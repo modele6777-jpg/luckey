@@ -2038,7 +2038,7 @@ try {
   // 78. 고대 이집트 36 데칸 별자리 수호신 & 누트 천구 항해 엔진
   const egyptianDecansResult = calculateSupplement('egyptianDecansResult', () => ((() => {
     try {
-      return calculateEgyptianThirtySixDecans({ profile, targetDate: now });
+      return calculateEgyptianThirtySixDecans({ profile, targetDate: now, question });
     } catch (_) {
       return null;
     }
@@ -2938,7 +2938,7 @@ try {
   // 179. 고대 이집트 《암두아트의 서》 12시간 태양신 라 밤의 저승 항해 & 케프리 부활 엔진
   const egyptianAmduatResult = calculateSupplement('egyptianAmduatResult', () => ((() => {
     try {
-      return calculateEgyptianAmduat(profile);
+      return calculateEgyptianAmduat(profile, now, question);
     } catch (_) {
       return null;
     }

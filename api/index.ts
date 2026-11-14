@@ -1,4 +1,4 @@
-// v1.7.463: Deepen Aboriginal Dreamtime Songlines, Akashic Records Oracle, and Celtic Tree Ogham engines
+// v1.7.464: Deepen Egyptian Amduat, Maat Feather Heart, and Thirty-Six Decans engines
 import { getLucyRequestFallbacks, requestWithModelFallback } from '../src/lib/lucyModelPolicy.ts';
 import "dotenv/config";
 import express from "express";

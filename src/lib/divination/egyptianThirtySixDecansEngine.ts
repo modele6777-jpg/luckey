@@ -17,7 +17,28 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const EGYPTIAN_DECANS_VERSION = 'LUCKEY-EGYPTIAN-DECANS-v1.0.0';
+export const EGYPTIAN_DECANS_VERSION = 'LUCKEY-EGYPTIAN-DECANS-v2.0.0';
+
+export interface DecanSituationalAudit {
+  navigationAxis: string;
+  deityGiftFocus: string;
+  altarAction: string;
+  shadowWarning: string;
+}
+
+export interface DecanTemporalRhythm {
+  kstHour: number;
+  denderaWatchWindow: string;
+  sothicSeasonPhase: string;
+  navigationTimingDirective: string;
+  stellarTempo: '상승별' | '천정조망' | '침잠관조';
+}
+
+export interface DecanSynthesisMatrix {
+  resonanceGrade: '삼합공명' | '극성조율' | '안정항해';
+  birthTransitLink: string;
+  nextNavigationStep: string;
+}
 
 export interface DecanDeityInfo {
   decanNumber: number;          // 1 ~ 36
@@ -37,7 +58,10 @@ export interface EgyptianThirtySixDecansReport {
   calculatedAt: string;
   birthDecan: DecanDeityInfo;
   currentTransitDecan: DecanDeityInfo;
-  stellarResonanceScore: number;  // 0 ~ 100 천구 공명 지수
+  stellarResonanceScore: number;  // 내부 연산용
+  situationalDecanAudit: DecanSituationalAudit;
+  temporalDecanRhythm: DecanTemporalRhythm;
+  decanSynthesisMatrix: DecanSynthesisMatrix;
   spiritualNavigationGuidance: string; // 누트(Nut) 천구 항해 지침
   decanAltarPrescription: string;      // 데칸 제단 일상 개운 행동
 }
@@ -96,9 +120,94 @@ const EGYPTIAN_DEITIES_LIST: Array<Omit<DecanDeityInfo, 'decanNumber' | 'zodiacS
 const ZODIAC_NAMES = ['양자리', '황소자리', '쌍둥이자리', '게자리', '사자자리', '처녀자리', '천칭자리', '전갈자리', '사수자리', '염소자리', '물병자리', '물고기자리'];
 const DECAN_DEGREES = ['0° ~ 10° (제1데칸)', '10° ~ 20° (제2데칸)', '20° ~ 30° (제3데칸)'];
 
+function getKstDecanParts(now: Date): { hour: number; month: number } {
+  const formatter = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Asia/Seoul',
+    hour: 'numeric',
+    month: 'numeric',
+    hour12: false,
+  });
+  const parts = formatter.formatToParts(now);
+  return {
+    hour: Number(parts.find((p) => p.type === 'hour')?.value || '12') % 24,
+    month: Number(parts.find((p) => p.type === 'month')?.value || '1'),
+  };
+}
+
+function buildDecanSituationalAudit(
+  question: string,
+  birthDecan: DecanDeityInfo,
+  transitDecan: DecanDeityInfo
+): DecanSituationalAudit {
+  const q = question.toLowerCase();
+  if (/일|진로|사업|이직|선택|계획|목표/.test(q)) {
+    return {
+      navigationAxis: '덴데라 천구 항로 설정 및 실무 도약',
+      deityGiftFocus: `${birthDecan.guardianDeity}의 [${birthDecan.lightGift}] 발현`,
+      altarAction: `${transitDecan.sacredAmulet}의 상징처럼 핵심 원칙 하나를 명확히 세우고 실행에 옮기십시오.`,
+      shadowWarning: transitDecan.shadowChallenge,
+    };
+  }
+  if (/관계|연애|사랑|사람|가족|갈등|소통/.test(q)) {
+    return {
+      navigationAxis: '쌍성 공명 및 대인 경계선 조율',
+      deityGiftFocus: `${transitDecan.guardianDeity}의 [${transitDecan.elementalForce}] 조화`,
+      altarAction: '상대의 입장을 단정 짓기 전에 차분한 질문 한 마디로 서로의 거리를 확인하십시오.',
+      shadowWarning: birthDecan.shadowChallenge,
+    };
+  }
+  return {
+    navigationAxis: `제${transitDecan.decanNumber}데칸 천구 순환 조율`,
+    deityGiftFocus: transitDecan.lightGift,
+    altarAction: `${transitDecan.sacredIncense} 계열의 차분한 향기나 깊은 호흡으로 마음의 중심을 잡으십시오.`,
+    shadowWarning: transitDecan.shadowChallenge,
+  };
+}
+
+function buildDecanTemporalRhythm(now: Date): DecanTemporalRhythm {
+  const { hour, month } = getKstDecanParts(now);
+
+  let denderaWatchWindow = '새벽 소티스(Sothis) 헬리아칼 상승 창';
+  let stellarTempo: DecanTemporalRhythm['stellarTempo'] = '상승별';
+  let navigationTimingDirective = '지평선 위로 별이 떠오르듯 하루의 핵심 방향을 잡기 좋은 시간입니다.';
+
+  if (hour >= 5 && hour < 10) {
+    denderaWatchWindow = '여명 소티스(Sothis) 상승 별자리 창 (05~10시)';
+    stellarTempo = '상승별';
+    navigationTimingDirective = '새로운 계획과 맑은 판단이 필요한 결정을 내리기 알맞은 시간입니다.';
+  } else if (hour >= 10 && hour < 17) {
+    denderaWatchWindow = '주간 호루스 천정 조망 창 (10~17시)';
+    stellarTempo = '천정조망';
+    navigationTimingDirective = '높은 시야에서 전체 일정을 조율하고 실행력을 발휘하기 좋습니다.';
+  } else if (hour >= 17 && hour < 21) {
+    denderaWatchWindow = '황혼 누트(Nut) 천구 개막 창 (17~21시)';
+    stellarTempo = '침잠관조';
+    navigationTimingDirective = '낮의 분주함을 접고 오늘의 흐름을 차분히 되돌아보십시오.';
+  } else {
+    denderaWatchWindow = '심야 36데칸 항성 관측 창 (21~05시)';
+    stellarTempo = '침잠관조';
+    navigationTimingDirective = '밤하늘의 질서처럼 조용한 휴식으로 내면의 나침반을 재정렬할 시간입니다.';
+  }
+
+  let sothicSeasonPhase = '소티스(시리우스) 나일 순환절';
+  if (month >= 3 && month <= 5) sothicSeasonPhase = '춘분~하지 · 성장 별자리 순환절';
+  else if (month >= 6 && month <= 8) sothicSeasonPhase = '소티스 상승 · 나일 범람과 개화절';
+  else if (month >= 9 && month <= 11) sothicSeasonPhase = '추분~동지 · 수확과 조율절';
+  else sothicSeasonPhase = '동지~춘분 · 심연과 재생 준비절';
+
+  return {
+    kstHour: hour,
+    denderaWatchWindow,
+    sothicSeasonPhase,
+    navigationTimingDirective,
+    stellarTempo,
+  };
+}
+
 export function calculateEgyptianThirtySixDecans(params: {
   profile?: UserProfile | null;
   targetDate?: Date;
+  question?: string;
 }): EgyptianThirtySixDecansReport {
   const now = params.targetDate || new Date();
   
@@ -156,12 +265,29 @@ export function calculateEgyptianThirtySixDecans(params: {
 
   const decanAltarPrescription = `오늘 일상에서 ${currentTransitDecan.sacredIncense} 향기를 호흡하거나, ${currentTransitDecan.sacredAmulet}의 상징을 마음속에 떠올리며 ${currentTransitDecan.elementalForce}의 기운과 조화를 이루십시오.`;
 
+  const situationalDecanAudit = buildDecanSituationalAudit(params.question || '', birthDecan, currentTransitDecan);
+  const temporalDecanRhythm = buildDecanTemporalRhythm(now);
+  const resonanceGrade: DecanSynthesisMatrix['resonanceGrade'] =
+    circularDistance === 0 || circularDistance === 12 || circularDistance === 24
+      ? '삼합공명'
+      : circularDistance === 18
+        ? '극성조율'
+        : '안정항해';
+  const decanSynthesisMatrix: DecanSynthesisMatrix = {
+    resonanceGrade,
+    birthTransitLink: `본명 제${birthDecan.decanNumber}데칸(${birthDecan.guardianDeity})과 현재 제${currentTransitDecan.decanNumber}데칸(${currentTransitDecan.guardianDeity})이 ${temporalDecanRhythm.denderaWatchWindow}에서 교차합니다.`,
+    nextNavigationStep: situationalDecanAudit.altarAction,
+  };
+
   return {
     engineVersion: EGYPTIAN_DECANS_VERSION,
     calculatedAt: now.toISOString(),
     birthDecan,
     currentTransitDecan,
     stellarResonanceScore,
+    situationalDecanAudit,
+    temporalDecanRhythm,
+    decanSynthesisMatrix,
     spiritualNavigationGuidance,
     decanAltarPrescription,
   };
@@ -173,8 +299,13 @@ export function formatEgyptianThirtySixDecansPrompt(report: EgyptianThirtySixDec
   - 수호신격: ${report.birthDecan.guardianDeity} (${report.birthDecan.deityTitle})
   - 원소력 / 수호 부적: ${report.birthDecan.elementalForce} · ${report.birthDecan.sacredAmulet}
   - 빛의 은총 / 그림자 시험: ${report.birthDecan.lightGift} / ${report.birthDecan.shadowChallenge}
-- **현재 천구 트랜짓 데칸**: 제${report.currentTransitDecan.decanNumber}데칸 [${report.currentTransitDecan.zodiacSign} ${report.currentTransitDecan.decanDegree}] (${report.currentTransitDecan.guardianDeity})
-- **천구 항성 공명도**: ${report.stellarResonanceScore}점 / 100점
+- **현재 천구 트랜짓 데칸**: 제${report.currentTransitDecan.decanNumber}데칸 [${report.currentTransitDecan.zodiacSign} ${report.currentTransitDecan.decanDegree}] (${report.currentTransitDecan.guardianDeity}) · 공명 위상(${report.decanSynthesisMatrix.resonanceGrade})
+- **질문 맥락 감사**: ${report.situationalDecanAudit.navigationAxis} · 초점(${report.situationalDecanAudit.deityGiftFocus})
+  - 제단 실천: ${report.situationalDecanAudit.altarAction}
+  - 그림자 경계: ${report.situationalDecanAudit.shadowWarning}
+- **KST 시공간 리듬 (${report.temporalDecanRhythm.kstHour}시)**: ${report.temporalDecanRhythm.denderaWatchWindow} · ${report.temporalDecanRhythm.sothicSeasonPhase} (${report.temporalDecanRhythm.stellarTempo})
+  - 시간대 지침: ${report.temporalDecanRhythm.navigationTimingDirective}
+- **천구 교차 매트릭스**: ${report.decanSynthesisMatrix.birthTransitLink}
 - **누트(Nut) 천구 항해 지침**: ${report.spiritualNavigationGuidance}
 - **데칸 제단 일상 개운 행동**: ${report.decanAltarPrescription}`;
 }
