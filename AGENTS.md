@@ -43,4 +43,5 @@ Every time a user request is completed or changes are made to the codebase:
 - ScreenPortal and WorkspacePortal dialogs/backdrops always exclude sidebar/bottom navigation. In unfolded mode, scope them to the initiating content/Lucy pane, including swapped and portrait layouts; folded mode uses visible main bounds.
 - Preserve the initiating pane across nested/async dialogs, and recapture it whenever a persistent global portal reopens. Independent pane popups must not block each other.
 - Keep portal layers outside route transforms while giving fixed descendants a main-sized containing block. Nested dialogs must keep their stacking/focus behavior.
+- Folding/unfolding changes pane visibility and geometry, never the mounted page/portal ancestry. Open dialogs, nested layers, draft/search/filter state and scroll must survive both directions. Lazily mount unused panes, then retain them.
 - Recompute bounds on rotation, sidebar resize and visual viewport/keyboard changes. Never dim or intercept navigation with a dialog backdrop.

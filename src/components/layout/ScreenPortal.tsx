@@ -6,6 +6,25 @@ import { createPortal } from 'react-dom';
 
 export const ScreenOverlayContext = createContext<readonly RefObject<HTMLDivElement | null>[]>([]);
 
+/** Folding must not navigate away from the page that owns a live popup. */
+export function hasOpenScreenOverlay(): boolean {
+  if (Array.from(document.querySelectorAll<HTMLElement>('[data-screen-overlay-layer]'))
+    .some(layer => layer.childElementCount > 0 && layer.getBoundingClientRect().width > 0)) return true;
+  const visibleDialog = (doc: Document) => Array.from(doc.querySelectorAll<HTMLElement>('[role="dialog"], dialog[open]'))
+    .some(dialog => {
+      const rect = dialog.getBoundingClientRect();
+      const style = doc.defaultView?.getComputedStyle(dialog);
+      return rect.width > 0 && rect.height > 0 && style?.visibility !== 'hidden' && style?.display !== 'none';
+    });
+  if (visibleDialog(document)) return true;
+  // Key's practice dialogs live in its same-origin frame, outside React portals.
+  return Array.from(document.querySelectorAll('iframe')).some(frame => {
+    try {
+      return frame.getBoundingClientRect().width > 0 && Boolean(frame.contentDocument && visibleDialog(frame.contentDocument));
+    } catch { return false; }
+  });
+}
+
 /** Only occupied overlays participate; opening order wins over JSX declaration order. */
 export function isTopScreenOverlay(element: HTMLElement | null): boolean {
   const layers = Array.from(document.querySelectorAll<HTMLElement>('[data-screen-overlay-layer]'))
