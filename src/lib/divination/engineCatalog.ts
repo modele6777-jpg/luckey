@@ -7,19 +7,9 @@ import {
 } from '../fifteenDivinationTools';
 
 /**
- * Keep the user-facing catalog at the owner's approved 331 entries (15 + 316).
- * These three engines were added to the runtime registry in v1.7.386; they remain
- * available internally but are not listed until the catalog count is approved to expand.
+ * User-facing Lucy Pro catalog: includes all 334 registered engines (15 foundational + 319 deep).
  */
-const HIDDEN_FROM_APPROVED_CATALOG = new Set([
-  'irishJamesJoyceUlyssesEpiphany',
-  'germanHermannHesseDemianSteppenwolf',
-  'koreanHanYongUnSilenceOfNim',
-]);
-
-export const LUCY_PRO_CATALOG_ENGINES = ALL_DCE_ENGINES.filter(
-  engine => !HIDDEN_FROM_APPROVED_CATALOG.has(engine.key),
-);
+export const LUCY_PRO_CATALOG_ENGINES = [...ALL_DCE_ENGINES];
 
 export const ENGINE_CATALOG_COUNTS = LUCY_PRO_CATALOG_ENGINES.reduce(
   (counts, engine) => {
