@@ -2,21 +2,15 @@
  * 근대 네덜란드 바루흐 스피노자(Baruch Spinoza) 《에티카(Ethica)》 코나투스(Conatus) & 신즉자연(Deus sive Natura) 영원의 상 관조 엔진
  *
  * 스피노자의 《에티카(Ethica Ordine Geometrico Demonstrata)》 원전 기반.
- * 1. 신즉자연(Deus sive Natura): 우주 전체가 유일하고 무한한 실체(Substantia)이며, 만물은 그 실체의 필연적 표현(양태, Modus).
- * 2. 코나투스(Conatus): "각 사물은 자신의 존재를 보존하려고 온 힘을 다해 노력한다(Unaquaeque res in suo esse perseverare conatur)."
- *    - 코나투스는 인간의 본질 그 자체이며 활동 역량(Potentia agendi)의 원천.
- * 3. 정념과 감정의 역학(Affectus):
- *    - 기쁨(Laetitia): 정신과 육체의 활동 역량이 증가하고 완전성이 더 커지는 이행.
- *    - 슬픔(Tristitia): 활동 역량이 감소하고 완전성이 위축되는 이행.
- * 4. 영원의 상 아래에서(Sub Specie Aeternitatis): 사물들을 일시적 우연이 아니라 우주적 필연의 연쇄 속에서 직관하고 조망함.
- * 5. 신에 대한 지적 사랑(Amor Dei Intellectualis): 만물의 필연성을 온전히 이해함으로써 얻는 최고의 지복(Beatitudo)과 자유.
  *
- * @version LUCKEY-SPINOZA-CONATUS-AMORDEI-v1.0.0
+ * @version LUCKEY-SPINOZA-CONATUS-AMORDEI-v1.1.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const SPINOZA_CONATUS_AMORDEI_VERSION = 'LUCKEY-SPINOZA-CONATUS-AMORDEI-v1.0.0';
+export const SPINOZA_CONATUS_AMORDEI_VERSION = 'LUCKEY-SPINOZA-CONATUS-AMORDEI-v1.1.0';
+
+export type SpinozaQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
 export interface SpinozaAffectState {
   affectKey: string;
@@ -37,15 +31,18 @@ export interface SpinozaEpistemicLevel {
 export interface BaruchSpinozaEthicaConatusResult {
   engineVersion: string;
   calculatedAtKst: string;
-  // 5대 핵심 지표 (0~100)
-  conatusVitalityScore: number;          // 코나투스(Conatus) 자기보존 및 역량 증진 활력도
-  subSpecieAeternitatisScore: number;    // 영원의 상 아래에서(Sub Specie Aeternitatis) 우주적 필연성 관조도
-  affectJoyTransitionScore: number;      // 감정 역학(기쁨 Laetitia 역량 증가도)
-  adequateIdeaIntellectScore: number;    // 타당한 관념(Idea Adequata) 이성적 명석판명도
-  amorDeiIntellectualisScore: number;    // 신에 대한 지적 사랑(Amor Dei Intellectualis) 지복도
-  // 세부 명세
+  conatusVitalityScore: number;
+  subSpecieAeternitatisScore: number;
+  affectJoyTransitionScore: number;
+  adequateIdeaIntellectScore: number;
+  amorDeiIntellectualisScore: number;
+  questionTopic: SpinozaQuestionTopic;
   activeAffectState: SpinozaAffectState;
   focalEpistemicLevel: SpinozaEpistemicLevel;
+  practiceGuidance: string;
+  ritualAction: string;
+  reflectionFocus: string;
+  boundaryNotice: string;
   spinozaPhilosophicalCounsel: {
     counselTitle: string;
     philosophicalGuidance: string;
@@ -109,12 +106,51 @@ const EPISTEMIC_LEVELS: SpinozaEpistemicLevel[] = [
   },
 ];
 
-export function calculateBaruchSpinozaEthicaConatus(profile: UserProfile): BaruchSpinozaEthicaConatusResult {
+function classifySpinozaTopic(question: string): SpinozaQuestionTopic {
+  if (/연애|사랑|관계|이별|갈등|상대|사람|친구|가족|부부|직장동료/.test(question)) {
+    return 'relationship';
+  }
+  if (/선택|결정|이직|창업|투자|계약|시험|진로|방향|옮길|할까|말까/.test(question)) {
+    return 'decision';
+  }
+  if (/치유|회복|불안|지침|슬픔|분노|상처|우울|번아웃|스트레스|두려움/.test(question)) {
+    return 'healing';
+  }
+  return 'reflection';
+}
+
+const SPINOZA_TOPIC_PRACTICE: Record<SpinozaQuestionTopic, string> = {
+  relationship: '상대의 반응에 수동적으로 흔들리기보다, 서로의 존재 역량을 북돋우는 호혜적 연대와 관대함의 태도를 먼저 선택하십시오.',
+  decision: '당장의 불안이나 막연한 기대 대신, 각 선택지가 나의 활동 역량과 지속 가능한 평정을 키우는지 인과적으로 따져 보십시오.',
+  healing: '우리를 지치게 하는 것은 사건 자체보다 그 원인을 모른 채 떠도는 수동적 정념입니다. 감정의 뿌리를 명료히 이해할 때 마음은 자유로워집니다.',
+  reflection: '외부의 평가에 매여 있던 시선을 거두고, 지금 내가 본래 지닌 존재의 힘과 고요한 자기 긍정을 깊이 자각하십시오.',
+};
+
+const SPINOZA_TOPIC_RITUAL: Record<SpinozaQuestionTopic, string> = {
+  relationship: '상대에게 서운함이 올라올 때 즉각 반응하지 말고, 상대 역시 자기만의 인과와 조건 속에서 움직이고 있음을 한 호흡 떠올려 보십시오.',
+  decision: '선택지마다 느끼는 두려움과 실제 사실을 종이 위에서 분리해 적어 보고, 사실의 인과만 남긴 채 다시 판단해 보십시오.',
+  healing: '지금 마음을 무겁게 누르는 감정 하나를 이름 붙이고, 그것이 어떤 구체적 사건과 생각에서 비롯되었는지 차분히 문장으로 풀어 보십시오.',
+  reflection: '오늘 하루 동안 나의 기운을 높여 준 활동과 고갈시킨 습관을 각각 하나씩 가려내어 내일의 리듬을 정돈해 보십시오.',
+};
+
+const SPINOZA_TOPIC_REFLECTION: Record<SpinozaQuestionTopic, string> = {
+  relationship: '이 관계에서 나는 상대를 통제하려 하고 있나요, 아니면 서로의 역량이 함께 자라나는 자유를 넓히고 있나요?',
+  decision: '지금 내 마음을 끄는 선택은 일시적 충동에서 온 것인가요, 아니면 나의 본질적 역량을 오래 키우는 방향인가요?',
+  healing: '이 슬픔이나 불안을 막연한 운명 탓으로 돌리지 않고 인과적으로 바라볼 때 가장 먼저 보이는 원인은 무엇인가요?',
+  reflection: '타인의 시선과 비교를 걷어낸 자리에서 내 존재가 가장 온전히 살아 숨 쉬는 순간은 언제인가요?',
+};
+
+export function calculateBaruchSpinozaEthicaConatus(
+  profile: UserProfile,
+  now: Date = new Date(),
+  question = ''
+): BaruchSpinozaEthicaConatusResult {
+  const kstDate = new Date(now.getTime() + 9 * 60 * 60 * 1000).toISOString().slice(0, 10);
   const seedString =
-    (profile?.basic?.birthdate ?? (profile as any)?.birthdate ?? '1990-01-01') +
-    (profile?.basic?.name ?? (profile as any)?.name ?? 'User') +
-    (profile?.basic?.birthtime ?? (profile as any)?.birthtime ?? '12:00') +
-    'BaruchSpinozaEthicaConatus';
+    (profile?.basic?.birthdate ?? (profile as unknown as { birthdate?: string })?.birthdate ?? '1990-01-01') +
+    (profile?.basic?.name ?? (profile as unknown as { name?: string })?.name ?? 'User') +
+    (profile?.basic?.birthtime ?? (profile as unknown as { birthtime?: string })?.birthtime ?? '12:00') +
+    `|${kstDate}|${question}|BaruchSpinozaEthicaConatus`;
 
   let hash = 0;
   for (let i = 0; i < seedString.length; i++) {
@@ -134,23 +170,31 @@ export function calculateBaruchSpinozaEthicaConatus(profile: UserProfile): Baruc
 
   const activeAffectState = AFFECT_STATES[affectIndex];
   const focalEpistemicLevel = EPISTEMIC_LEVELS[levelIndex];
+  const questionTopic = classifySpinozaTopic(question);
+
+  const practiceGuidance = `${activeAffectState.actionCounsel} ${SPINOZA_TOPIC_PRACTICE[questionTopic]}`;
+  const ritualAction = SPINOZA_TOPIC_RITUAL[questionTopic];
+  const reflectionFocus = SPINOZA_TOPIC_REFLECTION[questionTopic];
+  const boundaryNotice = '이 관점은 스피노자 윤리학의 정념 전환과 인과적 이해라는 철학적 틀을 빌린 정성적 성찰이며, 우열의 점수나 확정적 예측이 아닙니다.';
 
   const counselTitle = `스피노자 에티카와 코나투스: ${activeAffectState.affectNameLatin}`;
-  const philosophicalGuidance = `자신의 존재를 보존하고 활동 역량을 드높이려는 코나투스(Conatus)의 힘을 신뢰하십시오. ` +
-    `현재 당신의 감정 역학은 '${activeAffectState.affectNameKo}'에 집중할 때입니다. ${activeAffectState.actionCounsel} ` +
-    `상황을 조망할 때는 ${focalEpistemicLevel.levelNameKo}(${focalEpistemicLevel.levelNameLatin})의 안목을 취하십시오. ` +
-    `영원의 상 아래에서(Sub Specie Aeternitatis) 만물을 바라볼 때 ${focalEpistemicLevel.philosophicalInsight}`;
+  const philosophicalGuidance = `${activeAffectState.actionCounsel} ${SPINOZA_TOPIC_PRACTICE[questionTopic]} ${focalEpistemicLevel.philosophicalInsight}`;
 
   return {
     engineVersion: SPINOZA_CONATUS_AMORDEI_VERSION,
-    calculatedAtKst: new Date().toISOString(),
+    calculatedAtKst: now.toISOString(),
     conatusVitalityScore,
     subSpecieAeternitatisScore,
     affectJoyTransitionScore,
     adequateIdeaIntellectScore,
     amorDeiIntellectualisScore,
+    questionTopic,
     activeAffectState,
     focalEpistemicLevel,
+    practiceGuidance,
+    ritualAction,
+    reflectionFocus,
+    boundaryNotice,
     spinozaPhilosophicalCounsel: {
       counselTitle,
       philosophicalGuidance,
@@ -161,16 +205,13 @@ export function calculateBaruchSpinozaEthicaConatus(profile: UserProfile): Baruc
 export function formatBaruchSpinozaEthicaConatusPrompt(res: BaruchSpinozaEthicaConatusResult): string {
   return [
     `【스피노자 에티카 코나투스 & 신즉자연 관조 지표】`,
-    `- 코나투스 역량증진 활력도: ${res.conatusVitalityScore}/100`,
-    `- 영원의 상 필연성 관조도: ${res.subSpecieAeternitatisScore}/100`,
-    `- 능동적 기쁨 역량 이행도: ${res.affectJoyTransitionScore}/100`,
-    `- 타당한 관념 이성적 인식도: ${res.adequateIdeaIntellectScore}/100`,
-    `- 지적 사랑(Amor Dei) 지복도: ${res.amorDeiIntellectualisScore}/100`,
     `- 능동 정념 상태: ${res.activeAffectState.affectNameLatin} (${res.activeAffectState.affectNameKo})`,
     `- 역학 설명: ${res.activeAffectState.potencyDynamics}`,
-    `- 실천적 조언: ${res.activeAffectState.actionCounsel}`,
     `- 인식의 지평: ${res.focalEpistemicLevel.levelNameKo} [${res.focalEpistemicLevel.levelNameLatin}]`,
     `- 인식적 통찰: ${res.focalEpistemicLevel.philosophicalInsight}`,
-    `- 철학적 수양 지침: ${res.spinozaPhilosophicalCounsel.philosophicalGuidance}`,
+    `- 실천 조언: ${res.practiceGuidance}`,
+    `- 일상 의례: ${res.ritualAction}`,
+    `- 성찰 질문: ${res.reflectionFocus}`,
+    `- 해석 경계: ${res.boundaryNotice}`,
   ].join('\n');
 }

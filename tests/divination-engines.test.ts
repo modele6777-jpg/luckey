@@ -6391,6 +6391,44 @@ test('Sukuyo, Kabbalah, and Hongguk Qimen engines: enhanced multi-dimensional nu
   assert(hqPrompt.includes('4계절 거시 결단 윈도우'));
 });
 
+test('Inanna Underworld, Spinoza Ethica, and Plotinus Enneads v1.1.0 engines provide question-responsive qualitative synthesis without score exposure', () => {
+  const testDate = new Date('2026-11-14T03:00:00Z');
+  const testProfile = { basic: { birthdate: '1994-01-24', birthtime: '12:00', gender: 'male' as const, name: '제제' } };
+
+  const inanna = calculateSumerianInannaUnderworldDescent({
+    profile: testProfile,
+    question: '이직 결정을 앞두고 두려움이 커요',
+    now: testDate,
+  });
+  assert.equal(inanna.questionTopic, 'decision');
+  assert.ok(inanna.practiceGuidance.length > 10);
+  assert.ok(inanna.ritualAction.length > 10);
+  assert.ok(inanna.reflectionFocus.length > 10);
+  assert.ok(inanna.boundaryNotice.length > 10);
+  const inannaPrompt = formatSumerianInannaUnderworldDescentPrompt(inanna);
+  assert(!inannaPrompt.includes('/100'));
+  assert(!inannaPrompt.includes('%'));
+
+  const spinoza = calculateBaruchSpinozaEthicaConatus(testProfile, testDate, '상대방과의 갈등으로 마음이 무거워요');
+  assert.equal(spinoza.questionTopic, 'relationship');
+  assert.ok(spinoza.practiceGuidance.length > 10);
+  assert.ok(spinoza.ritualAction.length > 10);
+  assert.ok(spinoza.reflectionFocus.length > 10);
+  assert.ok(spinoza.boundaryNotice.length > 10);
+  const spinozaPrompt = formatBaruchSpinozaEthicaConatusPrompt(spinoza);
+  assert(!spinozaPrompt.includes('/100'));
+
+  const plotinus = calculateAncientGreekPlotinusEnneadsHenosis(testProfile, testDate, '번아웃에서 벗어나 마음을 회복하고 싶어요');
+  assert.equal(plotinus.questionTopic, 'healing');
+  assert.ok(plotinus.practiceGuidance.length > 10);
+  assert.ok(plotinus.ritualAction.length > 10);
+  assert.ok(plotinus.reflectionFocus.length > 10);
+  assert.ok(plotinus.boundaryNotice.length > 10);
+  const plotinusPrompt = formatAncientGreekPlotinusEnneadsHenosisPrompt(plotinus);
+  assert(!plotinusPrompt.includes('/100'));
+  assert(!plotinusPrompt.includes('원전 출처'));
+});
+
 
 
 
