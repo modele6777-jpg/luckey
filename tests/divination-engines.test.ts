@@ -6891,6 +6891,45 @@ test('qualitative & temporal deepening: Adler Individual Psychology, Viktor Fran
   assert.ok(!wittPrompt.includes('/100'));
 });
 
+test('qualitative & temporal deepening: Bertrand Russell, Virginia Woolf, and William Shakespeare', () => {
+  const testProfile = {
+    basic: {
+      name: '제제',
+      birthdate: '1994-01-24',
+      birthtime: '14:30',
+      gender: 'male',
+    },
+  } as any;
+  const now = new Date('2026-11-14T12:40:00Z'); // 21:40 KST (evening)
+
+  const russell = calculateBritishBertrandRussellConquestOfHappiness(testProfile, '새로운 진로 결정을 앞두고 불안이 커요', now);
+  assert.equal(russell.engineVersion, BRITISH_BERTRAND_RUSSELL_VERSION);
+  assert.equal(russell.questionTopic, 'decision');
+  assert.ok(russell.temporalRussellRhythm.kstDateLabel.includes('2026-11-14'));
+  assert.ok(russell.practiceGuidance.length > 0 && russell.ritualAction.length > 0 && russell.boundaryNotice.length > 0);
+  const russellPrompt = formatBritishBertrandRussellConquestOfHappinessPrompt(russell);
+  assert.ok(russellPrompt.includes('질문 주제 맥락: decision'));
+  assert.ok(!russellPrompt.includes('/100'));
+
+  const woolf = calculateBritishVirginiaWoolfRoomOfOnesOwn(testProfile, '요즘 마음이 지치고 나만의 시간이 필요해요', now);
+  assert.equal(woolf.engineVersion, BRITISH_VIRGINIA_WOOLF_ROOM_OF_ONES_OWN_VERSION);
+  assert.equal(woolf.questionTopic, 'healing');
+  assert.ok(woolf.temporalWoolfRhythm.kstDateLabel.includes('2026-11-14'));
+  assert.ok(woolf.practiceGuidance.length > 0 && woolf.ritualAction.length > 0 && woolf.boundaryNotice.length > 0);
+  const woolfPrompt = formatBritishVirginiaWoolfRoomOfOnesOwnPrompt(woolf);
+  assert.ok(woolfPrompt.includes('질문 주제 맥락: healing'));
+  assert.ok(!woolfPrompt.includes('/100'));
+
+  const shakespeare = calculateBritishWilliamShakespeareTragicWisdom(testProfile, '가족과의 갈등에서 용서와 화해가 어려워요', now);
+  assert.equal(shakespeare.engineVersion, BRITISH_WILLIAM_SHAKESPEARE_TRAGIC_WISDOM_VERSION);
+  assert.equal(shakespeare.questionTopic, 'relationship');
+  assert.ok(shakespeare.temporalShakespeareRhythm.kstDateLabel.includes('2026-11-14'));
+  assert.ok(shakespeare.practiceGuidance.length > 0 && shakespeare.ritualAction.length > 0 && shakespeare.boundaryNotice.length > 0);
+  const shakespearePrompt = formatBritishWilliamShakespeareTragicWisdomPrompt(shakespeare);
+  assert.ok(shakespearePrompt.includes('질문 주제 맥락: relationship'));
+  assert.ok(!shakespearePrompt.includes('/100'));
+});
+
 
 
 

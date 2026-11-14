@@ -8,12 +8,21 @@
  * 4. 내면 의식의 흐름 수용 및 진실성 지표 (Stream of Consciousness Authenticity Index): 관습적 형식에 얽매이지 않고 인간 내면의 솔직한 감정과 사유의 물결을 온전히 긍정하는 힘.
  * 5. 세월의 파도 속에서도 중심을 잡는 등대적 회복탄력성 (Lighthouse Steadfast Resilience Score): 시간의 무상함과 상실 속에서도 삶의 의미를 잃지 않고 내면의 빛을 비추는 회복탄력성.
  *
- * @version LUCKEY-VIRGINIA-WOOLF-ROOM-OF-ONES-OWN-v1.0.0
+ * @version LUCKEY-VIRGINIA-WOOLF-ROOM-OF-ONES-OWN-v1.1.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const BRITISH_VIRGINIA_WOOLF_ROOM_OF_ONES_OWN_VERSION = 'LUCKEY-VIRGINIA-WOOLF-ROOM-OF-ONES-OWN-v1.0.0';
+export const BRITISH_VIRGINIA_WOOLF_ROOM_OF_ONES_OWN_VERSION = 'LUCKEY-VIRGINIA-WOOLF-ROOM-OF-ONES-OWN-v1.1.0';
+
+export type WoolfQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
+
+export interface WoolfTemporalRhythm {
+  kstDateLabel: string;
+  timeWindowKo: string;
+  luminousTone: string;
+  rhythmDirective: string;
+}
 
 export interface WoolfTheme {
   themeKey: string;
@@ -41,8 +50,14 @@ export interface BritishVirginiaWoolfRoomOfOnesOwnResult {
   streamOfConsciousnessFlowIndex: number;               // 의식의 흐름 수용 및 진실성 지표 (Stream of Consciousness Authenticity)
   lighthouseResilienceScore: number;                    // 등대적 회복탄력성 (Lighthouse Steadfast Resilience)
   // 세부 분석
+  questionTopic: WoolfQuestionTopic;
+  temporalWoolfRhythm: WoolfTemporalRhythm;
   activeWoolfTheme: WoolfTheme;
   focalWoolfAphorism: WoolfAphorism;
+  practiceGuidance: string;
+  ritualAction: string;
+  reflectionFocus: string;
+  boundaryNotice: string;
   woolfComprehensiveGuidance: {
     guidanceTitle: string;
     philosophicalCounsel: string;
@@ -120,9 +135,89 @@ function hashString(str: string): number {
   return hash;
 }
 
+function classifyWoolfQuestionTopic(query?: string): WoolfQuestionTopic {
+  const q = (query ?? '').toLowerCase();
+  if (/사랑|연애|관계|결혼|이별|가족|친구|갈등|사람|동료|부모/.test(q)) return 'relationship';
+  if (/선택|결정|이직|사업|진로|시험|돈|투자|계약|시작|포기|방향/.test(q)) return 'decision';
+  if (/지치|힘들|불안|우울|상처|치유|위로|외로|슬픔|걱정|두려|피곤/.test(q)) return 'healing';
+  return 'reflection';
+}
+
+function buildWoolfTemporalRhythm(now?: Date): WoolfTemporalRhythm {
+  const base = now ?? new Date();
+  const kst = new Date(base.getTime() + 9 * 60 * 60 * 1000);
+  const kstDateLabel = kst.toISOString().slice(0, 10);
+  const hour = kst.getUTCHours();
+
+  if (hour >= 5 && hour < 11) {
+    return {
+      kstDateLabel,
+      timeWindowKo: '아침 자기만의 방 개방 시간 (05:00~11:00 KST)',
+      luminousTone: '맑은 사유의 독립과 선명한 시선',
+      rhythmDirective: '타인의 요구가 밀려들기 전, 온전히 내면의 문을 닫아걸고 나만의 문장을 세우는 시간입니다.',
+    };
+  }
+  if (hour >= 11 && hour < 17) {
+    return {
+      kstDateLabel,
+      timeWindowKo: '낮 존재의 순간들 포착 시간 (11:00~17:00 KST)',
+      luminousTone: '일상 속 반짝이는 직관과 조화',
+      rhythmDirective: '분주한 현실의 틈새에서 찰나의 진실과 이성·감성의 균형을 길어 올리는 시간입니다.',
+    };
+  }
+  if (hour >= 17 && hour < 22) {
+    return {
+      kstDateLabel,
+      timeWindowKo: '저녁 등대 불빛의 시간 (17:00~22:00 KST)',
+      luminousTone: '세월을 견디는 중심과 온기',
+      rhythmDirective: '하루의 파도가 잦아드는 저녁, 멀리 비추는 등대처럼 흔들리지 않는 내면의 빛을 확인하는 시간입니다.',
+    };
+  }
+  return {
+    kstDateLabel,
+    timeWindowKo: '심야 의식의 흐름 성찰 시간 (22:00~05:00 KST)',
+    luminousTone: '솔직한 내면의 물결과 어둠 속 성냥빛',
+    rhythmDirective: '세속의 소음을 끄고 어둠 속에서 작은 성냥을 켜듯 조용한 영감과 진실을 마주하는 시간입니다.',
+  };
+}
+
+function buildWoolfTopicGuidance(topic: WoolfQuestionTopic): {
+  practiceGuidance: string;
+  ritualAction: string;
+  reflectionFocus: string;
+} {
+  if (topic === 'relationship') {
+    return {
+      practiceGuidance: '타인의 기대에 나를 전부 맞추려 하기보다, 건강한 경계와 독립된 내면의 방을 지킨 채 만나십시오.',
+      ritualAction: '상대의 말에 즉각 반응하기 전, 10초간 나의 진짜 감정을 내면에서 먼저 확인하기',
+      reflectionFocus: '이 관계에서 나는 나만의 목소리를 지킨 채 연결되어 있는가, 아니면 소음에 잠식되고 있는가?',
+    };
+  }
+  if (topic === 'decision') {
+    return {
+      practiceGuidance: '물질적·현실적 자립의 토대와 내면의 창조적 자유가 함께 살아남는 방향을 선택하십시오.',
+      ritualAction: '남들의 평가 기준을 지우고 내가 진정으로 원하는 조건 세 가지만 종이에 적어 보기',
+      reflectionFocus: '이 선택이 나에게 더 넓은 "자기만의 방"과 시간의 주권을 열어 주는가?',
+    };
+  }
+  if (topic === 'healing') {
+    return {
+      practiceGuidance: '거창한 해답을 한 번에 찾으려 하지 말고, 오늘 어둠 속에서 켜는 작은 성냥빛 같은 위로에 마음을 기대십시오.',
+      ritualAction: '하루 단 20분이라도 누구의 방해도 받지 않는 공간에서 차 한 잔과 함께 온전히 쉬기',
+      reflectionFocus: '무감각한 피로 속에서 오늘 나를 잠깐이라도 살아 숨 쉬게 만든 찰나는 무엇이었는가?',
+    };
+  }
+  return {
+    practiceGuidance: '정형화된 틀에서 벗어나 이성과 직관이 함께 공명하는 나만의 창조적 리듬을 회복하십시오.',
+    ritualAction: '오늘 스쳐 지나간 사소한 풍경이나 감정 하나를 꾸밈없는 문장으로 두 줄 기록하기',
+    reflectionFocus: '지금 내 마음의 등대는 어떤 방향을 비추며 나를 부르고 있는가?',
+  };
+}
+
 export function calculateBritishVirginiaWoolfRoomOfOnesOwn(
   profile?: UserProfile,
   query?: string,
+  now?: Date,
 ): BritishVirginiaWoolfRoomOfOnesOwnResult {
   const p = profile as any;
   const name = profile?.basic?.name ?? p?.name ?? '남희';
@@ -130,7 +225,11 @@ export function calculateBritishVirginiaWoolfRoomOfOnesOwn(
   const birthTime = profile?.basic?.birthtime ?? p?.birthTime ?? p?.birthtime ?? '12:00';
   const gender = profile?.basic?.gender ?? p?.gender ?? 'neutral';
 
-  const seedString = `VIRGINIA-WOOLF-ROOM-OF-ONES-OWN:${name}:${birthDate}:${birthTime}:${gender}:${query ?? ''}`;
+  const temporalWoolfRhythm = buildWoolfTemporalRhythm(now);
+  const questionTopic = classifyWoolfQuestionTopic(query);
+  const topicGuidance = buildWoolfTopicGuidance(questionTopic);
+
+  const seedString = `VIRGINIA-WOOLF-ROOM-OF-ONES-OWN:${name}:${birthDate}:${birthTime}:${gender}:${query ?? ''}:${temporalWoolfRhythm.kstDateLabel}`;
   const baseHash = hashString(seedString);
   const absHash = Math.abs(baseHash);
 
@@ -151,19 +250,27 @@ export function calculateBritishVirginiaWoolfRoomOfOnesOwn(
     `외부의 억압과 편견을 넘어선 온전한 사유의 독립성, 무감각한 일상의 껍질을 뚫고 솟구치는 존재의 순간들(Moments of Being), ` +
     `그리고 이성과 감성이 상호 공명하는 양성구유적(Androgynous) 전인적 창조성의 길을 제시했습니다. ` +
     `지금 당신에게 가장 필요한 실천적 나침반은 '${activeWoolfTheme.themeTitleKo}'입니다. ` +
-    `${activeWoolfTheme.practicalCounsel} 울프의 명언 "${focalWoolfAphorism.aphorismKo}" (${focalWoolfAphorism.aphorismEnglish})을 마음에 새기고, ` +
+    `${activeWoolfTheme.practicalCounsel} ${topicGuidance.practiceGuidance} 울프의 명언 "${focalWoolfAphorism.aphorismKo}" (${focalWoolfAphorism.aphorismEnglish})을 마음에 새기고, ` +
     `${focalWoolfAphorism.actionGuidance}`;
+
+  const boundaryNotice = '버지니아 울프 문학·철학 해석은 사유의 독립과 내면 성찰을 돕는 상징 관점이며, 현실의 확정 예언이나 의학적 진단이 아닙니다.';
 
   return {
     engineVersion: BRITISH_VIRGINIA_WOOLF_ROOM_OF_ONES_OWN_VERSION,
-    calculatedAtKst: new Date().toISOString(),
+    calculatedAtKst: (now ?? new Date()).toISOString(),
     roomOfOnesOwnAutonomyScore,
     momentsOfBeingInsightIndex,
     androgynousMindCreativityScore,
     streamOfConsciousnessFlowIndex,
     lighthouseResilienceScore,
+    questionTopic,
+    temporalWoolfRhythm,
     activeWoolfTheme,
     focalWoolfAphorism,
+    practiceGuidance: topicGuidance.practiceGuidance,
+    ritualAction: topicGuidance.ritualAction,
+    reflectionFocus: topicGuidance.reflectionFocus,
+    boundaryNotice,
     woolfComprehensiveGuidance: {
       guidanceTitle,
       philosophicalCounsel,
@@ -176,17 +283,18 @@ export function formatBritishVirginiaWoolfRoomOfOnesOwnPrompt(
 ): string {
   return [
     `【버지니아 울프 《자기만의 방·등대로》 사유의 독립·존재의 순간들 지표】`,
-    `- 자기만의 방 자율성과 독립적 사유 역량(Room of One's Own Autonomy): ${res.roomOfOnesOwnAutonomyScore}/100`,
-    `- 존재의 순간들 직관도(Moments of Being Insight): ${res.momentsOfBeingInsightIndex}/100`,
-    `- 양성구유적 창조적 지성(Androgynous Mind Creativity): ${res.androgynousMindCreativityScore}/100`,
-    `- 의식의 흐름 수용 및 진실성 지표(Stream of Consciousness Authenticity): ${res.streamOfConsciousnessFlowIndex}/100`,
-    `- 등대적 회복탄력성(Lighthouse Steadfast Resilience): ${res.lighthouseResilienceScore}/100`,
+    `- 질문 주제 맥락: ${res.questionTopic}`,
+    `- KST 시공간 리듬: ${res.temporalWoolfRhythm.kstDateLabel} · ${res.temporalWoolfRhythm.timeWindowKo} (${res.temporalWoolfRhythm.luminousTone}) — ${res.temporalWoolfRhythm.rhythmDirective}`,
     `- 핵심 울프 테마: ${res.activeWoolfTheme.themeTitleKo} [${res.activeWoolfTheme.themeTitleEn}]`,
     `- 문학적 통찰: ${res.activeWoolfTheme.literaryInsight}`,
     `- 행동 조언: ${res.activeWoolfTheme.practicalCounsel}`,
+    `- 질문 맞춤 실천 가이드: ${res.practiceGuidance}`,
+    `- 일상 실천 의례: ${res.ritualAction}`,
+    `- 핵심 성찰 질문: ${res.reflectionFocus}`,
     `- 울프 원전 테제: "${res.focalWoolfAphorism.aphorismKo}" (${res.focalWoolfAphorism.aphorismEnglish})`,
     `- 원전 출처: [${res.focalWoolfAphorism.sourceContext}]`,
     `- 구체적 실천 지침: ${res.focalWoolfAphorism.actionGuidance}`,
     `- 종합 울프 권면: ${res.woolfComprehensiveGuidance.philosophicalCounsel}`,
+    `- 해석 경계: ${res.boundaryNotice}`,
   ].join('\n');
 }

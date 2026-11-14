@@ -9,12 +9,21 @@
  * 4. 비인칭적 흥미와 여가의 활력도(Impersonal Interests & Leisure Vitality Index): 생업의 중압감에서 벗어나 마음을 회복시키는 순수한 취미와 폭넓은 시야.
  * 5. 합리적 이성과 회복탄력성 지수(Rational Equanimity & Resilience Score): 피할 수 없는 불행 앞에서도 불필요한 감정 소모를 멈추고 냉철하고 따뜻한 이성으로 극복하는 지혜.
  *
- * @version LUCKEY-BERTRAND-RUSSELL-HAPPINESS-v1.0.0
+ * @version LUCKEY-BERTRAND-RUSSELL-HAPPINESS-v1.1.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const BRITISH_BERTRAND_RUSSELL_VERSION = 'LUCKEY-BERTRAND-RUSSELL-HAPPINESS-v1.0.0';
+export const BRITISH_BERTRAND_RUSSELL_VERSION = 'LUCKEY-BERTRAND-RUSSELL-HAPPINESS-v1.1.0';
+
+export type RussellQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
+
+export interface RussellTemporalRhythm {
+  kstDateLabel: string;
+  timeWindowKo: string;
+  zestTone: string;
+  rhythmDirective: string;
+}
 
 export interface RussellTheme {
   themeKey: string;
@@ -42,8 +51,14 @@ export interface BritishBertrandRussellConquestOfHappinessResult {
   impersonalInterestsVitalityIndex: number;       // 비인칭적 흥미와 여가의 활력도 (Impersonal Interests Vitality)
   rationalEquanimityResilienceScore: number;      // 합리적 이성과 회복탄력성 지수 (Rational Equanimity & Resilience)
   // 세부 분석
+  questionTopic: RussellQuestionTopic;
+  temporalRussellRhythm: RussellTemporalRhythm;
   activeRussellTheme: RussellTheme;
   focalRussellAphorism: RussellAphorism;
+  practiceGuidance: string;
+  ritualAction: string;
+  reflectionFocus: string;
+  boundaryNotice: string;
   russellComprehensiveGuidance: {
     guidanceTitle: string;
     philosophicalCounsel: string;
@@ -133,9 +148,89 @@ export const RUSSELL_APHORISMS: RussellAphorism[] = [
   },
 ];
 
+function classifyRussellQuestionTopic(query?: string): RussellQuestionTopic {
+  const q = (query ?? '').toLowerCase();
+  if (/사랑|연애|관계|결혼|이별|가족|친구|갈등|사람|동료|부모/.test(q)) return 'relationship';
+  if (/선택|결정|이직|사업|진로|시험|돈|투자|계약|시작|포기|방향/.test(q)) return 'decision';
+  if (/지치|힘들|불안|우울|상처|치유|위로|외로|슬픔|걱정|두려|피곤/.test(q)) return 'healing';
+  return 'reflection';
+}
+
+function buildRussellTemporalRhythm(now?: Date): RussellTemporalRhythm {
+  const base = now ?? new Date();
+  const kst = new Date(base.getTime() + 9 * 60 * 60 * 1000);
+  const kstDateLabel = kst.toISOString().slice(0, 10);
+  const hour = kst.getUTCHours();
+
+  if (hour >= 5 && hour < 11) {
+    return {
+      kstDateLabel,
+      timeWindowKo: '아침 열의의 시간 (05:00~11:00 KST)',
+      zestTone: '신선한 호기심과 외향적 활력',
+      rhythmDirective: '내면의 근심을 접어 두고 오늘 마주할 세상과 일에 산뜻한 호기심을 기울이는 시간입니다.',
+    };
+  }
+  if (hour >= 11 && hour < 17) {
+    return {
+      kstDateLabel,
+      timeWindowKo: '낮 건설적 몰입의 시간 (11:00~17:00 KST)',
+      zestTone: '목적 있는 실행과 비교 탈피',
+      rhythmDirective: '타인과의 비교를 멈추고 손에 잡힌 구체적 과업을 한 걸음씩 쌓아 올리는 시간입니다.',
+    };
+  }
+  if (hour >= 17 && hour < 22) {
+    return {
+      kstDateLabel,
+      timeWindowKo: '저녁 비인칭적 여가의 시간 (17:00~22:00 KST)',
+      zestTone: '넓은 시야와 순수한 관심',
+      rhythmDirective: '이해관계를 떠난 독서·산책·대화 같은 비인칭적 흥미로 마음의 균형을 회복하는 시간입니다.',
+    };
+  }
+  return {
+    kstDateLabel,
+    timeWindowKo: '심야 이성적 평온의 시간 (22:00~05:00 KST)',
+    zestTone: '불안 직시와 우주의 관조',
+    rhythmDirective: '막연한 두려움을 이성으로 정리하고 우주의 넓은 시야 속에서 마음을 내려놓는 시간입니다.',
+  };
+}
+
+function buildRussellTopicGuidance(topic: RussellQuestionTopic): {
+  practiceGuidance: string;
+  ritualAction: string;
+  reflectionFocus: string;
+} {
+  if (topic === 'relationship') {
+    return {
+      practiceGuidance: '상대의 인정이나 반응에 지나치게 매달리기보다, 상대를 있는 그대로 호기심과 애정으로 바라보십시오.',
+      ritualAction: '오늘 가까운 사람에게 계산이나 비교 없이 순수한 안부나 고마움 한 마디 건네기',
+      reflectionFocus: '지금 이 관계에서 나를 괴롭히는 것은 상대의 행동인가, 아니면 비교와 자의식인가?',
+    };
+  }
+  if (topic === 'decision') {
+    return {
+      practiceGuidance: '막연한 불안으로 결정을 미루기보다 최악의 경우까지 차분히 직시하고 건설적인 한 걸음을 내디디십시오.',
+      ritualAction: '망설이는 선택지의 최악 시나리오와 대응책 두 줄을 종이에 적어 불안을 실체화하기',
+      reflectionFocus: '이 선택을 할 때 남의 시선보다 내가 실제로 흥미와 보람을 느끼는 일은 무엇인가?',
+    };
+  }
+  if (topic === 'healing') {
+    return {
+      practiceGuidance: '고통의 원인을 내 안에서만 파고들수록 자기몰두가 깊어집니다. 시선을 밖으로 돌려 작은 활력을 회복하십시오.',
+      ritualAction: '오늘 15분만이라도 업무나 고민과 무관한 순수한 취미·산책·음악에 온전히 몰입하기',
+      reflectionFocus: '내가 통제할 수 없는 걱정 대신 지금 바로 손 뻗어 맛볼 수 있는 작은 기쁨은 무엇인가?',
+    };
+  }
+  return {
+    practiceGuidance: '우주의 광대함 속에서 오늘의 사소한 번뇌를 가볍게 내려놓고 건설적인 하루의 질서를 세우십시오.',
+    ritualAction: '오늘 하루 나를 설레게 하거나 호기심을 자극했던 장면 하나를 짧게 기록하기',
+    reflectionFocus: '나는 지금 나 자신을 분석하는 데 시간을 쓰고 있는가, 세상을 사랑하는 데 쓰고 있는가?',
+  };
+}
+
 export function calculateBritishBertrandRussellConquestOfHappiness(
   profile?: UserProfile,
   query?: string,
+  now?: Date,
 ): BritishBertrandRussellConquestOfHappinessResult {
   const p = profile as any;
   const name = profile?.basic?.name ?? p?.name ?? '남희';
@@ -143,7 +238,11 @@ export function calculateBritishBertrandRussellConquestOfHappiness(
   const birthTime = profile?.basic?.birthtime ?? p?.birthTime ?? p?.birthtime ?? '12:00';
   const gender = profile?.basic?.gender ?? p?.gender ?? 'neutral';
 
-  const seedString = `BERTRAND-RUSSELL-HAPPINESS:${name}:${birthDate}:${birthTime}:${gender}:${query ?? ''}`;
+  const temporalRussellRhythm = buildRussellTemporalRhythm(now);
+  const questionTopic = classifyRussellQuestionTopic(query);
+  const topicGuidance = buildRussellTopicGuidance(questionTopic);
+
+  const seedString = `BERTRAND-RUSSELL-HAPPINESS:${name}:${birthDate}:${birthTime}:${gender}:${query ?? ''}:${temporalRussellRhythm.kstDateLabel}`;
 
   let hash = 0;
   for (let i = 0; i < seedString.length; i++) {
@@ -167,19 +266,27 @@ export function calculateBritishBertrandRussellConquestOfHappiness(
   const guidanceTitle = `버트런드 러셀 행복의 정복 지혜: ${activeRussellTheme.themeTitleKo}`;
   const philosophicalCounsel = `20세기 최고의 지성 버트런드 러셀의 《행복의 정복》은 불필요한 자기몰두와 남과의 비교를 털어내고, 외부 세계를 향한 열정적 관심(Zest)과 건설적인 일의 기쁨으로 나아가도록 이끕니다. ` +
     `현재 당신의 삶을 환하게 밝히는 핵심 행복 원리는 '${activeRussellTheme.themeTitleKo}'입니다. ` +
-    `${activeRussellTheme.practicalCounsel} 아울러 러셀의 명언 "${focalRussellAphorism.aphorismKo}"를 되새기며, ` +
+    `${activeRussellTheme.practicalCounsel} ${topicGuidance.practiceGuidance} 아울러 러셀의 명언 "${focalRussellAphorism.aphorismKo}"를 되새기며, ` +
     `${focalRussellAphorism.actionGuidance}`;
+
+  const boundaryNotice = '버트런드 러셀 철학 해석은 삶의 태도와 시선 전환을 돕는 상징·성찰 관점이며, 임상적·의학적 진단이나 확정 예언이 아닙니다.';
 
   return {
     engineVersion: BRITISH_BERTRAND_RUSSELL_VERSION,
-    calculatedAtKst: new Date().toISOString(),
+    calculatedAtKst: (now ?? new Date()).toISOString(),
     zestForLifeIndex,
     overcomingSelfAbsorptionIndex,
     constructiveWorkFulfillmentScore,
     impersonalInterestsVitalityIndex,
     rationalEquanimityResilienceScore,
+    questionTopic,
+    temporalRussellRhythm,
     activeRussellTheme,
     focalRussellAphorism,
+    practiceGuidance: topicGuidance.practiceGuidance,
+    ritualAction: topicGuidance.ritualAction,
+    reflectionFocus: topicGuidance.reflectionFocus,
+    boundaryNotice,
     russellComprehensiveGuidance: {
       guidanceTitle,
       philosophicalCounsel,
@@ -192,18 +299,19 @@ export function formatBritishBertrandRussellConquestOfHappinessPrompt(
 ): string {
   return [
     `【버트런드 러셀 《행복의 정복》 열정적 관심 & 합리적 낙관 지표】`,
-    `- 삶에 대한 열정적 관심도(Zest for Life): ${res.zestForLifeIndex}/100`,
-    `- 자기몰두 및 피해망상 극복 지수(Overcoming Self-Absorption): ${res.overcomingSelfAbsorptionIndex}/100`,
-    `- 건설적 일과 몰입의 성취도(Constructive Work Fulfillment): ${res.constructiveWorkFulfillmentScore}/100`,
-    `- 비인칭적 흥미와 여가의 활력도(Impersonal Interests Vitality): ${res.impersonalInterestsVitalityIndex}/100`,
-    `- 합리적 이성과 회복탄력성 지수(Rational Equanimity & Resilience): ${res.rationalEquanimityResilienceScore}/100`,
+    `- 질문 주제 맥락: ${res.questionTopic}`,
+    `- KST 시공간 리듬: ${res.temporalRussellRhythm.kstDateLabel} · ${res.temporalRussellRhythm.timeWindowKo} (${res.temporalRussellRhythm.zestTone}) — ${res.temporalRussellRhythm.rhythmDirective}`,
     `- 핵심 행복 테마: ${res.activeRussellTheme.themeTitleKo} [${res.activeRussellTheme.themeTitleEn}]`,
     `- 실존적 통찰: ${res.activeRussellTheme.existentialInsight}`,
     `- 실천적 조언: ${res.activeRussellTheme.practicalCounsel}`,
+    `- 질문 맞춤 실천 가이드: ${res.practiceGuidance}`,
+    `- 일상 실천 의례: ${res.ritualAction}`,
+    `- 핵심 성찰 질문: ${res.reflectionFocus}`,
     `- 러셀 원전 명언: "${res.focalRussellAphorism.aphorismKo}"`,
     `- 영문 원전: "${res.focalRussellAphorism.aphorismEn}"`,
     `- 원전 출처: [${res.focalRussellAphorism.sourceContext}]`,
     `- 구체적 실천 지침: ${res.focalRussellAphorism.actionGuidance}`,
     `- 종합 러셀 행복 권면: ${res.russellComprehensiveGuidance.philosophicalCounsel}`,
+    `- 해석 경계: ${res.boundaryNotice}`,
   ].join('\n');
 }
