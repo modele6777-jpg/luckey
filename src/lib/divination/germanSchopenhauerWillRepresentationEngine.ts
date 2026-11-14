@@ -1,19 +1,18 @@
 /**
  * 독일 아서 쇼펜하우어(Arthur Schopenhauer) 《의지와 표상으로서의 세계》 맹목적 의지 초월 & 심미적 관조·동포애 자비 엔진
  *
- * 19세기 독일 철학자 아서 쇼펜하우어(1788~1860)의 주저 《의지와 표상으로서의 세계(Die Welt als Wille und Vorstellung)》 및 《인생론》 원전 기반:
- * 1. 표상으로서의 세계(Die Welt als Vorstellung)와 맹목적 의지(Wille): 눈앞의 세계는 주관의 인식 표상이며, 그 배후에서 끝없이 결핍과 갈증을 일으키는 맹목적 생의 의지(Wille zum Leben)를 명철하게 직시함.
- * 2. 예술과 심미적 관조(Ästhetische Betrachtung): 순수 예술과 음악에 온전히 몰입함으로써 욕망의 사슬에서 일시적으로 벗어나 '순수한 인식의 주체(Reines Subjekt des Erkennens)'로 자유를 누리는 지적 해탈.
- * 3. 동포애와 보편적 자비(Mitleid): 모든 생명체가 실은 동일한 고통의 바다를 건너고 있다는 근원적 통찰에서 우러나오는 깊은 연민과 무조건적인 자비심.
- * 4. 명랑한 평정(Heiterkeit & Besonnenheit): 외적인 부귀나 타인의 칭찬에 행복을 구걸하지 않고, 지적인 자율성과 내면의 풍요로움으로 평정을 지키는 삶의 기술.
- * 5. 고슴도치의 딜레마(Stachelschweine-Dilemma): 타인과의 관계에서 너무 가까워 상처를 주지도, 너무 멀어져 얼어붙지도 않는 지혜로운 온기의 적정 거리 유지.
+ * 19세기 독일 철학자 아서 쇼펜하우어(1788~1860)의 주저 《의지와 표상으로서의 세계(Die Welt als Wille und Vorstellung)》 및 《인생론(Aphorismen zur Lebensweisheit)》 원전 기반:
+ * 1. 표상으로서의 세계와 맹목적 생의 의지(Wille zum Leben) 직시
+ * 2. 예술·음악 심미적 관조(Ästhetische Betrachtung)
+ * 3. 동포애와 보편적 자비(Mitleid) · 고슴도치 딜레마(Stachelschweine)
+ * 4. 질문 맥락 의지-관조 감사(situationalWillAudit) + KST 시공간 리듬(temporalContemplationRhythm) + 교차 검증 매트릭스(schopenhauerSynthesisMatrix)
  *
- * @version LUCKEY-SCHOPENHAUER-WILL-REPRESENTATION-v1.0.0
+ * @version LUCKEY-SCHOPENHAUER-WILL-REPRESENTATION-v2.0.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const SCHOPENHAUER_WILL_REPRESENTATION_VERSION = 'LUCKEY-SCHOPENHAUER-WILL-REPRESENTATION-v1.0.0';
+export const SCHOPENHAUER_WILL_REPRESENTATION_VERSION = 'LUCKEY-SCHOPENHAUER-WILL-REPRESENTATION-v2.0.0';
 
 export interface SchopenhauerTheme {
   themeKey: string;
@@ -31,6 +30,29 @@ export interface SchopenhauerAphorism {
   practicalAction: string;
 }
 
+export interface SchopenhauerSituationalWillAudit {
+  contemplativeLens: '의지 직시(Wille)' | '심미적 관조(Ästhetik)' | '동포애 자비(Mitleid)' | '적정 거리(Stachelschweine)';
+  focusAxisKo: string;
+  classicalCitation: string;
+  detachmentDirective: string;
+  reflectiveQuestion: string;
+}
+
+export interface SchopenhauerTemporalContemplationRhythm {
+  kstHour: number;
+  timeWindowKo: string;
+  seasonKo: string;
+  heiterkeitSerenityIndex: number;
+  dailyContemplationPractice: string;
+}
+
+export interface SchopenhauerSynthesisMatrix {
+  willLucidity: number;
+  aestheticStillness: number;
+  mitleidCompassion: number;
+  overallSchopenhauerGrade: string;
+}
+
 export interface SchopenhauerWillRepresentationResult {
   engineVersion: string;
   calculatedAtKst: string;
@@ -43,6 +65,9 @@ export interface SchopenhauerWillRepresentationResult {
   // 세부 체계
   activeSchopenhauerTheme: SchopenhauerTheme;
   focalPhilosophicalAphorism: SchopenhauerAphorism;
+  situationalWillAudit: SchopenhauerSituationalWillAudit;
+  temporalContemplationRhythm: SchopenhauerTemporalContemplationRhythm;
+  schopenhauerSynthesisMatrix: SchopenhauerSynthesisMatrix;
   schopenhauerPersonalCounsel: {
     counselTitle: string;
     philosophicalGuidance: string;
@@ -120,11 +145,114 @@ const SCHOPENHAUER_APHORISMS: SchopenhauerAphorism[] = [
   },
 ];
 
-export function calculateSchopenhauerWillRepresentation(profile: UserProfile): SchopenhauerWillRepresentationResult {
+function buildSituationalWillAudit(question: string, absHash: number): SchopenhauerSituationalWillAudit {
+  const q = question.trim();
+  if (/관계|거리|상처|갈등|가까|연인|가족|친구/.test(q)) {
+    return {
+      contemplativeLens: '적정 거리(Stachelschweine)',
+      focusAxisKo: '고슴도치 딜레마: 찌르지 않고 온기를 지키는 예의의 거리',
+      classicalCitation: '《소품과 부록》 §396: "고슴도치들은 서로의 가시에 찔리지 않으면서 추위를 견딜 수 있는 알맞은 거리를 배웠다."',
+      detachmentDirective: '너무 바짝 파고들어 상처 주지도, 차갑게 등 돌리지도 말고 서로 숨 쉴 수 있는 건강한 간격을 회복하십시오.',
+      reflectiveQuestion: '지금 이 관계에서 조금 한 걸음 물러서면 오히려 편안해질 경계는 어디입니까?',
+    };
+  }
+  if (/욕심|집착|결핍|비교|돈|성공|권태|초조/.test(q)) {
+    return {
+      contemplativeLens: '의지 직시(Wille)',
+      focusAxisKo: '채워지지 않는 욕망의 시계추 멈추기',
+      classicalCitation: '《의지와 표상으로서의 세계》 §57: "인생은 고통과 권태 사이를 왕복하는 시계추다."',
+      detachmentDirective: '무엇을 더 가져야만 안심할 수 있다는 갈증을 멈추고, 이미 내 안에 있는 정신적 자족을 먼저 확인하십시오.',
+      reflectiveQuestion: '지금 나를 몰아세우는 갈증이 정말 생존의 필요인지, 아니면 남과 비교하는 맹목적 의지인지 구분해 보셨습니까?',
+    };
+  }
+  if (/지치|불안|음악|예술|휴식|감정|머리아/.test(q)) {
+    return {
+      contemplativeLens: '심미적 관조(Ästhetik)',
+      focusAxisKo: '이해관계를 벗어난 순수 관조와 플루트 같은 명랑함',
+      classicalCitation: '《의지와 표상으로서의 세계》 §34: "순수 인식의 주체가 될 때 의지의 폭풍은 잠시 멎는다."',
+      detachmentDirective: '계산과 걱정의 스위치를 잠시 끄고, 음악·자연·독서 같은 순수 관조의 시간에 영혼을 쉬게 하십시오.',
+      reflectiveQuestion: '아무런 목적이나 성과 없이 그 자체로 내 마음을 고요하게 해 주는 시간은 언제입니까?',
+    };
+  }
+  if (/미움|용서|원망|화|실망|타인/.test(q)) {
+    return {
+      contemplativeLens: '동포애 자비(Mitleid)',
+      focusAxisKo: '심판 대신 \'함께 고뇌하는 벗\'으로 바라보는 연민',
+      classicalCitation: '《도덕의 기초에 대하여》 §16: "진정한 도덕적 가치는 오직 타인의 고통에 대한 연민(Mitleid)에서만 솟아난다."',
+      detachmentDirective: '상대의 거친 태도 뒤에 숨은 두려움과 결핍을 한 번만 헤아려 보며 마음의 적개심을 누그러뜨리십시오.',
+      reflectiveQuestion: '상대를 심판하기 전에 \'저 사람도 자기만의 무게를 견디고 있구나\'라고 본다면 감정이 어떻게 변합니까?',
+    };
+  }
+
+  const lenses: Array<'의지 직시(Wille)' | '심미적 관조(Ästhetik)' | '동포애 자비(Mitleid)' | '적정 거리(Stachelschweine)'> = [
+    '의지 직시(Wille)',
+    '심미적 관조(Ästhetik)',
+    '동포애 자비(Mitleid)',
+    '적정 거리(Stachelschweine)',
+  ];
+  return {
+    contemplativeLens: lenses[absHash % lenses.length],
+    focusAxisKo: '외물의 동요를 잠재우는 내면의 명랑함(Heiterkeit)',
+    classicalCitation: '《인생론》: "자신 안에 풍요로운 내면을 지닌 사람은 바깥에서 구걸하지 않는다."',
+    detachmentDirective: '바깥의 소란에 마음을 내주지 말고, 나만의 고독하고 맑은 중심을 먼저 세우십시오.',
+    reflectiveQuestion: '외부의 인정이나 결과가 없더라도 내 안의 평정을 지킬 수 있는 나만의 안식처는 무엇입니까?',
+  };
+}
+
+function buildTemporalContemplationRhythm(now: Date, baseScore: number): SchopenhauerTemporalContemplationRhythm {
+  const kstDate = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const kstHour = kstDate.getUTCHours();
+  const kstMonth = kstDate.getUTCMonth() + 1;
+
+  const seasonKo = kstMonth >= 3 && kstMonth <= 5
+    ? '춘계 발아기(관조의 눈뜸)'
+    : kstMonth >= 6 && kstMonth <= 8
+      ? '하계 팽창기(의지의 절제)'
+      : kstMonth >= 9 && kstMonth <= 11
+        ? '추계 숙성기(고독의 명랑)'
+        : '동계 침잠기(적정 온기의 거리)';
+
+  let timeWindowKo = '오후의 적정 거리 조율';
+  let hourBonus = 0;
+  let dailyContemplationPractice = '관계와 일에서 과한 개입을 한 걸음 줄이고 마음의 호수를 잔잔히 유지하십시오.';
+
+  if (kstHour >= 5 && kstHour < 10) {
+    timeWindowKo = '새벽의 순수 인식(맑은 아침 사유)';
+    hourBonus = 6;
+    dailyContemplationPractice = '아침의 가장 맑은 정신으로 헛된 걱정을 가라앉히고 본질적인 사유에 집중하십시오.';
+  } else if (kstHour >= 10 && kstHour < 15) {
+    timeWindowKo = '오전의 의지 절제와 연민 실천';
+    hourBonus = 4;
+    dailyContemplationPractice = '바쁜 일과 속에서도 조급함을 내려놓고 주변 사람에게 부드러운 연민을 건네십시오.';
+  } else if (kstHour >= 15 && kstHour < 20) {
+    timeWindowKo = '오후의 심미적 관조(음악과 휴식)';
+    hourBonus = 5;
+    dailyContemplationPractice = '하루의 피로가 몰려올 때 음악이나 산책으로 욕망의 긴장을 부드럽게 풀어주십시오.';
+  } else {
+    timeWindowKo = '밤의 고독과 내면 명랑(Heiterkeit)';
+    hourBonus = 4;
+    dailyContemplationPractice = '혼자만의 고요한 시간을 외로움이 아닌 자유의 공간으로 누리며 하루를 갈무리하십시오.';
+  }
+
+  return {
+    kstHour,
+    timeWindowKo,
+    seasonKo,
+    heiterkeitSerenityIndex: Math.min(100, Math.round(baseScore + hourBonus)),
+    dailyContemplationPractice,
+  };
+}
+
+export function calculateSchopenhauerWillRepresentation(
+  profile: UserProfile,
+  question = '',
+  now: Date = new Date()
+): SchopenhauerWillRepresentationResult {
   const seedString =
     (profile?.basic?.birthdate ?? (profile as any)?.birthdate ?? '1990-01-01') +
     (profile?.basic?.name ?? (profile as any)?.name ?? 'User') +
     (profile?.basic?.birthtime ?? (profile as any)?.birthtime ?? '12:00') +
+    question.trim() +
     'SchopenhauerWillRepresentation';
 
   let hash = 0;
@@ -145,16 +273,32 @@ export function calculateSchopenhauerWillRepresentation(profile: UserProfile): S
 
   const activeSchopenhauerTheme = SCHOPENHAUER_THEMES[themeIndex];
   const focalPhilosophicalAphorism = SCHOPENHAUER_APHORISMS[aphorismIndex];
+  const situationalWillAudit = buildSituationalWillAudit(question, absHash);
+  const temporalContemplationRhythm = buildTemporalContemplationRhythm(now, innerHeiterkeitSerenityScore);
+
+  const avgScore = Math.round(
+    (willTranscendenceClarityScore + aestheticContemplationDepthScore + mitleidUniversalCompassionScore) / 3
+  );
+  const schopenhauerSynthesisMatrix: SchopenhauerSynthesisMatrix = {
+    willLucidity: willTranscendenceClarityScore,
+    aestheticStillness: aestheticContemplationDepthScore,
+    mitleidCompassion: mitleidUniversalCompassionScore,
+    overallSchopenhauerGrade: avgScore >= 88
+      ? '순수 관조와 명랑의 경지(Heiterkeit)'
+      : avgScore >= 78
+        ? '욕망 초월과 연민 조화(Mitleid Harmony)'
+        : '의지의 성찰적 절제(Will Lucidity)',
+  };
 
   const counselTitle = `쇼펜하우어 의지와 표상 철학: ${activeSchopenhauerTheme.themeTitleKo}`;
   const philosophicalGuidance = `아서 쇼펜하우어의 철학은 맹목적인 욕망의 쳇바퀴에서 벗어나 심미적 관조와 동포애적 자비심을 통해 삶의 참된 평정을 찾도록 돕습니다. ` +
-    `현재 당신에게 필요한 지혜는 '${activeSchopenhauerTheme.themeTitleKo}'의 통찰과 직결되어 있습니다. ` +
-    `${activeSchopenhauerTheme.contemplativeCounsel} 또한 쇼펜하우어의 아포리즘인 '${focalPhilosophicalAphorism.aphorismKo}'(${focalPhilosophicalAphorism.wisdomDimension})을 기억하여, ` +
-    `${focalPhilosophicalAphorism.practicalAction}`;
+    `현재 질문은 [${situationalWillAudit.contemplativeLens}]의 '${situationalWillAudit.focusAxisKo}'와 맞닿아 있습니다. ` +
+    `${situationalWillAudit.detachmentDirective} 또한 '${focalPhilosophicalAphorism.aphorismKo}'(${focalPhilosophicalAphorism.wisdomDimension})을 기억하며 ` +
+    `${temporalContemplationRhythm.dailyContemplationPractice}`;
 
   return {
     engineVersion: SCHOPENHAUER_WILL_REPRESENTATION_VERSION,
-    calculatedAtKst: new Date().toISOString(),
+    calculatedAtKst: new Date(now.getTime() + 9 * 60 * 60 * 1000).toISOString().replace('Z', '+09:00'),
     willTranscendenceClarityScore,
     aestheticContemplationDepthScore,
     mitleidUniversalCompassionScore,
@@ -162,6 +306,9 @@ export function calculateSchopenhauerWillRepresentation(profile: UserProfile): S
     wiseRelationalDistanceScore,
     activeSchopenhauerTheme,
     focalPhilosophicalAphorism,
+    situationalWillAudit,
+    temporalContemplationRhythm,
+    schopenhauerSynthesisMatrix,
     schopenhauerPersonalCounsel: {
       counselTitle,
       philosophicalGuidance,
@@ -171,18 +318,19 @@ export function calculateSchopenhauerWillRepresentation(profile: UserProfile): S
 
 export function formatSchopenhauerWillRepresentationPrompt(res: SchopenhauerWillRepresentationResult): string {
   return [
-    `【쇼펜하우어 의지와 표상(Wille und Vorstellung) & 자비(Mitleid) 지표】`,
+    `【쇼펜하우어 의지와 표상(Wille und Vorstellung) & 자비(Mitleid) 지표 v2.0】`,
     `- 맹목적 의지 초월 및 환상 직시도: ${res.willTranscendenceClarityScore}/100`,
     `- 심미적 관조(예술·음악) 몰입 지수: ${res.aestheticContemplationDepthScore}/100`,
     `- 동포애적 자비심(Mitleid) 공감도: ${res.mitleidUniversalCompassionScore}/100`,
     `- 내적 명랑 평정심(Heiterkeit): ${res.innerHeiterkeitSerenityScore}/100`,
     `- 고슴도치 딜레마 적정 거리 지혜도: ${res.wiseRelationalDistanceScore}/100`,
+    `- 질문 맥락 관조 렌즈: [${res.situationalWillAudit.contemplativeLens}] ${res.situationalWillAudit.focusAxisKo}`,
+    `- 원전 처방: ${res.situationalWillAudit.classicalCitation} → ${res.situationalWillAudit.detachmentDirective}`,
+    `- 성찰 질문: ${res.situationalWillAudit.reflectiveQuestion}`,
+    `- KST 시공간 리듬: ${res.temporalContemplationRhythm.timeWindowKo} (${res.temporalContemplationRhythm.seasonKo}, 평정지수 ${res.temporalContemplationRhythm.heiterkeitSerenityIndex}/100) — ${res.temporalContemplationRhythm.dailyContemplationPractice}`,
+    `- 종합 등급: ${res.schopenhauerSynthesisMatrix.overallSchopenhauerGrade}`,
     `- 핵심 관조 테마: ${res.activeSchopenhauerTheme.themeTitleKo} [${res.activeSchopenhauerTheme.themeTitleGerman}]`,
-    `- 철학적 통찰: ${res.activeSchopenhauerTheme.philosophicalInsight}`,
-    `- 관조적 조언: ${res.activeSchopenhauerTheme.contemplativeCounsel}`,
-    `- 핵심 아포리즘: "${res.focalPhilosophicalAphorism.aphorismKo}"`,
-    `- 독일어 원문: "${res.focalPhilosophicalAphorism.aphorismGerman}" [${res.focalPhilosophicalAphorism.wisdomDimension}]`,
-    `- 실천적 행동 지침: ${res.focalPhilosophicalAphorism.practicalAction}`,
+    `- 핵심 아포리즘: "${res.focalPhilosophicalAphorism.aphorismKo}" ("${res.focalPhilosophicalAphorism.aphorismGerman}")`,
     `- 통합 실존 처방: ${res.schopenhauerPersonalCounsel.philosophicalGuidance}`,
   ].join('\n');
 }

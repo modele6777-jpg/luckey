@@ -3244,7 +3244,7 @@ try {
   // 213. 독일 계몽주의 이마누엘 칸트 정언명령 & 목적의 왕국 자율성 도덕법칙 엔진
   const kantCategoricalImperativeResult = calculateSupplement('kantCategoricalImperativeResult', () => ((() => {
     try {
-      return calculateKantCategoricalImperative(profile);
+      return calculateKantCategoricalImperative(profile, question, now);
     } catch (_) {
       return null;
     }
@@ -3361,7 +3361,7 @@ try {
   // 226. 독일 아서 쇼펜하우어 의지와 표상으로서의 세계 맹목적 의지 초월 & 심미적 관조·자비 엔진
   const schopenhauerWillRepresentationResult = calculateSupplement('schopenhauerWillRepresentationResult', () => ((() => {
     try {
-      return calculateSchopenhauerWillRepresentation(profile);
+      return calculateSchopenhauerWillRepresentation(profile, question, now);
     } catch (_) {
       return null;
     }
@@ -3415,7 +3415,7 @@ try {
   // 232. 독일 G.W.F. 헤겔 정신현상학 변증법적 지양 & 인륜성 자유실현 엔진
   const hegelDialecticalAufhebenResult = calculateSupplement('hegelDialecticalAufhebenResult', () => ((() => {
     try {
-      return calculateHegelDialecticalAufheben(profile);
+      return calculateHegelDialecticalAufheben(profile, question, now);
     } catch (_) {
       return null;
     }

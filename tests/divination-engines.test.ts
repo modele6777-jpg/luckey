@@ -4654,7 +4654,7 @@ test('Spinoza Ethica Conatus Engine: calculates Conatus vitality, Sub Specie Aet
 });
 
 test('Kant Categorical Imperative Engine: calculates universal law maxims, human dignity ends, and moral autonomy', () => {
-  const rep = calculateKantCategoricalImperative(profile);
+  const rep = calculateKantCategoricalImperative(profile, '인간관계에서 원칙과 존엄성을 어떻게 지켜야 할까요?', new Date('2026-11-14T00:00:00Z'));
   assert.equal(rep.engineVersion, KANT_CATEGORICAL_IMPERATIVE_VERSION);
   assert(rep.universalLawMaximsScore >= 0 && rep.universalLawMaximsScore <= 100);
   assert(rep.humanDignityEndsScore >= 0 && rep.humanDignityEndsScore <= 100);
@@ -4662,9 +4662,13 @@ test('Kant Categorical Imperative Engine: calculates universal law maxims, human
   assert(rep.transcendentalSynthesisScore >= 0 && rep.transcendentalSynthesisScore <= 100);
   assert(rep.summumBonumHarmonyScore >= 0 && rep.summumBonumHarmonyScore <= 100);
   assert(rep.activeImperativeFormula.formulaNameGerman.length > 0);
+  assert(rep.situationalImperativeAudit.focusAxisKo.length > 0);
+  assert(rep.temporalReasonRhythm.practicalReasonIndex >= 0 && rep.temporalReasonRhythm.practicalReasonIndex <= 100);
+  assert(rep.kantSynthesisMatrix.overallKantGrade.length > 0);
   const prompt = formatKantCategoricalImperativePrompt(rep);
   assert(prompt.includes('칸트 정언명령 & 목적의 왕국 자율성 지표'));
   assert(prompt.includes(rep.activeImperativeFormula.formulaNameKo));
+  assert(prompt.includes('질문 맥락 정식'));
 });
 
 test('Upanishadic Tat Tvam Asi Engine: calculates Brahman-Atman unity, Maya piercing, Neti Neti detachment, and Sat-Chit-Ananda', () => {
@@ -4839,7 +4843,7 @@ test('Blaise Pascal Pensees Engine: calculates Thinking reed dignity, Heart intu
 });
 
 test('Arthur Schopenhauer Will Representation Engine: calculates Will transcendence, Aesthetic contemplation, and Mitleid compassion', () => {
-  const rep = calculateSchopenhauerWillRepresentation(profile);
+  const rep = calculateSchopenhauerWillRepresentation(profile, '가까운 관계에서 거리 조절이 너무 어려워요', new Date('2026-11-14T08:00:00Z'));
   assert.equal(rep.engineVersion, SCHOPENHAUER_WILL_REPRESENTATION_VERSION);
   assert(rep.willTranscendenceClarityScore >= 0 && rep.willTranscendenceClarityScore <= 100);
   assert(rep.aestheticContemplationDepthScore >= 0 && rep.aestheticContemplationDepthScore <= 100);
@@ -4847,9 +4851,13 @@ test('Arthur Schopenhauer Will Representation Engine: calculates Will transcende
   assert(rep.innerHeiterkeitSerenityScore >= 0 && rep.innerHeiterkeitSerenityScore <= 100);
   assert(rep.wiseRelationalDistanceScore >= 0 && rep.wiseRelationalDistanceScore <= 100);
   assert(rep.activeSchopenhauerTheme.themeTitleGerman.length > 0);
+  assert(rep.situationalWillAudit.focusAxisKo.length > 0);
+  assert(rep.temporalContemplationRhythm.heiterkeitSerenityIndex >= 0 && rep.temporalContemplationRhythm.heiterkeitSerenityIndex <= 100);
+  assert(rep.schopenhauerSynthesisMatrix.overallSchopenhauerGrade.length > 0);
   const prompt = formatSchopenhauerWillRepresentationPrompt(rep);
   assert(prompt.includes('쇼펜하우어 의지와 표상(Wille und Vorstellung) & 자비(Mitleid) 지표'));
   assert(prompt.includes(rep.activeSchopenhauerTheme.themeTitleKo));
+  assert(prompt.includes('질문 맥락 관조 렌즈'));
 });
 
 test('Chusa Kim Jeong-hui Sehando Engine: calculates Songbaek hudjo integrity, Enduring friendship, and Munjahyang seogwongi', () => {
@@ -4931,7 +4939,7 @@ test('Carl Gustav Jung Individuation Archetype Engine: calculates Self realizati
 });
 
 test('G.W.F. Hegel Dialectical Aufheben Engine: calculates Dialectical synthesis, Mutual recognition, and Sittlichkeit harmony', () => {
-  const rep = calculateHegelDialecticalAufheben(profile);
+  const rep = calculateHegelDialecticalAufheben(profile, '서로 다른 두 입장 사이의 갈등을 어떻게 풀어야 할까요?', new Date('2026-11-14T09:00:00Z'));
   assert.equal(rep.engineVersion, GERMAN_HEGEL_DIALECTICAL_VERSION);
   assert(rep.dialecticalAufhebenSynthesisScore >= 0 && rep.dialecticalAufhebenSynthesisScore <= 100);
   assert(rep.mutualAnerkennungMaturityScore >= 0 && rep.mutualAnerkennungMaturityScore <= 100);
@@ -4939,9 +4947,13 @@ test('G.W.F. Hegel Dialectical Aufheben Engine: calculates Dialectical synthesis
   assert(rep.rationalRealityGraspScore >= 0 && rep.rationalRealityGraspScore <= 100);
   assert(rep.minervaReflectiveWisdomScore >= 0 && rep.minervaReflectiveWisdomScore <= 100);
   assert(rep.activeHegelTheme.themeTitleGerman.length > 0);
+  assert(rep.situationalDialecticalAudit.focusAxisKo.length > 0);
+  assert(rep.temporalMinervaRhythm.dialecticalMaturityIndex >= 0 && rep.temporalMinervaRhythm.dialecticalMaturityIndex <= 100);
+  assert(rep.hegelSynthesisMatrix.overallHegelGrade.length > 0);
   const prompt = formatHegelDialecticalAufhebenPrompt(rep);
   assert(prompt.includes('G.W.F. 헤겔 변증법적 지양(Aufheben) & 인륜성 지표'));
   assert(prompt.includes(rep.activeHegelTheme.themeTitleKo));
+  assert(prompt.includes('질문 맥락 변증법 계기'));
 });
 
 test('Dasan Jeong Yagyong Mokmin Simseo Silhak Engine: calculates Yeoyudang Sindok, Yulgi integrity, and Silsagusi practicality', () => {

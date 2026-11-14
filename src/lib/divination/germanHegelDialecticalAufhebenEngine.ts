@@ -3,19 +3,17 @@
  *
  * 19세기 독일 관념론의 거장 G.W.F. 헤겔(1770~1831)의 주저 《정신현상학(Phänomenologie des Geistes)》,
  * 《법철학 강요(Grundlinien der Philosophie des Rechts)》, 《대논리학(Wissenschaft der Logik)》 원전 기반:
- * 1. 변증법적 지양(Aufheben): 정(These)과 반(Antithese)의 대립과 모순을 단순한 파괴나 배제가 아니라,
- *    본질적 가치를 보존(Bewahren)하며 한계를 폐기(Aufhören)하고 더 높은 차원으로 고양(Erhöhen)시키는 종합(Synthese)의 창조력.
- * 2. 상호 인정투쟁(Kampf um Anerkennung): 일방적 지배-예속 관계를 극복하고, 타자를 대등한 자유로운 인격으로 상호 인정(Gegenseitige Anerkennung)함으로써 도달하는 자기의식의 성숙.
- * 3. 인륜성(Sittlichkeit): 추상적인 당위 도덕(Moralität)을 넘어, 가족·시민사회·국가 공동체의 구체적 관계와 신뢰 속에서 실천되는 실체적 자유.
- * 4. 이성적인 것은 현실적인 것이다(Das Vernünftige ist wirklich): 헛된 공상이나 비관에 빠지지 않고, 현실의 필연성과 고난 속에서 작동하는 거대한 이성적 법칙을 신뢰하는 의연함.
- * 5. 미네르바의 올빼미(Die Eule der Minerva): 황혼이 저물 무렵에야 날개를 펴듯, 격동과 혼란이 가라앉은 뒤 냉철한 사후 성찰을 통해 삶의 궁극적 진리를 완성하는 원숙한 통찰.
+ * 1. 변증법적 지양(Aufheben): 정(These)-반(Antithese)-합(Synthese)
+ * 2. 상호 인정투쟁(Kampf um Anerkennung)과 인륜성(Sittlichkeit)
+ * 3. 미네르바의 올빼미(Die Eule der Minerva) 성찰
+ * 4. 질문 맥락 변증법 감사(situationalDialecticalAudit) + KST 시공간 리듬(temporalMinervaRhythm) + 교차 검증 매트릭스(hegelSynthesisMatrix)
  *
- * @version LUCKEY-GERMAN-HEGEL-DIALECTICAL-v1.0.0
+ * @version LUCKEY-GERMAN-HEGEL-DIALECTICAL-v2.0.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const GERMAN_HEGEL_DIALECTICAL_VERSION = 'LUCKEY-GERMAN-HEGEL-DIALECTICAL-v1.0.0';
+export const GERMAN_HEGEL_DIALECTICAL_VERSION = 'LUCKEY-GERMAN-HEGEL-DIALECTICAL-v2.0.0';
 
 export interface HegelTheme {
   themeKey: string;
@@ -33,6 +31,29 @@ export interface HegelAphorism {
   practicalAction: string;
 }
 
+export interface HegelSituationalDialecticalAudit {
+  dialecticalMoment: '정·반 지양(Aufheben)' | '상호 인정(Anerkennung)' | '구체적 인륜성(Sittlichkeit)' | '미네르바 성찰(Minerva)';
+  focusAxisKo: string;
+  classicalCitation: string;
+  synthesisDirective: string;
+  reflectiveQuestion: string;
+}
+
+export interface HegelTemporalMinervaRhythm {
+  kstHour: number;
+  timeWindowKo: string;
+  seasonKo: string;
+  dialecticalMaturityIndex: number;
+  dailySynthesisPractice: string;
+}
+
+export interface HegelSynthesisMatrix {
+  aufhebenIntegration: number;
+  mutualRecognitionDepth: number;
+  minervaReflectionClarity: number;
+  overallHegelGrade: string;
+}
+
 export interface HegelDialecticalAufhebenResult {
   engineVersion: string;
   calculatedAtKst: string;
@@ -45,6 +66,9 @@ export interface HegelDialecticalAufhebenResult {
   // 세부 체계
   activeHegelTheme: HegelTheme;
   focalHegelAphorism: HegelAphorism;
+  situationalDialecticalAudit: HegelSituationalDialecticalAudit;
+  temporalMinervaRhythm: HegelTemporalMinervaRhythm;
+  hegelSynthesisMatrix: HegelSynthesisMatrix;
   hegelPersonalCounsel: {
     counselTitle: string;
     philosophicalGuidance: string;
@@ -129,11 +153,114 @@ const HEGEL_APHORISMS: HegelAphorism[] = [
   },
 ];
 
-export function calculateHegelDialecticalAufheben(profile: UserProfile): HegelDialecticalAufhebenResult {
+function buildSituationalDialecticalAudit(question: string, absHash: number): HegelSituationalDialecticalAudit {
+  const q = question.trim();
+  if (/갈등|대립|모순|둘 다|싸움|반대|선택/.test(q)) {
+    return {
+      dialecticalMoment: '정·반 지양(Aufheben)',
+      focusAxisKo: '대립하는 두 극단을 버리지 않고 더 높은 제3의 해법으로 지양',
+      classicalCitation: '《대논리학》: "지양(Aufheben)은 부정함과 동시에 보존하여 더 높은 차원으로 끌어올리는 것이다."',
+      synthesisDirective: '어느 한쪽을 완전히 꺾으려 들지 말고, 양쪽이 진정으로 보호하려는 핵심 가치를 동시에 살리는 상위 구조를 설계하십시오.',
+      reflectiveQuestion: '서로 부딪치는 두 입장 각각이 지키고 싶어 하는 타당한 핵심은 무엇입니까?',
+    };
+  }
+  if (/인정|관계|동료|상사|존중|연인|무시|평가/.test(q)) {
+    return {
+      dialecticalMoment: '상호 인정(Anerkennung)',
+      focusAxisKo: '지배와 눈치의 비대칭을 넘어선 대등한 상호 인정',
+      classicalCitation: '《정신현상학》 자기의식 장: "자기의식은 오직 다른 자기의식으로부터 인정받을 때 비로소 참된 자기의식이 된다."',
+      synthesisDirective: '상대를 굴복시키거나 반대로 과도하게 맞추는 관계를 끊고, 대등한 인격으로 서로의 경계를 인정하는 대화를 여십시오.',
+      reflectiveQuestion: '지금 이 관계에서 내가 상대에게 바라는 인정만큼 나도 상대의 자율성을 인정하고 있습니까?',
+    };
+  }
+  if (/책임|가족|회사|공동체|역할|현실|일상/.test(q)) {
+    return {
+      dialecticalMoment: '구체적 인륜성(Sittlichkeit)',
+      focusAxisKo: '추상적 이상이 아닌 삶의 현장에서 구현되는 자유',
+      classicalCitation: '《법철학 강요》 §142: "인륜성은 살아 있는 선으로서 구체적 제도와 신뢰 속에서 자유를 실현한다."',
+      synthesisDirective: '머릿속 완벽한 이상론에 머물지 말고, 내가 몸담은 공동체와 일상의 약속을 성실히 지켜내며 신뢰를 쌓으십시오.',
+      reflectiveQuestion: '거창한 구호 대신 오늘 내가 맡은 작은 자리에서 실천할 수 있는 구체적 신의는 무엇입니까?',
+    };
+  }
+  if (/후회|실패|지나간|의미|정리|성찰/.test(q)) {
+    return {
+      dialecticalMoment: '미네르바 성찰(Minerva)',
+      focusAxisKo: '황혼의 고요 속에서 전체 의미를 건져 올리는 사후 통찰',
+      classicalCitation: '《법철학 강요》 서문: "미네르바의 올빼미는 황혼이 깃들어야 비로소 날개를 편다."',
+      synthesisDirective: '사건의 소용돌이 한가운데서 성급히 결론 내리지 말고, 한 걸음 물러나 전체 흐름 속에서의 의미를 차분히 복기하십시오.',
+      reflectiveQuestion: '이 경험이 내 삶 전체의 큰 이야기 속에서 어떤 도약을 위한 디딤돌이었다고 볼 수 있습니까?',
+    };
+  }
+
+  const moments: Array<'정·반 지양(Aufheben)' | '상호 인정(Anerkennung)' | '구체적 인륜성(Sittlichkeit)' | '미네르바 성찰(Minerva)'> = [
+    '정·반 지양(Aufheben)',
+    '상호 인정(Anerkennung)',
+    '구체적 인륜성(Sittlichkeit)',
+    '미네르바 성찰(Minerva)',
+  ];
+  return {
+    dialecticalMoment: moments[absHash % moments.length],
+    focusAxisKo: '부분의 혼란을 넘어 전체 진리(Das Ganze)를 조망하기',
+    classicalCitation: '《정신현상학》 서문: "진리는 전체다. 전체는 자신의 발전을 통해 스스로를 완성하는 본질이다."',
+    synthesisDirective: '단편적인 승패나 오늘의 기분에 흔들리지 말고, 더 긴 시간의 지평 위에서 모순을 통합해 나가십시오.',
+    reflectiveQuestion: '눈앞의 문제를 1년 단위 전체 맥락으로 넓혀 보면 지금 가장 우선해야 할 통합은 무엇입니까?',
+  };
+}
+
+function buildTemporalMinervaRhythm(now: Date, baseScore: number): HegelTemporalMinervaRhythm {
+  const kstDate = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const kstHour = kstDate.getUTCHours();
+  const kstMonth = kstDate.getUTCMonth() + 1;
+
+  const seasonKo = kstMonth >= 3 && kstMonth <= 5
+    ? '춘계 정립기(새로운 정(These))'
+    : kstMonth >= 6 && kstMonth <= 8
+      ? '하계 대립기(창조적 반(Antithese))'
+      : kstMonth >= 9 && kstMonth <= 11
+        ? '추계 지양기(고양된 합(Synthese))'
+        : '동계 황혼기(미네르바의 성찰)';
+
+  let timeWindowKo = '황혼의 미네르바 성찰';
+  let hourBonus = 0;
+  let dailySynthesisPractice = '하루의 소용돌이가 가라앉는 시간대에 대립되던 생각들을 하나의 큰 그림으로 통합하십시오.';
+
+  if (kstHour >= 5 && kstHour < 10) {
+    timeWindowKo = '아침의 정립(These) · 방향 설정';
+    hourBonus = 4;
+    dailySynthesisPractice = '오늘 해결해야 할 핵심 모순을 명료하게 정리하고 구체적인 현실 과업부터 착수하십시오.';
+  } else if (kstHour >= 10 && kstHour < 15) {
+    timeWindowKo = '오전의 인륜성 실천(Sittlichkeit)';
+    hourBonus = 5;
+    dailySynthesisPractice = '공동체와 일의 현장에서 상호 인정과 성실한 책임을 통해 자유를 구현하십시오.';
+  } else if (kstHour >= 15 && kstHour < 20) {
+    timeWindowKo = '황혼의 미네르바 올빼미(Eule der Minerva)';
+    hourBonus = 7;
+    dailySynthesisPractice = '낮의 분주함이 잦아드는 황혼 무렵, 지나온 선택의 맥락을 전체적으로 통찰하십시오.';
+  } else {
+    timeWindowKo = '밤의 변증법적 통합(Aufheben)';
+    hourBonus = 4;
+    dailySynthesisPractice = '오늘 겪은 아쉬움과 성취를 모두 보존하고 한 단계 높은 내일의 관점으로 승화시키십시오.';
+  }
+
+  return {
+    kstHour,
+    timeWindowKo,
+    seasonKo,
+    dialecticalMaturityIndex: Math.min(100, Math.round(baseScore + hourBonus)),
+    dailySynthesisPractice,
+  };
+}
+
+export function calculateHegelDialecticalAufheben(
+  profile: UserProfile,
+  question = '',
+  now: Date = new Date()
+): HegelDialecticalAufhebenResult {
   const seedString =
     (profile?.basic?.birthdate ?? (profile as any)?.birthdate ?? '1990-01-01') +
     (profile?.basic?.name ?? (profile as any)?.name ?? 'User') +
     (profile?.basic?.birthtime ?? (profile as any)?.birthtime ?? '12:00') +
+    question.trim() +
     'GermanHegelDialecticalAufheben';
 
   let hash = 0;
@@ -154,16 +281,32 @@ export function calculateHegelDialecticalAufheben(profile: UserProfile): HegelDi
 
   const activeHegelTheme = HEGEL_THEMES[themeIndex];
   const focalHegelAphorism = HEGEL_APHORISMS[aphorismIndex];
+  const situationalDialecticalAudit = buildSituationalDialecticalAudit(question, absHash);
+  const temporalMinervaRhythm = buildTemporalMinervaRhythm(now, minervaReflectiveWisdomScore);
+
+  const avgScore = Math.round(
+    (dialecticalAufhebenSynthesisScore + mutualAnerkennungMaturityScore + minervaReflectiveWisdomScore) / 3
+  );
+  const hegelSynthesisMatrix: HegelSynthesisMatrix = {
+    aufhebenIntegration: dialecticalAufhebenSynthesisScore,
+    mutualRecognitionDepth: mutualAnerkennungMaturityScore,
+    minervaReflectionClarity: minervaReflectiveWisdomScore,
+    overallHegelGrade: avgScore >= 88
+      ? '미네르바의 전체성 통찰(Das Wahre ist das Ganze)'
+      : avgScore >= 78
+        ? '변증법적 지양과 상호 인정(Aufheben)'
+        : '현실과 이성의 조율(Vernünftig & Wirklich)',
+  };
 
   const counselTitle = `헤겔 변증법적 지양 철학: ${activeHegelTheme.themeTitleKo}`;
   const philosophicalGuidance = `G.W.F. 헤겔의 철학은 모순과 대립을 회피하지 않고 상위 차원의 지양(Aufheben)으로 승화시켜 참된 자유를 실현하도록 이끕니다. ` +
-    `현재 당신이 마주한 상황의 핵심 통찰은 '${activeHegelTheme.themeTitleKo}'에 부합합니다. ` +
-    `${activeHegelTheme.dialecticalCounsel} 헤겔의 통찰인 '${focalHegelAphorism.aphorismKo}'(${focalHegelAphorism.philosophicalDimension})을 기억하여, ` +
-    `${focalHegelAphorism.practicalAction}`;
+    `현재 질문은 [${situationalDialecticalAudit.dialecticalMoment}]의 '${situationalDialecticalAudit.focusAxisKo}'에 부합합니다. ` +
+    `${situationalDialecticalAudit.synthesisDirective} 아울러 '${focalHegelAphorism.aphorismKo}'(${focalHegelAphorism.philosophicalDimension})을 기억하며 ` +
+    `${temporalMinervaRhythm.dailySynthesisPractice}`;
 
   return {
     engineVersion: GERMAN_HEGEL_DIALECTICAL_VERSION,
-    calculatedAtKst: new Date().toISOString(),
+    calculatedAtKst: new Date(now.getTime() + 9 * 60 * 60 * 1000).toISOString().replace('Z', '+09:00'),
     dialecticalAufhebenSynthesisScore,
     mutualAnerkennungMaturityScore,
     sittlichkeitEthicalLifeHarmonyScore,
@@ -171,6 +314,9 @@ export function calculateHegelDialecticalAufheben(profile: UserProfile): HegelDi
     minervaReflectiveWisdomScore,
     activeHegelTheme,
     focalHegelAphorism,
+    situationalDialecticalAudit,
+    temporalMinervaRhythm,
+    hegelSynthesisMatrix,
     hegelPersonalCounsel: {
       counselTitle,
       philosophicalGuidance,
@@ -180,18 +326,19 @@ export function calculateHegelDialecticalAufheben(profile: UserProfile): HegelDi
 
 export function formatHegelDialecticalAufhebenPrompt(res: HegelDialecticalAufhebenResult): string {
   return [
-    `【G.W.F. 헤겔 변증법적 지양(Aufheben) & 인륜성 지표】`,
+    `【G.W.F. 헤겔 변증법적 지양(Aufheben) & 인륜성 지표 v2.0】`,
     `- 대립 갈등 지양 종합력(Aufheben): ${res.dialecticalAufhebenSynthesisScore}/100`,
     `- 상호 인정투쟁 성숙도(Anerkennung): ${res.mutualAnerkennungMaturityScore}/100`,
     `- 인륜성 공동체 신뢰도(Sittlichkeit): ${res.sittlichkeitEthicalLifeHarmonyScore}/100`,
     `- 현실·이성 일치 통찰력(Vernünftig & Wirklich): ${res.rationalRealityGraspScore}/100`,
     `- 미네르바 올빼미 성찰도(Minerva): ${res.minervaReflectiveWisdomScore}/100`,
+    `- 질문 맥락 변증법 계기: [${res.situationalDialecticalAudit.dialecticalMoment}] ${res.situationalDialecticalAudit.focusAxisKo}`,
+    `- 원전 처방: ${res.situationalDialecticalAudit.classicalCitation} → ${res.situationalDialecticalAudit.synthesisDirective}`,
+    `- 성찰 질문: ${res.situationalDialecticalAudit.reflectiveQuestion}`,
+    `- KST 시공간 리듬: ${res.temporalMinervaRhythm.timeWindowKo} (${res.temporalMinervaRhythm.seasonKo}, 성숙지수 ${res.temporalMinervaRhythm.dialecticalMaturityIndex}/100) — ${res.temporalMinervaRhythm.dailySynthesisPractice}`,
+    `- 종합 등급: ${res.hegelSynthesisMatrix.overallHegelGrade}`,
     `- 핵심 변증법 테마: ${res.activeHegelTheme.themeTitleKo} [${res.activeHegelTheme.themeTitleGerman}]`,
-    `- 철학적 통찰: ${res.activeHegelTheme.philosophicalInsight}`,
-    `- 변증법적 조언: ${res.activeHegelTheme.dialecticalCounsel}`,
-    `- 핵심 아포리즘: "${res.focalHegelAphorism.aphorismKo}"`,
-    `- 독일어 원문: "${res.focalHegelAphorism.aphorismGerman}" [${res.focalHegelAphorism.philosophicalDimension}]`,
-    `- 실천적 행동 지침: ${res.focalHegelAphorism.practicalAction}`,
+    `- 핵심 아포리즘: "${res.focalHegelAphorism.aphorismKo}" ("${res.focalHegelAphorism.aphorismGerman}")`,
     `- 통합 변증 처방: ${res.hegelPersonalCounsel.philosophicalGuidance}`,
   ].join('\n');
 }
