@@ -30,11 +30,12 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const HEIAN_ONMYODO_SEIMEI_VERSION = '1.0.0';
+export const HEIAN_ONMYODO_SEIMEI_VERSION = '2.0.0';
 
 export interface HeianOnmyodoSeimeiReport {
   engineVersion: string;
   calculatedAt: string;
+  calculatedAtKst: string;
   // 음양도 5대 수리 지표 (0~100)
   shikigamiCommandResonance: number; // 식신 사역 영력장 및 잠재의식 동조율
   seimeiFivePointedStarWardStrength: number; // 세이메이 오망성(桔梗紋) 5행 결계 방어력
@@ -54,7 +55,24 @@ export interface HeianOnmyodoSeimeiReport {
     kanji: string;
     blessing: string;
   };
+  situationalOnmyoAudit: {
+    focusTheme: string;
+    shikigamiStance: string;
+    fiveElementWardStrategy: string;
+  };
+  temporalOnmyoRhythm: {
+    kstTimeLabel: string;
+    twelveBranchWindow: string;
+    seasonalYinYangPhase: string;
+    temporalGuidance: string;
+  };
+  onmyoSynthesisMatrix: {
+    coreInsight: string;
+    recommendedAction: string;
+    cautionNotice: string;
+  };
   onmyoPurificationGuidance: string;
+  boundaryNotice: string;
 }
 
 function djb2Hash(str: string): number {
@@ -153,7 +171,77 @@ const TWELVE_HEAVENLY_GENERALS = [
   }
 ];
 
-export function calculateHeianOnmyodoSeimei(profile: UserProfile | null | undefined): HeianOnmyodoSeimeiReport {
+function formatOnmyoKst(date: Date): { label: string; hour: number; month: number } {
+  const kst = new Date(date.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return {
+    label: `${y}-${m}-${d} ${hh}:${mm} KST`,
+    hour: kst.getUTCHours(),
+    month: kst.getUTCMonth() + 1,
+  };
+}
+
+function getTemporalOnmyoRhythm(now: Date) {
+  const kst = formatOnmyoKst(now);
+  const twelveBranchWindow =
+    kst.hour >= 5 && kst.hour < 11
+      ? '묘·진·사시(卯~巳) 청룡 양기 상승창 — 식신(式神)을 깨워 새로운 기획과 결단을 내리기 좋은 시간'
+      : kst.hour >= 11 && kst.hour < 17
+        ? '오·미·신시(午~申) 주작·태상 활동창 — 오망성 결계로 외부 마찰을 다스리며 실무를 밀고 나가는 시간'
+        : kst.hour >= 17 && kst.hour < 23
+          ? '유·술·해시(酉~亥) 태음·천후 정화창 — 태산부군제의 음덕으로 하루의 피로와 액운을 씻어내는 시간'
+          : '자·축·인시(子~寅) 현무·귀인 심야창 — 육임신과 천지반의 깊은 직관으로 본질을 꿰뚫어 보는 시간';
+
+  const seasonalYinYangPhase =
+    kst.month >= 3 && kst.month <= 5
+      ? '춘분·목(木) 생발기 — 청룡과 육합의 기운이 열려 새로운 인연과 도약이 살아나는 절기'
+      : kst.month >= 6 && kst.month <= 8
+        ? '하지·화(火) 창성기 — 주작의 명예와 등사의 직관이 강해지므로 과열을 식히는 절기'
+        : kst.month >= 9 && kst.month <= 11
+          ? '추분·금(金) 수렴기 — 백호의 결단력과 태음의 지략으로 흩어진 판을 정리하는 절기'
+          : '동지·수(水) 축장기 — 현무의 방비와 귀인의 음덕으로 내실을 단단히 다지는 절기';
+
+  return {
+    kstTimeLabel: kst.label,
+    twelveBranchWindow,
+    seasonalYinYangPhase,
+    temporalGuidance: `${twelveBranchWindow}의 흐름에 맞추어 오망성 오행의 균형을 고르게 유지하십시오.`,
+  };
+}
+
+function getSituationalOnmyoAudit(question: string | undefined, primaryElement: string) {
+  const q = (question || '').trim();
+  if (/돈|재물|사업|투자|계약|직장|승진|이직/.test(q)) {
+    return {
+      focusTheme: '청룡·태상 재물 유통과 오망성 방비',
+      shikigamiStance: '식신을 산만하게 흩뿌리지 말고, 가장 핵심적인 목표 하나에 집중 사역하여 실리를 챙기십시오.',
+      fiveElementWardStrategy: `수호 신장의 [${primaryElement}] 기운을 중심으로 계약·문서·자금 흐름의 빈틈을 단단히 잠그는 결계를 세우십시오.`,
+    };
+  }
+  if (/관계|연애|결혼|사람|갈등|구설|소송/.test(q)) {
+    return {
+      focusTheme: '육합 결연과 구설·흉살 차단 결계',
+      shikigamiStance: '상대의 말 뒤에 숨은 의도를 조급히 의심하기보다, 맑은 거울처럼 상대의 진심을 비추어 보십시오.',
+      fiveElementWardStrategy: `수호 신장의 [${primaryElement}] 기운으로 감정적 동요를 가라앉히고, 꼭 필요한 경계선만 차분히 지키십시오.`,
+    };
+  }
+  return {
+    focusTheme: '세이메이 오망성 5행 순환과 태산부군제 활력 회복',
+    shikigamiStance: '잠재의식의 불안을 식신 삼아 밖으로 흘려보내고, 중심을 지키는 고요한 관찰자로 서십시오.',
+    fiveElementWardStrategy: `수호 신장의 [${primaryElement}] 기운이 5행 상생의 축이 되어 흩어진 기력을 하나로 모아줍니다.`,
+  };
+}
+
+export function calculateHeianOnmyodoSeimei(
+  profile: UserProfile | null | undefined,
+  nowArg?: Date,
+  questionArg?: string
+): HeianOnmyodoSeimeiReport {
+  const now = nowArg || new Date();
   const birthStr = profile?.basic?.birthdate || '1995-01-01';
   const nameStr = profile?.basic?.name || '내담자';
   const timeStr = profile?.basic?.birthtime || '12:00';
@@ -179,6 +267,9 @@ export function calculateHeianOnmyodoSeimei(profile: UserProfile | null | undefi
     blessing: TWELVE_HEAVENLY_GENERALS[secondaryIdx].blessing
   };
 
+  const temporalOnmyoRhythm = getTemporalOnmyoRhythm(now);
+  const situationalOnmyoAudit = getSituationalOnmyoAudit(questionArg, primaryGuardianGeneral.element);
+
   let onmyoPurificationGuidance = '';
   if (seimeiFivePointedStarWardStrength >= 85) {
     onmyoPurificationGuidance = '세이메이 오망성(桔梗紋) 결계가 당신의 기운을 완벽하게 보호하고 있습니다. 외부의 부정적인 질투나 소음이 전혀 침범하지 못하니, 대담하게 당신의 뜻을 펼치십시오.';
@@ -188,9 +279,16 @@ export function calculateHeianOnmyodoSeimei(profile: UserProfile | null | undefi
     onmyoPurificationGuidance = '소금과 맑은 물로 주변 공간을 정화하고, 매일 아침 동쪽을 향해 심호흡하며 12천장의 수호령을 상기하십시오. 흩어진 잡념이 정돈되며 올바른 판단력이 살아납니다.';
   }
 
+  const onmyoSynthesisMatrix = {
+    coreInsight: `주 수호 신장 [${primaryGuardianGeneral.nameKo}]과 보조 신장 [${secondaryGuardianGeneral.nameKo}]이 결합해 ${situationalOnmyoAudit.focusTheme}의 결계를 이루고 있습니다.`,
+    recommendedAction: `${situationalOnmyoAudit.shikigamiStance} (${onmyoPurificationGuidance})`,
+    cautionNotice: '음양의 기운이 한쪽으로 치우치면 결계에 틈이 생깁니다. 과신이나 지나친 위축을 모두 경계하십시오.',
+  };
+
   return {
     engineVersion: HEIAN_ONMYODO_SEIMEI_VERSION,
-    calculatedAt: new Date().toISOString(),
+    calculatedAt: now.toISOString(),
+    calculatedAtKst: temporalOnmyoRhythm.kstTimeLabel,
     shikigamiCommandResonance,
     seimeiFivePointedStarWardStrength,
     taishanGodDestinyReversalPower,
@@ -198,21 +296,30 @@ export function calculateHeianOnmyodoSeimei(profile: UserProfile | null | undefi
     sixCoursesDivinationAccuracy,
     primaryGuardianGeneral,
     secondaryGuardianGeneral,
-    onmyoPurificationGuidance
+    situationalOnmyoAudit,
+    temporalOnmyoRhythm,
+    onmyoSynthesisMatrix,
+    onmyoPurificationGuidance,
+    boundaryNotice: '본 결과는 헤이안 음양도 《점사략》 12천장 및 오망성 5행 순환에 따른 정성적 상징 해석이며, 점수나 확정적 길흉 판정이 아닙니다.',
   };
 }
 
 export function formatHeianOnmyodoSeimeiPrompt(report: HeianOnmyodoSeimeiReport): string {
   return `### 일본 헤이안 음양도 아베노 세이메이 《점사략》 12천장 & 식신 사역 엔진 (v${report.engineVersion})
+- **연산 시각**: ${report.calculatedAtKst}
 - **주 수호 신장 (十二天將)**: ${report.primaryGuardianGeneral.nameKo} [${report.primaryGuardianGeneral.element} / ${report.primaryGuardianGeneral.quality}]
   - *신장 축복*: ${report.primaryGuardianGeneral.blessing}
 - **보조 수호 신장**: ${report.secondaryGuardianGeneral.nameKo} (${report.secondaryGuardianGeneral.blessing})
-- **음양도 5대 수리 지표**:
-  - 식신(式神) 사역 영력 동조율: ${report.shikigamiCommandResonance}점 / 100
-  - 세이메이 오망성(桔梗紋) 5행 결계 방어력: ${report.seimeiFivePointedStarWardStrength}점 / 100
-  - 태산부군제(泰山府君祭) 명운 역전 생명력: ${report.taishanGodDestinyReversalPower}점 / 100
-  - 음양 극성 균형도: ${report.yinYangPolarityBalanceScore}점 / 100
-  - 육임신과 천지반 직관 통찰력: ${report.sixCoursesDivinationAccuracy}점 / 100
+- **질문 맥락 감사 (${report.situationalOnmyoAudit.focusTheme})**:
+  - *식신 운용 태세*: ${report.situationalOnmyoAudit.shikigamiStance}
+  - *오망성 오행 결계*: ${report.situationalOnmyoAudit.fiveElementWardStrategy}
+- **KST 시공간 음양 리듬**: ${report.temporalOnmyoRhythm.twelveBranchWindow} / ${report.temporalOnmyoRhythm.seasonalYinYangPhase}
+  - *시공간 지침*: ${report.temporalOnmyoRhythm.temporalGuidance}
+- **음양도 교차 매트릭스**:
+  - *핵심 통찰*: ${report.onmyoSynthesisMatrix.coreInsight}
+  - *권고 실행*: ${report.onmyoSynthesisMatrix.recommendedAction}
+  - *주의 경계*: ${report.onmyoSynthesisMatrix.cautionNotice}
 - **아베노 세이메이 액막이 비방**:
-  - "${report.onmyoPurificationGuidance}"`;
+  - "${report.onmyoPurificationGuidance}"
+- **해석 경계**: ${report.boundaryNotice}`;
 }

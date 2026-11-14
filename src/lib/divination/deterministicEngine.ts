@@ -2344,7 +2344,7 @@ try {
   // 112. 고대 인도 자이나교(Jainism) 14 군아스타나 & 삼보(Ratnatraya) 카르마 엔진
   const jainGunasthanaKarmaResult = calculateSupplement('jainGunasthanaKarmaResult', () => ((() => {
     try {
-      return calculateJainGunasthanaKarma({ profile, targetInstantTime: now.toISOString() });
+      return calculateJainGunasthanaKarma({ profile, targetInstantTime: now.toISOString(), question });
     } catch (_) {
       return null;
     }
@@ -2848,7 +2848,7 @@ try {
   // 169. 고대 잉카 안데스 코스몰로지 3대 세계·신성 영수·파차마마 아이니(Ayni) 호혜 조화 엔진
   const incaAndeanThreePachaAyniResult = calculateSupplement('incaAndeanThreePachaAyniResult', () => ((() => {
     try {
-      return calculateIncaAndeanThreePachaAyni(profile);
+      return calculateIncaAndeanThreePachaAyni(profile, now, question);
     } catch (_) {
       return null;
     }
@@ -2902,7 +2902,7 @@ try {
   // 175. 일본 헤이안 음양도 아베노 세이메이 《점사략》 12천장 수호령 & 식신 사역 엔진
   const heianOnmyodoSeimeiResult = calculateSupplement('heianOnmyodoSeimeiResult', () => ((() => {
     try {
-      return calculateHeianOnmyodoSeimei(profile);
+      return calculateHeianOnmyodoSeimei(profile, now, question);
     } catch (_) {
       return null;
     }
