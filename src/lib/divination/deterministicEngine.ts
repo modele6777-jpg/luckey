@@ -2128,7 +2128,7 @@ try {
   // 88. 고대 중국 귀곡자(鬼谷子) 양구령(兩頭鉗) 72변화 명리 결단 엔진
   const guiguziLiangtouqianResult = calculateSupplement('guiguziLiangtouqianResult', () => ((() => {
     try {
-      return calculateGuiguziLiangtouqian({ profile, contextText: question });
+      return calculateGuiguziLiangtouqian({ profile, contextText: question, referenceDate: now });
     } catch (_) {
       return null;
     }
@@ -2839,7 +2839,7 @@ try {
   // 168. 동학 수운 최제우 시천주(侍天主) 주문 & 지기금지 인내천 천지조화 엔진
   const donghakCheondoismCheonjuResult = calculateSupplement('donghakCheondoismCheonjuResult', () => ((() => {
     try {
-      return calculateDonghakCheondoismCheonju(profile);
+      return calculateDonghakCheondoismCheonju(profile, now, question);
     } catch (_) {
       return null;
     }
@@ -2893,7 +2893,7 @@ try {
   // 174. 조선 명종 격암 남사고 《격암유록》 45편 비결 & 계룡백석 궁궁을을 사중구생 엔진
   const gyeogamYurokResult = calculateSupplement('gyeogamYurokResult', () => ((() => {
     try {
-      return calculateGyeogamYurokProphecy(profile);
+      return calculateGyeogamYurokProphecy(profile, now, question);
     } catch (_) {
       return null;
     }

@@ -22,16 +22,17 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const DONGHAK_CHEONDOISM_VERSION = '1.0.0';
+export const DONGHAK_CHEONDOISM_VERSION = '2.0.0';
 
 export interface DonghakCheonjuReport {
   engineVersion: string;
   calculatedAt: string;
-  // 3대 시(侍) 심성 층위
+  calculatedAtKst: string;
+  // 3대 시(侍) 심성 층위 (내부 호환용, 프롬프트 비노출)
   innerSpiritualityScore: number; // 내유신령 (內有神靈, 0~100)
   outerCosmicResonanceScore: number; // 외유기화 (外有氣化, 0~100)
   unshakableAwakeningScore: number; // 각지불이 (各知不移, 0~100)
-  // 동학 종합 지표
+  // 동학 종합 지표 (내부 호환용, 프롬프트 비노출)
   jigiUniversalEnergyAlignment: number; // 지기금지(至氣今至) 우주 기운 감응도 (0~100)
   gaebyeokTransformationIndex: number; // 다시 개벽(開闢) 운기 대전환 지수 (0~100)
   mansajiOmniscientWisdomScore: number; // 영세불망 만사지(萬事知) 통찰 지수 (0~100)
@@ -46,7 +47,24 @@ export interface DonghakCheonjuReport {
     phraseKo: string;
     spiritualApplication: string;
   };
+  situationalDonghakAudit: {
+    focusTheme: string;
+    samjauiAlignmentNote: string;
+    practiceFocus: string;
+  };
+  temporalDonghakRhythm: {
+    kstTimeLabel: string;
+    yongdamWatchWindow: string;
+    seasonalGaebyeokTone: string;
+    temporalGuidance: string;
+  };
+  donghakSynthesisMatrix: {
+    coreInsight: string;
+    recommendedAction: string;
+    cautionNotice: string;
+  };
   sainyeocheonGuidance: string;
+  boundaryNotice: string;
 }
 
 function djb2Hash(str: string): number {
@@ -104,11 +122,53 @@ const MANTRA_FOCUS_LIST = [
   },
 ];
 
-export function calculateDonghakCheondoismCheonju(profile?: UserProfile | null): DonghakCheonjuReport {
+function getTemporalDonghakRhythm(now: Date) {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  const hour = kst.getUTCHours();
+  const month = kst.getUTCMonth() + 1;
+
+  const yongdamWatchWindow =
+    hour >= 5 && hour < 11
+      ? '용담정 아침 청수창 — 지기금지(至氣今至)의 맑은 숨결로 하루의 첫 뜻을 여는 시간'
+      : hour >= 11 && hour < 17
+        ? '외유기화 정오 교류창 — 만물과 사람 사이에서 사인여천을 실천으로 옮기는 시간'
+        : hour >= 17 && hour < 22
+          ? '시천주 황혼 성찰창 — 하루의 분주함을 거두고 내유신령의 중심으로 돌아오는 시간'
+          : '만사지 심야 고요창 — 영세불망의 고요 속에서 흔들리지 않는 각지불이를 세우는 시간';
+
+  const seasonalGaebyeokTone =
+    month >= 3 && month <= 5
+      ? '봄 · 후천개벽 발아기 (낡은 틀을 벗고 새 생명의 기운을 맞이하는 시기)'
+      : month >= 6 && month <= 8
+        ? '여름 · 보국안민 발현기 (열정으로 주변과 상생하며 조화를 넓히는 시기)'
+        : month >= 9 && month <= 11
+          ? '가을 · 각지불이 수렴기 (흔들리지 않는 깨달음으로 결실을 갈무리하는 시기)'
+          : '겨울 · 수심정기(守心正氣) 응축기 (마음을 지키고 기운을 바르게 기르는 시기)';
+
+  return {
+    kstTimeLabel: `${y}-${m}-${d} ${hh}:${mm} KST`,
+    yongdamWatchWindow,
+    seasonalGaebyeokTone,
+    temporalGuidance: `${yongdamWatchWindow} · ${seasonalGaebyeokTone}의 결에 맞추어 수심정기(守心正氣)의 태도를 유지하십시오.`,
+  };
+}
+
+export function calculateDonghakCheondoismCheonju(
+  profile?: UserProfile | null,
+  nowArg?: Date,
+  questionArg?: string
+): DonghakCheonjuReport {
+  const now = nowArg || new Date();
+  const question = (questionArg || '').trim();
   const bdate = profile?.basic?.birthdate || '1994-01-24';
   const btime = profile?.basic?.birthtime || '12:00';
   const name = profile?.basic?.name || 'zeZE';
-  const seedStr = `${bdate}_${btime}_${name}_donghak_cheonju_v1`;
+  const seedStr = `${bdate}_${btime}_${name}_${question}_donghak_cheonju_v2`;
   const seed = djb2Hash(seedStr);
 
   const innerSpiritualityScore = 65 + (seed % 34);
@@ -131,9 +191,35 @@ export function calculateDonghakCheondoismCheonju(profile?: UserProfile | null):
     sainyeocheonGuidance = '지기금지(至氣今至)의 고요한 침묵을 취하며, 일상의 사소한 인연에도 공경의 예를 다할 때 개벽의 복운이 열립니다.';
   }
 
+  const temporalDonghakRhythm = getTemporalDonghakRhythm(now);
+  const situationalDonghakAudit = /관계|사람|가족|연애|동료|갈등/.test(question)
+    ? {
+        focusTheme: '사인여천(事人如天)과 동귀일체의 관계 공명',
+        samjauiAlignmentNote: '상대를 내 안의 한울님처럼 공경할 때 대립의 벽이 자연히 허물어집니다.',
+        practiceFocus: '먼저 부드러운 말과 경청으로 상대의 존엄을 세워주십시오.',
+      }
+    : /일|사업|직장|결정|변화|이직/.test(question)
+      ? {
+          focusTheme: '다시 개벽(開闢)과 각지불이의 주체적 전환',
+          samjauiAlignmentNote: '외부의 흐름(외유기화)을 읽되 내면의 기준(각지불이)을 흔들림 없이 세우십시오.',
+          practiceFocus: '21자 주문의 고요한 집중처럼 핵심 과업 하나를 정해 정성을 쏟으십시오.',
+        }
+      : {
+          focusTheme: '내유신령(內有神靈)과 수심정기의 내면 조화',
+          samjauiAlignmentNote: '수심정기(마음을 지키고 기운을 바르게 함)가 모든 판단의 출발점입니다.',
+          practiceFocus: '잠시 숨을 고르며 오늘의 심법 덕목을 조용히 되새기십시오.',
+        };
+
+  const donghakSynthesisMatrix = {
+    coreInsight: `[${primaryVirtue.titleKo}]와 주문 구절 [${twentyOneWordsMantraFocus.phraseKo}]가 ${situationalDonghakAudit.focusTheme}을 비춥니다.`,
+    recommendedAction: `${sainyeocheonGuidance} (${situationalDonghakAudit.practiceFocus})`,
+    cautionNotice: '조급함으로 외유기화의 흐름을 거스르거나 스스로의 내적 존엄을 가볍게 여기지 않도록 경계하십시오.',
+  };
+
   return {
     engineVersion: DONGHAK_CHEONDOISM_VERSION,
-    calculatedAt: new Date().toISOString(),
+    calculatedAt: now.toISOString(),
+    calculatedAtKst: temporalDonghakRhythm.kstTimeLabel,
     innerSpiritualityScore,
     outerCosmicResonanceScore,
     unshakableAwakeningScore,
@@ -142,18 +228,25 @@ export function calculateDonghakCheondoismCheonju(profile?: UserProfile | null):
     mansajiOmniscientWisdomScore,
     primaryVirtue,
     twentyOneWordsMantraFocus,
+    situationalDonghakAudit,
+    temporalDonghakRhythm,
+    donghakSynthesisMatrix,
     sainyeocheonGuidance,
+    boundaryNotice: '본 결과는 《동경대전》 시천주·인내천 철학에 기반한 정성적 성찰 안내이며, 확정적 길흉 판정이 아닙니다.',
   };
 }
 
 export function formatDonghakCheondoismCheonjuPrompt(report: DonghakCheonjuReport): string {
   return [
-    `[동학 수운 최제우 시천주(侍天主) & 지기금지 인내천 천지조화]`,
-    `- 내유신령(內有神靈) 내면 자성 점수: ${report.innerSpiritualityScore}점 / 외유기화(外有氣化) 우주 감응도: ${report.outerCosmicResonanceScore}점`,
-    `- 각지불이(各知不移) 부동심 지수: ${report.unshakableAwakeningScore}점 / 지기금지(至氣今至) 우주 조화율: ${report.jigiUniversalEnergyAlignment}%`,
-    `- 다시 개벽(開闢) 운기 대전환 지수: ${report.gaebyeokTransformationIndex}점 / 만사지(萬事知) 지혜 통찰력: ${report.mansajiOmniscientWisdomScore}점`,
+    `[동학 수운 최제우 시천주(侍天主) & 지기금지 인내천 천지조화 (v${report.engineVersion})]`,
+    `- 연산 시각: ${report.calculatedAtKst}`,
     `- 핵심 심법 덕목: ${report.primaryVirtue.titleKo} (${report.primaryVirtue.hanja}) - ${report.primaryVirtue.meaning}`,
     `- 21자 주문 집중 명상: ${report.twentyOneWordsMantraFocus.phraseHanja} (${report.twentyOneWordsMantraFocus.phraseKo}) -> ${report.twentyOneWordsMantraFocus.spiritualApplication}`,
+    `- 질문 맥락 감사 (${report.situationalDonghakAudit.focusTheme}): ${report.situationalDonghakAudit.samjauiAlignmentNote} / 실천: ${report.situationalDonghakAudit.practiceFocus}`,
+    `- KST 시공간 용담 리듬: ${report.temporalDonghakRhythm.yongdamWatchWindow} / ${report.temporalDonghakRhythm.seasonalGaebyeokTone}`,
+    `  • 시공간 지침: ${report.temporalDonghakRhythm.temporalGuidance}`,
+    `- 동학 교차 매트릭스: 핵심(${report.donghakSynthesisMatrix.coreInsight}) | 실행(${report.donghakSynthesisMatrix.recommendedAction}) | 주의(${report.donghakSynthesisMatrix.cautionNotice})`,
     `- 사인여천(事人如天) 실천 지침: ${report.sainyeocheonGuidance}`,
+    `- 해석 경계: ${report.boundaryNotice}`,
   ].join('\n');
 }
