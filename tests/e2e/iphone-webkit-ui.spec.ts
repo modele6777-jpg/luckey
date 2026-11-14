@@ -259,6 +259,63 @@ test('Lucy message mode badge opens only actual per-answer engine evidence', asy
   await expect(evidence).toContainText('이번 답변에 모델로 전달된 계산·상징 엔진 기록이 없습니다.');
 });
 
+test('Lucy actual engine evidence renders individually themed badges for used engines only', async ({ page }) => {
+  await page.route('**/*', async route => {
+    const url = new URL(route.request().url());
+    if (url.origin !== 'http://127.0.0.1:4173' || url.pathname.startsWith('/api/sync/')) {
+      await route.abort();
+      return;
+    }
+    await route.continue();
+  });
+  await page.addInitScript((timestamp) => {
+    localStorage.setItem('chat_history_unified_v3', JSON.stringify([{
+      id: 'synthetic-engine-badge-check',
+      role: 'assistant',
+      content: '합성 엔진 배지 UI 확인 답변입니다.',
+      timestamp,
+      mode: 'trinity',
+      channels: ['trinity'],
+      calculationAudit: [
+        { toolId: 'saju', name: '사주명리', status: 'calculated', sentToModel: true },
+        { toolId: 'sleepSubconscious', name: '수면 무의식 뇌파', status: 'symbolic', sentToModel: true },
+        { toolId: 'ikigaiDestinyCompass', name: '이키가이 나침반', status: 'partial', sentToModel: true },
+        { toolId: 'qimen', name: '홍국기문/기문둔갑', status: 'skipped', sentToModel: true },
+        { toolId: 'tojeong', name: '토정비결', status: 'calculated', sentToModel: false },
+      ],
+    }]));
+  }, Date.now());
+  await openLucy(page);
+
+  const modeBadge = page.locator('button[data-message-mode-badge="true"]').last();
+  await expect(modeBadge).toBeVisible();
+  await modeBadge.click();
+  const evidence = page.getByRole('dialog', { name: '이번 답변에서 실제 사용한 엔진' });
+  const engineBadges = evidence.getByTestId('used-engine-badge');
+  await expect(engineBadges).toHaveCount(3);
+  await expect(evidence.locator('[data-engine-key="qimen"]')).toHaveCount(0);
+  await expect(evidence.locator('[data-engine-key="tojeong"]')).toHaveCount(0);
+
+  const sajuBadge = evidence.locator('[data-engine-key="saju"]');
+  await expect(sajuBadge).toHaveAttribute('data-engine-theme', 'trinity');
+  await expect(sajuBadge).toContainText('계산 결과');
+  await expect(sajuBadge).toHaveCSS('background-color', 'rgb(254, 249, 195)');
+  await expect(sajuBadge).toHaveCSS('color', 'rgb(133, 77, 14)');
+  await expect(sajuBadge).toHaveCSS('border-top-color', 'rgb(253, 224, 71)');
+
+  const sleepBadge = evidence.locator('[data-engine-key="sleepSubconscious"]');
+  await expect(sleepBadge).toHaveAttribute('data-engine-theme', 'aura');
+  await expect(sleepBadge).toContainText('상징 참고');
+  await expect(sleepBadge).toHaveCSS('background-color', 'rgb(220, 252, 231)');
+  await expect(sleepBadge).toHaveCSS('color', 'rgb(22, 101, 52)');
+
+  const ikigaiBadge = evidence.locator('[data-engine-key="ikigaiDestinyCompass"]');
+  await expect(ikigaiBadge).toHaveAttribute('data-engine-theme', 'bluebird');
+  await expect(ikigaiBadge).toContainText('부분 계산');
+  await expect(ikigaiBadge).toHaveCSS('background-color', 'rgb(219, 234, 254)');
+  await expect(ikigaiBadge).toHaveCSS('color', 'rgb(30, 64, 175)');
+});
+
 test('Lucy engine count opens the visible 331-entry catalog and meanings', async ({ page }) => {
   await openLucy(page);
   const trigger = page.getByRole('button', { name: /Lucy 엔진과 관점 목록/ });
