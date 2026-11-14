@@ -3,11 +3,11 @@ import { test } from 'node:test';
 import { updateAppMediaSession } from '../src/lib/appMediaSession.ts';
 import { applyAudioMixingPolicy, isAppAudioActive, setAppAudioActive } from '../src/lib/audioMixingPolicy.ts';
 
-test('idle and BGM stay in ambient while active TTS uses playback for background audio', () => {
+test('idle, BGM, and active TTS stay in nonexclusive ambient mode', () => {
   const previousNavigator = Object.getOwnPropertyDescriptor(globalThis, 'navigator');
   const fakeNavigator = {
     audioSession: { type: 'playback' },
-    mediaSession: { playbackState: 'none', metadata: null, setActionHandler() {} },
+    mediaSession: { playbackState: 'none', metadata: null, setActionHandler() { throw new Error('OS media controls must remain untouched'); } },
   };
   Object.defineProperty(globalThis, 'navigator', { configurable: true, value: fakeNavigator });
   try {
@@ -19,8 +19,13 @@ test('idle and BGM stay in ambient while active TTS uses playback for background
     assert.equal(fakeNavigator.audioSession.type, 'ambient');
 
     updateAppMediaSession('tts', { title: 'Lucy Speech', artist: 'Lucy', state: 'playing' });
-    assert.equal(fakeNavigator.audioSession.type, 'playback');
-    assert.equal(fakeNavigator.mediaSession.playbackState, 'playing');
+    assert.equal(fakeNavigator.audioSession.type, 'ambient');
+    assert.equal(fakeNavigator.mediaSession.playbackState, 'none');
+    assert.equal(fakeNavigator.mediaSession.metadata, null);
+
+    fakeNavigator.audioSession.type = 'playback';
+    applyAudioMixingPolicy();
+    assert.equal(fakeNavigator.audioSession.type, 'ambient');
 
     updateAppMediaSession('tts', null);
     assert.equal(fakeNavigator.audioSession.type, 'ambient');

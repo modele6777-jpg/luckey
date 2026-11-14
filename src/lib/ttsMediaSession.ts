@@ -1,5 +1,6 @@
 import { updateAppMediaSession } from './appMediaSession';
 
+/** Keep in-app TTS state; OS-wide media metadata and transport controls remain untouched. */
 let enabled = false;
 let title = '';
 let artist = 'LucKey';
