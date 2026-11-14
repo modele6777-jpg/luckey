@@ -5,10 +5,17 @@ import {
   getManualSyncChangelogEntries,
   getUnseenChangelogEntries,
   UPDATE_ACK_KEY,
-  REFRESH_NOTICE_KEY,
+  hasPendingUpdateNotice,
+  clearPendingUpdateNotice,
   type ChangelogEntry,
 } from '@/lib/updateNotice';
 import { safeLocalStorage } from '@/utils/safeStorage';
+
+function bundledReleaseNotes(): ChangelogEntry[] {
+  const notes = typeof __APP_RELEASE_NOTES__ === 'undefined' ? null : __APP_RELEASE_NOTES__;
+  if (!notes?.version || !notes.summary) return [];
+  return [notes];
+}
 
 export type UpdateNoticeMode = 'auto' | 'manual';
 
@@ -41,35 +48,44 @@ export function useUpdateNotice(enabled: boolean) {
   }, []);
 
   useEffect(() => {
-    let showAfterRefresh = false;
-    try { showAfterRefresh = sessionStorage.getItem(REFRESH_NOTICE_KEY) === '1'; } catch { /* ignore */ }
-    if (!enabled && !showAfterRefresh) return;
-
+    // Login and the PIN screen must not swallow a reload that already reached a new version.
     let cancelled = false;
+    let attempts = 0;
 
     const checkUpdates = async () => {
+      const showAfterRefresh = hasPendingUpdateNotice();
+      const changelog = await fetchChangelog();
+      if (cancelled) return;
+      const notes = changelog.length > 0 ? changelog : bundledReleaseNotes();
+
       if (showAfterRefresh) {
-        const changelog = await fetchChangelog();
-        if (cancelled) return;
-        const recent = getManualSyncChangelogEntries(changelog, APP_VERSION);
+        const recent = getManualSyncChangelogEntries(notes, APP_VERSION);
         if (recent.length > 0) {
-          try { sessionStorage.removeItem(REFRESH_NOTICE_KEY); } catch { /* ignore */ }
           void openNotice(recent, 'manual');
+          return;
+        }
+        // Keep the flag when the changelog is briefly unavailable during a service-worker swap.
+        if (attempts < 2) {
+          attempts += 1;
+          window.setTimeout(() => { if (!cancelled) void checkUpdates(); }, 1200);
         }
         return;
       }
-      const ackVersion = safeLocalStorage.getItem(UPDATE_ACK_KEY);
 
+      const ackVersion = safeLocalStorage.getItem(UPDATE_ACK_KEY);
       if (!ackVersion) {
         safeLocalStorage.setItem(UPDATE_ACK_KEY, APP_VERSION);
         return;
       }
 
-      const changelog = await fetchChangelog();
-      if (cancelled) return;
-
-      const unseen = getUnseenChangelogEntries(changelog, APP_VERSION, ackVersion);
-      if (unseen.length === 0) return;
+      const unseen = getUnseenChangelogEntries(notes, APP_VERSION, ackVersion);
+      if (unseen.length === 0) {
+        if (notes.length === 0 && attempts < 2) {
+          attempts += 1;
+          window.setTimeout(() => { if (!cancelled) void checkUpdates(); }, 1200);
+        }
+        return;
+      }
 
       void openNotice(unseen, 'auto');
     };
@@ -88,9 +104,8 @@ export function useUpdateNotice(enabled: boolean) {
   }, [openNotice]);
 
   const dismiss = useCallback(() => {
-    if (modeRef.current === 'auto') {
-      safeLocalStorage.setItem(UPDATE_ACK_KEY, APP_VERSION);
-    }
+    safeLocalStorage.setItem(UPDATE_ACK_KEY, APP_VERSION);
+    clearPendingUpdateNotice();
     setIsOpen(false);
     setEntries([]);
     dismissResolverRef.current?.();

@@ -1,13 +1,20 @@
 /* Isolate the library's reading palette from the app-wide text remapping. */
 #hori-prompt-library-dialog { --prompt-bg: #f8fafc; --prompt-panel: #ffffff; --prompt-ink: #233448; --prompt-muted: #53677d; --prompt-line: #d4dfe9; background: var(--prompt-bg) !important; color: var(--prompt-ink); border-color: var(--prompt-line); }
 html.dark #hori-prompt-library-dialog { --prompt-bg: #141e2b; --prompt-panel: #1e2c3d; --prompt-ink: #edf3fb; --prompt-muted: #b9c9dc; --prompt-line: #405369; }
-#hori-prompt-library-dialog :is(h2,h3,p,span,input,button,svg) { color: var(--prompt-ink) !important; }
+#hori-prompt-library-dialog :is(h2, h3, p, input, button) { color: var(--prompt-ink) !important; -webkit-text-fill-color: currentColor; }
+#hori-prompt-library-dialog .prompt-library-badge {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+#hori-prompt-library-dialog .prompt-library-tool {
+  -webkit-text-fill-color: currentColor !important;
+}
 #hori-prompt-library-dialog :is(p, [class*='text-slate-400'], [class*='text-slate-500']) { color: var(--prompt-muted) !important; }
 #hori-prompt-library-dialog :is(input, .prompt-library-card) { background: var(--prompt-panel) !important; border-color: var(--prompt-line) !important; }
 #hori-prompt-library-dialog input::placeholder { color: var(--prompt-muted) !important; opacity: 1; }
 #hori-prompt-library-dialog .prompt-library-card h3 { font-size: 16px; line-height: 1.6; }
 #hori-prompt-library-dialog .prompt-library-card p { background: var(--prompt-bg) !important; font-size: 13px; line-height: 1.8; border-color: var(--prompt-line); }
-#hori-prompt-library-dialog .prompt-library-card span[class*='rounded-md'] { color: var(--prompt-ink) !important; background: var(--prompt-bg) !important; border: 1px solid var(--prompt-line); }
+#hori-prompt-library-dialog .prompt-library-card .prompt-library-tool { background: var(--prompt-bg) !important; border: 1px solid var(--prompt-line); }
 #hori-prompt-library-dialog :is(button, div)[class*='bg-slate-50'], #hori-prompt-library-dialog button[class*='bg-white'] { background: var(--prompt-bg) !important; border-color: var(--prompt-line); }
 #hori-prompt-library-dialog button[data-active='true'], #hori-prompt-library-dialog .prompt-library-action { background: #345e8b !important; color: #ffffff !important; border-color: #345e8b !important; }
 #hori-prompt-library-dialog button[data-active='true'] *, #hori-prompt-library-dialog .prompt-library-action * { color: #ffffff !important; }

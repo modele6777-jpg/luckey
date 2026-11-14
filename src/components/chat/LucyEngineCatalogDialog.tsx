@@ -130,7 +130,7 @@ export function LucyEngineCatalogDialog({ isOpen, onClose, isLight }: LucyEngine
                   className={`w-full rounded-2xl bg-transparent py-2.5 pl-10 pr-3 text-sm outline-none ${isLight ? 'placeholder:text-slate-400 focus:ring-2 focus:ring-amber-400/30' : 'placeholder:text-slate-500 focus:ring-2 focus:ring-amber-400/20'}`}
                 />
               </div>
-              <nav aria-label="엔진 목록 분류" className="flex gap-2 overflow-x-auto pb-0.5">
+              <nav aria-label="엔진 목록 분류" className="chat-library-filters flex flex-wrap gap-2 pb-0.5">
                 {FILTERS.map(item => {
                   const count = item.id === 'all' ? LUCY_PRO_CATALOG_ENGINES.length : ENGINE_CATALOG_COUNTS[item.id];
                   const selected = filter === item.id;
@@ -148,7 +148,7 @@ export function LucyEngineCatalogDialog({ isOpen, onClose, isLight }: LucyEngine
                 })}
                 <span className={`ml-auto shrink-0 self-center text-[11px] ${muted}`}>{filteredEngines.length}개 표시</span>
               </nav>
-              <nav aria-label="Lucy 7개 채널 테마" className="flex gap-2 overflow-x-auto pb-0.5">
+              <nav aria-label="Lucy 7개 채널 테마" className="chat-library-filters flex flex-wrap gap-2 pb-0.5">
                 <button
                   type="button"
                   onClick={() => setThemeFilter('all')}

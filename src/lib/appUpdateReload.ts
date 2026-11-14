@@ -1,3 +1,5 @@
+import { markPendingUpdateNotice } from './updateNotice';
+
 /** One navigation per open page when an update reloads the running app. */
 
 export const APP_UPDATE_RELOAD_KEY = 'luckey-update-viewport';
@@ -12,6 +14,8 @@ export function markAppUpdateReload(storage: StorageWriter | null | undefined): 
   } catch {
     // Private mode can reject sessionStorage. The navigation-type fallback still runs.
   }
+  // Session flags disappear on some iOS reloads. The changelog flag is also stored locally.
+  markPendingUpdateNotice();
 }
 
 export function isAppUpdateReloadMarked(storage: { getItem(key: string): string | null } | null | undefined): boolean {

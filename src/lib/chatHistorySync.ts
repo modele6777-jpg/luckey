@@ -157,6 +157,28 @@ export function isMessageFromToday(m: UnifiedMessage | null | undefined): boolea
   return lastSessionDate === todayKey;
 }
 
+/** Keep the last week on screen so reopening Lucy is not a blank greeting. */
+export const RECENT_CONVERSATION_MS = 7 * 24 * 60 * 60 * 1000;
+export const RECENT_CONVERSATION_LIMIT = 80;
+
+export function isVisibleConversationMessage(m: UnifiedMessage | null | undefined, now = Date.now()): boolean {
+  if (!m || isErrorMessage(m) || isEmptyPlaceholder(m)) return false;
+  if (isGreetingMessage(m)) return isMessageFromToday(m);
+  if (typeof m.timestamp === 'number' && Number.isFinite(m.timestamp)) {
+    return m.timestamp >= now - RECENT_CONVERSATION_MS && m.timestamp <= now + 60_000;
+  }
+  return isMessageFromToday(m);
+}
+
+export function retainRecentConversation(messages: UnifiedMessage[] | null | undefined, now = Date.now()): UnifiedMessage[] {
+  const visible = (Array.isArray(messages) ? messages : [])
+    .filter((message) => isVisibleConversationMessage(message, now))
+    .sort((a, b) => Number(a.timestamp || 0) - Number(b.timestamp || 0));
+  const greeting = visible.find((message) => isGreetingMessage(message));
+  const conversation = visible.filter((message) => !isGreetingMessage(message)).slice(-RECENT_CONVERSATION_LIMIT);
+  return greeting ? [greeting, ...conversation] : conversation;
+}
+
 /**
  * 기본 환영 메시지 생성자 (매일 처음 루시채팅 들어갈 때만 표시)
  */
@@ -210,7 +232,7 @@ export function createDefaultGreeting(
  */
 export function hasRealUserConversation(messages: UnifiedMessage[] | null | undefined): boolean {
   if (!Array.isArray(messages) || messages.length === 0) return false;
-  return messages.some((m) => m.role === 'user' && !!m.content && isMessageFromToday(m));
+  return messages.some((m) => m.role === 'user' && !!m.content && isVisibleConversationMessage(m));
 }
 
 /**
@@ -258,12 +280,8 @@ export function mergeUnifiedMessages(
   primary: UnifiedMessage[],
   incoming: UnifiedMessage[]
 ): UnifiedMessage[] {
-  const cleanPrimary = (Array.isArray(primary) ? primary : []).filter(
-    (m) => !isErrorMessage(m) && !isEmptyPlaceholder(m) && isMessageFromToday(m)
-  );
-  const cleanIncoming = (Array.isArray(incoming) ? incoming : []).filter(
-    (m) => !isErrorMessage(m) && !isEmptyPlaceholder(m) && isMessageFromToday(m)
-  );
+  const cleanPrimary = retainRecentConversation(primary);
+  const cleanIncoming = retainRecentConversation(incoming);
 
   const hasPrimaryUser = hasRealUserConversation(cleanPrimary);
   const hasIncomingUser = hasRealUserConversation(cleanIncoming);
@@ -349,22 +367,18 @@ export function loadSavedUnifiedMessages(): UnifiedMessage[] {
     if (savedV3) {
       const parsed = JSON.parse(savedV3);
       if (Array.isArray(parsed)) {
-        const todayOnly = parsed.filter((m) => !isErrorMessage(m) && isMessageFromToday(m));
-        if (todayOnly.length > 0) {
-          return todayOnly;
-        }
+        const recent = retainRecentConversation(parsed);
+        if (recent.length > 0) return recent;
       }
     }
 
-    // 2. Backup V3 (오늘 대화만 허용)
+    // 2. Backup V3 (최근 대화만 허용)
     const savedBackup = safeLocalStorage.getItem(STORAGE_KEYS.BACKUP_V3);
     if (savedBackup) {
       const parsed = JSON.parse(savedBackup);
       if (Array.isArray(parsed)) {
-        const todayOnly = parsed.filter((m) => !isErrorMessage(m) && isMessageFromToday(m));
-        if (todayOnly.length > 0) {
-          return todayOnly;
-        }
+        const recent = retainRecentConversation(parsed);
+        if (recent.length > 0) return recent;
       }
     }
 
@@ -380,7 +394,7 @@ export function loadSavedUnifiedMessages(): UnifiedMessage[] {
           Object.entries(parsedOld).forEach(([personaKey, msgs]) => {
             if (Array.isArray(msgs)) {
               msgs.forEach((m: UnifiedMessage) => {
-                if (!isErrorMessage(m) && !isGreetingMessage(m) && isMessageFromToday(m)) {
+                if (isVisibleConversationMessage(m) && !isGreetingMessage(m)) {
                   allMsgs.push({
                     ...m,
                     persona: (m.persona || personaKey) as PersonaType,
@@ -411,7 +425,7 @@ export function saveUnifiedMessagesSafely(messages: UnifiedMessage[]): void {
   if (!Array.isArray(messages)) return;
 
   try {
-    const todayFiltered = messages.filter((m) => !isErrorMessage(m) && isMessageFromToday(m));
+    const todayFiltered = retainRecentConversation(messages);
     const jsonStr = JSON.stringify(todayFiltered);
     safeLocalStorage.setItem(STORAGE_KEYS.PRIMARY_V3, jsonStr);
     safeLocalStorage.setItem(STORAGE_KEYS.BACKUP_V3, jsonStr);

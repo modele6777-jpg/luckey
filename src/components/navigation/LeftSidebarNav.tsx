@@ -29,7 +29,7 @@ import { useApp } from '@/contexts/AppContext';
 import { resetAppScreen } from '@/lib/visualViewportBox';
 import { markAppScreenReset } from '@/lib/appUpdateReload';
 import { showViewportDiagnostics } from '@/lib/viewportDiagnostics';
-import { REFRESH_NOTICE_KEY } from '@/lib/updateNotice';
+import { markPendingUpdateNotice } from '@/lib/updateNotice';
 
 export interface NavItemConfig {
   path: string;
@@ -374,9 +374,7 @@ export default function LeftSidebarNav() {
     } finally {
       clearTimeout(syncTimeout);
     }
-    try {
-      sessionStorage.setItem(REFRESH_NOTICE_KEY, '1');
-    } catch { /* The restart still works if browser storage is unavailable. */ }
+    markPendingUpdateNotice();
     try {
       await forceAppUpgradeAndReload();
     } catch (err) {

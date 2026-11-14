@@ -2461,6 +2461,25 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
     scrollToBottom(true, false);
   }, [isLucyReady, scrollToBottom]);
 
+  // Folded navigation hides the pane with display:none. Scroll only when it becomes visible again.
+  useEffect(() => {
+    const container = messagesContainerRef.current;
+    if (!container || !isLucyReady) return;
+    let wasHidden = container.getBoundingClientRect().height < 2;
+    const revealLatest = () => {
+      const hidden = container.getBoundingClientRect().height < 2;
+      if (wasHidden && !hidden) {
+        isUserScrolledUpRef.current = false;
+        setShowReturnToRecentConversation(false);
+        scrollToBottom(true, false);
+      }
+      wasHidden = hidden;
+    };
+    const observer = new ResizeObserver(revealLatest);
+    observer.observe(container);
+    return () => observer.disconnect();
+  }, [isLucyReady, scrollToBottom]);
+
   // Returning from the background also opens at the latest conversation.
   const wasAppHiddenRef = useRef(false);
   useEffect(() => {
@@ -3045,7 +3064,11 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
                       setIsEngineCatalogOpen(true);
                       triggerHaptic('whitehole');
                     }}
-                    className="inline-flex items-center gap-1.5 min-h-[36px] px-2 rounded-[6px] text-[10px] font-bold tracking-tight bg-amber-500/15 text-amber-300 border border-amber-400/30 whitespace-nowrap shrink-0 hover:bg-amber-500/25 transition-colors cursor-pointer select-none"
+                    className={`lucy-engine-list-button inline-flex items-center gap-1.5 min-h-[32px] px-2 rounded-[6px] text-[10px] font-bold tracking-tight border whitespace-nowrap shrink-0 hover:bg-amber-500/25 transition-colors cursor-pointer select-none ${
+                      isLight
+                        ? 'bg-amber-100 text-amber-950 border-amber-500/50'
+                        : 'bg-amber-500/15 text-amber-100 border-amber-400/40'
+                    }`}
                     title={`등록된 엔진·관점 ${LUCY_PRO_CATALOG_ENGINES.length}개 목록 보기`}
                     aria-label={`Lucy 엔진과 관점 목록 ${LUCY_PRO_CATALOG_ENGINES.length}개 보기`}
                     aria-haspopup="dialog"
@@ -3851,7 +3874,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
               aria-expanded={isPromptLibraryOpen}
               aria-controls="hori-prompt-library-dialog"
               onClick={() => setIsPromptLibraryOpen(true)}
-              className={`w-9 h-9 min-w-9 min-h-9 p-0 rounded-lg bg-gradient-to-r from-amber-500/15 via-yellow-500/20 to-amber-500/15 hover:from-amber-500/25 hover:to-yellow-500/30 border border-amber-400/80 dark:border-amber-500/60 transition-all shrink-0 cursor-pointer active:scale-95 flex items-center justify-center shadow-2xs group ${
+              className={`w-[22px] h-[22px] min-w-[22px] min-h-[22px] sm:w-[24px] sm:h-[24px] sm:min-w-[24px] sm:min-h-[24px] p-0 rounded-lg bg-gradient-to-r from-amber-500/15 via-yellow-500/20 to-amber-500/15 hover:from-amber-500/25 hover:to-yellow-500/30 border border-amber-400/80 dark:border-amber-500/60 transition-all shrink-0 cursor-pointer active:scale-95 flex items-center justify-center shadow-2xs group ${
                 isLight ? 'text-amber-900' : 'text-white'
               }`}
               style={{ color: isLight ? '#78350f' : '#ffffff' }}

@@ -788,6 +788,17 @@ html[data-lucy-theme='starlight'] .lucy-night .lucy-voice-status { background: #
   height: 24px !important;
   min-height: 24px !important;
   max-height: 26px !important;
+  overflow: hidden;
+}
+.lucy-chat-shell[data-lucy-light='true'] .lucy-engine-list-button {
+  color: #78350f !important;
+  -webkit-text-fill-color: #78350f !important;
+  background: #fef3c7 !important;
+  border-color: rgba(180, 83, 9, 0.45) !important;
+}
+.lucy-chat-shell[data-lucy-light='false'] .lucy-engine-list-button {
+  color: #fef3c7 !important;
+  -webkit-text-fill-color: #fef3c7 !important;
 }
 .lucy-starlight-composer {
   width: 100% !important;

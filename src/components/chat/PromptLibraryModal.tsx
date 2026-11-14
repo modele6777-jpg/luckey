@@ -158,7 +158,7 @@ export const PromptLibraryModal: React.FC<PromptLibraryModalProps> = ({
                   type="text"
                   value={searchQuery}
                   onChange={(e) => handleSearchChange(e.target.value)}
-                  placeholder="관심 있는 질문 키워드를 검색해 보세요 (예: 재회, 이직, 궁합, 사주, 타로, 성격)"
+                  placeholder="질문 검색"
                   className="w-full pl-10 pr-9 py-2 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs sm:text-sm text-slate-800 dark:text-slate-100 placeholder-slate-400 outline-none focus:border-amber-500 dark:focus:border-amber-400 focus:ring-2 focus:ring-amber-500/20 transition-all shadow-2xs"
                 />
                 {searchQuery && (
@@ -173,7 +173,7 @@ export const PromptLibraryModal: React.FC<PromptLibraryModalProps> = ({
               </div>
 
               {/* Category Tabs */}
-              <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
+              <div className="chat-library-filters flex flex-wrap items-center gap-1.5 py-0.5">
                 <button
                   type="button"
                   onClick={() => handleCategoryChange('all')}
@@ -214,7 +214,7 @@ export const PromptLibraryModal: React.FC<PromptLibraryModalProps> = ({
               </div>
 
               {/* Themes Quick Filter Pills */}
-              <div className="flex items-center gap-1 overflow-x-auto no-scrollbar py-0.5 text-[11px]">
+              <div className="chat-library-filters flex flex-wrap items-center gap-1 py-0.5 text-[11px]">
                 <span className="text-slate-400 dark:text-slate-500 font-medium shrink-0 flex items-center gap-1 mr-1">
                   <Compass size={12} />
                   테마:
@@ -287,7 +287,7 @@ export const PromptLibraryModal: React.FC<PromptLibraryModalProps> = ({
                           <div className="flex items-center justify-between gap-2 flex-wrap">
                             <div className="flex items-center gap-1.5 flex-wrap">
                               <span
-                                className="px-2 py-0.5 rounded-md text-[10px] font-bold text-white shadow-2xs"
+                                className="prompt-library-badge px-2 py-0.5 rounded-md text-[10px] font-bold text-white shadow-2xs"
                                 style={{ backgroundColor: catMeta?.color || '#FF6575' }}
                               >
                                 {prompt.categoryLabel}
@@ -298,7 +298,7 @@ export const PromptLibraryModal: React.FC<PromptLibraryModalProps> = ({
                                 return (
                                   <span
                                     key={t}
-                                    className="px-2 py-0.5 rounded-md text-[10px] font-bold border transition-colors shadow-2xs"
+                                    className="prompt-library-tool px-2 py-0.5 rounded-md text-[10px] font-bold border transition-colors shadow-2xs"
                                     style={{
                                       color: toolMeta?.color || '#3b82f6',
                                       backgroundColor: toolMeta ? `${toolMeta.color}15` : 'rgba(148, 163, 184, 0.1)',
