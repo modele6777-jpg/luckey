@@ -1,4 +1,4 @@
-// v1.7.467: Deepen Greek Moirai Ananke, Delphic Maxims, and Essene Communion Tree engines
+// v1.7.468: Deepen Hawaiian Huna, Kahuna Three Selves, and Hindu Sri Yantra engines
 import { getLucyRequestFallbacks, requestWithModelFallback } from '../src/lib/lucyModelPolicy.ts';
 import "dotenv/config";
 import express from "express";

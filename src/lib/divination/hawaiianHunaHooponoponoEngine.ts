@@ -28,7 +28,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const HAWAIIAN_HUNA_VERSION = 'LUCKEY-HAWAIIAN-HUNA-v1.0.0';
+export const HAWAIIAN_HUNA_VERSION = 'LUCKEY-HAWAIIAN-HUNA-v2.0.0';
 
 export interface HunaPrincipleGuidance {
   code: 'IKE' | 'KALA' | 'MAKIA' | 'MANAWA' | 'ALOHA' | 'MANA' | 'PONO';
@@ -57,11 +57,28 @@ export interface HooponoponoPrescription {
 export interface HawaiianHunaReport {
   engineVersion: string;
   calculatedAt: string;
+  calculatedAtKst: string;
   activePrinciple: HunaPrincipleGuidance;
   threeSelves: ThreeSelvesBalance;
   hooponopono: HooponoponoPrescription;
   totalHealingHarmonics: number; // 0 ~ 100
   synthesisMessage: string;
+  situationalHunaAudit: {
+    questionFocus: string;
+    akaCordTension: string;
+    cleansingPriority: string;
+  };
+  temporalHunaRhythm: {
+    calculatedAtKst: string;
+    alohaManaWindow: string;
+    pacificTidePhase: string;
+    ritualTimingNote: string;
+  };
+  hunaSynthesisMatrix: {
+    coreMandate: string;
+    sacredBoundary: string;
+    reflectiveQuestion: string;
+  };
 }
 
 const HUNA_PRINCIPLES: Array<{
@@ -191,11 +208,57 @@ export function calculateHawaiianHunaHooponopono(
 
   const totalHealingHarmonics = Math.round((resonanceScore * 0.4) + (triadicHarmonyScore * 0.6));
 
-  const synthesisMessage = `당신의 영혼에 지금 가장 절실한 우주 원리는 [${activePrinciple.hawaiianName}]이며, 3대 자아 조화도는 ${triadicHarmonyScore}점입니다. 내면의 아이(우니히필리)를 안아주며 "${cleansingFocusTheme}"을 4대 정화 진언으로 깨끗이 지워낼 때, 신성한 포노(Pono, 온전한 평화)가 깃듭니다.`;
+  const synthesisMessage = `당신의 영혼에 지금 가장 절실한 우주 원리는 [${activePrinciple.hawaiianName}]입니다. 내면의 아이(우니히필리)를 안아주며 "${cleansingFocusTheme}"을 4대 정화 진언으로 깨끗이 지워낼 때, 신성한 포노(Pono, 온전한 평화)가 깃듭니다.`;
+
+  const kstMs = now.getTime() + 9 * 60 * 60 * 1000;
+  const kstDate = new Date(kstMs);
+  const kstHour = kstDate.getUTCHours();
+  const kstMonth = kstDate.getUTCMonth() + 1;
+  const calculatedAtKst = `${kstDate.getUTCFullYear()}-${String(kstMonth).padStart(2, '0')}-${String(kstDate.getUTCDate()).padStart(2, '0')} ${String(kstHour).padStart(2, '0')}:${String(kstDate.getUTCMinutes()).padStart(2, '0')} KST`;
+
+  const qLower = (effectiveContextText || '').toLowerCase();
+  const questionFocus = /연애|사랑|관계|결혼|재회|이별|가족/.test(qLower)
+    ? '아카(Aka) 인연의 끈 정화와 알로하 공명 감사'
+    : /돈|재물|사업|직장|투자|이직|계약/.test(qLower)
+    ? '결핍 기억 삭제와 마키아(Makia) 주의 집중 감사'
+    : /건강|불안|피로|마음|수면|치유/.test(qLower)
+    ? '우니히필리 내면 아이 감정 정화와 하(Ha) 호흡 감사'
+    : '후나 7대 원리 포노(Pono) 균형과 100% 자기 책임 감사';
+
+  const akaCordTension = unihipiliScore < 75
+    ? '과거 기억과 얽힌 아카(Aka) 끈을 부드럽게 풀어야 하는 정화 국면'
+    : '내면 아이와 의식 자아가 아우마쿠아의 빛 아래 순조롭게 정렬된 국면';
+
+  const cleansingPriority = `우선 정화 초점: ${cleansingFocusTheme}`;
+
+  const alohaManaWindow = kstHour >= 5 && kstHour < 11
+    ? '여명 카후나 하(Ha) 호흡 창(새로운 마나를 채우고 이케(Ike) 신념을 세우기 좋음)'
+    : kstHour >= 11 && kstHour < 17
+    ? '정오 마나와(Manawa) 현존 창(주의를 한 곳에 모아 포노 실천을 하기에 좋음)'
+    : kstHour >= 17 && kstHour < 22
+    ? '황혼 호오포노포노 정화 창(하루의 서운함과 기억 찌꺼기를 4대 진언으로 씻어내기에 좋음)'
+    : '심야 아우마쿠아 침묵 교감 창(내면 아이를 다독이고 고위 자아에 신뢰를 맡기기에 좋음)';
+
+  const pacificTidePhase = kstMonth >= 3 && kstMonth <= 5
+    ? '춘계 알로하 생명의 숨결기(새로운 관계와 희망의 씨앗을 품는 주기)'
+    : kstMonth >= 6 && kstMonth <= 8
+    ? '하계 마나 충만기(뜨거운 열정을 마키아 집중력으로 조율하는 주기)'
+    : kstMonth >= 9 && kstMonth <= 11
+    ? '추계 칼라(Kala) 해방기(묵은 집착을 끊고 가벼운 자유를 회복하는 주기)'
+    : '동계 포노(Pono) 내면 정돈기(외부 소음을 줄이고 진실한 평화를 다지는 주기)';
+
+  const ritualTimingNote = `${alohaManaWindow}과 ${pacificTidePhase}가 겹치므로, ${selectedMeta.actionGuideline}`;
+
+  const hunaSynthesisMatrix = {
+    coreMandate: `[${activePrinciple.hawaiianName}] 원리를 기준으로 ${questionFocus}을 수행하십시오.`,
+    sacredBoundary: '외부 탓이나 자기 비난의 기억을 재생하지 말고, 모든 경험을 4대 정화 진언의 대상으로 돌리십시오.',
+    reflectiveQuestion: `지금 내 마음속 불편함은 어떤 오래된 기억이 다시 재생되고 있다는 신호일까요?`,
+  };
 
   return {
     engineVersion: HAWAIIAN_HUNA_VERSION,
     calculatedAt: now.toISOString(),
+    calculatedAtKst,
     activePrinciple,
     threeSelves: {
       unihipiliScore,
@@ -207,22 +270,35 @@ export function calculateHawaiianHunaHooponopono(
     hooponopono,
     totalHealingHarmonics,
     synthesisMessage,
+    situationalHunaAudit: {
+      questionFocus,
+      akaCordTension,
+      cleansingPriority,
+    },
+    temporalHunaRhythm: {
+      calculatedAtKst,
+      alohaManaWindow,
+      pacificTidePhase,
+      ritualTimingNote,
+    },
+    hunaSynthesisMatrix,
   };
 }
 
 export function formatHawaiianHunaHooponoponoPrompt(report: HawaiianHunaReport): string {
   return `### 🌺 고대 하와이 호오포노포노 & 후나 7대 원리 치유 나침반 엔진 (${HAWAIIAN_HUNA_VERSION})
-- **활성 후나 원리(Huna Principle)**: ${report.activePrinciple.hawaiianName} [${report.activePrinciple.koreanMeaning}] (공명도: ${report.activePrinciple.resonanceScore}점)
+- **기준 시각(KST)**: ${report.temporalHunaRhythm.calculatedAtKst}
+- **질문 맥락 & 아카(Aka) 감사**: ${report.situationalHunaAudit.questionFocus} | ${report.situationalHunaAudit.akaCordTension}
+- **활성 후나 원리(Huna Principle)**: ${report.activePrinciple.hawaiianName} [${report.activePrinciple.koreanMeaning}]
   - 핵심 원리: "${report.activePrinciple.coreAxiom}"
   - 실천 지침: ${report.activePrinciple.actionGuideline}
-- **3대 자아 역학 균형도(Three Selves)**:
-  - 우니히필리(Unihipili, 잠재의식/내면의 아이): ${report.threeSelves.unihipiliScore}점 [${report.threeSelves.innerChildStatus}]
-  - 우하네(Uhane, 의식 자아): ${report.threeSelves.uhaneScore}점 | 아우마쿠아(Aumakua, 고위 초의식): ${report.threeSelves.aumakuaScore}점
-  - 3대 자아 삼위일체 조화도: ${report.threeSelves.triadicHarmonyScore}점 / 100점
+- **3대 자아 상태(Three Selves)**: 우니히필리 [${report.threeSelves.innerChildStatus}] · 우하네(의식 분별) · 아우마쿠아(고위 초의식)
 - **호오포노포노 정화 처방(Ho'oponopono Cleansing)**:
   - 집중 정화 테마: ${report.hooponopono.cleansingFocusTheme}
   - 정화 진언 시퀀스: ${report.hooponopono.primaryMantraSequence}
   - 일상 실천 의식: ${report.hooponopono.cleansingRitualPractice}
   - 마나(Mana) 생명력 충전: ${report.hooponopono.manaReplenishmentAdvice}
-- **치유 통합 나침반**: ${report.synthesisMessage}`;
+- **시공간 리듬**: ${report.temporalHunaRhythm.alohaManaWindow} · ${report.temporalHunaRhythm.pacificTidePhase}
+- **치유 통합 나침반**: ${report.synthesisMessage}
+- **교차 매트릭스**: ${report.hunaSynthesisMatrix.coreMandate} | 경계: ${report.hunaSynthesisMatrix.sacredBoundary} | 성찰 질문: "${report.hunaSynthesisMatrix.reflectiveQuestion}"`;
 }

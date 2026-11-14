@@ -2935,15 +2935,19 @@ test('Ayurvedic Tridosha & Prana Engine: calculates prakriti, vikriti and subtle
 });
 
 test('Hawaiian Huna & Ho\'oponopono Engine: calculates active principle, three selves balance and cleansing mantra', () => {
-  const rep = calculateHawaiianHunaHooponopono({ profile });
+  const rep = calculateHawaiianHunaHooponopono({ profile, contextText: '관계의 화해와 내면 평화' });
   assert.equal(rep.engineVersion, HAWAIIAN_HUNA_VERSION);
   assert(rep.activePrinciple.hawaiianName.length > 0);
   assert(rep.activePrinciple.resonanceScore >= 0 && rep.activePrinciple.resonanceScore <= 100);
   assert(rep.threeSelves.unihipiliScore >= 0 && rep.threeSelves.uhaneScore >= 0 && rep.threeSelves.aumakuaScore >= 0);
   assert(rep.hooponopono.cleansingFocusTheme.length > 0);
+  assert(rep.temporalHunaRhythm.calculatedAtKst.includes('KST'));
+  assert(rep.situationalHunaAudit.questionFocus.length > 0);
   const prompt = formatHawaiianHunaHooponoponoPrompt(rep);
   assert(prompt.includes('고대 하와이 호오포노포노 & 후나 7대 원리'));
   assert(prompt.includes(rep.activePrinciple.hawaiianName));
+  assert(!prompt.includes('/ 100점'));
+  assert(!prompt.includes('점'));
 });
 
 test('Feng Shui Eight Mansions Engine: calculates kua number, east/west mansion and spatial directions', () => {
@@ -3382,15 +3386,19 @@ test('Sumerian Gilgamesh Trials Engine: calculates 12 trials and heroic resilien
 });
 
 test('Hawaiian Kahuna Three Selves Engine: calculates 3 selves harmony and mana resonance score', () => {
-  const rep = calculateHawaiianKahunaThreeSelves({ profile });
+  const rep = calculateHawaiianKahunaThreeSelves({ profile, question: '마음의 안정과 실행' });
   assert.equal(rep.engineVersion, HAWAIIAN_KAHUNA_THREE_SELVES_ENGINE_VERSION);
   assert(rep.manaResonanceScore >= 0 && rep.manaResonanceScore <= 100);
   assert(rep.unihipili.currentVitality > 0);
   assert(rep.uhane.currentVitality > 0);
   assert(rep.aumakua.currentVitality > 0);
+  assert(rep.temporalKahunaRhythm.calculatedAtKst.includes('KST'));
+  assert(rep.situationalKahunaAudit.questionFocus.length > 0);
   const prompt = formatHawaiianKahunaThreeSelvesPrompt(rep);
   assert(prompt.includes('고대 하와이 카후나 3대 자아 & 마나 공명 실측 데이터'));
   assert(prompt.includes(rep.unihipili.dominantNeedOrBlock));
+  assert(!prompt.includes('/ 100점'));
+  assert(!prompt.includes('점 '));
 });
 
 test('Nordic Yggdrasil Nine Realms Engine: calculates dominant realm and Bifrost clearance', () => {
@@ -4118,7 +4126,7 @@ test('Korean Cheonbugyeong Eighty One Cosmic Engine: calculates heaven earth hum
 });
 
 test('Hindu Sri Yantra Sacred Geometry Engine: calculates Shiva-Shakti polarities, Nava Yoni and Nava Avarana', () => {
-  const rep = calculateHinduSriYantraSacredGeometry(profile);
+  const rep = calculateHinduSriYantraSacredGeometry(profile, new Date('2026-11-15T06:05:00Z'), '사업 성취와 내면 조화');
   assert.equal(rep.engineVersion, SRI_YANTRA_ENGINE_VERSION);
   assert(rep.shivaAscendingConsciousnessScore >= 0 && rep.shivaAscendingConsciousnessScore <= 100);
   assert(rep.shaktiDescendingGraceScore >= 0 && rep.shaktiDescendingGraceScore <= 100);
@@ -4128,9 +4136,13 @@ test('Hindu Sri Yantra Sacred Geometry Engine: calculates Shiva-Shakti polaritie
   assert(rep.sarvaRogaharaHealingPower >= 0 && rep.sarvaRogaharaHealingPower <= 100);
   assert(rep.sarvaAnandamayaBlissAlignment >= 0 && rep.sarvaAnandamayaBlissAlignment <= 100);
   assert(rep.primaryAvaranaChakra.level >= 1 && rep.primaryAvaranaChakra.level <= 9);
+  assert(rep.temporalSriYantraRhythm.calculatedAtKst.includes('KST'));
+  assert(rep.situationalSriYantraAudit.questionFocus.length > 0);
   const prompt = formatHinduSriYantraSacredGeometryPrompt(rep);
   assert(prompt.includes('힌두 탄트라 스리 얀트라(Sri Yantra) 9대 나바요니 & 바인두 신성기하학'));
   assert(prompt.includes(rep.primaryAvaranaChakra.sanskritName));
+  assert(!prompt.includes('%'));
+  assert(!prompt.includes('점'));
 });
 
 test('Lakota Medicine Wheel Wakan Tanka Engine: calculates 4 sacred directions, balance index and Mitakuye Oyasin', () => {

@@ -26,11 +26,12 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const SRI_YANTRA_ENGINE_VERSION = '1.0.0';
+export const SRI_YANTRA_ENGINE_VERSION = '2.0.0';
 
 export interface SriYantraSacredGeometryReport {
   engineVersion: string;
   calculatedAt: string;
+  calculatedAtKst: string;
   // 시바-샤크티 극성 밸런스
   shivaAscendingConsciousnessScore: number; // 4 시바 삼각형 상승 순수의식 (0~100)
   shaktiDescendingGraceScore: number; // 5 샤크티 삼각형 하강 창조은총 (0~100)
@@ -49,6 +50,22 @@ export interface SriYantraSacredGeometryReport {
   sarvaRogaharaHealingPower: number; // 심신 번뇌 치유력 (0~100)
   sarvaAnandamayaBlissAlignment: number; // 우주적 환희 및 내적 평온도 (0~100)
   sacredGeometryMeditationGuidance: string;
+  situationalSriYantraAudit: {
+    questionFocus: string;
+    polarityBalanceNote: string;
+    avaranaEntryStep: string;
+  };
+  temporalSriYantraRhythm: {
+    calculatedAtKst: string;
+    brahmaMuhurtaWindow: string;
+    seasonalShaktiPhase: string;
+    yantraFocusNote: string;
+  };
+  sriYantraSynthesisMatrix: {
+    coreMandate: string;
+    sacredBoundary: string;
+    reflectiveQuestion: string;
+  };
 }
 
 function djb2Hash(str: string): number {
@@ -126,11 +143,17 @@ const SRI_AVARANA_CIRCUITS = [
   },
 ];
 
-export function calculateHinduSriYantraSacredGeometry(profile?: UserProfile | null): SriYantraSacredGeometryReport {
+export function calculateHinduSriYantraSacredGeometry(
+  profile?: UserProfile | null,
+  nowArg?: Date,
+  questionArg?: string
+): SriYantraSacredGeometryReport {
+  const now = nowArg || new Date();
+  const question = (questionArg || '').trim();
   const bdate = profile?.basic?.birthdate || '1994-01-24';
   const btime = profile?.basic?.birthtime || '12:00';
   const name = profile?.basic?.name || 'zeZE';
-  const seedStr = `${bdate}_${btime}_${name}_sri_yantra_v1`;
+  const seedStr = `${bdate}_${btime}_${name}_${question || 'sri_yantra_v2'}`;
   const seed = djb2Hash(seedStr);
 
   const shivaAscendingConsciousnessScore = 65 + (seed % 34);
@@ -160,9 +183,57 @@ export function calculateHinduSriYantraSacredGeometry(profile?: UserProfile | nu
     sacredGeometryMeditationGuidance = '만물을 품는 샤크티의 감성과 풍요가 넘쳐납니다. 이를 구체적인 현실의 틀로 고정할 시바의 명확한 규율과 구조적 결단을 보강하십시오.';
   }
 
+  const kstMs = now.getTime() + 9 * 60 * 60 * 1000;
+  const kstDate = new Date(kstMs);
+  const kstHour = kstDate.getUTCHours();
+  const kstMonth = kstDate.getUTCMonth() + 1;
+  const calculatedAtKst = `${kstDate.getUTCFullYear()}-${String(kstMonth).padStart(2, '0')}-${String(kstDate.getUTCDate()).padStart(2, '0')} ${String(kstHour).padStart(2, '0')}:${String(kstDate.getUTCMinutes()).padStart(2, '0')} KST`;
+
+  const qLower = question.toLowerCase();
+  const questionFocus = /연애|사랑|관계|결혼|재회|감정/.test(qLower)
+    ? '샤크티 하강 은총과 3층 삼크쇼바나 감정 정화 감사'
+    : /일|직장|사업|돈|재물|성취|목표/.test(qLower)
+    ? '사르바 아르타(과업 성취) 회랑과 시바 구조적 결단 감사'
+    : /건강|치유|피로|수면|불안|마음/.test(qLower)
+    ? '사르바 로가하라(고통 치유) 회랑과 바인두 고요 합일 감사'
+    : '나바요니(9삼각형) 시바-샤크티 교차 조화 감사';
+
+  const polarityBalanceNote = navaYoniInterlockingHarmony >= 85
+    ? '시바의 순수의식과 샤크티의 창조은총이 황금비율로 맞물린 합일 국면'
+    : shivaAscendingConsciousnessScore > shaktiDescendingGraceScore
+    ? '시바 상승 의식이 우세해 분석·결단은 날카로우나 샤크티의 수용성 보완이 필요한 국면'
+    : '샤크티 하강 은총이 풍부하나 시바의 명확한 구조와 실행 경계가 필요한 국면';
+
+  const avaranaEntryStep = `제${primaryAvaranaChakra.level}층 ${primaryAvaranaChakra.koreanTitle} 관문 통과 중`;
+
+  const brahmaMuhurtaWindow = kstHour >= 4 && kstHour < 9
+    ? '브라흐마 무후르타·아침 바인두 응시 창(외부 소음을 끊고 순수 의식의 중심을 잡기에 최적)'
+    : kstHour >= 9 && kstHour < 17
+    ? '낮 사르바 아르타 현실 현현 창(얀트라의 구조적 힘을 실무와 행동으로 구현하기에 최적)'
+    : kstHour >= 17 && kstHour < 22
+    ? '황혼 사르바 로가하라 치유 창(하루의 긴장과 번뇌를 정화하고 감정을 가라앉히기에 최적)'
+    : '심야 아난다마야 합일 창(애씀을 멈추고 바인두의 고요 속에 안식하기에 최적)';
+
+  const seasonalShaktiPhase = kstMonth >= 3 && kstMonth <= 5
+    ? '춘계 나바라트리 창조 개화기(새로운 열망과 씨앗이 꽃피어나는 주기)'
+    : kstMonth >= 6 && kstMonth <= 8
+    ? '하계 테자스(Tejas) 광명기(강렬한 실행력으로 과업을 돌파하는 주기)'
+    : kstMonth >= 9 && kstMonth <= 11
+    ? '추계 스리비드야 수확·성숙기(직관과 현실 결실이 하나로 모이는 주기)'
+    : '동계 바인두 심연 응축기(내면 성채를 수호하며 힘을 축적하는 주기)';
+
+  const yantraFocusNote = `${brahmaMuhurtaWindow}과 ${seasonalShaktiPhase}가 교차하므로, ${primaryAvaranaChakra.blessingAdvice}`;
+
+  const sriYantraSynthesisMatrix = {
+    coreMandate: `[제${primaryAvaranaChakra.level}층 ${primaryAvaranaChakra.sanskritName}] 회랑을 중심으로 ${questionFocus}을 수행하십시오.`,
+    sacredBoundary: '시바(이성)와 샤크티(감성) 중 한쪽으로 치우친 극단적 판단을 경계하고, 바인두 중심의 고요에서 답을 구하십시오.',
+    reflectiveQuestion: `지금 내 삶의 소용돌이 한가운데서 흔들리지 않는 고요한 중심점(바인두)은 어디에 있나요?`,
+  };
+
   return {
     engineVersion: SRI_YANTRA_ENGINE_VERSION,
-    calculatedAt: new Date().toISOString(),
+    calculatedAt: now.toISOString(),
+    calculatedAtKst,
     shivaAscendingConsciousnessScore,
     shaktiDescendingGraceScore,
     navaYoniInterlockingHarmony,
@@ -172,18 +243,31 @@ export function calculateHinduSriYantraSacredGeometry(profile?: UserProfile | nu
     sarvaRogaharaHealingPower,
     sarvaAnandamayaBlissAlignment,
     sacredGeometryMeditationGuidance,
+    situationalSriYantraAudit: {
+      questionFocus,
+      polarityBalanceNote,
+      avaranaEntryStep,
+    },
+    temporalSriYantraRhythm: {
+      calculatedAtKst,
+      brahmaMuhurtaWindow,
+      seasonalShaktiPhase,
+      yantraFocusNote,
+    },
+    sriYantraSynthesisMatrix,
   };
 }
 
 export function formatHinduSriYantraSacredGeometryPrompt(report: SriYantraSacredGeometryReport): string {
   return [
-    `[힌두 탄트라 스리 얀트라(Sri Yantra) 9대 나바요니 & 바인두 신성기하학 엔진]`,
-    `- 시바-샤크티 극성 밸런스: 4 시바 삼각형(순수의식) ${report.shivaAscendingConsciousnessScore}점 / 5 샤크티 삼각형(우주창조) ${report.shaktiDescendingGraceScore}점`,
-    `- 9 나바요니 교차 인터로킹 조화율: ${report.navaYoniInterlockingHarmony}% / 바인두(Bindu) 중심합일 각성도: ${report.binduTranscendentalAwakeningScore}점`,
+    `[힌두 탄트라 스리 얀트라(Sri Yantra) 9대 나바요니 & 바인두 신성기하학 엔진 v${report.engineVersion}]`,
+    `- 기준 시각(KST): ${report.temporalSriYantraRhythm.calculatedAtKst}`,
+    `- 질문 맥락 & 극성 감사: ${report.situationalSriYantraAudit.questionFocus} | ${report.situationalSriYantraAudit.polarityBalanceNote}`,
     `- 활성화 아바라나(Avarana) 회랑: [제${report.primaryAvaranaChakra.level}층] ${report.primaryAvaranaChakra.koreanTitle} (${report.primaryAvaranaChakra.sanskritName})`,
     `  * 신성 원형 힘: ${report.primaryAvaranaChakra.archetypalPower}`,
     `  * 수행 축복 조언: ${report.primaryAvaranaChakra.blessingAdvice}`,
-    `- 과업 성취력(Sarva Artha): ${report.sarvaArthaManifestationIndex}점 / 치유 복원력(Sarva Rogahara): ${report.sarvaRogaharaHealingPower}점 / 우주적 지복도: ${report.sarvaAnandamayaBlissAlignment}점`,
+    `- 시공간 리듬: ${report.temporalSriYantraRhythm.brahmaMuhurtaWindow} · ${report.temporalSriYantraRhythm.seasonalShaktiPhase}`,
     `- 신성 기하학 명상 지침: ${report.sacredGeometryMeditationGuidance}`,
+    `- 교차 매트릭스: ${report.sriYantraSynthesisMatrix.coreMandate} | 경계: ${report.sriYantraSynthesisMatrix.sacredBoundary} | 성찰 질문: "${report.sriYantraSynthesisMatrix.reflectiveQuestion}"`,
   ].join('\n');
 }
