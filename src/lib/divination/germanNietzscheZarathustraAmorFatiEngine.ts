@@ -6,14 +6,14 @@
  * 2. 세 가지 변화(Drei Verwandlungen des Geistes): 낙타(Kamel) → 사자(Löwe) → 아이(Kind)
  * 3. 초인(Übermensch)과 자기 극복(Selbstüberwindung)
  * 4. 영원회귀(Ewige Wiederkunft)와 위대한 정오(Großer Mittag)
- * 5. 질문 맥락 정신 변신 진단(situationalMetamorphosis) + KST 시공간 리듬(temporalZarathustraRhythm) + 교차 검증 매트릭스(uebermenschSynthesisMatrix)
+ * 5. 질문 맥락 정신 변신 진단(situationalMetamorphosis) + KST 시공간 리듬(temporalZarathustraRhythm) + 교차 검증 매트릭스(uebermenschSynthesisMatrix) + 순수 정성 성찰(v2.1.0)
  *
- * @version LUCKEY-NIETZSCHE-ZARATHUSTRA-AMOR-FATI-v2.0.0
+ * @version LUCKEY-NIETZSCHE-ZARATHUSTRA-AMOR-FATI-v2.1.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const NIETZSCHE_ZARATHUSTRA_AMOR_FATI_VERSION = 'LUCKEY-NIETZSCHE-ZARATHUSTRA-AMOR-FATI-v2.0.0';
+export const NIETZSCHE_ZARATHUSTRA_AMOR_FATI_VERSION = 'LUCKEY-NIETZSCHE-ZARATHUSTRA-AMOR-FATI-v2.1.0';
 
 export interface NietzscheTheme {
   themeKey: string;
@@ -69,6 +69,8 @@ export interface NietzscheZarathustraAmorFatiResult {
   situationalMetamorphosis: NietzscheSituationalMetamorphosis;
   temporalZarathustraRhythm: NietzscheTemporalZarathustraRhythm;
   uebermenschSynthesisMatrix: NietzscheUebermenschMatrix;
+  dailyPracticeRitual: string;
+  interpretiveBoundary: string;
   nietzschePersonalCounsel: {
     counselTitle: string;
     philosophicalGuidance: string;
@@ -293,6 +295,9 @@ export function calculateNietzscheZarathustraAmorFati(
     `${situationalMetamorphosis.overcomingPrescription} 또한 '${activeNietzscheTheme.themeTitleKo}'의 가르침과 아포리즘 '${focalNietzscheAphorism.aphorismKo}'(${focalNietzscheAphorism.creativeDimension})을 품고 ` +
     `${temporalZarathustraRhythm.dailyAffirmationPractice}`;
 
+  const dailyPracticeRitual = `오늘의 아모르 파티 실천 의례: ${temporalZarathustraRhythm.dailyAffirmationPractice} 피하고 싶은 조건 하나를 '그럼에도 내가 창조로 바꿀 재료'로 다시 명명해 보십시오.`;
+  const interpretiveBoundary = '이 관점은 니체의 실존 철학과 운명애(Amor Fati)의 상징적 통찰일 뿐, 현실의 심리·의료적 진단이나 결정을 대신하지 않습니다.';
+
   return {
     engineVersion: NIETZSCHE_ZARATHUSTRA_AMOR_FATI_VERSION,
     calculatedAtKst: new Date(now.getTime() + 9 * 60 * 60 * 1000).toISOString().replace('Z', '+09:00'),
@@ -306,6 +311,8 @@ export function calculateNietzscheZarathustraAmorFati(
     situationalMetamorphosis,
     temporalZarathustraRhythm,
     uebermenschSynthesisMatrix,
+    dailyPracticeRitual,
+    interpretiveBoundary,
     nietzschePersonalCounsel: {
       counselTitle,
       philosophicalGuidance,
@@ -313,21 +320,66 @@ export function calculateNietzscheZarathustraAmorFati(
   };
 }
 
+function describeNietzscheStage(score: number, high: string, mid: string, low: string): string {
+  if (score >= 86) return high;
+  if (score >= 76) return mid;
+  return low;
+}
+
 export function formatNietzscheZarathustraAmorFatiPrompt(res: NietzscheZarathustraAmorFatiResult): string {
+  const amorFatiStage = describeNietzscheStage(
+    res.amorFatiRadicalAffirmationScore,
+    '필연성까지 기꺼이 껴안고 창조의 불꽃으로 바꾸는 아모르 파티 절정',
+    '일어난 일의 무게를 수용하며 내 편으로 돌려세우는 긍정의 흐름',
+    '원망과 후회의 시선을 거두고 현재의 필연을 직면할 시기',
+  );
+  const metamorphosesStage = describeNietzscheStage(
+    res.threeMetamorphosesCreativeScore,
+    '묵은 규범을 넘어 아이처럼 새 가치를 빚어내는 창조적 자유',
+    '낙타의 인내에서 사자의 단호함으로 발걸음을 옮기는 변신의 국면',
+    '남이 지워준 짐을 내려놓고 내 진짜 욕망을 구분해야 할 때',
+  );
+  const uebermenschStage = describeNietzscheStage(
+    res.uebermenschSelfOvercomingScore,
+    '어제의 나를 경쾌하게 뛰어넘어 스스로를 갱신하는 자기 극복의 기세',
+    '익숙한 안주와 새로운 도약 사이에서 의지를 다지는 과정',
+    '비교의 시선을 끊고 내 안의 가장 솔직한 힘에 불을 붙일 시점',
+  );
+  const recurrenceStage = describeNietzscheStage(
+    res.eternalRecurrenceResolveScore,
+    '이 순간이 영원히 되풀이되어도 기꺼이 예(Ja)라고 답할 수 있는 결단',
+    '순간의 선택에 책임과 진정성을 실어 밀도 있게 살아가는 흐름',
+    '미루던 결정을 더는 뒤로 미루지 말고 오늘의 태도를 정할 때',
+  );
+  const dionysianStage = describeNietzscheStage(
+    res.dionysianVitalityDriveScore,
+    '내면의 생명력과 창조적 환희가 춤추듯 솟구치는 디오니소스적 활력',
+    '혼돈을 두려워하지 않고 에너지의 리듬을 조절하며 나아가는 중',
+    '지친 감각을 회복하고 몸과 마음의 생기를 먼저 되살려야 할 시기',
+  );
+  const temporalRhythmStage = describeNietzscheStage(
+    res.temporalZarathustraRhythm.dionysianPulseIndex,
+    '차라투스트라의 창조적 맥동이 가장 선명하게 깨어나는 시간대',
+    '운명을 긍정하는 호흡이 일상 속에 고르게 흐르는 리듬',
+    '깊은 밤처럼 고요히 다음 도약의 화살을 다듬는 시간',
+  );
+
   return [
-    `【프리드리히 니체 차라투스트라 초인 & 아모르 파티(Amor Fati) 지표 v2.0】`,
-    `- 아모르 파티(Amor Fati) 운명 절대 긍정도: ${res.amorFatiRadicalAffirmationScore}/100`,
-    `- 3단계 변신(낙타·사자·아이) 창조적 자유도: ${res.threeMetamorphosesCreativeScore}/100`,
-    `- 초인(Übermensch) 자기 극복 및 창조력: ${res.uebermenschSelfOvercomingScore}/100`,
-    `- 영원회귀(Ewige Wiederkunft) 순간 결단력: ${res.eternalRecurrenceResolveScore}/100`,
-    `- 디오니소스적 생명력 및 활력 지수: ${res.dionysianVitalityDriveScore}/100`,
+    `【프리드리히 니체 차라투스트라 초인 & 아모르 파티(Amor Fati) 지표 v2.1 (순수 정성 성찰)】`,
+    `- 아모르 파티(Amor Fati) 운명 긍정: ${amorFatiStage}`,
+    `- 3단계 변신(낙타·사자·아이) 자유: ${metamorphosesStage}`,
+    `- 초인(Übermensch) 자기 극복: ${uebermenschStage}`,
+    `- 영원회귀(Ewige Wiederkunft) 결단: ${recurrenceStage}`,
+    `- 디오니소스적 생명력: ${dionysianStage}`,
     `- 질문 맥락 변신 단계: [${res.situationalMetamorphosis.metamorphosisStage}] ${res.situationalMetamorphosis.focusAxisKo}`,
     `- 원전 처방: ${res.situationalMetamorphosis.classicalCitation} → ${res.situationalMetamorphosis.overcomingPrescription}`,
     `- 성찰 질문: ${res.situationalMetamorphosis.reflectiveQuestion}`,
-    `- KST 시공간 리듬: ${res.temporalZarathustraRhythm.timeWindowKo} (${res.temporalZarathustraRhythm.seasonKo}, 맥동지수 ${res.temporalZarathustraRhythm.dionysianPulseIndex}/100) — ${res.temporalZarathustraRhythm.dailyAffirmationPractice}`,
-    `- 종합 등급: ${res.uebermenschSynthesisMatrix.overallZarathustraGrade}`,
+    `- KST 시공간 리듬: ${res.temporalZarathustraRhythm.timeWindowKo} (${res.temporalZarathustraRhythm.seasonKo}, ${temporalRhythmStage}) — ${res.temporalZarathustraRhythm.dailyAffirmationPractice}`,
+    `- 종합 위상: ${res.uebermenschSynthesisMatrix.overallZarathustraGrade}`,
     `- 핵심 초인 테마: ${res.activeNietzscheTheme.themeTitleKo} [${res.activeNietzscheTheme.themeTitleGerman}]`,
     `- 핵심 아포리즘: "${res.focalNietzscheAphorism.aphorismKo}" ("${res.focalNietzscheAphorism.aphorismGerman}")`,
+    `- 일상 실천 의례: ${res.dailyPracticeRitual}`,
     `- 통합 실존 처방: ${res.nietzschePersonalCounsel.philosophicalGuidance}`,
+    `- 해석 경계: ${res.interpretiveBoundary}`,
   ].join('\n');
 }
