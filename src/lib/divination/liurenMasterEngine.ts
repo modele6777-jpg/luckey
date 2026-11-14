@@ -28,7 +28,7 @@
 
 import { calculateLiuren } from './eventCharts';
 
-export const LIUREN_MASTER_ENGINE_VERSION = 'LUCKEY-LR-v1.1.0';
+export const LIUREN_MASTER_ENGINE_VERSION = 'LUCKEY-LR-v2.0.0';
 
 export const LIUREN_MASTER_METHOD =
   '대육임(大六壬) 정통 월장가시 천지반 12궁 포국, 사과(간상·간음·지상·지음) 오행 생극제화 수리 판정, 삼전(초전·중전·말전 발용) 구종과격 및 전개 템포, 12천장 승차 길흉 판정 및 0~100점 결단·행동 모멘텀 스코어 결정론적 산출';
@@ -78,6 +78,7 @@ export interface LiurenTransmissionDynamics {
 
 export interface LiurenMasterResult {
   engineVersion: string;
+  calculatedAtKst: string;
   method: string;
   status: 'calculated' | 'error';
   instantKstIso: string;
@@ -90,7 +91,7 @@ export interface LiurenMasterResult {
   fourLessons: LiurenLesson[];
   threeTransmissions: LiurenTransmission[];
   primaryGeneral: LiurenGeneralInfo;
-  decisionScore: number; // 0 ~ 100
+  decisionScore: number; // 내부 호환용 0 ~ 100 (프롬프트 비노출)
   decisionGrade: '적극 추진 (Strong Go)' | '협력 추진 (Cooperative Go)' | '내실 관망 (Watch & Fortify)' | '전략 수정 (Caution & Pivot)' | '전면 보류 (Strong Stop)';
   actionProtocols: {
     timingAdvice: string;
@@ -99,6 +100,59 @@ export interface LiurenMasterResult {
   };
   interpersonalDynamic: LiurenInterpersonalDynamic;
   transmissionDynamics: LiurenTransmissionDynamics;
+  situationalLiurenAudit: {
+    focusTheme: string;
+    lessonNote: string;
+    nextMove: string;
+  };
+  temporalLiurenRhythm: {
+    kstTimeLabel: string;
+    hourWatchWindow: string;
+    seasonalLiurenTone: string;
+    temporalGuidance: string;
+  };
+  liurenSynthesisMatrix: {
+    coreInsight: string;
+    recommendedAction: string;
+    cautionNotice: string;
+  };
+  boundaryNotice: string;
+}
+
+function getTemporalLiurenRhythm(now: Date) {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  const hour = kst.getUTCHours();
+  const month = kst.getUTCMonth() + 1;
+
+  const hourWatchWindow =
+    hour >= 5 && hour < 11
+      ? '아침 초전(初傳) 발용창 — 일의 첫 단추와 방향을 명료하게 세우는 시간'
+      : hour >= 11 && hour < 17
+        ? '정오 사과(四課) 교섭창 — 상대와 환경의 생극을 살펴 실질적 합의를 이끄는 시간'
+        : hour >= 17 && hour < 22
+          ? '황혼 중전(中傳) 조율창 — 진행 중인 과제의 변수를 점검하고 매듭을 짓는 시간'
+          : '심야 말전(末傳) 관조창 — 하루의 귀결을 정리하며 내일의 귀인 조력을 준비하는 시간';
+
+  const seasonalLiurenTone =
+    month >= 3 && month <= 5
+      ? '봄 · 인묘(木) 발용절 (초전의 움직임이 빠르게 퍼져나가는 시기)'
+      : month >= 6 && month <= 8
+        ? '여름 · 사오(火) 성취절 (적극적인 추진과 대외 협력이 빛나는 시기)'
+        : month >= 9 && month <= 11
+          ? '가을 · 신유(金) 결단절 (원칙과 문서 기준을 분명히 세우는 시기)'
+          : '겨울 · 해자(水) 지혜절 (조용한 기획과 물밑 준비가 힘을 발휘하는 시기)';
+
+  return {
+    kstTimeLabel: `${y}-${m}-${d} ${hh}:${mm} KST`,
+    hourWatchWindow,
+    seasonalLiurenTone,
+    temporalGuidance: `${hourWatchWindow} · ${seasonalLiurenTone}의 결에 맞추어 인사의 흐름을 살피십시오.`,
+  };
 }
 
 const GENERAL_DATA: Record<string, LiurenGeneralInfo> = {
@@ -197,7 +251,7 @@ function evaluateElementRelation(subjEl: string, envEl: string): {
 /**
  * 대육임 정통 수리 계산 및 사과·삼전·12천장 결단 마스터 엔진 실행
  */
-export function calculateLiurenMaster(instant: Date = new Date()): LiurenMasterResult {
+export function calculateLiurenMaster(instant: Date = new Date(), question?: string): LiurenMasterResult {
   const raw = calculateLiuren(instant);
   const nowKstIso = new Date(instant.getTime() + 9 * 3600000).toISOString().replace('Z', '+09:00');
 
@@ -337,8 +391,29 @@ export function calculateLiurenMaster(instant: Date = new Date()): LiurenMasterR
     breakthroughStrategy,
   };
 
+  const temporalLiurenRhythm = getTemporalLiurenRhythm(instant);
+  const q = (question || '').trim();
+  const situationalLiurenAudit = /관계|사람|협업|계약/.test(q)
+    ? {
+        focusTheme: `사과(四課) ${elemEval.relationType} 대인 역학`,
+        lessonNote: elemEval.meaning,
+        nextMove: breakthroughStrategy,
+      }
+    : {
+        focusTheme: `${patternHanja} · ${threeTransmissions[0]?.general} 발용`,
+        lessonNote: patternGuidance,
+        nextMove: `${tempo} 흐름에 맞추어 ${matchedGeneral.advice}`,
+      };
+
+  const liurenSynthesisMatrix = {
+    coreInsight: `[${patternHanja}] 초전(${threeTransmissions[0]?.branch}·${threeTransmissions[0]?.general})에서 말전(${threeTransmissions[2]?.branch})으로 흐릅니다.`,
+    recommendedAction: breakthroughStrategy,
+    cautionNotice: matchedGeneral.advice,
+  };
+
   return {
     engineVersion: LIUREN_MASTER_ENGINE_VERSION,
+    calculatedAtKst: temporalLiurenRhythm.kstTimeLabel,
     method: LIUREN_MASTER_METHOD,
     status: 'calculated',
     instantKstIso: nowKstIso,
@@ -360,6 +435,10 @@ export function calculateLiurenMaster(instant: Date = new Date()): LiurenMasterR
     },
     interpersonalDynamic,
     transmissionDynamics,
+    situationalLiurenAudit,
+    temporalLiurenRhythm,
+    liurenSynthesisMatrix,
+    boundaryNotice: '본 결과는 대육임 월장가시·사과·삼전 수리에 기반한 정성적 인사 처신 가이드이며, 확정적 예언이 아닙니다.',
   };
 }
 
@@ -369,27 +448,46 @@ export function calculateLiurenMaster(instant: Date = new Date()): LiurenMasterR
 export function formatLiurenMasterPrompt(res: LiurenMasterResult): string {
   if (res.status !== 'calculated') return '';
 
+  const harmonyTone =
+    res.interpersonalDynamic.fourLessonsHarmonyScore >= 85
+      ? '높은 상생 조화'
+      : res.interpersonalDynamic.fourLessonsHarmonyScore >= 65
+        ? '무난한 균형'
+        : '조율 필요';
+  const momentumTone =
+    res.transmissionDynamics.actionMomentumIndex >= 75
+      ? '강한 실행 탄력'
+      : res.transmissionDynamics.actionMomentumIndex >= 50
+        ? '완만한 진행 탄력'
+        : '신중한 준비 국면';
+
   return `[대육임(大六壬) 정통 사과·삼전·12천장 결단 리포트 (엔진: ${res.engineVersion})]
+- 연산 시각: ${res.calculatedAtKst}
 - 점시 일진: ${res.dayStemBranch}일 ${res.hourBranch}시 (월장: ${res.monthGeneral})
 - 과격(課格): ${res.patternName} - ${res.patternGuidance}
-- 결단 스코어: ${res.decisionScore}점 (${res.decisionGrade})
+- 결단 기조: ${res.decisionGrade}
 - 주도 12천장: ${res.primaryGeneral.name} [${res.primaryGeneral.nature}] - ${res.primaryGeneral.attribute}
 - 사과(四課) 포국:
   1. 제1과(일간상신/나의 외적위치): ${res.fourLessons[0]?.upper}/${res.fourLessons[0]?.lower} (${res.interpersonalDynamic.subjectElement})
   2. 제2과(일간음신/나의 내적심리): ${res.fourLessons[1]?.upper}/${res.fourLessons[1]?.lower}
   3. 제3과(일지상신/상대의 환경): ${res.fourLessons[2]?.upper}/${res.fourLessons[2]?.lower} (${res.interpersonalDynamic.environmentElement})
   4. 제4과(일지음신/상대의 의도): ${res.fourLessons[3]?.upper}/${res.fourLessons[3]?.lower}
-- 사과 생극 역학: 제1과 상신(${res.interpersonalDynamic.subjectUpper}) vs 제3과 상신(${res.interpersonalDynamic.environmentUpper}) -> ${res.interpersonalDynamic.relationType} (${res.interpersonalDynamic.relationMeaning}) [사과 조화도: ${res.interpersonalDynamic.fourLessonsHarmonyScore}점]
+- 사과 생극 역학: 제1과 상신(${res.interpersonalDynamic.subjectUpper}) vs 제3과 상신(${res.interpersonalDynamic.environmentUpper}) -> ${res.interpersonalDynamic.relationType} (${res.interpersonalDynamic.relationMeaning}) [사과 조화: ${harmonyTone}]
 - 삼전(三傳) 타임라인 & 추진 역학:
   • 초전(발용/시작): ${res.threeTransmissions[0]?.branch} (${res.threeTransmissions[0]?.general}) -> ${res.threeTransmissions[0]?.timelineRole}
   • 중전(과정/고비): ${res.threeTransmissions[1]?.branch} (${res.threeTransmissions[1]?.general}) -> ${res.threeTransmissions[1]?.timelineRole}
   • 말전(귀결/수확): ${res.threeTransmissions[2]?.branch} (${res.threeTransmissions[2]?.general}) -> ${res.threeTransmissions[2]?.timelineRole}
-  • 전개 템포: ${res.transmissionDynamics.tempo} | 행동 모멘텀: ${res.transmissionDynamics.actionMomentumIndex}점
+  • 전개 템포: ${res.transmissionDynamics.tempo} | 행동 탄력: ${momentumTone}
   • 전개 흐름: ${res.transmissionDynamics.flowMeaning}
+- 질문 맥락 감사 (${res.situationalLiurenAudit.focusTheme}): ${res.situationalLiurenAudit.lessonNote} / ${res.situationalLiurenAudit.nextMove}
+- KST 시공간 대육임 리듬: ${res.temporalLiurenRhythm.hourWatchWindow} / ${res.temporalLiurenRhythm.seasonalLiurenTone}
+  • 시공간 지침: ${res.temporalLiurenRhythm.temporalGuidance}
+- 대육임 교차 매트릭스: 핵심(${res.liurenSynthesisMatrix.coreInsight}) | 실행(${res.liurenSynthesisMatrix.recommendedAction}) | 주의(${res.liurenSynthesisMatrix.cautionNotice})
 - 실천 프로토콜 & 돌파 전략:
   • 타이밍: ${res.actionProtocols.timingAdvice}
   • 관계 전략: ${res.actionProtocols.relationshipAdvice}
   • 핵심 주의: ${res.actionProtocols.strategicCaution}
   • 돌파 개운 전략: ${res.transmissionDynamics.breakthroughStrategy}
+- 해석 경계: ${res.boundaryNotice}
 ※ 루시 지침: 대육임은 인사처신의 거울입니다. 사용자가 질문한 일의 시작(초전), 진행(중전), 결말(말전)과 상대방과의 심리적 역학(사과)을 명쾌하고 든든하게 해설해 주세요.`;
 }

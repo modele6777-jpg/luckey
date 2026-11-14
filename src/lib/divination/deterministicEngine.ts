@@ -1128,7 +1128,7 @@ try {
 liurenEnvelope = {toolId:'liuren', toolKoName:'육임', status:'skipped', note:'이번 질문에서 선택하지 않은 도구'};
 } else {
 try {
-    liurenMasterResult = calculateLiurenMaster(now);
+    liurenMasterResult = calculateLiurenMaster(now, question);
     liurenEnvelope = {
       toolId: 'liuren',
       toolKoName: '육임',
@@ -1148,7 +1148,7 @@ try {
   let honggukQimenResult: HonggukQimenResult | null = null;
   if (!params.coreOnly && (!params.focusTools?.length || params.focusTools.includes('qimen'))) {
   try {
-    honggukQimenResult = calculateHonggukQimen({ profile, targetYear: now.getFullYear() });
+    honggukQimenResult = calculateHonggukQimen({ profile, targetYear: now.getFullYear(), now, question });
   } catch (err: any) {
     honggukQimenResult = {
       status: 'error',
@@ -2155,7 +2155,7 @@ try {
   // 91. 황제명리(黃帝命理) & 오운육기(五運六氣) 천기대운 기상의학 엔진
   const huangdiFiveMovementsSixQiResult = calculateSupplement('huangdiFiveMovementsSixQiResult', () => ((() => {
     try {
-      return calculateHuangdiFiveMovementsSixQi(profile);
+      return calculateHuangdiFiveMovementsSixQi(profile, now, question);
     } catch (_) {
       return null;
     }

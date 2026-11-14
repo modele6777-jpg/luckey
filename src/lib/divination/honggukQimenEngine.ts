@@ -53,7 +53,7 @@
 import type { UserProfile } from '../sharedState';
 import { calculateDetailedSaju, STEM_ELEMENT, BRANCH_ELEMENT } from '../sajuAnalysis';
 
-export const HONGGUK_QIMEN_ENGINE_VERSION = 'LUCKEY-HQ-v1.0.0';
+export const HONGGUK_QIMEN_ENGINE_VERSION = 'LUCKEY-HQ-v2.0.0';
 
 export const HONGGUK_QIMEN_METHOD =
   '조선 정통 홍국기문(洪局奇門) 결정론 산법: 사주 연·월·일·시 4주 천간·지지의 하도 생성수(甲1~癸10)·후천 12진수(子1~亥12) 낙서 구성환원으로 지반수(地盤數) 중궁과 천반수(天盤數) 중궁을 산출하고, 중궁 기점 건→태→간→리→감→곤→진→손 낙서 비행 경로 역행 배열로 9궁(1백 감궁~9자 리궁) 천지반 비성 포국, 세효(世爻·본신)·응효(應爻·상대)·중궁(中宮·핵심) 3대 거점 수리 식별과 3궁 오행 상생·상극·비화 대조, 인사신·축술미 삼형(三刑) 성립 및 육충 반영 파극 위험도(0~100), 수생목→목생화→화생토→토생금→금생수 상생 통기 순환 완성도(0~100), 8문(개휴생 3길문·상두경(景) 사경(驚) 평흉문) 정궁 배속과 세효 득문(得門) 판정, 길흉 격국 및 개운 처방';
@@ -163,6 +163,7 @@ export interface HonggukQimenKeyRelation {
 export interface HonggukQimenResult {
   status: 'calculated' | 'skipped' | 'error';
   engineVersion: string;
+  calculatedAtKst?: string;
   method: string;
   targetYear?: number;
   fourPillars?: {
@@ -212,6 +213,23 @@ export interface HonggukQimenResult {
   heavenEarthResonance?: HonggukHeavenEarthResonance;
   threeWondersAlliance?: HonggukThreeWondersAlliance;
   tacticalSeasonWindows?: HonggukTacticalSeasonWindows;
+  situationalHonggukAudit?: {
+    focusTheme: string;
+    gateNote: string;
+    tacticalStep: string;
+  };
+  temporalHonggukRhythm?: {
+    kstTimeLabel: string;
+    palaceWatchWindow: string;
+    seasonalQimenTone: string;
+    temporalGuidance: string;
+  };
+  honggukSynthesisMatrix?: {
+    coreInsight: string;
+    recommendedAction: string;
+    cautionNotice: string;
+  };
+  boundaryNotice?: string;
   note?: string;
 }
 
@@ -387,6 +405,42 @@ function calculateTacticalSeasonWindows(seYaoPalaceNumber: number): HonggukTacti
   };
 }
 
+function getTemporalHonggukRhythm(now: Date) {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  const hour = kst.getUTCHours();
+  const month = kst.getUTCMonth() + 1;
+
+  const palaceWatchWindow =
+    hour >= 5 && hour < 11
+      ? '아침 개문(開門)·생문(生門) 출두창 — 세효궁의 길문 방위를 향해 첫 행보를 여는 시간'
+      : hour >= 11 && hour < 17
+        ? '정오 응효(應爻) 교섭창 — 상대·시장과 오행 생극을 조율하며 실무 합의를 이끄는 시간'
+        : hour >= 17 && hour < 22
+          ? '황혼 휴문(休門) 수렴창 — 무리한 확장 대신 통기(通氣)를 돌보며 하루를 정돈하는 시간'
+          : '심야 중궁(中宮) 관조창 — 천지반 포국의 본질을 돌아보며 다음 판을 설계하는 시간';
+
+  const seasonalQimenTone =
+    month >= 3 && month <= 5
+      ? '봄 · 진손(木) 발동절 (동쪽·남동쪽 목기 통기가 살아나는 시기)'
+      : month >= 6 && month <= 8
+        ? '여름 · 리궁(火) 현현절 (문서·명예·결실의 화기가 빛나는 시기)'
+        : month >= 9 && month <= 11
+          ? '가을 · 건태(金) 결단절 (개문의 결단과 정리정돈이 힘을 발휘하는 시기)'
+          : '겨울 · 감궁(水) 축적절 (휴문의 지혜로 내실을 다지고 자원을 비축하는 시기)';
+
+  return {
+    kstTimeLabel: `${y}-${m}-${d} ${hh}:${mm} KST`,
+    palaceWatchWindow,
+    seasonalQimenTone,
+    temporalGuidance: `${palaceWatchWindow} · ${seasonalQimenTone}의 결에 맞추어 포국의 문을 여십시오.`,
+  };
+}
+
 /**
  * 조선 정통 홍국기문 4주 9궁 수리 포국 결정론적 계산 함수
  * (동일한 생년월일시 입력 → 항상 100% 동일한 포국·거점·삼형·통기 판정 산출)
@@ -394,7 +448,11 @@ function calculateTacticalSeasonWindows(seYaoPalaceNumber: number): HonggukTacti
 export function calculateHonggukQimen(params: {
   profile?: UserProfile | null;
   targetYear?: number;
+  now?: Date;
+  question?: string;
 }): HonggukQimenResult {
+  const now = params.now || new Date();
+  const question = (params.question || '').trim();
   const birthdateStr = params.profile?.basic?.birthdate?.trim() || '';
   if (!birthdateStr) {
     return {
@@ -603,10 +661,32 @@ export function calculateHonggukQimen(params: {
     const allGans = numerals.map((n) => n.gan);
     const threeWondersAlliance = calculateThreeWondersAlliance(allGans);
     const tacticalSeasonWindows = calculateTacticalSeasonWindows(seYao.palace);
+    const temporalHonggukRhythm = getTemporalHonggukRhythm(now);
+
+    const situationalHonggukAudit = /계약|사업|투자|결정/.test(question)
+      ? {
+          focusTheme: `세효(${seYao.palaceName}) · ${verdict.pattern} 결단 감사`,
+          gateNote: summary,
+          tacticalStep: advice,
+        }
+      : {
+          focusTheme: `${seYao.palaceName} ⇄ ${eungYao.palaceName} 포국 흐름`,
+          gateNote: heavenEarthResonance.overallBalance,
+          tacticalStep: tacticalSeasonWindows.strategicPacingAdvice,
+        };
+
+    const honggukSynthesisMatrix = {
+      coreInsight: `[${pattern}] 세효(${seYao.palaceName})의 ${seYao.gate || '무문'}과 ${threeWondersAlliance.wondersDetected.length ? threeWondersAlliance.wondersDetected.join('·') : '기본'} 기운이 맞물립니다.`,
+      recommendedAction: `${tacticalSeasonWindows.peakActionSeason} 흐름에 맞추어 ${advice.slice(0, 48)}`,
+      cautionNotice: formedType
+        ? `${formedType} 형살의 균열을 방지하기 위해 문서·절차 증빙을 철저히 하십시오.`
+        : '길문 방위라도 통기 순환이 끊긴 오행을 보완해야 길함이 온전해집니다.',
+    };
 
     return {
       status: 'calculated',
       engineVersion: HONGGUK_QIMEN_ENGINE_VERSION,
+      calculatedAtKst: temporalHonggukRhythm.kstTimeLabel,
       method: HONGGUK_QIMEN_METHOD,
       targetYear: params.targetYear,
       fourPillars: {
@@ -647,6 +727,10 @@ export function calculateHonggukQimen(params: {
       heavenEarthResonance,
       threeWondersAlliance,
       tacticalSeasonWindows,
+      situationalHonggukAudit,
+      temporalHonggukRhythm,
+      honggukSynthesisMatrix,
+      boundaryNotice: '본 결과는 조선 정통 홍국기문 9궁 수리 포국과 8문 법칙에 기반한 정성적 전략 가이드이며, 확정적 예언이 아닙니다.',
       note: timeNote || undefined,
     };
   } catch (err: any) {
@@ -675,8 +759,18 @@ export function formatHonggukQimenPrompt(result: HonggukQimenResult): string {
   const tg = result.tonggi!;
   const verdict = result.eightGatesVerdict!;
 
+  const riskTone = sh.riskIndex >= 70 ? '고위험 경계' : sh.riskIndex >= 40 ? '잠재 주의' : '평온 안정';
+  const tonggiTone = tg.score >= 80 ? '완숙 유통' : tg.score >= 40 ? '부분 유통' : '정체 보완 필요';
+  const wondersTone = result.threeWondersAlliance
+    ? result.threeWondersAlliance.wondersEmpowermentIndex >= 80
+      ? '강한 귀인 원조'
+      : result.threeWondersAlliance.wondersEmpowermentIndex >= 60
+        ? '안정적 조력'
+        : '자력 돌파 중심'
+    : '';
+
   return `[☯️ 조선 정통 홍국기문 4주 9궁 수리 포국 (결정론 엔진 ${HONGGUK_QIMEN_ENGINE_VERSION})]
-산법: ${result.method}
+${result.calculatedAtKst ? `연산 시각: ${result.calculatedAtKst}\n` : ''}산법: ${result.method}
 원국 4주: ${result.fourPillars!.year}년 ${result.fourPillars!.month}월 ${result.fourPillars!.day}일 ${result.fourPillars!.hour ? result.fourPillars!.hour + '시' : '(생시 미입력)'} ${result.note ? '· ' + result.note : ''}
 4주 수리: ${(result.numerals || []).map((n) => `${n.pillar} ${n.gan}${n.zhi} (천간 ${n.ganNumber}→궁${n.ganPalace}, 지지 ${n.zhiNumber}→궁${n.zhiPalace})`).join(' | ')}
 지반수 중궁: ${result.earthCenterNumber} · 천반수 중궁: ${result.heavenCenterNumber} (중궁 기점 건→태→간→리→감→곤→진→손 역행 비행 배열)
@@ -692,24 +786,28 @@ ${board}
 ${relations}
 
 [삼형(三刑) 진단]
-- 형성: ${sh.type || '미성립'} (성립 ${sh.formed ? '예' : '아니오'} / 잠재 형 ${sh.partial ? '있음' : '없음'}) · 파극 위험도 ${sh.riskIndex}/100
-- 판정: ${sh.note}
+- 형성: ${sh.type || '미성립'} (성립 ${sh.formed ? '예' : '아니오'} / 잠재 형 ${sh.partial ? '있음' : '없음'}) · 파극 위험도 [${riskTone}]
+- 판정: ${sh.note.replace(/\d+점/g, riskTone)}
 
-[통기(通氣) — 오행 상생 순환 완성도 ${tg.score}/100]
+[통기(通氣) — 오행 상생 순환 ${tonggiTone}]
 - 유통 간선: ${tg.activeCycles.length ? tg.activeCycles.join(' → ') + ' → (순환)' : '없음 (정체)'}
 - 결손 간선: ${tg.missingCycles.length ? tg.missingCycles.join('·') : '없음 (완숙)'}
 - 오행 분포: 목${tg.elementCounts['목']} 화${tg.elementCounts['화']} 토${tg.elementCounts['토']} 금${tg.elementCounts['금']} 수${tg.elementCounts['수']}
-- 판정: ${tg.note}
+- 판정: ${tg.note.replace(/\(\d+점\)/g, `(${tonggiTone})`)}
 
 [8문 길흉 격국]
 - 세효 입문: ${verdict.seYaoGate || '무문(중궁 기궁)'} · 득문(得門) ${verdict.deukMun ? '성립' : '미성립'}
 - 격국: ${verdict.pattern}
-- 총평: ${verdict.summary}
+- 총평: ${verdict.summary.replace(/\d+점/g, '').replace(/\s{2,}/g, ' ')}
 - 처방: ${verdict.advice}
 
 ${result.heavenEarthResonance ? `[천지반 홍국수 생극 공명]\n- ${result.heavenEarthResonance.overallBalance}\n  * 해석: ${result.heavenEarthResonance.seYaoResonance.interpretation}` : ''}
-${result.threeWondersAlliance ? `[삼기(三奇) 득기 회합]\n- 감지된 삼기: ${result.threeWondersAlliance.wondersDetected.length ? result.threeWondersAlliance.wondersDetected.join(' · ') : '없음'} · 원조력 ${result.threeWondersAlliance.wondersEmpowermentIndex}/100\n  * 귀인 조력: ${result.threeWondersAlliance.nobleSponsorship}` : ''}
+${result.threeWondersAlliance ? `[삼기(三奇) 득기 회합]\n- 감지된 삼기: ${result.threeWondersAlliance.wondersDetected.length ? result.threeWondersAlliance.wondersDetected.join(' · ') : '없음'} · 원조 흐름 [${wondersTone}]\n  * 귀인 조력: ${result.threeWondersAlliance.nobleSponsorship}` : ''}
 ${result.tacticalSeasonWindows ? `[4계절 거시 결단 윈도우]\n- 최적 추진기: ${result.tacticalSeasonWindows.peakActionSeason} · 내실 수성기: ${result.tacticalSeasonWindows.defensiveSeason}\n  * 전술 가이드: ${result.tacticalSeasonWindows.strategicPacingAdvice}` : ''}
+${result.situationalHonggukAudit ? `[질문 맥락 감사]\n- ${result.situationalHonggukAudit.focusTheme}: ${result.situationalHonggukAudit.tacticalStep}` : ''}
+${result.temporalHonggukRhythm ? `[KST 시공간 기문 리듬]\n- ${result.temporalHonggukRhythm.palaceWatchWindow} / ${result.temporalHonggukRhythm.seasonalQimenTone}\n  * 시공간 지침: ${result.temporalHonggukRhythm.temporalGuidance}` : ''}
+${result.honggukSynthesisMatrix ? `[홍국기문 교차 매트릭스]\n- 핵심(${result.honggukSynthesisMatrix.coreInsight}) | 실행(${result.honggukSynthesisMatrix.recommendedAction}) | 주의(${result.honggukSynthesisMatrix.cautionNotice})` : ''}
+${result.boundaryNotice ? `- 해석 경계: ${result.boundaryNotice}` : ''}
 
 위 포국은 사주 4주 간지의 하도·낙서 수리로 직접 계산한 고정 결과다. 궁위·문·삼형·통기를 임의로 바꾸어 말하지 말고, 세효(사용자)를 주체로 응효(상대·환경)와 대비해 해석하라. 상대 프로필이 별도로 있어도 이 포국의 응효는 사용자 원국의 상대 자리임을 유지하라.`;
 }
