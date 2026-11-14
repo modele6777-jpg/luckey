@@ -3,12 +3,12 @@
  *
  * 20세기 정치철학자 한나 아렌트(Hannah Arendt, 1906~1975)의 주저 《인간의 조건(The Human Condition, 1958)》, 《예루살렘의 아이히만》, 《정신의 삶》 원전 기반의 정성적 성찰 엔진.
  *
- * @version LUCKEY-HANNAH-ARENDT-VITA-ACTIVA-v2.0.0
+ * @version LUCKEY-HANNAH-ARENDT-VITA-ACTIVA-v2.1.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const AMERICAN_GERMAN_HANNAH_ARENDT_VERSION = 'LUCKEY-HANNAH-ARENDT-VITA-ACTIVA-v2.0.0';
+export const AMERICAN_GERMAN_HANNAH_ARENDT_VERSION = 'LUCKEY-HANNAH-ARENDT-VITA-ACTIVA-v2.1.0';
 
 export type ArendtQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -315,6 +315,12 @@ export function calculateHannahArendtVitaActiva(
   };
 }
 
+function describeArendtStage(score: number): string {
+  if (score >= 90) return '충만·공적 개시(Initiating)';
+  if (score >= 82) return '명료·사유 각성(Awakened)';
+  return '성찰·다원 조율(Dialogic)';
+}
+
 export function formatHannahArendtVitaActivaPrompt(res: HannahArendtVitaActivaResult): string {
   return [
     `【한나 아렌트 《인간의 조건》 활동적 삶 & 탄생성 지표】`,
@@ -326,8 +332,8 @@ export function formatHannahArendtVitaActivaPrompt(res: HannahArendtVitaActivaRe
     `- 성찰 질문: ${res.reflectionFocus}`,
     `- 핵심 원전 경구: "${res.focalArendtAphorism.aphorismKo}"`,
     `- 원전 출처: "${res.focalArendtAphorism.aphorismEn}" [${res.focalArendtAphorism.sourceContext}]`,
-    `- KST 활동적 삶 리듬: ${res.temporalVitaActivaRhythm.kstWindow} (${res.temporalVitaActivaRhythm.vitaActivaFocus}, 명료도 ${res.temporalVitaActivaRhythm.natalityClarityIndex}/100) — ${res.temporalVitaActivaRhythm.rhythmDirective}`,
-    `- 아렌트 매트릭스: 탄생성 착수 ${res.arendtSynthesisMatrix.natalityInitiation} / 사유 양심 ${res.arendtSynthesisMatrix.reflectiveConscience} / 다원성 연대 ${res.arendtSynthesisMatrix.pluralitySolidarity} (종합 ${res.arendtSynthesisMatrix.overallSynthesis}/100)`,
+    `- KST 활동적 삶 리듬: ${res.temporalVitaActivaRhythm.kstWindow} (${res.temporalVitaActivaRhythm.vitaActivaFocus}, 흐름 ${describeArendtStage(res.temporalVitaActivaRhythm.natalityClarityIndex)}) — ${res.temporalVitaActivaRhythm.rhythmDirective}`,
+    `- 아렌트 매트릭스: 탄생성 착수(${describeArendtStage(res.arendtSynthesisMatrix.natalityInitiation)}) · 사유 양심(${describeArendtStage(res.arendtSynthesisMatrix.reflectiveConscience)}) · 다원성 연대(${describeArendtStage(res.arendtSynthesisMatrix.pluralitySolidarity)}) — 종합 결(${describeArendtStage(res.arendtSynthesisMatrix.overallSynthesis)})`,
     `- 조언 요약: ${res.counselNote}`,
     `- 해석 경계: ${res.boundaryNotice}`,
   ].join('\n');

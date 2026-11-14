@@ -3,12 +3,12 @@
  *
  * 미국 초월주의와 생태주의 사상가 헨리 데이비드 소로(Henry David Thoreau, 1817~1862)의 《월든(Walden, 1854)》과 《시민 불복종(Civil Disobedience, 1849)》 원전 기반의 정성적 성찰 엔진.
  *
- * @version LUCKEY-HENRY-DAVID-THOREAU-WALDEN-v2.0.0
+ * @version LUCKEY-HENRY-DAVID-THOREAU-WALDEN-v2.1.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const AMERICAN_HENRY_DAVID_THOREAU_VERSION = 'LUCKEY-HENRY-DAVID-THOREAU-WALDEN-v2.0.0';
+export const AMERICAN_HENRY_DAVID_THOREAU_VERSION = 'LUCKEY-HENRY-DAVID-THOREAU-WALDEN-v2.1.0';
 
 export type ThoreauQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -315,6 +315,12 @@ export function calculateHenryDavidThoreauWalden(
   };
 }
 
+function describeThoreauStage(score: number): string {
+  if (score >= 90) return '충만·맑은 본질(Liminal Clarity)';
+  if (score >= 82) return '단순·깨어있는 자립(Awakened)';
+  return '고요·호수 성찰(Contemplative)';
+}
+
 export function formatHenryDavidThoreauWaldenPrompt(res: HenryDavidThoreauWaldenResult): string {
   return [
     `【헨리 데이비드 소로 《월든》 단순함 & 양심 지표】`,
@@ -326,8 +332,8 @@ export function formatHenryDavidThoreauWaldenPrompt(res: HenryDavidThoreauWalden
     `- 성찰 질문: ${res.reflectionFocus}`,
     `- 핵심 원전 경구: "${res.focalThoreauAphorism.aphorismKo}"`,
     `- 원전 출처: "${res.focalThoreauAphorism.aphorismEn}" [${res.focalThoreauAphorism.sourceContext}]`,
-    `- KST 월든 리듬: ${res.temporalWaldenRhythm.kstWindow} (${res.temporalWaldenRhythm.waldenFocus}, 명료도 ${res.temporalWaldenRhythm.waldenClarityIndex}/100) — ${res.temporalWaldenRhythm.rhythmDirective}`,
-    `- 월든 매트릭스: 본질 단순성 ${res.thoreauSynthesisMatrix.essentialSimplicity} / 깨어난 자립 ${res.thoreauSynthesisMatrix.awakenedAutonomy} / 자연 회복력 ${res.thoreauSynthesisMatrix.natureResilience} (종합 ${res.thoreauSynthesisMatrix.overallSynthesis}/100)`,
+    `- KST 월든 리듬: ${res.temporalWaldenRhythm.kstWindow} (${res.temporalWaldenRhythm.waldenFocus}, 흐름 ${describeThoreauStage(res.temporalWaldenRhythm.waldenClarityIndex)}) — ${res.temporalWaldenRhythm.rhythmDirective}`,
+    `- 월든 매트릭스: 본질 단순성(${describeThoreauStage(res.thoreauSynthesisMatrix.essentialSimplicity)}) · 깨어난 자립(${describeThoreauStage(res.thoreauSynthesisMatrix.awakenedAutonomy)}) · 자연 회복력(${describeThoreauStage(res.thoreauSynthesisMatrix.natureResilience)}) — 종합 결(${describeThoreauStage(res.thoreauSynthesisMatrix.overallSynthesis)})`,
     `- 조언 요약: ${res.counselNote}`,
     `- 해석 경계: ${res.boundaryNotice}`,
   ].join('\n');
