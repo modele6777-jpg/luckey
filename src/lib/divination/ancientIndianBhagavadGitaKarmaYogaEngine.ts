@@ -7,12 +7,12 @@
  * 3. 사마트밤(Samatvam): "성공과 실패, 승리와 패배를 동등하게 바라보며 중심을 잃지 않는 것, 그것을 요가(Yoga)라 부른다."
  * 4. 요가스타 쿠루 카르마니(Yogasthah kuru karmani): "집착을 끊고 신성한 자아에 굳건히 서서 행위하라."
  *
- * @version LUCKEY-BHAGAVAD-GITA-KARMA-YOGA-v1.0.0
+ * @version LUCKEY-BHAGAVAD-GITA-KARMA-YOGA-v2.0.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const BHAGAVAD_GITA_KARMA_YOGA_VERSION = 'LUCKEY-BHAGAVAD-GITA-KARMA-YOGA-v1.0.0';
+export const BHAGAVAD_GITA_KARMA_YOGA_VERSION = 'LUCKEY-BHAGAVAD-GITA-KARMA-YOGA-v2.0.0';
 
 export interface GitaStage {
   stageLevel: number;
@@ -20,6 +20,30 @@ export interface GitaStage {
   stageNameKo: string;
   spiritualCore: string;
   karmaActionBlessing: string;
+}
+
+export interface GitaSituationalKarmaAudit {
+  themeKo: string;
+  chapterVerse: string;
+  sanskritQuote: string;
+  translationKo: string;
+  attachmentTrap: string;
+  nishkamaActionStep: string;
+}
+
+export interface GitaTemporalGunaRhythm {
+  kstWindow: string;
+  seasonalTone: string;
+  dominantGuna: 'Sattva (조화·맑음)' | 'Rajas (역동·추진)' | 'Tamas (안정·침잠)';
+  sattvaEquanimityIndex: number;
+  rhythmDirective: string;
+}
+
+export interface GitaKarmaYogaMatrix {
+  detachmentMastery: number;
+  swadharmaClarity: number;
+  samatvamResilience: number;
+  overallSynthesis: number;
 }
 
 export interface BhagavadGitaKarmaYogaResult {
@@ -39,6 +63,9 @@ export interface BhagavadGitaKarmaYogaResult {
     coreEssence: string;
     actionableDirective: string;
   };
+  situationalKarmaAudit: GitaSituationalKarmaAudit;
+  temporalGunaRhythm: GitaTemporalGunaRhythm;
+  karmaYogaMatrix: GitaKarmaYogaMatrix;
   karmaYogaPhilosophicalCounsel: {
     counselTitle: string;
     philosophicalGuidance: string;
@@ -112,7 +139,114 @@ const GITA_SUTRAS = [
   },
 ];
 
-export function calculateBhagavadGitaKarmaYoga(profile: UserProfile): BhagavadGitaKarmaYogaResult {
+function buildSituationalKarmaAudit(question?: string): GitaSituationalKarmaAudit {
+  const q = (question ?? '').trim();
+  if (/결과|성공|보상|돈|성과|합격|불안/.test(q)) {
+    return {
+      themeKo: '결과의 열매 내려놓기 (Nishkama Karma)',
+      chapterVerse: '《바가바드 기타》 2장 47절',
+      sanskritQuote: 'Karmany evadhikaras te ma phaleshu kadachana',
+      translationKo: '그대에게 권리가 있는 것은 오직 행위 자체뿐이며, 그 결과의 열매에는 결코 권리가 없다.',
+      attachmentTrap: '아직 손에 오지 않은 보상을 먼저 계산하느라 지금 이 순간의 집중력을 잃어버리는 조바심.',
+      nishkamaActionStep: '성과 지표를 잠시 가려 두고, 오늘 내가 맑은 마음으로 완수할 수 있는 작업 1단위에만 온전히 몰입하십시오.',
+    };
+  }
+  if (/비교|진로|적성|길|선택|이직|본분/.test(q)) {
+    return {
+      themeKo: '자기 본분 수호 (Swadharma)',
+      chapterVerse: '《바가바드 기타》 3장 35절',
+      sanskritQuote: 'Shreyan sva-dharmo vigunah para-dharmat sv-anushthitat',
+      translationKo: '남의 길을 완벽하게 흉내 내는 것보다 서툴더라도 자신의 본분(Swadharma)을 걷는 것이 훨씬 수승하다.',
+      attachmentTrap: '타인의 화려한 속도와 궤도를 부러워하며 내 고유한 기질과 소명을 저버리는 비교의 함정.',
+      nishkamaActionStep: '남의 기준이 아닌, 내가 가장 정직하게 책임을 질 수 있는 고유한 역할 한 가지를 중심축으로 세우십시오.',
+    };
+  }
+  if (/실패|포기|좌절|두려움|상처|잃/.test(q)) {
+    return {
+      themeKo: '성패 초월의 평정심 (Samatvam)',
+      chapterVerse: '《바가바드 기타》 2장 48절',
+      sanskritQuote: 'Siddhy-asiddhyoh samo bhutva samatvam yoga ucyate',
+      translationKo: '성취와 불성취를 동등하게 바라보며 중심을 잃지 않는 평정심, 바로 그것이 요가다.',
+      attachmentTrap: '일시적 좌절을 존재 전체의 패배로 동일시해 아예 행동 자체를 멈춰 버리는 위축.',
+      nishkamaActionStep: '지금 겪은 실패를 영혼의 훼손이 아닌 데이터로만 받아들이고, 작고 단순한 다음 실행 1건을 다시 여십시오.',
+    };
+  }
+  if (/관계|의무|갈등|가족|사람|책임/.test(q)) {
+    return {
+      themeKo: '자비와 비집착의 조화 (Loka-sangraha)',
+      chapterVerse: '《바가바드 기타》 3장 20절 · 12장 13절',
+      sanskritQuote: 'Adveshta sarva-bhutanam maitrah karuna eva cha',
+      translationKo: '어느 존재도 미워하지 않고 벗처럼 자애로우며, 집착과 아집에서 벗어난 자가 참으로 성숙하다.',
+      attachmentTrap: '상대를 내 뜻대로 바꾸려 하거나 감사받기 위해 베풀다가 서운함에 빠지는 조건부 의무감.',
+      nishkamaActionStep: '대가나 즉각적 인정을 바라지 않고 내가 건넬 수 있는 정갈한 친절과 경계만 묵묵히 실행하십시오.',
+    };
+  }
+  return {
+    themeKo: '마음의 요동 정화와 흔들리지 않는 실행 (Yogastha)',
+    chapterVerse: '《바가바드 기타》 6장 35절 · 18장 66절',
+    sanskritQuote: 'Abhyasena tu kaunteya vairagyena cha grihyate',
+    translationKo: '방황하는 마음도 꾸준한 수련(Abhyasa)과 집착 내려놓기(Vairagya)로써 고요히 다스릴 수 있다.',
+    attachmentTrap: '결과와 타인의 반응을 한꺼번에 통제하려는 마음의 과부하.',
+    nishkamaActionStep: '깊게 세 번 호흡한 뒤, 걱정 목록 중 오늘 내 손으로 봉헌하듯 끝낼 수 있는 일 한 가지만 바로 착수하십시오.',
+  };
+}
+
+function buildTemporalGunaRhythm(now?: Date): GitaTemporalGunaRhythm {
+  const ref = now ?? new Date();
+  const kst = new Date(ref.getTime() + 9 * 60 * 60 * 1000);
+  const hour = kst.getUTCHours();
+  const month = kst.getUTCMonth() + 1;
+
+  const seasonalTone =
+    month >= 3 && month <= 5
+      ? '봄 — 라자스(Rajas)의 발아 에너지를 스와다르마 실행으로 이끄는 계절'
+      : month >= 6 && month <= 8
+        ? '여름 — 열정 속에서도 사마트밤(Samatvam) 평정심을 잃지 않는 계절'
+        : month >= 9 && month <= 11
+          ? '가을 — 열매에 대한 집착을 비우고 사트바(Sattva) 명료도를 거두는 계절'
+          : '겨울 — 내면의 아트만(Atman)을 응시하며 조용히 힘을 기르는 계절';
+
+  if (hour >= 4 && hour < 10) {
+    return {
+      kstWindow: '브라흐마 무후르타 · 오전 사트바(Sattva) 맑은 창',
+      seasonalTone,
+      dominantGuna: 'Sattva (조화·맑음)',
+      sattvaEquanimityIndex: 92,
+      rhythmDirective: '사트바 기운이 가장 맑은 시간입니다. 욕심 없이 오늘의 올바른 의도와 원칙을 세우십시오.',
+    };
+  }
+  if (hour >= 10 && hour < 17) {
+    return {
+      kstWindow: '한낮 라자스(Rajas) 역동 실행 창',
+      seasonalTone,
+      dominantGuna: 'Rajas (역동·추진)',
+      sattvaEquanimityIndex: 80,
+      rhythmDirective: '행동의 열기가 높은 낮입니다. 조급함만 걷어내면 강력한 카르마 요가의 추진력이 됩니다.',
+    };
+  }
+  if (hour >= 17 && hour < 21) {
+    return {
+      kstWindow: '저녁 카르마팔라(Karmaphala) 봉헌·정리 창',
+      seasonalTone,
+      dominantGuna: 'Sattva (조화·맑음)',
+      sattvaEquanimityIndex: 84,
+      rhythmDirective: '오늘 행한 일의 결과를 내 손에서 내려놓고 마음의 평정을 회복하기 좋은 시간입니다.',
+    };
+  }
+  return {
+    kstWindow: '심야 타마스(Tamas) 침잠·휴식 창',
+    seasonalTone,
+    dominantGuna: 'Tamas (안정·침잠)',
+    sattvaEquanimityIndex: 74,
+    rhythmDirective: '무거운 상념이 찾아오기 쉬운 밤입니다. 해결하려는 애씀을 멈추고 내일을 위해 고요히 내려놓으십시오.',
+  };
+}
+
+export function calculateBhagavadGitaKarmaYoga(
+  profile: UserProfile,
+  question?: string,
+  now?: Date,
+): BhagavadGitaKarmaYogaResult {
   const seedString = (profile?.basic?.birthdate ?? (profile as any)?.birthdate ?? '1990-01-01') +
     (profile?.basic?.name ?? (profile as any)?.name ?? 'User') +
     (profile?.basic?.birthtime ?? (profile as any)?.birthtime ?? '12:00') +
@@ -136,6 +270,20 @@ export function calculateBhagavadGitaKarmaYoga(profile: UserProfile): BhagavadGi
 
   const activeGitaStage = GITA_STAGES[stageIndex];
   const primaryGitaSutra = GITA_SUTRAS[sutraIndex];
+  const situationalKarmaAudit = buildSituationalKarmaAudit(question);
+  const temporalGunaRhythm = buildTemporalGunaRhythm(now);
+
+  const detachmentMastery = Math.min(99, Math.round((nishkamaKarmaDetachmentScore + karmaphalaRenunciation) / 2));
+  const swadharmaClarity = Math.min(99, Math.round((swadharmaCallingAlignment + yogasthaSteadfastness) / 2));
+  const samatvamResilience = Math.min(99, Math.round((samatvamEquanimityIndex + temporalGunaRhythm.sattvaEquanimityIndex) / 2));
+  const overallSynthesis = Math.round((detachmentMastery + swadharmaClarity + samatvamResilience) / 3);
+
+  const karmaYogaMatrix: GitaKarmaYogaMatrix = {
+    detachmentMastery,
+    swadharmaClarity,
+    samatvamResilience,
+    overallSynthesis,
+  };
 
   const counselTitle = `바가바드 기타 카르마 요가: ${activeGitaStage.sanskritStage}`;
   const philosophicalGuidance = `현재 마주한 과제에서 가장 중요한 열쇠는 '결과에 대한 집착을 내려놓는 것(Nishkama Karma)'입니다. ` +
@@ -144,7 +292,7 @@ export function calculateBhagavadGitaKarmaYoga(profile: UserProfile): BhagavadGi
 
   return {
     engineVersion: BHAGAVAD_GITA_KARMA_YOGA_VERSION,
-    calculatedAtKst: new Date().toISOString(),
+    calculatedAtKst: (now ?? new Date()).toISOString(),
     nishkamaKarmaDetachmentScore,
     swadharmaCallingAlignment,
     samatvamEquanimityIndex,
@@ -152,6 +300,9 @@ export function calculateBhagavadGitaKarmaYoga(profile: UserProfile): BhagavadGi
     karmaphalaRenunciation,
     activeGitaStage,
     primaryGitaSutra,
+    situationalKarmaAudit,
+    temporalGunaRhythm,
+    karmaYogaMatrix,
     karmaYogaPhilosophicalCounsel: {
       counselTitle,
       philosophicalGuidance,
@@ -168,9 +319,11 @@ export function formatBhagavadGitaKarmaYogaPrompt(res: BhagavadGitaKarmaYogaResu
     `- 요가스타(Yogastha) 확고한 몰입도: ${res.yogasthaSteadfastness}/100`,
     `- 카르마팔라(Karmaphala) 결과 집착 포기 자유도: ${res.karmaphalaRenunciation}/100`,
     `- 현재 영적 행위 단계: ${res.activeGitaStage.sanskritStage} (${res.activeGitaStage.stageNameKo})`,
-    `- 핵심 영적 가르침: ${res.activeGitaStage.spiritualCore}`,
-    `- 바가바드 기타 경구: "${res.primaryGitaSutra.themeKo}" [${res.primaryGitaSutra.sanskritSloka}]`,
-    `- 실천적 조언: ${res.primaryGitaSutra.actionableDirective}`,
+    `- 질문 맥락 카르마 처방 (${res.situationalKarmaAudit.themeKo} · ${res.situationalKarmaAudit.chapterVerse}): "${res.situationalKarmaAudit.translationKo}" [${res.situationalKarmaAudit.sanskritQuote}]`,
+    `- 집착 함정: ${res.situationalKarmaAudit.attachmentTrap}`,
+    `- 니슈카마 실천 단계: ${res.situationalKarmaAudit.nishkamaActionStep}`,
+    `- KST 구나(Guna) 리듬: ${res.temporalGunaRhythm.kstWindow} (${res.temporalGunaRhythm.dominantGuna}, 사트바 평정 ${res.temporalGunaRhythm.sattvaEquanimityIndex}/100) — ${res.temporalGunaRhythm.rhythmDirective}`,
+    `- 카르마 요가 매트릭스: 무집착 숙련 ${res.karmaYogaMatrix.detachmentMastery} / 본분 명료도 ${res.karmaYogaMatrix.swadharmaClarity} / 평정 회복력 ${res.karmaYogaMatrix.samatvamResilience} (종합 ${res.karmaYogaMatrix.overallSynthesis}/100)`,
     `- 철학적 처방: ${res.karmaYogaPhilosophicalCounsel.philosophicalGuidance}`,
   ].join('\n');
 }

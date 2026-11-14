@@ -1,4 +1,4 @@
-// v1.7.428: Deepen Socratic Maieutic, Aristotle Mesotes, and Confucius Analects engines with qualitative synthesis
+// v1.7.430: Deepen Plato Idea Cave, Epictetus Dichotomy of Control, and Bhagavad Gita Karma Yoga engines
 import { getLucyRequestFallbacks, requestWithModelFallback } from '../src/lib/lucyModelPolicy.ts';
 import "dotenv/config";
 import express from "express";
