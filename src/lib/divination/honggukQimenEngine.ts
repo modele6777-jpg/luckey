@@ -665,7 +665,7 @@ export function calculateHonggukQimen(params: {
 
     const situationalHonggukAudit = /계약|사업|투자|결정/.test(question)
       ? {
-          focusTheme: `세효(${seYao.palaceName}) · ${verdict.pattern} 결단 감사`,
+          focusTheme: `세효(${seYao.palaceName}) · ${pattern} 결단 감사`,
           gateNote: summary,
           tacticalStep: advice,
         }
