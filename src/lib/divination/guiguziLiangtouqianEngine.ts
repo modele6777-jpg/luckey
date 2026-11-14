@@ -26,7 +26,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const GUIGUZI_VERSION = 'LUCKEY-GUIGUZI-LIANGTOUQIAN-v1.0.0';
+export const GUIGUZI_VERSION = 'LUCKEY-GUIGUZI-LIANGTOUQIAN-v2.0.0';
 
 export interface GuiguziGuaStructure {
   yearStem: string;      // 년간 (선천 천명)
@@ -70,11 +70,29 @@ export interface StrategicDecisionMatrix {
 export interface GuiguziLiangtouqianReport {
   engineVersion: string;
   calculatedAt: string;
+  calculatedAtKst: string;
   guaStructure: GuiguziGuaStructure;
   poetry: ThreePhasesPoetry;
   strategy: StrategicDecisionMatrix;
-  strategicClarityScore: number; // 0 ~ 100 결단 명료도
+  situationalGuiguziAudit: {
+    focusTheme: string;
+    tacticalBalanceNote: string;
+    diplomacyFocus: string;
+  };
+  temporalGuiguziRhythm: {
+    kstTimeLabel: string;
+    zonghengWatchWindow: string;
+    seasonalCampaignTone: string;
+    temporalGuidance: string;
+  };
+  guiguziSynthesisMatrix: {
+    coreInsight: string;
+    recommendedAction: string;
+    cautionNotice: string;
+  };
+  strategicClarityScore: number; // 0 ~ 100 결단 명료도 (내부 호환용, 프롬프트 비노출)
   synthesisMessage: string;
+  boundaryNotice: string;
 }
 
 const HEAVENLY_STEMS = ['甲', '乙', '丙', '丁', '戊', '己', '庚', '辛', '壬', '癸'];
@@ -96,6 +114,42 @@ function stringHash(str: string): number {
     hash |= 0;
   }
   return Math.abs(hash);
+}
+
+function getTemporalGuiguziRhythm(now: Date) {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  const hour = kst.getUTCHours();
+  const month = kst.getUTCMonth() + 1;
+
+  const zonghengWatchWindow =
+    hour >= 5 && hour < 11
+      ? '귀곡(鬼谷) 아침 모책창 — 판세를 조용히 읽고 오늘의 우선순위를 가르는 시간'
+      : hour >= 11 && hour < 17
+        ? '합종연횡 정오 교섭창 — 명분과 실리를 맞물려 핵심 협상과 결단을 내리는 시간'
+        : hour >= 17 && hour < 22
+          ? '양두(兩頭) 황혼 점검창 — 오늘의 진격과 수비 결과를 복기하며 인맥을 다지는 시간'
+          : '은인자중 심야 비책창 — 불필요한 노출을 닫고 다음 국면의 수를 깊이 가다듬는 시간';
+
+  const seasonalCampaignTone =
+    month >= 3 && month <= 5
+      ? '봄 · 개국(開局) 포석기 (새 판을 짜고 동맹을 탐색하는 시기)'
+      : month >= 6 && month <= 8
+        ? '여름 · 승풍(乘風) 진격기 (모멘텀을 타고 주도권을 넓히는 시기)'
+        : month >= 9 && month <= 11
+          ? '가을 · 수렴(收斂) 결실기 (실속을 추리고 조건을 명문화하는 시기)'
+          : '겨울 · 축력(蓄力) 수비기 (내실을 다지며 결정적 호기를 기다리는 시기)';
+
+  return {
+    kstTimeLabel: `${y}-${m}-${d} ${hh}:${mm} KST`,
+    zonghengWatchWindow,
+    seasonalCampaignTone,
+    temporalGuidance: `${zonghengWatchWindow} · ${seasonalCampaignTone}의 흐름에 맞추어 진격과 수비의 균형을 조율하십시오.`,
+  };
 }
 
 export function calculateGuiguziLiangtouqian(params: {
@@ -245,21 +299,59 @@ export function calculateGuiguziLiangtouqian(params: {
 
   const strategicClarityScore = 70 + (seed % 28); // 70 ~ 97
 
+  const temporalGuiguziRhythm = getTemporalGuiguziRhythm(now);
+  const situationalGuiguziAudit = /협상|계약|동업|관계|인맥|사람/.test(context)
+    ? {
+        focusTheme: '합종연횡(合縱連橫)의 명분과 실리 균형',
+        tacticalBalanceNote: '상대의 필요를 먼저 읽어 윈-윈 구조를 제시하되 핵심 조건은 문서로 못 박으십시오.',
+        diplomacyFocus: strategy.alliedNetworkAdvice,
+      }
+    : /결정|이직|사업|투자|진로|승부/.test(context)
+      ? {
+          focusTheme: '선천 년간과 후천 시간의 양두(兩頭) 결단',
+          tacticalBalanceNote: `${strategy.tacticalLabel} 기조 아래 무리한 과욕을 피하고 확실한 승부처에만 힘을 모으십시오.`,
+          diplomacyFocus: strategy.crisisAversionKey,
+        }
+      : {
+          focusTheme: '3대 국면(기반·행장·결말)의 흐름과 내실 관리',
+          tacticalBalanceNote: `${destinyStar.starName}의 강점을 살리면서 수비와 진격의 완급을 조절하십시오.`,
+          diplomacyFocus: strategy.alliedNetworkAdvice,
+        };
+
+  const guiguziSynthesisMatrix = {
+    coreInsight: `[${guaStructure.yearStem}年 ${guaStructure.hourStem}時 · ${guaStructure.patternName}]와 수호성 [${destinyStar.starName}]가 ${situationalGuiguziAudit.focusTheme}을 비춥니다.`,
+    recommendedAction: `${strategy.tacticalLabel} — ${strategy.alliedNetworkAdvice}`,
+    cautionNotice: strategy.crisisAversionKey,
+  };
+
   const synthesisMessage = `귀곡자 양두겸 분석 결과, 당신의 선천 천명과 후천 귀결은 [${guaStructure.yearStem}年 ${guaStructure.hourStem}時 / ${guaStructure.patternName}]에 해당합니다. 수호성 [${destinyStar.starName}]의 기운을 받아 지금은 [${strategy.tacticalLabel}]의 전술을 펼칠 때이며, "${strategy.crisisAversionKey}"를 명심할 때 필승의 활로가 열립니다.`;
 
   return {
     engineVersion: GUIGUZI_VERSION,
     calculatedAt: now.toISOString(),
+    calculatedAtKst: temporalGuiguziRhythm.kstTimeLabel,
     guaStructure,
     poetry,
     strategy,
+    situationalGuiguziAudit,
+    temporalGuiguziRhythm,
+    guiguziSynthesisMatrix,
     strategicClarityScore,
     synthesisMessage,
+    boundaryNotice: '본 결과는 《귀곡선생양두겸》의 고전 명리·전략 상징 체계에 기반한 정성적 성찰 안내이며, 확정적 승패 판정이 아닙니다.',
   };
 }
 
 export function formatGuiguziLiangtouqianPrompt(report: GuiguziLiangtouqianReport): string {
+  const stanceTone =
+    report.strategy.patienceVsActionRatio.actionPercentage > report.strategy.patienceVsActionRatio.patiencePercentage
+      ? '결단·진격 우위(선제적 움직임과 주도권 확보)'
+      : report.strategy.patienceVsActionRatio.patiencePercentage > report.strategy.patienceVsActionRatio.actionPercentage
+        ? '인내·수비 우위(내실 비축과 신중한 관망)'
+        : '진격·수비 균형(상황에 따른 유연한 합종연횡)';
+
   return `### 📜 고대 중국 귀곡자(鬼谷子) 양구령 72변화 명리 결단 엔진 (${GUIGUZI_VERSION})
+- **연산 시각**: ${report.calculatedAtKst}
 - **양두(兩頭) 구조 및 괘명**: [년간 ${report.guaStructure.yearStem} / 시간 ${report.guaStructure.hourStem}] ➔ **${report.guaStructure.patternName}** (${report.guaStructure.destinyGrade})
 - **주재 선천 성수**: ${report.guaStructure.destinyStar.starName} [${report.guaStructure.destinyStar.koreanTitle}]
   - 영향 영역: ${report.guaStructure.destinyStar.influenceArea}
@@ -269,8 +361,13 @@ export function formatGuiguziLiangtouqianPrompt(report: GuiguziLiangtouqianRepor
   - 행장국 (중년/처세): "${report.poetry.journeyPhase.verseLine}" ➔ ${report.poetry.journeyPhase.modernInterpretation}
   - 결말국 (만년/결실): "${report.poetry.culminationPhase.verseLine}" ➔ ${report.poetry.culminationPhase.modernInterpretation}
 - **종횡가 전략 결단 나침반**:
-  - 권고 전술: **${report.strategy.tacticalLabel}** (결단 진격 ${report.strategy.patienceVsActionRatio.actionPercentage}% vs 인내 수비 ${report.strategy.patienceVsActionRatio.patiencePercentage}%)
+  - 권고 전술: **${report.strategy.tacticalLabel}** (${stanceTone})
   - 합종연횡 인맥: ${report.strategy.alliedNetworkAdvice}
-  - 위험 관리 핵심: ${report.strategy.crisisAversionKey} (결단 명료도: ${report.strategicClarityScore}점)
-- **귀곡자 통합 나침반**: ${report.synthesisMessage}`;
+  - 위험 관리 핵심: ${report.strategy.crisisAversionKey}
+- **질문 맥락 감사 (${report.situationalGuiguziAudit.focusTheme})**: ${report.situationalGuiguziAudit.tacticalBalanceNote}
+- **KST 시공간 종횡 리듬**: ${report.temporalGuiguziRhythm.zonghengWatchWindow} / ${report.temporalGuiguziRhythm.seasonalCampaignTone}
+  - 시공간 지침: ${report.temporalGuiguziRhythm.temporalGuidance}
+- **귀곡자 교차 매트릭스**: 핵심(${report.guiguziSynthesisMatrix.coreInsight}) | 실행(${report.guiguziSynthesisMatrix.recommendedAction}) | 주의(${report.guiguziSynthesisMatrix.cautionNotice})
+- **귀곡자 통합 나침반**: ${report.synthesisMessage}
+- **해석 경계**: ${report.boundaryNotice}`;
 }

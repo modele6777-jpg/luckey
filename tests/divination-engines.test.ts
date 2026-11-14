@@ -3006,15 +3006,20 @@ test('Hindu Tantric Kundalini & Nadi Awakening Engine: calculates nadis, chakras
 });
 
 test('Guiguzi Liangtouqian Decision Matrix Engine: calculates two heads gua, destiny star and strategic matrix', () => {
-  const rep = calculateGuiguziLiangtouqian({ profile });
+  const rep = calculateGuiguziLiangtouqian({ profile, contextText: '사업 협상과 결정', referenceDate: new Date('2026-11-15T07:05:00+09:00') });
   assert.equal(rep.engineVersion, GUIGUZI_VERSION);
   assert(rep.guaStructure.yearStem.length > 0 && rep.guaStructure.hourStem.length > 0);
   assert(rep.guaStructure.patternName.length > 0);
   assert(rep.strategy.tacticalLabel.length > 0);
   assert(rep.strategicClarityScore >= 0 && rep.strategicClarityScore <= 100);
+  assert(rep.calculatedAtKst.includes('KST'));
+  assert(rep.temporalGuiguziRhythm.zonghengWatchWindow.length > 0);
+  assert(rep.guiguziSynthesisMatrix.coreInsight.length > 0);
   const prompt = formatGuiguziLiangtouqianPrompt(rep);
   assert(prompt.includes('고대 중국 귀곡자(鬼谷子) 양구령 72변화 명리 결단 엔진'));
   assert(prompt.includes(rep.guaStructure.patternName));
+  assert(prompt.includes('KST'));
+  assert(!prompt.includes('/100') && !prompt.includes('%') && !prompt.includes('점수'));
 });
 
 test('Slavic Svarog Circle & Rod Ancestral Karma Engine: calculates svarog hall, rod karma blessing and elements', () => {
@@ -4094,7 +4099,7 @@ test('Hopi Four Worlds Kachina Prophecy Engine: calculates four worlds evolution
 });
 
 test('Donghak Cheondoism Cheonju Engine: calculates inner spirituality, cosmic resonance and gaebyeok index', () => {
-  const rep = calculateDonghakCheondoismCheonju(profile);
+  const rep = calculateDonghakCheondoismCheonju(profile, new Date('2026-11-15T07:05:00+09:00'), '관계와 마음의 중심');
   assert.equal(rep.engineVersion, DONGHAK_CHEONDOISM_VERSION);
   assert(rep.innerSpiritualityScore >= 0 && rep.innerSpiritualityScore <= 100);
   assert(rep.outerCosmicResonanceScore >= 0 && rep.outerCosmicResonanceScore <= 100);
@@ -4103,9 +4108,14 @@ test('Donghak Cheondoism Cheonju Engine: calculates inner spirituality, cosmic r
   assert(rep.gaebyeokTransformationIndex >= 0 && rep.gaebyeokTransformationIndex <= 100);
   assert(rep.mansajiOmniscientWisdomScore >= 0 && rep.mansajiOmniscientWisdomScore <= 100);
   assert(rep.primaryVirtue.titleKo.length > 0);
+  assert(rep.calculatedAtKst.includes('KST'));
+  assert(rep.temporalDonghakRhythm.yongdamWatchWindow.length > 0);
+  assert(rep.donghakSynthesisMatrix.coreInsight.length > 0);
   const prompt = formatDonghakCheondoismCheonjuPrompt(rep);
   assert(prompt.includes('동학 수운 최제우 시천주(侍天主) & 지기금지 인내천 천지조화'));
   assert(prompt.includes(rep.primaryVirtue.titleKo));
+  assert(prompt.includes('KST'));
+  assert(!prompt.includes('/100') && !prompt.includes('%') && !prompt.includes('점수'));
 });
 
 test('Inca Andean Three Pacha Ayni Engine: calculates three pachas, sacred reciprocity and totem medicine', () => {
@@ -4201,7 +4211,7 @@ test('Lakota Medicine Wheel Wakan Tanka Engine: calculates 4 sacred directions, 
 });
 
 test('Korean Gyeogam Yurok Prophecy Engine: calculates Gunggung Euleul, Haein three bounties and crisis resilience', () => {
-  const rep = calculateGyeogamYurokProphecy(profile);
+  const rep = calculateGyeogamYurokProphecy(profile, new Date('2026-11-15T07:05:00+09:00'), '위기와 마음의 중심');
   assert.equal(rep.engineVersion, GYEOGAM_YUROK_VERSION);
   assert(rep.gunggungEuleulSpiritualShieldScore >= 0 && rep.gunggungEuleulSpiritualShieldScore <= 100);
   assert(rep.haeinThreeBountiesGraceIndex >= 0 && rep.haeinThreeBountiesGraceIndex <= 100);
@@ -4211,9 +4221,14 @@ test('Korean Gyeogam Yurok Prophecy Engine: calculates Gunggung Euleul, Haein th
   assert(rep.sajungGusaengTransformationIndex >= 0 && rep.sajungGusaengTransformationIndex <= 100);
   assert(rep.primaryGyeogamChapter.titleKo.length > 0);
   assert(rep.haeinTalismanType.nameKo.length > 0);
+  assert(rep.calculatedAtKst.includes('KST'));
+  assert(rep.temporalGyeogamRhythm.sipseungWatchWindow.length > 0);
+  assert(rep.gyeogamSynthesisMatrix.coreInsight.length > 0);
   const prompt = formatGyeogamYurokProphecyPrompt(rep);
   assert(prompt.includes('조선 명종 격암 남사고 《격암유록(格菴遺錄)》 45편 비결 & 궁궁을을·해인 사중구생'));
   assert(prompt.includes(rep.primaryGyeogamChapter.titleKo));
+  assert(prompt.includes('KST'));
+  assert(!prompt.includes('/100') && !prompt.includes('%') && !prompt.includes('점수'));
 });
 
 test('Japanese Heian Onmyodo Seimei Engine: calculates 12 heavenly generals, Shikigami resonance and Seimei ward', () => {

@@ -21,12 +21,13 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const GYEOGAM_YUROK_VERSION = '1.0.0';
+export const GYEOGAM_YUROK_VERSION = '2.0.0';
 
 export interface GyeogamYurokReport {
   engineVersion: string;
   calculatedAt: string;
-  // 6대 격암 비결 지표 (0~100)
+  calculatedAtKst: string;
+  // 6대 격암 비결 지표 (내부 호환용 0~100, 프롬프트 비노출)
   gunggungEuleulSpiritualShieldScore: number; // 궁궁을을(弓弓乙乙) 영적 방패 및 생명선 보존율
   haeinThreeBountiesGraceIndex: number; // 삼풍해인(三豊海印: 화·우·로) 천은 소생 지수
   gyeryongWhiteStonePurityScore: number; // 계룡백석(鷄龍白石) 순수 심기 및 대덕 도통도
@@ -45,7 +46,24 @@ export interface GyeogamYurokReport {
     virtue: string;
     protectiveEffect: string;
   };
+  situationalGyeogamAudit: {
+    focusTheme: string;
+    sajungGusaengNote: string;
+    sanctuaryPractice: string;
+  };
+  temporalGyeogamRhythm: {
+    kstTimeLabel: string;
+    sipseungWatchWindow: string;
+    seasonalSampungTone: string;
+    temporalGuidance: string;
+  };
+  gyeogamSynthesisMatrix: {
+    coreInsight: string;
+    recommendedAction: string;
+    cautionNotice: string;
+  };
   namSagoMasterAdvice: string;
+  boundaryNotice: string;
 }
 
 function djb2Hash(str: string): number {
@@ -119,12 +137,54 @@ const HAEIN_TALISMAN_TYPES = [
   }
 ];
 
-export function calculateGyeogamYurokProphecy(profile: UserProfile | null | undefined): GyeogamYurokReport {
+function getTemporalGyeogamRhythm(now: Date) {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  const hour = kst.getUTCHours();
+  const month = kst.getUTCMonth() + 1;
+
+  const sipseungWatchWindow =
+    hour >= 5 && hour < 11
+      ? '양백(兩白) 아침 정화창 — 맑은 백석처럼 선입견을 씻고 하루의 길지를 여는 시간'
+      : hour >= 11 && hour < 17
+        ? '사중구생 정오 돌파창 — 난관 속에서도 제3의 활로를 찾아 과감히 움직이는 시간'
+        : hour >= 17 && hour < 22
+          ? '삼풍해인 황혼 감로창 — 지친 심신에 단비 같은 휴식과 덕을 채우는 시간'
+          : '궁궁을을 심야 수호창 — 세속의 소음을 닫고 내면의 십승길지를 지키는 시간';
+
+  const seasonalSampungTone =
+    month >= 3 && month <= 5
+      ? '봄 · 감로우(甘露雨) 소생기 (메마른 흐름에 새 생기가 스며드는 시기)'
+      : month >= 6 && month <= 8
+        ? '여름 · 천화(天火) 정화기 (불필요한 집착을 태우고 본질을 남기는 시기)'
+        : month >= 9 && month <= 11
+          ? '가을 · 백석(白石) 결실기 (순수한 덕과 실력이 단단히 증명되는 시기)'
+          : '겨울 · 해인(海印) 침잠기 (고요한 거울처럼 만물의 이치를 비추어 살피는 시기)';
+
+  return {
+    kstTimeLabel: `${y}-${m}-${d} ${hh}:${mm} KST`,
+    sipseungWatchWindow,
+    seasonalSampungTone,
+    temporalGuidance: `${sipseungWatchWindow} · ${seasonalSampungTone}의 흐름에 맞추어 외부가 아닌 내면의 길지를 먼저 세우십시오.`,
+  };
+}
+
+export function calculateGyeogamYurokProphecy(
+  profile: UserProfile | null | undefined,
+  nowArg?: Date,
+  questionArg?: string
+): GyeogamYurokReport {
+  const now = nowArg || new Date();
+  const question = (questionArg || '').trim();
   const birthStr = profile?.basic?.birthdate || '1995-01-01';
   const nameStr = profile?.basic?.name || '내담자';
   const timeStr = profile?.basic?.birthtime || '12:00';
 
-  const seed = djb2Hash(`${birthStr}_${nameStr}_${timeStr}_gyeogam_yurok`);
+  const seed = djb2Hash(`${birthStr}_${nameStr}_${timeStr}_${question}_gyeogam_yurok_v2`);
 
   const gunggungEuleulSpiritualShieldScore = 60 + (seed % 39);
   const haeinThreeBountiesGraceIndex = 58 + ((seed >> 2) % 41);
@@ -145,9 +205,35 @@ export function calculateGyeogamYurokProphecy(profile: UserProfile | null | unde
     namSagoMasterAdvice = '세론(世論)의 소음과 일시적 혼란에 마음을 빼앗기지 마십시오. 계룡백석의 무결한 의지를 세우고 매일 작은 선행과 지혜를 쌓는 것이 가장 강력한 십승길지(十勝吉地) 피난처가 됩니다.';
   }
 
+  const temporalGyeogamRhythm = getTemporalGyeogamRhythm(now);
+  const situationalGyeogamAudit = /위기|갈등|불안|결정|이직|사업/.test(question)
+    ? {
+        focusTheme: '사중구생(死中求生)의 전환점과 십승길지 수호',
+        sajungGusaengNote: '막다른 길처럼 보일 때일수록 낡은 방식을 내려놓고 제3의 활로를 여는 지혜가 작동합니다.',
+        sanctuaryPractice: '세론의 불안한 말에 흔들리지 말고 하루 한 가지 원칙을 단단히 지키십시오.',
+      }
+    : /관계|가족|연애|사람|마음/.test(question)
+      ? {
+          focusTheme: '삼풍해인 감로정화와 인의예지 덕목',
+          sajungGusaengNote: '복된 길지는 바깥이 아니라 사람의 마음(인의예지) 안에 있습니다.',
+          sanctuaryPractice: '먼저 마음을 비우고 맑은 태도로 상대를 대할 때 방패가 자연히 세워집니다.',
+        }
+      : {
+          focusTheme: '궁궁을을(弓弓乙乙)의 중용과 양백백석의 순수성',
+          sajungGusaengNote: '과도한 욕심과 조급함을 덜어낼수록 내면의 나침반이 선명해집니다.',
+          sanctuaryPractice: '조용한 시간 동안 마음의 소음을 가라앉히고 본래의 중심을 점검하십시오.',
+        };
+
+  const gyeogamSynthesisMatrix = {
+    coreInsight: `[${primaryGyeogamChapter.titleKo}]와 신령 인장 [${haeinTalismanType.nameKo}]가 ${situationalGyeogamAudit.focusTheme}을 비춥니다.`,
+    recommendedAction: `${namSagoMasterAdvice} (${situationalGyeogamAudit.sanctuaryPractice})`,
+    cautionNotice: '외적 요행이나 세속의 소문에 기대어 내면의 덕과 원칙을 소홀히 하지 않도록 경계하십시오.',
+  };
+
   return {
     engineVersion: GYEOGAM_YUROK_VERSION,
-    calculatedAt: new Date().toISOString(),
+    calculatedAt: now.toISOString(),
+    calculatedAtKst: temporalGyeogamRhythm.kstTimeLabel,
     gunggungEuleulSpiritualShieldScore,
     haeinThreeBountiesGraceIndex,
     gyeryongWhiteStonePurityScore,
@@ -156,23 +242,26 @@ export function calculateGyeogamYurokProphecy(profile: UserProfile | null | unde
     sajungGusaengTransformationIndex,
     primaryGyeogamChapter,
     haeinTalismanType,
-    namSagoMasterAdvice
+    situationalGyeogamAudit,
+    temporalGyeogamRhythm,
+    gyeogamSynthesisMatrix,
+    namSagoMasterAdvice,
+    boundaryNotice: '본 결과는 《격암유록》의 비유적·철학적 상징 체계에 기반한 정성적 성찰 안내이며, 확정적 예언이나 길흉 판정이 아닙니다.',
   };
 }
 
 export function formatGyeogamYurokProphecyPrompt(report: GyeogamYurokReport): string {
   return `### 조선 명종 격암 남사고 《격암유록(格菴遺錄)》 45편 비결 & 궁궁을을·해인 사중구생 엔진 (v${report.engineVersion})
+- **연산 시각**: ${report.calculatedAtKst}
 - **주요 비결 편명**: ${report.primaryGyeogamChapter.titleKo} (${report.primaryGyeogamChapter.coreTheme})
   - *비결 잠언*: "${report.primaryGyeogamChapter.wisdomVerse}"
 - **해인 신령 인장**: ${report.haeinTalismanType.nameKo} (${report.haeinTalismanType.virtue})
   - *수호 작용*: ${report.haeinTalismanType.protectiveEffect}
-- **6대 격암 비결 지표**:
-  - 궁궁을을(弓弓乙乙) 영적 방패율: ${report.gunggungEuleulSpiritualShieldScore}점 / 100
-  - 삼풍해인(三豊海印: 화·우·로) 천은 소생 지수: ${report.haeinThreeBountiesGraceIndex}점 / 100
-  - 계룡백석(鷄龍白石) 순수 심기 도통도: ${report.gyeryongWhiteStonePurityScore}점 / 100
-  - 십승길지(十勝吉地) 대덕 파동 공명률: ${report.tenSanctuariesAuspiciousResonance}점 / 100
-  - 소두무족(小頭無足) 급변 환난 돌파력: ${report.crisisTranscendingResilience}점 / 100
-  - 사중구생(死中求生) 대반전 운기 전환도: ${report.sajungGusaengTransformationIndex}점 / 100
+- **질문 맥락 감사 (${report.situationalGyeogamAudit.focusTheme})**: ${report.situationalGyeogamAudit.sajungGusaengNote} / 실천: ${report.situationalGyeogamAudit.sanctuaryPractice}
+- **KST 시공간 십승 리듬**: ${report.temporalGyeogamRhythm.sipseungWatchWindow} / ${report.temporalGyeogamRhythm.seasonalSampungTone}
+  - *시공간 지침*: ${report.temporalGyeogamRhythm.temporalGuidance}
+- **격암 교차 매트릭스**: 핵심(${report.gyeogamSynthesisMatrix.coreInsight}) | 실행(${report.gyeogamSynthesisMatrix.recommendedAction}) | 주의(${report.gyeogamSynthesisMatrix.cautionNotice})
 - **격암 남사고 선생 심법 처방**:
-  - "${report.namSagoMasterAdvice}"`;
+  - "${report.namSagoMasterAdvice}"
+- **해석 경계**: ${report.boundaryNotice}`;
 }
