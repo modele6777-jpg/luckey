@@ -1,0 +1,46 @@
+/* These dialogs respond to their pane, not the device-wide media breakpoint. */
+.chat-library-dialog {
+  container: chat-library / size;
+  height: 100%;
+  min-height: 0;
+  min-width: 0;
+}
+.chat-library-scroll {
+  flex: 1 1 0%;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  touch-action: pan-y;
+}
+.chat-library-heading { min-width: 0; gap: .75rem; }
+.chat-library-heading > div:first-child { min-width: 0; flex: 1; }
+.chat-library-heading-copy { min-width: 0; flex: 1; }
+.chat-library-heading-row { display: flex; flex-wrap: wrap; gap: .25rem .5rem; align-items: center; }
+.chat-library-heading h2 { overflow-wrap: anywhere; }
+.chat-library-close { flex-shrink: 0; min-width: 40px; min-height: 40px; }
+.prompt-library-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: .875rem; }
+.prompt-library-card { min-width: 0; overflow-wrap: anywhere; }
+@container chat-library (min-width: 640px) {
+  .prompt-library-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@container chat-library (max-width: 540px) {
+  .chat-library-heading { padding: .75rem !important; gap: .625rem; }
+  .chat-library-heading-icon { width: 32px !important; height: 32px !important; flex-shrink: 0; }
+  .chat-library-heading h2 { font-size: 16px !important; line-height: 1.4; }
+  .chat-library-toolbar, .prompt-library-content { padding: .75rem !important; }
+  .prompt-library-card { padding: .875rem !important; }
+  .chat-library-pagination { padding: .625rem .75rem !important; }
+}
+@container chat-library (max-height: 560px) {
+  .chat-library-heading { padding-top: .5rem !important; padding-bottom: .5rem !important; }
+  .chat-library-subtitle { display: none; }
+  .chat-library-pagination { padding-top: .375rem !important; padding-bottom: .375rem !important; }
+}
+
+.chat-library-pagination > div { max-width: 100%; flex-wrap: wrap; }
+@container chat-library (max-width: 360px) {
+  .chat-library-pagination { gap: .375rem !important; }
+  .chat-library-pagination button { width: 26px !important; min-width: 26px; padding-left: 4px !important; padding-right: 4px !important; }
+}
+.chat-library-dialog .lucy-engine-catalog-entry-name { font-size: 14px; line-height: 1.6; }
+.chat-library-dialog .lucy-engine-catalog-entry-meaning { font-size: 13px; line-height: 1.7; }
