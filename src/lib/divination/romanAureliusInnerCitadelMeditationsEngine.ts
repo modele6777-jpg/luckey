@@ -2,18 +2,19 @@
  * 고대 로마 철학 황제 마르쿠스 아우렐리우스 《명상록(Meditations)》 내면의 요새(Inner Citadel) & 우주적 이성 엔진
  *
  * 서기 2세기 로마 제국의 16대 황제이자 스토아 철학자 마르쿠스 아우렐리우스 안토니누스의 《명상록(Τὰ εἰς ἑαυτόν)》 원전 기반.
- * 1. 내면의 성채(Inner Citadel): 외부의 비난, 불운, 혼란이 결코 침투할 수 없는 영혼의 불가침 요새
- * 2. 지휘부 이성(Hegemonikon): 외부 인상(Phantasia)에 휘둘리지 않고 스스로 판단하고 통제하는 영혼의 사령부
- * 3. 찰나의 현재(Hic et nunc): 지나간 과거나 알 수 없는 미래의 번민을 내려놓고 지금 여기에 온전히 현존함
- * 4. 코스모폴리스(Cosmopolis)와 공동선: 우주 전체의 유기적 일원으로서 타인을 형제로 대하고 공공의 이익에 헌신함
- * 5. 아모르 파티(Amor Fati): 우주 섭리가 주는 모든 운명을 의연하게 수용하고 덕(Arete)으로 전환함
+ * 1. 내면의 성채(Inner Citadel, Book IV.3): 외부의 비난, 불운, 혼란이 결코 침투할 수 없는 영혼의 불가침 요새
+ * 2. 지휘부 이성(Hegemonikon, Book II.1, VIII.48): 외부 인상(Phantasia)에 휘둘리지 않고 스스로 판단하는 영혼의 사령부
+ * 3. 찰나의 현재(Hic et nunc, Book II.14, III.10): 지나간 과거나 알 수 없는 미래의 번민을 내려놓고 지금 여기에 온전히 현존함
+ * 4. 코스모폴리스(Cosmopolis, Book IV.4, VI.44)와 공동선: 우주 전체의 유기적 일원으로서 공공의 이익에 헌신함
+ * 5. 아모르 파티(Amor Fati, Book IV.23, V.20): 장애물이 곧 길이 되며 모든 운명을 덕(Arete)으로 전환함
+ * 6. 질문 기반 통제 이분법(Dichotomy of Control) + 로마 황제 일과(아침 예행연습·저녁 성찰) 연동
  *
- * @version LUCKEY-AURELIUS-INNER-CITADEL-v1.0.0
+ * @version LUCKEY-AURELIUS-INNER-CITADEL-v2.0.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const AURELIUS_INNER_CITADEL_VERSION = 'LUCKEY-AURELIUS-INNER-CITADEL-v1.0.0';
+export const AURELIUS_INNER_CITADEL_VERSION = 'LUCKEY-AURELIUS-INNER-CITADEL-v2.0.0';
 
 export interface AureliusStage {
   stageLevel: number;
@@ -21,6 +22,36 @@ export interface AureliusStage {
   stageNameKo: string;
   stoicDomain: string;
   citadelBlessing: string;
+}
+
+export type AureliusControlTheme =
+  | 'external_judgment'
+  | 'obstacle_as_way'
+  | 'present_moment'
+  | 'duty_and_justice'
+  | 'mortality_perspective'
+  | 'self_mastery';
+
+export interface AureliusControlDichotomy {
+  theme: AureliusControlTheme;
+  bookReference: string;
+  internalSovereigntyRatio: number; // 0~100: 내면 주권 영역 비중
+  uncontrollableNoiseKo: string; // 내려놓아야 할 외부 변수
+  sovereignActionKo: string; // 내가 지금 통제할 수 있는 선택
+  reflectionQuestion: string;
+}
+
+export interface AureliusDailyStoicPractice {
+  kstHour: number;
+  practiceMode: '아침 예행연습 (Praemeditatio)' | '한낮의 현존 (Hic et nunc)' | '저녁 자기 성찰 (Examen)';
+  protocolTitleKo: string;
+  protocolDirective: string;
+}
+
+export interface AureliusCitadelResilienceMatrix {
+  phantasiaDetachmentScore: number; // 0~100: 외부 자극에 대한 판단 보류·거리두기 지수
+  amorFatiConversionIndex: number; // 0~100: 장애물을 성장 연료로 바꾸는 변환력
+  cosmopolisContributionGuide: string;
 }
 
 export interface AureliusInnerCitadelResult {
@@ -44,6 +75,10 @@ export interface AureliusInnerCitadelResult {
     soliloquyTitle: string;
     meditativeCounsel: string;
   };
+  // v2.0.0 다차원 질적 성찰 & 시공간 교차 검증
+  controlDichotomy: AureliusControlDichotomy;
+  dailyStoicPractice: AureliusDailyStoicPractice;
+  citadelResilienceMatrix: AureliusCitadelResilienceMatrix;
 }
 
 export type AureliusInnerCitadelReport = AureliusInnerCitadelResult;
@@ -70,10 +105,58 @@ const CITADEL_SOLILOQUIES = [
   { soliloquyTitle: '우주의 거대한 시간 속에서 찰나를 응시하는 눈동자', meditativeCounsel: '아무리 위대한 영웅도 한 줌의 흙으로 돌아가나니, 헛된 명성을 탐하지 말고 오직 정의롭고 따뜻한 한 인간으로 오늘을 살아가십시오.' },
 ];
 
-function getKstDateString(): string {
-  const now = new Date();
-  const kst = new Date(now.getTime() + (9 * 60 + now.getTimezoneOffset()) * 60000);
-  return kst.toISOString().replace('T', ' ').substring(0, 19) + ' KST';
+const CONTROL_DICHOTOMIES: Record<AureliusControlTheme, Omit<AureliusControlDichotomy, 'internalSovereigntyRatio'>> = {
+  external_judgment: {
+    theme: 'external_judgment',
+    bookReference: '《명상록》 제4권 3장 · 제9권 42장',
+    uncontrollableNoiseKo: '타인의 시선, 평판, 상대방이 나를 어떻게 오해하는가',
+    sovereignActionKo: '내 말과 행동의 진실성, 감정적 흔들림 없이 내면 성채로 물러나는 선택',
+    reflectionQuestion: '남의 마음속에 세워진 평가를 통제하려 애쓰느라, 정작 내 성채의 평화를 잃고 있지는 않으신가요?',
+  },
+  obstacle_as_way: {
+    theme: 'obstacle_as_way',
+    bookReference: '《명상록》 제5권 20장 (Obstacle is the Way)',
+    uncontrollableNoiseKo: '예기치 못한 장애물, 지연, 외부 환경의 변덕',
+    sovereignActionKo: '그 막힘을 소재 삼아 인내·창의성·절제라는 덕목을 실행하는 태도',
+    reflectionQuestion: '지금 앞길을 막고 있는 걸림돌이 오히려 내가 단련할 수 있는 유일한 재료라면, 오늘 무엇을 시도할 수 있을까요?',
+  },
+  present_moment: {
+    theme: 'present_moment',
+    bookReference: '《명상록》 제2권 14장 · 제8권 36장',
+    uncontrollableNoiseKo: '이미 지나간 과거의 후회와 아직 오지 않은 미래 전체에 대한 막연한 공포',
+    sovereignActionKo: '오직 오늘, 지금 눈앞의 한 가지 일에 온전한 정성을 들이는 집중',
+    reflectionQuestion: '미래 전체의 무게를 오늘 하루에 한꺼번에 짊어지려 해서 마음이 무너지고 있지는 않으신가요?',
+  },
+  duty_and_justice: {
+    theme: 'duty_and_justice',
+    bookReference: '《명상록》 제6권 44장 · 제9권 23장',
+    uncontrollableNoiseKo: '타인의 무례함이나 세상의 불공정함이 즉각 바뀌지 않는 현실',
+    sovereignActionKo: '공동선(코스모폴리스)과 나의 양심에 부끄럽지 않은 정직한 한 걸음',
+    reflectionQuestion: '누가 알아주지 않더라도 내가 마땅히 지켜야 할 품격과 정의로운 기준은 무엇인가요?',
+  },
+  mortality_perspective: {
+    theme: 'mortality_perspective',
+    bookReference: '《명상록》 제4권 48장 · 제7권 56장',
+    uncontrollableNoiseKo: '유한한 시간의 흐름과 영원히 변치 않을 것 같은 세속적 집착',
+    sovereignActionKo: '사소한 분노를 흘려보내고 지금 곁에 있는 사람과 진실한 순간을 아끼는 마음',
+    reflectionQuestion: '10년 뒤의 우주적 시선으로 오늘의 고민을 내려다본다면, 지금 가장 소중히 붙잡아야 할 것은 무엇일까요?',
+  },
+  self_mastery: {
+    theme: 'self_mastery',
+    bookReference: '《명상록》 제8권 48장 · 제10권 1장',
+    uncontrollableNoiseKo: '순간적으로 치솟는 충동, 감정의 파도, 외부의 유혹',
+    sovereignActionKo: '인상(Phantasia)과 판단 사이에 3초의 여백을 두고 헤게모니콘(이성 사령부)을 가동하기',
+    reflectionQuestion: '감정이 나를 지배하게 두기 전에, 내 영혼의 지휘부가 스스로 내린 맑은 명령은 무엇인가요?',
+  },
+};
+
+function getKstDate(now?: Date): Date {
+  const base = now ?? new Date();
+  return new Date(base.getTime() + (9 * 60 + base.getTimezoneOffset()) * 60000);
+}
+
+function getKstDateString(now?: Date): string {
+  return getKstDate(now).toISOString().replace('T', ' ').substring(0, 19) + ' KST';
 }
 
 function hashSeed(seedStr: string): number {
@@ -85,11 +168,63 @@ function hashSeed(seedStr: string): number {
   return Math.abs(h);
 }
 
-export function calculateAureliusInnerCitadel(profile?: UserProfile): AureliusInnerCitadelResult {
+function classifyAureliusTheme(question: string | undefined, seed: number): AureliusControlTheme {
+  const q = (question || '').toLowerCase();
+  if (/평판|눈치|비난|오해|평가|남|시선|인정/.test(q)) return 'external_judgment';
+  if (/장애|실패|막히|어려|불운|고난|위기|문제/.test(q)) return 'obstacle_as_way';
+  if (/불안|미래|과거|후회|걱정|오늘|시간|집중/.test(q)) return 'present_moment';
+  if (/책임|의무|정의|공정|직장|일|동료|관계|배려/.test(q)) return 'duty_and_justice';
+  if (/인생|삶|의미|죽음|후회|가치|본질|영원/.test(q)) return 'mortality_perspective';
+  if (/감정|화|분노|충동|습관|절제|마음|평정/.test(q)) return 'self_mastery';
+
+  const order: AureliusControlTheme[] = [
+    'external_judgment',
+    'obstacle_as_way',
+    'present_moment',
+    'duty_and_justice',
+    'mortality_perspective',
+    'self_mastery',
+  ];
+  return order[seed % order.length];
+}
+
+function buildDailyStoicPractice(kstDate: Date): AureliusDailyStoicPractice {
+  const hour = kstDate.getUTCHours();
+  if (hour >= 5 && hour < 11) {
+    return {
+      kstHour: hour,
+      practiceMode: '아침 예행연습 (Praemeditatio)',
+      protocolTitleKo: '하루의 변수와 타인의 미숙함을 미리 품고 출발하는 의식',
+      protocolDirective: '오늘 만날 예기치 못한 지연이나 까다로운 사람을 미리 떠올리며 "나는 흔들리지 않고 덕성으로 답하겠다"고 먼저 결심하십시오.',
+    };
+  }
+  if (hour >= 11 && hour < 19) {
+    return {
+      kstHour: hour,
+      practiceMode: '한낮의 현존 (Hic et nunc)',
+      protocolTitleKo: '인상(Phantasia)에 즉각 반응하지 않고 성채로 물러나는 호흡',
+      protocolDirective: '자극이 올 때 1차 인상과 2차 가치 판단을 분리하십시오. "이것은 사실일 뿐, 나를 해치는 것은 내 해석이 아니다"라고 되뇌십시오.',
+    };
+  }
+  return {
+    kstHour: hour,
+    practiceMode: '저녁 자기 성찰 (Examen)',
+    protocolTitleKo: '하루를 마감하며 세 가지 질문을 건네는 황제의 침묵 노트',
+    protocolDirective: '오늘 잘 견뎌낸 순간 하나, 감정에 휩쓸렸던 순간 하나, 내일 더 나아질 작은 태도 하나를 고요히 기록하고 잠드십시오.',
+  };
+}
+
+export function calculateAureliusInnerCitadel(
+  profile?: UserProfile,
+  question?: string,
+  now?: Date,
+): AureliusInnerCitadelResult {
   const birthdate = profile?.basic?.birthdate || '1995-03-21';
   const birthtime = profile?.basic?.birthtime || '12:00';
   const name = profile?.basic?.name || 'Inquirer';
+  const kstDate = getKstDate(now);
   const seed = hashSeed(`AURELIUS-CITADEL-${birthdate}-${birthtime}-${name}`);
+  const qSeed = hashSeed(`AURELIUS-Q-${question || ''}-${kstDate.getUTCFullYear()}-${kstDate.getUTCMonth() + 1}-${kstDate.getUTCDate()}`);
 
   const innerCitadelFortressScore = (seed % 41) + 60; // 60~100
   const hicEtNuncPresentPresence = ((seed >> 3) % 43) + 58; // 58~100
@@ -106,9 +241,32 @@ export function calculateAureliusInnerCitadel(profile?: UserProfile): AureliusIn
   const soliloquyIdx = (seed >> 6) % CITADEL_SOLILOQUIES.length;
   const citadelEmperorSoliloquy = CITADEL_SOLILOQUIES[soliloquyIdx];
 
+  const theme = classifyAureliusTheme(question, qSeed);
+  const baseDichotomy = CONTROL_DICHOTOMIES[theme];
+  const internalSovereigntyRatio = Math.min(98, Math.round((hegemonikonSovereignSoul + innerCitadelFortressScore) / 2));
+
+  const controlDichotomy: AureliusControlDichotomy = {
+    ...baseDichotomy,
+    internalSovereigntyRatio,
+  };
+
+  const dailyStoicPractice = buildDailyStoicPractice(kstDate);
+
+  const phantasiaDetachmentScore = Math.min(99, Math.round((innerCitadelFortressScore + hicEtNuncPresentPresence) / 2));
+  const amorFatiConversionIndex = Math.min(99, Math.round((amorFatiCosmicAcceptance + hegemonikonSovereignSoul) / 2));
+
+  const citadelResilienceMatrix: AureliusCitadelResilienceMatrix = {
+    phantasiaDetachmentScore,
+    amorFatiConversionIndex,
+    cosmopolisContributionGuide:
+      cosmopolisCommonGoodIndex >= 75
+        ? '공동선(Cosmopolis)과의 연대 감각이 높습니다. 내 마음의 평정을 지킨 뒤 곁에 있는 한 사람에게 작은 친절과 공정을 베푸십시오.'
+        : '외부 소음에 에너지가 소진되기 쉬운 상태입니다. 먼저 내면 성채의 문을 닫아 휴식과 존엄을 회복한 뒤 타인을 대하십시오.',
+  };
+
   return {
     engineVersion: AURELIUS_INNER_CITADEL_VERSION,
-    calculatedAtKst: getKstDateString(),
+    calculatedAtKst: getKstDateString(now),
     innerCitadelFortressScore,
     hicEtNuncPresentPresence,
     amorFatiCosmicAcceptance,
@@ -117,6 +275,9 @@ export function calculateAureliusInnerCitadel(profile?: UserProfile): AureliusIn
     activeAureliusStage,
     primaryMeditationsPrecept,
     citadelEmperorSoliloquy,
+    controlDichotomy,
+    dailyStoicPractice,
+    citadelResilienceMatrix,
   };
 }
 
@@ -131,6 +292,14 @@ export function formatAureliusInnerCitadelPrompt(result: AureliusInnerCitadelRes
 - 현행 스토아적 영혼 품계: **[${result.activeAureliusStage.stageNameKo} (${result.activeAureliusStage.stageNameLatin})]**
   → 관장 영역: ${result.activeAureliusStage.stoicDomain}
   → 성채의 축복: ${result.activeAureliusStage.citadelBlessing}
+- 통제 이분법(Dichotomy of Control) 분류 (${result.controlDichotomy.bookReference}, 내부 주권 비중 ${result.controlDichotomy.internalSovereigntyRatio}%):
+  → 내려놓을 외부 변수: ${result.controlDichotomy.uncontrollableNoiseKo}
+  → 내가 통제할 주권 선택: ${result.controlDichotomy.sovereignActionKo}
+  → 성찰 질문: ${result.controlDichotomy.reflectionQuestion}
+- 일일 스토아 실천 리듬 (${result.dailyStoicPractice.practiceMode}): ${result.dailyStoicPractice.protocolTitleKo}
+  → 실천 프로토콜: ${result.dailyStoicPractice.protocolDirective}
+- 성채 방어선 매트릭스: 인상 거리두기 ${result.citadelResilienceMatrix.phantasiaDetachmentScore}% · 아모르 파티 변환력 ${result.citadelResilienceMatrix.amorFatiConversionIndex}%
+  → 공동선 안내: ${result.citadelResilienceMatrix.cosmopolisContributionGuide}
 - 최우선 명상록 실천 잠언: **[${result.primaryMeditationsPrecept.preceptTitleKo} (${result.primaryMeditationsPrecept.latinAphorism})]**
   → 핵심 본질: ${result.primaryMeditationsPrecept.coreEssence}
   → 실천 지침: ${result.primaryMeditationsPrecept.actionableDirective}
