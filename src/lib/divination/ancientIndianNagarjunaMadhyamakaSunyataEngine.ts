@@ -1,12 +1,12 @@
 /**
  * 고대 인도 대승불교 용수(Nāgārjuna, 龍樹) 보살 《중론(Mūlamadhyamakakārikā)》 팔불중도 & 공성(Śūnyatā) 통찰 엔진
  *
- * @version LUCKEY-NAGARJUNA-MADHYAMAKA-v2.0.0
+ * @version LUCKEY-NAGARJUNA-MADHYAMAKA-v2.1.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const NAGARJUNA_MADHYAMAKA_VERSION = 'LUCKEY-NAGARJUNA-MADHYAMAKA-v2.0.0';
+export const NAGARJUNA_MADHYAMAKA_VERSION = 'LUCKEY-NAGARJUNA-MADHYAMAKA-v2.1.0';
 
 export interface EightfoldNegationAspect {
   aspectKey: string;
@@ -67,6 +67,9 @@ export interface NagarjunaMadhyamakaSunyataResult {
     counselTitle: string;
     middleWayGuidance: string;
   };
+  dailyPracticeRitual: string;
+  reflectiveQuestion: string;
+  interpretiveBoundary: string;
 }
 
 export type NagarjunaMadhyamakaSunyataReport = NagarjunaMadhyamakaSunyataResult;
@@ -286,6 +289,13 @@ export function calculateNagarjunaMadhyamakaSunyata(
     `${activeNegationAspect.practicalCounsel} 또한 《중론》의 정수인 '${focalKarikaWisdom.chapterThemeKo}'을 유념하여, ` +
     `${focalKarikaWisdom.lifeApplication}`;
 
+  const dailyPracticeRitual =
+    `[중도(中道) 고정관념 비우기 의례] ${situationalSunyataAudit.middleWayDeconstructionStep}`;
+  const reflectiveQuestion =
+    `내가 "절대 바뀔 수 없다"고 믿고 있는 이 상황은 실제로 고유한 실체인가, 아니면 인연 따라 얼마든지 다시 빚어질 흐름인가?`;
+  const interpretiveBoundary =
+    `용수 《중론》 팔불중도 엔진은 고정된 운명을 예단하는 도구가 아니라, 양극단과 고정관념을 풀어 유연한 변화를 열도록 돕는 상징·성찰 관점입니다.`;
+
   return {
     engineVersion: NAGARJUNA_MADHYAMAKA_VERSION,
     calculatedAtKst: (now ?? new Date()).toISOString(),
@@ -303,23 +313,36 @@ export function calculateNagarjunaMadhyamakaSunyata(
       counselTitle,
       middleWayGuidance,
     },
+    dailyPracticeRitual,
+    reflectiveQuestion,
+    interpretiveBoundary,
   };
+}
+
+function describeNagarjunaStage(score: number): string {
+  if (score >= 88) return '양극단을 여의고 걸림 없이 맑은 중도';
+  if (score >= 76) return '인연의 흐름을 유연하게 타는 안정된 결';
+  if (score >= 64) return '고정관념의 매듭을 차분히 푸는 단계';
+  return '분별을 멈추고 한 걸음 물러서 바라보는 초입';
 }
 
 export function formatNagarjunaMadhyamakaSunyataPrompt(res: NagarjunaMadhyamakaSunyataResult): string {
   return [
     `【용수 중론 & 팔불중도 공성(Śūnyatā) 지표】`,
-    `- 공성(Śūnyatā) 직관 및 무자성 통찰력: ${res.sunyataWisdomScore}/100`,
-    `- 팔불중도(八不中道) 양변 초월 평정도: ${res.eightfoldNegationMiddleWayScore}/100`,
-    `- 인연생기(緣起) 상호의존 자각도: ${res.pratityasamutpadaGraspScore}/100`,
-    `- 진속이제(眞俗二諦) 현실·이상 조화도: ${res.twoTruthsHarmonyScore}/100`,
-    `- 관념 고착 및 에고 해체 지수: ${res.clingingDeconstructionScore}/100`,
+    `- 공성(Śūnyatā) 직관 및 무자성 통찰: ${describeNagarjunaStage(res.sunyataWisdomScore)}`,
+    `- 팔불중도(八不中道) 양변 초월 평정: ${describeNagarjunaStage(res.eightfoldNegationMiddleWayScore)}`,
+    `- 인연생기(緣起) 상호의존 자각: ${describeNagarjunaStage(res.pratityasamutpadaGraspScore)}`,
+    `- 진속이제(眞俗二諦) 현실·이상 조화: ${describeNagarjunaStage(res.twoTruthsHarmonyScore)}`,
+    `- 관념 고착 및 에고 해체: ${describeNagarjunaStage(res.clingingDeconstructionScore)}`,
     `- 핵심 팔불중도 관점: ${res.activeNegationAspect.aspectNameKo} [${res.activeNegationAspect.aspectHanja}]`,
     `- 질문 맥락 공성 처방 (${res.situationalSunyataAudit.themeKo} · ${res.situationalSunyataAudit.karikaChapter}): "${res.situationalSunyataAudit.translationKo}" [${res.situationalSunyataAudit.sanskritVerse}]`,
     `- 실체 착각 함정: ${res.situationalSunyataAudit.substantialistTrap}`,
     `- 중도 해체 실천: ${res.situationalSunyataAudit.middleWayDeconstructionStep}`,
-    `- KST 연기 리듬: ${res.temporalPratityaRhythm.kstWindow} (${res.temporalPratityaRhythm.twoTruthsFocus}, 명료도 ${res.temporalPratityaRhythm.sunyataClarityIndex}/100) — ${res.temporalPratityaRhythm.rhythmDirective}`,
-    `- 중관 매트릭스: 자성 해체 ${res.madhyamakaMatrix.svabhavaDeconstruction} / 연기 흐름 ${res.madhyamakaMatrix.dependentOriginationFlow} / 이제 균형 ${res.madhyamakaMatrix.twoTruthsEquilibrium} (종합 ${res.madhyamakaMatrix.overallSynthesis}/100)`,
+    `- KST 연기 리듬: ${res.temporalPratityaRhythm.kstWindow} (${res.temporalPratityaRhythm.twoTruthsFocus}, 명료도 ${describeNagarjunaStage(res.temporalPratityaRhythm.sunyataClarityIndex)}) — ${res.temporalPratityaRhythm.rhythmDirective}`,
+    `- 중관 매트릭스: 자성 해체(${describeNagarjunaStage(res.madhyamakaMatrix.svabhavaDeconstruction)}) · 연기 흐름(${describeNagarjunaStage(res.madhyamakaMatrix.dependentOriginationFlow)}) · 이제 균형(${describeNagarjunaStage(res.madhyamakaMatrix.twoTruthsEquilibrium)}) · 종합(${describeNagarjunaStage(res.madhyamakaMatrix.overallSynthesis)})`,
     `- 일상 실천 지침: ${res.nagarjunaMiddleCounsel.middleWayGuidance}`,
+    `- 오늘의 실천 의례: ${res.dailyPracticeRitual}`,
+    `- 성찰 질문: ${res.reflectiveQuestion}`,
+    `- 해석 경계: ${res.interpretiveBoundary}`,
   ].join('\n');
 }

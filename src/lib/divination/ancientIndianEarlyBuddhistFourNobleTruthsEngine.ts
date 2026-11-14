@@ -3,12 +3,12 @@
  *
  * 《초전법륜경(Dhammacakkappavattana Sutta)》, 《대념처경(Mahāsatipaṭṭhāna Sutta)》, 《법구경(Dhammapada)》 원전 기반.
  *
- * @version LUCKEY-FOUR-NOBLE-TRUTHS-v2.0.0
+ * @version LUCKEY-FOUR-NOBLE-TRUTHS-v2.1.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const FOUR_NOBLE_TRUTHS_VERSION = 'LUCKEY-FOUR-NOBLE-TRUTHS-v2.0.0';
+export const FOUR_NOBLE_TRUTHS_VERSION = 'LUCKEY-FOUR-NOBLE-TRUTHS-v2.1.0';
 
 export interface BuddhistNobleTruth {
   truthHanja: string;
@@ -67,6 +67,9 @@ export interface AncientIndianFourNobleTruthsResult {
     counselTitle: string;
     philosophicalGuidance: string;
   };
+  dailyPracticeRitual: string;
+  reflectiveQuestion: string;
+  interpretiveBoundary: string;
 }
 
 export type AncientIndianFourNobleTruthsReport = AncientIndianFourNobleTruthsResult;
@@ -301,6 +304,13 @@ export function calculateAncientIndianFourNobleTruths(
     `현재 상황은 사성제 중 '${activeNobleTruth.truthHanja}'의 진리를 비추어볼 때입니다. ${activeNobleTruth.truthLiberationAction} ` +
     `실천적으로는 팔정도 '${focalEightfoldFactor.pathFactorHanja}'의 가르침을 따르십시오. ${focalEightfoldFactor.practicalMindfulnessCounsel}`;
 
+  const dailyPracticeRitual =
+    `[사띠(正念) 호흡 알아차림 1분 의례] ${situationalDharmaAudit.eightfoldActionStep}`;
+  const reflectiveQuestion =
+    `지금 내 마음을 무겁게 누르는 것은 사실 그 자체인가, 아니면 사실 위에 내가 덧씌운 집착과 저항인가?`;
+  const interpretiveBoundary =
+    `초기불교 사성제와 팔정도는 길흉을 단정하는 예언이 아니라, 괴로움의 원인을 살펴 중도(中道)의 실천으로 마음을 고요히 이끄는 상징·성찰 관점입니다.`;
+
   return {
     engineVersion: FOUR_NOBLE_TRUTHS_VERSION,
     calculatedAtKst: (now ?? new Date()).toISOString(),
@@ -318,24 +328,37 @@ export function calculateAncientIndianFourNobleTruths(
       counselTitle,
       philosophicalGuidance,
     },
+    dailyPracticeRitual,
+    reflectiveQuestion,
+    interpretiveBoundary,
   };
+}
+
+function describeBuddhistStage(score: number): string {
+  if (score >= 88) return '고요히 깨어 열반의 평온에 가까운 결';
+  if (score >= 76) return '삼학이 고르게 조율된 안정된 흐름';
+  if (score >= 64) return '집착을 알아차리며 정진하는 단계';
+  return '조급함을 내려놓고 호흡을 고르는 초입';
 }
 
 export function formatAncientIndianFourNobleTruthsPrompt(res: AncientIndianFourNobleTruthsResult): string {
   return [
     `【초기불교 사성제 & 팔정도 고집멸도 지표】`,
-    `- 사성제 인과 명석도: ${res.fourNobleTruthsClarityScore}/100`,
-    `- 팔정도 삼학 실천 밸런스: ${res.eightfoldPathBalanceScore}/100`,
-    `- 갈애 소멸 열반 평정심: ${res.cravingExtinctionNirodhaScore}/100`,
-    `- 사띠(정념) 현존 알아차림: ${res.satiMindfulnessPresenceScore}/100`,
-    `- 중도 균형 지혜도: ${res.middleWayMajjhimaScore}/100`,
+    `- 사성제 인과 명석함: ${describeBuddhistStage(res.fourNobleTruthsClarityScore)}`,
+    `- 팔정도 삼학 실천 균형: ${describeBuddhistStage(res.eightfoldPathBalanceScore)}`,
+    `- 갈애 소멸 열반 평정: ${describeBuddhistStage(res.cravingExtinctionNirodhaScore)}`,
+    `- 사띠(정념) 현존 알아차림: ${describeBuddhistStage(res.satiMindfulnessPresenceScore)}`,
+    `- 중도 균형 지혜: ${describeBuddhistStage(res.middleWayMajjhimaScore)}`,
     `- 비추어보는 거룩한 진리: ${res.activeNobleTruth.truthHanja} (${res.activeNobleTruth.truthPaliKo})`,
     `- 중점 팔정도 덕목: ${res.focalEightfoldFactor.pathFactorHanja} [${res.focalEightfoldFactor.pathFactorPaliKo}] - ${res.focalEightfoldFactor.trainingDomainKo}`,
     `- 질문 맥락 법문 처방 (${res.situationalDharmaAudit.themeKo} · ${res.situationalDharmaAudit.suttaCitation}): "${res.situationalDharmaAudit.translationKo}" [${res.situationalDharmaAudit.paliQuote}]`,
     `- 갈애의 매듭: ${res.situationalDharmaAudit.cravingKnot}`,
     `- 팔정도 실천 단계: ${res.situationalDharmaAudit.eightfoldActionStep}`,
-    `- KST 사띠 리듬: ${res.temporalSatiRhythm.kstWindow} (${res.temporalSatiRhythm.threeTrainingsFocus}, 명료도 ${res.temporalSatiRhythm.satiClarityIndex}/100) — ${res.temporalSatiRhythm.rhythmDirective}`,
-    `- 사성제·팔정도 매트릭스: 고제 수용 ${res.nobleEightfoldMatrix.dukkhaAcceptance} / 갈애 해탈 ${res.nobleEightfoldMatrix.tanhaRelease} / 사띠 현존 ${res.nobleEightfoldMatrix.satiPresence} (종합 ${res.nobleEightfoldMatrix.overallSynthesis}/100)`,
+    `- KST 사띠 리듬: ${res.temporalSatiRhythm.kstWindow} (${res.temporalSatiRhythm.threeTrainingsFocus}, 명료도 ${describeBuddhistStage(res.temporalSatiRhythm.satiClarityIndex)}) — ${res.temporalSatiRhythm.rhythmDirective}`,
+    `- 사성제·팔정도 매트릭스: 고제 수용(${describeBuddhistStage(res.nobleEightfoldMatrix.dukkhaAcceptance)}) · 갈애 해탈(${describeBuddhistStage(res.nobleEightfoldMatrix.tanhaRelease)}) · 사띠 현존(${describeBuddhistStage(res.nobleEightfoldMatrix.satiPresence)}) · 종합(${describeBuddhistStage(res.nobleEightfoldMatrix.overallSynthesis)})`,
     `- 붓다의 중도 지침: ${res.buddhistMiddleWayCounsel.philosophicalGuidance}`,
+    `- 오늘의 실천 의례: ${res.dailyPracticeRitual}`,
+    `- 성찰 질문: ${res.reflectiveQuestion}`,
+    `- 해석 경계: ${res.interpretiveBoundary}`,
   ].join('\n');
 }
