@@ -68,6 +68,7 @@ import { ALL_DCE_ENGINES } from '@/lib/divination/deterministicEngine';
 import { LUCY_PRO_CATALOG_ENGINES } from '@/lib/divination/engineCatalog';
 import { LucyEngineCatalogDialog } from '@/components/chat/LucyEngineCatalogDialog';
 import { getActuallyUsedCalculationAudit } from '@/lib/divination/calculationAudit';
+import { getEngineBadgeTheme } from '@/lib/divination/engineBadgeTheme';
 import '@/styles/lucy-starlight.css';
 
 // Helper: Compress uploaded images to prevent UI stutter and huge payload overhead
@@ -3314,15 +3315,29 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
                   >
                     <div className="mb-2 font-semibold">이번 답변에 실제 사용된 엔진 ({actuallyUsedEngines.length})</div>
                     {actuallyUsedEngines.length > 0 ? (
-                      <ul className="space-y-1">
-                        {actuallyUsedEngines.map((engine, engineIndex) => (
-                          <li key={`${engine.toolId}-${engineIndex}`} className="flex items-start gap-2">
-                            <span className="shrink-0 opacity-70">
-                              {engine.status === 'symbolic' ? '상징 참고' : engine.status === 'partial' ? '부분 계산' : '계산 결과'}
-                            </span>
-                            <span>{engine.name}</span>
-                          </li>
-                        ))}
+                      <ul className="flex flex-wrap gap-1.5">
+                        {actuallyUsedEngines.map((engine, engineIndex) => {
+                          const engineBadgeTheme = getEngineBadgeTheme(engine.toolId);
+                          const engineStatus = engine.status === 'symbolic' ? '상징 참고' : engine.status === 'partial' ? '부분 계산' : '계산 결과';
+                          return (
+                            <li key={`${engine.toolId}-${engineIndex}`} className="max-w-full">
+                              <span
+                                data-testid="used-engine-badge"
+                                data-engine-key={engine.toolId}
+                                data-engine-theme={engineBadgeTheme?.theme}
+                                className={`inline-flex max-w-full items-center gap-1.5 rounded-full border px-2.5 py-1 text-[10px] font-medium leading-5 ${engineBadgeTheme ? '' : isLight ? 'border-slate-200 bg-slate-100 text-slate-800' : 'border-white/20 bg-white/10 text-slate-100'}`}
+                                style={engineBadgeTheme ? {
+                                  backgroundColor: engineBadgeTheme.backgroundColor,
+                                  color: engineBadgeTheme.color,
+                                  borderColor: engineBadgeTheme.borderColor,
+                                } : undefined}
+                              >
+                                <span className="shrink-0 font-semibold">{engineStatus}</span>
+                                <span className="min-w-0 break-words">{engine.name}</span>
+                              </span>
+                            </li>
+                          );
+                        })}
                       </ul>
                     ) : (
                       <p>이번 답변에 모델로 전달된 계산·상징 엔진 기록이 없습니다.</p>
