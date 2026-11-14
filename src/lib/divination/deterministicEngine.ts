@@ -3784,7 +3784,7 @@ try {
   // 273. 영국 버트런드 러셀 행복의 정복 열정적 관심 & 합리적 낙관 지혜 엔진
   const britishBertrandRussellConquestOfHappinessResult = calculateSupplement('britishBertrandRussellConquestOfHappinessResult', () => ((() => {
     try {
-      return calculateBritishBertrandRussellConquestOfHappiness(profile);
+      return calculateBritishBertrandRussellConquestOfHappiness(profile, question, now);
     } catch (_) {
       return null;
     }
@@ -4189,7 +4189,7 @@ try {
   // 318. 영국 버지니아 울프 《자기만의 방·등대로》 자기만의 방 & 존재의 순간들·양성구유적 창조성 지혜 엔진
   const britishVirginiaWoolfRoomOfOnesOwnResult = calculateSupplement('britishVirginiaWoolfRoomOfOnesOwnResult', () => ((() => {
     try {
-      return calculateBritishVirginiaWoolfRoomOfOnesOwn(profile);
+      return calculateBritishVirginiaWoolfRoomOfOnesOwn(profile, question, now);
     } catch (_) {
       return null;
     }
@@ -4243,7 +4243,7 @@ try {
   // 324. 영국 윌리엄 셰익스피어 《햄릿·맥베스·템페스트·소네트》 인간 본성 심연 직시·실존적 결단·화해 대용서 및 준비되어 있음의 평정 지혜 엔진
   const britishWilliamShakespeareTragicWisdomResult = calculateSupplement('britishWilliamShakespeareTragicWisdomResult', () => ((() => {
     try {
-      return calculateBritishWilliamShakespeareTragicWisdom(profile);
+      return calculateBritishWilliamShakespeareTragicWisdom(profile, question, now);
     } catch (_) {
       return null;
     }
