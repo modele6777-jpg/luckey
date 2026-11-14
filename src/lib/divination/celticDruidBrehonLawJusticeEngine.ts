@@ -14,7 +14,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const CELTIC_BREHON_LAW_VERSION = 'LUCKEY-CELTIC-BREHON-LAW-v1.0.0';
+export const CELTIC_BREHON_LAW_VERSION = 'LUCKEY-CELTIC-BREHON-LAW-v2.0.0';
 
 export interface BrehonJusticeRank {
   rankLevel: number;
@@ -44,6 +44,23 @@ export interface CelticBrehonLawResult {
     precedentTitle: string;
     moralWisdom: string;
   };
+  situationalBrehonAudit: {
+    focusTheme: string;
+    equityNote: string;
+    tacticalStep: string;
+  };
+  temporalBrehonRhythm: {
+    kstTimeLabel: string;
+    groveCourtWindow: string;
+    seasonalBrehonTone: string;
+    temporalGuidance: string;
+  };
+  brehonSynthesisMatrix: {
+    coreInsight: string;
+    recommendedAction: string;
+    cautionNotice: string;
+  };
+  boundaryNotice: string;
 }
 
 export type CelticBrehonLawReport = CelticBrehonLawResult;
@@ -72,10 +89,45 @@ const BREHON_PRECEDENTS = [
   { precedentTitle: '추수의 첫 자루 봉헌 (Offering of the First Sheaf)', moralWisdom: '풍요의 몫을 타인과 먼저 나눌 때 자연의 신성과 법이 나의 권리를 영구히 보증한다.' },
 ];
 
-function getKstDateString(): string {
-  const now = new Date();
-  const kst = new Date(now.getTime() + (9 * 60 + now.getTimezoneOffset()) * 60000);
-  return kst.toISOString().replace('T', ' ').substring(0, 19) + ' KST';
+function getKstDateString(now: Date): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
+
+function getTemporalBrehonRhythm(now: Date) {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const hour = kst.getUTCHours();
+  const month = kst.getUTCMonth() + 1;
+
+  const groveCourtWindow =
+    hour >= 5 && hour < 11
+      ? '아침 참나무 법정창 — 사실과 약속의 기준을 맑게 세우고 하루의 신의를 여는 시간'
+      : hour >= 11 && hour < 17
+        ? '정오 중재 합의창 — 상호 권리와 책임을 공정하게 조율하며 실질적 합의를 이끄는 시간'
+        : hour >= 17 && hour < 22
+          ? '황혼 에릭(Éric) 균형창 — 크고 작은 빚과 감정의 잔여를 정산하고 평온을 회복하는 시간'
+          : '심야 피르 플라하(Fír Flatha) 관조창 — 진실의 저울 앞에서 스스로의 중심을 돌아보는 시간';
+
+  const seasonalBrehonTone =
+    month >= 3 && month <= 5
+      ? '봄 · 벨테인(Beltane) 맹세절 (새로운 신뢰와 동맹이 싹트는 시기)'
+      : month >= 6 && month <= 8
+        ? '여름 · 루나사(Lughnasadh) 결실절 (약속의 이행과 공정한 분배가 빛나는 시기)'
+        : month >= 9 && month <= 11
+          ? '가을 · 삼하인(Samhain) 정산절 (묵은 매듭을 공정히 청산하고 새 질서를 세우는 시기)'
+          : '겨울 · 임볼크(Imbolc) 정화절 (명예와 내면의 원칙을 다듬으며 내실을 기르는 시기)';
+
+  return {
+    kstTimeLabel: getKstDateString(now),
+    groveCourtWindow,
+    seasonalBrehonTone,
+    temporalGuidance: `${groveCourtWindow} · ${seasonalBrehonTone}의 법리에 맞추어 균형을 세우십시오.`,
+  };
 }
 
 function hashSeed(seedStr: string): number {
@@ -87,7 +139,13 @@ function hashSeed(seedStr: string): number {
   return Math.abs(h);
 }
 
-export function calculateCelticBrehonLaw(profile?: UserProfile): CelticBrehonLawResult {
+export function calculateCelticBrehonLaw(
+  profile?: UserProfile,
+  nowArg?: Date,
+  question?: string
+): CelticBrehonLawResult {
+  const now = nowArg || new Date();
+  const q = (question || '').trim();
   const birthdate = profile?.basic?.birthdate || '1995-03-21';
   const birthtime = profile?.basic?.birthtime || '12:00';
   const name = profile?.basic?.name || 'Inquirer';
@@ -108,9 +166,28 @@ export function calculateCelticBrehonLaw(profile?: UserProfile): CelticBrehonLaw
   const precedentIdx = (seed >> 6) % BREHON_PRECEDENTS.length;
   const resolutionPrecedent = BREHON_PRECEDENTS[precedentIdx];
 
+  const temporalBrehonRhythm = getTemporalBrehonRhythm(now);
+  const situationalBrehonAudit = /계약|돈|갈등|관계|분쟁|약속/.test(q)
+    ? {
+        focusTheme: `${primaryBrehonVirtue.nameKo} · 상호 공정 합의 감사`,
+        equityNote: resolutionPrecedent.moralWisdom,
+        tacticalStep: primaryBrehonVirtue.actionableDirective,
+      }
+    : {
+        focusTheme: `${activeJusticeRank.rankNameKo} · ${primaryBrehonVirtue.gaelic}`,
+        equityNote: activeJusticeRank.jurisdictionDomain,
+        tacticalStep: primaryBrehonVirtue.actionableDirective,
+      };
+
+  const brehonSynthesisMatrix = {
+    coreInsight: `[${activeJusticeRank.rankNameKo}] ${primaryBrehonVirtue.nameKo}의 기준이 상황의 중심을 세웁니다.`,
+    recommendedAction: primaryBrehonVirtue.actionableDirective,
+    cautionNotice: resolutionPrecedent.moralWisdom,
+  };
+
   return {
     engineVersion: CELTIC_BREHON_LAW_VERSION,
-    calculatedAtKst: getKstDateString(),
+    calculatedAtKst: temporalBrehonRhythm.kstTimeLabel,
     cairdePeacePactHarmony,
     ericCompensationRestoration,
     logNEnechHonorFaceValueScore,
@@ -119,21 +196,35 @@ export function calculateCelticBrehonLaw(profile?: UserProfile): CelticBrehonLaw
     activeJusticeRank,
     primaryBrehonVirtue,
     resolutionPrecedent,
+    situationalBrehonAudit,
+    temporalBrehonRhythm,
+    brehonSynthesisMatrix,
+    boundaryNotice: '본 결과는 고대 켈트 브레혼 법전의 정의와 회복 철학에 기반한 정성적 관계·합의 가이드이며, 법률 자문이나 확정적 예측이 아닙니다.',
   };
 }
 
 export function formatCelticBrehonLawPrompt(result: CelticBrehonLawResult): string {
+  const cairdeTone = result.cairdePeacePactHarmony >= 85 ? '견고한 평화 조약' : result.cairdePeacePactHarmony >= 70 ? '안정적 상호 존중' : '신뢰 재정비 필요';
+  const ericTone = result.ericCompensationRestoration >= 85 ? '온전한 균형 회복' : result.ericCompensationRestoration >= 70 ? '점진적 보상 조화' : '세심한 보완 필요';
+  const honorTone = result.logNEnechHonorFaceValueScore >= 85 ? '높은 신용 품격' : result.logNEnechHonorFaceValueScore >= 72 ? '단단한 신의 기반' : '명예 기준 점검 필요';
+  const truthTone = result.firFlathaTruthSovereigntyIndex >= 85 ? '맑은 공의와 풍요' : result.firFlathaTruthSovereigntyIndex >= 70 ? '안정적 진실 순환' : '원칙 재정립 필요';
+  const clarityTone = result.brehonArbitrationClarityPower >= 85 ? '명쾌한 중재력' : '차분한 분별 조율';
+
   return `[⚖️ 고대 켈트 드루이드 《브레혼 법전(Brehon Law)》 4대 우주정의 & 명예가격(Éric) 균형 리포트]
-- 엔진 버전: ${result.engineVersion}
-- 카이르데(Cairde) 신성 평화 조약 조화율: ${result.cairdePeacePactHarmony}% (상호 존중과 신뢰의 불가침 결계)
-- 에릭(Éric) 우주적 피해 복구 및 카르마 청산율: ${result.ericCompensationRestoration}% (정당한 등가 교환과 보상)
-- 로그 네네흐(Lóg n-enech) 인격 명예 자산 가치: ${result.logNEnechHonorFaceValueScore}점 (내면적 품위와 공적 신용도)
-- 피르 플라하(Fir Flatha) 진실 통치 및 대지 풍요율: ${result.firFlathaTruthSovereigntyIndex}% (공의로운 선택이 부르는 결실)
-- 브레혼 중재 판결 명료도: ${result.brehonArbitrationClarityPower}%
-- 현행 영적 판결 지위: ${result.activeJusticeRank.rankNameKo} (${result.activeJusticeRank.rankNameGaelic}) [배상 배수: x${result.activeJusticeRank.honorHonorariumMultiplier}]
+- 엔진 버전: ${result.engineVersion} | 연산 시각: ${result.calculatedAtKst}
+- 카이르데(Cairde) 신성 평화 조약 기조: ${cairdeTone} (상호 존중과 신뢰의 불가침 결계)
+- 에릭(Éric) 피해 복구 및 균형 기조: ${ericTone} (정당한 등가 교환과 회복)
+- 로그 네네흐(Lóg n-enech) 인격 명예 기조: ${honorTone} (내면적 품위와 공적 신용도)
+- 피르 플라하(Fir Flatha) 진실 통치 기조: ${truthTone} (공의로운 선택이 부르는 결실)
+- 브레혼 중재 판결 기조: ${clarityTone}
+- 현행 영적 판결 지위: ${result.activeJusticeRank.rankNameKo} (${result.activeJusticeRank.rankNameGaelic})
 - 관할 관장 영역: ${result.activeJusticeRank.jurisdictionDomain}
 - 최우선 브레혼 실천 덕목: **[${result.primaryBrehonVirtue.nameKo} (${result.primaryBrehonVirtue.gaelic})]**
   → 행동 지침: ${result.primaryBrehonVirtue.actionableDirective}
 - 전승 판례 조언: 《${result.resolutionPrecedent.precedentTitle}》
-  → 고대 법훈: "${result.resolutionPrecedent.moralWisdom}"`;
+  → 고대 법훈: "${result.resolutionPrecedent.moralWisdom}"
+- 질문 맥락 감사 (${result.situationalBrehonAudit.focusTheme}): ${result.situationalBrehonAudit.tacticalStep}
+- KST 시공간 법정 리듬: ${result.temporalBrehonRhythm.groveCourtWindow} / ${result.temporalBrehonRhythm.seasonalBrehonTone}
+- 브레혼 교차 매트릭스: 핵심(${result.brehonSynthesisMatrix.coreInsight}) | 실행(${result.brehonSynthesisMatrix.recommendedAction}) | 법훈(${result.brehonSynthesisMatrix.cautionNotice})
+- 해석 경계: ${result.boundaryNotice}`;
 }

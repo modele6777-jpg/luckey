@@ -1,6 +1,6 @@
 import { UserProfile } from '../sharedState';
 
-export const EGYPTIAN_HERMETIC_CARTOUCHE_ENGINE_VERSION = '1.1.0';
+export const EGYPTIAN_HERMETIC_CARTOUCHE_ENGINE_VERSION = '2.0.0';
 
 export type HermeticQuestionFocus = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -25,8 +25,54 @@ export interface EgyptianHermeticCartoucheReport {
   ritualAction: string;
   reflectionFocus: string;
   counselNote: string;
+  temporalHermeticRhythm: {
+    kstTimeLabel: string;
+    nileWatchWindow: string;
+    seasonalSolarTone: string;
+    temporalGuidance: string;
+  };
+  hermeticSynthesisMatrix: {
+    coreInsight: string;
+    recommendedAction: string;
+    cautionNotice: string;
+  };
   boundaryNotice: string;
   synthesisPrompt: string;
+}
+
+function getTemporalHermeticRhythm(kst: Date) {
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  const hour = kst.getUTCHours();
+  const month = kst.getUTCMonth() + 1;
+
+  const nileWatchWindow =
+    hour >= 5 && hour < 11
+      ? '아침 케프리(Khepri) 여명창 — 새로운 의도를 세우고 실행의 첫 빛을 여는 시간'
+      : hour >= 11 && hour < 17
+        ? '정오 라(Ra) 천정창 — 핵심 사안을 명료하게 직시하고 결단하는 시간'
+        : hour >= 17 && hour < 22
+          ? '황혼 아툼(Atum) 수렴창 — 하루의 경험을 차분히 정리하고 내면의 균형을 맞추는 시간'
+          : '심야 두아트(Duat) 성찰창 — 깊은 침묵 속에서 내일의 재생을 준비하는 시간';
+
+  const seasonalSolarTone =
+    month >= 3 && month <= 5
+      ? '봄 · 아케트(발아기) — 새로운 질서를 싹틔우는 시기'
+      : month >= 6 && month <= 8
+        ? '여름 · 태양 정점기 — 실행력과 생명력이 충만한 시기'
+        : month >= 9 && month <= 11
+          ? '가을 · 마트(Maat) 균형기 — 과실을 수확하고 질서를 가다듬는 시기'
+          : '겨울 · 페레트(재생기) — 내면의 빛을 응축하며 다음 도약을 준비하는 시기';
+
+  return {
+    kstTimeLabel: `${y}-${m}-${d} ${hh}:${mm} KST`,
+    nileWatchWindow,
+    seasonalSolarTone,
+    temporalGuidance: `${nileWatchWindow} · ${seasonalSolarTone}의 리듬에 맞추어 카르투슈의 뜻을 실천하십시오.`,
+  };
 }
 
 const CARTOUCHES = [
@@ -221,12 +267,18 @@ export function calculateEgyptianHermeticCartouche(
         : '부분의 혼란에 휩쓸리지 말고 전체의 질서를 비추는 중심의 빛을 먼저 회복하라.';
 
   const guidance = buildHermeticGuidance(dominantAxis, questionFocus, cartouche.name);
+  const temporalHermeticRhythm = getTemporalHermeticRhythm(kst);
+  const hermeticSynthesisMatrix = {
+    coreInsight: `[${cartouche.name}] ${triadHarmonyState}`,
+    recommendedAction: guidance.practiceGuidance,
+    cautionNotice: guidance.reflectionFocus,
+  };
   const boundaryNotice = '이는 고대 이집트 헤르메스주의 상징에 기반한 자기 성찰 참고일 뿐, 개인 점수·심리 진단·미래 예측이 아닙니다.';
 
   const synthesisPrompt = `
 [고대 이집트 헤르메스 카르투슈 & 영혼 3위일체 오라클 실측 데이터]
 ======================================================================
-엔진 버전: ${EGYPTIAN_HERMETIC_CARTOUCHE_ENGINE_VERSION} | 기준 일시: ${kst.toISOString().replace('T', ' ').slice(0, 19)} KST | 질문 맥락: ${questionFocus}
+엔진 버전: ${EGYPTIAN_HERMETIC_CARTOUCHE_ENGINE_VERSION} | 기준 일시: ${temporalHermeticRhythm.kstTimeLabel} | 질문 맥락: ${questionFocus}
 ----------------------------------------------------------------------
 1. 𓋹 [주재 신성 카르투슈 심볼]:
    - 신성 원형: **${cartouche.name}**
@@ -236,19 +288,21 @@ export function calculateEgyptianHermeticCartouche(
 2. 𓊹 [영혼 3위일체(Ka·Ba·Akh) 정성적 균형 상태]:
    - 공명 상태: ${triadHarmonyState}
    - 에메랄드 타블렛 원리: ${emeraldMaxim}
-3. 📜 [헤르메스주의 칙령 & 성찰 가이드]:
+3. 📜 [헤르메스주의 칙령 & 시공간 성찰 가이드]:
    - 칙령: "${cartouche.decree}"
    - 실천 조언: ${guidance.practiceGuidance}
    - 일상 의례: ${guidance.ritualAction}
    - 성찰 질문: ${guidance.reflectionFocus}
    - 조언 요약: ${guidance.counselNote}
+   - KST 시공간 리듬: ${temporalHermeticRhythm.nileWatchWindow} / ${temporalHermeticRhythm.seasonalSolarTone}
+   - 교차 매트릭스: 핵심(${hermeticSynthesisMatrix.coreInsight}) | 실행(${hermeticSynthesisMatrix.recommendedAction}) | 성찰(${hermeticSynthesisMatrix.cautionNotice})
    - 경계 안내: ${boundaryNotice}
 ======================================================================
 `.trim();
 
   return {
     engineVersion: EGYPTIAN_HERMETIC_CARTOUCHE_ENGINE_VERSION,
-    calculatedAtKst: kst.toISOString().replace('T', ' ').slice(0, 19) + ' KST',
+    calculatedAtKst: temporalHermeticRhythm.kstTimeLabel,
     questionFocus,
     primaryCartoucheName: cartouche.name,
     hieroglyphSymbol: cartouche.symbol,
@@ -267,6 +321,8 @@ export function calculateEgyptianHermeticCartouche(
     ritualAction: guidance.ritualAction,
     reflectionFocus: guidance.reflectionFocus,
     counselNote: guidance.counselNote,
+    temporalHermeticRhythm,
+    hermeticSynthesisMatrix,
     boundaryNotice,
     synthesisPrompt,
   };

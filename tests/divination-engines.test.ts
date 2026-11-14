@@ -3296,10 +3296,13 @@ test('Egyptian Hermetic Cartouche Engine: calculates divine cartouche and qualit
   assert(rep.soulTriad.kaVitalityIndex >= 0 && rep.soulTriad.kaVitalityIndex <= 100);
   assert(rep.soulTriad.baIndividualityIndex >= 0 && rep.soulTriad.baIndividualityIndex <= 100);
   assert(rep.soulTriad.akhLuminousPurity >= 0 && rep.soulTriad.akhLuminousPurity <= 100);
+  assert(rep.temporalHermeticRhythm.nileWatchWindow.length > 0);
+  assert(rep.hermeticSynthesisMatrix.coreInsight.length > 0);
   const prompt = formatEgyptianHermeticCartouchePrompt(rep);
   assert(prompt.includes('고대 이집트 헤르메스 카르투슈 & 영혼 3위일체 오라클 실측 데이터'));
   assert(prompt.includes(rep.primaryCartoucheName));
-  assert(!prompt.includes('/100'));
+  assert(prompt.includes('KST'));
+  assert(!prompt.includes('/100') && !prompt.includes('%') && !prompt.includes('점수'));
 });
 
 test('Taoist Gong Guo Ge Karma Engine: calculates merit domain and qualitative guidance', () => {
@@ -3329,13 +3332,26 @@ test('Yoruba Ifa Odu Engine: calculates 16 Meji Odu and Ebo guidance', () => {
 });
 
 test('Arabic Ilm al-Raml Engine: calculates 16 geomantic figures and Qadi verdict', () => {
-  const rep = calculateArabicIlmAlRaml({ profile });
+  const rep = calculateArabicIlmAlRaml({ profile, targetDate: new Date('2026-11-15T08:15:00+09:00'), question: '이 계약 진행해도 될까요?' });
   assert.equal(rep.engineVersion, ARABIC_ILM_AL_RAML_ENGINE_VERSION);
   assert(rep.figureNameLatin.length > 0);
   assert(rep.earthResonanceIndex >= 0 && rep.earthResonanceIndex <= 100);
+  assert(rep.calculatedAtKst.includes('KST'));
+  assert(rep.temporalRamlRhythm.geomanticWatchWindow.length > 0);
+  assert(rep.ramlSynthesisMatrix.coreInsight.length > 0);
   const prompt = formatArabicIlmAlRamlPrompt(rep);
   assert(prompt.includes('고대 아랍 일무 알-람말(‘Ilm al-Raml) 16 형상 & 지오맨시(Geomancy) 지혜 실측 데이터'));
   assert(prompt.includes(rep.figureNameLatin));
+  assert(prompt.includes('KST'));
+  assert(!prompt.includes('/100') && !prompt.includes('%') && !prompt.includes('점수'));
+
+  const brehon = calculateCelticBrehonLaw(profile, new Date('2026-11-15T08:15:00+09:00'), '계약 분쟁을 어떻게 풀어야 할까요?');
+  assert.equal(brehon.engineVersion, CELTIC_BREHON_LAW_VERSION);
+  assert(brehon.calculatedAtKst.includes('KST'));
+  assert(brehon.temporalBrehonRhythm.groveCourtWindow.length > 0);
+  const brehonPrompt = formatCelticBrehonLawPrompt(brehon);
+  assert(brehonPrompt.includes('KST'));
+  assert(!brehonPrompt.includes('/100') && !brehonPrompt.includes('%') && !brehonPrompt.includes('점수'));
 });
 
 test('Hindu Nadi Agastya Palm Leaf Engine: calculates 14 Kandams and Shanti Parikharam', () => {

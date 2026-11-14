@@ -1,6 +1,6 @@
 import { UserProfile } from '../sharedState';
 
-export const ARABIC_ILM_AL_RAML_ENGINE_VERSION = '1.0.0';
+export const ARABIC_ILM_AL_RAML_ENGINE_VERSION = '2.0.0';
 
 export interface ArabicIlmAlRamlReport {
   engineVersion: string;
@@ -14,8 +14,60 @@ export interface ArabicIlmAlRamlReport {
   geomanticNature: string;
   qadiJudgeVerdict: string;
   actionGuidance: string;
-  earthResonanceIndex: number;
+  earthResonanceIndex: number; // 내부 호환용 (프롬프트 비노출)
+  situationalRamlAudit: {
+    focusTheme: string;
+    courtNote: string;
+    tacticalStep: string;
+  };
+  temporalRamlRhythm: {
+    kstTimeLabel: string;
+    geomanticWatchWindow: string;
+    seasonalEarthTone: string;
+    temporalGuidance: string;
+  };
+  ramlSynthesisMatrix: {
+    coreInsight: string;
+    recommendedAction: string;
+    cautionNotice: string;
+  };
+  boundaryNotice: string;
   synthesisPrompt: string;
+}
+
+function getTemporalRamlRhythm(kst: Date) {
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  const hour = kst.getUTCHours();
+  const month = kst.getUTCMonth() + 1;
+
+  const geomanticWatchWindow =
+    hour >= 5 && hour < 11
+      ? '아침 사점(砂占) 개시창 — 모래 위에 첫 획을 긋듯 하루의 우선순위를 선명히 세우는 시간'
+      : hour >= 11 && hour < 17
+        ? '정오 카디(Qadi) 판결창 — 실무 협상과 계약의 근거를 명료히 점검하는 시간'
+        : hour >= 17 && hour < 22
+          ? '황혼 수렴창 — 흩어진 4원소의 기운을 가라앉히고 하루의 결실을 정리하는 시간'
+          : '심야 관조창 — 불필요한 충동을 내려놓고 다음 날의 방향을 고요히 가늠하는 시간';
+
+  const seasonalEarthTone =
+    month >= 3 && month <= 5
+      ? '봄 · 공기·발아절 (새로운 연결과 소통의 바람이 부는 시기)'
+      : month >= 6 && month <= 8
+        ? '여름 · 불·확장절 (열정과 추진력이 가장 강하게 드러나는 시기)'
+        : month >= 9 && month <= 11
+          ? '가을 · 흙·결실절 (현실적 수확과 구조의 안정이 중요한 시기)'
+          : '겨울 · 물·심연절 (내면의 지혜와 침착한 통찰이 힘을 발휘하는 시기)';
+
+  return {
+    kstTimeLabel: `${y}-${m}-${d} ${hh}:${mm} KST`,
+    geomanticWatchWindow,
+    seasonalEarthTone,
+    temporalGuidance: `${geomanticWatchWindow} · ${seasonalEarthTone}의 흐름에 맞추어 사점의 징표를 읽으십시오.`,
+  };
 }
 
 const SIXTEEN_GEOMANTIC_FIGURES = [
@@ -233,11 +285,30 @@ export function calculateArabicIlmAlRaml(options?: {
   const fig = SIXTEEN_GEOMANTIC_FIGURES[figureIndex];
 
   const earthResonanceIndex = 82 + ((seed * 13 + kst.getUTCHours() * 7) % 17);
+  const resonanceTone = earthResonanceIndex >= 93 ? '깊은 대지 공명' : earthResonanceIndex >= 87 ? '안정적 균형' : '신중한 조율 필요';
+  const temporalRamlRhythm = getTemporalRamlRhythm(kst);
+  const situationalRamlAudit = /계약|결정|사업|돈|일/.test(qStr)
+    ? {
+        focusTheme: `${fig.latin} · 실무·계약 사점 감사`,
+        courtNote: fig.verdict,
+        tacticalStep: fig.guidance,
+      }
+    : {
+        focusTheme: `${fig.house} · ${fig.element} 조응`,
+        courtNote: fig.nature,
+        tacticalStep: fig.guidance,
+      };
+  const ramlSynthesisMatrix = {
+    coreInsight: `[${fig.latin}] ${fig.planet}의 기운이 ${fig.house}에서 작동합니다.`,
+    recommendedAction: fig.guidance,
+    cautionNotice: `4원소 점(${fig.dots})의 균형을 잃지 않도록 성급한 단정을 피하십시오.`,
+  };
+  const boundaryNotice = '본 결과는 아라비아 일무 알-람말 16 형상 지오맨시 상징에 기반한 정성적 성찰 가이드이며, 확정적 예언이 아닙니다.';
 
   const synthesisPrompt = `
 [고대 아랍 일무 알-람말(‘Ilm al-Raml) 16 형상 & 지오맨시(Geomancy) 지혜 실측 데이터]
 ======================================================================
-엔진 버전: ${ARABIC_ILM_AL_RAML_ENGINE_VERSION} | 기준 일시: ${kst.toISOString().replace('T', ' ').slice(0, 19)} KST
+엔진 버전: ${ARABIC_ILM_AL_RAML_ENGINE_VERSION} | 기준 일시: ${temporalRamlRhythm.kstTimeLabel}
 ----------------------------------------------------------------------
 1. 🏜️ [사점(砂占) 지오맨틱 형상 & 천체 조응]:
    - 주재 형상: **${fig.latin}** [${fig.arabic}]
@@ -247,16 +318,20 @@ export function calculateArabicIlmAlRaml(options?: {
 2. ⚖️ [카디(Qadi/Judge) 심판관 판결]:
    - 형상의 본성: **${fig.nature}**
    - 최종 판결(Verdict): "${fig.verdict}"
-3. 🧭 [현실 나침반 지침 & 대지 공명도]:
-   - 🎯 전략적 행동 지침: **${fig.guidance}**
-   - 대지 원소 공명도: **${earthResonanceIndex}%**
+3. 🧭 [현실 나침반 지침 & 시공간 리듬]:
+   - 전략적 행동 지침: **${fig.guidance}**
+   - 대지 원소 공명 기조: **${resonanceTone}**
+   - 질문 맥락 감사 (${situationalRamlAudit.focusTheme}): ${situationalRamlAudit.tacticalStep}
+   - KST 시공간 리듬: ${temporalRamlRhythm.geomanticWatchWindow} / ${temporalRamlRhythm.seasonalEarthTone}
+   - 교차 매트릭스: 핵심(${ramlSynthesisMatrix.coreInsight}) | 실행(${ramlSynthesisMatrix.recommendedAction}) | 주의(${ramlSynthesisMatrix.cautionNotice})
+   - 해석 경계: ${boundaryNotice}
 ======================================================================
 [AI 해석 절대 지침]: 본 리포트는 9세기 아랍 이슬람 황금기 및 중세 유럽 지오맨시 정통 16 형상 체계에 입각한 100% 결정론적 산출물입니다. 형상의 기운과 카디 판결, 현실 행동 지침을 결합하여 상담자에게 단호하고 명쾌한 지상(地上)의 나침반을 제공하십시오.
 `.trim();
 
   return {
     engineVersion: ARABIC_ILM_AL_RAML_ENGINE_VERSION,
-    calculatedAtKst: kst.toISOString().replace('T', ' ').slice(0, 19) + ' KST',
+    calculatedAtKst: temporalRamlRhythm.kstTimeLabel,
     figureNameLatin: fig.latin,
     figureNameArabic: fig.arabic,
     fourLevelDots: fig.dots,
@@ -267,6 +342,10 @@ export function calculateArabicIlmAlRaml(options?: {
     qadiJudgeVerdict: fig.verdict,
     actionGuidance: fig.guidance,
     earthResonanceIndex,
+    situationalRamlAudit,
+    temporalRamlRhythm,
+    ramlSynthesisMatrix,
+    boundaryNotice,
     synthesisPrompt,
   };
 }
