@@ -2749,15 +2749,19 @@ test('Five Emotions Pulse Engine: calculates five elements emotional harmony and
 });
 
 test('Hermetic Kybalion Engine: maps 7 cosmic principles and alchemical shift', () => {
-  const rep = calculateHermeticKybalion(profile);
+  const rep = calculateHermeticKybalion(profile, new Date('2026-11-15T05:00:00Z'), '직장 결정을 앞두고 불안합니다');
   assert.equal(rep.engineVersion, HERMETIC_KYBALION_VERSION);
   assert(rep.cosmicPrinciples.length === 7);
   assert(rep.principleAlignmentScore >= 0 && rep.principleAlignmentScore <= 100);
   assert(rep.masterPrinciple.nameKo.length > 0);
+  assert(rep.situationalKybalionAudit.kybalionMaxim.length > 0);
+  assert(rep.temporalPendulumRhythm.pendulumWindow.length > 0);
+  assert(rep.kybalionSynthesisMatrix.synthesizedVerdict.length > 0);
   const prompt = formatHermeticKybalionPrompt(rep);
   assert(prompt.includes('헤르메스 카이발리온'));
   assert(prompt.includes(rep.masterPrinciple.nameKo));
   assert.doesNotMatch(prompt, /\bHz\b|주파수|frequency/i);
+  assert(!prompt.includes('%'));
 });
 
 test('Vibrational Soul Quest Engine: derives 4 core soul numbers and personal year quest', () => {
@@ -3639,16 +3643,22 @@ test('Shugendo Yamabushi Ten Realms Engine: calculates ten realms purification a
 });
 
 test('Gnostic Pistis Sophia Pleroma Engine: calculates twelve aeons resonance and pneuma spark', () => {
-  const rep = calculateGnosticPistisSophiaPleroma({ profile });
+  const rep = calculateGnosticPistisSophiaPleroma({ profile, question: '마음이 불안할 때 빛을 찾고 싶어요', now: new Date('2026-11-15T05:00:00Z') });
   assert.equal(rep.engineVersion, GNOSTIC_PISTIS_SOPHIA_PLEROMA_ENGINE_VERSION);
+  assert.equal(rep.questionFocus, 'anxiety');
   assert(rep.pneumaSpiritualSparkScore >= 0 && rep.pneumaSpiritualSparkScore <= 100);
   assert(rep.gnosisLiberationIndex >= 0 && rep.gnosisLiberationIndex <= 100);
   assert(rep.archonMatrixDissolutionRate >= 0 && rep.archonMatrixDissolutionRate <= 100);
   assert(rep.pleromaLightFullnessScore >= 0 && rep.pleromaLightFullnessScore <= 100);
   assert(rep.primaryAeon.nameKo.length > 0);
+  assert(rep.situationalGnosticAudit.pistisSophiaVerse.length > 0);
+  assert(rep.temporalPleromaRhythm.pleromaHourWindow.length > 0);
+  assert(rep.pleromaSynthesisMatrix.synthesizedVerdict.length > 0);
   const prompt = formatGnosticPistisSophiaPleromaPrompt(rep);
   assert(prompt.includes('고대 영지주의(Gnosticism) 피스티스 소피아 12에온 & 플레로마 실측 데이터'));
   assert(prompt.includes(rep.primaryAeon.nameKo));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
 });
 
 test('Sumerian Inanna Underworld Descent Engine: calculates seven gates stripping and resurrection vitality', () => {
@@ -3782,16 +3792,21 @@ test('Persian Attar Seven Valleys Engine: calculates seven valleys passage, Simu
 });
 
 test('Hermetic Poimandres Ascension Engine: calculates seven spheres passions purification and Ogdoad Nous', () => {
-  const rep = calculateHermeticPoimandres({ profile, question: '포이만드레스와 누스' });
+  const rep = calculateHermeticPoimandres({ profile, question: '포이만드레스와 누스', now: new Date('2026-11-15T05:00:00Z') });
   assert.equal(rep.engineVersion, HERMETIC_POIMANDRES_ENGINE_VERSION);
   assert(rep.nousDivineIntellectResonanceScore >= 0 && rep.nousDivineIntellectResonanceScore <= 100);
   assert(rep.planetaryPassionsPurificationRate >= 0 && rep.planetaryPassionsPurificationRate <= 100);
   assert(rep.ogdoadAscensionReadinessIndex >= 0 && rep.ogdoadAscensionReadinessIndex <= 100);
   assert(rep.theosisDivineUnityScore >= 0 && rep.theosisDivineUnityScore <= 100);
   assert(rep.dominantSphere.nameKo.length > 0);
+  assert(rep.situationalPoimandresAudit.corpusHermeticumVerse.length > 0);
+  assert(rep.temporalOgdoadRhythm.ascensionWindow.length > 0);
+  assert(rep.poimandresSynthesisMatrix.synthesizedVerdict.length > 0);
   const prompt = formatHermeticPoimandresPrompt(rep);
   assert(prompt.includes('고대 헤르메스주의 포이만드레스 7대 천계 탈각 & 옥도아드 각성 실측 데이터'));
   assert(prompt.includes(rep.dominantSphere.nameKo));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
 });
 
 test('Kashmir Shaivism Spanda Engine: calculates cosmic pulsation, Pratyabhijna self-recognition and Prakasha-Vimarsha', () => {
