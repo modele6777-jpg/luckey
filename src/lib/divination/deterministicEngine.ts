@@ -1388,7 +1388,7 @@ try {
   const geokgukResult = calculateSupplement('geokgukResult', () => (birthdateStr && profile
     ? (() => {
         try {
-          const res = calculateGeokguk({ profile });
+          const res = calculateGeokguk({ profile, now, question });
           return res.status === 'calculated' ? res : null;
         } catch (_) {
           return null;
@@ -1570,7 +1570,7 @@ try {
   const deepWorkFlowResult = calculateSupplement('deepWorkFlowResult', () => (birthdateStr && profile
     ? (() => {
         try {
-          return calculateDeepWorkFlow({ profile, targetDate: now });
+          return calculateDeepWorkFlow({ profile, targetDate: now, question });
         } catch (_) {
           return null;
         }
@@ -1680,7 +1680,7 @@ try {
   const biorhythmPeakFlowResult = calculateSupplement('biorhythmPeakFlowResult', () => (birthdateStr && profile
     ? (() => {
         try {
-          return calculateBiorhythmPeakFlow({ profile, targetDate: now });
+          return calculateBiorhythmPeakFlow({ profile, targetDate: now, question });
         } catch (_) {
           return null;
         }

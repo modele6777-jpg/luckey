@@ -16,7 +16,7 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const BIORHYTHM_PEAK_FLOW_VERSION = 'LUCKEY-BIOFLOW-v1.0.0';
+export const BIORHYTHM_PEAK_FLOW_VERSION = 'LUCKEY-BIOFLOW-v2.0.0';
 
 export type ChronotypeType = 
   | '사자형 (Lion · 새벽형 몰입 개척자)'
@@ -28,7 +28,7 @@ export interface BiorhythmCurve {
   physical: number;      // 신체 리듬 (-100 ~ +100)
   emotional: number;     // 감성 리듬 (-100 ~ +100)
   intellectual: number;  // 지성 리듬 (-100 ~ +100)
-  compositeVitality: number; // 3대 합성 활력 지수 (0 ~ 100)
+  compositeVitality: number; // 3대 합성 활력 지수 (내부 호환용 0 ~ 100)
   isCriticalDay: boolean; // 0점 교차 위험일 여부
   criticalCategory?: '신체 위험일 (체력/부상 주의)' | '감성 위험일 (감정 롤러코스터 주의)' | '지성 위험일 (판단 착오 주의)';
 }
@@ -42,6 +42,7 @@ export interface GoldenTimeWindow {
 export interface BiorhythmPeakFlowReport {
   engineVersion: string;
   calculatedAt: string;
+  calculatedAtKst: string;
   chronotype: ChronotypeType;
   biorhythm: BiorhythmCurve;
   goldenWindows: GoldenTimeWindow;
@@ -50,12 +51,66 @@ export interface BiorhythmPeakFlowReport {
     nutritionTiming: string;      // 최적 두뇌 포도당 & 식사 타이밍
     focusBoosterProtocol: string; // 집중력 급상승 부스터 행동
   };
+  situationalBioAudit: {
+    focusTheme: string;
+    rhythmNote: string;
+    pacingTip: string;
+  };
+  temporalBioRhythm: {
+    kstTimeLabel: string;
+    currentPhaseWindow: string;
+    seasonalCircadianTone: string;
+    temporalGuidance: string;
+  };
+  bioSynthesisMatrix: {
+    coreInsight: string;
+    recommendedAction: string;
+    cautionNotice: string;
+  };
+  boundaryNotice: string;
   synthesisPromptGuidance: string;
+}
+
+function getTemporalBioRhythm(now: Date) {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  const hour = kst.getUTCHours();
+  const month = kst.getUTCMonth() + 1;
+
+  const currentPhaseWindow =
+    hour >= 5 && hour < 11
+      ? '아침 코르티솔 각성창 — 자연광을 쬐며 서서히 대사·인지 리듬을 깨우는 시간'
+      : hour >= 11 && hour < 17
+        ? '정오 활성·리셋창 — 핵심 과업을 처리하고 오후 나른함에 짧은 휴식을 배치하는 시간'
+        : hour >= 17 && hour < 22
+          ? '황혼 이완창 — 자극적인 빛을 줄이고 몸의 긴장을 서서히 내리는 시간'
+          : '심야 멜라토닌 회복창 — 깊은 수면과 세포 회복에 전념하는 시간';
+
+  const seasonalCircadianTone =
+    month >= 3 && month <= 5
+      ? '봄 · 생체 시계 전진기 (일출이 빨라져 아침 활동량을 늘리기 좋은 시기)'
+      : month >= 6 && month <= 8
+        ? '여름 · 열발산·수분 조절기 (무더위 피로를 낮잠과 수분 보충으로 다스리는 시기)'
+        : month >= 9 && month <= 11
+          ? '가을 · 일주기 안정 수렴기 (일정한 기상·취침 리듬이 가장 잘 잡히는 시기)'
+          : '겨울 · 동절기 에너지 보존기 (수면 시간을 충분히 확보하고 오전 빛 노출을 늘리는 시기)';
+
+  return {
+    kstTimeLabel: `${y}-${m}-${d} ${hh}:${mm} KST`,
+    currentPhaseWindow,
+    seasonalCircadianTone,
+    temporalGuidance: `${currentPhaseWindow} · ${seasonalCircadianTone}의 흐름에 맞추어 하루의 에너지 배분을 조율하십시오.`,
+  };
 }
 
 export function runBiorhythmPeakFlowEngine(
   profile?: UserProfile,
-  targetDate: Date = new Date()
+  targetDate: Date = new Date(),
+  question?: string
 ): BiorhythmPeakFlowReport {
   const sajuRes = calculateDetailedSaju(profile || null);
 
@@ -152,21 +207,60 @@ export function runBiorhythmPeakFlowEngine(
     ? `⚠️ [주의] 오늘 ${criticalCategory}: 리듬 곡선이 영점을 통과하는 전환기이므로 충동적 결정이나 무리한 체력 소모를 피하십시오.`
     : `✅ 안정 상태: 3대 리듬이 조화롭게 순항 중입니다.`;
 
-  const synthesisPromptGuidance = `[LUCKEY 3대 생체 바이오리듬 & 크로노타입 황금 피크 v1.0.0]
+  const describeWave = (val: number) =>
+    val >= 40 ? '상승 고점' : val <= -40 ? '이완·회복기' : '전환 완만기';
+
+  const q = (question || '').trim();
+  const temporalBioRhythm = getTemporalBioRhythm(targetDate);
+  const situationalBioAudit = /일|결정|회의|집중|공부/.test(q)
+    ? {
+        focusTheme: `${chronotype.split(' ')[0]} 기반 딥워크·결단 황금 시간대 활용`,
+        rhythmNote: `지성 리듬은 ${describeWave(intellectual)}, 신체 리듬은 ${describeWave(physical)} 국면입니다.`,
+        pacingTip: goldenWindows.deepWorkPeak,
+      }
+    : /피곤|휴식|수면|건강|감정/.test(q)
+      ? {
+          focusTheme: '일주기 리듬 회복과 재충전 창 확보',
+          rhythmNote: `감성 리듬(${describeWave(emotional)})과 신체 리듬(${describeWave(physical)})을 살펴 무리한 일정을 줄이십시오.`,
+          pacingTip: goldenWindows.rechargeWindow,
+        }
+      : {
+          focusTheme: `${chronotype} 일일 페이싱`,
+          rhythmNote: `신체(${describeWave(physical)}) · 감성(${describeWave(emotional)}) · 지성(${describeWave(intellectual)}) 흐름이 맞물려 있습니다.`,
+          pacingTip: biohackingPrescription.circadianLightAction,
+        };
+
+  const bioSynthesisMatrix = {
+    coreInsight: `[${chronotype.split(' ')[0]}] 리듬과 오늘의 ${isCriticalDay ? criticalCategory : '안정 순항 국면'}이 교차합니다.`,
+    recommendedAction: `몰입창(${goldenWindows.deepWorkPeak}) 활용 + ${biohackingPrescription.focusBoosterProtocol}`,
+    cautionNotice: isCriticalDay
+      ? `${criticalCategory}이므로 큰 결정이나 무리한 일정은 한 템포 늦추는 것이 안전합니다.`
+      : '고점이든 저점이든 자신의 크로노타입 리듬을 거스르지 않는 것이 핵심입니다.',
+  };
+
+  const boundaryNotice = '본 결과는 고전 생체리듬 주기와 크로노타입 모델을 활용한 정성적 컨디션 페이싱 참고용이며, 의학적 진단이 아닙니다.';
+
+  const synthesisPromptGuidance = `[LUCKEY 3대 생체 바이오리듬 & 크로노타입 황금 피크 ${BIORHYTHM_PEAK_FLOW_VERSION}]
+- 연산 시각: ${temporalBioRhythm.kstTimeLabel}
 - 크로노타입: ${chronotype}
-- 오늘 3대 바이오리듬 지수:
-  * 신체(Physical): ${physical > 0 ? '+' : ''}${physical}% | 감성(Emotional): ${emotional > 0 ? '+' : ''}${emotional}% | 지성(Intellectual): ${intellectual > 0 ? '+' : ''}${intellectual}%
-  * 합성 활력 점수: ${compositeVitality}점
-- 위험일 진단: ${criticalWarningText}
+- 오늘 3대 바이오리듬 결:
+  * 신체(Physical): ${describeWave(physical)} | 감성(Emotional): ${describeWave(emotional)} | 지성(Intellectual): ${describeWave(intellectual)}
+- 전환기 진단: ${criticalWarningText}
+- 질문 맥락 감사 (${situationalBioAudit.focusTheme}): ${situationalBioAudit.rhythmNote}
+- KST 시공간 일주기 리듬: ${temporalBioRhythm.currentPhaseWindow} / ${temporalBioRhythm.seasonalCircadianTone}
+  * 시공간 지침: ${temporalBioRhythm.temporalGuidance}
+- 바이오 교차 매트릭스: 핵심(${bioSynthesisMatrix.coreInsight}) | 실행(${bioSynthesisMatrix.recommendedAction}) | 주의(${bioSynthesisMatrix.cautionNotice})
 - 일일 황금 시간대(Golden Windows):
   * [딥워크 최고 몰입] ${goldenWindows.deepWorkPeak}
   * [전략적 결단/협상] ${goldenWindows.strategicDecisionPeak}
   * [재충전 리셋] ${goldenWindows.rechargeWindow}
-- 바이오해킹 행동 처방: ${biohackingPrescription.circadianLightAction}`;
+- 바이오해킹 행동 처방: ${biohackingPrescription.circadianLightAction}
+- 해석 경계: ${boundaryNotice}`;
 
   return {
     engineVersion: BIORHYTHM_PEAK_FLOW_VERSION,
     calculatedAt: targetDate.toISOString(),
+    calculatedAtKst: temporalBioRhythm.kstTimeLabel,
     chronotype,
     biorhythm: {
       physical,
@@ -178,6 +272,10 @@ export function runBiorhythmPeakFlowEngine(
     },
     goldenWindows,
     biohackingPrescription,
+    situationalBioAudit,
+    temporalBioRhythm,
+    bioSynthesisMatrix,
+    boundaryNotice,
     synthesisPromptGuidance
   };
 }
@@ -188,10 +286,11 @@ export function calculateBiorhythmPeakFlow(params?: {
   profile?: UserProfile | null;
   saju?: SajuAnalysisResult | null;
   targetDate?: Date;
+  question?: string;
 }): BiorhythmPeakFlowResult {
   const profile = params?.profile || undefined;
   const targetDate = params?.targetDate || new Date();
-  return runBiorhythmPeakFlowEngine(profile, targetDate);
+  return runBiorhythmPeakFlowEngine(profile, targetDate, params?.question);
 }
 
 export function formatBiorhythmPeakFlowPrompt(res: BiorhythmPeakFlowResult): string {

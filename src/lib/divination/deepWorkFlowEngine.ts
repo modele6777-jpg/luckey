@@ -17,7 +17,7 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const DEEP_WORK_FLOW_VERSION = 'LUCKEY-FLOW-v1.0.0';
+export const DEEP_WORK_FLOW_VERSION = 'LUCKEY-FLOW-v2.0.0';
 
 export type FlowArchetype = 'deep_architect' | 'furious_sprinter' | 'craftsman_polisher' | 'intuitive_explorer';
 
@@ -80,11 +80,12 @@ export interface FlowEnvironmentMatrix {
 export interface DeepWorkFlowResult {
   engineVersion: string;
   calculatedAtIso: string;
+  calculatedAtKst: string;
 
   // 1순위 딥워크 아키타입
   archetype: FlowArchetypeDetail;
 
-  // 몰입 포커스 지수 (0~100)
+  // 몰입 포커스 지수 (내부 호환용 0~100, 프롬프트 비노출)
   flowFocusScore: number;
   flowStateTitle: string;
 
@@ -98,7 +99,60 @@ export interface DeepWorkFlowResult {
     hwagae: string;
   };
 
+  situationalFlowAudit: {
+    focusTheme: string;
+    flowNote: string;
+    sprintStep: string;
+  };
+  temporalFlowRhythm: {
+    kstTimeLabel: string;
+    focusWatchWindow: string;
+    seasonalFlowTone: string;
+    temporalGuidance: string;
+  };
+  flowSynthesisMatrix: {
+    coreInsight: string;
+    recommendedAction: string;
+    cautionNotice: string;
+  };
+  boundaryNotice: string;
   summary: string;
+}
+
+function getTemporalFlowRhythm(now: Date) {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  const hour = kst.getUTCHours();
+  const month = kst.getUTCMonth() + 1;
+
+  const focusWatchWindow =
+    hour >= 5 && hour < 11
+      ? '아침 단일 목표창 — 산만한 알림을 끄고 가장 무거운 핵심 과업 하나를 여는 시간'
+      : hour >= 11 && hour < 17
+        ? '정오 구조화·실행창 — 짧은 스프린트와 이완 리셋을 교차해 밀도를 유지하는 시간'
+        : hour >= 17 && hour < 22
+          ? '황혼 정리·다듬기창 — 오늘 만든 산출물을 마감하고 내일 첫 단추를 남기는 시간'
+          : '심야 정적 몰입창 — 외부 간섭이 줄어든 고요 속에서 창의적 영감을 기록하는 시간';
+
+  const seasonalFlowTone =
+    month >= 3 && month <= 5
+      ? '봄 · 발상 확장기 (새로운 프로토타입과 실험을 시도하기 좋은 시기)'
+      : month >= 6 && month <= 8
+        ? '여름 · 추진 가속기 (짧고 굵은 스프린트로 실행 속도를 높이는 시기)'
+        : month >= 9 && month <= 11
+          ? '가을 · 정밀 완성기 (디테일을 다듬어 완성도를 끌어올리는 시기)'
+          : '겨울 · 심층 사유기 (근원 아키텍처와 깊은 학습에 몰두하기 좋은 시기)';
+
+  return {
+    kstTimeLabel: `${y}-${m}-${d} ${hh}:${mm} KST`,
+    focusWatchWindow,
+    seasonalFlowTone,
+    temporalGuidance: `${focusWatchWindow} · ${seasonalFlowTone}의 결에 맞추어 몰입 블록을 설계하십시오.`,
+  };
 }
 
 /**
@@ -108,8 +162,10 @@ export function calculateDeepWorkFlow(params?: {
   profile?: UserProfile | null;
   saju?: SajuAnalysisResult | null;
   targetDate?: Date;
+  question?: string;
 }): DeepWorkFlowResult {
   const now = params?.targetDate || new Date();
+  const question = (params?.question || '').trim();
   const saju = params?.saju || calculateDetailedSaju(params?.profile || null);
 
   const structures = saju.specialStructures.map(s => s.name);
@@ -162,19 +218,48 @@ export function calculateDeepWorkFlow(params?: {
     hwagae: structures.some(s => s.includes('화개')) ? '보유 (독보적 예술성과 홀로 있는 시간의 축복)' : '공명'
   };
 
-  const summary = `[딥워크 몰입] 아키타입: ${archetype.title}. ` +
-    `몰입 지수: ${flowFocusScore}점 [${flowStateTitle}]. ` +
+  const temporalFlowRhythm = getTemporalFlowRhythm(now);
+  const situationalFlowAudit = /개발|코딩|일|공부|집중|작업/.test(question)
+    ? {
+        focusTheme: `${archetype.title} 맞춤 스프린트 진입`,
+        flowNote: archetype.flowTrigger,
+        sprintStep: `${archetype.optimalSprintMinutes}분 집중 후 ${archetype.restProtocolMinutes}분 완전 이완`,
+      }
+    : /지침|번아웃|막힘|슬럼프/.test(question)
+      ? {
+          focusTheme: '과부하 차단 및 30초 점화 리추얼 재정비',
+          flowNote: '억지로 시간을 채우기보다 시야와 알림을 비우고 작은 단위 하나만 끝내는 것이 회복의 지름길입니다.',
+          sprintStep: environment.ignitionRitual,
+        }
+      : {
+          focusTheme: `${archetype.title} · ${flowStateTitle}`,
+          flowNote: archetype.creativeAura,
+          sprintStep: `${archetype.optimalSprintMinutes}분 집중 / ${archetype.restProtocolMinutes}분 리셋`,
+        };
+
+  const flowSynthesisMatrix = {
+    coreInsight: `[${archetype.title}]의 몰입 방아쇠(${archetype.flowTrigger})를 깨우는 것이 핵심입니다.`,
+    recommendedAction: `${environment.ignitionRitual} -> ${archetype.optimalSprintMinutes}분 집중`,
+    cautionNotice: '멀티태스킹과 메신저 알림을 차단해야 딥워크 아우라가 온전히 유지됩니다.',
+  };
+
+  const summary = `[딥워크 몰입] 아키타입: ${archetype.title} [${flowStateTitle}]. ` +
     `추천 세션: ${archetype.optimalSprintMinutes}분 몰입 / ${archetype.restProtocolMinutes}분 이완. ` +
     `사운드: 집중 음악 또는 브라운 노이즈.`;
 
   return {
     engineVersion: DEEP_WORK_FLOW_VERSION,
     calculatedAtIso: now.toISOString(),
+    calculatedAtKst: temporalFlowRhythm.kstTimeLabel,
     archetype,
     flowFocusScore,
     flowStateTitle,
     environment,
     creativeStars,
+    situationalFlowAudit,
+    temporalFlowRhythm,
+    flowSynthesisMatrix,
+    boundaryNotice: '본 결과는 사주 신살·오행 성향과 딥워크 집중 리듬을 결합한 정성적 생산성 가이드이며, 절대적 능력 평가가 아닙니다.',
     summary
   };
 }
@@ -184,16 +269,21 @@ export function calculateDeepWorkFlow(params?: {
  */
 export function formatDeepWorkFlowPrompt(res: DeepWorkFlowResult): string {
   return `[창작 아우라 & 딥워크 몰입 엔진 리포트 (엔진: ${res.engineVersion})]
-- 1순위 몰입 아키타입: **${res.archetype.title}** [${res.archetype.hanja}]
+- 연산 시각: ${res.calculatedAtKst}
+- 1순위 몰입 아키타입: **${res.archetype.title}** [${res.archetype.hanja}] (${res.flowStateTitle})
   • 창작 아우라: ${res.archetype.creativeAura}
   • 몰입 방아쇠: ${res.archetype.flowTrigger}
   • 권장 스프린트 리듬: **${res.archetype.optimalSprintMinutes}분 집중 ➔ ${res.archetype.restProtocolMinutes}분 리셋**
-- 몰입 포커스 지수: **${res.flowFocusScore}점** [${res.flowStateTitle}]
+- 질문 맥락 감사 (${res.situationalFlowAudit.focusTheme}): ${res.situationalFlowAudit.flowNote} / 리듬: ${res.situationalFlowAudit.sprintStep}
+- KST 시공간 몰입 리듬: ${res.temporalFlowRhythm.focusWatchWindow} / ${res.temporalFlowRhythm.seasonalFlowTone}
+  • 시공간 지침: ${res.temporalFlowRhythm.temporalGuidance}
+- 딥워크 교차 매트릭스: 핵심(${res.flowSynthesisMatrix.coreInsight}) | 실행(${res.flowSynthesisMatrix.recommendedAction}) | 주의(${res.flowSynthesisMatrix.cautionNotice})
 - 최적 환경 매트릭스:
   • 사운드 스케이프: ${res.environment.soundscape}
   • 조명: ${res.environment.lightingEnvironment}
   • 30초 점화 리추얼: ${res.environment.ignitionRitual}
   • 노이즈 차단막: ${res.environment.distractionShield}
 - 창작 길신: 문창(${res.creativeStars.munchang}), 화개(${res.creativeStars.hwagae})
+- 해석 경계: ${res.boundaryNotice}
 ※ 루시 지침: 진정한 창작과 생산성은 억지로 버티는 노동이 아니라, 방해 없는 환경에서 자신만의 몰입 리듬을 찾는 과정입니다. 사용자가 산만함 없이 집중할 수 있도록 맞춤 세션 시간, 사운드 스케이프와 점화 리추얼을 감각적으로 가이드해 주세요.`;
 }

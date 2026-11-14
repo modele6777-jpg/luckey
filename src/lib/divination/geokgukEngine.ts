@@ -45,7 +45,7 @@ import {
   BRANCH_KOREAN,
 } from '../sajuAnalysis';
 
-export const GEOKGUK_ENGINE_VERSION = 'LUCKEY-GG-v1.0.0';
+export const GEOKGUK_ENGINE_VERSION = 'LUCKEY-GG-v2.0.0';
 
 export const GEOKGUK_METHOD =
   '자평진전(子平眞詮) 정통 격국 수리 산법: 월령 본기·중기·초기 사령 및 투간 대조(본기>중기>초기 우선), 월지 건록·양인 직취 판정, 4길신 순용(정관·재성·정인·식신의 재성/인성 보좌·식신생재·관인상생)과 4흉신 역용(칠살·상관·편인·양인의 식신제살·살인상생·상관패인·상관생재·재성제인·양인가살) 성격(成格) 점검, 상관견관·군겁쟁재·도식·신약살왕 등 파격(破格) 원인 및 구응(救應) 검출, 상신(相神) 식별 및 격국 기반 직업·사회적 재능 리포트 결정론적 산출';
@@ -99,6 +99,7 @@ export interface GeokgukCareerReport {
 export interface GeokgukResult {
   status: GeokgukStatus;
   engineVersion: string;
+  calculatedAtKst?: string;
   method: string;
   dayMaster: { stem: string; korean: string } | null;
   pillarsSnapshot: { year: string; month: string; day: string; hour: string | null } | null;
@@ -114,7 +115,60 @@ export interface GeokgukResult {
   guEung: GeokgukGuEung[];
   sangSin: GeokgukSangSin | null;
   careerReport: GeokgukCareerReport | null;
+  situationalGeokgukAudit?: {
+    focusTheme: string;
+    structuralNote: string;
+    actionGuide: string;
+  };
+  temporalGeokgukRhythm?: {
+    kstTimeLabel: string;
+    commandWatchWindow: string;
+    seasonalGeokgukTone: string;
+    temporalGuidance: string;
+  };
+  geokgukSynthesisMatrix?: {
+    coreInsight: string;
+    recommendedAction: string;
+    cautionNotice: string;
+  };
+  boundaryNotice?: string;
   note?: string;
+}
+
+function getTemporalGeokgukRhythm(now: Date) {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  const hour = kst.getUTCHours();
+  const month = kst.getUTCMonth() + 1;
+
+  const commandWatchWindow =
+    hour >= 5 && hour < 11
+      ? '아침 월령 기상창 — 본래 타고난 격국의 기틀을 의식하며 하루의 방향을 세우는 시간'
+      : hour >= 11 && hour < 17
+        ? '정오 상신(相神) 발현창 — 격국을 돕는 상신의 재능을 현실의 일과 관계에 쓰는 시간'
+        : hour >= 17 && hour < 22
+          ? '황혼 구응(救應) 조율창 — 어긋난 균형을 보완하고 무리한 욕심을 덜어내는 시간'
+          : '심야 성찰창 — 사회적 역할을 잠시 내려놓고 일간의 본질을 고요히 돌보는 시간';
+
+  const seasonalGeokgukTone =
+    month >= 3 && month <= 5
+      ? '봄 · 인묘진(寅卯辰) 생기절 (새로운 진로·역할을 모색하기 좋은 시기)'
+      : month >= 6 && month <= 8
+        ? '여름 · 사오미(巳午未) 발양절 (재능과 성취를 외부로 드러내는 시기)'
+        : month >= 9 && month <= 11
+          ? '가을 · 신유술(申酉戌) 결실절 (직업적 기준과 전문성을 다지는 시기)'
+          : '겨울 · 해자축(亥子丑) 함장절 (실력을 갈고닦아 다음 국면을 준비하는 시기)';
+
+  return {
+    kstTimeLabel: `${y}-${m}-${d} ${hh}:${mm} KST`,
+    commandWatchWindow,
+    seasonalGeokgukTone,
+    temporalGuidance: `${commandWatchWindow} · ${seasonalGeokgukTone}의 결에 맞추어 격국의 장점을 발휘하십시오.`,
+  };
 }
 
 /** 판정 코어 입력 (년·월·시 천간과 월지, 신강신약 레벨) */
@@ -735,8 +789,14 @@ const CAREER_ARCHETYPES: Record<string, { archetype: string; socialTalent: strin
 /**
  * 정통 사주 10대 격국 성격(成格)·파격(破格) 수리 판정 엔진 진입점
  */
-export function calculateGeokguk(params: { profile?: UserProfile | null }): GeokgukResult {
+export function calculateGeokguk(params: {
+  profile?: UserProfile | null;
+  now?: Date;
+  question?: string;
+}): GeokgukResult {
   const profile = params.profile;
+  const now = params.now || new Date();
+  const question = (params.question || '').trim();
   const birthdateStr = profile?.basic?.birthdate?.trim() || '';
 
   if (!profile || !birthdateStr) {
@@ -801,10 +861,35 @@ export function calculateGeokguk(params: { profile?: UserProfile | null }): Geok
     });
 
     const archetype = CAREER_ARCHETYPES[decision.geokgukName] || null;
+    const temporalGeokgukRhythm = getTemporalGeokgukRhythm(now);
+    const situationalGeokgukAudit = /직업|진로|적성|이직|사업|일/.test(question)
+      ? {
+          focusTheme: `${decision.geokgukFull} · ${archetype?.archetype || '적성'} 진로 활용`,
+          structuralNote: decision.verdictReason,
+          actionGuide: archetype ? `핵심 강점(${archetype.talents.slice(0, 2).join(', ')})을 살리는 역할에 집중하십시오.` : decision.yongMethod,
+        }
+      : {
+          focusTheme: `${decision.geokgukFull} (${decision.verdict})`,
+          structuralNote: decision.verdictReason,
+          actionGuide: decision.sangSin ? `상신 [${decision.sangSin.tenGodName}]의 균형 역할을 의식하십시오.` : decision.yongMethod,
+        };
+
+    const geokgukSynthesisMatrix = {
+      coreInsight: `[${decision.geokgukFull}] ${decision.verdict} — ${decision.shinsalClass}`,
+      recommendedAction: decision.sangSin
+        ? `상신 ${decision.sangSin.tenGodName}(${decision.sangSin.role}) 활용`
+        : decision.yongMethod,
+      cautionNotice: decision.paGyeok.length > 0
+        ? `${decision.paGyeok[0].type} 요인을 의식해 조율하는 태도가 필요합니다.`
+        : '격국 명칭 자체보다 자신의 강점을 현실에 맞게 쓰는 태도가 더 중요합니다.',
+    };
+
+    const boundaryNotice = '본 결과는 자평진전 월령 사령·투간 수리에 기반한 정성적 성향·적성 안내이며, 우열이나 확정적 진로 판정이 아닙니다.';
 
     return {
       status: 'calculated',
       engineVersion: GEOKGUK_ENGINE_VERSION,
+      calculatedAtKst: temporalGeokgukRhythm.kstTimeLabel,
       method: GEOKGUK_METHOD,
       dayMaster: { stem: dayStem, korean: STEM_KOREAN[dayStem] || dayStem },
       pillarsSnapshot: {
@@ -840,6 +925,10 @@ export function calculateGeokguk(params: { profile?: UserProfile | null }): Geok
             careers: [...archetype.careers],
           }
         : null,
+      situationalGeokgukAudit,
+      temporalGeokgukRhythm,
+      geokgukSynthesisMatrix,
+      boundaryNotice,
     };
   } catch (err: any) {
     return {
@@ -876,6 +965,7 @@ export function formatGeokgukPrompt(result: GeokgukResult): string {
 
   const lines: string[] = [];
   lines.push(`[정통 사주 10대 격국(格局) 성격·파격 수리 판정 리포트 (${GEOKGUK_ENGINE_VERSION})]`);
+  if (result.calculatedAtKst) lines.push(`- 연산 시각: ${result.calculatedAtKst}`);
   lines.push(`- 일간: ${result.dayMaster?.korean ?? ''}${result.dayMaster?.stem ?? ''} | 원국: ${result.pillarsSnapshot?.year ?? '?'} ${result.pillarsSnapshot?.month ?? '?'} ${result.pillarsSnapshot?.day ?? '?'} ${result.pillarsSnapshot?.hour ? result.pillarsSnapshot.hour : '(생시 미입력)'}`);
   lines.push(`- 격국: ${result.geokgukType} (${result.shinsalClass})`);
   lines.push(`- 격국 성립 원천: ${result.monthCommand.sourceKind} — 월지 ${result.monthCommand.branch}(${result.monthCommand.branchKr}) 사령 ${result.monthCommand.tenGodName}`);
@@ -903,6 +993,19 @@ export function formatGeokgukPrompt(result: GeokgukResult): string {
     lines.push(`- 상신(相神): ${result.sangSin.tenGodName}${result.sangSin.stem ? `(${result.sangSin.stem})` : ''} — ${result.sangSin.role}`);
   }
 
+  if (result.situationalGeokgukAudit) {
+    lines.push(`- 질문 맥락 감사 (${result.situationalGeokgukAudit.focusTheme}): ${result.situationalGeokgukAudit.structuralNote} / ${result.situationalGeokgukAudit.actionGuide}`);
+  }
+
+  if (result.temporalGeokgukRhythm) {
+    lines.push(`- KST 시공간 격국 리듬: ${result.temporalGeokgukRhythm.commandWatchWindow} / ${result.temporalGeokgukRhythm.seasonalGeokgukTone}`);
+    lines.push(`  * 시공간 지침: ${result.temporalGeokgukRhythm.temporalGuidance}`);
+  }
+
+  if (result.geokgukSynthesisMatrix) {
+    lines.push(`- 격국 교차 매트릭스: 핵심(${result.geokgukSynthesisMatrix.coreInsight}) | 실행(${result.geokgukSynthesisMatrix.recommendedAction}) | 주의(${result.geokgukSynthesisMatrix.cautionNotice})`);
+  }
+
   if (result.careerReport) {
     lines.push(`- 격국 기반 현대적 적성 리포트:`);
     lines.push(`  * 사회적 재능 유형: ${result.careerReport.archetype}`);
@@ -911,7 +1014,8 @@ export function formatGeokgukPrompt(result: GeokgukResult): string {
     lines.push(`  * 추천 진로: ${result.careerReport.careers.join(', ')}`);
   }
 
-  lines.push(`- [AI 해석 절대 지침]: 본 리포트는 자평진전(子平眞詮) 월령 사령·투간 수리로 100% 결정론 산출된 격국 판정입니다. 격국 명칭, 성격(成格)/파격(破格)/구응(救應) 판정, 상신을 임의 변경하지 말고, 이를 축으로 성격·재능·직업 방향 상담을 전개하십시오.`);
+  if (result.boundaryNotice) lines.push(`- 해석 경계: ${result.boundaryNotice}`);
+  lines.push(`- [AI 해석 절대 지침]: 본 리포트는 자평진전(子平眞詮) 월령 사령·투간 수리로 결정론 산출된 격국 판정입니다. 격국 명칭, 성격(成格)/파격(破格)/구응(救應) 판정, 상신을 임의 변경하지 말고, 이를 축으로 성격·재능·직업 방향 상담을 전개하십시오.`);
 
   return lines.join('\n');
 }
