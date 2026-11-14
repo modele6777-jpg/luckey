@@ -1,19 +1,14 @@
 /**
  * 프랑스 장 폴 사르트르(Jean-Paul Sartre) 《존재와 무(L'Être et le Néant)》 & 《실존주의는 휴머니즘이다》 실존적 자유·주체적 기획 & 진정성(Authenticité)과 앙가주망(Engagement) 엔진
  *
- * 20세기 프랑스 실존주의 철학의 기수 장 폴 사르트르(Jean-Paul Sartre, 1905~1980)의 핵심 원전 기반:
- * 1. 실존은 본질에 앞선다 (L'existence précède l'essence): 인간은 미리 정해진 본질이나 용도 없이 세상에 던져진 존재이며, 스스로의 기획과 행위를 통해 자신의 본질을 창조해 나감.
- * 2. 자유라는 형벌 (Condamné à être libre): 인간은 결코 자유롭지 않을 자유가 없으며, 자신의 모든 선택과 행동에 대한 전적인 책임을 홀로 짊어져야 함.
- * 3. 자기기만(Mauvaise foi) 극복: 세상의 핑계나 숙명론, 피해자 의식 뒤로 숨는 비겁한 자기기만을 털어내고, 냉철한 진정성(Authenticité)을 회복함.
- * 4. 실존적 불안의 직시 (Lucidité de l'angoisse): 선택 앞에서 마주하는 현기증과 불안은 우리에게 무한한 가능성과 자유가 주어져 있다는 가장 명확한 증거임.
- * 5. 앙가주망 (Engagement): 고립된 관조에 머물지 않고, 불의와 억압에 맞서 스스로를 시대와 세상의 한복판에 내던져 타인의 자유와 함께 연대하는 실천적 행동.
+ * 20세기 프랑스 실존주의 철학의 기수 장 폴 사르트르(Jean-Paul Sartre, 1905~1980)의 핵심 원전 기반.
  *
- * @version LUCKEY-JEAN-PAUL-SARTRE-EXISTENTIALISM-v1.0.0
+ * @version LUCKEY-JEAN-PAUL-SARTRE-EXISTENTIALISM-v2.0.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const FRENCH_JEAN_PAUL_SARTRE_VERSION = 'LUCKEY-JEAN-PAUL-SARTRE-EXISTENTIALISM-v1.0.0';
+export const FRENCH_JEAN_PAUL_SARTRE_VERSION = 'LUCKEY-JEAN-PAUL-SARTRE-EXISTENTIALISM-v2.0.0';
 
 export interface SartreTheme {
   themeKey: string;
@@ -31,6 +26,30 @@ export interface SartreAphorism {
   actionGuidance: string;
 }
 
+export interface SartreSituationalAuthenticityAudit {
+  themeKo: string;
+  sourceCitation: string;
+  frenchQuote: string;
+  translationKo: string;
+  badFaithExcuseTrap: string;
+  projectActionStep: string;
+}
+
+export interface SartreTemporalProjectRhythm {
+  kstWindow: string;
+  seasonalTone: string;
+  projectFocus: '주체적 기획(Projet)' | '행동 구현(Acte)' | '자기기만 점검(Authenticité)' | '앙가주망 연대(Engagement)';
+  authenticityClarityIndex: number;
+  rhythmDirective: string;
+}
+
+export interface SartreSynthesisMatrix {
+  projectAutonomy: number;
+  badFaithOvercoming: number;
+  engagedAction: number;
+  overallSynthesis: number;
+}
+
 export interface JeanPaulSartreExistentialismResult {
   engineVersion: string;
   calculatedAtKst: string;
@@ -43,6 +62,9 @@ export interface JeanPaulSartreExistentialismResult {
   // 세부 분석
   activeSartreTheme: SartreTheme;
   focalSartreAphorism: SartreAphorism;
+  situationalAuthenticityAudit: SartreSituationalAuthenticityAudit;
+  temporalProjectRhythm: SartreTemporalProjectRhythm;
+  sartreSynthesisMatrix: SartreSynthesisMatrix;
   sartreComprehensiveGuidance: {
     guidanceTitle: string;
     philosophicalCounsel: string;
@@ -118,8 +140,103 @@ export const SARTRE_APHORISMS: SartreAphorism[] = [
   },
 ];
 
+function buildSituationalAuthenticityAudit(question?: string): SartreSituationalAuthenticityAudit {
+  const q = (question ?? '').trim();
+  if (/어쩔 수 없|핑계|남 탓|환경|불가능|원래/.test(q)) {
+    return {
+      themeKo: '자기기만(Mauvaise foi) 해체와 주체성 회복',
+      sourceCitation: '《존재와 무(L’Être et le Néant)》 제1부 2장',
+      frenchQuote: "L'homme n'est rien d'autre que ce qu'il se fait.",
+      translationKo: '인간은 스스로가 만들어 가는 것 이외의 아무것도 아니다.',
+      badFaithExcuseTrap: '"상황이 이래서 어쩔 수 없다"며 내게 남아 있는 선택권마저 부인하는 자기기만.',
+      projectActionStep: '지금 상황에서 내가 포기하지 않고 행사할 수 있는 자유로운 선택 1가지를 종이에 분명히 적고 실행하십시오.',
+    };
+  }
+  if (/불안|결정|선택|망설|두렵|고민/.test(q)) {
+    return {
+      themeKo: '자유의 현기증(Angoisse)과 결단의 기획',
+      sourceCitation: '《실존주의는 휴머니즘이다》',
+      frenchQuote: "Il n'y a de réalité que dans l'action.",
+      translationKo: '현실성은 오직 행동 속에만 존재한다.',
+      badFaithExcuseTrap: '남이 정답을 대신 보증해 주기를 기다리며 선택을 무한히 미루는 유예.',
+      projectActionStep: '머릿속 시뮬레이션을 멈추고, 오늘 내 이름과 책임으로 감당할 첫 행동 1가지를 시작하십시오.',
+    };
+  }
+  if (/관계|타인|시선|눈치|평가|갈등/.test(q)) {
+    return {
+      themeKo: '타인의 시선(Le Regard)을 넘어선 상호 자유',
+      sourceCitation: '《존재와 무》 제3부 · 〈타자의 시선〉',
+      frenchQuote: "En me choisissant, je choisis l'homme.",
+      translationKo: '나 자신을 선택함으로써, 나는 인간 전체의 모범을 함께 선택한다.',
+      badFaithExcuseTrap: '타인의 시선에 비친 이미지에 나를 맞추어 스스로를 사물처럼 고정해 버리는 태도.',
+      projectActionStep: '상대의 눈치에 맞춘 가면을 잠시 내려놓고, 진정성 있는 본심 한 문장을 정중히 건네십시오.',
+    };
+  }
+  return {
+    themeKo: '실존의 본질 선행(Projet)과 오늘의 자기 창조',
+    sourceCitation: '《파리들》 & 《실존주의는 휴머니즘이다》',
+    frenchQuote: "Le destin de l'homme est placé en lui-même.",
+    translationKo: '인간의 운명은 바깥이 아니라 바로 자기 자신의 두 손 안에 놓여 있다.',
+    badFaithExcuseTrap: '과거의 경력이나 기질이라는 꼬리표 뒤에 숨어 오늘의 변화를 닫아 버리는 관성.',
+    projectActionStep: '오늘 내가 되고 싶은 모습에 부합하는 구체적 행동 1가지를 지금 바로 손에 잡히는 형태로 실행하십시오.',
+  };
+}
+
+function buildTemporalProjectRhythm(now?: Date): SartreTemporalProjectRhythm {
+  const ref = now ?? new Date();
+  const kst = new Date(ref.getTime() + 9 * 60 * 60 * 1000);
+  const hour = kst.getUTCHours();
+  const month = kst.getUTCMonth() + 1;
+
+  const seasonalTone =
+    month >= 3 && month <= 5
+      ? '봄 — 과거의 본질을 넘어 새 기획(Projet)을 세우는 계절'
+      : month >= 6 && month <= 8
+        ? '여름 — 말과 행동(Acte)으로 현실에 실존을 각인하는 계절'
+        : month >= 9 && month <= 11
+          ? '가을 — 핑계와 자기기만을 걷어내고 책임을 매듭짓는 계절'
+          : '겨울 — 타인의 시선에서 물러나 진정성(Authenticité)을 다지는 계절';
+
+  if (hour >= 5 && hour < 11) {
+    return {
+      kstWindow: '오전 주체적 기획(Projet) 선언 창',
+      seasonalTone,
+      projectFocus: '주체적 기획(Projet)',
+      authenticityClarityIndex: 91,
+      rhythmDirective: '어제의 꼬리표를 떼고 오늘의 나를 새로 기획하기 가장 좋은 오전입니다. 첫 행동을 선언하십시오.',
+    };
+  }
+  if (hour >= 11 && hour < 17) {
+    return {
+      kstWindow: '한낮 행동 구현(Acte) 돌파 창',
+      seasonalTone,
+      projectFocus: '행동 구현(Acte)',
+      authenticityClarityIndex: 86,
+      rhythmDirective: '생각만으로는 아무것도 바뀌지 않는 낮 시간입니다. 지금 당장 실행 가능한 행동으로 현실을 움직이십시오.',
+    };
+  }
+  if (hour >= 17 && hour < 22) {
+    return {
+      kstWindow: '저녁 앙가주망 연대(Engagement) 창',
+      seasonalTone,
+      projectFocus: '앙가주망 연대(Engagement)',
+      authenticityClarityIndex: 83,
+      rhythmDirective: '나의 자유가 타인의 자유와 만나는 저녁입니다. 솔직한 대화와 신뢰의 약속으로 연대를 확인하십시오.',
+    };
+  }
+  return {
+    kstWindow: '심야 자기기만 점검(Authenticité) 창',
+    seasonalTone,
+    projectFocus: '자기기만 점검(Authenticité)',
+    authenticityClarityIndex: 80,
+    rhythmDirective: '스스로에게 정직해지는 심야입니다. 오늘 내가 피한 선택과 핑계가 없었는지 조용히 비추어 보십시오.',
+  };
+}
+
 export function calculateJeanPaulSartreExistentialism(
-  profile: UserProfile
+  profile: UserProfile,
+  question?: string,
+  now?: Date,
 ): JeanPaulSartreExistentialismResult {
   const p = profile as any;
   const name = profile?.basic?.name ?? p?.name ?? '방문자';
@@ -147,6 +264,20 @@ export function calculateJeanPaulSartreExistentialism(
 
   const activeSartreTheme = SARTRE_THEMES[themeIndex];
   const focalSartreAphorism = SARTRE_APHORISMS[aphorismIndex];
+  const situationalAuthenticityAudit = buildSituationalAuthenticityAudit(question);
+  const temporalProjectRhythm = buildTemporalProjectRhythm(now);
+
+  const projectAutonomy = Math.min(99, Math.round((existencePrecedesEssenceScore + condemnedToBeFreeScore) / 2));
+  const badFaithOvercoming = Math.min(99, Math.round((badFaithOvercomingAuthenticityScore + temporalProjectRhythm.authenticityClarityIndex) / 2));
+  const engagedAction = Math.min(99, Math.round((existentialAnguishLucidityScore + engagementSolidarityActionIndex) / 2));
+  const overallSynthesis = Math.round((projectAutonomy + badFaithOvercoming + engagedAction) / 3);
+
+  const sartreSynthesisMatrix: SartreSynthesisMatrix = {
+    projectAutonomy,
+    badFaithOvercoming,
+    engagedAction,
+    overallSynthesis,
+  };
 
   const guidanceTitle = `장 폴 사르트르 실존적 자유와 앙가주망: ${activeSartreTheme.themeTitleKo}`;
   const philosophicalCounsel = `사르트르의 실존철학은 주어진 운명이나 핑계 뒤로 숨지 않고, 전적인 자유와 책임을 오롯이 짊어지며 자신의 본질을 창조하도록 격려합니다. ` +
@@ -156,7 +287,7 @@ export function calculateJeanPaulSartreExistentialism(
 
   return {
     engineVersion: FRENCH_JEAN_PAUL_SARTRE_VERSION,
-    calculatedAtKst: new Date().toISOString(),
+    calculatedAtKst: (now ?? new Date()).toISOString(),
     existencePrecedesEssenceScore,
     condemnedToBeFreeScore,
     badFaithOvercomingAuthenticityScore,
@@ -164,6 +295,9 @@ export function calculateJeanPaulSartreExistentialism(
     engagementSolidarityActionIndex,
     activeSartreTheme,
     focalSartreAphorism,
+    situationalAuthenticityAudit,
+    temporalProjectRhythm,
+    sartreSynthesisMatrix,
     sartreComprehensiveGuidance: {
       guidanceTitle,
       philosophicalCounsel,
@@ -180,11 +314,11 @@ export function formatJeanPaulSartreExistentialismPrompt(res: JeanPaulSartreExis
     `- 실존적 불안 직시 책임 명석도(Angoisse): ${res.existentialAnguishLucidityScore}/100`,
     `- 세상을 향한 연대 실천 앙가주망(Engagement): ${res.engagementSolidarityActionIndex}/100`,
     `- 핵심 실존 테마: ${res.activeSartreTheme.themeTitleKo} [${res.activeSartreTheme.themeTitleFrench}]`,
-    `- 실존적 통찰: ${res.activeSartreTheme.existentialInsight}`,
-    `- 실천적 조언: ${res.activeSartreTheme.practicalCounsel}`,
-    `- 핵심 경구: "${res.focalSartreAphorism.aphorismKo}"`,
-    `- 원전 출처: "${res.focalSartreAphorism.aphorismFrench}" [${res.focalSartreAphorism.sourceContext}]`,
-    `- 구체적 실천 지침: ${res.focalSartreAphorism.actionGuidance}`,
+    `- 질문 맥락 진정성 감사 (${res.situationalAuthenticityAudit.themeKo} · ${res.situationalAuthenticityAudit.sourceCitation}): "${res.situationalAuthenticityAudit.translationKo}" [${res.situationalAuthenticityAudit.frenchQuote}]`,
+    `- 자기기만 경계: ${res.situationalAuthenticityAudit.badFaithExcuseTrap}`,
+    `- 주체적 기획 첫걸음: ${res.situationalAuthenticityAudit.projectActionStep}`,
+    `- KST 실존 리듬: ${res.temporalProjectRhythm.kstWindow} (${res.temporalProjectRhythm.projectFocus}, 명료도 ${res.temporalProjectRhythm.authenticityClarityIndex}/100) — ${res.temporalProjectRhythm.rhythmDirective}`,
+    `- 사르트르 매트릭스: 주체적 기획 ${res.sartreSynthesisMatrix.projectAutonomy} / 자기기만 극복 ${res.sartreSynthesisMatrix.badFaithOvercoming} / 앙가주망 실천 ${res.sartreSynthesisMatrix.engagedAction} (종합 ${res.sartreSynthesisMatrix.overallSynthesis}/100)`,
     `- 종합 실존철학 권면: ${res.sartreComprehensiveGuidance.philosophicalCounsel}`,
   ].join('\n');
 }

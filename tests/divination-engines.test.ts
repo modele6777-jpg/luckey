@@ -6748,6 +6748,46 @@ test('v2.0.0 qualitative/temporal/matrix deepening: William James, Hannah Arendt
   assert.ok(thoreauPrompt.includes('월든 매트릭스'));
 });
 
+test('v2.0.0 qualitative/temporal/matrix deepening: Camus Absurd, Sartre Existentialism, and Beauvoir Ambiguity', () => {
+  const testProfile = {
+    basic: {
+      name: '남희',
+      birthdate: '1988-05-12',
+      birthtime: '09:30',
+      gender: 'female' as const,
+      calendarType: 'solar' as const,
+    },
+  };
+  const now = new Date('2026-11-14T10:25:00.000Z'); // KST 19:25
+
+  const camus = calculateAlbertCamusAbsurdRevolt(testProfile, '매일 같은 일상이 반복되어 허무하게 느껴져요', now);
+  assert.equal(camus.engineVersion, FRENCH_ALBERT_CAMUS_VERSION);
+  assert.ok(camus.situationalAbsurdAudit.sourceCitation.includes('시지프'));
+  assert.ok(camus.temporalRevoltRhythm.lucidityClarityIndex >= 50 && camus.temporalRevoltRhythm.lucidityClarityIndex <= 99);
+  assert.ok(camus.camusSynthesisMatrix.overallSynthesis >= 50);
+  const camusPrompt = formatAlbertCamusAbsurdRevoltPrompt(camus);
+  assert.ok(camusPrompt.includes('질문 맥락 부조리 감사'));
+  assert.ok(camusPrompt.includes('카뮈 매트릭스'));
+
+  const sartre = calculateJeanPaulSartreExistentialism(testProfile, '상황이 이래서 어쩔 수 없는 것 같아요', now);
+  assert.equal(sartre.engineVersion, FRENCH_JEAN_PAUL_SARTRE_VERSION);
+  assert.ok(sartre.situationalAuthenticityAudit.sourceCitation.includes('존재와 무'));
+  assert.ok(sartre.temporalProjectRhythm.authenticityClarityIndex >= 50 && sartre.temporalProjectRhythm.authenticityClarityIndex <= 99);
+  assert.ok(sartre.sartreSynthesisMatrix.overallSynthesis >= 50);
+  const sartrePrompt = formatJeanPaulSartreExistentialismPrompt(sartre);
+  assert.ok(sartrePrompt.includes('질문 맥락 진정성 감사'));
+  assert.ok(sartrePrompt.includes('사르트르 매트릭스'));
+
+  const beauvoir = calculateFrenchSimoneDeBeauvoirAmbiguityFreedom(testProfile, '미래가 너무 불확실하고 애매해서 고민이에요', now);
+  assert.equal(beauvoir.engineVersion, FRENCH_SIMONE_DE_BEAUVOIR_AMBIGUITY_FREEDOM_VERSION);
+  assert.ok(beauvoir.situationalAmbiguityAudit.sourceCitation.includes('애매성의 윤리학'));
+  assert.ok(beauvoir.temporalSolidarityRhythm.ambiguityClarityIndex >= 50 && beauvoir.temporalSolidarityRhythm.ambiguityClarityIndex <= 99);
+  assert.ok(beauvoir.beauvoirSynthesisMatrix.overallSynthesis >= 50);
+  const beauvoirPrompt = formatFrenchSimoneDeBeauvoirAmbiguityFreedomPrompt(beauvoir);
+  assert.ok(beauvoirPrompt.includes('질문 맥락 애매성 감사'));
+  assert.ok(beauvoirPrompt.includes('보부아르 매트릭스'));
+});
+
 
 
 
