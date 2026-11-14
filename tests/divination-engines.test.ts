@@ -7557,6 +7557,37 @@ test('v2.1.0 qualitative prompt reform: Hannah Arendt, Henry David Thoreau, and 
   assert.ok(jamesPrompt.includes('해석 경계'));
 });
 
+test('Kant, Hegel, and Nietzsche engines (v2.1.0) expose pure qualitative reflection without /100 or %', () => {
+  const now = new Date('2026-11-14T22:42:00Z');
+
+  const kant = calculateKantCategoricalImperative(profile, '인간관계에서 원칙과 존엄성을 어떻게 지켜야 할까요?', now);
+  assert.equal(kant.engineVersion, KANT_CATEGORICAL_IMPERATIVE_VERSION);
+  assert.ok(kant.dailyPracticeRitual.length > 0);
+  assert.ok(kant.interpretiveBoundary.length > 0);
+  const kantPrompt = formatKantCategoricalImperativePrompt(kant);
+  assert.ok(!kantPrompt.includes('/100') && !kantPrompt.includes('%'));
+  assert.ok(kantPrompt.includes('일상 실천 의례'));
+  assert.ok(kantPrompt.includes('해석 경계'));
+
+  const hegel = calculateHegelDialecticalAufheben(profile, '서로 다른 두 입장 사이의 갈등을 어떻게 풀어야 할까요?', now);
+  assert.equal(hegel.engineVersion, GERMAN_HEGEL_DIALECTICAL_VERSION);
+  assert.ok(hegel.dailyPracticeRitual.length > 0);
+  assert.ok(hegel.interpretiveBoundary.length > 0);
+  const hegelPrompt = formatHegelDialecticalAufhebenPrompt(hegel);
+  assert.ok(!hegelPrompt.includes('/100') && !hegelPrompt.includes('%'));
+  assert.ok(hegelPrompt.includes('일상 실천 의례'));
+  assert.ok(hegelPrompt.includes('해석 경계'));
+
+  const nietzsche = calculateNietzscheZarathustraAmorFati(profile, '지나간 후회를 딛고 새로운 창조를 시작하고 싶어요', now);
+  assert.equal(nietzsche.engineVersion, NIETZSCHE_ZARATHUSTRA_AMOR_FATI_VERSION);
+  assert.ok(nietzsche.dailyPracticeRitual.length > 0);
+  assert.ok(nietzsche.interpretiveBoundary.length > 0);
+  const nietzschePrompt = formatNietzscheZarathustraAmorFatiPrompt(nietzsche);
+  assert.ok(!nietzschePrompt.includes('/100') && !nietzschePrompt.includes('%'));
+  assert.ok(nietzschePrompt.includes('일상 실천 의례'));
+  assert.ok(nietzschePrompt.includes('해석 경계'));
+});
+
 
 
 

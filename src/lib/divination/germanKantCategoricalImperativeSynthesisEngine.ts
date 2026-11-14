@@ -5,14 +5,14 @@
  * 1. 《순수이성비판(Kritik der reinen Vernunft)》
  * 2. 《실천이성비판(Kritik der praktischen Vernunft)》
  * 3. 《윤리형이상학 정초(Grundlegung zur Metaphysik der Sitten)》
- * 4. 질문 맥락 정언명령 감사(situationalImperativeAudit) + KST 시공간 리듬(temporalReasonRhythm) + 교차 검증 매트릭스(kantSynthesisMatrix)
+ * 4. 질문 맥락 정언명령 감사(situationalImperativeAudit) + KST 시공간 리듬(temporalReasonRhythm) + 교차 검증 매트릭스(kantSynthesisMatrix) + 순수 정성 성찰(v2.1.0)
  *
- * @version LUCKEY-KANT-CATEGORICAL-IMPERATIVE-v2.0.0
+ * @version LUCKEY-KANT-CATEGORICAL-IMPERATIVE-v2.1.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const KANT_CATEGORICAL_IMPERATIVE_VERSION = 'LUCKEY-KANT-CATEGORICAL-IMPERATIVE-v2.0.0';
+export const KANT_CATEGORICAL_IMPERATIVE_VERSION = 'LUCKEY-KANT-CATEGORICAL-IMPERATIVE-v2.1.0';
 
 export interface KantImperativeFormula {
   formulaKey: string;
@@ -67,6 +67,8 @@ export interface KantCategoricalImperativeResult {
   situationalImperativeAudit: KantSituationalImperativeAudit;
   temporalReasonRhythm: KantTemporalReasonRhythm;
   kantSynthesisMatrix: KantSynthesisMatrix;
+  dailyPracticeRitual: string;
+  interpretiveBoundary: string;
   kantPhilosophicalCounsel: {
     counselTitle: string;
     philosophicalGuidance: string;
@@ -267,6 +269,9 @@ export function calculateKantCategoricalImperative(
     `${situationalImperativeAudit.imperativeDirective} 또한 '${focalMoralMaxim.maximNameKo}'(${focalMoralMaxim.dutyDimension})을 품고 ` +
     `${temporalReasonRhythm.dailyDutyPractice}`;
 
+  const dailyPracticeRitual = `오늘의 정언명령 실천 의례: ${temporalReasonRhythm.dailyDutyPractice} 결정 전 '이 원칙이 보편 법칙이 되어도 떳떳한가'를 한 번 자문하십시오.`;
+  const interpretiveBoundary = '이 관점은 칸트의 실천이성과 도덕 법칙의 상징적 비유일 뿐, 현실의 법적·실무적 판단을 대신하지 않습니다.';
+
   return {
     engineVersion: KANT_CATEGORICAL_IMPERATIVE_VERSION,
     calculatedAtKst: new Date(now.getTime() + 9 * 60 * 60 * 1000).toISOString().replace('Z', '+09:00'),
@@ -280,6 +285,8 @@ export function calculateKantCategoricalImperative(
     situationalImperativeAudit,
     temporalReasonRhythm,
     kantSynthesisMatrix,
+    dailyPracticeRitual,
+    interpretiveBoundary,
     kantPhilosophicalCounsel: {
       counselTitle,
       philosophicalGuidance,
@@ -287,21 +294,66 @@ export function calculateKantCategoricalImperative(
   };
 }
 
+function describeKantStage(score: number, high: string, mid: string, low: string): string {
+  if (score >= 86) return high;
+  if (score >= 76) return mid;
+  return low;
+}
+
 export function formatKantCategoricalImperativePrompt(res: KantCategoricalImperativeResult): string {
+  const universalLawStage = describeKantStage(
+    res.universalLawMaximsScore,
+    '예외 없는 보편 입법의 명료한 기준이 선 상태',
+    '원칙과 현실 맥락 사이에서 보편성을 조율하는 흐름',
+    '자기 예외의 유혹을 경계하며 준칙을 다시 다지는 시기',
+  );
+  const dignityStage = describeKantStage(
+    res.humanDignityEndsScore,
+    '나와 타인을 온전한 목적으로 대우하는 깊은 존엄의 태도',
+    '유용성과 인격 존중의 균형을 의식적으로 지키는 국면',
+    '이해관계에 흔들리지 않도록 상대와 자신의 품격을 챙겨야 할 때',
+  );
+  const autonomyStage = describeKantStage(
+    res.autonomousWillSovereigntyScore,
+    '외부 시선과 충동에 흔들리지 않는 자율적 이성의 주권 확립',
+    '주체적 판단을 세우되 감정의 여진을 다스리는 과도기',
+    '타인의 기대보다 스스로 납득할 도덕적 기준을 먼저 세울 시점',
+  );
+  const synthesisStage = describeKantStage(
+    res.transcendentalSynthesisScore,
+    '경험과 선험적 이성이 또렷이 결합하는 통각의 명료함',
+    '단편적 사실을 전체 맥락으로 엮어내는 사유의 흐름',
+    '성급한 단정을 멈추고 판단의 전제를 차분히 점검할 시기',
+  );
+  const summumBonumStage = describeKantStage(
+    res.summumBonumHarmonyScore,
+    '덕의 일관성과 삶의 충만함이 조화롭게 어우러지는 지향',
+    '옳음과 현실적 만족 사이에서 성숙한 균형을 찾는 중',
+    '당장의 결과보다 떳떳한 동기를 먼저 붙드는 내면의 다짐',
+  );
+  const temporalRhythmStage = describeKantStage(
+    res.temporalReasonRhythm.practicalReasonIndex,
+    '실천이성의 각성이 가장 또렷하게 빛나는 시간대',
+    '일상의 리듬 속에서 원칙을 무리 없이 이어가는 흐름',
+    '고요히 내면의 도덕 법칙을 비추어 숨을 고르는 시간',
+  );
+
   return [
-    `【칸트 정언명령 & 목적의 왕국 자율성 지표 v2.0】`,
-    `- 준칙 보편화 가능성 지수: ${res.universalLawMaximsScore}/100`,
-    `- 인간존엄성 목적 자체 대우도: ${res.humanDignityEndsScore}/100`,
-    `- 도덕적 자율성(Autonomy) 주권도: ${res.autonomousWillSovereigntyScore}/100`,
-    `- 선험적 종합판단 통각력: ${res.transcendentalSynthesisScore}/100`,
-    `- 최고선(덕·행복 조화) 지향도: ${res.summumBonumHarmonyScore}/100`,
+    `【칸트 정언명령 & 목적의 왕국 자율성 지표 v2.1 (순수 정성 성찰)】`,
+    `- 준칙 보편화 흐름: ${universalLawStage}`,
+    `- 인간존엄성 목적 대우: ${dignityStage}`,
+    `- 도덕적 자율성(Autonomy): ${autonomyStage}`,
+    `- 선험적 종합판단 통각: ${synthesisStage}`,
+    `- 최고선(덕·행복 조화): ${summumBonumStage}`,
     `- 질문 맥락 정식: [${res.situationalImperativeAudit.formulaAxis}] ${res.situationalImperativeAudit.focusAxisKo}`,
     `- 원전 처방: ${res.situationalImperativeAudit.classicalCitation} → ${res.situationalImperativeAudit.imperativeDirective}`,
     `- 성찰 질문: ${res.situationalImperativeAudit.reflectiveQuestion}`,
-    `- KST 시공간 리듬: ${res.temporalReasonRhythm.timeWindowKo} (${res.temporalReasonRhythm.seasonKo}, 실천이성지수 ${res.temporalReasonRhythm.practicalReasonIndex}/100) — ${res.temporalReasonRhythm.dailyDutyPractice}`,
-    `- 종합 등급: ${res.kantSynthesisMatrix.overallKantGrade}`,
+    `- KST 시공간 리듬: ${res.temporalReasonRhythm.timeWindowKo} (${res.temporalReasonRhythm.seasonKo}, ${temporalRhythmStage}) — ${res.temporalReasonRhythm.dailyDutyPractice}`,
+    `- 종합 위상: ${res.kantSynthesisMatrix.overallKantGrade}`,
     `- 핵심 정언명령 정식: ${res.activeImperativeFormula.formulaNameKo} [${res.activeImperativeFormula.formulaNameGerman}]`,
     `- 초점 도덕적 준칙: ${res.focalMoralMaxim.maximNameKo} (${res.focalMoralMaxim.dutyDimension})`,
+    `- 일상 실천 의례: ${res.dailyPracticeRitual}`,
     `- 철학적 수양 지침: ${res.kantPhilosophicalCounsel.philosophicalGuidance}`,
+    `- 해석 경계: ${res.interpretiveBoundary}`,
   ].join('\n');
 }
