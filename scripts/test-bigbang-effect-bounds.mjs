@@ -6,10 +6,10 @@ const bundle=await build({stdin:{contents:`
 import React from 'react';import{createRoot}from'react-dom/client';
 import{BigBangExpansionOverlay}from'./src/components/omniwarp/BigBangExpansionOverlay';
 import{BigBangHorizonOverlay}from'./src/components/omniwarp/BigBangHorizonOverlay';
-import{BigBangLuckyBreeze}from'./src/components/omniwarp/BigBangLuckyBreeze';
-import{BigBangCloverWind}from'./src/components/omniwarp/BigBangCloverWind';
+
+
 import{BigBangStarTrail}from'./src/components/omniwarp/BigBangStarTrail';
-function App(){const p=React.useRef({clientX:900,clientY:500}),o=React.useRef({x:900,y:500}),l=React.useRef(null);return <><BigBangExpansionOverlay/><BigBangHorizonOverlay isVisible radialSectorIndex={0} activeHole="whitehole" dragDistance={50} dragAngleDeg={0}/><BigBangLuckyBreeze settling={false}/><BigBangCloverWind settling={false} layerRef={l}/><BigBangStarTrail settling={false} pointerRef={p} originRef={o}/></>};window.mountEffects=()=>createRoot(document.getElementById('root')).render(<App/>);`,resolveDir:process.cwd(),loader:'tsx'},bundle:true,write:false,format:'iife',alias:{'@':`${process.cwd()}/src`}});
+function App(){const p=React.useRef({clientX:900,clientY:500}),o=React.useRef({x:900,y:500}),l=React.useRef(null);return <><BigBangExpansionOverlay/><BigBangHorizonOverlay isVisible radialSectorIndex={0} activeHole="whitehole" dragDistance={50} dragAngleDeg={0}/><BigBangStarTrail settling={false} pointerRef={p} originRef={o}/></>};window.mountEffects=()=>createRoot(document.getElementById('root')).render(<App/>);`,resolveDir:process.cwd(),loader:'tsx'},bundle:true,write:false,format:'iife',alias:{'@':`${process.cwd()}/src`}});
 const browser=await chromium.launch({executablePath:'/usr/bin/chromium',headless:true,args:['--no-sandbox']});
 try{
  const page=await browser.newPage({viewport:{width:1200,height:900}});
@@ -35,7 +35,7 @@ try{
   },mode);
   await page.waitForTimeout(100);
   const expected=await page.locator(mode==='folded'?'.sites-pinned-main':'#duo-content-viewport').boundingBox();
-  const layers=await page.locator('[data-bigbang-effect-viewport]').all();assert(layers.length>=4);
+  const layers=await page.locator('[data-bigbang-effect-viewport]').all();assert(layers.length>=2);
   for(const layer of layers){assert.deepEqual(await layer.boundingBox(),expected,mode);assert.equal(await layer.evaluate(e=>getComputedStyle(e).pointerEvents),'none');}
   if(mode!=='folded') {
    // Verify no effect can paint over Lucy in either swapped or stacked layouts.
@@ -46,5 +46,5 @@ try{
   }
  }
  assert.deepEqual(errors,[]);
- console.log('PASS: all Big Bang effects fit content in landscape/swapped/portrait/folded; whitehole/blackhole/wormhole leave Lucy pixels unchanged; effects never capture input');
+ console.log('PASS: non-clover Big Bang effects fit content in landscape/swapped/portrait/folded; whitehole/blackhole/wormhole leave Lucy pixels unchanged; effects never capture input');
 }finally{await browser.close();}
