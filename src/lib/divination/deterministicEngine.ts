@@ -3631,7 +3631,7 @@ try {
   // 256. 미국/독일 한나 아렌트 인간의 조건 탄생성 & 활동적 삶(노동·작업·행위)·사유와 판단 지혜 엔진
   const hannahArendtVitaActivaResult = calculateSupplement('hannahArendtVitaActivaResult', () => ((() => {
     try {
-      return calculateHannahArendtVitaActiva(profile);
+      return calculateHannahArendtVitaActiva(profile, question, now);
     } catch (_) {
       return null;
     }
@@ -3649,7 +3649,7 @@ try {
   // 258. 미국 헨리 데이비드 소로 월든 단순한 삶 & 자연 합일·깨어있는 양심 실천 엔진
   const henryDavidThoreauWaldenResult = calculateSupplement('henryDavidThoreauWaldenResult', () => ((() => {
     try {
-      return calculateHenryDavidThoreauWalden(profile);
+      return calculateHenryDavidThoreauWalden(profile, question, now);
     } catch (_) {
       return null;
     }
@@ -4843,7 +4843,7 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'hermeticPoimandres', nameKo: '헤르메스주의 포이만드레스 8대 천계', icon: '🌟', category: 'deep_master' },
   { key: 'kashmirShaivismSpanda', nameKo: '카슈미르 시바파 스판다 우주 맥동', icon: '🔱', category: 'deep_master' },
   { key: 'sumerianEnumaElishFiftyNames', nameKo: '에누마 엘리시 50대 이름', icon: '⚔️', category: 'deep_master' },
-  { key: 'alexandrianDecanThirtySixGods', nameKo: '알렉산드리아 36대 데칸', icon: '⌛', category: 'deep_master' },
+  { key: 'alexandrianDecanThirtySixGods', nameKo: '알렉산드리아 36대 데칸', icon: '⌛', category: 'deep_master', summary: '헤르메스주의 36대 데칸 시간 성령의 상징으로 조급한 시계 시간 너머의 결정적 타이밍(카이로스)과 삶의 리듬을 성찰합니다.' },
   { key: 'taoistLieziWindRiding', nameKo: '열자 어풍동행 무하유지향', icon: '🍃', category: 'deep_master' },
   { key: 'samkhyaTwentyFiveTattvas', nameKo: '상키야 25타트바 분별지', icon: '🧘', category: 'deep_master' },
   { key: 'neoConfucianFourSevenLiQi', nameKo: '성리학 사칠이기 거경궁리', icon: '📜', category: 'deep_master' },
