@@ -1,19 +1,21 @@
 /**
  * 미국 랠프 월도 에머슨(Ralph Waldo Emerson) 《자기신뢰(Self-Reliance)》 & 《자연(Nature)》 오버소울(Over-Soul) 비순응 자립 지혜 엔진
  *
- * 미국 초월주의(Transcendentalism)의 거장이자 정신적 독립선언의 철학자 랠프 월도 에머슨(1803~1882)의 불멸의 고전 《자기신뢰(Self-Reliance)》 및 《자연(Nature)》 원전 기반:
- * 1. 자기신뢰(Self-Reliance): "너 자신을 믿어라. 모든 심장은 이 철철 넘치는 철의 현에 맞추어 뛴다(Trust thyself: every heart vibrates to that iron string)" - 외부의 권위나 사회적 편견에 휘둘리지 않는 주체적 자립.
- * 2. 비순응적 진정성(Nonconformity): "진정한 인간이 되고자 하는 자는 순응주의자가 되어서는 안 된다" - 군중의 유행과 거짓 일관성을 거부하고 매 순간 자기 고유의 진실을 선언하는 용기.
- * 3. 오버소울(Over-Soul / 대령): 모든 인간의 영혼 밑바닥을 흐르는 우주적 신성과의 영적 교감 및 내적 직관에 대한 절대적 신뢰.
- * 4. 자연과의 합일(Transparent Eyeball): "나는 아무것도 아니지만 모든 것을 본다" - 자연 속에서 에고의 오만을 내려놓고 우주적 생명력의 순수한 통로가 되는 투명한 응시.
- * 5. 창조적 독창성(Creative Originality): 모방은 자살(Imitation is suicide)이라는 철칙 아래, 세상에 오직 하나뿐인 자기만의 사명과 예술적 과업을 꽃피우는 담대한 독창성.
+ * 미국 초월주의(Transcendentalism) 철학자 랠프 월도 에머슨(1803~1882)의 《자기신뢰》 및 《자연》 원전 기반:
+ * 1. 자기신뢰(Self-Reliance): 외부의 권위나 사회적 편견에 휘둘리지 않는 주체적 자립
+ * 2. 비순응적 진정성(Nonconformity): 군중의 유행과 거짓 일관성을 거부하고 자기 고유의 진실을 말하는 용기
+ * 3. 오버소울(Over-Soul): 내면 깊숙이 흐르는 직관과 보편적 생명력에 대한 신뢰
+ * 4. 자연과의 합일(Transparent Eyeball): 에고의 조급함을 비우고 자연의 리듬으로 호흡하는 투명한 응시
+ * 5. 창조적 독창성(Creative Originality): 모방을 멈추고 자신만의 고유한 과업을 꽃피움
  *
- * @version LUCKEY-RALPH-WALDO-EMERSON-v1.0.0
+ * @version LUCKEY-RALPH-WALDO-EMERSON-v1.1.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const AMERICAN_RALPH_WALDO_EMERSON_VERSION = 'LUCKEY-RALPH-WALDO-EMERSON-v1.0.0';
+export const AMERICAN_RALPH_WALDO_EMERSON_VERSION = 'LUCKEY-RALPH-WALDO-EMERSON-v1.1.0';
+
+export type EmersonQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
 export interface EmersonTheme {
   themeKey: string;
@@ -34,15 +36,22 @@ export interface EmersonAphorism {
 export interface RalphWaldoEmersonSelfRelianceResult {
   engineVersion: string;
   calculatedAtKst: string;
-  // 5대 핵심 초월주의·자기신뢰 지표 (0~100)
-  selfRelianceAutonomyScore: number;         // 자기신뢰 주체적 내적 자립도
-  overSoulDivineConnectionScore: number;     // 오버소울 우주 신성 직관력
-  nonconformistAuthenticityQuotient: number; // 비순응적 진정성 및 용기 지수
-  natureSpiritualRenewalScore: number;       // 자연 합일 영적 치유·정화력
-  creativeOriginalityPowerIndex: number;     // 창조적 독창성 및 고유 사명 실천력
+  questionTopic: EmersonQuestionTopic;
+  selfReliancePosture: string;
+  // 내부 계산 호환 필드 (프롬프트 비노출)
+  selfRelianceAutonomyScore: number;
+  overSoulDivineConnectionScore: number;
+  nonconformistAuthenticityQuotient: number;
+  natureSpiritualRenewalScore: number;
+  creativeOriginalityPowerIndex: number;
   // 세부 분석
   activeEmersonTheme: EmersonTheme;
   focalEmersonAphorism: EmersonAphorism;
+  practiceGuidance: string;
+  ritualAction: string;
+  reflectionFocus: string;
+  counselNote: string;
+  boundaryNotice: string;
   emersonComprehensiveGuidance: {
     guidanceTitle: string;
     philosophicalCounsel: string;
@@ -125,16 +134,76 @@ export const EMERSON_APHORISMS: EmersonAphorism[] = [
   },
 ];
 
+const TOPIC_GUIDANCE: Record<EmersonQuestionTopic, {
+  posture: string;
+  practice: string;
+  ritual: string;
+  reflection: string;
+}> = {
+  relationship: {
+    posture: '타인의 기대에 억지로 맞추기보다 고유한 나로 서서 진실하게 만나는 비순응적 우정',
+    practice: '호감을 얻기 위해 내 생각을 지우지 마십시오. 정직한 자기다움을 지킬 때 비로소 깊이 통하는 인연이 남습니다.',
+    ritual: '오늘 누군가의 눈치를 보느라 삼켰던 솔직한 의견 한 가지를 부드럽지만 분명하게 정리해 보기.',
+    reflection: '이 관계에서 내가 사랑받기 위해 억지로 흉내 내고 있는 모습은 무엇입니까?',
+  },
+  decision: {
+    posture: '세상의 유행과 어제의 일관성을 넘어 내면의 철의 현(Iron String)을 따르는 결단',
+    practice: '남들이 안전하다고 말하는 길이나 과거에 내뱉은 말에 묶이지 말고, 지금 내 영혼이 진실하다고 울리는 쪽을 택하십시오.',
+    ritual: '외부의 시선과 체면을 지웠을 때 내가 진짜로 선택하고 싶은 안을 한 줄로 적어 보기.',
+    reflection: '누구의 평가도 받지 않는다면, 나는 오늘 어떤 독창적인 선택을 내릴 것입니까?',
+  },
+  healing: {
+    posture: '도시의 소음과 비교를 내려놓고 자연의 숨결 속에서 본래의 생기를 되찾는 회복',
+    practice: '남의 밭을 부러워하며 나를 소모하지 마십시오. 잠시 스크린과 평가를 끄고 바람·햇빛·나무 아래서 나만의 리듬을 회복하십시오.',
+    ritual: '하루 10분만이라도 휴대폰 없이 하늘이나 나무를 바라보며 깊게 호흡하기.',
+    reflection: '비교와 조급함을 잠시 내려놓으면, 지금 내 안에 남아 있는 가장 순수한 평온은 어디에 있습니까?',
+  },
+  reflection: {
+    posture: '모방을 멈추고 나만의 고유한 땅을 경작하는 주체적 자기신뢰의 응시',
+    practice: '남의 기준표로 내 하루를 채점하지 마십시오. 오늘 내 안에서 솟아난 작은 직관과 호기심을 귀하게 대접하십시오.',
+    ritual: '오늘 남을 따라 한 선택 하나와 나답게 선택한 순간 하나를 나란히 기록하기.',
+    reflection: '오직 나만이 걸을 수 있고, 나만이 길러낼 수 있는 삶의 결은 무엇입니까?',
+  },
+};
+
+function classifyQuestionTopic(question?: string): EmersonQuestionTopic {
+  const q = (question ?? '').toLowerCase();
+  if (/연애|사랑|결혼|이별|사람|관계|친구|가족|동료|상사|평판|눈치|갈등/.test(q)) {
+    return 'relationship';
+  }
+  if (/선택|결정|이직|창업|사업|계약|진로|방향|해야|말아야|도전/.test(q)) {
+    return 'decision';
+  }
+  if (/지치|힘들|불안|걱정|우울|슬픔|비교|열등감|번아웃|회복|휴식/.test(q)) {
+    return 'healing';
+  }
+  return 'reflection';
+}
+
+function getKstDateString(now: Date): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  return kst.toISOString().slice(0, 10);
+}
+
+function formatKstIso(now: Date): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  return kst.toISOString().replace('Z', '+09:00');
+}
+
 export function calculateRalphWaldoEmersonSelfReliance(
-  profile: UserProfile
+  profile: UserProfile,
+  now: Date = new Date(),
+  question?: string,
 ): RalphWaldoEmersonSelfRelianceResult {
   const p = profile as any;
   const name = profile?.basic?.name ?? p?.name ?? '방문자';
   const birthDate = profile?.basic?.birthdate ?? p?.birthDate ?? p?.birthdate ?? '1990-01-01';
   const birthTime = profile?.basic?.birthtime ?? p?.birthTime ?? p?.birthtime ?? '12:00';
   const gender = profile?.basic?.gender ?? p?.gender ?? 'neutral';
+  const kstDate = getKstDateString(now);
+  const questionTopic = classifyQuestionTopic(question);
 
-  const seedString = `RALPH-WALDO-EMERSON:${name}:${birthDate}:${birthTime}:${gender}`;
+  const seedString = `RALPH-WALDO-EMERSON:${name}:${birthDate}:${birthTime}:${gender}:${kstDate}:${question ?? ''}`;
 
   let hash = 0;
   for (let i = 0; i < seedString.length; i++) {
@@ -154,16 +223,22 @@ export function calculateRalphWaldoEmersonSelfReliance(
 
   const activeEmersonTheme = EMERSON_THEMES[themeIndex];
   const focalEmersonAphorism = EMERSON_APHORISMS[aphorismIndex];
+  const topicGuide = TOPIC_GUIDANCE[questionTopic];
 
   const guidanceTitle = `랠프 월도 에머슨 자기신뢰·초월주의 지혜: ${activeEmersonTheme.themeTitleKo}`;
-  const philosophicalCounsel = `에머슨의 자기신뢰 철학은 타인의 시선과 사회적 모방을 단호히 거부하고, 내면의 신적 직관을 믿고 우뚝 서도록 이끕니다. ` +
+  const philosophicalCounsel = `에머슨의 자기신뢰 철학은 타인의 시선과 사회적 모방을 단호히 거부하고, 내면의 직관을 믿고 우뚝 서도록 이끕니다. ` +
     `현재 당신이 직면한 핵심 과제는 '${activeEmersonTheme.themeTitleKo}'입니다. ` +
     `${activeEmersonTheme.practicalCounsel} 아울러 에머슨의 경구 "${focalEmersonAphorism.aphorismKo}"("${focalEmersonAphorism.aphorismOriginalEn}")를 마음에 품고, ` +
     `${focalEmersonAphorism.actionGuidance}`;
 
+  const counselNote = `'${activeEmersonTheme.themeTitleKo}' 테마와 '${focalEmersonAphorism.aphorismKo}' 경구가 어우러져 '${topicGuide.posture}'를 비춥니다.`;
+  const boundaryNotice = '이 관점은 에머슨의 초월주의 철학을 바탕으로 한 상징적 성찰 안내이며, 확정적 미래 예측이나 의학적·법률적 조언이 아닙니다.';
+
   return {
     engineVersion: AMERICAN_RALPH_WALDO_EMERSON_VERSION,
-    calculatedAtKst: new Date().toISOString(),
+    calculatedAtKst: formatKstIso(now),
+    questionTopic,
+    selfReliancePosture: topicGuide.posture,
     selfRelianceAutonomyScore,
     overSoulDivineConnectionScore,
     nonconformistAuthenticityQuotient,
@@ -171,6 +246,11 @@ export function calculateRalphWaldoEmersonSelfReliance(
     creativeOriginalityPowerIndex,
     activeEmersonTheme,
     focalEmersonAphorism,
+    practiceGuidance: topicGuide.practice,
+    ritualAction: topicGuide.ritual,
+    reflectionFocus: topicGuide.reflection,
+    counselNote,
+    boundaryNotice,
     emersonComprehensiveGuidance: {
       guidanceTitle,
       philosophicalCounsel,
@@ -181,17 +261,18 @@ export function calculateRalphWaldoEmersonSelfReliance(
 export function formatRalphWaldoEmersonSelfReliancePrompt(res: RalphWaldoEmersonSelfRelianceResult): string {
   return [
     `【랠프 월도 에머슨 《자기신뢰》 & 《자연》 오버소울 비순응 자립 지표】`,
-    `- 자기신뢰 주체적 내적 자립도(Self-Reliance): ${res.selfRelianceAutonomyScore}/100`,
-    `- 오버소울 우주 신성 직관력(Over-Soul): ${res.overSoulDivineConnectionScore}/100`,
-    `- 비순응적 진정성 용기 지수(Nonconformity): ${res.nonconformistAuthenticityQuotient}/100`,
-    `- 자연 합일 영적 치유·정화력(Nature): ${res.natureSpiritualRenewalScore}/100`,
-    `- 창조적 독창성 사명 실천력(Originality): ${res.creativeOriginalityPowerIndex}/100`,
+    `- 질문 맥락 초점: ${res.questionTopic} | 자기신뢰 태도: ${res.selfReliancePosture}`,
     `- 핵심 초월주의 테마: ${res.activeEmersonTheme.themeTitleKo} [${res.activeEmersonTheme.themeTitleEn}]`,
     `- 초월주의적 통찰: ${res.activeEmersonTheme.transcendentalInsight}`,
     `- 실천적 조언: ${res.activeEmersonTheme.practicalCounsel}`,
     `- 핵심 경구: "${res.focalEmersonAphorism.aphorismKo}"`,
     `- 영문 원전: "${res.focalEmersonAphorism.aphorismOriginalEn}" [${res.focalEmersonAphorism.sourceContext}]`,
     `- 구체적 실천 지침: ${res.focalEmersonAphorism.actionGuidance}`,
+    `- 맥락별 실행 조언: ${res.practiceGuidance}`,
+    `- 오늘의 작은 의례: ${res.ritualAction}`,
+    `- 성찰 질문: ${res.reflectionFocus}`,
+    `- 핵심 조언 요약: ${res.counselNote}`,
+    `- 해석 경계: ${res.boundaryNotice}`,
     `- 종합 철학 권면: ${res.emersonComprehensiveGuidance.philosophicalCounsel}`,
   ].join('\n');
 }
