@@ -44,7 +44,7 @@ import { selectOptimalDivinationTools, FIFTEEN_DIVINATION_TOOLS, type SevenTheme
 // import { buildSedonaSystemPrompt } from '../lib/sedonaWisdom';
 // import { buildLettingGoSystemPrompt } from '../lib/lettingGoWisdom';
 import { loadSavedUnifiedMessages, saveUnifiedMessagesSafely, mergeUnifiedMessages, hasRealUserConversation, createDefaultGreeting } from '../lib/chatHistorySync';
-import { ALL_DCE_ENGINES } from '../lib/divination/deterministicEngine';
+import { LUCY_PRO_CATALOG_TOTAL_COUNT } from '../lib/divination/engineCatalogCount';
 import { processDailyChatArchival, archiveAndResetChat } from '../lib/chatMemoryArchive';
 import {
   SUGGESTIONS_SYSTEM_SUFFIX,
@@ -2151,8 +2151,8 @@ ${responseProfile.rule}`;
       if (sourcePersona === 'lucy' && isMasterCall) {
         systemPrompt += `\n\n[루시 프로 마스터 모드 응답 절대 원칙]:
 1. [마스터 모드 유지 & 수다모드 완전 배제]: 당신은 7대 테마를 다루는 '루시 프로(Lucy Pro) 마스터'야. 절대로 "가벼운 일상 수다를 떨까?", "수다 떨 준비가 되어 있어" 같은 수다 모드(casual) 대사나 질문을 하지 마. 어떤 질문이나 인사에도 항상 마스터로서 깊이 있게 응대해.
-2. [기본 운명 팩트 + 심층 지혜 융합]: 질문에 대해 15대 기초 운명학 도구의 수리 계산 근거(사주·자미·타로 등)와 함께, 선별된 316대 심층 철학·심리학 지혜를 유기적으로 융합하여 깊이 있는 마스터의 통찰을 제시해. 답변에 전달된 실제 산출 결과만 '계산 완료'라고 하고, 상징 관점·부분 계산·미실행·오류를 서로 구분해. 카탈로그 등록 수(${ALL_DCE_ENGINES.length}개)는 이번 턴 실제 실행 수가 아니므로 실행된 도구만 정직하게 언급해.
-3. [다정한 마스터 응대]: 사용자가 짧은 인사나 일상 이야기를 건네더라도 가벼운 잡담으로 넘기지 말고, 타고난 사주·점성술 원국과 오늘의 시간적 흐름, 실존적 지혜를 짚어주며 깊이 있고 다정하게 응대해.`;
+2. [기본 운명 팩트 + 심층 지혜 융합]: 질문에 대해 기초 운명학 도구의 수리 계산 근거와 질문에 관련된 심층 철학·심리학 관점을 균형 있게 활용해 깊이 있는 통찰을 제시해. 답변에 전달된 실제 산출 결과만 '계산 완료'라고 하고, 상징 관점·부분 계산·미실행·오류를 서로 구분해. 카탈로그 등록 수(${LUCY_PRO_CATALOG_TOTAL_COUNT}개)는 이번 턴 실제 실행 수가 아니므로 실행된 도구만 정직하게 언급해.
+ 3. [다정한 마스터 응대]: 사용자가 짧은 인사나 일상 이야기를 건네더라도 가벼운 잡담으로 넘기지 말고, 타고난 사주·점성술 원국과 오늘의 시간적 흐름, 실존적 지혜를 짚어주며 깊이 있고 다정하게 응대해.`;
       }
 
       if (sourcePersona === 'lucy' && requireBasicAndDeep && !isMasterCall) {

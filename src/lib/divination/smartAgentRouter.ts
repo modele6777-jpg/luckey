@@ -70,6 +70,61 @@ const TOOL_KO_NAMES: Record<DivinationToolId, string> = {
   taiyi: '태을신수',
 };
 
+const MAX_RELEVANT_DEEP_PERSPECTIVES = 12;
+const DEEP_QUERY_STOP_WORDS = new Set(['이번', '내', '나의', '어떻게', '무엇', '어떤', '해줘', '봐줘', '알려줘', '좀', '관련', '질문', '분석', '상담', '운세', '그리고', '그래서', '그런데', '때문', '수', '것']);
+const INTENT_RELEVANCE_TERMS: Record<QuestionIntentCategory, readonly string[]> = {
+  career_strategy: ['이직', '커리어', '진로', '직업', '승진', '면접', 'career', 'leadership'],
+  business_money: ['사업', '투자', '재물', '금전', '부동산', '사업', 'wealth', 'finance'],
+  relationship_love: ['연애', '결혼', '궁합', '관계', '사랑', 'love', 'relationship'],
+  immediate_decision: ['결정', '선택', '결단', '타이밍', 'decision', 'choice'],
+  daily_timing_transit: ['오늘', '일진', '행성', '트랜짓', '시간', 'transit', 'timing'],
+  life_season_timing: ['대운', '세운', '월운', '인생', '주기', 'season', 'cycle'],
+  vitality_wellness: ['건강', '피로', '수면', '회복', '명상', 'wellness', 'health'],
+  creative_mind: ['창작', '예술', '영감', '아이디어', '글쓰기', 'creative', 'art'],
+  life_reflection: ['성찰', '회고', '마음', '내면', '자기', 'reflection', 'journal'],
+  master_blueprint: ['인생', '전체', '종합', '방향', 'life', 'purpose'],
+  casual_greeting: [],
+};
+
+function getQuestionTokens(text: string): string[] {
+  const words = text.toLowerCase().normalize('NFKC').match(/[a-z0-9]+|[가-힣]{2,}/g) ?? [];
+  return [...new Set(words
+    .map(word => word.replace(/(에서|으로|에게|부터|까지|은|는|이|가|을|를|와|과|도|로|만|의|에)$/u, ''))
+    .filter(word => word.length >= 2 && !DEEP_QUERY_STOP_WORDS.has(word)))];
+}
+
+function selectRelevantDeepPerspectiveKeys(
+  question: string,
+  intent: QuestionIntentCategory,
+  preferredKeys: readonly string[] = [],
+): string[] {
+  const engines = ALL_DCE_ENGINES.filter(engine => engine.category === 'deep_master');
+  const engineByKey = new Map(engines.map(engine => [engine.key, engine] as const));
+  const preferred = [...new Set(preferredKeys)].filter(key => engineByKey.has(key));
+  const questionTokens = getQuestionTokens(question);
+  const intentTerms = INTENT_RELEVANCE_TERMS[intent];
+  const ranked = engines.map((engine, index) => {
+    const searchable = `${engine.key.replace(/([a-z])([A-Z])/g, '$1 $2')} ${engine.nameKo} ${engine.meaning ?? ''} ${engine.summary ?? ''}`
+      .toLowerCase().normalize('NFKC');
+    const queryMatches = questionTokens.filter(token => searchable.includes(token)).length;
+    const intentMatches = intentTerms.filter(term => searchable.includes(term)).length;
+    const preferredIndex = preferred.indexOf(engine.key);
+    return {
+      key: engine.key,
+      index,
+      score: queryMatches * 3 + intentMatches + (preferredIndex >= 0 ? 100 - preferredIndex : 0),
+    };
+  }).filter(item => item.score > 0)
+    .sort((a, b) => b.score - a.score || a.index - b.index);
+
+  const selected = [...preferred];
+  for (const item of ranked) {
+    if (selected.length >= MAX_RELEVANT_DEEP_PERSPECTIVES) break;
+    if (!selected.includes(item.key)) selected.push(item.key);
+  }
+  return selected.slice(0, MAX_RELEVANT_DEEP_PERSPECTIVES);
+}
+
 /**
  * 사용자 질문 텍스트를 분석하여 의도(Intent)와 최적 도구 조합(RoutePlan)을 산출합니다.
  */
@@ -494,6 +549,19 @@ export function routeAndExecute(params: {
     routePlan.deepEngineKeys = [];
     routePlan.deepEnginesKo = [];
     routePlan.deepEngineGuidance = undefined;
+  }
+
+  if (requireBasicAndDeep && !routePlan.isMasterMobilization) {
+    const selectedDeepKeys = selectRelevantDeepPerspectiveKeys(
+      params.text,
+      routePlan.intent,
+      routePlan.deepEngineKeys ?? [],
+    );
+    const engineNames = new Map(ALL_DCE_ENGINES
+      .filter(engine => engine.category === 'deep_master')
+      .map(engine => [engine.key, engine.nameKo] as const));
+    routePlan.deepEngineKeys = selectedDeepKeys;
+    routePlan.deepEnginesKo = selectedDeepKeys.map(key => engineNames.get(key) ?? key);
   }
 
   if (routePlan.isCasual) {

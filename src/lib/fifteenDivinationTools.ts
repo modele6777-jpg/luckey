@@ -6,7 +6,7 @@ import { parseBirthTime } from './birthDateTime';
 import { UserProfile } from './sharedState';
 import { calculateDetailedSaju } from './sajuAnalysis';
 import { buildUserNatalSummary } from './astrologyAnalysis';
-import { runDeterministicEngine, formatDeterministicEnginePrompt, getFiredEngineBadges, getCalculationAudit } from './divination/deterministicEngine';
+import { runDeterministicEngine, formatDeterministicEnginePrompt, getFiredEngineBadges, getCalculationAudit, ALL_DCE_ENGINES } from './divination/deterministicEngine';
 import { calculateKyusei } from './divination/kyuseiEngine';
 import { calculateMahabote } from './divination/mahaboteEngine';
 import { calculateThaiHorasat } from './divination/thaiHorasatEngine';
@@ -606,10 +606,28 @@ export function selectOptimalDivinationTools(
     }
   }
 
+  const calculationAudit = getCalculationAudit(routed.engineReport, {
+    isMasterMobilization: false,
+    focusTools: routed.routePlan.targetTools,
+  });
+  if (requireBasicAndDeep) {
+    for (const key of routed.routePlan.deepEngineKeys ?? []) {
+      const engine = ALL_DCE_ENGINES.find(item => item.key === key && item.category === 'deep_master');
+      if (!engine || calculationAudit.some(item => item.toolId === key)) continue;
+      calculationAudit.push({
+        toolId: key,
+        name: engine.nameKo,
+        status: 'symbolic',
+        sentToModel: true,
+        note: '질문 관련 상징 참고 관점이 답변 프롬프트에 전달됨',
+      });
+    }
+  }
+
   return {
     selectedTools,
     firedEngineBadges: routed.toolsForBadge,
-    calculationAudit: getCalculationAudit(routed.engineReport, { isMasterMobilization: false, focusTools: routed.routePlan.targetTools }),
+    calculationAudit,
     isCasualMessage: false,
     isMasterMobilization: false,
     selectionReason: `${routed.routePlan.intentKoName} (${routed.toolsForBadge.slice(0, 3).join(' + ')})`,

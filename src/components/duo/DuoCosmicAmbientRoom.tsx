@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { Sparkles, Music, Activity, Headphones, Pause, Play } from 'lucide-react';
 import './duo-cosmic-room.css';
 import { ALL_DCE_ENGINES, type DceEngineMeta } from '@/lib/divination/deterministicEngine';
+import { LUCY_PRO_CATALOG_DUPLICATE_KEYS } from '@/lib/divination/catalogDuplicateKeys';
 import { triggerHaptic } from '@/lib/omniWarp/omniWarpHaptics';
 import { getVisualRhythmBeatConfig, VisualRhythmBinauralPlayer } from '@/lib/visualRhythmBinaural';
 
@@ -9,7 +10,11 @@ interface DuoCosmicAmbientRoomProps {
   isLight?: boolean;
 }
 
-// 📖 252대 DCE 엔진별 핵심 통찰 및 요약 설명 생성기
+const VISIBLE_DCE_ENGINES = ALL_DCE_ENGINES.filter(engine =>
+  !LUCY_PRO_CATALOG_DUPLICATE_KEYS.has(engine.key),
+);
+
+// 📖 표시 카탈로그 엔진별 핵심 통찰 및 요약 설명 생성기
 function getEngineShortSummary(engine: DceEngineMeta): string {
   if (engine.summary) return engine.summary;
   const k = engine.key;
@@ -94,9 +99,9 @@ export const DuoCosmicAmbientRoom: React.FC<DuoCosmicAmbientRoomProps> = ({ isLi
   // BPM 리듬 설정 (기본 90 BPM)
   const [ambientTempoBpm, setAmbientTempoBpm] = useState<number>(90);
   const [isBinauralPlaying, setIsBinauralPlaying] = useState(false);
-  // 🔮 252대 DCE 엔진 무조건 랜덤 셔플로 시작
+  // 🔮 사용자 표시 카탈로그 엔진 중 무작위로 시작
   const [activeEngineIdx, setActiveEngineIdx] = useState<number>(() => {
-    return Math.floor(Math.random() * ALL_DCE_ENGINES.length);
+    return Math.floor(Math.random() * VISIBLE_DCE_ENGINES.length);
   });
 
   // 🎵 음악 비트 탭 싱크 (애플뮤직 박자에 맞춰 화면 탭 시 템포 실측 동기화)
@@ -134,9 +139,9 @@ export const DuoCosmicAmbientRoom: React.FC<DuoCosmicAmbientRoomProps> = ({ isLi
   useEffect(() => {
     const timer = setInterval(() => {
       setActiveEngineIdx((prev) => {
-        let next = Math.floor(Math.random() * ALL_DCE_ENGINES.length);
-        if (next === prev && ALL_DCE_ENGINES.length > 1) {
-          next = (next + 1) % ALL_DCE_ENGINES.length;
+        let next = Math.floor(Math.random() * VISIBLE_DCE_ENGINES.length);
+        if (next === prev && VISIBLE_DCE_ENGINES.length > 1) {
+          next = (next + 1) % VISIBLE_DCE_ENGINES.length;
         }
         return next;
       });
@@ -479,7 +484,7 @@ export const DuoCosmicAmbientRoom: React.FC<DuoCosmicAmbientRoomProps> = ({ isLi
     };
   }, [ambientTempoBpm]);
 
-  const currentEngine = ALL_DCE_ENGINES[activeEngineIdx] || ALL_DCE_ENGINES[0];
+  const currentEngine = VISIBLE_DCE_ENGINES[activeEngineIdx] || VISIBLE_DCE_ENGINES[0];
   const currentSummary = getEngineShortSummary(currentEngine);
   const binauralConfig = getVisualRhythmBeatConfig(ambientTempoBpm);
 

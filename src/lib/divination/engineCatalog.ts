@@ -5,11 +5,14 @@ import {
   type DivinationToolId,
   type SevenThemeChannel,
 } from '../fifteenDivinationTools';
+import { LUCY_PRO_CATALOG_DUPLICATE_KEYS } from './catalogDuplicateKeys';
 
 /**
- * User-facing Lucy Pro catalog: includes all 334 registered engines (15 foundational + 319 deep).
+ * User-facing Lucy Pro catalog omits only confirmed duplicate entries from the runtime registry.
  */
-export const LUCY_PRO_CATALOG_ENGINES = [...ALL_DCE_ENGINES];
+export const LUCY_PRO_CATALOG_ENGINES = ALL_DCE_ENGINES.filter(
+  engine => !LUCY_PRO_CATALOG_DUPLICATE_KEYS.has(engine.key),
+);
 
 export const ENGINE_CATALOG_COUNTS = LUCY_PRO_CATALOG_ENGINES.reduce(
   (counts, engine) => {

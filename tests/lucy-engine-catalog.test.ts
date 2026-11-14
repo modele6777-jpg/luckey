@@ -1,7 +1,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { ALL_DCE_ENGINES, type DceEngineMeta } from '../src/lib/divination/deterministicEngine';
-import { LUCY_PRO_DEEP_PERSPECTIVE_COUNT } from '../src/lib/divination/engineCatalogCount';
+import { LUCY_PRO_CATALOG_TOTAL_COUNT, LUCY_PRO_DEEP_PERSPECTIVE_COUNT, LUCY_PRO_FOUNDATIONAL_COUNT } from '../src/lib/divination/engineCatalogCount';
+import { LUCY_PRO_CATALOG_DUPLICATE_KEYS } from '../src/lib/divination/catalogDuplicateKeys';
 import {
   DEEP_PERSPECTIVE_RESEARCH_COUNTS,
   ENGINE_CATALOG_COUNTS,
@@ -15,19 +16,38 @@ import {
 } from '../src/lib/divination/engineCatalog';
 import { FIFTEEN_DIVINATION_TOOLS, type DivinationToolId } from '../src/lib/fifteenDivinationTools';
 
-test('Lucy Pro catalog distinguishes 334 total entries from 319 deep perspectives', () => {
-  assert.equal(ALL_DCE_ENGINES.length, 334);
-  assert.equal(LUCY_PRO_CATALOG_ENGINES.length, 334);
+test('Lucy Pro catalog contains 331 entries: 15 foundational tools and 316 deep perspectives', () => {
+  assert.equal(ALL_DCE_ENGINES.length, 331);
+  assert.equal(LUCY_PRO_CATALOG_ENGINES.length, 331);
+  assert.equal(LUCY_PRO_FOUNDATIONAL_COUNT, 15);
+  assert.equal(LUCY_PRO_CATALOG_TOTAL_COUNT, 331);
   assert.equal(LUCY_PRO_DEEP_PERSPECTIVE_COUNT, ENGINE_CATALOG_COUNTS.deep_master);
-  assert.equal(LUCY_PRO_DEEP_PERSPECTIVE_COUNT, 319);
-  assert.deepEqual(ENGINE_CATALOG_COUNTS, { foundational: 15, deep_master: 319 });
-  assert.equal(new Set(LUCY_PRO_CATALOG_ENGINES.map(engine => engine.key)).size, 334);
+  assert.equal(LUCY_PRO_DEEP_PERSPECTIVE_COUNT, 316);
+  assert.deepEqual(ENGINE_CATALOG_COUNTS, { foundational: 15, deep_master: 316 });
+  assert.equal(new Set(LUCY_PRO_CATALOG_ENGINES.map(engine => engine.key)).size, 331);
+  assert.deepEqual([...LUCY_PRO_CATALOG_DUPLICATE_KEYS], [
+    'romanAureliusInnerCitadel',
+    'koreanJeongYakyongMongminSimseo',
+    'zoroastrianAmeshaSpentasLight',
+  ]);
+  for (const key of LUCY_PRO_CATALOG_DUPLICATE_KEYS) {
+    assert.equal(LUCY_PRO_CATALOG_ENGINES.some(engine => engine.key === key), false, `duplicate remains visible: ${key}`);
+  }
 });
 
 test('every listed engine has a readable meaning and one of the seven channel themes', () => {
   const totalThemeCount = Object.values(ENGINE_CATALOG_THEME_COUNTS).reduce((sum, count) => sum + count, 0);
   assert.equal(LUCY_PRO_CHANNEL_THEMES.length, 7);
   assert.equal(totalThemeCount, LUCY_PRO_CATALOG_ENGINES.length);
+  assert.deepEqual(ENGINE_CATALOG_THEME_COUNTS, {
+    prologue: 6,
+    orange: 29,
+    trinity: 82,
+    aura: 54,
+    bluebird: 37,
+    muse: 113,
+    epilogue: 10,
+  });
 
   for (const theme of LUCY_PRO_CHANNEL_THEMES) {
     assert.ok(ENGINE_CATALOG_THEME_COUNTS[theme.id] > 0, `empty channel theme: ${theme.id}`);
@@ -58,11 +78,11 @@ test('automatic theme classification prioritizes named divination systems over g
   assert.equal(getEngineCatalogTheme(ziweiFlyingStars), 'trinity');
 });
 
-test('all 229 individually described perspectives retain their meaning and source status', () => {
+test('all 224 individually described catalog perspectives retain their meaning and source status', () => {
   const undescribedBeforeResearch = ALL_DCE_ENGINES.filter(
     engine => engine.category === 'deep_master' && !engine.summary,
   );
-  assert.equal(undescribedBeforeResearch.length, 229);
+  assert.equal(undescribedBeforeResearch.length, 224);
   assert.deepEqual(DEEP_PERSPECTIVE_RESEARCH_COUNTS, {
     total: 229,
     supported: 219,

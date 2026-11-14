@@ -67,6 +67,7 @@ import { LucyCosmicBackground } from '@/components/chat/LucyCosmicBackground';
 import { ALL_DCE_ENGINES } from '@/lib/divination/deterministicEngine';
 import { LUCY_PRO_CATALOG_ENGINES } from '@/lib/divination/engineCatalog';
 import { LucyEngineCatalogDialog } from '@/components/chat/LucyEngineCatalogDialog';
+import { getActuallyUsedCalculationAudit } from '@/lib/divination/calculationAudit';
 import '@/styles/lucy-starlight.css';
 
 // Helper: Compress uploaded images to prevent UI stutter and huge payload overhead
@@ -1826,6 +1827,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
   // 프로필 모달 상태
   const [isChatProfileModalOpen, setIsChatProfileModalOpen] = useState(false);
   const [isEngineCatalogOpen, setIsEngineCatalogOpen] = useState(false);
+  const [openUsageMessageId, setOpenUsageMessageId] = useState<string | null>(null);
   const [editingChatProfile, setEditingChatProfile] = useState<ChatTargetProfile | null>(null);
 
   const handleOpenAddChatProfile = useCallback(() => {
@@ -3210,6 +3212,9 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
               return null;
             }
             const msgModeInfo = resolveMessageModeAndChannels(msg, filteredMessages, index);
+            const actuallyUsedEngines = getActuallyUsedCalculationAudit((msg as any).calculationAudit);
+            const isUsageDetailsOpen = openUsageMessageId === msgId;
+            const hideAutomaticModeBadge = msgModeInfo.badgeLabel === 'AI 심층 자동 상담';
 
             // 루시의 인사말인지 여부 정밀 판별
             const isGreeting = (() => {
@@ -3276,15 +3281,54 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
                     </span>
                   )}
 
-                  <span data-message-mode-badge="true"
-                    className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium ${msgModeInfo.badgeColor}`}>
-                    <span aria-hidden="true">{msgModeInfo.badgeIcon}</span>
-                  <span>{msgModeInfo.badgeLabel}</span>
-                  </span>
+                  {!hideAutomaticModeBadge && (isUser ? (
+                    <span data-message-mode-badge="true"
+                      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium ${msgModeInfo.badgeColor}`}>
+                      <span aria-hidden="true">{msgModeInfo.badgeIcon}</span>
+                      <span>{msgModeInfo.badgeLabel}</span>
+                    </span>
+                  ) : (
+                    <button
+                      type="button"
+                      data-message-mode-badge="true"
+                      aria-label={`${msgModeInfo.badgeLabel} 모드 · 실제 사용 엔진 보기`}
+                      aria-haspopup="dialog"
+                      aria-expanded={isUsageDetailsOpen}
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        setOpenUsageMessageId(current => current === msgId ? null : msgId);
+                      }}
+                      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium cursor-pointer transition-opacity hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 ${msgModeInfo.badgeColor}`}>
+                      <span aria-hidden="true">{msgModeInfo.badgeIcon}</span>
+                      <span>{msgModeInfo.badgeLabel}</span>
+                    </button>
+                  ))}
 
                   <span className={`text-[10px] ${isLight ? 'text-slate-400' : 'text-white/70'}`}>{timeStr}</span>
                 </div>
-
+                {!isUser && isUsageDetailsOpen && (
+                  <section
+                    role="dialog"
+                    aria-label="이번 답변에서 실제 사용한 엔진"
+                    className={`mb-2 ml-1 w-[min(92vw,26rem)] max-h-64 overflow-y-auto rounded-xl border p-3 text-xs shadow-lg ${isLight ? 'border-slate-200 bg-white text-slate-800' : 'border-white/15 bg-slate-900 text-slate-100'}`}
+                  >
+                    <div className="mb-2 font-semibold">이번 답변에 실제 사용된 엔진 ({actuallyUsedEngines.length})</div>
+                    {actuallyUsedEngines.length > 0 ? (
+                      <ul className="space-y-1">
+                        {actuallyUsedEngines.map((engine, engineIndex) => (
+                          <li key={`${engine.toolId}-${engineIndex}`} className="flex items-start gap-2">
+                            <span className="shrink-0 opacity-70">
+                              {engine.status === 'symbolic' ? '상징 참고' : engine.status === 'partial' ? '부분 계산' : '계산 결과'}
+                            </span>
+                            <span>{engine.name}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <p>이번 답변에 모델로 전달된 계산·상징 엔진 기록이 없습니다.</p>
+                    )}
+                  </section>
+                )}
                 <div className="relative group max-w-[92%] sm:max-w-[85%] lg:max-w-[80%] min-w-0">
                   {/* Attached Image Preview (in User Message or Lucy's Card Deep Insight Reply) */}
                   {(() => {

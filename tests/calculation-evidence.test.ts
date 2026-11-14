@@ -2,6 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { ALL_DCE_ENGINES, runDeterministicEngine, getFiredEngineBadges, getCalculationAudit, formatDeterministicEnginePrompt } from '../src/lib/divination/deterministicEngine';
 import { selectOptimalDivinationTools } from '../src/lib/fifteenDivinationTools';
+import { getActuallyUsedCalculationAudit } from '../src/lib/divination/calculationAudit';
 
 const profile = { basic: { name: '검사용', birthdate: '1990-05-17', birthtime: '14:30', gender: 'female' as const, birthCity: '서울', lunarSolar: 'solar' as const } };
 
@@ -23,6 +24,28 @@ test('missing profile never crashes the chat calculation path or fabricates birt
   assert.equal(audit.length, 2);
   assert.ok(audit.every(item => item.status === 'skipped' && !item.sentToModel));
   assert.match(formatDeterministicEnginePrompt(report), /생년월일.*미입력/);
+});
+
+test('per-answer usage keeps only unique results and symbolic perspectives actually sent to the model', () => {
+  const used = getActuallyUsedCalculationAudit([
+    { toolId: 'calc', name: '계산 도구', status: 'calculated', sentToModel: true },
+    { toolId: 'partial', name: '부분 도구', status: 'partial', sentToModel: true },
+    { toolId: 'symbolic', name: '상징 관점', status: 'symbolic', sentToModel: true },
+    { toolId: 'skipped', name: '미실행 도구', status: 'skipped', sentToModel: false },
+    { toolId: 'error', name: '오류 도구', status: 'error', sentToModel: false },
+    { toolId: 'unimplemented', name: '미구현 도구', status: 'not_implemented', sentToModel: true },
+    { toolId: 'calc', name: '중복 기록', status: 'calculated', sentToModel: true },
+  ]);
+  assert.deepEqual(used.map(item => item.toolId), ['calc', 'partial', 'symbolic']);
+
+  const selected = selectOptimalDivinationTools(
+    '이번 이직 면접과 커리어 방향을 알려줘', [], profile, false,
+    { allowMaster: false, requireBasicAndDeep: true },
+  );
+  const actualSelection = getActuallyUsedCalculationAudit(selected.calculationAudit);
+  const symbolic = actualSelection.filter(item => item.status === 'symbolic');
+  assert.ok(symbolic.length > 0 && symbolic.length <= 12);
+  assert.ok(symbolic.every(item => selected.promptInjection.includes(item.name)));
 });
 
 test('failure, empty result and symbolic data cannot acquire success badges', () => {
@@ -56,8 +79,8 @@ test('master audit separates calculated results, symbolic references and skipped
   const audit = getCalculationAudit(report);
   const deep = audit.filter(item => ALL_DCE_ENGINES.find(engine => engine.key === item.toolId)?.category === 'deep_master');
 
-  assert.equal(audit.length, 334);
-  assert.equal(deep.length, 319);
+  assert.equal(audit.length, 331);
+  assert.equal(deep.length, 316);
   assert.ok(audit.some(item => item.status === 'calculated' && item.sentToModel));
   assert.ok(audit.some(item => item.status === 'symbolic' && item.sentToModel));
   assert.ok(audit.some(item => item.status === 'skipped' && !item.sentToModel));

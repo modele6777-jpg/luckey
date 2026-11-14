@@ -1,5 +1,6 @@
 import { getSymbolicPerspective } from './symbolicPerspective';
 import { MASTER_REVIEW_BINDINGS } from './masterReviewBindings';
+import { LUCY_PRO_CATALOG_DUPLICATE_KEYS } from './catalogDuplicateKeys';
 import type { CalculationAuditItem } from './calculationAudit';
 import type { SevenThemeChannel } from '../fifteenDivinationTools';
 /**
@@ -4680,7 +4681,7 @@ export interface DceEngineMeta {
   primaryTheme?: SevenThemeChannel;
 }
 
-export const ALL_DCE_ENGINES: DceEngineMeta[] = [
+export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   // 15대 기초 운명학 도구
   { key: 'saju', nameKo: '사주명리', icon: '🔮', category: 'foundational' },
   { key: 'astrology', nameKo: '서양 점성술', icon: '♈', category: 'foundational' },
@@ -5018,7 +5019,7 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = [
   { key: 'irishJamesJoyceUlyssesEpiphany', nameKo: '제임스 조이스 율리시스 에피파니 의식의흐름 세속적일상의신성화 실존적긍정 삶을향한예스 내면오디세이', icon: '🌊', category: 'deep_master', summary: "《Stephen Hero》에서 설명되는 에피파니 개념과 이후 작품 속 일상 장면을 참고해 질문과 관련된 문학적 관점을 제안합니다. 《율리시스》의 인물 해석은 문학적 읽기일 뿐이며 개인 점수·심리 진단·미래 예측은 하지 않습니다." },
   { key: 'germanHermannHesseDemianSteppenwolf', nameKo: '헤르만 헤세 데미안 싯다르타 유리알유희 알을깨는투쟁 아프락사스선악합일 내면의빛 자기자신에게이르는길 초연한강물의지혜', icon: '🕊️', category: 'deep_master', summary: "《데미안》·《싯다르타》·《황야의 이리》에서 변화·강물·자기 이해의 주제를 질문에 맞춰 살피는 문학적 관점입니다. 수치화된 평가·심리 진단·치료·미래 예측은 하지 않습니다." },
   { key: 'koreanHanYongUnSilenceOfNim', nameKo: '만해 한용운 님의침묵 조선불교유신론 역설적사랑 이별을사랑의새원천으로 서릿발자주지조 불굴의독립기개 대자비회복탄력성', icon: '🕯️', category: 'deep_master', summary: "《님의 침묵》 등 한용운의 작품을 통해 이별·희망·양심·배려를 살피는 문학적 관점입니다. 확인되지 않은 인용이나 개인 점수·관계 예측을 제공하지 않으며, 헌신은 동의와 안전의 경계를 존중합니다." },
-];
+] as DceEngineMeta[]).filter(engine => !LUCY_PRO_CATALOG_DUPLICATE_KEYS.has(engine.key));
 
 export function getFiredEngineBadges(
   report: DeterministicEngineReport,
@@ -5032,9 +5033,12 @@ const REVIEW_PENDING_CORE = new Set(['sukuyo', 'mahabote', 'kabbalah']);
 
 export function getMasterSymbolicReview(report: DeterministicEngineReport, options?: FormatDeterministicEngineOptions) {
   if (!report.masterReview) return [];
+  const catalogDeepEngines = ALL_DCE_ENGINES.filter(engine =>
+    engine.category === 'deep_master' && !LUCY_PRO_CATALOG_DUPLICATE_KEYS.has(engine.key),
+  );
   const engines = (options && options.isMasterMobilization === false)
-    ? ALL_DCE_ENGINES.filter(engine => engine.category === 'deep_master' && shouldIncludeEngine(engine.key, options))
-    : ALL_DCE_ENGINES.filter(engine => engine.category === 'deep_master');
+    ? catalogDeepEngines.filter(engine => shouldIncludeEngine(engine.key, options))
+    : catalogDeepEngines;
   return engines.map(engine => {
     const binding = MASTER_REVIEW_BINDINGS[engine.key];
     const value = binding ? (report as unknown as Record<string, unknown>)[binding.field] : null;
