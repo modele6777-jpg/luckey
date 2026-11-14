@@ -10,7 +10,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const ALEXANDRIAN_DECAN_ENGINE_VERSION = '1.1.0';
+export const ALEXANDRIAN_DECAN_ENGINE_VERSION = '2.0.0';
 
 export type DecanQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -28,6 +28,7 @@ export interface DecanCelestialGod {
 export interface AlexandrianDecanThirtySixGodsReport {
   engineVersion: string;
   timestamp: string;
+  calculatedAtKst: string;
   questionTopic: DecanQuestionTopic;
   kairosPosture: string;
   kairosTimeMasteryScore: number; // 내부 호환용 (프롬프트 비노출)
@@ -36,6 +37,17 @@ export interface AlexandrianDecanThirtySixGodsReport {
   zodiacalEquilibriumScore: number; // 내부 호환용 (프롬프트 비노출)
   dominantDecan: DecanCelestialGod;
   secondaryDecan: DecanCelestialGod;
+  temporalDecanRhythm: {
+    kstTimeLabel: string;
+    hermeticWatchWindow: string;
+    tenDaySolarCycle: string;
+    temporalGuidance: string;
+  };
+  decanSynthesisMatrix: {
+    coreInsight: string;
+    recommendedAction: string;
+    cautionNotice: string;
+  };
   practiceGuidance: string;
   ritualAction: string;
   reflectionFocus: string;
@@ -113,6 +125,40 @@ function classifyDecanTopic(question: string): DecanQuestionTopic {
 function getKstDateKey(now: Date): string {
   const kstMs = now.getTime() + 9 * 60 * 60 * 1000;
   return new Date(kstMs).toISOString().slice(0, 10);
+}
+
+function getTemporalDecanRhythm(now: Date) {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  const hour = kst.getUTCHours();
+  const dayOfMonth = kst.getUTCDate();
+
+  const hermeticWatchWindow =
+    hour >= 5 && hour < 11
+      ? '소티스 여명·아침 파수창 — 새로운 결심과 맑은 의도를 세우기 좋은 카이로스의 시분'
+      : hour >= 11 && hour < 17
+        ? '크눔 정오·조형창 — 구상을 현실의 구체적 결과물로 빚어내는 실행의 시분'
+        : hour >= 17 && hour < 22
+          ? '아누비스 황혼·칭량창 — 하루의 선택과 감정을 공정히 정돈하고 불필요한 긴장을 비우는 시분'
+          : '오시리스 심야·재생창 — 표면의 소음을 잠재우고 내면의 깊은 지혜를 회복하는 시분';
+
+  const tenDaySolarCycle =
+    dayOfMonth <= 10
+      ? '제1 데칸(초순 · 발아의 10일) — 새로운 흐름의 씨앗을 심고 방향을 가다듬는 주기'
+      : dayOfMonth <= 20
+        ? '제2 데칸(중순 · 확장의 10일) — 세운 계획을 밀도 있게 다듬어 형태를 굳히는 주기'
+        : '제3 데칸(하순 · 수렴의 10일) — 마무리를 짓고 다음 주기를 위해 여백을 비우는 주기';
+
+  return {
+    kstTimeLabel: `${y}-${m}-${d} ${hh}:${mm} KST`,
+    hermeticWatchWindow,
+    tenDaySolarCycle,
+    temporalGuidance: `${hermeticWatchWindow} · ${tenDaySolarCycle}의 흐름에 맞추어 오늘의 속도보다 리듬의 정확도를 살피십시오.`,
+  };
 }
 
 const DECAN_TOPIC_GUIDANCE: Record<
@@ -195,6 +241,7 @@ export function calculateAlexandrianDecanThirtySixGods(
   const zodiacalEquilibriumScore = Math.min(100, Math.max(44, Math.floor((kairosTimeMasteryScore * 0.5 + astralShieldingRate * 0.5))));
 
   const topicGuide = DECAN_TOPIC_GUIDANCE[questionTopic];
+  const temporalDecanRhythm = getTemporalDecanRhythm(now);
   const kairosPosture = `${dominantDecan.nameGreek}의 카이로스 국면 — ${dominantDecan.temporalRulership}`;
   const practiceGuidance = `${dominantDecan.soulVirtue} ${topicGuide.practice}`;
   const ritualAction = topicGuide.ritual;
@@ -202,12 +249,19 @@ export function calculateAlexandrianDecanThirtySixGods(
   const counselNote = topicGuide.counsel;
   const boundaryNotice = '알렉산드리아 36대 데칸 관점은 천상 시간의 상징을 빌려 삶의 리듬과 태도를 성찰하는 참고 도구이며, 미래 사건이나 길흉을 단정하지 않습니다.';
 
+  const decanSynthesisMatrix = {
+    coreInsight: `[${dominantDecan.nameGreek} (${dominantDecan.nameKo})]와 보조 성령 [${secondaryDecan.nameGreek}]이 ${questionTopic} 맥락에서 카이로스의 문을 비춥니다.`,
+    recommendedAction: `${practiceGuidance} (${ritualAction})`,
+    cautionNotice: '기계적 조급함(크로노스)에 쫓겨 리듬을 놓치면 작은 마찰이 커집니다. 한 호흡 고르고 본질을 확인하십시오.',
+  };
+
   const alexandrianHermeticDecree = `헤르메스주의 알렉산드리아 상징 체계에서 지금의 흐름을 비추는 주 수호 성령은 [${dominantDecan.nameGreek} - ${dominantDecan.nameKo}]이며, 보조로 [${secondaryDecan.nameGreek}]의 기운이 함께 작용합니다. ${dominantDecan.soulVirtue}`;
   const celestialDecanSealGuidance = `${dominantDecan.temporalRulership}. ${topicGuide.practice}`;
 
   return {
     engineVersion: ALEXANDRIAN_DECAN_ENGINE_VERSION,
     timestamp: now.toISOString(),
+    calculatedAtKst: temporalDecanRhythm.kstTimeLabel,
     questionTopic,
     kairosPosture,
     kairosTimeMasteryScore,
@@ -216,6 +270,8 @@ export function calculateAlexandrianDecanThirtySixGods(
     zodiacalEquilibriumScore,
     dominantDecan,
     secondaryDecan,
+    temporalDecanRhythm,
+    decanSynthesisMatrix,
     practiceGuidance,
     ritualAction,
     reflectionFocus,
@@ -228,7 +284,7 @@ export function calculateAlexandrianDecanThirtySixGods(
 
 export function formatAlexandrianDecanThirtySixGodsPrompt(rep: AlexandrianDecanThirtySixGodsReport): string {
   return `[알렉산드리아 헤르메스주의 36대 데칸 천상 성령 & 시간의 지배자 실측 데이터]
-· 엔진 버전: v${rep.engineVersion} | 질문 맥락: ${rep.questionTopic}
+· 엔진 버전: v${rep.engineVersion} | 연산 시각: ${rep.calculatedAtKst} | 질문 맥락: ${rep.questionTopic}
 · 카이로스 국면: ${rep.kairosPosture}
 · 주재 데칸 성령: [${rep.dominantDecan.nameGreek} (${rep.dominantDecan.nameKo})]
   - 관할 도수: ${rep.dominantDecan.decanDegreeDomain}
@@ -236,6 +292,12 @@ export function formatAlexandrianDecanThirtySixGodsPrompt(rep: AlexandrianDecanT
   - 천상 보호 상징: ${rep.dominantDecan.celestialProtectionPower}
   - 영혼 덕목: ${rep.dominantDecan.soulVirtue}
 · 보조 데칸 성령: [${rep.secondaryDecan.nameGreek} (${rep.secondaryDecan.nameKo})] — ${rep.secondaryDecan.temporalRulership}
+· KST 시공간 데칸 리듬: ${rep.temporalDecanRhythm.hermeticWatchWindow} / ${rep.temporalDecanRhythm.tenDaySolarCycle}
+  - 시공간 지침: ${rep.temporalDecanRhythm.temporalGuidance}
+· 데칸 교차 매트릭스:
+  - 핵심 통찰: ${rep.decanSynthesisMatrix.coreInsight}
+  - 권고 실행: ${rep.decanSynthesisMatrix.recommendedAction}
+  - 주의 경계: ${rep.decanSynthesisMatrix.cautionNotice}
 · 실천 조언: ${rep.practiceGuidance}
 · 일상 의례: ${rep.ritualAction}
 · 성찰 질문: ${rep.reflectionFocus}

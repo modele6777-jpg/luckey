@@ -2034,17 +2034,22 @@ test('Pythagorean Lifecycle Engine: 피타고라스 4대 피너클 & 챌린지 �
 });
 
 test('Astrological Decan & Sabian Engine: 점성술 36 데칸 & 사비안 심볼 360° 영혼 메타포 검증', () => {
-  const res = calculateAstrologicalDecanSabian({ profile, targetDate: new Date('2026-11-02T19:00:00+09:00') });
+  const res = calculateAstrologicalDecanSabian({ profile, targetDate: new Date('2026-11-02T19:00:00+09:00'), question: '직장과 창의적 비전이 궁금합니다.' });
   assert.equal(res.engineVersion, ASTRO_DECAN_SABIAN_VERSION);
   assert(res.sun.decan.decanIndex >= 1 && res.sun.decan.decanIndex <= 3);
   assert(res.sun.sabian.degreeNumber >= 1 && res.sun.sabian.degreeNumber <= 30);
   assert(res.moon.decan.decanIndex >= 1 && res.moon.decan.decanIndex <= 3);
   assert(res.moon.sabian.degreeNumber >= 1 && res.moon.sabian.degreeNumber <= 30);
   assert(res.soulPoetics.coreIdentityMetaphor.length > 0);
+  assert(res.calculatedAtKst.includes('KST'));
+  assert(res.temporalSabianRhythm.planetaryHourTone.length > 0);
+  assert(res.sabianSynthesisMatrix.coreInsight.length > 0);
   const prompt = formatAstrologicalDecanSabianPrompt(res);
   assert(prompt.includes(ASTRO_DECAN_SABIAN_VERSION));
   assert(prompt.includes('사비안 심볼'));
   assert(prompt.includes('데칸 배속'));
+  assert(prompt.includes('KST'));
+  assert(!prompt.includes('/100') && !prompt.includes('%') && !prompt.includes('점수'));
 });
 
 test('Medical Bio-Matrix Engine: 오행 한난조습 및 메디컬 점성술 장부 취약도 검증', () => {
@@ -2605,17 +2610,22 @@ test('Deterministic Engine: selective prompts contain only selected successful t
 
 test('Hellenistic Lots Engine: calculates Fortune, Spirit, Eros, Nemesis lots deterministically', () => {
   const p = { basic: { birthdate: '1995-05-15', birthtime: '14:30', gender: 'male' as const, birthCity: '서울' } };
-  const rep = calculateHellenisticLots({ profile: p });
+  const rep = calculateHellenisticLots({ profile: p, targetDate: new Date('2026-11-15T06:45:00+09:00'), question: '커리어와 재물의 흐름이 궁금합니다.' });
   assert.equal(rep.engineVersion, HELLENISTIC_LOTS_ENGINE_VERSION);
   assert.equal(rep.isDayChart, true);
   assert(rep.lots.fortune.degree >= 0 && rep.lots.fortune.degree <= 360);
   assert(rep.lots.spirit.degree >= 0 && rep.lots.spirit.degree <= 360);
   assert(rep.lots.eros.degree >= 0 && rep.lots.eros.degree <= 360);
   assert(rep.lots.nemesis.degree >= 0 && rep.lots.nemesis.degree <= 360);
+  assert(rep.calculatedAtKst.includes('KST'));
+  assert(rep.temporalLotsRhythm.hellenisticSectWindow.length > 0);
+  assert(rep.lotsSynthesisMatrix.coreInsight.length > 0);
   const prompt = formatHellenisticLotsPrompt(rep);
   assert(prompt.includes(HELLENISTIC_LOTS_ENGINE_VERSION));
   assert(prompt.includes('포르투나의 랏'));
   assert(prompt.includes('스피릿의 랏'));
+  assert(prompt.includes('KST'));
+  assert(!prompt.includes('/100') && !prompt.includes('%') && !prompt.includes('점수'));
 });
 
 test('I Ching 384 Yao Engine: calculates changing yao and quad-transformation hexagrams', () => {
@@ -3883,9 +3893,13 @@ test('Alexandrian Decan Thirty Six Gods Engine: provides qualitative Kairos post
   assert(rep.reflectionFocus.length > 0);
   assert(rep.boundaryNotice.length > 0);
   assert(rep.dominantDecan.nameKo.length > 0);
+  assert(rep.calculatedAtKst.includes('KST'));
+  assert(rep.temporalDecanRhythm.hermeticWatchWindow.length > 0);
+  assert(rep.decanSynthesisMatrix.coreInsight.length > 0);
   const prompt = formatAlexandrianDecanThirtySixGodsPrompt(rep);
   assert(prompt.includes('알렉산드리아 헤르메스주의 36대 데칸 천상 성령 & 시간의 지배자 실측 데이터'));
   assert(prompt.includes(rep.dominantDecan.nameKo));
+  assert(prompt.includes('KST'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });

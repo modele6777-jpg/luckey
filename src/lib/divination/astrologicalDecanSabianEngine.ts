@@ -16,7 +16,7 @@
 import type { UserProfile } from '../sharedState';
 import { calculateNatalChart, type NatalChartResult, type NatalPlacement, type ZodiacSignInfo } from '../astrologyAnalysis';
 
-export const ASTRO_DECAN_SABIAN_VERSION = 'LUCKEY-ASTRO-DS-v1.0.0';
+export const ASTRO_DECAN_SABIAN_VERSION = 'LUCKEY-ASTRO-DS-v2.0.0';
 
 export interface DecanInfo {
   signId: string;
@@ -52,15 +52,33 @@ export interface PlacementDecanSabian {
 export interface AstrologicalDecanSabianResult {
   engineVersion: string;
   calculatedAtIso: string;
+  calculatedAtKst: string;
   sun: PlacementDecanSabian;
   moon: PlacementDecanSabian;
   ascendant?: PlacementDecanSabian;
+  situationalSabianAudit: {
+    focusTheme: string;
+    decanSubRulerGuidance: string;
+    shadowCaution: string;
+  };
+  temporalSabianRhythm: {
+    kstTimeLabel: string;
+    planetaryHourTone: string;
+    seasonalZodiacArc: string;
+    temporalGuidance: string;
+  };
+  sabianSynthesisMatrix: {
+    coreInsight: string;
+    recommendedAction: string;
+    cautionNotice: string;
+  };
   soulPoetics: {
     coreIdentityMetaphor: string;
     innerEmotionalLandscape: string;
     actionableSoulAdvice: string;
   };
   summary: string;
+  boundaryNotice: string;
 }
 
 // 36 데칸 메타데이터 사전 (12사인 × 3데칸)
@@ -166,12 +184,78 @@ function getSabianSymbol(signId: string, signName: string, degree: number): Sabi
   };
 }
 
+function formatSabianKst(date: Date): { label: string; hour: number; month: number } {
+  const kst = new Date(date.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return {
+    label: `${y}-${m}-${d} ${hh}:${mm} KST`,
+    hour: kst.getUTCHours(),
+    month: kst.getUTCMonth() + 1,
+  };
+}
+
+function getTemporalSabianRhythm(now: Date) {
+  const kst = formatSabianKst(now);
+  const planetaryHourTone =
+    kst.hour >= 5 && kst.hour < 11
+      ? '아침 태양·수성 상승창 — 사비안 상징의 명료한 의도를 현실 계획으로 옮기기 좋은 시간'
+      : kst.hour >= 11 && kst.hour < 17
+        ? '정오 태양·목성 확장창 — 데칸 부지배성의 실행력을 대외적 성과로 펼치는 시간'
+        : kst.hour >= 17 && kst.hour < 22
+          ? '황혼 금성·달 조율창 — 관계의 온도와 정서적 여운을 부드럽게 가다듬는 시간'
+          : '심야 토성·해왕성 침잠창 — 내면의 무의식적 풍경을 고요히 관조하며 영감을 길어 올리는 시간';
+
+  const seasonalZodiacArc =
+    kst.month >= 3 && kst.month <= 5
+      ? '춘분·활동궁 발아기 (양·황소·쌍둥이 아크 — 새로운 시작과 언어의 확장)'
+      : kst.month >= 6 && kst.month <= 8
+        ? '하지·정서·창조궁 아크 (게·사자·처녀 아크 — 내면의 보호와 정교한 완성)'
+        : kst.month >= 9 && kst.month <= 11
+          ? '추분·관계·심연궁 아크 (천칭·전갈·사수 아크 — 균형과 본질 탐구)'
+          : '동지·구조·초월궁 아크 (염소·물병·물고기 아크 — 결실의 구조화와 새로운 비전)';
+
+  return {
+    kstTimeLabel: kst.label,
+    planetaryHourTone,
+    seasonalZodiacArc,
+    temporalGuidance: `${planetaryHourTone}에 맞추어 태양과 달의 사비안 상징이 가리키는 빛의 표현을 선택하십시오.`,
+  };
+}
+
+function getSituationalSabianAudit(question: string | undefined, sun: PlacementDecanSabian, moon: PlacementDecanSabian) {
+  const q = (question || '').trim();
+  if (/돈|재물|직장|사업|이직|계약|성공/.test(q)) {
+    return {
+      focusTheme: '현실 창조와 데칸 부지배성의 실행력',
+      decanSubRulerGuidance: `태양 제${sun.decan.decanIndex}데칸 부지배성 [${sun.decan.subRuler}]의 기운을 살려 ${sun.decan.manifestation} 쪽으로 실무를 정돈하십시오.`,
+      shadowCaution: sun.sabian.shadowTrap,
+    };
+  }
+  if (/사랑|연애|관계|결혼|사람|갈등/.test(q)) {
+    return {
+      focusTheme: '달의 사비안 감수성과 관계의 공명',
+      decanSubRulerGuidance: `달 제${moon.decan.decanIndex}데칸 [${moon.decan.title}]의 섬세한 감수성으로 상대의 진심과 내 마음의 온도를 함께 살피십시오.`,
+      shadowCaution: moon.sabian.shadowTrap,
+    };
+  }
+  return {
+    focusTheme: '태양 본질과 달 내면의 시적 통합',
+    decanSubRulerGuidance: `태양(${sun.decan.subRuler})의 추진력과 달(${moon.decan.subRuler})의 내면 리듬이 조화를 이룰 때 고유한 아키타입이 빛납니다.`,
+    shadowCaution: sun.sabian.shadowTrap,
+  };
+}
+
 /**
  * 점성술 36 데칸 & 사비안 심볼 연산 메인 함수
  */
 export function calculateAstrologicalDecanSabian(params?: {
   profile?: UserProfile | null;
   targetDate?: Date;
+  question?: string;
 }): AstrologicalDecanSabianResult {
   const now = params?.targetDate || new Date();
   const natal = calculateNatalChart(params?.profile);
@@ -202,24 +286,38 @@ export function calculateAstrologicalDecanSabian(params?: {
   const moon = makePlacementDS('달(Moon - 내면 심리와 무의식)', natal.moon);
   const ascendant = natal.ascendant ? makePlacementDS('상승궁(Ascendant - 대외 페르소나)', natal.ascendant) : undefined;
 
+  const temporalSabianRhythm = getTemporalSabianRhythm(now);
+  const situationalSabianAudit = getSituationalSabianAudit(params?.question, sun, moon);
+
   const coreIdentityMetaphor = `태양 [${sun.sign.name} ${sun.exactDegree}°] → ${sun.decan.title} (${sun.decan.subRuler} 영향권) · 사비안: ${sun.sabian.symbolTitle}`;
   const innerEmotionalLandscape = `달 [${moon.sign.name} ${moon.exactDegree}°] → ${moon.decan.title} (${moon.decan.subRuler} 영향권) · 사비안: ${moon.sabian.symbolTitle}`;
   const actionableSoulAdvice = `${sun.decan.coreVibe}의 힘으로 추진하되, ${sun.sabian.lightExpression}.`;
+
+  const sabianSynthesisMatrix = {
+    coreInsight: `태양 [${sun.decan.title}]과 달 [${moon.decan.title}]이 만나 ${situationalSabianAudit.focusTheme}의 고유한 상징을 빚어냅니다.`,
+    recommendedAction: `${actionableSoulAdvice} (${situationalSabianAudit.decanSubRulerGuidance})`,
+    cautionNotice: `그림자 함정 주의: ${situationalSabianAudit.shadowCaution}`,
+  };
 
   const summary = `[데칸 & 사비안] 태양은 ${sun.decan.title}(${sun.decan.subRuler} 관할), 사비안: ${sun.sabian.symbolTitle}. 달은 ${moon.decan.title}, 사비안: ${moon.sabian.symbolTitle}.`;
 
   return {
     engineVersion: ASTRO_DECAN_SABIAN_VERSION,
     calculatedAtIso: now.toISOString(),
+    calculatedAtKst: temporalSabianRhythm.kstTimeLabel,
     sun,
     moon,
     ascendant,
+    situationalSabianAudit,
+    temporalSabianRhythm,
+    sabianSynthesisMatrix,
     soulPoetics: {
       coreIdentityMetaphor,
       innerEmotionalLandscape,
       actionableSoulAdvice
     },
-    summary
+    summary,
+    boundaryNotice: '본 결과는 36 데칸 부지배성과 사비안 심볼 360° 원형에 따른 정성적 상징 해석이며, 확정적 길흉 판정이 아닙니다.',
   };
 }
 
@@ -228,6 +326,7 @@ export function calculateAstrologicalDecanSabian(params?: {
  */
 export function formatAstrologicalDecanSabianPrompt(res: AstrologicalDecanSabianResult): string {
   return `[점성술 36 데칸(Decan) & 사비안 심볼(Sabian 360°) 정밀 상징 리포트 (엔진: ${res.engineVersion})]
+- 연산 시각: ${res.calculatedAtKst}
 - 태양(Sun - 핵심 본질 자아): ${res.sun.sign.name} ${res.sun.exactDegree}°
   • 데칸 배속: [제${res.sun.decan.decanIndex}데칸: ${res.sun.decan.title}] (부지배성: ${res.sun.decan.subRuler} / 타로: ${res.sun.decan.tarotMinorCard})
     - 에너지: ${res.sun.decan.coreVibe} → 발현: ${res.sun.decan.manifestation}
@@ -239,10 +338,19 @@ export function formatAstrologicalDecanSabianPrompt(res: AstrologicalDecanSabian
   • 데칸 배속: [제${res.moon.decan.decanIndex}데칸: ${res.moon.decan.title}] (부지배성: ${res.moon.decan.subRuler})
   • 사비안 심볼: [${res.moon.sabian.symbolTitle}]
     - 내면의 풍경: "${res.moon.sabian.soulWisdom}"
+- 질문 맥락 감사 (${res.situationalSabianAudit.focusTheme}):
+  • 부지배성 조율: ${res.situationalSabianAudit.decanSubRulerGuidance}
+  • 경계 함정: ${res.situationalSabianAudit.shadowCaution}
+- KST 시공간 점성 리듬: ${res.temporalSabianRhythm.planetaryHourTone} / ${res.temporalSabianRhythm.seasonalZodiacArc}
+  • 시공간 지침: ${res.temporalSabianRhythm.temporalGuidance}
+- 사비안 교차 매트릭스:
+  • 핵심 통찰: ${res.sabianSynthesisMatrix.coreInsight}
+  • 권고 실행: ${res.sabianSynthesisMatrix.recommendedAction}
+  • 주의 경계: ${res.sabianSynthesisMatrix.cautionNotice}
 - 영혼의 문학적 메타포:
   • 핵심 본질: "${res.soulPoetics.coreIdentityMetaphor}"
   • 무의식 풍경: "${res.soulPoetics.innerEmotionalLandscape}"
   • 실천 지침: "${res.soulPoetics.actionableSoulAdvice}"
-※ 루시 지침: 데칸과 사비안 심볼은 사용자의 영혼을 단순한 별자리 명칭을 넘어 극도로 시적이고 입체적인 예술적 메타포로 묘사할 수 있는 정밀 도구입니다. 태양의 사비안 상징과 데칸의 부지배성을 활용해 독보적으로 매력적인 언어로 사용자의 천재성을 일깨워 주세요.`;
+- 해석 경계: ${res.boundaryNotice}`;
 }
 
