@@ -38,3 +38,8 @@ Every time a user request is completed or changes are made to the codebase:
 - Lucy+ → Lucy+ Pro and its reverse must keep the existing `+` marker visible and stable. Only the Pro marker changes.
 - Do not derive the transition's Plus appearance solely from `lucyTier === 'plus'`, since Pro is a separate tier value. Preserve the unfolded Plus appearance while Pro is active.
 - Folded Lucy Pro must not gain a Plus marker.
+
+### 7. Popup Bounds Exclude Navigation
+- ScreenPortal and WorkspacePortal dialogs/backdrops stay within the visible `.sites-pinned-main` rectangle, excluding any overlapping sidebar or bottom navigation.
+- Keep portal layers outside route transforms while giving fixed descendants a main-sized containing block. Nested dialogs must keep their stacking/focus behavior.
+- Recompute bounds on rotation, sidebar resize and visual viewport/keyboard changes. Never dim or intercept navigation with a dialog backdrop.

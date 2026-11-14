@@ -1,3 +1,4 @@
+import { useMainOverlayViewport } from '@/hooks/useMainOverlayViewport';
 import React, { createContext, useContext, useLayoutEffect, useMemo, useRef, type ReactNode, type RefObject } from 'react';
 import { createPortal } from 'react-dom';
 
@@ -59,10 +60,11 @@ export function useScreenOverlayLayer(ref: RefObject<HTMLDivElement | null>) {
 export function ScreenPortal({ children }: { children: ReactNode }) {
   const ref = useRef<HTMLDivElement>(null);
   const layers = useScreenOverlayLayer(ref);
+  const viewportStyle = useMainOverlayViewport();
   if (typeof document === 'undefined') return null;
   return createPortal(
     <ScreenOverlayContext.Provider value={layers}>
-      <div ref={ref} className="screen-portal" data-screen-overlay-layer="">{children}</div>
+      <div ref={ref} className="screen-portal" style={viewportStyle} data-screen-overlay-layer="">{children}</div>
     </ScreenOverlayContext.Provider>,
     document.body,
   );

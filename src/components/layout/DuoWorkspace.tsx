@@ -1,3 +1,4 @@
+import { useMainOverlayViewport } from '@/hooks/useMainOverlayViewport';
 import { ScreenOverlayContext, isTopScreenOverlay, useScreenOverlayLayer } from './ScreenPortal';
 import React, { forwardRef, useEffect, useRef, type HTMLAttributes, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
@@ -15,6 +16,7 @@ export const DuoWorkspace = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivEle
 export function WorkspacePortal({ children, onClose }: { children: ReactNode; onClose?: () => void }) {
   const portalRef = useRef<HTMLDivElement>(null);
   const layers = useScreenOverlayLayer(portalRef);
+  const viewportStyle = useMainOverlayViewport();
   const closeRef = useRef(onClose);
   closeRef.current = onClose;
   useEffect(() => {
@@ -48,7 +50,7 @@ export function WorkspacePortal({ children, onClose }: { children: ReactNode; on
   if (typeof document === 'undefined') return null;
   return createPortal(
     <ScreenOverlayContext.Provider value={layers}>
-      <div ref={portalRef} className="duo-portal" data-screen-overlay-layer="">{children}</div>
+      <div ref={portalRef} className="duo-portal" style={viewportStyle} data-screen-overlay-layer="">{children}</div>
     </ScreenOverlayContext.Provider>, document.body
   );
 }

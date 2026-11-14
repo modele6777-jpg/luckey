@@ -65,21 +65,27 @@
 }
 /* Dialog layers live outside app transforms and the permanent navigation rail. */
 .duo-portal,
-.screen-portal {
+.screen-portal,
+.main-viewport-overlay {
   position: fixed;
   inset: 0;
   z-index: 10000;
   pointer-events: none;
+  transform: translateZ(0);
+  contain: layout style paint;
+  overflow: clip;
+  isolation: isolate;
 }
+.main-viewport-overlay > :not(.pointer-events-none),
 .duo-portal > :not(.pointer-events-none),
 .screen-portal > :not(.pointer-events-none) { pointer-events: auto; }
 /* Keep anchored popovers at their intended width; only full-screen roots fill the viewport. */
 .duo-portal > .fixed.inset-0,
 .screen-portal > .fixed.inset-0 {
   box-sizing: border-box;
-  top: var(--vv-top, 0px);
-  bottom: auto;
-  height: var(--app-height, 100dvh);
+  top: 0;
+  bottom: 0;
+  height: 100%;
   max-width: 100%;
 }
 .duo-portal > .fixed.inset-0 {
@@ -89,7 +95,7 @@
   display: flex;
   flex-direction: column;
   min-width: 0;
-  max-height: calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 2rem);
+  max-height: calc(var(--overlay-height, 100dvh) - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 2rem);
   overflow: hidden;
 }
 .duo-dialog-heading, .duo-dialog-actions { flex-shrink: 0; }
@@ -254,4 +260,29 @@ html:root [data-channel-background] .cosmic-meteor {
 }
 @media (prefers-reduced-motion: reduce) {
   html:root [data-channel-background] :is(.cosmic-meteor, .channel-constellations, .channel-star-flare) { animation: none !important; }
+}
+
+/* A full-screen popup fills its measured main canvas, not the navigation rail. */
+:is(.screen-portal, .duo-portal, .main-viewport-overlay) .w-screen { width: 100% !important; }
+:is(.screen-portal, .duo-portal, .main-viewport-overlay) .h-screen { height: 100% !important; }
+:is(.screen-portal, .duo-portal) .fixed.inset-0 {
+  top: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  max-height: 100% !important;
+}
+
+/* Older tarot pane rules use IDs and viewport units; shared popup bounds win. */
+html:root:root :is(.screen-portal, .duo-portal) :is(#tarot-stage-container, #today-tarot-narration-modal, #circular-tarot-modal-container) {
+  left: 0 !important;
+  right: 0 !important;
+  top: 0 !important;
+  bottom: 0 !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  height: 100% !important;
+  max-height: 100% !important;
 }
