@@ -20,7 +20,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const DELPHIC_MAXIMS_VERSION = 'LUCKEY-DELPHIC-MAXIMS-v1.0.0';
+export const DELPHIC_MAXIMS_VERSION = 'LUCKEY-DELPHIC-MAXIMS-v2.0.0';
 
 export interface DelphicMaximInfo {
   maximIndex: number;            // 1 ~ 147
@@ -36,11 +36,28 @@ export interface DelphicMaximInfo {
 export interface DelphicMaximsOracleReport {
   engineVersion: string;
   calculatedAt: string;
+  calculatedAtKst: string;
   coreSoulMaxim: DelphicMaximInfo;       // 타고난 본명 영혼 잠언
   situationalOracleMaxim: DelphicMaximInfo; // 현재 국면을 관통하는 피티아 신탁 잠언
   apollonianClarityScore: number;        // 0 ~ 100 아폴론적 이성·명징성 지수
   pythianOracleInsight: string;          // 피티아 여사제의 신탁 통찰
   delphicVirtuePrescription: string;     // 덕성(Arete) 함양 실천 처방
+  situationalDelphicAudit: {
+    questionFocus: string;
+    clarityTone: string;
+    meditationPillar: string;
+  };
+  temporalDelphicRhythm: {
+    calculatedAtKst: string;
+    sanctuarySolarWindow: string;
+    parnassusSeasonPhase: string;
+    oracleTimingNote: string;
+  };
+  delphicSynthesisMatrix: {
+    coreMandate: string;
+    sacredBoundary: string;
+    reflectiveQuestion: string;
+  };
 }
 
 const MASTER_DELPHIC_MAXIMS: DelphicMaximInfo[] = [
@@ -209,8 +226,10 @@ const MASTER_DELPHIC_MAXIMS: DelphicMaximInfo[] = [
 export function calculateDelphicMaximsOracle(params: {
   profile?: UserProfile | null;
   targetDate?: Date;
+  question?: string;
 }): DelphicMaximsOracleReport {
   const now = params.targetDate || new Date();
+  const question = (params.question || '').trim();
 
   // 1. 선천 본명 영혼 잠언 (Core Soul Maxim)
   let birthSeed = 3; // 기본값: 탈레스의 '너 자신을 알라'
@@ -245,25 +264,91 @@ export function calculateDelphicMaximsOracle(params: {
 
   const delphicVirtuePrescription = `오늘 하루 [${situationalOracleMaxim.koreanTranslation}]의 교훈을 마음의 거울로 삼으십시오. ${situationalOracleMaxim.practicalActionGuidance} 이를 통해 아폴론의 명징한 지혜와 질서가 당신의 일상에 깃들 것입니다.`;
 
+  const kstMs = now.getTime() + 9 * 60 * 60 * 1000;
+  const kstDate = new Date(kstMs);
+  const kstHour = kstDate.getUTCHours();
+  const kstMonth = kstDate.getUTCMonth() + 1;
+  const calculatedAtKst = `${kstDate.getUTCFullYear()}-${String(kstMonth).padStart(2, '0')}-${String(kstDate.getUTCDate()).padStart(2, '0')} ${String(kstHour).padStart(2, '0')}:${String(kstDate.getUTCMinutes()).padStart(2, '0')} KST`;
+
+  const qLower = question.toLowerCase();
+  const questionFocus = /연애|사랑|관계|결혼|재회|우정|사람/.test(qLower)
+    ? '우정과 관계 속 절제·신의 잠언 감사'
+    : /계약|직장|사업|돈|재물|이직|승진|약속/.test(qLower)
+    ? '보증 경계(Engua)와 정당한 성취(Dikaios) 감사'
+    : /결정|선택|진로|방향|고민/.test(qLower)
+    ? '자아성찰(Gnothi Seauton)과 카이로스 포착 감사'
+    : '아폴론적 명징성과 7현인 덕성 균형 감사';
+
+  const clarityTone = coreSoulMaxim.domain === situationalOracleMaxim.domain
+    ? '선천 영혼 잠언과 현재 신탁 잠언이 같은 덕성 축에서 공명하는 명징한 정합 상태'
+    : '선천 본성과 현재 국면이 서로 다른 덕성 축에서 보완·조율을 요구하는 균형 상태';
+
+  const meditationPillar = situationalOracleMaxim.domain === '절제와중용(MedenAgan)'
+    ? '메덴 아간(Meden Agan): 과도함을 덜어내고 황금 중용을 세우는 기둥'
+    : situationalOracleMaxim.domain === '자아성찰(Gnothi)'
+    ? '그노티 세아우톤(Gnothi Seauton): 외부 시선을 거두고 내면의 그릇을 직시하는 기둥'
+    : '카이로스 프로네시스(Kairos Phronesis): 적절한 때를 분별해 실천적 지혜로 응답하는 기둥';
+
+  const sanctuarySolarWindow = kstHour >= 6 && kstHour < 12
+    ? '아폴론 여명의 카스탈리아 샘 정화 창(맑은 이성과 초심 정립에 적합)'
+    : kstHour >= 12 && kstHour < 18
+    ? '옴팔로스 정오의 태양 신탁 창(명확한 결단과 공정한 대화에 적합)'
+    : kstHour >= 18 && kstHour < 22
+    ? '파르나소스 황혼의 성찰 창(하루의 과잉을 덜어내고 중용을 회복하기에 적합)'
+    : '피티아 심야의 침묵 삼각대 창(성급한 확답을 미루고 본질을 숙고하기에 적합)';
+
+  const parnassusSeasonPhase = kstMonth >= 3 && kstMonth <= 5
+    ? '아폴론 봄 델포이 귀환기(새로운 배움과 질서를 세우는 주기)'
+    : kstMonth >= 6 && kstMonth <= 8
+    ? '하지 피티아 제전 절정기(실천적 지혜 프로네시스를 현실에 펼치는 주기)'
+    : kstMonth >= 9 && kstMonth <= 11
+    ? '추분 파르나소스 수확·절제기(약속과 책임을 점검하고 불필요한 다툼을 거두는 주기)'
+    : '겨울 디오니소스 델포이 수호기(외부 활동을 줄이고 내면의 통치력을 다지는 주기)';
+
+  const oracleTimingNote = `${sanctuarySolarWindow}과 ${parnassusSeasonPhase}이 맞물려 있으므로, ${situationalOracleMaxim.practicalActionGuidance}`;
+
+  const delphicSynthesisMatrix = {
+    coreMandate: `[${situationalOracleMaxim.koreanTranslation}]의 잠언을 기준으로 ${questionFocus}에 응답하십시오.`,
+    sacredBoundary: '성급한 맹세(Engua)와 과잉 반응(Meden Agan 위반)을 피하고 감당 가능한 범위만 확답하십시오.',
+    reflectiveQuestion: `지금 내 선택에서 "${situationalOracleMaxim.koreanTranslation}"의 기준에 어긋나는 과잉이나 조급함은 어디에 있나요?`,
+  };
+
   return {
     engineVersion: DELPHIC_MAXIMS_VERSION,
     calculatedAt: now.toISOString(),
+    calculatedAtKst,
     coreSoulMaxim,
     situationalOracleMaxim,
     apollonianClarityScore,
     pythianOracleInsight,
     delphicVirtuePrescription,
+    situationalDelphicAudit: {
+      questionFocus,
+      clarityTone,
+      meditationPillar,
+    },
+    temporalDelphicRhythm: {
+      calculatedAtKst,
+      sanctuarySolarWindow,
+      parnassusSeasonPhase,
+      oracleTimingNote,
+    },
+    delphicSynthesisMatrix,
   };
 }
 
 export function formatDelphicMaximsOraclePrompt(report: DelphicMaximsOracleReport): string {
   return `### 🏛️ 고대 그리스 델포이 아폴론 신탁 & 147 델포이 잠언 엔진 (${DELPHIC_MAXIMS_VERSION})
+- **기준 시각(KST)**: ${report.temporalDelphicRhythm.calculatedAtKst}
 - **선천 본명 영혼 잠언**: [제${report.coreSoulMaxim.maximIndex}잠언] ${report.coreSoulMaxim.greekText} (${report.coreSoulMaxim.transliteration})
   - 한글 뜻 / 현인: "${report.coreSoulMaxim.koreanTranslation}" · ${report.coreSoulMaxim.sage}
   - 인생 영역 / 본질: [${report.coreSoulMaxim.domain}] ${report.coreSoulMaxim.philosophicalMeaning}
 - **현재 시점 피티아 신탁 잠언**: [제${report.situationalOracleMaxim.maximIndex}잠언] ${report.situationalOracleMaxim.greekText}
   - 신탁 메시지: "${report.situationalOracleMaxim.koreanTranslation}" (${report.situationalOracleMaxim.sage})
-- **아폴론적 명징성(Clarity) 지수**: ${report.apollonianClarityScore}점 / 100점
+- **질문 맥락 & 명징성 감사**: ${report.situationalDelphicAudit.questionFocus} | ${report.situationalDelphicAudit.clarityTone}
+- **신전 실천 기둥**: ${report.situationalDelphicAudit.meditationPillar}
+- **시공간 리듬**: ${report.temporalDelphicRhythm.sanctuarySolarWindow} · ${report.temporalDelphicRhythm.parnassusSeasonPhase}
 - **피티아 여사제의 신탁 통찰**: ${report.pythianOracleInsight}
-- **델포이 덕성(Arete) 실천 처방**: ${report.delphicVirtuePrescription}`;
+- **델포이 덕성(Arete) 실천 처방**: ${report.delphicVirtuePrescription}
+- **교차 매트릭스**: ${report.delphicSynthesisMatrix.coreMandate} | 경계: ${report.delphicSynthesisMatrix.sacredBoundary} | 성찰 질문: "${report.delphicSynthesisMatrix.reflectiveQuestion}"`;
 }

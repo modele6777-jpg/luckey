@@ -1,4 +1,4 @@
-// v1.7.466: Deepen Celtic Awen Taliesin, Finnish Kalevala Sampo, and Druid 13 Moon Trees engines
+// v1.7.467: Deepen Greek Moirai Ananke, Delphic Maxims, and Essene Communion Tree engines
 import { getLucyRequestFallbacks, requestWithModelFallback } from '../src/lib/lucyModelPolicy.ts';
 import "dotenv/config";
 import express from "express";

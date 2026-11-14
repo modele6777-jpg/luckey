@@ -2074,7 +2074,7 @@ try {
   // 82. 고대 그리스 델포이 아폴론 신탁 & 147 델포이 잠언 신성 지혜 엔진
   const delphicMaximsResult = calculateSupplement('delphicMaximsResult', () => ((() => {
     try {
-      return calculateDelphicMaximsOracle({ profile, targetDate: now });
+      return calculateDelphicMaximsOracle({ profile, targetDate: now, question });
     } catch (_) {
       return null;
     }
@@ -2146,7 +2146,7 @@ try {
   // 90. 고대 에세네파 14대 천사 교감 & 영혼 생명나무 조화 엔진
   const esseneCommunionResult = calculateSupplement('esseneCommunionResult', () => ((() => {
     try {
-      return calculateEsseneCommunion(profile);
+      return calculateEsseneCommunion(profile, now, question);
     } catch (_) {
       return null;
     }
