@@ -3297,13 +3297,18 @@ test('Shanhaijing Sacred Beasts Engine: calculates directional beast and shieldi
 });
 
 test('Jain Gunasthana Karma Engine: calculates 14 Gunasthanas and Ratnatraya balance', () => {
-  const rep = calculateJainGunasthanaKarma({ profile });
+  const rep = calculateJainGunasthanaKarma({ profile, question: '관계와 마음의 평화를 찾고 싶습니다.' });
   assert.equal(rep.engineVersion, JAIN_GUNASTHANA_KARMA_ENGINE_VERSION);
   assert(rep.ahimsaPeaceIndex >= 0 && rep.ahimsaPeaceIndex <= 100);
   assert(rep.ratnatraya.dominantTreasure.length > 0);
+  assert(rep.calculatedAtKst.includes('KST'));
+  assert(rep.temporalJainRhythm.samayikaWindow.length > 0);
+  assert(rep.jainSynthesisMatrix.coreInsight.length > 0);
   const prompt = formatJainGunasthanaKarmaPrompt(rep);
   assert(prompt.includes('고대 인도 자이나교 14 군아스타나 & 삼보(Ratnatraya) 카르마 실측 데이터'));
   assert(prompt.includes(rep.activeStage.stageNameKo));
+  assert(prompt.includes('KST'));
+  assert(!prompt.includes('/ 100') && !prompt.includes('점수') && !prompt.includes('점'));
 });
 
 test('Celtic Awen Taliesin Engine: calculates Awen 3 rays and metamorphosis phase', () => {
@@ -4080,7 +4085,7 @@ test('Donghak Cheondoism Cheonju Engine: calculates inner spirituality, cosmic r
 });
 
 test('Inca Andean Three Pacha Ayni Engine: calculates three pachas, sacred reciprocity and totem medicine', () => {
-  const rep = calculateIncaAndeanThreePachaAyni(profile);
+  const rep = calculateIncaAndeanThreePachaAyni(profile, new Date('2026-11-15T06:35:00+09:00'), '직장과 재물의 균형이 궁금합니다.');
   assert.equal(rep.engineVersion, INCA_ANDEAN_PACHA_VERSION);
   assert(rep.hananPachaCelestialScore >= 0 && rep.hananPachaCelestialScore <= 100);
   assert(rep.kayPachaEarthlyPresenceScore >= 0 && rep.kayPachaEarthlyPresenceScore <= 100);
@@ -4089,9 +4094,14 @@ test('Inca Andean Three Pacha Ayni Engine: calculates three pachas, sacred recip
   assert(rep.samiLightEnergyPurity >= 0 && rep.samiLightEnergyPurity <= 100);
   assert(rep.huchaHeavyEnergyClearance >= 0 && rep.huchaHeavyEnergyClearance <= 100);
   assert(rep.sacredAnimalTotem.animalKo.length > 0);
+  assert(rep.calculatedAtKst.includes('KST'));
+  assert(rep.temporalPachaRhythm.intiSolarWindow.length > 0);
+  assert(rep.pachaSynthesisMatrix.coreInsight.length > 0);
   const prompt = formatIncaAndeanThreePachaAyniPrompt(rep);
   assert(prompt.includes('고대 잉카 안데스 코스몰로지 3대 파차 & 파차마마 아이니(Ayni) 호혜 조화'));
   assert(prompt.includes(rep.sacredAnimalTotem.animalKo));
+  assert(prompt.includes('KST'));
+  assert(!prompt.includes('/100') && !prompt.includes('%') && !prompt.includes('점수'));
 });
 
 test('Shang Oracle Bone Divination Engine: calculates oracle bone medium, diviner judgment and crack auspiciousness', () => {
@@ -4178,7 +4188,7 @@ test('Korean Gyeogam Yurok Prophecy Engine: calculates Gunggung Euleul, Haein th
 });
 
 test('Japanese Heian Onmyodo Seimei Engine: calculates 12 heavenly generals, Shikigami resonance and Seimei ward', () => {
-  const rep = calculateHeianOnmyodoSeimei(profile);
+  const rep = calculateHeianOnmyodoSeimei(profile, new Date('2026-11-15T06:35:00+09:00'), '사업 계약과 대인관계가 궁금합니다.');
   assert.equal(rep.engineVersion, HEIAN_ONMYODO_SEIMEI_VERSION);
   assert(rep.shikigamiCommandResonance >= 0 && rep.shikigamiCommandResonance <= 100);
   assert(rep.seimeiFivePointedStarWardStrength >= 0 && rep.seimeiFivePointedStarWardStrength <= 100);
@@ -4187,9 +4197,14 @@ test('Japanese Heian Onmyodo Seimei Engine: calculates 12 heavenly generals, Shi
   assert(rep.sixCoursesDivinationAccuracy >= 0 && rep.sixCoursesDivinationAccuracy <= 100);
   assert(rep.primaryGuardianGeneral.nameKo.length > 0);
   assert(rep.secondaryGuardianGeneral.nameKo.length > 0);
+  assert(rep.calculatedAtKst.includes('KST'));
+  assert(rep.temporalOnmyoRhythm.twelveBranchWindow.length > 0);
+  assert(rep.onmyoSynthesisMatrix.coreInsight.length > 0);
   const prompt = formatHeianOnmyodoSeimeiPrompt(rep);
   assert(prompt.includes('일본 헤이안 음양도 아베노 세이메이 《점사략》 12천장 & 식신 사역'));
   assert(prompt.includes(rep.primaryGuardianGeneral.nameKo));
+  assert(prompt.includes('KST'));
+  assert(!prompt.includes('/ 100') && !prompt.includes('점 /') && !prompt.includes('점수'));
 });
 
 test('Polynesian Wayfinding Star Compass Engine: calculates Star Compass houses, Zenith stars and Ocean Swell', () => {

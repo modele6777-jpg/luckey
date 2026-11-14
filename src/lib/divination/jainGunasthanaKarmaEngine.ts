@@ -25,7 +25,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const JAIN_GUNASTHANA_KARMA_ENGINE_VERSION = '1.0.0';
+export const JAIN_GUNASTHANA_KARMA_ENGINE_VERSION = '2.0.0';
 
 export interface RatnatrayaBalance {
   darshanaScore: number; // 정견 (올바른 믿음/직관) 0~100
@@ -46,11 +46,30 @@ export interface GunasthanaStage {
 export interface JainGunasthanaReport {
   engineVersion: string;
   calculatedAt: string;
+  calculatedAtKst: string;
   ahimsaPeaceIndex: number; // 아힘사(Ahimsa) 평화 지수 0~100
   activeStage: GunasthanaStage;
   ratnatraya: RatnatrayaBalance;
   nirjaraPurification: string; // 니르자라(Nirjara) 카르마 정화 실천
+  situationalJainAudit: {
+    focusTheme: string;
+    ahimsaTone: string;
+    aparigrahaPrinciple: string;
+    anekantaPerspective: string;
+  };
+  temporalJainRhythm: {
+    kstTimeLabel: string;
+    samayikaWindow: string;
+    tirthankaraCycle: string;
+    temporalGuidance: string;
+  };
+  jainSynthesisMatrix: {
+    coreInsight: string;
+    recommendedAction: string;
+    cautionNotice: string;
+  };
   jainWisdom: string;
+  boundaryNotice: string;
 }
 
 const GUNASTHANA_STAGES: GunasthanaStage[] = [
@@ -105,6 +124,81 @@ const GUNASTHANA_STAGES: GunasthanaStage[] = [
   }
 ];
 
+function formatJainKst(date: Date): { label: string; hour: number; month: number } {
+  const kst = new Date(date.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return {
+    label: `${y}-${m}-${d} ${hh}:${mm} KST`,
+    hour: kst.getUTCHours(),
+    month: kst.getUTCMonth() + 1,
+  };
+}
+
+function getTemporalJainRhythm(now: Date) {
+  const kst = formatJainKst(now);
+  const samayikaWindow =
+    kst.hour >= 4 && kst.hour < 10
+      ? '새벽·아침 사마이카(Samayika) 정화창 — 맑은 호흡으로 아힘사 서원을 세우고 욕심을 덜어내는 시간'
+      : kst.hour >= 10 && kst.hour < 17
+        ? '정오·오후 정행(Charitra) 실천창 — 언행의 해로움을 삼가고 분별의 칼날을 부드럽게 쓰는 시간'
+        : kst.hour >= 17 && kst.hour < 22
+          ? '황혼 프라티크라마나(Pratikramana) 성찰창 — 하루의 작은 허물과 서운함을 자비롭게 내려놓는 시간'
+          : '심야 아네칸타바다(Anekantavada) 침잠창 — 절대적 단정을 멈추고 다면적인 진실을 관조하는 시간';
+
+  const tirthankaraCycle =
+    kst.month >= 3 && kst.month <= 5
+      ? '봄의 비움과 맑힘 순환 — 불필요한 소유를 덜어내어 영혼의 가벼움을 되찾는 절기'
+      : kst.month >= 6 && kst.month <= 8
+        ? '우기의 차투르마스(Chaturmas) 내면 수련 순환 — 외부 확장을 멈추고 내면의 뿌리를 다지는 절기'
+        : kst.month >= 9 && kst.month <= 11
+          ? '파류샤나(Paryushana) 용서와 화해 순환 — 묵은 업과 원망을 미소로 해소하는 절기'
+          : '겨울 디파발리(Deepavali) 등불 각성 순환 — 고요한 침묵 속에서 내면의 지혜를 밝히는 절기';
+
+  return {
+    kstTimeLabel: kst.label,
+    samayikaWindow,
+    tirthankaraCycle,
+    temporalGuidance: `${samayikaWindow}의 흐름에 따라 오늘 마음속에 쥔 집착 하나를 가볍게 내려놓으십시오.`,
+  };
+}
+
+function getSituationalJainAudit(question: string | undefined, ahimsaPeaceIndex: number) {
+  const q = (question || '').trim();
+  const ahimsaTone =
+    ahimsaPeaceIndex >= 82
+      ? '내면의 평정심이 깊어 타인과 자신을 해치지 않는 맑은 아힘사 기운이 흐르고 있습니다.'
+      : ahimsaPeaceIndex >= 68
+        ? '평온과 긴장이 공존하는 상태이므로, 말과 결정에서 조급한 단정을 한 박자 늦추는 것이 좋습니다.'
+        : '마음의 마찰열이 높아진 상태이므로, 스스로를 다그치거나 외부에 날을 세우지 않는 자비로운 쉼이 필요합니다.';
+
+  if (/관계|연애|가족|친구|갈등|화해|사람/.test(q)) {
+    return {
+      focusTheme: '아네칸타바다(Anekantavada · 다면성)와 관계의 비폭력',
+      ahimsaTone,
+      aparigrahaPrinciple: '상대를 내 뜻대로 소유하거나 바꾸려는 마음을 내려놓을 때 관계의 숨통이 트입니다.',
+      anekantaPerspective: '하나의 사건에도 서로 다른 진실의 면이 공존함을 인정하면 불필요한 언쟁이 사라집니다.',
+    };
+  }
+  if (/돈|재물|투자|직장|사업|성공|선택|이직/.test(q)) {
+    return {
+      focusTheme: '아파리그라하(Aparigraha · 무소유 절제)와 정당한 성취',
+      ahimsaTone,
+      aparigrahaPrinciple: '필요 이상의 탐욕을 경계하고, 지금 나에게 꼭 알맞은 몫과 역할에 집중할 때 손실이 줄어듭니다.',
+      anekantaPerspective: '단기적 손익의 일면만 보지 말고, 장기적 신뢰와 마음의 평화까지 함께 헤아리십시오.',
+    };
+  }
+  return {
+    focusTheme: '니르자라(Nirjara · 카르마 소진)와 삼보(Ratnatraya) 균형',
+    ahimsaTone,
+    aparigrahaPrinciple: '마음의 짐이 되는 과도한 걱정과 과거의 집착을 비울수록 현재의 통찰이 선명해집니다.',
+    anekantaPerspective: '흑백논리나 조급한 결론을 피하고, 상황을 여러 각도에서 고요히 바라보십시오.',
+  };
+}
+
 /**
  * 사용자 프로필 및 타임스탬프를 기반으로
  * 자이나교 14 군아스타나와 삼보(Ratnatraya) 균형을 결정론적으로 연산합니다.
@@ -112,6 +206,7 @@ const GUNASTHANA_STAGES: GunasthanaStage[] = [
 export function calculateJainGunasthanaKarma(options?: {
   profile?: UserProfile;
   targetInstantTime?: string;
+  question?: string;
 }): JainGunasthanaReport {
   const profile = options?.profile;
   const now = options?.targetInstantTime ? new Date(options.targetInstantTime) : new Date();
@@ -167,16 +262,30 @@ export function calculateJainGunasthanaKarma(options?: {
   ];
   const nirjaraPurification = nirjaraPractices[seed % nirjaraPractices.length];
 
+  const temporalJainRhythm = getTemporalJainRhythm(now);
+  const situationalJainAudit = getSituationalJainAudit(options?.question, ahimsaPeaceIndex);
+
   const jainWisdom = `삼보 중 [${dominant.name}]의 빛이 강하게 발현되고 있으며, 군아스타나 제${activeStage.stageNumber}단계 [${activeStage.stageNameKo}]에 머물고 있습니다. ${activeStage.spiritualGuidance}`;
+
+  const jainSynthesisMatrix = {
+    coreInsight: `군아스타나 제${activeStage.stageNumber}단계 [${activeStage.stageNameKo}]에서 삼보 중 [${dominant.name}]이 빛을 발하고 있습니다.`,
+    recommendedAction: `${nirjaraPurification} (${situationalJainAudit.aparigrahaPrinciple})`,
+    cautionNotice: `일방적 단정(에칸타)과 과도한 집착을 피하고, ${situationalJainAudit.anekantaPerspective}`,
+  };
 
   return {
     engineVersion: JAIN_GUNASTHANA_KARMA_ENGINE_VERSION,
     calculatedAt: now.toISOString(),
+    calculatedAtKst: temporalJainRhythm.kstTimeLabel,
     ahimsaPeaceIndex,
     activeStage,
     ratnatraya,
     nirjaraPurification,
-    jainWisdom
+    situationalJainAudit,
+    temporalJainRhythm,
+    jainSynthesisMatrix,
+    jainWisdom,
+    boundaryNotice: '본 결과는 자이나교 《타트바르타 수트라》 14 군아스타나와 삼보 원리에 따른 정성적 성찰이며, 우열을 가르는 점수나 운명적 판정이 아닙니다.',
   };
 }
 
@@ -187,26 +296,34 @@ export function formatJainGunasthanaKarmaPrompt(report: JainGunasthanaReport): s
   const r = report.ratnatraya;
   const s = report.activeStage;
 
-  return `[🪷 고대 인도 자이나교 14 군아스타나 & 삼보(Ratnatraya) 카르마 실측 데이터]
+  return `[🪷 고대 인도 자이나교 14 군아스타나 & 삼보(Ratnatraya) 카르마 실측 데이터 v${report.engineVersion}]
 ======================================================================
-엔진 버전: ${report.engineVersion} | 연산 시각: ${report.calculatedAt}
-아힘사(Ahimsa) 평화 지수: ${report.ahimsaPeaceIndex} / 100점
-======================================================================
+연산 시각: ${report.calculatedAtKst}
 1. [영혼 진화의 사다리 (14 Gunasthanas)]:
    - 현재 영혼 국면: 제${s.stageNumber}단계 [${s.stageNameKo}] (${s.stageNameSanskrit})
    - 영적 상태 진단: ${s.soulEvolutionState}
    - 영혼 상승 지침: "${s.spiritualGuidance}"
 
-2. [자이나 삼보(Ratnatraya) 조화 밸런스]:
+2. [자이나 삼보(Ratnatraya) 조화]:
    - 주재 영적 보물: [${r.dominantTreasure}]
    - 주재 특성: ${r.dominantTreasureDescription}
-   - 삼보 세부 수치:
-     * 정견 (Samyak Darshana · 바른 안목): ${r.darshanaScore}점
-     * 정지 (Samyak Jnana · 바른 지혜): ${r.jnanaScore}점
-     * 정행 (Samyak Charitra · 바른 실천): ${r.charitraScore}점
 
-3. [니르자라(Nirjara) 카르마 정화 & 자이나 지혜]:
+3. [질문 맥락 감사 (${report.situationalJainAudit.focusTheme})]:
+   - 아힘사(Ahimsa) 평정 기조: ${report.situationalJainAudit.ahimsaTone}
+   - 아파리그라하(무소유) 원칙: ${report.situationalJainAudit.aparigrahaPrinciple}
+   - 아네칸타바다(다면성) 관점: ${report.situationalJainAudit.anekantaPerspective}
+
+4. [KST 시공간 리듬]:
+   - 시간창: ${report.temporalJainRhythm.samayikaWindow}
+   - 절기 순환: ${report.temporalJainRhythm.tirthankaraCycle}
+   - 시공간 지침: ${report.temporalJainRhythm.temporalGuidance}
+
+5. [니르자라(Nirjara) 카르마 정화 & 교차 매트릭스]:
    - 카르마 소진 실천: ${report.nirjaraPurification}
+   - 핵심 통찰: ${report.jainSynthesisMatrix.coreInsight}
+   - 권고 실행: ${report.jainSynthesisMatrix.recommendedAction}
+   - 주의 경계: ${report.jainSynthesisMatrix.cautionNotice}
    - 종합 해탈 조언: ${report.jainWisdom}
+   - 해석 경계: ${report.boundaryNotice}
 ======================================================================`;
 }
