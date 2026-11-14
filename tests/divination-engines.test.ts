@@ -5027,8 +5027,14 @@ test('Thomas Aquinas Summa Theologiae Engine: calculates Reason and Faith Harmon
 });
 
 test('Francis Bacon Novum Organum Engine: calculates Four Idols overcoming, Inductio Vera, and Empirical Grounding', () => {
-  const rep = calculateFrancisBaconNovumOrganum(profile);
+  const rep = calculateFrancisBaconNovumOrganum(profile, '이직 결정을 앞두고 냉정한 판단이 필요해요', new Date('2026-11-14T03:00:00Z'));
   assert.equal(rep.engineVersion, BRITISH_FRANCIS_BACON_VERSION);
+  assert.equal(rep.questionTopic, 'decision');
+  assert(rep.temporalBaconRhythm.kstDateLabel === '2026-11-14');
+  assert(rep.practiceGuidance.length > 0);
+  assert(rep.ritualAction.length > 0);
+  assert(rep.reflectionFocus.length > 0);
+  assert(rep.boundaryNotice.length > 0);
   assert(rep.idolsTribusSpeciesBiasOvercomingScore >= 0 && rep.idolsTribusSpeciesBiasOvercomingScore <= 100);
   assert(rep.idolsSpecusPersonalPrejudiceOvercomingScore >= 0 && rep.idolsSpecusPersonalPrejudiceOvercomingScore <= 100);
   assert(rep.idolsForiLinguisticClarityScore >= 0 && rep.idolsForiLinguisticClarityScore <= 100);
@@ -5038,6 +5044,9 @@ test('Francis Bacon Novum Organum Engine: calculates Four Idols overcoming, Indu
   const prompt = formatFrancisBaconNovumOrganumPrompt(rep);
   assert(prompt.includes('프랜시스 베이컨 《신기관》 4대 우상 타파 & 실증 경험 지표'));
   assert(prompt.includes(rep.activeBaconTheme.themeTitleKo));
+  assert(prompt.includes('질문 주제 맥락: decision'));
+  assert(prompt.includes('KST 시공간 리듬:'));
+  assert(!prompt.includes('/100'));
 });
 
 test('Ryu Seong-ryong Jingbirok Engine: calculates Jingjeon Bihu past reflection, Yubimuhwan preparedness, and Public Devotion', () => {
@@ -5083,8 +5092,14 @@ test('Jang Bogo Cheonghaejin Maritime Pioneer Engine: calculates Maritime Vision
 });
 
 test('John Stuart Mill On Liberty Individuality Engine: calculates Autonomy, Harm Principle, and Qualitative Growth', () => {
-  const rep = calculateJohnStuartMillOnLibertyIndividuality(profile);
+  const rep = calculateJohnStuartMillOnLibertyIndividuality(profile, '주변 시선 때문에 내 선택을 망설여요', new Date('2026-11-14T03:00:00Z'));
   assert.equal(rep.engineVersion, BRITISH_JS_MILL_VERSION);
+  assert.equal(rep.questionTopic, 'decision');
+  assert(rep.temporalMillRhythm.kstDateLabel === '2026-11-14');
+  assert(rep.practiceGuidance.length > 0);
+  assert(rep.ritualAction.length > 0);
+  assert(rep.reflectionFocus.length > 0);
+  assert(rep.boundaryNotice.length > 0);
   assert(rep.individualityAutonomyScore >= 0 && rep.individualityAutonomyScore <= 100);
   assert(rep.harmPrincipleClarityScore >= 0 && rep.harmPrincipleClarityScore <= 100);
   assert(rep.thoughtConscienceLibertyScore >= 0 && rep.thoughtConscienceLibertyScore <= 100);
@@ -5094,6 +5109,9 @@ test('John Stuart Mill On Liberty Individuality Engine: calculates Autonomy, Har
   const prompt = formatJohnStuartMillOnLibertyIndividualityPrompt(rep);
   assert(prompt.includes('존 스튜어트 밀 《자유론》 개별성 자율성 & 해악 원칙 지표'));
   assert(prompt.includes(rep.activeMillTheme.themeTitleKo));
+  assert(prompt.includes('질문 주제 맥락: decision'));
+  assert(prompt.includes('KST 시공간 리듬:'));
+  assert(!prompt.includes('/100'));
 });
 
 test('Jean-Jacques Rousseau Nature Authenticity Engine: calculates Inherent Goodness, Authenticity, and General Will', () => {
@@ -5374,8 +5392,14 @@ test('Gottfried Leibniz Monadology Engine: calculates Pre-established Harmony, M
 });
 
 test('John Locke Human Understanding Engine: calculates Tabula Rasa, Sensation/Reflection, and Natural Rights', () => {
-  const rep = calculateJohnLockeHumanUnderstanding(profile);
+  const rep = calculateJohnLockeHumanUnderstanding(profile, '사람들과의 관계에서 내 경계를 지키고 싶어요', new Date('2026-11-14T03:00:00Z'));
   assert.equal(rep.engineVersion, BRITISH_JOHN_LOCKE_VERSION);
+  assert.equal(rep.questionTopic, 'relationship');
+  assert(rep.temporalLockeRhythm.kstDateLabel === '2026-11-14');
+  assert(rep.practiceGuidance.length > 0);
+  assert(rep.ritualAction.length > 0);
+  assert(rep.reflectionFocus.length > 0);
+  assert(rep.boundaryNotice.length > 0);
   assert(rep.tabulaRasaOpenReceptivityScore >= 0 && rep.tabulaRasaOpenReceptivityScore <= 100);
   assert(rep.sensationReflectionBalanceIndex >= 0 && rep.sensationReflectionBalanceIndex <= 100);
   assert(rep.naturalRightsInviolabilityScore >= 0 && rep.naturalRightsInviolabilityScore <= 100);
@@ -5385,6 +5409,9 @@ test('John Locke Human Understanding Engine: calculates Tabula Rasa, Sensation/R
   const prompt = formatJohnLockeHumanUnderstandingPrompt(rep);
   assert(prompt.includes('존 로크 《인간 오성론》 타불라 라사 & 천부인권 지표'));
   assert(prompt.includes(rep.activeLockeTheme.themeTitleKo));
+  assert(prompt.includes('질문 주제 맥락: relationship'));
+  assert(prompt.includes('KST 시공간 리듬:'));
+  assert(!prompt.includes('/100'));
 });
 
 test('Hyecho Wang Ocheonchukgukjeon Engine: calculates Pilgrimage Pioneer Spirit, Frontier Resilience, and Poetic Equanimity', () => {
