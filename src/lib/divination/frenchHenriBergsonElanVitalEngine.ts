@@ -8,12 +8,21 @@
  * 4. 창조적 자유(Liberté créatrice): 우리의 행동이 인격 전체로부터 흘러나와 스스로의 독창적 삶을 조각해 나가는 완전한 실존적 자유.
  * 5. 열린 도덕과 생명성(Société ouverte): 폐쇄된 집단의 배타적 경계를 허물고, 모든 살아있는 존재를 향해 무한히 확장되는 열린 영성과 생명적 연대.
  *
- * @version LUCKEY-HENRI-BERGSON-ELAN-VITAL-v1.0.0
+ * @version LUCKEY-HENRI-BERGSON-ELAN-VITAL-v1.1.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const FRENCH_HENRI_BERGSON_VERSION = 'LUCKEY-HENRI-BERGSON-ELAN-VITAL-v1.0.0';
+export const FRENCH_HENRI_BERGSON_VERSION = 'LUCKEY-HENRI-BERGSON-ELAN-VITAL-v1.1.0';
+
+export type BergsonQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
+
+export interface BergsonTemporalRhythm {
+  kstDateLabel: string;
+  timeBand: '새벽 직관' | '오전 약동' | '오후 지속' | '저녁 성찰' | '심야 침잠';
+  vitalTempo: string;
+  temporalGuidance: string;
+}
 
 export interface BergsonTheme {
   themeKey: string;
@@ -34,7 +43,9 @@ export interface BergsonAphorism {
 export interface HenriBergsonElanVitalResult {
   engineVersion: string;
   calculatedAtKst: string;
-  // 5대 핵심 베르그송 생명·시간 지표 (0~100)
+  questionTopic: BergsonQuestionTopic;
+  temporalBergsonRhythm: BergsonTemporalRhythm;
+  // 5대 핵심 베르그송 생명·시간 지표 (내부 호환용 보존, 프롬프트 비노출)
   pureDurationContinuityScore: number;     // 순수 지속 자아 연속도 (Durée pure)
   elanVitalCreativeImpulseScore: number;   // 생명의 도약 창조적 약동력 (Élan vital)
   intuitiveSympathyInsightScore: number;   // 직관적 교감 통찰력 (Intuition philosophique)
@@ -43,6 +54,10 @@ export interface HenriBergsonElanVitalResult {
   // 세부 분석
   activeBergsonTheme: BergsonTheme;
   focalBergsonAphorism: BergsonAphorism;
+  practiceGuidance: string;
+  dailyPracticeRitual: string;
+  reflectiveQuestion: string;
+  interpretiveBoundary: string;
   bergsonComprehensiveGuidance: {
     guidanceTitle: string;
     philosophicalCounsel: string;
@@ -125,8 +140,116 @@ export const BERGSON_APHORISMS: BergsonAphorism[] = [
   },
 ];
 
+export function classifyBergsonQuestionTopic(question?: string): BergsonQuestionTopic {
+  const q = (question ?? '').toLowerCase();
+  if (/연애|사랑|관계|가족|친구|갈등|화해|이별|소통|사람|상대|동료|배우자/.test(q)) {
+    return 'relationship';
+  }
+  if (/결정|선택|이직|창업|진로|도전|방향|사업|투자|계약|결단|시작|그만/.test(q)) {
+    return 'decision';
+  }
+  if (/지치|불안|우울|회복|위로|상처|아픔|피로|휴식|번아웃|힘들|치유|걱정/.test(q)) {
+    return 'healing';
+  }
+  return 'reflection';
+}
+
+export function buildBergsonTemporalRhythm(now: Date = new Date()): BergsonTemporalRhythm {
+  const kstMs = now.getTime() + 9 * 60 * 60 * 1000;
+  const kst = new Date(kstMs);
+  const yyyy = kst.getUTCFullYear();
+  const mm = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const dd = String(kst.getUTCDate()).padStart(2, '0');
+  const hour = kst.getUTCHours();
+
+  if (hour >= 4 && hour < 8) {
+    return {
+      kstDateLabel: `${yyyy}-${mm}-${dd} 새벽`,
+      timeBand: '새벽 직관',
+      vitalTempo: '순수 지속의 여명이 열리는 고요한 도약대',
+      temporalGuidance: '분절된 일과가 시작되기 전, 밤사이 숙성된 내면의 직관이 가장 맑게 떠오르는 시간입니다.',
+    };
+  }
+  if (hour >= 8 && hour < 12) {
+    return {
+      kstDateLabel: `${yyyy}-${mm}-${dd} 오전`,
+      timeBand: '오전 약동',
+      vitalTempo: '엘랑 비탈(생명의 도약)이 현실로 분출하는 시간',
+      temporalGuidance: '전인격적 자유 의지를 행동으로 옮겨 작은 돌파구를 열기에 알맞은 오전 흐름입니다.',
+    };
+  }
+  if (hour >= 12 && hour < 18) {
+    return {
+      kstDateLabel: `${yyyy}-${mm}-${dd} 오후`,
+      timeBand: '오후 지속',
+      vitalTempo: '물질적 저항과 생명의 리듬을 조율하는 성숙의 흐름',
+      temporalGuidance: '기계적 일정에 쫓기기보다 한 걸음 숨을 고르며 흐름의 결을 다시 직관적으로 읽어야 하는 시간입니다.',
+    };
+  }
+  if (hour >= 18 && hour < 22) {
+    return {
+      kstDateLabel: `${yyyy}-${mm}-${dd} 저녁`,
+      timeBand: '저녁 성찰',
+      vitalTempo: '하루의 경험이 기억으로 녹아내리는 열린 교감의 시간',
+      temporalGuidance: '오늘 마주한 사람과 사건을 성과로 재단하지 말고, 내면의 지속 속에 따뜻하게 품어 안는 저녁입니다.',
+    };
+  }
+  return {
+    kstDateLabel: `${yyyy}-${mm}-${dd} 심야`,
+    timeBand: '심야 침잠',
+    vitalTempo: '시계 시간이 멎고 순수 기억과 무의식이 숨 쉬는 깊이',
+    temporalGuidance: '조급한 분석을 멈추고 내면의 가장 깊은 울림이 스스로 형태를 드러내도록 기다려 주는 밤입니다.',
+  };
+}
+
+function describeQualitativeLevel(score: number): string {
+  if (score >= 90) return '충만한 도약 결';
+  if (score >= 80) return '뚜렷한 생동 흐름';
+  return '잔잔한 숙성 여운';
+}
+
+function buildBergsonTopicContext(
+  topic: BergsonQuestionTopic,
+  theme: BergsonTheme,
+  temporal: BergsonTemporalRhythm
+): {
+  practiceGuidance: string;
+  dailyPracticeRitual: string;
+  reflectiveQuestion: string;
+} {
+  switch (topic) {
+    case 'relationship':
+      return {
+        practiceGuidance: `관계 맥락에서는 상대를 고정된 성격이나 과거의 실수로 규정짓지 않는 직관적 공감이 핵심입니다. '${theme.themeTitleKo}'의 관점에서 상대의 내면 리듬에 귀 기울여 보세요.`,
+        dailyPracticeRitual: `[${temporal.timeBand}] 대화 전 30초간 시계를 보지 않고 상대의 최근 표정과 말투가 품은 진짜 감정을 한 문장으로 떠올려 보기`,
+        reflectiveQuestion: '지금 내가 상대방의 어떤 변화를 미처 보지 못한 채 과거의 인상으로만 대하고 있지는 않은가요?',
+      };
+    case 'decision':
+      return {
+        practiceGuidance: `선택의 갈림길에서는 장단점 목록을 쪼개는 계산보다 인격 전체가 자연스럽게 기우는 방향을 읽는 창조적 자유가 중요합니다. '${theme.themeTitleKo}'가 그 기준을 밝혀 줍니다.`,
+        dailyPracticeRitual: `[${temporal.timeBand}] 두 선택지 중 하나를 실제로 고른 내일의 내 표정과 호흡을 1분간 생생히 상상해 보기`,
+        reflectiveQuestion: '남의 기준과 손익 계산을 모두 내려놓았을 때, 내 삶 전체가 가장 자연스럽게 이어지는 선택은 무엇인가요?',
+      };
+    case 'healing':
+      return {
+        practiceGuidance: `지치고 흔들리는 시기에는 매 시간을 효율로 채우려는 강박을 놓아야 합니다. '${theme.themeTitleKo}'처럼 지금의 쉼조차 내일이 자라는 순수 지속의 일부임을 받아들이세요.`,
+        dailyPracticeRitual: `[${temporal.timeBand}] 스마트폰 타이머를 끄고 물 한 잔을 마시며 지나온 시간의 수고를 스스로 인정해 주는 5분 휴식 갖기`,
+        reflectiveQuestion: '지금 나에게 필요한 것은 더 빠른 해결책인가요, 아니면 스스로 무르익을 수 있는 다정한 기다림인가요?',
+      };
+    case 'reflection':
+    default:
+      return {
+        practiceGuidance: `자기 성찰의 질문 앞에서는 관성적인 습관을 깨고 내면의 생명이 어디로 향하는지 직관으로 들여다볼 때입니다. '${theme.themeTitleKo}'의 빛으로 오늘의 결을 살펴보세요.`,
+        dailyPracticeRitual: `[${temporal.timeBand}] 오늘 가장 살아 있다고 느꼈던 한 순간을 골라 그 이유를 짧게 기록하기`,
+        reflectiveQuestion: '요즘 내 하루에서 관성으로 반복되는 부분과, 내면에서 새로 솟아오르려는 생명력은 각각 어디에 있나요?',
+      };
+  }
+}
+
 export function calculateHenriBergsonElanVital(
-  profile: UserProfile
+  profile: UserProfile,
+  question?: string,
+  now: Date = new Date()
 ): HenriBergsonElanVitalResult {
   const p = profile as any;
   const name = profile?.basic?.name ?? p?.name ?? '방문자';
@@ -134,7 +257,10 @@ export function calculateHenriBergsonElanVital(
   const birthTime = profile?.basic?.birthtime ?? p?.birthTime ?? p?.birthtime ?? '12:00';
   const gender = profile?.basic?.gender ?? p?.gender ?? 'neutral';
 
-  const seedString = `HENRI-BERGSON-ELAN-VITAL:${name}:${birthDate}:${birthTime}:${gender}`;
+  const questionTopic = classifyBergsonQuestionTopic(question);
+  const temporalBergsonRhythm = buildBergsonTemporalRhythm(now);
+
+  const seedString = `HENRI-BERGSON-ELAN-VITAL:${name}:${birthDate}:${birthTime}:${gender}:${questionTopic}`;
 
   let hash = 0;
   for (let i = 0; i < seedString.length; i++) {
@@ -155,15 +281,26 @@ export function calculateHenriBergsonElanVital(
   const activeBergsonTheme = BERGSON_THEMES[themeIndex];
   const focalBergsonAphorism = BERGSON_APHORISMS[aphorismIndex];
 
+  const { practiceGuidance, dailyPracticeRitual, reflectiveQuestion } = buildBergsonTopicContext(
+    questionTopic,
+    activeBergsonTheme,
+    temporalBergsonRhythm
+  );
+
+  const interpretiveBoundary =
+    '이 해석은 미래를 고정된 수치로 예단하는 점술이 아니라, 앙리 베르그송의 순수 지속과 엘랑 비탈 철학을 빌려 현재 삶의 리듬과 창조적 가능성을 비추어 보는 상징적 성찰 가이드입니다.';
+
   const guidanceTitle = `앙리 베르그송 생명의 도약 지혜: ${activeBergsonTheme.themeTitleKo}`;
   const philosophicalCounsel = `베르그송의 생명철학은 굳어버린 일상의 타성을 깨고 내면의 약동하는 지속과 창조적 자유를 회복하도록 일깨웁니다. ` +
     `현재 당신의 삶을 인도하는 핵심 원리는 '${activeBergsonTheme.themeTitleKo}'입니다. ` +
-    `${activeBergsonTheme.practicalCounsel} 아울러 원전의 불멸의 통찰 "${focalBergsonAphorism.aphorismKo}"(${focalBergsonAphorism.aphorismFrench})을 마음에 품고, ` +
+    `${activeBergsonTheme.practicalCounsel} ${practiceGuidance} 아울러 원전의 불멸의 통찰 "${focalBergsonAphorism.aphorismKo}"(${focalBergsonAphorism.aphorismFrench})을 마음에 품고, ` +
     `${focalBergsonAphorism.actionGuidance}`;
 
   return {
     engineVersion: FRENCH_HENRI_BERGSON_VERSION,
-    calculatedAtKst: new Date().toISOString(),
+    calculatedAtKst: temporalBergsonRhythm.kstDateLabel,
+    questionTopic,
+    temporalBergsonRhythm,
     pureDurationContinuityScore,
     elanVitalCreativeImpulseScore,
     intuitiveSympathyInsightScore,
@@ -171,6 +308,10 @@ export function calculateHenriBergsonElanVital(
     openSocietyVitalityIndex,
     activeBergsonTheme,
     focalBergsonAphorism,
+    practiceGuidance,
+    dailyPracticeRitual,
+    reflectiveQuestion,
+    interpretiveBoundary,
     bergsonComprehensiveGuidance: {
       guidanceTitle,
       philosophicalCounsel,
@@ -180,18 +321,25 @@ export function calculateHenriBergsonElanVital(
 
 export function formatHenriBergsonElanVitalPrompt(res: HenriBergsonElanVitalResult): string {
   return [
-    `【앙리 베르그송 《시간과 자유의지》 순수 지속 & 생명의 도약 지표】`,
-    `- 순수 지속 자아 연속도(Durée pure): ${res.pureDurationContinuityScore}/100`,
-    `- 생명의 도약 창조적 약동력(Élan vital): ${res.elanVitalCreativeImpulseScore}/100`,
-    `- 직관적 교감 통찰력(Intuition): ${res.intuitiveSympathyInsightScore}/100`,
-    `- 전인격적 창조적 자유도(Liberté): ${res.creativeFreedomUnfoldingScore}/100`,
-    `- 열린 도덕·생명 포용 지수(Société ouverte): ${res.openSocietyVitalityIndex}/100`,
+    `【앙리 베르그송 《시간과 자유의지·창조적 진화》 순수 지속 & 생명의 도약 성찰 가이드】`,
+    `- 질문 주제 맥락: ${res.questionTopic}`,
+    `- KST 시공간 리듬: ${res.temporalBergsonRhythm.kstDateLabel} · ${res.temporalBergsonRhythm.timeBand} (${res.temporalBergsonRhythm.vitalTempo})`,
+    `- 시공간 권면: ${res.temporalBergsonRhythm.temporalGuidance}`,
+    `- 순수 지속 자아 연속성(Durée pure): ${describeQualitativeLevel(res.pureDurationContinuityScore)}`,
+    `- 생명의 도약 창조적 약동(Élan vital): ${describeQualitativeLevel(res.elanVitalCreativeImpulseScore)}`,
+    `- 직관적 교감 통찰(Intuition): ${describeQualitativeLevel(res.intuitiveSympathyInsightScore)}`,
+    `- 전인격적 창조 자유(Liberté): ${describeQualitativeLevel(res.creativeFreedomUnfoldingScore)}`,
+    `- 열린 도덕·생명 포용(Société ouverte): ${describeQualitativeLevel(res.openSocietyVitalityIndex)}`,
     `- 핵심 생명 테마: ${res.activeBergsonTheme.themeTitleKo} [${res.activeBergsonTheme.themeTitleFrench}]`,
     `- 철학적 통찰: ${res.activeBergsonTheme.vitalInsight}`,
     `- 실천적 조언: ${res.activeBergsonTheme.practicalCounsel}`,
+    `- 맥락 맞춤 가이드: ${res.practiceGuidance}`,
+    `- 오늘의 실천 의례(${res.questionTopic}): ${res.dailyPracticeRitual}`,
+    `- 성찰 질문: ${res.reflectiveQuestion}`,
     `- 핵심 경구: "${res.focalBergsonAphorism.aphorismKo}"`,
     `- 원전 출처: "${res.focalBergsonAphorism.aphorismFrench}" [${res.focalBergsonAphorism.sourceContext}]`,
     `- 구체적 실천 지침: ${res.focalBergsonAphorism.actionGuidance}`,
     `- 종합 생명철학 권면: ${res.bergsonComprehensiveGuidance.philosophicalCounsel}`,
+    `- 해석 경계: ${res.interpretiveBoundary}`,
   ].join('\n');
 }

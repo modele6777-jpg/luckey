@@ -3568,7 +3568,7 @@ try {
   // 249. 프랑스 앙리 베르그송 시간과 자유의지 & 창조적 진화 순수 지속 & 생명의 도약 엔진
   const henriBergsonElanVitalResult = calculateSupplement('henriBergsonElanVitalResult', () => ((() => {
     try {
-      return calculateHenriBergsonElanVital(profile);
+      return calculateHenriBergsonElanVital(profile, question, now);
     } catch (_) {
       return null;
     }
@@ -3955,7 +3955,7 @@ try {
   // 292. 프랑스 질 들뢰즈 《천 개의 고원·차이와 반복》 리좀적접속 & 탈영토화·생성(Devenir) 지혜 엔진
   const frenchGillesDeleuzeRhizomeBecomingResult = calculateSupplement('frenchGillesDeleuzeRhizomeBecomingResult', () => ((() => {
     try {
-      return calculateFrenchGillesDeleuzeRhizomeBecoming(profile);
+      return calculateFrenchGillesDeleuzeRhizomeBecoming(profile, question, now);
     } catch (_) {
       return null;
     }
@@ -4036,7 +4036,7 @@ try {
   // 301. 프랑스 모리스 메를로퐁티 《지각의 현상학·눈과 마음》 신체-주체(Corps-sujet) & 원초적 지각·살(Chair)의 상호교감 지혜 엔진
   const frenchMauriceMerleauPontyEmbodiedPhenomenologyResult = calculateSupplement('frenchMauriceMerleauPontyEmbodiedPhenomenologyResult', () => ((() => {
     try {
-      return calculateFrenchMauriceMerleauPontyEmbodiedPhenomenology(profile);
+      return calculateFrenchMauriceMerleauPontyEmbodiedPhenomenology(profile, question, now);
     } catch (_) {
       return null;
     }
