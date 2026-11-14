@@ -6975,6 +6975,43 @@ test('qualitative & temporal deepening: Bertrand Russell, Virginia Woolf, and Wi
   assert.ok(!shakespearePrompt.includes('/100'));
 });
 
+test('v2.1.0 qualitative deepening without score exposure: Camus, Sartre, and Beauvoir', () => {
+  const testProfile = {
+    basic: {
+      name: '남희',
+      birthdate: '1988-05-12',
+      birthtime: '09:30',
+      gender: 'female' as const,
+      calendarType: 'solar' as const,
+    },
+  };
+  const now = new Date('2026-11-14T15:40:00.000Z'); // KST 2026-11-15 00:40
+
+  const camus = calculateAlbertCamusAbsurdRevolt(testProfile, '부당한 갈등 속에서 존엄을 지키고 싶어요', now);
+  assert.equal(camus.engineVersion, FRENCH_ALBERT_CAMUS_VERSION);
+  assert.equal(camus.questionTopic, 'relationship');
+  assert.ok(camus.dailyPracticeRitual.length > 0 && camus.reflectiveQuestion.length > 0 && camus.interpretiveBoundary.length > 0);
+  const camusPrompt = formatAlbertCamusAbsurdRevoltPrompt(camus);
+  assert.ok(camusPrompt.includes('오늘의 실천 의례(relationship)'));
+  assert.ok(!camusPrompt.includes('/100') && !camusPrompt.includes('%'));
+
+  const sartre = calculateJeanPaulSartreExistentialism(testProfile, '중요한 결정을 앞두고 망설여져요', now);
+  assert.equal(sartre.engineVersion, FRENCH_JEAN_PAUL_SARTRE_VERSION);
+  assert.equal(sartre.questionTopic, 'decision');
+  assert.ok(sartre.dailyPracticeRitual.length > 0 && sartre.reflectiveQuestion.length > 0 && sartre.interpretiveBoundary.length > 0);
+  const sartrePrompt = formatJeanPaulSartreExistentialismPrompt(sartre);
+  assert.ok(sartrePrompt.includes('오늘의 실천 의례(decision)'));
+  assert.ok(!sartrePrompt.includes('/100') && !sartrePrompt.includes('%'));
+
+  const beauvoir = calculateFrenchSimoneDeBeauvoirAmbiguityFreedom(testProfile, '남들의 기대와 평가 때문에 지치고 불안해요', now);
+  assert.equal(beauvoir.engineVersion, FRENCH_SIMONE_DE_BEAUVOIR_AMBIGUITY_FREEDOM_VERSION);
+  assert.equal(beauvoir.questionTopic, 'healing');
+  assert.ok(beauvoir.dailyPracticeRitual.length > 0 && beauvoir.reflectiveQuestion.length > 0 && beauvoir.interpretiveBoundary.length > 0);
+  const beauvoirPrompt = formatFrenchSimoneDeBeauvoirAmbiguityFreedomPrompt(beauvoir);
+  assert.ok(beauvoirPrompt.includes('오늘의 실천 의례(healing)'));
+  assert.ok(!beauvoirPrompt.includes('/100') && !beauvoirPrompt.includes('%'));
+});
+
 
 
 

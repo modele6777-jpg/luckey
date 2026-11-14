@@ -3,12 +3,14 @@
  *
  * 20세기 프랑스 실존주의 철학의 기수 장 폴 사르트르(Jean-Paul Sartre, 1905~1980)의 핵심 원전 기반.
  *
- * @version LUCKEY-JEAN-PAUL-SARTRE-EXISTENTIALISM-v2.0.0
+ * @version LUCKEY-JEAN-PAUL-SARTRE-EXISTENTIALISM-v2.1.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const FRENCH_JEAN_PAUL_SARTRE_VERSION = 'LUCKEY-JEAN-PAUL-SARTRE-EXISTENTIALISM-v2.0.0';
+export const FRENCH_JEAN_PAUL_SARTRE_VERSION = 'LUCKEY-JEAN-PAUL-SARTRE-EXISTENTIALISM-v2.1.0';
+
+export type SartreQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
 export interface SartreTheme {
   themeKey: string;
@@ -65,6 +67,10 @@ export interface JeanPaulSartreExistentialismResult {
   situationalAuthenticityAudit: SartreSituationalAuthenticityAudit;
   temporalProjectRhythm: SartreTemporalProjectRhythm;
   sartreSynthesisMatrix: SartreSynthesisMatrix;
+  questionTopic: SartreQuestionTopic;
+  dailyPracticeRitual: string;
+  reflectiveQuestion: string;
+  interpretiveBoundary: string;
   sartreComprehensiveGuidance: {
     guidanceTitle: string;
     philosophicalCounsel: string;
@@ -233,6 +239,55 @@ function buildTemporalProjectRhythm(now?: Date): SartreTemporalProjectRhythm {
   };
 }
 
+function classifySartreQuestionTopic(question?: string): SartreQuestionTopic {
+  const q = (question ?? '').trim();
+  if (/관계|타인|시선|눈치|평가|갈등|연대/.test(q)) return 'relationship';
+  if (/불안|결정|선택|망설|두렵|고민|진로/.test(q)) return 'decision';
+  if (/어쩔 수 없|핑계|남 탓|환경|불가능|원래|지치|무기력/.test(q)) return 'healing';
+  return 'reflection';
+}
+
+function describeSartreLevel(score: number): string {
+  if (score >= 88) return '명징하고 능동적인 결단';
+  if (score >= 80) return '주체적 책임을 여는 흐름';
+  return '자기기만을 걷어내는 성찰 국면';
+}
+
+function buildSartreQualitativePractice(topic: SartreQuestionTopic): {
+  dailyPracticeRitual: string;
+  reflectiveQuestion: string;
+  interpretiveBoundary: string;
+} {
+  const interpretiveBoundary =
+    '이 관점은 장 폴 사르트르의 실존주의 철학을 바탕으로 주체적 선택을 비추는 상징적 성찰 지표이며, 운명 단정이나 사주 수리 계산과는 구분됩니다.';
+  if (topic === 'relationship') {
+    return {
+      dailyPracticeRitual: '타인의 시선에 맞춘 역할을 잠시 내려놓고, 오늘 내 진심에 닿은 한 마디를 정중히 건네 보십시오.',
+      reflectiveQuestion: '지금 내가 상대의 시선 때문에 스스로를 고정된 역할 안에 가두고 있는 부분은 무엇인가요?',
+      interpretiveBoundary,
+    };
+  }
+  if (topic === 'decision') {
+    return {
+      dailyPracticeRitual: '머릿속 시뮬레이션을 멈추고, 내 이름으로 감당할 가장 작은 첫 행동 1가지를 오늘 바로 실행하십시오.',
+      reflectiveQuestion: '아무도 대신 결정해 주지 않는다면, 내가 오늘 내 행동으로 증명하고 싶은 방향은 무엇인가요?',
+      interpretiveBoundary,
+    };
+  }
+  if (topic === 'healing') {
+    return {
+      dailyPracticeRitual: '"어쩔 수 없다"고 말한 장면 하나를 골라, 그 안에서도 여전히 내 손에 남아 있는 선택의 여지 1가지를 적으십시오.',
+      reflectiveQuestion: '내가 환경이나 핑계 뒤에 숨겨 두었지만 사실은 내 선택이었던 지점은 어디인가요?',
+      interpretiveBoundary,
+    };
+  }
+  return {
+    dailyPracticeRitual: '어제의 꼬리표와 무관하게 오늘 내가 되고 싶은 모습에 맞는 구체적 실천 1가지를 손에 잡히게 해내십시오.',
+    reflectiveQuestion: '오늘 내가 취할 한 가지 행동이 나의 본질을 새롭게 쓴다면, 어떤 행동이어야 할까요?',
+    interpretiveBoundary,
+  };
+}
+
 export function calculateJeanPaulSartreExistentialism(
   profile: UserProfile,
   question?: string,
@@ -266,6 +321,8 @@ export function calculateJeanPaulSartreExistentialism(
   const focalSartreAphorism = SARTRE_APHORISMS[aphorismIndex];
   const situationalAuthenticityAudit = buildSituationalAuthenticityAudit(question);
   const temporalProjectRhythm = buildTemporalProjectRhythm(now);
+  const questionTopic = classifySartreQuestionTopic(question);
+  const qualitativePractice = buildSartreQualitativePractice(questionTopic);
 
   const projectAutonomy = Math.min(99, Math.round((existencePrecedesEssenceScore + condemnedToBeFreeScore) / 2));
   const badFaithOvercoming = Math.min(99, Math.round((badFaithOvercomingAuthenticityScore + temporalProjectRhythm.authenticityClarityIndex) / 2));
@@ -298,6 +355,10 @@ export function calculateJeanPaulSartreExistentialism(
     situationalAuthenticityAudit,
     temporalProjectRhythm,
     sartreSynthesisMatrix,
+    questionTopic,
+    dailyPracticeRitual: qualitativePractice.dailyPracticeRitual,
+    reflectiveQuestion: qualitativePractice.reflectiveQuestion,
+    interpretiveBoundary: qualitativePractice.interpretiveBoundary,
     sartreComprehensiveGuidance: {
       guidanceTitle,
       philosophicalCounsel,
@@ -307,18 +368,18 @@ export function calculateJeanPaulSartreExistentialism(
 
 export function formatJeanPaulSartreExistentialismPrompt(res: JeanPaulSartreExistentialismResult): string {
   return [
-    `【장 폴 사르트르 《존재와 무》 실존적 자유 & 앙가주망 지표】`,
-    `- 실존 본질선행 주체적 기획도(Projet): ${res.existencePrecedesEssenceScore}/100`,
-    `- 자유의 형벌 속 주체적 결단력(Liberté): ${res.condemnedToBeFreeScore}/100`,
-    `- 자기기만 극복 실존 진정성(Authenticité): ${res.badFaithOvercomingAuthenticityScore}/100`,
-    `- 실존적 불안 직시 책임 명석도(Angoisse): ${res.existentialAnguishLucidityScore}/100`,
-    `- 세상을 향한 연대 실천 앙가주망(Engagement): ${res.engagementSolidarityActionIndex}/100`,
+    `【장 폴 사르트르 《존재와 무》 실존적 자유 & 앙가주망 관점】`,
+    `- 실존 기획·자유·진정성 결: 기획(${describeSartreLevel(res.existencePrecedesEssenceScore)}) / 자유(${describeSartreLevel(res.condemnedToBeFreeScore)}) / 진정성(${describeSartreLevel(res.badFaithOvercomingAuthenticityScore)})`,
+    `- 불안 직시·앙가주망 결: 불안 명찰(${describeSartreLevel(res.existentialAnguishLucidityScore)}) / 연대 실천(${describeSartreLevel(res.engagementSolidarityActionIndex)})`,
     `- 핵심 실존 테마: ${res.activeSartreTheme.themeTitleKo} [${res.activeSartreTheme.themeTitleFrench}]`,
     `- 질문 맥락 진정성 감사 (${res.situationalAuthenticityAudit.themeKo} · ${res.situationalAuthenticityAudit.sourceCitation}): "${res.situationalAuthenticityAudit.translationKo}" [${res.situationalAuthenticityAudit.frenchQuote}]`,
     `- 자기기만 경계: ${res.situationalAuthenticityAudit.badFaithExcuseTrap}`,
     `- 주체적 기획 첫걸음: ${res.situationalAuthenticityAudit.projectActionStep}`,
-    `- KST 실존 리듬: ${res.temporalProjectRhythm.kstWindow} (${res.temporalProjectRhythm.projectFocus}, 명료도 ${res.temporalProjectRhythm.authenticityClarityIndex}/100) — ${res.temporalProjectRhythm.rhythmDirective}`,
-    `- 사르트르 매트릭스: 주체적 기획 ${res.sartreSynthesisMatrix.projectAutonomy} / 자기기만 극복 ${res.sartreSynthesisMatrix.badFaithOvercoming} / 앙가주망 실천 ${res.sartreSynthesisMatrix.engagedAction} (종합 ${res.sartreSynthesisMatrix.overallSynthesis}/100)`,
+    `- KST 실존 리듬: ${res.temporalProjectRhythm.kstWindow} (${res.temporalProjectRhythm.projectFocus} · ${res.temporalProjectRhythm.seasonalTone}) — ${res.temporalProjectRhythm.rhythmDirective}`,
+    `- 사르트르 매트릭스: 주체적 기획(${describeSartreLevel(res.sartreSynthesisMatrix.projectAutonomy)}) · 자기기만 극복(${describeSartreLevel(res.sartreSynthesisMatrix.badFaithOvercoming)}) · 앙가주망 실천(${describeSartreLevel(res.sartreSynthesisMatrix.engagedAction)})`,
+    `- 오늘의 실천 의례(${res.questionTopic}): ${res.dailyPracticeRitual}`,
+    `- 성찰 질문: ${res.reflectiveQuestion}`,
+    `- 해석 경계: ${res.interpretiveBoundary}`,
     `- 종합 실존철학 권면: ${res.sartreComprehensiveGuidance.philosophicalCounsel}`,
   ].join('\n');
 }
