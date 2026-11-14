@@ -1,19 +1,18 @@
 /**
  * 고대 그리스/로마 플로티노스(Plotinus) 《엔네아데스(Enneads)》 일자유출설 & 영적 귀환·내면합일(Henosis) 지혜 엔진
  *
- * 3세기 신플라톤주의(Neoplatonism)의 위대한 창시자 플로티노스(Plotinus, 204~270)의 전집 《엔네아데스(Enneads, 제자 포르피리오스 편찬)》 원전 기반:
- * 1. 일자(The One / To Hen) 근원 교감도(The One Supreme Source Emanation Score): 만유의 불가언적 궁극 원천인 '일자'로부터 온 세계가 빛처럼 유출됨을 자각하고 영적 근원과 교감하는 통찰.
- * 2. 누스(Nous, 신성한 지성) 관조·예지력(Nous Intellectual Contemplation Index): 시공간의 한계를 초월하여 영원한 이데아와 본질적 진리를 명징하게 응시하는 최고의 지성적 관조력.
- * 3. 프쉬케(Psyche, 우주 영혼) 생명 조화도(Psyche Soul Self-Cultivation Score): 육체와 물질에 매몰되지 않고 우주적 생명력과 내면의 조화를 유지하며 세상을 품는 영혼의 성숙도.
- * 4. 헤노시스(Henosis, 신성 합일) 영적 귀환력(Henosis Mystic Ascent Union Index): 감각적 물질계의 분열과 집착을 벗어나 오직 영혼의 날개로 가장 순수한 궁극의 일자로 거슬러 올라가는 회복력.
- * 5. 내면 조각 및 영혼 정화 미학도(Inner Beauty Sculpting Virtue Score): "너 자신만의 조각가가 되어 불필요한 돌을 깎아내라"는 가르침에 따라 허위와 탐욕을 비우고 본래의 아름다움을 빚어내는 실천적 덕성.
+ * 3세기 신플라톤주의 창시자 플로티노스의 《엔네아데스》 사상 기반:
+ * 일자(The One), 누스(Nous), 프쉬케(Psyche), 헤노시스(Henosis)의 내면 정화·관조·합일 관점.
  *
- * @version LUCKEY-PLOTINUS-ENNEADS-v1.0.0
+ * @version LUCKEY-PLOTINUS-ENNEADS-v1.1.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const ANCIENT_GREEK_PLOTINUS_VERSION = 'LUCKEY-PLOTINUS-ENNEADS-v1.0.0';
+export const ANCIENT_GREEK_PLOTINUS_VERSION = 'LUCKEY-PLOTINUS-ENNEADS-v1.1.0';
+
+export type PlotinusQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
+export type PlotinusAscentStage = 'KATHARSIS_PURIFICATION' | 'NOUS_ILLUMINATION' | 'HENOSIS_STILLNESS';
 
 export interface PlotinusTheme {
   themeKey: string;
@@ -34,15 +33,20 @@ export interface PlotinusAphorism {
 export interface AncientGreekPlotinusEnneadsHenosisResult {
   engineVersion: string;
   calculatedAtKst: string;
-  // 5대 핵심 플로티노스 엔네아데스 영적 귀환 지표 (0~100)
-  theOneSupremeSourceEmanationScore: number;    // 일자 근원 교감도 (The One Supreme Source)
-  nousIntellectualContemplationIndex: number;   // 누스 신성 지성 관조력 (Nous Intellectual Contemplation)
-  psycheSoulSelfCultivationScore: number;       // 프쉬케 영혼 생명 조화도 (Psyche Soul Self-Cultivation)
-  henosisMysticAscentUnionIndex: number;        // 헤노시스 영적 합일 귀환력 (Henosis Mystic Ascent)
-  innerBeautySculptingVirtueScore: number;      // 내면 조각 및 영혼 정화 미학도 (Inner Beauty Sculpting)
-  // 세부 분석
+  theOneSupremeSourceEmanationScore: number;
+  nousIntellectualContemplationIndex: number;
+  psycheSoulSelfCultivationScore: number;
+  henosisMysticAscentUnionIndex: number;
+  innerBeautySculptingVirtueScore: number;
+  questionTopic: PlotinusQuestionTopic;
+  ascentStage: PlotinusAscentStage;
+  ascentStageLabel: string;
   activePlotinusTheme: PlotinusTheme;
   focalPlotinusAphorism: PlotinusAphorism;
+  practiceGuidance: string;
+  ritualAction: string;
+  reflectionFocus: string;
+  boundaryNotice: string;
   plotinusComprehensiveGuidance: {
     guidanceTitle: string;
     philosophicalCounsel: string;
@@ -54,80 +58,123 @@ export const PLOTINUS_THEMES: PlotinusTheme[] = [
     themeKey: 'return_to_the_one',
     themeTitleEn: 'Return to the Supreme One (궁극의 일자로의 영적 귀환)',
     themeTitleKo: '물질의 분열과 혼란을 벗어나 만물의 근원인 고요한 일자로 향함',
-    existentialInsight: '태양이 빛을 뿜어내어 만물을 비추듯, 모든 존재는 가장 높은 선이자 순수한 원천인 일자(The One)로부터 유출되었습니다. 우리의 방황은 근원을 잊었을 때 시작되며, 마음의 눈을 안으로 돌릴 때 평화가 회복됩니다.',
-    practicalCounsel: '바깥세상의 소란과 끝없는 물질적 비교에 마음을 빼앗기지 마십시오. 하루 중 단 몇 분이라도 호흡을 가다듬고 모든 생각의 근원이 되는 내면의 가장 깊은 고요 속으로 돌아가십시오.',
+    existentialInsight: '우리의 방황은 내면의 근원을 잊고 바깥의 소란에 마음을 흩뿌릴 때 시작되며, 시선을 안으로 돌릴 때 고요한 중심이 회복됩니다.',
+    practicalCounsel: '바깥세상의 소란과 끝없는 비교에 마음을 빼앗기지 말고, 잠시 숨을 고르며 내면의 가장 깊은 고요 속으로 돌아가십시오.',
   },
   {
     themeKey: 'sculpting_inner_statue',
     themeTitleEn: 'Sculpting Your Own Inner Statue (내면의 조각상을 깎아냄)',
     themeTitleKo: '자신의 영혼에서 불필요한 번뇌와 집착을 깎아내어 본래의 고결함을 드러냄',
-    existentialInsight: '조각가는 돌에 무언가를 덧붙이지 않고 오직 불필요한 부분을 쪼아냄으로써 대리석 속에 숨겨진 고귀한 형상을 탄생시킵니다. 영혼의 성숙 역시 욕망을 채우는 것이 아니라 쓸데없는 찌꺼기를 비워내는 데 있습니다.',
-    practicalCounsel: '자신에게 없는 것을 억지로 끌어모으려 애태우지 마십시오. 질투, 원망, 허영 등 영혼의 맑은 빛을 가리는 거짓된 외피를 깎아낼 때 당신 안의 가장 빛나는 신성이 스스로 드러납니다.',
+    existentialInsight: '조각가는 돌에 무언가를 덧붙이지 않고 불필요한 부분을 덜어냄으로써 숨겨진 형상을 드러냅니다. 내면의 성숙 역시 욕망을 덧대기보다 군더더기를 비우는 데 있습니다.',
+    practicalCounsel: '없는 것을 억지로 끌어모으려 애태우지 말고, 마음을 흐리는 조급함과 허영을 덜어내어 본래의 맑은 결을 드러내십시오.',
   },
   {
     themeKey: 'nous_contemplative_illumination',
     themeTitleEn: 'Nous Contemplative Illumination (누스 지성의 영원한 진리 관조)',
     themeTitleKo: '변화무쌍한 감각의 허상을 뚫고 영원불멸한 본질과 지혜를 응시함',
-    existentialInsight: '눈앞의 사물들은 흘러가는 그림자에 불과하지만, 지성(Nous)은 시간을 뛰어넘는 보편적 질서와 이데아를 품고 있습니다. 피상적 현상에 휘둘리지 않고 이면의 본질을 꿰뚫어 보는 자만이 삶의 주인이 됩니다.',
-    practicalCounsel: '일시적인 성패나 눈앞의 작은 손익에 일희일비하지 마십시오. 한 걸음 물러나 사건 전체의 근본적인 원인과 구조적 흐름을 맑고 객관적인 시선으로 관조하십시오.',
+    existentialInsight: '눈앞의 흔들림은 지나가는 그림자이지만, 맑은 지성은 시간을 견디는 본질과 질서를 응시합니다. 현상의 이면을 살피는 자가 흔들리지 않습니다.',
+    practicalCounsel: '일시적인 성패나 작은 손익에 일희일비하지 말고, 한 걸음 물러나 사건 전체의 구조와 본질적 흐름을 맑게 관조하십시오.',
   },
   {
     themeKey: 'soul_harmonizing_cosmos',
     themeTitleEn: 'Soul Harmonizing the Cosmos (우주와 공명하는 프쉬케의 조화)',
     themeTitleKo: '육체의 한계에 갇히지 않고 만유를 살리는 너른 생명력으로 소통함',
-    existentialInsight: '영혼(Psyche)은 물질을 생명으로 숨 쉬게 하는 신성한 다리입니다. 영혼이 물질의 노예가 되지 않고 거꾸로 물질을 조화롭게 이끌 때, 삶은 예술이 되고 세상은 유기적인 아름다움으로 빛납니다.',
-    practicalCounsel: '자신의 몸과 일상 환경을 무질서 속에 방치하지 마십시오. 당신의 정돈된 마음과 따뜻한 태도가 주변 사람들과 환경 전체에 긍정적인 파동을 일으킨다는 사실을 기억하십시오.',
+    existentialInsight: '영혼이 감각적 조건에 끌려다니지 않고 삶을 조화롭게 이끌 때, 평범한 일상도 유기적인 아름다움과 질서를 되찾습니다.',
+    practicalCounsel: '몸과 일상 공간을 무질서 속에 방치하지 말고, 정돈된 마음과 따뜻한 태도로 주변과의 조화로운 울림을 만들어 가십시오.',
   },
   {
     themeKey: 'flight_of_the_alone_to_the_alone',
     themeTitleEn: 'Flight of the Alone to the Alone (홀로 있는 자의 신성한 비상)',
     themeTitleKo: '세속의 온갖 의존과 결핍을 털어내고 절대적 온전함에 도달함',
-    existentialInsight: '플로티노스는 삶의 궁극적 도달점을 "홀로 있는 자가 홀로 있는 자에게로 날아오름(Phygē monou pros monon)"이라 불렀습니다. 이는 고립이 아니라, 그 어떤 외부 조건에도 기대지 않는 완전한 자족과 자유의 경지입니다.',
-    practicalCounsel: '타인의 승인이나 인정에 목말라하지 마십시오. 당신은 이미 우주 전체의 신성한 근원을 품고 있는 온전한 존재입니다. 고독을 두려워하지 말고 절대적 자존과 품위를 회복하십시오.',
+    existentialInsight: '홀로 있는 자의 귀환은 외로운 고립이 아니라, 외부의 조건이나 타인의 승인에 기대지 않고도 스스로 온전한 자유의 경지를 뜻합니다.',
+    practicalCounsel: '타인의 인정이나 평가에 목말라하지 말고, 이미 내 안에 자리한 온전한 중심과 품위를 고요히 회복하십시오.',
   },
 ];
 
 export const PLOTINUS_APHORISMS: PlotinusAphorism[] = [
   {
     aphorismKey: 'sculpt_your_own_statue',
-    aphorismKo: '당신의 영혼이 아직 아름답지 않거든, 조각가가 아름다운 상을 만들 때 불필요한 돌을 깎아내듯 당신의 결점을 깎아내어 아름다운 미덕의 빛을 드러내어라.',
-    aphorismGreek: 'Κόλουε τὰ περιττὰ καὶ ἀπεύθυνε τὰ σκολιά, ἕως ἂν ἐκλάμψῃ σοι τὸ θεοειδὲς κάλλος τῆς ἀρετῆς',
-    sourceContext: '《엔네아데스(Enneads)》 제1권 제6편 〈아름다움에 관하여(Peri tou Kalou)〉 9장',
+    aphorismKo: '내면을 어지럽히는 불필요한 군더더기를 조각가가 돌을 깎아내듯 덜어내어 본래의 맑은 품성을 드러내십시오.',
+    aphorismGreek: 'Κόλουε τὰ περιττὰ καὶ ἀπεύθυνε τὰ σκολιά',
+    sourceContext: '엔네아데스 내면 조각 비유',
     actionGuidance: '내면을 어지럽히는 불필요한 잡념과 감정의 군더더기를 과감히 덜어내고, 본래의 고결한 품성을 회복하십시오.',
   },
   {
     aphorismKey: 'awaken_inner_eyesight',
-    aphorismKo: '참된 귀환은 두 발로 걷는 것이 아니라, 육체의 눈을 감고 누구나 가지고 있으나 극소수만이 사용하는 내면의 또 다른 시력을 일깨우는 것이다.',
-    aphorismGreek: 'Οὐ ποσὶ δεῖ ποιεῖσθαι τὴν πορείαν, ἀλλὰ μύσαντα τὴν ὄψιν ἄλλην ἕλκειν καὶ ἀνεγείρειν',
-    sourceContext: '《엔네아데스》 제1권 제6편 〈아름다움에 관하여〉 8장',
+    aphorismKo: '참된 귀환은 바깥을 헤매는 것이 아니라 감각의 소란을 닫고 내면의 맑은 시력을 일깨우는 것입니다.',
+    aphorismGreek: 'Οὐ ποσὶ δεῖ ποιεῖσθαι τὴν πορείαν',
+    sourceContext: '엔네아데스 내면 시력 비유',
     actionGuidance: '감각적인 외적 자극에 끌려다니기를 멈추고, 직관과 내적 통찰의 밝은 눈을 뜨십시오.',
   },
   {
     aphorismKey: 'flight_of_the_alone',
-    aphorismKo: '이것이 신들과 신성한 사람들의 해탈한 삶이니, 세속의 모든 번뇌를 벗어던진 홀로 있는 자가 홀로 있는 자에게로 날아오름이다.',
+    aphorismKo: '세속의 번뇌를 벗어던지고 홀로 온전한 중심에서 고요한 근원으로 비상하는 자유를 품으십시오.',
     aphorismGreek: 'Φυγὴ μόνου πρὸς μόνον',
-    sourceContext: '《엔네아데스》 제6권 제9편 〈선 또는 일자에 관하여(Peri tou Agathou ē tou Henos)〉 11장',
-    actionGuidance: '주변의 기대나 세상의 평가에 구애받지 말고, 오직 영혼의 가장 깊은 진실과 고요 속으로 당당히 날아오르십시오.',
+    sourceContext: '엔네아데스 일자 귀환 상징',
+    actionGuidance: '주변의 기대나 세상의 평가에 구애받지 말고, 오직 영혼의 가장 깊은 진실과 고요 속으로 당당히 나아가십시오.',
   },
   {
     aphorismKey: 'light_recognizes_light',
-    aphorismKo: '태양을 닮지 않은 눈은 결코 태양을 볼 수 없듯이, 영혼 스스로 아름다워지지 않고서는 지고의 아름다움을 마주할 수 없다.',
-    aphorismGreek: 'Οὐ γὰρ ἂν πώποτε εἶδεν ὀφθαλμὸς ἥλιον ἡλιοειδὴς μὴ γεγενημένος, οὐδὲ τὸ καλὸν ἴδοι ἂν ψυχὴ μὴ καλὴ γενομένη',
-    sourceContext: '《엔네아데스》 제1권 제6편 〈아름다움에 관하여〉 9장',
+    aphorismKo: '빛을 닮은 눈만이 빛을 알아보듯, 먼저 내 마음을 맑고 고결하게 가꿀 때 참된 아름다움과 만납니다.',
+    aphorismGreek: 'Τὸ καλὸν ἴδοι ἂν ψυχὴ καλὴ γενομένη',
+    sourceContext: '엔네아데스 내면 미학 비유',
     actionGuidance: '더 높은 삶과 좋은 인연을 바란다면 먼저 자신의 마음과 언행을 맑고 고결하게 가꾸십시오.',
   },
 ];
 
+function classifyPlotinusTopic(question: string): PlotinusQuestionTopic {
+  if (/연애|사랑|관계|이별|갈등|상대|사람|친구|가족|부부|직장동료/.test(question)) {
+    return 'relationship';
+  }
+  if (/선택|결정|이직|창업|투자|계약|시험|진로|방향|옮길|할까|말까/.test(question)) {
+    return 'decision';
+  }
+  if (/치유|회복|불안|지침|슬픔|분노|상처|우울|번아웃|스트레스|두려움/.test(question)) {
+    return 'healing';
+  }
+  return 'reflection';
+}
+
+const PLOTINUS_STAGE_LABELS: Record<PlotinusAscentStage, string> = {
+  KATHARSIS_PURIFICATION: '정화의 단계 — 마음의 군더더기와 외적 집착을 덜어내어 본래의 맑은 결을 회복하는 시기',
+  NOUS_ILLUMINATION: '관조의 단계 — 흔들리는 현상 너머의 본질적 질서와 구조를 맑은 지성으로 비추어 보는 시기',
+  HENOSIS_STILLNESS: '귀환의 단계 — 외부의 승인이나 분주함을 내려놓고 내면의 깊은 고요와 합일하는 시기',
+};
+
+const PLOTINUS_TOPIC_PRACTICE: Record<PlotinusQuestionTopic, string> = {
+  relationship: '상대에게서 결핍을 채우려 하기보다 내 안의 조화와 맑음을 먼저 회복할 때, 관계 역시 그 빛을 닮아 단단해집니다.',
+  decision: '바깥의 소란이나 유행이 아니라, 내면의 군더더기를 깎아낸 뒤에 남는 가장 본질적인 기준을 따라 선택하십시오.',
+  healing: '지친 마음을 달래는 가장 깊은 길은 무언가를 억지로 더하는 것이 아니라, 나를 짓누르던 불필요한 기대와 집착을 덜어내는 것입니다.',
+  reflection: '눈에 보이는 성취 너머에서 지금 내 영혼의 조각상을 가장 흐리게 만드는 군더더기가 무엇인지 고요히 살펴보십시오.',
+};
+
+const PLOTINUS_TOPIC_RITUAL: Record<PlotinusQuestionTopic, string> = {
+  relationship: '오늘 만남이나 연락에 앞서 마음을 가라앉히고, 상대의 반응과 무관하게 내가 지키고 싶은 품위와 온기를 먼저 정해 두십시오.',
+  decision: '고민 중인 일에서 남의 시선이나 체면 때문에 붙든 조건을 하나 지워 보고, 남은 핵심만 바라보며 결정의 감각을 느껴 보십시오.',
+  healing: '잠시 화면과 소음을 멀리하고 눈을 감은 채, 오늘 내 마음을 어지럽힌 생각 하나를 가만히 놓아 보내는 호흡을 이어 가십시오.',
+  reflection: '오늘 하루 나를 소모시킨 불필요한 걱정 하나를 떠올려 마음의 조각도에서 덜어내는 상상을 해 보십시오.',
+};
+
+const PLOTINUS_TOPIC_REFLECTION: Record<PlotinusQuestionTopic, string> = {
+  relationship: '이 관계에서 내가 상대에게 바라는 빛을 내 안에서는 얼마나 맑게 가꾸고 있나요?',
+  decision: '세상의 평가와 소음을 잠시 끈다면, 내면의 맑은 시선이 가리키는 방향은 어디인가요?',
+  healing: '더 채워야 낫는다고 믿었던 것 중에서, 사실은 비워 내야 비로소 숨이 트이는 짐은 무엇인가요?',
+  reflection: '지금 내 마음의 조각상에서 가장 먼저 다듬고 덜어내고 싶은 거친 모서리는 무엇인가요?',
+};
+
 export function calculateAncientGreekPlotinusEnneadsHenosis(
-  profile: UserProfile
+  profile: UserProfile,
+  now: Date = new Date(),
+  question = ''
 ): AncientGreekPlotinusEnneadsHenosisResult {
-  const p = profile as any;
+  const p = profile as unknown as Record<string, string | undefined>;
   const name = profile?.basic?.name ?? p?.name ?? '방문자';
   const birthDate = profile?.basic?.birthdate ?? p?.birthDate ?? p?.birthdate ?? '1990-01-01';
   const birthTime = profile?.basic?.birthtime ?? p?.birthTime ?? p?.birthtime ?? '12:00';
   const gender = profile?.basic?.gender ?? p?.gender ?? 'neutral';
+  const kstDate = new Date(now.getTime() + 9 * 60 * 60 * 1000).toISOString().slice(0, 10);
 
-  const seedString = `PLOTINUS-ENNEADS-HENOSIS:${name}:${birthDate}:${birthTime}:${gender}`;
+  const seedString = `PLOTINUS-ENNEADS-HENOSIS:${name}:${birthDate}:${birthTime}:${gender}:${kstDate}:${question}`;
 
   let hash = 0;
   for (let i = 0; i < seedString.length; i++) {
@@ -147,23 +194,37 @@ export function calculateAncientGreekPlotinusEnneadsHenosis(
 
   const activePlotinusTheme = PLOTINUS_THEMES[themeIndex];
   const focalPlotinusAphorism = PLOTINUS_APHORISMS[aphorismIndex];
+  const questionTopic = classifyPlotinusTopic(question);
+
+  const stages: PlotinusAscentStage[] = ['KATHARSIS_PURIFICATION', 'NOUS_ILLUMINATION', 'HENOSIS_STILLNESS'];
+  const ascentStage = stages[(absHash >> 2) % stages.length];
+  const ascentStageLabel = PLOTINUS_STAGE_LABELS[ascentStage];
+
+  const practiceGuidance = `${activePlotinusTheme.practicalCounsel} ${PLOTINUS_TOPIC_PRACTICE[questionTopic]}`;
+  const ritualAction = PLOTINUS_TOPIC_RITUAL[questionTopic];
+  const reflectionFocus = PLOTINUS_TOPIC_REFLECTION[questionTopic];
+  const boundaryNotice = '이 관점은 플로티노스 신플라톤주의의 정화와 관조 상징을 빌린 정성적 성찰이며, 우열의 점수나 확정적 예언이 아닙니다.';
 
   const guidanceTitle = `플로티노스 엔네아데스 일자 유출과 영적 귀환 지혜: ${activePlotinusTheme.themeTitleKo}`;
-  const philosophicalCounsel = `신플라톤주의의 거장 플로티노스의 엔네아데스 사상은 만물의 근원인 일자(The One)와의 영적 교감, 내면의 조각상을 깎아내는 영혼의 정화, 그리고 세속의 번뇌를 털고 궁극의 자유로 날아오르는 헤노시스(Henosis)의 지혜를 전합니다. ` +
-    `현재 당신의 삶을 관통하는 중심 영적 원리는 '${activePlotinusTheme.themeTitleKo}'입니다. ` +
-    `${activePlotinusTheme.practicalCounsel} 아울러 《엔네아데스》 원전의 명언 "${focalPlotinusAphorism.aphorismKo}"(${focalPlotinusAphorism.aphorismGreek})를 깊이 마음에 새기고, ` +
-    `${focalPlotinusAphorism.actionGuidance}`;
+  const philosophicalCounsel = `${activePlotinusTheme.practicalCounsel} ${PLOTINUS_TOPIC_PRACTICE[questionTopic]} ${focalPlotinusAphorism.actionGuidance}`;
 
   return {
     engineVersion: ANCIENT_GREEK_PLOTINUS_VERSION,
-    calculatedAtKst: new Date().toISOString(),
+    calculatedAtKst: now.toISOString(),
     theOneSupremeSourceEmanationScore,
     nousIntellectualContemplationIndex,
     psycheSoulSelfCultivationScore,
     henosisMysticAscentUnionIndex,
     innerBeautySculptingVirtueScore,
+    questionTopic,
+    ascentStage,
+    ascentStageLabel,
     activePlotinusTheme,
     focalPlotinusAphorism,
+    practiceGuidance,
+    ritualAction,
+    reflectionFocus,
+    boundaryNotice,
     plotinusComprehensiveGuidance: {
       guidanceTitle,
       philosophicalCounsel,
@@ -174,17 +235,12 @@ export function calculateAncientGreekPlotinusEnneadsHenosis(
 export function formatAncientGreekPlotinusEnneadsHenosisPrompt(res: AncientGreekPlotinusEnneadsHenosisResult): string {
   return [
     `【플로티노스 《엔네아데스》 일자유출설 & 영적 귀환 지표】`,
-    `- 일자 근원 교감도(The One Supreme Source): ${res.theOneSupremeSourceEmanationScore}/100`,
-    `- 누스 지성 관조력(Nous Contemplation): ${res.nousIntellectualContemplationIndex}/100`,
-    `- 프쉬케 영혼 조화도(Psyche Soul Harmony): ${res.psycheSoulSelfCultivationScore}/100`,
-    `- 헤노시스 영적 귀환력(Henosis Mystic Ascent): ${res.henosisMysticAscentUnionIndex}/100`,
-    `- 내면 조각 정화 미학도(Inner Beauty Sculpting): ${res.innerBeautySculptingVirtueScore}/100`,
+    `- 귀환 단계: ${res.ascentStageLabel}`,
     `- 핵심 영적 테마: ${res.activePlotinusTheme.themeTitleKo} [${res.activePlotinusTheme.themeTitleEn}]`,
     `- 실존적 통찰: ${res.activePlotinusTheme.existentialInsight}`,
-    `- 실천적 조언: ${res.activePlotinusTheme.practicalCounsel}`,
-    `- 핵심 원전 명언: "${res.focalPlotinusAphorism.aphorismKo}" [${res.focalPlotinusAphorism.aphorismGreek}]`,
-    `- 원전 출처: [${res.focalPlotinusAphorism.sourceContext}]`,
-    `- 구체적 실천 지침: ${res.focalPlotinusAphorism.actionGuidance}`,
-    `- 종합 신플라톤주의 철학 권면: ${res.plotinusComprehensiveGuidance.philosophicalCounsel}`,
+    `- 실천 조언: ${res.practiceGuidance}`,
+    `- 일상 의례: ${res.ritualAction}`,
+    `- 성찰 질문: ${res.reflectionFocus}`,
+    `- 해석 경계: ${res.boundaryNotice}`,
   ].join('\n');
 }

@@ -3234,7 +3234,7 @@ try {
   // 212. 근대 네덜란드 바루흐 스피노자 에티카 코나투스 & 신즉자연 영원의 상 관조 엔진
   const spinozaEthicaConatusResult = calculateSupplement('spinozaEthicaConatusResult', () => ((() => {
     try {
-      return calculateBaruchSpinozaEthicaConatus(profile);
+      return calculateBaruchSpinozaEthicaConatus(profile, now, question);
     } catch (_) {
       return null;
     }
@@ -3702,7 +3702,7 @@ try {
   // 264. 고대 그리스/로마 플로티노스 엔네아데스 일자유출설 & 영적 귀환·내면합일 지혜 엔진
   const ancientGreekPlotinusEnneadsHenosisResult = calculateSupplement('ancientGreekPlotinusEnneadsHenosisResult', () => ((() => {
     try {
-      return calculateAncientGreekPlotinusEnneadsHenosis(profile);
+      return calculateAncientGreekPlotinusEnneadsHenosis(profile, now, question);
     } catch (_) {
       return null;
     }
@@ -4829,7 +4829,7 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = [
   { key: 'toltecNagualDreaming', nameKo: '톨텍 나구알리즘 4대 약속', icon: '🦅', category: 'deep_master' },
   { key: 'shugendoYamabushiTenRealms', nameKo: '슈겐도 야마부시 10계수행', icon: '🏔️', category: 'deep_master' },
   { key: 'gnosticPistisSophiaPleroma', nameKo: '영지주의 소피아 플레로마', icon: '🕊️', category: 'deep_master' },
-  { key: 'sumerianInannaUnderworldDescent', nameKo: '수메르 이난나 명계하강 7대관문', icon: '👑', category: 'deep_master' },
+  { key: 'sumerianInannaUnderworldDescent', nameKo: '수메르 이난나 명계하강 7대관문', icon: '👑', category: 'deep_master', summary: '수메르 이난나 신화의 7대 관문 탈각 상징으로 외적 가면과 방어기제를 내려놓고 내면의 회복을 성찰합니다.' },
   { key: 'norseVolvaSeidrNineRealms', nameKo: '북유럽 볼바 세이드 9대세계', icon: '🌲', category: 'deep_master' },
   { key: 'zhuangziXiaoyaoyouButterfly', nameKo: '도가 장자 소요유 호접몽', icon: '🦋', category: 'deep_master' },
   { key: 'buddhistYogacaraConsciousness', nameKo: '불교 유식학 8식 전식득지', icon: '☸️', category: 'deep_master' },
@@ -4900,7 +4900,7 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = [
   { key: 'romanCiceroDeOfficiisHonestum', nameKo: '키케로 의무론 도덕적선 유용성조화 신의품위', icon: '⚖️', category: 'deep_master' },
   { key: 'ancientGreekEpictetusDichotomyOfControl', nameKo: '에픽테토스 엥케이리디온 통제이분법 프로하이레시스 도덕의지', icon: '🏛️', category: 'deep_master' },
   { key: 'ancientChineseConfuciusAnalectsZhitianming', nameKo: '공자 논어 지천명 극기복례 군자도', icon: '📜', category: 'deep_master' },
-  { key: 'baruchSpinozaEthicaConatusAmorDei', nameKo: '스피노자 에티카 코나투스 신즉자연 영원의상관조', icon: '✨', category: 'deep_master' },
+  { key: 'baruchSpinozaEthicaConatusAmorDei', nameKo: '스피노자 에티카 코나투스 신즉자연 영원의상관조', icon: '✨', category: 'deep_master', summary: '스피노자의 코나투스와 영원의 상 아래에서 감정의 인과를 명료히 이해하고 능동적 기쁨으로 나아갑니다.' },
   { key: 'germanKantCategoricalImperativeSynthesis', nameKo: '칸트 정언명령 목적의왕국 자율성 도덕법칙', icon: '⚖️', category: 'deep_master' },
   { key: 'indianUpanishadicTatTvamAsi', nameKo: '우파니샤드 타트트밤아시 범아일여 순수의식', icon: '🕉️', category: 'deep_master' },
   { key: 'koreanChoeHangiGihakUnwha', nameKo: '혜강 최한기 기학 신기통 운화기 추측지리', icon: '📜', category: 'deep_master' },
