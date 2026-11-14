@@ -8,14 +8,14 @@
  *    - 혀의 거룩한 선포(Utterance of Tongue, Hu): 사유된 진리를 현실 세계로 구현하는 권능.
  *    - 카(Ka) 생명력 부여(Imparting of Ka): 창조된 결과물에 생기와 지속 가능한 활력을 불어넣음.
  *    - 마아트(Ma'at) 우주 진리와의 합치: 모든 사유와 언어가 우주의 정의와 균형에 부합함.
- * 3. 7대 장인 신성 품계 및 멤피스 신탁 조언 산출
+ * 3. 질문 맥락 감사·KST 나일·멤피스 시공간 리듬·교차 매트릭스 산출
  *
- * @version LUCKEY-PTAH-MEMPHITE-v1.0.0
+ * @version LUCKEY-PTAH-MEMPHITE-v2.0.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const PTAH_MEMPHITE_VERSION = 'LUCKEY-PTAH-MEMPHITE-v1.0.0';
+export const PTAH_MEMPHITE_VERSION = 'LUCKEY-PTAH-MEMPHITE-v2.0.0';
 
 export interface PtahCreationStage {
   stageLevel: number;
@@ -25,15 +25,37 @@ export interface PtahCreationStage {
   manifestationBlessing: string;
 }
 
+export interface PtahSituationalAudit {
+  contextTheme: string;
+  shabakaInscription: string;
+  ibToHuDiagnosis: string;
+  craftsmanPrescription: string;
+}
+
+export interface PtahTemporalRhythm {
+  kstHour: number;
+  workshopWindow: string;
+  nileSeasonalCycle: string;
+  kaRadianceIndex: number;
+  timingAdvice: string;
+}
+
+export interface PtahSynthesisMatrix {
+  ibHeartAxis: string;
+  huTongueAxis: string;
+  maatCraftAxis: string;
+  synthesizedVerdict: string;
+}
+
 export interface PtahMemphiteResult {
   engineVersion: string;
   calculatedAtKst: string;
-  // 5대 핵심 지표 (0~100)
-  heartThoughtConceptualizationIndex: number; // 심장(Ib)의 내적 사유 및 구상력
-  tongueUtteranceManifestationForce: number; // 혀(Hu)의 말씀 선포 및 현실 구현력
-  divineKaVitalityInfusionScore: number; // 카(Ka) 생명력 및 활력 부여력
-  maatCosmicTruthAlignment: number; // 마아트(Ma'at) 진리 및 우주적 조화도
-  artisanMasteryPrecisionPower: number; // 프타 최고 장인의 정밀 완성도
+  // 내부 계산 호환 필드 (프롬프트 비노출)
+  heartThoughtConceptualizationIndex: number;
+  tongueUtteranceManifestationForce: number;
+  divineKaVitalityInfusionScore: number;
+  maatCosmicTruthAlignment: number;
+  artisanMasteryPrecisionPower: number;
   // 세부 명세
   activeCreationStage: PtahCreationStage;
   primaryMemphiteVirtue: {
@@ -46,6 +68,9 @@ export interface PtahMemphiteResult {
     stoneSceneTitle: string;
     eternalWisdom: string;
   };
+  situationalPtahAudit: PtahSituationalAudit;
+  temporalPtahRhythm: PtahTemporalRhythm;
+  ptahSynthesisMatrix: PtahSynthesisMatrix;
 }
 
 export type PtahMemphiteReport = PtahMemphiteResult;
@@ -74,9 +99,95 @@ const MEMPHITE_EPIPHANIES = [
   { stoneSceneTitle: '아피스 황소의 힘찬 발걸음', eternalWisdom: '내면에서 피어난 거룩한 의지는 거대한 황소의 힘처럼 묵직하게 나아가 마침내 모든 장애물을 평정한다.' },
 ];
 
-function getKstDateString(): string {
-  const now = new Date();
-  const kst = new Date(now.getTime() + (9 * 60 + now.getTimezoneOffset()) * 60000);
+function buildSituationalAudit(question: string, virtue: typeof MEMPHITE_VIRTUES[number]): PtahSituationalAudit {
+  const q = question.toLowerCase();
+  if (/연애|관계|사람|가족|동료|대화|약속|신뢰/.test(q)) {
+    return {
+      contextTheme: '언약(Hu)과 신뢰의 정렬 감사',
+      shabakaInscription: '《샤바카 석비》 제53행 — 심장(Ib)이 품은 진심이 혀(Hu)를 통해 나와 비로소 관계를 세운다.',
+      ibToHuDiagnosis: `속마음과 겉으로 나가는 말 사이의 간극을 좁혀야 할 때입니다. '${virtue.virtueNameKo}'이 기준이 됩니다.`,
+      craftsmanPrescription: '애매한 여운을 남기기보다 내가 지킬 수 있는 진심만 정직하고 또렷하게 건네십시오.',
+    };
+  }
+  if (/결정|선택|창업|기획|일|직장|진로|작품|프로젝트/.test(q)) {
+    return {
+      contextTheme: '심장 설계(Ib)와 장인 구현(Hu) 감사',
+      shabakaInscription: '《샤바카 석비》 제55행 — 모든 작업의 원형은 프타의 심장에서 먼저 구상되고 손끝에서 완성된다.',
+      ibToHuDiagnosis: `실행 속도를 높이기 전에 설계의 중심이 분명한지 점검할 시점입니다. '${virtue.virtueNameKo}'을 세우십시오.`,
+      craftsmanPrescription: '결과물의 핵심 목적 한 줄을 먼저 확정하고, 불필요한 장식을 덜어낸 뒤 착수하십시오.',
+    };
+  }
+  if (/지침|불안|고갈|무력|치유|회복|휴식/.test(q)) {
+    return {
+      contextTheme: '카(Ka) 생명력 재충전 감사',
+      shabakaInscription: '《샤바카 석비》 제56행 — 프타는 창조된 것마다 생명력(Ka)을 불어넣어 스스로 서게 한다.',
+      ibToHuDiagnosis: `형식적인 의무감만 남고 내면의 생기(Ka)가 소진된 상태입니다. '${virtue.virtueNameKo}'으로 숨을 고르십시오.`,
+      craftsmanPrescription: '새 일을 억지로 깎아내기보다 이미 해낸 일에서 작은 성취와 휴식의 숨을 되찾으십시오.',
+    };
+  }
+  return {
+    contextTheme: '멤피스 사유·언어 일치 감사',
+    shabakaInscription: '《샤바카 석비》 제54행 — 심장이 생각하고 혀가 명하는 바에 따라 마아트(Ma’at)가 이루어진다.',
+    ibToHuDiagnosis: `마음의 뜻과 실제 행동이 나란히 서 있는지 점검할 때입니다. '${virtue.virtueNameKo}'을 비춰 보십시오.`,
+    craftsmanPrescription: virtue.actionableDirective,
+  };
+}
+
+function buildTemporalRhythm(now: Date, seed: number): PtahTemporalRhythm {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const kstHour = kst.getUTCHours();
+  const month = kst.getUTCMonth() + 1;
+
+  let workshopWindow = '백주 프타 작업실·정교 구현 창 (오전~오후)';
+  let timingAdvice = '설계한 바를 미루지 말고 손끝의 실천(Hu)으로 한 조각씩 현실화하십시오.';
+  if (kstHour >= 5 && kstHour < 10) {
+    workshopWindow = '새벽 타테넨 둔덕·심장 구상 창 (이른 아침)';
+    timingAdvice = '작업에 들어가기 전 심장(Ib)으로 오늘 빚어낼 핵심 그림을 조용히 확정하십시오.';
+  } else if (kstHour >= 18 && kstHour < 22) {
+    workshopWindow = '황혼 마아트 균형·마감 검수 창 (저녁)';
+    timingAdvice = '오늘 남긴 말과 결과물이 균형(Ma’at)에 맞았는지 정갈하게 검수하십시오.';
+  } else if (kstHour >= 22 || kstHour < 5) {
+    workshopWindow = '심야 멤피스 성소·카(Ka) 안식 창 (밤~새벽)';
+    timingAdvice = '작업대의 도구를 내려놓고 내일의 창조를 위한 생기(Ka)를 보전하십시오.';
+  }
+
+  let nileSeasonalCycle = '나일 삼계절 순환';
+  if (month >= 3 && month <= 6) nileSeasonalCycle = '셰무(Shemu · 수확기) — 빚어낸 작품의 결실을 거두는 계절';
+  else if (month >= 7 && month <= 10) nileSeasonalCycle = '아케트(Akhet · 범람기) — 비옥한 영감과 재료를 채우는 계절';
+  else nileSeasonalCycle = '페레트(Peret · 파종·생장기) — 설계를 구체적 형상으로 세우는 계절';
+
+  const kaRadianceIndex = 64 + ((seed + kstHour * 5 + month * 3) % 35);
+
+  return {
+    kstHour,
+    workshopWindow,
+    nileSeasonalCycle,
+    kaRadianceIndex,
+    timingAdvice,
+  };
+}
+
+function buildSynthesisMatrix(
+  stage: PtahCreationStage,
+  virtue: typeof MEMPHITE_VIRTUES[number],
+  audit: PtahSituationalAudit,
+  temporal: PtahTemporalRhythm,
+): PtahSynthesisMatrix {
+  const ibHeartAxis = `심장 구상(Ib): ${stage.stageNameKo} (${audit.contextTheme})`;
+  const huTongueAxis = `말씀 구현(Hu): ${virtue.virtueNameKo}`;
+  const maatCraftAxis = `시의 장인정신: ${temporal.workshopWindow} · ${temporal.nileSeasonalCycle}`;
+  const synthesizedVerdict = `'${temporal.workshopWindow}'에 '${stage.stageNameKo}'의 자리에서 '${virtue.virtueNameKo}'을 실천할 때, 생각과 말이 어긋나지 않는 온전한 결실이 빚어집니다.`;
+
+  return {
+    ibHeartAxis,
+    huTongueAxis,
+    maatCraftAxis,
+    synthesizedVerdict,
+  };
+}
+
+function getKstDateString(now: Date): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
   return kst.toISOString().replace('T', ' ').substring(0, 19) + ' KST';
 }
 
@@ -89,17 +200,22 @@ function hashSeed(seedStr: string): number {
   return Math.abs(h);
 }
 
-export function calculatePtahMemphite(profile?: UserProfile): PtahMemphiteResult {
+export function calculatePtahMemphite(
+  profile?: UserProfile,
+  question = '',
+  now: Date = new Date(),
+): PtahMemphiteResult {
   const birthdate = profile?.basic?.birthdate || '1995-03-21';
   const birthtime = profile?.basic?.birthtime || '12:00';
   const name = profile?.basic?.name || 'Inquirer';
-  const seed = hashSeed(`PTAH-MEMPHITE-${birthdate}-${birthtime}-${name}`);
+  const kstDay = new Date(now.getTime() + 9 * 60 * 60 * 1000).toISOString().slice(0, 10);
+  const seed = hashSeed(`PTAH-MEMPHITE-${birthdate}-${birthtime}-${name}-${kstDay}-${question}`);
 
-  const heartThoughtConceptualizationIndex = (seed % 41) + 60; // 60~100
-  const tongueUtteranceManifestationForce = ((seed >> 3) % 43) + 58; // 58~100
-  const divineKaVitalityInfusionScore = ((seed >> 5) % 39) + 62; // 62~100
-  const maatCosmicTruthAlignment = ((seed >> 7) % 45) + 55; // 55~99
-  const artisanMasteryPrecisionPower = ((seed >> 9) % 38) + 63; // 63~100
+  const heartThoughtConceptualizationIndex = (seed % 41) + 60;
+  const tongueUtteranceManifestationForce = ((seed >> 3) % 43) + 58;
+  const divineKaVitalityInfusionScore = ((seed >> 5) % 39) + 62;
+  const maatCosmicTruthAlignment = ((seed >> 7) % 45) + 55;
+  const artisanMasteryPrecisionPower = ((seed >> 9) % 38) + 63;
 
   const stageIdx = (seed >> 2) % PTAH_STAGES.length;
   const activeCreationStage = PTAH_STAGES[stageIdx];
@@ -110,9 +226,13 @@ export function calculatePtahMemphite(profile?: UserProfile): PtahMemphiteResult
   const epiphanyIdx = (seed >> 6) % MEMPHITE_EPIPHANIES.length;
   const memphiteEpiphany = MEMPHITE_EPIPHANIES[epiphanyIdx];
 
+  const situationalPtahAudit = buildSituationalAudit(question, primaryMemphiteVirtue);
+  const temporalPtahRhythm = buildTemporalRhythm(now, seed);
+  const ptahSynthesisMatrix = buildSynthesisMatrix(activeCreationStage, primaryMemphiteVirtue, situationalPtahAudit, temporalPtahRhythm);
+
   return {
     engineVersion: PTAH_MEMPHITE_VERSION,
-    calculatedAtKst: getKstDateString(),
+    calculatedAtKst: getKstDateString(now),
     heartThoughtConceptualizationIndex,
     tongueUtteranceManifestationForce,
     divineKaVitalityInfusionScore,
@@ -121,23 +241,27 @@ export function calculatePtahMemphite(profile?: UserProfile): PtahMemphiteResult
     activeCreationStage,
     primaryMemphiteVirtue,
     memphiteEpiphany,
+    situationalPtahAudit,
+    temporalPtahRhythm,
+    ptahSynthesisMatrix,
   };
 }
 
 export function formatPtahMemphitePrompt(result: PtahMemphiteResult): string {
   return `[🏛️ 고대 이집트 멤피스 신학 《프타(Ptah)》 심장 구상 & 말씀 선포 리포트]
-- 엔진 버전: ${result.engineVersion}
-- 심장(Ib)의 내적 사유 및 구상력: ${result.heartThoughtConceptualizationIndex}%
-- 혀(Hu)의 말씀 선포 및 현실 구현력: ${result.tongueUtteranceManifestationForce}%
-- 카(Ka) 생명력 및 활력 부여력: ${result.divineKaVitalityInfusionScore}%
-- 마아트(Ma'at) 진리 및 우주적 조화도: ${result.maatCosmicTruthAlignment}%
-- 프타 최고 장인의 정밀 완성도: ${result.artisanMasteryPrecisionPower}%
+- 엔진 버전: ${result.engineVersion} | 기준 시각: ${result.calculatedAtKst}
 - 현행 창조 품계: **[${result.activeCreationStage.stageNameKo} (${result.activeCreationStage.stageNameAncient})]**
   → 관장 영역: ${result.activeCreationStage.creativeDomain}
   → 현실 구현 축복: ${result.activeCreationStage.manifestationBlessing}
 - 최우선 멤피스 덕목: **[${result.primaryMemphiteVirtue.virtueNameKo} (${result.primaryMemphiteVirtue.hieroglyphicTitle})]**
   → 핵심 본질: ${result.primaryMemphiteVirtue.coreEssence}
   → 실천 지침: ${result.primaryMemphiteVirtue.actionableDirective}
+- 상황 맥락 감사(${result.situationalPtahAudit.contextTheme}): ${result.situationalPtahAudit.shabakaInscription}
+  → 사유·선포 진단: ${result.situationalPtahAudit.ibToHuDiagnosis}
+  → 장인 처방: ${result.situationalPtahAudit.craftsmanPrescription}
+- 시공간 나일 리듬: ${result.temporalPtahRhythm.workshopWindow} · ${result.temporalPtahRhythm.nileSeasonalCycle}
+  → 시의 조언: ${result.temporalPtahRhythm.timingAdvice}
+- 프타 교차 매트릭스: ${result.ptahSynthesisMatrix.synthesizedVerdict}
 - 샤바카 석비의 불멸의 비전: 《${result.memphiteEpiphany.stoneSceneTitle}》
   → 영원한 지혜: "${result.memphiteEpiphany.eternalWisdom}"`;
 }

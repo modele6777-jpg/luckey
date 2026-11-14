@@ -2974,7 +2974,7 @@ try {
   // 183. 고대 그리스 엘레우시스 밀의 트리프톨레모스 황금 날개 용 전차 & 농경 문명 전파 3대 율법 엔진
   const eleusinianTriptolemosResult = calculateSupplement('eleusinianTriptolemosResult', () => ((() => {
     try {
-      return calculateEleusinianTriptolemos(profile);
+      return calculateEleusinianTriptolemos(profile, question, now);
     } catch (_) {
       return null;
     }
@@ -3028,7 +3028,7 @@ try {
   // 189. 고대 이집트 멤피스 신학 프타 심장 구상 & 말씀 선포 엔진
   const ptahMemphiteResult = calculateSupplement('ptahMemphiteResult', () => ((() => {
     try {
-      return calculatePtahMemphite(profile);
+      return calculatePtahMemphite(profile, question, now);
     } catch (_) {
       return null;
     }
