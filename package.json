@@ -18,6 +18,7 @@
     "deploy:firestore-rules": "firebase deploy --only firestore:rules",
     "build:sites": "vite build --mode sites && node scripts/build-sites.mjs",
     "test:webkit": "playwright test --project=webkit-iphone",
+    "test:engine-badge-theme": "tsx --test tests/engine-badge-theme.test.ts",
     "test:sync-vault": "tsx --test tests/server-vault-sync.test.ts"
   },
   "dependencies": {

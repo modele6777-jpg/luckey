@@ -35,19 +35,20 @@ export const DEEP_PERSPECTIVE_RESEARCH_COUNTS = DEEP_PERSPECTIVE_RESEARCH.reduce
 export interface LucyProChannelTheme {
   id: SevenThemeChannel;
   label: string;
+  emoji: string;
   route: string;
   description: string;
 }
 
 /** The app's seven actual channel themes, in the established app order. */
 export const LUCY_PRO_CHANNEL_THEMES: readonly LucyProChannelTheme[] = [
-  { id: 'prologue', label: '프롤로그', route: '/prologue', description: '삶의 시작·방향·목적' },
-  { id: 'orange', label: '오렌지', route: '/orange', description: '감정·소원·마음 성찰' },
-  { id: 'trinity', label: '트리니티', route: '/trinity', description: '운명·상징·선택' },
-  { id: 'aura', label: '아우라', route: '/heal', description: '명상·웰니스·회복' },
-  { id: 'bluebird', label: '블루버드', route: '/bluebird', description: '일상·관계·소통' },
-  { id: 'muse', label: '뮤즈', route: '/muse', description: '예술·창작·영감' },
-  { id: 'epilogue', label: '에필로그', route: '/epilogue', description: '기록·회고·정리' },
+  { id: 'prologue', label: '프롤로그', emoji: '☀️', route: '/prologue', description: '삶의 시작·방향·목적' },
+  { id: 'orange', label: '오렌지', emoji: '🌲', route: '/orange', description: '감정·소원·마음 성찰' },
+  { id: 'trinity', label: '트리니티', emoji: '✨', route: '/trinity', description: '운명·상징·선택' },
+  { id: 'aura', label: '아우라', emoji: '⚡', route: '/heal', description: '명상·웰니스·회복' },
+  { id: 'bluebird', label: '블루버드', emoji: '🕊️', route: '/bluebird', description: '일상·관계·소통' },
+  { id: 'muse', label: '뮤즈', emoji: '🎶', route: '/muse', description: '예술·창작·영감' },
+  { id: 'epilogue', label: '에필로그', emoji: '🌙', route: '/epilogue', description: '기록·회고·정리' },
 ];
 
 const themeById = new Map(LUCY_PRO_CHANNEL_THEMES.map(theme => [theme.id, theme] as const));

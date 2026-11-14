@@ -30,6 +30,7 @@ export function getEngineBadgeTheme(engineKey: string): EngineBadgeTheme | null 
 
 export interface EngineThemeBadge extends EngineBadgeTheme {
   label: string;
+  emoji: string;
 }
 
 /** Resolve unique theme badges from engines that were actually used; unknown IDs stay unthemed. */
@@ -40,12 +41,13 @@ export function getUsedEngineThemeBadges(engineKeys: readonly string[]): EngineT
     if (engine) usedThemes.add(getEngineCatalogTheme(engine));
   }
 
-  return LUCY_PRO_CHANNEL_THEMES.flatMap(({ id, label }) => {
+  return LUCY_PRO_CHANNEL_THEMES.flatMap(({ id, label, emoji }) => {
     if (!usedThemes.has(id)) return [];
     const palette = SEPTAGRAM_RAINBOW_PALETTE[id];
     return [{
       theme: id,
       label,
+      emoji,
       backgroundColor: palette.background,
       color: palette.foreground,
       borderColor: palette.border,
