@@ -29,7 +29,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const HUANGDI_YUNQI_VERSION = 'LUCKEY-HUANGDI-YUNQI-v1.0.0';
+export const HUANGDI_YUNQI_VERSION = 'LUCKEY-HUANGDI-YUNQI-v2.0.0';
 
 export interface FiveMovementYear {
   element: '목(木)' | '화(火)' | '토(土)' | '금(金)' | '수(水)';
@@ -54,19 +54,78 @@ export interface MeteorologicalMedicineRx {
 export interface HuangdiFiveMovementsSixQiReport {
   engineVersion: string;
   calculatedAt: string;
+  calculatedAtKst: string;
   birthYearGanZhi: string;
   fiveMovement: FiveMovementYear;
   sixQi: SixQiHeavenEarth;
   medicineRx: MeteorologicalMedicineRx;
-  cosmicResilienceScore: number;     // 0 ~ 100 천기 순응 조화도
+  cosmicResilienceScore: number;     // 내부 호환용 0 ~ 100 (프롬프트 비노출)
+  situationalYunqiAudit: {
+    focusTheme: string;
+    climateNote: string;
+    careTip: string;
+  };
+  temporalYunqiRhythm: {
+    kstTimeLabel: string;
+    organWatchWindow: string;
+    seasonalYunqiTone: string;
+    temporalGuidance: string;
+  };
+  yunqiSynthesisMatrix: {
+    coreInsight: string;
+    recommendedAction: string;
+    cautionNotice: string;
+  };
+  boundaryNotice: string;
   synthesisMessage: string;
+}
+
+function getTemporalYunqiRhythm(now: Date) {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  const hour = kst.getUTCHours();
+  const month = kst.getUTCMonth() + 1;
+
+  const organWatchWindow =
+    hour >= 5 && hour < 11
+      ? '아침 양기 승발창 — 따뜻한 미온수로 비위(脾胃)를 깨우고 맑은 공기를 들이마시는 시간'
+      : hour >= 11 && hour < 17
+        ? '정오 심소장 순환창 — 과로를 피하고 오미(五味) 균형 식으로 기력을 보충하는 시간'
+        : hour >= 17 && hour < 22
+          ? '황혼 신폐 수렴창 — 족욕과 호흡 이완으로 하루의 열기와 긴장을 가라앉히는 시간'
+          : '심야 간담 장혈(藏血)창 — 일찍 잠들어 간과 신의 진액을 회복하는 시간';
+
+  const seasonalYunqiTone =
+    month >= 3 && month <= 5
+      ? '봄 · 궐음풍목 절기 (간기 울체를 풀고 부드러운 스트레칭이 필요한 시기)'
+      : month >= 6 && month <= 8
+        ? '여름 · 소음군화·태음습토 절기 (심열과 습기를 다스리며 수분을 보충하는 시기)'
+        : month >= 9 && month <= 11
+          ? '가을 · 양명조금 절기 (폐와 기관지 진액을 촉촉히 지키는 시기)'
+          : '겨울 · 태양한수 절기 (신장의 정기를 보온하고 무리한 발한을 삼가는 시기)';
+
+  return {
+    kstTimeLabel: `${y}-${m}-${d} ${hh}:${mm} KST`,
+    organWatchWindow,
+    seasonalYunqiTone,
+    temporalGuidance: `${organWatchWindow} · ${seasonalYunqiTone}의 천기에 맞추어 몸의 균형을 돌보십시오.`,
+  };
 }
 
 const GAN_LIST = ['갑', '을', '병', '정', '무', '기', '경', '신', '임', '계'];
 const ZHI_LIST = ['자', '축', '인', '묘', '진', '사', '오', '미', '신', '유', '술', '해'];
 
-export function calculateHuangdiFiveMovementsSixQi(profile?: UserProfile): HuangdiFiveMovementsSixQiReport {
-  const now = new Date();
+export function calculateHuangdiFiveMovementsSixQi(
+  profile?: UserProfile,
+  nowArg?: Date,
+  question?: string
+): HuangdiFiveMovementsSixQiReport {
+  const now = nowArg || new Date();
+  const q = (question || '').trim();
   const birthStr = profile?.basic?.birthdate || '1990-01-01';
   const parts = birthStr.split('-');
   const year = parseInt(parts[0], 10) || 1990;
@@ -182,9 +241,29 @@ export function calculateHuangdiFiveMovementsSixQi(profile?: UserProfile): Huang
 
   const synthesisMessage = `당신의 선천 천기는 [${movementName}]과 [${heavenRulerSiTian} / ${earthRulerZaiQuan}]의 기운을 타고났습니다. ${susceptibleOrgans}의 조화에 유의하며, "${dietaryPrescription}"을 실천할 때 천인합일(天人合一)의 강건함을 누립니다.`;
 
+  const temporalYunqiRhythm = getTemporalYunqiRhythm(now);
+  const situationalYunqiAudit = /건강|피곤|몸|수면|식단/.test(q)
+    ? {
+        focusTheme: `${susceptibleOrgans} 중심 운기 섭생`,
+        climateNote: cosmicFeature,
+        careTip: dietaryPrescription,
+      }
+    : {
+        focusTheme: `${movementName} · ${heavenRulerSiTian}`,
+        climateNote: climaticCharacteristics,
+        careTip: breathMindHarmonization,
+      };
+
+  const yunqiSynthesisMatrix = {
+    coreInsight: `[${birthYearGanZhi}] 선천 천기는 ${movementName}과 ${heavenRulerSiTian}/${earthRulerZaiQuan}의 결을 따릅니다.`,
+    recommendedAction: `${dietaryPrescription} · ${breathMindHarmonization}`,
+    cautionNotice: `태과·불급으로 인한 취약 경향(${pathologicalTendency})을 미리 살피어 무리하지 마십시오.`,
+  };
+
   return {
     engineVersion: HUANGDI_YUNQI_VERSION,
     calculatedAt: now.toISOString(),
+    calculatedAtKst: temporalYunqiRhythm.kstTimeLabel,
     birthYearGanZhi,
     fiveMovement: {
       element,
@@ -204,22 +283,35 @@ export function calculateHuangdiFiveMovementsSixQi(profile?: UserProfile): Huang
       breathMindHarmonization,
     },
     cosmicResilienceScore,
+    situationalYunqiAudit,
+    temporalYunqiRhythm,
+    yunqiSynthesisMatrix,
+    boundaryNotice: '본 결과는 황제내경 운기칠편(오운육기)의 전통 섭생 철학에 기반한 정성적 건강 리듬 안내이며, 의학적 진단이 아닙니다.',
     synthesisMessage,
   };
 }
 
 export function formatHuangdiFiveMovementsSixQiPrompt(report: HuangdiFiveMovementsSixQiReport): string {
+  const resilienceTone =
+    report.cosmicResilienceScore >= 90 ? '안정적 천기 순응' : report.cosmicResilienceScore >= 82 ? '완만한 조화' : '세심한 섭생 필요';
+
   return `### 📜 황제명리(黃帝命理) & 오운육기(五運六氣) 천기 기상의학 엔진 (${HUANGDI_YUNQI_VERSION})
-- **선천 천기 간지**: **${report.birthYearGanZhi}** (천인합일 조화도: ${report.cosmicResilienceScore}점)
+- **연산 시각**: ${report.calculatedAtKst}
+- **선천 천기 간지**: **${report.birthYearGanZhi}** (천인합일 기조: ${resilienceTone})
 - **오운(五運) 대운 분석**: **${report.fiveMovement.movementName}**
   - 대우주 천기 특성: ${report.fiveMovement.cosmicFeature}
 - **육기(六氣) 사천·재천 기상장**:
   - 상반기 주재: **${report.sixQi.heavenRulerSiTian}** | 하반기 주재: **${report.sixQi.earthRulerZaiQuan}**
   - 기후학적 장세: ${report.sixQi.climaticCharacteristics}
+- **질문 맥락 감사 (${report.situationalYunqiAudit.focusTheme})**: ${report.situationalYunqiAudit.climateNote} / ${report.situationalYunqiAudit.careTip}
+- **KST 시공간 운기 리듬**: ${report.temporalYunqiRhythm.organWatchWindow} / ${report.temporalYunqiRhythm.seasonalYunqiTone}
+  - 시공간 지침: ${report.temporalYunqiRhythm.temporalGuidance}
+- **운기 교차 매트릭스**: 핵심(${report.yunqiSynthesisMatrix.coreInsight}) | 실행(${report.yunqiSynthesisMatrix.recommendedAction}) | 주의(${report.yunqiSynthesisMatrix.cautionNotice})
 - **기상의학적 생체 나침반 (황제내경 운기 처방)**:
   - 주의 장부/경락: ${report.medicineRx.susceptibleOrgans}
   - 취약 병리 성향: ${report.medicineRx.pathologicalTendency}
   - 오미(五味) 약선 식이: ${report.medicineRx.dietaryPrescription}
   - 기공 호흡/심신 조화: ${report.medicineRx.breathMindHarmonization}
-- **오운육기 통합 총평**: ${report.synthesisMessage}`;
+- **오운육기 통합 총평**: ${report.synthesisMessage}
+- **해석 경계**: ${report.boundaryNotice}`;
 }

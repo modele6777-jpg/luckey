@@ -1646,7 +1646,8 @@ import { calculateHonggukQimen, formatHonggukQimenPrompt, HONGGUK_QIMEN_ENGINE_V
 
 test('Hongguk Qimen: 4-pillar numeral casting, 9-palace flight, key points, determinism and prompt formatting', () => {
   const profile = { basic: { birthdate: '1995-03-25', birthtime: '14:30', gender: 'male' as const, birthCity: '서울' } };
-  const r1 = calculateHonggukQimen({ profile, targetYear: 2026 });
+  const fixedNow = new Date('2026-11-15T08:05:00+09:00');
+  const r1 = calculateHonggukQimen({ profile, targetYear: 2026, now: fixedNow, question: '이 계약 진행해도 될까' });
   assert.equal(r1.status, 'calculated');
   assert.equal(r1.engineVersion, HONGGUK_QIMEN_ENGINE_VERSION);
   assert.equal(r1.method, HONGGUK_QIMEN_METHOD);
@@ -1700,17 +1701,20 @@ test('Hongguk Qimen: 4-pillar numeral casting, 9-palace flight, key points, dete
   assert.equal(r1.eightGatesVerdict!.deukMun, r1.keyPoints!.seYao.deukMun);
 
   // 결정론성: 동일 입력 동일 출력
-  const r2 = calculateHonggukQimen({ profile, targetYear: 2026 });
+  const r2 = calculateHonggukQimen({ profile, targetYear: 2026, now: fixedNow, question: '이 계약 진행해도 될까' });
   assert.deepEqual(r1, r2);
+  assert(r1.calculatedAtKst?.includes('KST'));
 
   // 프롬프트 포맷터
   const prompt = formatHonggukQimenPrompt(r1);
-  assert(prompt.includes('LUCKEY-HQ-v1.0.0'));
+  assert(prompt.includes(HONGGUK_QIMEN_ENGINE_VERSION));
   assert(prompt.includes('세효(世爻'));
   assert(prompt.includes('응효(應爻'));
   assert(prompt.includes('중궁(中宮'));
   assert(prompt.includes('파극 위험도'));
   assert(prompt.includes('통기(通氣'));
+  assert(prompt.includes('KST'));
+  assert(!prompt.includes('/100') && !prompt.includes('%') && !prompt.includes('점수'));
   assert(prompt.includes(r1.eightGatesVerdict!.pattern));
 
   // 생시 없이도 산출 (3주 수리 safe fallback)
@@ -1878,10 +1882,11 @@ test('Unified Synastry: 결정론성(동일 입력 동일 출력)과 프롬프�
 });
 
 test('Liuren Master Engine: 사과·삼전·12천장 정통 결단 산출 및 프롬프트 포맷터 검증', () => {
-  const instant = new Date('2026-11-02T10:00:00Z');
-  const res = calculateLiurenMaster(instant);
+  const instant = new Date('2026-11-15T08:05:00+09:00');
+  const res = calculateLiurenMaster(instant, '이 협업 진행해도 될까');
   assert.equal(res.status, 'calculated');
   assert.equal(res.engineVersion, LIUREN_MASTER_ENGINE_VERSION);
+  assert(res.calculatedAtKst.includes('KST'));
   assert.equal(res.fourLessons.length, 4);
   assert(res.fourLessons[0].upper.length > 0 && res.fourLessons[0].lower.length > 0);
   assert.equal(res.threeTransmissions.length, 3);
@@ -1893,13 +1898,17 @@ test('Liuren Master Engine: 사과·삼전·12천장 정통 결단 산출 및 �
   assert(res.transmissionDynamics !== undefined);
   assert(res.transmissionDynamics.actionMomentumIndex >= 0 && res.transmissionDynamics.actionMomentumIndex <= 100);
   assert(res.transmissionDynamics.breakthroughStrategy.length > 0);
+  assert(res.temporalLiurenRhythm.hourWatchWindow.length > 0);
+  assert(res.liurenSynthesisMatrix.coreInsight.length > 0);
   const prompt = formatLiurenMasterPrompt(res);
   assert(prompt.includes(LIUREN_MASTER_ENGINE_VERSION));
+  assert(prompt.includes('KST'));
   assert(prompt.includes('사과(四課) 포국'));
   assert(prompt.includes('삼전(三傳) 타임라인'));
-  assert(prompt.includes('결단 스코어'));
+  assert(prompt.includes('결단 기조'));
   assert(prompt.includes('사과 생극 역학'));
   assert(prompt.includes('삼전 추진 역학'));
+  assert(!prompt.includes('/100') && !prompt.includes('%') && !prompt.includes('점수'));
 });
 
 test('Iching Master Engine: 64괘 4대 대칭 괘상(본·지·호·착·종) 및 체용 생극제화 검증', () => {
@@ -3114,14 +3123,19 @@ test('Essene Communion Tree Engine: calculates morning/evening angels, tree trin
 });
 
 test('Huangdi Five Movements & Six Qi Engine: calculates movements, heaven/earth rulers and medicine rx', () => {
-  const rep = calculateHuangdiFiveMovementsSixQi(profile);
+  const rep = calculateHuangdiFiveMovementsSixQi(profile, new Date('2026-11-15T08:05:00+09:00'), '요즘 몸 컨디션과 식단이 궁금해');
   assert.equal(rep.engineVersion, HUANGDI_YUNQI_VERSION);
   assert(rep.fiveMovement.movementName.length > 0);
   assert(rep.sixQi.heavenRulerSiTian.length > 0);
   assert(rep.medicineRx.susceptibleOrgans.length > 0);
+  assert(rep.calculatedAtKst.includes('KST'));
+  assert(rep.temporalYunqiRhythm.organWatchWindow.length > 0);
+  assert(rep.yunqiSynthesisMatrix.coreInsight.length > 0);
   const prompt = formatHuangdiFiveMovementsSixQiPrompt(rep);
   assert(prompt.includes('황제명리(黃帝命理) & 오운육기(五運六氣) 천기 기상의학 엔진'));
   assert(prompt.includes(rep.birthYearGanZhi));
+  assert(prompt.includes('KST'));
+  assert(!prompt.includes('/100') && !prompt.includes('%') && !prompt.includes('점수'));
 });
 
 test('Pythagorean Tetraktys & Gematria Harmonics Engine: calculates root, 4 tiers and manifestation index', () => {
