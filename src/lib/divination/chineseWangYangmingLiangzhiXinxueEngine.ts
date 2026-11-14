@@ -2,18 +2,13 @@
  * 명나라 양명학 왕양명(王陽明) 전습록(傳習錄) 치양지(致良知) & 지행합일(知行合一) 심학 엔진
  *
  * 명나라 유학자 왕양명(王陽明, 왕수인)의 《전습록(傳習錄)》 원전 기반.
- * 1. 심즉리(心卽理): 마음이 곧 이치이다. 마음 밖에서 사물의 이치를 구하려 하지 말라 (心外無理 心外無物).
- * 2. 치양지(致良知): 인간은 누구나 본래 옳고 그름을 직관하는 맑은 거울과 같은 '양지(良知)'를 지니고 있으니 이를 온전히 실현하라.
- * 3. 지행합일(知行合一): 앎은 행함의 시작이요 행함은 앎의 완성이다. 참으로 알면 반드시 행하게 된다.
- * 4. 사전마련(事上磨鍊): 정적인 명상에 머물지 않고 복잡한 현실의 일(事) 속에서 마음을 벼리고 단련해야 흔들리지 않는다.
- * 5. 파산중적이지(破山中賊易) 파심중적난(破心中賊難): 산속의 도적을 깨뜨리기는 쉬우나 마음속의 사사로운 도적을 깨뜨리기는 어렵다.
  *
- * @version LUCKEY-WANG-YANGMING-LIANGZHI-v1.0.0
+ * @version LUCKEY-WANG-YANGMING-LIANGZHI-v2.0.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const WANG_YANGMING_LIANGZHI_VERSION = 'LUCKEY-WANG-YANGMING-LIANGZHI-v1.0.0';
+export const WANG_YANGMING_LIANGZHI_VERSION = 'LUCKEY-WANG-YANGMING-LIANGZHI-v2.0.0';
 
 export interface XinxueStage {
   stageLevel: number;
@@ -21,6 +16,30 @@ export interface XinxueStage {
   stageNameKo: string;
   xinxuePrinciple: string;
   actionBlessing: string;
+}
+
+export interface YangmingSituationalXinxueAudit {
+  themeKo: string;
+  chuanxiluCitation: string;
+  hanjaQuote: string;
+  translationKo: string;
+  innerThiefTrap: string;
+  shiShangMoLianAction: string;
+}
+
+export interface YangmingTemporalLiangzhiRhythm {
+  kstWindow: string;
+  seasonalTone: string;
+  xinxueFocus: '치양지(致良知)' | '지행합일(知行合一)' | '사전마련(事上磨鍊)' | '파심중적(破心中賊)';
+  liangzhiClarityIndex: number;
+  rhythmDirective: string;
+}
+
+export interface YangmingSynthesisMatrix {
+  liangzhiClarity: number;
+  zhiXingUnity: number;
+  shiShangMoLianDepth: number;
+  overallSynthesis: number;
 }
 
 export interface WangYangmingXinxueResult {
@@ -40,6 +59,9 @@ export interface WangYangmingXinxueResult {
     coreEssence: string;
     actionableDirective: string;
   };
+  situationalXinxueAudit: YangmingSituationalXinxueAudit;
+  temporalLiangzhiRhythm: YangmingTemporalLiangzhiRhythm;
+  yangmingSynthesisMatrix: YangmingSynthesisMatrix;
   xinxuePhilosophicalCounsel: {
     counselTitle: string;
     philosophicalGuidance: string;
@@ -113,7 +135,104 @@ const XINXUE_APHORISMS = [
   },
 ];
 
-export function calculateWangYangmingXinxue(profile: UserProfile): WangYangmingXinxueResult {
+function buildSituationalXinxueAudit(question?: string): YangmingSituationalXinxueAudit {
+  const q = (question ?? '').trim();
+  if (/망설|미루|실행|행동|시작|결정/.test(q)) {
+    return {
+      themeKo: '지행합일(知行合一) 즉시 착수',
+      chuanxiluCitation: '《전습록》 상권 · 서애록',
+      hanjaQuote: '知是行之始 行是知之成 知而不行 只是未知',
+      translationKo: '앎은 행함의 시작이요 행함은 앎의 완성이다. 알면서도 행하지 않는 것은 아직 참으로 알지 못한 것이다.',
+      innerThiefTrap: '완벽한 준비가 끝날 때까지 미루는 것을 신중함으로 포장하는 마음의 도적.',
+      shiShangMoLianAction: '오늘 머릿속으로 옳다고 알고 있는 일 중 가장 작은 첫 단추 1개를 지금 10분 안에 바로 실행하십시오.',
+    };
+  }
+  if (/불안|두렵|눈치|체면|비교|질투/.test(q)) {
+    return {
+      themeKo: '파심중적(破心中賊) 내면 사욕 타파',
+      chuanxiluCitation: '《전습록》 · 〈여양사색서〉',
+      hanjaQuote: '破山中賊易 破心中賊難',
+      translationKo: '산속의 도적을 깨뜨리기는 쉬우나, 마음속의 도적(두려움·사욕)을 깨뜨리기는 어렵다.',
+      innerThiefTrap: '타인의 시선과 체면을 의식하느라 내 안의 맑은 양지(良知)의 목소리를 덮어 두는 일.',
+      shiShangMoLianAction: '남이 어떻게 볼까 하는 계산을 한 줄 지우고, 내 양심이 떳떳하다고 여기는 선택 1가지만 남기십시오.',
+    };
+  }
+  if (/일|업무|바쁘|갈등|스트레스|사람/.test(q)) {
+    return {
+      themeKo: '사전마련(事上磨鍊) 현장의 도장',
+      chuanxiluCitation: '《전습록》 상권 · 육징록',
+      hanjaQuote: '人須在事上磨 練做功夫 始得',
+      translationKo: '사람은 모름지기 현실의 일(事) 위에서 마음을 갈고 닦아야 비로소 진짜 공부가 된다.',
+      innerThiefTrap: '조용하고 편한 상황만 기다리며, 당면한 실무와 갈등을 회피하고 싶어 하는 안일함.',
+      shiShangMoLianAction: '지금 가장 성가시게 느껴지는 일이나 대화 1건을 회피하지 말고 침착한 태도로 정면 처리하십시오.',
+    };
+  }
+  return {
+    themeKo: '치양지(致良知)와 심즉리(心卽理) 자족',
+    chuanxiluCitation: '《전습록》 · 용장돈오(龍場頓悟)',
+    hanjaQuote: '吾性自足 不假外求',
+    translationKo: '나의 본성은 이미 스스로 족하니, 굳이 바깥에서 빌려 구할 필요가 없다.',
+    innerThiefTrap: '해답이 외부의 거창한 조건에만 있다고 믿어 내 안의 판단력을 의심하는 의존심.',
+    shiShangMoLianAction: '바깥의 소음을 잠시 끄고, 지금 내가 진심으로 옳다고 느끼는 방향 한 가지를 믿고 밀고 나가십시오.',
+  };
+}
+
+function buildTemporalLiangzhiRhythm(now?: Date): YangmingTemporalLiangzhiRhythm {
+  const ref = now ?? new Date();
+  const kst = new Date(ref.getTime() + 9 * 60 * 60 * 1000);
+  const hour = kst.getUTCHours();
+  const month = kst.getUTCMonth() + 1;
+
+  const seasonalTone =
+    month >= 3 && month <= 5
+      ? '봄 — 치양지(致良知)의 생동하는 직관으로 새 일을 여는 계절'
+      : month >= 6 && month <= 8
+        ? '여름 — 분주한 실무 속에서 사전마련(事上磨鍊)의 중심을 다지는 계절'
+        : month >= 9 && month <= 11
+          ? '가을 — 파심중적(破心中賊)의 결단으로 허영과 군더더기를 베어내는 계절'
+          : '겨울 — 용장돈오(龍場頓悟)처럼 고요히 내면의 자족함을 확인하는 계절';
+
+  if (hour >= 5 && hour < 11) {
+    return {
+      kstWindow: '오전 치양지(致良知) 맑은 거울 창',
+      seasonalTone,
+      xinxueFocus: '치양지(致良知)',
+      liangzhiClarityIndex: 92,
+      rhythmDirective: '마음의 거울이 가장 맑은 오전입니다. 양지가 가리키는 바른 방향을 먼저 정하고 미루지 마십시오.',
+    };
+  }
+  if (hour >= 11 && hour < 17) {
+    return {
+      kstWindow: '한낮 사전마련(事上磨鍊)·지행합일 창',
+      seasonalTone,
+      xinxueFocus: '사전마련(事上磨鍊)',
+      liangzhiClarityIndex: 85,
+      rhythmDirective: '크고 작은 실무와 사람이 부딪히는 낮 시간입니다. 바로 그 현장 위에서 마음을 단련하십시오.',
+    };
+  }
+  if (hour >= 17 && hour < 22) {
+    return {
+      kstWindow: '저녁 지행합일(知行合一) 매듭 창',
+      seasonalTone,
+      xinxueFocus: '지행합일(知行合一)',
+      liangzhiClarityIndex: 83,
+      rhythmDirective: '오늘 알고도 미룬 작은 실천 1가지를 행동으로 마무리 지어 앎과 행함을 일치시킬 시간입니다.',
+    };
+  }
+  return {
+    kstWindow: '심야 파심중적(破心中賊) 내면 정돈 창',
+    seasonalTone,
+    xinxueFocus: '파심중적(破心中賊)',
+    liangzhiClarityIndex: 79,
+    rhythmDirective: '밤에 올라오는 불필요한 후회와 허영이라는 마음의 도적을 비추어 보고 고요히 내려놓으십시오.',
+  };
+}
+
+export function calculateWangYangmingXinxue(
+  profile: UserProfile,
+  question?: string,
+  now?: Date,
+): WangYangmingXinxueResult {
   const seedString = (profile?.basic?.birthdate ?? (profile as any)?.birthdate ?? '1990-01-01') +
     (profile?.basic?.name ?? (profile as any)?.name ?? 'User') +
     (profile?.basic?.birthtime ?? (profile as any)?.birthtime ?? '12:00') +
@@ -137,6 +256,20 @@ export function calculateWangYangmingXinxue(profile: UserProfile): WangYangmingX
 
   const activeXinxueStage = XINXUE_STAGES[stageIndex];
   const primaryXinxueAphorism = XINXUE_APHORISMS[aphorismIndex];
+  const situationalXinxueAudit = buildSituationalXinxueAudit(question);
+  const temporalLiangzhiRhythm = buildTemporalLiangzhiRhythm(now);
+
+  const liangzhiClarity = Math.min(99, Math.round((liangzhiIntuitionScore + xinZhiLiMindCoreIntegrity) / 2));
+  const zhiXingUnity = Math.min(99, Math.round((zhiXingUnityPower + temporalLiangzhiRhythm.liangzhiClarityIndex) / 2));
+  const shiShangMoLianDepth = Math.min(99, Math.round((shiShangMoLianResilience + baBenSaiYuanSelflessPurity) / 2));
+  const overallSynthesis = Math.round((liangzhiClarity + zhiXingUnity + shiShangMoLianDepth) / 3);
+
+  const yangmingSynthesisMatrix: YangmingSynthesisMatrix = {
+    liangzhiClarity,
+    zhiXingUnity,
+    shiShangMoLianDepth,
+    overallSynthesis,
+  };
 
   const counselTitle = `왕양명 심학의 결단: ${activeXinxueStage.stageNameHanja}`;
   const philosophicalGuidance = `현재 상황에서 가장 긴요한 가르침은 '치양지(致良知)'와 '지행합일(知行合一)'입니다. ` +
@@ -145,7 +278,7 @@ export function calculateWangYangmingXinxue(profile: UserProfile): WangYangmingX
 
   return {
     engineVersion: WANG_YANGMING_LIANGZHI_VERSION,
-    calculatedAtKst: new Date().toISOString(),
+    calculatedAtKst: (now ?? new Date()).toISOString(),
     liangzhiIntuitionScore,
     zhiXingUnityPower,
     xinZhiLiMindCoreIntegrity,
@@ -153,6 +286,9 @@ export function calculateWangYangmingXinxue(profile: UserProfile): WangYangmingX
     baBenSaiYuanSelflessPurity,
     activeXinxueStage,
     primaryXinxueAphorism,
+    situationalXinxueAudit,
+    temporalLiangzhiRhythm,
+    yangmingSynthesisMatrix,
     xinxuePhilosophicalCounsel: {
       counselTitle,
       philosophicalGuidance,
@@ -169,9 +305,11 @@ export function formatWangYangmingXinxuePrompt(res: WangYangmingXinxueResult): s
     `- 사전마련(事上磨鍊) 현실단련 회복력: ${res.shiShangMoLianResilience}/100`,
     `- 발본색원(拔本塞源) 사욕차단 청정도: ${res.baBenSaiYuanSelflessPurity}/100`,
     `- 현재 심학 수양 단계: ${res.activeXinxueStage.stageNameHanja} (${res.activeXinxueStage.stageNameKo})`,
-    `- 핵심 심학 원리: ${res.activeXinxueStage.xinxuePrinciple}`,
-    `- 전습록 핵심 경구: "${res.primaryXinxueAphorism.themeKo}" [${res.primaryXinxueAphorism.hanjaClassic}]`,
-    `- 실천적 조언: ${res.primaryXinxueAphorism.actionableDirective}`,
+    `- 질문 맥락 심학 처방 (${res.situationalXinxueAudit.themeKo} · ${res.situationalXinxueAudit.chuanxiluCitation}): "${res.situationalXinxueAudit.translationKo}" [${res.situationalXinxueAudit.hanjaQuote}]`,
+    `- 마음의 도적(心中賊): ${res.situationalXinxueAudit.innerThiefTrap}`,
+    `- 사전마련 실천: ${res.situationalXinxueAudit.shiShangMoLianAction}`,
+    `- KST 양지 리듬: ${res.temporalLiangzhiRhythm.kstWindow} (${res.temporalLiangzhiRhythm.xinxueFocus}, 명료도 ${res.temporalLiangzhiRhythm.liangzhiClarityIndex}/100) — ${res.temporalLiangzhiRhythm.rhythmDirective}`,
+    `- 양명학 매트릭스: 양지 명료 ${res.yangmingSynthesisMatrix.liangzhiClarity} / 지행 합일 ${res.yangmingSynthesisMatrix.zhiXingUnity} / 사전마련 ${res.yangmingSynthesisMatrix.shiShangMoLianDepth} (종합 ${res.yangmingSynthesisMatrix.overallSynthesis}/100)`,
     `- 철학적 처방: ${res.xinxuePhilosophicalCounsel.philosophicalGuidance}`,
   ].join('\n');
 }
