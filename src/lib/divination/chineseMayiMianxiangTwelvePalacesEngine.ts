@@ -28,12 +28,13 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const MAYI_MIANXIANG_VERSION = '1.0.0';
+export const MAYI_MIANXIANG_VERSION = '2.0.0';
 
 export interface MayiMianxiangReport {
   engineVersion: string;
   calculatedAt: string;
-  // 관상 5대 수리 지표 (0~100)
+  calculatedAtKst: string;
+  // 관상 5대 수리 지표 (내부 호환용 0~100, 프롬프트 비노출)
   innerHeartMorphologyResonance: number; // 상유심생(相由心生) 심상-골격 일치도
   qiAuraLuminosityScore: number; // 자황홍(紫黃紅) 3대 길상 기색 광채
   twelvePalacesEquilibriumIndex: number; // 12궁 기운 균형도
@@ -52,7 +53,24 @@ export interface MayiMianxiangReport {
     hanja: string;
     blessingAdvice: string;
   };
+  situationalMayiAudit: {
+    focusTheme: string;
+    heartMindNote: string;
+    expressionPractice: string;
+  };
+  temporalMayiRhythm: {
+    kstTimeLabel: string;
+    yintangWatchWindow: string;
+    seasonalQiColorTone: string;
+    temporalGuidance: string;
+  };
+  mayiSynthesisMatrix: {
+    coreInsight: string;
+    recommendedAction: string;
+    cautionNotice: string;
+  };
   mayiDaoistMorphologicalAdvice: string;
+  boundaryNotice: string;
 }
 
 function djb2Hash(str: string): number {
@@ -151,12 +169,54 @@ const TWELVE_PALACES = [
   }
 ];
 
-export function calculateMayiMianxiang(profile: UserProfile | null | undefined): MayiMianxiangReport {
+function getTemporalMayiRhythm(now: Date) {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  const hour = kst.getUTCHours();
+  const month = kst.getUTCMonth() + 1;
+
+  const yintangWatchWindow =
+    hour >= 5 && hour < 11
+      ? '인당(印堂) 아침 서광창 — 미간을 펴고 맑은 숨으로 하루의 첫 기색을 여는 시간'
+      : hour >= 11 && hour < 17
+        ? '중정(中正) 정오 소통창 — 온화한 눈빛과 또렷한 언행으로 신뢰를 쌓는 시간'
+        : hour >= 17 && hour < 22
+          ? '지각(地閣) 황혼 안정창 — 긴장을 풀고 편안한 미소로 대인 조화를 다지는 시간'
+          : '심상(心相) 심야 정화창 — 마음의 번뇌를 비워 내일의 맑은 기색을 기르는 시간';
+
+  const seasonalQiColorTone =
+    month >= 3 && month <= 5
+      ? '봄 · 청명취록(淸明翠綠) 기색 (싱그러운 생기와 새로운 인연이 트이는 시기)'
+      : month >= 6 && month <= 8
+        ? '여름 · 홍윤화색(紅潤和色) 기색 (활력과 따뜻한 소통이 빛나는 시기)'
+        : month >= 9 && month <= 11
+          ? '가을 · 진황윤택(眞黃潤澤) 기색 (안정된 결실과 신뢰가 두터워지는 시기)'
+          : '겨울 · 자황응축(紫黃凝縮) 기색 (내면의 고요한 품격이 깊어지는 시기)';
+
+  return {
+    kstTimeLabel: `${y}-${m}-${d} ${hh}:${mm} KST`,
+    yintangWatchWindow,
+    seasonalQiColorTone,
+    temporalGuidance: `${yintangWatchWindow} · ${seasonalQiColorTone}의 흐름에 맞추어 상유심생(相由心生)의 여유를 지키십시오.`,
+  };
+}
+
+export function calculateMayiMianxiang(
+  profile: UserProfile | null | undefined,
+  nowArg?: Date,
+  questionArg?: string
+): MayiMianxiangReport {
+  const now = nowArg || new Date();
+  const question = (questionArg || '').trim();
   const birthStr = profile?.basic?.birthdate || '1995-01-01';
   const nameStr = profile?.basic?.name || '내담자';
   const timeStr = profile?.basic?.birthtime || '12:00';
 
-  const seed = djb2Hash(`${birthStr}_${nameStr}_${timeStr}_mayi_mianxiang`);
+  const seed = djb2Hash(`${birthStr}_${nameStr}_${timeStr}_${question}_mayi_mianxiang_v2`);
 
   const innerHeartMorphologyResonance = 65 + (seed % 34);
   const qiAuraLuminosityScore = 62 + ((seed >> 2) % 37);
@@ -186,9 +246,35 @@ export function calculateMayiMianxiang(profile: UserProfile | null | undefined):
     mayiDaoistMorphologicalAdvice = '골상(骨相)보다 중요한 것은 심상(心相)입니다. 매일 밤 잠들기 전 감사의 마음을 품고 고요히 호흡을 정돈하십시오. 마음에 덕이 쌓이면 얼굴의 어두운 그늘이 저절로 걷히고 맑은 서광이 비추게 됩니다.';
   }
 
+  const temporalMayiRhythm = getTemporalMayiRhythm(now);
+  const situationalMayiAudit = /관계|연애|사람|소통|면접|만남/.test(question)
+    ? {
+        focusTheme: '상유심생(相由心生)의 대인 공명과 부드러운 기색',
+        heartMindNote: '마음의 평온이 눈빛과 표정으로 전해질 때 상대의 경계심이 자연히 풀립니다.',
+        expressionPractice: '대화 전 어깨의 힘을 빼고 미간을 3초간 이완한 뒤 온화한 시선을 건네십시오.',
+      }
+    : /일|사업|직장|재물|돈|결정/.test(question)
+      ? {
+          focusTheme: '명궁(인당)의 명료한 통찰과 관록·재백의 균형',
+          heartMindNote: '조급함이 미간을 좁히면 판단도 흐려집니다. 여유 있는 시야가 실속을 부릅니다.',
+          expressionPractice: '중요한 결정 전 물 한 잔을 마시며 호흡을 고른 뒤 차분히 우선순위를 적으십시오.',
+        }
+      : {
+          focusTheme: '12궁 기색의 조화와 심상(心相) 수양',
+          heartMindNote: '심상이 맑으면 기색도 맑아진다는 마의상법의 핵심이 오늘의 나침반입니다.',
+          expressionPractice: '하루 한 번 거울 앞에서 편안히 웃으며 스스로에게 따뜻한 격려를 건네십시오.',
+        };
+
+  const mayiSynthesisMatrix = {
+    coreInsight: `주재 [${primaryPalace.nameKo}]와 보조 [${secondaryPalace.nameKo}]가 ${situationalMayiAudit.focusTheme}을 비춥니다.`,
+    recommendedAction: `${mayiDaoistMorphologicalAdvice} (${situationalMayiAudit.expressionPractice})`,
+    cautionNotice: '외적 조건이나 타인의 시선에 과도하게 긴장해 본래의 편안한 기색을 잃지 않도록 경계하십시오.',
+  };
+
   return {
     engineVersion: MAYI_MIANXIANG_VERSION,
-    calculatedAt: new Date().toISOString(),
+    calculatedAt: now.toISOString(),
+    calculatedAtKst: temporalMayiRhythm.kstTimeLabel,
     innerHeartMorphologyResonance,
     qiAuraLuminosityScore,
     twelvePalacesEquilibriumIndex,
@@ -196,22 +282,26 @@ export function calculateMayiMianxiang(profile: UserProfile | null | undefined):
     yintangManifestationPower,
     primaryPalace,
     secondaryPalace,
-    mayiDaoistMorphologicalAdvice
+    situationalMayiAudit,
+    temporalMayiRhythm,
+    mayiSynthesisMatrix,
+    mayiDaoistMorphologicalAdvice,
+    boundaryNotice: '본 결과는 《마의상법》의 심상(心相) 및 12궁 상징 철학에 기반한 정성적 성찰 안내이며, 외모 평가나 확정적 길흉 판정이 아닙니다.',
   };
 }
 
 export function formatMayiMianxiangPrompt(report: MayiMianxiangReport): string {
   return `### 동양 비전 마의도사 《마의상법》 12궁 관상 & 심상합일 기색 엔진 (v${report.engineVersion})
+- **연산 시각**: ${report.calculatedAtKst}
 - **주요 12궁 진단**: ${report.primaryPalace.nameKo} [부위: ${report.primaryPalace.anatomicalLocation}]
   - *관장 영역*: ${report.primaryPalace.destinyDomain}
   - *길조 기색*: ${report.primaryPalace.auspiciousQiColor}
 - **보조 12궁 조력**: ${report.secondaryPalace.nameKo} (${report.secondaryPalace.blessingAdvice})
-- **관상 5대 수리 지표**:
-  - 상유심생(相由心生) 심상 일치도: ${report.innerHeartMorphologyResonance}점 / 100
-  - 자황홍(紫黃紅) 3대 길상 기색 광채: ${report.qiAuraLuminosityScore}점 / 100
-  - 12궁 기운 균형도: ${report.twelvePalacesEquilibriumIndex}점 / 100
-  - 5관(이목구비신) 통섭 활력: ${report.fiveFeaturesVitalityForce}점 / 100
-  - 명궁 인당(印堂) 소원 투과율: ${report.yintangManifestationPower}점 / 100
+- **질문 맥락 감사 (${report.situationalMayiAudit.focusTheme})**: ${report.situationalMayiAudit.heartMindNote} / 실천: ${report.situationalMayiAudit.expressionPractice}
+- **KST 시공간 기색 리듬**: ${report.temporalMayiRhythm.yintangWatchWindow} / ${report.temporalMayiRhythm.seasonalQiColorTone}
+  - *시공간 지침*: ${report.temporalMayiRhythm.temporalGuidance}
+- **마의상법 교차 매트릭스**: 핵심(${report.mayiSynthesisMatrix.coreInsight}) | 실행(${report.mayiSynthesisMatrix.recommendedAction}) | 주의(${report.mayiSynthesisMatrix.cautionNotice})
 - **마의도사 심상 처방**:
-  - "${report.mayiDaoistMorphologicalAdvice}"`;
+  - "${report.mayiDaoistMorphologicalAdvice}"
+- **해석 경계**: ${report.boundaryNotice}`;
 }

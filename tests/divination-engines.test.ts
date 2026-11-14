@@ -1969,7 +1969,7 @@ test('Ziwei Flying Stars Engine: 유년 사화 동적 비성 및 삼방사정 �
 });
 
 test('HeLuoLiShu Engine: 사주·주역 융합 선천괘·후천괘·원당효 일생 마스터플랜 검증', () => {
-  const res = calculateHeLuoLiShu({ profile });
+  const res = calculateHeLuoLiShu({ profile, now: new Date('2026-11-15T07:15:00+09:00'), question: '직장과 진로의 도약' });
   assert.equal(res.status, 'calculated');
   assert.equal(res.engineVersion, HELUOLISHU_ENGINE_VERSION);
   assert(res.heavenNumber > 0 && res.earthNumber > 0);
@@ -1983,6 +1983,9 @@ test('HeLuoLiShu Engine: 사주·주역 융합 선천괘·후천괘·원당효 �
   assert(res.yuanTangDetail !== undefined);
   assert(res.yuanTangDetail.potencyScore >= 50 && res.yuanTangDetail.potencyScore <= 98);
   assert.equal(res.decadeTrajectory.length, 5);
+  assert(res.calculatedAtKst.includes('KST'));
+  assert(res.temporalHeLuoRhythm.hetuWatchWindow.length > 0);
+  assert(res.heLuoSynthesisMatrix.coreInsight.length > 0);
   const prompt = formatHeLuoLiShuPrompt(res);
   assert(prompt.includes(HELUOLISHU_ENGINE_VERSION));
   assert(prompt.includes('선천본괘'));
@@ -1990,6 +1993,8 @@ test('HeLuoLiShu Engine: 사주·주역 융합 선천괘·후천괘·원당효 �
   assert(prompt.includes('후천변괘'));
   assert(prompt.includes('음양 체질'));
   assert(prompt.includes('생애 대운별 주역 궤적'));
+  assert(prompt.includes('KST'));
+  assert(!prompt.includes('/100') && !prompt.includes('%') && !prompt.includes('점수'));
 });
 
 test('Dynamic Clash Trigger Engine: 실시간 삼형·육충·파해 동적 격발 및 에너지 승화 검증', () => {
@@ -3499,7 +3504,7 @@ test('Popol Vuh Hero Twins Engine: calculates active trial house and qualitative
 });
 
 test('Ancient Yarrow I Ching Probability Engine: calculates dominant yao and Dayan alignment score', () => {
-  const rep = calculateAncientYarrowProbability({ profile, question: '요즘 너무 지치고 불안해서 쉬고 싶어요' });
+  const rep = calculateAncientYarrowProbability({ profile, question: '요즘 너무 지치고 불안해서 쉬고 싶어요', now: new Date('2026-11-15T07:15:00+09:00') });
   assert.equal(rep.engineVersion, ANCIENT_YARROW_PROBABILITY_ENGINE_VERSION);
   assert.equal(rep.questionTheme, 'healing');
   assert([6, 7, 8, 9].includes(rep.dominantYaoValue));
@@ -3509,10 +3514,15 @@ test('Ancient Yarrow I Ching Probability Engine: calculates dominant yao and Day
   assert(rep.yaoNameKo.length > 0);
   assert(rep.timelinessPosture.length > 0);
   assert(rep.practiceGuidance.length > 0 && rep.ritualAction.length > 0 && rep.boundaryNotice.length > 0);
+  assert(rep.calculatedAtKst.includes('KST'));
+  assert(rep.temporalYarrowRhythm.dayanWatchWindow.length > 0);
+  assert(rep.yarrowSynthesisMatrix.coreInsight.length > 0);
   const prompt = formatAncientYarrowProbabilityPrompt(rep);
   assert(prompt.includes('고대 중국 주역 대연지수 49책 시초점 확률 실측 데이터'));
   assert(prompt.includes(rep.yaoNameKo));
   assert(prompt.includes(rep.practiceGuidance));
+  assert(prompt.includes('KST'));
+  assert(!prompt.includes('/100') && !prompt.includes('%') && !prompt.includes('점수'));
 });
 
 test('Vedic Pancha Kosha Engine: calculates 5 layers alignment and Atman realization index', () => {
@@ -4281,7 +4291,7 @@ test('Korean Wonhyo Hwajaeng One Mind Engine: calculates One Mind Two Gates, Hwa
 });
 
 test('Chinese Mayi Mianxiang Twelve Palaces Engine: calculates 12 palaces, Qi aura luminosity and inner heart morphology', () => {
-  const rep = calculateMayiMianxiang(profile);
+  const rep = calculateMayiMianxiang(profile, new Date('2026-11-15T07:15:00+09:00'), '관계와 소통의 기색');
   assert.equal(rep.engineVersion, MAYI_MIANXIANG_VERSION);
   assert(rep.innerHeartMorphologyResonance >= 0 && rep.innerHeartMorphologyResonance <= 100);
   assert(rep.qiAuraLuminosityScore >= 0 && rep.qiAuraLuminosityScore <= 100);
@@ -4290,9 +4300,14 @@ test('Chinese Mayi Mianxiang Twelve Palaces Engine: calculates 12 palaces, Qi au
   assert(rep.yintangManifestationPower >= 0 && rep.yintangManifestationPower <= 100);
   assert(rep.primaryPalace.nameKo.length > 0);
   assert(rep.secondaryPalace.nameKo.length > 0);
+  assert(rep.calculatedAtKst.includes('KST'));
+  assert(rep.temporalMayiRhythm.yintangWatchWindow.length > 0);
+  assert(rep.mayiSynthesisMatrix.coreInsight.length > 0);
   const prompt = formatMayiMianxiangPrompt(rep);
   assert(prompt.includes('동양 비전 마의도사 《마의상법》 12궁 관상 & 심상합일 기색'));
   assert(prompt.includes(rep.primaryPalace.nameKo));
+  assert(prompt.includes('KST'));
+  assert(!prompt.includes('/100') && !prompt.includes('%') && !prompt.includes('점수'));
 });
 
 test('Egyptian Amduat Twelve Hours Ra Engine: calculates 12 hours of underworld, Apophis dispelling and Khepri rebirth', () => {

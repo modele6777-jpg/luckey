@@ -1427,7 +1427,7 @@ try {
   const heLuoLiShuResult = calculateSupplement('heLuoLiShuResult', () => (birthdateStr && profile
     ? (() => {
         try {
-          return calculateHeLuoLiShu({ profile });
+          return calculateHeLuoLiShu({ profile, now, question });
         } catch (_) {
           return null;
         }
@@ -2929,7 +2929,7 @@ try {
   // 178. 동양 비전 마의도사 《마의상법》 12궁 관상 & 심상합일 기색 엔진
   const mayiMianxiangResult = calculateSupplement('mayiMianxiangResult', () => ((() => {
     try {
-      return calculateMayiMianxiang(profile);
+      return calculateMayiMianxiang(profile, now, question);
     } catch (_) {
       return null;
     }

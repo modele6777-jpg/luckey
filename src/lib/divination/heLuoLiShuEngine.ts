@@ -32,7 +32,7 @@ import type { UserProfile } from '../sharedState';
 import { calculateDetailedSaju, SajuAnalysisResult } from '../sajuAnalysis';
 import { hexagram } from './iching';
 
-export const HELUOLISHU_ENGINE_VERSION = 'LUCKEY-HL-v1.1.0';
+export const HELUOLISHU_ENGINE_VERSION = 'LUCKEY-HL-v2.0.0';
 
 export const HELUOLISHU_METHOD =
   '하락이수(河洛理數) 정통 상수역학 산법: 사주 8자 하도낙서 천수(25)·지수(30) 치환, 선천본괘(先天本卦)·원당효(元堂爻)·후천변괘(後天變卦) 결정론적 산출, 음양 밸런스·원당효 당위성·10년 대운 주역 궤적 및 청년/장년 2대 인생 주기 지수 산출';
@@ -71,6 +71,7 @@ export interface HeLuoLiShuResult {
   engineVersion: string;
   method: string;
   status: 'calculated';
+  calculatedAtKst: string;
   heavenNumber: number; // 천수 (天數)
   earthNumber: number; // 지수 (地數)
   innateHexagram: HeLuoHexagram; // 선천괘 (先天卦)
@@ -78,15 +79,32 @@ export interface HeLuoLiShuResult {
   yuanTangMeaning: string; // 원당효 해설
   acquiredHexagram: HeLuoHexagram; // 후천괘 (後天卦)
   lifeCycleBalance: {
-    earlyLifeScore: number; // 0 ~ 100
-    matureLifeScore: number; // 0 ~ 100
+    earlyLifeScore: number; // 0 ~ 100 (내부 호환용, 프롬프트 비노출)
+    matureLifeScore: number; // 0 ~ 100 (내부 호환용, 프롬프트 비노출)
     goldenEra: '청년기 선천 주도형' | '장년기 후천 대도약형' | '평생 지속 성장형';
   };
   masterStrategicGuidance: string;
   yinYangBalance: HeLuoYinYangBalance;
   yuanTangDetail: HeLuoYuanTangDetail;
   decadeTrajectory: HeLuoDecadeStage[];
+  situationalHeLuoAudit: {
+    focusTheme: string;
+    yuanTangApplication: string;
+    transitionGuidance: string;
+  };
+  temporalHeLuoRhythm: {
+    kstTimeLabel: string;
+    hetuWatchWindow: string;
+    seasonalLuoshuTone: string;
+    temporalGuidance: string;
+  };
+  heLuoSynthesisMatrix: {
+    coreInsight: string;
+    recommendedAction: string;
+    cautionNotice: string;
+  };
   lifeTransitionKey: string;
+  boundaryNotice: string;
 }
 
 // 천간 상수 (갑기9 을경8 병신7 정임6 무계5)
@@ -111,13 +129,53 @@ const TRIGRAM_BITS: Record<number, [number, number, number]> = {
   8: [0, 0, 0], // 곤
 };
 
+function getTemporalHeLuoRhythm(now: Date) {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  const hour = kst.getUTCHours();
+  const month = kst.getUTCMonth() + 1;
+
+  const hetuWatchWindow =
+    hour >= 5 && hour < 11
+      ? '하도(河圖) 아침 생수창 — 천수의 밝은 기운으로 오늘의 원당 소명을 여는 시간'
+      : hour >= 11 && hour < 17
+        ? '낙서(洛書) 정오 운용창 — 변화하는 현실의 수리를 읽어 실무로 풀어내는 시간'
+        : hour >= 17 && hour < 22
+          ? '후천(後天) 황혼 조율창 — 오늘의 결과를 점검하고 음양의 균형을 맞추는 시간'
+          : '선천(先天) 심야 귀장창 — 바깥의 수를 거두고 본래의 중심 효로 돌아가는 시간';
+
+  const seasonalLuoshuTone =
+    month >= 3 && month <= 5
+      ? '봄 · 동방 3·8 목기(木氣) 발흥기 (새로운 시작과 확장의 상수)'
+      : month >= 6 && month <= 8
+        ? '여름 · 남방 2·7 화기(火氣) 발현기 (재능과 열정이 밖으로 빛나는 상수)'
+        : month >= 9 && month <= 11
+          ? '가을 · 서방 4·9 금기(金氣) 수렴기 (결실을 거두고 옥석을 가리는 상수)'
+          : '겨울 · 북방 1·6 수기(水氣) 응축기 (지혜를 비축하고 내실을 다지는 상수)';
+
+  return {
+    kstTimeLabel: `${y}-${m}-${d} ${hh}:${mm} KST`,
+    hetuWatchWindow,
+    seasonalLuoshuTone,
+    temporalGuidance: `${hetuWatchWindow} · ${seasonalLuoshuTone}의 흐름에 맞추어 원당효의 중심을 지키십시오.`,
+  };
+}
+
 /**
  * 사주 8자로부터 하락이수 선천괘·후천괘·원당효 정밀 산출
  */
 export function calculateHeLuoLiShu(params?: {
   profile?: UserProfile | null;
   saju?: SajuAnalysisResult | null;
+  now?: Date;
+  question?: string;
 }): HeLuoLiShuResult {
+  const now = params?.now || new Date();
+  const question = (params?.question || '').trim();
   const saju = params?.saju || calculateDetailedSaju(params?.profile || null);
 
   const p = saju.pillars;
@@ -259,10 +317,36 @@ export function calculateHeLuoLiShu(params?: {
 
   const lifeTransitionKey = `선천의 ${innateGua.name}으로 내실을 다진 후, 원당 제${yuanTangYao}효(${alignment})의 스위치를 켜서 후천의 ${acquiredGua.name}으로 도약하는 전인적 대도약 전략`;
 
+  const temporalHeLuoRhythm = getTemporalHeLuoRhythm(now);
+  const situationalHeLuoAudit = /직장|사업|이직|결정|진로|돈/.test(question)
+    ? {
+        focusTheme: `원당 제${yuanTangYao}효(${alignment}) 기반의 실무·커리어 도약`,
+        yuanTangApplication: yuanTangMeanings[yuanTangYao] || yuanTangMeanings[5],
+        transitionGuidance: `선천 ${innateGua.name}의 바탕 위에서 후천 ${acquiredGua.name}의 방향으로 판을 넓히십시오.`,
+      }
+    : /관계|연애|가족|사람|결혼/.test(question)
+      ? {
+          focusTheme: '천수·지수 음양 조화와 인연의 상호 보완',
+          yuanTangApplication: yinYangBalance.balanceGuidance,
+          transitionGuidance: '상대의 기질과 나의 음양 균형을 맞추어 무리 없는 호흡을 이어가십시오.',
+        }
+      : {
+          focusTheme: `${goldenEra} 생애 주기와 원당효 소명의 조화`,
+          yuanTangApplication: yuanTangMeanings[yuanTangYao] || yuanTangMeanings[5],
+          transitionGuidance: lifeTransitionKey,
+        };
+
+  const heLuoSynthesisMatrix = {
+    coreInsight: `선천 [${innateGua.name}] → 원당 제${yuanTangYao}효 → 후천 [${acquiredGua.name}]의 궤적이 ${situationalHeLuoAudit.focusTheme}을 비춥니다.`,
+    recommendedAction: `선천의 ${innateGua.name}으로 내실을 다지고 원당 제${yuanTangYao}효의 소명을 실천해 후천의 ${acquiredGua.name}으로 나아가십시오.`,
+    cautionNotice: '기수(천수)와 우수(지수) 중 한쪽으로만 치우쳐 조급하거나 지나치게 수동적이 되지 않도록 균형을 살피십시오.',
+  };
+
   return {
     engineVersion: HELUOLISHU_ENGINE_VERSION,
     method: HELUOLISHU_METHOD,
     status: 'calculated',
+    calculatedAtKst: temporalHeLuoRhythm.kstTimeLabel,
     heavenNumber: heavenSum,
     earthNumber: earthSum,
     innateHexagram: {
@@ -292,7 +376,11 @@ export function calculateHeLuoLiShu(params?: {
     yinYangBalance,
     yuanTangDetail,
     decadeTrajectory,
+    situationalHeLuoAudit,
+    temporalHeLuoRhythm,
+    heLuoSynthesisMatrix,
     lifeTransitionKey,
+    boundaryNotice: '본 결과는 하락이수 상수역학의 사주·주역 상징 치환 모델에 기반한 정성적 성찰 안내이며, 확정적 길흉 판정이 아닙니다.',
   };
 }
 
@@ -305,20 +393,25 @@ export function formatHeLuoLiShuPrompt(res: HeLuoLiShuResult): string {
     .join('\n');
 
   return `[하락이수(河洛理數) 사주·주역 융합 선천괘·후천괘·원당효 리포트 (엔진: ${res.engineVersion})]
-- 상수 계산: 사주 하도낙서 천수(天數) ${res.heavenNumber} / 지수(地數) ${res.earthNumber} [${res.yinYangBalance.yinYangRatio}]
-  • 음양 체질: ${res.yinYangBalance.constitutionTrait} (조화도 지수: ${res.yinYangBalance.yinYangBalanceIndex}점)
+- 연산 시각: ${res.calculatedAtKst}
+- 상수 계산: 사주 하도낙서 천수(天數) ${res.heavenNumber} / 지수(地數) ${res.earthNumber}
+  • 음양 체질: ${res.yinYangBalance.constitutionTrait}
   • 조화 가이드: ${res.yinYangBalance.balanceGuidance}
 - 선천본괘(先天本卦 / 출생~30세 청년기): ${res.innateHexagram.name} (${res.innateHexagram.upper} 상 / ${res.innateHexagram.lower} 하)
-  • 의미: ${res.innateHexagram.coreMeaning} (청년기 활력 스코어: ${res.lifeCycleBalance.earlyLifeScore}점)
+  • 의미: ${res.innateHexagram.coreMeaning}
 - 원당효(元堂爻 / 영혼의 핵심 소명 효): 제${res.yuanTangYao}효 [${res.yuanTangDetail.positionType} ${res.yuanTangDetail.bitValue} / ${res.yuanTangDetail.alignment}]
   • 원당효 해설: ${res.yuanTangMeaning}
-  • 원당효 잠재 역량: ${res.yuanTangDetail.potencyScore}점
 - 후천변괘(後天變卦 / 30세 이후 장년·완성기): ${res.acquiredHexagram.name} (${res.acquiredHexagram.upper} 상 / ${res.acquiredHexagram.lower} 하)
-  • 의미: ${res.acquiredHexagram.coreMeaning} (장년기 도약 스코어: ${res.lifeCycleBalance.matureLifeScore}점)
+  • 의미: ${res.acquiredHexagram.coreMeaning}
 - 인생 주기 황금기: ${res.lifeCycleBalance.goldenEra}
+- 질문 맥락 감사 (${res.situationalHeLuoAudit.focusTheme}): ${res.situationalHeLuoAudit.transitionGuidance}
+- KST 시공간 하도낙서 리듬: ${res.temporalHeLuoRhythm.hetuWatchWindow} / ${res.temporalHeLuoRhythm.seasonalLuoshuTone}
+  • 시공간 지침: ${res.temporalHeLuoRhythm.temporalGuidance}
+- 하락 교차 매트릭스: 핵심(${res.heLuoSynthesisMatrix.coreInsight}) | 실행(${res.heLuoSynthesisMatrix.recommendedAction}) | 주의(${res.heLuoSynthesisMatrix.cautionNotice})
 - 생애 대운별 주역 궤적 (20대~60대+):
 ${dtStr}
 - 대전환 핵심 비결: ${res.lifeTransitionKey}
 - 마스터 거시 전략: "${res.masterStrategicGuidance}"
+- 해석 경계: ${res.boundaryNotice}
 ※ 루시 지침: 하락이수는 사주 8자가 주역 64괘의 대하드라마로 치환되는 동양 최고봉 수리 명학입니다. 청년기(선천)의 기본 바탕과 30세 이후(후천)의 대성공 괘상, 그리고 평생의 소명이 담긴 원당효를 입체적으로 해설해 주세요.`;
 }
