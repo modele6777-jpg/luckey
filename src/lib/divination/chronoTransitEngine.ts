@@ -129,6 +129,23 @@ export interface ChronoTransitResult {
     mindsetAdvice: string;
     microAction: string;
   };
+  situationalChronoAudit: {
+    focusTheme: string;
+    transitCue: string;
+    tacticalStep: string;
+  };
+  temporalChronoRhythm: {
+    kstTimeLabel: string;
+    dayHourWindow: string;
+    lunarTransitTone: string;
+    temporalGuidance: string;
+  };
+  chronoSynthesisMatrix: {
+    coreInsight: string;
+    recommendedAction: string;
+    cautionNotice: string;
+  };
+  boundaryNotice: string;
 }
 
 // 행성 한글 명칭 및 심볼 매핑
@@ -248,8 +265,10 @@ function makePillarInfo(gan: string, zhi: string): PillarInfo {
 export function calculateChronoTransit(params: {
   profile?: UserProfile | null;
   targetDate?: Date;
+  question?: string;
 }): ChronoTransitResult {
   const now = params.targetDate || new Date();
+  const question = (params.question || '').trim();
   const utcMs = now.getTime();
   
   // 한국 표준시 (KST = UTC + 9) 벽시계 일시 산출
@@ -557,8 +576,35 @@ export function calculateChronoTransit(params: {
     mindsetAdvice = `충(沖)의 자극이 들어오는 날입니다. 낡은 습관을 과감히 깨부수거나 새로운 방식으로 시도할 때 강한 추진력이 발휘됩니다.`;
   }
 
+  const kstTimeLabel = `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')} ${String(h).padStart(2, '0')}:${String(minute).padStart(2, '0')} KST`;
+  const dayHourWindow =
+    h >= 5 && h < 11
+      ? '아침 일진 발동창 — 오늘의 일진과 달의 위상을 확인해 하루의 중심을 세우는 시간'
+      : h >= 11 && h < 17
+        ? '정오 시진 교차창 — 실시간 행성 트랜짓의 탄력을 실무 실행으로 옮기는 시간'
+        : h >= 17 && h < 22
+          ? '황혼 수렴창 — 오늘의 십신 흐름과 대인 반응을 정리하며 균형을 맞추는 시간'
+          : '심야 전환창 — 하루의 리듬을 갈무리하고 내일 일진으로 부드럽게 넘어가는 시간';
+  const lunarTransitTone = `${moonPhaseName} · ${dominantTransitElement} 원소 주도 흐름`;
+  const situationalChronoAudit = question
+    ? {
+        focusTheme: `${dayPillar.koreanName} 일진 · ${moonPhaseName}`,
+        transitCue: topAspects[0] ? `${topAspects[0].transitBody} ${topAspects[0].aspectKoName}` : dailyAstroTheme,
+        tacticalStep: microAction,
+      }
+    : {
+        focusTheme: `${dayPillar.koreanName} · ${hourPillar.koreanName}시`,
+        transitCue: dailyEnergyTheme,
+        tacticalStep: mindsetAdvice,
+      };
+  const chronoSynthesisMatrix = {
+    coreInsight: headline,
+    recommendedAction: microAction,
+    cautionNotice: retrogradeBodies.length > 0 ? `역행 천체(${retrogradeBodies.join(', ')}) 영향권에서는 재확인과 여유가 필요합니다.` : '주요 행성 순행 흐름에 맞추어 차분히 실행하십시오.',
+  };
+
   return {
-    engineVersion: 'LUCKEY-CHRONO-TRANSIT-v1.0.0',
+    engineVersion: 'LUCKEY-CHRONO-TRANSIT-v2.0.0',
     calculatedAtUtc: nowUtcIso,
     calculatedAtKst: nowKstIso,
     timestamp: now.getTime(),
@@ -590,7 +636,16 @@ export function calculateChronoTransit(params: {
       energyFlow,
       mindsetAdvice,
       microAction
-    }
+    },
+    situationalChronoAudit,
+    temporalChronoRhythm: {
+      kstTimeLabel,
+      dayHourWindow,
+      lunarTransitTone,
+      temporalGuidance: `${dayHourWindow} · ${lunarTransitTone}에 맞추어 움직이십시오.`,
+    },
+    chronoSynthesisMatrix,
+    boundaryNotice: '본 결과는 실시간 만세력 일진·시진과 천문 행성 트랜짓을 결합한 정성적 시간 리듬 안내이며, 확정적 예언이 아닙니다.',
   };
 }
 
@@ -614,6 +669,8 @@ export function formatChronoTransitPrompt(result: ChronoTransitResult): string {
     ? ep.interactions.map(i => `  - [${i.category}] ${i.name} (${i.targetPillar}): ${i.description}`).join('\n')
     : '  - 일진과 사주 원국 간의 급격한 충이나 원진 없이 평온하고 안정된 에너지입니다.';
 
+  const moonLightTone = wt.moonPhase.illuminationEstimate >= 75 ? '밝은 만월권' : wt.moonPhase.illuminationEstimate >= 35 ? '반월 전환권' : '고요한 신월권';
+
   return `[🌌 실시간 일진(日辰) & 행성 트랜짓(Transit) 실측 동기화 데이터]
 ======================================================================
 기준 시각: ${result.calculatedAtKst} (한국 표준시) | 엔진: ${result.engineVersion}
@@ -633,7 +690,7 @@ ${interactionsStr}
 
 2. 🪐 [하늘의 실시간 행성 트랜짓 실측 (Western Transit)]
 - ${wt.dailyAstroTheme}
-- 달 위상: ${wt.moonPhase.name} (조도 약 ${wt.moonPhase.illuminationEstimate}%)
+- 달 위상: ${wt.moonPhase.name} (${moonLightTone})
 - 행성 역행 현황: ${retrogradeStr}
 - 주요 행성 현재 배치:
   * 태양: ${wt.transits.find(t => t.bodyId === 'sun')?.sign.name} ${wt.transits.find(t => t.bodyId === 'sun')?.degree}°
@@ -646,13 +703,17 @@ ${interactionsStr}
 - 사용자 출생 차트와의 실시간 트랜짓 아스펙트 (Top Transit Aspects):
 ${aspectsStr}
 
-3. ⚖️ [동서양 융합 오늘 실시간 행동 전략]
+3. ⚖️ [동서양 융합 오늘 실시간 행동 전략 & 시공간 리듬]
 - 에너지 결합: ${syn.energyFlow}
 - 마음가짐 조언: ${syn.mindsetAdvice}
 - 지금 즉시 추천 액션: ${syn.microAction}
+- 질문 맥락 감사 (${result.situationalChronoAudit.focusTheme}): ${result.situationalChronoAudit.transitCue}
+- KST 시공간 리듬 (${result.temporalChronoRhythm.kstTimeLabel}): ${result.temporalChronoRhythm.dayHourWindow} / ${result.temporalChronoRhythm.lunarTransitTone}
+- 교차 매트릭스: 핵심(${result.chronoSynthesisMatrix.coreInsight}) | 실행(${result.chronoSynthesisMatrix.recommendedAction}) | 주의(${result.chronoSynthesisMatrix.cautionNotice})
+- 해석 경계: ${result.boundaryNotice}
 
 [★ 대화 적용 절대 지침]:
 사용자가 "오늘 운세 어때?", "지금 뭐 하면 좋을까?", "오늘 일진이 어때?"처럼 오늘의 흐름을 물어볼 때는 물론,
 일반 상담 시에도 위 실시간 일진(간지·십신)과 행성 트랜짓(달 별자리·주요 아스펙트) 데이터를 자연스럽게 인용하여
-"어제나 내일과 똑같은 뻔한 이야기"가 아니라 "오늘 2026년 11월 1일 지금 이 순간의 살아 숨쉬는 통찰"로 전해줘.`;
+"어제나 내일과 똑같은 뻔한 이야기"가 아니라 "현재 기준 시각(${result.temporalChronoRhythm.kstTimeLabel})의 살아 숨쉬는 통찰"로 전해줘.`;
 }

@@ -1334,7 +1334,7 @@ try {
   const partialOrSymbolicCount = allTools.filter(t => t.status === 'partial' || t.status === 'symbolic').length;
   const notImplementedCount = allTools.filter(t => t.status === 'not_implemented').length;
 
-  const chronoTransitResult = calculateSupplement('chronoTransitResult', () => (calculateChronoTransit({ profile, targetDate: now })));
+  const chronoTransitResult = calculateSupplement('chronoTransitResult', () => (calculateChronoTransit({ profile, targetDate: now, question })));
   const lifeSeasonTimingResult = calculateSupplement('lifeSeasonTimingResult', () => (calculateLifeSeasonTiming({ profile, targetYear: now.getFullYear() })));
   const energeticPrescriptionResult = calculateSupplement('energeticPrescriptionResult', () => (calculateEnergeticPrescription({ profile, currentDate: now })));
   const contextualSynastryResult = calculateSupplement('contextualSynastryResult', () => (calculateContextualSynastry({ questionText: question, myProfile: profile })));
@@ -1548,7 +1548,7 @@ try {
   const contractShieldResult = calculateSupplement('contractShieldResult', () => (birthdateStr && profile
     ? (() => {
         try {
-          return calculateContractShield({ profile, targetDate: now });
+          return calculateContractShield({ profile, targetDate: now, question });
         } catch (_) {
           return null;
         }
@@ -3037,7 +3037,7 @@ try {
   // 190. 아일랜드 켈트 신화 루 라바다 8대 만능 기예 & 마그 투이레드 승전 엔진
   const lughSamildanachResult = calculateSupplement('lughSamildanachResult', () => ((() => {
     try {
-      return calculateLughSamildanach(profile);
+      return calculateLughSamildanach(profile, now, question);
     } catch (_) {
       return null;
     }

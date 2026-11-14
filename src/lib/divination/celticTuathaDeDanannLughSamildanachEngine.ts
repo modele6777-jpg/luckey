@@ -19,7 +19,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const LUGH_SAMILDANACH_VERSION = 'LUCKEY-LUGH-SAMILDANACH-v1.0.0';
+export const LUGH_SAMILDANACH_VERSION = 'LUCKEY-LUGH-SAMILDANACH-v2.0.0';
 
 export interface LughCraftRank {
   rankLevel: number;
@@ -50,6 +50,23 @@ export interface LughSamildanachResult {
     battleSceneTitle: string;
     celticWisdom: string;
   };
+  situationalLughAudit: {
+    focusTheme: string;
+    craftNote: string;
+    tacticalStep: string;
+  };
+  temporalLughRhythm: {
+    kstTimeLabel: string;
+    taraWatchWindow: string;
+    seasonalSolarTone: string;
+    temporalGuidance: string;
+  };
+  lughSynthesisMatrix: {
+    coreInsight: string;
+    recommendedAction: string;
+    cautionNotice: string;
+  };
+  boundaryNotice: string;
 }
 
 export type LughSamildanachReport = LughSamildanachResult;
@@ -78,10 +95,45 @@ const MAG_TUIRED_EPIPHANIES = [
   { battleSceneTitle: '수확의 제왕 루그나사드의 축복', celticWisdom: '봄에 뿌린 정성과 여름에 흘린 땀은 가을의 풍성한 식탁으로 돌아오나니, 때를 기다리는 자에게 결실은 필연이다.' },
 ];
 
-function getKstDateString(): string {
-  const now = new Date();
-  const kst = new Date(now.getTime() + (9 * 60 + now.getTimezoneOffset()) * 60000);
-  return kst.toISOString().replace('T', ' ').substring(0, 19) + ' KST';
+function getKstDateString(now: Date): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
+
+function getTemporalLughRhythm(now: Date) {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const hour = kst.getUTCHours();
+  const month = kst.getUTCMonth() + 1;
+
+  const taraWatchWindow =
+    hour >= 5 && hour < 11
+      ? '아침 타라(Tara) 입성창 — 다양한 역량을 한 방향으로 모아 하루의 첫 기세를 여는 시간'
+      : hour >= 11 && hour < 17
+        ? '정오 아레아드바르(Areadbhar) 집중창 — 핵심 과업에 빛의 창처럼 정밀하게 집중하는 시간'
+        : hour >= 17 && hour < 22
+          ? '황혼 하프·환대창 — 긴장을 풀고 협력자들과 성과를 나누며 조율을 다지는 시간'
+          : '심야 사밀다나크 관조창 — 흩어진 아이디어를 통합의 지혜로 엮어내는 시간';
+
+  const seasonalSolarTone =
+    month >= 3 && month <= 5
+      ? '봄 · 기술 연마절 (새로운 도구와 지식을 익혀 지평을 넓히는 시기)'
+      : month >= 6 && month <= 8
+        ? '여름 · 루그나사드(Lughnasadh) 도약절 (재능이 가장 밝게 빛나고 결실을 빚는 시기)'
+        : month >= 9 && month <= 11
+          ? '가을 · 마그 투이레드 수확절 (전략적 완성도와 실행력을 증명하는 시기)'
+          : '겨울 · 내면 연단절 (묵묵히 기본기를 벼려 다음 승부를 준비하는 시기)';
+
+  return {
+    kstTimeLabel: getKstDateString(now),
+    taraWatchWindow,
+    seasonalSolarTone,
+    temporalGuidance: `${taraWatchWindow} · ${seasonalSolarTone}의 결에 맞추어 기예를 펼치십시오.`,
+  };
 }
 
 function hashSeed(seedStr: string): number {
@@ -93,7 +145,13 @@ function hashSeed(seedStr: string): number {
   return Math.abs(h);
 }
 
-export function calculateLughSamildanach(profile?: UserProfile): LughSamildanachResult {
+export function calculateLughSamildanach(
+  profile?: UserProfile,
+  nowArg?: Date,
+  question?: string
+): LughSamildanachResult {
+  const now = nowArg || new Date();
+  const q = (question || '').trim();
   const birthdate = profile?.basic?.birthdate || '1995-03-21';
   const birthtime = profile?.basic?.birthtime || '12:00';
   const name = profile?.basic?.name || 'Inquirer';
@@ -114,9 +172,28 @@ export function calculateLughSamildanach(profile?: UserProfile): LughSamildanach
   const epiphanyIdx = (seed >> 6) % MAG_TUIRED_EPIPHANIES.length;
   const magTuiredEpiphany = MAG_TUIRED_EPIPHANIES[epiphanyIdx];
 
+  const temporalLughRhythm = getTemporalLughRhythm(now);
+  const situationalLughAudit = /일|커리어|프로젝트|창작|도전/.test(q)
+    ? {
+        focusTheme: `${activeCraftRank.rankNameKo} · 실전 다재다능 감사`,
+        craftNote: activeCraftRank.artisanDomain,
+        tacticalStep: primaryPolymathVirtue.actionableDirective,
+      }
+    : {
+        focusTheme: `${primaryPolymathVirtue.gaelicMotto} · 내면 통합`,
+        craftNote: primaryPolymathVirtue.coreEssence,
+        tacticalStep: primaryPolymathVirtue.actionableDirective,
+      };
+
+  const lughSynthesisMatrix = {
+    coreInsight: `[${activeCraftRank.rankNameKo}] ${activeCraftRank.polymathicBlessing}`,
+    recommendedAction: primaryPolymathVirtue.actionableDirective,
+    cautionNotice: magTuiredEpiphany.celticWisdom,
+  };
+
   return {
     engineVersion: LUGH_SAMILDANACH_VERSION,
-    calculatedAtKst: getKstDateString(),
+    calculatedAtKst: temporalLughRhythm.kstTimeLabel,
     samildanachPolymathIntegrityIndex,
     areadbharSpearOfLightPrecision,
     taraHallAdmissionWorthiness,
@@ -125,17 +202,27 @@ export function calculateLughSamildanach(profile?: UserProfile): LughSamildanach
     activeCraftRank,
     primaryPolymathVirtue,
     magTuiredEpiphany,
+    situationalLughAudit,
+    temporalLughRhythm,
+    lughSynthesisMatrix,
+    boundaryNotice: '본 결과는 켈트 신화 루 삼힐다나크의 8대 만능 기예 원형에 기반한 정성적 역량·실행 가이드이며, 확정적 예언이 아닙니다.',
   };
 }
 
 export function formatLughSamildanachPrompt(result: LughSamildanachResult): string {
+  const polymathTone = result.samildanachPolymathIntegrityIndex >= 85 ? '높은 융합 통섭력' : result.samildanachPolymathIntegrityIndex >= 70 ? '안정적 다재다능 균형' : '핵심 역량 집중 필요';
+  const precisionTone = result.areadbharSpearOfLightPrecision >= 85 ? '예리한 핵심 관통력' : '정밀한 목표 정렬';
+  const taraTone = result.taraHallAdmissionWorthiness >= 85 ? '충만한 자격과 위엄' : '견실한 실력 축적';
+  const victoryTone = result.magTuiredStrategicVictoryPower >= 82 ? '강한 반전 돌파력' : '꾸준한 전략 우위';
+  const artsTone = result.eightArtsHarmoniousMastery >= 85 ? '고른 만능 숙달' : '균형 잡힌 기예 조화';
+
   return `[⚡ 켈트 투아하 데 다난 《루 라바다(Lugh Samildánach)》 8대 만능 기예 리포트]
-- 엔진 버전: ${result.engineVersion}
-- 사밀다나크 만능 융합 및 다재다능 지수: ${result.samildanachPolymathIntegrityIndex}%
-- 빛의 창 아레아드바르 정밀 타격력: ${result.areadbharSpearOfLightPrecision}%
-- 타라 왕궁 입성 자격 및 위엄도: ${result.taraHallAdmissionWorthiness}%
-- 마그 투이레드 전황 반전 및 전략 승전력: ${result.magTuiredStrategicVictoryPower}%
-- 8대 신성 기예의 고른 숙달도: ${result.eightArtsHarmoniousMastery}%
+- 엔진 버전: ${result.engineVersion} | 연산 시각: ${result.calculatedAtKst}
+- 사밀다나크 만능 융합 기조: ${polymathTone}
+- 빛의 창 아레아드바르 정밀 기조: ${precisionTone}
+- 타라 왕궁 입성 위엄 기조: ${taraTone}
+- 마그 투이레드 전략 승전 기조: ${victoryTone}
+- 8대 신성 기예 숙달 기조: ${artsTone}
 - 현행 다재다능 품계: **[${result.activeCraftRank.rankNameKo} (${result.activeCraftRank.rankNameOldIrish})]**
   → 관장 영역: ${result.activeCraftRank.artisanDomain}
   → 만능 기예 축복: ${result.activeCraftRank.polymathicBlessing}
@@ -143,5 +230,9 @@ export function formatLughSamildanachPrompt(result: LughSamildanachResult): stri
   → 핵심 본질: ${result.primaryPolymathVirtue.coreEssence}
   → 실천 지침: ${result.primaryPolymathVirtue.actionableDirective}
 - 마그 투이레드 신화의 계시: 《${result.magTuiredEpiphany.battleSceneTitle}》
-  → 켈트의 불멸 지혜: "${result.magTuiredEpiphany.celticWisdom}"`;
+  → 켈트의 불멸 지혜: "${result.magTuiredEpiphany.celticWisdom}"
+- 질문 맥락 감사 (${result.situationalLughAudit.focusTheme}): ${result.situationalLughAudit.tacticalStep}
+- KST 시공간 리듬: ${result.temporalLughRhythm.taraWatchWindow} / ${result.temporalLughRhythm.seasonalSolarTone}
+- 루 교차 매트릭스: 핵심(${result.lughSynthesisMatrix.coreInsight}) | 실행(${result.lughSynthesisMatrix.recommendedAction}) | 계시(${result.lughSynthesisMatrix.cautionNotice})
+- 해석 경계: ${result.boundaryNotice}`;
 }
