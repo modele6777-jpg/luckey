@@ -1,22 +1,19 @@
 /**
  * 독일 프리드리히 니체(Friedrich Nietzsche) 《차라투스트라는 이렇게 말했다》 초인(Übermensch) & 아모르 파티(Amor Fati) 디오니소스적 운명 긍정 엔진
  *
- * 19세기 독일의 실존철학자 프리드리히 니체(1844~1900)의 대표 주저 《차라투스트라는 이렇게 말했다(Also sprach Zarathustra)》, 《즐거운 학문(Die fröhliche Wissenschaft)》, 《우상의 황혼(Götzen-Dämmerung)》 원전 기반:
- * 1. 아모르 파티(Amor Fati, 운명애): "내 모든 필연성을 사랑하라. 지나간 것이든 앞으로 올 것이든 다른 어떤 것도 원하지 않는 것." 삶의 고난과 역경조차도 영혼의 성장을 위한 소중한 불꽃으로 끌어안는 절대적 긍정.
- * 2. 세 가지 변화(Drei Verwandlungen des Geistes):
- *    - 낙타(Kamel): 무거운 인내와 전통적 의무('너는 해야 한다')를 묵묵히 짊어지는 단계.
- *    - 사자(Löwe): 낡은 우상과 억압을 향해 '나는 원한다'고 외치며 자유를 쟁취하는 파괴적 결단의 단계.
- *    - 아이(Kind): 지나간 일에 매이지 않고 순진무구하게 새로운 가치의 수레바퀴를 스스로 굴리는 신성한 긍정과 창조의 단계.
- * 3. 초인(Übermensch): 기존 도덕의 타성에 안주하는 나약한 '말인(Letzter Mensch)'을 극복하고, 끊임없이 자신을 넘어서며 삶의 새로운 의미를 창조하는 위대한 인간상.
- * 4. 영원회귀(Ewige Wiederkunft): "이 삶이 영원히 수없이 되풀이된다 할지라도 기꺼이 다시 살겠는가?" 지금 이 순간을 영원의 무게로 충만하게 살아내는 궁극의 실존적 척도.
- * 5. 디오니소스적 긍정(Dionysisches Ja-Sagen): 비극과 혼돈 속에서도 솟구치는 생명력을 찬미하며, 상처를 딛고 더 강건해지는 영혼의 회복탄력성.
+ * 19세기 독일의 실존철학자 프리드리히 니체(1844~1900)의 대표 주저 《차라투스트라는 이렇게 말했다(Also sprach Zarathustra)》, 《즐거운 학문(Die fröhliche Wissenschaft)》, 《우상의 황혼(Götzen-Dämmerung)》, 《이 사람을 보라(Ecce Homo)》 원전 기반:
+ * 1. 아모르 파티(Amor Fati, 운명애): "내 모든 필연성을 사랑하라."
+ * 2. 세 가지 변화(Drei Verwandlungen des Geistes): 낙타(Kamel) → 사자(Löwe) → 아이(Kind)
+ * 3. 초인(Übermensch)과 자기 극복(Selbstüberwindung)
+ * 4. 영원회귀(Ewige Wiederkunft)와 위대한 정오(Großer Mittag)
+ * 5. 질문 맥락 정신 변신 진단(situationalMetamorphosis) + KST 시공간 리듬(temporalZarathustraRhythm) + 교차 검증 매트릭스(uebermenschSynthesisMatrix)
  *
- * @version LUCKEY-NIETZSCHE-ZARATHUSTRA-AMOR-FATI-v1.0.0
+ * @version LUCKEY-NIETZSCHE-ZARATHUSTRA-AMOR-FATI-v2.0.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const NIETZSCHE_ZARATHUSTRA_AMOR_FATI_VERSION = 'LUCKEY-NIETZSCHE-ZARATHUSTRA-AMOR-FATI-v1.0.0';
+export const NIETZSCHE_ZARATHUSTRA_AMOR_FATI_VERSION = 'LUCKEY-NIETZSCHE-ZARATHUSTRA-AMOR-FATI-v2.0.0';
 
 export interface NietzscheTheme {
   themeKey: string;
@@ -34,6 +31,29 @@ export interface NietzscheAphorism {
   actionDirective: string;
 }
 
+export interface NietzscheSituationalMetamorphosis {
+  focusAxisKo: string;
+  metamorphosisStage: '낙타(Kamel)' | '사자(Löwe)' | '아이(Kind)';
+  classicalCitation: string;
+  overcomingPrescription: string;
+  reflectiveQuestion: string;
+}
+
+export interface NietzscheTemporalZarathustraRhythm {
+  kstHour: number;
+  timeWindowKo: string;
+  seasonKo: string;
+  dionysianPulseIndex: number;
+  dailyAffirmationPractice: string;
+}
+
+export interface NietzscheUebermenschMatrix {
+  amorFatiResilience: number;
+  selfOvercomingMomentum: number;
+  eternalRecurrenceClarity: number;
+  overallZarathustraGrade: string;
+}
+
 export interface NietzscheZarathustraAmorFatiResult {
   engineVersion: string;
   calculatedAtKst: string;
@@ -46,6 +66,9 @@ export interface NietzscheZarathustraAmorFatiResult {
   // 세부 체계
   activeNietzscheTheme: NietzscheTheme;
   focalNietzscheAphorism: NietzscheAphorism;
+  situationalMetamorphosis: NietzscheSituationalMetamorphosis;
+  temporalZarathustraRhythm: NietzscheTemporalZarathustraRhythm;
+  uebermenschSynthesisMatrix: NietzscheUebermenschMatrix;
   nietzschePersonalCounsel: {
     counselTitle: string;
     philosophicalGuidance: string;
@@ -123,11 +146,110 @@ const NIETZSCHE_APHORISMS: NietzscheAphorism[] = [
   },
 ];
 
-export function calculateNietzscheZarathustraAmorFati(profile: UserProfile): NietzscheZarathustraAmorFatiResult {
+function buildSituationalMetamorphosis(question: string, absHash: number): NietzscheSituationalMetamorphosis {
+  const q = question.trim();
+  if (/의무|책임|부담|버겁|해야|직장|눈치|강요/.test(q)) {
+    return {
+      focusAxisKo: '타인의 \'너는 해야 한다\'를 부수는 사자의 자유',
+      metamorphosisStage: '사자(Löwe)',
+      classicalCitation: '《차라투스트라는 이렇게 말했다》 〈세 가지 변화〉: "거룩한 아니오(Nein)를 외치는 사자만이 자유를 쟁취한다."',
+      overcomingPrescription: '남이 지워준 무거운 짐을 당연한 의무로 삼지 말고, 내 삶의 주권을 뺏는 관성에 단호히 "아니오"를 선언하십시오.',
+      reflectiveQuestion: '지금 내가 짊어진 짐 가운데 정말 내가 원해서 선택한 것은 몇 퍼센트입니까?',
+    };
+  }
+  if (/후회|과거|실패|원망|억울|운명|상처/.test(q)) {
+    return {
+      focusAxisKo: '지나간 필연을 창조적 긍정으로 바꾸는 아모르 파티',
+      metamorphosisStage: '아이(Kind)',
+      classicalCitation: '《이 사람을 보라》 〈왜 나는 이렇게 영리한가〉 §10: "인간의 위대함을 재는 공식은 아모르 파티다."',
+      overcomingPrescription: '되돌릴 수 없는 과거에 대한 원한(Ressentiment)을 끊고, 그 상처마저 지금의 나를 단련한 필연으로 끌어안으십시오.',
+      reflectiveQuestion: '가장 아팠던 그 사건을 \'다시 써야 할 원고\'가 아닌 \'나를 벼려낸 망치\'로 부른다면 무엇이 달라집니까?',
+    };
+  }
+  if (/시작|창조|새로운|도전|기획|아이디어|변화/.test(q)) {
+    return {
+      focusAxisKo: '스스로 굴러가는 수레바퀴, 어린아이의 신성한 긍정',
+      metamorphosisStage: '아이(Kind)',
+      classicalCitation: '《차라투스트라는 이렇게 말했다》 〈세 가지 변화〉: "아이는 순진무구함이며 망각이고, 새로운 시작이자 놀이이다."',
+      overcomingPrescription: '완벽한 명분이나 타인의 허락을 기다리지 말고, 어린아이가 모래성을 쌓듯 순수한 놀이와 호기심으로 첫 삽을 뜨십시오.',
+      reflectiveQuestion: '실패의 두려움과 체면을 내려놓는다면 지금 당장 시작하고 싶은 놀이는 무엇입니까?',
+    };
+  }
+  if (/선택|결정|망설|이직|갈등|결단/.test(q)) {
+    return {
+      focusAxisKo: '영원회귀의 시금석 위에서 내리는 일생일대의 결단',
+      metamorphosisStage: '사자(Löwe)',
+      classicalCitation: '《즐거운 학문》 §341: "이 순간이 무수히 반복된다 해도 기꺼이 다시 살겠는가?"',
+      overcomingPrescription: '안전하지만 영혼을 갉아먹는 타협 대신, 열 번을 다시 살아도 후회 없을 쪽을 향해 과감히 방향타를 꺾으십시오.',
+      reflectiveQuestion: '이 선택이 앞으로 영원히 반복된다고 상상할 때 가슴이 뛰는 쪽은 어느 쪽입니까?',
+    };
+  }
+
+  const fallbackStages: Array<'낙타(Kamel)' | '사자(Löwe)' | '아이(Kind)'> = ['낙타(Kamel)', '사자(Löwe)', '아이(Kind)'];
+  const stage = fallbackStages[absHash % fallbackStages.length];
+  return {
+    focusAxisKo: '어제의 나를 넘어서는 자기 극복과 창조적 도약',
+    metamorphosisStage: stage,
+    classicalCitation: '《차라투스트라는 이렇게 말했다》 서설 §4: "인간은 극복되어야 할 그 무엇이다."',
+    overcomingPrescription: '편안한 현상 유지의 유혹을 딛고, 스스로에게 조금 더 높은 기준과 창조적 과제를 부여하십시오.',
+    reflectiveQuestion: '어제의 나와 다른 오늘을 만들기 위해 지금 당장 넘어서야 할 작은 습관은 무엇입니까?',
+  };
+}
+
+function buildTemporalZarathustraRhythm(now: Date, baseScore: number): NietzscheTemporalZarathustraRhythm {
+  const kstDate = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const kstHour = kstDate.getUTCHours();
+  const kstMonth = kstDate.getUTCMonth() + 1;
+
+  const seasonKo = kstMonth >= 3 && kstMonth <= 5
+    ? '춘계 발아기(여명의 긍정)'
+    : kstMonth >= 6 && kstMonth <= 8
+      ? '하계 정오기(태양의 충만)'
+      : kstMonth >= 9 && kstMonth <= 11
+        ? '추계 수확기(필연의 성숙)'
+        : '동계 단련기(심연의 내공)';
+
+  let timeWindowKo = '위대한 정오(Großer Mittag)';
+  let hourBonus = 0;
+  let dailyAffirmationPractice = '태양이 가장 높은 정오의 기백으로 망설임을 태워버리고 핵심 결단 하나를 실행하십시오.';
+
+  if (kstHour >= 5 && kstHour < 10) {
+    timeWindowKo = '여명(Morgenröte) · 산정의 출발';
+    hourBonus = 5;
+    dailyAffirmationPractice = '아침 햇살 아래 어제의 후회를 씻어내고, 오늘 내가 창조할 한 가지 가치를 선포하십시오.';
+  } else if (kstHour >= 10 && kstHour < 15) {
+    timeWindowKo = '위대한 정오(Großer Mittag) · 영원회귀의 정점';
+    hourBonus = 7;
+    dailyAffirmationPractice = '그림자가 가장 짧은 정오에 타인의 시선을 걷어내고 가장 담대한 일에 몰입하십시오.';
+  } else if (kstHour >= 15 && kstHour < 20) {
+    timeWindowKo = '황혼과 하산(Untergang) · 선물하는 덕';
+    hourBonus = 3;
+    dailyAffirmationPractice = '낮 동안 쌓은 통찰과 활력을 주변과 일의 현장에 아낌없이 흘려보내십시오.';
+  } else {
+    timeWindowKo = '깊은 한밤(Mitternacht) · 춤추는 별의 잉태';
+    hourBonus = 2;
+    dailyAffirmationPractice = '고요한 심연의 시간에 혼돈을 두려워하지 말고, 내일 쏘아 올릴 창조적 화살을 다듬으십시오.';
+  }
+
+  return {
+    kstHour,
+    timeWindowKo,
+    seasonKo,
+    dionysianPulseIndex: Math.min(100, Math.round(baseScore + hourBonus)),
+    dailyAffirmationPractice,
+  };
+}
+
+export function calculateNietzscheZarathustraAmorFati(
+  profile: UserProfile,
+  question = '',
+  now: Date = new Date()
+): NietzscheZarathustraAmorFatiResult {
   const seedString =
     (profile?.basic?.birthdate ?? (profile as any)?.birthdate ?? '1990-01-01') +
     (profile?.basic?.name ?? (profile as any)?.name ?? 'User') +
     (profile?.basic?.birthtime ?? (profile as any)?.birthtime ?? '12:00') +
+    question.trim() +
     'NietzscheZarathustraAmorFati';
 
   let hash = 0;
@@ -148,16 +270,32 @@ export function calculateNietzscheZarathustraAmorFati(profile: UserProfile): Nie
 
   const activeNietzscheTheme = NIETZSCHE_THEMES[themeIndex];
   const focalNietzscheAphorism = NIETZSCHE_APHORISMS[aphorismIndex];
+  const situationalMetamorphosis = buildSituationalMetamorphosis(question, absHash);
+  const temporalZarathustraRhythm = buildTemporalZarathustraRhythm(now, dionysianVitalityDriveScore);
+
+  const avgScore = Math.round(
+    (amorFatiRadicalAffirmationScore + uebermenschSelfOvercomingScore + eternalRecurrenceResolveScore) / 3
+  );
+  const uebermenschSynthesisMatrix: NietzscheUebermenschMatrix = {
+    amorFatiResilience: amorFatiRadicalAffirmationScore,
+    selfOvercomingMomentum: Math.round((threeMetamorphosesCreativeScore + uebermenschSelfOvercomingScore) / 2),
+    eternalRecurrenceClarity: eternalRecurrenceResolveScore,
+    overallZarathustraGrade: avgScore >= 88
+      ? '디오니소스적 초인 공명(Übermensch Resonance)'
+      : avgScore >= 78
+        ? '사자에서 아이로의 도약(Löwe → Kind)'
+        : '낙타의 인내를 넘어서는 각성(Awakening)',
+  };
 
   const counselTitle = `니체 초인(Übermensch) 철학: ${activeNietzscheTheme.themeTitleKo}`;
   const philosophicalGuidance = `프리드리히 니체의 철학은 나약한 체념을 부수고 자신의 운명을 환호하며 사랑하는 아모르 파티(Amor Fati)의 불꽃을 피우도록 격려합니다. ` +
-    `현재 당신에게 필요한 지혜는 '${activeNietzscheTheme.themeTitleKo}'의 가르침과 직결되어 있습니다. ` +
-    `${activeNietzscheTheme.affirmationCounsel} 또한 차라투스트라의 아포리즘인 '${focalNietzscheAphorism.aphorismKo}'(${focalNietzscheAphorism.creativeDimension})을 가슴에 품고, ` +
-    `${focalNietzscheAphorism.actionDirective}`;
+    `현재 질문은 [${situationalMetamorphosis.metamorphosisStage}] 단계의 '${situationalMetamorphosis.focusAxisKo}'와 공명합니다. ` +
+    `${situationalMetamorphosis.overcomingPrescription} 또한 '${activeNietzscheTheme.themeTitleKo}'의 가르침과 아포리즘 '${focalNietzscheAphorism.aphorismKo}'(${focalNietzscheAphorism.creativeDimension})을 품고 ` +
+    `${temporalZarathustraRhythm.dailyAffirmationPractice}`;
 
   return {
     engineVersion: NIETZSCHE_ZARATHUSTRA_AMOR_FATI_VERSION,
-    calculatedAtKst: new Date().toISOString(),
+    calculatedAtKst: new Date(now.getTime() + 9 * 60 * 60 * 1000).toISOString().replace('Z', '+09:00'),
     amorFatiRadicalAffirmationScore,
     threeMetamorphosesCreativeScore,
     uebermenschSelfOvercomingScore,
@@ -165,6 +303,9 @@ export function calculateNietzscheZarathustraAmorFati(profile: UserProfile): Nie
     dionysianVitalityDriveScore,
     activeNietzscheTheme,
     focalNietzscheAphorism,
+    situationalMetamorphosis,
+    temporalZarathustraRhythm,
+    uebermenschSynthesisMatrix,
     nietzschePersonalCounsel: {
       counselTitle,
       philosophicalGuidance,
@@ -174,18 +315,19 @@ export function calculateNietzscheZarathustraAmorFati(profile: UserProfile): Nie
 
 export function formatNietzscheZarathustraAmorFatiPrompt(res: NietzscheZarathustraAmorFatiResult): string {
   return [
-    `【프리드리히 니체 차라투스트라 초인 & 아모르 파티(Amor Fati) 지표】`,
+    `【프리드리히 니체 차라투스트라 초인 & 아모르 파티(Amor Fati) 지표 v2.0】`,
     `- 아모르 파티(Amor Fati) 운명 절대 긍정도: ${res.amorFatiRadicalAffirmationScore}/100`,
     `- 3단계 변신(낙타·사자·아이) 창조적 자유도: ${res.threeMetamorphosesCreativeScore}/100`,
     `- 초인(Übermensch) 자기 극복 및 창조력: ${res.uebermenschSelfOvercomingScore}/100`,
     `- 영원회귀(Ewige Wiederkunft) 순간 결단력: ${res.eternalRecurrenceResolveScore}/100`,
     `- 디오니소스적 생명력 및 활력 지수: ${res.dionysianVitalityDriveScore}/100`,
+    `- 질문 맥락 변신 단계: [${res.situationalMetamorphosis.metamorphosisStage}] ${res.situationalMetamorphosis.focusAxisKo}`,
+    `- 원전 처방: ${res.situationalMetamorphosis.classicalCitation} → ${res.situationalMetamorphosis.overcomingPrescription}`,
+    `- 성찰 질문: ${res.situationalMetamorphosis.reflectiveQuestion}`,
+    `- KST 시공간 리듬: ${res.temporalZarathustraRhythm.timeWindowKo} (${res.temporalZarathustraRhythm.seasonKo}, 맥동지수 ${res.temporalZarathustraRhythm.dionysianPulseIndex}/100) — ${res.temporalZarathustraRhythm.dailyAffirmationPractice}`,
+    `- 종합 등급: ${res.uebermenschSynthesisMatrix.overallZarathustraGrade}`,
     `- 핵심 초인 테마: ${res.activeNietzscheTheme.themeTitleKo} [${res.activeNietzscheTheme.themeTitleGerman}]`,
-    `- 철학적 통찰: ${res.activeNietzscheTheme.philosophicalInsight}`,
-    `- 긍정적 조언: ${res.activeNietzscheTheme.affirmationCounsel}`,
-    `- 핵심 아포리즘: "${res.focalNietzscheAphorism.aphorismKo}"`,
-    `- 독일어 원문: "${res.focalNietzscheAphorism.aphorismGerman}" [${res.focalNietzscheAphorism.creativeDimension}]`,
-    `- 실천적 행동 지침: ${res.focalNietzscheAphorism.actionDirective}`,
+    `- 핵심 아포리즘: "${res.focalNietzscheAphorism.aphorismKo}" ("${res.focalNietzscheAphorism.aphorismGerman}")`,
     `- 통합 실존 처방: ${res.nietzschePersonalCounsel.philosophicalGuidance}`,
   ].join('\n');
 }

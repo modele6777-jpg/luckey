@@ -1,22 +1,18 @@
 /**
  * 덴마크 쇠렌 키르케고르(Søren Kierkegaard) 《이것이냐 저것이냐》 & 《죽음에 이르는 병》 단독자(Den Enkelte) 3단계 실존 도약 엔진
  *
- * 19세기 덴마크 실존철학의 선구자 쇠렌 키르케고르(1813~1855)의 주저 《이것이냐 저것이냐(Enten-Eller)》, 《불안의 개념(Begrebet Angest)》, 《죽음에 이르는 병(Sygdommen til Døden)》 원전 기반:
- * 1. 실존의 3단계(Tre Stadier på Livets Vei):
- *    - 미적 실존(Aestetisk stadium): 순간적 감각과 유희, 그러나 필연적으로 권태(Kedsomhed)와 절망에 직면함.
- *    - 윤리적 실존(Etisk stadium): 보편적 도덕률과 자기 선택(Vælg dig selv), 가족과 사회에 대한 성실한 책임.
- *    - 종교적 실존(Religiøst stadium): 윤리적 척도를 초월하여 신 앞에 홀로 선 '단독자(Den Enkelte)'의 신앙의 도약(Springet).
- * 2. 단독자(Den Enkelte): 익명성의 군중(Mængden) 뒤에 숨지 않고, 오직 자기 자신의 영혼과 실존적 결단을 직시하는 진정한 주체성.
- * 3. 불안의 극복(Angst): "불안은 자유의 어지럼증이다(Angest er Frihedens Svimmelhed)." 가능성의 심연 앞에서 도망치지 않고 결단을 통해 자신을 구원하는 도약.
- * 4. 이것이냐 저것이냐(Enten - Eller): 양다리를 걸치는 미온적 타협을 버리고, 온 존재를 걸고 가치 있는 것을 선택하는 실존적 결단.
- * 5. 절망(Fortvivlelse) 치유: 유한성과 무한성, 시간성과 영원성이 투명하게 통합되는 온전한 자아 일치(Self-Synthesis).
+ * 19세기 덴마크 실존철학의 선구자 쇠렌 키르케고르(1813~1855)의 주저 《이것이냐 저것이냐(Enten-Eller)》, 《불안의 개념(Begrebet Angest)》, 《죽음에 이르는 병(Sygdommen til Døden)》, 《두려움과 떨림(Frygt og Bæven)》 원전 기반:
+ * 1. 실존의 3단계(Tre Stadier på Livets Vei): 미적 실존(Aestetisk) → 윤리적 실존(Etisk) → 종교적 실존(Religiøst)
+ * 2. 단독자(Den Enkelte)와 군중(Mængden) 탈피
+ * 3. 불안(Angst)의 가능성과 신앙의 도약(Springet)
+ * 4. 질문 맥락 실존 단계 진단(situationalStageAudit) + KST 시공간 리듬(temporalSolitudeRhythm) + 교차 검증 매트릭스(kierkegaardSynthesisMatrix)
  *
- * @version LUCKEY-KIERKEGAARD-STAGES-OF-LIFE-v1.0.0
+ * @version LUCKEY-KIERKEGAARD-STAGES-OF-LIFE-v2.0.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const KIERKEGAARD_STAGES_OF_LIFE_VERSION = 'LUCKEY-KIERKEGAARD-STAGES-OF-LIFE-v1.0.0';
+export const KIERKEGAARD_STAGES_OF_LIFE_VERSION = 'LUCKEY-KIERKEGAARD-STAGES-OF-LIFE-v2.0.0';
 
 export interface KierkegaardTheme {
   themeKey: string;
@@ -34,6 +30,29 @@ export interface KierkegaardAphorism {
   practicalAction: string;
 }
 
+export interface KierkegaardSituationalStageAudit {
+  stageNameKo: '미적 실존(Aestetisk)' | '윤리적 실존(Etisk)' | '종교적 실존(Religiøst)';
+  focusAxisKo: string;
+  classicalCitation: string;
+  leapDirective: string;
+  reflectiveQuestion: string;
+}
+
+export interface KierkegaardTemporalSolitudeRhythm {
+  kstHour: number;
+  timeWindowKo: string;
+  seasonKo: string;
+  leapReadinessIndex: number;
+  dailySolitudePractice: string;
+}
+
+export interface KierkegaardSynthesisMatrix {
+  denEnkelteAutonomy: number;
+  angstSublimation: number;
+  faithLeapCourage: number;
+  overallExistentialGrade: string;
+}
+
 export interface KierkegaardStagesOfLifeResult {
   engineVersion: string;
   calculatedAtKst: string;
@@ -46,6 +65,9 @@ export interface KierkegaardStagesOfLifeResult {
   // 세부 체계
   activeKierkegaardTheme: KierkegaardTheme;
   focalKierkegaardAphorism: KierkegaardAphorism;
+  situationalStageAudit: KierkegaardSituationalStageAudit;
+  temporalSolitudeRhythm: KierkegaardTemporalSolitudeRhythm;
+  kierkegaardSynthesisMatrix: KierkegaardSynthesisMatrix;
   kierkegaardPersonalCounsel: {
     counselTitle: string;
     philosophicalGuidance: string;
@@ -123,11 +145,113 @@ const KIERKEGAARD_APHORISMS: KierkegaardAphorism[] = [
   },
 ];
 
-export function calculateKierkegaardStagesOfLife(profile: UserProfile): KierkegaardStagesOfLifeResult {
+function buildSituationalStageAudit(question: string, absHash: number): KierkegaardSituationalStageAudit {
+  const q = question.trim();
+  if (/선택|결정|이직|갈등|망설|둘 중|포기/.test(q)) {
+    return {
+      stageNameKo: '윤리적 실존(Etisk)',
+      focusAxisKo: '미온적 유보를 끊는 \'이것이냐 저것이냐\'의 결단',
+      classicalCitation: '《이것이냐 저것이냐》 제2부: "결단의 순간이야말로 인간이 비로소 자기 자신을 선택하는 윤리적 탄생이다."',
+      leapDirective: '완벽한 보장을 기다리며 양다리를 걸치지 말고, 내가 책임질 단 하나의 길을 오늘 선명하게 선택하십시오.',
+      reflectiveQuestion: '지금 결정하지 않고 미루는 동안 내가 잃고 있는 시간의 무게는 얼마입니까?',
+    };
+  }
+  if (/불안|두려|걱정|초조|막연|어지럼/.test(q)) {
+    return {
+      stageNameKo: '종교적 실존(Religiøst)',
+      focusAxisKo: '자유의 어지럼증(Angst)을 도약의 발판으로 삼기',
+      classicalCitation: '《불안의 개념》 제1장: "불안은 자유가 가능성의 심연을 내려다볼 때 느끼는 어지럼증이다."',
+      leapDirective: '불안을 없애려 도망치지 마십시오. 그 어지럼증은 당신 앞에 새로운 가능성의 문이 열렸다는 신호입니다.',
+      reflectiveQuestion: '지금 나를 흔드는 불안 뒤에 숨어 있는, 내가 진짜 시도하고 싶은 가능성은 무엇입니까?',
+    };
+  }
+  if (/외로|고독|혼자|관계|눈치|비교|남들/.test(q)) {
+    return {
+      stageNameKo: '종교적 실존(Religiøst)',
+      focusAxisKo: '군중의 기준을 벗고 홀로 서는 단독자(Den Enkelte)',
+      classicalCitation: '《관점》: "군중은 비진리다. 오직 단독자만이 진리 앞에 설 수 있다."',
+      leapDirective: '타인의 박수나 유행의 잣대를 내려놓고, 아무도 보지 않을 때도 떳떳한 내 양심의 목소리에만 응답하십시오.',
+      reflectiveQuestion: '세상의 시선을 전부 지우고 나 혼자 남았을 때 여전히 지키고 싶은 가치는 무엇입니까?',
+    };
+  }
+  if (/권태|지루|무의미|공허|재미|쾌락/.test(q)) {
+    return {
+      stageNameKo: '미적 실존(Aestetisk)',
+      focusAxisKo: '순간적 자극의 권태를 넘어 성실한 헌신으로 건너가기',
+      classicalCitation: '《이것이냐 저것이냐》 제1부 〈윤작법〉: "미적 삶은 끝내 권태와 절망에 부딪힌다."',
+      leapDirective: '기분이나 자극에 의존하는 수동적 태도를 접고, 작더라도 꾸준히 가꿀 수 있는 책임의 밭을 하나 정하십시오.',
+      reflectiveQuestion: '잠깐의 재미가 식은 뒤에도 내 삶에 남길 수 있는 깊은 열매는 무엇입니까?',
+    };
+  }
+
+  const stages: Array<'미적 실존(Aestetisk)' | '윤리적 실존(Etisk)' | '종교적 실존(Religiøst)'> = [
+    '윤리적 실존(Etisk)',
+    '종교적 실존(Religiøst)',
+    '미적 실존(Aestetisk)',
+  ];
+  return {
+    stageNameKo: stages[absHash % stages.length],
+    focusAxisKo: '실존의 3단계를 관통하는 자기 선택과 신앙의 도약',
+    classicalCitation: '《죽음에 이르는 병》: "진정한 자아는 자기 자신과 투명하게 관계 맺으려 할 때 완성된다."',
+    leapDirective: '남의 시나리오를 사는 일을 멈추고, 지금 내 마음의 순결이 가리키는 한 가지 일에 온 마음을 기울이십시오.',
+    reflectiveQuestion: '오늘 내 영혼이 가장 정직하게 "이것이다"라고 고백할 수 있는 선택은 무엇입니까?',
+  };
+}
+
+function buildTemporalSolitudeRhythm(now: Date, baseScore: number): KierkegaardTemporalSolitudeRhythm {
+  const kstDate = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const kstHour = kstDate.getUTCHours();
+  const kstMonth = kstDate.getUTCMonth() + 1;
+
+  const seasonKo = kstMonth >= 3 && kstMonth <= 5
+    ? '춘계 각성기(새 출발의 도약)'
+    : kstMonth >= 6 && kstMonth <= 8
+      ? '하계 결단기(뜨거운 선택)'
+      : kstMonth >= 9 && kstMonth <= 11
+        ? '추계 성찰기(단독자의 고요)'
+        : '동계 침잠기(7만 길 심연)';
+
+  let timeWindowKo = '오후의 선택 기로(Enten-Eller)';
+  let hourBonus = 0;
+  let dailySolitudePractice = '복잡한 선택지 중 미온적 타협 하나를 덜어내고 핵심 결단에 집중하십시오.';
+
+  if (kstHour >= 5 && kstHour < 10) {
+    timeWindowKo = '새벽의 침묵(Tavshed) · 순수한 지향';
+    hourBonus = 6;
+    dailySolitudePractice = '하루의 소음이 시작되기 전 5분간 침묵하며 오늘 지켜낼 단 하나의 가치를 정하십시오.';
+  } else if (kstHour >= 10 && kstHour < 15) {
+    timeWindowKo = '오전의 윤리적 소명(Etisk Kald)';
+    hourBonus = 4;
+    dailySolitudePractice = '약속과 책임을 회피하지 않고 묵묵히 완수함으로써 자기 선택의 무게를 입증하십시오.';
+  } else if (kstHour >= 15 && kstHour < 20) {
+    timeWindowKo = '오후의 결단 기로(Enten-Eller)';
+    hourBonus = 3;
+    dailySolitudePractice = '미루고 있던 결단 하나를 오늘 안에 매듭짓고 군중의 눈치를 걷어내십시오.';
+  } else {
+    timeWindowKo = '밤의 단독자(Den Enkelte) 성찰';
+    hourBonus = 5;
+    dailySolitudePractice = '하루의 모든 가면과 역할을 내려놓고, 오롯이 나 자신과 마주 앉아 내면의 소리를 들으십시오.';
+  }
+
+  return {
+    kstHour,
+    timeWindowKo,
+    seasonKo,
+    leapReadinessIndex: Math.min(100, Math.round(baseScore + hourBonus)),
+    dailySolitudePractice,
+  };
+}
+
+export function calculateKierkegaardStagesOfLife(
+  profile: UserProfile,
+  question = '',
+  now: Date = new Date()
+): KierkegaardStagesOfLifeResult {
   const seedString =
     (profile?.basic?.birthdate ?? (profile as any)?.birthdate ?? '1990-01-01') +
     (profile?.basic?.name ?? (profile as any)?.name ?? 'User') +
     (profile?.basic?.birthtime ?? (profile as any)?.birthtime ?? '12:00') +
+    question.trim() +
     'KierkegaardStagesOfLife';
 
   let hash = 0;
@@ -148,16 +272,32 @@ export function calculateKierkegaardStagesOfLife(profile: UserProfile): Kierkega
 
   const activeKierkegaardTheme = KIERKEGAARD_THEMES[themeIndex];
   const focalKierkegaardAphorism = KIERKEGAARD_APHORISMS[aphorismIndex];
+  const situationalStageAudit = buildSituationalStageAudit(question, absHash);
+  const temporalSolitudeRhythm = buildTemporalSolitudeRhythm(now, existentialLeapCourageScore);
+
+  const avgScore = Math.round(
+    (existentialLeapCourageScore + denEnkelteAuthenticityScore + angstPossibilityMasteryScore) / 3
+  );
+  const kierkegaardSynthesisMatrix: KierkegaardSynthesisMatrix = {
+    denEnkelteAutonomy: denEnkelteAuthenticityScore,
+    angstSublimation: angstPossibilityMasteryScore,
+    faithLeapCourage: existentialLeapCourageScore,
+    overallExistentialGrade: avgScore >= 88
+      ? '단독자의 신앙 도약(Springet)'
+      : avgScore >= 78
+        ? '자기 선택의 윤리적 각성(Vælg dig selv)'
+        : '불안을 딛고 일어서는 성찰(Awakening)',
+  };
 
   const counselTitle = `키르케고르 단독자 실존 철학: ${activeKierkegaardTheme.themeTitleKo}`;
   const philosophicalGuidance = `쇠렌 키르케고르의 철학은 군중의 안일함에서 벗어나 오롯한 단독자로서 자신의 삶을 선택하고 신뢰의 도약을 감행하도록 이끕니다. ` +
-    `현재 당신에게 필요한 지혜는 '${activeKierkegaardTheme.themeTitleKo}'의 통찰과 깊이 맞닿아 있습니다. ` +
-    `${activeKierkegaardTheme.existentialCounsel} 또한 키르케고르의 명제인 '${focalKierkegaardAphorism.aphorismKo}'(${focalKierkegaardAphorism.stageDimension})을 기억하여, ` +
-    `${focalKierkegaardAphorism.practicalAction}`;
+    `현재 질문은 [${situationalStageAudit.stageNameKo}] 단계의 '${situationalStageAudit.focusAxisKo}'와 맞닿아 있습니다. ` +
+    `${situationalStageAudit.leapDirective} 아울러 '${focalKierkegaardAphorism.aphorismKo}'(${focalKierkegaardAphorism.stageDimension})을 기억하며 ` +
+    `${temporalSolitudeRhythm.dailySolitudePractice}`;
 
   return {
     engineVersion: KIERKEGAARD_STAGES_OF_LIFE_VERSION,
-    calculatedAtKst: new Date().toISOString(),
+    calculatedAtKst: new Date(now.getTime() + 9 * 60 * 60 * 1000).toISOString().replace('Z', '+09:00'),
     existentialLeapCourageScore,
     denEnkelteAuthenticityScore,
     angstPossibilityMasteryScore,
@@ -165,6 +305,9 @@ export function calculateKierkegaardStagesOfLife(profile: UserProfile): Kierkega
     spiritSynthesisWholenessScore,
     activeKierkegaardTheme,
     focalKierkegaardAphorism,
+    situationalStageAudit,
+    temporalSolitudeRhythm,
+    kierkegaardSynthesisMatrix,
     kierkegaardPersonalCounsel: {
       counselTitle,
       philosophicalGuidance,
@@ -174,18 +317,19 @@ export function calculateKierkegaardStagesOfLife(profile: UserProfile): Kierkega
 
 export function formatKierkegaardStagesOfLifePrompt(res: KierkegaardStagesOfLifeResult): string {
   return [
-    `【쇠렌 키르케고르 단독자(Den Enkelte) & 실존 3단계 지표】`,
+    `【쇠렌 키르케고르 단독자(Den Enkelte) & 실존 3단계 지표 v2.0】`,
     `- 실존적 도약(Springet) 결단력: ${res.existentialLeapCourageScore}/100`,
     `- 단독자(Den Enkelte) 주체성 지수: ${res.denEnkelteAuthenticityScore}/100`,
     `- 불안의 가능성 승화도(Angst): ${res.angstPossibilityMasteryScore}/100`,
     `- 자기 선택 성실도(Vælg dig selv): ${res.ethicalSelfChoiceCommitmentScore}/100`,
     `- 영적 자아 일치 평정심(Fortvivlelse 치유): ${res.spiritSynthesisWholenessScore}/100`,
+    `- 질문 맥락 실존 단계: [${res.situationalStageAudit.stageNameKo}] ${res.situationalStageAudit.focusAxisKo}`,
+    `- 원전 처방: ${res.situationalStageAudit.classicalCitation} → ${res.situationalStageAudit.leapDirective}`,
+    `- 성찰 질문: ${res.situationalStageAudit.reflectiveQuestion}`,
+    `- KST 시공간 리듬: ${res.temporalSolitudeRhythm.timeWindowKo} (${res.temporalSolitudeRhythm.seasonKo}, 도약지수 ${res.temporalSolitudeRhythm.leapReadinessIndex}/100) — ${res.temporalSolitudeRhythm.dailySolitudePractice}`,
+    `- 종합 등급: ${res.kierkegaardSynthesisMatrix.overallExistentialGrade}`,
     `- 핵심 실존 테마: ${res.activeKierkegaardTheme.themeTitleKo} [${res.activeKierkegaardTheme.themeTitleDanish}]`,
-    `- 철학적 통찰: ${res.activeKierkegaardTheme.philosophicalInsight}`,
-    `- 실존적 조언: ${res.activeKierkegaardTheme.existentialCounsel}`,
-    `- 핵심 아포리즘: "${res.focalKierkegaardAphorism.aphorismKo}"`,
-    `- 덴마크어 원문: "${res.focalKierkegaardAphorism.aphorismDanish}" [${res.focalKierkegaardAphorism.stageDimension}]`,
-    `- 실천적 행동 지침: ${res.focalKierkegaardAphorism.practicalAction}`,
+    `- 핵심 아포리즘: "${res.focalKierkegaardAphorism.aphorismKo}" ("${res.focalKierkegaardAphorism.aphorismDanish}")`,
     `- 통합 실존 처방: ${res.kierkegaardPersonalCounsel.philosophicalGuidance}`,
   ].join('\n');
 }
