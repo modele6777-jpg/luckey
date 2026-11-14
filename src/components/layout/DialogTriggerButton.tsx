@@ -1,9 +1,11 @@
 import type { ButtonHTMLAttributes } from 'react';
+import { rememberOverlayPane } from '@/lib/overlayPane';
 
 /** Keep the tap target stable until click, even when blurring chat closes a keyboard. */
 export function DialogTriggerButton({ onClick, onPointerDown, type = 'button', ...props }: ButtonHTMLAttributes<HTMLButtonElement>) {
   return <button {...props} type={type}
     onPointerDown={event => {
+      rememberOverlayPane(event.currentTarget, { x: event.clientX, y: event.clientY });
       onPointerDown?.(event);
       if (event.button === 0 && event.isPrimary) event.preventDefault();
     }}

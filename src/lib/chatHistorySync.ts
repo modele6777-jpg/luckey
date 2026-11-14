@@ -157,25 +157,49 @@ export function isMessageFromToday(m: UnifiedMessage | null | undefined): boolea
   return lastSessionDate === todayKey;
 }
 
-/** Keep the last week on screen so reopening Lucy is not a blank greeting. */
-export const RECENT_CONVERSATION_MS = 7 * 24 * 60 * 60 * 1000;
+/** The visible Lucy thread is the latest saved exchange, not only the current calendar day. */
 export const RECENT_CONVERSATION_LIMIT = 80;
+
+export function messageTime(message: UnifiedMessage | null | undefined): number {
+  const timestamp = message?.timestamp as unknown;
+  if (typeof timestamp === 'number' && Number.isFinite(timestamp)) return timestamp;
+  if (typeof timestamp === 'string' && timestamp.trim() && Number.isFinite(Number(timestamp))) return Number(timestamp);
+  if (timestamp && typeof timestamp === 'object') {
+    const record = timestamp as { seconds?: number; toMillis?: () => number; toDate?: () => Date };
+    if (typeof record.toMillis === 'function') {
+      const millis = record.toMillis();
+      if (Number.isFinite(millis)) return millis;
+    }
+    if (typeof record.seconds === 'number') return record.seconds * 1000;
+    if (typeof record.toDate === 'function') {
+      const date = record.toDate();
+      if (date instanceof Date && Number.isFinite(date.getTime())) return date.getTime();
+    }
+  }
+  return 0;
+}
 
 export function isVisibleConversationMessage(m: UnifiedMessage | null | undefined, now = Date.now()): boolean {
   if (!m || isErrorMessage(m) || isEmptyPlaceholder(m)) return false;
-  if (isGreetingMessage(m)) return isMessageFromToday(m);
-  if (typeof m.timestamp === 'number' && Number.isFinite(m.timestamp)) {
-    return m.timestamp >= now - RECENT_CONVERSATION_MS && m.timestamp <= now + 60_000;
-  }
-  return isMessageFromToday(m);
+  if (isGreetingMessage(m)) return isMessageFromToday({ ...m, timestamp: messageTime(m) || m.timestamp });
+  const time = messageTime(m);
+  if (!time) return isMessageFromToday(m);
+  return time <= now + 60_000;
 }
 
 export function retainRecentConversation(messages: UnifiedMessage[] | null | undefined, now = Date.now()): UnifiedMessage[] {
   const visible = (Array.isArray(messages) ? messages : [])
     .filter((message) => isVisibleConversationMessage(message, now))
-    .sort((a, b) => Number(a.timestamp || 0) - Number(b.timestamp || 0));
+    .map((message) => {
+      const time = messageTime(message);
+      return time && time !== message.timestamp ? { ...message, timestamp: time } : message;
+    })
+    .sort((a, b) => messageTime(a) - messageTime(b));
   const greeting = visible.find((message) => isGreetingMessage(message));
   const conversation = visible.filter((message) => !isGreetingMessage(message)).slice(-RECENT_CONVERSATION_LIMIT);
+  if (!conversation.some((message) => message.role === 'user' && message.content)) {
+    return greeting ? [greeting] : [];
+  }
   return greeting ? [greeting, ...conversation] : conversation;
 }
 

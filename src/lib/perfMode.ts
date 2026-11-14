@@ -192,33 +192,83 @@ export function resolveDuoViewport(width: number, height: number, spanned = fals
 
 let lastDuoLayoutViewport: { width: number; height: number } | null = null;
 
-export function isDuoUnfoldedState(): DuoUnfoldedState {
-  if (typeof window === 'undefined') return { unfolded: false, orientation: 'portrait' };
-  const width = window.innerWidth;
-  const activeEl = typeof document !== 'undefined' ? document.activeElement : null;
+export const DUO_SEGMENT_QUERIES = [
+  '(horizontal-viewport-segments: 2)',
+  '(vertical-viewport-segments: 2)',
+  '(spanning: single-fold-vertical)',
+  '(spanning: single-fold-horizontal)',
+] as const;
+
+export function isViewportSpanned(win: Window = window): boolean {
+  return DUO_SEGMENT_QUERIES.some(query => {
+    try { return win.matchMedia(query).matches; } catch { return false; }
+  });
+}
+
+function keyboardOccludesLayout(win: Window): boolean {
+  const activeEl = win.document?.activeElement;
   const isInputActive = Boolean(
     activeEl &&
     (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA' || (activeEl as HTMLElement).isContentEditable)
   );
-  const keyboardOpen =
-    (typeof document !== 'undefined' &&
-      (document.documentElement.classList.contains('keyboard-open') ||
-       document.body?.classList.contains('keyboard-open') ||
-       document.documentElement.classList.contains('lucy-input-focused') ||
-       document.body?.classList.contains('lucy-input-focused'))) ||
-    isInputActive;
-  // A keyboard reduces available height; it does not fold the device.
-  const height = keyboardOpen && lastDuoLayoutViewport?.width === width
-    ? lastDuoLayoutViewport.height : window.innerHeight;
-  if (!keyboardOpen) lastDuoLayoutViewport = { width, height };
-  const spanned = [
-    '(horizontal-viewport-segments: 2)', '(vertical-viewport-segments: 2)',
-    '(spanning: single-fold-vertical)', '(spanning: single-fold-horizontal)',
-  ].some(query => {
-    try { return window.matchMedia(query).matches; } catch { return false; }
-  });
+  const doc = win.document;
+  return isInputActive || Boolean(
+    doc?.documentElement.classList.contains('keyboard-open') ||
+    doc?.body?.classList.contains('keyboard-open') ||
+    doc?.documentElement.classList.contains('lucy-input-focused') ||
+    doc?.body?.classList.contains('lucy-input-focused')
+  );
+}
 
-  return resolveDuoViewport(width, height, spanned);
+/** Full screen height for this window width, ignoring a keyboard or browser chrome shrink. */
+function unoccludedHeight(win: Window, width: number, rawHeight: number): number {
+  const screen = win.screen;
+  let screenHeight = 0;
+  if (screen?.width && screen?.height) {
+    const near = (a: number, b: number) => Math.abs(a - b) <= 96;
+    if (near(width, screen.width)) screenHeight = screen.height;
+    else if (near(width, screen.height)) screenHeight = screen.width;
+  }
+  const remembered = lastDuoLayoutViewport && Math.abs(lastDuoLayoutViewport.width - width) <= 2
+    ? lastDuoLayoutViewport.height
+    : 0;
+  return Math.max(rawHeight, screenHeight, remembered);
+}
+
+/**
+ * Fold state from the device's layout size, not from a keyboard or URL-bar shrink.
+ * A real fold changes the window width to the cover. A shorter height at the same
+ * unfolded width stays dual.
+ */
+export function isDuoUnfoldedState(): DuoUnfoldedState {
+  if (typeof window === 'undefined') return { unfolded: false, orientation: 'portrait' };
+  const width = window.innerWidth;
+  const rawHeight = window.innerHeight;
+  if (isViewportSpanned(window)) return resolveDuoViewport(width, rawHeight, true);
+
+  const fullHeight = unoccludedHeight(window, width, rawHeight);
+  const keyboard = keyboardOccludesLayout(window);
+  const collapsed = fullHeight > rawHeight * 1.12;
+  const height = keyboard || collapsed ? fullHeight : rawHeight;
+  if (!keyboard && !collapsed) lastDuoLayoutViewport = { width, height: rawHeight };
+  return resolveDuoViewport(width, height, false);
+}
+
+/** Re-evaluate when the hinge, keyboard, or page visibility changes without a resize. */
+export function subscribeDuoLayout(onChange: () => void): () => void {
+  if (typeof window === 'undefined') return () => {};
+  const queries = DUO_SEGMENT_QUERIES.map(query => {
+    try { return window.matchMedia(query); } catch { return null; }
+  }).filter((query): query is MediaQueryList => Boolean(query));
+  const handler = () => onChange();
+  queries.forEach(query => query.addEventListener?.('change', handler));
+  window.addEventListener('pageshow', handler);
+  document.addEventListener('visibilitychange', handler);
+  return () => {
+    queries.forEach(query => query.removeEventListener?.('change', handler));
+    window.removeEventListener('pageshow', handler);
+    document.removeEventListener('visibilitychange', handler);
+  };
 }
 
 function isFoldableInnerScreen(): boolean {

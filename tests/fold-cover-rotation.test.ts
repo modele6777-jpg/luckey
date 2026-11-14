@@ -176,6 +176,38 @@ test('explicit spanned screens remain unfolded even with a narrow viewport', () 
   }
 });
 
+test('a shorter viewport at the same unfolded width does not fall back to one pane', () => {
+  assert.equal(resolveDuoViewport(890, 626).unfolded, true);
+  const previousWindow = globalThis.window;
+  const previousDocument = globalThis.document;
+  const viewport = {
+    innerWidth: 890,
+    innerHeight: 626,
+    matchMedia: () => ({ matches: false }),
+    screen: { width: 890, height: 626 },
+  };
+  Object.assign(globalThis, {
+    window: viewport,
+    document: {
+      activeElement: null,
+      documentElement: { classList: { contains: () => false } },
+      body: { classList: { contains: () => false } },
+    },
+  });
+  try {
+    assert.equal(isDuoUnfoldedState().unfolded, true);
+    viewport.innerHeight = 280;
+    assert.equal(isDuoUnfoldedState().unfolded, true, 'keyboard or browser chrome must not fold the inner display');
+    assert.equal(isDualPaneLayout(), true);
+    viewport.innerWidth = 390;
+    viewport.innerHeight = 844;
+    viewport.screen = { width: 390, height: 844 };
+    assert.equal(isDuoUnfoldedState().unfolded, false, 'a real cover width still uses one pane');
+  } finally {
+    Object.assign(globalThis, { window: previousWindow, document: previousDocument });
+  }
+});
+
 test('a keyboard on the inner display does not fold it', () => {
   const previousWindow = globalThis.window;
   const previousDocument = globalThis.document;

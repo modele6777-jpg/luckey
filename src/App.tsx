@@ -32,7 +32,7 @@ import { KeyCosmicLoader } from "./components/KeyCosmicLoader";
 import { GlobalScrollToTopOnHeaderTap } from "./components/navigation/GlobalScrollToTopOnHeaderTap";
 import { BgMusicPlayer } from "./components/trinity/BgMusicPlayer";
 import { initTTSAudioLifecycle } from "./lib/audio";
-import { shouldUsePageTransitions, shouldMountBgMusicPlayer, isDualPaneLayout, isDuoUnfoldedState } from "./lib/perfMode";
+import { shouldUsePageTransitions, shouldMountBgMusicPlayer, isDualPaneLayout, isDuoUnfoldedState, subscribeDuoLayout } from "./lib/perfMode";
 import { isDuoDividerDoubleTap, mapDuoPaneSide, shouldResetDuoPaneSwapOnFold, type DuoDividerTap } from "./lib/duoPaneSwap";
 import { DuoCosmicAmbientRoom } from "./components/duo/DuoCosmicAmbientRoom";
 import AuroraBackground from "./components/AuroraBackground";
@@ -332,10 +332,12 @@ function AppContent() {
     window.addEventListener('resize', handleLayoutChange, { passive: true });
     window.addEventListener('orientationchange', handleLayoutChange, { passive: true });
     window.visualViewport?.addEventListener('resize', handleLayoutChange, { passive: true });
+    const unsubscribeDuo = subscribeDuoLayout(handleLayoutChange);
     return () => {
       window.removeEventListener('resize', handleLayoutChange);
       window.removeEventListener('orientationchange', handleLayoutChange);
       window.visualViewport?.removeEventListener('resize', handleLayoutChange);
+      unsubscribeDuo();
     };
   }, [navigate]);
 

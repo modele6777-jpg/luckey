@@ -13,14 +13,21 @@ const message = (id: string, ageMs: number, role: UnifiedMessage['role'] = 'user
   timestamp: now - ageMs,
 });
 
-test('reopening Lucy keeps the recent thread and drops month-old messages', () => {
+test('reopening Lucy keeps the latest saved thread, including one from yesterday', () => {
   const kept = retainRecentConversation([
     message('yesterday', 26 * 60 * 60 * 1000),
     message('today', 60 * 60 * 1000, 'assistant'),
-    message('ancient', 30 * 24 * 60 * 60 * 1000),
     { id: 'greet-old', role: 'model', content: 'old hello', timestamp: now - 3 * 24 * 60 * 60 * 1000 },
   ], now);
   assert.deepEqual(kept.map((entry) => entry.id), ['yesterday', 'today']);
+});
+
+test('only the latest 80 messages stay in the visible thread', () => {
+  const many = Array.from({ length: 100 }, (_, index) => message(`m-${index}`, (100 - index) * 60 * 60 * 1000));
+  const kept = retainRecentConversation(many, now).filter((entry) => entry.role === 'user');
+  assert.equal(kept.length, 80);
+  assert.equal(kept[0].id, 'm-20');
+  assert.equal(kept.at(-1)?.id, 'm-99');
 });
 
 test('a date change no longer replaces a recent conversation with a blank greeting', () => {
