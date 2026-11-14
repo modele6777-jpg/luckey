@@ -7242,6 +7242,34 @@ test('v2.1.0 pure qualitative deepening: Aristotle Mesotes, Plato Cave, and Epic
   assert.ok(epictetusPrompt.includes('해석 경계'));
 });
 
+test('Aztec Tonalamatl, Balinese Tri Hita Karana, and Celtic Tuatha Four Treasures v2.0.0: qualitative/temporal audits without prompt score leaks', () => {
+  const now = new Date('2026-11-15T04:55:00+09:00');
+
+  const aztec = calculateAztecTonalamatl({ profile, question: '새로운 프로젝트를 시작하려는데 방향이 고민됩니다', now });
+  assert.equal(aztec.engineVersion, 'LUCKEY-AZTEC-TONALAMATL-v2.0.0');
+  assert.ok(aztec.situationalTonalamatlAudit.focusAxis.length > 0);
+  assert.ok(aztec.temporalTonalamatlRhythm.sunPhase.length > 0);
+  assert.ok(aztec.tonalamatlSynthesisMatrix.ollinActionDirective.length > 0);
+  const aztecPrompt = formatAztecTonalamatlPrompt(aztec);
+  assert.ok(!aztecPrompt.includes('/100') && !aztecPrompt.includes('%'));
+
+  const balinese = calculateBalineseTriHitaKarana(profile, '가족과의 관계에서 말의 온도를 조율하고 싶습니다', now);
+  assert.equal(balinese.engineVersion, 'LUCKEY-BALINESE-TRI-HITA-v2.0.0');
+  assert.ok(balinese.situationalTriHitaAudit.harmonyAxis.length > 0);
+  assert.ok(balinese.temporalTriHitaRhythm.sandhyaPhase.length > 0);
+  assert.ok(balinese.triHitaSynthesisMatrix.dailyOfferingDirective.length > 0);
+  const balinesePrompt = formatBalineseTriHitaKaranaPrompt(balinese);
+  assert.ok(!balinesePrompt.includes('/100') && !balinesePrompt.includes('%'));
+
+  const celtic = calculateCelticTuathaFourTreasures({ profile, question: '중요한 결정을 앞두고 돌파력이 필요합니다', now });
+  assert.equal(celtic.engineVersion, 'LUCKEY-CELTIC-TUATHA-v2.0.0');
+  assert.ok(celtic.situationalTuathaAudit.battlefieldTheme.length > 0);
+  assert.ok(celtic.temporalTuathaRhythm.celticDayWindow.length > 0);
+  assert.ok(celtic.tuathaSynthesisMatrix.nextHeroicStep.length > 0);
+  const celticPrompt = formatCelticTuathaFourTreasuresPrompt(celtic);
+  assert.ok(!celticPrompt.includes('/100') && !celticPrompt.includes('%'));
+});
+
 
 
 

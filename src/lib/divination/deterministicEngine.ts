@@ -2821,7 +2821,7 @@ try {
   // 166. 발리 힌두교 트리 히타 카라나(3대 우주 조화) 및 트리 카야 파리수다 3업 정화 엔진
   const balineseTriHitaKaranaResult = calculateSupplement('balineseTriHitaKaranaResult', () => ((() => {
     try {
-      return calculateBalineseTriHitaKarana(profile);
+      return calculateBalineseTriHitaKarana(profile, question, now);
     } catch (_) {
       return null;
     }

@@ -2,18 +2,13 @@
  * 고대 아일랜드 켈트 투아하 데 다난(Tuatha Dé Danann) 4대 보물 & 영웅 운명 엔진 (celticTuathaFourTreasuresEngine.ts)
  *
  * 에린(Erin) 신화 원전 《에린 침략의 서(Lebor Gabála Érenn)》 기반:
- * 신들의 민족 투아하 데 다난이 북방 4대 신성 도시에서 가져온 4대 신성 보물.
- * 1. 리아 팔 (Lia Fáil, 운명의 돌) - 북쪽 파리아스(Falias) | 원소: 흙 | 진정한 왕권과 소명의 증명, 진실의 포효
- * 2. 루의 창 (Spear of Lugh / 슬라우 고르마흐) - 동쪽 고리아스(Gorias) | 원소: 불 | 필승의 관통력과 지칠 줄 모르는 영웅적 돌파
- * 3. 누아다의 검 (Sword of Nuada / 클라우 솔리스) - 남쪽 핀디아스(Findias) | 원소: 공기 | 누구도 피할 수 없는 정의의 섬광과 단호한 결단
- * 4. 다그다의 솥 (Cauldron of the Dagda / 무르안) - 서쪽 무리아스(Murias) | 원소: 물 | 아무도 굶주려 떠나지 않는 무한한 풍요와 치유
- *
- * 다누(Danu) 여신의 가호 아래 내담자의 현실 돌파력과 생명 자양분을 100% 결정론적으로 도출합니다.
+ * 신들의 민족 투아하 데 다난이 북방 4대 신성 도시(파리아스·고리아스·핀디아스·무리아스)에서 가져온 4대 신성 보물과
+ * 질문 맥락별 영웅 감사, KST 켈트 시공간 리듬을 교차 해독합니다.
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const CELTIC_TUATHA_FOUR_TREASURES_ENGINE_VERSION = '1.0.0';
+export const CELTIC_TUATHA_FOUR_TREASURES_ENGINE_VERSION = 'LUCKEY-CELTIC-TUATHA-v2.0.0';
 
 export interface TuathaTreasure {
   id: 'lia_fail' | 'spear_of_lugh' | 'sword_of_nuada' | 'cauldron_of_dagda';
@@ -22,14 +17,35 @@ export interface TuathaTreasure {
   element: '흙(Earth)' | '불(Fire)' | '공기(Air)' | '물(Water)';
   direction: '북쪽(파리아스)' | '동쪽(고리아스)' | '남쪽(핀디아스)' | '서쪽(무리아스)';
   archetype: string;
-  resonanceScore: number; // 0 ~ 100
+  resonanceScore: number; // 0 ~ 100 (내부 정량 연산용)
   divineVow: string;
+}
+
+export interface CelticTuathaSituationalAudit {
+  battlefieldTheme: string;
+  requiredTreasureVirtue: string;
+  legendaryPrecedent: string;
+  shadowWarning: string;
+}
+
+export interface CelticTuathaTemporalRhythm {
+  kstHour: number;
+  celticDayWindow: string;
+  wheelOfTheYearSeason: string;
+  rhythmDirective: string;
+  heroicTempo: '돌파' | '수호' | '치유';
+}
+
+export interface CelticTuathaSynthesisMatrix {
+  sovereigntyAlignment: '왕권확립' | '전선균형' | '자양충전';
+  elementBalanceNote: string;
+  nextHeroicStep: string;
 }
 
 export interface CelticTuathaFourTreasuresReport {
   engineVersion: string;
   timestamp: string;
-  tuathaHeroResonance: number; // 0 ~ 100 영웅 운명 공명 지수
+  tuathaHeroResonance: number;
   treasures: {
     liaFail: TuathaTreasure;
     spearOfLugh: TuathaTreasure;
@@ -37,8 +53,11 @@ export interface CelticTuathaFourTreasuresReport {
     cauldronOfDagda: TuathaTreasure;
     dominantTreasure: TuathaTreasure;
   };
-  danaGoddessBlessing: string; // 모신 다누의 신성 축복
-  heroicActionPrescription: string; // 현실 돌파를 위한 투아하 영웅 행동 처방
+  situationalTuathaAudit: CelticTuathaSituationalAudit;
+  temporalTuathaRhythm: CelticTuathaTemporalRhythm;
+  tuathaSynthesisMatrix: CelticTuathaSynthesisMatrix;
+  danaGoddessBlessing: string;
+  heroicActionPrescription: string;
 }
 
 const TREASURES_DEF: Record<TuathaTreasure['id'], Omit<TuathaTreasure, 'resonanceScore'>> = {
@@ -80,6 +99,94 @@ const TREASURES_DEF: Record<TuathaTreasure['id'], Omit<TuathaTreasure, 'resonanc
   },
 };
 
+function getKstParts(now: Date): { hour: number; month: number } {
+  const formatter = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Asia/Seoul',
+    hour: 'numeric',
+    month: 'numeric',
+    hour12: false,
+  });
+  const parts = formatter.formatToParts(now);
+  return {
+    hour: Number(parts.find((p) => p.type === 'hour')?.value || '12') % 24,
+    month: Number(parts.find((p) => p.type === 'month')?.value || '1'),
+  };
+}
+
+function buildSituationalAudit(question: string, dominant: TuathaTreasure): CelticTuathaSituationalAudit {
+  const q = question.toLowerCase();
+  if (/일|사업|프로젝트|직업|시험|성공|경쟁|돌파/.test(q)) {
+    return {
+      battlefieldTheme: '타라(Tara)의 왕좌와 소명 입증 전선',
+      requiredTreasureVirtue: `${dominant.nameKo}의 ${dominant.archetype}`,
+      legendaryPrecedent: '모이투라(Mag Tuired) 전투에서 루가 모든 기술의 대가(Samildánach)로서 적진을 뚫었듯, 분산된 힘을 하나로 모을 때입니다.',
+      shadowWarning: '완벽한 준비만을 기다리다 결정적 타이밍을 놓치는 우유부단함을 경계하십시오.',
+    };
+  }
+  if (/관계|사랑|이별|결혼|사람|갈등|결정|선택/.test(q)) {
+    return {
+      battlefieldTheme: '진실의 검과 자비의 솥이 만나는 인연의 관문',
+      requiredTreasureVirtue: '모호함을 정리하는 분별과 상대를 품는 넉넉함의 균형',
+      legendaryPrecedent: '은빛 손의 왕 누아다가 명예를 회복했듯, 감정에 휘둘리지 않고 정직한 경계를 세울 때 관계가 바로 섭니다.',
+      shadowWarning: '미련 때문에 끊어야 할 매듭을 질질 끌거나, 반대로 성급한 칼날로 인연을 베지 마십시오.',
+    };
+  }
+  if (/건강|피로|휴식|마음|치유|불안|재물|생활/.test(q)) {
+    return {
+      battlefieldTheme: '다그다의 솥을 채우는 생명력 회복의 터전',
+      requiredTreasureVirtue: '고갈되지 않는 내면 자양분과 대지의 안정감',
+      legendaryPrecedent: '다그다의 마르지 않는 솥이 지친 전사들을 먹였듯, 먼저 자신의 그릇을 채워야 다음 싸움을 치를 수 있습니다.',
+      shadowWarning: '기력이 바닥난 상태에서 무리한 돌파를 강행하면 오히려 중심축이 흔들립니다.',
+    };
+  }
+  return {
+    battlefieldTheme: `${dominant.direction}에서 열린 투아하 영웅의 소명`,
+    requiredTreasureVirtue: dominant.archetype,
+    legendaryPrecedent: `신성 보물 ${dominant.nameKo}의 서약처럼("${dominant.divineVow}") 지금 선 자리에서 흔들리지 않는 원칙을 세우십시오.`,
+    shadowWarning: '외부의 소음에 시선을 빼앗겨 본래의 서약을 잊지 않도록 주의하십시오.',
+  };
+}
+
+function buildTemporalRhythm(now: Date): CelticTuathaTemporalRhythm {
+  const { hour, month } = getKstParts(now);
+
+  let celticDayWindow = '루(Lugh)의 정오 광명 창';
+  let heroicTempo: CelticTuathaTemporalRhythm['heroicTempo'] = '돌파';
+  let rhythmDirective = '태양의 기운이 가장 왕성한 시간대이므로 핵심 목표를 정조준해 추진하기 좋습니다.';
+
+  if (hour >= 5 && hour < 10) {
+    celticDayWindow = '브리짓(Brigid)의 여명 화로 창';
+    heroicTempo = '돌파';
+    rhythmDirective = '새로운 하루의 영감과 창조적 불꽃을 지펴 첫 과업을 시작하기 가장 알맞은 시간입니다.';
+  } else if (hour >= 10 && hour < 16) {
+    celticDayWindow = '루(Lugh)의 태양 창공 창';
+    heroicTempo = '돌파';
+    rhythmDirective = '실무와 결단, 외부 협의 등 직접적인 전진과 돌파가 필요한 일에 힘을 실으십시오.';
+  } else if (hour >= 16 && hour < 21) {
+    celticDayWindow = '누아다(Nuada)의 황혼 정돈 창';
+    heroicTempo = '수호';
+    rhythmDirective = '오늘 거둔 성과와 남은 과제를 선명히 구분하고 불필요한 잡념을 정리할 시간입니다.';
+  } else {
+    celticDayWindow = '다그다(Dagda)의 심야 솥 안식 창';
+    heroicTempo = '치유';
+    rhythmDirective = '칼과 창을 내려놓고 깊은 휴식과 회복으로 내일의 생명력을 비축할 시간입니다.';
+  }
+
+  let wheelOfTheYearSeason = '임볼크(Imbolc) · 빛의 싹틈';
+  if (month >= 2 && month <= 4) wheelOfTheYearSeason = '임볼크~벨타네(Imbolc–Beltane) · 여명과 도약';
+  else if (month >= 5 && month <= 7) wheelOfTheYearSeason = '벨타네~루나사(Beltane–Lughnasadh) · 열정과 만개';
+  else if (month >= 8 && month <= 10) wheelOfTheYearSeason = '루나사~삼하인(Lughnasadh–Samhain) · 수확과 정돈';
+  else wheelOfTheYearSeason = '삼하인~율(Samhain–Yule) · 침잠과 뿌리 수호';
+
+  return {
+    kstHour: hour,
+    celticDayWindow,
+    wheelOfTheYearSeason,
+    rhythmDirective,
+    heroicTempo,
+  };
+}
+
 export function calculateCelticTuathaFourTreasures(options?: {
   profile?: UserProfile | null;
   question?: string;
@@ -113,6 +220,25 @@ export function calculateCelticTuathaFourTreasures(options?: {
 
   const tuathaHeroResonance = Math.min(100, Math.max(35, Math.floor((liaPower + spearPower + swordPower + cauldronPower) / 4)));
 
+  const situationalTuathaAudit = buildSituationalAudit(question, dominantTreasure);
+  const temporalTuathaRhythm = buildTemporalRhythm(now);
+
+  const sovereigntyAlignment: CelticTuathaSynthesisMatrix['sovereigntyAlignment'] =
+    dominantTreasure.id === 'lia_fail' || dominantTreasure.id === 'spear_of_lugh'
+      ? '왕권확립'
+      : dominantTreasure.id === 'sword_of_nuada'
+        ? '전선균형'
+        : '자양충전';
+
+  const elementBalanceNote = `주재 보물 [${dominantTreasure.nameKo}(${dominantTreasure.element})]가 전면에 서고, ${all[1].nameKo}(${all[1].element})가 보조 축으로 받쳐주는 구도입니다.`;
+  const nextHeroicStep = `${temporalTuathaRhythm.celticDayWindow} 리듬(${temporalTuathaRhythm.heroicTempo})에 맞춰 ${situationalTuathaAudit.battlefieldTheme}의 핵심 과제를 실행하십시오.`;
+
+  const tuathaSynthesisMatrix: CelticTuathaSynthesisMatrix = {
+    sovereigntyAlignment,
+    elementBalanceNote,
+    nextHeroicStep,
+  };
+
   let danaGoddessBlessing = '';
   let heroicActionPrescription = '';
 
@@ -141,6 +267,9 @@ export function calculateCelticTuathaFourTreasures(options?: {
       cauldronOfDagda,
       dominantTreasure,
     },
+    situationalTuathaAudit,
+    temporalTuathaRhythm,
+    tuathaSynthesisMatrix,
     danaGoddessBlessing,
     heroicActionPrescription,
   };
@@ -149,16 +278,17 @@ export function calculateCelticTuathaFourTreasures(options?: {
 export function formatCelticTuathaFourTreasuresPrompt(rep: CelticTuathaFourTreasuresReport): string {
   return `[고대 아일랜드 켈트 투아하 데 다난(Tuatha Dé Danann) 4대 보물 영웅 운명 실측 데이터]
 · 엔진 버전: v${rep.engineVersion}
-· 투아하 영웅 운명 공명 지수: ${rep.tuathaHeroResonance}/100
-· 핵심 지배 신성 보물: ${rep.treasures.dominantTreasure.nameKo} (${rep.treasures.dominantTreasure.irishName}) — 공명력 ${rep.treasures.dominantTreasure.resonanceScore}%
+· 핵심 지배 신성 보물: ${rep.treasures.dominantTreasure.nameKo} (${rep.treasures.dominantTreasure.irishName})
   - 방위 및 원소: ${rep.treasures.dominantTreasure.direction} | ${rep.treasures.dominantTreasure.element}
   - 영웅 원형: ${rep.treasures.dominantTreasure.archetype}
   - 신성 서약: "${rep.treasures.dominantTreasure.divineVow}"
-· 4대 보물 공명 밸런스:
-  1) 리아 팔 (운명의 돌/흙): ${rep.treasures.liaFail.resonanceScore}%
-  2) 루의 승리 창 (관통/불): ${rep.treasures.spearOfLugh.resonanceScore}%
-  3) 누아다의 검 (결단/공기): ${rep.treasures.swordOfNuada.resonanceScore}%
-  4) 다그다의 솥 (치유풍요/물): ${rep.treasures.cauldronOfDagda.resonanceScore}%
+· 질문 맥락 감사: ${rep.situationalTuathaAudit.battlefieldTheme} · 필요 덕목(${rep.situationalTuathaAudit.requiredTreasureVirtue})
+  - 원전 선례: ${rep.situationalTuathaAudit.legendaryPrecedent}
+  - 경계할 그림자: ${rep.situationalTuathaAudit.shadowWarning}
+· KST 시공간 리듬 (${rep.temporalTuathaRhythm.kstHour}시): ${rep.temporalTuathaRhythm.celticDayWindow} · ${rep.temporalTuathaRhythm.wheelOfTheYearSeason} (${rep.temporalTuathaRhythm.heroicTempo})
+  - 시간대 지침: ${rep.temporalTuathaRhythm.rhythmDirective}
+· 사대 보물 교차 매트릭스: ${rep.tuathaSynthesisMatrix.sovereigntyAlignment} — ${rep.tuathaSynthesisMatrix.elementBalanceNote}
+  - 다음 영웅적 발걸음: ${rep.tuathaSynthesisMatrix.nextHeroicStep}
 · 모신 다누의 신성 축복: ${rep.danaGoddessBlessing}
 · 현실 돌파 영웅 행동 처방: ${rep.heroicActionPrescription}`;
 }

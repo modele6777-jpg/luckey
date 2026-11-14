@@ -3,17 +3,12 @@
  *
  * 유네스코 인류무형문화유산 등재 발리 힌두 고유 철학 《트리 히타 카라나(Tri Hita Karana)》 원전 기반:
  * 행복과 번영(Sukham)을 이끄는 3대 우주적 조화의 축(신성 Parhyangan · 인간 Pawongan · 자연 Palemahan)과
- * 신체·언어·마음의 3대 업을 정화하는 《트리 카야 파리수다(Tri Kaya Parisudha)》 수리 모델링.
- *
- * 3대 우주 조화:
- * 1. Parhyangan: 상향 위디 와사(Ida Sang Hyang Widhi Wasa) 우주 최고신 및 조상신과의 영적 합일.
- * 2. Pawongan: 타트 트밤 아시(Tat Twam Asi, '네가 곧 나이다')에 입각한 인간 간의 깊은 자비와 유대.
- * 3. Palemahan: 대지모신 이부 페르티위(Ibu Pertiwi)와 수박(Subak) 수자원 체계가 상징하는 생태적 공존.
+ * 신체·언어·마음의 3대 업을 정화하는 《트리 카야 파리수다(Tri Kaya Parisudha)》 정성·시공간 모델링.
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const BALINESE_TRI_HITA_KARANA_ENGINE_VERSION = '1.0.0';
+export const BALINESE_TRI_HITA_KARANA_ENGINE_VERSION = 'LUCKEY-BALINESE-TRI-HITA-v2.0.0';
 
 export interface BalineseSacredSanctuary {
   id: string;
@@ -23,19 +18,43 @@ export interface BalineseSacredSanctuary {
   guardianAspect: string;
   spiritualResonanceVirtue: string;
   canangSariRitualOffering: string;
-  sanctuaryResonanceScore: number; // 0 ~ 100
+  sanctuaryResonanceScore: number; // 0 ~ 100 (내부 연산용)
+}
+
+export interface BalineseSituationalAudit {
+  harmonyAxis: string;
+  triKayaFocus: string;
+  tatTwamAsiGuidance: string;
+  warningBoundary: string;
+}
+
+export interface BalineseTemporalRhythm {
+  kstHour: number;
+  sandhyaPhase: string;
+  subakSeasonFlow: string;
+  rhythmGuidance: string;
+  equilibriumState: '조화' | '정화' | '안식';
+}
+
+export interface BalineseSynthesisMatrix {
+  trinityBalanceGrade: '원만' | '조율' | '정화필요';
+  karmaPurificationNote: string;
+  dailyOfferingDirective: string;
 }
 
 export interface BalineseTriHitaKaranaReport {
   engineVersion: string;
   timestamp: string;
-  parhyanganDivineHarmony: number; // 0 ~ 100 신성 영적 조화율 (Parhyangan)
-  pawonganHumanityEmpathy: number; // 0 ~ 100 인간 상호 공감 및 자비도 (Pawongan)
-  palemahanEcologyBalance: number; // 0 ~ 100 자연 생태 공존 밸런스 (Palemahan)
-  triKayaPurificationIndex: number; // 0 ~ 100 트리 카야 파리수다 3업(생각·말·행동) 정화도
-  activeSanctuary: BalineseSacredSanctuary; // 현재 운명과 공명하는 발리 대성소
-  balineseCosmicGuidance: string; // 트리 히타 카라나 지혜 처방
-  tirtaHolyWaterBlessing: string; // 성수(Tirta) 정화 명상 지침
+  parhyanganDivineHarmony: number;
+  pawonganHumanityEmpathy: number;
+  palemahanEcologyBalance: number;
+  triKayaPurificationIndex: number;
+  activeSanctuary: BalineseSacredSanctuary;
+  situationalTriHitaAudit: BalineseSituationalAudit;
+  temporalTriHitaRhythm: BalineseTemporalRhythm;
+  triHitaSynthesisMatrix: BalineseSynthesisMatrix;
+  balineseCosmicGuidance: string;
+  tirtaHolyWaterBlessing: string;
 }
 
 const BALINESE_SANCTUARIES_BASE: Omit<BalineseSacredSanctuary, 'sanctuaryResonanceScore'>[] = [
@@ -104,11 +123,122 @@ function djb2Hash(str: string): number {
   return Math.abs(hash);
 }
 
-export function calculateBalineseTriHitaKarana(profile?: UserProfile | null): BalineseTriHitaKaranaReport {
+function getKstParts(now: Date): { hour: number; month: number } {
+  const formatter = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Asia/Seoul',
+    hour: 'numeric',
+    month: 'numeric',
+    hour12: false,
+  });
+  const parts = formatter.formatToParts(now);
+  return {
+    hour: Number(parts.find((p) => p.type === 'hour')?.value || '12') % 24,
+    month: Number(parts.find((p) => p.type === 'month')?.value || '1'),
+  };
+}
+
+function buildSituationalAudit(question: string): BalineseSituationalAudit {
+  const q = question.toLowerCase();
+  if (/관계|사랑|가족|동료|친구|갈등|화해|인간/.test(q)) {
+    return {
+      harmonyAxis: '파웡안(Pawongan — 인간 상호 자비와 타트 트밤 아시)',
+      triKayaFocus: '와치카(Wacika — 상처 주지 않는 바른 언어)',
+      tatTwamAsiGuidance: '"네가 곧 나이다(Tat Twam Asi)"라는 자각으로 상대의 두려움과 입장을 먼저 헤아리면 대립이 풀립니다.',
+      warningBoundary: '자기 정당성을 증명하려는 날 선 말투가 관계의 물길을 막지 않게 조심하십시오.',
+    };
+  }
+  if (/일|사업|직업|재물|성과|프로젝트|공부|결정/.test(q)) {
+    return {
+      harmonyAxis: '파르향안(Parhyangan — 신성한 목적의식과 소명 정렬)',
+      triKayaFocus: '카야카(Kayika — 성실하고 정직한 행위)',
+      tatTwamAsiGuidance: '당장의 이해득실보다 이 일이 공동체와 스스로에게 어떤 선한 순환(Dharma)을 남기는지 먼저 세우십시오.',
+      warningBoundary: '조급한 탐욕이 일의 품격과 균형을 무너뜨리지 않도록 경계하십시오.',
+    };
+  }
+  if (/건강|휴식|피로|자연|환경|이사|공간|마음/.test(q)) {
+    return {
+      harmonyAxis: '팔레마한(Palemahan — 자연·공간과의 생태적 균형)',
+      triKayaFocus: '마나치카(Manacika — 고요하고 맑은 생각)',
+      tatTwamAsiGuidance: '몸과 생활 공간을 정돈하고 물·빛·공기의 순환을 열어두면 막혔던 생명력이 자연스레 회복됩니다.',
+      warningBoundary: '자연의 리듬을 거스르는 과로와 무리한 일정 강행을 멈추십시오.',
+    };
+  }
+  return {
+    harmonyAxis: '파르향안·파웡안·팔레마한 삼위일체 조화',
+    triKayaFocus: '마나치카·와치카·카야카 3업 청정 정렬',
+    tatTwamAsiGuidance: '생각·말·행동이 한 결로 이어질 때 외부의 혼란 속에서도 흔들리지 않는 수캄(Sukham)이 깃듭니다.',
+    warningBoundary: '마음의 불안과 말의 과잉이 불필요한 업을 쌓지 않도록 호흡을 고르십시오.',
+  };
+}
+
+function buildTemporalRhythm(now: Date): BalineseTemporalRhythm {
+  const { hour, month } = getKstParts(now);
+
+  let sandhyaPhase = '정오 마디안나(Madhyahna) 수리야 찬가 창';
+  let equilibriumState: BalineseTemporalRhythm['equilibriumState'] = '조화';
+  let rhythmGuidance = '낮의 태양 빛이 가장 밝은 시간이므로 명쾌한 대화와 현실적 봉사를 실천하기 좋습니다.';
+
+  if (hour >= 4 && hour < 9) {
+    sandhyaPhase = '여명 프라타흐(Pratah) 트리 산디아 정화 창';
+    equilibriumState = '정화';
+    rhythmGuidance = '새벽 첫 햇살 아래 차낭 사리(Canang Sari)를 올리듯 하루의 생각과 마음을 맑게 씻어내십시오.';
+  } else if (hour >= 9 && hour < 16) {
+    sandhyaPhase = '주간 마디안나(Madhyahna) 생명 순환 창';
+    equilibriumState = '조화';
+    rhythmGuidance = '수박(Subak) 물길이 논을 적시듯 사람과 일 사이에 막힘없는 협력을 흐르게 할 시간입니다.';
+  } else if (hour >= 16 && hour < 20) {
+    sandhyaPhase = '황혼 사얌(Sayam) 트리 산디아 감사 창';
+    equilibriumState = '정화';
+    rhythmGuidance = '해가 지는 서쪽을 바라보며 오늘 하루의 수고와 인연에 감사의 합장을 올리십시오.';
+  } else {
+    sandhyaPhase = '심야 녱피(Nyepi) 침묵 안식 창';
+    equilibriumState = '안식';
+    rhythmGuidance = '모든 외부 활동을 멈추고 침묵 속에서 내면의 신성과 깊은 휴식을 회복할 시간입니다.';
+  }
+
+  let subakSeasonFlow = '수박(Subak) 물길의 균형 순환기';
+  if (month >= 3 && month <= 5) subakSeasonFlow = '봄 싹틔움과 생명의 물길 개방기';
+  else if (month >= 6 && month <= 8) subakSeasonFlow = '풍성한 생장과 햇살의 결실 준비기';
+  else if (month >= 9 && month <= 11) subakSeasonFlow = '수확 감사제 오달란(Odalan) 은총기';
+  else subakSeasonFlow = '우기의 대지 정화와 내면 성찰기';
+
+  return {
+    kstHour: hour,
+    sandhyaPhase,
+    subakSeasonFlow,
+    rhythmGuidance,
+    equilibriumState,
+  };
+}
+
+export interface BalineseTriHitaOptions {
+  profile?: UserProfile | null;
+  question?: string;
+  now?: Date;
+}
+
+export function calculateBalineseTriHitaKarana(
+  profileOrOptions?: UserProfile | BalineseTriHitaOptions | null,
+  questionArg = '',
+  nowArg = new Date()
+): BalineseTriHitaKaranaReport {
+  let profile: UserProfile | null | undefined;
+  let question = questionArg;
+  let now = nowArg;
+
+  if (profileOrOptions && ('profile' in profileOrOptions || 'question' in profileOrOptions || 'now' in profileOrOptions)) {
+    const opts = profileOrOptions as BalineseTriHitaOptions;
+    profile = opts.profile;
+    question = opts.question || '';
+    now = opts.now || new Date();
+  } else {
+    profile = profileOrOptions as UserProfile | null | undefined;
+  }
+
   const bdate = profile?.basic?.birthdate || '1994-01-24';
   const btime = profile?.basic?.birthtime || '12:00';
   const name = profile?.basic?.name || 'zeZE';
-  const seedStr = `${bdate}_${btime}_${name}_balinese_tri_hita_v1`;
+  const seedStr = `${bdate}_${btime}_${name}_${question}_balinese_tri_hita_v2`;
   const seed = djb2Hash(seedStr);
 
   const parhyanganDivineHarmony = 62 + (seed % 37);
@@ -125,18 +255,41 @@ export function calculateBalineseTriHitaKarana(profile?: UserProfile | null): Ba
     sanctuaryResonanceScore,
   };
 
+  const situationalTriHitaAudit = buildSituationalAudit(question);
+  const temporalTriHitaRhythm = buildTemporalRhythm(now);
+
+  const avg = (parhyanganDivineHarmony + pawonganHumanityEmpathy + palemahanEcologyBalance) / 3;
+  const trinityBalanceGrade: BalineseSynthesisMatrix['trinityBalanceGrade'] =
+    avg >= 78 ? '원만' : avg >= 68 ? '조율' : '정화필요';
+
+  const karmaPurificationNote =
+    triKayaPurificationIndex >= 78
+      ? '생각·말·행동 3업이 맑게 정렬되어 성수(Tirta)의 서기가 막힘없이 흐르는 상태입니다.'
+      : '감정의 잔여와 말의 날카로움을 먼저 비워내면 3업의 균형이 빠르게 회복됩니다.';
+
+  const dailyOfferingDirective = `[${activeSanctuary.balineseName}]의 서기를 받아 ${temporalTriHitaRhythm.sandhyaPhase}에 맞춰 ${situationalTriHitaAudit.triKayaFocus}을 실천하십시오.`;
+
+  const triHitaSynthesisMatrix: BalineseSynthesisMatrix = {
+    trinityBalanceGrade,
+    karmaPurificationNote,
+    dailyOfferingDirective,
+  };
+
   const balineseCosmicGuidance = `발리 힌두 《트리 히타 카라나》의 법도는 우주 신성(Parhyangan), 인간 이웃(Pawongan), 자연 대지(Palemahan)의 삼위일체가 균형을 이룰 때 진정한 행복(Sukham)이 꽃핀다고 가르칩니다. 현재 [${activeSanctuary.nameKo}]의 수호 서기와 공명하여 바른 생각(Manacika), 바른 말(Wacika), 바른 행동(Kayika)의 3업을 정화하십시오.`;
 
   const tirtaHolyWaterBlessing = `손에 깨끗한 물을 담아 이마(마음의 정화), 입술(말의 정화), 가슴(행위의 정화)에 세 방울씩 가볍게 얹으며 '티르타(Tirta, 성스러운 생명수)'가 모든 해묵은 피로와 부정적 에너지를 말끔히 씻어냄을 명상하십시오.`;
 
   return {
     engineVersion: BALINESE_TRI_HITA_KARANA_ENGINE_VERSION,
-    timestamp: new Date().toISOString(),
+    timestamp: now.toISOString(),
     parhyanganDivineHarmony,
     pawonganHumanityEmpathy,
     palemahanEcologyBalance,
     triKayaPurificationIndex,
     activeSanctuary,
+    situationalTriHitaAudit,
+    temporalTriHitaRhythm,
+    triHitaSynthesisMatrix,
     balineseCosmicGuidance,
     tirtaHolyWaterBlessing,
   };
@@ -146,15 +299,17 @@ export function formatBalineseTriHitaKaranaPrompt(report: BalineseTriHitaKaranaR
   const s = report.activeSanctuary;
   return `[발리 힌두교 트리 히타 카라나 3대 우주 조화 & 3업 정화 실측 데이터]
 - 엔진 버전: v${report.engineVersion}
-- 파르향안(Parhyangan) 신성 영적 조화율: ${report.parhyanganDivineHarmony}/100
-- 파웡안(Pawongan) 인간 상호 공감·자비도: ${report.pawonganHumanityEmpathy}/100
-- 팔레마한(Palemahan) 자연 생태 공존 밸런스: ${report.palemahanEcologyBalance}/100
-- 트리 카야 파리수다(Tri Kaya Parisudha) 3업 정화도: ${report.triKayaPurificationIndex}/100
 - 주재 공명 발리 대성소: ${s.nameKo} (${s.balineseName} / ${s.cardinalDirection})
   * 수호 서기: ${s.guardianAspect}
   * 영적 공명 미덕: ${s.spiritualResonanceVirtue}
-  * 성소 공명도: ${s.sanctuaryResonanceScore}/100
   * 차낭 사리(Canang Sari) 봉헌 리추얼: ${s.canangSariRitualOffering}
+- 질문 맥락 감사: ${report.situationalTriHitaAudit.harmonyAxis} · 초점(${report.situationalTriHitaAudit.triKayaFocus})
+  * 타트 트밤 아시 지침: ${report.situationalTriHitaAudit.tatTwamAsiGuidance}
+  * 경계할 점: ${report.situationalTriHitaAudit.warningBoundary}
+- KST 시공간 리듬 (${report.temporalTriHitaRhythm.kstHour}시): ${report.temporalTriHitaRhythm.sandhyaPhase} · ${report.temporalTriHitaRhythm.subakSeasonFlow} (${report.temporalTriHitaRhythm.equilibriumState})
+  * 리듬 처방: ${report.temporalTriHitaRhythm.rhythmGuidance}
+- 삼위일체 교차 매트릭스: 조화 등급(${report.triHitaSynthesisMatrix.trinityBalanceGrade}) · ${report.triHitaSynthesisMatrix.karmaPurificationNote}
+  * 오늘의 실천: ${report.triHitaSynthesisMatrix.dailyOfferingDirective}
 - 트리 히타 카라나 우주 지혜 지침: ${report.balineseCosmicGuidance}
 - 티르타(Tirta) 성수 정화 명상: ${report.tirtaHolyWaterBlessing}`;
 }

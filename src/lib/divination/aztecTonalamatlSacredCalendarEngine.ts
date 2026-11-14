@@ -3,23 +3,13 @@
  *
  * 고대 메소아메리카 아즈텍 문명의 260일 신성 역법 토날포왈리(Tonalpohualli)와 성력서 토날라마틀(Tonalamatl) 기반:
  * 인간의 운명과 영혼의 3대 에너지(토날리·테욜리아·이히요틀)를 조율하고,
- * 20대 신성 일진(Day Signs)과 13대 주천신(Thirteen Lords of the Day)의 천구 진동을 해독하는 마스터 역법 엔진.
- *
- * 3대 영혼 에너지(Three Spiritual Centers):
- * 1. 토날리 (Tonalli): 정수리에 깃든 태양의 영적 활력과 운명적 기운 (Solar Vitality & Destiny Force)
- * 2. 테욜리아 (Teyolia): 심장에 거주하는 영혼, 정서적 순수성과 기억의 불멸성 (Heart Spirit & Emotional Purity)
- * 3. 이히요틀 (Ihiyotl): 간과 호흡에 깃든 생명력, 결단력과 역동적 추진력 (Breath Power & Willpower)
- *
- * 20대 신성 일진(Twenty Sacred Day Signs - Cipactli ~ Xochitl):
- * 악어(Cipactli), 바람(Ehecatl), 집(Calli), 도마뱀(Cuetzpalin), 뱀(Coatl),
- * 죽음(Miquiztli), 사슴(Mazatl), 토끼(Tochtli), 물(Atl), 개(Itzcuintli),
- * 원숭이(Ozomatli), 풀(Malinalli), 갈대(Acatl), 재규어(Ocelotl), 독수리(Cuauhtli),
- * 콘도르(Cozcacuauhtli), 움직임/올린(Ollin), 부싯돌(Tecpatl), 비(Quiahuitl), 꽃(Xochitl).
+ * 20대 신성 일진(Day Signs)과 13대 주천신(Thirteen Lords of the Day)의 천구 진동,
+ * 질문 맥락별 정성 감사, KST 시공간 리듬을 해독하는 마스터 역법 엔진.
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const AZTEC_TONALAMATL_ENGINE_VERSION = '1.0.0';
+export const AZTEC_TONALAMATL_ENGINE_VERSION = 'LUCKEY-AZTEC-TONALAMATL-v2.0.0';
 
 export interface AztecDaySign {
   signNumber: number;
@@ -28,20 +18,44 @@ export interface AztecDaySign {
   patronDeity: string;
   elementNature: string;
   cosmicDestinyPower: string;
-  resonanceScore: number; // 0 ~ 100
+  resonanceScore: number; // 0 ~ 100 (내부 정량 연산용)
+}
+
+export interface AztecSituationalAudit {
+  focusAxis: string;
+  energyCenterFocus: string;
+  codexPrescription: string;
+  cautionNotice: string;
+}
+
+export interface AztecTemporalRhythm {
+  kstHour: number;
+  sunPhase: string;
+  seasonElement: string;
+  temporalPrescription: string;
+  cosmicRhythmQuality: '상승' | '안정' | '성찰';
+}
+
+export interface AztecSynthesisMatrix {
+  solarClarityGrade: '탁월' | '안정' | '보완';
+  heartAlignmentState: string;
+  ollinActionDirective: string;
 }
 
 export interface AztecTonalamatlReport {
   engineVersion: string;
   timestamp: string;
-  tonalliSolarVitalityScore: number; // 0 ~ 100 정수리 토날리 태양 영혼 활력도
-  teyoliaHeartPurityIndex: number; // 0 ~ 100 심장 테욜리아 순수성 지수
-  ihiyotlBreathPowerScore: number; // 0 ~ 100 호흡과 결단력 이히요틀 기운
-  ollinCosmicMovementHarmony: number; // 0 ~ 100 제5의 태양 올린 우주 진동 조화도
-  dominantDaySign: AztecDaySign; // 현재 주재하는 아즈텍 신성 일진
-  thirteenLordOfTheDay: string; // 13대 주천신 중 수호신
-  aztecTonalamatlGuidance: string; // 토날라마틀 지혜 지침
-  tonalliSunSalutationRitual: string; // 토날리 태양 경배 리추얼
+  tonalliSolarVitalityScore: number;
+  teyoliaHeartPurityIndex: number;
+  ihiyotlBreathPowerScore: number;
+  ollinCosmicMovementHarmony: number;
+  dominantDaySign: AztecDaySign;
+  thirteenLordOfTheDay: string;
+  situationalTonalamatlAudit: AztecSituationalAudit;
+  temporalTonalamatlRhythm: AztecTemporalRhythm;
+  tonalamatlSynthesisMatrix: AztecSynthesisMatrix;
+  aztecTonalamatlGuidance: string;
+  tonalliSunSalutationRitual: string;
 }
 
 const TWENTY_SIGNS_BASE: Omit<AztecDaySign, 'resonanceScore'>[] = [
@@ -223,6 +237,96 @@ const THIRTEEN_LORDS: string[] = [
   '제13주천신 시틀랄리쿠에 (별들의 치마를 입은 밤하늘 여신 - 우주적 포용)',
 ];
 
+function getKstParts(now: Date): { hour: number; month: number } {
+  const formatter = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Asia/Seoul',
+    hour: 'numeric',
+    month: 'numeric',
+    hour12: false,
+  });
+  const parts = formatter.formatToParts(now);
+  const hourPart = parts.find((p) => p.type === 'hour')?.value || '12';
+  const monthPart = parts.find((p) => p.type === 'month')?.value || '1';
+  return {
+    hour: Number(hourPart) % 24,
+    month: Number(monthPart),
+  };
+}
+
+function buildSituationalAudit(question: string, sign: AztecDaySign): AztecSituationalAudit {
+  const q = question.toLowerCase();
+  if (/사랑|연애|관계|배우자|이별|결혼|사람|가족/.test(q)) {
+    return {
+      focusAxis: '심장 테욜리아(Teyolia) 정서 공명',
+      energyCenterFocus: '가슴의 순수한 진심과 기억의 성실함',
+      codexPrescription: `[${sign.nameKo}]의 기운 아래 상대방의 말 너머에 있는 본심을 살피고, 감정의 파도를 정화한 뒤 진실한 언어로 다가가십시오.`,
+      cautionNotice: '충동적인 서운함에 휩쓸려 관계의 본질을 흐리지 않도록 숨을 고르십시오.',
+    };
+  }
+  if (/일|직업|사업|이직|시험|프로젝트|돈|재물|계약|진로/.test(q)) {
+    return {
+      focusAxis: '정수리 토날리(Tonalli) 태양 소명과 현실 결실',
+      energyCenterFocus: '머리 위의 명징한 목적의식과 흔들리지 않는 추진력',
+      codexPrescription: `[${sign.nameKo}]가 부여하는 실행력을 바탕으로 오늘 가장 먼저 처리할 핵심 과업 하나를 정해 완수하십시오.`,
+      cautionNotice: '불필요한 소모전에 에너지를 분산시키지 말고 주력 전선에 집중하십시오.',
+    };
+  }
+  if (/건강|몸|피로|불안|마음|치유|잠|휴식/.test(q)) {
+    return {
+      focusAxis: '간·호흡 이히요틀(Ihiyotl) 생명 순환 회복',
+      energyCenterFocus: '단전의 깊은 호흡과 긴장된 신경계의 이완',
+      codexPrescription: '무리한 결단을 잠시 멈추고 따뜻한 물과 규칙적인 호흡으로 체내 순환의 불꽃을 안정시키십시오.',
+      cautionNotice: '과도한 자기 채찍질이 오히려 생명의 리듬을 거스르지 않게 경계하십시오.',
+    };
+  }
+  return {
+    focusAxis: '토날리·테욜리아·이히요틀 삼위일체 조율',
+    energyCenterFocus: '생각·감정·행동이 한 방향으로 정렬되는 올린(Ollin)의 중심',
+    codexPrescription: `[${sign.nameKo}]의 원형인 "${sign.cosmicDestinyPower}"을 오늘의 나침반으로 삼아 차분히 한 걸음을 내딛으십시오.`,
+    cautionNotice: '결과를 서둘러 단정 짓기보다 지금 손에 쥔 현장의 흐름을 먼저 정돈하십시오.',
+  };
+}
+
+function buildTemporalRhythm(now: Date): AztecTemporalRhythm {
+  const { hour, month } = getKstParts(now);
+
+  let sunPhase = '정오의 토나티우(Tonatiuh) 절정 창';
+  let cosmicRhythmQuality: AztecTemporalRhythm['cosmicRhythmQuality'] = '상승';
+  let temporalPrescription = '태양이 가장 높이 뜬 시간대이므로 핵심 결단과 외부 소통을 과감히 추진하기 좋습니다.';
+
+  if (hour >= 4 && hour < 9) {
+    sunPhase = '새벽별 틀라위스칼판테쿠틀리 여명 창';
+    cosmicRhythmQuality = '상승';
+    temporalPrescription = '새벽의 첫 빛과 함께 토날리(정수리 기운)를 정돈하고 하루의 의도를 선언하기 가장 좋은 시간입니다.';
+  } else if (hour >= 9 && hour < 15) {
+    sunPhase = '정오의 토나티우(Tonatiuh) 창공 창';
+    cosmicRhythmQuality = '상승';
+    temporalPrescription = '외부의 일과 창조적 실행을 힘있게 밀고 나가되 수분과 호흡을 함께 챙기십시오.';
+  } else if (hour >= 15 && hour < 20) {
+    sunPhase = '황혼의 숄로틀(Xolotl) 전환 창';
+    cosmicRhythmQuality = '안정';
+    temporalPrescription = '낮 동안 흩어진 마음을 거두고 진행 중인 과업의 마무리를 점검하기 알맞습니다.';
+  } else {
+    sunPhase = '밤하늘 시틀랄리쿠에(Citlalicue) 성찰 창';
+    cosmicRhythmQuality = '성찰';
+    temporalPrescription = '외부의 소음을 닫고 내면의 흑요석 거울 앞에서 하루의 진짜 의미를 비추어 볼 시간입니다.';
+  }
+
+  let seasonElement = '대지의 결실기 (Tonalco)';
+  if (month >= 3 && month <= 5) seasonElement = '새싹과 바람의 부활기 (Xopan)';
+  else if (month >= 6 && month <= 8) seasonElement = '틀랄록의 비와 성장기 (Xopantla)';
+  else if (month >= 9 && month <= 11) seasonElement = '수확과 황금 바람의 결실기 (Tonalko)';
+  else seasonElement = '동지 태양의 침잠과 내면 응축기 (Cecuiztli)';
+
+  return {
+    kstHour: hour,
+    sunPhase,
+    seasonElement,
+    temporalPrescription,
+    cosmicRhythmQuality,
+  };
+}
+
 export interface AztecTonalamatlOptions {
   profile?: UserProfile | null;
   question?: string;
@@ -274,7 +378,24 @@ export function calculateAztecTonalamatl(
   const ihiyotlBreathPowerScore = Math.min(100, Math.max(44, 53 + ((seed * 19) % 45)));
   const ollinCosmicMovementHarmony = Math.min(100, Math.max(46, Math.floor((tonalliSolarVitalityScore * 0.5 + teyoliaHeartPurityIndex * 0.5))));
 
-  const aztecTonalamatlGuidance = `아즈텍 토날포왈리 성력서는 가르칩니다: "태양의 전사는 자신의 토날리(Tonalli)를 의식의 불꽃으로 지피며 어둠을 가른다." 현재 당신의 운명을 비추는 성스러운 일진은 [${dominantDaySign.nameKo}]이며, 수호신은 [${dominantDaySign.patronDeity}]입니다. ${dominantDaySign.cosmicDestinyPower}. 정수리의 태양 에너지와 가슴의 테욜리아가 지금 힘차게 고동치고 있습니다.`;
+  const situationalTonalamatlAudit = buildSituationalAudit(question, dominantDaySign);
+  const temporalTonalamatlRhythm = buildTemporalRhythm(now);
+
+  const solarClarityGrade: AztecSynthesisMatrix['solarClarityGrade'] =
+    tonalliSolarVitalityScore >= 78 ? '탁월' : tonalliSolarVitalityScore >= 60 ? '안정' : '보완';
+  const heartAlignmentState =
+    teyoliaHeartPurityIndex >= 72
+      ? '테욜리아 심장 영혼이 고요하고 투명하게 정렬된 상태'
+      : '감정의 잔물결을 호흡으로 가라앉히며 진심을 다시 확인해야 할 상태';
+  const ollinActionDirective = `${temporalTonalamatlRhythm.sunPhase} 흐름에 맞추어 ${situationalTonalamatlAudit.focusAxis}을 우선 정돈하십시오.`;
+
+  const tonalamatlSynthesisMatrix: AztecSynthesisMatrix = {
+    solarClarityGrade,
+    heartAlignmentState,
+    ollinActionDirective,
+  };
+
+  const aztecTonalamatlGuidance = `아즈텍 토날포왈리 성력서는 가르칩니다: "태양의 전사는 자신의 토날리(Tonalli)를 의식의 불꽃으로 지피며 어둠을 가른다." 현재 당신의 운명을 비추는 성스러운 일진은 [${dominantDaySign.nameKo}]이며, 수호신은 [${dominantDaySign.patronDeity}]입니다. ${dominantDaySign.cosmicDestinyPower}.`;
   const tonalliSunSalutationRitual = `아침 태양을 마주하고 정수리를 곧게 펴며 심호흡하십시오: "제5의 태양 토나티우의 광명이 나의 토날리를 가득 채우니, 두려움 없이 올린(Ollin)의 거룩한 우주적 변화를 향해 나아간다."`;
 
   return {
@@ -286,6 +407,9 @@ export function calculateAztecTonalamatl(
     ollinCosmicMovementHarmony,
     dominantDaySign,
     thirteenLordOfTheDay,
+    situationalTonalamatlAudit,
+    temporalTonalamatlRhythm,
+    tonalamatlSynthesisMatrix,
     aztecTonalamatlGuidance,
     tonalliSunSalutationRitual,
   };
@@ -298,10 +422,13 @@ export function formatAztecTonalamatlPrompt(report: AztecTonalamatlReport): stri
 - **원소적 성질**: ${report.dominantDaySign.elementNature}
 - **우주적 운명 권능**: ${report.dominantDaySign.cosmicDestinyPower}
 - **13대 주천신 수호령**: ${report.thirteenLordOfTheDay}
-- **토날리(정수리 태양 활력도)**: ${report.tonalliSolarVitalityScore}/100
-- **테욜리아(심장 영혼 순수성)**: ${report.teyoliaHeartPurityIndex}/100
-- **이히요틀(호흡·결단력 기운)**: ${report.ihiyotlBreathPowerScore}/100
-- **올린(우주 진동 조화도)**: ${report.ollinCosmicMovementHarmony}/100
+- **질문 맥락 감사**: ${report.situationalTonalamatlAudit.focusAxis} — ${report.situationalTonalamatlAudit.energyCenterFocus}
+  * 원전 처방: ${report.situationalTonalamatlAudit.codexPrescription}
+  * 주의 경계: ${report.situationalTonalamatlAudit.cautionNotice}
+- **KST 시공간 리듬 (${report.temporalTonalamatlRhythm.kstHour}시)**: ${report.temporalTonalamatlRhythm.sunPhase} · ${report.temporalTonalamatlRhythm.seasonElement} (${report.temporalTonalamatlRhythm.cosmicRhythmQuality})
+  * 시공간 지침: ${report.temporalTonalamatlRhythm.temporalPrescription}
+- **삼중 영혼 교차 매트릭스**: 토날리(${report.tonalamatlSynthesisMatrix.solarClarityGrade}) · ${report.tonalamatlSynthesisMatrix.heartAlignmentState}
+  * 통합 행동 지침: ${report.tonalamatlSynthesisMatrix.ollinActionDirective}
 - **토날라마틀 지혜 지침**: ${report.aztecTonalamatlGuidance}
 - **토날리 태양 경배 리추얼**: ${report.tonalliSunSalutationRitual}`;
 }
