@@ -6494,6 +6494,55 @@ test('Dreamtime Songlines, Eleusinian Mysteries, and Babylonian Enuma Elish prov
   assert(!babylonPrompt.includes('/100'));
 });
 
+test('Wonhyo Hwajaeng, Vedic Pancha Kosha, and Epicurean Tetrapharmakos v2.0.0 qualitative synthesis', () => {
+  const testProfile = {
+    basic: {
+      name: '김유신',
+      birthdate: '1988-05-15',
+      birthtime: '09:30',
+      gender: 'male' as const,
+      birthCity: '서울',
+    },
+  };
+  const now = new Date('2026-11-14T09:15:00Z');
+
+  // 1. 원효대사 화쟁 엔진 v2.0.0
+  const wonhyo = calculateWonhyoHwajaeng(testProfile, '직장 동료와의 갈등과 협상 문제로 고민이에요', now);
+  assert.equal(wonhyo.engineVersion, WONHYO_HWAJAENG_VERSION);
+  assert.equal(wonhyo.situationalHwajaeng.themeKey, 'assertion_refutation');
+  assert.equal(wonhyo.temporalOneMindRhythm.jinYeoWeight + wonhyo.temporalOneMindRhythm.saengMyeolWeight, 100);
+  assert.ok(wonhyo.dialecticHarmonizationMatrix.muAePracticeDirective.length > 10);
+  const wonhyoPrompt = formatWonhyoHwajaengPrompt(wonhyo);
+  assert.ok(wonhyoPrompt.includes('질문 맥락 화쟁 성찰'));
+  assert.ok(wonhyoPrompt.includes('KST 일심이문 시공간 리듬'));
+
+  // 2. 베단타 5대 코샤 엔진 v2.0.0
+  const kosha = calculateVedicPanchaKosha({ profile: testProfile, question: '요즘 호흡이 얕고 무기력해서 지쳐요', now });
+  assert.equal(kosha.engineVersion, VEDIC_PANCHA_KOSHA_ENGINE_VERSION);
+  assert.equal(kosha.questionKoshaResonance.focusLayerIndex, 2);
+  assert.ok(kosha.temporalPranaRhythm.recommendedPranayama.length > 5);
+  assert.ok(kosha.koshaBridgeMatrix.integrationPrescription.length > 10);
+  const koshaPrompt = formatVedicPanchaKoshaPrompt(kosha);
+  assert.ok(koshaPrompt.includes('질문 맥락 코샤 공명'));
+  assert.ok(koshaPrompt.includes('상하층 코샤 브리지 통합'));
+
+  // 3. 에피쿠로스 테트라파르마코스 엔진 v2.0.0
+  const epicurean = calculateEpicureanTetrapharmakos(testProfile, '돈과 성공에 대한 비교 때문에 마음이 초조해요', now);
+  assert.equal(epicurean.engineVersion, EPICUREAN_TETRAPHARMAKOS_VERSION);
+  assert.equal(epicurean.situationalRemedy.remedyIndex, 3);
+  assert.equal(
+    epicurean.desireTaxonomyMatrix.naturalNecessaryRatio +
+      epicurean.desireTaxonomyMatrix.naturalUnnecessaryRatio +
+      epicurean.desireTaxonomyMatrix.vainEmptyRatio,
+    100,
+  );
+  assert.ok(epicurean.temporalGardenRhythm.practiceFocus.length > 10);
+  const epicureanPrompt = formatEpicureanTetrapharmakosPrompt(epicurean);
+  assert.ok(epicureanPrompt.includes('질문 맥락 처방'));
+  assert.ok(epicureanPrompt.includes('에피쿠로스 욕망 3분류'));
+});
+
+
 
 
 

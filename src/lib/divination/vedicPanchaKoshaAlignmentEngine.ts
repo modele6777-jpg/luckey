@@ -7,10 +7,10 @@
  * 3. 마노마야 코샤 (정서/마음체)
  * 4. 비즈냐나마야 코샤 (지성/직관체)
  * 5. 아난다마야 코샤 (영혼/지고의 지복체)
- * 5개 층위의 막힘을 진단하고 참된 본성인 아트만(Atman)의 환희를 회복합니다.
+ * 질문 맥락 병목 진단, KST 프라나 시공간 리듬, 상하층 코샤 브리지 매트릭스를 통합합니다.
  */
 
-export const VEDIC_PANCHA_KOSHA_ENGINE_VERSION = 'LUCKEY-PANCHA-KOSHA-v1.0.0';
+export const VEDIC_PANCHA_KOSHA_ENGINE_VERSION = 'LUCKEY-PANCHA-KOSHA-v2.0.0';
 
 export interface KoshaLayer {
   layerIndex: number;
@@ -22,13 +22,145 @@ export interface KoshaLayer {
   clearingAction: string;
 }
 
+export interface QuestionKoshaResonance {
+  focusLayerIndex: number;
+  focusKoshaKo: string;
+  upanishadMantra: string;
+  reflectionQuestion: string;
+}
+
+export interface TemporalPranaRhythm {
+  kstHour: number;
+  doshaWindowKo: string;
+  recommendedPranayama: string;
+  rhythmGuidance: string;
+}
+
+export interface KoshaBridgeMatrix {
+  lowerSupportLayerKo: string;
+  upperAspirationLayerKo: string;
+  bridgeBalanceScore: number;
+  integrationPrescription: string;
+}
+
 export interface PanchaKoshaReport {
   engineVersion: string;
   calculatedAt: string;
   layers: KoshaLayer[];
   lowestAlignedLayer: KoshaLayer;
   atmanRealizationIndex: number; // 0 ~ 100
+  questionKoshaResonance: QuestionKoshaResonance;
+  temporalPranaRhythm: TemporalPranaRhythm;
+  koshaBridgeMatrix: KoshaBridgeMatrix;
   blissPrescription: string;
+}
+
+function classifyQuestionKosha(question: string, fallbackLayerIdx: number): QuestionKoshaResonance {
+  const q = question.toLowerCase();
+
+  if (/(몸|건강|피로|수면|잠|아프|식사|운동|컨디션|체력)/.test(q)) {
+    return {
+      focusLayerIndex: 1,
+      focusKoshaKo: '안나마야 코샤 (육체/음식체)',
+      upanishadMantra: '《타이티리야 우파니샤드》 — "모든 존재는 음식(Anna)에서 태어나 음식으로 자라며 그 안에서 쉰다."',
+      reflectionQuestion: '지금 내 몸이 보내는 뻐근함과 피로의 신호를 무시하고, 생각으로만 문제를 밀어붙이고 있지는 않나요?',
+    };
+  }
+  if (/(무기력|활력|숨|호흡|긴장|답답|에너지|지침|번아웃)/.test(q)) {
+    return {
+      focusLayerIndex: 2,
+      focusKoshaKo: '프라나마야 코샤 (생명력/호흡체)',
+      upanishadMantra: '《타이티리야 우파니샤드》 — "생명기운(Prana)은 육체 안을 흐르며 모든 감각에 생명의 불꽃을 지핀다."',
+      reflectionQuestion: '어깨에 힘을 빼고 복부 깊숙이 숨을 세 번만 채워도, 지금 당장 급해 보였던 긴장이 얼마나 가라앉나요?',
+    };
+  }
+  if (/(감정|불안|사랑|연애|관계|상처|분노|슬픔|걱정|마음)/.test(q)) {
+    return {
+      focusLayerIndex: 3,
+      focusKoshaKo: '마노마야 코샤 (감정/마음체)',
+      upanishadMantra: '《마이트리 우파니샤드》 — "마음이 묶이면 속박이요, 마음이 고요해지면 곧 해방이다."',
+      reflectionQuestion: '지금 느끼는 감정이 사실 자체인지, 아니면 과거의 기억이 덧씌운 해석인지 한 발 물러서서 바라볼 수 있나요?',
+    };
+  }
+  if (/(결정|선택|진로|일|공부|통찰|지혜|이직|사업|방향)/.test(q)) {
+    return {
+      focusLayerIndex: 4,
+      focusKoshaKo: '비즈냐나마야 코샤 (지성/직관체)',
+      upanishadMantra: '《타이티리야 우파니샤드》 — "식별의 지성(Vijnana)은 옳고 그름을 가르고 내면의 신성한 질서를 따른다."',
+      reflectionQuestion: '남들의 기준이나 눈앞의 유불리를 걷어냈을 때, 내 안의 고요한 직관(Buddhi)은 이미 어떤 답을 가리키고 있나요?',
+    };
+  }
+  if (/(의미|행복|고독|인생|평화|영혼|감사|본질)/.test(q)) {
+    return {
+      focusLayerIndex: 5,
+      focusKoshaKo: '아난다마야 코샤 (지고의 지복체)',
+      upanishadMantra: '《타이티리야 우파니샤드》 — "존재의 가장 깊은 중심은 기쁨(Ananda)이며, 모든 생명체는 그 기쁨에서 호흡한다."',
+      reflectionQuestion: '무언가를 더 성취해야만 행복할 것이라는 조건을 잠시 떼어놓으면, 이미 지금 여기에서 누릴 수 있는 평화는 무엇인가요?',
+    };
+  }
+
+  const defaults: QuestionKoshaResonance[] = [
+    {
+      focusLayerIndex: 1,
+      focusKoshaKo: '안나마야 코샤 (육체/음식체)',
+      upanishadMantra: '《타이티리야 우파니샤드》 — "모든 존재는 음식(Anna)에서 태어나 음식으로 자라며 그 안에서 쉰다."',
+      reflectionQuestion: '오늘 내 몸이 가장 원하고 있는 소박한 돌봄(물 한 잔, 스트레칭, 일찍 눕기)은 무엇인가요?',
+    },
+    {
+      focusLayerIndex: 2,
+      focusKoshaKo: '프라나마야 코샤 (생명력/호흡체)',
+      upanishadMantra: '《타이티리야 우파니샤드》 — "생명기운(Prana)은 육체 안을 흐르며 모든 감각에 생명의 불꽃을 지핀다."',
+      reflectionQuestion: '얕아진 호흡을 천천히 내쉬면서, 굳어 있던 생기의 흐름을 어디부터 다시 열어 줄 수 있을까요?',
+    },
+    {
+      focusLayerIndex: 3,
+      focusKoshaKo: '마노마야 코샤 (감정/마음체)',
+      upanishadMantra: '《마이트리 우파니샤드》 — "마음이 묶이면 속박이요, 마음이 고요해지면 곧 해방이다."',
+      reflectionQuestion: '마음속에 반복되는 걱정 한 가지를 판단 없이 이름 붙여 바라보면 어떤 감정인가요?',
+    },
+    {
+      focusLayerIndex: 4,
+      focusKoshaKo: '비즈냐나마야 코샤 (지성/직관체)',
+      upanishadMantra: '《타이티리야 우파니샤드》 — "식별의 지성(Vijnana)은 옳고 그름을 가르고 내면의 신성한 질서를 따른다."',
+      reflectionQuestion: '고정관념을 비우고 한 단계 높은 시선에서 오늘의 상황을 조망하면 어떤 길이 보이나요?',
+    },
+    {
+      focusLayerIndex: 5,
+      focusKoshaKo: '아난다마야 코샤 (지고의 지복체)',
+      upanishadMantra: '《타이티리야 우파니샤드》 — "존재의 가장 깊은 중심은 기쁨(Ananda)이며, 모든 생명체는 그 기쁨에서 호흡한다."',
+      reflectionQuestion: '외부 조건과 무관하게 내면 깊은 곳에 자리한 고요한 만족감을 떠올려 보세요.',
+    },
+  ];
+
+  return defaults[(fallbackLayerIdx - 1 + defaults.length) % defaults.length];
+}
+
+function computeTemporalPranaRhythm(now: Date): TemporalPranaRhythm {
+  const kst = new Date(now.getTime() + 9 * 3600 * 1000);
+  const kstHour = kst.getUTCHours();
+
+  if (kstHour >= 4 && kstHour < 10) {
+    return {
+      kstHour,
+      doshaWindowKo: '아침 · 브라흐마 무후르타 ~ 카파 각성기',
+      recommendedPranayama: '카팔라바티(맑은 두개골 호흡) 또는 깊은 복식 호흡 3분',
+      rhythmGuidance: '육체(안나마야)와 호흡(프라나마야)을 깨워 하루의 탁한 기운을 비우고 직관의 창을 여는 시간입니다.',
+    };
+  }
+  if (kstHour >= 10 && kstHour < 18) {
+    return {
+      kstHour,
+      doshaWindowKo: '낮 · 피타 활동 및 지성 발현기',
+      recommendedPranayama: '나디 쇼다나(좌우 교대 비강 호흡) 5회 순환',
+      rhythmGuidance: '과열되기 쉬운 감정(마노마야)과 판단(비즈냐나마야)의 균형을 맞추어 명료하게 실행할 때입니다.',
+    };
+  }
+  return {
+    kstHour,
+    doshaWindowKo: '저녁·밤 · 바타 진정 및 지복체 회귀기',
+    recommendedPranayama: '4-7-8 이완 호흡 또는 브라마리(벌 소리 명상 호흡)',
+    rhythmGuidance: '낮의 감각 자극을 거두고 가장 깊은 아난다마야 코샤의 평온 속으로 몸과 마음을 내려놓을 시간입니다.',
+  };
 }
 
 export function calculateVedicPanchaKosha(params: {
@@ -113,6 +245,21 @@ export function calculateVedicPanchaKosha(params: {
     }
   }
 
+  const questionKoshaResonance = classifyQuestionKosha(question, lowestAlignedLayer.layerIndex);
+  const temporalPranaRhythm = computeTemporalPranaRhythm(now);
+
+  const lowIdx = lowestAlignedLayer.layerIndex - 1;
+  const lowerSupport = layers[Math.max(0, lowIdx - 1)];
+  const upperAspiration = layers[Math.min(layers.length - 1, lowIdx + 1)];
+  const bridgeBalanceScore = Math.round((lowerSupport.alignmentScore + upperAspiration.alignmentScore) / 2);
+
+  const koshaBridgeMatrix: KoshaBridgeMatrix = {
+    lowerSupportLayerKo: lowerSupport.koshaNameKo,
+    upperAspirationLayerKo: upperAspiration.koshaNameKo,
+    bridgeBalanceScore,
+    integrationPrescription: `[${lowestAlignedLayer.koshaNameKo}]를 회복하기 위해 아래층 [${lowerSupport.koshaNameKo}]로 바닥을 다지고, 위층 [${upperAspiration.koshaNameKo}]의 통찰로 시야를 여세요.`,
+  };
+
   const atmanRealizationIndex = Math.round(layers.reduce((sum, l) => sum + l.alignmentScore, 0) / layers.length);
   const blissPrescription = `현재 5대 코샤 중 [${lowestAlignedLayer.koshaNameKo}]의 정렬이 가장 시급합니다. '${lowestAlignedLayer.clearingAction}'을 즉시 실행하여 거친 외피를 정화하고, 가장 깊은 곳의 참된 자아(Atman)의 환희를 해방하세요.`;
 
@@ -122,6 +269,9 @@ export function calculateVedicPanchaKosha(params: {
     layers,
     lowestAlignedLayer,
     atmanRealizationIndex,
+    questionKoshaResonance,
+    temporalPranaRhythm,
+    koshaBridgeMatrix,
     blissPrescription,
   };
 }
@@ -130,8 +280,15 @@ export function formatVedicPanchaKoshaPrompt(report: PanchaKoshaReport): string 
   const low = report.lowestAlignedLayer;
   return `### 🕉️ 고대 인도 베단타 5대 코샤(Pancha Kosha) 층위별 정렬 실측 데이터 (${report.engineVersion})
 - **아트만(Atman) 지복 실현 지수**: ${report.atmanRealizationIndex}점 / 100점
-- **가장 정렬이 시급한 칼집 층위**: 제${low.layerIndex}층 [${low.koshaNameKo}] (${low.alignmentScore}점)
-- **발견된 병목 증상**: ${low.blockageSymptom}
+- **가장 정렬이 시급한 칼집 층위**: 제${low.layerIndex}층 [${low.koshaNameKo}] (${low.alignmentScore}점) — 병목: ${low.blockageSymptom}
+- **질문 맥락 코샤 공명 (제${report.questionKoshaResonance.focusLayerIndex}층 · ${report.questionKoshaResonance.focusKoshaKo})**:
+  - 우파니샤드 경구: ${report.questionKoshaResonance.upanishadMantra}
+  - 성찰 질문: ${report.questionKoshaResonance.reflectionQuestion}
+- **KST 프라나 시공간 리듬 (${report.temporalPranaRhythm.doshaWindowKo})**:
+  - 권장 호흡법: ${report.temporalPranaRhythm.recommendedPranayama}
+  - 리듬 조언: ${report.temporalPranaRhythm.rhythmGuidance}
+- **상하층 코샤 브리지 통합 (연결 조화도 ${report.koshaBridgeMatrix.bridgeBalanceScore}점)**:
+  - ${report.koshaBridgeMatrix.integrationPrescription}
 - **5대 층위별 정렬 상태**:
 ${report.layers.map(l => `  * ${l.koshaNameKo}: ${l.alignmentScore}점 - ${l.dimension}`).join('\n')}
 - **지복 회복 행동 처방**: ${report.blissPrescription}`;
