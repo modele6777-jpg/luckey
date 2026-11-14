@@ -3041,14 +3041,19 @@ test('Pythagorean Tetraktys & Gematria Harmonics Engine: calculates root, 4 tier
 });
 
 test('Babylonian Enuma Elish & Tablets of Destiny Engine: calculates patron deity, edict and ordering index', () => {
-  const rep = calculateBabylonianEnumaElish(profile);
+  const rep = calculateBabylonianEnumaElish(profile, new Date('2026-11-15T05:00:00Z'), '중요한 결정을 앞두고 질서를 잡고 싶습니다');
   assert.equal(rep.engineVersion, BABYLONIAN_ENUMA_ELISH_VERSION);
   assert(rep.patronDeity.koreanName.length > 0);
   assert(rep.destinyEdict.soulSovereigntyScore >= 0 && rep.destinyEdict.soulSovereigntyScore <= 100);
   assert(rep.orderingIndex >= 0 && rep.orderingIndex <= 100);
+  assert(rep.situationalBabylonAudit.enumaElishTablet.length > 0);
+  assert(rep.temporalBabylonRhythm.zigguratWatchWindow.length > 0);
+  assert(rep.babylonSynthesisMatrix.synthesizedVerdict.length > 0);
   const prompt = formatBabylonianEnumaElishPrompt(rep);
-  assert(prompt.includes('고대 바빌로니아 에누마 엘리쉬 & 운명의 서판 천체 엔진'));
+  assert(prompt.includes('고대 바빌로니아 에누마 엘리쉬 & 운명의 서판'));
   assert(prompt.includes(rep.patronDeity.koreanName));
+  assert(!prompt.includes('%'));
+  assert(!prompt.includes('/100'));
 });
 
 test('Taoist Huangting Jing Internal Palaces Engine: calculates palaces, guardian spirit and prescription', () => {
@@ -4250,7 +4255,7 @@ test('Korean Suun Gasi Heon Engine: calculates Yongcheon sword severance, Samgye
 });
 
 test('Ancient Greek Eleusinian Triptolemos Engine: calculates dragon chariot, sacred wheat and 3 laws of Demeter', () => {
-  const rep = calculateEleusinianTriptolemos(profile);
+  const rep = calculateEleusinianTriptolemos(profile, '새로운 일을 시작하며 좋은 씨앗을 뿌리고 싶습니다', new Date('2026-11-15T05:00:00Z'));
   assert.equal(rep.engineVersion, ELEUSINIAN_TRIPTOLEMOS_VERSION);
   assert(rep.goldenChariotFlightIndex >= 0 && rep.goldenChariotFlightIndex <= 100);
   assert(rep.sacredWheatCivilizationForce >= 0 && rep.sacredWheatCivilizationForce <= 100);
@@ -4258,9 +4263,14 @@ test('Ancient Greek Eleusinian Triptolemos Engine: calculates dragon chariot, sa
   assert(rep.threeLawsHarmonyEquilibrium >= 0 && rep.threeLawsHarmonyEquilibrium <= 100);
   assert(rep.seedSowingAbundancePower >= 0 && rep.seedSowingAbundancePower <= 100);
   assert(rep.activeChariotStage.stageNameGreek.length > 0);
+  assert(rep.situationalEleusisAudit.homericHymnCitation.length > 0);
+  assert(rep.temporalEleusisRhythm.eleusisFlightWindow.length > 0);
+  assert(rep.triptolemosSynthesisMatrix.synthesizedVerdict.length > 0);
   const prompt = formatEleusinianTriptolemosPrompt(rep);
   assert(prompt.includes('고대 그리스 엘레우시스 밀의 《트리프톨레모스(Triptolemos)》'));
   assert(prompt.includes(rep.activeChariotStage.stageNameKo));
+  assert(!prompt.includes('%'));
+  assert(!prompt.includes('/100'));
 });
 
 test('Mesoamerican Mixtec Eight Deer Jaguar Claw Engine: calculates courage, sacred alliance, cave oracle and territorial balance', () => {
@@ -4334,7 +4344,7 @@ test('Korean Yi Sun-sin Nanjung Ilgi Strategic Engine: calculates Pilsa Jeuksaen
 });
 
 test('Ancient Egyptian Ptah Memphite Theology Engine: calculates heart thought conceptualization, tongue utterance and Maat alignment', () => {
-  const rep = calculatePtahMemphite(profile);
+  const rep = calculatePtahMemphite(profile, '새 프로젝트를 구상하고 현실로 구현하고 싶습니다', new Date('2026-11-15T05:00:00Z'));
   assert.equal(rep.engineVersion, PTAH_MEMPHITE_VERSION);
   assert(rep.heartThoughtConceptualizationIndex >= 0 && rep.heartThoughtConceptualizationIndex <= 100);
   assert(rep.tongueUtteranceManifestationForce >= 0 && rep.tongueUtteranceManifestationForce <= 100);
@@ -4342,9 +4352,14 @@ test('Ancient Egyptian Ptah Memphite Theology Engine: calculates heart thought c
   assert(rep.maatCosmicTruthAlignment >= 0 && rep.maatCosmicTruthAlignment <= 100);
   assert(rep.artisanMasteryPrecisionPower >= 0 && rep.artisanMasteryPrecisionPower <= 100);
   assert(rep.activeCreationStage.stageNameAncient.length > 0);
+  assert(rep.situationalPtahAudit.shabakaInscription.length > 0);
+  assert(rep.temporalPtahRhythm.workshopWindow.length > 0);
+  assert(rep.ptahSynthesisMatrix.synthesizedVerdict.length > 0);
   const prompt = formatPtahMemphitePrompt(rep);
   assert(prompt.includes('고대 이집트 멤피스 신학 《프타(Ptah)》'));
   assert(prompt.includes(rep.activeCreationStage.stageNameKo));
+  assert(!prompt.includes('%'));
+  assert(!prompt.includes('/100'));
 });
 
 test('Celtic Tuatha Dé Danann Lugh Samildánach Engine: calculates polymath integrity, spear precision, Tara hall admission and Mag Tuired victory', () => {

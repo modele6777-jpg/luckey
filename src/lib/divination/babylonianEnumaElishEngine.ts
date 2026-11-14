@@ -12,34 +12,53 @@
  *    - 우주의 모든 신들과 인간의 운명을 확정하고 지배하는 절대적 권능의 서판.
  *    - 혼돈의 심연 티아마트(Tiamat)를 극복하고 우주의 황도 질서를 세운 마르두크(Marduk)의
  *      영적 주권(Spiritual Sovereignty)과 영혼의 개척자적 카리스마 산출.
- * 2. 12대 바빌로니아 천상 주재신 매핑 (Twelve Celestial Deities):
- *    - 마르두크(목성/태양신), 에아(지혜의 신), 신(Sin - 달의 신), 샤마쉬(Shamash - 정의의 태양),
- *      이슈타르(금성/사랑과 전쟁), 네르갈(화성/극복과 용기), 나부(수성/지혜와 서기),
- *      아누(천공의 지고신), 엔릴(바람과 폭풍), 닌우르타(농경과 전승), 닌후르삭(생명모신), 아프수 등.
- * 3. 혼돈 극복 현실 재편 지수 (Chaos-to-Cosmos Ordering Index - 0 ~ 100):
- *    - 불확실성과 무질서 속에서 강력한 자기 질서와 방향성을 확립하는 결단력.
+ * 2. 바빌로니아 천상 주재신 매핑 (Celestial Deities):
+ *    - 마르두크(목성), 에아(지혜), 이슈타르(금성), 샤마쉬(태양), 신(달), 나부(수성).
+ * 3. 질문 맥락 서판 감사·KST 바빌론 천체 시공간 리듬·교차 매트릭스 산출
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const BABYLONIAN_ENUMA_ELISH_VERSION = 'LUCKEY-BABYLONIAN-ENUMA-ELISH-v1.1.0';
+export const BABYLONIAN_ENUMA_ELISH_VERSION = 'LUCKEY-BABYLONIAN-ENUMA-ELISH-v2.0.0';
 
 export type BabylonianQuestionTheme = 'relationship' | 'decision' | 'healing' | 'reflection';
 
 export interface BabylonianPatronDeity {
   cuneiformName: string;
   koreanName: string;
-  celestialDomain: string;         // 관할 천체 및 영역
-  divineAttribute: string;         // 신성한 권능
-  sacredCommandment: string;       // 운명의 서판에 새겨진 신탁
+  celestialDomain: string;
+  divineAttribute: string;
+  sacredCommandment: string;
 }
 
 export interface TabletsOfDestinyEdict {
-  destinyEdictTitle: string;       // 운명의 칙령 제목
+  destinyEdictTitle: string;
   soulSovereigntyScore: number;     // 내부 참조용
-  sovereigntyPosture: string;       // 정성적 주권 국면
-  chaosOvercomingPower: string;     // 혼돈 극복 및 현실 재편 힘
-  cosmicOrderVirtue: string;        // 우주적 질서 미덕
+  sovereigntyPosture: string;
+  chaosOvercomingPower: string;
+  cosmicOrderVirtue: string;
+}
+
+export interface BabylonianSituationalAudit {
+  contextTheme: string;
+  enumaElishTablet: string;
+  chaosVsCosmosDiagnosis: string;
+  sovereignPrescription: string;
+}
+
+export interface BabylonianTemporalRhythm {
+  kstHour: number;
+  zigguratWatchWindow: string;
+  mulApinSeasonalCycle: string;
+  cosmicOrderIndex: number;
+  timingAdvice: string;
+}
+
+export interface BabylonianSynthesisMatrix {
+  deityAxis: string;
+  edictAxis: string;
+  temporalAxis: string;
+  synthesizedVerdict: string;
 }
 
 export interface BabylonianEnumaElishReport {
@@ -49,7 +68,7 @@ export interface BabylonianEnumaElishReport {
   patronDeity: BabylonianPatronDeity;
   destinyEdict: TabletsOfDestinyEdict;
   orderingIndex: number;            // 내부 참조용
-  orderingPosture: string;          // 정성적 질서화 국면
+  orderingPosture: string;
   cuneiformWisdomOmen: string;
   synthesisMessage: string;
   practiceGuidance: string;
@@ -57,6 +76,9 @@ export interface BabylonianEnumaElishReport {
   reflectionFocus: string;
   counselNote: string;
   boundaryNotice: string;
+  situationalBabylonAudit: BabylonianSituationalAudit;
+  temporalBabylonRhythm: BabylonianTemporalRhythm;
+  babylonSynthesisMatrix: BabylonianSynthesisMatrix;
 }
 
 const BABYLONIAN_DEITIES: BabylonianPatronDeity[] = [
@@ -112,6 +134,97 @@ function classifyBabylonianTheme(question?: string): BabylonianQuestionTheme {
   return 'reflection';
 }
 
+function buildSituationalAudit(
+  theme: BabylonianQuestionTheme,
+  deity: BabylonianPatronDeity,
+  edictTitle: string,
+): BabylonianSituationalAudit {
+  if (theme === 'relationship') {
+    return {
+      contextTheme: '관계 경계·언약 서판 감사',
+      enumaElishTablet: '《에누마 엘리쉬》 제6서판 — 신들의 직무와 경계를 분명히 정해 화평을 세움',
+      chaosVsCosmosDiagnosis: `모호한 기대와 말하지 않은 서운함이 혼돈(Tiamat)을 키우는 상태입니다. '${deity.koreanName}'의 질서로 경계를 세우십시오.`,
+      sovereignPrescription: '상대에게 바라는 점과 내가 감당할 수 있는 선을 정중하지만 분명한 언어로 합의하십시오.',
+    };
+  }
+  if (theme === 'decision') {
+    return {
+      contextTheme: '운명의 서판(Tup Shimati) 결단 감사',
+      enumaElishTablet: '《에누마 엘리쉬》 제4서판 — 마르두크가 별자리와 방위를 확정하여 혼돈을 가름',
+      chaosVsCosmosDiagnosis: `여러 선택지가 얽혀 중심이 흔들리는 국면입니다. '${edictTitle}'의 칙령으로 우선순위를 갈라내십시오.`,
+      sovereignPrescription: '불확실한 가정을 덜어내고 내가 직접 책임지고 통제할 수 있는 선택지 하나를 확정하십시오.',
+    };
+  }
+  if (theme === 'healing') {
+    return {
+      contextTheme: '아프수(Apsu) 심연 정화·회복 감사',
+      enumaElishTablet: '《에누마 엘리쉬》 제1서판 — 에아가 고요한 담수의 심연 위에서 평온을 회복함',
+      chaosVsCosmosDiagnosis: `외부 압박으로 내면의 방위가 흔들린 상태입니다. 지금은 싸움이 아니라 '${deity.koreanName}'의 품에서 숨을 고를 때입니다.`,
+      sovereignPrescription: '새로운 전선을 열지 말고 수면과 공간 정리부터 시작해 내면의 질서를 먼저 회복하십시오.',
+    };
+  }
+  return {
+    contextTheme: '천체 질서·자기 주권 감사',
+    enumaElishTablet: '《MUL.APIN》 천문서 — 하늘의 별자리 주기를 따라 지상의 질서를 바로잡음',
+    chaosVsCosmosDiagnosis: `일상의 루틴과 원칙을 점검해 자기 주권을 다질 시점입니다. '${deity.koreanName}'의 기운이 중심을 잡아줍니다.`,
+    sovereignPrescription: deity.sacredCommandment,
+  };
+}
+
+function buildTemporalRhythm(now: Date, seed: number): BabylonianTemporalRhythm {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const kstHour = kst.getUTCHours();
+  const month = kst.getUTCMonth() + 1;
+
+  let zigguratWatchWindow = '샤마쉬 백주 공의 관측 창 (오전~오후)';
+  let timingAdvice = '태양 아래 모든 사실이 명료히 드러나는 때이므로 정직하고 단호하게 결단하십시오.';
+  if (kstHour >= 4 && kstHour < 10) {
+    zigguratWatchWindow = '이슈타르 새벽별 개창 창 (이른 아침)';
+    timingAdvice = '동트는 별빛 아래 오늘 하루 세울 핵심 질서(칙령) 한 가지를 먼저 선언하십시오.';
+  } else if (kstHour >= 18 && kstHour < 22) {
+    zigguratWatchWindow = '지구라트 황혼 성좌 기록 창 (저녁)';
+    timingAdvice = '나부의 서기처럼 오늘의 혼돈을 가라앉히고 남길 기록과 내려놓을 짐을 분류하십시오.';
+  } else if (kstHour >= 22 || kstHour < 4) {
+    zigguratWatchWindow = '신(Sin) 달빛 심야 관조 창 (밤~새벽)';
+    timingAdvice = '밤의 성급한 판단을 피하고 달빛처럼 고요히 내면의 힘을 비축하십시오.';
+  }
+
+  let mulApinSeasonalCycle = '바빌론 12궁 황도 순환';
+  if (month >= 3 && month <= 5) mulApinSeasonalCycle = '아키투(Akitu) 춘분 신년제 — 새 질서와 서판 갱신의 계절';
+  else if (month >= 6 && month <= 8) mulApinSeasonalCycle = '샤마쉬 하지 정점기 — 열정과 추진력의 극대화 계절';
+  else if (month >= 9 && month <= 11) mulApinSeasonalCycle = '타쉬리투(Tashritu) 추분 균형기 — 계약과 공정한 수확의 계절';
+  else mulApinSeasonalCycle = '아프수(Apsu) 동지 심연기 — 내실 정돈과 지혜 축적의 계절';
+
+  const cosmicOrderIndex = 65 + ((seed + kstHour * 5 + month * 3) % 34);
+
+  return {
+    kstHour,
+    zigguratWatchWindow,
+    mulApinSeasonalCycle,
+    cosmicOrderIndex,
+    timingAdvice,
+  };
+}
+
+function buildSynthesisMatrix(
+  deity: BabylonianPatronDeity,
+  edict: TabletsOfDestinyEdict,
+  audit: BabylonianSituationalAudit,
+  temporal: BabylonianTemporalRhythm,
+): BabylonianSynthesisMatrix {
+  const deityAxis = `수호 천체: ${deity.koreanName} (${audit.contextTheme})`;
+  const edictAxis = `서판 칙령: ${edict.destinyEdictTitle}`;
+  const temporalAxis = `지구라트 시의: ${temporal.zigguratWatchWindow} · ${temporal.mulApinSeasonalCycle}`;
+  const synthesizedVerdict = `'${temporal.zigguratWatchWindow}'의 천체 흐름 아래 '${deity.koreanName}'의 질서로 '${edict.destinyEdictTitle}'을 실행할 때, 혼돈은 명료한 구조로 정돈됩니다.`;
+
+  return {
+    deityAxis,
+    edictAxis,
+    temporalAxis,
+    synthesizedVerdict,
+  };
+}
+
 export function calculateBabylonianEnumaElish(
   profile?: UserProfile,
   nowArg?: Date,
@@ -161,6 +274,10 @@ export function calculateBabylonianEnumaElish(
     cosmicOrderVirtue: chosenEdict.virtue,
   };
 
+  const situationalBabylonAudit = buildSituationalAudit(questionTheme, patronDeity, chosenEdict.title);
+  const temporalBabylonRhythm = buildTemporalRhythm(now, seed);
+  const babylonSynthesisMatrix = buildSynthesisMatrix(patronDeity, destinyEdict, situationalBabylonAudit, temporalBabylonRhythm);
+
   const themeGuidanceMap: Record<BabylonianQuestionTheme, { practice: string; ritual: string; reflection: string }> = {
     relationship: {
       practice: `${patronDeity.koreanName}의 질서처럼, 관계의 모호한 경계를 솔직하고 정중한 언어로 분명히 정리해 보세요.`,
@@ -204,6 +321,9 @@ export function calculateBabylonianEnumaElish(
     reflectionFocus: themed.reflection,
     counselNote: `[에누마 엘리쉬 성찰] ${patronDeity.koreanName} · ${chosenEdict.title} — ${themed.practice}`,
     boundaryNotice: '고대 바빌로니아 에누마 엘리쉬 서사시의 질서·창조 상징을 활용한 성찰적 관점이며, 확정적 예언이나 의학적·재정적 판단을 대신하지 않습니다.',
+    situationalBabylonAudit,
+    temporalBabylonRhythm,
+    babylonSynthesisMatrix,
   };
 }
 
@@ -217,6 +337,12 @@ export function formatBabylonianEnumaElishPrompt(report: BabylonianEnumaElishRep
   - 칙령 명칭: ${report.destinyEdict.destinyEdictTitle}
   - 혼돈 극복 권능: ${report.destinyEdict.chaosOvercomingPower}
   - 핵심 우주 미덕: ${report.destinyEdict.cosmicOrderVirtue}
+- **서판 상황 감사(${report.situationalBabylonAudit.contextTheme})**: ${report.situationalBabylonAudit.enumaElishTablet}
+  - 혼돈·질서 진단: ${report.situationalBabylonAudit.chaosVsCosmosDiagnosis}
+  - 주권 처방: ${report.situationalBabylonAudit.sovereignPrescription}
+- **바빌론 시공간 천체 리듬**: ${report.temporalBabylonRhythm.zigguratWatchWindow} · ${report.temporalBabylonRhythm.mulApinSeasonalCycle}
+  - 시의 조언: ${report.temporalBabylonRhythm.timingAdvice}
+- **에누마 엘리쉬 교차 매트릭스**: ${report.babylonSynthesisMatrix.synthesizedVerdict}
 - **맥락별 실천 조언**: ${report.practiceGuidance}
 - **일상 의례**: ${report.ritualAction}
 - **성찰 질문**: ${report.reflectionFocus}
