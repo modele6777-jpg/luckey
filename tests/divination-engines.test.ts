@@ -7432,6 +7432,42 @@ test('Ibn Arabi Wahdat, Kabbalistic Zohar, and Kashmir Shaivism Spanda v2.0.0 in
   assert.ok(!spandaPrompt.includes('/100') && !spandaPrompt.includes('%') && !spandaPrompt.includes('점수'));
 });
 
+test('v2.1.0 qualitative prompt reform: Hannah Arendt, Henry David Thoreau, and William James hide raw scores', () => {
+  const profile = {
+    basic: {
+      name: '남희',
+      birthdate: '1988-05-12',
+      birthtime: '09:30',
+      gender: 'female' as const,
+      calendarType: 'solar' as const,
+    },
+  };
+  const now = new Date('2026-11-15T06:40:00+09:00');
+
+  const arendt = calculateHannahArendtVitaActiva(profile, '새로운 시작을 앞두고 결정을 망설이고 있어요', now);
+  assert.equal(arendt.engineVersion, 'LUCKEY-HANNAH-ARENDT-VITA-ACTIVA-v2.1.0');
+  const arendtPrompt = formatHannahArendtVitaActivaPrompt(arendt);
+  assert.ok(!arendtPrompt.includes('/100') && !arendtPrompt.includes('%'));
+  assert.ok(arendtPrompt.includes('아렌트 매트릭스'));
+
+  const thoreau = calculateHenryDavidThoreauWalden(profile, '지치고 복잡해서 마음을 단순하게 비우고 싶어요', now);
+  assert.equal(thoreau.engineVersion, 'LUCKEY-HENRY-DAVID-THOREAU-WALDEN-v2.1.0');
+  const thoreauPrompt = formatHenryDavidThoreauWaldenPrompt(thoreau);
+  assert.ok(!thoreauPrompt.includes('/100') && !thoreauPrompt.includes('%'));
+  assert.ok(thoreauPrompt.includes('월든 매트릭스'));
+
+  const james = calculateAmericanWilliamJamesPragmatism(profile, '불안하고 잡념이 많아 마음을 다잡고 싶어요', now);
+  assert.equal(james.engineVersion, 'LUCKEY-WILLIAM-JAMES-PRAGMATISM-v2.1.0');
+  assert.equal(james.questionTopic, 'healing');
+  assert.ok(james.dailyPracticeRitual.length > 0);
+  assert.ok(james.reflectiveQuestion.length > 0);
+  assert.ok(james.interpretiveBoundary.length > 0);
+  const jamesPrompt = formatAmericanWilliamJamesPragmatismPrompt(james);
+  assert.ok(!jamesPrompt.includes('/100') && !jamesPrompt.includes('%'));
+  assert.ok(jamesPrompt.includes('오늘의 실천 의례'));
+  assert.ok(jamesPrompt.includes('해석 경계'));
+});
+
 
 
 

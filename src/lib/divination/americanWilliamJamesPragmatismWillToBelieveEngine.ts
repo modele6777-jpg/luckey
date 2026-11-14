@@ -5,12 +5,14 @@
  * 《실용주의(Pragmatism, 1907)》, 《신념의 의지(The Will to Believe, 1897)》, 《심리학의 원리(The Principles of Psychology, 1890)》,
  * 《종교적 경험의 다양성(The Varieties of Religious Experience, 1902)》 원전 기반.
  *
- * @version LUCKEY-WILLIAM-JAMES-PRAGMATISM-v2.0.0
+ * @version LUCKEY-WILLIAM-JAMES-PRAGMATISM-v2.1.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const AMERICAN_WILLIAM_JAMES_VERSION = 'LUCKEY-WILLIAM-JAMES-PRAGMATISM-v2.0.0';
+export const AMERICAN_WILLIAM_JAMES_VERSION = 'LUCKEY-WILLIAM-JAMES-PRAGMATISM-v2.1.0';
+
+export type JamesQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
 export interface JamesTheme {
   themeKey: string;
@@ -55,7 +57,8 @@ export interface JamesSynthesisMatrix {
 export interface AmericanWilliamJamesPragmatismResult {
   engineVersion: string;
   calculatedAtKst: string;
-  // 5대 핵심 윌리엄 제임스 실용주의 & 심리 지표 (0~100)
+  questionTopic: JamesQuestionTopic;
+  // 5대 핵심 윌리엄 제임스 실용주의 & 심리 지표 (내부 계산 호환용, 프롬프트 비노출)
   practicalCashValueIndex: number;              // 실천적 현금가치 및 유용성 지수 (Cash-Value & Fruitfulness)
   willToBelieveConfidenceScore: number;         // 신념의 의지 및 행동 결단력 (The Will to Believe & Decisive Action)
   streamOfConsciousnessVitalityIndex: number;   // 의식의 흐름 및 심리적 유연성 지표 (Stream of Consciousness Flexibility)
@@ -67,6 +70,9 @@ export interface AmericanWilliamJamesPragmatismResult {
   situationalPragmatismAudit: JamesSituationalPragmatismAudit;
   temporalPragmatismRhythm: JamesTemporalPragmatismRhythm;
   jamesSynthesisMatrix: JamesSynthesisMatrix;
+  dailyPracticeRitual: string;
+  reflectiveQuestion: string;
+  interpretiveBoundary: string;
   jamesComprehensiveGuidance: {
     guidanceTitle: string;
     philosophicalCounsel: string;
@@ -242,6 +248,48 @@ function buildTemporalPragmatismRhythm(now?: Date): JamesTemporalPragmatismRhyth
   };
 }
 
+function classifyJamesQuestionTopic(query?: string): JamesQuestionTopic {
+  const q = (query ?? '').toLowerCase();
+  if (/관계|사람|갈등|인정|소통|서운|연애|가족|동료/.test(q)) return 'relationship';
+  if (/확신|결정|선택|도전|시작|불확실|망설|이직|창업/.test(q)) return 'decision';
+  if (/불안|스트레스|우울|지침|생각|걱정|잡념|회복|휴식/.test(q)) return 'healing';
+  return 'reflection';
+}
+
+function buildJamesTopicExtras(topic: JamesQuestionTopic): {
+  dailyPracticeRitual: string;
+  reflectiveQuestion: string;
+} {
+  switch (topic) {
+    case 'relationship':
+      return {
+        dailyPracticeRitual: '오늘 마주한 사람에게 상대의 의도와 수고를 있는 그대로 인정해 주는 짧은 문장 하나 먼저 건네기.',
+        reflectiveQuestion: '상대의 틀림을 논박하는 대신, 이 관계에서 실제로 협력과 온기를 여는 현금가치 있는 말은 무엇입니까?',
+      };
+    case 'decision':
+      return {
+        dailyPracticeRitual: '완벽한 확신을 기다리지 말고 15분 안에 현실 피드백을 얻을 수 있는 최소 실험 1건 바로 착수하기.',
+        reflectiveQuestion: '내가 먼저 믿고 발을 떼어야 비로소 현실이 움직이기 시작하는 지점은 어디입니까?',
+      };
+    case 'healing':
+      return {
+        dailyPracticeRitual: '자세를 곧게 펴고 심호흡 3회 뒤, 머릿속 잡념 대신 손과 몸을 쓰는 단순한 행동 1가지 즉시 시작하기.',
+        reflectiveQuestion: '지금 붙잡고 있는 생각 대신 의식적으로 선택해 옮겨 탈 수 있는 더 건강한 생각은 무엇입니까?',
+      };
+    default:
+      return {
+        dailyPracticeRitual: '오늘 하루 내 삶에 실제로 구체적인 차이를 만들어 낸 작은 행동 1가지를 밤에 짧게 기록하기.',
+        reflectiveQuestion: '추상적 고민을 접어 두고 지금 당장 손에 잡히는 변화를 만드는 가장 실용적인 한 걸음은 무엇입니까?',
+      };
+  }
+}
+
+function describeJamesStage(score: number): string {
+  if (score >= 90) return '충만·실천 도약(Cash-Value Active)';
+  if (score >= 82) return '명료·신념 발현(Will to Believe)';
+  return '유연·의식 조율(Stream Flowing)';
+}
+
 export function calculateAmericanWilliamJamesPragmatism(
   profile?: UserProfile,
   query?: string,
@@ -252,8 +300,9 @@ export function calculateAmericanWilliamJamesPragmatism(
   const birthDate = profile?.basic?.birthdate ?? p?.birthDate ?? p?.birthdate ?? '1967-08-25';
   const birthTime = profile?.basic?.birthtime ?? p?.birthTime ?? p?.birthtime ?? '12:00';
   const gender = profile?.basic?.gender ?? p?.gender ?? 'neutral';
+  const questionTopic = classifyJamesQuestionTopic(query);
 
-  const seedString = `WILLIAM-JAMES-PRAGMATISM:${name}:${birthDate}:${birthTime}:${gender}:${query ?? ''}`;
+  const seedString = `WILLIAM-JAMES-PRAGMATISM:${name}:${birthDate}:${birthTime}:${gender}:${questionTopic}:${query ?? ''}`;
 
   let hash = 0;
   for (let i = 0; i < seedString.length; i++) {
@@ -294,9 +343,13 @@ export function calculateAmericanWilliamJamesPragmatism(
     `${activeJamesTheme.practicalCounsel} 아울러 제임스의 명언 "${focalJamesAphorism.aphorismKo}"를 가슴에 품고, ` +
     `${focalJamesAphorism.actionGuidance}`;
 
+  const topicExtras = buildJamesTopicExtras(questionTopic);
+  const interpretiveBoundary = '윌리엄 제임스의 실용주의와 심리학 관점은 행동과 태도의 전환을 비추는 상징적 성찰 렌즈이며, 확정적 예측이나 전문 자문을 대신하지 않습니다.';
+
   return {
     engineVersion: AMERICAN_WILLIAM_JAMES_VERSION,
     calculatedAtKst: (now ?? new Date()).toISOString(),
+    questionTopic,
     practicalCashValueIndex,
     willToBelieveConfidenceScore,
     streamOfConsciousnessVitalityIndex,
@@ -307,6 +360,9 @@ export function calculateAmericanWilliamJamesPragmatism(
     situationalPragmatismAudit,
     temporalPragmatismRhythm,
     jamesSynthesisMatrix,
+    dailyPracticeRitual: topicExtras.dailyPracticeRitual,
+    reflectiveQuestion: topicExtras.reflectiveQuestion,
+    interpretiveBoundary,
     jamesComprehensiveGuidance: {
       guidanceTitle,
       philosophicalCounsel,
@@ -319,17 +375,18 @@ export function formatAmericanWilliamJamesPragmatismPrompt(
 ): string {
   return [
     `【윌리엄 제임스 《실용주의》 & 《신념의 의지》 실천적 현금가치 지표】`,
-    `- 실천적 현금가치 및 유용성 지수(Cash-Value & Fruitfulness): ${res.practicalCashValueIndex}/100`,
-    `- 신념의 의지 및 행동 결단력(The Will to Believe & Decisive Action): ${res.willToBelieveConfidenceScore}/100`,
-    `- 의식의 흐름 및 심리적 유연성 지표(Stream of Consciousness Flexibility): ${res.streamOfConsciousnessVitalityIndex}/100`,
-    `- 다원적 우주 및 다양성 수용도(Pluralistic Universe Openness): ${res.pluralisticOpennessScore}/100`,
-    `- 건강한 영혼 및 정서 전환 회복탄력성(Healthy-Mindedness & Somatic Action): ${res.healthyMindedResilienceIndex}/100`,
+    `- 질문 맥락 초점: ${res.questionTopic}`,
+    `- 실천적 현금가치 결: ${describeJamesStage(res.practicalCashValueIndex)} · 신념의 의지(${describeJamesStage(res.willToBelieveConfidenceScore)}) · 의식의 흐름(${describeJamesStage(res.streamOfConsciousnessVitalityIndex)})`,
+    `- 다원적 수용·회복 결: 다원적 개방성(${describeJamesStage(res.pluralisticOpennessScore)}) · 건강한 정서 전환(${describeJamesStage(res.healthyMindedResilienceIndex)})`,
     `- 핵심 실용주의 테마: ${res.activeJamesTheme.themeTitleKo} [${res.activeJamesTheme.themeTitleEn}]`,
     `- 질문 맥락 실용 감사 (${res.situationalPragmatismAudit.themeKo} · ${res.situationalPragmatismAudit.sourceCitation}): "${res.situationalPragmatismAudit.translationKo}"`,
     `- 현금가치 검증: ${res.situationalPragmatismAudit.cashValueTest}`,
     `- 신체·행동 첫걸음: ${res.situationalPragmatismAudit.somaticFirstStep}`,
-    `- KST 실용주의 리듬: ${res.temporalPragmatismRhythm.kstWindow} (${res.temporalPragmatismRhythm.pragmaticFocus}, 명료도 ${res.temporalPragmatismRhythm.pragmatismClarityIndex}/100) — ${res.temporalPragmatismRhythm.rhythmDirective}`,
-    `- 제임스 매트릭스: 현금가치 ${res.jamesSynthesisMatrix.cashValueClarity} / 신념 결단 ${res.jamesSynthesisMatrix.willToBelieveCourage} / 의식 유연성 ${res.jamesSynthesisMatrix.streamAdaptability} (종합 ${res.jamesSynthesisMatrix.overallSynthesis}/100)`,
+    `- KST 실용주의 리듬: ${res.temporalPragmatismRhythm.kstWindow} (${res.temporalPragmatismRhythm.pragmaticFocus}, 흐름 ${describeJamesStage(res.temporalPragmatismRhythm.pragmatismClarityIndex)}) — ${res.temporalPragmatismRhythm.rhythmDirective}`,
+    `- 제임스 매트릭스: 현금가치(${describeJamesStage(res.jamesSynthesisMatrix.cashValueClarity)}) · 신념 결단(${describeJamesStage(res.jamesSynthesisMatrix.willToBelieveCourage)}) · 의식 유연성(${describeJamesStage(res.jamesSynthesisMatrix.streamAdaptability)}) — 종합 결(${describeJamesStage(res.jamesSynthesisMatrix.overallSynthesis)})`,
+    `- 오늘의 실천 의례: ${res.dailyPracticeRitual}`,
+    `- 성찰 질문: ${res.reflectiveQuestion}`,
     `- 종합 제임스 실용 권면: ${res.jamesComprehensiveGuidance.philosophicalCounsel}`,
+    `- 해석 경계: ${res.interpretiveBoundary}`,
   ].join('\n');
 }
