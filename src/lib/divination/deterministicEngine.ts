@@ -3082,7 +3082,7 @@ try {
   // 195. 고대 그리스 에페소스 헤라클레이토스 만물유전 & 로고스 대립물 조화 엔진
   const heraclitusPantaRheiResult = calculateSupplement('heraclitusPantaRheiResult', () => ((() => {
     try {
-      return calculateHeraclitusPantaRhei(profile);
+      return calculateHeraclitusPantaRhei(profile, question, now);
     } catch (_) {
       return null;
     }
@@ -3100,7 +3100,7 @@ try {
   // 197. 고대 로마 철학 황제 마르쿠스 아우렐리우스 명상록 내면의 성채 엔진
   const aureliusInnerCitadelResult = calculateSupplement('aureliusInnerCitadelResult', () => ((() => {
     try {
-      return calculateAureliusInnerCitadel(profile);
+      return calculateAureliusInnerCitadel(profile, question, now);
     } catch (_) {
       return null;
     }
@@ -3109,7 +3109,7 @@ try {
   // 198. 고대 중국 노자 《도덕경》 81장 상선약수 & 무위자연 엔진
   const laoziDaodejingResult = calculateSupplement('laoziDaodejingResult', () => ((() => {
     try {
-      return calculateLaoziDaodejing(profile);
+      return calculateLaoziDaodejing(profile, question, now);
     } catch (_) {
       return null;
     }

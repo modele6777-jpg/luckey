@@ -2,18 +2,19 @@
  * 고대 중국 노자(老子) 《도덕경(道德經)》 81장 상선약수(上善若水) & 무위자연(無爲自然) 엔진
  *
  * 춘추전국시대 도가(道家) 종사 노자의 《도덕경》 81장 원전 기반.
- * 1. 상선약수(上善若水): 만물을 이롭게 하면서도 다투지 않고 가장 낮은 곳에 머무는 물의 덕성.
- * 2. 무위이무불위(無爲而無不爲): 억지 부림 없이 자연의 순리에 맡김으로써 이루지 못함이 없음.
- * 3. 화광동진(和光同塵): 제 빛을 부드럽게 감추어 세상의 먼지와 티끌에 함께 어우러지는 겸양.
- * 4. 지족부욕(知足不辱) 지지불태(知止不殆): 만족할 줄 알면 욕되지 않고, 머물 줄 알면 위태롭지 않음.
- * 5. 대기만성(大器晩成): 큰 그릇은 늦게 완성되며, 서두르지 않는 깊은 내면의 도량.
+ * 1. 상선약수(上善若水, 제8장): 만물을 이롭게 하면서도 다투지 않고 가장 낮은 곳에 머무는 물의 덕성.
+ * 2. 무위이무불위(無爲而無不爲, 제37장·제48장): 억지 부림 없이 자연의 순리에 맡김으로써 이루지 못함이 없음.
+ * 3. 화광동진(和光同塵, 제56장): 제 빛을 부드럽게 감추어 세상의 먼지와 티끌에 함께 어우러지는 겸양.
+ * 4. 지족부욕(知足不辱) 지지불태(知止不殆, 제44장): 만족할 줄 알면 욕되지 않고, 머물 줄 알면 위태롭지 않음.
+ * 5. 대기만성(大器晩成, 제41장) & 유약승강강(柔弱勝剛强, 제36장·제78장): 부드러움이 굳셈을 이기는 깊은 내공.
+ * 6. 질문 맥락 공명 챕터 매핑 + 시공간 음양 수기(水氣) 리듬 + 여백-충만 균형 교차 검증
  *
- * @version LUCKEY-LAOZI-DAODEJING-v1.0.0
+ * @version LUCKEY-LAOZI-DAODEJING-v2.0.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const LAOZI_DAODEJING_VERSION = 'LUCKEY-LAOZI-DAODEJING-v1.0.0';
+export const LAOZI_DAODEJING_VERSION = 'LUCKEY-LAOZI-DAODEJING-v2.0.0';
 
 export interface DaodejingStage {
   stageLevel: number;
@@ -21,6 +22,38 @@ export interface DaodejingStage {
   stageNameKo: string;
   daoDomain: string;
   cosmicWaterBlessing: string;
+}
+
+export type DaodejingTheme =
+  | 'non_contention_water'
+  | 'emptiness_utility'
+  | 'yielding_resilience'
+  | 'contentment_stopping'
+  | 'unhurried_maturity'
+  | 'softening_light';
+
+export interface DaodejingChapterResonance {
+  theme: DaodejingTheme;
+  chapterNumber: number;
+  chapterTitle: string;
+  originalHanja: string;
+  translationKo: string;
+  reflectionQuestion: string;
+  wuweiUnburdeningTip: string;
+}
+
+export interface DaodejingSeasonalWaterFlow {
+  kstHour: number;
+  shichenName: string;
+  seasonalQi: string;
+  waterPacingScore: number; // 0~100: 무위 완급 조율 지수
+  effortlessTimingCounsel: string;
+}
+
+export interface DaodejingSoftStrengthMatrix {
+  emptinessFullnessRatio: number; // 0~100: 비움과 채움의 균형도
+  nonContentionHarmonyScore: number; // 0~100: 다툼 회피 순리 지수
+  yieldingOverRigidStrategy: string;
 }
 
 export interface LaoziDaodejingResult {
@@ -44,6 +77,10 @@ export interface LaoziDaodejingResult {
     chapterSceneTitle: string;
     timelessWisdom: string;
   };
+  // v2.0.0 다차원 질적 성찰 & 시공간 교차 검증
+  chapterResonance: DaodejingChapterResonance;
+  seasonalWaterFlow: DaodejingSeasonalWaterFlow;
+  softStrengthMatrix: DaodejingSoftStrengthMatrix;
 }
 
 export type LaoziDaodejingReport = LaoziDaodejingResult;
@@ -72,10 +109,70 @@ const DAODEJING_EPIPHANIES = [
   { chapterSceneTitle: '바다로 흘러드는 천하의 백천 가지 시냇물', timelessWisdom: '바다가 모든 강의 으뜸이 될 수 있는 까닭은 스스로 가장 낮은 곳에 있기 때문이다.' },
 ];
 
-function getKstDateString(): string {
-  const now = new Date();
-  const kst = new Date(now.getTime() + (9 * 60 + now.getTimezoneOffset()) * 60000);
-  return kst.toISOString().replace('T', ' ').substring(0, 19) + ' KST';
+const CHAPTER_RESONANCES: Record<DaodejingTheme, DaodejingChapterResonance> = {
+  non_contention_water: {
+    theme: 'non_contention_water',
+    chapterNumber: 8,
+    chapterTitle: '제8장 상선약수(上善若水)',
+    originalHanja: '夫唯不爭 故無尤',
+    translationKo: '오직 다투지 않으므로 허물이 없다.',
+    reflectionQuestion: '지금 꼭 이겨야 한다고 여기는 승부가 사실은 다투지 않고도 더 크게 얻을 수 있는 길은 아닐까요?',
+    wuweiUnburdeningTip: '상대와 정면으로 맞서기보다 낮고 넓은 자리에서 상대의 필요가 자연히 흘러오게 두십시오.',
+  },
+  emptiness_utility: {
+    theme: 'emptiness_utility',
+    chapterNumber: 11,
+    chapterTitle: '제11장 무지이용(無之以爲用)',
+    originalHanja: '埏埴以爲器 當其無 有器之用',
+    translationKo: '진흙을 빚어 그릇을 만들지만 그 안의 빈 공간 덕분에 그릇의 쓰임이 생긴다.',
+    reflectionQuestion: '일정과 생각을 빈틈없이 채우려다 정작 새로운 숨결과 영감이 들어올 여백을 막고 있지는 않으신가요?',
+    wuweiUnburdeningTip: '오늘 해야 할 일 목록에서 굳이 내가 직접 쥐고 있지 않아도 될 한 가지를 과감히 비워 보십시오.',
+  },
+  yielding_resilience: {
+    theme: 'yielding_resilience',
+    chapterNumber: 22,
+    chapterTitle: '제22장 곡즉전(曲則全)',
+    originalHanja: '曲則全 枉則直 窪則盈 弊則新',
+    translationKo: '굽히면 온전해지고, 휘어지면 곧아지며, 움푹 파이면 차오르고, 낡으면 새로워진다.',
+    reflectionQuestion: '완벽한 직선으로만 밀고 나가려다 오히려 작은 바람에도 부러질 뻔한 순간은 없었나요?',
+    wuweiUnburdeningTip: '잠시 한 걸음 물러나거나 우회하는 선택을 패배가 아닌 온전한 보존의 지혜로 받아들이십시오.',
+  },
+  contentment_stopping: {
+    theme: 'contentment_stopping',
+    chapterNumber: 44,
+    chapterTitle: '제44장 지족지(知足知止)',
+    originalHanja: '知足不辱 知止不殆 可以長久',
+    translationKo: '만족할 줄 알면 욕되지 않고, 멈출 줄 알면 위태롭지 않으니 오래도록 평안하다.',
+    reflectionQuestion: '충분히 잘 해내고 있음에도 ‘조금만 더’라는 조바심이 지금의 평온을 갉아먹고 있지는 않으신가요?',
+    wuweiUnburdeningTip: '오늘의 성취에 명확한 마침표(지지·知止)를 찍고, 더 이상의 과잉 개입을 멈추십시오.',
+  },
+  unhurried_maturity: {
+    theme: 'unhurried_maturity',
+    chapterNumber: 45,
+    chapterTitle: '제45장 대교약졸(大巧若拙)',
+    originalHanja: '躁勝寒 靜勝熱 清靜爲天下正',
+    translationKo: '움직임이 추위를 이기듯 고요함은 들뜬 열기를 이기나니, 맑고 고요함이 천하의 바른 기준이다.',
+    reflectionQuestion: '빠른 결과를 재촉하는 조급함이 오히려 큰 그릇이 무르익을 시간을 빼앗고 있지는 않으신가요?',
+    wuweiUnburdeningTip: '속도를 내기 전에 들뜬 마음을 먼저 가라앉히고, 묵직한 기본기 하나를 조용히 다지십시오.',
+  },
+  softening_light: {
+    theme: 'softening_light',
+    chapterNumber: 56,
+    chapterTitle: '제56장 화광동진(和光同塵)',
+    originalHanja: '挫其銳 解其紛 和其光 同其塵',
+    translationKo: '날카로운 모서리를 무디게 하고 얽힘을 풀며, 빛을 부드럽게 하여 티끌과 함께 어우른다.',
+    reflectionQuestion: '내 논리의 날카로움을 앞세우느라 상대가 마음 편히 다가올 온기를 가리고 있지는 않으신가요?',
+    wuweiUnburdeningTip: '정답을 증명하려 하기보다 상대의 입장을 먼저 공감하며 대화의 각을 부드럽게 낮추십시오.',
+  },
+};
+
+function getKstDate(now?: Date): Date {
+  const base = now ?? new Date();
+  return new Date(base.getTime() + (9 * 60 + base.getTimezoneOffset()) * 60000);
+}
+
+function getKstDateString(now?: Date): string {
+  return getKstDate(now).toISOString().replace('T', ' ').substring(0, 19) + ' KST';
 }
 
 function hashSeed(seedStr: string): number {
@@ -87,11 +184,78 @@ function hashSeed(seedStr: string): number {
   return Math.abs(h);
 }
 
-export function calculateLaoziDaodejing(profile?: UserProfile): LaoziDaodejingResult {
+function classifyDaodejingTheme(question: string | undefined, seed: number): DaodejingTheme {
+  const q = (question || '').toLowerCase();
+  if (/경쟁|다툼|이기|승부|갈등|비교|논쟁/.test(q)) return 'non_contention_water';
+  if (/비우|여백|휴식|번아웃|지치|복잡|정리|덜어/.test(q)) return 'emptiness_utility';
+  if (/꺾이|막히|굽히|실패|우회|유연|어려움|포기/.test(q)) return 'yielding_resilience';
+  if (/욕심|불안|만족|멈추|돈|재물|성과|집착/.test(q)) return 'contentment_stopping';
+  if (/조급|느리|기다리|시간|성장|준비|진로|결실/.test(q)) return 'unhurried_maturity';
+  if (/관계|소통|대화|사람|오해|화해|겸손|배려/.test(q)) return 'softening_light';
+
+  const order: DaodejingTheme[] = [
+    'non_contention_water',
+    'emptiness_utility',
+    'yielding_resilience',
+    'contentment_stopping',
+    'unhurried_maturity',
+    'softening_light',
+  ];
+  return order[seed % order.length];
+}
+
+function buildSeasonalWaterFlow(kstDate: Date, wuweiForce: number): DaodejingSeasonalWaterFlow {
+  const hour = kstDate.getUTCHours();
+  const month = kstDate.getUTCMonth() + 1;
+
+  const shichenList = [
+    '자시(子時·깊은 밤 수기 충만)', '축시(丑時·고요한 여명 대기)', '인시(寅時·만물 생동 시작)',
+    '묘시(卯時·아침 이슬 조화)', '진시(辰時·물길이 트이는 때)', '사시(巳時·빛과 물의 균형)',
+    '오시(午時·양기 절정·절제 요망)', '미시(未時·느슨한 숨고르기)', '신시(申時·실용적 흐름 조율)',
+    '유시(酉時·수렴과 정돈의 때)', '술시(戌時·빛을 거두는 화광동진)', '해시(亥時·근원으로 돌아가는 귀근)',
+  ];
+  const shichenIdx = Math.floor(((hour + 1) % 24) / 2);
+  const shichenName = shichenList[shichenIdx];
+
+  let seasonalQi = '동장(冬藏): 뿌리에 기운을 모으고 고요히 내실을 다지는 수기(水氣)의 계절';
+  let seasonBonus = 8;
+  if (month >= 3 && month <= 5) {
+    seasonalQi = '춘생(春生): 얼음이 녹아 자연스레 시냇물이 흐르기 시작하는 순리의 계절';
+    seasonBonus = 6;
+  } else if (month >= 6 && month <= 8) {
+    seasonalQi = '하장(夏長): 왕성한 양기 속에서 지나친 조급함을 물의 차분함으로 식혀야 하는 계절';
+    seasonBonus = 2;
+  } else if (month >= 9 && month <= 11) {
+    seasonalQi = '추수(秋收): 겉잎을 떨어뜨리고 꼭 필요한 알곡만 남기는 지족(知足)의 계절';
+    seasonBonus = 7;
+  }
+
+  const waterPacingScore = Math.min(99, Math.round(wuweiForce * 0.88 + seasonBonus));
+  const effortlessTimingCounsel =
+    hour >= 11 && hour < 15
+      ? '양기가 가장 높은 시간대이므로 억지 추진을 줄이고 물 한 잔 마시듯 여유를 두고 판단하십시오.'
+      : '억지 개입 없이 자연스럽게 흘러가는 결을 읽기 좋은 시간입니다. 순리에 맡기고 필요한 한 수만 두십시오.';
+
+  return {
+    kstHour: hour,
+    shichenName,
+    seasonalQi,
+    waterPacingScore,
+    effortlessTimingCounsel,
+  };
+}
+
+export function calculateLaoziDaodejing(
+  profile?: UserProfile,
+  question?: string,
+  now?: Date,
+): LaoziDaodejingResult {
   const birthdate = profile?.basic?.birthdate || '1995-03-21';
   const birthtime = profile?.basic?.birthtime || '12:00';
   const name = profile?.basic?.name || 'Inquirer';
+  const kstDate = getKstDate(now);
   const seed = hashSeed(`LAOZI-DAODEJING-${birthdate}-${birthtime}-${name}`);
+  const qSeed = hashSeed(`LAOZI-Q-${question || ''}-${kstDate.getUTCFullYear()}-${kstDate.getUTCMonth() + 1}-${kstDate.getUTCDate()}`);
 
   const waterYieldingAdaptabilityScore = (seed % 41) + 60; // 60~100
   const wuweiEffortlessActionForce = ((seed >> 3) % 43) + 58; // 58~100
@@ -108,9 +272,25 @@ export function calculateLaoziDaodejing(profile?: UserProfile): LaoziDaodejingRe
   const epiphanyIdx = (seed >> 6) % DAODEJING_EPIPHANIES.length;
   const daodejingCosmicEpiphany = DAODEJING_EPIPHANIES[epiphanyIdx];
 
+  const theme = classifyDaodejingTheme(question, qSeed);
+  const chapterResonance = CHAPTER_RESONANCES[theme];
+  const seasonalWaterFlow = buildSeasonalWaterFlow(kstDate, wuweiEffortlessActionForce);
+
+  const emptinessFullnessRatio = Math.min(99, Math.round((contentmentNonGraspingPower + wuweiEffortlessActionForce) / 2));
+  const nonContentionHarmonyScore = Math.min(99, Math.round((waterYieldingAdaptabilityScore + harmoniousLightSofteningIndex) / 2));
+
+  const softStrengthMatrix: DaodejingSoftStrengthMatrix = {
+    emptinessFullnessRatio,
+    nonContentionHarmonyScore,
+    yieldingOverRigidStrategy:
+      nonContentionHarmonyScore >= 75
+        ? '부드러움으로 강함을 이기는 유약승강강(柔弱勝剛强)의 흐름이 원활합니다. 직접 부딪히기보다 낮은 자리에서 전체 흐름을 품으십시오.'
+        : '스스로 기준을 너무 굳게 세워 피로가 쌓이기 쉬운 상태입니다. 오늘 한 가지는 완성도보다 여백과 유연성을 우선해 보십시오.',
+  };
+
   return {
     engineVersion: LAOZI_DAODEJING_VERSION,
-    calculatedAtKst: getKstDateString(),
+    calculatedAtKst: getKstDateString(now),
     waterYieldingAdaptabilityScore,
     wuweiEffortlessActionForce,
     harmoniousLightSofteningIndex,
@@ -119,6 +299,9 @@ export function calculateLaoziDaodejing(profile?: UserProfile): LaoziDaodejingRe
     activeDaodejingStage,
     primaryDaoPrinciple,
     daodejingCosmicEpiphany,
+    chapterResonance,
+    seasonalWaterFlow,
+    softStrengthMatrix,
   };
 }
 
@@ -133,6 +316,13 @@ export function formatLaoziDaodejingPrompt(result: LaoziDaodejingResult): string
 - 현행 도가적 품계: **[${result.activeDaodejingStage.stageNameKo} (${result.activeDaodejingStage.stageNameHanja})]**
   → 관장 영역: ${result.activeDaodejingStage.daoDomain}
   → 섭리의 축복: ${result.activeDaodejingStage.cosmicWaterBlessing}
+- 질문 공명 《도덕경》 장(章): **[${result.chapterResonance.chapterTitle}]** — "${result.chapterResonance.translationKo}" (${result.chapterResonance.originalHanja})
+  → 성찰 질문: ${result.chapterResonance.reflectionQuestion}
+  → 무위 덜어내기: ${result.chapterResonance.wuweiUnburdeningTip}
+- 시공간 수기(水氣) 리듬: ${result.seasonalWaterFlow.shichenName} / ${result.seasonalWaterFlow.seasonalQi} (완급 조율 지수 ${result.seasonalWaterFlow.waterPacingScore}%)
+  → 타이밍 조언: ${result.seasonalWaterFlow.effortlessTimingCounsel}
+- 유약승강강 균형 매트릭스: 여백-충만 균형 ${result.softStrengthMatrix.emptinessFullnessRatio}% · 다툼 회피 순리 지수 ${result.softStrengthMatrix.nonContentionHarmonyScore}%
+  → 전략 제언: ${result.softStrengthMatrix.yieldingOverRigidStrategy}
 - 최우선 도가 지침: **[${result.primaryDaoPrinciple.principleTitleKo} (${result.primaryDaoPrinciple.hanjaMotto})]**
   → 핵심 본질: ${result.primaryDaoPrinciple.coreEssence}
   → 실천 지침: ${result.primaryDaoPrinciple.actionableDirective}

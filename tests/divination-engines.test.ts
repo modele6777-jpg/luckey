@@ -4388,7 +4388,7 @@ test('Korean Jeong Yak-yong Mongmin Simseo Engine: calculates Cheongnyeom integr
 });
 
 test('Ancient Greek Heraclitus Panta Rhei Engine: calculates flux index, Logos harmony, eternal fire and hidden harmonia', () => {
-  const rep = calculateHeraclitusPantaRhei(profile);
+  const rep = calculateHeraclitusPantaRhei(profile, '이직과 새로운 변화 앞에서 갈등이 커서 불안해요', new Date('2026-11-14T00:00:00Z'));
   assert.equal(rep.engineVersion, HERACLITUS_PANTA_RHEI_VERSION);
   assert(rep.pantaRheiFluxIndex >= 0 && rep.pantaRheiFluxIndex <= 100);
   assert(rep.logosHarmoniaScore >= 0 && rep.logosHarmoniaScore <= 100);
@@ -4396,9 +4396,14 @@ test('Ancient Greek Heraclitus Panta Rhei Engine: calculates flux index, Logos h
   assert(rep.hiddenHarmoniaStrength >= 0 && rep.hiddenHarmoniaStrength <= 100);
   assert(rep.enantiodromiaBalance >= 0 && rep.enantiodromiaBalance <= 100);
   assert(rep.activeHeraclitusStage.stageNameGreek.length > 0);
+  assert.equal(rep.situationalReflection.theme, 'transition_flux');
+  assert(rep.situationalReflection.reflectionPrompt.length > 0);
+  assert(rep.temporalFluxContext.dayPhaseKo.length > 0);
+  assert(rep.dialecticPolarityMatrix.tensionHarmonyRatio >= 0 && rep.dialecticPolarityMatrix.tensionHarmonyRatio <= 100);
   const prompt = formatHeraclitusPantaRheiPrompt(rep);
   assert(prompt.includes('에페소스 헤라클레이토스 만물유전(Panta Rhei)'));
   assert(prompt.includes(rep.activeHeraclitusStage.stageNameKo));
+  assert(prompt.includes(rep.situationalReflection.fragmentRef));
 });
 
 test('Ancient Chinese Mozi Gyeom-Ae Universal Love Engine: calculates Gyeom-Ae love, Gyo-Ri mutual benefit and Bi-Gong shield', () => {
@@ -4416,7 +4421,7 @@ test('Ancient Chinese Mozi Gyeom-Ae Universal Love Engine: calculates Gyeom-Ae l
 });
 
 test('Roman Marcus Aurelius Inner Citadel Meditations Engine: calculates Inner Citadel score, Hic et nunc and Amor Fati', () => {
-  const rep = calculateAureliusInnerCitadel(profile);
+  const rep = calculateAureliusInnerCitadel(profile, '타인의 평가와 평판 때문에 마음이 흔들려요', new Date('2026-11-14T12:00:00Z'));
   assert.equal(rep.engineVersion, AURELIUS_INNER_CITADEL_VERSION);
   assert(rep.innerCitadelFortressScore >= 0 && rep.innerCitadelFortressScore <= 100);
   assert(rep.hicEtNuncPresentPresence >= 0 && rep.hicEtNuncPresentPresence <= 100);
@@ -4424,13 +4429,18 @@ test('Roman Marcus Aurelius Inner Citadel Meditations Engine: calculates Inner C
   assert(rep.cosmopolisCommonGoodIndex >= 0 && rep.cosmopolisCommonGoodIndex <= 100);
   assert(rep.hegemonikonSovereignSoul >= 0 && rep.hegemonikonSovereignSoul <= 100);
   assert(rep.activeAureliusStage.stageNameLatin.length > 0);
+  assert.equal(rep.controlDichotomy.theme, 'external_judgment');
+  assert(rep.controlDichotomy.internalSovereigntyRatio >= 0 && rep.controlDichotomy.internalSovereigntyRatio <= 100);
+  assert(rep.dailyStoicPractice.protocolDirective.length > 0);
+  assert(rep.citadelResilienceMatrix.amorFatiConversionIndex >= 0 && rep.citadelResilienceMatrix.amorFatiConversionIndex <= 100);
   const prompt = formatAureliusInnerCitadelPrompt(rep);
   assert(prompt.includes('고대 로마 마르쿠스 아우렐리우스 《명상록(Meditations)》'));
   assert(prompt.includes(rep.activeAureliusStage.stageNameKo));
+  assert(prompt.includes(rep.controlDichotomy.bookReference));
 });
 
 test('Chinese Laozi Daodejing Water Way Engine: calculates water yielding adaptability, wuwei action and contentment', () => {
-  const rep = calculateLaoziDaodejing(profile);
+  const rep = calculateLaoziDaodejing(profile, '치열한 경쟁 속에서 다툼 없이 현명하게 대처하고 싶어요', new Date('2026-11-14T06:00:00Z'));
   assert.equal(rep.engineVersion, LAOZI_DAODEJING_VERSION);
   assert(rep.waterYieldingAdaptabilityScore >= 0 && rep.waterYieldingAdaptabilityScore <= 100);
   assert(rep.wuweiEffortlessActionForce >= 0 && rep.wuweiEffortlessActionForce <= 100);
@@ -4438,9 +4448,13 @@ test('Chinese Laozi Daodejing Water Way Engine: calculates water yielding adapta
   assert(rep.contentmentNonGraspingPower >= 0 && rep.contentmentNonGraspingPower <= 100);
   assert(rep.greatVesselPatienceMaturity >= 0 && rep.greatVesselPatienceMaturity <= 100);
   assert(rep.activeDaodejingStage.stageNameHanja.length > 0);
+  assert.equal(rep.chapterResonance.chapterNumber, 8);
+  assert(rep.seasonalWaterFlow.waterPacingScore >= 0 && rep.seasonalWaterFlow.waterPacingScore <= 100);
+  assert(rep.softStrengthMatrix.nonContentionHarmonyScore >= 0 && rep.softStrengthMatrix.nonContentionHarmonyScore <= 100);
   const prompt = formatLaoziDaodejingPrompt(rep);
   assert(prompt.includes('고대 중국 노자(老子) 《도덕경(道德經)》'));
   assert(prompt.includes(rep.activeDaodejingStage.stageNameKo));
+  assert(prompt.includes(rep.chapterResonance.chapterTitle));
 });
 
 test('Ancient Greek Epicurean Tetrapharmakos Engine: calculates ataraxia tranquility, aponia ease and friendship', () => {
