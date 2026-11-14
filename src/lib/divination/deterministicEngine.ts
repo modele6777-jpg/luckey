@@ -3280,7 +3280,7 @@ try {
   // 217. 근대 프랑스 르네 데카르트 방법서설 코기토 & 명석판명 지성 직관 엔진
   const frenchDescartesCogitoResult = calculateSupplement('frenchDescartesCogitoResult', () => ((() => {
     try {
-      return calculateFrenchDescartesCogito(profile);
+      return calculateFrenchDescartesCogito(profile, question, now);
     } catch (_) {
       return null;
     }
@@ -3847,7 +3847,7 @@ try {
   // 280. 프랑스 가스통 바슐라르 《공간의 시학》 몽상의 시학 & 내면의 집·촛불의 고독 지혜 엔진
   const frenchGastonBachelardPoeticsOfSpaceResult = calculateSupplement('frenchGastonBachelardPoeticsOfSpaceResult', () => ((() => {
     try {
-      return calculateFrenchGastonBachelardPoeticsOfSpace(profile);
+      return calculateFrenchGastonBachelardPoeticsOfSpace(profile, question, now);
     } catch (_) {
       return null;
     }
@@ -4090,7 +4090,7 @@ try {
   // 307. 프랑스 에마뉘엘 레비나스 《전체성과 무한·존재와 다르게》 타자의 얼굴(Visage)·무조건적 환대·무한한 윤리적 책임 지혜 엔진
   const frenchEmmanuelLevinasFaceOfOtherHospitalityResult = calculateSupplement('frenchEmmanuelLevinasFaceOfOtherHospitalityResult', () => ((() => {
     try {
-      return calculateFrenchEmmanuelLevinasFaceOfOtherHospitality(profile);
+      return calculateFrenchEmmanuelLevinasFaceOfOtherHospitality(profile, question, now);
     } catch (_) {
       return null;
     }
@@ -4906,7 +4906,7 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'indianUpanishadicTatTvamAsi', nameKo: '우파니샤드 타트트밤아시 범아일여 순수의식', icon: '🕉️', category: 'deep_master' },
   { key: 'koreanChoeHangiGihakUnwha', nameKo: '혜강 최한기 기학 신기통 운화기 추측지리', icon: '📜', category: 'deep_master' },
   { key: 'ancientChineseSunTzuArtOfWarStrategy', nameKo: '손자병법 오사칠계 부전승 피실격허 전략', icon: '⚔️', category: 'deep_master', summary: '정면 소모전을 피하고 5사와 피실격허·부전승의 지혜로 가장 무리 없는 활로를 읽습니다.' },
-  { key: 'frenchDescartesCogitoClaraDistincta', nameKo: '데카르트 방법서설 코기토 명석판명 지성직관', icon: '💡', category: 'deep_master' },
+  { key: 'frenchDescartesCogitoClaraDistincta', nameKo: '데카르트 방법서설 코기토 명석판명 지성직관', icon: '💡', category: 'deep_master', summary: '데카르트의 방법적 회의와 명석판명(Clara et Distincta) 4대 규칙으로 모호한 불안을 걷어내고 사유 주체의 확고한 결단을 세웁니다.' },
   { key: 'ancientIndianEarlyBuddhistFourNobleTruths', nameKo: '초기불교 사성제 팔정도 고집멸도 중도해탈', icon: '☸️', category: 'deep_master' },
   { key: 'islamicSufiRumiMasnaviDivineLove', nameKo: '루미 마스나비 수피즘 신성한사랑 영혼갈망', icon: '🕊️', category: 'deep_master' },
   { key: 'koreanUisangHwaeomIlseungBeopgye', nameKo: '신라 의상대사 화엄일승법계도 법성게 원융무애', icon: '☸️', category: 'deep_master' },

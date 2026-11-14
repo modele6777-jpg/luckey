@@ -4717,8 +4717,14 @@ test('Sun Tzu Art of War Strategy Engine: calculates Five Factors, unfought vict
 });
 
 test('Descartes Cogito Clara Distincta Engine: calculates Cogito certainty, Clara et Distincta, and provisional moral resolve', () => {
-  const rep = calculateFrenchDescartesCogito(profile);
+  const rep = calculateFrenchDescartesCogito(profile, '중요한 이직 결정을 앞두고 있는데 어떻게 정리해야 할까요?', new Date('2026-11-15T01:30:00Z'));
   assert.equal(rep.engineVersion, DESCARTES_COGITO_VERSION);
+  assert.equal(rep.questionTopic, 'decision');
+  assert(rep.temporalDescartesRhythm.kstDateLabel === '2026-11-15');
+  assert(rep.practiceGuidance.length > 0);
+  assert(rep.ritualAction.length > 0);
+  assert(rep.reflectionFocus.length > 0);
+  assert(rep.boundaryNotice.length > 0);
   assert(rep.cogitoPresenceCertaintyScore >= 0 && rep.cogitoPresenceCertaintyScore <= 100);
   assert(rep.claraDistinctaClarityScore >= 0 && rep.claraDistinctaClarityScore <= 100);
   assert(rep.methodicDoubtPurificationScore >= 0 && rep.methodicDoubtPurificationScore <= 100);
@@ -4728,6 +4734,9 @@ test('Descartes Cogito Clara Distincta Engine: calculates Cogito certainty, Clar
   const prompt = formatFrenchDescartesCogitoPrompt(rep);
   assert(prompt.includes('데카르트 코기토 & 명석판명 방법서설 지표'));
   assert(prompt.includes(rep.activeMethodRule.ruleNameFrench));
+  assert(prompt.includes('질문 맞춤 실천 가이드'));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
 });
 
 test('Early Buddhist Four Noble Truths Engine: calculates Four Noble Truths, Eightfold Path, Nirodha, and Sati presence', () => {
@@ -5653,8 +5662,14 @@ test('Charles de Montesquieu Spirit of Laws Engine: calculates Checks and Balanc
 });
 
 test('Gaston Bachelard Poetics of Space Engine: calculates Material Imagination, House Sanctuary, Candle Meditation, and Dual Spiral', () => {
-  const rep = calculateFrenchGastonBachelardPoeticsOfSpace(profile);
+  const rep = calculateFrenchGastonBachelardPoeticsOfSpace(profile, '요즘 너무 지쳐서 마음의 휴식과 회복이 필요해요', new Date('2026-11-15T14:00:00Z'));
   assert.equal(rep.engineVersion, FRENCH_GASTON_BACHELARD_POETICS_VERSION);
+  assert.equal(rep.questionTopic, 'healing');
+  assert(rep.temporalBachelardRhythm.kstDateLabel === '2026-11-15');
+  assert(rep.practiceGuidance.length > 0);
+  assert(rep.ritualAction.length > 0);
+  assert(rep.reflectionFocus.length > 0);
+  assert(rep.boundaryNotice.length > 0);
   assert(rep.materialImaginationVitalityIndex >= 0 && rep.materialImaginationVitalityIndex <= 100);
   assert(rep.poeticsOfHouseSanctuaryScore >= 0 && rep.poeticsOfHouseSanctuaryScore <= 100);
   assert(rep.solitaryCandleMeditationIndex >= 0 && rep.solitaryCandleMeditationIndex <= 100);
@@ -5664,6 +5679,9 @@ test('Gaston Bachelard Poetics of Space Engine: calculates Material Imagination,
   const prompt = formatFrenchGastonBachelardPoeticsOfSpacePrompt(rep);
   assert(prompt.includes('가스통 바슐라르 《공간의 시학》 & 《촛불의 미학》 몽상의 시학 지표'));
   assert(prompt.includes(rep.activeBachelardTheme.themeTitleKo));
+  assert(prompt.includes('질문 맞춤 실천 가이드'));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
 });
 
 test('Nammyeong Jo Sik Gyeong-Ui Engine: calculates Inner Clarity Gyeong, Outer Decisive Ui, Seongseongja Vigilance, and Danseongso Integrity', () => {
@@ -6049,8 +6067,14 @@ test('Walter Benjamin Aura and Now-Time Engine: calculates Aura Authenticity, An
 });
 
 test('Emmanuel Levinas Face of the Other and Hospitality Engine: calculates Face Encounter, Infinite Responsibility, and Hospitality', () => {
-  const rep = calculateFrenchEmmanuelLevinasFaceOfOtherHospitality(profile);
+  const rep = calculateFrenchEmmanuelLevinasFaceOfOtherHospitality(profile, '가까운 동료와의 갈등을 어떻게 화해로 풀어야 할까요?', new Date('2026-11-15T10:00:00Z'));
   assert.equal(rep.engineVersion, FRENCH_EMMANUEL_LEVINAS_ETHICS_VERSION);
+  assert.equal(rep.questionTopic, 'relationship');
+  assert(rep.temporalLevinasRhythm.kstDateLabel === '2026-11-15');
+  assert(rep.practiceGuidance.length > 0);
+  assert(rep.ritualAction.length > 0);
+  assert(rep.reflectionFocus.length > 0);
+  assert(rep.boundaryNotice.length > 0);
   assert(rep.faceOfOtherEncounterScore >= 0 && rep.faceOfOtherEncounterScore <= 100);
   assert(rep.infiniteResponsibilityIndex >= 0 && rep.infiniteResponsibilityIndex <= 100);
   assert(rep.unconditionalHospitalityScore >= 0 && rep.unconditionalHospitalityScore <= 100);
@@ -6060,6 +6084,9 @@ test('Emmanuel Levinas Face of the Other and Hospitality Engine: calculates Face
   const prompt = formatFrenchEmmanuelLevinasFaceOfOtherHospitalityPrompt(rep);
   assert(prompt.includes('에마뉘엘 레비나스 《전체성과 무한》 타자의 얼굴·무한한 책임 지표'));
   assert(prompt.includes(rep.activeLevinasTheme.themeTitleKo));
+  assert(prompt.includes('질문 맞춤 실천 가이드'));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
 });
 
 test('Theodor Adorno Negative Dialectics and Minima Moralia Engine: calculates Non-Identical Safeguard, Damaged Life, and Dissonance Tolerance', () => {

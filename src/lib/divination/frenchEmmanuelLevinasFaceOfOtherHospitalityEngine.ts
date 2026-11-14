@@ -8,12 +8,21 @@
  * 4. 전체성 탈피 및 무한 지향 지수 (Beyond Totality & Transcendence of Infinity Index): 인간과 세계를 획일적인 효율성이나 계산된 손익의 전체성(Totalité)에 가두지 않고, 무한(Infini)의 신비로 열어두는 비판적 통찰.
  * 5. 취약성 응답 및 비폭력 수호 지표 (Vulnerability Protection & Non-Violent Care Score): 약자의 눈물과 벌거벗은 취약함 앞에 폭력성과 오만을 거두고, 생명을 보살피는 평화적 연대와 배려의 힘.
  *
- * @version LUCKEY-EMMANUEL-LEVINAS-ETHICS-v1.0.0
+ * @version LUCKEY-EMMANUEL-LEVINAS-ETHICS-v1.1.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const FRENCH_EMMANUEL_LEVINAS_ETHICS_VERSION = 'LUCKEY-EMMANUEL-LEVINAS-ETHICS-v1.0.0';
+export const FRENCH_EMMANUEL_LEVINAS_ETHICS_VERSION = 'LUCKEY-EMMANUEL-LEVINAS-ETHICS-v1.1.0';
+
+export type LevinasQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
+
+export interface LevinasTemporalRhythm {
+  kstDateLabel: string;
+  timeWindowKo: string;
+  ethicsTone: string;
+  rhythmDirective: string;
+}
 
 export interface LevinasTheme {
   themeKey: string;
@@ -41,8 +50,14 @@ export interface FrenchEmmanuelLevinasFaceOfOtherHospitalityResult {
   beyondTotalityInfinityIndex: number;        // 전체성 탈피 및 무한 지향 지수 (Beyond Totality Infinity Index)
   vulnerabilityProtectionScore: number;       // 취약성 응답 및 비폭력 수호 지표 (Vulnerability Protection Score)
   // 세부 분석
+  questionTopic: LevinasQuestionTopic;
+  temporalLevinasRhythm: LevinasTemporalRhythm;
   activeLevinasTheme: LevinasTheme;
   focalLevinasAphorism: LevinasAphorism;
+  practiceGuidance: string;
+  ritualAction: string;
+  reflectionFocus: string;
+  boundaryNotice: string;
   levinasComprehensiveGuidance: {
     guidanceTitle: string;
     philosophicalCounsel: string;
@@ -127,9 +142,90 @@ function hashString(str: string): number {
   return hash;
 }
 
+function classifyLevinasQuestionTopic(query?: string): LevinasQuestionTopic {
+  const q = (query ?? '').trim().toLowerCase();
+  if (!q) return 'reflection';
+  if (/(사랑|연애|관계|배우자|친구|가족|동료|갈등|화해|인연|사람|대화|소통)/.test(q)) return 'relationship';
+  if (/(선택|결정|이직|창업|투자|계약|진로|시험|합격|도전|시작|포기|방향)/.test(q)) return 'decision';
+  if (/(불안|우울|지침|피곤|회복|치유|휴식|스트레스|상처|위로|두려움|혼란)/.test(q)) return 'healing';
+  return 'reflection';
+}
+
+function buildLevinasTemporalRhythm(now?: Date): LevinasTemporalRhythm {
+  const baseDate = now ?? new Date();
+  const kst = new Date(baseDate.getTime() + 9 * 60 * 60 * 1000);
+  const kstDateLabel = kst.toISOString().slice(0, 10);
+  const hour = kst.getUTCHours();
+
+  if (hour >= 5 && hour < 12) {
+    return {
+      kstDateLabel,
+      timeWindowKo: '오전 열린 환대와 응답의 시간 (05:00~12:00 KST)',
+      ethicsTone: '선입견 내려놓기',
+      rhythmDirective: '오늘 만나는 낯선 상황과 사람에게 방어벽 대신 열린 문으로 응답하기 좋은 시간입니다.',
+    };
+  }
+  if (hour >= 12 && hour < 17) {
+    return {
+      kstDateLabel,
+      timeWindowKo: '오후 책임 있는 연대와 실천의 시간 (12:00~17:00 KST)',
+      ethicsTone: '주체적 책임 응답',
+      rhythmDirective: '이해득실 계산을 앞세우기보다 맡은 자리에서 먼저 손을 내밀어 신뢰를 세우는 시간입니다.',
+    };
+  }
+  if (hour >= 17 && hour < 22) {
+    return {
+      kstDateLabel,
+      timeWindowKo: '저녁 타자의 얼굴 경청의 시간 (17:00~22:00 KST)',
+      ethicsTone: '고유한 타자성 존중',
+      rhythmDirective: '내 기준의 재단을 멈추고 상대방의 표정과 말 너머의 진심을 고요히 듣는 시간입니다.',
+    };
+  }
+  return {
+    kstDateLabel,
+    timeWindowKo: '심야 전체성 탈피와 무한 성찰의 시간 (22:00~05:00 KST)',
+    ethicsTone: '비폭력과 평화의 성찰',
+    rhythmDirective: '효율과 비교의 잣대를 내려놓고 나와 타인의 존엄을 조용히 되새기는 시간입니다.',
+  };
+}
+
+function buildLevinasTopicGuidance(topic: LevinasQuestionTopic): {
+  practiceGuidance: string;
+  ritualAction: string;
+  reflectionFocus: string;
+} {
+  if (topic === 'relationship') {
+    return {
+      practiceGuidance: '상대를 내 기대나 틀에 맞추려 하기보다, 내가 아직 다 알지 못하는 고유한 타자로 온전히 존중하십시오.',
+      ritualAction: '오늘 대화에서 상대의 말을 끊거나 평가하지 않고 끝까지 들은 뒤 한 문장만 공감해 주기',
+      reflectionFocus: '지금 나는 상대의 얼굴을 보고 있는가, 아니면 내가 만든 이미지와 싸우고 있는가?',
+    };
+  }
+  if (topic === 'decision') {
+    return {
+      practiceGuidance: '단기적 손익과 전체성의 효율만 따지기보다, 이 선택이 약자와 주변의 존엄을 지키는 방향인지 살피십시오.',
+      ritualAction: '결정 전 이 선택이 영향을 미칠 한 사람의 입장을 떠올려 보고 무리한 요구가 없는지 점검하기',
+      reflectionFocus: '계산을 걷어내고 보았을 때 내가 기꺼이 책임질 수 있는 윤리적 방향은 무엇인가?',
+    };
+  }
+  if (topic === 'healing') {
+    return {
+      practiceGuidance: '자신의 취약함과 상처를 부끄러워하지 마십시오. 연약함이야말로 타인과 연결되고 살림의 연대를 여는 자리입니다.',
+      ritualAction: '스스로를 몰아세우는 내면의 비판적 목소리를 멈추고 따뜻한 말 한 마디 건네기',
+      reflectionFocus: '내가 지금 내 약함을 공격하는 데 에너지를 쓰고 있는가, 돌보는 데 쓰고 있는가?',
+    };
+  }
+  return {
+    practiceGuidance: '익숙한 내 세계의 중심에서 한 발 비켜서서, 타인의 호소와 낯선 가능성에 마음의 문을 열어 두십시오.',
+    ritualAction: '오늘 하루 누군가에게 대가나 핑계 없이 먼저 작은 배려 하나 건네기',
+    reflectionFocus: '나의 편안함을 잠시 내려놓고 응답할 수 있는 오늘의 작은 환대는 무엇인가?',
+  };
+}
+
 export function calculateFrenchEmmanuelLevinasFaceOfOtherHospitality(
   profile?: UserProfile,
   query?: string,
+  now?: Date,
 ): FrenchEmmanuelLevinasFaceOfOtherHospitalityResult {
   const p = profile as any;
   const name = profile?.basic?.name ?? p?.name ?? '남희';
@@ -137,7 +233,11 @@ export function calculateFrenchEmmanuelLevinasFaceOfOtherHospitality(
   const birthTime = profile?.basic?.birthtime ?? p?.birthTime ?? p?.birthtime ?? '12:00';
   const gender = profile?.basic?.gender ?? p?.gender ?? 'neutral';
 
-  const seedString = `EMMANUEL-LEVINAS-ETHICS:${name}:${birthDate}:${birthTime}:${gender}:${query ?? ''}`;
+  const temporalLevinasRhythm = buildLevinasTemporalRhythm(now);
+  const questionTopic = classifyLevinasQuestionTopic(query);
+  const topicGuidance = buildLevinasTopicGuidance(questionTopic);
+
+  const seedString = `EMMANUEL-LEVINAS-ETHICS:${name}:${birthDate}:${birthTime}:${gender}:${query ?? ''}:${temporalLevinasRhythm.kstDateLabel}`;
   const baseHash = hashString(seedString);
   const absHash = Math.abs(baseHash);
 
@@ -158,19 +258,27 @@ export function calculateFrenchEmmanuelLevinasFaceOfOtherHospitality(
     `내 욕망의 감옥을 부수고 상대방의 고유한 존재를 직시하는 '타자의 얼굴(Visage)', 계산과 핑계를 넘어선 '무한한 책임(Responsabilité infinie)', ` +
     `그리고 닫힌 전체성의 폭력을 극복하고 낯선 이를 품어내는 '무조건적 환대(Hospitalité)'의 길을 밝혔습니다. ` +
     `현재 당신이 마주한 인간관계와 갈등의 해법은 바로 '${activeLevinasTheme.themeTitleKo}'에 있습니다. ` +
-    `${activeLevinasTheme.practicalCounsel} 레비나스의 숭고한 윤리적 명제 "${focalLevinasAphorism.aphorismKo}" (${focalLevinasAphorism.aphorismFrench})를 깊이 묵상하며, ` +
+    `${activeLevinasTheme.practicalCounsel} ${topicGuidance.practiceGuidance} 레비나스의 숭고한 윤리적 명제 "${focalLevinasAphorism.aphorismKo}" (${focalLevinasAphorism.aphorismFrench})를 깊이 묵상하며, ` +
     `${focalLevinasAphorism.actionGuidance}`;
+
+  const boundaryNotice = '에마뉘엘 레비나스 윤리 해석은 타자와의 관계·환대·책임의 태도를 돌아보는 상징·성찰 관점이며, 법률·의학 진단이나 확정 예언이 아닙니다.';
 
   return {
     engineVersion: FRENCH_EMMANUEL_LEVINAS_ETHICS_VERSION,
-    calculatedAtKst: new Date().toISOString(),
+    calculatedAtKst: (now ?? new Date()).toISOString(),
     faceOfOtherEncounterScore,
     infiniteResponsibilityIndex,
     unconditionalHospitalityScore,
     beyondTotalityInfinityIndex,
     vulnerabilityProtectionScore,
+    questionTopic,
+    temporalLevinasRhythm,
     activeLevinasTheme,
     focalLevinasAphorism,
+    practiceGuidance: topicGuidance.practiceGuidance,
+    ritualAction: topicGuidance.ritualAction,
+    reflectionFocus: topicGuidance.reflectionFocus,
+    boundaryNotice,
     levinasComprehensiveGuidance: {
       guidanceTitle,
       philosophicalCounsel,
@@ -183,17 +291,18 @@ export function formatFrenchEmmanuelLevinasFaceOfOtherHospitalityPrompt(
 ): string {
   return [
     `【에마뉘엘 레비나스 《전체성과 무한》 타자의 얼굴·무한한 책임 지표】`,
-    `- 타자의 얼굴 대면 및 탈자기중심성(Face of the Other Encounter): ${res.faceOfOtherEncounterScore}/100`,
-    `- 무한한 책임 및 윤리적 주체성(Infinite Responsibility): ${res.infiniteResponsibilityIndex}/100`,
-    `- 무조건적 환대 및 타자성 포용(Unconditional Hospitality): ${res.unconditionalHospitalityScore}/100`,
-    `- 전체성 탈피 및 무한 지향(Beyond Totality Infinity): ${res.beyondTotalityInfinityIndex}/100`,
-    `- 취약성 응답 및 비폭력 수호(Vulnerability Protection): ${res.vulnerabilityProtectionScore}/100`,
+    `- 질문 주제 맥락: ${res.questionTopic}`,
+    `- KST 시공간 리듬: ${res.temporalLevinasRhythm.kstDateLabel} · ${res.temporalLevinasRhythm.timeWindowKo} (${res.temporalLevinasRhythm.ethicsTone}) — ${res.temporalLevinasRhythm.rhythmDirective}`,
     `- 핵심 레비나스 테마: ${res.activeLevinasTheme.themeTitleKo} [${res.activeLevinasTheme.themeTitleEn}]`,
     `- 실천적 통찰: ${res.activeLevinasTheme.pragmaticInsight}`,
     `- 행동 조언: ${res.activeLevinasTheme.practicalCounsel}`,
+    `- 질문 맞춤 실천 가이드: ${res.practiceGuidance}`,
+    `- 일상 실천 의례: ${res.ritualAction}`,
+    `- 핵심 성찰 질문: ${res.reflectionFocus}`,
     `- 레비나스 원전 격언: "${res.focalLevinasAphorism.aphorismKo}" (${res.focalLevinasAphorism.aphorismFrench})`,
     `- 원전 출처: [${res.focalLevinasAphorism.sourceContext}]`,
     `- 구체적 실천 지침: ${res.focalLevinasAphorism.actionGuidance}`,
     `- 종합 레비나스 권면: ${res.levinasComprehensiveGuidance.philosophicalCounsel}`,
+    `- 해석 경계: ${res.boundaryNotice}`,
   ].join('\n');
 }
