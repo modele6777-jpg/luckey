@@ -1,11 +1,27 @@
 import fs from 'fs';
 import path from 'path';
 import os from 'os';
+import { createHash } from 'node:crypto';
 
 // In-memory + temporary server-side storage for zero-config cross-device synchronization
 interface VaultEntry {
   data: any;
   updatedAt: number;
+  etag: string;
+  payloadBytes: number;
+  payloadDigest: string;
+}
+
+function getVaultVersion(data: any, updatedAt: number): { etag: string; payloadBytes: number; payloadDigest: string } {
+  const serialized = JSON.stringify(data) ?? 'null';
+  const responseRepresentation = JSON.stringify({ success: true, data, updatedAt });
+  const payloadDigest = createHash('sha256').update(serialized).digest('base64url');
+  const etagDigest = createHash('sha256').update(responseRepresentation).digest('base64url');
+  return {
+    etag: `"${etagDigest}"`,
+    payloadBytes: Buffer.byteLength(serialized, 'utf8'),
+    payloadDigest,
+  };
 }
 
 interface RelayEntry {
@@ -43,23 +59,29 @@ if (purgeTimer.unref) {
   purgeTimer.unref();
 }
 
-export function saveVaultData(uid: string, data: any): { success: boolean; updatedAt: number } {
-  if (!uid) return { success: false, updatedAt: 0 };
+export function saveVaultData(uid: string, data: any): { success: boolean; updatedAt: number; etag: string; payloadBytes: number } {
+  if (!uid) return { success: false, updatedAt: 0, etag: '', payloadBytes: 0 };
+  const previous = vaultStore.get(uid);
+  const serializedPayload = JSON.stringify(data) ?? 'null';
+  const payloadDigest = createHash('sha256').update(serializedPayload).digest('base64url');
+  const payloadBytes = Buffer.byteLength(serializedPayload, 'utf8');
+  if (previous?.payloadDigest === payloadDigest) return { success: true, updatedAt: previous.updatedAt, etag: previous.etag, payloadBytes };
   const updatedAt = Date.now();
-  vaultStore.set(uid, { data, updatedAt });
+  const entry: VaultEntry = { data, updatedAt, ...getVaultVersion(data, updatedAt) };
+  vaultStore.set(uid, entry);
   try {
-    fs.writeFileSync(getDiskFilePath(uid), JSON.stringify({ data, updatedAt }), 'utf8');
+    fs.writeFileSync(getDiskFilePath(uid), JSON.stringify(entry), 'utf8');
   } catch (_) {}
-  return { success: true, updatedAt };
+  return { success: true, updatedAt, etag: entry.etag, payloadBytes: entry.payloadBytes };
 }
 
-export function getVaultData(uid: string): { success: boolean; data: any; updatedAt: number } {
+export function getVaultData(uid: string): { success: boolean; data: any; updatedAt: number; etag?: string; payloadBytes?: number } {
   if (!uid) {
     return { success: false, data: null, updatedAt: 0 };
   }
   if (vaultStore.has(uid)) {
     const entry = vaultStore.get(uid)!;
-    return { success: true, data: entry.data, updatedAt: entry.updatedAt };
+    return { success: true, data: entry.data, updatedAt: entry.updatedAt, etag: entry.etag, payloadBytes: entry.payloadBytes };
   }
   try {
     const file = getDiskFilePath(uid);
@@ -67,12 +89,22 @@ export function getVaultData(uid: string): { success: boolean; data: any; update
       const raw = fs.readFileSync(file, 'utf8');
       const parsed = JSON.parse(raw);
       if (parsed?.data) {
-        vaultStore.set(uid, parsed);
-        return { success: true, data: parsed.data, updatedAt: parsed.updatedAt || Date.now() };
+        const updatedAt = parsed.updatedAt || Date.now();
+        const entry: VaultEntry = { data: parsed.data, updatedAt, ...getVaultVersion(parsed.data, updatedAt) };
+        vaultStore.set(uid, entry);
+        return { success: true, data: entry.data, updatedAt: entry.updatedAt, etag: entry.etag, payloadBytes: entry.payloadBytes };
       }
     }
   } catch (_) {}
   return { success: false, data: null, updatedAt: 0 };
+}
+
+export function ifNoneMatchMatches(ifNoneMatch: string | undefined, etag: string): boolean {
+  if (!ifNoneMatch) return false;
+  return ifNoneMatch.split(',').some((candidate) => {
+    const value = candidate.trim();
+    return value === '*' || value === etag || value.replace(/^W\//, '') === etag;
+  });
 }
 
 export async function createRelayCode(payload: any, existingVaultId?: string): Promise<{ code: string; vaultId: string; expiresAt: number }> {
@@ -160,4 +192,3 @@ export async function getRelayData(code: string): Promise<{ success: boolean; pa
 
   return { success: false, payload: null };
 }
-

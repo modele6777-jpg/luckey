@@ -1,7 +1,10 @@
 import type { SharedState } from './sharedState';
+import { readServerVaultPullResponse, readServerVaultPushResponse } from './serverVaultProtocol';
+import { createServerVaultPollBackoff } from './serverVaultPollBackoff';
 
 export const PAIRED_VAULT_KEY = 'prism_paired_vault_id';
 export const PAIRED_SYNC_CHANNEL_NAME = 'prism_paired_realtime_sync';
+const serverVaultEtags = new Map<string, string>();
 
 export function getPairedVaultId(): string | null {
   try {
@@ -41,7 +44,7 @@ export async function pushToServerVault(uid: string, state: SharedState): Promis
       headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
       body: JSON.stringify({ uid, payload: state }),
     }, 8000);
-    return res.ok;
+    return await readServerVaultPushResponse(uid, res, serverVaultEtags);
   } catch (e) {
     console.warn('[ServerVault] push failed:', e);
     return false;
@@ -52,15 +55,14 @@ export async function pullFromServerVault(uid: string): Promise<SharedState | nu
   if (!uid) return null;
   try {
     const token = await auth.currentUser?.getIdToken();
+    const headers: Record<string, string> = {};
+    if (token) headers.Authorization = `Bearer ${token}`;
+    const etag = serverVaultEtags.get(uid);
+    if (etag) headers['If-None-Match'] = etag;
     const res = await fetchWithTimeout('/api/sync/vault/pull/' + encodeURIComponent(uid), {
-      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      headers,
     }, 8000);
-    if (!res.ok) return null;
-    const json = await res.json();
-    if (json?.success && json?.data) {
-      return json.data as SharedState;
-    }
-    return null;
+    return await readServerVaultPullResponse(uid, res, serverVaultEtags);
   } catch (e) {
     console.warn('[ServerVault] pull failed:', e);
     return null;
@@ -129,14 +131,43 @@ export function subscribeToPairedVault(onUpdate: (state: SharedState) => void): 
   let firestoreConnected = false;
   let polling = false;
   let lastPayload = '';
+  const pollBackoff = createServerVaultPollBackoff();
+  let pollTimer: number | null = null;
+
+  function scheduleNextPoll(delayMs = pollBackoff.current()): void {
+    if (isDestroyed || firestoreConnected || document.visibilityState !== 'visible') return;
+    if (pollTimer !== null) window.clearTimeout(pollTimer);
+    pollTimer = window.setTimeout(() => {
+      pollTimer = null;
+      void pollServerVault();
+    }, delayMs);
+  }
 
   const deliver = (state: SharedState) => {
     const payload = JSON.stringify(state);
     if (payload === lastPayload) return;
     lastPayload = payload;
+    pollBackoff.reset();
     lastReceivedTs = Math.max(lastReceivedTs, state.clientUpdatedAt || 0);
     onUpdate(state);
   };
+
+  async function pollServerVault(): Promise<void> {
+    if (isDestroyed || firestoreConnected || polling) return;
+    if (document.visibilityState !== 'visible') return;
+    polling = true;
+    let serverState: SharedState | null = null;
+    try {
+      serverState = await pullFromServerVault(vaultId);
+      if (serverState && !isDestroyed && !firestoreConnected) {
+        const ts = serverState.clientUpdatedAt || 0;
+        if (ts > lastReceivedTs) deliver(serverState);
+      }
+    } finally {
+      polling = false;
+      if (!isDestroyed) scheduleNextPoll(pollBackoff.afterPoll(Boolean(serverState)));
+    }
+  }
 
   // 1. Real-time Firestore onSnapshot Listener
   let unsubFirestore: (() => void) | null = null;
@@ -145,12 +176,19 @@ export function subscribeToPairedVault(onUpdate: (state: SharedState) => void): 
     unsubFirestore = onSnapshot(docRef, { includeMetadataChanges: true }, (snap) => {
       if (isDestroyed) return;
       firestoreConnected = !snap.metadata.fromCache && snap.exists();
+      if (firestoreConnected) {
+        if (pollTimer !== null) window.clearTimeout(pollTimer);
+        pollTimer = null;
+      } else {
+        scheduleNextPoll();
+      }
       if (!snap.exists()) return;
       if (snap.metadata.hasPendingWrites) return;
       deliver(snap.data() as SharedState);
     }, (err) => {
       firestoreConnected = false;
       console.warn('[PairedVault] onSnapshot notice (falling back to continuous sync):', err?.message || err);
+      scheduleNextPoll();
     });
   } catch (_) {}
 
@@ -168,38 +206,25 @@ export function subscribeToPairedVault(onUpdate: (state: SharedState) => void): 
     }
   } catch (_) {}
 
-  // 3. Continuous Background Polling & Visibility wakeup trigger
-  const pollServerVault = async () => {
-    if (isDestroyed || firestoreConnected || polling) return;
-    if (typeof document !== 'undefined' && document.visibilityState !== 'visible') return;
-    polling = true;
-    try {
-      const serverState = await pullFromServerVault(vaultId);
-      if (serverState && !isDestroyed && !firestoreConnected) {
-        const ts = serverState.clientUpdatedAt || 0;
-        if (ts > lastReceivedTs) deliver(serverState);
-      }
-    } finally {
-      polling = false;
-    }
-  };
-
-  const pollInterval = window.setInterval(pollServerVault, 15000);
-
+  // 3. Adaptive background polling while Firestore realtime is unavailable.
   const handleWakeup = () => {
     if (document.visibilityState === 'visible') {
+      pollBackoff.reset();
+      if (pollTimer !== null) window.clearTimeout(pollTimer);
+      pollTimer = null;
       void pollServerVault();
     }
   };
   document.addEventListener('visibilitychange', handleWakeup);
   window.addEventListener('focus', handleWakeup);
   window.addEventListener('online', handleWakeup);
+  scheduleNextPoll();
 
   return () => {
     isDestroyed = true;
     if (unsubFirestore) unsubFirestore();
     if (bc) bc.close();
-    window.clearInterval(pollInterval);
+    if (pollTimer !== null) window.clearTimeout(pollTimer);
     document.removeEventListener('visibilitychange', handleWakeup);
     window.removeEventListener('focus', handleWakeup);
     window.removeEventListener('online', handleWakeup);
@@ -306,4 +331,3 @@ export async function importWithPairingCode(code: string): Promise<SharedState |
     return null;
   }
 }
-
