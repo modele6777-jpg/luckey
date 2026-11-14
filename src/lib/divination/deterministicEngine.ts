@@ -1801,7 +1801,7 @@ try {
   const akashicRecordsOracleResult = calculateSupplement('akashicRecordsOracleResult', () => (birthdateStr && profile
     ? (() => {
         try {
-          return calculateAkashicRecordsOracle({ profile, targetDate: now });
+          return calculateAkashicRecordsOracle({ profile, targetDate: now, question });
         } catch (_) {
           return null;
         }
@@ -2002,7 +2002,7 @@ try {
   // 74. 고대 켈트 오검(Ogham) 수목 신성 지혜 & 수호목 오라클 엔진
   const celticTreeOghamResult = calculateSupplement('celticTreeOghamResult', () => ((() => {
     try {
-      return calculateCelticTreeOgham(profile, now);
+      return calculateCelticTreeOgham(profile, now, question);
     } catch (_) {
       return null;
     }
