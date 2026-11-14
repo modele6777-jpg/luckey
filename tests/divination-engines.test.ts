@@ -4695,18 +4695,21 @@ test('Choe Han-gi Gihak Unwha Engine: calculates Unwhagi cosmic flow, Singitong 
   assert(prompt.includes(rep.activeGihakPrinciple.principleNameKo));
 });
 
-test('Sun Tzu Art of War Strategy Engine: calculates Five Factors, unfought victory, situational clarity, and water form', () => {
-  const rep = calculateSunTzuArtOfWarStrategy(profile);
+test('Sun Tzu Art of War Strategy Engine: calculates Five Factors, unfought victory, and qualitative strategy', () => {
+  const rep = calculateSunTzuArtOfWarStrategy(profile, new Date('2026-11-14T18:45:00+09:00'), '너무 지치고 소모적인 일을 멈춰야 할까요?');
   assert.equal(rep.engineVersion, SUNTZU_STRATEGY_VERSION);
-  assert(rep.fiveFactorsHarmonyScore >= 0 && rep.fiveFactorsHarmonyScore <= 100);
-  assert(rep.unfoughtVictoryPowerScore >= 0 && rep.unfoughtVictoryPowerScore <= 100);
-  assert(rep.situationalClarityScore >= 0 && rep.situationalClarityScore <= 100);
-  assert(rep.waterFormFlexibilityScore >= 0 && rep.waterFormFlexibilityScore <= 100);
-  assert(rep.deceptiveTimingMasteryScore >= 0 && rep.deceptiveTimingMasteryScore <= 100);
+  assert.equal(rep.questionTopic, 'healing');
+  assert(rep.strategicPosture.length > 0);
+  assert(rep.practiceGuidance.length > 0);
+  assert(rep.ritualAction.length > 0);
+  assert(rep.reflectionFocus.length > 0);
+  assert(rep.counselNote.length > 0);
+  assert(rep.boundaryNotice.length > 0);
   assert(rep.focalFiveFactor.factorHanja.length > 0);
   const prompt = formatSunTzuArtOfWarStrategyPrompt(rep);
   assert(prompt.includes('손자병법 오사칠계 & 부전승 피실격허 전략 지표'));
   assert(prompt.includes(rep.focalFiveFactor.factorHanja));
+  assert(!prompt.includes('/100'));
 });
 
 test('Descartes Cogito Clara Distincta Engine: calculates Cogito certainty, Clara et Distincta, and provisional moral resolve', () => {
@@ -5143,18 +5146,21 @@ test('Suun Choe Je-u Donghak Sicheonju Engine: calculates Sicheonju Dignity, Sai
   assert(prompt.includes(rep.activeDonghakTheme.themeTitleKo));
 });
 
-test('Ralph Waldo Emerson Self-Reliance Engine: calculates Self-Reliance Autonomy, Over-Soul Divine, and Creative Originality', () => {
-  const rep = calculateRalphWaldoEmersonSelfReliance(profile);
+test('Ralph Waldo Emerson Self-Reliance Engine: calculates qualitative Self-Reliance and Over-Soul guidance', () => {
+  const rep = calculateRalphWaldoEmersonSelfReliance(profile, new Date('2026-11-14T18:45:00+09:00'), '남들 눈치를 보지 않고 이직 결정을 내려도 될까요?');
   assert.equal(rep.engineVersion, AMERICAN_RALPH_WALDO_EMERSON_VERSION);
-  assert(rep.selfRelianceAutonomyScore >= 0 && rep.selfRelianceAutonomyScore <= 100);
-  assert(rep.overSoulDivineConnectionScore >= 0 && rep.overSoulDivineConnectionScore <= 100);
-  assert(rep.nonconformistAuthenticityQuotient >= 0 && rep.nonconformistAuthenticityQuotient <= 100);
-  assert(rep.natureSpiritualRenewalScore >= 0 && rep.natureSpiritualRenewalScore <= 100);
-  assert(rep.creativeOriginalityPowerIndex >= 0 && rep.creativeOriginalityPowerIndex <= 100);
+  assert.equal(rep.questionTopic, 'decision');
+  assert(rep.selfReliancePosture.length > 0);
+  assert(rep.practiceGuidance.length > 0);
+  assert(rep.ritualAction.length > 0);
+  assert(rep.reflectionFocus.length > 0);
+  assert(rep.counselNote.length > 0);
+  assert(rep.boundaryNotice.length > 0);
   assert(rep.activeEmersonTheme.themeTitleKo.length > 0);
   const prompt = formatRalphWaldoEmersonSelfReliancePrompt(rep);
   assert(prompt.includes('랠프 월도 에머슨 《자기신뢰》 & 《자연》 오버소울 비순응 자립 지표'));
   assert(prompt.includes(rep.activeEmersonTheme.themeTitleKo));
+  assert(!prompt.includes('/100'));
 });
 
 test('Henri Bergson Elan Vital Engine: calculates Pure Duration, Elan Vital, and Creative Freedom', () => {
@@ -6043,18 +6049,21 @@ test('Roland Barthes Semiotics and Punctum Engine: calculates Punctum Intuition,
   assert(prompt.includes(rep.activeBarthesTheme.themeTitleKo));
 });
 
-test('John Dewey Pragmatic Inquiry and Growth Engine: calculates Reflective Thinking, Instrumental Intelligence, and Life as Growth', () => {
-  const rep = calculateAmericanJohnDeweyPragmaticInquiryGrowth(profile);
+test('John Dewey Pragmatic Inquiry and Growth Engine: calculates qualitative Reflective Inquiry and Growth guidance', () => {
+  const rep = calculateAmericanJohnDeweyPragmaticInquiryGrowth(profile, '동료와 대화가 어긋날 때 어떻게 풀어가야 할까요?', new Date('2026-11-14T18:45:00+09:00'));
   assert.equal(rep.engineVersion, AMERICAN_JOHN_DEWEY_PRAGMATIC_INQUIRY_GROWTH_VERSION);
-  assert(rep.reflectiveThinkingInquiryScore >= 0 && rep.reflectiveThinkingInquiryScore <= 100);
-  assert(rep.instrumentalIntelligenceAdaptabilityIndex >= 0 && rep.instrumentalIntelligenceAdaptabilityIndex <= 100);
-  assert(rep.growthAsLifeProcessVitalityScore >= 0 && rep.growthAsLifeProcessVitalityScore <= 100);
-  assert(rep.organismEnvironmentInteractionHarmonyIndex >= 0 && rep.organismEnvironmentInteractionHarmonyIndex <= 100);
-  assert(rep.democraticCooperationEmpathyScore >= 0 && rep.democraticCooperationEmpathyScore <= 100);
+  assert.equal(rep.questionTopic, 'relationship');
+  assert(rep.inquiryPosture.length > 0);
+  assert(rep.practiceGuidance.length > 0);
+  assert(rep.ritualAction.length > 0);
+  assert(rep.reflectionFocus.length > 0);
+  assert(rep.counselNote.length > 0);
+  assert(rep.boundaryNotice.length > 0);
   assert(rep.activeDeweyTheme.themeTitleKo.length > 0);
   const prompt = formatAmericanJohnDeweyPragmaticInquiryGrowthPrompt(rep);
   assert(prompt.includes('존 듀이 《경험과 자연·민주주의와 교육》 반성적 사고(Reflective Inquiry)·성장 지표'));
   assert(prompt.includes(rep.activeDeweyTheme.themeTitleKo));
+  assert(!prompt.includes('/100'));
 });
 
 test('Fyodor Dostoevsky Karamazov Soul Compassion Engine: calculates Soul Abyss Confrontation, Active Love, and Suffering Purification', () => {

@@ -3271,7 +3271,7 @@ try {
   // 216. 고대 중국 춘추전국시대 손무 손자병법 오사칠계 & 부전승 피실격허 전략 엔진
   const sunTzuArtOfWarStrategyResult = calculateSupplement('sunTzuArtOfWarStrategyResult', () => ((() => {
     try {
-      return calculateSunTzuArtOfWarStrategy(profile);
+      return calculateSunTzuArtOfWarStrategy(profile, now, question);
     } catch (_) {
       return null;
     }
@@ -3559,7 +3559,7 @@ try {
   // 248. 미국 랠프 월도 에머슨 자기신뢰 & 자연 오버소울 비순응 자립 지혜 엔진
   const ralphWaldoEmersonSelfRelianceResult = calculateSupplement('ralphWaldoEmersonSelfRelianceResult', () => ((() => {
     try {
-      return calculateRalphWaldoEmersonSelfReliance(profile);
+      return calculateRalphWaldoEmersonSelfReliance(profile, now, question);
     } catch (_) {
       return null;
     }
@@ -4135,7 +4135,7 @@ try {
   // 312. 미국 존 듀이 《경험과 자연·민주주의와 교육》 도구주의 반성적 사고 & 지성적 탐구·성장으로서의 삶 지혜 엔진
   const americanJohnDeweyPragmaticInquiryGrowthResult = calculateSupplement('americanJohnDeweyPragmaticInquiryGrowthResult', () => ((() => {
     try {
-      return calculateAmericanJohnDeweyPragmaticInquiryGrowth(profile);
+      return calculateAmericanJohnDeweyPragmaticInquiryGrowth(profile, question, now);
     } catch (_) {
       return null;
     }
@@ -4905,7 +4905,7 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'germanKantCategoricalImperativeSynthesis', nameKo: '칸트 정언명령 목적의왕국 자율성 도덕법칙', icon: '⚖️', category: 'deep_master' },
   { key: 'indianUpanishadicTatTvamAsi', nameKo: '우파니샤드 타트트밤아시 범아일여 순수의식', icon: '🕉️', category: 'deep_master' },
   { key: 'koreanChoeHangiGihakUnwha', nameKo: '혜강 최한기 기학 신기통 운화기 추측지리', icon: '📜', category: 'deep_master' },
-  { key: 'ancientChineseSunTzuArtOfWarStrategy', nameKo: '손자병법 오사칠계 부전승 피실격허 전략', icon: '⚔️', category: 'deep_master' },
+  { key: 'ancientChineseSunTzuArtOfWarStrategy', nameKo: '손자병법 오사칠계 부전승 피실격허 전략', icon: '⚔️', category: 'deep_master', summary: '정면 소모전을 피하고 5사와 피실격허·부전승의 지혜로 가장 무리 없는 활로를 읽습니다.' },
   { key: 'frenchDescartesCogitoClaraDistincta', nameKo: '데카르트 방법서설 코기토 명석판명 지성직관', icon: '💡', category: 'deep_master' },
   { key: 'ancientIndianEarlyBuddhistFourNobleTruths', nameKo: '초기불교 사성제 팔정도 고집멸도 중도해탈', icon: '☸️', category: 'deep_master' },
   { key: 'islamicSufiRumiMasnaviDivineLove', nameKo: '루미 마스나비 수피즘 신성한사랑 영혼갈망', icon: '🕊️', category: 'deep_master' },

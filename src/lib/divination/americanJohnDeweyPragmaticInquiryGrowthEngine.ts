@@ -1,19 +1,20 @@
 /**
  * 미국 존 듀이(John Dewey) 《경험과 자연》 & 《민주주의와 교육》 도구주의 반성적 사고 & 지성적 탐구·성장으로서의 삶 지혜 엔진
  *
- * 20세기 미국 실용주의(Pragmatism) 및 도구주의(Instrumentalism) 철학의 대부 존 듀이(1859~1952)의 원전 기반:
- * 1. 반성적 사고 및 지성적 문제해결 탐구도 (Reflective Thinking & Inquiry Precision Score): 맹목적 관습이나 성급한 충동을 멈추고 문제 상황의 본질을 명료히 짚어내는 반성적 사유력.
- * 2. 도구적 지성 및 상황 적응 유연성 지수 (Instrumental Intelligence & Adaptive Flexibility Index): 관념에 머물지 않고 생각을 현실의 난제를 해결하는 유효한 도구로 활용하는 유연성.
- * 3. 도달점 없는 성장 그 자체로서의 삶 활력도 (Growth as an End in Itself Vitality Score): 완결된 결과에 얽매이지 않고 끊임없이 역량을 확장하고 배우는 과정 자체의 생명력.
- * 4. 유기체와 환경의 능동적 상호작용 조화 지표 (Organism-Environment Dynamic Transaction Index): 주어지는 조건에 수동적으로 갇히지 않고 환경과 호흡하며 새로운 질서를 창조하는 개척력.
- * 5. 열린 소통과 민주적 협력 공감 회복탄력성 (Democratic Communication & Cooperative Resilience Score): 독단적 주장을 내려놓고 타자와의 솔직한 대화와 협력을 통해 지평을 넓히는 포용력.
+ * 20세기 미국 실용주의(Pragmatism) 및 도구주의(Instrumentalism) 철학자 존 듀이(1859~1952)의 원전 기반:
+ * 1. 반성적 사고(Reflective Thinking): 맹목적 관습이나 성급한 충동을 멈추고 문제 상황의 본질을 탐구함
+ * 2. 도구적 지성(Instrumental Intelligence): 생각을 현실의 난제를 푸는 유효한 도구로 삼는 유연성
+ * 3. 성장 그 자체로서의 삶(Growth as an End in Itself): 완결된 결과보다 배우며 확장하는 과정의 생명력
+ * 4. 유기체-환경 상호작용(Transaction): 주어진 조건과 호흡하며 새로운 질서를 빚어내는 개척력
  *
- * @version LUCKEY-JOHN-DEWEY-PRAGMATIC-INQUIRY-GROWTH-v1.0.0
+ * @version LUCKEY-JOHN-DEWEY-PRAGMATIC-INQUIRY-GROWTH-v1.1.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const AMERICAN_JOHN_DEWEY_PRAGMATIC_INQUIRY_GROWTH_VERSION = 'LUCKEY-JOHN-DEWEY-PRAGMATIC-INQUIRY-GROWTH-v1.0.0';
+export const AMERICAN_JOHN_DEWEY_PRAGMATIC_INQUIRY_GROWTH_VERSION = 'LUCKEY-JOHN-DEWEY-PRAGMATIC-INQUIRY-GROWTH-v1.1.0';
+
+export type DeweyQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
 export interface DeweyTheme {
   themeKey: string;
@@ -34,15 +35,22 @@ export interface DeweyAphorism {
 export interface AmericanJohnDeweyPragmaticInquiryGrowthResult {
   engineVersion: string;
   calculatedAtKst: string;
-  // 5대 존 듀이 핵심 지표 (0~100)
-  reflectiveThinkingInquiryScore: number;                 // 반성적 사고 및 지성적 탐구도 (Reflective Thinking & Inquiry)
-  instrumentalIntelligenceAdaptabilityIndex: number;      // 도구적 지성 및 상황 적응 유연성 지수 (Instrumental Intelligence & Adaptability)
-  growthAsLifeProcessVitalityScore: number;               // 성장 그 자체로서의 삶 활력도 (Growth as an End in Itself)
-  organismEnvironmentInteractionHarmonyIndex: number;     // 유기체-환경 상호작용 조화 지표 (Organism-Environment Dynamic Transaction)
-  democraticCooperationEmpathyScore: number;              // 열린 소통 및 민주적 협력 회복탄력성 (Democratic Communication & Resilience)
+  questionTopic: DeweyQuestionTopic;
+  inquiryPosture: string;
+  // 내부 계산 호환 필드 (프롬프트 비노출)
+  reflectiveThinkingInquiryScore: number;
+  instrumentalIntelligenceAdaptabilityIndex: number;
+  growthAsLifeProcessVitalityScore: number;
+  organismEnvironmentInteractionHarmonyIndex: number;
+  democraticCooperationEmpathyScore: number;
   // 세부 분석
   activeDeweyTheme: DeweyTheme;
   focalDeweyAphorism: DeweyAphorism;
+  practiceGuidance: string;
+  ritualAction: string;
+  reflectionFocus: string;
+  counselNote: string;
+  boundaryNotice: string;
   deweyComprehensiveGuidance: {
     guidanceTitle: string;
     philosophicalCounsel: string;
@@ -111,6 +119,62 @@ export const DEWEY_APHORISMS: DeweyAphorism[] = [
   },
 ];
 
+const TOPIC_GUIDANCE: Record<DeweyQuestionTopic, {
+  posture: string;
+  practice: string;
+  ritual: string;
+  reflection: string;
+}> = {
+  relationship: {
+    posture: '독단을 내려놓고 대화와 공동 탐구로 서로의 지평을 넓히는 민주적 소통의 태도',
+    practice: '누가 옳은지 겨루기보다, 두 사람이 함께 부딪힌 상황을 공동의 문제로 놓고 실험적인 해법을 대화로 맞춰 보십시오.',
+    ritual: '상대의 말 중 내가 아직 맥락을 다 확인하지 못한 부분 한 가지를 추측 대신 질문으로 확인하기.',
+    reflection: '이 관계의 갈등은 우리에게 어떤 새로운 소통 방식을 배우라고 깨우고 있습니까?',
+  },
+  decision: {
+    posture: '완벽한 정답을 기다리지 않고 작은 가설을 실행해 결과를 검증하는 실험적 탐구의 태도',
+    practice: '전부를 걸고 한 번에 결론 내려 하지 말고, 되돌릴 수 있는 작은 실험(Pilot)으로 가설의 현실성을 먼저 시험하십시오.',
+    ritual: '고민 중인 선택에 대해 "내일 바로 시험해 볼 수 있는 최소 행동 1가지" 정하기.',
+    reflection: '머릿속 시뮬레이션을 멈추고 현실에서 직접 확인해 보면 바로 드러날 사실은 무엇입니까?',
+  },
+  healing: {
+    posture: '실패를 끝이 아닌 경험의 재구성 재료로 삼아 다음 발걸음을 여는 회복의 태도',
+    practice: '겪은 아픔을 단순한 상처로만 두지 마십시오. 무엇이 나를 지치게 했는지 차분히 반성적 성찰로 건져 올리면 내일의 보호막이 됩니다.',
+    ritual: '최근 힘들었던 일에서 "다음에 다르게 써먹을 수 있는 단서 한 줄"만 가볍게 메모하기.',
+    reflection: '이 경험을 지나온 뒤의 나에게 남아 있는 가장 단단한 배움은 무엇입니까?',
+  },
+  reflection: {
+    posture: '고정된 목표보다 배우고 재구성해 나가는 과정 자체를 살아내는 성장의 태도',
+    practice: '지금의 나를 완성품이나 미완성품으로 재단하지 말고, 어제의 습관 중 오늘 새롭게 고쳐 쓸 도구 하나를 찾아보십시오.',
+    ritual: '오늘 하루 동안 가장 호기심이 생겼던 순간 하나를 기록해 두기.',
+    reflection: '더 많은 배움과 연결을 열어 주기 위해 지금 내가 업데이트할 오래된 방식은 무엇입니까?',
+  },
+};
+
+function classifyQuestionTopic(question?: string): DeweyQuestionTopic {
+  const q = (question ?? '').toLowerCase();
+  if (/연애|사랑|결혼|이별|사람|관계|친구|가족|동료|상사|갈등|소통|대화|협력/.test(q)) {
+    return 'relationship';
+  }
+  if (/선택|결정|이직|창업|사업|계약|진로|실험|방향|해야|말아야|해결/.test(q)) {
+    return 'decision';
+  }
+  if (/지치|힘들|불안|걱정|우울|슬픔|실패|좌절|회복|휴식|상처/.test(q)) {
+    return 'healing';
+  }
+  return 'reflection';
+}
+
+function getKstDateString(now: Date): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  return kst.toISOString().slice(0, 10);
+}
+
+function formatKstIso(now: Date): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  return kst.toISOString().replace('Z', '+09:00');
+}
+
 function hashString(str: string): number {
   let hash = 0;
   for (let i = 0; i < str.length; i++) {
@@ -123,14 +187,17 @@ function hashString(str: string): number {
 export function calculateAmericanJohnDeweyPragmaticInquiryGrowth(
   profile?: UserProfile,
   query?: string,
+  now: Date = new Date(),
 ): AmericanJohnDeweyPragmaticInquiryGrowthResult {
   const p = profile as any;
   const name = profile?.basic?.name ?? p?.name ?? '남희';
   const birthDate = profile?.basic?.birthdate ?? p?.birthDate ?? p?.birthdate ?? '1967-08-25';
   const birthTime = profile?.basic?.birthtime ?? p?.birthTime ?? p?.birthtime ?? '12:00';
   const gender = profile?.basic?.gender ?? p?.gender ?? 'neutral';
+  const kstDate = getKstDateString(now);
+  const questionTopic = classifyQuestionTopic(query);
 
-  const seedString = `JOHN-DEWEY-PRAGMATIC-INQUIRY-GROWTH:${name}:${birthDate}:${birthTime}:${gender}:${query ?? ''}`;
+  const seedString = `JOHN-DEWEY-PRAGMATIC-INQUIRY-GROWTH:${name}:${birthDate}:${birthTime}:${gender}:${kstDate}:${query ?? ''}`;
   const baseHash = hashString(seedString);
   const absHash = Math.abs(baseHash);
 
@@ -145,18 +212,24 @@ export function calculateAmericanJohnDeweyPragmaticInquiryGrowth(
 
   const activeDeweyTheme = DEWEY_THEMES[themeIndex];
   const focalDeweyAphorism = DEWEY_APHORISMS[aphorismIndex];
+  const topicGuide = TOPIC_GUIDANCE[questionTopic];
 
   const guidanceTitle = `존 듀이 실용주의 탐구와 성장의 지혜: ${activeDeweyTheme.themeTitleKo}`;
-  const philosophicalCounsel = `20세기 실용주의 철학의 완성자 존 듀이 선생은 《경험과 자연》과 《민주주의와 교육》을 통해 ` +
-    `맹목적 습관을 멈추고 문제의 맥락을 짚는 반성적 사고(Reflective Thinking), 관념을 현실의 난제를 푸는 유용한 연장으로 삼는 도구적 지성, ` +
-    `그리고 고정된 목적지에 머물지 않고 끝없이 지평을 넓혀가는 성장 그 자체로서의 삶을 역설했습니다. ` +
-    `현재 당신이 마주한 상황에서 가장 유효한 실천적 열쇠는 '${activeDeweyTheme.themeTitleKo}'입니다. ` +
+  const philosophicalCounsel = `존 듀이는 《경험과 자연》과 《민주주의와 교육》을 통해 ` +
+    `맹목적 습관을 멈추고 문제의 맥락을 짚는 반성적 사고(Reflective Thinking), 관념을 현실의 난제를 푸는 연장으로 삼는 도구적 지성, ` +
+    `그리고 끝없이 지평을 넓혀가는 성장 그 자체로서의 삶을 역설했습니다. ` +
+    `현재 마주한 상황에서 가장 유효한 실천적 열쇠는 '${activeDeweyTheme.themeTitleKo}'입니다. ` +
     `${activeDeweyTheme.practicalCounsel} 듀이의 테제 "${focalDeweyAphorism.aphorismKo}" (${focalDeweyAphorism.aphorismEnglish})을 지표로 삼고, ` +
     `${focalDeweyAphorism.actionGuidance}`;
 
+  const counselNote = `'${activeDeweyTheme.themeTitleKo}' 테마와 '${focalDeweyAphorism.aphorismKo}' 테제가 만나 '${topicGuide.posture}'를 제안합니다.`;
+  const boundaryNotice = '이 관점은 존 듀이의 실용주의·도구주의 철학을 빌린 상징적 성찰 안내이며, 확정적 예측이나 전문 자문이 아닙니다.';
+
   return {
     engineVersion: AMERICAN_JOHN_DEWEY_PRAGMATIC_INQUIRY_GROWTH_VERSION,
-    calculatedAtKst: new Date().toISOString(),
+    calculatedAtKst: formatKstIso(now),
+    questionTopic,
+    inquiryPosture: topicGuide.posture,
     reflectiveThinkingInquiryScore,
     instrumentalIntelligenceAdaptabilityIndex,
     growthAsLifeProcessVitalityScore,
@@ -164,6 +237,11 @@ export function calculateAmericanJohnDeweyPragmaticInquiryGrowth(
     democraticCooperationEmpathyScore,
     activeDeweyTheme,
     focalDeweyAphorism,
+    practiceGuidance: topicGuide.practice,
+    ritualAction: topicGuide.ritual,
+    reflectionFocus: topicGuide.reflection,
+    counselNote,
+    boundaryNotice,
     deweyComprehensiveGuidance: {
       guidanceTitle,
       philosophicalCounsel,
@@ -176,17 +254,18 @@ export function formatAmericanJohnDeweyPragmaticInquiryGrowthPrompt(
 ): string {
   return [
     `【존 듀이 《경험과 자연·민주주의와 교육》 반성적 사고(Reflective Inquiry)·성장 지표】`,
-    `- 반성적 사고 및 지성적 문제해결 탐구도(Reflective Thinking & Inquiry): ${res.reflectiveThinkingInquiryScore}/100`,
-    `- 도구적 지성 및 상황 적응 유연성 지수(Instrumental Intelligence & Adaptability): ${res.instrumentalIntelligenceAdaptabilityIndex}/100`,
-    `- 성장 그 자체로서의 삶 활력도(Growth as an End in Itself): ${res.growthAsLifeProcessVitalityScore}/100`,
-    `- 유기체와 환경의 능동적 상호작용 조화도(Organism-Environment Transaction): ${res.organismEnvironmentInteractionHarmonyIndex}/100`,
-    `- 열린 소통 및 민주적 협력 회복탄력성(Democratic Communication & Resilience): ${res.democraticCooperationEmpathyScore}/100`,
+    `- 질문 맥락 초점: ${res.questionTopic} | 탐구 태도: ${res.inquiryPosture}`,
     `- 핵심 듀이 테마: ${res.activeDeweyTheme.themeTitleKo} [${res.activeDeweyTheme.themeTitleEn}]`,
     `- 실천적 통찰: ${res.activeDeweyTheme.pragmaticInsight}`,
     `- 행동 조언: ${res.activeDeweyTheme.practicalCounsel}`,
     `- 듀이 원전 테제: "${res.focalDeweyAphorism.aphorismKo}" (${res.focalDeweyAphorism.aphorismEnglish})`,
     `- 원전 출처: [${res.focalDeweyAphorism.sourceContext}]`,
     `- 구체적 실천 지침: ${res.focalDeweyAphorism.actionGuidance}`,
+    `- 맥락별 실행 조언: ${res.practiceGuidance}`,
+    `- 오늘의 작은 의례: ${res.ritualAction}`,
+    `- 성찰 질문: ${res.reflectionFocus}`,
+    `- 핵심 조언 요약: ${res.counselNote}`,
+    `- 해석 경계: ${res.boundaryNotice}`,
     `- 종합 듀이 권면: ${res.deweyComprehensiveGuidance.philosophicalCounsel}`,
   ].join('\n');
 }
