@@ -7352,6 +7352,38 @@ test('Chaldean Mul Apin, Egyptian Sphinx Dream, and Etruscan Augur v2.0.0: quali
   assert.ok(!etruscanPrompt.includes('/100') && !etruscanPrompt.includes('%') && !etruscanPrompt.includes('점수'));
 });
 
+test('Eleusinian Mysteries, Hindu Kundalini, and Hopi Four Worlds v2.0.0 include KST temporal rhythm and qualitative matrix without score exposure', () => {
+  const testDate = new Date('2026-11-15T06:15:00Z');
+
+  const eleusis = calculateEleusinianMysteries(profile, {
+    now: testDate,
+    question: '새로운 전환 앞에서 마음이 복잡해요',
+  });
+  assert.equal(eleusis.engineVersion, 'LUCKEY-ELEUSINIAN-MYSTERIES-v2.0.0');
+  assert.ok(eleusis.temporalEleusinianRhythm.calculatedAtKst.includes('KST'));
+  assert.ok(eleusis.eleusinianSynthesisMatrix.gradeStationNexus.length > 0);
+  const eleusisPrompt = formatEleusinianMysteriesPrompt(eleusis);
+  assert.ok(!eleusisPrompt.includes('/100') && !eleusisPrompt.includes('%') && !eleusisPrompt.includes('점수'));
+
+  const kundalini = calculateHinduTantricKundalini({
+    profile,
+    contextText: '일과 마음의 균형을 잡고 싶습니다',
+    referenceDate: testDate,
+  });
+  assert.equal(kundalini.engineVersion, 'LUCKEY-HINDU-KUNDALINI-v2.0.0');
+  assert.ok(kundalini.temporalKundaliniRhythm.calculatedAtKst.includes('KST'));
+  assert.ok(kundalini.kundaliniSynthesisMatrix.nadiChakraNexus.length > 0);
+  const kundaliniPrompt = formatHinduTantricKundaliniPrompt(kundalini);
+  assert.ok(!kundaliniPrompt.includes('/ 100') && !kundaliniPrompt.includes('/100') && !kundaliniPrompt.includes('%') && !kundaliniPrompt.includes('점수'));
+
+  const hopi = calculateHopiFourWorldsKachina(profile, '흔들리는 일상을 바로잡고 싶어요', testDate);
+  assert.equal(hopi.engineVersion, '2.0.0');
+  assert.ok(hopi.temporalHopiRhythm.calculatedAtKst.includes('KST'));
+  assert.ok(hopi.hopiSynthesisMatrix.kachinaWorldNexus.length > 0);
+  const hopiPrompt = formatHopiFourWorldsPrompt(hopi);
+  assert.ok(!hopiPrompt.includes('/100') && !hopiPrompt.includes('%') && !hopiPrompt.includes('점수'));
+});
+
 
 
 

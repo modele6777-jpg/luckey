@@ -1,4 +1,4 @@
-// v1.7.468: Deepen Hawaiian Huna, Kahuna Three Selves, and Hindu Sri Yantra engines
+// v1.7.469: Deepen Eleusinian Mysteries, Hindu Kundalini, and Hopi Four Worlds engines
 import { getLucyRequestFallbacks, requestWithModelFallback } from '../src/lib/lucyModelPolicy.ts';
 import "dotenv/config";
 import express from "express";

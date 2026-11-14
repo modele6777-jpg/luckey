@@ -2119,7 +2119,7 @@ try {
   // 87. 힌두 탄트라 쿤달리니 7대 차크라 나디 프라나야마 각성 엔진
   const hinduKundaliniResult = calculateSupplement('hinduKundaliniResult', () => ((() => {
     try {
-      return calculateHinduTantricKundalini({ profile, contextText: question });
+      return calculateHinduTantricKundalini({ profile, contextText: question, referenceDate: now });
     } catch (_) {
       return null;
     }
@@ -2830,7 +2830,7 @@ try {
   // 167. 아메리카 호피족 4대 우주 시대 순환·카치나 정령 지혜·코양니스카시 치유 엔진
   const hopiFourWorldsKachinaResult = calculateSupplement('hopiFourWorldsKachinaResult', () => ((() => {
     try {
-      return calculateHopiFourWorldsKachina(profile);
+      return calculateHopiFourWorldsKachina(profile, question, now);
     } catch (_) {
       return null;
     }
