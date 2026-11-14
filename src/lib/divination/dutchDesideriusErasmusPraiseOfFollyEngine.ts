@@ -8,12 +8,21 @@
  * 4. 사변적 형식주의 탈피와 소박한 실천 덕성 지수 (Sincere Practical Virtue Index): 헛된 말장난과 허례허식을 배격하고 삶의 현장에서 행동으로 드러나는 참된 선의.
  * 5. 유쾌한 삶의 긍정과 회복탄력성 (Cheerful Life Affirmation & Resilience Score): 시련과 오해 앞에서도 냉소에 빠지지 않고 웃음과 지혜로 일어서는 회복탄력성.
  *
- * @version LUCKEY-ERASMUS-PRAISE-OF-FOLLY-v1.0.0
+ * @version LUCKEY-ERASMUS-PRAISE-OF-FOLLY-v1.1.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const DUTCH_DESIDERIUS_ERASMUS_PRAISE_OF_FOLLY_VERSION = 'LUCKEY-ERASMUS-PRAISE-OF-FOLLY-v1.0.0';
+export const DUTCH_DESIDERIUS_ERASMUS_PRAISE_OF_FOLLY_VERSION = 'LUCKEY-ERASMUS-PRAISE-OF-FOLLY-v1.1.0';
+
+export type ErasmusQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
+
+export interface ErasmusTemporalRhythm {
+  kstDateLabel: string;
+  timeWindowKo: string;
+  humanismTone: string;
+  rhythmDirective: string;
+}
 
 export interface ErasmusTheme {
   themeKey: string;
@@ -41,8 +50,14 @@ export interface DutchDesideriusErasmusPraiseOfFollyResult {
   practicalSincereVirtueIndex: number;            // 소박한 실천 덕성 (Sincere Practical Virtue)
   cheerfulResilienceScore: number;                // 유쾌한 삶의 긍정 회복탄력성 (Cheerful Resilience)
   // 세부 분석
+  questionTopic: ErasmusQuestionTopic;
+  temporalErasmusRhythm: ErasmusTemporalRhythm;
   activeErasmusTheme: ErasmusTheme;
   focalErasmusAphorism: ErasmusAphorism;
+  practiceGuidance: string;
+  ritualAction: string;
+  reflectionFocus: string;
+  boundaryNotice: string;
   erasmusComprehensiveGuidance: {
     guidanceTitle: string;
     philosophicalCounsel: string;
@@ -127,9 +142,89 @@ function hashString(str: string): number {
   return hash;
 }
 
+function classifyErasmusQuestionTopic(query?: string): ErasmusQuestionTopic {
+  const q = (query ?? '').toLowerCase();
+  if (/사랑|연애|관계|결혼|이별|가족|친구|갈등|사람|동료|부모/.test(q)) return 'relationship';
+  if (/선택|결정|이직|사업|진로|시험|돈|투자|계약|시작|포기|방향/.test(q)) return 'decision';
+  if (/지치|힘들|불안|우울|상처|치유|위로|외로|슬픔|걱정|두려|피곤/.test(q)) return 'healing';
+  return 'reflection';
+}
+
+function buildErasmusTemporalRhythm(now?: Date): ErasmusTemporalRhythm {
+  const base = now ?? new Date();
+  const kst = new Date(base.getTime() + 9 * 60 * 60 * 1000);
+  const kstDateLabel = kst.toISOString().slice(0, 10);
+  const hour = kst.getUTCHours();
+
+  if (hour >= 5 && hour < 11) {
+    return {
+      kstDateLabel,
+      timeWindowKo: '아침 경직 해제의 시간 (05:00~11:00 KST)',
+      humanismTone: '가벼운 위트와 유연한 시작',
+      rhythmDirective: '지나친 완벽주의를 내려놓고 유쾌한 여유로 하루를 여는 시간입니다.',
+    };
+  }
+  if (hour >= 11 && hour < 17) {
+    return {
+      kstDateLabel,
+      timeWindowKo: '낮 소박한 선의 실천 시간 (11:00~17:00 KST)',
+      humanismTone: '형식보다 진실한 행동',
+      rhythmDirective: '겉치레와 명분 논쟁을 걷어내고 작지만 실질적인 친절과 평화를 택하는 시간입니다.',
+    };
+  }
+  if (hour >= 17 && hour < 22) {
+    return {
+      kstDateLabel,
+      timeWindowKo: '저녁 휴머니즘 관용의 시간 (17:00~22:00 KST)',
+      humanismTone: '인간적 연약함에 대한 너그러움',
+      rhythmDirective: '나와 타인의 서툰 점들을 탓하기보다 웃음과 관용으로 감싸 안기 좋은 시간입니다.',
+    };
+  }
+  return {
+    kstDateLabel,
+    timeWindowKo: '심야 도그마 비움의 시간 (22:00~05:00 KST)',
+    humanismTone: '겸허한 성찰과 평온',
+    rhythmDirective: '흑백논리와 자기 비난을 거두고 마음의 온건한 중용을 회복하는 시간입니다.',
+  };
+}
+
+function buildErasmusTopicGuidance(topic: ErasmusQuestionTopic): {
+  practiceGuidance: string;
+  ritualAction: string;
+  reflectionFocus: string;
+} {
+  if (topic === 'relationship') {
+    return {
+      practiceGuidance: '내가 옳고 상대가 틀렸다는 엄숙한 재판을 멈추고, 인간의 불완전함을 유머와 관용으로 먼저 품어 주십시오.',
+      ritualAction: '갈등이 맴도는 상대의 서툰 점 한 가지를 비난 대신 웃어넘길 여지로 바꿔 보기',
+      reflectionFocus: '지금 이 관계에서 내가 놓지 못하고 있는 것은 진실인가, 아니면 옳고 싶다는 자존심인가?',
+    };
+  }
+  if (topic === 'decision') {
+    return {
+      practiceGuidance: '완벽한 정답을 쥔 체면보다, 소모적인 다툼을 피하고 평화와 실질을 지키는 온건한 선택을 고르십시오.',
+      ritualAction: '결정 전 "이 선택이 내 마음의 평화와 일상의 선의를 지키는가" 한 줄 점검하기',
+      reflectionFocus: '거창한 명분이나 타인의 시선을 걷어내면 가장 소박하고 지혜로운 선택은 무엇인가?',
+    };
+  }
+  if (topic === 'healing') {
+    return {
+      practiceGuidance: '완벽해야 한다는 무거운 갑옷을 벗고 스스로의 실수마저 가볍게 웃어넘길 때 마음에 숨통이 트입니다.',
+      ritualAction: '오늘 나를 괴롭힌 자책 한 가지를 "사람이니 그럴 수 있지"라고 소리 내어 풀어 주기',
+      reflectionFocus: '나는 지금 나 자신에게 너무 엄격한 도그마를 들이대고 있지는 않은가?',
+    };
+  }
+  return {
+    practiceGuidance: '딱딱한 형식주의와 흑백논리를 내려놓고 유쾌한 위트와 겸허한 호기심으로 오늘을 바라보십시오.',
+    ritualAction: '오늘 너무 심각하게 붙잡고 있던 고민 하나를 한 걸음 물러나 가볍게 바라보기',
+    reflectionFocus: '내 생각 중 사실이 아니라 습관적 편견이나 엄숙주의에서 나온 것은 무엇인가?',
+  };
+}
+
 export function calculateDutchDesideriusErasmusPraiseOfFolly(
   profile?: UserProfile,
   query?: string,
+  now?: Date,
 ): DutchDesideriusErasmusPraiseOfFollyResult {
   const p = profile as any;
   const name = profile?.basic?.name ?? p?.name ?? '남희';
@@ -137,7 +232,11 @@ export function calculateDutchDesideriusErasmusPraiseOfFolly(
   const birthTime = profile?.basic?.birthtime ?? p?.birthTime ?? p?.birthtime ?? '12:00';
   const gender = profile?.basic?.gender ?? p?.gender ?? 'neutral';
 
-  const seedString = `ERASMUS-PRAISE-OF-FOLLY:${name}:${birthDate}:${birthTime}:${gender}:${query ?? ''}`;
+  const temporalErasmusRhythm = buildErasmusTemporalRhythm(now);
+  const questionTopic = classifyErasmusQuestionTopic(query);
+  const topicGuidance = buildErasmusTopicGuidance(questionTopic);
+
+  const seedString = `ERASMUS-PRAISE-OF-FOLLY:${name}:${birthDate}:${birthTime}:${gender}:${query ?? ''}:${temporalErasmusRhythm.kstDateLabel}`;
   const baseHash = hashString(seedString);
   const absHash = Math.abs(baseHash);
 
@@ -154,22 +253,30 @@ export function calculateDutchDesideriusErasmusPraiseOfFolly(
   const focalErasmusAphorism = ERASMUS_APHORISMS[aphorismIndex];
 
   const guidanceTitle = `에라스무스 우신예찬 르네상스 휴머니즘 지혜: ${activeErasmusTheme.themeTitleKo}`;
-  const philosophicalCounsel = `르네상스 휴머니즘의 최고봉 에라스무스 선생은 《우신예찬》을 통해 숨 막히는 독단과 엄숙주의를 통렬히 풍자하며, ` +
-    `인간의 연약함을 품어주는 따스한 관용과 유쾌한 지혜의 가치를 가르쳤습니다. ` +
+  const philosophicalCounsel = `르네상스 휴머니즘의 사상가 에라스무스는 《우신예찬》을 통해 숨 막히는 독단과 엄숙주의를 유쾌하게 비틀며, ` +
+    `인간의 연약함을 품어주는 따스한 관용과 소박한 선의의 가치를 비춥니다. ` +
     `현재 당신의 상황을 명쾌하게 풀어내는 핵심 원리는 '${activeErasmusTheme.themeTitleKo}'입니다. ` +
-    `${activeErasmusTheme.practicalCounsel} 에라스무스 선생의 격언 "${focalErasmusAphorism.aphorismKo}" (${focalErasmusAphorism.aphorismLatin})을 상기하며, ` +
+    `${activeErasmusTheme.practicalCounsel} ${topicGuidance.practiceGuidance} "${focalErasmusAphorism.aphorismKo}"(${focalErasmusAphorism.aphorismLatin})을 떠올리며, ` +
     `${focalErasmusAphorism.actionGuidance}`;
+
+  const boundaryNotice = '에라스무스 우신예찬 해석은 경직된 편견을 풀고 관용과 유머를 회복하도록 돕는 상징·성찰 관점이며, 미래 예측이나 확정적 판단이 아닙니다.';
 
   return {
     engineVersion: DUTCH_DESIDERIUS_ERASMUS_PRAISE_OF_FOLLY_VERSION,
-    calculatedAtKst: new Date().toISOString(),
+    calculatedAtKst: (now ?? new Date()).toISOString(),
     follyHumorousWisdomScore,
     dogmaticPrejudiceDissolutionIndex,
     renaissanceHumanisticToleranceScore,
     practicalSincereVirtueIndex,
     cheerfulResilienceScore,
+    questionTopic,
+    temporalErasmusRhythm,
     activeErasmusTheme,
     focalErasmusAphorism,
+    practiceGuidance: topicGuidance.practiceGuidance,
+    ritualAction: topicGuidance.ritualAction,
+    reflectionFocus: topicGuidance.reflectionFocus,
+    boundaryNotice,
     erasmusComprehensiveGuidance: {
       guidanceTitle,
       philosophicalCounsel,
@@ -182,17 +289,18 @@ export function formatDutchDesideriusErasmusPraiseOfFollyPrompt(
 ): string {
   return [
     `【데시데리우스 에라스무스 《우신예찬》 르네상스 휴머니즘 및 해학·관용 지혜 지표】`,
-    `- 우신(愚神)의 해학적 지혜와 위트(Humorous Wisdom & Wit): ${res.follyHumorousWisdomScore}/100`,
-    `- 도그마·편견 타파 및 분별력(Dogma Dissolution & Clarity): ${res.dogmaticPrejudiceDissolutionIndex}/100`,
-    `- 르네상스 휴머니즘 관용 및 포용도(Humanistic Tolerance): ${res.renaissanceHumanisticToleranceScore}/100`,
-    `- 소박한 실천 덕성 지수(Sincere Practical Virtue): ${res.practicalSincereVirtueIndex}/100`,
-    `- 유쾌한 삶의 긍정과 회복탄력성(Cheerful Life Affirmation): ${res.cheerfulResilienceScore}/100`,
+    `- 질문 주제 맥락: ${res.questionTopic}`,
+    `- KST 시공간 리듬: ${res.temporalErasmusRhythm.kstDateLabel} · ${res.temporalErasmusRhythm.timeWindowKo} (${res.temporalErasmusRhythm.humanismTone}) — ${res.temporalErasmusRhythm.rhythmDirective}`,
     `- 핵심 에라스무스 테마: ${res.activeErasmusTheme.themeTitleKo} [${res.activeErasmusTheme.themeTitleEn}]`,
     `- 실천적 통찰: ${res.activeErasmusTheme.pragmaticInsight}`,
     `- 행동 조언: ${res.activeErasmusTheme.practicalCounsel}`,
+    `- 질문 맞춤 실천 가이드: ${res.practiceGuidance}`,
+    `- 일상 실천 의례: ${res.ritualAction}`,
+    `- 핵심 성찰 질문: ${res.reflectionFocus}`,
     `- 에라스무스 원전 명언: "${res.focalErasmusAphorism.aphorismKo}" (${res.focalErasmusAphorism.aphorismLatin})`,
     `- 원전 출처: [${res.focalErasmusAphorism.sourceContext}]`,
     `- 구체적 실천 지침: ${res.focalErasmusAphorism.actionGuidance}`,
     `- 종합 에라스무스 권면: ${res.erasmusComprehensiveGuidance.philosophicalCounsel}`,
+    `- 해석 경계: ${res.boundaryNotice}`,
   ].join('\n');
 }

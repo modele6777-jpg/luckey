@@ -8,12 +8,21 @@
  * 4. 현실의 부조리를 꿰뚫고 대안을 설계하는 이상주의적 통찰력 (Visionary Ideal & Social Wisdom Index): "양들이 사람을 잡아먹는다"는 비판처럼 현실 문제를 정밀 진단하고 대안을 제시하는 힘.
  * 5. 외적 압박 앞에서도 신념을 굽히지 않는 단호한 도덕적 용기 회복탄력성 (Steadfast Moral Courage Resilience Score): 권력의 위협 앞에서도 타협하지 않고 양심의 법정을 지켜낸 불굴의 기개.
  *
- * @version LUCKEY-THOMAS-MORE-UTOPIA-v1.0.0
+ * @version LUCKEY-THOMAS-MORE-UTOPIA-v1.1.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const BRITISH_THOMAS_MORE_UTOPIA_VERSION = 'LUCKEY-THOMAS-MORE-UTOPIA-v1.0.0';
+export const BRITISH_THOMAS_MORE_UTOPIA_VERSION = 'LUCKEY-THOMAS-MORE-UTOPIA-v1.1.0';
+
+export type MoreQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
+
+export interface MoreTemporalRhythm {
+  kstDateLabel: string;
+  timeWindowKo: string;
+  utopiaTone: string;
+  rhythmDirective: string;
+}
 
 export interface ThomasMoreTheme {
   themeKey: string;
@@ -41,8 +50,14 @@ export interface BritishThomasMoreUtopiaResult {
   visionarySocialReformIndex: number;               // 이상주의적 대안 통찰력 (Visionary Insight)
   steadfastMoralCourageResilienceScore: number;     // 도덕적 용기 회복탄력성 (Steadfast Moral Courage)
   // 세부 분석
+  questionTopic: MoreQuestionTopic;
+  temporalMoreRhythm: MoreTemporalRhythm;
   activeMoreTheme: ThomasMoreTheme;
   focalMoreAphorism: ThomasMoreAphorism;
+  practiceGuidance: string;
+  ritualAction: string;
+  reflectionFocus: string;
+  boundaryNotice: string;
   moreComprehensiveGuidance: {
     guidanceTitle: string;
     philosophicalCounsel: string;
@@ -127,9 +142,89 @@ function hashString(str: string): number {
   return hash;
 }
 
+function classifyMoreQuestionTopic(query?: string): MoreQuestionTopic {
+  const q = (query ?? '').toLowerCase();
+  if (/사랑|연애|관계|결혼|이별|가족|친구|갈등|사람|동료|부모/.test(q)) return 'relationship';
+  if (/선택|결정|이직|사업|진로|시험|돈|투자|계약|시작|포기|방향/.test(q)) return 'decision';
+  if (/지치|힘들|불안|우울|상처|치유|위로|외로|슬픔|걱정|두려|피곤/.test(q)) return 'healing';
+  return 'reflection';
+}
+
+function buildMoreTemporalRhythm(now?: Date): MoreTemporalRhythm {
+  const base = now ?? new Date();
+  const kst = new Date(base.getTime() + 9 * 60 * 60 * 1000);
+  const kstDateLabel = kst.toISOString().slice(0, 10);
+  const hour = kst.getUTCHours();
+
+  if (hour >= 5 && hour < 11) {
+    return {
+      kstDateLabel,
+      timeWindowKo: '아침 양심 정돈의 시간 (05:00~11:00 KST)',
+      utopiaTone: '맑은 양심과 하루의 질서 세우기',
+      rhythmDirective: '과욕을 비우고 오늘 지켜야 할 공정과 일의 경계를 차분히 정하기 좋은 시간입니다.',
+    };
+  }
+  if (hour >= 11 && hour < 17) {
+    return {
+      kstDateLabel,
+      timeWindowKo: '낮 공동선 실천의 시간 (11:00~17:00 KST)',
+      utopiaTone: '집중된 노동과 우회적 지혜',
+      rhythmDirective: '폭풍 속 배의 돛을 조율하듯 현실 조건 속에서 최선을 다해 선을 넓히는 시간입니다.',
+    };
+  }
+  if (hour >= 17 && hour < 22) {
+    return {
+      kstDateLabel,
+      timeWindowKo: '저녁 오티움(Otium)의 시간 (17:00~22:00 KST)',
+      utopiaTone: '노동의 마침표와 영혼의 여가',
+      rhythmDirective: '일과를 내려놓고 독서·대화·예술로 영혼의 자유를 회복하기 좋은 시간입니다.',
+    };
+  }
+  return {
+    kstDateLabel,
+    timeWindowKo: '심야 양심 성찰의 시간 (22:00~05:00 KST)',
+    utopiaTone: '내면의 고요와 흔들리지 않는 중심',
+    rhythmDirective: '세속의 소음을 끄고 양심의 법정 앞에서 스스로의 진실함을 돌아보는 시간입니다.',
+  };
+}
+
+function buildMoreTopicGuidance(topic: MoreQuestionTopic): {
+  practiceGuidance: string;
+  ritualAction: string;
+  reflectionFocus: string;
+} {
+  if (topic === 'relationship') {
+    return {
+      practiceGuidance: '독점과 비교를 내려놓고 서로의 몫과 품위를 존중할 때 관계의 공동선이 단단해집니다.',
+      ritualAction: '가까운 사람에게 결과나 조건 없이 공정하고 따뜻한 인정 한마디 건네기',
+      reflectionFocus: '이 관계에서 나는 몫을 나누는 쪽에 서 있는가, 아니면 내 불안으로 움켜쥐고 있는가?',
+    };
+  }
+  if (topic === 'decision') {
+    return {
+      practiceGuidance: '당장의 허세나 단기 이익보다 내 양심이 부끄럽지 않고 오래 지속할 수 있는 균형을 고르십시오.',
+      ritualAction: '선택지 옆에 "이 결정이 일과 쉼, 양심을 지키는가" 한 줄 기준 적어 보기',
+      reflectionFocus: '바람을 바꿀 수 없는 현실 속에서 내가 정직하게 조율할 수 있는 돛은 무엇인가?',
+    };
+  }
+  if (topic === 'healing') {
+    return {
+      practiceGuidance: '끝없는 노동의 멍에에서 잠시 내려와 아무 생산성도 증명하지 않는 순수한 여가(Otium)를 허락하십시오.',
+      ritualAction: '오늘 20분간 일과 화면을 닫고 산책·음악·독서 중 한 가지로 영혼 쉬게 하기',
+      reflectionFocus: '나는 지금 나 자신을 돌보는 일까지 성과나 의무로 밀어붙이고 있지는 않은가?',
+    };
+  }
+  return {
+    practiceGuidance: '겉치레와 비교의 족쇄를 풀고 단순하고 정직한 일상의 질서를 단단히 세우십시오.',
+    ritualAction: '오늘 나를 불필요하게 지치게 한 허례나 과욕 한 가지를 목록에서 지우기',
+    reflectionFocus: '내 삶에서 정말 지키고 싶은 양심의 중심과 적정한 쉼의 비율은 어디에 있는가?',
+  };
+}
+
 export function calculateBritishThomasMoreUtopia(
   profile?: UserProfile,
   query?: string,
+  now?: Date,
 ): BritishThomasMoreUtopiaResult {
   const p = profile as any;
   const name = profile?.basic?.name ?? p?.name ?? '남희';
@@ -137,7 +232,11 @@ export function calculateBritishThomasMoreUtopia(
   const birthTime = profile?.basic?.birthtime ?? p?.birthTime ?? p?.birthtime ?? '12:00';
   const gender = profile?.basic?.gender ?? p?.gender ?? 'neutral';
 
-  const seedString = `THOMAS-MORE-UTOPIA:${name}:${birthDate}:${birthTime}:${gender}:${query ?? ''}`;
+  const temporalMoreRhythm = buildMoreTemporalRhythm(now);
+  const questionTopic = classifyMoreQuestionTopic(query);
+  const topicGuidance = buildMoreTopicGuidance(questionTopic);
+
+  const seedString = `THOMAS-MORE-UTOPIA:${name}:${birthDate}:${birthTime}:${gender}:${query ?? ''}:${temporalMoreRhythm.kstDateLabel}`;
   const baseHash = hashString(seedString);
   const absHash = Math.abs(baseHash);
 
@@ -154,22 +253,30 @@ export function calculateBritishThomasMoreUtopia(
   const focalMoreAphorism = THOMAS_MORE_APHORISMS[aphorismIndex];
 
   const guidanceTitle = `토머스 모어 유토피아 양심과 삶의 균형 지혜: ${activeMoreTheme.themeTitleKo}`;
-  const philosophicalCounsel = `영국의 위대한 사상가이자 양심의 수호자 토머스 모어 선생은 《유토피아》를 통해 탐욕과 불평등을 날카롭게 비판하며, ` +
-    `노동과 여가의 조화, 내면의 순결한 양심, 그리고 공공선의 숭고한 지혜를 선언했습니다. ` +
-    `현재 당신의 삶을 바르게 이끄는 핵심 이정표는 '${activeMoreTheme.themeTitleKo}'입니다. ` +
-    `${activeMoreTheme.practicalCounsel} 토머스 모어 선생의 명언 "${focalMoreAphorism.aphorismKo}" (${focalMoreAphorism.aphorismLatin})의 가르침대로, ` +
+  const philosophicalCounsel = `영국의 사상가 토머스 모어는 《유토피아》를 통해 탐욕과 불평등을 넘어 노동과 여가의 조화, ` +
+    `내면의 순결한 양심, 그리고 공공선의 균형을 비춥니다. ` +
+    `현재 당신의 흐름에서 핵심이 되는 관점은 '${activeMoreTheme.themeTitleKo}'입니다. ` +
+    `${activeMoreTheme.practicalCounsel} ${topicGuidance.practiceGuidance} "${focalMoreAphorism.aphorismKo}"(${focalMoreAphorism.aphorismLatin})의 뜻처럼, ` +
     `${focalMoreAphorism.actionGuidance}`;
+
+  const boundaryNotice = '토머스 모어 유토피아 해석은 노동·여가의 균형과 양심적 성찰을 돕는 상징 관점이며, 미래 예측이나 확정적 판단이 아닙니다.';
 
   return {
     engineVersion: BRITISH_THOMAS_MORE_UTOPIA_VERSION,
-    calculatedAtKst: new Date().toISOString(),
+    calculatedAtKst: (now ?? new Date()).toISOString(),
     communalConscienceJusticeScore,
     laborOtiumBalancedHarmonyIndex,
     spiritualIntegrityPurityScore,
     visionarySocialReformIndex,
     steadfastMoralCourageResilienceScore,
+    questionTopic,
+    temporalMoreRhythm,
     activeMoreTheme,
     focalMoreAphorism,
+    practiceGuidance: topicGuidance.practiceGuidance,
+    ritualAction: topicGuidance.ritualAction,
+    reflectionFocus: topicGuidance.reflectionFocus,
+    boundaryNotice,
     moreComprehensiveGuidance: {
       guidanceTitle,
       philosophicalCounsel,
@@ -182,17 +289,18 @@ export function formatBritishThomasMoreUtopiaPrompt(
 ): string {
   return [
     `【토머스 모어 《유토피아》 공동체 양심·삶의 균형 및 도덕적 용기 지표】`,
-    `- 공동체적 양심과 공공선 정의(Communal Conscience & Justice): ${res.communalConscienceJusticeScore}/100`,
-    `- 노동과 여가(Otium)의 조화도(Labor & Leisure Harmony): ${res.laborOtiumBalancedHarmonyIndex}/100`,
-    `- 영혼의 순결함 및 청빈 지수(Spiritual Integrity & Purity): ${res.spiritualIntegrityPurityScore}/100`,
-    `- 이상주의적 대안 통찰력(Visionary Ideal & Social Insight): ${res.visionarySocialReformIndex}/100`,
-    `- 단호한 도덕적 용기 회복탄력성(Steadfast Moral Courage): ${res.steadfastMoralCourageResilienceScore}/100`,
+    `- 질문 주제 맥락: ${res.questionTopic}`,
+    `- KST 시공간 리듬: ${res.temporalMoreRhythm.kstDateLabel} · ${res.temporalMoreRhythm.timeWindowKo} (${res.temporalMoreRhythm.utopiaTone}) — ${res.temporalMoreRhythm.rhythmDirective}`,
     `- 핵심 토머스 모어 테마: ${res.activeMoreTheme.themeTitleKo} [${res.activeMoreTheme.themeTitleEn}]`,
     `- 실천적 통찰: ${res.activeMoreTheme.pragmaticInsight}`,
     `- 행동 조언: ${res.activeMoreTheme.practicalCounsel}`,
+    `- 질문 맞춤 실천 가이드: ${res.practiceGuidance}`,
+    `- 일상 실천 의례: ${res.ritualAction}`,
+    `- 핵심 성찰 질문: ${res.reflectionFocus}`,
     `- 토머스 모어 원전 명언: "${res.focalMoreAphorism.aphorismKo}" (${res.focalMoreAphorism.aphorismLatin})`,
     `- 원전 출처: [${res.focalMoreAphorism.sourceContext}]`,
     `- 구체적 실천 지침: ${res.focalMoreAphorism.actionGuidance}`,
     `- 종합 토머스 모어 권면: ${res.moreComprehensiveGuidance.philosophicalCounsel}`,
+    `- 해석 경계: ${res.boundaryNotice}`,
   ].join('\n');
 }

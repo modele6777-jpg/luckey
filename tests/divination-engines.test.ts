@@ -5737,17 +5737,23 @@ test('Voltaire Candide and Tolerance Engine: calculates Cultivate Our Garden Dev
 });
 
 test('Walt Whitman Leaves of Grass Engine: calculates Song of Myself, Multitudes Inclusivity, and Open Road Spirit', () => {
-  const rep = calculateAmericanWaltWhitmanLeavesOfGrass(profile);
+  const rep = calculateAmericanWaltWhitmanLeavesOfGrass(profile, '새로운 일을 시작할 때 두려움을 떨치고 싶어요', new Date('2026-11-14T03:00:00Z'));
   assert.equal(rep.engineVersion, AMERICAN_WALT_WHITMAN_VERSION);
+  assert.equal(rep.questionTopic, 'decision');
+  assert.equal(rep.temporalWhitmanRhythm.kstDateLabel, '2026-11-14');
   assert(rep.songOfMyselfSelfCelebrationScore >= 0 && rep.songOfMyselfSelfCelebrationScore <= 100);
   assert(rep.embracingMultitudesInclusivityIndex >= 0 && rep.embracingMultitudesInclusivityIndex <= 100);
   assert(rep.leavesOfGrassWonderVitalityScore >= 0 && rep.leavesOfGrassWonderVitalityScore <= 100);
   assert(rep.democraticFreedomOpenRoadIndex >= 0 && rep.democraticFreedomOpenRoadIndex <= 100);
   assert(rep.cyclicalNatureOptimisticResilienceScore >= 0 && rep.cyclicalNatureOptimisticResilienceScore <= 100);
   assert(rep.activeWhitmanTheme.themeTitleKo.length > 0);
+  assert(rep.practiceGuidance.length > 0 && rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.boundaryNotice.length > 0);
   const prompt = formatAmericanWaltWhitmanLeavesOfGrassPrompt(rep);
   assert(prompt.includes('월트 휘트먼 《풀잎(Leaves of Grass)》 우주적 생명 찬가 지표'));
   assert(prompt.includes(rep.activeWhitmanTheme.themeTitleKo));
+  assert(prompt.includes('2026-11-14'));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
 });
 
 test('Ahn Jung-geun Peace and Righteousness Engine: calculates Moral Righteousness, Sovereign Peace, and Daily Reading', () => {
@@ -5849,31 +5855,43 @@ test('Heo Jun Dongui Bogam Yangsaeng Engine: calculates Tong-Jeuk-Bul-Tong, Cheo
 });
 
 test('Desiderius Erasmus Praise of Folly Engine: calculates Humorous Wisdom, Dogma Dissolution, and Humanistic Tolerance', () => {
-  const rep = calculateDutchDesideriusErasmusPraiseOfFolly(profile);
+  const rep = calculateDutchDesideriusErasmusPraiseOfFolly(profile, '사람들과의 갈등 속에서 마음을 넓히고 싶어요', new Date('2026-11-14T03:00:00Z'));
   assert.equal(rep.engineVersion, DUTCH_DESIDERIUS_ERASMUS_PRAISE_OF_FOLLY_VERSION);
+  assert.equal(rep.questionTopic, 'relationship');
+  assert.equal(rep.temporalErasmusRhythm.kstDateLabel, '2026-11-14');
   assert(rep.follyHumorousWisdomScore >= 0 && rep.follyHumorousWisdomScore <= 100);
   assert(rep.dogmaticPrejudiceDissolutionIndex >= 0 && rep.dogmaticPrejudiceDissolutionIndex <= 100);
   assert(rep.renaissanceHumanisticToleranceScore >= 0 && rep.renaissanceHumanisticToleranceScore <= 100);
   assert(rep.practicalSincereVirtueIndex >= 0 && rep.practicalSincereVirtueIndex <= 100);
   assert(rep.cheerfulResilienceScore >= 0 && rep.cheerfulResilienceScore <= 100);
   assert(rep.activeErasmusTheme.themeTitleKo.length > 0);
+  assert(rep.practiceGuidance.length > 0 && rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.boundaryNotice.length > 0);
   const prompt = formatDutchDesideriusErasmusPraiseOfFollyPrompt(rep);
   assert(prompt.includes('데시데리우스 에라스무스 《우신예찬》 르네상스 휴머니즘 및 해학·관용 지혜 지표'));
   assert(prompt.includes(rep.activeErasmusTheme.themeTitleKo));
+  assert(prompt.includes('2026-11-14'));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
 });
 
 test('Thomas More Utopia Engine: calculates Communal Conscience, Labor-Leisure Balance, and Spiritual Integrity', () => {
-  const rep = calculateBritishThomasMoreUtopia(profile);
+  const rep = calculateBritishThomasMoreUtopia(profile, '일과 쉼의 균형을 지키며 지친 마음을 추스르고 싶어요', new Date('2026-11-14T03:00:00Z'));
   assert.equal(rep.engineVersion, BRITISH_THOMAS_MORE_UTOPIA_VERSION);
+  assert.equal(rep.questionTopic, 'healing');
+  assert.equal(rep.temporalMoreRhythm.kstDateLabel, '2026-11-14');
   assert(rep.communalConscienceJusticeScore >= 0 && rep.communalConscienceJusticeScore <= 100);
   assert(rep.laborOtiumBalancedHarmonyIndex >= 0 && rep.laborOtiumBalancedHarmonyIndex <= 100);
   assert(rep.spiritualIntegrityPurityScore >= 0 && rep.spiritualIntegrityPurityScore <= 100);
   assert(rep.visionarySocialReformIndex >= 0 && rep.visionarySocialReformIndex <= 100);
   assert(rep.steadfastMoralCourageResilienceScore >= 0 && rep.steadfastMoralCourageResilienceScore <= 100);
   assert(rep.activeMoreTheme.themeTitleKo.length > 0);
+  assert(rep.practiceGuidance.length > 0 && rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.boundaryNotice.length > 0);
   const prompt = formatBritishThomasMoreUtopiaPrompt(rep);
   assert(prompt.includes('토머스 모어 《유토피아》 공동체 양심·삶의 균형 및 도덕적 용기 지표'));
   assert(prompt.includes(rep.activeMoreTheme.themeTitleKo));
+  assert(prompt.includes('2026-11-14'));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
 });
 
 test('Gosan Yoon Seon-do Five Friends Engine: calculates Five Friends Integrity, Four Seasons Equanimity, and Bamboo Humility', () => {
