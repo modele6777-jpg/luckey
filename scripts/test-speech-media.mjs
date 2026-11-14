@@ -34,12 +34,13 @@ Object.defineProperty(globalThis, 'navigator', { configurable: true, value: { me
 let stopped = 0, pausedCount = 0, resumed = 0;
 initTTSSessionHandlers(() => stopped++, () => pausedCount++, () => resumed++);
 setTTSSessionActive('Test');
-assert.equal(fakeMediaSession.playbackState, 'playing');
+assert.equal(fakeMediaSession.playbackState, 'none');
 pauseTTSSession();
-assert.equal(fakeMediaSession.playbackState, 'paused');
+assert.equal(fakeMediaSession.playbackState, 'none');
 resumeTTSSession();
-assert.equal(fakeMediaSession.playbackState, 'playing');
+assert.equal(fakeMediaSession.playbackState, 'none');
 clearTTSSession();
 assert.equal(fakeMediaSession.playbackState, 'none');
+assert.equal(registeredHandlers.size, 0);
 assert.equal(stopped, 0); assert.equal(pausedCount, 0); assert.equal(resumed, 0);
-console.log('Speech media: mediaSession playback lifecycle passed.');
+console.log('Speech media: in-app lifecycle passed without publishing OS media controls.');

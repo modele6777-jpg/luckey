@@ -41,7 +41,7 @@ test('speech, resume, BGM and compatibility entry points always retain nonexclus
     assert.equal(type, 'ambient');
     const audio = getSpeechMediaElement() as unknown as Media;
     const first = playTTSAudio(Buffer.alloc(48000).toString('base64'), 'pcm', 24000, undefined, true);
-    assert.equal(type, 'playback'); assert.equal(plays, 1); assert.equal(loads, 0);
+    assert.equal(type, 'ambient'); assert.equal(plays, 1); assert.equal(loads, 0);
     audio.currentTime = 1.25;
     pauseTTSAudio();
     assert.equal(audio.paused, true);
@@ -53,11 +53,11 @@ test('speech, resume, BGM and compatibility entry points always retain nonexclus
     assert.equal(plays, 1, 'returning must not override an explicit user pause');
     type = 'auto'; // Model a browser resetting the category between playback calls.
     resumeTTSAudio();
-    assert.equal(type, 'playback'); assert.equal(audio.currentTime, 1.25);
+    assert.equal(type, 'ambient'); assert.equal(audio.currentTime, 1.25);
     const ctx = getSharedAudioContext(); assert.equal(ctx.state, 'suspended');
     assert.equal(getTTSPlaybackProgress()?.elapsed, 1.25);
     audio.dispatchEvent(new Event('ended')); await first;
-    assert.equal(type, 'playback', 'sequence chunk transition must retain playback session');
+    assert.equal(type, 'ambient', 'sequence chunk transition must retain nonexclusive audio');
     const second = playTTSAudio(Buffer.alloc(48000).toString('base64'), 'pcm', 24000, undefined, true);
     assert.equal(getSpeechMediaElement() as unknown, audio);
     assert.equal(loads, 0, 'chunk transitions must not clear/load the shared native element');

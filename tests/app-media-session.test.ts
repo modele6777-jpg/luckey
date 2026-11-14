@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { updateAppMediaSession } from '../src/lib/appMediaSession';
 import { initTTSSessionHandlers, setTTSSessionActive, clearTTSSession } from '../src/lib/ttsMediaSession';
 
-test('BGM stays nonexclusive ambient while active TTS claims playback and OS media controls only during speech', () => {
+test('BGM and TTS stay nonexclusive ambient without claiming OS media controls', () => {
   const descriptor = Object.getOwnPropertyDescriptor(globalThis, 'navigator');
   const handlers = new Map<MediaSessionAction, (() => void) | null>();
   const media = {
@@ -32,15 +32,16 @@ test('BGM stays nonexclusive ambient while active TTS claims playback and OS med
     initTTSSessionHandlers(() => {}, () => speechPauses++);
     setTTSSessionActive('Reading');
 
-    assert.equal(audioType, 'playback');
-    assert.equal(media.playbackState, 'playing');
-    assert.equal(typeof handlers.get('pause'), 'function');
+    assert.equal(audioType, 'ambient');
+    assert.equal(media.playbackState, 'none');
+    assert.equal(media.metadata, null);
+    assert.equal(handlers.size, 0);
 
     clearTTSSession();
     assert.equal(audioType, 'ambient');
     assert.equal(media.playbackState, 'none');
     assert.equal(media.metadata, null);
-    assert.equal(handlers.get('pause'), null);
+    assert.equal(handlers.has('pause'), false);
 
     updateAppMediaSession('bgm', null);
     assert.equal(media.playbackState, 'none');

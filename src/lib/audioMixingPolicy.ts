@@ -1,5 +1,6 @@
-/** Keep idle/BGM app audio nonexclusive ('ambient') so external players stay undisturbed,
- *  and switch to 'playback' only while TTS speech is actively playing so iOS allows background/lock-screen playback. */
+/** Keep all app audio, including TTS, nonexclusive ('ambient') so external players are not
+ *  actively displaced. The web API cannot request native AVAudioSession.mixWithOthers; 'playback'
+ *  may interrupt or duck another iOS app. Background continuation remains best-effort in WebKit. */
 let isAudioActive = false;
 let speechAudioActive = false;
 
@@ -27,7 +28,9 @@ export function applyAudioMixingPolicy(): void {
   if (typeof navigator === 'undefined' || !('audioSession' in navigator)) return;
   try {
     const session = (navigator as Navigator & { audioSession?: { type: string } }).audioSession;
-    const desiredType = speechAudioActive ? 'playback' : 'ambient';
+    // Do not promote active TTS to 'playback': the web AudioSession API exposes no
+    // mixWithOthers option, so that mode can take priority over external music on iOS.
+    const desiredType = 'ambient';
     if (session && session.type !== desiredType) session.type = desiredType;
   } catch { /* AudioSession selection is unavailable on some browsers/iOS versions. */ }
 }
