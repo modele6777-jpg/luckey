@@ -18,18 +18,19 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const ANCESTRAL_KARMA_VERSION = 'LUCKEY-ANCESTRAL-v1.0.0';
+export const ANCESTRAL_KARMA_VERSION = 'LUCKEY-ANCESTRAL-v2.0.0';
 
 export interface AncestralLineageImprint {
   generationTheme: string;        // 혈통을 관통하는 핵심 테마
   repressedShadow: string;        // 선대로부터 물려받은 무의식적 억압/결핍
   inheritedSuperGift: string;     // DNA 속에 각인된 조상의 위대한 재능과 잠재력
-  clearingDegreePercent: number;  // 현재 내 대에서의 카르마 정화 및 자유도 (0 ~ 100%)
+  clearingDegreePercent: number;  // 현재 내 대에서의 카르마 정화 및 자유도 (내부 호환용 0 ~ 100)
 }
 
 export interface AncestralEpigeneticKarmaReport {
   engineVersion: string;
   calculatedAt: string;
+  calculatedAtKst: string;
   lineageArchetype: string;       // 가문 혈통 아키타입
   ancestralImprint: AncestralLineageImprint;
   generationalChainToBreak: string; // 내 대에서 반드시 끊어내야 할 1순위 사슬
@@ -38,12 +39,66 @@ export interface AncestralEpigeneticKarmaReport {
     ritualName: string;
     actionGuide: string;
   };
+  situationalAncestralAudit: {
+    focusTheme: string;
+    lineageNote: string;
+    liberationStep: string;
+  };
+  temporalAncestralRhythm: {
+    kstTimeLabel: string;
+    lineageWatchWindow: string;
+    seasonalRootsTone: string;
+    temporalGuidance: string;
+  };
+  ancestralSynthesisMatrix: {
+    coreInsight: string;
+    recommendedAction: string;
+    cautionNotice: string;
+  };
+  boundaryNotice: string;
   synthesisPromptGuidance: string;
+}
+
+function getTemporalAncestralRhythm(now: Date) {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  const hour = kst.getUTCHours();
+  const month = kst.getUTCMonth() + 1;
+
+  const lineageWatchWindow =
+    hour >= 5 && hour < 11
+      ? '아침 개척창 — 선대의 묵묵한 응원을 받아 오늘 나만의 새로운 길을 여는 시간'
+      : hour >= 11 && hour < 17
+        ? '정오 발현창 — 물려받은 강인한 재능(Super-Gift)을 현실의 과업에 펼치는 시간'
+        : hour >= 17 && hour < 22
+          ? '황혼 해원창 — 낡은 생존 긴장을 내려놓고 내 대에서 평화를 선택하는 시간'
+          : '심야 뿌리창 — 고요한 호흡 속에서 세대의 기억을 감사와 자비로 감싸는 시간';
+
+  const seasonalRootsTone =
+    month >= 3 && month <= 5
+      ? '봄 · 신생 발아기 (오래된 가문 패턴에서 벗어나 새 싹을 틔우는 시기)'
+      : month >= 6 && month <= 8
+        ? '여름 · 당당 발현기 (고유한 개성과 진실을 세상에 드러내는 시기)'
+        : month >= 9 && month <= 11
+          ? '가을 · 감사 결실기 (선대의 노고에 감사하되 불필요한 짐은 내려놓는 시기)'
+          : '겨울 · 심연 정화기 (조용히 내면의 뿌리를 돌보며 평온을 회복하는 시기)';
+
+  return {
+    kstTimeLabel: `${y}-${m}-${d} ${hh}:${mm} KST`,
+    lineageWatchWindow,
+    seasonalRootsTone,
+    temporalGuidance: `${lineageWatchWindow} · ${seasonalRootsTone}의 결에 맞추어 나의 오늘을 자유롭게 선택하십시오.`,
+  };
 }
 
 export function runAncestralEpigeneticKarmaEngine(
   profile?: UserProfile,
-  targetDate: Date = new Date()
+  targetDate: Date = new Date(),
+  question?: string
 ): AncestralEpigeneticKarmaReport {
   const sajuRes = calculateDetailedSaju(profile || null);
 
@@ -118,18 +173,53 @@ export function runAncestralEpigeneticKarmaEngine(
     clearingDegreePercent
   };
 
-  const synthesisPromptGuidance = `[LUCKEY 조상 혈통 업력 & 후성유전학적 카르마 정화 v1.0.0]
+  const q = (question || '').trim();
+  const temporalAncestralRhythm = getTemporalAncestralRhythm(targetDate);
+  const situationalAncestralAudit = /가족|부모|관계|결혼|사람/.test(q)
+    ? {
+        focusTheme: '관계 속 대물림 패턴 자각과 경계 회복',
+        lineageNote: '익숙한 죄책감이나 방어 태도가 내 것인지, 오래전부터 이어진 습관인지 한 걸음 물러서서 살피십시오.',
+        liberationStep: actionGuide,
+      }
+    : /일|돈|불안|결정|진로/.test(q)
+      ? {
+          focusTheme: '생존 강박 해제와 고유한 재능(Super-Gift) 신뢰',
+          lineageNote: `[${inheritedSuperGift}]의 저력은 이미 당신 안에 있으므로 조급한 생존 불안에 휘둘릴 필요가 없습니다.`,
+          liberationStep: liberationAffirmation,
+        }
+      : {
+          focusTheme: `[${lineageArchetype}] 혈통 강점 계승과 해방`,
+          lineageNote: `선대의 장점([${inheritedSuperGift}])은 잇고, [${generationalChainToBreak}]은 오늘 부드럽게 내려놓으십시오.`,
+          liberationStep: actionGuide,
+        };
+
+  const ancestralSynthesisMatrix = {
+    coreInsight: `[${lineageArchetype}]의 강점(${inheritedSuperGift})과 해방 과제(${generationalChainToBreak})가 함께 비칩니다.`,
+    recommendedAction: `[${ritualName}] ${actionGuide}`,
+    cautionNotice: '가족력이나 과거의 그림자를 숙명으로 단정하지 말고, 지금 내 대에서 새로운 선택을 여는 자각의 재료로 삼으십시오.',
+  };
+
+  const boundaryNotice = '본 결과는 사주 년주·일주 상징과 세대 심리 은유를 결합한 정성적 성찰 안내이며, 의학적·유전학적 진단이 아닙니다.';
+
+  const synthesisPromptGuidance = `[LUCKEY 조상 혈통 업력 & 후성유전학적 카르마 정화 ${ANCESTRAL_KARMA_VERSION}]
+- 연산 시각: ${temporalAncestralRhythm.kstTimeLabel}
 - 가문 혈통 아키타입: [${lineageArchetype}]
 - 혈통 관통 테마: ${generationTheme}
 - 세대 간 대물림 그림자: ${repressedShadow}
 - DNA 각인 영적 선물(Super-Gift): ${inheritedSuperGift}
-- 내 대에서 끊어낼 1순위 사슬: ${generationalChainToBreak} (카르마 정화 완성도: ${clearingDegreePercent}%)
+- 내 대에서 끊어낼 1순위 사슬: ${generationalChainToBreak}
+- 질문 맥락 감사 (${situationalAncestralAudit.focusTheme}): ${situationalAncestralAudit.lineageNote}
+- KST 시공간 혈통 리듬: ${temporalAncestralRhythm.lineageWatchWindow} / ${temporalAncestralRhythm.seasonalRootsTone}
+  * 시공간 지침: ${temporalAncestralRhythm.temporalGuidance}
+- 혈통 교차 매트릭스: 핵심(${ancestralSynthesisMatrix.coreInsight}) | 실행(${ancestralSynthesisMatrix.recommendedAction}) | 주의(${ancestralSynthesisMatrix.cautionNotice})
 - 가문 해원 의식: [${ritualName}] ${actionGuide}
-- 혈통 해방 확언: "${liberationAffirmation}"`;
+- 혈통 해방 확언: "${liberationAffirmation}"
+- 해석 경계: ${boundaryNotice}`;
 
   return {
     engineVersion: ANCESTRAL_KARMA_VERSION,
     calculatedAt: targetDate.toISOString(),
+    calculatedAtKst: temporalAncestralRhythm.kstTimeLabel,
     lineageArchetype,
     ancestralImprint,
     generationalChainToBreak,
@@ -138,6 +228,10 @@ export function runAncestralEpigeneticKarmaEngine(
       ritualName,
       actionGuide
     },
+    situationalAncestralAudit,
+    temporalAncestralRhythm,
+    ancestralSynthesisMatrix,
+    boundaryNotice,
     synthesisPromptGuidance
   };
 }
@@ -148,10 +242,11 @@ export function calculateAncestralEpigeneticKarma(params?: {
   profile?: UserProfile | null;
   saju?: SajuAnalysisResult | null;
   targetDate?: Date;
+  question?: string;
 }): AncestralEpigeneticKarmaResult {
   const profile = params?.profile || undefined;
   const targetDate = params?.targetDate || new Date();
-  return runAncestralEpigeneticKarmaEngine(profile, targetDate);
+  return runAncestralEpigeneticKarmaEngine(profile, targetDate, params?.question);
 }
 
 export function formatAncestralEpigeneticKarmaPrompt(res: AncestralEpigeneticKarmaResult): string {

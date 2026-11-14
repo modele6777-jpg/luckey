@@ -22,7 +22,7 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const ENNEAGRAM_INTEGRATION_VERSION = 'LUCKEY-ENNEAGRAM-v1.0.0';
+export const ENNEAGRAM_INTEGRATION_VERSION = 'LUCKEY-ENNEAGRAM-v2.0.0';
 
 export interface EnneagramTypeDetails {
   coreNumber: number; // 1 ~ 9
@@ -44,17 +44,72 @@ export interface EnneagramTypeDetails {
 export interface EnneagramSoulIntegrationReport {
   engineVersion: string;
   calculatedAt: string;
+  calculatedAtKst: string;
   soulType: EnneagramTypeDetails;
   egoFixation: string;             // 에고의 고착 (예: 완벽주의, 허영, 탐욕, 두려움 등)
   virtueAscension: string;         // 영혼이 회복해야 할 본연의 미덕 (예: 평정, 진실성, 자비, 용기 등)
-  integrationScore: number;        // 현재 의식 수준 및 통합 지수 (0 ~ 100)
+  integrationScore: number;        // 현재 의식 수준 및 통합 지수 (내부 호환용 0 ~ 100)
   soulLiberationTask: string;      // 낡은 에고 패턴을 깨뜨리는 실천 과제
+  situationalEnneagramAudit: {
+    focusTheme: string;
+    egoSignal: string;
+    integrationStep: string;
+  };
+  temporalEnneagramRhythm: {
+    kstTimeLabel: string;
+    centerWatchWindow: string;
+    seasonalIntegrationTone: string;
+    temporalGuidance: string;
+  };
+  enneagramSynthesisMatrix: {
+    coreInsight: string;
+    recommendedAction: string;
+    cautionNotice: string;
+  };
+  boundaryNotice: string;
   synthesisPromptGuidance: string;
+}
+
+function getTemporalEnneagramRhythm(now: Date) {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  const hour = kst.getUTCHours();
+  const month = kst.getUTCMonth() + 1;
+
+  const centerWatchWindow =
+    hour >= 5 && hour < 11
+      ? '아침 장중추(Gut) 각성창 — 내면의 자동 반응을 알아차리고 오늘의 의도를 바로 세우는 시간'
+      : hour >= 11 && hour < 17
+        ? '정오 머리중추(Head) 명료창 — 불안과 분별을 가라앉히고 본질에 집중해 실행하는 시간'
+        : hour >= 17 && hour < 22
+          ? '황혼 가슴중추(Heart) 공감창 — 타인의 시선에서 벗어나 진정한 나다움을 회복하는 시간'
+          : '심야 통합(Integration) 성찰창 — 하루의 에고 방어기제를 내려놓고 미덕을 되새기는 시간';
+
+  const seasonalIntegrationTone =
+    month >= 3 && month <= 5
+      ? '봄 · 통합 개화기 (새로운 성장 방향의 태도를 가볍게 실험하기 좋은 시기)'
+      : month >= 6 && month <= 8
+        ? '여름 · 역동 발현기 (과열된 에고 고착을 알아차리고 유연함을 더하는 시기)'
+        : month >= 9 && month <= 11
+          ? '가을 · 성숙 수렴기 (경험을 지혜로 통합하며 내면의 중심을 다지는 시기)'
+          : '겨울 · 고요 관조기 (두려움의 뿌리를 잠잠히 비추어 평정을 기르는 시기)';
+
+  return {
+    kstTimeLabel: `${y}-${m}-${d} ${hh}:${mm} KST`,
+    centerWatchWindow,
+    seasonalIntegrationTone,
+    temporalGuidance: `${centerWatchWindow} · ${seasonalIntegrationTone}의 결에 맞추어 의식적 통합 방향을 선택하십시오.`,
+  };
 }
 
 export function runEnneagramSoulIntegrationEngine(
   profile?: UserProfile,
-  targetDate: Date = new Date()
+  targetDate: Date = new Date(),
+  question?: string
 ): EnneagramSoulIntegrationReport {
   const sajuRes = calculateDetailedSaju(profile || null);
 
@@ -203,7 +258,36 @@ export function runEnneagramSoulIntegrationEngine(
 
   const soulLiberationTask = `에고가 [${egoFixation}]의 덫에 빠질 때 멈추고 심호흡하세요. [${stressDesc}]의 경고 신호가 올 때, 의식적으로 [${growthDesc}]의 통합 방향을 선택하여 [${virtueAscension}]의 영혼 미덕을 깨우는 것이 궁극의 마스터리입니다.`;
 
-  const synthesisPromptGuidance = `[LUCKEY 에니어그램 영혼 성격 통합 & 의식 진화 v1.0.0]
+  const q = (question || '').trim();
+  const temporalEnneagramRhythm = getTemporalEnneagramRhythm(targetDate);
+  const situationalEnneagramAudit = /관계|사람|소통|연애|가족/.test(q)
+    ? {
+        focusTheme: `${triad} 관계 방어기제 자각과 [${virtueAscension}] 회복`,
+        egoSignal: `관계가 흔들릴 때 [${egoFixation}] 패턴이나 ${stressTarget}번 분열 신호가 올라올 수 있습니다.`,
+        integrationStep: `${growthTarget}번 통합 방향(${growthDesc})의 태도를 의식적으로 한 번 먼저 건네십시오.`,
+      }
+    : /일|결정|불안|진로|실패/.test(q)
+      ? {
+          focusTheme: `[${coreDesire}]를 향한 건강한 실행과 스트레스 분열 예방`,
+          egoSignal: `[${coreFear}]가 건드려질 때 조급해지기 쉬우니 한 호흡 멈추는 것이 중요합니다.`,
+          integrationStep: soulLiberationTask,
+        }
+      : {
+          focusTheme: `${coreNumber}번 유형(${dominantWing})의 의식 통합`,
+          egoSignal: egoFixation,
+          integrationStep: soulLiberationTask,
+        };
+
+  const enneagramSynthesisMatrix = {
+    coreInsight: `[${coreNumber}번 · ${triad}] 에고 고착(${egoFixation})을 넘어 ${growthTarget}번 통합 방향으로 나아가는 구조입니다.`,
+    recommendedAction: soulLiberationTask,
+    cautionNotice: '에니어그램 유형은 나를 가두는 꼬리표가 아니라 자동 반응에서 깨어나는 거울로만 활용하십시오.',
+  };
+
+  const boundaryNotice = '본 결과는 사주 오행 상징과 에니어그램 성격 역동 모델을 결합한 정성적 자기 이해 안내이며, 임상 심리 진단이 아닙니다.';
+
+  const synthesisPromptGuidance = `[LUCKEY 에니어그램 영혼 성격 통합 & 의식 진화 ${ENNEAGRAM_INTEGRATION_VERSION}]
+- 연산 시각: ${temporalEnneagramRhythm.kstTimeLabel}
 - 핵심 유형: ${koreanTitle}
 - 에너지 중추: ${triad} | 주 날개: ${dominantWing}
 - 핵심 두려움: ${coreFear}
@@ -211,17 +295,26 @@ export function runEnneagramSoulIntegrationEngine(
 - 에고의 고착(Fixation): [${egoFixation}] -> 영혼의 미덕(Virtue): [${virtueAscension}]
 - 스트레스 분열(Disintegration): ${stressTarget}번 방향 (${stressDesc})
 - 성장 통합(Integration): ${growthTarget}번 방향 (${growthDesc})
-- 의식 통합 지수: ${integrationScore}점
-- 영혼 해방 실천 과제: ${soulLiberationTask}`;
+- 질문 맥락 감사 (${situationalEnneagramAudit.focusTheme}): ${situationalEnneagramAudit.egoSignal}
+- KST 시공간 통합 리듬: ${temporalEnneagramRhythm.centerWatchWindow} / ${temporalEnneagramRhythm.seasonalIntegrationTone}
+  * 시공간 지침: ${temporalEnneagramRhythm.temporalGuidance}
+- 에니어그램 교차 매트릭스: 핵심(${enneagramSynthesisMatrix.coreInsight}) | 실행(${enneagramSynthesisMatrix.recommendedAction}) | 주의(${enneagramSynthesisMatrix.cautionNotice})
+- 영혼 해방 실천 과제: ${soulLiberationTask}
+- 해석 경계: ${boundaryNotice}`;
 
   return {
     engineVersion: ENNEAGRAM_INTEGRATION_VERSION,
     calculatedAt: targetDate.toISOString(),
+    calculatedAtKst: temporalEnneagramRhythm.kstTimeLabel,
     soulType,
     egoFixation,
     virtueAscension,
     integrationScore,
     soulLiberationTask,
+    situationalEnneagramAudit,
+    temporalEnneagramRhythm,
+    enneagramSynthesisMatrix,
+    boundaryNotice,
     synthesisPromptGuidance
   };
 }
@@ -232,10 +325,11 @@ export function calculateEnneagramSoulIntegration(params?: {
   profile?: UserProfile | null;
   saju?: SajuAnalysisResult | null;
   targetDate?: Date;
+  question?: string;
 }): EnneagramSoulIntegrationResult {
   const profile = params?.profile || undefined;
   const targetDate = params?.targetDate || new Date();
-  return runEnneagramSoulIntegrationEngine(profile, targetDate);
+  return runEnneagramSoulIntegrationEngine(profile, targetDate, params?.question);
 }
 
 export function formatEnneagramSoulIntegrationPrompt(res: EnneagramSoulIntegrationResult): string {

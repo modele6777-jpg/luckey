@@ -2204,14 +2204,19 @@ test('Quantum Leap Timing Engine: 퀀텀 점프 준비도 및 골든 모멘텀 �
 });
 
 test('Elemental Resonance Engine: 오행 생극제화 및 상생 순환 루프 검증', () => {
-  const res = calculateElementalResonance({ profile, targetDate: new Date('2026-11-03T08:00:00+09:00') });
+  const res = calculateElementalResonance({ profile, targetDate: new Date('2026-11-15T07:35:00+09:00'), question: '일과 집중력 회복' });
   assert.equal(res.engineVersion, ELEMENTAL_RESONANCE_VERSION);
   assert(res.overallResonanceScore >= 0 && res.overallResonanceScore <= 100);
   assert(res.amplifier.primeElement.length > 0);
   assert(res.amplifier.amplifierColor.length > 0);
+  assert(res.calculatedAtKst.includes('KST'));
+  assert(res.temporalElementalRhythm.cycleWatchWindow.length > 0);
+  assert(res.elementalSynthesisMatrix.coreInsight.length > 0);
   const prompt = formatElementalResonancePrompt(res);
   assert(prompt.includes(ELEMENTAL_RESONANCE_VERSION));
   assert(prompt.includes('오행 생극제화'));
+  assert(prompt.includes('KST'));
+  assert(!prompt.includes('/100') && !prompt.includes('%') && !prompt.includes('점수'));
 });
 
 test('Yin-Yang Polarity Engine: 음양 수리 분포 및 24시간 바이폴라 윈도우 검증', () => {
@@ -2377,28 +2382,38 @@ test('Chakra Vibration Alignment Engine: frequency-free chakra alignment and bal
 });
 
 test('Enneagram Soul Integration Engine: 에니어그램 영혼 성격 통합 및 의식 진화 검증', () => {
-  const res = calculateEnneagramSoulIntegration({ profile, targetDate: new Date('2026-11-03T10:00:00+09:00') });
+  const res = calculateEnneagramSoulIntegration({ profile, targetDate: new Date('2026-11-15T07:35:00+09:00'), question: '관계에서 내 방어기제를 알고 싶어' });
   assert.equal(res.engineVersion, ENNEAGRAM_INTEGRATION_VERSION);
   assert(res.soulType.coreNumber >= 1 && res.soulType.coreNumber <= 9);
   assert(res.integrationScore >= 0 && res.integrationScore <= 100);
   assert(res.egoFixation.length > 0);
   assert(res.virtueAscension.length > 0);
   assert(res.soulLiberationTask.length > 0);
+  assert(res.calculatedAtKst.includes('KST'));
+  assert(res.temporalEnneagramRhythm.centerWatchWindow.length > 0);
+  assert(res.enneagramSynthesisMatrix.coreInsight.length > 0);
   const prompt = formatEnneagramSoulIntegrationPrompt(res);
   assert(prompt.includes('LUCKEY 에니어그램 영혼 성격 통합 & 의식 진화'));
   assert(prompt.includes(res.soulType.koreanTitle));
+  assert(prompt.includes('KST'));
+  assert(!prompt.includes('/100') && !prompt.includes('%') && !prompt.includes('점수'));
 });
 
 test('Ancestral Epigenetic Karma Engine: 조상 혈통 업력 & 후성유전학적 카르마 정화 검증', () => {
-  const res = calculateAncestralEpigeneticKarma({ profile, targetDate: new Date('2026-11-03T10:00:00+09:00') });
+  const res = calculateAncestralEpigeneticKarma({ profile, targetDate: new Date('2026-11-15T07:35:00+09:00'), question: '가족 관계 패턴을 끊고 싶어' });
   assert.equal(res.engineVersion, ANCESTRAL_KARMA_VERSION);
   assert(res.lineageArchetype.length > 0);
   assert(res.ancestralImprint.clearingDegreePercent >= 0 && res.ancestralImprint.clearingDegreePercent <= 100);
   assert(res.generationalChainToBreak.length > 0);
   assert(res.liberationAffirmation.length > 0);
+  assert(res.calculatedAtKst.includes('KST'));
+  assert(res.temporalAncestralRhythm.lineageWatchWindow.length > 0);
+  assert(res.ancestralSynthesisMatrix.coreInsight.length > 0);
   const prompt = formatAncestralEpigeneticKarmaPrompt(res);
   assert(prompt.includes('LUCKEY 조상 혈통 업력 & 후성유전학적 카르마 정화'));
   assert(prompt.includes(res.lineageArchetype));
+  assert(prompt.includes('KST'));
+  assert(!prompt.includes('/100') && !prompt.includes('%') && !prompt.includes('점수'));
 });
 
 test('Shamanic Animal Totem Engine: 샤머니즘 파워 애니멀 & 12지지 스피릿 토템 검증', () => {
