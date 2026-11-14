@@ -13,7 +13,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const KOREAN_DANGUN_CHEONBUIN_ENGINE_VERSION = '1.0.0';
+export const KOREAN_DANGUN_CHEONBUIN_ENGINE_VERSION = '2.0.0';
 
 export interface CheonbuTreasure {
   id: 'mirror' | 'sword' | 'bell';
@@ -21,7 +21,7 @@ export interface CheonbuTreasure {
   hanja: string;
   archetype: string;
   symbolism: string;
-  activationPower: number; // 0 ~ 100
+  activationPower: number; // 0 ~ 100 (내부 정렬용, 프롬프트 비노출)
   divineDecree: string;
 }
 
@@ -37,8 +37,9 @@ export interface HeavenlyMinister {
 export interface KoreanDangunCheonbuinReport {
   engineVersion: string;
   timestamp: string;
-  hongikProsperityIndex: number; // 0 ~ 100 홍익인간 상생 번영 지수
-  cosmicHarmonyIndex: number; // 0 ~ 100 천지인(天地人) 조화율
+  calculatedAtKst: string;
+  hongikProsperityIndex: number; // 0 ~ 100 홍익인간 상생 번영 지수 (내부 호환용, 프롬프트 비노출)
+  cosmicHarmonyIndex: number; // 0 ~ 100 천지인(天地人) 조화율 (내부 호환용, 프롬프트 비노출)
   treasures: {
     mirror: CheonbuTreasure;
     sword: CheonbuTreasure;
@@ -46,7 +47,24 @@ export interface KoreanDangunCheonbuinReport {
     dominantTreasure: CheonbuTreasure;
   };
   activeMinister: HeavenlyMinister;
+  situationalCheonbuinAudit: {
+    focusTheme: string;
+    treasureGuidance: string;
+    ministerSupport: string;
+  };
+  temporalCheonbuinRhythm: {
+    kstTimeLabel: string;
+    shinsiSkyWindow: string;
+    seasonalNatureTone: string;
+    temporalGuidance: string;
+  };
+  cheonbuinSynthesisMatrix: {
+    coreInsight: string;
+    recommendedAction: string;
+    cautionNotice: string;
+  };
   ihwaSegyeRemedy: string; // 이화세계 개운 처방
+  boundaryNotice: string;
 }
 
 const TREASURES_DEF: Record<'mirror' | 'sword' | 'bell', Omit<CheonbuTreasure, 'activationPower'>> = {
@@ -103,10 +121,48 @@ const MINISTERS_DEF: HeavenlyMinister[] = [
   },
 ];
 
+function getTemporalCheonbuinRhythm(now: Date) {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  const hour = kst.getUTCHours();
+  const month = kst.getUTCMonth() + 1;
+
+  const shinsiSkyWindow =
+    hour >= 5 && hour < 11
+      ? '신시(神市) 아침 여명창 — 거울(明鏡)처럼 맑은 시야로 하루의 큰 뜻을 비추는 시간'
+      : hour >= 11 && hour < 17
+        ? '단군 정오 결단창 — 보검(寶劍)의 실행력으로 미루던 과제를 단호히 처리하는 시간'
+        : hour >= 17 && hour < 22
+          ? '홍익 황혼 공명창 — 천령(天鈴)의 울림으로 주변 인연과 조화롭게 소통하는 시간'
+          : '백두 심야 침잠창 — 풍백·우사·운사의 기운을 고요히 가라앉히고 내일을 품는 시간';
+
+  const seasonalNatureTone =
+    month >= 3 && month <= 5
+      ? '춘풍(春風 · 풍백) — 새로운 변화의 바람을 타고 과감히 발을 떼는 시기'
+      : month >= 6 && month <= 8
+        ? '하운(夏雲 · 운사) — 뜨거운 열기 속에서도 큰 그림을 품고 속도를 조율하는 시기'
+        : month >= 9 && month <= 11
+          ? '추우(秋雨 · 우사) — 들인 정성이 단단한 결실로 여물어 수확을 거두는 시기'
+          : '동정(冬靜 · 신단수) — 뿌리를 깊게 내리며 내실과 지혜를 축적하는 시기';
+
+  return {
+    kstTimeLabel: `${y}-${m}-${d} ${hh}:${mm} KST`,
+    shinsiSkyWindow,
+    seasonalNatureTone,
+    temporalGuidance: `${shinsiSkyWindow} · ${seasonalNatureTone}의 흐름에 맞추어 천부삼인의 균형을 살피십시오.`,
+  };
+}
+
 export function calculateKoreanDangunCheonbuin(options?: {
   profile?: UserProfile | null;
   question?: string;
+  now?: Date;
 }): KoreanDangunCheonbuinReport {
+  const now = options?.now || new Date();
   const profile = options?.profile;
   const question = (options?.question || '').trim();
 
@@ -144,9 +200,35 @@ export function calculateKoreanDangunCheonbuin(options?: {
     ihwaSegyeRemedy = '자신의 이익만을 주장하기보다 상대방의 입장을 먼저 수용하고 부드러운 소통(방울)으로 주변 귀인의 조력을 이끌어내십시오.';
   }
 
+  const temporalCheonbuinRhythm = getTemporalCheonbuinRhythm(now);
+  const situationalCheonbuinAudit = /결정|이직|사업|일|선택/.test(question)
+    ? {
+        focusTheme: '결단(보검)과 본질 자각(거울)의 실행 조화',
+        treasureGuidance: `${dominant.nameKo}의 기운을 중심으로 불필요한 선택지를 덜어내십시오.`,
+        ministerSupport: `${activeMinister.nameKo}(${activeMinister.element})의 조력: ${activeMinister.guidance}`,
+      }
+    : /관계|연애|사람|소통|화해/.test(question)
+      ? {
+          focusTheme: '화합(방울)과 홍익인간의 상생 소통',
+          treasureGuidance: '방울의 공명처럼 먼저 열린 마음으로 진심을 전할 때 관계의 물꼬가 트입니다.',
+          ministerSupport: `${activeMinister.nameKo}(${activeMinister.element})의 조력: ${activeMinister.guidance}`,
+        }
+      : {
+          focusTheme: '천부삼인(거울·칼·방울)의 균형과 이화세계',
+          treasureGuidance: `${dominant.nameKo}이 비추는 ${dominant.archetype}을 오늘의 나침반으로 삼으십시오.`,
+          ministerSupport: `${activeMinister.nameKo}(${activeMinister.element})의 조력: ${activeMinister.guidance}`,
+        };
+
+  const cheonbuinSynthesisMatrix = {
+    coreInsight: `주재 천부보물 [${dominant.nameKo}]와 천계 관직 [${activeMinister.nameKo}]가 만나 ${situationalCheonbuinAudit.focusTheme}을 이끕니다.`,
+    recommendedAction: ihwaSegyeRemedy,
+    cautionNotice: '거울의 성찰 없는 칼의 결단이나, 칼의 경계 없는 방울의 타협에 빠지지 않도록 삼인의 균형을 살피십시오.',
+  };
+
   return {
     engineVersion: KOREAN_DANGUN_CHEONBUIN_ENGINE_VERSION,
-    timestamp: new Date().toISOString(),
+    timestamp: now.toISOString(),
+    calculatedAtKst: temporalCheonbuinRhythm.kstTimeLabel,
     hongikProsperityIndex,
     cosmicHarmonyIndex,
     treasures: {
@@ -156,22 +238,29 @@ export function calculateKoreanDangunCheonbuin(options?: {
       dominantTreasure: dominant,
     },
     activeMinister,
+    situationalCheonbuinAudit,
+    temporalCheonbuinRhythm,
+    cheonbuinSynthesisMatrix,
     ihwaSegyeRemedy,
+    boundaryNotice: '본 결과는 《삼국유사》 단군 천부삼인과 홍익인간 상징 체계에 따른 정성적 성찰 안내이며, 확정적 길흉 판정이 아닙니다.',
   };
 }
 
 export function formatKoreanDangunCheonbuinPrompt(rep: KoreanDangunCheonbuinReport): string {
   return `[고대 한국 삼국유사 단군 천부인(天符印) 3보 & 홍익인간 광명 실측 데이터]
-· 엔진 버전: v${rep.engineVersion}
-· 홍익인간 상생 번영 지수: ${rep.hongikProsperityIndex}/100 | 천지인 조화율: ${rep.cosmicHarmonyIndex}%
-· 핵심 지배 천부보물: ${rep.treasures.dominantTreasure.nameKo} (${rep.treasures.dominantTreasure.hanja}) — 활력도 ${rep.treasures.dominantTreasure.activationPower}%
+· 엔진 버전: v${rep.engineVersion} | 연산 시각: ${rep.calculatedAtKst}
+· 핵심 지배 천부보물: ${rep.treasures.dominantTreasure.nameKo} (${rep.treasures.dominantTreasure.hanja})
   - 상징 원형: ${rep.treasures.dominantTreasure.archetype} (${rep.treasures.dominantTreasure.symbolism})
   - 천부 비전 칙령: "${rep.treasures.dominantTreasure.divineDecree}"
-· 천부 3보 활성 밸런스:
-  1) 거울 (지혜/자각): ${rep.treasures.mirror.activationPower}%
-  2) 칼 (벽사/결단): ${rep.treasures.sword.activationPower}%
-  3) 방울 (화합/소통): ${rep.treasures.bell.activationPower}%
 · 감응 천계 관직: ${rep.activeMinister.nameKo} (${rep.activeMinister.element}) — ${rep.activeMinister.role}
   - 주재자 조언: ${rep.activeMinister.guidance}
-· 이화세계(理化世界) 현실 개운 처방: ${rep.ihwaSegyeRemedy}`;
+· 질문 맥락 감사 (${rep.situationalCheonbuinAudit.focusTheme}): ${rep.situationalCheonbuinAudit.treasureGuidance} | ${rep.situationalCheonbuinAudit.ministerSupport}
+· KST 시공간 신시 리듬: ${rep.temporalCheonbuinRhythm.shinsiSkyWindow} / ${rep.temporalCheonbuinRhythm.seasonalNatureTone}
+  - 시공간 지침: ${rep.temporalCheonbuinRhythm.temporalGuidance}
+· 천부인 교차 매트릭스:
+  - 핵심 통찰: ${rep.cheonbuinSynthesisMatrix.coreInsight}
+  - 권고 실행: ${rep.cheonbuinSynthesisMatrix.recommendedAction}
+  - 주의 경계: ${rep.cheonbuinSynthesisMatrix.cautionNotice}
+· 이화세계(理化世界) 현실 개운 처방: ${rep.ihwaSegyeRemedy}
+· 해석 경계: ${rep.boundaryNotice}`;
 }

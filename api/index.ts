@@ -1,4 +1,4 @@
-// v1.7.473: Deepen Alexandrian Decan, Astrological Decan Sabian, and Hellenistic Lots engines to pure qualitative prompts
+// v1.7.474: Deepen Korean Cheonbugyeong 81, Dangun Cheonbuin, and Pungryudo Hwarang engines to pure qualitative prompts
 import { getLucyRequestFallbacks, requestWithModelFallback } from '../src/lib/lucyModelPolicy.ts';
 import "dotenv/config";
 import express from "express";

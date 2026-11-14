@@ -23,19 +23,20 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const CHEONBUGYEONG_ENGINE_VERSION = '1.0.0';
+export const CHEONBUGYEONG_ENGINE_VERSION = '2.0.0';
 
 export interface CheonbugyeongEightyOneReport {
   engineVersion: string;
   calculatedAt: string;
-  // 3대 천지인 삼극 점수
+  calculatedAtKst: string;
+  // 3대 천지인 삼극 점수 (내부 호환용, 프롬프트 비노출)
   heavenCosmicAlignmentScore: number; // 천일일(天一一) 천기 순도 (0~100)
   earthGroundingStabilityScore: number; // 지일이(地一二) 지기 안정도 (0~100)
   humanHarmonizingSovereigntyScore: number; // 인일삼(人一三) 인중천지일 인성 중심력 (0~100)
-  // 삼일신고 3진3망 지표
+  // 삼일신고 3진3망 지표 (내부 호환용, 프롬프트 비노출)
   sungMyungJungTrueTrinityScore: number; // 성·명·정(性命精) 3진 합일 지수 (0~100)
   threeTrainingsMasteryScore: number; // 지감·조식·금촉(止感調息禁觸) 수양 완성도 (0~100)
-  // 천부경 순환 매트릭스
+  // 천부경 순환 매트릭스 (내부 호환용, 프롬프트 비노출)
   yongbyeonBudongbonIntegrity: number; // 용변부동본(用變不動本) 불변성 (0~100)
   seongtongGwangmyeongIllumination: number; // 성통광명(性通光明) 영적 각성도 (0~100)
   hongikInkanManifestationCapacity: number; // 홍익인간(弘益人間) 재세이화 실천력 (0~100)
@@ -46,7 +47,24 @@ export interface CheonbugyeongEightyOneReport {
     philosophicalCore: string;
     modernApplication: string;
   };
+  situationalCheonbuAudit: {
+    focusTheme: string;
+    samjinBalanceNote: string;
+    practiceFocus: string;
+  };
+  temporalCheonbuRhythm: {
+    kstTimeLabel: string;
+    samgeukWatchWindow: string;
+    seasonalSolarTone: string;
+    temporalGuidance: string;
+  };
+  cheonbuSynthesisMatrix: {
+    coreInsight: string;
+    recommendedAction: string;
+    cautionNotice: string;
+  };
   spiritualCultivationGuidance: string;
+  boundaryNotice: string;
 }
 
 function djb2Hash(str: string): number {
@@ -91,11 +109,53 @@ const CHEONBUGYEONG_CORE_VERSES = [
   },
 ];
 
-export function calculateKoreanCheonbugyeongEightyOne(profile?: UserProfile | null): CheonbugyeongEightyOneReport {
+function getTemporalCheonbuRhythm(now: Date) {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  const hour = kst.getUTCHours();
+  const month = kst.getUTCMonth() + 1;
+
+  const samgeukWatchWindow =
+    hour >= 5 && hour < 11
+      ? '천일일(天一一) 아침 청명창 — 본심본태양(本心本太陽)의 맑은 뜻을 세우는 시간'
+      : hour >= 11 && hour < 17
+        ? '지일이(地一二) 정오 구현창 — 구상을 현실의 실행과 재세이화로 다지는 시간'
+        : hour >= 17 && hour < 22
+          ? '인일삼(人一三) 황혼 조화창 — 사람과 관계, 감정을 지감(止感)으로 가다듬는 시간'
+          : '일종무종일(一終無終一) 심야 회귀창 — 조식(調息)으로 호흡을 고르며 근본으로 돌아가는 시간';
+
+  const seasonalSolarTone =
+    month >= 3 && month <= 5
+      ? '봄 · 일시무시일 발아기 (새로운 순환을 여는 생동감)'
+      : month >= 6 && month <= 8
+        ? '여름 · 일묘연 만왕만래기 (활발히 펼쳐 쓰되 중심을 지키는 시기)'
+        : month >= 9 && month <= 11
+          ? '가을 · 용변부동본 수렴기 (변화 속에서도 핵심 원칙을 추리는 시기)'
+          : '겨울 · 인중천지일 응축기 (내면의 정기를 고요히 비축하는 시기)';
+
+  return {
+    kstTimeLabel: `${y}-${m}-${d} ${hh}:${mm} KST`,
+    samgeukWatchWindow,
+    seasonalSolarTone,
+    temporalGuidance: `${samgeukWatchWindow} · ${seasonalSolarTone}의 결에 맞추어 삼일신고 3법(지감·조식·금촉)을 일상에 가볍게 적용하십시오.`,
+  };
+}
+
+export function calculateKoreanCheonbugyeongEightyOne(
+  profile?: UserProfile | null,
+  nowArg?: Date,
+  questionArg?: string
+): CheonbugyeongEightyOneReport {
+  const now = nowArg || new Date();
+  const question = (questionArg || '').trim();
   const bdate = profile?.basic?.birthdate || '1994-01-24';
   const btime = profile?.basic?.birthtime || '12:00';
   const name = profile?.basic?.name || 'zeZE';
-  const seedStr = `${bdate}_${btime}_${name}_cheonbugyeong_81_v1`;
+  const seedStr = `${bdate}_${btime}_${name}_${question}_cheonbugyeong_81_v2`;
   const seed = djb2Hash(seedStr);
 
   const heavenCosmicAlignmentScore = 65 + (seed % 34);
@@ -124,9 +184,35 @@ export function calculateKoreanCheonbugyeongEightyOne(profile?: UserProfile | nu
     spiritualCultivationGuidance = '지감(止感, 감정 다스림)과 조식(調息, 숨결 고르기)의 명상을 취하여 용변부동본(用變不動本)의 중심축을 확고히 세우십시오.';
   }
 
+  const temporalCheonbuRhythm = getTemporalCheonbuRhythm(now);
+  const situationalCheonbuAudit = /일|직장|사업|돈|재물|결정/.test(question)
+    ? {
+        focusTheme: '재세이화(在世理化)와 용변부동본의 실무 중심축',
+        samjinBalanceNote: '성(性)의 명료한 기준을 세우고 정(精)의 실행력을 흔들림 없이 이어가십시오.',
+        practiceFocus: '금촉(禁觸)으로 불필요한 외부 소음을 끊고 핵심 과제 하나에 집중하십시오.',
+      }
+    : /관계|연애|사랑|사람|가족|갈등/.test(question)
+      ? {
+          focusTheme: '홍익인간(弘益人間)과 인중천지일의 관계 공명',
+          samjinBalanceNote: '지감(止感)으로 감정의 파도를 먼저 가라앉힌 뒤 상대의 본심을 바라보십시오.',
+          practiceFocus: '조식(調息)으로 호흡을 길게 내쉬며 부드러운 말로 여백을 남기십시오.',
+        }
+      : {
+          focusTheme: '성통광명(性通光明)과 삼극(천·지·인)의 내면 조화',
+          samjinBalanceNote: '성·명·정 삼진이 균형을 이룰 때 본심본태양의 밝음이 자연히 드러납니다.',
+          practiceFocus: '하루 3분 조용히 호흡을 고르며 오늘의 중심 구절을 되새기십시오.',
+        };
+
+  const cheonbuSynthesisMatrix = {
+    coreInsight: `[${primaryHexagramGua.verseKo}(${primaryHexagramGua.verseHanja})]가 ${situationalCheonbuAudit.focusTheme}의 방향을 비춥니다.`,
+    recommendedAction: `${primaryHexagramGua.modernApplication} (${situationalCheonbuAudit.practiceFocus})`,
+    cautionNotice: '삼망(심·기·신)의 조급함에 휩쓸려 근본을 놓치지 않도록 한 걸음 물러나 호흡을 점검하십시오.',
+  };
+
   return {
     engineVersion: CHEONBUGYEONG_ENGINE_VERSION,
-    calculatedAt: new Date().toISOString(),
+    calculatedAt: now.toISOString(),
+    calculatedAtKst: temporalCheonbuRhythm.kstTimeLabel,
     heavenCosmicAlignmentScore,
     earthGroundingStabilityScore,
     humanHarmonizingSovereigntyScore,
@@ -136,19 +222,25 @@ export function calculateKoreanCheonbugyeongEightyOne(profile?: UserProfile | nu
     seongtongGwangmyeongIllumination,
     hongikInkanManifestationCapacity,
     primaryHexagramGua,
+    situationalCheonbuAudit,
+    temporalCheonbuRhythm,
+    cheonbuSynthesisMatrix,
     spiritualCultivationGuidance,
+    boundaryNotice: '본 결과는 《천부경》 81자와 《삼일신고》 3진3망 철학에 기반한 정성적 성찰 안내이며, 확정적 길흉 판정이 아닙니다.',
   };
 }
 
 export function formatKoreanCheonbugyeongEightyOnePrompt(report: CheonbugyeongEightyOneReport): string {
   return [
-    `[단군 단학 천부경(天符經) 81자 우주 매트릭스 & 삼일신고 3진3망 성통광명 엔진]`,
-    `- 천·지·인 삼극(三極): 천일일(天一一) 천기 순도 ${report.heavenCosmicAlignmentScore}점 / 지일이(地一二) 지기 안정도 ${report.earthGroundingStabilityScore}점 / 인일삼(人一三) 중심력 ${report.humanHarmonizingSovereigntyScore}점`,
-    `- 삼일신고 성·명·정(性命精) 3진 합일 지수: ${report.sungMyungJungTrueTrinityScore}점 / 지감·조식·금촉(止感調息禁觸) 수양도: ${report.threeTrainingsMasteryScore}점`,
-    `- 용변부동본(用變不動本) 불변성: ${report.yongbyeonBudongbonIntegrity}점 / 성통광명(性通光明) 영적 각성도: ${report.seongtongGwangmyeongIllumination}점`,
-    `- 홍익인간(弘益人間) 재세이화 실천력: ${report.hongikInkanManifestationCapacity}점`,
+    `[단군 단학 천부경(天符經) 81자 우주 매트릭스 & 삼일신고 3진3망 성통광명 엔진 (v${report.engineVersion})]`,
+    `- 연산 시각: ${report.calculatedAtKst}`,
     `- 핵심 천부경 구절: ${report.primaryHexagramGua.verseHanja} (${report.primaryHexagramGua.verseKo}) - ${report.primaryHexagramGua.philosophicalCore}`,
     `- 현대적 적용: ${report.primaryHexagramGua.modernApplication}`,
+    `- 질문 맥락 감사 (${report.situationalCheonbuAudit.focusTheme}): ${report.situationalCheonbuAudit.samjinBalanceNote} / 수련 초점: ${report.situationalCheonbuAudit.practiceFocus}`,
+    `- KST 시공간 삼극 리듬: ${report.temporalCheonbuRhythm.samgeukWatchWindow} / ${report.temporalCheonbuRhythm.seasonalSolarTone}`,
+    `  • 시공간 지침: ${report.temporalCheonbuRhythm.temporalGuidance}`,
+    `- 천부 교차 매트릭스: 핵심(${report.cheonbuSynthesisMatrix.coreInsight}) | 실행(${report.cheonbuSynthesisMatrix.recommendedAction}) | 주의(${report.cheonbuSynthesisMatrix.cautionNotice})`,
     `- 심신 수련 처방: ${report.spiritualCultivationGuidance}`,
+    `- 해석 경계: ${report.boundaryNotice}`,
   ].join('\n');
 }

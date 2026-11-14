@@ -3357,14 +3357,19 @@ test('Tarot Yes/No Verdict: correctly identifies NO when reading content is NO d
 });
 
 test('Korean Dangun Cheonbuin Engine: calculates 3 Sacred Treasures and Hongik prosperity index', () => {
-  const rep = calculateKoreanDangunCheonbuin({ profile });
+  const rep = calculateKoreanDangunCheonbuin({ profile, question: '사업 결단과 조화', now: new Date('2026-11-15T06:55:00+09:00') });
   assert.equal(rep.engineVersion, KOREAN_DANGUN_CHEONBUIN_ENGINE_VERSION);
   assert(rep.hongikProsperityIndex >= 0 && rep.hongikProsperityIndex <= 100);
   assert(rep.cosmicHarmonyIndex >= 0 && rep.cosmicHarmonyIndex <= 100);
   assert(rep.treasures.dominantTreasure.nameKo.length > 0);
+  assert(rep.calculatedAtKst.includes('KST'));
+  assert(rep.temporalCheonbuinRhythm.shinsiSkyWindow.length > 0);
+  assert(rep.cheonbuinSynthesisMatrix.coreInsight.length > 0);
   const prompt = formatKoreanDangunCheonbuinPrompt(rep);
   assert(prompt.includes('고대 한국 삼국유사 단군 천부인(天符印) 3보 & 홍익인간 광명 실측 데이터'));
   assert(prompt.includes(rep.treasures.dominantTreasure.nameKo));
+  assert(prompt.includes('KST'));
+  assert(!prompt.includes('/100') && !prompt.includes('%') && !prompt.includes('점수'));
 });
 
 test('Maori Mauri Hauora Engine: calculates 4 Hauora pillars and Mauri vitality index', () => {
@@ -3813,16 +3818,21 @@ test('Patanjali Ashtanga Yoga Sutra Engine: calculates citta vritti nirodha and 
 });
 
 test('Korean Pungryudo Hwarang Five Precepts Engine: calculates xuanmiao harmony and hoyounjigi', () => {
-  const rep = calculateKoreanPungryudoHwarang({ profile, question: '호연지기와 화랑의 기개' });
+  const rep = calculateKoreanPungryudoHwarang({ profile, question: '호연지기와 화랑의 기개', now: new Date('2026-11-15T06:55:00+09:00') });
   assert.equal(rep.engineVersion, KOREAN_PUNGRYUDO_HWARANG_ENGINE_VERSION);
   assert(rep.pungryuXuanmiaoHarmonyScore >= 0 && rep.pungryuXuanmiaoHarmonyScore <= 100);
   assert(rep.hoyounjigiSpiritualCourageScore >= 0 && rep.hoyounjigiSpiritualCourageScore <= 100);
   assert(rep.socialFaithLoyaltyScore >= 0 && rep.socialFaithLoyaltyScore <= 100);
   assert(rep.gaAkSangYeolJoyVibration >= 0 && rep.gaAkSangYeolJoyVibration <= 100);
   assert(rep.dominantPrecept.nameKo.length > 0);
+  assert(rep.calculatedAtKst.includes('KST'));
+  assert(rep.temporalPungryuRhythm.hwarangWatchWindow.length > 0);
+  assert(rep.pungryuSynthesisMatrix.coreInsight.length > 0);
   const prompt = formatKoreanPungryudoHwarangPrompt(rep);
   assert(prompt.includes('풍류도'));
   assert(prompt.includes(rep.dominantPrecept.nameKo));
+  assert(prompt.includes('KST'));
+  assert(!prompt.includes('/100') && !prompt.includes('%') && !prompt.includes('점수'));
 });
 
 test('Persian Attar Seven Valleys Engine: calculates seven valleys passage, Simurgh mirror and Fana/Baqa', () => {
@@ -4133,7 +4143,7 @@ test('Shang Oracle Bone Divination Engine: calculates oracle bone medium, divine
 });
 
 test('Korean Cheonbugyeong Eighty One Cosmic Engine: calculates heaven earth human, 3jin 3mang and budongbon', () => {
-  const rep = calculateKoreanCheonbugyeongEightyOne(profile);
+  const rep = calculateKoreanCheonbugyeongEightyOne(profile, new Date('2026-11-15T06:55:00+09:00'), '직장과 내면의 중심');
   assert.equal(rep.engineVersion, CHEONBUGYEONG_ENGINE_VERSION);
   assert(rep.heavenCosmicAlignmentScore >= 0 && rep.heavenCosmicAlignmentScore <= 100);
   assert(rep.earthGroundingStabilityScore >= 0 && rep.earthGroundingStabilityScore <= 100);
@@ -4144,9 +4154,14 @@ test('Korean Cheonbugyeong Eighty One Cosmic Engine: calculates heaven earth hum
   assert(rep.seongtongGwangmyeongIllumination >= 0 && rep.seongtongGwangmyeongIllumination <= 100);
   assert(rep.hongikInkanManifestationCapacity >= 0 && rep.hongikInkanManifestationCapacity <= 100);
   assert(rep.primaryHexagramGua.verseKo.length > 0);
+  assert(rep.calculatedAtKst.includes('KST'));
+  assert(rep.temporalCheonbuRhythm.samgeukWatchWindow.length > 0);
+  assert(rep.cheonbuSynthesisMatrix.coreInsight.length > 0);
   const prompt = formatKoreanCheonbugyeongEightyOnePrompt(rep);
   assert(prompt.includes('단군 단학 천부경(天符經) 81자 우주 매트릭스 & 삼일신고 3진3망 성통광명'));
   assert(prompt.includes(rep.primaryHexagramGua.verseHanja));
+  assert(prompt.includes('KST'));
+  assert(!prompt.includes('/100') && !prompt.includes('%') && !prompt.includes('점수'));
 });
 
 test('Hindu Sri Yantra Sacred Geometry Engine: calculates Shiva-Shakti polarities, Nava Yoni and Nava Avarana', () => {
