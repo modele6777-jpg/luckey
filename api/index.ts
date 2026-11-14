@@ -1,4 +1,4 @@
-// v1.7.456: Deepen Hermetic Kybalion, Poimandres Ascension, and Gnostic Pistis Sophia engines
+// v1.7.457: Deepen Sun Tzu Art of War, Delphic Chilon, and Zoroastrian Amesha Spentas engines
 import { getLucyRequestFallbacks, requestWithModelFallback } from '../src/lib/lucyModelPolicy.ts';
 import "dotenv/config";
 import express from "express";

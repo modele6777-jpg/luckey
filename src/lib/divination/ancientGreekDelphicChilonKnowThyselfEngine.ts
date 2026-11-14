@@ -11,14 +11,14 @@
  *    - 자기 절제와 감정 다스림(Emotional Temperance): 기쁨이나 분노에 휩쓸려 경솔해지지 않음.
  *    - 미래에 대한 경계심(Prudent Foresight): 평화로울 때 위기를 대비하고 교만을 꺾음.
  *    - 노인을 공경하고 법도를 지킴(Reverence for Order): 공동체의 오랜 지혜와 질서를 존중함.
- * 3. 7대 지혜의 품계 및 델포이 아폴론 성소 조언 산출
+ * 3. 질문 맥락·KST 시공간 절제 리듬·교차 매트릭스 산출
  *
- * @version LUCKEY-DELPHIC-CHILON-v1.0.0
+ * @version LUCKEY-DELPHIC-CHILON-v2.0.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const DELPHIC_CHILON_VERSION = 'LUCKEY-DELPHIC-CHILON-v1.0.0';
+export const DELPHIC_CHILON_VERSION = 'LUCKEY-DELPHIC-CHILON-v2.0.0';
 
 export interface DelphicSageStage {
   stageLevel: number;
@@ -28,15 +28,37 @@ export interface DelphicSageStage {
   selfMasteryBlessing: string;
 }
 
+export interface DelphicSituationalAudit {
+  contextTheme: string;
+  delphicInscription: string;
+  temperanceDiagnosis: string;
+  laconicPrescription: string;
+}
+
+export interface DelphicTemporalRhythm {
+  kstHour: number;
+  sanctuaryWindow: string;
+  seasonalModeration: string;
+  clarityIndex: number;
+  timingAdvice: string;
+}
+
+export interface ChilonSynthesisMatrix {
+  selfKnowledgeAxis: string;
+  moderationAxis: string;
+  prudenceAxis: string;
+  synthesizedVerdict: string;
+}
+
 export interface DelphicChilonResult {
   engineVersion: string;
   calculatedAtKst: string;
-  // 5대 핵심 지표 (0~100)
-  gnothiSeautonSelfKnowledgeIndex: number; // 너 자신을 알라 자기 객관화 및 분수 자각도
-  medenAganModerationEquilibrium: number; // 과유불급 중용 및 극단 회피력
-  enguaPrudenceDiscretionForce: number; // 신중함 및 섣부른 장담 경계력
-  laconicBrevityClarityScore: number; // 언어의 무게 및 간결한 결단력
-  spartanEnduranceTemperancePower: number; // 스파르타적 인내와 내면 절제력
+  // 내부 계산 호환 필드 (프롬프트 비노출)
+  gnothiSeautonSelfKnowledgeIndex: number;
+  medenAganModerationEquilibrium: number;
+  enguaPrudenceDiscretionForce: number;
+  laconicBrevityClarityScore: number;
+  spartanEnduranceTemperancePower: number;
   // 세부 명세
   activeSageStage: DelphicSageStage;
   primaryDelphicMaxim: {
@@ -49,6 +71,9 @@ export interface DelphicChilonResult {
     sanctuarySceneTitle: string;
     philosophicWisdom: string;
   };
+  situationalChilonAudit: DelphicSituationalAudit;
+  temporalDelphicRhythm: DelphicTemporalRhythm;
+  chilonSynthesisMatrix: ChilonSynthesisMatrix;
 }
 
 export type DelphicChilonReport = DelphicChilonResult;
@@ -77,9 +102,96 @@ const DELPHIC_EPIPHANIES = [
   { sanctuarySceneTitle: '에포로스의 의자에 앉은 킬론의 침묵', philosophicWisdom: '천 마디 화려한 변명보다 한 줄기 정직한 행동이 백만 군사를 움직이는 가장 위대한 법률이다.' },
 ];
 
-function getKstDateString(): string {
-  const now = new Date();
-  const kst = new Date(now.getTime() + (9 * 60 + now.getTimezoneOffset()) * 60000);
+function buildSituationalAudit(question: string, maxim: typeof DELPHIC_MAXIMS[number]): DelphicSituationalAudit {
+  const q = question.toLowerCase();
+  if (/연애|관계|사람|가족|동료|갈등|말실수|대화/.test(q)) {
+    return {
+      contextTheme: '관계 언어 절제 감사',
+      delphicInscription: 'Γλῶσσα μὴ προτρεχέτω τοῦ νοῦ (혀가 지성보다 앞서 달리지 않게 하라)',
+      temperanceDiagnosis: `감정이 앞선 장담이나 서운한 말 한마디가 관계를 흔들기 쉬운 국면입니다. '${maxim.maximTitleKo}'을 우선 적용하십시오.`,
+      laconicPrescription: '라코닉(Laconic) 어법처럼 꼭 필요한 진심만 짧고 정중하게 전한 뒤 상대의 침묵을 존중하십시오.',
+    };
+  }
+  if (/결정|선택|계약|투자|이직|약속|보증|진로/.test(q)) {
+    return {
+      contextTheme: '섣부른 장담 경계·중용 감사',
+      delphicInscription: "Ἐγγύα, πάρα δ' ἄτα (과도한 보증과 확신은 재앙의 곁에 선다)",
+      temperanceDiagnosis: `기대감이나 조급함에 휩쓸려 감당 범위를 넘는 약속을 하기 쉬운 때입니다. '${maxim.maximTitleKo}'이 방패가 됩니다.`,
+      laconicPrescription: '낙관적 시나리오만큼 최악의 부담 한계선을 명확히 긋고, 감당 가능한 범위만 책임지십시오.',
+    };
+  }
+  if (/불안|지침|스트레스|비교|자존감|후회|걱정/.test(q)) {
+    return {
+      contextTheme: '분수 자각·평정 회복 감사',
+      delphicInscription: 'Γνῶθι σεαυτόν — Μηδὲν ἄγαν (너 자신을 알고, 지나침을 멈추라)',
+      temperanceDiagnosis: `타인의 기준이나 과도한 자책으로 내면의 균형이 기운 상태입니다. '${maxim.maximTitleKo}'으로 중심을 되찾으십시오.`,
+      laconicPrescription: '내가 통제할 수 없는 평판과 비교를 내려놓고, 오늘 할 수 있는 적정한 한 걸음에만 머무십시오.',
+    };
+  }
+  return {
+    contextTheme: '델포이 자기성찰 감사',
+    delphicInscription: `${maxim.greekAphorism}`,
+    temperanceDiagnosis: `일상의 관성 속에서 자만이나 과욕이 스며들기 쉬운 지점을 '${maxim.maximTitleKo}'의 거울로 비춰 봅니다.`,
+    laconicPrescription: maxim.actionableDirective,
+  };
+}
+
+function buildTemporalRhythm(now: Date, seed: number): DelphicTemporalRhythm {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const kstHour = kst.getUTCHours();
+  const month = kst.getUTCMonth() + 1;
+
+  let sanctuaryWindow = '백주 아폴론 성소 성찰 창 (오전~오후)';
+  let timingAdvice = '밝은 낮의 시선으로 과장 없이 현재 위치와 한계를 정확히 가늠하십시오.';
+  if (kstHour >= 5 && kstHour < 10) {
+    sanctuaryWindow = '카스탈리아 새벽 정화 창 (이른 아침)';
+    timingAdvice = '하루의 말과 약속을 시작하기 전, 오늘 지킬 단 하나의 절제 원칙을 세우십시오.';
+  } else if (kstHour >= 18 && kstHour < 22) {
+    sanctuaryWindow = '황혼 에포로스 결산 창 (저녁)';
+    timingAdvice = '오늘 내뱉은 말과 선택 중 지나쳤던(Meden Agan) 부분을 담담히 되짚고 비우십시오.';
+  } else if (kstHour >= 22 || kstHour < 5) {
+    sanctuaryWindow = '심야 파르나소스 침묵 창 (밤~새벽)';
+    timingAdvice = '결론을 서두르지 말고 밤의 침묵 속에서 흩어진 생각을 가라앉히십시오.';
+  }
+
+  let seasonalModeration = '사계 중용 리듬';
+  if (month >= 3 && month <= 5) seasonalModeration = '봄(Spring) — 새로운 시작 앞에서의 과욕 경계';
+  else if (month >= 6 && month <= 8) seasonalModeration = '여름(Summer) — 열기와 감정 과잉의 냉각 절제';
+  else if (month >= 9 && month <= 11) seasonalModeration = '가을(Autumn) — 수확 앞에서의 겸손과 분수 점검';
+  else seasonalModeration = '겨울(Winter) — 침묵의 인내와 내면 단련';
+
+  const clarityIndex = 62 + ((seed + kstHour * 3 + month * 7) % 36);
+
+  return {
+    kstHour,
+    sanctuaryWindow,
+    seasonalModeration,
+    clarityIndex,
+    timingAdvice,
+  };
+}
+
+function buildSynthesisMatrix(
+  stage: DelphicSageStage,
+  maxim: typeof DELPHIC_MAXIMS[number],
+  audit: DelphicSituationalAudit,
+  temporal: DelphicTemporalRhythm,
+): ChilonSynthesisMatrix {
+  const selfKnowledgeAxis = `자기 객관화: ${stage.stageNameKo} (${audit.contextTheme})`;
+  const moderationAxis = `중용 절제: ${maxim.maximTitleKo}`;
+  const prudenceAxis = `시의 신중: ${temporal.sanctuaryWindow} · ${temporal.seasonalModeration}`;
+  const synthesizedVerdict = `'${temporal.sanctuaryWindow}'에 '${stage.stageNameKo}'의 자리에서 '${maxim.maximTitleKo}'을 기준으로 삼을 때, 과잉과 경솔함 없는 단단한 결단이 완성됩니다.`;
+
+  return {
+    selfKnowledgeAxis,
+    moderationAxis,
+    prudenceAxis,
+    synthesizedVerdict,
+  };
+}
+
+function getKstDateString(now: Date): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
   return kst.toISOString().replace('T', ' ').substring(0, 19) + ' KST';
 }
 
@@ -92,17 +204,22 @@ function hashSeed(seedStr: string): number {
   return Math.abs(h);
 }
 
-export function calculateDelphicChilon(profile?: UserProfile): DelphicChilonResult {
+export function calculateDelphicChilon(
+  profile?: UserProfile,
+  question = '',
+  now: Date = new Date(),
+): DelphicChilonResult {
   const birthdate = profile?.basic?.birthdate || '1995-03-21';
   const birthtime = profile?.basic?.birthtime || '12:00';
   const name = profile?.basic?.name || 'Inquirer';
-  const seed = hashSeed(`DELPHIC-CHILON-${birthdate}-${birthtime}-${name}`);
+  const kstDay = new Date(now.getTime() + 9 * 60 * 60 * 1000).toISOString().slice(0, 10);
+  const seed = hashSeed(`DELPHIC-CHILON-${birthdate}-${birthtime}-${name}-${kstDay}-${question}`);
 
-  const gnothiSeautonSelfKnowledgeIndex = (seed % 41) + 60; // 60~100
-  const medenAganModerationEquilibrium = ((seed >> 3) % 43) + 58; // 58~100
-  const enguaPrudenceDiscretionForce = ((seed >> 5) % 39) + 62; // 62~100
-  const laconicBrevityClarityScore = ((seed >> 7) % 45) + 55; // 55~99
-  const spartanEnduranceTemperancePower = ((seed >> 9) % 38) + 63; // 63~100
+  const gnothiSeautonSelfKnowledgeIndex = (seed % 41) + 60;
+  const medenAganModerationEquilibrium = ((seed >> 3) % 43) + 58;
+  const enguaPrudenceDiscretionForce = ((seed >> 5) % 39) + 62;
+  const laconicBrevityClarityScore = ((seed >> 7) % 45) + 55;
+  const spartanEnduranceTemperancePower = ((seed >> 9) % 38) + 63;
 
   const stageIdx = (seed >> 2) % DELPHIC_STAGES.length;
   const activeSageStage = DELPHIC_STAGES[stageIdx];
@@ -113,9 +230,13 @@ export function calculateDelphicChilon(profile?: UserProfile): DelphicChilonResu
   const epiphanyIdx = (seed >> 6) % DELPHIC_EPIPHANIES.length;
   const delphiTempleEpiphany = DELPHIC_EPIPHANIES[epiphanyIdx];
 
+  const situationalChilonAudit = buildSituationalAudit(question, primaryDelphicMaxim);
+  const temporalDelphicRhythm = buildTemporalRhythm(now, seed);
+  const chilonSynthesisMatrix = buildSynthesisMatrix(activeSageStage, primaryDelphicMaxim, situationalChilonAudit, temporalDelphicRhythm);
+
   return {
     engineVersion: DELPHIC_CHILON_VERSION,
-    calculatedAtKst: getKstDateString(),
+    calculatedAtKst: getKstDateString(now),
     gnothiSeautonSelfKnowledgeIndex,
     medenAganModerationEquilibrium,
     enguaPrudenceDiscretionForce,
@@ -124,23 +245,27 @@ export function calculateDelphicChilon(profile?: UserProfile): DelphicChilonResu
     activeSageStage,
     primaryDelphicMaxim,
     delphiTempleEpiphany,
+    situationalChilonAudit,
+    temporalDelphicRhythm,
+    chilonSynthesisMatrix,
   };
 }
 
 export function formatDelphicChilonPrompt(result: DelphicChilonResult): string {
   return `[🏛️ 델포이 아폴론 신전 7현인 《스파르타의 킬론(Chilon)》 자기성찰 & 절제 리포트]
-- 엔진 버전: ${result.engineVersion}
-- 너 자신을 알라 자기 객관화 및 분수 자각도: ${result.gnothiSeautonSelfKnowledgeIndex}%
-- 과유불급 중용 및 극단 회피력: ${result.medenAganModerationEquilibrium}%
-- 신중함 및 섣부른 장담 경계력: ${result.enguaPrudenceDiscretionForce}%
-- 언어의 무게 및 간결한 결단력: ${result.laconicBrevityClarityScore}%
-- 스파르타적 인내와 내면 절제력: ${result.spartanEnduranceTemperancePower}%
+- 엔진 버전: ${result.engineVersion} | 기준 시각: ${result.calculatedAtKst}
 - 현행 현자 품계: **[${result.activeSageStage.stageNameKo} (${result.activeSageStage.stageNameGreek})]**
   → 관장 영역: ${result.activeSageStage.wisdomDomain}
   → 자기 통제 축복: ${result.activeSageStage.selfMasteryBlessing}
 - 최우선 델포이 격언: **[${result.primaryDelphicMaxim.maximTitleKo} (${result.primaryDelphicMaxim.greekAphorism})]**
   → 핵심 본질: ${result.primaryDelphicMaxim.coreEssence}
   → 실천 지침: ${result.primaryDelphicMaxim.actionableDirective}
+- 상황 맥락 감사(${result.situationalChilonAudit.contextTheme}): ${result.situationalChilonAudit.delphicInscription}
+  → 절제 진단: ${result.situationalChilonAudit.temperanceDiagnosis}
+  → 라코닉 처방: ${result.situationalChilonAudit.laconicPrescription}
+- 시공간 절제 리듬: ${result.temporalDelphicRhythm.sanctuaryWindow} · ${result.temporalDelphicRhythm.seasonalModeration}
+  → 시의 조언: ${result.temporalDelphicRhythm.timingAdvice}
+- 킬론 교차 매트릭스: ${result.chilonSynthesisMatrix.synthesizedVerdict}
 - 델포이 신전의 불멸의 신탁: 《${result.delphiTempleEpiphany.sanctuarySceneTitle}》
   → 철학적 불멸 지혜: "${result.delphiTempleEpiphany.philosophicWisdom}"`;
 }

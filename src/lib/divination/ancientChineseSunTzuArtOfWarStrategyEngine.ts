@@ -8,12 +8,12 @@
  * 4. 피실격허(避實擊虛)와 수형(水形): 단단한 정면충돌을 피하고 빈틈과 활로로 흐름
  * 5. 이우위직(以迂爲直): 돌아가는 우회로를 가장 빠른 지름길로 삼는 지혜
  *
- * @version LUCKEY-SUNTZU-STRATEGY-v1.1.0
+ * @version LUCKEY-SUNTZU-STRATEGY-v2.0.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const SUNTZU_STRATEGY_VERSION = 'LUCKEY-SUNTZU-STRATEGY-v1.1.0';
+export const SUNTZU_STRATEGY_VERSION = 'LUCKEY-SUNTZU-STRATEGY-v2.0.0';
 
 export type SunTzuQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -29,6 +29,29 @@ export interface SunTzuStrategicTactic {
   tacticNameKo: string;
   dynamicAction: string;
   practicalExecution: string;
+}
+
+export interface SunTzuSituationalAudit {
+  contextTheme: string;
+  artOfWarChapter: string;
+  sunTzuMaxim: string;
+  terrainDiagnosis: string;
+  maneuverPrescription: string;
+}
+
+export interface SunTzuTemporalRhythm {
+  kstHour: number;
+  campaignWindow: string;
+  seasonalMomentum: string;
+  qiFlowIndex: number;
+  timingAdvice: string;
+}
+
+export interface SunTzuSynthesisMatrix {
+  terrainClarityAxis: string;
+  forceConservationAxis: string;
+  maneuverAgilityAxis: string;
+  synthesizedVerdict: string;
 }
 
 export interface SunTzuArtOfWarStrategyResult {
@@ -50,6 +73,9 @@ export interface SunTzuArtOfWarStrategyResult {
   reflectionFocus: string;
   counselNote: string;
   boundaryNotice: string;
+  situationalStrategyAudit: SunTzuSituationalAudit;
+  temporalSunTzuRhythm: SunTzuTemporalRhythm;
+  sunTzuSynthesisMatrix: SunTzuSynthesisMatrix;
   sunTzuPhilosophicalCounsel: {
     counselTitle: string;
     philosophicalGuidance: string;
@@ -164,6 +190,97 @@ function classifyQuestionTopic(question?: string): SunTzuQuestionTopic {
   return 'reflection';
 }
 
+function buildSituationalAudit(topic: SunTzuQuestionTopic, factor: SunTzuFiveFactor, tactic: SunTzuStrategicTactic): SunTzuSituationalAudit {
+  if (topic === 'relationship') {
+    return {
+      contextTheme: '관계·협상 형세 감사',
+      artOfWarChapter: '《손자병법》〈모공편(謀攻篇)〉',
+      sunTzuMaxim: '백번 싸워 백번 이기는 것이 최선이 아니라, 싸우지 않고 남의 군사를 굴복시키는 것이 최선이다.',
+      terrainDiagnosis: `상대와의 대립각을 세우면 둘 다 소모되는 교착 지형입니다. '${factor.factorHanja}'를 통해 명분을 정렬해야 합니다.`,
+      maneuverPrescription: `${tactic.tacticNameHanja} 원리에 따라 상대의 체면을 살려주면서 핵심 이익을 확보하는 화해·협상로를 여십시오.`,
+    };
+  }
+  if (topic === 'decision') {
+    return {
+      contextTheme: '진로·결단 형세 감사',
+      artOfWarChapter: '《손자병법》〈허실편(虛實篇)〉',
+      sunTzuMaxim: '병사의 형세는 물과 같으니, 높은 곳을 피하고 낮은 곳으로 흐르며 실한 곳을 피하고 빈 곳을 친다.',
+      terrainDiagnosis: `정면 경쟁이 치열한 고지를 억지로 오르기보다 '${factor.factorHanja}'가 받쳐주는 빈틈을 선점할 때입니다.`,
+      maneuverPrescription: `${tactic.tacticNameHanja}에 맞춰 과열된 경로를 우회하고 내가 가장 적은 비용으로 주도할 수 있는 판을 택하십시오.`,
+    };
+  }
+  if (topic === 'healing') {
+    return {
+      contextTheme: '소모전 중단·원기 보전 감사',
+      artOfWarChapter: '《손자병법》〈작전편(作戰篇)〉',
+      sunTzuMaxim: '군사를 오래 끄는 것은 나라에 이롭지 못하니, 둔해진 칼날을 거두어 내실을 채우라.',
+      terrainDiagnosis: `장기전으로 군량과 기력이 소진된 국면입니다. '${factor.factorHanja}' 외의 부수적 전선을 즉시 닫아야 합니다.`,
+      maneuverPrescription: '승부욕을 잠시 접고 휴식과 보급선 복구를 최우선 과업으로 삼으십시오.',
+    };
+  }
+  return {
+    contextTheme: '지피지기 내면 성찰 감사',
+    artOfWarChapter: '《손자병법》〈군형편(軍形篇)〉',
+    sunTzuMaxim: '옛날의 잘 싸우는 자는 먼저 이길 수 없는 태세를 갖춘 뒤에 적이 이길 수 있는 틈을 기다렸다.',
+    terrainDiagnosis: `외부 적수보다 내 진영의 '${factor.factorHanja}' 빈틈을 먼저 막아 불패의 기반을 다질 시점입니다.`,
+    maneuverPrescription: `${tactic.tacticNameHanja}의 관점으로 현재 자원과 일정의 헛점을 하나씩 보강하십시오.`,
+  };
+}
+
+function buildTemporalRhythm(now: Date, absHash: number): SunTzuTemporalRhythm {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const kstHour = kst.getUTCHours();
+  const month = kst.getUTCMonth() + 1;
+
+  let campaignWindow = '주간 교전·실행 창 (오시~유시)';
+  let timingAdvice = '시야가 밝고 지형이 드러난 시간대이므로 결정된 전략을 간결하고 단호하게 집행하십시오.';
+  if (kstHour >= 4 && kstHour < 10) {
+    campaignWindow = '새벽 첩보·오사 점검 창 (인시~사시)';
+    timingAdvice = '출정 전 지형과 아군의 기강(道·法)을 차분히 점검하고 우선순위를 확정하기 좋은 때입니다.';
+  } else if (kstHour >= 18 && kstHour < 22) {
+    campaignWindow = '황혼 전선 정비·우회 구상 창 (유시~해시)';
+    timingAdvice = '낮 동안의 마찰을 정리하고 정면충돌 대신 돌아가는 우회로(以迂爲直)를 설계하십시오.';
+  } else if (kstHour >= 22 || kstHour < 4) {
+    campaignWindow = '야간 야영·원기 비축 창 (해시~인시)';
+    timingAdvice = '군사를 움직이지 말고 소모된 기력을 회복하며 내일의 불패 태세를 가다듬으십시오.';
+  }
+
+  let seasonalMomentum = '춘하 생장기 기세';
+  if (month >= 3 && month <= 5) seasonalMomentum = '춘기(春氣) — 병력 전개와 새 전선 탐색의 계절';
+  else if (month >= 6 && month <= 8) seasonalMomentum = '하기(夏氣) — 열기 과열 경계 및 수형(水形) 유연성의 계절';
+  else if (month >= 9 && month <= 11) seasonalMomentum = '추기(秋氣) — 전선 압축과 결실 수확·정리의 계절';
+  else seasonalMomentum = '동기(冬氣) — 병력 보전과 내실 축적의 계절';
+
+  const qiFlowIndex = 65 + ((absHash + kstHour * 5 + month * 3) % 34);
+
+  return {
+    kstHour,
+    campaignWindow,
+    seasonalMomentum,
+    qiFlowIndex,
+    timingAdvice,
+  };
+}
+
+function buildSynthesisMatrix(
+  factor: SunTzuFiveFactor,
+  tactic: SunTzuStrategicTactic,
+  audit: SunTzuSituationalAudit,
+  temporal: SunTzuTemporalRhythm,
+): SunTzuSynthesisMatrix {
+  const terrainClarityAxis = `지피지기 판세: ${factor.factorHanja} 정비 (${audit.contextTheme})`;
+  const forceConservationAxis = `병력 보전: ${temporal.seasonalMomentum}`;
+  const maneuverAgilityAxis = `수형 기동: ${tactic.tacticNameHanja} (${temporal.campaignWindow})`;
+  const synthesizedVerdict = `현재 '${temporal.campaignWindow}'에 놓인 형세는 '${factor.factorHanja}'를 중심축으로 삼아 '${tactic.tacticNameHanja}'로 움직일 때 가장 적은 소모로 주도권을 확보합니다.`;
+
+  return {
+    terrainClarityAxis,
+    forceConservationAxis,
+    maneuverAgilityAxis,
+    synthesizedVerdict,
+  };
+}
+
 function getKstDateString(now: Date): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
   return kst.toISOString().slice(0, 10);
@@ -209,6 +326,10 @@ export function calculateSunTzuArtOfWarStrategy(
   const activeStrategicTactic = STRATEGIC_TACTICS[tacticIndex];
   const topicGuide = TOPIC_GUIDANCE[questionTopic];
 
+  const situationalStrategyAudit = buildSituationalAudit(questionTopic, focalFiveFactor, activeStrategicTactic);
+  const temporalSunTzuRhythm = buildTemporalRhythm(now, absHash);
+  const sunTzuSynthesisMatrix = buildSynthesisMatrix(focalFiveFactor, activeStrategicTactic, situationalStrategyAudit, temporalSunTzuRhythm);
+
   const counselTitle = `손자병법 전략: ${activeStrategicTactic.tacticNameHanja}`;
   const philosophicalGuidance = `전쟁은 국가의 대사요, 사생의 땅이며 존망의 도이니 깊이 살피지 않을 수 없습니다. ` +
     `현재 당면한 국면에서는 5사 중 '${focalFiveFactor.factorHanja}'의 정비가 최우선입니다. ${focalFiveFactor.cultivationCounsel} ` +
@@ -234,6 +355,9 @@ export function calculateSunTzuArtOfWarStrategy(
     reflectionFocus: topicGuide.reflection,
     counselNote,
     boundaryNotice,
+    situationalStrategyAudit,
+    temporalSunTzuRhythm,
+    sunTzuSynthesisMatrix,
     sunTzuPhilosophicalCounsel: {
       counselTitle,
       philosophicalGuidance,
@@ -244,12 +368,19 @@ export function calculateSunTzuArtOfWarStrategy(
 export function formatSunTzuArtOfWarStrategyPrompt(res: SunTzuArtOfWarStrategyResult): string {
   return [
     `【손자병법 오사칠계 & 부전승 피실격허 전략 지표】`,
+    `- 엔진 버전: ${res.engineVersion} | 기준 시각(KST): ${res.calculatedAtKst}`,
     `- 질문 맥락 초점: ${res.questionTopic} | 전략적 태도: ${res.strategicPosture}`,
     `- 핵심 정비 요소: ${res.focalFiveFactor.factorHanja} (${res.focalFiveFactor.factorKo})`,
     `- 전략적 의미: ${res.focalFiveFactor.strategicSignificance}`,
     `- 요소별 수양 조언: ${res.focalFiveFactor.cultivationCounsel}`,
     `- 당면 전략 전술: ${res.activeStrategicTactic.tacticNameHanja} [${res.activeStrategicTactic.tacticNameKo}]`,
     `- 전술적 실행 방침: ${res.activeStrategicTactic.practicalExecution}`,
+    `- 원전 형세 감사(${res.situationalStrategyAudit.artOfWarChapter}): "${res.situationalStrategyAudit.sunTzuMaxim}"`,
+    `  → 지형 진단: ${res.situationalStrategyAudit.terrainDiagnosis}`,
+    `  → 기동 처방: ${res.situationalStrategyAudit.maneuverPrescription}`,
+    `- 시공간 전략 리듬: ${res.temporalSunTzuRhythm.campaignWindow} · ${res.temporalSunTzuRhythm.seasonalMomentum}`,
+    `  → 시의 지침: ${res.temporalSunTzuRhythm.timingAdvice}`,
+    `- 손자병법 교차 매트릭스: ${res.sunTzuSynthesisMatrix.synthesizedVerdict}`,
     `- 맥락별 실행 조언: ${res.practiceGuidance}`,
     `- 오늘의 작은 의례: ${res.ritualAction}`,
     `- 성찰 질문: ${res.reflectionFocus}`,

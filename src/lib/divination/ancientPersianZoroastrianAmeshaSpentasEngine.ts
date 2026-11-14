@@ -14,14 +14,14 @@
  *    - 후크타(Hukhta, 선한 말씀)
  *    - 흐바르시타(Hvarshta, 선한 행동)
  *    - 아샤의 거룩한 불길로 거짓(Druj)을 물리치고 빛의 세계를 회복함.
- * 3. 7대 영적 품계 및 아베스타 신성 불꽃 조언 산출
+ * 3. 질문 맥락 감사·KST 아타르(성화) 시공간 리듬·교차 매트릭스 산출
  *
- * @version LUCKEY-ZOROASTRIAN-AMESHA-SPENTAS-v1.0.0
+ * @version LUCKEY-ZOROASTRIAN-AMESHA-SPENTAS-v2.0.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const ZOROASTRIAN_AMESHA_SPENTAS_VERSION = 'LUCKEY-ZOROASTRIAN-AMESHA-SPENTAS-v1.0.0';
+export const ZOROASTRIAN_AMESHA_SPENTAS_VERSION = 'LUCKEY-ZOROASTRIAN-AMESHA-SPENTAS-v2.0.0';
 
 export interface AmeshaSpentaStage {
   stageLevel: number;
@@ -31,15 +31,37 @@ export interface AmeshaSpentaStage {
   cosmicLightBlessing: string;
 }
 
+export interface AvestaSituationalAudit {
+  contextTheme: string;
+  gathasCitation: string;
+  ashaVsDrujDiagnosis: string;
+  luminousPrescription: string;
+}
+
+export interface ZoroastrianTemporalRhythm {
+  kstHour: number;
+  gahWatchWindow: string;
+  seasonalLightCycle: string;
+  atarRadianceIndex: number;
+  timingAdvice: string;
+}
+
+export interface AmeshaSynthesisMatrix {
+  humataThoughtAxis: string;
+  hukhtaSpeechAxis: string;
+  hvarshtaDeedAxis: string;
+  synthesizedVerdict: string;
+}
+
 export interface ZoroastrianAmeshaSpentasResult {
   engineVersion: string;
   calculatedAtKst: string;
-  // 5대 핵심 지표 (0~100)
-  vohuManahGoodMindIndex: number; // 보후 마나흐 선한 생각 및 순수 지성도
-  ashaVahishtaCosmicTruthForce: number; // 아샤 바히시타 최상 진리 및 정의력
-  spentaArmaitiHolyDevotionScore: number; // 스펜타 아르마이티 거룩한 헌신 및 겸양도
-  haurvatatWholenessHealingPower: number; // 하우르바타트 온전함 및 영육 치유력
-  ameretatImmortalityVitality: number; // 아메레타트 불멸 및 영원한 생명력
+  // 내부 계산 호환 필드 (프롬프트 비노출)
+  vohuManahGoodMindIndex: number;
+  ashaVahishtaCosmicTruthForce: number;
+  spentaArmaitiHolyDevotionScore: number;
+  haurvatatWholenessHealingPower: number;
+  ameretatImmortalityVitality: number;
   // 세부 명세
   activeSpentaStage: AmeshaSpentaStage;
   primaryZoroastrianTriad: {
@@ -52,6 +74,9 @@ export interface ZoroastrianAmeshaSpentasResult {
     fireSceneTitle: string;
     luminousWisdom: string;
   };
+  situationalAvestaAudit: AvestaSituationalAudit;
+  temporalAtarRhythm: ZoroastrianTemporalRhythm;
+  ameshaSynthesisMatrix: AmeshaSynthesisMatrix;
 }
 
 export type ZoroastrianAmeshaSpentasReport = ZoroastrianAmeshaSpentasResult;
@@ -80,9 +105,96 @@ const SACRED_FIRE_EPIPHANIES = [
   { fireSceneTitle: '빛과 어둠의 대전쟁 끝에 밝아오는 프라쇼케레티', luminousWisdom: '세상의 혼란은 영원하지 않으며, 선한 생각과 행동이 쌓인 자리에 마침내 완전한 빛의 세계가 도래한다.' },
 ];
 
-function getKstDateString(): string {
-  const now = new Date();
-  const kst = new Date(now.getTime() + (9 * 60 + now.getTimezoneOffset()) * 60000);
+function buildSituationalAudit(question: string, triad: typeof ZOROASTRIAN_TRIADS[number]): AvestaSituationalAudit {
+  const q = question.toLowerCase();
+  if (/연애|관계|사람|가족|동료|갈등|화해|상처/.test(q)) {
+    return {
+      contextTheme: '관계 화평·선한 말씀(Hukhta) 감사',
+      gathasCitation: '《가타스》 야스나 43.1 — Vohu Manah(선한 마음)로 타인의 영혼을 밝히는 자에게 복이 있다.',
+      ashaVsDrujDiagnosis: `오해와 원망이라는 어둠(Druj)이 대화를 흐리기 쉬운 때입니다. '${triad.triadTitleKo}'으로 신뢰를 회복하십시오.`,
+      luminousPrescription: '상대의 허물을 찌르기보다 내가 먼저 진실되고 온화한 한 마디(Hukhta)를 건네 어둠을 걷어내십시오.',
+    };
+  }
+  if (/결정|선택|진로|이직|사업|계약|돈|정의/.test(q)) {
+    return {
+      contextTheme: '진리 선택·아샤(Asha) 양심 감사',
+      gathasCitation: '《가타스》 야스나 30.2 — 각 사람은 선과 악, 진리(Asha)와 거짓(Druj) 사이에서 스스로 선택한다.',
+      ashaVsDrujDiagnosis: `단기적 편의와 양심의 기준이 부딪히는 갈림길입니다. '${triad.triadTitleKo}'의 기준으로 판단하십시오.`,
+      luminousPrescription: '당장 손해가 되더라도 장기적으로 떳떳한 쪽(Asha)을 택해야 흔들리지 않는 기반이 섭니다.',
+    };
+  }
+  if (/불안|지침|치유|건강|회복|우울|슬픔/.test(q)) {
+    return {
+      contextTheme: '하우르바타트 온전함·치유 감사',
+      gathasCitation: '《아베스타》 하우르바타트 — 맑은 물과 꺼지지 않는 불꽃이 지친 영육을 온전하게 회복시킨다.',
+      ashaVsDrujDiagnosis: `불안과 자기 의심으로 내면의 불꽃이 약해진 상태입니다. '${triad.triadTitleKo}'으로 생기를 되살리십시오.`,
+      luminousPrescription: '거창한 결심 대신 오늘 내 몸과 마음을 따뜻하게 돌보는 작은 선행(Hvarshta) 하나부터 실천하십시오.',
+    };
+  }
+  return {
+    contextTheme: '삼위일체 아샤(생각·말·행동) 감사',
+    gathasCitation: '《아베스타》 아셈 보후(Ashem Vohu) — 진리(Asha) 자체가 최선의 선이며 행복이다.',
+    ashaVsDrujDiagnosis: `생각·말·행동이 한 방향으로 정렬될 때 불필요한 불안이 사라집니다. '${triad.triadTitleKo}'을 점검하십시오.`,
+    luminousPrescription: triad.actionableDirective,
+  };
+}
+
+function buildTemporalRhythm(now: Date, seed: number): ZoroastrianTemporalRhythm {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const kstHour = kst.getUTCHours();
+  const month = kst.getUTCMonth() + 1;
+
+  let gahWatchWindow = '라피트윈 가(Rapithwin Gah · 정오의 성화 시간)';
+  let timingAdvice = '태양이 가장 높은 시간대처럼 밝고 투명하게 진실(Asha)을 실행에 옮기십시오.';
+  if (kstHour >= 4 && kstHour < 10) {
+    gahWatchWindow = '하반 가(Hawan Gah · 새벽 첫 빛의 시간)';
+    timingAdvice = '아침의 첫 생각(Humata)을 맑게 정화하고 오늘 베풀 선한 일 한 가지를 정하십시오.';
+  } else if (kstHour >= 16 && kstHour < 20) {
+    gahWatchWindow = '우제린 가(Uzerin Gah · 저녁 성화 봉헌 시간)';
+    timingAdvice = '하루의 말과 행동을 비추어 후회가 남지 않도록 따뜻한 마무리(Hukhta)를 건네십시오.';
+  } else if (kstHour >= 20 || kstHour < 4) {
+    gahWatchWindow = '아이위스루트렘·우샤힌 가(야간 성화 수호 시간)';
+    timingAdvice = '밤의 어둠 속에서 마음의 불씨(Atar)가 꺼지지 않도록 부정적 상념을 내려놓고 안식하십시오.';
+  }
+
+  let seasonalLightCycle = '빛의 순환기';
+  if (month >= 3 && month <= 5) seasonalLightCycle = '노루즈(Nowruz) 춘분 — 새 생명의 빛과 갱신 주기';
+  else if (month >= 6 && month <= 8) seasonalLightCycle = '하지 성화(Rapithwin) — 열정과 정의의 확충 주기';
+  else if (month >= 9 && month <= 11) seasonalLightCycle = '미흐라간(Mehregan) 추분 — 신뢰와 조화의 결실 주기';
+  else seasonalLightCycle = '야르다(Yalda) 동지 — 가장 긴 어둠을 건너는 불멸의 불씨 주기';
+
+  const atarRadianceIndex = 64 + ((seed + kstHour * 5 + month * 3) % 35);
+
+  return {
+    kstHour,
+    gahWatchWindow,
+    seasonalLightCycle,
+    atarRadianceIndex,
+    timingAdvice,
+  };
+}
+
+function buildSynthesisMatrix(
+  stage: AmeshaSpentaStage,
+  triad: typeof ZOROASTRIAN_TRIADS[number],
+  audit: AvestaSituationalAudit,
+  temporal: ZoroastrianTemporalRhythm,
+): AmeshaSynthesisMatrix {
+  const humataThoughtAxis = `후마타(선한 생각): ${stage.stageNameKo} (${audit.contextTheme})`;
+  const hukhtaSpeechAxis = `후크타(선한 말씀): ${triad.triadTitleKo}`;
+  const hvarshtaDeedAxis = `흐바르시타(시의 실천): ${temporal.gahWatchWindow} · ${temporal.seasonalLightCycle}`;
+  const synthesizedVerdict = `'${temporal.gahWatchWindow}'의 빛 아래 '${stage.stageNameKo}'의 자리에서 '${triad.triadTitleKo}'을 실천할 때, 내면의 불씨(Atar)가 가장 맑고 온전하게 타오릅니다.`;
+
+  return {
+    humataThoughtAxis,
+    hukhtaSpeechAxis,
+    hvarshtaDeedAxis,
+    synthesizedVerdict,
+  };
+}
+
+function getKstDateString(now: Date): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
   return kst.toISOString().replace('T', ' ').substring(0, 19) + ' KST';
 }
 
@@ -95,17 +207,22 @@ function hashSeed(seedStr: string): number {
   return Math.abs(h);
 }
 
-export function calculateZoroastrianAmeshaSpentas(profile?: UserProfile): ZoroastrianAmeshaSpentasResult {
+export function calculateZoroastrianAmeshaSpentas(
+  profile?: UserProfile,
+  question = '',
+  now: Date = new Date(),
+): ZoroastrianAmeshaSpentasResult {
   const birthdate = profile?.basic?.birthdate || '1995-03-21';
   const birthtime = profile?.basic?.birthtime || '12:00';
   const name = profile?.basic?.name || 'Inquirer';
-  const seed = hashSeed(`ZOROASTRIAN-AMESHA-${birthdate}-${birthtime}-${name}`);
+  const kstDay = new Date(now.getTime() + 9 * 60 * 60 * 1000).toISOString().slice(0, 10);
+  const seed = hashSeed(`ZOROASTRIAN-AMESHA-${birthdate}-${birthtime}-${name}-${kstDay}-${question}`);
 
-  const vohuManahGoodMindIndex = (seed % 41) + 60; // 60~100
-  const ashaVahishtaCosmicTruthForce = ((seed >> 3) % 43) + 58; // 58~100
-  const spentaArmaitiHolyDevotionScore = ((seed >> 5) % 39) + 62; // 62~100
-  const haurvatatWholenessHealingPower = ((seed >> 7) % 45) + 55; // 55~99
-  const ameretatImmortalityVitality = ((seed >> 9) % 38) + 63; // 63~100
+  const vohuManahGoodMindIndex = (seed % 41) + 60;
+  const ashaVahishtaCosmicTruthForce = ((seed >> 3) % 43) + 58;
+  const spentaArmaitiHolyDevotionScore = ((seed >> 5) % 39) + 62;
+  const haurvatatWholenessHealingPower = ((seed >> 7) % 45) + 55;
+  const ameretatImmortalityVitality = ((seed >> 9) % 38) + 63;
 
   const stageIdx = (seed >> 2) % AMESHA_STAGES.length;
   const activeSpentaStage = AMESHA_STAGES[stageIdx];
@@ -116,9 +233,13 @@ export function calculateZoroastrianAmeshaSpentas(profile?: UserProfile): Zoroas
   const epiphanyIdx = (seed >> 6) % SACRED_FIRE_EPIPHANIES.length;
   const avestaSacredFireEpiphany = SACRED_FIRE_EPIPHANIES[epiphanyIdx];
 
+  const situationalAvestaAudit = buildSituationalAudit(question, primaryZoroastrianTriad);
+  const temporalAtarRhythm = buildTemporalRhythm(now, seed);
+  const ameshaSynthesisMatrix = buildSynthesisMatrix(activeSpentaStage, primaryZoroastrianTriad, situationalAvestaAudit, temporalAtarRhythm);
+
   return {
     engineVersion: ZOROASTRIAN_AMESHA_SPENTAS_VERSION,
-    calculatedAtKst: getKstDateString(),
+    calculatedAtKst: getKstDateString(now),
     vohuManahGoodMindIndex,
     ashaVahishtaCosmicTruthForce,
     spentaArmaitiHolyDevotionScore,
@@ -127,23 +248,27 @@ export function calculateZoroastrianAmeshaSpentas(profile?: UserProfile): Zoroas
     activeSpentaStage,
     primaryZoroastrianTriad,
     avestaSacredFireEpiphany,
+    situationalAvestaAudit,
+    temporalAtarRhythm,
+    ameshaSynthesisMatrix,
   };
 }
 
 export function formatZoroastrianAmeshaSpentasPrompt(result: ZoroastrianAmeshaSpentasResult): string {
   return `[🔥 고대 페르시아 조로아스터교 《아베스타(Avesta)》 6대 신성 불멸자 빛의 조화 리포트]
-- 엔진 버전: ${result.engineVersion}
-- 보후 마나흐 선한 생각 및 순수 지성도: ${result.vohuManahGoodMindIndex}%
-- 아샤 바히시타 최상 진리 및 정의력: ${result.ashaVahishtaCosmicTruthForce}%
-- 스펜타 아르마이티 거룩한 헌신 및 겸양도: ${result.spentaArmaitiHolyDevotionScore}%
-- 하우르바타트 온전함 및 영육 치유력: ${result.haurvatatWholenessHealingPower}%
-- 아메레타트 불멸 및 영원한 생명력: ${result.ameretatImmortalityVitality}%
+- 엔진 버전: ${result.engineVersion} | 기준 시각: ${result.calculatedAtKst}
 - 현행 영적 품계: **[${result.activeSpentaStage.stageNameKo} (${result.activeSpentaStage.stageNameAvestan})]**
   → 관장 영역: ${result.activeSpentaStage.luminousDomain}
   → 신성한 빛 축복: ${result.activeSpentaStage.cosmicLightBlessing}
 - 최우선 실천 지침: **[${result.primaryZoroastrianTriad.triadTitleKo} (${result.primaryZoroastrianTriad.avestanMotto})]**
   → 핵심 본질: ${result.primaryZoroastrianTriad.coreEssence}
   → 실천 지침: ${result.primaryZoroastrianTriad.actionableDirective}
+- 상황 맥락 감사(${result.situationalAvestaAudit.contextTheme}): ${result.situationalAvestaAudit.gathasCitation}
+  → 아샤·드루지 진단: ${result.situationalAvestaAudit.ashaVsDrujDiagnosis}
+  → 빛의 처방: ${result.situationalAvestaAudit.luminousPrescription}
+- 시공간 성화 리듬: ${result.temporalAtarRhythm.gahWatchWindow} · ${result.temporalAtarRhythm.seasonalLightCycle}
+  → 시의 조언: ${result.temporalAtarRhythm.timingAdvice}
+- 아메샤 스펜타 교차 매트릭스: ${result.ameshaSynthesisMatrix.synthesizedVerdict}
 - 아베스타 신성 불꽃의 계시: 《${result.avestaSacredFireEpiphany.fireSceneTitle}》
   → 빛의 불멸 지혜: "${result.avestaSacredFireEpiphany.luminousWisdom}"`;
 }
