@@ -1,12 +1,14 @@
 /**
  * 오스트리아/유대 빅터 프랭클(Viktor Frankl) 《죽음의 수용소에서(Man's Search for Meaning)》 & 《로고테라피(Logotherapy)》 의미치료 엔진
  *
- * @version LUCKEY-VIKTOR-FRANKL-LOGOTHERAPY-v2.0.0
+ * @version LUCKEY-VIKTOR-FRANKL-LOGOTHERAPY-v2.1.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const AUSTRIAN_VIKTOR_FRANKL_VERSION = 'LUCKEY-VIKTOR-FRANKL-LOGOTHERAPY-v2.0.0';
+export const AUSTRIAN_VIKTOR_FRANKL_VERSION = 'LUCKEY-VIKTOR-FRANKL-LOGOTHERAPY-v2.1.0';
+
+export type FranklQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
 export interface FranklTheme {
   themeKey: string;
@@ -57,11 +59,15 @@ export interface ViktorFranklLogotherapyResult {
   selfTranscendenceDedicationScore: number;   // 자아를 넘어 타인과 가치를 향하는 자기초월성 (Self-Transcendence)
   lifeResponsibilityIntegrityIndex: number;   // 삶의 부름에 인격으로 응답하는 실존적 책임성 (Verantwortlichkeit)
   // 세부 분석
+  questionTopic: FranklQuestionTopic;
   activeFranklTheme: FranklTheme;
   focalFranklAphorism: FranklAphorism;
   situationalMeaningAudit: FranklSituationalMeaningAudit;
   temporalMeaningRhythm: FranklTemporalMeaningRhythm;
   logotherapyMatrix: FranklLogotherapyMatrix;
+  ritualAction: string;
+  reflectionFocus: string;
+  boundaryNotice: string;
   franklComprehensiveGuidance: {
     guidanceTitle: string;
     philosophicalCounsel: string;
@@ -235,6 +241,42 @@ function buildTemporalMeaningRhythm(now?: Date): FranklTemporalMeaningRhythm {
   };
 }
 
+function classifyFranklQuestionTopic(question?: string): FranklQuestionTopic {
+  const q = (question ?? '').trim();
+  if (/관계|사랑|가족|사람|헌신|외로|동료|연인/.test(q)) return 'relationship';
+  if (/결정|선택|진로|이직|후회|실수|책임|시작|포기/.test(q)) return 'decision';
+  if (/시련|고통|힘들|어렵|아프|절망|공허|무의미|우울/.test(q)) return 'healing';
+  return 'reflection';
+}
+
+function buildFranklRitualAndReflection(topic: FranklQuestionTopic): {
+  ritualAction: string;
+  reflectionFocus: string;
+} {
+  if (topic === 'relationship') {
+    return {
+      ritualAction: '오늘 소중한 사람에게 내가 먼저 건넬 수 있는 진심 어린 안부나 감사의 말 한 줄 전하기',
+      reflectionFocus: '지금 이 관계에서 내가 받으려는 인정보다 먼저 건네고 싶은 온기는 무엇인가?',
+    };
+  }
+  if (topic === 'decision') {
+    return {
+      ritualAction: '마치 두 번째 기회를 얻은 사람처럼 오늘 당장 바로잡고 착수할 행동 1가지 실행하기',
+      reflectionFocus: '지금 망설이는 선택을 내 인생이 내게 던진 물음이라 여긴다면 어떤 답을 남기고 싶은가?',
+    };
+  }
+  if (topic === 'healing') {
+    return {
+      ritualAction: '피할 수 없는 고단함 앞에서 오늘 내가 지키고 싶은 단 하나의 품위 있는 태도를 짧게 적어 두기',
+      reflectionFocus: '자극과 반응 사이의 짧은 공간에서 내가 여전히 선택할 수 있는 내면의 자유는 무엇인가?',
+    };
+  }
+  return {
+    ritualAction: '기분이나 의욕을 기다리지 않고 오늘 내가 완성할 수 있는 작은 의미 있는 과업 1건에 20분 몰입하기',
+    reflectionFocus: '오늘 나의 하루가 끝나갈 때 "이 시간은 헛되지 않았다"고 말할 수 있는 단 하나의 이유는 무엇인가?',
+  };
+}
+
 export function calculateViktorFranklLogotherapy(
   profile: UserProfile,
   question?: string,
@@ -246,7 +288,10 @@ export function calculateViktorFranklLogotherapy(
   const birthTime = profile?.basic?.birthtime ?? p?.birthTime ?? p?.birthtime ?? '12:00';
   const gender = profile?.basic?.gender ?? p?.gender ?? 'neutral';
 
-  const seedString = `VIKTOR-FRANKL-LOGOTHERAPY:${name}:${birthDate}:${birthTime}:${gender}`;
+  const questionTopic = classifyFranklQuestionTopic(question);
+  const { ritualAction, reflectionFocus } = buildFranklRitualAndReflection(questionTopic);
+
+  const seedString = `VIKTOR-FRANKL-LOGOTHERAPY:${name}:${birthDate}:${birthTime}:${gender}:${question ?? ''}`;
 
   let hash = 0;
   for (let i = 0; i < seedString.length; i++) {
@@ -287,6 +332,8 @@ export function calculateViktorFranklLogotherapy(
     `${activeFranklTheme.practicalCounsel} 아울러 원전의 불멸의 치유 경구 "${focalFranklAphorism.aphorismKo}"(${focalFranklAphorism.aphorismGermanOrEnglish})을 마음에 품고, ` +
     `${focalFranklAphorism.actionGuidance}`;
 
+  const boundaryNotice = '로고테라피 의미치료 관점은 삶의 태도와 의미를 성찰하는 철학적·상징적 조언이며, 전문 의료·정신건강 진료를 대신하지 않습니다.';
+
   return {
     engineVersion: AUSTRIAN_VIKTOR_FRANKL_VERSION,
     calculatedAtKst: (now ?? new Date()).toISOString(),
@@ -295,11 +342,15 @@ export function calculateViktorFranklLogotherapy(
     tragicOptimismResilienceScore,
     selfTranscendenceDedicationScore,
     lifeResponsibilityIntegrityIndex,
+    questionTopic,
     activeFranklTheme,
     focalFranklAphorism,
     situationalMeaningAudit,
     temporalMeaningRhythm,
     logotherapyMatrix,
+    ritualAction,
+    reflectionFocus,
+    boundaryNotice,
     franklComprehensiveGuidance: {
       guidanceTitle,
       philosophicalCounsel,
@@ -310,17 +361,18 @@ export function calculateViktorFranklLogotherapy(
 export function formatViktorFranklLogotherapyPrompt(res: ViktorFranklLogotherapyResult): string {
   return [
     `【빅터 프랭클 《죽음의 수용소에서》 시련 속 최후의 자유 & 의미치료 지표】`,
-    `- 최후의 자유 태도 선택력(Freedom): ${res.lastHumanFreedomAttitudeScore}/100`,
-    `- 의미를 향한 근원적 의지(Wille zum Sinn): ${res.willToMeaningDriveScore}/100`,
-    `- 비극적 낙관주의 회복탄력성(Optimismus): ${res.tragicOptimismResilienceScore}/100`,
-    `- 자아초월 가치·타인 헌신도(Transzendenz): ${res.selfTranscendenceDedicationScore}/100`,
-    `- 삶의 부름 실존 책임성(Verantwortung): ${res.lifeResponsibilityIntegrityIndex}/100`,
+    `- 질문 주제 맥락: ${res.questionTopic}`,
     `- 핵심 의미치료 테마: ${res.activeFranklTheme.themeTitleKo} [${res.activeFranklTheme.themeTitleGerman}]`,
+    `- 로고테라피 통찰: ${res.activeFranklTheme.logotherapyInsight}`,
+    `- 행동 조언: ${res.activeFranklTheme.practicalCounsel}`,
     `- 질문 맥락 의미 감사 (${res.situationalMeaningAudit.themeKo} · ${res.situationalMeaningAudit.sourceCitation}): "${res.situationalMeaningAudit.classicalQuote}"`,
     `- 실존 공허 함정: ${res.situationalMeaningAudit.existentialVacuumTrap}`,
     `- 태도 전환 실천: ${res.situationalMeaningAudit.attitudeShiftAction}`,
-    `- KST 의미 리듬: ${res.temporalMeaningRhythm.kstWindow} (${res.temporalMeaningRhythm.valuePathFocus}, 명료도 ${res.temporalMeaningRhythm.logotherapyClarityIndex}/100) — ${res.temporalMeaningRhythm.rhythmDirective}`,
-    `- 로고테라피 매트릭스: 태도 자유 ${res.logotherapyMatrix.attitudeFreedom} / 의미 정렬 ${res.logotherapyMatrix.meaningAlignment} / 자기초월 ${res.logotherapyMatrix.selfTranscendence} (종합 ${res.logotherapyMatrix.overallSynthesis}/100)`,
+    `- KST 의미 리듬: ${res.temporalMeaningRhythm.kstWindow} (${res.temporalMeaningRhythm.seasonalTone} · ${res.temporalMeaningRhythm.valuePathFocus}) — ${res.temporalMeaningRhythm.rhythmDirective}`,
+    `- 로고테라피 매트릭스: 최후의 자유 태도 선택 · 의미를 향한 의지 정렬 · 자기초월 헌신 정성 균형`,
+    `- 일상 실천 의례: ${res.ritualAction}`,
+    `- 핵심 성찰 질문: ${res.reflectionFocus}`,
     `- 종합 의미치료 권면: ${res.franklComprehensiveGuidance.philosophicalCounsel}`,
+    `- 해석 경계: ${res.boundaryNotice}`,
   ].join('\n');
 }

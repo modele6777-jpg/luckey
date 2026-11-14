@@ -3919,7 +3919,7 @@ try {
   // 288. 오스트리아 알프레트 아들러 《인간이해》 & 《삶의 의미》 열등감 극복 & 공동체 감각 지혜 엔진
   const austrianAlfredAdlerIndividualPsychologyResult = calculateSupplement('austrianAlfredAdlerIndividualPsychologyResult', () => ((() => {
     try {
-      return calculateAustrianAlfredAdlerIndividualPsychology(profile);
+      return calculateAustrianAlfredAdlerIndividualPsychology(profile, question, now);
     } catch (_) {
       return null;
     }
@@ -3946,7 +3946,7 @@ try {
   // 291. 오스트리아/영국 루트비히 비트겐슈타인 《논리철학논고·철학적 탐구》 언어게임 & 삶의형식·침묵의지혜 엔진
   const austrianWittgensteinLanguageGameSilenceResult = calculateSupplement('austrianWittgensteinLanguageGameSilenceResult', () => ((() => {
     try {
-      return calculateAustrianWittgensteinLanguageGameSilence(profile);
+      return calculateAustrianWittgensteinLanguageGameSilence(profile, question, now);
     } catch (_) {
       return null;
     }
