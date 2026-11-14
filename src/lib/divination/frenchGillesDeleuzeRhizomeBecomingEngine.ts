@@ -3,18 +3,27 @@
  *
  * 20세기 후반 현대 프랑스 철학의 거장 질 들뢰즈(Gilles Deleuze, 1925~1995)와 펠릭스 과타리(Félix Guattari)의
  * 불후의 대표 저술 《천 개의 고원(Mille Plateaux)》 및 《차이와 반복(Différence et Répétition)》 원전 기반:
- * 1. 리좀적 수평 접속 및 탈중심 네트워크 역량 (Rhizomatic Connection & Pluralism Index): 수목형(위계적·수직적) 모델을 넘어 중심 없이 사방으로 뻗어 나가며 이질적인 것들을 엮어내는 힘.
- * 2. 탈영토화 및 노마딕 경계 확장 결단력 (Deterritorialization & Nomadic Freedom Score): 고착된 틀과 제도화된 영역을 과감히 벗어나 새로운 가능성의 지평으로 탈주하는 용기.
- * 3. 순수한 차이의 긍정 및 다양체 포용 지표 (Affirmation of Pure Difference Index): 획일적 동일성의 잣대로 재단하지 않고 다름 그 자체의 고유한 생명력을 긍정하는 지혜.
- * 4. 창조적 '되기(Devenir / Becoming)' 변용 역동성 (Creative Becoming & Transformation Score): 고정된 정체성에 머물지 않고 끊임없이 새로운 존재로 변용하며 성장하는 활력.
- * 5. 고착 극복 및 잠재력 해방 회복탄력성 (Liberation of Potential & Resilience Score): 억압적인 도그마나 결핍의 환상을 부수고 내재적 충만과 생명 에너지를 회복하는 힘.
+ * 1. 리좀적 수평 접속 및 탈중심 네트워크 역량 (Rhizomatic Connection & Pluralism): 수목형(위계적·수직적) 모델을 넘어 중심 없이 사방으로 뻗어 나가며 이질적인 것들을 엮어내는 힘.
+ * 2. 탈영토화 및 노마딕 경계 확장 결단력 (Deterritorialization & Nomadic Freedom): 고착된 틀과 제도화된 영역을 과감히 벗어나 새로운 가능성의 지평으로 탈주하는 용기.
+ * 3. 순수한 차이의 긍정 및 다양체 포용 (Affirmation of Pure Difference): 획일적 동일성의 잣대로 재단하지 않고 다름 그 자체의 고유한 생명력을 긍정하는 지혜.
+ * 4. 창조적 '되기(Devenir / Becoming)' 변용 역동성 (Creative Becoming & Transformation): 고정된 정체성에 머물지 않고 끊임없이 새로운 존재로 변용하며 성장하는 활력.
+ * 5. 고착 극복 및 잠재력 해방 회복탄력성 (Liberation of Potential & Resilience): 억압적인 도그마나 결핍의 환상을 부수고 내재적 충만과 생명 에너지를 회복하는 힘.
  *
- * @version LUCKEY-DELEUZE-RHIZOME-BECOMING-v1.0.0
+ * @version LUCKEY-DELEUZE-RHIZOME-BECOMING-v1.1.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const FRENCH_GILLES_DELEUZE_RHIZOME_BECOMING_VERSION = 'LUCKEY-DELEUZE-RHIZOME-BECOMING-v1.0.0';
+export const FRENCH_GILLES_DELEUZE_RHIZOME_BECOMING_VERSION = 'LUCKEY-DELEUZE-RHIZOME-BECOMING-v1.1.0';
+
+export type DeleuzeQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
+
+export interface DeleuzeTemporalRhythm {
+  kstDateLabel: string;
+  timeBand: '새벽 탈주선' | '오전 리좀 접속' | '오후 탈영토화' | '저녁 차이 긍정' | '심야 되기 침잠';
+  nomadicTempo: string;
+  temporalGuidance: string;
+}
 
 export interface DeleuzeTheme {
   themeKey: string;
@@ -35,7 +44,9 @@ export interface DeleuzeAphorism {
 export interface FrenchGillesDeleuzeRhizomeBecomingResult {
   engineVersion: string;
   calculatedAtKst: string;
-  // 5대 들뢰즈 리좀·탈영토화·생성 핵심 지표 (0~100)
+  questionTopic: DeleuzeQuestionTopic;
+  temporalDeleuzeRhythm: DeleuzeTemporalRhythm;
+  // 5대 들뢰즈 리좀·탈영토화·생성 핵심 지표 (내부 호환용 보존, 프롬프트 비노출)
   rhizomaticHorizontalConnectionIndex: number;      // 리좀적 수평 접속 역량 (Rhizomatic Connection)
   deterritorializationNomadicFreedomScore: number;  // 탈영토화 노마딕 자유도 (Deterritorialization)
   affirmationOfDifferenceMultiplicityIndex: number; // 순수 차이 긍정 및 다양체 (Affirmation of Difference)
@@ -44,6 +55,10 @@ export interface FrenchGillesDeleuzeRhizomeBecomingResult {
   // 세부 분석
   activeDeleuzeTheme: DeleuzeTheme;
   focalDeleuzeAphorism: DeleuzeAphorism;
+  practiceGuidance: string;
+  dailyPracticeRitual: string;
+  reflectiveQuestion: string;
+  interpretiveBoundary: string;
   deleuzeComprehensiveGuidance: {
     guidanceTitle: string;
     philosophicalCounsel: string;
@@ -128,9 +143,116 @@ function hashString(str: string): number {
   return hash;
 }
 
+export function classifyDeleuzeQuestionTopic(question?: string): DeleuzeQuestionTopic {
+  const q = (question ?? '').toLowerCase();
+  if (/연애|사랑|관계|가족|친구|갈등|화해|이별|소통|사람|상대|동료|배우자/.test(q)) {
+    return 'relationship';
+  }
+  if (/결정|선택|이직|창업|진로|도전|방향|사업|투자|계약|결단|시작|그만/.test(q)) {
+    return 'decision';
+  }
+  if (/지치|불안|우울|회복|위로|상처|아픔|피로|휴식|번아웃|힘들|치유|걱정/.test(q)) {
+    return 'healing';
+  }
+  return 'reflection';
+}
+
+export function buildDeleuzeTemporalRhythm(now: Date = new Date()): DeleuzeTemporalRhythm {
+  const kstMs = now.getTime() + 9 * 60 * 60 * 1000;
+  const kst = new Date(kstMs);
+  const yyyy = kst.getUTCFullYear();
+  const mm = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const dd = String(kst.getUTCDate()).padStart(2, '0');
+  const hour = kst.getUTCHours();
+
+  if (hour >= 4 && hour < 8) {
+    return {
+      kstDateLabel: `${yyyy}-${mm}-${dd} 새벽`,
+      timeBand: '새벽 탈주선',
+      nomadicTempo: '관성의 경계를 넘어 첫 탈주선이 열리는 고요한 영토',
+      temporalGuidance: '기존의 틀이 아직 굳기 전, 고정관념을 벗어난 새로운 접속점을 상상하기 좋은 새벽입니다.',
+    };
+  }
+  if (hour >= 8 && hour < 12) {
+    return {
+      kstDateLabel: `${yyyy}-${mm}-${dd} 오전`,
+      timeBand: '오전 리좀 접속',
+      nomadicTempo: '이질적인 아이디어와 사람이 수평으로 만나는 시간',
+      temporalGuidance: '수직적 위계나 정답 강박을 내려놓고, 낯선 분야와 가볍게 연결해 보기 알맞은 오전입니다.',
+    };
+  }
+  if (hour >= 12 && hour < 18) {
+    return {
+      kstDateLabel: `${yyyy}-${mm}-${dd} 오후`,
+      timeBand: '오후 탈영토화',
+      nomadicTempo: '익숙한 루틴에서 반 보 벗어나 변용을 실험하는 흐름',
+      temporalGuidance: '반복되는 일과 속에서 작은 우회로 하나를 열어 새로운 감각을 불러들이기 좋은 오후입니다.',
+    };
+  }
+  if (hour >= 18 && hour < 22) {
+    return {
+      kstDateLabel: `${yyyy}-${mm}-${dd} 저녁`,
+      timeBand: '저녁 차이 긍정',
+      nomadicTempo: '비교와 획일성을 내려놓고 고유한 다름을 품는 시간',
+      temporalGuidance: '남과 달랐던 오늘의 선택과 흔적을 결핍이 아닌 나만의 차이로 긍정하는 저녁입니다.',
+    };
+  }
+  return {
+    kstDateLabel: `${yyyy}-${mm}-${dd} 심야`,
+    timeBand: '심야 되기 침잠',
+    nomadicTempo: '고정된 명사를 풀어 헤쳐 내일의 생성(Devenir)을 잉태하는 밤',
+    temporalGuidance: '스스로를 가두던 자기규정을 잠시 내려놓고, 자유로운 유목적 사유가 숨 쉬도록 여백을 두는 밤입니다.',
+  };
+}
+
+function describeQualitativeIntensity(score: number): string {
+  if (score >= 90) return '왕성한 노마딕 약동';
+  if (score >= 84) return '유연한 리좀 확장';
+  return '차분한 변용 준비';
+}
+
+function buildDeleuzeTopicContext(
+  topic: DeleuzeQuestionTopic,
+  theme: DeleuzeTheme,
+  temporal: DeleuzeTemporalRhythm
+): {
+  practiceGuidance: string;
+  dailyPracticeRitual: string;
+  reflectiveQuestion: string;
+} {
+  switch (topic) {
+    case 'relationship':
+      return {
+        practiceGuidance: `관계에서는 누가 위이고 아래인지 따지는 수목형 위계를 허물고, 서로의 차이를 존중하는 수평적 접속이 해답입니다. '${theme.themeTitleKo}'의 시선으로 관계의 새 통로를 열어 보세요.`,
+        dailyPracticeRitual: `[${temporal.timeBand}] 상대방과 내가 다른 지점을 고치려 들지 않고, 그 다름이 만든 흥미로운 점 1가지를 메모해 보기`,
+        reflectiveQuestion: '지금 이 관계에서 나를 답답하게 만드는 고정된 역할 기대는 무엇이며, 어떻게 수평적으로 다시 연결할 수 있을까요?',
+      };
+    case 'decision':
+      return {
+        practiceGuidance: `선택 앞에서는 '원래 하던 대로'라는 안전한 영토가 발목을 잡기 쉽습니다. '${theme.themeTitleKo}'처럼 두 갈래 밖의 제3의 탈주선까지 열어 두고 움직여 보세요.`,
+        dailyPracticeRitual: `[${temporal.timeBand}] 지금 고민하는 두 선택지 외에, 전혀 다른 분야의 사람이라면 고를 법한 엉뚱한 제3안 하나를 적어 보기`,
+        reflectiveQuestion: '내가 망설이는 이유가 위험해서인가요, 아니면 단지 익숙한 영토를 떠나는 것이 낯설기 때문인가요?',
+      };
+    case 'healing':
+      return {
+        practiceGuidance: `마음이 지칠 때는 욕망을 '부족함'으로 읽는 시선을 멈추고 내면의 충만함을 회복해야 합니다. '${theme.themeTitleKo}'를 따라 남과의 비교를 잠시 꺼 두세요.`,
+        dailyPracticeRitual: `[${temporal.timeBand}] 해야 할 일 목록에서 비교와 평가가 섞인 항목 하나를 지우고, 순수하게 즐거워서 하는 10분 행동 넣기`,
+        reflectiveQuestion: '지금 나를 지치게 하는 것은 실제 내 몸의 피로인가요, 아니면 남과 같아야 한다는 획일성의 압박인가요?',
+      };
+    case 'reflection':
+    default:
+      return {
+        practiceGuidance: `스스로를 돌아볼 때는 '나는 원래 이런 사람'이라는 고정된 명사를 동사로 바꾸는 연습이 필요합니다. '${theme.themeTitleKo}'의 리듬으로 오늘의 변화를 읽어 보세요.`,
+        dailyPracticeRitual: `[${temporal.timeBand}] 평소 자주 쓰던 '나는 원래 ~해'라는 표현을 '요즘 나는 ~되어 가는 중이야'로 바꿔 한 줄 써 보기`,
+        reflectiveQuestion: '지금 내 삶에서 가장 굳어 있는 습관의 뿌리는 어디이며, 어떤 새로운 접속이 나를 다시 흐르게 할 수 있을까요?',
+      };
+  }
+}
+
 export function calculateFrenchGillesDeleuzeRhizomeBecoming(
   profile?: UserProfile,
   query?: string,
+  now: Date = new Date(),
 ): FrenchGillesDeleuzeRhizomeBecomingResult {
   const p = profile as any;
   const name = profile?.basic?.name ?? p?.name ?? '남희';
@@ -138,7 +260,10 @@ export function calculateFrenchGillesDeleuzeRhizomeBecoming(
   const birthTime = profile?.basic?.birthtime ?? p?.birthTime ?? p?.birthtime ?? '12:00';
   const gender = profile?.basic?.gender ?? p?.gender ?? 'neutral';
 
-  const seedString = `DELEUZE-RHIZOME-BECOMING:${name}:${birthDate}:${birthTime}:${gender}:${query ?? ''}`;
+  const questionTopic = classifyDeleuzeQuestionTopic(query);
+  const temporalDeleuzeRhythm = buildDeleuzeTemporalRhythm(now);
+
+  const seedString = `DELEUZE-RHIZOME-BECOMING:${name}:${birthDate}:${birthTime}:${gender}:${questionTopic}:${query ?? ''}`;
   const baseHash = hashString(seedString);
   const absHash = Math.abs(baseHash);
 
@@ -154,15 +279,26 @@ export function calculateFrenchGillesDeleuzeRhizomeBecoming(
   const activeDeleuzeTheme = DELEUZE_THEMES[themeIndex];
   const focalDeleuzeAphorism = DELEUZE_APHORISMS[aphorismIndex];
 
+  const { practiceGuidance, dailyPracticeRitual, reflectiveQuestion } = buildDeleuzeTopicContext(
+    questionTopic,
+    activeDeleuzeTheme,
+    temporalDeleuzeRhythm
+  );
+
+  const interpretiveBoundary =
+    '이 해석은 운명을 고정된 숫자로 단정하는 예언이 아니라, 질 들뢰즈의 리좀·탈영토화·생성(Devenir) 철학을 통해 현재 상황의 열린 연결성과 변용 가능성을 비추어 보는 상징적 성찰 가이드입니다.';
+
   const guidanceTitle = `들뢰즈 리좀·탈영토화 지혜: ${activeDeleuzeTheme.themeTitleKo}`;
   const philosophicalCounsel = `현대 사상의 지형을 바꾼 질 들뢰즈는 수직적 위계를 허무는 '리좀(Rhizome)'적 접속, 한계를 돌파하는 '탈영토화(Déterritorialisation)', 그리고 끊임없이 변용하는 '되기(Devenir)'의 철학을 완성했습니다. ` +
     `현재 당신의 흐름에서 가장 역동적인 활력을 불어넣는 핵심 원리는 '${activeDeleuzeTheme.themeTitleKo}'입니다. ` +
-    `${activeDeleuzeTheme.practicalCounsel} 들뢰즈의 명언 "${focalDeleuzeAphorism.aphorismKo} (${focalDeleuzeAphorism.aphorismOriginal})"을 되새기며, ` +
+    `${activeDeleuzeTheme.practicalCounsel} ${practiceGuidance} 들뢰즈의 명언 "${focalDeleuzeAphorism.aphorismKo} (${focalDeleuzeAphorism.aphorismOriginal})"을 되새기며, ` +
     `${focalDeleuzeAphorism.actionGuidance}`;
 
   return {
     engineVersion: FRENCH_GILLES_DELEUZE_RHIZOME_BECOMING_VERSION,
-    calculatedAtKst: new Date().toISOString(),
+    calculatedAtKst: temporalDeleuzeRhythm.kstDateLabel,
+    questionTopic,
+    temporalDeleuzeRhythm,
     rhizomaticHorizontalConnectionIndex,
     deterritorializationNomadicFreedomScore,
     affirmationOfDifferenceMultiplicityIndex,
@@ -170,6 +306,10 @@ export function calculateFrenchGillesDeleuzeRhizomeBecoming(
     desiringProductionLiberationResilienceScore,
     activeDeleuzeTheme,
     focalDeleuzeAphorism,
+    practiceGuidance,
+    dailyPracticeRitual,
+    reflectiveQuestion,
+    interpretiveBoundary,
     deleuzeComprehensiveGuidance: {
       guidanceTitle,
       philosophicalCounsel,
@@ -181,18 +321,25 @@ export function formatFrenchGillesDeleuzeRhizomeBecomingPrompt(
   res: FrenchGillesDeleuzeRhizomeBecomingResult,
 ): string {
   return [
-    `【들뢰즈 《천 개의 고원·차이와 반복》 리좀·탈영토화·생성 지혜 지표】`,
-    `- 리좀적 수평 접속 역량(Rhizomatic Connection Index): ${res.rhizomaticHorizontalConnectionIndex}/100`,
-    `- 탈영토화 노마딕 자유도(Deterritorialization Score): ${res.deterritorializationNomadicFreedomScore}/100`,
-    `- 순수 차이 긍정 및 다양체(Affirmation of Difference): ${res.affirmationOfDifferenceMultiplicityIndex}/100`,
-    `- 창조적 되기 변용 역동성(Creative Becoming Vitality): ${res.creativeBecomingVitalityScore}/100`,
-    `- 잠재력 해방 회복탄력성(Liberation of Potential Resilience): ${res.desiringProductionLiberationResilienceScore}/100`,
+    `【들뢰즈 《천 개의 고원·차이와 반복》 리좀·탈영토화·생성 성찰 가이드】`,
+    `- 질문 주제 맥락: ${res.questionTopic}`,
+    `- KST 시공간 리듬: ${res.temporalDeleuzeRhythm.kstDateLabel} · ${res.temporalDeleuzeRhythm.timeBand} (${res.temporalDeleuzeRhythm.nomadicTempo})`,
+    `- 시공간 권면: ${res.temporalDeleuzeRhythm.temporalGuidance}`,
+    `- 리좀적 수평 접속 역량(Rhizomatic Connection): ${describeQualitativeIntensity(res.rhizomaticHorizontalConnectionIndex)}`,
+    `- 탈영토화 노마딕 자유도(Deterritorialization): ${describeQualitativeIntensity(res.deterritorializationNomadicFreedomScore)}`,
+    `- 순수 차이 긍정 및 다양체(Affirmation of Difference): ${describeQualitativeIntensity(res.affirmationOfDifferenceMultiplicityIndex)}`,
+    `- 창조적 되기 변용 역동성(Creative Becoming): ${describeQualitativeIntensity(res.creativeBecomingVitalityScore)}`,
+    `- 잠재력 해방 회복탄력성(Liberation Resilience): ${describeQualitativeIntensity(res.desiringProductionLiberationResilienceScore)}`,
     `- 핵심 들뢰즈 테마: ${res.activeDeleuzeTheme.themeTitleKo} [${res.activeDeleuzeTheme.themeTitleEn}]`,
     `- 실천적 통찰: ${res.activeDeleuzeTheme.pragmaticInsight}`,
     `- 행동 조언: ${res.activeDeleuzeTheme.practicalCounsel}`,
+    `- 맥락 맞춤 가이드: ${res.practiceGuidance}`,
+    `- 오늘의 실천 의례(${res.questionTopic}): ${res.dailyPracticeRitual}`,
+    `- 성찰 질문: ${res.reflectiveQuestion}`,
     `- 들뢰즈 원전 명언: "${res.focalDeleuzeAphorism.aphorismKo}" (${res.focalDeleuzeAphorism.aphorismOriginal})`,
     `- 원전 출처: [${res.focalDeleuzeAphorism.sourceContext}]`,
     `- 구체적 실천 지침: ${res.focalDeleuzeAphorism.actionGuidance}`,
     `- 종합 들뢰즈 권면: ${res.deleuzeComprehensiveGuidance.philosophicalCounsel}`,
+    `- 해석 경계: ${res.interpretiveBoundary}`,
   ].join('\n');
 }

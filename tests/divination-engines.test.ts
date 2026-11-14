@@ -5220,7 +5220,7 @@ test('Henri Bergson Elan Vital Engine: calculates Pure Duration, Elan Vital, and
   assert(rep.openSocietyVitalityIndex >= 0 && rep.openSocietyVitalityIndex <= 100);
   assert(rep.activeBergsonTheme.themeTitleKo.length > 0);
   const prompt = formatHenriBergsonElanVitalPrompt(rep);
-  assert(prompt.includes('앙리 베르그송 《시간과 자유의지》 순수 지속 & 생명의 도약 지표'));
+  assert(prompt.includes('앙리 베르그송 《시간과 자유의지·창조적 진화》 순수 지속 & 생명의 도약 성찰 가이드'));
   assert(prompt.includes(rep.activeBergsonTheme.themeTitleKo));
 });
 
@@ -5854,7 +5854,7 @@ test('Gilles Deleuze Rhizome and Becoming Engine: calculates Rhizomatic Connecti
   assert(rep.desiringProductionLiberationResilienceScore >= 0 && rep.desiringProductionLiberationResilienceScore <= 100);
   assert(rep.activeDeleuzeTheme.themeTitleKo.length > 0);
   const prompt = formatFrenchGillesDeleuzeRhizomeBecomingPrompt(rep);
-  assert(prompt.includes('들뢰즈 《천 개의 고원·차이와 반복》 리좀·탈영토화·생성 지혜 지표'));
+  assert(prompt.includes('들뢰즈 《천 개의 고원·차이와 반복》 리좀·탈영토화·생성 성찰 가이드'));
   assert(prompt.includes(rep.activeDeleuzeTheme.themeTitleKo));
 });
 
@@ -5992,7 +5992,7 @@ test('Maurice Merleau-Ponty Embodied Phenomenology Engine: calculates Body-Subje
   assert(rep.phenomenologicalGroundingResilienceScore >= 0 && rep.phenomenologicalGroundingResilienceScore <= 100);
   assert(rep.activePontyTheme.themeTitleKo.length > 0);
   const prompt = formatFrenchMauriceMerleauPontyEmbodiedPhenomenologyPrompt(rep);
-  assert(prompt.includes('모리스 메를로퐁티 《지각의 현상학》 신체-주체 및 원초적 지각 지표'));
+  assert(prompt.includes('모리스 메를로퐁티 《지각의 현상학·눈과 마음》 신체-주체 및 원초적 지각 성찰 가이드'));
   assert(prompt.includes(rep.activePontyTheme.themeTitleKo));
 });
 
@@ -7037,6 +7037,46 @@ test('v2.1.0 qualitative deepening without score exposure: Camus, Sartre, and Be
   const beauvoirPrompt = formatFrenchSimoneDeBeauvoirAmbiguityFreedomPrompt(beauvoir);
   assert.ok(beauvoirPrompt.includes('오늘의 실천 의례(healing)'));
   assert.ok(!beauvoirPrompt.includes('/100') && !beauvoirPrompt.includes('%'));
+});
+
+test('v1.1.0 qualitative deepening without score exposure: Bergson, Deleuze, and Merleau-Ponty', () => {
+  const testProfile = {
+    basic: {
+      name: '남희',
+      birthdate: '1988-05-12',
+      birthtime: '09:30',
+      gender: 'female' as const,
+      calendarType: 'solar' as const,
+    },
+  };
+  const now = new Date('2026-11-14T17:40:00.000Z'); // KST 2026-11-15 02:40
+
+  const bergson = calculateHenriBergsonElanVital(testProfile, '새로운 도전을 시작할지 결정하기 어려워요', now);
+  assert.equal(bergson.engineVersion, FRENCH_HENRI_BERGSON_VERSION);
+  assert.equal(bergson.questionTopic, 'decision');
+  assert.ok(bergson.temporalBergsonRhythm.kstDateLabel.includes('2026-11-15'));
+  assert.ok(bergson.dailyPracticeRitual.length > 0 && bergson.reflectiveQuestion.length > 0 && bergson.interpretiveBoundary.length > 0);
+  const bergsonPrompt = formatHenriBergsonElanVitalPrompt(bergson);
+  assert.ok(bergsonPrompt.includes('질문 주제 맥락: decision'));
+  assert.ok(!bergsonPrompt.includes('/100') && !bergsonPrompt.includes('%'));
+
+  const deleuze = calculateFrenchGillesDeleuzeRhizomeBecoming(testProfile, '사람들과의 관계에서 답답함이 느껴져요', now);
+  assert.equal(deleuze.engineVersion, FRENCH_GILLES_DELEUZE_RHIZOME_BECOMING_VERSION);
+  assert.equal(deleuze.questionTopic, 'relationship');
+  assert.ok(deleuze.temporalDeleuzeRhythm.kstDateLabel.includes('2026-11-15'));
+  assert.ok(deleuze.dailyPracticeRitual.length > 0 && deleuze.reflectiveQuestion.length > 0 && deleuze.interpretiveBoundary.length > 0);
+  const deleuzePrompt = formatFrenchGillesDeleuzeRhizomeBecomingPrompt(deleuze);
+  assert.ok(deleuzePrompt.includes('질문 주제 맥락: relationship'));
+  assert.ok(!deleuzePrompt.includes('/100') && !deleuzePrompt.includes('%'));
+
+  const ponty = calculateFrenchMauriceMerleauPontyEmbodiedPhenomenology(testProfile, '요즘 너무 지치고 불안해서 쉬고 싶어요', now);
+  assert.equal(ponty.engineVersion, FRENCH_MAURICE_MERLEAU_PONTY_EMBODIED_PHENOMENOLOGY_VERSION);
+  assert.equal(ponty.questionTopic, 'healing');
+  assert.ok(ponty.temporalMerleauPontyRhythm.kstDateLabel.includes('2026-11-15'));
+  assert.ok(ponty.dailyPracticeRitual.length > 0 && ponty.reflectiveQuestion.length > 0 && ponty.interpretiveBoundary.length > 0);
+  const pontyPrompt = formatFrenchMauriceMerleauPontyEmbodiedPhenomenologyPrompt(ponty);
+  assert.ok(pontyPrompt.includes('질문 주제 맥락: healing'));
+  assert.ok(!pontyPrompt.includes('/100') && !pontyPrompt.includes('%'));
 });
 
 
