@@ -28,7 +28,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const CELTIC_OGHAM_VERSION = 'LUCKEY-CELTIC-OGHAM-v1.0.0';
+export const CELTIC_OGHAM_VERSION = 'LUCKEY-CELTIC-OGHAM-v2.0.0';
 
 export interface OghamTree {
   nameOgham: string;
@@ -42,12 +42,36 @@ export interface OghamTree {
   celticAphorism: string;
 }
 
+export interface OghamSituationalAudit {
+  groveQuestionAxis: string;
+  treeResonanceFocus: string;
+  druidMedicineAction: string;
+  rootCaution: string;
+}
+
+export interface OghamTemporalRhythm {
+  kstHour: number;
+  groveWatchWindow: string;
+  lunarTreeSeason: string;
+  attunementGuidance: string;
+  groveTempo: '발아' | '성장' | '휴면';
+}
+
+export interface OghamSynthesisMatrix {
+  resonanceState: '깊은공명' | '조화순환' | '뿌리안정';
+  birthSeasonalLink: string;
+  nextGroveStep: string;
+}
+
 export interface CelticTreeOghamReport {
   engineVersion: string;
   calculatedAt: string;
   birthGuardianTree: OghamTree;
   seasonalOracleTree: OghamTree;
-  druidWisdomScore: number;     // 0 ~ 100 대자연 공명 점수
+  druidWisdomScore: number;     // 내부 연산용
+  situationalOghamAudit: OghamSituationalAudit;
+  temporalOghamRhythm: OghamTemporalRhythm;
+  oghamSynthesisMatrix: OghamSynthesisMatrix;
   treeMedicinePrescription: string;
   natureAttunementAffirmation: string;
 }
@@ -198,9 +222,94 @@ const CELTIC_TREES: OghamTree[] = [
   }
 ];
 
+function getKstOghamParts(now: Date): { hour: number; month: number } {
+  const formatter = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Asia/Seoul',
+    hour: 'numeric',
+    month: 'numeric',
+    hour12: false,
+  });
+  const parts = formatter.formatToParts(now);
+  return {
+    hour: Number(parts.find((p) => p.type === 'hour')?.value || '12') % 24,
+    month: Number(parts.find((p) => p.type === 'month')?.value || '1'),
+  };
+}
+
+function buildOghamSituationalAudit(
+  question: string,
+  birthTree: OghamTree,
+  seasonalTree: OghamTree
+): OghamSituationalAudit {
+  const q = question.toLowerCase();
+  if (/일|진로|사업|이직|선택|시험|계획/.test(q)) {
+    return {
+      groveQuestionAxis: '성장의 방향과 뿌리 기반 점검',
+      treeResonanceFocus: `${birthTree.nameTreeKo}의 기질 위에 ${seasonalTree.nameTreeKo}의 실행력 접목`,
+      druidMedicineAction: '지금 진행 중인 일에서 핵심 줄기 하나만 남기고 잔가지를 쳐내는 우선순위 정리를 하십시오.',
+      rootCaution: '겉잎만 무성하고 뿌리가 얕으면 계절 바람에 흔들립니다.',
+    };
+  }
+  if (/관계|사랑|연애|사람|가족|갈등|화해/.test(q)) {
+    return {
+      groveQuestionAxis: '숲의 연대와 경계선 조율',
+      treeResonanceFocus: `${seasonalTree.nameTreeKo} (${seasonalTree.guardianKeyword})의 포용과 유연성`,
+      druidMedicineAction: '가까운 사이일수록 나무 사이의 적당한 그늘과 간격을 존중하며 따뜻한 안부를 건네십시오.',
+      rootCaution: '상대의 영역까지 뿌리를 뻗어 통제하려 들지 마십시오.',
+    };
+  }
+  return {
+    groveQuestionAxis: `${seasonalTree.nameTreeKo} 숲의 계절 순응`,
+    treeResonanceFocus: seasonalTree.treeMedicine,
+    druidMedicineAction: '가까운 나무나 식물을 잠시 바라보며 호흡을 천천히 세 번 가다듬으십시오.',
+    rootCaution: '씨앗을 심자마자 열매를 따려는 조급함을 경계하십시오.',
+  };
+}
+
+function buildOghamTemporalRhythm(now: Date): OghamTemporalRhythm {
+  const { hour, month } = getKstOghamParts(now);
+
+  let groveWatchWindow = '아침 자작나무 이슬 창';
+  let groveTempo: OghamTemporalRhythm['groveTempo'] = '발아';
+  let attunementGuidance = '신선한 호흡과 함께 오늘의 의도를 맑게 세우기 좋은 시간입니다.';
+
+  if (hour >= 5 && hour < 10) {
+    groveWatchWindow = '여명 숲 이슬 발아 창 (05~10시)';
+    groveTempo = '발아';
+    attunementGuidance = '새로운 시작과 맑은 직관이 열리므로 오늘의 핵심 과업을 먼저 펼치십시오.';
+  } else if (hour >= 10 && hour < 17) {
+    groveWatchWindow = '정오 참나무 광합성 성장 창 (10~17시)';
+    groveTempo = '성장';
+    attunementGuidance = '햇빛을 받아 줄기를 뻗듯 실질적 실행과 소통에 힘을 싣기 좋습니다.';
+  } else if (hour >= 17 && hour < 21) {
+    groveWatchWindow = '황혼 버드나무 순환 정리 창 (17~21시)';
+    groveTempo = '성장';
+    attunementGuidance = '감정의 찌꺼기를 바람에 흘려보내고 하루를 차분히 갈무리하십시오.';
+  } else {
+    groveWatchWindow = '심야 엘더(Elder) 뿌리 휴면 창 (21~05시)';
+    groveTempo = '휴면';
+    attunementGuidance = '에너지를 뿌리로 내려보내 깊은 쉼 속에서 재생을 도모할 시간입니다.';
+  }
+
+  let lunarTreeSeason = '켈트 13태음월 순환절';
+  if (month >= 3 && month <= 5) lunarTreeSeason = '봄 · 버드나무·물푸레 발아절';
+  else if (month >= 6 && month <= 8) lunarTreeSeason = '여름 · 참나무·호랑가시 만개절';
+  else if (month >= 9 && month <= 11) lunarTreeSeason = '가을 · 포도나무·갈대 수확절';
+  else lunarTreeSeason = '겨울 · 엘더·자작나무 정화절';
+
+  return {
+    kstHour: hour,
+    groveWatchWindow,
+    lunarTreeSeason,
+    attunementGuidance,
+    groveTempo,
+  };
+}
+
 export function calculateCelticTreeOgham(
   profile?: UserProfile | null,
-  targetDate: Date = new Date()
+  targetDate: Date = new Date(),
+  question: string = ''
 ): CelticTreeOghamReport {
   let month = 8;
   let day = 15;
@@ -241,12 +350,22 @@ export function calculateCelticTreeOgham(
   let seasonalIndex = (birthTreeIndex + Math.floor(targetMonthDay / 30)) % CELTIC_TREES.length;
   const seasonalOracleTree = CELTIC_TREES[seasonalIndex];
 
-  // 드루이드 공명 점수 (70 ~ 99)
+  // 드루이드 공명 점수 (내부 연산용)
   const druidWisdomScore = 72 + ((month * 7 + day * 13) % 27);
 
   const treeMedicinePrescription = `내담자의 본명 수호목은 [${birthGuardianTree.nameOgham} - ${birthGuardianTree.nameTreeKo}] (${birthGuardianTree.oghamLetter})입니다. 현재 시점에는 [${seasonalOracleTree.nameTreeKo}]의 [${seasonalOracleTree.guardianKeyword}] 기운이 강력하게 공명하고 있습니다. ${seasonalOracleTree.treeMedicine}.`;
 
   const natureAttunementAffirmation = `나는 [${birthGuardianTree.nameTreeKo}]의 깊은 뿌리처럼 흔들림 없이 안전하며, [${seasonalOracleTree.nameTreeKo}]의 푸른 잎처럼 대자연의 지혜와 풍요를 온몸으로 흡수한다.`;
+
+  const situationalOghamAudit = buildOghamSituationalAudit(question, birthGuardianTree, seasonalOracleTree);
+  const temporalOghamRhythm = buildOghamTemporalRhythm(targetDate);
+  const resonanceState: OghamSynthesisMatrix['resonanceState'] =
+    druidWisdomScore >= 88 ? '깊은공명' : druidWisdomScore >= 78 ? '조화순환' : '뿌리안정';
+  const oghamSynthesisMatrix: OghamSynthesisMatrix = {
+    resonanceState,
+    birthSeasonalLink: `${birthGuardianTree.nameTreeKo}(${birthGuardianTree.element})와 현재 ${seasonalOracleTree.nameTreeKo}(${seasonalOracleTree.element})가 ${temporalOghamRhythm.groveWatchWindow}에서 만납니다.`,
+    nextGroveStep: situationalOghamAudit.druidMedicineAction,
+  };
 
   return {
     engineVersion: CELTIC_OGHAM_VERSION,
@@ -254,6 +373,9 @@ export function calculateCelticTreeOgham(
     birthGuardianTree,
     seasonalOracleTree,
     druidWisdomScore,
+    situationalOghamAudit,
+    temporalOghamRhythm,
+    oghamSynthesisMatrix,
     treeMedicinePrescription,
     natureAttunementAffirmation
   };
@@ -265,9 +387,14 @@ export function formatCelticTreeOghamPrompt(report: CelticTreeOghamReport): stri
   - 오검 신성 문자: ${report.birthGuardianTree.oghamLetter} | 수호 원소: ${report.birthGuardianTree.element} | 주기: ${report.birthGuardianTree.periodKo}
   - 수호목 핵심 키워드: ${report.birthGuardianTree.guardianKeyword}
   - 드루이드 격언: "${report.birthGuardianTree.celticAphorism}"
-- **현재 공명 오라클 나무**: ${report.seasonalOracleTree.nameTreeKo} (${report.seasonalOracleTree.nameOgham})
+- **현재 공명 오라클 나무**: ${report.seasonalOracleTree.nameTreeKo} (${report.seasonalOracleTree.nameOgham}) · 공명 상태(${report.oghamSynthesisMatrix.resonanceState})
   - 계절적 조언: ${report.seasonalOracleTree.guardianKeyword}
-- **대자연 공명 점수**: ${report.druidWisdomScore}점 / 100점
+- **질문 맥락 감사**: ${report.situationalOghamAudit.groveQuestionAxis} · 초점(${report.situationalOghamAudit.treeResonanceFocus})
+  - 드루이드 처방: ${report.situationalOghamAudit.druidMedicineAction}
+  - 뿌리 경계: ${report.situationalOghamAudit.rootCaution}
+- **KST 시공간 리듬 (${report.temporalOghamRhythm.kstHour}시)**: ${report.temporalOghamRhythm.groveWatchWindow} · ${report.temporalOghamRhythm.lunarTreeSeason} (${report.temporalOghamRhythm.groveTempo})
+  - 시간대 지침: ${report.temporalOghamRhythm.attunementGuidance}
+- **수목 교차 매트릭스**: ${report.oghamSynthesisMatrix.birthSeasonalLink}
 - **수목 치유 처방 (Tree Medicine)**: ${report.treeMedicinePrescription}
 - **자연 조율 확언 (Affirmation)**: ${report.natureAttunementAffirmation}`;
 }

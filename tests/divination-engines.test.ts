@@ -2420,6 +2420,7 @@ test('Akashic Records Oracle Engine: 아카식 레코드 영혼 서약 & 카르�
   const prompt = formatAkashicRecordsOraclePrompt(res);
   assert(prompt.includes('LUCKEY 아카식 레코드 영혼 서약 & 카르믹 청사진'));
   assert(prompt.includes(res.soulOrigin.originSystem));
+  assert(!prompt.includes('/100') && !prompt.includes('자각도:'));
 });
 
 test('Quantum Probabilistic Timeline Engine: 양자 다중우주 타임라인 분기 & 퀀텀 점프 검증', () => {
@@ -2815,6 +2816,7 @@ test('Celtic Tree Ogham Engine: derives birth guardian tree and seasonal oracle'
   const prompt = formatCelticTreeOghamPrompt(rep);
   assert(prompt.includes('켈트 오검'));
   assert(prompt.includes(rep.birthGuardianTree.nameTreeKo));
+  assert(!prompt.includes('/100') && !prompt.includes('점수'));
 });
 
 test('Taoist Sanbao Inner Alchemy Engine: calculates Jing-Qi-Shen and alchemy phase', () => {
@@ -3256,8 +3258,9 @@ test('Aboriginal Dreamtime Songlines Engine: calculates ancestral totem and Kuru
   assert(rep.kurunpaLifeForceIndex >= 0 && rep.kurunpaLifeForceIndex <= 100);
   assert(rep.activeTotem.name.length > 0);
   const prompt = formatAboriginalDreamtimeSonglinesPrompt(rep);
-  assert(prompt.includes('호주 원주민 드림타임(Dreamtime) 송라인 & 8대 토템 영혼 나침반 실측 데이터'));
+  assert(prompt.includes('호주 원주민 드림타임(Dreamtime) 송라인 & 8대 토템 영혼 나침반'));
   assert(prompt.includes(rep.activeTotem.name));
+  assert(!prompt.includes('/100') && !prompt.includes('점수'));
 });
 
 test('Finnish Kalevala Sampo Engine: calculates 3 Sampo wings and Sisu resilience index', () => {

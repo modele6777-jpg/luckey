@@ -29,7 +29,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const ABORIGINAL_DREAMTIME_SONGLINES_ENGINE_VERSION = '1.1.0';
+export const ABORIGINAL_DREAMTIME_SONGLINES_ENGINE_VERSION = '2.0.0';
 
 export type DreamtimeQuestionTheme = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -39,6 +39,27 @@ export interface AncestralTotem {
   element: string;
   spiritualGift: string;
   coreMessage: string;
+}
+
+export interface DreamtimeSituationalAudit {
+  songlineFocus: string;
+  totemMedicine: string;
+  walkaboutPrescription: string;
+  driftCaution: string;
+}
+
+export interface DreamtimeTemporalRhythm {
+  kstHour: number;
+  countryWatchWindow: string;
+  seasonalCountryPhase: string;
+  timingDirective: string;
+  dreamingTempo: '깨어남' | '동행' | '고요';
+}
+
+export interface DreamtimeSynthesisMatrix {
+  kurunpaState: '충만' | '균형' | '회복필요';
+  totemSonglineLink: string;
+  nextWalkaboutStep: string;
 }
 
 export interface DreamtimeSonglineReport {
@@ -52,6 +73,9 @@ export interface DreamtimeSonglineReport {
   songlineTheme: string; // 대지의 노래 테마
   dadirriPractice: string; // 다디리(Dadirri) 고요의 경청 실천
   dreamtimeWisdom: string; // 드림타임 지혜 조언
+  situationalDreamtimeAudit: DreamtimeSituationalAudit;
+  temporalDreamtimeRhythm: DreamtimeTemporalRhythm;
+  dreamtimeSynthesisMatrix: DreamtimeSynthesisMatrix;
   practiceGuidance: string;
   ritualAction: string;
   reflectionFocus: string;
@@ -136,6 +160,97 @@ function classifyDreamtimeTheme(question?: string): DreamtimeQuestionTheme {
   return 'reflection';
 }
 
+function getKstDreamtimeParts(now: Date): { hour: number; month: number } {
+  const formatter = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Asia/Seoul',
+    hour: 'numeric',
+    month: 'numeric',
+    hour12: false,
+  });
+  const parts = formatter.formatToParts(now);
+  return {
+    hour: Number(parts.find((p) => p.type === 'hour')?.value || '12') % 24,
+    month: Number(parts.find((p) => p.type === 'month')?.value || '1'),
+  };
+}
+
+function buildDreamtimeSituationalAudit(
+  theme: DreamtimeQuestionTheme,
+  totem: AncestralTotem,
+  songlineDirection: string
+): DreamtimeSituationalAudit {
+  if (theme === 'decision') {
+    return {
+      songlineFocus: `${songlineDirection} · 장기적 발걸음 방향 정렬`,
+      totemMedicine: `${totem.name}의 시선으로 단기 이해득실 너머의 길 판별`,
+      walkaboutPrescription: '결정을 서두르기 전에 5분간 걸으며 호흡과 발걸음이 가장 편안히 놓이는 선택을 점검하십시오.',
+      driftCaution: '남의 송라인을 흉내 내느라 내 발에 맞지 않는 신발을 신지 마십시오.',
+    };
+  }
+  if (theme === 'relationship') {
+    return {
+      songlineFocus: '상호 송라인 존중과 영혼의 경계선 조율',
+      totemMedicine: `${totem.name}의 품성으로 다름을 인정하며 맑은 거리 유지`,
+      walkaboutPrescription: '대화 전 상대의 말을 판단 없이 끝까지 듣는 다디리 경청을 먼저 실천하십시오.',
+      driftCaution: '불안감으로 상대의 영역을 침범하거나 반대로 자신을 지우지 마십시오.',
+    };
+  }
+  if (theme === 'healing') {
+    return {
+      songlineFocus: '쿠룬파(Kurunpa) 대지 접지 및 생명력 복원',
+      totemMedicine: `${totem.name}의 자연 리듬을 빌려 소진된 기운 회복`,
+      walkaboutPrescription: '자연광과 바람을 접하며 오늘 하루는 해결보다 쉼과 비움에 우선순위를 두십시오.',
+      driftCaution: '지친 상태에서 억지로 속도를 올리면 길의 표지판을 놓치게 됩니다.',
+    };
+  }
+  return {
+    songlineFocus: `${songlineDirection} · 현재 순간(Jukurrpa) 각성`,
+    totemMedicine: totem.spiritualGift,
+    walkaboutPrescription: '오늘 마주치는 작은 우연과 느낌을 흘려보내지 말고 고요히 음미하십시오.',
+    driftCaution: '과거의 후회나 미래의 불안으로 현재의 발밑을 흐리지 마십시오.',
+  };
+}
+
+function buildDreamtimeTemporalRhythm(now: Date): DreamtimeTemporalRhythm {
+  const { hour, month } = getKstDreamtimeParts(now);
+
+  let countryWatchWindow = '여명 쿠카부라 새벽 노래 창';
+  let dreamingTempo: DreamtimeTemporalRhythm['dreamingTempo'] = '깨어남';
+  let timingDirective = '맑은 새벽 공기와 함께 오늘의 핵심 의도를 세우기 좋은 시간입니다.';
+
+  if (hour >= 5 && hour < 10) {
+    countryWatchWindow = '여명 송라인 발걸음 창 (05~10시)';
+    dreamingTempo = '깨어남';
+    timingDirective = '첫 발걸음을 가볍게 내딛고 오늘 집중할 한 가지 길을 정하십시오.';
+  } else if (hour >= 10 && hour < 17) {
+    countryWatchWindow = '정오 태양의 송라인 활동 창 (10~17시)';
+    dreamingTempo = '동행';
+    timingDirective = '대지 위에서 실질적인 과업과 대화를 힘차게 이어가기 알맞은 시간입니다.';
+  } else if (hour >= 17 && hour < 21) {
+    countryWatchWindow = '황혼 다디리(Dadirri) 경청 창 (17~21시)';
+    dreamingTempo = '고요';
+    timingDirective = '하루의 소음을 가라앉히고 내면의 목소리에 귀 기울일 시간입니다.';
+  } else {
+    countryWatchWindow = '심야 남십자성 주쿠르파 휴식 창 (21~05시)';
+    dreamingTempo = '고요';
+    timingDirective = '꿈과 무의식이 대지와 이어지는 시간대이므로 깊은 휴식으로 기운을 모으십시오.';
+  }
+
+  let seasonalCountryPhase = '대지 소생의 바람절';
+  if (month >= 3 && month <= 5) seasonalCountryPhase = '봄 · 새싹과 씨앗 파종절';
+  else if (month >= 6 && month <= 8) seasonalCountryPhase = '여름 · 태양과 생명력 발산절';
+  else if (month >= 9 && month <= 11) seasonalCountryPhase = '가을 · 성찰과 갈무리절';
+  else seasonalCountryPhase = '겨울 · 별빛과 내면 응축절';
+
+  return {
+    kstHour: hour,
+    countryWatchWindow,
+    seasonalCountryPhase,
+    timingDirective,
+    dreamingTempo,
+  };
+}
+
 export function calculateAboriginalDreamtimeSonglines(options?: {
   profile?: UserProfile;
   targetInstantTime?: string;
@@ -216,6 +331,16 @@ export function calculateAboriginalDreamtimeSonglines(options?: {
   // 5. 드림타임 지혜 조언 (점수 노출 제거)
   const dreamtimeWisdom = `선조 정령 [${activeTotem.nameIndigenous}]의 가호 아래, 지금 당신의 발밑에는 [${songline.theme}]을 향한 송라인이 흐르고 있습니다. ${kurunpaPosture}에서 ${activeTotem.coreMessage}`;
 
+  const situationalDreamtimeAudit = buildDreamtimeSituationalAudit(questionTheme, activeTotem, songline.direction);
+  const temporalDreamtimeRhythm = buildDreamtimeTemporalRhythm(now);
+  const kurunpaState: DreamtimeSynthesisMatrix['kurunpaState'] =
+    kurunpaLifeForceIndex >= 85 ? '충만' : kurunpaLifeForceIndex >= 70 ? '균형' : '회복필요';
+  const dreamtimeSynthesisMatrix: DreamtimeSynthesisMatrix = {
+    kurunpaState,
+    totemSonglineLink: `${activeTotem.name}의 파동이 ${temporalDreamtimeRhythm.countryWatchWindow} (${temporalDreamtimeRhythm.dreamingTempo}) 리듬과 공명합니다.`,
+    nextWalkaboutStep: situationalDreamtimeAudit.walkaboutPrescription,
+  };
+
   return {
     engineVersion: ABORIGINAL_DREAMTIME_SONGLINES_ENGINE_VERSION,
     calculatedAt: now.toISOString(),
@@ -227,6 +352,9 @@ export function calculateAboriginalDreamtimeSonglines(options?: {
     songlineTheme: songline.theme,
     dadirriPractice,
     dreamtimeWisdom,
+    situationalDreamtimeAudit,
+    temporalDreamtimeRhythm,
+    dreamtimeSynthesisMatrix,
     practiceGuidance: themed.practice,
     ritualAction: themed.ritual,
     reflectionFocus: themed.reflection,
@@ -262,6 +390,13 @@ export function formatAboriginalDreamtimeSonglinesPrompt(report: DreamtimeSongli
    - 일상 의례: ${report.ritualAction}
    - 성찰 질문: ${report.reflectionFocus}
    - 드림타임 총평: ${report.dreamtimeWisdom}
+
+4. [질문 맥락 감사 & KST 시공간 리듬 (${report.temporalDreamtimeRhythm.kstHour}시)]:
+   - 송라인 초점: ${report.situationalDreamtimeAudit.songlineFocus} · 토템 약(Medicine): ${report.situationalDreamtimeAudit.totemMedicine}
+   - 워크어바웃 처방: ${report.situationalDreamtimeAudit.walkaboutPrescription} (주의: ${report.situationalDreamtimeAudit.driftCaution})
+   - 시공간 리듬: ${report.temporalDreamtimeRhythm.countryWatchWindow} · ${report.temporalDreamtimeRhythm.seasonalCountryPhase} (${report.temporalDreamtimeRhythm.dreamingTempo})
+   - 시간대 지침: ${report.temporalDreamtimeRhythm.timingDirective}
+   - 교차 매트릭스(${report.dreamtimeSynthesisMatrix.kurunpaState}): ${report.dreamtimeSynthesisMatrix.totemSonglineLink}
    - 해석 경계: ${report.boundaryNotice}
 ======================================================================`;
 }

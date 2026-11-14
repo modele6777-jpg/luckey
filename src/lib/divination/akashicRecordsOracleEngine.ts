@@ -5,11 +5,7 @@
  * 
  * [엔진 개요]
  * 우주 만물의 모든 기억과 파동이 보존되는 영자장(Zero-Point Holographic Field) '아카식 레코드(Akashic Records)'와
- * 사주 4주 원국, 자미두수 명궁(命宮)·신궁(身宮) 및 서양 점성술의 12하우스 영혼 카르마를 결합한 엔진입니다.
- * 
- * 1. 영혼의 기원(Soul Origin / Starseed Archetype): 플레이아데스(사랑과 예술), 시리우스(기술과 영성), 오리온(이성과 시스템), 아크투루스(치유와 진동), 지구 토착 영혼
- * 2. 환생 전 영혼의 신성한 계약(Sacred Soul Contract): 이번 생을 시작하며 서약한 핵심 과업과 배움의 테마
- * 3. 아카식 도서관 접속 만트라 & 영혼 각성 코드(Akashic Activation Code)
+ * 사주 4주 원국, 질문 맥락 정성 감사 및 KST 시공간 리듬을 결합한 엔진입니다.
  */
 
 import type { UserProfile } from '../sharedState';
@@ -18,7 +14,7 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const AKASHIC_RECORDS_VERSION = 'LUCKEY-AKASHIC-v1.0.0';
+export const AKASHIC_RECORDS_VERSION = 'LUCKEY-AKASHIC-v2.0.0';
 
 export interface SoulOriginDetails {
   originSystem: string;          // 영혼 기원 항성계 / 아키타입
@@ -32,20 +28,129 @@ export interface SacredSoulContract {
   forbiddenBypass: string;       // 영적 우월감이나 현실 도피로 빠지지 않기 위한 경고
 }
 
+export interface AkashicSituationalAudit {
+  contractMirrorAxis: string;
+  karmicAnchor: string;
+  groundingPractice: string;
+  bypassWarning: string;
+}
+
+export interface AkashicTemporalRhythm {
+  kstHour: number;
+  akashicAccessWindow: string;
+  seasonalEvolutionPhase: string;
+  timingGuidance: string;
+  libraryTempo: '개방열람' | '현실정박' | '심층통합';
+}
+
+export interface AkashicSynthesisMatrix {
+  clarityState: '명료' | '숙성' | '정화중';
+  originContractLink: string;
+  nextContractStep: string;
+}
+
 export interface AkashicRecordsOracleReport {
   engineVersion: string;
   calculatedAt: string;
   soulOrigin: SoulOriginDetails;
   soulContract: SacredSoulContract;
-  soulAgeMaturity: string;       // 영혼의 성숙도 (성숙한 영혼 Mature Soul, 오래된 영혼 Old Soul, 초월적 영혼 Infinite Soul 등)
-  akashicAccessMantra: string;   // 영혼의 도서관 접속 확언 만트라
-  soulClarityIndex: number;      // 영혼 목적 자각 지수 (0 ~ 100)
+  soulAgeMaturity: string;
+  akashicAccessMantra: string;
+  soulClarityIndex: number;      // 내부 연산용
+  situationalAkashicAudit: AkashicSituationalAudit;
+  temporalAkashicRhythm: AkashicTemporalRhythm;
+  akashicSynthesisMatrix: AkashicSynthesisMatrix;
   synthesisPromptGuidance: string;
+}
+
+function getKstAkashicParts(now: Date): { hour: number; month: number } {
+  const formatter = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Asia/Seoul',
+    hour: 'numeric',
+    month: 'numeric',
+    hour12: false,
+  });
+  const parts = formatter.formatToParts(now);
+  return {
+    hour: Number(parts.find((p) => p.type === 'hour')?.value || '12') % 24,
+    month: Number(parts.find((p) => p.type === 'month')?.value || '1'),
+  };
+}
+
+function buildAkashicSituationalAudit(
+  question: string,
+  contract: SacredSoulContract,
+  originSystem: string
+): AkashicSituationalAudit {
+  const q = question.toLowerCase();
+  if (/일|진로|사업|이직|선택|계약|목표/.test(q)) {
+    return {
+      contractMirrorAxis: '지상 사명 구현 및 현실적 책임과 이상 조율',
+      karmicAnchor: `${originSystem}의 영감을 일상의 구체적 결과물로 번역`,
+      groundingPractice: '거창한 소명 의식보다 오늘 바로 실행할 수 있는 작은 현실 과업 한 가지를 완수하십시오.',
+      bypassWarning: contract.forbiddenBypass,
+    };
+  }
+  if (/관계|사랑|연애|가족|갈등|인연|사람/.test(q)) {
+    return {
+      contractMirrorAxis: '영혼 계약 거울 — 타인을 통한 자기 인식',
+      karmicAnchor: contract.primaryLesson,
+      groundingPractice: '상대의 행동이 내 안의 어떤 오래된 감정을 건드리는지 먼저 관찰하고 솔직히 표현하십시오.',
+      bypassWarning: '상대를 가르치려 들거나 영적 거리두기로 대화를 회피하지 마십시오.',
+    };
+  }
+  return {
+    contractMirrorAxis: '영혼 서약 재정렬 및 내면 통합',
+    karmicAnchor: contract.karmicGiftToWorld,
+    groundingPractice: '조용히 숨을 고르며 지금 내가 반복하고 있는 패턴 중 내려놓을 한 가지를 적어 보십시오.',
+    bypassWarning: contract.forbiddenBypass,
+  };
+}
+
+function buildAkashicTemporalRhythm(now: Date): AkashicTemporalRhythm {
+  const { hour, month } = getKstAkashicParts(now);
+
+  let akashicAccessWindow = '새벽 아카식 서고 여명 열람 창';
+  let libraryTempo: AkashicTemporalRhythm['libraryTempo'] = '개방열람';
+  let timingGuidance = '잡념이 적은 시간대이므로 직관적인 통찰을 기록하기 알맞습니다.';
+
+  if (hour >= 5 && hour < 10) {
+    akashicAccessWindow = '여명 영자장 명료 열람 창 (05~10시)';
+    libraryTempo = '개방열람';
+    timingGuidance = '하루를 시작하기 전 영혼의 우선순위와 오늘의 태도를 차분히 정돈하십시오.';
+  } else if (hour >= 10 && hour < 17) {
+    akashicAccessWindow = '주간 지상 서약 정박 창 (10~17시)';
+    libraryTempo = '현실정박';
+    timingGuidance = '영감을 머릿속에만 두지 말고 실제 행동, 대화, 창작물로 구현할 시간입니다.';
+  } else if (hour >= 17 && hour < 21) {
+    akashicAccessWindow = '황혼 카르마 회고 창 (17~21시)';
+    libraryTempo = '심층통합';
+    timingGuidance = '오늘 마주친 사건과 감정이 나에게 어떤 배움을 주었는지 가볍게 정리하십시오.';
+  } else {
+    akashicAccessWindow = '심야 영혼 기록 통합 창 (21~05시)';
+    libraryTempo = '심층통합';
+    timingGuidance = '의식적 분석을 내려놓고 깊은 수면 속에서 내면의 기억이 정돈되도록 맡기십시오.';
+  }
+
+  let seasonalEvolutionPhase = '봄 · 새 순환 개시절';
+  if (month >= 3 && month <= 5) seasonalEvolutionPhase = '봄 · 새로운 영혼 주제 발아절';
+  else if (month >= 6 && month <= 8) seasonalEvolutionPhase = '여름 · 지상 사명 실행절';
+  else if (month >= 9 && month <= 11) seasonalEvolutionPhase = '가을 · 배움의 수확 및 정리절';
+  else seasonalEvolutionPhase = '겨울 · 침잠과 서약 재점검절';
+
+  return {
+    kstHour: hour,
+    akashicAccessWindow,
+    seasonalEvolutionPhase,
+    timingGuidance,
+    libraryTempo,
+  };
 }
 
 export function runAkashicRecordsOracleEngine(
   profile?: UserProfile,
-  targetDate: Date = new Date()
+  targetDate: Date = new Date(),
+  question: string = ''
 ): AkashicRecordsOracleReport {
   const sajuRes = calculateDetailedSaju(profile || null);
 
@@ -53,7 +158,6 @@ export function runAkashicRecordsOracleEngine(
   const dayBranch = sajuRes?.pillars?.day?.zhi || '술';
   const element = sajuRes?.dayMaster?.element || '금';
 
-  // 수리 연산 시드
   const ganCode = dayMaster.charCodeAt(0) + dayBranch.charCodeAt(0) + element.charCodeAt(0);
   const seed = (ganCode * 19 + targetDate.getFullYear() * 7 + (targetDate.getMonth() + 1) * 11) % 100;
 
@@ -93,7 +197,6 @@ export function runAkashicRecordsOracleEngine(
     karmicGiftToWorld = '불합리와 모순을 일거에 해체하고 최고의 효율과 자유를 선사하는 궁극의 해법';
     forbiddenBypass = '지적 우월감에 갇혀 마음의 문을 닫고 고립되는 냉소주의';
   } else {
-    // 수 (Water)
     originSystem = '아크투루스 고차원 의식 (Arcturian Master Mystic)';
     soulEssenceQuality = '차원 간 통로를 넘나드는 심오한 직관, 다차원 에너지 조율과 초월적 평화';
     cosmicMission = '인간 내면의 심연과 우주 의식을 연결하여 영혼의 깊은 상처를 정화하는 것';
@@ -109,39 +212,57 @@ export function runAkashicRecordsOracleEngine(
     '변혁의 인도자 영혼 (Transpersonal Catalyst - 문명 전환기 닻을 내린 영혼)'
   ];
   const soulAgeMaturity = soulAges[seed % soulAges.length];
-
   const akashicAccessMantra = `나는 우주의 영원한 사랑과 지혜의 장에 접속합니다. 나의 모든 과거와 현재, 미래는 온전하며, 오늘 나는 이번 생의 영혼 서약을 기쁨으로 이행합니다.`;
-
   const soulClarityIndex = 84 + (seed % 15);
 
-  const synthesisPromptGuidance = `[LUCKEY 아카식 레코드 영혼 서약 & 카르믹 청사진 v1.0.0]
+  const soulOrigin: SoulOriginDetails = {
+    originSystem,
+    soulEssenceQuality,
+    cosmicMission,
+  };
+  const soulContract: SacredSoulContract = {
+    primaryLesson,
+    karmicGiftToWorld,
+    forbiddenBypass,
+  };
+
+  const situationalAkashicAudit = buildAkashicSituationalAudit(question, soulContract, originSystem);
+  const temporalAkashicRhythm = buildAkashicTemporalRhythm(targetDate);
+  const clarityState: AkashicSynthesisMatrix['clarityState'] =
+    soulClarityIndex >= 93 ? '명료' : soulClarityIndex >= 87 ? '숙성' : '정화중';
+  const akashicSynthesisMatrix: AkashicSynthesisMatrix = {
+    clarityState,
+    originContractLink: `${originSystem}의 파동이 ${temporalAkashicRhythm.akashicAccessWindow} (${temporalAkashicRhythm.libraryTempo}) 리듬과 이어집니다.`,
+    nextContractStep: situationalAkashicAudit.groundingPractice,
+  };
+
+  const synthesisPromptGuidance = `[LUCKEY 아카식 레코드 영혼 서약 & 카르믹 청사진 v2.0.0]
 - 영혼의 기원: [${originSystem}]
   * 본질적 파동: ${soulEssenceQuality}
   * 지상에서의 사명: ${cosmicMission}
-- 영혼의 성숙도: ${soulAgeMaturity}
+- 영혼의 성숙도: ${soulAgeMaturity} (자각 상태: ${clarityState})
 - 신성한 영혼 계약(Soul Contract):
   * 제1 배움 과제: ${primaryLesson}
   * 세상에 남길 선물: ${karmicGiftToWorld}
   * 경계할 영적 우회(Bypass): ${forbiddenBypass}
-- 영혼 목적 자각도: ${soulClarityIndex}점
+- 질문 맥락 감사: ${situationalAkashicAudit.contractMirrorAxis} · 닻(${situationalAkashicAudit.karmicAnchor})
+  * 그라운딩 실천: ${situationalAkashicAudit.groundingPractice}
+- KST 시공간 리듬 (${temporalAkashicRhythm.kstHour}시): ${temporalAkashicRhythm.akashicAccessWindow} · ${temporalAkashicRhythm.seasonalEvolutionPhase} (${temporalAkashicRhythm.libraryTempo})
+  * 시간대 지침: ${temporalAkashicRhythm.timingGuidance}
+- 아카식 교차 매트릭스: ${akashicSynthesisMatrix.originContractLink}
 - 아카식 접속 만트라: "${akashicAccessMantra}"`;
 
   return {
     engineVersion: AKASHIC_RECORDS_VERSION,
     calculatedAt: targetDate.toISOString(),
-    soulOrigin: {
-      originSystem,
-      soulEssenceQuality,
-      cosmicMission
-    },
-    soulContract: {
-      primaryLesson,
-      karmicGiftToWorld,
-      forbiddenBypass
-    },
+    soulOrigin,
+    soulContract,
     soulAgeMaturity,
     akashicAccessMantra,
     soulClarityIndex,
+    situationalAkashicAudit,
+    temporalAkashicRhythm,
+    akashicSynthesisMatrix,
     synthesisPromptGuidance
   };
 }
@@ -152,10 +273,12 @@ export function calculateAkashicRecordsOracle(params?: {
   profile?: UserProfile | null;
   saju?: SajuAnalysisResult | null;
   targetDate?: Date;
+  question?: string;
 }): AkashicRecordsOracleResult {
   const profile = params?.profile || undefined;
   const targetDate = params?.targetDate || new Date();
-  return runAkashicRecordsOracleEngine(profile, targetDate);
+  const question = params?.question || '';
+  return runAkashicRecordsOracleEngine(profile, targetDate, question);
 }
 
 export function formatAkashicRecordsOraclePrompt(res: AkashicRecordsOracleResult): string {
