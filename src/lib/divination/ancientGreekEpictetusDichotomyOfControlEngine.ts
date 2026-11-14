@@ -14,7 +14,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const EPICTETUS_CONTROL_VERSION = 'LUCKEY-EPICTETUS-CONTROL-v2.0.0';
+export const EPICTETUS_CONTROL_VERSION = 'LUCKEY-EPICTETUS-CONTROL-v2.1.0';
 
 export interface EpictetusControlDomain {
   domainType: 'InternalControl' | 'ExternalCondition';
@@ -75,6 +75,10 @@ export interface EpictetusDichotomyOfControlResult {
     counselTitle: string;
     philosophicalGuidance: string;
   };
+  // v2.1.0 순수 정성 실천·성찰·경계
+  dailyPracticeRitual: string;
+  reflectiveQuestion: string;
+  interpretiveBoundary: string;
 }
 
 export type EpictetusDichotomyOfControlReport = EpictetusDichotomyOfControlResult;
@@ -272,6 +276,13 @@ export function calculateEpictetusDichotomyOfControl(
     `현재 당신의 당면 과제는 '${activeControlDomain.domainNameKo}'의 영역에 속합니다. ${activeControlDomain.actionDirective} ` +
     `특히 ${focalToposDiscipline.toposNameKo}(${focalToposDiscipline.toposNameGreek})을 염두에 두십시오. ${focalToposDiscipline.practicalCounsel}`;
 
+  const dailyPracticeRitual =
+    `오늘의 프로하이레시스(Prohairesis) 의례: '${situationalControlAudit.taOukEphHeminRelease}'은 통제 밖으로 내려놓고, '${situationalControlAudit.taEphHeminFocus}'에만 주권을 집중하십시오. (${temporalProhairesisRhythm.kstWindow})`;
+  const reflectiveQuestion =
+    `지금 나를 흔드는 일 가운데 실제로 내 선택(Ta Eph' hemin)에 달린 부분과 내 힘 밖(Ta Ouk Eph' hemin)에 있는 부분은 어디서 갈립니까?`;
+  const interpretiveBoundary =
+    '에픽테토스의 통제이분법 통찰은 외부 사건의 성패를 점치는 도구가 아니라, 인상(Phantasia)에 흔들리지 않고 내면의 자유의지(Prohairesis)를 세우기 위한 스토아 성찰 체계입니다.';
+
   return {
     engineVersion: EPICTETUS_CONTROL_VERSION,
     calculatedAtKst: (now ?? new Date()).toISOString(),
@@ -289,25 +300,34 @@ export function calculateEpictetusDichotomyOfControl(
       counselTitle,
       philosophicalGuidance,
     },
+    dailyPracticeRitual,
+    reflectiveQuestion,
+    interpretiveBoundary,
   };
+}
+
+function describeEpictetusStage(score: number): string {
+  if (score >= 82) return '흔들림 없는 스토아 주권 확립기';
+  if (score >= 70) return '통제 경계가 선명한 평정기';
+  return '인상을 여과하며 중심을 세우는 수련기';
 }
 
 export function formatEpictetusDichotomyOfControlPrompt(res: EpictetusDichotomyOfControlResult): string {
   return [
-    `【스토아학파 에픽테토스 통제이분법 & 프로하이레시스 지표】`,
-    `- 통제이분법 분별 명징도: ${res.dichotomyClarityScore}/100`,
-    `- 프로하이레시스 자유의지 주권도: ${res.prohairesisAutonomyScore}/100`,
-    `- 아디아포라 외물 초연력: ${res.adiaphoraDetachmentScore}/100`,
-    `- 3대 토포스 수양 밸런스: ${res.threeTopoiDisciplineScore}/100`,
-    `- 아파테이아 내면 평정심: ${res.apatheiaEquanimityScore}/100`,
+    `【스토아학파 에픽테토스 통제이분법 & 프로하이레시스 지표 (${res.engineVersion})】`,
+    `- 통제·자유의지 결: 이분법 명징(${describeEpictetusStage(res.dichotomyClarityScore)}) · 프로하이레시스 주권(${describeEpictetusStage(res.prohairesisAutonomyScore)})`,
+    `- 초연·수양 결: 아디아포라 초연(${describeEpictetusStage(res.adiaphoraDetachmentScore)}) · 3대 토포스 균형(${describeEpictetusStage(res.threeTopoiDisciplineScore)}) · 아파테이아 평정(${describeEpictetusStage(res.apatheiaEquanimityScore)})`,
     `- 통제 영역 판별: ${res.activeControlDomain.domainNameGreek} (${res.activeControlDomain.domainNameKo})`,
     `- 핵심 수양 단계: ${res.focalToposDiscipline.toposNameKo} [${res.focalToposDiscipline.toposNameGreek}]`,
     `- 질문 맥락 통제 감사 (${res.situationalControlAudit.themeKo} · ${res.situationalControlAudit.sourceCitation}): "${res.situationalControlAudit.classicalQuote}"`,
     `- 내게 달린 것(Ta Eph' hemin): ${res.situationalControlAudit.taEphHeminFocus}`,
     `- 내려놓을 것(Ta Ouk Eph' hemin): ${res.situationalControlAudit.taOukEphHeminRelease}`,
     `- 스토아 전환 행동: ${res.situationalControlAudit.stoicReframeAction}`,
-    `- KST 주권 리듬: ${res.temporalProhairesisRhythm.kstWindow} (${res.temporalProhairesisRhythm.toposPracticeFocus}, 명료도 ${res.temporalProhairesisRhythm.prohairesisClarityIndex}/100) — ${res.temporalProhairesisRhythm.rhythmDirective}`,
-    `- 스토아 자율 매트릭스: 인상 여과 ${res.stoicAutonomyMatrix.impressionFilterStrength} / 운명 수용 ${res.stoicAutonomyMatrix.amorFatiAcceptance} / 의무 실행 ${res.stoicAutonomyMatrix.kathekonExecution} (종합 ${res.stoicAutonomyMatrix.overallSynthesis}/100)`,
+    `- KST 주권 리듬: ${res.temporalProhairesisRhythm.kstWindow} (${res.temporalProhairesisRhythm.toposPracticeFocus}, ${describeEpictetusStage(res.temporalProhairesisRhythm.prohairesisClarityIndex)}) — ${res.temporalProhairesisRhythm.rhythmDirective}`,
+    `- 스토아 자율 매트릭스: 인상 여과(${describeEpictetusStage(res.stoicAutonomyMatrix.impressionFilterStrength)}) · 운명 수용(${describeEpictetusStage(res.stoicAutonomyMatrix.amorFatiAcceptance)}) · 의무 실행(${describeEpictetusStage(res.stoicAutonomyMatrix.kathekonExecution)}) · 종합 흐름(${describeEpictetusStage(res.stoicAutonomyMatrix.overallSynthesis)})`,
     `- 철학적 수양 지침: ${res.epictetusPhilosophicalCounsel.philosophicalGuidance}`,
+    `- 오늘의 실천 의례: ${res.dailyPracticeRitual}`,
+    `- 핵심 성찰 질문: ${res.reflectiveQuestion}`,
+    `- 해석 경계: ${res.interpretiveBoundary}`,
   ].join('\n');
 }

@@ -13,7 +13,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const PLATONIC_IDEA_CAVE_VERSION = 'LUCKEY-PLATONIC-IDEA-CAVE-v2.0.0';
+export const PLATONIC_IDEA_CAVE_VERSION = 'LUCKEY-PLATONIC-IDEA-CAVE-v2.1.0';
 
 export interface PlatonicAscentStage {
   stageLevel: number;
@@ -73,6 +73,10 @@ export interface PlatonicIdeaCaveResult {
     counselTitle: string;
     philosophicalGuidance: string;
   };
+  // v2.1.0 순수 정성 실천·성찰·경계
+  dailyPracticeRitual: string;
+  reflectiveQuestion: string;
+  interpretiveBoundary: string;
 }
 
 export type PlatonicIdeaCaveReport = PlatonicIdeaCaveResult;
@@ -294,6 +298,13 @@ export function calculatePlatonicIdeaCave(
     `${activeAscentStage.epistemicRealm}의 차원에서 ${activeAscentStage.actionDirective} ` +
     `특히 영혼의 ${focalCardinalVirtue.soulPart}을 조화롭게 이끄는 ${focalCardinalVirtue.virtueKo}을 중심에 두십시오. ${focalCardinalVirtue.practicalCounsel}`;
 
+  const dailyPracticeRitual =
+    `오늘의 카타바시스(Katabasis) 의례: '${situationalCaveAscent.shadowIllusionTrap}'에서 시선을 거두고, ${situationalCaveAscent.katabasisPractice} (${temporalDialecticRhythm.kstWindow})`;
+  const reflectiveQuestion =
+    `${situationalCaveAscent.dialecticQuestion} 지금 붙잡고 있는 두려움이나 욕망 가운데 동굴 벽의 그림자에 불과한 것은 무엇입니까?`;
+  const interpretiveBoundary =
+    '플라톤 동굴의 비유와 이데아 성찰은 외적 결과를 예단하는 점술이 아니라, 현상의 그림자 너머 본질과 4대 추덕의 균형을 비추는 변증법적 사유 도구입니다.';
+
   return {
     engineVersion: PLATONIC_IDEA_CAVE_VERSION,
     calculatedAtKst: (now ?? new Date()).toISOString(),
@@ -311,25 +322,34 @@ export function calculatePlatonicIdeaCave(
       counselTitle,
       philosophicalGuidance,
     },
+    dailyPracticeRitual,
+    reflectiveQuestion,
+    interpretiveBoundary,
   };
+}
+
+function describePlatonicStage(score: number): string {
+  if (score >= 82) return '이데아의 빛을 직관하는 노에시스 명징기';
+  if (score >= 70) return '그림자를 가려내는 변증법적 상승기';
+  return '동굴의 시선을 돌리는 각성과 회상기';
 }
 
 export function formatPlatonicIdeaCavePrompt(res: PlatonicIdeaCaveResult): string {
   return [
-    `【고대 그리스 플라톤 동굴의 비유 & 이데아 4대 추덕 지표】`,
-    `- 이데아 진리지향도: ${res.ideaTruthOrientationScore}/100`,
-    `- 동굴 그림자 착각탈피력: ${res.shadowIllusionLiberationScore}/100`,
-    `- 상기설 영혼직관 회상력: ${res.anamnesisSoulIntuitionScore}/100`,
-    `- 4대 추덕 조화도: ${res.cardinalVirtuesHarmonyScore}/100`,
-    `- 변증법적 영혼비상 지성력: ${res.dialecticAscentPowerScore}/100`,
+    `【고대 그리스 플라톤 동굴의 비유 & 이데아 4대 추덕 지표 (${res.engineVersion})】`,
+    `- 진리·해방 결: 이데아 지향(${describePlatonicStage(res.ideaTruthOrientationScore)}) · 그림자 탈피(${describePlatonicStage(res.shadowIllusionLiberationScore)}) · 상기 직관(${describePlatonicStage(res.anamnesisSoulIntuitionScore)})`,
+    `- 추덕·비상 결: 4대 추덕 조화(${describePlatonicStage(res.cardinalVirtuesHarmonyScore)}) · 변증법적 상승(${describePlatonicStage(res.dialecticAscentPowerScore)})`,
     `- 영혼 상승 단계: ${res.activeAscentStage.stageNameGreek} (${res.activeAscentStage.stageNameKo})`,
     `- 핵심 요청 덕목: ${res.focalCardinalVirtue.virtueKo} [${res.focalCardinalVirtue.virtueGreek}]`,
     `- 질문 맥락 동굴 처방 (${res.situationalCaveAscent.themeKo} · ${res.situationalCaveAscent.dialogueSource}): "${res.situationalCaveAscent.classicalQuote}"`,
     `- 그림자 함정: ${res.situationalCaveAscent.shadowIllusionTrap}`,
     `- 변증 성찰 질문: ${res.situationalCaveAscent.dialecticQuestion}`,
     `- 카타바시스 실천: ${res.situationalCaveAscent.katabasisPractice}`,
-    `- KST 사유 리듬: ${res.temporalDialecticRhythm.kstWindow} (${res.temporalDialecticRhythm.soulChariotFocus}, 명료도 ${res.temporalDialecticRhythm.noeticClarityIndex}/100) — ${res.temporalDialecticRhythm.rhythmDirective}`,
-    `- 이데아 상승 매트릭스: 그림자 탈피 ${res.ideaAscentMatrix.shadowDetachment} / 상기 공명 ${res.ideaAscentMatrix.anamnesisResonance} / 카타바시스 준비도 ${res.ideaAscentMatrix.katabasisReadiness} (종합 ${res.ideaAscentMatrix.overallSynthesis}/100)`,
+    `- KST 사유 리듬: ${res.temporalDialecticRhythm.kstWindow} (${res.temporalDialecticRhythm.soulChariotFocus}, ${describePlatonicStage(res.temporalDialecticRhythm.noeticClarityIndex)}) — ${res.temporalDialecticRhythm.rhythmDirective}`,
+    `- 이데아 상승 매트릭스: 그림자 탈피(${describePlatonicStage(res.ideaAscentMatrix.shadowDetachment)}) · 상기 공명(${describePlatonicStage(res.ideaAscentMatrix.anamnesisResonance)}) · 카타바시스 준비(${describePlatonicStage(res.ideaAscentMatrix.katabasisReadiness)}) · 종합 흐름(${describePlatonicStage(res.ideaAscentMatrix.overallSynthesis)})`,
     `- 철학적 처방: ${res.platonicPhilosophicalCounsel.philosophicalGuidance}`,
+    `- 오늘의 실천 의례: ${res.dailyPracticeRitual}`,
+    `- 핵심 성찰 질문: ${res.reflectiveQuestion}`,
+    `- 해석 경계: ${res.interpretiveBoundary}`,
   ].join('\n');
 }

@@ -12,7 +12,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const ARISTOTLE_MESOTES_VERSION = 'LUCKEY-ARISTOTLE-MESOTES-EUDAIMONIA-v2.0.0';
+export const ARISTOTLE_MESOTES_VERSION = 'LUCKEY-ARISTOTLE-MESOTES-EUDAIMONIA-v2.1.0';
 
 export interface AristotleVirtueStage {
   stageLevel: number;
@@ -72,6 +72,10 @@ export interface AristotleMesotesResult {
   situationalMesotes: SituationalMesotes;
   temporalPhronesisRhythm: TemporalPhronesisRhythm;
   eudaimoniaBalanceMatrix: EudaimoniaBalanceMatrix;
+  // v2.1.0 순수 정성 실천·성찰·경계
+  dailyPracticeRitual: string;
+  reflectiveQuestion: string;
+  interpretiveBoundary: string;
 }
 
 export type AristotleMesotesReport = AristotleMesotesResult;
@@ -299,6 +303,13 @@ export function calculateAristotleMesotes(
     `${activeVirtueStage.goldenMeanEssence}의 원칙을 기준으로 삼으십시오. ` +
     `${situationalMesotes.goldenMeanPivot} 프로네시스(실천적 지혜)를 발휘할 때 온전한 에우다이모니아(영혼의 번영)가 활짝 열립니다.`;
 
+  const dailyPracticeRitual =
+    `오늘의 헥시스(Hexis) 실천: '${activeVirtueStage.virtueNameGreek}'의 기준에 따라 ${activeVirtueStage.practicalAction} (${temporalPhronesisRhythm.kstPhaseLabel})`;
+  const reflectiveQuestion =
+    `지금 내 마음과 선택은 '${situationalMesotes.deficiencyTrap}'과 '${situationalMesotes.excessTrap}' 중 어느 극단에 더 기울어 있으며, 마땅한 때와 정도를 지키는 중용(Mesotes)은 무엇입니까?`;
+  const interpretiveBoundary =
+    '아리스토텔레스의 중용과 에우다이모니아 통찰은 길흉이나 점수를 단정하는 예언이 아니라, 구체적 상황에서 실천적 지혜(Phronesis)로 균형을 가늠하기 위한 철학적 성찰 도구입니다.';
+
   return {
     engineVersion: ARISTOTLE_MESOTES_VERSION,
     calculatedAtKst: isoKst,
@@ -316,23 +327,35 @@ export function calculateAristotleMesotes(
     situationalMesotes,
     temporalPhronesisRhythm,
     eudaimoniaBalanceMatrix,
+    dailyPracticeRitual,
+    reflectiveQuestion,
+    interpretiveBoundary,
   };
+}
+
+function describeAristotleStage(score: number): string {
+  if (score >= 82) return '깊고 흔들림 없는 중용의 성숙기';
+  if (score >= 70) return '균형과 분별이 자리 잡은 안정기';
+  return '양극단을 조율하며 습관을 다지는 연마기';
 }
 
 export function formatAristotleMesotesPrompt(res: AristotleMesotesResult): string {
   return [
-    `【고대 그리스 아리스토텔레스 니코마코스 윤리학 중용(Mesotes) & 에우다이모니아 지표 (${res.engineVersion})】`,
-    `- 중용 황금률: ${res.mesotesGoldenMeanScore}/100 | 에우다이모니아 번영: ${res.eudaimoniaFlourishingIndex}/100 | 프로네시스: ${res.phronesisPracticalWisdom}/100`,
-    `- 텔로스 지향력: ${res.telosPurposeOrientation}/100 | 아레테 품격도: ${res.areteExcellenceIntegrity}/100`,
+    `【고대 그리스 아리스토텔레스 니코마코스 윤리학 중용(Mesotes) & 에우다이모니아 성찰 (${res.engineVersion})】`,
+    `- 중용·번영 결: 중용 황금률(${describeAristotleStage(res.mesotesGoldenMeanScore)}) · 에우다이모니아(${describeAristotleStage(res.eudaimoniaFlourishingIndex)}) · 프로네시스(${describeAristotleStage(res.phronesisPracticalWisdom)})`,
+    `- 목적·품격 결: 텔로스 지향(${describeAristotleStage(res.telosPurposeOrientation)}) · 아레테 품격(${describeAristotleStage(res.areteExcellenceIntegrity)})`,
     `- 현재 중용 조율 덕목: ${res.activeVirtueStage.virtueNameGreek} (${res.activeVirtueStage.virtueNameKo})`,
     `- 질문 맥락 불균형 축(${res.situationalMesotes.ethicsCitation}): ${res.situationalMesotes.imbalanceAxis}`,
     `  · 결핍 함정: ${res.situationalMesotes.deficiencyTrap} ↔ 과도 함정: ${res.situationalMesotes.excessTrap}`,
     `  · 중용 전환점: ${res.situationalMesotes.goldenMeanPivot}`,
-    `- KST 시공간 리듬: ${res.temporalPhronesisRhythm.kstPhaseLabel} · ${res.temporalPhronesisRhythm.seasonContext} (실천 준비도 ${res.temporalPhronesisRhythm.phronesisReadiness}/100)`,
+    `- KST 시공간 리듬: ${res.temporalPhronesisRhythm.kstPhaseLabel} · ${res.temporalPhronesisRhythm.seasonContext} (${describeAristotleStage(res.temporalPhronesisRhythm.phronesisReadiness)})`,
     `- 헥시스(습관) 지침: ${res.temporalPhronesisRhythm.hexisHabitGuidance}`,
-    `- 에우다이모니아 밸런스 매트릭스: 안정도 ${res.eudaimoniaBalanceMatrix.goldenMeanStability} / 실행력 ${res.eudaimoniaBalanceMatrix.phronesisActionability} / 습관 추진력 ${res.eudaimoniaBalanceMatrix.habitualAreteMomentum} (${res.eudaimoniaBalanceMatrix.dominantAxis})`,
+    `- 에우다이모니아 밸런스 매트릭스: ${res.eudaimoniaBalanceMatrix.dominantAxis} — 안정(${describeAristotleStage(res.eudaimoniaBalanceMatrix.goldenMeanStability)}) · 실행(${describeAristotleStage(res.eudaimoniaBalanceMatrix.phronesisActionability)}) · 습관(${describeAristotleStage(res.eudaimoniaBalanceMatrix.habitualAreteMomentum)})`,
     `- 조율 가이드: ${res.eudaimoniaBalanceMatrix.meanCalibrationGuide}`,
     `- 윤리학 핵심 지침: "${res.primaryMesotesWisdom.themeKo}" [${res.primaryMesotesWisdom.greekClassic}]`,
     `- 철학적 처방: ${res.eudaimoniaPhilosophicalCounsel.philosophicalGuidance}`,
+    `- 오늘의 실천 의례: ${res.dailyPracticeRitual}`,
+    `- 핵심 성찰 질문: ${res.reflectiveQuestion}`,
+    `- 해석 경계: ${res.interpretiveBoundary}`,
   ].join('\n');
 }
