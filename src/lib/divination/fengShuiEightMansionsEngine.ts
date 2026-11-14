@@ -29,7 +29,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const FENG_SHUI_EIGHT_MANSIONS_VERSION = 'LUCKEY-FENG-SHUI-EIGHT-MANSIONS-v1.0.0';
+export const FENG_SHUI_EIGHT_MANSIONS_VERSION = 'LUCKEY-FENG-SHUI-EIGHT-MANSIONS-v2.0.0';
 
 export type TrigramName = '감(坎, 1궁)' | '곤(坤, 2궁)' | '진(震, 3궁)' | '손(巽, 4궁)' | '건(乾, 6궁)' | '태(兌, 7궁)' | '간(艮, 8궁)' | '이(離, 9궁)';
 
@@ -57,14 +57,32 @@ export interface SpatialArrangementPrescription {
 export interface FengShuiEightMansionsReport {
   engineVersion: string;
   calculatedAt: string;
+  calculatedAtKst: string;
   kuaNumber: number;
   kuaTrigram: TrigramName;
   mansionGroup: '동사택(東四宅)' | '서사택(西四宅)';
   auspiciousDirections: AuspiciousDirections;
   inauspiciousDirections: InauspiciousDirections;
   prescription: SpatialArrangementPrescription;
-  spatialEnergyVitalityScore: number; // 0 ~ 100
+  spatialEnergyVitalityScore: number; // 내부 호환용 0 ~ 100 (프롬프트 비노출)
+  situationalFengShuiAudit: {
+    focusTheme: string;
+    spatialNote: string;
+    placementTip: string;
+  };
+  temporalFengShuiRhythm: {
+    kstTimeLabel: string;
+    sunDirectionWindow: string;
+    seasonalSpatialTone: string;
+    temporalGuidance: string;
+  };
+  fengShuiSynthesisMatrix: {
+    coreInsight: string;
+    recommendedAction: string;
+    cautionNotice: string;
+  };
   spatialHarmonyGuidance: string;
+  boundaryNotice: string;
 }
 
 interface TrigramDirectionTable {
@@ -172,13 +190,49 @@ const TRIGRAM_NAMES: Record<number, TrigramName> = {
   9: '이(離, 9궁)',
 };
 
+function getTemporalFengShuiRhythm(now: Date) {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  const hour = kst.getUTCHours();
+  const month = kst.getUTCMonth() + 1;
+
+  const sunDirectionWindow =
+    hour >= 5 && hour < 11
+      ? '동방 묘시(卯時) 채광창 — 동쪽·동남쪽의 맑은 아침 기운으로 공간을 환기하는 시간'
+      : hour >= 11 && hour < 17
+        ? '남방 오시(午時) 활발창 — 밝은 조명과 정돈된 책상 배치로 집중력을 높이는 시간'
+        : hour >= 17 && hour < 22
+          ? '서방 유시(酉時) 정돈창 — 하루의 흐름을 갈무리하며 소지품을 제자리에 정리하는 시간'
+          : '북방 자시(子時) 안식창 — 불필요한 빛을 줄이고 천의·연년 방위로 숙면을 취하는 시간';
+
+  const seasonalSpatialTone =
+    month >= 3 && month <= 5
+      ? '봄 · 동방 생기 발흥기 (창문 환기와 푸른 식물로 공간의 막힘을 푸는 시기)'
+      : month >= 6 && month <= 8
+        ? '여름 · 남방 광명 확산기 (시원한 동선 확보와 과열된 기운의 조율이 필요한 시기)'
+        : month >= 9 && month <= 11
+          ? '가을 · 서방 수렴 정돈기 (불필요한 물건을 비워 맑은 기운을 들이는 시기)'
+          : '겨울 · 북방 온기 비축기 (따뜻한 조명과 포근한 배치로 내실을 지키는 시기)';
+
+  return {
+    kstTimeLabel: `${y}-${m}-${d} ${hh}:${mm} KST`,
+    sunDirectionWindow,
+    seasonalSpatialTone,
+    temporalGuidance: `${sunDirectionWindow} · ${seasonalSpatialTone}의 흐름에 맞추어 머무는 자리의 방향을 가볍게 살피십시오.`,
+  };
+}
+
 export function calculateFengShuiEightMansions(
-  profileOrParams: UserProfile | null | undefined | { profile?: UserProfile | null; contextText?: string },
+  profileOrParams: UserProfile | null | undefined | { profile?: UserProfile | null; contextText?: string; now?: Date },
   contextText?: string
 ): FengShuiEightMansionsReport {
   const profile = (profileOrParams && 'profile' in profileOrParams) ? profileOrParams.profile : (profileOrParams as UserProfile | null | undefined);
   const effectiveContextText = contextText || (profileOrParams && 'contextText' in profileOrParams ? profileOrParams.contextText : '');
-  const now = new Date();
+  const now = (profileOrParams && 'now' in profileOrParams && profileOrParams.now) ? profileOrParams.now : new Date();
   const birthYear = profile?.basic?.birthdate ? parseInt(profile.basic.birthdate.slice(0, 4), 10) || 1990 : 1990;
   const isFemale = profile?.basic?.gender === 'female';
 
@@ -247,9 +301,36 @@ export function calculateFengShuiEightMansions(
 
   const spatialHarmonyGuidance = `당신의 타고난 본명괘는 [${trigramName}]으로 [${mansionGroup}]에 속합니다. 업무 시에는 [${auspiciousDirections.shengChi}]을 향해 앉아 왕성한 추진력을 얻고, 취침 시 머리는 [${bedHeadDirection}]으로 두어 심신의 치유와 인간관계 안정을 도모하십시오. 반면 [${inauspiciousDirections.chuehMing}] 방향은 정면 응시나 장시간 휴식을 피하는 것이 길합니다.`;
 
+  const temporalFengShuiRhythm = getTemporalFengShuiRhythm(now);
+  const q = (effectiveContextText || '').trim();
+  const situationalFengShuiAudit = /이사|집|방|자리|책상|일|사업|공부/.test(q)
+    ? {
+        focusTheme: '생기·복위 방위 기반 업무 및 거주 공간 최적화',
+        spatialNote: `책상이나 주된 시선은 [${auspiciousDirections.shengChi}] 또는 [${auspiciousDirections.fuWei}]를 향하게 두는 것이 유리합니다.`,
+        placementTip: prescription.remedyColorAndElement,
+      }
+    : /잠|건강|피곤|휴식|관계|가족/.test(q)
+      ? {
+          focusTheme: '천의·연년 방위 기반 회복과 관계 조화',
+          spatialNote: `휴식과 숙면 시 머리 방향은 [${bedHeadDirection}]으로 두어 기운을 보충하십시오.`,
+          placementTip: '침대 주변의 뾰족한 모서리나 어수선한 짐을 정리해 부드러운 동선을 유지하십시오.',
+        }
+      : {
+          focusTheme: `[${mansionGroup}] 본명괘 8방위 일상 조화`,
+          spatialNote: spatialHarmonyGuidance,
+          placementTip: prescription.remedyColorAndElement,
+        };
+
+  const fengShuiSynthesisMatrix = {
+    coreInsight: `[${trigramName} · ${mansionGroup}] 체질에 맞춘 4길방(${auspiciousDirections.shengChi} 등) 활용이 핵심입니다.`,
+    recommendedAction: `업무 시 [${auspiciousDirections.shengChi}], 휴식 시 [${bedHeadDirection}] 지향 + ${prescription.remedyColorAndElement}`,
+    cautionNotice: `장시간 정면 응시나 침대 머리 방향이 [${inauspiciousDirections.chuehMing}]에 고정되지 않도록만 가볍게 피하십시오.`,
+  };
+
   return {
     engineVersion: FENG_SHUI_EIGHT_MANSIONS_VERSION,
     calculatedAt: now.toISOString(),
+    calculatedAtKst: temporalFengShuiRhythm.kstTimeLabel,
     kuaNumber: kua,
     kuaTrigram: trigramName,
     mansionGroup,
@@ -257,13 +338,18 @@ export function calculateFengShuiEightMansions(
     inauspiciousDirections,
     prescription,
     spatialEnergyVitalityScore,
+    situationalFengShuiAudit,
+    temporalFengShuiRhythm,
+    fengShuiSynthesisMatrix,
     spatialHarmonyGuidance,
+    boundaryNotice: '본 결과는 동양 팔택명괘(八宅命卦) 방위 원리를 활용한 정성적 공간 배치 참고용이며, 확정적 길흉 판정이 아닙니다.',
   };
 }
 
 export function formatFengShuiEightMansionsPrompt(report: FengShuiEightMansionsReport): string {
   return `### 🧭 동양 정통 풍수 8택(八宅) 공간 에너지 & 24방위 길흉 엔진 (${FENG_SHUI_EIGHT_MANSIONS_VERSION})
-- **선천 본명괘(本命卦)**: ${report.kuaTrigram} [${report.mansionGroup}] (생체 활력 지수: ${report.spatialEnergyVitalityScore}점)
+- **연산 시각**: ${report.calculatedAtKst}
+- **선천 본명괘(本命卦)**: ${report.kuaTrigram} [${report.mansionGroup}]
 - **4대 길방(Auspicious Directions)**:
   - 🌟 생기(生氣, 최고 활력/사업): ${report.auspiciousDirections.shengChi}
   - 🕊️ 천의(天醫, 건강/귀인 원조): ${report.auspiciousDirections.tienYi}
@@ -272,10 +358,15 @@ export function formatFengShuiEightMansionsPrompt(report: FengShuiEightMansionsR
 - **4대 흉방(Inauspicious Directions - 주의 요망)**:
   - ⚠️ 절명(絕命, 기력 소진 방위): ${report.inauspiciousDirections.chuehMing} | 오귀(五鬼, 구설/분쟁): ${report.inauspiciousDirections.wuKwei}
   - ⚠️ 육살(六煞, 갈등/혼란 방위): ${report.inauspiciousDirections.liuSha} | 화해(禍害, 피로/장애): ${report.inauspiciousDirections.huoHai}
+- **질문 맥락 감사 (${report.situationalFengShuiAudit.focusTheme})**: ${report.situationalFengShuiAudit.spatialNote} / 팁: ${report.situationalFengShuiAudit.placementTip}
+- **KST 시공간 방위 리듬**: ${report.temporalFengShuiRhythm.sunDirectionWindow} / ${report.temporalFengShuiRhythm.seasonalSpatialTone}
+  - *시공간 지침*: ${report.temporalFengShuiRhythm.temporalGuidance}
+- **팔택 교차 매트릭스**: 핵심(${report.fengShuiSynthesisMatrix.coreInsight}) | 실행(${report.fengShuiSynthesisMatrix.recommendedAction}) | 주의(${report.fengShuiSynthesisMatrix.cautionNotice})
 - **일상 공간 배치 처방(Spatial Arrangement)**:
   - 업무/학업 데스크 지향 방위: ${report.prescription.deskFacingDirection}
   - 침대 두침(머리 방향) 권장 방위: ${report.prescription.bedHeadDirection}
   - 비즈니스 협상 좌석 가이드: ${report.prescription.meetingSeatAdvice}
   - 공간 보완 인테리어: ${report.prescription.remedyColorAndElement}
-- **풍수 공간 조화 나침반**: ${report.spatialHarmonyGuidance}`;
+- **풍수 공간 조화 나침반**: ${report.spatialHarmonyGuidance}
+- **해석 경계**: ${report.boundaryNotice}`;
 }

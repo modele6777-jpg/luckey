@@ -2358,17 +2358,22 @@ test('Human Design BodyGraph Engine: 휴먼 디자인 9대 에너지 센터 및 
 });
 
 test('Chakra Vibration Alignment Engine: frequency-free chakra alignment and balance', () => {
-  const res = calculateChakraVibrationAlignment({ profile, targetDate: new Date('2026-11-03T10:00:00+09:00') });
+  const res = calculateChakraVibrationAlignment({ profile, targetDate: new Date('2026-11-15T07:25:00+09:00'), question: '요즘 불안하고 지쳐서 회복이 필요해' });
   assert.equal(res.engineVersion, CHAKRA_ALIGNMENT_VERSION);
   assert.equal(res.chakras.length, 7);
   assert(res.overallChakraBalanceScore >= 0 && res.overallChakraBalanceScore <= 100);
   assert.equal('frequencyHz' in res.primaryFocusChakra, false);
   assert(res.chakras.every((chakra) => !('frequencyHz' in chakra)));
   assert(res.kundaliniBreathingPrescription.instruction.length > 0);
+  assert(res.calculatedAtKst.includes('KST'));
+  assert(res.temporalChakraRhythm.chakraWatchWindow.length > 0);
+  assert(res.chakraSynthesisMatrix.coreInsight.length > 0);
   const prompt = formatChakraVibrationAlignmentPrompt(res);
   assert(prompt.includes('LUCKEY 7대 차크라 파동 정렬 & 에너지 퀀텀 밸런싱'));
   assert(prompt.includes(res.primaryFocusChakra.name));
+  assert(prompt.includes('KST'));
   assert.doesNotMatch(prompt, /\bHz\b|Solfeggio|솔페지오|주파수/);
+  assert(!prompt.includes('/100') && !prompt.includes('%') && !prompt.includes('점수'));
 });
 
 test('Enneagram Soul Integration Engine: 에니어그램 영혼 성격 통합 및 의식 진화 검증', () => {
@@ -2756,14 +2761,19 @@ test('Karmic Synastry Resonance Engine: calculates interpersonal bond score and 
 });
 
 test('Five Emotions Pulse Engine: calculates five elements emotional harmony and prescriptions', () => {
-  const rep = calculateFiveEmotionsPulse(profile);
+  const rep = calculateFiveEmotionsPulse(profile, new Date('2026-11-15T07:25:00+09:00'), '불안과 스트레스를 다스리고 싶어');
   assert.equal(rep.engineVersion, FIVE_EMOTIONS_PULSE_VERSION);
   assert(rep.emotionPulses.length === 5);
   assert(rep.harmonyScore >= 0 && rep.harmonyScore <= 100);
   assert(rep.vulnerableOrgan.length > 0);
+  assert(rep.calculatedAtKst.includes('KST'));
+  assert(rep.temporalPulseRhythm.organMeridianWindow.length > 0);
+  assert(rep.pulseSynthesisMatrix.coreInsight.length > 0);
   const prompt = formatFiveEmotionsPulsePrompt(rep);
   assert(prompt.includes('오행 칠정'));
   assert(prompt.includes(rep.dominantEmotion));
+  assert(prompt.includes('KST'));
+  assert(!prompt.includes('/100') && !prompt.includes('%') && !prompt.includes('점수'));
 });
 
 test('Hermetic Kybalion Engine: maps 7 cosmic principles and alchemical shift', () => {
@@ -2966,15 +2976,20 @@ test('Hawaiian Huna & Ho\'oponopono Engine: calculates active principle, three s
 });
 
 test('Feng Shui Eight Mansions Engine: calculates kua number, east/west mansion and spatial directions', () => {
-  const rep = calculateFengShuiEightMansions({ profile });
+  const rep = calculateFengShuiEightMansions({ profile, contextText: '책상 배치와 업무 집중', now: new Date('2026-11-15T07:25:00+09:00') });
   assert.equal(rep.engineVersion, FENG_SHUI_EIGHT_MANSIONS_VERSION);
   assert(rep.kuaNumber >= 1 && rep.kuaNumber <= 9);
   assert(rep.auspiciousDirections.shengChi.length > 0);
   assert(rep.inauspiciousDirections.chuehMing.length > 0);
   assert(rep.prescription.deskFacingDirection.length > 0);
+  assert(rep.calculatedAtKst.includes('KST'));
+  assert(rep.temporalFengShuiRhythm.sunDirectionWindow.length > 0);
+  assert(rep.fengShuiSynthesisMatrix.coreInsight.length > 0);
   const prompt = formatFengShuiEightMansionsPrompt(rep);
   assert(prompt.includes('동양 정통 풍수 8택(八宅) 공간 에너지'));
   assert(prompt.includes(rep.kuaTrigram));
+  assert(prompt.includes('KST'));
+  assert(!prompt.includes('/100') && !prompt.includes('%') && !prompt.includes('점수'));
 });
 
 test('Zoroastrian Asha Truth Engine: calculates threefold path, sacred atar fire and ethical discernment', () => {
