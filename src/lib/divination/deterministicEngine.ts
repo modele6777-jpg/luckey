@@ -2920,7 +2920,7 @@ try {
   // 177. 신라 원효대사 《십문화쟁론》 일심이문 화쟁 & 원융회통 엔진
   const wonhyoHwajaengResult = calculateSupplement('wonhyoHwajaengResult', () => ((() => {
     try {
-      return calculateWonhyoHwajaeng(profile);
+      return calculateWonhyoHwajaeng(profile, question, now);
     } catch (_) {
       return null;
     }
@@ -3118,7 +3118,7 @@ try {
   // 199. 고대 그리스 에피쿠로스 《테트라파르마코스》 4대치유약 영혼평정 아타락시아 엔진
   const epicureanTetrapharmakosResult = calculateSupplement('epicureanTetrapharmakosResult', () => ((() => {
     try {
-      return calculateEpicureanTetrapharmakos(profile);
+      return calculateEpicureanTetrapharmakos(profile, question, now);
     } catch (_) {
       return null;
     }

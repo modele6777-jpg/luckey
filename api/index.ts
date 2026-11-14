@@ -1,4 +1,4 @@
-// v1.7.424: Deepen Heraclitus, Laozi Daodejing, and Aurelius Inner Citadel engines with qualitative synthesis
+// v1.7.426: Deepen Wonhyo Hwajaeng, Vedic Pancha Kosha, and Epicurean Tetrapharmakos engines with qualitative synthesis
 import { getLucyRequestFallbacks, requestWithModelFallback } from '../src/lib/lucyModelPolicy.ts';
 import "dotenv/config";
 import express from "express";
