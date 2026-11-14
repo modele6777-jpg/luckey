@@ -7660,6 +7660,43 @@ test('Kant, Hegel, and Nietzsche engines (v2.1.0) expose pure qualitative reflec
   assert.ok(nietzschePrompt.includes('해석 경계'));
 });
 
+test('v2.1.0 pure qualitative prompts (zero /100 or % exposure): Bhagavad Gita, Four Noble Truths, and Nagarjuna Sunyata', () => {
+  const now = new Date('2026-11-15T00:00:00.000Z'); // KST 09:00
+
+  const gita = calculateBhagavadGitaKarmaYoga(profile, '결과가 불안해서 도무지 집중이 안 돼요', now);
+  assert.equal(gita.engineVersion, BHAGAVAD_GITA_KARMA_YOGA_VERSION);
+  assert.ok(gita.dailyPracticeRitual.length > 0);
+  assert.ok(gita.reflectiveQuestion.length > 0);
+  assert.ok(gita.interpretiveBoundary.length > 0);
+  const gitaPrompt = formatBhagavadGitaKarmaYogaPrompt(gita);
+  assert.ok(!gitaPrompt.includes('/100') && !gitaPrompt.includes('%'));
+  assert.ok(gitaPrompt.includes('오늘의 실천 의례'));
+  assert.ok(gitaPrompt.includes('성찰 질문'));
+  assert.ok(gitaPrompt.includes('해석 경계'));
+
+  const buddha = calculateAncientIndianFourNobleTruths(profile, '불안하고 걱정이 많아서 마음이 흔들려요', now);
+  assert.equal(buddha.engineVersion, FOUR_NOBLE_TRUTHS_VERSION);
+  assert.ok(buddha.dailyPracticeRitual.length > 0);
+  assert.ok(buddha.reflectiveQuestion.length > 0);
+  assert.ok(buddha.interpretiveBoundary.length > 0);
+  const buddhaPrompt = formatAncientIndianFourNobleTruthsPrompt(buddha);
+  assert.ok(!buddhaPrompt.includes('/100') && !buddhaPrompt.includes('%'));
+  assert.ok(buddhaPrompt.includes('오늘의 실천 의례'));
+  assert.ok(buddhaPrompt.includes('성찰 질문'));
+  assert.ok(buddhaPrompt.includes('해석 경계'));
+
+  const nagarjuna = calculateNagarjunaMadhyamakaSunyata(profile, '내 생각만 맞다는 고집 때문에 갈등이 생겼어요', now);
+  assert.equal(nagarjuna.engineVersion, NAGARJUNA_MADHYAMAKA_VERSION);
+  assert.ok(nagarjuna.dailyPracticeRitual.length > 0);
+  assert.ok(nagarjuna.reflectiveQuestion.length > 0);
+  assert.ok(nagarjuna.interpretiveBoundary.length > 0);
+  const nagarjunaPrompt = formatNagarjunaMadhyamakaSunyataPrompt(nagarjuna);
+  assert.ok(!nagarjunaPrompt.includes('/100') && !nagarjunaPrompt.includes('%'));
+  assert.ok(nagarjunaPrompt.includes('오늘의 실천 의례'));
+  assert.ok(nagarjunaPrompt.includes('성찰 질문'));
+  assert.ok(nagarjunaPrompt.includes('해석 경계'));
+});
+
 
 
 

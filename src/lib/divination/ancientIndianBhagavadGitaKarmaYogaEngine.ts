@@ -7,12 +7,12 @@
  * 3. 사마트밤(Samatvam): "성공과 실패, 승리와 패배를 동등하게 바라보며 중심을 잃지 않는 것, 그것을 요가(Yoga)라 부른다."
  * 4. 요가스타 쿠루 카르마니(Yogasthah kuru karmani): "집착을 끊고 신성한 자아에 굳건히 서서 행위하라."
  *
- * @version LUCKEY-BHAGAVAD-GITA-KARMA-YOGA-v2.0.0
+ * @version LUCKEY-BHAGAVAD-GITA-KARMA-YOGA-v2.1.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const BHAGAVAD_GITA_KARMA_YOGA_VERSION = 'LUCKEY-BHAGAVAD-GITA-KARMA-YOGA-v2.0.0';
+export const BHAGAVAD_GITA_KARMA_YOGA_VERSION = 'LUCKEY-BHAGAVAD-GITA-KARMA-YOGA-v2.1.0';
 
 export interface GitaStage {
   stageLevel: number;
@@ -70,6 +70,9 @@ export interface BhagavadGitaKarmaYogaResult {
     counselTitle: string;
     philosophicalGuidance: string;
   };
+  dailyPracticeRitual: string;
+  reflectiveQuestion: string;
+  interpretiveBoundary: string;
 }
 
 export type BhagavadGitaKarmaYogaReport = BhagavadGitaKarmaYogaResult;
@@ -290,6 +293,18 @@ export function calculateBhagavadGitaKarmaYoga(
     `결과를 통제하려 들면 불안과 속박이 따르지만, 행위 자체를 신성한 소명으로 대하면 엄청난 자유와 집중력이 솟아납니다. ` +
     `${activeGitaStage.karmaActionBlessing}을 실천하십시오. 평정심(Samatvam)을 지키며 오직 현재의 올바른 행위에 몰입하십시오.`;
 
+  const karmaYogaPhilosophicalCounsel = {
+    counselTitle,
+    philosophicalGuidance,
+  };
+  const dailyPracticeRitual =
+    `[니슈카마 카르마 1회 봉헌 의례] 오늘 해야 할 일 중 결과 걱정이 가장 큰 일 한 가지를 고른 뒤, ` +
+    `성패 계산을 멈추고 "${situationalKarmaAudit.nishkamaActionStep}"을 조용히 실행해 보십시오.`;
+  const reflectiveQuestion =
+    `지금 내가 두려워하는 것은 행위 그 자체인가, 아니면 내 뜻대로 되지 않을 결과에 대한 집착인가?`;
+  const interpretiveBoundary =
+    `바가바드 기타 카르마 요가는 미래의 성패를 점치는 도구가 아니라, 결과 집착을 내려놓고 현재의 본분(Swadharma)에 집중하도록 돕는 상징·성찰 관점입니다.`;
+
   return {
     engineVersion: BHAGAVAD_GITA_KARMA_YOGA_VERSION,
     calculatedAtKst: (now ?? new Date()).toISOString(),
@@ -303,27 +318,37 @@ export function calculateBhagavadGitaKarmaYoga(
     situationalKarmaAudit,
     temporalGunaRhythm,
     karmaYogaMatrix,
-    karmaYogaPhilosophicalCounsel: {
-      counselTitle,
-      philosophicalGuidance,
-    },
+    karmaYogaPhilosophicalCounsel,
+    dailyPracticeRitual,
+    reflectiveQuestion,
+    interpretiveBoundary,
   };
+}
+
+function describeGitaStage(score: number): string {
+  if (score >= 88) return '투명하고 흔들림 없이 맑은 경지';
+  if (score >= 76) return '안정적으로 무르익어 가는 흐름';
+  if (score >= 64) return '꾸준히 중심을 세워 가는 단계';
+  return '차분히 집착을 비워 내는 초입';
 }
 
 export function formatBhagavadGitaKarmaYogaPrompt(res: BhagavadGitaKarmaYogaResult): string {
   return [
-    `【고대 인도 바가바드 기타(Bhagavad Gita) 카르마 요가 & 무집착 행동 지표】`,
-    `- 니슈카마 카르마(Nishkama Karma) 행위 무집착 지수: ${res.nishkamaKarmaDetachmentScore}/100`,
-    `- 스와다르마(Swadharma) 영혼 본분 일치도: ${res.swadharmaCallingAlignment}/100`,
-    `- 사마트밤(Samatvam) 초연 평정심: ${res.samatvamEquanimityIndex}/100`,
-    `- 요가스타(Yogastha) 확고한 몰입도: ${res.yogasthaSteadfastness}/100`,
-    `- 카르마팔라(Karmaphala) 결과 집착 포기 자유도: ${res.karmaphalaRenunciation}/100`,
+    `【고대 인도 바가바드 기타(Bhagavad Gita) 카르마 요가 & 무집착 행동 관점】`,
+    `- 니슈카마 카르마(Nishkama Karma) 행위 무집착 결: ${describeGitaStage(res.nishkamaKarmaDetachmentScore)}`,
+    `- 스와다르마(Swadharma) 영혼 본분 일치 결: ${describeGitaStage(res.swadharmaCallingAlignment)}`,
+    `- 사마트밤(Samatvam) 초연 평정심: ${describeGitaStage(res.samatvamEquanimityIndex)}`,
+    `- 요가스타(Yogastha) 확고한 몰입: ${describeGitaStage(res.yogasthaSteadfastness)}`,
+    `- 카르마팔라(Karmaphala) 결과 집착 내려놓음: ${describeGitaStage(res.karmaphalaRenunciation)}`,
     `- 현재 영적 행위 단계: ${res.activeGitaStage.sanskritStage} (${res.activeGitaStage.stageNameKo})`,
     `- 질문 맥락 카르마 처방 (${res.situationalKarmaAudit.themeKo} · ${res.situationalKarmaAudit.chapterVerse}): "${res.situationalKarmaAudit.translationKo}" [${res.situationalKarmaAudit.sanskritQuote}]`,
     `- 집착 함정: ${res.situationalKarmaAudit.attachmentTrap}`,
     `- 니슈카마 실천 단계: ${res.situationalKarmaAudit.nishkamaActionStep}`,
-    `- KST 구나(Guna) 리듬: ${res.temporalGunaRhythm.kstWindow} (${res.temporalGunaRhythm.dominantGuna}, 사트바 평정 ${res.temporalGunaRhythm.sattvaEquanimityIndex}/100) — ${res.temporalGunaRhythm.rhythmDirective}`,
-    `- 카르마 요가 매트릭스: 무집착 숙련 ${res.karmaYogaMatrix.detachmentMastery} / 본분 명료도 ${res.karmaYogaMatrix.swadharmaClarity} / 평정 회복력 ${res.karmaYogaMatrix.samatvamResilience} (종합 ${res.karmaYogaMatrix.overallSynthesis}/100)`,
+    `- KST 구나(Guna) 리듬: ${res.temporalGunaRhythm.kstWindow} (${res.temporalGunaRhythm.dominantGuna}, 사트바 평정 ${describeGitaStage(res.temporalGunaRhythm.sattvaEquanimityIndex)}) — ${res.temporalGunaRhythm.rhythmDirective}`,
+    `- 카르마 요가 매트릭스: 무집착 숙련(${describeGitaStage(res.karmaYogaMatrix.detachmentMastery)}) · 본분 명료도(${describeGitaStage(res.karmaYogaMatrix.swadharmaClarity)}) · 평정 회복력(${describeGitaStage(res.karmaYogaMatrix.samatvamResilience)}) · 종합(${describeGitaStage(res.karmaYogaMatrix.overallSynthesis)})`,
     `- 철학적 처방: ${res.karmaYogaPhilosophicalCounsel.philosophicalGuidance}`,
+    `- 오늘의 실천 의례: ${res.dailyPracticeRitual}`,
+    `- 성찰 질문: ${res.reflectiveQuestion}`,
+    `- 해석 경계: ${res.interpretiveBoundary}`,
   ].join('\n');
 }
