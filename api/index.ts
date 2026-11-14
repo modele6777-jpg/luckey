@@ -1,4 +1,4 @@
-// v1.7.457: Deepen Sun Tzu Art of War, Delphic Chilon, and Zoroastrian Amesha Spentas engines
+// v1.7.458: Deepen Aristotle Mesotes, Plato Cave, and Epictetus Dichotomy engines (pure qualitative prompt, v2.1.0)
 import { getLucyRequestFallbacks, requestWithModelFallback } from '../src/lib/lucyModelPolicy.ts';
 import "dotenv/config";
 import express from "express";

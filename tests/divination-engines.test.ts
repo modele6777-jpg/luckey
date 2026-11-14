@@ -7181,6 +7181,52 @@ test('Plotinus Enneads, Mozi Gyeom-Ae, and Buddhist Yogacara v2.0.0 engines prov
   assert.ok(!yogacaraPrompt.includes('/100') && !yogacaraPrompt.includes('%'));
 });
 
+test('v2.1.0 pure qualitative deepening: Aristotle Mesotes, Plato Cave, and Epictetus Dichotomy remove /100 and % from prompt', () => {
+  const testProfile = {
+    basic: {
+      name: '제제',
+      birthdate: '1994-01-24',
+      birthtime: '08:30',
+      gender: 'male' as const,
+      calendarType: 'solar' as const,
+    },
+  };
+  const now = new Date('2026-11-15T04:40:00.000+09:00');
+
+  const aristotle = calculateAristotleMesotes(testProfile, '조급함과 불안 사이에서 일의 균형을 잡고 싶어요', now);
+  assert.equal(aristotle.engineVersion, 'LUCKEY-ARISTOTLE-MESOTES-EUDAIMONIA-v2.1.0');
+  assert.ok(aristotle.dailyPracticeRitual.includes('헥시스'));
+  assert.ok(aristotle.reflectiveQuestion.length > 10);
+  assert.ok(aristotle.interpretiveBoundary.length > 10);
+  const aristotlePrompt = formatAristotleMesotesPrompt(aristotle);
+  assert.ok(!aristotlePrompt.includes('/100') && !aristotlePrompt.includes('%'));
+  assert.ok(aristotlePrompt.includes('오늘의 실천 의례'));
+  assert.ok(aristotlePrompt.includes('핵심 성찰 질문'));
+  assert.ok(aristotlePrompt.includes('해석 경계'));
+
+  const plato = calculatePlatonicIdeaCave(testProfile, '타인의 시선과 본질 사이에서 진로를 고민 중입니다', now);
+  assert.equal(plato.engineVersion, 'LUCKEY-PLATONIC-IDEA-CAVE-v2.1.0');
+  assert.ok(plato.dailyPracticeRitual.includes('카타바시스'));
+  assert.ok(plato.reflectiveQuestion.length > 10);
+  assert.ok(plato.interpretiveBoundary.length > 10);
+  const platoPrompt = formatPlatonicIdeaCavePrompt(plato);
+  assert.ok(!platoPrompt.includes('/100') && !platoPrompt.includes('%'));
+  assert.ok(platoPrompt.includes('오늘의 실천 의례'));
+  assert.ok(platoPrompt.includes('핵심 성찰 질문'));
+  assert.ok(platoPrompt.includes('해석 경계'));
+
+  const epictetus = calculateEpictetusDichotomyOfControl(testProfile, '내가 바꿀 수 없는 결과 때문에 마음이 흔들립니다', now);
+  assert.equal(epictetus.engineVersion, 'LUCKEY-EPICTETUS-CONTROL-v2.1.0');
+  assert.ok(epictetus.dailyPracticeRitual.includes('프로하이레시스'));
+  assert.ok(epictetus.reflectiveQuestion.length > 10);
+  assert.ok(epictetus.interpretiveBoundary.length > 10);
+  const epictetusPrompt = formatEpictetusDichotomyOfControlPrompt(epictetus);
+  assert.ok(!epictetusPrompt.includes('/100') && !epictetusPrompt.includes('%'));
+  assert.ok(epictetusPrompt.includes('오늘의 실천 의례'));
+  assert.ok(epictetusPrompt.includes('핵심 성찰 질문'));
+  assert.ok(epictetusPrompt.includes('해석 경계'));
+});
+
 
 
 
