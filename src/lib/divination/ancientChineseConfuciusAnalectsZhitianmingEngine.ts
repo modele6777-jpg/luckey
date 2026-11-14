@@ -1,24 +1,18 @@
 /**
  * 고대 동양 유학 공자(孔子) 《논어(論語)》 지천명(知天命) & 극기복례(克己復禮) 군자도(君子道) 수양 엔진
  *
- * 공자의 《논어(論語)》 <위정(爲政)>, <안연(顔淵)>, <헌문(憲問)> 원전 기반.
- * 1. 생애 주기적 천명 자각(Life Stages of Wisdom):
- *    - 지우학(志于學, 15세): 배움에 뜻을 둠.
- *    - 이립(而立, 30세): 기초를 굳건히 세워 자립함.
- *    - 불혹(不惑, 40세): 세상의 미혹과 유혹에 흔들리지 않음.
- *    - 지천명(知天命, 50세): 하늘이 나에게 부여한 사명과 순리를 깊이 자각함.
- *    - 이순(耳順, 60세): 어떤 말을 들어도 귀에 거슬리지 않고 너그럽게 통달함.
- *    - 종심소욕불유구(從心所欲不踰矩, 70세): 마음이 하고자 하는 대로 따라도 법도와 도리에 어긋남이 없음.
+ * 공자의 《논어(論語)》 <학이(學而)>, <위정(爲政)>, <이인(里仁)>, <안연(顔淵)>, <헌문(憲問)> 원전 기반.
+ * 1. 생애 주기적 천명 자각(Life Stages of Wisdom): 지우학 → 이립 → 불혹 → 지천명 → 이순 → 종심소욕불유구
  * 2. 인(仁)과 예(禮): 내면의 진솔한 사랑과 공감(仁)과 그것을 격조 있게 표현하는 절도(禮).
  * 3. 극기복례(克己復禮): 사사로운 욕망을 이겨내고 본래의 도리와 예법으로 돌아감.
  * 4. 군자탄탕탕(君子坦蕩蕩): 소인의 조급하고 궁색한 근심(小人長戚戚)을 벗어나 마음에 걸림이 없는 넓고 평정한 품격.
  *
- * @version LUCKEY-CONFUCIUS-ZHITIANMING-v1.0.0
+ * @version LUCKEY-CONFUCIUS-ZHITIANMING-v2.0.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const CONFUCIUS_ZHITIANMING_VERSION = 'LUCKEY-CONFUCIUS-ZHITIANMING-v1.0.0';
+export const CONFUCIUS_ZHITIANMING_VERSION = 'LUCKEY-CONFUCIUS-ZHITIANMING-v2.0.0';
 
 export interface ConfuciusLifeStage {
   stageKey: string;
@@ -33,6 +27,29 @@ export interface ConfuciusCoreVirtue {
   virtueKo: string;
   moralFocus: string;
   cultivationCounsel: string;
+}
+
+export interface SituationalAnalects {
+  themeKo: string;
+  chapterCitation: string;
+  classicalQuote: string;
+  modernInsight: string;
+  reflectionPrompt: string;
+}
+
+export interface TemporalJunziRhythm {
+  kstPhaseLabel: string;
+  seasonContext: string;
+  liHarmonyIndex: number;
+  dailyCultivationPractice: string;
+}
+
+export interface JunziCultivationMatrix {
+  renLiCohesion: number;
+  kejiRestraint: number;
+  tianmingAcceptance: number;
+  priorityVirtueFocus: string;
+  dailyThreeReflections: string;
 }
 
 export interface ConfuciusAnalectsZhitianmingResult {
@@ -51,6 +68,10 @@ export interface ConfuciusAnalectsZhitianmingResult {
     counselTitle: string;
     philosophicalGuidance: string;
   };
+  // v2.0.0 질적 성찰 & 시공간·다차원 교차 검증
+  situationalAnalects: SituationalAnalects;
+  temporalJunziRhythm: TemporalJunziRhythm;
+  junziCultivationMatrix: JunziCultivationMatrix;
 }
 
 export type ConfuciusAnalectsZhitianmingReport = ConfuciusAnalectsZhitianmingResult;
@@ -133,7 +154,105 @@ const CORE_VIRTUES: ConfuciusCoreVirtue[] = [
   },
 ];
 
-export function calculateConfuciusAnalectsZhitianming(profile: UserProfile): ConfuciusAnalectsZhitianmingResult {
+function getKstComponents(now: Date): { hour: number; month: number; isoKst: string } {
+  const kstMs = now.getTime() + 9 * 60 * 60 * 1000;
+  const kstDate = new Date(kstMs);
+  return {
+    hour: kstDate.getUTCHours(),
+    month: kstDate.getUTCMonth() + 1,
+    isoKst: kstDate.toISOString().replace('Z', '+09:00'),
+  };
+}
+
+function analyzeSituationalAnalects(question: string | undefined, focalVirtue: ConfuciusCoreVirtue): SituationalAnalects {
+  const q = (question ?? '').trim();
+  if (/사람|관계|친구|가족|동료|배신|서운|믿음|갈등/.test(q)) {
+    return {
+      themeKo: '화이부동(和而不同)과 신의(信義)의 관계학',
+      chapterCitation: '《논어》 〈자로(子路)〉 23 · 〈학이(學而)〉 4',
+      classicalQuote: '군자화이부동 소인동이불화 (君子和而不同 小人同而不和)',
+      modernInsight: '참된 유대는 억지로 뜻을 맞추는 동조가 아니라, 서로의 다름을 존중하면서도 도리 안에서 조화를 이루는 데 있습니다.',
+      reflectionPrompt: '상대와 나의 다름을 틀림으로 단정하지 않으면서도 내가 지켜야 할 예(禮)의 선은 어디입니까?',
+    };
+  }
+  if (/돈|이익|직장|사업|성공|선택|유혹|승진|결정/.test(q)) {
+    return {
+      themeKo: '견리사의(見利思義)와 정명(正名)의 결단',
+      chapterCitation: '《논어》 〈헌문(憲問)〉 12 · 〈이인(里仁)〉 16',
+      classicalQuote: '견리사의 견위수명 (見利思義 見危授命)',
+      modernInsight: '눈앞의 이익이 보일수록 그것이 마땅한 도의에 부합하는지 먼저 묻는 사람이 결국 가장 오래가는 신뢰를 얻습니다.',
+      reflectionPrompt: '지금 눈앞의 유익이 1년 뒤 나의 이름과 양심에 부끄러움 없이 어울리는 선택입니까?',
+    };
+  }
+  if (/불안|조급|실패|힘들|지치|포기|운명|답답/.test(q)) {
+    return {
+      themeKo: '인부지이불온(人不知而不慍)과 군자탄탕탕',
+      chapterCitation: '《논어》 〈학이(學而)〉 1 · 〈술이(述而)〉 36',
+      classicalQuote: '군자탄탕탕 소인장척척 (君子坦蕩蕩 小人長戚戚)',
+      modernInsight: '남이 나를 알아주지 않아도 노여워하지 않고 내 실력과 덕을 닦는 사람은 마음이 넓고 평정합니다.',
+      reflectionPrompt: '결과에 대한 조급함(장척척)을 내려놓고 오늘 내가 오롯이 책임질 수 있는 작은 본분은 무엇입니까?',
+    };
+  }
+  if (/공부|배움|성장|진로|꿈|목표|소명|시작/.test(q)) {
+    return {
+      themeKo: '학이시습(學而時習)과 불치하문(不恥下問)',
+      chapterCitation: '《논어》 〈공야장(公冶長)〉 15 · 〈위정(爲政)〉 15',
+      classicalQuote: '학이불사칙망 사이불학칙태 (學而不思則罔 思而不學則殆)',
+      modernInsight: '배우기만 하고 깊이 사유하지 않으면 어둡고, 생각만 하고 배우지 않으면 위태로워집니다.',
+      reflectionPrompt: '지금 내게 부족한 것은 새로운 정보입니까, 아니면 이미 배운 것을 삶에 익히는(시습) 실천입니까?',
+    };
+  }
+
+  return {
+    themeKo: `${focalVirtue.virtueHanja} 중심의 극기복례 수양`,
+    chapterCitation: '《논어》 〈안연(顔淵)〉 1 · 〈위정(爲政)〉 4',
+    classicalQuote: '극기복례위인 (克己復禮爲仁)',
+    modernInsight: focalVirtue.moralFocus,
+    reflectionPrompt: focalVirtue.cultivationCounsel,
+  };
+}
+
+function buildTemporalJunziRhythm(hour: number, month: number, liScore: number): TemporalJunziRhythm {
+  let kstPhaseLabel = '';
+  let phaseBonus = 0;
+  let dailyCultivationPractice = '';
+
+  if (hour >= 4 && hour < 9) {
+    kstPhaseLabel = '신독(愼獨) 새벽 정좌기 (04~09시)';
+    phaseBonus = 8;
+    dailyCultivationPractice = '홀로 있을 때도 도리에 어긋남이 없는지 마음을 단정히 씻고 오늘의 지천명(知天命)을 가다듬는 시간입니다.';
+  } else if (hour >= 9 && hour < 14) {
+    kstPhaseLabel = '정명(正名) 오전 실천기 (09~14시)';
+    phaseBonus = 5;
+    dailyCultivationPractice = '맡은 자리와 이름에 걸맞은 책임과 언행일치(信)를 또렷하게 세워 움직이기에 가장 좋은 때입니다.';
+  } else if (hour >= 14 && hour < 19) {
+    kstPhaseLabel = '화이부동(和而不同) 오후 교류기 (14~19시)';
+    phaseBonus = 4;
+    dailyCultivationPractice = '타인의 시선과 다른 의견을 너그럽게 수용(이순)하되 예(禮)의 품격을 잃지 않는 소통의 시간입니다.';
+  } else {
+    kstPhaseLabel = '일일삼성(一日三省) 밤 성찰기 (19~04시)';
+    phaseBonus = 7;
+    dailyCultivationPractice = '남을 위해 도모함에 진심을 다했는가, 벗과 사귐에 신의가 있었는가, 배운 바를 익혔는가 세 가지를 고요히 돌아보십시오.';
+  }
+
+  let seasonContext = '겨울(Winter · 내덕 함양기)';
+  if (month >= 3 && month <= 5) seasonContext = '봄(Spring · 인의 발아기)';
+  else if (month >= 6 && month <= 8) seasonContext = '여름(Summer · 예절 정진기)';
+  else if (month >= 9 && month <= 11) seasonContext = '가을(Autumn · 지천명 결실기)';
+
+  return {
+    kstPhaseLabel,
+    seasonContext,
+    liHarmonyIndex: Math.min(99, Math.max(45, liScore + phaseBonus)),
+    dailyCultivationPractice,
+  };
+}
+
+export function calculateConfuciusAnalectsZhitianming(
+  profile: UserProfile,
+  question?: string,
+  now: Date = new Date()
+): ConfuciusAnalectsZhitianmingResult {
   const seedString =
     (profile?.basic?.birthdate ?? (profile as any)?.birthdate ?? '1990-01-01') +
     (profile?.basic?.name ?? (profile as any)?.name ?? 'User') +
@@ -159,14 +278,42 @@ export function calculateConfuciusAnalectsZhitianming(profile: UserProfile): Con
   const activeLifeStage = LIFE_STAGES[stageIndex];
   const focalVirtue = CORE_VIRTUES[virtueIndex];
 
+  const { hour, month, isoKst } = getKstComponents(now);
+  const situationalAnalects = analyzeSituationalAnalects(question, focalVirtue);
+  const temporalJunziRhythm = buildTemporalJunziRhythm(hour, month, liDecorumHarmonyScore);
+
+  const renLiCohesion = Math.round(renBenevolenceCoreScore * 0.55 + temporalJunziRhythm.liHarmonyIndex * 0.45);
+  const kejiRestraint = Math.round(kejiFuliDisciplineScore * 0.6 + liDecorumHarmonyScore * 0.4);
+  const tianmingAcceptance = Math.round(tianmingAttunementScore * 0.55 + junziEquanimityScore * 0.45);
+
+  const minAxis = Math.min(renLiCohesion, kejiRestraint, tianmingAcceptance);
+  let priorityVirtueFocus = '인(仁)과 예(禮)의 내외 조화 확충';
+  let dailyThreeReflections = '오늘 사람을 대함에 있어 진심(忠)과 예의 절도를 함께 갖추었는지 살피십시오.';
+  if (minAxis === kejiRestraint) {
+    priorityVirtueFocus = '극기복례(克己復禮) 사욕 절제 집중';
+    dailyThreeReflections = '순간의 조급함이나 사사로운 집착에 중심을 내어준 순간이 있었는지 정직히 점검하십시오.';
+  } else if (minAxis === tianmingAcceptance) {
+    priorityVirtueFocus = '지천명(知天命) 순리 수용과 평정심 회복';
+    dailyThreeReflections = '내가 통제할 수 없는 결과의 성패를 하늘의 순리에 맡기고 내 본분에만 몰입했는지 돌아보십시오.';
+  }
+
+  const junziCultivationMatrix: JunziCultivationMatrix = {
+    renLiCohesion,
+    kejiRestraint,
+    tianmingAcceptance,
+    priorityVirtueFocus,
+    dailyThreeReflections,
+  };
+
   const counselTitle = `공자 논어 지천명: ${activeLifeStage.stageNameHanja}`;
-  const philosophicalGuidance = `군자는 마음이 넓고 평정하며(君子坦蕩蕩), 소인은 늘 근심하고 조급해합니다(小人長戚戚). ` +
-    `현재 당신이 마주한 삶의 마디는 '${activeLifeStage.stageNameKo}'에 조응합니다. ${activeLifeStage.actionGuidance} ` +
-    `특히 ${focalVirtue.virtueKo}의 덕목을 지키십시오. ${focalVirtue.moralFocus}의 정신으로 ${focalVirtue.cultivationCounsel}`;
+  const philosophicalGuidance =
+    `군자는 마음이 넓고 평정하며(君子坦蕩蕩), 소인은 늘 근심하고 조급해합니다(小人長戚戚). ` +
+    `현재 당신의 질문('${situationalAnalects.themeKo}')은 '${activeLifeStage.stageNameKo}'에 조응합니다. ${activeLifeStage.actionGuidance} ` +
+    `특히 ${focalVirtue.virtueKo}의 덕목을 지키며 "${situationalAnalects.classicalQuote}"의 정신을 되새기십시오.`;
 
   return {
     engineVersion: CONFUCIUS_ZHITIANMING_VERSION,
-    calculatedAtKst: new Date().toISOString(),
+    calculatedAtKst: isoKst,
     tianmingAttunementScore,
     renBenevolenceCoreScore,
     liDecorumHarmonyScore,
@@ -178,22 +325,25 @@ export function calculateConfuciusAnalectsZhitianming(profile: UserProfile): Con
       counselTitle,
       philosophicalGuidance,
     },
+    situationalAnalects,
+    temporalJunziRhythm,
+    junziCultivationMatrix,
   };
 }
 
 export function formatConfuciusAnalectsZhitianmingPrompt(res: ConfuciusAnalectsZhitianmingResult): string {
   return [
-    `【공자 논어 지천명 & 극기복례 군자도 지표】`,
-    `- 지천명 섭리 통찰도: ${res.tianmingAttunementScore}/100`,
-    `- 인(仁) 도덕적 본질도: ${res.renBenevolenceCoreScore}/100`,
-    `- 예(禮) 사회적 절도 조화도: ${res.liDecorumHarmonyScore}/100`,
-    `- 극기복례 본연 복원력: ${res.kejiFuliDisciplineScore}/100`,
-    `- 군자탄탕탕 의연 평정심: ${res.junziEquanimityScore}/100`,
+    `【공자 논어 지천명 & 극기복례 군자도 지표 (${res.engineVersion})】`,
+    `- 지천명 통찰: ${res.tianmingAttunementScore}/100 | 인(仁): ${res.renBenevolenceCoreScore}/100 | 예(禮): ${res.liDecorumHarmonyScore}/100`,
+    `- 극기복례 복원력: ${res.kejiFuliDisciplineScore}/100 | 군자탄탕탕 평정심: ${res.junziEquanimityScore}/100`,
     `- 조응하는 생애 마디: ${res.activeLifeStage.stageNameHanja} (${res.activeLifeStage.stageNameKo})`,
-    `- 지혜의 통찰: ${res.activeLifeStage.wisdomInsight}`,
-    `- 실천적 행동 지침: ${res.activeLifeStage.actionGuidance}`,
+    `- 질문 맥락 논어 처방(${res.situationalAnalects.chapterCitation}): ${res.situationalAnalects.themeKo}`,
+    `  · 원전 경구: "${res.situationalAnalects.classicalQuote}" — ${res.situationalAnalects.modernInsight}`,
+    `  · 성찰 물음: ${res.situationalAnalects.reflectionPrompt}`,
+    `- KST 시공간 리듬: ${res.temporalJunziRhythm.kstPhaseLabel} · ${res.temporalJunziRhythm.seasonContext} (예절 조화도 ${res.temporalJunziRhythm.liHarmonyIndex}/100)`,
+    `- 일일 수양 실천: ${res.temporalJunziRhythm.dailyCultivationPractice}`,
+    `- 군자 수양 매트릭스: 인예 일치 ${res.junziCultivationMatrix.renLiCohesion} / 극기 절제 ${res.junziCultivationMatrix.kejiRestraint} / 천명 수용 ${res.junziCultivationMatrix.tianmingAcceptance} → [${res.junziCultivationMatrix.priorityVirtueFocus}]`,
     `- 핵심 수양 덕목: ${res.focalVirtue.virtueKo}`,
-    `- 도덕적 훈계: ${res.focalVirtue.moralFocus}`,
     `- 철학적 수양 지침: ${res.confucianPhilosophicalCounsel.philosophicalGuidance}`,
   ].join('\n');
 }

@@ -6542,6 +6542,46 @@ test('Wonhyo Hwajaeng, Vedic Pancha Kosha, and Epicurean Tetrapharmakos v2.0.0 q
   assert.ok(epicureanPrompt.includes('에피쿠로스 욕망 3분류'));
 });
 
+test('Socratic Maieutic, Aristotle Mesotes, and Confucius Analects engines v2.0.0 qualitative synthesis and temporal cross-validation', () => {
+  const testProfile = {
+    basic: {
+      name: '배남희',
+      birthdate: '1967-08-25',
+      birthtime: '08:30',
+      gender: 'female' as const,
+      birthCity: '서울',
+    },
+  };
+  const now = new Date('2026-11-14T09:35:00.000Z'); // KST 18:35
+
+  const socrates = calculateSocraticMaieuticDaimon(testProfile, '이직을 해야 할지 계속 남아야 할지 선택이 고민돼요', now);
+  assert.equal(socrates.engineVersion, SOCRATIC_MAIEUTIC_DAIMON_VERSION);
+  assert.ok(socrates.situationalElenchus.dialogueSource.includes('변론'));
+  assert.ok(socrates.temporalDaimonionRhythm.daimonClarityIndex >= 45 && socrates.temporalDaimonionRhythm.daimonClarityIndex <= 99);
+  assert.ok(socrates.dialecticSynthesisMatrix.aporiaCourage >= 50);
+  const socratesPrompt = formatSocraticMaieuticDaimonPrompt(socrates);
+  assert.ok(socratesPrompt.includes('핵심 엘렌코스 질문'));
+  assert.ok(socratesPrompt.includes('변증 통합 매트릭스'));
+
+  const aristotle = calculateAristotleMesotes(testProfile, '조급하고 불안해서 자꾸 일을 미루게 돼요', now);
+  assert.equal(aristotle.engineVersion, ARISTOTLE_MESOTES_VERSION);
+  assert.ok(aristotle.situationalMesotes.ethicsCitation.includes('니코마코스 윤리학'));
+  assert.ok(aristotle.temporalPhronesisRhythm.phronesisReadiness >= 45 && aristotle.temporalPhronesisRhythm.phronesisReadiness <= 99);
+  assert.ok(aristotle.eudaimoniaBalanceMatrix.goldenMeanStability >= 50);
+  const aristotlePrompt = formatAristotleMesotesPrompt(aristotle);
+  assert.ok(aristotlePrompt.includes('질문 맥락 불균형 축'));
+  assert.ok(aristotlePrompt.includes('에우다이모니아 밸런스 매트릭스'));
+
+  const confucius = calculateConfuciusAnalectsZhitianming(testProfile, '동료와의 관계와 믿음에 갈등이 생겼어요', now);
+  assert.equal(confucius.engineVersion, CONFUCIUS_ZHITIANMING_VERSION);
+  assert.ok(confucius.situationalAnalects.classicalQuote.includes('군자화이부동'));
+  assert.ok(confucius.temporalJunziRhythm.liHarmonyIndex >= 45 && confucius.temporalJunziRhythm.liHarmonyIndex <= 99);
+  assert.ok(confucius.junziCultivationMatrix.renLiCohesion >= 50);
+  const confuciusPrompt = formatConfuciusAnalectsZhitianmingPrompt(confucius);
+  assert.ok(confuciusPrompt.includes('질문 맥락 논어 처방'));
+  assert.ok(confuciusPrompt.includes('군자 수양 매트릭스'));
+});
+
 
 
 
