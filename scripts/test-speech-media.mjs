@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { primeSpeechMedia, playSpeechMedia, stopSpeechMedia, pauseSpeechMedia, resumeSpeechMedia, speechMediaProgress } from '../src/lib/speechMedia.ts';
+import { primeSpeechMedia, playSpeechMedia, stopSpeechMedia, pauseSpeechMedia, resumeSpeechMedia, speechMediaProgress, handleSpeechPageVisibility } from '../src/lib/speechMedia.ts';
 class AudioMock extends EventTarget {
   paused = true; currentTime = 0; duration = 12; src = ''; preload = '';
   setAttribute() {} removeAttribute() { this.src = ''; } load() {}
@@ -27,20 +27,62 @@ await old; assert.equal(blobs.size, 1); stopSpeechMedia(); await current; assert
 const failed = playSpeechMedia(new Uint8Array([1]), 'mp3', 24000); player.dispatchEvent(new Event('error')); await assert.rejects(failed); stopSpeechMedia();
 console.log('Speech media: PCM header, same-element playback, pause/resume, completion, replacement, stop and errors passed.');
 
+// A native background pause gets one retry; manual pauses stay paused.
+let nativePlayCalls = 0;
+const backgroundReading = playSpeechMedia(new Uint8Array([73, 68, 51, 0]), 'mp3', 24000);
+const normalPlay = player.play.bind(player);
+player.play = () => { nativePlayCalls++; return normalPlay(); };
+player.currentTime = 4;
+handleSpeechPageVisibility(false);
+player.paused = true;
+player.dispatchEvent(new Event('pause'));
+assert.equal(nativePlayCalls, 1);
+assert.equal(player.currentTime, 4);
+player.paused = true;
+player.dispatchEvent(new Event('pause'));
+assert.equal(nativePlayCalls, 1, 'no retry loop while backgrounded');
+handleSpeechPageVisibility(true);
+assert.equal(nativePlayCalls, 2);
+handleSpeechPageVisibility(false);
+pauseSpeechMedia();
+player.dispatchEvent(new Event('pause'));
+handleSpeechPageVisibility(true);
+assert.equal(nativePlayCalls, 2, 'manual pause must not be overridden');
+stopSpeechMedia(); await backgroundReading;
+console.log('Background interruption: one native retry, preserved position and manual-pause protection passed.');
+
 const { setTTSSessionActive, pauseTTSSession, resumeTTSSession, clearTTSSession, initTTSSessionHandlers } = await import('../src/lib/ttsMediaSession.ts');
+const { updateAppMediaSession } = await import('../src/lib/appMediaSession.ts');
+const { isAppAudioActive } = await import('../src/lib/audioMixingPolicy.ts');
 const registeredHandlers = new Map();
+const fakeAudioSession = { type: 'ambient' };
 const fakeMediaSession = { playbackState: 'none', metadata: null, setActionHandler: (action, handler) => registeredHandlers.set(action, handler) };
-Object.defineProperty(globalThis, 'navigator', { configurable: true, value: { mediaSession: fakeMediaSession } });
+Object.defineProperty(globalThis, 'navigator', { configurable: true, value: { mediaSession: fakeMediaSession, audioSession: fakeAudioSession } });
 let stopped = 0, pausedCount = 0, resumed = 0;
+updateAppMediaSession('bgm', { title: 'BGM', artist: 'Lucy', state: 'playing' });
+assert.equal(fakeAudioSession.type, 'ambient');
+assert.equal(fakeMediaSession.playbackState, 'none', 'BGM must not claim OS transport');
 initTTSSessionHandlers(() => stopped++, () => pausedCount++, () => resumed++);
 setTTSSessionActive('Test');
-assert.equal(fakeMediaSession.playbackState, 'none');
+assert.equal(fakeMediaSession.playbackState, 'playing');
+assert.equal(fakeAudioSession.type, 'playback');
+updateAppMediaSession('bgm', null);
+assert.equal(fakeAudioSession.type, 'playback', 'BGM stop cannot clear TTS priority');
+updateAppMediaSession('bgm', { title: 'BGM', artist: 'Lucy', state: 'playing' });
+registeredHandlers.get('pause')(); assert.equal(pausedCount, 1);
 pauseTTSSession();
-assert.equal(fakeMediaSession.playbackState, 'none');
+assert.equal(fakeMediaSession.playbackState, 'paused');
+assert.equal(fakeAudioSession.type, 'ambient');
+registeredHandlers.get('play')(); assert.equal(resumed, 1);
 resumeTTSSession();
-assert.equal(fakeMediaSession.playbackState, 'none');
+assert.equal(fakeMediaSession.playbackState, 'playing');
+assert.equal(fakeAudioSession.type, 'playback');
+registeredHandlers.get('stop')(); assert.equal(stopped, 1);
 clearTTSSession();
 assert.equal(fakeMediaSession.playbackState, 'none');
-assert.equal(registeredHandlers.size, 0);
-assert.equal(stopped, 0); assert.equal(pausedCount, 0); assert.equal(resumed, 0);
-console.log('Speech media: in-app lifecycle passed without publishing OS media controls.');
+assert.equal(fakeAudioSession.type, 'ambient');
+assert.equal(isAppAudioActive(), true, 'ending TTS must retain active BGM tracking');
+assert.ok([...registeredHandlers.values()].every(handler => handler === null));
+updateAppMediaSession('bgm', null);
+assert.equal(isAppAudioActive(), false);
+console.log('TTS priority: playback only while speaking, working OS controls, ambient on pause/stop, BGM ownership preserved.');

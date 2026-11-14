@@ -1,12 +1,12 @@
-/** Keep all app audio, including TTS, nonexclusive ('ambient') so external players are not
- *  actively displaced. The web API cannot request native AVAudioSession.mixWithOthers; 'playback'
- *  may interrupt or duck another iOS app. Background continuation remains best-effort in WebKit. */
+/** TTS explicitly takes background-playback priority while it is speaking.
+ * Other app audio remains ambient; release the priority on pause, stop or completion.
+ * iOS may pause external music while TTS owns this playback session.
+ */
 let isAudioActive = false;
 let speechAudioActive = false;
 
 export function setAppAudioActive(active: boolean): void {
   isAudioActive = active;
-  if (!active) speechAudioActive = false;
   applyAudioMixingPolicy();
 }
 
@@ -17,7 +17,7 @@ export function setSpeechAudioActive(active: boolean): void {
 }
 
 export function isAppAudioActive(): boolean {
-  return isAudioActive;
+  return isAudioActive || speechAudioActive;
 }
 
 export function isSpeechAudioActive(): boolean {
@@ -28,9 +28,7 @@ export function applyAudioMixingPolicy(): void {
   if (typeof navigator === 'undefined' || !('audioSession' in navigator)) return;
   try {
     const session = (navigator as Navigator & { audioSession?: { type: string } }).audioSession;
-    // Do not promote active TTS to 'playback': the web AudioSession API exposes no
-    // mixWithOthers option, so that mode can take priority over external music on iOS.
-    const desiredType = 'ambient';
+    const desiredType = speechAudioActive ? 'playback' : 'ambient';
     if (session && session.type !== desiredType) session.type = desiredType;
   } catch { /* AudioSession selection is unavailable on some browsers/iOS versions. */ }
 }

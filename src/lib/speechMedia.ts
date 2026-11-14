@@ -9,13 +9,20 @@ let active = false;
 let paused = false;
 let playbackFailure: (() => void) | null = null;
 let pageWasHidden = false;
+let backgroundResumeAttempted = false;
 export function getSpeechMediaElement(): HTMLAudioElement {
   if (!player) {
     player = new Audio();
     player.preload = 'auto';
     player.setAttribute('playsinline', 'true');
+    player.setAttribute('hidden', '');
+    player.setAttribute('aria-hidden', 'true');
     // Preserve pitch independently of the audio-session mixing policy.
     (player as any).preservesPitch = true;
+  }
+  // Keep native playback attached across routes instead of relying on a detached element.
+  if (typeof document !== 'undefined' && typeof Node !== 'undefined' && player instanceof Node && !player.isConnected) {
+    document.body?.appendChild(player);
   }
   return player;
 }
@@ -26,10 +33,10 @@ export function primeSpeechMedia(userGesture = typeof navigator !== 'undefined' 
 
 export function stopSpeechMedia(): void {
   active = false; paused = false;
+  backgroundResumeAttempted = false;
   finish?.(); finish = null;
   updateAppMediaSession('tts', null);
   setSpeechAudioActive(false);
-  setAppAudioActive(false);
   if (player) { player.pause(); player.removeAttribute('src'); player.load(); }
   if (objectUrl) URL.revokeObjectURL(objectUrl);
   objectUrl = null;
@@ -68,14 +75,26 @@ export function resumeSpeechMedia() {
   }
 }
 
-/** Resume only a native-media interruption observed across a hidden/visible transition. */
+/** One nonexclusive retry per background transition, never a focus-reclaim loop. */
+function resumeHiddenSpeechOnce(): void {
+  if (backgroundResumeAttempted || !active || paused || !player || player.ended || !player.paused) return;
+  backgroundResumeAttempted = true;
+  applyAudioMixingPolicy();
+  // A background permission refusal must not discard the reading or its position.
+  void player.play().catch(() => {});
+}
+
+/** Preserve playback on hide and recover only unrequested native interruptions. */
 export function handleSpeechPageVisibility(isVisible: boolean): void {
   if (!isVisible) {
+    if (!pageWasHidden) backgroundResumeAttempted = false;
     pageWasHidden = true;
+    resumeHiddenSpeechOnce();
     return;
   }
   if (!pageWasHidden) return;
   pageWasHidden = false;
+  backgroundResumeAttempted = false;
   if (!active || paused || !player || player.ended || !player.paused) return;
   resumeSpeechMedia();
 }
@@ -111,6 +130,11 @@ export function playSpeechMedia(
   if (previousUrl) URL.revokeObjectURL(previousUrl);
   return new Promise<void>((resolve, reject) => {
     let settled = false;
+    const interrupted = () => {
+      if (pageWasHidden || (typeof document !== 'undefined' && document.visibilityState === 'hidden')) {
+        resumeHiddenSpeechOnce();
+      }
+    };
     const playing = () => {
       updateAppMediaSession('tts', {
         title: 'Lucy Speech',
@@ -121,6 +145,7 @@ export function playSpeechMedia(
       onPlaying?.();
     };
     const cleanup = () => {
+      audio.removeEventListener('pause', interrupted);
       audio.removeEventListener('playing', playing);
       audio.removeEventListener('ended', ended);
       audio.removeEventListener('error', failed);
@@ -147,6 +172,7 @@ export function playSpeechMedia(
     };
     finish = ended;
     playbackFailure = failed;
+    audio.addEventListener('pause', interrupted);
     audio.addEventListener('playing', playing, { once: true });
     audio.addEventListener('ended', ended);
     audio.addEventListener('error', failed);

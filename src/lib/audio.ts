@@ -35,8 +35,8 @@ export function getSharedAudioContext(): AudioContext {
     throw new Error('AudioContext is only available in a browser with Web Audio support');
   }
 
-  // All sound, including BGM and speech, uses a nonexclusive ambient session.
-  configureAmbientAudioSession();
+  // Creating an effect/BGM context must not clear active TTS playback priority.
+  applyAudioMixingPolicy();
 
   if (!sharedAudioCtx || sharedAudioCtx.state === 'closed') {
     const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
@@ -620,9 +620,7 @@ let speechSessionActive = false;
 
 export function setBgmPlaybackSessionActive(active: boolean): void {
   setAppAudioActive(active);
-  if (!active && !speechSessionActive) {
-    configureAmbientAudioSession();
-  }
+  applyAudioMixingPolicy();
 }
 
 export function configureAmbientAudioSession(): void {
@@ -631,7 +629,7 @@ export function configureAmbientAudioSession(): void {
 }
 
 /** Compatibility entry points stay nonexclusive to preserve external player audio. */
-export function configureTransientDuckingAudioSession(): void { configureAmbientAudioSession(); }
+export function configureTransientDuckingAudioSession(): void { applyAudioMixingPolicy(); }
 export function configurePlaybackAudioSession(): void {
   setAppAudioActive(true);
 }
@@ -661,7 +659,7 @@ function replaceSpeechAudioContext(context: AudioContext): AudioContext {
 export function unlockAudioPlayback(): void {
   if (typeof window === 'undefined') return;
   try {
-    configureAmbientAudioSession();
+    applyAudioMixingPolicy();
     let audioCtx = getSharedAudioContext();
     if (speechContextNeedsReset) audioCtx = replaceSpeechAudioContext(audioCtx);
     const unlockSource = audioCtx.createBufferSource();

@@ -12,8 +12,8 @@ Every time a user request is completed or changes are made to the codebase:
 
 ### 2. Permanent External Music Continuity
 - External music (Apple Music, Spotify, Melon, etc.) must keep playing throughout the app, including while in-app BGM is explicitly enabled.
-- Apply the shared nonexclusive `ambient` audio policy before any playback. Never select `playback`, `play-and-record`, `solo-ambient`, or ducking to take priority over external music.
-- Never publish app Media Session metadata, playback state, or OS transport handlers that replace external music controls. App BGM/TTS use their own UI controls.
+- BGM, effects, navigation and idle audio use nonexclusive `ambient`. User clarification on 2026-11-14 gives active TTS priority for screen-off/app-switch playback: TTS alone may use `playback`, returning to `ambient` on pause, stop or completion. External music may pause during TTS on iOS.
+- BGM must not publish OS Media Session controls. Explicit TTS may publish speech pause/play/stop controls for background playback; remove them when TTS ends.
 - Ordinary navigation, opening chat/music UI, registering a track, and text-only chat must not prime silent audio or wake audio contexts.
 - Do not add automatic BGM, silent keep-alive loops, or focus-reclaim retries when no app audio was requested.
 - Verify policy and playback entry points when changing audio. Browser/OS restrictions (especially microphone capture and cross-origin players) cannot be overridden by web code; describe physical-device verification limits honestly.
