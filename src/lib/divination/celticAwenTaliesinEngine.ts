@@ -23,7 +23,28 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const CELTIC_AWEN_TALIESIN_ENGINE_VERSION = '1.0.0';
+export const CELTIC_AWEN_TALIESIN_ENGINE_VERSION = '2.0.0';
+
+export interface AwenSituationalAudit {
+  cauldronFocus: string;
+  rayAlignment: string;
+  bardicAction: string;
+  illusionCaution: string;
+}
+
+export interface AwenTemporalRhythm {
+  kstHour: number;
+  awenBardicWindow: string;
+  celticQuarterPhase: string;
+  inspirationGuidance: string;
+  awenTempo: '발현' | '침잠' | '연단';
+}
+
+export interface AwenSynthesisMatrix {
+  inspirationState: '아웬만개' | '내면숙성' | '변용도약';
+  rayTotemLink: string;
+  nextCauldronStep: string;
+}
 
 export interface AwenRaysBalance {
   natureRayScore: number; // 자연/직관의 빛 0~100
@@ -43,9 +64,12 @@ export interface MetamorphosisPhase {
 export interface CelticAwenTaliesinReport {
   engineVersion: string;
   calculatedAt: string;
-  awenFlowIndex: number; // 아웬(Awen) 창조적 영감 몰입 지수 0~100
+  awenFlowIndex: number; // 내부 연산용
   awenRays: AwenRaysBalance;
   activeMetamorphosis: MetamorphosisPhase;
+  situationalAwenAudit: AwenSituationalAudit;
+  temporalAwenRhythm: AwenTemporalRhythm;
+  awenSynthesisMatrix: AwenSynthesisMatrix;
   cauldronPractice: string; // 가마솥 연단 실천
   taliesinProphecy: string;
 }
@@ -81,9 +105,94 @@ const METAMORPHOSIS_PHASES: MetamorphosisPhase[] = [
  * 사용자 프로필 및 타임스탬프를 기반으로
  * 켈트 아웬(Awen) 3대 광선과 탈리에신 변용 국면을 결정론적으로 연산합니다.
  */
+function getKstAwenParts(now: Date): { hour: number; month: number } {
+  const formatter = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Asia/Seoul',
+    hour: 'numeric',
+    month: 'numeric',
+    hour12: false,
+  });
+  const parts = formatter.formatToParts(now);
+  return {
+    hour: Number(parts.find((p) => p.type === 'hour')?.value || '12') % 24,
+    month: Number(parts.find((p) => p.type === 'month')?.value || '1'),
+  };
+}
+
+function buildAwenSituationalAudit(
+  question: string,
+  dominantRay: { name: AwenRaysBalance['dominantRay']; role: string },
+  phase: MetamorphosisPhase
+): AwenSituationalAudit {
+  const q = question.toLowerCase();
+  if (/창작|아이디어|글|기획|일|사업|프로젝트|새로/.test(q)) {
+    return {
+      cauldronFocus: `케리드웬의 가마솥 창조 발효 — ${dominantRay.name}`,
+      rayAlignment: dominantRay.role,
+      bardicAction: `탈리에신의 [${phase.animalTotem}]처럼 낡은 형식을 벗고 오늘 떠오른 핵심 아이디어 한 줄을 바로 형태화하십시오.`,
+      illusionCaution: '완벽한 문장이나 거창한 설계를 기다리다 영감의 불씨가 식지 않게 하십시오.',
+    };
+  }
+  if (/변화|선택|이직|갈림길|고민|방향/.test(q)) {
+    return {
+      cauldronFocus: `[${phase.phaseTitle}] — 유연한 변용과 탈피`,
+      rayAlignment: phase.strategicGift,
+      bardicAction: '산토끼처럼 민첩하게 상황을 살피되, 연어처럼 깊은 본질 하나를 붙들고 결정하십시오.',
+      illusionCaution: '남의 박수나 체면 때문에 내면의 아웬(Awen) 직관을 외면하지 마십시오.',
+    };
+  }
+  return {
+    cauldronFocus: `${dominantRay.name} · ${phase.phaseTitle}`,
+    rayAlignment: dominantRay.role,
+    bardicAction: '10분간 검열 없는 자유 기록으로 머릿속 안개를 걷어내십시오.',
+    illusionCaution: '생각만 거듭하며 실제 표현을 미루지 마십시오.',
+  };
+}
+
+function buildAwenTemporalRhythm(now: Date): AwenTemporalRhythm {
+  const { hour, month } = getKstAwenParts(now);
+
+  let awenBardicWindow = '여명 아웬(Awen) 첫 광선 창';
+  let awenTempo: AwenTemporalRhythm['awenTempo'] = '발현';
+  let inspirationGuidance = '고요한 새벽 공기와 함께 직관의 첫 영감을 포착하기 좋은 시간입니다.';
+
+  if (hour >= 5 && hour < 10) {
+    awenBardicWindow = '여명 아웬(Awen) 첫 광선 창 (05~10시)';
+    awenTempo = '발현';
+    inspirationGuidance = '검열 없이 떠오르는 생각과 오늘의 핵심 의도를 적기 좋습니다.';
+  } else if (hour >= 10 && hour < 17) {
+    awenBardicWindow = '주간 바드(Bard) 선언 및 실행 창 (10~17시)';
+    awenTempo = '발현';
+    inspirationGuidance = '구상한 영감을 실제 말과 글, 실무 결과물로 옮기기 알맞은 시간입니다.';
+  } else if (hour >= 17 && hour < 21) {
+    awenBardicWindow = '황혼 케리드웬 가마솥 숙성 창 (17~21시)';
+    awenTempo = '연단';
+    inspirationGuidance = '오늘 얻은 경험을 천천히 곱씹으며 내면의 지혜로 뭉근히 달이십시오.';
+  } else {
+    awenBardicWindow = '심야 지혜의 연어 침잠 창 (21~05시)';
+    awenTempo = '침잠';
+    inspirationGuidance = '외부 자극을 끄고 깊은 휴식 속에서 무의식의 샘을 채울 시간입니다.';
+  }
+
+  let celticQuarterPhase = '임볼크(Imbolc · 새싹과 정화절)';
+  if (month >= 2 && month <= 4) celticQuarterPhase = '임볼크~벨테인 · 영감 발아절';
+  else if (month >= 5 && month <= 7) celticQuarterPhase = '벨테인~루그나사드 · 태양 창조절';
+  else if (month >= 8 && month <= 10) celticQuarterPhase = '루그나사드~삼하인 · 수확 숙성절';
+  else celticQuarterPhase = '삼하인~임볼크 · 가마솥 침잠절';
+
+  return {
+    kstHour: hour,
+    awenBardicWindow,
+    celticQuarterPhase,
+    inspirationGuidance,
+    awenTempo,
+  };
+}
+
 export function calculateCelticAwenTaliesin(options?: {
   profile?: UserProfile;
   targetInstantTime?: string;
+  question?: string;
 }): CelticAwenTaliesinReport {
   const profile = options?.profile;
   const now = options?.targetInstantTime ? new Date(options.targetInstantTime) : new Date();
@@ -141,12 +250,25 @@ export function calculateCelticAwenTaliesin(options?: {
 
   const taliesinProphecy = `아웬의 세 광선 중 [${dominantRay.name}]이 찬란히 비추고 있습니다. 탈리에신의 변용 [${activeMetamorphosis.animalTotem}]의 기운으로: "${activeMetamorphosis.bardicProclamation}"`;
 
+  const situationalAwenAudit = buildAwenSituationalAudit(options?.question || '', dominantRay, activeMetamorphosis);
+  const temporalAwenRhythm = buildAwenTemporalRhythm(now);
+  const inspirationState: AwenSynthesisMatrix['inspirationState'] =
+    awenFlowIndex >= 85 ? '아웬만개' : awenFlowIndex >= 72 ? '변용도약' : '내면숙성';
+  const awenSynthesisMatrix: AwenSynthesisMatrix = {
+    inspirationState,
+    rayTotemLink: `[${dominantRay.name}]의 빛과 [${activeMetamorphosis.animalTotem}]의 변용이 ${temporalAwenRhythm.awenBardicWindow}에서 만납니다.`,
+    nextCauldronStep: situationalAwenAudit.bardicAction,
+  };
+
   return {
     engineVersion: CELTIC_AWEN_TALIESIN_ENGINE_VERSION,
     calculatedAt: now.toISOString(),
     awenFlowIndex,
     awenRays,
     activeMetamorphosis,
+    situationalAwenAudit,
+    temporalAwenRhythm,
+    awenSynthesisMatrix,
     cauldronPractice,
     taliesinProphecy
   };
@@ -158,27 +280,29 @@ export function calculateCelticAwenTaliesin(options?: {
 export function formatCelticAwenTaliesinPrompt(report: CelticAwenTaliesinReport): string {
   const r = report.awenRays;
   const m = report.activeMetamorphosis;
+  const rayStrength = (s: number) => (s >= 80 ? '충만' : s >= 62 ? '조화' : '잠재');
 
-  return `[🔮 고대 켈트 바드 탈리에신(Taliesin) 가마솥 & 아웬(Awen) 영감 실측 데이터]
-======================================================================
-엔진 버전: ${report.engineVersion} | 연산 시각: ${report.calculatedAt}
-아웬(Awen) 창조적 몰입 지수: ${report.awenFlowIndex} / 100점
-======================================================================
+  return `[🔮 고대 켈트 바드 탈리에신(Taliesin) 가마솥 & 아웬(Awen) 영감 실측 데이터 (v${report.engineVersion})]
+- 아웬(Awen) 영감 위상: ${report.awenSynthesisMatrix.inspirationState}
 1. [신성한 영감 아웬(Awen /|\\) 3대 광선]:
    - 주재 영감 광선: [${r.dominantRay}]
    - 주재 광선 역량: ${r.dominantRayRole}
-   - 3대 광선 수치:
-     * 자연과 직관의 빛 (Nature): ${r.natureRayScore}점
-     * 진실과 균형의 빛 (Truth): ${r.truthRayScore}점
-     * 태양과 창조의 빛 (Solar Vision): ${r.solarRayScore}점
+   - 3대 광선 균형: 자연/직관(${rayStrength(r.natureRayScore)}) · 진실/균형(${rayStrength(r.truthRayScore)}) · 태양/창조(${rayStrength(r.solarRayScore)})
 
 2. [탈리에신 4단계 영혼 변용(Metamorphosis)]:
    - 현재 변용 국면: [${m.animalTotem}] - ${m.phaseTitle}
    - 전략적 선물: ${m.strategicGift}
    - 바드적 선언: "${m.bardicProclamation}"
 
-3. [케리드웬 가마솥 처방 & 탈리에신 신탁]:
+3. [질문 맥락 감사 & KST 시공간 리듬 (${report.temporalAwenRhythm.kstHour}시)]:
+   - 가마솥 초점: ${report.situationalAwenAudit.cauldronFocus}
+   - 바드 실천: ${report.situationalAwenAudit.bardicAction}
+   - 환상 경계: ${report.situationalAwenAudit.illusionCaution}
+   - 시공간 창: ${report.temporalAwenRhythm.awenBardicWindow} · ${report.temporalAwenRhythm.celticQuarterPhase} (${report.temporalAwenRhythm.awenTempo})
+   - 시간대 지침: ${report.temporalAwenRhythm.inspirationGuidance}
+
+4. [케리드웬 가마솥 처방 & 탈리에신 신탁]:
+   - 교차 매트릭스: ${report.awenSynthesisMatrix.rayTotemLink}
    - 가마솥 연단 실천: ${report.cauldronPractice}
-   - 종합 영감 예언: ${report.taliesinProphecy}
-======================================================================`;
+   - 종합 영감 예언: ${report.taliesinProphecy}`;
 }

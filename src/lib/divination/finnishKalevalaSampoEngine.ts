@@ -22,7 +22,28 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const FINNISH_KALEVALA_SAMPO_ENGINE_VERSION = '1.0.0';
+export const FINNISH_KALEVALA_SAMPO_ENGINE_VERSION = '2.0.0';
+
+export interface SampoSituationalAudit {
+  sampoAxis: string;
+  sisuLeverage: string;
+  artisanAction: string;
+  frostCaution: string;
+}
+
+export interface SampoTemporalRhythm {
+  kstHour: number;
+  nordicSunWindow: string;
+  taigaSeasonPhase: string;
+  forgeTimingGuidance: string;
+  sisuTempo: '단조' | '항해' | '안식';
+}
+
+export interface SampoSynthesisMatrix {
+  sisuGrade: '강철시수' | '견고지속' | '온기보존';
+  wingRunoLink: string;
+  nextSampoStep: string;
+}
 
 export interface SampoWingsBalance {
   flourScore: number; // 곡물 (안정과 생계) 0~100
@@ -42,9 +63,12 @@ export interface KalevalaRuno {
 export interface FinnishKalevalaSampoReport {
   engineVersion: string;
   calculatedAt: string;
-  sisuResilienceIndex: number; // 시수(Sisu) 회복탄력성 0~100
+  sisuResilienceIndex: number; // 내부 연산용
   sampoBalance: SampoWingsBalance;
   activeRuno: KalevalaRuno;
+  situationalSampoAudit: SampoSituationalAudit;
+  temporalSampoRhythm: SampoTemporalRhythm;
+  sampoSynthesisMatrix: SampoSynthesisMatrix;
   guardianNatureSpirit: string; // 대자연 수호신
   forestHealingPractice: string; // 숲의 힐링 처방
   kalevalaWisdom: string;
@@ -117,9 +141,94 @@ const NATURE_SPIRITS = [
 /**
  * 칼레발라 삼포 번영 및 시수(Sisu) 지수를 결정론적으로 연산합니다.
  */
+function getKstKalevalaParts(now: Date): { hour: number; month: number } {
+  const formatter = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Asia/Seoul',
+    hour: 'numeric',
+    month: 'numeric',
+    hour12: false,
+  });
+  const parts = formatter.formatToParts(now);
+  return {
+    hour: Number(parts.find((p) => p.type === 'hour')?.value || '12') % 24,
+    month: Number(parts.find((p) => p.type === 'month')?.value || '1'),
+  };
+}
+
+function buildSampoSituationalAudit(
+  question: string,
+  dominantWing: { name: SampoWingsBalance['dominantWing']; gift: string },
+  runo: KalevalaRuno
+): SampoSituationalAudit {
+  const q = question.toLowerCase();
+  if (/돈|재물|사업|일|직장|생계|성취|프로젝트/.test(q)) {
+    return {
+      sampoAxis: `삼포 [${dominantWing.name}] 가동 — 실물과 성취의 맷돌`,
+      sisuLeverage: `${dominantWing.gift} · 제${runo.runoNumber}장(${runo.runoTitle})`,
+      artisanAction: '일마리넨의 대장간처럼 오늘 결과로 남길 작은 실무 산출물 하나를 끝까지 벼려내십시오.',
+      frostCaution: '한 번에 큰 황금을 기대하며 기초의 곡물·소금 기반을 소홀히 하지 마십시오.',
+    };
+  }
+  if (/힘들|지치|버티|어렵|고민|관계|불안/.test(q)) {
+    return {
+      sampoAxis: `시수(Sisu) 내면 온기 보존 — ${runo.runoTitle}`,
+      sisuLeverage: runo.loitsuChant,
+      artisanAction: '차가운 외부 상황을 단숨에 바꾸려 하기보다, 내 안의 작은 화롯불과 일상 루틴부터 지키십시오.',
+      frostCaution: '고립된 채 혼자 모든 추위를 버티려 하지 말고 숲과 사람의 온기를 빌리십시오.',
+    };
+  }
+  return {
+    sampoAxis: `${dominantWing.name} · ${runo.runoTitle}`,
+    sisuLeverage: dominantWing.gift,
+    artisanAction: '작은 일상 도구나 공간을 정갈히 다듬으며 장인의 리듬을 회복하십시오.',
+    frostCaution: '조급함으로 맷돌의 균형을 무너뜨리지 마십시오.',
+  };
+}
+
+function buildSampoTemporalRhythm(now: Date): SampoTemporalRhythm {
+  const { hour, month } = getKstKalevalaParts(now);
+
+  let nordicSunWindow = '새벽 일마타르(Ilmatar) 청명 창';
+  let sisuTempo: SampoTemporalRhythm['sisuTempo'] = '단조';
+  let forgeTimingGuidance = '맑은 호흡으로 오늘 지켜낼 핵심 원칙을 세우기 좋은 시간입니다.';
+
+  if (hour >= 5 && hour < 10) {
+    nordicSunWindow = '여명 칼레발라 칸텔레 조율 창 (05~10시)';
+    sisuTempo = '단조';
+    forgeTimingGuidance = '하루의 줄을 바르게 고르고 핵심 일의 시동을 걸기 알맞은 시간입니다.';
+  } else if (hour >= 10 && hour < 17) {
+    nordicSunWindow = '주간 일마리넨 삼포 주조 창 (10~17시)';
+    sisuTempo = '항해';
+    forgeTimingGuidance = '꾸준한 실행력과 묵직한 시수(Sisu) 의지로 과업을 진척시킬 시간입니다.';
+  } else if (hour >= 17 && hour < 21) {
+    nordicSunWindow = '황혼 타피올라 숲의 귀환 창 (17~21시)';
+    sisuTempo = '안식';
+    forgeTimingGuidance = '긴장을 풀고 따뜻한 차와 온기로 심신의 피로를 씻어내십시오.';
+  } else {
+    nordicSunWindow = '심야 벨라모 호수 정화 창 (21~05시)';
+    sisuTempo = '안식';
+    forgeTimingGuidance = '고요한 밤의 호수처럼 생각을 비우고 내일을 위한 기력을 회복하십시오.';
+  }
+
+  let taigaSeasonPhase = '타이가 순환절';
+  if (month >= 3 && month <= 5) taigaSeasonPhase = '해빙과 새싹 · 파종 준비절';
+  else if (month >= 6 && month <= 8) taigaSeasonPhase = '백야와 생장 · 삼포 가동절';
+  else if (month >= 9 && month <= 11) taigaSeasonPhase = '수확과 저장 · 소금 보존절';
+  else taigaSeasonPhase = '설한과 시수(Sisu) 내면 연단절';
+
+  return {
+    kstHour: hour,
+    nordicSunWindow,
+    taigaSeasonPhase,
+    forgeTimingGuidance,
+    sisuTempo,
+  };
+}
+
 export function calculateFinnishKalevalaSampo(options?: {
   profile?: UserProfile;
   targetInstantTime?: string;
+  question?: string;
 }): FinnishKalevalaSampoReport {
   const profile = options?.profile;
   const now = options?.targetInstantTime ? new Date(options.targetInstantTime) : new Date();
@@ -179,7 +288,16 @@ export function calculateFinnishKalevalaSampo(options?: {
   ];
   const forestHealingPractice = forestPractices[seed % forestPractices.length];
 
-  const kalevalaWisdom = `불굴의 시수(Sisu) 정신(${sisuResilienceIndex}점)과 삼포의 [${dominantWing.name}]이 공명하고 있습니다. ${activeRuno.loitsuChant}`;
+  const kalevalaWisdom = `불굴의 시수(Sisu) 정신과 삼포의 [${dominantWing.name}]이 공명하고 있습니다. ${activeRuno.loitsuChant}`;
+  const situationalSampoAudit = buildSampoSituationalAudit(options?.question || '', dominantWing, activeRuno);
+  const temporalSampoRhythm = buildSampoTemporalRhythm(now);
+  const sisuGrade: SampoSynthesisMatrix['sisuGrade'] =
+    sisuResilienceIndex >= 85 ? '강철시수' : sisuResilienceIndex >= 72 ? '견고지속' : '온기보존';
+  const sampoSynthesisMatrix: SampoSynthesisMatrix = {
+    sisuGrade,
+    wingRunoLink: `[${dominantWing.name}]과 제${activeRuno.runoNumber}장 [${activeRuno.runoTitle}]이 ${temporalSampoRhythm.nordicSunWindow}에서 맞물립니다.`,
+    nextSampoStep: situationalSampoAudit.artisanAction,
+  };
 
   return {
     engineVersion: FINNISH_KALEVALA_SAMPO_ENGINE_VERSION,
@@ -187,6 +305,9 @@ export function calculateFinnishKalevalaSampo(options?: {
     sisuResilienceIndex,
     sampoBalance,
     activeRuno,
+    situationalSampoAudit,
+    temporalSampoRhythm,
+    sampoSynthesisMatrix,
     guardianNatureSpirit,
     forestHealingPractice,
     kalevalaWisdom
@@ -199,27 +320,29 @@ export function calculateFinnishKalevalaSampo(options?: {
 export function formatFinnishKalevalaSampoPrompt(report: FinnishKalevalaSampoReport): string {
   const sb = report.sampoBalance;
   const r = report.activeRuno;
+  const wingGrade = (s: number) => (s >= 80 ? '풍성' : s >= 62 ? '안정' : '배양중');
 
-  return `[🌾 고대 핀란드 칼레발라(Kalevala) 삼포(Sampo) & 9대 룬가 실측 데이터]
-======================================================================
-엔진 버전: ${report.engineVersion} | 연산 시각: ${report.calculatedAt}
-시수(Sisu) 회복탄력성 지수: ${report.sisuResilienceIndex} / 100점 | 수호 정령: ${report.guardianNatureSpirit}
-======================================================================
+  return `[🌾 고대 핀란드 칼레발라(Kalevala) 삼포(Sampo) & 9대 룬가 실측 데이터 (v${report.engineVersion})]
+- 시수(Sisu) 회복탄력 위상: ${report.sampoSynthesisMatrix.sisuGrade} | 수호 정령: ${report.guardianNatureSpirit}
 1. [기적의 맷돌 삼포(Sampo) 3대 번영 밸런스]:
    - 주재 번영 날개: [${sb.dominantWing}]
    - 주재 축복 선물: ${sb.dominantGift}
-   - 삼포 3대 날개 수치:
-     * 곡물의 날개 (안정/기반): ${sb.flourScore}점
-     * 소금의 날개 (지혜/보존): ${sb.saltScore}점
-     * 황금의 날개 (성취/번영): ${sb.goldScore}점
+   - 삼포 3대 날개 균형: 곡물/안정(${wingGrade(sb.flourScore)}) · 소금/지혜(${wingGrade(sb.saltScore)}) · 황금/번영(${wingGrade(sb.goldScore)})
 
 2. [바이내뫼이넨의 9대 신성 룬가(Runo) 신탁]:
    - 주재 룬: 제${r.runoNumber}장 [${r.runoTitle}]
    - 신화적 기원: ${r.mythicOrigin}
    - 로이추(마법 치유 노래): "${r.loitsuChant}"
 
-3. [북유럽식 치유 처방 & 칼레발라 지혜]:
+3. [질문 맥락 감사 & KST 시공간 리듬 (${report.temporalSampoRhythm.kstHour}시)]:
+   - 삼포 초점: ${report.situationalSampoAudit.sampoAxis} · 지렛대(${report.situationalSampoAudit.sisuLeverage})
+   - 장인 실천: ${report.situationalSampoAudit.artisanAction}
+   - 설한 경계: ${report.situationalSampoAudit.frostCaution}
+   - 시공간 창: ${report.temporalSampoRhythm.nordicSunWindow} · ${report.temporalSampoRhythm.taigaSeasonPhase} (${report.temporalSampoRhythm.sisuTempo})
+   - 시간대 지침: ${report.temporalSampoRhythm.forgeTimingGuidance}
+
+4. [북유럽식 치유 처방 & 칼레발라 지혜]:
+   - 교차 매트릭스: ${report.sampoSynthesisMatrix.wingRunoLink}
    - 실천 처방: ${report.forestHealingPractice}
-   - 칼레발라 총평: ${report.kalevalaWisdom}
-======================================================================`;
+   - 칼레발라 총평: ${report.kalevalaWisdom}`;
 }

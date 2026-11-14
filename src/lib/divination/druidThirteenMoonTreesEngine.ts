@@ -29,7 +29,28 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const DRUID_MOON_TREES_VERSION = 'LUCKEY-DRUID-MOON-TREES-v1.0.0';
+export const DRUID_MOON_TREES_VERSION = 'LUCKEY-DRUID-MOON-TREES-v2.0.0';
+
+export interface DruidTreeSituationalAudit {
+  groveFocus: string;
+  oghamGuidance: string;
+  forestAction: string;
+  rootCaution: string;
+}
+
+export interface DruidTreeTemporalRhythm {
+  kstHour: number;
+  sacredGroveWindow: string;
+  lunarTreeSeason: string;
+  groveTimingDirective: string;
+  treeTempo: '발아' | '번성' | '침잠';
+}
+
+export interface DruidTreeSynthesisMatrix {
+  resonanceGrade: '고목공명' | '유연조화' | '뿌리안정';
+  birthCycleLink: string;
+  nextGroveStep: string;
+}
 
 export interface DruidMoonTreeInfo {
   oghamLetter: string;
@@ -45,7 +66,10 @@ export interface DruidMoonTreesReport {
   calculatedAt: string;
   birthTree: DruidMoonTreeInfo;
   activeCycleTree: DruidMoonTreeInfo;
-  resonanceScore: number;          // 0 ~ 100 드루이드 숲 공명도
+  resonanceScore: number;          // 내부 연산용
+  situationalTreeAudit: DruidTreeSituationalAudit;
+  temporalTreeRhythm: DruidTreeTemporalRhythm;
+  treeSynthesisMatrix: DruidTreeSynthesisMatrix;
   forestGuidance: string;
   synthesisMessage: string;
 }
@@ -157,8 +181,95 @@ const THIRTEEN_TREES: DruidMoonTreeInfo[] = [
   },
 ];
 
-export function calculateDruidMoonTrees(profile?: UserProfile): DruidMoonTreesReport {
-  const now = new Date();
+function getKstDruidParts(now: Date): { hour: number; month: number } {
+  const formatter = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Asia/Seoul',
+    hour: 'numeric',
+    month: 'numeric',
+    hour12: false,
+  });
+  const parts = formatter.formatToParts(now);
+  return {
+    hour: Number(parts.find((p) => p.type === 'hour')?.value || '12') % 24,
+    month: Number(parts.find((p) => p.type === 'month')?.value || '1'),
+  };
+}
+
+function buildDruidTreeSituationalAudit(
+  question: string,
+  birthTree: DruidMoonTreeInfo,
+  activeTree: DruidMoonTreeInfo
+): DruidTreeSituationalAudit {
+  const q = question.toLowerCase();
+  if (/일|선택|결정|새로|시작|이직|도전/.test(q)) {
+    return {
+      groveFocus: `[${activeTree.koreanName}] 달나무 주기 — 뿌리와 새 가지의 균형`,
+      oghamGuidance: activeTree.sacredAttribute,
+      forestAction: `${birthTree.koreanName}의 본질을 바탕으로, 오늘 뻗어낼 가장 현실적인 작은 가지 하나를 선택하십시오.`,
+      rootCaution: '뿌리를 내리기도 전에 수관만 무성하게 키우려는 조급함을 경계하십시오.',
+    };
+  }
+  if (/관계|사람|가족|사랑|갈등|지치|치유/.test(q)) {
+    return {
+      groveFocus: `${birthTree.oghamLetter} · 숲의 경계와 순환 치유`,
+      oghamGuidance: birthTree.sacredAttribute,
+      forestAction: '나무와 나무가 적당한 간격을 둘 때 함께 자라듯, 감정의 거리와 휴식을 확보하십시오.',
+      rootCaution: '타인의 계절에 내 리듬을 억지로 맞추느라 소진되지 마십시오.',
+    };
+  }
+  return {
+    groveFocus: `${activeTree.koreanName} · 오검 숲 순환`,
+    oghamGuidance: activeTree.druidTreeOmen,
+    forestAction: '잠시 호흡을 고르며 오늘 내 안의 나무가 필요로 하는 햇빛과 물이 무엇인지 살피십시오.',
+    rootCaution: '계절의 속도를 앞지르려 하지 마십시오.',
+  };
+}
+
+function buildDruidTreeTemporalRhythm(now: Date): DruidTreeTemporalRhythm {
+  const { hour, month } = getKstDruidParts(now);
+
+  let sacredGroveWindow = '여명 네메톤(Nemeton) 이슬 창';
+  let treeTempo: DruidTreeTemporalRhythm['treeTempo'] = '발아';
+  let groveTimingDirective = '이슬을 머금은 나무처럼 맑은 정신으로 하루의 방향을 정하기 좋습니다.';
+
+  if (hour >= 5 && hour < 10) {
+    sacredGroveWindow = '여명 네메톤(Nemeton) 이슬 창 (05~10시)';
+    treeTempo = '발아';
+    groveTimingDirective = '새로운 생각과 가벼운 시작을 열기에 가장 청명한 시간입니다.';
+  } else if (hour >= 10 && hour < 17) {
+    sacredGroveWindow = '주간 참나무 수관 태양 창 (10~17시)';
+    treeTempo = '번성';
+    groveTimingDirective = '햇빛을 받아 잎을 틔우듯 실무와 대외 활동을 왕성히 펼칠 시간입니다.';
+  } else if (hour >= 17 && hour < 21) {
+    sacredGroveWindow = '황혼 버드나무 달빛 정돈 창 (17~21시)';
+    treeTempo = '침잠';
+    groveTimingDirective = '바람을 흘려보내는 버드나무처럼 오늘의 긴장을 부드럽게 내려놓으십시오.';
+  } else {
+    sacredGroveWindow = '심야 뿌리 영양 축적 창 (21~05시)';
+    treeTempo = '침잠';
+    groveTimingDirective = '땅속 깊은 뿌리로 수분을 모으듯 조용한 수면과 안식에 들 시간입니다.';
+  }
+
+  let lunarTreeSeason = '13달나무 순환절';
+  if (month >= 3 && month <= 5) lunarTreeSeason = '봄 · 오리나무·버드나무 발아절';
+  else if (month >= 6 && month <= 8) lunarTreeSeason = '여름 · 참나무·개암나무 번성절';
+  else if (month >= 9 && month <= 11) lunarTreeSeason = '가을 · 포도나무·갈대 수확절';
+  else lunarTreeSeason = '겨울 · 자작나무·엘더나무 정화절';
+
+  return {
+    kstHour: hour,
+    sacredGroveWindow,
+    lunarTreeSeason,
+    groveTimingDirective,
+    treeTempo,
+  };
+}
+
+export function calculateDruidMoonTrees(
+  profile?: UserProfile,
+  now: Date = new Date(),
+  question: string = ''
+): DruidMoonTreesReport {
   const birthStr = profile?.basic?.birthdate || '1990-01-01';
   const nameStr = profile?.basic?.name || 'Druid';
 
@@ -180,7 +291,16 @@ export function calculateDruidMoonTrees(profile?: UserProfile): DruidMoonTreesRe
 
   const forestGuidance = `당신의 탄생 수호목 [${birthTree.koreanName}]의 뿌리 깊은 힘과 오늘의 활성목 [${activeCycleTree.koreanName}]의 신탁이 어우러져 "${activeCycleTree.druidTreeOmen}"의 지혜를 전합니다.`;
 
-  const synthesisMessage = `켈트 드루이드 13달나무 역법에 따라, 당신은 [${birthTree.koreanName}]의 본질적 기질을 품고 있으며 현재 숲 공명도는 ${resonanceScore}점입니다.`;
+  const resonanceGrade: DruidTreeSynthesisMatrix['resonanceGrade'] =
+    resonanceScore >= 90 ? '고목공명' : resonanceScore >= 82 ? '유연조화' : '뿌리안정';
+  const synthesisMessage = `켈트 드루이드 13달나무 역법에 따라, 당신은 [${birthTree.koreanName}]의 본질적 기질을 품고 있으며 현재 숲 공명은 [${resonanceGrade}] 상태입니다.`;
+  const situationalTreeAudit = buildDruidTreeSituationalAudit(question, birthTree, activeCycleTree);
+  const temporalTreeRhythm = buildDruidTreeTemporalRhythm(now);
+  const treeSynthesisMatrix: DruidTreeSynthesisMatrix = {
+    resonanceGrade,
+    birthCycleLink: `탄생 수호목 [${birthTree.koreanName}]과 활성목 [${activeCycleTree.koreanName}]이 ${temporalTreeRhythm.sacredGroveWindow}에서 어우러집니다.`,
+    nextGroveStep: situationalTreeAudit.forestAction,
+  };
 
   return {
     engineVersion: DRUID_MOON_TREES_VERSION,
@@ -188,6 +308,9 @@ export function calculateDruidMoonTrees(profile?: UserProfile): DruidMoonTreesRe
     birthTree,
     activeCycleTree,
     resonanceScore,
+    situationalTreeAudit,
+    temporalTreeRhythm,
+    treeSynthesisMatrix,
     forestGuidance,
     synthesisMessage,
   };
@@ -200,7 +323,11 @@ export function formatDruidMoonTreesPrompt(report: DruidMoonTreesReport): string
   - 신성한 권능: ${report.birthTree.sacredAttribute}
 - **현재 주기 활성 수호목**: **${report.activeCycleTree.koreanName}**
   - 드루이드 신탁: "${report.activeCycleTree.druidTreeOmen}"
-- **드루이드 신성 숲 공명도**: **${report.resonanceScore}점** (대자연 수목과의 조화 상태)
+- **드루이드 신성 숲 공명 위상**: **${report.treeSynthesisMatrix.resonanceGrade}** (대자연 수목과의 조화 상태)
+- **질문 맥락 감사**: ${report.situationalTreeAudit.groveFocus} · 실천(${report.situationalTreeAudit.forestAction}) · 경계(${report.situationalTreeAudit.rootCaution})
+- **KST 시공간 리듬 (${report.temporalTreeRhythm.kstHour}시)**: ${report.temporalTreeRhythm.sacredGroveWindow} · ${report.temporalTreeRhythm.lunarTreeSeason} (${report.temporalTreeRhythm.treeTempo})
+  - 시간대 지침: ${report.temporalTreeRhythm.groveTimingDirective}
+- **교차 매트릭스**: ${report.treeSynthesisMatrix.birthCycleLink}
 - **숲의 지혜 처방**: ${report.forestGuidance}
 - **드루이드 통합 나침반**: ${report.synthesisMessage}`;
 }
