@@ -3806,17 +3806,21 @@ test('Sumerian Enuma Elish Fifty Names Engine: calculates Tiamat subjugation, fo
   assert(prompt.includes(rep.dominantSacredName.nameKo));
 });
 
-test('Alexandrian Decan Thirty Six Gods Engine: calculates Kairos time mastery, ten-day soul tuning and astral shielding', () => {
-  const rep = calculateAlexandrianDecanThirtySixGods({ profile, question: '알렉산드리아 36대 데칸' });
+test('Alexandrian Decan Thirty Six Gods Engine: provides qualitative Kairos posture, question context and hides raw scores', () => {
+  const rep = calculateAlexandrianDecanThirtySixGods({ profile, question: '이직 결정을 내려도 될까요?' });
   assert.equal(rep.engineVersion, ALEXANDRIAN_DECAN_ENGINE_VERSION);
-  assert(rep.kairosTimeMasteryScore >= 0 && rep.kairosTimeMasteryScore <= 100);
-  assert(rep.tenDaySoulTuningIndex >= 0 && rep.tenDaySoulTuningIndex <= 100);
-  assert(rep.astralShieldingRate >= 0 && rep.astralShieldingRate <= 100);
-  assert(rep.zodiacalEquilibriumScore >= 0 && rep.zodiacalEquilibriumScore <= 100);
+  assert.equal(rep.questionTopic, 'decision');
+  assert(rep.kairosPosture.length > 0);
+  assert(rep.practiceGuidance.length > 0);
+  assert(rep.ritualAction.length > 0);
+  assert(rep.reflectionFocus.length > 0);
+  assert(rep.boundaryNotice.length > 0);
   assert(rep.dominantDecan.nameKo.length > 0);
   const prompt = formatAlexandrianDecanThirtySixGodsPrompt(rep);
   assert(prompt.includes('알렉산드리아 헤르메스주의 36대 데칸 천상 성령 & 시간의 지배자 실측 데이터'));
   assert(prompt.includes(rep.dominantDecan.nameKo));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
 });
 
 test('Taoist Liezi Wind Riding Engine: calculates wind riding unity, Muhayu rest index and tranquil emptiness', () => {
@@ -5237,18 +5241,20 @@ test('Martin Heidegger Being and Time Engine: calculates In-der-Welt-sein, Eigen
   assert(prompt.includes(rep.activeHeideggerTheme.themeTitleKo));
 });
 
-test('Hannah Arendt Vita Activa Engine: calculates Natality, Action, and Banality of Evil Overcoming', () => {
-  const rep = calculateHannahArendtVitaActiva(profile);
+test('Hannah Arendt Vita Activa Engine: provides qualitative Natality guidance, question context and hides raw scores', () => {
+  const rep = calculateHannahArendtVitaActiva(profile, '인간관계 갈등을 어떻게 풀어야 할까요?');
   assert.equal(rep.engineVersion, AMERICAN_GERMAN_HANNAH_ARENDT_VERSION);
-  assert(rep.natalityRenewalCapacityScore >= 0 && rep.natalityRenewalCapacityScore <= 100);
-  assert(rep.vitaActivaBalanceScore >= 0 && rep.vitaActivaBalanceScore <= 100);
-  assert(rep.banalityOfEvilOvercomingThinkingScore >= 0 && rep.banalityOfEvilOvercomingThinkingScore <= 100);
-  assert(rep.publicRealmPluralityIndex >= 0 && rep.publicRealmPluralityIndex <= 100);
-  assert(rep.forgivenessAndPromiseFidelityScore >= 0 && rep.forgivenessAndPromiseFidelityScore <= 100);
+  assert.equal(rep.questionTopic, 'relationship');
+  assert(rep.practiceGuidance.length > 0);
+  assert(rep.ritualAction.length > 0);
+  assert(rep.reflectionFocus.length > 0);
+  assert(rep.boundaryNotice.length > 0);
   assert(rep.activeArendtTheme.themeTitleKo.length > 0);
   const prompt = formatHannahArendtVitaActivaPrompt(rep);
   assert(prompt.includes('한나 아렌트 《인간의 조건》 활동적 삶 & 탄생성 지표'));
   assert(prompt.includes(rep.activeArendtTheme.themeTitleKo));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
 });
 
 test('Dosan Ahn Chang-ho Musil Yeokhaeng Engine: calculates Musil, Yeokhaeng, and Owner Responsibility', () => {
@@ -5265,18 +5271,20 @@ test('Dosan Ahn Chang-ho Musil Yeokhaeng Engine: calculates Musil, Yeokhaeng, an
   assert(prompt.includes(rep.activeDosanTheme.themeTitleKo));
 });
 
-test('Henry David Thoreau Walden Engine: calculates Simplicity, Nature Communion, and Moral Conscience', () => {
-  const rep = calculateHenryDavidThoreauWalden(profile);
+test('Henry David Thoreau Walden Engine: provides qualitative Simplicity guidance, question context and hides raw scores', () => {
+  const rep = calculateHenryDavidThoreauWalden(profile, '마음이 지치고 휴식이 필요해요');
   assert.equal(rep.engineVersion, AMERICAN_HENRY_DAVID_THOREAU_VERSION);
-  assert(rep.simplicityEssentialLifeScore >= 0 && rep.simplicityEssentialLifeScore <= 100);
-  assert(rep.natureCommunionHarmoniaScore >= 0 && rep.natureCommunionHarmoniaScore <= 100);
-  assert(rep.awakenedConsciousnessIndex >= 0 && rep.awakenedConsciousnessIndex <= 100);
-  assert(rep.moralConscienceDisobedienceScore >= 0 && rep.moralConscienceDisobedienceScore <= 100);
-  assert(rep.vitalMarrowLivingIndex >= 0 && rep.vitalMarrowLivingIndex <= 100);
+  assert.equal(rep.questionTopic, 'healing');
+  assert(rep.practiceGuidance.length > 0);
+  assert(rep.ritualAction.length > 0);
+  assert(rep.reflectionFocus.length > 0);
+  assert(rep.boundaryNotice.length > 0);
   assert(rep.activeThoreauTheme.themeTitleKo.length > 0);
   const prompt = formatHenryDavidThoreauWaldenPrompt(rep);
   assert(prompt.includes('헨리 데이비드 소로 《월든》 단순함 & 양심 지표'));
   assert(prompt.includes(rep.activeThoreauTheme.themeTitleKo));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
 });
 
 test('David Hume Treatise of Human Nature Engine: calculates Mitigated Skepticism, Sympathy, and Gentle Composure', () => {

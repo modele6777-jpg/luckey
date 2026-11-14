@@ -3,20 +3,16 @@
  *
  * 기원전 헬레니즘 알렉산드리아 점성술 및 《헤르메티카(Hermetica)》 제8권 원전 기반:
  * 360도 천상 황도대를 10도씩 분할하여 우주의 시간과 지상의 운명을 주재하는
- * 36대 데칸 성령(Decanoi / 36 Sacred Celestial Rulers of Time) 체계.
+ * 36대 데칸 성령(Decanoi / 36 Sacred Celestial Rulers of Time)의 상징·성찰 체계.
  *
- * 6대 핵심 신성 데칸 성령 원형:
- * 1. 소티스 (Sothis / 시리우스의 빛) - 나일강의 신성한 범람을 부르고 생명의 새해를 여는 여명의 주재자
- * 2. 크눔 (Khnum / 신성한 도예공) - 인간의 형상과 운명의 그릇을 정교하게 빚어내는 실질적 조형과 장인성
- * 3. 세크메트 (Sekhmet / 태양의 불꽃) - 모든 불의와 어둠의 에너지를 태워버리는 정화와 단호한 벽사의 권능
- * 4. 토트 (Thoth / 진리의 기록자) - 지혜의 서판을 쥐고 만물의 원리를 밝혀내는 통찰과 지적 분석력
- * 5. 아누비스 (Anubis / 경계의 인도자) - 갈림길과 전환점에서 두려움을 없애고 올바른 길로 이끄는 수호자
- * 6. 오시리스 (Osiris / 부활의 영원성) - 시련과 해체를 딛고 영원히 빛나는 영적 완성으로 이끄는 재생력
+ * @version 1.1.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const ALEXANDRIAN_DECAN_ENGINE_VERSION = '1.0.0';
+export const ALEXANDRIAN_DECAN_ENGINE_VERSION = '1.1.0';
+
+export type DecanQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
 export interface DecanCelestialGod {
   id: string;
@@ -26,20 +22,27 @@ export interface DecanCelestialGod {
   temporalRulership: string; // 시간의 지배 양상 (크로노스 vs 카이로스)
   celestialProtectionPower: string;
   soulVirtue: string;
-  resonanceScore: number; // 0 ~ 100
+  resonanceScore: number; // 내부 정렬용 (프롬프트 비노출)
 }
 
 export interface AlexandrianDecanThirtySixGodsReport {
   engineVersion: string;
   timestamp: string;
-  kairosTimeMasteryScore: number; // 0 ~ 100 카이로스적 결정적 타이밍 지배도
-  tenDaySoulTuningIndex: number; // 0 ~ 100 10일 주기 영혼 조율도
-  astralShieldingRate: number; // 0 ~ 100 천체 흉살 및 외부 혼란 차폐율
-  zodiacalEquilibriumScore: number; // 0 ~ 100 황도대 360도 균형도
+  questionTopic: DecanQuestionTopic;
+  kairosPosture: string;
+  kairosTimeMasteryScore: number; // 내부 호환용 (프롬프트 비노출)
+  tenDaySoulTuningIndex: number; // 내부 호환용 (프롬프트 비노출)
+  astralShieldingRate: number; // 내부 호환용 (프롬프트 비노출)
+  zodiacalEquilibriumScore: number; // 내부 호환용 (프롬프트 비노출)
   dominantDecan: DecanCelestialGod;
   secondaryDecan: DecanCelestialGod;
-  alexandrianHermeticDecree: string; // 헤르메스주의 데칸 지혜 선언
-  celestialDecanSealGuidance: string; // 데칸 신성 인장 수호 지침
+  practiceGuidance: string;
+  ritualAction: string;
+  reflectionFocus: string;
+  counselNote: string;
+  boundaryNotice: string;
+  alexandrianHermeticDecree: string;
+  celestialDecanSealGuidance: string;
 }
 
 const ALEXANDRIAN_DECANS_BASE: Omit<DecanCelestialGod, 'resonanceScore'>[] = [
@@ -99,6 +102,49 @@ const ALEXANDRIAN_DECANS_BASE: Omit<DecanCelestialGod, 'resonanceScore'>[] = [
   },
 ];
 
+function classifyDecanTopic(question: string): DecanQuestionTopic {
+  const q = question.toLowerCase();
+  if (/연애|사랑|관계|이별|재회|결혼|사람|배우자|친구|가족|갈등/.test(q)) return 'relationship';
+  if (/선택|결정|이직|창업|진로|계약|시험|투자|사업|옮길|할까|말까/.test(q)) return 'decision';
+  if (/마음|우울|불안|치유|회복|건강|지침|슬픔|휴식|외로|힘들/.test(q)) return 'healing';
+  return 'reflection';
+}
+
+function getKstDateKey(now: Date): string {
+  const kstMs = now.getTime() + 9 * 60 * 60 * 1000;
+  return new Date(kstMs).toISOString().slice(0, 10);
+}
+
+const DECAN_TOPIC_GUIDANCE: Record<
+  DecanQuestionTopic,
+  { practice: string; ritual: string; reflection: string; counsel: string }
+> = {
+  relationship: {
+    practice: '관계의 타이밍을 조급하게 재촉하지 말고, 상대와 나 사이의 경계와 진심을 차분히 살피십시오.',
+    ritual: '오늘 대화를 시작하기 전 세 번 숨을 고르고, 판단 대신 상대의 말을 끝까지 듣는 시간을 가지십시오.',
+    reflection: '지금 이 관계에서 내가 지키고 싶은 진실한 태도와 내려놓아야 할 조바심은 무엇인가요?',
+    counsel: '알렉산드리아 데칸의 시간은 억지로 관계를 끌어당기기보다, 서로의 리듬이 맞물리는 순간을 기다릴 때 비로소 열립니다.',
+  },
+  decision: {
+    practice: '크로노스(기계적 시계 시간)의 조급함을 내려놓고, 지금이 행동할 카이로스인지 준비할 시기인지 분별하십시오.',
+    ritual: '결정해야 할 선택지 두 가지를 적고, 각각의 최선과 최악이 아닌 "내가 감당할 수 있는 리듬"을 표시해 보십시오.',
+    reflection: '지금 내 선택을 흔드는 것은 현실의 근거인가요, 아니면 늦어질까 봐 두려운 마음인가요?',
+    counsel: '10도씩 나뉘는 데칸의 흐름처럼, 큰 결단도 지금 눈앞의 한 구간을 정확히 밟는 데서 완성됩니다.',
+  },
+  healing: {
+    practice: '지금의 정체나 피로를 실패로 여기지 말고, 다음 주기를 준비하는 고요한 10일 주기의 쉼으로 받아들이십시오.',
+    ritual: '해 질 녘 불필요한 화면을 잠시 끄고, 따뜻한 물 한 잔과 함께 오늘 버텨낸 자신에게 짧은 휴식을 허락하십시오.',
+    reflection: '지금 내 마음의 에너지를 가장 크게 소모시키고 있는 외부의 소음은 무엇인가요?',
+    counsel: '데칸 성령의 수호는 거창한 변화보다 지친 일상 속에 작은 질서와 온기를 되찾는 순간에 작용합니다.',
+  },
+  reflection: {
+    practice: '반복되는 일상의 흐름 속에서 오늘 유독 눈에 띄는 징후와 내면의 감각을 조용히 기록해 두십시오.',
+    ritual: '잠들기 전 오늘 하루 중 가장 선명했던 순간 하나와 그 순간의 감정을 한 줄로 적어 보십시오.',
+    reflection: '요즘 내 삶의 시간은 어떤 계절을 지나고 있으며, 무엇을 새롭게 빚어내고 있나요?',
+    counsel: '하늘의 데칸이 시간을 나누듯, 스스로 하루의 의미를 분절해 바라보면 막연했던 흐름이 선명해집니다.',
+  },
+};
+
 export interface AlexandrianDecanThirtySixGodsOptions {
   profile?: UserProfile | null;
   question?: string;
@@ -127,12 +173,12 @@ export function calculateAlexandrianDecanThirtySixGods(
 
   const bdate = profile?.basic?.birthdate || (profile as unknown as { birthdate?: string; birthDate?: string })?.birthdate || (profile as unknown as { birthDate?: string })?.birthDate || '1994-01-24';
   const btime = profile?.basic?.birthtime || (profile as unknown as { birthtime?: string; birthTime?: string })?.birthtime || (profile as unknown as { birthTime?: string })?.birthTime || '12:00';
+  const kstDate = getKstDateKey(now);
+  const questionTopic = classifyDecanTopic(question);
 
   let seed = 87121;
-  for (let i = 0; i < bdate.length; i++) seed = (seed * 31 + bdate.charCodeAt(i)) % 1000003;
-  for (let i = 0; i < btime.length; i++) seed = (seed * 19 + btime.charCodeAt(i)) % 1000003;
-  for (let i = 0; i < question.length; i++) seed = (seed * 17 + question.charCodeAt(i)) % 1000003;
-  seed = (seed + now.getUTCHours() * 39) % 1000003;
+  const seedStr = `${bdate}|${btime}|${kstDate}|${questionTopic}|${question}`;
+  for (let i = 0; i < seedStr.length; i++) seed = (seed * 31 + seedStr.charCodeAt(i)) % 1000003;
 
   const decans: DecanCelestialGod[] = ALEXANDRIAN_DECANS_BASE.map((dec, idx) => {
     const score = 48 + ((seed * (idx + 4) + idx * 31) % 51);
@@ -148,18 +194,33 @@ export function calculateAlexandrianDecanThirtySixGods(
   const astralShieldingRate = Math.min(100, Math.max(46, 55 + ((seed * 17) % 43)));
   const zodiacalEquilibriumScore = Math.min(100, Math.max(44, Math.floor((kairosTimeMasteryScore * 0.5 + astralShieldingRate * 0.5))));
 
-  const alexandrianHermeticDecree = `헤르메스주의 알렉산드리아 점성술은 전합니다: "36대 데칸 성령은 하늘의 시간을 지배하며 지상의 운명을 수호한다." 지금 당신의 시간대를 관장하는 주 수호 성령은 [${dominantDecan.nameGreek} - ${dominantDecan.nameKo}]입니다. ${dominantDecan.soulVirtue}`;
-  const celestialDecanSealGuidance = `시간의 지배자 데칸의 신성 인장: ${dominantDecan.temporalRulership}. 외부의 잡음에 휘둘리지 마십시오. ${dominantDecan.celestialProtectionPower}의 오라가 당신을 감싸고 있습니다.`;
+  const topicGuide = DECAN_TOPIC_GUIDANCE[questionTopic];
+  const kairosPosture = `${dominantDecan.nameGreek}의 카이로스 국면 — ${dominantDecan.temporalRulership}`;
+  const practiceGuidance = `${dominantDecan.soulVirtue} ${topicGuide.practice}`;
+  const ritualAction = topicGuide.ritual;
+  const reflectionFocus = topicGuide.reflection;
+  const counselNote = topicGuide.counsel;
+  const boundaryNotice = '알렉산드리아 36대 데칸 관점은 천상 시간의 상징을 빌려 삶의 리듬과 태도를 성찰하는 참고 도구이며, 미래 사건이나 길흉을 단정하지 않습니다.';
+
+  const alexandrianHermeticDecree = `헤르메스주의 알렉산드리아 상징 체계에서 지금의 흐름을 비추는 주 수호 성령은 [${dominantDecan.nameGreek} - ${dominantDecan.nameKo}]이며, 보조로 [${secondaryDecan.nameGreek}]의 기운이 함께 작용합니다. ${dominantDecan.soulVirtue}`;
+  const celestialDecanSealGuidance = `${dominantDecan.temporalRulership}. ${topicGuide.practice}`;
 
   return {
     engineVersion: ALEXANDRIAN_DECAN_ENGINE_VERSION,
     timestamp: now.toISOString(),
+    questionTopic,
+    kairosPosture,
     kairosTimeMasteryScore,
     tenDaySoulTuningIndex,
     astralShieldingRate,
     zodiacalEquilibriumScore,
     dominantDecan,
     secondaryDecan,
+    practiceGuidance,
+    ritualAction,
+    reflectionFocus,
+    counselNote,
+    boundaryNotice,
     alexandrianHermeticDecree,
     celestialDecanSealGuidance,
   };
@@ -167,15 +228,17 @@ export function calculateAlexandrianDecanThirtySixGods(
 
 export function formatAlexandrianDecanThirtySixGodsPrompt(rep: AlexandrianDecanThirtySixGodsReport): string {
   return `[알렉산드리아 헤르메스주의 36대 데칸 천상 성령 & 시간의 지배자 실측 데이터]
-· 엔진 버전: v${rep.engineVersion}
-· 카이로스적 시간 지배도: ${rep.kairosTimeMasteryScore}/100 | 10일 주기 영혼 조율도: ${rep.tenDaySoulTuningIndex}/100
-· 아스트랄 차폐율: ${rep.astralShieldingRate}/100 | 황도대 360도 균형도: ${rep.zodiacalEquilibriumScore}/100
-· 주재 데칸 성령: [${rep.dominantDecan.nameGreek} (${rep.dominantDecan.nameKo})] — 공명도 ${rep.dominantDecan.resonanceScore}%
+· 엔진 버전: v${rep.engineVersion} | 질문 맥락: ${rep.questionTopic}
+· 카이로스 국면: ${rep.kairosPosture}
+· 주재 데칸 성령: [${rep.dominantDecan.nameGreek} (${rep.dominantDecan.nameKo})]
   - 관할 도수: ${rep.dominantDecan.decanDegreeDomain}
   - 시간 지배 양상: ${rep.dominantDecan.temporalRulership}
-  - 천상 보호력: ${rep.dominantDecan.celestialProtectionPower}
+  - 천상 보호 상징: ${rep.dominantDecan.celestialProtectionPower}
   - 영혼 덕목: ${rep.dominantDecan.soulVirtue}
-· 보조 데칸 성령: [${rep.secondaryDecan.nameGreek} (${rep.secondaryDecan.nameKo})] — 공명도 ${rep.secondaryDecan.resonanceScore}%
-· 알렉산드리아 헤르메스주의 선언: ${rep.alexandrianHermeticDecree}
-· 데칸 신성 인장 수호 지침: ${rep.celestialDecanSealGuidance}`;
+· 보조 데칸 성령: [${rep.secondaryDecan.nameGreek} (${rep.secondaryDecan.nameKo})] — ${rep.secondaryDecan.temporalRulership}
+· 실천 조언: ${rep.practiceGuidance}
+· 일상 의례: ${rep.ritualAction}
+· 성찰 질문: ${rep.reflectionFocus}
+· 조언 요약: ${rep.counselNote}
+· 해석 경계: ${rep.boundaryNotice}`;
 }
