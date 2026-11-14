@@ -36,7 +36,11 @@ export function measureMainOverlayViewport(pane: OverlayPane = 'main'): MainOver
       right = Math.min(right, rect.right); bottom = Math.min(bottom, rect.bottom);
     }
   }
-  return { left, top, width: Math.max(0, right - left), height: Math.max(0, bottom - top) };
+  const width = Math.max(0, right - left);
+  const height = Math.max(0, bottom - top);
+  // A zero intersection hides the dialog completely. Fall back to the visible main canvas.
+  if ((width < 48 || height < 48) && pane !== 'main') return measureMainOverlayViewport('main');
+  return { left, top, width, height };
 }
 
 const listeners = new Set<() => void>();

@@ -56,6 +56,7 @@ import {
   saveUnifiedMessagesSafely,
   loadSavedUnifiedMessages,
   mergeUnifiedMessages,
+  retainRecentConversation,
 } from '@/lib/chatHistorySync';
 import { processDailyChatArchival } from '@/lib/chatMemoryArchive';
 import { drawLucyTarotCards, formatTarotMarker } from '@/utils/tarotDetector';
@@ -1730,6 +1731,9 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
         markFirstLucyVisitCompletedToday(chatScope);
       }
 
+      const existingUsers = existing.filter((message) => message.role === 'user' && message.content).length;
+      const nextUsers = nextList.filter((message) => message.role === 'user' && message.content).length;
+      if (nextUsers === 0 && existingUsers > 0) return prevRecord;
       if (JSON.stringify(existing) !== JSON.stringify(nextList)) {
         saveUnifiedMessagesSafely(nextList);
         return {
@@ -2457,9 +2461,20 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
   // Align it before paint; playback state must never retrigger this entry scroll.
   useLayoutEffect(() => {
     if (!isLucyReady) return;
+    const stored = loadSavedUnifiedMessages();
+    const storedUsers = stored.filter((message) => message.role === 'user' && message.content);
+    if (storedUsers.length > 0) {
+      setPersonaMessages((prevRecord) => {
+        const current = prevRecord.lucy || [];
+        const currentUsers = current.filter((message) => message.role === 'user' && message.content);
+        if (currentUsers.length >= storedUsers.length) return prevRecord;
+        const next = retainRecentConversation([...current, ...stored]);
+        return { lucy: next, orange: next, trinity: next, aura: next, bluebird: next, muse: next };
+      });
+    }
     isUserScrolledUpRef.current = false;
     scrollToBottom(true, false);
-  }, [isLucyReady, scrollToBottom]);
+  }, [isLucyReady, location, scrollToBottom, setPersonaMessages]);
 
   // Folded navigation hides the pane with display:none. Scroll only when it becomes visible again.
   useEffect(() => {

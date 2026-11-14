@@ -24,6 +24,12 @@
   max-height: 100% !important;
   min-height: 0 !important;
 }
+/* Keep the library inside the pane that opened it. A viewport-fixed layer can
+   be laid out on the other half and then clipped away. */
+:is(.screen-portal, .duo-portal):has(.chat-library-dialog) > .fixed.inset-0 {
+  position: absolute !important;
+  inset: 0 !important;
+}
 .chat-library-scroll {
   flex: 1 1 0%;
   min-height: 0;

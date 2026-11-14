@@ -813,17 +813,14 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             const rawNick = sharedStateRef.current?.userProfile?.basic?.nickname?.trim();
             const nick = (rawNick && rawNick !== '여행자' && rawNick !== '사용자' && rawNick !== '박주형') ? rawNick : '제제';
             const archivalResult = processDailyChatArchival(remoteList, nick);
-            if (archivalResult.wasArchived && !Object.values(isGeneratingRef.current).some(Boolean)) {
-              saveUnifiedMessagesSafely(archivalResult.messages);
-              setUnifiedMessages(archivalResult.messages);
-              pushChatThreadsToFirestore(archivalResult.messages, true);
-              return;
-            }
-
             setUnifiedMessages((prev) => {
               const merged = mergeIncomingChat(prev, archivalResult.messages);
+              const previousUsers = prev.filter(message => message.role === 'user' && message.content).length;
+              const nextUsers = merged.filter(message => message.role === 'user' && message.content).length;
+              // A remote greeting must not erase the conversation already on this device.
+              if (nextUsers === 0 && previousUsers > 0) return prev;
               if (JSON.stringify(prev) !== JSON.stringify(merged)) {
-                saveUnifiedMessagesSafely(merged);
+                if (!Object.values(isGeneratingRef.current).some(Boolean)) saveUnifiedMessagesSafely(merged);
                 return merged;
               }
               return prev;
