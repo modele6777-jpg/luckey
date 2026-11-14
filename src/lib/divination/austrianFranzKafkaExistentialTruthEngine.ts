@@ -13,7 +13,28 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const AUSTRIAN_FRANZ_KAFKA_EXISTENTIAL_TRUTH_VERSION = 'LUCKEY-FRANZ-KAFKA-EXISTENTIAL-TRUTH-v1.0.0';
+export const AUSTRIAN_FRANZ_KAFKA_EXISTENTIAL_TRUTH_VERSION = 'LUCKEY-FRANZ-KAFKA-EXISTENTIAL-TRUTH-v1.1.0';
+
+export type KafkaQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
+
+export interface KafkaSituationalAudit {
+  questionTopic: KafkaQuestionTopic;
+  focusAxisKo: string;
+  existentialPosture: string;
+  classicalCitation: string;
+  practiceGuidance: string;
+  ritualAction: string;
+  reflectionFocus: string;
+  counselNote: string;
+  boundaryNotice: string;
+}
+
+export interface KafkaTemporalRhythm {
+  kstHour: number;
+  timeWindowKo: string;
+  seasonKo: string;
+  dailyWatchword: string;
+}
 
 export interface KafkaTheme {
   themeKey: string;
@@ -43,6 +64,9 @@ export interface AustrianFranzKafkaExistentialTruthResult {
   // 세부 분석
   activeKafkaTheme: KafkaTheme;
   focalKafkaAphorism: KafkaAphorism;
+  questionTopic: KafkaQuestionTopic;
+  situationalKafkaAudit: KafkaSituationalAudit;
+  temporalKafkaRhythm: KafkaTemporalRhythm;
   kafkaComprehensiveGuidance: {
     guidanceTitle: string;
     philosophicalCounsel: string;
@@ -127,9 +151,117 @@ function hashString(str: string): number {
   return hash;
 }
 
+function classifyKafkaQuestionTopic(query: string): KafkaQuestionTopic {
+  const q = query.trim();
+  if (/(연애|사랑|관계|사람|가족|친구|이별|갈등|소통|오해|타인)/.test(q)) return 'relationship';
+  if (/(결정|선택|이직|진로|시험|사업|투자|계약|방향|결단|포기|시작)/.test(q)) return 'decision';
+  if (/(불안|우울|지침|피로|상처|아픔|두려움|고독|외로움|치유|회복|무기력)/.test(q)) return 'healing';
+  return 'reflection';
+}
+
+function buildKafkaSituationalAudit(topic: KafkaQuestionTopic): KafkaSituationalAudit {
+  const boundaryNotice = '카프카 실존 진실 관점은 내면의 정직성과 고독한 존엄을 비추는 상징적·성찰적 기준이며, 외부 현실의 법적·실무적 판단을 대신하지 않습니다.';
+  if (topic === 'relationship') {
+    return {
+      questionTopic: topic,
+      focusAxisKo: '관료적 소외와 오해 속에서도 지켜내는 영혼의 순결한 경계',
+      existentialPosture: '그레고르 잠자가 가족의 낯선 시선 속에서도 인간적 온기를 잃지 않았듯, 타인의 오해에 자신을 깎아 맞추지 않는 내면의 단단한 중심.',
+      classicalCitation: '《변신》·《밀레나에게 보내는 편지》: 타인의 편견이나 차가운 규정 앞에서도 자기 영혼의 진실함까지 내주지 말라.',
+      practiceGuidance: '상대에게 인정받기 위해 본심을 왜곡하거나 과도한 가면을 쓰기보다, 담백하고 정직한 태도로 내 마음의 경계를 세우십시오.',
+      ritualAction: '오늘 대화에서 상대의 눈치를 보며 억지로 덧붙이려던 변명 한 마디를 덜어내고, 가장 솔직한 한 문장만 남기십시오.',
+      reflectionFocus: '지금 내가 지키고 싶은 관계의 진심은 무엇이며, 타인의 시선 때문에 억지로 연기하고 있는 부분은 어디입니까?',
+      counselNote: '관계의 벽이 느껴질수록 겉으로 소리치기보다 자신의 진실한 중심을 단단히 붙드는 편이 낫습니다.',
+      boundaryNotice,
+    };
+  }
+  if (topic === 'decision') {
+    return {
+      questionTopic: topic,
+      focusAxisKo: '안개 낀 성벽 앞에서도 발걸음을 멈추지 않는 정직한 결단',
+      existentialPosture: '《성》의 K처럼 모든 조건이 투명하게 보장되지 않더라도, 자기기만 없이 오늘 감당할 한 걸음을 내딛는 결기.',
+      classicalCitation: '《성(Das Schloss)》·《자겔라우 아포리즘》: 완벽한 보장이 주어질 때까지 기다리기보다 진실에 어긋나지 않는 방향을 택하라.',
+      practiceGuidance: '당장의 안락함이나 남들이 정해 놓은 안전지대에 숨지 말고, 스스로에게 부끄럽지 않은 선택지를 먼저 가려내십시오.',
+      ritualAction: '결정 앞의 두려움과 현실적 핑계를 종이에 한 줄씩 적고, 그중 자기기만에 해당하는 항목 하나를 선을 그어 지우십시오.',
+      reflectionFocus: '결과가 불확실하다는 이유만으로 내 안의 가장 정직한 직관을 외면하고 있지는 않습니까?',
+      counselNote: '모든 문이 한 번에 열리지 않더라도, 진실한 방향으로 옮긴 한 걸음은 결코 헛되지 않습니다.',
+      boundaryNotice,
+    };
+  }
+  if (topic === 'healing') {
+    return {
+      questionTopic: topic,
+      focusAxisKo: '얼어붙은 바다를 깨고 내면의 숨결을 되살리는 고독의 승화',
+      existentialPosture: '고립과 무력감을 억지로 덮지 않고 정직하게 응시하며, 글쓰기와 사색으로 상처를 맑게 건져 올리는 태도.',
+      classicalCitation: '《오스카 폴락에게 보낸 편지》·《일기》: 얼어붙은 감각을 깨우는 정직한 직면이 오히려 영혼을 숨 쉬게 한다.',
+      practiceGuidance: '괜찮은 척 스스로를 다그치지 말고, 지금 느끼는 피로와 고독의 무게를 있는 그대로 인정한 뒤 조용한 휴식의 시간을 확보하십시오.',
+      ritualAction: '잠들기 전 10분간 휴대전화를 내려놓고, 오늘 나를 가장 지치게 한 감정 한 가지를 꾸밈없이 노트에 적어 내려놓으십시오.',
+      reflectionFocus: '내가 애써 괜찮다고 덮어두었지만 사실은 다독임이 필요한 내면의 감정은 무엇입니까?',
+      counselNote: '자기 안의 어둠을 정직하게 바라보는 순간, 무감각의 얼음은 서서히 풀리기 시작합니다.',
+      boundaryNotice,
+    };
+  }
+  return {
+    questionTopic: topic,
+    focusAxisKo: '자기기만을 걷어내고 파괴될 수 없는 내면의 핵을 응시하는 성찰',
+    existentialPosture: '세속의 소음에서 한 걸음 물러나 내면의 순수한 양심과 고독한 존엄을 확인하는 관조의 자세.',
+    classicalCitation: '《자겔라우 아포리즘》: 인간은 내면의 파괴될 수 없는 무언가에 대한 신뢰 없이는 살아갈 수 없다.',
+    practiceGuidance: '바깥의 기준이나 조급한 비교를 잠시 멈추고, 나 자신만이 알고 있는 삶의 본질적 질문을 차분히 되짚어 보십시오.',
+    ritualAction: '오늘 하루 중 가장 조용한 5분을 골라, 지금 내가 진정으로 붙들고 있는 가치가 무엇인지 한 문장으로 정리하십시오.',
+    reflectionFocus: '세상의 평가가 모두 사라진 자리에서도 내가 끝까지 포기할 수 없는 내면의 진실은 무엇입니까?',
+    counselNote: '침묵 속에서 자기 자신과 정직하게 마주하는 시간이 흔들리지 않는 방패가 됩니다.',
+    boundaryNotice,
+  };
+}
+
+function buildKafkaTemporalRhythm(now: Date): KafkaTemporalRhythm {
+  const kstDate = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const kstHour = kstDate.getUTCHours();
+  const kstMonth = kstDate.getUTCMonth() + 1;
+
+  const seasonKo = kstMonth >= 3 && kstMonth <= 5
+    ? '춘계 해빙기(얼어붙은 바다를 깨는 각성)'
+    : kstMonth >= 6 && kstMonth <= 8
+      ? '하계 성벽기(안개 속을 돌파하는 끈기)'
+      : kstMonth >= 9 && kstMonth <= 11
+        ? '추계 성찰기(본질만 남기는 정직한 수확)'
+        : '동계 침잠기(고독 속 내면의 핵을 지키는 겨울)';
+
+  if (kstHour >= 5 && kstHour < 11) {
+    return {
+      kstHour,
+      timeWindowKo: '새벽과 아침 · 변신의 문턱(Threshold of Awakening)',
+      seasonKo,
+      dailyWatchword: '하루의 소음이 몰려오기 전, 타인의 기대가 아닌 나 자신의 진실한 기준을 먼저 세우십시오.',
+    };
+  }
+  if (kstHour >= 11 && kstHour < 17) {
+    return {
+      kstHour,
+      timeWindowKo: '한낮 · 성벽 앞의 보행(Walk Before the Castle)',
+      seasonKo,
+      dailyWatchword: '복잡한 절차와 타인의 시선 한복판에서도 중심을 잃지 말고 오늘 해야 할 한 걸음을 묵묵히 옮기십시오.',
+    };
+  }
+  if (kstHour >= 17 && kstHour < 22) {
+    return {
+      kstHour,
+      timeWindowKo: '해질녘 · 가면을 벗는 시간(Unmasking Dusk)',
+      seasonKo,
+      dailyWatchword: '낮 동안 짊어졌던 역할과 방어막을 내려놓고, 지친 내면의 솔직한 목소리에 귀를 기울이십시오.',
+    };
+  }
+  return {
+    kstHour,
+    timeWindowKo: '심야 · 기도로서의 글쓰기(Writing as Prayer)',
+    seasonKo,
+    dailyWatchword: '고요한 밤의 심연 속에서 불안과 고민을 정직한 문장으로 정리하며 내면의 평정을 되찾으십시오.',
+  };
+}
+
 export function calculateAustrianFranzKafkaExistentialTruth(
   profile?: UserProfile,
   query?: string,
+  now: Date = new Date(),
 ): AustrianFranzKafkaExistentialTruthResult {
   const p = profile as any;
   const name = profile?.basic?.name ?? p?.name ?? '남희';
@@ -137,7 +269,8 @@ export function calculateAustrianFranzKafkaExistentialTruth(
   const birthTime = profile?.basic?.birthtime ?? p?.birthTime ?? p?.birthtime ?? '12:00';
   const gender = profile?.basic?.gender ?? p?.gender ?? 'neutral';
 
-  const seedString = `FRANZ-KAFKA-EXISTENTIAL-TRUTH:${name}:${birthDate}:${birthTime}:${gender}:${query ?? ''}`;
+  const kstDayKey = new Date(now.getTime() + 9 * 60 * 60 * 1000).toISOString().slice(0, 10);
+  const seedString = `FRANZ-KAFKA-EXISTENTIAL-TRUTH:${name}:${birthDate}:${birthTime}:${gender}:${kstDayKey}:${query ?? ''}`;
   const baseHash = hashString(seedString);
   const absHash = Math.abs(baseHash);
 
@@ -152,17 +285,20 @@ export function calculateAustrianFranzKafkaExistentialTruth(
 
   const activeKafkaTheme = KAFKA_THEMES[themeIndex];
   const focalKafkaAphorism = KAFKA_APHORISMS[aphorismIndex];
+  const questionTopic = classifyKafkaQuestionTopic(query ?? '');
+  const situationalKafkaAudit = buildKafkaSituationalAudit(questionTopic);
+  const temporalKafkaRhythm = buildKafkaTemporalRhythm(now);
 
   const guidanceTitle = `프란츠 카프카 실존 진실 및 부조리 극복 고독 지혜: ${activeKafkaTheme.themeTitleKo}`;
   const philosophicalCounsel = `20세기 실존 문학의 거장 프란츠 카프카 선생은 부조리하고 소외된 세계 앞에서도 ` +
     `자기기만을 거부하고 벌거벗은 내면의 진실을 끝까지 응시하는 실존적 정직성과 영혼의 신성한 존엄을 가르쳤습니다. ` +
-    `현재 당신의 도전을 깊이 있게 관통하는 핵심 통찰은 '${activeKafkaTheme.themeTitleKo}'입니다. ` +
-    `${activeKafkaTheme.practicalCounsel} 카프카 선생의 불후의 아포리즘 "${focalKafkaAphorism.aphorismKo}" (${focalKafkaAphorism.aphorismGerman})을 깊이 새기며, ` +
-    `${focalKafkaAphorism.actionGuidance}`;
+    `현재 질문의 결('${situationalKafkaAudit.focusAxisKo}')과 '${activeKafkaTheme.themeTitleKo}'의 통찰이 맞닿아 있습니다. ` +
+    `${situationalKafkaAudit.practiceGuidance} 카프카의 아포리즘 "${focalKafkaAphorism.aphorismKo}" (${focalKafkaAphorism.aphorismGerman})을 새기며, ` +
+    `${temporalKafkaRhythm.dailyWatchword}`;
 
   return {
     engineVersion: AUSTRIAN_FRANZ_KAFKA_EXISTENTIAL_TRUTH_VERSION,
-    calculatedAtKst: new Date().toISOString(),
+    calculatedAtKst: new Date(now.getTime() + 9 * 60 * 60 * 1000).toISOString().replace('Z', '+09:00'),
     existentialHonestyScore,
     innerSanctityInAlienationIndex,
     persistentTruthSearchScore,
@@ -170,6 +306,9 @@ export function calculateAustrianFranzKafkaExistentialTruth(
     transformativeSolitudeResilienceScore,
     activeKafkaTheme,
     focalKafkaAphorism,
+    questionTopic,
+    situationalKafkaAudit,
+    temporalKafkaRhythm,
     kafkaComprehensiveGuidance: {
       guidanceTitle,
       philosophicalCounsel,
@@ -182,17 +321,19 @@ export function formatAustrianFranzKafkaExistentialTruthPrompt(
 ): string {
   return [
     `【프란츠 카프카 《변신·성》 부조리 직시와 실존적 정직성 및 내적 존엄성 지표】`,
-    `- 실존적 정직성 및 진실 직시도(Existential Honesty & Authenticity): ${res.existentialHonestyScore}/100`,
-    `- 소외 속 영혼의 고독한 존엄성(Inner Sanctity in Alienation): ${res.innerSanctityInAlienationIndex}/100`,
-    `- 부조리 앞 끈질긴 진실 추구 인내심(Persistent Truth Search): ${res.persistentTruthSearchScore}/100`,
-    `- 얼어붙은 바다를 깨는 도끼 명민함(Axe for Frozen Sea Insight): ${res.frozenSeaPiercingInsightIndex}/100`,
-    `- 고독의 내면 승화 회복탄력성(Transformative Solitude Resilience): ${res.transformativeSolitudeResilienceScore}/100`,
+    `- 질문 맥락 초점(${res.questionTopic}): ${res.situationalKafkaAudit.focusAxisKo}`,
+    `- 실존적 태도: ${res.situationalKafkaAudit.existentialPosture}`,
+    `- KST 시공간 리듬: ${res.temporalKafkaRhythm.timeWindowKo} · ${res.temporalKafkaRhythm.seasonKo}`,
     `- 핵심 카프카 테마: ${res.activeKafkaTheme.themeTitleKo} [${res.activeKafkaTheme.themeTitleEn}]`,
     `- 실천적 통찰: ${res.activeKafkaTheme.pragmaticInsight}`,
-    `- 행동 조언: ${res.activeKafkaTheme.practicalCounsel}`,
+    `- 질문 맞춤 조언: ${res.situationalKafkaAudit.practiceGuidance}`,
+    `- 일상 의례 제안: ${res.situationalKafkaAudit.ritualAction}`,
+    `- 성찰 질문: ${res.situationalKafkaAudit.reflectionFocus}`,
+    `- 조언 요약: ${res.situationalKafkaAudit.counselNote}`,
     `- 카프카 원전 명언: "${res.focalKafkaAphorism.aphorismKo}" (${res.focalKafkaAphorism.aphorismGerman})`,
     `- 원전 출처: [${res.focalKafkaAphorism.sourceContext}]`,
-    `- 구체적 실천 지침: ${res.focalKafkaAphorism.actionGuidance}`,
+    `- 시간대 권고: ${res.temporalKafkaRhythm.dailyWatchword}`,
     `- 종합 카프카 권면: ${res.kafkaComprehensiveGuidance.philosophicalCounsel}`,
+    `- 해석 경계: ${res.situationalKafkaAudit.boundaryNotice}`,
   ].join('\n');
 }

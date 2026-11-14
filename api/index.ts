@@ -1,4 +1,4 @@
-// v1.7.437: Deepen Nietzsche Zarathustra, Kierkegaard Stages, and Heidegger Being & Time engines
+// v1.7.438: Deepen Kafka Existential Truth, Martin Buber I & Thou, and Rilke Letters engines
 import { getLucyRequestFallbacks, requestWithModelFallback } from '../src/lib/lucyModelPolicy.ts';
 import "dotenv/config";
 import express from "express";

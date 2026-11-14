@@ -3766,7 +3766,7 @@ try {
   // 271. 오스트리아/유대 마틴 부버 나와 너 인격적 만남 & 진정한 대화 실존 지혜 엔진
   const austrianMartinBuberIAndThouResult = calculateSupplement('austrianMartinBuberIAndThouResult', () => ((() => {
     try {
-      return calculateAustrianMartinBuberIAndThou(profile);
+      return calculateAustrianMartinBuberIAndThou(profile, question, now);
     } catch (_) {
       return null;
     }
@@ -4009,7 +4009,7 @@ try {
   // 298. 오스트리아/체코 프란츠 카프카 《변신·성》 부조리 직시와 실존적 정직성 & 고독 속 영혼의 존엄과 진실 추구 지혜 엔진
   const austrianFranzKafkaExistentialTruthResult = calculateSupplement('austrianFranzKafkaExistentialTruthResult', () => ((() => {
     try {
-      return calculateAustrianFranzKafkaExistentialTruth(profile);
+      return calculateAustrianFranzKafkaExistentialTruth(profile, question, now);
     } catch (_) {
       return null;
     }
@@ -4216,7 +4216,7 @@ try {
   // 321. 오스트리아 라이너 마리아 릴케 《젊은 시인에게 주는 편지·두이노의 비가》 내면의 고독 사랑·질문 품기·사물 응시와 존재 변용 지혜 엔진
   const austrianRainerMariaRilkeLettersResult = calculateSupplement('austrianRainerMariaRilkeLettersResult', () => ((() => {
     try {
-      return calculateAustrianRainerMariaRilkeLetters(profile);
+      return calculateAustrianRainerMariaRilkeLetters(profile, question, now);
     } catch (_) {
       return null;
     }

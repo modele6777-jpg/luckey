@@ -13,7 +13,28 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const AUSTRIAN_RAINER_MARIA_RILKE_LETTERS_VERSION = 'LUCKEY-RILKE-LETTERS-TO-YOUNG-POET-v1.0.0';
+export const AUSTRIAN_RAINER_MARIA_RILKE_LETTERS_VERSION = 'LUCKEY-RILKE-LETTERS-TO-YOUNG-POET-v1.1.0';
+
+export type RilkeQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
+
+export interface RilkeSituationalAudit {
+  questionTopic: RilkeQuestionTopic;
+  focusAxisKo: string;
+  poeticPosture: string;
+  classicalCitation: string;
+  practiceGuidance: string;
+  ritualAction: string;
+  reflectionFocus: string;
+  counselNote: string;
+  boundaryNotice: string;
+}
+
+export interface RilkeTemporalRhythm {
+  kstHour: number;
+  timeWindowKo: string;
+  seasonKo: string;
+  dailyWatchword: string;
+}
 
 export interface RilkeTheme {
   themeKey: string;
@@ -43,6 +64,9 @@ export interface AustrianRainerMariaRilkeLettersResult {
   // 세부 분석
   activeRilkeTheme: RilkeTheme;
   focalRilkeAphorism: RilkeAphorism;
+  questionTopic: RilkeQuestionTopic;
+  situationalRilkeAudit: RilkeSituationalAudit;
+  temporalRilkeRhythm: RilkeTemporalRhythm;
   rilkeComprehensiveGuidance: {
     guidanceTitle: string;
     philosophicalCounsel: string;
@@ -121,9 +145,117 @@ function hashString(str: string): number {
   return hash;
 }
 
+function classifyRilkeQuestionTopic(query: string): RilkeQuestionTopic {
+  const q = query.trim();
+  if (/(연애|사랑|관계|사람|가족|친구|이별|거리|외로움|함께|그리움)/.test(q)) return 'relationship';
+  if (/(결정|선택|진로|이직|시험|창작|도전|방향|기다림|답|확신)/.test(q)) return 'decision';
+  if (/(슬픔|상실|아픔|우울|불안|지침|눈물|고통|치유|회복|위로)/.test(q)) return 'healing';
+  return 'reflection';
+}
+
+function buildRilkeSituationalAudit(topic: RilkeQuestionTopic): RilkeSituationalAudit {
+  const boundaryNotice = '릴케의 고독 사랑과 질문 품기 관점은 내면의 성숙과 존재 변용을 돕는 문학적·상징적 기준이며, 현실적 결정을 대신 내리지 않습니다.';
+  if (topic === 'relationship') {
+    return {
+      questionTopic: topic,
+      focusAxisKo: '서로의 고독을 지켜 주며 깊어지는 성숙한 사랑의 거리',
+      poeticPosture: '상대를 소유하거나 내 불안을 메우는 수단으로 삼지 않고, 두 고독이 서로를 보호하고 인사하는 아름다운 거리를 존중하는 자세.',
+      classicalCitation: '《젊은 시인에게 주는 편지》 제7신: "한 인간이 다른 인간을 사랑하는 것은 아마도 우리에게 주어진 가장 어려운 과제다."',
+      practiceGuidance: '상대의 침묵이나 빈틈을 조급하게 다그쳐 채우려 하지 말고, 먼저 내 안의 고독한 방을 정돈한 뒤 따뜻한 신뢰를 건네십시오.',
+      ritualAction: '오늘 소중한 사람에게 걱정이나 요구 대신, 상대의 하루와 평안을 진심으로 축복하는 짧은 한 줄을 전하십시오.',
+      reflectionFocus: '나는 상대를 있는 그대로 바라보며 사랑하고 있습니까, 아니면 내 외로움을 달래 달라고 기대고 있습니까?',
+      counselNote: '서로의 고독을 존중할 줄 아는 사람만이 오래가는 깊은 인연을 가꿉니다.',
+      boundaryNotice,
+    };
+  }
+  if (topic === 'decision') {
+    return {
+      questionTopic: topic,
+      focusAxisKo: '조급한 해답을 재촉하지 않고 질문 자체를 살아내는 인내',
+      poeticPosture: '당장 손에 쥐어지지 않는 확실함을 억지로 꺾어 따기보다, 낯선 언어로 쓰인 책처럼 질문을 품고 성숙해지는 태도.',
+      classicalCitation: '《젊은 시인에게 주는 편지》 제4신: "지금은 질문을 살아가십시오. 그러면 머지않아 해답 속에 살아가고 있을 것입니다."',
+      practiceGuidance: '불안 때문에 설익은 결론을 내리지 마십시오. 오늘 내게 분명한 작은 과업 하나를 성실히 해내는 사이 길의 윤곽이 드러납니다.',
+      ritualAction: '지금 가장 답답한 질문 하나를 노트에 적고, "당장 풀지 않아도 괜찮다, 오늘 내가 할 작은 한 걸음은 ___다"라고 덧붙이십시오.',
+      reflectionFocus: '지금 내가 조급히 얻으려는 답은 정말 준비된 것입니까, 아니면 불안을 잠재우기 위한 임시방편입니까?',
+      counselNote: '익지 않은 답을 서두르기보다 질문을 품고 걷는 시간이 당신을 더 단단하게 만듭니다.',
+      boundaryNotice,
+    };
+  }
+  if (topic === 'healing') {
+    return {
+      questionTopic: topic,
+      focusAxisKo: '슬픔과 상실을 억누르지 않고 존재의 변용으로 건너가는 비가의 힘',
+      poeticPosture: '기쁨뿐 아니라 두려움과 슬픔까지 삶의 정당한 손님으로 통과시키며, 아픔을 내면의 깊이로 빚어내는 태도.',
+      classicalCitation: '《시도시집》·《두이노의 비가》: "아름다움도 두려움도 모두 그대에게 일어나도록 두라. 어떤 감정도 마지막이 아니다."',
+      practiceGuidance: '상처를 억지로 잊으려 애쓰거나 스스로를 탓하지 마십시오. 슬픔이 머물다 지나갈 수 있도록 고요한 호흡의 여백을 허락하십시오.',
+      ritualAction: '오늘 하루 15분간 산책하며 하늘, 나무, 빛 같은 일상의 사물 하나를 판단 없이 조용히 바라보며 마음을 가라앉히십시오.',
+      reflectionFocus: '지금의 아픔이 내 안의 어떤 다정함과 깊이를 새롭게 눈뜨게 하고 있습니까?',
+      counselNote: '어떤 감정도 영원한 종착지가 아니니, 오늘의 파도도 결국 당신을 더 깊은 평온으로 데려갈 것입니다.',
+      boundaryNotice,
+    };
+  }
+  return {
+    questionTopic: topic,
+    focusAxisKo: '세속의 소음을 걷어내고 자기만의 고독한 중심을 사랑하는 침잠',
+    poeticPosture: '주변의 인정과 빠른 속도에 휩쓸리지 않고, 넓어지는 내면의 공간을 다정하게 끌어안는 시적 관조.',
+    classicalCitation: '《젊은 시인에게 주는 편지》 제4신: "당신의 고독을 사랑하십시오. 주위가 멀게 느껴진다면 당신의 공간이 넓어지기 시작한 증거입니다."',
+    practiceGuidance: '바깥에서 해답이나 위안을 찾느라 분주해질수록, 오히려 내면의 고요한 방으로 돌아와 나 자신의 목소리를 먼저 들으십시오.',
+    ritualAction: '오늘 밤 잠들기 전, 아무 음악이나 영상도 켜지 않은 채 5분 동안 온전한 침묵 속에서 호흡만 느껴 보십시오.',
+    reflectionFocus: '타인의 시선과 평가가 닿지 않는 나만의 고독한 시간 속에서 나는 무엇을 가장 소중히 여기고 있습니까?',
+    counselNote: '고독을 두려워하지 않고 가꾸는 사람에게는 어떤 흔들림에도 무너지지 않는 중심이 생깁니다.',
+    boundaryNotice,
+  };
+}
+
+function buildRilkeTemporalRhythm(now: Date): RilkeTemporalRhythm {
+  const kstDate = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const kstHour = kstDate.getUTCHours();
+  const kstMonth = kstDate.getUTCMonth() + 1;
+
+  const seasonKo = kstMonth >= 3 && kstMonth <= 5
+    ? '춘계 발아기(질문이 싹트는 봄)'
+    : kstMonth >= 6 && kstMonth <= 8
+      ? '하계 열림기(광활한 빛을 마주하는 여름)'
+      : kstMonth >= 9 && kstMonth <= 11
+        ? '추계 비가기(성숙과 변용의 가을)'
+        : '동계 고독기(내면의 방을 지키는 겨울)';
+
+  if (kstHour >= 5 && kstHour < 11) {
+    return {
+      kstHour,
+      timeWindowKo: '아침 · 사물의 첫 빛(First Light on Things)',
+      seasonKo,
+      dailyWatchword: '서두르기 전에 눈앞의 차 한 잔과 창밖의 빛을 천천히 응시하며 고요한 마음을 먼저 여십시오.',
+    };
+  }
+  if (kstHour >= 11 && kstHour < 17) {
+    return {
+      kstHour,
+      timeWindowKo: '한낮 · 열림의 지평(Das Offene)',
+      seasonKo,
+      dailyWatchword: '분주한 일과 속에서도 조급한 결론을 내리지 말고, 지금 할 수 있는 일에 차분히 마음을 실으십시오.',
+    };
+  }
+  if (kstHour >= 17 && kstHour < 22) {
+    return {
+      kstHour,
+      timeWindowKo: '황혼 · 두이노의 비가(Elegiac Dusk)',
+      seasonKo,
+      dailyWatchword: '하루 동안 겪은 크고 작은 감정을 판단 없이 품어 안고, 무거운 마음은 저녁의 고요 속에 내려놓으십시오.',
+    };
+  }
+  return {
+    kstHour,
+    timeWindowKo: '심야 · 고독의 편지(Nocturne of Solitude)',
+    seasonKo,
+    dailyWatchword: '깊은 밤의 고독을 외로움이 아닌 영혼이 쉬는 너른 방으로 여기며 스스로에게 다정한 편지를 쓰듯 하루를 마무리하십시오.',
+  };
+}
+
 export function calculateAustrianRainerMariaRilkeLetters(
   profile?: UserProfile,
   query?: string,
+  now: Date = new Date(),
 ): AustrianRainerMariaRilkeLettersResult {
   const p = profile as any;
   const name = profile?.basic?.name ?? p?.name ?? '남희';
@@ -131,7 +263,8 @@ export function calculateAustrianRainerMariaRilkeLetters(
   const birthTime = profile?.basic?.birthtime ?? p?.birthTime ?? p?.birthtime ?? '12:00';
   const gender = profile?.basic?.gender ?? p?.gender ?? 'neutral';
 
-  const seedString = `RILKE-LETTERS-TO-YOUNG-POET:${name}:${birthDate}:${birthTime}:${gender}:${query ?? ''}`;
+  const kstDayKey = new Date(now.getTime() + 9 * 60 * 60 * 1000).toISOString().slice(0, 10);
+  const seedString = `RILKE-LETTERS-TO-YOUNG-POET:${name}:${birthDate}:${birthTime}:${gender}:${kstDayKey}:${query ?? ''}`;
   const baseHash = hashString(seedString);
   const absHash = Math.abs(baseHash);
 
@@ -146,18 +279,20 @@ export function calculateAustrianRainerMariaRilkeLetters(
 
   const activeRilkeTheme = RILKE_THEMES[themeIndex];
   const focalRilkeAphorism = RILKE_APHORISMS[aphorismIndex];
+  const questionTopic = classifyRilkeQuestionTopic(query ?? '');
+  const situationalRilkeAudit = buildRilkeSituationalAudit(questionTopic);
+  const temporalRilkeRhythm = buildRilkeTemporalRhythm(now);
 
   const guidanceTitle = `라이너 마리아 릴케 고독의 사랑과 질문의 변용: ${activeRilkeTheme.themeTitleKo}`;
   const philosophicalCounsel = `20세기 실존 서정시의 거장 라이너 마리아 릴케 선생은 《젊은 시인에게 주는 편지》와 《두이노의 비가》를 통해 ` +
-    `세속의 소음에서 물러나 자기만의 고독을 사랑하는 깊은 침잠, 조급하게 해답을 구걸하지 않고 질문 자체를 살아내는 숭고한 인내, ` +
-    `그리고 상처와 유한성을 눈부신 영혼의 노래로 승화하는 존재의 변용(Verwandlung)의 길을 일깨웠습니다. ` +
-    `지금 당신에게 가장 절실한 내면의 등불은 '${activeRilkeTheme.themeTitleKo}'입니다. ` +
-    `${activeRilkeTheme.practicalCounsel} 릴케의 원전 테제 "${focalRilkeAphorism.aphorismKo}"을 마음에 품고, ` +
-    `${focalRilkeAphorism.actionGuidance}`;
+    `자기만의 고독을 사랑하는 침잠과 질문 자체를 살아내는 숭고한 인내를 일깨웠습니다. ` +
+    `지금 질문의 결('${situationalRilkeAudit.focusAxisKo}')과 '${activeRilkeTheme.themeTitleKo}'의 통찰이 맞닿아 있습니다. ` +
+    `${situationalRilkeAudit.practiceGuidance} 릴케의 원전 테제 "${focalRilkeAphorism.aphorismKo}"을 마음에 품고, ` +
+    `${temporalRilkeRhythm.dailyWatchword}`;
 
   return {
     engineVersion: AUSTRIAN_RAINER_MARIA_RILKE_LETTERS_VERSION,
-    calculatedAtKst: new Date().toISOString(),
+    calculatedAtKst: new Date(now.getTime() + 9 * 60 * 60 * 1000).toISOString().replace('Z', '+09:00'),
     lovingSolitudeInwardScore,
     livingTheQuestionsIndex,
     contemplativeGazingIndex,
@@ -165,6 +300,9 @@ export function calculateAustrianRainerMariaRilkeLetters(
     openHorizonResilienceScore,
     activeRilkeTheme,
     focalRilkeAphorism,
+    questionTopic,
+    situationalRilkeAudit,
+    temporalRilkeRhythm,
     rilkeComprehensiveGuidance: {
       guidanceTitle,
       philosophicalCounsel,
@@ -177,18 +315,20 @@ export function formatAustrianRainerMariaRilkeLettersPrompt(
 ): string {
   return [
     `【라이너 마리아 릴케 《젊은 시인에게 주는 편지·두이노의 비가》 고독 사랑·질문 품기 지표】`,
-    `- 고독 사랑과 깊은 침잠도(Loving Solitude & Inward Deepening): ${res.lovingSolitudeInwardScore}/100`,
-    `- 가슴속 질문 자체를 살아내는 지혜(Living Unresolved Questions): ${res.livingTheQuestionsIndex}/100`,
-    `- 사물에 대한 지극한 시적 응시(Contemplative Gazing): ${res.contemplativeGazingIndex}/100`,
-    `- 시련과 상실의 비가적 승화력(Elegiac Sublimation & Praise): ${res.elegiacSublimationScore}/100`,
-    `- 거대한 열림 속 초연한 회복탄력성(Open Horizon Resilience): ${res.openHorizonResilienceScore}/100`,
+    `- 질문 맥락 초점(${res.questionTopic}): ${res.situationalRilkeAudit.focusAxisKo}`,
+    `- 시적·실존적 태도: ${res.situationalRilkeAudit.poeticPosture}`,
+    `- KST 시공간 리듬: ${res.temporalRilkeRhythm.timeWindowKo} · ${res.temporalRilkeRhythm.seasonKo}`,
     `- 핵심 릴케 테마: ${res.activeRilkeTheme.themeTitleKo} [${res.activeRilkeTheme.themeTitleEn}]`,
     `- 문학적 사색: ${res.activeRilkeTheme.literaryInsight}`,
-    `- 행동 조언: ${res.activeRilkeTheme.practicalCounsel}`,
+    `- 질문 맞춤 조언: ${res.situationalRilkeAudit.practiceGuidance}`,
+    `- 일상 의례 제안: ${res.situationalRilkeAudit.ritualAction}`,
+    `- 성찰 질문: ${res.situationalRilkeAudit.reflectionFocus}`,
+    `- 조언 요약: ${res.situationalRilkeAudit.counselNote}`,
     `- 릴케 원전 테제: "${res.focalRilkeAphorism.aphorismKo}"`,
     `- 원문: (${res.focalRilkeAphorism.aphorismGerman})`,
     `- 원전 출처: [${res.focalRilkeAphorism.sourceContext}]`,
-    `- 구체적 실천 지침: ${res.focalRilkeAphorism.actionGuidance}`,
+    `- 시간대 권고: ${res.temporalRilkeRhythm.dailyWatchword}`,
     `- 종합 릴케 권면: ${res.rilkeComprehensiveGuidance.philosophicalCounsel}`,
+    `- 해석 경계: ${res.situationalRilkeAudit.boundaryNotice}`,
   ].join('\n');
 }
