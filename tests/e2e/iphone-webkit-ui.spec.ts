@@ -260,10 +260,11 @@ test('Lucy message mode badge opens only actual per-answer engine evidence', asy
   await expect(evidence).toContainText('이번 답변에 모델로 전달된 계산·상징 엔진 기록이 없습니다.');
 });
 
-test('Lucy answer themes follow used engines rather than the question and group used engines by result category', async ({ page }) => {
+test('Lucy answer themes show emojis for used engines while user messages have no mode badge', async ({ page, baseURL }) => {
+  const appOrigin = new URL(baseURL || 'http://127.0.0.1:4173').origin;
   await page.route('**/*', async route => {
     const url = new URL(route.request().url());
-    if (url.origin !== 'http://127.0.0.1:4173' || url.pathname.startsWith('/api/sync/')) {
+    if (url.origin !== appOrigin || url.pathname.startsWith('/api/sync/')) {
       await route.abort();
       return;
     }
@@ -274,7 +275,7 @@ test('Lucy answer themes follow used engines rather than the question and group 
       {
         id: 'synthetic-engine-badge-question',
         role: 'user',
-        content: '질문 테마가 답변 엔진 테마와 달라도 질문 배지는 유지합니다.',
+        content: '사용자 질문에는 모드 배지를 표시하지 않습니다.',
         timestamp: timestamp - 60_000,
         mode: 'orange',
         channels: ['orange'],
@@ -300,17 +301,21 @@ test('Lucy answer themes follow used engines rather than the question and group 
   await openLucy(page);
 
   const questionBadge = page.locator('[data-message-mode-badge="true"][data-message-id="synthetic-engine-badge-question"]');
-  await expect(questionBadge).toBeVisible();
+  await expect(page.getByText('사용자 질문에는 모드 배지를 표시하지 않습니다.', { exact: true })).toBeVisible();
+  await expect(questionBadge).toHaveCount(0);
   const modeBadge = page.locator('button[data-message-mode-badge="true"][data-message-id="synthetic-engine-badge-check"]');
   await expect(modeBadge).toBeVisible();
   await expect(modeBadge).not.toContainText('오렌지');
   const answerThemeBadges = modeBadge.locator('[data-message-theme-badge="true"]');
   await expect(answerThemeBadges).toHaveCount(3);
   await expect(answerThemeBadges.nth(0)).toHaveAttribute('data-message-theme', 'trinity');
+  await expect(answerThemeBadges.nth(0)).toContainText('✨');
   await expect(answerThemeBadges.nth(0)).toContainText('트리니티');
   await expect(answerThemeBadges.nth(1)).toHaveAttribute('data-message-theme', 'aura');
+  await expect(answerThemeBadges.nth(1)).toContainText('⚡');
   await expect(answerThemeBadges.nth(1)).toContainText('아우라');
   await expect(answerThemeBadges.nth(2)).toHaveAttribute('data-message-theme', 'bluebird');
+  await expect(answerThemeBadges.nth(2)).toContainText('🕊️');
   await expect(answerThemeBadges.nth(2)).toContainText('블루버드');
   await modeBadge.click();
   const evidence = page.getByRole('dialog', { name: '이번 답변에서 실제 사용한 엔진' });
