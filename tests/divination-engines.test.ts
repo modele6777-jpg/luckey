@@ -4376,7 +4376,7 @@ test('Korean Choe Hyeon-bae Hangeul Geulbon Engine: calculates Korean soul prese
 });
 
 test('Ancient Persian Zoroastrian Amesha Spentas Engine: calculates Vohu Manah, Asha Vahishta truth, Spenta Armaiti and Garothman light', () => {
-  const rep = calculateZoroastrianAmeshaSpentas(profile);
+  const rep = calculateZoroastrianAmeshaSpentas(profile, '갈등 상황에서 올바른 선택을 하고 싶습니다', new Date('2026-11-15T05:00:00Z'));
   assert.equal(rep.engineVersion, ZOROASTRIAN_AMESHA_SPENTAS_VERSION);
   assert(rep.vohuManahGoodMindIndex >= 0 && rep.vohuManahGoodMindIndex <= 100);
   assert(rep.ashaVahishtaCosmicTruthForce >= 0 && rep.ashaVahishtaCosmicTruthForce <= 100);
@@ -4384,13 +4384,18 @@ test('Ancient Persian Zoroastrian Amesha Spentas Engine: calculates Vohu Manah, 
   assert(rep.haurvatatWholenessHealingPower >= 0 && rep.haurvatatWholenessHealingPower <= 100);
   assert(rep.ameretatImmortalityVitality >= 0 && rep.ameretatImmortalityVitality <= 100);
   assert(rep.activeSpentaStage.stageNameAvestan.length > 0);
+  assert(rep.situationalAvestaAudit.gathasCitation.length > 0);
+  assert(rep.temporalAtarRhythm.gahWatchWindow.length > 0);
+  assert(rep.ameshaSynthesisMatrix.synthesizedVerdict.length > 0);
   const prompt = formatZoroastrianAmeshaSpentasPrompt(rep);
   assert(prompt.includes('고대 페르시아 조로아스터교 《아베스타(Avesta)》'));
   assert(prompt.includes(rep.activeSpentaStage.stageNameKo));
+  assert(!prompt.includes('%'));
+  assert(!prompt.includes('/100'));
 });
 
 test('Ancient Greek Delphic Chilon Know Thyself Engine: calculates Gnothi Seauton self-knowledge, Meden Agan moderation and Spartan brevity', () => {
-  const rep = calculateDelphicChilon(profile);
+  const rep = calculateDelphicChilon(profile, '중요한 약속과 결정을 앞두고 조심스럽습니다', new Date('2026-11-15T05:00:00Z'));
   assert.equal(rep.engineVersion, DELPHIC_CHILON_VERSION);
   assert(rep.gnothiSeautonSelfKnowledgeIndex >= 0 && rep.gnothiSeautonSelfKnowledgeIndex <= 100);
   assert(rep.medenAganModerationEquilibrium >= 0 && rep.medenAganModerationEquilibrium <= 100);
@@ -4398,9 +4403,14 @@ test('Ancient Greek Delphic Chilon Know Thyself Engine: calculates Gnothi Seauto
   assert(rep.laconicBrevityClarityScore >= 0 && rep.laconicBrevityClarityScore <= 100);
   assert(rep.spartanEnduranceTemperancePower >= 0 && rep.spartanEnduranceTemperancePower <= 100);
   assert(rep.activeSageStage.stageNameGreek.length > 0);
+  assert(rep.situationalChilonAudit.delphicInscription.length > 0);
+  assert(rep.temporalDelphicRhythm.sanctuaryWindow.length > 0);
+  assert(rep.chilonSynthesisMatrix.synthesizedVerdict.length > 0);
   const prompt = formatDelphicChilonPrompt(rep);
   assert(prompt.includes('델포이 아폴론 신전 7현인 《스파르타의 킬론(Chilon)》'));
   assert(prompt.includes(rep.activeSageStage.stageNameKo));
+  assert(!prompt.includes('%'));
+  assert(!prompt.includes('/100'));
 });
 
 test('Korean Jeong Yak-yong Mongmin Simseo Engine: calculates Cheongnyeom integrity, Yulgi self-discipline and Aemin compassion', () => {
@@ -4740,10 +4750,14 @@ test('Sun Tzu Art of War Strategy Engine: calculates Five Factors, unfought vict
   assert(rep.counselNote.length > 0);
   assert(rep.boundaryNotice.length > 0);
   assert(rep.focalFiveFactor.factorHanja.length > 0);
+  assert(rep.situationalStrategyAudit.artOfWarChapter.length > 0);
+  assert(rep.temporalSunTzuRhythm.campaignWindow.length > 0);
+  assert(rep.sunTzuSynthesisMatrix.synthesizedVerdict.length > 0);
   const prompt = formatSunTzuArtOfWarStrategyPrompt(rep);
   assert(prompt.includes('손자병법 오사칠계 & 부전승 피실격허 전략 지표'));
   assert(prompt.includes(rep.focalFiveFactor.factorHanja));
   assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
 });
 
 test('Descartes Cogito Clara Distincta Engine: calculates Cogito certainty, Clara et Distincta, and provisional moral resolve', () => {

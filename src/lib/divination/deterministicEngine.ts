@@ -3055,7 +3055,7 @@ try {
   // 192. 고대 페르시아 조로아스터교 6대 신성 불멸자 아메샤 스펜타 빛의 조화 엔진
   const zoroastrianAmeshaSpentasResult = calculateSupplement('zoroastrianAmeshaSpentasResult', () => ((() => {
     try {
-      return calculateZoroastrianAmeshaSpentas(profile);
+      return calculateZoroastrianAmeshaSpentas(profile, question, now);
     } catch (_) {
       return null;
     }
@@ -3064,7 +3064,7 @@ try {
   // 193. 고대 그리스 델포이 아폴론 신전 스파르타의 킬론 자기성찰 & 절제 엔진
   const delphicChilonResult = calculateSupplement('delphicChilonResult', () => ((() => {
     try {
-      return calculateDelphicChilon(profile);
+      return calculateDelphicChilon(profile, question, now);
     } catch (_) {
       return null;
     }
