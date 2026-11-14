@@ -2875,7 +2875,7 @@ try {
   // 172. 고대 인도 탄트라 스리 얀트라 9대 나바요니 교차 삼각형 & 바인두 9단계 아바라나 엔진
   const hinduSriYantraResult = calculateSupplement('hinduSriYantraResult', () => ((() => {
     try {
-      return calculateHinduSriYantraSacredGeometry(profile);
+      return calculateHinduSriYantraSacredGeometry(profile, now, question);
     } catch (_) {
       return null;
     }

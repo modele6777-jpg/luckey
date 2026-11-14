@@ -5,7 +5,7 @@
  * 3대 자아(우니히필리·우하네·아우마쿠아)의 삼위일체 정렬과 신성한 생명 에너지 마나(Mana) 순환을 연동합니다.
  */
 
-export const HAWAIIAN_KAHUNA_THREE_SELVES_ENGINE_VERSION = 'LUCKEY-HAWAIIAN-KAHUNA-v1.0.0';
+export const HAWAIIAN_KAHUNA_THREE_SELVES_ENGINE_VERSION = 'LUCKEY-HAWAIIAN-KAHUNA-v2.0.0';
 
 export interface KahunaSelfState {
   selfType: '우니히필리 (Unihipili - 잠재의식/내면아이)' | '우하네 (Uhane - 의식/이성적 자아)' | '아우마쿠아 (Aumakua - 초의식/신성한 고차원 자아)';
@@ -19,6 +19,7 @@ export interface KahunaSelfState {
 export interface KahunaManaReport {
   engineVersion: string;
   calculatedAt: string;
+  calculatedAtKst: string;
   unihipili: KahunaSelfState;
   uhane: KahunaSelfState;
   aumakua: KahunaSelfState;
@@ -26,6 +27,22 @@ export interface KahunaManaReport {
   currentManaPikoState: '피코 포오 (Piko Poʻo - 정수리 영적 연결)' | '피코 피코 (Piko Piko - 배꼽 현재 육체 중심)' | '피코 마이 (Piko Mai - 조상 및 뿌리 에너지)';
   kalaCleansingRitual: string; // 카라(Kala) 해방 및 무결성 회복
   haBreathingPrescription: string; // 마나 축적 하(Ha) 호흡법
+  situationalKahunaAudit: {
+    questionFocus: string;
+    pikoAlignmentNote: string;
+    manaBlockageSummary: string;
+  };
+  temporalKahunaRhythm: {
+    calculatedAtKst: string;
+    kahunaManaWindow: string;
+    seasonalTradewindPhase: string;
+    pikoTimingNote: string;
+  };
+  kahunaSynthesisMatrix: {
+    coreMandate: string;
+    sacredBoundary: string;
+    reflectiveQuestion: string;
+  };
 }
 
 export function calculateHawaiianKahunaThreeSelves(params: {
@@ -133,9 +150,52 @@ export function calculateHawaiianKahunaThreeSelves(params: {
   const kalaCleansingRitual = '카라(Kala) 리추얼: "과거의 모든 죄책감과 매듭을 지금 이 순간 완전히 풉니다(Kala). 나의 우니히필리야, 우리는 안전하며 자유롭다."라고 3회 소리 내어 읊조리세요.';
   const haBreathingPrescription = '하(Ha) 호흡법 처방: 코로 4박자 동안 깊게 마시고, 4박자 멈추며 마나를 단전에 응축한 뒤, "하~" 소리와 함께 입으로 4박자 내쉬는 호흡을 4회 반복하여 생명 에너지를 완충하세요.';
 
+  const kstMs = now.getTime() + 9 * 60 * 60 * 1000;
+  const kstDate = new Date(kstMs);
+  const kstHour = kstDate.getUTCHours();
+  const kstMonth = kstDate.getUTCMonth() + 1;
+  const calculatedAtKst = `${kstDate.getUTCFullYear()}-${String(kstMonth).padStart(2, '0')}-${String(kstDate.getUTCDate()).padStart(2, '0')} ${String(kstHour).padStart(2, '0')}:${String(kstDate.getUTCMinutes()).padStart(2, '0')} KST`;
+
+  const qLower = question.toLowerCase();
+  const questionFocus = /연애|사랑|관계|결혼|재회|이별/.test(qLower)
+    ? '우니히필리 감정 기억 해방과 아우마쿠아 사랑 공명 감사'
+    : /일|직장|사업|돈|재물|결정|이직/.test(qLower)
+    ? '우하네 의식적 결단과 피코 피코 현실 실행력 감사'
+    : /건강|휴식|피로|마음|불안/.test(qLower)
+    ? '하(Ha) 호흡 마나 충전과 신체 감각 이완 감사'
+    : '삼중 자아(우니히필리·우하네·아우마쿠아) 마나 순환 감사';
+
+  const pikoAlignmentNote = `현재 ${currentManaPikoState} 축이 중심을 잡고 있어, 세 자아 사이의 마나 통로가 이 지점을 통해 조율됩니다.`;
+  const manaBlockageSummary = `${unihipili.dominantNeedOrBlock} 및 ${uhane.dominantNeedOrBlock}을 부드럽게 풀어내는 것이 핵심입니다.`;
+
+  const kahunaManaWindow = kstHour >= 5 && kstHour < 11
+    ? '아침 마나 축적 창(하 호흡과 우니히필리 다독임으로 하루 에너지를 여는 시간)'
+    : kstHour >= 11 && kstHour < 17
+    ? '정오 우하네 실행 창(명확한 의도를 세우고 현실 과업을 밀고 나가는 시간)'
+    : kstHour >= 17 && kstHour < 22
+    ? '황혼 카라(Kala) 매듭 풀기 창(하루의 긴장과 감정을 해방하는 시간)'
+    : '심야 아우마쿠아 영적 연결 창(고차원 직관과 꿈의 인도를 받는 시간)';
+
+  const seasonalTradewindPhase = kstMonth >= 3 && kstMonth <= 5
+    ? '봄 무역풍 순환기(막힌 기운이 풀리며 새로운 마나가 유입되는 주기)'
+    : kstMonth >= 6 && kstMonth <= 8
+    ? '여름 태양 마나 절정기(풍부한 생명력을 과용하지 않도록 균형을 잡는 주기)'
+    : kstMonth >= 9 && kstMonth <= 11
+    ? '가을 대지 그라운딩기(피코 마이 뿌리 에너지를 단단히 다지는 주기)'
+    : '겨울 심해 침잠기(외부 소모를 줄이고 아우마쿠아의 고요에 머무는 주기)';
+
+  const pikoTimingNote = `${kahunaManaWindow}과 ${seasonalTradewindPhase}에 맞춰 ${currentManaPikoState}을 의식적으로 호흡하십시오.`;
+
+  const kahunaSynthesisMatrix = {
+    coreMandate: `${currentManaPikoState}을 중심축으로 ${questionFocus}을 실행하십시오.`,
+    sacredBoundary: '우하네의 과도한 통제로 우니히필리를 억압하지 말고, 먼저 감정을 달랜 뒤 이성적 결정을 내리십시오.',
+    reflectiveQuestion: `지금 내 안의 내면 아이(우니히필리)가 가장 듣고 싶어 하는 안심의 한마디는 무엇인가요?`,
+  };
+
   return {
     engineVersion: HAWAIIAN_KAHUNA_THREE_SELVES_ENGINE_VERSION,
     calculatedAt: now.toISOString(),
+    calculatedAtKst,
     unihipili,
     uhane,
     aumakua,
@@ -143,16 +203,31 @@ export function calculateHawaiianKahunaThreeSelves(params: {
     currentManaPikoState,
     kalaCleansingRitual,
     haBreathingPrescription,
+    situationalKahunaAudit: {
+      questionFocus,
+      pikoAlignmentNote,
+      manaBlockageSummary,
+    },
+    temporalKahunaRhythm: {
+      calculatedAtKst,
+      kahunaManaWindow,
+      seasonalTradewindPhase,
+      pikoTimingNote,
+    },
+    kahunaSynthesisMatrix,
   };
 }
 
 export function formatHawaiianKahunaThreeSelvesPrompt(report: KahunaManaReport): string {
   return `### 🌺 고대 하와이 카후나 3대 자아 & 마나 공명 실측 데이터 (${report.engineVersion})
-- **3대 자아 마나 흐름 정렬도**: ${report.manaResonanceScore}점 / 100점
+- **기준 시각(KST)**: ${report.temporalKahunaRhythm.calculatedAtKst}
+- **질문 맥락 & 피코(Piko) 감사**: ${report.situationalKahunaAudit.questionFocus} | ${report.situationalKahunaAudit.pikoAlignmentNote}
 - **현재 집중 마나 중심축 (Piko)**: ${report.currentManaPikoState}
-- **우니히필리 (Unihipili - 잠재의식/내면아이)**: 활력 ${report.unihipili.currentVitality}점 | 상태: ${report.unihipili.dominantNeedOrBlock} | 처방: ${report.unihipili.harmonyPrescription}
-- **우하네 (Uhane - 의식/이성적 자아)**: 활력 ${report.uhane.currentVitality}점 | 상태: ${report.uhane.dominantNeedOrBlock} | 처방: ${report.uhane.harmonyPrescription}
-- **아우마쿠아 (Aumakua - 초의식/신성한 자아)**: 활력 ${report.aumakua.currentVitality}점 | 상태: ${report.aumakua.dominantNeedOrBlock} | 처방: ${report.aumakua.harmonyPrescription}
+- **우니히필리 (Unihipili - 잠재의식/내면아이)**: 상태: ${report.unihipili.dominantNeedOrBlock} | 처방: ${report.unihipili.harmonyPrescription}
+- **우하네 (Uhane - 의식/이성적 자아)**: 상태: ${report.uhane.dominantNeedOrBlock} | 처방: ${report.uhane.harmonyPrescription}
+- **아우마쿠아 (Aumakua - 초의식/신성한 자아)**: 상태: ${report.aumakua.dominantNeedOrBlock} | 처방: ${report.aumakua.harmonyPrescription}
+- **시공간 리듬**: ${report.temporalKahunaRhythm.kahunaManaWindow} · ${report.temporalKahunaRhythm.seasonalTradewindPhase}
 - **카라(Kala) 해방 리추얼**: ${report.kalaCleansingRitual}
-- **마나 충전 하(Ha) 호흡법**: ${report.haBreathingPrescription}`;
+- **마나 충전 하(Ha) 호흡법**: ${report.haBreathingPrescription}
+- **교차 매트릭스**: ${report.kahunaSynthesisMatrix.coreMandate} | 경계: ${report.kahunaSynthesisMatrix.sacredBoundary} | 성찰 질문: "${report.kahunaSynthesisMatrix.reflectiveQuestion}"`;
 }
