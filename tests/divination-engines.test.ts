@@ -3147,16 +3147,23 @@ test('Vedic Nakshatra 108 Pada Engine: calculates nakshatra, pada and dharma pat
   assert(prompt.includes(rep.nakshatraNameKo));
 });
 
-test('Egyptian Hermetic Cartouche Engine: calculates divine cartouche and soul triad', () => {
-  const rep = calculateEgyptianHermeticCartouche(profile);
+test('Egyptian Hermetic Cartouche Engine: calculates divine cartouche and qualitative soul triad', () => {
+  const rep = calculateEgyptianHermeticCartouche(profile, new Date('2026-11-14T01:00:00Z'), '이직 결정이 고민됩니다');
   assert.equal(rep.engineVersion, EGYPTIAN_HERMETIC_CARTOUCHE_ENGINE_VERSION);
+  assert.equal(rep.questionFocus, 'decision');
   assert(rep.primaryCartoucheName.length > 0);
+  assert(rep.triadHarmonyState.length > 0);
+  assert(rep.practiceGuidance.length > 0);
+  assert(rep.ritualAction.length > 0);
+  assert(rep.reflectionFocus.length > 0);
+  assert(rep.boundaryNotice.includes('예측이 아닙니다'));
   assert(rep.soulTriad.kaVitalityIndex >= 0 && rep.soulTriad.kaVitalityIndex <= 100);
   assert(rep.soulTriad.baIndividualityIndex >= 0 && rep.soulTriad.baIndividualityIndex <= 100);
   assert(rep.soulTriad.akhLuminousPurity >= 0 && rep.soulTriad.akhLuminousPurity <= 100);
   const prompt = formatEgyptianHermeticCartouchePrompt(rep);
   assert(prompt.includes('고대 이집트 헤르메스 카르투슈 & 영혼 3위일체 오라클 실측 데이터'));
   assert(prompt.includes(rep.primaryCartoucheName));
+  assert(!prompt.includes('/100'));
 });
 
 test('Taoist Gong Guo Ge Karma Engine: calculates merit domain and shielding index', () => {
@@ -3433,15 +3440,20 @@ test('Vedic Pancha Kosha Engine: calculates 5 layers alignment and Atman realiza
   assert(prompt.includes(rep.lowestAlignedLayer.koshaNameKo));
 });
 
-test('Roman Janus Engine: calculates threshold balance and active gateway', () => {
-  const rep = calculateRomanJanus({ profile });
+test('Roman Janus Engine: calculates qualitative threshold balance and active gateway', () => {
+  const rep = calculateRomanJanus({ profile, question: '새로운 시작을 선택해야 할까요?' });
   assert.equal(rep.engineVersion, ROMAN_JANUS_ENGINE_VERSION);
+  assert.equal(rep.questionFocus, 'decision');
   assert(rep.pastClosureScore >= 0 && rep.pastClosureScore <= 100);
   assert(rep.futureReadinessScore >= 0 && rep.futureReadinessScore <= 100);
   assert(rep.activeJanusGateway.gatewayNumber >= 1 && rep.activeJanusGateway.gatewayNumber <= 4);
+  assert(rep.practiceGuidance.length > 0);
+  assert(rep.ritualAction.length > 0);
+  assert(rep.boundaryNotice.includes('예측이 아닙니다'));
   const prompt = formatRomanJanusPrompt(rep);
   assert(prompt.includes('고대 로마 야누스(Janus) 2대 얼굴 시공간 문턱 & 새출발 실측 데이터'));
   assert(prompt.includes(rep.activeJanusGateway.gatewayNameKo));
+  assert(!prompt.includes('/100'));
 });
 
 test('Baopuzi Ge Hong Nine Turn Elixir Engine: calculates alchemy rank and vitality', () => {
@@ -3455,15 +3467,20 @@ test('Baopuzi Ge Hong Nine Turn Elixir Engine: calculates alchemy rank and vital
   assert(prompt.includes(rep.activeElixirPhase.elixirNameKo));
 });
 
-test('Vedic Mahavakya Consciousness Engine: calculates Brahman realization and Soham resonance', () => {
-  const rep = calculateVedicMahavakya({ profile });
+test('Vedic Mahavakya Consciousness Engine: calculates qualitative Brahman contemplation', () => {
+  const rep = calculateVedicMahavakya({ profile, question: '가까운 사람과의 관계가 서운합니다' });
   assert.equal(rep.engineVersion, VEDIC_MAHAVAKYA_ENGINE_VERSION);
+  assert.equal(rep.questionFocus, 'relationship');
   assert(rep.brahmanRealizationScore >= 0 && rep.brahmanRealizationScore <= 100);
   assert(rep.innerSohamResonance >= 0 && rep.innerSohamResonance <= 100);
   assert(rep.activeMahavakya.sanskritPhrase.length > 0);
+  assert(rep.practiceGuidance.length > 0);
+  assert(rep.ritualAction.length > 0);
+  assert(rep.boundaryNotice.includes('예측이 아닙니다'));
   const prompt = formatVedicMahavakyaPrompt(rep);
   assert(prompt.includes('고대 인도 베다 우파니샤드 4대 마하바키야(Mahāvākya) 대선언 실측 데이터'));
   assert(prompt.includes(rep.activeMahavakya.sanskritPhrase));
+  assert(!prompt.includes('/100'));
 });
 
 test('Sumerian Apkallu Wisdom Engine: calculates 7 sages resonance and Apsu clarity', () => {

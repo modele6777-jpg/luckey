@@ -2262,7 +2262,7 @@ try {
   // 103. 고대 이집트 헤르메스 카르투슈 & 영혼 3위일체 오라클 엔진
   const egyptianHermeticCartoucheResult = calculateSupplement('egyptianHermeticCartoucheResult', () => ((() => {
     try {
-      return calculateEgyptianHermeticCartouche(profile);
+      return calculateEgyptianHermeticCartouche(profile, now, question);
     } catch (_) {
       return null;
     }
