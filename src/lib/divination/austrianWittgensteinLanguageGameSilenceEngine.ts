@@ -9,12 +9,21 @@
  * 4. '의미는 곧 사용' 삶의 현장 실천 지수 (Meaning as Use & Practical Action Score): 추상적 사변에 매몰되지 않고 삶의 구체적 현장에서 행동과 실천으로 가치를 드러내는 지혜.
  * 5. 헛된 관념 혼란 치료 및 해방 회복탄력성 (Therapeutic Dissolution & Mental Clarity Score): 딱정벌레 상자의 비유처럼 사적인 집착과 언어의 미망을 털어내고 평정을 되찾는 힘.
  *
- * @version LUCKEY-WITTGENSTEIN-LANGUAGE-GAME-SILENCE-v1.0.0
+ * @version LUCKEY-WITTGENSTEIN-LANGUAGE-GAME-SILENCE-v1.1.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const AUSTRIAN_WITTGENSTEIN_LANGUAGE_GAME_SILENCE_VERSION = 'LUCKEY-WITTGENSTEIN-LANGUAGE-GAME-SILENCE-v1.0.0';
+export const AUSTRIAN_WITTGENSTEIN_LANGUAGE_GAME_SILENCE_VERSION = 'LUCKEY-WITTGENSTEIN-LANGUAGE-GAME-SILENCE-v1.1.0';
+
+export type WittgensteinQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
+
+export interface WittgensteinTemporalRhythm {
+  kstDateLabel: string;
+  timeWindowKo: string;
+  languageTone: string;
+  rhythmDirective: string;
+}
 
 export interface WittgensteinTheme {
   themeKey: string;
@@ -42,8 +51,14 @@ export interface AustrianWittgensteinLanguageGameSilenceResult {
   meaningAsUsePragmaticActionScore: number;           // 의미는 사용 실천도 (Meaning as Use)
   therapeuticDissolutionClarityScore: number;         // 관념 혼란 치료 회복탄력성 (Therapeutic Clarity)
   // 세부 분석
+  questionTopic: WittgensteinQuestionTopic;
+  temporalWittgensteinRhythm: WittgensteinTemporalRhythm;
   activeWittgensteinTheme: WittgensteinTheme;
   focalWittgensteinAphorism: WittgensteinAphorism;
+  practiceGuidance: string;
+  ritualAction: string;
+  reflectionFocus: string;
+  boundaryNotice: string;
   wittgensteinComprehensiveGuidance: {
     guidanceTitle: string;
     philosophicalCounsel: string;
@@ -128,9 +143,91 @@ function hashString(str: string): number {
   return hash;
 }
 
+function classifyWittgensteinQuestionTopic(query?: string): WittgensteinQuestionTopic {
+  const q = (query ?? '').trim();
+  if (/관계|대화|소통|오해|말|연인|가족|친구|동료/.test(q)) return 'relationship';
+  if (/결정|선택|진로|일|실행|방법|규칙|계획/.test(q)) return 'decision';
+  if (/고민|불안|생각|집착|혼란|복잡|답답|막막/.test(q)) return 'healing';
+  return 'reflection';
+}
+
+function buildWittgensteinTemporalRhythm(now?: Date): WittgensteinTemporalRhythm {
+  const ref = now ?? new Date();
+  const kst = new Date(ref.getTime() + 9 * 60 * 60 * 1000);
+  const yyyy = kst.getUTCFullYear();
+  const mm = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const dd = String(kst.getUTCDate()).padStart(2, '0');
+  const hour = kst.getUTCHours();
+
+  if (hour >= 5 && hour < 12) {
+    return {
+      kstDateLabel: `${yyyy}-${mm}-${dd} KST`,
+      timeWindowKo: '오전 명료한 명제·구별 창',
+      languageTone: '말할 수 있는 사실과 해야 할 일을 또렷이 가르는 아침',
+      rhythmDirective: '모호한 추측 대신 오늘 실제로 손에 잡히는 사실 3가지만 먼저 명료하게 적어 보십시오.',
+    };
+  }
+  if (hour >= 12 && hour < 18) {
+    return {
+      kstDateLabel: `${yyyy}-${mm}-${dd} KST`,
+      timeWindowKo: '오후 언어게임·맥락 조율 창',
+      languageTone: '각자의 삶의 형식과 맥락 규칙을 읽고 조율하는 낮',
+      rhythmDirective: '내 사전 속 뜻만 고집하지 말고, 상대와 현장이 지금 어떤 언어게임을 하고 있는지 먼저 살피십시오.',
+    };
+  }
+  if (hour >= 18 && hour < 22) {
+    return {
+      kstDateLabel: `${yyyy}-${mm}-${dd} KST`,
+      timeWindowKo: '저녁 파리병 탈출·관념 정돈 창',
+      languageTone: '머릿속 헛된 언어의 덫에서 빠져나와 현실에 발을 딛는 저녁',
+      rhythmDirective: '하루 동안 붙들었던 불필요한 말꼬리와 추상적 걱정을 내려놓고 단순한 일상의 감각으로 돌아오십시오.',
+    };
+  }
+  return {
+    kstDateLabel: `${yyyy}-${mm}-${dd} KST`,
+    timeWindowKo: '심야 신비 앞의 침묵(Schweigen) 창',
+    languageTone: '말로 다 재단할 수 없는 삶의 신비 앞에서 고요히 머무는 밤',
+    rhythmDirective: '지금 당장 모든 답을 문장으로 규정하려 하지 마십시오. 침묵 속에서 스스로 드러나는 결이 있습니다.',
+  };
+}
+
+function buildWittgensteinTopicGuidance(topic: WittgensteinQuestionTopic): {
+  practiceGuidance: string;
+  ritualAction: string;
+  reflectionFocus: string;
+} {
+  if (topic === 'relationship') {
+    return {
+      practiceGuidance: '같은 단어를 써도 상대와 나의 삶의 형식이 다를 수 있음을 인정하고, 뜻이 아닌 실제 맥락을 먼저 확인하십시오.',
+      ritualAction: '오해가 생긴 문장을 추측으로 해석하기 전에 "내가 이해한 바가 맞는지" 한 문장으로 담백하게 묻기',
+      reflectionFocus: '지금 우리 사이의 갈등은 사실의 차이인가, 아니면 서로 다른 언어게임의 규칙에서 온 오해인가?',
+    };
+  }
+  if (topic === 'decision') {
+    return {
+      practiceGuidance: '머릿속에서만 정의를 맴돌지 말고, 실제 삶에서 어떻게 쓰이고 작동하는지 작은 실행으로 검증하십시오.',
+      ritualAction: '고민 중인 선택지를 거창한 이념이 아니라 오늘 당장 실행할 구체적 동작 1줄로 바꿔 적어 보기',
+      reflectionFocus: '이 선택의 의미는 머릿속 추상적 설명에 있는가, 아니면 내일 내가 실제로 써먹을 행동에 있는가?',
+    };
+  }
+  if (topic === 'healing') {
+    return {
+      practiceGuidance: '해결되지 않는 문제처럼 보이는 것 중 상당수는 스스로 짠 언어의 미로(파리병)일 수 있습니다. 한 걸음 물러나 출구를 보십시오.',
+      ritualAction: '머리를 맴도는 걱정 문장 하나를 종이에 적은 뒤 "확인된 사실"과 "내 해석" 두 줄로 가르기',
+      reflectionFocus: '내가 지금 부딪히고 있는 것은 바깥의 벽인가, 아니면 내가 만든 말의 유리병 벽면인가?',
+    };
+  }
+  return {
+    practiceGuidance: '명료하게 말할 수 있는 것은 단정히 정리하되, 말로 다 담기지 않는 깊은 가치는 성급히 재단하지 마십시오.',
+    ritualAction: '오늘 하루 10분간 불필요한 설명이나 변명을 멈추고 조용히 산책하거나 차를 마시며 침묵 머물기',
+    reflectionFocus: '지금 내 삶에서 굳이 말로 설명하지 않아도 행동과 태도만으로 이미 드러나고 있는 진실은 무엇인가?',
+  };
+}
+
 export function calculateAustrianWittgensteinLanguageGameSilence(
   profile?: UserProfile,
   query?: string,
+  now?: Date,
 ): AustrianWittgensteinLanguageGameSilenceResult {
   const p = profile as any;
   const name = profile?.basic?.name ?? p?.name ?? '남희';
@@ -138,7 +235,11 @@ export function calculateAustrianWittgensteinLanguageGameSilence(
   const birthTime = profile?.basic?.birthtime ?? p?.birthTime ?? p?.birthtime ?? '12:00';
   const gender = profile?.basic?.gender ?? p?.gender ?? 'neutral';
 
-  const seedString = `WITTGENSTEIN-LANGUAGE-GAME:${name}:${birthDate}:${birthTime}:${gender}:${query ?? ''}`;
+  const temporalWittgensteinRhythm = buildWittgensteinTemporalRhythm(now);
+  const questionTopic = classifyWittgensteinQuestionTopic(query);
+  const topicGuidance = buildWittgensteinTopicGuidance(questionTopic);
+
+  const seedString = `WITTGENSTEIN-LANGUAGE-GAME:${name}:${birthDate}:${birthTime}:${gender}:${query ?? ''}:${temporalWittgensteinRhythm.kstDateLabel}`;
   const baseHash = hashString(seedString);
   const absHash = Math.abs(baseHash);
 
@@ -157,19 +258,28 @@ export function calculateAustrianWittgensteinLanguageGameSilence(
   const guidanceTitle = `비트겐슈타인 언어게임·침묵 지혜: ${activeWittgensteinTheme.themeTitleKo}`;
   const philosophicalCounsel = `20세기 현대 사상의 거장 비트겐슈타인은 말할 수 있는 것의 명료한 논리적 정밀성을 세우고, 말할 수 없는 삶의 신비 앞에서는 경건한 침묵을 가르쳤으며, 언어 게임과 삶의 형식을 통해 실천적 지혜를 열었습니다. ` +
     `현재 당신의 흐름에서 가장 투명한 통찰을 비추는 핵심 원리는 '${activeWittgensteinTheme.themeTitleKo}'입니다. ` +
-    `${activeWittgensteinTheme.practicalCounsel} 비트겐슈타인의 불후의 명제 "${focalWittgensteinAphorism.aphorismKo} (${focalWittgensteinAphorism.aphorismOriginal})"를 되새기며, ` +
+    `${activeWittgensteinTheme.practicalCounsel} ${topicGuidance.practiceGuidance} ` +
+    `비트겐슈타인의 불후의 명제 "${focalWittgensteinAphorism.aphorismKo} (${focalWittgensteinAphorism.aphorismOriginal})"를 되새기며, ` +
     `${focalWittgensteinAphorism.actionGuidance}`;
+
+  const boundaryNotice = '비트겐슈타인 언어게임·침묵 관점은 사고의 혼란을 덜고 맥락을 살피기 위한 철학적 성찰 도구이며, 실증적 사실 검증이나 전문 상담을 대신하지 않습니다.';
 
   return {
     engineVersion: AUSTRIAN_WITTGENSTEIN_LANGUAGE_GAME_SILENCE_VERSION,
-    calculatedAtKst: new Date().toISOString(),
+    calculatedAtKst: (now ?? new Date()).toISOString(),
     logicalClarityTractatusPrecisionIndex,
     mysticalSilenceReverenceScore,
     languageGameContextualFlexibilityIndex,
     meaningAsUsePragmaticActionScore,
     therapeuticDissolutionClarityScore,
+    questionTopic,
+    temporalWittgensteinRhythm,
     activeWittgensteinTheme,
     focalWittgensteinAphorism,
+    practiceGuidance: topicGuidance.practiceGuidance,
+    ritualAction: topicGuidance.ritualAction,
+    reflectionFocus: topicGuidance.reflectionFocus,
+    boundaryNotice,
     wittgensteinComprehensiveGuidance: {
       guidanceTitle,
       philosophicalCounsel,
@@ -182,17 +292,18 @@ export function formatAustrianWittgensteinLanguageGameSilencePrompt(
 ): string {
   return [
     `【비트겐슈타인 《논리철학논고·철학적 탐구》 언어게임·침묵 지혜 지표】`,
-    `- 논리철학적 사유 정밀성(Logical Clarity Precision): ${res.logicalClarityTractatusPrecisionIndex}/100`,
-    `- 신비 앞의 경건한 침묵도(Mystical Silence Reverence): ${res.mysticalSilenceReverenceScore}/100`,
-    `- 언어 게임 맥락 유연성(Language-Game Flexibility): ${res.languageGameContextualFlexibilityIndex}/100`,
-    `- 의미는 곧 사용 실천도(Meaning as Use Action): ${res.meaningAsUsePragmaticActionScore}/100`,
-    `- 관념 혼란 치료 회복탄력성(Therapeutic Dissolution Clarity): ${res.therapeuticDissolutionClarityScore}/100`,
+    `- 질문 주제 맥락: ${res.questionTopic}`,
+    `- KST 시공간 리듬: ${res.temporalWittgensteinRhythm.kstDateLabel} · ${res.temporalWittgensteinRhythm.timeWindowKo} (${res.temporalWittgensteinRhythm.languageTone}) — ${res.temporalWittgensteinRhythm.rhythmDirective}`,
     `- 핵심 비트겐슈타인 테마: ${res.activeWittgensteinTheme.themeTitleKo} [${res.activeWittgensteinTheme.themeTitleEn}]`,
     `- 실천적 통찰: ${res.activeWittgensteinTheme.pragmaticInsight}`,
     `- 행동 조언: ${res.activeWittgensteinTheme.practicalCounsel}`,
+    `- 질문 맞춤 실천 가이드: ${res.practiceGuidance}`,
+    `- 일상 실천 의례: ${res.ritualAction}`,
+    `- 핵심 성찰 질문: ${res.reflectionFocus}`,
     `- 비트겐슈타인 원전 명언: "${res.focalWittgensteinAphorism.aphorismKo}" (${res.focalWittgensteinAphorism.aphorismOriginal})`,
     `- 원전 출처: [${res.focalWittgensteinAphorism.sourceContext}]`,
     `- 구체적 실천 지침: ${res.focalWittgensteinAphorism.actionGuidance}`,
     `- 종합 비트겐슈타인 권면: ${res.wittgensteinComprehensiveGuidance.philosophicalCounsel}`,
+    `- 해석 경계: ${res.boundaryNotice}`,
   ].join('\n');
 }
