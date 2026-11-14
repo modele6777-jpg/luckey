@@ -6671,6 +6671,45 @@ test('v2.0.0 qualitative/temporal/matrix deepening: Four Noble Truths, Nagarjuna
   assert.ok(franklPrompt.includes('로고테라피 매트릭스'));
 });
 
+test('v2.0.0 qualitative/temporal/matrix deepening: Spinoza Ethica, Mencius Hoyeon, and Wang Yangming Liangzhi', () => {
+  const testProfile = {
+    basic: {
+      name: '남희',
+      birthdate: '1988-05-12',
+      birthtime: '09:30',
+      gender: 'female' as const,
+      calendarType: 'solar' as const,
+    },
+  };
+  const now = new Date('2026-11-14T10:05:00.000Z'); // KST 19:05
+
+  const spinoza = calculateBaruchSpinozaEthicaConatus(testProfile, now, '상대방과의 갈등으로 마음이 무거워요');
+  assert.equal(spinoza.engineVersion, SPINOZA_CONATUS_AMORDEI_VERSION);
+  assert.ok(spinoza.temporalConatusRhythm.conatusClarityIndex >= 50 && spinoza.temporalConatusRhythm.conatusClarityIndex <= 99);
+  assert.ok(spinoza.ethicaSynthesisMatrix.overallSynthesis >= 50);
+  const spinozaPrompt = formatBaruchSpinozaEthicaConatusPrompt(spinoza);
+  assert.ok(spinozaPrompt.includes('KST 코나투스 리듬'));
+  assert.ok(spinozaPrompt.includes('에티카 매트릭스'));
+
+  const mencius = calculateMenciusFourSproutsHoyeon(testProfile, '조급한 마음 때문에 빨리 결과를 내고 싶어요', now);
+  assert.equal(mencius.engineVersion, MENCIUS_FOUR_SPROUTS_HOYEON_VERSION);
+  assert.ok(mencius.situationalMoralAudit.menciusCitation.includes('맹자'));
+  assert.ok(mencius.temporalHoyeonRhythm.hoyeonClarityIndex >= 50 && mencius.temporalHoyeonRhythm.hoyeonClarityIndex <= 99);
+  assert.ok(mencius.menciusSynthesisMatrix.overallSynthesis >= 50);
+  const menciusPrompt = formatMenciusFourSproutsHoyeonPrompt(mencius);
+  assert.ok(menciusPrompt.includes('질문 맥락 도덕 감사'));
+  assert.ok(menciusPrompt.includes('맹자 매트릭스'));
+
+  const yangming = calculateWangYangmingXinxue(testProfile, '망설이느라 실행을 계속 미루고 있어요', now);
+  assert.equal(yangming.engineVersion, WANG_YANGMING_LIANGZHI_VERSION);
+  assert.ok(yangming.situationalXinxueAudit.chuanxiluCitation.includes('전습록'));
+  assert.ok(yangming.temporalLiangzhiRhythm.liangzhiClarityIndex >= 50 && yangming.temporalLiangzhiRhythm.liangzhiClarityIndex <= 99);
+  assert.ok(yangming.yangmingSynthesisMatrix.overallSynthesis >= 50);
+  const yangmingPrompt = formatWangYangmingXinxuePrompt(yangming);
+  assert.ok(yangmingPrompt.includes('질문 맥락 심학 처방'));
+  assert.ok(yangmingPrompt.includes('양명학 매트릭스'));
+});
+
 
 
 

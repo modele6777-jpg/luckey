@@ -1,4 +1,4 @@
-// v1.7.431: Deepen Four Noble Truths, Nagarjuna Sunyata, and Viktor Frankl Logotherapy engines
+// v1.7.433: Deepen Spinoza Ethica, Mencius Hoyeon, and Wang Yangming Liangzhi engines
 import { getLucyRequestFallbacks, requestWithModelFallback } from '../src/lib/lucyModelPolicy.ts';
 import "dotenv/config";
 import express from "express";

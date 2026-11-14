@@ -3,12 +3,12 @@
  *
  * 스피노자의 《에티카(Ethica Ordine Geometrico Demonstrata)》 원전 기반.
  *
- * @version LUCKEY-SPINOZA-CONATUS-AMORDEI-v1.1.0
+ * @version LUCKEY-SPINOZA-CONATUS-AMORDEI-v2.0.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const SPINOZA_CONATUS_AMORDEI_VERSION = 'LUCKEY-SPINOZA-CONATUS-AMORDEI-v1.1.0';
+export const SPINOZA_CONATUS_AMORDEI_VERSION = 'LUCKEY-SPINOZA-CONATUS-AMORDEI-v2.0.0';
 
 export type SpinozaQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -28,6 +28,21 @@ export interface SpinozaEpistemicLevel {
   philosophicalInsight: string;
 }
 
+export interface SpinozaTemporalConatusRhythm {
+  kstWindow: string;
+  seasonalTone: string;
+  epistemicFocus: string;
+  conatusClarityIndex: number;
+  rhythmDirective: string;
+}
+
+export interface SpinozaEthicaSynthesisMatrix {
+  passiveToActiveTransition: number;
+  causalUnderstandingDepth: number;
+  amorDeiEquanimity: number;
+  overallSynthesis: number;
+}
+
 export interface BaruchSpinozaEthicaConatusResult {
   engineVersion: string;
   calculatedAtKst: string;
@@ -39,6 +54,8 @@ export interface BaruchSpinozaEthicaConatusResult {
   questionTopic: SpinozaQuestionTopic;
   activeAffectState: SpinozaAffectState;
   focalEpistemicLevel: SpinozaEpistemicLevel;
+  temporalConatusRhythm: SpinozaTemporalConatusRhythm;
+  ethicaSynthesisMatrix: SpinozaEthicaSynthesisMatrix;
   practiceGuidance: string;
   ritualAction: string;
   reflectionFocus: string;
@@ -140,6 +157,56 @@ const SPINOZA_TOPIC_REFLECTION: Record<SpinozaQuestionTopic, string> = {
   reflection: '타인의 시선과 비교를 걷어낸 자리에서 내 존재가 가장 온전히 살아 숨 쉬는 순간은 언제인가요?',
 };
 
+function buildTemporalConatusRhythm(now: Date): SpinozaTemporalConatusRhythm {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const hour = kst.getUTCHours();
+  const month = kst.getUTCMonth() + 1;
+
+  const seasonalTone =
+    month >= 3 && month <= 5
+      ? '봄 — 코나투스(존재 지속·확장 의지)가 명료히 깨어나는 계절'
+      : month >= 6 && month <= 8
+        ? '여름 — 수동적 정념의 열기를 이성(Ratio)의 인과 분석으로 식히는 계절'
+        : month >= 9 && month <= 11
+          ? '가을 — 영원의 상(Sub Specie Aeternitatis) 아래 필연을 고요히 수용하는 계절'
+          : '겨울 — 내면의 직관지(Scientia Intuitiva)와 자기만족을 깊게 다지는 계절';
+
+  if (hour >= 5 && hour < 12) {
+    return {
+      kstWindow: '오전 타당한 관념(Adequate Idea) 명증 창',
+      seasonalTone,
+      epistemicFocus: '제2종 인식(Ratio) 인과 명료화',
+      conatusClarityIndex: 91,
+      rhythmDirective: '감정적 잔여물이 적고 이성적 인과 파악이 가장 선명한 오전입니다. 핵심 판단을 명료히 세우십시오.',
+    };
+  }
+  if (hour >= 12 && hour < 18) {
+    return {
+      kstWindow: '오후 포르티투도(Fortitudo) 능동 실천 창',
+      seasonalTone,
+      epistemicFocus: '능동적 기쁨(Laetitia Activa)과 관대함',
+      conatusClarityIndex: 84,
+      rhythmDirective: '외부 변수와 마주하는 오후입니다. 타인의 감정에 휘말리지 말고 용기와 관대함으로 대응하십시오.',
+    };
+  }
+  if (hour >= 18 && hour < 22) {
+    return {
+      kstWindow: '저녁 정념 전환(Affect Transition) 성찰 창',
+      seasonalTone,
+      epistemicFocus: '수동적 정념의 원인 해명',
+      conatusClarityIndex: 86,
+      rhythmDirective: '하루의 피로와 서운함을 막연한 기분으로 남기지 말고 인과적 원인을 짚어 가볍게 풀어내십시오.',
+    };
+  }
+  return {
+    kstWindow: '심야 영원의 상(Sub Specie Aeternitatis) 관조 창',
+    seasonalTone,
+    epistemicFocus: '제3종 인식(직관지)과 내적 평정',
+    conatusClarityIndex: 79,
+    rhythmDirective: '우연과 불안에 휩쓸리기 쉬운 심야입니다. 모든 사물이 자연의 필연 속에 있음을 관조하며 쉬십시오.',
+  };
+}
+
 export function calculateBaruchSpinozaEthicaConatus(
   profile: UserProfile,
   now: Date = new Date(),
@@ -171,6 +238,19 @@ export function calculateBaruchSpinozaEthicaConatus(
   const activeAffectState = AFFECT_STATES[affectIndex];
   const focalEpistemicLevel = EPISTEMIC_LEVELS[levelIndex];
   const questionTopic = classifySpinozaTopic(question);
+  const temporalConatusRhythm = buildTemporalConatusRhythm(now);
+
+  const passiveToActiveTransition = Math.min(99, Math.round((affectJoyTransitionScore + conatusVitalityScore) / 2));
+  const causalUnderstandingDepth = Math.min(99, Math.round((adequateIdeaIntellectScore + temporalConatusRhythm.conatusClarityIndex) / 2));
+  const amorDeiEquanimity = Math.min(99, Math.round((subSpecieAeternitatisScore + amorDeiIntellectualisScore) / 2));
+  const overallSynthesis = Math.round((passiveToActiveTransition + causalUnderstandingDepth + amorDeiEquanimity) / 3);
+
+  const ethicaSynthesisMatrix: SpinozaEthicaSynthesisMatrix = {
+    passiveToActiveTransition,
+    causalUnderstandingDepth,
+    amorDeiEquanimity,
+    overallSynthesis,
+  };
 
   const practiceGuidance = `${activeAffectState.actionCounsel} ${SPINOZA_TOPIC_PRACTICE[questionTopic]}`;
   const ritualAction = SPINOZA_TOPIC_RITUAL[questionTopic];
@@ -191,6 +271,8 @@ export function calculateBaruchSpinozaEthicaConatus(
     questionTopic,
     activeAffectState,
     focalEpistemicLevel,
+    temporalConatusRhythm,
+    ethicaSynthesisMatrix,
     practiceGuidance,
     ritualAction,
     reflectionFocus,
@@ -206,12 +288,12 @@ export function formatBaruchSpinozaEthicaConatusPrompt(res: BaruchSpinozaEthicaC
   return [
     `【스피노자 에티카 코나투스 & 신즉자연 관조 지표】`,
     `- 능동 정념 상태: ${res.activeAffectState.affectNameLatin} (${res.activeAffectState.affectNameKo})`,
-    `- 역학 설명: ${res.activeAffectState.potencyDynamics}`,
     `- 인식의 지평: ${res.focalEpistemicLevel.levelNameKo} [${res.focalEpistemicLevel.levelNameLatin}]`,
-    `- 인식적 통찰: ${res.focalEpistemicLevel.philosophicalInsight}`,
-    `- 실천 조언: ${res.practiceGuidance}`,
+    `- 실천 조언 (${res.questionTopic}): ${res.practiceGuidance}`,
     `- 일상 의례: ${res.ritualAction}`,
     `- 성찰 질문: ${res.reflectionFocus}`,
+    `- KST 코나투스 리듬: ${res.temporalConatusRhythm.kstWindow} (${res.temporalConatusRhythm.epistemicFocus}, 명료도 ${res.temporalConatusRhythm.conatusClarityIndex}/100) — ${res.temporalConatusRhythm.rhythmDirective}`,
+    `- 에티카 매트릭스: 능동 정념 전환 ${res.ethicaSynthesisMatrix.passiveToActiveTransition} / 인과 이해 깊이 ${res.ethicaSynthesisMatrix.causalUnderstandingDepth} / 영원의 상 평정 ${res.ethicaSynthesisMatrix.amorDeiEquanimity} (종합 ${res.ethicaSynthesisMatrix.overallSynthesis}/100)`,
     `- 해석 경계: ${res.boundaryNotice}`,
   ].join('\n');
 }

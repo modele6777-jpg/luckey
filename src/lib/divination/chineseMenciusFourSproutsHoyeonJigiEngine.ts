@@ -1,23 +1,14 @@
 /**
  * 고대 중국 맹자(Mencius) 사단사덕(四端四德) & 호연지기(浩然之氣) 양기 엔진
  *
- * 전국시대 유학자 맹자(孟子)의 《맹자(孟子)》 공손추상·고자상 원전 기반.
- * 1. 사단(四端): 인의예지(仁義禮智)의 네 가지 싹.
- *    - 측은지심(惻隱之心): 남의 아픔을 불쌍히 여기는 어진 마음 (仁之端)
- *    - 수오지심(羞惡之心): 불의를 부끄러워하고 악을 미워하는 마음 (義之端)
- *    - 사양지심(辭讓之心): 겸손히 양보하고 공경하는 마음 (禮之端)
- *    - 시비지심(是非之心): 옳고 그름을 명확히 가려내는 지혜로운 마음 (智之端)
- * 2. 호연지기(浩然之氣): 지극히 크고 굳세며 곧아 천지간에 가득 차는 당당한 도덕적 기운 (至大至剛 以直養而無害).
- * 3. 집의(集義): 일상의 작은 올바름을 꾸준히 쌓아야 하며, 조급하게 당겨 키우려(助長) 하지 말 것.
- * 4. 부동심(不動心): 어떤 유혹과 위협 앞에서도 중심을 잃지 않는 굳건한 평정심.
- * 5. 대장부(大丈夫): 부귀불능음(富貴不能淫), 빈천불능이(貧賤不能移), 위무불능굴(威武不能屈).
+ * 전국시대 유학자 맹자(孟子)의 《맹자(孟子)》 공손추상·고자상·등문공하 원전 기반.
  *
- * @version LUCKEY-MENCIUS-FOUR-SPROUTS-HOYEON-v1.0.0
+ * @version LUCKEY-MENCIUS-FOUR-SPROUTS-HOYEON-v2.0.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const MENCIUS_FOUR_SPROUTS_HOYEON_VERSION = 'LUCKEY-MENCIUS-FOUR-SPROUTS-HOYEON-v1.0.0';
+export const MENCIUS_FOUR_SPROUTS_HOYEON_VERSION = 'LUCKEY-MENCIUS-FOUR-SPROUTS-HOYEON-v2.0.0';
 
 export interface MenciusSproutStage {
   stageLevel: number;
@@ -25,6 +16,30 @@ export interface MenciusSproutStage {
   stageNameKo: string;
   moralSproutPrinciple: string;
   practicalActionBlessing: string;
+}
+
+export interface MenciusSituationalMoralAudit {
+  themeKo: string;
+  menciusCitation: string;
+  hanjaQuote: string;
+  translationKo: string;
+  jojangTrap: string;
+  jiYiActionStep: string;
+}
+
+export interface MenciusTemporalHoyeonRhythm {
+  kstWindow: string;
+  seasonalTone: string;
+  sproutFocus: '측은지심(仁)' | '수오지심(義)' | '사양지심(禮)' | '시비지심(智)';
+  hoyeonClarityIndex: number;
+  rhythmDirective: string;
+}
+
+export interface MenciusSynthesisMatrix {
+  fourSproutsBalance: number;
+  jiYiAccumulation: number;
+  buDongXinSteadiness: number;
+  overallSynthesis: number;
 }
 
 export interface MenciusFourSproutsHoyeonResult {
@@ -44,6 +59,9 @@ export interface MenciusFourSproutsHoyeonResult {
     coreEssence: string;
     actionableDirective: string;
   };
+  situationalMoralAudit: MenciusSituationalMoralAudit;
+  temporalHoyeonRhythm: MenciusTemporalHoyeonRhythm;
+  menciusSynthesisMatrix: MenciusSynthesisMatrix;
   menciusPhilosophicalCounsel: {
     counselTitle: string;
     philosophicalGuidance: string;
@@ -110,7 +128,104 @@ const MENCIUS_CLASSICS = [
   },
 ];
 
-export function calculateMenciusFourSproutsHoyeon(profile: UserProfile): MenciusFourSproutsHoyeonResult {
+function buildSituationalMoralAudit(question?: string): MenciusSituationalMoralAudit {
+  const q = (question ?? '').trim();
+  if (/조급|빨리|당장|성과|불안|초조/.test(q)) {
+    return {
+      themeKo: '물망물조장(勿忘勿助長) 집의의 속도',
+      menciusCitation: '《맹자》 공손추상 2장 (알묘조장)',
+      hanjaQuote: '必有事焉而勿正 心勿忘 勿助長也',
+      translationKo: '할 일을 꾸준히 하되 결과를 조급히 재촉하지 말고, 마음에서 잊지 말며 억지로 잡아당겨 키우지(助長) 말라.',
+      jojangTrap: '아직 뿌리가 내리기도 전에 결과를 억지로 당겨 뽑아 올리려다(揠苗助長) 기운까지 말려 버리는 조급함.',
+      jiYiActionStep: '집의(集義): 오늘 내 몫의 정직한 1시간 공정만 마치고, 결과의 싹이 자랄 밤의 시간을 믿고 기다리십시오.',
+    };
+  }
+  if (/관계|사람|상처|불의|억울|타협/.test(q)) {
+    return {
+      themeKo: '대장부(大丈夫)의 자존과 수오지심',
+      menciusCitation: '《맹자》 등문공하 2장',
+      hanjaQuote: '富貴不能淫 貧賤不能移 威武不能屈',
+      translationKo: '부귀가 마음을 흔들지 못하고, 가난이 뜻을 옮기지 못하며, 위세가 굽히지 못하는 이가 대장부다.',
+      jojangTrap: '눈앞의 눈치나 작은 이익 때문에 스스로 부끄러운 타협을 하며 내면의 떳떳함을 잃는 일.',
+      jiYiActionStep: '수오지심(羞惡之心): 불편하더라도 내가 지키고 싶은 원칙 한 줄을 분명히 긋고 정중하게 의사를 밝히십시오.',
+    };
+  }
+  if (/실패|어렵|시련|지치|힘들|포기/.test(q)) {
+    return {
+      themeKo: '생어우환(生於憂患) 단련의 사명',
+      menciusCitation: '《맹자》 고자하 15장',
+      hanjaQuote: '故天將降大任於是人也 必先苦其心志 勞其筋骨',
+      translationKo: '하늘이 큰 소임을 맡기려 할 때는 반드시 먼저 그 마음과 뜻을 괴롭게 하고 뼈마디를 수고롭게 한다.',
+      jojangTrap: '당장의 고단함을 내가 부족하거나 버림받은 신호로 오해하여 스스로 물러서는 위축.',
+      jiYiActionStep: '부동심(不動心): 오늘의 어려움을 근력을 키우는 훈련으로 받아들이고, 가장 기본이 되는 루틴 1가지만 지키십시오.',
+    };
+  }
+  return {
+    themeKo: '반구저기(反求諸己)와 야기(夜氣) 회복',
+    menciusCitation: '《맹자》 이루상 · 고자상',
+    hanjaQuote: '行有不得者 皆反求諸己 其身正而天下歸之',
+    translationKo: '행하여 얻지 못하는 바가 있으면 모두 자기 자신에게서 돌이켜 찾으라. 내 몸이 바르면 세상이 따른다.',
+    jojangTrap: '바깥의 조건과 남의 탓만 돌리다가 정작 내가 가꾸어야 할 맑은 밤기운(夜氣)을 소진하는 일.',
+    jiYiActionStep: '사단 확충: 오늘 나 자신에게 떳떳한 작은 선행이나 정직한 마무리 1가지를 조용히 실행하십시오.',
+  };
+}
+
+function buildTemporalHoyeonRhythm(now?: Date): MenciusTemporalHoyeonRhythm {
+  const ref = now ?? new Date();
+  const kst = new Date(ref.getTime() + 9 * 60 * 60 * 1000);
+  const hour = kst.getUTCHours();
+  const month = kst.getUTCMonth() + 1;
+
+  const seasonalTone =
+    month >= 3 && month <= 5
+      ? '봄 — 측은지심(仁)의 따뜻한 싹을 틔워 인연을 품는 계절'
+      : month >= 6 && month <= 8
+        ? '여름 — 사양지심(禮)의 절도와 균형으로 열기를 다스리는 계절'
+        : month >= 9 && month <= 11
+          ? '가을 — 수오지심(義)의 곧은 결단으로 불필요한 가지를 치는 계절'
+          : '겨울 — 시비지심(智)과 야기(夜氣)를 고요히 축적하는 계절';
+
+  if (hour >= 4 && hour < 10) {
+    return {
+      kstWindow: '새벽·아침 평단지기(平旦之氣) 맑은 기운 창',
+      seasonalTone,
+      sproutFocus: '측은지심(仁)',
+      hoyeonClarityIndex: 92,
+      rhythmDirective: '밤사이 맑아진 평단지기가 살아 있는 아침입니다. 사사로운 이해타산을 걷고 본래의 어진 뜻을 세우십시오.',
+    };
+  }
+  if (hour >= 10 && hour < 17) {
+    return {
+      kstWindow: '한낮 집의(集義) 당당한 실천 창',
+      seasonalTone,
+      sproutFocus: '수오지심(義)',
+      hoyeonClarityIndex: 84,
+      rhythmDirective: '일과 선택이 겹치는 낮 시간입니다. 작은 편법 대신 정직하고 떳떳한 원칙으로 중심을 지키십시오.',
+    };
+  }
+  if (hour >= 17 && hour < 22) {
+    return {
+      kstWindow: '저녁 사양지심(禮) 화합과 경청 창',
+      seasonalTone,
+      sproutFocus: '사양지심(禮)',
+      hoyeonClarityIndex: 82,
+      rhythmDirective: '타인의 자리를 존중하고 하루의 과열된 마음을 겸손과 온기로 가라앉히기 좋은 시간입니다.',
+    };
+  }
+  return {
+    kstWindow: '심야 야기(夜氣) 함양과 시비(智) 성찰 창',
+    seasonalTone,
+    sproutFocus: '시비지심(智)',
+    hoyeonClarityIndex: 80,
+    rhythmDirective: '조장(助長)의 조급함을 내려놓고 맑은 밤기운(夜氣)이 스스로 회복되도록 고요히 쉬십시오.',
+  };
+}
+
+export function calculateMenciusFourSproutsHoyeon(
+  profile: UserProfile,
+  question?: string,
+  now?: Date,
+): MenciusFourSproutsHoyeonResult {
   const seedString = (profile?.basic?.birthdate ?? (profile as any)?.birthdate ?? '1990-01-01') +
     (profile?.basic?.name ?? (profile as any)?.name ?? 'User') +
     (profile?.basic?.birthtime ?? (profile as any)?.birthtime ?? '12:00') +
@@ -134,6 +249,20 @@ export function calculateMenciusFourSproutsHoyeon(profile: UserProfile): Mencius
 
   const activeMenciusStage = MENCIUS_STAGES[stageIndex];
   const primaryMenciusClassic = MENCIUS_CLASSICS[classicIndex];
+  const situationalMoralAudit = buildSituationalMoralAudit(question);
+  const temporalHoyeonRhythm = buildTemporalHoyeonRhythm(now);
+
+  const fourSproutsBalance = Math.min(99, Math.round((fourSproutsCultivationLevel + daejangbuNobility) / 2));
+  const jiYiAccumulation = Math.min(99, Math.round((jiYiMoralAccumulation + hoyeonJigiGreatVitalityScore) / 2));
+  const buDongXinSteadiness = Math.min(99, Math.round((buDongXinSteadfastness + temporalHoyeonRhythm.hoyeonClarityIndex) / 2));
+  const overallSynthesis = Math.round((fourSproutsBalance + jiYiAccumulation + buDongXinSteadiness) / 3);
+
+  const menciusSynthesisMatrix: MenciusSynthesisMatrix = {
+    fourSproutsBalance,
+    jiYiAccumulation,
+    buDongXinSteadiness,
+    overallSynthesis,
+  };
 
   const counselTitle = `맹자 사단 확충과 호연지기: ${activeMenciusStage.stageNameHanja}`;
   const philosophicalGuidance = `현재 마주한 과업은 잔꾀나 타협이 아닌 당당한 호연지기(浩然之氣)와 사단(四端)의 확충으로 돌파해야 합니다. ` +
@@ -142,7 +271,7 @@ export function calculateMenciusFourSproutsHoyeon(profile: UserProfile): Mencius
 
   return {
     engineVersion: MENCIUS_FOUR_SPROUTS_HOYEON_VERSION,
-    calculatedAtKst: new Date().toISOString(),
+    calculatedAtKst: (now ?? new Date()).toISOString(),
     hoyeonJigiGreatVitalityScore,
     fourSproutsCultivationLevel,
     buDongXinSteadfastness,
@@ -150,6 +279,9 @@ export function calculateMenciusFourSproutsHoyeon(profile: UserProfile): Mencius
     daejangbuNobility,
     activeMenciusStage,
     primaryMenciusClassic,
+    situationalMoralAudit,
+    temporalHoyeonRhythm,
+    menciusSynthesisMatrix,
     menciusPhilosophicalCounsel: {
       counselTitle,
       philosophicalGuidance,
@@ -166,10 +298,11 @@ export function formatMenciusFourSproutsHoyeonPrompt(res: MenciusFourSproutsHoye
     `- 집의(集義) 정직 축적력: ${res.jiYiMoralAccumulation}/100`,
     `- 대장부 당당한 기개: ${res.daejangbuNobility}/100`,
     `- 집중 확충 사단: ${res.activeMenciusStage.stageNameHanja} (${res.activeMenciusStage.stageNameKo})`,
-    `- 도덕적 발현 원리: ${res.activeMenciusStage.moralSproutPrinciple}`,
-    `- 맹자 원전 명구: "${res.primaryMenciusClassic.themeKo}" [${res.primaryMenciusClassic.hanjaClassic}]`,
-    `- 본질 해설: ${res.primaryMenciusClassic.coreEssence}`,
-    `- 실천적 조언: ${res.primaryMenciusClassic.actionableDirective}`,
+    `- 질문 맥락 도덕 감사 (${res.situationalMoralAudit.themeKo} · ${res.situationalMoralAudit.menciusCitation}): "${res.situationalMoralAudit.translationKo}" [${res.situationalMoralAudit.hanjaQuote}]`,
+    `- 조장(助長) 함정: ${res.situationalMoralAudit.jojangTrap}`,
+    `- 집의(集義) 실천 단계: ${res.situationalMoralAudit.jiYiActionStep}`,
+    `- KST 호연지기 리듬: ${res.temporalHoyeonRhythm.kstWindow} (${res.temporalHoyeonRhythm.sproutFocus}, 명료도 ${res.temporalHoyeonRhythm.hoyeonClarityIndex}/100) — ${res.temporalHoyeonRhythm.rhythmDirective}`,
+    `- 맹자 매트릭스: 사단 균형 ${res.menciusSynthesisMatrix.fourSproutsBalance} / 집의 축적 ${res.menciusSynthesisMatrix.jiYiAccumulation} / 부동심 안정 ${res.menciusSynthesisMatrix.buDongXinSteadiness} (종합 ${res.menciusSynthesisMatrix.overallSynthesis}/100)`,
     `- 철학적 처방: ${res.menciusPhilosophicalCounsel.philosophicalGuidance}`,
   ].join('\n');
 }

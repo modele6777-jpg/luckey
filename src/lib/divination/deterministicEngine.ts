@@ -3154,7 +3154,7 @@ try {
   // 203. 명나라 양명학 왕양명 전습록 치양지 & 지행합일 심학 엔진
   const wangYangmingXinxueResult = calculateSupplement('wangYangmingXinxueResult', () => ((() => {
     try {
-      return calculateWangYangmingXinxue(profile);
+      return calculateWangYangmingXinxue(profile, question, now);
     } catch (_) {
       return null;
     }
@@ -3172,7 +3172,7 @@ try {
   // 205. 고대 중국 맹자 사단사덕 & 호연지기 양기 엔진
   const menciusFourSproutsHoyeonResult = calculateSupplement('menciusFourSproutsHoyeonResult', () => ((() => {
     try {
-      return calculateMenciusFourSproutsHoyeon(profile);
+      return calculateMenciusFourSproutsHoyeon(profile, question, now);
     } catch (_) {
       return null;
     }
