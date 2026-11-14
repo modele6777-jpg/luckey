@@ -4867,7 +4867,7 @@ test('Chusa Kim Jeong-hui Sehando Engine: calculates Songbaek hudjo integrity, E
 });
 
 test('Søren Kierkegaard Stages of Life Engine: calculates Den Enkelte authenticity, Leap of faith, and Anxiety possibility mastery', () => {
-  const rep = calculateKierkegaardStagesOfLife(profile);
+  const rep = calculateKierkegaardStagesOfLife(profile, '이직 선택과 불안 앞에서 어떻게 결단해야 할까요?', new Date('2026-11-14T06:00:00Z'));
   assert.equal(rep.engineVersion, KIERKEGAARD_STAGES_OF_LIFE_VERSION);
   assert(rep.existentialLeapCourageScore >= 0 && rep.existentialLeapCourageScore <= 100);
   assert(rep.denEnkelteAuthenticityScore >= 0 && rep.denEnkelteAuthenticityScore <= 100);
@@ -4875,13 +4875,17 @@ test('Søren Kierkegaard Stages of Life Engine: calculates Den Enkelte authentic
   assert(rep.ethicalSelfChoiceCommitmentScore >= 0 && rep.ethicalSelfChoiceCommitmentScore <= 100);
   assert(rep.spiritSynthesisWholenessScore >= 0 && rep.spiritSynthesisWholenessScore <= 100);
   assert(rep.activeKierkegaardTheme.themeTitleDanish.length > 0);
+  assert(rep.situationalStageAudit.focusAxisKo.length > 0);
+  assert(rep.temporalSolitudeRhythm.leapReadinessIndex >= 0 && rep.temporalSolitudeRhythm.leapReadinessIndex <= 100);
+  assert(rep.kierkegaardSynthesisMatrix.overallExistentialGrade.length > 0);
   const prompt = formatKierkegaardStagesOfLifePrompt(rep);
   assert(prompt.includes('쇠렌 키르케고르 단독자(Den Enkelte) & 실존 3단계 지표'));
   assert(prompt.includes(rep.activeKierkegaardTheme.themeTitleKo));
+  assert(prompt.includes('질문 맥락 실존 단계'));
 });
 
 test('Friedrich Nietzsche Zarathustra Amor Fati Engine: calculates Amor Fati radical affirmation, Three metamorphoses, and Übermensch overcoming', () => {
-  const rep = calculateNietzscheZarathustraAmorFati(profile);
+  const rep = calculateNietzscheZarathustraAmorFati(profile, '지나간 후회를 딛고 새로운 창조를 시작하고 싶어요', new Date('2026-11-14T03:00:00Z'));
   assert.equal(rep.engineVersion, NIETZSCHE_ZARATHUSTRA_AMOR_FATI_VERSION);
   assert(rep.amorFatiRadicalAffirmationScore >= 0 && rep.amorFatiRadicalAffirmationScore <= 100);
   assert(rep.threeMetamorphosesCreativeScore >= 0 && rep.threeMetamorphosesCreativeScore <= 100);
@@ -4889,9 +4893,13 @@ test('Friedrich Nietzsche Zarathustra Amor Fati Engine: calculates Amor Fati rad
   assert(rep.eternalRecurrenceResolveScore >= 0 && rep.eternalRecurrenceResolveScore <= 100);
   assert(rep.dionysianVitalityDriveScore >= 0 && rep.dionysianVitalityDriveScore <= 100);
   assert(rep.activeNietzscheTheme.themeTitleGerman.length > 0);
+  assert(rep.situationalMetamorphosis.focusAxisKo.length > 0);
+  assert(rep.temporalZarathustraRhythm.dionysianPulseIndex >= 0 && rep.temporalZarathustraRhythm.dionysianPulseIndex <= 100);
+  assert(rep.uebermenschSynthesisMatrix.overallZarathustraGrade.length > 0);
   const prompt = formatNietzscheZarathustraAmorFatiPrompt(rep);
   assert(prompt.includes('프리드리히 니체 차라투스트라 초인 & 아모르 파티(Amor Fati) 지표'));
   assert(prompt.includes(rep.activeNietzscheTheme.themeTitleKo));
+  assert(prompt.includes('질문 맥락 변신 단계'));
 });
 
 test('Seosan Daesa Hyujeong Seonga Gwigam Engine: calculates Ilmul yeongmyeong, Hwalku chamseon, and Seon-Gyo integration', () => {
@@ -5248,7 +5256,7 @@ test('Baekbeom Kim Gu My Desire Culture Engine: calculates High Power of Culture
 });
 
 test('Martin Heidegger Being and Time Engine: calculates In-der-Welt-sein, Eigentlichkeit, and Sein-zum-Tode', () => {
-  const rep = calculateMartinHeideggerBeingAndTime(profile);
+  const rep = calculateMartinHeideggerBeingAndTime(profile, '남들 눈치 보지 않고 미래 계획을 세우고 싶어요', new Date('2026-11-14T00:00:00Z'));
   assert.equal(rep.engineVersion, GERMAN_MARTIN_HEIDEGGER_VERSION);
   assert(rep.inDerWeltSeinRelationalScore >= 0 && rep.inDerWeltSeinRelationalScore <= 100);
   assert(rep.dasManOvercomingAuthenticityScore >= 0 && rep.dasManOvercomingAuthenticityScore <= 100);
@@ -5256,9 +5264,13 @@ test('Martin Heidegger Being and Time Engine: calculates In-der-Welt-sein, Eigen
   assert(rep.seinZumTodeLucidityScore >= 0 && rep.seinZumTodeLucidityScore <= 100);
   assert(rep.sorgeCareTemporalIndex >= 0 && rep.sorgeCareTemporalIndex <= 100);
   assert(rep.activeHeideggerTheme.themeTitleKo.length > 0);
+  assert(rep.situationalDaseinAudit.focusAxisKo.length > 0);
+  assert(rep.temporalAugenblickRhythm.authenticityClarityIndex >= 0 && rep.temporalAugenblickRhythm.authenticityClarityIndex <= 100);
+  assert(rep.daseinSynthesisMatrix.overallDaseinGrade.length > 0);
   const prompt = formatMartinHeideggerBeingAndTimePrompt(rep);
   assert(prompt.includes('마틴 하이데거 《존재와 시간》 현존재 & 본래성 지표'));
   assert(prompt.includes(rep.activeHeideggerTheme.themeTitleKo));
+  assert(prompt.includes('질문 맥락 현존재 국면'));
 });
 
 test('Hannah Arendt Vita Activa Engine: provides qualitative Natality guidance, question context and hides raw scores', () => {

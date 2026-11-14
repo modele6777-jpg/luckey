@@ -2,18 +2,18 @@
  * 독일 마틴 하이데거(Martin Heidegger) 《존재와 시간(Sein und Zeit)》 현존재(Dasein) & 세계-내-존재·죽음을 향한 존재 본래성(Eigentlichkeit) 실존 엔진
  *
  * 20세기 실존철학과 현상학의 거인 마틴 하이데거(Martin Heidegger, 1889~1976)의 주저 《존재와 시간(Sein und Zeit, 1927)》 핵심 원전 기반:
- * 1. 현존재(Dasein)와 세계-내-존재(In-der-Welt-sein): 인간은 독립된 고립된 자아가 아니라 언제나 이미 세계 속에 들어가 사물과 타인과 얽혀 살아가는 존재임.
- * 2. 세인(Das Man)의 일상성 탈피와 본래성(Eigentlichkeit): 세상의 막연한 잡담(Gerede), 호기심, 시선에 휘둘려 비본래적으로 살아가는 '세인'에서 벗어나 자기 고유의 본래적 실존을 회복함.
- * 3. 피투성(Geworfenheit)과 기투(Entwurf): 세상에 이미 던져진 한계와 조건을 수용하면서도, 자신의 가능성을 향해 스스로를 미래로 내던지는 주체적 기획력.
- * 4. 죽음을 향한 존재(Sein-zum-Tode): 누구도 대신해 줄 수 없는 자신의 가장 고유한 종말(죽음)이라는 유한성을 회피하지 않고 직시함으로써, 현재의 매 순간을 가장 밀도 있고 진실하게 선택함.
- * 5. 염려(Sorge)와 시간성(Zeitlichkeit): 과거의 바탕 위에서 미래의 가능성을 품고 현재의 순간(Augenblick)에 결단하는 전인격적 돌봄과 시간적 지평의 원숙도.
+ * 1. 현존재(Dasein)와 세계-내-존재(In-der-Welt-sein)
+ * 2. 세인(Das Man)의 일상성 탈피와 본래성(Eigentlichkeit)
+ * 3. 피투성(Geworfenheit)과 기투(Entwurf)
+ * 4. 죽음을 향한 존재(Sein-zum-Tode)와 순간(Augenblick)
+ * 5. 질문 맥락 현존재 감사(situationalDaseinAudit) + KST 시공간 리듬(temporalAugenblickRhythm) + 교차 검증 매트릭스(daseinSynthesisMatrix)
  *
- * @version LUCKEY-MARTIN-HEIDEGGER-BEING-AND-TIME-v1.0.0
+ * @version LUCKEY-MARTIN-HEIDEGGER-BEING-AND-TIME-v2.0.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const GERMAN_MARTIN_HEIDEGGER_VERSION = 'LUCKEY-MARTIN-HEIDEGGER-BEING-AND-TIME-v1.0.0';
+export const GERMAN_MARTIN_HEIDEGGER_VERSION = 'LUCKEY-MARTIN-HEIDEGGER-BEING-AND-TIME-v2.0.0';
 
 export interface HeideggerTheme {
   themeKey: string;
@@ -31,6 +31,29 @@ export interface HeideggerAphorism {
   actionGuidance: string;
 }
 
+export interface HeideggerSituationalDaseinAudit {
+  existentialMode: '본래성(Eigentlichkeit)' | '선구적 결단(Vorlaufen)' | '세계-내-존재 실천(Zuhandenheit)';
+  focusAxisKo: string;
+  classicalCitation: string;
+  authenticityDirective: string;
+  reflectiveQuestion: string;
+}
+
+export interface HeideggerTemporalAugenblickRhythm {
+  kstHour: number;
+  timeWindowKo: string;
+  seasonKo: string;
+  authenticityClarityIndex: number;
+  dailyDaseinPractice: string;
+}
+
+export interface HeideggerDaseinSynthesisMatrix {
+  dasManLiberation: number;
+  entwurfProjection: number;
+  seinsMutLucidity: number;
+  overallDaseinGrade: string;
+}
+
 export interface MartinHeideggerBeingAndTimeResult {
   engineVersion: string;
   calculatedAtKst: string;
@@ -43,6 +66,9 @@ export interface MartinHeideggerBeingAndTimeResult {
   // 세부 분석
   activeHeideggerTheme: HeideggerTheme;
   focalHeideggerAphorism: HeideggerAphorism;
+  situationalDaseinAudit: HeideggerSituationalDaseinAudit;
+  temporalAugenblickRhythm: HeideggerTemporalAugenblickRhythm;
+  daseinSynthesisMatrix: HeideggerDaseinSynthesisMatrix;
   heideggerComprehensiveGuidance: {
     guidanceTitle: string;
     philosophicalCounsel: string;
@@ -118,8 +144,107 @@ export const HEIDEGGER_APHORISMS: HeideggerAphorism[] = [
   },
 ];
 
+function buildSituationalDaseinAudit(question: string, absHash: number): HeideggerSituationalDaseinAudit {
+  const q = question.trim();
+  if (/남들|눈치|시선|유행|비교|체면|평판/.test(q)) {
+    return {
+      existentialMode: '본래성(Eigentlichkeit)',
+      focusAxisKo: '세인(Das Man)의 익명성을 벗어나는 양심의 부름',
+      classicalCitation: '《존재와 시간》 §27·§57: "세인의 지배로부터 자신을 되찾아오는 것이 본래적 실존이다."',
+      authenticityDirective: '\'남들이 다 그렇게 한다\'는 핑계를 버리고, 아무도 대신 살아주지 않는 나만의 선택을 당당히 세우십시오.',
+      reflectiveQuestion: '세상의 기준과 박수를 전부 끄고 나면 지금 내가 진짜 원하는 길은 무엇입니까?',
+    };
+  }
+  if (/미래|이직|계획|도전|시작|목표|변화/.test(q)) {
+    return {
+      existentialMode: '선구적 결단(Vorlaufen)',
+      focusAxisKo: '주어진 조건(피투성)을 딛고 미래로 던지는 기투(Entwurf)',
+      classicalCitation: '《존재와 시간》 §31: "현존재는 자신의 가능성을 향해 스스로를 앞질러 던지는 기투적 존재다."',
+      authenticityDirective: '조건이 완벽해지기를 기다리지 말고, 지금 손에 쥔 현실을 발판 삼아 미래를 향해 한 발 먼저 내던지십시오.',
+      reflectiveQuestion: '주어진 환경의 핑계를 내려놓고 오늘 내가 직접 설계할 수 있는 한 걸음은 무엇입니까?',
+    };
+  }
+  if (/시간|유한|나이|후회|늦|마감|끝|죽음/.test(q)) {
+    return {
+      existentialMode: '선구적 결단(Vorlaufen)',
+      focusAxisKo: '유한성을 직시해 비본래적 군더더기를 덜어내는 각성',
+      classicalCitation: '《존재와 시간》 §53: "유한성을 선구적으로 직시할 때 사소한 가능성들이 한꺼번에 걸러진다."',
+      authenticityDirective: '시간이 무한한 것처럼 미루는 습관을 끊고, 가장 본질적인 단 한 가지 일에 오늘의 에너지를 모으십시오.',
+      reflectiveQuestion: '삶의 유한함을 떠올릴 때 지금 당장 내려놓아야 할 사소한 집착은 무엇입니까?',
+    };
+  }
+  if (/일|실천|현실|손|관계|생활|막막/.test(q)) {
+    return {
+      existentialMode: '세계-내-존재 실천(Zuhandenheit)',
+      focusAxisKo: '추상적 관념을 넘어 손닿는 현장(Zuhandenheit)으로 들어가기',
+      classicalCitation: '《존재와 시간》 §15: "세계는 구경거리가 아니라 손으로 다루며 돌보는 실천의 장이다."',
+      authenticityDirective: '머릿속 시뮬레이션을 멈추고 지금 눈앞에 놓인 작은 일과 사람에게 직접 손길을 내미십시오.',
+      reflectiveQuestion: '생각만 하던 일을 멈추고 지금 당장 손으로 만지고 처리할 수 있는 일은 무엇입니까?',
+    };
+  }
+
+  const modes: Array<'본래성(Eigentlichkeit)' | '선구적 결단(Vorlaufen)' | '세계-내-존재 실천(Zuhandenheit)'> = [
+    '본래성(Eigentlichkeit)',
+    '선구적 결단(Vorlaufen)',
+    '세계-내-존재 실천(Zuhandenheit)',
+  ];
+  return {
+    existentialMode: modes[absHash % modes.length],
+    focusAxisKo: '순간(Augenblick)의 결단으로 시간성을 장악하는 현존재',
+    classicalCitation: '《존재와 시간》 §68: "순간이란 결단 속에서 상황을 명료하게 장악하는 시간의 정점이다."',
+    authenticityDirective: '과거의 후회와 미래의 막연한 염려를 거두고, 지금 이 순간 내 양심이 가리키는 행동 하나를 실행하십시오.',
+    reflectiveQuestion: '오늘 이 순간(Augenblick)에 내가 주인으로 깨어 있기 위해 취할 행동은 무엇입니까?',
+  };
+}
+
+function buildTemporalAugenblickRhythm(now: Date, baseScore: number): HeideggerTemporalAugenblickRhythm {
+  const kstDate = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const kstHour = kstDate.getUTCHours();
+  const kstMonth = kstDate.getUTCMonth() + 1;
+
+  const seasonKo = kstMonth >= 3 && kstMonth <= 5
+    ? '춘계 기투기(가능성의 개화)'
+    : kstMonth >= 6 && kstMonth <= 8
+      ? '하계 현존기(치열한 실천)'
+      : kstMonth >= 9 && kstMonth <= 11
+        ? '추계 각성기(본래성의 수확)'
+        : '동계 침잠기(존재의 고요)';
+
+  let timeWindowKo = '오후의 기투 결단(Entwurf)';
+  let hourBonus = 0;
+  let dailyDaseinPractice = '상황의 본질을 직시하고 미루던 결단 하나를 구체적 행동으로 옮기십시오.';
+
+  if (kstHour >= 5 && kstHour < 10) {
+    timeWindowKo = '새벽의 양심 부름(Ruf des Gewissens)';
+    hourBonus = 6;
+    dailyDaseinPractice = '세인의 잡담이 시작되기 전 고요한 아침에 오늘 내가 지킬 본래적 방향을 세우십시오.';
+  } else if (kstHour >= 10 && kstHour < 15) {
+    timeWindowKo = '오전의 세계-내-존재 실천(In-der-Welt-sein)';
+    hourBonus = 5;
+    dailyDaseinPractice = '관념적 망설임을 접고 눈앞의 일과 관계 속에 온전히 몸을 실어 참여하십시오.';
+  } else if (kstHour >= 15 && kstHour < 20) {
+    timeWindowKo = '오후의 순간 결단(Augenblick)';
+    hourBonus = 4;
+    dailyDaseinPractice = '하루의 흐름이 흩어지기 전에 가장 본질적인 과제 하나를 단호히 매듭지으십시오.';
+  } else {
+    timeWindowKo = '밤의 시간성 성찰(Zeitlichkeit)';
+    hourBonus = 3;
+    dailyDaseinPractice = '세상의 소음을 끄고 나의 유한성과 오늘의 진정성을 조용히 비추어 보십시오.';
+  }
+
+  return {
+    kstHour,
+    timeWindowKo,
+    seasonKo,
+    authenticityClarityIndex: Math.min(100, Math.round(baseScore + hourBonus)),
+    dailyDaseinPractice,
+  };
+}
+
 export function calculateMartinHeideggerBeingAndTime(
-  profile: UserProfile
+  profile: UserProfile,
+  question = '',
+  now: Date = new Date()
 ): MartinHeideggerBeingAndTimeResult {
   const p = profile as any;
   const name = profile?.basic?.name ?? p?.name ?? '방문자';
@@ -127,7 +252,7 @@ export function calculateMartinHeideggerBeingAndTime(
   const birthTime = profile?.basic?.birthtime ?? p?.birthTime ?? p?.birthtime ?? '12:00';
   const gender = profile?.basic?.gender ?? p?.gender ?? 'neutral';
 
-  const seedString = `MARTIN-HEIDEGGER-BEING-AND-TIME:${name}:${birthDate}:${birthTime}:${gender}`;
+  const seedString = `MARTIN-HEIDEGGER-BEING-AND-TIME:${name}:${birthDate}:${birthTime}:${gender}:${question.trim()}`;
 
   let hash = 0;
   for (let i = 0; i < seedString.length; i++) {
@@ -147,16 +272,32 @@ export function calculateMartinHeideggerBeingAndTime(
 
   const activeHeideggerTheme = HEIDEGGER_THEMES[themeIndex];
   const focalHeideggerAphorism = HEIDEGGER_APHORISMS[aphorismIndex];
+  const situationalDaseinAudit = buildSituationalDaseinAudit(question, absHash);
+  const temporalAugenblickRhythm = buildTemporalAugenblickRhythm(now, dasManOvercomingAuthenticityScore);
+
+  const avgScore = Math.round(
+    (dasManOvercomingAuthenticityScore + geworfenheitEntwurfProjectScore + seinZumTodeLucidityScore) / 3
+  );
+  const daseinSynthesisMatrix: HeideggerDaseinSynthesisMatrix = {
+    dasManLiberation: dasManOvercomingAuthenticityScore,
+    entwurfProjection: geworfenheitEntwurfProjectScore,
+    seinsMutLucidity: seinZumTodeLucidityScore,
+    overallDaseinGrade: avgScore >= 88
+      ? '본래적 선구 결단(Eigentliche Entschlossenheit)'
+      : avgScore >= 78
+        ? '세인 탈피 및 기투 각성(Entwurf Awakening)'
+        : '양심의 부름 경청(Ruf des Gewissens)',
+  };
 
   const guidanceTitle = `마틴 하이데거 실존과 본래성 지혜: ${activeHeideggerTheme.themeTitleKo}`;
   const philosophicalCounsel = `하이데거의 실존 현상학은 세상의 안일한 세인(Das Man)의 기준에서 벗어나, 자신의 유한성을 직시하고 본래적인 자기 자신(Eigentlichkeit)으로 우뚝 서도록 일깨웁니다. ` +
-    `현재 당신의 삶을 관통하는 존재론적 통찰 원리는 '${activeHeideggerTheme.themeTitleKo}'입니다. ` +
-    `${activeHeideggerTheme.practicalCounsel} 아울러 주저 《존재와 시간》의 불멸의 경구 "${focalHeideggerAphorism.aphorismKo}"(${focalHeideggerAphorism.aphorismGerman})을 깊이 음미하고, ` +
-    `${focalHeideggerAphorism.actionGuidance}`;
+    `현재 질문은 [${situationalDaseinAudit.existentialMode}]의 '${situationalDaseinAudit.focusAxisKo}'와 맞물려 있습니다. ` +
+    `${situationalDaseinAudit.authenticityDirective} 아울러 《존재와 시간》의 경구 "${focalHeideggerAphorism.aphorismKo}"(${focalHeideggerAphorism.aphorismGerman})을 음미하고 ` +
+    `${temporalAugenblickRhythm.dailyDaseinPractice}`;
 
   return {
     engineVersion: GERMAN_MARTIN_HEIDEGGER_VERSION,
-    calculatedAtKst: new Date().toISOString(),
+    calculatedAtKst: new Date(now.getTime() + 9 * 60 * 60 * 1000).toISOString().replace('Z', '+09:00'),
     inDerWeltSeinRelationalScore,
     dasManOvercomingAuthenticityScore,
     geworfenheitEntwurfProjectScore,
@@ -164,6 +305,9 @@ export function calculateMartinHeideggerBeingAndTime(
     sorgeCareTemporalIndex,
     activeHeideggerTheme,
     focalHeideggerAphorism,
+    situationalDaseinAudit,
+    temporalAugenblickRhythm,
+    daseinSynthesisMatrix,
     heideggerComprehensiveGuidance: {
       guidanceTitle,
       philosophicalCounsel,
@@ -173,18 +317,19 @@ export function calculateMartinHeideggerBeingAndTime(
 
 export function formatMartinHeideggerBeingAndTimePrompt(res: MartinHeideggerBeingAndTimeResult): string {
   return [
-    `【마틴 하이데거 《존재와 시간》 현존재 & 본래성 지표】`,
+    `【마틴 하이데거 《존재와 시간》 현존재 & 본래성 지표 v2.0】`,
     `- 세계-내-존재 존재연관도(In-der-Welt-sein): ${res.inDerWeltSeinRelationalScore}/100`,
     `- 세인 탈피 본래성 지수(Eigentlichkeit): ${res.dasManOvercomingAuthenticityScore}/100`,
     `- 피투성 수용 및 미래 기투력(Entwurf): ${res.geworfenheitEntwurfProjectScore}/100`,
     `- 유한성 직시 실존밀도도(Sein-zum-Tode): ${res.seinZumTodeLucidityScore}/100`,
     `- 염려 및 시간성 원숙도(Sorge & Zeitlichkeit): ${res.sorgeCareTemporalIndex}/100`,
+    `- 질문 맥락 현존재 국면: [${res.situationalDaseinAudit.existentialMode}] ${res.situationalDaseinAudit.focusAxisKo}`,
+    `- 원전 처방: ${res.situationalDaseinAudit.classicalCitation} → ${res.situationalDaseinAudit.authenticityDirective}`,
+    `- 성찰 질문: ${res.situationalDaseinAudit.reflectiveQuestion}`,
+    `- KST 시공간 리듬: ${res.temporalAugenblickRhythm.timeWindowKo} (${res.temporalAugenblickRhythm.seasonKo}, 본래성지수 ${res.temporalAugenblickRhythm.authenticityClarityIndex}/100) — ${res.temporalAugenblickRhythm.dailyDaseinPractice}`,
+    `- 종합 등급: ${res.daseinSynthesisMatrix.overallDaseinGrade}`,
     `- 핵심 실존 테마: ${res.activeHeideggerTheme.themeTitleKo} [${res.activeHeideggerTheme.themeTitleGerman}]`,
-    `- 실존적 통찰: ${res.activeHeideggerTheme.existentialInsight}`,
-    `- 실천적 조언: ${res.activeHeideggerTheme.practicalCounsel}`,
-    `- 핵심 원전 경구: "${res.focalHeideggerAphorism.aphorismKo}"`,
-    `- 원전 출처: "${res.focalHeideggerAphorism.aphorismGerman}" [${res.focalHeideggerAphorism.sourceContext}]`,
-    `- 구체적 실천 지침: ${res.focalHeideggerAphorism.actionGuidance}`,
+    `- 핵심 원전 경구: "${res.focalHeideggerAphorism.aphorismKo}" (${res.focalHeideggerAphorism.sourceContext})`,
     `- 종합 실존철학 권면: ${res.heideggerComprehensiveGuidance.philosophicalCounsel}`,
   ].join('\n');
 }

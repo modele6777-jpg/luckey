@@ -3379,7 +3379,7 @@ try {
   // 228. 덴마크 쇠렌 키르케고르 이것이냐 저것이냐 & 단독자 실존 3단계 도약 엔진
   const kierkegaardStagesOfLifeResult = calculateSupplement('kierkegaardStagesOfLifeResult', () => ((() => {
     try {
-      return calculateKierkegaardStagesOfLife(profile);
+      return calculateKierkegaardStagesOfLife(profile, question, now);
     } catch (_) {
       return null;
     }
@@ -3388,7 +3388,7 @@ try {
   // 229. 독일 프리드리히 니체 차라투스트라는 이렇게 말했다 초인 & 아모르 파티 엔진
   const nietzscheZarathustraAmorFatiResult = calculateSupplement('nietzscheZarathustraAmorFatiResult', () => ((() => {
     try {
-      return calculateNietzscheZarathustraAmorFati(profile);
+      return calculateNietzscheZarathustraAmorFati(profile, question, now);
     } catch (_) {
       return null;
     }
@@ -3622,7 +3622,7 @@ try {
   // 255. 독일 마틴 하이데거 존재와 시간 현존재 & 세계-내-존재·죽음을 향한 존재 본래성 실존 엔진
   const martinHeideggerBeingAndTimeResult = calculateSupplement('martinHeideggerBeingAndTimeResult', () => ((() => {
     try {
-      return calculateMartinHeideggerBeingAndTime(profile);
+      return calculateMartinHeideggerBeingAndTime(profile, question, now);
     } catch (_) {
       return null;
     }
