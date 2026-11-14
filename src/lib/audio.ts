@@ -1,4 +1,4 @@
-import { applyAudioMixingPolicy, setAppAudioActive, isAppAudioActive } from './audioMixingPolicy';
+import { applyAudioMixingPolicy, setAppAudioActive, setSpeechAudioActive, isAppAudioActive } from './audioMixingPolicy';
 import { getSpeechMediaElement, primeSpeechMedia, stopSpeechMedia, speechMediaProgress, isSpeechMediaPlaying, pauseSpeechMedia, resumeSpeechMedia, playSpeechMedia, handleSpeechPageVisibility } from './speechMedia';
 import { acquireScreenWakeLock, releaseScreenWakeLock } from './wakeLock';
 import { recoverSpeechContext } from './audioRecovery';
@@ -626,7 +626,8 @@ export function setBgmPlaybackSessionActive(active: boolean): void {
 }
 
 export function configureAmbientAudioSession(): void {
-  applyAudioMixingPolicy();
+  speechSessionActive = false;
+  setSpeechAudioActive(false);
 }
 
 /** Compatibility entry points stay nonexclusive to preserve external player audio. */
@@ -636,7 +637,7 @@ export function configurePlaybackAudioSession(): void {
 }
 export function configureSpeechAudioSession(): void {
   speechSessionActive = true;
-  setAppAudioActive(true);
+  setSpeechAudioActive(true);
 }
 
 export function getTTSAudioElement(): HTMLAudioElement {
@@ -1289,7 +1290,7 @@ export async function playTTSAudio(
   const bytes = base64ToBytes(base64);
   const format = detectAudioFormat(bytes);
   try {
-    await playSpeechMedia(bytes, format === 'pcm' ? encoding : format, sampleRate, onPlaying);
+    await playSpeechMedia(bytes, format === 'pcm' ? encoding : format, sampleRate, onPlaying, isSequenceChunk);
   } finally {
     if (activePlaybackId === ttsPlaybackId && !isSequenceChunk) {
       ttsShouldBePlaying = false;
@@ -1311,7 +1312,11 @@ export function initTTSAudioLifecycle(): void {
     if (document.visibilityState === 'hidden') return;
     // Resume only media paused across a hidden-page transition; never reclaim external audio focus.
     handleSpeechPageVisibility(true);
-    configureAmbientAudioSession();
+    if (!speechSessionActive && !ttsShouldBePlaying) {
+      configureAmbientAudioSession();
+    } else {
+      applyAudioMixingPolicy();
+    }
   };
 
   const handleVisibilityChange = () => {

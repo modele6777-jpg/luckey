@@ -1,4 +1,4 @@
-import { applyAudioMixingPolicy, setAppAudioActive } from './audioMixingPolicy';
+import { applyAudioMixingPolicy, setAppAudioActive, setSpeechAudioActive } from './audioMixingPolicy';
 import { updateAppMediaSession } from './appMediaSession';
 import { primeUserMediaPlayback } from './nativeMediaPriming';
 // Use the browser's media pipeline so speech can continue while the page is hidden.
@@ -28,6 +28,7 @@ export function stopSpeechMedia(): void {
   active = false; paused = false;
   finish?.(); finish = null;
   updateAppMediaSession('tts', null);
+  setSpeechAudioActive(false);
   setAppAudioActive(false);
   if (player) { player.pause(); player.removeAttribute('src'); player.load(); }
   if (objectUrl) URL.revokeObjectURL(objectUrl);
@@ -42,12 +43,18 @@ export function pauseSpeechMedia() {
   if (active) {
     paused = true;
     player?.pause();
-    updateAppMediaSession('tts', { title: 'Lucy Speech', artist: '루시 (Lucy)', state: 'paused' });
+    updateAppMediaSession('tts', {
+      title: 'Lucy Speech',
+      artist: '루시 (Lucy)',
+      state: 'paused',
+      actions: { pause: pauseSpeechMedia, play: resumeSpeechMedia, stop: stopSpeechMedia },
+    });
   }
 }
 export function resumeSpeechMedia() {
   if (active && player) {
     paused = false;
+    setSpeechAudioActive(true);
     setAppAudioActive(true);
     applyAudioMixingPolicy();
     updateAppMediaSession('tts', {
@@ -73,13 +80,20 @@ export function handleSpeechPageVisibility(isVisible: boolean): void {
   resumeSpeechMedia();
 }
 
-export function playSpeechMedia(bytes: Uint8Array, encoding: string, sampleRate: number, onPlaying?: () => void): Promise<void> {
+export function playSpeechMedia(
+  bytes: Uint8Array,
+  encoding: string,
+  sampleRate: number,
+  onPlaying?: () => void,
+  keepSessionOnEnd = false,
+): Promise<void> {
   // Settle the old chunk without clearing/reloading the shared media element.
   // Safari may release its background session if src is removed between chunks.
   finish?.(); finish = null;
   const previousUrl = objectUrl;
   const audio = getSpeechMediaElement();
   paused = false;
+  setSpeechAudioActive(true);
   setAppAudioActive(true);
   applyAudioMixingPolicy();
   let data = bytes;
@@ -118,7 +132,9 @@ export function playSpeechMedia(bytes: Uint8Array, encoding: string, sampleRate:
       settled = true;
       active = false;
       cleanup();
-      updateAppMediaSession('tts', null);
+      if (!keepSessionOnEnd) {
+        updateAppMediaSession('tts', null);
+      }
       resolve();
     };
     const failed = () => {

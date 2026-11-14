@@ -3,7 +3,7 @@ import { test } from 'node:test';
 import { updateAppMediaSession } from '../src/lib/appMediaSession.ts';
 import { applyAudioMixingPolicy, isAppAudioActive, setAppAudioActive } from '../src/lib/audioMixingPolicy.ts';
 
-test('active app audio always stays in the nonexclusive ambient session', () => {
+test('idle and BGM stay in ambient while active TTS uses playback for background audio', () => {
   const previousNavigator = Object.getOwnPropertyDescriptor(globalThis, 'navigator');
   const fakeNavigator = {
     audioSession: { type: 'playback' },
@@ -19,9 +19,11 @@ test('active app audio always stays in the nonexclusive ambient session', () => 
     assert.equal(fakeNavigator.audioSession.type, 'ambient');
 
     updateAppMediaSession('tts', { title: 'Lucy Speech', artist: 'Lucy', state: 'playing' });
-    assert.equal(fakeNavigator.mediaSession.playbackState, 'none');
-    assert.equal(fakeNavigator.mediaSession.metadata, null);
+    assert.equal(fakeNavigator.audioSession.type, 'playback');
+    assert.equal(fakeNavigator.mediaSession.playbackState, 'playing');
+
     updateAppMediaSession('tts', null);
+    assert.equal(fakeNavigator.audioSession.type, 'ambient');
     assert.equal(fakeNavigator.mediaSession.playbackState, 'none');
     assert.equal(fakeNavigator.mediaSession.metadata, null);
   } finally {
