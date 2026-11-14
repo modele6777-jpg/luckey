@@ -1984,7 +1984,7 @@ try {
   // 72. 서양 정통 연금술 7단계 영혼 변환 & 심리적 승화 엔진
   const alchemicalTransmutationResult = calculateSupplement('alchemicalTransmutationResult', () => ((() => {
     try {
-      return calculateAlchemicalTransmutation(profile, now);
+      return calculateAlchemicalTransmutation(profile, now, question);
     } catch (_) {
       return null;
     }
@@ -2083,7 +2083,7 @@ try {
   // 83. 인도 정통 아유르베다 3대 도샤(트리도샤) 체질 & 프라나 생명력 엔진
   const ayurvedicTridoshaResult = calculateSupplement('ayurvedicTridoshaResult', () => ((() => {
     try {
-      return calculateAyurvedicTridoshaPrana({ profile, targetDate: now });
+      return calculateAyurvedicTridoshaPrana({ profile, targetDate: now, question });
     } catch (_) {
       return null;
     }

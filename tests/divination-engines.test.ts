@@ -2774,15 +2774,19 @@ test('Vibrational Soul Quest Engine: derives 4 core soul numbers and personal ye
 });
 
 test('Alchemical Transmutation Engine: calculates 7 stages and 4 opus phases', () => {
-  const rep = calculateAlchemicalTransmutation(profile);
+  const rep = calculateAlchemicalTransmutation(profile, new Date('2026-11-15T05:00:00Z'), '직장 이직 결정이 불안합니다');
   assert.equal(rep.engineVersion, ALCHEMICAL_TRANSMUTATION_VERSION);
   assert(rep.currentStage.stageNumber >= 1 && rep.currentStage.stageNumber <= 7);
   assert(rep.transmutationPower >= 0 && rep.transmutationPower <= 100);
   assert(rep.primaMateria.length > 0);
   assert(rep.lapisPhilosophorum.length > 0);
+  assert(rep.situationalAlchemicalAudit.hermeticQuote.length > 0);
+  assert(rep.temporalOpusRhythm.alchemicalHourWindow.length > 0);
+  assert(rep.opusSynthesisMatrix.synthesizedVerdict.length > 0);
   const prompt = formatAlchemicalTransmutationPrompt(rep);
   assert(prompt.includes('연금술 7단계 영혼 변환'));
   assert(prompt.includes(rep.currentStage.nameKo));
+  assert(!prompt.includes('% / 100%'));
 });
 
 test('Ziwei HuaJi Transformation Engine: maps stem hua-ji and breakthrough gift', () => {
@@ -2901,15 +2905,21 @@ test('Delphic Maxims Oracle Engine: calculates soul maxim, situational oracle an
 });
 
 test('Ayurvedic Tridosha & Prana Engine: calculates prakriti, vikriti and subtle energies', () => {
-  const rep = calculateAyurvedicTridoshaPrana({ profile });
+  const rep = calculateAyurvedicTridoshaPrana({ profile, targetDate: new Date('2026-11-15T05:00:00Z'), question: '요즘 피로하고 잠이 잘 안 와요' });
   assert.equal(rep.engineVersion, AYURVEDIC_TRIDOSHA_VERSION);
+  assert.equal(rep.questionFocus, 'health');
   assert(rep.prakritiConstitution.vata >= 0 && rep.prakritiConstitution.pitta >= 0 && rep.prakritiConstitution.kapha >= 0);
   assert.equal(rep.prakritiConstitution.vata + rep.prakritiConstitution.pitta + rep.prakritiConstitution.kapha, 100);
   assert(rep.subtleEnergies.pranaScore >= 0 && rep.subtleEnergies.tejasScore >= 0 && rep.subtleEnergies.ojasScore >= 0);
   assert(rep.dinacharya.pranayamaBreathing.length > 0);
+  assert(rep.situationalAyurvedaAudit.charakaSutra.length > 0);
+  assert(rep.temporalDinacharyaRhythm.doshaClockWindow.length > 0);
+  assert(rep.tridoshaSynthesisMatrix.synthesizedVerdict.length > 0);
   const prompt = formatAyurvedicTridoshaPranaPrompt(rep);
   assert(prompt.includes('인도 정통 아유르베다 3대 도샤'));
   assert(prompt.includes(rep.prakritiConstitution.dominantDosha));
+  assert(!prompt.includes('점 / 100점'));
+  assert(!prompt.includes('%'));
 });
 
 test('Hawaiian Huna & Ho\'oponopono Engine: calculates active principle, three selves balance and cleansing mantra', () => {
@@ -3475,14 +3485,19 @@ test('Roman Janus Engine: calculates qualitative threshold balance and active ga
 });
 
 test('Baopuzi Ge Hong Nine Turn Elixir Engine: calculates alchemy rank and vitality', () => {
-  const rep = calculateBaopuziElixirs({ profile });
+  const rep = calculateBaopuziElixirs({ profile, question: '체력이 떨어지고 피곤해요', now: new Date('2026-11-15T05:00:00Z') });
   assert.equal(rep.engineVersion, BAOPUZI_ELIXIRS_ENGINE_VERSION);
+  assert.equal(rep.questionFocus, 'health');
   assert(rep.alchemicalRefinementLevel >= 1 && rep.alchemicalRefinementLevel <= 9);
   assert(rep.vitalityPreservationScore >= 0 && rep.vitalityPreservationScore <= 100);
   assert(rep.activeElixirPhase.elixirNameKo.length > 0);
+  assert(rep.situationalBaopuziAudit.baopuziVerse.length > 0);
+  assert(rep.temporalElixirRhythm.shichenWindow.length > 0);
+  assert(rep.baopuziSynthesisMatrix.synthesizedGuidance.length > 0);
   const prompt = formatBaopuziElixirsPrompt(rep);
   assert(prompt.includes('고대 도교 포박자(抱朴子) 갈홍 구전환단(九轉還丹) 무병장수 실측 데이터'));
   assert(prompt.includes(rep.activeElixirPhase.elixirNameKo));
+  assert(!prompt.includes('/100'));
 });
 
 test('Vedic Mahavakya Consciousness Engine: calculates qualitative Brahman contemplation', () => {
