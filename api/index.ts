@@ -1,4 +1,4 @@
-// v1.7.408: Include James Joyce, Hermann Hesse, and Han Yong-un engines in Lucy Pro catalog (334 total: 15 foundational + 319 deep)
+// v1.7.409: Avoid retransmitting unchanged server vaults and back off fallback polling
 import { getLucyRequestFallbacks, requestWithModelFallback } from '../src/lib/lucyModelPolicy.ts';
 import "dotenv/config";
 import express from "express";
@@ -338,7 +338,7 @@ app.post("/api/sync/vault/push", async (req, res) => {
     }
     const { saveVaultData } = await import("../server/api-lib/syncRelay.ts");
     const result = saveVaultData(uid, payload);
-    return res.status(200).json(result);
+    return res.status(200).json({ success: result.success, updatedAt: result.updatedAt, etag: result.etag });
   } catch (e: any) {
     return res.status(500).json({ error: e.message });
   }
@@ -346,14 +346,38 @@ app.post("/api/sync/vault/push", async (req, res) => {
 
 app.get("/api/sync/vault/pull/:uid", async (req, res) => {
   res.set("Cache-Control", "private, no-store");
+  res.vary("Authorization");
+  res.vary("If-None-Match");
   try {
     const { uid } = req.params;
-    const { getVaultData } = await import("../server/api-lib/syncRelay.ts");
+    const { getVaultData, ifNoneMatchMatches } = await import("../server/api-lib/syncRelay.ts");
     if (!(await canAccessServerVault(req.get("Authorization"), uid))) {
       return res.status(401).json({ error: "Vault authentication required" });
     }
     const result = getVaultData(uid);
-    return res.status(200).json(result);
+    const body = JSON.stringify({ success: result.success, data: result.data, updatedAt: result.updatedAt });
+    const representationBytes = Buffer.byteLength(body, "utf8");
+    const vaultDataBytes = result.success ? result.payloadBytes || 0 : 0;
+    const recordTransfer = (status: number, responseBodyBytes: number) => {
+      res.once("finish", () => {
+        console.info("[sync-vault-pull]", JSON.stringify({ status, responseBodyBytes, representationBytes, vaultDataBytes }));
+      });
+    };
+
+    if (result.success && result.etag) {
+      res.set("ETag", result.etag);
+      if (ifNoneMatchMatches(req.get("If-None-Match"), result.etag)) {
+        recordTransfer(304, 0);
+        return res.status(304).end();
+      }
+    }
+
+    recordTransfer(200, representationBytes);
+    return res
+      .status(200)
+      .type("application/json")
+      .set("Content-Length", String(representationBytes))
+      .send(body);
   } catch (e: any) {
     return res.status(500).json({ error: e.message });
   }
