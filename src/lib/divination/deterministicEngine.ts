@@ -2173,7 +2173,7 @@ try {
   // 93. 고대 바빌로니아 에누마 엘리쉬 & 운명의 서판 천체 엔진
   const babylonianEnumaElishResult = calculateSupplement('babylonianEnumaElishResult', () => ((() => {
     try {
-      return calculateBabylonianEnumaElish(profile);
+      return calculateBabylonianEnumaElish(profile, now, question);
     } catch (_) {
       return null;
     }
@@ -2245,7 +2245,7 @@ try {
   // 101. 고대 그리스 엘레우시스 신비주의(Eleusinian Mysteries) 영혼 입사의례 & 페르세포네 환원 엔진
   const eleusinianMysteriesResult = calculateSupplement('eleusinianMysteriesResult', () => ((() => {
     try {
-      return calculateEleusinianMysteries(profile);
+      return calculateEleusinianMysteries(profile, { now, question });
     } catch (_) {
       return null;
     }
@@ -2317,7 +2317,7 @@ try {
   // 109. 호주 원주민 드림타임(Dreamtime) 송라인 & 8대 토템 영혼 나침반 엔진
   const aboriginalDreamtimeSonglinesResult = calculateSupplement('aboriginalDreamtimeSonglinesResult', () => ((() => {
     try {
-      return calculateAboriginalDreamtimeSonglines({ profile, targetInstantTime: now.toISOString() });
+      return calculateAboriginalDreamtimeSonglines({ profile, targetInstantTime: now.toISOString(), question });
     } catch (_) {
       return null;
     }
