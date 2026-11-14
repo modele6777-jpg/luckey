@@ -117,7 +117,7 @@ test('calculateChronoTransit produces valid pillars, transits, and prompt', asyn
 
   const result = calculateChronoTransit({ profile: mockProfile, targetDate: testDate });
   assert.ok(result);
-  assert.equal(result.engineVersion, 'LUCKEY-CHRONO-TRANSIT-v1.0.0');
+  assert.equal(result.engineVersion, 'LUCKEY-CHRONO-TRANSIT-v2.0.0');
 
   // 동양 만세력 검증
   assert.equal(result.easternPillars.year.gan, '丙');
