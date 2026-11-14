@@ -3901,7 +3901,7 @@ try {
   // 286. 미국 월트 휘트먼 《풀잎》 & 〈나 자신의 노래〉 우주적 생명 찬가 & 무한 포용 지혜 엔진
   const americanWaltWhitmanLeavesOfGrassResult = calculateSupplement('americanWaltWhitmanLeavesOfGrassResult', () => ((() => {
     try {
-      return calculateAmericanWaltWhitmanLeavesOfGrass(profile);
+      return calculateAmericanWaltWhitmanLeavesOfGrass(profile, question, now);
     } catch (_) {
       return null;
     }
@@ -3973,7 +3973,7 @@ try {
   // 294. 네덜란드 데시데리우스 에라스무스 《우신예찬》 우신의지혜·르네상스 휴머니즘 & 해학·도그마타파 관용 엔진
   const dutchDesideriusErasmusPraiseOfFollyResult = calculateSupplement('dutchDesideriusErasmusPraiseOfFollyResult', () => ((() => {
     try {
-      return calculateDutchDesideriusErasmusPraiseOfFolly(profile);
+      return calculateDutchDesideriusErasmusPraiseOfFolly(profile, question, now);
     } catch (_) {
       return null;
     }
@@ -3982,7 +3982,7 @@ try {
   // 295. 영국 토머스 모어 《유토피아》 공동체 양심 & 삶의 균형(노동·여가)·내면 순결과 공공 정의 지혜 엔진
   const britishThomasMoreUtopiaResult = calculateSupplement('britishThomasMoreUtopiaResult', () => ((() => {
     try {
-      return calculateBritishThomasMoreUtopia(profile);
+      return calculateBritishThomasMoreUtopia(profile, question, now);
     } catch (_) {
       return null;
     }

@@ -9,12 +9,21 @@
  * 4. 격식과 두려움을 떨치고 나아가는 자유로운 개척정신(Democratic Freedom & Open Road Spirit Index): 열린 길(Open Road)을 향해 성큼 발을 내딛는 모험심.
  * 5. 삶과 죽음의 영원한 순환 속에서 피어나는 낙관적 회복탄력성(Cycle of Nature & Optimistic Resilience Score): 절망을 넘어 빛을 향해 고개를 드는 생명력.
  *
- * @version LUCKEY-WHITMAN-LEAVES-OF-GRASS-v1.0.0
+ * @version LUCKEY-WHITMAN-LEAVES-OF-GRASS-v1.1.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const AMERICAN_WALT_WHITMAN_VERSION = 'LUCKEY-WHITMAN-LEAVES-OF-GRASS-v1.0.0';
+export const AMERICAN_WALT_WHITMAN_VERSION = 'LUCKEY-WHITMAN-LEAVES-OF-GRASS-v1.1.0';
+
+export type WhitmanQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
+
+export interface WhitmanTemporalRhythm {
+  kstDateLabel: string;
+  timeWindowKo: string;
+  vitalityTone: string;
+  rhythmDirective: string;
+}
 
 export interface WhitmanTheme {
   themeKey: string;
@@ -42,8 +51,14 @@ export interface AmericanWaltWhitmanLeavesOfGrassResult {
   democraticFreedomOpenRoadIndex: number;       // 열린 길을 향한 자유로운 개척정신 (Open Road Spirit & Freedom)
   cyclicalNatureOptimisticResilienceScore: number; // 자연 순환 신뢰 및 낙관적 회복탄력성 (Cycle of Nature & Resilience)
   // 세부 분석
+  questionTopic: WhitmanQuestionTopic;
+  temporalWhitmanRhythm: WhitmanTemporalRhythm;
   activeWhitmanTheme: WhitmanTheme;
   focalWhitmanAphorism: WhitmanAphorism;
+  practiceGuidance: string;
+  ritualAction: string;
+  reflectionFocus: string;
+  boundaryNotice: string;
   whitmanComprehensiveGuidance: {
     guidanceTitle: string;
     philosophicalCounsel: string;
@@ -121,9 +136,89 @@ function hashString(str: string): number {
   return hash;
 }
 
+function classifyWhitmanQuestionTopic(query?: string): WhitmanQuestionTopic {
+  const q = (query ?? '').toLowerCase();
+  if (/사랑|연애|관계|결혼|이별|가족|친구|갈등|사람|동료|부모/.test(q)) return 'relationship';
+  if (/선택|결정|이직|사업|진로|시험|돈|투자|계약|시작|포기|방향/.test(q)) return 'decision';
+  if (/지치|힘들|불안|우울|상처|치유|위로|외로|슬픔|걱정|두려|피곤/.test(q)) return 'healing';
+  return 'reflection';
+}
+
+function buildWhitmanTemporalRhythm(now?: Date): WhitmanTemporalRhythm {
+  const base = now ?? new Date();
+  const kst = new Date(base.getTime() + 9 * 60 * 60 * 1000);
+  const kstDateLabel = kst.toISOString().slice(0, 10);
+  const hour = kst.getUTCHours();
+
+  if (hour >= 5 && hour < 11) {
+    return {
+      kstDateLabel,
+      timeWindowKo: '아침 열린 길의 시간 (05:00~11:00 KST)',
+      vitalityTone: '가볍고 자유로운 출발',
+      rhythmDirective: '묵은 짐을 내려놓고 새 아침의 공기를 들이마시며 열린 길을 내딛기 좋은 시간입니다.',
+    };
+  }
+  if (hour >= 11 && hour < 17) {
+    return {
+      kstDateLabel,
+      timeWindowKo: '낮 태양과 생명 찬가의 시간 (11:00~17:00 KST)',
+      vitalityTone: '존재의 긍정과 활력',
+      rhythmDirective: '타인의 기준 대신 내 숨결과 발걸음의 생동감을 믿고 움직이는 시간입니다.',
+    };
+  }
+  if (hour >= 17 && hour < 22) {
+    return {
+      kstDateLabel,
+      timeWindowKo: '저녁 풀잎 경이의 시간 (17:00~22:00 KST)',
+      vitalityTone: '소박한 일상 속 경탄',
+      rhythmDirective: '하루의 작은 풀잎 같은 순간들 속에서 고요한 감사와 넉넉함을 발견하는 시간입니다.',
+    };
+  }
+  return {
+    kstDateLabel,
+    timeWindowKo: '심야 다중성 포용의 시간 (22:00~05:00 KST)',
+    vitalityTone: '모순을 품는 광대한 숨',
+    rhythmDirective: '낮 동안 흔들린 마음과 모순된 감정까지도 내 안의 일부로 너그럽게 품어 안는 시간입니다.',
+  };
+}
+
+function buildWhitmanTopicGuidance(topic: WhitmanQuestionTopic): {
+  practiceGuidance: string;
+  ritualAction: string;
+  reflectionFocus: string;
+} {
+  if (topic === 'relationship') {
+    return {
+      practiceGuidance: '상대의 다름과 내 안의 모순을 억지로 재단하지 말고, 있는 그대로의 숨결을 존중하며 여백을 두십시오.',
+      ritualAction: '가까운 사람의 낯설거나 서툰 면 하나를 고치려 하기보다 있는 그대로 바라봐 주기',
+      reflectionFocus: '내가 상대에게 기대하는 단 하나의 틀 때문에 그 사람의 광대함을 좁게 보고 있지는 않은가?',
+    };
+  }
+  if (topic === 'decision') {
+    return {
+      practiceGuidance: '완벽한 정답을 기다리느라 멈추기보다, 홀가분한 마음으로 열린 길에 첫발을 내딛어 보십시오.',
+      ritualAction: '망설이던 선택 앞에서 두려움을 부풀리는 생각 대신 지금 당장 할 수 있는 가벼운 한 걸음 정하기',
+      reflectionFocus: '타인의 시선을 걷어내고 나 자신의 노래를 따른다면 어느 길로 발길이 향하는가?',
+    };
+  }
+  if (topic === 'healing') {
+    return {
+      practiceGuidance: '흔들리고 모순되는 마음조차 생명의 일부입니다. 오늘 곁에 있는 작은 풀잎과 숨결에서 온기를 회복하십시오.',
+      ritualAction: '잠시 바깥 공기를 쐬며 하늘이나 나무, 풀잎 하나를 1분간 가만히 바라보기',
+      reflectionFocus: '내가 스스로를 작게 평가하느라 잊고 있던 나만의 고유한 생명력은 무엇인가?',
+    };
+  }
+  return {
+    practiceGuidance: '크고 거창한 성취에만 마음을 묶지 말고, 오늘의 평범한 숨과 다채로운 감정을 넉넉히 긍정하십시오.',
+    ritualAction: '오늘 하루 중 작지만 살아 있음을 느끼게 해 준 순간 한 가지 적어 두기',
+    reflectionFocus: '지금 내 안의 여러 감정과 생각들을 억누르지 않고 어떻게 하나로 품어낼 수 있을까?',
+  };
+}
+
 export function calculateAmericanWaltWhitmanLeavesOfGrass(
   profile?: UserProfile,
   query?: string,
+  now?: Date,
 ): AmericanWaltWhitmanLeavesOfGrassResult {
   const p = profile as any;
   const name = profile?.basic?.name ?? p?.name ?? '남희';
@@ -131,7 +226,11 @@ export function calculateAmericanWaltWhitmanLeavesOfGrass(
   const birthTime = profile?.basic?.birthtime ?? p?.birthTime ?? p?.birthtime ?? '12:00';
   const gender = profile?.basic?.gender ?? p?.gender ?? 'neutral';
 
-  const seedString = `WHITMAN-LEAVES-OF-GRASS:${name}:${birthDate}:${birthTime}:${gender}:${query ?? ''}`;
+  const temporalWhitmanRhythm = buildWhitmanTemporalRhythm(now);
+  const questionTopic = classifyWhitmanQuestionTopic(query);
+  const topicGuidance = buildWhitmanTopicGuidance(questionTopic);
+
+  const seedString = `WHITMAN-LEAVES-OF-GRASS:${name}:${birthDate}:${birthTime}:${gender}:${query ?? ''}:${temporalWhitmanRhythm.kstDateLabel}`;
   const baseHash = hashString(seedString);
   const absHash = Math.abs(baseHash);
 
@@ -148,21 +247,29 @@ export function calculateAmericanWaltWhitmanLeavesOfGrass(
   const focalWhitmanAphorism = WHITMAN_APHORISMS[aphorismIndex];
 
   const guidanceTitle = `월트 휘트먼 풀잎 생명 찬가: ${activeWhitmanTheme.themeTitleKo}`;
-  const philosophicalCounsel = `미국의 대시인 월트 휘트먼은 "나는 광대하며 수많은 것들을 품고 있다(I am large, I contain multitudes)"는 무한한 긍정과 소박한 풀잎의 경이를 노래합니다. ` +
-    `현재 당신의 흐름에서 가장 귀감이 되는 핵심 지혜는 '${activeWhitmanTheme.themeTitleKo}'입니다. ` +
-    `${activeWhitmanTheme.practicalCounsel} 휘트먼의 노래 "${focalWhitmanAphorism.aphorismKo}"를 가슴에 품고, ` +
+  const philosophicalCounsel = `미국의 대시인 월트 휘트먼은 "나는 광대하며 수많은 것들을 품고 있다(I am large, I contain multitudes)"는 긍정과 소박한 풀잎의 경이를 노래합니다. ` +
+    `현재 당신의 흐름에서 핵심이 되는 지혜는 '${activeWhitmanTheme.themeTitleKo}'입니다. ` +
+    `${activeWhitmanTheme.practicalCounsel} ${topicGuidance.practiceGuidance} 휘트먼의 시구 "${focalWhitmanAphorism.aphorismKo}"를 품고, ` +
     `${focalWhitmanAphorism.actionGuidance}`;
+
+  const boundaryNotice = '월트 휘트먼 풀잎 해석은 자아 긍정과 열린 시선을 돕는 상징·성찰 관점이며, 미래 예측이나 확정적 판단이 아닙니다.';
 
   return {
     engineVersion: AMERICAN_WALT_WHITMAN_VERSION,
-    calculatedAtKst: new Date().toISOString(),
+    calculatedAtKst: (now ?? new Date()).toISOString(),
     songOfMyselfSelfCelebrationScore,
     embracingMultitudesInclusivityIndex,
     leavesOfGrassWonderVitalityScore,
     democraticFreedomOpenRoadIndex,
     cyclicalNatureOptimisticResilienceScore,
+    questionTopic,
+    temporalWhitmanRhythm,
     activeWhitmanTheme,
     focalWhitmanAphorism,
+    practiceGuidance: topicGuidance.practiceGuidance,
+    ritualAction: topicGuidance.ritualAction,
+    reflectionFocus: topicGuidance.reflectionFocus,
+    boundaryNotice,
     whitmanComprehensiveGuidance: {
       guidanceTitle,
       philosophicalCounsel,
@@ -175,18 +282,19 @@ export function formatAmericanWaltWhitmanLeavesOfGrassPrompt(
 ): string {
   return [
     `【월트 휘트먼 《풀잎(Leaves of Grass)》 우주적 생명 찬가 지표】`,
-    `- 나 자신의 찬미 및 자존감 환희 지수(Song of Myself Celebration): ${res.songOfMyselfSelfCelebrationScore}/100`,
-    `- 모순 포용 및 대우주적 수용성 지표(Embracing Multitudes Inclusivity): ${res.embracingMultitudesInclusivityIndex}/100`,
-    `- 풀잎의 경이 및 생명 경탄도(Leaves of Grass Wonder & Vitality): ${res.leavesOfGrassWonderVitalityScore}/100`,
-    `- 열린 길을 향한 자유로운 개척정신(Open Road Spirit & Freedom): ${res.democraticFreedomOpenRoadIndex}/100`,
-    `- 자연 순환 신뢰 및 낙관적 회복탄력성(Cycle of Nature Resilience): ${res.cyclicalNatureOptimisticResilienceScore}/100`,
+    `- 질문 주제 맥락: ${res.questionTopic}`,
+    `- KST 시공간 리듬: ${res.temporalWhitmanRhythm.kstDateLabel} · ${res.temporalWhitmanRhythm.timeWindowKo} (${res.temporalWhitmanRhythm.vitalityTone}) — ${res.temporalWhitmanRhythm.rhythmDirective}`,
     `- 핵심 휘트먼 생명 테마: ${res.activeWhitmanTheme.themeTitleKo} [${res.activeWhitmanTheme.themeTitleEn}]`,
     `- 시적·실천적 통찰: ${res.activeWhitmanTheme.pragmaticInsight}`,
     `- 생명력 행동 조언: ${res.activeWhitmanTheme.practicalCounsel}`,
+    `- 질문 맞춤 실천 가이드: ${res.practiceGuidance}`,
+    `- 일상 실천 의례: ${res.ritualAction}`,
+    `- 핵심 성찰 질문: ${res.reflectionFocus}`,
     `- 휘트먼 원전 명시: "${res.focalWhitmanAphorism.aphorismKo}"`,
     `- 영문 원시 인용: "${res.focalWhitmanAphorism.aphorismEn}"`,
     `- 원전 출처: [${res.focalWhitmanAphorism.sourceContext}]`,
     `- 구체적 실천 지침: ${res.focalWhitmanAphorism.actionGuidance}`,
     `- 종합 휘트먼 생명 권면: ${res.whitmanComprehensiveGuidance.philosophicalCounsel}`,
+    `- 해석 경계: ${res.boundaryNotice}`,
   ].join('\n');
 }
