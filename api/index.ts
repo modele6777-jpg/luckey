@@ -1,4 +1,4 @@
-// v1.7.459: Deepen Ptah Memphite, Eleusinian Triptolemos, and Babylonian Enuma Elish engines
+// v1.7.460: Deepen Aztec Tonalamatl, Balinese Tri Hita Karana, and Celtic Tuatha Four Treasures engines
 import { getLucyRequestFallbacks, requestWithModelFallback } from '../src/lib/lucyModelPolicy.ts';
 import "dotenv/config";
 import express from "express";
