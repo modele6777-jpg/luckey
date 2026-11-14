@@ -14,7 +14,28 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const AUSTRIAN_MARTIN_BUBER_VERSION = 'LUCKEY-MARTIN-BUBER-DIALOGUE-v1.0.0';
+export const AUSTRIAN_MARTIN_BUBER_VERSION = 'LUCKEY-MARTIN-BUBER-DIALOGUE-v1.1.0';
+
+export type BuberQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
+
+export interface BuberSituationalAudit {
+  questionTopic: BuberQuestionTopic;
+  focusAxisKo: string;
+  encounterPosture: string;
+  classicalCitation: string;
+  practiceGuidance: string;
+  ritualAction: string;
+  reflectionFocus: string;
+  counselNote: string;
+  boundaryNotice: string;
+}
+
+export interface BuberTemporalRhythm {
+  kstHour: number;
+  timeWindowKo: string;
+  seasonKo: string;
+  dailyWatchword: string;
+}
 
 export interface BuberTheme {
   themeKey: string;
@@ -44,6 +65,9 @@ export interface AustrianMartinBuberIAndThouResult {
   // 세부 분석
   activeBuberTheme: BuberTheme;
   focalBuberAphorism: BuberAphorism;
+  questionTopic: BuberQuestionTopic;
+  situationalBuberAudit: BuberSituationalAudit;
+  temporalBuberRhythm: BuberTemporalRhythm;
   buberComprehensiveGuidance: {
     guidanceTitle: string;
     philosophicalCounsel: string;
@@ -133,9 +157,117 @@ export const BUBER_APHORISMS: BuberAphorism[] = [
   },
 ];
 
+function classifyBuberQuestionTopic(query: string): BuberQuestionTopic {
+  const q = query.trim();
+  if (/(연애|사랑|관계|사람|가족|친구|대화|소통|동료|갈등|화해|만남)/.test(q)) return 'relationship';
+  if (/(결정|선택|협업|제안|계약|이직|진로|방향|결단|함께|역할)/.test(q)) return 'decision';
+  if (/(외로움|단절|상처|소외|불안|지침|피로|회복|위로|마음)/.test(q)) return 'healing';
+  return 'reflection';
+}
+
+function buildBuberSituationalAudit(topic: BuberQuestionTopic): BuberSituationalAudit {
+  const boundaryNotice = '마틴 부버 《나와 너》 관점은 관계의 태도와 대화적 현존을 비추는 상징적·성찰적 기준이며, 구체적인 대인 갈등의 법적·심리치료적 진단을 대신하지 않습니다.';
+  if (topic === 'relationship') {
+    return {
+      questionTopic: topic,
+      focusAxisKo: '상대를 그것(Es)으로 규정하지 않고 온전한 너(Du)로 마주하는 만남',
+      encounterPosture: '상대의 과거 이력이나 내 판단의 틀로 재단하지 않고, 지금 눈앞의 살아 있는 인격 앞에 온전히 현존하는 자세.',
+      classicalCitation: '《나와 너(Ich und Du)》: "모든 참된 삶은 만남이다. 인간은 너를 마주함으로써 비로소 참된 나가 된다."',
+      practiceGuidance: '대답을 미리 머릿속에 준비한 채 듣지 말고, 상대의 말 뒤에 담긴 두려움과 바람까지 끝까지 경청해 주십시오.',
+      ritualAction: '오늘 가까운 사람 한 명에게 용건이나 평가가 아닌, 온전한 안부와 고마움을 담은 짧은 진심을 먼저 건네십시오.',
+      reflectionFocus: '지금 이 관계에서 나는 상대를 내 뜻대로 움직여야 할 대상(그것)으로 보고 있습니까, 함께 숨 쉬는 인격(너)으로 대하고 있습니까?',
+      counselNote: '진심은 설명보다 경청에서 먼저 통합니다.',
+      boundaryNotice,
+    };
+  }
+  if (topic === 'decision') {
+    return {
+      questionTopic: topic,
+      focusAxisKo: '이해득실의 셈법을 넘어 신뢰의 사이(Das Zwischen)를 여는 선택',
+      encounterPosture: '단기적 효율이나 도구적 계산에만 매몰되지 않고, 함께하는 사람들과의 신뢰 공간을 지키는 결단.',
+      classicalCitation: '《대화론(Zwiesprache)》: "대화적 삶의 본질은 서로가 서로에게 온전히 자신을 열어 보이고 응답하는 데 있다."',
+      practiceGuidance: '조건과 이익을 따지기에 앞서, 이 선택이 나와 타인 사이의 신뢰를 살리는 방향인지 아니면 도구화하는 방향인지 먼저 살피십시오.',
+      ritualAction: '결정을 내리기 전, 관련된 상대의 입장에서 가장 중요할 한 가지 배려를 선택 조건에 명시적으로 포함하십시오.',
+      reflectionFocus: '이번 선택이 당장의 편의는 주더라도 내가 아끼는 관계와 신의를 훼손하지는 않습니까?',
+      counselNote: '신뢰가 살아 있는 선택은 시간이 지날수록 더 단단한 토대가 됩니다.',
+      boundaryNotice,
+    };
+  }
+  if (topic === 'healing') {
+    return {
+      questionTopic: topic,
+      focusAxisKo: '고립된 에고의 방어막을 걷고 따뜻한 연결감을 회복하는 치유',
+      encounterPosture: '스스로를 닫고 세상과 단절되기보다, 안전한 대화의 공간을 통해 마음의 숨통을 다시 여는 태도.',
+      classicalCitation: '《나와 너》 제3부: "영원한 너는 결코 사물(그것)이 될 수 없다. 언제나 우리를 부르는 신뢰의 근원이다."',
+      practiceGuidance: '혼자 모든 짐을 짊어지려 애쓰기보다, 판단 없이 내 이야기를 들어줄 한 사람이나 자연의 고요 앞에 마음을 열어 두십시오.',
+      ritualAction: '오늘 마음이 무거울 때 억지로 밝은 척하지 말고, 신뢰하는 이에게 "요즘 조금 지쳐서 이야기가 필요하다"고 솔직히 알리십시오.',
+      reflectionFocus: '상처받지 않으려고 세워 둔 방어벽이 오히려 나를 더 깊은 고립으로 밀어 넣고 있지는 않습니까?',
+      counselNote: '진실한 만남 한 번이 혼자 견디는 열 밤보다 큰 회복을 가져옵니다.',
+      boundaryNotice,
+    };
+  }
+  return {
+    questionTopic: topic,
+    focusAxisKo: '일상의 사소한 스침 속에서도 영원한 너(Du)의 빛을 알아보는 성찰',
+    encounterPosture: '기능과 효율에 쫓기는 일상을 잠시 멈추고, 나와 세계 사이의 살아 있는 관계망을 음미하는 관조.',
+    classicalCitation: '《나와 너》 제1부: "근본어 나-너는 오직 온 존재를 다 바쳐서만 말해질 수 있다."',
+    practiceGuidance: '오늘 마주하는 일과 사람 하나하나를 스쳐 지나가는 배경으로 여기지 말고, 온 마음을 기울여 응답하는 연습을 하십시오.',
+    ritualAction: '오늘 하루 중 만나는 사람 한 명의 눈을 2초 이상 마주 보며 진심 어린 인사를 건네고 그 여운을 느껴 보십시오.',
+    reflectionFocus: '바쁜 일상 속에서 내가 무심코 기능적으로만 대하며 지나친 소중한 인연은 누구입니까?',
+    counselNote: '관계의 품격은 특별한 사건이 아니라 오늘 건네는 온전한 시선에서 자랍니다.',
+    boundaryNotice,
+  };
+}
+
+function buildBuberTemporalRhythm(now: Date): BuberTemporalRhythm {
+  const kstDate = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const kstHour = kstDate.getUTCHours();
+  const kstMonth = kstDate.getUTCMonth() + 1;
+
+  const seasonKo = kstMonth >= 3 && kstMonth <= 5
+    ? '춘계 만남기(마음의 문을 여는 봄)'
+    : kstMonth >= 6 && kstMonth <= 8
+      ? '하계 공명기(사이의 공간이 깊어지는 여름)'
+      : kstMonth >= 9 && kstMonth <= 11
+        ? '추계 경청기(성숙한 대화가 무르익는 가을)'
+        : '동계 온기기(고독을 녹이는 환대의 겨울)';
+
+  if (kstHour >= 5 && kstHour < 11) {
+    return {
+      kstHour,
+      timeWindowKo: '아침 · 첫 인사의 문(Morning Greeting)',
+      seasonKo,
+      dailyWatchword: '오늘 처음 만나는 사람에게 계산 없는 따뜻한 시선과 진심 어린 인사를 건네며 하루를 여십시오.',
+    };
+  }
+  if (kstHour >= 11 && kstHour < 17) {
+    return {
+      kstHour,
+      timeWindowKo: '한낮 · 사이의 광장(Sphere of Between)',
+      seasonKo,
+      dailyWatchword: '업무와 역할의 분주함 속에서도 상대를 도구가 아닌 온전한 인격으로 대하는 균형을 지키십시오.',
+    };
+  }
+  if (kstHour >= 17 && kstHour < 22) {
+    return {
+      kstHour,
+      timeWindowKo: '저녁 · 깊은 대화의 식탁(Evening Dialogue)',
+      seasonKo,
+      dailyWatchword: '판단과 조언을 서두르기보다 상대의 하루를 끝까지 들어주는 고요한 경청의 자리를 마련하십시오.',
+    };
+  }
+  return {
+    kstHour,
+    timeWindowKo: '심야 · 영원한 너와의 침묵(Night Communion)',
+    seasonKo,
+    dailyWatchword: '세상의 소음이 잦아든 밤, 내 안의 독백을 멈추고 삶을 지탱해 준 인연들에게 감사의 마음을 모으십시오.',
+  };
+}
+
 export function calculateAustrianMartinBuberIAndThou(
   profile?: UserProfile,
   query?: string,
+  now: Date = new Date(),
 ): AustrianMartinBuberIAndThouResult {
   const p = profile as any;
   const name = profile?.basic?.name ?? p?.name ?? '남희';
@@ -143,7 +275,8 @@ export function calculateAustrianMartinBuberIAndThou(
   const birthTime = profile?.basic?.birthtime ?? p?.birthTime ?? p?.birthtime ?? '12:00';
   const gender = profile?.basic?.gender ?? p?.gender ?? 'neutral';
 
-  const seedString = `MARTIN-BUBER-ICH-UND-DU:${name}:${birthDate}:${birthTime}:${gender}:${query ?? ''}`;
+  const kstDayKey = new Date(now.getTime() + 9 * 60 * 60 * 1000).toISOString().slice(0, 10);
+  const seedString = `MARTIN-BUBER-ICH-UND-DU:${name}:${birthDate}:${birthTime}:${gender}:${kstDayKey}:${query ?? ''}`;
 
   let hash = 0;
   for (let i = 0; i < seedString.length; i++) {
@@ -163,16 +296,19 @@ export function calculateAustrianMartinBuberIAndThou(
 
   const activeBuberTheme = BUBER_THEMES[themeIndex];
   const focalBuberAphorism = BUBER_APHORISMS[aphorismIndex];
+  const questionTopic = classifyBuberQuestionTopic(query ?? '');
+  const situationalBuberAudit = buildBuberSituationalAudit(questionTopic);
+  const temporalBuberRhythm = buildBuberTemporalRhythm(now);
 
   const guidanceTitle = `마틴 부버 나와 너 대화철학 지혜: ${activeBuberTheme.themeTitleKo}`;
   const philosophicalCounsel = `대화 철학의 거장 마틴 부버의 《나와 너》는 인간을 고립된 기능적 도구(Es)로 격하시키지 않고, 온 인격을 바쳐 상대를 목적으로 대우하는 거룩한 만남(Du)으로 이끕니다. ` +
-    `현재 당신의 관계와 실존을 비추는 가장 결정적인 철학적 원리는 '${activeBuberTheme.themeTitleKo}'입니다. ` +
-    `${activeBuberTheme.practicalCounsel} 아울러 부버의 불멸의 원전 명언 "${focalBuberAphorism.aphorismKo}"(${focalBuberAphorism.aphorismDe})를 마음에 새기며, ` +
-    `${focalBuberAphorism.actionGuidance}`;
+    `현재 질문의 핵심('${situationalBuberAudit.focusAxisKo}')과 '${activeBuberTheme.themeTitleKo}'의 원리가 공명합니다. ` +
+    `${situationalBuberAudit.practiceGuidance} 부버의 원전 명언 "${focalBuberAphorism.aphorismKo}"(${focalBuberAphorism.aphorismDe})를 마음에 새기며, ` +
+    `${temporalBuberRhythm.dailyWatchword}`;
 
   return {
     engineVersion: AUSTRIAN_MARTIN_BUBER_VERSION,
-    calculatedAtKst: new Date().toISOString(),
+    calculatedAtKst: new Date(now.getTime() + 9 * 60 * 60 * 1000).toISOString().replace('Z', '+09:00'),
     iThouRelationalResonanceScore,
     authenticDialoguePresenceIndex,
     overcomingInstrumentalizationScore,
@@ -180,6 +316,9 @@ export function calculateAustrianMartinBuberIAndThou(
     eternalThouCommunionTrustScore,
     activeBuberTheme,
     focalBuberAphorism,
+    questionTopic,
+    situationalBuberAudit,
+    temporalBuberRhythm,
     buberComprehensiveGuidance: {
       guidanceTitle,
       philosophicalCounsel,
@@ -192,17 +331,19 @@ export function formatAustrianMartinBuberIAndThouPrompt(
 ): string {
   return [
     `【마틴 부버 《나와 너》 인격적 만남 & 진정한 대화(Dialogue) 실존 지표】`,
-    `- 나와 너 인격적 공명도(I-Thou Resonance): ${res.iThouRelationalResonanceScore}/100`,
-    `- 진정한 대화 및 현존성(Authentic Dialogue & Presence): ${res.authenticDialoguePresenceIndex}/100`,
-    `- 나-그것 도구주의 극복도(Overcoming Instrumentalization): ${res.overcomingInstrumentalizationScore}/100`,
-    `- 사이의 영역 성찰도(Between-Sphere Meaning): ${res.betweenSphereMeaningIndex}/100`,
-    `- 영원한 너 교감 신뢰도(Eternal Thou Trust): ${res.eternalThouCommunionTrustScore}/100`,
+    `- 질문 맥락 초점(${res.questionTopic}): ${res.situationalBuberAudit.focusAxisKo}`,
+    `- 만남의 태도: ${res.situationalBuberAudit.encounterPosture}`,
+    `- KST 시공간 리듬: ${res.temporalBuberRhythm.timeWindowKo} · ${res.temporalBuberRhythm.seasonKo}`,
     `- 핵심 대화 테마: ${res.activeBuberTheme.themeTitleKo} [${res.activeBuberTheme.themeTitleDe}]`,
     `- 실존적 통찰: ${res.activeBuberTheme.existentialInsight}`,
-    `- 실천적 조언: ${res.activeBuberTheme.practicalCounsel}`,
+    `- 질문 맞춤 조언: ${res.situationalBuberAudit.practiceGuidance}`,
+    `- 일상 의례 제안: ${res.situationalBuberAudit.ritualAction}`,
+    `- 성찰 질문: ${res.situationalBuberAudit.reflectionFocus}`,
+    `- 조언 요약: ${res.situationalBuberAudit.counselNote}`,
     `- 부버 원전 명언: "${res.focalBuberAphorism.aphorismKo}" [${res.focalBuberAphorism.aphorismDe}]`,
     `- 원전 출처: [${res.focalBuberAphorism.sourceContext}]`,
-    `- 구체적 실천 지침: ${res.focalBuberAphorism.actionGuidance}`,
+    `- 시간대 권고: ${res.temporalBuberRhythm.dailyWatchword}`,
     `- 종합 부버 대화 권면: ${res.buberComprehensiveGuidance.philosophicalCounsel}`,
+    `- 해석 경계: ${res.situationalBuberAudit.boundaryNotice}`,
   ].join('\n');
 }

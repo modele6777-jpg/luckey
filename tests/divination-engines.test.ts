@@ -6800,6 +6800,47 @@ test('v2.0.0 qualitative/temporal/matrix deepening: Camus Absurd, Sartre Existen
   assert.ok(beauvoirPrompt.includes('보부아르 매트릭스'));
 });
 
+test('v1.1.0 qualitative/temporal deepening without score exposure: Kafka, Buber, and Rilke', () => {
+  const testProfile = {
+    basic: {
+      name: '남희',
+      birthdate: '1988-05-12',
+      birthtime: '09:30',
+      gender: 'female' as const,
+      calendarType: 'solar' as const,
+    },
+  };
+  const now = new Date('2026-11-14T10:40:00.000Z'); // KST 19:40
+
+  const kafka = calculateAustrianFranzKafkaExistentialTruth(testProfile, '진로 결정을 앞두고 두렵고 망설여져요', now);
+  assert.equal(kafka.questionTopic, 'decision');
+  assert.ok(kafka.situationalKafkaAudit.practiceGuidance.length > 0);
+  assert.ok(kafka.situationalKafkaAudit.ritualAction.length > 0);
+  assert.ok(kafka.situationalKafkaAudit.reflectionFocus.length > 0);
+  assert.ok(kafka.temporalKafkaRhythm.timeWindowKo.includes('가면을 벗는 시간'));
+  const kafkaPrompt = formatAustrianFranzKafkaExistentialTruthPrompt(kafka);
+  assert.ok(kafkaPrompt.includes('질문 맥락 초점(decision)'));
+  assert.ok(!kafkaPrompt.includes('/100'));
+
+  const buber = calculateAustrianMartinBuberIAndThou(testProfile, '소중한 사람과의 관계와 대화가 어긋난 것 같아요', now);
+  assert.equal(buber.questionTopic, 'relationship');
+  assert.ok(buber.situationalBuberAudit.practiceGuidance.length > 0);
+  assert.ok(buber.situationalBuberAudit.ritualAction.length > 0);
+  assert.ok(buber.temporalBuberRhythm.timeWindowKo.includes('저녁'));
+  const buberPrompt = formatAustrianMartinBuberIAndThouPrompt(buber);
+  assert.ok(buberPrompt.includes('질문 맥락 초점(relationship)'));
+  assert.ok(!buberPrompt.includes('/100'));
+
+  const rilke = calculateAustrianRainerMariaRilkeLetters(testProfile, '마음이 너무 지치고 상처가 깊어서 위로가 필요해요', now);
+  assert.equal(rilke.questionTopic, 'healing');
+  assert.ok(rilke.situationalRilkeAudit.practiceGuidance.length > 0);
+  assert.ok(rilke.situationalRilkeAudit.ritualAction.length > 0);
+  assert.ok(rilke.temporalRilkeRhythm.timeWindowKo.includes('황혼'));
+  const rilkePrompt = formatAustrianRainerMariaRilkeLettersPrompt(rilke);
+  assert.ok(rilkePrompt.includes('질문 맥락 초점(healing)'));
+  assert.ok(!rilkePrompt.includes('/100'));
+});
+
 
 
 
