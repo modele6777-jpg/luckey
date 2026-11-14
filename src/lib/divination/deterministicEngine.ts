@@ -1966,7 +1966,7 @@ try {
   // 70. 헤르메스 카이발리온 7대 우주 불변 법칙 진동 엔진
   const hermeticKybalionResult = calculateSupplement('hermeticKybalionResult', () => ((() => {
     try {
-      return calculateHermeticKybalion(profile, now);
+      return calculateHermeticKybalion(profile, now, question);
     } catch (_) {
       return null;
     }
