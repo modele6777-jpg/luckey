@@ -2803,7 +2803,7 @@ try {
   // 164. 안달루시아 수피즘 이븐 아라비 존재의 단일성 및 28대 예언자 심장 영지 엔진
   const ibnArabiWahdatAlWujudResult = calculateSupplement('ibnArabiWahdatAlWujudResult', () => ((() => {
     try {
-      return calculateIbnArabiWahdatAlWujud(profile, now);
+      return calculateIbnArabiWahdatAlWujud(profile, now, question);
     } catch (_) {
       return null;
     }
