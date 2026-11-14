@@ -1603,7 +1603,7 @@ try {
   const elementalResonanceResult = calculateSupplement('elementalResonanceResult', () => (birthdateStr && profile
     ? (() => {
         try {
-          return calculateElementalResonance({ profile, targetDate: now });
+          return calculateElementalResonance({ profile, targetDate: now, question });
         } catch (_) {
           return null;
         }
@@ -1757,7 +1757,7 @@ try {
   const enneagramSoulIntegrationResult = calculateSupplement('enneagramSoulIntegrationResult', () => (birthdateStr && profile
     ? (() => {
         try {
-          return calculateEnneagramSoulIntegration({ profile, targetDate: now });
+          return calculateEnneagramSoulIntegration({ profile, targetDate: now, question });
         } catch (_) {
           return null;
         }
@@ -1768,7 +1768,7 @@ try {
   const ancestralEpigeneticKarmaResult = calculateSupplement('ancestralEpigeneticKarmaResult', () => (birthdateStr && profile
     ? (() => {
         try {
-          return calculateAncestralEpigeneticKarma({ profile, targetDate: now });
+          return calculateAncestralEpigeneticKarma({ profile, targetDate: now, question });
         } catch (_) {
           return null;
         }

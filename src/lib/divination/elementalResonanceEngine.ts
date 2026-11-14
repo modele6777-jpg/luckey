@@ -16,7 +16,7 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const ELEMENTAL_RESONANCE_VERSION = 'LUCKEY-RESON-v1.0.0';
+export const ELEMENTAL_RESONANCE_VERSION = 'LUCKEY-RESON-v2.0.0';
 
 export type ElementName = '목' | '화' | '토' | '금' | '수';
 
@@ -48,6 +48,7 @@ export interface ResonanceAmplifier {
 export interface ElementalResonanceResult {
   engineVersion: string;
   calculatedAtIso: string;
+  calculatedAtKst: string;
 
   // 오행별 상태 상세
   elements: Record<ElementName, ElementStateDetail>;
@@ -58,10 +59,27 @@ export interface ElementalResonanceResult {
   // 당일 1순위 에너지 공명 증폭기
   amplifier: ResonanceAmplifier;
 
-  // 종합 생기 공명 지수 (0~100)
+  // 종합 생기 공명 지수 (내부 호환용 0~100, 프롬프트 비노출)
   overallResonanceScore: number;
   resonanceGrade: string;
 
+  situationalResonanceAudit: {
+    focusTheme: string;
+    circulationNote: string;
+    dailyPractice: string;
+  };
+  temporalElementalRhythm: {
+    kstTimeLabel: string;
+    cycleWatchWindow: string;
+    seasonalElementTone: string;
+    temporalGuidance: string;
+  };
+  elementalSynthesisMatrix: {
+    coreInsight: string;
+    recommendedAction: string;
+    cautionNotice: string;
+  };
+  boundaryNotice: string;
   summary: string;
 }
 
@@ -81,6 +99,42 @@ const NEXT_ELEMENT: Record<ElementName, ElementName> = {
   '수': '목'
 };
 
+function getTemporalElementalRhythm(now: Date) {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  const hour = kst.getUTCHours();
+  const month = kst.getUTCMonth() + 1;
+
+  const cycleWatchWindow =
+    hour >= 5 && hour < 11
+      ? '목(木) 아침 생장창 — 상생 고리의 첫 물꼬를 트며 하루의 리듬을 여는 시간'
+      : hour >= 11 && hour < 17
+        ? '화·토(火·土) 정오 전개창 — 활발히 움직이되 중심을 잃지 않도록 조율하는 시간'
+        : hour >= 17 && hour < 22
+          ? '금(金) 황혼 정리창 — 넘치는 기운을 가지런히 정돈하고 핵심을 남기는 시간'
+          : '수(水) 심야 함양창 — 고요한 휴식 속에서 다음 순환의 에너지를 비축하는 시간';
+
+  const seasonalElementTone =
+    month >= 3 && month <= 5
+      ? '봄 · 목기(木氣) 왕성절 (새 출발과 유연한 확장이 유리한 시기)'
+      : month >= 6 && month <= 8
+        ? '여름 · 화기(火氣) 발양절 (표현력과 활력을 살리되 과열을 식히는 시기)'
+        : month >= 9 && month <= 11
+          ? '가을 · 금기(金氣) 수렴절 (선택과 집중으로 결실을 맺는 시기)'
+          : '겨울 · 수기(水氣) 응축절 (내면의 지혜와 체력을 조용히 기르는 시기)';
+
+  return {
+    kstTimeLabel: `${y}-${m}-${d} ${hh}:${mm} KST`,
+    cycleWatchWindow,
+    seasonalElementTone,
+    temporalGuidance: `${cycleWatchWindow} · ${seasonalElementTone}의 흐름에 맞추어 부족한 오행 기운을 가볍게 보충하십시오.`,
+  };
+}
+
 /**
  * 오행 생극 공명 엔진 메인 연산
  */
@@ -88,8 +142,10 @@ export function calculateElementalResonance(params?: {
   profile?: UserProfile | null;
   saju?: SajuAnalysisResult | null;
   targetDate?: Date;
+  question?: string;
 }): ElementalResonanceResult {
   const now = params?.targetDate || new Date();
+  const question = (params?.question || '').trim();
   const saju = params?.saju || calculateDetailedSaju(params?.profile || null);
 
   const rawCounts = saju.elements.counts;
@@ -206,14 +262,40 @@ export function calculateElementalResonance(params?: {
   else if (overallResonanceScore >= 80) resonanceGrade = '고주파 안정 공명 (High Resonance)';
   else resonanceGrade = '생기 재충전 조율기 (Resonance Tuning)';
 
-  const summary = `[오행 생극 공명] 순환 원활도: ${circulationScore}점. ` +
+  const temporalElementalRhythm = getTemporalElementalRhythm(now);
+  const situationalResonanceAudit = /일|사업|결정|진로|집중/.test(question)
+    ? {
+        focusTheme: `${primeElement}(${ELEMENT_HANJA[primeElement]}) 보강을 통한 실행 순환 복원`,
+        circulationNote: stagnantPair,
+        dailyPractice: amplifierActivity,
+      }
+    : /관계|연애|사람|휴식|피곤/.test(question)
+      ? {
+          focusTheme: '오행 상생 고리 완화와 심신 공명 조율',
+          circulationNote: isLoopComplete ? '5행이 고루 순환하여 관계와 감정의 흐름이 부드럽습니다.' : stagnantPair,
+          dailyPractice: `${amplifierColor} 소품 활용 · ${amplifierFood}`,
+        }
+      : {
+          focusTheme: `${resonanceGrade} · ${primeElement}기운 공명`,
+          circulationNote: stagnantPair,
+          dailyPractice: amplifierActivity,
+        };
+
+  const elementalSynthesisMatrix = {
+    coreInsight: `1순위 보강 오행 [${primeElement}(${ELEMENT_HANJA[primeElement]})]을 채우면 상생 순환 고리가 한결 매끄러워집니다.`,
+    recommendedAction: `${amplifierActivity} (${amplifierColor} · ${amplifierFood})`,
+    cautionNotice: '오행의 다과(多寡)를 좋고 나쁨으로 나누지 말고, 균형을 맞추는 일상 조율 신호로 활용하십시오.',
+  };
+
+  const summary = `[오행 생극 공명] ${resonanceGrade}. ` +
     `핵심 상생 고리: ${flowingPairs.slice(0, 3).join(', ')}. ` +
     `1순위 증폭 오행: ${primeElement}(${ELEMENT_HANJA[primeElement]}). ` +
-    `공명 컬러: ${amplifierColor}. 종합 점수: ${overallResonanceScore}점 [${resonanceGrade}].`;
+    `공명 컬러: ${amplifierColor}.`;
 
   return {
     engineVersion: ELEMENTAL_RESONANCE_VERSION,
     calculatedAtIso: now.toISOString(),
+    calculatedAtKst: temporalElementalRhythm.kstTimeLabel,
     elements: elementsState,
     loopAnalysis: {
       isLoopComplete,
@@ -224,6 +306,10 @@ export function calculateElementalResonance(params?: {
     amplifier,
     overallResonanceScore,
     resonanceGrade,
+    situationalResonanceAudit,
+    temporalElementalRhythm,
+    elementalSynthesisMatrix,
+    boundaryNotice: '본 결과는 사주 오행의 상생·순환 구조를 바탕으로 한 정성적 컨디션 참고 안내이며, 확정적 길흉 판정이 아닙니다.',
     summary
   };
 }
@@ -233,16 +319,21 @@ export function calculateElementalResonance(params?: {
  */
 export function formatElementalResonancePrompt(res: ElementalResonanceResult): string {
   return `[오행 생극제화 & 에너지 공명 증폭 엔진 리포트 (엔진: ${res.engineVersion})]
+- 연산 시각: ${res.calculatedAtKst}
 - 오행 활력 스펙트럼:
   • 木(${res.elements['목'].count}개·${res.elements['목'].vitalityLevel}) / 火(${res.elements['화'].count}개·${res.elements['화'].vitalityLevel}) / 土(${res.elements['토'].count}개·${res.elements['토'].vitalityLevel}) / 金(${res.elements['금'].count}개·${res.elements['금'].vitalityLevel}) / 水(${res.elements['수'].count}개·${res.elements['수'].vitalityLevel})
-- 상생 순환 원활도: **${res.loopAnalysis.circulationScore}점** (${res.loopAnalysis.isLoopComplete ? '5행 완전 순환형' : '특정 오행 집중형'})
+- 상생 순환 상태: **${res.resonanceGrade}** (${res.loopAnalysis.isLoopComplete ? '5행 완전 순환형' : '특정 오행 집중형'})
   • 활성 상생 고리: ${res.loopAnalysis.flowingPairs.join(' ➔ ')}
   • 순환 조율 지점: ${res.loopAnalysis.stagnantPair}
+- 질문 맥락 감사 (${res.situationalResonanceAudit.focusTheme}): ${res.situationalResonanceAudit.circulationNote} / 실천: ${res.situationalResonanceAudit.dailyPractice}
+- KST 시공간 오행 리듬: ${res.temporalElementalRhythm.cycleWatchWindow} / ${res.temporalElementalRhythm.seasonalElementTone}
+  • 시공간 지침: ${res.temporalElementalRhythm.temporalGuidance}
+- 오행 교차 매트릭스: 핵심(${res.elementalSynthesisMatrix.coreInsight}) | 실행(${res.elementalSynthesisMatrix.recommendedAction}) | 주의(${res.elementalSynthesisMatrix.cautionNotice})
 - 1순위 에너지 공명 증폭기: **${res.amplifier.primeElement}기운 증폭**
   • 공명 컬러: ${res.amplifier.amplifierColor}
   • 생기 푸드: ${res.amplifier.amplifierFood}
   • 1분 점화 행동: ${res.amplifier.amplifierActivity}
   • 발현 아우라: ${res.amplifier.resonanceAura}
-- 종합 생기 공명 점수: **${res.overallResonanceScore}점** [${res.resonanceGrade}]
+- 해석 경계: ${res.boundaryNotice}
 ※ 루시 지침: 오행은 단순한 운세 풀이가 아니라 내 몸과 지성을 움직이는 5대 생체 원소입니다. 에너지가 한곳에 고이지 않고 부드럽게 상생하며 흐를 때 최상의 컨디션과 문제 해결력이 터져 나옵니다. 사용자가 오늘 부족한 기운을 가벼운 컬러나 생활 습관으로 가볍게 채워 넣을 수 있도록 감각적인 팁으로 제안해 주세요.`;
 }
