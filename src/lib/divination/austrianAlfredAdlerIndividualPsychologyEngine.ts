@@ -9,12 +9,21 @@
  * 4. 목적론적 재해석 및 미래 창조력(Teleological Reframing & Future Creation Index): 과거 트라우마에 얽매이지 않고 지금 여기서 새로운 목적을 선택하는 힘.
  * 5. 불완전할 용기 및 공감적 연결 회복탄력성(Courage to Be Imperfect & Empathetic Connection Score): 완벽주의의 가면을 벗고 온전한 나로 마주하는 회복탄력성.
  *
- * @version LUCKEY-ADLER-INDIVIDUAL-PSYCHOLOGY-v1.0.0
+ * @version LUCKEY-ADLER-INDIVIDUAL-PSYCHOLOGY-v1.1.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const AUSTRIAN_ALFRED_ADLER_INDIVIDUAL_PSYCHOLOGY_VERSION = 'LUCKEY-ADLER-INDIVIDUAL-PSYCHOLOGY-v1.0.0';
+export const AUSTRIAN_ALFRED_ADLER_INDIVIDUAL_PSYCHOLOGY_VERSION = 'LUCKEY-ADLER-INDIVIDUAL-PSYCHOLOGY-v1.1.0';
+
+export type AdlerQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
+
+export interface AdlerTemporalRhythm {
+  kstDateLabel: string;
+  timeWindowKo: string;
+  courageTone: string;
+  rhythmDirective: string;
+}
 
 export interface AdlerTheme {
   themeKey: string;
@@ -42,8 +51,14 @@ export interface AustrianAlfredAdlerIndividualPsychologyResult {
   teleologicalReframingCreationIndex: number;          // 목적론적 재해석 및 미래 창조력 (Teleological Reframing)
   courageToBeImperfectResilienceScore: number;         // 불완전할 용기 및 공감 연결성 (Courage to Be Imperfect)
   // 세부 분석
+  questionTopic: AdlerQuestionTopic;
+  temporalAdlerRhythm: AdlerTemporalRhythm;
   activeAdlerTheme: AdlerTheme;
   focalAdlerAphorism: AdlerAphorism;
+  practiceGuidance: string;
+  ritualAction: string;
+  reflectionFocus: string;
+  boundaryNotice: string;
   adlerComprehensiveGuidance: {
     guidanceTitle: string;
     philosophicalCounsel: string;
@@ -128,9 +143,91 @@ function hashString(str: string): number {
   return hash;
 }
 
+function classifyAdlerQuestionTopic(query?: string): AdlerQuestionTopic {
+  const q = (query ?? '').trim();
+  if (/관계|연애|가족|친구|동료|타인|갈등|상대|사람|미움/.test(q)) return 'relationship';
+  if (/결정|선택|진로|이직|사업|시작|포기|도전|방향/.test(q)) return 'decision';
+  if (/열등|불안|실패|상처|완벽|자책|지친|힘들|치유|위축/.test(q)) return 'healing';
+  return 'reflection';
+}
+
+function buildAdlerTemporalRhythm(now?: Date): AdlerTemporalRhythm {
+  const ref = now ?? new Date();
+  const kst = new Date(ref.getTime() + 9 * 60 * 60 * 1000);
+  const yyyy = kst.getUTCFullYear();
+  const mm = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const dd = String(kst.getUTCDate()).padStart(2, '0');
+  const hour = kst.getUTCHours();
+
+  if (hour >= 5 && hour < 12) {
+    return {
+      kstDateLabel: `${yyyy}-${mm}-${dd} KST`,
+      timeWindowKo: '오전 목적론적 착수 창',
+      courageTone: '어제의 원인을 핑계 삼지 않고 오늘의 목적을 새로 세우는 아침',
+      rhythmDirective: '타인의 시선보다 오늘 내가 주도적으로 기여할 과제 한 가지를 먼저 정하고 첫 발을 내딛으십시오.',
+    };
+  }
+  if (hour >= 12 && hour < 18) {
+    return {
+      kstDateLabel: `${yyyy}-${mm}-${dd} KST`,
+      timeWindowKo: '오후 과제 분리·수평 관계 창',
+      courageTone: '타인의 기대와 내 과제의 경계를 명료히 가르는 낮',
+      rhythmDirective: '상대의 평가나 기분은 상대의 과제에 두고, 나는 내 몫의 성실한 실행과 수평적 존중에 집중하십시오.',
+    };
+  }
+  if (hour >= 18 && hour < 22) {
+    return {
+      kstDateLabel: `${yyyy}-${mm}-${dd} KST`,
+      timeWindowKo: '저녁 공동체 감각·공헌 회복 창',
+      courageTone: '비교와 경쟁을 내려놓고 따뜻한 연결과 감사를 회복하는 저녁',
+      rhythmDirective: '완벽함 대신 오늘 내가 누군가에게 건넨 작은 온기와 성실한 걸음을 스스로 인정해 주십시오.',
+    };
+  }
+  return {
+    kstDateLabel: `${yyyy}-${mm}-${dd} KST`,
+    timeWindowKo: '심야 불완전할 용기 성찰 창',
+    courageTone: '부족함과 실수까지 성장의 재료로 품는 고요한 밤',
+    rhythmDirective: '완벽해야 사랑받는다는 불안을 내려놓고, 있는 그대로의 나를 수용하며 내일의 용기를 비축하십시오.',
+  };
+}
+
+function buildAdlerTopicGuidance(topic: AdlerQuestionTopic): {
+  practiceGuidance: string;
+  ritualAction: string;
+  reflectionFocus: string;
+} {
+  if (topic === 'relationship') {
+    return {
+      practiceGuidance: '상대의 기분이나 평가까지 내가 통제하려 하지 말고, 내가 줄 수 있는 존중과 경계를 차분히 분리하십시오.',
+      ritualAction: '갈등이 얽힌 상대의 과제와 나의 과제를 종이에 두 칸으로 나누어 적고, 내 칸의 한 가지만 실행하기',
+      reflectionFocus: '지금 이 관계에서 내가 두려워하는 것은 상대로부터의 미움인가, 아니면 내 과제를 마주하는 책임인가?',
+    };
+  }
+  if (topic === 'decision') {
+    return {
+      practiceGuidance: '과거의 실패 경험을 "그래서 못한다"는 원인론으로 쓰지 말고, 앞으로 나아가기 위한 목적론적 선택을 내리십시오.',
+      ritualAction: '망설이는 선택지에서 100% 확신을 기다리지 말고, 오늘 실험할 수 있는 최소 단위 1단계 바로 착수하기',
+      reflectionFocus: '내가 피하려는 결과가 실제로 닥칠 위험인가, 아니면 실패하지 않으려 핑계를 만드는 중인가?',
+    };
+  }
+  if (topic === 'healing') {
+    return {
+      practiceGuidance: '열등감 자체를 없애려 애쓰기보다, 그 불편한 감각이 가리키는 성장의 방향을 담담히 바라보십시오.',
+      ritualAction: '오늘 스스로에게 부족하다고 느낀 점 하나를 "아직 자라는 중인 지점"으로 문장을 바꿔 적어 보기',
+      reflectionFocus: '완벽해야 한다는 기준을 잠시 내려놓는다면, 지금의 나로도 충분히 시작할 수 있는 일은 무엇인가?',
+    };
+  }
+  return {
+    practiceGuidance: '자기중심적 평가에서 한 걸음 나와 공동체 안에서 내가 보탤 수 있는 작은 공헌을 찾아보십시오.',
+    ritualAction: '오늘 주변 사람이나 동료에게 조건 없이 건넬 수 있는 작은 도움이나 격려 한 마디 전하기',
+    reflectionFocus: '오늘 나의 하루를 평가하는 기준을 "남보다 나았는가"에서 "어제의 나보다 나아갔는가"로 바꾼다면?',
+  };
+}
+
 export function calculateAustrianAlfredAdlerIndividualPsychology(
   profile?: UserProfile,
   query?: string,
+  now?: Date,
 ): AustrianAlfredAdlerIndividualPsychologyResult {
   const p = profile as any;
   const name = profile?.basic?.name ?? p?.name ?? '남희';
@@ -138,7 +235,11 @@ export function calculateAustrianAlfredAdlerIndividualPsychology(
   const birthTime = profile?.basic?.birthtime ?? p?.birthTime ?? p?.birthtime ?? '12:00';
   const gender = profile?.basic?.gender ?? p?.gender ?? 'neutral';
 
-  const seedString = `ADLER-INDIVIDUAL-PSYCHOLOGY:${name}:${birthDate}:${birthTime}:${gender}:${query ?? ''}`;
+  const temporalAdlerRhythm = buildAdlerTemporalRhythm(now);
+  const questionTopic = classifyAdlerQuestionTopic(query);
+  const topicGuidance = buildAdlerTopicGuidance(questionTopic);
+
+  const seedString = `ADLER-INDIVIDUAL-PSYCHOLOGY:${name}:${birthDate}:${birthTime}:${gender}:${query ?? ''}:${temporalAdlerRhythm.kstDateLabel}`;
   const baseHash = hashString(seedString);
   const absHash = Math.abs(baseHash);
 
@@ -157,19 +258,27 @@ export function calculateAustrianAlfredAdlerIndividualPsychology(
   const guidanceTitle = `아들러 개인심리학 용기 지혜: ${activeAdlerTheme.themeTitleKo}`;
   const philosophicalCounsel = `현대 개인심리학의 창시자 알프레트 아들러는 열등감을 성장의 원동력으로 삼고, 과제를 분리하여 타인과 상생하는 '공동체 감각(Gemeinschaftsgefühl)'을 가르칩니다. ` +
     `현재 당신의 흐름에서 가장 힘이 되는 핵심 심리학적 지혜는 '${activeAdlerTheme.themeTitleKo}'입니다. ` +
-    `${activeAdlerTheme.practicalCounsel} 아들러의 격언 "${focalAdlerAphorism.aphorismKo}"를 가슴에 품고, ` +
-    `${focalAdlerAphorism.actionGuidance}`;
+    `${activeAdlerTheme.practicalCounsel} ${topicGuidance.practiceGuidance} ` +
+    `아들러의 격언 "${focalAdlerAphorism.aphorismKo}"를 가슴에 품고, ${focalAdlerAphorism.actionGuidance}`;
+
+  const boundaryNotice = '아들러 개인심리학 해석은 심리적 성찰과 과제 분리를 돕는 상징·철학 관점이며, 의학적·임상적 심리 진단을 대체하지 않습니다.';
 
   return {
     engineVersion: AUSTRIAN_ALFRED_ADLER_INDIVIDUAL_PSYCHOLOGY_VERSION,
-    calculatedAtKst: new Date().toISOString(),
+    calculatedAtKst: (now ?? new Date()).toISOString(),
     inferiorityTranscendenceHealthyStrivingScore,
     communityFeelingContributionIndex,
     separationOfTasksCourageScore,
     teleologicalReframingCreationIndex,
     courageToBeImperfectResilienceScore,
+    questionTopic,
+    temporalAdlerRhythm,
     activeAdlerTheme,
     focalAdlerAphorism,
+    practiceGuidance: topicGuidance.practiceGuidance,
+    ritualAction: topicGuidance.ritualAction,
+    reflectionFocus: topicGuidance.reflectionFocus,
+    boundaryNotice,
     adlerComprehensiveGuidance: {
       guidanceTitle,
       philosophicalCounsel,
@@ -182,18 +291,19 @@ export function formatAustrianAlfredAdlerIndividualPsychologyPrompt(
 ): string {
   return [
     `【알프레트 아들러 《인간이해》 & 《삶의 의미》 열등감 극복 및 공동체 감각 지혜 지표】`,
-    `- 열등감 극복 및 건강한 성장 추구(Inferiority Transcendence): ${res.inferiorityTranscendenceHealthyStrivingScore}/100`,
-    `- 공동체 감각 및 타인 공헌도(Gemeinschaftsgefühl): ${res.communityFeelingContributionIndex}/100`,
-    `- 과제의 분리 및 주체적 자립 용기(Separation of Tasks): ${res.separationOfTasksCourageScore}/100`,
-    `- 목적론적 재해석 및 미래 창조력(Teleological Reframing): ${res.teleologicalReframingCreationIndex}/100`,
-    `- 불완전할 용기 및 공감 연결성(Courage to Be Imperfect): ${res.courageToBeImperfectResilienceScore}/100`,
+    `- 질문 주제 맥락: ${res.questionTopic}`,
+    `- KST 시공간 리듬: ${res.temporalAdlerRhythm.kstDateLabel} · ${res.temporalAdlerRhythm.timeWindowKo} (${res.temporalAdlerRhythm.courageTone}) — ${res.temporalAdlerRhythm.rhythmDirective}`,
     `- 핵심 아들러 테마: ${res.activeAdlerTheme.themeTitleKo} [${res.activeAdlerTheme.themeTitleEn}]`,
     `- 실천적 통찰: ${res.activeAdlerTheme.pragmaticInsight}`,
     `- 행동 조언: ${res.activeAdlerTheme.practicalCounsel}`,
+    `- 질문 맞춤 실천 가이드: ${res.practiceGuidance}`,
+    `- 일상 실천 의례: ${res.ritualAction}`,
+    `- 핵심 성찰 질문: ${res.reflectionFocus}`,
     `- 아들러 원전 명언: "${res.focalAdlerAphorism.aphorismKo}"`,
     `- 원문 인용: "${res.focalAdlerAphorism.aphorismEn}"`,
     `- 원전 출처: [${res.focalAdlerAphorism.sourceContext}]`,
     `- 구체적 실천 지침: ${res.focalAdlerAphorism.actionGuidance}`,
     `- 종합 아들러 용기 심리학 권면: ${res.adlerComprehensiveGuidance.philosophicalCounsel}`,
+    `- 해석 경계: ${res.boundaryNotice}`,
   ].join('\n');
 }

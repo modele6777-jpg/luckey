@@ -6853,6 +6853,44 @@ test('v1.1.0 qualitative/temporal deepening without score exposure: Kafka, Buber
   assert.ok(!rilkePrompt.includes('/100'));
 });
 
+test('qualitative & temporal deepening: Adler Individual Psychology, Viktor Frankl Logotherapy, and Wittgenstein Language Game', () => {
+  const testProfile = {
+    basic: {
+      name: '제제',
+      birthdate: '1994-01-24',
+      birthtime: '14:30',
+      gender: 'male',
+    },
+  } as any;
+  const now = new Date('2026-11-14T11:40:00Z'); // 20:40 KST (evening)
+
+  const adler = calculateAustrianAlfredAdlerIndividualPsychology(testProfile, '가족과의 갈등에서 내 과제를 어떻게 분리할까요?', now);
+  assert.equal(adler.engineVersion, AUSTRIAN_ALFRED_ADLER_INDIVIDUAL_PSYCHOLOGY_VERSION);
+  assert.equal(adler.questionTopic, 'relationship');
+  assert.ok(adler.temporalAdlerRhythm.kstDateLabel.includes('2026-11-14'));
+  assert.ok(adler.practiceGuidance.length > 0 && adler.ritualAction.length > 0 && adler.boundaryNotice.length > 0);
+  const adlerPrompt = formatAustrianAlfredAdlerIndividualPsychologyPrompt(adler);
+  assert.ok(adlerPrompt.includes('질문 주제 맥락: relationship'));
+  assert.ok(!adlerPrompt.includes('/100'));
+
+  const frankl = calculateViktorFranklLogotherapy(testProfile, '요즘 너무 공허하고 힘든데 삶의 의미를 찾고 싶어요', now);
+  assert.equal(frankl.engineVersion, AUSTRIAN_VIKTOR_FRANKL_VERSION);
+  assert.equal(frankl.questionTopic, 'healing');
+  assert.ok(frankl.ritualAction.length > 0 && frankl.reflectionFocus.length > 0 && frankl.boundaryNotice.length > 0);
+  const franklPrompt = formatViktorFranklLogotherapyPrompt(frankl);
+  assert.ok(franklPrompt.includes('질문 주제 맥락: healing'));
+  assert.ok(!franklPrompt.includes('/100'));
+
+  const witt = calculateAustrianWittgensteinLanguageGameSilence(testProfile, '계속 머릿속이 복잡하고 불안한 생각만 맴돌아요', now);
+  assert.equal(witt.engineVersion, AUSTRIAN_WITTGENSTEIN_LANGUAGE_GAME_SILENCE_VERSION);
+  assert.equal(witt.questionTopic, 'healing');
+  assert.ok(witt.temporalWittgensteinRhythm.kstDateLabel.includes('2026-11-14'));
+  assert.ok(witt.practiceGuidance.length > 0 && witt.ritualAction.length > 0 && witt.boundaryNotice.length > 0);
+  const wittPrompt = formatAustrianWittgensteinLanguageGameSilencePrompt(witt);
+  assert.ok(wittPrompt.includes('질문 주제 맥락: healing'));
+  assert.ok(!wittPrompt.includes('/100'));
+});
+
 
 
 
