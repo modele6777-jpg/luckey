@@ -10,12 +10,21 @@
  * 4. 극장의 우상(Idola Theatri) 극복: 과거의 낡은 권위, 검증되지 않은 전통 체계나 독단적 교조주의를 맹종하지 않는 비판적 성찰력.
  * 5. 참된 귀납과 실천적 힘(Inductio Vera & Scientia Potentia Est): "아는 것이 힘이다(Scientia potentia est)"라는 명제처럼, 면밀한 관찰과 사실 검증을 통해 실질적인 변화를 창출하는 실증적 실행력.
  *
- * @version LUCKEY-FRANCIS-BACON-NOVUM-ORGANUM-v1.0.0
+ * @version LUCKEY-FRANCIS-BACON-NOVUM-ORGANUM-v1.1.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const BRITISH_FRANCIS_BACON_VERSION = 'LUCKEY-FRANCIS-BACON-NOVUM-ORGANUM-v1.0.0';
+export const BRITISH_FRANCIS_BACON_VERSION = 'LUCKEY-FRANCIS-BACON-NOVUM-ORGANUM-v1.1.0';
+
+export type BaconQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
+
+export interface BaconTemporalRhythm {
+  kstDateLabel: string;
+  timeWindowKo: string;
+  empiricalTone: string;
+  rhythmDirective: string;
+}
 
 export interface BaconTheme {
   themeKey: string;
@@ -43,8 +52,14 @@ export interface FrancisBaconNovumOrganumResult {
   idolsTheatriAuthorityDogmaOvercomingScore: number; // 극장의 우상 타파 - 낡은 권위·독단주의 비판적 극복도
   trueInductionEmpiricalGroundedScore: number;       // 참된 귀납(Inductio Vera) 사실 검증력 & 지식의 실천력
   // 세부 분석
+  questionTopic: BaconQuestionTopic;
+  temporalBaconRhythm: BaconTemporalRhythm;
   activeBaconTheme: BaconTheme;
   focalBaconAphorism: BaconAphorism;
+  practiceGuidance: string;
+  ritualAction: string;
+  reflectionFocus: string;
+  boundaryNotice: string;
   baconComprehensiveGuidance: {
     guidanceTitle: string;
     philosophicalCounsel: string;
@@ -127,8 +142,89 @@ export const BACON_APHORISMS: BaconAphorism[] = [
   },
 ];
 
+function classifyBaconQuestionTopic(query?: string): BaconQuestionTopic {
+  const q = (query ?? '').toLowerCase();
+  if (/사랑|연애|관계|결혼|이별|가족|친구|갈등|사람|동료|부모/.test(q)) return 'relationship';
+  if (/선택|결정|이직|사업|진로|시험|돈|투자|계약|시작|포기|방향/.test(q)) return 'decision';
+  if (/지치|힘들|불안|우울|상처|치유|위로|외로|슬픔|걱정|두려|피곤/.test(q)) return 'healing';
+  return 'reflection';
+}
+
+function buildBaconTemporalRhythm(now?: Date): BaconTemporalRhythm {
+  const base = now ?? new Date();
+  const kst = new Date(base.getTime() + 9 * 60 * 60 * 1000);
+  const kstDateLabel = kst.toISOString().slice(0, 10);
+  const hour = kst.getUTCHours();
+
+  if (hour >= 5 && hour < 11) {
+    return {
+      kstDateLabel,
+      timeWindowKo: '아침 우상 정화의 시간 (05:00~11:00 KST)',
+      empiricalTone: '선입견 비우기와 백지 관찰',
+      rhythmDirective: '어제의 기대와 편향을 털어내고 오늘 눈앞의 사실만을 투명하게 수집하기 좋은 시간입니다.',
+    };
+  }
+  if (hour >= 11 && hour < 17) {
+    return {
+      kstDateLabel,
+      timeWindowKo: '낮 빛의 실험 시간 (11:00~17:00 KST)',
+      empiricalTone: '사실 검증과 참된 귀납',
+      rhythmDirective: '말이나 소문(시장의 우상)을 걷어내고 현장 데이터와 반증 사례로 판단을 검증하는 시간입니다.',
+    };
+  }
+  if (hour >= 17 && hour < 22) {
+    return {
+      kstDateLabel,
+      timeWindowKo: '저녁 꿀벌 종합의 시간 (17:00~22:00 KST)',
+      empiricalTone: '경험 소화와 구조화',
+      rhythmDirective: '낮 동안 모은 관찰 조각들을 꿀벌처럼 스스로 소화해 내일의 실행 원리로 빚어내는 시간입니다.',
+    };
+  }
+  return {
+    kstDateLabel,
+    timeWindowKo: '심야 무게추 성찰의 시간 (22:00~05:00 KST)',
+    empiricalTone: '성급한 비약 경계와 차분한 검증',
+    rhythmDirective: '감정적 비약을 멈추고 인과관계의 빈틈이 없는지 점검의 추를 달아 보는 시간입니다.',
+  };
+}
+
+function buildBaconTopicGuidance(topic: BaconQuestionTopic): {
+  practiceGuidance: string;
+  ritualAction: string;
+  reflectionFocus: string;
+} {
+  if (topic === 'relationship') {
+    return {
+      practiceGuidance: '소문이나 섣부른 인상(시장의 우상)으로 상대를 단정 짓지 말고, 실제 말과 행동의 사실만 따로 놓아 보십시오.',
+      ritualAction: '상대에 대한 추측 한 줄과 실제로 확인된 사실 한 줄을 메모로 분리해 적어 보기',
+      reflectionFocus: '지금 내가 상대에게 느끼는 실망이나 기대는 사실에서 온 것인가, 내 동굴의 우상에서 온 것인가?',
+    };
+  }
+  if (topic === 'decision') {
+    return {
+      practiceGuidance: '보고 싶은 근거만 모으지 말고, 이 선택이 어긋날 수 있는 반증 사례 하나를 일부러 찾아 검증하십시오.',
+      ritualAction: '결정 전 찬성 근거 2개와 반대·리스크 사실 1개를 나란히 적어 비교하기',
+      reflectionFocus: '내가 믿고 싶은 희망과 냉정한 현실 데이터 사이에 어떤 틈이 있는가?',
+    };
+  }
+  if (topic === 'healing') {
+    return {
+      practiceGuidance: '막연한 자책이나 과장된 해석을 내려놓고, 오늘 내 몸과 마음이 겪은 구체적 사실만 담백하게 확인하십시오.',
+      ritualAction: '불안한 생각 대신 오늘 실제로 해낸 작은 사실 3가지를 담담히 기록하기',
+      reflectionFocus: '내가 사실로 겪은 일과 내 마음이 덧붙인 두려운 해석을 어떻게 나눌 수 있을까?',
+    };
+  }
+  return {
+    practiceGuidance: '과거에 통했던 낡은 도그마를 잠시 내려놓고, 오늘의 새로운 관찰을 정직하게 축적하십시오.',
+    ritualAction: '당연하게 믿어 온 전제 하나를 골라 오늘 실제로 여전히 맞는지 점검하기',
+    reflectionFocus: '지금 내 사고를 가로막고 있는 가장 큰 우상(편향·습관·소문·권위)은 무엇인가?',
+  };
+}
+
 export function calculateFrancisBaconNovumOrganum(
-  profile: UserProfile
+  profile: UserProfile,
+  query?: string,
+  now?: Date,
 ): FrancisBaconNovumOrganumResult {
   const p = profile as any;
   const name = profile?.basic?.name ?? p?.name ?? '방문자';
@@ -136,7 +232,11 @@ export function calculateFrancisBaconNovumOrganum(
   const birthTime = profile?.basic?.birthtime ?? p?.birthTime ?? p?.birthtime ?? '12:00';
   const gender = profile?.basic?.gender ?? p?.gender ?? 'neutral';
 
-  const seedString = `FRANCIS-BACON-ORGANUM:${name}:${birthDate}:${birthTime}:${gender}`;
+  const temporalBaconRhythm = buildBaconTemporalRhythm(now);
+  const questionTopic = classifyBaconQuestionTopic(query);
+  const topicGuidance = buildBaconTopicGuidance(questionTopic);
+
+  const seedString = `FRANCIS-BACON-ORGANUM:${name}:${birthDate}:${birthTime}:${gender}:${query ?? ''}:${temporalBaconRhythm.kstDateLabel}`;
 
   let hash = 0;
   for (let i = 0; i < seedString.length; i++) {
@@ -160,19 +260,27 @@ export function calculateFrancisBaconNovumOrganum(
   const guidanceTitle = `프랜시스 베이컨 신기관 지성 지혜: ${activeBaconTheme.themeTitleKo}`;
   const philosophicalCounsel = `프랜시스 베이컨의 경험론 철학은 마음을 흐리는 4대 우상을 깨부수고 차가운 사실에 입각한 실천적 힘을 세우도록 이끕니다. ` +
     `현재 당신이 가장 주의 깊게 점검해야 할 지점은 '${activeBaconTheme.themeTitleKo}'입니다. ` +
-    `${activeBaconTheme.practicalCounsel} 아울러 베이컨의 명언 "${focalBaconAphorism.aphorismKo}"(${focalBaconAphorism.aphorismLatin})을 상기하며, ` +
+    `${activeBaconTheme.practicalCounsel} ${topicGuidance.practiceGuidance} 아울러 베이컨의 명언 "${focalBaconAphorism.aphorismKo}"(${focalBaconAphorism.aphorismLatin})을 상기하며, ` +
     `${focalBaconAphorism.actionGuidance}`;
+
+  const boundaryNotice = '프랜시스 베이컨 신기관 해석은 인지적 편향과 사실 검증을 돕는 상징·성찰 관점이며, 미래 예측이나 확정적 판단이 아닙니다.';
 
   return {
     engineVersion: BRITISH_FRANCIS_BACON_VERSION,
-    calculatedAtKst: new Date().toISOString(),
+    calculatedAtKst: (now ?? new Date()).toISOString(),
     idolsTribusSpeciesBiasOvercomingScore,
     idolsSpecusPersonalPrejudiceOvercomingScore,
     idolsForiLinguisticClarityScore,
     idolsTheatriAuthorityDogmaOvercomingScore,
     trueInductionEmpiricalGroundedScore,
+    questionTopic,
+    temporalBaconRhythm,
     activeBaconTheme,
     focalBaconAphorism,
+    practiceGuidance: topicGuidance.practiceGuidance,
+    ritualAction: topicGuidance.ritualAction,
+    reflectionFocus: topicGuidance.reflectionFocus,
+    boundaryNotice,
     baconComprehensiveGuidance: {
       guidanceTitle,
       philosophicalCounsel,
@@ -183,17 +291,18 @@ export function calculateFrancisBaconNovumOrganum(
 export function formatFrancisBaconNovumOrganumPrompt(res: FrancisBaconNovumOrganumResult): string {
   return [
     `【프랜시스 베이컨 《신기관》 4대 우상 타파 & 실증 경험 지표】`,
-    `- 종족의 우상 극복도(Idola Tribus - 인간 중심 편향 탈피): ${res.idolsTribusSpeciesBiasOvercomingScore}/100`,
-    `- 동굴의 우상 극복도(Idola Specus - 개인적 선입견 탈피): ${res.idolsSpecusPersonalPrejudiceOvercomingScore}/100`,
-    `- 시장의 우상 극복도(Idola Fori - 언어 왜곡·소문 식별): ${res.idolsForiLinguisticClarityScore}/100`,
-    `- 극장의 우상 극복도(Idola Theatri - 권위·도그마 비판력): ${res.idolsTheatriAuthorityDogmaOvercomingScore}/100`,
-    `- 참된 귀납 사실 검증력(Inductio Vera & Scientia Potentia): ${res.trueInductionEmpiricalGroundedScore}/100`,
+    `- 질문 주제 맥락: ${res.questionTopic}`,
+    `- KST 시공간 리듬: ${res.temporalBaconRhythm.kstDateLabel} · ${res.temporalBaconRhythm.timeWindowKo} (${res.temporalBaconRhythm.empiricalTone}) — ${res.temporalBaconRhythm.rhythmDirective}`,
     `- 핵심 우상 타파 테마: ${res.activeBaconTheme.themeTitleKo} [${res.activeBaconTheme.themeTitleLatin}]`,
     `- 인식론적 통찰: ${res.activeBaconTheme.epistemologicalInsight}`,
     `- 실천적 조언: ${res.activeBaconTheme.practicalCounsel}`,
+    `- 질문 맞춤 실천 가이드: ${res.practiceGuidance}`,
+    `- 일상 실천 의례: ${res.ritualAction}`,
+    `- 핵심 성찰 질문: ${res.reflectionFocus}`,
     `- 핵심 경구: "${res.focalBaconAphorism.aphorismKo}"`,
     `- 라틴어 원문: "${res.focalBaconAphorism.aphorismLatin}" [${res.focalBaconAphorism.novumOrganumRef}]`,
     `- 구체적 실천 지침: ${res.focalBaconAphorism.actionGuidance}`,
     `- 종합 통찰 권면: ${res.baconComprehensiveGuidance.philosophicalCounsel}`,
+    `- 해석 경계: ${res.boundaryNotice}`,
   ].join('\n');
 }

@@ -3469,7 +3469,7 @@ try {
   // 238. 영국 프랜시스 베이컨 신기관 4대 우상 타파 & 참된 귀납 사실 검증 지성 엔진
   const francisBaconNovumOrganumResult = calculateSupplement('francisBaconNovumOrganumResult', () => ((() => {
     try {
-      return calculateFrancisBaconNovumOrganum(profile);
+      return calculateFrancisBaconNovumOrganum(profile, question, now);
     } catch (_) {
       return null;
     }
@@ -3505,7 +3505,7 @@ try {
   // 242. 영국 존 스튜어트 밀 자유론 개별성 자율성 & 해악 원칙 질적 공리 지혜 엔진
   const johnStuartMillOnLibertyIndividualityResult = calculateSupplement('johnStuartMillOnLibertyIndividualityResult', () => ((() => {
     try {
-      return calculateJohnStuartMillOnLibertyIndividuality(profile);
+      return calculateJohnStuartMillOnLibertyIndividuality(profile, question, now);
     } catch (_) {
       return null;
     }
@@ -3685,7 +3685,7 @@ try {
   // 262. 영국 존 로크 인간 오성론 타불라 라사 & 경험적 이성·천부인권 관용 엔진
   const johnLockeHumanUnderstandingResult = calculateSupplement('johnLockeHumanUnderstandingResult', () => ((() => {
     try {
-      return calculateJohnLockeHumanUnderstanding(profile);
+      return calculateJohnLockeHumanUnderstanding(profile, question, now);
     } catch (_) {
       return null;
     }
@@ -4927,7 +4927,7 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'italianMachiavelliVirtuFortuna', nameKo: '마키아벨리 군주론 비르투역량 포르투나극복 시대조화 여우와사자', icon: '🦁', category: 'deep_master' },
   { key: 'koreanChoeChiwonPungryudo', nameKo: '최치원 난랑비서 국유현묘지도 풍류도 포함삼교 접화군생 계원필경', icon: '🪶', category: 'deep_master' },
   { key: 'italianThomasAquinasSummaTheologiae', nameKo: '토마스 아퀴나스 신학대전 이성신앙조화 5대길 7대덕목 지복직관', icon: '⛪', category: 'deep_master' },
-  { key: 'britishFrancisBaconNovumOrganum', nameKo: '프랜시스 베이컨 신기관 4대우상타파 참된귀납 아는것이힘이다 사실검증', icon: '🔬', category: 'deep_master' },
+  { key: 'britishFrancisBaconNovumOrganum', nameKo: '프랜시스 베이컨 신기관 4대우상타파 참된귀납 아는것이힘이다 사실검증', icon: '🔬', category: 'deep_master', summary: '프랜시스 베이컨의 신기관 철학으로 마음을 흐리는 4대 우상을 걷어내고 사실과 경험에 뿌리내린 실천적 지성을 세웁니다.' },
   { key: 'koreanRyuSeongryongJingbirok', nameKo: '서애 류성룡 징비록 징전비후 유비무환 거안사위 인재발탁 실사구시', icon: '🛡️', category: 'deep_master' },
   { key: 'koreanKingSejongHunminjeongeumAemin', nameKo: '세종대왕 훈민정음 어제서문 애민창조 여민락 집현전 실용실사', icon: '📜', category: 'deep_master', summary: '세종대왕의 훈민정음 어제서문과 애민 정신으로 장벽을 허물고 세상을 이롭게 하는 실천적 창의력을 발휘합니다.' },
   { key: 'koreanJangBogoCheonghaejinMaritimePioneer', nameKo: '장보고 해상왕 청해진 글로벌무역 신의개척 파도극복 자주국방', icon: '⚓', category: 'deep_master', summary: '장보고의 청해진 해상 네트워크와 신의의 개척 정신으로 거친 파도를 넘어 글로벌 시야의 새 항로를 엽니다.' },
