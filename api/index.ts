@@ -1,4 +1,4 @@
-// v1.7.482: Deepen Hongguk Qimen, Liuren Master, and Huangdi Five Movements & Six Qi engines
+// v1.7.483: Deepen Arabic Ilm al-Raml, Egyptian Hermetic Cartouche, and Celtic Brehon Law engines
 import { getLucyRequestFallbacks, requestWithModelFallback } from '../src/lib/lucyModelPolicy.ts';
 import "dotenv/config";
 import express from "express";

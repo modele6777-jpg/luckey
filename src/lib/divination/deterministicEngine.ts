@@ -2947,7 +2947,7 @@ try {
   // 180. 고대 켈트 드루이드 《브레혼 법전》 4대 우주정의 & 에릭 명예균형 엔진
   const celticDruidBrehonLawResult = calculateSupplement('celticDruidBrehonLawResult', () => ((() => {
     try {
-      return calculateCelticBrehonLaw(profile);
+      return calculateCelticBrehonLaw(profile, now, question);
     } catch (_) {
       return null;
     }
