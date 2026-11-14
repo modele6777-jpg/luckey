@@ -3136,7 +3136,7 @@ try {
   // 201. 고대 그리스 아리스토텔레스 니코마코스 윤리학 중용 & 에우다이모니아 엔진
   const aristotleMesotesResult = calculateSupplement('aristotleMesotesResult', () => ((() => {
     try {
-      return calculateAristotleMesotes(profile);
+      return calculateAristotleMesotes(profile, question, now);
     } catch (_) {
       return null;
     }
@@ -3163,7 +3163,7 @@ try {
   // 204. 고대 그리스 소크라테스 산파술 & 다이몬 영혼성찰 엔진
   const socraticMaieuticDaimonResult = calculateSupplement('socraticMaieuticDaimonResult', () => ((() => {
     try {
-      return calculateSocraticMaieuticDaimon(profile);
+      return calculateSocraticMaieuticDaimon(profile, question, now);
     } catch (_) {
       return null;
     }
@@ -3226,7 +3226,7 @@ try {
   // 211. 고대 동양 유학 공자 논어 지천명 & 극기복례 군자도 수양 엔진
   const confuciusAnalectsZhitianmingResult = calculateSupplement('confuciusAnalectsZhitianmingResult', () => ((() => {
     try {
-      return calculateConfuciusAnalectsZhitianming(profile);
+      return calculateConfuciusAnalectsZhitianming(profile, question, now);
     } catch (_) {
       return null;
     }
