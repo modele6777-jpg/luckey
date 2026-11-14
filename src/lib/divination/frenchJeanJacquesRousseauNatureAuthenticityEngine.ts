@@ -193,7 +193,7 @@ export function calculateFrenchJeanJacquesRousseauNatureAuthenticity(
   const birthTime = profile?.basic?.birthtime ?? p?.birthTime ?? p?.birthtime ?? '12:00';
   const gender = profile?.basic?.gender ?? p?.gender ?? 'neutral';
 
-  const seedString = `JJ-ROUSSEAU-NATURE:${name}:${birthDate}:${birthTime}:${gender}:${questionTopic}:${temporalRousseau.kstSlot}`;
+  const seedString = `JJ-ROUSSEAU-NATURE:${name}:${birthDate}:${birthTime}:${gender}:${questionTopic}:${temporalRhythm.kstSlot}`;
 
   let hash = 0;
   for (let i = 0; i < seedString.length; i++) {
