@@ -1,4 +1,4 @@
-// v1.7.440: Deepen Kant Categorical Imperative, Schopenhauer Will, and Hegel Dialectical engines
+// v1.7.454: Deepen Plotinus Enneads, Mozi Gyeom-Ae, and Buddhist Yogacara Eight Consciousness engines
 import { getLucyRequestFallbacks, requestWithModelFallback } from '../src/lib/lucyModelPolicy.ts';
 import "dotenv/config";
 import express from "express";

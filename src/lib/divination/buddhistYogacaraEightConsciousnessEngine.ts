@@ -9,39 +9,62 @@
  *
  * 4대 근본번뇌(아치·아견·아만·아애)를 정화하여
  * 8가지 분별 망식을 부처의 4대 지혜로 근본 혁신하는 '전식득지(轉識得智)'의 지혜를 산출함.
- *
- * 4대 전식득지 지혜(Four Yogacara Transformed Wisdoms):
- * 1. 대원경지(大圓鏡智) - 제8 아뢰야식 전환: 번뇌의 티끌이 사라져 만유를 있는 그대로 비추는 크고 둥근 거울의 지혜
- * 2. 평등성지(平等性智) - 제7 말나식 전환: 나와 남의 분별과 아만을 녹여 모든 생명을 한 몸으로 품는 자비의 지혜
- * 3. 묘관찰지(妙觀察智) - 제6 의식 전환: 주관적 편견 없이 사물의 본성과 인과를 명징하게 꿰뚫는 통찰의 지혜
- * 4. 성소작지(成所作智) - 전5식 전환: 신체와 감각의 모든 행동이 세상을 이롭게 하는 실천적 완성의 지혜
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const BUDDHIST_YOGACARA_CONSCIOUSNESS_ENGINE_VERSION = '1.0.0';
+export const BUDDHIST_YOGACARA_CONSCIOUSNESS_ENGINE_VERSION = '2.0.0';
+
+export type YogacaraQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
 export interface YogacaraTransformedWisdom {
   id: string;
   nameKo: string;
   sanskrit: string;
-  rootConsciousness: string; // 전환 근본 의식 (제8식, 제7식 등)
+  rootConsciousness: string;
   wisdomPrinciple: string;
   enlightenedAction: string;
-  resonanceScore: number; // 0 ~ 100 공명도
+  resonanceScore: number;
+}
+
+export interface YogacaraSituationalAudit {
+  topic: YogacaraQuestionTopic;
+  scriptureRef: string;
+  kleshaRootPattern: string;
+  bijaTransformation: string;
+  mindOnlyPractice: string;
+}
+
+export interface YogacaraTemporalRhythm {
+  kstWindowLabel: string;
+  seasonTone: string;
+  satiTransformationFocus: string;
+  contemplativeCue: string;
+}
+
+export interface YogacaraSynthesisMatrix {
+  alayaMirrorClarity: string;
+  manasEgoRelease: string;
+  actionCompletionReadiness: string;
+  integrativeSummary: string;
 }
 
 export interface BuddhistYogacaraConsciousnessReport {
   engineVersion: string;
   timestamp: string;
-  alayaPurificationScore: number; // 0 ~ 100 아뢰야식 근본종자 맑음도
-  manasEgoTranscendenceRate: number; // 0 ~ 100 말나식 아집(我執) 탈각율
-  fourWisdomsHarmonizationIndex: number; // 0 ~ 100 4대 지혜 조화도
-  kleshaDefilementPurificationScore: number; // 0 ~ 100 4대 근본번뇌(아치·아견·아만·아애) 정화 지수
-  dominantWisdom: YogacaraTransformedWisdom; // 가장 강렬하게 꽃피는 주재 지혜
-  secondaryWisdom: YogacaraTransformedWisdom; // 보조 발현 지혜
-  yogacaraMindOnlyGuidance: string; // 유식유심 실천 지침
-  mirrorMeditationRitual: string; // 대원경지 거울 명상 리추얼
+  alayaPurificationScore: number;
+  manasEgoTranscendenceRate: number;
+  fourWisdomsHarmonizationIndex: number;
+  kleshaDefilementPurificationScore: number;
+  questionTopic: YogacaraQuestionTopic;
+  dominantWisdom: YogacaraTransformedWisdom;
+  secondaryWisdom: YogacaraTransformedWisdom;
+  yogacaraMindOnlyGuidance: string;
+  mirrorMeditationRitual: string;
+  situationalYogacaraAudit: YogacaraSituationalAudit;
+  temporalAlayaRhythm: YogacaraTemporalRhythm;
+  yogacaraSynthesisMatrix: YogacaraSynthesisMatrix;
+  boundaryNotice: string;
 }
 
 const YOGACARA_WISDOMS_BASE: Omit<YogacaraTransformedWisdom, 'resonanceScore'>[] = [
@@ -86,6 +109,119 @@ export interface BuddhistYogacaraConsciousnessOptions {
   currentTime?: string;
 }
 
+function classifyYogacaraTopic(question: string): YogacaraQuestionTopic {
+  if (/연애|사랑|관계|이별|갈등|상대|사람|친구|가족|부부|직장동료/.test(question)) {
+    return 'relationship';
+  }
+  if (/선택|결정|이직|창업|투자|계약|시험|진로|방향|옮길|할까|말까/.test(question)) {
+    return 'decision';
+  }
+  if (/치유|회복|불안|지침|슬픔|분노|상처|우울|번아웃|스트레스|두려움|집착|후회/.test(question)) {
+    return 'healing';
+  }
+  return 'reflection';
+}
+
+function buildYogacaraSituationalAudit(topic: YogacaraQuestionTopic): YogacaraSituationalAudit {
+  switch (topic) {
+    case 'relationship':
+      return {
+        topic,
+        scriptureRef: '《유식삼십송》 제5~7송 (말나식의 아견·아만·아애·아치 전환)',
+        kleshaRootPattern: '제7 말나식이 "내가 옳다"거나 "내가 다칠지 모른다"며 세우는 방어적 아집과 분별',
+        bijaTransformation: '나와 너를 가르는 아집의 종자를 평등성지(平等性智)의 공감으로 전환합니다.',
+        mindOnlyPractice: '상대의 말 뒤에 숨은 두려움을 먼저 알아보고 내 쪽의 자존심 고집을 한 겹 내려놓습니다.',
+      };
+    case 'decision':
+      return {
+        topic,
+        scriptureRef: '《성유식론》 제6 의식 분별 타파와 묘관찰지(妙觀察智)',
+        kleshaRootPattern: '제6 의식이 과거 실패 기억과 미래 가정을 엮어 만들어 내는 과잉 망상',
+        bijaTransformation: '주관적 편견과 두려움을 걷어내고 인과의 핵심만 짚는 묘관찰지로 전환합니다.',
+        mindOnlyPractice: '머릿속 시나리오를 멈추고 지금 눈앞의 사실·자원·실행 가능성 세 가지만 또렷이 적습니다.',
+      };
+    case 'healing':
+      return {
+        topic,
+        scriptureRef: '《유식삼십송》 제2~4송 (아뢰야식 잠재 종자의 훈습 정화)',
+        kleshaRootPattern: '아뢰야식에 묵은 상처와 후회의 종자(Bija)가 현재 상황 위에서 되살아나는 투사',
+        bijaTransformation: '묵은 기억을 억누르지 않고 대원경지(大圓鏡智)의 맑은 거울 위에 있는 그대로 비춰 보냅니다.',
+        mindOnlyPractice: '거울은 그림자가 스쳐 가도 흠집이 나지 않듯, 올라오는 감정을 내 실체로 붙잡지 않고 흘려보냅니다.',
+      };
+    default:
+      return {
+        topic,
+        scriptureRef: '《유식삼십송》 제29~30송 (무분별지 증득과 원성실성)',
+        kleshaRootPattern: '전5식과 제6 의식이 바깥 현상을 좇느라 마음의 근원 자리를 잊는 산란함',
+        bijaTransformation: '보고 듣는 일상 감각을 선업의 실천으로 완성하는 성소작지(成所作智)로 전환합니다.',
+        mindOnlyPractice: '지금 당장 손에 닿는 작은 일 하나를 온전한 알아차림과 정성으로 매듭짓습니다.',
+      };
+  }
+}
+
+function buildYogacaraTemporalRhythm(now: Date): YogacaraTemporalRhythm {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const hour = kst.getUTCHours();
+  const month = kst.getUTCMonth() + 1;
+
+  let kstWindowLabel = '새벽 아뢰야식 청정 시간대 (대원경지)';
+  let satiTransformationFocus = '잠재된 종자가 가장 고요히 가라앉아 마음의 거울을 맑게 닦기 좋은 흐름';
+  let contemplativeCue = '일어나자마자 과거의 걱정이나 오늘의 분주함을 붙잡기 전에 깊은 호흡 세 번으로 마음을 비우십시오.';
+
+  if (hour >= 7 && hour < 12) {
+    kstWindowLabel = '오전 의식 분별 정화 시간대 (묘관찰지)';
+    satiTransformationFocus = '제6 의식의 명료함이 살아나 복잡한 일의 인과와 핵심을 짚어 내기 좋은 흐름';
+    contemplativeCue = '사소한 변수에 흔들리지 말고 오늘 일의 가장 본질적인 인과 한 가지를 먼저 세우십시오.';
+  } else if (hour >= 12 && hour < 18) {
+    kstWindowLabel = '오후 감각·실천 전환 시간대 (성소작지)';
+    satiTransformationFocus = '전5식의 감각과 손발의 움직임이 구체적인 선업과 결실로 이어지는 흐름';
+    contemplativeCue = '머리로만 맴도는 생각을 작은 실행 하나로 옮겨 현실의 매듭을 풀어 가십시오.';
+  } else if (hour >= 18 && hour < 23) {
+    kstWindowLabel = '밤 말나식 아집 해체 시간대 (평등성지)';
+    satiTransformationFocus = '낮 동안 세웠던 자존심과 방어의 갑옷을 벗고 너그러운 시선으로 돌아가는 흐름';
+    contemplativeCue = '하루를 덮으며 나 자신과 타인에게 날 세웠던 마음을 부드럽게 놓아 보내십시오.';
+  }
+
+  let seasonTone = '가을의 침잠 — 흩어진 분별을 거두어 마음의 맑은 종자만 남기는 관조의 계절';
+  if (month >= 3 && month <= 5) {
+    seasonTone = '봄의 훈습 — 맑은 알아차림의 새 종자를 일상에 심어 키우는 계절';
+  } else if (month >= 6 && month <= 8) {
+    seasonTone = '여름의 정진 — 뜨거운 감정의 파동 속에서도 거울 같은 평정을 지키는 계절';
+  } else if (month === 12 || month <= 2) {
+    seasonTone = '겨울의 수렴 — 바깥 투사를 멈추고 깊은 내면의 아뢰야식을 정화하는 계절';
+  }
+
+  return {
+    kstWindowLabel,
+    seasonTone,
+    satiTransformationFocus,
+    contemplativeCue,
+  };
+}
+
+function buildYogacaraSynthesisMatrix(
+  dominant: YogacaraTransformedWisdom,
+  topic: YogacaraQuestionTopic,
+  temporal: YogacaraTemporalRhythm
+): YogacaraSynthesisMatrix {
+  const alayaMirrorClarity = dominant.id === 'great_round_mirror_wisdom' || topic === 'healing'
+    ? '맑음 회복 — 과거의 기억이 현재를 덮지 않도록 한 걸음 떨어져 바라보는 거울 시선이 필요합니다.'
+    : '안정 — 감정적 잔상을 크게 부풀리지 않고 사실을 차분히 비추어 볼 수 있습니다.';
+  const manasEgoRelease = dominant.id === 'equality_nature_wisdom' || topic === 'relationship'
+    ? '핵심 과제 — "내가 옳다"는 방어적 집착을 내려놓을수록 관계의 막힘이 풀립니다.'
+    : '원활 — 자기중심적 고집보다 전체의 균형을 살필 여력이 열려 있습니다.';
+  const actionCompletionReadiness = dominant.id === 'perfect_action_wisdom' || topic === 'decision'
+    ? '실행 전환 — 생각을 행동으로 옮기는 작은 성소작지가 고민을 가장 빠르게 정리합니다.'
+    : '차분함 — 서두르기보다 알아차림을 동반한 꾸준한 실천이 알맞습니다.';
+
+  return {
+    alayaMirrorClarity,
+    manasEgoRelease,
+    actionCompletionReadiness,
+    integrativeSummary: `${temporal.kstWindowLabel}의 기운과 함께 ${dominant.nameKo}(${dominant.sanskrit})를 중심에 두면 분별 망상이 지혜로운 실천으로 전환됩니다.`,
+  };
+}
+
 export function calculateBuddhistYogacaraConsciousness(
   optionsOrProfile?: BuddhistYogacaraConsciousnessOptions | UserProfile | null,
   legacyContext?: { question?: string; currentTime?: string }
@@ -128,6 +264,12 @@ export function calculateBuddhistYogacaraConsciousness(
   const kleshaDefilementPurificationScore = Math.min(100, Math.max(45, 54 + ((seed * 29) % 44)));
   const fourWisdomsHarmonizationIndex = Math.min(100, Math.max(48, Math.floor((alayaPurificationScore * 0.4 + manasEgoTranscendenceRate * 0.3 + kleshaDefilementPurificationScore * 0.3))));
 
+  const questionTopic = classifyYogacaraTopic(question);
+  const situationalYogacaraAudit = buildYogacaraSituationalAudit(questionTopic);
+  const temporalAlayaRhythm = buildYogacaraTemporalRhythm(now);
+  const yogacaraSynthesisMatrix = buildYogacaraSynthesisMatrix(dominantWisdom, questionTopic, temporalAlayaRhythm);
+  const boundaryNotice = '이 풀이는 유식학의 전식득지 상징을 빌려 마음의 분별과 집착을 돌아보는 정성적 성찰이며, 우열의 점수나 확정적 예언이 아닙니다.';
+
   const yogacaraMindOnlyGuidance = `세상의 모든 고통과 번뇌는 바깥 대상에 있는 것이 아니라 내 마음식(識)의 분별 투사에서 비롯됩니다. 지금 당신에게 개화하는 지혜는 [${dominantWisdom.nameKo}(${dominantWisdom.sanskrit})]입니다. ${dominantWisdom.enlightenedAction}에 집중할 때 망상이 걷히고 성취의 길이 맑아집니다.`;
   const mirrorMeditationRitual = `조용히 호흡을 고르고 가슴 중심에 티끌 없는 거울이 떠오르는 모습을 관상하십시오: "삼계유심 만법유식(三界唯心 萬法唯識), 오고 가는 모든 현상은 거울에 비친 그림자일 뿐 나를 물들이지 못한다."`;
 
@@ -138,23 +280,30 @@ export function calculateBuddhistYogacaraConsciousness(
     manasEgoTranscendenceRate,
     fourWisdomsHarmonizationIndex,
     kleshaDefilementPurificationScore,
+    questionTopic,
     dominantWisdom,
     secondaryWisdom,
     yogacaraMindOnlyGuidance,
     mirrorMeditationRitual,
+    situationalYogacaraAudit,
+    temporalAlayaRhythm,
+    yogacaraSynthesisMatrix,
+    boundaryNotice,
   };
 }
 
 export function formatBuddhistYogacaraConsciousnessPrompt(rep: BuddhistYogacaraConsciousnessReport): string {
   return `[불교 유식학 8식 정화 & 아뢰야식 전식득지(轉識得智) 실측 데이터]
 · 엔진 버전: v${rep.engineVersion}
-· 아뢰야식 종자 맑음도: ${rep.alayaPurificationScore}/100 | 말나식 아집 탈각율: ${rep.manasEgoTranscendenceRate}/100
-· 4대 지혜 조화도: ${rep.fourWisdomsHarmonizationIndex}/100 | 4대 근본번뇌 정화 지수: ${rep.kleshaDefilementPurificationScore}/100
-· 주재 전식득지 지혜: [${rep.dominantWisdom.nameKo} (${rep.dominantWisdom.sanskrit})] — 공명도 ${rep.dominantWisdom.resonanceScore}%
+· 주재 전식득지 지혜: [${rep.dominantWisdom.nameKo} (${rep.dominantWisdom.sanskrit})]
   - 근본 전환: ${rep.dominantWisdom.rootConsciousness}
   - 지혜 원리: ${rep.dominantWisdom.wisdomPrinciple}
   - 해탈 실천: ${rep.dominantWisdom.enlightenedAction}
-· 보조 지혜: [${rep.secondaryWisdom.nameKo} (${rep.secondaryWisdom.sanskrit})] — 공명도 ${rep.secondaryWisdom.resonanceScore}%
+· 보조 지혜: [${rep.secondaryWisdom.nameKo} (${rep.secondaryWisdom.sanskrit})] — ${rep.secondaryWisdom.rootConsciousness}
+· 질문 맥락 감사(${rep.situationalYogacaraAudit.scriptureRef}): 번뇌 패턴(${rep.situationalYogacaraAudit.kleshaRootPattern}) → 종자 전환(${rep.situationalYogacaraAudit.bijaTransformation}) / 유심 실천(${rep.situationalYogacaraAudit.mindOnlyPractice})
+· KST 시공간 리듬(${rep.temporalAlayaRhythm.kstWindowLabel} · ${rep.temporalAlayaRhythm.seasonTone}): ${rep.temporalAlayaRhythm.satiTransformationFocus} (${rep.temporalAlayaRhythm.contemplativeCue})
+· 유식 교차 매트릭스: 대원경지(${rep.yogacaraSynthesisMatrix.alayaMirrorClarity}) | 평등성지(${rep.yogacaraSynthesisMatrix.manasEgoRelease}) | 성소작지(${rep.yogacaraSynthesisMatrix.actionCompletionReadiness})
 · 유식유심 실천 지침: ${rep.yogacaraMindOnlyGuidance}
-· 대원경지 거울 명상 리추얼: ${rep.mirrorMeditationRitual}`;
+· 대원경지 거울 명상 리추얼: ${rep.mirrorMeditationRitual}
+· 해석 경계: ${rep.boundaryNotice}`;
 }

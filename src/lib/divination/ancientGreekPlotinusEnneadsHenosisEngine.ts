@@ -4,12 +4,12 @@
  * 3세기 신플라톤주의 창시자 플로티노스의 《엔네아데스》 사상 기반:
  * 일자(The One), 누스(Nous), 프쉬케(Psyche), 헤노시스(Henosis)의 내면 정화·관조·합일 관점.
  *
- * @version LUCKEY-PLOTINUS-ENNEADS-v1.1.0
+ * @version LUCKEY-PLOTINUS-ENNEADS-v2.0.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const ANCIENT_GREEK_PLOTINUS_VERSION = 'LUCKEY-PLOTINUS-ENNEADS-v1.1.0';
+export const ANCIENT_GREEK_PLOTINUS_VERSION = 'LUCKEY-PLOTINUS-ENNEADS-v2.0.0';
 
 export type PlotinusQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 export type PlotinusAscentStage = 'KATHARSIS_PURIFICATION' | 'NOUS_ILLUMINATION' | 'HENOSIS_STILLNESS';
@@ -30,6 +30,28 @@ export interface PlotinusAphorism {
   actionGuidance: string;
 }
 
+export interface PlotinusSituationalAudit {
+  topic: PlotinusQuestionTopic;
+  enneadsRef: string;
+  shadowTrap: string;
+  dialecticQuestion: string;
+  katharsisPractice: string;
+}
+
+export interface PlotinusTemporalRhythm {
+  kstWindowLabel: string;
+  seasonTone: string;
+  henosisClarityState: string;
+  contemplativeCue: string;
+}
+
+export interface PlotinusSynthesisMatrix {
+  katharsisReadiness: string;
+  nousAlignment: string;
+  henosisStillness: string;
+  integrativeSummary: string;
+}
+
 export interface AncientGreekPlotinusEnneadsHenosisResult {
   engineVersion: string;
   calculatedAtKst: string;
@@ -47,6 +69,9 @@ export interface AncientGreekPlotinusEnneadsHenosisResult {
   ritualAction: string;
   reflectionFocus: string;
   boundaryNotice: string;
+  situationalEnneadsAudit: PlotinusSituationalAudit;
+  temporalNousRhythm: PlotinusTemporalRhythm;
+  plotinusSynthesisMatrix: PlotinusSynthesisMatrix;
   plotinusComprehensiveGuidance: {
     guidanceTitle: string;
     philosophicalCounsel: string;
@@ -96,28 +121,28 @@ export const PLOTINUS_APHORISMS: PlotinusAphorism[] = [
     aphorismKey: 'sculpt_your_own_statue',
     aphorismKo: '내면을 어지럽히는 불필요한 군더더기를 조각가가 돌을 깎아내듯 덜어내어 본래의 맑은 품성을 드러내십시오.',
     aphorismGreek: 'Κόλουε τὰ περιττὰ καὶ ἀπεύθυνε τὰ σκολιά',
-    sourceContext: '엔네아데스 내면 조각 비유',
+    sourceContext: '엔네아데스 I.6.9 내면 조각 비유',
     actionGuidance: '내면을 어지럽히는 불필요한 잡념과 감정의 군더더기를 과감히 덜어내고, 본래의 고결한 품성을 회복하십시오.',
   },
   {
     aphorismKey: 'awaken_inner_eyesight',
     aphorismKo: '참된 귀환은 바깥을 헤매는 것이 아니라 감각의 소란을 닫고 내면의 맑은 시력을 일깨우는 것입니다.',
     aphorismGreek: 'Οὐ ποσὶ δεῖ ποιεῖσθαι τὴν πορείαν',
-    sourceContext: '엔네아데스 내면 시력 비유',
+    sourceContext: '엔네아데스 I.6.8 내면 시력 비유',
     actionGuidance: '감각적인 외적 자극에 끌려다니기를 멈추고, 직관과 내적 통찰의 밝은 눈을 뜨십시오.',
   },
   {
     aphorismKey: 'flight_of_the_alone',
     aphorismKo: '세속의 번뇌를 벗어던지고 홀로 온전한 중심에서 고요한 근원으로 비상하는 자유를 품으십시오.',
     aphorismGreek: 'Φυγὴ μόνου πρὸς μόνον',
-    sourceContext: '엔네아데스 일자 귀환 상징',
+    sourceContext: '엔네아데스 VI.9.11 일자 귀환 상징',
     actionGuidance: '주변의 기대나 세상의 평가에 구애받지 말고, 오직 영혼의 가장 깊은 진실과 고요 속으로 당당히 나아가십시오.',
   },
   {
     aphorismKey: 'light_recognizes_light',
     aphorismKo: '빛을 닮은 눈만이 빛을 알아보듯, 먼저 내 마음을 맑고 고결하게 가꿀 때 참된 아름다움과 만납니다.',
     aphorismGreek: 'Τὸ καλὸν ἴδοι ἂν ψυχὴ καλὴ γενομένη',
-    sourceContext: '엔네아데스 내면 미학 비유',
+    sourceContext: '엔네아데스 I.6.9 내면 미학 비유',
     actionGuidance: '더 높은 삶과 좋은 인연을 바란다면 먼저 자신의 마음과 언행을 맑고 고결하게 가꾸십시오.',
   },
 ];
@@ -162,6 +187,106 @@ const PLOTINUS_TOPIC_REFLECTION: Record<PlotinusQuestionTopic, string> = {
   reflection: '지금 내 마음의 조각상에서 가장 먼저 다듬고 덜어내고 싶은 거친 모서리는 무엇인가요?',
 };
 
+function buildPlotinusSituationalAudit(topic: PlotinusQuestionTopic): PlotinusSituationalAudit {
+  switch (topic) {
+    case 'relationship':
+      return {
+        topic,
+        enneadsRef: '《엔네아데스》 V.1.1 (영혼이 근원을 잊고 타자성에 흩어짐)',
+        shadowTrap: '상대의 인정과 반응에 내 존재의 중심을 맡긴 채 결핍을 바깥에서 채우려는 의존',
+        dialecticQuestion: '상대의 말이 닿기 전, 내가 먼저 스스로에게 건네야 할 온전한 품위는 무엇인가요?',
+        katharsisPractice: '상대를 바꾸려는 조급함을 덜어내고, 먼저 내 시선과 말의 결을 고요히 정돈합니다.',
+      };
+    case 'decision':
+      return {
+        topic,
+        enneadsRef: '《엔네아데스》 I.6.8 (발이 아니라 내면의 눈으로 돌아가는 길)',
+        shadowTrap: '세속의 평판·비교·조바심이라는 덧칠 때문에 본질적 기준을 흐리는 선택',
+        dialecticQuestion: '남에게 보이기 위한 조건을 모두 깎아내면, 끝까지 남는 단 하나의 중심은 무엇인가요?',
+        katharsisPractice: '선택지마다 붙은 허영과 두려움의 군더더기를 하나씩 지우고 남은 핵심만으로 결정합니다.',
+      };
+    case 'healing':
+      return {
+        topic,
+        enneadsRef: '《엔네아데스》 I.6.9 (내면의 조각상에서 불필요한 것을 깎아냄)',
+        shadowTrap: '지친 영혼 위에 더 많은 성취나 위로를 덧씌워 오히려 무거워지는 과잉',
+        dialecticQuestion: '지금 내 영혼의 조각상을 무겁게 덮고 있는 낡은 껍질 한 겹은 무엇인가요?',
+        katharsisPractice: '억지로 힘을 내기보다 마음을 어지럽히는 소음과 자책을 가만히 덜어내어 숨을 틔웁니다.',
+      };
+    default:
+      return {
+        topic,
+        enneadsRef: '《엔네아데스》 VI.9.11 (홀로 있는 자의 홀로 계신 분께로의 비상)',
+        shadowTrap: '외부의 분주함과 끝없는 비교에 마음을 흩뿌려 내면의 고요를 잃는 분산',
+        dialecticQuestion: '지금 이 순간 어떤 역할도 맡지 않은 채 고요히 서 있는 나 자신은 어떤 모습인가요?',
+        katharsisPractice: '하루 중 잠시 바깥의 소리를 끄고 내면의 맑은 중심이 제자리를 찾도록 고요히 머뭅니다.',
+      };
+  }
+}
+
+function buildPlotinusTemporalRhythm(now: Date): PlotinusTemporalRhythm {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const hour = kst.getUTCHours();
+  const month = kst.getUTCMonth() + 1;
+
+  let kstWindowLabel = '새벽 카타르시스 시간대 (내면 정화)';
+  let henosisClarityState = '잡념이 가라앉고 본래의 맑은 결이 드러나는 고요한 정화의 흐름';
+  let contemplativeCue = '하루를 열기 전, 불필요한 걱정 한 가지를 먼저 내려놓는 짧은 침묵이 큰 중심을 세워 줍니다.';
+
+  if (hour >= 7 && hour < 12) {
+    kstWindowLabel = '오전 누스 관조 시간대 (본질 응시)';
+    henosisClarityState = '현상의 세부를 넘어 전체 질서와 구조를 맑게 꿰뚫어 보는 지성의 흐름';
+    contemplativeCue = '눈앞의 분주함에 휩쓸리기 전에 오늘 가장 본질적인 한 가지 축을 먼저 세워 두십시오.';
+  } else if (hour >= 12 && hour < 18) {
+    kstWindowLabel = '오후 프쉬케 조화 시간대 (질서 실현)';
+    henosisClarityState = '생각과 행위가 일상과 관계 속에서 조화로운 형태를 빚어 가는 흐름';
+    contemplativeCue = '주변의 소란과 부딪히더라도 내면의 맑은 시선을 잃지 않고 태도의 품위를 지켜 내십시오.';
+  } else if (hour >= 18 && hour < 23) {
+    kstWindowLabel = '밤 헤노시스 귀환 시간대 (고요한 합일)';
+    henosisClarityState = '바깥으로 흩어졌던 시선을 다시 안으로 거두어 온전한 쉼으로 돌아가는 흐름';
+    contemplativeCue = '오늘 하루 타인의 시선 때문에 짊어졌던 긴장을 내려놓고 내면의 고요 속으로 돌아가십시오.';
+  }
+
+  let seasonTone = '가을의 수렴 — 겉잎을 덜어내고 내면의 맑은 중심을 남기는 절제';
+  if (month >= 3 && month <= 5) {
+    seasonTone = '봄의 유출 — 맑은 빛이 일상의 결을 따라 부드럽게 번져 나가는 개화';
+  } else if (month >= 6 && month <= 8) {
+    seasonTone = '여름의 현현 — 넘치는 생명력 속에서도 중심의 고요를 잃지 않는 균형';
+  } else if (month === 12 || month <= 2) {
+    seasonTone = '겨울의 귀환 — 외적 분주함을 멈추고 내면의 조각상을 깊이 다듬는 침잠';
+  }
+
+  return {
+    kstWindowLabel,
+    seasonTone,
+    henosisClarityState,
+    contemplativeCue,
+  };
+}
+
+function buildPlotinusSynthesisMatrix(
+  stage: PlotinusAscentStage,
+  topic: PlotinusQuestionTopic,
+  temporal: PlotinusTemporalRhythm
+): PlotinusSynthesisMatrix {
+  const katharsisReadiness = stage === 'KATHARSIS_PURIFICATION'
+    ? '우선순위 높음 — 덧씌워진 집착과 체면의 군더더기를 덜어내는 정화가 출발점입니다.'
+    : '정돈됨 — 불필요한 소음을 가라앉히고 본질만 남길 준비가 되어 있습니다.';
+  const nousAlignment = topic === 'decision' || topic === 'reflection'
+    ? '명료함 — 단편적 이해관계를 넘어 전체 구조와 본질을 바라보는 시선이 열려 있습니다.'
+    : '안정적 — 감정적 파동 뒤편의 조용한 이치와 흐름을 차분히 짚어 볼 수 있습니다.';
+  const henosisStillness = stage === 'HENOSIS_STILLNESS'
+    ? '깊음 — 외부의 승인 없이도 홀로 온전한 고요에 머무를 수 있는 내적 중심이 섰습니다.'
+    : '성숙 중 — 바깥에서 안으로 시선을 되돌릴수록 마음의 고요가 빠르게 회복됩니다.';
+
+  return {
+    katharsisReadiness,
+    nousAlignment,
+    henosisStillness,
+    integrativeSummary: `${temporal.kstWindowLabel}의 흐름 속에서 더하기보다 덜어냄(카타르시스)으로 내면의 맑은 중심을 세울 때 해답이 또렷해집니다.`,
+  };
+}
+
 export function calculateAncientGreekPlotinusEnneadsHenosis(
   profile: UserProfile,
   now: Date = new Date(),
@@ -200,6 +325,10 @@ export function calculateAncientGreekPlotinusEnneadsHenosis(
   const ascentStage = stages[(absHash >> 2) % stages.length];
   const ascentStageLabel = PLOTINUS_STAGE_LABELS[ascentStage];
 
+  const situationalEnneadsAudit = buildPlotinusSituationalAudit(questionTopic);
+  const temporalNousRhythm = buildPlotinusTemporalRhythm(now);
+  const plotinusSynthesisMatrix = buildPlotinusSynthesisMatrix(ascentStage, questionTopic, temporalNousRhythm);
+
   const practiceGuidance = `${activePlotinusTheme.practicalCounsel} ${PLOTINUS_TOPIC_PRACTICE[questionTopic]}`;
   const ritualAction = PLOTINUS_TOPIC_RITUAL[questionTopic];
   const reflectionFocus = PLOTINUS_TOPIC_REFLECTION[questionTopic];
@@ -225,6 +354,9 @@ export function calculateAncientGreekPlotinusEnneadsHenosis(
     ritualAction,
     reflectionFocus,
     boundaryNotice,
+    situationalEnneadsAudit,
+    temporalNousRhythm,
+    plotinusSynthesisMatrix,
     plotinusComprehensiveGuidance: {
       guidanceTitle,
       philosophicalCounsel,
@@ -237,6 +369,9 @@ export function formatAncientGreekPlotinusEnneadsHenosisPrompt(res: AncientGreek
     `【플로티노스 《엔네아데스》 일자유출설 & 영적 귀환 지표】`,
     `- 귀환 단계: ${res.ascentStageLabel}`,
     `- 핵심 영적 테마: ${res.activePlotinusTheme.themeTitleKo} [${res.activePlotinusTheme.themeTitleEn}]`,
+    `- 질문 맥락 감사(${res.situationalEnneadsAudit.enneadsRef}): 함정(${res.situationalEnneadsAudit.shadowTrap}) → 변증 질문("${res.situationalEnneadsAudit.dialecticQuestion}") / 정화 실천(${res.situationalEnneadsAudit.katharsisPractice})`,
+    `- KST 시공간 리듬(${res.temporalNousRhythm.kstWindowLabel} · ${res.temporalNousRhythm.seasonTone}): ${res.temporalNousRhythm.henosisClarityState} (${res.temporalNousRhythm.contemplativeCue})`,
+    `- 엔네아데스 교차 매트릭스: 정화(${res.plotinusSynthesisMatrix.katharsisReadiness}) | 누스(${res.plotinusSynthesisMatrix.nousAlignment}) | 헤노시스(${res.plotinusSynthesisMatrix.henosisStillness})`,
     `- 실존적 통찰: ${res.activePlotinusTheme.existentialInsight}`,
     `- 실천 조언: ${res.practiceGuidance}`,
     `- 일상 의례: ${res.ritualAction}`,

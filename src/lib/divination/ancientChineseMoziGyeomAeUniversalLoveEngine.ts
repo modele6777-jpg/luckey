@@ -7,12 +7,14 @@
  * 3. 절용(節用) 및 절장(節葬): 허례허식과 낭비를 없애고 본질과 실용에 집중함
  * 4. 상현(尙賢) 및 천지(天志): 신분을 초월한 능력주의 인재 등용과 하늘의 공평무사한 정의 실천
  *
- * @version LUCKEY-MOZI-GYEOM-AE-v1.0.0
+ * @version LUCKEY-MOZI-GYEOM-AE-v2.0.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const MOZI_GYEOM_AE_VERSION = 'LUCKEY-MOZI-GYEOM-AE-v1.0.0';
+export const MOZI_GYEOM_AE_VERSION = 'LUCKEY-MOZI-GYEOM-AE-v2.0.0';
+
+export type MoziQuestionTopic = 'relationship' | 'decision' | 'simplicity' | 'reflection';
 
 export interface MohistStage {
   stageLevel: number;
@@ -22,16 +24,37 @@ export interface MohistStage {
   mohistVirtueBlessing: string;
 }
 
+export interface MoziSituationalAudit {
+  topic: MoziQuestionTopic;
+  moziTextRef: string;
+  exclusionTrap: string;
+  reciprocalShift: string;
+  practicalDirective: string;
+}
+
+export interface MoziTemporalRhythm {
+  kstWindowLabel: string;
+  seasonTone: string;
+  gyeomAePracticeFocus: string;
+  dailyCue: string;
+}
+
+export interface MoziSynthesisMatrix {
+  gyeomAeOpenness: string;
+  gyoRiReciprocity: string;
+  biGongJeolYongDiscipline: string;
+  integrativeSummary: string;
+}
+
 export interface MoziGyeomAeResult {
   engineVersion: string;
   calculatedAtKst: string;
-  // 5대 핵심 지표 (0~100)
-  gyeomAeUniversalLoveScore: number; // 겸상애(兼相愛) 차별 없는 보편적 자비도
-  gyoRiMutualBenefitIndex: number; // 교상리(交相利) 상호 번영 및 윈윈 협력 지수
-  biGongPeaceShieldForce: number; // 비공(非攻) 무력 억제 및 철통 방어 수호력
-  jeolYongSimplicityPurity: number; // 절용(節用) 허례허식 척결 및 실용 본질도
-  tianZhiCosmicJusticeScore: number; // 천지(天志) 하늘의 공평무사한 정의 실천도
-  // 세부 명세
+  gyeomAeUniversalLoveScore: number;
+  gyoRiMutualBenefitIndex: number;
+  biGongPeaceShieldForce: number;
+  jeolYongSimplicityPurity: number;
+  tianZhiCosmicJusticeScore: number;
+  questionTopic: MoziQuestionTopic;
   activeMohistStage: MohistStage;
   primaryMohistPrecept: {
     preceptTitleKo: string;
@@ -43,6 +66,10 @@ export interface MoziGyeomAeResult {
     fortressTitle: string;
     strategicCounsel: string;
   };
+  situationalMohistAudit: MoziSituationalAudit;
+  temporalMohistRhythm: MoziTemporalRhythm;
+  mohistSynthesisMatrix: MoziSynthesisMatrix;
+  boundaryNotice: string;
 }
 
 export type MoziGyeomAeReport = MoziGyeomAeResult;
@@ -69,9 +96,8 @@ const FORTRESS_WISDOMS = [
   { fortressTitle: '차별 없이 만물을 비추는 하늘의 태양', strategicCounsel: '사람의 외모나 신분으로 차별하지 않고 오직 성실함과 진실됨으로 사람을 대하면 천하가 당신과 함께할 것입니다.' },
 ];
 
-function getKstDateString(): string {
-  const now = new Date();
-  const kst = new Date(now.getTime() + (9 * 60 + now.getTimezoneOffset()) * 60000);
+function getKstDateString(now: Date): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
   return kst.toISOString().replace('T', ' ').substring(0, 19) + ' KST';
 }
 
@@ -84,17 +110,135 @@ function hashSeed(seedStr: string): number {
   return Math.abs(h);
 }
 
-export function calculateMoziGyeomAe(profile?: UserProfile): MoziGyeomAeResult {
+function classifyMoziTopic(question: string): MoziQuestionTopic {
+  if (/연애|사랑|관계|갈등|다툼|상대|사람|가족|친구|동료|협력|신뢰/.test(question)) {
+    return 'relationship';
+  }
+  if (/선택|결정|이직|창업|계약|협상|경쟁|진로|일|프로젝트|전략/.test(question)) {
+    return 'decision';
+  }
+  if (/돈|지출|낭비|절약|정리|단순|피로|소모|체면|효율|회복/.test(question)) {
+    return 'simplicity';
+  }
+  return 'reflection';
+}
+
+function buildMoziSituationalAudit(topic: MoziQuestionTopic): MoziSituationalAudit {
+  switch (topic) {
+    case 'relationship':
+      return {
+        topic,
+        moziTextRef: '《묵자》〈겸애(兼愛)〉 — 남의 집을 내 집처럼 보라(視人之家 若視其家)',
+        exclusionTrap: '내 편과 남의 편을 가르고 상대의 손해를 감수한 채 내 입장만 세우려는 별애(別愛)',
+        reciprocalShift: '상대와 내가 함께 숨 쉬고 득을 나누는 호혜적 질문("둘 다에게 이로운 길은 무엇인가")으로 시선을 옮깁니다.',
+        practicalDirective: '감정적 공방을 멈추고 상대의 실제 어려움을 한 가지 덜어 주는 구체적 행동부터 먼저 건네십시오.',
+      };
+    case 'decision':
+      return {
+        topic,
+        moziTextRef: '《묵자》〈비공(非攻)〉·〈상현(尙賢)〉 — 싸우지 않고 지키는 실질의 방어',
+        exclusionTrap: '소모적인 기싸움이나 외형적 체면에 자원을 낭비하며 본질의 수호를 놓치는 무모함',
+        reciprocalShift: '공격보다 튼튼한 대비(수어)와 실질적 효용을 기준으로 선택지를 재정렬합니다.',
+        practicalDirective: '갈등을 키우는 선택을 피하고, 나와 동료가 모두 지치지 않게 지킬 수 있는 방어선과 실익을 먼저 확보하십시오.',
+      };
+    case 'simplicity':
+      return {
+        topic,
+        moziTextRef: '《묵자》〈절용(節用)〉 — 쓸모없는 낭비를 거두어 본질에 쓰라(去無用之費)',
+        exclusionTrap: '남의 시선과 체면을 맞추기 위해 시간·돈·기력을 과도하게 소모하는 허례허식',
+        reciprocalShift: '보여주기식 조건을 덜어내고 삶의 실제 쓸모와 회복에 자원을 집중합니다.',
+        practicalDirective: '오늘 당장 불필요한 약속·지출·절차 하나를 과감히 줄여 가장 중요한 일에 여력을 돌리십시오.',
+      };
+    default:
+      return {
+        topic,
+        moziTextRef: '《묵자》〈천지(天志)〉 — 공평무사한 저울(義)로 자기 삶을 비춤',
+        exclusionTrap: '말과 다짐만 앞세운 채 일상 속 구체적 실천과 검증을 미루는 공허함',
+        reciprocalShift: '추상적 고민을 구체적으로 누구에게, 무엇에 이로운가로 바꿔 묻습니다.',
+        practicalDirective: '큰 결심보다 오늘 내 손이 닿는 자리에서 낭비를 줄이고 한 사람에게라도 실질적 도움을 주는 선택을 하십시오.',
+      };
+  }
+}
+
+function buildMoziTemporalRhythm(now: Date): MoziTemporalRhythm {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const hour = kst.getUTCHours();
+  const month = kst.getUTCMonth() + 1;
+
+  let kstWindowLabel = '새벽 절용·대비 시간대 (실질 점검)';
+  let gyeomAePracticeFocus = '군더더기를 덜어내고 오늘 지켜야 할 핵심 원칙과 방어선을 단단히 세우는 시간';
+  let dailyCue = '분주해지기 전에 불필요한 소모를 줄이고 오늘 반드시 지킬 우선순위 하나만 남기십시오.';
+
+  if (hour >= 7 && hour < 12) {
+    kstWindowLabel = '오전 교리·협력 시간대 (상생 실행)';
+    gyeomAePracticeFocus = '나와 타인이 함께 이득을 얻는 호혜적 협력과 명확한 실무가 힘있게 굴러가는 흐름';
+    dailyCue = '협의와 소통에서 내 몫만 챙기기보다 상대방이 얻는 실질적 이익을 함께 짚어 주십시오.';
+  } else if (hour >= 12 && hour < 18) {
+    kstWindowLabel = '오후 비공·수어 시간대 (평화 수호)';
+    gyeomAePracticeFocus = '불필요한 마찰을 미리 막고 약한 고리를 보강해 공동의 안정을 지켜 내는 흐름';
+    dailyCue = '날 선 말로 맞서기보다 차분한 대비책으로 갈등의 소지를 먼저 가라앉히십시오.';
+  } else if (hour >= 18 && hour < 23) {
+    kstWindowLabel = '밤 천지·성찰 시간대 (공정 회고)';
+    gyeomAePracticeFocus = '오늘의 언행이 편견 없이 공정하고 실질적으로 쓰였는지 고요히 돌아보는 흐름';
+    dailyCue = '하루의 지출과 감정을 점검하며 과했던 허례와 불필요한 긴장을 조용히 내려놓으십시오.';
+  }
+
+  let seasonTone = '가을의 수확 — 거품을 걷어내고 알곡과 실질만 단단히 거두는 절용의 계절';
+  if (month >= 3 && month <= 5) {
+    seasonTone = '봄의 파종 — 차별 없는 연대와 호혜의 씨앗을 널리 심는 겸애의 계절';
+  } else if (month >= 6 && month <= 8) {
+    seasonTone = '여름의 수어 — 과열된 갈등을 식히고 소중한 터전을 흔들림 없이 지키는 비공의 계절';
+  } else if (month === 12 || month <= 2) {
+    seasonTone = '겨울의 비축 — 낭비를 멈추고 내실과 방어 역량을 묵묵히 다지는 절용의 계절';
+  }
+
+  return {
+    kstWindowLabel,
+    seasonTone,
+    gyeomAePracticeFocus,
+    dailyCue,
+  };
+}
+
+function buildMoziSynthesisMatrix(
+  stage: MohistStage,
+  topic: MoziQuestionTopic,
+  temporal: MoziTemporalRhythm
+): MoziSynthesisMatrix {
+  const gyeomAeOpenness = topic === 'relationship'
+    ? '확장 필요 — 내 편과 남의 편을 나누는 경계를 허물고 상대의 처지를 먼저 살필 때 막힘이 풀립니다.'
+    : '안정적 — 편견 없이 전체의 선과 공존을 바라볼 여력이 갖춰져 있습니다.';
+  const gyoRiReciprocity = topic === 'decision'
+    ? '핵심 축 — 일방적 승부가 아니라 서로에게 실질적 이로움이 남는 구조를 설계해야 오래갑니다.'
+    : '양호 — 말보다 구체적 도움과 실행으로 신뢰가 쌓이는 흐름입니다.';
+  const biGongJeolYongDiscipline = stage.stageLevel >= 4 || topic === 'simplicity'
+    ? '최우선 — 불필요한 소모전과 체면 낭비를 멈추고 본질 방어에 자원을 모아야 합니다.'
+    : '균형 — 겉치레를 줄이고 핵심 과업에 집중할수록 일의 단단함이 살아납니다.';
+
+  return {
+    gyeomAeOpenness,
+    gyoRiReciprocity,
+    biGongJeolYongDiscipline,
+    integrativeSummary: `${temporal.kstWindowLabel}에서는 허례를 줄이는 절용과 서로를 살리는 교상리가 맞물릴 때 가장 든든한 해법이 열립니다.`,
+  };
+}
+
+export function calculateMoziGyeomAe(
+  profile?: UserProfile,
+  question = '',
+  now: Date = new Date()
+): MoziGyeomAeResult {
   const birthdate = profile?.basic?.birthdate || '1995-03-21';
   const birthtime = profile?.basic?.birthtime || '12:00';
   const name = profile?.basic?.name || 'Inquirer';
-  const seed = hashSeed(`MOZI-GYEOM-AE-${birthdate}-${birthtime}-${name}`);
+  const kstDate = new Date(now.getTime() + 9 * 60 * 60 * 1000).toISOString().slice(0, 10);
+  const seed = hashSeed(`MOZI-GYEOM-AE-${birthdate}-${birthtime}-${name}-${kstDate}-${question}`);
 
-  const gyeomAeUniversalLoveScore = (seed % 41) + 60; // 60~100
-  const gyoRiMutualBenefitIndex = ((seed >> 3) % 43) + 58; // 58~100
-  const biGongPeaceShieldForce = ((seed >> 5) % 39) + 62; // 62~100
-  const jeolYongSimplicityPurity = ((seed >> 7) % 45) + 55; // 55~99
-  const tianZhiCosmicJusticeScore = ((seed >> 9) % 38) + 63; // 63~100
+  const gyeomAeUniversalLoveScore = (seed % 41) + 60;
+  const gyoRiMutualBenefitIndex = ((seed >> 3) % 43) + 58;
+  const biGongPeaceShieldForce = ((seed >> 5) % 39) + 62;
+  const jeolYongSimplicityPurity = ((seed >> 7) % 45) + 55;
+  const tianZhiCosmicJusticeScore = ((seed >> 9) % 38) + 63;
 
   const stageIdx = (seed >> 2) % MOHIST_STAGES.length;
   const activeMohistStage = MOHIST_STAGES[stageIdx];
@@ -105,34 +249,44 @@ export function calculateMoziGyeomAe(profile?: UserProfile): MoziGyeomAeResult {
   const wisdomIdx = (seed >> 6) % FORTRESS_WISDOMS.length;
   const moziFortressWisdom = FORTRESS_WISDOMS[wisdomIdx];
 
+  const questionTopic = classifyMoziTopic(question);
+  const situationalMohistAudit = buildMoziSituationalAudit(questionTopic);
+  const temporalMohistRhythm = buildMoziTemporalRhythm(now);
+  const mohistSynthesisMatrix = buildMoziSynthesisMatrix(activeMohistStage, questionTopic, temporalMohistRhythm);
+  const boundaryNotice = '이 풀이는 묵자 겸애·비공·절용 사상을 오늘의 선택과 관계에 비추어 보는 정성적 실천 지침이며, 수치 우열이나 확정적 예언이 아닙니다.';
+
   return {
     engineVersion: MOZI_GYEOM_AE_VERSION,
-    calculatedAtKst: getKstDateString(),
+    calculatedAtKst: getKstDateString(now),
     gyeomAeUniversalLoveScore,
     gyoRiMutualBenefitIndex,
     biGongPeaceShieldForce,
     jeolYongSimplicityPurity,
     tianZhiCosmicJusticeScore,
+    questionTopic,
     activeMohistStage,
     primaryMohistPrecept,
     moziFortressWisdom,
+    situationalMohistAudit,
+    temporalMohistRhythm,
+    mohistSynthesisMatrix,
+    boundaryNotice,
   };
 }
 
 export function formatMoziGyeomAePrompt(result: MoziGyeomAeResult): string {
   return `[🛡️ 춘추전국시대 묵가(墨家) 묵자(墨子) 겸애교리(兼愛交利) & 비공절용 실천 리포트]
 - 엔진 버전: ${result.engineVersion}
-- 겸상애(兼相愛) 차별 없는 보편적 자비도: ${result.gyeomAeUniversalLoveScore}%
-- 교상리(交相利) 상호 번영 및 윈윈 협력 지수: ${result.gyoRiMutualBenefitIndex}%
-- 비공(非攻) 무력 억제 및 철통 방어 수호력: ${result.biGongPeaceShieldForce}%
-- 절용(節用) 허례허식 척결 및 실용 본질도: ${result.jeolYongSimplicityPurity}%
-- 천지(天志) 하늘의 공평무사한 정의 실천도: ${result.tianZhiCosmicJusticeScore}%
 - 현행 묵가적 도덕 지평: **[${result.activeMohistStage.stageNameKo} (${result.activeMohistStage.stageNameHanja})]**
   → 관장 영역: ${result.activeMohistStage.ethicalDomain}
   → 실천의 축복: ${result.activeMohistStage.mohistVirtueBlessing}
+- 질문 맥락 감사(${result.situationalMohistAudit.moziTextRef}): 함정(${result.situationalMohistAudit.exclusionTrap}) → 전환(${result.situationalMohistAudit.reciprocalShift}) / 실천(${result.situationalMohistAudit.practicalDirective})
+- KST 시공간 리듬(${result.temporalMohistRhythm.kstWindowLabel} · ${result.temporalMohistRhythm.seasonTone}): ${result.temporalMohistRhythm.gyeomAePracticeFocus} (${result.temporalMohistRhythm.dailyCue})
+- 묵가 교차 매트릭스: 겸애(${result.mohistSynthesisMatrix.gyeomAeOpenness}) | 교리(${result.mohistSynthesisMatrix.gyoRiReciprocity}) | 비공·절용(${result.mohistSynthesisMatrix.biGongJeolYongDiscipline})
 - 최우선 묵가 실천 계율: **[${result.primaryMohistPrecept.preceptTitleKo} (${result.primaryMohistPrecept.hanjaMotto})]**
   → 핵심 본질: ${result.primaryMohistPrecept.coreEssence}
   → 실천 지침: ${result.primaryMohistPrecept.actionableDirective}
 - 묵자의 철옹성 지혜: 《${result.moziFortressWisdom.fortressTitle}》
-  → 전략적 조언: "${result.moziFortressWisdom.strategicCounsel}"`;
+  → 전략적 조언: "${result.moziFortressWisdom.strategicCounsel}"
+- 해석 경계: ${result.boundaryNotice}`;
 }
