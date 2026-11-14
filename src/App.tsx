@@ -1,3 +1,5 @@
+import { OverlayPaneContext } from './components/layout/OverlayPaneContext';
+import { rememberOverlayPane } from './lib/overlayPane';
 import { isLucyThemeRoute } from './lib/lucyDayTheme';
 import { TTSFailureNotice } from './components/common/TTSFailureNotice';
 import { recordOneStopPageVisit } from './lib/omniWarp/contextNavCycleEngine';
@@ -724,6 +726,7 @@ function AppContent() {
     if (typeof window === 'undefined') return;
 
     const handleGlobalPointer = (e: Event) => {
+      rememberOverlayPane(e.target, e instanceof MouseEvent && e.detail !== 0 ? { x: e.clientX, y: e.clientY } : undefined);
       const target = e.target as HTMLElement | null;
       if (!target) return;
 
@@ -859,15 +862,17 @@ function AppContent() {
               }
               className="duo-folded-view shrink-0 flex flex-col overflow-hidden relative border-none"
             >
-              {isLucyRoute ? (
-                /* 최우측/최하단 메뉴에서 루시 선택 시 ➔ 코스믹 룸 표출 */
-                <div className="w-full h-full overflow-hidden flex flex-col">
-                  <DuoCosmicAmbientRoom isLight={isLight} />
-                </div>
-              ) : (
-                /* 최우측/최하단 메뉴에서 KEY 또는 럭키 채널 선택 시 ➔ 해당 페이지 표출 */
-                <ChannelPage location={location} />
-              )}
+              <OverlayPaneContext.Provider value="content">
+                {isLucyRoute ? (
+                  /* 최우측/최하단 메뉴에서 루시 선택 시 ➔ 코스믹 룸 표출 */
+                  <div className="w-full h-full overflow-hidden flex flex-col">
+                    <DuoCosmicAmbientRoom isLight={isLight} />
+                  </div>
+                ) : (
+                  /* 최우측/최하단 메뉴에서 KEY 또는 럭키 채널 선택 시 ➔ 해당 페이지 표출 */
+                  <ChannelPage location={location} />
+                )}
+              </OverlayPaneContext.Provider>
             </div>
 
             {/* 루시 채팅창:
@@ -890,11 +895,13 @@ function AppContent() {
               }
               className="shrink-0 min-h-0 flex flex-col overflow-hidden z-10 relative border-none"
             >
-              <ErrorBoundary>
-                <React.Suspense fallback={<PageLoader />}>
-                  <LucyStandalonePage />
-                </React.Suspense>
-              </ErrorBoundary>
+              <OverlayPaneContext.Provider value="lucy">
+                <ErrorBoundary>
+                  <React.Suspense fallback={<PageLoader />}>
+                    <LucyStandalonePage />
+                  </React.Suspense>
+                </ErrorBoundary>
+              </OverlayPaneContext.Provider>
             </div>
             {isDuoLandscape && (
               <button

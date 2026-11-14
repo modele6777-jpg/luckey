@@ -1,3 +1,5 @@
+import { OverlayPaneContext } from './OverlayPaneContext';
+import { useOverlayPane } from '@/hooks/useOverlayPane';
 import { useMainOverlayViewport } from '@/hooks/useMainOverlayViewport';
 import { ScreenOverlayContext, isTopScreenOverlay, useScreenOverlayLayer } from './ScreenPortal';
 import React, { forwardRef, useEffect, useRef, type HTMLAttributes, type ReactNode } from 'react';
@@ -16,7 +18,8 @@ export const DuoWorkspace = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivEle
 export function WorkspacePortal({ children, onClose }: { children: ReactNode; onClose?: () => void }) {
   const portalRef = useRef<HTMLDivElement>(null);
   const layers = useScreenOverlayLayer(portalRef);
-  const viewportStyle = useMainOverlayViewport();
+  const pane = useOverlayPane(portalRef);
+  const viewportStyle = useMainOverlayViewport(pane);
   const closeRef = useRef(onClose);
   closeRef.current = onClose;
   useEffect(() => {
@@ -25,6 +28,11 @@ export function WorkspacePortal({ children, onClose }: { children: ReactNode; on
     focusable()[0]?.focus();
     const handleKeyDown = (event: KeyboardEvent) => {
       if (!isTopScreenOverlay(portalRef.current)) return;
+      const target = event.target instanceof Element ? event.target : null;
+      const source = target?.closest<HTMLElement>('[data-overlay-pane]');
+      if (source && source.dataset.overlayPane !== portalRef.current?.dataset.overlayPane) return;
+      const sourcePane = target?.closest('#duo-content-viewport, #duo-lucy-viewport');
+      if (sourcePane && sourcePane.id !== (portalRef.current?.dataset.overlayPane === 'lucy' ? 'duo-lucy-viewport' : 'duo-content-viewport')) return;
       if (event.key === 'Escape' && closeRef.current) {
         event.preventDefault();
         event.stopPropagation();
@@ -49,8 +57,10 @@ export function WorkspacePortal({ children, onClose }: { children: ReactNode; on
   }, []);
   if (typeof document === 'undefined') return null;
   return createPortal(
-    <ScreenOverlayContext.Provider value={layers}>
-      <div ref={portalRef} className="duo-portal" style={viewportStyle} data-screen-overlay-layer="">{children}</div>
-    </ScreenOverlayContext.Provider>, document.body
+    <OverlayPaneContext.Provider value={pane}>
+      <ScreenOverlayContext.Provider value={layers}>
+        <div ref={portalRef} className="duo-portal" style={viewportStyle} data-overlay-pane={pane} data-screen-overlay-layer="">{children}</div>
+      </ScreenOverlayContext.Provider>
+    </OverlayPaneContext.Provider>, document.body
   );
 }

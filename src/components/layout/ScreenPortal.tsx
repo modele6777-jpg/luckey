@@ -1,3 +1,5 @@
+import { OverlayPaneContext } from './OverlayPaneContext';
+import { useOverlayPane } from '@/hooks/useOverlayPane';
 import { useMainOverlayViewport } from '@/hooks/useMainOverlayViewport';
 import React, { createContext, useContext, useLayoutEffect, useMemo, useRef, type ReactNode, type RefObject } from 'react';
 import { createPortal } from 'react-dom';
@@ -7,7 +9,13 @@ export const ScreenOverlayContext = createContext<readonly RefObject<HTMLDivElem
 /** Only occupied overlays participate; opening order wins over JSX declaration order. */
 export function isTopScreenOverlay(element: HTMLElement | null): boolean {
   const layers = Array.from(document.querySelectorAll<HTMLElement>('[data-screen-overlay-layer]'))
-    .filter(layer => layer.childElementCount > 0);
+    .filter(layer => {
+      if (!layer.childElementCount || !element) return false;
+      const a = layer.getBoundingClientRect();
+      const b = element.getBoundingClientRect();
+      // Independent pane dialogs must not disable each other's controls.
+      return a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top;
+    });
   layers.sort((a, b) => Number(a.style.zIndex) - Number(b.style.zIndex));
   return layers.at(-1) === element;
 }
@@ -60,12 +68,15 @@ export function useScreenOverlayLayer(ref: RefObject<HTMLDivElement | null>) {
 export function ScreenPortal({ children }: { children: ReactNode }) {
   const ref = useRef<HTMLDivElement>(null);
   const layers = useScreenOverlayLayer(ref);
-  const viewportStyle = useMainOverlayViewport();
+  const pane = useOverlayPane(ref);
+  const viewportStyle = useMainOverlayViewport(pane);
   if (typeof document === 'undefined') return null;
   return createPortal(
-    <ScreenOverlayContext.Provider value={layers}>
-      <div ref={ref} className="screen-portal" style={viewportStyle} data-screen-overlay-layer="">{children}</div>
-    </ScreenOverlayContext.Provider>,
+    <OverlayPaneContext.Provider value={pane}>
+      <ScreenOverlayContext.Provider value={layers}>
+        <div ref={ref} className="screen-portal" style={viewportStyle} data-overlay-pane={pane} data-screen-overlay-layer="">{children}</div>
+      </ScreenOverlayContext.Provider>
+    </OverlayPaneContext.Provider>,
     document.body,
   );
 }

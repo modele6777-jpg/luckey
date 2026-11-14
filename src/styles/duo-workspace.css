@@ -286,3 +286,26 @@ html:root:root :is(.screen-portal, .duo-portal) :is(#tarot-stage-container, #tod
   height: 100% !important;
   max-height: 100% !important;
 }
+
+/* Dialogs must remain reachable when a pane is shorter than a device viewport. */
+:is(.screen-portal, .duo-portal) .fixed.inset-0 {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  align-items: safe center;
+  justify-content: safe center;
+}
+:is(.screen-portal, .duo-portal) .fixed.inset-0 > :is([role="dialog"], [class*="max-h-"], .duo-dialog-panel) {
+  min-height: 0;
+  max-height: max(3rem, calc(var(--overlay-height) - 2rem)) !important;
+}
+/* Floating music cards also use local bounds rather than device-width sizing. */
+:is(.screen-portal, .duo-portal) > .fixed:not(.inset-0) {
+  max-width: calc(100% - 1.5rem);
+  max-height: max(3rem, calc(var(--overlay-height) - 2rem));
+}
+html:root:root :is(.screen-portal, .duo-portal) :is(.bottom-safe-fab-center, .bottom-safe-music-menu) {
+  left: 50% !important;
+  right: auto !important;
+  bottom: 1rem !important;
+  transform: translateX(-50%) !important;
+}
