@@ -3069,14 +3069,21 @@ test('Sumerian Fifty Mes & Civilization Engine: calculates primary me, creation 
   assert(prompt.includes(rep.primaryMe.koreanName));
 });
 
-test('Zhong-Lu Inner Alchemy & Three Immortals Engine: calculates stages, tier and kan-li harmony', () => {
-  const rep = calculateZhongLuInnerAlchemy(profile);
+test('Zhong-Lu Inner Alchemy & Three Immortals Engine: calculates stages, tier and kan-li qualitative posture', () => {
+  const rep = calculateZhongLuInnerAlchemy(profile, '요즘 너무 지쳐서 회복하고 싶어요');
   assert.equal(rep.engineVersion, ZHONG_LU_INNER_ALCHEMY_VERSION);
+  assert.equal(rep.questionTheme, 'healing');
   assert(rep.immortalityTier.koreanTitle.length > 0);
-  assert(rep.kanLiHarmonyScore >= 0 && rep.kanLiHarmonyScore <= 100);
+  assert(rep.kanLiPosture.length > 0);
+  assert(rep.practiceGuidance.length > 0);
+  assert(rep.ritualAction.length > 0);
+  assert(rep.reflectionFocus.length > 0);
+  assert(rep.boundaryNotice.length > 0);
   const prompt = formatZhongLuInnerAlchemyPrompt(rep);
   assert(prompt.includes('도교 종려권·여동빈 종여내단(鍾呂內丹) 3품 선도 & 환원 엔진'));
   assert(prompt.includes(rep.immortalityTier.koreanTitle));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('조화도:'));
 });
 
 test('Druid Thirteen Moon Trees & Ogham Engine: calculates birth tree, active tree and resonance', () => {
@@ -3166,15 +3173,20 @@ test('Egyptian Hermetic Cartouche Engine: calculates divine cartouche and qualit
   assert(!prompt.includes('/100'));
 });
 
-test('Taoist Gong Guo Ge Karma Engine: calculates merit domain and shielding index', () => {
-  const rep = calculateTaoistGongGuoGeKarma(profile);
+test('Taoist Gong Guo Ge Karma Engine: calculates merit domain and qualitative guidance', () => {
+  const rep = calculateTaoistGongGuoGeKarma(profile, new Date(), '이직 결정을 어떻게 해야 할까요?');
   assert.equal(rep.engineVersion, TAOIST_GONG_GUO_GE_KARMA_ENGINE_VERSION);
+  assert.equal(rep.questionTheme, 'decision');
   assert(rep.meritDomain.length > 0);
-  assert(rep.netMeritScore >= 0);
-  assert(rep.karmicShieldingIndex >= 0 && rep.karmicShieldingIndex <= 100);
+  assert(rep.practiceGuidance.length > 0);
+  assert(rep.ritualAction.length > 0);
+  assert(rep.reflectionFocus.length > 0);
+  assert(rep.boundaryNotice.length > 0);
   const prompt = formatTaoistGongGuoGeKarmaPrompt(rep);
-  assert(prompt.includes('도교 태상감응편(太上感應篇) & 공과격(功過格) 선악 카르마 적선개운 실측 데이터'));
+  assert(prompt.includes('도교 태상감응편(太上感應篇) & 공과격(功過格) 적선개운 성찰 리포트'));
   assert(prompt.includes(rep.meritDomain));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('점**'));
 });
 
 test('Yoruba Ifa Odu Engine: calculates 16 Meji Odu and Ebo guidance', () => {
@@ -3401,15 +3413,21 @@ test('Orpheic Mysteries Engine: calculates memory well awakening and Dionysian e
   assert(prompt.includes(rep.practiceGuidance));
 });
 
-test('Popol Vuh Hero Twins Engine: calculates active trial house and trickster resilience', () => {
-  const rep = calculatePopolVuhHeroTwins({ profile });
+test('Popol Vuh Hero Twins Engine: calculates active trial house and qualitative transformation', () => {
+  const rep = calculatePopolVuhHeroTwins({ profile, question: '연애 갈등을 어떻게 풀어야 할까요?' });
   assert.equal(rep.engineVersion, MESOAMERICAN_POPOL_VUH_ENGINE_VERSION);
-  assert(rep.tricksterResilienceScore >= 0 && rep.tricksterResilienceScore <= 100);
+  assert.equal(rep.questionTheme, 'relationship');
   assert(rep.activeTrialHouse.houseNumber >= 1 && rep.activeTrialHouse.houseNumber <= 6);
   assert(rep.activeTrialHouse.houseNameKo.length > 0);
+  assert(rep.twinArchetype.twinName.length > 0);
+  assert(rep.practiceGuidance.length > 0);
+  assert(rep.ritualAction.length > 0);
+  assert(rep.reflectionFocus.length > 0);
+  assert(rep.boundaryNotice.length > 0);
   const prompt = formatPopolVuhHeroTwinsPrompt(rep);
   assert(prompt.includes('고대 마야 포폴 부(Popol Vuh) 쌍둥이 영웅 & 시발바 시련 돌파 실측 데이터'));
   assert(prompt.includes(rep.activeTrialHouse.houseNameKo));
+  assert(!prompt.includes('/100'));
 });
 
 test('Ancient Yarrow I Ching Probability Engine: calculates dominant yao and Dayan alignment score', () => {

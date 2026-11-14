@@ -3,14 +3,23 @@
  *
  * 마야 키체 신화의 정수인 포폴 부에서 쌍둥이 영웅 후나푸(Hunahpu)와 슈발랑케(Xbalanque)가
  * 지하세계 시발바(Xibalba)의 6대 죽음의 시련의 집을 기지와 트릭스터 지혜로 극복하고 태양과 달로 부활한 신화를
- * 현대인의 절체절명의 위기 탈출, 트릭스터적 유연성, 고난 역전 승리력에 연동합니다.
+ * 질문 맥락에 반응하는 정성적 성찰과 유연한 위기 전환 지침으로 연결합니다.
  */
 
-export const MESOAMERICAN_POPOL_VUH_ENGINE_VERSION = 'LUCKEY-POPOL-VUH-HERO-TWINS-v1.0.0';
+export const MESOAMERICAN_POPOL_VUH_ENGINE_VERSION = 'LUCKEY-POPOL-VUH-HERO-TWINS-v1.1.0';
+
+export type PopolVuhQuestionTheme = 'relationship' | 'decision' | 'healing' | 'reflection';
+
+export type PopolVuhTransformationPhase =
+  | 'UNDERWORLD_TRIAL'
+  | 'CLEVER_REVERSAL'
+  | 'ASH_REBIRTH'
+  | 'SOLAR_LUNAR_ASCENT';
 
 export interface PopolVuhReport {
   engineVersion: string;
   calculatedAt: string;
+  questionTheme: PopolVuhQuestionTheme;
   activeTrialHouse: {
     houseNumber: number;
     houseNameKo: string;
@@ -18,9 +27,20 @@ export interface PopolVuhReport {
     coreHazard: string;
     heroicCounterStrategy: string;
   };
-  tricksterResilienceScore: number; // 0 ~ 100
+  twinArchetype: {
+    twinName: string;
+    celestialSymbol: string;
+    wisdomFocus: string;
+  };
+  transformationPhase: PopolVuhTransformationPhase;
+  tricksterResilienceScore: number; // 내부 호환용
   heroicTransformationVerdict: string;
   underworldVictoryRule: string;
+  practiceGuidance: string;
+  ritualAction: string;
+  reflectionFocus: string;
+  counselNote: string;
+  boundaryNotice: string;
 }
 
 const XIBALBA_HOUSES = [
@@ -68,6 +88,66 @@ const XIBALBA_HOUSES = [
   },
 ];
 
+const TWIN_ARCHETYPES = [
+  {
+    twinName: '후나푸 (Hunahpu · 태양의 형)',
+    celestialSymbol: '새벽을 여는 명료한 태양과 정면 돌파의 시선',
+    wisdomFocus: '혼란의 한가운데서도 본질을 꿰뚫어 보고 두려움 없이 다음 수를 준비하는 명석함',
+  },
+  {
+    twinName: '슈발랑케 (Xbalanque · 달의 아우)',
+    celestialSymbol: '밤의 어둠을 역이용하는 은빛 달과 트릭스터의 기지',
+    wisdomFocus: '정면 충돌 대신 판을 뒤집는 유머와 우회적 변신으로 위기를 기회로 바꾸는 유연함',
+  },
+];
+
+function classifyPopolVuhTheme(question: string): PopolVuhQuestionTheme {
+  if (/(연애|사랑|관계|배우자|결혼|이별|친구|가족|동료|사람|갈등)/.test(question)) return 'relationship';
+  if (/(이직|취업|사업|계약|돈|투자|선택|결정|진로|시험|합격|계획)/.test(question)) return 'decision';
+  if (/(불안|우울|지침|스트레스|건강|수면|마음|회복|위로|휴식|힘들)/.test(question)) return 'healing';
+  return 'reflection';
+}
+
+function buildPopolVuhQualitativeFields(
+  house: (typeof XIBALBA_HOUSES)[number],
+  twin: (typeof TWIN_ARCHETYPES)[number],
+  theme: PopolVuhQuestionTheme
+) {
+  const themeMap: Record<PopolVuhQuestionTheme, {
+    practice: string;
+    ritual: string;
+    reflection: string;
+    counsel: string;
+  }> = {
+    relationship: {
+      practice: `${house.houseNameKo}의 압박 앞에서는 상대를 정면으로 꺾으려 들지 마세요. ${twin.twinName}의 시선으로 날 선 말 사이에 작은 여백과 유머를 두면 팽팽한 긴장이 저절로 풀립니다.`,
+      ritual: '오늘 대화가 어긋날 것 같은 순간에는 바로 대꾸하지 말고, 물 한 모금을 마시며 상대의 진짜 두려움이 무엇인지 한 번만 헤아려 보세요.',
+      reflection: '지금 이 관계의 긴장 속에서 내가 꼭 지켜야 할 진심과, 가볍게 흘려보내도 될 자존심은 각각 무엇인가요?',
+      counsel: `${house.houseNameKo}의 시험은 관계의 칼날을 힘으로 누르는 대신 지혜롭게 방향을 트는 유연함을 묻고 있습니다.`,
+    },
+    decision: {
+      practice: `지금의 선택지는 정공법 하나만 있는 것이 아닙니다. ${house.heroicCounterStrategy}처럼, 상대와 환경이 예측하지 못한 작은 우회로와 대안 시나리오를 하나 더 그려보세요.`,
+      ritual: '중요한 결정을 내리기 전 종이에 가장 피하고 싶은 시나리오 하나를 적고, 그것을 거꾸로 뒤집어 유리하게 쓰는 방법을 3줄로 써보세요.',
+      reflection: '남들이 정해둔 시발바의 규칙 안에서만 싸우고 있지는 않은지, 판 자체를 바꿀 수 있는 나만의 강점은 무엇인가요?',
+      counsel: `${twin.twinName}의 기지는 정면 승부가 불리할 때 규칙을 재해석해 판을 뒤집는 창조적 결단을 권합니다.`,
+    },
+    healing: {
+      practice: `어둠과 냉기가 몰려올수록 불씨를 밖에서 찾지 말고 내면의 작은 온기를 먼저 지켜야 합니다. ${house.heroicCounterStrategy}의 태도로 오늘 하루는 스스로를 몰아세우지 마세요.`,
+      ritual: '잠들기 전 조명을 한 단계 낮추고, 오늘 하루 버텨낸 내 몸의 긴장을 어깨부터 천천히 내려놓는 3분 호흡을 해보세요.',
+      reflection: '지금 나를 가장 지치게 만드는 시련의 방은 외부의 사건인가요, 아니면 내 안의 엄격한 재촉인가요?',
+      counsel: `쌍둥이 영웅도 시련의 방을 단숨에 부수지 않고 쉼과 기다림을 통해 새벽을 맞았음을 기억하세요.`,
+    },
+    reflection: {
+      practice: `지금 마주한 난관은 끝이 아니라 통과 의례입니다. ${house.houseNameKo}의 그림자를 직시하되, ${twin.wisdomFocus}을 떠올리며 한 걸음 떨어져 전체 판을 바라보세요.`,
+      ritual: '오늘 하루 동안 가장 막막하게 느껴졌던 일 하나를 골라, "이 상황이 나에게 어떤 새로운 기술을 가르치려 하는가?"를 한 문장으로 적어보세요.',
+      reflection: '이 시련을 통과하고 난 뒤의 나는 어떤 새로운 빛과 여유를 갖게 될까요?',
+      counsel: `포폴 부의 시발바 서사는 어둠 속에서도 기지를 잃지 않는 자가 결국 새로운 태양과 달로 떠오른다는 상징을 전합니다.`,
+    },
+  };
+
+  return themeMap[theme];
+}
+
 export function calculatePopolVuhHeroTwins(params: {
   profile?: any;
   question?: string;
@@ -76,7 +156,8 @@ export function calculatePopolVuhHeroTwins(params: {
   const now = params.now || new Date();
   const basic = params.profile?.basic;
   const birthdateStr = basic?.birthdate?.trim() || '1994-01-24';
-  const question = params.question || '';
+  const question = (params.question || '').trim();
+  const questionTheme = classifyPopolVuhTheme(question);
 
   let seed = 0;
   for (let i = 0; i < birthdateStr.length; i++) {
@@ -89,28 +170,52 @@ export function calculatePopolVuhHeroTwins(params: {
 
   const houseIdx = Math.abs(seed) % XIBALBA_HOUSES.length;
   const activeTrialHouse = XIBALBA_HOUSES[houseIdx];
+  const twinArchetype = TWIN_ARCHETYPES[Math.abs(seed) % TWIN_ARCHETYPES.length];
+
+  const phases: PopolVuhTransformationPhase[] = [
+    'UNDERWORLD_TRIAL',
+    'CLEVER_REVERSAL',
+    'ASH_REBIRTH',
+    'SOLAR_LUNAR_ASCENT',
+  ];
+  const transformationPhase = phases[Math.abs(seed * 3) % phases.length];
 
   const tricksterResilienceScore = 68 + (Math.abs(seed * 7) % 31);
-  const heroicTransformationVerdict = '시발바의 시험을 딛고 하늘의 찬란한 태양과 달로 승천하는 영웅적 불사신';
-  const underworldVictoryRule = `지금 마주한 압박이나 난관에 정면으로 부딪혀 상처 입지 마세요. '${activeTrialHouse.houseNameKo}'의 위험을 뛰어넘는 쌍둥이 영웅의 지혜('${activeTrialHouse.heroicCounterStrategy}')를 본받아, 유쾌한 기지와 유연한 역발상으로 국면을 완벽히 반전시키세요.`;
+  const qualitative = buildPopolVuhQualitativeFields(activeTrialHouse, twinArchetype, questionTheme);
+
+  const heroicTransformationVerdict = `${activeTrialHouse.houseNameKo}의 시험을 ${twinArchetype.twinName}의 기지로 건너 새벽빛으로 도약하는 전환 국면`;
+  const underworldVictoryRule = qualitative.practice;
 
   return {
     engineVersion: MESOAMERICAN_POPOL_VUH_ENGINE_VERSION,
     calculatedAt: now.toISOString(),
+    questionTheme,
     activeTrialHouse,
+    twinArchetype,
+    transformationPhase,
     tricksterResilienceScore,
     heroicTransformationVerdict,
     underworldVictoryRule,
+    practiceGuidance: qualitative.practice,
+    ritualAction: qualitative.ritual,
+    reflectionFocus: qualitative.reflection,
+    counselNote: qualitative.counsel,
+    boundaryNotice: '마야 포폴 부 쌍둥이 영웅 상징은 우열을 가르는 점수가 아니라 위기를 유연하게 전환하기 위한 정성적 성찰 프레임입니다.',
   };
 }
 
 export function formatPopolVuhHeroTwinsPrompt(report: PopolVuhReport): string {
   const h = report.activeTrialHouse;
   return `### 🐆 고대 마야 포폴 부(Popol Vuh) 쌍둥이 영웅 & 시발바 시련 돌파 실측 데이터 (${report.engineVersion})
+- **질문 맥락 & 변모 국면**: ${report.questionTheme} · ${report.transformationPhase}
 - **현재 돌파 중인 시련의 방**: 제${h.houseNumber}관문 - ${h.houseNameKo} (${h.houseNameMaya})
+- **조응하는 쌍둥이 영웅**: ${report.twinArchetype.twinName} (${report.twinArchetype.celestialSymbol})
 - **직면한 핵심 위기 요인**: ${h.coreHazard}
 - **영웅들의 트릭스터 돌파 전략**: ${h.heroicCounterStrategy}
-- **트릭스터 위기 역전력 지수**: ${report.tricksterResilienceScore}점 / 100점
 - **영혼의 변모 판정**: ${report.heroicTransformationVerdict}
-- **지하세계 탈출 행동 지침**: ${report.underworldVictoryRule}`;
+- **실천 조언**: ${report.practiceGuidance}
+- **일상 의례**: ${report.ritualAction}
+- **성찰 질문**: ${report.reflectionFocus}
+- **조언 요약**: ${report.counselNote}
+- **해석 경계**: ${report.boundaryNotice}`;
 }
