@@ -1,8 +1,5 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { calculateWonhyoHwajaeng, formatWonhyoHwajaengPrompt, WONHYO_HWAJAENG_VERSION } from '../src/lib/divination/koreanWonhyoHwajaengOneMindEngine';
-import { calculateVedicPanchaKosha, formatVedicPanchaKoshaPrompt, VEDIC_PANCHA_KOSHA_ENGINE_VERSION } from '../src/lib/divination/vedicPanchaKoshaAlignmentEngine';
-import { calculateEpicureanTetrapharmakos, formatEpicureanTetrapharmakosPrompt, EPICUREAN_TETRAPHARMAKOS_VERSION } from '../src/lib/divination/ancientGreekEpicureanTetrapharmakosEngine';
 import { calculateIching, castIching, hexagram } from '../src/lib/divination/iching';
 import { calculateZiwei, calculateSukuyo, calculateVedic, sukuyoFromLunar, sukuyoRelationship } from '../src/lib/divination/birthCharts';
 import { calculateLiuren, calculateQimen, eventInstant } from '../src/lib/divination/eventCharts';
