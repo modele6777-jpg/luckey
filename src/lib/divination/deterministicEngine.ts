@@ -3091,7 +3091,7 @@ try {
   // 196. 춘추전국시대 묵가 묵자 겸애교리 & 비공절용 실천 엔진
   const moziGyeomAeResult = calculateSupplement('moziGyeomAeResult', () => ((() => {
     try {
-      return calculateMoziGyeomAe(profile);
+      return calculateMoziGyeomAe(profile, question, now);
     } catch (_) {
       return null;
     }

@@ -7100,6 +7100,43 @@ test('v1.1.0 qualitative deepening without score exposure: Bergson, Deleuze, and
   assert.ok(!pontyPrompt.includes('/100') && !pontyPrompt.includes('%'));
 });
 
+test('Plotinus Enneads, Mozi Gyeom-Ae, and Buddhist Yogacara v2.0.0 engines provide qualitative situational/temporal audit without score exposure', () => {
+  const testDate = new Date('2026-11-15T04:05:00Z');
+  const plotinus = calculateAncientGreekPlotinusEnneadsHenosis(profile, testDate, '이직을 선택해야 할지 방향이 고민돼요');
+  assert.equal(plotinus.engineVersion, ANCIENT_GREEK_PLOTINUS_VERSION);
+  assert.equal(plotinus.questionTopic, 'decision');
+  assert.ok(plotinus.situationalEnneadsAudit.enneadsRef.length > 0);
+  assert.ok(plotinus.temporalNousRhythm.kstWindowLabel.length > 0);
+  assert.ok(plotinus.plotinusSynthesisMatrix.integrativeSummary.length > 0);
+  const plotinusPrompt = formatAncientGreekPlotinusEnneadsHenosisPrompt(plotinus);
+  assert.ok(plotinusPrompt.includes('질문 맥락 감사'));
+  assert.ok(!plotinusPrompt.includes('/100') && !plotinusPrompt.includes('%'));
+
+  const mozi = calculateMoziGyeomAe(profile, '동료와의 갈등과 신뢰 회복이 고민입니다', testDate);
+  assert.equal(mozi.engineVersion, MOZI_GYEOM_AE_VERSION);
+  assert.equal(mozi.questionTopic, 'relationship');
+  assert.ok(mozi.situationalMohistAudit.moziTextRef.length > 0);
+  assert.ok(mozi.temporalMohistRhythm.kstWindowLabel.length > 0);
+  assert.ok(mozi.mohistSynthesisMatrix.integrativeSummary.length > 0);
+  const moziPrompt = formatMoziGyeomAePrompt(mozi);
+  assert.ok(moziPrompt.includes('질문 맥락 감사'));
+  assert.ok(!moziPrompt.includes('/100') && !moziPrompt.includes('%'));
+
+  const yogacara = calculateBuddhistYogacaraConsciousness({
+    profile,
+    question: '번아웃과 후회를 치유하고 마음을 비우고 싶어요',
+    now: testDate,
+  });
+  assert.equal(yogacara.engineVersion, BUDDHIST_YOGACARA_CONSCIOUSNESS_ENGINE_VERSION);
+  assert.equal(yogacara.questionTopic, 'healing');
+  assert.ok(yogacara.situationalYogacaraAudit.scriptureRef.length > 0);
+  assert.ok(yogacara.temporalAlayaRhythm.kstWindowLabel.length > 0);
+  assert.ok(yogacara.yogacaraSynthesisMatrix.integrativeSummary.length > 0);
+  const yogacaraPrompt = formatBuddhistYogacaraConsciousnessPrompt(yogacara);
+  assert.ok(yogacaraPrompt.includes('질문 맥락 감사'));
+  assert.ok(!yogacaraPrompt.includes('/100') && !yogacaraPrompt.includes('%'));
+});
+
 
 
 
