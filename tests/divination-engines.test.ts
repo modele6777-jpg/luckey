@@ -596,7 +596,8 @@ test('Auspicious stars: 천을귀인 via year stem, kongwang/chung/hyeong interf
   assert.equal(t.upcomingYears[0].year,2027);assert.equal(t.upcomingYears[0].ganZhi,'丁未');
   assert(t.upcomingYears[0].arrivedNobles.includes('천을귀인'));
   const prompt=formatAuspiciousStarsPrompt(r);
-  assert(prompt.includes('LUCKEY-AS-v1.0.0')&&prompt.includes('천을귀인')&&prompt.includes('공망'));
+  assert(prompt.includes(AUSPICIOUS_STARS_ENGINE_VERSION)&&prompt.includes('천을귀인')&&prompt.includes('공망'));
+  assert(!prompt.includes('/100')&&!prompt.includes('%'));
 });
 test('Auspicious stars: resonance detects when the partner holds my noble branch; skips without profile',()=>{
   const r=calculateAuspiciousStars({profile:asProfile,targetYear:2026,partnerProfile:asProfile});
@@ -2509,6 +2510,7 @@ test('Etheric Aura Biofield Engine: 에테르 오라 생체장 & 쉴딩 결계 �
   const prompt = formatEthericAuraBiofieldPrompt(res);
   assert(prompt.includes('LUCKEY 에테르 오라 생체장 & 쉴딩'));
   assert(prompt.includes(res.spectrum.primaryColor));
+  assert(!prompt.includes('/100') && !prompt.includes('%'));
 });
 
 test('Saju Classic Yongshin Prescription Engine: 사주 정통 3대 원전 용신·격국·조후 검증', () => {
@@ -3962,6 +3964,7 @@ test('Gaelic Wheel Four Fire Festivals Engine: calculates fire festival stations
   const prompt = formatGaelicWheelFireFestivalsPrompt(rep);
   assert(prompt.includes('휠 오브 더 이어 켈트 4대 화제 축제 실측 데이터'));
   assert(prompt.includes(rep.activeStation.nameKo));
+  assert(!prompt.includes('/100') && !prompt.includes('%'));
 });
 
 test('Norse Havamal Eighteen Galdr Engine: calculates eighteen runic charms, yggdrasil depth and odin mastery', () => {
