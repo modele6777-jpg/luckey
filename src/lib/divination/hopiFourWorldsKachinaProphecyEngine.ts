@@ -15,7 +15,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const HOPI_FOUR_WORLDS_ENGINE_VERSION = '1.0.0';
+export const HOPI_FOUR_WORLDS_ENGINE_VERSION = '2.0.0';
 
 export interface HopiKachinaSpirit {
   id: string;
@@ -31,13 +31,31 @@ export interface HopiKachinaSpirit {
 export interface HopiFourWorldsReport {
   engineVersion: string;
   timestamp: string;
-  fourWorldsEvolutionScore: number; // 0 ~ 100 4대 세계 진화 영성 지수
-  koyaanisqatsiHealingPower: number; // 0 ~ 100 코양니스카시(불균형) 치유력
-  kivaSacredCenterAlignment: number; // 0 ~ 100 키바(Kiva) 지하 성소 영적 정렬도
-  spiderGrandmotherWisdom: number; // 0 ~ 100 거미할머니 운명의 그물 통찰력
+  fourWorldsEvolutionScore: number; // 내부 참조용 (프롬프트 비노출)
+  koyaanisqatsiHealingPower: number; // 내부 참조용 (프롬프트 비노출)
+  kivaSacredCenterAlignment: number; // 내부 참조용 (프롬프트 비노출)
+  spiderGrandmotherWisdom: number; // 내부 참조용 (프롬프트 비노출)
   dominantKachina: HopiKachinaSpirit; // 현재 운명을 수호하는 카치나 정령
+  situationalHopiAudit: {
+    questionTheme: 'balance' | 'relationship' | 'decision' | 'renewal';
+    activeWorldStage: string;
+    koyaanisqatsiAlert: string;
+    spiderWebInsight: string;
+  };
+  temporalHopiRhythm: {
+    calculatedAtKst: string;
+    kivaSolarWindow: string;
+    ceremonialCycle: string;
+    rhythmGuidance: string;
+  };
+  hopiSynthesisMatrix: {
+    kachinaWorldNexus: string;
+    groundingPosture: string;
+    peaceDirective: string;
+  };
   hopiProphecyGuidance: string; // 호피 평화 예언 처방
   pikiBreadSacredOffering: string; // 대지와 연결되는 소박한 평화 리추얼
+  boundaryNotice: string;
 }
 
 const HOPI_KACHINAS_BASE: Omit<HopiKachinaSpirit, 'spiritResonanceScore'>[] = [
@@ -106,11 +124,17 @@ function djb2Hash(str: string): number {
   return Math.abs(hash);
 }
 
-export function calculateHopiFourWorldsKachina(profile?: UserProfile | null): HopiFourWorldsReport {
+export function calculateHopiFourWorldsKachina(
+  profile?: UserProfile | null,
+  questionArg?: string,
+  nowArg?: Date,
+): HopiFourWorldsReport {
+  const now = nowArg ?? new Date();
+  const question = (questionArg || '').trim();
   const bdate = profile?.basic?.birthdate || '1994-01-24';
   const btime = profile?.basic?.birthtime || '12:00';
   const name = profile?.basic?.name || 'zeZE';
-  const seedStr = `${bdate}_${btime}_${name}_hopi_kachina_v1`;
+  const seedStr = `${bdate}_${btime}_${name}_${question}_hopi_kachina_v2`;
   const seed = djb2Hash(seedStr);
 
   const fourWorldsEvolutionScore = 61 + (seed % 38);
@@ -127,36 +151,104 @@ export function calculateHopiFourWorldsKachina(profile?: UserProfile | null): Ho
     spiritResonanceScore,
   };
 
+  const qLower = question.toLowerCase();
+  const questionTheme: 'balance' | 'relationship' | 'decision' | 'renewal' =
+    /관계|연애|사람|가족|친구|갈등|이별/.test(qLower)
+      ? 'relationship'
+      : /선택|결정|진로|일|직장|사업|방향/.test(qLower)
+        ? 'decision'
+        : /시작|새로|변화|도전|전환/.test(qLower)
+          ? 'renewal'
+          : 'balance';
+
+  const WORLD_STAGES = [
+    '제1세계 토크펠라(Tokpela) — 본래의 순수한 조화와 첫 호흡 회복',
+    '제2세계 토크파(Tokpa) — 물질·소유의 집착을 비우고 균형 회복',
+    '제3세계 쿠스쿠르자(Kuskurza) — 속도와 조급함을 멈추고 겸허히 성찰',
+    '제4세계 투와카치(Tuwaqachi) — 대지와의 겸허한 동행 및 현존 실천',
+  ];
+  const activeWorldStage = WORLD_STAGES[seed % WORLD_STAGES.length];
+
+  const situationalHopiAudit = {
+    questionTheme,
+    activeWorldStage,
+    koyaanisqatsiAlert: questionTheme === 'decision'
+      ? '조급한 확장보다 삶의 리듬이 무너지지 않는 단순한 길을 우선 점검하세요.'
+      : '일상의 속도가 너무 빨라져 내면의 중심(Kiva)을 놓치고 있지 않은지 살피는 시점입니다.',
+    spiderWebInsight: '거미할머니의 그물처럼 모든 인연과 선택은 눈에 보이지 않는 실로 이어져 있으니, 작은 친절과 성실함이 전체 흐름을 바로 세웁니다.',
+  };
+
+  const kstDate = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const kstHour = kstDate.getUTCHours();
+  const kstMonth = kstDate.getUTCMonth() + 1;
+  const calculatedAtKst = kstDate.toISOString().replace('T', ' ').slice(0, 16) + ' KST';
+
+  const kivaSolarWindow = kstHour >= 5 && kstHour < 10
+    ? '동쪽 지평선 태양 맞이창 (새 날의 감사와 옥수수가루 봉헌)'
+    : kstHour >= 10 && kstHour < 17
+      ? '메사(Mesa) 고원 한낮창 (성실한 노동과 현실 접지)'
+      : kstHour >= 17 && kstHour < 22
+        ? '석양 귀환창 (하루의 불균형을 내려놓는 정화)'
+        : '키바(Kiva) 지하 성소 심야창 (대지모신과의 고요한 내면 대화)';
+
+  const ceremonialCycle = kstMonth >= 12 || kstMonth <= 2
+    ? '소얄랑우 동지 순환절 (빛의 귀환과 새 서약)'
+    : kstMonth >= 3 && kstMonth <= 5
+      ? '파와무 봄 파종절 (씨앗 싹틔우기와 인내)'
+      : kstMonth >= 6 && kstMonth <= 8
+        ? '니만 여름 단비절 (결실과 감사의 회향)'
+        : '가을 수확 정리절 (겨울을 대비한 소박한 갈무리)';
+
+  const temporalHopiRhythm = {
+    calculatedAtKst,
+    kivaSolarWindow,
+    ceremonialCycle,
+    rhythmGuidance: `${kivaSolarWindow}과 ${ceremonialCycle}이 맞물려 있습니다. 거창한 계획보다 오늘 발딛고 선 자리의 평화부터 돌보세요.`,
+  };
+
+  const hopiSynthesisMatrix = {
+    kachinaWorldNexus: `${dominantKachina.nameKo} × ${activeWorldStage.split(' — ')[0]}`,
+    groundingPosture: koyaanisqatsiHealingPower >= 78
+      ? '일상의 흔들림을 스스로 다잡고 대지의 중심에 단단히 뿌리내리는 국면'
+      : '복잡한 소음을 잠시 끄고 키바의 고요함 속으로 돌아가 숨을 고르는 회복 국면',
+    peaceDirective: dominantKachina.kachinaBlessingAffirmation,
+  };
+
   const hopiProphecyGuidance = `호피족의 평화 예언은 세상이 균형을 잃고 요동치는 '코양니스카시(Koyaanisqatsi)'의 시기일수록, 대지와 겸허히 소통하는 소박한 영혼만이 제4세계(Tuwaqachi)의 안식을 누린다고 전합니다. 현재 [${dominantKachina.nameKo}]의 성스러운 가호를 받아 내면의 중심을 바로잡으십시오.`;
 
   const pikiBreadSacredOffering = `신발을 벗고 잠시 조용히 서서 발바닥 아래 흙과 대지모신의 호흡을 느껴보십시오. 심장에서부터 어머니 대지의 심장까지 굵고 따뜻한 붉은 뿌리가 뻗어나가 당신을 든든하게 받쳐주고 있음을 자각하십시오.`;
 
   return {
     engineVersion: HOPI_FOUR_WORLDS_ENGINE_VERSION,
-    timestamp: new Date().toISOString(),
+    timestamp: now.toISOString(),
     fourWorldsEvolutionScore,
     koyaanisqatsiHealingPower,
     kivaSacredCenterAlignment,
     spiderGrandmotherWisdom,
     dominantKachina,
+    situationalHopiAudit,
+    temporalHopiRhythm,
+    hopiSynthesisMatrix,
     hopiProphecyGuidance,
     pikiBreadSacredOffering,
+    boundaryNotice: '아메리카 호피족 구전 지혜와 카치나 상징을 빌려 온 정성적 성찰 관점이며, 확정적 예언이나 의학적·재정적 처방이 아닙니다.',
   };
 }
 
 export function formatHopiFourWorldsPrompt(report: HopiFourWorldsReport): string {
   const k = report.dominantKachina;
-  return `[아메리카 호피족 4대 우주 시대 & 카치나 정령 지혜 실측 데이터]
-- 엔진 버전: v${report.engineVersion}
-- 4대 세계 진화 영성 지수: ${report.fourWorldsEvolutionScore}/100
-- 코양니스카시(불균형 치유력): ${report.koyaanisqatsiHealingPower}/100
-- 키바(Kiva) 지하 성소 영적 정렬도: ${report.kivaSacredCenterAlignment}/100
-- 거미할머니 운명의 그물 통찰력: ${report.spiderGrandmotherWisdom}/100
+  return `[아메리카 호피족 4대 우주 시대 & 카치나 정령 지혜 실측 데이터 (${report.engineVersion})]
+- 질문 맥락 감사: 테마(${report.situationalHopiAudit.questionTheme}) · 세계 순환(${report.situationalHopiAudit.activeWorldStage})
+  * 코양니스카시 점검: ${report.situationalHopiAudit.koyaanisqatsiAlert}
+  * 거미할머니 통찰: ${report.situationalHopiAudit.spiderWebInsight}
+- 시공간 키바 리듬 (${report.temporalHopiRhythm.calculatedAtKst}): ${report.temporalHopiRhythm.kivaSolarWindow} / ${report.temporalHopiRhythm.ceremonialCycle}
+  * 리듬 지침: ${report.temporalHopiRhythm.rhythmGuidance}
 - 주재 수호 카치나 정령: ${k.nameKo} (${k.hopiName} / ${k.ceremonialSeason})
   * 영적 영역: ${k.spiritualDomain}
   * 치유의 약성: ${k.healingMedicine}
-  * 정령 공명도: ${k.spiritResonanceScore}/100
   * 축복 확언: ${k.kachinaBlessingAffirmation}
+- 카치나 교차 매트릭스: ${report.hopiSynthesisMatrix.kachinaWorldNexus} — ${report.hopiSynthesisMatrix.groundingPosture}
 - 호피 평화 예언 지혜 지침: ${report.hopiProphecyGuidance}
-- 대지모신 연결 평화 리추얼: ${report.pikiBreadSacredOffering}`;
+- 대지모신 연결 평화 리추얼: ${report.pikiBreadSacredOffering}
+- 해석 경계: ${report.boundaryNotice}`;
 }

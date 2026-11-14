@@ -24,7 +24,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const HINDU_KUNDALINI_VERSION = 'LUCKEY-HINDU-KUNDALINI-v1.0.0';
+export const HINDU_KUNDALINI_VERSION = 'LUCKEY-HINDU-KUNDALINI-v2.0.0';
 
 export interface PrimaryNadiState {
   code: 'IDA' | 'PINGALA' | 'SUSHUMNA';
@@ -69,12 +69,30 @@ export interface HinduTantricKundaliniReport {
   engineVersion: string;
   calculatedAt: string;
   primaryNadi: PrimaryNadiState;
-  kundaliniVitalityLevel: number; // 0 ~ 100 쿤달리니 잠재 생명력
+  kundaliniVitalityLevel: number; // 내부 참조용 (프롬프트 비노출)
   dominantChakraNode: ChakraAwakeningNode;
   granthis: GranthiKnotStatus[];
   pranayama: PranayamaPrescription;
-  totalSpiritualAwakeningHarmonics: number; // 0 ~ 100
+  totalSpiritualAwakeningHarmonics: number; // 내부 참조용 (프롬프트 비노출)
+  situationalKundaliniAudit: {
+    questionTheme: 'relationship' | 'career' | 'healing' | 'spiritual';
+    nadiTensionAxis: string;
+    granthiFocus: string;
+    sadhanaPrescription: string;
+  };
+  temporalKundaliniRhythm: {
+    calculatedAtKst: string;
+    pranaWindow: string;
+    seasonalTattva: string;
+    rhythmGuidance: string;
+  };
+  kundaliniSynthesisMatrix: {
+    nadiChakraNexus: string;
+    awakeningPosture: string;
+    coreDirective: string;
+  };
   synthesisMessage: string;
+  boundaryNotice: string;
 }
 
 const CHAKRA_NODES: ChakraAwakeningNode[] = [
@@ -229,6 +247,67 @@ export function calculateHinduTantricKundalini(params: {
 
   const synthesisMessage = `현재 당신의 에너지는 [${primaryNadi.sanskritName} / ${primaryNadi.solarLunarPolarity}]의 흐름에 정렬되어 있습니다. 우세 차크라인 [${dominantChakraNode.koreanName}]의 진동과 함께 ${primaryBreathwork}를 수련할 때, 척추를 타고 흐르는 신성한 쿤달리니 생명력이 3대 매듭을 관통하여 영적 도약을 이끕니다.`;
 
+  const qLower = context.toLowerCase();
+  const questionTheme: 'relationship' | 'career' | 'healing' | 'spiritual' =
+    /관계|연애|사랑|사람|가족|이별|갈등/.test(qLower)
+      ? 'relationship'
+      : /일|직장|사업|진로|결정|돈|재물|시험/.test(qLower)
+        ? 'career'
+        : /지치|불안|피로|휴식|건강|치유|우울/.test(qLower)
+          ? 'healing'
+          : 'spiritual';
+
+  const situationalKundaliniAudit = {
+    questionTheme,
+    nadiTensionAxis: code === 'PINGALA'
+      ? '과도한 태양 양기(추진·긴장)와 이완의 필요성 사이 균형'
+      : code === 'IDA'
+        ? '깊은 내면 침잠(달 음기)과 현실 실행력 사이의 균형'
+        : '양측 기류의 중화와 중앙 수슘나 각성의 고요한 유지',
+    granthiFocus: questionTheme === 'relationship'
+      ? granthis[1].name + ' — 조건부 애착을 자비로 승화'
+      : questionTheme === 'career'
+        ? granthis[0].name + ' — 생존 불안을 내려놓고 대지 접지'
+        : granthis[2].name + ' — 과도한 분석·분별을 내려놓고 관조',
+    sadhanaPrescription: pranayama.dailySadhanaAdvice,
+  };
+
+  const kstDate = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const kstHour = kstDate.getUTCHours();
+  const kstMonth = kstDate.getUTCMonth() + 1;
+  const calculatedAtKst = kstDate.toISOString().replace('T', ' ').slice(0, 16) + ' KST';
+
+  const pranaWindow = kstHour >= 4 && kstHour < 7
+    ? '브라흐마 무후르타 (새벽 영적 각성 및 수슘나 개방 황금창)'
+    : kstHour >= 7 && kstHour < 14
+      ? '수리야 태양창 (핑갈라 활력과 마니푸라 실행 에너지)'
+      : kstHour >= 14 && kstHour < 20
+        ? '바유 균형창 (나디 쇼다나 호흡으로 기혈 순환 정돈)'
+        : '찬드라 달빛창 (이다 나디 이완 및 아나하타 정서 치유)';
+
+  const seasonalTattva = kstMonth >= 3 && kstMonth <= 5
+    ? '바유·아카샤 봄 상승기 (새 프라나 순환)'
+    : kstMonth >= 6 && kstMonth <= 8
+      ? '아그니 여름 화기절 (시탈리 냉각 호흡으로 조화)'
+      : kstMonth >= 9 && kstMonth <= 11
+        ? '프리트비 가을 접지기 (물라 반다와 내면 수렴)'
+        : '아파스 겨울 심연기 (고요한 만트라 진동 축적)';
+
+  const temporalKundaliniRhythm = {
+    calculatedAtKst,
+    pranaWindow,
+    seasonalTattva,
+    rhythmGuidance: `${pranaWindow}과 ${seasonalTattva}가 교차하는 시간입니다. 호흡의 리듬을 억지로 늘리기보다 날숨을 편안히 길게 내쉬세요.`,
+  };
+
+  const kundaliniSynthesisMatrix = {
+    nadiChakraNexus: `${primaryNadi.sanskritName} × ${dominantChakraNode.koreanName}`,
+    awakeningPosture: totalSpiritualAwakeningHarmonics >= 78
+      ? '수슘나 중앙 통로가 원활히 열려 직관과 실행이 조화를 이루는 국면'
+      : '이다와 핑갈라의 교차 호흡을 통해 매듭을 부드럽게 이완하는 정화 국면',
+    coreDirective: `${dominantChakraNode.focusChallenge}에 의식을 두고 "${dominantChakraNode.seedMantra}" 진동을 가볍게 호흡에 실어 보세요.`,
+  };
+
   return {
     engineVersion: HINDU_KUNDALINI_VERSION,
     calculatedAt: now.toISOString(),
@@ -238,26 +317,41 @@ export function calculateHinduTantricKundalini(params: {
     granthis,
     pranayama,
     totalSpiritualAwakeningHarmonics,
+    situationalKundaliniAudit,
+    temporalKundaliniRhythm,
+    kundaliniSynthesisMatrix,
     synthesisMessage,
+    boundaryNotice: '인도 탄트라 요가 및 프라나야마 상징 체계에 기반한 정성적 심신 성찰 관점이며, 의학적 진단이나 치료를 대신하지 않습니다.',
   };
 }
 
 export function formatHinduTantricKundaliniPrompt(report: HinduTantricKundaliniReport): string {
+  const nadiBalanceQualitative =
+    report.primaryNadi.code === 'SUSHUMNA'
+      ? '양측 나디가 고르게 중화되어 중앙 수슘나 통로가 열려 있는 균형 상태'
+      : report.primaryNadi.code === 'PINGALA'
+        ? '태양 나디(핑갈라) 기류가 우세하여 추진력과 외적 실행력이 앞서는 상태'
+        : '달 나디(이다) 기류가 우세하여 내면 감수성과 회복 이완이 앞서는 상태';
+
   return `### 🕉️ 힌두 탄트라 쿤달리니 7대 차크라 나디 각성 엔진 (${HINDU_KUNDALINI_VERSION})
 - **주요 나디(Nadi) 극성 흐름**: ${report.primaryNadi.sanskritName} (${report.primaryNadi.solarLunarPolarity})
   - 콧구멍 기류: ${report.primaryNadi.activeNostrilFlow}
   - 심신 상태: ${report.primaryNadi.mentalPhysiologicalState}
-  - 나디 에너지 밸런스: 이다(달) ${report.primaryNadi.energyBalanceRatio.idaPercentage}% | 핑갈라(태양) ${report.primaryNadi.energyBalanceRatio.pingalaPercentage}% | 수슘나(중앙영적통로) 개방도 ${report.primaryNadi.energyBalanceRatio.sushumnaOpenness}%
-- **쿤달리니 잠재 생명력**: ${report.kundaliniVitalityLevel}점 / 100점 | **각성 조화 지수**: ${report.totalSpiritualAwakeningHarmonics}점
-- **현재 핵심 공명 차크라**: ${report.dominantChakraNode.koreanName} (만트라: ${report.dominantChakraNode.seedMantra} | 활성도: ${report.dominantChakraNode.energyVibrationLevel}점)
+  - 나디 흐름 균형: ${nadiBalanceQualitative}
+- **질문 맥락 감사**: 테마(${report.situationalKundaliniAudit.questionTheme}) · 긴장축: ${report.situationalKundaliniAudit.nadiTensionAxis} · 핵심 매듭: ${report.situationalKundaliniAudit.granthiFocus}
+- **시공간 프라나 리듬 (${report.temporalKundaliniRhythm.calculatedAtKst})**: ${report.temporalKundaliniRhythm.pranaWindow} / ${report.temporalKundaliniRhythm.seasonalTattva}
+  - 리듬 지침: ${report.temporalKundaliniRhythm.rhythmGuidance}
+- **현재 핵심 공명 차크라**: ${report.dominantChakraNode.koreanName} (만트라: ${report.dominantChakraNode.seedMantra})
   - 영적 도전 과제: ${report.dominantChakraNode.focusChallenge}
-- **3대 영적 매듭(Granthis) 해제 상태**:
-  - 브라흐마(물질): ${report.granthis[0].untyingProgressScore}% 해제 [${report.granthis[0].liberationGuidance}]
-  - 비슈누(감정): ${report.granthis[1].untyingProgressScore}% 해제 [${report.granthis[1].liberationGuidance}]
-  - 루드라(지성): ${report.granthis[2].untyingProgressScore}% 해제 [${report.granthis[2].liberationGuidance}]
+- **3대 영적 매듭(Granthis) 성찰**:
+  - 브라흐마(물질): ${report.granthis[0].liberationGuidance}
+  - 비슈누(감정): ${report.granthis[1].liberationGuidance}
+  - 루드라(지성): ${report.granthis[2].liberationGuidance}
 - **프라나야마 호흡 처방(Pranayama Sadhana)**:
   - 수련 호흡법: ${report.pranayama.primaryBreathwork} (리듬: ${report.pranayama.breathRhythmRatio})
   - 만트라 & 무드라: ${report.pranayama.seedMantraChanting} | ${report.pranayama.mudraAndBandha}
   - 일상 지침: ${report.pranayama.dailySadhanaAdvice}
-- **쿤달리니 통합 나침반**: ${report.synthesisMessage}`;
+- **나디-차크라 교차 매트릭스**: ${report.kundaliniSynthesisMatrix.nadiChakraNexus} — ${report.kundaliniSynthesisMatrix.awakeningPosture} (${report.kundaliniSynthesisMatrix.coreDirective})
+- **쿤달리니 통합 나침반**: ${report.synthesisMessage}
+- **해석 경계**: ${report.boundaryNotice}`;
 }

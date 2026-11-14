@@ -23,7 +23,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const ELEUSINIAN_MYSTERIES_VERSION = 'LUCKEY-ELEUSINIAN-MYSTERIES-v1.1.0';
+export const ELEUSINIAN_MYSTERIES_VERSION = 'LUCKEY-ELEUSINIAN-MYSTERIES-v2.0.0';
 
 export type EleusinianQuestionTheme = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -52,6 +52,17 @@ export interface EleusinianReport {
   rebirthPosture: string;        // 정성적 에포프테이아 부활 국면
   sacredSymbol: string;          // 보리 이삭(Ear of Grain), 횃불(Torch), 키케온(Kykeon) 등
   oracleMessage: string;         // 신비전 오라클 전언
+  temporalEleusinianRhythm: {
+    calculatedAtKst: string;
+    telesterionWindow: string;
+    seasonalCycle: string;
+    rhythmGuidance: string;
+  };
+  eleusinianSynthesisMatrix: {
+    gradeStationNexus: string;
+    thresholdTension: string;
+    initiationDirective: string;
+  };
   practiceGuidance: string;
   ritualAction: string;
   reflectionFocus: string;
@@ -214,6 +225,42 @@ export function calculateEleusinianMysteries(
   };
   const themed = themeGuidanceMap[questionTheme];
 
+  const kstDate = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const kstHour = kstDate.getUTCHours();
+  const kstMonth = kstDate.getUTCMonth() + 1;
+  const calculatedAtKst = kstDate.toISOString().replace('T', ' ').slice(0, 16) + ' KST';
+
+  const telesterionWindow = kstHour >= 5 && kstHour < 10
+    ? '일리소스 새벽 정화창 (카타르시스와 맑은 입문)'
+    : kstHour >= 10 && kstHour < 17
+      ? '아테네 아고라 낮 순례창 (현실의 씨앗 봉헌)'
+      : kstHour >= 17 && kstHour < 22
+        ? '횃불 행렬 황혼창 (텔레스테리온 문턱)'
+        : '페르세포네 심야 밀의창 (침묵 속 에포프테이아 관조)';
+
+  const seasonalCycle = kstMonth >= 3 && kstMonth <= 5
+    ? '코레의 봄 귀환절 (아나바시스 · 새싹의 개화)'
+    : kstMonth >= 6 && kstMonth <= 8
+      ? '데메테르의 여름 성숙절 (풍요의 수확과 나눔)'
+      : kstMonth >= 9 && kstMonth <= 11
+        ? '보에드로미온 대신비절 (성스러운 이삭과 내면 침잠)'
+        : '페르세포네의 겨울 하강절 (카타바시스 · 뿌리의 인내)';
+
+  const temporalEleusinianRhythm = {
+    calculatedAtKst,
+    telesterionWindow,
+    seasonalCycle,
+    rhythmGuidance: `${telesterionWindow}과 ${seasonalCycle}이 맞물린 지금, 억지로 결과를 당기기보다 계절의 순환에 맞추어 다음 문턱을 준비하세요.`,
+  };
+
+  const eleusinianSynthesisMatrix = {
+    gradeStationNexus: `${currentGrade.gradeTitle} × ${activeStation.stationName}`,
+    thresholdTension: questionTheme === 'decision'
+      ? '익숙한 껍질을 유지하려는 관성과 새로운 국면으로 건너가려는 부름 사이의 긴장'
+      : '외부의 인정을 구하는 마음과 내면의 침묵 속에서 본질을 확인하려는 마음 사이의 긴장',
+    initiationDirective: `${activeStation.practicalVirtue} (${sacredSymbol})`,
+  };
+
   return {
     engineVersion: ELEUSINIAN_MYSTERIES_VERSION,
     calculatedAt: now.toISOString(),
@@ -224,6 +271,8 @@ export function calculateEleusinianMysteries(
     rebirthPosture,
     sacredSymbol,
     oracleMessage,
+    temporalEleusinianRhythm,
+    eleusinianSynthesisMatrix,
     practiceGuidance: themed.practice,
     ritualAction: themed.ritual,
     reflectionFocus: themed.reflection,
@@ -233,7 +282,7 @@ export function calculateEleusinianMysteries(
 }
 
 export function formatEleusinianMysteriesPrompt(report: EleusinianReport): string {
-  return `[고대 그리스 엘레우시스 신비주의(Eleusinian Mysteries) 영혼 입사의례 성찰 관점]
+  return `[고대 그리스 엘레우시스 신비주의(Eleusinian Mysteries) 영혼 입사의례 & 페르세포네 환원 엔진 (${report.engineVersion})]
 - 질문 맥락: ${report.questionTheme} | 부활 국면: ${report.rebirthPosture}
 - 입사 등급: ${report.currentGrade.gradeTitle} (${report.currentGrade.greekTerm})
   * 의식 층위: ${report.currentGrade.spiritualLevel}
@@ -242,6 +291,11 @@ export function formatEleusinianMysteriesPrompt(report: EleusinianReport): strin
   * 신화적 상징: ${report.activeStation.mythicArchetype}
   * 내적 변용: ${report.activeStation.innerTransformation}
   * 행동 미덕: ${report.activeStation.practicalVirtue}
+- 시공간 밀의 리듬 (${report.temporalEleusinianRhythm.calculatedAtKst}): ${report.temporalEleusinianRhythm.telesterionWindow} / ${report.temporalEleusinianRhythm.seasonalCycle}
+  * 리듬 지침: ${report.temporalEleusinianRhythm.rhythmGuidance}
+- 입사 교차 매트릭스: ${report.eleusinianSynthesisMatrix.gradeStationNexus}
+  * 문턱 긴장: ${report.eleusinianSynthesisMatrix.thresholdTension}
+  * 입사 결단: ${report.eleusinianSynthesisMatrix.initiationDirective}
 - 신성 상징물: ${report.sacredSymbol}
 - 맥락별 실천 조언: ${report.practiceGuidance}
 - 일상 의례: ${report.ritualAction}
