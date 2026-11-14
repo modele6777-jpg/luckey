@@ -39,7 +39,7 @@ import type { UserProfile } from '../sharedState';
 import { calculateDetailedSaju, BRANCH_KOREAN, type SajuAnalysisResult } from '../sajuAnalysis';
 import { getAstronomicalSajuYear } from '../astronomicalSolarTerms';
 
-export const AUSPICIOUS_STARS_ENGINE_VERSION = 'LUCKEY-AS-v1.0.0';
+export const AUSPICIOUS_STARS_ENGINE_VERSION = 'LUCKEY-AS-v2.0.0';
 
 export const AUSPICIOUS_STARS_METHOD =
   '천을(갑무경축미·을기자신·병정해유·임계사묘·신인오, 일간+년간 4주 대조, 일지/년월시지 분해)·문창(전통 가요)·학당(장생지)·문곡(상관 록지)·천덕·월덕(월지 기준) 6대 길신 매트릭스, 일지 순 공망과 충형 간섭 길력 보정, 세운·대운 지지 귀인 도래 타임라인 및 상호 귀인 인연 매칭 결정론 산출';
@@ -113,6 +113,27 @@ export interface NobleResonance {
   description: string;
 }
 
+export interface AuspiciousSituationalAudit {
+  nobleLeverageAxis: string;
+  keyStarFocus: string;
+  actionPrescription: string;
+  interferenceCaution: string;
+}
+
+export interface AuspiciousTemporalRhythm {
+  kstHour: number;
+  nobleWatchWindow: string;
+  seasonalQi: string;
+  timingDirective: string;
+  activationTempo: '귀인개방' | '신중준비' | '내실응축';
+}
+
+export interface AuspiciousSynthesisMatrix {
+  nobleStrengthSummary: string;
+  timingResonanceLink: string;
+  nextNobleStep: string;
+}
+
 export interface AuspiciousStarsResult {
   engineVersion: string;
   method: string;
@@ -145,6 +166,10 @@ export interface AuspiciousStarsResult {
 
   /** 귀인 인연 매칭 (상대 프로필이 있을 때만) */
   resonance: NobleResonance | null;
+
+  situationalNobleAudit?: AuspiciousSituationalAudit;
+  temporalNobleRhythm?: AuspiciousTemporalRhythm;
+  nobleSynthesisMatrix?: AuspiciousSynthesisMatrix;
 
   actionGuide: string[];
   summary: string;
@@ -496,6 +521,88 @@ function buildNobleTiming(
   };
 }
 
+function getKstNobleParts(now: Date): { hour: number; month: number } {
+  const formatter = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Asia/Seoul',
+    hour: 'numeric',
+    month: 'numeric',
+    hour12: false,
+  });
+  const parts = formatter.formatToParts(now);
+  return {
+    hour: Number(parts.find((p) => p.type === 'hour')?.value || '12') % 24,
+    month: Number(parts.find((p) => p.type === 'month')?.value || '1'),
+  };
+}
+
+function buildAuspiciousSituationalAudit(question: string, hits: AuspiciousStarHit[]): AuspiciousSituationalAudit {
+  const q = question.toLowerCase();
+  const topHit = hits[0];
+  const starLabel = topHit ? `${topHit.nameKr}(${topHit.foundCharKo})` : '대운·세운 길신';
+  if (/이직|직장|사업|계약|투자|진로|시험|합격|발표/.test(q)) {
+    return {
+      nobleLeverageAxis: '커리어·계약·문서 레버리지',
+      keyStarFocus: `${starLabel} 중심의 조력자·문서 명분 확보`,
+      actionPrescription: '혼자 모든 것을 떠안기보다 신뢰할 만한 선배·동료·전문가에게 먼저 의사를 타진하고 초안을 공유하십시오.',
+      interferenceCaution: '구두 합의만으로 확정짓지 말고 서류와 기한을 분명히 남겨야 길력이 온전히 작동합니다.',
+    };
+  }
+  if (/연애|사랑|결혼|배우자|사람|인연|관계/.test(q)) {
+    return {
+      nobleLeverageAxis: '귀인 인연·배우자궁 공명',
+      keyStarFocus: `${starLabel}이 여는 상호 보호와 신뢰의 선순환`,
+      actionPrescription: '상대의 단점보다 나와 결이 맞는 장점을 먼저 인정하고, 따뜻한 안부 한 마디로 문턱을 낮추십시오.',
+      interferenceCaution: '자존심을 앞세워 고립을 택하면 귀인의 손길도 닿기 어렵습니다.',
+    };
+  }
+  return {
+    nobleLeverageAxis: '전반적 길신 보호와 흐름 조율',
+    keyStarFocus: `${starLabel} 기반의 순리적 확장`,
+    actionPrescription: '무리한 돌파보다 준비된 자리를 단단히 지키면서 다가오는 제안과 만남을 차분히 살피십시오.',
+    interferenceCaution: '성급한 확장으로 기본 체력을 소모하지 않도록 속도를 조절하십시오.',
+  };
+}
+
+function buildAuspiciousTemporalRhythm(now: Date): AuspiciousTemporalRhythm {
+  const { hour, month } = getKstNobleParts(now);
+
+  let nobleWatchWindow = '묘·진시(05~09시) 여명 귀인 개방 창';
+  let activationTempo: AuspiciousTemporalRhythm['activationTempo'] = '귀인개방';
+  let timingDirective = '맑은 정신으로 오늘 연락할 사람과 우선 처리할 문서를 정하기 좋은 시간입니다.';
+
+  if (hour >= 5 && hour < 11) {
+    nobleWatchWindow = '진·사시(05~11시) 천을·문창 개방 창';
+    activationTempo = '귀인개방';
+    timingDirective = '중요한 제안, 문서 발송, 조력자와의 첫 소통에 가장 유리한 시간대입니다.';
+  } else if (hour >= 11 && hour < 17) {
+    nobleWatchWindow = '오·미·신시(11~17시) 공적 교류 창';
+    activationTempo = '귀인개방';
+    timingDirective = '실무 미팅과 협업, 조건 조율을 차분히 진전시키기 알맞습니다.';
+  } else if (hour >= 17 && hour < 21) {
+    nobleWatchWindow = '유·술시(17~21시) 갈무리·점검 창';
+    activationTempo = '신중준비';
+    timingDirective = '낮 동안 오간 대화를 정리하고 내일의 약속을 차분히 점검할 시간입니다.';
+  } else {
+    nobleWatchWindow = '해·자·축시(21~05시) 음덕 응축 창';
+    activationTempo = '내실응축';
+    timingDirective = '즉각적인 결정은 미루고 충분한 휴식으로 내면의 판단력을 회복하십시오.';
+  }
+
+  let seasonalQi = '봄 목기(木氣) 발아절';
+  if (month >= 3 && month <= 5) seasonalQi = '봄 목기(木氣) · 새 인연·기획 발아절';
+  else if (month >= 6 && month <= 8) seasonalQi = '여름 화기(火氣) · 명예·발표 확장절';
+  else if (month >= 9 && month <= 11) seasonalQi = '가을 금기(金氣) · 결실·계약 수확절';
+  else seasonalQi = '겨울 수기(水氣) · 지혜·내실 응축절';
+
+  return {
+    kstHour: hour,
+    nobleWatchWindow,
+    seasonalQi,
+    timingDirective,
+    activationTempo,
+  };
+}
+
 /**
  * 6대 길신 매트릭스 + 귀인 도래 타이밍 + 귀인 인연 매칭을 결정론적으로 산출합니다.
  */
@@ -503,8 +610,10 @@ export function calculateAuspiciousStars(params: {
   profile?: UserProfile | null;
   targetYear?: number;
   partnerProfile?: UserProfile | null;
+  question?: string;
+  now?: Date;
 }): AuspiciousStarsResult {
-  const now = new Date();
+  const now = params.now ?? new Date();
   const nowUtcIso = now.toISOString();
   const nowKstIso = new Date(now.getTime() + 9 * 3600000).toISOString().replace('Z', '+09:00');
   const targetYear = params.targetYear ?? now.getFullYear();
@@ -618,6 +727,16 @@ export function calculateAuspiciousStars(params: {
       ? `일간 ${saju.dayMaster.hanja}(${saju.dayMaster.korean}) 원국에 ${hits.length}개 길신이 발현: ${hits.map((h) => `${h.nameKr}(${h.foundCharKo})`).join(', ')}.${resonance ? ` 귀인 인연 매칭: ${resonance.description}` : ''}`
       : `일간 ${saju.dayMaster.hanja}(${saju.dayMaster.korean}) 원국에는 6대 길신의 직접 발현이 없는 담백한 명식 — 귀인 도래 타임라인을 참고하세요.`;
 
+    const situationalNobleAudit = buildAuspiciousSituationalAudit(params.question || '', hits);
+    const temporalNobleRhythm = buildAuspiciousTemporalRhythm(now);
+    const nobleSynthesisMatrix: AuspiciousSynthesisMatrix = {
+      nobleStrengthSummary: hits.length > 0
+        ? `${hits.map((h) => `${h.nameKr}(${h.foundCharKo})`).join('·')} 발현이 ${temporalNobleRhythm.seasonalQi} 흐름과 맞물려 있습니다.`
+        : '원국 직접 발현 대신 세운·대운 도래 창을 활용하는 구조입니다.',
+      timingResonanceLink: `${temporalNobleRhythm.nobleWatchWindow} (${temporalNobleRhythm.activationTempo}) 리듬이 ${situationalNobleAudit.nobleLeverageAxis}을 뒷받침합니다.`,
+      nextNobleStep: situationalNobleAudit.actionPrescription,
+    };
+
     return {
       ...base,
       status: 'calculated',
@@ -631,6 +750,9 @@ export function calculateAuspiciousStars(params: {
       totalNoblesFound: hits.length,
       timing,
       resonance,
+      situationalNobleAudit,
+      temporalNobleRhythm,
+      nobleSynthesisMatrix,
       actionGuide,
       summary,
     };
@@ -651,10 +773,11 @@ export function formatAuspiciousStarsPrompt(res: AuspiciousStarsResult): string 
     .map(([key, hit]) => {
       if (!hit) return `   - ${key}: 미발현`;
       const inter = hit.interference.length > 0
-        ? ` | 간섭: ${hit.interference.map((i) => `${i.type}(${i.penalty}점 감점)`).join(', ')}`
+        ? ` | 간섭: ${hit.interference.map((i) => `${i.type}`).join(', ')}`
         : ' | 간섭 없음';
       const pillarsTxt = hit.foundPillars.map((f) => `${f.full} ${f.pillar}`).join(', ');
-      return `   - ${hit.nameKr}(${hit.nameHanja}) [${hit.foundChar}·${hit.foundCharKo}] 길력 ${hit.strengthLevel}/5: ${pillarsTxt} 기준(${hit.basis.join('/')})${inter} — ${hit.meaning}`;
+      const levelWord = hit.strengthLevel >= 4 ? '강함' : hit.strengthLevel >= 3 ? '안정' : '보완';
+      return `   - ${hit.nameKr}(${hit.nameHanja}) [${hit.foundChar}·${hit.foundCharKo}] 길력(${levelWord}): ${pillarsTxt} 기준(${hit.basis.join('/')})${inter} — ${hit.meaning}`;
     })
     .join('\n');
 
@@ -674,11 +797,21 @@ export function formatAuspiciousStarsPrompt(res: AuspiciousStarsResult): string 
   const resonanceTxt = res.resonance
     ? [
         `   - 상대 원국: ${res.resonance.partnerSummary.fourPillarsText} (일간 ${res.resonance.partnerSummary.dayMaster})`,
-        `   - 상호 귀인 보유: 상대가 내 귀인 보유=${res.resonance.partnerHoldsMyNoble ? 'O' : 'X'} / 내가 상대 귀인 보유=${res.resonance.iHoldPartnersNoble ? 'O' : 'X'} | 공명 점수 ${res.resonance.resonanceScore}/100`,
+        `   - 상호 귀인 보유: 상대가 내 귀인 보유=${res.resonance.partnerHoldsMyNoble ? 'O' : 'X'} / 내가 상대 귀인 보유=${res.resonance.iHoldPartnersNoble ? 'O' : 'X'}`,
         ...(res.resonance.foundDetails.length > 0 ? res.resonance.foundDetails.map((d) => `   · ${d}`) : []),
         `   - 종합: ${res.resonance.description}`,
       ].join('\n')
     : '   - 상대 프로필 미제공으로 인연 매칭 생략';
+
+  const auditTxt = res.situationalNobleAudit
+    ? `\n5. [질문 맥락 감사]: ${res.situationalNobleAudit.nobleLeverageAxis} · 초점(${res.situationalNobleAudit.keyStarFocus})\n   - 처방: ${res.situationalNobleAudit.actionPrescription}\n   - 경계: ${res.situationalNobleAudit.interferenceCaution}`
+    : '';
+  const temporalTxt = res.temporalNobleRhythm
+    ? `\n6. [KST 시공간 리듬 (${res.temporalNobleRhythm.kstHour}시)]: ${res.temporalNobleRhythm.nobleWatchWindow} · ${res.temporalNobleRhythm.seasonalQi} (${res.temporalNobleRhythm.activationTempo})\n   - 지침: ${res.temporalNobleRhythm.timingDirective}`
+    : '';
+  const matrixSynthTxt = res.nobleSynthesisMatrix
+    ? `\n7. [귀인 교차 매트릭스]: ${res.nobleSynthesisMatrix.nobleStrengthSummary} · ${res.nobleSynthesisMatrix.timingResonanceLink}`
+    : '';
 
   return `[🌟 천을귀인·문창 길신(吉神) 매트릭스 및 인연 매칭 실측 데이터 (Auspicious Noble Stars & Resonance Core)]
 ======================================================================
@@ -696,12 +829,12 @@ ${timingTxt}
 ${resonanceTxt}
 
 4. [인생 레버리지 행동 가이드]:
-${res.actionGuide.map((a, i) => `   ${i + 1}. ${a}`).join('\n')}
+${res.actionGuide.map((a, i) => `   ${i + 1}. ${a}`).join('\n')}${auditTxt}${temporalTxt}${matrixSynthTxt}
 
 종합: ${res.summary}
 ======================================================================
 [★ 루시 길신 상담 지침]:
 - 위 데이터는 결정론 엔진(${res.engineVersion})의 100% 수리 산출입니다. 길신의 위치(일지 천을 = 내 몸과 배우자궁, 년/월/시지 천을 = 사회·직업·말년)를 구분해 해석하세요.
-- 공망·충형 간섭이 감지된 길신은 "귀인이 있으나 스스로의 준비가 길력을 살린다"는 방향으로 균형 있게 안내하고, 과장 없이 발현 등급(1~5)에 맞춰 들려주세요.
+- 공망·충형 간섭이 감지된 길신은 "귀인이 있으나 스스로의 준비가 길력을 살린다"는 방향으로 균형 있게 안내하고, 점수 수치 대신 발현 성질에 맞춰 들려주세요.
 - 귀인 도래 타임라인의 해를 사용자의 구체적 레버리지(이직, 계약, 투자, 발표, 시험)에 대입해 실행 로드맵으로 제안하세요.`;
 }

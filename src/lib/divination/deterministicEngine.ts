@@ -1377,7 +1377,7 @@ try {
   const auspiciousStarsResult = calculateSupplement('auspiciousStarsResult', () => (birthdateStr && profile
     ? (() => {
         try {
-          const res = calculateAuspiciousStars({ profile, targetYear: now.getFullYear() });
+          const res = calculateAuspiciousStars({ profile, targetYear: now.getFullYear(), question, now });
           return res.status === 'calculated' ? res : null;
         } catch (_) {
           return null;
@@ -1878,7 +1878,7 @@ try {
   const ethericAuraBiofieldResult = calculateSupplement('ethericAuraBiofieldResult', () => (birthdateStr && profile
     ? (() => {
         try {
-          return calculateEthericAuraBiofield({ profile, targetDate: now });
+          return calculateEthericAuraBiofield({ profile, targetDate: now, question });
         } catch (_) {
           return null;
         }
@@ -2785,7 +2785,7 @@ try {
   // 162. 고대 게일 4대 화제 축제 및 휠 오브 더 이어 계절 순환 엔진
   const gaelicWheelFireFestivalsResult = calculateSupplement('gaelicWheelFireFestivalsResult', () => ((() => {
     try {
-      return calculateGaelicWheelFireFestivals(profile, now);
+      return calculateGaelicWheelFireFestivals(profile, now, question);
     } catch (_) {
       return null;
     }
