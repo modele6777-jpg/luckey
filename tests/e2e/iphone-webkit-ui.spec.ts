@@ -242,11 +242,11 @@ test('legacy Pro URL normalizes to Lucy and keeps the shared catalog available',
   await openLucy(page, '/chat?mode=pro');
   await expect(page).toHaveURL(/\/chat\?mode=ai$/);
   await expect(page.getByText('Lucy Pro', { exact: true })).toHaveCount(0);
-  await expect(page.getByRole('button', { name: /Lucy 엔진과 관점 목록 331개/ })).toBeVisible();
+  await expect(page.getByRole('button', { name: /Lucy 엔진과 관점 목록 334개/ })).toBeVisible();
   expect(await page.evaluate(() => localStorage.getItem('lucy_tier_mode'))).toBe('ai');
 });
 
-test('Lucy engine count opens the visible 331-entry catalog and meanings', async ({ page }) => {
+test('Lucy engine count opens the visible 334-entry catalog and meanings', async ({ page }) => {
   await openLucy(page);
   const trigger = page.getByRole('button', { name: /Lucy 엔진과 관점 목록/ });
   await expect(trigger).toBeVisible();
@@ -254,9 +254,9 @@ test('Lucy engine count opens the visible 331-entry catalog and meanings', async
 
   const dialog = page.getByRole('dialog', { name: 'Lucy 엔진·관점 안내' });
   await expect(dialog).toBeVisible();
-  await expect(dialog).toContainText('등록 목록 331개');
+  await expect(dialog).toContainText('등록 목록 334개');
   await expect(dialog).toContainText('15개 기초 도구');
-  await expect(dialog).toContainText('316개 심층 관점');
+  await expect(dialog).toContainText('319개 심층 관점');
   await expect(dialog).toContainText('각각 독립 계산기가 아닙니다');
   const nameStyle = await dialog.locator('.lucy-engine-catalog-entry-name').first().evaluate(element => {
     const dialogElement = element.closest('[role="dialog"]');
@@ -283,16 +283,16 @@ test('Lucy engine count opens the visible 331-entry catalog and meanings', async
   await expect(dialog.getByRole('link')).toHaveCount(0);
 });
 
-test('Lucy groups all 331 catalog entries under the seven channel themes', async ({ page }) => {
+test('Lucy groups all 334 catalog entries under the seven channel themes', async ({ page }) => {
   await openLucy(page);
   await page.getByRole('button', { name: /Lucy 엔진과 관점 목록/ }).click();
 
   const dialog = page.getByRole('dialog', { name: 'Lucy 엔진·관점 안내' });
   await expect(dialog).toBeVisible();
   const entries = dialog.getByTestId('lucy-engine-catalog-entry');
-  await expect(entries).toHaveCount(331);
+  await expect(entries).toHaveCount(334);
   const meaningTexts = await entries.locator('.lucy-engine-catalog-entry-meaning').allTextContents();
-  expect(meaningTexts).toHaveLength(331);
+  expect(meaningTexts).toHaveLength(334);
   for (const meaning of meaningTexts) {
     expect(meaning.trim()).not.toMatch(/^뜻\s*:/);
     expect(meaning.trim().length).toBeGreaterThan(0);
@@ -307,7 +307,7 @@ test('Lucy groups all 331 catalog entries under the seven channel themes', async
     expect(count).toBeGreaterThan(0);
     groupedCount += count;
   }
-  expect(groupedCount).toBe(331);
+  expect(groupedCount).toBe(334);
   await expect(dialog.getByRole('link')).toHaveCount(0);
 
   const themeNav = dialog.getByRole('navigation', { name: 'Lucy 7개 채널 테마' });

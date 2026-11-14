@@ -15,17 +15,13 @@ import {
 } from '../src/lib/divination/engineCatalog';
 import { FIFTEEN_DIVINATION_TOOLS, type DivinationToolId } from '../src/lib/fifteenDivinationTools';
 
-test('Lucy Pro catalog distinguishes 331 total entries from 316 deep perspectives', () => {
+test('Lucy Pro catalog distinguishes 334 total entries from 319 deep perspectives', () => {
   assert.equal(ALL_DCE_ENGINES.length, 334);
-  assert.equal(LUCY_PRO_CATALOG_ENGINES.length, 331);
+  assert.equal(LUCY_PRO_CATALOG_ENGINES.length, 334);
   assert.equal(LUCY_PRO_DEEP_PERSPECTIVE_COUNT, ENGINE_CATALOG_COUNTS.deep_master);
-  assert.equal(LUCY_PRO_DEEP_PERSPECTIVE_COUNT, 316);
-  assert.deepEqual(ENGINE_CATALOG_COUNTS, { foundational: 15, deep_master: 316 });
-  assert.equal(new Set(LUCY_PRO_CATALOG_ENGINES.map(engine => engine.key)).size, 331);
-  assert.deepEqual(
-    ALL_DCE_ENGINES.filter(engine => !LUCY_PRO_CATALOG_ENGINES.some(item => item.key === engine.key)).map(engine => engine.key).sort(),
-    ['germanHermannHesseDemianSteppenwolf', 'irishJamesJoyceUlyssesEpiphany', 'koreanHanYongUnSilenceOfNim'].sort(),
-  );
+  assert.equal(LUCY_PRO_DEEP_PERSPECTIVE_COUNT, 319);
+  assert.deepEqual(ENGINE_CATALOG_COUNTS, { foundational: 15, deep_master: 319 });
+  assert.equal(new Set(LUCY_PRO_CATALOG_ENGINES.map(engine => engine.key)).size, 334);
 });
 
 test('every listed engine has a readable meaning and one of the seven channel themes', () => {
