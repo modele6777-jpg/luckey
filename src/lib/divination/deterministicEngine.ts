@@ -3136,7 +3136,7 @@ try {
   // 201. 고대 그리스 아리스토텔레스 니코마코스 윤리학 중용 & 에우다이모니아 엔진
   const aristotleMesotesResult = calculateSupplement('aristotleMesotesResult', () => ((() => {
     try {
-      return calculateAristotleMesotes(profile);
+      return calculateAristotleMesotes(profile, now, question);
     } catch (_) {
       return null;
     }
@@ -3226,7 +3226,7 @@ try {
   // 211. 고대 동양 유학 공자 논어 지천명 & 극기복례 군자도 수양 엔진
   const confuciusAnalectsZhitianmingResult = calculateSupplement('confuciusAnalectsZhitianmingResult', () => ((() => {
     try {
-      return calculateConfuciusAnalectsZhitianming(profile);
+      return calculateConfuciusAnalectsZhitianming(profile, now, question);
     } catch (_) {
       return null;
     }
@@ -3271,7 +3271,7 @@ try {
   // 216. 고대 중국 춘추전국시대 손무 손자병법 오사칠계 & 부전승 피실격허 전략 엔진
   const sunTzuArtOfWarStrategyResult = calculateSupplement('sunTzuArtOfWarStrategyResult', () => ((() => {
     try {
-      return calculateSunTzuArtOfWarStrategy(profile);
+      return calculateSunTzuArtOfWarStrategy(profile, now, question);
     } catch (_) {
       return null;
     }
@@ -4890,7 +4890,7 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'laoziDaodejingWaterWay', nameKo: '노자 도덕경 81장 상선약수 화광동진 무위자연', icon: '☯️', category: 'deep_master' },
   { key: 'ancientGreekEpicureanTetrapharmakos', nameKo: '에피쿠로스 4대치유약 테트라파르마코스 아타락시아 영혼평정', icon: '🌿', category: 'deep_master' },
   { key: 'koreanYulgokGyeokmongYogyeol', nameKo: '율곡 이이 격몽요결 입지혁구습 구용구사 수신실천', icon: '📖', category: 'deep_master' },
-  { key: 'ancientGreekAristotleMesotesEudaimonia', nameKo: '아리스토텔레스 니코마코스 윤리학 중용 에우다이모니아', icon: '⚖️', category: 'deep_master' },
+  { key: 'ancientGreekAristotleMesotesEudaimonia', nameKo: '아리스토텔레스 니코마코스 윤리학 중용 에우다이모니아', icon: '⚖️', category: 'deep_master', summary: '지나침과 모자람을 벗어난 중용(Mesotes)과 실천적 지혜로 지금 상황에 알맞은 품성의 균형을 비춥니다.' },
   { key: 'ancientIndianBhagavadGitaKarmaYoga', nameKo: '바가바드 기타 카르마 요가 니슈카마 카르마 무집착', icon: '🕉️', category: 'deep_master' },
   { key: 'chineseWangYangmingLiangzhiXinxue', nameKo: '양명학 왕양명 전습록 치양지 지행합일 심학', icon: '📜', category: 'deep_master' },
   { key: 'ancientGreekSocraticMaieuticDaimon', nameKo: '소크라테스 산파술 다이몬 영혼성찰 무지의지', icon: '🏛️', category: 'deep_master' },
@@ -4900,12 +4900,12 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'koreanToegyeSeonghakSipdo', nameKo: '퇴계 이황 성학십도 거경궁리 상성성 경철학', icon: '📜', category: 'deep_master' },
   { key: 'romanCiceroDeOfficiisHonestum', nameKo: '키케로 의무론 도덕적선 유용성조화 신의품위', icon: '⚖️', category: 'deep_master' },
   { key: 'ancientGreekEpictetusDichotomyOfControl', nameKo: '에픽테토스 엥케이리디온 통제이분법 프로하이레시스 도덕의지', icon: '🏛️', category: 'deep_master' },
-  { key: 'ancientChineseConfuciusAnalectsZhitianming', nameKo: '공자 논어 지천명 극기복례 군자도', icon: '📜', category: 'deep_master' },
+  { key: 'ancientChineseConfuciusAnalectsZhitianming', nameKo: '공자 논어 지천명 극기복례 군자도', icon: '📜', category: 'deep_master', summary: '논어의 인(仁)·예(禮)와 지천명의 시선으로 조급함을 덜고 사람과 도리 사이의 중심을 살핍니다.' },
   { key: 'baruchSpinozaEthicaConatusAmorDei', nameKo: '스피노자 에티카 코나투스 신즉자연 영원의상관조', icon: '✨', category: 'deep_master', summary: '스피노자의 코나투스와 영원의 상 아래에서 감정의 인과를 명료히 이해하고 능동적 기쁨으로 나아갑니다.' },
   { key: 'germanKantCategoricalImperativeSynthesis', nameKo: '칸트 정언명령 목적의왕국 자율성 도덕법칙', icon: '⚖️', category: 'deep_master' },
   { key: 'indianUpanishadicTatTvamAsi', nameKo: '우파니샤드 타트트밤아시 범아일여 순수의식', icon: '🕉️', category: 'deep_master' },
   { key: 'koreanChoeHangiGihakUnwha', nameKo: '혜강 최한기 기학 신기통 운화기 추측지리', icon: '📜', category: 'deep_master' },
-  { key: 'ancientChineseSunTzuArtOfWarStrategy', nameKo: '손자병법 오사칠계 부전승 피실격허 전략', icon: '⚔️', category: 'deep_master' },
+  { key: 'ancientChineseSunTzuArtOfWarStrategy', nameKo: '손자병법 오사칠계 부전승 피실격허 전략', icon: '⚔️', category: 'deep_master', summary: '정면 소모전을 피하고 5사와 피실격허·부전승의 지혜로 가장 무리 없는 활로를 읽습니다.' },
   { key: 'frenchDescartesCogitoClaraDistincta', nameKo: '데카르트 방법서설 코기토 명석판명 지성직관', icon: '💡', category: 'deep_master' },
   { key: 'ancientIndianEarlyBuddhistFourNobleTruths', nameKo: '초기불교 사성제 팔정도 고집멸도 중도해탈', icon: '☸️', category: 'deep_master' },
   { key: 'islamicSufiRumiMasnaviDivineLove', nameKo: '루미 마스나비 수피즘 신성한사랑 영혼갈망', icon: '🕊️', category: 'deep_master' },

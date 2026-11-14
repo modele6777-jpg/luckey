@@ -2,17 +2,19 @@
  * 고대 그리스 아리스토텔레스(Aristotle) 니코마코스 윤리학 중용(Mesotes) & 최고선 에우다이모니아(Eudaimonia) 덕행 엔진
  *
  * 서기전 4세기 아리스토텔레스의 《니코마코스 윤리학(Nicomachean Ethics)》 원전 기반.
- * 1. 최고선 에우다이모니아(Eudaimonia): 인간 삶의 궁극적 목적은 덕(Aretē)에 따르는 영혼의 활동이자 온전한 번영이다.
- * 2. 중용(Mesotes, Golden Mean): 덕은 지나침(과도)과 모자람(결핍)의 양극단을 배제한 최적의 중간 지점을 포착하는 것이다.
- * 3. 실천적 지혜 프로네시스(Phronesis): 구체적인 상황 속에서 올바른 행동의 척도를 가늠하는 이성적 판단력.
- * 4. 텔로스(Telos, 목적론): 모든 존재는 내재된 잠재태(Dynamis)를 실현태(Energeia)로 꽃피우려는 궁극의 목적을 지닌다.
+ * 1. 최고선 에우다이모니아(Eudaimonia): 덕(Aretē)에 따르는 영혼의 활발한 활동과 온전한 번영
+ * 2. 중용(Mesotes, Golden Mean): 지나침(과도)과 모자람(결핍)의 양극단을 벗어난 지혜로운 균형점
+ * 3. 실천적 지혜 프로네시스(Phronesis): 구체적 상황 속에서 마땅한 척도를 가늠하는 이성적 판단력
+ * 4. 아레테(Aretē): 반복된 선한 습관이 빚어내는 영혼의 탁월성
  *
- * @version LUCKEY-ARISTOTLE-MESOTES-EUDAIMONIA-v1.0.0
+ * @version LUCKEY-ARISTOTLE-MESOTES-EUDAIMONIA-v1.1.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const ARISTOTLE_MESOTES_VERSION = 'LUCKEY-ARISTOTLE-MESOTES-EUDAIMONIA-v1.0.0';
+export const ARISTOTLE_MESOTES_VERSION = 'LUCKEY-ARISTOTLE-MESOTES-EUDAIMONIA-v1.1.0';
+
+export type AristotleQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
 export interface AristotleVirtueStage {
   stageLevel: number;
@@ -27,12 +29,14 @@ export interface AristotleVirtueStage {
 export interface AristotleMesotesResult {
   engineVersion: string;
   calculatedAtKst: string;
-  // 5대 핵심 지표 (0~100)
-  mesotesGoldenMeanScore: number;     // 중용 황금률 밸런스 지수
-  eudaimoniaFlourishingIndex: number; // 에우다이모니아 영혼 번영도
-  phronesisPracticalWisdom: number;   // 실천적 지혜 프로네시스 분별력
-  telosPurposeOrientation: number;   // 텔로스 목적론적 지향력
-  areteExcellenceIntegrity: number;   // 아레테 탁월성 품격도
+  questionTopic: AristotleQuestionTopic;
+  mesotesPosture: string;
+  // 내부 계산 호환 필드 (프롬프트 비노출)
+  mesotesGoldenMeanScore: number;
+  eudaimoniaFlourishingIndex: number;
+  phronesisPracticalWisdom: number;
+  telosPurposeOrientation: number;
+  areteExcellenceIntegrity: number;
   // 세부 명세
   activeVirtueStage: AristotleVirtueStage;
   primaryMesotesWisdom: {
@@ -41,6 +45,11 @@ export interface AristotleMesotesResult {
     coreEssence: string;
     actionableDirective: string;
   };
+  practiceGuidance: string;
+  ritualAction: string;
+  reflectionFocus: string;
+  counselNote: string;
+  boundaryNotice: string;
   eudaimoniaPhilosophicalCounsel: {
     counselTitle: string;
     philosophicalGuidance: string;
@@ -124,10 +133,74 @@ const MESOTES_WISDOMS = [
   },
 ];
 
-export function calculateAristotleMesotes(profile: UserProfile): AristotleMesotesResult {
+const TOPIC_GUIDANCE: Record<AristotleQuestionTopic, {
+  posture: string;
+  practice: string;
+  ritual: string;
+  reflection: string;
+}> = {
+  relationship: {
+    posture: '우애(Philia)의 품격 속에서 지나친 희생도 냉담함도 피하는 온유한 균형',
+    practice: '상대를 위해 내 경계를 무너뜨리지도, 마음을 닫아걸지도 말고 공정하고 따뜻한 비례를 세우십시오.',
+    ritual: '상대에게 느낀 서운함이나 고마움을 과장 없이 담백한 한 문장으로 정리해 보기.',
+    reflection: '이 관계에서 내가 지나치게 참고 있거나, 반대로 과하게 요구하고 있는 몫은 무엇입니까?',
+  },
+  decision: {
+    posture: '이론이 아닌 지금 이 상황의 마땅한 척도를 가늠하는 프로네시스(실천적 지혜)',
+    practice: '전부 아니면 전무(All or Nothing)의 극단적 가정을 내려놓고, 현실에서 지속 가능한 중용의 한 걸음을 고르십시오.',
+    ritual: '고민 중인 선택지의 "과도한 극단"과 "지나친 회피"를 적고 그 사이의 현실적 중간 지점 찾기.',
+    reflection: '지금 이 결정을 내린 뒤 일주일·한 달 뒤의 내가 반복해서 지킬 수 있는 습관은 무엇입니까?',
+  },
+  healing: {
+    posture: '자기 비하(결핍)와 무리한 몰아붙임(과도) 사이에서 영혼의 리듬을 되찾는 돌봄',
+    practice: '아무것도 못 하겠다는 무기력과 완벽히 해내야 한다는 조급함 둘 다 내려놓고, 오늘 감당할 수 있는 적정한 호흡으로 돌아오십시오.',
+    ritual: '오늘 하루 지킬 수 있는 아주 작고 기분 좋은 일상 루틴 한 가지만 정성껏 실행하기.',
+    reflection: '지금 내 몸과 마음이 가장 필요로 하는 "적절한 분량의 쉼과 움직임"은 무엇입니까?',
+  },
+  reflection: {
+    posture: '거창한 결심이 아니라 매일 반복하는 작은 습관(Hexis)으로 품성을 빚는 태도',
+    practice: '지금의 나를 규정하는 것은 한 번의 큰 성취가 아니라 매일 무심코 반복하는 말과 태도임을 기억하십시오.',
+    ritual: '하루 중 내가 가장 자주 기울어지는 습관 하나를 골라 과도·결핍 중 어느 쪽인지 관찰하기.',
+    reflection: '내가 닮고 싶은 삶의 모습(Telos)을 향해 오늘부터 길들일 작은 습관 하나는 무엇입니까?',
+  },
+};
+
+function classifyQuestionTopic(question?: string): AristotleQuestionTopic {
+  const q = (question ?? '').toLowerCase();
+  if (/연애|사랑|결혼|이별|사람|관계|친구|가족|동료|상사|갈등|화해|소통|우정/.test(q)) {
+    return 'relationship';
+  }
+  if (/선택|결정|이직|창업|사업|계약|투자|진로|시험|갈림길|해야|말아야|방향/.test(q)) {
+    return 'decision';
+  }
+  if (/지치|힘들|불안|걱정|우울|슬픔|상처|회복|위로|휴식|번아웃|건강|잠/.test(q)) {
+    return 'healing';
+  }
+  return 'reflection';
+}
+
+function getKstDateString(now: Date): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  return kst.toISOString().slice(0, 10);
+}
+
+function formatKstIso(now: Date): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  return kst.toISOString().replace('Z', '+09:00');
+}
+
+export function calculateAristotleMesotes(
+  profile: UserProfile,
+  now: Date = new Date(),
+  question?: string,
+): AristotleMesotesResult {
+  const kstDate = getKstDateString(now);
+  const questionTopic = classifyQuestionTopic(question);
   const seedString = (profile?.basic?.birthdate ?? (profile as any)?.birthdate ?? '1990-01-01') +
     (profile?.basic?.name ?? (profile as any)?.name ?? 'User') +
     (profile?.basic?.birthtime ?? (profile as any)?.birthtime ?? '12:00') +
+    kstDate +
+    (question ?? '') +
     'AristotleMesotesEudaimonia';
 
   let hash = 0;
@@ -148,15 +221,21 @@ export function calculateAristotleMesotes(profile: UserProfile): AristotleMesote
 
   const activeVirtueStage = ARISTOTLE_VIRTUE_STAGES[stageIndex];
   const primaryMesotesWisdom = MESOTES_WISDOMS[wisdomIndex];
+  const topicGuide = TOPIC_GUIDANCE[questionTopic];
 
   const counselTitle = `아리스토텔레스 중용의 미덕: ${activeVirtueStage.virtueNameGreek}`;
   const philosophicalGuidance = `현재 과제는 결핍이나 과도함이라는 양극단의 덫에 빠지지 않고 중용(Mesotes)의 황금 지점을 찾는 것이 핵심입니다. ` +
     `${activeVirtueStage.goldenMeanEssence}의 원칙을 기준으로 삼으십시오. ` +
     `${activeVirtueStage.practicalAction} 프로네시스(실천적 지혜)를 발휘할 때 온전한 에우다이모니아(영혼의 번영)가 활짝 열립니다.`;
 
+  const counselNote = `${activeVirtueStage.virtueNameGreek}의 중용과 '${primaryMesotesWisdom.themeKo}'가 맞닿아, 지금 상황을 '${topicGuide.posture}'로 비추고 있습니다.`;
+  const boundaryNotice = '이 관점은 《니코마코스 윤리학》의 중용·품성 철학에 기반한 상징적 성찰 안내이며, 확정적 예언이나 의학적·법률적 판단이 아닙니다.';
+
   return {
     engineVersion: ARISTOTLE_MESOTES_VERSION,
-    calculatedAtKst: new Date().toISOString(),
+    calculatedAtKst: formatKstIso(now),
+    questionTopic,
+    mesotesPosture: topicGuide.posture,
     mesotesGoldenMeanScore,
     eudaimoniaFlourishingIndex,
     phronesisPracticalWisdom,
@@ -164,6 +243,11 @@ export function calculateAristotleMesotes(profile: UserProfile): AristotleMesote
     areteExcellenceIntegrity,
     activeVirtueStage,
     primaryMesotesWisdom,
+    practiceGuidance: topicGuide.practice,
+    ritualAction: topicGuide.ritual,
+    reflectionFocus: topicGuide.reflection,
+    counselNote,
+    boundaryNotice,
     eudaimoniaPhilosophicalCounsel: {
       counselTitle,
       philosophicalGuidance,
@@ -174,15 +258,16 @@ export function calculateAristotleMesotes(profile: UserProfile): AristotleMesote
 export function formatAristotleMesotesPrompt(res: AristotleMesotesResult): string {
   return [
     `【고대 그리스 아리스토텔레스 니코마코스 윤리학 중용(Mesotes) & 에우다이모니아 지표】`,
-    `- 중용(Mesotes) 황금률 밸런스: ${res.mesotesGoldenMeanScore}/100`,
-    `- 에우다이모니아 영혼 번영도: ${res.eudaimoniaFlourishingIndex}/100`,
-    `- 프로네시스(Phronesis) 실천적 지혜: ${res.phronesisPracticalWisdom}/100`,
-    `- 텔로스(Telos) 목적론적 지향력: ${res.telosPurposeOrientation}/100`,
-    `- 아레테(Aretē) 탁월성 품격도: ${res.areteExcellenceIntegrity}/100`,
+    `- 질문 맥락 초점: ${res.questionTopic} | 중용의 태도: ${res.mesotesPosture}`,
     `- 현재 중용 조율 덕목: ${res.activeVirtueStage.virtueNameGreek} (${res.activeVirtueStage.virtueNameKo})`,
     `- 중용의 본질: ${res.activeVirtueStage.goldenMeanEssence} (결핍: ${res.activeVirtueStage.deficiencyExtreme} ↔ 과도: ${res.activeVirtueStage.excessExtreme})`,
     `- 윤리학 핵심 지침: "${res.primaryMesotesWisdom.themeKo}" [${res.primaryMesotesWisdom.greekClassic}]`,
     `- 실천적 조언: ${res.primaryMesotesWisdom.actionableDirective}`,
+    `- 맥락별 실행 조언: ${res.practiceGuidance}`,
+    `- 오늘의 작은 의례: ${res.ritualAction}`,
+    `- 성찰 질문: ${res.reflectionFocus}`,
+    `- 핵심 조언 요약: ${res.counselNote}`,
+    `- 해석 경계: ${res.boundaryNotice}`,
     `- 철학적 처방: ${res.eudaimoniaPhilosophicalCounsel.philosophicalGuidance}`,
   ].join('\n');
 }

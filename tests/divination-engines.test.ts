@@ -4485,18 +4485,21 @@ test('Korean Yulgok Yi I Gyeokmong Yogyeol Engine: calculates noble aspiration i
   assert(prompt.includes(rep.activeScholarStage.stageNameKo));
 });
 
-test('Ancient Greek Aristotle Mesotes Eudaimonia Engine: calculates Golden Mean, Eudaimonia, Phronesis and Telos', () => {
-  const rep = calculateAristotleMesotes(profile);
+test('Ancient Greek Aristotle Mesotes Eudaimonia Engine: calculates Golden Mean, Eudaimonia, Phronesis and qualitative guidance', () => {
+  const rep = calculateAristotleMesotes(profile, new Date('2026-11-14T18:40:00+09:00'), '이직 결정을 앞두고 어떻게 균형을 잡아야 할까요?');
   assert.equal(rep.engineVersion, ARISTOTLE_MESOTES_VERSION);
-  assert(rep.mesotesGoldenMeanScore >= 0 && rep.mesotesGoldenMeanScore <= 100);
-  assert(rep.eudaimoniaFlourishingIndex >= 0 && rep.eudaimoniaFlourishingIndex <= 100);
-  assert(rep.phronesisPracticalWisdom >= 0 && rep.phronesisPracticalWisdom <= 100);
-  assert(rep.telosPurposeOrientation >= 0 && rep.telosPurposeOrientation <= 100);
-  assert(rep.areteExcellenceIntegrity >= 0 && rep.areteExcellenceIntegrity <= 100);
+  assert.equal(rep.questionTopic, 'decision');
+  assert(rep.mesotesPosture.length > 0);
+  assert(rep.practiceGuidance.length > 0);
+  assert(rep.ritualAction.length > 0);
+  assert(rep.reflectionFocus.length > 0);
+  assert(rep.counselNote.length > 0);
+  assert(rep.boundaryNotice.length > 0);
   assert(rep.activeVirtueStage.virtueNameGreek.length > 0);
   const prompt = formatAristotleMesotesPrompt(rep);
   assert(prompt.includes('고대 그리스 아리스토텔레스 니코마코스 윤리학 중용(Mesotes)'));
   assert(prompt.includes(rep.activeVirtueStage.virtueNameKo));
+  assert(!prompt.includes('/100'));
 });
 
 test('Ancient Indian Bhagavad Gita Karma Yoga Engine: calculates Nishkama Karma, Swadharma, Samatvam and Yogastha', () => {
@@ -4625,18 +4628,21 @@ test('Epictetus Dichotomy of Control Engine: calculates Ta Eph hemin clarity, Pr
   assert(prompt.includes(rep.activeControlDomain.domainNameKo));
 });
 
-test('Confucius Analects Zhitianming Engine: calculates life stage wisdom, Ren, Li, and Junzi equanimity', () => {
-  const rep = calculateConfuciusAnalectsZhitianming(profile);
+test('Confucius Analects Zhitianming Engine: calculates life stage wisdom, Ren, Li, and qualitative counsel', () => {
+  const rep = calculateConfuciusAnalectsZhitianming(profile, new Date('2026-11-14T18:40:00+09:00'), '직장 동료와의 관계 갈등을 어떻게 풀어야 할까요?');
   assert.equal(rep.engineVersion, CONFUCIUS_ZHITIANMING_VERSION);
-  assert(rep.tianmingAttunementScore >= 0 && rep.tianmingAttunementScore <= 100);
-  assert(rep.renBenevolenceCoreScore >= 0 && rep.renBenevolenceCoreScore <= 100);
-  assert(rep.liDecorumHarmonyScore >= 0 && rep.liDecorumHarmonyScore <= 100);
-  assert(rep.kejiFuliDisciplineScore >= 0 && rep.kejiFuliDisciplineScore <= 100);
-  assert(rep.junziEquanimityScore >= 0 && rep.junziEquanimityScore <= 100);
+  assert.equal(rep.questionTopic, 'relationship');
+  assert(rep.junziPosture.length > 0);
+  assert(rep.practiceGuidance.length > 0);
+  assert(rep.ritualAction.length > 0);
+  assert(rep.reflectionFocus.length > 0);
+  assert(rep.counselNote.length > 0);
+  assert(rep.boundaryNotice.length > 0);
   assert(rep.activeLifeStage.stageNameHanja.length > 0);
   const prompt = formatConfuciusAnalectsZhitianmingPrompt(rep);
   assert(prompt.includes('공자 논어 지천명 & 극기복례 군자도 지표'));
   assert(prompt.includes(rep.activeLifeStage.stageNameKo));
+  assert(!prompt.includes('/100'));
 });
 
 test('Spinoza Ethica Conatus Engine: calculates Conatus vitality, Sub Specie Aeternitatis, and Amor Dei Intellectualis', () => {
@@ -4695,18 +4701,21 @@ test('Choe Han-gi Gihak Unwha Engine: calculates Unwhagi cosmic flow, Singitong 
   assert(prompt.includes(rep.activeGihakPrinciple.principleNameKo));
 });
 
-test('Sun Tzu Art of War Strategy Engine: calculates Five Factors, unfought victory, situational clarity, and water form', () => {
-  const rep = calculateSunTzuArtOfWarStrategy(profile);
+test('Sun Tzu Art of War Strategy Engine: calculates Five Factors, unfought victory, and qualitative strategy', () => {
+  const rep = calculateSunTzuArtOfWarStrategy(profile, new Date('2026-11-14T18:40:00+09:00'), '너무 지치고 소모적인 일을 멈춰야 할까요?');
   assert.equal(rep.engineVersion, SUNTZU_STRATEGY_VERSION);
-  assert(rep.fiveFactorsHarmonyScore >= 0 && rep.fiveFactorsHarmonyScore <= 100);
-  assert(rep.unfoughtVictoryPowerScore >= 0 && rep.unfoughtVictoryPowerScore <= 100);
-  assert(rep.situationalClarityScore >= 0 && rep.situationalClarityScore <= 100);
-  assert(rep.waterFormFlexibilityScore >= 0 && rep.waterFormFlexibilityScore <= 100);
-  assert(rep.deceptiveTimingMasteryScore >= 0 && rep.deceptiveTimingMasteryScore <= 100);
+  assert.equal(rep.questionTopic, 'healing');
+  assert(rep.strategicPosture.length > 0);
+  assert(rep.practiceGuidance.length > 0);
+  assert(rep.ritualAction.length > 0);
+  assert(rep.reflectionFocus.length > 0);
+  assert(rep.counselNote.length > 0);
+  assert(rep.boundaryNotice.length > 0);
   assert(rep.focalFiveFactor.factorHanja.length > 0);
   const prompt = formatSunTzuArtOfWarStrategyPrompt(rep);
   assert(prompt.includes('손자병법 오사칠계 & 부전승 피실격허 전략 지표'));
   assert(prompt.includes(rep.focalFiveFactor.factorHanja));
+  assert(!prompt.includes('/100'));
 });
 
 test('Descartes Cogito Clara Distincta Engine: calculates Cogito certainty, Clara et Distincta, and provisional moral resolve', () => {

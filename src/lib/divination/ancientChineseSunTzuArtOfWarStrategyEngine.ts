@@ -2,23 +2,20 @@
  * 고대 중국 춘추전국시대 손무(孫武) 《손자병법(孫子兵法)》 오사칠계(五事七計) & 부전승(不戰勝) 피실격허(避實擊虛) 전략 엔진
  *
  * 손무의 《손자병법(孫子兵法)》 13편 원전 기반.
- * 1. 오사(五事): 결단과 형세의 승패를 결정짓는 5대 근본 요소
- *    - 도(道): 대의명분과 신뢰, 상하가 한마음이 되는 일체감.
- *    - 천(天): 때와 기회, 타이밍과 계절적 흐름.
- *    - 지(地): 지형과 환경, 유리한 입지와 공간 조건.
- *    - 장(將): 지혜(智), 신의(信), 인자함(仁), 용기(勇), 엄격함(嚴)의 5대 리더십 덕목.
- *    - 법(法): 시스템과 규율, 명확한 프로세스와 지속 가능한 자원 배분.
- * 2. 부전이굴인지병(不戰而屈人之兵): 싸우지 않고 상대를 굴복시키고 목적을 달성하는 최상의 지혜(善之善者也).
- * 3. 지피지기 백전불태(知彼知己 百戰不殆): 나와 상대, 환경의 역학 관계를 꿰뚫어 위태로움에 빠지지 않음.
- * 4. 피실격허(避實擊虛)와 수형(水形): 물이 높은 곳을 피하고 낮은 곳으로 흐르듯, 적의 강점을 피하고 허점을 짚음.
- * 5. 이우위직(以迂爲直): 돌아가는 우회로를 도리어 가장 빠른 지름길로 삼는 역발상 전략.
+ * 1. 오사(五事): 도(道)·천(天)·지(地)·장(將)·법(法)
+ * 2. 부전이굴인지병(不戰而屈人之兵): 싸우지 않고 목적을 달성하는 최상의 지혜
+ * 3. 지피지기 백전불태(知彼知己 百戰不殆): 나와 상대, 환경의 역학 관계를 꿰뚫어 위태로움을 피함
+ * 4. 피실격허(避實擊虛)와 수형(水形): 단단한 정면충돌을 피하고 빈틈과 활로로 흐름
+ * 5. 이우위직(以迂爲直): 돌아가는 우회로를 가장 빠른 지름길로 삼는 지혜
  *
- * @version LUCKEY-SUNTZU-STRATEGY-v1.0.0
+ * @version LUCKEY-SUNTZU-STRATEGY-v1.1.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const SUNTZU_STRATEGY_VERSION = 'LUCKEY-SUNTZU-STRATEGY-v1.0.0';
+export const SUNTZU_STRATEGY_VERSION = 'LUCKEY-SUNTZU-STRATEGY-v1.1.0';
+
+export type SunTzuQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
 export interface SunTzuFiveFactor {
   factorHanja: string;
@@ -37,15 +34,22 @@ export interface SunTzuStrategicTactic {
 export interface SunTzuArtOfWarStrategyResult {
   engineVersion: string;
   calculatedAtKst: string;
-  // 5대 핵심 지표 (0~100)
-  fiveFactorsHarmonyScore: number;       // 오사(도·천·지·장·법) 전략적 종합 균형도
-  unfoughtVictoryPowerScore: number;     // 부전승(不戰勝) 비폭력적 굴적 지혜 지수
-  situationalClarityScore: number;       // 지피지기(知彼知己) 상황 및 역학 명석도
-  waterFormFlexibilityScore: number;     // 수형(水形) 피실격허 유연 적응도
-  deceptiveTimingMasteryScore: number;   // 이우위직(以迂爲直) 우회 결단 및 타이밍 장악력
+  questionTopic: SunTzuQuestionTopic;
+  strategicPosture: string;
+  // 내부 계산 호환 필드 (프롬프트 비노출)
+  fiveFactorsHarmonyScore: number;
+  unfoughtVictoryPowerScore: number;
+  situationalClarityScore: number;
+  waterFormFlexibilityScore: number;
+  deceptiveTimingMasteryScore: number;
   // 세부 명세
   focalFiveFactor: SunTzuFiveFactor;
   activeStrategicTactic: SunTzuStrategicTactic;
+  practiceGuidance: string;
+  ritualAction: string;
+  reflectionFocus: string;
+  counselNote: string;
+  boundaryNotice: string;
   sunTzuPhilosophicalCounsel: {
     counselTitle: string;
     philosophicalGuidance: string;
@@ -114,11 +118,75 @@ const STRATEGIC_TACTICS: SunTzuStrategicTactic[] = [
   },
 ];
 
-export function calculateSunTzuArtOfWarStrategy(profile: UserProfile): SunTzuArtOfWarStrategyResult {
+const TOPIC_GUIDANCE: Record<SunTzuQuestionTopic, {
+  posture: string;
+  practice: string;
+  ritual: string;
+  reflection: string;
+}> = {
+  relationship: {
+    posture: '싸우지 않고 상대를 이해하며 명분을 살려주는 부전승(不戰勝)의 태도',
+    practice: '감정적 맞대응으로 소모전을 치르기보다, 상대가 진짜로 지키고 싶어 하는 명분과 두려움을 먼저 읽으십시오.',
+    ritual: '어려운 대화를 앞두고 상대와 내가 함께 얻을 수 있는 최소 공통분모 한 가지를 먼저 적어 보기.',
+    reflection: '이 갈등에서 굳이 이기려 들지 않고도 내가 지키고 싶은 핵심 가치는 무엇입니까?',
+  },
+  decision: {
+    posture: '막힌 정면을 뚫으려 힘 빼지 않고 물처럼 빈틈으로 흐르는 피실격허(避實擊虛)의 태도',
+    practice: '지금 당장 모든 조건을 완벽히 정면 돌파하려 하기보다, 가장 적은 마찰로 주도권을 확보할 수 있는 입지와 시점을 고르십시오.',
+    ritual: '선택지를 놓고 "내가 유리한 조건"과 "소모가 큰 함정"을 각각 두 줄로 정리해 보기.',
+    reflection: '지금 이 일에서 정면충돌 대신 한 걸음 돌아가면 열리는 우회로(以迂爲直)는 어디에 있습니까?',
+  },
+  healing: {
+    posture: '소모적인 장기전(久)을 멈추고 병력을 거두어 내실을 재정비하는 보전(保全)의 태도',
+    practice: '이미 지친 상태에서 승부를 보려 들지 마십시오. 지금은 전선을 넓힐 때가 아니라 불필요한 전선을 정리하고 원기를 비축할 때입니다.',
+    ritual: '오늘 에너지를 가장 많이 갉아먹는 일 하나를 보류 목록으로 옮기고 휴식 시간 확보하기.',
+    reflection: '지금 내가 끝내지 못해 계속 기력을 빼앗기고 있는 소모전은 무엇입니까?',
+  },
+  reflection: {
+    posture: '나와 상황을 냉철하게 비추어 위태로움을 피하는 지피지기(知彼知己)의 태도',
+    practice: '기세나 희망적 관측이 아니라 현재 내가 가진 자원(道·天·地·將·法)과 빈틈을 있는 그대로 점검하십시오.',
+    ritual: '현재 진행 중인 핵심 일 하나에 대해 "가장 잘 풀리는 조건"과 "가장 취약한 고리"를 나란히 적어 보기.',
+    reflection: '지금의 형세에서 내가 과신하고 있거나 아직 살피지 못한 사각지대는 어디입니까?',
+  },
+};
+
+function classifyQuestionTopic(question?: string): SunTzuQuestionTopic {
+  const q = (question ?? '').toLowerCase();
+  if (/연애|사랑|결혼|이별|사람|관계|친구|가족|동료|상사|갈등|협상|화해|소통/.test(q)) {
+    return 'relationship';
+  }
+  if (/선택|결정|이직|창업|사업|계약|투자|진로|경쟁|전략|시험|방향|승부/.test(q)) {
+    return 'decision';
+  }
+  if (/지치|힘들|불안|걱정|우울|슬픔|소진|번아웃|회복|휴식|지친/.test(q)) {
+    return 'healing';
+  }
+  return 'reflection';
+}
+
+function getKstDateString(now: Date): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  return kst.toISOString().slice(0, 10);
+}
+
+function formatKstIso(now: Date): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  return kst.toISOString().replace('Z', '+09:00');
+}
+
+export function calculateSunTzuArtOfWarStrategy(
+  profile: UserProfile,
+  now: Date = new Date(),
+  question?: string,
+): SunTzuArtOfWarStrategyResult {
+  const kstDate = getKstDateString(now);
+  const questionTopic = classifyQuestionTopic(question);
   const seedString =
     (profile?.basic?.birthdate ?? (profile as any)?.birthdate ?? '1990-01-01') +
     (profile?.basic?.name ?? (profile as any)?.name ?? 'User') +
     (profile?.basic?.birthtime ?? (profile as any)?.birthtime ?? '12:00') +
+    kstDate +
+    (question ?? '') +
     'SunTzuArtOfWarStrategy';
 
   let hash = 0;
@@ -139,15 +207,21 @@ export function calculateSunTzuArtOfWarStrategy(profile: UserProfile): SunTzuArt
 
   const focalFiveFactor = FIVE_FACTORS[factorIndex];
   const activeStrategicTactic = STRATEGIC_TACTICS[tacticIndex];
+  const topicGuide = TOPIC_GUIDANCE[questionTopic];
 
   const counselTitle = `손자병법 전략: ${activeStrategicTactic.tacticNameHanja}`;
   const philosophicalGuidance = `전쟁은 국가의 대사요, 사생의 땅이며 존망의 도이니 깊이 살피지 않을 수 없습니다. ` +
     `현재 당면한 국면에서는 5사 중 '${focalFiveFactor.factorHanja}'의 정비가 최우선입니다. ${focalFiveFactor.cultivationCounsel} ` +
     `전술적으로는 '${activeStrategicTactic.tacticNameKo}(${activeStrategicTactic.tacticNameHanja})'의 원리를 적용하십시오. ${activeStrategicTactic.practicalExecution}`;
 
+  const counselNote = `5사의 '${focalFiveFactor.factorHanja}' 정비와 '${activeStrategicTactic.tacticNameHanja}' 전술이 결합되어, 지금 국면을 '${topicGuide.posture}'로 안내합니다.`;
+  const boundaryNotice = '이 관점은 《손자병법》의 형세 판단과 자원 배분 철학을 빌린 상징적 전략 성찰이며, 확정적 승패 예측이나 법률·투자 자문이 아닙니다.';
+
   return {
     engineVersion: SUNTZU_STRATEGY_VERSION,
-    calculatedAtKst: new Date().toISOString(),
+    calculatedAtKst: formatKstIso(now),
+    questionTopic,
+    strategicPosture: topicGuide.posture,
     fiveFactorsHarmonyScore,
     unfoughtVictoryPowerScore,
     situationalClarityScore,
@@ -155,6 +229,11 @@ export function calculateSunTzuArtOfWarStrategy(profile: UserProfile): SunTzuArt
     deceptiveTimingMasteryScore,
     focalFiveFactor,
     activeStrategicTactic,
+    practiceGuidance: topicGuide.practice,
+    ritualAction: topicGuide.ritual,
+    reflectionFocus: topicGuide.reflection,
+    counselNote,
+    boundaryNotice,
     sunTzuPhilosophicalCounsel: {
       counselTitle,
       philosophicalGuidance,
@@ -165,16 +244,17 @@ export function calculateSunTzuArtOfWarStrategy(profile: UserProfile): SunTzuArt
 export function formatSunTzuArtOfWarStrategyPrompt(res: SunTzuArtOfWarStrategyResult): string {
   return [
     `【손자병법 오사칠계 & 부전승 피실격허 전략 지표】`,
-    `- 5사(도·천·지·장·법) 균형도: ${res.fiveFactorsHarmonyScore}/100`,
-    `- 부전승 비폭력 굴적 지혜: ${res.unfoughtVictoryPowerScore}/100`,
-    `- 지피지기 상황 명석도: ${res.situationalClarityScore}/100`,
-    `- 수형 피실격허 유연 적응도: ${res.waterFormFlexibilityScore}/100`,
-    `- 이우위직 타이밍 장악력: ${res.deceptiveTimingMasteryScore}/100`,
+    `- 질문 맥락 초점: ${res.questionTopic} | 전략적 태도: ${res.strategicPosture}`,
     `- 핵심 정비 요소: ${res.focalFiveFactor.factorHanja} (${res.focalFiveFactor.factorKo})`,
     `- 전략적 의미: ${res.focalFiveFactor.strategicSignificance}`,
     `- 요소별 수양 조언: ${res.focalFiveFactor.cultivationCounsel}`,
     `- 당면 전략 전술: ${res.activeStrategicTactic.tacticNameHanja} [${res.activeStrategicTactic.tacticNameKo}]`,
     `- 전술적 실행 방침: ${res.activeStrategicTactic.practicalExecution}`,
+    `- 맥락별 실행 조언: ${res.practiceGuidance}`,
+    `- 오늘의 작은 의례: ${res.ritualAction}`,
+    `- 성찰 질문: ${res.reflectionFocus}`,
+    `- 핵심 조언 요약: ${res.counselNote}`,
+    `- 해석 경계: ${res.boundaryNotice}`,
     `- 병법적 결단 지침: ${res.sunTzuPhilosophicalCounsel.philosophicalGuidance}`,
   ].join('\n');
 }
