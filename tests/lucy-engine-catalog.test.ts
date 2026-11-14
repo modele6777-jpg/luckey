@@ -59,6 +59,17 @@ test('every listed engine has a readable meaning and one of the seven channel th
   }
 });
 
+test('bluebird catalog label changes without changing its ID, route, or count', () => {
+  const theme = LUCY_PRO_CHANNEL_THEMES.find(item => item.id === 'bluebird');
+  assert.deepEqual(theme, {
+    id: 'bluebird',
+    label: '블루버드',
+    route: '/bluebird',
+    description: '일상·관계·소통',
+  });
+  assert.equal(ENGINE_CATALOG_THEME_COUNTS.bluebird, 37);
+});
+
 test('foundational tool meanings and primary themes use their existing authored definitions', () => {
   for (const engine of ALL_DCE_ENGINES.filter(item => item.category === 'foundational')) {
     const tool = FIFTEEN_DIVINATION_TOOLS[engine.key as DivinationToolId];
@@ -77,12 +88,11 @@ test('automatic theme classification prioritizes named divination systems over g
   const ziweiFlyingStars = ALL_DCE_ENGINES.find(engine => engine.key === 'ziweiFlyingStars')!;
   assert.equal(getEngineCatalogTheme(ziweiFlyingStars), 'trinity');
 });
-
-test('all 224 individually described catalog perspectives retain their meaning and source status', () => {
+test('all 223 individually described catalog perspectives retain their meaning and source status', () => {
   const undescribedBeforeResearch = ALL_DCE_ENGINES.filter(
     engine => engine.category === 'deep_master' && !engine.summary,
   );
-  assert.equal(undescribedBeforeResearch.length, 224);
+  assert.equal(undescribedBeforeResearch.length, 223);
   assert.deepEqual(DEEP_PERSPECTIVE_RESEARCH_COUNTS, {
     total: 229,
     supported: 219,

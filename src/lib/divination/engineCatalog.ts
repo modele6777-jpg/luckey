@@ -45,7 +45,7 @@ export const LUCY_PRO_CHANNEL_THEMES: readonly LucyProChannelTheme[] = [
   { id: 'orange', label: '오렌지', route: '/orange', description: '감정·소원·마음 성찰' },
   { id: 'trinity', label: '트리니티', route: '/trinity', description: '운명·상징·선택' },
   { id: 'aura', label: '아우라', route: '/heal', description: '명상·웰니스·회복' },
-  { id: 'bluebird', label: '파랑새', route: '/bluebird', description: '일상·관계·소통' },
+  { id: 'bluebird', label: '블루버드', route: '/bluebird', description: '일상·관계·소통' },
   { id: 'muse', label: '뮤즈', route: '/muse', description: '예술·창작·영감' },
   { id: 'epilogue', label: '에필로그', route: '/epilogue', description: '기록·회고·정리' },
 ];
