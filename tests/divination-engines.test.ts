@@ -3352,14 +3352,19 @@ test('Nordic Yggdrasil Nine Realms Engine: calculates dominant realm and Bifrost
 });
 
 test('Egyptian Maat Feather Heart Engine: calculates heart lightness and Maat verdict', () => {
-  const rep = calculateEgyptianMaatFeatherHeart({ profile });
+  const rep = calculateEgyptianMaatFeatherHeart({ profile, question: '이직 결정을 앞두고 마음이 무거워요' });
   assert.equal(rep.engineVersion, EGYPTIAN_MAAT_FEATHER_ENGINE_VERSION);
+  assert.equal(rep.questionTheme, 'decision');
   assert(rep.heartLightnessScore >= 0 && rep.heartLightnessScore <= 100);
+  assert(rep.balanceState.length > 0);
   assert(rep.weighingVerdict.length > 0);
   assert(rep.activeNegativeConfessionVirtue.length > 0);
+  assert(rep.symbolicGuard.anubisRole.length > 0 && rep.symbolicGuard.thothRole.length > 0);
+  assert(rep.practiceGuidance.length > 0 && rep.ritualAction.length > 0 && rep.boundaryNotice.length > 0);
   const prompt = formatEgyptianMaatFeatherHeartPrompt(rep);
   assert(prompt.includes('고대 이집트 마아트(Ma\'at) 진리의 깃털 & 심장 무게 측정 실측 데이터'));
   assert(prompt.includes(rep.activeNegativeConfessionVirtue));
+  assert(prompt.includes(rep.practiceGuidance));
 });
 
 test('Persian Mithraic Seven Spheres Engine: calculates Mithraic grade and Sol Invictus score', () => {
@@ -3374,14 +3379,19 @@ test('Persian Mithraic Seven Spheres Engine: calculates Mithraic grade and Sol I
 });
 
 test('Orpheic Mysteries Engine: calculates memory well awakening and Dionysian ecstasy vitality', () => {
-  const rep = calculateOrpheicMysteries({ profile });
+  const rep = calculateOrpheicMysteries({ profile, question: '연애 관계에서 내 중심을 잃지 않으려면 어떻게 해야 할까요?' });
   assert.equal(rep.engineVersion, ORPHEIC_MYSTERIES_ENGINE_VERSION);
+  assert.equal(rep.questionTheme, 'relationship');
   assert(rep.memoryWellAwakeningScore >= 0 && rep.memoryWellAwakeningScore <= 100);
   assert(rep.dionysianEcstasyVitality >= 0 && rep.dionysianEcstasyVitality <= 100);
+  assert(rep.thresholdState.length > 0);
+  assert(rep.polarityArchetype.nameKo.length > 0);
   assert(rep.divineLineageDeclaration.length > 0);
+  assert(rep.practiceGuidance.length > 0 && rep.ritualAction.length > 0 && rep.boundaryNotice.length > 0);
   const prompt = formatOrpheicMysteriesPrompt(rep);
   assert(prompt.includes('고대 그리스 오르페우스 신비주의 & 므네모시네 기억의 샘 실측 데이터'));
   assert(prompt.includes(rep.goldTabletPassportCode));
+  assert(prompt.includes(rep.practiceGuidance));
 });
 
 test('Popol Vuh Hero Twins Engine: calculates active trial house and trickster resilience', () => {
@@ -3396,14 +3406,20 @@ test('Popol Vuh Hero Twins Engine: calculates active trial house and trickster r
 });
 
 test('Ancient Yarrow I Ching Probability Engine: calculates dominant yao and Dayan alignment score', () => {
-  const rep = calculateAncientYarrowProbability({ profile });
+  const rep = calculateAncientYarrowProbability({ profile, question: '요즘 너무 지치고 불안해서 쉬고 싶어요' });
   assert.equal(rep.engineVersion, ANCIENT_YARROW_PROBABILITY_ENGINE_VERSION);
+  assert.equal(rep.questionTheme, 'healing');
   assert([6, 7, 8, 9].includes(rep.dominantYaoValue));
+  assert.equal(rep.remainingStalks, rep.dominantYaoValue * 4);
+  assert.equal(rep.isChangingLine, rep.dominantYaoValue === 6 || rep.dominantYaoValue === 9);
   assert(rep.dayanAlignmentScore >= 0 && rep.dayanAlignmentScore <= 100);
   assert(rep.yaoNameKo.length > 0);
+  assert(rep.timelinessPosture.length > 0);
+  assert(rep.practiceGuidance.length > 0 && rep.ritualAction.length > 0 && rep.boundaryNotice.length > 0);
   const prompt = formatAncientYarrowProbabilityPrompt(rep);
   assert(prompt.includes('고대 중국 주역 대연지수 49책 시초점 확률 실측 데이터'));
   assert(prompt.includes(rep.yaoNameKo));
+  assert(prompt.includes(rep.practiceGuidance));
 });
 
 test('Vedic Pancha Kosha Engine: calculates 5 layers alignment and Atman realization index', () => {
