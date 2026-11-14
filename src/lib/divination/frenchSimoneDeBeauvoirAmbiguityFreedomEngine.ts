@@ -3,12 +3,14 @@
  *
  * 20세기 프랑스 실존주의 철학의 거목 시몬 드 보부아르(1908~1986)의 불후의 명저 《애매성의 윤리학》, 《제2의 성》 원전 기반.
  *
- * @version LUCKEY-BEAUVOIR-AMBIGUITY-FREEDOM-v2.0.0
+ * @version LUCKEY-BEAUVOIR-AMBIGUITY-FREEDOM-v2.1.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const FRENCH_SIMONE_DE_BEAUVOIR_AMBIGUITY_FREEDOM_VERSION = 'LUCKEY-BEAUVOIR-AMBIGUITY-FREEDOM-v2.0.0';
+export const FRENCH_SIMONE_DE_BEAUVOIR_AMBIGUITY_FREEDOM_VERSION = 'LUCKEY-BEAUVOIR-AMBIGUITY-FREEDOM-v2.1.0';
+
+export type BeauvoirQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
 export interface BeauvoirTheme {
   themeKey: string;
@@ -65,6 +67,10 @@ export interface FrenchSimoneDeBeauvoirAmbiguityFreedomResult {
   situationalAmbiguityAudit: BeauvoirSituationalAmbiguityAudit;
   temporalSolidarityRhythm: BeauvoirTemporalSolidarityRhythm;
   beauvoirSynthesisMatrix: BeauvoirSynthesisMatrix;
+  questionTopic: BeauvoirQuestionTopic;
+  dailyPracticeRitual: string;
+  reflectiveQuestion: string;
+  interpretiveBoundary: string;
   beauvoirComprehensiveGuidance: {
     guidanceTitle: string;
     philosophicalCounsel: string;
@@ -242,6 +248,55 @@ function buildTemporalSolidarityRhythm(now?: Date): BeauvoirTemporalSolidarityRh
   };
 }
 
+function classifyBeauvoirQuestionTopic(query?: string): BeauvoirQuestionTopic {
+  const q = (query ?? '').trim();
+  if (/관계|연애|가족|동료|타인|갈등|자유|연대/.test(q)) return 'relationship';
+  if (/불확실|애매|혼란|모호|결정|고민|선택/.test(q)) return 'decision';
+  if (/눈치|기대|나이|성별|틀|규범|평가|지치|불안/.test(q)) return 'healing';
+  return 'reflection';
+}
+
+function describeBeauvoirLevel(score: number): string {
+  if (score >= 88) return '단단하고 개방적인 주체성';
+  if (score >= 82) return '균형 잡힌 애매성 수용';
+  return '차분히 자유의 방향을 가다듬는 흐름';
+}
+
+function buildBeauvoirQualitativePractice(topic: BeauvoirQuestionTopic): {
+  dailyPracticeRitual: string;
+  reflectiveQuestion: string;
+  interpretiveBoundary: string;
+} {
+  const interpretiveBoundary =
+    '이 관점은 시몬 드 보부아르의 실존 윤리학을 바탕으로 상황 속 주체성을 성찰하는 상징적 지표이며, 예언적 점술이나 사주 오행 수리 계산과 구분됩니다.';
+  if (topic === 'relationship') {
+    return {
+      dailyPracticeRitual: '상대의 선택을 존중하는 동시에 내가 바라는 경계와 제안을 대등한 언어로 한 문장 밝혀 보십시오.',
+      reflectiveQuestion: '지금 이 관계에서 나와 상대가 모두 자기 자유를 잃지 않으려면 어떤 대화가 필요할까요?',
+      interpretiveBoundary,
+    };
+  }
+  if (topic === 'decision') {
+    return {
+      dailyPracticeRitual: '흑백의 완벽한 확신을 기다리지 말고, 지금 조건에서 책임질 수 있는 작은 실험 1가지를 오늘 시작하십시오.',
+      reflectiveQuestion: '불확실함을 억지로 지우지 않고도 오늘 내가 기꺼이 책임질 수 있는 선택은 무엇인가요?',
+      interpretiveBoundary,
+    };
+  }
+  if (topic === 'healing') {
+    return {
+      dailyPracticeRitual: '남들이 정해 준 기대나 역할에서 한 걸음 비켜나, 오직 내가 원해서 고른 작은 일 하나를 실천하십시오.',
+      reflectiveQuestion: '타인의 각본이 아니라 나 자신의 목소리로 쓰기 시작할 때, 오늘 가장 먼저 바꾸고 싶은 장면은 무엇인가요?',
+      interpretiveBoundary,
+    };
+  }
+  return {
+    dailyPracticeRitual: '주어진 제약 조건을 탓하는 대신 지금 손에 쥔 여지 안에서 가능한 최선의 한 걸음을 실행하십시오.',
+    reflectiveQuestion: '지금 나의 상황(Situation) 속에서 자유가 가장 건강하게 숨 쉴 수 있는 틈은 어디인가요?',
+    interpretiveBoundary,
+  };
+}
+
 export function calculateFrenchSimoneDeBeauvoirAmbiguityFreedom(
   profile?: UserProfile,
   query?: string,
@@ -270,6 +325,8 @@ export function calculateFrenchSimoneDeBeauvoirAmbiguityFreedom(
   const focalBeauvoirAphorism = BEAUVOIR_APHORISMS[aphorismIndex];
   const situationalAmbiguityAudit = buildSituationalAmbiguityAudit(query);
   const temporalSolidarityRhythm = buildTemporalSolidarityRhythm(now);
+  const questionTopic = classifyBeauvoirQuestionTopic(query);
+  const qualitativePractice = buildBeauvoirQualitativePractice(questionTopic);
 
   const selfCreationAgency = Math.min(99, Math.round((authenticSelfCreationScore + situationalAgencyIndex) / 2));
   const ambiguityHonesty = Math.min(99, Math.round((ethicsOfAmbiguityIndex + temporalSolidarityRhythm.ambiguityClarityIndex) / 2));
@@ -303,6 +360,10 @@ export function calculateFrenchSimoneDeBeauvoirAmbiguityFreedom(
     situationalAmbiguityAudit,
     temporalSolidarityRhythm,
     beauvoirSynthesisMatrix,
+    questionTopic,
+    dailyPracticeRitual: qualitativePractice.dailyPracticeRitual,
+    reflectiveQuestion: qualitativePractice.reflectiveQuestion,
+    interpretiveBoundary: qualitativePractice.interpretiveBoundary,
     beauvoirComprehensiveGuidance: {
       guidanceTitle,
       philosophicalCounsel,
@@ -314,18 +375,18 @@ export function formatFrenchSimoneDeBeauvoirAmbiguityFreedomPrompt(
   res: FrenchSimoneDeBeauvoirAmbiguityFreedomResult,
 ): string {
   return [
-    `【시몬 드 보부아르 《애매성의 윤리학》 실존적 자기창조 및 상호자유 지표】`,
-    `- 주체적 자기창조 및 실존적 투사(Authentic Self-Creation & Projection): ${res.authenticSelfCreationScore}/100`,
-    `- 애매성의 윤리학 및 실존적 정직성(Ethics of Ambiguity & Honest Acceptance): ${res.ethicsOfAmbiguityIndex}/100`,
-    `- 자유의 상호 연대 및 해방적 공감도(Mutual Freedom & Liberating Solidarity): ${res.mutualFreedomSolidarityScore}/100`,
-    `- 상황 돌파 실천력 및 주체적 결단(Situational Agency & Action): ${res.situationalAgencyIndex}/100`,
-    `- 실존적 용기 및 창조적 회복탄력성(Existential Courage & Resilience): ${res.existentialCourageResilienceScore}/100`,
+    `【시몬 드 보부아르 《애매성의 윤리학》 실존적 자기창조 및 상호자유 관점】`,
+    `- 자기창조·애매성·연대 결: 자기창조(${describeBeauvoirLevel(res.authenticSelfCreationScore)}) / 애매성 정직(${describeBeauvoirLevel(res.ethicsOfAmbiguityIndex)}) / 상호 연대(${describeBeauvoirLevel(res.mutualFreedomSolidarityScore)})`,
+    `- 상황 돌파·용기 결: 상황 돌파(${describeBeauvoirLevel(res.situationalAgencyIndex)}) / 실존적 용기(${describeBeauvoirLevel(res.existentialCourageResilienceScore)})`,
     `- 핵심 보부아르 테마: ${res.activeBeauvoirTheme.themeTitleKo} [${res.activeBeauvoirTheme.themeTitleEn}]`,
     `- 질문 맥락 애매성 감사 (${res.situationalAmbiguityAudit.themeKo} · ${res.situationalAmbiguityAudit.sourceCitation}): "${res.situationalAmbiguityAudit.translationKo}" [${res.situationalAmbiguityAudit.frenchQuote}]`,
     `- 독단·수동성 경계: ${res.situationalAmbiguityAudit.dogmaOrPassivityTrap}`,
     `- 상황 속 자유 실천: ${res.situationalAmbiguityAudit.situationalFreedomStep}`,
-    `- KST 연대 리듬: ${res.temporalSolidarityRhythm.kstWindow} (${res.temporalSolidarityRhythm.ethicsFocus}, 명료도 ${res.temporalSolidarityRhythm.ambiguityClarityIndex}/100) — ${res.temporalSolidarityRhythm.rhythmDirective}`,
-    `- 보부아르 매트릭스: 자기창조 ${res.beauvoirSynthesisMatrix.selfCreationAgency} / 애매성 정직 ${res.beauvoirSynthesisMatrix.ambiguityHonesty} / 상호 연대 ${res.beauvoirSynthesisMatrix.mutualSolidarity} (종합 ${res.beauvoirSynthesisMatrix.overallSynthesis}/100)`,
+    `- KST 연대 리듬: ${res.temporalSolidarityRhythm.kstWindow} (${res.temporalSolidarityRhythm.ethicsFocus} · ${res.temporalSolidarityRhythm.seasonalTone}) — ${res.temporalSolidarityRhythm.rhythmDirective}`,
+    `- 보부아르 매트릭스: 자기창조(${describeBeauvoirLevel(res.beauvoirSynthesisMatrix.selfCreationAgency)}) · 애매성 정직(${describeBeauvoirLevel(res.beauvoirSynthesisMatrix.ambiguityHonesty)}) · 상호 연대(${describeBeauvoirLevel(res.beauvoirSynthesisMatrix.mutualSolidarity)})`,
+    `- 오늘의 실천 의례(${res.questionTopic}): ${res.dailyPracticeRitual}`,
+    `- 성찰 질문: ${res.reflectiveQuestion}`,
+    `- 해석 경계: ${res.interpretiveBoundary}`,
     `- 종합 보부아르 권면: ${res.beauvoirComprehensiveGuidance.philosophicalCounsel}`,
   ].join('\n');
 }

@@ -3,12 +3,14 @@
  *
  * 프랑스 문학의 불멸의 거장이자 1957년 노벨 문학상 최연소 수상 철학자 알베르 카뮈(Albert Camus, 1913~1960)의 핵심 원전 기반.
  *
- * @version LUCKEY-ALBERT-CAMUS-ABSURD-REVOLT-v2.0.0
+ * @version LUCKEY-ALBERT-CAMUS-ABSURD-REVOLT-v2.1.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const FRENCH_ALBERT_CAMUS_VERSION = 'LUCKEY-ALBERT-CAMUS-ABSURD-REVOLT-v2.0.0';
+export const FRENCH_ALBERT_CAMUS_VERSION = 'LUCKEY-ALBERT-CAMUS-ABSURD-REVOLT-v2.1.0';
+
+export type CamusQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
 export interface CamusTheme {
   themeKey: string;
@@ -65,6 +67,10 @@ export interface AlbertCamusAbsurdRevoltResult {
   situationalAbsurdAudit: CamusSituationalAbsurdAudit;
   temporalRevoltRhythm: CamusTemporalRevoltRhythm;
   camusSynthesisMatrix: CamusSynthesisMatrix;
+  questionTopic: CamusQuestionTopic;
+  dailyPracticeRitual: string;
+  reflectiveQuestion: string;
+  interpretiveBoundary: string;
   camusComprehensiveGuidance: {
     guidanceTitle: string;
     philosophicalCounsel: string;
@@ -240,6 +246,55 @@ function buildTemporalRevoltRhythm(now?: Date): CamusTemporalRevoltRhythm {
   };
 }
 
+function classifyCamusQuestionTopic(question?: string): CamusQuestionTopic {
+  const q = (question ?? '').trim();
+  if (/부당|억울|불의|갈등|관계|상처|연대|가족|동료|사랑/.test(q)) return 'relationship';
+  if (/선택|결정|결단|진로|이직|도전|방향|포기/.test(q)) return 'decision';
+  if (/불안|미래|외로|겨울|막막|실패|지치|힘들|위로|치유/.test(q)) return 'healing';
+  return 'reflection';
+}
+
+function describeCamusLevel(score: number): string {
+  if (score >= 88) return '명석하고 충만한 절정';
+  if (score >= 80) return '단단히 깨어 있는 흐름';
+  return '고요히 응시하며 다지는 국면';
+}
+
+function buildCamusQualitativePractice(topic: CamusQuestionTopic): {
+  dailyPracticeRitual: string;
+  reflectiveQuestion: string;
+  interpretiveBoundary: string;
+} {
+  const interpretiveBoundary =
+    '이 관점은 알베르 카뮈의 실존철학을 바탕으로 오늘의 태도를 성찰하는 상징적 지표이며, 길흉 예언이나 사주 오행의 수리 계산을 대체하지 않습니다.';
+  if (topic === 'relationship') {
+    return {
+      dailyPracticeRitual: '오늘 대화에서 내 존엄의 경계를 지키는 정직한 한 문장을 차분히 건네고, 상대의 체온을 함께 살피십시오.',
+      reflectiveQuestion: '지금 이 관계에서 내가 침묵으로 삼키거나 냉소로 회피하고 있는 존엄의 선은 어디인가요?',
+      interpretiveBoundary,
+    };
+  }
+  if (topic === 'decision') {
+    return {
+      dailyPracticeRitual: '완벽한 보장을 기다리는 대신, 오늘 내가 직접 책임지고 밀어 올릴 바위 1가지를 골라 첫 30분을 실행하십시오.',
+      reflectiveQuestion: '결과가 보장되지 않더라도, 지금 이 선택 자체가 나를 부끄럽지 않게 만드는 이유는 무엇인가요?',
+      interpretiveBoundary,
+    };
+  }
+  if (topic === 'healing') {
+    return {
+      dailyPracticeRitual: '오늘 15분만이라도 미래 걱정을 내려놓고 햇살·바람·따뜻한 차 한 잔으로 지금 살아 있음을 감각하십시오.',
+      reflectiveQuestion: '지금 내 마음의 겨울 한복판에서도 아직 식지 않고 남아 있는 불패의 여름은 무엇인가요?',
+      interpretiveBoundary,
+    };
+  }
+  return {
+    dailyPracticeRitual: '오늘 반복되는 일상 한 장면에서 결과 평가를 잠시 멈추고, 그 수고에 담긴 나만의 리듬을 온전히 느껴 보십시오.',
+    reflectiveQuestion: '세상이 내가 바란 답을 주지 않을 때, 나는 어떤 태도로 오늘의 주인이 될 수 있을까요?',
+    interpretiveBoundary,
+  };
+}
+
 export function calculateAlbertCamusAbsurdRevolt(
   profile: UserProfile,
   question?: string,
@@ -273,6 +328,8 @@ export function calculateAlbertCamusAbsurdRevolt(
   const focalCamusAphorism = CAMUS_APHORISMS[aphorismIndex];
   const situationalAbsurdAudit = buildSituationalAbsurdAudit(question);
   const temporalRevoltRhythm = buildTemporalRevoltRhythm(now);
+  const questionTopic = classifyCamusQuestionTopic(question);
+  const qualitativePractice = buildCamusQualitativePractice(questionTopic);
 
   const absurdLucidity = Math.min(99, Math.round((absurdLucidityAwakeningScore + lucidFreedomAutonomyScore) / 2));
   const revoltPersistence = Math.min(99, Math.round((unceasingRevoltDignityScore + temporalRevoltRhythm.lucidityClarityIndex) / 2));
@@ -305,6 +362,10 @@ export function calculateAlbertCamusAbsurdRevolt(
     situationalAbsurdAudit,
     temporalRevoltRhythm,
     camusSynthesisMatrix,
+    questionTopic,
+    dailyPracticeRitual: qualitativePractice.dailyPracticeRitual,
+    reflectiveQuestion: qualitativePractice.reflectiveQuestion,
+    interpretiveBoundary: qualitativePractice.interpretiveBoundary,
     camusComprehensiveGuidance: {
       guidanceTitle,
       philosophicalCounsel,
@@ -314,18 +375,18 @@ export function calculateAlbertCamusAbsurdRevolt(
 
 export function formatAlbertCamusAbsurdRevoltPrompt(res: AlbertCamusAbsurdRevoltResult): string {
   return [
-    `【알베르 카뮈 《시지프 신화》 부조리의 자각 & 실존적 반항 지표】`,
-    `- 부조리 명석한 자각도(Lucidité): ${res.absurdLucidityAwakeningScore}/100`,
-    `- 굴하지 않는 반항과 존엄도(Révolte): ${res.unceasingRevoltDignityScore}/100`,
-    `- 순간을 사랑하는 삶의 열정(Passion): ${res.passionateVitalityIndex}/100`,
-    `- 환상을 걷어낸 실존적 자유도(Liberté): ${res.lucidFreedomAutonomyScore}/100`,
-    `- 시지프의 행복 회복탄력성(Bonheur): ${res.sisyphusHappinessResilienceScore}/100`,
+    `【알베르 카뮈 《시지프 신화》 부조리의 자각 & 실존적 반항 관점】`,
+    `- 부조리 자각·반항·열정 결: 자각(${describeCamusLevel(res.absurdLucidityAwakeningScore)}) / 반항(${describeCamusLevel(res.unceasingRevoltDignityScore)}) / 열정(${describeCamusLevel(res.passionateVitalityIndex)})`,
+    `- 실존적 자유·회복 결: 자유(${describeCamusLevel(res.lucidFreedomAutonomyScore)}) / 시지프의 행복(${describeCamusLevel(res.sisyphusHappinessResilienceScore)})`,
     `- 핵심 실존 테마: ${res.activeCamusTheme.themeTitleKo} [${res.activeCamusTheme.themeTitleFrench}]`,
     `- 질문 맥락 부조리 감사 (${res.situationalAbsurdAudit.themeKo} · ${res.situationalAbsurdAudit.sourceCitation}): "${res.situationalAbsurdAudit.translationKo}" [${res.situationalAbsurdAudit.frenchQuote}]`,
     `- 거짓 도피 경계: ${res.situationalAbsurdAudit.falseEscapeTrap}`,
     `- 시지프의 첫걸음: ${res.situationalAbsurdAudit.sisyphusFirstStep}`,
-    `- KST 반항 리듬: ${res.temporalRevoltRhythm.kstWindow} (${res.temporalRevoltRhythm.revoltFocus}, 명료도 ${res.temporalRevoltRhythm.lucidityClarityIndex}/100) — ${res.temporalRevoltRhythm.rhythmDirective}`,
-    `- 카뮈 매트릭스: 부조리 자각 ${res.camusSynthesisMatrix.absurdLucidity} / 반항 지속 ${res.camusSynthesisMatrix.revoltPersistence} / 현재 열정 ${res.camusSynthesisMatrix.presentPassion} (종합 ${res.camusSynthesisMatrix.overallSynthesis}/100)`,
+    `- KST 반항 리듬: ${res.temporalRevoltRhythm.kstWindow} (${res.temporalRevoltRhythm.revoltFocus} · ${res.temporalRevoltRhythm.seasonalTone}) — ${res.temporalRevoltRhythm.rhythmDirective}`,
+    `- 카뮈 매트릭스: 자각(${describeCamusLevel(res.camusSynthesisMatrix.absurdLucidity)}) · 반항 지속(${describeCamusLevel(res.camusSynthesisMatrix.revoltPersistence)}) · 현재 열정(${describeCamusLevel(res.camusSynthesisMatrix.presentPassion)})`,
+    `- 오늘의 실천 의례(${res.questionTopic}): ${res.dailyPracticeRitual}`,
+    `- 성찰 질문: ${res.reflectiveQuestion}`,
+    `- 해석 경계: ${res.interpretiveBoundary}`,
     `- 종합 실존철학 권면: ${res.camusComprehensiveGuidance.philosophicalCounsel}`,
   ].join('\n');
 }
