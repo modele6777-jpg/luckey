@@ -1,6 +1,6 @@
 import { SEPTAGRAM_RAINBOW_PALETTE } from '../lucyAutoModeDetector';
 import type { SevenThemeChannel } from '../fifteenDivinationTools';
-import { getEngineCatalogTheme, LUCY_PRO_CATALOG_ENGINES } from './engineCatalog';
+import { getEngineCatalogTheme, LUCY_PRO_CATALOG_ENGINES, LUCY_PRO_CHANNEL_THEMES } from './engineCatalog';
 
 export interface EngineBadgeTheme {
   theme: SevenThemeChannel;
@@ -26,4 +26,29 @@ export function getEngineBadgeTheme(engineKey: string): EngineBadgeTheme | null 
     color: palette.foreground,
     borderColor: palette.border,
   };
+}
+
+export interface EngineThemeBadge extends EngineBadgeTheme {
+  label: string;
+}
+
+/** Resolve unique theme badges from engines that were actually used; unknown IDs stay unthemed. */
+export function getUsedEngineThemeBadges(engineKeys: readonly string[]): EngineThemeBadge[] {
+  const usedThemes = new Set<SevenThemeChannel>();
+  for (const engineKey of engineKeys) {
+    const engine = visibleCatalogEngineByKey.get(engineKey);
+    if (engine) usedThemes.add(getEngineCatalogTheme(engine));
+  }
+
+  return LUCY_PRO_CHANNEL_THEMES.flatMap(({ id, label }) => {
+    if (!usedThemes.has(id)) return [];
+    const palette = SEPTAGRAM_RAINBOW_PALETTE[id];
+    return [{
+      theme: id,
+      label,
+      backgroundColor: palette.background,
+      color: palette.foreground,
+      borderColor: palette.border,
+    }];
+  });
 }
