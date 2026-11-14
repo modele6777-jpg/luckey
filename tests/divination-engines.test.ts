@@ -7384,6 +7384,39 @@ test('Eleusinian Mysteries, Hindu Kundalini, and Hopi Four Worlds v2.0.0 include
   assert.ok(!hopiPrompt.includes('/100') && !hopiPrompt.includes('%') && !hopiPrompt.includes('점수'));
 });
 
+test('Ibn Arabi Wahdat, Kabbalistic Zohar, and Kashmir Shaivism Spanda v2.0.0 include KST temporal rhythm and qualitative matrix without score exposure', () => {
+  const testDate = new Date('2026-11-15T06:25:00Z');
+
+  const arabi = calculateIbnArabiWahdatAlWujud(profile, testDate, '마음의 평화와 자비가 필요해요');
+  assert.equal(arabi.engineVersion, '2.0.0');
+  assert.ok(arabi.temporalWahdatRhythm.calculatedAtKst.includes('KST'));
+  assert.ok(arabi.wahdatSynthesisMatrix.prophetVirtueNexus.length > 0);
+  const arabiPrompt = formatIbnArabiWahdatAlWujudPrompt(arabi);
+  assert.ok(!arabiPrompt.includes('/100') && !arabiPrompt.includes('%') && !arabiPrompt.includes('점수'));
+
+  const zohar = calculateKabbalisticZoharSoul({
+    profile,
+    question: '영혼의 회복과 내면의 중심을 찾고 싶습니다',
+    now: testDate,
+  });
+  assert.equal(zohar.engineVersion, '2.0.0');
+  assert.ok(zohar.temporalZoharRhythm.calculatedAtKst.includes('KST'));
+  assert.ok(zohar.zoharSynthesisMatrix.primarySecondaryNexus.length > 0);
+  const zoharPrompt = formatKabbalisticZoharSoulPrompt(zohar);
+  assert.ok(!zoharPrompt.includes('/100') && !zoharPrompt.includes('%') && !zoharPrompt.includes('점수'));
+
+  const spanda = calculateKashmirShaivismSpanda({
+    profile,
+    question: '새로운 창조적 영감을 실행하고 싶어요',
+    now: testDate,
+  });
+  assert.equal(spanda.engineVersion, '2.0.0');
+  assert.ok(spanda.temporalSpandaRhythm.calculatedAtKst.includes('KST'));
+  assert.ok(spanda.spandaSynthesisMatrix.primarySecondaryNexus.length > 0);
+  const spandaPrompt = formatKashmirShaivismSpandaPrompt(spanda);
+  assert.ok(!spandaPrompt.includes('/100') && !spandaPrompt.includes('%') && !spandaPrompt.includes('점수'));
+});
+
 
 
 

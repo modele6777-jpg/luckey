@@ -17,7 +17,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const KABBALISTIC_ZOHAR_SOUL_ENGINE_VERSION = '1.0.0';
+export const KABBALISTIC_ZOHAR_SOUL_ENGINE_VERSION = '2.0.0';
 
 export interface KabbalisticSoulLevel {
   id: string;
@@ -32,14 +32,32 @@ export interface KabbalisticSoulLevel {
 export interface KabbalisticZoharSoulReport {
   engineVersion: string;
   timestamp: string;
-  yechidahDivineSparkScore: number; // 0 ~ 100 예히다 신성 단일성 지수
-  tikkunSoulCorrectionProgress: number; // 0 ~ 100 티쿤(영혼 교정/회복) 완성도
-  shekhinahDivinePresenceIndex: number; // 0 ~ 100 셰키나 신성 임재 조화도
-  qlippothShellPurificationRate: number; // 0 ~ 100 클리포트(그림자 껍질) 정화율
+  yechidahDivineSparkScore: number; // 내부 참조용 (프롬프트 비노출)
+  tikkunSoulCorrectionProgress: number; // 내부 참조용 (프롬프트 비노출)
+  shekhinahDivinePresenceIndex: number; // 내부 참조용 (프롬프트 비노출)
+  qlippothShellPurificationRate: number; // 내부 참조용 (프롬프트 비노출)
   dominantSoulLevel: KabbalisticSoulLevel; // 현재 주재하는 영혼 층위
   secondarySoulLevel: KabbalisticSoulLevel; // 보조 영혼 층위
+  situationalZoharAudit: {
+    questionTheme: 'grounding' | 'emotion' | 'insight' | 'calling';
+    tikkunTask: string;
+    qlippothBarrier: string;
+    kelimGuidance: string;
+  };
+  temporalZoharRhythm: {
+    calculatedAtKst: string;
+    sephirothWatchWindow: string;
+    shabbatCycle: string;
+    rhythmGuidance: string;
+  };
+  zoharSynthesisMatrix: {
+    primarySecondaryNexus: string;
+    ascensionPosture: string;
+    tikkunDirective: string;
+  };
   zoharKabbalahGuidance: string; // 조하르 지혜 지침
   einSofLightAscensionRitual: string; // 에인 소프 무한의 빛 상승 리추얼
+  boundaryNotice: string;
 }
 
 const ZOHAR_SOUL_LEVELS_BASE: Omit<KabbalisticSoulLevel, 'resonanceScore'>[] = [
@@ -134,6 +152,57 @@ export function calculateKabbalisticZoharSoul(
   const shekhinahDivinePresenceIndex = Math.min(100, Math.max(44, 52 + ((seed * 19) % 46)));
   const qlippothShellPurificationRate = Math.min(100, Math.max(46, Math.floor((tikkunSoulCorrectionProgress * 0.5 + yechidahDivineSparkScore * 0.5))));
 
+  const qLower = question.toLowerCase();
+  const questionTheme: 'grounding' | 'emotion' | 'insight' | 'calling' =
+    /일|직장|돈|건강|생활|현실|실행/.test(qLower)
+      ? 'grounding'
+      : /관계|연애|감정|마음|사랑|가족|이별/.test(qLower)
+        ? 'emotion'
+        : /선택|결정|방향|진로|고민|의미/.test(qLower)
+          ? 'insight'
+          : 'calling';
+
+  const situationalZoharAudit = {
+    questionTheme,
+    tikkunTask: `${dominantSoulLevel.nameKo}의 빛을 일상 속 작은 행동과 태도로 연결하는 티쿤(회복)`,
+    qlippothBarrier: questionTheme === 'emotion'
+      ? '과거의 서운함이나 방어심이 만든 감정적 껍질(클리포트)'
+      : '결과를 미리 통제하려는 조급함과 두려움의 껍질(클리포트)',
+    kelimGuidance: '빛이 머물 수 있는 고요하고 단단한 마음의 그릇(Kelim)을 먼저 비워 두세요.',
+  };
+
+  const kstDate = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const kstHour = kstDate.getUTCHours();
+  const kstDay = kstDate.getUTCDay();
+  const calculatedAtKst = kstDate.toISOString().replace('T', ' ').slice(0, 16) + ' KST';
+
+  const sephirothWatchWindow = kstHour >= 5 && kstHour < 11
+    ? '헤세드(자비) 아침 파수창 (네샤마의 맑은 통찰과 선한 의도 점화)'
+    : kstHour >= 11 && kstHour < 17
+      ? '티페레트(조화) 한낮 파수창 (루아흐와 네페쉬의 현실적 균형)'
+      : kstHour >= 17 && kstHour < 22
+        ? '게부라(절제) 저녁 파수창 (하루의 껍질을 벗겨내는 성찰)'
+        : '비나·예히다 심야 파수창 (티쿤 하초트·고요한 영혼의 회복)';
+
+  const shabbatCycle = kstDay === 5 || kstDay === 6
+    ? '셰키나 안식 순환 (비움과 쉼을 통한 빛의 충전)'
+    : '아시야 행위 순환 (작은 성실함으로 빛의 그릇을 빚는 주간)';
+
+  const temporalZoharRhythm = {
+    calculatedAtKst,
+    sephirothWatchWindow,
+    shabbatCycle,
+    rhythmGuidance: `${sephirothWatchWindow}과 ${shabbatCycle}이 교차합니다. 거창한 도약보다 오늘 마음의 그릇을 맑게 닦는 한 걸음에 집중하세요.`,
+  };
+
+  const zoharSynthesisMatrix = {
+    primarySecondaryNexus: `${dominantSoulLevel.nameKo} × ${secondarySoulLevel.nameKo}`,
+    ascensionPosture: tikkunSoulCorrectionProgress >= 75
+      ? '내면의 그림자 껍질이 얇아져 높은 영혼 층위의 직관이 일상과 자연스럽게 이어지는 국면'
+      : '네페쉬·루아흐의 생활 리듬을 다지며 티쿤의 기반을 차분히 회복하는 국면',
+    tikkunDirective: dominantSoulLevel.divineIllumination,
+  };
+
   const zoharKabbalahGuidance = `당신의 영혼은 단순한 육체적 한계를 넘어 거룩한 신성의 빛줄기로 연결되어 있습니다. 현재 강력히 진동하는 층위는 [${dominantSoulLevel.nameKo}]입니다. ${dominantSoulLevel.divineIllumination}의 은총을 자각하십시오. 껍질(클리포트)의 두려움을 벗어던질 때 영혼의 참된 그릇(Kelim)이 완성됩니다.`;
   const einSofLightAscensionRitual = `정수리 위로 찬란한 무한의 백색광이 쏟아져 온몸의 차크라를 정화하는 모습을 그리십시오: "에인 소프 오르(Ein Sof Or), 무한한 신성의 빛이 내 영혼을 회복시키며 거룩한 셰키나의 평화가 깃든다."`;
 
@@ -146,21 +215,29 @@ export function calculateKabbalisticZoharSoul(
     qlippothShellPurificationRate,
     dominantSoulLevel,
     secondarySoulLevel,
+    situationalZoharAudit,
+    temporalZoharRhythm,
+    zoharSynthesisMatrix,
     zoharKabbalahGuidance,
     einSofLightAscensionRitual,
+    boundaryNotice: '카발라 《조하르》의 5대 영혼 층위 상징을 빌려 온 정성적 성찰 관점이며, 확정적 예언이나 의학적·재정적 처방이 아닙니다.',
   };
 }
 
 export function formatKabbalisticZoharSoulPrompt(rep: KabbalisticZoharSoulReport): string {
   return `[카발라 조하르(Zohar) 5대 영혼 층위 & 에인 소프 신성 상승 실측 데이터]
 · 엔진 버전: v${rep.engineVersion}
-· 예히다 신성 단일성 지수: ${rep.yechidahDivineSparkScore}/100 | 티쿤(영혼 회복) 완성도: ${rep.tikkunSoulCorrectionProgress}/100
-· 셰키나 신성 임재 조화도: ${rep.shekhinahDivinePresenceIndex}/100 | 클리포트 껍질 정화율: ${rep.qlippothShellPurificationRate}/100
-· 주재 영혼 층위: [${rep.dominantSoulLevel.nameKo} (${rep.dominantSoulLevel.hebrew})] — 공명도 ${rep.dominantSoulLevel.resonanceScore}%
+· 주재 영혼 층위: [${rep.dominantSoulLevel.nameKo} (${rep.dominantSoulLevel.hebrew})]
   - 카발라 세계: ${rep.dominantSoulLevel.kabbalisticWorld}
   - 영혼 영역: ${rep.dominantSoulLevel.soulDomain}
   - 신성 조명 은사: ${rep.dominantSoulLevel.divineIllumination}
-· 보조 영혼 층위: [${rep.secondarySoulLevel.nameKo} (${rep.secondarySoulLevel.hebrew})] — 공명도 ${rep.secondarySoulLevel.resonanceScore}%
+· 보조 영혼 층위: [${rep.secondarySoulLevel.nameKo} (${rep.secondarySoulLevel.hebrew})]
+· 질문 맥락 감사: 테마(${rep.situationalZoharAudit.questionTheme}) · 티쿤 과제: ${rep.situationalZoharAudit.tikkunTask}
+  - 정화할 껍질: ${rep.situationalZoharAudit.qlippothBarrier} | 그릇 지침: ${rep.situationalZoharAudit.kelimGuidance}
+· 시공간 세피로트 리듬 (${rep.temporalZoharRhythm.calculatedAtKst}): ${rep.temporalZoharRhythm.sephirothWatchWindow} / ${rep.temporalZoharRhythm.shabbatCycle}
+  - 리듬 지침: ${rep.temporalZoharRhythm.rhythmGuidance}
+· 영혼 교차 매트릭스: ${rep.zoharSynthesisMatrix.primarySecondaryNexus} — ${rep.zoharSynthesisMatrix.ascensionPosture}
 · 조하르 카발라 지혜 지침: ${rep.zoharKabbalahGuidance}
-· 에인 소프 빛의 상승 리추얼: ${rep.einSofLightAscensionRitual}`;
+· 에인 소프 빛의 상승 리추얼: ${rep.einSofLightAscensionRitual}
+· 해석 경계: ${rep.boundaryNotice}`;
 }

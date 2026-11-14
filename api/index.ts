@@ -1,4 +1,4 @@
-// v1.7.469: Deepen Eleusinian Mysteries, Hindu Kundalini, and Hopi Four Worlds engines
+// v1.7.470: Deepen Ibn Arabi Wahdat, Kabbalistic Zohar, and Kashmir Shaivism Spanda engines
 import { getLucyRequestFallbacks, requestWithModelFallback } from '../src/lib/lucyModelPolicy.ts';
 import "dotenv/config";
 import express from "express";

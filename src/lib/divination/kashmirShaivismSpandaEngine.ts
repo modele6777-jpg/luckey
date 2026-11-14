@@ -18,7 +18,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const KASHMIR_SHAIVISM_SPANDA_ENGINE_VERSION = '1.0.0';
+export const KASHMIR_SHAIVISM_SPANDA_ENGINE_VERSION = '2.0.0';
 
 export interface KashmirShaivismTattva {
   id: string;
@@ -33,14 +33,32 @@ export interface KashmirShaivismTattva {
 export interface KashmirShaivismSpandaReport {
   engineVersion: string;
   timestamp: string;
-  spandaCosmicPulsationScore: number; // 0 ~ 100 스판다 우주적 맥동 점수
-  pratyabhijnaSelfRecognitionIndex: number; // 0 ~ 100 프라티야비즈냐 본성 재인식 완성도
-  prakashaVimarshaUnityScore: number; // 0 ~ 100 프라카샤-비마르샤 합일률
-  threeMalasPurificationRate: number; // 0 ~ 100 3대 말라(에고 불순) 정화율
+  spandaCosmicPulsationScore: number; // 내부 참조용 (프롬프트 비노출)
+  pratyabhijnaSelfRecognitionIndex: number; // 내부 참조용 (프롬프트 비노출)
+  prakashaVimarshaUnityScore: number; // 내부 참조용 (프롬프트 비노출)
+  threeMalasPurificationRate: number; // 내부 참조용 (프롬프트 비노출)
   dominantTattva: KashmirShaivismTattva; // 현재 주재하는 트리카 신성 양상
   secondaryTattva: KashmirShaivismTattva; // 보조 양상
+  situationalSpandaAudit: {
+    questionTheme: 'creation' | 'stillness' | 'release' | 'recognition';
+    activeMalaChallenge: string;
+    prakashaVimarshaPosture: string;
+    trikaGuidance: string;
+  };
+  temporalSpandaRhythm: {
+    calculatedAtKst: string;
+    spandaPulseWindow: string;
+    seasonalLila: string;
+    rhythmGuidance: string;
+  };
+  spandaSynthesisMatrix: {
+    primarySecondaryNexus: string;
+    recognitionState: string;
+    pulseDirective: string;
+  };
   kashmirShaivismGuidance: string; // 카슈미르 시바파 지혜 지침
   spandaPulsationMeditationRitual: string; // 스판다 맥동 명상 리추얼
+  boundaryNotice: string;
 }
 
 const KASHMIR_TATTVAS_BASE: Omit<KashmirShaivismTattva, 'resonanceScore'>[] = [
@@ -135,6 +153,63 @@ export function calculateKashmirShaivismSpanda(
   const prakashaVimarshaUnityScore = Math.min(100, Math.max(44, 53 + ((seed * 17) % 45)));
   const threeMalasPurificationRate = Math.min(100, Math.max(46, Math.floor((spandaCosmicPulsationScore * 0.5 + pratyabhijnaSelfRecognitionIndex * 0.5))));
 
+  const qLower = question.toLowerCase();
+  const questionTheme: 'creation' | 'stillness' | 'release' | 'recognition' =
+    /시작|창조|새로|일|도전|아이디어/.test(qLower)
+      ? 'creation'
+      : /불안|흔들|유지|평화|중심|관계/.test(qLower)
+        ? 'stillness'
+        : /비우|정화|지치|힘들|과거|놓/.test(qLower)
+          ? 'release'
+          : 'recognition';
+
+  const situationalSpandaAudit = {
+    questionTheme,
+    activeMalaChallenge: questionTheme === 'creation'
+      ? '카르마 말라(결과에 대한 집착과 행위의 조급함) 내려놓기'
+      : questionTheme === 'stillness'
+        ? '마이야 말라(타인과 상황의 차이에 휘둘리는 분별심) 이완하기'
+        : '아나바 말라(스스로를 작고 부족한 존재로 여기는 착각) 해체하기',
+    prakashaVimarshaPosture: '대상을 비추는 순수한 빛(프라카샤)과 스스로를 알아차리는 힘(비마르샤)이 한 호흡 안에서 겹쳐지는 자리',
+    trikaGuidance: dominantTattva.transcendencePower,
+  };
+
+  const kstDate = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const kstHour = kstDate.getUTCHours();
+  const kstMonth = kstDate.getUTCMonth() + 1;
+  const calculatedAtKst = kstDate.toISOString().replace('T', ' ').slice(0, 16) + ' KST';
+
+  const spandaPulseWindow = kstHour >= 4 && kstHour < 9
+    ? '우샤스 새벽 맥동창 (들숨과 날숨 사이 순수 자각이 열리는 시간)'
+    : kstHour >= 9 && kstHour < 17
+      ? '스리스티 낮 창조창 (내면의 자각이 현실의 행동으로 춤추는 시간)'
+      : kstHour >= 17 && kstHour < 22
+        ? '삼하라 황혼 용해창 (하루의 분별과 피로를 빛으로 녹이는 시간)'
+        : '투리야 심야 정적창 (모든 현상이 고요한 중심으로 되돌아가는 시간)';
+
+  const seasonalLila = kstMonth >= 3 && kstMonth <= 5
+    ? '봄의 창조 유희(Srishti Lila)'
+    : kstMonth >= 6 && kstMonth <= 8
+      ? '여름의 생명 약동(Spanda Lila)'
+      : kstMonth >= 9 && kstMonth <= 11
+        ? '가을의 투명한 자각(Prakasha Lila)'
+        : '겨울의 깊은 본성 회귀(Samhara Lila)';
+
+  const temporalSpandaRhythm = {
+    calculatedAtKst,
+    spandaPulseWindow,
+    seasonalLila,
+    rhythmGuidance: `${spandaPulseWindow}과 ${seasonalLila}이 맞물려 있습니다. 생각을 더 보태기보다 지금 이 순간 숨 사이의 고요를 먼저 느껴보세요.`,
+  };
+
+  const spandaSynthesisMatrix = {
+    primarySecondaryNexus: `${dominantTattva.nameKo} × ${secondaryTattva.nameKo}`,
+    recognitionState: pratyabhijnaSelfRecognitionIndex >= 76
+      ? '이미 갖추어진 내면의 여유와 중심을 자연스럽게 재인식하는 명료한 국면'
+      : '복잡한 생각의 파도를 잠시 멈추고 순수한 알아차림으로 돌아가는 정돈 국면',
+    pulseDirective: dominantTattva.transcendencePower,
+  };
+
   const kashmirShaivismGuidance = `카슈미르 시바파의 스판다 카리카는 말합니다: "그대 안에서 뛰고 있는 심장박동과 숨결이 곧 우주를 창조하고 거두어들이는 신성한 맥동이다." 현재 진동하는 신성한 양상은 [${dominantTattva.nameKo}]입니다. 당신은 무언가를 새로 쟁취할 필요가 없습니다. 이미 본래 완벽한 신성 자아임을 '재인식(프라티야비즈냐)'하십시오. ${dominantTattva.transcendencePower}의 권능이 지금 발현되고 있습니다.`;
   const spandaPulsationMeditationRitual = `가슴의 고동과 호흡의 들숨·날숨 사이 미세한 정적을 감지하십시오: "쉬보함(Shivoham - 내가 곧 시바요 순수 자각이다). 내 안의 신성한 맥동 스판다가 만유와 함께 춤춘다."`;
 
@@ -147,21 +222,29 @@ export function calculateKashmirShaivismSpanda(
     threeMalasPurificationRate,
     dominantTattva,
     secondaryTattva,
+    situationalSpandaAudit,
+    temporalSpandaRhythm,
+    spandaSynthesisMatrix,
     kashmirShaivismGuidance,
     spandaPulsationMeditationRitual,
+    boundaryNotice: '카슈미르 시바파 트리카 철학의 스판다·프라티야비즈냐 상징을 빌려 온 정성적 성찰 관점이며, 확정적 예언이나 의학적·재정적 처방이 아닙니다.',
   };
 }
 
 export function formatKashmirShaivismSpandaPrompt(rep: KashmirShaivismSpandaReport): string {
   return `[카슈미르 시바파 스판다 우주 맥동 & 프라티야비즈냐 재인식 실측 데이터]
 · 엔진 버전: v${rep.engineVersion}
-· 스판다 우주적 맥동 점수: ${rep.spandaCosmicPulsationScore}/100 | 프라티야비즈냐 본성 재인식도: ${rep.pratyabhijnaSelfRecognitionIndex}/100
-· 프라카샤-비마르샤 합일률: ${rep.prakashaVimarshaUnityScore}/100 | 3대 말라(에고 불순) 정화율: ${rep.threeMalasPurificationRate}/100
-· 주재 트리카 신성 양상: [${rep.dominantTattva.nameKo} (${rep.dominantTattva.sanskrit})] — 공명도 ${rep.dominantTattva.resonanceScore}%
+· 주재 트리카 신성 양상: [${rep.dominantTattva.nameKo} (${rep.dominantTattva.sanskrit})]
   - 5대 신성 행위: ${rep.dominantTattva.divineAction}
   - 의식 영역: ${rep.dominantTattva.consciousnessDomain}
   - 초월 권능: ${rep.dominantTattva.transcendencePower}
-· 보조 신성 양상: [${rep.secondaryTattva.nameKo} (${rep.secondaryTattva.sanskrit})] — 공명도 ${rep.secondaryTattva.resonanceScore}%
+· 보조 신성 양상: [${rep.secondaryTattva.nameKo} (${rep.secondaryTattva.sanskrit})]
+· 질문 맥락 감사: 테마(${rep.situationalSpandaAudit.questionTheme}) · 3대 말라 과제: ${rep.situationalSpandaAudit.activeMalaChallenge}
+  - 자각 자세: ${rep.situationalSpandaAudit.prakashaVimarshaPosture}
+· 시공간 스판다 리듬 (${rep.temporalSpandaRhythm.calculatedAtKst}): ${rep.temporalSpandaRhythm.spandaPulseWindow} / ${rep.temporalSpandaRhythm.seasonalLila}
+  - 리듬 지침: ${rep.temporalSpandaRhythm.rhythmGuidance}
+· 스판다 교차 매트릭스: ${rep.spandaSynthesisMatrix.primarySecondaryNexus} — ${rep.spandaSynthesisMatrix.recognitionState}
 · 카슈미르 시바파 지혜 지침: ${rep.kashmirShaivismGuidance}
-· 스판다 맥동 명상 리추얼: ${rep.spandaPulsationMeditationRitual}`;
+· 스판다 맥동 명상 리추얼: ${rep.spandaPulsationMeditationRitual}
+· 해석 경계: ${rep.boundaryNotice}`;
 }

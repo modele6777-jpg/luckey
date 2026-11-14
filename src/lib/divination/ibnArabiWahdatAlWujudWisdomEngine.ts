@@ -13,7 +13,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const IBN_ARABI_WAHDAT_ENGINE_VERSION = '1.0.0';
+export const IBN_ARABI_WAHDAT_ENGINE_VERSION = '2.0.0';
 
 export interface PropheticHeartWisdom {
   prophetName: string;
@@ -28,13 +28,31 @@ export interface PropheticHeartWisdom {
 export interface IbnArabiWahdatAlWujudReport {
   engineVersion: string;
   timestamp: string;
-  wahdatOnenessPerceptionScore: number; // 0 ~ 100 존재의 단일성 지각 지수
-  divineTajalliIllumination: number; // 0 ~ 100 타잘리 신성 자기현현 조도
-  perfectHumanMirrorIndex: number; // 0 ~ 100 알 인산 알 카밀 완전한 인간 거울 지수
-  heartPurityBarakah: number; // 0 ~ 100 심장의 순결함과 바라카(은총)
+  wahdatOnenessPerceptionScore: number; // 내부 참조용 (프롬프트 비노출)
+  divineTajalliIllumination: number; // 내부 참조용 (프롬프트 비노출)
+  perfectHumanMirrorIndex: number; // 내부 참조용 (프롬프트 비노출)
+  heartPurityBarakah: number; // 내부 참조용 (프롬프트 비노출)
   dominantWisdom: PropheticHeartWisdom; // 현재 주재하는 심장의 예언자적 지혜
+  situationalWahdatAudit: {
+    questionTheme: 'love' | 'decision' | 'peace' | 'gnosis';
+    jamalJalalBalance: string;
+    heartMirrorClarity: string;
+    taqallubGuidance: string;
+  };
+  temporalWahdatRhythm: {
+    calculatedAtKst: string;
+    tajalliHourWindow: string;
+    seasonalBreath: string;
+    rhythmGuidance: string;
+  };
+  wahdatSynthesisMatrix: {
+    prophetVirtueNexus: string;
+    mirrorPosture: string;
+    contemplativeDirective: string;
+  };
   ibnArabiMysticGuidance: string; // 이븐 아라비 영적 잠언
   heartMirrorContemplation: string; // 심장 거울 관조 리추얼
+  boundaryNotice: string;
 }
 
 const PROPHETIC_WISDOMS_BASE: Omit<PropheticHeartWisdom, 'innerAlignmentScore'>[] = [
@@ -82,9 +100,11 @@ const PROPHETIC_WISDOMS_BASE: Omit<PropheticHeartWisdom, 'innerAlignmentScore'>[
 
 export function calculateIbnArabiWahdatAlWujud(
   profile?: UserProfile | null,
-  referenceDate = new Date()
+  referenceDate = new Date(),
+  questionArg?: string,
 ): IbnArabiWahdatAlWujudReport {
-  const seedString = `${profile?.basic?.birthdate || '1994-01-24'}_${profile?.basic?.birthtime || '12:00'}_${profile?.basic?.name || 'zeZE'}`;
+  const question = (questionArg || '').trim();
+  const seedString = `${profile?.basic?.birthdate || '1994-01-24'}_${profile?.basic?.birthtime || '12:00'}_${profile?.basic?.name || 'zeZE'}_${question}`;
   let hash = 0;
   for (let i = 0; i < seedString.length; i++) {
     hash = (hash * 37 + seedString.charCodeAt(i)) >>> 0;
@@ -109,6 +129,61 @@ export function calculateIbnArabiWahdatAlWujud(
   const perfectHumanMirrorIndex = 72 + (((hash >> 4) ^ (day * 21)) % 27);
   const heartPurityBarakah = 75 + (((hash >> 6) ^ (minute * 7)) % 24);
 
+  const qLower = question.toLowerCase();
+  const questionTheme: 'love' | 'decision' | 'peace' | 'gnosis' =
+    /관계|연애|사랑|사람|가족|이별|갈등/.test(qLower)
+      ? 'love'
+      : /선택|결정|진로|일|직장|사업|방향/.test(qLower)
+        ? 'decision'
+        : /불안|지치|평화|위로|휴식|마음/.test(qLower)
+          ? 'peace'
+          : 'gnosis';
+
+  const situationalWahdatAudit = {
+    questionTheme,
+    jamalJalalBalance: questionTheme === 'love'
+      ? '아름다움(Jamal·자비와 환대)의 온기를 앞세워 관계의 경계를 녹이는 흐름'
+      : '위엄(Jalal·고요한 중심)과 자비(Jamal)가 심장 거울 안에서 균형을 이루는 흐름',
+    heartMirrorClarity: wahdatOnenessPerceptionScore >= 82
+      ? '분별의 먼지가 가라앉아 사건 이면의 단일한 의미를 맑게 비추는 명경(明鏡) 국면'
+      : '고정관념의 안개를 걷어내고 유연한 시선(Taqallub)을 회복하는 연마 국면',
+    taqallubGuidance: dominantWisdom.contemplativePrescription,
+  };
+
+  const kstDate = new Date(referenceDate.getTime() + 9 * 60 * 60 * 1000);
+  const kstHour = kstDate.getUTCHours();
+  const kstMonth = kstDate.getUTCMonth() + 1;
+  const calculatedAtKst = kstDate.toISOString().replace('T', ' ').slice(0, 16) + ' KST';
+
+  const tajalliHourWindow = kstHour >= 4 && kstHour < 9
+    ? '사하르 새벽 현현창 (타잘리의 첫 숨결이 심장에 스며드는 시간)'
+    : kstHour >= 9 && kstHour < 17
+      ? '주흐르 정오 명징창 (만물 속에서 신성한 질서를 발견하는 낮 시간)'
+      : kstHour >= 17 && kstHour < 22
+        ? '마그립 황혼 환대창 (하루의 수고를 자비로 품어 안는 시간)'
+        : '타하주드 심야 관조창 (고요한 어둠 속에서 빛나는 심장 거울)';
+
+  const seasonalBreath = kstMonth >= 3 && kstMonth <= 5
+    ? '봄의 나파스 알 라흐만 (만물이 새롭게 피어나는 자비의 숨결)'
+    : kstMonth >= 6 && kstMonth <= 8
+      ? '여름의 누르(빛) 절정기 (내면의 열정을 자비로 순화)'
+      : kstMonth >= 9 && kstMonth <= 11
+        ? '가을의 수렴절 (외부의 잎을 비우고 본질만 남기는 계절)'
+        : '겨울의 킬와(침잠)절 (내면의 고요한 성소를 지키는 계절)';
+
+  const temporalWahdatRhythm = {
+    calculatedAtKst,
+    tajalliHourWindow,
+    seasonalBreath,
+    rhythmGuidance: `${tajalliHourWindow}과 ${seasonalBreath}이 맞닿아 있습니다. 고정된 판단 하나를 내려놓을 때 새로운 의미가 거울에 비칩니다.`,
+  };
+
+  const wahdatSynthesisMatrix = {
+    prophetVirtueNexus: `${dominantWisdom.prophetName} × ${dominantWisdom.spiritualVirtue}`,
+    mirrorPosture: situationalWahdatAudit.heartMirrorClarity,
+    contemplativeDirective: dominantWisdom.contemplativePrescription,
+  };
+
   const ibnArabiMysticGuidance = `이븐 아라비의 지혜: "신은 그대의 심장 외에는 다른 처소를 원치 않으신다." 지금 당신의 심장 거울에는 [${dominantWisdom.prophetName}]의 [${dominantWisdom.wisdomTitleKo}]가 가장 맑게 비추어지고 있습니다.`;
   const heartMirrorContemplation = `[심장 거울 관조]: ${dominantWisdom.contemplativePrescription} (${dominantWisdom.heartMirrorQuality})`;
 
@@ -120,8 +195,12 @@ export function calculateIbnArabiWahdatAlWujud(
     perfectHumanMirrorIndex,
     heartPurityBarakah,
     dominantWisdom,
+    situationalWahdatAudit,
+    temporalWahdatRhythm,
+    wahdatSynthesisMatrix,
     ibnArabiMysticGuidance,
     heartMirrorContemplation,
+    boundaryNotice: '안달루시아 수피즘 이븐 아라비의 영지주의 상징을 빌려 온 정성적 성찰 관점이며, 종교적 단정이나 의학적·재정적 처방이 아닙니다.',
   };
 }
 
@@ -130,12 +209,13 @@ export function formatIbnArabiWahdatAlWujudPrompt(report: IbnArabiWahdatAlWujudR
 - **주재 예언자 지혜**: ${report.dominantWisdom.prophetName} - ${report.dominantWisdom.wisdomTitleKo} (${report.dominantWisdom.arabicFacet})
 - **영적 덕목**: ${report.dominantWisdom.spiritualVirtue}
 - **심장 거울 속성**: ${report.dominantWisdom.heartMirrorQuality}
-- **내면 정렬도**: ${report.dominantWisdom.innerAlignmentScore}/100
-- **존재의 단일성 지각 지수**: ${report.wahdatOnenessPerceptionScore}/100
-- **타잘리 신성 자기현현 조도**: ${report.divineTajalliIllumination}/100
-- **알 인산 알 카밀 완전한 인간 거울 지수**: ${report.perfectHumanMirrorIndex}/100
-- **심장의 순결함과 바라카(은총)**: ${report.heartPurityBarakah}/100
+- **질문 맥락 감사**: 테마(${report.situationalWahdatAudit.questionTheme}) · 자비/위엄 균형: ${report.situationalWahdatAudit.jamalJalalBalance}
+  - 거울 명징도: ${report.situationalWahdatAudit.heartMirrorClarity}
+- **시공간 타잘리 리듬 (${report.temporalWahdatRhythm.calculatedAtKst})**: ${report.temporalWahdatRhythm.tajalliHourWindow} / ${report.temporalWahdatRhythm.seasonalBreath}
+  - 리듬 지침: ${report.temporalWahdatRhythm.rhythmGuidance}
+- **심장 교차 매트릭스**: ${report.wahdatSynthesisMatrix.prophetVirtueNexus} — ${report.wahdatSynthesisMatrix.contemplativeDirective}
 - **이븐 아라비 영적 잠언**: ${report.ibnArabiMysticGuidance}
-- **심장 거울 관조 리추얼**: ${report.heartMirrorContemplation}`;
+- **심장 거울 관조 리추얼**: ${report.heartMirrorContemplation}
+- **해석 경계**: ${report.boundaryNotice}`;
 }
 
