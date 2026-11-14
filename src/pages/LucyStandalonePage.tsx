@@ -67,8 +67,8 @@ import { LucyCosmicBackground } from '@/components/chat/LucyCosmicBackground';
 import { ALL_DCE_ENGINES } from '@/lib/divination/deterministicEngine';
 import { LUCY_PRO_CATALOG_ENGINES } from '@/lib/divination/engineCatalog';
 import { LucyEngineCatalogDialog } from '@/components/chat/LucyEngineCatalogDialog';
-import { getActuallyUsedCalculationAudit } from '@/lib/divination/calculationAudit';
-import { getEngineBadgeTheme } from '@/lib/divination/engineBadgeTheme';
+import { groupActuallyUsedCalculationAudit } from '@/lib/divination/calculationAudit';
+import { getEngineBadgeTheme, getUsedEngineThemeBadges } from '@/lib/divination/engineBadgeTheme';
 import '@/styles/lucy-starlight.css';
 
 // Helper: Compress uploaded images to prevent UI stutter and huge payload overhead
@@ -3213,9 +3213,11 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
               return null;
             }
             const msgModeInfo = resolveMessageModeAndChannels(msg, filteredMessages, index);
-            const actuallyUsedEngines = getActuallyUsedCalculationAudit((msg as any).calculationAudit);
+            const actuallyUsedEngineGroups = groupActuallyUsedCalculationAudit((msg as any).calculationAudit);
+            const actuallyUsedEngines = actuallyUsedEngineGroups.flatMap(group => group.engines);
+            const actuallyUsedEngineThemes = getUsedEngineThemeBadges(actuallyUsedEngines.map(engine => engine.toolId));
             const isUsageDetailsOpen = openUsageMessageId === msgId;
-            const hideAutomaticModeBadge = msgModeInfo.badgeLabel === 'AI 심층 자동 상담';
+            const hideAutomaticModeBadge = isUser && msgModeInfo.badgeLabel === 'AI 심층 자동 상담';
 
             // 루시의 인사말인지 여부 정밀 판별
             const isGreeting = (() => {
@@ -3283,7 +3285,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
                   )}
 
                   {!hideAutomaticModeBadge && (isUser ? (
-                    <span data-message-mode-badge="true"
+                    <span data-message-mode-badge="true" data-message-id={msgId}
                       className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium ${msgModeInfo.badgeColor}`}>
                       <span aria-hidden="true">{msgModeInfo.badgeIcon}</span>
                       <span>{msgModeInfo.badgeLabel}</span>
@@ -3292,16 +3294,30 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
                     <button
                       type="button"
                       data-message-mode-badge="true"
-                      aria-label={`${msgModeInfo.badgeLabel} 모드 · 실제 사용 엔진 보기`}
+                      data-message-id={msgId}
+                      aria-label={`${actuallyUsedEngineThemes.length > 0 ? `${actuallyUsedEngineThemes.map(theme => theme.label).join(' + ')} 테마 · ` : ''}실제 사용 엔진 보기`}
                       aria-haspopup="dialog"
                       aria-expanded={isUsageDetailsOpen}
                       onClick={(event) => {
                         event.stopPropagation();
                         setOpenUsageMessageId(current => current === msgId ? null : msgId);
                       }}
-                      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium cursor-pointer transition-opacity hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 ${msgModeInfo.badgeColor}`}>
-                      <span aria-hidden="true">{msgModeInfo.badgeIcon}</span>
-                      <span>{msgModeInfo.badgeLabel}</span>
+                      className="inline-flex items-center gap-1 px-1 py-0.5 rounded-full text-[10px] font-medium cursor-pointer transition-opacity hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400">
+                      {actuallyUsedEngineThemes.length > 0 ? actuallyUsedEngineThemes.map(theme => (
+                        <span
+                          key={theme.theme}
+                          data-message-theme-badge="true"
+                          data-message-theme={theme.theme}
+                          className="inline-flex items-center rounded-full border px-2 py-0.5"
+                          style={{ backgroundColor: theme.backgroundColor, color: theme.color, borderColor: theme.borderColor }}
+                        >
+                          {theme.label}
+                        </span>
+                      )) : (
+                        <span className={`inline-flex items-center rounded-full border px-2 py-0.5 ${isLight ? 'border-slate-200 bg-slate-100 text-slate-700' : 'border-white/20 bg-white/10 text-slate-100'}`}>
+                          {actuallyUsedEngines.length > 0 ? '실제 사용 엔진' : '엔진 기록 없음'}
+                        </span>
+                      )}
                     </button>
                   ))}
 
@@ -3315,30 +3331,40 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
                   >
                     <div className="mb-2 font-semibold">이번 답변에 실제 사용된 엔진 ({actuallyUsedEngines.length})</div>
                     {actuallyUsedEngines.length > 0 ? (
-                      <ul className="flex flex-wrap gap-1.5">
-                        {actuallyUsedEngines.map((engine, engineIndex) => {
-                          const engineBadgeTheme = getEngineBadgeTheme(engine.toolId);
-                          const engineStatus = engine.status === 'symbolic' ? '상징 참고' : engine.status === 'partial' ? '부분 계산' : '계산 결과';
-                          return (
-                            <li key={`${engine.toolId}-${engineIndex}`} className="max-w-full">
-                              <span
-                                data-testid="used-engine-badge"
-                                data-engine-key={engine.toolId}
-                                data-engine-theme={engineBadgeTheme?.theme}
-                                className={`inline-flex max-w-full items-center gap-1.5 rounded-full border px-2.5 py-1 text-[10px] font-medium leading-5 ${engineBadgeTheme ? '' : isLight ? 'border-slate-200 bg-slate-100 text-slate-800' : 'border-white/20 bg-white/10 text-slate-100'}`}
-                                style={engineBadgeTheme ? {
-                                  backgroundColor: engineBadgeTheme.backgroundColor,
-                                  color: engineBadgeTheme.color,
-                                  borderColor: engineBadgeTheme.borderColor,
-                                } : undefined}
-                              >
-                                <span className="shrink-0 font-semibold">{engineStatus}</span>
-                                <span className="min-w-0 break-words">{engine.name}</span>
-                              </span>
-                            </li>
-                          );
-                        })}
-                      </ul>
+                      <div className="space-y-2">
+                        {actuallyUsedEngineGroups.map(group => (
+                          <div
+                            key={group.status}
+                            data-testid="used-engine-category-group"
+                            data-engine-category={group.status}
+                            className="flex flex-wrap items-center gap-x-2 gap-y-1"
+                          >
+                            <span data-testid="used-engine-category-label" className="shrink-0 font-semibold">{group.label}:</span>
+                            <ul className="flex flex-wrap gap-1.5">
+                              {group.engines.map((engine, engineIndex) => {
+                                const engineBadgeTheme = getEngineBadgeTheme(engine.toolId);
+                                return (
+                                  <li key={`${engine.toolId}-${engineIndex}`} className="max-w-full">
+                                    <span
+                                      data-testid="used-engine-badge"
+                                      data-engine-key={engine.toolId}
+                                      data-engine-theme={engineBadgeTheme?.theme}
+                                      className={`inline-flex max-w-full items-center rounded-full border px-2.5 py-1 text-[10px] font-medium leading-5 ${engineBadgeTheme ? '' : isLight ? 'border-slate-200 bg-slate-100 text-slate-800' : 'border-white/20 bg-white/10 text-slate-100'}`}
+                                      style={engineBadgeTheme ? {
+                                        backgroundColor: engineBadgeTheme.backgroundColor,
+                                        color: engineBadgeTheme.color,
+                                        borderColor: engineBadgeTheme.borderColor,
+                                      } : undefined}
+                                    >
+                                      <span className="min-w-0 break-words">{engine.name}</span>
+                                    </span>
+                                  </li>
+                                );
+                              })}
+                            </ul>
+                          </div>
+                        ))}
+                      </div>
                     ) : (
                       <p>이번 답변에 모델로 전달된 계산·상징 엔진 기록이 없습니다.</p>
                     )}

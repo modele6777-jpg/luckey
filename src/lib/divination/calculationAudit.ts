@@ -22,6 +22,29 @@ export function getActuallyUsedCalculationAudit(
   });
 }
 
+export interface ActuallyUsedCalculationGroup {
+  status: 'calculated' | 'partial' | 'symbolic';
+  label: string;
+  engines: CalculationAuditItem[];
+}
+
+const ACTUALLY_USED_CALCULATION_GROUPS: readonly Pick<ActuallyUsedCalculationGroup, 'status' | 'label'>[] = [
+  { status: 'calculated', label: '계산 결과' },
+  { status: 'partial', label: '부분 계산' },
+  { status: 'symbolic', label: '상징 참고' },
+];
+
+/** Group only deduplicated calculation evidence that was actually sent to the model. */
+export function groupActuallyUsedCalculationAudit(
+  audit: readonly CalculationAuditItem[] | null | undefined,
+): ActuallyUsedCalculationGroup[] {
+  const used = getActuallyUsedCalculationAudit(audit);
+  return ACTUALLY_USED_CALCULATION_GROUPS.flatMap(group => {
+    const engines = used.filter(item => item.status === group.status);
+    return engines.length > 0 ? [{ ...group, engines }] : [];
+  });
+}
+
 export const CALCULATION_HONESTY_RULE = `[계산 근거 정직성]
 이번 요청에 상태와 데이터가 제공된 계산만 계산했다고 말한다. 전달된 상징적 관점은 사용 도구에 포함할 수 있으나 상징임을 구분한다. 등록된 엔진 개수나 마스터 모드는 실행 증거가 아니다.
 해시·상징 점수를 실측값·건강 진단·검증된 예측으로 표현하지 않는다. 상징적 조언은 상징이라고 밝힌다.
