@@ -6,13 +6,14 @@
  * 동효·정효의 시중(時中) 태도를 정성적 행동 성찰에 연결합니다.
  */
 
-export const ANCIENT_YARROW_PROBABILITY_ENGINE_VERSION = 'LUCKEY-YARROW-PROBABILITY-v1.1.0';
+export const ANCIENT_YARROW_PROBABILITY_ENGINE_VERSION = 'LUCKEY-YARROW-PROBABILITY-v2.0.0';
 
 export type YarrowQuestionTheme = 'relationship' | 'decision' | 'healing' | 'reflection';
 
 export interface YarrowProbabilityReport {
   engineVersion: string;
   calculatedAt: string;
+  calculatedAtKst: string;
   questionTheme: YarrowQuestionTheme;
   dominantYaoValue: 6 | 7 | 8 | 9;
   remainingStalks: 24 | 28 | 32 | 36; // 3변 후 남은 책수 (remainingStalks / 4 = dominantYaoValue)
@@ -23,6 +24,17 @@ export interface YarrowProbabilityReport {
   dayanAlignmentScore: number; // 하위 호환용 내부 참조치 (0 ~ 100)
   temporalYinYangMomentum: string;
   timelinessPosture: string; // 시중(時中) 처세 태도
+  temporalYarrowRhythm: {
+    kstTimeLabel: string;
+    dayanWatchWindow: string;
+    seasonalChangeTone: string;
+    temporalGuidance: string;
+  };
+  yarrowSynthesisMatrix: {
+    coreInsight: string;
+    recommendedAction: string;
+    cautionNotice: string;
+  };
   cosmicTimingActionMandate: string; // 하위 호환용 지침
   practiceGuidance: string; // getSymbolicPerspective 호환 정성적 조언
   ritualAction: string;
@@ -36,6 +48,42 @@ function classifyYarrowTheme(question: string): YarrowQuestionTheme {
   if (/선택|결정|이직|직장|일|사업|돈|시험|도전|시작|투자/.test(question)) return 'decision';
   if (/힘들|지치|불안|우울|잠|휴식|치유|피곤|건강/.test(question)) return 'healing';
   return 'reflection';
+}
+
+function getTemporalYarrowRhythm(now: Date) {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  const hour = kst.getUTCHours();
+  const month = kst.getUTCMonth() + 1;
+
+  const dayanWatchWindow =
+    hour >= 5 && hour < 11
+      ? '소양(少陽) 아침 발아창 — 시초를 가다듬듯 맑은 마음으로 오늘의 첫 뜻을 세우는 시간'
+      : hour >= 11 && hour < 17
+        ? '노양(老陽) 정오 전개창 — 쌓아둔 뜻을 실행으로 펼치되 과열을 경계하는 시간'
+        : hour >= 17 && hour < 22
+          ? '소음(少陰) 황혼 수렴창 — 바깥의 소음을 거두고 오늘의 흐름을 차분히 갈무리하는 시간'
+          : '노음(老陰) 심야 전환창 — 낡은 긴장을 비우고 내일의 새 순환을 준비하는 시간';
+
+  const seasonalChangeTone =
+    month >= 3 && month <= 5
+      ? '봄 · 둔(屯)·진(震) 발아기 (새 국면이 조심스럽게 싹트는 시기)'
+      : month >= 6 && month <= 8
+        ? '여름 · 이(離)·풍(豐) 전개기 (기운이 뻗어가되 절도로 균형을 잡는 시기)'
+        : month >= 9 && month <= 11
+          ? '가을 · 태(兌)·간(艮) 수렴기 (결실을 추리고 불필요한 가지를 정리하는 시기)'
+          : '겨울 · 복(復)·곤(坤) 비축기 (조용히 힘을 기르며 시중의 때를 기다리는 시기)';
+
+  return {
+    kstTimeLabel: `${y}-${m}-${d} ${hh}:${mm} KST`,
+    dayanWatchWindow,
+    seasonalChangeTone,
+    temporalGuidance: `${dayanWatchWindow} · ${seasonalChangeTone}의 결에 맞추어 시중(時中)의 처세 태도를 유지하십시오.`,
+  };
 }
 
 export function calculateAncientYarrowProbability(params: {
@@ -221,11 +269,18 @@ export function calculateAncientYarrowProbability(params: {
   };
 
   const themeContent = guidanceByYaoAndTheme[dominantYaoValue][questionTheme];
+  const temporalYarrowRhythm = getTemporalYarrowRhythm(now);
+  const yarrowSynthesisMatrix = {
+    coreInsight: `[${yaoNameKo}]가 [${questionTheme}] 국면의 시중(時中) 흐름을 비춥니다.`,
+    recommendedAction: `${themeContent.practiceGuidance} (${themeContent.ritualAction})`,
+    cautionNotice: themeContent.counselNote,
+  };
   const boundaryNotice = '대연지수 시초점 관점은 고대 주역의 상징 수리를 빌린 정성적 처세 참고용이며, 개인 점수나 확률 예언이 아닙니다.';
 
   return {
     engineVersion: ANCIENT_YARROW_PROBABILITY_ENGINE_VERSION,
     calculatedAt: now.toISOString(),
+    calculatedAtKst: temporalYarrowRhythm.kstTimeLabel,
     questionTheme,
     dominantYaoValue,
     remainingStalks,
@@ -236,6 +291,8 @@ export function calculateAncientYarrowProbability(params: {
     dayanAlignmentScore,
     temporalYinYangMomentum,
     timelinessPosture,
+    temporalYarrowRhythm,
+    yarrowSynthesisMatrix,
     cosmicTimingActionMandate: themeContent.practiceGuidance,
     practiceGuidance: themeContent.practiceGuidance,
     ritualAction: themeContent.ritualAction,
@@ -246,12 +303,25 @@ export function calculateAncientYarrowProbability(params: {
 }
 
 export function formatAncientYarrowProbabilityPrompt(report: YarrowProbabilityReport): string {
+  const qualitativeSplit =
+    report.dominantYaoValue === 6
+      ? '1/16 희귀 분기 (대역전의 변곡점)'
+      : report.dominantYaoValue === 7
+        ? '5/16 안정 전진 분기 (곧고 굳건한 성장)'
+        : report.dominantYaoValue === 8
+          ? '7/16 최빈 수용 분기 (유순한 내실 비축)'
+          : '3/16 극양 전환 분기 (성취의 결실과 절제)';
+
   return `### 🎋 고대 중국 주역 대연지수 49책 시초점 확률 실측 데이터 (${report.engineVersion})
+- **연산 시각**: ${report.calculatedAtKst}
 - **산출 효(爻) 수리값**: ${report.dominantYaoValue} (${report.remainingStalks}책 / 4) - [${report.yaoNameKo}]
 - **동효 여부**: ${report.isChangingLine ? '동효 (국면 전환기)' : '정효 (안정 유지기)'}
-- **시초점 이론적 발생 확률**: ${report.theoreticalProbability}
+- **시초점 삼변 비대칭 구조**: ${qualitativeSplit}
 - **시공간 음양 모멘텀**: ${report.temporalYinYangMomentum}
+- **KST 시공간 대연 리듬**: ${report.temporalYarrowRhythm.dayanWatchWindow} / ${report.temporalYarrowRhythm.seasonalChangeTone}
+  - *시공간 지침*: ${report.temporalYarrowRhythm.temporalGuidance}
 - **시중(時中) 처세 태도**: ${report.timelinessPosture}
+- **대연 교차 매트릭스**: 핵심(${report.yarrowSynthesisMatrix.coreInsight}) | 실행(${report.yarrowSynthesisMatrix.recommendedAction}) | 주의(${report.yarrowSynthesisMatrix.cautionNotice})
 - **실천 조언**: ${report.practiceGuidance}
 - **일상 의례**: ${report.ritualAction}
 - **성찰 질문**: ${report.reflectionFocus}
