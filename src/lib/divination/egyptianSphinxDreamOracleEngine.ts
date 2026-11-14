@@ -1,35 +1,48 @@
 /**
  * 고대 이집트 투트모세 4세 스핑크스 영혼 꿈신탁 & 태양신 레-호라크티 엔진 (egyptianSphinxDreamOracleEngine.ts)
  *
- * 기원전 1401년 이집트 신왕국 제18왕조 투트모세 4세의 '꿈의 비석(Dream Stele)' 정통 원전:
- * 기자의 대스핑크스 발치에 세워진 신성한 비문에 새겨진 역사적 신탁.
- * 왕자 투트모세가 사냥 도중 모래에 파묻힌 스핑크스 그늘 아래 잠들었을 때,
- * 지평선의 태양신 '호르-엠-아케트(Hor-em-akhet / 레-호라크티)'가 꿈에 나타나
- * 자신을 덮고 있는 무거운 사막 모래를 치워주면 상하 이집트의 영원한 왕권을 주겠노라 약조한 영적 해방의 원형.
- *
- * 스핑크스 4대 신성 테트라모르프(Tetramorph) 권능:
- * 1. 인간의 머리(Man) - 사유의 명료함과 지혜 (Wisdom)
- * 2. 사자의 가슴(Lion) - 불굴의 기개와 결단력 (Courage)
- * 3. 황소의 하체(Bull) - 침묵의 인내와 지구력 (Endurance)
- * 4. 독수리의 날개(Eagle) - 높은 곳에서 내려다보는 원대한 조망 (Vision)
+ * 기원전 1401년 이집트 신왕국 제18왕조 투트모세 4세의 '꿈의 비석(Dream Stele)' 정통 원전 기반:
+ * 스핑크스 4대 신성 테트라모르프(인간의 머리·사자의 가슴·황소의 하체·독수리의 날개),
+ * 질문 맥락 정성 감사, KST 태양신 레-호라크티 시공간 리듬을 교차 해독합니다.
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const EGYPTIAN_SPHINX_DREAM_ORACLE_ENGINE_VERSION = '1.0.0';
+export const EGYPTIAN_SPHINX_DREAM_ORACLE_ENGINE_VERSION = 'LUCKEY-EGYPTIAN-SPHINX-v2.0.0';
 
 export interface SphinxVirtue {
   nameKo: string;
   symbol: string;
-  score: number; // 0 ~ 100
+  score: number; // 0 ~ 100 (내부 정량 연산용)
   powerDesc: string;
 }
 
 export interface SphinxTetramorphAspects {
-  humanHead: SphinxVirtue; // 인간의 머리: 지혜와 명석함
-  lionHeart: SphinxVirtue; // 사자의 심장: 용기와 돌파
-  bullStrength: SphinxVirtue; // 황소의 힘: 끈기와 인내
-  eagleVision: SphinxVirtue; // 독수리의 시야: 높은 조망과 영적 통찰
+  humanHead: SphinxVirtue;
+  lionHeart: SphinxVirtue;
+  bullStrength: SphinxVirtue;
+  eagleVision: SphinxVirtue;
+}
+
+export interface SphinxSituationalAudit {
+  sandObstacleType: string;
+  tetramorphCounterforce: string;
+  dreamStelePrescription: string;
+  mirageWarning: string;
+}
+
+export interface SphinxTemporalRhythm {
+  kstHour: number;
+  solarBarqueStage: string;
+  nileHorizonSeason: string;
+  dawnDirective: string;
+  solarPhaseMode: '여명' | '정오' | '황혼' | '잠행';
+}
+
+export interface SphinxSynthesisMatrix {
+  sandClearanceGrade: '맑음' | '걷히는중' | '정화필요';
+  tetramorphSynergy: string;
+  sovereignStep: string;
 }
 
 export interface EgyptianSphinxDreamOracleReport {
@@ -37,10 +50,13 @@ export interface EgyptianSphinxDreamOracleReport {
   timestamp: string;
   tetramorph: SphinxTetramorphAspects;
   dominantVirtue: string;
-  sandCleansingIndex: number; // 0 ~ 100 영혼의 모래 정화율 (무거운 잡념과 장애의 제거도)
-  thutmosePromise: string; // 투트모세 4세에게 내린 신성한 약조의 현대적 투영
-  sphinxRiddleInsight: string; // 스핑크스의 수수께끼를 푸는 지혜로운 통찰
-  reHorakhtyDawnCommand: string; // 지평선의 태양신 레-호라크티의 여명 행동 명령
+  sandCleansingIndex: number;
+  situationalSphinxAudit: SphinxSituationalAudit;
+  temporalSphinxRhythm: SphinxTemporalRhythm;
+  sphinxSynthesisMatrix: SphinxSynthesisMatrix;
+  thutmosePromise: string;
+  sphinxRiddleInsight: string;
+  reHorakhtyDawnCommand: string;
 }
 
 function simpleHash(str: string): number {
@@ -50,6 +66,93 @@ function simpleHash(str: string): number {
     hash |= 0;
   }
   return Math.abs(hash);
+}
+
+function getKstParts(now: Date): { hour: number; month: number } {
+  const formatter = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Asia/Seoul',
+    hour: 'numeric',
+    month: 'numeric',
+    hour12: false,
+  });
+  const parts = formatter.formatToParts(now);
+  return {
+    hour: Number(parts.find((p) => p.type === 'hour')?.value || '12') % 24,
+    month: Number(parts.find((p) => p.type === 'month')?.value || '1'),
+  };
+}
+
+function buildSituationalAudit(question: string, dominantVirtue: string): SphinxSituationalAudit {
+  const q = question.toLowerCase();
+  if (/일|사업|직업|시험|프로젝트|승진|목표|결정/.test(q)) {
+    return {
+      sandObstacleType: '주도권을 가리는 과도한 신중함과 사소한 잡무의 모래',
+      tetramorphCounterforce: `${dominantVirtue} 중심의 단호한 우선순위 정리`,
+      dreamStelePrescription: '왕자 투트모세가 스핑크스 발치의 모래를 걷어냈듯, 오늘 가장 무거운 미결 과제 하나부터 직접 손을 대십시오.',
+      mirageWarning: '완벽한 타이밍을 기다리다가 정작 행동할 시간을 모래 속에 묻어버리지 마십시오.',
+    };
+  }
+  if (/사랑|연애|관계|배우자|사람|가족|갈등/.test(q)) {
+    return {
+      sandObstacleType: '말하지 못한 오해와 체면이라는 침묵의 모래',
+      tetramorphCounterforce: '인간의 지혜와 사자의 진정성이 만나는 솔직한 대화',
+      dreamStelePrescription: '상대의 반응을 미리 재단하지 말고, 내 마음의 중심에서 우러나는 진실을 분명한 언어로 전하십시오.',
+      mirageWarning: '자존심을 지키려다 진짜 소중한 마음을 사막 바람에 날려 보내지 마십시오.',
+    };
+  }
+  if (/건강|피로|마음|불안|잠|꿈|휴식/.test(q)) {
+    return {
+      sandObstacleType: '과로와 누적된 긴장이 만든 영혼의 피로',
+      tetramorphCounterforce: '황소의 묵직한 안정감과 독수리의 한 발 물러선 조망',
+      dreamStelePrescription: '지금 당장 모든 답을 내려 하지 말고, 충분한 수면과 고요한 휴식으로 내면의 모래 먼지를 가라앉히십시오.',
+      mirageWarning: '지친 상태에서 떠오르는 불안한 생각을 현실의 예언처럼 믿지 마십시오.',
+    };
+  }
+  return {
+    sandObstacleType: '본질을 흐리는 일상의 잡념과 미뤄둔 결단',
+    tetramorphCounterforce: dominantVirtue,
+    dreamStelePrescription: '스핑크스 앞에서 스스로에게 가장 정직한 질문을 던지고, 핑계 없이 오늘 할 일 한 가지를 실행하십시오.',
+    mirageWarning: '외부의 평가에 흔들려 자신의 왕권을 남에게 넘기지 마십시오.',
+  };
+}
+
+function buildTemporalRhythm(now: Date): SphinxTemporalRhythm {
+  const { hour, month } = getKstParts(now);
+
+  let solarBarqueStage = '케프리(Khepri) · 지평선 여명의 태양선';
+  let solarPhaseMode: SphinxTemporalRhythm['solarPhaseMode'] = '여명';
+  let dawnDirective = '아침 햇살이 스핑크스의 이마를 비추는 시간대이므로 새로운 결심과 첫 실행을 열기 좋습니다.';
+
+  if (hour >= 5 && hour < 10) {
+    solarBarqueStage = '레-호라크티(Re-Horakhty) · 동쪽 지평선 상승 창';
+    solarPhaseMode = '여명';
+    dawnDirective = '하루의 가장 맑은 집중력으로 핵심 과업을 먼저 세우십시오.';
+  } else if (hour >= 10 && hour < 16) {
+    solarBarqueStage = '라(Ra) · 정오 천정 태양선 창';
+    solarPhaseMode = '정오';
+    dawnDirective = '빛이 가장 강하므로 숨김없는 소통과 정면 돌파에 유리합니다.';
+  } else if (hour >= 16 && hour < 20) {
+    solarBarqueStage = '아툼(Atum) · 서쪽 지평선 황혼 창';
+    solarPhaseMode = '황혼';
+    dawnDirective = '낮 동안 쌓인 감정의 모래를 털어내고 하루를 정돈하기 알맞습니다.';
+  } else {
+    solarBarqueStage = '두아트의 밤(Duat) · 내면 잠행 재생 창';
+    solarPhaseMode = '잠행';
+    dawnDirective = '투트모세의 꿈처럼 깊은 휴식 속에서 내일의 통찰이 무르익는 시간입니다.';
+  }
+
+  let nileHorizonSeason = '아케트(Akhet) · 나일 범람과 비옥의 계절';
+  if (month >= 3 && month <= 5) nileHorizonSeason = '페레트(Peret) · 대지 발아와 성숙의 계절';
+  else if (month >= 6 && month <= 9) nileHorizonSeason = '셰무(Shemu) · 태양과 수확의 계절';
+  else nileHorizonSeason = '아케트(Akhet) · 범람과 새 토대 준비의 계절';
+
+  return {
+    kstHour: hour,
+    solarBarqueStage,
+    nileHorizonSeason,
+    dawnDirective,
+    solarPhaseMode,
+  };
 }
 
 export function calculateEgyptianSphinxDreamOracle(options?: {
@@ -117,6 +220,20 @@ export function calculateEgyptianSphinxDreamOracle(options?: {
 
   const sandCleansingIndex = Math.round((humanScore * 0.25 + lionScore * 0.25 + bullScore * 0.25 + eagleScore * 0.25));
 
+  const situationalSphinxAudit = buildSituationalAudit(question, dominantVirtue);
+  const temporalSphinxRhythm = buildTemporalRhythm(now);
+
+  const sandClearanceGrade: SphinxSynthesisMatrix['sandClearanceGrade'] =
+    sandCleansingIndex >= 76 ? '맑음' : sandCleansingIndex >= 62 ? '걷히는중' : '정화필요';
+  const tetramorphSynergy = `전면에 선 [${dominantVirtue}]을(를) ${scores[1].name}이(가) 뒷받침하는 테트라모르프 구도입니다.`;
+  const sovereignStep = `${temporalSphinxRhythm.solarBarqueStage} 리듬(${temporalSphinxRhythm.solarPhaseMode})에 맞추어 ${situationalSphinxAudit.tetramorphCounterforce}을 실천하십시오.`;
+
+  const sphinxSynthesisMatrix: SphinxSynthesisMatrix = {
+    sandClearanceGrade,
+    tetramorphSynergy,
+    sovereignStep,
+  };
+
   const thutmosePromise = sandCleansingIndex >= 70
     ? '오랜 세월 당신의 본질을 덮고 있던 혼란과 번민의 모래가 말끔히 걷히고 있습니다. 진정한 당신의 왕권(주도권)을 되찾을 때입니다.'
     : '주변의 잡음과 사소한 걱정이라는 모래를 스스로 털어내야 비로소 당신의 온전한 위엄이 빛을 발합니다.';
@@ -133,6 +250,9 @@ export function calculateEgyptianSphinxDreamOracle(options?: {
     tetramorph,
     dominantVirtue,
     sandCleansingIndex,
+    situationalSphinxAudit,
+    temporalSphinxRhythm,
+    sphinxSynthesisMatrix,
     thutmosePromise,
     sphinxRiddleInsight,
     reHorakhtyDawnCommand,
@@ -142,11 +262,18 @@ export function calculateEgyptianSphinxDreamOracle(options?: {
 export function formatEgyptianSphinxDreamOraclePrompt(rep: EgyptianSphinxDreamOracleReport): string {
   return `[고대 이집트 투트모세 4세 스핑크스 영혼 꿈신탁 & 태양신 레-호라크티 실측 데이터]
 · 엔진 버전: v${rep.engineVersion}
-· 스핑크스 지배적 신성 원형: ${rep.dominantVirtue} (영혼의 모래 정화율: ${rep.sandCleansingIndex}/100)
-· 인간의 머리(지혜): 위력 ${rep.tetramorph.humanHead.score}/100 - ${rep.tetramorph.humanHead.powerDesc}
-· 사자의 심장(용기): 위력 ${rep.tetramorph.lionHeart.score}/100 - ${rep.tetramorph.lionHeart.powerDesc}
-· 황소의 힘(인내): 위력 ${rep.tetramorph.bullStrength.score}/100 - ${rep.tetramorph.bullStrength.powerDesc}
-· 독수리의 시야(조망): 위력 ${rep.tetramorph.eagleVision.score}/100 - ${rep.tetramorph.eagleVision.powerDesc}
+· 스핑크스 지배적 신성 원형: ${rep.dominantVirtue} (정화 상태: ${rep.sphinxSynthesisMatrix.sandClearanceGrade})
+· 인간의 머리(지혜): ${rep.tetramorph.humanHead.powerDesc}
+· 사자의 심장(용기): ${rep.tetramorph.lionHeart.powerDesc}
+· 황소의 힘(인내): ${rep.tetramorph.bullStrength.powerDesc}
+· 독수리의 시야(조망): ${rep.tetramorph.eagleVision.powerDesc}
+· 질문 맥락 감사: 걷어낼 모래(${rep.situationalSphinxAudit.sandObstacleType}) · 대응 원형(${rep.situationalSphinxAudit.tetramorphCounterforce})
+  - 꿈의 비석 처방: ${rep.situationalSphinxAudit.dreamStelePrescription}
+  - 신기루 경계: ${rep.situationalSphinxAudit.mirageWarning}
+· KST 시공간 리듬 (${rep.temporalSphinxRhythm.kstHour}시): ${rep.temporalSphinxRhythm.solarBarqueStage} · ${rep.temporalSphinxRhythm.nileHorizonSeason} (${rep.temporalSphinxRhythm.solarPhaseMode})
+  - 여명 지침: ${rep.temporalSphinxRhythm.dawnDirective}
+· 테트라모르프 교차 매트릭스: ${rep.sphinxSynthesisMatrix.tetramorphSynergy}
+  - 왕권 행동: ${rep.sphinxSynthesisMatrix.sovereignStep}
 · 꿈의 비석 신성 약조: ${rep.thutmosePromise}
 · 스핑크스 수수께끼 해법: ${rep.sphinxRiddleInsight}
 · 레-호라크티 여명 행동 명령: ${rep.reHorakhtyDawnCommand}`;
