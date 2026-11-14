@@ -1471,7 +1471,7 @@ try {
   const astrologicalDecanSabianResult = calculateSupplement('astrologicalDecanSabianResult', () => (birthdateStr && profile
     ? (() => {
         try {
-          return calculateAstrologicalDecanSabian({ profile, targetDate: now });
+          return calculateAstrologicalDecanSabian({ profile, targetDate: now, question });
         } catch (_) {
           return null;
         }
@@ -1911,7 +1911,7 @@ try {
   const hellenisticLotsResult = calculateSupplement('hellenisticLotsResult', () => (birthdateStr && profile
     ? (() => {
         try {
-          return calculateHellenisticLots({ profile, targetDate: now });
+          return calculateHellenisticLots({ profile, targetDate: now, question });
         } catch (_) {
           return null;
         }

@@ -21,7 +21,7 @@ import type { UserProfile } from '../sharedState';
 import { parseBirthTime } from '../birthDateTime';
 import { resolveEffectiveSolarDate } from '../lunarCalendar';
 
-export const HELLENISTIC_LOTS_ENGINE_VERSION = 'LUCKEY-HELLENISTIC-LOTS-v1.0.0';
+export const HELLENISTIC_LOTS_ENGINE_VERSION = 'LUCKEY-HELLENISTIC-LOTS-v2.0.0';
 
 export interface ArabicLotInfo {
   nameKo: string;
@@ -36,6 +36,7 @@ export interface ArabicLotInfo {
 
 export interface HellenisticLotsReport {
   engineVersion: string;
+  calculatedAtKst: string;
   isDayChart: boolean;
   chartTypeKo: string;
   ascendantDegree: number;
@@ -49,7 +50,24 @@ export interface HellenisticLotsReport {
   };
   dominantLot: string;
   zodiacalPeakTheme: string;
+  situationalLotsAudit: {
+    focusTheme: string;
+    activeLotKey: string;
+    zodiacalReleasingNote: string;
+  };
+  temporalLotsRhythm: {
+    kstTimeLabel: string;
+    hellenisticSectWindow: string;
+    lunarPhaseTone: string;
+    temporalGuidance: string;
+  };
+  lotsSynthesisMatrix: {
+    coreInsight: string;
+    recommendedAction: string;
+    cautionNotice: string;
+  };
   cosmicAdvice: string;
+  boundaryNotice: string;
 }
 
 const ZODIAC_SIGNS = [
@@ -83,13 +101,87 @@ function getHouseFromAscendant(ascDeg: number, targetDeg: number): number {
   return Math.floor(diff / 30) + 1;
 }
 
+function formatLotsKst(date: Date): { label: string; hour: number; day: number } {
+  const kst = new Date(date.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return {
+    label: `${y}-${m}-${d} ${hh}:${mm} KST`,
+    hour: kst.getUTCHours(),
+    day: kst.getUTCDate(),
+  };
+}
+
+function getTemporalLotsRhythm(now: Date, isDayChart: boolean) {
+  const kst = formatLotsKst(now);
+  const hellenisticSectWindow = isDayChart
+    ? kst.hour >= 6 && kst.hour < 18
+      ? '주간 섹트(Diurnal Sect) 공명창 — 태양과 스피릿의 랏이 깨어나 의지적 주도권을 발휘하기 좋은 시간'
+      : '야간 교차(Nocturnal Shift) 성찰창 — 낮의 분주함을 내려놓고 포르투나의 내실과 휴식을 챙기는 시간'
+    : kst.hour >= 6 && kst.hour < 18
+      ? '주간 교차(Diurnal Shift) 조율창 — 현실적 환경(포르투나)과 주변의 협력을 차분히 살피는 시간'
+      : '야간 섹트(Nocturnal Sect) 공명창 — 달과 직관의 랏이 깊어지며 핵심 통찰이 선명해지는 시간';
+
+  const lunarPhaseTone =
+    kst.day <= 10
+      ? '상현 전반부 — 스피릿의 랏이 가리키는 방향으로 첫 발을 내딛기 좋은 개시 리듬'
+      : kst.day <= 20
+        ? '만월 절정기 — 포르투나와 에로스의 랏이 결실과 관계의 빛을 드러내는 확장 리듬'
+        : '하현 수렴기 — 네메시스의 랏이 비추는 낡은 과제를 정리하고 비우는 정화 리듬';
+
+  return {
+    kstTimeLabel: kst.label,
+    hellenisticSectWindow,
+    lunarPhaseTone,
+    temporalGuidance: `${hellenisticSectWindow} · ${lunarPhaseTone}에 맞추어 오늘 집중할 랏을 선택하십시오.`,
+  };
+}
+
+function getSituationalLotsAudit(
+  question: string | undefined,
+  lots: HellenisticLotsReport['lots']
+) {
+  const q = (question || '').trim();
+  if (/돈|재물|사업|투자|직장|커리어|승진|이직/.test(q)) {
+    return {
+      focusTheme: '현실 복록(포르투나)과 커리어 주도권(스피릿)',
+      activeLotKey: `${lots.spirit.nameKo} & ${lots.fortune.nameKo}`,
+      zodiacalReleasingNote: `${lots.spirit.zodiacSignKo}(${lots.spirit.house}하우스)의 주체적 결단과 ${lots.fortune.zodiacSignKo}(${lots.fortune.house}하우스)의 현실 기반을 나란히 맞물려 움직이십시오.`,
+    };
+  }
+  if (/사랑|연애|관계|결혼|사람|매력|인연/.test(q)) {
+    return {
+      focusTheme: '영혼의 끌림(에로스)과 관계의 조화',
+      activeLotKey: lots.eros.nameKo,
+      zodiacalReleasingNote: `${lots.eros.zodiacSignKo}(${lots.eros.house}하우스)의 솔직한 매력과 온기를 자연스럽게 드러낼 때 인연의 문이 열립니다.`,
+    };
+  }
+  if (/불안|시련|막힘|갈등|두려움|극복|고민/.test(q)) {
+    return {
+      focusTheme: '카르마 관문 돌파(네메시스)',
+      activeLotKey: lots.nemesis.nameKo,
+      zodiacalReleasingNote: `${lots.nemesis.zodiacSignKo}(${lots.nemesis.house}하우스)가 가리키는 두려움의 지점을 회피하지 않고 마주할 때 오히려 가장 큰 돌파력이 생깁니다.`,
+    };
+  }
+  return {
+    focusTheme: '4대 랏(포르투나·스피릿·에로스·네메시스)의 균형 조율',
+    activeLotKey: `${lots.fortune.nameKo} & ${lots.spirit.nameKo}`,
+    zodiacalReleasingNote: '환경적 복록(포르투나)과 내면의 의지(스피릿)가 어긋나지 않도록 오늘의 우선순위를 단순화하십시오.',
+  };
+}
+
 /**
  * 헬레니즘 아라빅 랏 및 운명 타임로드 계산
  */
 export function calculateHellenisticLots(params: {
   profile?: UserProfile | null;
   targetDate?: Date;
+  question?: string;
 }): HellenisticLotsReport {
+  const now = params.targetDate || new Date();
   const profile = params.profile;
   const basic = profile?.basic;
   let year = 1995, month = 5, day = 15, hour = 12, minute = 0;
@@ -196,8 +288,17 @@ export function calculateHellenisticLots(params: {
   const zodiacalPeakTheme = `${spiritSign.ko} ${spiritHouse}하우스 중심의 창조적 도약 사이클`;
   const cosmicAdvice = `당신은 ${isDayChart ? '태양의 빛을 타고난 주간 차트' : '달의 신비를 품은 야간 차트'}의 소유자입니다. 포르투나(${fortuneSign.ko})의 현실적 그릇 위에 스피릿(${spiritSign.ko})의 대담한 의지를 얹을 때 우주가 당신의 길을 가장 강력하게 엽니다.`;
 
+  const temporalLotsRhythm = getTemporalLotsRhythm(now, isDayChart);
+  const situationalLotsAudit = getSituationalLotsAudit(params.question, lots);
+  const lotsSynthesisMatrix = {
+    coreInsight: `${isDayChart ? '주간 섹트' : '야간 섹트'} 구조 위에서 [${situationalLotsAudit.activeLotKey}]가 ${situationalLotsAudit.focusTheme}을 비춥니다.`,
+    recommendedAction: `${situationalLotsAudit.zodiacalReleasingNote} (${lots.spirit.powerAction})`,
+    cautionNotice: `네메시스의 랏(${nemesisSign.ko} ${nemesisHouse}하우스)이 가리키는 완벽주의와 회피 심리를 경계하십시오.`,
+  };
+
   return {
     engineVersion: HELLENISTIC_LOTS_ENGINE_VERSION,
+    calculatedAtKst: temporalLotsRhythm.kstTimeLabel,
     isDayChart,
     chartTypeKo: isDayChart ? '주간생 (Day Chart / 태양 주도)' : '야간생 (Night Chart / 달 주도)',
     ascendantDegree: ascDeg,
@@ -206,14 +307,18 @@ export function calculateHellenisticLots(params: {
     lots,
     dominantLot,
     zodiacalPeakTheme,
+    situationalLotsAudit,
+    temporalLotsRhythm,
+    lotsSynthesisMatrix,
     cosmicAdvice,
+    boundaryNotice: '본 결과는 헬레니즘 점성술 4대 아라빅 랏과 섹트 원리에 따른 정성적 상징 해석이며, 확정적 길흉 판정이 아닙니다.',
   };
 }
 
 export function formatHellenisticLotsPrompt(report: HellenisticLotsReport): string {
   return `[🏛️ 고대 헬레니즘 아라빅 랏 & 조디악 릴리싱 (Lots of Fortune & Spirit) 실측 데이터]
 ======================================================================
-엔진 버전: ${report.engineVersion}
+엔진 버전: ${report.engineVersion} | 연산 시각: ${report.calculatedAtKst}
 차트 유형: ${report.chartTypeKo}
 주도 랏(Dominant Lot): ${report.dominantLot}
 도약 테마: ${report.zodiacalPeakTheme}
@@ -236,7 +341,19 @@ export function formatHellenisticLotsPrompt(report: HellenisticLotsReport): stri
    - 위치: ${report.lots.nemesis.zodiacSignKo} (${report.lots.nemesis.degree}° / ${report.lots.nemesis.house}하우스)
    - 카르마 돌파구: ${report.lots.nemesis.coreMeaning}
 
+5. 🧭 [질문 맥락 감사 & KST 시공간 리듬]:
+   - 초점 테마: ${report.situationalLotsAudit.focusTheme} (${report.situationalLotsAudit.activeLotKey})
+   - 조디악 릴리싱 조언: ${report.situationalLotsAudit.zodiacalReleasingNote}
+   - KST 섹트 시간창: ${report.temporalLotsRhythm.hellenisticSectWindow} / ${report.temporalLotsRhythm.lunarPhaseTone}
+   - 시공간 지침: ${report.temporalLotsRhythm.temporalGuidance}
+
+6. 🏛️ [아라빅 랏 교차 매트릭스]:
+   - 핵심 통찰: ${report.lotsSynthesisMatrix.coreInsight}
+   - 권고 실행: ${report.lotsSynthesisMatrix.recommendedAction}
+   - 주의 경계: ${report.lotsSynthesisMatrix.cautionNotice}
+
 ★ 조디악 릴리싱 핵심 전언:
 "${report.cosmicAdvice}"
+- 해석 경계: ${report.boundaryNotice}
 ======================================================================`;
 }
