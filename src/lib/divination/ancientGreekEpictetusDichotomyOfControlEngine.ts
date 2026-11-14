@@ -9,12 +9,12 @@
  * 3. 3대 수양 영역(Topoi): 욕망과 기피의 훈련(운명 순응), 충동과 행동의 훈련(적절한 의무), 동의와 판단의 훈련(이성적 명징).
  * 4. 아디아포라(Adiaphora)와 아파테이아(Apatheia): 외부 사물에 대한 초연함과 영혼의 흔들림 없는 평정.
  *
- * @version LUCKEY-EPICTETUS-CONTROL-v1.0.0
+ * @version LUCKEY-EPICTETUS-CONTROL-v2.0.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const EPICTETUS_CONTROL_VERSION = 'LUCKEY-EPICTETUS-CONTROL-v1.0.0';
+export const EPICTETUS_CONTROL_VERSION = 'LUCKEY-EPICTETUS-CONTROL-v2.0.0';
 
 export interface EpictetusControlDomain {
   domainType: 'InternalControl' | 'ExternalCondition';
@@ -32,6 +32,30 @@ export interface EpictetusToposDiscipline {
   practicalCounsel: string;
 }
 
+export interface EpictetusSituationalControlAudit {
+  themeKo: string;
+  sourceCitation: string;
+  classicalQuote: string;
+  taEphHeminFocus: string;
+  taOukEphHeminRelease: string;
+  stoicReframeAction: string;
+}
+
+export interface EpictetusTemporalProhairesisRhythm {
+  kstWindow: string;
+  seasonalTone: string;
+  toposPracticeFocus: string;
+  prohairesisClarityIndex: number;
+  rhythmDirective: string;
+}
+
+export interface EpictetusStoicAutonomyMatrix {
+  impressionFilterStrength: number;
+  amorFatiAcceptance: number;
+  kathekonExecution: number;
+  overallSynthesis: number;
+}
+
 export interface EpictetusDichotomyOfControlResult {
   engineVersion: string;
   calculatedAtKst: string;
@@ -44,6 +68,9 @@ export interface EpictetusDichotomyOfControlResult {
   // 세부 명세
   activeControlDomain: EpictetusControlDomain;
   focalToposDiscipline: EpictetusToposDiscipline;
+  situationalControlAudit: EpictetusSituationalControlAudit;
+  temporalProhairesisRhythm: EpictetusTemporalProhairesisRhythm;
+  stoicAutonomyMatrix: EpictetusStoicAutonomyMatrix;
   epictetusPhilosophicalCounsel: {
     counselTitle: string;
     philosophicalGuidance: string;
@@ -93,7 +120,114 @@ const THREE_TOPOI: EpictetusToposDiscipline[] = [
   },
 ];
 
-export function calculateEpictetusDichotomyOfControl(profile: UserProfile): EpictetusDichotomyOfControlResult {
+function buildSituationalControlAudit(question?: string): EpictetusSituationalControlAudit {
+  const q = (question ?? '').trim();
+  if (/시선|평판|비난|눈치|인정|남/.test(q)) {
+    return {
+      themeKo: '타인의 시선과 평판 해방',
+      sourceCitation: '《엥케이리디온》 1장 · 23장',
+      classicalQuote: '다른 사람의 인정을 구하느라 애쓰는 순간, 너는 이미 너의 프로하이레시스(자유의지)를 타인의 손에 넘겨준 것이다.',
+      taEphHeminFocus: '내가 옳다고 믿는 기준에 따라 성실하게 말하고 행동할 주권.',
+      taOukEphHeminRelease: '타인이 나를 어떻게 평가하고 오해할지까지 통제하려는 헛된 집착.',
+      stoicReframeAction: '상대의 반응 대신 "나는 지금 내 기준에 부끄럽지 않은가" 한 가지만 점검하고 실행하십시오.',
+    };
+  }
+  if (/불안|결과|실패|걱정|미래|시험|합격/.test(q)) {
+    return {
+      themeKo: '결과 집착과 미래 불안 절연',
+      sourceCitation: '《담화록》 제2권 5장',
+      classicalQuote: '활을 당기는 일까지는 네 몫이지만, 날아간 화살이 바람을 타고 과녁에 꽂히는 일은 네 몫이 아니다.',
+      taEphHeminFocus: '오늘 화살을 곧게 깎고 시위를 끝까지 당기는 준비 과정과 집중력.',
+      taOukEphHeminRelease: '당장의 합격·성과·시장 반응처럼 변수가 개입하는 최종 결과.',
+      stoicReframeAction: '결과 걱정에 쓰던 시간을 오늘 바로 실행할 수 있는 준비 체크리스트 1개 완료로 치환하십시오.',
+    };
+  }
+  if (/관계|갈등|화|짜증|서운|상대|사람/.test(q)) {
+    return {
+      themeKo: '관계의 두 손잡이 원칙',
+      sourceCitation: '《엥케이리디온》 43장',
+      classicalQuote: '모든 일에는 손잡이가 둘 있다. 하나로는 들 수 있고 다른 하나로는 들 수 없다.',
+      taEphHeminFocus: '상대의 무례함에 똑같이 분노하지 않고 품위와 원칙으로 응대하는 나의 선택.',
+      taOukEphHeminRelease: '상대의 성격이나 이미 뱉어진 말을 내 뜻대로 고치려는 조바심.',
+      stoicReframeAction: '원망의 손잡이 대신 "우리가 함께 풀 수 있는 현실적 경계와 합의는 무엇인가"라는 들 수 있는 손잡이를 잡으십시오.',
+    };
+  }
+  if (/선택|후회|결정|바꿀|어쩌지|포기/.test(q)) {
+    return {
+      themeKo: '프로하이레시스 결단과 운명 수용',
+      sourceCitation: '《엥케이리디온》 8장',
+      classicalQuote: '일어나는 일들이 네 뜻대로 되기를 바라지 말고, 일어나는 대로 일어나기를 바라라. 그러면 삶이 순조로울 것이다.',
+      taEphHeminFocus: '주어진 조건을 재료 삼아 가장 지혜로운 다음 한 수를 설계하는 내면 의지.',
+      taOukEphHeminRelease: '이미 지나간 과거의 선택을 되돌리려는 헛된 가정과 자책.',
+      stoicReframeAction: '지나간 패를 탓하는 대신, 지금 손에 들린 패로 둘 수 있는 최선의 수 한 가지를 바로 실행하십시오.',
+    };
+  }
+  return {
+    themeKo: '인상(Phantasia) 검증과 내면 주권',
+    sourceCitation: '《엥케이리디온》 1장 5절 · 5장',
+    classicalQuote: '사람을 어지럽히는 것은 사건 자체가 아니라 사건에 대해 스스로 내리는 판단이다.',
+    taEphHeminFocus: '사건에 성급히 의미를 덧붙이지 않고 사실과 해석을 분리하는 이성적 판단력.',
+    taOukEphHeminRelease: '예기치 않게 찾아온 외적 변수와 즉각적인 감정적 파동.',
+    stoicReframeAction: '감정이 치밀 때 10초 멈춰 "이것은 사실인가, 나의 판단인가"를 소리 내어 구분한 뒤 다음 행동을 정하십시오.',
+  };
+}
+
+function buildTemporalProhairesisRhythm(now?: Date): EpictetusTemporalProhairesisRhythm {
+  const ref = now ?? new Date();
+  const kst = new Date(ref.getTime() + 9 * 60 * 60 * 1000);
+  const hour = kst.getUTCHours();
+  const month = kst.getUTCMonth() + 1;
+
+  const seasonalTone =
+    month >= 3 && month <= 5
+      ? '봄 — 새로운 시도 앞에서 결과 욕심을 비우고 올바른 방향(Horme)을 세우는 계절'
+      : month >= 6 && month <= 8
+        ? '여름 — 외적 열기와 압박 속에서도 내면의 아파테이아를 지키는 계절'
+        : month >= 9 && month <= 11
+          ? '가을 — 수확의 크기에 일희일비하지 않고 아디아포라를 훈련하는 계절'
+          : '겨울 — 통제 밖의 시련을 내면 강인함의 연료로 바꾸는 계절';
+
+  if (hour >= 5 && hour < 11) {
+    return {
+      kstWindow: '아침 프로하이레시스 주권 선언 창',
+      seasonalTone,
+      toposPracticeFocus: '제3토포스(판단과 동의 훈련)',
+      prohairesisClarityIndex: 90,
+      rhythmDirective: '하루의 변수들을 만나기 전, 오늘 내가 통제할 영역과 내려놓을 영역을 먼저 선포하기 좋은 시간입니다.',
+    };
+  }
+  if (hour >= 11 && hour < 17) {
+    return {
+      kstWindow: '한낮 카테콘(Kathekon) 의무 실행 창',
+      seasonalTone,
+      toposPracticeFocus: '제2토포스(충동과 적절한 행동 훈련)',
+      prohairesisClarityIndex: 83,
+      rhythmDirective: '타인과 변수가 부딪히는 낮 시간입니다. 즉각적 감정 반응 대신 본분과 원칙에 맞는 행동을 택하십시오.',
+    };
+  }
+  if (hour >= 17 && hour < 22) {
+    return {
+      kstWindow: '저녁 아모르 파티(Amor Fati) 수용 창',
+      seasonalTone,
+      toposPracticeFocus: '제1토포스(욕망과 기피 훈련)',
+      prohairesisClarityIndex: 76,
+      rhythmDirective: '뜻대로 되지 않은 일들을 억지로 붙잡지 말고 오늘 주어진 현실을 담담히 소화하며 마무리하십시오.',
+    };
+  }
+  return {
+    kstWindow: '심야 아파테이아(Apatheia) 정화 창',
+    seasonalTone,
+    toposPracticeFocus: '제3토포스(인상 거리두기 정화)',
+    prohairesisClarityIndex: 79,
+    rhythmDirective: '밤의 불안한 상상은 대개 통제 밖의 허상입니다. 판단을 내일로 미루고 내면의 평정을 회복하십시오.',
+  };
+}
+
+export function calculateEpictetusDichotomyOfControl(
+  profile: UserProfile,
+  question?: string,
+  now?: Date,
+): EpictetusDichotomyOfControlResult {
   const seedString =
     (profile?.basic?.birthdate ?? (profile as any)?.birthdate ?? '1990-01-01') +
     (profile?.basic?.name ?? (profile as any)?.name ?? 'User') +
@@ -118,6 +252,20 @@ export function calculateEpictetusDichotomyOfControl(profile: UserProfile): Epic
 
   const activeControlDomain = CONTROL_DOMAINS[domainIndex];
   const focalToposDiscipline = THREE_TOPOI[toposIndex];
+  const situationalControlAudit = buildSituationalControlAudit(question);
+  const temporalProhairesisRhythm = buildTemporalProhairesisRhythm(now);
+
+  const impressionFilterStrength = Math.min(99, Math.round((dichotomyClarityScore + temporalProhairesisRhythm.prohairesisClarityIndex) / 2));
+  const amorFatiAcceptance = Math.min(99, Math.round((adiaphoraDetachmentScore + apatheiaEquanimityScore) / 2));
+  const kathekonExecution = Math.min(99, Math.round((prohairesisAutonomyScore + threeTopoiDisciplineScore) / 2));
+  const overallSynthesis = Math.round((impressionFilterStrength + amorFatiAcceptance + kathekonExecution) / 3);
+
+  const stoicAutonomyMatrix: EpictetusStoicAutonomyMatrix = {
+    impressionFilterStrength,
+    amorFatiAcceptance,
+    kathekonExecution,
+    overallSynthesis,
+  };
 
   const counselTitle = `에픽테토스 통제이분법: ${activeControlDomain.domainNameGreek}`;
   const philosophicalGuidance = `인간을 괴롭히는 것은 사물 자체가 아니라 사물에 대해 가지는 생각입니다. ` +
@@ -126,7 +274,7 @@ export function calculateEpictetusDichotomyOfControl(profile: UserProfile): Epic
 
   return {
     engineVersion: EPICTETUS_CONTROL_VERSION,
-    calculatedAtKst: new Date().toISOString(),
+    calculatedAtKst: (now ?? new Date()).toISOString(),
     dichotomyClarityScore,
     prohairesisAutonomyScore,
     adiaphoraDetachmentScore,
@@ -134,6 +282,9 @@ export function calculateEpictetusDichotomyOfControl(profile: UserProfile): Epic
     apatheiaEquanimityScore,
     activeControlDomain,
     focalToposDiscipline,
+    situationalControlAudit,
+    temporalProhairesisRhythm,
+    stoicAutonomyMatrix,
     epictetusPhilosophicalCounsel: {
       counselTitle,
       philosophicalGuidance,
@@ -150,10 +301,13 @@ export function formatEpictetusDichotomyOfControlPrompt(res: EpictetusDichotomyO
     `- 3대 토포스 수양 밸런스: ${res.threeTopoiDisciplineScore}/100`,
     `- 아파테이아 내면 평정심: ${res.apatheiaEquanimityScore}/100`,
     `- 통제 영역 판별: ${res.activeControlDomain.domainNameGreek} (${res.activeControlDomain.domainNameKo})`,
-    `- 핵심 초점 요소: ${res.activeControlDomain.focusElements.join(', ')}`,
-    `- 영역별 실천 지침: ${res.activeControlDomain.actionDirective}`,
     `- 핵심 수양 단계: ${res.focalToposDiscipline.toposNameKo} [${res.focalToposDiscipline.toposNameGreek}]`,
-    `- 심리적 처방: ${res.focalToposDiscipline.psychologicalFocus}`,
+    `- 질문 맥락 통제 감사 (${res.situationalControlAudit.themeKo} · ${res.situationalControlAudit.sourceCitation}): "${res.situationalControlAudit.classicalQuote}"`,
+    `- 내게 달린 것(Ta Eph' hemin): ${res.situationalControlAudit.taEphHeminFocus}`,
+    `- 내려놓을 것(Ta Ouk Eph' hemin): ${res.situationalControlAudit.taOukEphHeminRelease}`,
+    `- 스토아 전환 행동: ${res.situationalControlAudit.stoicReframeAction}`,
+    `- KST 주권 리듬: ${res.temporalProhairesisRhythm.kstWindow} (${res.temporalProhairesisRhythm.toposPracticeFocus}, 명료도 ${res.temporalProhairesisRhythm.prohairesisClarityIndex}/100) — ${res.temporalProhairesisRhythm.rhythmDirective}`,
+    `- 스토아 자율 매트릭스: 인상 여과 ${res.stoicAutonomyMatrix.impressionFilterStrength} / 운명 수용 ${res.stoicAutonomyMatrix.amorFatiAcceptance} / 의무 실행 ${res.stoicAutonomyMatrix.kathekonExecution} (종합 ${res.stoicAutonomyMatrix.overallSynthesis}/100)`,
     `- 철학적 수양 지침: ${res.epictetusPhilosophicalCounsel.philosophicalGuidance}`,
   ].join('\n');
 }

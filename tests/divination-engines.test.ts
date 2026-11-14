@@ -6591,6 +6591,46 @@ test('Socratic Maieutic, Aristotle Mesotes, and Confucius Analects engines v2.0.
   assert.ok(confuciusPrompt.includes('군자 수양 매트릭스'));
 });
 
+test('v2.0.0 qualitative/temporal/matrix deepening: Plato Cave, Epictetus Dichotomy, and Bhagavad Gita Karma Yoga', () => {
+  const testProfile = {
+    basic: {
+      name: '남희',
+      birthdate: '1988-05-12',
+      birthtime: '09:30',
+      gender: 'female' as const,
+      calendarType: 'solar' as const,
+    },
+  };
+  const now = new Date('2026-11-14T09:45:00.000Z'); // KST 18:45
+
+  const plato = calculatePlatonicIdeaCave(testProfile, '선택의 갈림길에서 진로 고민이 깊어요', now);
+  assert.equal(plato.engineVersion, PLATONIC_IDEA_CAVE_VERSION);
+  assert.ok(plato.situationalCaveAscent.dialogueSource.includes('국가'));
+  assert.ok(plato.temporalDialecticRhythm.noeticClarityIndex >= 50 && plato.temporalDialecticRhythm.noeticClarityIndex <= 99);
+  assert.ok(plato.ideaAscentMatrix.overallSynthesis >= 50);
+  const platoPrompt = formatPlatonicIdeaCavePrompt(plato);
+  assert.ok(platoPrompt.includes('질문 맥락 동굴 처방'));
+  assert.ok(platoPrompt.includes('이데아 상승 매트릭스'));
+
+  const epictetus = calculateEpictetusDichotomyOfControl(testProfile, '남의 시선과 평판 때문에 자꾸 위축돼요', now);
+  assert.equal(epictetus.engineVersion, EPICTETUS_CONTROL_VERSION);
+  assert.ok(epictetus.situationalControlAudit.sourceCitation.includes('엥케이리디온'));
+  assert.ok(epictetus.temporalProhairesisRhythm.prohairesisClarityIndex >= 50 && epictetus.temporalProhairesisRhythm.prohairesisClarityIndex <= 99);
+  assert.ok(epictetus.stoicAutonomyMatrix.overallSynthesis >= 50);
+  const epictetusPrompt = formatEpictetusDichotomyOfControlPrompt(epictetus);
+  assert.ok(epictetusPrompt.includes('질문 맥락 통제 감사'));
+  assert.ok(epictetusPrompt.includes('스토아 자율 매트릭스'));
+
+  const gita = calculateBhagavadGitaKarmaYoga(testProfile, '결과가 불안해서 도무지 집중이 안 돼요', now);
+  assert.equal(gita.engineVersion, BHAGAVAD_GITA_KARMA_YOGA_VERSION);
+  assert.ok(gita.situationalKarmaAudit.chapterVerse.includes('바가바드 기타'));
+  assert.ok(gita.temporalGunaRhythm.sattvaEquanimityIndex >= 50 && gita.temporalGunaRhythm.sattvaEquanimityIndex <= 99);
+  assert.ok(gita.karmaYogaMatrix.overallSynthesis >= 50);
+  const gitaPrompt = formatBhagavadGitaKarmaYogaPrompt(gita);
+  assert.ok(gitaPrompt.includes('질문 맥락 카르마 처방'));
+  assert.ok(gitaPrompt.includes('카르마 요가 매트릭스'));
+});
+
 
 
 

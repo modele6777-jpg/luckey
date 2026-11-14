@@ -1,19 +1,19 @@
 /**
  * 고대 그리스 플라톤(Plato) 동굴의 비유(Allegory of the Cave) & 이데아(Idea) 4대 추덕 사유 엔진
  *
- * 플라톤 대화편 《국가(Politeia)》 제7권 동굴의 비유, 《파이돈(Phaedo)》, 《향연(Symposium)》 원전 기반.
+ * 플라톤 대화편 《국가(Politeia)》 제7권 동굴의 비유, 《파이돈(Phaedo)》, 《향연(Symposium)》, 《파이드로스(Phaedrus)》 원전 기반.
  * 1. 동굴의 비유(Allegory of the Cave): 감각의 그림자에 얽매인 상태에서 벗어나 지성의 태양을 향해 오르는 해방.
  * 2. 좋음의 이데아(Idea of the Good): 모든 존재와 진리의 궁극적 근원이자 지적 통찰의 최고봉.
  * 3. 상기설(Anamnesis): 진리는 외부에서 주입되는 것이 아니라 영혼이 본래 지니고 있던 것을 일깨우는 회상.
  * 4. 4대 추덕(Cardinal Virtues): 지혜(Sophia)·용기(Andreia)·절제(Sophrosyne)·정의(Dikaiosyne)의 조화.
  * 5. 카타바시스(Katabasis): 진리를 본 철인이 다시 동굴로 내려와 공동체를 이끌고 밝히는 실천적 의무.
  *
- * @version LUCKEY-PLATONIC-IDEA-CAVE-v1.0.0
+ * @version LUCKEY-PLATONIC-IDEA-CAVE-v2.0.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const PLATONIC_IDEA_CAVE_VERSION = 'LUCKEY-PLATONIC-IDEA-CAVE-v1.0.0';
+export const PLATONIC_IDEA_CAVE_VERSION = 'LUCKEY-PLATONIC-IDEA-CAVE-v2.0.0';
 
 export interface PlatonicAscentStage {
   stageLevel: number;
@@ -30,6 +30,30 @@ export interface PlatonicCardinalVirtue {
   practicalCounsel: string;
 }
 
+export interface PlatonicSituationalCaveAscent {
+  themeKo: string;
+  dialogueSource: string;
+  classicalQuote: string;
+  shadowIllusionTrap: string;
+  dialecticQuestion: string;
+  katabasisPractice: string;
+}
+
+export interface PlatonicTemporalDialecticRhythm {
+  kstWindow: string;
+  seasonalTone: string;
+  soulChariotFocus: string;
+  noeticClarityIndex: number;
+  rhythmDirective: string;
+}
+
+export interface PlatonicIdeaAscentMatrix {
+  shadowDetachment: number;
+  anamnesisResonance: number;
+  katabasisReadiness: number;
+  overallSynthesis: number;
+}
+
 export interface PlatonicIdeaCaveResult {
   engineVersion: string;
   calculatedAtKst: string;
@@ -40,8 +64,11 @@ export interface PlatonicIdeaCaveResult {
   cardinalVirtuesHarmonyScore: number;     // 4대 추덕(지혜·용기·절제·정의) 조화도
   dialecticAscentPowerScore: number;       // 변증법적 영혼비상 지성력
   // 세부 명세
-  activeAscentStage: PlatonicAscentStage;
+  activeAscentStage: PlatonicCardinalVirtue extends never ? never : PlatonicAscentStage;
   focalCardinalVirtue: PlatonicCardinalVirtue;
+  situationalCaveAscent: PlatonicSituationalCaveAscent;
+  temporalDialecticRhythm: PlatonicTemporalDialecticRhythm;
+  ideaAscentMatrix: PlatonicIdeaAscentMatrix;
   platonicPhilosophicalCounsel: {
     counselTitle: string;
     philosophicalGuidance: string;
@@ -115,7 +142,114 @@ const CARDINAL_VIRTUES: PlatonicCardinalVirtue[] = [
   },
 ];
 
-export function calculatePlatonicIdeaCave(profile: UserProfile): PlatonicIdeaCaveResult {
+function buildSituationalCaveAscent(question?: string): PlatonicSituationalCaveAscent {
+  const q = (question ?? '').trim();
+  if (/선택|결정|진로|이직|갈림길|고민/.test(q)) {
+    return {
+      themeKo: '선택과 본질 분별(Dianoia)',
+      dialogueSource: '《국가(Politeia)》 제7권 518c',
+      classicalQuote: '교육이란 영혼에 시력을 불어넣는 것이 아니라, 이미 가진 시력을 올바른 방향으로 돌려놓는 기술이다.',
+      shadowIllusionTrap: '남들이 부러워하는 외적 조건이라는 동굴 벽 그림자에 기준을 빼앗긴 채 결정하려는 함정.',
+      dialecticQuestion: '모든 외적 보상을 지우고 난 뒤에도, 당신의 영혼이 스스로 옳다고 고개를 끄덕일 선택은 어느 쪽입니까?',
+      katabasisPractice: '선택지별 단기 이해득실이 아닌 3년 뒤 영혼의 성장과 조화(Dikaiosyne) 기준으로 우선순위를 다시 적으십시오.',
+    };
+  }
+  if (/관계|사람|사랑|신뢰|오해|갈등/.test(q)) {
+    return {
+      themeKo: '관계의 에로스와 정의(Symposium)',
+      dialogueSource: '《향연(Symposium)》 210a–212a',
+      classicalQuote: '아름다움에 대한 참된 사랑은 한 사람의 겉모습에서 시작해 영혼의 아름다움과 진리 그 자체로 오르는 사다리다.',
+      shadowIllusionTrap: '상대의 일시적 말투나 겉모습을 전부의 실체인 양 단정 짓는 감각적 투영의 오류.',
+      dialecticQuestion: '내가 상대에게 서운해하는 것은 그의 본질입니까, 아니면 내 기대가 만든 그림자입니까?',
+      katabasisPractice: '감정적 비난 대신 상대의 영혼이 지향하는 본래의 선의를 한 번 더 묻고 경청하는 대화를 시도하십시오.',
+    };
+  }
+  if (/불안|두려움|실패|혼란|막막|걱정/.test(q)) {
+    return {
+      themeKo: '그림자 공포 탈피(Eikasia → Pistis)',
+      dialogueSource: '《파이돈(Phaedo)》 79c–80b',
+      classicalQuote: '영혼이 감각에만 의존해 사물을 살필 때는 흔들리고 어지럽지만, 스스로 사유할 때는 변치 않는 순수함으로 돌아간다.',
+      shadowIllusionTrap: '아직 일어나지도 않은 불행의 그림자를 실체로 착각해 스스로 쇠사슬을 조이는 상태.',
+      dialecticQuestion: '지금 당신을 위협하는 두려움 가운데, 실제로 손에 잡히는 사실은 몇 할이나 됩니까?',
+      katabasisPractice: '불안한 상상을 사실과 추측으로 분리해 종이에 적고, 이성(Logistikon)이 다룰 수 있는 사실 1건만 처리하십시오.',
+    };
+  }
+  if (/돈|성취|일|사업|목표|성공/.test(q)) {
+    return {
+      themeKo: '좋음의 이데아와 일의 목적(Noesis)',
+      dialogueSource: '《국가(Politeia)》 제6권 505a–509b',
+      classicalQuote: '좋음의 이데아를 알지 못한 채 얻은 다른 모든 소유와 지식은 우리에게 진정한 유익을 주지 못한다.',
+      shadowIllusionTrap: '수단(재물·성과)을 궁극의 목적(선과 가치)으로 착각해 끝없는 갈증에 빠지는 상태.',
+      dialecticQuestion: '이번 성취가 완성되었을 때, 그 결과는 누구의 삶을 어떻게 더 좋게 밝히게 됩니까?',
+      katabasisPractice: '성과 목표 옆에 이 일이 타인과 공동체에 남길 구체적 가치 한 문장을 함께 못 박고 실행하십시오.',
+    };
+  }
+  return {
+    themeKo: '상기설과 내면의 진리 회복(Anamnesis)',
+    dialogueSource: '《메논(Meno)》 81c–d',
+    classicalQuote: '배움이란 낯선 것을 새로 채우는 일이 아니라, 영혼이 본래 알고 있던 질서를 스스로 일깨우는 상기(Anamnesis)다.',
+    shadowIllusionTrap: '외부의 정답만을 찾아 헤매며 이미 내면에 갖춰진 직관과 이성의 빛을 불신하는 태도.',
+    dialecticQuestion: '남들의 조언을 잠시 덮어두었을 때, 당신의 양심과 지성은 이미 어떤 답을 기억하고 있습니까?',
+    katabasisPractice: '외부 검색과 비교를 30분 멈추고 고요한 사유 속에서 이미 알고 있던 핵심 원칙을 문장으로 되살리십시오.',
+  };
+}
+
+function buildTemporalDialecticRhythm(now?: Date): PlatonicTemporalDialecticRhythm {
+  const ref = now ?? new Date();
+  const kst = new Date(ref.getTime() + 9 * 60 * 60 * 1000);
+  const hour = kst.getUTCHours();
+  const month = kst.getUTCMonth() + 1;
+
+  const seasonalTone =
+    month >= 3 && month <= 5
+      ? '봄의 발아기 — 동굴 문턱에서 첫 빛을 향해 고개를 돌리는 해방의 계절'
+      : month >= 6 && month <= 8
+        ? '여름의 정오기 — 진리의 태양을 직시하며 지성의 시력을 단련하는 계절'
+        : month >= 9 && month <= 11
+          ? '가을의 수렴기 — 현상과 본질을 가려내 영혼의 정의를 세우는 계절'
+          : '겨울의 심연기 — 내면의 상기(Anamnesis)로 본질을 응축하는 계절';
+
+  if (hour >= 5 && hour < 11) {
+    return {
+      kstWindow: '새벽·오전 노에시스(Noesis) 맑은 직관 창',
+      seasonalTone,
+      soulChariotFocus: 'Logistikon (이성의 마부 각성)',
+      noeticClarityIndex: 91,
+      rhythmDirective: '감각적 소음이 적고 지성의 눈이 가장 맑은 시간입니다. 핵심 본질과 장기 원칙을 먼저 확정하십시오.',
+    };
+  }
+  if (hour >= 11 && hour < 17) {
+    return {
+      kstWindow: '한낮 디아노이아(Dianoia) 실행·변증 창',
+      seasonalTone,
+      soulChariotFocus: 'Thymoeides (기개와 실행의 조화)',
+      noeticClarityIndex: 82,
+      rhythmDirective: '세속의 일과 사람 속에서 이데아의 질서를 실천(Katabasis)으로 옮기기에 적합한 시간입니다.',
+    };
+  }
+  if (hour >= 17 && hour < 22) {
+    return {
+      kstWindow: '저녁 소프로쉬네(Sophrosyne) 절제·정돈 창',
+      seasonalTone,
+      soulChariotFocus: 'Epithymetikon (욕망과 감정의 절제)',
+      noeticClarityIndex: 74,
+      rhythmDirective: '하루 동안 붙은 감각의 그림자와 과도한 자극을 가라앉히고 내면의 질서를 복원하십시오.',
+    };
+  }
+  return {
+    kstWindow: '심야 아남네시스(Anamnesis) 영혼 회상 창',
+    seasonalTone,
+    soulChariotFocus: 'Hole Psyche (영혼 전체의 침잠과 조화)',
+    noeticClarityIndex: 78,
+    rhythmDirective: '바깥의 횃불이 잦아드는 밤입니다. 섣부른 판단보다 영혼의 깊은 기억과 본심을 조용히 비추십시오.',
+  };
+}
+
+export function calculatePlatonicIdeaCave(
+  profile: UserProfile,
+  question?: string,
+  now?: Date,
+): PlatonicIdeaCaveResult {
   const seedString =
     (profile?.basic?.birthdate ?? (profile as any)?.birthdate ?? '1990-01-01') +
     (profile?.basic?.name ?? (profile as any)?.name ?? 'User') +
@@ -140,6 +274,20 @@ export function calculatePlatonicIdeaCave(profile: UserProfile): PlatonicIdeaCav
 
   const activeAscentStage = ASCENT_STAGES[stageIndex];
   const focalCardinalVirtue = CARDINAL_VIRTUES[virtueIndex];
+  const situationalCaveAscent = buildSituationalCaveAscent(question);
+  const temporalDialecticRhythm = buildTemporalDialecticRhythm(now);
+
+  const shadowDetachment = Math.min(99, Math.round((shadowIllusionLiberationScore + temporalDialecticRhythm.noeticClarityIndex) / 2));
+  const anamnesisResonance = Math.min(99, Math.round((anamnesisSoulIntuitionScore + ideaTruthOrientationScore) / 2));
+  const katabasisReadiness = Math.min(99, Math.round((cardinalVirtuesHarmonyScore + dialecticAscentPowerScore) / 2));
+  const overallSynthesis = Math.round((shadowDetachment + anamnesisResonance + katabasisReadiness) / 3);
+
+  const ideaAscentMatrix: PlatonicIdeaAscentMatrix = {
+    shadowDetachment,
+    anamnesisResonance,
+    katabasisReadiness,
+    overallSynthesis,
+  };
 
   const counselTitle = `플라톤 이데아와 동굴의 비유: ${activeAscentStage.stageNameGreek}`;
   const philosophicalGuidance = `현재 상황은 눈앞의 현상적 그림자(Eikasia)를 넘어 좋음의 이데아(Idea of the Good)를 향해 영혼의 눈을 돌려야 할 시점입니다. ` +
@@ -148,7 +296,7 @@ export function calculatePlatonicIdeaCave(profile: UserProfile): PlatonicIdeaCav
 
   return {
     engineVersion: PLATONIC_IDEA_CAVE_VERSION,
-    calculatedAtKst: new Date().toISOString(),
+    calculatedAtKst: (now ?? new Date()).toISOString(),
     ideaTruthOrientationScore,
     shadowIllusionLiberationScore,
     anamnesisSoulIntuitionScore,
@@ -156,6 +304,9 @@ export function calculatePlatonicIdeaCave(profile: UserProfile): PlatonicIdeaCav
     dialecticAscentPowerScore,
     activeAscentStage,
     focalCardinalVirtue,
+    situationalCaveAscent,
+    temporalDialecticRhythm,
+    ideaAscentMatrix,
     platonicPhilosophicalCounsel: {
       counselTitle,
       philosophicalGuidance,
@@ -172,10 +323,13 @@ export function formatPlatonicIdeaCavePrompt(res: PlatonicIdeaCaveResult): strin
     `- 4대 추덕 조화도: ${res.cardinalVirtuesHarmonyScore}/100`,
     `- 변증법적 영혼비상 지성력: ${res.dialecticAscentPowerScore}/100`,
     `- 영혼 상승 단계: ${res.activeAscentStage.stageNameGreek} (${res.activeAscentStage.stageNameKo})`,
-    `- 인식의 영역: ${res.activeAscentStage.epistemicRealm}`,
-    `- 단계별 실천 지침: ${res.activeAscentStage.actionDirective}`,
     `- 핵심 요청 덕목: ${res.focalCardinalVirtue.virtueKo} [${res.focalCardinalVirtue.virtueGreek}]`,
-    `- 덕목 실천 지침: ${res.focalCardinalVirtue.practicalCounsel}`,
+    `- 질문 맥락 동굴 처방 (${res.situationalCaveAscent.themeKo} · ${res.situationalCaveAscent.dialogueSource}): "${res.situationalCaveAscent.classicalQuote}"`,
+    `- 그림자 함정: ${res.situationalCaveAscent.shadowIllusionTrap}`,
+    `- 변증 성찰 질문: ${res.situationalCaveAscent.dialecticQuestion}`,
+    `- 카타바시스 실천: ${res.situationalCaveAscent.katabasisPractice}`,
+    `- KST 사유 리듬: ${res.temporalDialecticRhythm.kstWindow} (${res.temporalDialecticRhythm.soulChariotFocus}, 명료도 ${res.temporalDialecticRhythm.noeticClarityIndex}/100) — ${res.temporalDialecticRhythm.rhythmDirective}`,
+    `- 이데아 상승 매트릭스: 그림자 탈피 ${res.ideaAscentMatrix.shadowDetachment} / 상기 공명 ${res.ideaAscentMatrix.anamnesisResonance} / 카타바시스 준비도 ${res.ideaAscentMatrix.katabasisReadiness} (종합 ${res.ideaAscentMatrix.overallSynthesis}/100)`,
     `- 철학적 처방: ${res.platonicPhilosophicalCounsel.philosophicalGuidance}`,
   ].join('\n');
 }

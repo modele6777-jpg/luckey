@@ -3145,7 +3145,7 @@ try {
   // 202. 고대 인도 바가바드 기타 카르마 요가 & 무집착 행동 엔진
   const bhagavadGitaKarmaYogaResult = calculateSupplement('bhagavadGitaKarmaYogaResult', () => ((() => {
     try {
-      return calculateBhagavadGitaKarmaYoga(profile);
+      return calculateBhagavadGitaKarmaYoga(profile, question, now);
     } catch (_) {
       return null;
     }
@@ -3190,7 +3190,7 @@ try {
   // 207. 고대 그리스 플라톤 동굴의 비유 & 이데아 4대 추덕 사유 엔진
   const platonicIdeaCaveResult = calculateSupplement('platonicIdeaCaveResult', () => ((() => {
     try {
-      return calculatePlatonicIdeaCave(profile);
+      return calculatePlatonicIdeaCave(profile, question, now);
     } catch (_) {
       return null;
     }
@@ -3217,7 +3217,7 @@ try {
   // 210. 고대 그리스 로마 스토아학파 에픽테토스 엥케이리디온 통제이분법 & 프로하이레시스 도덕의지 엔진
   const epictetusDichotomyOfControlResult = calculateSupplement('epictetusDichotomyOfControlResult', () => ((() => {
     try {
-      return calculateEpictetusDichotomyOfControl(profile);
+      return calculateEpictetusDichotomyOfControl(profile, question, now);
     } catch (_) {
       return null;
     }
