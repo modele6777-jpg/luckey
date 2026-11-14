@@ -1,5 +1,5 @@
 import { applyAudioMixingPolicy, setAppAudioActive, isAppAudioActive } from './audioMixingPolicy';
-import { getSpeechMediaElement, primeSpeechMedia, stopSpeechMedia, speechMediaProgress, isSpeechMediaPlaying, pauseSpeechMedia, resumeSpeechMedia, playSpeechMedia } from './speechMedia';
+import { getSpeechMediaElement, primeSpeechMedia, stopSpeechMedia, speechMediaProgress, isSpeechMediaPlaying, pauseSpeechMedia, resumeSpeechMedia, playSpeechMedia, handleSpeechPageVisibility } from './speechMedia';
 import { acquireScreenWakeLock, releaseScreenWakeLock } from './wakeLock';
 import { recoverSpeechContext } from './audioRecovery';
 
@@ -1309,15 +1309,19 @@ export function initTTSAudioLifecycle(): void {
 
   const handleVisibleResume = () => {
     if (document.visibilityState === 'hidden') return;
-    // Reapply only the nonexclusive policy; never reclaim focus or restart a paused source.
+    // Resume only media paused across a hidden-page transition; never reclaim external audio focus.
+    handleSpeechPageVisibility(true);
     configureAmbientAudioSession();
   };
 
-  document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'visible') {
-      handleVisibleResume();
-    }
-  });
+  const handleVisibilityChange = () => {
+    if (document.visibilityState === 'hidden') handleSpeechPageVisibility(false);
+    else handleVisibleResume();
+  };
+  const handlePageHide = () => handleSpeechPageVisibility(false);
+
+  document.addEventListener('visibilitychange', handleVisibilityChange);
+  window.addEventListener('pagehide', handlePageHide);
   window.addEventListener('pageshow', handleVisibleResume);
   window.addEventListener('focus', handleVisibleResume);
 }

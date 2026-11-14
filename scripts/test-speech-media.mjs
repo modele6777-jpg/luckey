@@ -28,13 +28,14 @@ const failed = playSpeechMedia(new Uint8Array([1]), 'mp3', 24000); player.dispat
 console.log('Speech media: PCM header, same-element playback, pause/resume, completion, replacement, stop and errors passed.');
 
 const { setTTSSessionActive, pauseTTSSession, resumeTTSSession, clearTTSSession, initTTSSessionHandlers } = await import('../src/lib/ttsMediaSession.ts');
-const actions = new Map();
-Object.defineProperty(globalThis, 'navigator', { configurable: true, value: { mediaSession: { setActionHandler: (a, fn) => actions.set(a, fn) } } });
+let actionRegistrations = 0;
+Object.defineProperty(globalThis, 'navigator', { configurable: true, value: { mediaSession: { setActionHandler: () => actionRegistrations++ } } });
 let stopped = 0, pausedCount = 0, resumed = 0;
 initTTSSessionHandlers(() => stopped++, () => pausedCount++, () => resumed++);
-setTTSSessionActive('Test'); actions.get('pause')(); assert.equal(pausedCount, 1);
-pauseTTSSession(); assert.equal(navigator.mediaSession.playbackState, 'paused');
-actions.get('play')(); assert.equal(resumed, 1); resumeTTSSession(); assert.equal(navigator.mediaSession.playbackState, 'playing');
-actions.get('stop')(); assert.equal(stopped, 1); clearTTSSession(); actions.get('play')(); assert.equal(resumed, 1);
-assert.equal(navigator.mediaSession.playbackState, 'none');
-console.log('Speech media session controls passed.');
+setTTSSessionActive('Test');
+pauseTTSSession();
+resumeTTSSession();
+clearTTSSession();
+assert.equal(actionRegistrations, 0, 'TTS must not claim global OS controls used by external music players');
+assert.equal(stopped, 0); assert.equal(pausedCount, 0); assert.equal(resumed, 0);
+console.log('Speech media: app-local state passed without claiming OS media controls.');

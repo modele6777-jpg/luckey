@@ -25,7 +25,9 @@ test('speech, resume, BGM and compatibility entry points always retain nonexclus
     pause() { this.paused = true; }
     async play() { plays++; this.paused = false; queueMicrotask(() => this.dispatchEvent(new Event('playing'))); }
   }
-  const doc = Object.assign(new EventTarget(), { visibilityState: 'visible' });
+  let visibility = 'visible';
+  const doc = new EventTarget();
+  Object.defineProperty(doc, 'visibilityState', { configurable: true, get: () => visibility });
   const win = Object.assign(new EventTarget(), { AudioContext: Context });
   const originals = new Map(['window', 'navigator', 'document', 'Audio'].map(key => [key, Object.getOwnPropertyDescriptor(globalThis, key)]));
   Object.defineProperty(globalThis, 'navigator', { configurable: true, value: { audioSession: { get type() { return type; }, set type(value) { type = value; } }, userActivation: { isActive: false } } });
@@ -43,6 +45,9 @@ test('speech, resume, BGM and compatibility entry points always retain nonexclus
     audio.currentTime = 1.25;
     pauseTTSAudio();
     assert.equal(audio.paused, true);
+    visibility = 'hidden';
+    doc.dispatchEvent(new Event('visibilitychange'));
+    visibility = 'visible';
     doc.dispatchEvent(new Event('visibilitychange'));
     assert.equal(plays, 1, 'returning must not override an explicit user pause');
     type = 'auto'; // Model a browser resetting the category between playback calls.
@@ -54,9 +59,16 @@ test('speech, resume, BGM and compatibility entry points always retain nonexclus
     const second = playTTSAudio(Buffer.alloc(48000).toString('base64'), 'pcm', 24000, undefined, true);
     assert.equal(getSpeechMediaElement() as unknown, audio);
     assert.equal(loads, 0, 'chunk transitions must not clear/load the shared native element');
-    audio.pause();
+    visibility = 'hidden';
     doc.dispatchEvent(new Event('visibilitychange'));
-    assert.equal(audio.paused, true, 'visibility changes must not restart paused audio or reclaim external audio focus');
+    const interruptedAt = audio.currentTime;
+    audio.pause();
+    const playCountBeforeRecovery = plays;
+    visibility = 'visible';
+    doc.dispatchEvent(new Event('visibilitychange'));
+    assert.equal(audio.paused, false, 'a native pause observed across a hidden/visible transition should resume');
+    assert.equal(plays, playCountBeforeRecovery + 1);
+    assert.equal(audio.currentTime, interruptedAt, 'background recovery must continue at the current native media position');
     stopTTSPlayback(); await second;
     assert.equal(type, 'ambient'); assert.equal(audio.paused, true); assert.equal(audio.src, '');
   } finally {

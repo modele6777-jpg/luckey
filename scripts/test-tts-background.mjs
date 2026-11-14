@@ -52,8 +52,11 @@ const { outputFiles } = await build({
       const second = playTTSAudio(encoded, 'pcm', 24000, undefined, true, undefined, () => secondPlaying());
       await secondStarted;
       if (audio !== getTTSAudioElement() || loads !== 0) throw Error('Chunk transition reinitialized native player');
+      visibility = 'hidden';
+      document.dispatchEvent(new Event('visibilitychange'));
       audio.pause();
       const interruptedAt = audio.currentTime;
+      visibility = 'visible';
       document.dispatchEvent(new Event('visibilitychange'));
       await wait(300);
       if (audio.paused || audio.currentTime < interruptedAt + 0.1) throw Error('System interruption did not recover');

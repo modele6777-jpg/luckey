@@ -8,6 +8,7 @@ let finish: (() => void) | null = null;
 let active = false;
 let paused = false;
 let playbackFailure: (() => void) | null = null;
+let pageWasHidden = false;
 export function getSpeechMediaElement(): HTMLAudioElement {
   if (!player) {
     player = new Audio();
@@ -59,6 +60,19 @@ export function resumeSpeechMedia() {
     void player.play().catch(() => failed?.());
   }
 }
+
+/** Resume only a native-media interruption observed across a hidden/visible transition. */
+export function handleSpeechPageVisibility(isVisible: boolean): void {
+  if (!isVisible) {
+    pageWasHidden = true;
+    return;
+  }
+  if (!pageWasHidden) return;
+  pageWasHidden = false;
+  if (!active || paused || !player || player.ended || !player.paused) return;
+  resumeSpeechMedia();
+}
+
 export function playSpeechMedia(bytes: Uint8Array, encoding: string, sampleRate: number, onPlaying?: () => void): Promise<void> {
   // Settle the old chunk without clearing/reloading the shared media element.
   // Safari may release its background session if src is removed between chunks.
