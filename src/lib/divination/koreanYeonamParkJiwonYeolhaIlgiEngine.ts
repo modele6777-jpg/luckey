@@ -8,12 +8,20 @@
  * 4. 북학개방 문물 수용 혜안(北學開放 視野 慧眼): 좁은 소중화 명분론의 우물 안 개구리를 벗어나, 천하의 뛰어난 문물과 제도를 편견 없이 관찰하고 배움으로써 시대를 혁신하는 광활한 안목.
  * 5. 위선 타파 해학·풍자 여유도(諧謔的 餘裕度): <호질(虎叱)>, <허생전(許生傳)> 등에서 번뜩이는 사대부의 가식과 허위의식을 단칼에 무너뜨리는 호탕한 유머와 통쾌한 해학적 여유.
  *
- * @version LUCKEY-YEONAM-PARK-JIWON-YEOLHA-ILGI-v1.0.0
+ * @version LUCKEY-YEONAM-PARK-JIWON-YEOLHA-ILGI-v1.1.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const KOREAN_YEONAM_PARK_JIWON_VERSION = 'LUCKEY-YEONAM-PARK-JIWON-YEOLHA-ILGI-v1.0.0';
+export const KOREAN_YEONAM_PARK_JIWON_VERSION = 'LUCKEY-YEONAM-PARK-JIWON-YEOLHA-ILGI-v1.1.0';
+
+export type YeonamQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
+
+export interface YeonamTemporalRhythm {
+  kstSlot: string;
+  phaseLabel: string;
+  rhythmDirective: string;
+}
 
 export interface YeonamTheme {
   themeKey: string;
@@ -34,7 +42,9 @@ export interface YeonamAphorism {
 export interface YeonamParkJiwonYeolhaIlgiResult {
   engineVersion: string;
   calculatedAtKst: string;
-  // 5대 핵심 연암 박지원 실학·일야구도 지표 (0~100)
+  questionTopic: YeonamQuestionTopic;
+  temporalYeonamRhythm: YeonamTemporalRhythm;
+  // 5대 핵심 연암 박지원 실학·일야구도 지표 (내부 정성 변환용)
   nightCrossingRiverSerenityScore: number;  // 일야구도 심령 평정심 (一夜九渡 心靈 平靜心)
   beopgoChangsinCreativeWisdomScore: number; // 법고창신 창조적 혁신도 (法古創新 創造的 智慧度)
   iyongHusaengPracticalCompetenceScore: number; // 이용후생 실사구시 역량 (利用厚生 實事求是 力量)
@@ -43,6 +53,9 @@ export interface YeonamParkJiwonYeolhaIlgiResult {
   // 세부 분석
   activeYeonamTheme: YeonamTheme;
   focalYeonamAphorism: YeonamAphorism;
+  dailyPracticeRitual: string;
+  reflectiveQuestion: string;
+  interpretiveBoundary: string;
   yeonamComprehensiveGuidance: {
     guidanceTitle: string;
     philosophicalCounsel: string;
@@ -125,8 +138,60 @@ export const YEONAM_APHORISMS: YeonamAphorism[] = [
   },
 ];
 
+function classifyYeonamQuestionTopic(question?: string): YeonamQuestionTopic {
+  const q = (question ?? '').toLowerCase();
+  if (/연애|사랑|사람|관계|친구|가족|동료|갈등|이별|결혼|상대/.test(q)) return 'relationship';
+  if (/결정|선택|진로|이직|사업|투자|시험|공부|합격|도전|방향|계획/.test(q)) return 'decision';
+  if (/불안|힘들|지치|우울|회복|위로|휴식|건강|마음|치유|고민/.test(q)) return 'healing';
+  return 'reflection';
+}
+
+function buildYeonamTemporalRhythm(now?: Date): YeonamTemporalRhythm {
+  const base = now ?? new Date();
+  const kst = new Date(base.getTime() + 9 * 60 * 60 * 1000);
+  const hour = kst.getUTCHours();
+  const hh = String(hour).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  const kstSlot = `${hh}:${mm} KST`;
+
+  if (hour >= 5 && hour < 11) {
+    return {
+      kstSlot,
+      phaseLabel: '새벽 도강(晨渡) · 명징한 출발',
+      rhythmDirective: '아침 첫 물결을 가르며 강을 건너듯, 잡념을 덜어내고 오늘 실질적으로 쓰일 한 가지를 정돈할 때입니다.',
+    };
+  }
+  if (hour >= 11 && hour < 17) {
+    return {
+      kstSlot,
+      phaseLabel: '백주 경세(白晝) · 이용후생 실천',
+      rhythmDirective: '탁상공론 대신 눈앞의 도구와 일상을 개선하는 구체적 행동이 가장 빛나는 시간대입니다.',
+    };
+  }
+  if (hour >= 17 && hour < 22) {
+    return {
+      kstSlot,
+      phaseLabel: '황혼 담소(黃昏) · 해학과 여유',
+      rhythmDirective: '낮의 긴장을 유쾌한 웃음으로 풀어내며, 다른 시선과 새로운 배움을 편견 없이 받아들이기 좋습니다.',
+    };
+  }
+  return {
+    kstSlot,
+    phaseLabel: '일야구도(一夜九渡) · 내면의 평정',
+    rhythmDirective: '어둠 속 물소리에 흔들리지 않고 마음의 중심을 고요히 가라앉혀 본질을 응시하는 밤의 시간입니다.',
+  };
+}
+
+function describeYeonamStage(score: number, high: string, mid: string, base: string): string {
+  if (score >= 90) return high;
+  if (score >= 80) return mid;
+  return base;
+}
+
 export function calculateYeonamParkJiwonYeolhaIlgi(
-  profile: UserProfile
+  profile: UserProfile,
+  question?: string,
+  now?: Date,
 ): YeonamParkJiwonYeolhaIlgiResult {
   const p = profile as any;
   const name = profile?.basic?.name ?? p?.name ?? '방문자';
@@ -134,7 +199,9 @@ export function calculateYeonamParkJiwonYeolhaIlgi(
   const birthTime = profile?.basic?.birthtime ?? p?.birthTime ?? p?.birthtime ?? '12:00';
   const gender = profile?.basic?.gender ?? p?.gender ?? 'neutral';
 
-  const seedString = `YEONAM-PARK-JIWON-YEOLHA-ILGI:${name}:${birthDate}:${birthTime}:${gender}`;
+  const questionTopic = classifyYeonamQuestionTopic(question);
+  const temporalYeonamRhythm = buildYeonamTemporalRhythm(now);
+  const seedString = `YEONAM-PARK-JIWON-YEOLHA-ILGI:${name}:${birthDate}:${birthTime}:${gender}:${questionTopic}`;
 
   let hash = 0;
   for (let i = 0; i < seedString.length; i++) {
@@ -149,21 +216,41 @@ export function calculateYeonamParkJiwonYeolhaIlgi(
   const bukhakOpenMindedInsightScore = 72 + ((absHash >> 9) % 27);
   const haehakSatiricalGenerosityQuotient = 71 + ((absHash >> 12) % 28);
 
-  const themeIndex = (absHash >> 4) % YEONAM_THEMES.length;
-  const aphorismIndex = (absHash >> 7) % YEONAM_APHORISMS.length;
+  const topicThemeOffset =
+    questionTopic === 'decision' ? 1 :
+    questionTopic === 'healing' ? 0 :
+    questionTopic === 'relationship' ? 4 : 3;
+  const themeIndex = ((absHash >> 4) + topicThemeOffset) % YEONAM_THEMES.length;
+  const aphorismIndex = ((absHash >> 7) + topicThemeOffset) % YEONAM_APHORISMS.length;
 
   const activeYeonamTheme = YEONAM_THEMES[themeIndex];
   const focalYeonamAphorism = YEONAM_APHORISMS[aphorismIndex];
 
+  const ritualByTopic: Record<YeonamQuestionTopic, string> = {
+    relationship: '상대의 체면이나 직함 대신 오늘 나눈 진심 어린 말 한마디를 떠올리고, 무거운 긴장을 푸는 가벼운 유머로 거리를 좁히십시오.',
+    decision: '거창한 명분보다 당장 오늘 손에 잡히고 삶을 편하게 해 줄 실질적인 선택지 하나를 종이에 적어 실행에 옮기십시오.',
+    healing: '눈을 감고 거친 물소리 대신 호흡의 고요한 리듬에 집중하며, 바깥의 소음을 잠시 마음 밖으로 흘려보내십시오.',
+    reflection: '익숙한 내 방식에서 한 걸음 비켜서서, 평소 지나쳤던 낯선 분야나 작은 경험 속에서 오늘 건져 올릴 배움 하나를 찾아보십시오.',
+  };
+
+  const questionByTopic: Record<YeonamQuestionTopic, string> = {
+    relationship: '지금 이 관계에서 겉치레 체면을 내려놓는다면 어떤 솔직한 온기가 살아날까요?',
+    decision: '지금 내 선택은 남에게 보이기 위한 명분인가요, 아니면 내 삶을 실제로 이롭게 하는 방편인가요?',
+    healing: '지금 나를 두렵게 하는 소리는 실제 위협인가요, 아니면 내 마음이 키운 물소리인가요?',
+    reflection: '오늘 내가 깨진 기와 조각처럼 가볍게 여겨 지나친 경험 속에 숨어 있는 쓰임은 무엇일까요?',
+  };
+
   const guidanceTitle = `연암 박지원 열하일기 실학 지혜: ${activeYeonamTheme.themeTitleKo}`;
   const philosophicalCounsel = `연암 박지원 선생의 실학 정신은 외물의 소음과 두려움을 비워내어 격류를 건너는 일야구도의 담대함과 낡은 틀을 깨고 혁신을 일구는 법고창신의 지혜를 선사합니다. ` +
-    `현재 당신의 삶을 인도하는 핵심 원리는 '${activeYeonamTheme.themeTitleKo}'입니다. ` +
+    `현재 질문의 흐름(${temporalYeonamRhythm.phaseLabel})을 비추는 핵심 원리는 '${activeYeonamTheme.themeTitleKo}'입니다. ` +
     `${activeYeonamTheme.practicalCounsel} 아울러 《열하일기》의 통쾌한 가르침 "${focalYeonamAphorism.aphorismKo}"(${focalYeonamAphorism.aphorismHanja})을 가슴 깊이 새기며, ` +
     `${focalYeonamAphorism.actionGuidance}`;
 
   return {
     engineVersion: KOREAN_YEONAM_PARK_JIWON_VERSION,
-    calculatedAtKst: new Date().toISOString(),
+    calculatedAtKst: (now ?? new Date()).toISOString(),
+    questionTopic,
+    temporalYeonamRhythm,
     nightCrossingRiverSerenityScore,
     beopgoChangsinCreativeWisdomScore,
     iyongHusaengPracticalCompetenceScore: 이용HusaengScore,
@@ -171,6 +258,9 @@ export function calculateYeonamParkJiwonYeolhaIlgi(
     haehakSatiricalGenerosityQuotient,
     activeYeonamTheme,
     focalYeonamAphorism,
+    dailyPracticeRitual: ritualByTopic[questionTopic],
+    reflectiveQuestion: questionByTopic[questionTopic],
+    interpretiveBoundary: '열하일기의 사유는 우열을 수치로 재단하지 않으며, 질문자의 시선과 일상의 실용을 비추는 문학적·실학적 은유로만 활용합니다.',
     yeonamComprehensiveGuidance: {
       guidanceTitle,
       philosophicalCounsel,
@@ -180,18 +270,23 @@ export function calculateYeonamParkJiwonYeolhaIlgi(
 
 export function formatYeonamParkJiwonYeolhaIlgiPrompt(res: YeonamParkJiwonYeolhaIlgiResult): string {
   return [
-    `【연암 박지원 《열하일기》 일야구도 & 이용후생·법고창신 실학 지표】`,
-    `- 일야구도 심령 평정심(一夜九渡): ${res.nightCrossingRiverSerenityScore}/100`,
-    `- 법고창신 창조적 혁신도(法古創新): ${res.beopgoChangsinCreativeWisdomScore}/100`,
-    `- 이용후생 실사구시 역량(利用厚生): ${res.iyongHusaengPracticalCompetenceScore}/100`,
-    `- 북학개방 문물 수용 혜안(北學開放): ${res.bukhakOpenMindedInsightScore}/100`,
-    `- 위선 타파 해학·풍자 여유도(諧謔破僞): ${res.haehakSatiricalGenerosityQuotient}/100`,
+    `【연암 박지원 《열하일기》 일야구도 & 이용후생·법고창신 실학 지표 (정성 성찰)】`,
+    `- 질문 맥락 및 시공간 리듬: [${res.questionTopic}] · ${res.temporalYeonamRhythm.kstSlot} (${res.temporalYeonamRhythm.phaseLabel})`,
+    `- 시공간 지침: ${res.temporalYeonamRhythm.rhythmDirective}`,
+    `- 일야구도 심령 평정(一夜九渡): ${describeYeonamStage(res.nightCrossingRiverSerenityScore, '격류 속에서도 고요한 중심을 지키는 담대한 평정', '외부 소음을 가라앉히고 중심을 잡는 안정기', '불안의 물소리를 인식하며 마음을 정돈하는 시기')}`,
+    `- 법고창신 창조적 지혜(法古創新): ${describeYeonamStage(res.beopgoChangsinCreativeWisdomScore, '근본 위에서 과감히 새 길을 여는 창조적 파격', '옛 지혜와 새 시도를 균형 있게 잇는 조화', '기본기를 다지며 변화의 실마리를 찾는 단계')}`,
+    `- 이용후생 실사구시(利用厚生): ${describeYeonamStage(res.iyongHusaengPracticalCompetenceScore, '명분보다 삶의 실질적 유익을 빚어내는 실행력', '일상의 편의를 차근차근 개선하는 현실 감각', '추상적 고민을 구체적 생활 과제로 옮기는 시기')}`,
+    `- 북학개방 열린 혜안(北學開放): ${describeYeonamStage(res.bukhakOpenMindedInsightScore, '편견 없이 낯선 배움을 흡수하는 광활한 안목', '새로운 관점을 유연하게 살피는 열린 태도', '익숙한 틀 너머를 천천히 탐색하는 시기')}`,
+    `- 위선 타파 해학·여유(諧謔破僞): ${describeYeonamStage(res.haehakSatiricalGenerosityQuotient, '무거운 긴장을 웃음으로 녹여내는 호탕한 여유', '상황을 한 걸음 떨어져 바라보는 유쾌한 균형', '지나친 엄숙함을 내려놓고 숨을 고르는 시기')}`,
     `- 핵심 실학 테마: ${res.activeYeonamTheme.themeTitleKo} [${res.activeYeonamTheme.themeTitleHanja}]`,
     `- 실학적 통찰: ${res.activeYeonamTheme.silhakInsight}`,
     `- 실천적 조언: ${res.activeYeonamTheme.practicalCounsel}`,
     `- 핵심 경구: "${res.focalYeonamAphorism.aphorismKo}"`,
     `- 원전 출처: "${res.focalYeonamAphorism.aphorismHanja}" [${res.focalYeonamAphorism.sourceContext}]`,
     `- 구체적 실천 지침: ${res.focalYeonamAphorism.actionGuidance}`,
+    `- 오늘의 실천 의례: ${res.dailyPracticeRitual}`,
+    `- 핵심 성찰 질문: ${res.reflectiveQuestion}`,
+    `- 해석 경계: ${res.interpretiveBoundary}`,
     `- 종합 실학사상 권면: ${res.yeonamComprehensiveGuidance.philosophicalCounsel}`,
   ].join('\n');
 }

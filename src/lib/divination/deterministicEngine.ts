@@ -2812,7 +2812,7 @@ try {
   // 165. 조선 비전 정감록 10승지 영맥·궁궁을을 지기 보신 피난처 엔진
   const chonggamnokTenSanctuariesResult = calculateSupplement('chonggamnokTenSanctuariesResult', () => ((() => {
     try {
-      return calculateChonggamnokTenSanctuaries(profile);
+      return calculateChonggamnokTenSanctuaries(profile, question, now);
     } catch (_) {
       return null;
     }
@@ -3586,7 +3586,7 @@ try {
   // 251. 조선 연암 박지원 열하일기 도강록 일야구도 & 이용후생·법고창신 실학 지혜 엔진
   const yeonamParkJiwonYeolhaIlgiResult = calculateSupplement('yeonamParkJiwonYeolhaIlgiResult', () => ((() => {
     try {
-      return calculateYeonamParkJiwonYeolhaIlgi(profile);
+      return calculateYeonamParkJiwonYeolhaIlgi(profile, question, now);
     } catch (_) {
       return null;
     }
@@ -3883,7 +3883,7 @@ try {
   // 284. 대한민국 백사 이항복 & 한음 이덕형 《오성과 한음》 지기지우 & 경세제민 지혜 엔진
   const koreanOhseongHaneumFriendshipGovernanceResult = calculateSupplement('koreanOhseongHaneumFriendshipGovernanceResult', () => ((() => {
     try {
-      return calculateKoreanOhseongHaneumFriendshipGovernance(profile);
+      return calculateKoreanOhseongHaneumFriendshipGovernance(profile, question, now);
     } catch (_) {
       return null;
     }
@@ -4854,7 +4854,7 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'gaelicWheelFireFestivals', nameKo: '게일 4대 화제 축제 휠 오브 더 이어', icon: '🔥', category: 'deep_master' },
   { key: 'norseHavamalEighteenGaldr', nameKo: '하바말 오딘 18대 게알드르 룬 비전', icon: 'ᚱ', category: 'deep_master' },
   { key: 'ibnArabiWahdatAlWujud', nameKo: '이븐 아라비 존재의 단일성 심장 영지', icon: '🪞', category: 'deep_master' },
-  { key: 'chonggamnokTenSanctuaries', nameKo: '정감록 10승지 영맥 피난처', icon: '⛰️', category: 'deep_master' },
+  { key: 'chonggamnokTenSanctuaries', nameKo: '정감록 10승지 영맥 피난처', icon: '⛰️', category: 'deep_master', summary: '《정감록》 감결의 궁궁을을과 10승지 영맥 비유로 세파 속에서도 내면의 중심과 평온한 안식처를 지키는 성찰을 이끕니다.' },
   { key: 'balineseTriHitaKarana', nameKo: '발리 트리 히타 카라나 3대 조화', icon: '🌺', category: 'deep_master' },
   { key: 'hopiFourWorldsKachina', nameKo: '호피 4대 세계 카치나 정령 지혜', icon: '🦅', category: 'deep_master' },
   { key: 'donghakCheondoismCheonju', nameKo: '동학 시천주 지기금지 인내천 조화', icon: '🕊️', category: 'deep_master' },

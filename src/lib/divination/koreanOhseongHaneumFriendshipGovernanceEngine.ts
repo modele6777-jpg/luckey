@@ -9,12 +9,20 @@
  * 4. 당쟁 초월 공명정대 및 청백리 공심 지표(Anti-Factional Impartiality & Integrity Score): 붕당의 사리사욕을 떠나 오직 나라와 백성을 우선한 공정성.
  * 5. 불굴의 의리 및 의연한 선비 품격도(Unyielding Fidelity & Dignified Grace Index): 폐모론에 맞선 직언과 북청 유배길에서도 품격을 지킨 불굴의 기개.
  *
- * @version LUCKEY-OHSEONG-HANEUM-FRIENDSHIP-v1.0.0
+ * @version LUCKEY-OHSEONG-HANEUM-FRIENDSHIP-v1.1.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const KOREAN_OHSEONG_HANEUM_VERSION = 'LUCKEY-OHSEONG-HANEUM-FRIENDSHIP-v1.0.0';
+export const KOREAN_OHSEONG_HANEUM_VERSION = 'LUCKEY-OHSEONG-HANEUM-FRIENDSHIP-v1.1.0';
+
+export type OhseongHaneumQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
+
+export interface OhseongHaneumTemporalRhythm {
+  kstSlot: string;
+  phaseLabel: string;
+  rhythmDirective: string;
+}
 
 export interface OhseongHaneumTheme {
   themeKey: string;
@@ -35,7 +43,9 @@ export interface OhseongHaneumAphorism {
 export interface KoreanOhseongHaneumFriendshipGovernanceResult {
   engineVersion: string;
   calculatedAtKst: string;
-  // 5대 핵심 오성과 한음 지혜 지표 (0~100)
+  questionTopic: OhseongHaneumQuestionTopic;
+  temporalOhseongHaneumRhythm: OhseongHaneumTemporalRhythm;
+  // 5대 핵심 오성과 한음 지혜 지표 (내부 정성 변환용)
   lifelongMoralFriendshipTrustIndex: number;    // 지기지우 평생 상호 신뢰 및 도의적 우정 지수 (Friendship & Mutual Trust)
   crisisGovernanceStatesmanshipScore: number;   // 국난 극복 경세제민 및 위기 대응 경륜 (Crisis Governance & Statesmanship)
   humorWitMagnanimityResilienceIndex: number;   // 해학·위트 및 활달한 배포 회복탄력성 (Humor, Wit & Magnanimous Resilience)
@@ -44,6 +54,9 @@ export interface KoreanOhseongHaneumFriendshipGovernanceResult {
   // 세부 분석
   activeOhseongHaneumTheme: OhseongHaneumTheme;
   focalOhseongHaneumAphorism: OhseongHaneumAphorism;
+  dailyPracticeRitual: string;
+  reflectiveQuestion: string;
+  interpretiveBoundary: string;
   ohseongHaneumComprehensiveGuidance: {
     guidanceTitle: string;
     philosophicalCounsel: string;
@@ -126,9 +139,60 @@ export const OHSEONG_HANEUM_APHORISMS: OhseongHaneumAphorism[] = [
   },
 ];
 
+function classifyOhseongHaneumQuestionTopic(query?: string): OhseongHaneumQuestionTopic {
+  const q = (query ?? '').toLowerCase();
+  if (/연애|사랑|사람|관계|친구|가족|동료|갈등|이별|결혼|상대|우정/.test(q)) return 'relationship';
+  if (/결정|선택|진로|이직|사업|투자|시험|공부|합격|도전|방향|계획/.test(q)) return 'decision';
+  if (/불안|힘들|지치|우울|회복|위로|휴식|건강|마음|치유|고민/.test(q)) return 'healing';
+  return 'reflection';
+}
+
+function buildOhseongHaneumTemporalRhythm(now?: Date): OhseongHaneumTemporalRhythm {
+  const base = now ?? new Date();
+  const kst = new Date(base.getTime() + 9 * 60 * 60 * 1000);
+  const hour = kst.getUTCHours();
+  const hh = String(hour).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  const kstSlot = `${hh}:${mm} KST`;
+
+  if (hour >= 5 && hour < 11) {
+    return {
+      kstSlot,
+      phaseLabel: '조정 정론(朝廷正論) · 공정한 출발',
+      rhythmDirective: '아침 첫 업무를 열 듯 편견 없이 사실을 살피고, 함께 일하는 이들과 신의를 다지기 좋은 시간입니다.',
+    };
+  }
+  if (hour >= 11 && hour < 17) {
+    return {
+      kstSlot,
+      phaseLabel: '경세실천(經世實踐) · 위기 돌파',
+      rhythmDirective: '명분보다 실질적인 해법을 우선하여 얽힌 과제를 과감하고 유연하게 풀어낼 때입니다.',
+    };
+  }
+  if (hour >= 17 && hour < 22) {
+    return {
+      kstSlot,
+      phaseLabel: '백사담소(白沙談笑) · 해학과 우정',
+      rhythmDirective: '낮의 팽팽한 긴장을 유쾌한 농담과 따뜻한 안부로 녹이며 지기지우의 온기를 나누기 좋은 저녁입니다.',
+    };
+  }
+  return {
+    kstSlot,
+    phaseLabel: '북청 충절(北靑忠節) · 고요한 기개',
+    rhythmDirective: '깊은 밤 외부의 시선에서 벗어나 내면의 원칙과 의리를 조용히 되새기는 시간입니다.',
+  };
+}
+
+function describeOhseongStage(score: number, high: string, mid: string, base: string): string {
+  if (score >= 92) return high;
+  if (score >= 86) return mid;
+  return base;
+}
+
 export function calculateKoreanOhseongHaneumFriendshipGovernance(
   profile?: UserProfile,
   query?: string,
+  now?: Date,
 ): KoreanOhseongHaneumFriendshipGovernanceResult {
   const p = profile as any;
   const name = profile?.basic?.name ?? p?.name ?? '남희';
@@ -136,7 +200,9 @@ export function calculateKoreanOhseongHaneumFriendshipGovernance(
   const birthTime = profile?.basic?.birthtime ?? p?.birthTime ?? p?.birthtime ?? '12:00';
   const gender = profile?.basic?.gender ?? p?.gender ?? 'neutral';
 
-  const seedString = `OHSEONG-HANEUM-FRIENDSHIP:${name}:${birthDate}:${birthTime}:${gender}:${query ?? ''}`;
+  const questionTopic = classifyOhseongHaneumQuestionTopic(query);
+  const temporalOhseongHaneumRhythm = buildOhseongHaneumTemporalRhythm(now);
+  const seedString = `OHSEONG-HANEUM-FRIENDSHIP:${name}:${birthDate}:${birthTime}:${gender}:${questionTopic}:${query ?? ''}`;
 
   let hash = 0;
   for (let i = 0; i < seedString.length; i++) {
@@ -151,21 +217,41 @@ export function calculateKoreanOhseongHaneumFriendshipGovernance(
   const antiFactionalImpartialityScore = 80 + ((absHash >> 9) % 19);
   const unyieldingFidelityGraceIndex = 84 + ((absHash >> 12) % 15);
 
-  const themeIndex = (absHash >> 5) % OHSEONG_HANEUM_THEMES.length;
-  const aphorismIndex = (absHash >> 8) % OHSEONG_HANEUM_APHORISMS.length;
+  const topicOffset =
+    questionTopic === 'relationship' ? 0 :
+    questionTopic === 'decision' ? 1 :
+    questionTopic === 'healing' ? 2 : 3;
+  const themeIndex = ((absHash >> 5) + topicOffset) % OHSEONG_HANEUM_THEMES.length;
+  const aphorismIndex = ((absHash >> 8) + topicOffset) % OHSEONG_HANEUM_APHORISMS.length;
 
   const activeOhseongHaneumTheme = OHSEONG_HANEUM_THEMES[themeIndex];
   const focalOhseongHaneumAphorism = OHSEONG_HANEUM_APHORISMS[aphorismIndex];
 
+  const ritualByTopic: Record<OhseongHaneumQuestionTopic, string> = {
+    relationship: '믿고 의지할 수 있는 벗이나 동료에게 짧은 안부를 전하고, 체면보다 솔직하고 유쾌한 마음 한 줄을 나누십시오.',
+    decision: '편 가르기나 눈치 보기 대신, 지금 공동체와 나 모두에게 가장 실질적이고 공정한 해결책 하나를 선택하십시오.',
+    healing: '스스로를 너무 무겁게 다그치지 말고, 백사 이항복처럼 고단한 순간에도 미소 지을 수 있는 작은 여유를 허용하십시오.',
+    reflection: '주변의 찬반이나 이해득실이 잦아든 자리에서, 내가 끝까지 지키고 싶은 신의와 품격의 기준을 돌아보십시오.',
+  };
+
+  const questionByTopic: Record<OhseongHaneumQuestionTopic, string> = {
+    relationship: '지금 내 곁에서 말없이도 마음이 통하는 진정한 동반자에게 나는 어떤 신의를 보여주고 있나요?',
+    decision: '지금 고민하는 선택은 당장의 편의를 위한 것인가요, 아니면 나중에 돌아보아도 당당한 공심(公心)의 선택인가요?',
+    healing: '지금 나를 짓누르는 무게를 웃음과 배포로 한 번 가볍게 털어낸다면 무엇이 가장 먼저 보일까요?',
+    reflection: '어려운 형편 속에서도 내가 끝내 굽히지 않고 지켜 온 나만의 선비적 품격은 무엇인가요?',
+  };
+
   const guidanceTitle = `오성과 한음 지혜: ${activeOhseongHaneumTheme.themeTitleKo}`;
   const philosophicalCounsel = `조선 중기 국난 극복의 두 명재상 백사 이항복과 한음 이덕형은 평생의 도의적 신의(知己之友), 위기 앞의 실전적 경세제민, 그리고 해학과 활달한 배포를 가르칩니다. ` +
-    `현재 당신의 상황에서 가장 필요한 핵심 덕목은 '${activeOhseongHaneumTheme.themeTitleKo}'입니다. ` +
+    `현재 질문의 흐름(${temporalOhseongHaneumRhythm.phaseLabel})에서 가장 빛나는 핵심 덕목은 '${activeOhseongHaneumTheme.themeTitleKo}'입니다. ` +
     `${activeOhseongHaneumTheme.practicalCounsel} 오성과 한음의 교훈 "${focalOhseongHaneumAphorism.aphorismKo}"를 되새기며, ` +
     `${focalOhseongHaneumAphorism.actionGuidance}`;
 
   return {
     engineVersion: KOREAN_OHSEONG_HANEUM_VERSION,
-    calculatedAtKst: new Date().toISOString(),
+    calculatedAtKst: (now ?? new Date()).toISOString(),
+    questionTopic,
+    temporalOhseongHaneumRhythm,
     lifelongMoralFriendshipTrustIndex,
     crisisGovernanceStatesmanshipScore,
     humorWitMagnanimityResilienceIndex,
@@ -173,6 +259,9 @@ export function calculateKoreanOhseongHaneumFriendshipGovernance(
     unyieldingFidelityGraceIndex,
     activeOhseongHaneumTheme,
     focalOhseongHaneumAphorism,
+    dailyPracticeRitual: ritualByTopic[questionTopic],
+    reflectiveQuestion: questionByTopic[questionTopic],
+    interpretiveBoundary: '오성과 한음의 일화와 경륜은 인물의 우열을 점수화하지 않으며, 관계의 신의와 위기 대처의 품격을 비추는 인문적 성찰 틀로만 활용합니다.',
     ohseongHaneumComprehensiveGuidance: {
       guidanceTitle,
       philosophicalCounsel,
@@ -184,12 +273,14 @@ export function formatKoreanOhseongHaneumFriendshipGovernancePrompt(
   res: KoreanOhseongHaneumFriendshipGovernanceResult,
 ): string {
   return [
-    `【오성과 한음(이항복·이덕형) 지기지우 & 경세제민 지혜 지표】`,
-    `- 지기지우 상호 신뢰 및 도의적 우정 지수(Lifelong Moral Friendship): ${res.lifelongMoralFriendshipTrustIndex}/100`,
-    `- 국난 극복 경세제민 및 위기 대응 경륜(Crisis Governance & Statesmanship): ${res.crisisGovernanceStatesmanshipScore}/100`,
-    `- 해학·위트 및 활달한 배포 회복탄력성(Humor & Magnanimous Resilience): ${res.humorWitMagnanimityResilienceIndex}/100`,
-    `- 당쟁 초월 공명정대 및 청백리 공심 지표(Anti-Factional Impartiality): ${res.antiFactionalImpartialityScore}/100`,
-    `- 불굴의 의리 및 의연한 선비 품격도(Unyielding Fidelity & Grace): ${res.unyieldingFidelityGraceIndex}/100`,
+    `【오성과 한음(이항복·이덕형) 지기지우 & 경세제민 지혜 지표 (정성 성찰)】`,
+    `- 질문 맥락 및 시공간 리듬: [${res.questionTopic}] · ${res.temporalOhseongHaneumRhythm.kstSlot} (${res.temporalOhseongHaneumRhythm.phaseLabel})`,
+    `- 시공간 지침: ${res.temporalOhseongHaneumRhythm.rhythmDirective}`,
+    `- 지기지우 상호 신뢰와 우정: ${describeOhseongStage(res.lifelongMoralFriendshipTrustIndex, '말하지 않아도 뜻이 통하는 깊고 단단한 신뢰', '서로의 부족함을 감싸며 함께 걷는 온화한 신의', '진심 어린 대화로 신뢰의 다리를 놓아가는 시기')}`,
+    `- 국난 극복 경세제민 경륜: ${describeOhseongStage(res.crisisGovernanceStatesmanshipScore, '명분보다 실질 해법을 세워 위기를 돌파하는 경륜', '상황을 냉철히 짚고 차분히 수습해 가는 안정감', '얽힌 실마리의 우선순위를 정돈하는 단계')}`,
+    `- 해학·위트와 활달한 배포: ${describeOhseongStage(res.humorWitMagnanimityResilienceIndex, '엄중한 고비도 웃음으로 녹여내는 호탕한 여유', '긴장 속에서도 숨통을 틔우는 유연한 기지', '마음의 굳은 긴장을 조금씩 풀어내는 시기')}`,
+    `- 당쟁 초월 공명정대 공심: ${describeOhseongStage(res.antiFactionalImpartialityScore, '사사로운 이해를 넘어 원칙으로 중심을 잡는 공정성', '편향에 흔들리지 않고 균형을 지키는 태도', '감정적 편 가르기를 경계하며 시야를 넓히는 시기')}`,
+    `- 불굴의 의리와 선비 품격: ${describeOhseongStage(res.unyieldingFidelityGraceIndex, '어려운 자리에서도 꺾이지 않는 의연한 기품', '스스로의 도리와 원칙을 묵묵히 지키는 절조', '흔들리는 마음을 원칙 위로 다시 세우는 시기')}`,
     `- 핵심 오성과 한음 테마: ${res.activeOhseongHaneumTheme.themeTitleKo} [${res.activeOhseongHaneumTheme.themeTitleEn}]`,
     `- 실용주의적 통찰: ${res.activeOhseongHaneumTheme.pragmaticInsight}`,
     `- 실천적 조언: ${res.activeOhseongHaneumTheme.practicalCounsel}`,
@@ -197,6 +288,9 @@ export function formatKoreanOhseongHaneumFriendshipGovernancePrompt(
     `- 영문 원전: "${res.focalOhseongHaneumAphorism.aphorismEn}"`,
     `- 원전 출처: [${res.focalOhseongHaneumAphorism.sourceContext}]`,
     `- 구체적 실천 지침: ${res.focalOhseongHaneumAphorism.actionGuidance}`,
+    `- 오늘의 실천 의례: ${res.dailyPracticeRitual}`,
+    `- 핵심 성찰 질문: ${res.reflectiveQuestion}`,
+    `- 해석 경계: ${res.interpretiveBoundary}`,
     `- 종합 오성과 한음 경세 권면: ${res.ohseongHaneumComprehensiveGuidance.philosophicalCounsel}`,
   ].join('\n');
 }
