@@ -1,3 +1,5 @@
+import { hasOpenScreenOverlay } from './components/layout/ScreenPortal';
+import { RetainedPane } from './components/layout/RetainedPane';
 import { OverlayPaneContext } from './components/layout/OverlayPaneContext';
 import { rememberOverlayPane } from './lib/overlayPane';
 import { isLucyThemeRoute } from './lib/lucyDayTheme';
@@ -218,6 +220,15 @@ function ChannelPage({ location }: { location: string }) {
   );
 }
 
+/** Keep the Lucy component identity stable even when the display folds. */
+function LegacyLucyRoute({ location }: { location: string }) {
+  const [, navigate] = useLocation();
+  React.useEffect(() => {
+    if (location === '/chat/pro') navigate('/chat', { replace: true });
+  }, [location, navigate]);
+  return <LucyStandalonePage />;
+}
+
 function GlobalTTSScroll() {
   useSmartScroll();
   return null;
@@ -311,7 +322,9 @@ function AppContent() {
           setFoldedCosmicRoom(true);
         } else {
           setFoldedCosmicRoom(false);
-          if (cover.navigateTo) navigate(cover.navigateTo);
+          // A fold-driven route change would destroy the channel's live dialogs.
+          // Retain both page trees until the user explicitly navigates instead.
+          if (cover.navigateTo && !hasOpenScreenOverlay()) navigate(cover.navigateTo);
         }
       }
     };
@@ -707,6 +720,8 @@ function AppContent() {
   }, [isUnlocked, sharedState?.themeColor, resolvedTheme]);
 
   const isLucyRoute = location === '/' || location === '/chat' || location === '/lucy' || location === '/chat/pro';
+  const showLucyPane = isDuoUnfolded || (isLucyRoute && !foldedCosmicRoom);
+  const showContentPane = isDuoUnfolded || !showLucyPane;
 
   React.useEffect(() => {
     if (typeof document === 'undefined') return;
@@ -839,14 +854,14 @@ function AppContent() {
       </AnimatePresence>
 
       <main className={`sites-pinned-main flex-1 min-h-0 overflow-x-hidden relative w-full ${isDuoUnfolded ? `duo-dual-view flex ${isDuoPortrait ? 'flex-col' : isDuoPanesSwapped ? 'flex-row-reverse' : 'flex-row'}` : 'flex flex-col'}`}>
-        {isDuoUnfolded ? (
-          <div className={`w-full h-full min-h-0 overflow-hidden flex relative ${isDuoPortrait ? 'flex-col' : isDuoPanesSwapped ? 'flex-row-reverse' : 'flex-row'}`}>
+          <div className={`w-full h-full min-h-0 overflow-hidden flex relative ${!isDuoUnfolded ? 'flex-col' : isDuoPortrait ? 'flex-col' : isDuoPanesSwapped ? 'flex-row-reverse' : 'flex-row'}`}>
             {/* 콘텐츠 뷰포트:
                 - 가로(Landscape): 물리 힌지 기준 기기 절반 (50vw)
                 - 세로(Portrait): 상단 50%
              */}
             <div
-              id="duo-content-viewport"
+              id={isDuoUnfolded ? "duo-content-viewport" : undefined}
+              data-workspace-pane="content"
               onPointerDownCapture={() => {
                 lastTouchedDuoPaneRef.current = mapDuoPaneSide('left', isDuoPanesSwapped);
                 if (!isLucyRoute) lastLeftChannelPathRef.current = location;
@@ -856,22 +871,26 @@ function AppContent() {
                 if (!isLucyRoute) lastLeftChannelPathRef.current = location;
               }}
               style={
-                isDuoPortrait
+                !isDuoUnfolded
+                  ? { display: showContentPane ? 'flex' : 'none', width: '100%', height: '100%', flex: '1 1 0%', minHeight: 0 }
+                  : isDuoPortrait
                   ? { height: '50%', minHeight: '50%', maxHeight: '50%', width: '100%', flex: '0 0 50%' }
                   : { width: '50vw', minWidth: '50vw', maxWidth: '50vw', height: '100%', flex: '0 0 50vw' }
               }
               className="duo-folded-view shrink-0 flex flex-col overflow-hidden relative border-none"
             >
               <OverlayPaneContext.Provider value="content">
-                {isLucyRoute ? (
-                  /* 최우측/최하단 메뉴에서 루시 선택 시 ➔ 코스믹 룸 표출 */
-                  <div className="w-full h-full overflow-hidden flex flex-col">
-                    <DuoCosmicAmbientRoom isLight={isLight} />
-                  </div>
-                ) : (
-                  /* 최우측/최하단 메뉴에서 KEY 또는 럭키 채널 선택 시 ➔ 해당 페이지 표출 */
-                  <ChannelPage location={location} />
-                )}
+                <RetainedPane active={showContentPane}>
+                  {isLucyRoute ? (
+                    /* 최우측/최하단 메뉴에서 루시 선택 시 ➔ 코스믹 룸 표출 */
+                    <div className="w-full h-full overflow-hidden flex flex-col">
+                      <DuoCosmicAmbientRoom isLight={isLight} />
+                    </div>
+                  ) : (
+                    /* 최우측/최하단 메뉴에서 KEY 또는 럭키 채널 선택 시 ➔ 해당 페이지 표출 */
+                    <ChannelPage location={location} />
+                  )}
+                </RetainedPane>
               </OverlayPaneContext.Provider>
             </div>
 
@@ -881,7 +900,8 @@ function AppContent() {
                 - 시간대별 루시 고유 테마(아침·낮·밤) 100% 온전히 반영
              */}
             <div
-              id="duo-lucy-viewport"
+              id={isDuoUnfolded ? "duo-lucy-viewport" : undefined}
+              data-workspace-pane="lucy"
               onPointerDownCapture={() => {
                 lastTouchedDuoPaneRef.current = mapDuoPaneSide('right', isDuoPanesSwapped);
               }}
@@ -889,18 +909,22 @@ function AppContent() {
                 lastTouchedDuoPaneRef.current = mapDuoPaneSide('right', isDuoPanesSwapped);
               }}
               style={
-                isDuoPortrait
+                !isDuoUnfolded
+                  ? { display: showLucyPane ? 'flex' : 'none', width: '100%', height: '100%', flex: '1 1 0%', minHeight: 0 }
+                  : isDuoPortrait
                   ? { height: '50%', minHeight: '50%', maxHeight: '50%', width: '100%', flex: '0 0 50%' }
                   : { flex: '1 1 0px', width: 'calc(50vw - var(--sites-sidebar-width, 80px))', height: '100%' }
               }
               className="shrink-0 min-h-0 flex flex-col overflow-hidden z-10 relative border-none"
             >
               <OverlayPaneContext.Provider value="lucy">
-                <ErrorBoundary>
-                  <React.Suspense fallback={<PageLoader />}>
-                    <LucyStandalonePage />
-                  </React.Suspense>
-                </ErrorBoundary>
+                <RetainedPane active={showLucyPane}>
+                  <ErrorBoundary>
+                    <React.Suspense fallback={<PageLoader />}>
+                      <LegacyLucyRoute location={location} />
+                    </React.Suspense>
+                  </ErrorBoundary>
+                </RetainedPane>
               </OverlayPaneContext.Provider>
             </div>
             {isDuoLandscape && (
@@ -919,13 +943,6 @@ function AppContent() {
               </button>
             )}
           </div>
-        ) : foldedCosmicRoom && isLucyRoute ? (
-          <div className="duo-folded-view w-full h-full min-h-0 flex-1 overflow-hidden flex flex-col">
-            <DuoCosmicAmbientRoom isLight={isLight} />
-          </div>
-        ) : (
-          <ChannelPage location={location} />
-        )}
       </main>
       <OneStopVisitTracker />
       <GlobalScrollToTopOnHeaderTap />
