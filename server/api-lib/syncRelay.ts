@@ -24,6 +24,9 @@ function getVaultVersion(data: any, updatedAt: number): { etag: string; payloadB
   };
 }
 
+const emptyVaultRepresentation = JSON.stringify({ success: false, data: null, updatedAt: 0 });
+const emptyVaultETag = `"${createHash('sha256').update(emptyVaultRepresentation).digest('base64url')}"`;
+
 interface RelayEntry {
   payload: any;
   vaultId: string;
@@ -77,7 +80,7 @@ export function saveVaultData(uid: string, data: any): { success: boolean; updat
 
 export function getVaultData(uid: string): { success: boolean; data: any; updatedAt: number; etag?: string; payloadBytes?: number } {
   if (!uid) {
-    return { success: false, data: null, updatedAt: 0 };
+    return { success: false, data: null, updatedAt: 0, etag: emptyVaultETag, payloadBytes: 0 };
   }
   if (vaultStore.has(uid)) {
     const entry = vaultStore.get(uid)!;
@@ -96,7 +99,7 @@ export function getVaultData(uid: string): { success: boolean; data: any; update
       }
     }
   } catch (_) {}
-  return { success: false, data: null, updatedAt: 0 };
+  return { success: false, data: null, updatedAt: 0, etag: emptyVaultETag, payloadBytes: 0 };
 }
 
 export function ifNoneMatchMatches(ifNoneMatch: string | undefined, etag: string): boolean {
