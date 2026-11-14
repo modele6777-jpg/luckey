@@ -2208,7 +2208,7 @@ try {
   // 97. 도교 종려권·여동빈 종여내단(鍾呂內丹) 3품 선도 & 환원 엔진
   const zhongLuAlchemyResult = calculateSupplement('zhongLuAlchemyResult', () => ((() => {
     try {
-      return calculateZhongLuInnerAlchemy(profile);
+      return calculateZhongLuInnerAlchemy(profile, question);
     } catch (_) {
       return null;
     }
@@ -2271,7 +2271,7 @@ try {
   // 104. 도교 태상감응편 & 공과격 선악 카르마 적선개운 엔진
   const taoistGongGuoGeKarmaResult = calculateSupplement('taoistGongGuoGeKarmaResult', () => ((() => {
     try {
-      return calculateTaoistGongGuoGeKarma(profile);
+      return calculateTaoistGongGuoGeKarma(profile, now, question);
     } catch (_) {
       return null;
     }
