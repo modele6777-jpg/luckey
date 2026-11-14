@@ -2163,15 +2163,27 @@ test('Voice Persona Engine: 스피치 페르소나 및 설득력 치트키 검�
 });
 
 test('Contract Shield Engine: 계약 분쟁 리스크 및 5대 쉴드 체크리스트 검증', () => {
-  const res = calculateContractShield({ profile, targetDate: new Date('2026-11-03T08:00:00+09:00') });
+  const res = calculateContractShield({ profile, targetDate: new Date('2026-11-03T08:00:00+09:00'), question: '새 외주 계약서 서명 전 점검' });
   assert.equal(res.engineVersion, CONTRACT_SHIELD_VERSION);
   assert(res.disputeRiskScore >= 0 && res.disputeRiskScore <= 100);
   assert(res.shieldChecklist.length === 5);
   assert(res.ichingSongWisdom.hexagram.length > 0);
+  assert(res.calculatedAtKst.includes('KST'));
+  assert(res.temporalShieldRhythm.negotiationWindow.length > 0);
   const prompt = formatContractShieldPrompt(res);
   assert(prompt.includes(CONTRACT_SHIELD_VERSION));
-  assert(prompt.includes('분쟁 리스크 지수'));
+  assert(prompt.includes('계약 & 분쟁 경계 기조'));
   assert(prompt.includes('5대 계약 쉴드 체크리스트'));
+  assert(prompt.includes('KST'));
+  assert(!prompt.includes('/100') && !prompt.includes('%') && !prompt.includes('점수'));
+
+  const lugh = calculateLughSamildanach(profile, new Date('2026-11-15T08:25:00+09:00'), '새 프로젝트 시작');
+  assert.equal(lugh.engineVersion, LUGH_SAMILDANACH_VERSION);
+  assert(lugh.calculatedAtKst.includes('KST'));
+  assert(lugh.temporalLughRhythm.taraWatchWindow.length > 0);
+  const lughPrompt = formatLughSamildanachPrompt(lugh);
+  assert(lughPrompt.includes('KST'));
+  assert(!lughPrompt.includes('/100') && !lughPrompt.includes('%') && !lughPrompt.includes('점수'));
 });
 
 test('Life Domain Wheel Engine: 6대 핵심 라이프 도메인 밸런스 휠 검증', () => {

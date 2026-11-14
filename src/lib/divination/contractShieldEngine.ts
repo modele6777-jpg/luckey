@@ -16,7 +16,7 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const CONTRACT_SHIELD_VERSION = 'LUCKEY-SHIELD-v1.0.0';
+export const CONTRACT_SHIELD_VERSION = 'LUCKEY-SHIELD-v2.0.0';
 
 export interface ContractChecklistItem {
   category: string;
@@ -28,8 +28,9 @@ export interface ContractChecklistItem {
 export interface ContractShieldResult {
   engineVersion: string;
   calculatedAtIso: string;
+  calculatedAtKst: string;
 
-  // 계약 & 분쟁 리스크 지수 (0~100, 낮을수록 안전함)
+  // 계약 & 분쟁 리스크 지수 (0~100 내부 호환용, 프롬프트 비노출)
   disputeRiskScore: number;
   riskLevel: 'safe' | 'caution' | 'alert' | 'high_risk';
   riskLevelTitle: string;
@@ -48,8 +49,61 @@ export interface ContractShieldResult {
 
   // 즉각 실천 액션 가이드
   actionProtocol: string;
+  situationalShieldAudit: {
+    focusTheme: string;
+    clauseAlert: string;
+    nextStep: string;
+  };
+  temporalShieldRhythm: {
+    kstTimeLabel: string;
+    negotiationWindow: string;
+    seasonalContractTone: string;
+    temporalGuidance: string;
+  };
+  shieldSynthesisMatrix: {
+    coreInsight: string;
+    recommendedAction: string;
+    cautionNotice: string;
+  };
+  boundaryNotice: string;
 
   summary: string;
+}
+
+function getTemporalShieldRhythm(now: Date) {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  const hour = kst.getUTCHours();
+  const month = kst.getUTCMonth() + 1;
+
+  const negotiationWindow =
+    hour >= 5 && hour < 11
+      ? '아침 초안 검토창 — 감정 개입 없이 조항과 숫자를 가장 명석하게 대조할 수 있는 시간'
+      : hour >= 11 && hour < 17
+        ? '정오 실무 협상창 — 상대와 범위·일정·대금 조건을 문서로 확정하기 좋은 시간'
+        : hour >= 17 && hour < 22
+          ? '황혼 재검토창 — 구두로 오간 내용을 회의록·메일로 정리해 증거를 남길 시간'
+          : '심야 서명 보류창 — 피로한 상태의 즉흥적 서명을 피하고 다음 날 다시 읽어야 할 시간';
+
+  const seasonalContractTone =
+    month >= 3 && month <= 5
+      ? '봄 · 신규 착수절 (SOW 과업 범위와 일정 경계를 분명히 못 박아야 하는 시기)'
+      : month >= 6 && month <= 8
+        ? '여름 · 집행 가속절 (중도금 마일스톤과 검수 기준을 엄격히 챙길 시기)'
+        : month >= 9 && month <= 11
+          ? '가을 · 정산 결실절 (잔금 지급 기한과 IP 귀속 범위를 깔끔히 정리할 시기)'
+          : '겨울 · 재계약·보존절 (책임 상한과 비밀유지 조항을 재점검할 시기)';
+
+  return {
+    kstTimeLabel: `${y}-${m}-${d} ${hh}:${mm} KST`,
+    negotiationWindow,
+    seasonalContractTone,
+    temporalGuidance: `${negotiationWindow} · ${seasonalContractTone}의 원칙을 적용하십시오.`,
+  };
 }
 
 const DEFAULT_SHIELD_CHECKLIST: ContractChecklistItem[] = [
@@ -92,8 +146,10 @@ export function calculateContractShield(params?: {
   profile?: UserProfile | null;
   saju?: SajuAnalysisResult | null;
   targetDate?: Date;
+  question?: string;
 }): ContractShieldResult {
   const now = params?.targetDate || new Date();
+  const q = (params?.question || '').trim();
   const saju = params?.saju || calculateDetailedSaju(params?.profile || null);
 
   const activeRiskTriggers: string[] = [];
@@ -153,13 +209,33 @@ export function calculateContractShield(params?: {
 
   const actionProtocol = '도장이나 서명을 찍기 전, 반드시 5대 쉴드 체크리스트(IP 귀속, 책임 상한, 범위 확정, 자동 검수, 문서화)를 재확인하고, 애매한 조항은 1줄의 단서 조항을 추가하여 위험을 원천 무력화하세요.';
 
-  const summary = `[계약·분쟁 쉴드] 리스크 지수: ${disputeRiskScore}점 [${riskLevelTitle}]. ` +
+  const summary = `[계약·분쟁 쉴드] ${riskLevelTitle}. ` +
     `트리거: ${activeRiskTriggers.length}건. ` +
     `주역 송괘: ${ichingSongWisdom.teaching.slice(0, 30)}... 5대 체크리스트 장착 완료.`;
+
+  const temporalShieldRhythm = getTemporalShieldRhythm(now);
+  const situationalShieldAudit = /계약|돈|외주|동업|협상|서명/.test(q)
+    ? {
+        focusTheme: `실전 계약 조항 · ${riskLevelTitle}`,
+        clauseAlert: activeRiskTriggers[0],
+        nextStep: actionProtocol,
+      }
+    : {
+        focusTheme: `선제적 분쟁 예방 · ${ichingSongWisdom.hexagram}`,
+        clauseAlert: ichingSongWisdom.teaching,
+        nextStep: actionProtocol,
+      };
+
+  const shieldSynthesisMatrix = {
+    coreInsight: `[${riskLevelTitle}] ${ichingSongWisdom.hexagram} — ${ichingSongWisdom.teaching}`,
+    recommendedAction: 'IP 귀속·책임 상한·과업 범위·지급 기한·서면화 5대 쉴드를 서명 전 모두 확인하십시오.',
+    cautionNotice: activeRiskTriggers.join(' / '),
+  };
 
   return {
     engineVersion: CONTRACT_SHIELD_VERSION,
     calculatedAtIso: now.toISOString(),
+    calculatedAtKst: temporalShieldRhythm.kstTimeLabel,
     disputeRiskScore,
     riskLevel,
     riskLevelTitle,
@@ -167,6 +243,10 @@ export function calculateContractShield(params?: {
     ichingSongWisdom,
     shieldChecklist: DEFAULT_SHIELD_CHECKLIST,
     actionProtocol,
+    situationalShieldAudit,
+    temporalShieldRhythm,
+    shieldSynthesisMatrix,
+    boundaryNotice: '본 결과는 명리·주역 천수송 지혜와 표준 계약 리스크 원칙을 결합한 예방 체크리스트이며, 정식 법률 자문이 아닙니다.',
     summary
   };
 }
@@ -180,13 +260,18 @@ export function formatContractShieldPrompt(res: ContractShieldResult): string {
     .join('\n');
 
   return `[계약·분쟁 방어 & 관재구설 쉴드 리포트 (엔진: ${res.engineVersion})]
-- 계약 & 분쟁 리스크 지수: **${res.disputeRiskScore}점** [${res.riskLevelTitle}]
+- 연산 시각: ${res.calculatedAtKst}
+- 계약 & 분쟁 경계 기조: **${res.riskLevelTitle}**
 - 감지된 리스크 트리거:
 ${res.activeRiskTriggers.map(t => `  • ${t}`).join('\n')}
 - 주역 천수송(訟) 방어 지혜: **${res.ichingSongWisdom.hexagram}**
   • "${res.ichingSongWisdom.teaching}"
 - 5대 계약 쉴드 체크리스트:
 ${checklistStr}
+- 질문 맥락 감사 (${res.situationalShieldAudit.focusTheme}): ${res.situationalShieldAudit.clauseAlert}
+- KST 시공간 협상 리듬: ${res.temporalShieldRhythm.negotiationWindow} / ${res.temporalShieldRhythm.seasonalContractTone}
+- 쉴드 교차 매트릭스: 핵심(${res.shieldSynthesisMatrix.coreInsight}) | 실행(${res.shieldSynthesisMatrix.recommendedAction}) | 주의(${res.shieldSynthesisMatrix.cautionNotice})
 - 액션 프로토콜: ${res.actionProtocol}
+- 해석 경계: ${res.boundaryNotice}
 ※ 루시 지침: 분쟁을 피하는 최고의 방법은 싸워서 이기는 것이 아니라, 애초에 다툴 여지가 없도록 계약서와 문서에 명확한 방어벽을 쳐두는 것입니다. 사용자가 사업, 외주, 동업, 계약 과정에서 불필요한 관재구설에 휘말리지 않도록 5대 쉴드 체크리스트와 천수송의 지혜를 든든하게 일러주세요.`;
 }
