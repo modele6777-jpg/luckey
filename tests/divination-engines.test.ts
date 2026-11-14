@@ -4838,8 +4838,13 @@ test('Giordano Bruno Infinite Universe Engine: calculates Infinite cosmos vision
 });
 
 test('Blaise Pascal Pensees Engine: calculates Thinking reed dignity, Heart intuition, and Existential wager resolve', () => {
-  const rep = calculatePascalPenseesHeartReason(profile);
+  const rep = calculatePascalPenseesHeartReason(profile, '중요한 결정을 앞두고 망설여져요', new Date('2026-11-15T01:00:00Z'));
   assert.equal(rep.engineVersion, PASCAL_PENSEES_HEART_REASON_VERSION);
+  assert.equal(rep.questionTopic, 'decision');
+  assert(rep.temporalRhythm.kstSlot.length > 0);
+  assert(rep.dailyPracticeRitual.length > 0);
+  assert(rep.reflectiveQuestion.length > 0);
+  assert(rep.interpretiveBoundary.length > 0);
   assert(rep.thinkingReedDignityScore >= 0 && rep.thinkingReedDignityScore <= 100);
   assert(rep.heartIntuitionFinesseScore >= 0 && rep.heartIntuitionFinesseScore <= 100);
   assert(rep.existentialWagerResolveScore >= 0 && rep.existentialWagerResolveScore <= 100);
@@ -4849,6 +4854,8 @@ test('Blaise Pascal Pensees Engine: calculates Thinking reed dignity, Heart intu
   const prompt = formatPascalPenseesHeartReasonPrompt(rep);
   assert(prompt.includes('블레즈 파스칼 팡세(Pensées) 사유하는 갈대 & 심장의 논리 지표'));
   assert(prompt.includes(rep.activeThematicThought.thoughtTitleKo));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
 });
 
 test('Arthur Schopenhauer Will Representation Engine: calculates Will transcendence, Aesthetic contemplation, and Mitleid compassion', () => {
@@ -5124,8 +5131,13 @@ test('John Stuart Mill On Liberty Individuality Engine: calculates Autonomy, Har
 });
 
 test('Jean-Jacques Rousseau Nature Authenticity Engine: calculates Inherent Goodness, Authenticity, and General Will', () => {
-  const rep = calculateFrenchJeanJacquesRousseauNatureAuthenticity(profile);
+  const rep = calculateFrenchJeanJacquesRousseauNatureAuthenticity(profile, '요즘 너무 지치고 쉬고 싶어요', new Date('2026-11-15T10:00:00Z'));
   assert.equal(rep.engineVersion, FRENCH_JJ_ROUSSEAU_VERSION);
+  assert.equal(rep.questionTopic, 'healing');
+  assert(rep.temporalRhythm.kstSlot.length > 0);
+  assert(rep.dailyPracticeRitual.length > 0);
+  assert(rep.reflectiveQuestion.length > 0);
+  assert(rep.interpretiveBoundary.length > 0);
   assert(rep.natureInherentGoodnessScore >= 0 && rep.natureInherentGoodnessScore <= 100);
   assert(rep.authenticityInnerVoiceScore >= 0 && rep.authenticityInnerVoiceScore <= 100);
   assert(rep.generalWillSolidarityScore >= 0 && rep.generalWillSolidarityScore <= 100);
@@ -5135,6 +5147,8 @@ test('Jean-Jacques Rousseau Nature Authenticity Engine: calculates Inherent Good
   const prompt = formatJeanJacquesRousseauNatureAuthenticityPrompt(rep);
   assert(prompt.includes('장 자크 루소 《에밀·사회계약론》 인간 본성 자연 회복 & 진정성 지표'));
   assert(prompt.includes(rep.activeRousseauTheme.themeTitleKo));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
 });
 
 test('Johann Wolfgang von Goethe Faust Striving Engine: calculates Striving Salvation, Sacred Moment, and Creative Action', () => {
@@ -5741,8 +5755,13 @@ test('Ohseong and Haneum Friendship Governance Engine: calculates Lifelong Moral
 });
 
 test('Voltaire Candide and Tolerance Engine: calculates Cultivate Our Garden Devotion, Tolerance, and Satirical Wit', () => {
-  const rep = calculateFrenchVoltaireCandideTolerance(profile);
+  const rep = calculateFrenchVoltaireCandideTolerance(profile, '사람들과의 갈등을 어떻게 풀어야 할까요', new Date('2026-11-15T05:00:00Z'));
   assert.equal(rep.engineVersion, FRENCH_VOLTAIRE_CANDIDE_TOLERANCE_VERSION);
+  assert.equal(rep.questionTopic, 'relationship');
+  assert(rep.temporalRhythm.kstSlot.length > 0);
+  assert(rep.dailyPracticeRitual.length > 0);
+  assert(rep.reflectiveQuestion.length > 0);
+  assert(rep.interpretiveBoundary.length > 0);
   assert(rep.cultivateOurGardenPragmaticDevotionScore >= 0 && rep.cultivateOurGardenPragmaticDevotionScore <= 100);
   assert(rep.toleranceEnlightenedReasonIndex >= 0 && rep.toleranceEnlightenedReasonIndex <= 100);
   assert(rep.witSatiricalPiercingInsightScore >= 0 && rep.witSatiricalPiercingInsightScore <= 100);
@@ -5752,6 +5771,8 @@ test('Voltaire Candide and Tolerance Engine: calculates Cultivate Our Garden Dev
   const prompt = formatFrenchVoltaireCandideTolerancePrompt(rep);
   assert(prompt.includes('볼테르 《캉디드》 & 《관용론》 일상 실천 및 관용 지혜 지표'));
   assert(prompt.includes(rep.activeVoltaireTheme.themeTitleKo));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
 });
 
 test('Walt Whitman Leaves of Grass Engine: calculates Song of Myself, Multitudes Inclusivity, and Open Road Spirit', () => {

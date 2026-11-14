@@ -10,12 +10,21 @@
  * 4. 일반의지(Volonté Générale): 개별적인 사욕과 편협한 에고를 넘어, 모두의 공공선과 인류적 조화를 지향하는 고결한 공감과 연대.
  * 5. 자율적 주체성과 내적 자유: 억압적 관습의 사슬을 자각하고 영혼의 주권자로서 진정한 자율성을 꽃피우는 성숙.
  *
- * @version LUCKEY-JJ-ROUSSEAU-NATURE-v1.0.0
+ * @version LUCKEY-JJ-ROUSSEAU-NATURE-v1.1.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const FRENCH_JJ_ROUSSEAU_VERSION = 'LUCKEY-JJ-ROUSSEAU-NATURE-v1.0.0';
+export const FRENCH_JJ_ROUSSEAU_VERSION = 'LUCKEY-JJ-ROUSSEAU-NATURE-v1.1.0';
+
+export type RousseauQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
+
+export interface RousseauTemporalRhythm {
+  kstHour: number;
+  kstSlot: string;
+  rhythmTitle: string;
+  rhythmGuidance: string;
+}
 
 export interface RousseauTheme {
   themeKey: string;
@@ -49,6 +58,12 @@ export interface JeanJacquesRousseauNatureAuthenticityResult {
     guidanceTitle: string;
     philosophicalCounsel: string;
   };
+  questionTopic: RousseauQuestionTopic;
+  temporalRhythm: RousseauTemporalRhythm;
+  questionContextGuide: string;
+  dailyPracticeRitual: string;
+  reflectiveQuestion: string;
+  interpretiveBoundary: string;
 }
 
 export const ROUSSEAU_THEMES: RousseauTheme[] = [
@@ -113,16 +128,72 @@ export const ROUSSEAU_APHORISMS: RousseauAphorism[] = [
   },
 ];
 
+function classifyRousseauQuestionTopic(question?: string): RousseauQuestionTopic {
+  const q = (question ?? '').trim().toLowerCase();
+  if (!q) return 'reflection';
+  if (/연애|사랑|관계|이별|결혼|재회|상대|사람|친구|가족|동료|마음|호감|갈등|연락/.test(q)) return 'relationship';
+  if (/결정|선택|이직|창업|진로|시험|합격|투자|계약|진행|포기|방향|할까|말까/.test(q)) return 'decision';
+  if (/불안|우울|지침|피곤|상처|치유|위로|힘들|걱정|두려|잠|휴식|회복/.test(q)) return 'healing';
+  return 'reflection';
+}
+
+function buildRousseauTemporalRhythm(now?: Date): RousseauTemporalRhythm {
+  const target = now ?? new Date();
+  const kstHour = (target.getUTCHours() + 9) % 24;
+  if (kstHour >= 5 && kstHour < 11) {
+    return {
+      kstHour,
+      kstSlot: '새벽·아침 순수기',
+      rhythmTitle: '사회적 가면을 벗는 자연의 첫 호흡',
+      rhythmGuidance: '남의 시선이나 평가가 스며들기 전, 자기 본연의 감각과 양심의 소리를 가장 맑게 들을 수 있는 시간입니다.',
+    };
+  }
+  if (kstHour >= 11 && kstHour < 17) {
+    return {
+      kstHour,
+      kstSlot: '한낮의 연대기',
+      rhythmTitle: '허영을 내려놓고 공존을 묻는 시간',
+      rhythmGuidance: '비교와 경쟁(Amour-propre)에 휩쓸리기 쉬운 한낮일수록 건강한 자기애(Amour de soi)와 공공선의 감각을 지켜야 합니다.',
+    };
+  }
+  if (kstHour >= 17 && kstHour < 22) {
+    return {
+      kstHour,
+      kstSlot: '저녁의 회복기',
+      rhythmTitle: '관습의 무게를 내려놓는 내면 귀환',
+      rhythmGuidance: '하루 동안 짊어진 역할과 체면을 내려놓고 나 자신에게 솔직한 감정을 허락하기 좋은 저녁입니다.',
+    };
+  }
+  return {
+    kstHour,
+    kstSlot: '심야의 고백기',
+    rhythmTitle: '고요한 양심과 마주하는 진정성의 밤',
+    rhythmGuidance: '어둠 속에서 허식을 벗고 지금 내 마음이 진짜로 바라는 바를 담백하게 확인하는 시간대입니다.',
+  };
+}
+
+function describeRousseauQualitativeStage(score: number): string {
+  if (score >= 90) return '맑은 자연 회복기 (본연의 진정성과 양심이 선명하게 깨어 있는 흐름)';
+  if (score >= 80) return '조화로운 자율기 (비교를 내려놓고 자기 중심을 지키는 흐름)';
+  return '차분한 정화기 (인위적 긴장을 풀고 본래의 감각을 되찾는 흐름)';
+}
+
 export function calculateFrenchJeanJacquesRousseauNatureAuthenticity(
-  profile: UserProfile
+  profile: UserProfile,
+  question?: string,
+  now?: Date,
 ): JeanJacquesRousseauNatureAuthenticityResult {
+  const targetDate = now ?? new Date();
+  const questionTopic = classifyRousseauQuestionTopic(question);
+  const temporalRhythm = buildRousseauTemporalRhythm(targetDate);
+
   const p = profile as any;
   const name = profile?.basic?.name ?? p?.name ?? '방문자';
   const birthDate = profile?.basic?.birthdate ?? p?.birthDate ?? p?.birthdate ?? '1990-01-01';
   const birthTime = profile?.basic?.birthtime ?? p?.birthTime ?? p?.birthtime ?? '12:00';
   const gender = profile?.basic?.gender ?? p?.gender ?? 'neutral';
 
-  const seedString = `JJ-ROUSSEAU-NATURE:${name}:${birthDate}:${birthTime}:${gender}`;
+  const seedString = `JJ-ROUSSEAU-NATURE:${name}:${birthDate}:${birthTime}:${gender}:${questionTopic}:${temporalRousseau.kstSlot}`;
 
   let hash = 0;
   for (let i = 0; i < seedString.length; i++) {
@@ -143,6 +214,31 @@ export function calculateFrenchJeanJacquesRousseauNatureAuthenticity(
   const activeRousseauTheme = ROUSSEAU_THEMES[themeIndex];
   const focalRousseauAphorism = ROUSSEAU_APHORISMS[aphorismIndex];
 
+  const topicGuides: Record<RousseauQuestionTopic, { guide: string; ritual: string; question: string }> = {
+    relationship: {
+      guide: '관계에서 상대의 인정을 얻으려 자신을 꾸미기 시작하면 마음은 금세 지칩니다. 비교하는 허영을 내려놓고 솔직하고 담백한 진심을 건넬 때 관계도 숨을 쉽니다.',
+      ritual: '오늘 누군가에게 답장을 보낼 때 멋져 보이려는 말을 한 줄 덜어내고, 지금 느끼는 진실한 마음 한 문장만 남겨 보세요.',
+      question: '이 관계에서 내가 정말 지키고 싶은 것은 체면인가요, 아니면 서로를 있는 그대로 대하는 진정성인가요?',
+    },
+    decision: {
+      guide: '남들이 부러워할 기준을 따라 고른 선택은 성취 뒤에도 공허를 남깁니다. 내 양심과 타고난 기질이 자연스럽게 동의하는 길인지 먼저 물어보세요.',
+      ritual: '선택지를 앞에 두고 "남들이 어떻게 볼까"라는 문장을 지운 채 "내 몸과 마음이 편해지는 쪽"을 기준으로 다시 적어 보세요.',
+      question: '타인의 시선과 사회적 기준이 전혀 없다면, 지금 나는 어느 쪽을 기꺼이 선택할까요?',
+    },
+    healing: {
+      guide: '자연이 만든 본성은 원래 스스로 회복하는 힘을 지니고 있습니다. 억지로 괜찮은 척 연기하지 말고, 지친 감정을 자연스러운 신호로 받아들이세요.',
+      ritual: '오늘 15분만이라도 나무나 하늘, 햇빛 같은 자연의 풍경을 바라보며 아무 평가 없이 깊게 숨을 내쉬어 보세요.',
+      question: '지금 나를 가장 지치게 하는 것은 현실의 무게인가요, 아니면 스스로에게 씌운 과도한 기대인가요?',
+    },
+    reflection: {
+      guide: '루소가 말한 진정한 자유는 남을 이기는 힘이 아니라 스스로의 주권자가 되는 데 있습니다. 오늘 내 일상이 내 본성과 얼마나 닮아 있는지 돌아보세요.',
+      ritual: '하루를 마무리하며 오늘 내가 진짜 내 뜻으로 선택한 순간 하나와 체면 때문에 움직인 순간 하나를 나란히 적어 보세요.',
+      question: '요즘 내 하루에서 가장 인위적으로 꾸며진 부분과 가장 자연스럽게 숨 쉬는 부분은 각각 어디인가요?',
+    },
+  };
+
+  const topicPack = topicGuides[questionTopic];
+
   const guidanceTitle = `장 자크 루소 자연 회복 진정성 지혜: ${activeRousseauTheme.themeTitleKo}`;
   const philosophicalCounsel = `장 자크 루소의 자연 회복과 진정성 철학은 사회적 허식과 비교의 고통을 털어내고 당신 본래의 순수한 생명력을 꽃피우도록 돕습니다. ` +
     `현재 당신에게 필요한 가장 핵심적인 내적 성찰은 '${activeRousseauTheme.themeTitleKo}'입니다. ` +
@@ -151,7 +247,7 @@ export function calculateFrenchJeanJacquesRousseauNatureAuthenticity(
 
   return {
     engineVersion: FRENCH_JJ_ROUSSEAU_VERSION,
-    calculatedAtKst: new Date().toISOString(),
+    calculatedAtKst: targetDate.toISOString(),
     natureInherentGoodnessScore,
     authenticityInnerVoiceScore,
     generalWillSolidarityScore,
@@ -163,23 +259,34 @@ export function calculateFrenchJeanJacquesRousseauNatureAuthenticity(
       guidanceTitle,
       philosophicalCounsel,
     },
+    questionTopic,
+    temporalRhythm,
+    questionContextGuide: topicPack.guide,
+    dailyPracticeRitual: topicPack.ritual,
+    reflectiveQuestion: topicPack.question,
+    interpretiveBoundary: '본 관점은 루소의 자연 회복·진정성 사상을 바탕으로 자기 성찰을 돕는 상징적 안내이며, 우열의 점수나 단정적 예언이 아닙니다.',
   };
 }
 
 export function formatJeanJacquesRousseauNatureAuthenticityPrompt(res: JeanJacquesRousseauNatureAuthenticityResult): string {
   return [
     `【장 자크 루소 《에밀·사회계약론》 인간 본성 자연 회복 & 진정성 지표】`,
-    `- 자연적 본성 순수성 회복도(Retour à la nature): ${res.natureInherentGoodnessScore}/100`,
-    `- 양심의 내적 목소리와 진정성(Authenticity): ${res.authenticityInnerVoiceScore}/100`,
-    `- 일반의지 공공선 연대감(Volonté Générale): ${res.generalWillSolidarityScore}/100`,
-    `- 건전한 자기애 자존감(Amour de soi): ${res.amourDeSoiSelfLoveScore}/100`,
-    `- 에밀식 자율적 주체성(Emile Autonomy): ${res.emileAutonomyEducationScore}/100`,
+    `- 자연적 본성 순수성 회복 흐름(Retour à la nature): ${describeRousseauQualitativeStage(res.natureInherentGoodnessScore)}`,
+    `- 양심의 내적 목소리와 진정성(Authenticity): ${describeRousseauQualitativeStage(res.authenticityInnerVoiceScore)}`,
+    `- 일반의지 공공선 연대감(Volonté Générale): ${describeRousseauQualitativeStage(res.generalWillSolidarityScore)}`,
+    `- 건전한 자기애 자존감(Amour de soi): ${describeRousseauQualitativeStage(res.amourDeSoiSelfLoveScore)}`,
+    `- 에밀식 자율적 주체성(Emile Autonomy): ${describeRousseauQualitativeStage(res.emileAutonomyEducationScore)}`,
+    `- 현재 시공간 리듬 (${res.temporalRhythm.kstSlot}): ${res.temporalRhythm.rhythmTitle} — ${res.temporalRhythm.rhythmGuidance}`,
+    `- 질문 맥락 맞춤 성찰 (${res.questionTopic}): ${res.questionContextGuide}`,
     `- 핵심 자연 테마: ${res.activeRousseauTheme.themeTitleKo} [${res.activeRousseauTheme.themeTitleEn}]`,
     `- 철학적 통찰: ${res.activeRousseauTheme.philosophicalInsight}`,
     `- 실천적 조언: ${res.activeRousseauTheme.practicalCounsel}`,
     `- 핵심 경구: "${res.focalRousseauAphorism.aphorismKo}"`,
     `- 영문 원문: "${res.focalRousseauAphorism.aphorismEn}" [${res.focalRousseauAphorism.sourceContext}]`,
     `- 구체적 실천 지침: ${res.focalRousseauAphorism.actionGuidance}`,
+    `- 오늘의 진정성 의례: ${res.dailyPracticeRitual}`,
+    `- 핵심 성찰 질문: ${res.reflectiveQuestion}`,
     `- 종합 통찰 권면: ${res.rousseauComprehensiveGuidance.philosophicalCounsel}`,
+    `- 해석 경계: ${res.interpretiveBoundary}`,
   ].join('\n');
 }

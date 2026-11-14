@@ -3352,7 +3352,7 @@ try {
   // 225. 프랑스 블레즈 파스칼 팡세 사유하는 갈대 & 심장의 논리 엔진
   const pascalPenseesHeartReasonResult = calculateSupplement('pascalPenseesHeartReasonResult', () => ((() => {
     try {
-      return calculatePascalPenseesHeartReason(profile);
+      return calculatePascalPenseesHeartReason(profile, question, now);
     } catch (_) {
       return null;
     }
@@ -3514,7 +3514,7 @@ try {
   // 243. 프랑스 장 자크 루소 에밀 & 사회계약론 인간 본성 자연 회복 & 진정성 지혜 엔진
   const frenchJeanJacquesRousseauNatureAuthenticityResult = calculateSupplement('frenchJeanJacquesRousseauNatureAuthenticityResult', () => ((() => {
     try {
-      return calculateFrenchJeanJacquesRousseauNatureAuthenticity(profile);
+      return calculateFrenchJeanJacquesRousseauNatureAuthenticity(profile, question, now);
     } catch (_) {
       return null;
     }
@@ -3892,7 +3892,7 @@ try {
   // 285. 프랑스 볼테르 《캉디드》 & 《관용론》 밭을 일구는 실천 & 관용 지혜 엔진
   const frenchVoltaireCandideToleranceResult = calculateSupplement('frenchVoltaireCandideToleranceResult', () => ((() => {
     try {
-      return calculateFrenchVoltaireCandideTolerance(profile);
+      return calculateFrenchVoltaireCandideTolerance(profile, question, now);
     } catch (_) {
       return null;
     }
@@ -4914,7 +4914,7 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'ancientIndianNagarjunaMadhyamakaSunyata', nameKo: '용수 중론 팔불중도 연기즉공 이제설 공성지혜', icon: '☸️', category: 'deep_master' },
   { key: 'koreanJinulJeonghyeSsangsuDonohJeomsu', nameKo: '보조국사 지눌 수심결 정혜쌍수 돈오점수 성적등지', icon: '📜', category: 'deep_master' },
   { key: 'renaissanceBrunoInfiniteUniverseHeroicFurore', nameKo: '조르다노 브루노 무한우주론 영웅적열정 정신주권', icon: '🌌', category: 'deep_master' },
-  { key: 'frenchPascalPenseesHeartReason', nameKo: '블레즈 파스칼 팡세 사유하는갈대 심장의논리 파스칼의내기', icon: '🌾', category: 'deep_master' },
+  { key: 'frenchPascalPenseesHeartReason', nameKo: '블레즈 파스칼 팡세 사유하는갈대 심장의논리 파스칼의내기', icon: '🌾', category: 'deep_master', summary: '블레즈 파스칼의 《팡세》 사상으로 헛된 소음을 멈추고 사유하는 갈대의 존엄과 심장의 직관·결단을 비춥니다.' },
   { key: 'germanSchopenhauerWillRepresentation', nameKo: '쇼펜하우어 의지와표상 맹목적의지초월 심미적관조 동포애자비', icon: '🎼', category: 'deep_master' },
   { key: 'koreanChusaKimJeonghuiSehando', nameKo: '추사 김정희 세한도 송백후조 역경극복지조 문자향서권기', icon: '🌲', category: 'deep_master' },
   { key: 'danishKierkegaardStagesOfLife', nameKo: '쇠렌 키르케고르 단독자 실존3단계 이것이냐저것이냐 신앙도약', icon: '⚖️', category: 'deep_master' },
