@@ -3289,7 +3289,7 @@ try {
   // 218. 고대 인도 초기불교 석가모니 붓다 사성제 & 팔정도 고집멸도 중도해탈 엔진
   const fourNobleTruthsResult = calculateSupplement('fourNobleTruthsResult', () => ((() => {
     try {
-      return calculateAncientIndianFourNobleTruths(profile);
+      return calculateAncientIndianFourNobleTruths(profile, question, now);
     } catch (_) {
       return null;
     }
@@ -3325,7 +3325,7 @@ try {
   // 222. 고대 인도 용수 중론 팔불중도 & 공성(Śūnyatā) 통찰 엔진
   const nagarjunaMadhyamakaSunyataResult = calculateSupplement('nagarjunaMadhyamakaSunyataResult', () => ((() => {
     try {
-      return calculateNagarjunaMadhyamakaSunyata(profile);
+      return calculateNagarjunaMadhyamakaSunyata(profile, question, now);
     } catch (_) {
       return null;
     }
@@ -3604,7 +3604,7 @@ try {
   // 253. 오스트리아 빅터 프랭클 죽음의 수용소에서 & 로고테라피 시련 속 최후의 자유 & 의미를 향한 의지와 비극적 낙관주의 엔진
   const viktorFranklLogotherapyResult = calculateSupplement('viktorFranklLogotherapyResult', () => ((() => {
     try {
-      return calculateViktorFranklLogotherapy(profile);
+      return calculateViktorFranklLogotherapy(profile, question, now);
     } catch (_) {
       return null;
     }

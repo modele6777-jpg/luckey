@@ -6631,6 +6631,46 @@ test('v2.0.0 qualitative/temporal/matrix deepening: Plato Cave, Epictetus Dichot
   assert.ok(gitaPrompt.includes('카르마 요가 매트릭스'));
 });
 
+test('v2.0.0 qualitative/temporal/matrix deepening: Four Noble Truths, Nagarjuna Sunyata, and Viktor Frankl Logotherapy', () => {
+  const testProfile = {
+    basic: {
+      name: '남희',
+      birthdate: '1988-05-12',
+      birthtime: '09:30',
+      gender: 'female' as const,
+      calendarType: 'solar' as const,
+    },
+  };
+  const now = new Date('2026-11-14T09:55:00.000Z'); // KST 18:55
+
+  const buddha = calculateAncientIndianFourNobleTruths(testProfile, '불안하고 걱정이 많아서 마음이 흔들려요', now);
+  assert.equal(buddha.engineVersion, FOUR_NOBLE_TRUTHS_VERSION);
+  assert.ok(buddha.situationalDharmaAudit.suttaCitation.includes('화살경'));
+  assert.ok(buddha.temporalSatiRhythm.satiClarityIndex >= 50 && buddha.temporalSatiRhythm.satiClarityIndex <= 99);
+  assert.ok(buddha.nobleEightfoldMatrix.overallSynthesis >= 50);
+  const buddhaPrompt = formatAncientIndianFourNobleTruthsPrompt(buddha);
+  assert.ok(buddhaPrompt.includes('질문 맥락 법문 처방'));
+  assert.ok(buddhaPrompt.includes('사성제·팔정도 매트릭스'));
+
+  const nagarjuna = calculateNagarjunaMadhyamakaSunyata(testProfile, '내 생각만 맞다는 고집 때문에 갈등이 생겼어요', now);
+  assert.equal(nagarjuna.engineVersion, NAGARJUNA_MADHYAMAKA_VERSION);
+  assert.ok(nagarjuna.situationalSunyataAudit.karikaChapter.includes('중론'));
+  assert.ok(nagarjuna.temporalPratityaRhythm.sunyataClarityIndex >= 50 && nagarjuna.temporalPratityaRhythm.sunyataClarityIndex <= 99);
+  assert.ok(nagarjuna.madhyamakaMatrix.overallSynthesis >= 50);
+  const nagarjunaPrompt = formatNagarjunaMadhyamakaSunyataPrompt(nagarjuna);
+  assert.ok(nagarjunaPrompt.includes('질문 맥락 공성 처방'));
+  assert.ok(nagarjunaPrompt.includes('중관 매트릭스'));
+
+  const frankl = calculateViktorFranklLogotherapy(testProfile, '요즘 너무 공허하고 삶의 의욕이 안 나요', now);
+  assert.equal(frankl.engineVersion, AUSTRIAN_VIKTOR_FRANKL_VERSION);
+  assert.ok(frankl.situationalMeaningAudit.sourceCitation.includes('죽음의 수용소에서'));
+  assert.ok(frankl.temporalMeaningRhythm.logotherapyClarityIndex >= 50 && frankl.temporalMeaningRhythm.logotherapyClarityIndex <= 99);
+  assert.ok(frankl.logotherapyMatrix.overallSynthesis >= 50);
+  const franklPrompt = formatViktorFranklLogotherapyPrompt(frankl);
+  assert.ok(franklPrompt.includes('질문 맥락 의미 감사'));
+  assert.ok(franklPrompt.includes('로고테라피 매트릭스'));
+});
+
 
 
 

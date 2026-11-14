@@ -1,19 +1,12 @@
 /**
- * 오스트리아/유대 빅터 프랭클(Viktor Frankl) 《죽음의 수용소에서(Man's Search for Meaning)》 & 《로고테라피(Logotherapy)》 시련 속 최후의 자유 & 의미를 향한 의지(Wille zum Sinn)와 비극적 낙관주의 엔진
+ * 오스트리아/유대 빅터 프랭클(Viktor Frankl) 《죽음의 수용소에서(Man's Search for Meaning)》 & 《로고테라피(Logotherapy)》 의미치료 엔진
  *
- * 제3 비엔나 정신치료학파 창시자이자 실존분석·로고테라피의 거장 빅터 프랭클(Viktor E. Frankl, 1905~1997)의 핵심 원전 기반:
- * 1. 최후의 인간적 자유 (The Last of Human Freedoms): 나치 수용소의 극단적 박탈 속에서도 그 누구도 빼앗을 수 없는 단 하나의 자유는 바로 '자신의 고난에 어떤 태도를 취할 것인가'를 선택하는 내면의 결단임.
- * 2. 의미를 향한 의지 (Wille zum Sinn): 쾌락이나 권력보다 앞서는 인간의 가장 깊은 실존적 동기는 고유한 삶의 의미와 목적을 발견하고 실현하려는 갈망임.
- * 3. 비극적 낙관주의 (Tragic Optimism): 고통(Pain), 죄책감(Guilt), 죽음(Death)이라는 인생의 비극적 삼원조 앞에서도 이를 성숙과 배움, 책임 있는 결단으로 전환해 내는 위대한 영적 회복탄력성.
- * 4. 자기초월성 (Self-Transcendence): 인간은 자아에 집착할 때 길을 잃으며, 오직 타인을 향한 헌신, 사랑, 창조적 과업을 향해 자신을 내어줄 때 비로소 진정한 자아를 완성함.
- * 5. 실존적 책임성 (Verantwortlichkeit): 삶이 내게 무엇을 줄 것인가를 묻지 않고, 삶이 내게 던지는 질문과 부름에 온 인격으로 응답하고 책임을 다하는 성숙한 실존.
- *
- * @version LUCKEY-VIKTOR-FRANKL-LOGOTHERAPY-v1.0.0
+ * @version LUCKEY-VIKTOR-FRANKL-LOGOTHERAPY-v2.0.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const AUSTRIAN_VIKTOR_FRANKL_VERSION = 'LUCKEY-VIKTOR-FRANKL-LOGOTHERAPY-v1.0.0';
+export const AUSTRIAN_VIKTOR_FRANKL_VERSION = 'LUCKEY-VIKTOR-FRANKL-LOGOTHERAPY-v2.0.0';
 
 export interface FranklTheme {
   themeKey: string;
@@ -31,6 +24,29 @@ export interface FranklAphorism {
   actionGuidance: string;
 }
 
+export interface FranklSituationalMeaningAudit {
+  themeKo: string;
+  sourceCitation: string;
+  classicalQuote: string;
+  existentialVacuumTrap: string;
+  attitudeShiftAction: string;
+}
+
+export interface FranklTemporalMeaningRhythm {
+  kstWindow: string;
+  seasonalTone: string;
+  valuePathFocus: '창조적 가치(일·만듦)' | '체험적 가치(사랑·만남)' | '태도적 가치(고난의 품격)';
+  logotherapyClarityIndex: number;
+  rhythmDirective: string;
+}
+
+export interface FranklLogotherapyMatrix {
+  attitudeFreedom: number;
+  meaningAlignment: number;
+  selfTranscendence: number;
+  overallSynthesis: number;
+}
+
 export interface ViktorFranklLogotherapyResult {
   engineVersion: string;
   calculatedAtKst: string;
@@ -43,6 +59,9 @@ export interface ViktorFranklLogotherapyResult {
   // 세부 분석
   activeFranklTheme: FranklTheme;
   focalFranklAphorism: FranklAphorism;
+  situationalMeaningAudit: FranklSituationalMeaningAudit;
+  temporalMeaningRhythm: FranklTemporalMeaningRhythm;
+  logotherapyMatrix: FranklLogotherapyMatrix;
   franklComprehensiveGuidance: {
     guidanceTitle: string;
     philosophicalCounsel: string;
@@ -118,8 +137,108 @@ export const FRANKL_APHORISMS: FranklAphorism[] = [
   },
 ];
 
+function buildSituationalMeaningAudit(question?: string): FranklSituationalMeaningAudit {
+  const q = (question ?? '').trim();
+  if (/시련|고통|힘들|어렵|아프|절망/.test(q)) {
+    return {
+      themeKo: '태도적 가치와 최후의 자유',
+      sourceCitation: '《죽음의 수용소에서》 제1부·제2부',
+      classicalQuote: '자극과 반응 사이에는 공간이 있다. 그 공간 안에 우리의 반응을 선택할 자유와 힘이 놓여 있다.',
+      existentialVacuumTrap: '바꿀 수 없는 환경의 가혹함에 압도되어 내 태도를 선택할 힘마저 포기하는 체념.',
+      attitudeShiftAction: '피할 수 없는 고난이라면, 오늘 이 일을 대할 때 내가 지키고 싶은 단 하나의 품위 있는 태도를 먼저 선언하십시오.',
+    };
+  }
+  if (/공허|무의미|지루|우울|왜|목적|의욕/.test(q)) {
+    return {
+      themeKo: '실존적 공허(Existential Vacuum) 돌파',
+      sourceCitation: '《죽음의 수용소에서》 로고테라피 개론',
+      classicalQuote: '우리가 삶에 의미를 묻는 것이 아니라, 삶이 지금 우리에게 묻고 있다는 사실을 깨달아야 한다.',
+      existentialVacuumTrap: '나 자신의 기분과 공허감만 파고들수록(과잉성찰) 오히려 무의미가 깊어지는 악순환.',
+      attitudeShiftAction: '시선을 나에게서 바깥으로 돌려, 오늘 내가 도울 수 있는 사람이나 완성할 작은 작품 1건을 바로 실행하십시오.',
+    };
+  }
+  if (/관계|사랑|가족|사람|헌신|외로/.test(q)) {
+    return {
+      themeKo: '체험적 가치와 자기초월(Self-Transcendence)',
+      sourceCitation: '《죽음의 수용소에서》 사랑의 의미',
+      classicalQuote: '인간은 오직 사랑 안에서, 그리고 소중한 존재를 온전히 바라볼 때 비로소 자기 자신을 넘어선다.',
+      existentialVacuumTrap: '내가 먼저 인정받고 채워져야만 움직이려다가 관계의 온기를 놓쳐 버리는 방어.',
+      attitudeShiftAction: '오늘 소중한 사람 한 명에게 진심 어린 감사나 안부 한 마디를 먼저 건네며 자기초월을 실천하십시오.',
+    };
+  }
+  if (/후회|실수|과거|죄책|자책|선택/.test(q)) {
+    return {
+      themeKo: '두 번째 삶의 정언명령과 책임성',
+      sourceCitation: '《죽음의 수용소에서》 로고테라피 정언명령',
+      classicalQuote: '마치 두 번째 삶을 사는 것처럼, 그리고 첫 번째 삶에서 막 잘못 행하려던 순간인 것처럼 지금을 살아라.',
+      existentialVacuumTrap: '과거의 실수를 되새김질하느라 지금 눈앞에 주어진 새로운 책임의 기회를 놓치는 자책.',
+      attitudeShiftAction: '어제의 후회를 오늘의 책임으로 바꾸십시오. 지금 바로 바로잡을 수 있는 행동 1가지를 오늘 실행하십시오.',
+    };
+  }
+  return {
+    themeKo: '의미를 향한 의지(Wille zum Sinn)와 창조적 가치',
+    sourceCitation: '《삶의 의미를 찾아서》 · 《의미를 향한 의지》',
+    classicalQuote: '행복은 쫓아갈 대상이 아니라, 의미 있는 과업에 헌신할 때 자연스럽게 뒤따라오는 부산물이다.',
+    existentialVacuumTrap: '당장의 기분 좋은 결과만 좇다가 정작 나를 단단하게 세우는 고유한 과업을 미루는 태도.',
+    attitudeShiftAction: '기분이 나기를 기다리지 말고, 오늘 나만이 책임지고 끝낼 수 있는 의미 있는 일 한 가지에 30분 몰입하십시오.',
+  };
+}
+
+function buildTemporalMeaningRhythm(now?: Date): FranklTemporalMeaningRhythm {
+  const ref = now ?? new Date();
+  const kst = new Date(ref.getTime() + 9 * 60 * 60 * 1000);
+  const hour = kst.getUTCHours();
+  const month = kst.getUTCMonth() + 1;
+
+  const seasonalTone =
+    month >= 3 && month <= 5
+      ? '봄 — 새로운 창조적 가치(일과 사명)의 씨앗을 심는 계절'
+      : month >= 6 && month <= 8
+        ? '여름 — 열정과 시련을 함께 품고 비극적 낙관주의를 단련하는 계절'
+        : month >= 9 && month <= 11
+          ? '가을 — 사람과 삶의 체험적 가치를 깊게 음미하며 감사하는 계절'
+          : '겨울 — 가장 추운 시기에도 내면의 최후의 자유를 지키는 계절';
+
+  if (hour >= 5 && hour < 12) {
+    return {
+      kstWindow: '아침 삶의 부름 응답(Verantwortlichkeit) 창',
+      seasonalTone,
+      valuePathFocus: '창조적 가치(일·만듦)',
+      logotherapyClarityIndex: 91,
+      rhythmDirective: '삶이 오늘 내게 던지는 질문에 응답하기 좋은 오전입니다. 가장 의미 있는 핵심 과업을 먼저 붙드십시오.',
+    };
+  }
+  if (hour >= 12 && hour < 18) {
+    return {
+      kstWindow: '오후 태도적 가치(최후의 자유) 실천 창',
+      seasonalTone,
+      valuePathFocus: '태도적 가치(고난의 품격)',
+      logotherapyClarityIndex: 84,
+      rhythmDirective: '예상치 못한 변수와 피로가 겹치는 오후입니다. 반응 전 3초의 공간에서 품위 있는 태도를 택하십시오.',
+    };
+  }
+  if (hour >= 18 && hour < 22) {
+    return {
+      kstWindow: '저녁 체험적 가치(사랑·만남) 회복 창',
+      seasonalTone,
+      valuePathFocus: '체험적 가치(사랑·만남)',
+      logotherapyClarityIndex: 86,
+      rhythmDirective: '성과 계산을 멈추고 소중한 사람·예술·자연과의 만남 속에서 삶의 온기를 회복할 시간입니다.',
+    };
+  }
+  return {
+    kstWindow: '심야 비극적 낙관주의 성찰 창',
+    seasonalTone,
+    valuePathFocus: '태도적 가치(고난의 품격)',
+    logotherapyClarityIndex: 78,
+    rhythmDirective: '오늘의 미완성과 아쉬움도 성숙의 재료입니다. 내일을 향한 작은 이유 하나를 품고 평안히 쉬십시오.',
+  };
+}
+
 export function calculateViktorFranklLogotherapy(
-  profile: UserProfile
+  profile: UserProfile,
+  question?: string,
+  now?: Date,
 ): ViktorFranklLogotherapyResult {
   const p = profile as any;
   const name = profile?.basic?.name ?? p?.name ?? '방문자';
@@ -147,6 +266,20 @@ export function calculateViktorFranklLogotherapy(
 
   const activeFranklTheme = FRANKL_THEMES[themeIndex];
   const focalFranklAphorism = FRANKL_APHORISMS[aphorismIndex];
+  const situationalMeaningAudit = buildSituationalMeaningAudit(question);
+  const temporalMeaningRhythm = buildTemporalMeaningRhythm(now);
+
+  const attitudeFreedom = Math.min(99, Math.round((lastHumanFreedomAttitudeScore + tragicOptimismResilienceScore) / 2));
+  const meaningAlignment = Math.min(99, Math.round((willToMeaningDriveScore + temporalMeaningRhythm.logotherapyClarityIndex) / 2));
+  const selfTranscendence = Math.min(99, Math.round((selfTranscendenceDedicationScore + lifeResponsibilityIntegrityIndex) / 2));
+  const overallSynthesis = Math.round((attitudeFreedom + meaningAlignment + selfTranscendence) / 3);
+
+  const logotherapyMatrix: FranklLogotherapyMatrix = {
+    attitudeFreedom,
+    meaningAlignment,
+    selfTranscendence,
+    overallSynthesis,
+  };
 
   const guidanceTitle = `빅터 프랭클 로고테라피 의미치료: ${activeFranklTheme.themeTitleKo}`;
   const philosophicalCounsel = `빅터 프랭클의 로고테라피는 고통의 한복판에서도 결코 꺼지지 않는 삶의 의미와 최후의 자유를 일깨웁니다. ` +
@@ -156,7 +289,7 @@ export function calculateViktorFranklLogotherapy(
 
   return {
     engineVersion: AUSTRIAN_VIKTOR_FRANKL_VERSION,
-    calculatedAtKst: new Date().toISOString(),
+    calculatedAtKst: (now ?? new Date()).toISOString(),
     lastHumanFreedomAttitudeScore,
     willToMeaningDriveScore,
     tragicOptimismResilienceScore,
@@ -164,6 +297,9 @@ export function calculateViktorFranklLogotherapy(
     lifeResponsibilityIntegrityIndex,
     activeFranklTheme,
     focalFranklAphorism,
+    situationalMeaningAudit,
+    temporalMeaningRhythm,
+    logotherapyMatrix,
     franklComprehensiveGuidance: {
       guidanceTitle,
       philosophicalCounsel,
@@ -180,11 +316,11 @@ export function formatViktorFranklLogotherapyPrompt(res: ViktorFranklLogotherapy
     `- 자아초월 가치·타인 헌신도(Transzendenz): ${res.selfTranscendenceDedicationScore}/100`,
     `- 삶의 부름 실존 책임성(Verantwortung): ${res.lifeResponsibilityIntegrityIndex}/100`,
     `- 핵심 의미치료 테마: ${res.activeFranklTheme.themeTitleKo} [${res.activeFranklTheme.themeTitleGerman}]`,
-    `- 로고테라피 통찰: ${res.activeFranklTheme.logotherapyInsight}`,
-    `- 실천적 조언: ${res.activeFranklTheme.practicalCounsel}`,
-    `- 핵심 경구: "${res.focalFranklAphorism.aphorismKo}"`,
-    `- 원전 출처: "${res.focalFranklAphorism.aphorismGermanOrEnglish}" [${res.focalFranklAphorism.sourceContext}]`,
-    `- 구체적 실천 지침: ${res.focalFranklAphorism.actionGuidance}`,
+    `- 질문 맥락 의미 감사 (${res.situationalMeaningAudit.themeKo} · ${res.situationalMeaningAudit.sourceCitation}): "${res.situationalMeaningAudit.classicalQuote}"`,
+    `- 실존 공허 함정: ${res.situationalMeaningAudit.existentialVacuumTrap}`,
+    `- 태도 전환 실천: ${res.situationalMeaningAudit.attitudeShiftAction}`,
+    `- KST 의미 리듬: ${res.temporalMeaningRhythm.kstWindow} (${res.temporalMeaningRhythm.valuePathFocus}, 명료도 ${res.temporalMeaningRhythm.logotherapyClarityIndex}/100) — ${res.temporalMeaningRhythm.rhythmDirective}`,
+    `- 로고테라피 매트릭스: 태도 자유 ${res.logotherapyMatrix.attitudeFreedom} / 의미 정렬 ${res.logotherapyMatrix.meaningAlignment} / 자기초월 ${res.logotherapyMatrix.selfTranscendence} (종합 ${res.logotherapyMatrix.overallSynthesis}/100)`,
     `- 종합 의미치료 권면: ${res.franklComprehensiveGuidance.philosophicalCounsel}`,
   ].join('\n');
 }

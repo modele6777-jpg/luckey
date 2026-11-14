@@ -1,4 +1,4 @@
-// v1.7.430: Deepen Plato Idea Cave, Epictetus Dichotomy of Control, and Bhagavad Gita Karma Yoga engines
+// v1.7.431: Deepen Four Noble Truths, Nagarjuna Sunyata, and Viktor Frankl Logotherapy engines
 import { getLucyRequestFallbacks, requestWithModelFallback } from '../src/lib/lucyModelPolicy.ts';
 import "dotenv/config";
 import express from "express";
