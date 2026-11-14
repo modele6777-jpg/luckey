@@ -3119,6 +3119,7 @@ test('Druid Thirteen Moon Trees & Ogham Engine: calculates birth tree, active tr
   const prompt = formatDruidMoonTreesPrompt(rep);
   assert(prompt.includes('켈트 드루이드 13대 달나무(Moon Trees) & 오검 주술 엔진'));
   assert(prompt.includes(rep.birthTree.koreanName));
+  assert(!prompt.includes('/100') && !prompt.includes('점수'));
 });
 
 test('Tieban Shenshu & Tai Xuan Numerology Engine: calculates inherent clause, affinity clause and accord', () => {
@@ -3272,6 +3273,7 @@ test('Finnish Kalevala Sampo Engine: calculates 3 Sampo wings and Sisu resilienc
   const prompt = formatFinnishKalevalaSampoPrompt(rep);
   assert(prompt.includes('고대 핀란드 칼레발라(Kalevala) 삼포(Sampo) & 9대 룬가 실측 데이터'));
   assert(prompt.includes(rep.sampoBalance.dominantWing));
+  assert(!prompt.includes('/ 100') && !prompt.includes('점수'));
 });
 
 test('Shanhaijing Sacred Beasts Engine: calculates directional beast and shielding index', () => {
@@ -3302,6 +3304,7 @@ test('Celtic Awen Taliesin Engine: calculates Awen 3 rays and metamorphosis phas
   const prompt = formatCelticAwenTaliesinPrompt(rep);
   assert(prompt.includes('고대 켈트 바드 탈리에신(Taliesin) 가마솥 & 아웬(Awen) 영감 실측 데이터'));
   assert(prompt.includes(rep.activeMetamorphosis.animalTotem));
+  assert(!prompt.includes('/ 100') && !prompt.includes('점수'));
 });
 
 test('Tarot Yes/No Verdict: correctly identifies NO when reading content is NO despite heading options', () => {

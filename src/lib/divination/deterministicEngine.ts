@@ -2218,7 +2218,7 @@ try {
   // 98. 켈트 드루이드 13대 달나무(Moon Trees) & 오검 주술 엔진
   const druidMoonTreesResult = calculateSupplement('druidMoonTreesResult', () => ((() => {
     try {
-      return calculateDruidMoonTrees(profile);
+      return calculateDruidMoonTrees(profile, now, question);
     } catch (_) {
       return null;
     }
@@ -2326,7 +2326,7 @@ try {
   // 110. 고대 핀란드 칼레발라(Kalevala) 삼포(Sampo) 9대 룬가 번영 엔진
   const finnishKalevalaSampoResult = calculateSupplement('finnishKalevalaSampoResult', () => ((() => {
     try {
-      return calculateFinnishKalevalaSampo({ profile, targetInstantTime: now.toISOString() });
+      return calculateFinnishKalevalaSampo({ profile, targetInstantTime: now.toISOString(), question });
     } catch (_) {
       return null;
     }
@@ -2353,7 +2353,7 @@ try {
   // 113. 고대 켈트 바드 탈리에신(Taliesin) 가마솥 & 아웬(Awen) 영감 엔진
   const celticAwenTaliesinResult = calculateSupplement('celticAwenTaliesinResult', () => ((() => {
     try {
-      return calculateCelticAwenTaliesin({ profile, targetInstantTime: now.toISOString() });
+      return calculateCelticAwenTaliesin({ profile, targetInstantTime: now.toISOString(), question });
     } catch (_) {
       return null;
     }

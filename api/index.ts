@@ -1,4 +1,4 @@
-// v1.7.465: Deepen Yeonam Park Jiwon, Chonggamnok Ten Sanctuaries, and Ohseong & Haneum engines
+// v1.7.466: Deepen Celtic Awen Taliesin, Finnish Kalevala Sampo, and Druid 13 Moon Trees engines
 import { getLucyRequestFallbacks, requestWithModelFallback } from '../src/lib/lucyModelPolicy.ts';
 import "dotenv/config";
 import express from "express";
