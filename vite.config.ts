@@ -12,15 +12,20 @@ const packageJson = JSON.parse(
   fs.readFileSync(path.resolve(__dirname, 'package.json'), 'utf-8'),
 ) as { version: string };
 
-function readChangelogSummary(version: string): string | undefined {
+function readChangelogEntry(version: string): { summary?: string; items?: string[] } | undefined {
   try {
     const changelogPath = path.resolve(__dirname, 'public/changelog.json');
     const entries = JSON.parse(fs.readFileSync(changelogPath, 'utf-8')) as Array<{
       version?: string;
       summary?: string;
+      items?: string[];
     }>;
     const match = entries.find((entry) => entry.version === version);
-    return match?.summary?.trim() || undefined;
+    if (!match?.summary?.trim()) return undefined;
+    const items = Array.isArray(match.items)
+      ? match.items.map((item) => String(item).trim()).filter(Boolean)
+      : [];
+    return { summary: match.summary.trim(), ...(items.length ? { items } : {}) };
   } catch {
     return undefined;
   }
@@ -28,8 +33,8 @@ function readChangelogSummary(version: string): string | undefined {
 
 function buildVersionPayload(version: string) {
   const builtAt = new Date().toISOString();
-  const summary = readChangelogSummary(version);
-  return summary ? { version, builtAt, summary } : { version, builtAt };
+  const entry = readChangelogEntry(version);
+  return entry ? { version, builtAt, ...entry } : { version, builtAt };
 }
 
 function prismVersionPlugin(version: string): Plugin {
@@ -57,6 +62,7 @@ export default defineConfig(({mode}) => {
   if (mode === 'sites') {
     for (const key of ['GEMINI_API_KEY', 'AI_API_KEY', 'XAI_API_KEY', 'GOOGLE_GENAI_API_KEY', 'VITE_GEMINI_API_KEY', 'VITE_AI_API_KEY']) delete env[key];
   }
+  const releaseEntry = readChangelogEntry(packageJson.version);
   return {
     plugins: [
       prismVersionPlugin(packageJson.version),
@@ -218,6 +224,9 @@ export default defineConfig(({mode}) => {
     ],
     define: {
       __APP_VERSION__: JSON.stringify(packageJson.version),
+      __APP_RELEASE_NOTES__: JSON.stringify(releaseEntry
+        ? { version: packageJson.version, ...releaseEntry }
+        : null),
       'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY),
       'process.env.AI_API_KEY': JSON.stringify(env.AI_API_KEY),
       'process.env.XAI_API_KEY': JSON.stringify(env.XAI_API_KEY),

@@ -794,14 +794,28 @@ function AppContent() {
   const isCalmSite = location === '/calm' || location === '/key';
   const isChatView = isLucyRoute;
 
+  const updateNotice = (
+    <UpdateNoticeModal
+      key={updateNoticeKey}
+      isOpen={isUpdateNoticeOpen}
+      entries={updateEntries}
+      mode={updateNoticeMode}
+      onClose={dismissUpdateNotice}
+      onApply={handleApplyUpdateNow}
+    />
+  );
+
   // Standalone routes bypass full auth gating immediately so they never hang on key/calm/chat entry
   if ((!isAuthReady || !appEntranceDone) && !isStandaloneChat) {
     return (
-      <PrismRainbowLoader
-        fullScreen
-        message="행운과 해답의 문을 여는 중..."
-        subMessage="LUCKEY · SOUL SANCTUARY"
-      />
+      <>
+        <PrismRainbowLoader
+          fullScreen
+          message="행운과 해답의 문을 여는 중..."
+          subMessage="LUCKEY · SOUL SANCTUARY"
+        />
+        {updateNotice}
+      </>
     );
   }
 
@@ -817,6 +831,7 @@ function AppContent() {
     return (
       <div className="prism-app-shell relative z-[1] bg-transparent">
         <LoginScreen />
+        {updateNotice}
       </div>
     );
   }
@@ -825,6 +840,7 @@ function AppContent() {
     return (
       <div className="prism-app-shell relative z-[1] bg-transparent">
         <PinLockScreen onUnlock={unlock} />
+        {updateNotice}
       </div>
     );
   }
@@ -959,14 +975,7 @@ function AppContent() {
       <LucyVoiceModeModal />
       <SelectionBridgeToolbar />
       <AppIconPreviewModal />
-      <UpdateNoticeModal
-        key={updateNoticeKey}
-        isOpen={isUpdateNoticeOpen}
-        entries={updateEntries}
-        mode={updateNoticeMode}
-        onClose={dismissUpdateNotice}
-        onApply={handleApplyUpdateNow}
-      />
+      {updateNotice}
     </div>
   );
 }

@@ -13,6 +13,7 @@ import { formatDateKey, getTodayDateKey, isTimestampToday } from './dailyCache';
 import {
   forceResetUnifiedChatHistory,
   createDefaultGreeting,
+  retainRecentConversation,
   type UnifiedMessage,
   type PersonaType,
 } from './chatHistorySync';
@@ -214,17 +215,23 @@ export function processDailyChatArchival(
   // 2. 세션 날짜를 오늘로 갱신
   safeLocalStorage.setItem(MEMORY_STORAGE_KEYS.LAST_SESSION_DATE, todayKey);
 
-  // 3. 오늘 이미 나눈 실제 대화가 있다면 오늘 대화(인사말 포함) 보존
-  const hasTodayUserMsgs = todayMessages.some((m) => m.role === 'user' && m.content);
-  if (hasTodayUserMsgs) {
+  // 3. 최근 일주일 대화는 화면에 남긴다. 그보다 오래된 메시지만 아카이브 후 접는다.
+  const recent = retainRecentConversation(allMsgs);
+  const hasRecentUserMsgs = recent.some((m) => m.role === 'user' && m.content);
+  if (hasRecentUserMsgs) {
+    const messages = recent.some((m) => String(m.id || '').startsWith('greet-'))
+      ? recent
+      : [createDefaultGreeting('lucy', userName), ...recent];
+    const unchanged = messages.length === allMsgs.length
+      && messages.every((message, index) => message.id === allMsgs[index]?.id && message.content === allMsgs[index]?.content);
     return {
-      messages: todayMessages,
-      wasArchived: true,
+      messages,
+      wasArchived: !unchanged,
       archivedDate: lastSessionDate,
     };
   }
 
-  // 4. 오늘 실제 대화 기록이 없다면 기본 루시 인사말 표시
+  // 4. 최근 사용자 대화가 없을 때만 오늘의 인사말로 연다.
   const freshMorningGreeting = createDefaultGreeting('lucy', userName);
   return {
     messages: [freshMorningGreeting],
