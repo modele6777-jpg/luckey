@@ -1,28 +1,12 @@
 /**
  * 고대 인도 대승불교 용수(Nāgārjuna, 龍樹) 보살 《중론(Mūlamadhyamakakārikā)》 팔불중도 & 공성(Śūnyatā) 통찰 엔진
  *
- * 서력 기원 2~3세기 대승불교의 중흥조 용수 보살의 불후의 저작 《중론(中論)》 원전 기반:
- * 1. 팔불중도(八不中道):
- *    - 불생불멸(不生不滅): 어떤 것도 실체로서 새롭게 생겨나거나 영원히 사라지지 않는다.
- *    - 부단부상(不斷不常): 완전히 끊어져 사라지는 허무도 없고, 불변으로 고착된 영원도 없다.
- *    - 불일불이(不一不異): 원인과 결과는 완전히 하나도 아니며 완전히 별개도 아니다.
- *    - 불래불출(不來不出): 어디선가 홀연히 오는 것도 아니며 어디론가 빠져나가는 것도 아니다.
- * 2. 연기즉공(緣起卽空, Pratītyasamutpāda = Śūnyatā):
- *    - "중인연생법(衆因緣生法) 아설즉시공(我說卽是空) 역위시가명(亦爲是假名) 역시중도의(亦是中道義)"
- *    - 온갖 인연에 기대어 생겨난 모든 것은 독립된 고유 실체(Svabhāva)가 없으므로 텅 비어 있으며, 그 때문에 무한히 유연하게 변화할 수 있다.
- * 3. 진속이제(眞俗二諦):
- *    - 진제(勝義諦, Paramārtha-satya): 언어와 분별을 초월한 궁극의 적멸과 공성.
- *    - 속제(世俗諦, Saṃvṛti-satya): 일상생활과 인간 소통의 맥락과 법칙.
- *    - "속제에 의지하지 않으면 진제를 말할 수 없고, 진제를 얻지 못하면 열반에 이르지 못한다."
- * 4. 사구게 분별 해체:
- *    - 유(有), 무(無), 역유역무(亦有亦無), 비유비무(非有非無)의 4단 논법적 고착을 모두 타파하여 진정한 자유를 얻음.
- *
- * @version LUCKEY-NAGARJUNA-MADHYAMAKA-v1.0.0
+ * @version LUCKEY-NAGARJUNA-MADHYAMAKA-v2.0.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const NAGARJUNA_MADHYAMAKA_VERSION = 'LUCKEY-NAGARJUNA-MADHYAMAKA-v1.0.0';
+export const NAGARJUNA_MADHYAMAKA_VERSION = 'LUCKEY-NAGARJUNA-MADHYAMAKA-v2.0.0';
 
 export interface EightfoldNegationAspect {
   aspectKey: string;
@@ -40,6 +24,30 @@ export interface MadhyamakaKarikaWisdom {
   lifeApplication: string;
 }
 
+export interface NagarjunaSituationalSunyataAudit {
+  themeKo: string;
+  karikaChapter: string;
+  sanskritVerse: string;
+  translationKo: string;
+  substantialistTrap: string;
+  middleWayDeconstructionStep: string;
+}
+
+export interface NagarjunaTemporalPratityaRhythm {
+  kstWindow: string;
+  seasonalTone: string;
+  twoTruthsFocus: string;
+  sunyataClarityIndex: number;
+  rhythmDirective: string;
+}
+
+export interface NagarjunaMadhyamakaMatrix {
+  svabhavaDeconstruction: number;
+  dependentOriginationFlow: number;
+  twoTruthsEquilibrium: number;
+  overallSynthesis: number;
+}
+
 export interface NagarjunaMadhyamakaSunyataResult {
   engineVersion: string;
   calculatedAtKst: string;
@@ -52,6 +60,9 @@ export interface NagarjunaMadhyamakaSunyataResult {
   // 세부 분석
   activeNegationAspect: EightfoldNegationAspect;
   focalKarikaWisdom: MadhyamakaKarikaWisdom;
+  situationalSunyataAudit: NagarjunaSituationalSunyataAudit;
+  temporalPratityaRhythm: NagarjunaTemporalPratityaRhythm;
+  madhyamakaMatrix: NagarjunaMadhyamakaMatrix;
   nagarjunaMiddleCounsel: {
     counselTitle: string;
     middleWayGuidance: string;
@@ -122,7 +133,114 @@ const KARIKA_WISDOMS: MadhyamakaKarikaWisdom[] = [
   },
 ];
 
-export function calculateNagarjunaMadhyamakaSunyata(profile: UserProfile): NagarjunaMadhyamakaSunyataResult {
+function buildSituationalSunyataAudit(question?: string): NagarjunaSituationalSunyataAudit {
+  const q = (question ?? '').trim();
+  if (/고집|반드시|절대|내 생각|맞다|갈등/.test(q)) {
+    return {
+      themeKo: '견해(Drsti)의 고착 해체',
+      karikaChapter: '《중론》 제27품 관사견품 30게',
+      sanskritVerse: 'Sarvadrstiprahanaya yah saddharmam adesayat',
+      translationKo: '모든 고정된 견해(소견)를 놓아 버리게 하려고 부처님께서 정법을 설하셨다.',
+      substantialistTrap: '내 판단만이 변치 않는 절대 진리라고 쥐고 있어 대화와 변화의 여지를 닫아 버리는 상견(常見).',
+      middleWayDeconstructionStep: '"반드시 이래야 한다"는 전제 하나를 괄호 안에 넣고, 상대 조건이 바뀔 때 달라지는 다른 가능성 2가지를 적어 보십시오.',
+    };
+  }
+  if (/끝|상실|포기|실패|망|허무|무기력/.test(q)) {
+    return {
+      themeKo: '단견(허무)과 상견(고착) 초월',
+      karikaChapter: '《중론》 제24품 관사제품 18~19게',
+      sanskritVerse: 'Yah pratityasamutpadah sunyatam tam pracaksmahe',
+      translationKo: '인연 따라 일어남(緣起), 바로 그것을 우리는 공(空)이라 부르며 또한 중도라 한다.',
+      substantialistTrap: '한 번의 실패를 영원한 끝(단견)으로 규정해, 조건이 바뀌면 다시 피어날 가능성마저 지워 버리는 착각.',
+      middleWayDeconstructionStep: '고정된 실패는 없습니다. 지금 상황을 구성하는 조건 중 내 손으로 바꿀 수 있는 작은 인연 1가지만 재배치하십시오.',
+    };
+  }
+  if (/관계|사람|경계|외로|거리|집착/.test(q)) {
+    return {
+      themeKo: '불일불이(不一不異) 관계의 중도',
+      karikaChapter: '《중론》 제1품 관인연품 · 귀경게',
+      sanskritVerse: 'Anirodham anutpadam anucchedam asasvatam anekartham ananartham',
+      translationKo: '하나도 아니며 다르지도 않고(不一不異), 끊어지지도 영원하지도 않은 것이 연기의 참모습이다.',
+      substantialistTrap: '상대와 나를 완전히 하나로 엮어 통제하려 하거나, 완전히 남으로 끊어 내며 고립되는 양극단.',
+      middleWayDeconstructionStep: '상대와 나 사이의 적당한 숨 쉴 거리를 인정하면서, 오늘 할 수 있는 담백한 안부나 정중한 경계 1줄만 전하십시오.',
+    };
+  }
+  if (/선택|진로|변화|이직|불안|미래/.test(q)) {
+    return {
+      themeKo: '공(空)이 열어 주는 변화의 자유',
+      karikaChapter: '《중론》 제24품 관사제품 14게',
+      sanskritVerse: 'Sarvam ca yujyate tasya sunyata yasya yujyate',
+      translationKo: '공성이 성립하는 자에게는 모든 변화와 성취가 가능하고, 공성이 없으면 아무것도 이루어질 수 없다.',
+      substantialistTrap: '현재의 처지가 바꿀 수 없는 고정 실체인 양 두려워하며 새로운 시도 자체를 막는 마음.',
+      middleWayDeconstructionStep: '지금의 어려움이 텅 비어(변화 가능) 있기 때문에 새 길도 열립니다. 완벽한 보장 대신 작은 실험 1건을 오늘 시작하십시오.',
+    };
+  }
+  return {
+    themeKo: '진속이제(眞俗二諦) 삶의 균형',
+    karikaChapter: '《중론》 제24품 제8~10게',
+    sanskritVerse: 'Dve satye samupasritya buddhanam dharmadesana',
+    translationKo: '모든 부처님의 가르침은 세속의 질서(속제)와 궁극의 이치(진제) 두 가지 진리에 의지한다.',
+    substantialistTrap: '현실의 실무를 가볍게 여기거나, 반대로 세속의 수치에만 매달려 마음의 자유를 잃는 편향.',
+    middleWayDeconstructionStep: '오늘 해야 할 세속의 일은 성실히 마치되, 그 결과에 대한 집착은 공성의 하늘에 흘려보내십시오.',
+  };
+}
+
+function buildTemporalPratityaRhythm(now?: Date): NagarjunaTemporalPratityaRhythm {
+  const ref = now ?? new Date();
+  const kst = new Date(ref.getTime() + 9 * 60 * 60 * 1000);
+  const hour = kst.getUTCHours();
+  const month = kst.getUTCMonth() + 1;
+
+  const seasonalTone =
+    month >= 3 && month <= 5
+      ? '봄 — 불생불멸의 싹이 인연을 만나 피어나는 개방의 계절'
+      : month >= 6 && month <= 8
+        ? '여름 — 치열한 인연의 그물망 속에서 진속이제를 균형 잡는 계절'
+        : month >= 9 && month <= 11
+          ? '가을 — 잎이 지되 뿌리는 남는 부단부상(不斷不常)의 지혜를 익히는 계절'
+          : '겨울 — 모든 견해와 분별을 쉬고 맑은 공성(Śūnyatā)을 관조하는 계절';
+
+  if (hour >= 5 && hour < 11) {
+    return {
+      kstWindow: '새벽·오전 공성(Śūnyatā) 무분별 명징 창',
+      seasonalTone,
+      twoTruthsFocus: '진제(勝義諦) 직관 우선',
+      sunyataClarityIndex: 91,
+      rhythmDirective: '고정관념이 옅고 마음이 맑은 시간입니다. 사안을 둘러싼 선입견부터 걷어낸 뒤 본질을 보십시오.',
+    };
+  }
+  if (hour >= 11 && hour < 17) {
+    return {
+      kstWindow: '한낮 속제(世俗諦) 인연 조율 창',
+      seasonalTone,
+      twoTruthsFocus: '속제(世俗諦) 성실 실천',
+      sunyataClarityIndex: 82,
+      rhythmDirective: '일상의 약속과 관계를 세심하게 다루면서, 조건이 어긋나도 유연하게 방향을 틀기 좋은 시간입니다.',
+    };
+  }
+  if (hour >= 17 && hour < 22) {
+    return {
+      kstWindow: '저녁 팔불중도(八不中道) 균형 회복 창',
+      seasonalTone,
+      twoTruthsFocus: '진속이제(眞俗二諦) 통합',
+      sunyataClarityIndex: 84,
+      rhythmDirective: '낮 동안 쌓인 흑백 논리와 승패 집착을 내려놓고 양극단의 중간 지점을 점검하십시오.',
+    };
+  }
+  return {
+    kstWindow: '심야 사구게(四句偈) 분별 휴식 창',
+    seasonalTone,
+    twoTruthsFocus: '진제(勝義諦) 침잠과 휴식',
+    sunyataClarityIndex: 79,
+    rhythmDirective: '있다·없다의 분별을 쫓기 쉬운 밤입니다. 결론을 서두르지 말고 생각의 고리를 잠시 풀어 두십시오.',
+  };
+}
+
+export function calculateNagarjunaMadhyamakaSunyata(
+  profile: UserProfile,
+  question?: string,
+  now?: Date,
+): NagarjunaMadhyamakaSunyataResult {
   const seedString =
     (profile?.basic?.birthdate ?? (profile as any)?.birthdate ?? '1990-01-01') +
     (profile?.basic?.name ?? (profile as any)?.name ?? 'User') +
@@ -147,6 +265,20 @@ export function calculateNagarjunaMadhyamakaSunyata(profile: UserProfile): Nagar
 
   const activeNegationAspect = EIGHTFOLD_NEGATION_ASPECTS[aspectIndex];
   const focalKarikaWisdom = KARIKA_WISDOMS[wisdomIndex];
+  const situationalSunyataAudit = buildSituationalSunyataAudit(question);
+  const temporalPratityaRhythm = buildTemporalPratityaRhythm(now);
+
+  const svabhavaDeconstruction = Math.min(99, Math.round((sunyataWisdomScore + clingingDeconstructionScore) / 2));
+  const dependentOriginationFlow = Math.min(99, Math.round((pratityasamutpadaGraspScore + temporalPratityaRhythm.sunyataClarityIndex) / 2));
+  const twoTruthsEquilibrium = Math.min(99, Math.round((eightfoldNegationMiddleWayScore + twoTruthsHarmonyScore) / 2));
+  const overallSynthesis = Math.round((svabhavaDeconstruction + dependentOriginationFlow + twoTruthsEquilibrium) / 3);
+
+  const madhyamakaMatrix: NagarjunaMadhyamakaMatrix = {
+    svabhavaDeconstruction,
+    dependentOriginationFlow,
+    twoTruthsEquilibrium,
+    overallSynthesis,
+  };
 
   const counselTitle = `용수 중론 팔불중도: ${activeNegationAspect.aspectHanja}`;
   const middleWayGuidance = `용수 보살의 대승 중관 철학은 일체의 양극단과 고정관념을 해체하여 걸림 없는 자유를 선사합니다. ` +
@@ -156,7 +288,7 @@ export function calculateNagarjunaMadhyamakaSunyata(profile: UserProfile): Nagar
 
   return {
     engineVersion: NAGARJUNA_MADHYAMAKA_VERSION,
-    calculatedAtKst: new Date().toISOString(),
+    calculatedAtKst: (now ?? new Date()).toISOString(),
     sunyataWisdomScore,
     eightfoldNegationMiddleWayScore,
     pratityasamutpadaGraspScore,
@@ -164,6 +296,9 @@ export function calculateNagarjunaMadhyamakaSunyata(profile: UserProfile): Nagar
     clingingDeconstructionScore,
     activeNegationAspect,
     focalKarikaWisdom,
+    situationalSunyataAudit,
+    temporalPratityaRhythm,
+    madhyamakaMatrix,
     nagarjunaMiddleCounsel: {
       counselTitle,
       middleWayGuidance,
@@ -180,10 +315,11 @@ export function formatNagarjunaMadhyamakaSunyataPrompt(res: NagarjunaMadhyamakaS
     `- 진속이제(眞俗二諦) 현실·이상 조화도: ${res.twoTruthsHarmonyScore}/100`,
     `- 관념 고착 및 에고 해체 지수: ${res.clingingDeconstructionScore}/100`,
     `- 핵심 팔불중도 관점: ${res.activeNegationAspect.aspectNameKo} [${res.activeNegationAspect.aspectHanja}]`,
-    `- 철학적 의미: ${res.activeNegationAspect.philosophicalMeaning}`,
-    `- 실천적 중도 조언: ${res.activeNegationAspect.practicalCounsel}`,
-    `- 《중론》 핵심 게송: ${res.focalKarikaWisdom.chapterThemeKo} ("${res.focalKarikaWisdom.sanskritVerseSummary}")`,
-    `- 게송 통찰: ${res.focalKarikaWisdom.philosophicalInsight}`,
+    `- 질문 맥락 공성 처방 (${res.situationalSunyataAudit.themeKo} · ${res.situationalSunyataAudit.karikaChapter}): "${res.situationalSunyataAudit.translationKo}" [${res.situationalSunyataAudit.sanskritVerse}]`,
+    `- 실체 착각 함정: ${res.situationalSunyataAudit.substantialistTrap}`,
+    `- 중도 해체 실천: ${res.situationalSunyataAudit.middleWayDeconstructionStep}`,
+    `- KST 연기 리듬: ${res.temporalPratityaRhythm.kstWindow} (${res.temporalPratityaRhythm.twoTruthsFocus}, 명료도 ${res.temporalPratityaRhythm.sunyataClarityIndex}/100) — ${res.temporalPratityaRhythm.rhythmDirective}`,
+    `- 중관 매트릭스: 자성 해체 ${res.madhyamakaMatrix.svabhavaDeconstruction} / 연기 흐름 ${res.madhyamakaMatrix.dependentOriginationFlow} / 이제 균형 ${res.madhyamakaMatrix.twoTruthsEquilibrium} (종합 ${res.madhyamakaMatrix.overallSynthesis}/100)`,
     `- 일상 실천 지침: ${res.nagarjunaMiddleCounsel.middleWayGuidance}`,
   ].join('\n');
 }

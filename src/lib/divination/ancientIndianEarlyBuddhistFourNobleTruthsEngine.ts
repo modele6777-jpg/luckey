@@ -1,24 +1,14 @@
 /**
  * 고대 인도 초기불교 석가모니 붓다 사성제(Catvāri Āryasatyāni) & 팔정도(Āryāṣṭāṅgamārga) 고집멸도(苦集滅道) 중도해탈 엔진
  *
- * 《초전법륜경(Dhammacakkappavattana Sutta)》 및 《대념처경(Mahāsatipaṭṭhāna Sutta)》 원전 기반.
- * 1. 사성제(四聖諦): 깨달음에 이르는 네 가지 거룩한 진리
- *    - 고제(Dukkha): 삶의 무상(Anicca)과 불완전성, 괴로움의 실상을 회피 없이 직면함.
- *    - 집제(Samudaya): 갈애(Taṇhā)와 집착(Upādāna), 무명(Avijjā)이 고통의 근원임을 꿰뚫음.
- *    - 멸제(Nirodha): 탐·진·치 삼독의 불길이 꺼지고 번뇌의 얽매임에서 벗어난 열반(Nibbāna)의 고요.
- *    - 도제(Magga): 고통의 소멸로 이끄는 여덟 가지 바른 길 팔정도(八正道).
- * 2. 팔정도(八正道) 삼학(三學) 구조:
- *    - 혜학(Paññā): 정견(正見, 연기와 사성제 직관), 정사유(正思惟, 출리·무진·무해의 사유)
- *    - 계학(Sīla): 정어(正語, 진실하고 자비로운 말), 정업(正業, 바른 행위), 정명(正命, 청정한 생계)
- *    - 정학(Samādhi): 정정진(正精進, 바른 노력), 정념(正念, 사띠/온전한 알아차림), 정정(正定, 고요한 삼매)
- * 3. 중도(Majjhima Paṭipadā): 맹목적 쾌락주의와 가혹한 자기학대의 양극단을 여의고 중심을 잡는 실천적 지혜.
+ * 《초전법륜경(Dhammacakkappavattana Sutta)》, 《대념처경(Mahāsatipaṭṭhāna Sutta)》, 《법구경(Dhammapada)》 원전 기반.
  *
- * @version LUCKEY-FOUR-NOBLE-TRUTHS-v1.0.0
+ * @version LUCKEY-FOUR-NOBLE-TRUTHS-v2.0.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const FOUR_NOBLE_TRUTHS_VERSION = 'LUCKEY-FOUR-NOBLE-TRUTHS-v1.0.0';
+export const FOUR_NOBLE_TRUTHS_VERSION = 'LUCKEY-FOUR-NOBLE-TRUTHS-v2.0.0';
 
 export interface BuddhistNobleTruth {
   truthHanja: string;
@@ -34,6 +24,30 @@ export interface EightfoldPathFactor {
   practicalMindfulnessCounsel: string;
 }
 
+export interface BuddhistSituationalDharmaAudit {
+  themeKo: string;
+  suttaCitation: string;
+  paliQuote: string;
+  translationKo: string;
+  cravingKnot: string;
+  eightfoldActionStep: string;
+}
+
+export interface BuddhistTemporalSatiRhythm {
+  kstWindow: string;
+  seasonalTone: string;
+  threeTrainingsFocus: '혜학(지혜)' | '계학(윤리·언행)' | '정학(마음챙김·삼매)';
+  satiClarityIndex: number;
+  rhythmDirective: string;
+}
+
+export interface BuddhistNobleEightfoldMatrix {
+  dukkhaAcceptance: number;
+  tanhaRelease: number;
+  satiPresence: number;
+  overallSynthesis: number;
+}
+
 export interface AncientIndianFourNobleTruthsResult {
   engineVersion: string;
   calculatedAtKst: string;
@@ -46,6 +60,9 @@ export interface AncientIndianFourNobleTruthsResult {
   // 세부 명세
   activeNobleTruth: BuddhistNobleTruth;
   focalEightfoldFactor: EightfoldPathFactor;
+  situationalDharmaAudit: BuddhistSituationalDharmaAudit;
+  temporalSatiRhythm: BuddhistTemporalSatiRhythm;
+  nobleEightfoldMatrix: BuddhistNobleEightfoldMatrix;
   buddhistMiddleWayCounsel: {
     counselTitle: string;
     philosophicalGuidance: string;
@@ -132,7 +149,114 @@ const EIGHTFOLD_FACTORS: EightfoldPathFactor[] = [
   },
 ];
 
-export function calculateAncientIndianFourNobleTruths(profile: UserProfile): AncientIndianFourNobleTruthsResult {
+function buildSituationalDharmaAudit(question?: string): BuddhistSituationalDharmaAudit {
+  const q = (question ?? '').trim();
+  if (/불안|고통|힘들|우울|막막|걱정/.test(q)) {
+    return {
+      themeKo: '두 번째 화살 멈추기 (고제·사띠)',
+      suttaCitation: '《화살경(Sallatha Sutta, SN 36.6)》',
+      paliQuote: 'Ekam sallam patisamvedeti, kayikam na cetasikam',
+      translationKo: '깨어있는 이는 몸의 첫 번째 화살은 맞더라도, 마음의 자책과 불안이라는 두 번째 화살은 맞지 않는다.',
+      cravingKnot: '일어난 현실에 "왜 나만 이럴까"라는 저항과 두려움을 덧씌워 괴로움을 두 배로 키우는 습관.',
+      eightfoldActionStep: '정념(正念): 지금 숨이 들어오고 나가는 감각에 1분간 주의를 두며, 사실과 마음의 덧칠을 분리하십시오.',
+    };
+  }
+  if (/집착|욕심|놓|포기|미련|돈|결과/.test(q)) {
+    return {
+      themeKo: '갈애(Taṇhā)의 매듭 풀기 (집제·멸제)',
+      suttaCitation: '《초전법륜경(SN 56.11)》',
+      paliQuote: 'Yo kho bhikkhave imaya tanhaya asesaviraganirodho',
+      translationKo: '갈애를 남김없이 여의고 놓아 버리는 바로 그 자리에 괴로움의 소멸(열반)이 있다.',
+      cravingKnot: '무상한 조건을 영원히 붙잡아 두려는 움켜쥠(Upādāna)에서 피어나는 초조함.',
+      eightfoldActionStep: '정사유(正思惟): "이것을 꼭 쥐지 않아도 나는 안전하다"고 스스로에게 일러 주고 쥔 주먹의 힘을 30% 빼십시오.',
+    };
+  }
+  if (/관계|사람|말|갈등|화|오해|서운/.test(q)) {
+    return {
+      themeKo: '바른 언어와 자비의 경계 (정어·정업)',
+      suttaCitation: '《법구경(Dhammapada)》 제5게',
+      paliQuote: 'Na hi verena verani sammantidha kudacanam, averena ca sammanti',
+      translationKo: '원한은 원한으로 풀리지 않고 오직 원한을 내려놓은 자비로써만 고요히 가라앉는다.',
+      cravingKnot: '상대의 가시 돋친 말에 똑같은 분노로 되갚으려는 즉각적 반작용.',
+      eightfoldActionStep: '정어(正語): 감정이 가라앉기 전에는 답장을 멈추고, 진실하되 상대를 찌르지 않는 온화한 문장만 남기십시오.',
+    };
+  }
+  if (/선택|진로|일|이직|방향|결정/.test(q)) {
+    return {
+      themeKo: '바른 견해와 중도적 결단 (정견·정명)',
+      suttaCitation: '《소나경(Sona Sutta, AN 6.55)》',
+      paliQuote: 'Accaraddho kho pana viriyo uddhaccaya samvattati',
+      translationKo: '거문고 줄이 너무 팽팽하면 끊어지고 너무 느슨하면 소리가 나지 않듯, 정진도 고른 조율에 있다.',
+      cravingKnot: '한 번의 선택으로 모든 것을 완벽히 끝내려는 조급함과 실패 회피.',
+      eightfoldActionStep: '정견(正見) & 정명(正命): 무리한 도박이나 비겁한 타협을 피하고 오래 지속할 수 있는 바른 길 한 걸음을 택하십시오.',
+    };
+  }
+  return {
+    themeKo: '지금-여기 깨어있는 정진 (정정진·정념)',
+    suttaCitation: '《대념처경(DN 22)》',
+    paliQuote: 'Ekayano ayam bhikkhave maggo sattanam visuddhiya',
+    translationKo: '몸과 느낌과 마음을 지금 이 자리에서 또렷이 알아차리는 길, 이것이 마음을 맑히는 외길이다.',
+    cravingKnot: '지나간 어제와 오지 않은 내일 사이에서 현재의 힘을 흩어뜨리는 산만함.',
+    eightfoldActionStep: '정정진(正精進): 오늘 할 일 중 가장 정갈한 한 가지를 골라 25분간 한결같은 마음으로 마치고 호흡을 고르십시오.',
+  };
+}
+
+function buildTemporalSatiRhythm(now?: Date): BuddhistTemporalSatiRhythm {
+  const ref = now ?? new Date();
+  const kst = new Date(ref.getTime() + 9 * 60 * 60 * 1000);
+  const hour = kst.getUTCHours();
+  const month = kst.getUTCMonth() + 1;
+
+  const seasonalTone =
+    month >= 3 && month <= 5
+      ? '봄 — 새로운 인연의 싹을 정견(正見)과 자비로 가꾸는 계절'
+      : month >= 6 && month <= 8
+        ? '여름 — 탐·진·치의 열기를 사띠(정념)의 서늘한 알아차림으로 식히는 계절'
+        : month >= 9 && month <= 11
+          ? '가을 — 무상(Anicca)의 이치를 담담히 수용하며 집착을 비우는 계절'
+          : '겨울 — 내면의 정정(正定) 삼매를 깊게 들이며 고요히 힘을 기르는 계절';
+
+  if (hour >= 4 && hour < 10) {
+    return {
+      kstWindow: '새벽·아침 정념(正念) 사띠 각성 창',
+      seasonalTone,
+      threeTrainingsFocus: '정학(마음챙김·삼매)',
+      satiClarityIndex: 92,
+      rhythmDirective: '마음이 가장 고요하고 맑은 아침입니다. 호흡을 고른 뒤 오늘의 올바른 의도(정사유)를 세우십시오.',
+    };
+  }
+  if (hour >= 10 && hour < 17) {
+    return {
+      kstWindow: '한낮 계학(正語·正業·正命) 일상 실천 창',
+      seasonalTone,
+      threeTrainingsFocus: '계학(윤리·언행)',
+      satiClarityIndex: 83,
+      rhythmDirective: '말과 행동이 타인과 닿는 낮 시간입니다. 한 마디 말과 한 가지 일에도 청정한 주의를 기울이십시오.',
+    };
+  }
+  if (hour >= 17 && hour < 22) {
+    return {
+      kstWindow: '저녁 혜학(正見) 연기 성찰 창',
+      seasonalTone,
+      threeTrainingsFocus: '혜학(지혜)',
+      satiClarityIndex: 80,
+      rhythmDirective: '하루의 크고 작은 감정을 연기의 눈으로 관조하며 불필요한 갈애를 내려놓기 좋은 시간입니다.',
+    };
+  }
+  return {
+    kstWindow: '심야 니로다(Nirodha) 고요·이완 창',
+    seasonalTone,
+    threeTrainingsFocus: '정학(마음챙김·삼매)',
+    satiClarityIndex: 77,
+    rhythmDirective: '밤의 번뇌는 실체가 없는 그림자입니다. 생각을 끊으려 애쓰지 말고 호흡만 지켜보며 쉬십시오.',
+  };
+}
+
+export function calculateAncientIndianFourNobleTruths(
+  profile: UserProfile,
+  question?: string,
+  now?: Date,
+): AncientIndianFourNobleTruthsResult {
   const seedString =
     (profile?.basic?.birthdate ?? (profile as any)?.birthdate ?? '1990-01-01') +
     (profile?.basic?.name ?? (profile as any)?.name ?? 'User') +
@@ -157,6 +281,20 @@ export function calculateAncientIndianFourNobleTruths(profile: UserProfile): Anc
 
   const activeNobleTruth = NOBLE_TRUTHS[truthIndex];
   const focalEightfoldFactor = EIGHTFOLD_FACTORS[pathIndex];
+  const situationalDharmaAudit = buildSituationalDharmaAudit(question);
+  const temporalSatiRhythm = buildTemporalSatiRhythm(now);
+
+  const dukkhaAcceptance = Math.min(99, Math.round((fourNobleTruthsClarityScore + middleWayMajjhimaScore) / 2));
+  const tanhaRelease = Math.min(99, Math.round((cravingExtinctionNirodhaScore + eightfoldPathBalanceScore) / 2));
+  const satiPresence = Math.min(99, Math.round((satiMindfulnessPresenceScore + temporalSatiRhythm.satiClarityIndex) / 2));
+  const overallSynthesis = Math.round((dukkhaAcceptance + tanhaRelease + satiPresence) / 3);
+
+  const nobleEightfoldMatrix: BuddhistNobleEightfoldMatrix = {
+    dukkhaAcceptance,
+    tanhaRelease,
+    satiPresence,
+    overallSynthesis,
+  };
 
   const counselTitle = `초기불교 사성제 & 팔정도: ${focalEightfoldFactor.pathFactorHanja} (${focalEightfoldFactor.trainingDomainKo})`;
   const philosophicalGuidance = `거문고 줄은 너무 팽팽해도 끊어지고 너무 느슨해도 소리가 나지 않듯, 삶의 본질은 중도(中道)에 있습니다. ` +
@@ -165,7 +303,7 @@ export function calculateAncientIndianFourNobleTruths(profile: UserProfile): Anc
 
   return {
     engineVersion: FOUR_NOBLE_TRUTHS_VERSION,
-    calculatedAtKst: new Date().toISOString(),
+    calculatedAtKst: (now ?? new Date()).toISOString(),
     fourNobleTruthsClarityScore,
     eightfoldPathBalanceScore,
     cravingExtinctionNirodhaScore,
@@ -173,6 +311,9 @@ export function calculateAncientIndianFourNobleTruths(profile: UserProfile): Anc
     middleWayMajjhimaScore,
     activeNobleTruth,
     focalEightfoldFactor,
+    situationalDharmaAudit,
+    temporalSatiRhythm,
+    nobleEightfoldMatrix,
     buddhistMiddleWayCounsel: {
       counselTitle,
       philosophicalGuidance,
@@ -189,10 +330,12 @@ export function formatAncientIndianFourNobleTruthsPrompt(res: AncientIndianFourN
     `- 사띠(정념) 현존 알아차림: ${res.satiMindfulnessPresenceScore}/100`,
     `- 중도 균형 지혜도: ${res.middleWayMajjhimaScore}/100`,
     `- 비추어보는 거룩한 진리: ${res.activeNobleTruth.truthHanja} (${res.activeNobleTruth.truthPaliKo})`,
-    `- 진리의 통찰: ${res.activeNobleTruth.truthInsight}`,
-    `- 당면 해탈 실천: ${res.activeNobleTruth.truthLiberationAction}`,
     `- 중점 팔정도 덕목: ${res.focalEightfoldFactor.pathFactorHanja} [${res.focalEightfoldFactor.pathFactorPaliKo}] - ${res.focalEightfoldFactor.trainingDomainKo}`,
-    `- 마음챙김 조언: ${res.focalEightfoldFactor.practicalMindfulnessCounsel}`,
+    `- 질문 맥락 법문 처방 (${res.situationalDharmaAudit.themeKo} · ${res.situationalDharmaAudit.suttaCitation}): "${res.situationalDharmaAudit.translationKo}" [${res.situationalDharmaAudit.paliQuote}]`,
+    `- 갈애의 매듭: ${res.situationalDharmaAudit.cravingKnot}`,
+    `- 팔정도 실천 단계: ${res.situationalDharmaAudit.eightfoldActionStep}`,
+    `- KST 사띠 리듬: ${res.temporalSatiRhythm.kstWindow} (${res.temporalSatiRhythm.threeTrainingsFocus}, 명료도 ${res.temporalSatiRhythm.satiClarityIndex}/100) — ${res.temporalSatiRhythm.rhythmDirective}`,
+    `- 사성제·팔정도 매트릭스: 고제 수용 ${res.nobleEightfoldMatrix.dukkhaAcceptance} / 갈애 해탈 ${res.nobleEightfoldMatrix.tanhaRelease} / 사띠 현존 ${res.nobleEightfoldMatrix.satiPresence} (종합 ${res.nobleEightfoldMatrix.overallSynthesis}/100)`,
     `- 붓다의 중도 지침: ${res.buddhistMiddleWayCounsel.philosophicalGuidance}`,
   ].join('\n');
 }
