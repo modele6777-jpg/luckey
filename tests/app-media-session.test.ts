@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { updateAppMediaSession } from '../src/lib/appMediaSession';
 import { initTTSSessionHandlers, setTTSSessionActive, clearTTSSession } from '../src/lib/ttsMediaSession';
 
-test('app audio bookkeeping never claims OS media controls or controls external players', () => {
+test('BGM stays nonexclusive ambient while active TTS claims playback and OS media controls only during speech', () => {
   const descriptor = Object.getOwnPropertyDescriptor(globalThis, 'navigator');
   const handlers = new Map<MediaSessionAction, (() => void) | null>();
   const media = {
@@ -25,19 +25,26 @@ test('app audio bookkeeping never claims OS media controls or controls external 
     updateAppMediaSession('bgm', {
       title: 'BGM', artist: 'Lucy', state: 'playing', actions: { pause: () => bgmPauses++ },
     });
+    assert.equal(audioType, 'ambient');
+    assert.equal(media.playbackState, 'none');
+    assert.equal(handlers.size, 0, 'BGM alone must not claim lock-screen actions');
+
     initTTSSessionHandlers(() => {}, () => speechPauses++);
     setTTSSessionActive('Reading');
 
+    assert.equal(audioType, 'playback');
+    assert.equal(media.playbackState, 'playing');
+    assert.equal(typeof handlers.get('pause'), 'function');
+
+    clearTTSSession();
     assert.equal(audioType, 'ambient');
     assert.equal(media.playbackState, 'none');
     assert.equal(media.metadata, null);
-    assert.equal(handlers.size, 0, 'the app must not install lock-screen actions that can control other players');
+    assert.equal(handlers.get('pause'), null);
 
-    clearTTSSession();
     updateAppMediaSession('bgm', null);
     assert.equal(media.playbackState, 'none');
     assert.equal(media.metadata, null);
-    assert.equal(handlers.size, 0);
     assert.equal(bgmPauses, 0);
     assert.equal(speechPauses, 0);
   } finally {

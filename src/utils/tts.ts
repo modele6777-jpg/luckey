@@ -730,6 +730,8 @@ export const playTTSInChunks = async (
 
       setSpeechLookahead(sequenceSessionId, i + 1 < chunks.length
         ? { text: chunks[i + 1], voice, emotion } : undefined);
+      if (i + 1 < chunks.length) void prefetchTTS(chunks[i + 1], voice, emotion).catch(() => {});
+      if (i + 2 < chunks.length) void prefetchTTS(chunks[i + 2], voice, emotion).catch(() => {});
 
       const isLastChunk = i === chunks.length - 1;
       try {
