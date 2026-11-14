@@ -870,14 +870,19 @@ test('Geokguk engine: Zipyeong Jinjeon 10-geok judgment, seong/pa/gueung, determ
   assert.equal(holJap.sangSin, null);
 
   // 결정론성(동일 입력 동일 출력)
-  const r2 = calculateGeokguk({ profile });
-  assert.deepEqual(r1, r2);
+  const fixedNow = new Date('2026-11-15T07:45:00+09:00');
+  const rFixed1 = calculateGeokguk({ profile, now: fixedNow, question: '내 격국과 적성 알려줘' });
+  const rFixed2 = calculateGeokguk({ profile, now: fixedNow, question: '내 격국과 적성 알려줘' });
+  assert.deepEqual(rFixed1, rFixed2);
+  assert(rFixed1.calculatedAtKst?.includes('KST'));
 
-  // 프롬프트 포맷터에 엔진 버전 포함
-  const prompt = formatGeokgukPrompt(r1);
-  assert(prompt.includes('LUCKEY-GG-v1.0.0'));
+  // 프롬프트 포맷터에 엔진 버전 및 시공간 리듬 포함
+  const prompt = formatGeokgukPrompt(rFixed1);
+  assert(prompt.includes(GEOKGUK_ENGINE_VERSION));
   assert(prompt.includes('격국'));
+  assert(prompt.includes('KST'));
   assert(prompt.includes('상신(相神)') || r1.sangSin === null);
+  assert(!prompt.includes('/100') && !prompt.includes('%') && !prompt.includes('점수'));
 
   // 프로필 누락 시 skipped 처리
   const skipped = calculateGeokguk({ profile: null });
@@ -2164,17 +2169,22 @@ test('Life Domain Wheel Engine: 6대 핵심 라이프 도메인 밸런스 휠 �
 });
 
 test('Deep Work Flow Engine: 딥워크 몰입 아키타입 및 최적 환경 매트릭스 검증', () => {
-  const res = calculateDeepWorkFlow({ profile, targetDate: new Date('2026-11-03T08:00:00+09:00') });
+  const res = calculateDeepWorkFlow({ profile, targetDate: new Date('2026-11-15T07:45:00+09:00'), question: '개발 작업 집중이 필요해' });
   assert.equal(res.engineVersion, DEEP_WORK_FLOW_VERSION);
   assert(res.archetype.title.length > 0);
   assert(res.flowFocusScore >= 0 && res.flowFocusScore <= 100);
   assert(res.environment.soundscape.length > 0);
   assert(res.archetype.optimalSprintMinutes > 0);
+  assert(res.calculatedAtKst.includes('KST'));
+  assert(res.temporalFlowRhythm.focusWatchWindow.length > 0);
+  assert(res.flowSynthesisMatrix.coreInsight.length > 0);
   const prompt = formatDeepWorkFlowPrompt(res);
   assert(prompt.includes(DEEP_WORK_FLOW_VERSION));
   assert(prompt.includes('1순위 몰입 아키타입'));
   assert(prompt.includes('최적 환경 매트릭스'));
+  assert(prompt.includes('KST'));
   assert.doesNotMatch(prompt, /\bHz\b|Solfeggio|솔페지오|주파수/i);
+  assert(!prompt.includes('/100') && !prompt.includes('%') && !prompt.includes('점수'));
 });
 
 test('Sleep Subconscious Engine: 수면 사운드 안내 및 3단계 나이트 리셋 검증', () => {
@@ -2289,16 +2299,21 @@ test('Shadow Archetype Engine: 융 심리학 그림자 자아 & 골든 섀도우
 });
 
 test('Biorhythm Peak Flow Engine: 3대 생체 바이오리듬 & 크로노타입 황금 피크 검증', () => {
-  const res = calculateBiorhythmPeakFlow({ profile, targetDate: new Date('2026-11-03T10:00:00+09:00') });
+  const res = calculateBiorhythmPeakFlow({ profile, targetDate: new Date('2026-11-15T07:45:00+09:00'), question: '오늘 집중할 시간대 알려줘' });
   assert.equal(res.engineVersion, BIORHYTHM_PEAK_FLOW_VERSION);
   assert(res.biorhythm.physical >= -100 && res.biorhythm.physical <= 100);
   assert(res.biorhythm.emotional >= -100 && res.biorhythm.emotional <= 100);
   assert(res.biorhythm.intellectual >= -100 && res.biorhythm.intellectual <= 100);
   assert(res.biorhythm.compositeVitality >= 0 && res.biorhythm.compositeVitality <= 100);
   assert(res.goldenWindows.deepWorkPeak.length > 0);
+  assert(res.calculatedAtKst.includes('KST'));
+  assert(res.temporalBioRhythm.currentPhaseWindow.length > 0);
+  assert(res.bioSynthesisMatrix.coreInsight.length > 0);
   const prompt = formatBiorhythmPeakFlowPrompt(res);
   assert(prompt.includes('LUCKEY 3대 생체 바이오리듬 & 크로노타입 황금 피크'));
   assert(prompt.includes(res.chronotype));
+  assert(prompt.includes('KST'));
+  assert(!prompt.includes('/100') && !prompt.includes('%') && !prompt.includes('점수'));
 });
 
 test('Destiny Synastry Echo Engine: 다차원 운명 공명 에코 & 카르마적 인연 중력 검증', () => {
