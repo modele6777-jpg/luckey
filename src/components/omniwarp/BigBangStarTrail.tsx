@@ -1,5 +1,5 @@
+import { BigBangEffectPortal } from './BigBangEffectPortal';
 import { useEffect, useRef, type RefObject } from 'react';
-import { createPortal } from 'react-dom';
 
 type Point = { x: number; y: number; time: number; life: number };
 type Spark = Point & { dx: number; dy: number; size: number };
@@ -27,7 +27,7 @@ export function BigBangStarTrail({ settling, pointerRef, originRef }: Props) {
     let lastSparkDistance = 0;
     let sequence = 0;
     const resize = () => {
-      width = innerWidth; height = innerHeight;
+      width = canvas.clientWidth; height = canvas.clientHeight;
       const ratio = Math.min(devicePixelRatio || 1, 2);
       canvas.width = Math.round(width * ratio); canvas.height = Math.round(height * ratio);
       context.setTransform(ratio, 0, 0, ratio, 0, 0);
@@ -35,11 +35,13 @@ export function BigBangStarTrail({ settling, pointerRef, originRef }: Props) {
     };
     resize();
     const origin = originRef.current;
-    if (origin) points.push({ ...origin, time: performance.now(), life: 600 });
+    if (origin) { const rect = canvas.getBoundingClientRect(); points.push({ x: origin.x - rect.left, y: origin.y - rect.top, time: performance.now(), life: 600 }); }
     const draw = (now: number) => {
       context.clearRect(0, 0, width, height);
       const light = document.documentElement.classList.contains('light');
-      const pointer = settlingRef.current ? null : pointerRef.current;
+      const globalPointer = settlingRef.current ? null : pointerRef.current;
+      const rect = canvas.getBoundingClientRect();
+      const pointer = globalPointer ? { clientX: globalPointer.clientX - rect.left, clientY: globalPointer.clientY - rect.top } : null;
       if (pointer) {
         const previous = points.at(-1);
         const distance = previous ? Math.hypot(pointer.clientX - previous.x, pointer.clientY - previous.y) : 0;
@@ -93,9 +95,10 @@ export function BigBangStarTrail({ settling, pointerRef, originRef }: Props) {
     };
     frame = requestAnimationFrame(draw);
     window.addEventListener('resize', resize);
-    return () => { cancelAnimationFrame(frame); window.removeEventListener('resize', resize); };
+    const observer = new ResizeObserver(resize); observer.observe(canvas);
+    return () => { observer.disconnect(); cancelAnimationFrame(frame); window.removeEventListener('resize', resize); };
   }, [pointerRef, originRef]);
   if (typeof document === 'undefined') return null;
-  return createPortal(<canvas ref={canvasRef} data-bigbang-star-trail="true" aria-hidden="true"
-    style={{ position: 'fixed', inset: 0, width: '100%', height: '100%', pointerEvents: 'none', zIndex: 10010 }} />, document.body);
+  return (<BigBangEffectPortal zIndex={10010}><canvas ref={canvasRef} data-bigbang-star-trail="true" aria-hidden="true"
+    style={{ position: 'fixed', inset: 0, width: '100%', height: '100%', pointerEvents: 'none', zIndex: 10010 }} /></BigBangEffectPortal>);
 }

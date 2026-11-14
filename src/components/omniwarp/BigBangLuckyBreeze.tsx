@@ -1,5 +1,5 @@
+import { BigBangEffectPortal } from './BigBangEffectPortal';
 import React, { useMemo } from 'react';
-import { createPortal } from 'react-dom';
 import { motion, useReducedMotion } from 'motion/react';
 
 interface BigBangLuckyBreezeProps {
@@ -79,14 +79,14 @@ export function BigBangLuckyBreeze({ settling }: BigBangLuckyBreezeProps) {
 
   if (typeof document === 'undefined') return null;
 
-  return createPortal(
-    <div
+  return (
+    <BigBangEffectPortal zIndex={10035}><div
       aria-hidden="true"
       data-bigbang-lucky-breeze-fullscreen="true"
       className="fixed inset-0 pointer-events-none select-none overflow-hidden z-[10035]"
       style={{
-        width: '100vw',
-        height: '100dvh',
+        width: '100%',
+        height: '100%',
         opacity: settling ? 0 : 1,
         transition: 'opacity 1.25s cubic-bezier(0.16, 1, 0.3, 1)',
       }}
@@ -97,8 +97,8 @@ export function BigBangLuckyBreeze({ settling }: BigBangLuckyBreezeProps) {
             key={c.id}
             className="absolute will-change-transform"
             style={{
-              left: `${c.startX}vw`,
-              top: `${c.startY}vh`,
+              left: `${c.startX}%`,
+              top: `${c.startY}%`,
               width: c.size,
               height: c.size,
               color: c.color,
@@ -169,7 +169,6 @@ export function BigBangLuckyBreeze({ settling }: BigBangLuckyBreezeProps) {
           </motion.div>
         );
       })}
-    </div>,
-    document.body
+    </div></BigBangEffectPortal>
   );
 }

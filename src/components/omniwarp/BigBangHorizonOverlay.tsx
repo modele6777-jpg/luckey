@@ -1,3 +1,4 @@
+import { BigBangEffectPortal } from './BigBangEffectPortal';
 import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Sun, Sparkles, Moon } from 'lucide-react';
@@ -77,7 +78,7 @@ export function BigBangHorizonOverlay({
     : '전체 7대 앱 차원 지평선';
 
   return (
-    <AnimatePresence>
+    <BigBangEffectPortal><AnimatePresence>
       <motion.div
         key="bigbang-horizon-overlay"
         initial={{ opacity: 0 }}
@@ -297,6 +298,6 @@ export function BigBangHorizonOverlay({
           <span className="text-red-400">원 밖으로 멀리 던지면 안전 취소</span>
         </div>
       </motion.div>
-    </AnimatePresence>
+    </AnimatePresence></BigBangEffectPortal>
   );
 }

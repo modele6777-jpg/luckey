@@ -1,3 +1,5 @@
+import { measureMainOverlayViewport } from '@/lib/mainOverlayViewport';
+import { BigBangEffectPortal } from './BigBangEffectPortal';
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { BigBangCommitEventDetail } from '@/lib/omniWarp/types';
@@ -32,8 +34,11 @@ export function BigBangExpansionOverlay() {
         // Spawn Big Bang particles from crystal orb origin (bottom-right button area)
         const canvas = canvasRef.current;
         const btnRect = document.getElementById('bigbang-omnibutton')?.getBoundingClientRect();
-        const originX = btnRect ? (btnRect.left + btnRect.width / 2) : (window.innerWidth - 60);
-        const originY = btnRect ? (btnRect.top + btnRect.height / 2) : (window.innerHeight - 60);
+        const bounds = measureMainOverlayViewport('content');
+        const globalX = btnRect ? (btnRect.left + btnRect.width / 2) : (window.innerWidth - 60);
+        const globalY = btnRect ? (btnRect.top + btnRect.height / 2) : (window.innerHeight - 60);
+        const originX = globalX >= bounds.left && globalX <= bounds.left + bounds.width ? globalX - bounds.left : bounds.width / 2;
+        const originY = globalY >= bounds.top && globalY <= bounds.top + bounds.height ? globalY - bounds.top : bounds.height * 0.8;
         setOrigin({ x: originX, y: originY });
         const isWhitehole = detail.phase === 'whitehole' || (detail.phase === 'event_horizon' && detail.target?.eventHorizonMode === 'whitehole');
         const isBlackhole = detail.phase === 'blackhole' || (detail.phase === 'event_horizon' && detail.target?.eventHorizonMode === 'blackhole');
@@ -125,8 +130,13 @@ export function BigBangExpansionOverlay() {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
+    const resize = () => {
+      canvas.width = Math.max(1, Math.round(canvas.getBoundingClientRect().width));
+      canvas.height = Math.max(1, Math.round(canvas.getBoundingClientRect().height));
+    };
+    resize();
+    const observer = new ResizeObserver(resize);
+    observer.observe(canvas);
 
     const render = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -176,6 +186,7 @@ export function BigBangExpansionOverlay() {
     animFrameRef.current = requestAnimationFrame(render);
 
     return () => {
+      observer.disconnect();
       if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
     };
   }, [activeCommit]);
@@ -188,7 +199,7 @@ export function BigBangExpansionOverlay() {
   const isWormhole = phase === 'wormhole';
 
   return (
-    <AnimatePresence>
+    <BigBangEffectPortal><AnimatePresence>
       <motion.div
         key="bigbang-overlay"
         data-testid="bigbang-transition-overlay"
@@ -302,6 +313,6 @@ export function BigBangExpansionOverlay() {
           />
         )}
       </motion.div>
-    </AnimatePresence>
+    </AnimatePresence></BigBangEffectPortal>
   );
 }
