@@ -2362,7 +2362,7 @@ try {
   // 114. 고대 한국 삼국유사 단군 천부인(天符印) 3보 & 홍익인간 광명 엔진
   const koreanDangunCheonbuinResult = calculateSupplement('koreanDangunCheonbuinResult', () => ((() => {
     try {
-      return calculateKoreanDangunCheonbuin({ profile, question });
+      return calculateKoreanDangunCheonbuin({ profile, question, now });
     } catch (_) {
       return null;
     }
@@ -2866,7 +2866,7 @@ try {
   // 171. 한국 고대 단군 단학 천부경(天符經) 81자 우주 매트릭스 & 삼일신고 3진3망 성통광명 엔진
   const cheonbugyeongEightyOneResult = calculateSupplement('cheonbugyeongEightyOneResult', () => ((() => {
     try {
-      return calculateKoreanCheonbugyeongEightyOne(profile);
+      return calculateKoreanCheonbugyeongEightyOne(profile, now, question);
     } catch (_) {
       return null;
     }

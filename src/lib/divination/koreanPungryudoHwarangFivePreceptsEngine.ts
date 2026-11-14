@@ -20,7 +20,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const KOREAN_PUNGRYUDO_HWARANG_ENGINE_VERSION = '1.0.0';
+export const KOREAN_PUNGRYUDO_HWARANG_ENGINE_VERSION = '2.0.0';
 
 export interface HwarangPrecept {
   id: string;
@@ -28,20 +28,38 @@ export interface HwarangPrecept {
   hanja: string;
   coreSpirit: string;
   guidanceAction: string;
-  preceptScore: number; // 0 ~ 100
+  preceptScore: number; // 0 ~ 100 (내부 정렬용, 프롬프트 비노출)
 }
 
 export interface KoreanPungryudoHwarangReport {
   engineVersion: string;
   timestamp: string;
-  pungryuXuanmiaoHarmonyScore: number; // 0 ~ 100 풍류도 현묘지도(유불선 삼교융합) 조화 지수
-  hoyounjigiSpiritualCourageScore: number; // 0 ~ 100 호연지기(산수유람 기백) 지수
-  socialFaithLoyaltyScore: number; // 0 ~ 100 대인관계 신의도(교우이신·충의)
-  gaAkSangYeolJoyVibration: number; // 0 ~ 100 가악상열(풍류와 예술적 즐거움) 파동도
+  calculatedAtKst: string;
+  pungryuXuanmiaoHarmonyScore: number; // 0 ~ 100 (내부 호환용, 프롬프트 비노출)
+  hoyounjigiSpiritualCourageScore: number; // 0 ~ 100 (내부 호환용, 프롬프트 비노출)
+  socialFaithLoyaltyScore: number; // 0 ~ 100 (내부 호환용, 프롬프트 비노출)
+  gaAkSangYeolJoyVibration: number; // 0 ~ 100 (내부 호환용, 프롬프트 비노출)
   dominantPrecept: HwarangPrecept; // 현재 가장 크게 발동하는 화랑 오계
   secondaryPrecept: HwarangPrecept; // 보조 지원 오계
+  situationalPungryuAudit: {
+    focusTheme: string;
+    preceptAlignmentNote: string;
+    cultivationTone: string;
+  };
+  temporalPungryuRhythm: {
+    kstTimeLabel: string;
+    hwarangWatchWindow: string;
+    seasonalMountainTone: string;
+    temporalGuidance: string;
+  };
+  pungryuSynthesisMatrix: {
+    coreInsight: string;
+    recommendedAction: string;
+    cautionNotice: string;
+  };
   pungryudoLifeCultivation: string; // 풍류도 도의상마 심신수련 처방
   hwarangCourageGuidance: string; // 화랑도 기개 및 결단 지침
+  boundaryNotice: string;
 }
 
 const HWARANG_PRECEPTS_BASE: Omit<HwarangPrecept, 'preceptScore'>[] = [
@@ -88,6 +106,42 @@ export interface KoreanPungryudoHwarangOptions {
   contextText?: string;
   now?: Date;
   targetDate?: Date;
+}
+
+function getTemporalPungryuRhythm(now: Date) {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  const hour = kst.getUTCHours();
+  const month = kst.getUTCMonth() + 1;
+
+  const hwarangWatchWindow =
+    hour >= 5 && hour < 11
+      ? '남산 아침 수련창 — 사군이충의 맑은 뜻과 오늘의 기개를 세우는 시간'
+      : hour >= 11 && hour < 17
+        ? '임전무퇴 정오 돌파창 — 망설임을 접고 핵심 과업을 당당히 돌파하는 시간'
+        : hour >= 17 && hour < 22
+          ? '가악상열 황혼 풍류창 — 교우이신의 신의를 나누고 마음의 여백을 즐기는 시간'
+          : '도의상마 심야 성찰창 — 하루의 언행을 살생유택의 절제로 돌아보는 시간';
+
+  const seasonalMountainTone =
+    month >= 3 && month <= 5
+      ? '봄 · 금강산 산수유람기 (새 기운을 들이마시며 시야를 넓히는 시기)'
+      : month >= 6 && month <= 8
+        ? '여름 · 지리산 호연지기 (열정을 품되 절도와 품격을 잃지 않는 시기)'
+        : month >= 9 && month <= 11
+          ? '가을 · 경주 도의상마기 (신의와 책임을 다져 결실을 맺는 시기)'
+          : '겨울 · 선도 응축기 (내면의 기백을 조용히 갈고닦는 시기)';
+
+  return {
+    kstTimeLabel: `${y}-${m}-${d} ${hh}:${mm} KST`,
+    hwarangWatchWindow,
+    seasonalMountainTone,
+    temporalGuidance: `${hwarangWatchWindow} · ${seasonalMountainTone}의 호흡에 맞추어 풍류의 여유와 오계의 중심을 함께 지키십시오.`,
+  };
 }
 
 export function calculateKoreanPungryudoHwarang(
@@ -155,17 +209,47 @@ export function calculateKoreanPungryudoHwarang(
     hwarangCourageGuidance = `${dominantPrecept.nameKo}의 가치를 나침반 삼아, 유·불·선을 아우르는 풍류도의 유연하고 현묘한 조화로 난관을 슬기롭게 돌파하십시오.`;
   }
 
+  const temporalPungryuRhythm = getTemporalPungryuRhythm(now);
+  const situationalPungryuAudit = /관계|친구|동료|연애|사랑|약속|갈등/.test(contextText)
+    ? {
+        focusTheme: '교우이신(신의)과 살생유택(상생 절제)',
+        preceptAlignmentNote: '관계에서는 약속의 무게를 지키되 상대를 몰아세우지 않는 너그러움이 가장 큰 힘이 됩니다.',
+        cultivationTone: '도의상마 — 진실한 대화로 서로의 품격을 지켜주는 태도',
+      }
+    : /도전|시험|이직|사업|일|결단|승부/.test(contextText)
+      ? {
+          focusTheme: '임전무퇴(기개)와 사군이충(사명감)',
+          preceptAlignmentNote: '물러서지 않는 당당함 위에 맡은 바 책임을 끝까지 완수하는 진정성이 더해질 때 승부가 갈립니다.',
+          cultivationTone: '호연지기 — 작은 이해득실에 흔들리지 않는 큰 시야',
+        }
+      : {
+          focusTheme: '유·불·선 삼교융합 풍류도의 균형',
+          preceptAlignmentNote: `${dominantPrecept.nameKo}와 ${secondaryPrecept.nameKo}을 아울러 유연함과 단단함을 함께 갖추십시오.`,
+          cultivationTone: pungryudoLifeCultivation,
+        };
+
+  const pungryuSynthesisMatrix = {
+    coreInsight: `주재 오계 [${dominantPrecept.nameKo}]와 보조 [${secondaryPrecept.nameKo}]가 ${situationalPungryuAudit.focusTheme}을 비춥니다.`,
+    recommendedAction: `${hwarangCourageGuidance} (${dominantPrecept.guidanceAction})`,
+    cautionNotice: '기개만 앞서 살생유택의 절제를 잃거나, 풍류에 치우쳐 임전무퇴의 결단을 미루지 않도록 경계하십시오.',
+  };
+
   return {
     engineVersion: KOREAN_PUNGRYUDO_HWARANG_ENGINE_VERSION,
     timestamp: now.toISOString(),
+    calculatedAtKst: temporalPungryuRhythm.kstTimeLabel,
     pungryuXuanmiaoHarmonyScore,
     hoyounjigiSpiritualCourageScore,
     socialFaithLoyaltyScore,
     gaAkSangYeolJoyVibration,
     dominantPrecept,
     secondaryPrecept,
+    situationalPungryuAudit,
+    temporalPungryuRhythm,
+    pungryuSynthesisMatrix,
     pungryudoLifeCultivation,
     hwarangCourageGuidance,
+    boundaryNotice: '본 결과는 최치원 《난랑비서》 풍류도와 원광법사 《세속오계》의 인문·정신 철학에 기반한 정성적 성찰 안내이며, 확정적 길흉 판정이 아닙니다.',
   };
 }
 
@@ -174,14 +258,15 @@ export function formatKoreanPungryudoHwarangPrompt(
 ): string {
   return [
     `### 🌸 고대 한국 신라 최치원 난랑비서 풍류도 현묘지도 & 화랑도 세속오계 리포트`,
-    `- 엔진 버전: v${report.engineVersion}`,
-    `- 풍류도 현묘지도 조화도: ${report.pungryuXuanmiaoHarmonyScore}/100 (유·불·선 삼교융합 상생력)`,
-    `- 호연지기(산수유람 기백): ${report.hoyounjigiSpiritualCourageScore}/100 · 대인관계 신의도: ${report.socialFaithLoyaltyScore}/100`,
-    `- 가악상열(풍류·예술 파동): ${report.gaAkSangYeolJoyVibration}/100`,
-    `- 핵심 화랑 세속오계: ${report.dominantPrecept.nameKo} (${report.dominantPrecept.preceptScore}점) — ${report.dominantPrecept.coreSpirit}`,
-    `- 보조 화랑 세속오계: ${report.secondaryPrecept.nameKo} (${report.secondaryPrecept.preceptScore}점) — ${report.secondaryPrecept.coreSpirit}`,
+    `- 엔진 버전: v${report.engineVersion} | 연산 시각: ${report.calculatedAtKst}`,
+    `- 핵심 화랑 세속오계: ${report.dominantPrecept.nameKo} (${report.dominantPrecept.hanja}) — ${report.dominantPrecept.coreSpirit}`,
+    `- 보조 화랑 세속오계: ${report.secondaryPrecept.nameKo} (${report.secondaryPrecept.hanja}) — ${report.secondaryPrecept.coreSpirit}`,
+    `- 질문 맥락 감사 (${report.situationalPungryuAudit.focusTheme}): ${report.situationalPungryuAudit.preceptAlignmentNote} (${report.situationalPungryuAudit.cultivationTone})`,
+    `- KST 시공간 풍류 리듬: ${report.temporalPungryuRhythm.hwarangWatchWindow} / ${report.temporalPungryuRhythm.seasonalMountainTone}`,
+    `  • 시공간 지침: ${report.temporalPungryuRhythm.temporalGuidance}`,
+    `- 풍류 교차 매트릭스: 핵심(${report.pungryuSynthesisMatrix.coreInsight}) | 실행(${report.pungryuSynthesisMatrix.recommendedAction}) | 주의(${report.pungryuSynthesisMatrix.cautionNotice})`,
     `- 풍류도 심신수련 처방: ${report.pungryudoLifeCultivation}`,
     `- 화랑도 기개·결단 지침: ${report.hwarangCourageGuidance}`,
-    `- [AI 해석 지침]: 신라 최치원의 《난랑비서》 풍류도(風流道)와 원광법사의 《세속오계(世俗五戒)》 정신을 적용하여, 질문자가 유·불·선을 포괄하는 호연지기와 유연한 대인 신의를 발휘하고, 결정적 승부처에서 화랑의 당당한 기개로 문제를 품격 있게 돌파하도록 고무하십시오.`,
+    `- 해석 경계: ${report.boundaryNotice}`,
   ].join('\n');
 }
