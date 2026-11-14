@@ -1600,9 +1600,11 @@ test('Kabbalah engine fixtures: life path / personality / soul path and pillar b
 
 test('Kabbalah engine: determinism, null-safe fallback and prompt formatting', () => {
   const profile = { basic: { birthdate: '1995-03-25', gender: 'male' as const } };
-  const r1 = calculateKabbalah({ profile });
-  const r2 = calculateKabbalah({ profile });
+  const fixedNow = new Date('2026-11-15T07:55:00+09:00');
+  const r1 = calculateKabbalah({ profile, now: fixedNow, question: '내 카발라 생명나무 알려줘' });
+  const r2 = calculateKabbalah({ profile, now: fixedNow, question: '내 카발라 생명나무 알려줘' });
   assert.deepEqual(r1, r2); // 동일 입력 동일 출력
+  assert(r1.calculatedAtKst?.includes('KST'));
   // 프로필 누락 시 safe fallback
   const skipped = calculateKabbalah({ profile: null });
   assert.equal(skipped.status, 'skipped');
@@ -1612,14 +1614,16 @@ test('Kabbalah engine: determinism, null-safe fallback and prompt formatting', (
   assert(malformed.status === 'error' || malformed.status === 'skipped');
   // 프롬프트 포맷터
   const prompt = formatKabbalahPrompt(r1);
-  assert(prompt.includes('LUCKEY-KB-v1.0.0'));
+  assert(prompt.includes(KABBALAH_ENGINE_VERSION));
   assert(prompt.includes('네차크'));
   assert(!prompt.includes('라이프 패스 세피라: 7 → 게부라'));
   assert(prompt.includes('제17경로'));
   assert(prompt.includes('연인'));
-  assert(prompt.includes('자비(확장) 50%'));
+  assert(prompt.includes('자비(확장) 균형'));
   assert(prompt.includes('예치라'));
-  assert(prompt.includes('생년월일 게마트리아 수리로 산출된 100% 확정 배속'));
+  assert(prompt.includes('KST'));
+  assert(!prompt.includes('/100') && !prompt.includes('%') && !prompt.includes('점수'));
+  assert(prompt.includes('생년월일 게마트리아 수리로 산출된 확정 배속'));
   assert.equal(formatKabbalahPrompt(skipped), '');
   assert(KABBALAH_METHOD.length > 0);
 });
@@ -1632,7 +1636,7 @@ test('Kabbalah engine binds into the deterministic engine report and prompt', ()
   assert.equal(report.kabbalahResult!.numerology!.lifePathSephirah.name, '네차크');
   assert.equal(report.tools.kabbalah.status, 'calculated'); // symbolic → calculated 승격
   const prompt = formatDeterministicEnginePrompt(report);
-  assert(prompt.includes('LUCKEY-KB-v1.0.0'));
+  assert(prompt.includes(KABBALAH_ENGINE_VERSION));
   const noProfile = runDeterministicEngine({ profile: null });
   assert(noProfile.kabbalahResult?.status === 'skipped');
   assert.equal(noProfile.tools.kabbalah.status, 'skipped');
@@ -1899,9 +1903,11 @@ test('Liuren Master Engine: 사과·삼전·12천장 정통 결단 산출 및 �
 });
 
 test('Iching Master Engine: 64괘 4대 대칭 괘상(본·지·호·착·종) 및 체용 생극제화 검증', () => {
-  const res = calculateIchingMaster([7, 8, 9, 8, 7, 8]); // 3효 양동효
+  const fixedNow = new Date('2026-11-15T07:55:00+09:00');
+  const res = calculateIchingMaster([7, 8, 9, 8, 7, 8], '이 선택을 진행해도 될까', fixedNow); // 3효 양동효
   assert.equal(res.status, 'calculated');
   assert.equal(res.engineVersion, ICHING_MASTER_ENGINE_VERSION);
+  assert(res.calculatedAtKst.includes('KST'));
   assert.deepEqual(res.movingLines, [3]);
   assert(res.primary.number >= 1 && res.primary.number <= 64);
   assert(res.changed.number >= 1 && res.changed.number <= 64);
@@ -1915,8 +1921,11 @@ test('Iching Master Engine: 64괘 4대 대칭 괘상(본·지·호·착·종) �
   assert(res.hexagramDynamics.momentumScore >= 0 && res.hexagramDynamics.momentumScore <= 100);
   assert(res.palGongSeYing.seYao >= 1 && res.palGongSeYing.seYao <= 6);
   assert(res.palGongSeYing.yingYao >= 1 && res.palGongSeYing.yingYao <= 6);
+  assert(res.temporalIchingRhythm.divinationWatchWindow.length > 0);
+  assert(res.ichingSynthesisMatrix.coreInsight.length > 0);
   const prompt = formatIchingMasterPrompt(res);
   assert(prompt.includes(ICHING_MASTER_ENGINE_VERSION));
+  assert(prompt.includes('KST'));
   assert(prompt.includes('본괘(本卦)'));
   assert(prompt.includes('지괘(之卦/변괘)'));
   assert(prompt.includes('호괘(互卦/잠재)'));
@@ -1925,6 +1934,7 @@ test('Iching Master Engine: 64괘 4대 대칭 괘상(본·지·호·착·종) �
   assert(prompt.includes('체용(體用) 생극제화'));
   assert(prompt.includes('효위(爻位) 6단계 성장 역학'));
   assert(prompt.includes('경방 8궁(八宮) 및 세응(世應) 상호작용'));
+  assert(!prompt.includes('/100') && !prompt.includes('%') && !prompt.includes('점수'));
 });
 
 test('Tarot Master Engine: 78 아르카나 수비학 소울·퍼스널리티·연간 카드 및 4원소 밸런스 검증', () => {
@@ -2365,16 +2375,21 @@ test('Serendipity Synchronicity Engine: 양자 동시성 & 세렌디피티 행�
 });
 
 test('Human Design BodyGraph Engine: 휴먼 디자인 9대 에너지 센터 및 오라 검증', () => {
-  const res = calculateHumanDesignBodyGraph({ profile, targetDate: new Date('2026-11-03T10:00:00+09:00') });
+  const res = calculateHumanDesignBodyGraph({ profile, targetDate: new Date('2026-11-15T07:55:00+09:00'), question: '내 결정 방식이 궁금해' });
   assert.equal(res.engineVersion, HUMAN_DESIGN_BODYGRAPH_VERSION);
   assert(res.designType.type.length > 0);
   assert(res.strategy.length > 0);
   assert(res.innerAuthority.length > 0);
   assert(res.centers.sacral !== undefined);
   assert(res.deconditioningAdvice.length > 0);
+  assert(res.calculatedAtKst.includes('KST'));
+  assert(res.temporalHdRhythm.auraWatchWindow.length > 0);
+  assert(res.hdSynthesisMatrix.coreInsight.length > 0);
   const prompt = formatHumanDesignBodyGraphPrompt(res);
   assert(prompt.includes('LUCKEY 휴먼 디자인 9대 에너지 센터 & 바디그래프 오라'));
   assert(prompt.includes(res.designType.koreanLabel));
+  assert(prompt.includes('KST'));
+  assert(!prompt.includes('/100') && !prompt.includes('%') && !prompt.includes('점수'));
 });
 
 test('Chakra Vibration Alignment Engine: frequency-free chakra alignment and balance', () => {

@@ -20,7 +20,7 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const HUMAN_DESIGN_BODYGRAPH_VERSION = 'LUCKEY-HUMANDESIGN-v1.0.0';
+export const HUMAN_DESIGN_BODYGRAPH_VERSION = 'LUCKEY-HUMANDESIGN-v2.0.0';
 
 export type HumanDesignType = 'Generator' | 'Manifesting Generator' | 'Projector' | 'Manifestor' | 'Reflector';
 
@@ -34,6 +34,7 @@ export interface CenterState {
 export interface HumanDesignBodyGraphReport {
   engineVersion: string;
   calculatedAt: string;
+  calculatedAtKst: string;
   designType: {
     type: HumanDesignType;
     koreanLabel: string;
@@ -46,12 +47,66 @@ export interface HumanDesignBodyGraphReport {
   definitionProfile: string;  // 프로파일 (예: 1/3 탐구자·실험가, 2/4 은둔자·네트워커 등)
   centers: Record<string, CenterState>;
   deconditioningAdvice: string; // 타인의 기대를 털어내고 본연의 에너지를 회복하는 탈조건화 행동 지침
+  situationalHdAudit: {
+    focusTheme: string;
+    auraNote: string;
+    decisionTip: string;
+  };
+  temporalHdRhythm: {
+    kstTimeLabel: string;
+    auraWatchWindow: string;
+    seasonalDesignTone: string;
+    temporalGuidance: string;
+  };
+  hdSynthesisMatrix: {
+    coreInsight: string;
+    recommendedAction: string;
+    cautionNotice: string;
+  };
+  boundaryNotice: string;
   synthesisPromptGuidance: string;
+}
+
+function getTemporalHdRhythm(now: Date) {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  const hour = kst.getUTCHours();
+  const month = kst.getUTCMonth() + 1;
+
+  const auraWatchWindow =
+    hour >= 5 && hour < 11
+      ? '아침 오라 정렬창 — 타인의 기대가 스며들기 전 내적 권위(Inner Authority)의 감각을 확인하는 시간'
+      : hour >= 11 && hour < 17
+        ? '정오 전략 실행창 — 내 타입의 전략(반응/초대/알리기)에 따라 외부와 상호작용하는 시간'
+        : hour >= 17 && hour < 22
+          ? '황혼 미정의 센터 방전창 — 하루 동안 흡수한 타인의 감정·압박을 털어내고 혼자의 공간을 갖는 시간'
+          : '심야 탈조건화 회복창 — 수면 중 열린 센터들을 비우고 고유 에너지로 복귀하는 시간';
+
+  const seasonalDesignTone =
+    month >= 3 && month <= 5
+      ? '봄 · 뉴트리노 개시절 (새로운 반응과 초대가 들어오기 시작하는 시기)'
+      : month >= 6 && month <= 8
+        ? '여름 · 오라 확장절 (정의된 센터의 에너지가 활발히 발현되는 시기)'
+        : month >= 9 && month <= 11
+          ? '가을 · 탈조건화 정제절 (비자아 패턴을 걸러내고 본질만 남기는 시기)'
+          : '겨울 · 내적 권위 숙성절 (조급함을 내려놓고 몸의 명확한 신호를 기다리는 시기)';
+
+  return {
+    kstTimeLabel: `${y}-${m}-${d} ${hh}:${mm} KST`,
+    auraWatchWindow,
+    seasonalDesignTone,
+    temporalGuidance: `${auraWatchWindow} · ${seasonalDesignTone}의 결에 맞추어 결정 리듬을 조율하십시오.`,
+  };
 }
 
 export function runHumanDesignBodyGraphEngine(
   profile?: UserProfile,
-  targetDate: Date = new Date()
+  targetDate: Date = new Date(),
+  question?: string
 ): HumanDesignBodyGraphReport {
   const sajuRes = calculateDetailedSaju(profile || null);
 
@@ -222,7 +277,36 @@ export function runHumanDesignBodyGraphEngine(
 
   const deconditioningAdvice = `${designType.koreanLabel} 유형인 당신의 핵심 탈조건화 과제는 [${designType.notSelfTheme}]의 늪에서 벗어나는 것입니다. 머리로 따져서 억지로 계획을 짜지 말고, 오직 [${strategy}]의 원칙과 [${innerAuthority}]에 따라 몸이 보내는 신호에 맡길 때 자연스러운 [${designType.signatureEmotion}]의 흐름으로 복귀합니다.`;
 
-  const synthesisPromptGuidance = `[LUCKEY 휴먼 디자인 9대 에너지 센터 & 바디그래프 오라 v1.0.0]
+  const temporalHdRhythm = getTemporalHdRhythm(targetDate);
+  const q = (question || '').trim();
+  const situationalHdAudit = /결정|선택|이직|계약/.test(q)
+    ? {
+        focusTheme: `${designType.type} 내적 권위 기반 의사결정`,
+        auraNote: innerAuthority,
+        decisionTip: strategy,
+      }
+    : /피곤|관계|지침|감정/.test(q)
+      ? {
+          focusTheme: '미정의 센터 탈조건화 및 에너지 보호',
+          auraNote: `비자아 신호(${designType.notSelfTheme})가 감지되면 외부 기대를 내려놓으십시오.`,
+          decisionTip: centers.solarPlexus.wisdomInsight,
+        }
+      : {
+          focusTheme: `${designType.koreanLabel} · ${definitionProfile.split(' ')[0]}`,
+          auraNote: designType.auraQuality,
+          decisionTip: strategy,
+        };
+
+  const hdSynthesisMatrix = {
+    coreInsight: `[${designType.type}]의 서명 감정(${designType.signatureEmotion})은 전략(${strategy})을 따를 때 자연히 열립니다.`,
+    recommendedAction: `${innerAuthority}에 귀 기울이며 ${definitionProfile.split(' ')[0]} 강점을 살리기`,
+    cautionNotice: `비자아 주제(${designType.notSelfTheme})에 빠질 때는 머리의 조급함을 멈추십시오.`,
+  };
+
+  const boundaryNotice = '본 결과는 휴먼 디자인 아키타입과 사주 오행 구조를 결합한 정성적 자기 이해 가이드이며, 고정된 운명 판정이 아닙니다.';
+
+  const synthesisPromptGuidance = `[LUCKEY 휴먼 디자인 9대 에너지 센터 & 바디그래프 오라 ${HUMAN_DESIGN_BODYGRAPH_VERSION}]
+- 연산 시각: ${temporalHdRhythm.kstTimeLabel}
 - 에너지 타입: ${designType.koreanLabel} (서명: ${designType.signatureEmotion} | 비자아: ${designType.notSelfTheme})
 - 오라 특성: ${designType.auraQuality}
 - 인생 전략(Strategy): ${strategy}
@@ -233,17 +317,27 @@ export function runHumanDesignBodyGraphEngine(
   * 태양신경총(Solar Plexus): ${isSolarDefined ? '정의(Defined - 감정 파도 통과 후 결정)' : '미정의(Undefined - 타인 감정 필터링 필요)'}
   * 비장(Spleen): ${isSpleenDefined ? '정의(Defined - 찰나의 순간 직관 신뢰)' : '미정의(Undefined - 미련 버리기 훈련)'}
   * 심장/에고(Heart): ${isHeartDefined ? '정의(Defined - 강철 의지력)' : '미정의(Undefined - 가치 증명 강박 탈피)'}
-- 탈조건화(De-conditioning) 행동 처방: ${deconditioningAdvice}`;
+- 질문 맥락 감사 (${situationalHdAudit.focusTheme}): ${situationalHdAudit.auraNote} / ${situationalHdAudit.decisionTip}
+- KST 시공간 오라 리듬: ${temporalHdRhythm.auraWatchWindow} / ${temporalHdRhythm.seasonalDesignTone}
+  * 시공간 지침: ${temporalHdRhythm.temporalGuidance}
+- 휴먼 디자인 교차 매트릭스: 핵심(${hdSynthesisMatrix.coreInsight}) | 실행(${hdSynthesisMatrix.recommendedAction}) | 주의(${hdSynthesisMatrix.cautionNotice})
+- 탈조건화(De-conditioning) 행동 처방: ${deconditioningAdvice}
+- 해석 경계: ${boundaryNotice}`;
 
   return {
     engineVersion: HUMAN_DESIGN_BODYGRAPH_VERSION,
     calculatedAt: targetDate.toISOString(),
+    calculatedAtKst: temporalHdRhythm.kstTimeLabel,
     designType,
     strategy,
     innerAuthority,
     definitionProfile,
     centers,
     deconditioningAdvice,
+    situationalHdAudit,
+    temporalHdRhythm,
+    hdSynthesisMatrix,
+    boundaryNotice,
     synthesisPromptGuidance
   };
 }
@@ -254,10 +348,11 @@ export function calculateHumanDesignBodyGraph(params?: {
   profile?: UserProfile | null;
   saju?: SajuAnalysisResult | null;
   targetDate?: Date;
+  question?: string;
 }): HumanDesignBodyGraphResult {
   const profile = params?.profile || undefined;
   const targetDate = params?.targetDate || new Date();
-  return runHumanDesignBodyGraphEngine(profile, targetDate);
+  return runHumanDesignBodyGraphEngine(profile, targetDate, params?.question);
 }
 
 export function formatHumanDesignBodyGraphPrompt(res: HumanDesignBodyGraphResult): string {

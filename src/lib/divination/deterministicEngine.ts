@@ -1108,7 +1108,7 @@ try {
 ichingEnvelope = {toolId:'iching', toolKoName:'주역', status:'skipped', note:'이번 질문에서 선택하지 않은 도구'};
 } else {
 try {
-    ichingMasterResult = calculateIchingMaster(now);
+    ichingMasterResult = calculateIchingMaster(now, question, now);
     ichingEnvelope = {
       toolId: 'iching',
       toolKoName: '주역',
@@ -1222,7 +1222,7 @@ kabbalahEnvelope = {toolId:'kabbalah', toolKoName:'카발라', status:'symbolic'
 kabbalahEnvelope = {toolId:'kabbalah', toolKoName:'카발라', status:'skipped', note:'이번 질문에서 선택하지 않은 도구'};
 } else {
 try {
-    kabbalahResult = calculateKabbalah({ profile });
+    kabbalahResult = calculateKabbalah({ profile, now, question });
     if (kabbalahResult.status === 'calculated') {
       kabbalahEnvelope = {
         toolId: 'kabbalah',
@@ -1735,7 +1735,7 @@ try {
   const humanDesignBodyGraphResult = calculateSupplement('humanDesignBodyGraphResult', () => (birthdateStr && profile
     ? (() => {
         try {
-          return calculateHumanDesignBodyGraph({ profile, targetDate: now });
+          return calculateHumanDesignBodyGraph({ profile, targetDate: now, question });
         } catch (_) {
           return null;
         }

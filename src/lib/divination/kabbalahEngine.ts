@@ -51,7 +51,7 @@
 import type { UserProfile } from '../sharedState';
 import { resolveEffectiveSolarDate } from '../lunarCalendar';
 
-export const KABBALAH_ENGINE_VERSION = 'LUCKEY-KB-v1.0.0';
+export const KABBALAH_ENGINE_VERSION = 'LUCKEY-KB-v2.0.0';
 
 export const KABBALAH_METHOD =
   '정통 카발라 생명나무 결정론 산법: 헤브라이 전통 10 세피로트(케테르~말쿠트, 다트는 숨겨진 세피라 별도 보존)·3대 기둥(자비·엄격·균형)·4개 세계(아칠루트·베리아·예치라·아시야)·22 경로(알레프~타브 22문자, 황금여명(Golden Dawn) 통용 원소·행성·별자리 속성 및 타로 메이저 0~21 배속) 전수 데이터와 생년월일 게마트리아 수리(라이프 패스 세피라 1~10 축약 및 11·22·33 마스터 넘버 케테르·다트 특별 해석, 퍼스널리티 세피라, 소울 패스 활성 경로, 3기둥 밸런스 백분율) 산출';
@@ -327,6 +327,7 @@ export interface KabbalahNumerology {
 export interface KabbalahResult {
   status: 'calculated' | 'skipped' | 'error';
   engineVersion: string;
+  calculatedAtKst?: string;
   method: string;
   birthInput?: { solarDateString: string; originalDateString: string; isLunar: boolean };
   numerology?: KabbalahNumerology;
@@ -337,6 +338,23 @@ export interface KabbalahResult {
     worlds: ReadonlyArray<KabbalahWorld>; // 4개 세계
     paths: ReadonlyArray<KabbalahPath>; // 22 경로 전수
   };
+  situationalKabbalahAudit?: {
+    focusTheme: string;
+    sephirahNote: string;
+    pathPractice: string;
+  };
+  temporalKabbalahRhythm?: {
+    kstTimeLabel: string;
+    treeWatchWindow: string;
+    seasonalWorldTone: string;
+    temporalGuidance: string;
+  };
+  kabbalahSynthesisMatrix?: {
+    coreInsight: string;
+    recommendedAction: string;
+    cautionNotice: string;
+  };
+  boundaryNotice?: string;
   note?: string;
 }
 
@@ -472,11 +490,53 @@ function calculateFourWorldsSpectrum(activatedSephiroth: ReadonlyArray<number>):
   };
 }
 
+function getTemporalKabbalahRhythm(now: Date) {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  const hour = kst.getUTCHours();
+  const month = kst.getUTCMonth() + 1;
+
+  const treeWatchWindow =
+    hour >= 5 && hour < 11
+      ? '아침 케테르·아칠루트 각성창 — 오늘의 가장 순수한 의도를 왕관(케테르)에 세우는 시간'
+      : hour >= 11 && hour < 17
+        ? '정오 티페레트·베리아 균형창 — 자비와 엄격 사이에서 중심(티페레트)을 잡는 시간'
+        : hour >= 17 && hour < 22
+          ? '황혼 말쿠트·아시야 결실창 — 생각과 영감을 현실의 손에 잡히는 결과로 맺는 시간'
+          : '심야 예소드·무의식 성찰창 — 꿈과 무의식의 저장소를 정화하며 내면을 비추는 시간';
+
+  const seasonalWorldTone =
+    month >= 3 && month <= 5
+      ? '봄 · 아칠루트(불) 영감기 (새로운 의도와 창조적 씨앗을 틔우는 시기)'
+      : month >= 6 && month <= 8
+        ? '여름 · 베리아(물) 창조기 (열정과 감성을 구조화해 세상으로 흘려보내는 시기)'
+        : month >= 9 && month <= 11
+          ? '가을 · 예치라(바람) 형성기 (언어와 관계의 형식을 정교하게 다듬는 시기)'
+          : '겨울 · 아시야(흙) 내실기 (보이지 않는 뿌리를 단단히 다져 현실 토대를 굳히는 시기)';
+
+  return {
+    kstTimeLabel: `${y}-${m}-${d} ${hh}:${mm} KST`,
+    treeWatchWindow,
+    seasonalWorldTone,
+    temporalGuidance: `${treeWatchWindow} · ${seasonalWorldTone}의 흐름에 맞추어 생명나무의 기둥을 조율하십시오.`,
+  };
+}
+
 /**
  * 정통 카발라 생명나무 10 세피로트 & 22 경로 게마트리아 결정론적 계산 함수
  * (동일한 생년월일 입력 → 항상 100% 동일한 세피로트·경로 배속 산출)
  */
-export function calculateKabbalah(params: { profile?: UserProfile | null }): KabbalahResult {
+export function calculateKabbalah(params: {
+  profile?: UserProfile | null;
+  now?: Date;
+  question?: string;
+}): KabbalahResult {
+  const now = params.now || new Date();
+  const question = (params.question || '').trim();
   const birthdateStr = params.profile?.basic?.birthdate?.trim() || '';
   if (!birthdateStr) {
     return {
@@ -529,9 +589,35 @@ export function calculateKabbalah(params: { profile?: UserProfile | null }): Kab
     const tipherethAlignment = calculateTipherethAlignment(lifePathNumber === 22 ? 3 : lifePathSephirah.number, isDaath);
     const fourWorldsSpectrum = calculateFourWorldsSpectrum(activated);
 
+    const temporalKabbalahRhythm = getTemporalKabbalahRhythm(now);
+    const situationalKabbalahAudit = /관계|사랑|감정/.test(question)
+      ? {
+          focusTheme: `${lifePathSephirah.name} · ${soulPath.tarotName} 관계 균형`,
+          sephirahNote: `${dominantWorld.name}(${dominantWorld.korean})의 결에서 자비와 엄격의 균형을 살펴보십시오.`,
+          pathPractice: soulPath.spiritualTheme,
+        }
+      : /일|진로|선택|성공/.test(question)
+        ? {
+            focusTheme: `${personalitySephirah.name} · ${fourWorldsSpectrum.manifestationAdvice.slice(0, 24)}`,
+            sephirahNote: lightningFlash.spiritualLesson,
+            pathPractice: tipherethAlignment.solarHeartGuidance,
+          }
+        : {
+            focusTheme: `${lifePathSephirah.name}(${lifePathSephirah.translit}) · 제${soulPath.number}경로 ${soulPath.letterName}`,
+            sephirahNote: lifePathInterpretation,
+            pathPractice: soulPath.spiritualTheme,
+          };
+
+    const kabbalahSynthesisMatrix = {
+      coreInsight: `[${lifePathSephirah.name}] 라이프 패스와 제${soulPath.number}경로(${soulPath.tarotName})가 생명나무의 축을 이룹니다.`,
+      recommendedAction: tipherethAlignment.solarHeartGuidance,
+      cautionNotice: '자비(확장)와 엄격(수축) 중 한쪽으로 치우치지 않도록 중도(티페레트)를 의식하십시오.',
+    };
+
     return {
       status: 'calculated',
       engineVersion: KABBALAH_ENGINE_VERSION,
+      calculatedAtKst: temporalKabbalahRhythm.kstTimeLabel,
       method: KABBALAH_METHOD,
       birthInput: {
         solarDateString: resolved.solarDateString,
@@ -561,6 +647,10 @@ export function calculateKabbalah(params: { profile?: UserProfile | null }): Kab
         worlds: FOUR_WORLDS,
         paths: PATHS_22,
       },
+      situationalKabbalahAudit,
+      temporalKabbalahRhythm,
+      kabbalahSynthesisMatrix,
+      boundaryNotice: '본 결과는 헤브라이 카발라 생명나무와 생년월일 게마트리아 수리에 기반한 정성적 성찰 안내이며, 확정적 예언이 아닙니다.',
     };
   } catch (err: any) {
     return {
@@ -580,8 +670,11 @@ export function formatKabbalahPrompt(result: KabbalahResult): string {
   const lp = n.lifePathSephirah;
   const isDaath = 'title' in lp && lp.number === 0;
 
+  const describeBalance = (v: number) => (v >= 50 ? '우세' : v >= 25 ? '균형' : '보완 필요');
+
   const lines = [
     `[정통 카발라 생명나무 10 세피로트 & 22 경로 게마트리아 리포트 (${KABBALAH_ENGINE_VERSION})]`,
+    ...(result.calculatedAtKst ? [`- 연산 시각: ${result.calculatedAtKst}`] : []),
     `- 출생 기준: ${birth.solarDateString}${birth.isLunar ? '(음력 → 양력 환산)' : ''} | 게마트리아 원값: ${n.rawDigitSum}`,
     `- 라이프 패스 세피라: ${n.lifePathNumber}${n.lifePathIsMaster ? '(마스터 넘버)' : ''} → ${lp.name}(${lp.translit})${'meaning' in lp ? ` / ${lp.meaning}` : ''} — ${lp.title}${'pillar' in lp ? ` · ${lp.pillar}` : ' · 기둥 없음(심연)'}`,
     `  * 해석: ${n.lifePathInterpretation}`,
@@ -589,29 +682,40 @@ export function formatKabbalahPrompt(result: KabbalahResult): string {
     `- 소울 패스: 수리 ${n.soulPathNumber}/22 → 제${n.soulPath.number}경로 ${n.soulPath.letterName}(${n.soulPath.hebrewLetter}) ${kabbalahSephirahByNumber(n.soulPath.from).name}↔${kabbalahSephirahByNumber(n.soulPath.to).name} — 타로 메이저 ${n.soulPath.tarotNumber}번 ${n.soulPath.tarotName}(${n.soulPath.tarotTranslit})`,
     `  * 점성학적 속성: ${n.soulPath.attribution.kind} ${n.soulPath.attribution.value} | 문자 의미: ${n.soulPath.letterMeaning}`,
     `  * 영적 상승 테마: ${n.soulPath.spiritualTheme}`,
-    `- 3기둥 밸런스: 자비(확장) ${n.pillarBalance.mercy}% · 엄격(수축) ${n.pillarBalance.severity}% · 균형(통합) ${n.pillarBalance.mildness}%`,
+    `- 3기둥 밸런스: 자비(확장) ${describeBalance(n.pillarBalance.mercy)} · 엄격(수축) ${describeBalance(n.pillarBalance.severity)} · 균형(통합) ${describeBalance(n.pillarBalance.mildness)}`,
     `- 지배 세계: 제${n.dominantWorld.order}세계 ${n.dominantWorld.name}(${n.dominantWorld.translit} / ${n.dominantWorld.korean}·${n.dominantWorld.element}) — ${n.dominantWorld.description} · 세피로트 층위 ${n.dominantWorld.sephirahRange}`,
   ];
 
   if (n.lightningFlash) {
     lines.push(
-      `- 창조의 번개(Lightning Flash): ${n.lightningFlash.stageTitle} (영혼 승화 잠재력 ${n.lightningFlash.ascensionPotentialIndex}점)\n  * 영적 과제: ${n.lightningFlash.spiritualLesson}`,
+      `- 창조의 번개(Lightning Flash): ${n.lightningFlash.stageTitle}\n  * 영적 과제: ${n.lightningFlash.spiritualLesson}`,
     );
   }
   if (n.tipherethAlignment) {
     lines.push(
-      `- 티페레트(태양·심장) 조화도: ${n.tipherethAlignment.harmonyScore}점 [${n.tipherethAlignment.balanceStatus}]\n  * 조율 가이드: ${n.tipherethAlignment.solarHeartGuidance}`,
+      `- 티페레트(태양·심장) 조화도: [${n.tipherethAlignment.balanceStatus}]\n  * 조율 가이드: ${n.tipherethAlignment.solarHeartGuidance}`,
     );
   }
   if (n.fourWorldsSpectrum) {
     lines.push(
-      `- 4대 세계 친화도: 아칠루트(원형계·불) ${n.fourWorldsSpectrum.atziluth}% · 베리아(창조계·물) ${n.fourWorldsSpectrum.beriah}% · 예치라(형성계·바람) ${n.fourWorldsSpectrum.yetzirah}% · 아시야(물질계·흙) ${n.fourWorldsSpectrum.assiah}%\n  * 현실 구현 조언: ${n.fourWorldsSpectrum.manifestationAdvice}`,
+      `- 4대 세계 친화도: 아칠루트(원형계·불) ${describeBalance(n.fourWorldsSpectrum.atziluth)} · 베리아(창조계·물) ${describeBalance(n.fourWorldsSpectrum.beriah)} · 예치라(형성계·바람) ${describeBalance(n.fourWorldsSpectrum.yetzirah)} · 아시야(물질계·흙) ${describeBalance(n.fourWorldsSpectrum.assiah)}\n  * 현실 구현 조언: ${n.fourWorldsSpectrum.manifestationAdvice}`,
     );
+  }
+  if (result.situationalKabbalahAudit) {
+    lines.push(`- 질문 맥락 감사 (${result.situationalKabbalahAudit.focusTheme}): ${result.situationalKabbalahAudit.sephirahNote} / ${result.situationalKabbalahAudit.pathPractice}`);
+  }
+  if (result.temporalKabbalahRhythm) {
+    lines.push(`- KST 시공간 생명나무 리듬: ${result.temporalKabbalahRhythm.treeWatchWindow} / ${result.temporalKabbalahRhythm.seasonalWorldTone}`);
+    lines.push(`  * 시공간 지침: ${result.temporalKabbalahRhythm.temporalGuidance}`);
+  }
+  if (result.kabbalahSynthesisMatrix) {
+    lines.push(`- 카발라 교차 매트릭스: 핵심(${result.kabbalahSynthesisMatrix.coreInsight}) | 실행(${result.kabbalahSynthesisMatrix.recommendedAction}) | 주의(${result.kabbalahSynthesisMatrix.cautionNotice})`);
   }
 
   lines.push(
     `- 나무 구조: 10 세피로트(케테르~말쿠트) + 숨겨진 다트 · 3대 기둥(자비·엄격·균형) · 4개 세계(아칠루트·베리아·예치라·아시야) · 22 경로(알레프~타브 = 타로 메이저 0~21)`,
-    `- [AI 해석 절대 지침]: 본 리포트는 생년월일 게마트리아 수리로 산출된 100% 확정 배속입니다. 세피라·경로·타로 배속을 임의로 바꾸지 말고, 다트는 발현되지 않은 숨겨진 세피라이므로 일반 세피로트처럼 단정하지 마십시오.`,
+    ...(result.boundaryNotice ? [`- 해석 경계: ${result.boundaryNotice}`] : []),
+    `- [AI 해석 절대 지침]: 본 리포트는 생년월일 게마트리아 수리로 산출된 확정 배속입니다. 세피라·경로·타로 배속을 임의로 바꾸지 말고, 다트는 발현되지 않은 숨겨진 세피라이므로 일반 세피로트처럼 단정하지 마십시오.`,
   );
 
   if (isDaath) {

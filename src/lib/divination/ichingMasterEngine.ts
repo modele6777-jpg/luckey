@@ -31,7 +31,7 @@
 
 import { hexagram, Yao, calculateIching } from './iching';
 
-export const ICHING_MASTER_ENGINE_VERSION = 'LUCKEY-ICHING-v1.1.0';
+export const ICHING_MASTER_ENGINE_VERSION = 'LUCKEY-ICHING-v2.0.0';
 
 export const ICHING_MASTER_METHOD =
   '주역(周易) 64괘 정통 이진 비트 수리 산법: 본괘·지괘·호괘·착괘·종괘 4대 대칭 괘상 도출, 체용(體用) 오행 생극제화, 효위(爻位) 6단계 역학, 경방 8궁 세응(世應) 상응도 및 기운 변환 모멘텀 산출';
@@ -93,6 +93,7 @@ export interface PalGongSeYing {
 
 export interface IchingMasterResult {
   engineVersion: string;
+  calculatedAtKst: string;
   method: string;
   status: 'calculated';
   lines: Yao[];
@@ -103,18 +104,71 @@ export interface IchingMasterResult {
   opposite: HexagramView; // 착괘 (그림자 리스크)
   reversed: HexagramView; // 종괘 (상대방 관점)
   tiYong: TiYongRelation;
-  decisionScore: number; // 0 ~ 100
+  decisionScore: number; // 내부 호환용 0 ~ 100 (프롬프트 비노출)
   decisionGrade: '적극 추진 (Strong Go)' | '지혜로운 전진 (Cautious Go)' | '내실 관망 (Hold & Prepare)' | '방향 전환 (Pivot)' | '보류 및 수성 (Strong Stop)';
   yaoStages: YaoStageInfo[];
   dominantStage: YaoStageInfo;
   hexagramDynamics: HexagramDynamics;
   palGongSeYing: PalGongSeYing;
+  situationalIchingAudit: {
+    focusTheme: string;
+    hexagramNote: string;
+    actionStep: string;
+  };
+  temporalIchingRhythm: {
+    kstTimeLabel: string;
+    divinationWatchWindow: string;
+    seasonalIchingTone: string;
+    temporalGuidance: string;
+  };
+  ichingSynthesisMatrix: {
+    coreInsight: string;
+    recommendedAction: string;
+    cautionNotice: string;
+  };
+  boundaryNotice: string;
   guidance: {
     situationNow: string; // 본괘 조언
     hiddenDynamic: string; // 호괘 조언
     outcomeFuture: string; // 지괘 조언
     counterpartView: string; // 종괘 조언
     actionProtocol: string; // 종합 실천 방침
+  };
+}
+
+function getTemporalIchingRhythm(now: Date) {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  const hour = kst.getUTCHours();
+  const month = kst.getUTCMonth() + 1;
+
+  const divinationWatchWindow =
+    hour >= 5 && hour < 11
+      ? '아침 천기 발아창 — 본괘의 첫 징후를 읽고 맑은 판단으로 방향을 세우는 시간'
+      : hour >= 11 && hour < 17
+        ? '정오 변효(變爻) 실행창 — 체용의 흐름에 맞추어 현실적인 조치를 취하는 시간'
+        : hour >= 17 && hour < 22
+          ? '황혼 호괘(互卦) 성찰창 — 겉으로 드러나지 않은 내면의 잠재 과정을 되짚는 시간'
+          : '심야 정괘(靜卦) 침잠창 — 소강절의 수리처럼 고요히 변화의 귀결을 관조하는 시간';
+
+  const seasonalIchingTone =
+    month >= 3 && month <= 5
+      ? '봄 · 지뢰복(地雷復) 생동절 (새 기운이 땅속에서 싹트는 시기)'
+      : month >= 6 && month <= 8
+        ? '여름 · 중천건(重天乾) 발양절 (강건한 추진력과 결단이 빛나는 시기)'
+        : month >= 9 && month <= 11
+          ? '가을 · 택천쾌(澤天夬) 수렴절 (불필요한 것을 정리하고 결실을 다지는 시기)'
+          : '겨울 · 중지곤(重地坤) 함장절 (포용과 인내로 다음 주기를 준비하는 시기)';
+
+  return {
+    kstTimeLabel: `${y}-${m}-${d} ${hh}:${mm} KST`,
+    divinationWatchWindow,
+    seasonalIchingTone,
+    temporalGuidance: `${divinationWatchWindow} · ${seasonalIchingTone}의 결에 맞추어 괘의 변화를 읽으십시오.`,
   };
 }
 
@@ -285,13 +339,18 @@ const YAO_POSITION_PROFILES = [
 /**
  * 주역 64괘 384효 4대 대칭 괘상 및 체용 결단 마스터 엔진 실행
  */
-export function calculateIchingMaster(linesOrDate?: readonly number[] | Date): IchingMasterResult {
+export function calculateIchingMaster(
+  linesOrDate?: readonly number[] | Date,
+  question?: string,
+  nowArg?: Date
+): IchingMasterResult {
+  const refNow = nowArg ?? (linesOrDate instanceof Date ? linesOrDate : new Date());
   let lines: Yao[];
   if (Array.isArray(linesOrDate) && linesOrDate.length === 6) {
     lines = [...linesOrDate] as Yao[];
   } else {
     // 날짜/타임스탬프 기반 소강절 선천팔괘수 시간작괘 (결정론적 일관성)
-    const target = linesOrDate instanceof Date ? linesOrDate : new Date();
+    const target = linesOrDate instanceof Date ? linesOrDate : refNow;
     const y = target.getFullYear();
     const m = target.getMonth() + 1;
     const d = target.getDate();
@@ -446,8 +505,37 @@ export function calculateIchingMaster(linesOrDate?: readonly number[] | Date): I
     },
   };
 
+  const temporalIchingRhythm = getTemporalIchingRhythm(refNow);
+  const q = (question || '').trim();
+  const situationalIchingAudit = /결정|선택|진행|투자|계약/.test(q)
+    ? {
+        focusTheme: `${primary.name} → ${changed.name} 결단 흐름`,
+        hexagramNote: `${tiYongRel} · ${decisionGrade}`,
+        actionStep: dominantStage.actionGuidance,
+      }
+    : /관계|상대|사람|협업/.test(q)
+      ? {
+          focusTheme: `세효(${palGongSeYing.seYao}효) ⇄ 응효(${palGongSeYing.yingYao}효) 상응 감사`,
+          hexagramNote: `종괘(${reversed.name})의 관점에서 상대방의 입장을 함께 살피십시오.`,
+          actionStep: palGongSeYing.cooperationAdvice,
+        }
+      : {
+          focusTheme: `${primary.name} · ${dominantStage.yaoName}`,
+          hexagramNote: tiYongSummary,
+          actionStep: `${tiYongRel}의 흐름에 따라 ${decisionGrade} 기조를 유지하십시오.`,
+        };
+
+  const ichingSynthesisMatrix = {
+    coreInsight: `본괘(${primary.name})에서 지괘(${changed.name})로 이어지는 ${phaseShift} 국면입니다.`,
+    recommendedAction: `${dominantStage.yaoName}(${dominantStage.archetypeRole}) · ${palGongSeYing.seYingHarmony}`,
+    cautionNotice: `착괘(${opposite.name})가 비추는 이면 리스크를 함께 경계하십시오.`,
+  };
+
+  const boundaryNotice = '본 결과는 주역 64괘·체용·경방 8궁 수리에 기반한 정성적 변화 통찰이며, 확정적 예언이 아닙니다.';
+
   return {
     engineVersion: ICHING_MASTER_ENGINE_VERSION,
+    calculatedAtKst: temporalIchingRhythm.kstTimeLabel,
     method: ICHING_MASTER_METHOD,
     status: 'calculated',
     lines,
@@ -471,6 +559,10 @@ export function calculateIchingMaster(linesOrDate?: readonly number[] | Date): I
     dominantStage,
     hexagramDynamics,
     palGongSeYing,
+    situationalIchingAudit,
+    temporalIchingRhythm,
+    ichingSynthesisMatrix,
+    boundaryNotice,
     guidance: {
       situationNow: `본괘는 ${primary.name}으로, 현재 상황의 본질적 기운을 나타냅니다.`,
       hiddenDynamic: `호괘는 ${nuclear.name}으로, 내면에 숨은 잠재력과 중간 전개 과정을 암시합니다.`,
@@ -485,7 +577,15 @@ export function calculateIchingMaster(linesOrDate?: readonly number[] | Date): I
  * 프롬프트 주입용 마스터 포맷터
  */
 export function formatIchingMasterPrompt(res: IchingMasterResult): string {
+  const momentumTone =
+    res.hexagramDynamics.momentumScore >= 80
+      ? '강한 추진 탄력'
+      : res.hexagramDynamics.momentumScore >= 60
+        ? '완만한 순행 탄력'
+        : '신중한 내실 축적';
+
   return `[주역(周易) 64괘 4대 대칭 괘상 및 체용 결단 리포트 (엔진: ${res.engineVersion})]
+- 연산 시각: ${res.calculatedAtKst}
 - 본괘(本卦): ${res.primary.name} (${res.primary.upper} 상 / ${res.primary.lower} 하)
 - 동효(動爻): ${res.movingLines.length > 0 ? res.movingLines.map((l) => `${l}효`).join(', ') : '동효 없음 (정괘)'}
 - 지괘(之卦/변괘): ${res.changed.name} -> 최종 결말과 도달점
@@ -505,9 +605,14 @@ export function formatIchingMasterPrompt(res: IchingMasterResult): string {
   • 세효(나): ${res.palGongSeYing.seYao}효 ⇄ 응효(상대/환경): ${res.palGongSeYing.yingYao}효 [${res.palGongSeYing.seYingHarmony}]
   • 상생 협력 조언: ${res.palGongSeYing.cooperationAdvice}
 - 기운 변환 모멘텀:
-  • 변환 국면: ${res.hexagramDynamics.phaseShift} (모멘텀 ${res.hexagramDynamics.momentumScore}점, 엔트로피: ${res.hexagramDynamics.movingEntropy})
+  • 변환 국면: ${res.hexagramDynamics.phaseShift} (${momentumTone}, 엔트로피: ${res.hexagramDynamics.movingEntropy})
   • 전반기 전략: ${res.hexagramDynamics.strategicWindow.firstHalf}
   • 후반기 전략: ${res.hexagramDynamics.strategicWindow.secondHalf}
-- 결단 스코어: ${res.decisionScore}점 (${res.decisionGrade})
+- 질문 맥락 감사 (${res.situationalIchingAudit.focusTheme}): ${res.situationalIchingAudit.hexagramNote} / ${res.situationalIchingAudit.actionStep}
+- KST 시공간 주역 리듬: ${res.temporalIchingRhythm.divinationWatchWindow} / ${res.temporalIchingRhythm.seasonalIchingTone}
+  • 시공간 지침: ${res.temporalIchingRhythm.temporalGuidance}
+- 주역 교차 매트릭스: 핵심(${res.ichingSynthesisMatrix.coreInsight}) | 실행(${res.ichingSynthesisMatrix.recommendedAction}) | 주의(${res.ichingSynthesisMatrix.cautionNotice})
+- 종합 결단 기조: ${res.decisionGrade}
+- 해석 경계: ${res.boundaryNotice}
 ※ 루시 지침: 주역은 우주의 변화 법칙입니다. 본괘(현재)에서 동효의 움직임을 거쳐 지괘(미래)로 나아가는 흐름과 호괘·착괘·종괘가 주는 다각도 통찰, 세효와 응효의 상응 역학을 자연어 조언에 자연스럽게 녹여내 주세요.`;
 }
