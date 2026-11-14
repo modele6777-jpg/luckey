@@ -3217,7 +3217,6 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
             const actuallyUsedEngines = actuallyUsedEngineGroups.flatMap(group => group.engines);
             const actuallyUsedEngineThemes = getUsedEngineThemeBadges(actuallyUsedEngines.map(engine => engine.toolId));
             const isUsageDetailsOpen = openUsageMessageId === msgId;
-            const hideAutomaticModeBadge = isUser && msgModeInfo.badgeLabel === 'AI 심층 자동 상담';
 
             // 루시의 인사말인지 여부 정밀 판별
             const isGreeting = (() => {
@@ -3284,13 +3283,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
                     </span>
                   )}
 
-                  {!hideAutomaticModeBadge && (isUser ? (
-                    <span data-message-mode-badge="true" data-message-id={msgId}
-                      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium ${msgModeInfo.badgeColor}`}>
-                      <span aria-hidden="true">{msgModeInfo.badgeIcon}</span>
-                      <span>{msgModeInfo.badgeLabel}</span>
-                    </span>
-                  ) : (
+                  {!isUser && (
                     <button
                       type="button"
                       data-message-mode-badge="true"
@@ -3311,6 +3304,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
                           className="inline-flex items-center rounded-full border px-2 py-0.5"
                           style={{ backgroundColor: theme.backgroundColor, color: theme.color, borderColor: theme.borderColor }}
                         >
+                          <span aria-hidden="true" className="mr-1">{theme.emoji}</span>
                           {theme.label}
                         </span>
                       )) : (
@@ -3319,7 +3313,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
                         </span>
                       )}
                     </button>
-                  ))}
+                  )}
 
                   <span className={`text-[10px] ${isLight ? 'text-slate-400' : 'text-white/70'}`}>{timeStr}</span>
                 </div>
