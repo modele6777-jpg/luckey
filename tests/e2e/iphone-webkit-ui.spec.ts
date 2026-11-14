@@ -551,8 +551,42 @@ test('Big Bang center double tap jumps to the recommended app without firing a s
     const current = new URL(page.url());
     return `${current.pathname}${current.search}`;
   }).toBe(`${expected.pathname}${expected.search}`);
+  await expect(page.getByTestId('bigbang-transition-overlay')).toBeVisible();
   await page.waitForTimeout(350);
   expect(await page.evaluate(() => (window as any).__bigBangNormalTapCount)).toBe(0);
+});
+
+test('Big Bang center single tap enters Lucy with the shared transition, without triggering the recommended warp', async ({ page }) => {
+  await openPrologue(page);
+  const button = page.locator('#bigbang-omnibutton');
+  await expect(button).toBeVisible();
+  const box = await button.boundingBox();
+  expect(box).not.toBeNull();
+  if (!box) throw new Error('Big Bang button is missing for single-tap test');
+  const x = box.x + box.width / 2;
+  const y = box.y + box.height / 2;
+
+  await page.evaluate(() => {
+    (window as any).__bigBangSingleTapCommits = [];
+    window.addEventListener('prism:bigbang_commit', (event) => {
+      (window as any).__bigBangSingleTapCommits.push((event as CustomEvent).detail);
+    });
+  });
+  await page.evaluate(({ x, y }) => {
+    const target = document.querySelector<HTMLElement>('#bigbang-omnibutton');
+    if (!target) throw new Error('Big Bang button is missing from the page');
+    const common = { bubbles: true, cancelable: true, pointerId: 12, pointerType: 'touch', isPrimary: true, clientX: x, clientY: y, button: 0 };
+    target.dispatchEvent(new PointerEvent('pointerdown', { ...common, buttons: 1 }));
+    target.dispatchEvent(new PointerEvent('pointerup', { ...common, buttons: 0 }));
+  }, { x, y });
+
+  await expect.poll(() => page.evaluate(() => `${window.location.pathname}${window.location.search}`)).toBe('/?mode=ai');
+  await expect(page.getByTestId('bigbang-transition-overlay')).toBeVisible();
+  const commits = await page.evaluate(() => (window as any).__bigBangSingleTapCommits);
+  expect(commits).toHaveLength(1);
+  expect(commits[0].target.destinationPath).toBe('/chat?mode=ai');
+  expect(commits[0].phase).toBe('wormhole');
+  expect(commits[0].isDoubleTapSuction).toBe(false);
 });
 
 test('Big Bang center long press navigates directly to Key', async ({ page }) => {
@@ -565,11 +599,19 @@ test('Big Bang center long press navigates directly to Key', async ({ page }) =>
   const x = box.x + box.width / 2;
   const y = box.y + box.height / 2;
 
+  await page.evaluate(() => {
+    (window as any).__bigBangHoldCommit = null;
+    window.addEventListener('prism:bigbang_commit', (event) => {
+      (window as any).__bigBangHoldCommit = (event as CustomEvent).detail;
+    }, { once: true });
+  });
   await page.mouse.move(x, y);
   await page.mouse.down();
   await page.waitForTimeout(650);
   await page.mouse.up();
   await expect(page).toHaveURL(/\/key$/);
+  await expect.poll(() => page.evaluate(() => (window as any).__bigBangHoldCommit?.target?.destinationPath)).toBe('/key');
+  await expect(page.getByTestId('bigbang-transition-overlay')).toBeVisible();
   await expect(page.locator('iframe[title="Key"]')).toBeVisible();
   expect(await page.evaluate(() => localStorage.getItem('lucy_tier_mode'))).not.toBe('pro');
 });
