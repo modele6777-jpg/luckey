@@ -24,7 +24,28 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const EGYPTIAN_AMDUAT_VERSION = '1.0.0';
+export const EGYPTIAN_AMDUAT_VERSION = '2.0.0';
+
+export interface AmduatSituationalAudit {
+  duatGateFocus: string;
+  apophisResistance: string;
+  barqueAction: string;
+  abyssCaution: string;
+}
+
+export interface AmduatTemporalRhythm {
+  kstHour: number;
+  solarBarqueWatch: string;
+  nileSeasonPhase: string;
+  voyageGuidance: string;
+  solarTempo: '항해' | '결전' | '새벽부활';
+}
+
+export interface AmduatSynthesisMatrix {
+  rebirthState: '케프리비상' | '라오시리스합일' | '심연돌파';
+  hourGuardianLink: string;
+  nextBarqueStep: string;
+}
 
 export interface EgyptianAmduatReport {
   engineVersion: string;
@@ -48,6 +69,9 @@ export interface EgyptianAmduatReport {
     role: string;
     solarGift: string;
   };
+  situationalAmduatAudit: AmduatSituationalAudit;
+  temporalAmduatRhythm: AmduatTemporalRhythm;
+  amduatSynthesisMatrix: AmduatSynthesisMatrix;
   amduatHieroglyphicWisdom: string;
 }
 
@@ -128,7 +152,94 @@ const SOLAR_GUARDIANS = [
   }
 ];
 
-export function calculateEgyptianAmduat(profile: UserProfile | null | undefined): EgyptianAmduatReport {
+function getKstAmduatParts(now: Date): { hour: number; month: number } {
+  const formatter = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Asia/Seoul',
+    hour: 'numeric',
+    month: 'numeric',
+    hour12: false,
+  });
+  const parts = formatter.formatToParts(now);
+  return {
+    hour: Number(parts.find((p) => p.type === 'hour')?.value || '12') % 24,
+    month: Number(parts.find((p) => p.type === 'month')?.value || '1'),
+  };
+}
+
+function buildAmduatSituationalAudit(
+  question: string,
+  hourInfo: (typeof AMDUAT_HOURS)[number],
+  guardian: (typeof SOLAR_GUARDIANS)[number]
+): AmduatSituationalAudit {
+  const q = question.toLowerCase();
+  if (/위기|힘들|어렵|불안|실패|고민|막히/.test(q)) {
+    return {
+      duatGateFocus: `제${hourInfo.hourNumber}시간(${hourInfo.hourTheme}) — 심연 통과와 빛의 보존`,
+      apophisResistance: `${guardian.nameAncient}의 가호로 두려움·회의감의 뱀 아포피스 제압`,
+      barqueAction: '어둠 전체를 한 번에 걷어내려 하기보다 오늘 건너갈 수 있는 한 관문만 차분히 통과하십시오.',
+      abyssCaution: '캄캄한 구간에서 노를 놓아버리고 자책감에 잠기지 마십시오.',
+    };
+  }
+  if (/일|선택|이직|사업|도전|새로|시작/.test(q)) {
+    return {
+      duatGateFocus: '케프리(Khepri) 새벽 탄생 및 새 주기 출항',
+      apophisResistance: '망설임과 완벽주의의 그림자 돌파',
+      barqueAction: '낡은 방식의 허물을 벗고 오늘 당장 실행 가능한 작은 첫 항해를 시작하십시오.',
+      abyssCaution: '준비만 하다가 지평선 너머로 떠오를 타이밍을 놓치지 마십시오.',
+    };
+  }
+  return {
+    duatGateFocus: `${hourInfo.hourTheme} — 라-오시리스 합일 조율`,
+    apophisResistance: guardian.solarGift,
+    barqueAction: '태양선 메섹테트의 항로처럼 조급함 없이 하루의 순환 리듬을 신뢰하십시오.',
+    abyssCaution: '밤의 시간이 길어 보인다고 해가 뜨지 않는 것은 아닙니다.',
+  };
+}
+
+function buildAmduatTemporalRhythm(now: Date): AmduatTemporalRhythm {
+  const { hour, month } = getKstAmduatParts(now);
+
+  let solarBarqueWatch = '새벽 케프리(Khepri) 지평선 비상 창';
+  let solarTempo: AmduatTemporalRhythm['solarTempo'] = '새벽부활';
+  let voyageGuidance = '새로운 태양처럼 맑은 의도로 오늘의 첫 걸음을 내딛기 좋습니다.';
+
+  if (hour >= 5 && hour < 10) {
+    solarBarqueWatch = '여명 케프리(Khepri) 지평선 비상 창 (05~10시)';
+    solarTempo = '새벽부활';
+    voyageGuidance = '어제의 무거운 기억을 털어내고 새로운 시작에 에너지를 집중하십시오.';
+  } else if (hour >= 10 && hour < 17) {
+    solarBarqueWatch = '주간 마네제트(Mandjet) 주간 태양선 항해 창 (10~17시)';
+    solarTempo = '항해';
+    voyageGuidance = '밝은 시야로 핵심 과업과 대외 소통을 힘차게 추진할 시간입니다.';
+  } else if (hour >= 17 && hour < 21) {
+    solarBarqueWatch = '황혼 메섹테트(Mesektet) 야간선 출항 창 (17~21시)';
+    solarTempo = '결전';
+    voyageGuidance = '외부 소음을 줄이고 오늘의 성취와 미완료 과제를 차분히 갈무리하십시오.';
+  } else {
+    solarBarqueWatch = '심야 라-오시리스(Ra-Osiris) 재충전 창 (21~05시)';
+    solarTempo = '결전';
+    voyageGuidance = '깊은 휴식으로 영혼의 생명력을 재충전하며 새벽 부활을 준비할 시간입니다.';
+  }
+
+  let nileSeasonPhase = '아케트(Akhet · 범람과 비옥의 계절)';
+  if (month >= 3 && month <= 6) nileSeasonPhase = '페레트(Peret · 발아와 성장의 계절)';
+  else if (month >= 7 && month <= 10) nileSeasonPhase = '셰무(Shemu · 수확과 결실의 계절)';
+  else nileSeasonPhase = '아케트(Akhet · 정화와 재충전의 계절)';
+
+  return {
+    kstHour: hour,
+    solarBarqueWatch,
+    nileSeasonPhase,
+    voyageGuidance,
+    solarTempo,
+  };
+}
+
+export function calculateEgyptianAmduat(
+  profile: UserProfile | null | undefined,
+  now: Date = new Date(),
+  question: string = ''
+): EgyptianAmduatReport {
   const birthStr = profile?.basic?.birthdate || '1995-01-01';
   const nameStr = profile?.basic?.name || '내담자';
   const timeStr = profile?.basic?.birthtime || '12:00';
@@ -153,9 +264,23 @@ export function calculateEgyptianAmduat(profile: UserProfile | null | undefined)
     amduatHieroglyphicWisdom = '심야의 라-오시리스 신성 합일을 기억하십시오. 가장 어둡고 고요한 순간에 우주의 생명 에너지가 당신의 깊은 내면에 충전되고 있습니다. 서두르지 말고 태양의 배(Mesektet)의 리듬에 몸을 맡기십시오.';
   }
 
+  const situationalAmduatAudit = buildAmduatSituationalAudit(question, currentAmduatHour, solarDeityGuardian);
+  const temporalAmduatRhythm = buildAmduatTemporalRhythm(now);
+  const rebirthState: AmduatSynthesisMatrix['rebirthState'] =
+    khepriRebirthLuminosityScore >= 85
+      ? '케프리비상'
+      : midnightRaOsirisUnionPower >= 80
+        ? '라오시리스합일'
+        : '심연돌파';
+  const amduatSynthesisMatrix: AmduatSynthesisMatrix = {
+    rebirthState,
+    hourGuardianLink: `제${currentAmduatHour.hourNumber}시간 [${currentAmduatHour.hourNameAncient}]과 수호신 ${solarDeityGuardian.nameAncient}이 ${temporalAmduatRhythm.solarBarqueWatch}에서 만납니다.`,
+    nextBarqueStep: situationalAmduatAudit.barqueAction,
+  };
+
   return {
     engineVersion: EGYPTIAN_AMDUAT_VERSION,
-    calculatedAt: new Date().toISOString(),
+    calculatedAt: now.toISOString(),
     khepriRebirthLuminosityScore,
     apophisChaosDispellingForce,
     midnightRaOsirisUnionPower,
@@ -163,23 +288,29 @@ export function calculateEgyptianAmduat(profile: UserProfile | null | undefined)
     mesektetSolarBarqueSteadiness,
     currentAmduatHour,
     solarDeityGuardian,
+    situationalAmduatAudit,
+    temporalAmduatRhythm,
+    amduatSynthesisMatrix,
     amduatHieroglyphicWisdom
   };
 }
 
 export function formatEgyptianAmduatPrompt(report: EgyptianAmduatReport): string {
+  const khepriGrade = report.khepriRebirthLuminosityScore >= 85 ? '찬란함' : report.khepriRebirthLuminosityScore >= 72 ? '안정' : '응축중';
+  const apophisGrade = report.apophisChaosDispellingForce >= 82 ? '강건함' : '수호중';
   return `### 고대 이집트 《암두아트의 서》 12시간 태양신 라의 밤의 저승 항해 & 케프리 부활 엔진 (v${report.engineVersion})
 - **현재 통과 시간대**: 제${report.currentAmduatHour.hourNumber}시간 [${report.currentAmduatHour.hourNameAncient}] - ${report.currentAmduatHour.hourTheme}
   - *영적 시험*: ${report.currentAmduatHour.cosmicTrial}
   - *승리의 축복*: ${report.currentAmduatHour.victoryBlessing}
 - **태양 수호신**: ${report.solarDeityGuardian.nameAncient} (${report.solarDeityGuardian.role})
   - *신성 선물*: ${report.solarDeityGuardian.solarGift}
-- **암두아트 5대 태양 지표**:
-  - 케프리 새벽 부활 태양 광채도: ${report.khepriRebirthLuminosityScore}점 / 100
-  - 아포피스 혼돈 분쇄 내구력: ${report.apophisChaosDispellingForce}점 / 100
-  - 라-오시리스 심야 신성 합일력: ${report.midnightRaOsirisUnionPower}점 / 100
-  - 지하 12관문 돌파 통찰력: ${report.twelveUnderworldGatesMastery}점 / 100
-  - 메섹테트 태양선 항해 안정도: ${report.mesektetSolarBarqueSteadiness}점 / 100
+- **암두아트 정성 위상**: 부활 국면(${report.amduatSynthesisMatrix.rebirthState}) · 케프리 광채(${khepriGrade}) · 아포피스 방어(${apophisGrade})
+- **질문 맥락 감사**: ${report.situationalAmduatAudit.duatGateFocus} · 방어(${report.situationalAmduatAudit.apophisResistance})
+  - *항해 처방*: ${report.situationalAmduatAudit.barqueAction}
+  - *심연 경계*: ${report.situationalAmduatAudit.abyssCaution}
+- **KST 시공간 리듬 (${report.temporalAmduatRhythm.kstHour}시)**: ${report.temporalAmduatRhythm.solarBarqueWatch} · ${report.temporalAmduatRhythm.nileSeasonPhase} (${report.temporalAmduatRhythm.solarTempo})
+  - *시간대 지침*: ${report.temporalAmduatRhythm.voyageGuidance}
+- **교차 매트릭스**: ${report.amduatSynthesisMatrix.hourGuardianLink}
 - **암두아트 상형문자 지혜 잠언**:
   - "${report.amduatHieroglyphicWisdom}"`;
 }

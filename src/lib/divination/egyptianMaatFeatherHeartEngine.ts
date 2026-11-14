@@ -6,9 +6,23 @@
  * 양심의 명료함, 마음의 짐 내려놓기에 연결하는 정성적 성찰 엔진입니다.
  */
 
-export const EGYPTIAN_MAAT_FEATHER_ENGINE_VERSION = 'LUCKEY-EGYPTIAN-MAAT-v1.1.0';
+export const EGYPTIAN_MAAT_FEATHER_ENGINE_VERSION = 'LUCKEY-EGYPTIAN-MAAT-v2.0.0';
 
 export type MaatQuestionTheme = 'relationship' | 'decision' | 'healing' | 'reflection';
+
+export interface MaatTemporalRhythm {
+  kstHour: number;
+  hallOfMaatWindow: string;
+  seasonalBalancePhase: string;
+  weighingGuidance: string;
+  scaleTempo: '명료판정' | '균형조율' | '정화성찰';
+}
+
+export interface MaatSynthesisMatrix {
+  virtueTrapLink: string;
+  scaleAlignmentState: '수평안정' | '경량명료' | '정화권고';
+  nextScaleStep: string;
+}
 
 export interface MaatWeighingReport {
   engineVersion: string;
@@ -24,6 +38,8 @@ export interface MaatWeighingReport {
     thothRole: string;  // 있는 그대로 기록하는 서기관
   };
   featherAlignmentPrescription: string; // 하위 호환용 지침
+  temporalMaatRhythm: MaatTemporalRhythm;
+  maatSynthesisMatrix: MaatSynthesisMatrix;
   practiceGuidance: string; // getSymbolicPerspective 호환 정성적 조언
   ritualAction: string;
   reflectionFocus: string;
@@ -36,6 +52,60 @@ function classifyMaatTheme(question: string): MaatQuestionTheme {
   if (/선택|결정|이직|직장|일|사업|돈|시험|도전|시작|계약/.test(question)) return 'decision';
   if (/힘들|지치|불안|우울|잠|휴식|치유|피곤|후회|죄책/.test(question)) return 'healing';
   return 'reflection';
+}
+
+function getKstMaatParts(now: Date): { hour: number; month: number } {
+  const formatter = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Asia/Seoul',
+    hour: 'numeric',
+    month: 'numeric',
+    hour12: false,
+  });
+  const parts = formatter.formatToParts(now);
+  return {
+    hour: Number(parts.find((p) => p.type === 'hour')?.value || '12') % 24,
+    month: Number(parts.find((p) => p.type === 'month')?.value || '1'),
+  };
+}
+
+function buildMaatTemporalRhythm(now: Date): MaatTemporalRhythm {
+  const { hour, month } = getKstMaatParts(now);
+
+  let hallOfMaatWindow = '여명 마아트(Ma\'at) 맑은 양심 창';
+  let scaleTempo: MaatTemporalRhythm['scaleTempo'] = '명료판정';
+  let weighingGuidance = '감정이 가라앉은 맑은 시간대이므로 객관적인 기준을 세우기 좋습니다.';
+
+  if (hour >= 5 && hour < 10) {
+    hallOfMaatWindow = '여명 진리의 깃털 명료 창 (05~10시)';
+    scaleTempo = '명료판정';
+    weighingGuidance = '오늘의 선택 기준을 정직하고 단순하게 정리하기 가장 좋은 시간입니다.';
+  } else if (hour >= 10 && hour < 17) {
+    hallOfMaatWindow = '주간 이집트 저울 수평 조율 창 (10~17시)';
+    scaleTempo = '균형조율';
+    weighingGuidance = '일과 관계에서 공정한 주고받음과 현실적 책임을 균형 있게 다룰 시간입니다.';
+  } else if (hour >= 17 && hour < 21) {
+    hallOfMaatWindow = '황혼 토트(Thoth) 서기관 회고 창 (17~21시)';
+    scaleTempo = '정화성찰';
+    weighingGuidance = '하루 동안 쌓인 감정적 무게를 팩트와 구분해 내려놓기 알맞습니다.';
+  } else {
+    hallOfMaatWindow = '심야 아루(Aaru) 평온 안식 창 (21~05시)';
+    scaleTempo = '정화성찰';
+    weighingGuidance = '스스로를 심판하는 생각을 멈추고 가벼운 마음으로 휴식에 들 시간입니다.';
+  }
+
+  let seasonalBalancePhase = '봄 · 진실의 새싹 정돈절';
+  if (month >= 3 && month <= 5) seasonalBalancePhase = '봄 · 새로운 약속과 명료함 개시절';
+  else if (month >= 6 && month <= 8) seasonalBalancePhase = '여름 · 열정 속 균형 절제절';
+  else if (month >= 9 && month <= 11) seasonalBalancePhase = '가을 · 공평한 수확과 결산절';
+  else seasonalBalancePhase = '겨울 · 고요한 내면 성찰절';
+
+  return {
+    kstHour: hour,
+    hallOfMaatWindow,
+    seasonalBalancePhase,
+    weighingGuidance,
+    scaleTempo,
+  };
 }
 
 export function calculateEgyptianMaatFeatherHeart(params: {
@@ -127,7 +197,15 @@ export function calculateEgyptianMaatFeatherHeart(params: {
   };
 
   const themeContent = guidanceByTheme[questionTheme];
-  const boundaryNotice = '이집트 마아트 관점은 고대 상징을 빌린 정성적 자기 성찰 참고용이며, 도덕적 심판이나 개인 점수·미래 예언이 아닙니다.';
+  const boundaryNotice = '이집트 마아트 관점은 고대 상징을 빌린 정성적 자기 성찰 참고용이며, 도덕적 심판이나 개인의 가치 평가·미래 예언이 아닙니다.';
+  const temporalMaatRhythm = buildMaatTemporalRhythm(now);
+  const scaleAlignmentState: MaatSynthesisMatrix['scaleAlignmentState'] =
+    heartLightnessScore >= 85 ? '경량명료' : heartLightnessScore >= 70 ? '수평안정' : '정화권고';
+  const maatSynthesisMatrix: MaatSynthesisMatrix = {
+    virtueTrapLink: `[${activeNegativeConfessionVirtue}]의 덕목으로 [${ammutShadowTrap}]을 비추어 균형을 잡습니다.`,
+    scaleAlignmentState,
+    nextScaleStep: themeContent.ritualAction,
+  };
 
   return {
     engineVersion: EGYPTIAN_MAAT_FEATHER_ENGINE_VERSION,
@@ -140,6 +218,8 @@ export function calculateEgyptianMaatFeatherHeart(params: {
     ammutShadowTrap,
     symbolicGuard,
     featherAlignmentPrescription: themeContent.practiceGuidance,
+    temporalMaatRhythm,
+    maatSynthesisMatrix,
     practiceGuidance: themeContent.practiceGuidance,
     ritualAction: themeContent.ritualAction,
     reflectionFocus: themeContent.reflectionFocus,
@@ -150,11 +230,14 @@ export function calculateEgyptianMaatFeatherHeart(params: {
 
 export function formatEgyptianMaatFeatherHeartPrompt(report: MaatWeighingReport): string {
   return `### ⚖️ 고대 이집트 마아트(Ma'at) 진리의 깃털 & 심장 무게 측정 실측 데이터 (${report.engineVersion})
-- **심장-깃털 균형 상태**: ${report.balanceState}
+- **심장-깃털 균형 상태**: ${report.balanceState} (${report.maatSynthesisMatrix.scaleAlignmentState})
 - **오시리스 심판 저울 판정**: [${report.weighingVerdict}]
 - **주도적 양심 무결성 덕목**: ${report.activeNegativeConfessionVirtue}
 - **경계해야 할 아미트(Ammut) 그림자 함정**: ${report.ammutShadowTrap}
 - **아누비스·토트 상징 균형**: ${report.symbolicGuard.anubisRole} / ${report.symbolicGuard.thothRole}
+- **KST 시공간 리듬 (${report.temporalMaatRhythm.kstHour}시)**: ${report.temporalMaatRhythm.hallOfMaatWindow} · ${report.temporalMaatRhythm.seasonalBalancePhase} (${report.temporalMaatRhythm.scaleTempo})
+  - **시간대 지침**: ${report.temporalMaatRhythm.weighingGuidance}
+- **교차 매트릭스**: ${report.maatSynthesisMatrix.virtueTrapLink}
 - **실천 조언**: ${report.practiceGuidance}
 - **일상 의례**: ${report.ritualAction}
 - **성찰 질문**: ${report.reflectionFocus}

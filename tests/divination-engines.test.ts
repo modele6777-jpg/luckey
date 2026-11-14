@@ -2862,6 +2862,7 @@ test('Egyptian 36 Decans Engine: calculates birth decan and stellar resonance', 
   const prompt = formatEgyptianThirtySixDecansPrompt(rep);
   assert(prompt.includes('고대 이집트 36 데칸'));
   assert(prompt.includes(rep.birthDecan.guardianDeity));
+  assert(!prompt.includes('/100') && !prompt.includes('점수'));
 });
 
 test('Sufi Seven Lataif Soul Ascension Engine: calculates spiritual station and heart purity', () => {
@@ -3408,6 +3409,7 @@ test('Egyptian Maat Feather Heart Engine: calculates heart lightness and Maat ve
   assert(prompt.includes('고대 이집트 마아트(Ma\'at) 진리의 깃털 & 심장 무게 측정 실측 데이터'));
   assert(prompt.includes(rep.activeNegativeConfessionVirtue));
   assert(prompt.includes(rep.practiceGuidance));
+  assert(!prompt.includes('/100') && !prompt.includes('점수'));
 });
 
 test('Persian Mithraic Seven Spheres Engine: calculates Mithraic grade and Sol Invictus score', () => {
@@ -4216,6 +4218,7 @@ test('Egyptian Amduat Twelve Hours Ra Engine: calculates 12 hours of underworld,
   const prompt = formatEgyptianAmduatPrompt(rep);
   assert(prompt.includes('고대 이집트 《암두아트의 서》 12시간 태양신 라의 밤의 저승 항해 & 케프리 부활'));
   assert(prompt.includes(rep.currentAmduatHour.hourNameAncient));
+  assert(!prompt.includes('/ 100') && !prompt.includes('점수'));
 });
 
 test('Celtic Druid Brehon Law Justice Engine: calculates 4 cosmic justices, Cairde peace pact and Eric compensation', () => {
