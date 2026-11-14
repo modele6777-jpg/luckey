@@ -9,12 +9,21 @@
  * 4. 억울한 약자를 구명하고 진실을 밝히는 실천적 양심 및 정의 구현도(Justice Advocacy & Conscience Score): 카라스 사건 구명처럼 불의에 맞서 진실을 밝히는 용기.
  * 5. 헛된 관념론을 탈피하고 현실을 직시하는 분별력(Realistic Disillusionment & Clarity Index): 뜬구름 잡는 낙관론을 넘어 객관적 현실을 마주하는 힘.
  *
- * @version LUCKEY-VOLTAIRE-CANDIDE-TOLERANCE-v1.0.0
+ * @version LUCKEY-VOLTAIRE-CANDIDE-TOLERANCE-v1.1.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const FRENCH_VOLTAIRE_CANDIDE_TOLERANCE_VERSION = 'LUCKEY-VOLTAIRE-CANDIDE-TOLERANCE-v1.0.0';
+export const FRENCH_VOLTAIRE_CANDIDE_TOLERANCE_VERSION = 'LUCKEY-VOLTAIRE-CANDIDE-TOLERANCE-v1.1.0';
+
+export type VoltaireQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
+
+export interface VoltaireTemporalRhythm {
+  kstHour: number;
+  kstSlot: string;
+  rhythmTitle: string;
+  rhythmGuidance: string;
+}
 
 export interface VoltaireTheme {
   themeKey: string;
@@ -48,6 +57,12 @@ export interface FrenchVoltaireCandideToleranceResult {
     guidanceTitle: string;
     philosophicalCounsel: string;
   };
+  questionTopic: VoltaireQuestionTopic;
+  temporalRhythm: VoltaireTemporalRhythm;
+  questionContextGuide: string;
+  dailyPracticeRitual: string;
+  reflectiveQuestion: string;
+  interpretiveBoundary: string;
 }
 
 export const VOLTAIRE_THEMES: VoltaireTheme[] = [
@@ -121,17 +136,72 @@ function hashString(str: string): number {
   return hash;
 }
 
+function classifyVoltaireQuestionTopic(query?: string): VoltaireQuestionTopic {
+  const q = (query ?? '').trim().toLowerCase();
+  if (!q) return 'reflection';
+  if (/연애|사랑|관계|이별|결혼|재회|상대|사람|친구|가족|동료|마음|호감|갈등|연락/.test(q)) return 'relationship';
+  if (/결정|선택|이직|창업|진로|시험|합격|투자|계약|진행|포기|방향|할까|말까/.test(q)) return 'decision';
+  if (/불안|우울|지침|피곤|상처|치유|위로|힘들|걱정|두려|잠|휴식|회복/.test(q)) return 'healing';
+  return 'reflection';
+}
+
+function buildVoltaireTemporalRhythm(now?: Date): VoltaireTemporalRhythm {
+  const target = now ?? new Date();
+  const kstHour = (target.getUTCHours() + 9) % 24;
+  if (kstHour >= 5 && kstHour < 11) {
+    return {
+      kstHour,
+      kstSlot: '새벽·아침 경작기',
+      rhythmTitle: '오늘의 밭을 여는 첫 호미질',
+      rhythmGuidance: '거창한 걱정보다 오늘 내 손이 닿는 작고 구체적인 과업 하나를 정해 가볍게 시작하기 좋은 시간입니다.',
+    };
+  }
+  if (kstHour >= 11 && kstHour < 17) {
+    return {
+      kstHour,
+      kstSlot: '한낮의 관용기',
+      rhythmTitle: '다름을 품고 위트로 균형을 잡는 시간',
+      rhythmGuidance: '서로 다른 의견이 부딪히는 낮 시간에는 독단 대신 열린 대화와 가벼운 유머가 가장 실용적인 해법이 됩니다.',
+    };
+  }
+  if (kstHour >= 17 && kstHour < 22) {
+    return {
+      kstHour,
+      kstSlot: '저녁의 분별기',
+      rhythmTitle: '완벽주의를 내려놓고 결실을 확인하는 시간',
+      rhythmGuidance: '빈틈없는 완벽을 따지기보다 오늘 충분히 잘해낸 실질적 진전을 인정하고 숨을 고르기 좋은 저녁입니다.',
+    };
+  }
+  return {
+    kstHour,
+    kstSlot: '심야의 명철기',
+    rhythmTitle: '공허한 사변을 접고 현실을 맑게 보는 밤',
+    rhythmGuidance: '끝없는 가정과 불안한 상상을 멈추고 내일 손대야 할 한 가지 실천만 남긴 채 편안히 내려놓을 때입니다.',
+  };
+}
+
+function describeVoltaireQualitativeStage(score: number): string {
+  if (score >= 90) return '명철한 실천기 (현실 감각과 관용·실행력이 고르게 살아 있는 흐름)';
+  if (score >= 80) return '견실한 경작기 (차분히 일상을 가꾸며 중심을 지키는 흐름)';
+  return '담백한 정돈기 (헛된 완벽주의를 덜고 본질로 돌아가는 흐름)';
+}
+
 export function calculateFrenchVoltaireCandideTolerance(
   profile?: UserProfile,
   query?: string,
+  now?: Date,
 ): FrenchVoltaireCandideToleranceResult {
+  const targetDate = now ?? new Date();
+  const questionTopic = classifyVoltaireQuestionTopic(query);
+  const temporalRhythm = buildVoltaireTemporalRhythm(targetDate);
+
   const p = profile as any;
   const name = profile?.basic?.name ?? p?.name ?? '남희';
   const birthDate = profile?.basic?.birthdate ?? p?.birthDate ?? p?.birthdate ?? '1967-08-25';
   const birthTime = profile?.basic?.birthtime ?? p?.birthTime ?? p?.birthtime ?? '12:00';
   const gender = profile?.basic?.gender ?? p?.gender ?? 'neutral';
 
-  const seedString = `VOLTAIRE-CANDIDE-TOLERANCE:${name}:${birthDate}:${birthTime}:${gender}:${query ?? ''}`;
+  const seedString = `VOLTAIRE-CANDIDE-TOLERANCE:${name}:${birthDate}:${birthTime}:${gender}:${questionTopic}:${temporalRhythm.kstSlot}:${query ?? ''}`;
   const baseHash = hashString(seedString);
   const absHash = Math.abs(baseHash);
 
@@ -147,6 +217,31 @@ export function calculateFrenchVoltaireCandideTolerance(
   const activeVoltaireTheme = VOLTAIRE_THEMES[themeIndex];
   const focalVoltaireAphorism = VOLTAIRE_APHORISMS[aphorismIndex];
 
+  const topicGuides: Record<VoltaireQuestionTopic, { guide: string; ritual: string; question: string }> = {
+    relationship: {
+      guide: '볼테르의 관용(Tolérance)은 상대를 무조건 옳다고 하는 것이 아니라, 나와 다르게 생각할 권리를 인정하는 여유에서 시작됩니다. 날 선 정답 다툼보다 유머 한 스푼이 관계를 살립니다.',
+      ritual: '상대의 말이 거슬릴 때 반박부터 꺼내기 전에 "저 사람 입장에서는 저렇게 보일 수도 있겠구나"를 한 번만 속으로 되뇌어 보세요.',
+      question: '이 관계에서 내가 반드시 이겨야 한다고 믿었던 주장 중, 내려놓아도 괜찮은 것은 무엇인가요?',
+    },
+    decision: {
+      guide: '"더할 나위 없이 완벽한 것은 충분히 좋은 것의 적"입니다. 모든 위험을 0으로 만든 뒤 움직이려 하기보다, 지금 당장 내 밭에서 해볼 수 있는 작은 실행을 먼저 심어 보세요.',
+      ritual: '결정을 망설이게 하는 가장 큰 가정 1가지를 지우고, 오늘 30분 안에 검증할 수 있는 현실적인 작은 행동 하나를 실행해 보세요.',
+      question: '완벽한 답을 기다리느라 미루고 있는 일 가운데, 지금 충분히 해볼 만한 첫 단계는 무엇인가요?',
+    },
+    healing: {
+      guide: '세상의 부조리와 끝없는 걱정을 머리로 다 풀려 하면 마음만 지칩니다. 통제할 수 없는 큰 담론에서 시선을 거두고, 지금 내 책상과 방, 오늘의 한 끼를 정성껏 돌보는 일이 마음을 회복시킵니다.',
+      ritual: '오늘 10분만이라도 어지러운 생각에서 손 떼고, 내 손이 닿는 작은 공간 하나를 정돈하거나 따뜻한 차 한 잔을 챙겨 마셔 보세요.',
+      question: '지금 내 마음을 가장 무겁게 누르는 걱정 중, 사실 내가 직접 통제할 수 있는 영역은 어디까지인가요?',
+    },
+    reflection: {
+      guide: '《캉디드》의 마지막 문장처럼 결국 삶을 지탱하는 것은 추상적인 낙관도 비관도 아닌, 오늘의 밭을 일구는 성실한 손길입니다.',
+      ritual: '오늘 하루 중 공허한 생각에 머문 시간 대신 내 손으로 직접 만들어낸 작은 결과물 한 가지를 떠올려 보세요.',
+      question: '지금 내 삶에서 뜬구름 잡는 고민을 멈추고 정성껏 가꾸기 시작해야 할 "나의 밭"은 무엇인가요?',
+    },
+  };
+
+  const topicPack = topicGuides[questionTopic];
+
   const guidanceTitle = `볼테르 계몽주의 실천 지혜: ${activeVoltaireTheme.themeTitleKo}`;
   const philosophicalCounsel = `프랑스 계몽주의의 거목 볼테르는 "우리의 밭을 일구어야 한다(Il faut cultiver notre jardin)"는 일상의 성실한 실천과 광신을 물리치는 관용(Tolérance)을 가르칩니다. ` +
     `현재 당신의 흐름에서 가장 귀감이 되는 핵심 지혜는 '${activeVoltaireTheme.themeTitleKo}'입니다. ` +
@@ -155,7 +250,7 @@ export function calculateFrenchVoltaireCandideTolerance(
 
   return {
     engineVersion: FRENCH_VOLTAIRE_CANDIDE_TOLERANCE_VERSION,
-    calculatedAtKst: new Date().toISOString(),
+    calculatedAtKst: targetDate.toISOString(),
     cultivateOurGardenPragmaticDevotionScore,
     toleranceEnlightenedReasonIndex,
     witSatiricalPiercingInsightScore,
@@ -167,6 +262,12 @@ export function calculateFrenchVoltaireCandideTolerance(
       guidanceTitle,
       philosophicalCounsel,
     },
+    questionTopic,
+    temporalRhythm,
+    questionContextGuide: topicPack.guide,
+    dailyPracticeRitual: topicPack.ritual,
+    reflectiveQuestion: topicPack.question,
+    interpretiveBoundary: '본 관점은 볼테르의 《캉디드》와 《관용론》 사상을 바탕으로 일상의 실천과 열린 시선을 돕는 상징적 안내이며, 우열의 점수나 확정적 예언이 아닙니다.',
   };
 }
 
@@ -175,11 +276,13 @@ export function formatFrenchVoltaireCandideTolerancePrompt(
 ): string {
   return [
     `【볼테르 《캉디드》 & 《관용론》 일상 실천 및 관용 지혜 지표】`,
-    `- 밭을 일구는 일상 실천 지수(Cultivate Our Garden Devotion): ${res.cultivateOurGardenPragmaticDevotionScore}/100`,
-    `- 관용 및 열린 지성 지표(Tolerance & Enlightened Reason): ${res.toleranceEnlightenedReasonIndex}/100`,
-    `- 위선 타파 기지 및 유머 회복탄력성(Wit & Satirical Piercing Insight): ${res.witSatiricalPiercingInsightScore}/100`,
-    `- 실천적 양심 및 정의 구현도(Justice Advocacy & Conscience): ${res.justiceAdvocacyConscienceScore}/100`,
-    `- 현실 직시 및 분별력 지수(Realistic Disillusionment & Clarity): ${res.realisticDisillusionmentClarityIndex}/100`,
+    `- 밭을 일구는 일상 실천 흐름(Cultivate Our Garden Devotion): ${describeVoltaireQualitativeStage(res.cultivateOurGardenPragmaticDevotionScore)}`,
+    `- 관용 및 열린 지성 흐름(Tolerance & Enlightened Reason): ${describeVoltaireQualitativeStage(res.toleranceEnlightenedReasonIndex)}`,
+    `- 위선 타파 기지 및 유머 회복탄력성(Wit & Satirical Piercing Insight): ${describeVoltaireQualitativeStage(res.witSatiricalPiercingInsightScore)}`,
+    `- 실천적 양심 및 정의 구현(Justice Advocacy & Conscience): ${describeVoltaireQualitativeStage(res.justiceAdvocacyConscienceScore)}`,
+    `- 현실 직시 및 분별력(Realistic Disillusionment & Clarity): ${describeVoltaireQualitativeStage(res.realisticDisillusionmentClarityIndex)}`,
+    `- 현재 시공간 리듬 (${res.temporalRhythm.kstSlot}): ${res.temporalRhythm.rhythmTitle} — ${res.temporalRhythm.rhythmGuidance}`,
+    `- 질문 맥락 맞춤 성찰 (${res.questionTopic}): ${res.questionContextGuide}`,
     `- 핵심 볼테르 실천 테마: ${res.activeVoltaireTheme.themeTitleKo} [${res.activeVoltaireTheme.themeTitleEn}]`,
     `- 실천적 통찰: ${res.activeVoltaireTheme.pragmaticInsight}`,
     `- 행동 조언: ${res.activeVoltaireTheme.practicalCounsel}`,
@@ -187,6 +290,9 @@ export function formatFrenchVoltaireCandideTolerancePrompt(
     `- 원문 인용: "${res.focalVoltaireAphorism.aphorismEn}"`,
     `- 원전 출처: [${res.focalVoltaireAphorism.sourceContext}]`,
     `- 구체적 실천 지침: ${res.focalVoltaireAphorism.actionGuidance}`,
+    `- 오늘의 경작 의례: ${res.dailyPracticeRitual}`,
+    `- 핵심 성찰 질문: ${res.reflectiveQuestion}`,
     `- 종합 볼테르 계몽 권면: ${res.voltaireComprehensiveGuidance.philosophicalCounsel}`,
+    `- 해석 경계: ${res.interpretiveBoundary}`,
   ].join('\n');
 }
