@@ -6429,6 +6429,49 @@ test('Inanna Underworld, Spinoza Ethica, and Plotinus Enneads v1.1.0 engines pro
   assert(!plotinusPrompt.includes('원전 출처'));
 });
 
+test('Dreamtime Songlines, Eleusinian Mysteries, and Babylonian Enuma Elish provide qualitative question-reactive guidance without score exposure', async () => {
+  const { calculateAboriginalDreamtimeSonglines, formatAboriginalDreamtimeSonglinesPrompt } = await import('../src/lib/divination/aboriginalDreamtimeSonglinesEngine');
+  const { calculateEleusinianMysteries, formatEleusinianMysteriesPrompt } = await import('../src/lib/divination/eleusinianMysteriesEngine');
+  const { calculateBabylonianEnumaElish, formatBabylonianEnumaElishPrompt } = await import('../src/lib/divination/babylonianEnumaElishEngine');
+
+  const testProfile = {
+    id: 'test-user',
+    name: '제제',
+    basic: { birthdate: '1994-01-24', birthtime: '09:30', gender: 'male' as const, calendarType: 'solar' as const },
+  };
+  const testDate = new Date('2026-11-14T04:45:00Z');
+
+  const dreamtime = calculateAboriginalDreamtimeSonglines({ profile: testProfile, targetInstantTime: testDate.toISOString(), question: '이직 결정을 앞두고 방향이 고민돼요' });
+  assert.equal(dreamtime.questionTheme, 'decision');
+  assert.ok(dreamtime.practiceGuidance.length > 10);
+  assert.ok(dreamtime.ritualAction.length > 10);
+  assert.ok(dreamtime.reflectionFocus.length > 10);
+  assert.ok(dreamtime.boundaryNotice.length > 10);
+  const dreamtimePrompt = formatAboriginalDreamtimeSonglinesPrompt(dreamtime);
+  assert(!dreamtimePrompt.includes('/100'));
+  assert(!dreamtimePrompt.includes('점)'));
+
+  const eleusis = calculateEleusinianMysteries(testProfile, { now: testDate, question: '최근 관계 갈등 때문에 마음이 지쳤어요' });
+  assert.equal(eleusis.questionTheme, 'relationship');
+  assert.ok(eleusis.practiceGuidance.length > 10);
+  assert.ok(eleusis.ritualAction.length > 10);
+  assert.ok(eleusis.reflectionFocus.length > 10);
+  assert.ok(eleusis.boundaryNotice.length > 10);
+  const eleusisPrompt = formatEleusinianMysteriesPrompt(eleusis);
+  assert(!eleusisPrompt.includes('100점'));
+  assert(!eleusisPrompt.includes('/100'));
+
+  const babylon = calculateBabylonianEnumaElish(testProfile, testDate, '요즘 번아웃이 와서 회복하고 싶어요');
+  assert.equal(babylon.questionTheme, 'healing');
+  assert.ok(babylon.practiceGuidance.length > 10);
+  assert.ok(babylon.ritualAction.length > 10);
+  assert.ok(babylon.reflectionFocus.length > 10);
+  assert.ok(babylon.boundaryNotice.length > 10);
+  const babylonPrompt = formatBabylonianEnumaElishPrompt(babylon);
+  assert(!babylonPrompt.includes('점)'));
+  assert(!babylonPrompt.includes('/100'));
+});
+
 
 
 

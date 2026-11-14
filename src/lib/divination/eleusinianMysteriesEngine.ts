@@ -23,7 +23,9 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const ELEUSINIAN_MYSTERIES_VERSION = 'LUCKEY-ELEUSINIAN-MYSTERIES-v1.0.0';
+export const ELEUSINIAN_MYSTERIES_VERSION = 'LUCKEY-ELEUSINIAN-MYSTERIES-v1.1.0';
+
+export type EleusinianQuestionTheme = 'relationship' | 'decision' | 'healing' | 'reflection';
 
 export interface EleusinianGrade {
   gradeTitle: string;            // 무스테스 / 에포프테스 / 히에로판트
@@ -43,11 +45,18 @@ export interface EleusinianStation {
 export interface EleusinianReport {
   engineVersion: string;
   calculatedAt: string;
+  questionTheme: EleusinianQuestionTheme;
   currentGrade: EleusinianGrade;
   activeStation: EleusinianStation;
-  epoptiaRebirthScore: number;   // 0 ~ 100 에포프테이아 영혼 부활 지수
+  epoptiaRebirthScore: number;   // 내부 참조용
+  rebirthPosture: string;        // 정성적 에포프테이아 부활 국면
   sacredSymbol: string;          // 보리 이삭(Ear of Grain), 횃불(Torch), 키케온(Kykeon) 등
   oracleMessage: string;         // 신비전 오라클 전언
+  practiceGuidance: string;
+  ritualAction: string;
+  reflectionFocus: string;
+  counselNote: string;
+  boundaryNotice: string;
 }
 
 const INITIATION_GRADES: EleusinianGrade[] = [
@@ -109,9 +118,17 @@ const SACRED_SYMBOLS = [
   '영혼의 영원한 회귀를 상징하는 석류 씨앗 (Seeds of Pomegranate - 신성한 계약)'
 ];
 
+function classifyEleusinianTheme(question?: string): EleusinianQuestionTheme {
+  const q = (question || '').toLowerCase();
+  if (/관계|연애|사랑|사람|가족|친구|이별|갈등|소통/.test(q)) return 'relationship';
+  if (/선택|결정|진로|이직|사업|일|직장|시험|투자|방향/.test(q)) return 'decision';
+  if (/지치|힘들|불안|우울|회복|치유|휴식|건강|마음|위로/.test(q)) return 'healing';
+  return 'reflection';
+}
+
 export function calculateEleusinianMysteries(
   profile: UserProfile,
-  options?: { contextText?: string }
+  options?: { contextText?: string; question?: string; now?: Date }
 ): EleusinianReport {
   let birthYear = 1990;
   let birthMonth = 6;
@@ -120,6 +137,9 @@ export function calculateEleusinianMysteries(
 
   const birthDate = profile?.basic?.birthdate;
   const birthTime = profile?.basic?.birthtime;
+  const now = options?.now ?? new Date();
+  const question = (options?.question || options?.contextText || '').trim();
+  const questionTheme = classifyEleusinianTheme(question);
 
   if (birthDate) {
     const parts = birthDate.split('-').map(Number);
@@ -137,21 +157,29 @@ export function calculateEleusinianMysteries(
     }
   }
 
+  let qSeed = 0;
+  for (let i = 0; i < question.length; i++) qSeed = (qSeed * 31 + question.charCodeAt(i)) & 0x7fffffff;
+
   // 1. 입사 등급 산출
-  const gradeIdx = (Math.abs(birthYear + birthMonth * 3 + birthDay * 5 + birthHour * 7) % 3);
+  const gradeIdx = (Math.abs(birthYear + birthMonth * 3 + birthDay * 5 + birthHour * 7 + qSeed) % 3);
   const currentGrade = INITIATION_GRADES[gradeIdx];
 
   // 2. 신비의례 국면 산출
-  const stationIdx = (Math.abs(birthYear * 2 + birthMonth * 7 + birthDay * 11 + birthHour * 13) % 4);
+  const stationIdx = (Math.abs(birthYear * 2 + birthMonth * 7 + birthDay * 11 + birthHour * 13 + now.getUTCDate() + qSeed) % 4);
   const activeStation = MYSTIC_STATIONS[stationIdx];
 
-  // 3. 에포프테이아 영혼 부활 지수 (0 ~ 100)
+  // 3. 에포프테이아 영혼 부활 국면 (내부 인덱스 -> 정성적 표현)
   const epoptiaRebirthScore = Math.min(99, Math.max(65, Math.round(
     72 + ((birthYear * 3 + birthMonth * 5 + birthDay * 7) % 27)
   )));
+  const rebirthPosture = epoptiaRebirthScore >= 88
+    ? '겨울의 침묵을 뚫고 새싹이 솟아오르는 에포프테이아 개화 국면'
+    : epoptiaRebirthScore >= 78
+      ? '내면의 씨앗을 묵묵히 품고 계절의 전환을 준비하는 성숙 국면'
+      : '묵은 찌꺼기를 씻어내며 본래의 빛을 회복해 가는 정화 국면';
 
   // 4. 신성 상징
-  const symbolIdx = (birthDay + birthMonth + birthYear) % SACRED_SYMBOLS.length;
+  const symbolIdx = (birthDay + birthMonth + birthYear + qSeed) % SACRED_SYMBOLS.length;
   const sacredSymbol = SACRED_SYMBOLS[symbolIdx];
 
   const ORACLES = [
@@ -162,19 +190,51 @@ export function calculateEleusinianMysteries(
   ];
   const oracleMessage = ORACLES[(birthDay + stationIdx) % ORACLES.length];
 
+  const themeGuidanceMap: Record<EleusinianQuestionTheme, { practice: string; ritual: string; reflection: string }> = {
+    relationship: {
+      practice: `데메테르와 페르세포네의 순환처럼, 모든 관계에도 겨울의 거리두기와 봄의 재회가 교차함을 인정해 보세요.`,
+      ritual: '상대에게 서운했던 감정 하나를 억지로 누르지 말고 노트에 적어 씻어 보내기',
+      reflection: '지금 이 관계에서 겨울처럼 얼어붙은 부분을 녹이기 위해 내가 먼저 건넬 수 있는 작은 온기는 무엇인가요?',
+    },
+    decision: {
+      practice: `${activeStation.practicalVirtue} 결단 앞에서는 두려움을 피하기보다 본질이 살아남는 선택을 택하세요.`,
+      ritual: '오늘 결정해야 할 문제의 가장 두려운 시나리오와 가장 빛나는 시나리오를 나란히 적어 보기',
+      reflection: '내가 지금 망설이는 이유는 실패에 대한 두려움 때문인가요, 아니면 아직 때가 무르익지 않아서인가요?',
+    },
+    healing: {
+      practice: `지하세계의 어둠도 씨앗이 뿌리를 내리는 시간입니다. 지금의 지침을 패배가 아닌 재생의 계절로 받아들이세요.`,
+      ritual: '따뜻한 허브차나 물을 천천히 마시며 오늘 나 자신을 가장 괴롭혔던 자책 한 가지를 내려놓기',
+      reflection: '고단했던 시간을 통과하며 내 안에 남게 된 가장 단단한 지혜는 무엇인가요?',
+    },
+    reflection: {
+      practice: `${currentGrade.initiationGuidance} ${activeStation.practicalVirtue}`,
+      ritual: '하루의 끝에서 2분간 조명을 낮추고 침묵 속에서 오늘의 마음 상태를 가만히 바라보기',
+      reflection: '껍질을 깨고 나와야만 비로소 열매를 맺을 수 있는 내 삶의 오랜 습관은 무엇인가요?',
+    },
+  };
+  const themed = themeGuidanceMap[questionTheme];
+
   return {
     engineVersion: ELEUSINIAN_MYSTERIES_VERSION,
-    calculatedAt: new Date().toISOString(),
+    calculatedAt: now.toISOString(),
+    questionTheme,
     currentGrade,
     activeStation,
     epoptiaRebirthScore,
+    rebirthPosture,
     sacredSymbol,
-    oracleMessage
+    oracleMessage,
+    practiceGuidance: themed.practice,
+    ritualAction: themed.ritual,
+    reflectionFocus: themed.reflection,
+    counselNote: `[엘레우시스 입사의례 성찰] ${currentGrade.gradeTitle} · ${activeStation.stationName} — ${themed.practice}`,
+    boundaryNotice: '고대 엘레우시스 신비전의 순환·재생 상징을 빌려 온 정성적 성찰 관점이며, 확정적 예언이나 의학적·재정적 처방이 아닙니다.',
   };
 }
 
 export function formatEleusinianMysteriesPrompt(report: EleusinianReport): string {
-  return `[고대 그리스 엘레우시스 신비주의(Eleusinian Mysteries) 영혼 입사의례 & 페르세포네 환원 엔진]
+  return `[고대 그리스 엘레우시스 신비주의(Eleusinian Mysteries) 영혼 입사의례 성찰 관점]
+- 질문 맥락: ${report.questionTheme} | 부활 국면: ${report.rebirthPosture}
 - 입사 등급: ${report.currentGrade.gradeTitle} (${report.currentGrade.greekTerm})
   * 의식 층위: ${report.currentGrade.spiritualLevel}
   * 입사 지침: ${report.currentGrade.initiationGuidance}
@@ -182,7 +242,10 @@ export function formatEleusinianMysteriesPrompt(report: EleusinianReport): strin
   * 신화적 상징: ${report.activeStation.mythicArchetype}
   * 내적 변용: ${report.activeStation.innerTransformation}
   * 행동 미덕: ${report.activeStation.practicalVirtue}
-- 에포프테이아 영혼 부활 지수: ${report.epoptiaRebirthScore}점 (100점 만점)
 - 신성 상징물: ${report.sacredSymbol}
-- 엘레우시스 성소 신탁: "${report.oracleMessage}"`;
+- 맥락별 실천 조언: ${report.practiceGuidance}
+- 일상 의례: ${report.ritualAction}
+- 성찰 질문: ${report.reflectionFocus}
+- 엘레우시스 성소 신탁: "${report.oracleMessage}"
+- 해석 경계: ${report.boundaryNotice}`;
 }

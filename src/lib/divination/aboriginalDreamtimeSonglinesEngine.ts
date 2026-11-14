@@ -29,7 +29,9 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const ABORIGINAL_DREAMTIME_SONGLINES_ENGINE_VERSION = '1.0.0';
+export const ABORIGINAL_DREAMTIME_SONGLINES_ENGINE_VERSION = '1.1.0';
+
+export type DreamtimeQuestionTheme = 'relationship' | 'decision' | 'healing' | 'reflection';
 
 export interface AncestralTotem {
   name: string;
@@ -42,12 +44,19 @@ export interface AncestralTotem {
 export interface DreamtimeSonglineReport {
   engineVersion: string;
   calculatedAt: string;
-  kurunpaLifeForceIndex: number; // 쿠룬파(Kurunpa) 대지 영혼 에너지 (0~100)
+  questionTheme: DreamtimeQuestionTheme;
+  kurunpaLifeForceIndex: number; // 내부 참조용
+  kurunpaPosture: string; // 쿠룬파 정성적 상태
   activeTotem: AncestralTotem;
   songlineDirection: string; // 송라인 주재 방향
   songlineTheme: string; // 대지의 노래 테마
   dadirriPractice: string; // 다디리(Dadirri) 고요의 경청 실천
   dreamtimeWisdom: string; // 드림타임 지혜 조언
+  practiceGuidance: string;
+  ritualAction: string;
+  reflectionFocus: string;
+  counselNote: string;
+  boundaryNotice: string;
 }
 
 const TOTEMS: AncestralTotem[] = [
@@ -119,12 +128,23 @@ const SONGLINE_DIRECTIONS = [
 /**
  * 드림타임 송라인 및 선조 토템 나침반을 결정론적으로 연산합니다.
  */
+function classifyDreamtimeTheme(question?: string): DreamtimeQuestionTheme {
+  const q = (question || '').toLowerCase();
+  if (/관계|연애|사랑|사람|가족|친구|이별|갈등|소통/.test(q)) return 'relationship';
+  if (/선택|결정|진로|이직|사업|일|직장|시험|투자|방향/.test(q)) return 'decision';
+  if (/지치|힘들|불안|우울|회복|치유|휴식|건강|마음|위로/.test(q)) return 'healing';
+  return 'reflection';
+}
+
 export function calculateAboriginalDreamtimeSonglines(options?: {
   profile?: UserProfile;
   targetInstantTime?: string;
+  question?: string;
 }): DreamtimeSonglineReport {
   const profile = options?.profile;
   const now = options?.targetInstantTime ? new Date(options.targetInstantTime) : new Date();
+  const question = options?.question?.trim() || '';
+  const questionTheme = classifyDreamtimeTheme(question);
 
   let seed = 60000; // 호주 6만년 원주민 역사 상징수
 
@@ -140,8 +160,17 @@ export function calculateAboriginalDreamtimeSonglines(options?: {
     seed += (h || 0) * 23 + (m || 0) * 7;
   }
 
-  // 1. 쿠룬파(Kurunpa) 대지 영혼 활력 지수 (55 ~ 98점 범위)
+  for (let i = 0; i < question.length; i++) {
+    seed = (seed * 31 + question.charCodeAt(i)) & 0x7fffffff;
+  }
+
+  // 1. 쿠룬파(Kurunpa) 대지 영혼 활력 상태
   const kurunpaLifeForceIndex = 55 + (seed % 44);
+  const kurunpaPosture = kurunpaLifeForceIndex >= 85
+    ? '대지의 리듬과 깊게 공명하며 생명력이 충만하게 깨어 있는 국면'
+    : kurunpaLifeForceIndex >= 70
+      ? '안정된 호흡 속에서 자기만의 길을 차분히 걸어가는 균형 국면'
+      : '잠시 멈춰 서서 다디리(Dadirri)의 고요로 기운을 되채워야 할 회복 국면';
 
   // 2. 8대 선조 토템 선정
   const totemIdx = seed % TOTEMS.length;
@@ -160,18 +189,49 @@ export function calculateAboriginalDreamtimeSonglines(options?: {
   ];
   const dadirriPractice = dadirriPractices[seed % dadirriPractices.length];
 
-  // 5. 드림타임 지혜 조언
-  const dreamtimeWisdom = `선조 정령 [${activeTotem.nameIndigenous}]의 가호 아래, 지금 당신의 발밑에는 [${songline.theme}]을 향한 송라인이 흐르고 있습니다. 쿠룬파 활력(${kurunpaLifeForceIndex}점)을 바탕으로 ${activeTotem.coreMessage}`;
+  const themeGuidanceMap: Record<DreamtimeQuestionTheme, { practice: string; ritual: string; reflection: string }> = {
+    relationship: {
+      practice: `${activeTotem.name}의 기질처럼 상대를 통제하려 하기보다, 각자의 송라인이 존중받는 거리와 경계를 유지해 보세요.`,
+      ritual: '오늘 대화를 나누기 전 3번 깊게 숨을 들이쉬며 상대의 말 이면에 있는 감정을 먼저 경청하기',
+      reflection: '지금 이 관계에서 내가 지켜야 할 영혼의 경계선과 내려놓아야 할 집착은 무엇인가요?',
+    },
+    decision: {
+      practice: `${songline.direction}이 가리키는 방향처럼, 눈앞의 유불리보다 내가 오래 걸어도 지치지 않을 길인지를 기준으로 선택하세요.`,
+      ritual: '결정을 내리기 전 5분간 스마트폰을 내려놓고 조용한 산책으로 몸의 감각을 확인하기',
+      reflection: '이 선택은 1년 뒤의 나에게도 대지 위에 단단히 뿌리내린 발걸음으로 남을 수 있나요?',
+    },
+    healing: {
+      practice: `지금은 속도를 높일 때가 아니라 다디리(Dadirri)의 고요 속에서 흐트러진 쿠룬파 생명력을 다시 모을 때입니다.`,
+      ritual: dadirriPractice,
+      reflection: '요즘 내 마음의 땅을 가장 메마르게 만든 생각은 무엇이며, 어떤 쉼이 그 땅을 적셔 줄까요?',
+    },
+    reflection: {
+      practice: `${activeTotem.coreMessage} 오늘 하루의 작은 징후들을 대지가 건네는 다정한 신호로 읽어 보세요.`,
+      ritual: '잠들기 전 오늘 내 발걸음이 머물렀던 가장 평온한 순간 하나를 떠올리며 감사하기',
+      reflection: '과거와 미래의 소음을 끄고 지금 이 순간(Jukurrpa)에 온전히 머문다면 무엇이 보이나요?',
+    },
+  };
+  const themed = themeGuidanceMap[questionTheme];
+
+  // 5. 드림타임 지혜 조언 (점수 노출 제거)
+  const dreamtimeWisdom = `선조 정령 [${activeTotem.nameIndigenous}]의 가호 아래, 지금 당신의 발밑에는 [${songline.theme}]을 향한 송라인이 흐르고 있습니다. ${kurunpaPosture}에서 ${activeTotem.coreMessage}`;
 
   return {
     engineVersion: ABORIGINAL_DREAMTIME_SONGLINES_ENGINE_VERSION,
     calculatedAt: now.toISOString(),
+    questionTheme,
     kurunpaLifeForceIndex,
+    kurunpaPosture,
     activeTotem,
     songlineDirection: songline.direction,
     songlineTheme: songline.theme,
     dadirriPractice,
-    dreamtimeWisdom
+    dreamtimeWisdom,
+    practiceGuidance: themed.practice,
+    ritualAction: themed.ritual,
+    reflectionFocus: themed.reflection,
+    counselNote: `[드림타임 송라인 성찰] ${activeTotem.name} · ${songline.direction} — ${themed.practice}`,
+    boundaryNotice: '호주 원주민 드림타임(Jukurrpa)과 다디리(Dadirri) 개념을 바탕으로 한 상징적·성찰적 관점이며, 확정적 예언이나 의학적·재정적 진단이 아닙니다.',
   };
 }
 
@@ -181,10 +241,10 @@ export function calculateAboriginalDreamtimeSonglines(options?: {
 export function formatAboriginalDreamtimeSonglinesPrompt(report: DreamtimeSonglineReport): string {
   const t = report.activeTotem;
 
-  return `[🪃 호주 원주민 드림타임(Dreamtime) 송라인 & 8대 토템 영혼 나침반 실측 데이터]
+  return `[🪃 호주 원주민 드림타임(Dreamtime) 송라인 & 8대 토템 영혼 나침반 성찰 관점]
 ======================================================================
-엔진 버전: ${report.engineVersion} | 연산 시각: ${report.calculatedAt}
-쿠룬파(Kurunpa) 대지 영혼 활력도: ${report.kurunpaLifeForceIndex} / 100점
+엔진 버전: ${report.engineVersion} | 연산 시각: ${report.calculatedAt} | 질문 맥락: ${report.questionTheme}
+쿠룬파(Kurunpa) 상태: ${report.kurunpaPosture}
 ======================================================================
 1. [주재 선조 토템 정령 (Ancestral Totem)]:
    - 토템명: [${t.name}] (${t.nameIndigenous})
@@ -196,8 +256,12 @@ export function formatAboriginalDreamtimeSonglinesPrompt(report: DreamtimeSongli
    - 송라인 방향: ${report.songlineDirection}
    - 대지의 노래 테마: ${report.songlineTheme}
 
-3. [다디리(Dadirri) 고요의 경청 & 드림타임 지혜]:
+3. [다디리(Dadirri) 고요의 경청 & 실천 성찰]:
    - 다디리 수련 실천: ${report.dadirriPractice}
+   - 맥락별 실천 조언: ${report.practiceGuidance}
+   - 일상 의례: ${report.ritualAction}
+   - 성찰 질문: ${report.reflectionFocus}
    - 드림타임 총평: ${report.dreamtimeWisdom}
+   - 해석 경계: ${report.boundaryNotice}
 ======================================================================`;
 }

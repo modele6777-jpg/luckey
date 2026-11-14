@@ -22,7 +22,9 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const BABYLONIAN_ENUMA_ELISH_VERSION = 'LUCKEY-BABYLONIAN-ENUMA-ELISH-v1.0.0';
+export const BABYLONIAN_ENUMA_ELISH_VERSION = 'LUCKEY-BABYLONIAN-ENUMA-ELISH-v1.1.0';
+
+export type BabylonianQuestionTheme = 'relationship' | 'decision' | 'healing' | 'reflection';
 
 export interface BabylonianPatronDeity {
   cuneiformName: string;
@@ -34,7 +36,8 @@ export interface BabylonianPatronDeity {
 
 export interface TabletsOfDestinyEdict {
   destinyEdictTitle: string;       // 운명의 칙령 제목
-  soulSovereigntyScore: number;     // 0 ~ 100 영적 주권 지수
+  soulSovereigntyScore: number;     // 내부 참조용
+  sovereigntyPosture: string;       // 정성적 주권 국면
   chaosOvercomingPower: string;     // 혼돈 극복 및 현실 재편 힘
   cosmicOrderVirtue: string;        // 우주적 질서 미덕
 }
@@ -42,11 +45,18 @@ export interface TabletsOfDestinyEdict {
 export interface BabylonianEnumaElishReport {
   engineVersion: string;
   calculatedAt: string;
+  questionTheme: BabylonianQuestionTheme;
   patronDeity: BabylonianPatronDeity;
   destinyEdict: TabletsOfDestinyEdict;
-  orderingIndex: number;            // 0 ~ 100 혼돈 극복 질서 지수
+  orderingIndex: number;            // 내부 참조용
+  orderingPosture: string;          // 정성적 질서화 국면
   cuneiformWisdomOmen: string;
   synthesisMessage: string;
+  practiceGuidance: string;
+  ritualAction: string;
+  reflectionFocus: string;
+  counselNote: string;
+  boundaryNotice: string;
 }
 
 const BABYLONIAN_DEITIES: BabylonianPatronDeity[] = [
@@ -94,20 +104,45 @@ const BABYLONIAN_DEITIES: BabylonianPatronDeity[] = [
   },
 ];
 
-export function calculateBabylonianEnumaElish(profile?: UserProfile): BabylonianEnumaElishReport {
-  const now = new Date();
+function classifyBabylonianTheme(question?: string): BabylonianQuestionTheme {
+  const q = (question || '').toLowerCase();
+  if (/관계|연애|사랑|사람|가족|친구|이별|갈등|소통/.test(q)) return 'relationship';
+  if (/선택|결정|진로|이직|사업|일|직장|시험|투자|방향/.test(q)) return 'decision';
+  if (/지치|힘들|불안|우울|회복|치유|휴식|건강|마음|위로/.test(q)) return 'healing';
+  return 'reflection';
+}
+
+export function calculateBabylonianEnumaElish(
+  profile?: UserProfile,
+  nowArg?: Date,
+  questionArg?: string
+): BabylonianEnumaElishReport {
+  const now = nowArg ?? new Date();
+  const question = (questionArg || '').trim();
+  const questionTheme = classifyBabylonianTheme(question);
   const birthStr = profile?.basic?.birthdate || '1990-01-01';
   const nameStr = profile?.basic?.name || 'Marduk';
 
   let seed = 0;
   for (let i = 0; i < birthStr.length; i++) seed = (seed * 31 + birthStr.charCodeAt(i)) & 0x7fffffff;
   for (let i = 0; i < nameStr.length; i++) seed = (seed * 19 + nameStr.charCodeAt(i)) & 0x7fffffff;
+  for (let i = 0; i < question.length; i++) seed = (seed * 17 + question.charCodeAt(i)) & 0x7fffffff;
 
   const deityIdx = (seed + now.getUTCMonth()) % BABYLONIAN_DEITIES.length;
   const patronDeity = BABYLONIAN_DEITIES[deityIdx];
 
   const soulSovereigntyScore = 75 + ((seed * 7 + now.getUTCDate() * 3) % 24);
   const orderingIndex = 72 + ((seed * 11 + now.getUTCHours() * 5) % 27);
+
+  const sovereigntyPosture = soulSovereigntyScore >= 90
+    ? '흔들리지 않는 자기 주권으로 새로운 질서를 선언하는 창조 국면'
+    : soulSovereigntyScore >= 82
+      ? '내면의 중심을 단단히 세우고 우선순위를 정리하는 정돈 국면'
+      : '외부의 소음을 가라앉히며 자기 기준을 다시 점검하는 재정비 국면';
+
+  const orderingPosture = orderingIndex >= 88
+    ? '복잡하게 얽힌 실타래가 명쾌한 구조로 풀려 나가는 명료 국면'
+    : '작은 질서 하나를 세우는 것으로 전체 흐름이 안정되는 전환 국면';
 
   const edicts = [
     { title: '우주적 질서의 재건 (Establishment of Cosmic Order)', power: '어지러운 환경과 대인관계의 잡음을 일거에 정리하고 확고한 중심을 세움', virtue: '단호한 결단력과 주도성' },
@@ -121,33 +156,70 @@ export function calculateBabylonianEnumaElish(profile?: UserProfile): Babylonian
   const destinyEdict: TabletsOfDestinyEdict = {
     destinyEdictTitle: chosenEdict.title,
     soulSovereigntyScore,
+    sovereigntyPosture,
     chaosOvercomingPower: chosenEdict.power,
     cosmicOrderVirtue: chosenEdict.virtue,
   };
 
+  const themeGuidanceMap: Record<BabylonianQuestionTheme, { practice: string; ritual: string; reflection: string }> = {
+    relationship: {
+      practice: `${patronDeity.koreanName}의 질서처럼, 관계의 모호한 경계를 솔직하고 정중한 언어로 분명히 정리해 보세요.`,
+      ritual: '상대에게 바라는 핵심 한 가지만 간결하고 따뜻하게 정리해 전달하기',
+      reflection: '이 관계에서 내가 주도적으로 바로잡아야 할 약속이나 경계는 무엇인가요?',
+    },
+    decision: {
+      practice: `${chosenEdict.virtue}을 기준으로 삼아, 혼돈을 키우는 변수는 쳐내고 가장 단순한 원칙부터 실행하세요.`,
+      ritual: '오늘 결정할 사안의 필수 조건 3가지를 종이에 적어 우선순위 번호를 매기기',
+      reflection: '지금 내 선택을 흐리게 만드는 주변의 소음과 진짜 핵심은 각각 무엇인가요?',
+    },
+    healing: {
+      practice: `혼돈을 억지로 통제하려 애쓰기보다, 에아(Ea)의 심연처럼 고요한 휴식 속에서 내면의 질서를 먼저 회복하세요.`,
+      ritual: '책상이나 주변 공간 한 곳을 5분만 깔끔하게 정돈하며 마음의 쉼표 찍기',
+      reflection: '내 에너지가 흩어지지 않도록 지금 당장 내려놓아도 좋은 일 하나는 무엇인가요?',
+    },
+    reflection: {
+      practice: `${patronDeity.sacredCommandment} 작은 일상의 질서를 세우는 것이 곧 큰 흐름을 여는 시작입니다.`,
+      ritual: '오늘 하루 내가 지키고 싶은 나만의 원칙 한 줄을 적어 눈에 잘 보이는 곳에 두기',
+      reflection: '내가 나 자신의 운명의 서판에 가장 먼저 새기고 싶은 태도는 무엇인가요?',
+    },
+  };
+  const themed = themeGuidanceMap[questionTheme];
+
   const cuneiformWisdomOmen = `바빌로니아 운명의 서판에는 당신의 이름 곁에 "${chosenEdict.virtue}"의 신성한 인장이 찍혀 있습니다. [${patronDeity.koreanName}]의 가호 아래 현실의 혼돈을 명쾌한 질서로 전환하세요.`;
 
-  const synthesisMessage = `에누마 엘리쉬 창조 서사시의 원전에 따라, 당신은 [${patronDeity.koreanName}]의 천상 권능을 부여받았습니다. 주권 지수(${soulSovereigntyScore}점)를 바탕으로 "${patronDeity.sacredCommandment}"`;
+  const synthesisMessage = `에누마 엘리쉬 창조 서사시의 원전에 따라, [${patronDeity.koreanName}]의 상징 아래 ${sovereigntyPosture}에 놓여 있습니다. "${patronDeity.sacredCommandment}"`;
 
   return {
     engineVersion: BABYLONIAN_ENUMA_ELISH_VERSION,
     calculatedAt: now.toISOString(),
+    questionTheme,
     patronDeity,
     destinyEdict,
     orderingIndex,
+    orderingPosture,
     cuneiformWisdomOmen,
     synthesisMessage,
+    practiceGuidance: themed.practice,
+    ritualAction: themed.ritual,
+    reflectionFocus: themed.reflection,
+    counselNote: `[에누마 엘리쉬 성찰] ${patronDeity.koreanName} · ${chosenEdict.destinyEdictTitle ?? chosenEdict.title} — ${themed.practice}`,
+    boundaryNotice: '고대 바빌로니아 에누마 엘리쉬 서사시의 질서·창조 상징을 활용한 성찰적 관점이며, 확정적 예언이나 의학적·재정적 판단을 대신하지 않습니다.',
   };
 }
 
 export function formatBabylonianEnumaElishPrompt(report: BabylonianEnumaElishReport): string {
-  return `### 🏛️ 고대 바빌로니아 에누마 엘리쉬 & 운명의 서판 천체 엔진 (${BABYLONIAN_ENUMA_ELISH_VERSION})
+  return `### 🏛️ 고대 바빌로니아 에누마 엘리쉬 & 운명의 서판 성찰 관점 (${BABYLONIAN_ENUMA_ELISH_VERSION})
+- **질문 맥락**: ${report.questionTheme} | **질서화 국면**: ${report.orderingPosture}
 - **바빌로니아 수호신**: **${report.patronDeity.koreanName}** [천체: ${report.patronDeity.celestialDomain}]
   - 신성한 권능: ${report.patronDeity.divineAttribute}
   - 운명의 서판 신탁: "${report.patronDeity.sacredCommandment}"
-- **운명의 서판(Tup Shimati) 칙령 (영적 주권: ${report.destinyEdict.soulSovereigntyScore}점 | 질서화 지수: ${report.orderingIndex}점)**:
+- **운명의 서판(Tup Shimati) 칙령 (${report.destinyEdict.sovereigntyPosture})**:
   - 칙령 명칭: ${report.destinyEdict.destinyEdictTitle}
   - 혼돈 극복 권능: ${report.destinyEdict.chaosOvercomingPower}
   - 핵심 우주 미덕: ${report.destinyEdict.cosmicOrderVirtue}
-- **에누마 엘리쉬 통합 나침반**: ${report.synthesisMessage}`;
+- **맥락별 실천 조언**: ${report.practiceGuidance}
+- **일상 의례**: ${report.ritualAction}
+- **성찰 질문**: ${report.reflectionFocus}
+- **에누마 엘리쉬 통합 나침반**: ${report.synthesisMessage}
+- **해석 경계**: ${report.boundaryNotice}`;
 }
