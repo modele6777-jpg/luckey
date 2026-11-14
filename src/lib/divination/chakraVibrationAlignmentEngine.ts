@@ -22,7 +22,7 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const CHAKRA_ALIGNMENT_VERSION = 'LUCKEY-CHAKRA-v1.0.0';
+export const CHAKRA_ALIGNMENT_VERSION = 'LUCKEY-CHAKRA-v2.0.0';
 
 export interface SingleChakraInfo {
   id: string;
@@ -30,7 +30,7 @@ export interface SingleChakraInfo {
   koreanName: string;
   location: string;
   color: string;
-  opennessPercent: number; // 0 ~ 100%
+  opennessPercent: number; // 0 ~ 100 (내부 호환용, 프롬프트 비노출)
   status: '최적 정렬 (Harmonized)' | '에너지 과활성 (Overactive)' | '막힘/결핍 (Underactive/Blocked)';
   theme: string;
   affirmation: string;
@@ -39,7 +39,8 @@ export interface SingleChakraInfo {
 export interface ChakraVibrationAlignmentReport {
   engineVersion: string;
   calculatedAt: string;
-  overallChakraBalanceScore: number; // 전체 에너지 조화 지수 (0 ~ 100)
+  calculatedAtKst: string;
+  overallChakraBalanceScore: number; // 전체 에너지 조화 지수 (내부 호환용 0 ~ 100)
   primaryFocusChakra: {
     name: string;
     reason: string;
@@ -52,12 +53,66 @@ export interface ChakraVibrationAlignmentReport {
     durationMinutes: number;
     instruction: string;
   };
+  situationalChakraAudit: {
+    focusTheme: string;
+    resonanceNote: string;
+    groundingStep: string;
+  };
+  temporalChakraRhythm: {
+    kstTimeLabel: string;
+    chakraWatchWindow: string;
+    seasonalPranaTone: string;
+    temporalGuidance: string;
+  };
+  chakraSynthesisMatrix: {
+    coreInsight: string;
+    recommendedAction: string;
+    cautionNotice: string;
+  };
+  boundaryNotice: string;
   synthesisPromptGuidance: string;
+}
+
+function getTemporalChakraRhythm(now: Date) {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  const hour = kst.getUTCHours();
+  const month = kst.getUTCMonth() + 1;
+
+  const chakraWatchWindow =
+    hour >= 5 && hour < 11
+      ? '물라다라·아즈나 아침 각성창 — 대지에 발을 딛고 맑은 호흡으로 7대 센터를 여는 시간'
+      : hour >= 11 && hour < 17
+        ? '마니푸라·비슈다 정오 발현창 — 중심 의지와 진실된 표현으로 세상과 소통하는 시간'
+        : hour >= 17 && hour < 22
+          ? '아나하타·스와디스타나 황혼 조율창 — 감정의 긴장을 풀고 따뜻한 공감을 회복하는 시간'
+          : '사하스라라 심야 정화창 — 바깥의 자극을 거두고 고요한 내면 평화에 머무는 시간';
+
+  const seasonalPranaTone =
+    month >= 3 && month <= 5
+      ? '봄 · 아나하타 목기(木氣) 생동 주기 (새로운 연결과 마음이 열리는 시기)'
+      : month >= 6 && month <= 8
+        ? '여름 · 마니푸라 화기(火氣) 전개 주기 (의지와 활력이 활발히 뻗어가는 시기)'
+        : month >= 9 && month <= 11
+          ? '가을 · 비슈다 금기(金氣) 명료 주기 (군더더기를 비우고 본질을 표현하는 시기)'
+          : '겨울 · 물라다라 수기(水氣) 응축 주기 (깊은 뿌리와 생명력을 조용히 기르는 시기)';
+
+  return {
+    kstTimeLabel: `${y}-${m}-${d} ${hh}:${mm} KST`,
+    chakraWatchWindow,
+    seasonalPranaTone,
+    temporalGuidance: `${chakraWatchWindow} · ${seasonalPranaTone}의 결에 맞추어 호흡의 리듬을 고르게 유지하십시오.`,
+  };
 }
 
 export function runChakraVibrationAlignmentEngine(
   profile?: UserProfile,
-  targetDate: Date = new Date()
+  targetDate: Date = new Date(),
+  question?: string
 ): ChakraVibrationAlignmentReport {
   const sajuRes = calculateDetailedSaju(profile || null);
 
@@ -188,24 +243,66 @@ export function runChakraVibrationAlignmentEngine(
     instruction: `오른손 엄지로 오른쪽 콧구멍을 막고 왼쪽으로 4초간 숨을 들이마신 뒤, 약지로 왼쪽을 막고 4초간 멈추며 [${primaryFocusChakra.name}] 부위에 황금빛 에너지가 차오르는 것을 시각화합니다. 반대쪽으로 8초간 천천히 내쉬기를 5분간 반복합니다.`
   };
 
-  const synthesisPromptGuidance = `[LUCKEY 7대 차크라 파동 정렬 & 에너지 퀀텀 밸런싱 v1.0.0]
-- 전체 차크라 조화도: ${overallChakraBalanceScore}점
-- 1순위 집중 치유 차크라: [${primaryFocusChakra.name}] (${chosenChakra.opennessPercent}%)
+  const q = (question || '').trim();
+  const temporalChakraRhythm = getTemporalChakraRhythm(targetDate);
+  const situationalChakraAudit = /관계|연애|사람|소통|가족/.test(q)
+    ? {
+        focusTheme: '아나하타(심장)와 비슈다(목)의 부드러운 소통 공명',
+        resonanceNote: '마음을 닫거나 방어하기보다 솔직하고 온화한 호흡으로 상대를 마주할 때 순환이 열립니다.',
+        groundingStep: '대화 전 가슴 중앙에 손을 얹고 천천히 3회 심호흡하며 긴장을 내려놓으십시오.',
+      }
+    : /일|결정|진로|돈|불안|지침/.test(q)
+      ? {
+          focusTheme: '물라다라(뿌리) 그라운딩과 마니푸라(태양신경총) 중심 회복',
+          resonanceNote: '생각이 많아질수록 뿌리의 안정감을 먼저 세워야 판단의 중심이 흔들리지 않습니다.',
+          groundingStep: '두 발바닥을 바닥에 고르게 붙이고 아랫배의 온기를 느끼며 우선순위를 하나만 정하십시오.',
+        }
+      : {
+          focusTheme: `[${primaryFocusChakra.name}] 중심 7대 에너지 순환 조율`,
+          resonanceNote: `현재 [${chosenChakra.theme}] 영역의 기운을 부드럽게 풀어주면 전체 흐름이 한결 편안해집니다.`,
+          groundingStep: '하루 5분 나디 쇼다나 호흡과 함께 선택한 원석·아로마의 감각에 머무르십시오.',
+        };
+
+  const chakraSynthesisMatrix = {
+    coreInsight: `집중 조율 대상 [${primaryFocusChakra.name}]와 [${situationalChakraAudit.focusTheme}]이 맞물려 있습니다.`,
+    recommendedAction: `${kundaliniBreathingPrescription.techniqueName} 5분 실천 (${primaryFocusChakra.gemstone} · ${primaryFocusChakra.aromatherapyOil})`,
+    cautionNotice: '에너지의 막힘이나 과활성을 우열로 판단하지 말고 지금 몸과 마음이 보내는 신호로 부드럽게 살피십시오.',
+  };
+
+  const boundaryNotice = '본 결과는 7대 차크라와 사주 오행 상징을 결합한 정성적 심신 성찰 안내이며, 의학적 진단이나 수치 평가가 아닙니다.';
+
+  const chakrasSummary = chakras
+    .map((c) => `  * ${c.koreanName}: ${c.status} (${c.theme})`)
+    .join('\n');
+
+  const synthesisPromptGuidance = `[LUCKEY 7대 차크라 파동 정렬 & 에너지 퀀텀 밸런싱 ${CHAKRA_ALIGNMENT_VERSION}]
+- 연산 시각: ${temporalChakraRhythm.kstTimeLabel}
+- 1순위 집중 치유 차크라: [${primaryFocusChakra.name}] (${chosenChakra.status})
+  * 사유: ${primaryFocusChakra.reason}
   * 공명 원석(Gemstone): ${primaryFocusChakra.gemstone}
   * 아로마 에센스: ${primaryFocusChakra.aromatherapyOil}
   * 확언(Affirmation): "${chosenChakra.affirmation}"
-- 7대 차크라 개방도 요약:
-  * 뿌리(Root): ${rootScore}% | 천골(Sacral): ${sacralScore}% | 태양신경총(Solar): ${solarScore}%
-  * 심장(Heart): ${heartScore}% | 목(Throat): ${throatScore}% | 제3의눈(Ajna): ${ajnaScore}% | 크라운(Crown): ${crownScore}%
-- 쿤달리니 정렬 호흡법: [${kundaliniBreathingPrescription.techniqueName} ${kundaliniBreathingPrescription.durationMinutes}분] ${kundaliniBreathingPrescription.instruction}`;
+- 질문 맥락 감사 (${situationalChakraAudit.focusTheme}): ${situationalChakraAudit.resonanceNote} / 실천: ${situationalChakraAudit.groundingStep}
+- KST 시공간 차크라 리듬: ${temporalChakraRhythm.chakraWatchWindow} / ${temporalChakraRhythm.seasonalPranaTone}
+  * 시공간 지침: ${temporalChakraRhythm.temporalGuidance}
+- 차크라 교차 매트릭스: 핵심(${chakraSynthesisMatrix.coreInsight}) | 실행(${chakraSynthesisMatrix.recommendedAction}) | 주의(${chakraSynthesisMatrix.cautionNotice})
+- 7대 차크라 상태 요약:
+${chakrasSummary}
+- 쿤달리니 정렬 호흡법: [${kundaliniBreathingPrescription.techniqueName} ${kundaliniBreathingPrescription.durationMinutes}분] ${kundaliniBreathingPrescription.instruction}
+- 해석 경계: ${boundaryNotice}`;
 
   return {
     engineVersion: CHAKRA_ALIGNMENT_VERSION,
     calculatedAt: targetDate.toISOString(),
+    calculatedAtKst: temporalChakraRhythm.kstTimeLabel,
     overallChakraBalanceScore,
     primaryFocusChakra,
     chakras,
     kundaliniBreathingPrescription,
+    situationalChakraAudit,
+    temporalChakraRhythm,
+    chakraSynthesisMatrix,
+    boundaryNotice,
     synthesisPromptGuidance
   };
 }
@@ -216,10 +313,11 @@ export function calculateChakraVibrationAlignment(params?: {
   profile?: UserProfile | null;
   saju?: SajuAnalysisResult | null;
   targetDate?: Date;
+  question?: string;
 }): ChakraVibrationAlignmentResult {
   const profile = params?.profile || undefined;
   const targetDate = params?.targetDate || new Date();
-  return runChakraVibrationAlignmentEngine(profile, targetDate);
+  return runChakraVibrationAlignmentEngine(profile, targetDate, params?.question);
 }
 
 export function formatChakraVibrationAlignmentPrompt(res: ChakraVibrationAlignmentResult): string {

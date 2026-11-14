@@ -16,7 +16,7 @@
 import type { UserProfile } from '../sharedState';
 import { calculateDetailedSaju, type SajuAnalysisResult } from '../sajuAnalysis';
 
-export const FIVE_EMOTIONS_PULSE_VERSION = 'LUCKEY-FIVE-EMOTIONS-v1.0.0';
+export const FIVE_EMOTIONS_PULSE_VERSION = 'LUCKEY-FIVE-EMOTIONS-v2.0.0';
 
 export type TraditionalEmotion = '노(怒-분노/추진)' | '희(喜-환희/산만)' | '사(思-사색/번민)' | '비우(悲憂-슬픔/위축)' | '공경(恐驚-공포/불안)';
 
@@ -25,7 +25,7 @@ export interface EmotionPulseItem {
   organ: string;            // 주관 장부 (간/심/비/폐/신)
   emotion: TraditionalEmotion;
   qiMovement: string;       // 기의 흐름 (기상 氣上, 기완 氣緩, 기결 氣結, 기소 氣消, 기하 氣下)
-  score: number;            // 0 ~ 100 점수
+  score: number;            // 0 ~ 100 (내부 호환용, 프롬프트 비노출)
   status: '과다(태과)' | '적정' | '결핍(불급)';
   symptomSign: string;      // 신체 및 심리적 징후
 }
@@ -33,11 +33,12 @@ export interface EmotionPulseItem {
 export interface FiveEmotionsPulseReport {
   engineVersion: string;
   calculatedAt: string;
+  calculatedAtKst: string;
   dominantEmotion: TraditionalEmotion;
   vulnerableOrgan: string;
   qiDynamicState: string;     // 기혈 전체 동역학 상태
   heatCoolIndex: number;      // 심신 열냉 지수 (-50: 극냉/위축 ~ +50: 극열/과열)
-  harmonyScore: number;       // 오행 칠정 조화도 (0 ~ 100)
+  harmonyScore: number;       // 오행 칠정 조화도 (내부 호환용 0 ~ 100)
   emotionPulses: EmotionPulseItem[];
   elementalDeficiency: string; // 가장 보충이 시급한 오행
   balancingPrescription: {
@@ -46,11 +47,65 @@ export interface FiveEmotionsPulseReport {
     dietaryAdvice: string;    // 식생 처방
     mindDirectives: string;   // 심신 평정 행동 강령
   };
+  situationalPulseAudit: {
+    focusTheme: string;
+    emotionNote: string;
+    calmingPractice: string;
+  };
+  temporalPulseRhythm: {
+    kstTimeLabel: string;
+    organMeridianWindow: string;
+    seasonalEmotionTone: string;
+    temporalGuidance: string;
+  };
+  pulseSynthesisMatrix: {
+    coreInsight: string;
+    recommendedAction: string;
+    cautionNotice: string;
+  };
+  boundaryNotice: string;
+}
+
+function getTemporalPulseRhythm(now: Date) {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  const hour = kst.getUTCHours();
+  const month = kst.getUTCMonth() + 1;
+
+  const organMeridianWindow =
+    hour >= 5 && hour < 11
+      ? '비위(脾胃)·폐(肺) 아침 순환창 — 가벼운 아침 호흡과 따뜻한 음식으로 기혈을 깨우는 시간'
+      : hour >= 11 && hour < 17
+        ? '심(心)·소장(小腸) 정오 활력창 — 치솟는 열기를 고르게 분산하며 명료하게 소통하는 시간'
+        : hour >= 17 && hour < 22
+          ? '신(腎)·심포(心包) 황혼 이완창 — 하루의 긴장을 풀고 마음의 열냉 균형을 되찾는 시간'
+          : '담(膽)·간(肝) 심야 회복창 — 생각을 멈추고 깊은 수면으로 칠정을 가라앉히는 시간';
+
+  const seasonalEmotionTone =
+    month >= 3 && month <= 5
+      ? '봄 · 간목(肝木) 서발기 (감정과 의욕이 뻗어나가므로 유연한 이완이 필요한 시기)'
+      : month >= 6 && month <= 8
+        ? '여름 · 심화(心火) 왕성기 (열정이 높아지므로 수분과 여유로 과열을 식히는 시기)'
+        : month >= 9 && month <= 11
+          ? '가을 · 폐금(肺金) 수렴기 (사색이 깊어지므로 맑은 호흡으로 쓸쓸함을 달래는 시기)'
+          : '겨울 · 신수(腎水) 저장기 (불안을 내려놓고 따뜻한 휴식으로 정기를 비축하는 시기)';
+
+  return {
+    kstTimeLabel: `${y}-${m}-${d} ${hh}:${mm} KST`,
+    organMeridianWindow,
+    seasonalEmotionTone,
+    temporalGuidance: `${organMeridianWindow} · ${seasonalEmotionTone}의 흐름에 맞추어 칠정의 중화(中和)를 살피십시오.`,
+  };
 }
 
 export function calculateFiveEmotionsPulse(
   profile?: UserProfile | null,
-  targetDate: Date = new Date()
+  targetDate: Date = new Date(),
+  question?: string
 ): FiveEmotionsPulseReport {
   let sajuRes: SajuAnalysisResult | null = null;
   try {
@@ -190,9 +245,36 @@ export function calculateFiveEmotionsPulse(
     mindDirectives = '조급함을 내려놓고 깊은 수면과 침묵 속에서 기력을 비축하세요.';
   }
 
+  const temporalPulseRhythm = getTemporalPulseRhythm(targetDate);
+  const q = (question || '').trim();
+  const situationalPulseAudit = /불안|걱정|스트레스|지침|우울|화/.test(q)
+    ? {
+        focusTheme: '칠정상(七情傷) 기혈 순환 완화와 심신 열냉 조율',
+        emotionNote: `현재 [${dominant.emotion}] 맥파가 도드라져 [${dominant.organ}] 계통의 긴장을 먼저 풀어주는 것이 좋습니다.`,
+        calmingPractice: breathingMethod,
+      }
+    : /일|결정|관계|소통/.test(q)
+      ? {
+          focusTheme: '중화(中和)의 감정 리듬 유지와 현실 대처',
+          emotionNote: '한쪽으로 치우친 감정 기운을 다스리고 결핍된 오행을 보충하면 판단이 한결 또렷해집니다.',
+          calmingPractice: mindDirectives,
+        }
+      : {
+          focusTheme: `${dominant.emotion} 중심 오행 칠정 균형 조율`,
+          emotionNote: qiDynamicState,
+          calmingPractice: `${breathingMethod} · ${mindDirectives}`,
+        };
+
+  const pulseSynthesisMatrix = {
+    coreInsight: `주도 맥파 [${dominant.emotion}]와 보충 오행 [${deficient.element}]의 균형을 맞추는 것이 핵심입니다.`,
+    recommendedAction: `${breathingMethod} + ${colorTherapy} + ${mindDirectives}`,
+    cautionNotice: '특정 장부나 감정의 태과·불급을 질병으로 단정하지 말고 일상 리듬을 돌보는 신호로 참고하십시오.',
+  };
+
   return {
     engineVersion: FIVE_EMOTIONS_PULSE_VERSION,
     calculatedAt: targetDate.toISOString(),
+    calculatedAtKst: temporalPulseRhythm.kstTimeLabel,
     dominantEmotion: dominant.emotion,
     vulnerableOrgan: dominant.organ,
     qiDynamicState,
@@ -205,20 +287,36 @@ export function calculateFiveEmotionsPulse(
       breathingMethod,
       dietaryAdvice,
       mindDirectives
-    }
+    },
+    situationalPulseAudit,
+    temporalPulseRhythm,
+    pulseSynthesisMatrix,
+    boundaryNotice: '본 결과는 한의학 황제내경의 오행·칠정 상징 이론을 활용한 정성적 심신 성찰 안내이며, 의학적 진단이 아닙니다.',
   };
 }
 
 export function formatFiveEmotionsPulsePrompt(rep: FiveEmotionsPulseReport): string {
   const pulsesStr = rep.emotionPulses
-    .map(p => `• [${p.element} / ${p.organ}] ${p.emotion} (${p.score}점, ${p.status}) - ${p.symptomSign}`)
+    .map(p => `• [${p.element} / ${p.organ}] ${p.emotion} (${p.status}) - ${p.symptomSign}`)
     .join('\n');
+
+  const thermalTone =
+    rep.heatCoolIndex >= 20
+      ? '양기 상승 · 열감 과잉 경향'
+      : rep.heatCoolIndex <= -20
+        ? '음기 침잠 · 냉감 위축 경향'
+        : '열냉 중화(中和) 안정권';
 
   return `[오행 칠정(七情) 심신 맥파 & 기혈 조화 리포트 (Five Elements Emotion Pulse)]
 - 엔진 버전: ${rep.engineVersion}
-- 심신 기혈 동역학: ${rep.qiDynamicState} (조화도: ${rep.harmonyScore}점, 열냉 지수: ${rep.heatCoolIndex > 0 ? '+' : ''}${rep.heatCoolIndex})
+- 연산 시각: ${rep.calculatedAtKst}
+- 심신 기혈 동역학: ${rep.qiDynamicState} (열냉 경향: ${thermalTone})
 - 주도 감정 맥파: ${rep.dominantEmotion} (주의 장부: ${rep.vulnerableOrgan})
 - 결핍 보충 오행: ${rep.elementalDeficiency}
+- 질문 맥락 감사 (${rep.situationalPulseAudit.focusTheme}): ${rep.situationalPulseAudit.emotionNote} / 처방: ${rep.situationalPulseAudit.calmingPractice}
+- KST 시공간 장부 리듬: ${rep.temporalPulseRhythm.organMeridianWindow} / ${rep.temporalPulseRhythm.seasonalEmotionTone}
+  • 시공간 지침: ${rep.temporalPulseRhythm.temporalGuidance}
+- 칠정 교차 매트릭스: 핵심(${rep.pulseSynthesisMatrix.coreInsight}) | 실행(${rep.pulseSynthesisMatrix.recommendedAction}) | 주의(${rep.pulseSynthesisMatrix.cautionNotice})
 - 5대 감정 맥파 분석:
 ${pulsesStr}
 - 맞춤형 심신 평정 처방:
@@ -226,5 +324,6 @@ ${pulsesStr}
   • 호흡법: ${rep.balancingPrescription.breathingMethod}
   • 식생 권장: ${rep.balancingPrescription.dietaryAdvice}
   • 행동 강령: ${rep.balancingPrescription.mindDirectives}
+- 해석 경계: ${rep.boundaryNotice}
 ※ 상담 시 내담자의 말투와 감정 기복이 위 기혈 맥파(${rep.dominantEmotion})와 어떻게 공명하는지 짚어주고, 현실적인 심신 이완 조언을 부드럽게 곁들여주세요.`;
 }

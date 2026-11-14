@@ -1746,7 +1746,7 @@ try {
   const chakraVibrationAlignmentResult = calculateSupplement('chakraVibrationAlignmentResult', () => (birthdateStr && profile
     ? (() => {
         try {
-          return calculateChakraVibrationAlignment({ profile, targetDate: now });
+          return calculateChakraVibrationAlignment({ profile, targetDate: now, question });
         } catch (_) {
           return null;
         }
@@ -1957,7 +1957,7 @@ try {
   // 69. 오행 칠정(七情) 심신 맥파 & 기혈 조화 엔진
   const fiveEmotionsPulseResult = calculateSupplement('fiveEmotionsPulseResult', () => ((() => {
     try {
-      return calculateFiveEmotionsPulse(profile, now);
+      return calculateFiveEmotionsPulse(profile, now, question);
     } catch (_) {
       return null;
     }
@@ -2101,7 +2101,7 @@ try {
   // 85. 동양 정통 풍수 8택(八宅) 공간 에너지 & 24방위 길흉 엔진
   const fengShuiEightMansionsResult = calculateSupplement('fengShuiEightMansionsResult', () => ((() => {
     try {
-      return calculateFengShuiEightMansions({ profile, contextText: question });
+      return calculateFengShuiEightMansions({ profile, contextText: question, now });
     } catch (_) {
       return null;
     }
