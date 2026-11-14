@@ -48,6 +48,14 @@ test('changed vault gets a new ETag and the stored state includes the complete u
   assert.deepEqual(getVaultData(uid).data, changed);
 });
 
+test('a missing vault has a stable validator for its empty response', () => {
+  const missing = getVaultData(testUid());
+  assert.equal(missing.success, false);
+  assert.equal(missing.data, null);
+  assert.ok(missing.etag);
+  assert.equal(ifNoneMatchMatches(missing.etag, missing.etag), true);
+});
+
 test('a 304 pull yields no replacement state, preserving the client state; a changed 200 yields the new state', async () => {
   const uid = testUid();
   const existing = {
@@ -141,6 +149,20 @@ test('authenticated synthetic HTTP pull sends 304 with zero body and records onl
 
   try {
     const authorization = { Authorization: `Bearer ${token}` };
+    const emptyPull = await originalFetch(`${baseUrl}/api/sync/vault/pull/${encodeURIComponent(uid)}`, { headers: authorization });
+    assert.equal(emptyPull.status, 200);
+    assert.match(emptyPull.headers.get('cache-control') || '', /private.*no-store/);
+    const emptyETag = emptyPull.headers.get('etag');
+    const emptyBody = await emptyPull.text();
+    const emptyBytes = Buffer.byteLength(emptyBody, 'utf8');
+    assert.ok(emptyETag);
+    assert.ok(emptyBytes > 0);
+    const unchangedEmptyPull = await originalFetch(`${baseUrl}/api/sync/vault/pull/${encodeURIComponent(uid)}`, {
+      headers: { ...authorization, 'If-None-Match': emptyETag! },
+    });
+    assert.equal(unchangedEmptyPull.status, 304);
+    assert.equal(await unchangedEmptyPull.text(), '');
+
     const push = await originalFetch(`${baseUrl}/api/sync/vault/push`, {
       method: 'POST',
       headers: { ...authorization, 'Content-Type': 'application/json' },
@@ -188,7 +210,10 @@ test('authenticated synthetic HTTP pull sends 304 with zero body and records onl
     assert.equal(changedBody.data.userGoals[0].title, 'Synthetic only');
 
     const transferMetrics = capturedLogs.map((line) => JSON.parse(line.slice(line.indexOf('{'))));
-    const unchangedMetric = transferMetrics.find((metric) => metric.status === 304);
+    const unchangedEmptyMetric = transferMetrics.find((metric) => metric.status === 304 && metric.representationBytes === emptyBytes);
+    assert.ok(unchangedEmptyMetric);
+    assert.equal(unchangedEmptyMetric.responseBodyBytes, 0);
+    const unchangedMetric = transferMetrics.find((metric) => metric.status === 304 && metric.representationBytes === fullBytes);
     assert.ok(unchangedMetric);
     assert.equal(unchangedMetric.responseBodyBytes, 0);
     assert.equal(unchangedMetric.representationBytes, fullBytes);

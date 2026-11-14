@@ -1,4 +1,4 @@
-// v1.7.409: Avoid retransmitting unchanged server vaults and back off fallback polling
+// v1.7.410: Avoid retransmitting unchanged and empty server vault responses
 import { getLucyRequestFallbacks, requestWithModelFallback } from '../src/lib/lucyModelPolicy.ts';
 import "dotenv/config";
 import express from "express";
@@ -364,7 +364,7 @@ app.get("/api/sync/vault/pull/:uid", async (req, res) => {
       });
     };
 
-    if (result.success && result.etag) {
+    if (result.etag) {
       res.set("ETag", result.etag);
       if (ifNoneMatchMatches(req.get("If-None-Match"), result.etag)) {
         recordTransfer(304, 0);
