@@ -3811,7 +3811,7 @@ try {
   // 276. 미국 윌리엄 제임스 실용주의 & 신념의 의지 실천적 현금가치 지혜 엔진
   const americanWilliamJamesPragmatismResult = calculateSupplement('americanWilliamJamesPragmatismResult', () => ((() => {
     try {
-      return calculateAmericanWilliamJamesPragmatism(profile);
+      return calculateAmericanWilliamJamesPragmatism(profile, question, now);
     } catch (_) {
       return null;
     }

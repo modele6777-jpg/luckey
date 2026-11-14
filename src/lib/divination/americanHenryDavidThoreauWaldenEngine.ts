@@ -3,12 +3,12 @@
  *
  * 미국 초월주의와 생태주의 사상가 헨리 데이비드 소로(Henry David Thoreau, 1817~1862)의 《월든(Walden, 1854)》과 《시민 불복종(Civil Disobedience, 1849)》 원전 기반의 정성적 성찰 엔진.
  *
- * @version LUCKEY-HENRY-DAVID-THOREAU-WALDEN-v1.1.0
+ * @version LUCKEY-HENRY-DAVID-THOREAU-WALDEN-v2.0.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const AMERICAN_HENRY_DAVID_THOREAU_VERSION = 'LUCKEY-HENRY-DAVID-THOREAU-WALDEN-v1.1.0';
+export const AMERICAN_HENRY_DAVID_THOREAU_VERSION = 'LUCKEY-HENRY-DAVID-THOREAU-WALDEN-v2.0.0';
 
 export type ThoreauQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -28,6 +28,21 @@ export interface ThoreauAphorism {
   actionGuidance: string;
 }
 
+export interface ThoreauTemporalWaldenRhythm {
+  kstWindow: string;
+  seasonalTone: string;
+  waldenFocus: '새벽 각성(Awakening)' | '단순한 실천(Simplicity)' | '자연 교감(Nature)' | '양심의 고요(Conscience)';
+  waldenClarityIndex: number;
+  rhythmDirective: string;
+}
+
+export interface ThoreauSynthesisMatrix {
+  essentialSimplicity: number;
+  awakenedAutonomy: number;
+  natureResilience: number;
+  overallSynthesis: number;
+}
+
 export interface HenryDavidThoreauWaldenResult {
   engineVersion: string;
   calculatedAtKst: string;
@@ -41,6 +56,8 @@ export interface HenryDavidThoreauWaldenResult {
   // 세부 정성 분석
   activeThoreauTheme: ThoreauTheme;
   focalThoreauAphorism: ThoreauAphorism;
+  temporalWaldenRhythm: ThoreauTemporalWaldenRhythm;
+  thoreauSynthesisMatrix: ThoreauSynthesisMatrix;
   practiceGuidance: string;
   ritualAction: string;
   reflectionFocus: string;
@@ -72,7 +89,7 @@ export const THOREAU_THEMES: ThoreauTheme[] = [
     themeTitleEn: 'Awakened Morning Consciousness (깨어있는 새벽의 영혼)',
     themeTitleKo: '날마다 새롭게 동터 오는 아침처럼 의식을 투명하고 명징하게 세움',
     existentialInsight: '참된 하루는 시계가 울릴 때가 아니라 우리의 의식이 깨어날 때 시작됩니다. 관성을 벗어나 깨어 있는 시선으로 오늘을 마주해야 합니다.',
-    practicalCounsel: '습관적인 체념이나 미룸에서 한 걸음 벗어나, 오늘 내가 진실로 원하는 방향을 맑은 눈으로 바라보십시오.',
+    practicalCounsel: '습관적인 체념이나 미룸에서 한 걸음 벗어나, 오늘 내가 진실로 원하는 방향을 맑은 눈으로 바라십시오.',
   },
   {
     themeKey: 'conscience_and_moral_integrity',
@@ -164,6 +181,56 @@ const THOREAU_TOPIC_GUIDANCE: Record<
   },
 };
 
+function buildTemporalWaldenRhythm(now: Date): ThoreauTemporalWaldenRhythm {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const hour = kst.getUTCHours();
+  const month = kst.getUTCMonth() + 1;
+
+  const seasonalTone =
+    month >= 3 && month <= 5
+      ? '봄 — 월든 호수의 얼음이 녹듯 낡은 관성을 깨고 깨어나는 계절'
+      : month >= 6 && month <= 8
+        ? '여름 — 숲의 생명력 속에서 본질적 일에 깊이 몰입하는 계절'
+        : month >= 9 && month <= 11
+          ? '가을 — 불필요한 소유와 겉치레를 비워내어 단순해지는 계절'
+          : '겨울 — 난롯가 고요 속에서 내면의 양심과 자립을 단단히 다지는 계절';
+
+  if (hour >= 4 && hour < 10) {
+    return {
+      kstWindow: '새벽·아침 각성(Awakened Morning) 창',
+      seasonalTone,
+      waldenFocus: '새벽 각성(Awakening)',
+      waldenClarityIndex: 93,
+      rhythmDirective: '하루의 영혼이 가장 투명하게 깨어나는 아침입니다. 백 가지 일 대신 핵심 두세 가지만 남기십시오.',
+    };
+  }
+  if (hour >= 10 && hour < 16) {
+    return {
+      kstWindow: '한낮 단순한 실천(Simplicity) 창',
+      seasonalTone,
+      waldenFocus: '단순한 실천(Simplicity)',
+      waldenClarityIndex: 85,
+      rhythmDirective: '남들의 속도에 휩쓸리기 쉬운 낮 시간입니다. 나만의 북소리에 맞춰 군더더기 없이 움직이십시오.',
+    };
+  }
+  if (hour >= 16 && hour < 21) {
+    return {
+      kstWindow: '저녁 자연 교감(Nature Communion) 산책 창',
+      seasonalTone,
+      waldenFocus: '자연 교감(Nature)',
+      waldenClarityIndex: 87,
+      rhythmDirective: '화면과 소음에서 잠시 물러나 바깥 공기와 하늘을 마주하며 하루의 긴장을 덜어내십시오.',
+    };
+  }
+  return {
+    kstWindow: '심야 양심의 고요(Conscience) 창',
+    seasonalTone,
+    waldenFocus: '양심의 고요(Conscience)',
+    waldenClarityIndex: 81,
+    rhythmDirective: '체면과 비교의 소음이 멈춘 밤입니다. 내 안의 양심에 부끄럼 없는 고요한 쉼을 허락하십시오.',
+  };
+}
+
 export function calculateHenryDavidThoreauWalden(
   profile: UserProfile,
   question = '',
@@ -198,6 +265,19 @@ export function calculateHenryDavidThoreauWalden(
   const activeThoreauTheme = THOREAU_THEMES[themeIndex];
   const focalThoreauAphorism = THOREAU_APHORISMS[aphorismIndex];
   const topicGuide = THOREAU_TOPIC_GUIDANCE[questionTopic];
+  const temporalWaldenRhythm = buildTemporalWaldenRhythm(now);
+
+  const essentialSimplicity = Math.min(99, Math.round((simplicityEssentialLifeScore + vitalMarrowLivingIndex) / 2));
+  const awakenedAutonomy = Math.min(99, Math.round((awakenedConsciousnessIndex + moralConscienceDisobedienceScore) / 2));
+  const natureResilience = Math.min(99, Math.round((natureCommunionHarmoniaScore + temporalWaldenRhythm.waldenClarityIndex) / 2));
+  const overallSynthesis = Math.round((essentialSimplicity + awakenedAutonomy + natureResilience) / 3);
+
+  const thoreauSynthesisMatrix: ThoreauSynthesisMatrix = {
+    essentialSimplicity,
+    awakenedAutonomy,
+    natureResilience,
+    overallSynthesis,
+  };
 
   const practiceGuidance = `${activeThoreauTheme.practicalCounsel} ${topicGuide.practice}`;
   const ritualAction = topicGuide.ritual;
@@ -221,6 +301,8 @@ export function calculateHenryDavidThoreauWalden(
     vitalMarrowLivingIndex,
     activeThoreauTheme,
     focalThoreauAphorism,
+    temporalWaldenRhythm,
+    thoreauSynthesisMatrix,
     practiceGuidance,
     ritualAction,
     reflectionFocus,
@@ -244,6 +326,8 @@ export function formatHenryDavidThoreauWaldenPrompt(res: HenryDavidThoreauWalden
     `- 성찰 질문: ${res.reflectionFocus}`,
     `- 핵심 원전 경구: "${res.focalThoreauAphorism.aphorismKo}"`,
     `- 원전 출처: "${res.focalThoreauAphorism.aphorismEn}" [${res.focalThoreauAphorism.sourceContext}]`,
+    `- KST 월든 리듬: ${res.temporalWaldenRhythm.kstWindow} (${res.temporalWaldenRhythm.waldenFocus}, 명료도 ${res.temporalWaldenRhythm.waldenClarityIndex}/100) — ${res.temporalWaldenRhythm.rhythmDirective}`,
+    `- 월든 매트릭스: 본질 단순성 ${res.thoreauSynthesisMatrix.essentialSimplicity} / 깨어난 자립 ${res.thoreauSynthesisMatrix.awakenedAutonomy} / 자연 회복력 ${res.thoreauSynthesisMatrix.natureResilience} (종합 ${res.thoreauSynthesisMatrix.overallSynthesis}/100)`,
     `- 조언 요약: ${res.counselNote}`,
     `- 해석 경계: ${res.boundaryNotice}`,
   ].join('\n');
