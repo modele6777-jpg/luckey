@@ -2,26 +2,13 @@
  * 고대 에트루리아 16천궁 분할 & 로마 아우구르(Augur) 조점(鳥占) 신탁 엔진
  * (Ancient Etruscan 16-Region Celestial Templum & Roman Augur Auspice Engine)
  *
- * 기원전 이탈리아 반도의 신비 문명 에트루리아의 《디스치플리나 에트루스카(Disciplina Etrusca)》 및
- * 고대 로마 공화정 신관단(Collegium Augurum)의 공식 점성 신탁 조점(Auspicium / Augury) 원전 기반:
- *
- * 1. 16대 천궁 템플룸(Templum Caeleste) 4분원 우주 분할:
- *    - 제1사분면 (북동·파르스 포스티카 시니스트라): 최고 주신 티니아(Tinia/유피테르)·우니(헤라)·멘르바의 영역 (지극히 길함)
- *    - 제2사분면 (남동·파르스 안티카 시니스트라): 대지·농경·풍요와 빛의 지상 신성 영역 (길함)
- *    - 제3사분면 (남서·파르스 안티카 덱스트라): 과도기적 변화와 지류 신들의 영역 (혼합·주의)
- *    - 제4사분면 (북서·파르스 포스티카 덱스트라): 운명과 명계의 주신 만투스(Mantus) 영역 (엄중한 경고)
- * 2. 아우구르 3대 신성 징표(Signa Auspicii):
- *    - 알리테스(Alites): 독수리·매 등 날개짓과 비행 궤적으로 길흉을 알리는 새
- *    - 오스키네스(Oscines): 갈까마귀·까마귀·올빼미 등 울음소리와 방향으로 신탁을 전하는 새
- *    - 풀구라토레스(Fulguratores): 번개의 번뜩임과 낙뢰 궤적으로 천의를 선포하는 징표
- * 3. 리투우스(Lituus) 지팡이의 천상 관측 및 신성한 승인(Admissio):
- *    - 파우스투스(Faustus) 길조 공명도 (0~100)
- *    - 신성한 결정 허가도(Admissio Index): 계획의 추진/보류 여부 판정
+ * 《디스치플리나 에트루스카(Disciplina Etrusca)》 및 고대 로마 아우구르 신관단 조점 원전 기반:
+ * 16천궁 템플룸 분할, 아우구르 3대 신성 징표, 질문 맥락 감사, KST 리투우스 시공간 리듬을 교차 해독합니다.
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const ETRUSCAN_AUGUR_ENGINE_VERSION = 'LUCKEY-ETRUSCAN-AUGUR-v1.0.0';
+export const ETRUSCAN_AUGUR_ENGINE_VERSION = 'LUCKEY-ETRUSCAN-AUGUR-v2.0.0';
 
 export interface CelestialTemplumRegion {
   regionNumber: number; // 1 ~ 16
@@ -39,14 +26,38 @@ export interface AugurSignInfo {
   omenInterpretation: string;
 }
 
+export interface EtruscanSituationalAudit {
+  templumInquiryAxis: string;
+  augurFocusVirtue: string;
+  disciplinaPrescription: string;
+  prohibitioCaution: string;
+}
+
+export interface EtruscanTemporalRhythm {
+  kstHour: number;
+  auguryWatchWindow: string;
+  etruscanSeasonCycle: string;
+  observationDirective: string;
+  sanctionTempo: '승인개방' | '신중관측' | '침묵대기';
+}
+
+export interface EtruscanSynthesisMatrix {
+  templumVerdictSummary: string;
+  signDirectionHarmony: string;
+  nextAuspiceAction: string;
+}
+
 export interface EtruscanAugurSixteenSkyReport {
   engineVersion: string;
   activeRegion: CelestialTemplumRegion;
   augurSign: AugurSignInfo;
-  faustusScore: number;                 // 0 ~ 100 파우스투스 길조 점수
+  faustusScore: number;
   admissioApprovalLevel: 'Plena Admissio (완전 승인)' | 'Cum Monitu (주의 조건부 승인)' | 'Prohibitio (보류 및 재검토)';
-  lituusClarityIndex: number;           // 0 ~ 100 리투우스 시야 투명도
-  cosmicSanctionStrength: number;       // 0 ~ 100 하늘의 재가 강도
+  lituusClarityIndex: number;
+  cosmicSanctionStrength: number;
+  situationalAugurAudit: EtruscanSituationalAudit;
+  temporalAugurRhythm: EtruscanTemporalRhythm;
+  augurSynthesisMatrix: EtruscanSynthesisMatrix;
   augurOracleGuidance: string;
   auspiceActionPrescription: string;
 }
@@ -69,6 +80,94 @@ const SIXTEEN_TEMPLUM_REGIONS: CelestialTemplumRegion[] = [
   { regionNumber: 15, quadrantName: 'Pars Postica Dextra', quadrantKo: '북서 15구역 (침묵의 심연)', presidingDeity: '마니아(Mania / 영혼의 어머니 신)', auspiciousNature: 'Infamum (경고·금기)', cosmicSignificance: '말을 아끼고 침묵 속에서 결속력을 다져야 할 시기' },
   { regionNumber: 16, quadrantName: 'Pars Postica Dextra', quadrantKo: '북서 16구역 (운명의 실타래)', presidingDeity: '노르티아(Nortia / 운명에 못을 박는 불변의 여신)', auspiciousNature: 'Infamum (경고·금기)', cosmicSignificance: '피할 수 없는 인과의 매듭 앞에서의 겸허한 수용과 결단' }
 ];
+
+function getKstParts(now: Date): { hour: number; month: number } {
+  const formatter = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Asia/Seoul',
+    hour: 'numeric',
+    month: 'numeric',
+    hour12: false,
+  });
+  const parts = formatter.formatToParts(now);
+  return {
+    hour: Number(parts.find((p) => p.type === 'hour')?.value || '12') % 24,
+    month: Number(parts.find((p) => p.type === 'month')?.value || '1'),
+  };
+}
+
+function buildSituationalAudit(question: string, region: CelestialTemplumRegion): EtruscanSituationalAudit {
+  const q = question.toLowerCase();
+  if (/계약|일|사업|투자|결정|이직|시험|프로젝트/.test(q)) {
+    return {
+      templumInquiryAxis: '공적 결단과 실행 허가(Auspicium Publicum) 검토',
+      augurFocusVirtue: `${region.presidingDeity}의 경계 수호와 명분 점검`,
+      disciplinaPrescription: '모든 조건이 완전히 확인되기 전에는 구두 약속을 확정으로 착각하지 말고 서류와 기한을 먼저 점검하십시오.',
+      prohibitioCaution: '징조가 완전히 열리기 전에 조급히 도장을 찍거나 판을 키우는 모험은 피하십시오.',
+    };
+  }
+  if (/관계|사랑|결혼|사람|갈등|화해|이별/.test(q)) {
+    return {
+      templumInquiryAxis: '사적 인연과 신뢰 경계(Templum Privatum) 살핌',
+      augurFocusVirtue: '감정의 과잉을 가라앉히고 상대의 실제 행동을 읽는 시야',
+      disciplinaPrescription: '추측으로 상대를 재단하기보다, 담백하고 명확한 한두 문장으로 서로의 입장을 확인하십시오.',
+      prohibitioCaution: '서운함을 방치한 채 침묵으로 상대의 마음을 시험하지 마십시오.',
+    };
+  }
+  if (/건강|휴식|피로|마음|치유|불안/.test(q)) {
+    return {
+      templumInquiryAxis: '심신 정화와 안식 성소(Sanctum) 회복',
+      augurFocusVirtue: '불필요한 경계를 풀고 호흡을 가다듬는 고요함',
+      disciplinaPrescription: '하늘의 징조를 쫓느라 몸을 혹사하지 말고, 오늘은 의도적으로 자극을 줄여 회복에 집중하십시오.',
+      prohibitioCaution: '피로가 누적된 상태에서 내리는 성급한 자기 비판을 멈추십시오.',
+    };
+  }
+  return {
+    templumInquiryAxis: `${region.quadrantKo} 하늘의 방향성과 균형 점검`,
+    augurFocusVirtue: region.cosmicSignificance,
+    disciplinaPrescription: '리투우스 지팡이로 하늘의 구역을 나누듯, 오늘 내가 통제할 수 있는 일과 기다려야 할 일을 명확히 가르고 움직이십시오.',
+    prohibitioCaution: '작은 징후 하나에 전체 계획을 성급히 뒤집지 마십시오.',
+  };
+}
+
+function buildTemporalRhythm(now: Date): EtruscanTemporalRhythm {
+  const { hour, month } = getKstParts(now);
+
+  let auguryWatchWindow = '새벽 아우구르(Augur) 템플룸 개방 창';
+  let sanctionTempo: EtruscanTemporalRhythm['sanctionTempo'] = '승인개방';
+  let observationDirective = '하늘이 가장 맑게 열리는 새벽~오전 창으로 새로운 착수와 판단에 적합합니다.';
+
+  if (hour >= 4 && hour < 10) {
+    auguryWatchWindow = '새벽 테산(Thesan) 리투우스 관측 창';
+    sanctionTempo = '승인개방';
+    observationDirective = '고대 아우구르가 동쪽을 향해 첫 징조를 살피던 시간대로, 핵심 결정을 선명하게 세우기 좋습니다.';
+  } else if (hour >= 10 && hour < 16) {
+    auguryWatchWindow = '정오 우실(Usil) 공적 집행 창';
+    sanctionTempo = '승인개방';
+    observationDirective = '이미 확인된 원칙을 바탕으로 실무를 추진하고 합의를 이끌어내기 좋은 시간입니다.';
+  } else if (hour >= 16 && hour < 20) {
+    auguryWatchWindow = '황혼 카우타(Cath) 경계 점검 창';
+    sanctionTempo = '신중관측';
+    observationDirective = '새로운 일을 벌이기보다 진행 중인 일의 빈틈을 살피고 속도를 조절할 시간입니다.';
+  } else {
+    auguryWatchWindow = '심야 만투스(Mantus) 침묵 대기 창';
+    sanctionTempo = '침묵대기';
+    observationDirective = '밤의 성소를 닫고 내면의 소리를 가라앉히며 다음 날의 길조를 기다리는 시간입니다.';
+  }
+
+  let etruscanSeasonCycle = '봄 춘분(Ver) 개방 주기';
+  if (month >= 3 && month <= 5) etruscanSeasonCycle = '봄(Ver) · 성소 개방과 토대 다지기';
+  else if (month >= 6 && month <= 8) etruscanSeasonCycle = '여름(Aestas) · 태양 절정과 결실 가꾸기';
+  else if (month >= 9 && month <= 11) etruscanSeasonCycle = '가을(Autumnus) · 수확과 경계 점검';
+  else etruscanSeasonCycle = '겨울(Hiems) · 침묵 수호와 내실 응축';
+
+  return {
+    kstHour: hour,
+    auguryWatchWindow,
+    etruscanSeasonCycle,
+    observationDirective,
+    sanctionTempo,
+  };
+}
 
 export function calculateEtruscanAugurSixteenSky(params: {
   profile?: UserProfile | null;
@@ -102,11 +201,9 @@ export function calculateEtruscanAugurSixteenSky(params: {
 
   const seed = (year * 365 + month * 31 + day + hour * 23 + minute * 7 + qSeed + nowYear * 12 + nowMonth * 30 + nowDay + nowHour) >>> 0;
 
-  // 1. 16 Celestial Templum Region Selection
   const regIdx = seed % SIXTEEN_TEMPLUM_REGIONS.length;
   const activeRegion = SIXTEEN_TEMPLUM_REGIONS[regIdx];
 
-  // 2. Augur Sign Category & Interpretation
   const signTypeIdx = (seed * 11 + day * 3) % 3;
   let signCategory: AugurSignInfo['signCategory'] = 'Alites (신성 비행조)';
   let sacredSymbol = '신성한 황금 독수리 (Aquila)의 높은 활공';
@@ -134,7 +231,6 @@ export function calculateEtruscanAugurSixteenSky(params: {
     omenInterpretation
   };
 
-  // 3. Quantitative Indices
   let baseFaustus = 60;
   if (activeRegion.auspiciousNature === 'Summe Faustum (최고의 대길)') baseFaustus = 88;
   else if (activeRegion.auspiciousNature === 'Faustum (길조)') baseFaustus = 75;
@@ -152,8 +248,20 @@ export function calculateEtruscanAugurSixteenSky(params: {
     admissioApprovalLevel = 'Cum Monitu (주의 조건부 승인)';
   }
 
-  // 4. Guidance Formulation
-  const augurOracleGuidance = `고대 로마 최고 신관의 선언: "신들의 허가(Auspicia)가 내리지 않은 계획은 아무리 거대해도 모래성이다." 현재 하늘의 리투우스 템플룸 관측 구역은 [제${activeRegion.regionNumber}구역: ${activeRegion.quadrantKo}]이며, 주재신은 [${activeRegion.presidingDeity}]입니다. 징표는 [${augurSign.sacredDirection}]에서 나타난 [${augurSign.sacredSymbol}]입니다. 천상의 최종 판정은 [${admissioApprovalLevel}]입니다. 길조 공명도 ${faustusScore}점에 따라, ${activeRegion.cosmicSignificance}의 기운을 바탕으로 행보를 결정하십시오.`;
+  const situationalAugurAudit = buildSituationalAudit(question, activeRegion);
+  const temporalAugurRhythm = buildTemporalRhythm(now);
+
+  const templumVerdictSummary = `[제${activeRegion.regionNumber}구역 ${activeRegion.quadrantKo}]의 ${activeRegion.auspiciousNature} 기운과 [${admissioApprovalLevel}] 판정이 결합되어 있습니다.`;
+  const signDirectionHarmony = `${augurSign.sacredDirection}에서 포착된 ${augurSign.signCategory} 징표가 ${temporalAugurRhythm.sanctionTempo} 리듬과 조응합니다.`;
+  const nextAuspiceAction = `${temporalAugurRhythm.auguryWatchWindow} 흐름에 맞춰 ${situationalAugurAudit.templumInquiryAxis}을 우선 처리하십시오.`;
+
+  const augurSynthesisMatrix: EtruscanSynthesisMatrix = {
+    templumVerdictSummary,
+    signDirectionHarmony,
+    nextAuspiceAction,
+  };
+
+  const augurOracleGuidance = `고대 로마 최고 신관의 선언: "신들의 허가(Auspicia)가 내리지 않은 계획은 아무리 거대해도 모래성이다." 현재 하늘의 리투우스 템플룸 관측 구역은 [제${activeRegion.regionNumber}구역: ${activeRegion.quadrantKo}]이며, 주재신은 [${activeRegion.presidingDeity}]입니다. 징표는 [${augurSign.sacredDirection}]에서 나타난 [${augurSign.sacredSymbol}]입니다. 천상의 최종 판정은 [${admissioApprovalLevel}]입니다.`;
 
   const auspiceActionPrescription = `[아우구르 행동 지침] ${augurSign.signCategory}의 징조("${augurSign.omenInterpretation}")를 거울삼으십시오. ${
     admissioApprovalLevel === 'Plena Admissio (완전 승인)'
@@ -171,6 +279,9 @@ export function calculateEtruscanAugurSixteenSky(params: {
     admissioApprovalLevel,
     lituusClarityIndex,
     cosmicSanctionStrength,
+    situationalAugurAudit,
+    temporalAugurRhythm,
+    augurSynthesisMatrix,
     augurOracleGuidance,
     auspiceActionPrescription
   };
@@ -185,11 +296,14 @@ export function formatEtruscanAugurSixteenSkyPrompt(rep: EtruscanAugurSixteenSky
 · 관측 신성 징표: [${rep.augurSign.signCategory}] — 방향: ${rep.augurSign.sacredDirection}
   - 상징: ${rep.augurSign.sacredSymbol}
   - 징표 해석: ${rep.augurSign.omenInterpretation}
-· 핵심 계측 지표:
-  - 파우스투스(Faustus) 길조 지수: ${rep.faustusScore}/100
-  - 신성한 결정 승인도(Admissio): ${rep.admissioApprovalLevel}
-  - 리투우스 시야 투명도: ${rep.lituusClarityIndex}/100
-  - 천상 재가(Sanction) 강도: ${rep.cosmicSanctionStrength}/100
+· 신성한 결정 승인도(Admissio): ${rep.admissioApprovalLevel}
+· 질문 맥락 감사: ${rep.situationalAugurAudit.templumInquiryAxis} · 초점(${rep.situationalAugurAudit.augurFocusVirtue})
+  - 에트루스카 처방: ${rep.situationalAugurAudit.disciplinaPrescription}
+  - 보류 경계: ${rep.situationalAugurAudit.prohibitioCaution}
+· KST 시공간 리듬 (${rep.temporalAugurRhythm.kstHour}시): ${rep.temporalAugurRhythm.auguryWatchWindow} · ${rep.temporalAugurRhythm.etruscanSeasonCycle} (${rep.temporalAugurRhythm.sanctionTempo})
+  - 관측 지침: ${rep.temporalAugurRhythm.observationDirective}
+· 템플룸 교차 매트릭스: ${rep.augurSynthesisMatrix.templumVerdictSummary} · ${rep.augurSynthesisMatrix.signDirectionHarmony}
+  - 다음 행동: ${rep.augurSynthesisMatrix.nextAuspiceAction}
 · 아우구르 신관 오라클 지침: ${rep.augurOracleGuidance}
 · 천의 부응 행동 처방: ${rep.auspiceActionPrescription}`;
 }

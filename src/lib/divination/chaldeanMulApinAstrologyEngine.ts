@@ -1,20 +1,13 @@
 /**
  * 고대 메소포타미아 칼데아 12조디악 원형 & 바빌로니아 물핀(MUL.APIN) 천문 신탁 엔진 (chaldeanMulApinAstrologyEngine.ts)
  *
- * 기원전 1000년경 바빌로니아 천문 점토판 『물핀(MUL.APIN, 쟁기별)』 및 『칼데아 신탁(Chaldean Oracles)』 정통 원전:
- * 인류 최초의 체계적 천문학 관측 기록이자 서양 점성술의 근원.
- * 밤하늘을 3대 신성 천상로(Three Celestial Paths)로 삼분하여 신들의 섭리를 관측함:
- * 1. 엔릴의 길(Way of Enlil) - 북천 33개 별자리, 최고의 법도와 영적 질서, 통솔의 권능
- * 2. 아누의 길(Way of Anu) - 적도천 23개 별자리, 황도 12조디악의 원형, 지상과 천상의 균형
- * 3. 에아의 길(Way of Ea) - 남천 15개 별자리, 심연의 담수 압수(Apsu), 무의식적 창조성과 치유
- *
- * 칼데아 질서(Chaldean Order)의 7대 행성(토-목-화-일-금-수-월)과
- * 신성한 영적 불꽃 '노에틱 파이어(Noetic Fire)'에 기반한 현실 개운 통찰.
+ * 기원전 1000년경 바빌로니아 천문 점토판 『물핀(MUL.APIN, 쟁기별)』 및 『칼데아 신탁(Chaldean Oracles)』 정통 원전 기반:
+ * 엔릴·아누·에아 3대 천상로, 칼데아 7대 행성, 질문 맥락 정성 감사, KST 지구라트 천문 리듬을 교차 해독합니다.
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const CHALDEAN_MUL_APIN_ASTROLOGY_ENGINE_VERSION = '1.0.0';
+export const CHALDEAN_MUL_APIN_ASTROLOGY_ENGINE_VERSION = 'LUCKEY-CHALDEAN-MULAPIN-v2.0.0';
 
 export type CelestialPath =
   | '엔릴의 길(Way of Enlil - 북천/절대원칙과 법도)'
@@ -26,18 +19,42 @@ export interface ChaldeanPlanet {
   akkadianName: string;
   symbol: string;
   virtue: string;
-  resonanceScore: number; // 0 ~ 100
+  resonanceScore: number; // 0 ~ 100 (내부 연산용)
+}
+
+export interface ChaldeanSituationalAudit {
+  celestialFocus: string;
+  noeticPrinciple: string;
+  tabletPrescription: string;
+  eclipseWarning: string;
+}
+
+export interface ChaldeanTemporalRhythm {
+  kstHour: number;
+  zigguratWatch: string;
+  babylonianSeason: string;
+  timingGuidance: string;
+  celestialTempo: '창공' | '균형' | '심연';
+}
+
+export interface ChaldeanSynthesisMatrix {
+  pathResonanceGrade: '선명' | '안정' | '보완';
+  planetConstellationLink: string;
+  nextAstronomicalStep: string;
 }
 
 export interface ChaldeanMulApinAstrologyReport {
   engineVersion: string;
   timestamp: string;
   celestialPath: CelestialPath;
-  pathAlignmentScore: number; // 0 ~ 100 천상로 조응도
+  pathAlignmentScore: number;
   rulingPlanet: ChaldeanPlanet;
-  mulApinConstellation: string; // 바빌로니아 원초 별자리
-  noeticFireGuidance: string; // 칼데아 신탁의 지성 불꽃
-  astronomicalActionAdvice: string; // 천문학적 시기 포착 및 현실 처방
+  mulApinConstellation: string;
+  situationalMulApinAudit: ChaldeanSituationalAudit;
+  temporalMulApinRhythm: ChaldeanTemporalRhythm;
+  mulApinSynthesisMatrix: ChaldeanSynthesisMatrix;
+  noeticFireGuidance: string;
+  astronomicalActionAdvice: string;
 }
 
 const BABYLONIAN_CONSTELLATIONS = [
@@ -72,6 +89,94 @@ function simpleHash(str: string): number {
     hash |= 0;
   }
   return Math.abs(hash);
+}
+
+function getKstParts(now: Date): { hour: number; month: number } {
+  const formatter = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Asia/Seoul',
+    hour: 'numeric',
+    month: 'numeric',
+    hour12: false,
+  });
+  const parts = formatter.formatToParts(now);
+  return {
+    hour: Number(parts.find((p) => p.type === 'hour')?.value || '12') % 24,
+    month: Number(parts.find((p) => p.type === 'month')?.value || '1'),
+  };
+}
+
+function buildSituationalAudit(question: string, planet: ChaldeanPlanet): ChaldeanSituationalAudit {
+  const q = question.toLowerCase();
+  if (/일|사업|직업|계약|시험|프로젝트|재물|진로/.test(q)) {
+    return {
+      celestialFocus: '엔릴의 법도와 나부(Nabu)의 정밀한 기록 질서',
+      noeticPrinciple: `${planet.nameKo}의 덕목(${planet.virtue})을 실무 기준선으로 삼는 태도`,
+      tabletPrescription: '말로만 세운 계획을 점토판에 새기듯 구체적 기한과 수치, 책임 범위를 문서화해 실행하십시오.',
+      eclipseWarning: '근거 없는 낙관이나 요행에 기대어 원칙을 건너뛰면 궤도가 흔들립니다.',
+    };
+  }
+  if (/사랑|연애|관계|배우자|결혼|사람|화해|갈등/.test(q)) {
+    return {
+      celestialFocus: '아누의 적도천 균형과 이슈타르(Ishtar)의 진실한 결속',
+      noeticPrinciple: '상대의 궤도를 존중하면서도 자신의 중심을 잃지 않는 상호 공명',
+      tabletPrescription: '감정의 안개를 걷어내고 지금 이 관계에서 서로가 진심으로 바라는 바를 투명하게 나누십시오.',
+      eclipseWarning: '상대의 침묵을 최악의 시나리오로 해석하며 성급히 거리를 두지 마십시오.',
+    };
+  }
+  if (/건강|피로|마음|치유|휴식|불안|잠/.test(q)) {
+    return {
+      celestialFocus: '에아(Ea)의 남천 압수(Apsu) 심연 치유와 달(Sin)의 순환',
+      noeticPrinciple: '억지 강행 대신 물의 흐름에 몸을 맡겨 생명 리듬을 회복하는 지혜',
+      tabletPrescription: '오늘 하루는 외부의 별자리를 쫓기보다 조용한 물과 휴식으로 내면의 수면을 잔잔히 가라앉히십시오.',
+      eclipseWarning: '지친 상태에서 무리한 결단을 내리면 본래의 판단력이 흐려집니다.',
+    };
+  }
+  return {
+    celestialFocus: '엔릴·아누·에아 삼중 천상로의 조율',
+    noeticPrinciple: `${planet.nameKo}이 비추는 ${planet.virtue}`,
+    tabletPrescription: '별자리의 큰 흐름이 바뀔 때까지 조급히 흔들리지 말고 지금 맡은 자리를 묵묵히 정돈하십시오.',
+    eclipseWarning: '사소한 징후에 일희일비하며 본래의 항로를 바꾸지 마십시오.',
+  };
+}
+
+function buildTemporalRhythm(now: Date): ChaldeanTemporalRhythm {
+  const { hour, month } = getKstParts(now);
+
+  let zigguratWatch = '정오 샤마슈(Shamash) 정의의 창';
+  let celestialTempo: ChaldeanTemporalRhythm['celestialTempo'] = '창공';
+  let timingGuidance = '태양의 빛이 정점에 있는 시간대이므로 명백한 사실 확인과 결단에 유리합니다.';
+
+  if (hour >= 4 && hour < 9) {
+    zigguratWatch = '새벽 금성 이슈타르(Ishtar) 여명 관측 창';
+    celestialTempo = '창공';
+    timingGuidance = '동쪽 지평선이 열리는 새벽 시간대에 오늘의 핵심 의도와 우선순위를 정하십시오.';
+  } else if (hour >= 9 && hour < 16) {
+    zigguratWatch = '주간 샤마슈·마르두크(Shamash–Marduk) 천상로 창';
+    celestialTempo = '균형';
+    timingGuidance = '현실의 과업과 협력을 차분히 진전시키되 약속된 질서를 지키는 데 힘쓰십시오.';
+  } else if (hour >= 16 && hour < 21) {
+    zigguratWatch = '황혼 나부(Nabu) 서기관 결산 창';
+    celestialTempo = '균형';
+    timingGuidance = '낮의 기록을 갈무리하고 내일로 넘길 일과 오늘 끝낼 일을 분명히 나누십시오.';
+  } else {
+    zigguratWatch = '심야 신(Sin) 지구라트 천문 관측 창';
+    celestialTempo = '심연';
+    timingGuidance = '밤하늘의 별자리처럼 깊은 고요 속에서 내면의 직관과 휴식을 회복할 시간입니다.';
+  }
+
+  let babylonianSeason = '니산누(Nisannu) 봄 춘분 새해 창';
+  if (month >= 3 && month <= 5) babylonianSeason = '니산누(Nisannu) · 파종과 질서 수립기';
+  else if (month >= 6 && month <= 8) babylonianSeason = '두주(Du’uzu) · 태양의 절정과 성장기';
+  else if (month >= 9 && month <= 11) babylonianSeason = '티슈리투(Tashritu) · 천칭의 수확·결산기';
+  else babylonianSeason = '샤바투(Shabatu) · 비와 내면 응축기';
+
+  return {
+    kstHour: hour,
+    zigguratWatch,
+    babylonianSeason,
+    timingGuidance,
+    celestialTempo,
+  };
 }
 
 export function calculateChaldeanMulApinAstrology(options?: {
@@ -116,6 +221,20 @@ export function calculateChaldeanMulApinAstrology(options?: {
   const cMeta = BABYLONIAN_CONSTELLATIONS[constelIdx];
   const mulApinConstellation = `${cMeta.name} (${cMeta.nature})`;
 
+  const situationalMulApinAudit = buildSituationalAudit(question, rulingPlanet);
+  const temporalMulApinRhythm = buildTemporalRhythm(now);
+
+  const pathResonanceGrade: ChaldeanSynthesisMatrix['pathResonanceGrade'] =
+    pathAlignmentScore >= 80 ? '선명' : pathAlignmentScore >= 65 ? '안정' : '보완';
+  const planetConstellationLink = `주재 행성 ${rulingPlanet.akkadianName}의 기운이 원초 별자리 ${cMeta.name}의 성질(${cMeta.nature})과 맞물려 작동합니다.`;
+  const nextAstronomicalStep = `${temporalMulApinRhythm.zigguratWatch} 리듬에 맞추어 ${situationalMulApinAudit.celestialFocus}을 우선 점검하십시오.`;
+
+  const mulApinSynthesisMatrix: ChaldeanSynthesisMatrix = {
+    pathResonanceGrade,
+    planetConstellationLink,
+    nextAstronomicalStep,
+  };
+
   const noeticFireGuidance = `칼데아 신탁의 전승: "물질의 어둠에 현혹되지 말고 가슴속 신성한 지성의 불꽃(Noetic Fire)에 불을 지펴라." ` +
     `현재 당신의 기운은 [${rulingPlanet.nameKo}]과 강력히 공명하고 있습니다. ${rulingPlanet.virtue}의 덕목을 지침 삼으십시오.`;
 
@@ -129,6 +248,9 @@ export function calculateChaldeanMulApinAstrology(options?: {
     pathAlignmentScore,
     rulingPlanet,
     mulApinConstellation,
+    situationalMulApinAudit,
+    temporalMulApinRhythm,
+    mulApinSynthesisMatrix,
     noeticFireGuidance,
     astronomicalActionAdvice,
   };
@@ -137,9 +259,16 @@ export function calculateChaldeanMulApinAstrology(options?: {
 export function formatChaldeanMulApinAstrologyPrompt(rep: ChaldeanMulApinAstrologyReport): string {
   return `[고대 메소포타미아 칼데아 12조디악 원형 & 바빌로니아 물핀(MUL.APIN) 천문 신탁 실측 데이터]
 · 엔진 버전: v${rep.engineVersion}
-· 천상 3대로(Celestial Path): ${rep.celestialPath} (조응도: ${rep.pathAlignmentScore}/100)
-· 칼데아 주재 행성: ${rep.rulingPlanet.nameKo} [${rep.rulingPlanet.virtue}] (공명도: ${rep.rulingPlanet.resonanceScore}/100)
+· 천상 3대로(Celestial Path): ${rep.celestialPath}
+· 칼데아 주재 행성: ${rep.rulingPlanet.nameKo} [${rep.rulingPlanet.virtue}]
 · 바빌로니아 물핀 별자리: ${rep.mulApinConstellation}
+· 질문 맥락 감사: ${rep.situationalMulApinAudit.celestialFocus} — ${rep.situationalMulApinAudit.noeticPrinciple}
+  - 점토판 처방: ${rep.situationalMulApinAudit.tabletPrescription}
+  - 경계할 식(Eclipse): ${rep.situationalMulApinAudit.eclipseWarning}
+· KST 시공간 리듬 (${rep.temporalMulApinRhythm.kstHour}시): ${rep.temporalMulApinRhythm.zigguratWatch} · ${rep.temporalMulApinRhythm.babylonianSeason} (${rep.temporalMulApinRhythm.celestialTempo})
+  - 시간대 지침: ${rep.temporalMulApinRhythm.timingGuidance}
+· 천문 교차 매트릭스: 조응(${rep.mulApinSynthesisMatrix.pathResonanceGrade}) · ${rep.mulApinSynthesisMatrix.planetConstellationLink}
+  - 다음 행동: ${rep.mulApinSynthesisMatrix.nextAstronomicalStep}
 · 칼데아 지성 불꽃(Noetic Fire): ${rep.noeticFireGuidance}
 · 천문학적 행동 처방: ${rep.astronomicalActionAdvice}`;
 }

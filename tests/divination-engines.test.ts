@@ -7270,6 +7270,34 @@ test('Aztec Tonalamatl, Balinese Tri Hita Karana, and Celtic Tuatha Four Treasur
   assert.ok(!celticPrompt.includes('/100') && !celticPrompt.includes('%'));
 });
 
+test('Chaldean Mul Apin, Egyptian Sphinx Dream, and Etruscan Augur v2.0.0: qualitative/temporal audits without prompt score leaks', () => {
+  const now = new Date('2026-11-15T05:05:00+09:00');
+
+  const chaldean = calculateChaldeanMulApinAstrology({ profile, question: '새 프로젝트 계약을 앞두고 원칙을 점검하고 싶습니다', now });
+  assert.equal(chaldean.engineVersion, 'LUCKEY-CHALDEAN-MULAPIN-v2.0.0');
+  assert.ok(chaldean.situationalMulApinAudit.celestialFocus.length > 0);
+  assert.ok(chaldean.temporalMulApinRhythm.zigguratWatch.length > 0);
+  assert.ok(chaldean.mulApinSynthesisMatrix.nextAstronomicalStep.length > 0);
+  const chaldeanPrompt = formatChaldeanMulApinAstrologyPrompt(chaldean);
+  assert.ok(!chaldeanPrompt.includes('/100') && !chaldeanPrompt.includes('%'));
+
+  const sphinx = calculateEgyptianSphinxDreamOracle({ profile, question: '사소한 잡무와 불안을 걷어내고 싶습니다', now });
+  assert.equal(sphinx.engineVersion, 'LUCKEY-EGYPTIAN-SPHINX-v2.0.0');
+  assert.ok(sphinx.situationalSphinxAudit.sandObstacleType.length > 0);
+  assert.ok(sphinx.temporalSphinxRhythm.solarBarqueStage.length > 0);
+  assert.ok(sphinx.sphinxSynthesisMatrix.sovereignStep.length > 0);
+  const sphinxPrompt = formatEgyptianSphinxDreamOraclePrompt(sphinx);
+  assert.ok(!sphinxPrompt.includes('/100') && !sphinxPrompt.includes('%'));
+
+  const etruscan = calculateEtruscanAugurSixteenSky({ profile, question: '중요한 결정의 타이밍을 살피고 싶습니다', now });
+  assert.equal(etruscan.engineVersion, 'LUCKEY-ETRUSCAN-AUGUR-v2.0.0');
+  assert.ok(etruscan.situationalAugurAudit.templumInquiryAxis.length > 0);
+  assert.ok(etruscan.temporalAugurRhythm.auguryWatchWindow.length > 0);
+  assert.ok(etruscan.augurSynthesisMatrix.nextAuspiceAction.length > 0);
+  const etruscanPrompt = formatEtruscanAugurSixteenSkyPrompt(etruscan);
+  assert.ok(!etruscanPrompt.includes('/100') && !etruscanPrompt.includes('%') && !etruscanPrompt.includes('점수'));
+});
+
 
 
 
