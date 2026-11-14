@@ -3999,16 +3999,23 @@ test('Ibn Arabi Wahdat al-Wujud Heart Wisdom Engine: calculates prophetic heart 
 });
 
 test('Chonggamnok Ten Sanctuaries Engine: calculates geomantic sanctuaries, gonggong-euleul virtue and sanctuary shield', () => {
-  const rep = calculateChonggamnokTenSanctuaries(profile);
+  const rep = calculateChonggamnokTenSanctuaries(profile, '마음이 너무 불안하고 지쳐서 쉬고 싶어요', new Date('2026-11-15T05:00:00Z'));
   assert.equal(rep.engineVersion, CHONGGAMNOK_SANCTUARIES_ENGINE_VERSION);
+  assert.equal(rep.questionTopic, 'healing');
+  assert(rep.temporalSanctuaryRhythm.kstSlot.length > 0);
   assert(rep.gonggongEuleulVirtueScore >= 0 && rep.gonggongEuleulVirtueScore <= 100);
   assert(rep.threeCalamitiesImmunityScore >= 0 && rep.threeCalamitiesImmunityScore <= 100);
   assert(rep.geomanticVitalityIndex >= 0 && rep.geomanticVitalityIndex <= 100);
   assert(rep.spiritualSanctuaryShield >= 0 && rep.spiritualSanctuaryShield <= 100);
   assert(rep.dominantSanctuary.nameKo.length > 0);
+  assert(rep.dailyPracticeRitual.length > 0);
+  assert(rep.reflectiveQuestion.length > 0);
+  assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatChonggamnokPrompt(rep);
   assert(prompt.includes('조선 비전 정감록 10승지 영맥 & 보신 피난처 실측 데이터'));
   assert(prompt.includes(rep.dominantSanctuary.nameKo));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
 });
 
 test('Balinese Tri Hita Karana Engine: calculates cosmic trinity harmony, tri kaya purification and sanctuary resonance', () => {
@@ -5321,17 +5328,24 @@ test('Albert Camus Absurd Revolt Engine: calculates Absurd Lucidity, Unceasing R
 });
 
 test('Yeonam Park Jiwon Yeolha Ilgi Engine: calculates One-Night Nine Crossings, Beopgo Changsin, and Iyongs Husaeng', () => {
-  const rep = calculateYeonamParkJiwonYeolhaIlgi(profile);
+  const rep = calculateYeonamParkJiwonYeolhaIlgi(profile, '새 진로와 사업 방향을 어떻게 결정해야 할까요', new Date('2026-11-15T05:00:00Z'));
   assert.equal(rep.engineVersion, KOREAN_YEONAM_PARK_JIWON_VERSION);
+  assert.equal(rep.questionTopic, 'decision');
+  assert(rep.temporalYeonamRhythm.kstSlot.length > 0);
   assert(rep.nightCrossingRiverSerenityScore >= 0 && rep.nightCrossingRiverSerenityScore <= 100);
   assert(rep.beopgoChangsinCreativeWisdomScore >= 0 && rep.beopgoChangsinCreativeWisdomScore <= 100);
   assert(rep.iyongHusaengPracticalCompetenceScore >= 0 && rep.iyongHusaengPracticalCompetenceScore <= 100);
   assert(rep.bukhakOpenMindedInsightScore >= 0 && rep.bukhakOpenMindedInsightScore <= 100);
   assert(rep.haehakSatiricalGenerosityQuotient >= 0 && rep.haehakSatiricalGenerosityQuotient <= 100);
   assert(rep.activeYeonamTheme.themeTitleKo.length > 0);
+  assert(rep.dailyPracticeRitual.length > 0);
+  assert(rep.reflectiveQuestion.length > 0);
+  assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatYeonamParkJiwonYeolhaIlgiPrompt(rep);
   assert(prompt.includes('연암 박지원 《열하일기》 일야구도 & 이용후생·법고창신 실학 지표'));
   assert(prompt.includes(rep.activeYeonamTheme.themeTitleKo));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
 });
 
 test('Jean-Paul Sartre Existentialism Engine: calculates Existence Precedes Essence, Condemned to be Free, and Engagement', () => {
@@ -5809,17 +5823,24 @@ test('Michel de Montaigne Essays Engine: calculates Epistemic Humility, Candid S
 });
 
 test('Ohseong and Haneum Friendship Governance Engine: calculates Lifelong Moral Friendship, Crisis Governance, and Humor Wit Magnanimity', () => {
-  const rep = calculateKoreanOhseongHaneumFriendshipGovernance(profile);
+  const rep = calculateKoreanOhseongHaneumFriendshipGovernance(profile, '친구와 동료 사이의 갈등을 어떻게 풀어야 할까요', new Date('2026-11-15T05:00:00Z'));
   assert.equal(rep.engineVersion, KOREAN_OHSEONG_HANEUM_VERSION);
+  assert.equal(rep.questionTopic, 'relationship');
+  assert(rep.temporalOhseongHaneumRhythm.kstSlot.length > 0);
   assert(rep.lifelongMoralFriendshipTrustIndex >= 0 && rep.lifelongMoralFriendshipTrustIndex <= 100);
   assert(rep.crisisGovernanceStatesmanshipScore >= 0 && rep.crisisGovernanceStatesmanshipScore <= 100);
   assert(rep.humorWitMagnanimityResilienceIndex >= 0 && rep.humorWitMagnanimityResilienceIndex <= 100);
   assert(rep.antiFactionalImpartialityScore >= 0 && rep.antiFactionalImpartialityScore <= 100);
   assert(rep.unyieldingFidelityGraceIndex >= 0 && rep.unyieldingFidelityGraceIndex <= 100);
   assert(rep.activeOhseongHaneumTheme.themeTitleKo.length > 0);
+  assert(rep.dailyPracticeRitual.length > 0);
+  assert(rep.reflectiveQuestion.length > 0);
+  assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatKoreanOhseongHaneumFriendshipGovernancePrompt(rep);
   assert(prompt.includes('오성과 한음(이항복·이덕형) 지기지우 & 경세제민 지혜 지표'));
   assert(prompt.includes(rep.activeOhseongHaneumTheme.themeTitleKo));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
 });
 
 test('Voltaire Candide and Tolerance Engine: calculates Cultivate Our Garden Devotion, Tolerance, and Satirical Wit', () => {
