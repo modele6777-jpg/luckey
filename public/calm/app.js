@@ -1,4 +1,19 @@
 document.addEventListener('DOMContentLoaded', () => {
+  // Header geometry changes only on layout/font/inset updates, never per scroll.
+  const keyHeader = document.querySelector('.top-nav');
+  if (keyHeader) {
+    const updateKeyHeaderHeight = () => {
+      const height = Math.ceil(keyHeader.getBoundingClientRect().height);
+      const value = `${height}px`;
+      if (document.documentElement.style.getPropertyValue('--key-header-height') !== value) {
+        document.documentElement.style.setProperty('--key-header-height', value);
+      }
+    };
+    const keyHeaderObserver = new ResizeObserver(updateKeyHeaderHeight);
+    keyHeaderObserver.observe(keyHeader);
+    updateKeyHeaderHeight();
+  }
+
   function naturalVoiceUrl(data) {
     if (!data?.audioContent || !['mp3', 'wav'].includes(data.encoding)) return null;
     return `data:${data.encoding === 'wav' ? 'audio/wav' : 'audio/mpeg'};base64,${data.audioContent}`;

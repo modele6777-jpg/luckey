@@ -103,16 +103,14 @@ button, a, input, textarea, select {
   position: sticky;
   top: 0;
   z-index: 100;
-  background: rgba(252, 249, 245, 0.88);
-  backdrop-filter: blur(28px) saturate(180%);
-  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  background: var(--bg-canvas);
   border-bottom: 1px solid var(--border-linen);
   box-shadow: 0 2px 12px rgba(92, 60, 43, 0.05), 0 1px 3px rgba(0, 0, 0, 0.02);
   padding: max(12px, var(--key-safe-top, env(safe-area-inset-top))) max(20px, env(safe-area-inset-right)) 12px max(20px, env(safe-area-inset-left));
   display: flex;
   justify-content: space-between;
   align-items: center;
-  transition: all 0.2s ease;
+  transition: background-color 0.2s ease;
   overflow: hidden;
 }
 
@@ -1023,33 +1021,26 @@ button, a, input, textarea, select {
 
 /* Content Navigation Tabs (토스/애플 스타일 세그먼트) */
 .view-tabs-container {
-  position: sticky;
   position: -webkit-sticky;
-  top: calc(max(12px, var(--key-safe-top, env(safe-area-inset-top))) + 68px);
+  position: sticky;
+  top: var(--key-header-height, 80px);
   z-index: 99;
   display: flex;
   justify-content: center;
   max-width: 100%;
-  overflow-x: auto;
+  overflow: visible;
   padding: 4px 8px;
-  /*
-   * 스크롤 떨림 방지 (iOS Safari / iframe):
-   * sticky 요소의 위치는 스크롤마다 서브픽셀로 다시 계산되는데, backdrop-filter가 걸려 있으면
-   * 매 프레임 배경을 다시 블러 처리하면서 1~2px씩 재스냅되어 도구 목록 바가 미세하게 떨려 보였다.
-   * 그래서 블러는 쓰지 않고 거의 같은 색의 불투명에 가까운 단색 배경으로 대체하고(육안 차이 없음),
-   * 자체 합성 레이어로 승격해 서브픽셀 재배치가 화면에 드러나지 않게 고정한다.
-   */
-  background: rgba(252, 249, 245, 0.985);
-  -webkit-transform: translate3d(0, 0, 0);
-  transform: translate3d(0, 0, 0);
-  -webkit-backface-visibility: hidden;
-  backface-visibility: hidden;
+  /* One native sticky layer: no nested scrolling or transformed surface.
+     An opaque background also avoids repainting moving content through the bar. */
+  background: var(--bg-canvas);
   isolation: isolate;
-  overscroll-behavior-x: contain;
+  flex-shrink: 0;
 }
 
 .segmented-tabs {
   display: inline-flex;
+  flex-wrap: wrap;
+  justify-content: center;
   background: #ebe5db;
   padding: 4px;
   border-radius: 30px;
@@ -4458,7 +4449,7 @@ button, a, input, textarea, select {
   /* 5. Segmented Navigation Tabs (Apple iOS Segmented Control Style) */
   .view-tabs-container {
     width: 100%;
-    top: calc(max(10px, var(--key-safe-top, env(safe-area-inset-top))) + 62px);
+    top: var(--key-header-height, 72px);
   }
 
   .segmented-tabs {
