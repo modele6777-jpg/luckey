@@ -6340,6 +6340,9 @@ test('Maurice Merleau-Ponty Embodied Phenomenology Engine: calculates Body-Subje
   const prompt = formatFrenchMauriceMerleauPontyEmbodiedPhenomenologyPrompt(rep);
   assert(prompt.includes('모리스 메를로퐁티 《지각의 현상학·눈과 마음》 신체-주체 및 원초적 지각 성찰 가이드'));
   assert(prompt.includes(rep.activePontyTheme.themeTitleKo));
+  assert.ok(rep.calculatedAtKst.includes('KST'));
+  assert.ok(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
 });
 
 test('Samyeongdaesa Songun Yujeong Engine: calculates Righteous Devotion, Diplomatic Rescue, and Transcendent Compassion', () => {
@@ -6396,6 +6399,9 @@ test('Michel Foucault Care of Self Aesthetics Engine: calculates Care of Self, D
   const prompt = formatFrenchMichelFoucaultCareOfSelfAestheticsPrompt(rep);
   assert(prompt.includes('미셸 푸코 《주체의 해석학·자기 배려》 규율권력 탈피 및 존재의 미학 지표'));
   assert(prompt.includes(rep.activeFoucaultTheme.themeTitleKo));
+  assert.ok(rep.calculatedAtKst.includes('KST'));
+  assert.ok(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
 });
 
 test('Walter Benjamin Aura and Now-Time Engine: calculates Aura Authenticity, Angelus Novus, and Messianic Jetztzeit', () => {
@@ -6556,6 +6562,9 @@ test('Paul Ricoeur Narrative Identity and Healing Engine: calculates Emplotment,
   const prompt = formatFrenchPaulRicoeurNarrativeIdentityHealingPrompt(rep);
   assert(prompt.includes('폴 리쾨르 《시간과 이야기·자기 자신으로서의 타자》 서사적 정체성·치유 지표'));
   assert(prompt.includes(rep.activeRicoeurTheme.themeTitleKo));
+  assert.ok(rep.calculatedAtKst.includes('KST'));
+  assert.ok(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
 });
 
 test('Anton Chekhov Quiet Endurance and Compassion Engine: calculates Unpretentious Truthfulness, Diligence, and Fortitude', () => {

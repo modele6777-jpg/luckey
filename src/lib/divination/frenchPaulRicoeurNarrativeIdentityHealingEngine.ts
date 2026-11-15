@@ -8,12 +8,12 @@
  * 4. 은유적 상상력 및 삶의 지평 혁신성 (Metaphorical Innovation & Horizon of Hope Score): 굳어진 현실의 고정관념을 은유의 살아있는 힘으로 깨뜨리고 새로운 가능성을 여는 통찰.
  * 5. 화해와 용서를 향한 성숙한 회복탄력성 (Reconciliation & Generous Forgiveness Resilience): 원한과 복수의 악순환을 끊고 삶의 멍에를 내려놓아 자유를 찾는 영적 회복탄력성.
  *
- * @version LUCKEY-PAUL-RICOEUR-NARRATIVE-IDENTITY-HEALING-v1.0.0
+ * @version LUCKEY-PAUL-RICOEUR-NARRATIVE-IDENTITY-HEALING-v2.0.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const FRENCH_PAUL_RICOEUR_NARRATIVE_IDENTITY_HEALING_VERSION = 'LUCKEY-PAUL-RICOEUR-NARRATIVE-IDENTITY-HEALING-v1.0.0';
+export const FRENCH_PAUL_RICOEUR_NARRATIVE_IDENTITY_HEALING_VERSION = 'LUCKEY-PAUL-RICOEUR-NARRATIVE-IDENTITY-HEALING-v2.0.0';
 
 export interface RicoeurTheme {
   themeKey: string;
@@ -43,6 +43,11 @@ export interface FrenchPaulRicoeurNarrativeIdentityHealingResult {
   // 세부 분석
   activeRicoeurTheme: RicoeurTheme;
   focalRicoeurAphorism: RicoeurAphorism;
+  ricoeurSynthesisMatrix: {
+    coreInsight: string;
+    recommendedAction: string;
+    cautionNotice: string;
+  };
   ricoeurComprehensiveGuidance: {
     guidanceTitle: string;
     philosophicalCounsel: string;
@@ -120,9 +125,16 @@ function hashString(str: string): number {
   return hash;
 }
 
+function describeRicoeurStage(score: number): string {
+  if (score >= 95) return '깊은 서사적 통합과 화해의 지평이 열리는 국면';
+  if (score >= 91) return '차분히 기억을 재구성하며 회복해 가는 단계';
+  return '조용히 내면의 매듭을 풀어내는 성찰의 흐름';
+}
+
 export function calculateFrenchPaulRicoeurNarrativeIdentityHealing(
   profile?: UserProfile,
   query?: string,
+  now: Date = new Date(),
 ): FrenchPaulRicoeurNarrativeIdentityHealingResult {
   const p = profile as any;
   const name = profile?.basic?.name ?? p?.name ?? '남희';
@@ -154,9 +166,17 @@ export function calculateFrenchPaulRicoeurNarrativeIdentityHealing(
     `${activeRicoeurTheme.practicalCounsel} 리쾨르의 명제 "${focalRicoeurAphorism.aphorismKo}" (${focalRicoeurAphorism.aphorismFrench})를 마음에 새기고, ` +
     `${focalRicoeurAphorism.actionGuidance}`;
 
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const kstTimeLabel = `${kst.toISOString().slice(0, 10)} ${String(kst.getUTCHours()).padStart(2, '0')}:${String(kst.getUTCMinutes()).padStart(2, '0')} KST`;
+  const ricoeurSynthesisMatrix = {
+    coreInsight: activeRicoeurTheme.themeTitleKo,
+    recommendedAction: activeRicoeurTheme.practicalCounsel,
+    cautionNotice: '과거의 상처나 한 시점의 좌절을 인생 전체의 고정된 결론으로 단정 짓지 마십시오.',
+  };
+
   return {
     engineVersion: FRENCH_PAUL_RICOEUR_NARRATIVE_IDENTITY_HEALING_VERSION,
-    calculatedAtKst: new Date().toISOString(),
+    calculatedAtKst: kstTimeLabel,
     narrativeIdentityEmplotmentScore,
     ipsoIdentityEthicalAlterityIndex,
     hermeneuticHealingMemoryIndex,
@@ -164,6 +184,7 @@ export function calculateFrenchPaulRicoeurNarrativeIdentityHealing(
     reconciliationForgivenessResilience,
     activeRicoeurTheme,
     focalRicoeurAphorism,
+    ricoeurSynthesisMatrix,
     ricoeurComprehensiveGuidance: {
       guidanceTitle,
       philosophicalCounsel,
@@ -175,15 +196,17 @@ export function formatFrenchPaulRicoeurNarrativeIdentityHealingPrompt(
   res: FrenchPaulRicoeurNarrativeIdentityHealingResult,
 ): string {
   return [
-    `【폴 리쾨르 《시간과 이야기·자기 자신으로서의 타자》 서사적 정체성·치유 지표】`,
-    `- 서사적 정체성 및 삶의 재구성 통합도(Narrative Identity & Emplotment): ${res.narrativeIdentityEmplotmentScore}/100`,
-    `- 자기 자신으로서의 타자 공감 지수(Ipso-Identity & Ethical Alterity): ${res.ipsoIdentityEthicalAlterityIndex}/100`,
-    `- 상처받은 기억의 해석학적 치유 지표(Hermeneutic Healing of Memory): ${res.hermeneuticHealingMemoryIndex}/100`,
-    `- 은유적 상상력 및 지평 혁신성(Metaphorical Innovation & Hope): ${res.metaphoricalInnovationHopeScore}/100`,
-    `- 화해와 용서의 성숙한 회복탄력성(Reconciliation & Forgiveness Resilience): ${res.reconciliationForgivenessResilience}/100`,
+    `【폴 리쾨르 《시간과 이야기·자기 자신으로서의 타자》 서사적 정체성·치유 지표 (${res.engineVersion})】`,
+    `- 연산 시각: ${res.calculatedAtKst}`,
+    `- 서사적 정체성 및 삶의 재구성 통합도(Narrative Identity & Emplotment): ${describeRicoeurStage(res.narrativeIdentityEmplotmentScore)}`,
+    `- 자기 자신으로서의 타자 공감 지수(Ipso-Identity & Ethical Alterity): ${describeRicoeurStage(res.ipsoIdentityEthicalAlterityIndex)}`,
+    `- 상처받은 기억의 해석학적 치유 지표(Hermeneutic Healing of Memory): ${describeRicoeurStage(res.hermeneuticHealingMemoryIndex)}`,
+    `- 은유적 상상력 및 지평 혁신성(Metaphorical Innovation & Hope): ${describeRicoeurStage(res.metaphoricalInnovationHopeScore)}`,
+    `- 화해와 용서의 성숙한 회복탄력성(Reconciliation & Forgiveness Resilience): ${describeRicoeurStage(res.reconciliationForgivenessResilience)}`,
     `- 핵심 리쾨르 테마: ${res.activeRicoeurTheme.themeTitleKo} [${res.activeRicoeurTheme.themeTitleEn}]`,
     `- 해석학적 통찰: ${res.activeRicoeurTheme.hermeneuticInsight}`,
     `- 행동 조언: ${res.activeRicoeurTheme.practicalCounsel}`,
+    `- 교차 매트릭스: 핵심(${res.ricoeurSynthesisMatrix.coreInsight}) | 실행(${res.ricoeurSynthesisMatrix.recommendedAction}) | 주의(${res.ricoeurSynthesisMatrix.cautionNotice})`,
     `- 리쾨르 원전 테제: "${res.focalRicoeurAphorism.aphorismKo}" (${res.focalRicoeurAphorism.aphorismFrench})`,
     `- 원전 출처: [${res.focalRicoeurAphorism.sourceContext}]`,
     `- 구체적 실천 지침: ${res.focalRicoeurAphorism.actionGuidance}`,
