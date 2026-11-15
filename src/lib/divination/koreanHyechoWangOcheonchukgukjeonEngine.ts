@@ -8,12 +8,12 @@
  * 4. 이민족·이문화 편견 없는 수용 및 문명 포용력(Cultural Openness & Compassion): 피부색, 언어, 풍습이 전혀 다른 이국 만방의 사람들을 차별 없이 마주하고 관찰하는 대자대비의 너른 도량.
  * 5. 두 발로 현장을 걸으며 체득한 구도적 실천 지혜도(Bodhisattva Practical Field Wisdom): 책상 위의 탁상공론이 아니라, 직접 걷고 땀 흘리며 보고 들은 사실만을 기록하는 정직하고 실사구시적인 통찰.
  *
- * @version LUCKEY-HYECHO-WANGOCHEON-v1.0.0
+ * @version LUCKEY-HYECHO-WANGOCHEON-v2.0.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const KOREAN_HYECHO_VERSION = 'LUCKEY-HYECHO-WANGOCHEON-v1.0.0';
+export const KOREAN_HYECHO_VERSION = 'LUCKEY-HYECHO-WANGOCHEON-v2.0.0';
 
 export interface HyechoTheme {
   themeKey: string;
@@ -47,6 +47,27 @@ export interface HyechoWangOcheonchukgukjeonResult {
     guidanceTitle: string;
     philosophicalCounsel: string;
   };
+  hyechoSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
+}
+
+function formatHyechoKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
+
+function describeHyechoStage(score: number): string {
+  if (score >= 90) return '총령월령(蔥嶺越嶺) — 설산과 사막을 넘어 구도의 서원과 내면의 평정이 합일된 원융기';
+  if (score >= 82) return '천축행각(天竺行脚) — 낯선 문명을 편견 없이 품으며 두 발로 현장의 진실을 밟는 정진기';
+  return '발심출항(發心出航) — 익숙한 안락을 뒤로하고 진리를 향해 첫 발을 내딛는 개척기';
 }
 
 export const HYECHO_THEMES: HyechoTheme[] = [
@@ -119,7 +140,9 @@ export const HYECHO_APHORISMS: HyechoAphorism[] = [
 ];
 
 export function calculateHyechoWangOcheonchukgukjeon(
-  profile: UserProfile
+  profile: UserProfile,
+  query?: string,
+  now: Date = new Date(),
 ): HyechoWangOcheonchukgukjeonResult {
   const p = profile as any;
   const name = profile?.basic?.name ?? p?.name ?? '방문자';
@@ -127,7 +150,7 @@ export function calculateHyechoWangOcheonchukgukjeon(
   const birthTime = profile?.basic?.birthtime ?? p?.birthTime ?? p?.birthtime ?? '12:00';
   const gender = profile?.basic?.gender ?? p?.gender ?? 'neutral';
 
-  const seedString = `HYECHO-WANGOCHEON:${name}:${birthDate}:${birthTime}:${gender}`;
+  const seedString = `HYECHO-WANGOCHEON:${name}:${birthDate}:${birthTime}:${gender}:${query ?? ''}`;
 
   let hash = 0;
   for (let i = 0; i < seedString.length; i++) {
@@ -154,9 +177,24 @@ export function calculateHyechoWangOcheonchukgukjeon(
     `${activeHyechoTheme.practicalCounsel} 아울러 《왕오천축국전》의 시구 "${focalHyechoAphorism.aphorismKo}"(${focalHyechoAphorism.aphorismHanja})를 깊이 마음에 새기고, ` +
     `${focalHyechoAphorism.actionGuidance}`;
 
+  const calculatedAtKst = formatHyechoKstTimestamp(now);
+  const avgScore = Math.round(
+    (pilgrimagePioneerSpiritScore +
+      extremeFrontierResilienceIndex +
+      nostalgicPoeticEquanimityScore +
+      culturalOpennessCompassionIndex +
+      bodhisattvaFieldWisdomScore) /
+      5,
+  );
+  const hyechoSynthesisMatrix = {
+    dominantTension: `${activeHyechoTheme.themeTitleKo} ↔ ${focalHyechoAphorism.sourceContext}`,
+    alignmentState: describeHyechoStage(avgScore),
+    integratedAction: `${focalHyechoAphorism.actionGuidance}${query?.trim() ? ` [질문 맥락: ${query.trim()}]` : ''}`,
+  };
+
   return {
     engineVersion: KOREAN_HYECHO_VERSION,
-    calculatedAtKst: new Date().toISOString(),
+    calculatedAtKst,
     pilgrimagePioneerSpiritScore,
     extremeFrontierResilienceIndex,
     nostalgicPoeticEquanimityScore,
@@ -168,17 +206,23 @@ export function calculateHyechoWangOcheonchukgukjeon(
       guidanceTitle,
       philosophicalCounsel,
     },
+    hyechoSynthesisMatrix,
   };
 }
 
 export function formatHyechoWangOcheonchukgukjeonPrompt(res: HyechoWangOcheonchukgukjeonResult): string {
-  return [
+  const avgScore = Math.round(
+    (res.pilgrimagePioneerSpiritScore +
+      res.extremeFrontierResilienceIndex +
+      res.nostalgicPoeticEquanimityScore +
+      res.culturalOpennessCompassionIndex +
+      res.bodhisattvaFieldWisdomScore) /
+      5,
+  );
+  const lines = [
     `【혜초 《왕오천축국전》 구도 순례 & 역경 극복 지표】`,
-    `- 구도 순례 개척도(Pilgrimage Pioneer Spirit): ${res.pilgrimagePioneerSpiritScore}/100`,
-    `- 설산·사막 극한 역경 극복 회복탄력성(Frontier Resilience): ${res.extremeFrontierResilienceIndex}/100`,
-    `- 망향 서정 평정심(Poetic Equanimity): ${res.nostalgicPoeticEquanimityScore}/100`,
-    `- 문명 개방성 및 대자대비 포용력(Cultural Openness): ${res.culturalOpennessCompassionIndex}/100`,
-    `- 현장 실천 지혜도(Bodhisattva Field Wisdom): ${res.bodhisattvaFieldWisdomScore}/100`,
+    `- 연산 시각: ${res.calculatedAtKst} | 엔진: ${res.engineVersion}`,
+    `- 구도 순례 국면: ${describeHyechoStage(avgScore)}`,
     `- 핵심 순례 테마: ${res.activeHyechoTheme.themeTitleKo} [${res.activeHyechoTheme.themeTitleEn}]`,
     `- 실존적 통찰: ${res.activeHyechoTheme.existentialInsight}`,
     `- 실천적 조언: ${res.activeHyechoTheme.practicalCounsel}`,
@@ -186,5 +230,12 @@ export function formatHyechoWangOcheonchukgukjeonPrompt(res: HyechoWangOcheonchu
     `- 원전 출처: [${res.focalHyechoAphorism.sourceContext}]`,
     `- 구체적 실천 지침: ${res.focalHyechoAphorism.actionGuidance}`,
     `- 종합 구도 순례 철학 권면: ${res.hyechoComprehensiveGuidance.philosophicalCounsel}`,
-  ].join('\n');
+  ];
+  if (res.hyechoSynthesisMatrix) {
+    lines.push(
+      `- 교차 매트릭스 [핵심 긴장: ${res.hyechoSynthesisMatrix.dominantTension} | 조율 상태: ${res.hyechoSynthesisMatrix.alignmentState}]`,
+      `- 통합 실천: ${res.hyechoSynthesisMatrix.integratedAction}`,
+    );
+  }
+  return lines.join('\n');
 }

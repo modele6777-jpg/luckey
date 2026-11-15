@@ -9,12 +9,12 @@
  * 4. 글로벌 다문화 네트워크 융합: 적산 법화원(法華院) 건립 등 종교·문화·교역이 어우러지는 열린 코스모폴리탄 국제 교류 플랫폼 구축.
  * 5. 위기 속 기회 포착(變禍爲福): 노비 출신의 한계를 딛고 무예와 지략, 거시적 무역 감각으로 동아시아 역사상 가장 거대한 해상 제국을 일군 입지전적 회복력.
  *
- * @version LUCKEY-JANG-BOGO-MARITIME-v1.0.0
+ * @version LUCKEY-JANG-BOGO-MARITIME-v2.0.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const KOREAN_JANG_BOGO_VERSION = 'LUCKEY-JANG-BOGO-MARITIME-v1.0.0';
+export const KOREAN_JANG_BOGO_VERSION = 'LUCKEY-JANG-BOGO-MARITIME-v2.0.0';
 
 export interface CheonghaejinTheme {
   themeKey: string;
@@ -48,6 +48,27 @@ export interface JangBogoCheonghaejinMaritimePioneerResult {
     guidanceTitle: string;
     philosophicalCounsel: string;
   };
+  cheonghaeSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
+}
+
+function formatJangBogoKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
+
+function describeJangBogoStage(score: number): string {
+  if (score >= 90) return '청해대통(淸海大通) — 신의의 상도와 광역 네트워크가 어우러져 새 항로를 여는 도약기';
+  if (score >= 82) return '파랑전진(破浪前進) — 거친 역풍을 정면 돌파하며 자립 거점을 굳건히 세우는 실행기';
+  return '항로개척(航路開拓) — 좁은 울타리를 넘어 신뢰의 닻을 내리고 원대한 항해를 준비하는 기초기';
 }
 
 export const CHEONGHAE_THEMES: CheonghaejinTheme[] = [
@@ -127,7 +148,9 @@ export const CHEONGHAE_APHORISMS: CheonghaejinAphorism[] = [
 ];
 
 export function calculateJangBogoCheonghaejinMaritimePioneer(
-  profile: UserProfile
+  profile: UserProfile,
+  query?: string,
+  now: Date = new Date(),
 ): JangBogoCheonghaejinMaritimePioneerResult {
   const p = profile as any;
   const name = profile?.basic?.name ?? p?.name ?? '방문자';
@@ -135,7 +158,7 @@ export function calculateJangBogoCheonghaejinMaritimePioneer(
   const birthTime = profile?.basic?.birthtime ?? p?.birthTime ?? p?.birthtime ?? '12:00';
   const gender = profile?.basic?.gender ?? p?.gender ?? 'neutral';
 
-  const seedString = `JANG-BOGO-MARITIME:${name}:${birthDate}:${birthTime}:${gender}`;
+  const seedString = `JANG-BOGO-MARITIME:${name}:${birthDate}:${birthTime}:${gender}:${query ?? ''}`;
 
   let hash = 0;
   for (let i = 0; i < seedString.length; i++) {
@@ -162,9 +185,24 @@ export function calculateJangBogoCheonghaejinMaritimePioneer(
     `${activeCheonghaeTheme.practicalCounsel} 아울러 해상왕의 가르침 "${focalCheonghaeAphorism.aphorismKo}"(${focalCheonghaeAphorism.aphorismHanja})을 가슴에 품고, ` +
     `${focalCheonghaeAphorism.actionGuidance}`;
 
+  const calculatedAtKst = formatJangBogoKstTimestamp(now);
+  const avgScore = Math.round(
+    (maritimePioneerVisionScore +
+      trustNetworkCreditScore +
+      waveBreakerResilienceScore +
+      globalTradeStrategicMindScore +
+      independentStrongholdScore) /
+      5,
+  );
+  const cheonghaeSynthesisMatrix = {
+    dominantTension: `${activeCheonghaeTheme.themeTitleKo} ↔ ${focalCheonghaeAphorism.sourceContext}`,
+    alignmentState: describeJangBogoStage(avgScore),
+    integratedAction: `${focalCheonghaeAphorism.actionGuidance}${query?.trim() ? ` [질문 맥락: ${query.trim()}]` : ''}`,
+  };
+
   return {
     engineVersion: KOREAN_JANG_BOGO_VERSION,
-    calculatedAtKst: new Date().toISOString(),
+    calculatedAtKst,
     maritimePioneerVisionScore,
     trustNetworkCreditScore,
     waveBreakerResilienceScore,
@@ -176,17 +214,23 @@ export function calculateJangBogoCheonghaejinMaritimePioneer(
       guidanceTitle,
       philosophicalCounsel,
     },
+    cheonghaeSynthesisMatrix,
   };
 }
 
 export function formatJangBogoCheonghaejinMaritimePioneerPrompt(res: JangBogoCheonghaejinMaritimePioneerResult): string {
-  return [
+  const avgScore = Math.round(
+    (res.maritimePioneerVisionScore +
+      res.trustNetworkCreditScore +
+      res.waveBreakerResilienceScore +
+      res.globalTradeStrategicMindScore +
+      res.independentStrongholdScore) /
+      5,
+  );
+  const lines = [
     `【해상왕 장보고 《청해진》 글로벌 해상무역 & 신의 개척 지표】`,
-    `- 해양 개척 비전(破浪前進): ${res.maritimePioneerVisionScore}/100`,
-    `- 신의 기반 신뢰 자본(信義商道): ${res.trustNetworkCreditScore}/100`,
-    `- 역풍 극복 파도 돌파력(變禍爲福): ${res.waveBreakerResilienceScore}/100`,
-    `- 글로벌 교역 전략 안목(廣域聯網): ${res.globalTradeStrategicMindScore}/100`,
-    `- 자립 거점 구축력(自主據點): ${res.independentStrongholdScore}/100`,
+    `- 연산 시각: ${res.calculatedAtKst} | 엔진: ${res.engineVersion}`,
+    `- 청해진 개척 국면: ${describeJangBogoStage(avgScore)}`,
     `- 핵심 개척 테마: ${res.activeCheonghaeTheme.themeTitleKo} [${res.activeCheonghaeTheme.themeTitleHanja}]`,
     `- 역사적·철학적 통찰: ${res.activeCheonghaeTheme.historicalInsight}`,
     `- 실천적 조언: ${res.activeCheonghaeTheme.practicalCounsel}`,
@@ -194,5 +238,12 @@ export function formatJangBogoCheonghaejinMaritimePioneerPrompt(res: JangBogoChe
     `- 한자 원문: "${res.focalCheonghaeAphorism.aphorismHanja}" [${res.focalCheonghaeAphorism.sourceContext}]`,
     `- 구체적 실천 지침: ${res.focalCheonghaeAphorism.actionGuidance}`,
     `- 종합 통찰 권면: ${res.jangBogoComprehensiveGuidance.philosophicalCounsel}`,
-  ].join('\n');
+  ];
+  if (res.cheonghaeSynthesisMatrix) {
+    lines.push(
+      `- 교차 매트릭스 [핵심 긴장: ${res.cheonghaeSynthesisMatrix.dominantTension} | 조율 상태: ${res.cheonghaeSynthesisMatrix.alignmentState}]`,
+      `- 통합 실천: ${res.cheonghaeSynthesisMatrix.integratedAction}`,
+    );
+  }
+  return lines.join('\n');
 }

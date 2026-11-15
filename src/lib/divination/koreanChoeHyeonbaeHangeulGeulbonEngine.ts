@@ -10,12 +10,12 @@
  *    - 옥중 투쟁의 불굴의 지조(Prison Resilience): 혹독한 시련 앞에서도 진리의 신념을 굽히지 않는 올곧음.
  * 3. 7대 말글 자강 품계 및 외솔 친필 민족혼 성찰 조언 산출
  *
- * @version LUCKEY-CHOE-HYEONBAE-GEULBON-v1.0.0
+ * @version LUCKEY-CHOE-HYEONBAE-GEULBON-v2.0.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const CHOE_HYEONBAE_GEULBON_VERSION = 'LUCKEY-CHOE-HYEONBAE-GEULBON-v1.0.0';
+export const CHOE_HYEONBAE_GEULBON_VERSION = 'LUCKEY-CHOE-HYEONBAE-GEULBON-v2.0.0';
 
 export interface HangeulGeulbonStage {
   stageLevel: number;
@@ -46,6 +46,27 @@ export interface ChoeHyeonbaeGeulbonResult {
     manuscriptTitle: string;
     nationalSoulWisdom: string;
   };
+  geulbonSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
+}
+
+function formatGeulbonKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
+
+function describeGeulbonStage(score: number): string {
+  if (score >= 88) return '한글자강(한글自强) — 우리말의 맑은 주체성과 옥중절개의 신념이 하나로 선 확립기';
+  if (score >= 76) return '말모이정진(말모이精進) — 쉬운 말로 진실을 엮어 내면을 정돈하는 성숙기';
+  return '새싹다짐(새싹다짐) — 말과 글의 기본기를 세워 스스로의 중심을 다지는 준비기';
 }
 
 export type ChoeHyeonbaeGeulbonReport = ChoeHyeonbaeGeulbonResult;
@@ -89,11 +110,15 @@ function hashSeed(seedStr: string): number {
   return Math.abs(h);
 }
 
-export function calculateChoeHyeonbaeGeulbon(profile?: UserProfile): ChoeHyeonbaeGeulbonResult {
+export function calculateChoeHyeonbaeGeulbon(
+  profile?: UserProfile,
+  query?: string,
+  now: Date = new Date(),
+): ChoeHyeonbaeGeulbonResult {
   const birthdate = profile?.basic?.birthdate || '1995-03-21';
   const birthtime = profile?.basic?.birthtime || '12:00';
   const name = profile?.basic?.name || 'Inquirer';
-  const seed = hashSeed(`CHOE-HYEONBAE-GEULBON-${birthdate}-${birthtime}-${name}`);
+  const seed = hashSeed(`CHOE-HYEONBAE-GEULBON-${birthdate}-${birthtime}-${name}-${query ?? ''}`);
 
   const koreanSoulPreservationIndex = (seed % 41) + 60; // 60~100
   const geulbonLinguisticEmpowermentForce = ((seed >> 3) % 43) + 58; // 58~100
@@ -110,9 +135,24 @@ export function calculateChoeHyeonbaeGeulbon(profile?: UserProfile): ChoeHyeonba
   const legacyIdx = (seed >> 6) % OESOL_LEGACIES.length;
   const oesolLegacyReflection = OESOL_LEGACIES[legacyIdx];
 
+  const calculatedAtKst = formatGeulbonKstTimestamp(now);
+  const avgScore = Math.round(
+    (koreanSoulPreservationIndex +
+      geulbonLinguisticEmpowermentForce +
+      plainWordsCommunicationClarity +
+      prisonResilienceUnbendingFaith +
+      hangulRevivalCivilizationPower) /
+      5,
+  );
+  const geulbonSynthesisMatrix = {
+    dominantTension: `${activeGeulbonStage.stageNameKo} ↔ ${primaryOesolVirtue.koreanMotto}`,
+    alignmentState: describeGeulbonStage(avgScore),
+    integratedAction: `${primaryOesolVirtue.actionableDirective}${query?.trim() ? ` [질문 맥락: ${query.trim()}]` : ''}`,
+  };
+
   return {
     engineVersion: CHOE_HYEONBAE_GEULBON_VERSION,
-    calculatedAtKst: getKstDateString(),
+    calculatedAtKst,
     koreanSoulPreservationIndex,
     geulbonLinguisticEmpowermentForce,
     plainWordsCommunicationClarity,
@@ -121,23 +161,37 @@ export function calculateChoeHyeonbaeGeulbon(profile?: UserProfile): ChoeHyeonba
     activeGeulbonStage,
     primaryOesolVirtue,
     oesolLegacyReflection,
+    geulbonSynthesisMatrix,
   };
 }
 
 export function formatChoeHyeonbaeGeulbonPrompt(result: ChoeHyeonbaeGeulbonResult): string {
-  return `[📖 외솔 최현배 선생 《우리말본》 & 한글 문화 얼 계승 리포트]
-- 엔진 버전: ${result.engineVersion}
-- 배달겨레 문화 얼 계승 및 주체성 지수: ${result.koreanSoulPreservationIndex}%
-- 글본(문법·어문)의 체계적 문화 창달력: ${result.geulbonLinguisticEmpowermentForce}%
-- 쉬운 우리말 소통 및 대중 계몽력: ${result.plainWordsCommunicationClarity}%
-- 옥중 시련 극복 및 불굴의 지조도: ${result.prisonResilienceUnbendingFaith}%
-- 한글 부흥 및 미래 지식 문명화 실현력: ${result.hangulRevivalCivilizationPower}%
-- 현행 말글 자강 품계: **[${result.activeGeulbonStage.stageNameKo} (${result.activeGeulbonStage.stageNameHanja})]**
-  → 관장 영역: ${result.activeGeulbonStage.linguisticDomain}
-  → 문화 계몽 축복: ${result.activeGeulbonStage.culturalEnlightenmentBlessing}
-- 최우선 외솔 덕목: **[${result.primaryOesolVirtue.virtueNameKo} (${result.primaryOesolVirtue.koreanMotto})]**
-  → 핵심 본질: ${result.primaryOesolVirtue.coreEssence}
-  → 실천 지침: ${result.primaryOesolVirtue.actionableDirective}
-- 외솔의 민족혼 유산: 《${result.oesolLegacyReflection.manuscriptTitle}》
-  → 겨레의 불멸 지혜: "${result.oesolLegacyReflection.nationalSoulWisdom}"`;
+  const avgScore = Math.round(
+    (result.koreanSoulPreservationIndex +
+      result.geulbonLinguisticEmpowermentForce +
+      result.plainWordsCommunicationClarity +
+      result.prisonResilienceUnbendingFaith +
+      result.hangulRevivalCivilizationPower) /
+      5,
+  );
+  const lines = [
+    `[📖 외솔 최현배 선생 《우리말본》 & 한글 문화 얼 계승 리포트]`,
+    `- 연산 시각: ${result.calculatedAtKst} | 엔진 버전: ${result.engineVersion}`,
+    `- 말글 자강 국면: ${describeGeulbonStage(avgScore)}`,
+    `- 현행 말글 자강 품계: **[${result.activeGeulbonStage.stageNameKo} (${result.activeGeulbonStage.stageNameHanja})]**`,
+    `  → 관장 영역: ${result.activeGeulbonStage.linguisticDomain}`,
+    `  → 문화 계몽 축복: ${result.activeGeulbonStage.culturalEnlightenmentBlessing}`,
+    `- 최우선 외솔 덕목: **[${result.primaryOesolVirtue.virtueNameKo} (${result.primaryOesolVirtue.koreanMotto})]**`,
+    `  → 핵심 본질: ${result.primaryOesolVirtue.coreEssence}`,
+    `  → 실천 지침: ${result.primaryOesolVirtue.actionableDirective}`,
+    `- 외솔의 민족혼 유산: 《${result.oesolLegacyReflection.manuscriptTitle}》`,
+    `  → 겨레의 불멸 지혜: "${result.oesolLegacyReflection.nationalSoulWisdom}"`,
+  ];
+  if (result.geulbonSynthesisMatrix) {
+    lines.push(
+      `- 교차 매트릭스 [핵심 긴장: ${result.geulbonSynthesisMatrix.dominantTension} | 조율 상태: ${result.geulbonSynthesisMatrix.alignmentState}]`,
+      `- 통합 실천: ${result.geulbonSynthesisMatrix.integratedAction}`,
+    );
+  }
+  return lines.join('\n');
 }

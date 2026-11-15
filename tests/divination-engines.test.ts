@@ -4641,9 +4641,14 @@ test('Korean Choe Hyeon-bae Hangeul Geulbon Engine: calculates Korean soul prese
   assert(rep.prisonResilienceUnbendingFaith >= 0 && rep.prisonResilienceUnbendingFaith <= 100);
   assert(rep.hangulRevivalCivilizationPower >= 0 && rep.hangulRevivalCivilizationPower <= 100);
   assert(rep.activeGeulbonStage.stageNameHanja.length > 0);
+  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(rep.geulbonSynthesisMatrix?.integratedAction));
   const prompt = formatChoeHyeonbaeGeulbonPrompt(rep);
   assert(prompt.includes('외솔 최현배 선생 《우리말본》'));
   assert(prompt.includes(rep.activeGeulbonStage.stageNameKo));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
 });
 
 test('Ancient Persian Zoroastrian Amesha Spentas Engine: calculates Vohu Manah, Asha Vahishta truth, Spenta Armaiti and Garothman light', () => {
@@ -5506,9 +5511,14 @@ test('Jang Bogo Cheonghaejin Maritime Pioneer Engine: calculates Maritime Vision
   assert(rep.globalTradeStrategicMindScore >= 0 && rep.globalTradeStrategicMindScore <= 100);
   assert(rep.independentStrongholdScore >= 0 && rep.independentStrongholdScore <= 100);
   assert(rep.activeCheonghaeTheme.themeTitleHanja.length > 0);
+  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(rep.cheonghaeSynthesisMatrix?.integratedAction));
   const prompt = formatJangBogoCheonghaejinMaritimePioneerPrompt(rep);
   assert(prompt.includes('해상왕 장보고 《청해진》 글로벌 해상무역 & 신의 개척 지표'));
   assert(prompt.includes(rep.activeCheonghaeTheme.themeTitleKo));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
 });
 
 test('John Stuart Mill On Liberty Individuality Engine: calculates Autonomy, Harm Principle, and Qualitative Growth', () => {
@@ -5897,9 +5907,14 @@ test('Hyecho Wang Ocheonchukgukjeon Engine: calculates Pilgrimage Pioneer Spirit
   assert(rep.culturalOpennessCompassionIndex >= 0 && rep.culturalOpennessCompassionIndex <= 100);
   assert(rep.bodhisattvaFieldWisdomScore >= 0 && rep.bodhisattvaFieldWisdomScore <= 100);
   assert(rep.activeHyechoTheme.themeTitleKo.length > 0);
+  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(rep.hyechoSynthesisMatrix?.integratedAction));
   const prompt = formatHyechoWangOcheonchukgukjeonPrompt(rep);
   assert(prompt.includes('혜초 《왕오천축국전》 구도 순례 & 역경 극복 지표'));
   assert(prompt.includes(rep.activeHyechoTheme.themeTitleKo));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
 });
 
 test('Plotinus Enneads Henosis Engine: calculates The One, Nous, Psyche, Henosis, and Inner Beauty Sculpting', () => {
