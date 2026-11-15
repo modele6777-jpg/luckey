@@ -7,12 +7,12 @@
  * 3. 성장 그 자체로서의 삶(Growth as an End in Itself): 완결된 결과보다 배우며 확장하는 과정의 생명력
  * 4. 유기체-환경 상호작용(Transaction): 주어진 조건과 호흡하며 새로운 질서를 빚어내는 개척력
  *
- * @version LUCKEY-JOHN-DEWEY-PRAGMATIC-INQUIRY-GROWTH-v1.1.0
+ * @version LUCKEY-JOHN-DEWEY-PRAGMATIC-INQUIRY-GROWTH-v2.0.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const AMERICAN_JOHN_DEWEY_PRAGMATIC_INQUIRY_GROWTH_VERSION = 'LUCKEY-JOHN-DEWEY-PRAGMATIC-INQUIRY-GROWTH-v1.1.0';
+export const AMERICAN_JOHN_DEWEY_PRAGMATIC_INQUIRY_GROWTH_VERSION = 'LUCKEY-JOHN-DEWEY-PRAGMATIC-INQUIRY-GROWTH-v2.0.0';
 
 export type DeweyQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -51,9 +51,61 @@ export interface AmericanJohnDeweyPragmaticInquiryGrowthResult {
   reflectionFocus: string;
   counselNote: string;
   boundaryNotice: string;
+  situationalDeweyAudit: {
+    focusTheme: string;
+    inquiryCue: string;
+    tacticalStep: string;
+  };
+  temporalDeweyRhythm: {
+    kstTimeLabel: string;
+    inquiryWindow: string;
+    seasonalGrowthTone: string;
+    temporalGuidance: string;
+  };
+  deweySynthesisMatrix: {
+    coreInsight: string;
+    recommendedAction: string;
+    cautionNotice: string;
+  };
   deweyComprehensiveGuidance: {
     guidanceTitle: string;
     philosophicalCounsel: string;
+  };
+}
+
+function getTemporalDeweyRhythm(now: Date) {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  const hour = kst.getUTCHours();
+  const month = kst.getUTCMonth() + 1;
+
+  const inquiryWindow =
+    hour >= 5 && hour < 11
+      ? '아침 가설 설정창 — 관성적 반응 대신 오늘 시험해 볼 작은 가설을 세우기 좋은 시간'
+      : hour >= 11 && hour < 17
+        ? '정오 실험 실행창 — 아이디어를 현실의 작은 행동으로 옮겨 결과를 관찰하기 좋은 시간'
+        : hour >= 17 && hour < 22
+          ? '황혼 반성 성찰창 — 오늘의 경험에서 효과와 오차를 차분히 건져 올리기 좋은 시간'
+          : '심야 경험 재구성창 — 내일의 더 나은 실험을 위해 오늘의 배움을 정돈하는 시간';
+
+  const seasonalGrowthTone =
+    month >= 3 && month <= 5
+      ? '봄 · 탐구 발아절 (호기심을 열고 새 실험을 시작하는 시기)'
+      : month >= 6 && month <= 8
+        ? '여름 · 상호작용절 (환경과 활발히 부딪히며 도구를 벼리는 시기)'
+        : month >= 9 && month <= 11
+          ? '가을 · 반성 결실절 (경험을 성찰해 지혜로 정제하는 시기)'
+          : '겨울 · 재구성절 (묵은 습관을 점검하고 다음 성장을 준비하는 시기)';
+
+  return {
+    kstTimeLabel: `${y}-${m}-${d} ${hh}:${mm} KST`,
+    inquiryWindow,
+    seasonalGrowthTone,
+    temporalGuidance: `${inquiryWindow} · ${seasonalGrowthTone}의 리듬으로 탐구를 이어가십시오.`,
   };
 }
 
@@ -224,10 +276,21 @@ export function calculateAmericanJohnDeweyPragmaticInquiryGrowth(
 
   const counselNote = `'${activeDeweyTheme.themeTitleKo}' 테마와 '${focalDeweyAphorism.aphorismKo}' 테제가 만나 '${topicGuide.posture}'를 제안합니다.`;
   const boundaryNotice = '이 관점은 존 듀이의 실용주의·도구주의 철학을 빌린 상징적 성찰 안내이며, 확정적 예측이나 전문 자문이 아닙니다.';
+  const temporalDeweyRhythm = getTemporalDeweyRhythm(now);
+  const situationalDeweyAudit = {
+    focusTheme: `${questionTopic} · 반성적 탐구`,
+    inquiryCue: topicGuide.posture,
+    tacticalStep: topicGuide.ritual,
+  };
+  const deweySynthesisMatrix = {
+    coreInsight: activeDeweyTheme.themeTitleKo,
+    recommendedAction: topicGuide.practice,
+    cautionNotice: '관념의 시뮬레이션에만 머물지 말고 작고 되돌릴 수 있는 현실의 실험으로 확인하십시오.',
+  };
 
   return {
     engineVersion: AMERICAN_JOHN_DEWEY_PRAGMATIC_INQUIRY_GROWTH_VERSION,
-    calculatedAtKst: formatKstIso(now),
+    calculatedAtKst: temporalDeweyRhythm.kstTimeLabel,
     questionTopic,
     inquiryPosture: topicGuide.posture,
     reflectiveThinkingInquiryScore,
@@ -242,6 +305,9 @@ export function calculateAmericanJohnDeweyPragmaticInquiryGrowth(
     reflectionFocus: topicGuide.reflection,
     counselNote,
     boundaryNotice,
+    situationalDeweyAudit,
+    temporalDeweyRhythm,
+    deweySynthesisMatrix,
     deweyComprehensiveGuidance: {
       guidanceTitle,
       philosophicalCounsel,
@@ -253,8 +319,10 @@ export function formatAmericanJohnDeweyPragmaticInquiryGrowthPrompt(
   res: AmericanJohnDeweyPragmaticInquiryGrowthResult,
 ): string {
   return [
-    `【존 듀이 《경험과 자연·민주주의와 교육》 반성적 사고(Reflective Inquiry)·성장 지표】`,
+    `【존 듀이 《경험과 자연·민주주의와 교육》 반성적 사고(Reflective Inquiry)·성장 지표 (${res.engineVersion})】`,
+    `- 연산 시각: ${res.calculatedAtKst}`,
     `- 질문 맥락 초점: ${res.questionTopic} | 탐구 태도: ${res.inquiryPosture}`,
+    `- KST 시공간 리듬: ${res.temporalDeweyRhythm.inquiryWindow} / ${res.temporalDeweyRhythm.seasonalGrowthTone}`,
     `- 핵심 듀이 테마: ${res.activeDeweyTheme.themeTitleKo} [${res.activeDeweyTheme.themeTitleEn}]`,
     `- 실천적 통찰: ${res.activeDeweyTheme.pragmaticInsight}`,
     `- 행동 조언: ${res.activeDeweyTheme.practicalCounsel}`,
@@ -264,6 +332,7 @@ export function formatAmericanJohnDeweyPragmaticInquiryGrowthPrompt(
     `- 맥락별 실행 조언: ${res.practiceGuidance}`,
     `- 오늘의 작은 의례: ${res.ritualAction}`,
     `- 성찰 질문: ${res.reflectionFocus}`,
+    `- 교차 매트릭스: 핵심(${res.deweySynthesisMatrix.coreInsight}) | 실행(${res.deweySynthesisMatrix.recommendedAction}) | 주의(${res.deweySynthesisMatrix.cautionNotice})`,
     `- 핵심 조언 요약: ${res.counselNote}`,
     `- 해석 경계: ${res.boundaryNotice}`,
     `- 종합 듀이 권면: ${res.deweyComprehensiveGuidance.philosophicalCounsel}`,
