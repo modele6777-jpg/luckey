@@ -24,7 +24,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const ZOROASTRIAN_ASHA_VERSION = 'LUCKEY-ZOROASTRIAN-ASHA-v1.0.0';
+export const ZOROASTRIAN_ASHA_VERSION = 'LUCKEY-ZOROASTRIAN-ASHA-v2.0.0';
 
 export interface ThreefoldPillars {
   humataScore: number;     // 선한 생각 (0 ~ 100)
@@ -50,20 +50,40 @@ export interface EthicalDiscernmentGuidance {
 export interface ZoroastrianAshaReport {
   engineVersion: string;
   calculatedAt: string;
-  ashaAlignmentScore: number; // 아샤(Asha) 우주적 진리 일치도 (0 ~ 100)
+  calculatedAtKst: string;
+  ashaAlignmentScore: number; // 아샤(Asha) 우주적 진리 일치도 (내부 호환용, 프롬프트 비노출)
+  ashaQualitativeStage: string;
   threefoldPillars: ThreefoldPillars;
   sacredAtar: SacredAtarFireStatus;
   discernment: EthicalDiscernmentGuidance;
+  situationalEthicalFocus: string;
+  dailyPracticeRitual: string;
+  reflectiveQuestion: string;
+  interpretiveBoundary: string;
   synthesisTruthMaxim: string;
 }
 
+function describeAshaStage(score: number): string {
+  if (score >= 90) return '명징한 진리 정렬기 (생각·말·행동이 한 결로 모이는 국면)';
+  if (score >= 82) return '성화 수호기 (원칙을 지킬수록 신뢰가 쌓이는 국면)';
+  return '정화 성찰기 (모호한 타협을 덜어내고 중심을 세울 국면)';
+}
+
+function describeDrujDissolutionStage(score: number): string {
+  if (score >= 88) return '단호한 분별 (자기합리화를 곧장 꿰뚫어 보는 명료함)';
+  if (score >= 78) return '차분한 검증 (감정과 사실을 구분해 균형을 잡는 힘)';
+  return '신중한 경계 (서두르지 않고 사실 확인을 한 번 더 거치는 태도)';
+}
+
 export function calculateZoroastrianAshaTruth(
-  profileOrParams: UserProfile | null | undefined | { profile?: UserProfile | null; contextText?: string },
+  profileOrParams: UserProfile | null | undefined | { profile?: UserProfile | null; contextText?: string; now?: Date },
   contextText?: string
 ): ZoroastrianAshaReport {
   const profile = (profileOrParams && 'profile' in profileOrParams) ? profileOrParams.profile : (profileOrParams as UserProfile | null | undefined);
   const effectiveContextText = contextText || (profileOrParams && 'contextText' in profileOrParams ? profileOrParams.contextText : '');
-  const now = new Date();
+  const now = (profileOrParams && 'now' in profileOrParams && profileOrParams.now) ? profileOrParams.now : new Date();
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const calculatedAtKst = `${kst.toISOString().slice(0, 19)}+09:00`;
   const birthYear = profile?.basic?.birthdate ? parseInt(profile.basic.birthdate.slice(0, 4), 10) || 1993 : 1993;
   const birthMonth = profile?.basic?.birthdate ? parseInt(profile.basic.birthdate.slice(5, 7), 10) || 8 : 8;
   const birthDay = profile?.basic?.birthdate ? parseInt(profile.basic.birthdate.slice(8, 10), 10) || 20 : 20;
@@ -129,13 +149,24 @@ export function calculateZoroastrianAshaTruth(
   };
 
   const ashaAlignmentScore = Math.round((integratedRighteousnessScore * 0.5) + (firePurityScore * 0.5));
+  const ashaQualitativeStage = describeAshaStage(ashaAlignmentScore);
+  const situationalEthicalFocus = /관계|사람|가족|연애|갈등/.test(effectiveContextText || '')
+    ? '관계 속 진실성 — 듣기 좋은 모호함보다 상대와 나를 모두 지키는 투명한 말(Hukhta)을 고르십시오.'
+    : /일|사업|직장|결정|돈|계약/.test(effectiveContextText || '')
+      ? '일과 결정의 원칙 — 단기 편의보다 장기 신뢰가 남는 행동(Hvarshta)으로 매듭지으십시오.'
+      : '생각·말·행동의 일치 — 마음속 기준을 작은 실천 하나로 옮길 때 성화가 밝아집니다.';
+  const dailyPracticeRitual = '오늘 한 번은 모호하게 미루던 답을 사실에 근거해 분명하고 다정하게 전해 보십시오.';
+  const reflectiveQuestion = '지금 내가 편의를 위해 스스로에게 둘러대고 있는 합리화 한 가지는 무엇인가요?';
+  const interpretiveBoundary = '본 아샤(Asha) 리포트는 고대 아베스타의 윤리·성찰 상징에 기반한 정성적 안내이며, 절대적 도덕 심판이 아닙니다.';
 
-  const synthesisTruthMaxim = `아베스타 원전의 가르침: "오직 하나의 길만이 존재하니, 그것은 진리(Asha)의 길이며, 다른 모든 길은 신기루에 불과하다." 당신의 성화 순도는 ${firePurityScore}점이며, 당당한 진실의 선택이 우주적 보호와 승리를 부릅니다.`;
+  const synthesisTruthMaxim = '아베스타 원전의 가르침: "오직 하나의 길만이 존재하니, 그것은 진리(Asha)의 길이며, 다른 모든 길은 신기루에 불과하다." 당당한 진실의 선택이 내면의 평안과 신뢰를 부릅니다.';
 
   return {
     engineVersion: ZOROASTRIAN_ASHA_VERSION,
     calculatedAt: now.toISOString(),
+    calculatedAtKst,
     ashaAlignmentScore,
+    ashaQualitativeStage,
     threefoldPillars: {
       humataScore,
       hukhtaScore,
@@ -145,23 +176,31 @@ export function calculateZoroastrianAshaTruth(
     },
     sacredAtar,
     discernment,
+    situationalEthicalFocus,
+    dailyPracticeRitual,
+    reflectiveQuestion,
+    interpretiveBoundary,
     synthesisTruthMaxim,
   };
 }
 
 export function formatZoroastrianAshaTruthPrompt(report: ZoroastrianAshaReport): string {
   return `### 🔥 고대 조로아스터교 아샤(Asha) 신성 우주 질서 & 3대 선행 진실 엔진 (${ZOROASTRIAN_ASHA_VERSION})
-- **아샤(Asha) 진리 일치도**: ${report.ashaAlignmentScore}점 / 100점
+- **연산 시각**: ${report.calculatedAtKst}
+- **아샤(Asha) 진리 정렬 단계**: ${report.ashaQualitativeStage}
 - **3대 선행의 길(Threefold Path of Righteousness)**:
-  - 후마타(Humata, 선한 생각): ${report.threefoldPillars.humataScore}점 | 후크타(Hukhta, 선한 말): ${report.threefoldPillars.hukhtaScore}점 | 흐바르슈타(Hvarshta, 선한 행동): ${report.threefoldPillars.hvarshtaScore}점
-  - 3대 선행 통합 지수: ${report.threefoldPillars.integratedRighteousnessScore}점 (최대 강점 덕목: ${report.threefoldPillars.dominantPillarStrengths})
+  - 후마타(선한 생각) · 후크타(선한 말) · 흐바르슈타(선한 행동) 중 **가장 빛나는 강점 덕목**: ${report.threefoldPillars.dominantPillarStrengths}
 - **신성한 성화 아타르(Atar) 불꽃 상태**:
-  - 내적 양심 순도: ${report.sacredAtar.firePurityScore}점 [${report.sacredAtar.flameRadianceState}]
-  - 거짓·타협 소멸력: ${report.sacredAtar.drujDissolutionPower}점 / 100점
+  - 성화 광채 상태: **${report.sacredAtar.flameRadianceState}**
+  - 거짓·타협 분별력: ${describeDrujDissolutionStage(report.sacredAtar.drujDissolutionPower)}
+- **질문 맥락 분별 초점**: ${report.situationalEthicalFocus}
 - **영혼의 진실 분별 지침(Ethical Discernment)**:
   - 현재 당면 시험: ${report.discernment.currentTrialTheme}
   - 올바른 진리의 길: ${report.discernment.truthAshaPath}
   - 배제할 환상: ${report.discernment.illusionToDiscard}
   - 창조적 실천 권고: ${report.discernment.creativeSpentaAdvice}
-- **우주적 진리 잠언**: ${report.synthesisTruthMaxim}`;
+- **오늘의 실천 의례**: ${report.dailyPracticeRitual}
+- **성찰 질문**: ${report.reflectiveQuestion}
+- **우주적 진리 잠언**: ${report.synthesisTruthMaxim}
+- **해석 경계**: ${report.interpretiveBoundary}`;
 }

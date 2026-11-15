@@ -1,6 +1,6 @@
 import { UserProfile } from '../sharedState';
 
-export const YORUBA_IFA_ODU_ENGINE_VERSION = '1.0.0';
+export const YORUBA_IFA_ODU_ENGINE_VERSION = '2.0.0';
 
 export interface YorubaIfaOduReport {
   engineVersion: string;
@@ -14,7 +14,21 @@ export interface YorubaIfaOduReport {
   karmicWarning: string;
   eboPrescription: string;
   destinyAlignmentScore: number;
+  alignmentStage: string;
+  situationalIfaFocus: {
+    focusTheme: string;
+    orishaCounsel: string;
+  };
+  dailyPracticeRitual: string;
+  reflectiveQuestion: string;
+  interpretiveBoundary: string;
   synthesisPrompt: string;
+}
+
+function describeIfaAlignmentStage(score: number): string {
+  if (score >= 93) return '오리샤 공명 절정기 (내면의 소명과 오두의 흐름이 선명히 맞닿는 국면)';
+  if (score >= 86) return '조화로운 순풍기 (인내와 실천이 자연스럽게 축복으로 이어지는 국면)';
+  return '고요한 정돈기 (속도를 낮추고 경계와 에보를 먼저 가다듬을 때 열리는 국면)';
 }
 
 const SIXTEEN_MEJI_ODUS = [
@@ -216,30 +230,52 @@ export function calculateYorubaIfaOdu(options?: {
   const odu = SIXTEEN_MEJI_ODUS[oduIndex];
 
   const destinyAlignmentScore = 80 + ((seed * 11 + kst.getUTCHours() * 3) % 19);
+  const alignmentStage = describeIfaAlignmentStage(destinyAlignmentScore);
+  const kstIso = `${kst.toISOString().slice(0, 19)}+09:00`;
+  const situationalIfaFocus = /관계|연애|사람|가족|갈등/.test(qStr)
+    ? {
+        focusTheme: '관계 공명과 말의 신의(Iwa Pele)',
+        orishaCounsel: '감정이 앞설수록 오두의 온화한 품격으로 상대의 입장을 먼저 헤아리십시오.',
+      }
+    : /일|사업|직장|돈|재물|결정/.test(qStr)
+      ? {
+          focusTheme: '소명 결단과 에보(Ebó) 실행',
+          orishaCounsel: '막힌 지점을 한 번에 부수기보다 작은 정돈과 약속 이행으로 활로를 여십시오.',
+        }
+      : {
+          focusTheme: '운명 정렬과 내면의 균형',
+          orishaCounsel: '오늘의 오두가 비추는 본질적 태도를 일상 한 가지 선택에 곧장 적용해 보십시오.',
+        };
+  const dailyPracticeRitual = `${odu.ebo} — 오늘 하루 부담 없는 한 가지 정화 행동으로 오두의 흐름을 현실에 고정하십시오.`;
+  const reflectiveQuestion = `${odu.name}의 시선으로 볼 때, 지금 내가 억지로 붙잡거나 미루고 있는 선택 한 가지는 무엇인가요?`;
+  const interpretiveBoundary = '본 이파(Ifá) 오두 결과는 서아프리카 구전 신탁 상징에 기반한 정성적 성찰 안내이며, 확정적 길흉 예단이 아닙니다.';
 
   const synthesisPrompt = `
-[서아프리카 요루바 이파(Ifá) 16 오두 & 오룬밀라 운명의 지혜 실측 데이터]
+[서아프리카 요루바 이파(Ifá) 16 오두 & 오룬밀라 운명의 지혜 정성 리포트]
 ======================================================================
-엔진 버전: ${YORUBA_IFA_ODU_ENGINE_VERSION} | 기준 일시: ${kst.toISOString().replace('T', ' ').slice(0, 19)} KST
+엔진 버전: ${YORUBA_IFA_ODU_ENGINE_VERSION} | 기준 일시: ${kstIso}
 ----------------------------------------------------------------------
 1. 📿 [신성 오두(Odu Ifá) & 오펠레 신탁 체인]:
    - 주재 오두: **${odu.name}** [${odu.yoruba}]
    - 오펠레 바이너리 비트 패턴: \`${odu.pattern}\`
    - 영적 원형 에너지: **${odu.force}**
    - 수호 오리샤(Orisha): **${odu.orisha}**
-2. 🌟 [축복(Ire) & 경계 지침]:
+2. 🌟 [축복(Ire) & 질문 맥락 초점]:
    - 도래하는 축복: **${odu.blessing}**
+   - 질문 맥락 (${situationalIfaFocus.focusTheme}): ${situationalIfaFocus.orishaCounsel}
    - 오룬밀라의 카르마적 경계: "${odu.warning}"
-3. 🕊️ [에보(Ebó) 현실 행동 처방 & 공명도]:
-   - 🎯 오늘의 에보(헌신/행동): **${odu.ebo}**
-   - 영혼 소명 정렬 지수: **${destinyAlignmentScore}%**
+3. 🕊️ [에보(Ebó) 현실 행동 처방 & 공명 단계]:
+   - 영혼 소명 정렬 단계: **${alignmentStage}**
+   - 오늘의 에보 실천: **${dailyPracticeRitual}**
+   - 성찰 질문: ${reflectiveQuestion}
+   - 해석 경계: ${interpretiveBoundary}
 ======================================================================
-[AI 해석 절대 지침]: 본 리포트는 유네스코 인류무형문화유산인 서아프리카 정통 이파(Ifá) 16 메지 오두 체계에 입각한 100% 결정론적 신탁 데이터입니다. 오두의 영적 원형과 에보(Ebó) 행동 처방을 상담자의 현실적인 고민과 조화롭게 융합하여 따뜻하고 힘찬 지혜로 전하십시오.
+[AI 해석 절대 지침]: 본 리포트는 유네스코 인류무형문화유산인 서아프리카 정통 이파(Ifá) 16 메지 오두 체계에 입각한 순수 정성적 신탁 데이터입니다. 숫자 점수 없이 오두의 상징과 에보(Ebó) 행동 처방을 상담자의 현실 고민과 따뜻하게 연결하십시오.
 `.trim();
 
   return {
     engineVersion: YORUBA_IFA_ODU_ENGINE_VERSION,
-    calculatedAtKst: kst.toISOString().replace('T', ' ').slice(0, 19) + ' KST',
+    calculatedAtKst: kstIso,
     oduName: odu.name,
     oduYoruba: odu.yoruba,
     elementalForce: odu.force,
@@ -249,6 +285,11 @@ export function calculateYorubaIfaOdu(options?: {
     karmicWarning: odu.warning,
     eboPrescription: odu.ebo,
     destinyAlignmentScore,
+    alignmentStage,
+    situationalIfaFocus,
+    dailyPracticeRitual,
+    reflectiveQuestion,
+    interpretiveBoundary,
     synthesisPrompt,
   };
 }

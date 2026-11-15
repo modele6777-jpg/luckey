@@ -17,7 +17,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const ZIWEI_HUAJI_VERSION = 'LUCKEY-ZW-HUAJI-v1.0.0';
+export const ZIWEI_HUAJI_VERSION = 'LUCKEY-ZW-HUAJI-v2.0.0';
 
 export interface HuaJiStarInfo {
   starNameKo: string;
@@ -32,6 +32,7 @@ export interface HuaJiStarInfo {
 export interface ZiweiHuaJiReport {
   engineVersion: string;
   calculatedAt: string;
+  calculatedAtKst: string;
   birthYearStem: string;
   huaJiStar: HuaJiStarInfo;
   karmicPalace: {
@@ -40,9 +41,19 @@ export interface ZiweiHuaJiReport {
     lifeDomain: string;
     karmicTension: string;
   };
-  resilienceIndex: number;      // 0 ~ 100 전화위복 회복 탄력성 지수
+  resilienceIndex: number;      // 내부 호환용 (프롬프트 비노출)
+  resilienceStage: string;
+  situationalTransmutationFocus: string;
   transmutationStrategy: string; // 화기 승화 마스터 전략
   dailyBreakthroughAction: string; // 오늘 당장 실행할 반전 행동
+  reflectiveQuestion: string;
+  interpretiveBoundary: string;
+}
+
+function describeZiweiResilienceStage(index: number): string {
+  if (index >= 88) return '전화위복 돌파기 (결핍을 독보적 전문성과 반전 동력으로 바꾸는 국면)';
+  if (index >= 76) return '화기 연금기 (불편한 긴장을 차분한 구조 개선으로 승화하는 국면)';
+  return '기초 정돈기 (감정 소모를 줄이고 핵심 원칙 하나를 먼저 세울 국면)';
 }
 
 const HUAJI_STARS: Record<string, HuaJiStarInfo> = {
@@ -149,8 +160,12 @@ const ZIWEI_PALACES = [
 
 export function calculateZiweiHuaJiTransformation(
   profile?: UserProfile | null,
-  targetDate: Date = new Date()
+  targetDate: Date = new Date(),
+  questionArg?: string
 ): ZiweiHuaJiReport {
+  const question = (questionArg || '').trim();
+  const kst = new Date(targetDate.getTime() + 9 * 60 * 60 * 1000);
+  const calculatedAtKst = `${kst.toISOString().slice(0, 19)}+09:00`;
   let birthYear = 1990;
   let birthMonth = 8;
   let birthDay = 15;
@@ -183,6 +198,15 @@ export function calculateZiweiHuaJiTransformation(
   const timeSeed = (targetDate.getFullYear() * 12 + targetDate.getMonth() + targetDate.getDate()) % 100;
   const resilienceIndex = 65 + (timeSeed % 33);
 
+  const resilienceStage = describeZiweiResilienceStage(resilienceIndex);
+  const situationalTransmutationFocus = /관계|연애|사람|가족|갈등/.test(question)
+    ? '관계 속 화기 승화 — 서운함을 상대로 향한 원망 대신 내 경계와 표현을 다듬는 계기로 전환하십시오.'
+    : /일|사업|직장|돈|재물|결정/.test(question)
+      ? '일과 재정의 화기 승화 — 가장 까다롭고 불안한 지점이 곧 당신만의 대체 불가능한 실력이 자라는 자리입니다.'
+      : '내면의 화기 승화 — 결핍감을 숨기려 애쓰기보다 그 결핍이 가리키는 본질적 욕구를 직시하십시오.';
+  const reflectiveQuestion = `[${karmicPalace.palaceNameKo}] 영역에서 나를 가장 신경 쓰이게 만드는 문제 하나를, 장인정신으로 바꾼다면 어떤 강점이 될까요?`;
+  const interpretiveBoundary = '본 자미두수 화기 리포트는 생년 사화(四化) 상징에 기반한 정성적 성찰 안내이며, 확정적 길흉 판정이 아닙니다.';
+
   const transmutationStrategy = `내담자의 명반에서 [${huaJiStar.starNameKo}]가 [${karmicPalace.palaceNameKo}]에 임하고 있습니다. 이는 [${karmicPalace.lifeDomain}] 영역에서 겪는 결핍과 스트레스가 단순한 액운이 아니라, 당신을 해당 분야의 최고 권위자로 단련시키기 위한 우주의 담금질임을 뜻합니다. [${huaJiStar.transmutationPath}].`;
 
   const dailyBreakthroughAction = `[화기전화 실천]: 오늘 하루, [${karmicPalace.lifeDomain}]에서 나를 불안하게 만드는 문제를 회피하지 말고, ${huaJiStar.breakthroughGift}의 관점에서 딱 1가지의 실행 가능한 돌파 조치를 취하세요.`;
@@ -190,24 +214,33 @@ export function calculateZiweiHuaJiTransformation(
   return {
     engineVersion: ZIWEI_HUAJI_VERSION,
     calculatedAt: targetDate.toISOString(),
+    calculatedAtKst,
     birthYearStem: `${stem}간 (${huaJiStar.stem})`,
     huaJiStar,
     karmicPalace,
     resilienceIndex,
+    resilienceStage,
+    situationalTransmutationFocus,
     transmutationStrategy,
-    dailyBreakthroughAction
+    dailyBreakthroughAction,
+    reflectiveQuestion,
+    interpretiveBoundary
   };
 }
 
 export function formatZiweiHuaJiTransformationPrompt(report: ZiweiHuaJiReport): string {
   return `### 🔮 도교 자미두수 화기(化忌)·살성 정화 & 전화위복(轉禍爲福) 해원 엔진 (${ZIWEI_HUAJI_VERSION})
+- **연산 시각**: ${report.calculatedAtKst}
 - **생년 천간 & 화기 성좌**: ${report.birthYearStem} ➔ **${report.huaJiStar.starNameKo} (${report.huaJiStar.starNameHanja})**
 - **카르마 집중 궁위**: ${report.karmicPalace.palaceNameKo} (${report.karmicPalace.palaceNameHanja}) [영역: ${report.karmicPalace.lifeDomain}]
 - **궁위 카르마적 긴장**: ${report.karmicPalace.karmicTension}
 - **원형(Archetype)**: ${report.huaJiStar.archetype}
 - **카르마적 상처(Wound)**: ${report.huaJiStar.karmicWound}
 - **숨겨진 천재적 돌파 선물(Gift)**: ${report.huaJiStar.breakthroughGift}
-- **전화위복 회복 탄력성 지수**: ${report.resilienceIndex}점 / 100점
+- **전화위복 회복 탄력성 단계**: ${report.resilienceStage}
+- **질문 맥락 승화 초점**: ${report.situationalTransmutationFocus}
 - **화기 승화 마스터 전략**: ${report.transmutationStrategy}
-- **일일 전화위복 실천 과제**: ${report.dailyBreakthroughAction}`;
+- **일일 전화위복 실천 과제**: ${report.dailyBreakthroughAction}
+- **성찰 질문**: ${report.reflectiveQuestion}
+- **해석 경계**: ${report.interpretiveBoundary}`;
 }
