@@ -25,7 +25,7 @@ import {
 import { omniWarpAudio } from '@/lib/omniWarp/omniWarpAudio';
 import { triggerHaptic, startBlackHoleContinuousHaptic, stopBlackHoleContinuousHaptic } from '@/lib/omniWarp/omniWarpHaptics';
 import { safeSessionStorage, safeLocalStorage } from '@/utils/safeStorage';
-import { peekPendingSelection, clearPendingSelection, getLiveSelectedText } from '@/lib/selectionBridge';
+import { peekPendingSelection, clearPendingSelection, getLiveSelectedText, clearLiveSelections } from '@/lib/selectionBridge';
 import { isDuoUnfoldedState } from '@/lib/perfMode';
 import { isLucyChatScreen } from '@/lib/duoPaneFocus';
 import { isSinglePaneLucyScreen } from '@/lib/workspacePaneDom';
@@ -455,13 +455,13 @@ export function BigBangButton() {
 
     // 2. 버튼 클릭/터치 시 포커스 이동 등으로 selection이 방금 해제된 경우: 보존된 대기 스토리지 확인
     const pending = peekPendingSelection();
-    if (pending && pending.sourcePath && resolveCanonicalPath(pending.sourcePath) === resolveCanonicalPath(location) && !pending.target && pending.text && pending.text.trim().length >= 2) {
+    if (pending && !pending.target && pending.text && pending.text.trim().length >= 2) {
       return pending.text.trim();
     }
     return '';
   }, [location]);
 
-  // Capture selected text for tap-to-Lucy and hold-to-Plus.
+  // Capture selected text for the single tap-to-Lucy action.
   const [hasSelectionToss, setHasSelectionToss] = useState(false);
   const [selectionPreviewText, setSelectionPreviewText] = useState('');
   const touchStartSelectionRef = useRef<string>('');
@@ -715,7 +715,7 @@ export function BigBangButton() {
     let currentHole: 'whitehole' | 'blackhole' = 'whitehole';
 
     // A stationary center hold previews the same Key destination used on release.
-    if (elapsed >= 500 && start.direction === 'none') {
+    if (!touchStartSelectionRef.current && elapsed >= 500 && start.direction === 'none') {
       currentHole = 'whitehole';
       target = {
         id: 'key',
@@ -740,7 +740,7 @@ export function BigBangButton() {
         id: 'menu', icon: '🍀', phase: 'whitehole', gauge: metrics.virtualForce,
         aiTemperature: temp, title: '네잎클로버 메뉴', actionType: 'navigate',
         previewLabel: '탭: 메뉴 · 더블탭: 추천 워프',
-        previewDescription: '선택 문장 · 탭: Lucy 전달 · 홀드: Key 이동',
+        previewDescription: '선택 문장 · 탭 한 번으로 루시에게 보내기',
         destinationPath: location, themeColor: '#38bdf8', accentGlow: 'rgba(56, 189, 248, 0.85)',
       };
     }
@@ -1197,6 +1197,33 @@ export function BigBangButton() {
     handleRuneNavigate(nextPath, tab);
   }, [location, handleRuneNavigate, isCycleNavigationDisabled]);
 
+  const sendSelectionToLucy = (selectedText: string, metrics?: WarpForceMetrics) => {
+      const prompt = `내가 선택한 문장이야:\n"${selectedText}"\n\n이 내용에 대해 핵심과 따뜻한 피드백을 친절하게 이야기해 줘.`;
+      clearLiveSelections();
+      lastValidSelectionRef.current = '';
+      touchStartSelectionRef.current = '';
+      clearPendingSelection();
+      setHasSelectionToss(false);
+      setSelectionPreviewText('');
+      setIsQuickChatOpen(false);
+      showGestureFeedback('tap');
+      triggerHaptic('whitehole');
+      safeSessionStorage.removeItem('lucy_chat_voice_requested');
+      const visibleLucy = Array.from(document.querySelectorAll<HTMLElement>('.lucy-chat-shell')).some(shell => {
+        const box = shell.getBoundingClientRect();
+        return box.width > 1 && box.height > 1 && !shell.closest('[hidden], [aria-hidden="true"]');
+      });
+      if (visibleLucy || checkIsInLucyChat()) {
+        window.dispatchEvent(new CustomEvent('lucy-inject-message', { detail: { prompt, channels: [] } }));
+      } else {
+        safeSessionStorage.setItem('lucy_pro_pending_channel', 'casual');
+        safeSessionStorage.setItem('lucy_injected_auto_send', prompt);
+        dispatchBigBangRouteTransition('/chat?mode=ai', 'Lucy', metrics);
+        handleRuneNavigate('/chat?mode=ai');
+      }
+      window.dispatchEvent(new CustomEvent('prism:selection_tossed'));
+  };
+
   const handlePointerUp = (e: React.PointerEvent<HTMLDivElement> | PointerEvent) => {
     if (activePointerIdRef.current !== null && e.pointerId !== activePointerIdRef.current) return;
     cleanupGlobalPointerListeners();
@@ -1288,6 +1315,21 @@ export function BigBangButton() {
 
     setIsAborted(false);
 
+    // Selection has exactly one action: one tap sends to Lucy. Holds never navigate.
+    const selectedText = (touchStartSelectionRef.current || lastValidSelectionRef.current || getActiveSelectionText()).trim();
+    if (selectedText) {
+      if (singleTapTimerRef.current) clearTimeout(singleTapTimerRef.current);
+      singleTapTimerRef.current = null;
+      lastTapTimeRef.current = 0;
+      isPttRecordingRef.current = false;
+      setActivePhase('idle');
+      setGauge(0);
+      setDurationMs(0);
+      if (duration >= 500) return;
+      sendSelectionToLucy(selectedText, metrics);
+      return;
+    }
+
     // 🧭 위·아래는 메뉴 순서대로 앱을 바꾸고, 좌우는 현재 앱의 내부 화면만 이동합니다.
     // Touch has no preceding hover; use the press snapshot instead of a render closure.
     const targetDir = start.pointerType === 'touch'
@@ -1375,47 +1417,6 @@ export function BigBangButton() {
         return;
       }
 
-      const selectedText = (touchStartSelectionRef.current || lastValidSelectionRef.current || getActiveSelectionText()).trim();
-      if (selectedText) {
-        const prompt = `내가 선택한 문장이야:\n"${selectedText}"\n\n이 내용에 대해 핵심과 따뜻한 피드백을 친절하게 이야기해 줘.`;
-        if (singleTapTimerRef.current) clearTimeout(singleTapTimerRef.current);
-        lastTapTimeRef.current = now;
-        singleTapTimerRef.current = setTimeout(() => {
-          singleTapTimerRef.current = null;
-          lastTapTimeRef.current = 0;
-          showGestureFeedback('tap');
-          const normalTier = isDuoUnfoldedState().unfolded ? 'plus' : 'ai';
-          safeSessionStorage.setItem('lucy_tier_mode', normalTier);
-          safeLocalStorage.setItem('lucy_tier_mode', normalTier);
-          safeSessionStorage.removeItem('lucy_plus_active');
-          safeLocalStorage.removeItem('lucy_plus_active');
-          safeSessionStorage.setItem('lucy_plus_active', 'false');
-          safeLocalStorage.setItem('lucy_plus_active', 'false');
-          safeSessionStorage.setItem('lucy_force_ai_mode', 'true');
-          safeSessionStorage.removeItem('lucy_chat_voice_requested');
-          triggerHaptic('whitehole');
-          if (checkIsInLucyChat()) {
-            window.dispatchEvent(new CustomEvent('prism:revert_lucy_ai'));
-            window.dispatchEvent(new CustomEvent('lucy-inject-message', { detail: { prompt, channels: [] } }));
-          } else {
-            safeSessionStorage.setItem('lucy_pro_pending_channel', 'casual');
-            safeSessionStorage.setItem('lucy_injected_auto_send', prompt);
-            dispatchBigBangRouteTransition('/chat?mode=ai', 'Lucy', metrics);
-            handleRuneNavigate('/chat?mode=ai');
-          }
-          window.getSelection()?.removeAllRanges();
-          lastValidSelectionRef.current = '';
-          touchStartSelectionRef.current = '';
-          clearPendingSelection();
-          setHasSelectionToss(false);
-          setSelectionPreviewText('');
-          setIsQuickChatOpen(false);
-          setActivePhase('idle');
-          setGauge(0);
-          setDurationMs(0);
-        }, DOUBLE_TAP_WINDOW_MS);
-        return;
-      }
       if (singleTapTimerRef.current) clearTimeout(singleTapTimerRef.current);
       singleTapTimerRef.current = null;
       setIsQuickChatOpen(false);
@@ -1605,14 +1606,15 @@ export function BigBangButton() {
     return '루시 (1:1 음성 대화)';
   })();
 
-  if (typeof document === 'undefined' || isKeyboardOpen) return null;
+  if (typeof document === 'undefined' || (isKeyboardOpen && !hasSelectionToss)) return null;
   return createPortal(
     <>
       {cloverWind !== 'off' && <BigBangLuckyBreeze settling={cloverWind === 'settling'} buttonRef={buttonRef} />}
       {/* 🚀 Crystal Ball Big Bang Button (군더더기 없는 현대적이고 웅장한 대형 코스믹 아티팩트) */}
       <div
+        data-selection-send={hasSelectionToss ? 'true' : undefined}
         className={`fixed bottom-safe-fab-center w-[84px] h-[84px] pointer-events-none flex items-center justify-center select-none ${
-          isQuickChatOpen || voiceModeInfo.isOpen ? 'z-[9995]' : 'z-[410]'
+          hasSelectionToss ? 'z-[2147483000]' : isQuickChatOpen || voiceModeInfo.isOpen ? 'z-[9995]' : 'z-[410]'
         }`}
         style={
           panelCenterLeft != null
@@ -1629,6 +1631,7 @@ export function BigBangButton() {
         <div
           ref={hoverContainerRef}
           data-bigbang="true"
+          data-selection-send={hasSelectionToss ? 'true' : undefined}
           data-tap-sound="off"
           data-cycle-navigation-disabled={isCycleNavigationDisabled ? 'true' : 'false'}
           onPointerDown={handlePointerDown}
@@ -1669,9 +1672,9 @@ export function BigBangButton() {
           {/* Existing radial hit area accepts touch as well as mouse input */}
           <div className="absolute -inset-7 rounded-full pointer-events-auto touch-none -z-10" />
 
-          {/* 🌟 텍스트 선택(스크롤) 시 4대 토스 경로 안내 뱃지 표출 (루시채팅에서는 별도 말풍선 배지 제외) */}
+          {/* 🌟 텍스트 선택 시 앱 전체에서 루시 전송 안내 표시 */}
           <AnimatePresence>
-            {hasSelectionToss && !isPressing && !(location === '/' || location.startsWith('/chat') || location.startsWith('/lucy')) && (
+            {hasSelectionToss && !isPressing && (
               <motion.div
                 initial={{ opacity: 0, scale: 0.85, y: 6 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -1680,7 +1683,7 @@ export function BigBangButton() {
                 className="absolute -top-12 left-1/2 -translate-x-1/2 whitespace-nowrap px-3 py-1.5 rounded-full bg-slate-950/95 backdrop-blur-xl border border-cyan-400/60 text-[10px] font-bold text-cyan-200 shadow-[0_4px_24px_rgba(0,240,255,0.45)] pointer-events-none flex items-center gap-1.5 z-50 animate-pulse ring-1 ring-cyan-400/40"
               >
                 <span className="text-xs">💬</span>
-                <span>선택한 문장 · 탭: Lucy · 홀드: Key</span>
+                <span>탭해서 루시에게 보내기</span>
               </motion.div>
             )}
           </AnimatePresence>
@@ -1818,6 +1821,7 @@ export function BigBangButton() {
               ref={buttonRef}
               id="bigbang-omnibutton"
               data-bigbang="true"
+              data-selection-send={hasSelectionToss ? 'true' : undefined}
               type="button"
               onContextMenu={(e) => {
                 e.preventDefault();
@@ -1826,6 +1830,8 @@ export function BigBangButton() {
               onClick={(event) => {
                 // Pointer activation is handled on release; detail=0 covers keyboard/assistive activation.
                 if (event.detail === 0) {
+                  const selected = (lastValidSelectionRef.current || getActiveSelectionText()).trim();
+                  if (selected) { sendSelectionToLucy(selected); return; }
                   setIsQuickChatOpen(false);
                   handleRuneNavigate('/chat');
                 }
@@ -1901,7 +1907,7 @@ export function BigBangButton() {
                   : 'inset 0 0 22px rgba(56, 189, 248, 0.25), inset -6px -6px 18px rgba(0, 0, 0, 0.9), 0 0 24px rgba(56, 189, 248, 0.3)',
               }}
               title={`빅뱅 버튼 (탭: Lucy 채팅 / 더블탭: 추천 앱으로 바로 이동 / 위·아래: 스크롤 위치와 무관하게 메뉴 앱 순서대로 이동 / ${isCycleNavigationDisabled ? '현재 화면에서는 좌우 이동 비활성화' : '좌우: 현재 앱 내부 화면만 이동'} / 길게 누름: Key로 이동 / 드래그: 장식 효과만, 페이지 이동 없음)`}
-              aria-label={`빅뱅 버튼 · 탭: Lucy 채팅, 더블탭: 추천 앱으로 바로 이동 / 위·아래: 스크롤 위치와 무관하게 메뉴 앱 순서대로 이동 / ${isCycleNavigationDisabled ? '현재 화면에서는 좌우 이동 비활성화' : '좌우는 현재 앱 내부 화면만 이동'}, 길게 누름: Key로 이동, 드래그는 화면 이동 없음`}
+              aria-label={hasSelectionToss ? '선택한 글을 루시에게 보내기' : `빅뱅 버튼 · 탭: Lucy 채팅, 더블탭: 추천 앱으로 바로 이동 / 위·아래: 스크롤 위치와 무관하게 메뉴 앱 순서대로 이동 / ${isCycleNavigationDisabled ? '현재 화면에서는 좌우 이동 비활성화' : '좌우는 현재 앱 내부 화면만 이동'}, 길게 누름: Key로 이동, 드래그는 화면 이동 없음`}
             >
               {/* 🌀 [웜홀] 빛비춤 + 어두운 심연 + 사건의 지평선 3원 동시 융합 전개 */}
               {isPressing && activePhase === 'wormhole' && (

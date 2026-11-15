@@ -609,10 +609,10 @@
   }
 
   /* 🛡️ 가상 키보드 전개 시 FAB 버튼 완전 은닉 */
-  html.keyboard-open .bottom-safe-fab-center,
-  body.keyboard-open .bottom-safe-fab-center,
-  html.keyboard-open [data-bigbang="true"],
-  body.keyboard-open [data-bigbang="true"] {
+  html.keyboard-open .bottom-safe-fab-center:not([data-selection-send="true"]),
+  body.keyboard-open .bottom-safe-fab-center:not([data-selection-send="true"]),
+  html.keyboard-open [data-bigbang="true"]:not([data-selection-send="true"]),
+  body.keyboard-open [data-bigbang="true"]:not([data-selection-send="true"]) {
     display: none !important;
     opacity: 0 !important;
     visibility: hidden !important;
@@ -3286,20 +3286,20 @@ html[data-ios-standalone-flow]:not(.keyboard-open) .bottom-safe-fab-center {
 }
 
 /* 🛡️ 상단 검색창 및 하단 입력창 활성화 시 전 모드(루시·루시플러스·루시프로·루시플러스프로) 공통 빅뱅버튼 즉시 숨김 */
-html.lucy-search-active .bottom-safe-fab-center,
-body.lucy-search-active .bottom-safe-fab-center,
-html.lucy-input-focused .bottom-safe-fab-center,
-body.lucy-input-focused .bottom-safe-fab-center,
-.lucy-search-active ~ .bottom-safe-fab-center,
-.lucy-input-focused ~ .bottom-safe-fab-center,
-body:has(.lucy-search-active) .bottom-safe-fab-center,
-body:has(.lucy-input-focused) .bottom-safe-fab-center,
-body:has([data-lucy-search-active="true"]) .bottom-safe-fab-center,
-body:has([data-lucy-input-focused="true"]) .bottom-safe-fab-center,
-[data-lucy-search-active="true"] ~ .bottom-safe-fab-center,
-[data-lucy-input-focused="true"] ~ .bottom-safe-fab-center,
-.keyboard-open .bottom-safe-fab-center,
-body:has(.keyboard-open) .bottom-safe-fab-center {
+html.lucy-search-active .bottom-safe-fab-center:not([data-selection-send="true"]),
+body.lucy-search-active .bottom-safe-fab-center:not([data-selection-send="true"]),
+html.lucy-input-focused .bottom-safe-fab-center:not([data-selection-send="true"]),
+body.lucy-input-focused .bottom-safe-fab-center:not([data-selection-send="true"]),
+.lucy-search-active ~ .bottom-safe-fab-center:not([data-selection-send="true"]),
+.lucy-input-focused ~ .bottom-safe-fab-center:not([data-selection-send="true"]),
+body:has(.lucy-search-active) .bottom-safe-fab-center:not([data-selection-send="true"]),
+body:has(.lucy-input-focused) .bottom-safe-fab-center:not([data-selection-send="true"]),
+body:has([data-lucy-search-active="true"]) .bottom-safe-fab-center:not([data-selection-send="true"]),
+body:has([data-lucy-input-focused="true"]) .bottom-safe-fab-center:not([data-selection-send="true"]),
+[data-lucy-search-active="true"] ~ .bottom-safe-fab-center:not([data-selection-send="true"]),
+[data-lucy-input-focused="true"] ~ .bottom-safe-fab-center:not([data-selection-send="true"]),
+.keyboard-open .bottom-safe-fab-center:not([data-selection-send="true"]),
+body:has(.keyboard-open) .bottom-safe-fab-center:not([data-selection-send="true"]) {
   display: none !important;
   visibility: hidden !important;
   opacity: 0 !important;

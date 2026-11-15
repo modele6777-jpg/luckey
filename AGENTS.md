@@ -67,3 +67,8 @@ Every time a user request is completed or changes are made to the codebase:
 - The tarot reading and daily narration summary must be written in a separate AI pass from the completed full body, using the existing AI connection. Never substitute selected/copied body sentences on failure.
 - Keep current situation, direction/caution and practical action distinct; preserve the body's uncertainty and do not add unsupported facts.
 - Share generated lines across display, summary TTS and sharing; ignore stale requests and provide retry if generation fails.
+
+### 12. App-wide Selected Text to Lucy
+- While text is selected, a Big Bang tap sends it directly to Lucy once; selection-mode holds/directional/double-tap gestures must not navigate to Key or recommendations.
+- Capture selection across app pages, popups, input fields and accessible embedded app documents; keep it through the initiating gesture and clear it after send.
+- Selection-send stays reachable above dialogs and while an input/keyboard is active. Normal unselected navigation remains unchanged.

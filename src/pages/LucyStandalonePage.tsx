@@ -3404,7 +3404,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
     return () => {
       window.removeEventListener('lucy-inject-message', handleDynamicInject);
     };
-  }, []);
+  }, [location]);
 
   useEffect(() => {
     if (!isLucyReady) return;

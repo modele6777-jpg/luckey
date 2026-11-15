@@ -4,7 +4,6 @@ import React, { useEffect, useRef, useState, useCallback } from "react";
 import { useLocation } from "wouter";
 import { AnimatePresence, motion } from "motion/react";
 import { KeyCosmicLoader } from "@/components/KeyCosmicLoader";
-import { savePendingSelection, clearPendingSelection } from "@/lib/selectionBridge";
 import { getPendingPrismToss, clearPrismToss } from "@/lib/prismToss";
 import { playAudioHaptic } from "@/lib/audioHaptics";
 import { useTheme } from "@/contexts/ThemeContext";
@@ -164,15 +163,8 @@ export default function CalmApp() {
         return;
       }
 
-      // 2. Iframe 내부 텍스트 선택(스크롤)을 상위 PRISM 빅뱅 토스 브릿지로 동기화
-      if (e.data.type === "PRISM_IFRAME_SELECTION") {
-        if (e.data.text && e.data.text.length >= 2) {
-          savePendingSelection(e.data.text, undefined, '/key');
-        } else {
-          clearPendingSelection();
-        }
-        return;
-      }
+      // App-wide SelectionBridgeToolbar captures same-origin iframe selections.
+      if (e.data.type === "PRISM_IFRAME_SELECTION") return;
 
       // 3. Forward pending prism toss payload or navigation to Lucy
       if (e.data.type === "NAVIGATE_LUCKEY") {

@@ -1,113 +1,69 @@
 import { useEffect } from 'react';
 import { savePendingSelection, clearPendingSelection, getLiveSelectedText } from '../lib/selectionBridge';
 
-interface SelectionBridgeToolbarProps {
-  currentPath?: string;
-}
+interface SelectionBridgeToolbarProps { currentPath?: string }
 
-/** Captures selection for BigBang's long-press Lucy gesture only; never navigates or sends it. */
-export default function SelectionBridgeToolbar({ currentPath: _currentPath }: SelectionBridgeToolbarProps) {
-
+/** App-wide selection capture, including same-origin embedded pages and popups. */
+export default function SelectionBridgeToolbar(_props: SelectionBridgeToolbarProps) {
   useEffect(() => {
-    let debounceTimer: NodeJS.Timeout | null = null;
-
-    const handleSelectionChange = () => {
-      if (debounceTimer) clearTimeout(debounceTimer);
-      debounceTimer = setTimeout(() => {
-        if (typeof window === 'undefined') return;
-
-        // 🌟 일반 본문 및 input/textarea 빈칸 입력창 내부 선택 텍스트까지 포괄 추출
-        const text = getLiveSelectedText();
-
-        // 🛡️ 만약 사용자가 빅뱅 버튼을 조작/터치 중이거나 더블탭 대기 중(450ms 이내)이라면 pendingSelection을 섣불리 지우지 않고 보존!
-        const recentTapTime = typeof sessionStorage !== 'undefined' ? Number(sessionStorage.getItem('bigbang_recent_tap') || '0') : 0;
-        const isRecentTap = Date.now() - recentTapTime < 450;
-        const isBigBangActive = Boolean(
-          isRecentTap ||
-          document.querySelector('#bigbang-omnibutton:active, [data-bigbang="true"]:active') ||
-          (typeof sessionStorage !== 'undefined' && sessionStorage.getItem('bigbang_pressing') === 'true')
-        );
-        if (isBigBangActive) {
-          return;
-        }
-
-        // 🎯 스크롤(선택) 취소 감지:
-        // 선택이 없거나 해제되었거나 2글자 미만이면 대기 토스모드 정리
-        if (!text || text.length < 2) {
-          clearPendingSelection();
-          return;
-        }
-
-        // 유효한 선택 텍스트 백그라운드 저장 (빅뱅 버튼 연동용)
-        savePendingSelection(text, undefined, window.location.pathname);
-      }, 120);
+    const documents = new Map<Document, () => void>();
+    let timer: ReturnType<typeof setTimeout> | null = null;
+    const busy = () => sessionStorage.getItem('bigbang_pressing') === 'true' ||
+      Date.now() - Number(sessionStorage.getItem('bigbang_recent_tap') || '0') < 450;
+    const capture = (doc: Document) => {
+      if (timer) clearTimeout(timer);
+      timer = setTimeout(() => {
+        if (busy()) return;
+        const text = getLiveSelectedText(doc) || getLiveSelectedText(document);
+        if (text) savePendingSelection(text, undefined, window.location.pathname);
+        else clearPendingSelection();
+      }, 60);
     };
-
-    let clearTimer: NodeJS.Timeout | null = null;
-    const handleDocumentMouseDown = (e: MouseEvent | TouchEvent) => {
-      // 대기 중인 선택이 전혀 없으면 불필요한 DOM 질의 및 타이머 스케줄링 즉시 생략
-      if (typeof sessionStorage === 'undefined' || !sessionStorage.getItem('prism_dragged_selection_context')) {
-        return;
-      }
-
-      // 🛡️ 빅뱅 버튼 최근 탭(450ms 이내) 또는 터치 중인 경우 보호
-      const recentTapTime = typeof sessionStorage !== 'undefined' ? Number(sessionStorage.getItem('bigbang_recent_tap') || '0') : 0;
-      if (Date.now() - recentTapTime < 450) {
-        return;
-      }
-
-      // 🛡️ 빅뱅 버튼이나 토스 조작 트리거를 클릭/터치할 때는 selection을 지우지 않고 유지!
-      const target = e.target as HTMLElement | null;
-      if (target?.closest?.('#bigbang-omnibutton, [data-bigbang], [data-no-clear-selection]')) {
-        return;
-      }
-
-      if (sessionStorage.getItem('bigbang_pressing') === 'true') {
-        return;
-      }
-
-      if (clearTimer) clearTimeout(clearTimer);
-      clearTimer = setTimeout(() => {
-        const text = getLiveSelectedText();
-        if (!text || text.length < 2) {
-          clearPendingSelection();
+    const bind = (doc: Document) => {
+      if (documents.has(doc)) return;
+      const selection = () => capture(doc);
+      const pointer = (event: Event) => {
+        const target = event.target as Element | null;
+        if (target?.closest?.('#bigbang-omnibutton, [data-bigbang], [data-no-clear-selection]') || busy()) return;
+        capture(doc);
+      };
+      const key = (event: KeyboardEvent) => {
+        if (event.key === 'Escape') clearPendingSelection();
+      };
+      const bindFrame = (frame: HTMLIFrameElement) => {
+        try { if (frame.contentDocument) bind(frame.contentDocument); } catch { /* External embed. */ }
+      };
+      const loaded = (event: Event) => {
+        const target = event.target as Element | null;
+        if (target?.tagName === 'IFRAME') bindFrame(target as HTMLIFrameElement);
+      };
+      const observer = new MutationObserver(records => {
+        for (const record of records) for (const node of record.addedNodes) {
+          if (node.nodeType !== 1) continue;
+          const element = node as Element;
+          if (element.tagName === 'IFRAME') bindFrame(element as HTMLIFrameElement);
+          element.querySelectorAll('iframe').forEach(bindFrame);
         }
-      }, 140);
+      });
+      documents.set(doc, () => {
+        observer.disconnect();
+        for (const name of ['selectionchange', 'select', 'mouseup', 'touchend', 'keyup']) doc.removeEventListener(name, selection, true);
+        doc.removeEventListener('pointerdown', pointer, true);
+        doc.removeEventListener('keydown', key);
+        doc.removeEventListener('load', loaded, true);
+      });
+      for (const name of ['selectionchange', 'select', 'mouseup', 'touchend', 'keyup']) doc.addEventListener(name, selection, { capture: true, passive: true });
+      doc.addEventListener('pointerdown', pointer, { capture: true, passive: true });
+      doc.addEventListener('keydown', key);
+      doc.addEventListener('load', loaded, true);
+      observer.observe(doc, { childList: true, subtree: true });
+      doc.querySelectorAll('iframe').forEach(bindFrame);
     };
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        clearPendingSelection();
-      }
-    };
-
-    // 브라우저 텍스트 선택 관련 다각도 이벤트 리스너 등록 (iOS Safari 스크롤 쓰레드 병목 방지를 위해 passive 지정)
-    document.addEventListener('selectionchange', handleSelectionChange, { passive: true });
-    document.addEventListener('mouseup', handleSelectionChange, { passive: true });
-    document.addEventListener('touchend', handleSelectionChange, { passive: true });
-    document.addEventListener('keyup', handleSelectionChange, { passive: true });
-    // 💡 input / textarea 등 빈칸 내부 드래그 선택 시 발생하는 select 이벤트 (capture 모드로 감지)
-    document.addEventListener('select', handleSelectionChange, true);
-
-    document.addEventListener('mousedown', handleDocumentMouseDown, { passive: true });
-    document.addEventListener('touchstart', handleDocumentMouseDown, { passive: true });
-    document.addEventListener('keydown', handleKeyDown);
-
+    bind(document);
     return () => {
-      if (debounceTimer) clearTimeout(debounceTimer);
-      if (clearTimer) clearTimeout(clearTimer);
-      document.removeEventListener('selectionchange', handleSelectionChange);
-      document.removeEventListener('mouseup', handleSelectionChange);
-      document.removeEventListener('touchend', handleSelectionChange);
-      document.removeEventListener('keyup', handleSelectionChange);
-      document.removeEventListener('select', handleSelectionChange, true);
-
-      document.removeEventListener('mousedown', handleDocumentMouseDown);
-      document.removeEventListener('touchstart', handleDocumentMouseDown);
-      document.removeEventListener('keydown', handleKeyDown);
+      if (timer) clearTimeout(timer);
+      documents.forEach(cleanup => cleanup());
     };
   }, []);
-
-  // 🎯 스크롤할 때 선택 영역 위에 일체의 배지나 툴바를 노출하지 않음
   return null;
 }

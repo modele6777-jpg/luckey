@@ -20,39 +20,50 @@ const MAX_VALIDITY_MS = 10 * 60 * 1000; // 10분 유효
  * 🌟 브라우저 내 현재 선택(스크롤)된 모든 텍스트 추출
  * - 일반 DOM 텍스트 노드뿐만 아니라 input, textarea (빈칸 입력창) 및 contenteditable 내부 텍스트까지 완벽 지원
  */
-export function getLiveSelectedText(): string {
+export function getLiveSelectedText(sourceDocument?: Document): string {
   if (typeof window === 'undefined') return '';
-
-  // 1. 활성화된 폼 입력 요소 (input, textarea 등 빈칸) 내부의 선택 텍스트 확인
+  const doc = sourceDocument || document;
   try {
-    const activeEl = document.activeElement;
-    if (
-      activeEl &&
-      (activeEl instanceof HTMLInputElement || activeEl instanceof HTMLTextAreaElement)
-    ) {
-      const start = activeEl.selectionStart;
-      const end = activeEl.selectionEnd;
+    const active = doc.activeElement;
+    if (active?.tagName === 'IFRAME') {
+      const child = (active as HTMLIFrameElement).contentDocument;
+      if (child) {
+        const selected = getLiveSelectedText(child);
+        if (selected) return selected;
+      }
+    }
+    if (active?.tagName === 'INPUT' || active?.tagName === 'TEXTAREA') {
+      const field = active as HTMLInputElement | HTMLTextAreaElement;
+      if (field.tagName === 'INPUT' && (field as HTMLInputElement).type === 'password') return '';
+      const start = field.selectionStart, end = field.selectionEnd;
       if (start !== null && end !== null && start !== end) {
-        const inputSelected = activeEl.value.substring(Math.min(start, end), Math.max(start, end)).trim();
-        if (inputSelected.length >= 2) {
-          return inputSelected;
-        }
+        const selected = field.value.substring(Math.min(start, end), Math.max(start, end)).trim();
+        if (selected.length >= 2) return selected;
       }
     }
-  } catch (_) {}
-
-  // 2. 일반 DOM 본문 및 contenteditable 영역의 텍스트 선택 확인
-  try {
-    const selection = window.getSelection();
-    if (selection && !selection.isCollapsed) {
-      const domSelected = selection.toString().trim();
-      if (domSelected.length >= 2) {
-        return domSelected;
-      }
+    const selected = doc.getSelection();
+    if (selected && !selected.isCollapsed) {
+      const text = selected.toString().trim();
+      if (text.length >= 2) return text;
     }
-  } catch (_) {}
-
+  } catch { /* Cross-origin embeds cannot expose browser selections. */ }
   return '';
+}
+
+/** Clear the selection in all accessible app documents after a successful send. */
+export function clearLiveSelections(doc: Document = document): void {
+  try {
+    doc.getSelection()?.removeAllRanges();
+    const active = doc.activeElement;
+    if (active?.tagName === 'INPUT' || active?.tagName === 'TEXTAREA') {
+      const field = active as HTMLInputElement | HTMLTextAreaElement;
+      const end = field.selectionEnd;
+      if (end !== null) field.setSelectionRange(end, end);
+    }
+    doc.querySelectorAll('iframe').forEach(frame => {
+      try { if (frame.contentDocument) clearLiveSelections(frame.contentDocument); } catch { /* External embed. */ }
+    });
+  } catch { /* The source document may have navigated. */ }
 }
 
 
