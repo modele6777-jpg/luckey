@@ -21,7 +21,6 @@ import { calculateAstrologicalDecanSabian, formatAstrologicalDecanSabianPrompt, 
 import { calculateMedicalBioMatrix, formatMedicalBioMatrixPrompt, MEDICAL_BIO_MATRIX_VERSION } from '../src/lib/divination/medicalBioMatrixEngine';
 import { calculateWealthPipeline, formatWealthPipelinePrompt, WEALTH_PIPELINE_VERSION } from '../src/lib/divination/wealthPipelineEngine';
 import { calculateKarmicNodes, formatKarmicNodesPrompt, KARMIC_NODES_ENGINE_VERSION } from '../src/lib/divination/karmicNodesEngine';
-import { calculateKarmicSynastry, formatKarmicSynastryPrompt, KARMIC_SYNASTRY_VERSION } from '../src/lib/divination/karmicSynastryResonanceEngine';
 import { calculateMentalResilience, formatMentalResiliencePrompt, MENTAL_RESILIENCE_VERSION } from '../src/lib/divination/mentalResilienceEngine';
 import { calculateNobleNetwork, formatNobleNetworkPrompt, NOBLE_NETWORK_VERSION } from '../src/lib/divination/nobleNetworkEngine';
 import { calculateVoicePersona, formatVoicePersonaPrompt, VOICE_PERSONA_VERSION } from '../src/lib/divination/voicePersonaEngine';
