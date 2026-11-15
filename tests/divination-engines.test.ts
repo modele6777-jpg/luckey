@@ -5005,9 +5005,14 @@ test('Choe Han-gi Gihak Unwha Engine: calculates Unwhagi cosmic flow, Singitong 
   assert(rep.tongminPublicConnectionScore >= 0 && rep.tongminPublicConnectionScore <= 100);
   assert(rep.daedongUniversalHarmonyScore >= 0 && rep.daedongUniversalHarmonyScore <= 100);
   assert(rep.activeGihakPrinciple.sourceText.length > 0);
+  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(rep.gihakSynthesisMatrix?.integratedAction));
   const prompt = formatChoeHangiGihakUnwhaPrompt(rep);
   assert(prompt.includes('혜강 최한기 기학(氣學) & 신기통(神氣通) 운화 지표'));
   assert(prompt.includes(rep.activeGihakPrinciple.principleNameKo));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
 });
 
 test('Sun Tzu Art of War Strategy Engine: calculates Five Factors, unfought victory, and qualitative strategy', () => {
@@ -5210,9 +5215,14 @@ test('Chusa Kim Jeong-hui Sehando Engine: calculates Songbaek hudjo integrity, E
   assert(rep.chusaBoldHarmonyFlexibilityScore >= 0 && rep.chusaBoldHarmonyFlexibilityScore <= 100);
   assert(rep.dambaekSimgyeongPurityScore >= 0 && rep.dambaekSimgyeongPurityScore <= 100);
   assert(rep.activeSehandoTheme.themeTitleHanja.length > 0);
+  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(rep.sehandoSynthesisMatrix?.integratedAction));
   const prompt = formatChusaKimJeonghuiSehandoPrompt(rep);
   assert(prompt.includes('추사 김정희 세한도(歲寒圖) 송백후조 & 문자향 서권기 지표'));
   assert(prompt.includes(rep.activeSehandoTheme.themeTitleKo));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
 });
 
 test('Søren Kierkegaard Stages of Life Engine: calculates Den Enkelte authenticity, Leap of faith, and Anxiety possibility mastery', () => {
@@ -5353,9 +5363,14 @@ test('Choe Chiwon Pungryudo and Three Teachings Harmony Engine: calculates Mysti
   assert(rep.literaryIntellectualInsightScore >= 0 && rep.literaryIntellectualInsightScore <= 100);
   assert(rep.detachedTranscendentalPeaceScore >= 0 && rep.detachedTranscendentalPeaceScore <= 100);
   assert(rep.activeChoeChiwonTheme.themeTitleHanja.length > 0);
+  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(rep.pungryudoSynthesisMatrix?.integratedAction));
   const prompt = formatChoeChiwonPungryudoPrompt(rep);
   assert(prompt.includes('고운 최치원 풍류도(風流道) & 접화군생(接化群生) 지표'));
   assert(prompt.includes(rep.activeChoeChiwonTheme.themeTitleKo));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
 });
 
 test('Thomas Aquinas Summa Theologiae Engine: calculates Reason and Faith Harmony, Quinque Viae, and Beatific Vision', () => {

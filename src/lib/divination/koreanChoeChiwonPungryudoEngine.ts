@@ -10,12 +10,12 @@
  * 4. 격서필경(檄書筆耕)의 문기(文氣): 당나라를 뒤흔든 〈토황소격문(討黃巢檄文)〉처럼, 혼란한 시대 속에서도 붓끝으로 사악함을 물리치고 의로움을 세우는 명징한 지성.
  * 5. 지족은둔(知足隱遁)의 초연함: 가야산 해인사에 은둔하여 맑은 바람과 시내를 벗 삼아 세속의 덧없는 명리와 권세를 털어버리는 영적 해탈과 평정심.
  *
- * @version LUCKEY-KOREAN-CHOE-CHIWON-PUNGRYUDO-v1.0.0
+ * @version LUCKEY-KOREAN-CHOE-CHIWON-PUNGRYUDO-v2.0.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const KOREAN_CHOE_CHIWON_VERSION = 'LUCKEY-KOREAN-CHOE-CHIWON-PUNGRYUDO-v1.0.0';
+export const KOREAN_CHOE_CHIWON_VERSION = 'LUCKEY-KOREAN-CHOE-CHIWON-PUNGRYUDO-v2.0.0';
 
 export interface ChoeChiwonTheme {
   themeKey: string;
@@ -49,6 +49,27 @@ export interface ChoeChiwonPungryudoResult {
     counselTitle: string;
     philosophicalGuidance: string;
   };
+  pungryudoSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
+}
+
+function formatChoeChiwonKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
+
+function describePungryudoStage(score: number): string {
+  if (score >= 90) return '현묘원융(玄妙圓融) — 유·불·선 삼교의 지혜와 자연의 풍류가 막힘없이 어우러지는 흐름';
+  if (score >= 80) return '접화상생(接化相生) — 따뜻한 감화와 품격 있는 문기가 주변을 밝히는 국면';
+  return '지족정진(知足精進) — 세속의 시비를 내려놓고 내면의 맑은 멋을 가꾸는 흐름';
 }
 
 export const CHOE_CHIWON_THEMES: ChoeChiwonTheme[] = [
@@ -134,7 +155,11 @@ export const CHOE_CHIWON_APHORISMS: ChoeChiwonAphorism[] = [
   },
 ];
 
-export function calculateChoeChiwonPungryudo(profile: UserProfile): ChoeChiwonPungryudoResult {
+export function calculateChoeChiwonPungryudo(
+  profile: UserProfile,
+  query?: string,
+  now: Date = new Date(),
+): ChoeChiwonPungryudoResult {
   const p = profile as any;
   const name = profile?.basic?.name ?? p?.name ?? '방문자';
   const birthDate = profile?.basic?.birthdate ?? p?.birthDate ?? p?.birthdate ?? '1990-01-01';
@@ -168,9 +193,24 @@ export function calculateChoeChiwonPungryudo(profile: UserProfile): ChoeChiwonPu
     `${activeChoeChiwonTheme.pungryuCounsel} 아울러 최치원 선생의 가르침인 "${focalChoeChiwonAphorism.aphorismKo}"(${focalChoeChiwonAphorism.aphorismHanja})을 마음에 품고, ` +
     `${focalChoeChiwonAphorism.practicalAction}`;
 
+  const calculatedAtKst = formatChoeChiwonKstTimestamp(now);
+  const avgScore = Math.round(
+    (pungryuMysticVitalityScore +
+      threeTeachingsInclusionBalanceScore +
+      jeophwaGunsaengHarmoniousLoveScore +
+      literaryIntellectualInsightScore +
+      detachedTranscendentalPeaceScore) /
+      5,
+  );
+  const pungryudoSynthesisMatrix = {
+    dominantTension: `${activeChoeChiwonTheme.themeTitleKo} ↔ ${focalChoeChiwonAphorism.sourceOrigin}`,
+    alignmentState: describePungryudoStage(avgScore),
+    integratedAction: `${focalChoeChiwonAphorism.practicalAction}${query?.trim() ? ` [질문 맥락: ${query.trim()}]` : ''}`,
+  };
+
   return {
     engineVersion: KOREAN_CHOE_CHIWON_VERSION,
-    calculatedAtKst: new Date().toISOString(),
+    calculatedAtKst,
     pungryuMysticVitalityScore,
     threeTeachingsInclusionBalanceScore,
     jeophwaGunsaengHarmoniousLoveScore,
@@ -182,17 +222,23 @@ export function calculateChoeChiwonPungryudo(profile: UserProfile): ChoeChiwonPu
       counselTitle,
       philosophicalGuidance,
     },
+    pungryudoSynthesisMatrix,
   };
 }
 
 export function formatChoeChiwonPungryudoPrompt(res: ChoeChiwonPungryudoResult): string {
-  return [
+  const avgScore = Math.round(
+    (res.pungryuMysticVitalityScore +
+      res.threeTeachingsInclusionBalanceScore +
+      res.jeophwaGunsaengHarmoniousLoveScore +
+      res.literaryIntellectualInsightScore +
+      res.detachedTranscendentalPeaceScore) /
+      5,
+  );
+  const lines = [
     `【고운 최치원 풍류도(風流道) & 접화군생(接化群生) 지표】`,
-    `- 현묘지도 풍류 생명력(風流道): ${res.pungryuMysticVitalityScore}/100`,
-    `- 포함삼교 회통 균형도(包含三敎): ${res.threeTeachingsInclusionBalanceScore}/100`,
-    `- 접화군생 상생 감화도(接化群生): ${res.jeophwaGunsaengHarmoniousLoveScore}/100`,
-    `- 계원필경 문기 통찰력(桂苑筆耕): ${res.literaryIntellectualInsightScore}/100`,
-    `- 세속 초탈 고요 평정심(伽倻山 脫塵): ${res.detachedTranscendentalPeaceScore}/100`,
+    `- 연산 시각: ${res.calculatedAtKst} | 엔진: ${res.engineVersion}`,
+    `- 풍류도 조화 국면: ${describePungryudoStage(avgScore)}`,
     `- 핵심 풍류 테마: ${res.activeChoeChiwonTheme.themeTitleKo} [${res.activeChoeChiwonTheme.themeTitleHanja}]`,
     `- 사상·문화적 통찰: ${res.activeChoeChiwonTheme.culturalInsight}`,
     `- 풍류도 권면: ${res.activeChoeChiwonTheme.pungryuCounsel}`,
@@ -200,5 +246,12 @@ export function formatChoeChiwonPungryudoPrompt(res: ChoeChiwonPungryudoResult):
     `- 한문 원전: "${res.focalChoeChiwonAphorism.aphorismHanja}" [${res.focalChoeChiwonAphorism.sourceOrigin}]`,
     `- 실천적 행동 지침: ${res.focalChoeChiwonAphorism.practicalAction}`,
     `- 통합 풍류 권면: ${res.choeChiwonPersonalCounsel.philosophicalGuidance}`,
-  ].join('\n');
+  ];
+  if (res.pungryudoSynthesisMatrix) {
+    lines.push(
+      `- 교차 매트릭스 [핵심 긴장: ${res.pungryudoSynthesisMatrix.dominantTension} | 조율 상태: ${res.pungryudoSynthesisMatrix.alignmentState}]`,
+      `- 통합 실천: ${res.pungryudoSynthesisMatrix.integratedAction}`,
+    );
+  }
+  return lines.join('\n');
 }
