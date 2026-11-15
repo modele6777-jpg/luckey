@@ -25,7 +25,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const PERSIAN_AMESHA_SPENTA_VERSION = 'LUCKEY-PERSIAN-AMESHA-SPENTA-v1.0.0';
+export const PERSIAN_AMESHA_SPENTA_VERSION = 'LUCKEY-PERSIAN-AMESHA-SPENTA-v2.0.0';
 
 export interface AmeshaSpentaImmortal {
   avestanName: string;
@@ -45,11 +45,33 @@ export interface BaresmanAlignment {
 export interface PersianAmeshaSpentaReport {
   engineVersion: string;
   calculatedAt: string;
+  calculatedAtKst: string;
   patronImmortal: AmeshaSpentaImmortal;
   baresman: BaresmanAlignment;
   totalRadianceScore: number;
   avestanGuidance: string;
   synthesisMessage: string;
+  ameshaSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
+}
+
+function formatAmeshaKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
+
+function describeAmeshaStage(score: number): string {
+  if (score >= 88) return '아타르 성화 만개(Atar Radiance) — 바르숨 가지 묶음이 흐트러짐 없이 통합되어 선한 의지가 맑게 빛나는 최상 조화기';
+  if (score >= 76) return '아샤 질서 정합(Asha Order) — 일상 선택이 진리의 축을 따라 안정적으로 정렬되는 순항기';
+  return '바르숨 결집(Baresman Gathering) — 흩어진 감각을 다시 묶어 내면의 불씨를 지피는 정돈기';
 }
 
 const SIX_IMMORTALS: AmeshaSpentaImmortal[] = [
@@ -97,14 +119,20 @@ const SIX_IMMORTALS: AmeshaSpentaImmortal[] = [
   },
 ];
 
-export function calculatePersianAmeshaSpenta(profile?: UserProfile): PersianAmeshaSpentaReport {
-  const now = new Date();
+export function calculatePersianAmeshaSpenta(
+  profile?: UserProfile,
+  query?: string,
+  now: Date = new Date(),
+): PersianAmeshaSpentaReport {
   const birthStr = profile?.basic?.birthdate || '1990-01-01';
   const nameStr = profile?.basic?.name || 'Avesta';
 
   let seed = 0;
   for (let i = 0; i < birthStr.length; i++) seed = (seed * 31 + birthStr.charCodeAt(i)) & 0x7fffffff;
   for (let i = 0; i < nameStr.length; i++) seed = (seed * 29 + nameStr.charCodeAt(i)) & 0x7fffffff;
+  if (query) {
+    for (let i = 0; i < query.length; i++) seed = (seed * 17 + query.charCodeAt(i)) & 0x7fffffff;
+  }
 
   const immortalIdx = (seed + now.getUTCDay()) % SIX_IMMORTALS.length;
   const patronImmortal = SIX_IMMORTALS[immortalIdx];
@@ -123,12 +151,19 @@ export function calculatePersianAmeshaSpenta(profile?: UserProfile): PersianAmes
   }
 
   const avestanGuidance = `오늘의 수호 불멸자 [${patronImmortal.koreanName}]의 은총 아래 "${patronImmortal.sacredAttribute}"를 마음에 새기며, "${patronImmortal.contemplativeMantra}"를 실천하세요.`;
+  const synthesisMessage = `아베스타 가타 원전에 따라, 당신의 영혼은 6대 아메샤 스펜타 중 [${patronImmortal.koreanName}]의 신성한 가호를 받습니다.`;
 
-  const synthesisMessage = `아베스타 가타 원전에 따라, 당신의 영혼은 6대 아메샤 스펜타 중 [${patronImmortal.koreanName}]의 신성한 가호를 받습니다 (신성 광휘 지수: ${totalRadianceScore}점).`;
+  const calculatedAtKst = formatAmeshaKstTimestamp(now);
+  const ameshaSynthesisMatrix = {
+    dominantTension: `${patronImmortal.avestanName} ↔ ${patronImmortal.guardianDominion}`,
+    alignmentState: describeAmeshaStage(totalRadianceScore),
+    integratedAction: `${patronImmortal.contemplativeMantra}${query?.trim() ? ` [질문 맥락: ${query.trim()}]` : ''}`,
+  };
 
   return {
     engineVersion: PERSIAN_AMESHA_SPENTA_VERSION,
     calculatedAt: now.toISOString(),
+    calculatedAtKst,
     patronImmortal,
     baresman: {
       mindConcentrationScore,
@@ -139,18 +174,27 @@ export function calculatePersianAmeshaSpenta(profile?: UserProfile): PersianAmes
     totalRadianceScore,
     avestanGuidance,
     synthesisMessage,
+    ameshaSynthesisMatrix,
   };
 }
 
 export function formatPersianAmeshaSpentaPrompt(report: PersianAmeshaSpentaReport): string {
-  return `### 🔥 고대 페르시아 바르숨 & 6대 아메샤 스펜타 조화 엔진 (${PERSIAN_AMESHA_SPENTA_VERSION})
-- **아메샤 스펜타 수호 불멸자**: **${report.patronImmortal.koreanName}** (${report.patronImmortal.avestanName})
-  - 신성 미덕: ${report.patronImmortal.sacredAttribute}
-  - 관할 영역: ${report.patronImmortal.guardianDominion}
-  - 가타 명상 잠언: "${report.patronImmortal.contemplativeMantra}"
-- **바르숨(Baresman) 정렬 지수 (신성 광휘도: ${report.totalRadianceScore}점)**:
-  - 정신 집중: ${report.baresman.mindConcentrationScore}점 | 감정 순도: ${report.baresman.emotionalHarmonyScore}점 | 영적 광휘: ${report.baresman.spiritualRadianceScore}점
-  - 정렬 상태: ${report.baresman.twigsHarmonicState}
-- **아베스타 일일 나침반**: ${report.avestanGuidance}
-- **아메샤 스펜타 통합 결론**: ${report.synthesisMessage}`;
+  const lines = [
+    `### 🔥 고대 페르시아 바르숨 & 6대 아메샤 스펜타 조화 엔진 (${PERSIAN_AMESHA_SPENTA_VERSION})`,
+    `- **연산 시각**: ${report.calculatedAtKst} | **광휘 국면**: ${describeAmeshaStage(report.totalRadianceScore)}`,
+    `- **아메샤 스펜타 수호 불멸자**: **${report.patronImmortal.koreanName}** (${report.patronImmortal.avestanName})`,
+    `  - 신성 미덕: ${report.patronImmortal.sacredAttribute}`,
+    `  - 관할 영역: ${report.patronImmortal.guardianDominion}`,
+    `  - 가타 명상 잠언: "${report.patronImmortal.contemplativeMantra}"`,
+    `- **바르숨(Baresman) 정렬 상태**: ${report.baresman.twigsHarmonicState}`,
+    `- **아베스타 일일 나침반**: ${report.avestanGuidance}`,
+    `- **아메샤 스펜타 통합 결론**: ${report.synthesisMessage}`,
+  ];
+  if (report.ameshaSynthesisMatrix) {
+    lines.push(
+      `- **교차 매트릭스**: [핵심 긴장: ${report.ameshaSynthesisMatrix.dominantTension} | 조율 상태: ${report.ameshaSynthesisMatrix.alignmentState}]`,
+      `- **통합 실천**: ${report.ameshaSynthesisMatrix.integratedAction}`,
+    );
+  }
+  return lines.join('\n');
 }
