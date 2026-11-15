@@ -9,12 +9,12 @@
  * 4. 집현전(集賢殿) 집단지성 융합: 신숙주, 성삼문, 정인지, 최항 등 최고의 인재들을 모아 토론하고 경연하며 시너지를 극대화하는 열린 학문적 포용력.
  * 5. 생생지락(生生之樂) 삶의 환희: 백성이 저마다의 생업에 힘쓰며 삶의 즐거움을 누리게 하는 것을 정치와 인간 실존의 궁극적 목표로 삼는 휴머니즘.
  *
- * @version LUCKEY-KING-SEJONG-AEMIN-v1.0.0
+ * @version LUCKEY-KING-SEJONG-AEMIN-v2.0.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const KOREAN_KING_SEJONG_VERSION = 'LUCKEY-KING-SEJONG-AEMIN-v1.0.0';
+export const KOREAN_KING_SEJONG_VERSION = 'LUCKEY-KING-SEJONG-AEMIN-v2.0.0';
 
 export interface HunminjeongeumTheme {
   themeKey: string;
@@ -48,6 +48,27 @@ export interface KingSejongHunminjeongeumAeminResult {
     guidanceTitle: string;
     philosophicalCounsel: string;
   };
+  sejongSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
+}
+
+function formatKingSejongKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
+
+function describeSejongStage(score: number): string {
+  if (score >= 90) return '여민동락(與民同樂) — 애민의 창조성과 실용적 집단지성이 널리 소통하는 흐름';
+  if (score >= 80) return '편어일용(便於日用) — 복잡한 장벽을 허물고 명쾌한 실용 해법을 세우는 국면';
+  return '박문심사(博問審思) — 현장의 목소리를 널리 묻고 근본을 다듬는 흐름';
 }
 
 export const HUNMIN_THEMES: HunminjeongeumTheme[] = [
@@ -127,7 +148,9 @@ export const HUNMIN_APHORISMS: HunminjeongeumAphorism[] = [
 ];
 
 export function calculateKingSejongHunminjeongeumAemin(
-  profile: UserProfile
+  profile: UserProfile,
+  query?: string,
+  now: Date = new Date(),
 ): KingSejongHunminjeongeumAeminResult {
   const p = profile as any;
   const name = profile?.basic?.name ?? p?.name ?? '방문자';
@@ -162,9 +185,24 @@ export function calculateKingSejongHunminjeongeumAemin(
     `${activeHunminTheme.practicalCounsel} 아울러 세종대왕의 가르침 "${focalHunminAphorism.aphorismKo}"(${focalHunminAphorism.aphorismHanja})을 가슴에 새기고, ` +
     `${focalHunminAphorism.actionGuidance}`;
 
+  const calculatedAtKst = formatKingSejongKstTimestamp(now);
+  const avgScore = Math.round(
+    (aeminCreativityScore +
+      pragmaticBarrierBreakScore +
+      yeominrakHarmonyQuotient +
+      jiphyeonjeonCollectiveWisdom +
+      saengsaengJirakVitalityScore) /
+      5,
+  );
+  const sejongSynthesisMatrix = {
+    dominantTension: `${activeHunminTheme.themeTitleKo} ↔ ${focalHunminAphorism.sourceContext}`,
+    alignmentState: describeSejongStage(avgScore),
+    integratedAction: `${focalHunminAphorism.actionGuidance}${query?.trim() ? ` [질문 맥락: ${query.trim()}]` : ''}`,
+  };
+
   return {
     engineVersion: KOREAN_KING_SEJONG_VERSION,
-    calculatedAtKst: new Date().toISOString(),
+    calculatedAtKst,
     aeminCreativityScore,
     pragmaticBarrierBreakScore,
     yeominrakHarmonyQuotient,
@@ -176,17 +214,23 @@ export function calculateKingSejongHunminjeongeumAemin(
       guidanceTitle,
       philosophicalCounsel,
     },
+    sejongSynthesisMatrix,
   };
 }
 
 export function formatKingSejongHunminjeongeumAeminPrompt(res: KingSejongHunminjeongeumAeminResult): string {
-  return [
+  const avgScore = Math.round(
+    (res.aeminCreativityScore +
+      res.pragmaticBarrierBreakScore +
+      res.yeominrakHarmonyQuotient +
+      res.jiphyeonjeonCollectiveWisdom +
+      res.saengsaengJirakVitalityScore) /
+      5,
+  );
+  const lines = [
     `【세종대왕 《훈민정음》 어제서문 애민창조 & 여민락 지혜 지표】`,
-    `- 어제서문 애민창조력(憐憫創制): ${res.aeminCreativityScore}/100`,
-    `- 실용적 장벽 타파력(便於日用): ${res.pragmaticBarrierBreakScore}/100`,
-    `- 여민락 상생 조화도(與民同樂): ${res.yeominrakHarmonyQuotient}/100`,
-    `- 집현전 집단지성 융합력(集賢經筵): ${res.jiphyeonjeonCollectiveWisdom}/100`,
-    `- 생생지락 삶의 활력 지수(生生之樂): ${res.saengsaengJirakVitalityScore}/100`,
+    `- 연산 시각: ${res.calculatedAtKst} | 엔진: ${res.engineVersion}`,
+    `- 애민·창조 국면: ${describeSejongStage(avgScore)}`,
     `- 핵심 애민 테마: ${res.activeHunminTheme.themeTitleKo} [${res.activeHunminTheme.themeTitleHanja}]`,
     `- 역사적·철학적 통찰: ${res.activeHunminTheme.historicalInsight}`,
     `- 실천적 조언: ${res.activeHunminTheme.practicalCounsel}`,
@@ -194,5 +238,12 @@ export function formatKingSejongHunminjeongeumAeminPrompt(res: KingSejongHunminj
     `- 한자 원문: "${res.focalHunminAphorism.aphorismHanja}" [${res.focalHunminAphorism.sourceContext}]`,
     `- 구체적 실천 지침: ${res.focalHunminAphorism.actionGuidance}`,
     `- 종합 통찰 권면: ${res.sejongComprehensiveGuidance.philosophicalCounsel}`,
-  ].join('\n');
+  ];
+  if (res.sejongSynthesisMatrix) {
+    lines.push(
+      `- 교차 매트릭스 [핵심 긴장: ${res.sejongSynthesisMatrix.dominantTension} | 조율 상태: ${res.sejongSynthesisMatrix.alignmentState}]`,
+      `- 통합 실천: ${res.sejongSynthesisMatrix.integratedAction}`,
+    );
+  }
+  return lines.join('\n');
 }

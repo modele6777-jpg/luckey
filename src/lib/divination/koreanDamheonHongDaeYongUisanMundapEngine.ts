@@ -9,12 +9,12 @@
  * 4. 탈편견 과학적 합리주의 및 미신 타파력(Scientific Empiricism & Disillusionment Index): 허황된 명분과 도그마를 걷어내고 실증적 이치로 사물을 관찰하는 힘.
  * 5. 거문고와 사색의 호연지기 및 예술적 영성 회복탄력성(Magnanimous Geomungo Spirit & Resilience Score): 광막한 우주 속에서 거문고를 타며 맑고 호탕한 평정을 지키는 품격.
  *
- * @version LUCKEY-HONG-DAE-YONG-UISAN-MUNDAP-v1.0.0
+ * @version LUCKEY-HONG-DAE-YONG-UISAN-MUNDAP-v2.0.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const KOREAN_DAMHEON_HONG_DAE_YONG_UISAN_MUNDAP_VERSION = 'LUCKEY-HONG-DAE-YONG-UISAN-MUNDAP-v1.0.0';
+export const KOREAN_DAMHEON_HONG_DAE_YONG_UISAN_MUNDAP_VERSION = 'LUCKEY-HONG-DAE-YONG-UISAN-MUNDAP-v2.0.0';
 
 export interface HongDaeYongTheme {
   themeKey: string;
@@ -48,6 +48,27 @@ export interface KoreanDamheonHongDaeYongUisanMundapResult {
     guidanceTitle: string;
     philosophicalCounsel: string;
   };
+  hongDaeYongSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
+}
+
+function formatHongDaeYongKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
+
+function describeHongDaeYongStage(score: number): string {
+  if (score >= 90) return '무한우주 조망기 — 편견을 넘어 인물균의 평등과 실증적 개방성이 열리는 흐름';
+  if (score >= 85) return '탈중화 개방기 — 낡은 중심주의를 허물고 주체적인 시야를 넓히는 국면';
+  return '거문고 사색기 — 고요한 성찰 속에서 사물의 실제 이치를 차분히 검증하는 흐름';
 }
 
 export const HONG_DAE_YONG_THEMES: HongDaeYongTheme[] = [
@@ -131,6 +152,7 @@ function hashString(str: string): number {
 export function calculateKoreanDamheonHongDaeYongUisanMundap(
   profile?: UserProfile,
   query?: string,
+  now: Date = new Date(),
 ): KoreanDamheonHongDaeYongUisanMundapResult {
   const p = profile as any;
   const name = profile?.basic?.name ?? p?.name ?? '남희';
@@ -160,9 +182,24 @@ export function calculateKoreanDamheonHongDaeYongUisanMundap(
     `${activeHongDaeYongTheme.practicalCounsel} 담헌 선생의 명문 "${focalHongDaeYongAphorism.aphorismKo} (${focalHongDaeYongAphorism.aphorismHanja})"을 되새기며, ` +
     `${focalHongDaeYongAphorism.actionGuidance}`;
 
+  const calculatedAtKst = formatHongDaeYongKstTimestamp(now);
+  const avgScore = Math.round(
+    (infiniteUniverseRotationCosmologicalInsightScore +
+      egalitarianHarmonyHumansNatureIndex +
+      universalRelativismOpenMindednessScore +
+      scientificEmpiricismDisillusionmentIndex +
+      magnanimousGeomungoResilienceScore) /
+      5,
+  );
+  const hongDaeYongSynthesisMatrix = {
+    dominantTension: `${activeHongDaeYongTheme.themeTitleKo} ↔ ${focalHongDaeYongAphorism.sourceContext}`,
+    alignmentState: describeHongDaeYongStage(avgScore),
+    integratedAction: `${focalHongDaeYongAphorism.actionGuidance}${query?.trim() ? ` [질문 맥락: ${query.trim()}]` : ''}`,
+  };
+
   return {
     engineVersion: KOREAN_DAMHEON_HONG_DAE_YONG_UISAN_MUNDAP_VERSION,
-    calculatedAtKst: new Date().toISOString(),
+    calculatedAtKst,
     infiniteUniverseRotationCosmologicalInsightScore,
     egalitarianHarmonyHumansNatureIndex,
     universalRelativismOpenMindednessScore,
@@ -174,19 +211,25 @@ export function calculateKoreanDamheonHongDaeYongUisanMundap(
       guidanceTitle,
       philosophicalCounsel,
     },
+    hongDaeYongSynthesisMatrix,
   };
 }
 
 export function formatKoreanDamheonHongDaeYongUisanMundapPrompt(
   res: KoreanDamheonHongDaeYongUisanMundapResult,
 ): string {
-  return [
+  const avgScore = Math.round(
+    (res.infiniteUniverseRotationCosmologicalInsightScore +
+      res.egalitarianHarmonyHumansNatureIndex +
+      res.universalRelativismOpenMindednessScore +
+      res.scientificEmpiricismDisillusionmentIndex +
+      res.magnanimousGeomungoResilienceScore) /
+      5,
+  );
+  const lines = [
     `【담헌 홍대용 《의산문답》 지전설·무한우주론 및 인물균 지혜 지표】`,
-    `- 지전설 및 무한 우주론 통찰력(Infinite Universe & Earth Rotation): ${res.infiniteUniverseRotationCosmologicalInsightScore}/100`,
-    `- 인물균(人物均) 인간·자연 평등 존엄성(Egalitarian Humans & Nature): ${res.egalitarianHarmonyHumansNatureIndex}/100`,
-    `- 화이관 타파 및 열린 상대주의 개방도(Universal Relativism): ${res.universalRelativismOpenMindednessScore}/100`,
-    `- 탈편견 과학적 합리주의(Scientific Empiricism): ${res.scientificEmpiricismDisillusionmentIndex}/100`,
-    `- 거문고 사색 호연지기 회복탄력성(Magnanimous Geomungo Resilience): ${res.magnanimousGeomungoResilienceScore}/100`,
+    `- 연산 시각: ${res.calculatedAtKst} | 엔진: ${res.engineVersion}`,
+    `- 우주·실학 조망 국면: ${describeHongDaeYongStage(avgScore)}`,
     `- 핵심 담헌 실학 테마: ${res.activeHongDaeYongTheme.themeTitleKo} [${res.activeHongDaeYongTheme.themeTitleEn}]`,
     `- 실천적 통찰: ${res.activeHongDaeYongTheme.pragmaticInsight}`,
     `- 행동 조언: ${res.activeHongDaeYongTheme.practicalCounsel}`,
@@ -194,5 +237,12 @@ export function formatKoreanDamheonHongDaeYongUisanMundapPrompt(
     `- 원전 출처: [${res.focalHongDaeYongAphorism.sourceContext}]`,
     `- 구체적 실천 지침: ${res.focalHongDaeYongAphorism.actionGuidance}`,
     `- 종합 담헌 우주·실학 권면: ${res.hongDaeYongComprehensiveGuidance.philosophicalCounsel}`,
-  ].join('\n');
+  ];
+  if (res.hongDaeYongSynthesisMatrix) {
+    lines.push(
+      `- 교차 매트릭스 [핵심 긴장: ${res.hongDaeYongSynthesisMatrix.dominantTension} | 조율 상태: ${res.hongDaeYongSynthesisMatrix.alignmentState}]`,
+      `- 통합 실천: ${res.hongDaeYongSynthesisMatrix.integratedAction}`,
+    );
+  }
+  return lines.join('\n');
 }

@@ -11,12 +11,12 @@
  * 4. 실사구시(實事求是)와 이용후생: 공리공론과 헛된 명분을 배격하고, 오직 현장과 사실에서 진리를 구하여 인간의 실질적 삶을 윤택하게 하는 과학적 실용주의.
  * 5. 흠흠(欽欽) 생명 존중과 정밀한 검증: 한 사람의 억울함도 없도록 사실을 철저히 확인하고, 사람의 생명과 진실 앞에서 삼가고 또 삼가는 지극한 정성.
  *
- * @version LUCKEY-KOREAN-DASAN-MOKMIN-SIMSEO-v1.0.0
+ * @version LUCKEY-KOREAN-DASAN-MOKMIN-SIMSEO-v2.0.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const KOREAN_DASAN_MOKMIN_SIMSEO_VERSION = 'LUCKEY-KOREAN-DASAN-MOKMIN-SIMSEO-v1.0.0';
+export const KOREAN_DASAN_MOKMIN_SIMSEO_VERSION = 'LUCKEY-KOREAN-DASAN-MOKMIN-SIMSEO-v2.0.0';
 
 export interface DasanTheme {
   themeKey: string;
@@ -50,6 +50,27 @@ export interface DasanMokminSimseoResult {
     counselTitle: string;
     philosophicalGuidance: string;
   };
+  dasanSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
+}
+
+function formatDasanKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
+
+function describeDasanStage(score: number): string {
+  if (score >= 90) return '율기애민(律己愛民) — 청렴한 절제와 실사구시의 실행력이 조화를 이루는 경지';
+  if (score >= 80) return '실사구시(實事求是) — 사실을 면밀히 살피며 실질적 해법을 세우는 국면';
+  return '여유신독(與猶愼獨) — 살얼음을 건너듯 신중하게 원칙과 내실을 다지는 흐름';
 }
 
 export type DasanMokminSimseoReport = DasanMokminSimseoResult;
@@ -130,7 +151,11 @@ const DASAN_APHORISMS: DasanAphorism[] = [
   },
 ];
 
-export function calculateDasanMokminSimseo(profile: UserProfile): DasanMokminSimseoResult {
+export function calculateDasanMokminSimseo(
+  profile: UserProfile,
+  query?: string,
+  now: Date = new Date(),
+): DasanMokminSimseoResult {
   const seedString =
     (profile?.basic?.birthdate ?? (profile as any)?.birthdate ?? '1990-01-01') +
     (profile?.basic?.name ?? (profile as any)?.name ?? 'User') +
@@ -162,9 +187,24 @@ export function calculateDasanMokminSimseo(profile: UserProfile): DasanMokminSim
     `${activeDasanTheme.mokminCounsel} 아울러 다산의 경구인 '${focalDasanAphorism.aphorismKo}'(${focalDasanAphorism.aphorismHanja})을 명심하여, ` +
     `${focalDasanAphorism.practicalAction}`;
 
+  const calculatedAtKst = formatDasanKstTimestamp(now);
+  const avgScore = Math.round(
+    (yeoyudangPrudentDiscretionScore +
+      yulgiIntegrousSelfDisciplineScore +
+      aeminCompassionatePublicGoodScore +
+      silsagusiPragmaticWisdomScore +
+      heumheumMeticulousTruthseekingScore) /
+      5,
+  );
+  const dasanSynthesisMatrix = {
+    dominantTension: `${activeDasanTheme.themeTitleKo} ↔ ${focalDasanAphorism.silhakDimension}`,
+    alignmentState: describeDasanStage(avgScore),
+    integratedAction: `${focalDasanAphorism.practicalAction}${query?.trim() ? ` [질문 맥락: ${query.trim()}]` : ''}`,
+  };
+
   return {
     engineVersion: KOREAN_DASAN_MOKMIN_SIMSEO_VERSION,
-    calculatedAtKst: new Date().toISOString(),
+    calculatedAtKst,
     yeoyudangPrudentDiscretionScore,
     yulgiIntegrousSelfDisciplineScore,
     aeminCompassionatePublicGoodScore,
@@ -176,17 +216,23 @@ export function calculateDasanMokminSimseo(profile: UserProfile): DasanMokminSim
       counselTitle,
       philosophicalGuidance,
     },
+    dasanSynthesisMatrix,
   };
 }
 
 export function formatDasanMokminSimseoPrompt(res: DasanMokminSimseoResult): string {
-  return [
+  const avgScore = Math.round(
+    (res.yeoyudangPrudentDiscretionScore +
+      res.yulgiIntegrousSelfDisciplineScore +
+      res.aeminCompassionatePublicGoodScore +
+      res.silsagusiPragmaticWisdomScore +
+      res.heumheumMeticulousTruthseekingScore) /
+      5,
+  );
+  const lines = [
     `【다산 정약용 목민심서(牧民心書) & 실사구시 실학 지표】`,
-    `- 여유당 신독 신중도(愼獨): ${res.yeoyudangPrudentDiscretionScore}/100`,
-    `- 율기 청렴도(律己 淸廉): ${res.yulgiIntegrousSelfDisciplineScore}/100`,
-    `- 애민 공공선 실천도(愛民): ${res.aeminCompassionatePublicGoodScore}/100`,
-    `- 실사구시 현실해결력(實事求是): ${res.silsagusiPragmaticWisdomScore}/100`,
-    `- 흠흠 정밀 사실검증도(欽欽): ${res.heumheumMeticulousTruthseekingScore}/100`,
+    `- 연산 시각: ${res.calculatedAtKst} | 엔진: ${res.engineVersion}`,
+    `- 실학 수양 국면: ${describeDasanStage(avgScore)}`,
     `- 핵심 실학 테마: ${res.activeDasanTheme.themeTitleKo} [${res.activeDasanTheme.themeTitleHanja}]`,
     `- 실학적 통찰: ${res.activeDasanTheme.silhakInsight}`,
     `- 목민 처세 조언: ${res.activeDasanTheme.mokminCounsel}`,
@@ -194,5 +240,12 @@ export function formatDasanMokminSimseoPrompt(res: DasanMokminSimseoResult): str
     `- 한자 원문: "${res.focalDasanAphorism.aphorismHanja}" [${res.focalDasanAphorism.silhakDimension}]`,
     `- 실천적 행동 지침: ${res.focalDasanAphorism.practicalAction}`,
     `- 통합 실학 처방: ${res.dasanPersonalCounsel.philosophicalGuidance}`,
-  ].join('\n');
+  ];
+  if (res.dasanSynthesisMatrix) {
+    lines.push(
+      `- 교차 매트릭스 [핵심 긴장: ${res.dasanSynthesisMatrix.dominantTension} | 조율 상태: ${res.dasanSynthesisMatrix.alignmentState}]`,
+      `- 통합 실천: ${res.dasanSynthesisMatrix.integratedAction}`,
+    );
+  }
+  return lines.join('\n');
 }
