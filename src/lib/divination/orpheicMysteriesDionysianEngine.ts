@@ -6,13 +6,14 @@
  * 상징적 균형을 통해 현대인의 자기 인식과 정서적 회복을 비추는 정성적 성찰 도구입니다.
  */
 
-export const ORPHEIC_MYSTERIES_ENGINE_VERSION = 'LUCKEY-ORPHEIC-MYSTERIES-v1.1.0';
+export const ORPHEIC_MYSTERIES_ENGINE_VERSION = 'LUCKEY-ORPHEIC-MYSTERIES-v2.0.0';
 
 export type OrphicQuestionTheme = 'relationship' | 'decision' | 'healing' | 'reflection';
 
 export interface OrphicMysteriesReport {
   engineVersion: string;
   calculatedAt: string;
+  calculatedAtKst: string;
   questionTheme: OrphicQuestionTheme;
   divineLineageDeclaration: string; // 영혼의 근원적 주권 상징 문구
   memoryWellAwakeningScore: number; // 하위 호환용 내부 참조치 (0 ~ 100)
@@ -30,6 +31,21 @@ export interface OrphicMysteriesReport {
   reflectionFocus: string; // 내면 성찰 질문
   counselNote: string; // 조언 요약
   boundaryNotice: string; // 상징적 해석 경계 안내
+  orphicSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
+}
+
+function formatOrphicKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
 }
 
 function classifyOrphicTheme(question: string): OrphicQuestionTheme {
@@ -138,10 +154,17 @@ export function calculateOrpheicMysteries(params: {
 
   const themeContent = guidanceByTheme[questionTheme];
   const boundaryNotice = '오르페우스 신비주의 관점은 고대 그리스 상징 철학을 빌린 정성적 성찰 참고용이며, 개인 점수나 심리 진단·미래 예언이 아닙니다.';
+  const calculatedAtKst = formatOrphicKstTimestamp(now);
+  const orphicSynthesisMatrix = {
+    dominantTension: `${polarityArchetype.nameKo} ↔ ${thresholdState}`,
+    alignmentState: `${polarityArchetype.apollonianAspect} · ${polarityArchetype.dionysianAspect}`,
+    integratedAction: `${themeContent.ritualAction}${question.trim() ? ` [질문 맥락: ${question.trim()}]` : ''}`,
+  };
 
   return {
     engineVersion: ORPHEIC_MYSTERIES_ENGINE_VERSION,
     calculatedAt: now.toISOString(),
+    calculatedAtKst,
     questionTheme,
     divineLineageDeclaration,
     memoryWellAwakeningScore,
@@ -155,17 +178,28 @@ export function calculateOrpheicMysteries(params: {
     reflectionFocus: themeContent.reflectionFocus,
     counselNote: themeContent.counselNote,
     boundaryNotice,
+    orphicSynthesisMatrix,
   };
 }
 
 export function formatOrpheicMysteriesPrompt(report: OrphicMysteriesReport): string {
-  return `### 🏛️ 고대 그리스 오르페우스 신비주의 & 므네모시네 기억의 샘 실측 데이터 (${report.engineVersion})
-- **영혼의 신성한 근원 선언**: "${report.divineLineageDeclaration}"
-- **임계 통과 상태**: ${report.thresholdState}
-- **상징 원형**: ${report.polarityArchetype.nameKo} (아폴론적 명료함: ${report.polarityArchetype.apollonianAspect} / 디오니소스적 생명력: ${report.polarityArchetype.dionysianAspect})
-- **오르페우스 황금판 패스포트 코드**: \`${report.goldTabletPassportCode}\`
-- **실천 조언**: ${report.practiceGuidance}
-- **일상 의례**: ${report.ritualAction}
-- **성찰 질문**: ${report.reflectionFocus}
-- **참고 경계**: ${report.boundaryNotice}`;
+  const lines = [
+    `### 🏛️ 고대 그리스 오르페우스 신비주의 & 므네모시네 기억의 샘 실측 데이터 (${report.engineVersion})`,
+    `- **연산 시각**: ${report.calculatedAtKst}`,
+    `- **영혼의 신성한 근원 선언**: "${report.divineLineageDeclaration}"`,
+    `- **임계 통과 상태**: ${report.thresholdState}`,
+    `- **상징 원형**: ${report.polarityArchetype.nameKo} (아폴론적 명료함: ${report.polarityArchetype.apollonianAspect} / 디오니소스적 생명력: ${report.polarityArchetype.dionysianAspect})`,
+    `- **오르페우스 황금판 패스포트 코드**: \`${report.goldTabletPassportCode}\``,
+    `- **실천 조언**: ${report.practiceGuidance}`,
+    `- **일상 의례**: ${report.ritualAction}`,
+    `- **성찰 질문**: ${report.reflectionFocus}`,
+    `- **참고 경계**: ${report.boundaryNotice}`,
+  ];
+  if (report.orphicSynthesisMatrix) {
+    lines.push(
+      `- **교차 매트릭스**: [핵심 긴장: ${report.orphicSynthesisMatrix.dominantTension} | 조율 상태: ${report.orphicSynthesisMatrix.alignmentState}]`,
+      `- **통합 실천**: ${report.orphicSynthesisMatrix.integratedAction}`,
+    );
+  }
+  return lines.join('\n');
 }

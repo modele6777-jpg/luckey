@@ -15,7 +15,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const NORTH_AFRICAN_AUGUSTINE_VERSION = 'LUCKEY-AUGUSTINE-CONFESSIONES-ILLUMINATIO-v1.0.0';
+export const NORTH_AFRICAN_AUGUSTINE_VERSION = 'LUCKEY-AUGUSTINE-CONFESSIONES-ILLUMINATIO-v2.0.0';
 
 export interface AugustineTheme {
   themeKey: string;
@@ -49,6 +49,27 @@ export interface AugustineConfessionesIlluminatioResult {
     counselTitle: string;
     philosophicalGuidance: string;
   };
+  augustineSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
+}
+
+function formatAugustineKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
+
+function describeAugustineStage(score: number): string {
+  if (score >= 88) return '오스티아의 빛(Ostia Illumination) — 시간의 분산을 넘어 내면의 영원한 빛과 깊은 안식에 닿은 명징기';
+  if (score >= 76) return '내면의 방(In Interiore Homine) — 외부 소음을 물리고 기억·직관·기대를 현재로 모으는 관조기';
+  return '고백의 문턱(Inquietum Cor) — 불안한 자기애를 내려놓고 겸손한 은총의 안식을 구하는 정화기';
 }
 
 export const AUGUSTINE_THEMES: AugustineTheme[] = [
@@ -135,7 +156,9 @@ export const AUGUSTINE_APHORISMS: AugustineAphorism[] = [
 ];
 
 export function calculateAugustineConfessionesIlluminatio(
-  profile: UserProfile
+  profile: UserProfile,
+  query?: string,
+  now: Date = new Date(),
 ): AugustineConfessionesIlluminatioResult {
   const p = profile as any;
   const name = profile?.basic?.name ?? p?.name ?? '방문자';
@@ -143,7 +166,7 @@ export function calculateAugustineConfessionesIlluminatio(
   const birthTime = profile?.basic?.birthtime ?? p?.birthTime ?? p?.birthtime ?? '12:00';
   const gender = profile?.basic?.gender ?? p?.gender ?? 'neutral';
 
-  const seedString = `AUGUSTINE-CONFESSIONES:${name}:${birthDate}:${birthTime}:${gender}`;
+  const seedString = `AUGUSTINE-CONFESSIONES:${name}:${birthDate}:${birthTime}:${gender}:${query ?? ''}`;
 
   let hash = 0;
   for (let i = 0; i < seedString.length; i++) {
@@ -170,9 +193,19 @@ export function calculateAugustineConfessionesIlluminatio(
     `${activeAugustineTheme.spiritualCounsel} 아울러 아우구스티누스의 경구인 "${focalAugustineAphorism.aphorismKo}"(${focalAugustineAphorism.aphorismLatin})을 기억하며, ` +
     `${focalAugustineAphorism.practicalAction}`;
 
+  const calculatedAtKst = formatAugustineKstTimestamp(now);
+  const composite = Math.round(
+    (interiorIlluminationInsightScore + temporalPresenceHarmonizationScore + graceOvercomingPrideScore + restfulPeaceOfHeartScore + transcendentLoveOrientationScore) / 5
+  );
+  const augustineSynthesisMatrix = {
+    dominantTension: `${activeAugustineTheme.themeTitleKo} ↔ ${focalAugustineAphorism.scripturalContext}`,
+    alignmentState: describeAugustineStage(composite),
+    integratedAction: `${focalAugustineAphorism.practicalAction}${query?.trim() ? ` [질문 맥락: ${query.trim()}]` : ''}`,
+  };
+
   return {
     engineVersion: NORTH_AFRICAN_AUGUSTINE_VERSION,
-    calculatedAtKst: new Date().toISOString(),
+    calculatedAtKst,
     interiorIlluminationInsightScore,
     temporalPresenceHarmonizationScore,
     graceOvercomingPrideScore,
@@ -184,17 +217,18 @@ export function calculateAugustineConfessionesIlluminatio(
       counselTitle,
       philosophicalGuidance,
     },
+    augustineSynthesisMatrix,
   };
 }
 
 export function formatAugustineConfessionesIlluminatioPrompt(res: AugustineConfessionesIlluminatioResult): string {
-  return [
+  const composite = Math.round(
+    (res.interiorIlluminationInsightScore + res.temporalPresenceHarmonizationScore + res.graceOvercomingPrideScore + res.restfulPeaceOfHeartScore + res.transcendentLoveOrientationScore) / 5
+  );
+  const lines = [
     `【아우구스티누스 《고백록》 내적 조명 & 안식 평정심 지표】`,
-    `- 내적 조명 영적 직관도(Illuminatio): ${res.interiorIlluminationInsightScore}/100`,
-    `- 시간의 3중 현존 조화도(Distentio Animi): ${res.temporalPresenceHarmonizationScore}/100`,
-    `- 은총 수용 및 겸손도(Gratia & Humilitas): ${res.graceOvercomingPrideScore}/100`,
-    `- 심령의 안식 평정심 지수(Requies Cordis): ${res.restfulPeaceOfHeartScore}/100`,
-    `- 참된 사랑 지향도(Ordo Amoris / Caritas): ${res.transcendentLoveOrientationScore}/100`,
+    `- 연산 시각: ${res.calculatedAtKst} | 엔진 버전: ${res.engineVersion}`,
+    `- 영적 조명 국면: ${describeAugustineStage(composite)}`,
     `- 핵심 영성 테마: ${res.activeAugustineTheme.themeTitleKo} [${res.activeAugustineTheme.themeTitleLatin}]`,
     `- 신학·철학적 통찰: ${res.activeAugustineTheme.theologicalInsight}`,
     `- 영적 권면: ${res.activeAugustineTheme.spiritualCounsel}`,
@@ -202,5 +236,12 @@ export function formatAugustineConfessionesIlluminatioPrompt(res: AugustineConfe
     `- 라틴어 원문: "${res.focalAugustineAphorism.aphorismLatin}" [${res.focalAugustineAphorism.scripturalContext}]`,
     `- 실천적 행동 지침: ${res.focalAugustineAphorism.practicalAction}`,
     `- 통합 영성 권면: ${res.augustinePersonalCounsel.philosophicalGuidance}`,
-  ].join('\n');
+  ];
+  if (res.augustineSynthesisMatrix) {
+    lines.push(
+      `- 교차 매트릭스 [핵심 긴장: ${res.augustineSynthesisMatrix.dominantTension} | 조율 상태: ${res.augustineSynthesisMatrix.alignmentState}]`,
+      `- 통합 실천: ${res.augustineSynthesisMatrix.integratedAction}`,
+    );
+  }
+  return lines.join('\n');
 }

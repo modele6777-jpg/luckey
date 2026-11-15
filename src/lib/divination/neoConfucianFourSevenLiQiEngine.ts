@@ -23,7 +23,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const NEO_CONFUCIAN_LIQI_ENGINE_VERSION = 'LUCKEY-NEO-CONFUCIAN-LIQI-v1.0.0';
+export const NEO_CONFUCIAN_LIQI_ENGINE_VERSION = 'LUCKEY-NEO-CONFUCIAN-LIQI-v2.0.0';
 
 export interface SadanVirtueInfo {
   nameKo: string;
@@ -43,6 +43,7 @@ export interface ChiljeongEmotionInfo {
 
 export interface NeoConfucianFourSevenLiQiReport {
   engineVersion: string;
+  calculatedAtKst: string;
   dominantSadan: SadanVirtueInfo;
   dominantChiljeong: ChiljeongEmotionInfo;
   sadanAlignmentScore: number;         // 0 ~ 100 사단 도덕 발현도
@@ -52,6 +53,27 @@ export interface NeoConfucianFourSevenLiQiReport {
   geogyeongConcentrationIndex: number; // 0 ~ 100 거경(居敬) 주일무적 집중도
   neoConfucianMasterGuidance: string;
   mindCultivationPrescription: string;
+  liQiSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
+}
+
+function formatNeoConfucianKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
+
+function describeLiQiStage(score: number): string {
+  if (score >= 82) return '천리청명(天理淸明) — 사단의 도덕 이치가 기질의 탁함을 맑게 씻어내어 중절(中節)에 이른 조화기';
+  if (score >= 68) return '거경함양(居敬涵養) — 경(敬)의 자세로 감정의 기복을 다스리며 본연지성을 회복해 가는 수양기';
+  return '극기복례(克己復禮) — 칠정의 치우침을 알아차리고 주일무적(主一無適)으로 중심을 다시 세우는 정돈기';
 }
 
 const SADAN_VIRTUES: SadanVirtueInfo[] = [
@@ -155,13 +177,24 @@ export function calculateNeoConfucianFourSevenLiQi(params: {
   const originalNaturePurityScore = Math.min(100, Math.max(45, Math.round(liQiHarmonyIndex * 0.7 + ((qSeed % 19) + 12))));
   const geogyeongConcentrationIndex = Math.min(100, Math.max(55, Math.round(62 + ((seed * 23 + hour * 7) % 37))));
 
+  const calculatedAtKst = formatNeoConfucianKstTimestamp(now);
+  const composite = Math.round(
+    (sadanAlignmentScore + chiljeongBalanceScore + liQiHarmonyIndex + originalNaturePurityScore + geogyeongConcentrationIndex) / 5
+  );
+  const liQiSynthesisMatrix = {
+    dominantTension: `${dominantSadan.nameKo} ↔ ${dominantChiljeong.nameKo} [${dominantChiljeong.moderationStatus}]`,
+    alignmentState: describeLiQiStage(composite),
+    integratedAction: `${dominantSadan.moralAction} · ${dominantChiljeong.harmonizationKey}${question?.trim() ? ` [질문 맥락: ${question.trim()}]` : ''}`,
+  };
+
   // 4. Guidance Formulation
   const neoConfucianMasterGuidance = `성리학의 핵심은 '이기불상리(理와 氣는 떨어질 수 없고) 이기불상잡(理와 氣는 서로 뒤섞이지 않는다)'의 이기지묘에 있습니다. 당신의 내면에서 지금 가장 크게 발현되어야 할 본연의 도덕성은 [${dominantSadan.nameKo}]입니다. 감정의 흐름에서는 [${dominantChiljeong.nameKo}]의 기운이 [${dominantChiljeong.moderationStatus}] 상태로 나타나고 있습니다. 주자의 가르침대로, 외적인 자극에 일희일비하지 말고 '거경궁리(居敬窮理)'—항상 마음을 경건하고 또렷하게 깨어 있게 유지하십시오.`;
 
-  const mindCultivationPrescription = `[주일무적(主一無適) 수양 처방] 마음을 오직 하나에 모으고 잡념으로 흩어지지 않게 하는 주일무적 공부를 실천하십시오. 기질의 탁함을 맑게 씻어내어 본연지성(순수도 ${originalNaturePurityScore}점)을 회복할 때, ${dominantSadan.moralAction}이(가) 저절로 이루어집니다. ${dominantChiljeong.nameKo} 감정에 휘둘릴 때는 ${dominantChiljeong.harmonizationKey}를 가슴에 품고 평온의 중심을 잡으십시오.`;
+  const mindCultivationPrescription = `[주일무적(主一無適) 수양 처방] 마음을 오직 하나에 모으고 잡념으로 흩어지지 않게 하는 주일무적 공부를 실천하십시오. 기질의 탁함을 맑게 씻어내어 ${describeLiQiStage(originalNaturePurityScore)} 흐름을 회복할 때, ${dominantSadan.moralAction}이(가) 저절로 이루어집니다. ${dominantChiljeong.nameKo} 감정에 휘둘릴 때는 ${dominantChiljeong.harmonizationKey}를 가슴에 품고 평온의 중심을 잡으십시오.`;
 
   return {
     engineVersion: NEO_CONFUCIAN_LIQI_ENGINE_VERSION,
+    calculatedAtKst,
     dominantSadan,
     dominantChiljeong,
     sadanAlignmentScore,
@@ -170,24 +203,32 @@ export function calculateNeoConfucianFourSevenLiQi(params: {
     originalNaturePurityScore,
     geogyeongConcentrationIndex,
     neoConfucianMasterGuidance,
-    mindCultivationPrescription
+    mindCultivationPrescription,
+    liQiSynthesisMatrix,
   };
 }
 
 export function formatNeoConfucianFourSevenLiQiPrompt(rep: NeoConfucianFourSevenLiQiReport): string {
-  return `[성리학 사칠이기(四七理氣) & 거경궁리 주일무적 수양 실측 리포트]
-· 버전: ${rep.engineVersion}
-· 주재 사단(四端): [${rep.dominantSadan.nameKo}] — 덕목: ${rep.dominantSadan.cardinalVirtue}
-  - 도덕적 의미: ${rep.dominantSadan.meaning}
-  - 실천 행동: ${rep.dominantSadan.moralAction}
-· 감정 칠정(七情) 현황: [${rep.dominantChiljeong.nameKo}] — 조화 상태: ${rep.dominantChiljeong.moderationStatus}
-  - 감정 조율 요체: ${rep.dominantChiljeong.harmonizationKey}
-· 핵심 계측 지표:
-  - 사단 도덕 발현도: ${rep.sadanAlignmentScore}/100
-  - 칠정 중절(中節) 조화 지수: ${rep.chiljeongBalanceScore}/100
-  - 이기지묘(理氣之妙) 조화율: ${rep.liQiHarmonyIndex}/100
-  - 본연지성(本然之性) 회복 순수도: ${rep.originalNaturePurityScore}/100
-  - 거경(居敬) 주일무적 집중도: ${rep.geogyeongConcentrationIndex}/100
-· 성리학 거경 지침: ${rep.neoConfucianMasterGuidance}
-· 주일무적 마음 수양 처방: ${rep.mindCultivationPrescription}`;
+  const composite = Math.round(
+    (rep.sadanAlignmentScore + rep.chiljeongBalanceScore + rep.liQiHarmonyIndex + rep.originalNaturePurityScore + rep.geogyeongConcentrationIndex) / 5
+  );
+  const lines = [
+    `[성리학 사칠이기(四七理氣) & 거경궁리 주일무적 수양 실측 리포트]`,
+    `· 연산 시각: ${rep.calculatedAtKst} | 버전: ${rep.engineVersion}`,
+    `· 이기 수양 국면: ${describeLiQiStage(composite)}`,
+    `· 주재 사단(四端): [${rep.dominantSadan.nameKo}] — 덕목: ${rep.dominantSadan.cardinalVirtue}`,
+    `  - 도덕적 의미: ${rep.dominantSadan.meaning}`,
+    `  - 실천 행동: ${rep.dominantSadan.moralAction}`,
+    `· 감정 칠정(七情) 현황: [${rep.dominantChiljeong.nameKo}] — 조화 상태: ${rep.dominantChiljeong.moderationStatus}`,
+    `  - 감정 조율 요체: ${rep.dominantChiljeong.harmonizationKey}`,
+    `· 성리학 거경 지침: ${rep.neoConfucianMasterGuidance}`,
+    `· 주일무적 마음 수양 처방: ${rep.mindCultivationPrescription}`,
+  ];
+  if (rep.liQiSynthesisMatrix) {
+    lines.push(
+      `· 교차 매트릭스 [핵심 긴장: ${rep.liQiSynthesisMatrix.dominantTension} | 조율 상태: ${rep.liQiSynthesisMatrix.alignmentState}]`,
+      `· 통합 실천: ${rep.liQiSynthesisMatrix.integratedAction}`,
+    );
+  }
+  return lines.join('\n');
 }

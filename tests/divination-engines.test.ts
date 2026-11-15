@@ -3657,10 +3657,15 @@ test('Orpheic Mysteries Engine: calculates memory well awakening and Dionysian e
   assert(rep.polarityArchetype.nameKo.length > 0);
   assert(rep.divineLineageDeclaration.length > 0);
   assert(rep.practiceGuidance.length > 0 && rep.ritualAction.length > 0 && rep.boundaryNotice.length > 0);
+  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(rep.orphicSynthesisMatrix?.integratedAction));
   const prompt = formatOrpheicMysteriesPrompt(rep);
   assert(prompt.includes('고대 그리스 오르페우스 신비주의 & 므네모시네 기억의 샘 실측 데이터'));
   assert(prompt.includes(rep.goldTabletPassportCode));
   assert(prompt.includes(rep.practiceGuidance));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
 });
 
 test('Popol Vuh Hero Twins Engine: calculates active trial house and qualitative transformation', () => {
@@ -4156,9 +4161,14 @@ test('Neo-Confucian Four-Seven Li-Qi Engine: calculates Sadan alignment, Chiljeo
   assert(rep.originalNaturePurityScore >= 0 && rep.originalNaturePurityScore <= 100);
   assert(rep.geogyeongConcentrationIndex >= 0 && rep.geogyeongConcentrationIndex <= 100);
   assert(rep.dominantSadan.nameKo.length > 0);
+  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(rep.liQiSynthesisMatrix?.integratedAction));
   const prompt = formatNeoConfucianFourSevenLiQiPrompt(rep);
   assert(prompt.includes('성리학 사칠이기(四七理氣) & 거경궁리 주일무적 수양 실측 리포트'));
   assert(prompt.includes(rep.dominantSadan.nameKo));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
 });
 
 test('Etruscan Augur Sixteen Sky Divination Engine: calculates Faustus auspice score, 16 Templum region and Admissio approval', () => {
@@ -5477,9 +5487,14 @@ test('Aurelius Augustine Confessiones Illuminatio Engine: calculates Interior Il
   assert(rep.restfulPeaceOfHeartScore >= 0 && rep.restfulPeaceOfHeartScore <= 100);
   assert(rep.transcendentLoveOrientationScore >= 0 && rep.transcendentLoveOrientationScore <= 100);
   assert(rep.activeAugustineTheme.themeTitleLatin.length > 0);
+  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(rep.augustineSynthesisMatrix?.integratedAction));
   const prompt = formatAugustineConfessionesIlluminatioPrompt(rep);
   assert(prompt.includes('아우구스티누스 《고백록》 내적 조명 & 안식 평정심 지표'));
   assert(prompt.includes(rep.activeAugustineTheme.themeTitleKo));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
 });
 
 test('Niccolo Machiavelli Virtu and Fortuna Engine: calculates Virtu decisiveness, Fortuna navigation, and Riscontro adaptability', () => {
