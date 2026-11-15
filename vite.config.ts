@@ -6,6 +6,16 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { execSync } from 'child_process';
 import {defineConfig, loadEnv, type Plugin} from 'vite';
+import {
+  DCE_ENGINE_CHUNK_MAX_SOURCE_BYTES,
+  PRECACHE_CHUNK_BUDGET_BYTES,
+  WORKBOX_MAXIMUM_FILE_SIZE_TO_CACHE_IN_BYTES,
+  collectPrecacheFiles,
+  divinationEngineChunkName,
+  findPrecacheBudgetViolations,
+  formatBytes,
+  formatPrecacheBudgetError,
+} from './scripts/precacheChunkBudget.ts';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const packageJson = JSON.parse(
@@ -35,6 +45,34 @@ function buildVersionPayload(version: string) {
   const builtAt = new Date().toISOString();
   const entry = readChangelogEntry(version);
   return entry ? { version, builtAt, ...entry } : { version, builtAt };
+}
+
+function precacheChunkBudgetPlugin(): Plugin {
+  return {
+    name: 'precache-chunk-budget',
+    closeBundle: {
+      order: 'pre',
+      handler() {
+        const distDir = path.resolve(__dirname, 'dist');
+        const files = collectPrecacheFiles(distDir);
+        const violations = findPrecacheBudgetViolations(files);
+        if (violations.length) {
+          this.error(formatPrecacheBudgetError(violations));
+        }
+        const largest = files
+          .filter((file) => file.size >= 500_000 && /\.(js|mjs|css)$/.test(file.path))
+          .sort((a, b) => b.size - a.size);
+        if (largest.length) {
+          console.log(
+            `[precache-budget] budget ${formatBytes(PRECACHE_CHUNK_BUDGET_BYTES)} / Workbox cap ${formatBytes(WORKBOX_MAXIMUM_FILE_SIZE_TO_CACHE_IN_BYTES)}`,
+          );
+          for (const file of largest) {
+            console.log(`[precache-budget] ${file.path} ${formatBytes(file.size)}`);
+          }
+        }
+      },
+    },
+  };
 }
 
 function prismVersionPlugin(version: string): Plugin {
@@ -68,6 +106,7 @@ export default defineConfig(({mode}) => {
       prismVersionPlugin(packageJson.version),
       react(), 
       tailwindcss(),
+      precacheChunkBudgetPlugin(),
       VitePWA({
         registerType: 'autoUpdate',
         devOptions: {
@@ -171,7 +210,7 @@ export default defineConfig(({mode}) => {
           cleanupOutdatedCaches: true,
           clientsClaim: true,
           skipWaiting: true,
-          maximumFileSizeToCacheInBytes: 5000000,
+          maximumFileSizeToCacheInBytes: WORKBOX_MAXIMUM_FILE_SIZE_TO_CACHE_IN_BYTES,
           // Help mobile browsers pick up new versions faster
           runtimeCaching: [
             {
@@ -247,6 +286,26 @@ export default defineConfig(({mode}) => {
           main: path.resolve(__dirname, 'index.html'),
           chat: path.resolve(__dirname, 'chat.html'),
           handbook: path.resolve(__dirname, 'handbook.html'),
+        },
+        output: {
+          codeSplitting: {
+            groups: [
+              {
+                // Leaf engine modules are text-heavy and were statically pulled
+                // into the shared AppContext chunk until it crossed Workbox's
+                // per-file precache cap. Hashing them into fixed groups keeps
+                // each precached file small as more engines are added. The
+                // orchestrator stays put, so runDeterministicEngine remains sync.
+                name: (moduleId) => divinationEngineChunkName(moduleId) ?? 'dce-engine',
+                debugName: 'dce-engine',
+                test: (moduleId) => divinationEngineChunkName(moduleId) != null,
+                maxSize: DCE_ENGINE_CHUNK_MAX_SOURCE_BYTES,
+                minShareCount: 1,
+                includeDependenciesRecursively: false,
+                priority: 20,
+              },
+            ],
+          },
         },
       },
     },

@@ -1,4 +1,4 @@
-// v1.7.485: Deepen Bhagavad Gita, Four Noble Truths, and Nagarjuna Sunyata engines (pure qualitative v2.1.0)
+// v1.7.486: Split divination engine bodies out of the AppContext precache chunk
 import { getLucyRequestFallbacks, requestWithModelFallback } from '../src/lib/lucyModelPolicy.ts';
 import "dotenv/config";
 import express from "express";

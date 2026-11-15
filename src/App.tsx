@@ -36,9 +36,7 @@ import { shouldUsePageTransitions, shouldMountBgMusicPlayer, isDualPaneLayout, i
 import { isDuoDividerDoubleTap, mapDuoPaneSide, shouldResetDuoPaneSwapOnFold, type DuoDividerTap } from "./lib/duoPaneSwap";
 import { DuoCosmicAmbientRoom } from "./components/duo/DuoCosmicAmbientRoom";
 import AuroraBackground from "./components/AuroraBackground";
-import HubHome from "./pages/HubHome";
 import EpilogueApp from "./pages/EpilogueApp";
-import LucyStandalonePage from "./pages/LucyStandalonePage";
 
 function lazyWithRetry<T extends React.ComponentType<any>>(
   componentImport: () => Promise<{ default: T }>
@@ -59,6 +57,8 @@ function lazyWithRetry<T extends React.ComponentType<any>>(
   });
 }
 
+const HubHome = lazyWithRetry(() => import("./pages/HubHome"));
+const LucyStandalonePage = lazyWithRetry(() => import("./pages/LucyStandalonePage"));
 const TrinityApp = lazyWithRetry(() => import("./pages/TrinityApp"));
 const MuseApp = lazyWithRetry(() => import("./pages/MuseApp"));
 const OrangeApp = lazyWithRetry(() => import("./pages/OrangeApp"));
@@ -161,19 +161,23 @@ const ROUTES_MAP = [
   { path: "/key", Component: CalmApp },
 ];
 
+function SuspendedPage({ children }: { children: React.ReactNode }) {
+  return <React.Suspense fallback={<PageLoader />}>{children}</React.Suspense>;
+}
+
 function ActivePage({ loc }: { loc: string }) {
   const cleanLoc = loc ? loc.split('?')[0].split('#')[0] : '/';
   return (
     <ErrorBoundary key={cleanLoc}>
       <Switch location={cleanLoc}>
-        <Route path="/"><LucyStandalonePage /></Route>
-        <Route path="/prologue"><HubHome /></Route>
-        <Route path="/universe"><HubHome /></Route>
-        <Route path="/ecpr"><HubHome /></Route>
-        <Route path="/todo"><HubHome /></Route>
-        <Route path="/mission"><HubHome /></Route>
-        <Route path="/synergy"><HubHome /></Route>
-        <Route path="/aegis"><HubHome /></Route>
+        <Route path="/"><SuspendedPage><LucyStandalonePage /></SuspendedPage></Route>
+        <Route path="/prologue"><SuspendedPage><HubHome /></SuspendedPage></Route>
+        <Route path="/universe"><SuspendedPage><HubHome /></SuspendedPage></Route>
+        <Route path="/ecpr"><SuspendedPage><HubHome /></SuspendedPage></Route>
+        <Route path="/todo"><SuspendedPage><HubHome /></SuspendedPage></Route>
+        <Route path="/mission"><SuspendedPage><HubHome /></SuspendedPage></Route>
+        <Route path="/synergy"><SuspendedPage><HubHome /></SuspendedPage></Route>
+        <Route path="/aegis"><SuspendedPage><HubHome /></SuspendedPage></Route>
         <Route path="/trinity"><React.Suspense fallback={<PageLoader />}><TrinityApp /></React.Suspense></Route>
         <Route path="/muse"><React.Suspense fallback={<PageLoader />}><MuseApp /></React.Suspense></Route>
         <Route path="/orange"><React.Suspense fallback={<PageLoader />}><OrangeApp /></React.Suspense></Route>
@@ -186,8 +190,8 @@ function ActivePage({ loc }: { loc: string }) {
         <Route path="/handbook"><React.Suspense fallback={<PageLoader />}><HandbookStandalonePage /></React.Suspense></Route>
         <Route path="/rebible"><React.Suspense fallback={<PageLoader />}><HandbookStandalonePage /></React.Suspense></Route>
         <Route path="/chat/pro"><React.Suspense fallback={<PageLoader />}><LucyProPage /></React.Suspense></Route>
-        <Route path="/chat"><LucyStandalonePage /></Route>
-        <Route path="/lucy"><LucyStandalonePage /></Route>
+        <Route path="/chat"><SuspendedPage><LucyStandalonePage /></SuspendedPage></Route>
+        <Route path="/lucy"><SuspendedPage><LucyStandalonePage /></SuspendedPage></Route>
         <Route path="/omniwarp"><React.Suspense fallback={<PageLoader />}><OmniWarpPage /></React.Suspense></Route>
         <Route path="/bigbang"><React.Suspense fallback={<PageLoader />}><OmniWarpPage /></React.Suspense></Route>
         <Route path="/orb"><React.Suspense fallback={<PageLoader />}><CalmApp /></React.Suspense></Route>
