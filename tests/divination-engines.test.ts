@@ -5075,9 +5075,14 @@ test('Montaigne Essais Wisdom Engine: calculates Que sais-je inquiry, Self-intro
   assert(rep.humanToleranceEmpathyScore >= 0 && rep.humanToleranceEmpathyScore <= 100);
   assert(rep.equanimityMortalityScore >= 0 && rep.equanimityMortalityScore <= 100);
   assert(rep.activeThematicEssay.essayTitleFrench.length > 0);
+  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(rep.montaigneEssaisSynthesisMatrix?.integratedAction));
   const prompt = formatMontaigneEssaisWisdomPrompt(rep);
   assert(prompt.includes('몽테뉴 수상록(Essais) 회의주의·자기성찰 지표'));
   assert(prompt.includes(rep.activeThematicEssay.essayTitleKo));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
 });
 
 test('Nagarjuna Madhyamaka Sunyata Engine: calculates Sunyata wisdom, Eightfold negation, and Dependent origination', () => {
@@ -5330,9 +5335,14 @@ test('Thomas Aquinas Summa Theologiae Engine: calculates Reason and Faith Harmon
   assert(rep.naturalMoralLawPrudenceScore >= 0 && rep.naturalMoralLawPrudenceScore <= 100);
   assert(rep.beatificVisionSupremeGoodScore >= 0 && rep.beatificVisionSupremeGoodScore <= 100);
   assert(rep.activeAquinasTheme.themeTitleLatin.length > 0);
+  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(rep.aquinasSynthesisMatrix?.integratedAction));
   const prompt = formatThomasAquinasSummaTheologiaePrompt(rep);
   assert(prompt.includes('토마스 아퀴나스 《신학대전》 이성·신앙 조화 & 덕론 종합 지표'));
   assert(prompt.includes(rep.activeAquinasTheme.themeTitleKo));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
 });
 
 test('Francis Bacon Novum Organum Engine: calculates Four Idols overcoming, Inductio Vera, and Empirical Grounding', () => {
@@ -6824,8 +6834,10 @@ test('James Joyce engine selects a qualitative literary perspective from the que
   assert.equal(rep.activeJoyceTheme.themeKey, 'forgeInSoulSmithy');
   assert.equal(Object.hasOwn(rep, 'epiphanyEverydayRevelationScore'), false);
   assert.equal(Object.hasOwn(rep, 'calculatedAtKst'), false);
+  assert(Boolean(rep.joyceSynthesisMatrix?.integratedAction));
   const prompt = formatIrishJamesJoyceUlyssesEpiphanyPrompt(rep);
   assert.match(prompt, /문학적 참고/);
+  assert(prompt.includes('교차 매트릭스'));
   assert.doesNotMatch(prompt, /\/100|원전 명대사|길 잃은 고양이|A man of genius/);
 
   const epiphany = calculateIrishJamesJoyceUlyssesEpiphany('일상의 에피파니와 관찰');

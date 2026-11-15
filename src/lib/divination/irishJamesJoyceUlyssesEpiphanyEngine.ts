@@ -3,10 +3,10 @@
  * Epiphany is located in Stephen Hero; see https://www.joyceproject.com/notes/Wk-bJZUBeQi-aLQfd7Cb.
  * Ulysses episode 4 presents Bloom's household cat, not a lost cat.
  * This engine intentionally emits no personal scores, diagnosis, prediction, or attributed quotation.
- * @version LUCKEY-JOYCE-ULYSSES-EPIPHANY-v1.0.0
+ * @version LUCKEY-JOYCE-ULYSSES-EPIPHANY-v2.0.0
  */
 
-export const IRISH_JAMES_JOYCE_ULYSSES_EPIPHANY_VERSION = 'LUCKEY-JOYCE-ULYSSES-EPIPHANY-v1.0.0';
+export const IRISH_JAMES_JOYCE_ULYSSES_EPIPHANY_VERSION = 'LUCKEY-JOYCE-ULYSSES-EPIPHANY-v2.0.0';
 
 export interface JoyceTheme {
   themeKey: string;
@@ -22,6 +22,11 @@ export interface IrishJamesJoyceUlyssesEpiphanyResult {
   joyceComprehensiveGuidance: {
     guidanceTitle: string;
     philosophicalCounsel: string;
+  };
+  joyceSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
   };
 }
 
@@ -70,6 +75,11 @@ function selectJoyceTheme(query?: string): JoyceTheme {
 
 export function calculateIrishJamesJoyceUlyssesEpiphany(query?: string): IrishJamesJoyceUlyssesEpiphanyResult {
   const activeJoyceTheme = selectJoyceTheme(query);
+  const joyceSynthesisMatrix = {
+    dominantTension: `${activeJoyceTheme.themeTitleKo} ↔ 일상의 작은 행동`,
+    alignmentState: '문학적 에피파니를 통한 일상 관찰과 조율 국면',
+    integratedAction: activeJoyceTheme.practicalCounsel,
+  };
   return {
     engineVersion: IRISH_JAMES_JOYCE_ULYSSES_EPIPHANY_VERSION,
     activeJoyceTheme,
@@ -77,15 +87,24 @@ export function calculateIrishJamesJoyceUlyssesEpiphany(query?: string): IrishJa
       guidanceTitle: `제임스 조이스 작품에서 얻는 참고 관점: ${activeJoyceTheme.themeTitleKo}`,
       philosophicalCounsel: `${activeJoyceTheme.literaryInsight} ${activeJoyceTheme.practicalCounsel} 이 내용은 문학을 통한 참고이며, 개인의 성격이나 미래를 측정한 결과가 아닙니다.`,
     },
+    joyceSynthesisMatrix,
   };
 }
 
 export function formatIrishJamesJoyceUlyssesEpiphanyPrompt(res: IrishJamesJoyceUlyssesEpiphanyResult): string {
-  return [
+  const lines = [
     '【제임스 조이스 작품에서 얻은 문학적 참고】',
+    `- 엔진 버전: ${res.engineVersion}`,
     `- 질문과 관련해 살펴볼 주제: ${res.activeJoyceTheme.themeTitleKo}`,
     `- 작품 맥락: ${res.activeJoyceTheme.literaryInsight}`,
     `- 조심스럽게 적용할 제안: ${res.activeJoyceTheme.practicalCounsel}`,
     '- 이는 문학적 해석을 위한 참고일 뿐, 개인 점수·심리 진단·미래 예측이 아닙니다.',
-  ].join('\n');
+  ];
+  if (res.joyceSynthesisMatrix) {
+    lines.push(
+      `- 교차 매트릭스 [핵심 긴장: ${res.joyceSynthesisMatrix.dominantTension} | 조율 상태: ${res.joyceSynthesisMatrix.alignmentState}]`,
+      `- 통합 실천: ${res.joyceSynthesisMatrix.integratedAction}`,
+    );
+  }
+  return lines.join('\n');
 }
