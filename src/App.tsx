@@ -32,6 +32,7 @@ import { KeyCosmicLoader } from "./components/KeyCosmicLoader";
 import { GlobalScrollToTopOnHeaderTap } from "./components/navigation/GlobalScrollToTopOnHeaderTap";
 import { BgMusicPlayer } from "./components/trinity/BgMusicPlayer";
 import { initTTSAudioLifecycle } from "./lib/audio";
+import { installGlobalButtonTapSound } from "./lib/globalButtonTapSound";
 import { shouldUsePageTransitions, shouldMountBgMusicPlayer, isDualPaneLayout, isDuoUnfoldedState, subscribeDuoLayout } from "./lib/perfMode";
 import { isDuoDividerDoubleTap, mapDuoPaneSide, shouldResetDuoPaneSwapOnFold, type DuoDividerTap } from "./lib/duoPaneSwap";
 import { DuoCosmicAmbientRoom } from "./components/duo/DuoCosmicAmbientRoom";
@@ -999,6 +1000,11 @@ function AppContent() {
 }
 
 export default function App() {
+  React.useEffect(() => {
+    // 앱 전체 버튼 클릭음(tap_light) 1회 등록 — 모든 채널·모달·엔진함 버튼 공통
+    installGlobalButtonTapSound();
+  }, []);
+
   return (
     <ErrorBoundary>
       <ThemeProvider>

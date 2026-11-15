@@ -223,6 +223,28 @@ const STORAGE_KEY_VOLUME = 'prism_audio_haptics_volume';
 let hapticSubBus: GainNode | null = null;
 let cachedNoiseBuffer: AudioBuffer | null = null;
 
+/**
+ * App-wide light tap sound (전역 버튼 클릭음).
+ * A single interaction can reach several handlers (전역 위임 리스너 + 버튼 자체 onClick,
+ * DialogTriggerButton의 pointerup/click 이중 활성화 등) so identical tap sounds
+ * triggered inside this window are collapsed into one.
+ */
+const TAP_DEDUPE_MS = 70;
+const TAP_DEDUPE_TYPES: AudioHapticType[] = ['tap_light', 'tap_impact'];
+let lastTapPlayedType: AudioHapticType | null = null;
+let lastTapPlayedAt = 0;
+let lastHapticPlayedAt = 0;
+
+/** Timestamp(performance.now) of the most recent haptic that actually started playing. */
+export function getLastHapticTimestamp(): number {
+  return lastHapticPlayedAt;
+}
+
+function shouldCollapseDuplicateTap(type: AudioHapticType, now: number): boolean {
+  if (!TAP_DEDUPE_TYPES.includes(type)) return false;
+  return lastTapPlayedType === type && now - lastTapPlayedAt < TAP_DEDUPE_MS;
+}
+
 function getNoiseBuffer(ctx: AudioContext): AudioBuffer {
   if (cachedNoiseBuffer && cachedNoiseBuffer.sampleRate === ctx.sampleRate) {
     return cachedNoiseBuffer;
@@ -340,6 +362,15 @@ export function playAudioHaptic(type: AudioHapticType, options?: AudioHapticOpti
 
   const enabled = isAudioHapticsEnabled();
   if (!enabled) return;
+
+  // 0. Collapse the same tap sound fired twice for one interaction
+  const nowMs = typeof performance !== 'undefined' ? performance.now() : Date.now();
+  if (shouldCollapseDuplicateTap(type, nowMs)) return;
+  if (TAP_DEDUPE_TYPES.includes(type)) {
+    lastTapPlayedType = type;
+    lastTapPlayedAt = nowMs;
+  }
+  lastHapticPlayedAt = nowMs;
 
   // 1. Trigger hardware vibration pattern if not skipped
   if (!options?.skipVibration) {

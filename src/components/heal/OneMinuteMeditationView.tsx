@@ -551,7 +551,10 @@ export function OneMinuteMeditationView({ onClose, isModal = false }: OneMinuteM
   const phaseInfo = getPhaseInfo();
 
   return (
-    <div className={`w-full max-w-4xl mx-auto flex flex-col items-center ${isModal ? 'p-4 md:p-6' : ''}`}>
+    <div
+      data-tap-sound={soundEnabled ? undefined : 'off'}
+      className={`w-full max-w-4xl mx-auto flex flex-col items-center ${isModal ? 'p-4 md:p-6' : ''}`}
+    >
       {/* Header Banner */}
       <div className="w-full flex flex-col items-center text-center space-y-3 mb-6">
         <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs font-semibold tracking-wider">
