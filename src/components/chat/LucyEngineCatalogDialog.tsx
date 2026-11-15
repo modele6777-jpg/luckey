@@ -5,15 +5,15 @@ import './chat-library-layout.css';
 import React, { useMemo } from 'react';
 import { Search, Sparkles, X } from 'lucide-react';
 import { WorkspacePortal } from '@/components/layout/DuoWorkspace';
-import { type DceEngineMeta } from '@/lib/divination/deterministicEngine';
-import type { SevenThemeChannel } from '@/lib/fifteenDivinationTools';
 import {
   ENGINE_CATALOG_COUNTS,
-  ENGINE_CATALOG_THEME_COUNTS,
+  type EngineCatalogCategoryFilter,
+  type EngineCatalogThemeFilter,
   getEngineCatalogMeaning,
   getEngineCatalogTheme,
   LUCY_PRO_CATALOG_ENGINES,
   LUCY_PRO_CHANNEL_THEMES,
+  selectCatalogEngines,
 } from '@/lib/divination/engineCatalog';
 
 interface LucyEngineCatalogDialogProps {
@@ -23,8 +23,8 @@ interface LucyEngineCatalogDialogProps {
   isLight: boolean;
 }
 
-type CatalogFilter = 'all' | 'foundational' | 'deep_master';
-type CatalogThemeFilter = 'all' | SevenThemeChannel;
+type CatalogFilter = EngineCatalogCategoryFilter;
+type CatalogThemeFilter = EngineCatalogThemeFilter;
 
 const FILTERS: { id: CatalogFilter; label: string }[] = [
   { id: 'all', label: '전체 목록' },
@@ -32,27 +32,17 @@ const FILTERS: { id: CatalogFilter; label: string }[] = [
   { id: 'deep_master', label: '심층 관점' },
 ];
 
-function matchesFilter(engine: DceEngineMeta, filter: CatalogFilter) {
-  return filter === 'all' || engine.category === filter;
-}
-
 export function LucyEngineCatalogDialog({ isOpen, onClose, isLight, sessionKey = defaultLibrarySessionKey('engine-library') }: LucyEngineCatalogDialogProps) {
   const [filter, setFilter] = useLibrarySessionState<CatalogFilter>(`${sessionKey}:filter`, 'all');
   const [themeFilter, setThemeFilter] = useLibrarySessionState<CatalogThemeFilter>(`${sessionKey}:theme`, 'all');
   const [query, setQuery] = useLibrarySessionState<string>(`${sessionKey}:query`, '');
 
-  const filteredEngines = useMemo(() => {
-    const normalizedQuery = query.trim().toLocaleLowerCase();
-    return LUCY_PRO_CATALOG_ENGINES.filter(engine => {
-      if (!matchesFilter(engine, filter)) return false;
-      const theme = getEngineCatalogTheme(engine);
-      if (themeFilter !== 'all' && theme !== themeFilter) return false;
-      if (!normalizedQuery) return true;
-      const themeInfo = LUCY_PRO_CHANNEL_THEMES.find(item => item.id === theme);
-      return [engine.nameKo, engine.key, engine.summary ?? '', getEngineCatalogMeaning(engine), themeInfo?.label ?? '', themeInfo?.description ?? '']
-        .some(value => value.toLocaleLowerCase().includes(normalizedQuery));
-    });
-  }, [filter, query, themeFilter]);
+  const catalog = useMemo(() => selectCatalogEngines({
+    category: filter,
+    theme: themeFilter,
+    query,
+  }), [filter, query, themeFilter]);
+  const filteredEngines = catalog.engines;
 
   const groupedEngines = useMemo(() => LUCY_PRO_CHANNEL_THEMES
     .map(theme => ({
@@ -147,7 +137,7 @@ export function LucyEngineCatalogDialog({ isOpen, onClose, isLight, sessionKey =
               </div>
               <nav aria-label="엔진 목록 분류" className="chat-library-filters flex flex-wrap gap-2 pb-0.5">
                 {FILTERS.map(item => {
-                  const count = item.id === 'all' ? LUCY_PRO_CATALOG_ENGINES.length : ENGINE_CATALOG_COUNTS[item.id];
+                  const count = catalog.counts.categories[item.id];
                   const selected = filter === item.id;
                   return (
                     <button
@@ -170,7 +160,7 @@ export function LucyEngineCatalogDialog({ isOpen, onClose, isLight, sessionKey =
                   aria-pressed={themeFilter === 'all'}
                   className={`shrink-0 rounded-full px-3 py-1.5 text-xs font-bold transition-colors ${themeFilter === 'all' ? 'bg-amber-400 text-slate-950' : inactivePill}`}
                 >
-                  모든 테마 {LUCY_PRO_CATALOG_ENGINES.length}
+                  모든 테마 {catalog.counts.themes.all}
                 </button>
                 {LUCY_PRO_CHANNEL_THEMES.map(theme => {
                   const selected = themeFilter === theme.id;
@@ -182,7 +172,7 @@ export function LucyEngineCatalogDialog({ isOpen, onClose, isLight, sessionKey =
                       aria-pressed={selected}
                       className={`shrink-0 rounded-full px-3 py-1.5 text-xs font-bold transition-colors ${selected ? 'bg-amber-400 text-slate-950' : inactivePill}`}
                     >
-                      {theme.label} {ENGINE_CATALOG_THEME_COUNTS[theme.id]}
+                      {theme.label} {catalog.counts.themes[theme.id]}
                     </button>
                   );
                 })}
