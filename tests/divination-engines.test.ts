@@ -3114,8 +3114,10 @@ test('Hermetic Kybalion Engine: maps 7 cosmic principles and alchemical shift', 
 });
 
 test('Vibrational Soul Quest Engine: derives 4 core soul numbers and personal year quest', () => {
-  const rep = calculateVibrationalSoulQuest(profile);
+  const rep = calculateVibrationalSoulQuest(profile, new Date(), '올해의 영혼 방향');
   assert.equal(rep.engineVersion, VIBRATIONAL_SOUL_QUEST_VERSION);
+  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(rep.soulQuestSynthesisMatrix?.integratedAction));
   assert(rep.soulNumbers.lifePathNumber >= 1);
   assert(rep.soulNumbers.personalYear >= 1 && rep.soulNumbers.personalYear <= 9);
   assert(rep.questArchetype.length > 0);
@@ -3123,6 +3125,7 @@ test('Vibrational Soul Quest Engine: derives 4 core soul numbers and personal ye
   const prompt = formatVibrationalSoulQuestPrompt(rep);
   assert(prompt.includes('고대 수비학 차크라 솔 울림'));
   assert(prompt.includes(rep.questArchetype));
+  assert(prompt.includes('교차 매트릭스'));
   assert.doesNotMatch(prompt, /\bHz\b|Solfeggio|솔페지오|주파수/i);
 });
 
@@ -3600,8 +3603,10 @@ test('Eleusinian Mysteries Initiation & Rebirth Engine: calculates grade, statio
 });
 
 test('Vedic Nakshatra 108 Pada Engine: calculates nakshatra, pada and dharma path score', () => {
-  const rep = calculateVedicNakshatra108Pada(profile);
+  const rep = calculateVedicNakshatra108Pada(profile, new Date(), '카르마 소명');
   assert.equal(rep.engineVersion, VEDIC_NAKSHATRA_108_PADA_ENGINE_VERSION);
+  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(rep.nakshatra108SynthesisMatrix?.integratedAction));
   assert(rep.nakshatraIndex >= 1 && rep.nakshatraIndex <= 27);
   assert(rep.pada >= 1 && rep.pada <= 4);
   assert(rep.totalPadaIndex >= 1 && rep.totalPadaIndex <= 108);
@@ -3609,6 +3614,9 @@ test('Vedic Nakshatra 108 Pada Engine: calculates nakshatra, pada and dharma pat
   const prompt = formatVedicNakshatra108PadaPrompt(rep);
   assert(prompt.includes('베다 27나크샤트라 & 108파다(Pada) 카르마 성좌 정밀 실측 데이터'));
   assert(prompt.includes(rep.nakshatraNameKo));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
 });
 
 test('Egyptian Hermetic Cartouche Engine: calculates divine cartouche and qualitative soul triad', () => {
@@ -4293,6 +4301,8 @@ test('Buddhist Yogacara Consciousness Engine: calculates eight consciousnesses p
 test('Vedic Mandukya Turiya Engine: calculates four consciousness states, AUM resonance and pure witness', () => {
   const rep = calculateVedicMandukyaTuriya({ profile, question: '투리야 순수의식' });
   assert.equal(rep.engineVersion, VEDIC_MANDUKYA_TURIYA_ENGINE_VERSION);
+  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(rep.turiyaSynthesisMatrix?.integratedAction));
   assert(rep.turiyaPureConsciousnessScore >= 0 && rep.turiyaPureConsciousnessScore <= 100);
   assert(rep.aumSyllableResonanceIndex >= 0 && rep.aumSyllableResonanceIndex <= 100);
   assert(rep.sakshiWitnessPresenceScore >= 0 && rep.sakshiWitnessPresenceScore <= 100);
@@ -4301,6 +4311,9 @@ test('Vedic Mandukya Turiya Engine: calculates four consciousness states, AUM re
   const prompt = formatVedicMandukyaTuriyaPrompt(rep);
   assert(prompt.includes('고대 인도 만두키야 우파니샤드 4대 의식 & 투리야(Turiya) 순수의식 실측 데이터'));
   assert(prompt.includes(rep.dominantState.nameKo));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
 });
 
 test('Kabbalistic Zohar Five Soul Levels Engine: calculates five soul levels and Ein Sof spark', () => {

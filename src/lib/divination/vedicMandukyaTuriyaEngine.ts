@@ -16,7 +16,17 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const VEDIC_MANDUKYA_TURIYA_ENGINE_VERSION = '1.0.0';
+export const VEDIC_MANDUKYA_TURIYA_ENGINE_VERSION = '2.0.0';
+
+function formatMandukyaKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
 
 export interface MandukyaConsciousnessState {
   id: string;
@@ -31,6 +41,7 @@ export interface MandukyaConsciousnessState {
 
 export interface VedicMandukyaTuriyaReport {
   engineVersion: string;
+  calculatedAtKst: string;
   timestamp: string;
   turiyaPureConsciousnessScore: number; // 0 ~ 100 투리야 순수의식 각성도
   aumSyllableResonanceIndex: number; // 0 ~ 100 옴(AUM) 신성 파동 공명도
@@ -40,6 +51,11 @@ export interface VedicMandukyaTuriyaReport {
   secondaryState: MandukyaConsciousnessState; // 보조 의식 상태
   mandukyaUpanishadGuidance: string; // 만두키야 우파니샤드 지혜 지침
   omPranavaMeditationRitual: string; // 옴 프라나바 침묵 명상 리추얼
+  turiyaSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
 }
 
 const MANDUKYA_STATES_BASE: Omit<MandukyaConsciousnessState, 'resonanceScore'>[] = [
@@ -133,8 +149,17 @@ export function calculateVedicMandukyaTuriya(
   const mandukyaUpanishadGuidance = `당신은 몸도, 스쳐가는 감정도, 불안한 생각도 아닙니다. 그 모든 것을 바라보는 초연한 목격자(Sakshi)입니다. 지금 조명되는 상태는 [${dominantState.nameKo}]입니다. ${dominantState.spiritualGift}의 힘을 신뢰하십시오. 현상의 파도에 휩쓸리지 않고 깊은 바다의 침묵에 닻을 내릴 때입니다.`;
   const omPranavaMeditationRitual = `숨을 들이마시고 내쉬며 마음속으로 길게 'A-U-M...'을 울린 뒤, 음률이 멎은 고요한 침묵에 머무르십시오: "사르밤 칼비담 브라만(Sarvam Khalvidam Brahman) — 모든 것은 신성한 의식이며, 나는 영원한 순수 지각자이다."`;
 
+  const calculatedAtKst = formatMandukyaKstTimestamp(now);
+  const q = question.trim();
+  const turiyaSynthesisMatrix = {
+    dominantTension: `${dominantState.nameKo} ↔ ${secondaryState.nameKo}`,
+    alignmentState: `${dominantState.aumLetter} · ${dominantState.realm}`,
+    integratedAction: `${omPranavaMeditationRitual}${q ? ` [질문 맥락: ${q}]` : ''}`,
+  };
+
   return {
     engineVersion: VEDIC_MANDUKYA_TURIYA_ENGINE_VERSION,
+    calculatedAtKst,
     timestamp: now.toISOString(),
     turiyaPureConsciousnessScore,
     aumSyllableResonanceIndex,
@@ -144,19 +169,21 @@ export function calculateVedicMandukyaTuriya(
     secondaryState,
     mandukyaUpanishadGuidance,
     omPranavaMeditationRitual,
+    turiyaSynthesisMatrix,
   };
 }
 
 export function formatVedicMandukyaTuriyaPrompt(rep: VedicMandukyaTuriyaReport): string {
+  const matrixLine = rep.turiyaSynthesisMatrix
+    ? `\n· 투리야 의식 교차 매트릭스: 핵심 긴장(${rep.turiyaSynthesisMatrix.dominantTension}) · 조율 상태(${rep.turiyaSynthesisMatrix.alignmentState}) · 통합 실천(${rep.turiyaSynthesisMatrix.integratedAction})`
+    : '';
   return `[고대 인도 만두키야 우파니샤드 4대 의식 & 투리야(Turiya) 순수의식 실측 데이터]
-· 엔진 버전: v${rep.engineVersion}
-· 투리야 순수의식 각성도: ${rep.turiyaPureConsciousnessScore}/100 | 옴(AUM) 신성 파동 공명도: ${rep.aumSyllableResonanceIndex}/100
-· 샥시(초연한 목격자) 현존 지수: ${rep.sakshiWitnessPresenceScore}/100 | 마야 환영 탈각율: ${rep.mayaIllusionDissolutionRate}/100
-· 주재 의식 상태: [${rep.dominantState.nameKo} (${rep.dominantState.sanskrit})] — 공명도 ${rep.dominantState.resonanceScore}%
+· 엔진 버전: v${rep.engineVersion} | ${rep.calculatedAtKst}
+· 주재 의식 상태: [${rep.dominantState.nameKo} (${rep.dominantState.sanskrit})]
   - 옴 음률 계위: ${rep.dominantState.aumLetter} | 영역: ${rep.dominantState.realm}
   - 신성 원리: ${rep.dominantState.divinePrinciple}
   - 영적 은사: ${rep.dominantState.spiritualGift}
-· 보조 의식 상태: [${rep.secondaryState.nameKo} (${rep.secondaryState.sanskrit})] — 공명도 ${rep.secondaryState.resonanceScore}%
+· 보조 의식 상태: [${rep.secondaryState.nameKo} (${rep.secondaryState.sanskrit})]
 · 만두키야 우파니샤드 지혜 지침: ${rep.mandukyaUpanishadGuidance}
-· 옴 프라나바 침묵 명상 리추얼: ${rep.omPranavaMeditationRitual}`;
+· 옴 프라나바 침묵 명상 리추얼: ${rep.omPranavaMeditationRitual}${matrixLine}`;
 }
