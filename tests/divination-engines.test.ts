@@ -2324,8 +2324,10 @@ test('Deep Work Flow Engine: 딥워크 몰입 아키타입 및 최적 환경 매
 });
 
 test('Sleep Subconscious Engine: 수면 사운드 안내 및 3단계 나이트 리셋 검증', () => {
-  const res = calculateSleepSubconscious({ profile, targetDate: new Date('2026-11-03T08:00:00+09:00') });
+  const res = calculateSleepSubconscious({ profile, targetDate: new Date('2026-11-03T08:00:00+09:00'), question: '숙면과 꿈 해몽' });
   assert.equal(res.engineVersion, SLEEP_SUBCONSCIOUS_VERSION);
+  assert(res.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(res.sleepSynthesisMatrix?.integratedAction));
   assert(res.sleepRecoveryScore >= 0 && res.sleepRecoveryScore <= 100);
   assert(res.soundscape.recommendedSounds.length > 0);
   assert(res.nightRitual.step1BrainDump.length > 0);
@@ -2334,6 +2336,8 @@ test('Sleep Subconscious Engine: 수면 사운드 안내 및 3단계 나이트 �
   assert(prompt.includes(SLEEP_SUBCONSCIOUS_VERSION));
   assert(prompt.includes('수면 회복 잠재력'));
   assert(prompt.includes('나이트 리셋 리추얼'));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
   assert.doesNotMatch(prompt, /\bHz\b|Solfeggio|솔페지오|델타파|세타파|뇌파|주파수/i);
 });
 
@@ -2398,14 +2402,18 @@ test('Rune Matrix Engine: 고대 노르딕 룬 동시성 3대 스프레드 검�
 });
 
 test('Soul Journey Tarot Engine: 영혼 연금술 3단계 및 4원소 균형 검증', () => {
-  const res = calculateSoulJourneyTarot({ profile, targetDate: new Date('2026-11-03T10:00:00+09:00') });
+  const res = calculateSoulJourneyTarot({ profile, targetDate: new Date('2026-11-03T10:00:00+09:00'), question: '영혼 여정' });
   assert.equal(res.engineVersion, SOUL_JOURNEY_TAROT_VERSION);
+  assert(res.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(res.soulJourneySynthesisMatrix?.integratedAction));
   assert(res.currentArchetype.number >= 0 && res.currentArchetype.number <= 21);
   assert(res.elementalBalance.wands.score >= 0 && res.elementalBalance.wands.score <= 100);
   assert(res.riteOfPassage.alchemyScore >= 0 && res.riteOfPassage.alchemyScore <= 100);
   const prompt = formatSoulJourneyTarotPrompt(res);
   assert(prompt.includes('LUCKEY 영혼 타로 여정 지능'));
   assert(prompt.includes(res.currentArchetype.nameKo));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('%'));
 });
 
 test('Transcendental Meditation Engine: 초월 명상 및 마음 안정 안내 검증', () => {
@@ -2662,8 +2670,10 @@ test('Quantum Probabilistic Timeline Engine: 양자 다중우주 타임라인 �
 });
 
 test('Somatic Body Armoring Engine: 빌헬름 라이히 7대 신체 갑옷 해제 & 체성 감각 검증', () => {
-  const res = calculateSomaticBodyArmoring({ profile, targetDate: new Date('2026-11-03T10:00:00+09:00') });
+  const res = calculateSomaticBodyArmoring({ profile, targetDate: new Date('2026-11-03T10:00:00+09:00'), question: '신체 긴장 해소' });
   assert.equal(res.engineVersion, SOMATIC_ARMORING_VERSION);
+  assert(res.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(res.somaticSynthesisMatrix?.integratedAction));
   assert(res.primaryArmorSegment.segmentName.length > 0);
   assert(res.primaryArmorSegment.tensionLevelScore >= 0 && res.primaryArmorSegment.tensionLevelScore <= 100);
   assert(res.lifeForceEnergyFlowScore >= 0 && res.lifeForceEnergyFlowScore <= 100);
@@ -2671,6 +2681,8 @@ test('Somatic Body Armoring Engine: 빌헬름 라이히 7대 신체 갑옷 해�
   const prompt = formatSomaticBodyArmoringPrompt(res);
   assert(prompt.includes('LUCKEY 빌헬름 라이히 7대 신체 갑옷 해제 & 체성 감각'));
   assert(prompt.includes(res.primaryArmorSegment.segmentName));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
 });
 
 test('Supreme Wisdom Trinity Engine: 기적수업 × 초기불교 × 영지주의 3대 지혜 융합 검증', () => {
