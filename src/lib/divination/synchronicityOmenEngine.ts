@@ -19,7 +19,17 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const SYNCHRONICITY_OMEN_VERSION = 'LUCKEY-SYNCHRONICITY-OMEN-v1.0.0';
+export const SYNCHRONICITY_OMEN_VERSION = 'LUCKEY-SYNCHRONICITY-OMEN-v2.0.0';
+
+function formatSynchronicityKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
 
 export type ManifestationSignalType = 'GREEN_ACCELERATE' | 'AMBER_PAUSE_OBSERVE' | 'GOLDEN_QUANTUM_LEAP';
 
@@ -34,6 +44,7 @@ export interface SynchronicityChannelDetails {
 export interface SynchronicityOmenReport {
   engineVersion: string;
   calculatedAt: string;
+  calculatedAtKst: string;
   dominantOmenTheme: string;      // 현재 공명하는 오멘 테마
   synchronicityChannel: SynchronicityChannelDetails;
   twentyFourHourWatchSymbols: string[]; // 향후 24시간 주목할 3대 상징
@@ -43,11 +54,17 @@ export interface SynchronicityOmenReport {
     actionStep: string;
   };
   synthesisPromptGuidance: string;
+  synchronicitySynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
 }
 
 export function runSynchronicityOmenEngine(
   profile?: UserProfile,
-  targetDate: Date = new Date()
+  targetDate: Date = new Date(),
+  question?: string
 ): SynchronicityOmenReport {
   const sajuRes = calculateDetailedSaju(profile || null);
 
@@ -124,8 +141,15 @@ export function runSynchronicityOmenEngine(
   }
 
   const resonanceSensitivityScore = 85 + (seed % 15);
+  const calculatedAtKst = formatSynchronicityKstTimestamp(targetDate);
+  const q = (question || '').trim();
+  const synchronicitySynthesisMatrix = {
+    dominantTension: `${manifestationSignal} ↔ ${primaryChannelName}`,
+    alignmentState: `오멘 테마: ${dominantOmenTheme} · 오행: ${element} (${dayMaster}${dayBranch})`,
+    integratedAction: `${ritualName}: ${actionStep}${q ? ` [질문 맥락: ${q}]` : ''}`,
+  };
 
-  const synthesisPromptGuidance = `[LUCKEY 칼 융 동시성 징조 해독 & 오멘 매트릭스 v1.0.0]
+  const synthesisPromptGuidance = `[LUCKEY 칼 융 동시성 징조 해독 & 오멘 매트릭스 ${SYNCHRONICITY_OMEN_VERSION} | ${calculatedAtKst}]
 - 동시성 오멘 테마: [${dominantOmenTheme}]
 - 주 활성 채널: ${primaryChannelName}
 - 우주적 신호성 판별: [${manifestationSignal}] - ${signalSummary}
@@ -135,12 +159,14 @@ export function runSynchronicityOmenEngine(
   2. ${twentyFourHourWatchSymbols[1]}
   3. ${twentyFourHourWatchSymbols[2]}
 - 현실 틈새(Matrix Glitch) 해독 가이드: ${matrixGlitchDecodingGuidance}
-- 동시성 감응 지수: ${resonanceSensitivityScore}점
-- 동시성 각성 실천 리추얼: [${ritualName}] - ${actionStep}`;
+- 동시성 각성 실천 리추얼: [${ritualName}] - ${actionStep}
+- 교차 매트릭스: [핵심 긴장: ${synchronicitySynthesisMatrix.dominantTension} | 조율 상태: ${synchronicitySynthesisMatrix.alignmentState}]
+  * 통합 실천: ${synchronicitySynthesisMatrix.integratedAction}`;
 
   return {
     engineVersion: SYNCHRONICITY_OMEN_VERSION,
     calculatedAt: targetDate.toISOString(),
+    calculatedAtKst,
     dominantOmenTheme,
     synchronicityChannel: {
       primaryChannelName,
@@ -155,7 +181,8 @@ export function runSynchronicityOmenEngine(
       ritualName,
       actionStep
     },
-    synthesisPromptGuidance
+    synthesisPromptGuidance,
+    synchronicitySynthesisMatrix,
   };
 }
 
@@ -165,10 +192,11 @@ export function calculateSynchronicityOmen(params?: {
   profile?: UserProfile | null;
   saju?: SajuAnalysisResult | null;
   targetDate?: Date;
+  question?: string;
 }): SynchronicityOmenResult {
   const profile = params?.profile || undefined;
   const targetDate = params?.targetDate || new Date();
-  return runSynchronicityOmenEngine(profile, targetDate);
+  return runSynchronicityOmenEngine(profile, targetDate, params?.question);
 }
 
 export function formatSynchronicityOmenPrompt(res: SynchronicityOmenResult): string {
