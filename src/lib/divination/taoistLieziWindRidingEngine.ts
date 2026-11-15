@@ -15,7 +15,17 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const TAOIST_LIEZI_ENGINE_VERSION = '1.0.0';
+export const TAOIST_LIEZI_ENGINE_VERSION = '2.0.0';
+
+function formatLieziKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
 
 export interface LieziWindStage {
   id: string;
@@ -30,6 +40,7 @@ export interface LieziWindStage {
 export interface TaoistLieziWindRidingReport {
   engineVersion: string;
   timestamp: string;
+  calculatedAtKst: string;
   windRidingUnityScore: number; // 0 ~ 100 바람과의 합일도 (심기상응 지수)
   muhayuRestIndex: number; // 0 ~ 100 무하유지향 안식도
   tranquilEmptinessScore: number; // 0 ~ 100 허정염담(虛靜恬淡) 평온 지수
@@ -38,6 +49,11 @@ export interface TaoistLieziWindRidingReport {
   secondaryStage: LieziWindStage;
   lieziWindDecree: string; // 열자 어풍 지혜 선언
   wuweiActionMeditation: string; // 무위자연 행동 명상
+  lieziSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
 }
 
 const LIEZI_WIND_STAGES_BASE: Omit<LieziWindStage, 'resonanceScore'>[] = [
@@ -135,9 +151,18 @@ export function calculateTaoistLieziWindRiding(
   const lieziWindDecree = `《열자》 황제편은 노래합니다: "바람을 타는 자는 바람과 맞서지 않고, 내 몸을 한 줌의 겨처럼 가볍게 여겨 허공에 맡긴다." 지금 당신에게 흐르는 심법은 [${dominantStage.nameHanja} - ${dominantStage.nameKo}]입니다. ${dominantStage.transcendenceGuidance}`;
   const wuweiActionMeditation = `억지로 쥐고 있던 힘을 풀고 깊게 숨을 내쉬십시오: "어디에도 걸림이 없는 무하유지향의 바람이 분다. 나는 순풍을 타고 가볍게 유영한다."`;
 
+  const calculatedAtKst = formatLieziKstTimestamp(now);
+  const q = question.trim();
+  const lieziSynthesisMatrix = {
+    dominantTension: `${dominantStage.nameHanja} ↔ ${secondaryStage.nameHanja}`,
+    alignmentState: `심신 영역: ${dominantStage.mindCultivationDomain}`,
+    integratedAction: `${dominantStage.transcendenceGuidance}${q ? ` [질문 맥락: ${q}]` : ''}`,
+  };
+
   return {
     engineVersion: TAOIST_LIEZI_ENGINE_VERSION,
     timestamp: now.toISOString(),
+    calculatedAtKst,
     windRidingUnityScore,
     muhayuRestIndex,
     tranquilEmptinessScore,
@@ -146,19 +171,21 @@ export function calculateTaoistLieziWindRiding(
     secondaryStage,
     lieziWindDecree,
     wuweiActionMeditation,
+    lieziSynthesisMatrix,
   };
 }
 
 export function formatTaoistLieziWindRidingPrompt(rep: TaoistLieziWindRidingReport): string {
+  const matrixLine = rep.lieziSynthesisMatrix
+    ? `\n· 열자 교차 매트릭스: 핵심 긴장(${rep.lieziSynthesisMatrix.dominantTension}) · 조율 상태(${rep.lieziSynthesisMatrix.alignmentState}) · 통합 실천(${rep.lieziSynthesisMatrix.integratedAction})`
+    : '';
   return `[도가 열자 어풍동행 & 무하유지향 진인 유유자적 실측 데이터]
-· 엔진 버전: v${rep.engineVersion}
-· 바람과의 합일도(심기상응): ${rep.windRidingUnityScore}/100 | 무하유지향 안식도: ${rep.muhayuRestIndex}/100
-· 허정염담 평온도: ${rep.tranquilEmptinessScore}/100 | 무집착 유연성: ${rep.nonAttachmentFluidityRate}/100
-· 주재 어풍 심법: [${rep.dominantStage.nameHanja} (${rep.dominantStage.nameKo})] — 공명도 ${rep.dominantStage.resonanceScore}%
+· 엔진 버전: v${rep.engineVersion} | 기준 시각: ${rep.calculatedAtKst}
+· 주재 어풍 심법: [${rep.dominantStage.nameHanja} (${rep.dominantStage.nameKo})]
   - 심신 영역: ${rep.dominantStage.mindCultivationDomain}
   - 어풍 권능: ${rep.dominantStage.windRidingPower}
   - 초월 지침: ${rep.dominantStage.transcendenceGuidance}
-· 보조 심법: [${rep.secondaryStage.nameHanja} (${rep.secondaryStage.nameKo})] — 공명도 ${rep.secondaryStage.resonanceScore}%
+· 보조 심법: [${rep.secondaryStage.nameHanja} (${rep.secondaryStage.nameKo})]
 · 열자 어풍 지혜 선언: ${rep.lieziWindDecree}
-· 무위자연 행동 명상: ${rep.wuweiActionMeditation}`;
+· 무위자연 행동 명상: ${rep.wuweiActionMeditation}${matrixLine}`;
 }
