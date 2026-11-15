@@ -8,12 +8,12 @@
  * 4. 내면 의식의 흐름 수용 및 진실성 지표 (Stream of Consciousness Authenticity Index): 관습적 형식에 얽매이지 않고 인간 내면의 솔직한 감정과 사유의 물결을 온전히 긍정하는 힘.
  * 5. 세월의 파도 속에서도 중심을 잡는 등대적 회복탄력성 (Lighthouse Steadfast Resilience Score): 시간의 무상함과 상실 속에서도 삶의 의미를 잃지 않고 내면의 빛을 비추는 회복탄력성.
  *
- * @version LUCKEY-VIRGINIA-WOOLF-ROOM-OF-ONES-OWN-v1.1.0
+ * @version LUCKEY-VIRGINIA-WOOLF-ROOM-OF-ONES-OWN-v2.0.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const BRITISH_VIRGINIA_WOOLF_ROOM_OF_ONES_OWN_VERSION = 'LUCKEY-VIRGINIA-WOOLF-ROOM-OF-ONES-OWN-v1.1.0';
+export const BRITISH_VIRGINIA_WOOLF_ROOM_OF_ONES_OWN_VERSION = 'LUCKEY-VIRGINIA-WOOLF-ROOM-OF-ONES-OWN-v2.0.0';
 
 export type WoolfQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -58,6 +58,11 @@ export interface BritishVirginiaWoolfRoomOfOnesOwnResult {
   ritualAction: string;
   reflectionFocus: string;
   boundaryNotice: string;
+  woolfSynthesisMatrix: {
+    coreInsight: string;
+    recommendedAction: string;
+    cautionNotice: string;
+  };
   woolfComprehensiveGuidance: {
     guidanceTitle: string;
     philosophicalCounsel: string;
@@ -254,10 +259,18 @@ export function calculateBritishVirginiaWoolfRoomOfOnesOwn(
     `${focalWoolfAphorism.actionGuidance}`;
 
   const boundaryNotice = '버지니아 울프 문학·철학 해석은 사유의 독립과 내면 성찰을 돕는 상징 관점이며, 현실의 확정 예언이나 의학적 진단이 아닙니다.';
+  const baseDate = now ?? new Date();
+  const kst = new Date(baseDate.getTime() + 9 * 60 * 60 * 1000);
+  const kstTimeLabel = `${temporalWoolfRhythm.kstDateLabel} ${String(kst.getUTCHours()).padStart(2, '0')}:${String(kst.getUTCMinutes()).padStart(2, '0')} KST`;
+  const woolfSynthesisMatrix = {
+    coreInsight: activeWoolfTheme.themeTitleKo,
+    recommendedAction: topicGuidance.practiceGuidance,
+    cautionNotice: '타인의 요구와 세속적 소음에 나만의 시간·사유의 방을 전부 내주지 마십시오.',
+  };
 
   return {
     engineVersion: BRITISH_VIRGINIA_WOOLF_ROOM_OF_ONES_OWN_VERSION,
-    calculatedAtKst: (now ?? new Date()).toISOString(),
+    calculatedAtKst: kstTimeLabel,
     roomOfOnesOwnAutonomyScore,
     momentsOfBeingInsightIndex,
     androgynousMindCreativityScore,
@@ -271,6 +284,7 @@ export function calculateBritishVirginiaWoolfRoomOfOnesOwn(
     ritualAction: topicGuidance.ritualAction,
     reflectionFocus: topicGuidance.reflectionFocus,
     boundaryNotice,
+    woolfSynthesisMatrix,
     woolfComprehensiveGuidance: {
       guidanceTitle,
       philosophicalCounsel,
@@ -282,7 +296,8 @@ export function formatBritishVirginiaWoolfRoomOfOnesOwnPrompt(
   res: BritishVirginiaWoolfRoomOfOnesOwnResult,
 ): string {
   return [
-    `【버지니아 울프 《자기만의 방·등대로》 사유의 독립·존재의 순간들 지표】`,
+    `【버지니아 울프 《자기만의 방·등대로》 사유의 독립·존재의 순간들 지표 (${res.engineVersion})】`,
+    `- 연산 시각: ${res.calculatedAtKst}`,
     `- 질문 주제 맥락: ${res.questionTopic}`,
     `- KST 시공간 리듬: ${res.temporalWoolfRhythm.kstDateLabel} · ${res.temporalWoolfRhythm.timeWindowKo} (${res.temporalWoolfRhythm.luminousTone}) — ${res.temporalWoolfRhythm.rhythmDirective}`,
     `- 핵심 울프 테마: ${res.activeWoolfTheme.themeTitleKo} [${res.activeWoolfTheme.themeTitleEn}]`,
@@ -291,6 +306,7 @@ export function formatBritishVirginiaWoolfRoomOfOnesOwnPrompt(
     `- 질문 맞춤 실천 가이드: ${res.practiceGuidance}`,
     `- 일상 실천 의례: ${res.ritualAction}`,
     `- 핵심 성찰 질문: ${res.reflectionFocus}`,
+    `- 교차 매트릭스: 핵심(${res.woolfSynthesisMatrix.coreInsight}) | 실행(${res.woolfSynthesisMatrix.recommendedAction}) | 주의(${res.woolfSynthesisMatrix.cautionNotice})`,
     `- 울프 원전 테제: "${res.focalWoolfAphorism.aphorismKo}" (${res.focalWoolfAphorism.aphorismEnglish})`,
     `- 원전 출처: [${res.focalWoolfAphorism.sourceContext}]`,
     `- 구체적 실천 지침: ${res.focalWoolfAphorism.actionGuidance}`,
