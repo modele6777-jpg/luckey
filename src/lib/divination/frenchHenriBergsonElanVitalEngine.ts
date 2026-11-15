@@ -8,12 +8,12 @@
  * 4. 창조적 자유(Liberté créatrice): 우리의 행동이 인격 전체로부터 흘러나와 스스로의 독창적 삶을 조각해 나가는 완전한 실존적 자유.
  * 5. 열린 도덕과 생명성(Société ouverte): 폐쇄된 집단의 배타적 경계를 허물고, 모든 살아있는 존재를 향해 무한히 확장되는 열린 영성과 생명적 연대.
  *
- * @version LUCKEY-HENRI-BERGSON-ELAN-VITAL-v1.1.0
+ * @version LUCKEY-HENRI-BERGSON-ELAN-VITAL-v2.0.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const FRENCH_HENRI_BERGSON_VERSION = 'LUCKEY-HENRI-BERGSON-ELAN-VITAL-v1.1.0';
+export const FRENCH_HENRI_BERGSON_VERSION = 'LUCKEY-HENRI-BERGSON-ELAN-VITAL-v2.0.0';
 
 export type BergsonQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -58,6 +58,11 @@ export interface HenriBergsonElanVitalResult {
   dailyPracticeRitual: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
+  bergsonSynthesisMatrix: {
+    coreInsight: string;
+    recommendedAction: string;
+    cautionNotice: string;
+  };
   bergsonComprehensiveGuidance: {
     guidanceTitle: string;
     philosophicalCounsel: string;
@@ -296,9 +301,17 @@ export function calculateHenriBergsonElanVital(
     `${activeBergsonTheme.practicalCounsel} ${practiceGuidance} 아울러 원전의 불멸의 통찰 "${focalBergsonAphorism.aphorismKo}"(${focalBergsonAphorism.aphorismFrench})을 마음에 품고, ` +
     `${focalBergsonAphorism.actionGuidance}`;
 
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const kstTimeLabel = `${temporalBergsonRhythm.kstDateLabel} ${String(kst.getUTCHours()).padStart(2, '0')}:${String(kst.getUTCMinutes()).padStart(2, '0')} KST`;
+  const bergsonSynthesisMatrix = {
+    coreInsight: activeBergsonTheme.themeTitleKo,
+    recommendedAction: practiceGuidance,
+    cautionNotice: '기계적 시계 시간과 타성적 계산에만 갇혀 내면에서 솟아오르는 생명의 직관과 지속을 놓치지 마십시오.',
+  };
+
   return {
     engineVersion: FRENCH_HENRI_BERGSON_VERSION,
-    calculatedAtKst: temporalBergsonRhythm.kstDateLabel,
+    calculatedAtKst: kstTimeLabel,
     questionTopic,
     temporalBergsonRhythm,
     pureDurationContinuityScore,
@@ -312,6 +325,7 @@ export function calculateHenriBergsonElanVital(
     dailyPracticeRitual,
     reflectiveQuestion,
     interpretiveBoundary,
+    bergsonSynthesisMatrix,
     bergsonComprehensiveGuidance: {
       guidanceTitle,
       philosophicalCounsel,
@@ -321,7 +335,8 @@ export function calculateHenriBergsonElanVital(
 
 export function formatHenriBergsonElanVitalPrompt(res: HenriBergsonElanVitalResult): string {
   return [
-    `【앙리 베르그송 《시간과 자유의지·창조적 진화》 순수 지속 & 생명의 도약 성찰 가이드】`,
+    `【앙리 베르그송 《시간과 자유의지·창조적 진화》 순수 지속 & 생명의 도약 성찰 가이드 (${res.engineVersion})】`,
+    `- 연산 시각: ${res.calculatedAtKst}`,
     `- 질문 주제 맥락: ${res.questionTopic}`,
     `- KST 시공간 리듬: ${res.temporalBergsonRhythm.kstDateLabel} · ${res.temporalBergsonRhythm.timeBand} (${res.temporalBergsonRhythm.vitalTempo})`,
     `- 시공간 권면: ${res.temporalBergsonRhythm.temporalGuidance}`,
@@ -336,6 +351,7 @@ export function formatHenriBergsonElanVitalPrompt(res: HenriBergsonElanVitalResu
     `- 맥락 맞춤 가이드: ${res.practiceGuidance}`,
     `- 오늘의 실천 의례(${res.questionTopic}): ${res.dailyPracticeRitual}`,
     `- 성찰 질문: ${res.reflectiveQuestion}`,
+    `- 교차 매트릭스: 핵심(${res.bergsonSynthesisMatrix.coreInsight}) | 실행(${res.bergsonSynthesisMatrix.recommendedAction}) | 주의(${res.bergsonSynthesisMatrix.cautionNotice})`,
     `- 핵심 경구: "${res.focalBergsonAphorism.aphorismKo}"`,
     `- 원전 출처: "${res.focalBergsonAphorism.aphorismFrench}" [${res.focalBergsonAphorism.sourceContext}]`,
     `- 구체적 실천 지침: ${res.focalBergsonAphorism.actionGuidance}`,
