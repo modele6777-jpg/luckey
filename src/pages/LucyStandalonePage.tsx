@@ -61,7 +61,7 @@ import {
 import { processDailyChatArchival } from '@/lib/chatMemoryArchive';
 import { drawLucyTarotCards, formatTarotMarker } from '@/utils/tarotDetector';
 import { isLucyScrollPinned, lucyScrollPinHeld, noteLucyScrollPin, overlayCoversElement, releaseLucyScrollPin } from '@/lib/lucyScrollPin';
-import { captureLucySearchAnchor, resolveLucySearchRestoreTop, type LucySearchScrollAnchor } from '@/lib/lucySearchScroll';
+import { captureLucySearchAnchor, resolveLucySearchOpenGuardedTop, resolveLucySearchRestoreTop, type LucySearchScrollAnchor } from '@/lib/lucySearchScroll';
 import { isDualPaneLayout, isDuoUnfoldedState } from '@/lib/perfMode';
 import { buildLucyTarotReadingPrompt } from '@/lib/lucyTarotReading';
 import { getTodayDateKey } from '@/lib/dailyCache';
@@ -1012,6 +1012,34 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
     activeText: null as string | null,
     activeSentence: null as string | null,
   });
+
+  // 🔊 낭독 세션 동안은 하단 자동 이동을 붙잡는다.
+  // 청크 경계에서 isSpeaking이 잠깐 false가 되는데, 그 틈에 하단으로 끌어내리면 다음 문장에서
+  // 다시 중앙으로 올라와 화면이 위아래로 출렁인다. 낭독이 멈춘 뒤에도 잠깐 더 잡아 둔다.
+  const ttsHoldsScrollRef = useRef(false);
+  const ttsHoldTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const ttsReading = Boolean(playingMsgId) || ttsInfo.isSpeaking || ttsInfo.isLoading;
+
+  useEffect(() => {
+    if (ttsHoldTimerRef.current) {
+      clearTimeout(ttsHoldTimerRef.current);
+      ttsHoldTimerRef.current = null;
+    }
+    if (ttsReading) {
+      ttsHoldsScrollRef.current = true;
+      return;
+    }
+    ttsHoldTimerRef.current = setTimeout(() => {
+      ttsHoldsScrollRef.current = false;
+      ttsHoldTimerRef.current = null;
+    }, 900);
+    return () => {
+      if (ttsHoldTimerRef.current) {
+        clearTimeout(ttsHoldTimerRef.current);
+        ttsHoldTimerRef.current = null;
+      }
+    };
+  }, [ttsReading]);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const isInputComposingRef = useRef(false);
   const chatFooterRef = useRef<HTMLElement | null>(null);
@@ -1230,6 +1258,11 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
   // 검색이 목록을 걸러내기 전에 읽고 있던 위치를 보관한다. 검색을 닫으면 이 자리로 되돌린다.
   const searchScrollAnchorRef = useRef<LucySearchScrollAnchor | null>(null);
   const searchWasOpenRef = useRef(false);
+  const searchOpenGuardRef = useRef<{ userTouched: boolean; until: number; frame: number | null }>({
+    userTouched: false,
+    until: 0,
+    frame: null,
+  });
   const fileInputRef = useRef<HTMLInputElement>(null);
   const isTTSActive = useTTSActive();
   const isUserScrolledUpRef = useRef(false);
@@ -1319,7 +1352,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
     hasActiveHighlight: hasLucyActiveHighlight,
   } = useSmartScroll({
     containerRef: messagesContainerRef,
-    enabled: Boolean(ttsInfo.isSpeaking),
+    enabled: ttsReading,
     centerOffset: 0,
     resumeDelayMs: 3000,
   });
@@ -2557,6 +2590,9 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
     const layoutChanged = previous.height !== scrollHeight || previous.viewport !== clientHeight;
     messageGeometryRef.current = { height: scrollHeight, viewport: clientHeight };
     if (clientHeight < 2 || isAutoScrollingRef.current) return;
+    // 낭독 중 문장 중앙 정렬로 생기는 이동은 사용자의 스크롤이 아니다.
+    // 여기서 사용자가 위로 올렸다고 판단하면 낭독 위치와 하단 사이를 오가게 된다.
+    if (ttsHoldsScrollRef.current) return;
     if (layoutChanged && !isUserScrolledUpRef.current) {
       followLatestLayoutRef.current();
       return;
@@ -2653,7 +2689,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
 
   // Keep the callback stable: playback changes must not rerun the mount scroll effect.
   const ttsBlocksAutoScrollRef = useRef(false);
-  ttsBlocksAutoScrollRef.current = ttsInfo.isSpeaking || ttsInfo.isLoading;
+  ttsBlocksAutoScrollRef.current = ttsInfo.isSpeaking || ttsInfo.isLoading || ttsHoldsScrollRef.current;
 
   const scrollToBottom = useCallback((force = false, smooth = true) => {
     if (!messagesContainerRef.current) return;
@@ -2709,7 +2745,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
 
       if (rafId) cancelAnimationFrame(rafId);
       rafId = requestAnimationFrame(() => {
-        if (!isUserScrolledUpRef.current && !ttsInfo.isSpeaking) {
+        if (!isUserScrolledUpRef.current && !ttsBlocksAutoScrollRef.current) {
           scrollToBottom(false, false);
         }
       });
@@ -2718,7 +2754,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
     resizeObserver.observe(messagesWrapperRef.current);
 
     const handleContentResized = () => {
-      if (!isUserScrolledUpRef.current && !ttsInfo.isSpeaking) {
+      if (!isUserScrolledUpRef.current && !ttsBlocksAutoScrollRef.current) {
         scrollToBottom(false, false);
       }
     };
@@ -2730,10 +2766,10 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
       if (autoScrollTimerRef.current) clearTimeout(autoScrollTimerRef.current);
       window.removeEventListener('lucy-chat-content-resized', handleContentResized);
     };
-  }, [isLucyReady, scrollToBottom, ttsInfo.isSpeaking]);
+  }, [isLucyReady, scrollToBottom]);
 
   useEffect(() => {
-    if (!isUserScrolledUpRef.current && !ttsInfo.isSpeaking) {
+    if (!isUserScrolledUpRef.current && !ttsBlocksAutoScrollRef.current) {
       scrollToBottom(false, false);
     }
   }, [isLucyReady, lucyMessages, isLucyGenerating, ttsInfo.isSpeaking, scrollToBottom]);
@@ -2851,13 +2887,84 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
   }, [isSearchOpen, closeSearch]);
 
   // 검색창은 preventScroll로 포커스만 준다. autoFocus는 iOS에서 뷰포트까지 끌어올려 대화를 튀게 만든다.
+  // 패널이 이미 제자리에 그려진 다음 프레임에 포커스해야 WebKit이 빈(높이 0) 입력물을 찾아
+  // 스크롤 컨테이너를 뒤적이지 않는다.
+  const holdSearchOpenReadingPosition = useCallback(() => {
+    const container = messagesContainerRef.current;
+    const guard = searchOpenGuardRef.current;
+    if (!container || guard.userTouched || Date.now() > guard.until) return;
+    const anchor = searchScrollAnchorRef.current;
+    if (!anchor) return;
+    const expectedTop = resolveLucySearchRestoreTop(anchor, container.scrollHeight, container.clientHeight);
+    const next = resolveLucySearchOpenGuardedTop({
+      expectedTop,
+      currentTop: container.scrollTop,
+      scrollHeight: container.scrollHeight,
+      clientHeight: container.clientHeight,
+      userTouched: guard.userTouched,
+    });
+    if (next === null) return;
+    container.scrollTop = next;
+  }, []);
+
   useEffect(() => {
     if (!isSearchOpen) return;
-    const focusSearch = () => searchInputRef.current?.focus({ preventScroll: true });
+    const focusSearch = () => {
+      searchInputRef.current?.focus({ preventScroll: true });
+      holdSearchOpenReadingPosition();
+    };
     focusSearch();
-    const frame = requestAnimationFrame(focusSearch);
-    return () => cancelAnimationFrame(frame);
-  }, [isSearchOpen]);
+    let secondFrame = 0;
+    const firstFrame = requestAnimationFrame(() => {
+      secondFrame = requestAnimationFrame(focusSearch);
+    });
+    return () => {
+      cancelAnimationFrame(firstFrame);
+      cancelAnimationFrame(secondFrame);
+    };
+  }, [isSearchOpen, holdSearchOpenReadingPosition]);
+
+  // 🔎 검색창이 열린 직후 잠깐 동안 읽던 자리를 지킨다.
+  // iOS WebKit은 작은 글씨 input에 포커스를 주면 자동 확대·뷰포트 이동을 하면서 안쪽 스크롤까지
+  // 건드리는데, 그때 대화가 엉뚱한 곳(흔히 최상단)에 남는다. 사용자가 직접 만진 뒤에는 건드리지 않는다.
+  useEffect(() => {
+    const guard = searchOpenGuardRef.current;
+    const stopGuard = () => {
+      if (guard.frame !== null) cancelAnimationFrame(guard.frame);
+      guard.frame = null;
+      guard.until = 0;
+    };
+    if (!isSearchOpen || searchQuery.trim()) {
+      stopGuard();
+      return;
+    }
+    const container = messagesContainerRef.current;
+    guard.userTouched = false;
+    guard.until = Date.now() + 1200;
+    const markTouched = () => { guard.userTouched = true; };
+    container?.addEventListener('touchstart', markTouched, { passive: true });
+    window.addEventListener('wheel', markTouched, { passive: true });
+    const viewport = window.visualViewport;
+    const onViewportChange = () => holdSearchOpenReadingPosition();
+    viewport?.addEventListener('resize', onViewportChange);
+    viewport?.addEventListener('scroll', onViewportChange);
+    const sample = () => {
+      holdSearchOpenReadingPosition();
+      if (Date.now() <= guard.until) {
+        guard.frame = requestAnimationFrame(sample);
+        return;
+      }
+      guard.frame = null;
+    };
+    guard.frame = requestAnimationFrame(sample);
+    return () => {
+      stopGuard();
+      container?.removeEventListener('touchstart', markTouched);
+      window.removeEventListener('wheel', markTouched);
+      viewport?.removeEventListener('resize', onViewportChange);
+      viewport?.removeEventListener('scroll', onViewportChange);
+    };
+  }, [isSearchOpen, searchQuery, holdSearchOpenReadingPosition]);
 
   // 검색을 열기 전에 읽고 있던 자리를 기억해 두고, 검색을 닫으면 그 자리로 되돌린다.
   // (필터링으로 목록이 줄 때 브라우저가 scrollTop을 0으로 물리적 클램프하기 때문에, 기억해 두지 않으면 대화가 최상단에 남는다.)
@@ -3459,6 +3566,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
           <div className="lucy-header-actions flex items-center gap-1.5 sm:gap-2 shrink-0">
             {/* 1. 검색 (Search Toggle) */}
             <button
+              type="button"
               onClick={toggleSearch}
               className={`p-2 rounded-xl text-xs font-semibold transition-all cursor-pointer flex items-center justify-center ${
                 isSearchOpen
@@ -3536,14 +3644,16 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
         </div>
 
         {/*  Search Input Dropdown */}
-        <AnimatePresence>
+        {/* 높이 애니메이션 없음: 높이 0에서 포커스를 받으면 iOS가 대화를 끌어올린다. */}
+        <AnimatePresence initial={false}>
           {isSearchOpen && (
             <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: 'auto', opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.12 }}
               data-no-scroll-top="true"
-              className="overflow-hidden"
+              className="w-full"
             >
               <div className={`flex items-center gap-2 border rounded-xl px-3 py-1.5 focus-within:border-amber-400 transition-all ${
                 isLight ? 'bg-[#fffdf9]/90 border-amber-900/20' : 'bg-slate-900/90 border-white/15'
@@ -3555,7 +3665,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="대화 내용 검색 (키워드 입력)..."
-                  className={`flex-1 bg-transparent text-xs sm:text-sm outline-none ${
+                  className={`flex-1 bg-transparent text-base sm:text-sm outline-none ${
                     isLight ? 'text-slate-800 placeholder-slate-400' : 'text-white placeholder-white/60'
                   }`}
                   style={{ color: isLight ? '#1e293b' : '#ffffff' }}
@@ -3566,6 +3676,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
                   </span>
                 )}
                 <button 
+                  type="button"
                   onClick={closeSearch}
                   className="text-slate-400 hover:text-slate-700 dark:hover:text-white p-1 cursor-pointer"
                 >
@@ -3658,6 +3769,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
             return (
               <motion.div
                 key={msgId}
+                data-tts-playing-message={playingMsgId === msgId ? 'true' : undefined}
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 className={`flex flex-col w-full max-w-full min-w-0 overflow-x-hidden ${isUser ? 'items-end' : 'items-start'}`}

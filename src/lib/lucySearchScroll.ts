@@ -15,12 +15,48 @@ const BOTTOM_TOLERANCE = 80;
 
 export function captureLucySearchAnchor(scrollTop: number, scrollHeight: number, clientHeight: number): LucySearchScrollAnchor {
   const maxTop = Math.max(0, scrollHeight - clientHeight);
-  const top = Math.min(Math.max(0, Number.isFinite(scrollTop) ? scrollTop : 0), maxTop);
+  // 읽을 수 없는 scrollTop은 믿지 않고 최신 대화(하단)로 본다.
+  if (!Number.isFinite(scrollTop)) {
+    return { distanceFromBottom: 0, pinnedToBottom: true };
+  }
+  const top = Math.min(Math.max(0, scrollTop), maxTop);
   const distanceFromBottom = maxTop - top;
   return {
     distanceFromBottom,
     pinnedToBottom: distanceFromBottom <= BOTTOM_TOLERANCE,
   };
+}
+
+/**
+ * 🔎 검색창을 여는 순간의 자리 지킴.
+ *
+ * iOS WebKit은 폰트가 작은 검색 input에 포커스를 주면 자동 확대·뷰포트 이동을 하면서
+ * 안쪽 스크롤 컨테이너(대화 목록)까지 건드린다. 그래서 검색창이 열린 직후 잠깐 동안은
+ * "읽던 자리"에서 움직였는지 확인하고, 움직였다면 그 자리로 되돌린다.
+ * 사용자가 직접 만진 뒤에는 절대 되돌리지 않는다.
+ */
+export type LucySearchOpenGuardInput = {
+  /** 검색창을 열기 전에 읽고 있던 자리(열린 뒤 레이아웃 기준으로 다시 계산한 값) */
+  expectedTop: number;
+  /** 지금 컨테이너 scrollTop */
+  currentTop: number;
+  scrollHeight: number;
+  clientHeight: number;
+  /** 검색창이 열린 뒤 사용자가 직접 스크롤·터치를 했는지 */
+  userTouched: boolean;
+};
+
+/** 몇 px까지는 브라우저의 소수점 반올림으로 본다. */
+const OPEN_DRIFT_TOLERANCE = 2;
+
+export function resolveLucySearchOpenGuardedTop(input: LucySearchOpenGuardInput): number | null {
+  if (input.userTouched) return null;
+  if (!Number.isFinite(input.currentTop) || !Number.isFinite(input.expectedTop)) return null;
+  if (Math.abs(input.currentTop - input.expectedTop) <= OPEN_DRIFT_TOLERANCE) return null;
+  const maxTop = Math.max(0, input.scrollHeight - input.clientHeight);
+  const top = Math.min(Math.max(0, input.expectedTop), maxTop);
+  if (Math.abs(input.currentTop - top) <= OPEN_DRIFT_TOLERANCE) return null;
+  return top;
 }
 
 /**
