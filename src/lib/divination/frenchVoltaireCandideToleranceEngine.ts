@@ -9,12 +9,12 @@
  * 4. 억울한 약자를 구명하고 진실을 밝히는 실천적 양심 및 정의 구현도(Justice Advocacy & Conscience Score): 카라스 사건 구명처럼 불의에 맞서 진실을 밝히는 용기.
  * 5. 헛된 관념론을 탈피하고 현실을 직시하는 분별력(Realistic Disillusionment & Clarity Index): 뜬구름 잡는 낙관론을 넘어 객관적 현실을 마주하는 힘.
  *
- * @version LUCKEY-VOLTAIRE-CANDIDE-TOLERANCE-v1.1.0
+ * @version LUCKEY-VOLTAIRE-CANDIDE-TOLERANCE-v2.0.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const FRENCH_VOLTAIRE_CANDIDE_TOLERANCE_VERSION = 'LUCKEY-VOLTAIRE-CANDIDE-TOLERANCE-v1.1.0';
+export const FRENCH_VOLTAIRE_CANDIDE_TOLERANCE_VERSION = 'LUCKEY-VOLTAIRE-CANDIDE-TOLERANCE-v2.0.0';
 
 export type VoltaireQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -63,6 +63,11 @@ export interface FrenchVoltaireCandideToleranceResult {
   dailyPracticeRitual: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
+  voltaireSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
 }
 
 export const VOLTAIRE_THEMES: VoltaireTheme[] = [
@@ -186,6 +191,16 @@ function describeVoltaireQualitativeStage(score: number): string {
   return '담백한 정돈기 (헛된 완벽주의를 덜고 본질로 돌아가는 흐름)';
 }
 
+function formatVoltaireKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
+
 export function calculateFrenchVoltaireCandideTolerance(
   profile?: UserProfile,
   query?: string,
@@ -248,9 +263,18 @@ export function calculateFrenchVoltaireCandideTolerance(
     `${activeVoltaireTheme.practicalCounsel} 볼테르의 통찰 "${focalVoltaireAphorism.aphorismKo}"를 되새기며, ` +
     `${focalVoltaireAphorism.actionGuidance}`;
 
+  const voltaireSynthesisMatrix = {
+    dominantTension: `${activeVoltaireTheme.themeTitleKo} ↔ ${temporalRhythm.kstSlot}`,
+    alignmentState:
+      cultivateOurGardenPragmaticDevotionScore >= 88 && toleranceEnlightenedReasonIndex >= 88
+        ? '현실 경작과 관용·위트의 고차원 공명'
+        : '공리공론을 걷어내고 오늘의 밭을 일구는 실천기',
+    integratedAction: `${topicPack.ritual} (${focalVoltaireAphorism.actionGuidance})`,
+  };
+
   return {
     engineVersion: FRENCH_VOLTAIRE_CANDIDE_TOLERANCE_VERSION,
-    calculatedAtKst: targetDate.toISOString(),
+    calculatedAtKst: formatVoltaireKstTimestamp(targetDate),
     cultivateOurGardenPragmaticDevotionScore,
     toleranceEnlightenedReasonIndex,
     witSatiricalPiercingInsightScore,
@@ -268,14 +292,16 @@ export function calculateFrenchVoltaireCandideTolerance(
     dailyPracticeRitual: topicPack.ritual,
     reflectiveQuestion: topicPack.question,
     interpretiveBoundary: '본 관점은 볼테르의 《캉디드》와 《관용론》 사상을 바탕으로 일상의 실천과 열린 시선을 돕는 상징적 안내이며, 우열의 점수나 확정적 예언이 아닙니다.',
+    voltaireSynthesisMatrix,
   };
 }
 
 export function formatFrenchVoltaireCandideTolerancePrompt(
   res: FrenchVoltaireCandideToleranceResult,
 ): string {
-  return [
+  const lines = [
     `【볼테르 《캉디드》 & 《관용론》 일상 실천 및 관용 지혜 지표】`,
+    `- 엔진 버전: ${res.engineVersion} | 연산 시각: ${res.calculatedAtKst}`,
     `- 밭을 일구는 일상 실천 흐름(Cultivate Our Garden Devotion): ${describeVoltaireQualitativeStage(res.cultivateOurGardenPragmaticDevotionScore)}`,
     `- 관용 및 열린 지성 흐름(Tolerance & Enlightened Reason): ${describeVoltaireQualitativeStage(res.toleranceEnlightenedReasonIndex)}`,
     `- 위선 타파 기지 및 유머 회복탄력성(Wit & Satirical Piercing Insight): ${describeVoltaireQualitativeStage(res.witSatiricalPiercingInsightScore)}`,
@@ -294,5 +320,12 @@ export function formatFrenchVoltaireCandideTolerancePrompt(
     `- 핵심 성찰 질문: ${res.reflectiveQuestion}`,
     `- 종합 볼테르 계몽 권면: ${res.voltaireComprehensiveGuidance.philosophicalCounsel}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
-  ].join('\n');
+  ];
+  if (res.voltaireSynthesisMatrix) {
+    lines.push(
+      `- 교차 매트릭스 [핵심 긴장: ${res.voltaireSynthesisMatrix.dominantTension} | 조율 상태: ${res.voltaireSynthesisMatrix.alignmentState}]`,
+      `- 통합 실천: ${res.voltaireSynthesisMatrix.integratedAction}`,
+    );
+  }
+  return lines.join('\n');
 }
