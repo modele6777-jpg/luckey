@@ -16,7 +16,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const SUMERIAN_APKALLU_WISDOM_ENGINE_VERSION = '1.0.0';
+export const SUMERIAN_APKALLU_WISDOM_ENGINE_VERSION = '2.0.0';
 
 export interface ApkalluSage {
   id: string;
@@ -32,12 +32,28 @@ export interface ApkalluSage {
 export interface SumerianApkalluWisdomReport {
   engineVersion: string;
   timestamp: string;
+  calculatedAtKst: string;
   apkalluResonanceScore: number; // 0 ~ 100 7현자 지혜 감응도
   apsuClarityIndex: number; // 0 ~ 100 압수(담수) 정화 지수
   activeSage: ApkalluSage;
   secondarySage: ApkalluSage;
   enkiDecree: string; // 엔키 신의 신성 칙령
   meRestorationGuidance: string; // 메(Me) 질서 회복을 위한 현실 실천 지침
+  apkalluSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
+}
+
+function formatApkalluKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
 }
 
 const APKALLU_SAGES: Omit<ApkalluSage, 'resonancePower'>[] = [
@@ -139,27 +155,44 @@ export function calculateSumerianApkalluWisdom(options?: {
 
   const meRestorationGuidance = `${activeSage.nameKo}의 가호에 따라 ${activeSage.title}의 역량을 현실에 발현하십시오. ${secondarySage.nameKo}의 조언("${secondarySage.divineWisdom}")을 겸비하면 일의 매듭이 자연스럽게 풀릴 것입니다.`;
 
+  const calculatedAtKst = formatApkalluKstTimestamp(now);
+  const apkalluSynthesisMatrix = {
+    dominantTension: `${activeSage.nameKo}(${activeSage.element}) ↔ ${secondarySage.nameKo}(${secondarySage.element})`,
+    alignmentState: `${activeSage.title} · ${secondarySage.title}`,
+    integratedAction: `${activeSage.divineWisdom}${question ? ` [질문 맥락: ${question}]` : ''}`,
+  };
+
   return {
     engineVersion: SUMERIAN_APKALLU_WISDOM_ENGINE_VERSION,
     timestamp: now.toISOString(),
+    calculatedAtKst,
     apkalluResonanceScore,
     apsuClarityIndex,
     activeSage,
     secondarySage,
     enkiDecree,
     meRestorationGuidance,
+    apkalluSynthesisMatrix,
   };
 }
 
 export function formatSumerianApkalluWisdomPrompt(rep: SumerianApkalluWisdomReport): string {
-  return `[고대 수메르 에리두 엔키(Enki) 7대 압갈루(Apkallu) 현자 신성 지혜 실측 데이터]
-· 엔진 버전: v${rep.engineVersion}
-· 7대 압갈루 지혜 감응도: ${rep.apkalluResonanceScore}/100 | 압수(Apsu) 정화 지수: ${rep.apsuClarityIndex}%
-· 주재 압갈루 현자: ${rep.activeSage.nameKo} (${rep.activeSage.sumerianName}) — 공명력 ${rep.activeSage.resonancePower}%
-  - 원형 칭호: ${rep.activeSage.title} [원소: ${rep.activeSage.element}]
-  - 신성 지혜 훈언: "${rep.activeSage.divineWisdom}"
-· 보조 압갈루 현자: ${rep.secondarySage.nameKo} (${rep.secondarySage.sumerianName}) — 공명력 ${rep.secondarySage.resonancePower}%
-  - 조력 조언: "${rep.secondarySage.divineWisdom}"
-· 지혜신 엔키의 칙령: ${rep.enkiDecree}
-· 메(Me) 질서 회복 처방: ${rep.meRestorationGuidance}`;
+  const lines = [
+    `[고대 수메르 에리두 엔키(Enki) 7대 압갈루(Apkallu) 현자 신성 지혜 실측 데이터]`,
+    `· 엔진 버전: v${rep.engineVersion} | 연산 시각: ${rep.calculatedAtKst}`,
+    `· 주재 압갈루 현자: ${rep.activeSage.nameKo} (${rep.activeSage.sumerianName})`,
+    `  - 원형 칭호: ${rep.activeSage.title} [원소: ${rep.activeSage.element}]`,
+    `  - 신성 지혜 훈언: "${rep.activeSage.divineWisdom}"`,
+    `· 보조 압갈루 현자: ${rep.secondarySage.nameKo} (${rep.secondarySage.sumerianName})`,
+    `  - 조력 조언: "${rep.secondarySage.divineWisdom}"`,
+    `· 지혜신 엔키의 칙령: ${rep.enkiDecree}`,
+    `· 메(Me) 질서 회복 처방: ${rep.meRestorationGuidance}`,
+  ];
+  if (rep.apkalluSynthesisMatrix) {
+    lines.push(
+      `· 교차 매트릭스: [핵심 긴장: ${rep.apkalluSynthesisMatrix.dominantTension} | 조율 상태: ${rep.apkalluSynthesisMatrix.alignmentState}]`,
+      `  - 통합 실천: ${rep.apkalluSynthesisMatrix.integratedAction}`,
+    );
+  }
+  return lines.join('\n');
 }

@@ -23,7 +23,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const SUMERIAN_FIFTY_MES_VERSION = 'LUCKEY-SUMERIAN-FIFTY-MES-v1.0.0';
+export const SUMERIAN_FIFTY_MES_VERSION = 'LUCKEY-SUMERIAN-FIFTY-MES-v2.0.0';
 
 export interface SumerianMeArchetype {
   cuneiformCode: string;
@@ -36,11 +36,27 @@ export interface SumerianMeArchetype {
 export interface SumerianMeReport {
   engineVersion: string;
   calculatedAt: string;
+  calculatedAtKst: string;
   primaryMe: SumerianMeArchetype;
   creationIndex: number;           // 0 ~ 100 문명 창조력 지수
   civilizationResonance: string;   // 사회 및 환경과의 공명도
   sumerianWisdomOmen: string;
   synthesisMessage: string;
+  fiftyMesSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
+}
+
+function formatFiftyMesKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
 }
 
 const SUMERIAN_MES: SumerianMeArchetype[] = [
@@ -88,17 +104,23 @@ const SUMERIAN_MES: SumerianMeArchetype[] = [
   },
 ];
 
-export function calculateSumerianFiftyMes(profile?: UserProfile): SumerianMeReport {
-  const now = new Date();
+export function calculateSumerianFiftyMes(
+  profile?: UserProfile,
+  question?: string,
+  now: Date = new Date(),
+): SumerianMeReport {
   const birthStr = profile?.basic?.birthdate || '1990-01-01';
   const nameStr = profile?.basic?.name || 'Eridu';
+  const q = (question || '').trim();
 
   let seed = 0;
   for (let i = 0; i < birthStr.length; i++) seed = (seed * 31 + birthStr.charCodeAt(i)) & 0x7fffffff;
   for (let i = 0; i < nameStr.length; i++) seed = (seed * 29 + nameStr.charCodeAt(i)) & 0x7fffffff;
+  for (let i = 0; i < q.length; i++) seed = (seed * 17 + q.charCodeAt(i)) & 0x7fffffff;
 
   const meIdx = (seed + now.getUTCMonth() + now.getUTCDate()) % SUMERIAN_MES.length;
   const primaryMe = SUMERIAN_MES[meIdx];
+  const secondaryMe = SUMERIAN_MES[(meIdx + 1) % SUMERIAN_MES.length];
 
   const creationIndex = 75 + ((seed * 7 + now.getUTCHours() * 11) % 24);
 
@@ -109,27 +131,45 @@ export function calculateSumerianFiftyMes(profile?: UserProfile): SumerianMeRepo
 
   const sumerianWisdomOmen = `수메르 에리두 신전의 서판에 따르면, 오늘 당신의 영혼에 부여된 신성 규범은 [${primaryMe.koreanName}]입니다. "${primaryMe.eriduOracleDecree}"`;
 
-  const synthesisMessage = `수메르 50대 메 원전에 따라, 당신의 현실 구축 힘은 [${primaryMe.cuneiformCode}]와 연결되어 있습니다 (문명 창조력 지수: ${creationIndex}점).`;
+  const synthesisMessage = `수메르 50대 메 원전에 따라, 당신의 현실 구축 힘은 [${primaryMe.cuneiformCode}]와 연결되어 있습니다.`;
+
+  const calculatedAtKst = formatFiftyMesKstTimestamp(now);
+  const fiftyMesSynthesisMatrix = {
+    dominantTension: `${primaryMe.cuneiformCode} ↔ ${secondaryMe.cuneiformCode}`,
+    alignmentState: `${primaryMe.koreanName} · ${primaryMe.civilizationDomain}`,
+    integratedAction: `${primaryMe.eriduOracleDecree}${q ? ` [질문 맥락: ${q}]` : ''}`,
+  };
 
   return {
     engineVersion: SUMERIAN_FIFTY_MES_VERSION,
     calculatedAt: now.toISOString(),
+    calculatedAtKst,
     primaryMe,
     creationIndex,
     civilizationResonance,
     sumerianWisdomOmen,
     synthesisMessage,
+    fiftyMesSynthesisMatrix,
   };
 }
 
 export function formatSumerianFiftyMesPrompt(report: SumerianMeReport): string {
-  return `### 🏺 고대 수메르 에리두 50대 메(Me) 신성 문명 규범 엔진 (${SUMERIAN_FIFTY_MES_VERSION})
-- **오늘의 수메르 수호 메(Me)**: **${report.primaryMe.koreanName}** (${report.primaryMe.cuneiformCode})
-  - 문명 관할: ${report.primaryMe.civilizationDomain}
-  - 신성한 미덕: ${report.primaryMe.sacredVirtue}
-  - 에리두 신탁 규범: "${report.primaryMe.eriduOracleDecree}"
-- **수메르 문명 창조력 지수 (창조력: ${report.creationIndex}점)**:
-  - 공명 상태: ${report.civilizationResonance}
-- **에리두 일일 나침반**: ${report.sumerianWisdomOmen}
-- **수메르 신성 규범 통합 결론**: ${report.synthesisMessage}`;
+  const lines = [
+    `### 🏺 고대 수메르 에리두 50대 메(Me) 신성 문명 규범 엔진 (${SUMERIAN_FIFTY_MES_VERSION})`,
+    `- **연산 시각**: ${report.calculatedAtKst}`,
+    `- **오늘의 수메르 수호 메(Me)**: **${report.primaryMe.koreanName}** (${report.primaryMe.cuneiformCode})`,
+    `  - 문명 관할: ${report.primaryMe.civilizationDomain}`,
+    `  - 신성한 미덕: ${report.primaryMe.sacredVirtue}`,
+    `  - 에리두 신탁 규범: "${report.primaryMe.eriduOracleDecree}"`,
+    `- **수메르 문명 창조력 공명 상태**: ${report.civilizationResonance}`,
+    `- **에리두 일일 나침반**: ${report.sumerianWisdomOmen}`,
+    `- **수메르 신성 규범 통합 결론**: ${report.synthesisMessage}`,
+  ];
+  if (report.fiftyMesSynthesisMatrix) {
+    lines.push(
+      `- **교차 매트릭스**: [핵심 긴장: ${report.fiftyMesSynthesisMatrix.dominantTension} | 조율 상태: ${report.fiftyMesSynthesisMatrix.alignmentState}]`,
+      `  - 통합 실천: ${report.fiftyMesSynthesisMatrix.integratedAction}`,
+    );
+  }
+  return lines.join('\n');
 }

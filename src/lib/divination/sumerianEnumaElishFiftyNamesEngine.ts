@@ -20,7 +20,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const ENUMA_ELISH_ENGINE_VERSION = '1.0.0';
+export const ENUMA_ELISH_ENGINE_VERSION = '2.0.0';
 
 export interface MardukSacredName {
   id: string;
@@ -42,6 +42,7 @@ export interface EnumaElishFourWindsBalance {
 export interface SumerianEnumaElishFiftyNamesReport {
   engineVersion: string;
   timestamp: string;
+  calculatedAtKst: string;
   tiamatSubjugationOrderScore: number; // 0 ~ 100 혼돈 속 신성 질서 회복 지수
   fiftySacredNamesResonanceIndex: number; // 0 ~ 100 50대 이름 영적 공명 지수
   cosmicSovereigntyScore: number; // 0 ~ 100 우주적 주권 및 통제력
@@ -50,6 +51,21 @@ export interface SumerianEnumaElishFiftyNamesReport {
   secondarySacredName: MardukSacredName;
   enumaElishVictoryDecree: string; // 승리와 주권 선언 지침
   tabletOfDestinyGuidance: string; // 운명의 서판(Tablet of Destinies) 행동 지침
+  enumaElishSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
+}
+
+function formatEnumaElishKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
 }
 
 const MARDUK_SACRED_NAMES_BASE: Omit<MardukSacredName, 'resonanceScore'>[] = [
@@ -174,9 +190,17 @@ export function calculateSumerianEnumaElishFiftyNames(
   const enumaElishVictoryDecree = `바빌로니아 창세 서사시 에누마 엘리시는 노래합니다: "혼돈의 물결이 아무리 거셀지라도, 신성한 빛의 주권자는 4대 바람을 부려 우주의 질서를 세운다." 현재 당신에게 임재하는 마르두크의 칭호는 [${dominantSacredName.nameAkkadian} - ${dominantSacredName.nameKo}]입니다. ${dominantSacredName.actionVirtue}`;
   const tabletOfDestinyGuidance = `운명의 서판(Tablet of Destinies)을 가슴에 품으십시오: 당신의 선택이 곧 세상의 질서가 됩니다. ${dominantSacredName.tiamatSubjugationPower}의 권능으로 내외의 소란을 잠재우고 당당히 주권을 확립하십시오.`;
 
+  const calculatedAtKst = formatEnumaElishKstTimestamp(now);
+  const enumaElishSynthesisMatrix = {
+    dominantTension: `${dominantSacredName.nameAkkadian} ↔ ${secondarySacredName.nameAkkadian}`,
+    alignmentState: `${dominantSacredName.nameKo} · 4대 바람(북·남·동·서풍) 조율`,
+    integratedAction: `${dominantSacredName.actionVirtue}${question ? ` [질문 맥락: ${question}]` : ''}`,
+  };
+
   return {
     engineVersion: ENUMA_ELISH_ENGINE_VERSION,
     timestamp: now.toISOString(),
+    calculatedAtKst,
     tiamatSubjugationOrderScore,
     fiftySacredNamesResonanceIndex,
     cosmicSovereigntyScore,
@@ -185,22 +209,27 @@ export function calculateSumerianEnumaElishFiftyNames(
     secondarySacredName,
     enumaElishVictoryDecree,
     tabletOfDestinyGuidance,
+    enumaElishSynthesisMatrix,
   };
 }
 
 export function formatSumerianEnumaElishFiftyNamesPrompt(rep: SumerianEnumaElishFiftyNamesReport): string {
-  return `[바빌로니아 에누마 엘리시 마르두크 50대 이름 & 4대 바람 정복 실측 데이터]
-· 엔진 버전: v${rep.engineVersion}
-· 혼돈(티아마트) 속 신성 질서 회복도: ${rep.tiamatSubjugationOrderScore}/100 | 50대 이름 공명도: ${rep.fiftySacredNamesResonanceIndex}/100
-· 우주적 주권 및 통제력: ${rep.cosmicSovereigntyScore}/100
-· 4대 바람(Shar Urbi) 지배 밸런스:
-  - 북풍(절제·냉철): ${rep.fourWindsDominance.northWindDiscipline}% | 남풍(열정·정복): ${rep.fourWindsDominance.southWindPassion}%
-  - 동풍(창의·서광): ${rep.fourWindsDominance.eastWindDawnInspiration}% | 서풍(수용·정화): ${rep.fourWindsDominance.westWindTwilightPurification}%
-· 주재 마르두크 신성 칭호: [${rep.dominantSacredName.nameAkkadian} - ${rep.dominantSacredName.nameKo}] — 공명도 ${rep.dominantSacredName.resonanceScore}%
-  - 영역: ${rep.dominantSacredName.domain}
-  - 혼돈 정복 권능: ${rep.dominantSacredName.tiamatSubjugationPower}
-  - 행동 덕목: ${rep.dominantSacredName.actionVirtue}
-· 보조 신성 칭호: [${rep.secondarySacredName.nameAkkadian} - ${rep.secondarySacredName.nameKo}] — 공명도 ${rep.secondarySacredName.resonanceScore}%
-· 에누마 엘리시 승리 선언: ${rep.enumaElishVictoryDecree}
-· 운명의 서판(Tablet of Destinies) 지침: ${rep.tabletOfDestinyGuidance}`;
+  const lines = [
+    `[바빌로니아 에누마 엘리시 마르두크 50대 이름 & 4대 바람 정복 실측 데이터]`,
+    `· 엔진 버전: v${rep.engineVersion} | 연산 시각: ${rep.calculatedAtKst}`,
+    `· 주재 마르두크 신성 칭호: [${rep.dominantSacredName.nameAkkadian} - ${rep.dominantSacredName.nameKo}]`,
+    `  - 영역: ${rep.dominantSacredName.domain}`,
+    `  - 혼돈 정복 권능: ${rep.dominantSacredName.tiamatSubjugationPower}`,
+    `  - 행동 덕목: ${rep.dominantSacredName.actionVirtue}`,
+    `· 보조 신성 칭호: [${rep.secondarySacredName.nameAkkadian} - ${rep.secondarySacredName.nameKo}]`,
+    `· 에누마 엘리시 승리 선언: ${rep.enumaElishVictoryDecree}`,
+    `· 운명의 서판(Tablet of Destinies) 지침: ${rep.tabletOfDestinyGuidance}`,
+  ];
+  if (rep.enumaElishSynthesisMatrix) {
+    lines.push(
+      `· 교차 매트릭스: [핵심 긴장: ${rep.enumaElishSynthesisMatrix.dominantTension} | 조율 상태: ${rep.enumaElishSynthesisMatrix.alignmentState}]`,
+      `  - 통합 실천: ${rep.enumaElishSynthesisMatrix.integratedAction}`,
+    );
+  }
+  return lines.join('\n');
 }
