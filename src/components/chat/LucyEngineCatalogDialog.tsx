@@ -1,3 +1,4 @@
+import { DialogBackdrop } from '@/components/layout/DialogBackdrop';
 import './chat-library-layout.css';
 import React, { useMemo, useState } from 'react';
 import { Search, Sparkles, X } from 'lucide-react';
@@ -70,9 +71,9 @@ export function LucyEngineCatalogDialog({ isOpen, onClose, isLight }: LucyEngine
 
   return (
     <WorkspacePortal onClose={onClose}>
-      <div
+      <DialogBackdrop
         className="fixed inset-0 z-[10050] flex items-center justify-center bg-slate-950/75 p-2 backdrop-blur-md sm:p-5"
-        onClick={onClose}
+        onDismiss={onClose}
       >
         <section
           id="lucy-engine-catalog-dialog"
@@ -229,7 +230,7 @@ export function LucyEngineCatalogDialog({ isOpen, onClose, isLight }: LucyEngine
             </div>
           </div>
         </section>
-      </div>
+      </DialogBackdrop>
     </WorkspacePortal>
   );
 }

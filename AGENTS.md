@@ -44,6 +44,7 @@ Every time a user request is completed or changes are made to the codebase:
 - Preserve the initiating pane across nested/async dialogs, and recapture it whenever a persistent global portal reopens. Independent pane popups must not block each other.
 - Keep portal layers outside route transforms while giving fixed descendants a main-sized containing block. Nested dialogs must keep their stacking/focus behavior.
 - Folding/unfolding changes pane visibility and geometry, never the mounted page/portal ancestry. Open dialogs, nested layers, draft/search/filter state and scroll must survive both directions. Lazily mount unused panes, then retain them.
+- Safari touch dialog triggers must work without a compatibility click; guard duplicate activation and never dismiss a new dialog from the opening gesture. Test touch and backdrop behavior in WebKit.
 - Engine/question libraries size cards and chrome from the dialog container, not device media breakpoints. Keep controls and results in a usable scroll area on short panes, with close/pagination reachable and no horizontal clipping.
 - Recompute bounds on rotation, sidebar resize and visual viewport/keyboard changes. Never dim or intercept navigation with a dialog backdrop.
 

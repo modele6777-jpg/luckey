@@ -1,3 +1,4 @@
+import { DialogBackdrop } from '@/components/layout/DialogBackdrop';
 import './chat-library-layout.css';
 import React, { useState, useMemo, useCallback } from 'react';
 import { WorkspacePortal } from '@/components/layout/DuoWorkspace';
@@ -100,10 +101,10 @@ export const PromptLibraryModal: React.FC<PromptLibraryModalProps> = ({
 
   return (
     <WorkspacePortal onClose={onClose}><AnimatePresence>
-      <div
+      <DialogBackdrop
         id="hori-prompt-library-modal-backdrop"
         className="fixed inset-0 z-[10030] flex items-center justify-center p-3 sm:p-5 bg-slate-950/70 backdrop-blur-md"
-        onClick={onClose}
+        onDismiss={onClose}
       >
         <motion.div
           id="hori-prompt-library-dialog"
@@ -420,7 +421,7 @@ export const PromptLibraryModal: React.FC<PromptLibraryModalProps> = ({
             </div>
           </div>
         </motion.div>
-      </div>
+      </DialogBackdrop>
     </AnimatePresence></WorkspacePortal>
   );
 };
