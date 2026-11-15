@@ -16,7 +16,17 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const STRATEGIC_LEVERAGE_VERSION = 'LUCKEY-LEVERAGE-v1.0.0';
+export const STRATEGIC_LEVERAGE_VERSION = 'LUCKEY-LEVERAGE-v2.0.0';
+
+function formatLeverageKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
 
 export type QimenDoorTactics = 
   | '개문(開門): 거침없는 주도권 선제 장악'
@@ -35,6 +45,7 @@ export interface SunTzuStrategyDetail {
 export interface StrategicLeverageReport {
   engineVersion: string;
   calculatedAt: string;
+  calculatedAtKst: string;
   leverageScore: number;            // 보이지 않는 주도권 지수 (0~100)
   pokerFaceResilience: number;      // 포커페이스 & 멘탈 방어력 (0~100)
   activeQimenDoor: QimenDoorTactics;
@@ -47,11 +58,17 @@ export interface StrategicLeverageReport {
     criticalTaboo: string;          // 오늘 절대 피해야 할 악수(惡手)
   };
   synthesisPromptGuidance: string;
+  leverageSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
 }
 
 export function runStrategicLeverageEngine(
   profile?: UserProfile,
-  targetDate: Date = new Date()
+  targetDate: Date = new Date(),
+  question?: string
 ): StrategicLeverageReport {
   const sajuRes = calculateDetailedSaju(profile || null);
 
@@ -125,25 +142,40 @@ export function runStrategicLeverageEngine(
     criticalTaboo: '초조한 기색을 보이며 조급하게 먼저 양보안을 꺼내거나 감정적으로 반박하는 행동 절대 금기'
   };
 
-  const synthesisPromptGuidance = `[LUCKEY 전략 협상 & 손자병법 기문 레버리지 v1.0.0]
-- 보이지 않는 주도권 스코어: ${leverageScore}점 / 멘탈 포커페이스 방어력: ${pokerFaceResilience}점
+  const calculatedAtKst = formatLeverageKstTimestamp(targetDate);
+  const q = (question || '').trim();
+  const leverageSynthesisMatrix = {
+    dominantTension: `${activeQimenDoor} ↔ ${sunTacticSummary(sunTzuTactic)}`,
+    alignmentState: `협상 페르소나: ${powerDynamicRole} · 오행: ${element}`,
+    integratedAction: `${strategicActionPlan.openingMove}${q ? ` [질문 맥락: ${q}]` : ''}`,
+  };
+
+  function sunTacticSummary(tactic: SunTzuStrategyDetail): string {
+    return tactic.chapter;
+  }
+
+  const synthesisPromptGuidance = `[LUCKEY 전략 협상 & 손자병법 기문 레버리지 ${STRATEGIC_LEVERAGE_VERSION} | ${calculatedAtKst}]
 - 기문둔갑 작전 모드: ${activeQimenDoor}
 - 협상 페르소나 롤: ${powerDynamicRole}
 - 손자병법 실전 전술: [${sunTzuTactic.chapter}] "${sunTzuTactic.coreMaxim}"
   * 실전 지침: ${sunTzuTactic.negotiationTactic}
   * 심리 레버리지: ${sunTzuTactic.psychologicalLeverage}
-- 실전 액션 플랜: [초반] ${strategicActionPlan.openingMove} | [카운터] ${strategicActionPlan.counterStrategy} | [금기사항] ${strategicActionPlan.criticalTaboo}`;
+- 실전 액션 플랜: [초반] ${strategicActionPlan.openingMove} | [카운터] ${strategicActionPlan.counterStrategy} | [금기사항] ${strategicActionPlan.criticalTaboo}
+- 교차 매트릭스: [핵심 긴장: ${leverageSynthesisMatrix.dominantTension} | 조율 상태: ${leverageSynthesisMatrix.alignmentState}]
+  * 통합 실천: ${leverageSynthesisMatrix.integratedAction}`;
 
   return {
     engineVersion: STRATEGIC_LEVERAGE_VERSION,
     calculatedAt: targetDate.toISOString(),
+    calculatedAtKst,
     leverageScore,
     pokerFaceResilience,
     activeQimenDoor,
     sunTzuTactic,
     powerDynamicRole,
     strategicActionPlan,
-    synthesisPromptGuidance
+    synthesisPromptGuidance,
+    leverageSynthesisMatrix,
   };
 }
 
@@ -153,10 +185,11 @@ export function calculateStrategicLeverage(params?: {
   profile?: UserProfile | null;
   saju?: SajuAnalysisResult | null;
   targetDate?: Date;
+  question?: string;
 }): StrategicLeverageResult {
   const profile = params?.profile || undefined;
   const targetDate = params?.targetDate || new Date();
-  return runStrategicLeverageEngine(profile, targetDate);
+  return runStrategicLeverageEngine(profile, targetDate, params?.question);
 }
 
 export function formatStrategicLeveragePrompt(res: StrategicLeverageResult): string {

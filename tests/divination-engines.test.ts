@@ -40,6 +40,8 @@ import { calculateSoulJourneyTarot, formatSoulJourneyTarotPrompt, SOUL_JOURNEY_T
 import { calculateTranscendentalMeditation, formatTranscendentalMeditationPrompt, TRANSCENDENTAL_MEDITATION_VERSION } from '../src/lib/divination/transcendentalMeditationEngine';
 import { formatSajuDestinyShareText, type SajuDestinyStoryData } from '../src/utils/sajuDestinyExporter';
 import { calculateStrategicLeverage, formatStrategicLeveragePrompt, STRATEGIC_LEVERAGE_VERSION } from '../src/lib/divination/strategicLeverageEngine';
+import { calculateSpatialFengshui, formatSpatialFengshuiPrompt, SPATIAL_FENGSHUI_VERSION } from '../src/lib/divination/spatialFengshuiEngine';
+import { calculateSpecialStarsMatrix, formatSpecialStarsPrompt, SPECIAL_STARS_VERSION } from '../src/lib/divination/specialStarsEngine';
 import { calculateShadowArchetype, formatShadowArchetypePrompt, SHADOW_ARCHETYPE_VERSION } from '../src/lib/divination/shadowArchetypeEngine';
 import { calculateBiorhythmPeakFlow, formatBiorhythmPeakFlowPrompt, BIORHYTHM_PEAK_FLOW_VERSION } from '../src/lib/divination/biorhythmPeakFlowEngine';
 import { calculateDestinySynastryEcho, formatDestinySynastryEchoPrompt, DESTINY_SYNASTRY_ECHO_VERSION } from '../src/lib/divination/destinySynastryEchoEngine';
@@ -2429,13 +2431,38 @@ test('Transcendental Meditation Engine: 초월 명상 및 마음 안정 안내 �
 });
 
 test('Strategic Leverage Engine: 전략 협상 및 손자병법 기문 레버리지 검증', () => {
-  const res = calculateStrategicLeverage({ profile, targetDate: new Date('2026-11-03T10:00:00+09:00') });
+  const res = calculateStrategicLeverage({ profile, targetDate: new Date('2026-11-03T10:00:00+09:00'), question: '중요 협상' });
   assert.equal(res.engineVersion, STRATEGIC_LEVERAGE_VERSION);
+  assert(res.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(res.leverageSynthesisMatrix?.integratedAction));
   assert(res.leverageScore >= 0 && res.leverageScore <= 100);
   assert(res.sunTzuTactic.coreMaxim.length > 0);
   assert(res.strategicActionPlan.openingMove.length > 0);
   const prompt = formatStrategicLeveragePrompt(res);
   assert(prompt.includes('LUCKEY 전략 협상 & 손자병법 기문 레버리지'));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
+});
+
+test('Spatial Fengshui Engine: 동양 풍수·점성술 공간 길방위 v2.0.0 교차 매트릭스 검증', () => {
+  const res = calculateSpatialFengshui({ profile, targetDate: new Date('2026-11-03T10:00:00+09:00'), question: '작업실 방향' });
+  assert.equal(res.engineVersion, SPATIAL_FENGSHUI_VERSION);
+  assert(res.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(res.spatialSynthesisMatrix?.integratedAction));
+  assert(res.allDirections.length === 8);
+  const prompt = formatSpatialFengshuiPrompt(res);
+  assert(prompt.includes('공간 교차 매트릭스'));
+  assert(!prompt.includes('/100'));
+});
+
+test('Special Stars Matrix Engine: 15대 신살 슈퍼파워 치환 v2.0.0 교차 매트릭스 검증', () => {
+  const res = calculateSpecialStarsMatrix({ profile, targetDate: new Date('2026-11-03T10:00:00+09:00'), question: '타고난 무기' });
+  assert.equal(res.engineVersion, SPECIAL_STARS_VERSION);
+  assert(res.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(res.specialStarsSynthesisMatrix?.integratedAction));
+  const prompt = formatSpecialStarsPrompt(res);
+  assert(prompt.includes('신살 교차 매트릭스'));
+  assert(!prompt.includes('/100'));
 });
 
 test('Shadow Archetype Engine: 융 심리학 그림자 자아 & 골든 섀도우 연금술 검증', () => {

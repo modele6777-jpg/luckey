@@ -24,6 +24,18 @@ import {
   type SajuAnalysisResult,
 } from '../sajuAnalysis';
 
+export const SPECIAL_STARS_VERSION = 'LUCKEY-SSME-v2.0.0';
+
+function formatSpecialStarsKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
+
 export type PillarLocation = '년주(사회적기반)' | '월주(직업·커리어)' | '일주(핵심자아)' | '시주(비밀잠재력)';
 
 export interface DetectedStarItem {
@@ -73,15 +85,22 @@ export interface SpecialStarsResult {
   }>;
 
   overallSynthesis: string;
+  specialStarsSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
 }
 
 // 15대 신살 기준 정의
 export function calculateSpecialStarsMatrix(options?: {
   profile?: UserProfile;
+  targetDate?: Date;
+  question?: string;
 }): SpecialStarsResult {
-  const now = new Date();
+  const now = options?.targetDate || new Date();
   const nowUtcIso = now.toISOString();
-  const nowKstIso = new Date(now.getTime() + 9 * 3600000).toISOString().replace('Z', '+09:00');
+  const nowKst = formatSpecialStarsKstTimestamp(now);
 
   const saju: SajuAnalysisResult = calculateDetailedSaju(options?.profile);
 
@@ -454,10 +473,20 @@ export function calculateSpecialStarsMatrix(options?: {
     ? `총 ${detectedStars.length}개의 핵심 신살이 포진되어 있으며, 특히 ${topSuperpowers.map(t => t.starName).join(', ')}의 강력한 기운이 결합하여 현대 사회에서 독보적인 전문성과 파괴적 실행력을 발휘할 수 있는 슈퍼파워 구조를 갖추고 있습니다.`
     : '기운이 과하게 쏠리지 않고 담백하여, 특정 흉살의 부침 없이 안정적이고 꾸준한 성장을 이루는 청아한 명식입니다.';
 
+  const q = (options?.question || '').trim();
+  const leadStar = topSuperpowers[0];
+  const specialStarsSynthesisMatrix = {
+    dominantTension: leadStar
+      ? `${leadStar.starName} (${leadStar.pillar}) ↔ ${detectedStars.length}개 신살 공명`
+      : '균형 명식 ↔ 잠재 역량 발현',
+    alignmentState: `일간: ${saju.dayMaster.hanja}(${saju.dayMaster.korean}) · 감지 신살: ${detectedStars.length}개`,
+    integratedAction: `${leadStar ? leadStar.title : '안정적 장기 역량 축적'}${q ? ` [질문 맥락: ${q}]` : ''}`,
+  };
+
   return {
-    engineVersion: 'LUCKEY-SSME-v1.0.0',
+    engineVersion: SPECIAL_STARS_VERSION,
     calculatedAtUtc: nowUtcIso,
-    calculatedAtKst: nowKstIso,
+    calculatedAtKst: nowKst,
     timestamp: now.getTime(),
 
     profileSummary: {
@@ -471,6 +500,7 @@ export function calculateSpecialStarsMatrix(options?: {
     pillarSummary,
     topSuperpowers,
     overallSynthesis,
+    specialStarsSynthesisMatrix,
   };
 }
 
@@ -489,9 +519,13 @@ export function formatSpecialStarsPrompt(res: SpecialStarsResult): string {
     `   ${i + 1}. [${t.title}] (${t.starName} · ${t.pillar}): ${t.actionableAdvice}`
   ).join('\n');
 
+  const matrixLine = res.specialStarsSynthesisMatrix
+    ? `\n4. [신살 교차 매트릭스]:\n   - 핵심 긴장: ${res.specialStarsSynthesisMatrix.dominantTension}\n   - 조율 상태: ${res.specialStarsSynthesisMatrix.alignmentState}\n   - 통합 실천: ${res.specialStarsSynthesisMatrix.integratedAction}\n`
+    : '';
+
   return `[⭐ 15대 신살 위치별 슈퍼파워 치환 실측 데이터 (Special Stars Matrix Core)]
 ======================================================================
-엔진 버전: ${res.engineVersion} | 기준 명식: ${res.profileSummary.fourPillarsText}
+엔진 버전: ${res.engineVersion} | 기준 시각: ${res.calculatedAtKst} | 기준 명식: ${res.profileSummary.fourPillarsText}
 총 감지된 특수 신살: ${res.totalStarsFound}개 | 일간: ${res.profileSummary.dayMaster}
 종합 분석: ${res.overallSynthesis}
 ======================================================================
@@ -506,7 +540,7 @@ ${topList}
 
 3. [15대 신살 위치별 현대적 슈퍼파워 정밀 도감]:
 ${starsList}
-======================================================================
+${matrixLine}======================================================================
 [★ 루시 신살 슈퍼파워 상담 지침]:
 - 고전의 불길한 단어(살·재앙·고독)에 얽매이지 말고, 위 실측된 신살을 사용자의 '독보적인 천재적 재능과 커리어 무기(슈퍼파워)'로 활짝 승화시켜 들려줘.
 - 위치별(년/월/일/시) 특성을 살려 "사회에서 보여지는 무기(년/월)"와 "내면의 비밀 병기(일/시)"를 입체적이고 자신감 넘치게 해석해줘.`;
