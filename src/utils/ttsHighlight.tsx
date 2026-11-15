@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { subscribeTTS, getCurrentTTSState, TTSState } from './tts';
 import {
-  cleanSentenceForMatching,
   isSentenceActive,
   extractTextContent,
   TTSHighlightMark,
@@ -65,6 +64,7 @@ export function useTTSCurrentSentence(enabled: boolean = true) {
     return {
       isSpeaking: false,
       isLoading: false,
+      isPaused: false,
       activeSentence: null,
       activeFullText: null,
       activeSentenceIndex: -1,
@@ -75,6 +75,7 @@ export function useTTSCurrentSentence(enabled: boolean = true) {
   return {
     isSpeaking: ttsState.isSpeaking,
     isLoading: ttsState.isLoading,
+    isPaused: Boolean(ttsState.isPaused),
     activeSentence:
       ttsState.activeSentence ||
       ttsState.currentSentence ||
@@ -169,28 +170,17 @@ export const TTSHighlightText: React.FC<{
   isHeading?: boolean;
   enabled?: boolean;
 }> = ({ text, isLight = false, className = '', isHeading = false, enabled = true }) => {
-  const { isSpeaking, activeSentence } = useTTSCurrentSentence(enabled);
+  const { isSpeaking, isLoading, isPaused, activeSentence } = useTTSCurrentSentence(enabled);
+  // The underline belongs to the sentence being read: it stays while the next
+  // part of a long reading is still being generated and while paused, instead of
+  // blinking off between parts.
+  const readingActive = enabled && (isSpeaking || isLoading || isPaused);
 
-  const isMatching = useMemo(() => {
-    if (!enabled || !isSpeaking || !activeSentence || !text) return false;
-    const cleanText = cleanSentenceForMatching(text);
-    const cleanActive = cleanSentenceForMatching(activeSentence);
-    if (!cleanText || !cleanActive) return false;
-    // Disallow false substring matching when text is short
-    if (cleanText.length < 8 && cleanText !== cleanActive) {
-      return false;
-    }
-    return (
-      cleanText === cleanActive ||
-      cleanText.includes(cleanActive) ||
-      isSentenceActive(text, activeSentence)
-    );
-  }, [enabled, isSpeaking, activeSentence, text]);
-
-  const targetSentence = isMatching ? activeSentence : null;
   const content = useMemo(
-    () => (targetSentence ? renderWithSentenceHighlight(text, targetSentence, isLight, isHeading) : text),
-    [text, targetSentence, isLight, isHeading]
+    () => (readingActive && activeSentence
+      ? renderWithSentenceHighlight(text, activeSentence, isLight, isHeading)
+      : text),
+    [text, activeSentence, readingActive, isLight, isHeading]
   );
 
   return <span className={className}>{content}</span>;

@@ -1,7 +1,7 @@
 {
   "name": "luckey",
   "private": true,
-  "version": "1.7.509",
+  "version": "1.7.510",
   "engines": {
     "node": ">=20.0.0"
   },
@@ -20,7 +20,8 @@
     "test:webkit": "playwright test --project=webkit-iphone",
     "test:engine-badge-theme": "tsx --test tests/engine-badge-theme.test.ts",
     "test:prompt-marquee": "tsx --test tests/lucy-prompt-marquee-scroll.test.ts",
-    "test:sync-vault": "tsx --test tests/server-vault-sync.test.ts"
+    "test:sync-vault": "tsx --test tests/server-vault-sync.test.ts",
+    "test:tts-highlight": "tsx --test tests/tts-highlight-match.test.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.91.1",

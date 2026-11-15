@@ -210,11 +210,14 @@ export function Streamdown({
   const textWithCursor = isTyping ? displayedText + ' ▍' : displayedText;
 
   // Dynamic TTS sentence tracking (strictly isolated when enableTTSHighlight is true)
-  const { isSpeaking, activeSentence } = useTTSCurrentSentence(enableTTSHighlight);
+  const { isSpeaking, isLoading, activeSentence } = useTTSCurrentSentence(enableTTSHighlight);
   const activeTarget = useMemo(() => {
-    if (!enableTTSHighlight || !isSpeaking || !activeSentence) return null;
+    // Loading keeps the underline on the sentence about to be read: a long
+    // reading is synthesised part by part, and clearing the mark at every part
+    // boundary made the underline blink off and look late.
+    if (!enableTTSHighlight || (!isSpeaking && !isLoading) || !activeSentence) return null;
     return activeSentence;
-  }, [enableTTSHighlight, isSpeaking, activeSentence]);
+  }, [enableTTSHighlight, isSpeaking, isLoading, activeSentence]);
 
   const components = useMemo(() => {
     return {
