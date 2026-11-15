@@ -8,12 +8,12 @@
  * 4. 북학개방 문물 수용 혜안(北學開放 視野 慧眼): 좁은 소중화 명분론의 우물 안 개구리를 벗어나, 천하의 뛰어난 문물과 제도를 편견 없이 관찰하고 배움으로써 시대를 혁신하는 광활한 안목.
  * 5. 위선 타파 해학·풍자 여유도(諧謔的 餘裕度): <호질(虎叱)>, <허생전(許生傳)> 등에서 번뜩이는 사대부의 가식과 허위의식을 단칼에 무너뜨리는 호탕한 유머와 통쾌한 해학적 여유.
  *
- * @version LUCKEY-YEONAM-PARK-JIWON-YEOLHA-ILGI-v1.1.0
+ * @version LUCKEY-YEONAM-PARK-JIWON-YEOLHA-ILGI-v2.0.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const KOREAN_YEONAM_PARK_JIWON_VERSION = 'LUCKEY-YEONAM-PARK-JIWON-YEOLHA-ILGI-v1.1.0';
+export const KOREAN_YEONAM_PARK_JIWON_VERSION = 'LUCKEY-YEONAM-PARK-JIWON-YEOLHA-ILGI-v2.0.0';
 
 export type YeonamQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -60,6 +60,21 @@ export interface YeonamParkJiwonYeolhaIlgiResult {
     guidanceTitle: string;
     philosophicalCounsel: string;
   };
+  yeonamSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
+}
+
+function formatYeonamKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
 }
 
 export const YEONAM_THEMES: YeonamTheme[] = [
@@ -246,9 +261,28 @@ export function calculateYeonamParkJiwonYeolhaIlgi(
     `${activeYeonamTheme.practicalCounsel} 아울러 《열하일기》의 통쾌한 가르침 "${focalYeonamAphorism.aphorismKo}"(${focalYeonamAphorism.aphorismHanja})을 가슴 깊이 새기며, ` +
     `${focalYeonamAphorism.actionGuidance}`;
 
+  const calculatedAtKst = formatYeonamKstTimestamp(now ?? new Date());
+  const yeonamSynthesisMatrix = {
+    dominantTension: `${activeYeonamTheme.themeTitleKo} ↔ ${temporalYeonamRhythm.phaseLabel}`,
+    alignmentState: describeYeonamStage(
+      Math.round(
+        (nightCrossingRiverSerenityScore +
+          beopgoChangsinCreativeWisdomScore +
+          이용HusaengScore +
+          bukhakOpenMindedInsightScore +
+          haehakSatiricalGenerosityQuotient) /
+          5,
+      ),
+      '일야구도·법고창신 — 두려움 없는 평정과 실질적 혁신이 어우러지는 흐름',
+      '이용후생·북학개방 — 열린 시선으로 일상의 실용을 다지는 국면',
+      '해학파위·내면정돈 — 무거운 긴장을 털어내고 중심을 세우는 시기',
+    ),
+    integratedAction: `${focalYeonamAphorism.actionGuidance}${question?.trim() ? ` [질문 맥락: ${question.trim()}]` : ''}`,
+  };
+
   return {
     engineVersion: KOREAN_YEONAM_PARK_JIWON_VERSION,
-    calculatedAtKst: (now ?? new Date()).toISOString(),
+    calculatedAtKst,
     questionTopic,
     temporalYeonamRhythm,
     nightCrossingRiverSerenityScore,
@@ -265,12 +299,14 @@ export function calculateYeonamParkJiwonYeolhaIlgi(
       guidanceTitle,
       philosophicalCounsel,
     },
+    yeonamSynthesisMatrix,
   };
 }
 
 export function formatYeonamParkJiwonYeolhaIlgiPrompt(res: YeonamParkJiwonYeolhaIlgiResult): string {
-  return [
+  const lines = [
     `【연암 박지원 《열하일기》 일야구도 & 이용후생·법고창신 실학 지표 (정성 성찰)】`,
+    `- 연산 시각: ${res.calculatedAtKst} | 엔진: ${res.engineVersion}`,
     `- 질문 맥락 및 시공간 리듬: [${res.questionTopic}] · ${res.temporalYeonamRhythm.kstSlot} (${res.temporalYeonamRhythm.phaseLabel})`,
     `- 시공간 지침: ${res.temporalYeonamRhythm.rhythmDirective}`,
     `- 일야구도 심령 평정(一夜九渡): ${describeYeonamStage(res.nightCrossingRiverSerenityScore, '격류 속에서도 고요한 중심을 지키는 담대한 평정', '외부 소음을 가라앉히고 중심을 잡는 안정기', '불안의 물소리를 인식하며 마음을 정돈하는 시기')}`,
@@ -288,5 +324,12 @@ export function formatYeonamParkJiwonYeolhaIlgiPrompt(res: YeonamParkJiwonYeolha
     `- 핵심 성찰 질문: ${res.reflectiveQuestion}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
     `- 종합 실학사상 권면: ${res.yeonamComprehensiveGuidance.philosophicalCounsel}`,
-  ].join('\n');
+  ];
+  if (res.yeonamSynthesisMatrix) {
+    lines.push(
+      `- 교차 매트릭스 [핵심 긴장: ${res.yeonamSynthesisMatrix.dominantTension} | 조율 상태: ${res.yeonamSynthesisMatrix.alignmentState}]`,
+      `- 통합 실천: ${res.yeonamSynthesisMatrix.integratedAction}`,
+    );
+  }
+  return lines.join('\n');
 }

@@ -9,12 +9,12 @@
  * 4. 정기신(精氣神) 삼보 보존 및 내면 활력 지수 (Essence-Qi-Spirit Vitality Preservation Score): 정(精), 기(氣), 신(神)을 아끼고 욕망을 절제하여 본래 생명 에너지를 튼튼히 보존하는 힘.
  * 5. 혜민(惠民) 이타적 온기와 심신 평정 회복탄력성 (Beneficent Healing & Equanimity Resilience Score): 우리 땅의 향약으로 만백성을 구제하고자 한 따뜻한 애민과 치유의 회복탄력성.
  *
- * @version LUCKEY-HEO-JUN-DONGUI-BOGAM-YANGSAENG-v1.0.0
+ * @version LUCKEY-HEO-JUN-DONGUI-BOGAM-YANGSAENG-v2.0.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const KOREAN_HEO_JUN_DONGUI_BOGAM_YANGSAENG_VERSION = 'LUCKEY-HEO-JUN-DONGUI-BOGAM-YANGSAENG-v1.0.0';
+export const KOREAN_HEO_JUN_DONGUI_BOGAM_YANGSAENG_VERSION = 'LUCKEY-HEO-JUN-DONGUI-BOGAM-YANGSAENG-v2.0.0';
 
 export interface HeoJunTheme {
   themeKey: string;
@@ -48,6 +48,27 @@ export interface KoreanHeoJunDonguiBogamYangsaengResult {
     guidanceTitle: string;
     philosophicalCounsel: string;
   };
+  heoJunSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
+}
+
+function formatHeoJunKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
+
+function describeHeoJunStage(score: number): string {
+  if (score >= 90) return '통즉불통(通則不痛) — 기혈과 마음의 순환이 막힘없이 조화를 이루는 양생의 경지';
+  if (score >= 85) return '천인상응(天人相應) — 자연의 리듬과 내면의 균형이 안정적으로 어우러지는 국면';
+  return '치미병(治未病) — 작은 피로와 불균형을 미리 살펴 근원을 다스리는 선제적 정돈기';
 }
 
 export const HEO_JUN_THEMES: HeoJunTheme[] = [
@@ -131,6 +152,7 @@ function hashString(str: string): number {
 export function calculateKoreanHeoJunDonguiBogamYangsaeng(
   profile?: UserProfile,
   query?: string,
+  now: Date = new Date(),
 ): KoreanHeoJunDonguiBogamYangsaengResult {
   const p = profile as any;
   const name = profile?.basic?.name ?? p?.name ?? '남희';
@@ -160,9 +182,24 @@ export function calculateKoreanHeoJunDonguiBogamYangsaeng(
     `${activeHeoJunTheme.practicalCounsel} 허준 선생의 명문 "${focalHeoJunAphorism.aphorismKo} (${focalHeoJunAphorism.aphorismHanja})"을 가슴에 품고, ` +
     `${focalHeoJunAphorism.actionGuidance}`;
 
+  const calculatedAtKst = formatHeoJunKstTimestamp(now);
+  const avgScore = Math.round(
+    (tongJeukBulTongCirculationIndex +
+      bodyCosmosCorrespondenceHarmonyScore +
+      preventiveChiMiByeongYangsaengIndex +
+      essenceQiSpiritPreservationScore +
+      beneficentCompassionHealingResilienceScore) /
+      5,
+  );
+  const heoJunSynthesisMatrix = {
+    dominantTension: `${activeHeoJunTheme.themeTitleKo} ↔ ${focalHeoJunAphorism.sourceContext}`,
+    alignmentState: describeHeoJunStage(avgScore),
+    integratedAction: `${focalHeoJunAphorism.actionGuidance}${query?.trim() ? ` [질문 맥락: ${query.trim()}]` : ''}`,
+  };
+
   return {
     engineVersion: KOREAN_HEO_JUN_DONGUI_BOGAM_YANGSAENG_VERSION,
-    calculatedAtKst: new Date().toISOString(),
+    calculatedAtKst,
     tongJeukBulTongCirculationIndex,
     bodyCosmosCorrespondenceHarmonyScore,
     preventiveChiMiByeongYangsaengIndex,
@@ -174,19 +211,25 @@ export function calculateKoreanHeoJunDonguiBogamYangsaeng(
       guidanceTitle,
       philosophicalCounsel,
     },
+    heoJunSynthesisMatrix,
   };
 }
 
 export function formatKoreanHeoJunDonguiBogamYangsaengPrompt(
   res: KoreanHeoJunDonguiBogamYangsaengResult,
 ): string {
-  return [
+  const avgScore = Math.round(
+    (res.tongJeukBulTongCirculationIndex +
+      res.bodyCosmosCorrespondenceHarmonyScore +
+      res.preventiveChiMiByeongYangsaengIndex +
+      res.essenceQiSpiritPreservationScore +
+      res.beneficentCompassionHealingResilienceScore) /
+      5,
+  );
+  const lines = [
     `【구암 허준 《동의보감》 신형장부도·통즉불통 및 치미병 양생 지혜 지표】`,
-    `- 통즉불통(通則不痛) 기혈 소통 순환도(Unblocked Flow): ${res.tongJeukBulTongCirculationIndex}/100`,
-    `- 신형장부도 천인상응 균형도(Body-Cosmos Holistic Balance): ${res.bodyCosmosCorrespondenceHarmonyScore}/100`,
-    `- 치미병(治未病) 선제적 양생력(Preventive Wellness Care): ${res.preventiveChiMiByeongYangsaengIndex}/100`,
-    `- 정기신(精氣神) 삼보 보존 활력(Essence-Qi-Spirit Vitality): ${res.essenceQiSpiritPreservationScore}/100`,
-    `- 혜민(惠民) 치유 회복탄력성(Beneficent Healing Resilience): ${res.beneficentCompassionHealingResilienceScore}/100`,
+    `- 연산 시각: ${res.calculatedAtKst} | 엔진: ${res.engineVersion}`,
+    `- 양생 순환 국면: ${describeHeoJunStage(avgScore)}`,
     `- 핵심 허준 동의보감 테마: ${res.activeHeoJunTheme.themeTitleKo} [${res.activeHeoJunTheme.themeTitleEn}]`,
     `- 실천적 통찰: ${res.activeHeoJunTheme.pragmaticInsight}`,
     `- 행동 조언: ${res.activeHeoJunTheme.practicalCounsel}`,
@@ -194,5 +237,12 @@ export function formatKoreanHeoJunDonguiBogamYangsaengPrompt(
     `- 원전 출처: [${res.focalHeoJunAphorism.sourceContext}]`,
     `- 구체적 실천 지침: ${res.focalHeoJunAphorism.actionGuidance}`,
     `- 종합 허준 양생 권면: ${res.heoJunComprehensiveGuidance.philosophicalCounsel}`,
-  ].join('\n');
+  ];
+  if (res.heoJunSynthesisMatrix) {
+    lines.push(
+      `- 교차 매트릭스 [핵심 긴장: ${res.heoJunSynthesisMatrix.dominantTension} | 조율 상태: ${res.heoJunSynthesisMatrix.alignmentState}]`,
+      `- 통합 실천: ${res.heoJunSynthesisMatrix.integratedAction}`,
+    );
+  }
+  return lines.join('\n');
 }

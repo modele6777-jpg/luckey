@@ -8,12 +8,12 @@
  * 4. 거경궁리(居敬窮理): 안으로는 마음을 경건히 보존하고(居敬), 밖으로는 사물의 이치를 끝까지 탐구함(窮理).
  * 5. 심통성정(心統性情): 마음은 타고난 본성(性)과 밖으로 드러나는 감정(情)을 통솔하는 주재자.
  *
- * @version LUCKEY-TOEGYE-SEONGHAK-SIPDO-v1.0.0
+ * @version LUCKEY-TOEGYE-SEONGHAK-SIPDO-v2.0.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const TOEGYE_SEONGHAK_SIPDO_VERSION = 'LUCKEY-TOEGYE-SEONGHAK-SIPDO-v1.0.0';
+export const TOEGYE_SEONGHAK_SIPDO_VERSION = 'LUCKEY-TOEGYE-SEONGHAK-SIPDO-v2.0.0';
 
 export interface SeonghakDiagram {
   diagramNumber: number;
@@ -46,6 +46,27 @@ export interface ToegyeSeonghakSipdoResult {
     counselTitle: string;
     philosophicalGuidance: string;
   };
+  toegyeSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
+}
+
+function formatToegyeKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
+
+function describeToegyeStage(score: number): string {
+  if (score >= 85) return '주일무적(主一無適) — 마음이 한곳에 맑게 모여 흔들림 없이 깨어 있는 경지';
+  if (score >= 75) return '거경궁리(居敬窮理) — 경건한 중심 위에서 사물의 이치를 차분히 밝히는 국면';
+  return '정제엄숙(整齊嚴肅) — 몸가짐과 일상을 단정히 정돈하며 내면의 기운을 거두는 흐름';
 }
 
 export type ToegyeSeonghakSipdoReport = ToegyeSeonghakSipdoResult;
@@ -136,7 +157,11 @@ const GYEONG_PRACTICES: GyeongPractice[] = [
   },
 ];
 
-export function calculateToegyeSeonghakSipdo(profile: UserProfile): ToegyeSeonghakSipdoResult {
+export function calculateToegyeSeonghakSipdo(
+  profile: UserProfile,
+  query?: string,
+  now: Date = new Date(),
+): ToegyeSeonghakSipdoResult {
   const seedString =
     (profile?.basic?.birthdate ?? (profile as any)?.birthdate ?? '1990-01-01') +
     (profile?.basic?.name ?? (profile as any)?.name ?? 'User') +
@@ -167,9 +192,24 @@ export function calculateToegyeSeonghakSipdo(profile: UserProfile): ToegyeSeongh
     `현재 상황에서는 《${activeSeonghakDiagram.diagramTitleHanja}》의 이치를 새겨 ${activeSeonghakDiagram.cultivationMethod} ` +
     `특히 심법 실천의 핵심으로 '${focalGyeongPractice.practiceHanja}(${focalGyeongPractice.practiceKo})'를 마음에 새기십시오. ${focalGyeongPractice.dailyApplication}`;
 
+  const calculatedAtKst = formatToegyeKstTimestamp(now);
+  const avgScore = Math.round(
+    (gyeongMindfulnessFocusScore +
+      geogyeongGungriPrecisionScore +
+      sangseongseongAwakeningScore +
+      jeongjeEomsukDignityScore +
+      seonghakIntegrationPracticeScore) /
+      5,
+  );
+  const toegyeSynthesisMatrix = {
+    dominantTension: `${activeSeonghakDiagram.diagramTitleHanja} ↔ ${focalGyeongPractice.practiceHanja}`,
+    alignmentState: describeToegyeStage(avgScore),
+    integratedAction: `${focalGyeongPractice.dailyApplication}${query?.trim() ? ` [질문 맥락: ${query.trim()}]` : ''}`,
+  };
+
   return {
     engineVersion: TOEGYE_SEONGHAK_SIPDO_VERSION,
-    calculatedAtKst: new Date().toISOString(),
+    calculatedAtKst,
     gyeongMindfulnessFocusScore,
     geogyeongGungriPrecisionScore,
     sangseongseongAwakeningScore,
@@ -181,22 +221,35 @@ export function calculateToegyeSeonghakSipdo(profile: UserProfile): ToegyeSeongh
       counselTitle,
       philosophicalGuidance,
     },
+    toegyeSynthesisMatrix,
   };
 }
 
 export function formatToegyeSeonghakSipdoPrompt(res: ToegyeSeonghakSipdoResult): string {
-  return [
+  const avgScore = Math.round(
+    (res.gyeongMindfulnessFocusScore +
+      res.geogyeongGungriPrecisionScore +
+      res.sangseongseongAwakeningScore +
+      res.jeongjeEomsukDignityScore +
+      res.seonghakIntegrationPracticeScore) /
+      5,
+  );
+  const lines = [
     `【한국 조선 성리학 퇴계 이황 성학십도 경(敬) 심법 지표】`,
-    `- 경(敬) 내면집중 주일무적도: ${res.gyeongMindfulnessFocusScore}/100`,
-    `- 거경궁리 사유이치 정밀도: ${res.geogyeongGungriPrecisionScore}/100`,
-    `- 상성성 일상 깨어있음 지수: ${res.sangseongseongAwakeningScore}/100`,
-    `- 정제엄숙 몸가짐 품격도: ${res.jeongjeEomsukDignityScore}/100`,
-    `- 성학십도 지행합일 실천력: ${res.seonghakIntegrationPracticeScore}/100`,
+    `- 연산 시각: ${res.calculatedAtKst} | 엔진: ${res.engineVersion}`,
+    `- 경(敬) 수양 국면: ${describeToegyeStage(avgScore)}`,
     `- 성학십도 도상: ${res.activeSeonghakDiagram.diagramTitleHanja} (${res.activeSeonghakDiagram.diagramTitleKo})`,
     `- 핵심 수양 원리: ${res.activeSeonghakDiagram.corePrinciple}`,
     `- 도상 실천 지침: ${res.activeSeonghakDiagram.cultivationMethod}`,
     `- 핵심 경(敬) 심법: ${res.focalGyeongPractice.practiceHanja} - ${res.focalGyeongPractice.practiceKo}`,
     `- 심법 실천 요결: ${res.focalGyeongPractice.dailyApplication}`,
     `- 철학적 처방: ${res.toegyePhilosophicalCounsel.philosophicalGuidance}`,
-  ].join('\n');
+  ];
+  if (res.toegyeSynthesisMatrix) {
+    lines.push(
+      `- 교차 매트릭스 [핵심 긴장: ${res.toegyeSynthesisMatrix.dominantTension} | 조율 상태: ${res.toegyeSynthesisMatrix.alignmentState}]`,
+      `- 통합 실천: ${res.toegyeSynthesisMatrix.integratedAction}`,
+    );
+  }
+  return lines.join('\n');
 }
