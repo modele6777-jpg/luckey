@@ -8,12 +8,12 @@
  * 4. 법고창신(法古創新)과 추사체(秋史體)의 파격: 옛 법도를 뼈를 깎듯 궁구한 뒤 마침내 모든 형식의 틀을 깨고 분방하면서도 법도를 잃지 않는 대담한 창조성.
  * 5. 담백함(澹泊)과 갈필(渴筆)의 절제: 화려한 채색을 배제하고 오직 마른 먹(갈필) 하나로 그린 집 한 채와 고목처럼, 불필요한 군더더기와 욕심을 비워낸 본질의 힘.
  *
- * @version LUCKEY-CHUSA-SEHANDO-WISDOM-v1.0.0
+ * @version LUCKEY-CHUSA-SEHANDO-WISDOM-v2.0.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const CHUSA_SEHANDO_WISDOM_VERSION = 'LUCKEY-CHUSA-SEHANDO-WISDOM-v1.0.0';
+export const CHUSA_SEHANDO_WISDOM_VERSION = 'LUCKEY-CHUSA-SEHANDO-WISDOM-v2.0.0';
 
 export interface SehandoTheme {
   themeKey: string;
@@ -47,6 +47,27 @@ export interface ChusaKimJeonghuiSehandoResult {
     counselTitle: string;
     practicalGuidance: string;
   };
+  sehandoSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
+}
+
+function formatChusaKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
+
+function describeSehandoStage(score: number): string {
+  if (score >= 90) return '송백청청(松柏靑靑) — 혹한 속에서도 흔들리지 않는 지조와 문자향이 빛나는 경지';
+  if (score >= 80) return '법고창신(法古創新) — 깊은 내공을 바탕으로 담백하게 본질을 세우는 국면';
+  return '갈필수양(渴筆修養) — 불필요한 군더더기를 비우고 근본의 뿌리를 다지는 흐름';
 }
 
 export type ChusaKimJeonghuiSehandoReport = ChusaKimJeonghuiSehandoResult;
@@ -120,7 +141,11 @@ const CHUSA_MAXIMS: ChusaMaxim[] = [
   },
 ];
 
-export function calculateChusaKimJeonghuiSehando(profile: UserProfile): ChusaKimJeonghuiSehandoResult {
+export function calculateChusaKimJeonghuiSehando(
+  profile: UserProfile,
+  query?: string,
+  now: Date = new Date(),
+): ChusaKimJeonghuiSehandoResult {
   const seedString =
     (profile?.basic?.birthdate ?? (profile as any)?.birthdate ?? '1990-01-01') +
     (profile?.basic?.name ?? (profile as any)?.name ?? 'User') +
@@ -152,9 +177,24 @@ export function calculateChusaKimJeonghuiSehando(profile: UserProfile): ChusaKim
     `${activeSehandoTheme.resilienceCounsel} 또한 추사의 명훈인 '${focalChusaMaxim.maximKo}'(${focalChusaMaxim.maximHanja}, ${focalChusaMaxim.virtueDimension})을 가슴에 새겨, ` +
     `${focalChusaMaxim.actionGuidance}`;
 
+  const calculatedAtKst = formatChusaKstTimestamp(now);
+  const avgScore = Math.round(
+    (songbaekHudjoIntegrityScore +
+      enduringFriendshipTrustScore +
+      munjahyangScholarlyGraceScore +
+      chusaBoldHarmonyFlexibilityScore +
+      dambaekSimgyeongPurityScore) /
+      5,
+  );
+  const sehandoSynthesisMatrix = {
+    dominantTension: `${activeSehandoTheme.themeTitleKo} ↔ ${focalChusaMaxim.virtueDimension}`,
+    alignmentState: describeSehandoStage(avgScore),
+    integratedAction: `${focalChusaMaxim.actionGuidance}${query?.trim() ? ` [질문 맥락: ${query.trim()}]` : ''}`,
+  };
+
   return {
     engineVersion: CHUSA_SEHANDO_WISDOM_VERSION,
-    calculatedAtKst: new Date().toISOString(),
+    calculatedAtKst,
     songbaekHudjoIntegrityScore,
     enduringFriendshipTrustScore,
     munjahyangScholarlyGraceScore,
@@ -166,17 +206,23 @@ export function calculateChusaKimJeonghuiSehando(profile: UserProfile): ChusaKim
       counselTitle,
       practicalGuidance,
     },
+    sehandoSynthesisMatrix,
   };
 }
 
 export function formatChusaKimJeonghuiSehandoPrompt(res: ChusaKimJeonghuiSehandoResult): string {
-  return [
+  const avgScore = Math.round(
+    (res.songbaekHudjoIntegrityScore +
+      res.enduringFriendshipTrustScore +
+      res.munjahyangScholarlyGraceScore +
+      res.chusaBoldHarmonyFlexibilityScore +
+      res.dambaekSimgyeongPurityScore) /
+      5,
+  );
+  const lines = [
     `【추사 김정희 세한도(歲寒圖) 송백후조 & 문자향 서권기 지표】`,
-    `- 송백후조(歲寒後凋) 역경 극복 지조도: ${res.songbaekHudjoIntegrityScore}/100`,
-    `- 세한지교(歲寒之交) 불변의 신의도: ${res.enduringFriendshipTrustScore}/100`,
-    `- 문자향 서권기(文字香書卷氣) 내공 품격도: ${res.munjahyangScholarlyGraceScore}/100`,
-    `- 법고창신(法古創新) 독창적 융합 조화도: ${res.chusaBoldHarmonyFlexibilityScore}/100`,
-    `- 갈필담백(渴筆澹泊) 본질 집중 청정도: ${res.dambaekSimgyeongPurityScore}/100`,
+    `- 연산 시각: ${res.calculatedAtKst} | 엔진: ${res.engineVersion}`,
+    `- 세한도 품격 국면: ${describeSehandoStage(avgScore)}`,
     `- 핵심 세한도 테마: ${res.activeSehandoTheme.themeTitleKo} [${res.activeSehandoTheme.themeTitleHanja}]`,
     `- 철학적 통찰: ${res.activeSehandoTheme.philosophicalInsight}`,
     `- 역경 극복 조언: ${res.activeSehandoTheme.resilienceCounsel}`,
@@ -184,5 +230,12 @@ export function formatChusaKimJeonghuiSehandoPrompt(res: ChusaKimJeonghuiSehando
     `- 한자 원문: "${res.focalChusaMaxim.maximHanja}" [${res.focalChusaMaxim.virtueDimension}]`,
     `- 실천적 행동 지침: ${res.focalChusaMaxim.actionGuidance}`,
     `- 통합 품격 처방: ${res.chusaPersonalCounsel.practicalGuidance}`,
-  ].join('\n');
+  ];
+  if (res.sehandoSynthesisMatrix) {
+    lines.push(
+      `- 교차 매트릭스 [핵심 긴장: ${res.sehandoSynthesisMatrix.dominantTension} | 조율 상태: ${res.sehandoSynthesisMatrix.alignmentState}]`,
+      `- 통합 실천: ${res.sehandoSynthesisMatrix.integratedAction}`,
+    );
+  }
+  return lines.join('\n');
 }

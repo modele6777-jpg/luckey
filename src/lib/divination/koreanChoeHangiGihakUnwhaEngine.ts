@@ -10,12 +10,12 @@
  * 4. 통민(通民)과 공변된 삶: 한 사람의 앎과 덕은 홀로 닫혀 있지 않고 온 백성과 소통하여 공익을 실현해야 함.
  * 5. 대동(大同) 화협: 우주 자연과 인간 사회가 기(氣)의 막힘없는 조화 속에서 평형을 이루는 궁극의 경지.
  *
- * @version LUCKEY-CHOE-HANGI-GIHAK-UNWHA-v1.0.0
+ * @version LUCKEY-CHOE-HANGI-GIHAK-UNWHA-v2.0.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const CHOE_HANGI_GIHAK_UNWHA_VERSION = 'LUCKEY-CHOE-HANGI-GIHAK-UNWHA-v1.0.0';
+export const CHOE_HANGI_GIHAK_UNWHA_VERSION = 'LUCKEY-CHOE-HANGI-GIHAK-UNWHA-v2.0.0';
 
 export interface ChoeHangiGihakPrinciple {
   principleKey: string;
@@ -48,6 +48,27 @@ export interface ChoeHangiGihakUnwhaResult {
     counselTitle: string;
     practicalGuidance: string;
   };
+  gihakSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
+}
+
+function formatChoeHangiKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
+
+function describeGihakStage(score: number): string {
+  if (score >= 88) return '대동운화(大同運化) — 감각과 사유, 공익의 기운이 막힘없이 소통하는 흐름';
+  if (score >= 78) return '신기통달(神氣通達) — 경험과 추측의 이치가 현실과 균형을 이루는 국면';
+  return '천험수양(踐驗修養) — 작은 실천과 현장 검증으로 기운의 흐름을 틔우는 시기';
 }
 
 export type ChoeHangiGihakUnwhaReport = ChoeHangiGihakUnwhaResult;
@@ -97,7 +118,11 @@ const UNWHA_PRACTICES: ChoeHangiUnwhaPractice[] = [
   },
 ];
 
-export function calculateChoeHangiGihakUnwha(profile: UserProfile): ChoeHangiGihakUnwhaResult {
+export function calculateChoeHangiGihakUnwha(
+  profile: UserProfile,
+  query?: string,
+  now: Date = new Date(),
+): ChoeHangiGihakUnwhaResult {
   const seedString =
     (profile?.basic?.birthdate ?? (profile as any)?.birthdate ?? '1990-01-01') +
     (profile?.basic?.name ?? (profile as any)?.name ?? 'User') +
@@ -129,9 +154,24 @@ export function calculateChoeHangiGihakUnwha(profile: UserProfile): ChoeHangiGih
     `${activeGihakPrinciple.practicalCounsel} 또한 '${focalUnwhaPractice.practiceNameKo}'의 수양을 실천하여, ` +
     `${focalUnwhaPractice.actionGuidance}`;
 
+  const calculatedAtKst = formatChoeHangiKstTimestamp(now);
+  const avgScore = Math.round(
+    (unwhagiCosmicFlowScore +
+      singitongPerceptualMindScore +
+      chucheukEmpiricalInsightScore +
+      tongminPublicConnectionScore +
+      daedongUniversalHarmonyScore) /
+      5,
+  );
+  const gihakSynthesisMatrix = {
+    dominantTension: `${activeGihakPrinciple.principleNameKo} ↔ ${focalUnwhaPractice.practiceNameKo}`,
+    alignmentState: describeGihakStage(avgScore),
+    integratedAction: `${focalUnwhaPractice.actionGuidance}${query?.trim() ? ` [질문 맥락: ${query.trim()}]` : ''}`,
+  };
+
   return {
     engineVersion: CHOE_HANGI_GIHAK_UNWHA_VERSION,
-    calculatedAtKst: new Date().toISOString(),
+    calculatedAtKst,
     unwhagiCosmicFlowScore,
     singitongPerceptualMindScore,
     chucheukEmpiricalInsightScore,
@@ -143,17 +183,23 @@ export function calculateChoeHangiGihakUnwha(profile: UserProfile): ChoeHangiGih
       counselTitle,
       practicalGuidance,
     },
+    gihakSynthesisMatrix,
   };
 }
 
 export function formatChoeHangiGihakUnwhaPrompt(res: ChoeHangiGihakUnwhaResult): string {
-  return [
+  const avgScore = Math.round(
+    (res.unwhagiCosmicFlowScore +
+      res.singitongPerceptualMindScore +
+      res.chucheukEmpiricalInsightScore +
+      res.tongminPublicConnectionScore +
+      res.daedongUniversalHarmonyScore) /
+      5,
+  );
+  const lines = [
     `【혜강 최한기 기학(氣學) & 신기통(神氣通) 운화 지표】`,
-    `- 운화기(運化氣) 변화 순응도: ${res.unwhagiCosmicFlowScore}/100`,
-    `- 신기통(神氣通) 감각·마음 소통도: ${res.singitongPerceptualMindScore}/100`,
-    `- 추측(推測) 경험 실증 통찰력: ${res.chucheukEmpiricalInsightScore}/100`,
-    `- 통민(通民) 만인 소통·공익 연대도: ${res.tongminPublicConnectionScore}/100`,
-    `- 대동(大同) 평형 화협 지수: ${res.daedongUniversalHarmonyScore}/100`,
+    `- 연산 시각: ${res.calculatedAtKst} | 엔진: ${res.engineVersion}`,
+    `- 기학 운화 국면: ${describeGihakStage(avgScore)}`,
     `- 기학 핵심 원리: ${res.activeGihakPrinciple.principleNameKo}`,
     `- 출전: ${res.activeGihakPrinciple.sourceText}`,
     `- 우주론적 바탕: ${res.activeGihakPrinciple.coreCosmology}`,
@@ -162,5 +208,12 @@ export function formatChoeHangiGihakUnwhaPrompt(res: ChoeHangiGihakUnwhaResult):
     `- 인식적 초점: ${res.focalUnwhaPractice.epistemicFocus}`,
     `- 행동 지침: ${res.focalUnwhaPractice.actionGuidance}`,
     `- 철학적 수양 지침: ${res.choeHangiPhilosophicalCounsel.practicalGuidance}`,
-  ].join('\n');
+  ];
+  if (res.gihakSynthesisMatrix) {
+    lines.push(
+      `- 교차 매트릭스 [핵심 긴장: ${res.gihakSynthesisMatrix.dominantTension} | 조율 상태: ${res.gihakSynthesisMatrix.alignmentState}]`,
+      `- 통합 실천: ${res.gihakSynthesisMatrix.integratedAction}`,
+    );
+  }
+  return lines.join('\n');
 }
