@@ -3299,11 +3299,15 @@ test('Persian Amesha Spenta & Baresman Engine: calculates immortal, baresman sco
 test('Sumerian Fifty Mes & Civilization Engine: calculates primary me, creation index and decree', () => {
   const rep = calculateSumerianFiftyMes(profile);
   assert.equal(rep.engineVersion, SUMERIAN_FIFTY_MES_VERSION);
+  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(rep.fiftyMesSynthesisMatrix?.integratedAction));
   assert(rep.primaryMe.koreanName.length > 0);
   assert(rep.creationIndex >= 0 && rep.creationIndex <= 100);
   const prompt = formatSumerianFiftyMesPrompt(rep);
   assert(prompt.includes('고대 수메르 에리두 50대 메(Me) 신성 문명 규범 엔진'));
   assert(prompt.includes(rep.primaryMe.koreanName));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
 });
 
 test('Zhong-Lu Inner Alchemy & Three Immortals Engine: calculates stages, tier and kan-li qualitative posture', () => {
@@ -3831,12 +3835,16 @@ test('Vedic Mahavakya Consciousness Engine: calculates qualitative Brahman conte
 test('Sumerian Apkallu Wisdom Engine: calculates 7 sages resonance and Apsu clarity', () => {
   const rep = calculateSumerianApkalluWisdom({ profile });
   assert.equal(rep.engineVersion, SUMERIAN_APKALLU_WISDOM_ENGINE_VERSION);
+  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(rep.apkalluSynthesisMatrix?.integratedAction));
   assert(rep.apkalluResonanceScore >= 0 && rep.apkalluResonanceScore <= 100);
   assert(rep.apsuClarityIndex >= 0 && rep.apsuClarityIndex <= 100);
   assert(rep.activeSage.nameKo.length > 0);
   const prompt = formatSumerianApkalluWisdomPrompt(rep);
   assert(prompt.includes('고대 수메르 에리두 엔키(Enki) 7대 압갈루(Apkallu) 현자 신성 지혜 실측 데이터'));
   assert(prompt.includes(rep.activeSage.nameKo));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
 });
 
 test('Celtic Tuatha Four Treasures Engine: calculates heroic destiny and dominant sacred treasure', () => {
@@ -4169,6 +4177,8 @@ test('Kashmir Shaivism Spanda Engine: calculates cosmic pulsation, Pratyabhijna 
 test('Sumerian Enuma Elish Fifty Names Engine: calculates Tiamat subjugation, four winds balance and Marduk sacred names', () => {
   const rep = calculateSumerianEnumaElishFiftyNames({ profile, question: '에누마 엘리시 마르두크 50대 이름' });
   assert.equal(rep.engineVersion, ENUMA_ELISH_ENGINE_VERSION);
+  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(rep.enumaElishSynthesisMatrix?.integratedAction));
   assert(rep.tiamatSubjugationOrderScore >= 0 && rep.tiamatSubjugationOrderScore <= 100);
   assert(rep.fiftySacredNamesResonanceIndex >= 0 && rep.fiftySacredNamesResonanceIndex <= 100);
   assert(rep.cosmicSovereigntyScore >= 0 && rep.cosmicSovereigntyScore <= 100);
@@ -4178,6 +4188,8 @@ test('Sumerian Enuma Elish Fifty Names Engine: calculates Tiamat subjugation, fo
   const prompt = formatSumerianEnumaElishFiftyNamesPrompt(rep);
   assert(prompt.includes('바빌로니아 에누마 엘리시 마르두크 50대 이름 & 4대 바람 정복 실측 데이터'));
   assert(prompt.includes(rep.dominantSacredName.nameKo));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
 });
 
 test('Alexandrian Decan Thirty Six Gods Engine: provides qualitative Kairos posture, question context and hides raw scores', () => {
