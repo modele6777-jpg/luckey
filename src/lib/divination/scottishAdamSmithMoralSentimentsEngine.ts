@@ -13,7 +13,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const SCOTTISH_ADAM_SMITH_VERSION = 'LUCKEY-ADAM-SMITH-MORAL-SENTIMENTS-v1.0.0';
+export const SCOTTISH_ADAM_SMITH_VERSION = 'LUCKEY-ADAM-SMITH-MORAL-SENTIMENTS-v2.0.0';
 
 export interface AdamSmithTheme {
   themeKey: string;
@@ -47,6 +47,27 @@ export interface ScottishAdamSmithMoralSentimentsResult {
     guidanceTitle: string;
     philosophicalCounsel: string;
   };
+  adamSmithSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
+}
+
+function formatAdamSmithKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
+
+function describeAdamSmithStage(score: number): string {
+  if (score >= 88) return '공정한 관찰자 명징기(Impartial Clarity) — 내면 양심과 상호 공감이 조화롭게 어우러져 고결한 자기통제가 자연스러운 상태';
+  if (score >= 80) return '도덕 감정 성숙기(Sympathetic Poise) — 타인의 입장을 헤아리면서도 스스로의 품격과 원칙을 차분히 지키는 상태';
+  return '양심의 거울 정련기(Conscience Mirror) — 사사로운 감정을 한 발 물러나 비추어 보며 균형 잡힌 판단을 세우는 상태';
 }
 
 export const ADAM_SMITH_THEMES: AdamSmithTheme[] = [
@@ -119,7 +140,9 @@ export const ADAM_SMITH_APHORISMS: AdamSmithAphorism[] = [
 ];
 
 export function calculateScottishAdamSmithMoralSentiments(
-  profile: UserProfile
+  profile: UserProfile,
+  query?: string,
+  now: Date = new Date(),
 ): ScottishAdamSmithMoralSentimentsResult {
   const p = profile as any;
   const name = profile?.basic?.name ?? p?.name ?? '방문자';
@@ -127,7 +150,7 @@ export function calculateScottishAdamSmithMoralSentiments(
   const birthTime = profile?.basic?.birthtime ?? p?.birthTime ?? p?.birthtime ?? '12:00';
   const gender = profile?.basic?.gender ?? p?.gender ?? 'neutral';
 
-  const seedString = `ADAM-SMITH-MORAL-SENTIMENTS:${name}:${birthDate}:${birthTime}:${gender}`;
+  const seedString = `ADAM-SMITH-MORAL-SENTIMENTS:${name}:${birthDate}:${birthTime}:${gender}:${query ?? ''}`;
 
   let hash = 0;
   for (let i = 0; i < seedString.length; i++) {
@@ -154,9 +177,19 @@ export function calculateScottishAdamSmithMoralSentiments(
     `${activeAdamSmithTheme.practicalCounsel} 아울러 《도덕감정론》 원전의 명언 "${focalAdamSmithAphorism.aphorismKo}"(${focalAdamSmithAphorism.aphorismEn})를 깊이 마음에 새기고, ` +
     `${focalAdamSmithAphorism.actionGuidance}`;
 
+  const calculatedAtKst = formatAdamSmithKstTimestamp(now);
+  const composite = Math.round(
+    (impartialSpectatorConscienceScore + mutualSympathyFellowFeelingIndex + selfCommandEquanimityScore + justiceBeneficenceHarmonyIndex + praiseworthinessIntegrityScore) / 5
+  );
+  const adamSmithSynthesisMatrix = {
+    dominantTension: `${activeAdamSmithTheme.themeTitleKo} ↔ ${focalAdamSmithAphorism.sourceContext}`,
+    alignmentState: describeAdamSmithStage(composite),
+    integratedAction: `${focalAdamSmithAphorism.actionGuidance}${query?.trim() ? ` [질문 맥락: ${query.trim()}]` : ''}`,
+  };
+
   return {
     engineVersion: SCOTTISH_ADAM_SMITH_VERSION,
-    calculatedAtKst: new Date().toISOString(),
+    calculatedAtKst,
     impartialSpectatorConscienceScore,
     mutualSympathyFellowFeelingIndex,
     selfCommandEquanimityScore,
@@ -168,17 +201,18 @@ export function calculateScottishAdamSmithMoralSentiments(
       guidanceTitle,
       philosophicalCounsel,
     },
+    adamSmithSynthesisMatrix,
   };
 }
 
 export function formatScottishAdamSmithMoralSentimentsPrompt(res: ScottishAdamSmithMoralSentimentsResult): string {
-  return [
+  const composite = Math.round(
+    (res.impartialSpectatorConscienceScore + res.mutualSympathyFellowFeelingIndex + res.selfCommandEquanimityScore + res.justiceBeneficenceHarmonyIndex + res.praiseworthinessIntegrityScore) / 5
+  );
+  const lines = [
     `【아담 스미스 《도덕감정론》 공정한 관찰자 & 공감·자기통제 지표】`,
-    `- 공정한 관찰자 양심도(Impartial Spectator): ${res.impartialSpectatorConscienceScore}/100`,
-    `- 상호 공감 및 동류의식(Mutual Sympathy): ${res.mutualSympathyFellowFeelingIndex}/100`,
-    `- 자기통제 및 고결한 평정심(Self-Command): ${res.selfCommandEquanimityScore}/100`,
-    `- 정의와 인애의 조화도(Justice & Beneficence): ${res.justiceBeneficenceHarmonyIndex}/100`,
-    `- 칭찬받을 자격 및 진실성(Praiseworthiness): ${res.praiseworthinessIntegrityScore}/100`,
+    `- 연산 시각: ${res.calculatedAtKst} | 엔진 버전: ${res.engineVersion}`,
+    `- 도덕감정 성숙 국면: ${describeAdamSmithStage(composite)}`,
     `- 핵심 도덕감정 테마: ${res.activeAdamSmithTheme.themeTitleKo} [${res.activeAdamSmithTheme.themeTitleEn}]`,
     `- 실존적 통찰: ${res.activeAdamSmithTheme.existentialInsight}`,
     `- 실천적 조언: ${res.activeAdamSmithTheme.practicalCounsel}`,
@@ -186,5 +220,12 @@ export function formatScottishAdamSmithMoralSentimentsPrompt(res: ScottishAdamSm
     `- 원전 출처: [${res.focalAdamSmithAphorism.sourceContext}]`,
     `- 구체적 실천 지침: ${res.focalAdamSmithAphorism.actionGuidance}`,
     `- 종합 도덕감정 철학 권면: ${res.adamSmithComprehensiveGuidance.philosophicalCounsel}`,
-  ].join('\n');
+  ];
+  if (res.adamSmithSynthesisMatrix) {
+    lines.push(
+      `- 교차 매트릭스 [핵심 긴장: ${res.adamSmithSynthesisMatrix.dominantTension} | 조율 상태: ${res.adamSmithSynthesisMatrix.alignmentState}]`,
+      `- 통합 실천: ${res.adamSmithSynthesisMatrix.integratedAction}`,
+    );
+  }
+  return lines.join('\n');
 }

@@ -23,7 +23,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const SAMKHYA_TATTVAS_ENGINE_VERSION = 'LUCKEY-SAMKHYA-TATTVAS-v1.0.0';
+export const SAMKHYA_TATTVAS_ENGINE_VERSION = 'LUCKEY-SAMKHYA-TATTVAS-v2.0.0';
 
 export interface SamkhyaTattvaInfo {
   index: number;
@@ -44,6 +44,7 @@ export interface GunaBalance {
 
 export interface SamkhyaTwentyFiveTattvasReport {
   engineVersion: string;
+  calculatedAtKst: string;
   dominantTattva: SamkhyaTattvaInfo;
   secondaryTattva: SamkhyaTattvaInfo;
   gunaBalance: GunaBalance;
@@ -53,6 +54,27 @@ export interface SamkhyaTwentyFiveTattvasReport {
   prakritiEntanglementRisk: number;  // 0 ~ 100 물질계 동일시/속박 위험도
   samkhyaPhilosophicalGuidance: string;
   mindPurificationPrescription: string;
+  samkhyaSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
+}
+
+function formatSamkhyaKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
+
+function describeSamkhyaStage(score: number, dominantGuna: string): string {
+  if (score >= 82) return `카이발랴 명징기(${dominantGuna}) — 푸루샤 순수 관조자의 빛이 프라크리티의 현상을 고요히 비추는 해탈 통찰기`;
+  if (score >= 68) return `비베카 분별기(${dominantGuna}) — 붓디의 지성이 감각의 흔들림을 가라앉히고 본질을 가려내는 정화기`;
+  return `사트바 조율기(${dominantGuna}) — 거친 라자스와 무거운 타마스를 내려놓고 맑은 중심을 세우는 수련기`;
 }
 
 const TWENTY_FIVE_TATTVAS: SamkhyaTattvaInfo[] = [
@@ -358,10 +380,21 @@ export function calculateSamkhyaTwentyFiveTattvas(params: {
   // 4. Guidance Formulation
   const samkhyaPhilosophicalGuidance = `상키야 카리카의 제1원리: "괴로움의 근본 원인은 영원한 관조자 푸루샤(참자아)가 물질 자연 프라크리티의 현상과 자신을 착각하여 동일시하는 데 있다." 현재 당신의 우주적 작용을 이끄는 주재 타트바는 [${dominantTattva.nameKo}]입니다. 감정과 상황의 파도에 휩쓸리지 말고, 그 파도를 온전히 바라보는 내면의 순수 증언자(Purusha)의 자리로 물러서십시오. 3구나 중 [${dominantGuna}]가 주도하고 있으므로, 붓디(지성)의 판별지(Viveka)를 번뜩여 찰나의 현상에 속박되지 않는 내면의 절대 평온(Kaivalya)을 확립하십시오.`;
 
-  const mindPurificationPrescription = `[마음 정화 처방] 보조 타트바 [${secondaryTattva.nameKo}]의 에너지를 도구로 삼아, 감각(마나스)의 분요를 가라앉히고 붓디(대지성)를 맑게 닦아내십시오. 사트바 비율(${sattva}%)을 유지하며 욕망과 번뇌가 일어날 때 "이것은 내가 아니라 자연(Prakriti)의 작용일 뿐이다"라고 관조할 때 분별지(${vivekaDiscernmentScore}점)가 당신을 진정한 자유로 이끕니다.`;
+  const mindPurificationPrescription = `[마음 정화 처방] 보조 타트바 [${secondaryTattva.nameKo}]의 에너지를 도구로 삼아, 감각(마나스)의 분요를 가라앉히고 붓디(대지성)를 맑게 닦아내십시오. 욕망과 번뇌가 일어날 때 "이것은 내가 아니라 자연(Prakriti)의 작용일 뿐이다"라고 관조할 때 비베카 분별지가 당신을 진정한 자유로 이끕니다.`;
+
+  const calculatedAtKst = formatSamkhyaKstTimestamp(now);
+  const composite = Math.round(
+    (vivekaDiscernmentScore + kaivalyaLiberationIndex + purushaWitnessPower) / 3
+  );
+  const samkhyaSynthesisMatrix = {
+    dominantTension: `${dominantTattva.nameKo} ↔ ${dominantGuna}`,
+    alignmentState: describeSamkhyaStage(composite, dominantGuna),
+    integratedAction: `${mindPurificationPrescription}${question.trim() ? ` [질문 맥락: ${question.trim()}]` : ''}`,
+  };
 
   return {
     engineVersion: SAMKHYA_TATTVAS_ENGINE_VERSION,
+    calculatedAtKst,
     dominantTattva,
     secondaryTattva,
     gunaBalance,
@@ -370,23 +403,32 @@ export function calculateSamkhyaTwentyFiveTattvas(params: {
     purushaWitnessPower,
     prakritiEntanglementRisk,
     samkhyaPhilosophicalGuidance,
-    mindPurificationPrescription
+    mindPurificationPrescription,
+    samkhyaSynthesisMatrix,
   };
 }
 
 export function formatSamkhyaTwentyFiveTattvasPrompt(rep: SamkhyaTwentyFiveTattvasReport): string {
-  return `[고대 인도 상키야(Samkhya) 25타트바 & 푸루샤-프라크리티 분별지 실측 리포트]
-· 버전: ${rep.engineVersion}
-· 주재 타트바: [${rep.dominantTattva.nameKo} (${rep.dominantTattva.nameSanskrit})] — 분류: ${rep.dominantTattva.categoryKo}
-  - 우주적 기능: ${rep.dominantTattva.cosmicFunction}
-  - 영적 의미: ${rep.dominantTattva.spiritualSignificance}
-· 보조 타트바: [${rep.secondaryTattva.nameKo} (${rep.secondaryTattva.nameSanskrit})] — 분류: ${rep.secondaryTattva.categoryKo}
-· 3구나(Tri-Guna) 역동 밸런스: 사트바(Sattva) ${rep.gunaBalance.sattva}% | 라자스(Rajas) ${rep.gunaBalance.rajas}% | 타마스(Tamas) ${rep.gunaBalance.tamas}% (주도 구나: ${rep.gunaBalance.dominantGuna})
-· 핵심 계측 지표:
-  - 비베카 키야티(Viveka Khyati) 판별지 지수: ${rep.vivekaDiscernmentScore}/100
-  - 카이발랴(Kaivalya) 독존 해탈 준비도: ${rep.kaivalyaLiberationIndex}/100
-  - 푸루샤 관조자(Witness) 힘: ${rep.purushaWitnessPower}/100
-  - 프라크리티 물질계 동일시 속박 위험도: ${rep.prakritiEntanglementRisk}/100
-· 상키야 철학적 통찰 지침: ${rep.samkhyaPhilosophicalGuidance}
-· 심신 정화 및 판별 실천 처방: ${rep.mindPurificationPrescription}`;
+  const composite = Math.round(
+    (rep.vivekaDiscernmentScore + rep.kaivalyaLiberationIndex + rep.purushaWitnessPower) / 3
+  );
+  const lines = [
+    `[고대 인도 상키야(Samkhya) 25타트바 & 푸루샤-프라크리티 분별지 실측 리포트]`,
+    `· 연산 시각: ${rep.calculatedAtKst} | 버전: ${rep.engineVersion}`,
+    `· 주재 타트바: [${rep.dominantTattva.nameKo} (${rep.dominantTattva.nameSanskrit})] — 분류: ${rep.dominantTattva.categoryKo}`,
+    `  - 우주적 기능: ${rep.dominantTattva.cosmicFunction}`,
+    `  - 영적 의미: ${rep.dominantTattva.spiritualSignificance}`,
+    `· 보조 타트바: [${rep.secondaryTattva.nameKo} (${rep.secondaryTattva.nameSanskrit})] — 분류: ${rep.secondaryTattva.categoryKo}`,
+    `· 주도 구나(Tri-Guna): ${rep.gunaBalance.dominantGuna}`,
+    `· 분별지 국면: ${describeSamkhyaStage(composite, rep.gunaBalance.dominantGuna)}`,
+    `· 상키야 철학적 통찰 지침: ${rep.samkhyaPhilosophicalGuidance}`,
+    `· 심신 정화 및 판별 실천 처방: ${rep.mindPurificationPrescription}`,
+  ];
+  if (rep.samkhyaSynthesisMatrix) {
+    lines.push(
+      `· 교차 매트릭스 [핵심 긴장: ${rep.samkhyaSynthesisMatrix.dominantTension} | 조율 상태: ${rep.samkhyaSynthesisMatrix.alignmentState}]`,
+      `· 통합 실천: ${rep.samkhyaSynthesisMatrix.integratedAction}`,
+    );
+  }
+  return lines.join('\n');
 }
