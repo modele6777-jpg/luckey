@@ -42,12 +42,12 @@ export function useLibrarySessionState<T extends Value>(key: string, initial: T)
   return [value, setValue];
 }
 
-export function useLibrarySessionScroll(key: string, open: boolean) {
+export function useLibrarySessionScroll(key: string, open: boolean, ready = true) {
   const ref = useRef<HTMLDivElement>(null);
   const restoring = useRef(false);
   useLayoutEffect(() => {
     const element = ref.current;
-    if (!open || !element) return;
+    if (!open || !element || !ready) return;
     const top = read(key, 0);
     restoring.current = true;
     element.scrollTop = top;
@@ -58,9 +58,13 @@ export function useLibrarySessionScroll(key: string, open: boolean) {
       second = requestAnimationFrame(() => { restoring.current = false; });
     });
     return () => { cancelAnimationFrame(first); cancelAnimationFrame(second); restoring.current = false; };
-  }, [key, open]);
+  }, [key, open, ready]);
   const onScroll = useCallback((event: UIEvent<HTMLDivElement>) => {
-    if (!restoring.current) write(key, event.currentTarget.scrollTop);
+    if (ready && !restoring.current) write(key, event.currentTarget.scrollTop);
+  }, [key, ready]);
+  const reset = useCallback(() => {
+    write(key, 0);
+    if (ref.current) ref.current.scrollTop = 0;
   }, [key]);
-  return { ref, onScroll };
+  return { ref, onScroll, reset };
 }

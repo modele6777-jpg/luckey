@@ -1,5 +1,4 @@
-import { useLibrarySessionState } from '@/hooks/useLibrarySessionState';
-import { DialogTriggerButton } from '@/components/layout/DialogTriggerButton';
+import { LucyLibraryDialogs, LucyLibraryTrigger } from '@/components/chat/LucyLibraryDialogs';
 import { LucyModeName } from '@/components/chat/LucyModeName';
 import { ScreenPortal } from '@/components/layout/ScreenPortal';
 import { LucyModeTransition } from '@/components/chat/LucyModeTransition';
@@ -35,7 +34,6 @@ import { detectLucyChannelsFromText, formatChannelsModeTitle, getSeptagramBadgeS
 import { selectOptimalDivinationTools, THEME_PRIMARY_DIVINATION_TOOLS, type SelectedDivinationToolsResult } from '@/lib/fifteenDivinationTools';
 import { triggerHaptic } from '@/lib/omniWarp/omniWarpHaptics';
 import { LucyResponseRecommendation } from '@/components/LucyResponseRecommendation';
-import { PromptLibraryModal } from '@/components/chat/PromptLibraryModal';
 import { DynamicGhostInputPlaceholder } from '@/components/chat/DynamicGhostInputPlaceholder';
 import { ChatProfileDock } from '@/components/chat/ChatProfileDock';
 import { useSmartScroll } from '@/hooks/useSmartScroll';
@@ -69,7 +67,6 @@ import { LucyKakaoBubbleGroup } from '@/components/chat/LucyKakaoBubbleGroup';
 import { LucyCosmicBackground } from '@/components/chat/LucyCosmicBackground';
 import { ALL_DCE_ENGINES } from '@/lib/divination/deterministicEngine';
 import { LUCY_PRO_CATALOG_ENGINES } from '@/lib/divination/engineCatalog';
-import { LucyEngineCatalogDialog } from '@/components/chat/LucyEngineCatalogDialog';
 import { groupActuallyUsedCalculationAudit } from '@/lib/divination/calculationAudit';
 import { getEngineBadgeTheme, getUsedEngineThemeBadges } from '@/lib/divination/engineBadgeTheme';
 import '@/styles/lucy-starlight.css';
@@ -1007,7 +1004,6 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
     activeText: null as string | null,
     activeSentence: null as string | null,
   });
-  const [isPromptLibraryOpen, setIsPromptLibraryOpen] = useLibrarySessionState<boolean>(`${librarySessionKey}:prompt:open`, false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const isInputComposingRef = useRef(false);
   const chatFooterRef = useRef<HTMLElement | null>(null);
@@ -1834,7 +1830,6 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
 
   // 프로필 모달 상태
   const [isChatProfileModalOpen, setIsChatProfileModalOpen] = useState(false);
-  const [isEngineCatalogOpen, setIsEngineCatalogOpen] = useLibrarySessionState<boolean>(`${librarySessionKey}:engine:open`, false);
   const [openUsageMessageId, setOpenUsageMessageId] = useState<string | null>(null);
   const [editingChatProfile, setEditingChatProfile] = useState<ChatTargetProfile | null>(null);
 
@@ -3075,10 +3070,9 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
                       <LucyModeName plus={showPlusMarker} pro={false} isLight={isLight} />
                     </span>
                   </h1>
-                  <DialogTriggerButton
+                  <LucyLibraryTrigger
                     type="button"
                     onClick={() => {
-                      setIsEngineCatalogOpen(true);
                       triggerHaptic('whitehole');
                     }}
                     className={`lucy-engine-list-button inline-flex items-center gap-1.5 min-h-[32px] px-2 rounded-[6px] text-[10px] font-bold tracking-tight border whitespace-nowrap shrink-0 hover:bg-amber-500/25 transition-colors cursor-pointer select-none ${
@@ -3089,12 +3083,12 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
                     title={`등록된 엔진·관점 ${LUCY_PRO_CATALOG_ENGINES.length}개 목록 보기`}
                     aria-label={`Lucy 엔진과 관점 목록 ${LUCY_PRO_CATALOG_ENGINES.length}개 보기`}
                     aria-haspopup="dialog"
-                    aria-expanded={isEngineCatalogOpen}
+                    stateKey={`${librarySessionKey}:engine`}
                     aria-controls="lucy-engine-catalog-dialog"
                   >
                     <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
                     엔진·관점 {LUCY_PRO_CATALOG_ENGINES.length}개
-                  </DialogTriggerButton>
+                  </LucyLibraryTrigger>
                 </div>
               </div>
             </div>
@@ -3884,13 +3878,12 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
             )}
 
             {/* ✨ 추천질문 전체보기 모달 트리거 아이콘 버튼 */}
-            <DialogTriggerButton
+            <LucyLibraryTrigger
               id="lucy-open-prompt-library-btn"
               type="button"
               aria-haspopup="dialog"
-              aria-expanded={isPromptLibraryOpen}
+              stateKey={`${librarySessionKey}:prompt`}
               aria-controls="hori-prompt-library-dialog"
-              onClick={() => setIsPromptLibraryOpen(true)}
               className={`w-[22px] h-[22px] min-w-[22px] min-h-[22px] sm:w-[24px] sm:h-[24px] sm:min-w-[24px] sm:min-h-[24px] p-0 rounded-lg bg-gradient-to-r from-amber-500/15 via-yellow-500/20 to-amber-500/15 hover:from-amber-500/25 hover:to-yellow-500/30 border border-amber-400/80 dark:border-amber-500/60 transition-all shrink-0 cursor-pointer active:scale-95 flex items-center justify-center shadow-2xs group ${
                 isLight ? 'text-amber-900' : 'text-white'
               }`}
@@ -3899,7 +3892,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
               aria-label="추천질문 라이브러리 열기"
             >
               <Sparkles size={11} className="sm:w-3 sm:h-3 text-amber-500 dark:text-amber-400 group-hover:scale-110 transition-transform" />
-            </DialogTriggerButton>
+            </LucyLibraryTrigger>
 
             {/* 새로고침 셔플 버튼 */}
             <button
@@ -4050,7 +4043,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
                   }
                 }}
                 onBlur={() => {
-                  setIsInputFocused(false);
+                  React.startTransition(() => setIsInputFocused(false));
                   if (window.scrollY !== 0) window.scrollTo(0, 0);
                   if (document.documentElement.scrollTop !== 0) document.documentElement.scrollTop = 0;
                   if (document.body.scrollTop !== 0) document.body.scrollTop = 0;
@@ -4238,12 +4231,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
       </AnimatePresence>
 
       {/* 📖 13페이지 추천 질문 라이브러리 모달 */}
-      <PromptLibraryModal
-        sessionKey={`${librarySessionKey}:prompt`}
-        isOpen={isPromptLibraryOpen}
-        onClose={() => setIsPromptLibraryOpen(false)}
-        onSelectPrompt={handleSelectPromptFromLibrary}
-      />
+      <LucyLibraryDialogs sessionKey={librarySessionKey} isLight={isLight} onSelectPrompt={handleSelectPromptFromLibrary} />
 
       {/* 👥 대화창 프로필 추가/수정 모달 */}
       <ChatProfileModal
@@ -4256,12 +4244,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
         userRealName={sharedState?.userProfile?.basic?.name || getPersistentUserProfile()?.basic?.name || '박주형'}
       />
 
-      <LucyEngineCatalogDialog
-        sessionKey={`${librarySessionKey}:engine`}
-        isOpen={isEngineCatalogOpen}
-        onClose={() => setIsEngineCatalogOpen(false)}
-        isLight={isLight}
-      />
+
 
       {/* End of content */}
 

@@ -15,6 +15,7 @@ try{
   if(kind==='engine') await dialog.getByRole('button',{name:/^심층 관점/}).first().tap();
   await dialog.locator('input').first().fill('사주');
   await dialog.locator('input').first().blur();
+  if(kind==='engine') await dialog.locator('[data-testid=lucy-engine-catalog-list][aria-busy=false]').waitFor({state:'visible'});
   await dialog.evaluate(e=>{window.savedLibrary=e;e.querySelector('.chat-library-scroll').scrollTop=100;});
   for(const size of [{width:626,height:890},{width:890,height:626},{width:393,height:852},{width:1200,height:900}]){
    await page.setViewportSize(size);await page.waitForTimeout(300);
@@ -27,6 +28,7 @@ try{
   await page.reload();await dialog.waitFor({state:'visible',timeout:30000});
   assert.equal(await dialog.locator('input').first().inputValue(),'사주','Search survives page restoration');
   if(kind==='engine') assert.equal(await dialog.getByRole('button',{name:/^심층 관점/}).first().getAttribute('aria-pressed'),'true');
+  if(kind==='engine') await dialog.locator('[data-testid=lucy-engine-catalog-list][aria-busy=false]').waitFor({state:'visible'});
   await page.waitForTimeout(250);
   assert(await dialog.locator('.chat-library-scroll').evaluate(e=>e.scrollTop>0),'Reading position restores');
   if(kind==='prompt'){

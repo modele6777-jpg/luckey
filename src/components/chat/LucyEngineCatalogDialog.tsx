@@ -1,3 +1,4 @@
+import { useProgressiveLibrary } from '@/hooks/useProgressiveLibrary';
 import { defaultLibrarySessionKey, useLibrarySessionState, useLibrarySessionScroll } from '@/hooks/useLibrarySessionState';
 import { DialogBackdrop } from '@/components/layout/DialogBackdrop';
 import './chat-library-layout.css';
@@ -39,7 +40,6 @@ export function LucyEngineCatalogDialog({ isOpen, onClose, isLight, sessionKey =
   const [filter, setFilter] = useLibrarySessionState<CatalogFilter>(`${sessionKey}:filter`, 'all');
   const [themeFilter, setThemeFilter] = useLibrarySessionState<CatalogThemeFilter>(`${sessionKey}:theme`, 'all');
   const [query, setQuery] = useLibrarySessionState<string>(`${sessionKey}:query`, '');
-  const scroll = useLibrarySessionScroll(`${sessionKey}:scroll`, isOpen);
 
   const filteredEngines = useMemo(() => {
     const normalizedQuery = query.trim().toLocaleLowerCase();
@@ -60,6 +60,17 @@ export function LucyEngineCatalogDialog({ isOpen, onClose, isLight, sessionKey =
       engines: filteredEngines.filter(engine => getEngineCatalogTheme(engine) === theme.id),
     }))
     .filter(group => group.engines.length > 0), [filteredEngines]);
+
+  const renderedCount = useProgressiveLibrary(isOpen, filteredEngines.length, `${filter}:${themeFilter}:${query}`);
+  const visibleGroups = useMemo(() => {
+    let remaining = renderedCount;
+    return groupedEngines.map(group => {
+      const engines = group.engines.slice(0, remaining);
+      remaining = Math.max(0, remaining - engines.length);
+      return { ...group, engines, total: group.engines.length };
+    }).filter(group => group.engines.length);
+  }, [groupedEngines, renderedCount]);
+  const scroll = useLibrarySessionScroll(`${sessionKey}:scroll`, isOpen, renderedCount >= filteredEngines.length);
 
   if (!isOpen) return null;
 
@@ -105,7 +116,7 @@ export function LucyEngineCatalogDialog({ isOpen, onClose, isLight, sessionKey =
           </header>
 
           <div ref={scroll.ref} onScroll={scroll.onScroll} data-app-scroll-root="" data-testid="lucy-engine-catalog-list" tabIndex={0}
-            aria-label="엔진 목록, 세로로 스크롤할 수 있습니다" className="chat-library-scroll overflow-y-auto">
+            aria-label="엔진 목록, 세로로 스크롤할 수 있습니다" className="chat-library-scroll overflow-y-auto" aria-busy={renderedCount < filteredEngines.length}>
             <div className="chat-library-toolbar shrink-0 border-b border-inherit px-4 py-2.5 sm:px-6">
               <p id="lucy-engine-catalog-intro" className={`text-xs leading-relaxed sm:text-sm ${muted}`}>
                 <strong className={isLight ? 'text-slate-900' : 'text-white'}>{ENGINE_CATALOG_COUNTS.foundational}개 기초 도구</strong>와{' '}
@@ -128,7 +139,7 @@ export function LucyEngineCatalogDialog({ isOpen, onClose, isLight, sessionKey =
                 <input
                   type="search"
                   value={query}
-                  onChange={event => setQuery(event.target.value)}
+                  onChange={event => { scroll.reset(); setQuery(event.target.value); }}
                   placeholder="이름이나 주제 검색"
                   aria-label="엔진과 관점 검색"
                   className={`w-full rounded-2xl bg-transparent py-2.5 pl-10 pr-3 text-sm outline-none ${isLight ? 'placeholder:text-slate-400 focus:ring-2 focus:ring-amber-400/30' : 'placeholder:text-slate-500 focus:ring-2 focus:ring-amber-400/20'}`}
@@ -142,7 +153,7 @@ export function LucyEngineCatalogDialog({ isOpen, onClose, isLight, sessionKey =
                     <button
                       key={item.id}
                       type="button"
-                      onClick={() => setFilter(item.id)}
+                      onClick={() => { scroll.reset(); setFilter(item.id); }}
                       aria-pressed={selected}
                       className={`shrink-0 rounded-full px-3 py-1.5 text-xs font-bold transition-colors ${selected ? 'bg-amber-400 text-slate-950' : inactivePill}`}
                     >
@@ -155,7 +166,7 @@ export function LucyEngineCatalogDialog({ isOpen, onClose, isLight, sessionKey =
               <nav aria-label="Lucy 7개 채널 테마" className="chat-library-filters flex flex-wrap gap-2 pb-0.5">
                 <button
                   type="button"
-                  onClick={() => setThemeFilter('all')}
+                  onClick={() => { scroll.reset(); setThemeFilter('all'); }}
                   aria-pressed={themeFilter === 'all'}
                   className={`shrink-0 rounded-full px-3 py-1.5 text-xs font-bold transition-colors ${themeFilter === 'all' ? 'bg-amber-400 text-slate-950' : inactivePill}`}
                 >
@@ -167,7 +178,7 @@ export function LucyEngineCatalogDialog({ isOpen, onClose, isLight, sessionKey =
                     <button
                       key={theme.id}
                       type="button"
-                      onClick={() => setThemeFilter(theme.id)}
+                      onClick={() => { scroll.reset(); setThemeFilter(theme.id); }}
                       aria-pressed={selected}
                       className={`shrink-0 rounded-full px-3 py-1.5 text-xs font-bold transition-colors ${selected ? 'bg-amber-400 text-slate-950' : inactivePill}`}
                     >
@@ -179,14 +190,16 @@ export function LucyEngineCatalogDialog({ isOpen, onClose, isLight, sessionKey =
             </div>
 
             <div className="px-4 pb-4 sm:px-6">
-              {groupedEngines.length ? (
+              {filteredEngines.length > 0 && renderedCount === 0 ? (
+                <p role="status" className={`px-4 py-8 text-sm ${muted}`}>엔진 목록을 준비하고 있어요…</p>
+              ) : groupedEngines.length ? (
                 <div className="space-y-5">
-                  {groupedEngines.map(({ theme, engines }) => (
+                  {visibleGroups.map(({ theme, engines, total }) => (
                     <section key={theme.id} data-testid={`lucy-engine-theme-${theme.id}`} aria-label={`${theme.label} 테마`}>
                       <header className={`mb-2 rounded-xl border px-3 py-2 ${subtleSurface}`}>
                         <div className="flex items-center justify-between gap-2">
                           <h3 className="lucy-engine-catalog-theme-name text-sm font-black">{theme.label}</h3>
-                          <span className={`lucy-engine-catalog-theme-count text-[11px] font-bold ${muted}`}>{engines.length}개</span>
+                          <span className={`lucy-engine-catalog-theme-count text-[11px] font-bold ${muted}`}>{total}개</span>
                         </div>
                         <p className={`lucy-engine-catalog-theme-description mt-0.5 text-[10px] sm:text-[11px] ${muted}`}>{theme.description}</p>
                       </header>

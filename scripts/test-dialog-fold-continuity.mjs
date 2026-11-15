@@ -18,6 +18,7 @@ try {
   const selector=kind==='engine'?'#lucy-engine-catalog-dialog':'#hori-prompt-library-dialog';
   const dialog=page.locator(selector);await dialog.waitFor({state:'visible'});
   await dialog.locator('input').first().fill('사주');
+  if(kind==='engine') await dialog.locator('[data-testid=lucy-engine-catalog-list][aria-busy=false]').waitFor({state:'visible'});
   await page.waitForTimeout(250);
   await dialog.evaluate(element=>{
    window.savedDialog=element;

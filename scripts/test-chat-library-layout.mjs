@@ -13,7 +13,9 @@ try{
    const trigger=(kind==='engine'?page.getByRole('button',{name:/Lucy 엔진과 관점 목록/}):page.getByRole('button',{name:'추천질문 라이브러리 열기'})).first();
    await (safari?trigger.tap():trigger.click());
    const dialog=page.locator(kind==='engine'?'#lucy-engine-catalog-dialog':'#hori-prompt-library-dialog');
-   await dialog.waitFor({state:'visible'});await page.waitForTimeout(250);
+   await dialog.waitFor({state:'visible'});
+   if(kind==='engine') await dialog.locator('[data-testid=lucy-engine-catalog-list][aria-busy=false]').waitFor({state:'visible'});
+   await page.waitForTimeout(250);
    const metrics=await dialog.evaluate(el=>{
     const scroller=el.querySelector('.chat-library-scroll'),r=el.getBoundingClientRect();
     const grid=el.querySelector('.prompt-library-grid');
