@@ -8,12 +8,12 @@
  * 4. 산책자(Flâneur)의 변증법적 직관 및 수집가 안목 (Flâneur Intuition & Collector Gaze Index): 일상의 사소하고 잊힌 파편, 거리의 풍경 속에서 시대의 본질과 숨겨진 보물을 번뜩이는 직관으로 길어 올리는 관찰력.
  * 5. 파편의 알레고리 및 구원의 희망 점화력 (Allegorical Fragment Redemption Score): 부서지고 미완성된 한계 상황 속에서도 절망에 함몰되지 않고, 작은 틈새에서 구원의 불꽃을 재구성하는 회복탄력성.
  *
- * @version LUCKEY-WALTER-BENJAMIN-AURA-NOWTIME-v1.0.0
+ * @version LUCKEY-WALTER-BENJAMIN-AURA-NOWTIME-v2.0.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const GERMAN_WALTER_BENJAMIN_AURA_NOWTIME_VERSION = 'LUCKEY-WALTER-BENJAMIN-AURA-NOWTIME-v1.0.0';
+export const GERMAN_WALTER_BENJAMIN_AURA_NOWTIME_VERSION = 'LUCKEY-WALTER-BENJAMIN-AURA-NOWTIME-v2.0.0';
 
 export interface BenjaminTheme {
   themeKey: string;
@@ -46,6 +46,11 @@ export interface GermanWalterBenjaminAuraNowTimeResult {
   benjaminComprehensiveGuidance: {
     guidanceTitle: string;
     philosophicalCounsel: string;
+  };
+  benjaminSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
   };
 }
 
@@ -127,9 +132,26 @@ function hashString(str: string): number {
   return hash;
 }
 
+function formatBenjaminKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
+
+function describeBenjaminStage(score: number): string {
+  if (score >= 94) return '지금-시간(Jetztzeit) 폭발기 (지금-여기의 아우라와 구원의 문이 동시에 열리는 흐름)';
+  if (score >= 90) return '산책자 각성기 (일상의 사소한 파편에서 시대의 진실이 번뜩이는 국면)';
+  return '폐허 응시기 (허황된 속도를 멈추고 상처의 결을 정직하게 살피는 흐름)';
+}
+
 export function calculateGermanWalterBenjaminAuraNowTime(
   profile?: UserProfile,
   query?: string,
+  now: Date = new Date(),
 ): GermanWalterBenjaminAuraNowTimeResult {
   const p = profile as any;
   const name = profile?.basic?.name ?? p?.name ?? '남희';
@@ -161,9 +183,18 @@ export function calculateGermanWalterBenjaminAuraNowTime(
     `${activeBenjaminTheme.practicalCounsel} 벤야민의 불후의 테제 "${focalBenjaminAphorism.aphorismKo}" (${focalBenjaminAphorism.aphorismGerman})를 가슴에 품고, ` +
     `${focalBenjaminAphorism.actionGuidance}`;
 
+  const benjaminSynthesisMatrix = {
+    dominantTension: `${activeBenjaminTheme.themeTitleKo} ↔ ${focalBenjaminAphorism.sourceContext}`,
+    alignmentState:
+      auraAuthenticityResonanceScore >= 92 && jetztzeitMessianicMomentumScore >= 91
+        ? '아우라 현존성과 지금-시간 도약의 고차원 공명'
+        : '파편과 폐허 속에서 고유한 구원의 문턱을 여는 국면',
+    integratedAction: `${activeBenjaminTheme.practicalCounsel} (${focalBenjaminAphorism.actionGuidance})`,
+  };
+
   return {
     engineVersion: GERMAN_WALTER_BENJAMIN_AURA_NOWTIME_VERSION,
-    calculatedAtKst: new Date().toISOString(),
+    calculatedAtKst: formatBenjaminKstTimestamp(now),
     auraAuthenticityResonanceScore,
     angelusNovusHistoricalInsightIndex,
     jetztzeitMessianicMomentumScore,
@@ -175,19 +206,21 @@ export function calculateGermanWalterBenjaminAuraNowTime(
       guidanceTitle,
       philosophicalCounsel,
     },
+    benjaminSynthesisMatrix,
   };
 }
 
 export function formatGermanWalterBenjaminAuraNowTimePrompt(
   res: GermanWalterBenjaminAuraNowTimeResult,
 ): string {
-  return [
+  const lines = [
     `【발터 벤야민 《역사의 개념에 대하여》 아우라·지금-시간(Jetztzeit) 지표】`,
-    `- 아우라 고유성 및 진정성 공명(Aura Authenticity Resonance): ${res.auraAuthenticityResonanceScore}/100`,
-    `- 역사의 천사 및 폐허 직시력(Angelus Novus Ruin Insight): ${res.angelusNovusHistoricalInsightIndex}/100`,
-    `- 메시아적 지금-시간 및 결정적 도약력(Messianic Jetztzeit Leap): ${res.jetztzeitMessianicMomentumScore}/100`,
-    `- 산책자의 변증법적 직관 및 수집가 안목(Flâneur Intuition & Collector Gaze): ${res.flaneurDialecticalIlluminationIndex}/100`,
-    `- 파편의 알레고리 및 구원 희망 점화력(Allegorical Fragment Redemption): ${res.allegoricalRedemptionScore}/100`,
+    `- 엔진 버전: ${res.engineVersion} | 연산 시각: ${res.calculatedAtKst}`,
+    `- 아우라 고유성 및 진정성 공명(Aura Authenticity Resonance): ${describeBenjaminStage(res.auraAuthenticityResonanceScore)}`,
+    `- 역사의 천사 및 폐허 직시력(Angelus Novus Ruin Insight): ${describeBenjaminStage(res.angelusNovusHistoricalInsightIndex)}`,
+    `- 메시아적 지금-시간 및 결정적 도약력(Messianic Jetztzeit Leap): ${describeBenjaminStage(res.jetztzeitMessianicMomentumScore)}`,
+    `- 산책자의 변증법적 직관 및 수집가 안목(Flâneur Intuition & Collector Gaze): ${describeBenjaminStage(res.flaneurDialecticalIlluminationIndex)}`,
+    `- 파편의 알레고리 및 구원 희망 점화력(Allegorical Fragment Redemption): ${describeBenjaminStage(res.allegoricalRedemptionScore)}`,
     `- 핵심 벤야민 테마: ${res.activeBenjaminTheme.themeTitleKo} [${res.activeBenjaminTheme.themeTitleEn}]`,
     `- 실천적 통찰: ${res.activeBenjaminTheme.pragmaticInsight}`,
     `- 행동 조언: ${res.activeBenjaminTheme.practicalCounsel}`,
@@ -195,5 +228,12 @@ export function formatGermanWalterBenjaminAuraNowTimePrompt(
     `- 원전 출처: [${res.focalBenjaminAphorism.sourceContext}]`,
     `- 구체적 실천 지침: ${res.focalBenjaminAphorism.actionGuidance}`,
     `- 종합 벤야민 권면: ${res.benjaminComprehensiveGuidance.philosophicalCounsel}`,
-  ].join('\n');
+  ];
+  if (res.benjaminSynthesisMatrix) {
+    lines.push(
+      `- 교차 매트릭스 [핵심 긴장: ${res.benjaminSynthesisMatrix.dominantTension} | 조율 상태: ${res.benjaminSynthesisMatrix.alignmentState}]`,
+      `- 통합 실천: ${res.benjaminSynthesisMatrix.integratedAction}`,
+    );
+  }
+  return lines.join('\n');
 }
