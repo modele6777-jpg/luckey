@@ -649,10 +649,12 @@ test('Taiyi Shenshu: 16-palace calculation, 72 Ju, Jusan/Gaeksan and prompt form
 
   // Prompt formatting
   const prompt = formatTaiyiPrompt(r1);
-  assert(prompt.includes('LUCKEY-TY-v1.0.0'));
+  assert(prompt.includes(TAIYI_ENGINE_VERSION));
   assert(prompt.includes('태을신수'));
   assert(prompt.includes('주산'));
   assert(prompt.includes('객산'));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
 
   // Skipped without birthdate
   const skipped = calculateTaiyi({ profile: null, targetYear: 2026 });
@@ -2713,8 +2715,10 @@ test('Somatic Body Armoring Engine: 빌헬름 라이히 7대 신체 갑옷 해�
 });
 
 test('Supreme Wisdom Trinity Engine: 기적수업 × 초기불교 × 영지주의 3대 지혜 융합 검증', () => {
-  const res = calculateSupremeWisdomTrinity({ profile, targetDate: new Date('2026-11-03T10:00:00+09:00') });
+  const res = calculateSupremeWisdomTrinity({ profile, targetDate: new Date('2026-11-03T10:00:00+09:00'), question: '마음 평화' });
   assert.equal(res.engineVersion, SUPREME_WISDOM_TRINITY_VERSION);
+  assert(res.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(res.trinitySynthesisMatrix?.integratedAction));
   assert(res.trinitySynthesisCore.length > 0);
   assert(res.acim.workbookLessonQuote.length > 0);
   assert(res.acim.holyInstantShift.length > 0);
@@ -2725,6 +2729,8 @@ test('Supreme Wisdom Trinity Engine: 기적수업 × 초기불교 × 영지주�
   const prompt = formatSupremeWisdomTrinityPrompt(res);
   assert(prompt.includes('LUCKEY 궁극의 영적 3위1체 마스터 지혜'));
   assert(prompt.includes(res.trinitySynthesisCore));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
 });
 
 test('Sacred Vortex Geometry Engine: 황금비 영혼 수비학 & 보텍스 기하학 검증', () => {
@@ -2759,8 +2765,10 @@ test('Taoist Neidan Meridian Engine: 도교 내단 양생 & 진기 순환 경락
 });
 
 test('Synchronicity Omen Engine: 칼 융 동시성 징조 해독 & 오멘 매트릭스 검증', () => {
-  const res = calculateSynchronicityOmen({ profile, targetDate: new Date('2026-11-04T10:00:00+09:00') });
+  const res = calculateSynchronicityOmen({ profile, targetDate: new Date('2026-11-04T10:00:00+09:00'), question: '우주의 징조' });
   assert.equal(res.engineVersion, SYNCHRONICITY_OMEN_VERSION);
+  assert(res.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(res.synchronicitySynthesisMatrix?.integratedAction));
   assert(res.dominantOmenTheme.length > 0);
   assert(res.synchronicityChannel.primaryChannelName.length > 0);
   assert(['GREEN_ACCELERATE', 'AMBER_PAUSE_OBSERVE', 'GOLDEN_QUANTUM_LEAP'].includes(res.synchronicityChannel.manifestationSignal));
@@ -2769,6 +2777,8 @@ test('Synchronicity Omen Engine: 칼 융 동시성 징조 해독 & 오멘 매트
   const prompt = formatSynchronicityOmenPrompt(res);
   assert(prompt.includes('LUCKEY 칼 융 동시성 징조 해독 & 오멘 매트릭스'));
   assert(prompt.includes(res.dominantOmenTheme));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
 });
 
 test('Etheric Aura Biofield Engine: 에테르 오라 생체장 & 쉴딩 결계 검증', () => {

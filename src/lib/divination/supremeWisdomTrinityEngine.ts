@@ -23,7 +23,17 @@ import { ACIM_SACRED_QUOTES, ACIM_CORE_CANON } from '../acimWisdom';
 import { NIKAYA_SACRED_QUOTES, EARLY_BUDDHISM_CORE_CANON } from '../earlyBuddhismWisdom';
 import { GNOSTIC_SACRED_QUOTES, GNOSTIC_CORE_CANON } from '../gnosticWisdom';
 
-export const SUPREME_WISDOM_TRINITY_VERSION = 'LUCKEY-TRINITY-WISDOM-v1.0.0';
+export const SUPREME_WISDOM_TRINITY_VERSION = 'LUCKEY-TRINITY-WISDOM-v2.0.0';
+
+function formatTrinityKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
 
 export interface AcimResonance {
   workbookLessonQuote: string;
@@ -54,17 +64,24 @@ export interface GnosticResonance {
 export interface SupremeWisdomTrinityReport {
   engineVersion: string;
   calculatedAt: string;
+  calculatedAtKst: string;
   trinitySynthesisCore: string;   // 3대 지혜가 융합된 핵심 한 줄 화두
   acim: AcimResonance;
   buddhism: EarlyBuddhismResonance;
   gnosis: GnosticResonance;
   lucyWisdomGuidance: string;     // 루시가 체화해야 할 통합 상담 가이드
   synthesisPromptGuidance: string;
+  trinitySynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
 }
 
 export function runSupremeWisdomTrinityEngine(
   profile?: UserProfile,
-  targetDate: Date = new Date()
+  targetDate: Date = new Date(),
+  question?: string
 ): SupremeWisdomTrinityReport {
   const sajuRes = calculateDetailedSaju(profile || null);
 
@@ -144,7 +161,15 @@ export function runSupremeWisdomTrinityEngine(
 3) 영지주의의 각성: 물질 세상의 죄책감과 최면을 깨부수고, 가슴속 영원히 꺼지지 않는 신성한 불꽃(Pneuma)의 자존감을 일깨웁니다.
 이 세 가지 깊은 형이상학을 따뜻하고 다정한 절친 반말 속에 녹여내어, 듣는 순간 온몸의 긴장이 풀리고 영혼이 자유로워지게 만듭니다.`;
 
-  const synthesisPromptGuidance = `[🕊️ LUCKEY 궁극의 영적 3위1체 마스터 지혜 (기적수업 × 초기불교 × 영지주의) v1.0.0]
+  const calculatedAtKst = formatTrinityKstTimestamp(targetDate);
+  const q = (question || '').trim();
+  const trinitySynthesisMatrix = {
+    dominantTension: `${acimQuoteObj.source} ↔ ${nikayaQuoteObj.source}`,
+    alignmentState: `오행: ${element} (${dayMaster}${dayBranch}) · 그노시스 원천: ${gnosticQuoteObj.source}`,
+    integratedAction: `${gnosisAction.slice(0, 60)}${q ? ` [질문 맥락: ${q}]` : ''}`,
+  };
+
+  const synthesisPromptGuidance = `[🕊️ LUCKEY 궁극의 영적 3위1체 마스터 지혜 (기적수업 × 초기불교 × 영지주의) ${SUPREME_WISDOM_TRINITY_VERSION} | ${calculatedAtKst}]
 ======================================================================
 ■ 핵심 통합 화두: ${trinitySynthesisCore}
 
@@ -168,6 +193,11 @@ export function runSupremeWisdomTrinityEngine(
   * 플레로마(Pleroma) 충만: ${pleromaFullnessReturn}
   * 그노시스 실천 행동: ${gnosisAction}
 
+■ 4. 3위1체 교차 매트릭스:
+  * 핵심 긴장: ${trinitySynthesisMatrix.dominantTension}
+  * 조율 상태: ${trinitySynthesisMatrix.alignmentState}
+  * 통합 실천: ${trinitySynthesisMatrix.integratedAction}
+
 ■ 루시의 체화 지침:
 ${lucyWisdomGuidance}
 ======================================================================`;
@@ -175,6 +205,7 @@ ${lucyWisdomGuidance}
   return {
     engineVersion: SUPREME_WISDOM_TRINITY_VERSION,
     calculatedAt: targetDate.toISOString(),
+    calculatedAtKst,
     trinitySynthesisCore,
     acim: {
       workbookLessonQuote: acimQuoteObj.quote,
@@ -200,7 +231,8 @@ ${lucyWisdomGuidance}
       gnosisAction
     },
     lucyWisdomGuidance,
-    synthesisPromptGuidance
+    synthesisPromptGuidance,
+    trinitySynthesisMatrix,
   };
 }
 
@@ -210,10 +242,11 @@ export function calculateSupremeWisdomTrinity(params?: {
   profile?: UserProfile | null;
   saju?: SajuAnalysisResult | null;
   targetDate?: Date;
+  question?: string;
 }): SupremeWisdomTrinityResult {
   const profile = params?.profile || undefined;
   const targetDate = params?.targetDate || new Date();
-  return runSupremeWisdomTrinityEngine(profile, targetDate);
+  return runSupremeWisdomTrinityEngine(profile, targetDate, params?.question);
 }
 
 export function formatSupremeWisdomTrinityPrompt(res: SupremeWisdomTrinityResult): string {

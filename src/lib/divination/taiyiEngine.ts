@@ -39,7 +39,17 @@ import type { UserProfile } from '../sharedState';
 import { resolveEffectiveSolarDate } from '../lunarCalendar';
 import { parseBirthTime } from '../birthDateTime';
 
-export const TAIYI_ENGINE_VERSION = 'LUCKEY-TY-v1.0.0';
+export const TAIYI_ENGINE_VERSION = 'LUCKEY-TY-v2.0.0';
+
+function formatTaiyiKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
 
 export const TAIYI_METHOD =
   '태을신수(太乙神數) 정통 16궁 연국 적년 수리 산법: 당 개원 12년 기산 5원 6기 360년 대주기, 72국 순환, 태을 8정궁 3년 주기 순행, 문창(주목)·시격(객목) 성위, 주산·객산 수리(장단산·화합수), 주객 승부 판정, 삼기(군기·신기·민기) 거시 대세 지수 및 오복 길성 결정론적 산출';
@@ -101,6 +111,7 @@ export interface TaiyiMacroStrategicMatrix {
 export interface TaiyiResult {
   status: TaiyiStatus;
   engineVersion: string;
+  calculatedAtKst?: string;
   method: string;
   targetYear: number;
   targetYearGanZhi: string;
@@ -110,6 +121,11 @@ export interface TaiyiResult {
   fiveBlessings: { palace: number; palaceName: string; meaning: string } | null;
   macroActionStrategy: string;
   macroStrategicMatrix?: TaiyiMacroStrategicMatrix;
+  taiyiSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
   note?: string;
 }
 
@@ -169,8 +185,10 @@ export function calculateTaiyi(params: {
   profile?: UserProfile | null;
   targetYear?: number;
   targetDate?: Date;
+  question?: string;
 }): TaiyiResult {
   const now = params.targetDate || new Date();
+  const calculatedAtKst = formatTaiyiKstTimestamp(now);
   const targetYear = params.targetYear || now.getFullYear();
   const targetGanZhi = getYearGanZhi(targetYear);
 
@@ -178,6 +196,7 @@ export function calculateTaiyi(params: {
     return {
       status: 'skipped',
       engineVersion: TAIYI_ENGINE_VERSION,
+      calculatedAtKst,
       method: TAIYI_METHOD,
       targetYear,
       targetYearGanZhi: targetGanZhi,
@@ -342,9 +361,17 @@ export function calculateTaiyi(params: {
     outcome,
   );
 
+  const q = (params.question || '').trim();
+  const taiyiSynthesisMatrix = {
+    dominantTension: `주산(${juSan}·${juSanType}) ↔ 객산(${gaekSan}·${gaekSanType})`,
+    alignmentState: `${cycleName} 제${juNumber}국 · 태을 ${PALACES_16[taiyiPalace - 1].name}궁 · ${macroStrategicMatrix.macroPhase}`,
+    integratedAction: `${macroStrategicMatrix.tacticalWindowAdvice}${q ? ` [질문 맥락: ${q}]` : ''}`,
+  };
+
   return {
     status: 'calculated',
     engineVersion: TAIYI_ENGINE_VERSION,
+    calculatedAtKst,
     method: TAIYI_METHOD,
     targetYear,
     targetYearGanZhi: targetGanZhi,
@@ -374,6 +401,7 @@ export function calculateTaiyi(params: {
     fiveBlessings,
     macroActionStrategy,
     macroStrategicMatrix,
+    taiyiSynthesisMatrix,
   };
 }
 
@@ -455,7 +483,7 @@ export function formatTaiyiPrompt(result: TaiyiResult): string {
   const fb = result.fiveBlessings;
 
   return `
-[태을신수(太乙神數) 16궁 연국 거시 대세 결정론적 산출 리포트 (${TAIYI_ENGINE_VERSION})]
+[태을신수(太乙神數) 16궁 연국 거시 대세 결정론적 산출 리포트 (${TAIYI_ENGINE_VERSION} | ${result.calculatedAtKst || ''})]
 - 대상 연도: ${result.targetYear}년 (${result.targetYearGanZhi}년) · 태을적년 ${c.accumulatedYears.toLocaleString()}년
 - 연국 국수: ${c.cycleName} 제${c.juNumber}국 (${c.juType})
 - 태을성위: ${c.taiyiPalaceName}궁(${c.taiyiPalace}번 궁) 입궁
@@ -470,8 +498,11 @@ export function formatTaiyiPrompt(result: TaiyiResult): string {
 - 오복(五福) 길성: ${fb?.palaceName}궁 입궁 (${fb?.meaning})
 - 거시 전략 조언: ${result.macroActionStrategy}${result.macroStrategicMatrix ? `\n- 거시 전략 매트릭스:
   * 시대 국면: ${result.macroStrategicMatrix.macroPhase} — ${result.macroStrategicMatrix.phaseDescription}
-  * 공수 역학 밸런스 지수: 주도권 밸런스 ${result.macroStrategicMatrix.juBalanceScore}점/100점 (추진력 ${result.macroStrategicMatrix.initiativeIndex} vs 방어력 ${result.macroStrategicMatrix.defensiveIndex})
-  * 결단 실행 윈도우: ${result.macroStrategicMatrix.tacticalWindowAdvice}` : ''}
+  * 공수 역학 밸런스 지수: ${c.outcome} 기반 주도권·방어 균형
+  * 결단 실행 윈도우: ${result.macroStrategicMatrix.tacticalWindowAdvice}` : ''}${result.taiyiSynthesisMatrix ? `\n- 교차 매트릭스:
+  * 핵심 긴장: ${result.taiyiSynthesisMatrix.dominantTension}
+  * 조율 상태: ${result.taiyiSynthesisMatrix.alignmentState}
+  * 통합 실천: ${result.taiyiSynthesisMatrix.integratedAction}` : ''}
 - [AI 해석 절대 지침]: 본 리포트는 100% 전통 역법 수리로 계산된 실측 데이터입니다. 주산/객산 수리 및 승부 판정을 임의 변경하지 말고, 거시적 타이밍과 시대 흐름 조언에 충실히 반영하십시오.
 `.trim();
 }
