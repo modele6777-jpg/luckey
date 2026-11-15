@@ -5345,6 +5345,8 @@ test('Francis Bacon Novum Organum Engine: calculates Four Idols overcoming, Indu
   assert(prompt.includes(rep.activeBaconTheme.themeTitleKo));
   assert(prompt.includes('질문 주제 맥락: decision'));
   assert(prompt.includes('KST 시공간 리듬:'));
+  assert.ok(rep.calculatedAtKst.includes('KST'));
+  assert.ok(prompt.includes('교차 매트릭스'));
   assert(!prompt.includes('/100'));
 });
 
@@ -7329,6 +7331,8 @@ test('qualitative & temporal deepening: Bertrand Russell, Virginia Woolf, and Wi
   assert.ok(woolf.practiceGuidance.length > 0 && woolf.ritualAction.length > 0 && woolf.boundaryNotice.length > 0);
   const woolfPrompt = formatBritishVirginiaWoolfRoomOfOnesOwnPrompt(woolf);
   assert.ok(woolfPrompt.includes('질문 주제 맥락: healing'));
+  assert.ok(woolf.calculatedAtKst.includes('KST'));
+  assert.ok(woolfPrompt.includes('교차 매트릭스'));
   assert.ok(!woolfPrompt.includes('/100'));
 
   const shakespeare = calculateBritishWilliamShakespeareTragicWisdom(testProfile, '가족과의 갈등에서 용서와 화해가 어려워요', now);
@@ -7338,6 +7342,8 @@ test('qualitative & temporal deepening: Bertrand Russell, Virginia Woolf, and Wi
   assert.ok(shakespeare.practiceGuidance.length > 0 && shakespeare.ritualAction.length > 0 && shakespeare.boundaryNotice.length > 0);
   const shakespearePrompt = formatBritishWilliamShakespeareTragicWisdomPrompt(shakespeare);
   assert.ok(shakespearePrompt.includes('질문 주제 맥락: relationship'));
+  assert.ok(shakespeare.calculatedAtKst.includes('KST'));
+  assert.ok(shakespearePrompt.includes('교차 매트릭스'));
   assert.ok(!shakespearePrompt.includes('/100'));
 });
 

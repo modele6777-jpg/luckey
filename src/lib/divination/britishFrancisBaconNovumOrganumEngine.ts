@@ -10,12 +10,12 @@
  * 4. 극장의 우상(Idola Theatri) 극복: 과거의 낡은 권위, 검증되지 않은 전통 체계나 독단적 교조주의를 맹종하지 않는 비판적 성찰력.
  * 5. 참된 귀납과 실천적 힘(Inductio Vera & Scientia Potentia Est): "아는 것이 힘이다(Scientia potentia est)"라는 명제처럼, 면밀한 관찰과 사실 검증을 통해 실질적인 변화를 창출하는 실증적 실행력.
  *
- * @version LUCKEY-FRANCIS-BACON-NOVUM-ORGANUM-v1.1.0
+ * @version LUCKEY-FRANCIS-BACON-NOVUM-ORGANUM-v2.0.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const BRITISH_FRANCIS_BACON_VERSION = 'LUCKEY-FRANCIS-BACON-NOVUM-ORGANUM-v1.1.0';
+export const BRITISH_FRANCIS_BACON_VERSION = 'LUCKEY-FRANCIS-BACON-NOVUM-ORGANUM-v2.0.0';
 
 export type BaconQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -60,6 +60,11 @@ export interface FrancisBaconNovumOrganumResult {
   ritualAction: string;
   reflectionFocus: string;
   boundaryNotice: string;
+  baconSynthesisMatrix: {
+    coreInsight: string;
+    recommendedAction: string;
+    cautionNotice: string;
+  };
   baconComprehensiveGuidance: {
     guidanceTitle: string;
     philosophicalCounsel: string;
@@ -264,10 +269,18 @@ export function calculateFrancisBaconNovumOrganum(
     `${focalBaconAphorism.actionGuidance}`;
 
   const boundaryNotice = '프랜시스 베이컨 신기관 해석은 인지적 편향과 사실 검증을 돕는 상징·성찰 관점이며, 미래 예측이나 확정적 판단이 아닙니다.';
+  const baseDate = now ?? new Date();
+  const kst = new Date(baseDate.getTime() + 9 * 60 * 60 * 1000);
+  const kstTimeLabel = `${temporalBaconRhythm.kstDateLabel} ${String(kst.getUTCHours()).padStart(2, '0')}:${String(kst.getUTCMinutes()).padStart(2, '0')} KST`;
+  const baconSynthesisMatrix = {
+    coreInsight: activeBaconTheme.themeTitleKo,
+    recommendedAction: topicGuidance.practiceGuidance,
+    cautionNotice: '보고 싶은 사실만 모으거나 모호한 수사(시장의 우상)에 이끌려 성급히 단정하지 마십시오.',
+  };
 
   return {
     engineVersion: BRITISH_FRANCIS_BACON_VERSION,
-    calculatedAtKst: (now ?? new Date()).toISOString(),
+    calculatedAtKst: kstTimeLabel,
     idolsTribusSpeciesBiasOvercomingScore,
     idolsSpecusPersonalPrejudiceOvercomingScore,
     idolsForiLinguisticClarityScore,
@@ -281,6 +294,7 @@ export function calculateFrancisBaconNovumOrganum(
     ritualAction: topicGuidance.ritualAction,
     reflectionFocus: topicGuidance.reflectionFocus,
     boundaryNotice,
+    baconSynthesisMatrix,
     baconComprehensiveGuidance: {
       guidanceTitle,
       philosophicalCounsel,
@@ -290,7 +304,8 @@ export function calculateFrancisBaconNovumOrganum(
 
 export function formatFrancisBaconNovumOrganumPrompt(res: FrancisBaconNovumOrganumResult): string {
   return [
-    `【프랜시스 베이컨 《신기관》 4대 우상 타파 & 실증 경험 지표】`,
+    `【프랜시스 베이컨 《신기관》 4대 우상 타파 & 실증 경험 지표 (${res.engineVersion})】`,
+    `- 연산 시각: ${res.calculatedAtKst}`,
     `- 질문 주제 맥락: ${res.questionTopic}`,
     `- KST 시공간 리듬: ${res.temporalBaconRhythm.kstDateLabel} · ${res.temporalBaconRhythm.timeWindowKo} (${res.temporalBaconRhythm.empiricalTone}) — ${res.temporalBaconRhythm.rhythmDirective}`,
     `- 핵심 우상 타파 테마: ${res.activeBaconTheme.themeTitleKo} [${res.activeBaconTheme.themeTitleLatin}]`,
@@ -299,6 +314,7 @@ export function formatFrancisBaconNovumOrganumPrompt(res: FrancisBaconNovumOrgan
     `- 질문 맞춤 실천 가이드: ${res.practiceGuidance}`,
     `- 일상 실천 의례: ${res.ritualAction}`,
     `- 핵심 성찰 질문: ${res.reflectionFocus}`,
+    `- 교차 매트릭스: 핵심(${res.baconSynthesisMatrix.coreInsight}) | 실행(${res.baconSynthesisMatrix.recommendedAction}) | 주의(${res.baconSynthesisMatrix.cautionNotice})`,
     `- 핵심 경구: "${res.focalBaconAphorism.aphorismKo}"`,
     `- 라틴어 원문: "${res.focalBaconAphorism.aphorismLatin}" [${res.focalBaconAphorism.novumOrganumRef}]`,
     `- 구체적 실천 지침: ${res.focalBaconAphorism.actionGuidance}`,

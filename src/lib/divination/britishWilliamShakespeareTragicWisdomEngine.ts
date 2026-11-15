@@ -8,12 +8,12 @@
  * 4. 시간의 무상함을 넘어서는 예술적 영원성 지수 (Poetic Immortality & Creative Aesthetic Index): 소네트 18번처럼 세월의 풍화를 이겨내고 참된 아름다움과 진실을 영원히 꽃피우는 창조적 생명력.
  * 5. "준비되어 있음이 전부다" 초연한 섭리 수용 회복탄력성 (Serene Fortitude & "Readiness is All" Resilience Score): "참새 한 마리의 추락에도 특별한 섭리가 있다. 지금이 아니라면 언젠가 올 것이요, 준비되어 있음이 전부다"라는 초연한 내면 평정심.
  *
- * @version LUCKEY-SHAKESPEARE-TRAGIC-WISDOM-v1.1.0
+ * @version LUCKEY-SHAKESPEARE-TRAGIC-WISDOM-v2.0.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const BRITISH_WILLIAM_SHAKESPEARE_TRAGIC_WISDOM_VERSION = 'LUCKEY-SHAKESPEARE-TRAGIC-WISDOM-v1.1.0';
+export const BRITISH_WILLIAM_SHAKESPEARE_TRAGIC_WISDOM_VERSION = 'LUCKEY-SHAKESPEARE-TRAGIC-WISDOM-v2.0.0';
 
 export type ShakespeareQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -58,6 +58,11 @@ export interface BritishWilliamShakespeareTragicWisdomResult {
   ritualAction: string;
   reflectionFocus: string;
   boundaryNotice: string;
+  shakespeareSynthesisMatrix: {
+    coreInsight: string;
+    recommendedAction: string;
+    cautionNotice: string;
+  };
   shakespeareComprehensiveGuidance: {
     guidanceTitle: string;
     philosophicalCounsel: string;
@@ -262,10 +267,18 @@ export function calculateBritishWilliamShakespeareTragicWisdom(
     `${focalShakespeareAphorism.actionGuidance}`;
 
   const boundaryNotice = '윌리엄 셰익스피어 문학·철학 해석은 인간 본성과 선택을 비추는 상징·성찰 관점이며, 미래의 확정 예언이나 사실 판정이 아닙니다.';
+  const baseDate = now ?? new Date();
+  const kst = new Date(baseDate.getTime() + 9 * 60 * 60 * 1000);
+  const kstTimeLabel = `${temporalShakespeareRhythm.kstDateLabel} ${String(kst.getUTCHours()).padStart(2, '0')}:${String(kst.getUTCMinutes()).padStart(2, '0')} KST`;
+  const shakespeareSynthesisMatrix = {
+    coreInsight: activeShakespeareTheme.themeTitleKo,
+    recommendedAction: topicGuidance.practiceGuidance,
+    cautionNotice: '우유부단한 계산이나 오래된 원한에 붙들려 지금 이 순간의 준비와 품위를 잃지 마십시오.',
+  };
 
   return {
     engineVersion: BRITISH_WILLIAM_SHAKESPEARE_TRAGIC_WISDOM_VERSION,
-    calculatedAtKst: (now ?? new Date()).toISOString(),
+    calculatedAtKst: kstTimeLabel,
     tragicDepthConfrontationScore,
     existentialActionResolveIndex,
     tempestForgivenessGraceScore,
@@ -279,6 +292,7 @@ export function calculateBritishWilliamShakespeareTragicWisdom(
     ritualAction: topicGuidance.ritualAction,
     reflectionFocus: topicGuidance.reflectionFocus,
     boundaryNotice,
+    shakespeareSynthesisMatrix,
     shakespeareComprehensiveGuidance: {
       guidanceTitle,
       philosophicalCounsel,
@@ -290,7 +304,8 @@ export function formatBritishWilliamShakespeareTragicWisdomPrompt(
   res: BritishWilliamShakespeareTragicWisdomResult,
 ): string {
   return [
-    `【윌리엄 셰익스피어 《햄릿·템페스트》 비극적 통찰·실존적 결단 지표】`,
+    `【윌리엄 셰익스피어 《햄릿·템페스트》 비극적 통찰·실존적 결단 지표 (${res.engineVersion})】`,
+    `- 연산 시각: ${res.calculatedAtKst}`,
     `- 질문 주제 맥락: ${res.questionTopic}`,
     `- KST 시공간 리듬: ${res.temporalShakespeareRhythm.kstDateLabel} · ${res.temporalShakespeareRhythm.timeWindowKo} (${res.temporalShakespeareRhythm.dramaticTone}) — ${res.temporalShakespeareRhythm.rhythmDirective}`,
     `- 핵심 셰익스피어 테마: ${res.activeShakespeareTheme.themeTitleKo} [${res.activeShakespeareTheme.themeTitleEn}]`,
@@ -299,6 +314,7 @@ export function formatBritishWilliamShakespeareTragicWisdomPrompt(
     `- 질문 맞춤 실천 가이드: ${res.practiceGuidance}`,
     `- 일상 실천 의례: ${res.ritualAction}`,
     `- 핵심 성찰 질문: ${res.reflectionFocus}`,
+    `- 교차 매트릭스: 핵심(${res.shakespeareSynthesisMatrix.coreInsight}) | 실행(${res.shakespeareSynthesisMatrix.recommendedAction}) | 주의(${res.shakespeareSynthesisMatrix.cautionNotice})`,
     `- 셰익스피어 원전 명대사: "${res.focalShakespeareAphorism.aphorismKo}"`,
     `- 원문: (${res.focalShakespeareAphorism.aphorismOriginal})`,
     `- 원전 출처: [${res.focalShakespeareAphorism.sourceContext}]`,
