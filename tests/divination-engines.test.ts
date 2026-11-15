@@ -5919,9 +5919,14 @@ test('Karl Jaspers Existenz Grenzsituationen Engine: calculates Grenzsituationen
   assert(rep.lovingStruggleCommunicationScore >= 0 && rep.lovingStruggleCommunicationScore <= 100);
   assert(rep.reasonExistenzHarmonizationIndex >= 0 && rep.reasonExistenzHarmonizationIndex <= 100);
   assert(rep.activeJaspersTheme.themeTitleKo.length > 0);
+  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(rep.jaspersSynthesisMatrix?.integratedAction));
   const prompt = formatGermanKarlJaspersExistenzGrenzsituationenPrompt(rep);
   assert(prompt.includes('카를 야스퍼스 《철학》 한계상황 직시 & 초월자 암호·실존적 소통 지표'));
   assert(prompt.includes(rep.activeJaspersTheme.themeTitleKo));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
 });
 
 test('Maewoldang Kim Si-seup Geumo Sinhwa Engine: calculates Fangwairen Freedom, Clean Fidelity, Transcendent Love, and Three Teachings Harmony', () => {
@@ -6459,9 +6464,14 @@ test('Walter Benjamin Aura and Now-Time Engine: calculates Aura Authenticity, An
   assert(rep.flaneurDialecticalIlluminationIndex >= 0 && rep.flaneurDialecticalIlluminationIndex <= 100);
   assert(rep.allegoricalRedemptionScore >= 0 && rep.allegoricalRedemptionScore <= 100);
   assert(rep.activeBenjaminTheme.themeTitleKo.length > 0);
+  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(rep.benjaminSynthesisMatrix?.integratedAction));
   const prompt = formatGermanWalterBenjaminAuraNowTimePrompt(rep);
   assert(prompt.includes('발터 벤야민 《역사의 개념에 대하여》 아우라·지금-시간(Jetztzeit) 지표'));
   assert(prompt.includes(rep.activeBenjaminTheme.themeTitleKo));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
 });
 
 test('Emmanuel Levinas Face of the Other and Hospitality Engine: calculates Face Encounter, Infinite Responsibility, and Hospitality', () => {
@@ -6529,9 +6539,14 @@ test('Jurgen Habermas Communicative Action and Public Sphere Engine: calculates 
   assert(rep.lifeworldColonizationDefenseIndex >= 0 && rep.lifeworldColonizationDefenseIndex <= 100);
   assert(rep.deliberativeDemocraticConsensusScore >= 0 && rep.deliberativeDemocraticConsensusScore <= 100);
   assert(rep.activeHabermasTheme.themeTitleKo.length > 0);
+  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(rep.habermasSynthesisMatrix?.integratedAction));
   const prompt = formatGermanJurgenHabermasCommunicativeActionPrompt(rep);
   assert(prompt.includes('위르겐 하버마스 《의사소통행위이론》 더 나은 논증의 힘·공론장 지표'));
   assert(prompt.includes(rep.activeHabermasTheme.themeTitleKo));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
 });
 
 test('Roland Barthes Semiotics and Punctum Engine: calculates Punctum Intuition, Demythologization, and Death of Author', () => {

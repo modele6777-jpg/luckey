@@ -9,12 +9,12 @@
  * 4. 사랑의 투쟁 실존적 소통력(Loving Struggle Authentic Communication Score): 가면을 벗고 온 인격으로 마주하여 서로의 실존을 일깨우는 진실한 영혼의 소통력.
  * 5. 이성과 실존의 조화 균형도(Reason & Existenz Harmonization Index): 비합리적 광신이나 맹목적 허무에 빠지지 않고, 명철한 이성과 깊은 실존적 깊이를 통합하는 원숙도.
  *
- * @version LUCKEY-KARL-JASPERS-EXISTENZ-v1.0.0
+ * @version LUCKEY-KARL-JASPERS-EXISTENZ-v2.0.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const GERMAN_KARL_JASPERS_VERSION = 'LUCKEY-KARL-JASPERS-EXISTENZ-v1.0.0';
+export const GERMAN_KARL_JASPERS_VERSION = 'LUCKEY-KARL-JASPERS-EXISTENZ-v2.0.0';
 
 export interface JaspersTheme {
   themeKey: string;
@@ -47,6 +47,11 @@ export interface GermanKarlJaspersExistenzGrenzsituationenResult {
   jaspersComprehensiveGuidance: {
     guidanceTitle: string;
     philosophicalCounsel: string;
+  };
+  jaspersSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
   };
 }
 
@@ -133,9 +138,26 @@ export const JASPERS_APHORISMS: JaspersAphorism[] = [
   },
 ];
 
+function formatJaspersKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
+
+function describeJaspersStage(score: number): string {
+  if (score >= 91) return '실존적 도약기 (한계상황의 문턱에서 초월자의 암호가 선명히 읽히는 흐름)';
+  if (score >= 83) return '사랑의 투쟁기 (진실한 실존적 소통과 명철한 이성이 어우러지는 국면)';
+  return '고요한 응시기 (제약을 외면하지 않고 내면의 중심을 다지는 흐름)';
+}
+
 export function calculateGermanKarlJaspersExistenzGrenzsituationen(
   profile?: UserProfile,
   query?: string,
+  now: Date = new Date(),
 ): GermanKarlJaspersExistenzGrenzsituationenResult {
   const p = profile as any;
   const name = profile?.basic?.name ?? p?.name ?? '남희';
@@ -170,9 +192,18 @@ export function calculateGermanKarlJaspersExistenzGrenzsituationen(
     `${activeJaspersTheme.practicalCounsel} 아울러 야스퍼스의 불멸의 통찰 "${focalJaspersAphorism.aphorismKo}"를 가슴에 품고, ` +
     `${focalJaspersAphorism.actionGuidance}`;
 
+  const jaspersSynthesisMatrix = {
+    dominantTension: `${activeJaspersTheme.themeTitleKo} ↔ ${focalJaspersAphorism.sourceContext}`,
+    alignmentState:
+      grenzsituationenAcceptanceScore >= 88 && reasonExistenzHarmonizationIndex >= 88
+        ? '한계상황 직시와 이성·실존 조화의 고차원 도약'
+        : '피할 수 없는 제약을 뚫고 실존적 소통을 여는 국면',
+    integratedAction: `${activeJaspersTheme.practicalCounsel} (${focalJaspersAphorism.actionGuidance})`,
+  };
+
   return {
     engineVersion: GERMAN_KARL_JASPERS_VERSION,
-    calculatedAtKst: new Date().toISOString(),
+    calculatedAtKst: formatJaspersKstTimestamp(now),
     grenzsituationenAcceptanceScore,
     existentialLeapFreedomScore,
     cipherTranscendenceInsightIndex,
@@ -184,19 +215,21 @@ export function calculateGermanKarlJaspersExistenzGrenzsituationen(
       guidanceTitle,
       philosophicalCounsel,
     },
+    jaspersSynthesisMatrix,
   };
 }
 
 export function formatGermanKarlJaspersExistenzGrenzsituationenPrompt(
   res: GermanKarlJaspersExistenzGrenzsituationenResult,
 ): string {
-  return [
+  const lines = [
     `【카를 야스퍼스 《철학》 한계상황 직시 & 초월자 암호·실존적 소통 지표】`,
-    `- 한계상황 직시 및 수용력(Grenzsituationen Acceptance): ${res.grenzsituationenAcceptanceScore}/100`,
-    `- 실존적 도약 및 자유 실현도(Existential Leap & Freedom): ${res.existentialLeapFreedomScore}/100`,
-    `- 포괄자 암호 해독 통찰력(Cipher of Transcendence): ${res.cipherTranscendenceInsightIndex}/100`,
-    `- 사랑의 투쟁 실존적 소통력(Loving Struggle Communication): ${res.lovingStruggleCommunicationScore}/100`,
-    `- 이성과 실존의 조화 균형도(Reason & Existenz Harmonization): ${res.reasonExistenzHarmonizationIndex}/100`,
+    `- 엔진 버전: ${res.engineVersion} | 연산 시각: ${res.calculatedAtKst}`,
+    `- 한계상황 직시 및 수용력(Grenzsituationen Acceptance): ${describeJaspersStage(res.grenzsituationenAcceptanceScore)}`,
+    `- 실존적 도약 및 자유 실현도(Existential Leap & Freedom): ${describeJaspersStage(res.existentialLeapFreedomScore)}`,
+    `- 포괄자 암호 해독 통찰력(Cipher of Transcendence): ${describeJaspersStage(res.cipherTranscendenceInsightIndex)}`,
+    `- 사랑의 투쟁 실존적 소통력(Loving Struggle Communication): ${describeJaspersStage(res.lovingStruggleCommunicationScore)}`,
+    `- 이성과 실존의 조화 균형도(Reason & Existenz Harmonization): ${describeJaspersStage(res.reasonExistenzHarmonizationIndex)}`,
     `- 핵심 실존 테마: ${res.activeJaspersTheme.themeTitleKo} [${res.activeJaspersTheme.themeTitleDe}]`,
     `- 실존적 통찰: ${res.activeJaspersTheme.existentialInsight}`,
     `- 실천적 조언: ${res.activeJaspersTheme.practicalCounsel}`,
@@ -205,5 +238,12 @@ export function formatGermanKarlJaspersExistenzGrenzsituationenPrompt(
     `- 원전 출처: [${res.focalJaspersAphorism.sourceContext}]`,
     `- 구체적 실천 지침: ${res.focalJaspersAphorism.actionGuidance}`,
     `- 종합 야스퍼스 실존 권면: ${res.jaspersComprehensiveGuidance.philosophicalCounsel}`,
-  ].join('\n');
+  ];
+  if (res.jaspersSynthesisMatrix) {
+    lines.push(
+      `- 교차 매트릭스 [핵심 긴장: ${res.jaspersSynthesisMatrix.dominantTension} | 조율 상태: ${res.jaspersSynthesisMatrix.alignmentState}]`,
+      `- 통합 실천: ${res.jaspersSynthesisMatrix.integratedAction}`,
+    );
+  }
+  return lines.join('\n');
 }

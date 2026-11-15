@@ -8,12 +8,12 @@
  * 4. 생활세계의 식민화 방어 및 인간성 수호 지수 (Lifeworld Colonization Resistance Index): 돈과 권력, 기계적 효율성의 논리가 삶의 본질적 의미와 따뜻한 유대를 침범하지 못하도록 지켜내는 주체성.
  * 5. 숙의적 공감 및 성숙한 합의 도출력 (Deliberative Consensus & Co-Creative Synthesis Score): 성급한 타협이나 독단을 넘어 깊이 있는 숙의(Deliberation)를 통해 모두가 상생하는 차원 높은 해법을 창출하는 역량.
  *
- * @version LUCKEY-JURGEN-HABERMAS-COMMUNICATIVE-ACTION-v1.0.0
+ * @version LUCKEY-JURGEN-HABERMAS-COMMUNICATIVE-ACTION-v2.0.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const GERMAN_JURGEN_HABERMAS_COMMUNICATIVE_ACTION_VERSION = 'LUCKEY-JURGEN-HABERMAS-COMMUNICATIVE-ACTION-v1.0.0';
+export const GERMAN_JURGEN_HABERMAS_COMMUNICATIVE_ACTION_VERSION = 'LUCKEY-JURGEN-HABERMAS-COMMUNICATIVE-ACTION-v2.0.0';
 
 export interface HabermasTheme {
   themeKey: string;
@@ -46,6 +46,11 @@ export interface GermanJurgenHabermasCommunicativeActionResult {
   habermasComprehensiveGuidance: {
     guidanceTitle: string;
     philosophicalCounsel: string;
+  };
+  habermasSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
   };
 }
 
@@ -120,9 +125,26 @@ function hashString(str: string): number {
   return hash;
 }
 
+function formatHabermasKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
+
+function describeHabermasStage(score: number): string {
+  if (score >= 94) return '열린 공론장기 (더 나은 논증의 강제 없는 힘이 자연스럽게 합의를 이끄는 흐름)';
+  if (score >= 90) return '상호이해 균형기 (전략적 계산을 내려놓고 진정성 있는 대화가 이어지는 국면)';
+  return '생활세계 수호기 (외부의 효율 압박 속에서도 관계의 온기와 의미를 지켜내는 흐름)';
+}
+
 export function calculateGermanJurgenHabermasCommunicativeAction(
   profile?: UserProfile,
   query?: string,
+  now: Date = new Date(),
 ): GermanJurgenHabermasCommunicativeActionResult {
   const p = profile as any;
   const name = profile?.basic?.name ?? p?.name ?? '남희';
@@ -154,9 +176,18 @@ export function calculateGermanJurgenHabermasCommunicativeAction(
     `${activeHabermasTheme.practicalCounsel} 하버마스의 명언 "${focalHabermasAphorism.aphorismKo}" (${focalHabermasAphorism.aphorismGerman})을 가슴에 품고, ` +
     `${focalHabermasAphorism.actionGuidance}`;
 
+  const habermasSynthesisMatrix = {
+    dominantTension: `${activeHabermasTheme.themeTitleKo} ↔ ${focalHabermasAphorism.sourceContext}`,
+    alignmentState:
+      betterArgumentUnforcedForceScore >= 92 && lifeworldColonizationDefenseIndex >= 92
+        ? '더 나은 논증과 생활세계 연대의 고차원 공명'
+        : '왜곡 없는 상호이해와 열린 담화 질서를 세우는 국면',
+    integratedAction: `${activeHabermasTheme.practicalCounsel} (${focalHabermasAphorism.actionGuidance})`,
+  };
+
   return {
     engineVersion: GERMAN_JURGEN_HABERMAS_COMMUNICATIVE_ACTION_VERSION,
-    calculatedAtKst: new Date().toISOString(),
+    calculatedAtKst: formatHabermasKstTimestamp(now),
     betterArgumentUnforcedForceScore,
     mutualUnderstandingOrientationIndex,
     idealSpeechSituationFairnessScore,
@@ -168,19 +199,21 @@ export function calculateGermanJurgenHabermasCommunicativeAction(
       guidanceTitle,
       philosophicalCounsel,
     },
+    habermasSynthesisMatrix,
   };
 }
 
 export function formatGermanJurgenHabermasCommunicativeActionPrompt(
   res: GermanJurgenHabermasCommunicativeActionResult,
 ): string {
-  return [
+  const lines = [
     `【위르겐 하버마스 《의사소통행위이론》 더 나은 논증의 힘·공론장 지표】`,
-    `- 더 나은 논증의 강제 없는 힘(Unforced Force of Better Argument): ${res.betterArgumentUnforcedForceScore}/100`,
-    `- 상호이해 지향성 및 왜곡 없는 소통력(Mutual Understanding Orientation): ${res.mutualUnderstandingOrientationIndex}/100`,
-    `- 이상적 담화 상황 구현 및 공평성(Ideal Speech Situation Fairness): ${res.idealSpeechSituationFairnessScore}/100`,
-    `- 생활세계의 식민화 방어 및 인간성 수호(Lifeworld Colonization Resistance): ${res.lifeworldColonizationDefenseIndex}/100`,
-    `- 숙의적 공감 및 성숙한 합의 도출력(Deliberative Consensus Synthesis): ${res.deliberativeDemocraticConsensusScore}/100`,
+    `- 엔진 버전: ${res.engineVersion} | 연산 시각: ${res.calculatedAtKst}`,
+    `- 더 나은 논증의 강제 없는 힘(Unforced Force of Better Argument): ${describeHabermasStage(res.betterArgumentUnforcedForceScore)}`,
+    `- 상호이해 지향성 및 왜곡 없는 소통력(Mutual Understanding Orientation): ${describeHabermasStage(res.mutualUnderstandingOrientationIndex)}`,
+    `- 이상적 담화 상황 구현 및 공평성(Ideal Speech Situation Fairness): ${describeHabermasStage(res.idealSpeechSituationFairnessScore)}`,
+    `- 생활세계의 식민화 방어 및 인간성 수호(Lifeworld Colonization Resistance): ${describeHabermasStage(res.lifeworldColonizationDefenseIndex)}`,
+    `- 숙의적 공감 및 성숙한 합의 도출력(Deliberative Consensus Synthesis): ${describeHabermasStage(res.deliberativeDemocraticConsensusScore)}`,
     `- 핵심 하버마스 테마: ${res.activeHabermasTheme.themeTitleKo} [${res.activeHabermasTheme.themeTitleEn}]`,
     `- 실천적 통찰: ${res.activeHabermasTheme.pragmaticInsight}`,
     `- 행동 조언: ${res.activeHabermasTheme.practicalCounsel}`,
@@ -188,5 +221,12 @@ export function formatGermanJurgenHabermasCommunicativeActionPrompt(
     `- 원전 출처: [${res.focalHabermasAphorism.sourceContext}]`,
     `- 구체적 실천 지침: ${res.focalHabermasAphorism.actionGuidance}`,
     `- 종합 하버마스 권면: ${res.habermasComprehensiveGuidance.philosophicalCounsel}`,
-  ].join('\n');
+  ];
+  if (res.habermasSynthesisMatrix) {
+    lines.push(
+      `- 교차 매트릭스 [핵심 긴장: ${res.habermasSynthesisMatrix.dominantTension} | 조율 상태: ${res.habermasSynthesisMatrix.alignmentState}]`,
+      `- 통합 실천: ${res.habermasSynthesisMatrix.integratedAction}`,
+    );
+  }
+  return lines.join('\n');
 }
