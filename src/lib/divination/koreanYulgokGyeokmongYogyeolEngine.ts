@@ -10,12 +10,12 @@
  * 4. 독서(讀書): 이치를 궁구하여 일상에서 실천하는 실학적 성찰.
  * 5. 사친(事親)·접인(接人)·처세(處世): 가족을 공경하고 사람을 대함에 정성을 다하는 실천궁행.
  *
- * @version LUCKEY-YULGOK-GYEOKMONG-v1.0.0
+ * @version LUCKEY-YULGOK-GYEOKMONG-v2.0.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const YULGOK_GYEOKMONG_VERSION = 'LUCKEY-YULGOK-GYEOKMONG-v1.0.0';
+export const YULGOK_GYEOKMONG_VERSION = 'LUCKEY-YULGOK-GYEOKMONG-v2.0.0';
 
 export interface YulgokStage {
   stageLevel: number;
@@ -46,6 +46,11 @@ export interface YulgokGyeokmongResult {
     studySceneTitle: string;
     virtuousWisdom: string;
   };
+  yulgokSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
 }
 
 export type YulgokGyeokmongReport = YulgokGyeokmongResult;
@@ -74,10 +79,20 @@ const GYEOKMONG_EPIPHANIES = [
   { studySceneTitle: '거친 비바람 속에서도 꼿꼿이 서 있는 석담의 소나무', virtuousWisdom: '세상이 나를 알아주지 않아도 실망하지 말라. 홀로 있어도 스스로를 속이지 않는 자는 천하에 부끄러움이 없다.' },
 ];
 
-function getKstDateString(): string {
-  const now = new Date();
-  const kst = new Date(now.getTime() + (9 * 60 + now.getTimezoneOffset()) * 60000);
-  return kst.toISOString().replace('T', ' ').substring(0, 19) + ' KST';
+function getKstDateString(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
+
+function describeYulgokStage(score: number): string {
+  if (score >= 85) return '실천궁행(實踐躬行) — 입지와 구용구사가 일상의 태도로 무르익은 성숙기';
+  if (score >= 75) return '혁구자신(革舊自新) — 묵은 습관을 털어내고 배움의 중심을 세우는 정돈기';
+  return '초학입지(初學立志) — 큰 뜻을 먼저 세우고 일상의 작은 정성부터 다지는 출발기';
 }
 
 function hashSeed(seedStr: string): number {
@@ -89,7 +104,11 @@ function hashSeed(seedStr: string): number {
   return Math.abs(h);
 }
 
-export function calculateYulgokGyeokmong(profile?: UserProfile): YulgokGyeokmongResult {
+export function calculateYulgokGyeokmong(
+  profile?: UserProfile,
+  query?: string,
+  now: Date = new Date(),
+): YulgokGyeokmongResult {
   const birthdate = profile?.basic?.birthdate || '1995-03-21';
   const birthtime = profile?.basic?.birthtime || '12:00';
   const name = profile?.basic?.name || 'Inquirer';
@@ -110,9 +129,23 @@ export function calculateYulgokGyeokmong(profile?: UserProfile): YulgokGyeokmong
   const epiphanyIdx = (seed >> 6) % GYEOKMONG_EPIPHANIES.length;
   const gyeokmongMasteryEpiphany = GYEOKMONG_EPIPHANIES[epiphanyIdx];
 
+  const avgScore = Math.round(
+    (ipjiNobleAspirationIndex +
+      hyeokguseupOldHabitReformForce +
+      guyongGusaComposureMindfulness +
+      dokseoInquiryPracticalWisdom +
+      jisinMoralDignitySincerity) /
+      5,
+  );
+  const yulgokSynthesisMatrix = {
+    dominantTension: `${activeScholarStage.stageNameKo} ↔ ${primaryYulgokPrecept.preceptTitleKo}`,
+    alignmentState: describeYulgokStage(avgScore),
+    integratedAction: `${primaryYulgokPrecept.actionableDirective}${query?.trim() ? ` [질문 맥락: ${query.trim()}]` : ''}`,
+  };
+
   return {
     engineVersion: YULGOK_GYEOKMONG_VERSION,
-    calculatedAtKst: getKstDateString(),
+    calculatedAtKst: getKstDateString(now),
     ipjiNobleAspirationIndex,
     hyeokguseupOldHabitReformForce,
     guyongGusaComposureMindfulness,
@@ -121,23 +154,37 @@ export function calculateYulgokGyeokmong(profile?: UserProfile): YulgokGyeokmong
     activeScholarStage,
     primaryYulgokPrecept,
     gyeokmongMasteryEpiphany,
+    yulgokSynthesisMatrix,
   };
 }
 
 export function formatYulgokGyeokmongPrompt(result: YulgokGyeokmongResult): string {
-  return `[📖 조선 율곡 이이(栗谷 李珥) 《격몽요결(擊蒙要訣)》 입지·구용구사 수신 리포트]
-- 엔진 버전: ${result.engineVersion}
-- 입지 큰 뜻을 세우는 지향도: ${result.ipjiNobleAspirationIndex}%
-- 혁구습 묵은 습관 단절력: ${result.hyeokguseupOldHabitReformForce}%
-- 구용구사 몸가짐과 사유의 정밀도: ${result.guyongGusaComposureMindfulness}%
-- 독서 궁리 및 실천 지혜력: ${result.dokseoInquiryPracticalWisdom}%
-- 지신 수신처세의 진정성 및 위엄: ${result.jisinMoralDignitySincerity}%
-- 현행 수양적 품계: **[${result.activeScholarStage.stageNameKo} (${result.activeScholarStage.stageNameHanja})]**
-  → 관장 영역: ${result.activeScholarStage.scholarDomain}
-  → 성현의 축복: ${result.activeScholarStage.sagelyBlessing}
-- 최우선 격몽 지침: **[${result.primaryYulgokPrecept.preceptTitleKo} (${result.primaryYulgokPrecept.hanjaMotto})]**
-  → 핵심 본질: ${result.primaryYulgokPrecept.coreEssence}
-  → 실천 지침: ${result.primaryYulgokPrecept.actionableDirective}
-- 격몽요결 불멸의 가르침: 《${result.gyeokmongMasteryEpiphany.studySceneTitle}》
-  → 율곡 선생의 지혜: "${result.gyeokmongMasteryEpiphany.virtuousWisdom}"`;
+  const avgScore = Math.round(
+    (result.ipjiNobleAspirationIndex +
+      result.hyeokguseupOldHabitReformForce +
+      result.guyongGusaComposureMindfulness +
+      result.dokseoInquiryPracticalWisdom +
+      result.jisinMoralDignitySincerity) /
+      5,
+  );
+  const lines = [
+    `[📖 조선 율곡 이이(栗谷 李珥) 《격몽요결(擊蒙要訣)》 입지·구용구사 수신 리포트]`,
+    `- 연산 시각: ${result.calculatedAtKst} | 엔진: ${result.engineVersion}`,
+    `- 수양 국면: ${describeYulgokStage(avgScore)}`,
+    `- 현행 수양적 품계: **[${result.activeScholarStage.stageNameKo} (${result.activeScholarStage.stageNameHanja})]**`,
+    `  → 관장 영역: ${result.activeScholarStage.scholarDomain}`,
+    `  → 성현의 축복: ${result.activeScholarStage.sagelyBlessing}`,
+    `- 최우선 격몽 지침: **[${result.primaryYulgokPrecept.preceptTitleKo} (${result.primaryYulgokPrecept.hanjaMotto})]**`,
+    `  → 핵심 본질: ${result.primaryYulgokPrecept.coreEssence}`,
+    `  → 실천 지침: ${result.primaryYulgokPrecept.actionableDirective}`,
+    `- 격몽요결 불멸의 가르침: 《${result.gyeokmongMasteryEpiphany.studySceneTitle}》`,
+    `  → 율곡 선생의 지혜: "${result.gyeokmongMasteryEpiphany.virtuousWisdom}"`,
+  ];
+  if (result.yulgokSynthesisMatrix) {
+    lines.push(
+      `- 교차 매트릭스 [핵심 긴장: ${result.yulgokSynthesisMatrix.dominantTension} | 조율 상태: ${result.yulgokSynthesisMatrix.alignmentState}]`,
+      `- 통합 실천: ${result.yulgokSynthesisMatrix.integratedAction}`,
+    );
+  }
+  return lines.join('\n');
 }

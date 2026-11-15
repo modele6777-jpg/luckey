@@ -4791,9 +4791,14 @@ test('Korean Yulgok Yi I Gyeokmong Yogyeol Engine: calculates noble aspiration i
   assert(rep.dokseoInquiryPracticalWisdom >= 0 && rep.dokseoInquiryPracticalWisdom <= 100);
   assert(rep.jisinMoralDignitySincerity >= 0 && rep.jisinMoralDignitySincerity <= 100);
   assert(rep.activeScholarStage.stageNameHanja.length > 0);
+  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(rep.yulgokSynthesisMatrix?.integratedAction));
   const prompt = formatYulgokGyeokmongPrompt(rep);
   assert(prompt.includes('조선 율곡 이이(栗谷 李珥) 《격몽요결(擊蒙要訣)》'));
   assert(prompt.includes(rep.activeScholarStage.stageNameKo));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('%'));
+  assert(!prompt.includes('/100'));
 });
 
 test('Ancient Greek Aristotle Mesotes Eudaimonia Engine: calculates Golden Mean, Eudaimonia, Phronesis and Telos', () => {
@@ -6200,9 +6205,14 @@ test('Nammyeong Jo Sik Gyeong-Ui Engine: calculates Inner Clarity Gyeong, Outer 
   assert(rep.danseongsoUprightCourageScore >= 0 && rep.danseongsoUprightCourageScore <= 100);
   assert(rep.sancheonjaeActionScholarshipIndex >= 0 && rep.sancheonjaeActionScholarshipIndex <= 100);
   assert(rep.activeNammyeongTheme.themeTitleKo.length > 0);
+  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(rep.nammyeongSynthesisMatrix?.integratedAction));
   const prompt = formatKoreanNammyeongJoSikGyeongUiPrompt(rep);
   assert(prompt.includes('남명 조식 선생 《내명자경 외단자의》 경의검 & 성성자 실천 지표'));
   assert(prompt.includes(rep.activeNammyeongTheme.themeTitleKo));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
 });
 
 test('Albert Schweitzer Reverence for Life Engine: calculates Reverence for Life, Altruistic Service, and Civilizational Renewal', () => {
@@ -6532,9 +6542,14 @@ test('Poeun Jeong Mong-ju Dansimga Engine: calculates Dansimga Moral Fidelity, D
   assert(rep.foundationalScholarshipGovernanceIndex >= 0 && rep.foundationalScholarshipGovernanceIndex <= 100);
   assert(rep.undauntedIntegrityResilienceScore >= 0 && rep.undauntedIntegrityResilienceScore <= 100);
   assert(rep.activePoeunTheme.themeTitleKo.length > 0);
+  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(rep.poeunSynthesisMatrix?.integratedAction));
   const prompt = formatKoreanPoeunJeongMongJuDansimgaPrompt(rep);
   assert(prompt.includes('포은 정몽주 《단심가·포은집》 일편단심 지조 및 경세외교 지략 지표'));
   assert(prompt.includes(rep.activePoeunTheme.themeTitleKo));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
 });
 
 test('Simone de Beauvoir Ambiguity & Freedom Engine: calculates Self-Creation, Ethics of Ambiguity, and Mutual Freedom Solidarity', () => {
