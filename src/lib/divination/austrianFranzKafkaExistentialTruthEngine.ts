@@ -8,12 +8,12 @@
  * 4. 얼어붙은 바다를 깨는 도끼와 같은 명민함 (Axe for the Frozen Sea Insight Index): 일상의 무감각과 안일함을 깨부수고 삶의 전율과 본질을 일깨우는 날카로운 통찰력.
  * 5. 깊은 고독의 내면 승화 회복탄력성 (Transformative Solitude & Creative Resilience Score): 고립과 고통의 심연을 정직하게 관통하여 예술적 사색과 내적 순수성으로 승화하는 힘.
  *
- * @version LUCKEY-FRANZ-KAFKA-EXISTENTIAL-TRUTH-v1.0.0
+ * @version LUCKEY-FRANZ-KAFKA-EXISTENTIAL-TRUTH-v2.0.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const AUSTRIAN_FRANZ_KAFKA_EXISTENTIAL_TRUTH_VERSION = 'LUCKEY-FRANZ-KAFKA-EXISTENTIAL-TRUTH-v1.1.0';
+export const AUSTRIAN_FRANZ_KAFKA_EXISTENTIAL_TRUTH_VERSION = 'LUCKEY-FRANZ-KAFKA-EXISTENTIAL-TRUTH-v2.0.0';
 
 export type KafkaQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -67,6 +67,11 @@ export interface AustrianFranzKafkaExistentialTruthResult {
   questionTopic: KafkaQuestionTopic;
   situationalKafkaAudit: KafkaSituationalAudit;
   temporalKafkaRhythm: KafkaTemporalRhythm;
+  kafkaSynthesisMatrix: {
+    coreInsight: string;
+    recommendedAction: string;
+    cautionNotice: string;
+  };
   kafkaComprehensiveGuidance: {
     guidanceTitle: string;
     philosophicalCounsel: string;
@@ -296,9 +301,17 @@ export function calculateAustrianFranzKafkaExistentialTruth(
     `${situationalKafkaAudit.practiceGuidance} 카프카의 아포리즘 "${focalKafkaAphorism.aphorismKo}" (${focalKafkaAphorism.aphorismGerman})을 새기며, ` +
     `${temporalKafkaRhythm.dailyWatchword}`;
 
+  const kstDateObj = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const kstLabel = `${kstDateObj.toISOString().slice(0, 10)} ${String(kstDateObj.getUTCHours()).padStart(2, '0')}:${String(kstDateObj.getUTCMinutes()).padStart(2, '0')} KST`;
+  const kafkaSynthesisMatrix = {
+    coreInsight: activeKafkaTheme.themeTitleKo,
+    recommendedAction: situationalKafkaAudit.practiceGuidance,
+    cautionNotice: '외부의 모호함과 타인의 시선에 맞춰 내면의 진실한 중심을 꺾지 마십시오.',
+  };
+
   return {
     engineVersion: AUSTRIAN_FRANZ_KAFKA_EXISTENTIAL_TRUTH_VERSION,
-    calculatedAtKst: new Date(now.getTime() + 9 * 60 * 60 * 1000).toISOString().replace('Z', '+09:00'),
+    calculatedAtKst: kstLabel,
     existentialHonestyScore,
     innerSanctityInAlienationIndex,
     persistentTruthSearchScore,
@@ -309,6 +322,7 @@ export function calculateAustrianFranzKafkaExistentialTruth(
     questionTopic,
     situationalKafkaAudit,
     temporalKafkaRhythm,
+    kafkaSynthesisMatrix,
     kafkaComprehensiveGuidance: {
       guidanceTitle,
       philosophicalCounsel,
@@ -320,7 +334,8 @@ export function formatAustrianFranzKafkaExistentialTruthPrompt(
   res: AustrianFranzKafkaExistentialTruthResult,
 ): string {
   return [
-    `【프란츠 카프카 《변신·성》 부조리 직시와 실존적 정직성 및 내적 존엄성 지표】`,
+    `【프란츠 카프카 《변신·성》 부조리 직시와 실존적 정직성 및 내적 존엄성 지표 (${res.engineVersion})】`,
+    `- 연산 시각: ${res.calculatedAtKst}`,
     `- 질문 맥락 초점(${res.questionTopic}): ${res.situationalKafkaAudit.focusAxisKo}`,
     `- 실존적 태도: ${res.situationalKafkaAudit.existentialPosture}`,
     `- KST 시공간 리듬: ${res.temporalKafkaRhythm.timeWindowKo} · ${res.temporalKafkaRhythm.seasonKo}`,
@@ -330,6 +345,7 @@ export function formatAustrianFranzKafkaExistentialTruthPrompt(
     `- 일상 의례 제안: ${res.situationalKafkaAudit.ritualAction}`,
     `- 성찰 질문: ${res.situationalKafkaAudit.reflectionFocus}`,
     `- 조언 요약: ${res.situationalKafkaAudit.counselNote}`,
+    `- 교차 매트릭스: 핵심(${res.kafkaSynthesisMatrix.coreInsight}) | 실행(${res.kafkaSynthesisMatrix.recommendedAction}) | 주의(${res.kafkaSynthesisMatrix.cautionNotice})`,
     `- 카프카 원전 명언: "${res.focalKafkaAphorism.aphorismKo}" (${res.focalKafkaAphorism.aphorismGerman})`,
     `- 원전 출처: [${res.focalKafkaAphorism.sourceContext}]`,
     `- 시간대 권고: ${res.temporalKafkaRhythm.dailyWatchword}`,
