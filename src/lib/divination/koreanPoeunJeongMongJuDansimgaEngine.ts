@@ -8,12 +8,12 @@
  * 4. 동방이학지조 도학 정통성 및 솔선수범 지표 (Foundational Scholarship & Moral Governance Index): 주자가례와 도학의 기틀을 확립하고 학문과 실천을 일치시킨 선비 정신.
  * 5. 시련 앞 불굴의 선비 기개 및 의연한 회복탄력성 (Undaunted Scholar Integrity & Resilience Score): 망국의 풍파와 생사의 갈림길에서도 한 점 흐트러짐 없는 의연한 품격과 평정심.
  *
- * @version LUCKEY-POEUN-JEONG-MONG-JU-DANSIMGA-v1.0.0
+ * @version LUCKEY-POEUN-JEONG-MONG-JU-DANSIMGA-v2.0.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const KOREAN_POEUN_JEONG_MONG_JU_DANSIMGA_VERSION = 'LUCKEY-POEUN-JEONG-MONG-JU-DANSIMGA-v1.0.0';
+export const KOREAN_POEUN_JEONG_MONG_JU_DANSIMGA_VERSION = 'LUCKEY-POEUN-JEONG-MONG-JU-DANSIMGA-v2.0.0';
 
 export interface PoeunTheme {
   themeKey: string;
@@ -47,6 +47,27 @@ export interface KoreanPoeunJeongMongJuDansimgaResult {
     guidanceTitle: string;
     philosophicalCounsel: string;
   };
+  poeunSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
+}
+
+function formatPoeunKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
+
+function describePoeunStage(score: number): string {
+  if (score >= 94) return '일편단심(一片丹心) — 어떠한 풍파에도 변치 않는 신의와 외교적 기품이 만개한 경지';
+  if (score >= 90) return '백설매화(白雪梅花) — 난세의 바람 속에서도 대의명분과 도학적 중심을 지키는 정돈기';
+  return '지성격물(至誠格物) — 정성과 올곧은 도리로 신뢰의 기틀을 차분히 다지는 시기';
 }
 
 export const POEUN_THEMES: PoeunTheme[] = [
@@ -130,6 +151,7 @@ function hashString(str: string): number {
 export function calculateKoreanPoeunJeongMongJuDansimga(
   profile?: UserProfile,
   query?: string,
+  now: Date = new Date(),
 ): KoreanPoeunJeongMongJuDansimgaResult {
   const p = profile as any;
   const name = profile?.basic?.name ?? p?.name ?? '남희';
@@ -160,9 +182,24 @@ export function calculateKoreanPoeunJeongMongJuDansimga(
     `${activePoeunTheme.practicalCounsel} 포은 선생의 불후의 명구 "${focalPoeunAphorism.aphorismKo}" (${focalPoeunAphorism.aphorismHanja})을 가슴 깊이 새기며, ` +
     `${focalPoeunAphorism.actionGuidance}`;
 
+  const calculatedAtKst = formatPoeunKstTimestamp(now);
+  const avgScore = Math.round(
+    (dansimgaMoralFidelityScore +
+      righteousNobleResolutionIndex +
+      diplomaticStatesmanshipScore +
+      foundationalScholarshipGovernanceIndex +
+      undauntedIntegrityResilienceScore) /
+      5,
+  );
+  const poeunSynthesisMatrix = {
+    dominantTension: `${activePoeunTheme.themeTitleKo} ↔ ${focalPoeunAphorism.sourceContext}`,
+    alignmentState: describePoeunStage(avgScore),
+    integratedAction: `${focalPoeunAphorism.actionGuidance}${query?.trim() ? ` [질문 맥락: ${query.trim()}]` : ''}`,
+  };
+
   return {
     engineVersion: KOREAN_POEUN_JEONG_MONG_JU_DANSIMGA_VERSION,
-    calculatedAtKst: new Date().toISOString(),
+    calculatedAtKst,
     dansimgaMoralFidelityScore,
     righteousNobleResolutionIndex,
     diplomaticStatesmanshipScore,
@@ -174,19 +211,25 @@ export function calculateKoreanPoeunJeongMongJuDansimga(
       guidanceTitle,
       philosophicalCounsel,
     },
+    poeunSynthesisMatrix,
   };
 }
 
 export function formatKoreanPoeunJeongMongJuDansimgaPrompt(
   res: KoreanPoeunJeongMongJuDansimgaResult,
 ): string {
-  return [
+  const avgScore = Math.round(
+    (res.dansimgaMoralFidelityScore +
+      res.righteousNobleResolutionIndex +
+      res.diplomaticStatesmanshipScore +
+      res.foundationalScholarshipGovernanceIndex +
+      res.undauntedIntegrityResilienceScore) /
+      5,
+  );
+  const lines = [
     `【포은 정몽주 《단심가·포은집》 일편단심 지조 및 경세외교 지략 지표】`,
-    `- 일편단심 도의적 신의 및 지조(Dansimga Moral Fidelity): ${res.dansimgaMoralFidelityScore}/100`,
-    `- 난세 앞 살신성인 대의 결단력(Righteous Noble Resolution): ${res.righteousNobleResolutionIndex}/100`,
-    `- 감복시키는 외교적 담판 지략(Diplomatic Statesmanship): ${res.diplomaticStatesmanshipScore}/100`,
-    `- 동방이학지조 도학 정통성(Foundational Scholarship & Governance): ${res.foundationalScholarshipGovernanceIndex}/100`,
-    `- 불굴의 선비 기개 및 회복탄력성(Undaunted Integrity Resilience): ${res.undauntedIntegrityResilienceScore}/100`,
+    `- 연산 시각: ${res.calculatedAtKst} | 엔진: ${res.engineVersion}`,
+    `- 충절·경세 국면: ${describePoeunStage(avgScore)}`,
     `- 핵심 포은 테마: ${res.activePoeunTheme.themeTitleKo} [${res.activePoeunTheme.themeTitleEn}]`,
     `- 실천적 통찰: ${res.activePoeunTheme.pragmaticInsight}`,
     `- 행동 조언: ${res.activePoeunTheme.practicalCounsel}`,
@@ -194,5 +237,12 @@ export function formatKoreanPoeunJeongMongJuDansimgaPrompt(
     `- 원전 출처: [${res.focalPoeunAphorism.sourceContext}]`,
     `- 구체적 실천 지침: ${res.focalPoeunAphorism.actionGuidance}`,
     `- 종합 포은 권면: ${res.poeunComprehensiveGuidance.philosophicalCounsel}`,
-  ].join('\n');
+  ];
+  if (res.poeunSynthesisMatrix) {
+    lines.push(
+      `- 교차 매트릭스 [핵심 긴장: ${res.poeunSynthesisMatrix.dominantTension} | 조율 상태: ${res.poeunSynthesisMatrix.alignmentState}]`,
+      `- 통합 실천: ${res.poeunSynthesisMatrix.integratedAction}`,
+    );
+  }
+  return lines.join('\n');
 }

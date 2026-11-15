@@ -9,12 +9,12 @@
  * 4. 단성소(丹城疏) 서릿발 직언 및 불굴 지조 지수(Danseongso Uncompromising Integrity Score): 권력 앞에서도 흔들리지 않고 대의와 백성을 위해 진실을 고하는 용기.
  * 5. 산천재(山天齋) 지리산 실천학문 및 의병 배출 기개 지표(Sancheonjae Practical Scholarship & Courage Index): 말 잔치를 배격하고 국난 극복의 실천적 힘을 기르는 현장성.
  *
- * @version LUCKEY-NAMMYEONG-JO-SIK-GYEONG-UI-v1.0.0
+ * @version LUCKEY-NAMMYEONG-JO-SIK-GYEONG-UI-v2.0.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const KOREAN_NAMMYEONG_JO_SIK_VERSION = 'LUCKEY-NAMMYEONG-JO-SIK-GYEONG-UI-v1.0.0';
+export const KOREAN_NAMMYEONG_JO_SIK_VERSION = 'LUCKEY-NAMMYEONG-JO-SIK-GYEONG-UI-v2.0.0';
 
 export interface NammyeongTheme {
   themeKey: string;
@@ -48,6 +48,27 @@ export interface KoreanNammyeongJoSikGyeongUiResult {
     guidanceTitle: string;
     philosophicalCounsel: string;
   };
+  nammyeongSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
+}
+
+function formatNammyeongKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
+
+function describeNammyeongStage(score: number): string {
+  if (score >= 92) return '경의쌍수(敬義雙修) — 내면의 성찰과 바깥의 결단이 서릿발처럼 합일된 실천기';
+  if (score >= 87) return '성성각성(惺惺覺醒) — 방울 소리처럼 깨어 있어 흔들림 없이 중심을 잡는 정진기';
+  return '내명자경(內明者敬) — 번잡함을 거두고 마음의 성채를 고요히 밝히는 수양기';
 }
 
 export const NAMMYEONG_THEMES: NammyeongTheme[] = [
@@ -129,6 +150,7 @@ export const NAMMYEONG_APHORISMS: NammyeongAphorism[] = [
 export function calculateKoreanNammyeongJoSikGyeongUi(
   profile?: UserProfile,
   query?: string,
+  now: Date = new Date(),
 ): KoreanNammyeongJoSikGyeongUiResult {
   const p = profile as any;
   const name = profile?.basic?.name ?? p?.name ?? '남희';
@@ -163,9 +185,24 @@ export function calculateKoreanNammyeongJoSikGyeongUi(
     `${activeNammyeongTheme.practicalCounsel} 아울러 남명 선생의 명훈 "${focalNammyeongAphorism.aphorismKo} (${focalNammyeongAphorism.aphorismHanja})"를 가슴에 깊이 새기고, ` +
     `${focalNammyeongAphorism.actionGuidance}`;
 
+  const calculatedAtKst = formatNammyeongKstTimestamp(now);
+  const avgScore = Math.round(
+    (innerClarityGyeongScore +
+      outerDecisiveUiScore +
+      seongseongjaBellAwakeningIndex +
+      danseongsoUprightCourageScore +
+      sancheonjaeActionScholarshipIndex) /
+      5,
+  );
+  const nammyeongSynthesisMatrix = {
+    dominantTension: `${activeNammyeongTheme.themeTitleKo} ↔ ${focalNammyeongAphorism.sourceContext}`,
+    alignmentState: describeNammyeongStage(avgScore),
+    integratedAction: `${focalNammyeongAphorism.actionGuidance}${query?.trim() ? ` [질문 맥락: ${query.trim()}]` : ''}`,
+  };
+
   return {
     engineVersion: KOREAN_NAMMYEONG_JO_SIK_VERSION,
-    calculatedAtKst: new Date().toISOString(),
+    calculatedAtKst,
     innerClarityGyeongScore,
     outerDecisiveUiScore,
     seongseongjaBellAwakeningIndex,
@@ -177,19 +214,25 @@ export function calculateKoreanNammyeongJoSikGyeongUi(
       guidanceTitle,
       philosophicalCounsel,
     },
+    nammyeongSynthesisMatrix,
   };
 }
 
 export function formatKoreanNammyeongJoSikGyeongUiPrompt(
   res: KoreanNammyeongJoSikGyeongUiResult,
 ): string {
-  return [
+  const avgScore = Math.round(
+    (res.innerClarityGyeongScore +
+      res.outerDecisiveUiScore +
+      res.seongseongjaBellAwakeningIndex +
+      res.danseongsoUprightCourageScore +
+      res.sancheonjaeActionScholarshipIndex) /
+      5,
+  );
+  const lines = [
     `【남명 조식 선생 《내명자경 외단자의》 경의검 & 성성자 실천 지표】`,
-    `- 내명자경(內明者敬) 마음 성찰 및 상시 각성도(Inner Clarity Gyeong): ${res.innerClarityGyeongScore}/100`,
-    `- 외단자의(外斷者義) 결단력 및 실천력(Outer Decisive Righteousness Ui): ${res.outerDecisiveUiScore}/100`,
-    `- 성성자(惺惺子) 깨어있는 양심 방울 자각 지수(Seongseongja Vigilance): ${res.seongseongjaBellAwakeningIndex}/100`,
-    `- 단성소(丹城疏) 서릿발 직언 및 불굴 지조 지수(Danseongso Integrity): ${res.danseongsoUprightCourageScore}/100`,
-    `- 산천재(山天齋) 실천학문 및 불굴 기개 지표(Sancheonjae Action Courage): ${res.sancheonjaeActionScholarshipIndex}/100`,
+    `- 연산 시각: ${res.calculatedAtKst} | 엔진: ${res.engineVersion}`,
+    `- 경의 실천 국면: ${describeNammyeongStage(avgScore)}`,
     `- 핵심 경의사상 테마: ${res.activeNammyeongTheme.themeTitleKo} [${res.activeNammyeongTheme.themeTitleEn}]`,
     `- 선비정신 실천 통찰: ${res.activeNammyeongTheme.pragmaticInsight}`,
     `- 결단 실천 조언: ${res.activeNammyeongTheme.practicalCounsel}`,
@@ -198,5 +241,12 @@ export function formatKoreanNammyeongJoSikGyeongUiPrompt(
     `- 원전 출처: [${res.focalNammyeongAphorism.sourceContext}]`,
     `- 구체적 실천 지침: ${res.focalNammyeongAphorism.actionGuidance}`,
     `- 종합 남명 선비정신 권면: ${res.nammyeongComprehensiveGuidance.philosophicalCounsel}`,
-  ].join('\n');
+  ];
+  if (res.nammyeongSynthesisMatrix) {
+    lines.push(
+      `- 교차 매트릭스 [핵심 긴장: ${res.nammyeongSynthesisMatrix.dominantTension} | 조율 상태: ${res.nammyeongSynthesisMatrix.alignmentState}]`,
+      `- 통합 실천: ${res.nammyeongSynthesisMatrix.integratedAction}`,
+    );
+  }
+  return lines.join('\n');
 }
