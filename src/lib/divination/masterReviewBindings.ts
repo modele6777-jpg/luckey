@@ -1343,5 +1343,13 @@ export const MASTER_REVIEW_BINDINGS: Record<string, { field: string; traceKey: s
   "koreanHanYongUnSilenceOfNim": {
     "field": "koreanHanYongUnSilenceOfNimResult",
     "traceKey": "koreanHanYongUnSilenceOfNimResult"
+  },
+  "koreanYutjeomFourStickOracle": {
+    "field": "koreanYutjeomFourStickResult",
+    "traceKey": "koreanYutjeomFourStickResult"
+  },
+  "tamilThirukkuralAramPorulKamam": {
+    "field": "tamilThirukkuralAramPorulKamamResult",
+    "traceKey": "tamilThirukkuralAramPorulKamamResult"
   }
 };

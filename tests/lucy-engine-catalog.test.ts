@@ -16,15 +16,15 @@ import {
 } from '../src/lib/divination/engineCatalog';
 import { FIFTEEN_DIVINATION_TOOLS, type DivinationToolId } from '../src/lib/fifteenDivinationTools';
 
-test('Lucy Pro catalog contains 331 entries: 15 foundational tools and 316 deep perspectives', () => {
-  assert.equal(ALL_DCE_ENGINES.length, 331);
-  assert.equal(LUCY_PRO_CATALOG_ENGINES.length, 331);
+test('Lucy Pro catalog contains 333 entries: 15 foundational tools and 318 deep perspectives', () => {
+  assert.equal(ALL_DCE_ENGINES.length, 333);
+  assert.equal(LUCY_PRO_CATALOG_ENGINES.length, 333);
   assert.equal(LUCY_PRO_FOUNDATIONAL_COUNT, 15);
-  assert.equal(LUCY_PRO_CATALOG_TOTAL_COUNT, 331);
+  assert.equal(LUCY_PRO_CATALOG_TOTAL_COUNT, 333);
   assert.equal(LUCY_PRO_DEEP_PERSPECTIVE_COUNT, ENGINE_CATALOG_COUNTS.deep_master);
-  assert.equal(LUCY_PRO_DEEP_PERSPECTIVE_COUNT, 316);
-  assert.deepEqual(ENGINE_CATALOG_COUNTS, { foundational: 15, deep_master: 316 });
-  assert.equal(new Set(LUCY_PRO_CATALOG_ENGINES.map(engine => engine.key)).size, 331);
+  assert.equal(LUCY_PRO_DEEP_PERSPECTIVE_COUNT, 318);
+  assert.deepEqual(ENGINE_CATALOG_COUNTS, { foundational: 15, deep_master: 318 });
+  assert.equal(new Set(LUCY_PRO_CATALOG_ENGINES.map(engine => engine.key)).size, 333);
   assert.deepEqual([...LUCY_PRO_CATALOG_DUPLICATE_KEYS], [
     'romanAureliusInnerCitadel',
     'koreanJeongYakyongMongminSimseo',
@@ -41,11 +41,11 @@ test('every listed engine has a readable meaning and one of the seven channel th
   assert.equal(totalThemeCount, LUCY_PRO_CATALOG_ENGINES.length);
   assert.deepEqual(ENGINE_CATALOG_THEME_COUNTS, {
     prologue: 6,
-    orange: 29,
-    trinity: 82,
+    orange: 31,
+    trinity: 79,
     aura: 54,
-    bluebird: 37,
-    muse: 113,
+    bluebird: 39,
+    muse: 114,
     epilogue: 10,
   });
 
@@ -64,10 +64,11 @@ test('bluebird catalog label changes without changing its ID, route, or count', 
   assert.deepEqual(theme, {
     id: 'bluebird',
     label: '블루버드',
+    emoji: '🕊️',
     route: '/bluebird',
     description: '일상·관계·소통',
   });
-  assert.equal(ENGINE_CATALOG_THEME_COUNTS.bluebird, 37);
+  assert.equal(ENGINE_CATALOG_THEME_COUNTS.bluebird, 39);
 });
 
 test('foundational tool meanings and primary themes use their existing authored definitions', () => {
@@ -88,11 +89,11 @@ test('automatic theme classification prioritizes named divination systems over g
   const ziweiFlyingStars = ALL_DCE_ENGINES.find(engine => engine.key === 'ziweiFlyingStars')!;
   assert.equal(getEngineCatalogTheme(ziweiFlyingStars), 'trinity');
 });
-test('all 223 individually described catalog perspectives retain their meaning and source status', () => {
+test('all 206 individually described catalog perspectives retain their meaning and source status', () => {
   const undescribedBeforeResearch = ALL_DCE_ENGINES.filter(
     engine => engine.category === 'deep_master' && !engine.summary,
   );
-  assert.equal(undescribedBeforeResearch.length, 223);
+  assert.equal(undescribedBeforeResearch.length, 206);
   assert.deepEqual(DEEP_PERSPECTIVE_RESEARCH_COUNTS, {
     total: 229,
     supported: 219,

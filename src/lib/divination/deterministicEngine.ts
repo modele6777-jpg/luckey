@@ -251,6 +251,8 @@ import { calculateSunTzuArtOfWarStrategy, formatSunTzuArtOfWarStrategyPrompt, ty
 import { calculateFrenchDescartesCogito, formatFrenchDescartesCogitoPrompt, type FrenchDescartesCogitoResult, DESCARTES_COGITO_VERSION } from './frenchDescartesCogitoClaraDistinctaEngine';
 import { calculateAncientIndianFourNobleTruths, formatAncientIndianFourNobleTruthsPrompt, type AncientIndianFourNobleTruthsResult, FOUR_NOBLE_TRUTHS_VERSION } from './ancientIndianEarlyBuddhistFourNobleTruthsEngine';
 import { calculateRumiMasnaviDivineLove, formatRumiMasnaviDivineLovePrompt, type RumiMasnaviDivineLoveResult, RUMI_MASNAVI_SUFI_VERSION } from './islamicSufiRumiMasnaviDivineLoveEngine';
+import { calculateKoreanYutjeomFourStickOracle, formatKoreanYutjeomFourStickPrompt, type KoreanYutjeomFourStickResult, KOREAN_YUTJEOM_FOUR_STICK_VERSION } from './koreanYutjeomFourStickOracleEngine';
+import { calculateTamilThirukkuralAramPorulKamam, formatTamilThirukkuralAramPorulKamamPrompt, type TamilThirukkuralAramPorulKamamResult, TAMIL_THIRUKKURAL_ARAM_PORUL_KAMAM_VERSION } from './tamilThirukkuralAramPorulKamamEngine';
 import { calculateUisangHwaeomIlseungBeopgye, formatUisangHwaeomIlseungBeopgyePrompt, type UisangHwaeomIlseungBeopgyeResult, UISANG_HWAEOM_BEOPGYE_VERSION } from './koreanUisangHwaeomIlseungBeopgyeEngine';
 import { calculateMontaigneEssaisWisdom, formatMontaigneEssaisWisdomPrompt, type MontaigneEssaisWisdomResult, MONTAIGNE_ESSAIS_WISDOM_VERSION } from './frenchMontaigneEssaisWisdomEngine';
 import { calculateNagarjunaMadhyamakaSunyata, formatNagarjunaMadhyamakaSunyataPrompt, type NagarjunaMadhyamakaSunyataResult, NAGARJUNA_MADHYAMAKA_VERSION } from './ancientIndianNagarjunaMadhyamakaSunyataEngine';
@@ -740,6 +742,8 @@ export interface DeterministicEngineReport {
   irishJamesJoyceUlyssesEpiphanyResult?: IrishJamesJoyceUlyssesEpiphanyResult | null;
   germanHermannHesseDemianSteppenwolfResult?: GermanHermannHesseDemianSteppenwolfResult | null;
   koreanHanYongUnSilenceOfNimResult?: KoreanHanYongUnSilenceOfNimResult | null;
+  koreanYutjeomFourStickResult?: KoreanYutjeomFourStickResult | null;
+  tamilThirukkuralAramPorulKamamResult?: TamilThirukkuralAramPorulKamamResult | null;
 
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
@@ -3298,7 +3302,25 @@ try {
   // 219. 중세 이슬람 수피즘 잘랄 앗 딘 루미 마스나비 & 신성한 사랑 지혜 엔진
   const rumiMasnaviDivineLoveResult = calculateSupplement('rumiMasnaviDivineLoveResult', () => ((() => {
     try {
-      return calculateRumiMasnaviDivineLove(profile);
+      return calculateRumiMasnaviDivineLove(profile, question, now);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 338. 한국 윷점(四籌占) 도개걸윷모 다섯 결 상징 성찰 엔진
+  const koreanYutjeomFourStickResult = calculateSupplement('koreanYutjeomFourStickResult', () => ((() => {
+    try {
+      return calculateKoreanYutjeomFourStickOracle(profile, question, now);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 339. 타밀 《티루쿠랄》 아람·포룰·카맘 삼편 성찰 엔진
+  const tamilThirukkuralAramPorulKamamResult = calculateSupplement('tamilThirukkuralAramPorulKamamResult', () => ((() => {
+    try {
+      return calculateTamilThirukkuralAramPorulKamam(profile, question, now);
     } catch (_) {
       return null;
     }
@@ -4659,6 +4681,8 @@ try {
     irishJamesJoyceUlyssesEpiphanyResult,
     germanHermannHesseDemianSteppenwolfResult,
     koreanHanYongUnSilenceOfNimResult,
+    koreanYutjeomFourStickResult,
+    tamilThirukkuralAramPorulKamamResult,
     tools: toolsMap,
   };
 }
@@ -5019,6 +5043,8 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'irishJamesJoyceUlyssesEpiphany', nameKo: '제임스 조이스 율리시스 에피파니 의식의흐름 세속적일상의신성화 실존적긍정 삶을향한예스 내면오디세이', icon: '🌊', category: 'deep_master', summary: "《Stephen Hero》에서 설명되는 에피파니 개념과 이후 작품 속 일상 장면을 참고해 질문과 관련된 문학적 관점을 제안합니다. 《율리시스》의 인물 해석은 문학적 읽기일 뿐이며 개인 점수·심리 진단·미래 예측은 하지 않습니다." },
   { key: 'germanHermannHesseDemianSteppenwolf', nameKo: '헤르만 헤세 데미안 싯다르타 유리알유희 알을깨는투쟁 아프락사스선악합일 내면의빛 자기자신에게이르는길 초연한강물의지혜', icon: '🕊️', category: 'deep_master', summary: "《데미안》·《싯다르타》·《황야의 이리》에서 변화·강물·자기 이해의 주제를 질문에 맞춰 살피는 문학적 관점입니다. 수치화된 평가·심리 진단·치료·미래 예측은 하지 않습니다." },
   { key: 'koreanHanYongUnSilenceOfNim', nameKo: '만해 한용운 님의침묵 조선불교유신론 역설적사랑 이별을사랑의새원천으로 서릿발자주지조 불굴의독립기개 대자비회복탄력성', icon: '🕯️', category: 'deep_master', summary: "《님의 침묵》 등 한용운의 작품을 통해 이별·희망·양심·배려를 살피는 문학적 관점입니다. 확인되지 않은 인용이나 개인 점수·관계 예측을 제공하지 않으며, 헌신은 동의와 안전의 경계를 존중합니다." },
+  { key: 'koreanYutjeomFourStickOracle', nameKo: '한국 윷점 사비 도개걸윷모 정월 윷놀이 민속 점복 다섯결 성찰', icon: '🪵', category: 'deep_master', summary: '한국 정월 윷점의 도·개·걸·윷·모 다섯 결을 질문에 비추어 지금의 걸음을 살피는 민속 상징 관점입니다. 실제 윷 던지기나 길흉 예측을 대신하지 않습니다.', primaryTheme: 'trinity' },
+  { key: 'tamilThirukkuralAramPorulKamam', nameKo: '타밀 티루쿠랄 아람 포룰 카맘 삼편 덕 재물 사랑 발라르 고전 지혜', icon: '🌺', category: 'deep_master', summary: '남인도 타밀 고전 《티루쿠랄》의 덕·재물·사랑 세 축으로 지금 삶에서 비어 있는 곳을 살피는 고전 지혜 관점입니다. 역본마다 다른 원문 문장을 인용하지 않고 길흉·점수를 산출하지 않습니다.', primaryTheme: 'bluebird' },
 ] as DceEngineMeta[]).filter(engine => !LUCY_PRO_CATALOG_DUPLICATE_KEYS.has(engine.key));
 
 export function getFiredEngineBadges(
@@ -5336,6 +5362,7 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'sufiLataif',
     'hawaiianHuna',
     'slavicSvarog',
+    'tamilThirukkuralAramPorulKamam',
   ],
   immediate_decision: [
     'frenchAlbertCamusAbsurdRevolt',
@@ -5424,6 +5451,7 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'delphicMaxims',
     'zoroastrianAsha',
     'guiguziLiangtouqian',
+    'koreanYutjeomFourStickOracle',
   ],
   daily_timing_transit: [
     'aztecTonalamatl',
@@ -5778,6 +5806,8 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'zoroastrianAsha',
     'hinduKundalini',
     'slavicSvarog',
+    'koreanYutjeomFourStickOracle',
+    'tamilThirukkuralAramPorulKamam',
   ],
 };
 
