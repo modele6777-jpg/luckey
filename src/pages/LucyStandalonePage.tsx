@@ -37,6 +37,7 @@ import { LucyResponseRecommendation } from '@/components/LucyResponseRecommendat
 import { DynamicGhostInputPlaceholder } from '@/components/chat/DynamicGhostInputPlaceholder';
 import { ChatProfileDock } from '@/components/chat/ChatProfileDock';
 import { useSmartScroll } from '@/hooks/useSmartScroll';
+import { isLucyChatPaneVisible } from '@/lib/workspacePaneDom';
 import { SmartScrollResumeButton } from '@/components/common/SmartScrollResumeButton';
 import { ChatProfileModal } from '@/components/chat/ChatProfileModal';
 import { type ChatTargetProfile } from '@/types/chatProfile';
@@ -2631,9 +2632,17 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
   useEffect(() => {
     const handleScrollToTopEvent = (e: any) => {
       const target = e?.detail?.target;
-      if (target && typeof target.closest === 'function' && target.closest('#duo-content-viewport')) {
+      // 채널 본문에서 난 탭은 채널 화면만 올린다. 접힌 화면의 루시 패널은 DOM에 남아 있으므로
+      // #duo-content-viewport id가 없는 상태(data-workspace-pane="content")까지 막아야 한다.
+      if (
+        target &&
+        typeof target.closest === 'function' &&
+        (target.closest('#duo-content-viewport') || target.closest('[data-workspace-pane="content"]'))
+      ) {
         return;
       }
+      // 다른 채널을 보는 동안 숨겨진 채팅의 읽던 위치를 건드리지 않는다.
+      if (!isLucyChatPaneVisible()) return;
       if (messagesContainerRef.current) {
         scrollToConversationTop();
       }
