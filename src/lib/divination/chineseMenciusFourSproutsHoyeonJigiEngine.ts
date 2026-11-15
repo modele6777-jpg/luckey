@@ -3,12 +3,12 @@
  *
  * 전국시대 유학자 맹자(孟子)의 《맹자(孟子)》 공손추상·고자상·등문공하 원전 기반.
  *
- * @version LUCKEY-MENCIUS-FOUR-SPROUTS-HOYEON-v2.0.0
+ * @version LUCKEY-MENCIUS-FOUR-SPROUTS-HOYEON-v2.1.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const MENCIUS_FOUR_SPROUTS_HOYEON_VERSION = 'LUCKEY-MENCIUS-FOUR-SPROUTS-HOYEON-v2.0.0';
+export const MENCIUS_FOUR_SPROUTS_HOYEON_VERSION = 'LUCKEY-MENCIUS-FOUR-SPROUTS-HOYEON-v2.1.0';
 
 export interface MenciusSproutStage {
   stageLevel: number;
@@ -66,6 +66,9 @@ export interface MenciusFourSproutsHoyeonResult {
     counselTitle: string;
     philosophicalGuidance: string;
   };
+  dailyPracticeRitual: string;
+  reflectiveQuestion: string;
+  interpretiveBoundary: string;
 }
 
 export type MenciusFourSproutsHoyeonReport = MenciusFourSproutsHoyeonResult;
@@ -269,6 +272,13 @@ export function calculateMenciusFourSproutsHoyeon(
     `${activeMenciusStage.moralSproutPrinciple}의 원칙을 마음에 새기십시오. ` +
     `${activeMenciusStage.practicalActionBlessing} 억지로 조장(助長)하지 말고 의로움을 차곡차곡 쌓아갈 때(集義) 흔들리지 않는 부동심과 대장부의 당당함이 완성됩니다.`;
 
+  const dailyPracticeRitual =
+    `${situationalMoralAudit.jiYiActionStep} (${temporalHoyeonRhythm.rhythmDirective})`;
+  const reflectiveQuestion =
+    `지금 내 마음은 조급한 조장(助長)에 치우쳐 있습니까, 아니면 떳떳한 집의(集義)의 걸음을 걷고 있습니까?`;
+  const interpretiveBoundary =
+    '이 관점은 점수가 아니라 맹자의 사단(四端)과 호연지기·집의(集義)의 틀로 오늘의 마음 결을 비추는 상징적 성찰입니다.';
+
   return {
     engineVersion: MENCIUS_FOUR_SPROUTS_HOYEON_VERSION,
     calculatedAtKst: (now ?? new Date()).toISOString(),
@@ -286,23 +296,34 @@ export function calculateMenciusFourSproutsHoyeon(
       counselTitle,
       philosophicalGuidance,
     },
+    dailyPracticeRitual,
+    reflectiveQuestion,
+    interpretiveBoundary,
   };
+}
+
+function describeMenciusStage(score: number): string {
+  if (score >= 88) return '지대지강(천지간에 충만한 맑은 기상)';
+  if (score >= 76) return '집의 축적(꾸준히 뿌리내리는 기운)';
+  return '발아 성찰(사단의 싹을 돌보는 단계)';
 }
 
 export function formatMenciusFourSproutsHoyeonPrompt(res: MenciusFourSproutsHoyeonResult): string {
   return [
-    `【고대 중국 맹자 사단사덕(四端四德) & 호연지기(浩然之氣) 지표】`,
-    `- 호연지기 대기운 함양도: ${res.hoyeonJigiGreatVitalityScore}/100`,
-    `- 사단사덕 확충 완성도: ${res.fourSproutsCultivationLevel}/100`,
-    `- 부동심 내면 평정력: ${res.buDongXinSteadfastness}/100`,
-    `- 집의(集義) 정직 축적력: ${res.jiYiMoralAccumulation}/100`,
-    `- 대장부 당당한 기개: ${res.daejangbuNobility}/100`,
+    `【고대 중국 맹자 사단사덕(四端四德) & 호연지기(浩然之氣) 성찰 (${res.engineVersion})】`,
+    `- 호연지기 대기운 결: ${describeMenciusStage(res.hoyeonJigiGreatVitalityScore)}`,
+    `- 사단사덕 확충 흐름: ${describeMenciusStage(res.fourSproutsCultivationLevel)}`,
+    `- 부동심 내면 평정: ${describeMenciusStage(res.buDongXinSteadfastness)}`,
+    `- 집의(集義) 정직 축적: ${describeMenciusStage(res.jiYiMoralAccumulation)}`,
+    `- 대장부 당당한 기개: ${describeMenciusStage(res.daejangbuNobility)}`,
     `- 집중 확충 사단: ${res.activeMenciusStage.stageNameHanja} (${res.activeMenciusStage.stageNameKo})`,
     `- 질문 맥락 도덕 감사 (${res.situationalMoralAudit.themeKo} · ${res.situationalMoralAudit.menciusCitation}): "${res.situationalMoralAudit.translationKo}" [${res.situationalMoralAudit.hanjaQuote}]`,
     `- 조장(助長) 함정: ${res.situationalMoralAudit.jojangTrap}`,
-    `- 집의(集義) 실천 단계: ${res.situationalMoralAudit.jiYiActionStep}`,
-    `- KST 호연지기 리듬: ${res.temporalHoyeonRhythm.kstWindow} (${res.temporalHoyeonRhythm.sproutFocus}, 명료도 ${res.temporalHoyeonRhythm.hoyeonClarityIndex}/100) — ${res.temporalHoyeonRhythm.rhythmDirective}`,
-    `- 맹자 매트릭스: 사단 균형 ${res.menciusSynthesisMatrix.fourSproutsBalance} / 집의 축적 ${res.menciusSynthesisMatrix.jiYiAccumulation} / 부동심 안정 ${res.menciusSynthesisMatrix.buDongXinSteadiness} (종합 ${res.menciusSynthesisMatrix.overallSynthesis}/100)`,
+    `- 일일 집의(集義) 의례: ${res.dailyPracticeRitual}`,
+    `- KST 호연지기 리듬: ${res.temporalHoyeonRhythm.kstWindow} (${res.temporalHoyeonRhythm.sproutFocus}, ${res.temporalHoyeonRhythm.seasonalTone}, 명료 결: ${describeMenciusStage(res.temporalHoyeonRhythm.hoyeonClarityIndex)})`,
+    `- 맹자 조화 흐름: 사단 균형 [${describeMenciusStage(res.menciusSynthesisMatrix.fourSproutsBalance)}] / 집의 축적 [${describeMenciusStage(res.menciusSynthesisMatrix.jiYiAccumulation)}] / 부동심 안정 [${describeMenciusStage(res.menciusSynthesisMatrix.buDongXinSteadiness)}]`,
+    `- 성찰 질문: ${res.reflectiveQuestion}`,
     `- 철학적 처방: ${res.menciusPhilosophicalCounsel.philosophicalGuidance}`,
+    `- 해석 경계: ${res.interpretiveBoundary}`,
   ].join('\n');
 }

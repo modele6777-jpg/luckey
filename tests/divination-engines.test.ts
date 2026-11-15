@@ -4822,7 +4822,7 @@ test('Chinese Mencius Four Sprouts Hoyeon Jigi Engine: calculates four sprouts, 
   assert(rep.daejangbuNobility >= 0 && rep.daejangbuNobility <= 100);
   assert(rep.activeMenciusStage.stageNameHanja.length > 0);
   const prompt = formatMenciusFourSproutsHoyeonPrompt(rep);
-  assert(prompt.includes('고대 중국 맹자 사단사덕(四端四德) & 호연지기(浩然之氣) 지표'));
+  assert(prompt.includes('고대 중국 맹자 사단사덕(四端四德) & 호연지기(浩然之氣) 성찰'));
   assert(prompt.includes(rep.activeMenciusStage.stageNameKo));
 });
 
@@ -4906,7 +4906,7 @@ test('Confucius Analects Zhitianming Engine: calculates life stage wisdom, Ren, 
   assert(rep.junziEquanimityScore >= 0 && rep.junziEquanimityScore <= 100);
   assert(rep.activeLifeStage.stageNameHanja.length > 0);
   const prompt = formatConfuciusAnalectsZhitianmingPrompt(rep);
-  assert(prompt.includes('공자 논어 지천명 & 극기복례 군자도 지표'));
+  assert(prompt.includes('공자 논어 지천명 & 극기복례 군자도 성찰'));
   assert(prompt.includes(rep.activeLifeStage.stageNameKo));
 });
 
@@ -7695,6 +7695,41 @@ test('v2.1.0 pure qualitative prompts (zero /100 or % exposure): Bhagavad Gita, 
   assert.ok(nagarjunaPrompt.includes('오늘의 실천 의례'));
   assert.ok(nagarjunaPrompt.includes('성찰 질문'));
   assert.ok(nagarjunaPrompt.includes('해석 경계'));
+});
+
+test('v2.1.0 pure qualitative prompts (no /100 or raw scores): Confucius, Mencius, and Wang Yangming', () => {
+  const now = new Date('2026-11-15T01:40:00Z');
+  const confucius = calculateConfuciusAnalectsZhitianming(profile, '동료와의 관계와 믿음에 갈등이 생겼어요', now);
+  assert.equal(confucius.engineVersion, CONFUCIUS_ZHITIANMING_VERSION);
+  assert.ok(confucius.dailyPracticeRitual.length > 0);
+  assert.ok(confucius.reflectiveQuestion.length > 0);
+  assert.ok(confucius.interpretiveBoundary.length > 0);
+  const confuciusPrompt = formatConfuciusAnalectsZhitianmingPrompt(confucius);
+  assert.ok(!confuciusPrompt.includes('/100') && !confuciusPrompt.includes('%'));
+  assert.ok(confuciusPrompt.includes('일일 수양 의례'));
+  assert.ok(confuciusPrompt.includes('해석 경계'));
+
+  const mencius = calculateMenciusFourSproutsHoyeon(profile, '조급한 마음 때문에 빨리 결과를 내고 싶어요', now);
+  assert.equal(mencius.engineVersion, MENCIUS_FOUR_SPROUTS_HOYEON_VERSION);
+  assert.ok(mencius.dailyPracticeRitual.length > 0);
+  assert.ok(mencius.reflectiveQuestion.length > 0);
+  assert.ok(mencius.interpretiveBoundary.length > 0);
+  const menciusPrompt = formatMenciusFourSproutsHoyeonPrompt(mencius);
+  assert.ok(!menciusPrompt.includes('/100') && !menciusPrompt.includes('%'));
+  assert.ok(menciusPrompt.includes('일일 집의(集義) 의례'));
+  assert.ok(menciusPrompt.includes('성찰 질문'));
+  assert.ok(menciusPrompt.includes('해석 경계'));
+
+  const yangming = calculateWangYangmingXinxue(profile, '망설이느라 실행을 계속 미루고 있어요', now);
+  assert.equal(yangming.engineVersion, WANG_YANGMING_LIANGZHI_VERSION);
+  assert.ok(yangming.dailyPracticeRitual.length > 0);
+  assert.ok(yangming.reflectiveQuestion.length > 0);
+  assert.ok(yangming.interpretiveBoundary.length > 0);
+  const yangmingPrompt = formatWangYangmingXinxuePrompt(yangming);
+  assert.ok(!yangmingPrompt.includes('/100') && !yangmingPrompt.includes('%'));
+  assert.ok(yangmingPrompt.includes('일일 사전마련 의례'));
+  assert.ok(yangmingPrompt.includes('성찰 질문'));
+  assert.ok(yangmingPrompt.includes('해석 경계'));
 });
 
 
