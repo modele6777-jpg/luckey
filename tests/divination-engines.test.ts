@@ -24,6 +24,7 @@ import { calculateWealthPipeline, formatWealthPipelinePrompt, WEALTH_PIPELINE_VE
 import { calculateKarmicNodes, formatKarmicNodesPrompt, KARMIC_NODES_ENGINE_VERSION } from '../src/lib/divination/karmicNodesEngine';
 import { calculateMentalResilience, formatMentalResiliencePrompt, MENTAL_RESILIENCE_VERSION } from '../src/lib/divination/mentalResilienceEngine';
 import { calculateNobleNetwork, formatNobleNetworkPrompt, NOBLE_NETWORK_VERSION } from '../src/lib/divination/nobleNetworkEngine';
+import { calculateMonthlyFlow, formatMonthlyFlowPrompt, MONTHLY_FLOW_ENGINE_VERSION } from '../src/lib/divination/monthlyFlowEngine';
 import { calculateVoicePersona, formatVoicePersonaPrompt, VOICE_PERSONA_VERSION } from '../src/lib/divination/voicePersonaEngine';
 import { calculateContractShield, formatContractShieldPrompt, CONTRACT_SHIELD_VERSION } from '../src/lib/divination/contractShieldEngine';
 import { calculateLifeDomainWheel, formatLifeDomainWheelPrompt, LIFE_DOMAIN_WHEEL_VERSION } from '../src/lib/divination/lifeDomainWheelEngine';
@@ -2193,8 +2194,10 @@ test('Mental Resilience Engine: 위기 돌파 슈퍼파워 및 주역 난괘 탈
 });
 
 test('Noble Network Engine: 4대 귀인 및 인연 네트워크 시너지 검증', () => {
-  const res = calculateNobleNetwork({ profile, targetDate: new Date('2026-11-03T08:00:00+09:00') });
+  const res = calculateNobleNetwork({ profile, targetDate: new Date('2026-11-03T08:00:00+09:00'), question: '귀인 인연' });
   assert.equal(res.engineVersion, NOBLE_NETWORK_VERSION);
+  assert(res.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(res.nobleNetworkSynthesisMatrix?.integratedAction));
   assert(['catalyst', 'anchor', 'amplifier'].includes(res.primaryArchetype.type));
   assert(res.networkSynergyScore >= 0 && res.networkSynergyScore <= 100);
   assert(res.synergyZodiacAnimals.sixHarmony.length > 0);
@@ -2204,6 +2207,20 @@ test('Noble Network Engine: 4대 귀인 및 인연 네트워크 시너지 검증
   assert(prompt.includes(NOBLE_NETWORK_VERSION));
   assert(prompt.includes('1순위 귀인 아키타입'));
   assert(prompt.includes('천을귀인'));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
+});
+
+test('Monthly Flow Engine: 12개월 월운 및 분기 타이밍 검증', () => {
+  const res = calculateMonthlyFlow({ profile, targetYear: 2026, question: '이직 적기' });
+  assert.equal(res.engineVersion, MONTHLY_FLOW_ENGINE_VERSION);
+  assert(res.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(res.monthlyFlowSynthesisMatrix?.integratedAction));
+  assert.equal(res.monthlyTimeline.length, 12);
+  const prompt = formatMonthlyFlowPrompt(res);
+  assert(prompt.includes(MONTHLY_FLOW_ENGINE_VERSION));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
 });
 
 test('Voice Persona Engine: 스피치 페르소나 및 설득력 치트키 검증', () => {
@@ -2456,8 +2473,10 @@ test('Destiny Synastry Echo Engine: 다차원 운명 공명 에코 & 카르마�
 });
 
 test('Micro-Habit Karma Engine: 21일 카르마 리셋 & 오행 마이크로 해빗 검증', () => {
-  const res = calculateMicroHabitKarma({ profile, targetDate: new Date('2026-11-03T10:00:00+09:00') });
+  const res = calculateMicroHabitKarma({ profile, targetDate: new Date('2026-11-03T10:00:00+09:00'), question: '루틴 안착' });
   assert.equal(res.engineVersion, MICRO_HABIT_KARMA_VERSION);
+  assert(res.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(res.microHabitSynthesisMatrix?.integratedAction));
   assert(res.neuroplasticityScore >= 0 && res.neuroplasticityScore <= 100);
   assert(res.karmaStreakIndex >= 0 && res.karmaStreakIndex <= 100);
   assert(res.microHabit.twoMinuteAction.length > 0);
@@ -2465,6 +2484,8 @@ test('Micro-Habit Karma Engine: 21일 카르마 리셋 & 오행 마이크로 해
   const prompt = formatMicroHabitKarmaPrompt(res);
   assert(prompt.includes('LUCKEY 21일 카르마 리셋 & 오행 마이크로 해빗'));
   assert(prompt.includes(res.archetype));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
 });
 
 test('Ikigai Destiny Compass Engine: 이키가이 천직 4대 교집합 & 소명 나침반 검증', () => {
