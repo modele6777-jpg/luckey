@@ -6,7 +6,7 @@
  * 현대인의 역경 돌파, 결단력, 영혼의 성숙도에 연동합니다.
  */
 
-export const PERSIAN_MITHRAIC_SPHERES_ENGINE_VERSION = 'LUCKEY-MITHRAIC-SPHERES-v1.0.0';
+export const PERSIAN_MITHRAIC_SPHERES_ENGINE_VERSION = 'LUCKEY-MITHRAIC-SPHERES-v2.0.0';
 
 export interface MithraicGrade {
   gradeLevel: number;
@@ -22,11 +22,33 @@ export interface MithraicGrade {
 export interface MithraicSpheresReport {
   engineVersion: string;
   calculatedAt: string;
+  calculatedAtKst: string;
   activeGrade: MithraicGrade;
   solInvictusScore: number; // 0 ~ 100 (불패의 태양 회복탄력성 지수)
   astralLadderAscensionRate: number; // 0 ~ 100
   mithraicOathOfLight: string;
   masterBreakthroughPrescription: string;
+  mithraicSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
+}
+
+function formatMithraicKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
+
+function describeMithraicStage(score: number): string {
+  if (score >= 84) return '솔 인빅투스 정점(Sol Invictus) — 불패의 태양 광명이 역경을 돌파하고 천계 사다리를 힘차게 오르는 도약기';
+  if (score >= 70) return '아스트랄 계단 조율(Astral Ladder) — 입문 시험을 정면으로 통과하며 내면의 신념을 벼리는 수련기';
+  return '성소 잠행(Mithraeum Vigil) — 성급한 충돌을 피하고 빛의 맹세를 다시 다지는 준비기';
 }
 
 const SEVEN_GRADES: MithraicGrade[] = [
@@ -130,25 +152,44 @@ export function calculatePersianMithraicSpheres(params: {
   const mithraicOathOfLight = `나는 불패의 태양 미트라의 빛 아래에서 어둠에 굴복하지 않으며, [${activeGrade.gradeTitleKo}]의 맹세를 지킨다.`;
   const masterBreakthroughPrescription = `당신의 영혼은 지금 미트라 7대 천계 사다리의 제${activeGrade.gradeLevel}계단 [${activeGrade.gradeTitleKo}]을 통과하고 있습니다. '${activeGrade.initiationTrial}'을 두려워하지 말고, '${activeGrade.gradeActionRule}'을 실천하여 영혼의 주권을 완성하세요.`;
 
+  const calculatedAtKst = formatMithraicKstTimestamp(now);
+  const composite = Math.round((solInvictusScore + astralLadderAscensionRate) / 2);
+  const mithraicSynthesisMatrix = {
+    dominantTension: `제${activeGrade.gradeLevel}계단 ${activeGrade.gradeTitleKo} ↔ ${activeGrade.planetaryRuler}`,
+    alignmentState: describeMithraicStage(composite),
+    integratedAction: `${activeGrade.gradeActionRule}${question.trim() ? ` [질문 맥락: ${question.trim()}]` : ''}`,
+  };
+
   return {
     engineVersion: PERSIAN_MITHRAIC_SPHERES_ENGINE_VERSION,
     calculatedAt: now.toISOString(),
+    calculatedAtKst,
     activeGrade,
     solInvictusScore,
     astralLadderAscensionRate,
     mithraicOathOfLight,
     masterBreakthroughPrescription,
+    mithraicSynthesisMatrix,
   };
 }
 
 export function formatPersianMithraicSpheresPrompt(report: MithraicSpheresReport): string {
   const g = report.activeGrade;
-  return `### ☀️ 고대 페르시아 미트라(Mithra) 7대 행성 입문 천계 사다리 실측 데이터 (${report.engineVersion})
-- **현재 천계 사다리 계단**: 제${g.gradeLevel}단계 - ${g.gradeTitleKo} (${g.gradeTitleEn})
-- **주관 행성 및 원소**: ${g.planetaryRuler} | ${g.elementSymbol}
-- **통과해야 할 입문 시험**: ${g.initiationTrial}
-- **해방되는 불패의 태양 권능**: ${g.invictusPower}
-- **불패의 태양(Sol Invictus) 회복력**: ${report.solInvictusScore}점 / 100점
-- **천계 사다리 도약률**: ${report.astralLadderAscensionRate}점 / 100점
-- **미트라 광명 행동 지침**: ${report.masterBreakthroughPrescription}`;
+  const composite = Math.round((report.solInvictusScore + report.astralLadderAscensionRate) / 2);
+  const lines = [
+    `### ☀️ 고대 페르시아 미트라(Mithra) 7대 행성 입문 천계 사다리 실측 데이터 (${report.engineVersion})`,
+    `- **연산 시각**: ${report.calculatedAtKst} | **광명 입문 국면**: ${describeMithraicStage(composite)}`,
+    `- **현재 천계 사다리 계단**: 제${g.gradeLevel}단계 - ${g.gradeTitleKo} (${g.gradeTitleEn})`,
+    `- **주관 행성 및 원소**: ${g.planetaryRuler} | ${g.elementSymbol}`,
+    `- **통과해야 할 입문 시험**: ${g.initiationTrial}`,
+    `- **해방되는 불패의 태양 권능**: ${g.invictusPower}`,
+    `- **미트라 광명 행동 지침**: ${report.masterBreakthroughPrescription}`,
+  ];
+  if (report.mithraicSynthesisMatrix) {
+    lines.push(
+      `- **교차 매트릭스**: [핵심 긴장: ${report.mithraicSynthesisMatrix.dominantTension} | 조율 상태: ${report.mithraicSynthesisMatrix.alignmentState}]`,
+      `- **통합 실천**: ${report.mithraicSynthesisMatrix.integratedAction}`,
+    );
+  }
+  return lines.join('\n');
 }

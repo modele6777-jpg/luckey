@@ -19,7 +19,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const ATTAR_SEVEN_VALLEYS_ENGINE_VERSION = '1.0.0';
+export const ATTAR_SEVEN_VALLEYS_ENGINE_VERSION = '2.0.0';
 
 export interface AttarValley {
   id: string;
@@ -34,6 +34,7 @@ export interface AttarValley {
 export interface PersianAttarSevenValleysReport {
   engineVersion: string;
   timestamp: string;
+  calculatedAtKst: string;
   simurghMirrorResonanceScore: number; // 0 ~ 100 시무르그 신성 자아 거울 공명도
   sevenValleysPassageProgress: number; // 0 ~ 100 7대 계곡 통과 진척도
   fanaEgoDissolutionRate: number; // 0 ~ 100 파나(에고 한계 소멸) 해방도
@@ -42,6 +43,27 @@ export interface PersianAttarSevenValleysReport {
   secondaryValley: AttarValley; // 보조 계곡
   attarSufiWisdomGuidance: string; // 아타르 수피 지혜 지침
   simurghMirrorMeditationRitual: string; // 시무르그 신성 거울 명상 리추얼
+  attarSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
+}
+
+function formatAttarKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
+
+function describeAttarStage(score: number): string {
+  if (score >= 82) return '시무르그 거울 합일(Simurgh Mirror) — 바깥에서 찾던 왕이 곧 내 안의 참된 자아임을 직관하는 각성기';
+  if (score >= 66) return '후투티 순례 순항(Hudhud Passage) — 7대 계곡의 경계를 차분히 건너며 집착을 비우는 성숙기';
+  return '탈라브 첫발(Talab Threshold) — 세속의 익숙함을 내려놓고 내면의 물음을 다시 세우는 입문기';
 }
 
 const ATTAR_VALLEYS_BASE: Omit<AttarValley, 'resonanceScore'>[] = [
@@ -155,9 +177,20 @@ export function calculatePersianAttarSevenValleys(
   const attarSufiWisdomGuidance = `당신이 평생 찾아 헤매던 참된 보물은 바깥 세상에 있지 않습니다. 당신의 영혼은 지금 [${dominantValley.nameKo}]을 건너며 성숙하고 있습니다. ${dominantValley.transcendenceGuidance} 서른 마리의 새가 카프산 정상 호수에서 마침내 마주한 왕이 바로 그들 자신이었듯, 당신의 참된 영혼 자체가 곧 눈부신 시무르그입니다.`;
   const simurghMirrorMeditationRitual = `가슴 한가운데 잔잔한 거울 같은 호수를 떠올리십시오. 그 호수 위로 찬란한 무지개 깃털을 가진 영조(靈鳥) 시무르그가 비칩니다: "내가 찾는 진리가 곧 나 자신이며, 내 안의 에고가 고요히 녹아내릴 때 영원한 신성의 숨결이 피어난다."`;
 
+  const calculatedAtKst = formatAttarKstTimestamp(now);
+  const composite = Math.round(
+    (simurghMirrorResonanceScore + sevenValleysPassageProgress + fanaEgoDissolutionRate + baqaDivinePermanenceIndex) / 4
+  );
+  const attarSynthesisMatrix = {
+    dominantTension: `${dominantValley.nameKo} ↔ ${secondaryValley.nameKo}`,
+    alignmentState: describeAttarStage(composite),
+    integratedAction: `${dominantValley.transcendenceGuidance}${question.trim() ? ` [질문 맥락: ${question.trim()}]` : ''}`,
+  };
+
   return {
     engineVersion: ATTAR_SEVEN_VALLEYS_ENGINE_VERSION,
     timestamp: now.toISOString(),
+    calculatedAtKst,
     simurghMirrorResonanceScore,
     sevenValleysPassageProgress,
     fanaEgoDissolutionRate,
@@ -166,19 +199,31 @@ export function calculatePersianAttarSevenValleys(
     secondaryValley,
     attarSufiWisdomGuidance,
     simurghMirrorMeditationRitual,
+    attarSynthesisMatrix,
   };
 }
 
 export function formatPersianAttarSevenValleysPrompt(rep: PersianAttarSevenValleysReport): string {
-  return `[페르시아 수피즘 아타르 '새들의 회의' 7대 계곡 & 시무르그 실측 데이터]
-· 엔진 버전: v${rep.engineVersion}
-· 시무르그 신성 자아 거울 공명도: ${rep.simurghMirrorResonanceScore}/100 | 7대 계곡 통과 진척도: ${rep.sevenValleysPassageProgress}/100
-· 파나(에고 한계 소멸) 해방도: ${rep.fanaEgoDissolutionRate}/100 | 바카(신성 영속 현존) 지수: ${rep.baqaDivinePermanenceIndex}/100
-· 주재 영혼의 계곡: [${rep.dominantValley.nameKo} (${rep.dominantValley.persian})] — 공명도 ${rep.dominantValley.resonanceScore}%
-  - 계곡 테마: ${rep.dominantValley.valleyTheme}
-  - 영적 덕목: ${rep.dominantValley.spiritualVirtue}
-  - 초월 지침: ${rep.dominantValley.transcendenceGuidance}
-· 보조 계곡: [${rep.secondaryValley.nameKo} (${rep.secondaryValley.persian})] — 공명도 ${rep.secondaryValley.resonanceScore}%
-· 아타르 수피 지혜 지침: ${rep.attarSufiWisdomGuidance}
-· 시무르그 신성 거울 명상 리추얼: ${rep.simurghMirrorMeditationRitual}`;
+  const composite = Math.round(
+    (rep.simurghMirrorResonanceScore + rep.sevenValleysPassageProgress + rep.fanaEgoDissolutionRate + rep.baqaDivinePermanenceIndex) / 4
+  );
+  const lines = [
+    `[페르시아 수피즘 아타르 '새들의 회의' 7대 계곡 & 시무르그 실측 데이터]`,
+    `· 연산 시각: ${rep.calculatedAtKst} | 엔진 버전: v${rep.engineVersion}`,
+    `· 수피 순례 국면: ${describeAttarStage(composite)}`,
+    `· 주재 영혼의 계곡: [${rep.dominantValley.nameKo} (${rep.dominantValley.persian})]`,
+    `  - 계곡 테마: ${rep.dominantValley.valleyTheme}`,
+    `  - 영적 덕목: ${rep.dominantValley.spiritualVirtue}`,
+    `  - 초월 지침: ${rep.dominantValley.transcendenceGuidance}`,
+    `· 보조 계곡: [${rep.secondaryValley.nameKo} (${rep.secondaryValley.persian})] — ${rep.secondaryValley.valleyTheme}`,
+    `· 아타르 수피 지혜 지침: ${rep.attarSufiWisdomGuidance}`,
+    `· 시무르그 신성 거울 명상 리추얼: ${rep.simurghMirrorMeditationRitual}`,
+  ];
+  if (rep.attarSynthesisMatrix) {
+    lines.push(
+      `· 교차 매트릭스: [핵심 긴장: ${rep.attarSynthesisMatrix.dominantTension} | 조율 상태: ${rep.attarSynthesisMatrix.alignmentState}]`,
+      `· 통합 실천: ${rep.attarSynthesisMatrix.integratedAction}`,
+    );
+  }
+  return lines.join('\n');
 }
