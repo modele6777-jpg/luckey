@@ -15,7 +15,7 @@ import { PhysicalTarotInputModal } from './PhysicalTarotInputModal';
 import { useTarotCardBack } from '@/hooks/useTarotCardBack';
 import { playAudioHaptic } from '@/lib/audioHaptics';
 import { triggerTarotScreenVibration } from '@/utils/tarotEffects';
-import { LANDSCAPE_ARC_TOP, clampFanToWidth, fanCardWidth, landscapeFanMetrics, portraitFanMetrics, placeRingCards } from './tarotRingLayout';
+import { LANDSCAPE_ARC_TOP, landscapeFanMetrics, placeRingCards } from './tarotRingLayout';
 
 export interface SelectedTarotCardEntry extends TarotCard {
   touchMetadata?: any | null;
@@ -444,24 +444,30 @@ export const TarotSpread: React.FC<TarotSpreadProps> = ({
   // Responsive layout calibration
   useEffect(() => {
     const updateRadius = () => {
-      const node = containerRef.current;
-      const w = node?.clientWidth || window.innerWidth;
-      const h = node?.clientHeight || window.innerHeight;
+      const bounds = containerRef.current?.getBoundingClientRect();
+      const w = bounds?.width || window.innerWidth;
+      const h = bounds?.height || window.innerHeight;
       const isLandscape = w > h;
       setIsLandscapeLayout(isLandscape);
-      const cardWidth = fanCardWidth(w);
 
       if (isLandscape) {
         const fan = landscapeFanMetrics(h, LANDSCAPE_ARC_TOP);
-        const fitted = clampFanToWidth(fan.radius, fan.yOffset, w, h, cardWidth);
-        setRadius(fitted.radius);
-        setYOffset(fitted.yOffset);
-        setIsMobile(w < 700);
-      } else {
-        const fan = portraitFanMetrics(w, h, cardWidth);
         setRadius(fan.radius);
         setYOffset(fan.yOffset);
-        setIsMobile(w < 768);
+        setIsMobile(w < 700);
+      } else if (w < 540) {
+        // iPhone Duo 5.4" Outer Cover Screen in Portrait (Compact vertical ergonomics)
+        setRadius(Math.max(280, Math.min(340, Math.round(h * 0.40))));
+        setYOffset(Math.max(270, Math.min(340, Math.round(h * 0.41))));
+        setIsMobile(true);
+      } else if (w < 768) {
+        setRadius(460);
+        setYOffset(500);
+        setIsMobile(true);
+      } else {
+        setRadius(640);
+        setYOffset(700);
+        setIsMobile(false);
       }
     };
 
@@ -1053,7 +1059,7 @@ export const TarotSpread: React.FC<TarotSpreadProps> = ({
           ref={wheelLayerRef}
           className="absolute left-1/2 top-1/2 z-[30]"
           data-fan-radius={radius}
-          data-fan-card-width={fanCardWidth(containerRef.current?.clientWidth || (typeof window !== 'undefined' ? window.innerWidth : 0))}
+          data-fan-y-offset={yOffset}
           style={{
             transform: buildWheelTransform(rotationRef.current),
             willChange: 'transform',
