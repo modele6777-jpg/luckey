@@ -1,6 +1,7 @@
 import { OverlayPaneContext } from './OverlayPaneContext';
 import { useOverlayPane } from '@/hooks/useOverlayPane';
 import { useMainOverlayViewport } from '@/hooks/useMainOverlayViewport';
+import { holdLucyScrollPin, noteLucyScrollPin, rectsOverlap } from '@/lib/lucyScrollPin';
 import { ScreenOverlayContext, isTopScreenOverlay, useScreenOverlayLayer } from './ScreenPortal';
 import React, { forwardRef, useEffect, useRef, type HTMLAttributes, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
@@ -23,9 +24,30 @@ export function WorkspacePortal({ children, onClose }: { children: ReactNode; on
   const closeRef = useRef(onClose);
   closeRef.current = onClose;
   useEffect(() => {
+    const scroller = document.querySelector<HTMLElement>('.lucy-chat-main');
+    const savedTop = scroller?.scrollTop ?? 0;
+    const pinned = !!scroller && scroller.scrollHeight - scroller.scrollTop - scroller.clientHeight <= 80;
+    const portalBox = portalRef.current?.getBoundingClientRect();
+    const coversLucy = !!scroller && !!portalBox && (
+      portalBox.width > 24 && portalBox.height > 24
+        ? rectsOverlap(portalBox, scroller.getBoundingClientRect())
+        : portalRef.current?.dataset.overlayPane !== 'content'
+    );
+    if (coversLucy) noteLucyScrollPin(pinned);
+    const restoreChatScroll = () => {
+      if (!coversLucy) return;
+      const node = document.querySelector<HTMLElement>('.lucy-chat-main');
+      if (!node) return;
+      const behavior = node.style.scrollBehavior;
+      node.style.scrollBehavior = 'auto';
+      node.scrollTop = pinned ? node.scrollHeight : savedTop;
+      node.style.scrollBehavior = behavior;
+    };
     const previousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     const focusable = () => Array.from(portalRef.current?.querySelectorAll<HTMLElement>('button:not([disabled]), a[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex="0"]') || []).filter(element => element.getClientRects().length > 0);
-    focusable()[0]?.focus({ preventScroll: true });
+    const initial = focusable().find(element => element.tagName !== 'INPUT' && element.tagName !== 'TEXTAREA' && element.tagName !== 'SELECT') ?? focusable()[0];
+    initial?.focus({ preventScroll: true });
+    restoreChatScroll();
     const handleKeyDown = (event: KeyboardEvent) => {
       if (!isTopScreenOverlay(portalRef.current)) return;
       const target = event.target instanceof Element ? event.target : null;
@@ -44,15 +66,21 @@ export function WorkspacePortal({ children, onClose }: { children: ReactNode; on
       const first = elements[0];
       const last = elements[elements.length - 1];
       if (event.shiftKey && (document.activeElement === first || !portalRef.current?.contains(document.activeElement))) {
-        event.preventDefault(); last.focus();
+        event.preventDefault(); last.focus({ preventScroll: true });
       } else if (!event.shiftKey && (document.activeElement === last || !portalRef.current?.contains(document.activeElement))) {
-        event.preventDefault(); first.focus();
+        event.preventDefault(); first.focus({ preventScroll: true });
       }
     };
     document.addEventListener('keydown', handleKeyDown);
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
+      if (coversLucy) holdLucyScrollPin();
       if (previousFocus?.isConnected) previousFocus.focus({ preventScroll: true });
+      restoreChatScroll();
+      requestAnimationFrame(() => {
+        restoreChatScroll();
+        requestAnimationFrame(restoreChatScroll);
+      });
     };
   }, []);
   if (typeof document === 'undefined') return null;

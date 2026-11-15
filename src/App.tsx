@@ -562,6 +562,8 @@ function AppContent() {
     let isInsideBigBang = false;
     let touchActive = false;
     let touchMoved = false;
+    let maxTouchMove = 0;
+    let startedOnControl = false;
     let suppressTouchClickUntil = 0;
     let gestureLockedUrl = '';
     const clearGestureLock = () => { gestureLockedUrl = ''; };
@@ -580,6 +582,8 @@ function AppContent() {
     const handleEdgeTouchStart = (e: TouchEvent) => {
       touchActive = e.touches.length === 1;
       touchMoved = false;
+      maxTouchMove = 0;
+      startedOnControl = !!((e.target as HTMLElement | null)?.closest('button, a, [role="button"], input, textarea, select, label'));
       suppressTouchClickUntil = 0;
       // Capture the address before native history moves, even during a lazy route transition.
       gestureLockedUrl = window.location.pathname + window.location.search + window.location.hash;
@@ -604,11 +608,13 @@ function AppContent() {
         const dy = e.touches[0].clientY - startY;
         const absDx = Math.abs(dx);
         const absDy = Math.abs(dy);
-        if (Math.hypot(dx, dy) >= 12) {
+        maxTouchMove = Math.max(maxTouchMove, Math.hypot(dx, dy));
+        if (maxTouchMove >= 12) {
           touchMoved = true;
           suppressTouchClickUntil = Date.now() + 800;
         }
-        if (isInsideBigBang) return;
+        // A control owns the gesture. preventDefault here is what makes iOS cancel the tap.
+        if (startedOnControl || isInsideBigBang) return;
 
         const { sal, sar } = getSafeInsets();
         const leftGuard = Math.max(52, sal + 44);
@@ -639,6 +645,9 @@ function AppContent() {
     };
     const handleTouchCancel = () => {
       touchActive = false;
+      // Stationary taps inside clipped chrome are reported as touchcancel.
+      // Only a gesture that actually moved should swallow the following click.
+      if (!touchMoved && maxTouchMove < 48) return;
       suppressTouchClickUntil = Date.now() + 800;
       (window as any).__prismLastScreenSwipeAt = Date.now();
       (window as any).__prismAllowRouteChangeUntil = 0;
@@ -656,12 +665,13 @@ function AppContent() {
     const handleExplicitClickCapture = (e: MouseEvent) => {
       const pointerType = (e as PointerEvent).pointerType;
       const touchGenerated = pointerType === 'touch' || pointerType === 'pen' || (!pointerType && e.detail > 0 && (e as any).sourceCapabilities?.firesTouchEvents !== false);
-      if (touchGenerated && Date.now() < suppressTouchClickUntil) {
+      const target = e.target as HTMLElement | null;
+      const interactive = target?.closest('button, a, [role="button"], input, textarea, select, label');
+      if (!(interactive && maxTouchMove < 48) && touchGenerated && Date.now() < suppressTouchClickUntil) {
         e.preventDefault();
         e.stopImmediatePropagation();
         return;
       }
-      const target = e.target as HTMLElement | null;
       if (target?.closest('button, a, [role="button"], [data-bigbang="true"]')) {
         clearGestureLock();
         (window as any).__prismAllowRouteChangeUntil = Date.now() + 1500;

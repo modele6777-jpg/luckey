@@ -59,6 +59,7 @@ import {
 } from '@/lib/chatHistorySync';
 import { processDailyChatArchival } from '@/lib/chatMemoryArchive';
 import { drawLucyTarotCards, formatTarotMarker } from '@/utils/tarotDetector';
+import { isLucyScrollPinned, lucyScrollPinHeld, noteLucyScrollPin, overlayCoversElement, releaseLucyScrollPin } from '@/lib/lucyScrollPin';
 import { isDualPaneLayout, isDuoUnfoldedState } from '@/lib/perfMode';
 import { buildLucyTarotReadingPrompt } from '@/lib/lucyTarotReading';
 import { getTodayDateKey } from '@/lib/dailyCache';
@@ -2355,12 +2356,18 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
       return;
     }
     const distanceFromBottom = scrollHeight - (scrollTop + clientHeight);
-    if (document.querySelector('[data-screen-overlay-layer]:not(:empty)')) return;
+    // Only a layer over this conversation may ignore layout noise. A content-pane dialog stays independent.
+    if (!isUserScrolledUpRef.current && (overlayCoversElement(container) || lucyScrollPinHeld())) {
+      if (isLucyScrollPinned() || distanceFromBottom <= 80) followLatestLayoutRef.current();
+      return;
+    }
     if (distanceFromBottom > 80) {
       isUserScrolledUpRef.current = true;
+      noteLucyScrollPin(false);
       setShowReturnToRecentConversation(true);
     } else if (distanceFromBottom <= 35) {
       isUserScrolledUpRef.current = false;
+      noteLucyScrollPin(true);
       setShowReturnToRecentConversation(false);
     }
   }, []);
@@ -2372,7 +2379,10 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
     const onWheel = (e: WheelEvent) => {
       if (e.deltaY < -2) {
         // 위로 휠 스크롤 시 즉시 사용자 수동 조작 모드로 전환하여 하단 끌어당김 방지
+        if (overlayCoversElement(container)) return;
+        releaseLucyScrollPin();
         isUserScrolledUpRef.current = true;
+        noteLucyScrollPin(false);
       } else if (e.deltaY > 2) {
         const { scrollTop, scrollHeight, clientHeight } = container;
         const dist = scrollHeight - (scrollTop + clientHeight);
@@ -2382,7 +2392,13 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
       }
     };
     let touchY: number | null = null;
-    const readOlder = () => { isUserScrolledUpRef.current = true; setShowReturnToRecentConversation(true); };
+    const readOlder = () => {
+      if (overlayCoversElement(container)) return;
+      releaseLucyScrollPin();
+      isUserScrolledUpRef.current = true;
+      noteLucyScrollPin(false);
+      setShowReturnToRecentConversation(true);
+    };
     const onTouchStart = (event: TouchEvent) => { touchY = event.touches[0]?.clientY ?? null; };
     const onTouchMove = (event: TouchEvent) => {
       const y = event.touches[0]?.clientY;
@@ -3095,11 +3111,10 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
       data-lucy-light={isLight ? 'true' : 'false'}
       data-lucy-search-active={isSearchOpen ? 'true' : 'false'}
       data-lucy-input-focused={isInputFocused ? 'true' : 'false'}
-      className={`lucy-chat-shell ${isLight ? 'light' : 'dark'} ${isSearchOpen ? 'lucy-search-active' : ''} ${isInputFocused ? 'lucy-input-focused' : ''} ${isMasterMode ? 'is-pro-theme' : ''} ${lucyDayPeriod === 'night' ? 'lucy-night' : 'lucy-daylight'} h-full min-h-0 flex-1 w-full max-w-[100vw] overflow-hidden overflow-x-hidden overscroll-x-none touch-pan-y flex flex-col font-sans select-text relative transition-colors duration-500`}
+      className={`lucy-chat-shell ${isLight ? 'light' : 'dark'} ${isSearchOpen ? 'lucy-search-active' : ''} ${isInputFocused ? 'lucy-input-focused' : ''} ${isMasterMode ? 'is-pro-theme' : ''} ${lucyDayPeriod === 'night' ? 'lucy-night' : 'lucy-daylight'} h-full min-h-0 flex-1 w-full max-w-full overflow-hidden overflow-x-clip overscroll-x-none flex flex-col font-sans select-text relative transition-colors duration-500`}
       style={{
-        overflowX: 'hidden',
-        maxWidth: '100vw',
-        touchAction: 'pan-y',
+        overflowX: 'clip',
+        maxWidth: '100%',
       }}
     >
       {/* 🌌 Shared AI/Plus sky background; clover accents belong to Pro modes only */}
