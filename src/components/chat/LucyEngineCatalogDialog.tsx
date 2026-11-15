@@ -117,7 +117,7 @@ export function LucyEngineCatalogDialog({ isOpen, onClose, isLight, sessionKey =
 
           <div ref={scroll.ref} onScroll={scroll.onScroll} data-app-scroll-root="" data-testid="lucy-engine-catalog-list" tabIndex={0}
             aria-label="엔진 목록, 세로로 스크롤할 수 있습니다" className="chat-library-scroll overflow-y-auto" aria-busy={renderedCount < filteredEngines.length}>
-            <div className="chat-library-toolbar shrink-0 border-b border-inherit px-4 py-2.5 sm:px-6">
+            <div className="chat-library-toolbar shrink-0 px-4 py-2.5 sm:px-6">
               <p id="lucy-engine-catalog-intro" className={`text-xs leading-relaxed sm:text-sm ${muted}`}>
                 <strong className={isLight ? 'text-slate-900' : 'text-white'}>{ENGINE_CATALOG_COUNTS.foundational}개 기초 도구</strong>와{' '}
                 <strong className={isLight ? 'text-slate-900' : 'text-white'}>{ENGINE_CATALOG_COUNTS.deep_master}개 심층 관점</strong>이 등록되어 있어요. 심층 관점은 전통·철학·신화·심리의 참고 렌즈이며, 각각 독립 계산기가 아닙니다.
