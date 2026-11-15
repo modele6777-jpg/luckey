@@ -1,17 +1,42 @@
 document.addEventListener('DOMContentLoaded', () => {
-  // Header geometry changes only on layout/font/inset updates, never per scroll.
+  // Use a stationary placeholder plus a compositor-fixed bar after its anchor
+  // passes the header. Safari can jitter two independent sticky layers.
   const keyHeader = document.querySelector('.top-nav');
-  if (keyHeader) {
-    const updateKeyHeaderHeight = () => {
+  const keyTabs = document.querySelector('.view-tabs-container');
+  if (keyHeader && keyTabs) {
+    const headerSpace = document.createElement('div');
+    headerSpace.className = 'key-header-space';
+    keyHeader.before(headerSpace);
+    keyHeader.classList.add('key-header-fixed');
+    const anchor = document.createElement('div');
+    anchor.className = 'key-tabs-anchor';
+    keyTabs.before(anchor);
+    anchor.append(keyTabs);
+    const marker = document.createElement('span');
+    marker.className = 'key-tabs-marker';
+    anchor.prepend(marker);
+    let pinAt = Infinity;
+    const syncPinned = () => keyTabs.classList.toggle('key-tabs-pinned', window.scrollY > pinAt);
+    const updateGeometry = () => {
       const height = Math.ceil(keyHeader.getBoundingClientRect().height);
-      const value = `${height}px`;
-      if (document.documentElement.style.getPropertyValue('--key-header-height') !== value) {
-        document.documentElement.style.setProperty('--key-header-height', value);
-      }
+      const rect = anchor.getBoundingClientRect();
+      document.documentElement.style.setProperty('--key-header-height', `${height}px`);
+      headerSpace.style.height = `${height}px`;
+      keyTabs.style.setProperty('--key-tabs-left', `${rect.left}px`);
+      keyTabs.style.setProperty('--key-tabs-width', `${rect.width}px`);
+      anchor.style.minHeight = `${keyTabs.offsetHeight}px`;
+      pinAt = rect.top + window.scrollY - height;
+      syncPinned();
     };
-    const keyHeaderObserver = new ResizeObserver(updateKeyHeaderHeight);
-    keyHeaderObserver.observe(keyHeader);
-    updateKeyHeaderHeight();
+    const observer = new ResizeObserver(updateGeometry);
+    observer.observe(keyHeader);
+    observer.observe(anchor);
+    observer.observe(keyTabs);
+    // Only a cached number comparison on scroll: no layout reads or CSS offsets.
+    window.addEventListener('scroll', syncPinned, { passive: true });
+    window.addEventListener('resize', updateGeometry);
+    window.addEventListener('pageshow', updateGeometry);
+    updateGeometry();
   }
 
   function naturalVoiceUrl(data) {

@@ -1,0 +1,12 @@
+/* A stable document anchor keeps scroll geometry unchanged when pinning tabs. */
+.key-tabs-anchor { position: relative; width: 100%; flex-shrink: 0; }
+.key-tabs-marker { position: absolute; top: 0; left: 0; width: 1px; height: 1px; pointer-events: none; }
+.key-tabs-anchor > .view-tabs-container { position: relative; top: auto; box-sizing: border-box; }
+.key-tabs-anchor > .view-tabs-container.key-tabs-pinned {
+  position: fixed; top: var(--key-header-height); left: var(--key-tabs-left, 0px);
+  width: var(--key-tabs-width, 100%); margin: 0;
+  transform: translateZ(0); backface-visibility: hidden;
+}
+
+.top-nav.key-header-fixed { position: fixed; top: 0; left: 0; width: 100%; box-sizing: border-box; transform: translateZ(0); backface-visibility: hidden; }
+.key-header-space { flex-shrink: 0; width: 100%; }
