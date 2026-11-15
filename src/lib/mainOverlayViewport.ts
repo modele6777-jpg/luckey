@@ -1,14 +1,47 @@
 import type { OverlayPane } from './overlayPane';
 export interface MainOverlayViewport { left: number; top: number; width: number; height: number }
 
+const VISUAL_WIDTH_TOLERANCE = 24;
+
+/**
+ * Keyboard shrink keeps the same width and may pan vertically.
+ * Unfolding changes width; iOS often leaves visualViewport at the cover size
+ * or at a stale offset, and intersecting with that hides the popup.
+ */
+export function visualViewportMatchesLayout(
+  layoutWidth: number,
+  layoutHeight: number,
+  visual: { width: number; height: number; offsetLeft: number; offsetTop: number } | null,
+): boolean {
+  if (!visual || visual.width < 48 || visual.height < 48) return false;
+  if (Math.abs(visual.width - layoutWidth) >= VISUAL_WIDTH_TOLERANCE) return false;
+  if (visual.offsetLeft < -2 || visual.offsetLeft > layoutWidth * 0.34) return false;
+  if (visual.offsetTop < -2 || visual.offsetTop > layoutHeight * 0.67) return false;
+  return true;
+}
+
+function paneElement(pane: Exclude<OverlayPane, 'main'>): HTMLElement | null {
+  const id = pane === 'content' ? 'duo-content-viewport' : 'duo-lucy-viewport';
+  return document.getElementById(id) ?? document.querySelector<HTMLElement>(`[data-workspace-pane="${pane}"]`);
+}
+
 /** The visible main canvas, with any overlapping navigation edge removed. */
 export function measureMainOverlayViewport(pane: OverlayPane = 'main'): MainOverlayViewport {
   if (typeof window === 'undefined' || typeof document === 'undefined') return { left: 0, top: 0, width: 0, height: 0 };
+  const layoutWidth = window.innerWidth;
+  const layoutHeight = window.innerHeight;
   const viewport = window.visualViewport;
-  const viewportLeft = viewport?.offsetLeft ?? 0;
-  const viewportTop = viewport?.offsetTop ?? 0;
-  const viewportRight = viewportLeft + (viewport?.width ?? window.innerWidth);
-  const viewportBottom = viewportTop + (viewport?.height ?? window.innerHeight);
+  const visual = viewport ? {
+    width: viewport.width,
+    height: viewport.height,
+    offsetLeft: viewport.offsetLeft,
+    offsetTop: viewport.offsetTop,
+  } : null;
+  const useVisual = visualViewportMatchesLayout(layoutWidth, layoutHeight, visual);
+  const viewportLeft = useVisual ? visual!.offsetLeft : 0;
+  const viewportTop = useVisual ? visual!.offsetTop : 0;
+  const viewportRight = viewportLeft + (useVisual ? visual!.width : layoutWidth);
+  const viewportBottom = viewportTop + (useVisual ? visual!.height : layoutHeight);
   const main = document.querySelector<HTMLElement>('.sites-pinned-main');
   const mainRect = main?.getBoundingClientRect();
   // A mounting/transitioning main can briefly have zero bounds. Never strand a
@@ -29,8 +62,7 @@ export function measureMainOverlayViewport(pane: OverlayPane = 'main'): MainOver
     }
   }
   if (pane !== 'main') {
-    const element = document.getElementById(pane === 'content' ? 'duo-content-viewport' : 'duo-lucy-viewport');
-    const rect = element?.getBoundingClientRect();
+    const rect = paneElement(pane)?.getBoundingClientRect();
     if (rect && rect.width > 0 && rect.height > 0) {
       left = Math.max(left, rect.left); top = Math.max(top, rect.top);
       right = Math.min(right, rect.right); bottom = Math.min(bottom, rect.bottom);
@@ -40,6 +72,7 @@ export function measureMainOverlayViewport(pane: OverlayPane = 'main'): MainOver
   const height = Math.max(0, bottom - top);
   // A zero intersection hides the dialog completely. Fall back to the visible main canvas.
   if ((width < 48 || height < 48) && pane !== 'main') return measureMainOverlayViewport('main');
+  if (width < 48 || height < 48) return { left: 0, top: 0, width: layoutWidth, height: layoutHeight };
   return { left, top, width, height };
 }
 

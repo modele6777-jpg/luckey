@@ -774,8 +774,29 @@ html[data-lucy-theme='starlight'] .lucy-night .lucy-voice-status { background: #
   min-height: calc(74px + max(2px, env(safe-area-inset-bottom, 0px))) !important;
   height: auto !important;
   max-height: none !important;
-  overflow-x: hidden !important;
+  overflow-x: clip !important;
   overflow-y: visible !important;
+}
+/* backdrop-filter on the same element as the buttons swallows taps on iOS. */
+.lucy-chat-header.backdrop-blur-xl,
+.lucy-chat-footer.backdrop-blur-xl {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+.lucy-chat-header.backdrop-blur-xl::before,
+.lucy-chat-footer.backdrop-blur-xl::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+.lucy-chat-header.backdrop-blur-xl > *,
+.lucy-chat-footer.backdrop-blur-xl > * {
+  position: relative;
+  z-index: 1;
 }
 .lucy-input-stack {
   width: 100% !important;
@@ -788,7 +809,7 @@ html[data-lucy-theme='starlight'] .lucy-night .lucy-voice-status { background: #
   height: 24px !important;
   min-height: 24px !important;
   max-height: 26px !important;
-  overflow: hidden;
+  overflow: clip !important;
 }
 .lucy-chat-shell[data-lucy-light='true'] .lucy-engine-list-button {
   color: #78350f !important;

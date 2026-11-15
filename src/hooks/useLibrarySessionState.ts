@@ -18,7 +18,11 @@ function read<T extends Value>(key: string, initial: T): T {
 }
 function write(key: string, value: Value) {
   values.set(key, value);
-  safeSessionStorage.setItem(storageKey(key), JSON.stringify(value));
+  try {
+    safeSessionStorage.setItem(storageKey(key), JSON.stringify(value));
+  } catch {
+    // iOS can reject sessionStorage. The open flag still has to reach the dialog.
+  }
   listeners.get(key)?.forEach(notify => notify());
 }
 
