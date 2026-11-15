@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Sparkles, X, Check } from 'lucide-react';
-import { SpecialChannel } from '@/pages/LucyStandalonePage';
+import type { SpecialChannel } from '@/pages/LucyStandalonePage';
 
 export type LucyChatMode = 'auto' | SpecialChannel | 'casual' | 'master';
 
