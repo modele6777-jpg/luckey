@@ -54,3 +54,16 @@ export function getUsedEngineThemeBadges(engineKeys: readonly string[]): EngineT
     }];
   });
 }
+
+/** Keep related engines together in the same order as the channel theme legend. */
+export function groupEnginesByTheme<T extends { toolId: string }>(engines: readonly T[]) {
+  const themes = getUsedEngineThemeBadges(engines.map(engine => engine.toolId));
+  const groups = themes.map(theme => ({
+    key: theme.theme as string,
+    label: `${theme.emoji} ${theme.label}`,
+    engines: engines.filter(engine => getEngineBadgeTheme(engine.toolId)?.theme === theme.theme),
+  }));
+  const unknown = engines.filter(engine => !getEngineBadgeTheme(engine.toolId));
+  if (unknown.length) groups.push({ key: 'other', label: '기타 참고', engines: unknown });
+  return groups;
+}

@@ -69,7 +69,7 @@ import { LucyCosmicBackground } from '@/components/chat/LucyCosmicBackground';
 import { ALL_DCE_ENGINES } from '@/lib/divination/deterministicEngine';
 import { LUCY_PRO_CATALOG_ENGINES } from '@/lib/divination/engineCatalog';
 import { groupActuallyUsedCalculationAudit } from '@/lib/divination/calculationAudit';
-import { getEngineBadgeTheme, getUsedEngineThemeBadges } from '@/lib/divination/engineBadgeTheme';
+import { getEngineBadgeTheme, getUsedEngineThemeBadges, groupEnginesByTheme } from '@/lib/divination/engineBadgeTheme';
 import '@/styles/lucy-starlight.css';
 
 // Helper: Compress uploaded images to prevent UI stutter and huge payload overhead
@@ -3835,19 +3835,22 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
                             key={group.status}
                             data-testid="used-engine-category-group"
                             data-engine-category={group.status}
-                            className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1"
+                            className="flex min-w-0 flex-col gap-2"
                           >
                             <span data-testid="used-engine-category-label" className="shrink-0 font-semibold">{group.label}:</span>
-                            <ul className="flex min-w-0 max-w-full flex-wrap gap-1.5">
-                              {group.engines.map((engine, engineIndex) => {
+                            {groupEnginesByTheme(group.engines).map(themeGroup => (
+                            <div key={themeGroup.key} data-engine-theme-group={themeGroup.key} className="min-w-0 rounded-lg border border-current/10 p-2">
+                              <div className="mb-1.5 text-[10px] font-semibold opacity-70">{themeGroup.label}</div>
+                              <ul className="grid min-w-0 grid-cols-1 gap-1.5 sm:grid-cols-2">
+                              {themeGroup.engines.map((engine, engineIndex) => {
                                 const engineBadgeTheme = getEngineBadgeTheme(engine.toolId);
                                 return (
-                                  <li key={`${engine.toolId}-${engineIndex}`} className="max-w-full">
+                                  <li key={`${engine.toolId}-${engineIndex}`} className="min-w-0 max-w-full">
                                     <span
                                       data-testid="used-engine-badge"
                                       data-engine-key={engine.toolId}
                                       data-engine-theme={engineBadgeTheme?.theme}
-                                      className={`inline-flex max-w-full items-center rounded-full border px-2.5 py-1 text-[10px] font-medium leading-5 ${engineBadgeTheme ? '' : isLight ? 'border-slate-200 bg-slate-100 text-slate-800' : 'border-white/20 bg-white/10 text-slate-100'}`}
+                                      className={`inline-flex w-full max-w-full items-center rounded-lg border px-2.5 py-1.5 text-[10px] font-medium leading-relaxed ${engineBadgeTheme ? '' : isLight ? 'border-slate-200 bg-slate-100 text-slate-800' : 'border-white/20 bg-white/10 text-slate-100'}`}
                                       style={engineBadgeTheme ? {
                                         backgroundColor: engineBadgeTheme.backgroundColor,
                                         color: engineBadgeTheme.color,
@@ -3859,7 +3862,9 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
                                   </li>
                                 );
                               })}
-                            </ul>
+                              </ul>
+                            </div>
+                            ))}
                           </div>
                         ))}
                       </div>
