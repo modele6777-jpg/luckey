@@ -6051,9 +6051,14 @@ test('Michel de Montaigne Essays Engine: calculates Epistemic Humility, Candid S
   assert(rep.humanConditionAcceptanceScore >= 0 && rep.humanConditionAcceptanceScore <= 100);
   assert(rep.innerFreedomSanctuaryIndex >= 0 && rep.innerFreedomSanctuaryIndex <= 100);
   assert(rep.activeMontaigneTheme.themeTitleKo.length > 0);
+  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(rep.montaigneSynthesisMatrix?.integratedAction));
   const prompt = formatFrenchMichelDeMontaigneEssaysPrompt(rep);
   assert(prompt.includes('미셸 드 몽테뉴 《수상록(Les Essais)》 "내가 무엇을 아는가" 지혜 지표'));
   assert(prompt.includes(rep.activeMontaigneTheme.themeTitleKo));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
 });
 
 test('Ohseong and Haneum Friendship Governance Engine: calculates Lifelong Moral Friendship, Crisis Governance, and Humor Wit Magnanimity', () => {
@@ -6508,9 +6513,12 @@ test('Roland Barthes Semiotics and Punctum Engine: calculates Punctum Intuition,
   assert(rep.plaisirDuTexteSensualDelightIndex >= 0 && rep.plaisirDuTexteSensualDelightIndex <= 100);
   assert(rep.polyphonicSignifierFluidityScore >= 0 && rep.polyphonicSignifierFluidityScore <= 100);
   assert(rep.activeBarthesTheme.themeTitleKo.length > 0);
+  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(rep.barthesSynthesisMatrix?.integratedAction));
   const prompt = formatFrenchRolandBarthesSemioticsPunctumPrompt(rep);
   assert(prompt.includes('롤랑 바르트 《신화론》·《밝은 방》 푼크툼(Punctum)·기호학 지표'));
   assert(prompt.includes(rep.activeBarthesTheme.themeTitleKo));
+  assert(prompt.includes('교차 매트릭스'));
 });
 
 test('John Dewey Pragmatic Inquiry and Growth Engine: calculates qualitative Reflective Inquiry and Growth guidance', () => {
@@ -6629,9 +6637,14 @@ test('Victor Hugo Les Miserables Engine: calculates Mercy, Conscience, and Human
   assert(rep.cosmicJusticeIdealIndex >= 0 && rep.cosmicJusticeIdealIndex <= 100);
   assert(rep.indomitableHeroicResilience >= 0 && rep.indomitableHeroicResilience <= 100);
   assert(rep.activeHugoTheme.themeTitleKo.length > 0);
+  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(rep.hugoSynthesisMatrix?.integratedAction));
   const prompt = formatFrenchVictorHugoLesMiserablesPrompt(rep);
   assert(prompt.includes('빅토르 위고 《레 미제라블》 자비와 도덕적 양심·인도주의 지표'));
   assert(prompt.includes(rep.activeHugoTheme.themeTitleKo));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
 });
 
 test('Heo Gyun Hong Gildong & Yuldoguk Engine: calculates Talent Liberation, Homin Spirit, and Pioneer Agency', () => {

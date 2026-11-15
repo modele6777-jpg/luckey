@@ -8,7 +8,7 @@
  * 4. 텍스트의 즐거움 및 유희적 몰입 지수 (Plaisir du Texte & Jouissance Delight Index): 빡빡한 의무감과 메마른 기능주의를 넘어 배움과 일, 삶의 순간 자체에서 깊은 지적·감각적 희열을 향유하는 능력.
  * 5. 다의적 기표(Signifiant) 유연성 및 열린 해석력 (Polyphonic Signifier Fluidity & Open Horizon Score): 단 하나의 완결된 결론으로 문을 닫지 않고, 끊임없이 확장되는 다채로운 가능성의 결을 기쁘게 음미하는 유연성.
  *
- * @version LUCKEY-ROLAND-BARTHES-SEMIOTICS-PUNCTUM-v1.0.0
+ * @version LUCKEY-ROLAND-BARTHES-SEMIOTICS-PUNCTUM-v2.1.0
  */
 
 import type { UserProfile } from '../sharedState';
@@ -49,6 +49,11 @@ export interface FrenchRolandBarthesSemioticsPunctumResult {
   barthesComprehensiveGuidance: {
     guidanceTitle: string;
     philosophicalCounsel: string;
+  };
+  barthesSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
   };
 }
 
@@ -129,6 +134,16 @@ function describeBarthesStage(score: number): string {
   return '조용한 감응의 결을 음미하며 여백을 여는 단계';
 }
 
+function formatBarthesKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
+
 export function calculateFrenchRolandBarthesSemioticsPunctum(
   profile?: UserProfile,
   query?: string,
@@ -173,9 +188,18 @@ export function calculateFrenchRolandBarthesSemioticsPunctum(
   const interpretiveBoundary =
     '롤랑 바르트의 기호학·푼크툼 관점은 미래를 단정하거나 수치로 재단하는 도구가 아니라, 상투적 통념을 넘어 자기만의 감응과 의미를 읽는 상징적 렌즈입니다.';
 
+  const barthesSynthesisMatrix = {
+    dominantTension: `${activeBarthesTheme.themeTitleKo} ↔ ${focalBarthesAphorism.sourceContext}`,
+    alignmentState:
+      punctumAffectiveIntuitionScore >= 94 && mythologicalDemythologizationIndex >= 93
+        ? '푼크툼 직관과 탈신화화 비평의 고차원 공명'
+        : '통념을 걷어 내고 주체적 의미의 여백을 여는 국면',
+    integratedAction: `${dailyPracticeRitual} (${focalBarthesAphorism.actionGuidance})`,
+  };
+
   return {
     engineVersion: FRENCH_ROLAND_BARTHES_SEMIOTICS_PUNCTUM_VERSION,
-    calculatedAtKst: now.toISOString(),
+    calculatedAtKst: formatBarthesKstTimestamp(now),
     punctumAffectiveIntuitionScore,
     mythologicalDemythologizationIndex,
     deathOfAuthorScriptibleReaderScore,
@@ -190,14 +214,16 @@ export function calculateFrenchRolandBarthesSemioticsPunctum(
       guidanceTitle,
       philosophicalCounsel,
     },
+    barthesSynthesisMatrix,
   };
 }
 
 export function formatFrenchRolandBarthesSemioticsPunctumPrompt(
   res: FrenchRolandBarthesSemioticsPunctumResult,
 ): string {
-  return [
+  const lines = [
     `【롤랑 바르트 《신화론》·《밝은 방》 푼크툼(Punctum)·기호학 지표】`,
+    `- 엔진 버전: ${res.engineVersion} | 연산 시각: ${res.calculatedAtKst}`,
     `- 푼크툼 영혼 관통 직관 및 감응력(Punctum): ${describeBarthesStage(res.punctumAffectiveIntuitionScore)}`,
     `- 현대 신화의 기호학적 탈신화화력: ${describeBarthesStage(res.mythologicalDemythologizationIndex)}`,
     `- 저자의 죽음 및 능동적 재창조 독해력: ${describeBarthesStage(res.deathOfAuthorScriptibleReaderScore)}`,
@@ -213,5 +239,12 @@ export function formatFrenchRolandBarthesSemioticsPunctumPrompt(
     `- 성찰 질문: ${res.reflectiveQuestion}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
     `- 종합 바르트 권면: ${res.barthesComprehensiveGuidance.philosophicalCounsel}`,
-  ].join('\n');
+  ];
+  if (res.barthesSynthesisMatrix) {
+    lines.push(
+      `- 교차 매트릭스 [핵심 긴장: ${res.barthesSynthesisMatrix.dominantTension} | 조율 상태: ${res.barthesSynthesisMatrix.alignmentState}]`,
+      `- 통합 실천: ${res.barthesSynthesisMatrix.integratedAction}`,
+    );
+  }
+  return lines.join('\n');
 }
