@@ -26,7 +26,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const PYTHAGOREAN_TETRAKTYS_VERSION = 'LUCKEY-PYTHAGOREAN-TETRAKTYS-v1.0.0';
+export const PYTHAGOREAN_TETRAKTYS_VERSION = 'LUCKEY-PYTHAGOREAN-TETRAKTYS-v2.0.0';
 
 export interface TetraktysLevelDistribution {
   monadIdeaWeight: number;         // 0 ~ 100% 모나드(영감/의도)
@@ -45,24 +45,51 @@ export interface GematriaHarmonicSignature {
 export interface PythagoreanTetraktysReport {
   engineVersion: string;
   calculatedAt: string;
+  calculatedAtKst: string;
   harmonicSignature: GematriaHarmonicSignature;
   tetraktysDistribution: TetraktysLevelDistribution;
   realityManifestationIndex: number; // 0 ~ 100 현실 물질화 지수
   manifestationObstacleBreakthrough: string;
   sacredGeometryAffirmation: string;
   synthesisMessage: string;
+  tetraktysSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
 }
 
-export function calculatePythagoreanTetraktys(profile?: UserProfile): PythagoreanTetraktysReport {
-  const now = new Date();
+function formatTetraktysKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
+
+function describeTetraktysStage(score: number): string {
+  if (score >= 86) return '데카드 완성기(Decad Manifestation) — 1·2·3·4의 신성 기하가 현실의 구체적 결실로 단단히 구현되는 시기';
+  if (score >= 74) return '트리아드 조율기(Triad Harmonics) — 영감과 동기가 조화로운 구조로 엮여 실행으로 넘어가는 시기';
+  return '모나드 점화기(Monad Ignition) — 순수 의도의 불꽃을 먼저 명료하게 다듬어 방향을 세우는 시기';
+}
+
+export function calculatePythagoreanTetraktys(
+  profile?: UserProfile,
+  query?: string,
+  now: Date = new Date(),
+): PythagoreanTetraktysReport {
   const birthStr = profile?.basic?.birthdate || '1990-01-01';
   const nameStr = profile?.basic?.name || 'Pythagoras';
+  const queryStr = query || '';
 
   // 생년월일 숫자 합산
   const digits = birthStr.replace(/\D/g, '');
   let sum = 0;
   for (let i = 0; i < digits.length; i++) sum += parseInt(digits[i], 10);
   for (let i = 0; i < nameStr.length; i++) sum += (nameStr.charCodeAt(i) % 9) + 1;
+  for (let i = 0; i < queryStr.length; i++) sum += (queryStr.charCodeAt(i) % 9) + 1;
 
   // 마스터 넘버(11, 22) 보존 감안
   let root = sum;
@@ -116,11 +143,18 @@ export function calculatePythagoreanTetraktys(profile?: UserProfile): Pythagorea
 
   const sacredGeometryAffirmation = `테트락티스의 10대 성스러운 빛이여, 내 머릿속의 영감을 굳건한 현실의 대지 위에 아름다운 실체로 세우소서.`;
 
-  const synthesisMessage = `피타고라스 테트락티스 기하학에 따르면, 당신의 영혼 루트수는 [${soulRootNumber}]이며 현재 [${dominantTier}]에 있습니다. 현실 물질화 지수(${realityManifestationIndex}점)에 맞춰 "${manifestationObstacleBreakthrough}"`;
+  const synthesisMessage = `피타고라스 테트락티스 기하학에 따르면, 당신의 영혼 루트수는 [${soulRootNumber}]이며 현재 [${dominantTier}]에 있습니다. ${describeTetraktysStage(realityManifestationIndex)} 흐름에 맞춰 "${manifestationObstacleBreakthrough}"`;
+  const calculatedAtKst = formatTetraktysKstTimestamp(now);
+  const tetraktysSynthesisMatrix = {
+    dominantTension: `${dominantTier} ↔ ${sacredRatio.name}`,
+    alignmentState: describeTetraktysStage(realityManifestationIndex),
+    integratedAction: `${manifestationObstacleBreakthrough}${queryStr.trim() ? ` [질문 맥락: ${queryStr.trim()}]` : ''}`,
+  };
 
   return {
     engineVersion: PYTHAGOREAN_TETRAKTYS_VERSION,
     calculatedAt: now.toISOString(),
+    calculatedAtKst,
     harmonicSignature: {
       soulRootNumber,
       sacredRatioName: sacredRatio.name,
@@ -137,19 +171,27 @@ export function calculatePythagoreanTetraktys(profile?: UserProfile): Pythagorea
     manifestationObstacleBreakthrough,
     sacredGeometryAffirmation,
     synthesisMessage,
+    tetraktysSynthesisMatrix,
   };
 }
 
 export function formatPythagoreanTetraktysPrompt(report: PythagoreanTetraktysReport): string {
-  return `### 📐 피타고라스 테트락티스 10대 신성기하 & 게마트리아 엔진 (${PYTHAGOREAN_TETRAKTYS_VERSION})
-- **영혼 루트수 (Soul Root)**: **${report.harmonicSignature.soulRootNumber}** [신성 화음비: ${report.harmonicSignature.sacredRatioName}]
-  - 우주적 화음 상징: ${report.harmonicSignature.cosmicHarmonicMeaning}
-- **테트락티스 4대 창조 층위 에너지 분배**:
-  - 1층 모나드(영감) ${report.tetraktysDistribution.monadIdeaWeight}% | 2층 디아드(동기/관계) ${report.tetraktysDistribution.dyadPolarityWeight}%
-  - 3층 트리아드(구조/조화) ${report.tetraktysDistribution.triadHarmonyWeight}% | 4층 테트라드(현실구현) ${report.tetraktysDistribution.tetradManifestWeight}%
-  - 현재 주도 층위: **${report.tetraktysDistribution.dominantTier}**
-- **현실 물질화 지수 (Reality Manifestation Index)**: **${report.realityManifestationIndex}점**
-  - 물질화 돌파 지침: ${report.manifestationObstacleBreakthrough}
-  - 신성 기하 확언문: "${report.sacredGeometryAffirmation}"
-- **테트락티스 통합 결론**: ${report.synthesisMessage}`;
+  const lines = [
+    `### 📐 피타고라스 테트락티스 10대 신성기하 & 게마트리아 엔진 (${PYTHAGOREAN_TETRAKTYS_VERSION})`,
+    `- **연산 시각**: ${report.calculatedAtKst}`,
+    `- **영혼 루트수 (Soul Root)**: **${report.harmonicSignature.soulRootNumber}** [신성 화음비: ${report.harmonicSignature.sacredRatioName}]`,
+    `  - 우주적 화음 상징: ${report.harmonicSignature.cosmicHarmonicMeaning}`,
+    `- **테트락티스 창조 국면**: ${describeTetraktysStage(report.realityManifestationIndex)}`,
+    `- **현재 주도 층위**: **${report.tetraktysDistribution.dominantTier}**`,
+    `- **물질화 돌파 지침**: ${report.manifestationObstacleBreakthrough}`,
+    `- **신성 기하 확언문**: "${report.sacredGeometryAffirmation}"`,
+    `- **테트락티스 통합 결론**: ${report.synthesisMessage}`,
+  ];
+  if (report.tetraktysSynthesisMatrix) {
+    lines.push(
+      `- **교차 매트릭스**: [핵심 긴장: ${report.tetraktysSynthesisMatrix.dominantTension} | 조율 상태: ${report.tetraktysSynthesisMatrix.alignmentState}]`,
+      `- **통합 실천**: ${report.tetraktysSynthesisMatrix.integratedAction}`,
+    );
+  }
+  return lines.join('\n');
 }
