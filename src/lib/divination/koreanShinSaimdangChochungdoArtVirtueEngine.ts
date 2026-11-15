@@ -8,12 +8,12 @@
  * 4. 소박함 속의 고결한 품격 지표 (Modest Elegance & Quiet Rectitude Index): 화려함을 좇지 않고 단아하고 청초한 인품으로 삶의 균형과 단단한 중심을 지키는 품격.
  * 5. 현명한 감화 및 동반성장 지혜 지표 (Nurturing Wisdom & Co-Evolution Score): 강요와 억압 없이 온화한 모범과 덕성으로 주변 인연을 올바르게 성장시키는 지혜.
  *
- * @version LUCKEY-SHIN-SAIMDANG-CHOCHUNGDO-ART-VIRTUE-v1.0.0
+ * @version LUCKEY-SHIN-SAIMDANG-CHOCHUNGDO-ART-VIRTUE-v2.0.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const KOREAN_SHIN_SAIMDANG_CHOCHUNGDO_ART_VIRTUE_VERSION = 'LUCKEY-SHIN-SAIMDANG-CHOCHUNGDO-ART-VIRTUE-v1.0.0';
+export const KOREAN_SHIN_SAIMDANG_CHOCHUNGDO_ART_VIRTUE_VERSION = 'LUCKEY-SHIN-SAIMDANG-CHOCHUNGDO-ART-VIRTUE-v2.0.0';
 
 export interface SaimdangTheme {
   themeKey: string;
@@ -47,6 +47,27 @@ export interface KoreanShinSaimdangChochungdoArtVirtueResult {
     guidanceTitle: string;
     philosophicalCounsel: string;
   };
+  saimdangSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
+}
+
+function formatSaimdangKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
+
+function describeSaimdangStage(score: number): string {
+  if (score >= 94) return '화육조화(化育調和) — 자연의 미세한 숨결과 주체적 예술·덕성이 온화하게 꽃피는 성숙기';
+  if (score >= 90) return '염담수덕(恬淡修德) — 소박함 속의 맑은 기품과 지극한 성심으로 중심을 잡는 정돈기';
+  return '초충관조(草蟲觀照) — 작은 디테일과 근본의 온기에서 삶의 지혜를 길어 올리는 관찰기';
 }
 
 export const SAIMDANG_THEMES: SaimdangTheme[] = [
@@ -130,6 +151,7 @@ function hashString(str: string): number {
 export function calculateKoreanShinSaimdangChochungdoArtVirtue(
   profile?: UserProfile,
   query?: string,
+  now: Date = new Date(),
 ): KoreanShinSaimdangChochungdoArtVirtueResult {
   const p = profile as any;
   const name = profile?.basic?.name ?? p?.name ?? '남희';
@@ -161,9 +183,24 @@ export function calculateKoreanShinSaimdangChochungdoArtVirtue(
     `${activeSaimdangTheme.practicalCounsel} 신사임당의 불후의 잠언 "${focalSaimdangAphorism.aphorismKo}" (${focalSaimdangAphorism.aphorismHanja})를 마음에 품고, ` +
     `${focalSaimdangAphorism.actionGuidance}`;
 
+  const calculatedAtKst = formatSaimdangKstTimestamp(now);
+  const avgScore = Math.round(
+    (natureVitalityContemplationScore +
+      filialPietyAffectionIndex +
+      sageSelfRealizationScore +
+      modestEleganceIndex +
+      nurturingWisdomScore) /
+      5,
+  );
+  const saimdangSynthesisMatrix = {
+    dominantTension: `${activeSaimdangTheme.themeTitleKo} ↔ ${focalSaimdangAphorism.sourceContext}`,
+    alignmentState: describeSaimdangStage(avgScore),
+    integratedAction: `${focalSaimdangAphorism.actionGuidance}${query?.trim() ? ` [질문 맥락: ${query.trim()}]` : ''}`,
+  };
+
   return {
     engineVersion: KOREAN_SHIN_SAIMDANG_CHOCHUNGDO_ART_VIRTUE_VERSION,
-    calculatedAtKst: new Date().toISOString(),
+    calculatedAtKst,
     natureVitalityContemplationScore,
     filialPietyAffectionIndex,
     sageSelfRealizationScore,
@@ -175,19 +212,25 @@ export function calculateKoreanShinSaimdangChochungdoArtVirtue(
       guidanceTitle,
       philosophicalCounsel,
     },
+    saimdangSynthesisMatrix,
   };
 }
 
 export function formatKoreanShinSaimdangChochungdoArtVirtuePrompt(
   res: KoreanShinSaimdangChochungdoArtVirtueResult,
 ): string {
-  return [
+  const avgScore = Math.round(
+    (res.natureVitalityContemplationScore +
+      res.filialPietyAffectionIndex +
+      res.sageSelfRealizationScore +
+      res.modestEleganceIndex +
+      res.nurturingWisdomScore) /
+      5,
+  );
+  const lines = [
     `【신사임당 《초충도》 자연관조 및 현철자아실현 지표】`,
-    `- 자연관조 화육생명 통찰(Nature Vitality & Contemplation): ${res.natureVitalityContemplationScore}/100`,
-    `- 지극한 효애성심 및 가족화합(Filial Piety & Concord): ${res.filialPietyAffectionIndex}/100`,
-    `- 현철 자아실현 및 주체적 기품(Sage Self-Realization & Dignity): ${res.sageSelfRealizationScore}/100`,
-    `- 소박함 속의 고결한 품격(Modest Elegance & Rectitude): ${res.modestEleganceIndex}/100`,
-    `- 현명한 감화 및 동반성장(Nurturing Wisdom & Co-Evolution): ${res.nurturingWisdomScore}/100`,
+    `- 연산 시각: ${res.calculatedAtKst} | 엔진: ${res.engineVersion}`,
+    `- 초충도·현철 국면: ${describeSaimdangStage(avgScore)}`,
     `- 핵심 신사임당 테마: ${res.activeSaimdangTheme.themeTitleKo} [${res.activeSaimdangTheme.themeTitleEn}]`,
     `- 실천적 통찰: ${res.activeSaimdangTheme.pragmaticInsight}`,
     `- 행동 조언: ${res.activeSaimdangTheme.practicalCounsel}`,
@@ -195,5 +238,12 @@ export function formatKoreanShinSaimdangChochungdoArtVirtuePrompt(
     `- 원전 출처: [${res.focalSaimdangAphorism.sourceContext}]`,
     `- 구체적 실천 지침: ${res.focalSaimdangAphorism.actionGuidance}`,
     `- 종합 신사임당 권면: ${res.saimdangComprehensiveGuidance.philosophicalCounsel}`,
-  ].join('\n');
+  ];
+  if (res.saimdangSynthesisMatrix) {
+    lines.push(
+      `- 교차 매트릭스 [핵심 긴장: ${res.saimdangSynthesisMatrix.dominantTension} | 조율 상태: ${res.saimdangSynthesisMatrix.alignmentState}]`,
+      `- 통합 실천: ${res.saimdangSynthesisMatrix.integratedAction}`,
+    );
+  }
+  return lines.join('\n');
 }

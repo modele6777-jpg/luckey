@@ -8,12 +8,12 @@
  * 4. 남해 유배의 풍파 속 지극한 효심과 문학적 승화도 (Filial Devotion & Literary Sublimation Score): 귀양지의 처절한 고난 속에서도 홀어머니의 근심을 덜고자 명작을 써 내려간 지극한 효성과 승화력.
  * 5. 세속의 성패를 초월한 초연한 심신 회복탄력성 (Transcendent Equanimity & Serene Resilience Score): 득실과 영화, 궁달의 기복에 일희일비하지 않고 허공처럼 맑은 평정을 유지하는 회복탄력성.
  *
- * @version LUCKEY-SEOPO-KIM-MAN-JUNG-GUUNMONG-AWAKENING-v1.0.0
+ * @version LUCKEY-SEOPO-KIM-MAN-JUNG-GUUNMONG-AWAKENING-v2.0.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const KOREAN_SEOPO_KIM_MAN_JUNG_GUUNMONG_AWAKENING_VERSION = 'LUCKEY-SEOPO-KIM-MAN-JUNG-GUUNMONG-AWAKENING-v1.0.0';
+export const KOREAN_SEOPO_KIM_MAN_JUNG_GUUNMONG_AWAKENING_VERSION = 'LUCKEY-SEOPO-KIM-MAN-JUNG-GUUNMONG-AWAKENING-v2.0.0';
 
 export interface GuunmongTheme {
   themeKey: string;
@@ -47,6 +47,27 @@ export interface KoreanSeopoKimManJungGuunmongAwakeningResult {
     guidanceTitle: string;
     philosophicalCounsel: string;
   };
+  guunmongSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
+}
+
+function formatGuunmongKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
+
+function describeGuunmongStage(score: number): string {
+  if (score >= 95) return '몽각불이(夢覺不二) — 일장춘몽을 꿰뚫어 본 성진의 맑은 본래면목과 효심이 합일된 각성기';
+  if (score >= 91) return '반야공관(般若空觀) — 세속의 성패와 모함에 흔들리지 않는 초연한 평정기';
+  return '입몽성찰(入夢省察) — 화려한 영욕 너머의 본질을 조용히 비추어 보는 정돈기';
 }
 
 export const GUUNMONG_THEMES: GuunmongTheme[] = [
@@ -123,6 +144,7 @@ function hashString(str: string): number {
 export function calculateKoreanSeopoKimManJungGuunmongAwakening(
   profile?: UserProfile,
   query?: string,
+  now: Date = new Date(),
 ): KoreanSeopoKimManJungGuunmongAwakeningResult {
   const p = profile as any;
   const name = profile?.basic?.name ?? p?.name ?? '남희';
@@ -154,9 +176,24 @@ export function calculateKoreanSeopoKimManJungGuunmongAwakening(
     `${activeGuunmongTheme.practicalCounsel} 서포 선생의 가르침 "${focalGuunmongAphorism.aphorismKo}" [${focalGuunmongAphorism.aphorismHanja}]을 마음에 품고, ` +
     `${focalGuunmongAphorism.actionGuidance}`;
 
+  const calculatedAtKst = formatGuunmongKstTimestamp(now);
+  const avgScore = Math.round(
+    (guunmongIllusoryFamePenetrationScore +
+      prajnaparamitaVoidTrueSelfIndex +
+      righteousIntegrityMoralFidelityIndex +
+      filialDevotionLiterarySublimationScore +
+      transcendentEquanimityResilience) /
+      5,
+  );
+  const guunmongSynthesisMatrix = {
+    dominantTension: `${activeGuunmongTheme.themeTitleKo} ↔ ${focalGuunmongAphorism.sourceContext}`,
+    alignmentState: describeGuunmongStage(avgScore),
+    integratedAction: `${focalGuunmongAphorism.actionGuidance}${query?.trim() ? ` [질문 맥락: ${query.trim()}]` : ''}`,
+  };
+
   return {
     engineVersion: KOREAN_SEOPO_KIM_MAN_JUNG_GUUNMONG_AWAKENING_VERSION,
-    calculatedAtKst: new Date().toISOString(),
+    calculatedAtKst,
     guunmongIllusoryFamePenetrationScore,
     prajnaparamitaVoidTrueSelfIndex,
     righteousIntegrityMoralFidelityIndex,
@@ -168,19 +205,25 @@ export function calculateKoreanSeopoKimManJungGuunmongAwakening(
       guidanceTitle,
       philosophicalCounsel,
     },
+    guunmongSynthesisMatrix,
   };
 }
 
 export function formatKoreanSeopoKimManJungGuunmongAwakeningPrompt(
   res: KoreanSeopoKimManJungGuunmongAwakeningResult,
 ): string {
-  return [
+  const avgScore = Math.round(
+    (res.guunmongIllusoryFamePenetrationScore +
+      res.prajnaparamitaVoidTrueSelfIndex +
+      res.righteousIntegrityMoralFidelityIndex +
+      res.filialDevotionLiterarySublimationScore +
+      res.transcendentEquanimityResilience) /
+      5,
+  );
+  const lines = [
     `【서포 김만중 《구운몽·사씨남정기》 일장춘몽 각성·반야공관 지표】`,
-    `- 일장춘몽 세속 영화 허상 직시도(Illusory Fame Penetration): ${res.guunmongIllusoryFamePenetrationScore}/100`,
-    `- 금강경 반야공관 및 본래면목 회복 지수(Prajnaparamita Void & True Self): ${res.prajnaparamitaVoidTrueSelfIndex}/100`,
-    `- 사씨남정기 정경순결 및 도의적 신의 지표(Righteous Integrity & Fidelity): ${res.righteousIntegrityMoralFidelityIndex}/100`,
-    `- 지극한 효심과 시련의 문학적 승화도(Filial Devotion & Sublimation): ${res.filialDevotionLiterarySublimationScore}/100`,
-    `- 세속 성패를 초월한 초연한 회복탄력성(Transcendent Equanimity Resilience): ${res.transcendentEquanimityResilience}/100`,
+    `- 연산 시각: ${res.calculatedAtKst} | 엔진: ${res.engineVersion}`,
+    `- 구운몽 각성 국면: ${describeGuunmongStage(avgScore)}`,
     `- 핵심 구운몽 테마: ${res.activeGuunmongTheme.themeTitleKo} [${res.activeGuunmongTheme.themeTitleEn}]`,
     `- 각성적 통찰: ${res.activeGuunmongTheme.awakeningInsight}`,
     `- 행동 조언: ${res.activeGuunmongTheme.practicalCounsel}`,
@@ -188,5 +231,12 @@ export function formatKoreanSeopoKimManJungGuunmongAwakeningPrompt(
     `- 원전 출처: [${res.focalGuunmongAphorism.sourceContext}]`,
     `- 구체적 실천 지침: ${res.focalGuunmongAphorism.actionGuidance}`,
     `- 종합 서포 권면: ${res.guunmongComprehensiveGuidance.philosophicalCounsel}`,
-  ].join('\n');
+  ];
+  if (res.guunmongSynthesisMatrix) {
+    lines.push(
+      `- 교차 매트릭스 [핵심 긴장: ${res.guunmongSynthesisMatrix.dominantTension} | 조율 상태: ${res.guunmongSynthesisMatrix.alignmentState}]`,
+      `- 통합 실천: ${res.guunmongSynthesisMatrix.integratedAction}`,
+    );
+  }
+  return lines.join('\n');
 }

@@ -9,12 +9,12 @@
  * 4. 유불도 삼교 원융 회통력(Confucian-Buddhist-Taoist Syncretic Harmony Index): 유교의 의리, 불교의 무상과 자비, 도교의 무위자연을 두루 꿰뚫어 사유의 담벼락을 허무는 원융무애한 지혜.
  * 5. 청한 고독 내면 승화도(Cheonghan Solitude Transcendence Score): 금오산과 수락산, 관악산의 거친 산하 속에서도 차(茶)와 시(詩)로 고독을 맑은 영성으로 벼려낸 예술적 내공.
  *
- * @version LUCKEY-KIM-SI-SEUP-GEUMO-v1.0.0
+ * @version LUCKEY-KIM-SI-SEUP-GEUMO-v2.0.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const KOREAN_KIM_SI_SEUP_VERSION = 'LUCKEY-KIM-SI-SEUP-GEUMO-v1.0.0';
+export const KOREAN_KIM_SI_SEUP_VERSION = 'LUCKEY-KIM-SI-SEUP-GEUMO-v2.0.0';
 
 export interface MaewoldangTheme {
   themeKey: string;
@@ -48,6 +48,27 @@ export interface KoreanMaewoldangKimSiSeupGeumoSinhwaResult {
     guidanceTitle: string;
     philosophicalCounsel: string;
   };
+  maewoldangSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
+}
+
+function formatMaewoldangKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
+
+function describeMaewoldangStage(score: number): string {
+  if (score >= 92) return '청한원융(淸寒圓融) — 방외인의 자유혼과 삼교 회통의 지혜가 맑게 어우러진 경지';
+  if (score >= 85) return '금오정진(金鰲精進) — 불의와 타협 없는 절의 위에 고독을 차와 시로 벼려내는 성숙기';
+  return '방외초입(方外初入) — 세속의 그물을 벗어나 내면의 양심을 홀로 세우는 자립기';
 }
 
 export const MAEWOLDANG_THEMES: MaewoldangTheme[] = [
@@ -136,6 +157,7 @@ export const MAEWOLDANG_APHORISMS: MaewoldangAphorism[] = [
 export function calculateKoreanMaewoldangKimSiSeupGeumoSinhwa(
   profile?: UserProfile,
   query?: string,
+  now: Date = new Date(),
 ): KoreanMaewoldangKimSiSeupGeumoSinhwaResult {
   const p = profile as any;
   const name = profile?.basic?.name ?? p?.name ?? '남희';
@@ -170,9 +192,24 @@ export function calculateKoreanMaewoldangKimSiSeupGeumoSinhwa(
     `${activeMaewoldangTheme.practicalCounsel} 아울러 매월당 선생의 원전 명언 "${focalMaewoldangAphorism.aphorismKo}"(${focalMaewoldangAphorism.aphorismHanja})를 마음에 새기며, ` +
     `${focalMaewoldangAphorism.actionGuidance}`;
 
+  const calculatedAtKst = formatMaewoldangKstTimestamp(now);
+  const avgScore = Math.round(
+    (fangwairenFreedomScore +
+      indomitableFidelityConscienceScore +
+      transcendentLoveLiteraryIndex +
+      threeTeachingsSyncreticHarmonyIndex +
+      cheonghanSolitudeTranscendenceScore) /
+      5,
+  );
+  const maewoldangSynthesisMatrix = {
+    dominantTension: `${activeMaewoldangTheme.themeTitleKo} ↔ ${focalMaewoldangAphorism.sourceContext}`,
+    alignmentState: describeMaewoldangStage(avgScore),
+    integratedAction: `${focalMaewoldangAphorism.actionGuidance}${query?.trim() ? ` [질문 맥락: ${query.trim()}]` : ''}`,
+  };
+
   return {
     engineVersion: KOREAN_KIM_SI_SEUP_VERSION,
-    calculatedAtKst: new Date().toISOString(),
+    calculatedAtKst,
     fangwairenFreedomScore,
     indomitableFidelityConscienceScore,
     transcendentLoveLiteraryIndex,
@@ -184,19 +221,25 @@ export function calculateKoreanMaewoldangKimSiSeupGeumoSinhwa(
       guidanceTitle,
       philosophicalCounsel,
     },
+    maewoldangSynthesisMatrix,
   };
 }
 
 export function formatKoreanMaewoldangKimSiSeupGeumoSinhwaPrompt(
   res: KoreanMaewoldangKimSiSeupGeumoSinhwaResult,
 ): string {
-  return [
+  const avgScore = Math.round(
+    (res.fangwairenFreedomScore +
+      res.indomitableFidelityConscienceScore +
+      res.transcendentLoveLiteraryIndex +
+      res.threeTeachingsSyncreticHarmonyIndex +
+      res.cheonghanSolitudeTranscendenceScore) /
+      5,
+  );
+  const lines = [
     `【매월당 김시습 《금오신화》 방외인 자유혼 & 절의·삼교원융 지표】`,
-    `- 방외인 초연 자유혼 지수(Fangwairen Autonomous Freedom): ${res.fangwairenFreedomScore}/100`,
-    `- 불굴의 절의 및 지조 지수(Indomitable Fidelity & Conscience): ${res.indomitableFidelityConscienceScore}/100`,
-    `- 시공초월 지고지순 사랑 승화도(Transcendent Love & Literary): ${res.transcendentLoveLiteraryIndex}/100`,
-    `- 유불도 삼교 원융 회통력(Three Teachings Syncretic Harmony): ${res.threeTeachingsSyncreticHarmonyIndex}/100`,
-    `- 청한 고독 내면 승화도(Cheonghan Solitude Transcendence): ${res.cheonghanSolitudeTranscendenceScore}/100`,
+    `- 연산 시각: ${res.calculatedAtKst} | 엔진: ${res.engineVersion}`,
+    `- 방외·삼교원융 국면: ${describeMaewoldangStage(avgScore)}`,
     `- 핵심 매월당 테마: ${res.activeMaewoldangTheme.themeTitleKo} [${res.activeMaewoldangTheme.themeTitleHanja}]`,
     `- 실존적 통찰: ${res.activeMaewoldangTheme.existentialInsight}`,
     `- 실천적 조언: ${res.activeMaewoldangTheme.practicalCounsel}`,
@@ -204,5 +247,12 @@ export function formatKoreanMaewoldangKimSiSeupGeumoSinhwaPrompt(
     `- 원전 출처: [${res.focalMaewoldangAphorism.sourceContext}]`,
     `- 구체적 실천 지침: ${res.focalMaewoldangAphorism.actionGuidance}`,
     `- 종합 매월당 권면: ${res.maewoldangComprehensiveGuidance.philosophicalCounsel}`,
-  ].join('\n');
+  ];
+  if (res.maewoldangSynthesisMatrix) {
+    lines.push(
+      `- 교차 매트릭스 [핵심 긴장: ${res.maewoldangSynthesisMatrix.dominantTension} | 조율 상태: ${res.maewoldangSynthesisMatrix.alignmentState}]`,
+      `- 통합 실천: ${res.maewoldangSynthesisMatrix.integratedAction}`,
+    );
+  }
+  return lines.join('\n');
 }
