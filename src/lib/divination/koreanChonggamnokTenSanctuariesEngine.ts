@@ -20,7 +20,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const CHONGGAMNOK_SANCTUARIES_ENGINE_VERSION = '1.1.0';
+export const CHONGGAMNOK_SANCTUARIES_ENGINE_VERSION = '2.0.0';
 
 export type ChonggamnokQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -44,6 +44,7 @@ export interface ChonggamnokSanctuary {
 
 export interface ChonggamnokReport {
   engineVersion: string;
+  calculatedAtKst: string;
   timestamp: string;
   questionTopic: ChonggamnokQuestionTopic;
   temporalSanctuaryRhythm: ChonggamnokTemporalRhythm;
@@ -57,6 +58,21 @@ export interface ChonggamnokReport {
   interpretiveBoundary: string;
   koreanPropheticPrescription: string; // 정감록 처세 비결 지침
   innerRefugeMeditation: string; // 마음의 십승지 안주 명상법
+  chonggamnokSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
+}
+
+function formatChonggamnokKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
 }
 
 const CHONGGAMNOK_SANCTUARIES_BASE: Omit<ChonggamnokSanctuary, 'vitalityScore'>[] = [
@@ -270,9 +286,30 @@ export function calculateChonggamnokTenSanctuaries(
 
   const innerRefugeMeditation = `조용한 자리에 단정히 앉아 백두대간의 굵은 산맥 줄기가 당신의 등줄기(독맥)를 타고 내려와 단전에 굳건한 태산처럼 자리 잡는 모습을 시각화하십시오. 세상의 어떤 요동 속에서도 당신의 중심은 십승지의 성역처럼 고요하고 안전합니다.`;
 
+  const baseTime = now ?? new Date();
+  const calculatedAtKst = formatChonggamnokKstTimestamp(baseTime);
+  const avgScore = Math.round(
+    (gonggongEuleulVirtueScore +
+      threeCalamitiesImmunityScore +
+      geomanticVitalityIndex +
+      spiritualSanctuaryShield) /
+      4,
+  );
+  const chonggamnokSynthesisMatrix = {
+    dominantTension: `${dominantSanctuary.nameKo} ↔ ${temporalSanctuaryRhythm.phaseLabel}`,
+    alignmentState: describeChonggamnokStage(
+      avgScore,
+      '궁궁을을(弓弓乙乙)의 마음자리와 십승지 영맥이 흔들림 없이 맞물리는 평온 안주기',
+      '세속의 소음을 걸러내고 내면의 중심을 차분히 보전하는 안정기',
+      '흩어진 기운을 거두어 나만의 고요한 피난처를 다지는 준비기',
+    ),
+    integratedAction: `${ritualByTopic[questionTopic]}${question?.trim() ? ` [질문 맥락: ${question.trim()}]` : ''}`,
+  };
+
   return {
     engineVersion: CHONGGAMNOK_SANCTUARIES_ENGINE_VERSION,
-    timestamp: (now ?? new Date()).toISOString(),
+    calculatedAtKst,
+    timestamp: baseTime.toISOString(),
     questionTopic,
     temporalSanctuaryRhythm,
     gonggongEuleulVirtueScore,
@@ -285,28 +322,38 @@ export function calculateChonggamnokTenSanctuaries(
     interpretiveBoundary: '정감록 십승지는 실제 지리적 이주나 길흉 예언이 아니라, 혼란한 일상 속에서 마음을 보존하고 중심을 잡는 상징적 은유입니다.',
     koreanPropheticPrescription,
     innerRefugeMeditation,
+    chonggamnokSynthesisMatrix,
   };
 }
 
 export function formatChonggamnokPrompt(report: ChonggamnokReport): string {
   const s = report.dominantSanctuary;
-  return `[조선 비전 정감록 10승지 영맥 & 보신 피난처 실측 데이터 (정성 성찰)]
-- 엔진 버전: v${report.engineVersion}
-- 질문 맥락 및 시공간 리듬: [${report.questionTopic}] · ${report.temporalSanctuaryRhythm.kstSlot} (${report.temporalSanctuaryRhythm.phaseLabel})
-- 시공간 지침: ${report.temporalSanctuaryRhythm.rhythmDirective}
-- 궁궁을을 성인 지기 조화: ${describeChonggamnokStage(report.gonggongEuleulVirtueScore, '마음자리와 바깥 기운이 흔들림 없이 맞물리는 깊은 조화', '내면의 중심을 차분히 지켜내는 안정된 조화', '흩어진 마음을 한곳으로 모으며 조화를 다지는 시기')}
-- 삼재불입 평온 수호력: ${describeChonggamnokStage(report.threeCalamitiesImmunityScore, '외부의 거친 소음을 들이지 않는 견고한 평온', '불필요한 흔들림을 걸러내는 균형 잡힌 수호력', '작은 동요를 알아차리고 경계를 정돈하는 시기')}
-- 산태극 수태극 생기 흐름: ${describeChonggamnokStage(report.geomanticVitalityIndex, '산과 물이 감싸 안듯 생기가 고루 순환하는 충만함', '무너지지 않는 바탕 위에서 생기가 이어지는 흐름', '지친 기운을 천천히 채우며 터전을 다지는 시기')}
-- 난세 내면 안주 보호막: ${describeChonggamnokStage(report.spiritualSanctuaryShield, '어수선한 흐름 속에서도 스스로를 지키는 든든한 안식처', '일상의 쉼과 중심을 지켜내는 안정적인 보호막', '잠시 멈춰 숨을 고르며 안식처를 마련하는 시기')}
-- 주재 공명 10승지 명당: ${s.nameKo} (제${s.rank}승지 · ${s.region})
-  * 산맥 영맥: ${s.mountainVein}
-  * 생기 형국 특성: ${s.vitalEnergyFeature}
-  * 난세 보전력: ${s.preservationPower}
-  * 길지 생기 공명: ${describeChonggamnokStage(s.vitalityScore, '승지의 고요하고 깊은 영맥과 선명하게 공명함', '승지의 온화한 안정 기운과 무리 없이 이어짐', '승지의 맑은 기운을 천천히 받아들이는 흐름')}
-  * 승지 영적 지침: ${s.spiritualGuidance}
-- 오늘의 실천 의례: ${report.dailyPracticeRitual}
-- 핵심 성찰 질문: ${report.reflectiveQuestion}
-- 해석 경계: ${report.interpretiveBoundary}
-- 정감록 처세 비결 지침: ${report.koreanPropheticPrescription}
-- 마음의 십승지 안주 명상: ${report.innerRefugeMeditation}`;
+  const lines = [
+    `[조선 비전 정감록 10승지 영맥 & 보신 피난처 실측 데이터 (정성 성찰)]`,
+    `- 연산 시각: ${report.calculatedAtKst} | 엔진 버전: v${report.engineVersion}`,
+    `- 질문 맥락 및 시공간 리듬: [${report.questionTopic}] · ${report.temporalSanctuaryRhythm.kstSlot} (${report.temporalSanctuaryRhythm.phaseLabel})`,
+    `- 시공간 지침: ${report.temporalSanctuaryRhythm.rhythmDirective}`,
+    `- 궁궁을을 성인 지기 조화: ${describeChonggamnokStage(report.gonggongEuleulVirtueScore, '마음자리와 바깥 기운이 흔들림 없이 맞물리는 깊은 조화', '내면의 중심을 차분히 지켜내는 안정된 조화', '흩어진 마음을 한곳으로 모으며 조화를 다지는 시기')}`,
+    `- 삼재불입 평온 수호력: ${describeChonggamnokStage(report.threeCalamitiesImmunityScore, '외부의 거친 소음을 들이지 않는 견고한 평온', '불필요한 흔들림을 걸러내는 균형 잡힌 수호력', '작은 동요를 알아차리고 경계를 정돈하는 시기')}`,
+    `- 산태극 수태극 생기 흐름: ${describeChonggamnokStage(report.geomanticVitalityIndex, '산과 물이 감싸 안듯 생기가 고루 순환하는 충만함', '무너지지 않는 바탕 위에서 생기가 이어지는 흐름', '지친 기운을 천천히 채우며 터전을 다지는 시기')}`,
+    `- 난세 내면 안주 보호막: ${describeChonggamnokStage(report.spiritualSanctuaryShield, '어수선한 흐름 속에서도 스스로를 지키는 든든한 안식처', '일상의 쉼과 중심을 지켜내는 안정적인 보호막', '잠시 멈춰 숨을 고르며 안식처를 마련하는 시기')}`,
+    `- 주재 공명 10승지 명당: ${s.nameKo} (제${s.rank}승지 · ${s.region})`,
+    `  * 산맥 영맥: ${s.mountainVein}`,
+    `  * 생기 형국 특성: ${s.vitalEnergyFeature}`,
+    `  * 난세 보전력: ${s.preservationPower}`,
+    `  * 길지 생기 공명: ${describeChonggamnokStage(s.vitalityScore, '승지의 고요하고 깊은 영맥과 선명하게 공명함', '승지의 온화한 안정 기운과 무리 없이 이어짐', '승지의 맑은 기운을 천천히 받아들이는 흐름')}`,
+    `  * 승지 영적 지침: ${s.spiritualGuidance}`,
+    `- 오늘의 실천 의례: ${report.dailyPracticeRitual}`,
+    `- 핵심 성찰 질문: ${report.reflectiveQuestion}`,
+    `- 해석 경계: ${report.interpretiveBoundary}`,
+    `- 정감록 처세 비결 지침: ${report.koreanPropheticPrescription}`,
+    `- 마음의 십승지 안주 명상: ${report.innerRefugeMeditation}`,
+  ];
+  if (report.chonggamnokSynthesisMatrix) {
+    lines.push(
+      `- 교차 매트릭스 [핵심 긴장: ${report.chonggamnokSynthesisMatrix.dominantTension} | 조율 상태: ${report.chonggamnokSynthesisMatrix.alignmentState}]`,
+      `- 통합 실천: ${report.chonggamnokSynthesisMatrix.integratedAction}`,
+    );
+  }
+  return lines.join('\n');
 }

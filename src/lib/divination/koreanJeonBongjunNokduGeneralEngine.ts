@@ -10,12 +10,12 @@
  *    - 진멸권귀(盡滅權貴): 사리사욕에 눈먼 부패한 기득권의 악습을 타파함.
  * 3. 7대 의기(義氣) 결집 품계 및 새야 새야 파랑새 청포도 민중 소생력 산출
  *
- * @version LUCKEY-JEON-BONGJUN-NOKDU-v1.0.0
+ * @version LUCKEY-JEON-BONGJUN-NOKDU-v2.0.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const JEON_BONGJUN_NOKDU_VERSION = 'LUCKEY-JEON-BONGJUN-NOKDU-v1.0.0';
+export const JEON_BONGJUN_NOKDU_VERSION = 'LUCKEY-JEON-BONGJUN-NOKDU-v2.0.0';
 
 export interface NokduGeneralStage {
   stageLevel: number;
@@ -46,6 +46,27 @@ export interface JeonBongjunNokduResult {
     legacyTitle: string;
     historicalWisdom: string;
   };
+  nokduSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
+}
+
+function formatNokduKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
+
+function describeNokduStage(score: number): string {
+  if (score >= 88) return '백산창의(白山倡義) — 수평적 연대와 대의의 기개가 흔들림 없이 맞물린 결집기';
+  if (score >= 76) return '사발통문(沙鉢通文) — 서로의 뜻을 둥글게 모아 일상의 터전을 지키는 상생기';
+  return '녹두신아(綠豆新芽) — 추운 땅 밑에서 꺾이지 않고 새봄의 기운을 다지는 준비기';
 }
 
 export type JeonBongjunNokduReport = JeonBongjunNokduResult;
@@ -89,11 +110,15 @@ function hashSeed(seedStr: string): number {
   return Math.abs(h);
 }
 
-export function calculateJeonBongjunNokdu(profile?: UserProfile): JeonBongjunNokduResult {
+export function calculateJeonBongjunNokdu(
+  profile?: UserProfile,
+  query?: string,
+  now: Date = new Date(),
+): JeonBongjunNokduResult {
   const birthdate = profile?.basic?.birthdate || '1995-03-21';
   const birthtime = profile?.basic?.birthtime || '12:00';
   const name = profile?.basic?.name || 'Inquirer';
-  const seed = hashSeed(`JEON-BONGJUN-NOKDU-${birthdate}-${birthtime}-${name}`);
+  const seed = hashSeed(`JEON-BONGJUN-NOKDU-${birthdate}-${birthtime}-${name}-${query ?? ''}`);
 
   const sabalTongmunHorizontalSolidarity = (seed % 41) + 60; // 60~100
   const baeksanRighteousForce = ((seed >> 3) % 43) + 58; // 58~100
@@ -110,9 +135,24 @@ export function calculateJeonBongjunNokdu(profile?: UserProfile): JeonBongjunNok
   const legacyIdx = (seed >> 6) % DONGHAK_LEGACIES.length;
   const donghakPeasantLegacy = DONGHAK_LEGACIES[legacyIdx];
 
+  const calculatedAtKst = formatNokduKstTimestamp(now);
+  const avgScore = Math.round(
+    (sabalTongmunHorizontalSolidarity +
+      baeksanRighteousForce +
+      jepokGuminSalvationPower +
+      bogukAnminPeaceStabilityScore +
+      cheongpodoSpringResilience) /
+      5,
+  );
+  const nokduSynthesisMatrix = {
+    dominantTension: `${activeNokduStage.stageNameKo} ↔ ${primaryRighteousManifesto.hanjaMotto}`,
+    alignmentState: describeNokduStage(avgScore),
+    integratedAction: `${primaryRighteousManifesto.actionableDirective}${query?.trim() ? ` [질문 맥락: ${query.trim()}]` : ''}`,
+  };
+
   return {
     engineVersion: JEON_BONGJUN_NOKDU_VERSION,
-    calculatedAtKst: getKstDateString(),
+    calculatedAtKst,
     sabalTongmunHorizontalSolidarity,
     baeksanRighteousForce,
     jepokGuminSalvationPower,
@@ -121,23 +161,37 @@ export function calculateJeonBongjunNokdu(profile?: UserProfile): JeonBongjunNok
     activeNokduStage,
     primaryRighteousManifesto,
     donghakPeasantLegacy,
+    nokduSynthesisMatrix,
   };
 }
 
 export function formatJeonBongjunNokduPrompt(result: JeonBongjunNokduResult): string {
-  return `[🌾 한국 근대 동학농민혁명 《녹두장군 전봉준》 사발통문 & 백산 창의 4대 강령 리포트]
-- 엔진 버전: ${result.engineVersion}
-- 사발통문 원형 수평연대 지수: ${result.sabalTongmunHorizontalSolidarity}%
-- 백산 창의 대의명분 및 의기 결집력: ${result.baeksanRighteousForce}%
-- 제폭구민의 약자 보호 및 구원력: ${result.jepokGuminSalvationPower}%
-- 보국안민의 삶의 터전 안정도: ${result.bogukAnminPeaceStabilityScore}%
-- 엄동설한을 뚫는 청포도 봄 소생력: ${result.cheongpodoSpringResilience}%
-- 현행 의기(義氣) 결집 품계: **[${result.activeNokduStage.stageNameKo} (${result.activeNokduStage.stageNameHanja})]**
-  → 관장 영역: ${result.activeNokduStage.righteousDomain}
-  → 민중 회복력 축복: ${result.activeNokduStage.peasantResilienceBlessing}
-- 최우선 행동 강령: **[${result.primaryRighteousManifesto.manifestoTitleKo}]**
-  → 핵심 본질: ${result.primaryRighteousManifesto.coreEssence}
-  → 실천 지침: ${result.primaryRighteousManifesto.actionableDirective}
-- 동학농민혁명 불멸의 유산: 《${result.donghakPeasantLegacy.legacyTitle}》
-  → 역사적 지혜: "${result.donghakPeasantLegacy.historicalWisdom}"`;
+  const avgScore = Math.round(
+    (result.sabalTongmunHorizontalSolidarity +
+      result.baeksanRighteousForce +
+      result.jepokGuminSalvationPower +
+      result.bogukAnminPeaceStabilityScore +
+      result.cheongpodoSpringResilience) /
+      5,
+  );
+  const lines = [
+    `[🌾 한국 근대 동학농민혁명 《녹두장군 전봉준》 사발통문 & 백산 창의 4대 강령 리포트]`,
+    `- 연산 시각: ${result.calculatedAtKst} | 엔진 버전: ${result.engineVersion}`,
+    `- 의기 결집 국면: ${describeNokduStage(avgScore)}`,
+    `- 현행 의기(義氣) 결집 품계: **[${result.activeNokduStage.stageNameKo} (${result.activeNokduStage.stageNameHanja})]**`,
+    `  → 관장 영역: ${result.activeNokduStage.righteousDomain}`,
+    `  → 민중 회복력 축복: ${result.activeNokduStage.peasantResilienceBlessing}`,
+    `- 최우선 행동 강령: **[${result.primaryRighteousManifesto.manifestoTitleKo}]**`,
+    `  → 핵심 본질: ${result.primaryRighteousManifesto.coreEssence}`,
+    `  → 실천 지침: ${result.primaryRighteousManifesto.actionableDirective}`,
+    `- 동학농민혁명 불멸의 유산: 《${result.donghakPeasantLegacy.legacyTitle}》`,
+    `  → 역사적 지혜: "${result.donghakPeasantLegacy.historicalWisdom}"`,
+  ];
+  if (result.nokduSynthesisMatrix) {
+    lines.push(
+      `- 교차 매트릭스 [핵심 긴장: ${result.nokduSynthesisMatrix.dominantTension} | 조율 상태: ${result.nokduSynthesisMatrix.alignmentState}]`,
+      `- 통합 실천: ${result.nokduSynthesisMatrix.integratedAction}`,
+    );
+  }
+  return lines.join('\n');
 }
