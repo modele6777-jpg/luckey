@@ -8426,3 +8426,30 @@ test('Socratic, Spinoza, and Kierkegaard v2.1.0 engines expose qualitative stage
   assert.ok(!kierkegaardPrompt.includes('/100') && !kierkegaardPrompt.includes('%'));
   assert.ok(kierkegaardPrompt.includes('일상 실천 의례') && kierkegaardPrompt.includes('해석 경계'));
 });
+
+test('Seneca, Cicero, and Marcus Aurelius v2.1.0 engines expose qualitative stages and KST without /100 or %', () => {
+  const now = new Date('2026-11-15T18:40:00Z');
+  const seneca = calculateSenecaTimeSovereignty(profile, '이직 결정을 계속 미루고만 있어서 불안해요', now);
+  assert.equal(seneca.engineVersion, 'LUCKEY-SENECA-TIME-SOVEREIGNTY-v2.1.0');
+  assert.ok(seneca.calculatedAtKst.endsWith('+09:00'));
+  assert.ok(seneca.dailyPracticeRitual.length > 0 && seneca.reflectiveQuestion.length > 0 && seneca.interpretiveBoundary.length > 0);
+  const senecaPrompt = formatSenecaTimeSovereigntyPrompt(seneca);
+  assert.ok(!senecaPrompt.includes('/100') && !senecaPrompt.includes('%'));
+  assert.ok(senecaPrompt.includes('오늘의 실천 의례') && senecaPrompt.includes('해석 경계') && senecaPrompt.includes('+09:00'));
+
+  const cicero = calculateCiceroDeOfficiis(profile, '계약 조건과 신뢰 사이에서 어떤 선택이 옳을까요?', now);
+  assert.equal(cicero.engineVersion, 'LUCKEY-CICERO-DE-OFFICIIS-v2.1.0');
+  assert.ok(cicero.calculatedAtKst.endsWith('+09:00'));
+  assert.ok(cicero.dailyPracticeRitual.length > 0 && cicero.reflectiveQuestion.length > 0 && cicero.interpretiveBoundary.length > 0);
+  const ciceroPrompt = formatCiceroDeOfficiisPrompt(cicero);
+  assert.ok(!ciceroPrompt.includes('/100') && !ciceroPrompt.includes('%'));
+  assert.ok(ciceroPrompt.includes('오늘의 실천 의례') && ciceroPrompt.includes('해석 경계') && ciceroPrompt.includes('+09:00'));
+
+  const aurelius = calculateMarcusAureliusMeditationsCitadel(profile, '타인의 비난 때문에 마음이 흔들려요', now);
+  assert.equal(aurelius.engineVersion, 'LUCKEY-MARCUS-AURELIUS-CITADEL-v2.1.0');
+  assert.ok(aurelius.calculatedAtKst.endsWith('+09:00'));
+  assert.ok(aurelius.dailyPracticeRitual.length > 0 && aurelius.reflectiveQuestion.length > 0 && aurelius.interpretiveBoundary.length > 0);
+  const aureliusPrompt = formatMarcusAureliusMeditationsCitadelPrompt(aurelius);
+  assert.ok(!aureliusPrompt.includes('/100') && !aureliusPrompt.includes('%'));
+  assert.ok(aureliusPrompt.includes('오늘의 실천 의례') && aureliusPrompt.includes('해석 경계') && aureliusPrompt.includes('+09:00'));
+});

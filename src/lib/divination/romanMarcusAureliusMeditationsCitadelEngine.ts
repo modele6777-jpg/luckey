@@ -8,12 +8,12 @@
  * 4. 코이노니아 공공선 의무(Koinonia): 인류 공동체의 일원이자 꿀벌의 한 마리로서 공동의 유익을 위해 이기심을 내려놓고 의무를 다하는 도덕적 성실성.
  * 5. 아파테이아 평정심(Apatheia): 통제할 수 없는 외부 결과(타인의 평판, 부귀영화, 질병)에 대한 헛된 불안과 욕망을 걷어낸 절대적 내면의 고요.
  *
- * @version LUCKEY-MARCUS-AURELIUS-CITADEL-v1.0.0
+ * @version LUCKEY-MARCUS-AURELIUS-CITADEL-v2.1.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const ROMAN_MARCUS_AURELIUS_VERSION = 'LUCKEY-MARCUS-AURELIUS-CITADEL-v1.0.0';
+export const ROMAN_MARCUS_AURELIUS_VERSION = 'LUCKEY-MARCUS-AURELIUS-CITADEL-v2.1.0';
 
 export interface MeditationsTheme {
   themeKey: string;
@@ -47,6 +47,22 @@ export interface MarcusAureliusMeditationsCitadelResult {
     guidanceTitle: string;
     philosophicalCounsel: string;
   };
+  situationalCitadelFocus: {
+    detectedTheme: string;
+    classicReference: string;
+    judgmentDistortionDiagnostic: string;
+    citadelDirective: string;
+    reflectiveQuestion: string;
+  };
+  temporalAureliusRhythm: {
+    kstPhaseLabel: string;
+    seasonContext: string;
+    citadelStageKo: string;
+    recommendedPractice: string;
+  };
+  dailyPracticeRitual: string;
+  reflectiveQuestion: string;
+  interpretiveBoundary: string;
 }
 
 export const MEDITATIONS_THEMES: MeditationsTheme[] = [
@@ -125,8 +141,104 @@ export const MEDITATIONS_APHORISMS: MeditationsAphorism[] = [
   },
 ];
 
+function getAureliusKstComponents(now: Date): { hour: number; month: number; isoKst: string } {
+  const kstMs = now.getTime() + 9 * 60 * 60 * 1000;
+  const kstDate = new Date(kstMs);
+  return {
+    hour: kstDate.getUTCHours(),
+    month: kstDate.getUTCMonth() + 1,
+    isoKst: kstDate.toISOString().replace('Z', '+09:00'),
+  };
+}
+
+function describeAureliusStage(score: number): string {
+  if (score >= 90) return '굳건히 수호된 내면 성채의 흐름';
+  if (score >= 80) return '흔들림 없이 맑은 아파테이아의 흐름';
+  if (score >= 70) return '로고스 질서에 순응하며 가다듬는 흐름';
+  return '판단의 덧칠을 걷어내고 중심을 세우는 흐름';
+}
+
+function analyzeAureliusSituationalFocus(question: string | undefined, absHash: number) {
+  const q = (question ?? '').trim();
+  if (/관계|사람|비난|서운|배신|미움|갈등|상처/.test(q)) {
+    return {
+      detectedTheme: '내면의 성채(Hegemonikon)와 코이노니아 자비',
+      classicReference: '마르쿠스 아우렐리우스 《명상록》 2권 1절 · 8권 48절',
+      judgmentDistortionDiagnostic: '타인의 무례함이나 변덕에 나의 내적 평화까지 함께 내어주며 헛된 분노의 해석을 덧붙이고 있을 수 있습니다.',
+      citadelDirective: '타인의 행동을 내 영혼의 성채 안으로 들이지 말고, "저 사람도 나름의 착오 속에 있다"며 사실과 감정을 분리하십시오.',
+      reflectiveQuestion: '지금 나를 흔드는 것은 상대의 말 자체입니까, 아니면 내가 거기에 덧붙인 상처의 해석입니까?',
+    };
+  }
+  if (/선택|결정|이직|포기|장애|막막|실패|고민/.test(q)) {
+    return {
+      detectedTheme: '장애물이 곧 길이 되는 전환(Obstacle Is the Way)',
+      classicReference: '마르쿠스 아우렐리우스 《명상록》 5권 20절',
+      judgmentDistortionDiagnostic: '예상치 못한 제약이나 우회로를 실패로 단정해 버리면, 그 조건 안에서 발휘할 수 있는 이성적 창의성이 닫힙니다.',
+      citadelDirective: '바꿀 수 없는 조건에 불평하는 대신, 지금 눈앞의 장애물을 인내와 재구성의 재료로 삼아 한 걸음 전진하십시오.',
+      reflectiveQuestion: '지금 앞을 가로막는 이 조건을 재료로 삼는다면, 어떤 새로운 길이 열릴 수 있습니까?',
+    };
+  }
+  if (/불안|두려|걱정|죽음|시간|허무|외로|우울/.test(q)) {
+    return {
+      detectedTheme: '메멘토 모리(Memento Mori)와 현재 순간의 명찰함',
+      classicReference: '마르쿠스 아우렐리우스 《명상록》 2권 14절 · 4권 3절',
+      judgmentDistortionDiagnostic: '지나간 후회와 오지 않은 미래를 한꺼번에 짊어지려 해 현재의 성채가 과부하에 걸린 상태입니다.',
+      citadelDirective: '어제도 내일도 아닌 오직 지금 이 한 순간의 호흡과 의무에만 집중하며 사소한 근심을 덜어내십시오.',
+      reflectiveQuestion: '오늘이 삶을 가다듬을 마지막 날처럼 선명해진다면, 지금 가장 먼저 내려놓을 걱정은 무엇입니까?',
+    };
+  }
+
+  return absHash % 2 === 0
+    ? {
+        detectedTheme: '내면 성채(Inner Citadel)로의 고요한 귀환',
+        classicReference: '마르쿠스 아우렐리우스 《명상록》 4권 3절 · 7권 59절',
+        judgmentDistortionDiagnostic: '바깥의 소음과 평판을 살피느라 내면의 선의 샘(헤게모니콘)을 돌보는 시간이 줄어들기 쉬운 때입니다.',
+        citadelDirective: '잠시 외부의 시선을 닫고 내면의 성채로 물러나, 내가 통제할 수 있는 판단과 태도만 단정히 정돈하십시오.',
+        reflectiveQuestion: '지금 외부의 소음이 모두 잦아든다면 내면의 성채에서 가장 먼저 들리는 목소리는 무엇입니까?',
+      }
+    : {
+        detectedTheme: '보편적 로고스(Logos)와의 조화 및 의무 완수',
+        classicReference: '마르쿠스 아우렐리우스 《명상록》 6권 54절 · 8권 9절',
+        judgmentDistortionDiagnostic: '상황이 내 뜻대로만 흘러가지 않을 때 불평이 앞서는 순간 내면의 기품과 추진력이 흩어집니다.',
+        citadelDirective: '벌어진 현실을 있는 그대로 받아들이고, 공동체와 나 자신에게 부끄럽지 않은 오늘의 몫을 조용히 실행하십시오.',
+        reflectiveQuestion: '지금 내가 불평 없이 묵묵히 완수할 수 있는 오늘의 작은 의무는 무엇입니까?',
+      };
+}
+
+function buildAureliusTemporalRhythm(hour: number, month: number, citadelScore: number) {
+  let kstPhaseLabel = '';
+  let recommendedPractice = '';
+  if (hour >= 4 && hour < 9) {
+    kstPhaseLabel = '새벽 성채 수련기 (04~09시)';
+    recommendedPractice = '마르쿠스가 아침마다 되뇌었듯, 오늘 마주칠 무례함이나 변수에도 중심을 잃지 않겠다고 내면 성채를 먼저 다지는 시간입니다.';
+  } else if (hour >= 9 && hour < 14) {
+    kstPhaseLabel = '오전 코이노니아 실행기 (09~14시)';
+    recommendedPractice = '꿀벌이 군집을 위해 일하듯, 생색이나 조바심 없이 나에게 맡겨진 본분을 성실히 수행하기 좋은 시간대입니다.';
+  } else if (hour >= 14 && hour < 20) {
+    kstPhaseLabel = '오후 아파테이아 조율기 (14~20시)';
+    recommendedPractice = '사건 위에 감정적 해석을 덧씌우지 말고 "단지 그런 일이 일어났을 뿐"이라며 객관적 시선으로 평정을 지키십시오.';
+  } else {
+    kstPhaseLabel = '밤 메멘토 모리 자성기 (20~04시)';
+    recommendedPractice = '하루의 판단과 감정을 내면 법정에 올려놓고, 통제할 수 없는 것들에 대한 집착을 비우는 고요한 시간입니다.';
+  }
+
+  let seasonContext = '겨울(Winter · 성채 내실과 인내의 시기)';
+  if (month >= 3 && month <= 5) seasonContext = '봄(Spring · 로고스 질서 순응과 갱신기)';
+  else if (month >= 6 && month <= 8) seasonContext = '여름(Summer · 흔들림 없는 실행과 절제기)';
+  else if (month >= 9 && month <= 11) seasonContext = '가을(Autumn · 판단 정제와 평정의 수확기)';
+
+  return {
+    kstPhaseLabel,
+    seasonContext,
+    citadelStageKo: describeAureliusStage(citadelScore),
+    recommendedPractice,
+  };
+}
+
 export function calculateMarcusAureliusMeditationsCitadel(
-  profile: UserProfile
+  profile: UserProfile,
+  question?: string,
+  now: Date = new Date()
 ): MarcusAureliusMeditationsCitadelResult {
   const p = profile as any;
   const name = profile?.basic?.name ?? p?.name ?? '방문자';
@@ -154,16 +266,18 @@ export function calculateMarcusAureliusMeditationsCitadel(
 
   const activeMeditationsTheme = MEDITATIONS_THEMES[themeIndex];
   const focalMeditationsAphorism = MEDITATIONS_APHORISMS[aphorismIndex];
+  const { hour, month, isoKst } = getAureliusKstComponents(now);
+  const situationalCitadelFocus = analyzeAureliusSituationalFocus(question, absHash);
+  const temporalAureliusRhythm = buildAureliusTemporalRhythm(hour, month, innerCitadelResilienceScore);
 
   const guidanceTitle = `마르쿠스 아우렐리우스 명상록 스토아 지혜: ${activeMeditationsTheme.themeTitleKo}`;
-  const philosophicalCounsel = `아우렐리우스 황제의 스토아 철학은 외부의 격랑 속에서도 결코 흔들리지 않는 내면의 성채를 굳건히 세우도록 이끕니다. ` +
-    `현재 당신이 마주한 실존적 과제는 '${activeMeditationsTheme.themeTitleKo}'입니다. ` +
-    `${activeMeditationsTheme.practicalCounsel} 아울러 《명상록》의 경구 "${focalMeditationsAphorism.aphorismKo}"(${focalMeditationsAphorism.aphorismGreekOrLatin})을 깊이 새기며, ` +
-    `${focalMeditationsAphorism.actionGuidance}`;
+  const philosophicalCounsel = `아우렐리우스의 《명상록》은 질문('${situationalCitadelFocus.detectedTheme}') 앞에서 외부의 격랑 속에서도 무너지지 않는 내면의 성채를 세우도록 이끕니다. ` +
+    `${situationalCitadelFocus.citadelDirective} 또한 '${activeMeditationsTheme.themeTitleKo}'의 관점에서 ${activeMeditationsTheme.practicalCounsel} ` +
+    `《명상록》의 경구 "${focalMeditationsAphorism.aphorismKo}"(${focalMeditationsAphorism.aphorismGreekOrLatin})을 마음에 새기며 ${focalMeditationsAphorism.actionGuidance}`;
 
   return {
     engineVersion: ROMAN_MARCUS_AURELIUS_VERSION,
-    calculatedAtKst: new Date().toISOString(),
+    calculatedAtKst: isoKst,
     innerCitadelResilienceScore,
     logosProvidenceAlignmentScore,
     mementoMoriClarityQuotient,
@@ -175,23 +289,26 @@ export function calculateMarcusAureliusMeditationsCitadel(
       guidanceTitle,
       philosophicalCounsel,
     },
+    situationalCitadelFocus,
+    temporalAureliusRhythm,
+    dailyPracticeRitual: `${temporalAureliusRhythm.recommendedPractice} · ${situationalCitadelFocus.citadelDirective}`,
+    reflectiveQuestion: situationalCitadelFocus.reflectiveQuestion,
+    interpretiveBoundary: '마르쿠스 아우렐리우스 명상록 성찰은 미래의 길흉을 점치는 도구가 아니라, 통제할 수 있는 내면의 판단과 평정(아파테이아)을 지키기 위한 스토아 철학 관점입니다.',
   };
 }
 
 export function formatMarcusAureliusMeditationsCitadelPrompt(res: MarcusAureliusMeditationsCitadelResult): string {
   return [
-    `【마르쿠스 아우렐리우스 《명상록》 내면의 성채 & 스토아 실존 평정 지표】`,
-    `- 내면의 성채 회복탄력성(Hegemonikon): ${res.innerCitadelResilienceScore}/100`,
-    `- 로고스 섭리 순응도(Providentia): ${res.logosProvidenceAlignmentScore}/100`,
-    `- 메멘토 모리 명찰도(Memento Mori): ${res.mementoMoriClarityQuotient}/100`,
-    `- 코이노니아 공동체 의무도(Koinonia): ${res.koinoniaCosmopolitanDutyScore}/100`,
-    `- 아파테이아 평정심 지수(Apatheia): ${res.apatheiaSerenityIndex}/100`,
+    `【마르쿠스 아우렐리우스 《명상록》 내면의 성채 & 스토아 실존 평정 지표 (${res.engineVersion})】`,
+    `- 내면의 성채(Hegemonikon): ${describeAureliusStage(res.innerCitadelResilienceScore)} | 로고스 섭리 순응: ${describeAureliusStage(res.logosProvidenceAlignmentScore)} | 메멘토 모리: ${describeAureliusStage(res.mementoMoriClarityQuotient)}`,
+    `- 코이노니아 공동체 의무: ${describeAureliusStage(res.koinoniaCosmopolitanDutyScore)} | 아파테이아 평정심: ${describeAureliusStage(res.apatheiaSerenityIndex)}`,
     `- 핵심 스토아 테마: ${res.activeMeditationsTheme.themeTitleKo} [${res.activeMeditationsTheme.themeTitleGreek}]`,
-    `- 철학적 통찰: ${res.activeMeditationsTheme.stoicInsight}`,
-    `- 실천적 조언: ${res.activeMeditationsTheme.practicalCounsel}`,
-    `- 핵심 경구: "${res.focalMeditationsAphorism.aphorismKo}"`,
-    `- 원전 출처: "${res.focalMeditationsAphorism.aphorismGreekOrLatin}" [${res.focalMeditationsAphorism.sourceContext}]`,
-    `- 구체적 실천 지침: ${res.focalMeditationsAphorism.actionGuidance}`,
+    `- 질문 맥락 진단(${res.situationalCitadelFocus.classicReference}): ${res.situationalCitadelFocus.detectedTheme} — ${res.situationalCitadelFocus.judgmentDistortionDiagnostic}`,
+    `- KST 시공간 리듬 (${res.calculatedAtKst}): ${res.temporalAureliusRhythm.kstPhaseLabel} · ${res.temporalAureliusRhythm.seasonContext} (${res.temporalAureliusRhythm.citadelStageKo})`,
+    `- 오늘의 실천 의례: ${res.dailyPracticeRitual}`,
+    `- 성찰 질문: "${res.reflectiveQuestion}"`,
+    `- 핵심 경구: "${res.focalMeditationsAphorism.aphorismKo}" [${res.focalMeditationsAphorism.sourceContext}]`,
     `- 종합 철학 권면: ${res.aureliusComprehensiveGuidance.philosophicalCounsel}`,
+    `- 해석 경계: ${res.interpretiveBoundary}`,
   ].join('\n');
 }
