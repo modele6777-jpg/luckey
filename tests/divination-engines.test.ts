@@ -6095,9 +6095,14 @@ test('Leo Tolstoy Calendar of Wisdom Engine: calculates Spiritual Awakening, Aga
   assert(rep.nonViolencePeaceEquanimityIndex >= 0 && rep.nonViolencePeaceEquanimityIndex <= 100);
   assert(rep.existentialConscienceIntegrityScore >= 0 && rep.existentialConscienceIntegrityScore <= 100);
   assert(rep.activeTolstoyTheme.themeTitleKo.length > 0);
+  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(rep.tolstoySynthesisMatrix?.integratedAction));
   const prompt = formatRussianLeoTolstoyCalendarOfWisdomPrompt(rep);
   assert(prompt.includes('레프 톨스토이 《인생독본·사람은 무엇으로 사는가》 영적 각성 & 아가페 사랑 지표'));
   assert(prompt.includes(rep.activeTolstoyTheme.themeTitleKo));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
 });
 
 test('Rabindranath Tagore Gitanjali Engine: calculates Cosmic Soul Communion, Bhakti Devotion, Fearless Freedom, and Lamp of the East', () => {
@@ -6952,9 +6957,14 @@ test('Fyodor Dostoevsky Karamazov Soul Compassion Engine: calculates Soul Abyss 
   assert(rep.kissingTheEarthLivingVitalityIndex >= 0 && rep.kissingTheEarthLivingVitalityIndex <= 100);
   assert(rep.universalBrotherhoodSolidarityScore >= 0 && rep.universalBrotherhoodSolidarityScore <= 100);
   assert(rep.activeDostoevskyTheme.themeTitleKo.length > 0);
+  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(rep.dostoevskySynthesisMatrix?.integratedAction));
   const prompt = formatRussianFyodorDostoevskyKaramazovSoulCompassionPrompt(rep);
   assert(prompt.includes('도스토옙스키 《카라마조프 가의 형제들·죄와 벌》 심연 직시·대자비(Active Love) 지표'));
   assert(prompt.includes(rep.activeDostoevskyTheme.themeTitleKo));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
 });
 
 test('Baek Seok Deer and White Wall Poetic Purity Engine: calculates Noble Solitude, Folk Warmth, and Steadfast Resilience', () => {
@@ -7002,9 +7012,14 @@ test('Anton Chekhov Quiet Endurance and Compassion Engine: calculates Unpretenti
   assert(rep.innerDecencyIntegrityScore >= 0 && rep.innerDecencyIntegrityScore <= 100);
   assert(rep.gentleFortitudeHopeResilience >= 0 && rep.gentleFortitudeHopeResilience <= 100);
   assert(rep.activeChekhovTheme.themeTitleKo.length > 0);
+  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(rep.chekhovSynthesisMatrix?.integratedAction));
   const prompt = formatRussianAntonChekhovQuietEnduranceCompassionPrompt(rep);
   assert(prompt.includes('안톤 체호프 《바냐 아저씨·갈매기》 일상의 진실·묵묵한 인내 지표'));
   assert(prompt.includes(rep.activeChekhovTheme.themeTitleKo));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
 });
 
 test('Seopo Kim Man-jung Guunmong Illusory Awakening Engine: calculates Fame Penetration, Void True Self, and Equanimity', () => {

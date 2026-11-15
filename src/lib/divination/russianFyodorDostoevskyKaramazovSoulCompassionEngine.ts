@@ -13,7 +13,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const RUSSIAN_FYODOR_DOSTOEVSKY_KARAMAZOV_SOUL_COMPASSION_VERSION = 'LUCKEY-FYODOR-DOSTOEVSKY-KARAMAZOV-SOUL-COMPASSION-v1.0.0';
+export const RUSSIAN_FYODOR_DOSTOEVSKY_KARAMAZOV_SOUL_COMPASSION_VERSION = 'LUCKEY-FYODOR-DOSTOEVSKY-KARAMAZOV-SOUL-COMPASSION-v2.0.0';
 
 export interface DostoevskyTheme {
   themeKey: string;
@@ -47,6 +47,27 @@ export interface RussianFyodorDostoevskyKaramazovSoulCompassionResult {
     guidanceTitle: string;
     philosophicalCounsel: string;
   };
+  dostoevskySynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
+}
+
+function formatDostoevskyKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
+
+function describeDostoevskyStage(score: number): string {
+  if (score >= 93) return '알료샤의 대지 입맞춤(Kissing the Earth) — 심연의 고통을 통과해 살아 숨 쉬는 생명과 적극적 사랑으로 부활하는 환희기';
+  if (score >= 88) return '조시마 장로의 적극적 사랑(Active Love) — 내 앞의 한 사람을 구체적으로 품고 책임을 나누는 실천기';
+  return '백야의 성찰(White Night Vigil) — 가슴속 모순과 빛을 정직히 응시하며 양심의 편에 서는 정화기';
 }
 
 export const DOSTOEVSKY_THEMES: DostoevskyTheme[] = [
@@ -123,6 +144,7 @@ function hashString(str: string): number {
 export function calculateRussianFyodorDostoevskyKaramazovSoulCompassion(
   profile?: UserProfile,
   query?: string,
+  now: Date = new Date(),
 ): RussianFyodorDostoevskyKaramazovSoulCompassionResult {
   const p = profile as any;
   const name = profile?.basic?.name ?? p?.name ?? '남희';
@@ -154,9 +176,19 @@ export function calculateRussianFyodorDostoevskyKaramazovSoulCompassion(
     `${activeDostoevskyTheme.practicalCounsel} 도스토옙스키의 테제 "${focalDostoevskyAphorism.aphorismKo}" (${focalDostoevskyAphorism.aphorismRussian})을 마음에 새기고, ` +
     `${focalDostoevskyAphorism.actionGuidance}`;
 
+  const calculatedAtKst = formatDostoevskyKstTimestamp(now);
+  const composite = Math.round(
+    (soulAbyssHonestConfrontationScore + activeLoveCompassionIndex + sufferingPurificationTranscendenceScore + kissingTheEarthLivingVitalityIndex + universalBrotherhoodSolidarityScore) / 5
+  );
+  const dostoevskySynthesisMatrix = {
+    dominantTension: `${activeDostoevskyTheme.themeTitleKo} ↔ ${focalDostoevskyAphorism.sourceContext}`,
+    alignmentState: describeDostoevskyStage(composite),
+    integratedAction: `${focalDostoevskyAphorism.actionGuidance}${query?.trim() ? ` [질문 맥락: ${query.trim()}]` : ''}`,
+  };
+
   return {
     engineVersion: RUSSIAN_FYODOR_DOSTOEVSKY_KARAMAZOV_SOUL_COMPASSION_VERSION,
-    calculatedAtKst: new Date().toISOString(),
+    calculatedAtKst,
     soulAbyssHonestConfrontationScore,
     activeLoveCompassionIndex,
     sufferingPurificationTranscendenceScore,
@@ -168,19 +200,20 @@ export function calculateRussianFyodorDostoevskyKaramazovSoulCompassion(
       guidanceTitle,
       philosophicalCounsel,
     },
+    dostoevskySynthesisMatrix,
   };
 }
 
 export function formatRussianFyodorDostoevskyKaramazovSoulCompassionPrompt(
   res: RussianFyodorDostoevskyKaramazovSoulCompassionResult,
 ): string {
-  return [
+  const composite = Math.round(
+    (res.soulAbyssHonestConfrontationScore + res.activeLoveCompassionIndex + res.sufferingPurificationTranscendenceScore + res.kissingTheEarthLivingVitalityIndex + res.universalBrotherhoodSolidarityScore) / 5
+  );
+  const lines = [
     `【도스토옙스키 《카라마조프 가의 형제들·죄와 벌》 심연 직시·대자비(Active Love) 지표】`,
-    `- 영혼의 심연 직시 실존적 정직성(Soul Abyss Honest Confrontation): ${res.soulAbyssHonestConfrontationScore}/100`,
-    `- 적극적 사랑 실천 지표(Active Love & Concrete Compassion): ${res.activeLoveCompassionIndex}/100`,
-    `- 고통의 정화 및 초월 승화도(Suffering Purification & Transcendence): ${res.sufferingPurificationTranscendenceScore}/100`,
-    `- 대지 입맞춤 및 생명 긍정 환희도(Kissing the Earth & Vital Life Affirmation): ${res.kissingTheEarthLivingVitalityIndex}/100`,
-    `- 보편적 연대감 및 대자비 지수(Universal Responsibility & Compassion): ${res.universalBrotherhoodSolidarityScore}/100`,
+    `- 연산 시각: ${res.calculatedAtKst} | 엔진 버전: ${res.engineVersion}`,
+    `- 영혼 정화 국면: ${describeDostoevskyStage(composite)}`,
     `- 핵심 도스토옙스키 테마: ${res.activeDostoevskyTheme.themeTitleKo} [${res.activeDostoevskyTheme.themeTitleEn}]`,
     `- 실천적 통찰: ${res.activeDostoevskyTheme.pragmaticInsight}`,
     `- 행동 조언: ${res.activeDostoevskyTheme.practicalCounsel}`,
@@ -188,5 +221,12 @@ export function formatRussianFyodorDostoevskyKaramazovSoulCompassionPrompt(
     `- 원전 출처: [${res.focalDostoevskyAphorism.sourceContext}]`,
     `- 구체적 실천 지침: ${res.focalDostoevskyAphorism.actionGuidance}`,
     `- 종합 도스토옙스키 권면: ${res.dostoevskyComprehensiveGuidance.philosophicalCounsel}`,
-  ].join('\n');
+  ];
+  if (res.dostoevskySynthesisMatrix) {
+    lines.push(
+      `- 교차 매트릭스 [핵심 긴장: ${res.dostoevskySynthesisMatrix.dominantTension} | 조율 상태: ${res.dostoevskySynthesisMatrix.alignmentState}]`,
+      `- 통합 실천: ${res.dostoevskySynthesisMatrix.integratedAction}`,
+    );
+  }
+  return lines.join('\n');
 }
