@@ -8,12 +8,12 @@
  * 4. 관용(Tolérance)과 다름의 수용: 《식인종에 대하여(Des Cannibales)》 등에서 나타난 문화적 상대주의와 편견 타파, 타인에 대한 열린 공감.
  * 5. 죽음과 유한성에 대한 유연한 초연함: "철학을 한다는 것은 죽는 법을 배우는 것이다." 그러나 나아가 "죽음은 삶의 끝이지 목표가 아니다. 삶에 온전히 몰입하라."
  *
- * @version LUCKEY-MONTAIGNE-ESSAIS-WISDOM-v1.0.0
+ * @version LUCKEY-MONTAIGNE-ESSAIS-WISDOM-v2.0.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const MONTAIGNE_ESSAIS_WISDOM_VERSION = 'LUCKEY-MONTAIGNE-ESSAIS-WISDOM-v1.0.0';
+export const MONTAIGNE_ESSAIS_WISDOM_VERSION = 'LUCKEY-MONTAIGNE-ESSAIS-WISDOM-v2.0.0';
 
 export interface MontaigneThematicEssay {
   essayKey: string;
@@ -45,6 +45,11 @@ export interface MontaigneEssaisWisdomResult {
   montaignePersonalCounsel: {
     counselTitle: string;
     humanisticGuidance: string;
+  };
+  montaigneEssaisSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
   };
 }
 
@@ -108,11 +113,32 @@ const HUMANIST_MAXIMS: MontaigneHumanistMaxim[] = [
   },
 ];
 
-export function calculateMontaigneEssaisWisdom(profile: UserProfile): MontaigneEssaisWisdomResult {
+function formatMontaigneEssaisKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
+
+function describeMontaigneEssaisStage(score: number): string {
+  if (score >= 90) return '원융 관용(Tolérance)기 (독단을 내려놓고 삶의 자연스러움과 다름을 품는 흐름)';
+  if (score >= 78) return '자기성찰 중용기 (솔직한 자기 관찰로 일상의 균형을 가꾸는 국면)';
+  return '케 세주(Que sais-je?) 성찰기 (섣부른 확신을 멈추고 겸허히 묻는 흐름)';
+}
+
+export function calculateMontaigneEssaisWisdom(
+  profile: UserProfile,
+  query?: string,
+  now: Date = new Date(),
+): MontaigneEssaisWisdomResult {
   const seedString =
     (profile?.basic?.birthdate ?? (profile as any)?.birthdate ?? '1990-01-01') +
     (profile?.basic?.name ?? (profile as any)?.name ?? 'User') +
     (profile?.basic?.birthtime ?? (profile as any)?.birthtime ?? '12:00') +
+    (query ?? '') +
     'MontaigneEssaisWisdom';
 
   let hash = 0;
@@ -140,9 +166,18 @@ export function calculateMontaigneEssaisWisdom(profile: UserProfile): MontaigneE
     `${activeThematicEssay.practicalReflection} 또한 몽테뉴의 격언인 '${focalHumanistMaxim.maximKo}'(${focalHumanistMaxim.humanistDimension})을 기억하여, ` +
     `${focalHumanistMaxim.guidance}`;
 
+  const montaigneEssaisSynthesisMatrix = {
+    dominantTension: `${activeThematicEssay.essayTitleKo} ↔ ${focalHumanistMaxim.humanistDimension}`,
+    alignmentState:
+      queSaisJeInquiryScore >= 85 && naturalModerationScore >= 85
+        ? '지적 겸양과 일상 중용의 인문주의적 조화'
+        : '유연한 성찰을 통해 편견을 덜어내고 평정을 찾는 국면',
+    integratedAction: `${activeThematicEssay.practicalReflection} (${focalHumanistMaxim.guidance})`,
+  };
+
   return {
     engineVersion: MONTAIGNE_ESSAIS_WISDOM_VERSION,
-    calculatedAtKst: new Date().toISOString(),
+    calculatedAtKst: formatMontaigneEssaisKstTimestamp(now),
     queSaisJeInquiryScore,
     selfIntrospectionHonestyScore,
     naturalModerationScore,
@@ -154,22 +189,31 @@ export function calculateMontaigneEssaisWisdom(profile: UserProfile): MontaigneE
       counselTitle,
       humanisticGuidance,
     },
+    montaigneEssaisSynthesisMatrix,
   };
 }
 
 export function formatMontaigneEssaisWisdomPrompt(res: MontaigneEssaisWisdomResult): string {
-  return [
+  const lines = [
     `【몽테뉴 수상록(Essais) 회의주의·자기성찰 지표】`,
-    `- "내가 무엇을 아는가?"(도그마 탈피 회의 지수): ${res.queSaisJeInquiryScore}/100`,
-    `- 자기관찰 내면 성찰 정직도: ${res.selfIntrospectionHonestyScore}/100`,
-    `- 자연스러움과 일상 중용 조화도: ${res.naturalModerationScore}/100`,
-    `- 타자 존중 관용(Tolérance) 지수: ${res.humanToleranceEmpathyScore}/100`,
-    `- 유한성 수용과 평정심: ${res.equanimityMortalityScore}/100`,
+    `- 엔진 버전: ${res.engineVersion} | 연산 시각: ${res.calculatedAtKst}`,
+    `- "내가 무엇을 아는가?"(도그마 탈피 회의 지수): ${describeMontaigneEssaisStage(res.queSaisJeInquiryScore)}`,
+    `- 자기관찰 내면 성찰 정직도: ${describeMontaigneEssaisStage(res.selfIntrospectionHonestyScore)}`,
+    `- 자연스러움과 일상 중용 조화도: ${describeMontaigneEssaisStage(res.naturalModerationScore)}`,
+    `- 타자 존중 관용(Tolérance) 지수: ${describeMontaigneEssaisStage(res.humanToleranceEmpathyScore)}`,
+    `- 유한성 수용과 평정심: ${describeMontaigneEssaisStage(res.equanimityMortalityScore)}`,
     `- 핵심 수상록 에세이: ${res.activeThematicEssay.essayTitleKo} [${res.activeThematicEssay.essayTitleFrench}]`,
     `- 인문주의 철학적 사유: ${res.activeThematicEssay.corePhilosophicalIdea}`,
     `- 실천적 성찰 조언: ${res.activeThematicEssay.practicalReflection}`,
     `- 몽테뉴 핵심 격언: "${res.focalHumanistMaxim.maximKo}" (${res.focalHumanistMaxim.humanistDimension})`,
     `- 성찰 지침: ${res.focalHumanistMaxim.guidance}`,
     `- 인문학적 삶의 예술 지침: ${res.montaignePersonalCounsel.humanisticGuidance}`,
-  ].join('\n');
+  ];
+  if (res.montaigneEssaisSynthesisMatrix) {
+    lines.push(
+      `- 교차 매트릭스 [핵심 긴장: ${res.montaigneEssaisSynthesisMatrix.dominantTension} | 조율 상태: ${res.montaigneEssaisSynthesisMatrix.alignmentState}]`,
+      `- 통합 실천: ${res.montaigneEssaisSynthesisMatrix.integratedAction}`,
+    );
+  }
+  return lines.join('\n');
 }

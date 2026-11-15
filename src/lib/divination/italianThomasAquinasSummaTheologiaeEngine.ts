@@ -10,12 +10,12 @@
  * 4. 자연법(Lex Naturalis)과 실천적 지혜(Prudentia): 인간 본성에 새겨진 선을 행하고 악을 피하라는 근본 도덕 원칙을 일상에서 실천하는 현실 분별력.
  * 5. 지복직관(Visio Beatifica)과 최고선(Summum Bonum): 세상의 덧없는 물질적 성공이나 쾌락을 넘어 존재의 궁극적 행복과 목적을 향해 나아가는 삶의 명료함.
  *
- * @version LUCKEY-THOMAS-AQUINAS-SUMMA-THEOLOGIAE-v1.0.0
+ * @version LUCKEY-THOMAS-AQUINAS-SUMMA-THEOLOGIAE-v2.0.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const ITALIAN_THOMAS_AQUINAS_VERSION = 'LUCKEY-THOMAS-AQUINAS-SUMMA-THEOLOGIAE-v1.0.0';
+export const ITALIAN_THOMAS_AQUINAS_VERSION = 'LUCKEY-THOMAS-AQUINAS-SUMMA-THEOLOGIAE-v2.0.0';
 
 export interface AquinasTheme {
   themeKey: string;
@@ -48,6 +48,11 @@ export interface ThomasAquinasSummaTheologiaeResult {
   aquinasComprehensiveGuidance: {
     guidanceTitle: string;
     philosophicalCounsel: string;
+  };
+  aquinasSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
   };
 }
 
@@ -127,8 +132,26 @@ export const AQUINAS_APHORISMS: AquinasAphorism[] = [
   },
 ];
 
+function formatAquinasKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
+
+function describeAquinasStage(score: number): string {
+  if (score >= 90) return '지복직관(Visio Beatifica)기 (이성과 신앙이 최고선 안에서 명석하게 합일되는 흐름)';
+  if (score >= 80) return '7대 덕론 조화기 (사주덕과 삼향주덕이 일상 분별력 속에서 균형을 이루는 국면)';
+  return '인과 질서 성찰기 (자연법과 양심의 빛으로 근본 원인을 가다듬는 흐름)';
+}
+
 export function calculateThomasAquinasSummaTheologiae(
-  profile: UserProfile
+  profile: UserProfile,
+  query?: string,
+  now: Date = new Date(),
 ): ThomasAquinasSummaTheologiaeResult {
   const p = profile as any;
   const name = profile?.basic?.name ?? p?.name ?? '방문자';
@@ -136,7 +159,7 @@ export function calculateThomasAquinasSummaTheologiae(
   const birthTime = profile?.basic?.birthtime ?? p?.birthTime ?? p?.birthtime ?? '12:00';
   const gender = profile?.basic?.gender ?? p?.gender ?? 'neutral';
 
-  const seedString = `THOMAS-AQUINAS-SUMMA:${name}:${birthDate}:${birthTime}:${gender}`;
+  const seedString = `THOMAS-AQUINAS-SUMMA:${name}:${birthDate}:${birthTime}:${gender}:${query ?? ''}`;
 
   let hash = 0;
   for (let i = 0; i < seedString.length; i++) {
@@ -163,9 +186,18 @@ export function calculateThomasAquinasSummaTheologiae(
     `${activeAquinasTheme.practicalCounsel} 아울러 아퀴나스의 명경구 "${focalAquinasAphorism.aphorismKo}"(${focalAquinasAphorism.aphorismLatin})을 마음에 새기고, ` +
     `${focalAquinasAphorism.actionGuidance}`;
 
+  const aquinasSynthesisMatrix = {
+    dominantTension: `${activeAquinasTheme.themeTitleKo} ↔ ${focalAquinasAphorism.summaReference}`,
+    alignmentState:
+      reasonFaithHarmonyScore >= 85 && beatificVisionSupremeGoodScore >= 85
+        ? '이성과 신앙의 조화 및 최고선 지향의 스콜라적 합일'
+        : '자연법적 분별력(Prudentia)으로 7대 덕목의 균형을 잡는 국면',
+    integratedAction: `${activeAquinasTheme.practicalCounsel} (${focalAquinasAphorism.actionGuidance})`,
+  };
+
   return {
     engineVersion: ITALIAN_THOMAS_AQUINAS_VERSION,
-    calculatedAtKst: new Date().toISOString(),
+    calculatedAtKst: formatAquinasKstTimestamp(now),
     reasonFaithHarmonyScore,
     fiveWaysCausalInsightScore,
     cardinalTheologicalVirtuesBalanceScore,
@@ -177,17 +209,19 @@ export function calculateThomasAquinasSummaTheologiae(
       guidanceTitle,
       philosophicalCounsel,
     },
+    aquinasSynthesisMatrix,
   };
 }
 
 export function formatThomasAquinasSummaTheologiaePrompt(res: ThomasAquinasSummaTheologiaeResult): string {
-  return [
+  const lines = [
     `【토마스 아퀴나스 《신학대전》 이성·신앙 조화 & 덕론 종합 지표】`,
-    `- 이성·신앙 조화도(Ratio & Fides): ${res.reasonFaithHarmonyScore}/100`,
-    `- 우주적 인과 질서 통찰도(Quinque Viae): ${res.fiveWaysCausalInsightScore}/100`,
-    `- 7대 덕목 종합 밸런스(Septem Virtutes): ${res.cardinalTheologicalVirtuesBalanceScore}/100`,
-    `- 자연법 실천 분별력(Lex Naturalis & Prudentia): ${res.naturalMoralLawPrudenceScore}/100`,
-    `- 지복직관 최고선 지향도(Visio Beatifica): ${res.beatificVisionSupremeGoodScore}/100`,
+    `- 엔진 버전: ${res.engineVersion} | 연산 시각: ${res.calculatedAtKst}`,
+    `- 이성·신앙 조화도(Ratio & Fides): ${describeAquinasStage(res.reasonFaithHarmonyScore)}`,
+    `- 우주적 인과 질서 통찰도(Quinque Viae): ${describeAquinasStage(res.fiveWaysCausalInsightScore)}`,
+    `- 7대 덕목 종합 밸런스(Septem Virtutes): ${describeAquinasStage(res.cardinalTheologicalVirtuesBalanceScore)}`,
+    `- 자연법 실천 분별력(Lex Naturalis & Prudentia): ${describeAquinasStage(res.naturalMoralLawPrudenceScore)}`,
+    `- 지복직관 최고선 지향도(Visio Beatifica): ${describeAquinasStage(res.beatificVisionSupremeGoodScore)}`,
     `- 핵심 스콜라 테마: ${res.activeAquinasTheme.themeTitleKo} [${res.activeAquinasTheme.themeTitleLatin}]`,
     `- 신학·철학적 통찰: ${res.activeAquinasTheme.theologicalInsight}`,
     `- 실천적 조언: ${res.activeAquinasTheme.practicalCounsel}`,
@@ -195,5 +229,12 @@ export function formatThomasAquinasSummaTheologiaePrompt(res: ThomasAquinasSumma
     `- 라틴어 원문: "${res.focalAquinasAphorism.aphorismLatin}" [${res.focalAquinasAphorism.summaReference}]`,
     `- 구체적 실천 지침: ${res.focalAquinasAphorism.actionGuidance}`,
     `- 종합 통찰 권면: ${res.aquinasComprehensiveGuidance.philosophicalCounsel}`,
-  ].join('\n');
+  ];
+  if (res.aquinasSynthesisMatrix) {
+    lines.push(
+      `- 교차 매트릭스 [핵심 긴장: ${res.aquinasSynthesisMatrix.dominantTension} | 조율 상태: ${res.aquinasSynthesisMatrix.alignmentState}]`,
+      `- 통합 실천: ${res.aquinasSynthesisMatrix.integratedAction}`,
+    );
+  }
+  return lines.join('\n');
 }
