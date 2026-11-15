@@ -7921,3 +7921,27 @@ test('reworked Rumi engine takes the question and KST rhythm without exposing ra
   assert.ok(prompt.includes('오늘의 실천 의례'));
   assert.ok(prompt.includes(rep.activeSpiritualStation.stationNameKo));
 });
+
+test('Socratic, Spinoza, and Kierkegaard v2.1.0 engines expose qualitative stages and KST without /100 or %', () => {
+  const now = new Date('2026-11-15T12:40:00Z');
+  const socrates = calculateSocraticMaieuticDaimon(profile, '이직과 선택 앞에서 무엇을 물어야 할까요?', now);
+  assert.equal(socrates.engineVersion, 'LUCKEY-SOCRATIC-MAIEUTIC-DAIMON-v2.1.0');
+  assert.ok(socrates.dailyPracticeRitual.length > 0 && socrates.reflectiveQuestion.length > 0 && socrates.interpretiveBoundary.length > 0);
+  const socratesPrompt = formatSocraticMaieuticDaimonPrompt(socrates);
+  assert.ok(!socratesPrompt.includes('/100') && !socratesPrompt.includes('%'));
+  assert.ok(socratesPrompt.includes('해석 경계') && socratesPrompt.includes('+09:00'));
+
+  const spinoza = calculateBaruchSpinozaEthicaConatus(profile, now, '상대방과의 갈등으로 마음이 무거워요');
+  assert.equal(spinoza.engineVersion, 'LUCKEY-SPINOZA-CONATUS-AMORDEI-v2.1.0');
+  assert.ok(spinoza.calculatedAtKst.endsWith('+09:00'));
+  const spinozaPrompt = formatBaruchSpinozaEthicaConatusPrompt(spinoza);
+  assert.ok(!spinozaPrompt.includes('/100') && !spinozaPrompt.includes('%'));
+  assert.ok(spinozaPrompt.includes('에티카 매트릭스') && spinozaPrompt.includes('+09:00'));
+
+  const kierkegaard = calculateKierkegaardStagesOfLife(profile, '불안 앞에서 단독자로서 어떻게 결단할까요?', now);
+  assert.equal(kierkegaard.engineVersion, 'LUCKEY-KIERKEGAARD-STAGES-OF-LIFE-v2.1.0');
+  assert.ok(kierkegaard.dailyPracticeRitual.length > 0 && kierkegaard.interpretiveBoundary.length > 0);
+  const kierkegaardPrompt = formatKierkegaardStagesOfLifePrompt(kierkegaard);
+  assert.ok(!kierkegaardPrompt.includes('/100') && !kierkegaardPrompt.includes('%'));
+  assert.ok(kierkegaardPrompt.includes('일상 실천 의례') && kierkegaardPrompt.includes('해석 경계'));
+});
