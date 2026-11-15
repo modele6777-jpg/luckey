@@ -10,12 +10,12 @@
  * 4. 여우의 지혜와 사자의 용맹(Volpe e Leone): 간교한 덫을 알아채는 여우의 기민한 직관과 사나운 늑대를 내쫓는 사자의 결단력을 상황에 따라 겸비.
  * 5. 실효적 진리(Verità effettuale della cosa): 공허한 환상이나 탁상공론의 당위론을 버리고, 현실의 실질적인 인과와 역학 관계를 꿰뚫어 보는 냉철한 분별력.
  *
- * @version LUCKEY-MACHIAVELLI-VIRTU-FORTUNA-v1.0.0
+ * @version LUCKEY-MACHIAVELLI-VIRTU-FORTUNA-v2.0.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const ITALIAN_MACHIAVELLI_VERSION = 'LUCKEY-MACHIAVELLI-VIRTU-FORTUNA-v1.0.0';
+export const ITALIAN_MACHIAVELLI_VERSION = 'LUCKEY-MACHIAVELLI-VIRTU-FORTUNA-v2.0.0';
 
 export interface MachiavelliTheme {
   themeKey: string;
@@ -48,6 +48,11 @@ export interface MachiavelliVirtuFortunaResult {
   machiavelliPersonalCounsel: {
     counselTitle: string;
     philosophicalGuidance: string;
+  };
+  machiavelliSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
   };
 }
 
@@ -134,14 +139,34 @@ export const MACHIAVELLI_APHORISMS: MachiavelliAphorism[] = [
   },
 ];
 
-export function calculateMachiavelliVirtuFortuna(profile: UserProfile): MachiavelliVirtuFortunaResult {
+function formatMachiavelliKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
+
+function describeMachiavelliStage(score: number): string {
+  if (score >= 88) return '비르투(Virtù) 주도기 (운명의 격류를 뚫고 판을 장악하는 과단성)';
+  if (score >= 78) return '리스콘트로(Riscontro) 조화기 (시대의 흐름에 맞추어 태세를 유연하게 전환하는 국면)';
+  return '제방 구축(Argini e Ripari)기 (실효적 진리를 직시하며 방비와 역량을 다지는 흐름)';
+}
+
+export function calculateMachiavelliVirtuFortuna(
+  profile: UserProfile,
+  query?: string,
+  now: Date = new Date(),
+): MachiavelliVirtuFortunaResult {
   const p = profile as any;
   const name = profile?.basic?.name ?? p?.name ?? '방문자';
   const birthDate = profile?.basic?.birthdate ?? p?.birthDate ?? p?.birthdate ?? '1990-01-01';
   const birthTime = profile?.basic?.birthtime ?? p?.birthTime ?? p?.birthtime ?? '12:00';
   const gender = profile?.basic?.gender ?? p?.gender ?? 'neutral';
 
-  const seedString = `MACHIAVELLI-VIRTU:${name}:${birthDate}:${birthTime}:${gender}`;
+  const seedString = `MACHIAVELLI-VIRTU:${name}:${birthDate}:${birthTime}:${gender}:${query ?? ''}`;
 
   let hash = 0;
   for (let i = 0; i < seedString.length; i++) {
@@ -168,9 +193,18 @@ export function calculateMachiavelliVirtuFortuna(profile: UserProfile): Machiave
     `${activeMachiavelliTheme.strategicCounsel} 아울러 마키아벨리의 명제인 "${focalMachiavelliAphorism.aphorismKo}"(${focalMachiavelliAphorism.aphorismItalian})을 상기하며, ` +
     `${focalMachiavelliAphorism.practicalAction}`;
 
+  const machiavelliSynthesisMatrix = {
+    dominantTension: `${activeMachiavelliTheme.themeTitleKo} ↔ ${focalMachiavelliAphorism.textualContext}`,
+    alignmentState:
+      virtuDecisiveCompetenceScore >= 85 && effectualTruthRealismScore >= 85
+        ? '비르투의 결단과 실효적 진리 직시의 전략적 합일'
+        : '제방을 쌓으며 시대 변화(Riscontro)에 기민하게 대응하는 국면',
+    integratedAction: `${activeMachiavelliTheme.strategicCounsel} (${focalMachiavelliAphorism.practicalAction})`,
+  };
+
   return {
     engineVersion: ITALIAN_MACHIAVELLI_VERSION,
-    calculatedAtKst: new Date().toISOString(),
+    calculatedAtKst: formatMachiavelliKstTimestamp(now),
     virtuDecisiveCompetenceScore,
     fortunaNavigationMasteryScore,
     riscontroTemporalAdaptabilityScore,
@@ -182,17 +216,19 @@ export function calculateMachiavelliVirtuFortuna(profile: UserProfile): Machiave
       counselTitle,
       philosophicalGuidance,
     },
+    machiavelliSynthesisMatrix,
   };
 }
 
 export function formatMachiavelliVirtuFortunaPrompt(res: MachiavelliVirtuFortunaResult): string {
-  return [
+  const lines = [
     `【니콜로 마키아벨리 《군주론》 비르투 & 포르투나 지표】`,
-    `- 비르투 과단성 지수(Virtù): ${res.virtuDecisiveCompetenceScore}/100`,
-    `- 포르투나 운명 통제력(Fortuna Navigation): ${res.fortunaNavigationMasteryScore}/100`,
-    `- 시대·상황 조화 적응도(Riscontro con i Tempi): ${res.riscontroTemporalAdaptabilityScore}/100`,
-    `- 여우·사자 균형 역량(Volpe e Leone): ${res.foxLionPrudentBalanceScore}/100`,
-    `- 실효적 진리 통찰력(Verità Effettuale): ${res.effectualTruthRealismScore}/100`,
+    `- 엔진 버전: ${res.engineVersion} | 연산 시각: ${res.calculatedAtKst}`,
+    `- 비르투 과단성 지수(Virtù): ${describeMachiavelliStage(res.virtuDecisiveCompetenceScore)}`,
+    `- 포르투나 운명 통제력(Fortuna Navigation): ${describeMachiavelliStage(res.fortunaNavigationMasteryScore)}`,
+    `- 시대·상황 조화 적응도(Riscontro con i Tempi): ${describeMachiavelliStage(res.riscontroTemporalAdaptabilityScore)}`,
+    `- 여우·사자 균형 역량(Volpe e Leone): ${describeMachiavelliStage(res.foxLionPrudentBalanceScore)}`,
+    `- 실효적 진리 통찰력(Verità Effettuale): ${describeMachiavelliStage(res.effectualTruthRealismScore)}`,
     `- 핵심 전략 테마: ${res.activeMachiavelliTheme.themeTitleKo} [${res.activeMachiavelliTheme.themeTitleItalian}]`,
     `- 현실주의 정치 통찰: ${res.activeMachiavelliTheme.politicalInsight}`,
     `- 전략적 조언: ${res.activeMachiavelliTheme.strategicCounsel}`,
@@ -200,5 +236,12 @@ export function formatMachiavelliVirtuFortunaPrompt(res: MachiavelliVirtuFortuna
     `- 이탈리아어 원문: "${res.focalMachiavelliAphorism.aphorismItalian}" [${res.focalMachiavelliAphorism.textualContext}]`,
     `- 실천적 행동 지침: ${res.focalMachiavelliAphorism.practicalAction}`,
     `- 통합 전략 권면: ${res.machiavelliPersonalCounsel.philosophicalGuidance}`,
-  ].join('\n');
+  ];
+  if (res.machiavelliSynthesisMatrix) {
+    lines.push(
+      `- 교차 매트릭스 [핵심 긴장: ${res.machiavelliSynthesisMatrix.dominantTension} | 조율 상태: ${res.machiavelliSynthesisMatrix.alignmentState}]`,
+      `- 통합 실천: ${res.machiavelliSynthesisMatrix.integratedAction}`,
+    );
+  }
+  return lines.join('\n');
 }
