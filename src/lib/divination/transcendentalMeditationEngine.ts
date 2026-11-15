@@ -17,7 +17,17 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const TRANSCENDENTAL_MEDITATION_VERSION = 'LUCKEY-ZEN-v1.0.0';
+export const TRANSCENDENTAL_MEDITATION_VERSION = 'LUCKEY-ZEN-v2.0.0';
+
+function formatZenKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
 
 export type MeditationStyle = 
   | '비파사나 통찰 관조 (Vipassana Insight)'
@@ -42,6 +52,7 @@ export interface MeditationPrescription {
 export interface TranscendentalMeditationReport {
   engineVersion: string;
   calculatedAt: string;
+  calculatedAtKst: string;
   equanimityScore: number;       // 마음의 평정심 지수 (0~100)
   stressReleasePotential: number;// 스트레스 즉각 방출 잠재력 (0~100)
   zenEnergyArchetype: string;    // 명상 페르소나 아키타입
@@ -52,11 +63,17 @@ export interface TranscendentalMeditationReport {
     mantraText: string;
   };
   synthesisPromptGuidance: string;
+  zenSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
 }
 
 export function runTranscendentalMeditationEngine(
   profile?: UserProfile,
-  targetDate: Date = new Date()
+  targetDate: Date = new Date(),
+  question?: string
 ): TranscendentalMeditationReport {
   const sajuRes = calculateDetailedSaju(profile || null);
 
@@ -148,23 +165,34 @@ export function runTranscendentalMeditationEngine(
     }
   };
 
-  const synthesisPromptGuidance = `[LUCKEY 초월 명상 & 마음 안정 지능 v1.0.0]
-- 명상 페르소나 아키타입: ${zenEnergyArchetype} (마음 평정 지수: ${equanimityScore}점 / 이완 잠재력: ${stressReleasePotential}점)
+  const calculatedAtKst = formatZenKstTimestamp(targetDate);
+  const q = (question || '').trim();
+  const zenSynthesisMatrix = {
+    dominantTension: `${zenEnergyArchetype} ↔ ${intendedMindState}`,
+    alignmentState: `${ichingZenState.hexagramName} · ${optimalTimeWindow}`,
+    integratedAction: `${mentalAnchor}${q ? ` [질문 맥락: ${q}]` : ''}`,
+  };
+
+  const synthesisPromptGuidance = `[LUCKEY 초월 명상 & 마음 안정 지능 v2.0.0 | ${calculatedAtKst}]
+- 명상 페르소나 아키타입: ${zenEnergyArchetype}
 - 추천 명상 양식: ${primaryStyle}
 - 명상 의도: ${intendedMindState}
 - 오늘 최적 명상 윈도우: ${optimalTimeWindow}
 - 호흡 및 자세: [자세] ${posture} | [호흡] ${breathRatio} | [닻] ${mentalAnchor}
-- 주역 젠 만트라 (${ichingZenState.hexagramName}): "${ichingZenState.mantraText}"`;
+- 주역 젠 만트라 (${ichingZenState.hexagramName}): "${ichingZenState.mantraText}"
+- 초월 명상 교차 매트릭스: 핵심 긴장(${zenSynthesisMatrix.dominantTension}) · 조율 상태(${zenSynthesisMatrix.alignmentState}) · 통합 실천(${zenSynthesisMatrix.integratedAction})`;
 
   return {
     engineVersion: TRANSCENDENTAL_MEDITATION_VERSION,
     calculatedAt: targetDate.toISOString(),
+    calculatedAtKst,
     equanimityScore,
     stressReleasePotential,
     zenEnergyArchetype,
     prescription,
     ichingZenState,
-    synthesisPromptGuidance
+    synthesisPromptGuidance,
+    zenSynthesisMatrix,
   };
 }
 
@@ -174,10 +202,11 @@ export function calculateTranscendentalMeditation(params?: {
   profile?: UserProfile | null;
   saju?: SajuAnalysisResult | null;
   targetDate?: Date;
+  question?: string;
 }): TranscendentalMeditationResult {
   const profile = params?.profile || undefined;
   const targetDate = params?.targetDate || new Date();
-  return runTranscendentalMeditationEngine(profile, targetDate);
+  return runTranscendentalMeditationEngine(profile, targetDate, params?.question);
 }
 
 export function formatTranscendentalMeditationPrompt(res: TranscendentalMeditationResult): string {

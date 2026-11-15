@@ -15,7 +15,17 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const TOLTEC_NAGUAL_DREAMING_ENGINE_VERSION = '1.0.0';
+export const TOLTEC_NAGUAL_DREAMING_ENGINE_VERSION = '2.0.0';
+
+function formatToltecKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
 
 export interface ToltecAgreement {
   id: string;
@@ -30,6 +40,7 @@ export interface ToltecAgreement {
 export interface ToltecNagualDreamingReport {
   engineVersion: string;
   timestamp: string;
+  calculatedAtKst: string;
   nagualRatio: number; // 나구알(영적/지각자) 비율 (30 ~ 70%)
   tonalRatio: number; // 토날(물질/사회적 에고) 비율 (30 ~ 70%)
   secondAttentionIndex: number; // 0 ~ 100 제2주의(자각몽/현실 재창조) 지수
@@ -39,6 +50,11 @@ export interface ToltecNagualDreamingReport {
   primaryAgreement: ToltecAgreement; // 가장 강화가 시급한 핵심 약속
   dreamerGuidance: string; // 꿈꾸는 자의 현실 조율 지침
   warriorStalkingRitual: string; // 톨텍 전사의 자기 정화 리추얼
+  toltecSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
 }
 
 const TOLTEC_AGREEMENTS_BASE: Omit<ToltecAgreement, 'masteryScore'>[] = [
@@ -128,12 +144,19 @@ export function calculateToltecNagualDreaming(
   const mitoteClarityScore = Math.min(100, Math.max(35, 48 + ((seed * 11) % 49)));
   const stalkingMasteryScore = Math.min(100, Math.max(42, Math.floor((primaryAgreement.masteryScore * 0.4 + mitoteClarityScore * 0.6))));
 
-  const dreamerGuidance = `현재 토날(${tonalRatio}%)과 나구알(${nagualRatio}%)의 흐름 속에서, 기생충의 소음(미토테)을 잠재우기 위해 가장 시급한 열쇠는 '${primaryAgreement.nameKo}'입니다. 타인의 투사와 내면의 지레짐작을 분리할 때 제2주의가 깨어납니다.`;
+  const dreamerGuidance = `현재 토날(물질·에고)과 나구알(영적·지각자)의 흐름 속에서, 기생충의 소음(미토테)을 잠재우기 위해 가장 시급한 열쇠는 '${primaryAgreement.nameKo}'입니다. 타인의 투사와 내면의 지레짐작을 분리할 때 제2주의가 깨어납니다.`;
   const warriorStalkingRitual = `호흡을 가다듬고 가슴에 손을 얹은 뒤 선언하십시오: "나는 타인의 환영에 반응하지 않으며, 오직 나의 무결한 진실 속에서 깨어 꿈꾼다." (${primaryAgreement.impeccableAction})`;
+  const calculatedAtKst = formatToltecKstTimestamp(now);
+  const toltecSynthesisMatrix = {
+    dominantTension: `${primaryAgreement.nameKo} ↔ ${primaryAgreement.shadowTrap}`,
+    alignmentState: nagualRatio >= tonalRatio ? '나구알(지각자) 우위' : '토날(현실) 우위',
+    integratedAction: `${primaryAgreement.impeccableAction}${question ? ` [질문 맥락: ${question}]` : ''}`,
+  };
 
   return {
     engineVersion: TOLTEC_NAGUAL_DREAMING_ENGINE_VERSION,
     timestamp: now.toISOString(),
+    calculatedAtKst,
     nagualRatio,
     tonalRatio,
     secondAttentionIndex,
@@ -143,18 +166,21 @@ export function calculateToltecNagualDreaming(
     primaryAgreement,
     dreamerGuidance,
     warriorStalkingRitual,
+    toltecSynthesisMatrix,
   };
 }
 
 export function formatToltecNagualDreamingPrompt(rep: ToltecNagualDreamingReport): string {
+  const matrixLine = rep.toltecSynthesisMatrix
+    ? `\n· 톨텍 나구알 교차 매트릭스: 핵심 긴장(${rep.toltecSynthesisMatrix.dominantTension}) · 조율 상태(${rep.toltecSynthesisMatrix.alignmentState}) · 통합 실천(${rep.toltecSynthesisMatrix.integratedAction})`
+    : '';
   return `[고대 톨텍 나구알리즘 4대 약속 & 꿈의 제2주의 실측 데이터]
-· 엔진 버전: v${rep.engineVersion}
-· 토날 vs 나구알 밸런스: 토날(물질/에고) ${rep.tonalRatio}% vs 나구알(영적/지각자) ${rep.nagualRatio}%
-· 제2주의(현실 재창조) 지수: ${rep.secondAttentionIndex}/100 | 미토테(기생충 소음) 정화도: ${rep.mitoteClarityScore}/100 | 스토킹 숙달도: ${rep.stalkingMasteryScore}/100
-· 4대 약속 숙달 현황:
-${rep.agreements.map((a) => `  - ${a.nameKo}: ${a.masteryScore}/100 [위반 덫: ${a.shadowTrap}]`).join('\n')}
-· 최우선 의식 수복 약속: [${rep.primaryAgreement.nameKo}] (숙달도 ${rep.primaryAgreement.masteryScore}%)
+· 엔진 버전: v${rep.engineVersion} | ${rep.calculatedAtKst}
+· 토날 vs 나구알 균형: ${rep.nagualRatio >= rep.tonalRatio ? '나구알(영적·지각자) 우위' : '토날(물질·에고) 우위'}
+· 4대 약속 핵심 덫:
+${rep.agreements.map((a) => `  - ${a.nameKo}: [위반 덫: ${a.shadowTrap}]`).join('\n')}
+· 최우선 의식 수복 약속: [${rep.primaryAgreement.nameKo}]
   - 실천 행동: ${rep.primaryAgreement.impeccableAction}
 · 꿈꾸는 자의 현실 조율 지침: ${rep.dreamerGuidance}
-· 톨텍 전사 스토킹 리추얼: ${rep.warriorStalkingRitual}`;
+· 톨텍 전사 스토킹 리추얼: ${rep.warriorStalkingRitual}${matrixLine}`;
 }
