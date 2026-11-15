@@ -24,6 +24,18 @@ import {
   type FiveElement
 } from '../sajuAnalysis';
 
+export const ENERGETIC_PRESCRIPTION_ENGINE_VERSION = 'LUCKEY-EPE-v2.0.0';
+
+function formatEnergeticKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
+
 export type ElementBalanceStatus = '완전결핍(Void)' | '부족(Deficient)' | '적정(Balanced)' | '과다(Excess)';
 
 export interface SingleElementDiagnosis {
@@ -102,6 +114,13 @@ export interface EnergeticPrescriptionResult {
 
   // 4. 라이프스타일 & 공간 오행 처방
   lifestyleRemedy: LifestyleRemedy;
+
+  // 5. 교차 매트릭스
+  energeticSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
 }
 
 // 오행별 메타데이터 매핑
@@ -364,10 +383,11 @@ const ELEMENT_META: Record<FiveElement, {
 export function calculateEnergeticPrescription(options: {
   profile?: UserProfile;
   currentDate?: Date;
+  question?: string;
 }): EnergeticPrescriptionResult {
   const now = options.currentDate || new Date();
   const nowUtcIso = now.toISOString();
-  const nowKstIso = new Date(now.getTime() + 9 * 60 * 60 * 1000).toISOString().replace('Z', '+09:00');
+  const nowKstIso = formatEnergeticKstTimestamp(now);
 
   const saju: SajuAnalysisResult = calculateDetailedSaju(options.profile);
 
@@ -473,8 +493,15 @@ export function calculateEnergeticPrescription(options: {
     dailyAffirmation: primaryMeta.affirmation,
   };
 
+  const q = (options.question || '').trim();
+  const energeticSynthesisMatrix = {
+    dominantTension: `결핍 ${primaryLacking}(${counts[primaryLacking]}자) ↔ ${vitalityLevel}`,
+    alignmentState: `용신 ${therapeuticYongsin} · 희신 ${supportiveHeeshin} (${primaryMeta.chakra})`,
+    integratedAction: `${microRituals[0]?.title || primaryMeta.affirmation}${q ? ` [질문 맥락: ${q}]` : ''}`,
+  };
+
   return {
-    engineVersion: 'LUCKEY-EPE-v1.0.0',
+    engineVersion: ENERGETIC_PRESCRIPTION_ENGINE_VERSION,
     calculatedAtUtc: nowUtcIso,
     calculatedAtKst: nowKstIso,
     timestamp: now.getTime(),
@@ -509,6 +536,7 @@ export function calculateEnergeticPrescription(options: {
 
     microRituals,
     lifestyleRemedy,
+    energeticSynthesisMatrix,
   };
 }
 
@@ -555,6 +583,10 @@ ${ritualLines}
    - 아로마 에센셜 오일: ${l.aromaEssentialOils.join(', ')}
    - 풍수 방위 & 소품: ${l.fengShuiDirection} 방향 | 추천 오브제: ${l.spatialObject}
    - 데일리 확언 문장: "${l.dailyAffirmation}"
+${res.energeticSynthesisMatrix ? `5. [교차 매트릭스]:
+   - 핵심 긴장: ${res.energeticSynthesisMatrix.dominantTension}
+   - 조율 상태: ${res.energeticSynthesisMatrix.alignmentState}
+   - 통합 실천: ${res.energeticSynthesisMatrix.integratedAction}` : ''}
 ======================================================================
 [★ 루시 답변 가이드]:
 - 사용자가 피로, 건강, 개운, 오행, 라이프스타일을 물을 때 위 실측 데이터를 기반으로 지혜롭고 자상하게 처방해줘.

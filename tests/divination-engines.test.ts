@@ -26,6 +26,8 @@ import { calculateNobleNetwork, formatNobleNetworkPrompt, NOBLE_NETWORK_VERSION 
 import { calculateVoicePersona, formatVoicePersonaPrompt, VOICE_PERSONA_VERSION } from '../src/lib/divination/voicePersonaEngine';
 import { calculateContractShield, formatContractShieldPrompt, CONTRACT_SHIELD_VERSION } from '../src/lib/divination/contractShieldEngine';
 import { calculateLifeDomainWheel, formatLifeDomainWheelPrompt, LIFE_DOMAIN_WHEEL_VERSION } from '../src/lib/divination/lifeDomainWheelEngine';
+import { calculateEnergeticPrescription, formatEnergeticPrescriptionPrompt, ENERGETIC_PRESCRIPTION_ENGINE_VERSION } from '../src/lib/divination/energeticPrescriptionEngine';
+import { calculateInstantDecision, formatInstantDecisionPrompt, INSTANT_DECISION_ENGINE_VERSION } from '../src/lib/divination/instantDecisionEngine';
 import { calculateDeepWorkFlow, formatDeepWorkFlowPrompt, DEEP_WORK_FLOW_VERSION } from '../src/lib/divination/deepWorkFlowEngine';
 import { calculateSleepSubconscious, formatSleepSubconsciousPrompt, SLEEP_SUBCONSCIOUS_VERSION } from '../src/lib/divination/sleepSubconsciousEngine';
 import { calculateQuantumLeapTiming, formatQuantumLeapPrompt, QUANTUM_LEAP_VERSION } from '../src/lib/divination/quantumLeapTimingEngine';
@@ -2220,8 +2222,10 @@ test('Contract Shield Engine: 계약 분쟁 리스크 및 5대 쉴드 체크리�
 });
 
 test('Life Domain Wheel Engine: 6대 핵심 라이프 도메인 밸런스 휠 검증', () => {
-  const res = calculateLifeDomainWheel({ profile, targetDate: new Date('2026-11-03T08:00:00+09:00') });
+  const res = calculateLifeDomainWheel({ profile, targetDate: new Date('2026-11-03T08:00:00+09:00'), question: '삶의 균형' });
   assert.equal(res.engineVersion, LIFE_DOMAIN_WHEEL_VERSION);
+  assert(res.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(res.wheelSynthesisMatrix?.integratedAction));
   assert(res.wheelBalanceScore >= 0 && res.wheelBalanceScore <= 100);
   assert(res.primaryBreakthroughDomain.titleKo.length > 0);
   assert(res.rechargeDomain.titleKo.length > 0);
@@ -2230,6 +2234,32 @@ test('Life Domain Wheel Engine: 6대 핵심 라이프 도메인 밸런스 휠 �
   assert(prompt.includes(LIFE_DOMAIN_WHEEL_VERSION));
   assert(prompt.includes('라이프 휠 균형도'));
   assert(prompt.includes('1순위 돌파 도메인'));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
+});
+
+test('Energetic Prescription Engine: 결핍 오행 바이오 에너지 맞춤 처방 검증', () => {
+  const res = calculateEnergeticPrescription({ profile, currentDate: new Date('2026-11-16T06:00:00+09:00'), question: '활력 회복' });
+  assert.equal(res.engineVersion, ENERGETIC_PRESCRIPTION_ENGINE_VERSION);
+  assert(res.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(res.energeticSynthesisMatrix?.integratedAction));
+  assert(res.microRituals.length > 0);
+  const prompt = formatEnergeticPrescriptionPrompt(res);
+  assert(prompt.includes(ENERGETIC_PRESCRIPTION_ENGINE_VERSION));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
+});
+
+test('Instant Decision Engine: 매화역수·기문둔갑 즉시 결단 검증', () => {
+  const res = calculateInstantDecision({ instant: new Date('2026-11-16T06:00:00+09:00'), questionText: '지금 추진할까요' });
+  assert.equal(res.engineVersion, INSTANT_DECISION_ENGINE_VERSION);
+  assert(res.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(res.instantDecisionSynthesisMatrix?.integratedAction));
+  assert(res.verdict.finalScore >= 0 && res.verdict.finalScore <= 100);
+  const prompt = formatInstantDecisionPrompt(res);
+  assert(prompt.includes(INSTANT_DECISION_ENGINE_VERSION));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
 });
 
 test('Deep Work Flow Engine: 딥워크 몰입 아키타입 및 최적 환경 매트릭스 검증', () => {
