@@ -908,8 +908,10 @@ export const TarotSpread: React.FC<TarotSpreadProps> = ({
         touchAction: 'none',
         overscrollBehavior: 'none',
         paddingTop: 'env(safe-area-inset-top, 0px)',
-        paddingLeft: 'env(safe-area-inset-left, 0px)',
-        paddingRight: 'env(safe-area-inset-right, 0px)',
+        // ScreenPortal already excludes navigation; device side insets would
+        // reserve the landscape rail a second time and shift the fan left.
+        paddingLeft: 0,
+        paddingRight: 0,
       }}
     >
       {/* Unified Top Header Layer: Action Buttons & Perfectly Centered Info Banner */}
@@ -917,8 +919,8 @@ export const TarotSpread: React.FC<TarotSpreadProps> = ({
         className="absolute top-0 left-0 right-0 z-[320] w-full pointer-events-none flex flex-col items-center"
         style={{
           paddingTop: 'calc(env(safe-area-inset-top, 0px) + 6px)',
-          paddingLeft: 'calc(env(safe-area-inset-left, 0px) + 12px)',
-          paddingRight: 'calc(env(safe-area-inset-right, 0px) + 12px)',
+          paddingLeft: 12,
+          paddingRight: 12,
         }}
       >
         {/* Top Controls Row: Left Action Buttons & Right Close Button */}

@@ -166,6 +166,13 @@ try {
   await check('393x852 folded rail', { rail: 80 });
   await page.screenshot({ path: `${artifactDir}/tarot-fan-393.png` });
 
+  await page.setViewportSize({ width: 1280, height: 900 });
+  const wide = await check('1280x900 unfolded landscape', { duo: true, rail: 108, sideRail: false });
+  assert(Math.abs(wide.wheel.right - wide.stage.right) <= 1, 'fan reaches the Lucy boundary without reserving another safe-area gutter');
+  assert(Math.abs(wide.wheel.width - wide.stage.width) <= 1, 'fan uses the full pane width');
+  assert(Math.abs(wide.stage.right - 640) <= 2, 'tarot fills the left pane up to Lucy');
+  await page.screenshot({ path: `${artifactDir}/tarot-fan-1280.png` });
+
   await page.setViewportSize({ width: 900, height: 640 });
   const landscape = await check('900x640 unfolded landscape', { duo: true, rail: 80, sideRail: false });
   assert(landscape.stage.right <= landscape.rail.left - 40, 'landscape fan stays in the content pane');
