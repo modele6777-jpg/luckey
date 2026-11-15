@@ -4898,9 +4898,14 @@ test('Korean Joseon Toegye Seonghak Sipdo Engine: calculates Gyeong mindfulness,
   assert(rep.jeongjeEomsukDignityScore >= 0 && rep.jeongjeEomsukDignityScore <= 100);
   assert(rep.seonghakIntegrationPracticeScore >= 0 && rep.seonghakIntegrationPracticeScore <= 100);
   assert(rep.activeSeonghakDiagram.diagramTitleHanja.length > 0);
+  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(rep.toegyeSynthesisMatrix?.integratedAction));
   const prompt = formatToegyeSeonghakSipdoPrompt(rep);
   assert(prompt.includes('한국 조선 성리학 퇴계 이황 성학십도 경(敬) 심법 지표'));
   assert(prompt.includes(rep.activeSeonghakDiagram.diagramTitleKo));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
 });
 
 test('Roman Cicero De Officiis Engine: calculates Honestum moral duty, Utile harmony, Fides and Decorum', () => {
@@ -5652,12 +5657,15 @@ test('Yeonam Park Jiwon Yeolha Ilgi Engine: calculates One-Night Nine Crossings,
   assert(rep.bukhakOpenMindedInsightScore >= 0 && rep.bukhakOpenMindedInsightScore <= 100);
   assert(rep.haehakSatiricalGenerosityQuotient >= 0 && rep.haehakSatiricalGenerosityQuotient <= 100);
   assert(rep.activeYeonamTheme.themeTitleKo.length > 0);
+  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(rep.yeonamSynthesisMatrix?.integratedAction));
   assert(rep.dailyPracticeRitual.length > 0);
   assert(rep.reflectiveQuestion.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatYeonamParkJiwonYeolhaIlgiPrompt(rep);
   assert(prompt.includes('연암 박지원 《열하일기》 일야구도 & 이용후생·법고창신 실학 지표'));
   assert(prompt.includes(rep.activeYeonamTheme.themeTitleKo));
+  assert(prompt.includes('교차 매트릭스'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });
@@ -6354,9 +6362,14 @@ test('Heo Jun Dongui Bogam Yangsaeng Engine: calculates Tong-Jeuk-Bul-Tong, Cheo
   assert(rep.essenceQiSpiritPreservationScore >= 0 && rep.essenceQiSpiritPreservationScore <= 100);
   assert(rep.beneficentCompassionHealingResilienceScore >= 0 && rep.beneficentCompassionHealingResilienceScore <= 100);
   assert(rep.activeHeoJunTheme.themeTitleKo.length > 0);
+  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(rep.heoJunSynthesisMatrix?.integratedAction));
   const prompt = formatKoreanHeoJunDonguiBogamYangsaengPrompt(rep);
   assert(prompt.includes('구암 허준 《동의보감》 신형장부도·통즉불통 및 치미병 양생 지혜 지표'));
   assert(prompt.includes(rep.activeHeoJunTheme.themeTitleKo));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
 });
 
 test('Desiderius Erasmus Praise of Folly Engine: calculates Humorous Wisdom, Dogma Dissolution, and Humanistic Tolerance', () => {
