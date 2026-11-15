@@ -8848,3 +8848,29 @@ test('Seneca, Cicero, and Marcus Aurelius v2.1.0 engines expose qualitative stag
   assert.ok(!aureliusPrompt.includes('/100') && !aureliusPrompt.includes('%'));
   assert.ok(aureliusPrompt.includes('오늘의 실천 의례') && aureliusPrompt.includes('해석 경계') && aureliusPrompt.includes('+09:00'));
 });
+
+test('Schopenhauer v2.1.0, Mandukya Turiya v2.0.0, and Zhuangzi v2.0.0 engines output qualitative stages and KST without /100 or %', () => {
+  const now = new Date('2026-11-15T23:35:00Z');
+  const schopenhauer = calculateSchopenhauerWillRepresentation(profile, '관계에서 자꾸 상처받고 집착하게 돼요', now);
+  assert.equal(schopenhauer.engineVersion, 'LUCKEY-SCHOPENHAUER-WILL-REPRESENTATION-v2.1.0');
+  assert.ok(schopenhauer.calculatedAtKst.endsWith('+09:00'));
+  const schopenhauerPrompt = formatSchopenhauerWillRepresentationPrompt(schopenhauer);
+  assert.ok(!schopenhauerPrompt.includes('/100') && !schopenhauerPrompt.includes('%'));
+  assert.ok(schopenhauerPrompt.includes('해석 경계') && schopenhauerPrompt.includes('+09:00'));
+
+  const mandukya = calculateVedicMandukyaTuriya({ profile, question: '수면이 불안하고 마음이 자꾸 흔들려요', now });
+  assert.equal(mandukya.engineVersion, '2.0.0');
+  assert.ok(mandukya.calculatedAtKst.endsWith('+09:00'));
+  assert.ok(mandukya.dailyPracticeRitual.length > 0 && mandukya.reflectiveQuestion.length > 0 && mandukya.interpretiveBoundary.length > 0);
+  const mandukyaPrompt = formatVedicMandukyaTuriyaPrompt(mandukya);
+  assert.ok(!mandukyaPrompt.includes('/100') && !mandukyaPrompt.includes('%'));
+  assert.ok(mandukyaPrompt.includes('일상 관조 실천') && mandukyaPrompt.includes('해석 경계') && mandukyaPrompt.includes('+09:00'));
+
+  const zhuangzi = calculateZhuangziXiaoyaoyouButterfly({ profile, question: '진로 선택 앞에서 남들 시선이 자꾸 신경 쓰여요', now });
+  assert.equal(zhuangzi.engineVersion, '2.0.0');
+  assert.ok(zhuangzi.calculatedAtKst.endsWith('+09:00'));
+  assert.ok(zhuangzi.dailyPracticeRitual.length > 0 && zhuangzi.reflectiveQuestion.length > 0 && zhuangzi.interpretiveBoundary.length > 0);
+  const zhuangziPrompt = formatZhuangziXiaoyaoyouButterflyPrompt(zhuangzi);
+  assert.ok(!zhuangziPrompt.includes('/100') && !zhuangziPrompt.includes('%'));
+  assert.ok(zhuangziPrompt.includes('일상 관조 실천') && zhuangziPrompt.includes('해석 경계') && zhuangziPrompt.includes('+09:00'));
+});
