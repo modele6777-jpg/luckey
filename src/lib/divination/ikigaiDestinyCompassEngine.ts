@@ -17,7 +17,7 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const IKIGAI_DESTINY_COMPASS_VERSION = 'LUCKEY-IKIGAI-v1.0.0';
+export const IKIGAI_DESTINY_COMPASS_VERSION = 'LUCKEY-IKIGAI-v2.0.0';
 
 export interface IkigaiQuadrants {
   passion: {
@@ -45,6 +45,7 @@ export interface IkigaiQuadrants {
 export interface IkigaiDestinyCompassReport {
   engineVersion: string;
   calculatedAt: string;
+  calculatedAtKst: string;
   soulCallingTitle: string;        // 일생을 관통하는 천직 소명 타이틀
   ikigaiAlignmentScore: number;    // 이키가이 정렬 완성도 (0 ~ 100)
   quadrants: IkigaiQuadrants;
@@ -55,6 +56,27 @@ export interface IkigaiDestinyCompassReport {
   };
   nextCareerMilestone: string;     // 6개월~1년 내 달성해야 할 1순위 돌파 마일스톤
   synthesisPromptGuidance: string;
+  ikigaiSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
+}
+
+function formatIkigaiKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
+
+function describeIkigaiStage(score: number): string {
+  if (score >= 90) return '천직 공명 완성기 (열정·전문성·사명·수익성이 한 축으로 강하게 정렬된 흐름)';
+  if (score >= 80) return '교집합 확장기 (핵심 강점이 시장 가치와 만나 레버리지를 키우는 국면)';
+  return '좌표 탐색 정립기 (내면의 열정과 현실적 수요의 접점을 다듬는 흐름)';
 }
 
 export function runIkigaiDestinyCompassEngine(
@@ -149,27 +171,42 @@ export function runIkigaiDestinyCompassEngine(
   };
 
   const nextCareerMilestone = `향후 6개월 내 [${soulCallingTitle.split(' ')[0]}] 포지셔닝을 공식화하고, 첫 번째 고부가가치 시그니처 자산을 론칭하여 강력한 현금 흐름 확보하기`;
+  const calculatedAtKst = formatIkigaiKstTimestamp(targetDate);
 
-  const synthesisPromptGuidance = `[LUCKEY 이키가이 천직 4대 교집합 & 소명 나침반 v1.0.0]
+  const ikigaiSynthesisMatrix = {
+    dominantTension: `${quadrants.passion.coreDriver} ↔ ${quadrants.vocation.monetizationLeverage}`,
+    alignmentState:
+      ikigaiAlignmentScore >= 85
+        ? '열정·전문성·사명·수익성의 4대 교집합 고밀도 정렬'
+        : '전문성과 수익성 사이의 레버리지를 조율하는 확장 국면',
+    integratedAction: `${monetizationPath.phase1Validation} | ${nextCareerMilestone}`,
+  };
+
+  const synthesisPromptGuidance = `[LUCKEY 이키가이 천직 4대 교집합 & 소명 나침반 v2.0.0]
+- 연산 시각: ${calculatedAtKst}
 - 궁극의 천직 소명 타이틀: [${soulCallingTitle}]
-- 이키가이 정렬 완성도: ${ikigaiAlignmentScore}점
-- 4대 사분면 지수:
-  * 열정(Passion): ${passionScore}점 ("${quadrants.passion.coreDriver}")
-  * 전문성(Profession): ${professionScore}점 ("${quadrants.profession.superpowerSkill}")
-  * 사명(Mission): ${missionScore}점 ("${quadrants.mission.societalImpact}")
-  * 수익성(Vocation): ${vocationScore}점 ("${quadrants.vocation.monetizationLeverage}")
+- 이키가이 정렬 완성도: ${describeIkigaiStage(ikigaiAlignmentScore)}
+- 4대 사분면 흐름:
+  * 열정(Passion): ${describeIkigaiStage(passionScore)} ("${quadrants.passion.coreDriver}")
+  * 전문성(Profession): ${describeIkigaiStage(professionScore)} ("${quadrants.profession.superpowerSkill}")
+  * 사명(Mission): ${describeIkigaiStage(missionScore)} ("${quadrants.mission.societalImpact}")
+  * 수익성(Vocation): ${describeIkigaiStage(vocationScore)} ("${quadrants.vocation.monetizationLeverage}")
 - 3단계 수익화 로드맵: [1단계 검증] ${monetizationPath.phase1Validation} | [2단계 스케일] ${monetizationPath.phase2Scaling} | [3단계 제국] ${monetizationPath.phase3Empire}
-- 1순위 커리어 마일스톤: ${nextCareerMilestone}`;
+- 1순위 커리어 마일스톤: ${nextCareerMilestone}
+- 교차 매트릭스 [핵심 긴장: ${ikigaiSynthesisMatrix.dominantTension} | 조율 상태: ${ikigaiSynthesisMatrix.alignmentState}]
+- 통합 실천: ${ikigaiSynthesisMatrix.integratedAction}`;
 
   return {
     engineVersion: IKIGAI_DESTINY_COMPASS_VERSION,
     calculatedAt: targetDate.toISOString(),
+    calculatedAtKst,
     soulCallingTitle,
     ikigaiAlignmentScore,
     quadrants,
     monetizationPath,
     nextCareerMilestone,
-    synthesisPromptGuidance
+    synthesisPromptGuidance,
+    ikigaiSynthesisMatrix,
   };
 }
 
