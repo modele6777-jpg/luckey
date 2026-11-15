@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useTTSState } from '@/utils/tts';
+import { planTtsScroll } from '@/lib/ttsScrollFollow';
 
 const managedContainers = new WeakSet<HTMLElement>();
 
@@ -79,6 +80,54 @@ export function useSmartScroll(options: UseSmartScrollOptions = {}): UseSmartScr
   const countdownIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const isProgrammaticScrollingRef = useRef(false);
   const programmaticScrollResetTimerRef = useRef<NodeJS.Timeout | null>(null);
+  // 정렬은 한 번에 하나만 진행된다. 겹친 smooth scroll은 서로를 밀어내며 화면을 출렁이게 했다.
+  const scrollAnimationFrameRef = useRef<number | null>(null);
+  const lastAlignedTopRef = useRef<number | null>(null);
+
+  const cancelScrollAnimation = useCallback(() => {
+    if (scrollAnimationFrameRef.current !== null) {
+      cancelAnimationFrame(scrollAnimationFrameRef.current);
+      scrollAnimationFrameRef.current = null;
+    }
+  }, []);
+
+  /** 프로그램 스크롤 직후의 잔여 scroll 이벤트를 사용자 조작으로 오인하지 않게 잠깐 더 잠근다. */
+  const holdProgrammaticScroll = useCallback((ms: number) => {
+    isProgrammaticScrollingRef.current = true;
+    if (programmaticScrollResetTimerRef.current) {
+      clearTimeout(programmaticScrollResetTimerRef.current);
+    }
+    programmaticScrollResetTimerRef.current = setTimeout(() => {
+      isProgrammaticScrollingRef.current = false;
+      programmaticScrollResetTimerRef.current = null;
+    }, ms);
+  }, []);
+
+  const animateContainerScroll = useCallback(
+    (container: HTMLElement, from: number, to: number, duration: number) => {
+      cancelScrollAnimation();
+      if (typeof requestAnimationFrame !== 'function' || duration <= 0) {
+        container.scrollTop = to;
+        holdProgrammaticScroll(120);
+        return;
+      }
+      const startedAt = performance.now();
+      holdProgrammaticScroll(duration + 160);
+      const step = () => {
+        const progress = Math.min(1, (performance.now() - startedAt) / duration);
+        const eased = 1 - Math.pow(1 - progress, 3);
+        container.scrollTop = from + (to - from) * eased;
+        if (progress < 1) {
+          scrollAnimationFrameRef.current = requestAnimationFrame(step);
+          return;
+        }
+        scrollAnimationFrameRef.current = null;
+        holdProgrammaticScroll(160);
+      };
+      scrollAnimationFrameRef.current = requestAnimationFrame(step);
+    },
+    [cancelScrollAnimation, holdProgrammaticScroll]
+  );
 
   // Clear timers helper
   const clearTimers = useCallback(() => {
@@ -102,13 +151,41 @@ export function useSmartScroll(options: UseSmartScrollOptions = {}): UseSmartScr
   const getActiveElement = useCallback((): HTMLElement | null => {
     if (externalContainerRef && !externalContainerRef.current) return null;
     const root = externalContainerRef?.current || document;
-    const target = root.querySelector<HTMLElement>('[data-tts-active="true"]') || root.querySelector<HTMLElement>(selector);
-    if (!target || externalContainerRef) return target;
+
+    const active = Array.from(root.querySelectorAll<HTMLElement>('[data-tts-active="true"]'));
+    const candidates = active.length ? active : Array.from(root.querySelectorAll<HTMLElement>(selector));
+    if (!candidates.length) return null;
+
+    let pool = candidates;
+    if (candidates.length > 1) {
+      // 지금 낭독 중인 말풍선 안의 하이라이트를 우선한다. 같은 문장이 여러 말풍선에 있어도
+      // 예전 말풍선과 새 말풍선 사이를 오가지 않는다.
+      const playing = candidates.filter((element) => element.closest('[data-tts-playing-message="true"]'));
+      pool = playing.length ? playing : candidates;
+    }
+
+    let target = pool[0];
+    if (pool.length > 1) {
+      const container = containerRef.current;
+      const box = container?.getBoundingClientRect();
+      const center = box ? box.top + container!.clientHeight / 2 : window.innerHeight / 2;
+      let bestDistance = Number.POSITIVE_INFINITY;
+      for (const element of pool) {
+        const rect = element.getBoundingClientRect();
+        const distance = Math.abs(rect.top + rect.height / 2 - center);
+        if (distance < bestDistance) {
+          target = element;
+          bestDistance = distance;
+        }
+      }
+    }
+
+    if (externalContainerRef) return target;
     for (let element = target.parentElement; element; element = element.parentElement) {
       if (managedContainers.has(element)) return null;
     }
     return target;
-  }, [externalContainerRef, selector]);
+  }, [containerRef, externalContainerRef, selector]);
 
   // Resolve scrollable parent container for any target element
   const resolveScrollContainer = useCallback((target: HTMLElement | null): HTMLElement | null => {
@@ -158,40 +235,28 @@ export function useSmartScroll(options: UseSmartScrollOptions = {}): UseSmartScr
       // Current position and target metrics relative to container
       const currentScroll = container.scrollTop;
       const viewportTop = container === document.scrollingElement ? 0 : containerRect.top + container.clientTop;
-      const targetRelativeTop = targetRect.top - viewportTop;
       const containerHeight = container.clientHeight;
-
-      const desiredScrollTop = Math.round(
-        currentScroll + targetRelativeTop + (targetRect.height - containerHeight) / 2 + centerOffset
-      );
-
+      const targetCenterOffset = targetRect.top + targetRect.height / 2 - (viewportTop + containerHeight / 2) + centerOffset;
       const maxScroll = Math.max(0, container.scrollHeight - containerHeight);
-      const finalTop = Math.max(0, Math.min(maxScroll, desiredScrollTop));
 
-      if (!force && Math.abs(currentScroll - finalTop) <= 1) {
-        return true;
-      }
+      const plan = planTtsScroll({
+        currentTop: currentScroll,
+        maxTop: maxScroll,
+        targetCenterOffset,
+        targetRelativeTop: targetRect.top - viewportTop,
+        targetRelativeBottom: targetRect.bottom - viewportTop,
+        containerHeight,
+        lastTargetTop: lastAlignedTopRef.current,
+        force,
+      });
 
-      isProgrammaticScrollingRef.current = true;
-      if (programmaticScrollResetTimerRef.current) {
-        clearTimeout(programmaticScrollResetTimerRef.current);
-      }
-      programmaticScrollResetTimerRef.current = setTimeout(() => {
-        isProgrammaticScrollingRef.current = false;
-      }, 700);
+      lastAlignedTopRef.current = plan.top;
+      if (!plan.scroll) return true;
 
-      try {
-        container.scrollTo({
-          top: finalTop,
-          behavior: 'smooth',
-        });
-      } catch (_) {
-        container.scrollTop = finalTop;
-      }
-
+      animateContainerScroll(container, currentScroll, plan.top, plan.duration);
       return true;
     },
-    [enabled, getActiveElement, resolveScrollContainer, centerOffset]
+    [enabled, getActiveElement, resolveScrollContainer, centerOffset, animateContainerScroll]
   );
 
   // Resume auto-scroll action (called by user click or 3s timeout)
@@ -200,6 +265,7 @@ export function useSmartScroll(options: UseSmartScrollOptions = {}): UseSmartScr
     isUserOverridingRef.current = false;
     setIsUserOverriding(false);
     setRemainingSeconds(0);
+    lastAlignedTopRef.current = null;
     requestAnimationFrame(() => {
       scrollToActiveSentence(true);
     });
@@ -212,6 +278,9 @@ export function useSmartScroll(options: UseSmartScrollOptions = {}): UseSmartScr
     const handleUserGesture = (e: Event) => {
       // If TTS isn't speaking, manual gestures don't trigger override state
       if (!isSpeaking) return;
+
+      // A real gesture always wins over our own animation.
+      if (e.type !== 'keydown') cancelScrollAnimation();
 
       // Ignore programmatic scrolling events
       if (isProgrammaticScrollingRef.current) return;
@@ -271,17 +340,19 @@ export function useSmartScroll(options: UseSmartScrollOptions = {}): UseSmartScr
       targetNode.removeEventListener('pointerdown', handleUserGesture);
       window.removeEventListener('keydown', handleUserGesture);
     };
-  }, [enabled, isSpeaking, resumeDelayMs, containerRef, clearTimers, getActiveElement, resumeAutoScroll]);
+  }, [enabled, isSpeaking, resumeDelayMs, containerRef, clearTimers, getActiveElement, resumeAutoScroll, cancelScrollAnimation]);
 
   // When TTS stops speaking, reset override immediately
   useEffect(() => {
     if (!isSpeaking) {
       clearTimers();
+      cancelScrollAnimation();
+      lastAlignedTopRef.current = null;
       isUserOverridingRef.current = false;
       setIsUserOverriding(false);
       setHasActiveHighlight(false);
     }
-  }, [isSpeaking, clearTimers]);
+  }, [isSpeaking, clearTimers, cancelScrollAnimation]);
 
   // When active sentence changes, auto-scroll to center if not overriding
   useEffect(() => {
@@ -322,11 +393,12 @@ export function useSmartScroll(options: UseSmartScrollOptions = {}): UseSmartScr
   useEffect(() => {
     return () => {
       clearTimers();
+      cancelScrollAnimation();
       if (programmaticScrollResetTimerRef.current) {
         clearTimeout(programmaticScrollResetTimerRef.current);
       }
     };
-  }, [clearTimers]);
+  }, [clearTimers, cancelScrollAnimation]);
 
   return {
     isUserOverriding,
