@@ -8,12 +8,12 @@
  * 4. 시련과 상실을 성스러운 찬가로 빚어내는 비가의 승화력 (Elegiac Sublimation & Sacred Praise Score): 고통과 상실, 죽음의 유한성을 피하지 않고 존재의 아름다운 찬가로 변용(Verwandlung)시키는 힘.
  * 5. 거대한 열림 속에서 스스로를 바치는 초연한 회복탄력성 (Open Horizon & Surrender Resilience Index): 우주적 열림(Das Offene) 앞에서 두려움 없이 자신을 내어맡기는 의연한 평정심.
  *
- * @version LUCKEY-RILKE-LETTERS-TO-YOUNG-POET-v1.0.0
+ * @version LUCKEY-RILKE-LETTERS-TO-YOUNG-POET-v2.0.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const AUSTRIAN_RAINER_MARIA_RILKE_LETTERS_VERSION = 'LUCKEY-RILKE-LETTERS-TO-YOUNG-POET-v1.1.0';
+export const AUSTRIAN_RAINER_MARIA_RILKE_LETTERS_VERSION = 'LUCKEY-RILKE-LETTERS-TO-YOUNG-POET-v2.0.0';
 
 export type RilkeQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -67,6 +67,11 @@ export interface AustrianRainerMariaRilkeLettersResult {
   questionTopic: RilkeQuestionTopic;
   situationalRilkeAudit: RilkeSituationalAudit;
   temporalRilkeRhythm: RilkeTemporalRhythm;
+  rilkeSynthesisMatrix?: {
+    coreInsight: string;
+    recommendedAction: string;
+    cautionNotice: string;
+  };
   rilkeComprehensiveGuidance: {
     guidanceTitle: string;
     philosophicalCounsel: string;
@@ -292,7 +297,7 @@ export function calculateAustrianRainerMariaRilkeLetters(
 
   return {
     engineVersion: AUSTRIAN_RAINER_MARIA_RILKE_LETTERS_VERSION,
-    calculatedAtKst: new Date(now.getTime() + 9 * 60 * 60 * 1000).toISOString().replace('Z', '+09:00'),
+    calculatedAtKst: `${kstDayKey} ${String(new Date(now.getTime() + 9 * 60 * 60 * 1000).getUTCHours()).padStart(2, '0')}:${String(new Date(now.getTime() + 9 * 60 * 60 * 1000).getUTCMinutes()).padStart(2, '0')} KST`,
     lovingSolitudeInwardScore,
     livingTheQuestionsIndex,
     contemplativeGazingIndex,
@@ -303,6 +308,11 @@ export function calculateAustrianRainerMariaRilkeLetters(
     questionTopic,
     situationalRilkeAudit,
     temporalRilkeRhythm,
+    rilkeSynthesisMatrix: {
+      coreInsight: activeRilkeTheme.themeTitleKo,
+      recommendedAction: situationalRilkeAudit.practiceGuidance,
+      cautionNotice: '아직 익지 않은 해답을 조급하게 재촉하거나 내면의 고독을 외면하지 마십시오.',
+    },
     rilkeComprehensiveGuidance: {
       guidanceTitle,
       philosophicalCounsel,
@@ -314,7 +324,8 @@ export function formatAustrianRainerMariaRilkeLettersPrompt(
   res: AustrianRainerMariaRilkeLettersResult,
 ): string {
   return [
-    `【라이너 마리아 릴케 《젊은 시인에게 주는 편지·두이노의 비가》 고독 사랑·질문 품기 지표】`,
+    `【라이너 마리아 릴케 《젊은 시인에게 주는 편지·두이노의 비가》 고독 사랑·질문 품기 지표 (${res.engineVersion})】`,
+    `- 연산 시각: ${res.calculatedAtKst}`,
     `- 질문 맥락 초점(${res.questionTopic}): ${res.situationalRilkeAudit.focusAxisKo}`,
     `- 시적·실존적 태도: ${res.situationalRilkeAudit.poeticPosture}`,
     `- KST 시공간 리듬: ${res.temporalRilkeRhythm.timeWindowKo} · ${res.temporalRilkeRhythm.seasonKo}`,
@@ -323,6 +334,7 @@ export function formatAustrianRainerMariaRilkeLettersPrompt(
     `- 질문 맞춤 조언: ${res.situationalRilkeAudit.practiceGuidance}`,
     `- 일상 의례 제안: ${res.situationalRilkeAudit.ritualAction}`,
     `- 성찰 질문: ${res.situationalRilkeAudit.reflectionFocus}`,
+    `- 교차 매트릭스: 핵심(${res.rilkeSynthesisMatrix?.coreInsight ?? res.activeRilkeTheme.themeTitleKo}) | 실행(${res.rilkeSynthesisMatrix?.recommendedAction ?? res.situationalRilkeAudit.practiceGuidance}) | 주의(${res.rilkeSynthesisMatrix?.cautionNotice ?? '조급한 해답 경계'})`,
     `- 조언 요약: ${res.situationalRilkeAudit.counselNote}`,
     `- 릴케 원전 테제: "${res.focalRilkeAphorism.aphorismKo}"`,
     `- 원문: (${res.focalRilkeAphorism.aphorismGerman})`,

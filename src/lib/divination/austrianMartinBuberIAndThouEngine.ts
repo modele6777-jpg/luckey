@@ -9,12 +9,12 @@
  * 4. 사이의 영역 거룩한 성찰도(Between-Sphere Meaning Index): 의미와 진리는 고립된 개인 안에 갇혀 있는 것이 아니라, 사람과 사람 사이(Das Zwischen)에서 탄생한다는 관계성.
  * 5. 영원한 너 교감 신뢰도(Eternal Thou Communion Trust Score): 삶의 모든 참된 만남의 지평 너머에 깃든 영원한 존재와의 궁극적 일체감과 영적 평정심.
  *
- * @version LUCKEY-MARTIN-BUBER-DIALOGUE-v1.0.0
+ * @version LUCKEY-MARTIN-BUBER-DIALOGUE-v2.0.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const AUSTRIAN_MARTIN_BUBER_VERSION = 'LUCKEY-MARTIN-BUBER-DIALOGUE-v1.1.0';
+export const AUSTRIAN_MARTIN_BUBER_VERSION = 'LUCKEY-MARTIN-BUBER-DIALOGUE-v2.0.0';
 
 export type BuberQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -68,6 +68,11 @@ export interface AustrianMartinBuberIAndThouResult {
   questionTopic: BuberQuestionTopic;
   situationalBuberAudit: BuberSituationalAudit;
   temporalBuberRhythm: BuberTemporalRhythm;
+  buberSynthesisMatrix?: {
+    coreInsight: string;
+    recommendedAction: string;
+    cautionNotice: string;
+  };
   buberComprehensiveGuidance: {
     guidanceTitle: string;
     philosophicalCounsel: string;
@@ -308,7 +313,7 @@ export function calculateAustrianMartinBuberIAndThou(
 
   return {
     engineVersion: AUSTRIAN_MARTIN_BUBER_VERSION,
-    calculatedAtKst: new Date(now.getTime() + 9 * 60 * 60 * 1000).toISOString().replace('Z', '+09:00'),
+    calculatedAtKst: `${kstDayKey} ${String(new Date(now.getTime() + 9 * 60 * 60 * 1000).getUTCHours()).padStart(2, '0')}:${String(new Date(now.getTime() + 9 * 60 * 60 * 1000).getUTCMinutes()).padStart(2, '0')} KST`,
     iThouRelationalResonanceScore,
     authenticDialoguePresenceIndex,
     overcomingInstrumentalizationScore,
@@ -319,6 +324,11 @@ export function calculateAustrianMartinBuberIAndThou(
     questionTopic,
     situationalBuberAudit,
     temporalBuberRhythm,
+    buberSynthesisMatrix: {
+      coreInsight: activeBuberTheme.themeTitleKo,
+      recommendedAction: situationalBuberAudit.practiceGuidance,
+      cautionNotice: '상대를 내 목적을 위한 편리한 도구(Es)로 환원하지 않도록 경청의 여백을 지키십시오.',
+    },
     buberComprehensiveGuidance: {
       guidanceTitle,
       philosophicalCounsel,
@@ -330,7 +340,8 @@ export function formatAustrianMartinBuberIAndThouPrompt(
   res: AustrianMartinBuberIAndThouResult,
 ): string {
   return [
-    `【마틴 부버 《나와 너》 인격적 만남 & 진정한 대화(Dialogue) 실존 지표】`,
+    `【마틴 부버 《나와 너》 인격적 만남 & 진정한 대화(Dialogue) 실존 지표 (${res.engineVersion})】`,
+    `- 연산 시각: ${res.calculatedAtKst}`,
     `- 질문 맥락 초점(${res.questionTopic}): ${res.situationalBuberAudit.focusAxisKo}`,
     `- 만남의 태도: ${res.situationalBuberAudit.encounterPosture}`,
     `- KST 시공간 리듬: ${res.temporalBuberRhythm.timeWindowKo} · ${res.temporalBuberRhythm.seasonKo}`,
@@ -339,6 +350,7 @@ export function formatAustrianMartinBuberIAndThouPrompt(
     `- 질문 맞춤 조언: ${res.situationalBuberAudit.practiceGuidance}`,
     `- 일상 의례 제안: ${res.situationalBuberAudit.ritualAction}`,
     `- 성찰 질문: ${res.situationalBuberAudit.reflectionFocus}`,
+    `- 교차 매트릭스: 핵심(${res.buberSynthesisMatrix?.coreInsight ?? res.activeBuberTheme.themeTitleKo}) | 실행(${res.buberSynthesisMatrix?.recommendedAction ?? res.situationalBuberAudit.practiceGuidance}) | 주의(${res.buberSynthesisMatrix?.cautionNotice ?? '도구화 경계'})`,
     `- 조언 요약: ${res.situationalBuberAudit.counselNote}`,
     `- 부버 원전 명언: "${res.focalBuberAphorism.aphorismKo}" [${res.focalBuberAphorism.aphorismDe}]`,
     `- 원전 출처: [${res.focalBuberAphorism.sourceContext}]`,

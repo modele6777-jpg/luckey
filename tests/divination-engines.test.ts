@@ -7240,6 +7240,8 @@ test('v1.1.0 qualitative/temporal deepening without score exposure: Kafka, Buber
   assert.ok(buber.temporalBuberRhythm.timeWindowKo.includes('저녁'));
   const buberPrompt = formatAustrianMartinBuberIAndThouPrompt(buber);
   assert.ok(buberPrompt.includes('질문 맥락 초점(relationship)'));
+  assert.ok(buber.calculatedAtKst.includes('KST'));
+  assert.ok(buberPrompt.includes('교차 매트릭스'));
   assert.ok(!buberPrompt.includes('/100'));
 
   const rilke = calculateAustrianRainerMariaRilkeLetters(testProfile, '마음이 너무 지치고 상처가 깊어서 위로가 필요해요', now);
@@ -7249,6 +7251,8 @@ test('v1.1.0 qualitative/temporal deepening without score exposure: Kafka, Buber
   assert.ok(rilke.temporalRilkeRhythm.timeWindowKo.includes('황혼'));
   const rilkePrompt = formatAustrianRainerMariaRilkeLettersPrompt(rilke);
   assert.ok(rilkePrompt.includes('질문 맥락 초점(healing)'));
+  assert.ok(rilke.calculatedAtKst.includes('KST'));
+  assert.ok(rilkePrompt.includes('교차 매트릭스'));
   assert.ok(!rilkePrompt.includes('/100'));
 });
 
@@ -7270,6 +7274,8 @@ test('qualitative & temporal deepening: Adler Individual Psychology, Viktor Fran
   assert.ok(adler.practiceGuidance.length > 0 && adler.ritualAction.length > 0 && adler.boundaryNotice.length > 0);
   const adlerPrompt = formatAustrianAlfredAdlerIndividualPsychologyPrompt(adler);
   assert.ok(adlerPrompt.includes('질문 주제 맥락: relationship'));
+  assert.ok(adler.calculatedAtKst.includes('KST'));
+  assert.ok(adlerPrompt.includes('교차 매트릭스'));
   assert.ok(!adlerPrompt.includes('/100'));
 
   const frankl = calculateViktorFranklLogotherapy(testProfile, '요즘 너무 공허하고 힘든데 삶의 의미를 찾고 싶어요', now);
