@@ -3522,18 +3522,18 @@ ${recipientName} 님, 성장은 생각의 깊이가 아니라 행동의 빈도�
   return (
     <DuoWorkspace className="w-full max-w-6xl mx-auto pb-12 text-white">
 <section className="duo-workspace-input" aria-label="오라클 질문과 카드 선택">
-<div className="glass relative p-5 sm:p-7 rounded-3xl bg-white/[0.04] border border-amber-400/25 shadow-[inset_0_1px_1px_rgba(255,255,255,0.2),0_20px_60px_rgba(0,0,0,0.6)] backdrop-blur-2xl overflow-hidden">
+<div className="oracle-intro-card glass relative p-5 sm:p-7 rounded-3xl bg-white/[0.04] border border-amber-400/25 shadow-[inset_0_1px_1px_rgba(255,255,255,0.2),0_20px_60px_rgba(0,0,0,0.6)] backdrop-blur-2xl overflow-hidden">
         {/* Ambient cosmic glows */}
         <div className="absolute -top-24 -right-24 w-80 h-80 rounded-full bg-amber-500/10 blur-[90px] pointer-events-none" />
         <div className="absolute -bottom-24 -left-24 w-80 h-80 rounded-full bg-indigo-500/10 blur-[90px] pointer-events-none" />
 
-        <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="text-center md:text-left">
+        <div className="oracle-intro-header relative z-10">
+          <div className="oracle-intro-heading min-w-0 text-center md:text-left">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-400/30 text-[10px] sm:text-xs font-mono text-amber-300 mb-2 uppercase tracking-widest">
               <Sparkles size={12} className="text-amber-400 animate-pulse" />
               DESTINY ✕ TAROT FUSION
             </div>
-            <h2 className="text-xl sm:text-2xl md:text-3xl font-serif font-black tracking-tight text-white flex items-center justify-center md:justify-start gap-2">
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-serif font-black tracking-tight text-white flex flex-wrap items-center justify-center md:justify-start gap-2">
               오라클 타로 <span className="text-amber-400/90 font-light text-lg sm:text-xl">· 사주 명리 ✕ 타로 융합</span>
             </h2>
             <p className="text-xs sm:text-sm text-zinc-300/80 mt-1 font-sans">
@@ -3548,7 +3548,7 @@ ${recipientName} 님, 성장은 생각의 깊이가 아니라 행동의 빈도�
           </div>
 
           {/* Dual Mode Switcher & Mode Change Button */}
-          <div className="flex items-center gap-2 flex-wrap justify-center md:justify-end">
+          <div className="oracle-mode-actions flex items-center gap-2 flex-wrap min-w-0 max-w-full">
             {isModeChosen && (
               <button
                 type="button"
@@ -3560,7 +3560,7 @@ ${recipientName} 님, 성장은 생각의 깊이가 아니라 행동의 빈도�
                 <span>모드 선택</span>
               </button>
             )}
-            <div className="flex items-center p-1 rounded-2xl bg-black/50 border border-white/10 shadow-inner shrink-0">
+            <div className="oracle-mode-tabs p-1 rounded-2xl bg-black/50 border border-white/10 shadow-inner">
               <button
                 onClick={() => handleModeSwitch('healing')}
                 className={`relative flex items-center gap-2 px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-medium transition-all duration-300 cursor-pointer ${
@@ -3639,7 +3639,7 @@ ${recipientName} 님, 성장은 생각의 깊이가 아니라 행동의 빈도�
         {/* Saju Alignment Status Bar */}
         <div className="duo-workspace-actions relative z-10 mt-4 pt-3.5 border-t border-white/10 flex flex-wrap items-center justify-between gap-2.5 text-xs">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/15 border border-amber-400/40 text-amber-300 font-medium shadow-sm">
+            <span className="oracle-profile-badge inline-flex flex-wrap min-w-0 max-w-full items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/15 border border-amber-400/40 text-amber-300 font-medium shadow-sm">
               <Compass size={13} className="text-amber-400" />
               <span>사주 융합 연동:</span>
               <strong className="text-white font-bold">{saju?.name || '여행자'}</strong>
