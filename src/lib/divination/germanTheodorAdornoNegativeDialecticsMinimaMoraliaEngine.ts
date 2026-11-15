@@ -8,12 +8,12 @@
  * 4. 불협화음 직시 및 긴장 감내력 (Dissonance Tolerance & Aesthetic Resistance Index): 가짜 조화나 거짓된 낙관론의 마취에 기대지 않고, 현실의 갈등과 불협화음(Dissonanz)을 정직하게 버텨내며 예술적 긴장으로 승화하는 힘.
  * 5. 성좌(Konstellation)적 사고 및 입체적 구원 지표 (Constellation Thinking & Multidimensional Redemption Score): 닫힌 하나의 교조에 갇히지 않고 여러 개념과 현상들을 별자리처럼 입체적으로 엮어 진리의 다채로운 단면을 직관하는 사유력.
  *
- * @version LUCKEY-THEODOR-ADORNO-NEGATIVE-DIALECTICS-v1.0.0
+ * @version LUCKEY-THEODOR-ADORNO-NEGATIVE-DIALECTICS-v2.0.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const GERMAN_THEODOR_ADORNO_NEGATIVE_DIALECTICS_VERSION = 'LUCKEY-THEODOR-ADORNO-NEGATIVE-DIALECTICS-v1.0.0';
+export const GERMAN_THEODOR_ADORNO_NEGATIVE_DIALECTICS_VERSION = 'LUCKEY-THEODOR-ADORNO-NEGATIVE-DIALECTICS-v2.0.0';
 
 export interface AdornoTheme {
   themeKey: string;
@@ -46,6 +46,11 @@ export interface GermanTheodorAdornoNegativeDialecticsMinimaMoraliaResult {
   adornoComprehensiveGuidance: {
     guidanceTitle: string;
     philosophicalCounsel: string;
+  };
+  adornoSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
   };
 }
 
@@ -127,9 +132,26 @@ function hashString(str: string): number {
   return hash;
 }
 
+function formatAdornoKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
+
+function describeAdornoStage(score: number): string {
+  if (score >= 94) return '성좌(Konstellation) 직관기 (비동일자의 특이성과 입체적 진실이 또렷이 빛나는 흐름)';
+  if (score >= 90) return '비판적 각성기 (도구적 이성과 값싼 조화를 걷어내고 본질을 응시하는 국면)';
+  return '긴장 감내기 (불협화음 속에서도 영혼의 정직함을 단단히 지키는 흐름)';
+}
+
 export function calculateGermanTheodorAdornoNegativeDialecticsMinimaMoralia(
   profile?: UserProfile,
   query?: string,
+  now: Date = new Date(),
 ): GermanTheodorAdornoNegativeDialecticsMinimaMoraliaResult {
   const p = profile as any;
   const name = profile?.basic?.name ?? p?.name ?? '남희';
@@ -161,9 +183,18 @@ export function calculateGermanTheodorAdornoNegativeDialecticsMinimaMoralia(
     `${activeAdornoTheme.practicalCounsel} 아도르노의 예리한 원전 명제 "${focalAdornoAphorism.aphorismKo}" (${focalAdornoAphorism.aphorismGerman})를 깊이 성찰하며, ` +
     `${focalAdornoAphorism.actionGuidance}`;
 
+  const adornoSynthesisMatrix = {
+    dominantTension: `${activeAdornoTheme.themeTitleKo} ↔ ${focalAdornoAphorism.sourceContext}`,
+    alignmentState:
+      nonIdenticalSafeguardScore >= 92 && constellationDialecticsScore >= 92
+        ? '비동일자 수호와 성좌적 사유의 고차원 공명'
+        : '물상화를 거부하고 불협화음의 진실을 직시하는 국면',
+    integratedAction: `${activeAdornoTheme.practicalCounsel} (${focalAdornoAphorism.actionGuidance})`,
+  };
+
   return {
     engineVersion: GERMAN_THEODOR_ADORNO_NEGATIVE_DIALECTICS_VERSION,
-    calculatedAtKst: new Date().toISOString(),
+    calculatedAtKst: formatAdornoKstTimestamp(now),
     nonIdenticalSafeguardScore,
     damagedLifeCriticalReflectionIndex,
     instrumentalReasonTranscendenceScore,
@@ -175,19 +206,21 @@ export function calculateGermanTheodorAdornoNegativeDialecticsMinimaMoralia(
       guidanceTitle,
       philosophicalCounsel,
     },
+    adornoSynthesisMatrix,
   };
 }
 
 export function formatGermanTheodorAdornoNegativeDialecticsMinimaMoraliaPrompt(
   res: GermanTheodorAdornoNegativeDialecticsMinimaMoraliaResult,
 ): string {
-  return [
+  const lines = [
     `【테오도어 아도르노 《부정변증법》 비동일자 수호·미니마 모랄리아 지표】`,
-    `- 비동일자 수호 및 개별성 옹호(Non-Identical Safeguard): ${res.nonIdenticalSafeguardScore}/100`,
-    `- 손상된 삶의 비판적 성찰(Damaged Life Reflection): ${res.damagedLifeCriticalReflectionIndex}/100`,
-    `- 도구적 이성 극복 및 물상화 탈피(Instrumental Reason Transcendence): ${res.instrumentalReasonTranscendenceScore}/100`,
-    `- 불협화음 직시 및 긴장 감내력(Dissonance Tolerance): ${res.dissonanceResilienceIndex}/100`,
-    `- 성좌적 사고 및 입체적 구원(Constellation Thinking): ${res.constellationDialecticsScore}/100`,
+    `- 엔진 버전: ${res.engineVersion} | 연산 시각: ${res.calculatedAtKst}`,
+    `- 비동일자 수호 및 개별성 옹호(Non-Identical Safeguard): ${describeAdornoStage(res.nonIdenticalSafeguardScore)}`,
+    `- 손상된 삶의 비판적 성찰(Damaged Life Reflection): ${describeAdornoStage(res.damagedLifeCriticalReflectionIndex)}`,
+    `- 도구적 이성 극복 및 물상화 탈피(Instrumental Reason Transcendence): ${describeAdornoStage(res.instrumentalReasonTranscendenceScore)}`,
+    `- 불협화음 직시 및 긴장 감내력(Dissonance Tolerance): ${describeAdornoStage(res.dissonanceResilienceIndex)}`,
+    `- 성좌적 사고 및 입체적 구원(Constellation Thinking): ${describeAdornoStage(res.constellationDialecticsScore)}`,
     `- 핵심 아도르노 테마: ${res.activeAdornoTheme.themeTitleKo} [${res.activeAdornoTheme.themeTitleEn}]`,
     `- 실천적 통찰: ${res.activeAdornoTheme.pragmaticInsight}`,
     `- 행동 조언: ${res.activeAdornoTheme.practicalCounsel}`,
@@ -195,5 +228,12 @@ export function formatGermanTheodorAdornoNegativeDialecticsMinimaMoraliaPrompt(
     `- 원전 출처: [${res.focalAdornoAphorism.sourceContext}]`,
     `- 구체적 실천 지침: ${res.focalAdornoAphorism.actionGuidance}`,
     `- 종합 아도르노 권면: ${res.adornoComprehensiveGuidance.philosophicalCounsel}`,
-  ].join('\n');
+  ];
+  if (res.adornoSynthesisMatrix) {
+    lines.push(
+      `- 교차 매트릭스 [핵심 긴장: ${res.adornoSynthesisMatrix.dominantTension} | 조율 상태: ${res.adornoSynthesisMatrix.alignmentState}]`,
+      `- 통합 실천: ${res.adornoSynthesisMatrix.integratedAction}`,
+    );
+  }
+  return lines.join('\n');
 }

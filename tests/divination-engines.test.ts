@@ -5863,9 +5863,14 @@ test('Hermann Hesse Demian Siddhartha Engine: calculates Abraxas Self-Actualizat
   assert(rep.riverWisdomUnityIndex >= 0 && rep.riverWisdomUnityIndex <= 100);
   assert(rep.innerCallingFidelityScore >= 0 && rep.innerCallingFidelityScore <= 100);
   assert(rep.activeHesseTheme.themeTitleKo.length > 0);
+  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(rep.hesseSynthesisMatrix?.integratedAction));
   const prompt = formatGermanSwissHermannHesseDemianSiddharthaPrompt(rep);
   assert(prompt.includes('헤르만 헤세 《데미안·싯다르타》 아브락사스 자아실현 & 내면의 길 지표'));
   assert(prompt.includes(rep.activeHesseTheme.themeTitleKo));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
 });
 
 test('Martin Buber I and Thou Dialogue Engine: calculates I-Thou Resonance, Authentic Dialogue, and Between-Sphere Meaning', () => {
@@ -6508,9 +6513,14 @@ test('Theodor Adorno Negative Dialectics and Minima Moralia Engine: calculates N
   assert(rep.dissonanceResilienceIndex >= 0 && rep.dissonanceResilienceIndex <= 100);
   assert(rep.constellationDialecticsScore >= 0 && rep.constellationDialecticsScore <= 100);
   assert(rep.activeAdornoTheme.themeTitleKo.length > 0);
+  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(rep.adornoSynthesisMatrix?.integratedAction));
   const prompt = formatGermanTheodorAdornoNegativeDialecticsMinimaMoraliaPrompt(rep);
   assert(prompt.includes('테오도어 아도르노 《부정변증법》 비동일자 수호·미니마 모랄리아 지표'));
   assert(prompt.includes(rep.activeAdornoTheme.themeTitleKo));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
 });
 
 test('Jacques Derrida Deconstruction and Differance Engine: calculates Differance, Binary Deconstruction, Aporia, and Hospitality', () => {
@@ -6818,8 +6828,10 @@ test('Hermann Hesse engine matches the question to a literary theme and omits mi
   assert.equal(rep.activeHesseTheme.themeKey, 'siddharthaRiverOneness');
   assert.equal(Object.hasOwn(rep, 'siddharthaRiverEquanimityScore'), false);
   assert.equal(Object.hasOwn(rep, 'calculatedAtKst'), false);
+  assert(Boolean(rep.hesseSteppenwolfSynthesisMatrix?.integratedAction));
   const prompt = formatGermanHermannHesseDemianSteppenwolfPrompt(rep);
   assert.match(prompt, /문학적 참고/);
+  assert(prompt.includes('교차 매트릭스'));
   assert.doesNotMatch(prompt, /\/100|원문|원전|Das Wasser lief|Die Welt zu lieben|양극성 치유/);
 });
 

@@ -9,12 +9,12 @@
  * 4. 강물의 지혜 원융 합일도(River Wisdom Unity Index): 강물의 소리처럼 만물의 슬픔과 기쁨, 생성과 소멸이 거대한 하나의 조화로 흐르고 있음을 직관하는 영혼의 평정심.
  * 5. 내면의 부름 자기 성실성(Inner Calling Fidelity Score): 세속의 인정이나 군중의 소음에 흔들리지 않고, 가슴 깊은 곳에서 솟아 나오는 자기만의 목소리를 살아내는 진실성.
  *
- * @version LUCKEY-HERMANN-HESSE-WISDOM-v1.0.0
+ * @version LUCKEY-HERMANN-HESSE-WISDOM-v2.0.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const GERMAN_HERMANN_HESSE_VERSION = 'LUCKEY-HERMANN-HESSE-WISDOM-v1.0.0';
+export const GERMAN_HERMANN_HESSE_VERSION = 'LUCKEY-HERMANN-HESSE-WISDOM-v2.0.0';
 
 export interface HesseTheme {
   themeKey: string;
@@ -47,6 +47,11 @@ export interface GermanSwissHermannHesseDemianSiddharthaResult {
   hesseComprehensiveGuidance: {
     guidanceTitle: string;
     philosophicalCounsel: string;
+  };
+  hesseSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
   };
 }
 
@@ -133,9 +138,26 @@ export const HESSE_APHORISMS: HesseAphorism[] = [
   },
 ];
 
+function formatHesseKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
+
+function describeHesseStage(score: number): string {
+  if (score >= 92) return '아브락사스 비상(飛翔)기 (묵은 알을 깨고 고유한 내면의 부름으로 나아가는 흐름)';
+  if (score >= 84) return '강물의 원융기 (대립하는 양극을 품어 안으며 고요히 흐르는 국면)';
+  return '내면의 청진기 (외부의 소음을 닫고 스스로의 경험에 귀 기울이는 흐름)';
+}
+
 export function calculateGermanSwissHermannHesseDemianSiddhartha(
   profile?: UserProfile,
   query?: string,
+  now: Date = new Date(),
 ): GermanSwissHermannHesseDemianSiddharthaResult {
   const p = profile as any;
   const name = profile?.basic?.name ?? p?.name ?? '남희';
@@ -170,9 +192,18 @@ export function calculateGermanSwissHermannHesseDemianSiddhartha(
     `${activeHesseTheme.practicalCounsel} 아울러 헤세의 불멸의 원전 명언 "${focalHesseAphorism.aphorismKo}"(${focalHesseAphorism.aphorismDe})를 마음에 새기며, ` +
     `${focalHesseAphorism.actionGuidance}`;
 
+  const hesseSynthesisMatrix = {
+    dominantTension: `${activeHesseTheme.themeTitleKo} ↔ ${focalHesseAphorism.sourceContext}`,
+    alignmentState:
+      abraxasSelfActualizationScore >= 88 && innerCallingFidelityScore >= 88
+        ? '아브락사스 자아실현과 내면 성실성의 고차원 합일'
+        : '양극성을 포용하며 강물의 지혜로 중심을 잡는 국면',
+    integratedAction: `${activeHesseTheme.practicalCounsel} (${focalHesseAphorism.actionGuidance})`,
+  };
+
   return {
     engineVersion: GERMAN_HERMANN_HESSE_VERSION,
-    calculatedAtKst: new Date().toISOString(),
+    calculatedAtKst: formatHesseKstTimestamp(now),
     abraxasSelfActualizationScore,
     innerPolarityHarmonizationIndex,
     siddharthaAutonomousQuestScore,
@@ -184,19 +215,21 @@ export function calculateGermanSwissHermannHesseDemianSiddhartha(
       guidanceTitle,
       philosophicalCounsel,
     },
+    hesseSynthesisMatrix,
   };
 }
 
 export function formatGermanSwissHermannHesseDemianSiddharthaPrompt(
   res: GermanSwissHermannHesseDemianSiddharthaResult,
 ): string {
-  return [
+  const lines = [
     `【헤르만 헤세 《데미안·싯다르타》 아브락사스 자아실현 & 내면의 길 지표】`,
-    `- 아브락사스 자아실현도(Abraxas Self-Actualization): ${res.abraxasSelfActualizationScore}/100`,
-    `- 양극성 내면 통합 조화 지수(Polarity Harmonization): ${res.innerPolarityHarmonizationIndex}/100`,
-    `- 싯다르타 주체적 구도력(Autonomous Quest): ${res.siddharthaAutonomousQuestScore}/100`,
-    `- 강물의 지혜 원융 합일도(River Wisdom Unity): ${res.riverWisdomUnityIndex}/100`,
-    `- 내면의 부름 자기 성실성(Inner Calling Fidelity): ${res.innerCallingFidelityScore}/100`,
+    `- 엔진 버전: ${res.engineVersion} | 연산 시각: ${res.calculatedAtKst}`,
+    `- 아브락사스 자아실현도(Abraxas Self-Actualization): ${describeHesseStage(res.abraxasSelfActualizationScore)}`,
+    `- 양극성 내면 통합 조화 지수(Polarity Harmonization): ${describeHesseStage(res.innerPolarityHarmonizationIndex)}`,
+    `- 싯다르타 주체적 구도력(Autonomous Quest): ${describeHesseStage(res.siddharthaAutonomousQuestScore)}`,
+    `- 강물의 지혜 원융 합일도(River Wisdom Unity): ${describeHesseStage(res.riverWisdomUnityIndex)}`,
+    `- 내면의 부름 자기 성실성(Inner Calling Fidelity): ${describeHesseStage(res.innerCallingFidelityScore)}`,
     `- 핵심 영적 테마: ${res.activeHesseTheme.themeTitleKo} [${res.activeHesseTheme.themeTitleDe}]`,
     `- 실존적 통찰: ${res.activeHesseTheme.existentialInsight}`,
     `- 실천적 조언: ${res.activeHesseTheme.practicalCounsel}`,
@@ -204,5 +237,12 @@ export function formatGermanSwissHermannHesseDemianSiddharthaPrompt(
     `- 원전 출처: [${res.focalHesseAphorism.sourceContext}]`,
     `- 구체적 실천 지침: ${res.focalHesseAphorism.actionGuidance}`,
     `- 종합 헤세 지혜 권면: ${res.hesseComprehensiveGuidance.philosophicalCounsel}`,
-  ].join('\n');
+  ];
+  if (res.hesseSynthesisMatrix) {
+    lines.push(
+      `- 교차 매트릭스 [핵심 긴장: ${res.hesseSynthesisMatrix.dominantTension} | 조율 상태: ${res.hesseSynthesisMatrix.alignmentState}]`,
+      `- 통합 실천: ${res.hesseSynthesisMatrix.integratedAction}`,
+    );
+  }
+  return lines.join('\n');
 }
