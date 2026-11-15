@@ -8,12 +8,12 @@
  * 4. 수심정기(守心正氣): 맑은 마음을 오롯이 지키고 바른 기운을 길러 세속의 혼탁함과 두려움을 물리치는 내적 평정심.
  * 5. 후천개벽(後天開闢): 낡은 불평등과 절망의 시대를 넘어서서 새로운 빛과 상생의 새 세상을 여는 과감한 실천적 대전환력.
  *
- * @version LUCKEY-SUUN-CHOE-JEU-DONGHAK-v1.0.0
+ * @version LUCKEY-SUUN-CHOE-JEU-DONGHAK-v2.0.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const KOREAN_SUUN_CHOE_JEU_VERSION = 'LUCKEY-SUUN-CHOE-JEU-DONGHAK-v1.0.0';
+export const KOREAN_SUUN_CHOE_JEU_VERSION = 'LUCKEY-SUUN-CHOE-JEU-DONGHAK-v2.0.0';
 
 export interface DonghakTheme {
   themeKey: string;
@@ -47,6 +47,27 @@ export interface SuunChoeJeuDonghakSicheonjuResult {
     guidanceTitle: string;
     philosophicalCounsel: string;
   };
+  donghakSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
+}
+
+function formatDonghakKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
+
+function describeDonghakStage(score: number): string {
+  if (score >= 90) return '후천개벽(後天開闢) — 내면의 시천주 존엄과 상생 연대가 낡은 틀을 여는 도약기';
+  if (score >= 80) return '수심정기(守心正氣) — 흔들리는 세속 속에서도 맑은 마음과 바른 기운을 지키는 성숙기';
+  return '오심즉여심(吾心卽汝心) — 내 마음과 이웃의 마음을 하나로 비추며 초심을 세우는 준비기';
 }
 
 export const DONGHAK_THEMES: DonghakTheme[] = [
@@ -126,7 +147,9 @@ export const DONGHAK_APHORISMS: DonghakAphorism[] = [
 ];
 
 export function calculateSuunChoeJeuDonghakSicheonju(
-  profile: UserProfile
+  profile: UserProfile,
+  query?: string,
+  now: Date = new Date(),
 ): SuunChoeJeuDonghakSicheonjuResult {
   const p = profile as any;
   const name = profile?.basic?.name ?? p?.name ?? '방문자';
@@ -134,7 +157,7 @@ export function calculateSuunChoeJeuDonghakSicheonju(
   const birthTime = profile?.basic?.birthtime ?? p?.birthTime ?? p?.birthtime ?? '12:00';
   const gender = profile?.basic?.gender ?? p?.gender ?? 'neutral';
 
-  const seedString = `SUUN-CHOE-JEU-DONGHAK:${name}:${birthDate}:${birthTime}:${gender}`;
+  const seedString = `SUUN-CHOE-JEU-DONGHAK:${name}:${birthDate}:${birthTime}:${gender}:${query ?? ''}`;
 
   let hash = 0;
   for (let i = 0; i < seedString.length; i++) {
@@ -161,9 +184,24 @@ export function calculateSuunChoeJeuDonghakSicheonju(
     `${activeDonghakTheme.practicalCounsel} 아울러 동학의 경구 "${focalDonghakAphorism.aphorismKo}"(${focalDonghakAphorism.aphorismHanja})을 가슴 깊이 간직하며, ` +
     `${focalDonghakAphorism.actionGuidance}`;
 
+  const calculatedAtKst = formatDonghakKstTimestamp(now);
+  const avgScore = Math.round(
+    (sicheonjuDignityScore +
+      sainyeocheonReverenceQuotient +
+      osimJeukYeosimEmpathyScore +
+      susimJeonggiEquanimityScore +
+      hucheonGaebyeokPioneerScore) /
+      5,
+  );
+  const donghakSynthesisMatrix = {
+    dominantTension: `${activeDonghakTheme.themeTitleKo} ↔ ${focalDonghakAphorism.sourceContext}`,
+    alignmentState: describeDonghakStage(avgScore),
+    integratedAction: `${focalDonghakAphorism.actionGuidance}${query?.trim() ? ` [질문 맥락: ${query.trim()}]` : ''}`,
+  };
+
   return {
     engineVersion: KOREAN_SUUN_CHOE_JEU_VERSION,
-    calculatedAtKst: new Date().toISOString(),
+    calculatedAtKst,
     sicheonjuDignityScore,
     sainyeocheonReverenceQuotient,
     osimJeukYeosimEmpathyScore,
@@ -175,17 +213,23 @@ export function calculateSuunChoeJeuDonghakSicheonju(
       guidanceTitle,
       philosophicalCounsel,
     },
+    donghakSynthesisMatrix,
   };
 }
 
 export function formatSuunChoeJeuDonghakSicheonjuPrompt(res: SuunChoeJeuDonghakSicheonjuResult): string {
-  return [
+  const avgScore = Math.round(
+    (res.sicheonjuDignityScore +
+      res.sainyeocheonReverenceQuotient +
+      res.osimJeukYeosimEmpathyScore +
+      res.susimJeonggiEquanimityScore +
+      res.hucheonGaebyeokPioneerScore) /
+      5,
+  );
+  const lines = [
     `【수운 최제우 《동경대전》 시천주 & 사인여천 영성 존엄 및 후천개벽 지표】`,
-    `- 시천주 내면 영성 자존감(侍天主): ${res.sicheonjuDignityScore}/100`,
-    `- 사인여천 상생 공경 연대도(事人如天): ${res.sainyeocheonReverenceQuotient}/100`,
-    `- 오심즉여심 일체감응 공감력(吾心卽汝心): ${res.osimJeukYeosimEmpathyScore}/100`,
-    `- 수심정기 심신 정화 평정성(守心正氣): ${res.susimJeonggiEquanimityScore}/100`,
-    `- 후천개벽 시대전환 개척력(後天開闢): ${res.hucheonGaebyeokPioneerScore}/100`,
+    `- 연산 시각: ${res.calculatedAtKst} | 엔진: ${res.engineVersion}`,
+    `- 동학 개벽 국면: ${describeDonghakStage(avgScore)}`,
     `- 핵심 동학 테마: ${res.activeDonghakTheme.themeTitleKo} [${res.activeDonghakTheme.themeTitleHanja}]`,
     `- 영성적 통찰: ${res.activeDonghakTheme.spiritualInsight}`,
     `- 실천적 조언: ${res.activeDonghakTheme.practicalCounsel}`,
@@ -193,5 +237,12 @@ export function formatSuunChoeJeuDonghakSicheonjuPrompt(res: SuunChoeJeuDonghakS
     `- 한자 원문: "${res.focalDonghakAphorism.aphorismHanja}" [${res.focalDonghakAphorism.sourceContext}]`,
     `- 구체적 실천 지침: ${res.focalDonghakAphorism.actionGuidance}`,
     `- 종합 영성 권면: ${res.suunComprehensiveGuidance.philosophicalCounsel}`,
-  ].join('\n');
+  ];
+  if (res.donghakSynthesisMatrix) {
+    lines.push(
+      `- 교차 매트릭스 [핵심 긴장: ${res.donghakSynthesisMatrix.dominantTension} | 조율 상태: ${res.donghakSynthesisMatrix.alignmentState}]`,
+      `- 통합 실천: ${res.donghakSynthesisMatrix.integratedAction}`,
+    );
+  }
+  return lines.join('\n');
 }

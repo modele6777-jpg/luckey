@@ -9,12 +9,12 @@
  * 4. 당쟁 초월 공명정대 및 청백리 공심 지표(Anti-Factional Impartiality & Integrity Score): 붕당의 사리사욕을 떠나 오직 나라와 백성을 우선한 공정성.
  * 5. 불굴의 의리 및 의연한 선비 품격도(Unyielding Fidelity & Dignified Grace Index): 폐모론에 맞선 직언과 북청 유배길에서도 품격을 지킨 불굴의 기개.
  *
- * @version LUCKEY-OHSEONG-HANEUM-FRIENDSHIP-v1.1.0
+ * @version LUCKEY-OHSEONG-HANEUM-FRIENDSHIP-v2.0.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const KOREAN_OHSEONG_HANEUM_VERSION = 'LUCKEY-OHSEONG-HANEUM-FRIENDSHIP-v1.1.0';
+export const KOREAN_OHSEONG_HANEUM_VERSION = 'LUCKEY-OHSEONG-HANEUM-FRIENDSHIP-v2.0.0';
 
 export type OhseongHaneumQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -61,6 +61,21 @@ export interface KoreanOhseongHaneumFriendshipGovernanceResult {
     guidanceTitle: string;
     philosophicalCounsel: string;
   };
+  ohseongHaneumSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
+}
+
+function formatOhseongHaneumKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
 }
 
 export const OHSEONG_HANEUM_THEMES: OhseongHaneumTheme[] = [
@@ -247,9 +262,30 @@ export function calculateKoreanOhseongHaneumFriendshipGovernance(
     `${activeOhseongHaneumTheme.practicalCounsel} 오성과 한음의 교훈 "${focalOhseongHaneumAphorism.aphorismKo}"를 되새기며, ` +
     `${focalOhseongHaneumAphorism.actionGuidance}`;
 
+  const baseTime = now ?? new Date();
+  const calculatedAtKst = formatOhseongHaneumKstTimestamp(baseTime);
+  const avgScore = Math.round(
+    (lifelongMoralFriendshipTrustIndex +
+      crisisGovernanceStatesmanshipScore +
+      humorWitMagnanimityResilienceIndex +
+      antiFactionalImpartialityScore +
+      unyieldingFidelityGraceIndex) /
+      5,
+  );
+  const ohseongHaneumSynthesisMatrix = {
+    dominantTension: `${activeOhseongHaneumTheme.themeTitleKo} ↔ ${temporalOhseongHaneumRhythm.phaseLabel}`,
+    alignmentState: describeOhseongStage(
+      avgScore,
+      '지기지우의 신의와 위기 돌파 경륜·유쾌한 배포가 하나로 어우러진 원숙기',
+      '공심과 품격을 잃지 않고 현실의 매듭을 풀어가는 안정기',
+      '신뢰와 원칙의 기본기를 다지며 숨을 고르는 준비기',
+    ),
+    integratedAction: `${ritualByTopic[questionTopic]}${query?.trim() ? ` [질문 맥락: ${query.trim()}]` : ''}`,
+  };
+
   return {
     engineVersion: KOREAN_OHSEONG_HANEUM_VERSION,
-    calculatedAtKst: (now ?? new Date()).toISOString(),
+    calculatedAtKst,
     questionTopic,
     temporalOhseongHaneumRhythm,
     lifelongMoralFriendshipTrustIndex,
@@ -266,14 +302,16 @@ export function calculateKoreanOhseongHaneumFriendshipGovernance(
       guidanceTitle,
       philosophicalCounsel,
     },
+    ohseongHaneumSynthesisMatrix,
   };
 }
 
 export function formatKoreanOhseongHaneumFriendshipGovernancePrompt(
   res: KoreanOhseongHaneumFriendshipGovernanceResult,
 ): string {
-  return [
+  const lines = [
     `【오성과 한음(이항복·이덕형) 지기지우 & 경세제민 지혜 지표 (정성 성찰)】`,
+    `- 연산 시각: ${res.calculatedAtKst} | 엔진: ${res.engineVersion}`,
     `- 질문 맥락 및 시공간 리듬: [${res.questionTopic}] · ${res.temporalOhseongHaneumRhythm.kstSlot} (${res.temporalOhseongHaneumRhythm.phaseLabel})`,
     `- 시공간 지침: ${res.temporalOhseongHaneumRhythm.rhythmDirective}`,
     `- 지기지우 상호 신뢰와 우정: ${describeOhseongStage(res.lifelongMoralFriendshipTrustIndex, '말하지 않아도 뜻이 통하는 깊고 단단한 신뢰', '서로의 부족함을 감싸며 함께 걷는 온화한 신의', '진심 어린 대화로 신뢰의 다리를 놓아가는 시기')}`,
@@ -292,5 +330,12 @@ export function formatKoreanOhseongHaneumFriendshipGovernancePrompt(
     `- 핵심 성찰 질문: ${res.reflectiveQuestion}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
     `- 종합 오성과 한음 경세 권면: ${res.ohseongHaneumComprehensiveGuidance.philosophicalCounsel}`,
-  ].join('\n');
+  ];
+  if (res.ohseongHaneumSynthesisMatrix) {
+    lines.push(
+      `- 교차 매트릭스 [핵심 긴장: ${res.ohseongHaneumSynthesisMatrix.dominantTension} | 조율 상태: ${res.ohseongHaneumSynthesisMatrix.alignmentState}]`,
+      `- 통합 실천: ${res.ohseongHaneumSynthesisMatrix.integratedAction}`,
+    );
+  }
+  return lines.join('\n');
 }

@@ -4503,9 +4503,14 @@ test('Korean Suun Gasi Heon Engine: calculates Yongcheon sword severance, Samgye
   assert(rep.jiGiGeumJiCosmicQiFlow >= 0 && rep.jiGiGeumJiCosmicQiFlow <= 100);
   assert(rep.sudeokHeartPurityIndex >= 0 && rep.sudeokHeartPurityIndex <= 100);
   assert(rep.activeCultivationStage.stageNameKo.length > 0);
+  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(rep.suunGasiSynthesisMatrix?.integratedAction));
   const prompt = formatSuunGasiHeonPrompt(rep);
   assert(prompt.includes('동학 수운 최제우 《용담유사》 검결(劍訣)'));
   assert(prompt.includes(rep.activeCultivationStage.stageNameKo));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
 });
 
 test('Ancient Greek Eleusinian Triptolemos Engine: calculates dragon chariot, sacred wheat and 3 laws of Demeter', () => {
@@ -5638,9 +5643,14 @@ test('Suun Choe Je-u Donghak Sicheonju Engine: calculates Sicheonju Dignity, Sai
   assert(rep.susimJeonggiEquanimityScore >= 0 && rep.susimJeonggiEquanimityScore <= 100);
   assert(rep.hucheonGaebyeokPioneerScore >= 0 && rep.hucheonGaebyeokPioneerScore <= 100);
   assert(rep.activeDonghakTheme.themeTitleKo.length > 0);
+  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(rep.donghakSynthesisMatrix?.integratedAction));
   const prompt = formatSuunChoeJeuDonghakSicheonjuPrompt(rep);
   assert(prompt.includes('수운 최제우 《동경대전》 시천주 & 사인여천 영성 존엄 및 후천개벽 지표'));
   assert(prompt.includes(rep.activeDonghakTheme.themeTitleKo));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
 });
 
 test('Ralph Waldo Emerson Self-Reliance Engine: calculates qualitative Self-Reliance and Over-Soul guidance', () => {
@@ -6295,9 +6305,12 @@ test('Ohseong and Haneum Friendship Governance Engine: calculates Lifelong Moral
   assert(rep.dailyPracticeRitual.length > 0);
   assert(rep.reflectiveQuestion.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
+  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(rep.ohseongHaneumSynthesisMatrix?.integratedAction));
   const prompt = formatKoreanOhseongHaneumFriendshipGovernancePrompt(rep);
   assert(prompt.includes('오성과 한음(이항복·이덕형) 지기지우 & 경세제민 지혜 지표'));
   assert(prompt.includes(rep.activeOhseongHaneumTheme.themeTitleKo));
+  assert(prompt.includes('교차 매트릭스'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });
