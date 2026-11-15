@@ -55,7 +55,7 @@ import {
   saveUnifiedMessagesSafely,
   loadSavedUnifiedMessages,
   mergeUnifiedMessages,
-  retainRecentConversation,
+  restoreLatestConversation,
 } from '@/lib/chatHistorySync';
 import { processDailyChatArchival } from '@/lib/chatMemoryArchive';
 import { drawLucyTarotCards, formatTarotMarker } from '@/utils/tarotDetector';
@@ -1225,6 +1225,9 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
   const [showReturnToRecentConversation, setShowReturnToRecentConversation] = useState(false);
   const isAutoScrollingRef = useRef(false);
   const autoScrollTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const messageGeometryRef = useRef({ height: 0, viewport: 0 });
+  const followLayoutFrameRef = useRef<number | null>(null);
+  const followLatestLayoutRef = useRef<() => void>(() => {});
   const topScrollTimerRef = useRef<number | null>(null);
   const topScrollRestoreRef = useRef<(() => void) | null>(null);
 
@@ -2338,13 +2341,20 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
     };
   }, [lucyDayPeriod]);
 
-  // Smart non-intrusive scroll handling
+  // A resize/image/history update is not a request to read older messages.
   const handleScroll = useCallback(() => {
-    if (isAutoScrollingRef.current) return;
-    if (!messagesContainerRef.current) return;
-    const { scrollTop, scrollHeight, clientHeight } = messagesContainerRef.current;
+    const container = messagesContainerRef.current;
+    if (!container) return;
+    const { scrollTop, scrollHeight, clientHeight } = container;
+    const previous = messageGeometryRef.current;
+    const layoutChanged = previous.height !== scrollHeight || previous.viewport !== clientHeight;
+    messageGeometryRef.current = { height: scrollHeight, viewport: clientHeight };
+    if (clientHeight < 2 || isAutoScrollingRef.current) return;
+    if (layoutChanged && !isUserScrolledUpRef.current) {
+      followLatestLayoutRef.current();
+      return;
+    }
     const distanceFromBottom = scrollHeight - (scrollTop + clientHeight);
-    // 바닥에서 80px 이상 떨어져 있으면 사용자가 과거 대화를 읽는 중으로 엄격 보장
     if (distanceFromBottom > 80) {
       isUserScrolledUpRef.current = true;
       setShowReturnToRecentConversation(true);
@@ -2370,8 +2380,29 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
         }
       }
     };
+    let touchY: number | null = null;
+    const readOlder = () => { isUserScrolledUpRef.current = true; setShowReturnToRecentConversation(true); };
+    const onTouchStart = (event: TouchEvent) => { touchY = event.touches[0]?.clientY ?? null; };
+    const onTouchMove = (event: TouchEvent) => {
+      const y = event.touches[0]?.clientY;
+      if (touchY !== null && y !== undefined && y - touchY > 6) readOlder();
+      if (y !== undefined) touchY = y;
+    };
+    const onKeyDown = (event: KeyboardEvent) => {
+      const target = event.target instanceof Element ? event.target : null;
+      if (target?.closest('input, textarea, [contenteditable="true"]')) return;
+      if (['ArrowUp', 'PageUp', 'Home'].includes(event.key) || (event.key === ' ' && event.shiftKey)) readOlder();
+    };
     container.addEventListener('wheel', onWheel, { passive: true });
-    return () => container.removeEventListener('wheel', onWheel);
+    container.addEventListener('touchstart', onTouchStart, { passive: true });
+    container.addEventListener('touchmove', onTouchMove, { passive: true });
+    container.addEventListener('keydown', onKeyDown);
+    return () => {
+      container.removeEventListener('wheel', onWheel);
+      container.removeEventListener('touchstart', onTouchStart);
+      container.removeEventListener('touchmove', onTouchMove);
+      container.removeEventListener('keydown', onKeyDown);
+    };
   }, [isLucyReady]);
 
   // 📱 상단 상태바/헤더 탭 시 최상단 스크롤 이벤트 직접 수신
@@ -2410,6 +2441,28 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
       behavior: smooth ? 'smooth' : 'auto',
     });
   }, [cancelTopScrollAnimation]);
+
+  followLatestLayoutRef.current = () => {
+    if (followLayoutFrameRef.current !== null) cancelAnimationFrame(followLayoutFrameRef.current);
+    followLayoutFrameRef.current = requestAnimationFrame(() => {
+      followLayoutFrameRef.current = null;
+      scrollToBottom(false, false);
+    });
+  };
+  useEffect(() => () => {
+    if (followLayoutFrameRef.current !== null) cancelAnimationFrame(followLayoutFrameRef.current);
+  }, []);
+
+  const restoreLatestSavedMessages = useCallback(() => {
+    const saved = loadSavedUnifiedMessages();
+    if (!saved.some(message => message.role === 'user' && message.content)) return;
+    setPersonaMessages(previous => {
+      const current = previous.lucy || [];
+      const next = restoreLatestConversation(current, saved);
+      if (next === current) return previous;
+      return { lucy: next, orange: next, trinity: next, aura: next, bluebird: next, muse: next };
+    });
+  }, [setPersonaMessages]);
 
   // Continuous height & image layout observer for smooth uncropped scrolling
   useEffect(() => {
@@ -2458,39 +2511,37 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
   // Align it before paint; playback state must never retrigger this entry scroll.
   useLayoutEffect(() => {
     if (!isLucyReady) return;
-    const stored = loadSavedUnifiedMessages();
-    const storedUsers = stored.filter((message) => message.role === 'user' && message.content);
-    if (storedUsers.length > 0) {
-      setPersonaMessages((prevRecord) => {
-        const current = prevRecord.lucy || [];
-        const currentUsers = current.filter((message) => message.role === 'user' && message.content);
-        if (currentUsers.length >= storedUsers.length) return prevRecord;
-        const next = retainRecentConversation([...current, ...stored]);
-        return { lucy: next, orange: next, trinity: next, aura: next, bluebird: next, muse: next };
-      });
-    }
+    restoreLatestSavedMessages();
     isUserScrolledUpRef.current = false;
+    setShowReturnToRecentConversation(false);
     scrollToBottom(true, false);
-  }, [isLucyReady, location, scrollToBottom, setPersonaMessages]);
+    let second = 0;
+    let active = true;
+    const align = () => { if (active && !isUserScrolledUpRef.current) scrollToBottom(true, false); };
+    const first = requestAnimationFrame(() => { second = requestAnimationFrame(align); });
+    document.fonts?.ready.then(align).catch(() => {});
+    return () => { active = false; cancelAnimationFrame(first); cancelAnimationFrame(second); };
+  }, [isLucyReady, location, scrollToBottom, restoreLatestSavedMessages]);
 
-  // Folded navigation hides the pane with display:none. Scroll only when it becomes visible again.
+  // Follow resized geometry at the bottom; revealing a retained pane reopens the latest thread.
   useEffect(() => {
     const container = messagesContainerRef.current;
     if (!container || !isLucyReady) return;
     let wasHidden = container.getBoundingClientRect().height < 2;
     const revealLatest = () => {
       const hidden = container.getBoundingClientRect().height < 2;
-      if (wasHidden && !hidden) {
+      if (!hidden && (wasHidden || !isUserScrolledUpRef.current)) {
+        if (wasHidden) restoreLatestSavedMessages();
         isUserScrolledUpRef.current = false;
         setShowReturnToRecentConversation(false);
-        scrollToBottom(true, false);
+        scrollToBottom(wasHidden, false);
       }
       wasHidden = hidden;
     };
     const observer = new ResizeObserver(revealLatest);
     observer.observe(container);
     return () => observer.disconnect();
-  }, [isLucyReady, scrollToBottom]);
+  }, [isLucyReady, scrollToBottom, restoreLatestSavedMessages]);
 
   // Returning from the background also opens at the latest conversation.
   const wasAppHiddenRef = useRef(false);
@@ -2501,19 +2552,39 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
         wasAppHiddenRef.current = true;
       } else if (document.visibilityState === 'visible' && wasAppHiddenRef.current) {
         wasAppHiddenRef.current = false;
-        // 다른 앱이나 홈 화면에서 돌아왔을 때만 1회 최신 대화로 정렬
+        restoreLatestSavedMessages();
         isUserScrolledUpRef.current = false;
         setShowReturnToRecentConversation(false);
         scrollToBottom(true, false);
       }
     };
 
+    const onPageShow = () => {
+      restoreLatestSavedMessages();
+      isUserScrolledUpRef.current = false;
+      setShowReturnToRecentConversation(false);
+      scrollToBottom(true, false);
+      followLatestLayoutRef.current();
+    };
+    let navigationFrame: number | null = null;
+    const onLucyNavigation = (event: Event) => {
+      const path = (event as CustomEvent<{ path?: unknown }>).detail?.path;
+      if (typeof path !== 'string' || !['/', '/chat', '/lucy', '/chat/pro'].includes(path.split(/[?#]/)[0])) return;
+      if (navigationFrame !== null) cancelAnimationFrame(navigationFrame);
+      navigationFrame = requestAnimationFrame(() => { navigationFrame = null; onPageShow(); });
+    };
     document.addEventListener('visibilitychange', handleVisibilityChange);
-
+    window.addEventListener('pageshow', onPageShow);
+    window.addEventListener('prism-navigate', onLucyNavigation);
+    window.addEventListener('nav-click-active', onLucyNavigation);
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('pageshow', onPageShow);
+      window.removeEventListener('prism-navigate', onLucyNavigation);
+      window.removeEventListener('nav-click-active', onLucyNavigation);
+      if (navigationFrame !== null) cancelAnimationFrame(navigationFrame);
     };
-  }, [isLucyReady, scrollToBottom]);
+  }, [isLucyReady, scrollToBottom, restoreLatestSavedMessages]);
 
   // 🚀 최상단 스크롤 이벤트 수신 시 루시 대화창 최상단으로 부드럽게 스크롤
   useEffect(() => {

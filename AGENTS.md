@@ -55,3 +55,7 @@ Every time a user request is completed or changes are made to the codebase:
 - Keep effect layers visual-only and separate from popup/focus stacking. Folded effects use main bounds; the Big Bang button itself remains usable in its existing location.
 
 - User exception: clover wind/breeze effects cover the entire display, including Lucy and navigation, in folded and unfolded layouts. They stay visual-only and never intercept input.
+
+### 9. Latest Lucy Conversation on Entry
+- Entering/revealing Lucy, returning from background/BFCache and layout changes while following the bottom must show the newest available messages. Reconcile saved/current history by content/identity, never just message count; retain active streamed content.
+- Delayed history, fonts/images and viewport changes are layout events, not manual scrolling. Preserve explicit reading of older messages and the header-to-top/recent controls.
