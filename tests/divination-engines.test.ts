@@ -468,7 +468,9 @@ test('Kyusei reference example: 1990-05-17 solar birth is 一白水星 with 五�
   const again=calculateKyusei({profile:{basic:{birthdate:'1990-05-17',gender:'female' as const}},targetDate:new Date('2026-11-02T00:00:00Z')});
   assert.equal(JSON.stringify(again.annualChart),JSON.stringify(r.annualChart));
   const prompt=formatKyuseiPrompt(r);
-  assert(prompt.includes('LUCKEY-KS-v1.0.0')&&prompt.includes('오황살')&&prompt.includes('일백수성'));
+  assert(prompt.includes(KYUSEI_ENGINE_VERSION)&&prompt.includes('오황살')&&prompt.includes('일백수성'));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
   assert.equal(formatKyuseiPrompt(calculateKyusei({profile:null})),'');
 });
 
@@ -1033,6 +1035,9 @@ test('Burmese Mahabote: 7-house chart calculation, root house, age transit, Rahu
   assert(r1.transitInteraction!.phase.length > 0);
   assert(prompt.includes('행성 조화도 및 친화수리'));
   assert(prompt.includes('4대 인생 영역 친화도'));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
+  assert(r1.calculatedAtKst?.endsWith('KST'));
 
   // Skipped without birthdate
   const skipped = calculateMahabote({ profile: null });
@@ -2742,6 +2747,8 @@ test('Hellenistic Lots Engine: calculates Fortune, Spirit, Eros, Nemesis lots de
 test('I Ching 384 Yao Engine: calculates changing yao and quad-transformation hexagrams', () => {
   const rep = calculateIching384Yao({ question: '새로운 프로젝트 이직 타이밍 어떨까' });
   assert.equal(rep.engineVersion, ICHING_384YAO_ENGINE_VERSION);
+  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(rep.ichingSynthesisMatrix?.integratedAction));
   assert(rep.changingYao.yaoPosition >= 1 && rep.changingYao.yaoPosition <= 6);
   assert(rep.originalHexagram.nameKo.length > 0);
   assert(rep.transformedHexagram.nameKo.length > 0);
@@ -2750,6 +2757,7 @@ test('I Ching 384 Yao Engine: calculates changing yao and quad-transformation he
   assert(rep.nuclearHexagram.nameKo.length > 0);
   const prompt = formatIching384YaoPrompt(rep);
   assert(prompt.includes(ICHING_384YAO_ENGINE_VERSION));
+  assert(prompt.includes('교차 매트릭스'));
   assert(prompt.includes('지괘'));
   assert(prompt.includes('착괘'));
   assert(prompt.includes('종괘'));

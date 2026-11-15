@@ -35,7 +35,7 @@ import {
   getYearSolarTerms,
 } from '../astronomicalSolarTerms';
 
-export const KYUSEI_ENGINE_VERSION = 'LUCKEY-KS-v1.0.0';
+export const KYUSEI_ENGINE_VERSION = 'LUCKEY-KS-v2.0.0';
 
 export const KYUSEI_METHOD =
   '구성학 정통 9궁 명반 산법: 입춘 절입 연성 수리 본명성, 절월 월성 월명성, 동지·하지 근접 갑자일 일성 순행 비성(중궁→건→태→간→리→감→곤→진→손)으로 연·월·일 3반 포국 및 오황살·암검살·세파살·월파살·본명살·본명적살 결정론 산출';
@@ -127,6 +127,11 @@ export interface KyuseiResult {
   usageScenarios: Array<{ scenario: string; direction: KyuseiDirection; advice: string }>;
   directionalScores?: KyuseiDirectionScore[];
   honmyoseiSynergy?: KyuseiHonmyoseiSynergy;
+  kyuseiSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -594,6 +599,11 @@ export function calculateKyusei(params: {
   const honmyoseiSynergy = calculateHonmyoseiSynergy(honStar, annualChart.centerStar);
 
   const { utc, kst } = kstTimestamps(now);
+  const kyuseiSynthesisMatrix = {
+    dominantTension: `본명성 ${STARS[honStar].name} ↔ 연반 중궁 ${annualChart.centerStarName}`,
+    alignmentState: `${honmyoseiSynergy.annualStarRelation} — 최길 방위 ${topFortuneDirection?.direction ?? '유연 조율'}`,
+    integratedAction: topFortuneDirection ? topFortuneDirection.summary : honmyoseiSynergy.annualThemeGuidance,
+  };
 
   return {
     status: 'calculated',
@@ -631,6 +641,7 @@ export function calculateKyusei(params: {
     usageScenarios,
     directionalScores,
     honmyoseiSynergy,
+    kyuseiSynthesisMatrix,
   };
 }
 
@@ -802,9 +813,9 @@ ${fortuneLines}
 6. [활용 시나리오 — 이사·여행·미팅·출장]:
 ${usageLines}${result.directionalScores ? `\n======================================================================
 [8대 방위별 목적 적합도 매트릭스 및 본명성-연성 동회 심층 수리 평가]
-${result.directionalScores.map(d => `   • [${d.direction}] ${d.score}점/100점 (${d.level}) → 권장: ${d.recommendedActivities.join(', ')}`).join('\n')}
-   * 본명성-연성 조화도: ${result.honmyoseiSynergy?.annualStarRelation} (${result.honmyoseiSynergy?.synergyScore}점/100점)
-   * 연간 테마 가이드: ${result.honmyoseiSynergy?.annualThemeGuidance}` : ''}
+${result.directionalScores.map(d => `   • [${d.direction}] (${d.level}) → 권장: ${d.recommendedActivities.join(', ')}`).join('\n')}
+   * 본명성-연성 조화도: ${result.honmyoseiSynergy?.annualStarRelation}
+   * 연간 테마 가이드: ${result.honmyoseiSynergy?.annualThemeGuidance}` : ''}${result.kyuseiSynthesisMatrix ? `\n   * 교차 매트릭스 [핵심 긴장: ${result.kyuseiSynthesisMatrix.dominantTension} | 조율 상태: ${result.kyuseiSynthesisMatrix.alignmentState}]\n   * 통합 실천: ${result.kyuseiSynthesisMatrix.integratedAction}` : ''}
 ======================================================================
 [★ 루시 구성학 상담 지침]:
 - 위 3반(연반·월반·일반) 포국과 흉살 방위는 순수 수리로 직접 비성한 확정 데이터다. 다른 포국을 지어내지 마십시오.
