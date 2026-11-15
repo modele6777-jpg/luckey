@@ -22,7 +22,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const PATANJALI_ASHTANGA_YOGA_ENGINE_VERSION = '1.0.0';
+export const PATANJALI_ASHTANGA_YOGA_ENGINE_VERSION = '2.0.0';
 
 export interface YogaLimb {
   id: string;
@@ -38,6 +38,7 @@ export interface YogaLimb {
 export interface PatanjaliAshtangaYogaReport {
   engineVersion: string;
   timestamp: string;
+  calculatedAtKst: string;
   cittaVrittiNirodhaScore: number; // 0 ~ 100 마음의 동요 소멸(정적) 지수
   kleshaPurificationRate: number; // 0 ~ 100 5대 번뇌(무명·아상·애착·혐오·불안) 정화율
   purushaConsciousnessAwakening: number; // 0 ~ 100 순수의식(푸루샤) 자각도
@@ -46,6 +47,27 @@ export interface PatanjaliAshtangaYogaReport {
   secondaryYogaLimb: YogaLimb; // 보조 지원 지칙
   dharanaFocusPrescription: string; // 다라나(집중) 개운 처방
   samadhiClarityGuidance: string; // 사마디(삼매) 명징성 지침
+  yogaSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
+}
+
+function formatPatanjaliKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
+
+function describePatanjaliStage(score: number): string {
+  if (score >= 85) return '삼매 명징기(Samadhi Clarity) — 치타 브리티의 파동이 고요히 가라앉아 푸루샤 관조자의 빛이 선명한 상태';
+  if (score >= 70) return '다라나 집중기(Dharana Anchoring) — 산만한 감각을 거두고 본질적 한 지점에 의식이 안정적으로 모이는 상태';
+  return '니야마 정화기(Niyama Purification) — 호흡과 자세를 고르게 가다듬으며 번뇌의 물결을 차분히 가라앉히는 상태';
 }
 
 const YOGA_LIMBS_BASE: Omit<YogaLimb, 'resonanceScore'>[] = [
@@ -197,9 +219,20 @@ export function calculatePatanjaliAshtangaYoga(
     samadhiClarityGuidance = `잡념이 일어날 때마다 그것에 이름표를 붙이지 말고 단지 흘러가는 구름처럼 관조하십시오. 요동치는 물결 밑바닥의 고요한 침묵이 당신의 본래 자리입니다.`;
   }
 
+  const calculatedAtKst = formatPatanjaliKstTimestamp(now);
+  const composite = Math.round(
+    (cittaVrittiNirodhaScore + kleshaPurificationRate + purushaConsciousnessAwakening + pranayamaVitalityBalance) / 4
+  );
+  const yogaSynthesisMatrix = {
+    dominantTension: `${dominantYogaLimb.nameKo} ↔ ${secondaryYogaLimb.nameKo}`,
+    alignmentState: describePatanjaliStage(composite),
+    integratedAction: `${dharanaFocusPrescription}${contextText.trim() ? ` [질문 맥락: ${contextText.trim()}]` : ''}`,
+  };
+
   return {
     engineVersion: PATANJALI_ASHTANGA_YOGA_ENGINE_VERSION,
     timestamp: now.toISOString(),
+    calculatedAtKst,
     cittaVrittiNirodhaScore,
     kleshaPurificationRate,
     purushaConsciousnessAwakening,
@@ -208,22 +241,31 @@ export function calculatePatanjaliAshtangaYoga(
     secondaryYogaLimb,
     dharanaFocusPrescription,
     samadhiClarityGuidance,
+    yogaSynthesisMatrix,
   };
 }
 
 export function formatPatanjaliAshtangaYogaPrompt(
   report: PatanjaliAshtangaYogaReport
 ): string {
-  return [
+  const composite = Math.round(
+    (report.cittaVrittiNirodhaScore + report.kleshaPurificationRate + report.purushaConsciousnessAwakening + report.pranayamaVitalityBalance) / 4
+  );
+  const lines = [
     `### 🧘 고대 인도 파탄잘리 요가 수트라 8지칙 & 치타 브리티 니로다 삼매 청정 리포트`,
-    `- 엔진 버전: v${report.engineVersion}`,
-    `- 치타 브리티 니로다(마음의 동요 소멸도): ${report.cittaVrittiNirodhaScore}/100`,
-    `- 클레샤 5대 번뇌 정화율: ${report.kleshaPurificationRate}/100 · 푸루샤 순수의식 자각도: ${report.purushaConsciousnessAwakening}/100`,
-    `- 프라나 생명력 균형: ${report.pranayamaVitalityBalance}/100`,
-    `- 핵심 수행 요가지칙: 제${report.dominantYogaLimb.level}지칙 ${report.dominantYogaLimb.nameKo} [${report.dominantYogaLimb.focusRealm}] (${report.dominantYogaLimb.resonanceScore}점) — ${report.dominantYogaLimb.practicePrinciple}`,
-    `- 보조 수행 요가지칙: 제${report.secondaryYogaLimb.level}지칙 ${report.secondaryYogaLimb.nameKo} [${report.secondaryYogaLimb.focusRealm}] (${report.secondaryYogaLimb.resonanceScore}점) — ${report.secondaryYogaLimb.practicePrinciple}`,
+    `- 연산 시각: ${report.calculatedAtKst} | 엔진 버전: v${report.engineVersion}`,
+    `- 삼매 수행 국면: ${describePatanjaliStage(composite)}`,
+    `- 핵심 수행 요가지칙: 제${report.dominantYogaLimb.level}지칙 ${report.dominantYogaLimb.nameKo} [${report.dominantYogaLimb.focusRealm}] — ${report.dominantYogaLimb.practicePrinciple}`,
+    `- 보조 수행 요가지칙: 제${report.secondaryYogaLimb.level}지칙 ${report.secondaryYogaLimb.nameKo} [${report.secondaryYogaLimb.focusRealm}] — ${report.secondaryYogaLimb.practicePrinciple}`,
     `- 다라나(단일점 집중) 처방: ${report.dharanaFocusPrescription}`,
     `- 사마디(삼매 명징성) 지침: ${report.samadhiClarityGuidance}`,
     `- [AI 해석 지침]: 파탄잘리 《요가 수트라》의 '치타 브리티 니로다(마음의 작용을 고요히 함)' 원리를 적용하여, 질문자가 산만한 잡념과 번뇌의 소용돌이를 멈추고 고요한 순수의식(Puruṣa)의 중심을 잡아 흔들림 없는 집중력과 삼매의 명징성을 회복하도록 지혜롭게 안내하십시오.`,
-  ].join('\n');
+  ];
+  if (report.yogaSynthesisMatrix) {
+    lines.push(
+      `- 교차 매트릭스 [핵심 긴장: ${report.yogaSynthesisMatrix.dominantTension} | 조율 상태: ${report.yogaSynthesisMatrix.alignmentState}]`,
+      `- 통합 실천: ${report.yogaSynthesisMatrix.integratedAction}`,
+    );
+  }
+  return lines.join('\n');
 }

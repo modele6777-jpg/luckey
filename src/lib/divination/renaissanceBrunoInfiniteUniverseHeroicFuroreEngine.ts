@@ -20,7 +20,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const BRUNO_INFINITE_UNIVERSE_VERSION = 'LUCKEY-BRUNO-INFINITE-UNIVERSE-v1.0.0';
+export const BRUNO_INFINITE_UNIVERSE_VERSION = 'LUCKEY-BRUNO-INFINITE-UNIVERSE-v2.0.0';
 
 export interface BrunoCosmicAspect {
   aspectKey: string;
@@ -54,6 +54,27 @@ export interface RenaissanceBrunoInfiniteUniverseResult {
     counselTitle: string;
     heroicFlightGuidance: string;
   };
+  brunoSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
+}
+
+function formatBrunoKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
+
+function describeBrunoStage(score: number): string {
+  if (score >= 88) return '수정 구체 돌파(Flight Beyond Spheres) — 폐쇄된 틀을 깨고 무한 우주의 자유로운 지평으로 비상하는 도약기';
+  if (score >= 76) return '영웅적 열정 점화(Eroico Furore) — 내재적 생명력(Anima Mundi)과 교명하며 소신을 단단히 세우는 실천기';
+  return '양심의 불꽃 응시(Libera Coscienza) — 낡은 도그마를 걷어내고 본래의 정신 주권을 되찾는 자각기';
 }
 
 export type RenaissanceBrunoInfiniteUniverseReport = RenaissanceBrunoInfiniteUniverseResult;
@@ -120,11 +141,16 @@ const FURORE_METAPHORS: BrunoFuroreMetaphor[] = [
   },
 ];
 
-export function calculateRenaissanceBrunoInfiniteUniverse(profile: UserProfile): RenaissanceBrunoInfiniteUniverseResult {
+export function calculateRenaissanceBrunoInfiniteUniverse(
+  profile: UserProfile,
+  query?: string,
+  now: Date = new Date(),
+): RenaissanceBrunoInfiniteUniverseResult {
   const seedString =
     (profile?.basic?.birthdate ?? (profile as any)?.birthdate ?? '1990-01-01') +
     (profile?.basic?.name ?? (profile as any)?.name ?? 'User') +
     (profile?.basic?.birthtime ?? (profile as any)?.birthtime ?? '12:00') +
+    (query ?? '') +
     'BrunoInfiniteUniverseFurore';
 
   let hash = 0;
@@ -152,9 +178,19 @@ export function calculateRenaissanceBrunoInfiniteUniverse(profile: UserProfile):
     `${activeCosmicAspect.heroicCounsel} 또한 브루노의 영웅적 상징인 '${focalFuroreMetaphor.metaphorTitleKo}'를 가슴에 품고, ` +
     `${focalFuroreMetaphor.sovereignAction}`;
 
+  const calculatedAtKst = formatBrunoKstTimestamp(now);
+  const composite = Math.round(
+    (infiniteCosmosVisionScore + heroicFurorePassionScore + immanentDivineResonanceScore + actaeonTransformationScore + unboundedAutonomyScore) / 5
+  );
+  const brunoSynthesisMatrix = {
+    dominantTension: `${activeCosmicAspect.aspectNameKo} ↔ ${focalFuroreMetaphor.metaphorTitleKo}`,
+    alignmentState: describeBrunoStage(composite),
+    integratedAction: `${focalFuroreMetaphor.sovereignAction}${query?.trim() ? ` [질문 맥락: ${query.trim()}]` : ''}`,
+  };
+
   return {
     engineVersion: BRUNO_INFINITE_UNIVERSE_VERSION,
-    calculatedAtKst: new Date().toISOString(),
+    calculatedAtKst,
     infiniteCosmosVisionScore,
     heroicFurorePassionScore,
     immanentDivineResonanceScore,
@@ -166,17 +202,18 @@ export function calculateRenaissanceBrunoInfiniteUniverse(profile: UserProfile):
       counselTitle,
       heroicFlightGuidance,
     },
+    brunoSynthesisMatrix,
   };
 }
 
 export function formatRenaissanceBrunoInfiniteUniversePrompt(res: RenaissanceBrunoInfiniteUniverseResult): string {
-  return [
+  const composite = Math.round(
+    (res.infiniteCosmosVisionScore + res.heroicFurorePassionScore + res.immanentDivineResonanceScore + res.actaeonTransformationScore + res.unboundedAutonomyScore) / 5
+  );
+  const lines = [
     `【브루노 무한우주론 & 영웅적 열정(Eroico Furore) 지표】`,
-    `- 무한우주적 시야 및 경계 돌파력: ${res.infiniteCosmosVisionScore}/100`,
-    `- 영웅적 열정(Eroico Furore) 지적 비상도: ${res.heroicFurorePassionScore}/100`,
-    `- 내재적 생명력(Anima Mundi) 교명도: ${res.immanentDivineResonanceScore}/100`,
-    `- 진리 추구와 자아 초월 변모력: ${res.actaeonTransformationScore}/100`,
-    `- 권위 탈피 독자적 정신 주권도: ${res.unboundedAutonomyScore}/100`,
+    `- 연산 시각: ${res.calculatedAtKst} | 엔진 버전: ${res.engineVersion}`,
+    `- 영웅적 비상 국면: ${describeBrunoStage(composite)}`,
     `- 핵심 우주론적 관점: ${res.activeCosmicAspect.aspectNameKo} [${res.activeCosmicAspect.aspectLatinOrItalian}]`,
     `- 우주론적 의미: ${res.activeCosmicAspect.cosmicMeaning}`,
     `- 영웅적 비상 조언: ${res.activeCosmicAspect.heroicCounsel}`,
@@ -184,5 +221,12 @@ export function formatRenaissanceBrunoInfiniteUniversePrompt(res: RenaissanceBru
     `- 원전 명제 요약: "${res.focalFuroreMetaphor.italianVerseSummary}"`,
     `- 상징적 통찰: ${res.focalFuroreMetaphor.philosophicalInsight}`,
     `- 정신 주권 실천 지침: ${res.brunoHeroicCounsel.heroicFlightGuidance}`,
-  ].join('\n');
+  ];
+  if (res.brunoSynthesisMatrix) {
+    lines.push(
+      `- 교차 매트릭스 [핵심 긴장: ${res.brunoSynthesisMatrix.dominantTension} | 조율 상태: ${res.brunoSynthesisMatrix.alignmentState}]`,
+      `- 통합 실천: ${res.brunoSynthesisMatrix.integratedAction}`,
+    );
+  }
+  return lines.join('\n');
 }

@@ -3206,9 +3206,14 @@ test('Pythagorean Tetraktys & Gematria Harmonics Engine: calculates root, 4 tier
   assert(rep.harmonicSignature.soulRootNumber >= 1);
   assert(rep.realityManifestationIndex >= 0 && rep.realityManifestationIndex <= 100);
   assert(rep.tetraktysDistribution.dominantTier.length > 0);
+  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(rep.tetraktysSynthesisMatrix?.integratedAction));
   const prompt = formatPythagoreanTetraktysPrompt(rep);
   assert(prompt.includes('피타고라스 테트락티스 10대 신성기하 & 게마트리아 엔진'));
   assert(prompt.includes(rep.harmonicSignature.sacredRatioName));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
 });
 
 test('Babylonian Enuma Elish & Tablets of Destiny Engine: calculates patron deity, edict and ordering index', () => {
@@ -4018,9 +4023,14 @@ test('Patanjali Ashtanga Yoga Sutra Engine: calculates citta vritti nirodha and 
   assert(rep.purushaConsciousnessAwakening >= 0 && rep.purushaConsciousnessAwakening <= 100);
   assert(rep.pranayamaVitalityBalance >= 0 && rep.pranayamaVitalityBalance <= 100);
   assert(rep.dominantYogaLimb.nameKo.length > 0);
+  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(rep.yogaSynthesisMatrix?.integratedAction));
   const prompt = formatPatanjaliAshtangaYogaPrompt(rep);
   assert(prompt.includes('요가 수트라'));
   assert(prompt.includes(rep.dominantYogaLimb.nameKo));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
 });
 
 test('Korean Pungryudo Hwarang Five Precepts Engine: calculates xuanmiao harmony and hoyounjigi', () => {
@@ -5311,9 +5321,14 @@ test('Giordano Bruno Infinite Universe Engine: calculates Infinite cosmos vision
   assert(rep.actaeonTransformationScore >= 0 && rep.actaeonTransformationScore <= 100);
   assert(rep.unboundedAutonomyScore >= 0 && rep.unboundedAutonomyScore <= 100);
   assert(rep.activeCosmicAspect.aspectLatinOrItalian.length > 0);
+  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(rep.brunoSynthesisMatrix?.integratedAction));
   const prompt = formatRenaissanceBrunoInfiniteUniversePrompt(rep);
   assert(prompt.includes('브루노 무한우주론 & 영웅적 열정(Eroico Furore) 지표'));
   assert(prompt.includes(rep.activeCosmicAspect.aspectLatinOrItalian));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
 });
 
 test('Blaise Pascal Pensees Engine: calculates Thinking reed dignity, Heart intuition, and Existential wager resolve', () => {
