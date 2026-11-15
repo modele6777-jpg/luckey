@@ -150,7 +150,7 @@ export function calculateVedicNakshatra108Pada(
   const q = (question || '').trim();
   const nakshatra108SynthesisMatrix = {
     dominantTension: `${nakshatra.nameKo} 제${pada}파다 ↔ ${navamsha.name}`,
-    alignmentState: `${nakshatra.gana} · ${nakshatra.tattva} · ${nakshatra.presidingDeity || nakshatra.deity}`,
+    alignmentState: `${nakshatra.gana} · ${nakshatra.tattva} · ${nakshatra.deity}`,
     integratedAction: `${sanskritMantra} · ${nakshatra.mission}${q ? ` [질문 맥락: ${q}]` : ''}`,
   };
 
