@@ -3649,10 +3649,14 @@ test('Popol Vuh Hero Twins Engine: calculates active trial house and qualitative
   assert(rep.ritualAction.length > 0);
   assert(rep.reflectionFocus.length > 0);
   assert(rep.boundaryNotice.length > 0);
+  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(rep.popolVuhSynthesisMatrix?.integratedAction));
   const prompt = formatPopolVuhHeroTwinsPrompt(rep);
   assert(prompt.includes('고대 마야 포폴 부(Popol Vuh) 쌍둥이 영웅 & 시발바 시련 돌파 실측 데이터'));
   assert(prompt.includes(rep.activeTrialHouse.houseNameKo));
+  assert(prompt.includes('교차 매트릭스'));
   assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
 });
 
 test('Ancient Yarrow I Ching Probability Engine: calculates dominant yao and Dayan alignment score', () => {
@@ -4561,9 +4565,14 @@ test('Mesoamerican Mixtec Eight Deer Jaguar Claw Engine: calculates courage, sac
   assert(rep.mountainCoastSynthesisBalance >= 0 && rep.mountainCoastSynthesisBalance <= 100);
   assert(rep.turquoiseNoseOrnamentHonor >= 0 && rep.turquoiseNoseOrnamentHonor <= 100);
   assert(rep.activeHeroRank.rankNameMixtec.length > 0);
+  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(rep.mixtecSynthesisMatrix?.integratedAction));
   const prompt = formatMixtecEightDeerPrompt(rep);
   assert(prompt.includes('메소아메리카 믹스테크 《8-사슴 재규어 발톱(Eight Deer)》'));
   assert(prompt.includes(rep.activeHeroRank.rankNameKo));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
 });
 
 test('Korean Jeon Bongjun Nokdu General Engine: calculates Sabal Tongmun solidarity, Baeksan righteous force and 4 manifestos', () => {
@@ -4594,9 +4603,14 @@ test('Mesopotamian Atrahasis Flood Wisdom Engine: calculates reed wall intuition
   assert(rep.seedPreservationWisdomPower >= 0 && rep.seedPreservationWisdomPower <= 100);
   assert(rep.sacredEquilibriumPactHarmony >= 0 && rep.sacredEquilibriumPactHarmony <= 100);
   assert(rep.activeWisdomRank.rankNameAkkadian.length > 0);
+  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(rep.atrahasisSynthesisMatrix?.integratedAction));
   const prompt = formatAtrahasisFloodPrompt(rep);
   assert(prompt.includes('고대 메소포타미아 서사시 《아트라하시스(Atrahasis)》'));
   assert(prompt.includes(rep.activeWisdomRank.rankNameKo));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
 });
 
 test('Scandinavian Eddic Yggdrasil Nine Realms Engine: calculates cosmic axis, Urðarbrunnr fate weaving, Mímir wisdom and Gimlé renewal', () => {

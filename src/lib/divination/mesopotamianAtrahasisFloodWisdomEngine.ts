@@ -15,7 +15,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const ATRAHASIS_FLOOD_VERSION = 'LUCKEY-ATRAHASIS-FLOOD-v1.0.0';
+export const ATRAHASIS_FLOOD_VERSION = 'LUCKEY-ATRAHASIS-FLOOD-v2.0.0';
 
 export interface AtrahasisWisdomRank {
   rankLevel: number;
@@ -46,6 +46,17 @@ export interface AtrahasisFloodResult {
     tabletSceneTitle: string;
     primordialWisdom: string;
   };
+  atrahasisSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
+}
+
+function describeAtrahasisStage(score: number): string {
+  if (score >= 86) return '생명의 방주 항해(Ark Navigation) — 갈대벽 직관과 절제의 균형이 온전히 맞물린 안정기';
+  if (score >= 74) return '씨앗 보전(Seed Preservation) — 거센 소음 속에서도 본질을 지켜내며 때를 고르는 응집기';
+  return '갈대벽 경청(Reed Wall Listening) — 바깥의 소란을 끄고 내면의 미세한 신호를 듣는 준비기';
 }
 
 export type AtrahasisFloodReport = AtrahasisFloodResult;
@@ -74,10 +85,14 @@ const ATRAHASIS_EPIPHANIES = [
   { tabletSceneTitle: '무지개 향연과 영원한 공존의 향기', primordialWisdom: '절제와 자비를 아는 영혼은 신들의 축복을 받으며, 그가 일군 터전 위에서 인류의 새로운 봄이 시작된다.' },
 ];
 
-function getKstDateString(): string {
-  const now = new Date();
-  const kst = new Date(now.getTime() + (9 * 60 + now.getTimezoneOffset()) * 60000);
-  return kst.toISOString().replace('T', ' ').substring(0, 19) + ' KST';
+function getKstDateString(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
 }
 
 function hashSeed(seedStr: string): number {
@@ -89,11 +104,15 @@ function hashSeed(seedStr: string): number {
   return Math.abs(h);
 }
 
-export function calculateAtrahasisFlood(profile?: UserProfile): AtrahasisFloodResult {
+export function calculateAtrahasisFlood(
+  profile?: UserProfile,
+  query?: string,
+  now: Date = new Date(),
+): AtrahasisFloodResult {
   const birthdate = profile?.basic?.birthdate || '1995-03-21';
   const birthtime = profile?.basic?.birthtime || '12:00';
   const name = profile?.basic?.name || 'Inquirer';
-  const seed = hashSeed(`ATRAHASIS-FLOOD-${birthdate}-${birthtime}-${name}`);
+  const seed = hashSeed(`ATRAHASIS-FLOOD-${birthdate}-${birthtime}-${name}-${query ?? ''}`);
 
   const reedWallIntuitionScore = (seed % 41) + 60; // 60~100
   const arkCraftingResilienceForce = ((seed >> 3) % 43) + 58; // 58~100
@@ -110,9 +129,18 @@ export function calculateAtrahasisFlood(profile?: UserProfile): AtrahasisFloodRe
   const epiphanyIdx = (seed >> 6) % ATRAHASIS_EPIPHANIES.length;
   const floodEpicEpiphany = ATRAHASIS_EPIPHANIES[epiphanyIdx];
 
+  const composite = Math.round(
+    (reedWallIntuitionScore + arkCraftingResilienceForce + sevenDayStormPurificationIndex + seedPreservationWisdomPower + sacredEquilibriumPactHarmony) / 5
+  );
+  const atrahasisSynthesisMatrix = {
+    dominantTension: `${activeWisdomRank.rankNameKo} ↔ ${primaryArkVirtue.virtueNameKo}`,
+    alignmentState: describeAtrahasisStage(composite),
+    integratedAction: `${primaryArkVirtue.actionableDirective}${query?.trim() ? ` [질문 맥락: ${query.trim()}]` : ''}`,
+  };
+
   return {
     engineVersion: ATRAHASIS_FLOOD_VERSION,
-    calculatedAtKst: getKstDateString(),
+    calculatedAtKst: getKstDateString(now),
     reedWallIntuitionScore,
     arkCraftingResilienceForce,
     sevenDayStormPurificationIndex,
@@ -121,23 +149,32 @@ export function calculateAtrahasisFlood(profile?: UserProfile): AtrahasisFloodRe
     activeWisdomRank,
     primaryArkVirtue,
     floodEpicEpiphany,
+    atrahasisSynthesisMatrix,
   };
 }
 
 export function formatAtrahasisFloodPrompt(result: AtrahasisFloodResult): string {
-  return `[🌊 고대 메소포타미아 서사시 《아트라하시스(Atrahasis)》 지혜의 방주 & 절제 리포트]
-- 엔진 버전: ${result.engineVersion}
-- 갈대벽 밀담 직관력 및 신탁 수신도: ${result.reedWallIntuitionScore}%
-- 생명의 방주 건조력 및 위기 방어력: ${result.arkCraftingResilienceForce}%
-- 폭풍우 속 내면 정화 및 담대함: ${result.sevenDayStormPurificationIndex}%
-- 핵심 본질 보전 및 재도약 잠재력: ${result.seedPreservationWisdomPower}%
-- 우주적 공존 서약 및 절제의 조화도: ${result.sacredEquilibriumPactHarmony}%
-- 현행 지혜의 품계: **[${result.activeWisdomRank.rankNameKo} (${result.activeWisdomRank.rankNameAkkadian})]**
-  → 관장 영역: ${result.activeWisdomRank.cosmicDomain}
-  → 방주 보전 축복: ${result.activeWisdomRank.arkPreservationBlessing}
-- 최우선 방주 덕목: **[${result.primaryArkVirtue.virtueNameKo} (${result.primaryArkVirtue.akkadianMotto})]**
-  → 핵심 본질: ${result.primaryArkVirtue.coreEssence}
-  → 실천 지침: ${result.primaryArkVirtue.actionableDirective}
-- 점토판 신성 서판 전승: 《${result.floodEpicEpiphany.tabletSceneTitle}》
-  → 원초적 지혜: "${result.floodEpicEpiphany.primordialWisdom}"`;
+  const composite = Math.round(
+    (result.reedWallIntuitionScore + result.arkCraftingResilienceForce + result.sevenDayStormPurificationIndex + result.seedPreservationWisdomPower + result.sacredEquilibriumPactHarmony) / 5
+  );
+  const lines = [
+    `[🌊 고대 메소포타미아 서사시 《아트라하시스(Atrahasis)》 지혜의 방주 & 절제 리포트]`,
+    `- 연산 시각: ${result.calculatedAtKst} | 엔진 버전: ${result.engineVersion}`,
+    `- 방주 지혜 국면: ${describeAtrahasisStage(composite)}`,
+    `- 현행 지혜의 품계: **[${result.activeWisdomRank.rankNameKo} (${result.activeWisdomRank.rankNameAkkadian})]**`,
+    `  → 관장 영역: ${result.activeWisdomRank.cosmicDomain}`,
+    `  → 방주 보전 축복: ${result.activeWisdomRank.arkPreservationBlessing}`,
+    `- 최우선 방주 덕목: **[${result.primaryArkVirtue.virtueNameKo} (${result.primaryArkVirtue.akkadianMotto})]**`,
+    `  → 핵심 본질: ${result.primaryArkVirtue.coreEssence}`,
+    `  → 실천 지침: ${result.primaryArkVirtue.actionableDirective}`,
+    `- 점토판 신성 서판 전승: 《${result.floodEpicEpiphany.tabletSceneTitle}》`,
+    `  → 원초적 지혜: "${result.floodEpicEpiphany.primordialWisdom}"`,
+  ];
+  if (result.atrahasisSynthesisMatrix) {
+    lines.push(
+      `- 교차 매트릭스 [핵심 긴장: ${result.atrahasisSynthesisMatrix.dominantTension} | 조율 상태: ${result.atrahasisSynthesisMatrix.alignmentState}]`,
+      `- 통합 실천: ${result.atrahasisSynthesisMatrix.integratedAction}`,
+    );
+  }
+  return lines.join('\n');
 }
