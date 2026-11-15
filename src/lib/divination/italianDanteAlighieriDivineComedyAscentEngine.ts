@@ -10,12 +10,12 @@
  * 4. 천국(Paradiso)의 지복직관(Visio Beatifica): 베아트리체의 순수한 인도를 받아 우주의 조화와 영원한 빛에 눈뜨는 지혜의 도약.
  * 5. 태양과 별들을 움직이는 그 사랑(L'amor che move il sole e l'altre stelle): 모든 모순과 갈등을 감싸 안는 신성한 우주적 사랑과의 영적 합일.
  *
- * @version LUCKEY-DANTE-DIVINE-COMEDY-v1.0.0
+ * @version LUCKEY-DANTE-DIVINE-COMEDY-v2.0.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const ITALIAN_DANTE_COMEDY_VERSION = 'LUCKEY-DANTE-DIVINE-COMEDY-v1.0.0';
+export const ITALIAN_DANTE_COMEDY_VERSION = 'LUCKEY-DANTE-DIVINE-COMEDY-v2.0.0';
 
 export interface DanteTheme {
   themeKey: string;
@@ -48,6 +48,11 @@ export interface DanteAlighieriDivineComedyAscentResult {
   danteComprehensiveGuidance: {
     guidanceTitle: string;
     philosophicalCounsel: string;
+  };
+  danteSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
   };
 }
 
@@ -113,8 +118,26 @@ export const DANTE_APHORISMS: DanteAphorism[] = [
   },
 ];
 
+function formatDanteKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
+
+function describeDanteStage(score: number): string {
+  if (score >= 90) return '천국 지복직관(Paradiso)기 (어둠을 뚫고 별빛과 우주적 사랑에 닿는 흐름)';
+  if (score >= 80) return '연옥 정화(Purgatorio)기 (무거운 짐을 내려놓고 덕목으로 상승하는 국면)';
+  return '어두운 숲 각성(Selva Oscura)기 (혼란 속에서 정직한 나침반을 세우는 흐름)';
+}
+
 export function calculateItalianDanteAlighieriDivineComedyAscent(
-  profile: UserProfile
+  profile: UserProfile,
+  query?: string,
+  now: Date = new Date(),
 ): DanteAlighieriDivineComedyAscentResult {
   const p = profile as any;
   const name = profile?.basic?.name ?? p?.name ?? '방문자';
@@ -122,7 +145,7 @@ export function calculateItalianDanteAlighieriDivineComedyAscent(
   const birthTime = profile?.basic?.birthtime ?? p?.birthTime ?? p?.birthtime ?? '12:00';
   const gender = profile?.basic?.gender ?? p?.gender ?? 'neutral';
 
-  const seedString = `DANTE-DIVINE-COMEDY:${name}:${birthDate}:${birthTime}:${gender}`;
+  const seedString = `DANTE-DIVINE-COMEDY:${name}:${birthDate}:${birthTime}:${gender}:${query ?? ''}`;
 
   let hash = 0;
   for (let i = 0; i < seedString.length; i++) {
@@ -149,9 +172,18 @@ export function calculateItalianDanteAlighieriDivineComedyAscent(
     `${activeDanteTheme.practicalCounsel} 단테의 불멸의 명언 "${focalDanteAphorism.aphorismKo}"(${focalDanteAphorism.aphorismEn})을 마음에 품고, ` +
     `${focalDanteAphorism.actionGuidance}`;
 
+  const danteSynthesisMatrix = {
+    dominantTension: `${activeDanteTheme.themeTitleKo} ↔ ${focalDanteAphorism.sourceContext}`,
+    alignmentState:
+      paradisoLuminousClarityScore >= 86 && cosmicLoveHarmonizingScore >= 86
+        ? '지복직관과 우주적 사랑의 고차원 순례 합일'
+        : '그림자 직면과 연옥의 정화를 통해 별빛으로 오르는 국면',
+    integratedAction: `${activeDanteTheme.practicalCounsel} (${focalDanteAphorism.actionGuidance})`,
+  };
+
   return {
     engineVersion: ITALIAN_DANTE_COMEDY_VERSION,
-    calculatedAtKst: new Date().toISOString(),
+    calculatedAtKst: formatDanteKstTimestamp(now),
     selvaOscuraWayfindingScore,
     infernoShadowConfrontScore,
     purgatorioCleansingVirtueScore,
@@ -163,17 +195,19 @@ export function calculateItalianDanteAlighieriDivineComedyAscent(
       guidanceTitle,
       philosophicalCounsel,
     },
+    danteSynthesisMatrix,
   };
 }
 
 export function formatDanteAlighieriDivineComedyAscentPrompt(res: DanteAlighieriDivineComedyAscentResult): string {
-  return [
+  const lines = [
     `【단테 알리기에리 《신곡》 영혼의 상승 & 지옥·연옥·천국 지혜 지표】`,
-    `- 어두운 숲 바른길 발견력(Selva Oscura Wayfinding): ${res.selvaOscuraWayfindingScore}/100`,
-    `- 지옥 그림자 정직한 직면력(Inferno Shadow Confront): ${res.infernoShadowConfrontScore}/100`,
-    `- 연옥 영혼 정화 및 덕목 갱신력(Purgatorio Virtue): ${res.purgatorioCleansingVirtueScore}/100`,
-    `- 천국 지복직관 영적 명료성(Paradiso Light): ${res.paradisoLuminousClarityScore}/100`,
-    `- 우주를 움직이는 사랑 공명도(Cosmic Love): ${res.cosmicLoveHarmonizingScore}/100`,
+    `- 엔진 버전: ${res.engineVersion} | 연산 시각: ${res.calculatedAtKst}`,
+    `- 어두운 숲 바른길 발견력(Selva Oscura Wayfinding): ${describeDanteStage(res.selvaOscuraWayfindingScore)}`,
+    `- 지옥 그림자 정직한 직면력(Inferno Shadow Confront): ${describeDanteStage(res.infernoShadowConfrontScore)}`,
+    `- 연옥 영혼 정화 및 덕목 갱신력(Purgatorio Virtue): ${describeDanteStage(res.purgatorioCleansingVirtueScore)}`,
+    `- 천국 지복직관 영적 명료성(Paradiso Light): ${describeDanteStage(res.paradisoLuminousClarityScore)}`,
+    `- 우주를 움직이는 사랑 공명도(Cosmic Love): ${describeDanteStage(res.cosmicLoveHarmonizingScore)}`,
     `- 핵심 신곡 테마: ${res.activeDanteTheme.themeTitleKo} [${res.activeDanteTheme.themeTitleEn}]`,
     `- 철학적 통찰: ${res.activeDanteTheme.philosophicalInsight}`,
     `- 실천적 조언: ${res.activeDanteTheme.practicalCounsel}`,
@@ -181,5 +215,12 @@ export function formatDanteAlighieriDivineComedyAscentPrompt(res: DanteAlighieri
     `- 원문: "${res.focalDanteAphorism.aphorismEn}" [${res.focalDanteAphorism.sourceContext}]`,
     `- 구체적 실천 지침: ${res.focalDanteAphorism.actionGuidance}`,
     `- 종합 통찰 권면: ${res.danteComprehensiveGuidance.philosophicalCounsel}`,
-  ].join('\n');
+  ];
+  if (res.danteSynthesisMatrix) {
+    lines.push(
+      `- 교차 매트릭스 [핵심 긴장: ${res.danteSynthesisMatrix.dominantTension} | 조율 상태: ${res.danteSynthesisMatrix.alignmentState}]`,
+      `- 통합 실천: ${res.danteSynthesisMatrix.integratedAction}`,
+    );
+  }
+  return lines.join('\n');
 }

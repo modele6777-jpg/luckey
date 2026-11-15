@@ -8,12 +8,12 @@
  * 4. 내면 정화 및 관조적 평정 지표 (Inner Purification & Contemplative Peace Index): 도덕적 정화와 변증법적 사유를 통해 도달하는 영혼의 고요한 관조와 평화.
  * 5. 주체적 존엄성과 창조적 회복탄력성 (Sovereign Dignity & Creative Resilience Score): 외부 운명에 비굴하게 굴복하지 않고 내면의 거룩한 존엄으로 길을 개척하는 회복탄력성.
  *
- * @version LUCKEY-PICO-DELLA-MIRANDOLA-DIGNITY-v1.0.0
+ * @version LUCKEY-PICO-DELLA-MIRANDOLA-DIGNITY-v2.0.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const ITALIAN_PICO_DELLA_MIRANDOLA_DIGNITY_VERSION = 'LUCKEY-PICO-DELLA-MIRANDOLA-DIGNITY-v1.0.0';
+export const ITALIAN_PICO_DELLA_MIRANDOLA_DIGNITY_VERSION = 'LUCKEY-PICO-DELLA-MIRANDOLA-DIGNITY-v2.0.0';
 
 export interface PicoTheme {
   themeKey: string;
@@ -46,6 +46,11 @@ export interface ItalianPicoDellaMirandolaDignityResult {
   picoComprehensiveGuidance: {
     guidanceTitle: string;
     philosophicalCounsel: string;
+  };
+  picoSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
   };
 }
 
@@ -127,9 +132,26 @@ function hashString(str: string): number {
   return hash;
 }
 
+function formatPicoKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
+
+function describePicoStage(score: number): string {
+  if (score >= 93) return '자기조형(Self-Fashioning) 비상기 (자유의지로 고귀한 형상을 빚어내는 흐름)';
+  if (score >= 88) return '보편 일치(Pax Philosophica)기 (다름을 통합해 내면의 평화를 여는 국면)';
+  return '내면 정화(Katharsis)기 (잡념을 씻고 주체적 존엄의 중심을 세우는 흐름)';
+}
+
 export function calculateItalianPicoDellaMirandolaDignity(
   profile?: UserProfile,
   query?: string,
+  now: Date = new Date(),
 ): ItalianPicoDellaMirandolaDignityResult {
   const p = profile as any;
   const name = profile?.basic?.name ?? p?.name ?? '남희';
@@ -160,9 +182,18 @@ export function calculateItalianPicoDellaMirandolaDignity(
     `${activePicoTheme.practicalCounsel} 피코 선생의 고전 명언 "${focalPicoAphorism.aphorismKo}" (${focalPicoAphorism.aphorismLatin})을 깊이 새기며, ` +
     `${focalPicoAphorism.actionGuidance}`;
 
+  const picoSynthesisMatrix = {
+    dominantTension: `${activePicoTheme.themeTitleKo} ↔ ${focalPicoAphorism.sourceContext}`,
+    alignmentState:
+      freeWillAgencyScore >= 90 && sovereignDignityResilienceScore >= 90
+        ? '자유의지 자기조형과 주권적 존엄성의 르네상스적 합일'
+        : '내면 정화와 보편적 지혜의 조화를 통해 가능성을 넓히는 국면',
+    integratedAction: `${activePicoTheme.practicalCounsel} (${focalPicoAphorism.actionGuidance})`,
+  };
+
   return {
     engineVersion: ITALIAN_PICO_DELLA_MIRANDOLA_DIGNITY_VERSION,
-    calculatedAtKst: new Date().toISOString(),
+    calculatedAtKst: formatPicoKstTimestamp(now),
     freeWillAgencyScore,
     infinitePotentialIndex,
     syncreticUniversalWisdomScore,
@@ -174,19 +205,21 @@ export function calculateItalianPicoDellaMirandolaDignity(
       guidanceTitle,
       philosophicalCounsel,
     },
+    picoSynthesisMatrix,
   };
 }
 
 export function formatItalianPicoDellaMirandolaDignityPrompt(
   res: ItalianPicoDellaMirandolaDignityResult,
 ): string {
-  return [
+  const lines = [
     `【조반니 피코 델라 미란돌라 《인간의 존엄성에 관한 연설》 자유의지 및 주체적 존엄성 지표】`,
-    `- 자유의지 및 자기형성 주체성(Free Will & Self-Fashioning Agency): ${res.freeWillAgencyScore}/100`,
-    `- 무한한 잠재력 및 가능성 확장도(Infinite Potential & Aspiration): ${res.infinitePotentialIndex}/100`,
-    `- 보편적 지혜 융합 및 평화적 일치도(Syncretic Wisdom & Concord): ${res.syncreticUniversalWisdomScore}/100`,
-    `- 내면 정화 및 관조적 평정 지표(Inner Purification & Peace): ${res.innerPurificationPeaceIndex}/100`,
-    `- 주체적 존엄성과 창조적 회복탄력성(Sovereign Dignity & Resilience): ${res.sovereignDignityResilienceScore}/100`,
+    `- 엔진 버전: ${res.engineVersion} | 연산 시각: ${res.calculatedAtKst}`,
+    `- 자유의지 및 자기형성 주체성(Free Will & Self-Fashioning Agency): ${describePicoStage(res.freeWillAgencyScore)}`,
+    `- 무한한 잠재력 및 가능성 확장도(Infinite Potential & Aspiration): ${describePicoStage(res.infinitePotentialIndex)}`,
+    `- 보편적 지혜 융합 및 평화적 일치도(Syncretic Wisdom & Concord): ${describePicoStage(res.syncreticUniversalWisdomScore)}`,
+    `- 내면 정화 및 관조적 평정 지표(Inner Purification & Peace): ${describePicoStage(res.innerPurificationPeaceIndex)}`,
+    `- 주체적 존엄성과 창조적 회복탄력성(Sovereign Dignity & Resilience): ${describePicoStage(res.sovereignDignityResilienceScore)}`,
     `- 핵심 피코 테마: ${res.activePicoTheme.themeTitleKo} [${res.activePicoTheme.themeTitleEn}]`,
     `- 실천적 통찰: ${res.activePicoTheme.pragmaticInsight}`,
     `- 행동 조언: ${res.activePicoTheme.practicalCounsel}`,
@@ -194,5 +227,12 @@ export function formatItalianPicoDellaMirandolaDignityPrompt(
     `- 원전 출처: [${res.focalPicoAphorism.sourceContext}]`,
     `- 구체적 실천 지침: ${res.focalPicoAphorism.actionGuidance}`,
     `- 종합 피코 권면: ${res.picoComprehensiveGuidance.philosophicalCounsel}`,
-  ].join('\n');
+  ];
+  if (res.picoSynthesisMatrix) {
+    lines.push(
+      `- 교차 매트릭스 [핵심 긴장: ${res.picoSynthesisMatrix.dominantTension} | 조율 상태: ${res.picoSynthesisMatrix.alignmentState}]`,
+      `- 통합 실천: ${res.picoSynthesisMatrix.integratedAction}`,
+    );
+  }
+  return lines.join('\n');
 }

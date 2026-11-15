@@ -5297,9 +5297,14 @@ test('Niccolo Machiavelli Virtu and Fortuna Engine: calculates Virtu decisivenes
   assert(rep.foxLionPrudentBalanceScore >= 0 && rep.foxLionPrudentBalanceScore <= 100);
   assert(rep.effectualTruthRealismScore >= 0 && rep.effectualTruthRealismScore <= 100);
   assert(rep.activeMachiavelliTheme.themeTitleItalian.length > 0);
+  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(rep.machiavelliSynthesisMatrix?.integratedAction));
   const prompt = formatMachiavelliVirtuFortunaPrompt(rep);
   assert(prompt.includes('니콜로 마키아벨리 《군주론》 비르투 & 포르투나 지표'));
   assert(prompt.includes(rep.activeMachiavelliTheme.themeTitleKo));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
 });
 
 test('Choe Chiwon Pungryudo and Three Teachings Harmony Engine: calculates Mystic Vitality, Inclusion Balance, and Jeophwa Gunsaeng', () => {
@@ -5473,9 +5478,14 @@ test('Dante Alighieri Divine Comedy Ascent Engine: calculates Wayfinding, Infern
   assert(rep.paradisoLuminousClarityScore >= 0 && rep.paradisoLuminousClarityScore <= 100);
   assert(rep.cosmicLoveHarmonizingScore >= 0 && rep.cosmicLoveHarmonizingScore <= 100);
   assert(rep.activeDanteTheme.themeTitleKo.length > 0);
+  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(rep.danteSynthesisMatrix?.integratedAction));
   const prompt = formatDanteAlighieriDivineComedyAscentPrompt(rep);
   assert(prompt.includes('단테 알리기에리 《신곡》 영혼의 상승 & 지옥·연옥·천국 지혜 지표'));
   assert(prompt.includes(rep.activeDanteTheme.themeTitleKo));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
 });
 
 test('Marcus Aurelius Meditations Citadel Engine: calculates Inner Citadel, Logos Providence, and Apatheia Serenity', () => {
@@ -6332,9 +6342,14 @@ test('Giovanni Pico della Mirandola Dignity Engine: calculates Free Will Agency,
   assert(rep.innerPurificationPeaceIndex >= 0 && rep.innerPurificationPeaceIndex <= 100);
   assert(rep.sovereignDignityResilienceScore >= 0 && rep.sovereignDignityResilienceScore <= 100);
   assert(rep.activePicoTheme.themeTitleKo.length > 0);
+  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(rep.picoSynthesisMatrix?.integratedAction));
   const prompt = formatItalianPicoDellaMirandolaDignityPrompt(rep);
   assert(prompt.includes('조반니 피코 델라 미란돌라 《인간의 존엄성에 관한 연설》 자유의지 및 주체적 존엄성 지표'));
   assert(prompt.includes(rep.activePicoTheme.themeTitleKo));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
 });
 
 test('Franz Kafka Existential Truth Engine: calculates Existential Honesty, Inner Sanctity, and Frozen Sea Piercing Insight', () => {
