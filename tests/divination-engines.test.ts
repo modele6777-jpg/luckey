@@ -6495,9 +6495,14 @@ test('Gosan Yoon Seon-do Five Friends Engine: calculates Five Friends Integrity,
   assert(rep.waterUnceasingPurityIndex >= 0 && rep.waterUnceasingPurityIndex <= 100);
   assert(rep.seyeonjeongSolitaryResilienceScore >= 0 && rep.seyeonjeongSolitaryResilienceScore <= 100);
   assert(rep.activeYoonTheme.themeTitleKo.length > 0);
+  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(rep.yoonSynthesisMatrix?.integratedAction));
   const prompt = formatKoreanGosanYoonSeonDoFiveFriendsPrompt(rep);
   assert(prompt.includes('고산 윤선도 《오우가》 수석송죽월 5우 지조 및 《어부사시사》 심미적 안빈낙도 지표'));
   assert(prompt.includes(rep.activeYoonTheme.themeTitleKo));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
 });
 
 test('Giovanni Pico della Mirandola Dignity Engine: calculates Free Will Agency, Infinite Potential, and Syncretic Wisdom', () => {
@@ -6903,9 +6908,14 @@ test('Heo Gyun Hong Gildong & Yuldoguk Engine: calculates Talent Liberation, Hom
   assert(rep.visionaryPioneerYuldogukIndex >= 0 && rep.visionaryPioneerYuldogukIndex <= 100);
   assert(rep.progressiveReformResilience >= 0 && rep.progressiveReformResilience <= 100);
   assert(rep.activeHeoGyunTheme.themeTitleKo.length > 0);
+  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(rep.heoGyunSynthesisMatrix?.integratedAction));
   const prompt = formatKoreanHeoGyunHongGildongYuldogukPrompt(rep);
   assert(prompt.includes('교산 허균 《홍길동전·유재론·호민론》 인재 등용·호민 기개·율도국 지표'));
   assert(prompt.includes(rep.activeHeoGyunTheme.themeTitleKo));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
 });
 
 test('Rainer Maria Rilke Letters to a Young Poet Engine: calculates Loving Solitude, Living Questions, and Elegiac Sublimation', () => {
@@ -6945,9 +6955,14 @@ test('Ilyeon Samguk Yusa Engine: calculates Hongik Ingan Pride, Hyangga Healing,
   assert(rep.grassrootsCompassionIndex >= 0 && rep.grassrootsCompassionIndex <= 100);
   assert(rep.culturalPreservationResilience >= 0 && rep.culturalPreservationResilience <= 100);
   assert(rep.activeIlyeonTheme.themeTitleKo.length > 0);
+  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(rep.ilyeonSynthesisMatrix?.integratedAction));
   const prompt = formatKoreanIlyeonSamgukYusaPrompt(rep);
   assert(prompt.includes('보각국사 일연 《삼국유사》 홍익인간 자주 자긍심·향가 치유·처용 관용 지표'));
   assert(prompt.includes(rep.activeIlyeonTheme.themeTitleKo));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
 });
 
 test('William Shakespeare Tragic Wisdom Engine: calculates Tragic Depth, Existential Action, and Readiness', () => {

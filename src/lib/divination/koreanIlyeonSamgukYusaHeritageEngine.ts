@@ -8,12 +8,12 @@
  * 4. 난세를 이겨내는 민중 자비와 기적의 각성 (Grassroots Compassion & Miracle Awakening Index): 소외된 민중과 승려들의 소박한 자비행과 기적을 귀하게 기록한 따스한 휴머니즘.
  * 5. 몽골 전란 속에서도 민족의 영혼을 지켜낸 문화적 회복탄력성 (Ilyeon Cultural Preservation & Resilient Memory Score): 전란의 잿더미 속에서도 역사와 설화를 집대성하여 민족의 얼을 건넨 불굴의 회복탄력성.
  *
- * @version LUCKEY-KOREAN-ILYEON-SAMGUK-YUSA-v1.0.0
+ * @version LUCKEY-KOREAN-ILYEON-SAMGUK-YUSA-v2.0.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const KOREAN_ILYEON_SAMGUK_YUSA_VERSION = 'LUCKEY-KOREAN-ILYEON-SAMGUK-YUSA-v1.0.0';
+export const KOREAN_ILYEON_SAMGUK_YUSA_VERSION = 'LUCKEY-KOREAN-ILYEON-SAMGUK-YUSA-v2.0.0';
 
 export interface IlyeonTheme {
   themeKey: string;
@@ -47,6 +47,27 @@ export interface KoreanIlyeonSamgukYusaResult {
     guidanceTitle: string;
     philosophicalCounsel: string;
   };
+  ilyeonSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
+}
+
+function formatIlyeonKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
+
+function describeIlyeonStage(score: number): string {
+  if (score >= 96) return '홍익화해(弘益和解) — 처용의 관용과 홍익인간의 기개가 하나로 녹아든 원융기';
+  if (score >= 93) return '향가승화(鄕歌昇華) — 삶의 슬픔을 맑은 노래와 자비로 승화시키는 치유기';
+  return '개천자긍(開天自矜) — 흔들리지 않는 뿌리와 문화적 기억을 단단히 세우는 수호기';
 }
 
 export const ILYEON_THEMES: IlyeonTheme[] = [
@@ -124,6 +145,7 @@ function hashString(str: string): number {
 export function calculateKoreanIlyeonSamgukYusa(
   profile?: UserProfile,
   query?: string,
+  now: Date = new Date(),
 ): KoreanIlyeonSamgukYusaResult {
   const p = profile as any;
   const name = profile?.basic?.name ?? p?.name ?? '남희';
@@ -155,9 +177,24 @@ export function calculateKoreanIlyeonSamgukYusa(
     `${activeIlyeonTheme.practicalCounsel} 일연 선사의 원전 가르침 "${focalIlyeonAphorism.aphorismKo}" (${focalIlyeonAphorism.aphorismHanja})을 가슴에 새기고, ` +
     `${focalIlyeonAphorism.actionGuidance}`;
 
+  const calculatedAtKst = formatIlyeonKstTimestamp(now);
+  const avgScore = Math.round(
+    (hongikInganPrideScore +
+      hyanggaHealingIndex +
+      cheoyongToleranceScore +
+      grassrootsCompassionIndex +
+      culturalPreservationResilience) /
+      5,
+  );
+  const ilyeonSynthesisMatrix = {
+    dominantTension: `${activeIlyeonTheme.themeTitleKo} ↔ ${focalIlyeonAphorism.sourceContext}`,
+    alignmentState: describeIlyeonStage(avgScore),
+    integratedAction: `${focalIlyeonAphorism.actionGuidance}${query?.trim() ? ` [질문 맥락: ${query.trim()}]` : ''}`,
+  };
+
   return {
     engineVersion: KOREAN_ILYEON_SAMGUK_YUSA_VERSION,
-    calculatedAtKst: new Date().toISOString(),
+    calculatedAtKst,
     hongikInganPrideScore,
     hyanggaHealingIndex,
     cheoyongToleranceScore,
@@ -169,19 +206,25 @@ export function calculateKoreanIlyeonSamgukYusa(
       guidanceTitle,
       philosophicalCounsel,
     },
+    ilyeonSynthesisMatrix,
   };
 }
 
 export function formatKoreanIlyeonSamgukYusaPrompt(
   res: KoreanIlyeonSamgukYusaResult,
 ): string {
-  return [
+  const avgScore = Math.round(
+    (res.hongikInganPrideScore +
+      res.hyanggaHealingIndex +
+      res.cheoyongToleranceScore +
+      res.grassrootsCompassionIndex +
+      res.culturalPreservationResilience) /
+      5,
+  );
+  const lines = [
     `【보각국사 일연 《삼국유사》 홍익인간 자주 자긍심·향가 치유·처용 관용 지표】`,
-    `- 홍익인간 자주 자긍심(Hongik Ingan Pride): ${res.hongikInganPrideScore}/100`,
-    `- 향가 서정 치유력(Hyangga Poetic Healing): ${res.hyanggaHealingIndex}/100`,
-    `- 처용의 관용과 대도량(Cheoyong Tolerance): ${res.cheoyongToleranceScore}/100`,
-    `- 민중 자비와 기적 각성(Grassroots Compassion): ${res.grassrootsCompassionIndex}/100`,
-    `- 문화적 회복탄력성(Cultural Preservation Resilience): ${res.culturalPreservationResilience}/100`,
+    `- 연산 시각: ${res.calculatedAtKst} | 엔진: ${res.engineVersion}`,
+    `- 삼국유사 영성 국면: ${describeIlyeonStage(avgScore)}`,
     `- 핵심 삼국유사 테마: ${res.activeIlyeonTheme.themeTitleKo} [${res.activeIlyeonTheme.themeTitleEn}]`,
     `- 역사문학적 통찰: ${res.activeIlyeonTheme.literaryInsight}`,
     `- 행동 조언: ${res.activeIlyeonTheme.practicalCounsel}`,
@@ -190,5 +233,12 @@ export function formatKoreanIlyeonSamgukYusaPrompt(
     `- 원전 출처: [${res.focalIlyeonAphorism.sourceContext}]`,
     `- 구체적 실천 지침: ${res.focalIlyeonAphorism.actionGuidance}`,
     `- 종합 삼국유사 권면: ${res.ilyeonComprehensiveGuidance.philosophicalCounsel}`,
-  ].join('\n');
+  ];
+  if (res.ilyeonSynthesisMatrix) {
+    lines.push(
+      `- 교차 매트릭스 [핵심 긴장: ${res.ilyeonSynthesisMatrix.dominantTension} | 조율 상태: ${res.ilyeonSynthesisMatrix.alignmentState}]`,
+      `- 통합 실천: ${res.ilyeonSynthesisMatrix.integratedAction}`,
+    );
+  }
+  return lines.join('\n');
 }

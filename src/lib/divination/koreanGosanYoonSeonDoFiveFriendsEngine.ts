@@ -13,12 +13,12 @@
  * 5. 보길도 세연정 유배와 시련 속에서도 자연과 합일한 초연한 회복탄력성 (Seyeonjeong Solitary Nature Resilience Score):
  *    - 당쟁과 유배의 험난한 풍파 앞에서도 자연의 품에서 시가를 읊으며 영혼을 치유한 고결한 풍류와 불굴의 회복탄력성.
  *
- * @version LUCKEY-GO-SAN-YOON-SEON-DO-FIVE-FRIENDS-v1.0.0
+ * @version LUCKEY-GO-SAN-YOON-SEON-DO-FIVE-FRIENDS-v2.0.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const KOREAN_GOSAN_YOON_SEON_DO_FIVE_FRIENDS_VERSION = 'LUCKEY-GO-SAN-YOON-SEON-DO-FIVE-FRIENDS-v1.0.0';
+export const KOREAN_GOSAN_YOON_SEON_DO_FIVE_FRIENDS_VERSION = 'LUCKEY-GO-SAN-YOON-SEON-DO-FIVE-FRIENDS-v2.0.0';
 
 export interface YoonSeonDoTheme {
   themeKey: string;
@@ -52,6 +52,27 @@ export interface KoreanGosanYoonSeonDoFiveFriendsResult {
     guidanceTitle: string;
     philosophicalCounsel: string;
   };
+  yoonSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
+}
+
+function formatYoonKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
+
+function describeYoonStage(score: number): string {
+  if (score >= 93) return '세연정(洗然亭) — 오우의 지조와 사계절의 흥취가 한 몸처럼 어우러진 초연한 풍류기';
+  if (score >= 88) return '허심정진(虛心精進) — 대나무처럼 속을 비우고 물처럼 그치지 않고 흐르는 성숙기';
+  return '오우상봉(五友相逢) — 수·석·송·죽·월 다섯 벗의 변치 않는 품격을 마음속에 세우는 정돈기';
 }
 
 export const YOON_SEON_DO_THEMES: YoonSeonDoTheme[] = [
@@ -135,6 +156,7 @@ function hashString(str: string): number {
 export function calculateKoreanGosanYoonSeonDoFiveFriends(
   profile?: UserProfile,
   query?: string,
+  now: Date = new Date(),
 ): KoreanGosanYoonSeonDoFiveFriendsResult {
   const p = profile as any;
   const name = profile?.basic?.name ?? p?.name ?? '남희';
@@ -165,9 +187,24 @@ export function calculateKoreanGosanYoonSeonDoFiveFriends(
     `${activeYoonTheme.practicalCounsel} 고산 선생의 불후의 시조 "${focalYoonAphorism.aphorismKo}"의 깊은 울림을 되새기며, ` +
     `${focalYoonAphorism.actionGuidance}`;
 
+  const calculatedAtKst = formatYoonKstTimestamp(now);
+  const avgScore = Math.round(
+    (fiveFriendsIntegrityIndex +
+      fourSeasonsAestheticEquanimityScore +
+      bambooHollowHumilityScore +
+      waterUnceasingPurityIndex +
+      seyeonjeongSolitaryResilienceScore) /
+      5,
+  );
+  const yoonSynthesisMatrix = {
+    dominantTension: `${activeYoonTheme.themeTitleKo} ↔ ${focalYoonAphorism.sourceContext}`,
+    alignmentState: describeYoonStage(avgScore),
+    integratedAction: `${focalYoonAphorism.actionGuidance}${query?.trim() ? ` [질문 맥락: ${query.trim()}]` : ''}`,
+  };
+
   return {
     engineVersion: KOREAN_GOSAN_YOON_SEON_DO_FIVE_FRIENDS_VERSION,
-    calculatedAtKst: new Date().toISOString(),
+    calculatedAtKst,
     fiveFriendsIntegrityIndex,
     fourSeasonsAestheticEquanimityScore,
     bambooHollowHumilityScore,
@@ -179,19 +216,25 @@ export function calculateKoreanGosanYoonSeonDoFiveFriends(
       guidanceTitle,
       philosophicalCounsel,
     },
+    yoonSynthesisMatrix,
   };
 }
 
 export function formatKoreanGosanYoonSeonDoFiveFriendsPrompt(
   res: KoreanGosanYoonSeonDoFiveFriendsResult,
 ): string {
-  return [
+  const avgScore = Math.round(
+    (res.fiveFriendsIntegrityIndex +
+      res.fourSeasonsAestheticEquanimityScore +
+      res.bambooHollowHumilityScore +
+      res.waterUnceasingPurityIndex +
+      res.seyeonjeongSolitaryResilienceScore) /
+      5,
+  );
+  const lines = [
     `【고산 윤선도 《오우가》 수석송죽월 5우 지조 및 《어부사시사》 심미적 안빈낙도 지표】`,
-    `- 오우(水石松竹月) 청백지조 신의(Five Friends Moral Integrity): ${res.fiveFriendsIntegrityIndex}/100`,
-    `- 어부사시사 사계절 심미적 평온(Four Seasons Aesthetic Equanimity): ${res.fourSeasonsAestheticEquanimityScore}/100`,
-    `- 대나무 허심(虛心) 겸양 유연성(Hollow Heart Humility): ${res.bambooHollowHumilityScore}/100`,
-    `- 그치지 않고 맑게 흐르는 정진력(Unceasing Pure Diligence): ${res.waterUnceasingPurityIndex}/100`,
-    `- 세연정 자연합일 초연 회복탄력성(Seyeonjeong Solitary Resilience): ${res.seyeonjeongSolitaryResilienceScore}/100`,
+    `- 연산 시각: ${res.calculatedAtKst} | 엔진: ${res.engineVersion}`,
+    `- 오우·어부사시사 국면: ${describeYoonStage(avgScore)}`,
     `- 핵심 윤선도 테마: ${res.activeYoonTheme.themeTitleKo} [${res.activeYoonTheme.themeTitleEn}]`,
     `- 실천적 통찰: ${res.activeYoonTheme.pragmaticInsight}`,
     `- 행동 조언: ${res.activeYoonTheme.practicalCounsel}`,
@@ -199,5 +242,12 @@ export function formatKoreanGosanYoonSeonDoFiveFriendsPrompt(
     `- 원전 출처: [${res.focalYoonAphorism.sourceContext}]`,
     `- 구체적 실천 지침: ${res.focalYoonAphorism.actionGuidance}`,
     `- 종합 윤선도 권면: ${res.yoonComprehensiveGuidance.philosophicalCounsel}`,
-  ].join('\n');
+  ];
+  if (res.yoonSynthesisMatrix) {
+    lines.push(
+      `- 교차 매트릭스 [핵심 긴장: ${res.yoonSynthesisMatrix.dominantTension} | 조율 상태: ${res.yoonSynthesisMatrix.alignmentState}]`,
+      `- 통합 실천: ${res.yoonSynthesisMatrix.integratedAction}`,
+    );
+  }
+  return lines.join('\n');
 }

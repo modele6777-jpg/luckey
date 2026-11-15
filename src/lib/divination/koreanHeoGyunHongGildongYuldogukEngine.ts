@@ -8,12 +8,12 @@
  * 4. 율도국 건설과 미래지향적 이상향 개척력 (Visionary Pioneer Agency & Yuldoguk Index): 낡은 체제의 억압을 딛고 바다를 건너 모두가 평등하고 평화롭게 살아가는 새로운 이상향을 건설하는 결단.
  * 5. 시대의 질곡 앞에서도 꺾이지 않는 파격의 진보 회복탄력성 (Progressive Reform & Dauntless Resilience Score): 시대의 편견과 비극적 시련 속에서도 자유로운 영혼과 문학적 승화로 앞길을 여는 회복탄력성.
  *
- * @version LUCKEY-HEO-GYUN-HONG-GILDONG-YULDOGUK-v1.0.0
+ * @version LUCKEY-HEO-GYUN-HONG-GILDONG-YULDOGUK-v2.0.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const KOREAN_HEO_GYUN_HONG_GILDONG_YULDOGUK_VERSION = 'LUCKEY-HEO-GYUN-HONG-GILDONG-YULDOGUK-v1.0.0';
+export const KOREAN_HEO_GYUN_HONG_GILDONG_YULDOGUK_VERSION = 'LUCKEY-HEO-GYUN-HONG-GILDONG-YULDOGUK-v2.0.0';
 
 export interface HeoGyunTheme {
   themeKey: string;
@@ -47,6 +47,27 @@ export interface KoreanHeoGyunHongGildongYuldogukResult {
     guidanceTitle: string;
     philosophicalCounsel: string;
   };
+  heoGyunSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
+}
+
+function formatHeoGyunKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
+
+function describeHeoGyunStage(score: number): string {
+  if (score >= 95) return '율도개척(栗島開拓) — 낡은 울타리를 넘어 새로운 대동의 질서를 세우는 도약기';
+  if (score >= 91) return '호민각성(豪民覺醒) — 불의에 맞서고 숨은 재능을 해방하는 파격의 실천기';
+  return '유재발현(遺才發現) — 편견의 장벽을 허물고 본연의 잠재력을 깨우는 준비기';
 }
 
 export const HEO_GYUN_THEMES: HeoGyunTheme[] = [
@@ -123,6 +144,7 @@ function hashString(str: string): number {
 export function calculateKoreanHeoGyunHongGildongYuldoguk(
   profile?: UserProfile,
   query?: string,
+  now: Date = new Date(),
 ): KoreanHeoGyunHongGildongYuldogukResult {
   const p = profile as any;
   const name = profile?.basic?.name ?? p?.name ?? '남희';
@@ -154,9 +176,24 @@ export function calculateKoreanHeoGyunHongGildongYuldoguk(
     `${activeHeoGyunTheme.practicalCounsel} 허균 선생의 명언 "${focalHeoGyunAphorism.aphorismKo}" (${focalHeoGyunAphorism.aphorismHanja})를 마음에 새기고, ` +
     `${focalHeoGyunAphorism.actionGuidance}`;
 
+  const calculatedAtKst = formatHeoGyunKstTimestamp(now);
+  const avgScore = Math.round(
+    (talentLiberationOvercomingPrejudiceScore +
+      righteousCivicCourageHominIndex +
+      greatHarmonyJusticeHwalbindangScore +
+      visionaryPioneerYuldogukIndex +
+      progressiveReformResilience) /
+      5,
+  );
+  const heoGyunSynthesisMatrix = {
+    dominantTension: `${activeHeoGyunTheme.themeTitleKo} ↔ ${focalHeoGyunAphorism.sourceContext}`,
+    alignmentState: describeHeoGyunStage(avgScore),
+    integratedAction: `${focalHeoGyunAphorism.actionGuidance}${query?.trim() ? ` [질문 맥락: ${query.trim()}]` : ''}`,
+  };
+
   return {
     engineVersion: KOREAN_HEO_GYUN_HONG_GILDONG_YULDOGUK_VERSION,
-    calculatedAtKst: new Date().toISOString(),
+    calculatedAtKst,
     talentLiberationOvercomingPrejudiceScore,
     righteousCivicCourageHominIndex,
     greatHarmonyJusticeHwalbindangScore,
@@ -168,19 +205,25 @@ export function calculateKoreanHeoGyunHongGildongYuldoguk(
       guidanceTitle,
       philosophicalCounsel,
     },
+    heoGyunSynthesisMatrix,
   };
 }
 
 export function formatKoreanHeoGyunHongGildongYuldogukPrompt(
   res: KoreanHeoGyunHongGildongYuldogukResult,
 ): string {
-  return [
+  const avgScore = Math.round(
+    (res.talentLiberationOvercomingPrejudiceScore +
+      res.righteousCivicCourageHominIndex +
+      res.greatHarmonyJusticeHwalbindangScore +
+      res.visionaryPioneerYuldogukIndex +
+      res.progressiveReformResilience) /
+      5,
+  );
+  const lines = [
     `【교산 허균 《홍길동전·유재론·호민론》 인재 등용·호민 기개·율도국 지표】`,
-    `- 유재론 인재 등용 및 편견 타파 혁신도(Talent Liberation & Transcendence): ${res.talentLiberationOvercomingPrejudiceScore}/100`,
-    `- 호민론 불의 앞 당당한 저항의식(Righteous Civic Courage & Homin Spirit): ${res.righteousCivicCourageHominIndex}/100`,
-    `- 활빈당 약자 구휼과 대동정의 실천력(Great Harmony Justice & Aid): ${res.greatHarmonyJusticeHwalbindangScore}/100`,
-    `- 율도국 건설과 이상향 개척력(Visionary Pioneer Agency & Yuldoguk): ${res.visionaryPioneerYuldogukIndex}/100`,
-    `- 파격의 진보 회복탄력성(Progressive Reform & Dauntless Resilience): ${res.progressiveReformResilience}/100`,
+    `- 연산 시각: ${res.calculatedAtKst} | 엔진: ${res.engineVersion}`,
+    `- 개혁·개척 국면: ${describeHeoGyunStage(avgScore)}`,
     `- 핵심 허균 테마: ${res.activeHeoGyunTheme.themeTitleKo} [${res.activeHeoGyunTheme.themeTitleEn}]`,
     `- 개혁 사상적 통찰: ${res.activeHeoGyunTheme.reformInsight}`,
     `- 행동 조언: ${res.activeHeoGyunTheme.practicalCounsel}`,
@@ -188,5 +231,12 @@ export function formatKoreanHeoGyunHongGildongYuldogukPrompt(
     `- 원전 출처: [${res.focalHeoGyunAphorism.sourceContext}]`,
     `- 구체적 실천 지침: ${res.focalHeoGyunAphorism.actionGuidance}`,
     `- 종합 허균 권면: ${res.heoGyunComprehensiveGuidance.philosophicalCounsel}`,
-  ].join('\n');
+  ];
+  if (res.heoGyunSynthesisMatrix) {
+    lines.push(
+      `- 교차 매트릭스 [핵심 긴장: ${res.heoGyunSynthesisMatrix.dominantTension} | 조율 상태: ${res.heoGyunSynthesisMatrix.alignmentState}]`,
+      `- 통합 실천: ${res.heoGyunSynthesisMatrix.integratedAction}`,
+    );
+  }
+  return lines.join('\n');
 }
