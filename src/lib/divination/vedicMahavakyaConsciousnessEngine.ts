@@ -7,7 +7,17 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const VEDIC_MAHAVAKYA_ENGINE_VERSION = 'LUCKEY-VEDIC-MAHAVAKYA-v1.1.0';
+export const VEDIC_MAHAVAKYA_ENGINE_VERSION = 'LUCKEY-VEDIC-MAHAVAKYA-v2.0.0';
+
+function formatMahavakyaKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
 
 export type MahavakyaQuestionFocus = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -19,6 +29,7 @@ export interface VedicMahavakyaParams {
 
 export interface VedicMahavakyaReport {
   engineVersion: string;
+  calculatedAtKst: string;
   questionFocus: MahavakyaQuestionFocus;
   brahmanRealizationScore: number; // 내부 정렬용 (프롬프트 비노출)
   mayaIllusionDispellingIndex: number; // 내부 정렬용 (프롬프트 비노출)
@@ -38,6 +49,11 @@ export interface VedicMahavakyaReport {
   reflectionFocus: string;
   counselNote: string;
   boundaryNotice: string;
+  mahavakyaSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
 }
 
 const FOUR_MAHAVAKYAS = [
@@ -262,9 +278,17 @@ export function calculateVedicMahavakya(params?: VedicMahavakyaParams): VedicMah
           : '아드바이타 비차라(생각의 근원을 되묻는 순수 자아 탐구)';
 
   const guidance = buildMahavakyaGuidance(activeVakya.key, questionFocus);
+  const calculatedAtKst = formatMahavakyaKstTimestamp(now);
+  const q = question.trim();
+  const mahavakyaSynthesisMatrix = {
+    dominantTension: `${activeVakya.sanskritPhrase} ↔ ${vrittiPattern}`,
+    alignmentState: `${vivekaLens} · ${questionFocus}`,
+    integratedAction: `${guidance.ritualAction}${q ? ` [질문 맥락: ${q}]` : ''}`,
+  };
 
   return {
     engineVersion: VEDIC_MAHAVAKYA_ENGINE_VERSION,
+    calculatedAtKst,
     questionFocus,
     brahmanRealizationScore: brahman,
     mayaIllusionDispellingIndex: maya,
@@ -284,12 +308,16 @@ export function calculateVedicMahavakya(params?: VedicMahavakyaParams): VedicMah
     reflectionFocus: guidance.reflectionFocus,
     counselNote: guidance.counselNote,
     boundaryNotice: '이는 베다 우파니샤드 철학에 기반한 상징적 자기 성찰 참고일 뿐, 개인 점수·심리 진단·미래 예측이 아닙니다.',
+    mahavakyaSynthesisMatrix,
   };
 }
 
 export function formatVedicMahavakyaPrompt(report: VedicMahavakyaReport): string {
+  const matrixLine = report.mahavakyaSynthesisMatrix
+    ? `\n- 마하바키야 교차 매트릭스: 핵심 긴장(${report.mahavakyaSynthesisMatrix.dominantTension}) · 조율 상태(${report.mahavakyaSynthesisMatrix.alignmentState}) · 통합 실천(${report.mahavakyaSynthesisMatrix.integratedAction})`
+    : '';
   return `[고대 인도 베다 우파니샤드 4대 마하바키야(Mahāvākya) 대선언 실측 데이터]
-- 엔진 버전: ${report.engineVersion} | 질문 맥락: ${report.questionFocus}
+- 엔진 버전: ${report.engineVersion} | ${report.calculatedAtKst} | 질문 맥락: ${report.questionFocus}
 - 마음 파동(Vritti): ${report.vrittiPattern}
 - 분별 렌즈(Viveka): ${report.vivekaLens}
 - 활성 대선언: [${report.activeMahavakya.sanskritPhrase}] (${report.activeMahavakya.vedaSourceKo})
@@ -301,5 +329,5 @@ export function formatVedicMahavakyaPrompt(report: VedicMahavakyaReport): string
 - 일상 의례: ${report.ritualAction}
 - 성찰 질문: ${report.reflectionFocus}
 - 조언 요약: ${report.counselNote}
-- 경계 안내: ${report.boundaryNotice}`;
+- 경계 안내: ${report.boundaryNotice}${matrixLine}`;
 }

@@ -46,7 +46,17 @@ import { resolveEffectiveSolarDate } from '../lunarCalendar';
 import { parseBirthTime } from '../birthDateTime';
 import { calculateNatalChart, ZODIAC_SIGNS } from '../astrologyAnalysis';
 
-export const VEDIC_ENGINE_VERSION = 'LUCKEY-VD-v1.0.0';
+export const VEDIC_ENGINE_VERSION = 'LUCKEY-VD-v2.0.0';
+
+function formatVedicKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
 
 export const VEDIC_METHOD =
   '정통 베딕 조티시 결정론 산법: J2000 라히리(Lahiri) 근방 아얀암사 선형 근사 기반 항성황도 달·태양 경도로 27 나크샤트라·108 파다(주재신·상징·지배 행성·군·원소·카스트·나바암사 파다주인) 산출, 120년 빔쇼타리 다샤의 9대 마하다샤와 마하다샤×안타르다샤 9×9=81구간 타임라인(태양년 365.25일 환산, 출생 잔여 다샤 포함) 및 현재 마하다샤·안타르다샤 식별, 찬드라·수리야·라그나 12 라시 산출';
@@ -134,6 +144,7 @@ export interface PurusharthaAlignment {
 export interface VedicResult {
   status: 'calculated' | 'skipped' | 'error';
   engineVersion: string;
+  calculatedAtKst?: string;
   method: string;
   birthInstant?: { utcISOString: string; kstISOString: string; assumedNoon: boolean };
   ayanamsa?: number;
@@ -151,6 +162,11 @@ export interface VedicResult {
   dashaPlanetarySynergy?: DashaPlanetarySynergy | null;
   kendraTrikonaProsperity?: KendraTrikonaProsperity | null;
   purusharthaAlignment?: PurusharthaAlignment | null;
+  vedicSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
   note?: string;
 }
 
@@ -423,6 +439,7 @@ export function calculateVedicAdvanced(params: {
   profile?: UserProfile | null;
   targetYear?: number;
   targetDate?: Date;
+  question?: string;
 }): VedicResult {
   const birthdateStr = params.profile?.basic?.birthdate?.trim() || '';
   if (!birthdateStr) {
@@ -605,9 +622,21 @@ export function calculateVedicAdvanced(params: {
     primarySpiritualAim,
   };
 
+  const refNow = params.targetDate || new Date();
+  const calculatedAtKst = formatVedicKstTimestamp(refNow);
+  const q = (params.question || '').trim();
+  const vedicSynthesisMatrix = {
+    dominantTension: currentDasha
+      ? `${currentDasha.mahadasha.lord} 마하다샤 ↔ ${currentDasha.antardasha.lord} 안타르다샤`
+      : `${nakshatra.name} 나크샤트라 ↔ ${chandra.name} 라시`,
+    alignmentState: `${nakshatra.gana} · ${nakshatra.tattva} · ${purusharthaAlignment.primarySpiritualAim}`,
+    integratedAction: `${kendraTrikonaProsperity.lifePillarAdvice}${q ? ` [질문 맥락: ${q}]` : ''}`,
+  };
+
   return {
     status: 'calculated',
     engineVersion: VEDIC_ENGINE_VERSION,
+    calculatedAtKst,
     method: VEDIC_METHOD,
     birthInstant: {
       utcISOString: birthInstant.toISOString(),
@@ -625,6 +654,7 @@ export function calculateVedicAdvanced(params: {
     dashaPlanetarySynergy,
     kendraTrikonaProsperity,
     purusharthaAlignment,
+    vedicSynthesisMatrix,
   };
 }
 
@@ -646,7 +676,7 @@ export function formatVedicPrompt(result: VedicResult): string {
   const nakshatraLines = [
     `- 출생 나크샤트라(찬드라): ${n.name}(${n.sanskrit}) 제${n.number}/27 — 지배 행성 ${n.lord} · 파다 ${n.pada}/4 (나바암사 주인 ${n.padaLords[n.pada - 1]})`,
     `  * 주재신: ${n.deity} | 상징: ${n.symbol} | 군: ${n.gana} | 원소: ${n.tattva} | 카스트: ${n.caste}`,
-    `  * 항성황도 구간: ${n.spanDegrees.start.toFixed(4)}°~${n.spanDegrees.end.toFixed(4)}° (파다 ${n.padaDegrees.start.toFixed(4)}°~) · 진행률 ${(n.fractionIntoNakshatra * 100).toFixed(2)}%`,
+    `  * 항성황도 구간: ${n.spanDegrees.start.toFixed(4)}°~${n.spanDegrees.end.toFixed(4)}° (파다 ${n.padaDegrees.start.toFixed(4)}°~)`,
     `  * 잔여 다샤 수명(Balance of Dasha): ${balance.lord} ${balance.years.toFixed(4)}년`,
     `  * 상징 요해: ${n.meaning}`,
   ].join('\n');
@@ -668,15 +698,19 @@ export function formatVedicPrompt(result: VedicResult): string {
     : '- 현재 다샤: 기준 시점이 120년 다샤 주기 범위 밖이거나 산출 불가';
 
   const synergyLine = result.dashaPlanetarySynergy
-    ? `- 다샤 행성 조화: ${result.dashaPlanetarySynergy.relationship} (조화도 ${result.dashaPlanetarySynergy.synergyScore}점)\n  * 카르마적 초점: ${result.dashaPlanetarySynergy.karmicFocus}`
+    ? `- 다샤 행성 조화: ${result.dashaPlanetarySynergy.relationship}\n  * 카르마적 초점: ${result.dashaPlanetarySynergy.karmicFocus}`
     : '';
 
   const kendraLine = result.kendraTrikonaProsperity
-    ? `- 켄드라·트리코나 번영: ${result.kendraTrikonaProsperity.dominantHousePillar} (번영도 ${result.kendraTrikonaProsperity.dharmaProsperityScore}점)\n  * 지탱 기둥 조언: ${result.kendraTrikonaProsperity.lifePillarAdvice}`
+    ? `- 켄드라·트리코나 번영: ${result.kendraTrikonaProsperity.dominantHousePillar}\n  * 지탱 기둥 조언: ${result.kendraTrikonaProsperity.lifePillarAdvice}`
     : '';
 
   const purusharthaLine = result.purusharthaAlignment
-    ? `- 4대 푸루샤르타 인생 목적: 주 목적 [${result.purusharthaAlignment.primarySpiritualAim}]\n  * 가중치: 다르마 ${result.purusharthaAlignment.dharmaWeight}% | 아르타 ${result.purusharthaAlignment.arthaWeight}% | 카마 ${result.purusharthaAlignment.kamaWeight}% | 모크샤 ${result.purusharthaAlignment.mokshaWeight}%`
+    ? `- 4대 푸루샤르타 인생 목적: 주 목적 [${result.purusharthaAlignment.primarySpiritualAim}]`
+    : '';
+
+  const matrixLine = result.vedicSynthesisMatrix
+    ? `\n- 베딕 조티시 교차 매트릭스: 핵심 긴장(${result.vedicSynthesisMatrix.dominantTension}) · 조율 상태(${result.vedicSynthesisMatrix.alignmentState}) · 통합 실천(${result.vedicSynthesisMatrix.integratedAction})`
     : '';
 
   const timelineLines = result.mahadashas
@@ -696,14 +730,14 @@ export function formatVedicPrompt(result: VedicResult): string {
     .join('\n');
 
   return `
-[정통 베딕 조티시(Vedic Jyotish) 27 나크샤트라 & 120년 빔쇼타리 다샤 리포트 (${VEDIC_ENGINE_VERSION})]
+[정통 베딕 조티시(Vedic Jyotish) 27 나크샤트라 & 120년 빔쇼타리 다샤 리포트 (${VEDIC_ENGINE_VERSION} | ${result.calculatedAtKst || formatVedicKstTimestamp()})]
 ${birthLine}
 - 라히리 근방 아얀암사: ${result.ayanamsa}° · 항성황도 달 ${result.siderealLongitude!.moon.toFixed(4)}° / 태양 ${result.siderealLongitude!.sun.toFixed(4)}°
 ${nakshatraLines}
 ${rashiLines}
 ${currentLines}
 ${synergyLine ? synergyLine + '\n' : ''}${kendraLine ? kendraLine + '\n' : ''}${purusharthaLine ? purusharthaLine + '\n' : ''}- 120년 빔쇼타리 다샤 전수 타임라인 (9 마하다샤 × 9 안타르다샤 = ${result.antardashaCount}구간, 태양년 365.25일 환산):
-${timelineLines}
+${timelineLines}${matrixLine}
 - [AI 해석 절대 지침]: 본 리포트는 항성황도 천문 계산으로 산출된 100% 확정 수리입니다. 나크샤트라·파다·다샤 주인과 기간을 임의로 바꾸지 말고, 마하다샤(대운 주제)와 안타르다샤(소운 세부)의 계층 구조에 맞춰 상담하십시오. 아얀암사는 평균 세차율 근사이므로 나크샤트라·파다·다샤 경계일 전후 1일 이내의 결과는 단정하지 마십시오.
 `.trim();
 }

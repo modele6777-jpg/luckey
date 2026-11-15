@@ -988,9 +988,14 @@ test('28 Mansions six-domain scoring: bounds, consistency, 28-day date selection
 
   // 프롬프트 포맷터에 엔진 버전·핵심 수어 포함
   const prompt = formatTwentyEightMansionsPrompt(r);
-  assert(prompt.includes('LUCKEY-TM-v1.0.0'));
+  assert(prompt.includes(TWENTY_EIGHT_MANSIONS_ENGINE_VERSION));
+  assert(r.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(r.mansionsSynthesisMatrix?.integratedAction));
   assert(prompt.includes('천상열차분야지도') && prompt.includes('28수 직성'));
   assert(prompt.includes('필월오(畢月烏)') && prompt.includes('계약·협상') && prompt.includes('휴식·치유·내실'));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
   // 천문 3원, 4방신 신수 조화, 28일 순환 국면 검증
   assert(r.threeEnclosuresResonance?.celestialCourt !== undefined);
   assert(r.threeEnclosuresResonance!.resonanceScore >= 40 && r.threeEnclosuresResonance!.resonanceScore <= 98);
@@ -1177,7 +1182,13 @@ test('Vedic engine fixtures: moon sidereal positions match independent panchang 
 
 test('Vedic current dasha: 1995-03-25 birth at 2026-11-02 falls in Rahu-Sukra antardasha', () => {
   const profile = { basic: { birthdate: '1995-03-25', birthtime: '14:30', gender: 'male' as const, birthCity: '서울' } };
-  const r = calculateVedicAdvanced({ profile, targetDate: new Date('2026-11-02T00:00:00Z') });
+  const r = calculateVedicAdvanced({ profile, targetDate: new Date('2026-11-02T00:00:00Z'), question: '다샤 흐름' });
+  assert(r.calculatedAtKst?.endsWith('KST'));
+  assert(Boolean(r.vedicSynthesisMatrix?.integratedAction));
+  const vPrompt = formatVedicPrompt(r);
+  assert(vPrompt.includes('교차 매트릭스'));
+  assert(!vPrompt.includes('/100'));
+  assert(!vPrompt.includes('%'));
   // 잔여 태양 5.24y → 달 10y → 화성 7y 후 라후 18y(22.24y~); 라후-수성 30.19y~32.74y
   assert.equal(r.currentDasha!.mahadasha.lord, '라후');
   assert.equal(r.currentDasha!.antardasha.lord, '수성');
@@ -4030,6 +4041,8 @@ test('Baopuzi Ge Hong Nine Turn Elixir Engine: calculates alchemy rank and vital
 test('Vedic Mahavakya Consciousness Engine: calculates qualitative Brahman contemplation', () => {
   const rep = calculateVedicMahavakya({ profile, question: '가까운 사람과의 관계가 서운합니다' });
   assert.equal(rep.engineVersion, VEDIC_MAHAVAKYA_ENGINE_VERSION);
+  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(rep.mahavakyaSynthesisMatrix?.integratedAction));
   assert.equal(rep.questionFocus, 'relationship');
   assert(rep.brahmanRealizationScore >= 0 && rep.brahmanRealizationScore <= 100);
   assert(rep.innerSohamResonance >= 0 && rep.innerSohamResonance <= 100);
@@ -4040,7 +4053,9 @@ test('Vedic Mahavakya Consciousness Engine: calculates qualitative Brahman conte
   const prompt = formatVedicMahavakyaPrompt(rep);
   assert(prompt.includes('고대 인도 베다 우파니샤드 4대 마하바키야(Mahāvākya) 대선언 실측 데이터'));
   assert(prompt.includes(rep.activeMahavakya.sanskritPhrase));
+  assert(prompt.includes('교차 매트릭스'));
   assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
 });
 
 test('Sumerian Apkallu Wisdom Engine: calculates 7 sages resonance and Apsu clarity', () => {
