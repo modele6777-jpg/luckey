@@ -18,7 +18,17 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const VIBRATIONAL_SOUL_QUEST_VERSION = 'LUCKEY-SOUL-QUEST-v1.0.0';
+export const VIBRATIONAL_SOUL_QUEST_VERSION = 'LUCKEY-SOUL-QUEST-v2.0.0';
+
+function formatSoulQuestKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
 
 export interface VibrationalSoulNumbers {
   lifePathNumber: number;      // 생애 여정수 (삶의 대동맥)
@@ -30,6 +40,7 @@ export interface VibrationalSoulNumbers {
 
 export interface SoulQuestReport {
   engineVersion: string;
+  calculatedAtKst: string;
   calculatedAt: string;
   soulNumbers: VibrationalSoulNumbers;
   questArchetype: string;      // 영혼 퀘스트 아키타입 (예: 개척자의 성역, 지혜의 연금술사 등)
@@ -41,6 +52,11 @@ export interface SoulQuestReport {
   };
   dailySoulDirective: string;  // 오늘의 영혼 퀘스트 실천 미션
   wisdomQuote: string;
+  soulQuestSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
 }
 
 // 수비학 단자리 축약 함수 (마스터 넘버 11, 22, 33 보존)
@@ -55,7 +71,8 @@ function reduceToSingleOrMaster(num: number): number {
 
 export function calculateVibrationalSoulQuest(
   profile?: UserProfile | null,
-  targetDate: Date = new Date()
+  targetDate: Date = new Date(),
+  question?: string
 ): SoulQuestReport {
   let y = 1995;
   let m = 5;
@@ -157,9 +174,17 @@ export function calculateVibrationalSoulQuest(
   };
 
   const selectedArchetype = archetypes[lifePathNumber] || archetypes[1];
+  const calculatedAtKst = formatSoulQuestKstTimestamp(targetDate);
+  const q = (question || '').trim();
+  const soulQuestSynthesisMatrix = {
+    dominantTension: `여정수 ${lifePathNumber}번 ↔ 개인년 ${personalYear}년차`,
+    alignmentState: `${selectedArchetype.name} · ${selectedArchetype.chakra}`,
+    integratedAction: `${currentTheme.directive}${q ? ` [질문 맥락: ${q}]` : ''}`,
+  };
 
   return {
     engineVersion: VIBRATIONAL_SOUL_QUEST_VERSION,
+    calculatedAtKst,
     calculatedAt: targetDate.toISOString(),
     soulNumbers: {
       lifePathNumber,
@@ -176,13 +201,17 @@ export function calculateVibrationalSoulQuest(
       activationPoint: selectedArchetype.point
     },
     dailySoulDirective: currentTheme.directive,
-    wisdomQuote: selectedArchetype.quote
+    wisdomQuote: selectedArchetype.quote,
+    soulQuestSynthesisMatrix,
   };
 }
 
 export function formatVibrationalSoulQuestPrompt(rep: SoulQuestReport): string {
+  const matrixLine = rep.soulQuestSynthesisMatrix
+    ? `\n- 영혼 퀘스트 교차 매트릭스: 핵심 긴장(${rep.soulQuestSynthesisMatrix.dominantTension}) · 조율 상태(${rep.soulQuestSynthesisMatrix.alignmentState}) · 통합 실천(${rep.soulQuestSynthesisMatrix.integratedAction})`
+    : '';
   return `[고대 수비학 차크라 솔 울림 & 퍼스널 라이프 퀘스트 나침반 (Vibrational Soul Quest)]
-- 엔진 버전: ${rep.engineVersion}
+- 엔진 버전: ${rep.engineVersion} | ${rep.calculatedAtKst}
 - 4대 영혼 진동수:
   • 생애 여정수(Life Path): ${rep.soulNumbers.lifePathNumber}번 (핵심 본질)
   • 운명 표현수(Destiny): ${rep.soulNumbers.destinyNumber}번
@@ -196,6 +225,6 @@ export function formatVibrationalSoulQuestPrompt(rep: SoulQuestReport): string {
 - 오늘의 집중 차크라:
   • ${rep.focusChakra.chakraName} - ${rep.focusChakra.activationPoint}
 - 데일리 영혼 퀘스트 행동 강령:
-  • ${rep.dailySoulDirective}
+  • ${rep.dailySoulDirective}${matrixLine}
 ※ 상담 시 내담자에게 현재 나이와 시기가 9년 주기 중 몇 년차(${rep.soulNumbers.personalYear}년차: ${rep.currentCyclePhase})에 해당하는지 짚어주고, 현실의 불안을 '영혼이 겪고 있는 성장의 퀘스트'로 승화시켜 가슴 벅찬 용기를 선물해 주세요.`;
 }

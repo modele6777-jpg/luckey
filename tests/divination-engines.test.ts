@@ -103,6 +103,7 @@ import { calculateTiebanShenshu, formatTiebanShenshuPrompt, TIEBAN_SHENSHU_VERSI
 import { calculateTibetanBonNineWays, formatTibetanBonNineWaysPrompt, TIBETAN_BON_NINE_WAYS_VERSION } from '../src/lib/divination/tibetanBonNineWaysEngine';
 import { calculateEleusinianMysteries, formatEleusinianMysteriesPrompt, ELEUSINIAN_MYSTERIES_VERSION } from '../src/lib/divination/eleusinianMysteriesEngine';
 import { calculateVedicNakshatra108Pada, formatVedicNakshatra108PadaPrompt, VEDIC_NAKSHATRA_108_PADA_ENGINE_VERSION } from '../src/lib/divination/vedicNakshatra108PadaEngine';
+import { calculateVitalityCurve, formatVitalityCurvePrompt, VITALITY_CURVE_ENGINE_VERSION } from '../src/lib/divination/vitalityCurveEngine';
 import { calculateEgyptianHermeticCartouche, formatEgyptianHermeticCartouchePrompt, EGYPTIAN_HERMETIC_CARTOUCHE_ENGINE_VERSION } from '../src/lib/divination/egyptianHermeticCartoucheEngine';
 import { calculateTaoistGongGuoGeKarma, formatTaoistGongGuoGeKarmaPrompt, TAOIST_GONG_GUO_GE_KARMA_ENGINE_VERSION } from '../src/lib/divination/taoistGongGuoGeKarmaEngine';
 import { calculateYorubaIfaOdu, formatYorubaIfaOduPrompt, YORUBA_IFA_ODU_ENGINE_VERSION } from '../src/lib/divination/yorubaIfaOduEngine';
@@ -3114,8 +3115,10 @@ test('Hermetic Kybalion Engine: maps 7 cosmic principles and alchemical shift', 
 });
 
 test('Vibrational Soul Quest Engine: derives 4 core soul numbers and personal year quest', () => {
-  const rep = calculateVibrationalSoulQuest(profile);
+  const rep = calculateVibrationalSoulQuest(profile, new Date(), '올해의 영혼 방향');
   assert.equal(rep.engineVersion, VIBRATIONAL_SOUL_QUEST_VERSION);
+  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(rep.soulQuestSynthesisMatrix?.integratedAction));
   assert(rep.soulNumbers.lifePathNumber >= 1);
   assert(rep.soulNumbers.personalYear >= 1 && rep.soulNumbers.personalYear <= 9);
   assert(rep.questArchetype.length > 0);
@@ -3123,6 +3126,7 @@ test('Vibrational Soul Quest Engine: derives 4 core soul numbers and personal ye
   const prompt = formatVibrationalSoulQuestPrompt(rep);
   assert(prompt.includes('고대 수비학 차크라 솔 울림'));
   assert(prompt.includes(rep.questArchetype));
+  assert(prompt.includes('교차 매트릭스'));
   assert.doesNotMatch(prompt, /\bHz\b|Solfeggio|솔페지오|주파수/i);
 });
 
@@ -3600,8 +3604,10 @@ test('Eleusinian Mysteries Initiation & Rebirth Engine: calculates grade, statio
 });
 
 test('Vedic Nakshatra 108 Pada Engine: calculates nakshatra, pada and dharma path score', () => {
-  const rep = calculateVedicNakshatra108Pada(profile);
+  const rep = calculateVedicNakshatra108Pada(profile, new Date(), '카르마 소명');
   assert.equal(rep.engineVersion, VEDIC_NAKSHATRA_108_PADA_ENGINE_VERSION);
+  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(rep.nakshatra108SynthesisMatrix?.integratedAction));
   assert(rep.nakshatraIndex >= 1 && rep.nakshatraIndex <= 27);
   assert(rep.pada >= 1 && rep.pada <= 4);
   assert(rep.totalPadaIndex >= 1 && rep.totalPadaIndex <= 108);
@@ -3609,6 +3615,22 @@ test('Vedic Nakshatra 108 Pada Engine: calculates nakshatra, pada and dharma pat
   const prompt = formatVedicNakshatra108PadaPrompt(rep);
   assert(prompt.includes('베다 27나크샤트라 & 108파다(Pada) 카르마 성좌 정밀 실측 데이터'));
   assert(prompt.includes(rep.nakshatraNameKo));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
+});
+
+test('Vitality Curve Engine: calculates 12-stage biorhythm curve and synthesis matrix', () => {
+  const rep = calculateVitalityCurve({ profile, question: '오늘 집중 시간대' });
+  assert.equal(rep.engineVersion, VITALITY_CURVE_ENGINE_VERSION);
+  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(rep.vitalitySynthesisMatrix?.integratedAction));
+  assert.equal(rep.hourlyTideCurve.length, 12);
+  const prompt = formatVitalityCurvePrompt(rep);
+  assert(prompt.includes('12운성 바이오리듬 에너지 곡선'));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
 });
 
 test('Egyptian Hermetic Cartouche Engine: calculates divine cartouche and qualitative soul triad', () => {

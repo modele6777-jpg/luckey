@@ -25,6 +25,18 @@ import {
   type SajuAnalysisResult,
 } from '../sajuAnalysis';
 
+export const VITALITY_CURVE_ENGINE_VERSION = 'LUCKEY-VCE-v2.0.0';
+
+function formatVitalityKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
+
 export interface HourlyVitalityPoint {
   timeSlotName: string; // 예: "사시 (巳時 · 09:30~11:30)"
   branchHanja: string; // "巳"
@@ -79,6 +91,11 @@ export interface VitalityCurveResult {
   };
 
   actionTip: string;
+  vitalitySynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
 }
 
 // 12운성 기본 에너지 스코어
@@ -118,10 +135,11 @@ const SHIJIN_METAS = [
  */
 export function calculateVitalityCurve(options?: {
   profile?: UserProfile;
+  question?: string;
 }): VitalityCurveResult {
   const now = new Date();
   const nowUtcIso = now.toISOString();
-  const nowKstIso = new Date(now.getTime() + 9 * 3600000).toISOString().replace('Z', '+09:00');
+  const nowKstIso = formatVitalityKstTimestamp(now);
 
   const saju: SajuAnalysisResult = calculateDetailedSaju(options?.profile);
   const dGan = saju.pillars.day.gan;
@@ -213,8 +231,15 @@ export function calculateVitalityCurve(options?: {
   const deepWorkSlots = sortedSlots.slice(0, 2).map(s => s.timeSlotName.split('(')[0].trim()).join(' · ');
   const rechargeSlots = [...hourlyTideCurve].filter(s => s.energyScore <= 55).map(s => s.timeSlotName.split('(')[0].trim()).slice(0, 2).join(' · ');
 
+  const q = (options?.question || '').trim();
+  const vitalitySynthesisMatrix = {
+    dominantTension: `일지(${pStage}) ↔ 월지(${mStage}) · 현재 시진(${iStage})`,
+    alignmentState: `${vitalityStateName} · 딥워크(${deepWorkSlots || '09:30~13:30'})`,
+    integratedAction: `${actionTip}${q ? ` [질문 맥락: ${q}]` : ''}`,
+  };
+
   return {
-    engineVersion: 'LUCKEY-VCE-v1.0.0',
+    engineVersion: VITALITY_CURVE_ENGINE_VERSION,
     calculatedAtUtc: nowUtcIso,
     calculatedAtKst: nowKstIso,
     timestamp: now.getTime(),
@@ -254,6 +279,7 @@ export function calculateVitalityCurve(options?: {
     },
 
     actionTip,
+    vitalitySynthesisMatrix,
   };
 }
 
@@ -262,20 +288,23 @@ export function calculateVitalityCurve(options?: {
  */
 export function formatVitalityCurvePrompt(res: VitalityCurveResult): string {
   const curveSample = res.hourlyTideCurve.map(h =>
-    `   • ${h.timeSlotName}: 12운성 [${h.twelveStage}] | ★ ${h.energyScore}점 [${h.phaseCategory}] -> ${h.recommendedAction}`
+    `   • ${h.timeSlotName}: 12운성 [${h.twelveStage}] · [${h.phaseCategory}] -> ${h.recommendedAction}`
   ).join('\n');
+  const matrixLine = res.vitalitySynthesisMatrix
+    ? `\n4. [바이오리듬 교차 매트릭스]:\n   - 핵심 긴장: ${res.vitalitySynthesisMatrix.dominantTension}\n   - 조율 상태: ${res.vitalitySynthesisMatrix.alignmentState}\n   - 통합 실천: ${res.vitalitySynthesisMatrix.integratedAction}`
+    : '';
 
   return `[🧬 12운성 바이오리듬 에너지 곡선 실측 데이터 (Vitality Curve Matrix Core)]
 ======================================================================
 엔진 버전: ${res.engineVersion} | 기준 일시: ${res.calculatedAtKst}
-일간: ${res.userDayMaster} | 종합 에너지 지수: ★ ${res.overallVitalityScore}점 [${res.vitalityStateName}]
+일간: ${res.userDayMaster} | 상태: [${res.vitalityStateName}]
 상태 한줄평: "${res.vitalityStateHeadline}"
 실천 조언: ${res.actionTip}
 ======================================================================
-1. [3대 차원별 바이오리듬 지표]:
-   - 🔋 신체 활력(Physical): ★ ${res.dimensions.physicalVitality.score}점 (${res.dimensions.physicalVitality.description})
-   - 🧠 정신 집중(Mental): ★ ${res.dimensions.mentalFocus.score}점 (${res.dimensions.mentalFocus.description})
-   - 🔮 직관 플로우(Intuitive): ★ ${res.dimensions.intuitiveFlow.score}점 (${res.dimensions.intuitiveFlow.description})
+1. [3대 차원별 바이오리듬 위상]:
+   - 🔋 신체 활력(Physical): ${res.dimensions.physicalVitality.description}
+   - 🧠 정신 집중(Mental): ${res.dimensions.mentalFocus.description}
+   - 🔮 직관 플로우(Intuitive): ${res.dimensions.intuitiveFlow.description}
 
 2. [오늘의 라이프 골든 타임라인]:
    - 🚀 딥워크(Deep Work) 피크 시간대: ${res.goldenHours.deepWorkTime}
@@ -283,7 +312,7 @@ export function formatVitalityCurvePrompt(res: VitalityCurveResult): string {
    - 🌙 뇌신경 리셋 & 힐링 타임: ${res.goldenHours.recoveryRestTime}
 
 3. [24시간 12시진 에너지 조위(Tide Curve) 도감]:
-${curveSample}
+${curveSample}${matrixLine}
 ======================================================================
 [★ 루시 바이오리듬 상담 지침]:
 - 사용자가 '오늘 피곤해', '언제 집중 잘 될까?', '컨디션 어때?', '새벽 작업 할까?' 등을 물을 때 위 12시진 12운성 조위 실측 데이터를 근거로 구체적인 골든 타임라인을 명쾌하게 제시해줘.
