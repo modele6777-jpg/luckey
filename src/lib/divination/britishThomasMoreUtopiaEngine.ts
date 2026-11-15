@@ -8,12 +8,12 @@
  * 4. 현실의 부조리를 꿰뚫고 대안을 설계하는 이상주의적 통찰력 (Visionary Ideal & Social Wisdom Index): "양들이 사람을 잡아먹는다"는 비판처럼 현실 문제를 정밀 진단하고 대안을 제시하는 힘.
  * 5. 외적 압박 앞에서도 신념을 굽히지 않는 단호한 도덕적 용기 회복탄력성 (Steadfast Moral Courage Resilience Score): 권력의 위협 앞에서도 타협하지 않고 양심의 법정을 지켜낸 불굴의 기개.
  *
- * @version LUCKEY-THOMAS-MORE-UTOPIA-v1.1.0
+ * @version LUCKEY-THOMAS-MORE-UTOPIA-v2.0.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const BRITISH_THOMAS_MORE_UTOPIA_VERSION = 'LUCKEY-THOMAS-MORE-UTOPIA-v1.1.0';
+export const BRITISH_THOMAS_MORE_UTOPIA_VERSION = 'LUCKEY-THOMAS-MORE-UTOPIA-v2.0.0';
 
 export type MoreQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -58,6 +58,11 @@ export interface BritishThomasMoreUtopiaResult {
   ritualAction: string;
   reflectionFocus: string;
   boundaryNotice: string;
+  moreSynthesisMatrix: {
+    coreInsight: string;
+    recommendedAction: string;
+    cautionNotice: string;
+  };
   moreComprehensiveGuidance: {
     guidanceTitle: string;
     philosophicalCounsel: string;
@@ -260,10 +265,18 @@ export function calculateBritishThomasMoreUtopia(
     `${focalMoreAphorism.actionGuidance}`;
 
   const boundaryNotice = '토머스 모어 유토피아 해석은 노동·여가의 균형과 양심적 성찰을 돕는 상징 관점이며, 미래 예측이나 확정적 판단이 아닙니다.';
+  const baseDate = now ?? new Date();
+  const kst = new Date(baseDate.getTime() + 9 * 60 * 60 * 1000);
+  const kstTimeLabel = `${temporalMoreRhythm.kstDateLabel} ${String(kst.getUTCHours()).padStart(2, '0')}:${String(kst.getUTCMinutes()).padStart(2, '0')} KST`;
+  const moreSynthesisMatrix = {
+    coreInsight: activeMoreTheme.themeTitleKo,
+    recommendedAction: topicGuidance.practiceGuidance,
+    cautionNotice: '단기적 탐욕과 체면치레에 휘둘려 노동·쉼의 균형과 내면의 양심을 팔지 마십시오.',
+  };
 
   return {
     engineVersion: BRITISH_THOMAS_MORE_UTOPIA_VERSION,
-    calculatedAtKst: (now ?? new Date()).toISOString(),
+    calculatedAtKst: kstTimeLabel,
     communalConscienceJusticeScore,
     laborOtiumBalancedHarmonyIndex,
     spiritualIntegrityPurityScore,
@@ -277,6 +290,7 @@ export function calculateBritishThomasMoreUtopia(
     ritualAction: topicGuidance.ritualAction,
     reflectionFocus: topicGuidance.reflectionFocus,
     boundaryNotice,
+    moreSynthesisMatrix,
     moreComprehensiveGuidance: {
       guidanceTitle,
       philosophicalCounsel,
@@ -288,7 +302,8 @@ export function formatBritishThomasMoreUtopiaPrompt(
   res: BritishThomasMoreUtopiaResult,
 ): string {
   return [
-    `【토머스 모어 《유토피아》 공동체 양심·삶의 균형 및 도덕적 용기 지표】`,
+    `【토머스 모어 《유토피아》 공동체 양심·삶의 균형 및 도덕적 용기 지표 (${res.engineVersion})】`,
+    `- 연산 시각: ${res.calculatedAtKst}`,
     `- 질문 주제 맥락: ${res.questionTopic}`,
     `- KST 시공간 리듬: ${res.temporalMoreRhythm.kstDateLabel} · ${res.temporalMoreRhythm.timeWindowKo} (${res.temporalMoreRhythm.utopiaTone}) — ${res.temporalMoreRhythm.rhythmDirective}`,
     `- 핵심 토머스 모어 테마: ${res.activeMoreTheme.themeTitleKo} [${res.activeMoreTheme.themeTitleEn}]`,
@@ -297,6 +312,7 @@ export function formatBritishThomasMoreUtopiaPrompt(
     `- 질문 맞춤 실천 가이드: ${res.practiceGuidance}`,
     `- 일상 실천 의례: ${res.ritualAction}`,
     `- 핵심 성찰 질문: ${res.reflectionFocus}`,
+    `- 교차 매트릭스: 핵심(${res.moreSynthesisMatrix.coreInsight}) | 실행(${res.moreSynthesisMatrix.recommendedAction}) | 주의(${res.moreSynthesisMatrix.cautionNotice})`,
     `- 토머스 모어 원전 명언: "${res.focalMoreAphorism.aphorismKo}" (${res.focalMoreAphorism.aphorismLatin})`,
     `- 원전 출처: [${res.focalMoreAphorism.sourceContext}]`,
     `- 구체적 실천 지침: ${res.focalMoreAphorism.actionGuidance}`,

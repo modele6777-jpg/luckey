@@ -5412,6 +5412,8 @@ test('John Stuart Mill On Liberty Individuality Engine: calculates Autonomy, Har
   assert(prompt.includes(rep.activeMillTheme.themeTitleKo));
   assert(prompt.includes('질문 주제 맥락: decision'));
   assert(prompt.includes('KST 시공간 리듬:'));
+  assert.ok(rep.calculatedAtKst.includes('KST'));
+  assert.ok(prompt.includes('교차 매트릭스'));
   assert(!prompt.includes('/100'));
 });
 
@@ -5729,6 +5731,8 @@ test('John Locke Human Understanding Engine: calculates Tabula Rasa, Sensation/R
   assert(prompt.includes(rep.activeLockeTheme.themeTitleKo));
   assert(prompt.includes('질문 주제 맥락: relationship'));
   assert(prompt.includes('KST 시공간 리듬:'));
+  assert.ok(rep.calculatedAtKst.includes('KST'));
+  assert.ok(prompt.includes('교차 매트릭스'));
   assert(!prompt.includes('/100'));
 });
 
@@ -6234,6 +6238,8 @@ test('Thomas More Utopia Engine: calculates Communal Conscience, Labor-Leisure B
   assert(prompt.includes('토머스 모어 《유토피아》 공동체 양심·삶의 균형 및 도덕적 용기 지표'));
   assert(prompt.includes(rep.activeMoreTheme.themeTitleKo));
   assert(prompt.includes('2026-11-14'));
+  assert.ok(rep.calculatedAtKst.includes('KST'));
+  assert.ok(prompt.includes('교차 매트릭스'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });
