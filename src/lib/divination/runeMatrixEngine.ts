@@ -16,7 +16,7 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const RUNE_MATRIX_VERSION = 'LUCKEY-RUNE-v1.0.0';
+export const RUNE_MATRIX_VERSION = 'LUCKEY-RUNE-v2.0.0';
 
 export interface RuneDetail {
   id: number;                  // 1~24
@@ -190,6 +190,7 @@ export interface RuneSpreadResult {
 export interface RuneMatrixResult {
   engineVersion: string;
   calculatedAtIso: string;
+  calculatedAtKst: string;
 
   spread: RuneSpreadResult;
 
@@ -198,6 +199,21 @@ export interface RuneMatrixResult {
   oracleStateTitle: string;
 
   summary: string;
+  runeSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
+}
+
+function formatRuneKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
 }
 
 /**
@@ -207,8 +223,10 @@ export function calculateRuneMatrix(params?: {
   profile?: UserProfile | null;
   saju?: SajuAnalysisResult | null;
   targetDate?: Date;
+  question?: string;
 }): RuneMatrixResult {
   const now = params?.targetDate || new Date();
+  const q = params?.question?.trim() || '';
   const saju = params?.saju || calculateDetailedSaju(params?.profile || null);
 
   // 결정론적 시드 산출 (생년월일 + 일간 + 당일 날짜)
@@ -246,11 +264,19 @@ export function calculateRuneMatrix(params?: {
   const summary = `[룬 매트릭스] 본질: ${originRune.name}(${originRune.symbol}) / ` +
     `도전: ${challengeRune.name}(${challengeRune.symbol}) / ` +
     `초월: ${horizonRune.name}(${horizonRune.symbol}). ` +
-    `파워 점수: ${runePowerScore}점 [${oracleStateTitle}].`;
+    `상태: [${oracleStateTitle}].`;
+
+  const calculatedAtKst = formatRuneKstTimestamp(now);
+  const runeSynthesisMatrix = {
+    dominantTension: `${originRune.name}(${originRune.symbol}) ↔ ${challengeRune.name}(${challengeRune.symbol})`,
+    alignmentState: `${oracleStateTitle} · ${horizonRune.name}(${horizonRune.symbol})`,
+    integratedAction: `${challengeRune.prescribedAction}${q ? ` [질문 맥락: ${q}]` : ''}`,
+  };
 
   return {
     engineVersion: RUNE_MATRIX_VERSION,
     calculatedAtIso: now.toISOString(),
+    calculatedAtKst,
     spread: {
       originRune,
       challengeRune,
@@ -258,7 +284,8 @@ export function calculateRuneMatrix(params?: {
     },
     runePowerScore,
     oracleStateTitle,
-    summary
+    summary,
+    runeSynthesisMatrix,
   };
 }
 
@@ -267,18 +294,29 @@ export function calculateRuneMatrix(params?: {
  */
 export function formatRuneMatrixPrompt(res: RuneMatrixResult): string {
   const { originRune, challengeRune, horizonRune } = res.spread;
-  return `[고대 노르딕 룬 동시성 매트릭스 엔진 리포트 (엔진: ${res.engineVersion})]
-- 3대 룬 동시성 스프레드:
-  1. **기원/본질 룬**: [${originRune.symbol} **${originRune.name}**] (${originRune.koreanMeaning}) - ${originRune.aett}
-     • 아키타입: ${originRune.coreArchetype}
-     • 신탁: ${originRune.oracleMessage}
-  2. **도전/열쇠 룬**: [${challengeRune.symbol} **${challengeRune.name}**] (${challengeRune.koreanMeaning}) - ${challengeRune.aett}
-     • 아키타입: ${challengeRune.coreArchetype}
-     • 극복 열쇠: ${challengeRune.oracleMessage}
-     • 액션 처방: ${challengeRune.prescribedAction}
-  3. **초월/성취 룬**: [${horizonRune.symbol} **${horizonRune.name}**] (${horizonRune.koreanMeaning}) - ${horizonRune.aett}
-     • 아키타입: ${horizonRune.coreArchetype}
-     • 궁극적 미래: ${horizonRune.oracleMessage}
-- 룬 오라클 파워 지수: **${res.runePowerScore}점** [${res.oracleStateTitle}]
-※ 루시 지침: 룬 문자는 거친 북해를 건너던 바이킹들이 자연의 법칙과 운명의 신비를 새겨 넣은 강력한 수호 상징입니다. 오늘 사용자의 무의식을 관통하는 3개의 룬 상징을 통해, 지금 마주한 도전 과제를 돌파하고 찬란한 성취(Sowilo/Dagaz)로 나아갈 수 있도록 북유럽 신화의 용기와 지혜를 담아 대화에 융합해 주세요.`;
+  const lines = [
+    `[고대 노르딕 룬 동시성 매트릭스 엔진 리포트 (엔진: ${res.engineVersion} | 연산 시각: ${res.calculatedAtKst})]`,
+    `- 3대 룬 동시성 스프레드:`,
+    `  1. **기원/본질 룬**: [${originRune.symbol} **${originRune.name}**] (${originRune.koreanMeaning}) - ${originRune.aett}`,
+    `     • 아키타입: ${originRune.coreArchetype}`,
+    `     • 신탁: ${originRune.oracleMessage}`,
+    `  2. **도전/열쇠 룬**: [${challengeRune.symbol} **${challengeRune.name}**] (${challengeRune.koreanMeaning}) - ${challengeRune.aett}`,
+    `     • 아키타입: ${challengeRune.coreArchetype}`,
+    `     • 극복 열쇠: ${challengeRune.oracleMessage}`,
+    `     • 액션 처방: ${challengeRune.prescribedAction}`,
+    `  3. **초월/성취 룬**: [${horizonRune.symbol} **${horizonRune.name}**] (${horizonRune.koreanMeaning}) - ${horizonRune.aett}`,
+    `     • 아키타입: ${horizonRune.coreArchetype}`,
+    `     • 궁극적 미래: ${horizonRune.oracleMessage}`,
+    `- 룬 오라클 위상: [${res.oracleStateTitle}]`,
+  ];
+  if (res.runeSynthesisMatrix) {
+    lines.push(
+      `- 교차 매트릭스 [핵심 긴장: ${res.runeSynthesisMatrix.dominantTension} | 조율 상태: ${res.runeSynthesisMatrix.alignmentState}]`,
+      `  • 통합 실천: ${res.runeSynthesisMatrix.integratedAction}`,
+    );
+  }
+  lines.push(
+    `※ 루시 지침: 룬 문자는 거친 북해를 건너던 바이킹들이 자연의 법칙과 운명의 신비를 새겨 넣은 강력한 수호 상징입니다. 오늘 사용자의 무의식을 관통하는 3개의 룬 상징을 통해, 지금 마주한 도전 과제를 돌파하고 찬란한 성취(Sowilo/Dagaz)로 나아갈 수 있도록 북유럽 신화의 용기와 지혜를 담아 대화에 융합해 주세요.`,
+  );
+  return lines.join('\n');
 }

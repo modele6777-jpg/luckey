@@ -41,7 +41,7 @@
 import type { UserProfile } from '../sharedState';
 import { resolveEffectiveSolarDate, convertSolarToLunar } from '../lunarCalendar';
 
-export const SUKUYO_ENGINE_VERSION = 'LUCKEY-SY-v1.0.0';
+export const SUKUYO_ENGINE_VERSION = 'LUCKEY-SY-v2.0.0';
 
 export const SUKUYO_METHOD =
   '정통 밀교 숙요경(宿曜經) 27숙 결정론 산법: 월별 기숙표에 한국 음력 생일을 적용한 본명숙(本命宿) 환산, 7대 숙격(安重·和善·急猛·惡害·毒賢·輕疾·剛柔) 분류, 4방신(東方靑龍·北方玄武·西方白虎·南方朱雀) 소속 및 칠요 배속, 6대 관계성(命·業胎·榮衰·安危·成壞·友親) 방향별 판정과 3거리(근거리 1~4숙·중거리 5~13숙·원거리 14~26숙) 역학, 양방향 27숙 궁합 매트릭스 결정론 산출 (윤달은 계산 보류 · 일본 구력과 경계일 차이 가능)';
@@ -136,6 +136,7 @@ export interface SukuyoResult {
   status: 'calculated' | 'skipped' | 'error';
   engineVersion: string;
   method: string;
+  calculatedAtKst?: string;
   solarDateString?: string; // 역법 환산에 쓴 양력 생일 (YYYY-MM-DD)
   lunarDate?: { month: number; day: number; isLeapMonth: boolean };
   mansion?: SukuyoMansionInfo; // 본명숙
@@ -151,7 +152,22 @@ export interface SukuyoResult {
   celestialQuadrant?: SukuyoCelestialQuadrant;
   sanKyuCycle?: SukuyoSanKyuCycle;
   partnerMatrix?: SukuyoPartnerMatrix | null; // 파트너가 있을 때만
+  sukuyoSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
   note?: string;
+}
+
+function formatSukuyoKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
 }
 
 /** 27숙 원시 정의 (색인 0=각(角) ~ 26=진(軫), 숙요경 27숙 순서 — 우(牛)수 제외) */
@@ -396,7 +412,12 @@ export function sukuyoIndexFromLunar(month: number, day: number): number {
 export function calculateSukuyoAdvanced(params: {
   profile?: UserProfile | null;
   partnerProfile?: UserProfile | null;
+  question?: string;
+  now?: Date;
 }): SukuyoResult {
+  const now = params.now ?? new Date();
+  const calculatedAtKst = formatSukuyoKstTimestamp(now);
+  const q = params.question?.trim() || '';
   const birthdateStr = params.profile?.basic?.birthdate?.trim() || '';
   if (!birthdateStr) {
     return {
@@ -596,10 +617,17 @@ function calculateSanKyuCycle(mansion: SukuyoMansionInfo): SukuyoSanKyuCycle {
     }
   }
 
+  const sukuyoSynthesisMatrix = {
+    dominantTension: `${mansion.fullName} (${shukgukMeta.hanja}) ↔ ${celestialQuadrant.quadrant}`,
+    alignmentState: `${planetaryGuard.dominantLuminary} 수호 · ${sanKyuCycle.nineMansionPhase}`,
+    integratedAction: `${sanKyuCycle.actionCompass}${q ? ` [질문 맥락: ${q}]` : ''}`,
+  };
+
   return {
     status: 'calculated',
     engineVersion: SUKUYO_ENGINE_VERSION,
     method: SUKUYO_METHOD,
+    calculatedAtKst,
     solarDateString: `${solarDate.year}-${String(solarDate.month).padStart(2, '0')}-${String(solarDate.day).padStart(2, '0')}`,
     lunarDate: { month: lunar.month, day: lunar.day, isLeapMonth: false },
     mansion,
@@ -615,6 +643,7 @@ function calculateSanKyuCycle(mansion: SukuyoMansionInfo): SukuyoSanKyuCycle {
     celestialQuadrant,
     sanKyuCycle,
     partnerMatrix,
+    sukuyoSynthesisMatrix,
   };
 }
 
@@ -628,7 +657,7 @@ export function formatSukuyoPrompt(result: SukuyoResult): string {
 
   const mansionLines = [
     `- 본명숙(本命宿): ${result.mansion.fullName} — ${result.mansion.group} 소속 (${result.mansion.index + 1}/27수)`,
-    `  * 역법: 양력 ${result.solarDateString} → 음력 ${result.lunarDate?.month}월 ${result.lunarDate?.day}일`,
+    `  * 연산 시각: ${result.calculatedAtKst || formatSukuyoKstTimestamp()} | 역법: 양력 ${result.solarDateString} → 음력 ${result.lunarDate?.month}월 ${result.lunarDate?.day}일`,
     `  * 칠요·오행: ${result.mansion.luminary} / ${result.mansion.element} · 상징 신수: ${result.mansion.animal}`,
   ].join('\n');
 
@@ -639,7 +668,7 @@ export function formatSukuyoPrompt(result: SukuyoResult): string {
   const deepLines: string[] = [];
   if (result.planetaryGuard) {
     deepLines.push(
-      `- 칠요 행성 수호: ${result.planetaryGuard.dominantLuminary} — ${result.planetaryGuard.elementAffinity} (능범 안정도 ${result.planetaryGuard.guardScore}점 · 추천 요일: ${result.planetaryGuard.favorableWeekday})\n  * 수호 조언: ${result.planetaryGuard.yearlyAdvice}`,
+      `- 칠요 행성 수호: ${result.planetaryGuard.dominantLuminary} — ${result.planetaryGuard.elementAffinity} (추천 요일: ${result.planetaryGuard.favorableWeekday})\n  * 수호 조언: ${result.planetaryGuard.yearlyAdvice}`,
     );
   }
   if (result.celestialQuadrant) {
@@ -652,22 +681,27 @@ export function formatSukuyoPrompt(result: SukuyoResult): string {
       `- 3구 비법(三九秘法) 주기: ${result.sanKyuCycle.nineMansionPhase} — ${result.sanKyuCycle.phaseTheme}\n  * 행동 나침반: ${result.sanKyuCycle.actionCompass}`,
     );
   }
+  if (result.sukuyoSynthesisMatrix) {
+    deepLines.push(
+      `- 교차 매트릭스: [핵심 긴장: ${result.sukuyoSynthesisMatrix.dominantTension} | 조율 상태: ${result.sukuyoSynthesisMatrix.alignmentState}]\n  * 통합 실천: ${result.sukuyoSynthesisMatrix.integratedAction}`,
+    );
+  }
   const deepBlock = deepLines.join('\n');
 
   const partnerBlock = result.partnerMatrix
     ? [
         `- 궁합 상대: ${result.partnerMatrix.partnerProfileSummary}`,
         `- 상대 본명숙: ${result.partnerMatrix.partnerMansion.fullName} (${result.partnerMatrix.partnerMansion.shukgukHanja} · ${result.partnerMatrix.partnerMansion.shukgukTrait})`,
-        `- 나 → 상대: ${result.partnerMatrix.fromMe.label}(${result.partnerMatrix.fromMe.hanja}) 관계 · ${result.partnerMatrix.fromMe.band} · 호환 ${result.partnerMatrix.fromMe.score}점`,
-        `  * ${result.partnerMatrix.fromMe.description}`,
-        `- 상대 → 나: ${result.partnerMatrix.fromPartner.label}(${result.partnerMatrix.fromPartner.hanja}) 관계 · ${result.partnerMatrix.fromPartner.band} · 호환 ${result.partnerMatrix.fromPartner.score}점`,
-        `  * ${result.partnerMatrix.fromPartner.description}`,
-        `- 양방향 평균 호환 지수: ${result.partnerMatrix.compatibilityScore}점 (${result.partnerMatrix.mutualBand})`,
+        `- 나 → 상대: ${result.partnerMatrix.fromMe.label}(${result.partnerMatrix.fromMe.hanja}) 관계 · ${result.partnerMatrix.fromMe.band} · ${result.partnerMatrix.fromMe.polarity}`,
+        `  * ${result.partnerMatrix.fromMe.pairSummary} (${result.partnerMatrix.fromMe.bandDynamics})`,
+        `- 상대 → 나: ${result.partnerMatrix.fromPartner.label}(${result.partnerMatrix.fromPartner.hanja}) 관계 · ${result.partnerMatrix.fromPartner.band} · ${result.partnerMatrix.fromPartner.polarity}`,
+        `  * ${result.partnerMatrix.fromPartner.pairSummary}`,
+        `- 양방향 거리 대역: ${result.partnerMatrix.mutualBand}`,
         `- 27숙 전수 양방향 매트릭스 (내 본명숙 기준 상대 숙별 관계):`,
         result.partnerMatrix.fullMatrix
           .map(
             (row) =>
-              `    · ${row.partnerName}(${MANSION_HANJA_27[row.partnerIndex]})수 ${row.distance}숙 거리: 나→상대 ${row.fromMe.label}(${row.fromMe.hanja}) ${row.fromMe.score}점 / 상대→나 ${row.fromPartner.label}(${row.fromPartner.hanja}) ${row.fromPartner.score}점 [${row.fromMe.band}]`,
+              `    · ${row.partnerName}(${MANSION_HANJA_27[row.partnerIndex]})수 ${row.distance}숙 거리: 나→상대 ${row.fromMe.label}(${row.fromMe.hanja}) / 상대→나 ${row.fromPartner.label}(${row.fromPartner.hanja}) [${row.fromMe.band}]`,
           )
           .join('\n'),
       ].join('\n')
@@ -682,6 +716,6 @@ ${deepBlock}
 ${partnerBlock}
 - 6대 관계성 판정 체계: 명(命)=동일 숙의 운명적 거울 · 업·태(業·胎)=영혼의 파트너 · 영·쇠(榮·衰)=번영 vs 소모 · 안·위(安·危)=지지자 vs 긴장 · 성·괴(成·壞)=성취 vs 파괴 · 우·친(友·親)=가장 편안한 유대
 - 3거리 역학: 근거리 1~4숙(즉각적 공명과 마찰) · 중거리 5~13숙(협력과 성장) · 원거리 14~26숙(시공을 넘는 끌림)
-- [AI 해석 절대 지침]: 본 리포트는 월별 기숙표 기반 27숙 순환 수리로 계산된 100% 확정 수리입니다. 본명숙·숙격·관계 라벨과 호환 지수를 임의로 바꾸지 말고, 3거리 역학에 맞춰 상담하십시오.
+- [AI 해석 절대 지침]: 본 리포트는 월별 기숙표 기반 27숙 순환 수리로 계산된 100% 확정 수리입니다. 본명숙·숙격·관계 라벨을 임의로 바꾸지 말고, 3거리 역학에 맞춰 상담하십시오.
 `.trim();
 }

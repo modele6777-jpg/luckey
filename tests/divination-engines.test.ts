@@ -776,17 +776,21 @@ test('Sukuyo partner matrix: 양방향 궁합, 27숙 전수 매트릭스, 결정
   assert.equal(formatSukuyoPrompt(skipped), '');
   // 프롬프트 포맷터: 엔진 버전·핵심 수어 포함
   const prompt = formatSukuyoPrompt(r1);
-  assert(prompt.includes('LUCKEY-SY-v1.0.0'));
+  assert(prompt.includes(SUKUYO_ENGINE_VERSION));
+  assert(r1.calculatedAtKst?.endsWith('KST'));
+  assert(Boolean(r1.sukuyoSynthesisMatrix?.integratedAction));
   assert(prompt.includes('본명숙') && prompt.includes('숙격') && prompt.includes('6대 관계성') && prompt.includes('3거리'));
   assert(prompt.includes('규목랑(奎木狼)'));
   assert(prompt.includes('27숙 전수 양방향 매트릭스'));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
   // 결정론 엔진 통합 바인딩
   const report = runDeterministicEngine({ profile: syProfile, question: '내 본명숙과 궁합 알려줘' });
   assert(report.sukuyoAdvancedResult !== null && report.sukuyoAdvancedResult !== undefined);
   assert.equal(report.sukuyoAdvancedResult?.status, 'calculated');
   assert.equal(report.tools.sukuyo.status, 'calculated');
   const formatted = formatDeterministicEnginePrompt(report);
-  assert(formatted.includes('LUCKEY-SY-v1.0.0'));
+  assert(formatted.includes(SUKUYO_ENGINE_VERSION));
   const noProfile = runDeterministicEngine({ profile: null });
   assert.equal(noProfile.sukuyoAdvancedResult?.status, 'skipped');
 });
@@ -2304,6 +2308,8 @@ test('Yin-Yang Polarity Engine: 음양 수리 분포 및 24시간 바이폴라 �
 test('Rune Matrix Engine: 고대 노르딕 룬 동시성 3대 스프레드 검증', () => {
   const res = calculateRuneMatrix({ profile, targetDate: new Date('2026-11-03T08:00:00+09:00') });
   assert.equal(res.engineVersion, RUNE_MATRIX_VERSION);
+  assert(res.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(res.runeSynthesisMatrix?.integratedAction));
   assert(res.runePowerScore >= 0 && res.runePowerScore <= 100);
   assert(res.spread.originRune.name.length > 0);
   assert(res.spread.challengeRune.name.length > 0);
@@ -2311,6 +2317,8 @@ test('Rune Matrix Engine: 고대 노르딕 룬 동시성 3대 스프레드 검�
   const prompt = formatRuneMatrixPrompt(res);
   assert(prompt.includes(RUNE_MATRIX_VERSION));
   assert(prompt.includes('고대 노르딕 룬 동시성 매트릭스'));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
 });
 
 test('Soul Journey Tarot Engine: 영혼 연금술 3단계 및 4원소 균형 검증', () => {
@@ -3020,12 +3028,16 @@ test('Egyptian 36 Decans Engine: calculates birth decan and stellar resonance', 
 test('Sufi Seven Lataif Soul Ascension Engine: calculates spiritual station and heart purity', () => {
   const rep = calculateSufiLataifSoulAscension({ profile });
   assert.equal(rep.engineVersion, SUFI_LATAIF_VERSION);
+  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(rep.lataifSynthesisMatrix?.integratedAction));
   assert.equal(rep.lataifCenters.length, 7);
   assert(rep.spiritualHeartPurityScore >= 0 && rep.spiritualHeartPurityScore <= 100);
   assert(rep.currentSpiritualStation.stationName.length > 0);
   const prompt = formatSufiLataifSoulAscensionPrompt(rep);
   assert(prompt.includes('정통 수피즘 심장의 7대 라타이프'));
   assert(prompt.includes(rep.dominantActiveCenter.koreanName));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
 });
 
 test('Mayan Tzolkin Sacred Calendar Engine: calculates 260 Kin and galactic resonance', () => {
