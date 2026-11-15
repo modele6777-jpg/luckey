@@ -24,7 +24,7 @@ export function TTSFailureNotice() {
   }, []);
   if (!message && !speaking) return null;
   return createPortal(
-    <div className="main-viewport-overlay" style={{ ...viewportStyle, zIndex: 10030 }}>
+    <div className="main-viewport-overlay" data-responsive-canvas="true" style={{ ...viewportStyle, zIndex: 10030 }}>
     {speaking && <span className="pointer-events-none fixed bottom-4 left-4 z-[10030] rounded-full bg-slate-950/80 px-2 py-1 text-[10px] text-white/80">AI 생성 음성</span>}
     {message && <div role="alert" className="fixed top-20 left-4 right-4 z-[10030] mx-auto flex max-w-md items-center gap-3 rounded-xl border border-amber-300 bg-amber-50 p-3 text-sm text-amber-950 shadow-xl">
       <span className="flex-1">{message}</span>

@@ -48,6 +48,9 @@ export default function OmniWarpPage() {
   const [telemetry, setTelemetry] = useState("Orb State: SLEEPING");
 
   const triggerBigBang = useCallback((x: number, y: number, isDeep: boolean) => {
+    const canvasBox = canvasRef.current?.getBoundingClientRect();
+    x -= canvasBox?.left || 0;
+    y -= canvasBox?.top || 0;
     particlesRef.current = [];
     const count = 130;
     for (let i = 0; i < count; i++) {
@@ -168,10 +171,13 @@ export default function OmniWarpPage() {
     if (!ctx) return;
 
     const resize = () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
+      const box = canvas.getBoundingClientRect();
+      canvas.width = Math.max(1, Math.round(box.width));
+      canvas.height = Math.max(1, Math.round(box.height));
     };
     resize();
+    const observer = new ResizeObserver(resize);
+    if (canvas.parentElement) observer.observe(canvas.parentElement);
     window.addEventListener("resize", resize);
 
     const render = () => {
@@ -239,6 +245,7 @@ export default function OmniWarpPage() {
     animFrameRef.current = requestAnimationFrame(render);
 
     return () => {
+      observer.disconnect();
       window.removeEventListener("resize", resize);
       if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
     };
@@ -256,7 +263,9 @@ export default function OmniWarpPage() {
 
   return (
     <div
-      className="relative w-full h-screen text-white flex flex-col items-center justify-between overflow-hidden select-none touch-none font-sans"
+      data-app-scroll-root
+      data-responsive-canvas="true"
+      className="relative w-full h-full min-h-0 text-white flex flex-col items-center justify-between gap-6 overflow-x-hidden overflow-y-auto select-none touch-pan-y font-sans"
       style={{
         background: "radial-gradient(circle at center, #0f1026 0%, #030308 100%)",
       }}
@@ -265,7 +274,7 @@ export default function OmniWarpPage() {
       <canvas ref={canvasRef} className="absolute inset-0 w-full h-full z-10 pointer-events-none" />
 
       {/* Top Header & HUD */}
-      <div className="relative z-20 mt-8 sm:mt-10 text-center flex flex-col items-center px-4">
+      <div className="relative z-20 shrink-0 mt-8 sm:mt-10 text-center flex flex-col items-center px-4">
         <div className="flex items-center gap-2 mb-2">
           <Link
             href="/"
@@ -288,7 +297,7 @@ export default function OmniWarpPage() {
       </div>
 
       {/* Middle Viewport Card */}
-      <div className="relative z-20 w-[86%] max-w-[360px]">
+      <div className="relative z-20 shrink-0 w-[86%] max-w-[360px]">
         <div
           className="w-full rounded-[24px] p-6 backdrop-blur-xl flex flex-col items-center text-center transition-all duration-300 shadow-2xl"
           style={{
@@ -309,13 +318,13 @@ export default function OmniWarpPage() {
       </div>
 
       {/* Bottom Crystal Orb Interaction Area */}
-      <div className="relative z-20 mb-10 sm:mb-12 flex flex-col items-center w-full px-4">
+      <div className="relative z-20 shrink-0 mb-10 sm:mb-12 flex flex-col items-center w-full px-4">
         {/* Crystal Ball Shell */}
         <div
           ref={ballRef}
           onMouseDown={handleMouseDown}
           onTouchStart={onStart}
-          className="relative w-24 h-24 rounded-full flex items-center justify-center cursor-pointer overflow-hidden transition-all duration-100 border border-white/30 active:scale-95"
+          className="relative w-24 h-24 touch-none rounded-full flex items-center justify-center cursor-pointer overflow-hidden transition-all duration-100 border border-white/30 active:scale-95"
           style={{
             background:
               "radial-gradient(circle at 35% 35%, rgba(255, 255, 255, 0.25) 0%, rgba(255, 255, 255, 0.05) 50%, rgba(0, 0, 0, 0.7) 100%)",

@@ -93,7 +93,7 @@ export function ScreenPortal({ children }: { children: ReactNode }) {
   return createPortal(
     <OverlayPaneContext.Provider value={pane}>
       <ScreenOverlayContext.Provider value={layers}>
-        <div ref={ref} className="screen-portal" style={viewportStyle} data-overlay-pane={pane} data-screen-overlay-layer="">{children}</div>
+        <div ref={ref} className="screen-portal" data-responsive-canvas="true" style={viewportStyle} data-overlay-pane={pane} data-screen-overlay-layer="">{children}</div>
       </ScreenOverlayContext.Provider>
     </OverlayPaneContext.Provider>,
     document.body,

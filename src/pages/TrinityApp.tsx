@@ -1,3 +1,4 @@
+import { useContentCanvasCompact } from '@/hooks/useContentCanvasCompact';
 import { useInterpretiveTarotSummary } from '@/hooks/useInterpretiveTarotSummary';
 import '@/styles/tarot-reading.css';
 import { DuoWorkspace, WorkspacePortal } from '@/components/layout/DuoWorkspace';
@@ -980,17 +981,7 @@ export default function TrinityApp() {
 
   // States for Daily Tarot Card Picking
   const dailyDeckScrollRef = useRef<HTMLDivElement>(null);
-  const [dailyDeckCompact, setDailyDeckCompact] = useState(
-    () => typeof window !== "undefined" && window.innerWidth < 768,
-  );
-
-  useEffect(() => {
-    const mq = window.matchMedia("(max-width: 767px)");
-    const update = () => setDailyDeckCompact(mq.matches);
-    update();
-    mq.addEventListener("change", update);
-    return () => mq.removeEventListener("change", update);
-  }, []);
+  const dailyDeckCompact = useContentCanvasCompact(768);
   const [dailyDrawnCard, setDailyDrawnCard] = useState<TarotCard | null>(() => {
     const init = getInitialTrinityDailyResult();
     return (init?.drawnCard as TarotCard) || null;

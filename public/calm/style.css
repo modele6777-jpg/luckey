@@ -1427,7 +1427,7 @@ button, a, input, textarea, select {
 
 .cards-gallery-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 310px), 1fr));
   gap: 20px;
 }
 
@@ -3090,7 +3090,7 @@ button, a, input, textarea, select {
 /* 2. Stats Dashboard Grid */
 .workbook-stats-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 210px), 1fr));
   gap: 14px;
 }
 
@@ -7611,7 +7611,7 @@ button, a, input, textarea, select {
 /* Sensory Stations Grid */
 .sensory-stations-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(310px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 310px), 1fr));
   gap: 20px;
 }
 
@@ -8154,4 +8154,12 @@ button, a, input, textarea, select {
   .rest-timer-countdown {
     font-size: 2.5rem;
   }
+}
+
+/* Embedded Key uses its own viewport, including narrow folded app canvases. */
+.main-wrapper :is(input, textarea, select) { min-width: 0; max-width: 100%; }
+.main-wrapper :is(h1, h2, h3, h4, p, label) { overflow-wrap: anywhere; }
+@media (max-width: 680px) {
+  .wb-search-box { min-width: 0; width: 100%; max-width: 100%; }
+  .main-wrapper :is(.flex, .grid) > * { min-width: 0; }
 }

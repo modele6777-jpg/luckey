@@ -183,18 +183,18 @@ export function EpilogueAchievementStatsCard({ stats, onOpenShareModal, compact 
       )}
 
       {/* Main Action Trigger Buttons */}
-      <div className="relative z-10 pt-4 border-t border-purple-100 dark:border-white/10 flex flex-col sm:flex-row items-center justify-between gap-3">
+      <div className="relative z-10 pt-4 border-t border-purple-100 dark:border-white/10 flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
         <div className="text-xs text-zinc-500 dark:text-white/50 flex items-center gap-1.5">
           <ShieldCheck size={14} className="text-emerald-500 dark:text-emerald-400" />
           <span>오늘 하루의 성취 증명서와 피드를 우주 광장에 공유할 수 있습니다.</span>
         </div>
 
-        <div className="flex items-center gap-2.5 w-full sm:w-auto">
+        <div className="flex flex-wrap items-center gap-2.5 w-full lg:w-auto">
           {/* Main Hero CTA: Open Report Card Modal */}
           <button
             type="button"
             onClick={() => onOpenShareModal('card')}
-            className="flex-1 sm:flex-none px-5 py-3 rounded-2xl text-xs sm:text-sm font-bold text-white bg-gradient-to-r from-purple-600 via-pink-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 transition-all shadow-[0_0_20px_rgba(168,85,247,0.35)] active:scale-95 cursor-pointer flex items-center justify-center gap-2 border border-purple-300/40"
+            className="flex-1 lg:flex-none px-5 py-3 rounded-2xl text-xs sm:text-sm font-bold text-white bg-gradient-to-r from-purple-600 via-pink-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 transition-all shadow-[0_0_20px_rgba(168,85,247,0.35)] active:scale-95 cursor-pointer flex items-center justify-center gap-2 border border-purple-300/40"
           >
             <Share2 size={15} />
             <span>🏆 성취 리포트 카드 발급 &amp; 공유</span>

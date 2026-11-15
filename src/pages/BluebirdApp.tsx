@@ -1,3 +1,4 @@
+import { useContentCanvasCompact } from '@/hooks/useContentCanvasCompact';
 import { DuoWorkspace, WorkspacePortal } from '@/components/layout/DuoWorkspace';
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -246,13 +247,7 @@ export default function BluebirdApp() {
   const isDraggingRef = useRef(false);
   const { firebaseUser, sharedState, updateSharedState, isChatOpen, setIsChatOpen, sendUnifiedMessage, openLucyChat } = useApp();
 
-  const [isMobile, setIsMobile] = useState(false);
-  useEffect(() => {
-    const checkIsMobile = () => setIsMobile(window.innerWidth < 1024);
-    checkIsMobile();
-    window.addEventListener("resize", checkIsMobile);
-    return () => window.removeEventListener("resize", checkIsMobile);
-  }, []);
+  const isMobile = useContentCanvasCompact(1024);
 
   const [activeMode, setActiveMode] = useState<'simple' | 'daily' | 'secret' | 'soul' | 'bible' | 'history' | 'secretMessage' | 'synergy'>(() => {
     if (typeof window !== 'undefined') {

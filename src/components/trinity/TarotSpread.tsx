@@ -15,7 +15,7 @@ import { PhysicalTarotInputModal } from './PhysicalTarotInputModal';
 import { useTarotCardBack } from '@/hooks/useTarotCardBack';
 import { playAudioHaptic } from '@/lib/audioHaptics';
 import { triggerTarotScreenVibration } from '@/utils/tarotEffects';
-import { LANDSCAPE_ARC_TOP, landscapeFanMetrics, placeRingCards, portraitFanMetrics } from './tarotRingLayout';
+import { LANDSCAPE_ARC_TOP, placeRingCards, semicircleFanMetrics } from './tarotRingLayout';
 
 export interface SelectedTarotCardEntry extends TarotCard {
   touchMetadata?: any | null;
@@ -450,27 +450,18 @@ export const TarotSpread: React.FC<TarotSpreadProps> = ({
       const isLandscape = w > h;
       setIsLandscapeLayout(isLandscape);
 
-      if (isLandscape) {
-        const fan = landscapeFanMetrics(h, LANDSCAPE_ARC_TOP);
-        setRadius(fan.radius);
-        setYOffset(fan.yOffset);
-        setIsMobile(w < 700);
-      } else {
-        // Tall pane (phone, or one half of an unfolded / iPad split). The old
-        // fixed radius left the arc in the middle and a black band above the buttons.
-        const slot = containerRef.current?.querySelector('[data-tarot-slots]');
-        const cardHalf = w >= 768 ? 84 : w >= 540 ? 72 : 58;
-        const lift = w >= 768 ? 22 : 16;
-        let arcTop = (w < 540 ? 230 : w < 768 ? 280 : 320) + cardHalf;
-        if (slot && bounds) {
-          const slotBox = slot.getBoundingClientRect();
-          arcTop = Math.round(slotBox.bottom - bounds.top + cardHalf + lift);
-        }
-        const fan = portraitFanMetrics(w, h, arcTop);
-        setRadius(fan.radius);
-        setYOffset(fan.yOffset);
-        setIsMobile(w < 768);
+      const slot = containerRef.current?.querySelector('[data-tarot-slots]');
+      const cardHalf = w >= 768 ? 80 : w >= 640 ? 68 : 56;
+      const lift = w >= 768 ? 20 : 14;
+      let arcTop = isLandscape ? LANDSCAPE_ARC_TOP : (w < 540 ? 230 : w < 768 ? 280 : 320) + cardHalf;
+      if (!isLandscape && slot && bounds) {
+        const slotBox = slot.getBoundingClientRect();
+        arcTop = slotBox.bottom - bounds.top + cardHalf + lift;
       }
+      const fan = semicircleFanMetrics(w, h, arcTop);
+      setRadius(fan.radius);
+      setYOffset(fan.yOffset);
+      setIsMobile(w < 768);
     };
 
     updateRadius();
@@ -1061,6 +1052,7 @@ export const TarotSpread: React.FC<TarotSpreadProps> = ({
           className="absolute left-1/2 top-1/2 z-[30]"
           data-fan-radius={radius}
           data-fan-y-offset={yOffset}
+          data-fan-shape="semicircle"
           style={{
             transform: buildWheelTransform(rotationRef.current),
             willChange: 'transform',

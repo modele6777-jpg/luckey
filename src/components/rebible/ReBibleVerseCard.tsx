@@ -153,7 +153,7 @@ export const ReBibleVerseCard: React.FC<ReBibleVerseCardProps> = ({
   return (
     <article className="rounded-2xl border border-[#E5DAC6] bg-[#FCFAF5] shadow-[0_2px_12px_rgba(74,50,31,0.06)] hover:shadow-[0_4px_20px_rgba(74,50,31,0.1)] transition-all duration-300 overflow-hidden">
       {/* Top Meta Bar */}
-      <div className="px-4 sm:px-6 py-3 border-b border-[#E8DFC8] bg-[#F7F2E7]/80 flex items-center justify-between gap-2 text-xs">
+      <div className="px-4 sm:px-6 py-3 border-b border-[#E8DFC8] bg-[#F7F2E7]/80 flex flex-wrap items-center justify-between gap-2 text-xs">
         <div className="flex items-center gap-2 flex-wrap">
           {/* Chapter & Verse Reference Badge */}
           <span className="px-2.5 py-0.5 rounded-full font-serif font-black tracking-wide flex items-center gap-1 bg-[#4A321F] text-[#FAF5EB] shadow-xs text-xs">
@@ -180,7 +180,7 @@ export const ReBibleVerseCard: React.FC<ReBibleVerseCardProps> = ({
         </div>
 
         {/* Action Controls */}
-        <div className="flex items-center gap-1">
+        <div className="flex flex-wrap items-center justify-end gap-1 min-w-0 max-w-full">
           {/* Audio TTS Recitation */}
           <button
             onClick={handleToggleRecitation}

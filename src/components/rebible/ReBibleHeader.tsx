@@ -52,7 +52,7 @@ export const ReBibleHeader: React.FC<ReBibleHeaderProps> = ({
       <div className="max-w-5xl w-full mx-auto px-3 sm:px-6 py-3 sm:py-3.5">
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
           {/* Left: Back Button & Title */}
-          <div className="flex items-center justify-between sm:justify-start gap-2.5">
+          <div className="flex flex-wrap items-center justify-between sm:justify-start gap-2.5">
             <div className="flex items-center gap-2 sm:gap-3">
               <button
                 onClick={onBackToPrism}
@@ -84,7 +84,7 @@ export const ReBibleHeader: React.FC<ReBibleHeaderProps> = ({
             </div>
 
             {/* Mobile View Mode Segmented Control */}
-            <div className="flex sm:hidden items-center p-0.5 rounded-xl bg-[#EADDC6] border border-[#DFCDB2]">
+            <div className="flex sm:hidden flex-wrap items-center max-w-full p-0.5 rounded-xl bg-[#EADDC6] border border-[#DFCDB2]">
               <button
                 onClick={() => setViewMode('timeline')}
                 className={`px-2 py-1 rounded-lg text-[11px] font-bold transition flex items-center gap-1 ${

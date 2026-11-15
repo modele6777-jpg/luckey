@@ -96,6 +96,23 @@ export function portraitFanMetrics(width: number, height: number, arcTop: number
     bottomY,
   };
 }
+/** Visible upper-half fan. Keeping the hub below the stage prevents a donut/ring. */
+export function semicircleFanMetrics(width: number, height: number, requestedArcTop: number) {
+  const w = Math.max(1, width);
+  const h = Math.max(1, height);
+  const cardHalfHeight = w >= 768 ? 80 : w >= 640 ? 68 : 56;
+  const originY = h + 8;
+  // Reserve the selected-card/instruction area, then size the arc from BOTH axes.
+  const arcTop = Math.min(Math.max(cardHalfHeight + 18, requestedArcTop), Math.max(cardHalfHeight + 18, h - 32));
+  const radius = Math.max(24, Math.min(w * 0.54, originY - arcTop));
+  return {
+    radius: Math.round(radius),
+    yOffset: Math.round(originY - h / 2),
+    originY,
+    arcTopY: Math.round(originY - radius),
+  };
+}
+
 export function ringNeighborGaps(angles: ArrayLike<number>, activeIndices: readonly number[]): number[] {
   const gaps: number[] = [];
   const m = activeIndices.length;

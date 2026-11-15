@@ -1,3 +1,4 @@
+import { useContentCanvasCompact } from '@/hooks/useContentCanvasCompact';
 import { ScreenPortal } from '@/components/layout/ScreenPortal';
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -276,13 +277,7 @@ export default function OrangeApp() {
   const isDraggingRef = useRef(false);
   const { firebaseUser, sharedState, updateSharedState, isChatOpen, setIsChatOpen, sendUnifiedMessage, openLucyChat } = useApp();
 
-  const [isMobile, setIsMobile] = useState(false);
-  useEffect(() => {
-    const checkIsMobile = () => setIsMobile(window.innerWidth < 1024);
-    checkIsMobile();
-    window.addEventListener("resize", checkIsMobile);
-    return () => window.removeEventListener("resize", checkIsMobile);
-  }, []);
+  const isMobile = useContentCanvasCompact(1024);
 
   const [isMeasuringInsight, setIsMeasuringInsight] = useState(false);
   const [isDailyOracleLoading, setIsDailyOracleLoading] = useState(false);

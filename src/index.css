@@ -5,36 +5,36 @@
 /* Lucy's own daylight marker wins over the other pane's root theme. */
 @custom-variant dark (&:where(.dark, .dark *):not(:where(.lucy-chat-shell[data-lucy-light='true'], .lucy-chat-shell[data-lucy-light='true'] *)));
 
-/* Inside the unfolded content pane, use its width for the same responsive UI. */
+/* Each content, Lucy and popup canvas owns its responsive breakpoints in every layout. */
 @custom-variant sm {
   @media (width >= 40rem) {
-    &:where(:not(#duo-content-viewport *)) { @slot; }
+    &:where(:not([data-responsive-canvas] *)) { @slot; }
   }
-  @container duo-content (width >= 40rem) { @slot; }
+  @container app-canvas (width >= 40rem) { @slot; }
 }
 @custom-variant md {
   @media (width >= 48rem) {
-    &:where(:not(#duo-content-viewport *)) { @slot; }
+    &:where(:not([data-responsive-canvas] *)) { @slot; }
   }
-  @container duo-content (width >= 48rem) { @slot; }
+  @container app-canvas (width >= 48rem) { @slot; }
 }
 @custom-variant lg {
   @media (width >= 64rem) {
-    &:where(:not(#duo-content-viewport *)) { @slot; }
+    &:where(:not([data-responsive-canvas] *)) { @slot; }
   }
-  @container duo-content (width >= 64rem) { @slot; }
+  @container app-canvas (width >= 64rem) { @slot; }
 }
 @custom-variant xl {
   @media (width >= 80rem) {
-    &:where(:not(#duo-content-viewport *)) { @slot; }
+    &:where(:not([data-responsive-canvas] *)) { @slot; }
   }
-  @container duo-content (width >= 80rem) { @slot; }
+  @container app-canvas (width >= 80rem) { @slot; }
 }
 @custom-variant 2xl {
   @media (width >= 96rem) {
-    &:where(:not(#duo-content-viewport *)) { @slot; }
+    &:where(:not([data-responsive-canvas] *)) { @slot; }
   }
-  @container duo-content (width >= 96rem) { @slot; }
+  @container app-canvas (width >= 96rem) { @slot; }
 }
 
 @theme {
@@ -3507,7 +3507,7 @@ html.duo-unfolded-portrait .prism-xs-subnav:not(.duo-page-nav) {
    ========================================================================== */
 #duo-content-viewport {
   container-type: inline-size;
-  container-name: duo-content;
+  container-name: app-canvas duo-content;
   box-sizing: border-box;
 }
 

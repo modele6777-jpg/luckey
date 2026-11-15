@@ -1,5 +1,5 @@
 import { ScreenPortal } from '@/components/layout/ScreenPortal';
-import { useWideWorkspace } from '@/hooks/useWideWorkspace';
+import { useContentCanvasCompact } from '@/hooks/useContentCanvasCompact';
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import { useLocation } from "wouter";
 import { AnimatePresence, motion } from "motion/react";
@@ -265,7 +265,7 @@ export default function CalmApp() {
     };
   }, []);
 
-  const isWideWorkspace = useWideWorkspace();
+  const isWideWorkspace = !useContentCanvasCompact(896);
   useEffect(() => {
     const frame = iframeRef.current;
     const updateLayout = () => {
@@ -291,7 +291,7 @@ export default function CalmApp() {
     return () => frame?.removeEventListener('load', updateLayout);
   }, [isWideWorkspace]);
   const searchParams = typeof window !== 'undefined' ? window.location.search : '';
-  const iframeSrc = `/calm/index.html${searchParams ? searchParams + '&v=41.0' : '?v=41.0'}`;
+  const iframeSrc = `/calm/index.html${searchParams ? searchParams + '&v=42.0' : '?v=42.0'}`;
 
   return (
     <div

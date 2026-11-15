@@ -1,3 +1,4 @@
+import { useContentCanvasCompact } from '@/hooks/useContentCanvasCompact';
 import { ScreenPortal } from '@/components/layout/ScreenPortal';
 import React, {
   useState,
@@ -620,13 +621,7 @@ export default function MuseApp() {
   const isSpecialFeatureChromeHidden = useSpecialFeatureChromeHidden();
   const { isCurrentAppPlaying: isBackgroundMoodPlaying, toggle: toggleBackgroundMood } = useBackgroundMood('muse');
 
-  const [isMobile, setIsMobile] = useState(false);
-  useEffect(() => {
-    const checkIsMobile = () => setIsMobile(window.innerWidth < 1024);
-    checkIsMobile();
-    window.addEventListener("resize", checkIsMobile);
-    return () => window.removeEventListener("resize", checkIsMobile);
-  }, []);
+  const isMobile = useContentCanvasCompact(1024);
 
   const [isFlipped, setIsFlipped] = useState(false);
   const [sessionCardDrawn, setSessionCardDrawn] = useState<{

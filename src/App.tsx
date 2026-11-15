@@ -897,6 +897,7 @@ function AppContent() {
             <div
               id={isDuoUnfolded ? "duo-content-viewport" : undefined}
               data-workspace-pane="content"
+              data-responsive-canvas="true"
               onPointerDownCapture={() => {
                 lastTouchedDuoPaneRef.current = mapDuoPaneSide('left', isDuoPanesSwapped);
                 if (!isLucyRoute) lastLeftChannelPathRef.current = location;
@@ -937,6 +938,7 @@ function AppContent() {
             <div
               id={isDuoUnfolded ? "duo-lucy-viewport" : undefined}
               data-workspace-pane="lucy"
+              data-responsive-canvas="true"
               onPointerDownCapture={() => {
                 lastTouchedDuoPaneRef.current = mapDuoPaneSide('right', isDuoPanesSwapped);
               }}

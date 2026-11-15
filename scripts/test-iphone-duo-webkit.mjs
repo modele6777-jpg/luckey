@@ -1,6 +1,6 @@
 import { build } from 'esbuild';
 import { webkit, devices } from '@playwright/test';
-import { readFile } from 'node:fs/promises';
+import { readFile, mkdir } from 'node:fs/promises';
 import assert from 'node:assert/strict';
 
 const iphone = devices['iPhone 16 Pro'];
@@ -63,7 +63,9 @@ const bundle = await build({
   alias: { '@': `${process.cwd()}/src` },
 });
 
-const browser = await webkit.launch({ headless: true });
+const artifactDir = process.env.LUCKEY_ARTIFACT_DIR || '/tmp/luckey-ui-artifacts';
+await mkdir(artifactDir, { recursive: true });
+const browser = await webkit.launch({ headless: true, ...(process.env.LUCKEY_WEBKIT_EXECUTABLE ? { executablePath: process.env.LUCKEY_WEBKIT_EXECUTABLE } : {}) });
 try {
   const page = await browser.newPage({
     userAgent: iphone.userAgent,
@@ -169,7 +171,7 @@ try {
   assert(layout.chat.client < layout.chat.scrollHeight, JSON.stringify(layout));
   await page.locator('#engine').tap();
   await page.locator('#lucy-engine-catalog-dialog').waitFor({ state: 'visible' });
-  await page.screenshot({ path: '/opt/cursor/artifacts/iphone-engine-open.png' });
+  await page.screenshot({ path: `${artifactDir}/iphone-engine-open.png` });
   assert.equal(await page.evaluate(() => window.activations), 1, 'One tap opens the engine list without the swallowed click');
 
   const overlap = async () => page.evaluate(() => {
@@ -202,7 +204,7 @@ try {
     assert(await overlap() > 80 * 80, `Engine dialog stays on the Lucy pane at ${size.width}x${size.height}`);
   };
   await unfold({ width: 900, height: 640 }, 'landscape');
-  await page.screenshot({ path: '/opt/cursor/artifacts/iphone-unfolded-dialog.png' });
+  await page.screenshot({ path: `${artifactDir}/iphone-unfolded-dialog.png` });
   const coverage = await page.evaluate(() => {
     const chat = document.querySelector('.lucy-chat-main');
     const coveredByLucyDialog = window.overlayCovers(chat);
@@ -239,7 +241,7 @@ try {
     return box.left >= main.left - 1 && box.right <= main.right + 1 && box.top >= main.top - 1 && box.bottom <= window.innerHeight;
   });
   assert.equal(noticeInside, true, 'Update notice stays inside the unfolded main canvas');
-  await page.screenshot({ path: '/opt/cursor/artifacts/iphone-update-notice.png' });
+  await page.screenshot({ path: `${artifactDir}/iphone-update-notice.png` });
   await page.evaluate(() => window.dispatchEvent(new Event('hide-notice')));
   await page.locator('.update-notice-modal').waitFor({ state: 'detached' });
 
@@ -250,7 +252,7 @@ try {
     const chat = document.querySelector('.lucy-chat-main');
     return chat.scrollHeight - chat.scrollTop - chat.clientHeight < 4;
   });
-  await page.screenshot({ path: '/opt/cursor/artifacts/iphone-chat-bottom.png' });
+  await page.screenshot({ path: `${artifactDir}/iphone-chat-bottom.png` });
 
   await page.locator('#prompt').tap();
   await page.locator('#hori-prompt-library-dialog').waitFor({ state: 'visible' });

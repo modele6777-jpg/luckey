@@ -87,7 +87,7 @@ export function WorkspacePortal({ children, onClose }: { children: ReactNode; on
   return createPortal(
     <OverlayPaneContext.Provider value={pane}>
       <ScreenOverlayContext.Provider value={layers}>
-        <div ref={portalRef} className="duo-portal" style={viewportStyle} data-overlay-pane={pane} data-screen-overlay-layer="">{children}</div>
+        <div ref={portalRef} className="duo-portal" data-responsive-canvas="true" style={viewportStyle} data-overlay-pane={pane} data-screen-overlay-layer="">{children}</div>
       </ScreenOverlayContext.Provider>
     </OverlayPaneContext.Provider>, document.body
   );

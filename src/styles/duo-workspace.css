@@ -347,3 +347,24 @@ html:root:root :is(.screen-portal, .duo-portal) :is(.bottom-safe-fab-center, .bo
   .oracle-intro-heading { flex: 1 1 0; }
   .oracle-mode-actions { flex: 0 1 32rem; }
 }
+
+/* Shared canvas sizing for OS split windows, folded covers and retained panes. */
+[data-responsive-canvas] {
+  container-type: inline-size;
+  container-name: app-canvas;
+  min-width: 0;
+  min-height: 0;
+  box-sizing: border-box;
+}
+[data-responsive-canvas] :is(.channel-page, .channel-page-content, .prism-page-content, .duo-workspace-container) {
+  min-width: 0;
+  max-width: 100%;
+}
+[data-responsive-canvas] :is(.grid, .flex) > :is(div, section, article, form, fieldset) { min-width: 0; }
+[data-responsive-canvas] :is(input, textarea, select) { min-width: 0; max-width: 100%; box-sizing: border-box; }
+[data-responsive-canvas] :is(h1, h2, h3, h4, p, label) { overflow-wrap: anywhere; }
+[data-responsive-canvas] :is(img, video, canvas) { max-width: 100%; }
+[data-responsive-canvas] .duo-page-nav { justify-content: flex-start; scroll-padding-inline: .5rem; }
+@container app-canvas (max-width: 639px) {
+  [data-responsive-canvas] table { display: block; max-width: 100%; overflow-x: auto; }
+}

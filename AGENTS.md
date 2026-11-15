@@ -72,3 +72,9 @@ Every time a user request is completed or changes are made to the codebase:
 - While text is selected, a Big Bang tap sends it directly to Lucy once; selection-mode holds/directional/double-tap gestures must not navigate to Key or recommendations.
 - Capture selection across app pages, popups, input fields and accessible embedded app documents; keep it through the initiating gesture and clear it after send.
 - Selection-send stays reachable above dialogs and while an input/keyboard is active. Normal unselected navigation remains unchanged.
+
+### 13. Canvas-responsive Layout in Every Screen
+- Content, Lucy and popup canvases carry `data-responsive-canvas`; responsive utilities use their actual available width in folded, OS split, unfolded and portrait layouts. Navigation outside those canvases keeps window breakpoints.
+- JavaScript layout choices use `useContentCanvasCompact`, observing the content pane; never use the physical screen or full browser width for card/form layouts inside a pane.
+- Keep fields and media within their canvas. Wide tables/lists must remain accessible by scrolling, and short screens must keep controls reachable.
+- Preserve existing pane retention, theme isolation, popup bounds and audio rules. Check the route/tab catalog at folded, split and unfolded widths when changing the shared layout.

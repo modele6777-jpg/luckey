@@ -1,3 +1,4 @@
+import { useContentCanvasCompact } from '@/hooks/useContentCanvasCompact';
 import { ScreenPortal } from '@/components/layout/ScreenPortal';
 import { playConversation, stopTTS, useTTSActive } from '@/utils/tts'; import { Volume2, VolumeX } from 'lucide-react';
 import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
@@ -921,13 +922,7 @@ export default function HealApp() {
   const lucyMessages = personaMessages.lucy || [];
   const isSpecialFeatureChromeHidden = useSpecialFeatureChromeHidden();
 
-  const [isMobile, setIsMobile] = useState(false);
-  useEffect(() => {
-    const checkIsMobile = () => setIsMobile(window.innerWidth < 1024);
-    checkIsMobile();
-    window.addEventListener("resize", checkIsMobile);
-    return () => window.removeEventListener("resize", checkIsMobile);
-  }, []);
+  const isMobile = useContentCanvasCompact(1024);
 
   const [activeMode, setActiveMode] = useState<'simple' | 'soul' | 'bible' | 'history' | 'meditation' | 'oneMinute' | 'mission' | 'synergy'>(() => {
     if (typeof window !== 'undefined') {
