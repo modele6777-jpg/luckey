@@ -8,12 +8,19 @@
  * 4. 엘렌코스(Elenchus): 집요한 문답을 통해 헛된 편견을 허물고 참된 앎에 이르는 과정.
  * 5. 에피멜레이아 헤아우투(Epimeleia Heautou): 외적 명예와 부보다 영혼을 가장 훌륭하게 가꾸는 배려.
  *
- * @version LUCKEY-SOCRATIC-MAIEUTIC-DAIMON-v2.0.0
+ * @version LUCKEY-SOCRATIC-MAIEUTIC-DAIMON-v2.1.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const SOCRATIC_MAIEUTIC_DAIMON_VERSION = 'LUCKEY-SOCRATIC-MAIEUTIC-DAIMON-v2.0.0';
+export const SOCRATIC_MAIEUTIC_DAIMON_VERSION = 'LUCKEY-SOCRATIC-MAIEUTIC-DAIMON-v2.1.0';
+
+function describeSocraticStage(score: number): string {
+  if (score >= 88) return '명료한 각성 단계';
+  if (score >= 76) return '깊어지는 문답 단계';
+  if (score >= 64) return '성찰이 트이는 단계';
+  return '묵은 편견을 비우는 초기 단계';
+}
 
 export interface SocraticStage {
   stageLevel: number;
@@ -71,6 +78,9 @@ export interface SocraticMaieuticDaimonResult {
   situationalElenchus: SituationalElenchus;
   temporalDaimonionRhythm: TemporalDaimonionRhythm;
   dialecticSynthesisMatrix: DialecticSynthesisMatrix;
+  dailyPracticeRitual: string;
+  reflectiveQuestion: string;
+  interpretiveBoundary: string;
 }
 
 export type SocraticMaieuticDaimonReport = SocraticMaieuticDaimonResult;
@@ -319,21 +329,25 @@ export function calculateSocraticMaieuticDaimon(
     situationalElenchus,
     temporalDaimonionRhythm,
     dialecticSynthesisMatrix,
+    dailyPracticeRitual: `${temporalDaimonionRhythm.recommendedPractice} · ${situationalElenchus.maieuticPrompt}`,
+    reflectiveQuestion: situationalElenchus.elenchusQuestion,
+    interpretiveBoundary: '소크라테스 산파술과 다이몬 성찰은 정답을 대신 내려주는 점술이 아니라, 질문자가 스스로 헛된 전제를 비우고 내면의 양심을 들을 수 있도록 돕는 상징적 문답 프레임입니다.',
   };
 }
 
 export function formatSocraticMaieuticDaimonPrompt(res: SocraticMaieuticDaimonResult): string {
   return [
     `【고대 그리스 소크라테스 산파술 & 다이몬 영혼성찰 지표 (${res.engineVersion})】`,
-    `- 산파술 문답 통찰력: ${res.maieuticDialogueScore}/100 | 다이몬 감응도: ${res.daimonionWarningSensitivity}/100 | 무지의 지: ${res.doctaIgnorantiaHumility}/100`,
-    `- 엘렌코스 타파력: ${res.elenchusRefutationClarity}/100 | 영혼의 배려 품격도: ${res.epimeleiaSoulCareIntegrity}/100`,
+    `- 산파술 문답 흐름: ${describeSocraticStage(res.maieuticDialogueScore)} | 다이몬 감응: ${describeSocraticStage(res.daimonionWarningSensitivity)} | 무지의 지: ${describeSocraticStage(res.doctaIgnorantiaHumility)}`,
+    `- 엘렌코스 명료도: ${describeSocraticStage(res.elenchusRefutationClarity)} | 영혼의 배려: ${describeSocraticStage(res.epimeleiaSoulCareIntegrity)}`,
     `- 현재 문답 단계: ${res.activeSocraticStage.stageNameGreek} (${res.activeSocraticStage.stageNameKo})`,
     `- 질문 맥락 진단(${res.situationalElenchus.dialogueSource}): ${res.situationalElenchus.detectedTheme} — ${res.situationalElenchus.blindSpotDiagnostic}`,
     `- 핵심 엘렌코스 질문: "${res.situationalElenchus.elenchusQuestion}"`,
-    `- 산파술 실천: ${res.situationalElenchus.maieuticPrompt}`,
-    `- KST 시공간 리듬: ${res.temporalDaimonionRhythm.kstPhaseLabel} · ${res.temporalDaimonionRhythm.seasonContext} (다이몬 명료도 ${res.temporalDaimonionRhythm.daimonClarityIndex}/100)`,
-    `- 변증 통합 매트릭스: 아포리아 용기 ${res.dialecticSynthesisMatrix.aporiaCourage} / 다이몬 조율 ${res.dialecticSynthesisMatrix.daimonAttunement} / 산파 명료도 ${res.dialecticSynthesisMatrix.maieuticClarity} → [${res.dialecticSynthesisMatrix.primaryBottleneck}] ${res.dialecticSynthesisMatrix.synthesisDirective}`,
+    `- 산파술 실천: ${res.dailyPracticeRitual}`,
+    `- KST 시공간 리듬 (${res.calculatedAtKst}): ${res.temporalDaimonionRhythm.kstPhaseLabel} · ${res.temporalDaimonionRhythm.seasonContext} (다이몬 감응: ${describeSocraticStage(res.temporalDaimonionRhythm.daimonClarityIndex)})`,
+    `- 변증 통합 매트릭스: 아포리아 용기(${describeSocraticStage(res.dialecticSynthesisMatrix.aporiaCourage)}) / 다이몬 조율(${describeSocraticStage(res.dialecticSynthesisMatrix.daimonAttunement)}) / 산파 명료도(${describeSocraticStage(res.dialecticSynthesisMatrix.maieuticClarity)}) → [${res.dialecticSynthesisMatrix.primaryBottleneck}] ${res.dialecticSynthesisMatrix.synthesisDirective}`,
     `- 성찰 핵심 격언: "${res.primarySocraticAphorism.themeKo}" [${res.primarySocraticAphorism.greekClassic}]`,
     `- 철학적 처방: ${res.socraticPhilosophicalCounsel.philosophicalGuidance}`,
+    `- 해석 경계: ${res.interpretiveBoundary}`,
   ].join('\n');
 }

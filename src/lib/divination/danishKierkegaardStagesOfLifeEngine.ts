@@ -7,12 +7,19 @@
  * 3. 불안(Angst)의 가능성과 신앙의 도약(Springet)
  * 4. 질문 맥락 실존 단계 진단(situationalStageAudit) + KST 시공간 리듬(temporalSolitudeRhythm) + 교차 검증 매트릭스(kierkegaardSynthesisMatrix)
  *
- * @version LUCKEY-KIERKEGAARD-STAGES-OF-LIFE-v2.0.0
+ * @version LUCKEY-KIERKEGAARD-STAGES-OF-LIFE-v2.1.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const KIERKEGAARD_STAGES_OF_LIFE_VERSION = 'LUCKEY-KIERKEGAARD-STAGES-OF-LIFE-v2.0.0';
+export const KIERKEGAARD_STAGES_OF_LIFE_VERSION = 'LUCKEY-KIERKEGAARD-STAGES-OF-LIFE-v2.1.0';
+
+function describeKierkegaardStage(score: number): string {
+  if (score >= 88) return '단독자의 용기 있는 도약 단계';
+  if (score >= 76) return '자기 선택이 단단해지는 윤리 단계';
+  if (score >= 64) return '불안을 마주하며 깨어나는 성찰 단계';
+  return '군중의 시선을 거두고 내면을 살피는 초기 단계';
+}
 
 export interface KierkegaardTheme {
   themeKey: string;
@@ -72,6 +79,8 @@ export interface KierkegaardStagesOfLifeResult {
     counselTitle: string;
     philosophicalGuidance: string;
   };
+  dailyPracticeRitual: string;
+  interpretiveBoundary: string;
 }
 
 export type KierkegaardStagesOfLifeReport = KierkegaardStagesOfLifeResult;
@@ -312,24 +321,25 @@ export function calculateKierkegaardStagesOfLife(
       counselTitle,
       philosophicalGuidance,
     },
+    dailyPracticeRitual: `${temporalSolitudeRhythm.dailySolitudePractice} · ${focalKierkegaardAphorism.practicalAction}`,
+    interpretiveBoundary: '키르케고르 실존 단계 엔진은 미래의 길흉을 고정된 점수로 예단하지 않고, 선택과 불안 앞에서 단독자로서 책임을 짊어지는 성찰의 렌즈를 제공합니다.',
   };
 }
 
 export function formatKierkegaardStagesOfLifePrompt(res: KierkegaardStagesOfLifeResult): string {
   return [
-    `【쇠렌 키르케고르 단독자(Den Enkelte) & 실존 3단계 지표 v2.0】`,
-    `- 실존적 도약(Springet) 결단력: ${res.existentialLeapCourageScore}/100`,
-    `- 단독자(Den Enkelte) 주체성 지수: ${res.denEnkelteAuthenticityScore}/100`,
-    `- 불안의 가능성 승화도(Angst): ${res.angstPossibilityMasteryScore}/100`,
-    `- 자기 선택 성실도(Vælg dig selv): ${res.ethicalSelfChoiceCommitmentScore}/100`,
-    `- 영적 자아 일치 평정심(Fortvivlelse 치유): ${res.spiritSynthesisWholenessScore}/100`,
+    `【쇠렌 키르케고르 단독자(Den Enkelte) & 실존 3단계 지표 (${res.engineVersion})】`,
+    `- 실존적 도약(Springet): ${describeKierkegaardStage(res.existentialLeapCourageScore)} | 단독자 주체성: ${describeKierkegaardStage(res.denEnkelteAuthenticityScore)}`,
+    `- 불안의 승화(Angst): ${describeKierkegaardStage(res.angstPossibilityMasteryScore)} | 자기 선택 성실도: ${describeKierkegaardStage(res.ethicalSelfChoiceCommitmentScore)} | 영적 평정: ${describeKierkegaardStage(res.spiritSynthesisWholenessScore)}`,
     `- 질문 맥락 실존 단계: [${res.situationalStageAudit.stageNameKo}] ${res.situationalStageAudit.focusAxisKo}`,
     `- 원전 처방: ${res.situationalStageAudit.classicalCitation} → ${res.situationalStageAudit.leapDirective}`,
     `- 성찰 질문: ${res.situationalStageAudit.reflectiveQuestion}`,
-    `- KST 시공간 리듬: ${res.temporalSolitudeRhythm.timeWindowKo} (${res.temporalSolitudeRhythm.seasonKo}, 도약지수 ${res.temporalSolitudeRhythm.leapReadinessIndex}/100) — ${res.temporalSolitudeRhythm.dailySolitudePractice}`,
+    `- 일상 실천 의례: ${res.dailyPracticeRitual}`,
+    `- KST 시공간 리듬 (${res.calculatedAtKst}): ${res.temporalSolitudeRhythm.timeWindowKo} (${res.temporalSolitudeRhythm.seasonKo}, ${describeKierkegaardStage(res.temporalSolitudeRhythm.leapReadinessIndex)}) — ${res.temporalSolitudeRhythm.dailySolitudePractice}`,
     `- 종합 등급: ${res.kierkegaardSynthesisMatrix.overallExistentialGrade}`,
     `- 핵심 실존 테마: ${res.activeKierkegaardTheme.themeTitleKo} [${res.activeKierkegaardTheme.themeTitleDanish}]`,
     `- 핵심 아포리즘: "${res.focalKierkegaardAphorism.aphorismKo}" ("${res.focalKierkegaardAphorism.aphorismDanish}")`,
     `- 통합 실존 처방: ${res.kierkegaardPersonalCounsel.philosophicalGuidance}`,
+    `- 해석 경계: ${res.interpretiveBoundary}`,
   ].join('\n');
 }

@@ -3,12 +3,19 @@
  *
  * 스피노자의 《에티카(Ethica Ordine Geometrico Demonstrata)》 원전 기반.
  *
- * @version LUCKEY-SPINOZA-CONATUS-AMORDEI-v2.0.0
+ * @version LUCKEY-SPINOZA-CONATUS-AMORDEI-v2.1.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const SPINOZA_CONATUS_AMORDEI_VERSION = 'LUCKEY-SPINOZA-CONATUS-AMORDEI-v2.0.0';
+export const SPINOZA_CONATUS_AMORDEI_VERSION = 'LUCKEY-SPINOZA-CONATUS-AMORDEI-v2.1.0';
+
+function describeSpinozaStage(score: number): string {
+  if (score >= 88) return '지적 사랑(Amor Dei)의 고요한 충만 단계';
+  if (score >= 76) return '인과를 꿰뚫는 능동 이성 단계';
+  if (score >= 64) return '수동 정념에서 벗어나는 전환 단계';
+  return '흔들리는 감정의 원인을 살피는 초기 단계';
+}
 
 export type SpinozaQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -262,7 +269,7 @@ export function calculateBaruchSpinozaEthicaConatus(
 
   return {
     engineVersion: SPINOZA_CONATUS_AMORDEI_VERSION,
-    calculatedAtKst: now.toISOString(),
+    calculatedAtKst: new Date(now.getTime() + 9 * 60 * 60 * 1000).toISOString().replace('Z', '+09:00'),
     conatusVitalityScore,
     subSpecieAeternitatisScore,
     affectJoyTransitionScore,
@@ -286,14 +293,15 @@ export function calculateBaruchSpinozaEthicaConatus(
 
 export function formatBaruchSpinozaEthicaConatusPrompt(res: BaruchSpinozaEthicaConatusResult): string {
   return [
-    `【스피노자 에티카 코나투스 & 신즉자연 관조 지표】`,
+    `【스피노자 에티카 코나투스 & 신즉자연 관조 지표 (${res.engineVersion})】`,
+    `- 코나투스 생명력: ${describeSpinozaStage(res.conatusVitalityScore)} | 영원의 상 관조: ${describeSpinozaStage(res.subSpecieAeternitatisScore)}`,
     `- 능동 정념 상태: ${res.activeAffectState.affectNameLatin} (${res.activeAffectState.affectNameKo})`,
     `- 인식의 지평: ${res.focalEpistemicLevel.levelNameKo} [${res.focalEpistemicLevel.levelNameLatin}]`,
     `- 실천 조언 (${res.questionTopic}): ${res.practiceGuidance}`,
     `- 일상 의례: ${res.ritualAction}`,
     `- 성찰 질문: ${res.reflectionFocus}`,
-    `- KST 코나투스 리듬: ${res.temporalConatusRhythm.kstWindow} (${res.temporalConatusRhythm.epistemicFocus}, 명료도 ${res.temporalConatusRhythm.conatusClarityIndex}/100) — ${res.temporalConatusRhythm.rhythmDirective}`,
-    `- 에티카 매트릭스: 능동 정념 전환 ${res.ethicaSynthesisMatrix.passiveToActiveTransition} / 인과 이해 깊이 ${res.ethicaSynthesisMatrix.causalUnderstandingDepth} / 영원의 상 평정 ${res.ethicaSynthesisMatrix.amorDeiEquanimity} (종합 ${res.ethicaSynthesisMatrix.overallSynthesis}/100)`,
+    `- KST 코나투스 리듬 (${res.calculatedAtKst}): ${res.temporalConatusRhythm.kstWindow} (${res.temporalConatusRhythm.epistemicFocus}, ${describeSpinozaStage(res.temporalConatusRhythm.conatusClarityIndex)}) — ${res.temporalConatusRhythm.rhythmDirective}`,
+    `- 에티카 매트릭스: 능동 정념 전환(${describeSpinozaStage(res.ethicaSynthesisMatrix.passiveToActiveTransition)}) / 인과 이해 깊이(${describeSpinozaStage(res.ethicaSynthesisMatrix.causalUnderstandingDepth)}) / 영원의 상 평정(${describeSpinozaStage(res.ethicaSynthesisMatrix.amorDeiEquanimity)}) → 종합(${describeSpinozaStage(res.ethicaSynthesisMatrix.overallSynthesis)})`,
     `- 해석 경계: ${res.boundaryNotice}`,
   ].join('\n');
 }
