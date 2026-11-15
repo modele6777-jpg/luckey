@@ -16,7 +16,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const VEDIC_MANDUKYA_TURIYA_ENGINE_VERSION = '1.0.0';
+export const VEDIC_MANDUKYA_TURIYA_ENGINE_VERSION = '2.0.0';
 
 export interface MandukyaConsciousnessState {
   id: string;
@@ -32,14 +32,19 @@ export interface MandukyaConsciousnessState {
 export interface VedicMandukyaTuriyaReport {
   engineVersion: string;
   timestamp: string;
+  calculatedAtKst: string;
   turiyaPureConsciousnessScore: number; // 0 ~ 100 투리야 순수의식 각성도
   aumSyllableResonanceIndex: number; // 0 ~ 100 옴(AUM) 신성 파동 공명도
   sakshiWitnessPresenceScore: number; // 0 ~ 100 샥시(초연한 목격자) 현존 지수
   mayaIllusionDissolutionRate: number; // 0 ~ 100 마야 환영 투사 탈각율
   dominantState: MandukyaConsciousnessState; // 주재 의식 상태
   secondaryState: MandukyaConsciousnessState; // 보조 의식 상태
+  situationalTuriyaFocus: string;
   mandukyaUpanishadGuidance: string; // 만두키야 우파니샤드 지혜 지침
   omPranavaMeditationRitual: string; // 옴 프라나바 침묵 명상 리추얼
+  dailyPracticeRitual: string;
+  reflectiveQuestion: string;
+  interpretiveBoundary: string;
 }
 
 const MANDUKYA_STATES_BASE: Omit<MandukyaConsciousnessState, 'resonanceScore'>[] = [
@@ -88,6 +93,46 @@ export interface VedicMandukyaTuriyaOptions {
   currentTime?: string;
 }
 
+function buildSituationalTuriyaFocus(question: string): {
+  situationalTuriyaFocus: string;
+  dailyPracticeRitual: string;
+  reflectiveQuestion: string;
+} {
+  const q = question.trim();
+  if (/관계|사랑|사람|연애|이별|갈등|가족/.test(q)) {
+    return {
+      situationalTuriyaFocus: '타인의 말과 감정의 파동에 곧바로 동화되지 않고 한 걸음 물러서서 지켜보는 목격자(Sakshi) 자리 지키기',
+      dailyPracticeRitual: '상대의 반응에 즉각 답하기 전 세 번 천천히 숨을 내쉬며 내 안의 흔들리지 않는 고요한 바탕을 먼저 확인하십시오.',
+      reflectiveQuestion: '지금 올라오는 감정의 물결을 "내 자신"으로 붙잡고 있습니까, 아니면 지나가는 날씨처럼 바라보고 있습니까?',
+    };
+  }
+  if (/결정|선택|진로|이직|일|사업|돈|시험/.test(q)) {
+    return {
+      situationalTuriyaFocus: '결과에 대한 집착과 성급한 계산(Swapna의 동요)을 가라앉히고 맑은 현존(Jagrat)과 침묵(Turiya)을 잇기',
+      dailyPracticeRitual: '중요한 판단을 내리기 전 1분간 화면과 메모를 덮고, 욕망과 두려움이 빠진 자리에서 가장 선명하게 남는 방향을 확인하십시오.',
+      reflectiveQuestion: '두려움이나 조급함이 아니라 가장 고요하고 맑은 의식 상태에서 고른다면 어떤 선택이 남습니까?',
+    };
+  }
+  if (/불안|피곤|잠|수면|지침|휴식|스트레스|멘탈/.test(q)) {
+    return {
+      situationalTuriyaFocus: '끊임없이 생각을 굴리는 각성·꿈의 소음을 멈추고 수숩티(Sushupti)의 무욕한 쉼과 투리야 침묵에 몸을 맡기기',
+      dailyPracticeRitual: '잠들기 전 혹은 휴식 시간에 속으로 길게 A-U-M을 떠올린 뒤, 소리가 멎은 뒤의 고요함에 30초간 머무르십시오.',
+      reflectiveQuestion: '당장 해결하려 애쓰지 않아도, 잠시 내려놓는 것만으로 저절로 가라앉을 소음은 무엇입니까?',
+    };
+  }
+  return {
+    situationalTuriyaFocus: '일상의 감각(A)·상상(U)·휴식(M)을 관통해 변치 않는 순수 관조자(Turiya)의 중심 세우기',
+    dailyPracticeRitual: '하루 중 한 번, 흩어진 주의를 호흡의 끝자락 침묵으로 모아 현재 순간을 있는 그대로 바라보십시오.',
+    reflectiveQuestion: '오늘 겪는 일들이 변해도 그 모든 장면을 변함없이 비추고 있는 내 안의 고요한 거울은 어디에 있습니까?',
+  };
+}
+
+function describeMandukyaStage(score: number): string {
+  if (score >= 82) return '깊이 각성하여 맑게 비춤';
+  if (score >= 65) return '고르게 공명하며 자리를 잡음';
+  return '고요한 호흡으로 관조를 열 여백이 있음';
+}
+
 export function calculateVedicMandukyaTuriya(
   optionsOrProfile?: VedicMandukyaTuriyaOptions | UserProfile | null,
   legacyContext?: { question?: string; currentTime?: string }
@@ -130,33 +175,46 @@ export function calculateVedicMandukyaTuriya(
   const sakshiWitnessPresenceScore = Math.min(100, Math.max(42, 50 + ((seed * 31) % 48)));
   const mayaIllusionDissolutionRate = Math.min(100, Math.max(40, 48 + ((seed * 17) % 49)));
 
-  const mandukyaUpanishadGuidance = `당신은 몸도, 스쳐가는 감정도, 불안한 생각도 아닙니다. 그 모든 것을 바라보는 초연한 목격자(Sakshi)입니다. 지금 조명되는 상태는 [${dominantState.nameKo}]입니다. ${dominantState.spiritualGift}의 힘을 신뢰하십시오. 현상의 파도에 휩쓸리지 않고 깊은 바다의 침묵에 닻을 내릴 때입니다.`;
+  const calculatedAtKst = new Date(now.getTime() + 9 * 60 * 60 * 1000).toISOString().replace('Z', '+09:00');
+  const { situationalTuriyaFocus, dailyPracticeRitual, reflectiveQuestion } = buildSituationalTuriyaFocus(question);
+  const interpretBoundary = '이 관점은 만두키야 우파니샤드의 4대 의식 비유를 빌린 상징적 성찰 프레임이며, 확정 예언이 아닙니다.';
+
+  const mandukyaUpanishadGuidance = `당신은 몸도, 스쳐가는 감정도, 불안한 생각도 아닙니다. 그 모든 것을 바라보는 초연한 목격자(Sakshi)입니다. 지금 조명되는 상태는 [${dominantState.nameKo}]입니다. ${dominantState.spiritualGift}의 힘을 신뢰하십시오. (${situationalTuriyaFocus})`;
   const omPranavaMeditationRitual = `숨을 들이마시고 내쉬며 마음속으로 길게 'A-U-M...'을 울린 뒤, 음률이 멎은 고요한 침묵에 머무르십시오: "사르밤 칼비담 브라만(Sarvam Khalvidam Brahman) — 모든 것은 신성한 의식이며, 나는 영원한 순수 지각자이다."`;
 
   return {
     engineVersion: VEDIC_MANDUKYA_TURIYA_ENGINE_VERSION,
     timestamp: now.toISOString(),
+    calculatedAtKst,
     turiyaPureConsciousnessScore,
     aumSyllableResonanceIndex,
     sakshiWitnessPresenceScore,
     mayaIllusionDissolutionRate,
     dominantState,
     secondaryState,
+    situationalTuriyaFocus,
     mandukyaUpanishadGuidance,
     omPranavaMeditationRitual,
+    dailyPracticeRitual,
+    reflectiveQuestion,
+    interpretiveBoundary: interpretBoundary,
   };
 }
 
 export function formatVedicMandukyaTuriyaPrompt(rep: VedicMandukyaTuriyaReport): string {
-  return `[고대 인도 만두키야 우파니샤드 4대 의식 & 투리야(Turiya) 순수의식 실측 데이터]
-· 엔진 버전: v${rep.engineVersion}
-· 투리야 순수의식 각성도: ${rep.turiyaPureConsciousnessScore}/100 | 옴(AUM) 신성 파동 공명도: ${rep.aumSyllableResonanceIndex}/100
-· 샥시(초연한 목격자) 현존 지수: ${rep.sakshiWitnessPresenceScore}/100 | 마야 환영 탈각율: ${rep.mayaIllusionDissolutionRate}/100
-· 주재 의식 상태: [${rep.dominantState.nameKo} (${rep.dominantState.sanskrit})] — 공명도 ${rep.dominantState.resonanceScore}%
+  return `[고대 인도 만두키야 우파니샤드 4대 의식 & 투리야(Turiya) 순수의식 정성 관조]
+· 엔진 버전: v${rep.engineVersion} | 기준 시각(KST): ${rep.calculatedAtKst}
+· 투리야 순수의식 각성: ${describeMandukyaStage(rep.turiyaPureConsciousnessScore)} | 옴(AUM) 파동 공명: ${describeMandukyaStage(rep.aumSyllableResonanceIndex)}
+· 샥시(목격자) 현존: ${describeMandukyaStage(rep.sakshiWitnessPresenceScore)} | 마야 환영 탈각: ${describeMandukyaStage(rep.mayaIllusionDissolutionRate)}
+· 주재 의식 상태: [${rep.dominantState.nameKo} (${rep.dominantState.sanskrit})] — ${describeMandukyaStage(rep.dominantState.resonanceScore)}
   - 옴 음률 계위: ${rep.dominantState.aumLetter} | 영역: ${rep.dominantState.realm}
   - 신성 원리: ${rep.dominantState.divinePrinciple}
   - 영적 은사: ${rep.dominantState.spiritualGift}
-· 보조 의식 상태: [${rep.secondaryState.nameKo} (${rep.secondaryState.sanskrit})] — 공명도 ${rep.secondaryState.resonanceScore}%
+· 보조 의식 상태: [${rep.secondaryState.nameKo} (${rep.secondaryState.sanskrit})] — ${describeMandukyaStage(rep.secondaryState.resonanceScore)}
+· 질문 맥락 초점: ${rep.situationalTuriyaFocus}
 · 만두키야 우파니샤드 지혜 지침: ${rep.mandukyaUpanishadGuidance}
-· 옴 프라나바 침묵 명상 리추얼: ${rep.omPranavaMeditationRitual}`;
+· 일상 관조 실천: ${rep.dailyPracticeRitual}
+· 성찰 질문: ${rep.reflectiveQuestion}
+· 옴 프라나바 침묵 명상 리추얼: ${rep.omPranavaMeditationRitual}
+· 해석 경계: ${rep.interpretiveBoundary}`;
 }

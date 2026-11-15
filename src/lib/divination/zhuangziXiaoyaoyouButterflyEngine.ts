@@ -17,7 +17,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const ZHUANGZI_XIAOYAOYOU_BUTTERFLY_ENGINE_VERSION = '1.0.0';
+export const ZHUANGZI_XIAOYAOYOU_BUTTERFLY_ENGINE_VERSION = '2.0.0';
 
 export interface ZhuangziArchetype {
   id: string;
@@ -31,14 +31,19 @@ export interface ZhuangziArchetype {
 export interface ZhuangziXiaoyaoyouButterflyReport {
   engineVersion: string;
   timestamp: string;
+  calculatedAtKst: string;
   xiaoyaoyouAbsoluteFreedomScore: number; // 0 ~ 100 소요유(절대 자유) 지수
   rocAscendingWindResonance: number; // 0 ~ 100 대붕(大鵬) 상승 기류 공명도
   qiwulunTranscendenceIndex: number; // 0 ~ 100 제물론(시비·득실 초월) 지수
   butterflyDreamFluidityScore: number; // 0 ~ 100 호접몽(물화·유연성) 흐름도
   dominantArchetype: ZhuangziArchetype; // 가장 강력히 작동하는 장자 원형
   secondaryArchetype: ZhuangziArchetype; // 보조 조율 원형
+  situationalZhuangziFocus: string;
   zhuangziFreedomGuidance: string; // 장자의 대자유 지침
   wuSangWoEmptyRoomRitual: string; // 허실생백(虛室生白) 마음비움 리추얼
+  dailyPracticeRitual: string;
+  reflectiveQuestion: string;
+  interpretiveBoundary: string;
 }
 
 const ZHUANGZI_ARCHETYPES_BASE: Omit<ZhuangziArchetype, 'affinityScore'>[] = [
@@ -86,6 +91,46 @@ export interface ZhuangziXiaoyaoyouButterflyOptions {
   currentTime?: string;
 }
 
+function buildSituationalZhuangziFocus(question: string): {
+  situationalZhuangziFocus: string;
+  dailyPracticeRitual: string;
+  reflectiveQuestion: string;
+} {
+  const q = question.trim();
+  if (/관계|사람|갈등|시비|비교|연애|이별/.test(q)) {
+    return {
+      situationalZhuangziFocus: '누가 옳고 그른지 따지는 시비(是非)의 좁은 울타리를 넘어 포정해우처럼 관계의 빈틈(隙)을 여유롭게 통과하기',
+      dailyPracticeRitual: '상대의 말에 맞서 힘을 주기보다, 지금 상황에서 굳이 부딪치지 않아도 되는 빈틈을 먼저 찾아 한 걸음 비켜서 보십시오.',
+      reflectiveQuestion: '지금 붙잡고 있는 "내가 맞다"는 기준을 내려놓으면 이 관계는 어떻게 훨씬 가벼워집니까?',
+    };
+  }
+  if (/선택|결정|진로|이직|일|사업|돈|시험/.test(q)) {
+    return {
+      situationalZhuangziFocus: '뱁새의 짧은 눈금이 아니라 구만 리 바람을 타는 대붕(大鵬)의 거시적 시야로 현재의 갈림길을 조망하기',
+      dailyPracticeRitual: '당장의 작은 득실 목록을 한 번 덮고, 3년 뒤의 내가 지금의 고민을 내려다본다면 무엇이 남을지 적어 보십시오.',
+      reflectiveQuestion: '지금 망설이는 이유는 본질의 길이 어두워서가 아니라, 남들의 잣대에 맞추려 하기 때문은 아닙니까?',
+    };
+  }
+  if (/불안|압박|지침|스트레스|완벽|부담/.test(q)) {
+    return {
+      situationalZhuangziFocus: '애써 꾸미는 오상아(吾喪我)의 긴장을 풀고 허실생백(虛室生白)의 빈 공간에서 자연스러운 리듬 회복하기',
+      dailyPracticeRitual: '오늘 해야 할 일 중 억지로 힘으로 밀어붙이는 한 가지를 골라, 힘을 빼고 물 흐르듯 처리할 작은 틈을 찾으십시오.',
+      reflectiveQuestion: '체면이나 완벽주의를 잠시 내려놓는다면 지금 당장 가장 자유롭게 숨 쉴 수 있는 부분은 어디입니까?',
+    };
+  }
+  return {
+    situationalZhuangziFocus: '고정된 틀과 득실의 계산을 가볍게 비우고 구만 리 바람과 호접몽의 유연한 물화(物化) 감각 깨우기',
+    dailyPracticeRitual: '하루 중 5분만이라도 목적이나 평가 없이 산책하거나 숨을 고르며 마음의 방을 비워 두십시오.',
+    reflectiveQuestion: '오늘의 문제를 무거운 숙제가 아니라 한 번 노닐어 볼 흐름으로 본다면 첫걸음이 어떻게 달라집니까?',
+  };
+}
+
+function describeZhuangziStage(score: number): string {
+  if (score >= 82) return '구만 리 바람을 타듯 유유히 열림';
+  if (score >= 65) return '자연스러운 결을 따라 조화롭게 흐름';
+  return '긴장을 풀고 여백을 비울 여지가 있음';
+}
+
 export function calculateZhuangziXiaoyaoyouButterfly(
   optionsOrProfile?: ZhuangziXiaoyaoyouButterflyOptions | UserProfile | null,
   legacyContext?: { question?: string; currentTime?: string }
@@ -128,32 +173,45 @@ export function calculateZhuangziXiaoyaoyouButterfly(
   const qiwulunTranscendenceIndex = Math.min(100, Math.max(42, 50 + ((seed * 29) % 48)));
   const butterflyDreamFluidityScore = Math.min(100, Math.max(46, Math.floor((xiaoyaoyouAbsoluteFreedomScore * 0.5 + qiwulunTranscendenceIndex * 0.5))));
 
-  const zhuangziFreedomGuidance = `뱁새와 매미의 좁은 가지 다툼에 얽매이지 마십시오. 현재 당신에게 깃든 기운은 [${dominantArchetype.nameKo}(${dominantArchetype.hanja})]의 기상입니다. ${dominantArchetype.spiritualLiberationGift}의 태도를 지닐 때, 사소한 시비는 사라지고 구만 리 장공의 자유로운 바람이 펼쳐집니다.`;
+  const calculatedAtKst = new Date(now.getTime() + 9 * 60 * 60 * 1000).toISOString().replace('Z', '+09:00');
+  const { situationalZhuangziFocus, dailyPracticeRitual, reflectiveQuestion } = buildSituationalZhuangziFocus(question);
+  const interpretiveBoundary = '이 관점은 《장자》의 소요유·제물론 비유를 통해 시야를 넓히는 상징적 프레임이며, 확정 예언이 아닙니다.';
+
+  const zhuangziFreedomGuidance = `뱁새와 매미의 좁은 가지 다툼에 얽매이지 마십시오. 현재 당신에게 깃든 기운은 [${dominantArchetype.nameKo}(${dominantArchetype.hanja})]의 기상입니다. ${dominantArchetype.spiritualLiberationGift}의 태도를 지닐 때, 사소한 시비는 사라지고 구만 리 장공의 자유로운 바람이 펼쳐집니다. (${situationalZhuangziFocus})`;
   const wuSangWoEmptyRoomRitual = `어깨의 긴장을 풀고 가슴 속 모든 분별과 계산을 허공으로 내쉬며 속삭이십시오: "허실생백(虛室生白), 방을 비우면 저절로 신령한 빛이 차오르듯 나를 비우고 천지의 큰 흐름에 몸을 맡긴다."`;
 
   return {
     engineVersion: ZHUANGZI_XIAOYAOYOU_BUTTERFLY_ENGINE_VERSION,
     timestamp: now.toISOString(),
+    calculatedAtKst,
     xiaoyaoyouAbsoluteFreedomScore,
     rocAscendingWindResonance,
     qiwulunTranscendenceIndex,
     butterflyDreamFluidityScore,
     dominantArchetype,
     secondaryArchetype,
+    situationalZhuangziFocus,
     zhuangziFreedomGuidance,
     wuSangWoEmptyRoomRitual,
+    dailyPracticeRitual,
+    reflectiveQuestion,
+    interpretiveBoundary,
   };
 }
 
 export function formatZhuangziXiaoyaoyouButterflyPrompt(rep: ZhuangziXiaoyaoyouButterflyReport): string {
-  return `[고대 도가 장자 소요유 붕정만리 & 제물론 호접몽 실측 데이터]
-· 엔진 버전: v${rep.engineVersion}
-· 소요유(대자유) 지수: ${rep.xiaoyaoyouAbsoluteFreedomScore}/100 | 대붕 상승 기류 공명도: ${rep.rocAscendingWindResonance}/100
-· 제물론(시비·득실 초월) 지수: ${rep.qiwulunTranscendenceIndex}/100 | 호접몽 물화 유연성: ${rep.butterflyDreamFluidityScore}/100
-· 주재 장자 원형: [${rep.dominantArchetype.nameKo} (${rep.dominantArchetype.hanja})] — 친화도 ${rep.dominantArchetype.affinityScore}%
+  return `[고대 도가 장자 소요유 붕정만리 & 제물론 호접몽 정성 관조]
+· 엔진 버전: v${rep.engineVersion} | 기준 시각(KST): ${rep.calculatedAtKst}
+· 소요유(대자유) 흐름: ${describeZhuangziStage(rep.xiaoyaoyouAbsoluteFreedomScore)} | 대붕 상승 기류: ${describeZhuangziStage(rep.rocAscendingWindResonance)}
+· 제물론(시비 초월) 흐름: ${describeZhuangziStage(rep.qiwulunTranscendenceIndex)} | 호접몽 물화 유연성: ${describeZhuangziStage(rep.butterflyDreamFluidityScore)}
+· 주재 장자 원형: [${rep.dominantArchetype.nameKo} (${rep.dominantArchetype.hanja})] — ${describeZhuangziStage(rep.dominantArchetype.affinityScore)}
   - 초월 원리: ${rep.dominantArchetype.transcendentPrinciple}
   - 영적 해방 은사: ${rep.dominantArchetype.spiritualLiberationGift}
-· 보조 원형: [${rep.secondaryArchetype.nameKo} (${rep.secondaryArchetype.hanja})] — 친화도 ${rep.secondaryArchetype.affinityScore}%
+· 보조 원형: [${rep.secondaryArchetype.nameKo} (${rep.secondaryArchetype.hanja})] — ${describeZhuangziStage(rep.secondaryArchetype.affinityScore)}
+· 질문 맥락 초점: ${rep.situationalZhuangziFocus}
 · 장자의 대자유 지침: ${rep.zhuangziFreedomGuidance}
-· 허실생백(虛室生白) 마음비움 리추얼: ${rep.wuSangWoEmptyRoomRitual}`;
+· 일상 관조 실천: ${rep.dailyPracticeRitual}
+· 성찰 질문: ${rep.reflectiveQuestion}
+· 허실생백(虛室生白) 마음비움 리추얼: ${rep.wuSangWoEmptyRoomRitual}
+· 해석 경계: ${rep.interpretiveBoundary}`;
 }

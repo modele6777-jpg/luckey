@@ -7,12 +7,12 @@
  * 3. 동포애와 보편적 자비(Mitleid) · 고슴도치 딜레마(Stachelschweine)
  * 4. 질문 맥락 의지-관조 감사(situationalWillAudit) + KST 시공간 리듬(temporalContemplationRhythm) + 교차 검증 매트릭스(schopenhauerSynthesisMatrix)
  *
- * @version LUCKEY-SCHOPENHAUER-WILL-REPRESENTATION-v2.0.0
+ * @version LUCKEY-SCHOPENHAUER-WILL-REPRESENTATION-v2.1.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const SCHOPENHAUER_WILL_REPRESENTATION_VERSION = 'LUCKEY-SCHOPENHAUER-WILL-REPRESENTATION-v2.0.0';
+export const SCHOPENHAUER_WILL_REPRESENTATION_VERSION = 'LUCKEY-SCHOPENHAUER-WILL-REPRESENTATION-v2.1.0';
 
 export interface SchopenhauerTheme {
   themeKey: string;
@@ -316,21 +316,29 @@ export function calculateSchopenhauerWillRepresentation(
   };
 }
 
+function describeSchopenhauerStage(score: number): string {
+  if (score >= 88) return '깊이 열려 고요히 빛남';
+  if (score >= 78) return '안정적으로 자리를 잡음';
+  return '성찰과 거리 두기의 여백이 필요함';
+}
+
 export function formatSchopenhauerWillRepresentationPrompt(res: SchopenhauerWillRepresentationResult): string {
   return [
-    `【쇼펜하우어 의지와 표상(Wille und Vorstellung) & 자비(Mitleid) 지표 v2.0】`,
-    `- 맹목적 의지 초월 및 환상 직시도: ${res.willTranscendenceClarityScore}/100`,
-    `- 심미적 관조(예술·음악) 몰입 지수: ${res.aestheticContemplationDepthScore}/100`,
-    `- 동포애적 자비심(Mitleid) 공감도: ${res.mitleidUniversalCompassionScore}/100`,
-    `- 내적 명랑 평정심(Heiterkeit): ${res.innerHeiterkeitSerenityScore}/100`,
-    `- 고슴도치 딜레마 적정 거리 지혜도: ${res.wiseRelationalDistanceScore}/100`,
+    `【쇼펜하우어 의지와 표상(Wille und Vorstellung) & 자비(Mitleid) 정성 관조 v2.1】`,
+    `- 기준 시각(KST): ${res.calculatedAtKst}`,
+    `- 맹목적 의지 초월 및 환상 직시: ${describeSchopenhauerStage(res.willTranscendenceClarityScore)}`,
+    `- 심미적 관조(예술·음악) 몰입: ${describeSchopenhauerStage(res.aestheticContemplationDepthScore)}`,
+    `- 동포애적 자비심(Mitleid) 공감: ${describeSchopenhauerStage(res.mitleidUniversalCompassionScore)}`,
+    `- 내적 명랑 평정심(Heiterkeit): ${describeSchopenhauerStage(res.innerHeiterkeitSerenityScore)}`,
+    `- 고슴도치 딜레마 적정 거리 지혜: ${describeSchopenhauerStage(res.wiseRelationalDistanceScore)}`,
     `- 질문 맥락 관조 렌즈: [${res.situationalWillAudit.contemplativeLens}] ${res.situationalWillAudit.focusAxisKo}`,
     `- 원전 처방: ${res.situationalWillAudit.classicalCitation} → ${res.situationalWillAudit.detachmentDirective}`,
     `- 성찰 질문: ${res.situationalWillAudit.reflectiveQuestion}`,
-    `- KST 시공간 리듬: ${res.temporalContemplationRhythm.timeWindowKo} (${res.temporalContemplationRhythm.seasonKo}, 평정지수 ${res.temporalContemplationRhythm.heiterkeitSerenityIndex}/100) — ${res.temporalContemplationRhythm.dailyContemplationPractice}`,
-    `- 종합 등급: ${res.schopenhauerSynthesisMatrix.overallSchopenhauerGrade}`,
+    `- KST 시공간 리듬: ${res.temporalContemplationRhythm.timeWindowKo} (${res.temporalContemplationRhythm.seasonKo}, ${describeSchopenhauerStage(res.temporalContemplationRhythm.heiterkeitSerenityIndex)}) — ${res.temporalContemplationRhythm.dailyContemplationPractice}`,
+    `- 종합 경지: ${res.schopenhauerSynthesisMatrix.overallSchopenhauerGrade}`,
     `- 핵심 관조 테마: ${res.activeSchopenhauerTheme.themeTitleKo} [${res.activeSchopenhauerTheme.themeTitleGerman}]`,
     `- 핵심 아포리즘: "${res.focalPhilosophicalAphorism.aphorismKo}" ("${res.focalPhilosophicalAphorism.aphorismGerman}")`,
     `- 통합 실존 처방: ${res.schopenhauerPersonalCounsel.philosophicalGuidance}`,
+    `- 해석 경계: 이 관조는 확정 예언이 아니라 욕망의 소란을 한 걸음 비켜서서 바라보기 위한 철학적 상징 프레임입니다.`,
   ].join('\n');
 }
