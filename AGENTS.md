@@ -58,3 +58,7 @@ Every time a user request is completed or changes are made to the codebase:
 ### 9. Latest Lucy Conversation on Entry
 - Entering/revealing Lucy, returning from background/BFCache and layout changes while following the bottom must show the newest available messages. Reconcile saved/current history by content/identity, never just message count; retain active streamed content.
 - Delayed history, fonts/images and viewport changes are layout events, not manual scrolling. Preserve explicit reading of older messages and the header-to-top/recent controls.
+
+### 10. TTS Sentence Scroll Ownership
+- While TTS is speaking/loading, sentence tracking owns the conversation viewport, including forced entry/reveal/background bottom-follow. Do not race it with top/bottom animations.
+- Center each newly committed spoken sentence on the next frame, with no dead zone or delayed smooth animation. Coalesce notifications and respect actual manual gestures.

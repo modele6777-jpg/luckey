@@ -1343,6 +1343,9 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
   }, [cancelTopScrollAnimation]);
 
   useEffect(() => () => cancelTopScrollAnimation(), [cancelTopScrollAnimation]);
+  useEffect(() => {
+    if (ttsInfo.isSpeaking || ttsInfo.isLoading) cancelTopScrollAnimation();
+  }, [ttsInfo.isSpeaking, ttsInfo.isLoading, cancelTopScrollAnimation]);
 
   // 🎯 TTS 낭독 중인 하이라이트 문장 화면 수직 중앙(50%) 자동 정렬 스마트 스크롤
   const {
@@ -2693,7 +2696,9 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
 
   const scrollToBottom = useCallback((force = false, smooth = true) => {
     if (!messagesContainerRef.current) return;
-    if (!force && (isUserScrolledUpRef.current || ttsBlocksAutoScrollRef.current || manualTtsActiveRef.current)) return;
+    // TTS owns the viewport, including during layout/reveal/background recovery.
+    if (ttsBlocksAutoScrollRef.current || manualTtsActiveRef.current) return;
+    if (!force && isUserScrolledUpRef.current) return;
     if (force) cancelTopScrollAnimation();
 
     isAutoScrollingRef.current = true;

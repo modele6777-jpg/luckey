@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useEffect, useState } from 'react';
+import React, { useMemo, useRef, useEffect, useLayoutEffect, useState } from 'react';
 import { useTTSState } from '@/utils/tts';
 import {
   MIN_SENTENCE_MATCH_SCORE,
@@ -133,14 +133,20 @@ export function TTSHighlightMark({
       order: highlightCandidateOrder,
     });
     selectHighlightOwner();
-    if (typeof window !== 'undefined') {
-      window.dispatchEvent(new CustomEvent('prism:tts-sentence-highlighted', { detail: { element } }));
-    }
     return () => {
       highlightCandidates.delete(element);
       selectHighlightOwner();
     };
   }, [matchScore]);
+
+  // A reused mark can represent a new sentence without remounting. Notify only
+  // after the selected owner's new text and attributes have committed.
+  useLayoutEffect(() => {
+    const element = markRef.current;
+    if (ownsHighlight && element) {
+      window.dispatchEvent(new CustomEvent('prism:tts-sentence-highlighted', { detail: { element } }));
+    }
+  }, [children, ownsHighlight]);
 
   const themeClass = isLight
     ? 'tts-active-sentence-highlight bg-amber-200/90 text-amber-950 px-1.5 py-0.5 rounded border-b-2 border-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.3)] [font-weight:inherit] [font-size:inherit] [line-height:inherit]'

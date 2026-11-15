@@ -165,13 +165,6 @@ test('the dead zone scales with the viewport but keeps a readable minimum', () =
   assert.ok(ttsScrollDeadZone(1200) > ttsScrollDeadZone(600));
 });
 
-test('smart scroll runs one animation at a time instead of stacking smooth scrolls', () => {
-  assert.doesNotMatch(smartScroll, /behavior: 'smooth'/);
-  assert.match(smartScroll, /const scrollAnimationFrameRef = useRef<number \| null>\(null\);/);
-  assert.match(smartScroll, /const cancelScrollAnimation = useCallback/);
-  assert.match(smartScroll, /animateContainerScroll\(container, currentScroll, plan\.top, plan\.duration\)/);
-});
-
 test('the highlight being read is taken from the message currently playing', () => {
   assert.match(smartScroll, /\[data-tts-playing-message="true"\]/);
   assert.match(page, /data-tts-playing-message=\{playingMsgId === msgId \? 'true' : undefined\}/);
