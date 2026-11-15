@@ -96,6 +96,9 @@ export function subscribeMainOverlayViewport(listener: () => void): () => void {
     let trackedContent: Element | null = null;
     let trackedLucy: Element | null = null;
     const resize = new ResizeObserver(() => schedule());
+    // The document element tracks viewport changes even when a synthetic resize
+    // event is missed, so a fold or a rail resize cannot leave a popup at the old size.
+    resize.observe(document.documentElement);
     const refresh = () => {
       frame = 0;
       const main = document.querySelector('.sites-pinned-main');
@@ -104,6 +107,7 @@ export function subscribeMainOverlayViewport(listener: () => void): () => void {
       const lucy = document.getElementById('duo-lucy-viewport') ?? document.querySelector('[data-workspace-pane="lucy"]');
       if (main !== trackedMain || navigation !== trackedNavigation || content !== trackedContent || lucy !== trackedLucy) {
         resize.disconnect();
+        resize.observe(document.documentElement);
         if (main) resize.observe(main);
         if (navigation) resize.observe(navigation);
         if (content) resize.observe(content);

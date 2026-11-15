@@ -45,6 +45,53 @@ export function placeRingCards(ids: readonly string[], pickedIds: ReadonlySet<st
  */
 export const LANDSCAPE_ARC_TOP = 100;
 
+/** Wheel-card width used by the spread at this column width, matching the Tailwind steps. */
+export function fanCardWidth(containerWidth: number): number {
+  if (containerWidth < 420) return 64;
+  if (containerWidth < 768) return 80;
+  return 96;
+}
+
+/**
+ * Largest radius whose card faces stay inside the column.
+ * The ring is centered on the container, so both sides share the same inset.
+ */
+export function maxFanRadius(containerWidth: number, cardWidth = fanCardWidth(containerWidth), pad = 12): number {
+  const width = Math.max(cardWidth + pad * 2 + 8, containerWidth);
+  return Math.max(96, width / 2 - cardWidth / 2 - pad);
+}
+
+export function portraitFanMetrics(containerWidth: number, containerHeight: number, cardWidth = fanCardWidth(containerWidth)): {
+  radius: number;
+  yOffset: number;
+} {
+  const height = Math.max(200, containerHeight);
+  const cardHeight = cardWidth < 72 ? 112 : cardWidth < 90 ? 136 : 160;
+  // Keep the front card below the position slots, then size the circle so the
+  // widest visible chord still lands inside this column.
+  const arcTop = Math.round(Math.min(height * 0.5, Math.max(height * 0.34, cardHeight + 36)));
+  const drop = Math.max(1, height - arcTop);
+  const half = maxFanRadius(containerWidth, cardWidth);
+  const radiusForArc = (half * half + drop * drop) / (2 * drop);
+  const radius = Math.round(Math.min(half, radiusForArc, 680));
+  return { radius, yOffset: Math.max(0, Math.round(arcTop + radius - height / 2)) };
+}
+
+/** Shrink a landscape ring when the column is narrower than the preferred circle. */
+export function clampFanToWidth(
+  radius: number,
+  yOffset: number,
+  containerWidth: number,
+  containerHeight: number,
+  cardWidth = fanCardWidth(containerWidth),
+  arcTop = LANDSCAPE_ARC_TOP,
+): { radius: number; yOffset: number } {
+  const limit = maxFanRadius(containerWidth, cardWidth);
+  if (radius <= limit) return { radius, yOffset };
+  const next = Math.round(limit);
+  return { radius: next, yOffset: Math.max(0, Math.round(arcTop + next - containerHeight / 2)) };
+}
+
 export function landscapeFanMetrics(containerHeight: number, arcTop = LANDSCAPE_ARC_TOP): {
   radius: number;
   yOffset: number;
