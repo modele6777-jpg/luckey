@@ -15,7 +15,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const MESOPOTAMIAN_NISABA_VERSION = 'LUCKEY-MESOPOTAMIAN-NISABA-v1.0.0';
+export const MESOPOTAMIAN_NISABA_VERSION = 'LUCKEY-MESOPOTAMIAN-NISABA-v2.0.0';
 
 export interface NisabaScribeRank {
   rankLevel: number;
@@ -45,6 +45,17 @@ export interface MesopotamianNisabaResult {
     tabletSection: string;
     wisdomVerse: string;
   };
+  nisabaSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
+}
+
+function describeNisabaStage(score: number): string {
+  if (score >= 86) return '청금석 명징(Lapis Clarity) — 천문 수리와 현실의 도량형이 오차 없이 맞물린 정밀기';
+  if (score >= 74) return '에두바 숙달(Edubba Mastery) — 기록과 관찰이 차곡차곡 쌓여 통찰로 이어지는 안정기';
+  return '갈대첨필 정돈(Stylus Grounding) — 소란을 멈추고 기본 원칙과 장부를 다시 세우는 준비기';
 }
 
 export type MesopotamianNisabaReport = MesopotamianNisabaResult;
@@ -73,10 +84,14 @@ const LAPISLAZULI_DECREES = [
   { tabletSection: '새벽별의 서기 찬가 제9연', wisdomVerse: '지식은 자랑하는 무기가 아니라, 어둠 속에 헤매는 이를 위해 서판에 불을 밝히는 등불이다.' },
 ];
 
-function getKstDateString(): string {
-  const now = new Date();
-  const kst = new Date(now.getTime() + (9 * 60 + now.getTimezoneOffset()) * 60000);
-  return kst.toISOString().replace('T', ' ').substring(0, 19) + ' KST';
+function getKstDateString(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
 }
 
 function hashSeed(seedStr: string): number {
@@ -88,11 +103,15 @@ function hashSeed(seedStr: string): number {
   return Math.abs(h);
 }
 
-export function calculateMesopotamianNisaba(profile?: UserProfile): MesopotamianNisabaResult {
+export function calculateMesopotamianNisaba(
+  profile?: UserProfile,
+  query?: string,
+  now: Date = new Date(),
+): MesopotamianNisabaResult {
   const birthdate = profile?.basic?.birthdate || '1995-03-21';
   const birthtime = profile?.basic?.birthtime || '12:00';
   const name = profile?.basic?.name || 'Inquirer';
-  const seed = hashSeed(`MESOPOTAMIAN-NISABA-${birthdate}-${birthtime}-${name}`);
+  const seed = hashSeed(`MESOPOTAMIAN-NISABA-${birthdate}-${birthtime}-${name}-${query ?? ''}`);
 
   const reedStylusPrecisionIndex = (seed % 41) + 60; // 60~100
   const lapislazuliTabletClarityScore = ((seed >> 3) % 39) + 62; // 62~100
@@ -109,9 +128,18 @@ export function calculateMesopotamianNisaba(profile?: UserProfile): Mesopotamian
   const decreeIdx = (seed >> 6) % LAPISLAZULI_DECREES.length;
   const lapislazuliDecree = LAPISLAZULI_DECREES[decreeIdx];
 
+  const composite = Math.round(
+    (reedStylusPrecisionIndex + lapislazuliTabletClarityScore + edubbaIntellectualGrowth + sacredNindanMeasureBalance + astralMulConstellationResonance) / 5
+  );
+  const nisabaSynthesisMatrix = {
+    dominantTension: `${activeScribeRank.rankNameKo} ↔ ${primaryCuneiformVerdict.sumerianWord}`,
+    alignmentState: describeNisabaStage(composite),
+    integratedAction: `${primaryCuneiformVerdict.sacredGuidance}${query?.trim() ? ` [질문 맥락: ${query.trim()}]` : ''}`,
+  };
+
   return {
     engineVersion: MESOPOTAMIAN_NISABA_VERSION,
-    calculatedAtKst: getKstDateString(),
+    calculatedAtKst: getKstDateString(now),
     reedStylusPrecisionIndex,
     lapislazuliTabletClarityScore,
     edubbaIntellectualGrowth,
@@ -120,21 +148,30 @@ export function calculateMesopotamianNisaba(profile?: UserProfile): Mesopotamian
     activeScribeRank,
     primaryCuneiformVerdict,
     lapislazuliDecree,
+    nisabaSynthesisMatrix,
   };
 }
 
 export function formatMesopotamianNisabaPrompt(result: MesopotamianNisabaResult): string {
-  return `[📐 수메르 서기의 수호신 《니사바(Nisaba)》 청금석 서판 갈대첨필 천문수리 계측 리포트]
-- 엔진 버전: ${result.engineVersion}
-- 갈대 첨필(GI.DUB) 정밀 계산 및 기록력: ${result.reedStylusPrecisionIndex}% (오차 없는 객관적 계측)
-- 청금석 서판(DUB.ZA.GIN) 질서 명료도: ${result.lapislazuliTabletClarityScore}% (운명 매트릭스의 선명성)
-- 에두바(É.DUB.BA.A) 지적 숙달 및 지혜 확장력: ${result.edubbaIntellectualGrowth}% (전문성 축적과 응용력)
-- 신성 도량형 닌단(NINDAN) 수리 균형 배분율: ${result.sacredNindanMeasureBalance}% (공평무사한 자원과 기회 배분)
-- 성좌 관측(MUL) 우주 천문 리듬 일치율: ${result.astralMulConstellationResonance}% (하늘의 시간표와의 공명)
-- 현행 서기 지위: ${result.activeScribeRank.rankNameKo} (${result.activeScribeRank.rankSumerian})
-- 관장 천문 영역: ${result.activeScribeRank.astralDomain} [속성: ${result.activeScribeRank.celestialAttribute}]
-- 핵심 쐐기문자 명제: **[${result.primaryCuneiformVerdict.sumerianWord}]** - ${result.primaryCuneiformVerdict.meaningKo}
-  → 서기의 지침: ${result.primaryCuneiformVerdict.sacredGuidance}
-- 청금석 서판 신탁: 《${result.lapislazuliDecree.tabletSection}》
-  → 고대 찬가: "${result.lapislazuliDecree.wisdomVerse}"`;
+  const composite = Math.round(
+    (result.reedStylusPrecisionIndex + result.lapislazuliTabletClarityScore + result.edubbaIntellectualGrowth + result.sacredNindanMeasureBalance + result.astralMulConstellationResonance) / 5
+  );
+  const lines = [
+    `[📐 수메르 서기의 수호신 《니사바(Nisaba)》 청금석 서판 갈대첨필 천문수리 계측 리포트]`,
+    `- 연산 시각: ${result.calculatedAtKst} | 엔진 버전: ${result.engineVersion}`,
+    `- 서기 수리 국면: ${describeNisabaStage(composite)}`,
+    `- 현행 서기 지위: ${result.activeScribeRank.rankNameKo} (${result.activeScribeRank.rankSumerian})`,
+    `- 관장 천문 영역: ${result.activeScribeRank.astralDomain} [속성: ${result.activeScribeRank.celestialAttribute}]`,
+    `- 핵심 쐐기문자 명제: **[${result.primaryCuneiformVerdict.sumerianWord}]** - ${result.primaryCuneiformVerdict.meaningKo}`,
+    `  → 서기의 지침: ${result.primaryCuneiformVerdict.sacredGuidance}`,
+    `- 청금석 서판 신탁: 《${result.lapislazuliDecree.tabletSection}》`,
+    `  → 고대 찬가: "${result.lapislazuliDecree.wisdomVerse}"`,
+  ];
+  if (result.nisabaSynthesisMatrix) {
+    lines.push(
+      `- 교차 매트릭스 [핵심 긴장: ${result.nisabaSynthesisMatrix.dominantTension} | 조율 상태: ${result.nisabaSynthesisMatrix.alignmentState}]`,
+      `- 통합 실천: ${result.nisabaSynthesisMatrix.integratedAction}`,
+    );
+  }
+  return lines.join('\n');
 }
