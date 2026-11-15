@@ -23,7 +23,17 @@ import {
   type NatalChartResult
 } from '../astrologyAnalysis';
 
-export const MEDICAL_BIO_MATRIX_VERSION = 'LUCKEY-BIO-v1.0.0';
+export const MEDICAL_BIO_MATRIX_VERSION = 'LUCKEY-BIO-v2.0.0';
+
+function formatBioMatrixKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
 
 export interface OrganVulnerability {
   element: FiveElement;
@@ -46,6 +56,7 @@ export interface AstroMedicalFocus {
 export interface MedicalBioMatrixResult {
   engineVersion: string;
   calculatedAtIso: string;
+  calculatedAtKst: string;
   
   // 한난조습 기후 체질 (0~100)
   temperament: {
@@ -82,6 +93,11 @@ export interface MedicalBioMatrixResult {
   };
 
   summary: string;
+  bioMatrixSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
 }
 
 // 12별자리 메디컬 신체 부위 매핑
@@ -152,6 +168,7 @@ export function calculateMedicalBioMatrix(params?: {
   saju?: SajuAnalysisResult | null;
   natalChart?: NatalChartResult | null;
   targetDate?: Date;
+  question?: string;
 }): MedicalBioMatrixResult {
   const now = params?.targetDate || new Date();
   const saju = params?.saju || calculateDetailedSaju(params?.profile || null);
@@ -301,9 +318,18 @@ export function calculateMedicalBioMatrix(params?: {
     `취약 1순위 장부: ${primaryWeakness.organs}(${primaryWeakness.status}). ` +
     `메디컬 점성술: ${sunFocus.zodiacSign} 관할 [${sunFocus.governedBodyPart}]. 생체 활력 지수: ${vitalityScore}점 (${fatigueRiskLevel}).`;
 
+  const calculatedAtKst = formatBioMatrixKstTimestamp(now);
+  const q = (params?.question || '').trim();
+  const bioMatrixSynthesisMatrix = {
+    dominantTension: `${primaryConstitution} ↔ ${primaryWeakness.organs}(${primaryWeakness.status})`,
+    alignmentState: `태양궁 ${sunFocus.zodiacSign}(${sunFocus.governedBodyPart}) · 달궁 ${moonFocus.zodiacSign}`,
+    integratedAction: `${prescriptions.sleepAndRecoveryRitual}${q ? ` [질문 맥락: ${q}]` : ''}`,
+  };
+
   return {
     engineVersion: MEDICAL_BIO_MATRIX_VERSION,
     calculatedAtIso: now.toISOString(),
+    calculatedAtKst,
     temperament: {
       coldScore,
       heatScore,
@@ -322,7 +348,8 @@ export function calculateMedicalBioMatrix(params?: {
     vitalityScore,
     fatigueRiskLevel,
     prescriptions,
-    summary
+    summary,
+    bioMatrixSynthesisMatrix,
   };
 }
 
@@ -330,18 +357,27 @@ export function calculateMedicalBioMatrix(params?: {
  * 프롬프트 주입용 포맷터
  */
 export function formatMedicalBioMatrixPrompt(res: MedicalBioMatrixResult): string {
-  return `[오행 한난조습 & 메디컬 점성술 바이오 매트릭스 리포트 (엔진: ${res.engineVersion})]
-- 체질 기후 진단: **${res.temperament.primaryConstitution}** (한기 ${res.temperament.coldScore}점 / 열기 ${res.temperament.heatScore}점 / 건조 ${res.temperament.dryScore}점 / 습기 ${res.temperament.dampScore}점)
-  • 체질 특성: ${res.temperament.constitutionDesc}
-- 취약 장부(五臟六腑): **${res.primaryWeakness.organs} (${res.primaryWeakness.hanja})** - 상태: [${res.primaryWeakness.status}]
-  • 경락: ${res.primaryWeakness.meridians} | 주의 증상: ${res.primaryWeakness.symptoms}
-- 메디컬 점성술 장기:
-  • 태양궁(${res.astroMedical.sunFocus.zodiacSign}): ${res.astroMedical.sunFocus.governedBodyPart} (치유: ${res.astroMedical.sunFocus.healingGuidance})
-  • 달궁(${res.astroMedical.moonFocus.zodiacSign}): ${res.astroMedical.moonFocus.governedBodyPart} (${res.astroMedical.stressIndicator})
-- 생체 활력 지수: **${res.vitalityScore}점** (피로 위험도: ${res.fatigueRiskLevel})
-- 맞춤 웰니스 처방:
-  • 추천 음식/차: ${res.prescriptions.recommendedFoods.join(', ')} / ${res.prescriptions.herbalTeas.join(', ')}
-  • 피할 음식: ${res.prescriptions.foodsToAvoid.join(', ')}
-  • 수면 및 회복 리추얼: ${res.prescriptions.sleepAndRecoveryRitual}
-※ 루시 지침: 질병을 의학적으로 진단하지 마십시오. 사주 한난조습과 메디컬 점성술의 오랜 지혜를 바탕으로 사용자의 오늘의 컨디션과 생체 피로도를 따뜻하게 위로하고, 실천 가능한 영양·수면 웰니스 가이드를 다정하게 조언해 주세요.`;
+  const lines = [
+    `[오행 한난조습 & 메디컬 점성술 바이오 매트릭스 리포트 (엔진: ${res.engineVersion} | ${res.calculatedAtKst})]`,
+    `- 체질 기후 진단: **${res.temperament.primaryConstitution}**`,
+    `  • 체질 특성: ${res.temperament.constitutionDesc}`,
+    `- 취약 장부(五臟六腑): **${res.primaryWeakness.organs} (${res.primaryWeakness.hanja})** - 상태: [${res.primaryWeakness.status}]`,
+    `  • 경락: ${res.primaryWeakness.meridians} | 주의 증상: ${res.primaryWeakness.symptoms}`,
+    `- 메디컬 점성술 장기:`,
+    `  • 태양궁(${res.astroMedical.sunFocus.zodiacSign}): ${res.astroMedical.sunFocus.governedBodyPart} (치유: ${res.astroMedical.sunFocus.healingGuidance})`,
+    `  • 달궁(${res.astroMedical.moonFocus.zodiacSign}): ${res.astroMedical.moonFocus.governedBodyPart} (${res.astroMedical.stressIndicator})`,
+    `- 피로 리스크 흐름: ${res.fatigueRiskLevel}`,
+    `- 맞춤 웰니스 처방:`,
+    `  • 추천 음식/차: ${res.prescriptions.recommendedFoods.join(', ')} / ${res.prescriptions.herbalTeas.join(', ')}`,
+    `  • 피할 음식: ${res.prescriptions.foodsToAvoid.join(', ')}`,
+    `  • 수면 및 회복 리추얼: ${res.prescriptions.sleepAndRecoveryRitual}`,
+  ];
+  if (res.bioMatrixSynthesisMatrix) {
+    lines.push(
+      `- 교차 매트릭스: [핵심 긴장: ${res.bioMatrixSynthesisMatrix.dominantTension} | 조율 상태: ${res.bioMatrixSynthesisMatrix.alignmentState}]`,
+      `  • 통합 실천: ${res.bioMatrixSynthesisMatrix.integratedAction}`,
+    );
+  }
+  lines.push(`※ 루시 지침: 질병을 의학적으로 진단하지 마십시오. 사주 한난조습과 메디컬 점성술의 오랜 지혜를 바탕으로 사용자의 오늘의 컨디션과 생체 피로도를 따뜻하게 위로하고, 실천 가능한 영양·수면 웰니스 가이드를 다정하게 조언해 주세요.`);
+  return lines.join('\n');
 }
