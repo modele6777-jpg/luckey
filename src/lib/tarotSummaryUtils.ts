@@ -169,6 +169,44 @@ function splitSummarySentences(text: string): string[] {
     .filter((s) => s.length >= 8);
 }
 
+/** 문장이 질문자의 심리·상황을 직접 말하는지. 카드 그림 묘사와 구분하는 기준이다. */
+function hasQuerentStateSignal(sentence: string): boolean {
+  return /당신|질문자|[가-힣]{2,5}님|마음|심리|기분|감정|의지|상태|관계|상황|고민|부담|불안|피로|기대|결정|선택/.test(sentence);
+}
+
+/** "배경에는", "그림 속 인물이"처럼 카드 그림의 틀을 여는 말. */
+const CARD_SCENE_LEAD = /^(?:그\s*(?:뒤|너머|위|아래|옆|앞)|배경|전경|풍경|화면\s*(?:속|안|위|한가운데)|(?:카드|그림|도상|일러스트)\s*(?:속|안|위|아래|배경|한가운데|에는|엔|에서는))/;
+
+/** 그림 속 대상이 서 있다·놓여 있다·흐르고 있다처럼 도상을 서술하는 서술어. */
+const CARD_SCENE_VERB = /(?:흐르고\s*있|흐릅니다|그려져\s*있|그려진|새겨져|묘사되어|묘사된|보이고\s*있|보입니다|보이지요|서\s*있|놓여\s*있|들고\s*있|쥐고\s*있|잡고\s*있|비추고\s*있|펼쳐져\s*있|감싸고\s*있|솟아\s*있|매달려\s*있|누워\s*있|깔려\s*있|떠\s*있|머물고\s*있|피어\s*있|열려\s*있|바라보고\s*있|향하고\s*있|붓고\s*있|쏟고\s*있|던지고\s*있)/;
+
+/** 그림에만 나오는 대상(배경·소품·등장인물). */
+const CARD_SCENE_SUBJECT = /(?:강물|물결|시냇물|바다|호수|연못|구름|들판|숲|촛불|등불|왕관|성배|지팡이|펜타클|동전|두루마리|사자|뱀|천사|여인|기사|여왕|대천사|인물|나무|언덕|다리|항아리|탑|성\s*문)/;
+
+/**
+ * 카드 도상·배경 묘사만 하는 문장인지 판별한다.
+ * "배경에는 잔잔한 강물이 흐르고 있지요." 같은 문장이 현재 에너지 요약으로 채택되던 결함의 방어선이다.
+ */
+export function isCardSceneOnly(sentence: string): boolean {
+  const s = String(sentence || '').replace(/\*+/g, '').trim();
+  if (!s) return false;
+  if (hasQuerentStateSignal(s)) return false;
+  if (/그려져|그려진|새겨져|묘사되어|묘사된/.test(s)) return true;
+  if (CARD_SCENE_LEAD.test(s) && CARD_SCENE_VERB.test(s)) return true;
+  if (CARD_SCENE_SUBJECT.test(s) && CARD_SCENE_VERB.test(s)) return true;
+  return false;
+}
+
+/** 현재 에너지 요약으로 쓰기에는 의미가 모자란 짧은 조각인지 판별한다. */
+const ENERGY_MIN_LENGTH = 25;
+
+function isThinEnergyFragment(sentence: string): boolean {
+  const core = String(sentence || '').replace(/\s+/g, ' ').replace(/[.!?。…\s]+$/g, '').trim();
+  if (core.length >= ENERGY_MIN_LENGTH) return false;
+  // 짧아도 질문자의 심리·상황을 직접 말하는 문장은 남긴다.
+  return !/당신|질문자|[가-힣]{2,5}님|마음|심리|기분|감정|지금|현재|오늘|에너지|상태|관계|상황|고민/.test(core);
+}
+
 function isPictureOnly(sentence: string): boolean {
   const s = sentence.trim();
   const aboutQuerent = /당신|질문자|[가-힣]{2,5}님|마음|지금|현재|오늘|에너지|상태|부담|준비|관계|상황/.test(s);
@@ -176,6 +214,7 @@ function isPictureOnly(sentence: string): boolean {
     && /카드|도상|인물|성배|지팡이|검|펜타클|그림|대칭|모습/.test(s);
   if (definesPicture && !aboutQuerent) return true;
   if (/^(?:카드\s*속|그림\s*속|도상\s*속)/.test(s) && /(?:의미합니다|상징합니다|뜻합니다)\s*\.?$/.test(s)) return true;
+  if (isCardSceneOnly(s)) return true;
   return false;
 }
 
@@ -191,7 +230,8 @@ function isCautionTeaser(sentence: string): boolean {
 }
 
 function hasConcreteAction(sentence: string): boolean {
-  return /(?:보내|적어|적고|전하|전해|말해|말하|물어|확인|점검|비교|정리|정돈|마시|음미|걸어|연락|작성|내려놓|나눠|기록|인사|골라|멈춰|멈추|씻|환기|선언|매듭|메시지|문자|전화|메모|심호흡|스트레칭|공고|지원서|우선순위|조건을\s*확인|한\s*줄로)/.test(sentence);
+  // "질문자"는 "문자"를 품고 있어, 호칭만으로 행동 문장으로 오인되던 것을 막는다.
+  return /(?:보내|적어|적고|전하|전해|말해|말하|물어|확인|점검|비교|정리|정돈|마시|음미|걸어|연락|작성|내려놓|나눠|기록|인사|골라|멈춰|멈추|씻|환기|선언|매듭|메시지|(?<!질)문자|전화|메모|심호흡|스트레칭|공고|지원서|우선순위|조건을\s*확인|한\s*줄로)/.test(sentence);
 }
 
 /** "이 작은 행동", "첫 단추"처럼 행동을 가리키기만 하고 무엇을 할지는 없는 문장. */
@@ -247,6 +287,7 @@ function classifySummarySentence(sentence: string, role: SummaryRole): 'good' | 
   if (role === 'decision' && isDirectionTitleStub(s)) return 'skip';
   if (GENERIC_SUMMARY.test(s) || isPictureOnly(s)) return 'skip';
   if (isCautionTeaser(s) || isDanglingAction(s)) return 'skip';
+  if (role === 'energy' && isThinEnergyFragment(s)) return 'skip';
   if (role === 'energy' && /(?:하세요|보세요|십시오|마세요|해야\s*합니다|할\s*때입니다|될\s*것입니다|할\s*것입니다|전환점에\s*서\s*있습니다)\s*[.!?]?$/u.test(s)) return 'skip';
   if (role === 'action' && !hasConcreteAction(s)) return 'skip';
   return 'good';
@@ -291,7 +332,7 @@ function concreteCardAction(card: any): string {
 
 export function groundTarotSummaryParts(
   cards: any[] | undefined,
-  _concern?: string,
+  concern?: string,
 ): { energy: string; decision: string; action: string } {
   const list = Array.isArray(cards) ? cards.filter(Boolean) : [];
   const seen = new Set<string>();
@@ -316,9 +357,14 @@ export function groundTarotSummaryParts(
   const details = getTarotCardDetails(lead);
   const kws = keywordPhrase(lead);
   const particle = hasKoreanJongseong(name) ? '은' : '는';
+  // 본문에 쓸 문장이 없을 때 쓰는 대체 요약에도 질문 맥락을 붙여, 카드 설명만 남지 않게 한다.
+  const concernText = String(concern || '').replace(/\s+/g, ' ').trim();
+  const concernLead = concernText
+    ? `「${concernText.length > 40 ? `${concernText.slice(0, 40)}…` : concernText}」를 두고 `
+    : '';
   const energy = reversed
-    ? finishKoreanSentence(getTarotReversedData(lead).meaning || `지금 당신의 상태는 ${name} 역방향의 ${kws}처럼 흐름이 어긋나 있습니다`)
-    : finishKoreanSentence(`지금 당신의 에너지는 ${name}의 ${kws} 흐름 위에 있습니다`);
+    ? finishKoreanSentence(`${concernLead}${getTarotReversedData(lead).meaning || `지금 당신의 상태는 ${name} 역방향의 ${kws}처럼 흐름이 어긋나 있습니다`}`)
+    : finishKoreanSentence(`${concernLead}지금 당신의 에너지는 ${name}의 ${kws} 흐름 위에 있습니다`);
 
   const cautionRaw = (reversed ? getTarotCardCaution(lead) : details.shadowWarning || '').replace(/[.!?]\s*$/g, '').trim();
   const direction = reversed
@@ -364,10 +410,12 @@ export function extractConciseSummary(text: string, cardContext?: any): string[]
   // 인사말, 호칭, 상담실 메타 서두 제거 헬퍼
   const stripGreetingFromText = (s: string): string => {
     let str = s.trim();
-    str = str.replace(/^(?:(?:친애하는\s*)?(?:질문자|내담자)님[,\s~!]*)?(?:(?:어서\s*오세요|안녕하세요|반갑습니다|안녕하십니까)[,\s~!]*)+/i, '');
-    str = str.replace(/^(?:(?:어서\s*오세요|안녕하세요|반갑습니다|안녕하십니까)[,\s~!]*)?(?:(?:친애하는\s*)?(?:질문자|내담자)님[,\s~!]*)*/i, '');
+    str = str.replace(/^(?:(?:친애하는\s*)?(?:질문자|내담자)님(?=[,\s~!]|$)[,\s~!]*)?(?:(?:어서\s*오세요|안녕하세요|반갑습니다|안녕하십니까)[,\s~!]*)+/i, '');
+    str = str.replace(/^(?:(?:어서\s*오세요|안녕하세요|반갑습니다|안녕하십니까)[,\s~!]*)?(?:(?:친애하는\s*)?(?:질문자|내담자)님(?=[,\s~!]|$)[,\s~!]*)*/i, '');
     str = str.replace(/^(?:카드를\s*(?:가만히|조용히|한\s*장씩)?\s*마주하니|촛불을\s*켜고|타로\s*상담실에\s*오신\s*것을\s*환영합니다)[,\s~!.]*/i, '');
     str = str.replace(/^(?:다음은|오늘의|타로\s*리딩의)?\s*(?:핵심\s*3줄\s*요약|3줄\s*요약|핵심\s*요약)(?:입니다|을\s*전해드립니다|:|\.)\s*/i, '');
+    // 호칭만 떼어 내고 조사가 남은 문장("의 마음은 …")을 정리한다.
+    str = str.replace(/^(?:의|은|는|을|를|과|와|께서)\s+/, '');
     return str.trim();
   };
 
@@ -462,6 +510,10 @@ export function extractConciseSummary(text: string, cardContext?: any): string[]
       .map((l) => cleanSentence(l))
       .filter((l) => l.length > 5 && !l.startsWith('http') && !isGreetingOrMeta(l));
 
+    // 요약 블록에 카드 그림 묘사·버롬 문장이 있어도 그대로 채택하지 않고 본문에서 다시 고른다.
+    const rejectedBlockLines = new Set<string>();
+    const acceptEnergyLine = (cleaned: string): boolean => classifySummarySentence(cleaned, 'energy') === 'good';
+
     for (const line of rawLines) {
       const bracketMatch = line.match(/^\[([^\]]+)\]/);
       const rowTag = bracketMatch ? bracketMatch[1].trim() : '';
@@ -472,7 +524,11 @@ export function extractConciseSummary(text: string, cardContext?: any): string[]
         /\[(?:현재\s*에너지|현재\s*상황|내면\s*에너지|상황\s*진단|현재|에너지|상황)\]/i.test(line) ||
         (!p1Current && /^(?:현재\s*에너지|현재\s*상황|내면|에너지|상황\s*진단)/i.test(line))
       ) {
-        if (!p1Current) { p1Current = cleaned; tag1 = rowTag; continue; }
+        if (!p1Current) {
+          if (acceptEnergyLine(cleaned)) { p1Current = cleaned; tag1 = rowTag; }
+          else rejectedBlockLines.add(cleaned);
+          continue;
+        }
       }
       if (
         /\[(?:방향과\s*결단|결단\s*(?:및|&)?\s*방향(?:성)?|방향성|결단|선택|판정|미래\s*흐름|전환점)\]/i.test(line) ||
@@ -488,8 +544,8 @@ export function extractConciseSummary(text: string, cardContext?: any): string[]
       }
 
       if (!p1Current) {
-        p1Current = cleaned;
-        tag1 = rowTag;
+        if (acceptEnergyLine(cleaned)) { p1Current = cleaned; tag1 = rowTag; }
+        else rejectedBlockLines.add(cleaned);
       } else if (!p1Decision) {
         p1Decision = cleaned;
         tag2 = rowTag;
@@ -502,9 +558,14 @@ export function extractConciseSummary(text: string, cardContext?: any): string[]
     // Fallback if tags weren't used in summary block: assign in order
     const remaining = rawLines
       .map(stripGreetingFromText)
-      .filter((l) => l.length >= 8 && !isGreetingOrMeta(l) && l !== p1Current && l !== p1Decision && l !== p1Action);
+      .filter((l) => l.length >= 8 && !isGreetingOrMeta(l) && !rejectedBlockLines.has(l) && !isCardSceneOnly(l)
+        && l !== p1Current && l !== p1Decision && l !== p1Action);
 
-    if (!p1Current && remaining.length > 0) p1Current = remaining.shift() || '';
+    while (!p1Current && remaining.length > 0) {
+      const candidate = remaining.shift() || '';
+      if (acceptEnergyLine(candidate)) { p1Current = candidate; }
+      else rejectedBlockLines.add(candidate);
+    }
     if (!p1Decision && remaining.length > 0) p1Decision = remaining.shift() || '';
     if (!p1Action && remaining.length > 0) p1Action = remaining.shift() || '';
   }
@@ -634,11 +695,19 @@ export function extractConciseSummary(text: string, cardContext?: any): string[]
     const fromSection = [...new Set(sectionLines.flatMap(expand))].filter((s) => !fromSummary.includes(s));
     const fromPool = pool.filter((line) => classifySummarySentence(line, role) === 'good' && !used.has(line) && !fromSummary.includes(line) && !fromSection.includes(line));
     const isRelevant = (line: string) => !terms.length || relevance(line) > 0 || /\b(?:YES|NO)\b/i.test(line);
+    // 현재 에너지는 짧은 조각보다 마음·상황을 담은 문장을 우선한다.
+    const energySubstance = (line: string) => {
+      const len = line.replace(/\s+/g, ' ').trim().length;
+      if (len >= 40 && len <= 150) return 3;
+      if (len >= ENERGY_MIN_LENGTH) return 1;
+      return -3;
+    };
     const score = (line: string) =>
       relevance(line) * 5
       + (roleRe.test(line) ? 3 : 0)
       + (role === 'decision' && hasNamedCaution(line) ? 4 : 0)
-      + (role === 'action' && hasConcreteAction(line) ? 2 : 0);
+      + (role === 'action' && hasConcreteAction(line) ? 2 : 0)
+      + (role === 'energy' ? energySubstance(line) : 0);
     const best = (lines: string[]) => [...lines].sort((a, b) => score(b) - score(a) || a.length - b.length)[0] || '';
     const tier = (lines: string[]) => {
       const relevant = lines.filter(isRelevant);
@@ -663,6 +732,7 @@ export function extractConciseSummary(text: string, cardContext?: any): string[]
   const subject = concern ? `「${concern.length > 80 ? concern.slice(0, 80) + '…' : concern}」` : '질문한 주제';
   const current = pick([p1Current], secCurrent, 'energy', /현재|상황|지금|상태|원인|마음|에너지|부담|준비/)
     || salvageRoleText(grounded.energy, 'energy')
+    || grounded.energy
     || `${subject}에 관한 구체적인 상황 진단이 리딩에 충분히 제시되지 않았습니다.`;
   const decision = pick([p1Decision], [secDecision], 'decision', /최종|판정|YES|NO|선택|결단|방향|가능|주의|위험|비교|확인|나아가|한\s*걸음/i)
     || salvageRoleText(grounded.decision, 'decision')
@@ -701,8 +771,10 @@ export function extractOracleConciseSummary(params: OracleConciseSummaryParams):
   const isMiracle = oracleMode === 'miracle';
 
   const clean = (s: string) => {
+    // "- [방향과 결단] …"처럼 목록 기호 뒤에 태그가 오는 경우까지 태그를 떼어 낸다.
     return s
       .replace(/[\*\_]/g, '')
+      .replace(/^[-*•·\d.]+\s*/, '')
       .replace(/^\[[^\]]+\]\s*/, '')
       .replace(/^[-*•·\d.]+\s*/, '')
       .trim();
@@ -724,24 +796,6 @@ export function extractOracleConciseSummary(params: OracleConciseSummaryParams):
     if (!/[.!?]$/.test(t)) t += '.';
     return `[${tag}] ${t}`;
   };
-
-  // 1. Check if the message contains an explicit [핵심 3줄 요약] block
-  const summaryBlockMatch = message.match(
-    /(?:\[핵심\s*(?:3줄\s*|세줄\s*)?요약\]|###\s*.*핵심\s*(?:3줄\s*|세줄\s*)?요약|###\s*.*핵심\s*요약|\[핵심\s*요약\]|Quick\s*Summary)([\s\S]*?)(?:$|###)/i
-  );
-  if (summaryBlockMatch) {
-    const rawLines = summaryBlockMatch[1]
-      .split('\n')
-      .map(clean)
-      .filter((l) => l.length > 5 && !l.startsWith('http'));
-    if (rawLines.length >= 3) {
-      return [
-        fmt('현재 에너지', rawLines[0]),
-        fmt('방향과 결단', rawLines[1]),
-        fmt('실천 처방', rawLines[2]),
-      ];
-    }
-  }
 
   // 2. Extract Card details and Saju elements for high-detail, rich fusion synthesis
   const c1 = cards[0];
@@ -791,6 +845,32 @@ export function extractOracleConciseSummary(params: OracleConciseSummaryParams):
     line3 = `기적수업의 가르침처럼 "나는 이것 대신 평화를 보기를 선택한다"고 선언하며 마음의 거룩한 평화를 회복해 보세요.`;
   } else {
     line3 = `오늘 10분 안에 끝낼 수 있는 가장 작은 핵심 과제 한 가지를 정해 미루지 말고 지금 바로 행동으로 옮겨 보세요.`;
+  }
+
+  // 1. [핵심 3줄 요약] 블록이 있으면 그 문장을 먼저 쓰되, 카드 그림 묘사·짧은 조각이면 카드·사주 기반 문장으로 대신한다.
+  const summaryBlockMatch = message.match(
+    /(?:\[핵심\s*(?:3줄\s*|세줄\s*)?요약\]|###\s*.*핵심\s*(?:3줄\s*|세줄\s*)?요약|###\s*.*핵심\s*요약|\[핵심\s*요약\]|Quick\s*Summary)([\s\S]*?)(?:$|###)/i
+  );
+  if (summaryBlockMatch) {
+    const rawLines = summaryBlockMatch[1]
+      .split('\n')
+      .map(clean)
+      .filter((l) => l.length > 5 && !l.startsWith('http'));
+    if (rawLines.length >= 3) {
+      const blockEnergy = rawLines[0];
+      const energyUsable = !!blockEnergy && classifySummarySentence(blockEnergy, 'energy') === 'good';
+      // "과감한 결단"처럼 제목만 있는 문장은 결단 요약으로 쓰지 않고 카드가 가리키는 방향으로 대신한다.
+      const blockDecision = rawLines[1];
+      const decisionUsable = !!blockDecision
+        && !isDirectionTitleStub(blockDecision)
+        && !isCardSceneOnly(blockDecision);
+      const groundedDecision = decisionUsable ? '' : groundTarotSummaryParts(cards).decision;
+      return [
+        fmt('현재 에너지', energyUsable ? blockEnergy : line1),
+        fmt('방향과 결단', decisionUsable ? blockDecision : (groundedDecision || line2)),
+        fmt('실천 처방', rawLines[2]),
+      ];
+    }
   }
 
   return [
