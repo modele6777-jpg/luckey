@@ -3737,10 +3737,14 @@ test('Roman Janus Engine: calculates qualitative threshold balance and active ga
   assert(rep.practiceGuidance.length > 0);
   assert(rep.ritualAction.length > 0);
   assert(rep.boundaryNotice.includes('예측이 아닙니다'));
+  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(rep.janusSynthesisMatrix?.integratedAction));
   const prompt = formatRomanJanusPrompt(rep);
   assert(prompt.includes('고대 로마 야누스(Janus) 2대 얼굴 시공간 문턱 & 새출발 실측 데이터'));
   assert(prompt.includes(rep.activeJanusGateway.gatewayNameKo));
+  assert(prompt.includes('교차 매트릭스'));
   assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
 });
 
 test('Baopuzi Ge Hong Nine Turn Elixir Engine: calculates alchemy rank and vitality', () => {
@@ -4010,9 +4014,14 @@ test('Roman Stoic Prohairesis Dichotomy Engine: calculates internal control focu
   assert(rep.amorFatiScore >= 0 && rep.amorFatiScore <= 100);
   assert(rep.apatheiaInnerPeaceScore >= 0 && rep.apatheiaInnerPeaceScore <= 100);
   assert(rep.dominantVirtue.nameKo.length > 0);
+  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(rep.stoicSynthesisMatrix?.integratedAction));
   const prompt = formatRomanStoicProhairesisPrompt(rep);
   assert(prompt.includes('스토아학파'));
   assert(prompt.includes(rep.dominantVirtue.nameKo));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
 });
 
 test('Patanjali Ashtanga Yoga Sutra Engine: calculates citta vritti nirodha and klesha purification', () => {
@@ -4202,9 +4211,14 @@ test('Rosicrucian Chymical Wedding Engine: calculates seven days transmutation, 
   assert(rep.sevenDaysTransmutationRate >= 0 && rep.sevenDaysTransmutationRate <= 100);
   assert(rep.phoenixRebirthVibration >= 0 && rep.phoenixRebirthVibration <= 100);
   assert(rep.dominantStage.dayName.length > 0);
+  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(rep.rosicrucianSynthesisMatrix?.integratedAction));
   const prompt = formatRosicrucianChymicalWeddingPrompt(rep);
   assert(prompt.includes('장미십자회 《화학적 결혼》 7일 연금술 영혼 승화 실측 데이터'));
   assert(prompt.includes(rep.dominantStage.dayName));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
 });
 
 test('Aztec Tonalamatl Sacred Calendar Engine: calculates twenty day signs, tonalli solar vitality and ollin harmony', () => {

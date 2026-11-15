@@ -7,7 +7,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const ROMAN_JANUS_ENGINE_VERSION = 'LUCKEY-ROMAN-JANUS-v1.1.0';
+export const ROMAN_JANUS_ENGINE_VERSION = 'LUCKEY-ROMAN-JANUS-v2.0.0';
 
 export type JanusQuestionFocus = 'relationship' | 'decision' | 'healing' | 'reflection';
 export type JanusLiminalPhase = 'THRESHOLD_CLOSURE' | 'PASSAGE_OPENING' | 'BOUNDARY_GUARD' | 'COVENANT_BRIDGE';
@@ -20,6 +20,7 @@ export interface RomanJanusParams {
 
 export interface RomanJanusReport {
   engineVersion: string;
+  calculatedAtKst: string;
   questionFocus: JanusQuestionFocus;
   pastClosureScore: number; // 내부 정렬용 (프롬프트 비노출)
   futureReadinessScore: number; // 내부 정렬용 (프롬프트 비노출)
@@ -41,6 +42,31 @@ export interface RomanJanusReport {
   reflectionFocus: string;
   counselNote: string;
   boundaryNotice: string;
+  janusSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
+}
+
+function formatJanusKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
+
+function describeJanusStage(score: number, doorStatus: 'OPEN' | 'CLOSED'): string {
+  if (doorStatus === 'OPEN' && score >= 75) {
+    return '개방 전환기(Porta Patulcius) — 지나온 경험이 정돈되어 새 문턱 너머로 힘차게 발걸음을 옮길 수 있는 시기';
+  }
+  if (doorStatus === 'OPEN') {
+    return '여명 시동기(Porta Matutina) — 미련을 가볍게 털어내고 작지만 분명한 첫 실행을 열어야 하는 시기';
+  }
+  return '성문 수호기(Porta Clusivius) — 외연 확장보다 내면의 경계와 평화를 먼저 단단히 지키는 정비기';
 }
 
 const JANUS_GATEWAYS = [
@@ -261,9 +287,16 @@ export function calculateRomanJanus(params?: RomanJanusParams): RomanJanusReport
       : '신전 문 닫힘(CLOSED) — 외연 확장보다 내실 정비·경계 보호·평화 정착을 우선하는 흐름';
 
   const guidance = buildJanusGuidance(activeGateway.gatewayNumber, questionFocus);
+  const calculatedAtKst = formatJanusKstTimestamp(now);
+  const janusSynthesisMatrix = {
+    dominantTension: `${activeGateway.gatewayNameKo} ↔ 신전 문(${doorStatus})`,
+    alignmentState: describeJanusStage(thresholdBalance, doorStatus),
+    integratedAction: `${guidance.practiceGuidance}${question.trim() ? ` [질문 맥락: ${question.trim()}]` : ''}`,
+  };
 
   return {
     engineVersion: ROMAN_JANUS_ENGINE_VERSION,
+    calculatedAtKst,
     questionFocus,
     pastClosureScore: pastClosure,
     futureReadinessScore: futureReadiness,
@@ -285,21 +318,31 @@ export function calculateRomanJanus(params?: RomanJanusParams): RomanJanusReport
     reflectionFocus: guidance.reflectionFocus,
     counselNote: guidance.counselNote,
     boundaryNotice: '이는 로마 야누스 문턱 상징에 기반한 전환기 성찰 참고일 뿐, 개인 점수·심리 진단·미래 예측이 아닙니다.',
+    janusSynthesisMatrix,
   };
 }
 
 export function formatRomanJanusPrompt(report: RomanJanusReport): string {
-  return `[고대 로마 야누스(Janus) 2대 얼굴 시공간 문턱 & 새출발 실측 데이터]
-- 엔진 버전: ${report.engineVersion} | 질문 맥락: ${report.questionFocus} | 임계 국면: ${report.liminalPhase}
-- 뒤를 보는 얼굴(과거 성찰): ${report.retrospectInsight}
-- 앞을 보는 얼굴(전환 방향): ${report.prospectMomentum}
-- 현재 활성 문턱: ${report.activeJanusGateway.gatewayNumber}번 [${report.activeJanusGateway.gatewayNameKo}] (${report.activeJanusGateway.gatewayNameLa})
-  * 상징: ${report.activeJanusGateway.portalSymbol}
-  * 핵심 행동: ${report.activeJanusGateway.actionKey}
-- 야누스 열쇠 처방: ${report.sacredKeyPrescription}
-- 실천 조언: ${report.practiceGuidance}
-- 일상 의례: ${report.ritualAction}
-- 성찰 질문: ${report.reflectionFocus}
-- 조언 요약: ${report.counselNote}
-- 경계 안내: ${report.boundaryNotice}`;
+  const lines = [
+    `[고대 로마 야누스(Janus) 2대 얼굴 시공간 문턱 & 새출발 실측 데이터]`,
+    `- 연산 시각: ${report.calculatedAtKst} | 엔진 버전: ${report.engineVersion} | 질문 맥락: ${report.questionFocus} | 임계 국면: ${report.liminalPhase}`,
+    `- 뒤를 보는 얼굴(과거 성찰): ${report.retrospectInsight}`,
+    `- 앞을 보는 얼굴(전환 방향): ${report.prospectMomentum}`,
+    `- 현재 활성 문턱: ${report.activeJanusGateway.gatewayNumber}번 [${report.activeJanusGateway.gatewayNameKo}] (${report.activeJanusGateway.gatewayNameLa})`,
+    `  * 상징: ${report.activeJanusGateway.portalSymbol}`,
+    `  * 핵심 행동: ${report.activeJanusGateway.actionKey}`,
+    `- 야누스 열쇠 처방: ${report.sacredKeyPrescription}`,
+    `- 실천 조언: ${report.practiceGuidance}`,
+    `- 일상 의례: ${report.ritualAction}`,
+    `- 성찰 질문: ${report.reflectionFocus}`,
+    `- 조언 요약: ${report.counselNote}`,
+    `- 경계 안내: ${report.boundaryNotice}`,
+  ];
+  if (report.janusSynthesisMatrix) {
+    lines.push(
+      `- 교차 매트릭스 [핵심 긴장: ${report.janusSynthesisMatrix.dominantTension} | 조율 상태: ${report.janusSynthesisMatrix.alignmentState}]`,
+      `- 통합 실천: ${report.janusSynthesisMatrix.integratedAction}`,
+    );
+  }
+  return lines.join('\n');
 }
