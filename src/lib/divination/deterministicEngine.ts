@@ -1997,7 +1997,7 @@ try {
   // 73. 도교 자미두수 화기(化忌)·살성 정화 & 전화위복 해원 엔진
   const ziweiHuaJiResult = calculateSupplement('ziweiHuaJiResult', () => ((() => {
     try {
-      return calculateZiweiHuaJiTransformation(profile, now);
+      return calculateZiweiHuaJiTransformation(profile, now, question);
     } catch (_) {
       return null;
     }
@@ -2114,7 +2114,7 @@ try {
   // 86. 고대 조로아스터교 아샤(Asha) 신성 우주 질서 & 3대 선행 진실 엔진
   const zoroastrianAshaResult = calculateSupplement('zoroastrianAshaResult', () => ((() => {
     try {
-      return calculateZoroastrianAshaTruth({ profile, contextText: question });
+      return calculateZoroastrianAshaTruth({ profile, contextText: question, now });
     } catch (_) {
       return null;
     }
@@ -4787,7 +4787,7 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'hermeticKybalion', nameKo: '카이발리온 7대 우주법칙', icon: '📜', category: 'deep_master' },
   { key: 'vibrationalSoulQuest', nameKo: '차크라 솔 퀘스트', icon: '🧭', category: 'deep_master' },
   { key: 'alchemicalTransmutation', nameKo: '서양 연금술 7단계', icon: '⚗️', category: 'deep_master' },
-  { key: 'ziweiHuaJi', nameKo: '자미두수 화기 전화위복', icon: '🌌', category: 'deep_master' },
+  { key: 'ziweiHuaJi', nameKo: '자미두수 화기 전화위복', icon: '🌌', category: 'deep_master', summary: '자미두수 생년 화기(化忌)가 깃든 결핍의 궁위를 독보적 장인정신과 전화위복의 돌파구로 승화합니다.' },
   { key: 'celticTreeOgham', nameKo: '켈트 오검 수목지혜', icon: '🌲', category: 'deep_master' },
   { key: 'taoistSanbao', nameKo: '도교 삼보 내단에너지', icon: '☯️', category: 'deep_master' },
   { key: 'tibetanBardo', nameKo: '티베트 바르도 6환생', icon: '☸️', category: 'deep_master' },
@@ -4800,7 +4800,7 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'ayurvedicTridosha', nameKo: '인도 아유르베다 도샤', icon: '🌿', category: 'deep_master' },
   { key: 'hawaiianHuna', nameKo: '호오포노포노 7원리', icon: '🌺', category: 'deep_master' },
   { key: 'fengShuiEightMansions', nameKo: '풍수 8택 방위에너지', icon: '🧭', category: 'deep_master' },
-  { key: 'zoroastrianAsha', nameKo: '조로아스터 아샤 진실', icon: '🔥', category: 'deep_master' },
+  { key: 'zoroastrianAsha', nameKo: '조로아스터 아샤 진실', icon: '🔥', category: 'deep_master', summary: '고대 페르시아 아베스타의 아샤(진리)와 선한 생각·말·행동 3대 축으로 모호한 타협을 가려냅니다.' },
   { key: 'hinduKundalini', nameKo: '힌두 쿤달리니 나디각성', icon: '🕉️', category: 'deep_master' },
   { key: 'guiguziLiangtouqian', nameKo: '귀곡자 양구령 72변화', icon: '📜', category: 'deep_master' },
   { key: 'slavicSvarog', nameKo: '슬라브 16스바로그 로드카르마', icon: '🌌', category: 'deep_master' },
@@ -4819,7 +4819,7 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'vedicNakshatra108Pada', nameKo: '베다 108파다 카르마성좌', icon: '🕉️', category: 'deep_master' },
   { key: 'egyptianHermeticCartouche', nameKo: '이집트 헤르메스 카르투슈', icon: '𓋹', category: 'deep_master' },
   { key: 'taoistGongGuoGeKarma', nameKo: '도교 공과격 적선개운', icon: '☯️', category: 'deep_master' },
-  { key: 'yorubaIfaOdu', nameKo: '요루바 이파 16오두 신탁', icon: '📿', category: 'deep_master' },
+  { key: 'yorubaIfaOdu', nameKo: '요루바 이파 16오두 신탁', icon: '📿', category: 'deep_master', summary: '서아프리카 요루바 이파 16 메지 오두와 에보(Ebó) 실천으로 막힌 흐름을 여는 지혜를 전합니다.' },
   { key: 'arabicIlmAlRaml', nameKo: '아랍 일무람말 지오맨시', icon: '🏜️', category: 'deep_master' },
   { key: 'hinduNadiAgastyaPalmLeaf', nameKo: '인도 나디 아가스티야 야자잎', icon: '📜', category: 'deep_master' },
   { key: 'shintoKotodamaFourSouls', nameKo: '신도 4혼1생 고토다마', icon: '⛩️', category: 'deep_master' },
