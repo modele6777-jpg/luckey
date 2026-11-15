@@ -3008,9 +3008,14 @@ test('Mayan Tzolkin Sacred Calendar Engine: calculates 260 Kin and galactic reso
   assert(rep.birthKin.kinNumber >= 1 && rep.birthKin.kinNumber <= 260);
   assert(rep.todayKin.kinNumber >= 1 && rep.todayKin.kinNumber <= 260);
   assert(rep.galacticHarmonicResonanceScore >= 0 && rep.galacticHarmonicResonanceScore <= 100);
+  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(rep.tzolkinSynthesisMatrix?.integratedAction));
   const prompt = formatMayanTzolkinSacredCalendarPrompt(rep);
   assert(prompt.includes('고대 마야 촐킨'));
   assert(prompt.includes(rep.todayKin.kinFullName));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
 });
 
 test('Nordic Elder Futhark Runes Engine: calculates birth rune, norns trio and bindrune', () => {
@@ -3530,9 +3535,14 @@ test('Maori Mauri Hauora Engine: calculates 4 Hauora pillars and Mauri vitality 
   assert(rep.mauriVitalityIndex >= 0 && rep.mauriVitalityIndex <= 100);
   assert(rep.manaSovereigntyScore >= 0 && rep.manaSovereigntyScore <= 100);
   assert(rep.pillars.dominantPillar.nameMaori.length > 0);
+  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(rep.maoriSynthesisMatrix?.integratedAction));
   const prompt = formatMaoriMauriHauoraPrompt(rep);
   assert(prompt.includes('고대 마오리 하우오라 4대 기둥 & 마우리(Mauri) 생명력 실측 데이터'));
   assert(prompt.includes(rep.pillars.dominantPillar.nameMaori));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
 });
 
 test('Slavic Mokosh Fate Weaving Engine: calculates Dolya/Nedolya fate threads and fertility index', () => {
@@ -4360,9 +4370,14 @@ test('Lakota Medicine Wheel Wakan Tanka Engine: calculates 4 sacred directions, 
   assert(rep.mitakuyeOyasinInterconnectedness >= 0 && rep.mitakuyeOyasinInterconnectedness <= 100);
   assert(rep.primarySacredDirection.lakotaTerm.length > 0);
   assert(rep.activeCardinalVirtue.lakotaName.length > 0);
+  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(rep.lakotaSynthesisMatrix?.integratedAction));
   const prompt = formatLakotaMedicineWheelPrompt(rep);
   assert(prompt.includes('라코타 수(Lakota Sioux)족 와칸 탕카 & 4대 방향 성스러운 의약 휠(Medicine Wheel)'));
   assert(prompt.includes(rep.primarySacredDirection.lakotaTerm));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
 });
 
 test('Korean Gyeogam Yurok Prophecy Engine: calculates Gunggung Euleul, Haein three bounties and crisis resilience', () => {
