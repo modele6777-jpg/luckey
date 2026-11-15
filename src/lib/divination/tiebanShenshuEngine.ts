@@ -23,7 +23,17 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const TIEBAN_SHENSHU_VERSION = 'LUCKEY-TIEBAN-SHENSHU-v1.0.0';
+export const TIEBAN_SHENSHU_VERSION = 'LUCKEY-TIEBAN-SHENSHU-v2.0.0';
+
+function formatTiebanKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
 
 export interface TiebanClause {
   clauseNumber: number;          // 1 ~ 12,000 비전 조문 번호
@@ -56,6 +66,7 @@ export interface TiebanTacticalWindows {
 export interface TiebanReport {
   engineVersion: string;
   calculatedAt: string;
+  calculatedAtKst: string;
   inherentPrimeNumber: number;   // 선천 태현 기본수
   kuaName: string;               // 주재 괘명
   inherentClause: TiebanClause;  // 선천 본원 성정 조식
@@ -66,6 +77,11 @@ export interface TiebanReport {
   yuanHuiYunShi?: YuanHuiYunShiCycle;
   naYinRhythmHarmony?: NaYinRhythmHarmony;
   tacticalWindows?: TiebanTacticalWindows;
+  tiebanSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
 }
 
 const TAI_XUAN_STEM_MAP: Record<number, number> = {
@@ -193,7 +209,7 @@ const WISDOM_CLAUSE_TEMPLATES = [
 
 export function calculateTiebanShenshu(
   profile: UserProfile,
-  options?: { contextText?: string }
+  options?: { contextText?: string; question?: string }
 ): TiebanReport {
   let birthYear = 1990;
   let birthMonth = 6;
@@ -329,9 +345,19 @@ export function calculateTiebanShenshu(
     masterMotto: `소강절 철판심결: "數在天地 運在人心(수는 천지에 있으나 운은 사람의 마음에 달렸도다)".`,
   };
 
+  const now = new Date();
+  const calculatedAtKst = formatTiebanKstTimestamp(now);
+  const q = (options?.question || options?.contextText || '').trim();
+  const tiebanSynthesisMatrix = {
+    dominantTension: `${kuaName} ↔ ${timingClause.title}`,
+    alignmentState: `${cyclicalPhase} · 주재음(${dominantTone})`,
+    integratedAction: `${wisdomClause.actionableGuidance}${q ? ` [질문 맥락: ${q}]` : ''}`,
+  };
+
   return {
     engineVersion: TIEBAN_SHENSHU_VERSION,
-    calculatedAt: new Date().toISOString(),
+    calculatedAt: now.toISOString(),
+    calculatedAtKst,
     inherentPrimeNumber,
     kuaName,
     inherentClause,
@@ -342,23 +368,26 @@ export function calculateTiebanShenshu(
     yuanHuiYunShi,
     naYinRhythmHarmony,
     tacticalWindows,
+    tiebanSynthesisMatrix,
   };
 }
 
 export function formatTiebanShenshuPrompt(report: TiebanReport): string {
   const macroBlock = report.yuanHuiYunShi
-    ? `\n- 황극경세서 원회운세: ${report.yuanHuiYunShi.currentEpoch} (${report.yuanHuiYunShi.cyclicalPhase}, 공명도 ${report.yuanHuiYunShi.resonanceScore}점)\n  * 거시 시대 궤적 조언: ${report.yuanHuiYunShi.macroCycleAdvice}`
+    ? `\n- 황극경세서 원회운세: ${report.yuanHuiYunShi.currentEpoch} (${report.yuanHuiYunShi.cyclicalPhase})\n  * 거시 시대 궤적 조언: ${report.yuanHuiYunShi.macroCycleAdvice}`
     : '';
   const rhythmBlock = report.naYinRhythmHarmony
-    ? `\n- 12율려 음양 조화: 주재음 ${report.naYinRhythmHarmony.dominantTone} (조화도 ${report.naYinRhythmHarmony.pitchHarmonicsScore}점)\n  * 율려 공명: ${report.naYinRhythmHarmony.elementalResonance}`
+    ? `\n- 12율려 음양 조화: 주재음 ${report.naYinRhythmHarmony.dominantTone}\n  * 율려 공명: ${report.naYinRhythmHarmony.elementalResonance}`
     : '';
   const tacticalBlock = report.tacticalWindows
     ? `\n5. 철판 3대 결단 윈도우 및 심결 잠언:\n   * 전반기 돌파: ${report.tacticalWindows.earlyBreakthrough}\n   * 중반기 결실: ${report.tacticalWindows.midConsolidation}\n   * 후반기 수성: ${report.tacticalWindows.latePreservation}\n   * 비전 심결: ${report.tacticalWindows.masterMotto}`
     : '';
+  const matrixBlock = report.tiebanSynthesisMatrix
+    ? `\n- 철판신수 교차 매트릭스: 핵심 긴장(${report.tiebanSynthesisMatrix.dominantTension}) · 조율 상태(${report.tiebanSynthesisMatrix.alignmentState}) · 통합 실천(${report.tiebanSynthesisMatrix.integratedAction})`
+    : '';
 
-  return `[고대 중국 철판신수(鐵板神數) 천기운명 조식 & 태현수비학 엔진]
-- 선천 태현 기본수: ${report.inherentPrimeNumber} / 주재 괘상: ${report.kuaName}
-- 천기 조화 지수: ${report.heavenlyAccordIndex}점 (100점 만점)${macroBlock}${rhythmBlock}
+  return `[고대 중국 철판신수(鐵板神數) 천기운명 조식 & 태현수비학 엔진 (${report.engineVersion} | ${report.calculatedAtKst})]
+- 선천 태현 기본수: ${report.inherentPrimeNumber} / 주재 괘상: ${report.kuaName}${macroBlock}${rhythmBlock}
 1. 선천 본원 성정 조식 (제${report.inherentClause.clauseNumber}조):
    * 격국명: ${report.inherentClause.title}
    * 시경 원전: "${report.inherentClause.classicalPoem}"
@@ -375,5 +404,5 @@ export function formatTiebanShenshuPrompt(report: TiebanReport): string {
 4. 천기 심층 경책 조식 (제${report.wisdomClause.clauseNumber}조):
    * 경책명: ${report.wisdomClause.title}
    * 잠언 원전: "${report.wisdomClause.classicalPoem}"
-   * 수양 지혜: ${report.wisdomClause.actionableGuidance}${tacticalBlock}`;
+   * 수양 지혜: ${report.wisdomClause.actionableGuidance}${tacticalBlock}${matrixBlock}`;
 }
