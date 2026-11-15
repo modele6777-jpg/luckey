@@ -8,12 +8,12 @@
  * 4. 전체성 탈피 및 무한 지향 지수 (Beyond Totality & Transcendence of Infinity Index): 인간과 세계를 획일적인 효율성이나 계산된 손익의 전체성(Totalité)에 가두지 않고, 무한(Infini)의 신비로 열어두는 비판적 통찰.
  * 5. 취약성 응답 및 비폭력 수호 지표 (Vulnerability Protection & Non-Violent Care Score): 약자의 눈물과 벌거벗은 취약함 앞에 폭력성과 오만을 거두고, 생명을 보살피는 평화적 연대와 배려의 힘.
  *
- * @version LUCKEY-EMMANUEL-LEVINAS-ETHICS-v1.1.0
+ * @version LUCKEY-EMMANUEL-LEVINAS-ETHICS-v2.0.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const FRENCH_EMMANUEL_LEVINAS_ETHICS_VERSION = 'LUCKEY-EMMANUEL-LEVINAS-ETHICS-v1.1.0';
+export const FRENCH_EMMANUEL_LEVINAS_ETHICS_VERSION = 'LUCKEY-EMMANUEL-LEVINAS-ETHICS-v2.0.0';
 
 export type LevinasQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -58,6 +58,11 @@ export interface FrenchEmmanuelLevinasFaceOfOtherHospitalityResult {
   ritualAction: string;
   reflectionFocus: string;
   boundaryNotice: string;
+  levinasSynthesisMatrix: {
+    coreInsight: string;
+    recommendedAction: string;
+    cautionNotice: string;
+  };
   levinasComprehensiveGuidance: {
     guidanceTitle: string;
     philosophicalCounsel: string;
@@ -262,10 +267,18 @@ export function calculateFrenchEmmanuelLevinasFaceOfOtherHospitality(
     `${focalLevinasAphorism.actionGuidance}`;
 
   const boundaryNotice = '에마뉘엘 레비나스 윤리 해석은 타자와의 관계·환대·책임의 태도를 돌아보는 상징·성찰 관점이며, 법률·의학 진단이나 확정 예언이 아닙니다.';
+  const baseDate = now ?? new Date();
+  const kst = new Date(baseDate.getTime() + 9 * 60 * 60 * 1000);
+  const kstTimeLabel = `${temporalLevinasRhythm.kstDateLabel} ${String(kst.getUTCHours()).padStart(2, '0')}:${String(kst.getUTCMinutes()).padStart(2, '0')} KST`;
+  const levinasSynthesisMatrix = {
+    coreInsight: activeLevinasTheme.themeTitleKo,
+    recommendedAction: topicGuidance.practiceGuidance,
+    cautionNotice: '상대를 내 계산과 편견의 틀에 가두거나 약한 자의 호소에 고개를 돌리지 마십시오.',
+  };
 
   return {
     engineVersion: FRENCH_EMMANUEL_LEVINAS_ETHICS_VERSION,
-    calculatedAtKst: (now ?? new Date()).toISOString(),
+    calculatedAtKst: kstTimeLabel,
     faceOfOtherEncounterScore,
     infiniteResponsibilityIndex,
     unconditionalHospitalityScore,
@@ -279,6 +292,7 @@ export function calculateFrenchEmmanuelLevinasFaceOfOtherHospitality(
     ritualAction: topicGuidance.ritualAction,
     reflectionFocus: topicGuidance.reflectionFocus,
     boundaryNotice,
+    levinasSynthesisMatrix,
     levinasComprehensiveGuidance: {
       guidanceTitle,
       philosophicalCounsel,
@@ -290,7 +304,8 @@ export function formatFrenchEmmanuelLevinasFaceOfOtherHospitalityPrompt(
   res: FrenchEmmanuelLevinasFaceOfOtherHospitalityResult,
 ): string {
   return [
-    `【에마뉘엘 레비나스 《전체성과 무한》 타자의 얼굴·무한한 책임 지표】`,
+    `【에마뉘엘 레비나스 《전체성과 무한》 타자의 얼굴·무한한 책임 지표 (${res.engineVersion})】`,
+    `- 연산 시각: ${res.calculatedAtKst}`,
     `- 질문 주제 맥락: ${res.questionTopic}`,
     `- KST 시공간 리듬: ${res.temporalLevinasRhythm.kstDateLabel} · ${res.temporalLevinasRhythm.timeWindowKo} (${res.temporalLevinasRhythm.ethicsTone}) — ${res.temporalLevinasRhythm.rhythmDirective}`,
     `- 핵심 레비나스 테마: ${res.activeLevinasTheme.themeTitleKo} [${res.activeLevinasTheme.themeTitleEn}]`,
@@ -299,6 +314,7 @@ export function formatFrenchEmmanuelLevinasFaceOfOtherHospitalityPrompt(
     `- 질문 맞춤 실천 가이드: ${res.practiceGuidance}`,
     `- 일상 실천 의례: ${res.ritualAction}`,
     `- 핵심 성찰 질문: ${res.reflectionFocus}`,
+    `- 교차 매트릭스: 핵심(${res.levinasSynthesisMatrix.coreInsight}) | 실행(${res.levinasSynthesisMatrix.recommendedAction}) | 주의(${res.levinasSynthesisMatrix.cautionNotice})`,
     `- 레비나스 원전 격언: "${res.focalLevinasAphorism.aphorismKo}" (${res.focalLevinasAphorism.aphorismFrench})`,
     `- 원전 출처: [${res.focalLevinasAphorism.sourceContext}]`,
     `- 구체적 실천 지침: ${res.focalLevinasAphorism.actionGuidance}`,

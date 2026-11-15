@@ -8,12 +8,12 @@
  * 4. 사변적 형식주의 탈피와 소박한 실천 덕성 지수 (Sincere Practical Virtue Index): 헛된 말장난과 허례허식을 배격하고 삶의 현장에서 행동으로 드러나는 참된 선의.
  * 5. 유쾌한 삶의 긍정과 회복탄력성 (Cheerful Life Affirmation & Resilience Score): 시련과 오해 앞에서도 냉소에 빠지지 않고 웃음과 지혜로 일어서는 회복탄력성.
  *
- * @version LUCKEY-ERASMUS-PRAISE-OF-FOLLY-v1.1.0
+ * @version LUCKEY-ERASMUS-PRAISE-OF-FOLLY-v2.0.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const DUTCH_DESIDERIUS_ERASMUS_PRAISE_OF_FOLLY_VERSION = 'LUCKEY-ERASMUS-PRAISE-OF-FOLLY-v1.1.0';
+export const DUTCH_DESIDERIUS_ERASMUS_PRAISE_OF_FOLLY_VERSION = 'LUCKEY-ERASMUS-PRAISE-OF-FOLLY-v2.0.0';
 
 export type ErasmusQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -58,6 +58,11 @@ export interface DutchDesideriusErasmusPraiseOfFollyResult {
   ritualAction: string;
   reflectionFocus: string;
   boundaryNotice: string;
+  erasmusSynthesisMatrix: {
+    coreInsight: string;
+    recommendedAction: string;
+    cautionNotice: string;
+  };
   erasmusComprehensiveGuidance: {
     guidanceTitle: string;
     philosophicalCounsel: string;
@@ -260,10 +265,18 @@ export function calculateDutchDesideriusErasmusPraiseOfFolly(
     `${focalErasmusAphorism.actionGuidance}`;
 
   const boundaryNotice = '에라스무스 우신예찬 해석은 경직된 편견을 풀고 관용과 유머를 회복하도록 돕는 상징·성찰 관점이며, 미래 예측이나 확정적 판단이 아닙니다.';
+  const baseDate = now ?? new Date();
+  const kst = new Date(baseDate.getTime() + 9 * 60 * 60 * 1000);
+  const kstTimeLabel = `${temporalErasmusRhythm.kstDateLabel} ${String(kst.getUTCHours()).padStart(2, '0')}:${String(kst.getUTCMinutes()).padStart(2, '0')} KST`;
+  const erasmusSynthesisMatrix = {
+    coreInsight: activeErasmusTheme.themeTitleKo,
+    recommendedAction: topicGuidance.practiceGuidance,
+    cautionNotice: '지나친 엄숙주의나 흑백논리에 갇혀 자신과 타인의 연약함을 가혹하게 재단하지 마십시오.',
+  };
 
   return {
     engineVersion: DUTCH_DESIDERIUS_ERASMUS_PRAISE_OF_FOLLY_VERSION,
-    calculatedAtKst: (now ?? new Date()).toISOString(),
+    calculatedAtKst: kstTimeLabel,
     follyHumorousWisdomScore,
     dogmaticPrejudiceDissolutionIndex,
     renaissanceHumanisticToleranceScore,
@@ -277,6 +290,7 @@ export function calculateDutchDesideriusErasmusPraiseOfFolly(
     ritualAction: topicGuidance.ritualAction,
     reflectionFocus: topicGuidance.reflectionFocus,
     boundaryNotice,
+    erasmusSynthesisMatrix,
     erasmusComprehensiveGuidance: {
       guidanceTitle,
       philosophicalCounsel,
@@ -288,7 +302,8 @@ export function formatDutchDesideriusErasmusPraiseOfFollyPrompt(
   res: DutchDesideriusErasmusPraiseOfFollyResult,
 ): string {
   return [
-    `【데시데리우스 에라스무스 《우신예찬》 르네상스 휴머니즘 및 해학·관용 지혜 지표】`,
+    `【데시데리우스 에라스무스 《우신예찬》 르네상스 휴머니즘 및 해학·관용 지혜 지표 (${res.engineVersion})】`,
+    `- 연산 시각: ${res.calculatedAtKst}`,
     `- 질문 주제 맥락: ${res.questionTopic}`,
     `- KST 시공간 리듬: ${res.temporalErasmusRhythm.kstDateLabel} · ${res.temporalErasmusRhythm.timeWindowKo} (${res.temporalErasmusRhythm.humanismTone}) — ${res.temporalErasmusRhythm.rhythmDirective}`,
     `- 핵심 에라스무스 테마: ${res.activeErasmusTheme.themeTitleKo} [${res.activeErasmusTheme.themeTitleEn}]`,
@@ -297,6 +312,7 @@ export function formatDutchDesideriusErasmusPraiseOfFollyPrompt(
     `- 질문 맞춤 실천 가이드: ${res.practiceGuidance}`,
     `- 일상 실천 의례: ${res.ritualAction}`,
     `- 핵심 성찰 질문: ${res.reflectionFocus}`,
+    `- 교차 매트릭스: 핵심(${res.erasmusSynthesisMatrix.coreInsight}) | 실행(${res.erasmusSynthesisMatrix.recommendedAction}) | 주의(${res.erasmusSynthesisMatrix.cautionNotice})`,
     `- 에라스무스 원전 명언: "${res.focalErasmusAphorism.aphorismKo}" (${res.focalErasmusAphorism.aphorismLatin})`,
     `- 원전 출처: [${res.focalErasmusAphorism.sourceContext}]`,
     `- 구체적 실천 지침: ${res.focalErasmusAphorism.actionGuidance}`,

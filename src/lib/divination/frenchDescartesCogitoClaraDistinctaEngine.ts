@@ -14,12 +14,12 @@
  *    - 열거(Dénombrement): 빠뜨린 것이 없는지 전면적으로 점검하고 검토함.
  * 5. 잠정적 도덕 규칙(Morale par provision): 삶의 현장에서 행동을 미루지 않고 결단력 있게 정도를 걸어가는 실천 지혜.
  *
- * @version LUCKEY-DESCARTES-COGITO-v1.1.0
+ * @version LUCKEY-DESCARTES-COGITO-v2.0.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const DESCARTES_COGITO_VERSION = 'LUCKEY-DESCARTES-COGITO-v1.1.0';
+export const DESCARTES_COGITO_VERSION = 'LUCKEY-DESCARTES-COGITO-v2.0.0';
 
 export type DescartesQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -63,6 +63,11 @@ export interface FrenchDescartesCogitoResult {
   ritualAction: string;
   reflectionFocus: string;
   boundaryNotice: string;
+  descartesSynthesisMatrix: {
+    coreInsight: string;
+    recommendedAction: string;
+    cautionNotice: string;
+  };
   descartesPhilosophicalCounsel: {
     counselTitle: string;
     philosophicalGuidance: string;
@@ -244,10 +249,18 @@ export function calculateFrenchDescartesCogito(
     `${topicGuidance.practiceGuidance} 실천적으로는 '${focalProvisionalMoralRule.maximeNameKo}'의 규범을 지키십시오. ${focalProvisionalMoralRule.counselForAction}`;
 
   const boundaryNotice = '데카르트 철학 해석은 명석판명한 사유 정리와 실천적 결단을 돕는 상징·성찰 관점이며, 확정적 미래 예언이나 의학적 진단이 아닙니다.';
+  const baseDate = now ?? new Date();
+  const kst = new Date(baseDate.getTime() + 9 * 60 * 60 * 1000);
+  const kstTimeLabel = `${temporalDescartesRhythm.kstDateLabel} ${String(kst.getUTCHours()).padStart(2, '0')}:${String(kst.getUTCMinutes()).padStart(2, '0')} KST`;
+  const descartesSynthesisMatrix = {
+    coreInsight: activeMethodRule.ruleNameKo,
+    recommendedAction: topicGuidance.practiceGuidance,
+    cautionNotice: '검증되지 않은 추측을 사실로 성급히 받아들이거나 결단 앞에서 끝없이 주저하지 마십시오.',
+  };
 
   return {
     engineVersion: DESCARTES_COGITO_VERSION,
-    calculatedAtKst: (now ?? new Date()).toISOString(),
+    calculatedAtKst: kstTimeLabel,
     cogitoPresenceCertaintyScore,
     claraDistinctaClarityScore,
     methodicDoubtPurificationScore,
@@ -261,6 +274,7 @@ export function calculateFrenchDescartesCogito(
     ritualAction: topicGuidance.ritualAction,
     reflectionFocus: topicGuidance.reflectionFocus,
     boundaryNotice,
+    descartesSynthesisMatrix,
     descartesPhilosophicalCounsel: {
       counselTitle,
       philosophicalGuidance,
@@ -270,7 +284,8 @@ export function calculateFrenchDescartesCogito(
 
 export function formatFrenchDescartesCogitoPrompt(res: FrenchDescartesCogitoResult): string {
   return [
-    `【데카르트 코기토 & 명석판명 방법서설 지표】`,
+    `【데카르트 코기토 & 명석판명 방법서설 지표 (${res.engineVersion})】`,
+    `- 연산 시각: ${res.calculatedAtKst}`,
     `- 질문 주제 맥락: ${res.questionTopic}`,
     `- KST 시공간 리듬: ${res.temporalDescartesRhythm.kstDateLabel} · ${res.temporalDescartesRhythm.timeWindowKo} (${res.temporalDescartesRhythm.clarityTone}) — ${res.temporalDescartesRhythm.rhythmDirective}`,
     `- 적용 방법 규칙: ${res.activeMethodRule.ruleNameFrench} (${res.activeMethodRule.ruleNameKo})`,
@@ -281,6 +296,7 @@ export function formatFrenchDescartesCogitoPrompt(res: FrenchDescartesCogitoResu
     `- 질문 맞춤 실천 가이드: ${res.practiceGuidance}`,
     `- 일상 실천 의례: ${res.ritualAction}`,
     `- 핵심 성찰 질문: ${res.reflectionFocus}`,
+    `- 교차 매트릭스: 핵심(${res.descartesSynthesisMatrix.coreInsight}) | 실행(${res.descartesSynthesisMatrix.recommendedAction}) | 주의(${res.descartesSynthesisMatrix.cautionNotice})`,
     `- 철학적 직관 지침: ${res.descartesPhilosophicalCounsel.philosophicalGuidance}`,
     `- 해석 경계: ${res.boundaryNotice}`,
   ].join('\n');

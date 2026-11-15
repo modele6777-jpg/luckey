@@ -5018,6 +5018,8 @@ test('Descartes Cogito Clara Distincta Engine: calculates Cogito certainty, Clar
   assert(prompt.includes('데카르트 코기토 & 명석판명 방법서설 지표'));
   assert(prompt.includes(rep.activeMethodRule.ruleNameFrench));
   assert(prompt.includes('질문 맞춤 실천 가이드'));
+  assert.ok(rep.calculatedAtKst.includes('KST'));
+  assert.ok(prompt.includes('교차 매트릭스'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });
@@ -6218,6 +6220,8 @@ test('Desiderius Erasmus Praise of Folly Engine: calculates Humorous Wisdom, Dog
   assert(prompt.includes('데시데리우스 에라스무스 《우신예찬》 르네상스 휴머니즘 및 해학·관용 지혜 지표'));
   assert(prompt.includes(rep.activeErasmusTheme.themeTitleKo));
   assert(prompt.includes('2026-11-14'));
+  assert.ok(rep.calculatedAtKst.includes('KST'));
+  assert.ok(prompt.includes('교차 매트릭스'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });
@@ -6417,6 +6421,8 @@ test('Emmanuel Levinas Face of the Other and Hospitality Engine: calculates Face
   assert(prompt.includes('에마뉘엘 레비나스 《전체성과 무한》 타자의 얼굴·무한한 책임 지표'));
   assert(prompt.includes(rep.activeLevinasTheme.themeTitleKo));
   assert(prompt.includes('질문 맞춤 실천 가이드'));
+  assert.ok(rep.calculatedAtKst.includes('KST'));
+  assert.ok(prompt.includes('교차 매트릭스'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });
