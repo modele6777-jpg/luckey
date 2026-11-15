@@ -47,7 +47,7 @@ import {
   getYearSolarTerms,
 } from '../astronomicalSolarTerms';
 
-export const SAMJAE_GYOUN_ENGINE_VERSION = 'LUCKEY-SG-v1.0.0';
+export const SAMJAE_GYOUN_ENGINE_VERSION = 'LUCKEY-SG-v2.0.0';
 
 export const SAMJAE_GYOUN_METHOD =
   '삼합(三合) 묘지 앵커 삼재 산법: 입춘 원국 년지 띠의 삼합군 기준 들·눌·날 3개년 판정, 원국 4주 충형파해·육합과 용신·희신·기신 오행 조화의 복·평·악 등급화, 대운수 8대 타임라인 교체 나이 전후 1~2년 교운기 감지 및 십성·계절(접목운) 전환 완충 처방 결정론 산출';
@@ -166,6 +166,11 @@ export interface SamjaeGyoUnResult {
   headline: string;
   samjae: SamjaeAnalysis;
   gyoUn: GyoUnAnalysis;
+  samjaeGyoUnSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -857,6 +862,11 @@ export function calculateSamjaeGyoUn(params: {
   const gyoUnHeadline = gyoUn.isGyoUnPeriod
     ? `교운기 진입 (${gyoUn.windowType}) — ${gyoUn.switchYear}년 ${gyoUn.nextDaewoon?.koreanName ?? ''} 교체`
     : '대운 순항 구간';
+  const samjaeGyoUnSynthesisMatrix = {
+    dominantTension: `${samjae.isSamjaeYear ? `${samjae.phase}(${samjae.grade})` : '비삼재'} ↔ ${gyoUn.isGyoUnPeriod ? gyoUn.windowType : '대운 순항'}`,
+    alignmentState: `${samjaeHeadline} | ${gyoUnHeadline}`,
+    integratedAction: gyoUn.riskBufferAdvice || samjae.wellnessPrescription?.routine || samjae.gradeReason,
+  };
 
   return {
     status: 'calculated',
@@ -871,6 +881,7 @@ export function calculateSamjaeGyoUn(params: {
     headline: `${samjaeHeadline} | ${gyoUnHeadline}`,
     samjae,
     gyoUn,
+    samjaeGyoUnSynthesisMatrix,
   };
 }
 
@@ -936,7 +947,7 @@ ${gyoUnLines}
 
 5. [리스크 완충 & 기회 타이밍]:
    - 리스크 완충 처방: ${gyoUn.riskBufferAdvice || samjae.gradeReason}
-   - 기회 타이밍: ${gyoUn.opportunityTiming || '삼재 기간의 소극적 기회는 평삼재 관리로 충분합니다.'}
+   - 기회 타이밍: ${gyoUn.opportunityTiming || '삼재 기간의 소극적 기회는 평삼재 관리로 충분합니다.'}${result.samjaeGyoUnSynthesisMatrix ? `\n   - 교차 매트릭스 [핵심 긴장: ${result.samjaeGyoUnSynthesisMatrix.dominantTension} | 조율 상태: ${result.samjaeGyoUnSynthesisMatrix.alignmentState}]\n   - 통합 실천: ${result.samjaeGyoUnSynthesisMatrix.integratedAction}` : ''}
 ======================================================================
 [★ 루시 삼재·교운기 상담 지침]:
 - 위 삼재 판정(들·눌·날)과 교운기 감지(D-2~+1), 남은 햇수·월수는 순수 수리로 직접 계산한 확정 데이터다. 다른 해를 삼재로 지어내지 마십시오.
