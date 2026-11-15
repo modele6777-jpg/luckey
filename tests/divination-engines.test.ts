@@ -2974,9 +2974,14 @@ test('Mesopotamian Seven Gates Engine: calculates planetary gate and resurrectio
   assert(rep.activeGate.gateNumber >= 1 && rep.activeGate.gateNumber <= 7);
   assert(rep.sovereigntyResurrectionPower >= 0 && rep.sovereigntyResurrectionPower <= 100);
   assert(rep.liberationTask.length > 0);
+  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(rep.sevenGatesSynthesisMatrix?.integratedAction));
   const prompt = formatMesopotamianSevenGatesPrompt(rep);
   assert(prompt.includes('고대 메소포타미아 7대 행성 관문'));
   assert(prompt.includes(rep.activeGate.gateNameAkkadian));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
 });
 
 test('Egyptian 36 Decans Engine: calculates birth decan and stellar resonance', () => {
@@ -4173,9 +4178,14 @@ test('Mongolian Tengrism Hiimori Soul Engine: calculates wind horse vitality, bl
   assert(rep.suldImmortalSpiritPower >= 0 && rep.suldImmortalSpiritPower <= 100);
   assert(rep.etugenMotherEarthRooting >= 0 && rep.etugenMotherEarthRooting <= 100);
   assert(rep.dominantAspect.nameKo.length > 0);
+  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(rep.tengriSynthesisMatrix?.integratedAction));
   const prompt = formatMongolianTengriHiimoriPrompt(rep);
   assert(prompt.includes('몽골 텡그리즘 99 텡그리 & 히모리 풍마 영혼 공명 실측 데이터'));
   assert(prompt.includes(rep.dominantAspect.nameKo));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
 });
 
 test('Gaelic Wheel Four Fire Festivals Engine: calculates fire festival stations, celtic hearthfire vibration and anam cara depth', () => {
@@ -4513,9 +4523,14 @@ test('Mesopotamian Nisaba Scribe Wisdom Engine: calculates reed stylus precision
   assert(rep.sacredNindanMeasureBalance >= 0 && rep.sacredNindanMeasureBalance <= 100);
   assert(rep.astralMulConstellationResonance >= 0 && rep.astralMulConstellationResonance <= 100);
   assert(rep.activeScribeRank.rankSumerian.length > 0);
+  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(rep.nisabaSynthesisMatrix?.integratedAction));
   const prompt = formatMesopotamianNisabaPrompt(rep);
   assert(prompt.includes('수메르 서기의 수호신 《니사바(Nisaba)》'));
   assert(prompt.includes(rep.activeScribeRank.rankNameKo));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
 });
 
 test('Korean Suun Gasi Heon Engine: calculates Yongcheon sword severance, Samgyeong reverence and Bu-Jae-Rae timing', () => {

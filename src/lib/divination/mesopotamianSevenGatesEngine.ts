@@ -24,7 +24,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const MESOPOTAMIAN_GATES_VERSION = 'LUCKEY-MESO-GATES-v1.0.0';
+export const MESOPOTAMIAN_GATES_VERSION = 'LUCKEY-MESO-GATES-v2.0.0';
 
 export interface PlanetaryGateInfo {
   gateNumber: number;
@@ -38,12 +38,34 @@ export interface PlanetaryGateInfo {
 export interface MesopotamianSevenGatesReport {
   engineVersion: string;
   calculatedAt: string;
+  calculatedAtKst: string;
   activeGate: PlanetaryGateInfo;
   journeyPhase: '심연으로의 하강 (외적 껍질의 정화)' | '심연 최심부 (생명의 물을 기다리는 침묵)' | '지상으로의 찬란한 귀환 (왕권 회복과 부활)';
   sovereigntyResurrectionPower: number; // 0 ~ 100 진정한 자기 주권 부활력
   liberationTask: string;
   sevenGatesOracleGuidance: string;
   ancientSumerianBlessing: string;
+  sevenGatesSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
+}
+
+function formatSevenGatesKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
+
+function describeSevenGatesStage(score: number): string {
+  if (score >= 86) return '인안나의 귀환(Inanna Ascent) — 불필요한 갑옷을 벗고 본래의 주권을 되찾는 부활기';
+  if (score >= 70) return '심연의 정화(Abyss Purification) — 묵은 집착을 내려놓으며 내면의 중심을 세우는 전환기';
+  return '생명의 물 대기(Living Water Pause) — 침묵 속에서 회복의 신호를 기다리는 성찰기';
 }
 
 const SEVEN_PLANETARY_GATES: PlanetaryGateInfo[] = [
@@ -107,7 +129,8 @@ const SEVEN_PLANETARY_GATES: PlanetaryGateInfo[] = [
 
 export function calculateMesopotamianSevenGates(
   profile?: UserProfile | null,
-  targetDate: Date = new Date()
+  targetDate: Date = new Date(),
+  query?: string,
 ): MesopotamianSevenGatesReport {
   let birthSum = 10;
   let birthYear = 1991;
@@ -152,28 +175,46 @@ export function calculateMesopotamianSevenGates(
 
   const ancientSumerianBlessing = `수메르 인안나의 축복: "모든 껍데기를 벗어던진 그대여, 이제 대지에 생명의 물이 뿌려지고 당신의 진짜 왕권이 회복되리라."`;
 
+  const calculatedAtKst = formatSevenGatesKstTimestamp(targetDate);
+  const sevenGatesSynthesisMatrix = {
+    dominantTension: `${activeGate.gateNameAkkadian} (${activeGate.spiritualEgoArmor}) ↔ ${activeGate.resurrectionGift}`,
+    alignmentState: describeSevenGatesStage(sovereigntyResurrectionPower),
+    integratedAction: `${activeGate.resurrectionGift} 회복을 위해 ${activeGate.surrenderedRegalia} 집착 내려놓기${query?.trim() ? ` [질문 맥락: ${query.trim()}]` : ''}`,
+  };
+
   return {
     engineVersion: MESOPOTAMIAN_GATES_VERSION,
     calculatedAt: targetDate.toISOString(),
+    calculatedAtKst,
     activeGate,
     journeyPhase,
     sovereigntyResurrectionPower,
     liberationTask,
     sevenGatesOracleGuidance,
-    ancientSumerianBlessing
+    ancientSumerianBlessing,
+    sevenGatesSynthesisMatrix,
   };
 }
 
 export function formatMesopotamianSevenGatesPrompt(report: MesopotamianSevenGatesReport): string {
-  return `### 🏛️ 고대 메소포타미아 7대 행성 관문 & 이슈타르 지하세계 하강·부활 엔진 (${MESOPOTAMIAN_GATES_VERSION})
-- **현재 통과 중인 행성 관문**: 제${report.activeGate.gateNumber}관문 [${report.activeGate.gateNameAkkadian}]
-  - 관문 수호신: ${report.activeGate.planetaryDeity}
-  - 반납하는 장신구/갑옷: ${report.activeGate.surrenderedRegalia}
-  - 내려놓아야 할 에고의 껍질: ${report.activeGate.spiritualEgoArmor}
-  - 부활을 통해 얻는 참된 선물: ${report.activeGate.resurrectionGift}
-- **영혼의 여정 국면**: ${report.journeyPhase}
-- **참된 자기 주권(Sovereignty) 부활 지수**: ${report.sovereigntyResurrectionPower}점 / 100점
-- **관문 통과 해방 과제**: ${report.liberationTask}
-- **7대 관문 신탁 지침**: ${report.sevenGatesOracleGuidance}
-- **고대 수메르의 영적 축복**: "${report.ancientSumerianBlessing}"`;
+  const lines = [
+    `### 🏛️ 고대 메소포타미아 7대 행성 관문 & 이슈타르 지하세계 하강·부활 엔진 (${MESOPOTAMIAN_GATES_VERSION})`,
+    `- **연산 시각**: ${report.calculatedAtKst} | **주권 부활 국면**: ${describeSevenGatesStage(report.sovereigntyResurrectionPower)}`,
+    `- **현재 통과 중인 행성 관문**: 제${report.activeGate.gateNumber}관문 [${report.activeGate.gateNameAkkadian}]`,
+    `  - 관문 수호신: ${report.activeGate.planetaryDeity}`,
+    `  - 반납하는 장신구/갑옷: ${report.activeGate.surrenderedRegalia}`,
+    `  - 내려놓아야 할 에고의 껍질: ${report.activeGate.spiritualEgoArmor}`,
+    `  - 부활을 통해 얻는 참된 선물: ${report.activeGate.resurrectionGift}`,
+    `- **영혼의 여정 국면**: ${report.journeyPhase}`,
+    `- **관문 통과 해방 과제**: ${report.liberationTask}`,
+    `- **7대 관문 신탁 지침**: ${report.sevenGatesOracleGuidance}`,
+    `- **고대 수메르의 영적 축복**: "${report.ancientSumerianBlessing}"`,
+  ];
+  if (report.sevenGatesSynthesisMatrix) {
+    lines.push(
+      `- **교차 매트릭스**: [핵심 긴장: ${report.sevenGatesSynthesisMatrix.dominantTension} | 조율 상태: ${report.sevenGatesSynthesisMatrix.alignmentState}]`,
+      `- **통합 실천**: ${report.sevenGatesSynthesisMatrix.integratedAction}`,
+    );
+  }
+  return lines.join('\n');
 }
