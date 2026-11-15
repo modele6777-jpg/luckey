@@ -29,13 +29,12 @@ export function DialogTriggerButton({
 }: ButtonHTMLAttributes<HTMLButtonElement>) {
   const press = useRef<{ id: number; x: number; y: number; cancelled: boolean } | null>(null);
   const touch = useRef<{ id: number; x: number; y: number; moved: boolean } | null>(null);
-  const lastActivation = useRef(-Infinity);
+  const gesture = useRef(false);
+  const begin = () => { gesture.current = false; };
   const activate = (event: ActivationEvent) => {
     event.stopPropagation?.();
-    if (props.disabled) return;
-    const now = Date.now();
-    if (now - lastActivation.current < 700) return;
-    lastActivation.current = now;
+    if (props.disabled || gesture.current) return;
+    gesture.current = true;
     onClick?.(event as MouseEvent<HTMLButtonElement>);
     // Focusing on touch makes iOS scroll the conversation to the control.
     if ((event.pointerType === 'mouse' || event.detail === 0) && event.currentTarget instanceof HTMLElement) {
@@ -48,6 +47,7 @@ export function DialogTriggerButton({
   return <button {...props} type={type}
     style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent', ...props.style }}
     onPointerDown={(event: PointerEvent<HTMLButtonElement>) => {
+      begin();
       rememberOverlayPane(event.currentTarget, { x: event.clientX, y: event.clientY });
       onPointerDown?.(event);
       if (event.button !== 0 || !event.isPrimary || event.defaultPrevented) return;
@@ -72,6 +72,7 @@ export function DialogTriggerButton({
       activate(event);
     }}
     onTouchStart={(event: TouchEvent<HTMLButtonElement>) => {
+      begin();
       onTouchStart?.(event);
       const point = event.changedTouches[0];
       if (!point) return;
@@ -93,7 +94,8 @@ export function DialogTriggerButton({
       activate(event);
     }}
     onClick={(event: MouseEvent<HTMLButtonElement>) => {
-      if (Date.now() - lastActivation.current < 700) {
+      if (event.detail === 0) begin();
+      if (gesture.current) {
         event.preventDefault();
         event.stopPropagation();
         return;

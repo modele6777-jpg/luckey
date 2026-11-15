@@ -13,7 +13,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const FRENCH_ROLAND_BARTHES_SEMIOTICS_PUNCTUM_VERSION = 'LUCKEY-ROLAND-BARTHES-SEMIOTICS-PUNCTUM-v1.0.0';
+export const FRENCH_ROLAND_BARTHES_SEMIOTICS_PUNCTUM_VERSION = 'LUCKEY-ROLAND-BARTHES-SEMIOTICS-PUNCTUM-v2.1.0';
 
 export interface BarthesTheme {
   themeKey: string;
@@ -43,6 +43,9 @@ export interface FrenchRolandBarthesSemioticsPunctumResult {
   // 세부 분석
   activeBarthesTheme: BarthesTheme;
   focalBarthesAphorism: BarthesAphorism;
+  dailyPracticeRitual: string;
+  reflectiveQuestion: string;
+  interpretiveBoundary: string;
   barthesComprehensiveGuidance: {
     guidanceTitle: string;
     philosophicalCounsel: string;
@@ -120,9 +123,16 @@ function hashString(str: string): number {
   return hash;
 }
 
+function describeBarthesStage(score: number): string {
+  if (score >= 95) return '선명한 푼크툼의 번뜩임으로 살아 숨 쉬는 국면';
+  if (score >= 91) return '통념을 가볍게 걷어 내고 새 의미를 엮는 흐름';
+  return '조용한 감응의 결을 음미하며 여백을 여는 단계';
+}
+
 export function calculateFrenchRolandBarthesSemioticsPunctum(
   profile?: UserProfile,
   query?: string,
+  now: Date = new Date(),
 ): FrenchRolandBarthesSemioticsPunctumResult {
   const p = profile as any;
   const name = profile?.basic?.name ?? p?.name ?? '남희';
@@ -130,7 +140,8 @@ export function calculateFrenchRolandBarthesSemioticsPunctum(
   const birthTime = profile?.basic?.birthtime ?? p?.birthTime ?? p?.birthtime ?? '12:00';
   const gender = profile?.basic?.gender ?? p?.gender ?? 'neutral';
 
-  const seedString = `ROLAND-BARTHES-SEMIOTICS-PUNCTUM:${name}:${birthDate}:${birthTime}:${gender}:${query ?? ''}`;
+  const kstDate = new Date(now.getTime() + 9 * 60 * 60 * 1000).toISOString().slice(0, 10);
+  const seedString = `ROLAND-BARTHES-SEMIOTICS-PUNCTUM:${name}:${birthDate}:${birthTime}:${gender}:${kstDate}:${query ?? ''}`;
   const baseHash = hashString(seedString);
   const absHash = Math.abs(baseHash);
 
@@ -154,9 +165,17 @@ export function calculateFrenchRolandBarthesSemioticsPunctum(
     `${activeBarthesTheme.practicalCounsel} 바르트의 명언 "${focalBarthesAphorism.aphorismKo}" (${focalBarthesAphorism.aphorismFrench})을 마음에 품고, ` +
     `${focalBarthesAphorism.actionGuidance}`;
 
+  const dailyPracticeRitual =
+    '오늘 익숙한 일상 풍경이나 글귀 속에서 내 마음을 콕 찌르는 작은 디테일(푼크툼) 하나를 붙잡아 한 줄로 기록해 보세요.';
+  const reflectiveQuestion = query?.trim()
+    ? `‘${query.trim().slice(0, 48)}’에 대해 남들이 정해 둔 당연한 신화 대신, 나만의 독창적인 해석을 붙인다면 어떤 이야기가 될까요?`
+    : '지금 내 하루에서 의무라는 딱딱한 껍질을 벗기고 유쾌한 즐거움(Plaisir)으로 바꿀 수 있는 장면은 무엇인가요?';
+  const interpretiveBoundary =
+    '롤랑 바르트의 기호학·푼크툼 관점은 미래를 단정하거나 수치로 재단하는 도구가 아니라, 상투적 통념을 넘어 자기만의 감응과 의미를 읽는 상징적 렌즈입니다.';
+
   return {
     engineVersion: FRENCH_ROLAND_BARTHES_SEMIOTICS_PUNCTUM_VERSION,
-    calculatedAtKst: new Date().toISOString(),
+    calculatedAtKst: now.toISOString(),
     punctumAffectiveIntuitionScore,
     mythologicalDemythologizationIndex,
     deathOfAuthorScriptibleReaderScore,
@@ -164,6 +183,9 @@ export function calculateFrenchRolandBarthesSemioticsPunctum(
     polyphonicSignifierFluidityScore,
     activeBarthesTheme,
     focalBarthesAphorism,
+    dailyPracticeRitual,
+    reflectiveQuestion,
+    interpretiveBoundary,
     barthesComprehensiveGuidance: {
       guidanceTitle,
       philosophicalCounsel,
@@ -176,17 +198,20 @@ export function formatFrenchRolandBarthesSemioticsPunctumPrompt(
 ): string {
   return [
     `【롤랑 바르트 《신화론》·《밝은 방》 푼크툼(Punctum)·기호학 지표】`,
-    `- 푼크툼 영혼 관통 직관 및 감응력(Punctum Affective Intuition): ${res.punctumAffectiveIntuitionScore}/100`,
-    `- 현대 신화의 기호학적 탈신화화력(Semiotic Demythologization): ${res.mythologicalDemythologizationIndex}/100`,
-    `- 저자의 죽음 및 능동적 재창조 독해력(Death of Author & Scriptible Reader): ${res.deathOfAuthorScriptibleReaderScore}/100`,
-    `- 텍스트의 즐거움 및 유희적 몰입 지수(Plaisir du Texte & Jouissance): ${res.plaisirDuTexteSensualDelightIndex}/100`,
-    `- 다의적 기표 유연성 및 열린 해석력(Polyphonic Signifier Fluidity): ${res.polyphonicSignifierFluidityScore}/100`,
+    `- 푼크툼 영혼 관통 직관 및 감응력(Punctum): ${describeBarthesStage(res.punctumAffectiveIntuitionScore)}`,
+    `- 현대 신화의 기호학적 탈신화화력: ${describeBarthesStage(res.mythologicalDemythologizationIndex)}`,
+    `- 저자의 죽음 및 능동적 재창조 독해력: ${describeBarthesStage(res.deathOfAuthorScriptibleReaderScore)}`,
+    `- 텍스트의 즐거움 및 유희적 몰입 결: ${describeBarthesStage(res.plaisirDuTexteSensualDelightIndex)}`,
+    `- 다의적 기표 유연성 및 열린 해석력: ${describeBarthesStage(res.polyphonicSignifierFluidityScore)}`,
     `- 핵심 바르트 테마: ${res.activeBarthesTheme.themeTitleKo} [${res.activeBarthesTheme.themeTitleEn}]`,
     `- 실천적 통찰: ${res.activeBarthesTheme.pragmaticInsight}`,
     `- 행동 조언: ${res.activeBarthesTheme.practicalCounsel}`,
     `- 바르트 원전 테제: "${res.focalBarthesAphorism.aphorismKo}" (${res.focalBarthesAphorism.aphorismFrench})`,
     `- 원전 출처: [${res.focalBarthesAphorism.sourceContext}]`,
     `- 구체적 실천 지침: ${res.focalBarthesAphorism.actionGuidance}`,
+    `- 일상 실천 의례: ${res.dailyPracticeRitual}`,
+    `- 성찰 질문: ${res.reflectiveQuestion}`,
+    `- 해석 경계: ${res.interpretiveBoundary}`,
     `- 종합 바르트 권면: ${res.barthesComprehensiveGuidance.philosophicalCounsel}`,
   ].join('\n');
 }
