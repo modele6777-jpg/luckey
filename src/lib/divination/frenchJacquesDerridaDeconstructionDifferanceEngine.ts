@@ -13,7 +13,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const FRENCH_JACQUES_DERRIDA_DECONSTRUCTION_DIFFERANCE_VERSION = 'LUCKEY-JACQUES-DERRIDA-DECONSTRUCTION-DIFFERANCE-v1.0.0';
+export const FRENCH_JACQUES_DERRIDA_DECONSTRUCTION_DIFFERANCE_VERSION = 'LUCKEY-JACQUES-DERRIDA-DECONSTRUCTION-DIFFERANCE-v2.1.0';
 
 export interface DerridaTheme {
   themeKey: string;
@@ -43,6 +43,9 @@ export interface FrenchJacquesDerridaDeconstructionDifferanceResult {
   // 세부 분석
   activeDerridaTheme: DerridaTheme;
   focalDerridaAphorism: DerridaAphorism;
+  dailyPracticeRitual: string;
+  reflectiveQuestion: string;
+  interpretiveBoundary: string;
   derridaComprehensiveGuidance: {
     guidanceTitle: string;
     philosophicalCounsel: string;
@@ -120,9 +123,16 @@ function hashString(str: string): number {
   return hash;
 }
 
+function describeDerridaStage(score: number): string {
+  if (score >= 95) return '매우 깊고 명료하게 살아 움직이는 국면';
+  if (score >= 91) return '안정적으로 깨어나 유연하게 작동하는 흐름';
+  return '조용히 여백을 열어 두고 숙성되는 단계';
+}
+
 export function calculateFrenchJacquesDerridaDeconstructionDifferance(
   profile?: UserProfile,
   query?: string,
+  now: Date = new Date(),
 ): FrenchJacquesDerridaDeconstructionDifferanceResult {
   const p = profile as any;
   const name = profile?.basic?.name ?? p?.name ?? '남희';
@@ -130,7 +140,8 @@ export function calculateFrenchJacquesDerridaDeconstructionDifferance(
   const birthTime = profile?.basic?.birthtime ?? p?.birthTime ?? p?.birthtime ?? '12:00';
   const gender = profile?.basic?.gender ?? p?.gender ?? 'neutral';
 
-  const seedString = `JACQUES-DERRIDA-DECONSTRUCTION-DIFFERANCE:${name}:${birthDate}:${birthTime}:${gender}:${query ?? ''}`;
+  const kstDate = new Date(now.getTime() + 9 * 60 * 60 * 1000).toISOString().slice(0, 10);
+  const seedString = `JACQUES-DERRIDA-DECONSTRUCTION-DIFFERANCE:${name}:${birthDate}:${birthTime}:${gender}:${kstDate}:${query ?? ''}`;
   const baseHash = hashString(seedString);
   const absHash = Math.abs(baseHash);
 
@@ -154,9 +165,17 @@ export function calculateFrenchJacquesDerridaDeconstructionDifferance(
     `${activeDerridaTheme.practicalCounsel} 데리다의 명언 "${focalDerridaAphorism.aphorismKo}" (${focalDerridaAphorism.aphorismFrench})을 마음에 새기고, ` +
     `${focalDerridaAphorism.actionGuidance}`;
 
+  const dailyPracticeRitual =
+    '오늘 단정 짓고 싶던 이분법(성공/실패, 내 편/남의 편) 하나를 잠시 괄호에 넣고, 제3의 열린 선택지를 한 줄로 적어 보세요.';
+  const reflectiveQuestion = query?.trim()
+    ? `‘${query.trim().slice(0, 48)}’ 앞에서 내가 당연하다고 믿고 있던 전제는 무엇이며, 그것을 내려놓으면 어떤 새로운 환대가 열릴까요?`
+    : '지금 내가 마주한 막다른 골목(아포리아)에서 피하지 않고 끝까지 응시해야 할 나만의 결단은 무엇인가요?';
+  const interpretiveBoundary =
+    '자크 데리다의 해체·차연 관점은 정답을 단정하거나 미래를 예측하는 도구가 아니라, 고정관념을 흔들어 더 열린 선택을 성찰하는 상징적 렌즈입니다.';
+
   return {
     engineVersion: FRENCH_JACQUES_DERRIDA_DECONSTRUCTION_DIFFERANCE_VERSION,
-    calculatedAtKst: new Date().toISOString(),
+    calculatedAtKst: now.toISOString(),
     differancePostponementSpacializationScore,
     binaryOppositionDeconstructionIndex,
     aporiaBreakthroughResolutionScore,
@@ -164,6 +183,9 @@ export function calculateFrenchJacquesDerridaDeconstructionDifferance(
     pharmakonTransformativeHealingScore,
     activeDerridaTheme,
     focalDerridaAphorism,
+    dailyPracticeRitual,
+    reflectiveQuestion,
+    interpretiveBoundary,
     derridaComprehensiveGuidance: {
       guidanceTitle,
       philosophicalCounsel,
@@ -176,17 +198,20 @@ export function formatFrenchJacquesDerridaDeconstructionDifferancePrompt(
 ): string {
   return [
     `【자크 데리다 《그라마톨로지》 해체(Deconstruction)·차연(Différance) 지표】`,
-    `- 차연 및 의미 생성 지연·차이 유연성(Différance Spatialization & Deferral): ${res.differancePostponementSpacializationScore}/100`,
-    `- 이항대립 해체 및 제3의 지평 개척력(Binary Opposition Deconstruction): ${res.binaryOppositionDeconstructionIndex}/100`,
-    `- 아포리아 대면 및 역설적 결단력(Aporia Breakthrough & Decision): ${res.aporiaBreakthroughResolutionScore}/100`,
-    `- 조건 없는 환대 및 타자성 포용 지수(Unconditional Hospitality & Alterity): ${res.unconditionalHospitalityEmpathyIndex}/100`,
-    `- 파르마콘 양면성 변용 치유력(Pharmakon Dual-Nature Healing Alchemy): ${res.pharmakonTransformativeHealingScore}/100`,
+    `- 차연 및 의미 생성 지연·차이 유연성(Différance): ${describeDerridaStage(res.differancePostponementSpacializationScore)}`,
+    `- 이항대립 해체 및 제3의 지평 개척력: ${describeDerridaStage(res.binaryOppositionDeconstructionIndex)}`,
+    `- 아포리아 대면 및 역설적 결단력: ${describeDerridaStage(res.aporiaBreakthroughResolutionScore)}`,
+    `- 조건 없는 환대 및 타자성 포용 결: ${describeDerridaStage(res.unconditionalHospitalityEmpathyIndex)}`,
+    `- 파르마콘 양면성 변용 치유력: ${describeDerridaStage(res.pharmakonTransformativeHealingScore)}`,
     `- 핵심 데리다 테마: ${res.activeDerridaTheme.themeTitleKo} [${res.activeDerridaTheme.themeTitleEn}]`,
     `- 실천적 통찰: ${res.activeDerridaTheme.pragmaticInsight}`,
     `- 행동 조언: ${res.activeDerridaTheme.practicalCounsel}`,
     `- 데리다 원전 테제: "${res.focalDerridaAphorism.aphorismKo}" (${res.focalDerridaAphorism.aphorismFrench})`,
     `- 원전 출처: [${res.focalDerridaAphorism.sourceContext}]`,
     `- 구체적 실천 지침: ${res.focalDerridaAphorism.actionGuidance}`,
+    `- 일상 실천 의례: ${res.dailyPracticeRitual}`,
+    `- 성찰 질문: ${res.reflectiveQuestion}`,
+    `- 해석 경계: ${res.interpretiveBoundary}`,
     `- 종합 데리다 권면: ${res.derridaComprehensiveGuidance.philosophicalCounsel}`,
   ].join('\n');
 }
