@@ -323,6 +323,8 @@ import { calculateKoreanKimSoWolAzaleaFlowerPoeticGrace, formatKoreanKimSoWolAza
 import { calculateIrishJamesJoyceUlyssesEpiphany, formatIrishJamesJoyceUlyssesEpiphanyPrompt, IRISH_JAMES_JOYCE_ULYSSES_EPIPHANY_VERSION } from '../src/lib/divination/irishJamesJoyceUlyssesEpiphanyEngine';
 import { calculateGermanHermannHesseDemianSteppenwolf, formatGermanHermannHesseDemianSteppenwolfPrompt, GERMAN_HERMANN_HESSE_DEMIAN_STEPPENWOLF_VERSION } from '../src/lib/divination/germanHermannHesseDemianSteppenwolfEngine';
 import { calculateKoreanHanYongUnSilenceOfNim, formatKoreanHanYongUnSilenceOfNimPrompt, KOREAN_HAN_YONG_UN_SILENCE_OF_NIM_VERSION } from '../src/lib/divination/koreanHanYongUnSilenceOfNimEngine';
+import { calculateKoreanYutjeomFourStickOracle, formatKoreanYutjeomFourStickPrompt, KOREAN_YUTJEOM_FOUR_STICK_VERSION } from '../src/lib/divination/koreanYutjeomFourStickOracleEngine';
+import { calculateTamilThirukkuralAramPorulKamam, formatTamilThirukkuralAramPorulKamamPrompt, TAMIL_THIRUKKURAL_ARAM_PORUL_KAMAM_VERSION } from '../src/lib/divination/tamilThirukkuralAramPorulKamamEngine';
 
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
@@ -7790,3 +7792,71 @@ test('v2.1.0 qualitative prompt reform: Jacques Derrida, Michel Foucault, and Ro
 
 
 
+
+test('Korean Yutjeom engine: five qualitative stances without raw scores or a claimed cast', () => {
+  const rep = calculateKoreanYutjeomFourStickOracle(profile, '이직을 해야 할지 고민이에요', new Date('2026-11-15T03:00:00Z'));
+  assert.equal(rep.engineVersion, KOREAN_YUTJEOM_FOUR_STICK_VERSION);
+  assert.equal(rep.actualCastRecorded, false);
+  assert.equal(rep.questionTopic, 'decision');
+  assert.ok(rep.activeStanceTheme.stanceNameKo.length > 0);
+  assert.ok(rep.dailyPracticeRitual.length > 0);
+  assert.ok(rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('실제 윷 던지기를 대신하지 않으며'));
+  const prompt = formatKoreanYutjeomFourStickPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%') && !prompt.includes('점수'));
+  assert.ok(prompt.includes('오늘의 실천 의례'));
+  assert.ok(prompt.includes('성찰 질문'));
+  assert.ok(prompt.includes('해석 경계'));
+  assert.ok(prompt.includes('KST 시공간 리듬'));
+  assert.ok(prompt.includes('낮 — 가락을 주고받는 시간'));
+
+  const relationship = calculateKoreanYutjeomFourStickOracle(profile, '가족과 자꾸 다투어요');
+  assert.equal(relationship.questionTopic, 'relationship');
+  assert.ok(!formatKoreanYutjeomFourStickPrompt(relationship).includes('/100'));
+});
+
+test('Tamil Thirukkural engine: Aram, Porul and Kamam guidance stay qualitative and unattributed', () => {
+  const rep = calculateTamilThirukkuralAramPorulKamam(profile, '연인과 자꾸 다투어요', new Date('2026-11-15T12:00:00Z'));
+  assert.equal(rep.engineVersion, TAMIL_THIRUKKURAL_ARAM_PORUL_KAMAM_VERSION);
+  assert.equal(rep.questionTopic, 'relationship');
+  assert.ok(rep.activeThirukkuralTheme.chapterReference.length > 0);
+  assert.ok(rep.situationalThirukkuralAudit.questionMapping.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('역본마다 문장 표현이 달라'));
+  const prompt = formatTamilThirukkuralAramPorulKamamPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%') && !prompt.includes('점수'));
+  assert.ok(prompt.includes('아람·포룰·카맘'));
+  assert.ok(prompt.includes('오늘의 실천 의례'));
+  assert.ok(prompt.includes('성찰 질문'));
+  assert.ok(prompt.includes('해석 경계'));
+  assert.doesNotMatch(prompt, /"[^"]{10,}"/);
+
+  const decision = calculateTamilThirukkuralAramPorulKamam(profile, '창업을 시작해도 될까요');
+  assert.equal(decision.questionTopic, 'decision');
+  assert.ok(decision.situationalThirukkuralAudit.chapterReference.includes('포룰'));
+});
+
+test('reworked Heidegger engine exposes qualitative stages instead of raw scores', () => {
+  const rep = calculateMartinHeideggerBeingAndTime(profile as any, '이직 시기를 고민하고 있어요', new Date('2026-11-14T00:00:00Z'));
+  assert.equal(rep.engineVersion, GERMAN_MARTIN_HEIDEGGER_VERSION);
+  assert.equal(rep.questionTopic, 'decision');
+  assert.ok(rep.temporalAugenblickRhythm.clarityStageKo.length > 0);
+  assert.ok(rep.dailyPracticeRitual.length > 0 && rep.reflectiveQuestion.length > 0 && rep.interpretiveBoundary.length > 0);
+  const prompt = formatMartinHeideggerBeingAndTimePrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%') && !prompt.includes('점수'));
+  assert.ok(prompt.includes('일상 실천 의례'));
+  assert.ok(prompt.includes('해석 경계'));
+  assert.ok(prompt.includes(rep.temporalAugenblickRhythm.clarityStageKo));
+});
+
+test('reworked Rumi engine takes the question and KST rhythm without exposing raw scores', () => {
+  const rep = calculateRumiMasnaviDivineLove(profile, '상처가 아직 아파요', new Date('2026-11-14T21:00:00Z'));
+  assert.equal(rep.engineVersion, RUMI_MASNAVI_SUFI_VERSION);
+  assert.equal(rep.questionTopic, 'healing');
+  assert.ok(rep.temporalSamaRhythm.kstWindow.includes('새벽'));
+  assert.ok(rep.dailyPracticeRitual.length > 0 && rep.reflectiveQuestion.length > 0 && rep.interpretiveBoundary.length > 0);
+  const prompt = formatRumiMasnaviDivineLovePrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%') && !prompt.includes('점수'));
+  assert.ok(prompt.includes('KST 시공간 리듬'));
+  assert.ok(prompt.includes('오늘의 실천 의례'));
+  assert.ok(prompt.includes(rep.activeSpiritualStation.stationNameKo));
+});

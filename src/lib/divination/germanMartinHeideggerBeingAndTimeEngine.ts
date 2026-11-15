@@ -7,13 +7,19 @@
  * 3. 피투성(Geworfenheit)과 기투(Entwurf)
  * 4. 죽음을 향한 존재(Sein-zum-Tode)와 순간(Augenblick)
  * 5. 질문 맥락 현존재 감사(situationalDaseinAudit) + KST 시공간 리듬(temporalAugenblickRhythm) + 교차 검증 매트릭스(daseinSynthesisMatrix)
+ * 6. 질문 주제 분기(questionTopic) · 일상 실천 의례(dailyPracticeRitual) · 성찰 질문(reflectiveQuestion) · 해석 경계(interpretiveBoundary)
  *
- * @version LUCKEY-MARTIN-HEIDEGGER-BEING-AND-TIME-v2.0.0
+ * v2.1.0 정성 체계: 결과 객체의 수치 필드는 내부 계산 호환용으로만 남기고,
+ * 프롬프트 포맷터에서는 /100·%·원본 수치를 노출하지 않고 정성 단계 표현으로 전환합니다.
+ *
+ * @version LUCKEY-MARTIN-HEIDEGGER-BEING-AND-TIME-v2.1.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const GERMAN_MARTIN_HEIDEGGER_VERSION = 'LUCKEY-MARTIN-HEIDEGGER-BEING-AND-TIME-v2.0.0';
+export const GERMAN_MARTIN_HEIDEGGER_VERSION = 'LUCKEY-MARTIN-HEIDEGGER-BEING-AND-TIME-v2.1.0';
+
+export type HeideggerQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
 export interface HeideggerTheme {
   themeKey: string;
@@ -44,6 +50,8 @@ export interface HeideggerTemporalAugenblickRhythm {
   timeWindowKo: string;
   seasonKo: string;
   authenticityClarityIndex: number;
+  // 정성 단계 표현 (프롬프트에는 이 값만 노출)
+  clarityStageKo: string;
   dailyDaseinPractice: string;
 }
 
@@ -57,6 +65,7 @@ export interface HeideggerDaseinSynthesisMatrix {
 export interface MartinHeideggerBeingAndTimeResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: HeideggerQuestionTopic;
   // 5대 핵심 하이데거 실존 지표 (0~100)
   inDerWeltSeinRelationalScore: number;         // 세계-내-존재(In-der-Welt-sein) 및 근원적 존재 연관도
   dasManOvercomingAuthenticityScore: number;    // 세인(Das Man) 탈피 및 본래성(Eigentlichkeit) 지수
@@ -69,6 +78,9 @@ export interface MartinHeideggerBeingAndTimeResult {
   situationalDaseinAudit: HeideggerSituationalDaseinAudit;
   temporalAugenblickRhythm: HeideggerTemporalAugenblickRhythm;
   daseinSynthesisMatrix: HeideggerDaseinSynthesisMatrix;
+  dailyPracticeRitual: string;
+  reflectiveQuestion: string;
+  interpretiveBoundary: string;
   heideggerComprehensiveGuidance: {
     guidanceTitle: string;
     philosophicalCounsel: string;
@@ -197,6 +209,13 @@ function buildSituationalDaseinAudit(question: string, absHash: number): Heidegg
   };
 }
 
+export function describeHeideggerStage(score: number): string {
+  if (score >= 90) return '본래적 결단이 환히 열린 결(Eigentliche Entschlossenheit)';
+  if (score >= 82) return '세인을 벗어나 기투가 깨어나는 결(Entwurf Awakening)';
+  if (score >= 74) return '양심의 부름을 듣고 자리를 잡는 결(Ruf des Gewissens)';
+  return '일상의 소음 속에서 방향을 더듬는 결(Alltäglichkeit)';
+}
+
 function buildTemporalAugenblickRhythm(now: Date, baseScore: number): HeideggerTemporalAugenblickRhythm {
   const kstDate = new Date(now.getTime() + 9 * 60 * 60 * 1000);
   const kstHour = kstDate.getUTCHours();
@@ -232,13 +251,48 @@ function buildTemporalAugenblickRhythm(now: Date, baseScore: number): HeideggerT
     dailyDaseinPractice = '세상의 소음을 끄고 나의 유한성과 오늘의 진정성을 조용히 비추어 보십시오.';
   }
 
+  const authenticityClarityIndex = Math.min(100, Math.round(baseScore + hourBonus));
+
   return {
     kstHour,
     timeWindowKo,
     seasonKo,
-    authenticityClarityIndex: Math.min(100, Math.round(baseScore + hourBonus)),
+    authenticityClarityIndex,
+    clarityStageKo: describeHeideggerStage(authenticityClarityIndex),
     dailyDaseinPractice,
   };
+}
+
+function classifyHeideggerQuestionTopic(question: string): HeideggerQuestionTopic {
+  if (/관계|사람|가족|친구|동료|사랑|연인|갈등|다툼|다투|서운|만남|이별/.test(question)) return 'relationship';
+  if (/결정|선택|이직|창업|시작|계획|진로|미래|도전|목표/.test(question)) return 'decision';
+  if (/불안|지침|우울|회복|휴식|건강|수면|힘들|지친|공허/.test(question)) return 'healing';
+  return 'reflection';
+}
+
+function buildHeideggerTopicExtras(topic: HeideggerQuestionTopic): { dailyPracticeRitual: string; reflectiveQuestion: string } {
+  switch (topic) {
+    case 'relationship':
+      return {
+        dailyPracticeRitual: '오늘 마주치는 사람에게 세인의 잣대 대신 그 사람의 형편을 묻는 짧은 말 한마디 먼저 건네기.',
+        reflectiveQuestion: '이 관계에서 나는 상대의 실제 모습을 보고 있습니까, 아니면 남들이 기대하는 모습을 보고 있습니까?',
+      };
+    case 'decision':
+      return {
+        dailyPracticeRitual: '미뤄 둔 결정 하나를 골라, 오늘 안에 되돌릴 수 있는 가장 작은 기투로 옮겨 보기.',
+        reflectiveQuestion: '완벽한 조건을 기다리는 동안 미루고 있는 일은 무엇이며, 지금 손에 쥔 것으로 시작할 수 있는 부분은 어디입니까?',
+      };
+    case 'healing':
+      return {
+        dailyPracticeRitual: '하루 중 잠깐 모든 화면과 안내를 끄고, 내 유한함과 지금의 숨을 조용히 바라보는 시간 가지기.',
+        reflectiveQuestion: '지금 나를 지치게 하는 염려 가운데 실제로 내가 손댈 수 있는 것과 그저 기다려야 하는 것은 무엇입니까?',
+      };
+    default:
+      return {
+        dailyPracticeRitual: '오늘 내 양심이 가리킨 행동 하나를 정해 두고, 잠들기 전에 그것을 했는지 짧게 적어 두기.',
+        reflectiveQuestion: '세상의 소음과 남의 기대를 전부 끄고 나면, 오늘 내가 진짜로 하려 했던 일은 무엇입니까?',
+      };
+  }
 }
 
 export function calculateMartinHeideggerBeingAndTime(
@@ -251,8 +305,9 @@ export function calculateMartinHeideggerBeingAndTime(
   const birthDate = profile?.basic?.birthdate ?? p?.birthDate ?? p?.birthdate ?? '1990-01-01';
   const birthTime = profile?.basic?.birthtime ?? p?.birthTime ?? p?.birthtime ?? '12:00';
   const gender = profile?.basic?.gender ?? p?.gender ?? 'neutral';
+  const questionTopic = classifyHeideggerQuestionTopic(question);
 
-  const seedString = `MARTIN-HEIDEGGER-BEING-AND-TIME:${name}:${birthDate}:${birthTime}:${gender}:${question.trim()}`;
+  const seedString = `MARTIN-HEIDEGGER-BEING-AND-TIME:${name}:${birthDate}:${birthTime}:${gender}:${questionTopic}:${question.trim()}`;
 
   let hash = 0;
   for (let i = 0; i < seedString.length; i++) {
@@ -295,9 +350,14 @@ export function calculateMartinHeideggerBeingAndTime(
     `${situationalDaseinAudit.authenticityDirective} 아울러 《존재와 시간》의 경구 "${focalHeideggerAphorism.aphorismKo}"(${focalHeideggerAphorism.aphorismGerman})을 음미하고 ` +
     `${temporalAugenblickRhythm.dailyDaseinPractice}`;
 
+  const topicExtras = buildHeideggerTopicExtras(questionTopic);
+  const interpretiveBoundary =
+    '하이데거의 실존 현상학 관점은 세인과 본래성의 갈림길을 상징적으로 비추는 성찰 렌즈입니다. 개인의 길흉과 미래를 단정하지 않고, 의학적·심리적 진단이나 전문 상담을 대신하지 않습니다.';
+
   return {
     engineVersion: GERMAN_MARTIN_HEIDEGGER_VERSION,
     calculatedAtKst: new Date(now.getTime() + 9 * 60 * 60 * 1000).toISOString().replace('Z', '+09:00'),
+    questionTopic,
     inDerWeltSeinRelationalScore,
     dasManOvercomingAuthenticityScore,
     geworfenheitEntwurfProjectScore,
@@ -308,6 +368,9 @@ export function calculateMartinHeideggerBeingAndTime(
     situationalDaseinAudit,
     temporalAugenblickRhythm,
     daseinSynthesisMatrix,
+    dailyPracticeRitual: topicExtras.dailyPracticeRitual,
+    reflectiveQuestion: topicExtras.reflectiveQuestion,
+    interpretiveBoundary,
     heideggerComprehensiveGuidance: {
       guidanceTitle,
       philosophicalCounsel,
@@ -317,19 +380,22 @@ export function calculateMartinHeideggerBeingAndTime(
 
 export function formatMartinHeideggerBeingAndTimePrompt(res: MartinHeideggerBeingAndTimeResult): string {
   return [
-    `【마틴 하이데거 《존재와 시간》 현존재 & 본래성 지표 v2.0】`,
-    `- 세계-내-존재 존재연관도(In-der-Welt-sein): ${res.inDerWeltSeinRelationalScore}/100`,
-    `- 세인 탈피 본래성 지수(Eigentlichkeit): ${res.dasManOvercomingAuthenticityScore}/100`,
-    `- 피투성 수용 및 미래 기투력(Entwurf): ${res.geworfenheitEntwurfProjectScore}/100`,
-    `- 유한성 직시 실존밀도도(Sein-zum-Tode): ${res.seinZumTodeLucidityScore}/100`,
-    `- 염려 및 시간성 원숙도(Sorge & Zeitlichkeit): ${res.sorgeCareTemporalIndex}/100`,
+    `【마틴 하이데거 《존재와 시간》 현존재 & 본래성 지표】`,
+    `- 질문 맥락 초점: ${res.questionTopic}`,
+    `- 세계-내-존재 존재연관 결(In-der-Welt-sein): ${describeHeideggerStage(res.inDerWeltSeinRelationalScore)}`,
+    `- 세인 탈피 본래성 결(Eigentlichkeit): ${describeHeideggerStage(res.dasManOvercomingAuthenticityScore)}`,
+    `- 피투성 수용 및 미래 기투 결(Entwurf): ${describeHeideggerStage(res.geworfenheitEntwurfProjectScore)}`,
+    `- 유한성 직시 실존 밀도 결(Sein-zum-Tode): ${describeHeideggerStage(res.seinZumTodeLucidityScore)}`,
+    `- 염려 및 시간성 원숙도(Sorge & Zeitlichkeit): ${describeHeideggerStage(res.sorgeCareTemporalIndex)}`,
     `- 질문 맥락 현존재 국면: [${res.situationalDaseinAudit.existentialMode}] ${res.situationalDaseinAudit.focusAxisKo}`,
     `- 원전 처방: ${res.situationalDaseinAudit.classicalCitation} → ${res.situationalDaseinAudit.authenticityDirective}`,
-    `- 성찰 질문: ${res.situationalDaseinAudit.reflectiveQuestion}`,
-    `- KST 시공간 리듬: ${res.temporalAugenblickRhythm.timeWindowKo} (${res.temporalAugenblickRhythm.seasonKo}, 본래성지수 ${res.temporalAugenblickRhythm.authenticityClarityIndex}/100) — ${res.temporalAugenblickRhythm.dailyDaseinPractice}`,
-    `- 종합 등급: ${res.daseinSynthesisMatrix.overallDaseinGrade}`,
+    `- 성찰 질문: ${res.reflectiveQuestion}`,
+    `- KST 시공간 리듬: ${res.temporalAugenblickRhythm.timeWindowKo} (${res.temporalAugenblickRhythm.seasonKo}, 본래성 결 ${res.temporalAugenblickRhythm.clarityStageKo}) — ${res.temporalAugenblickRhythm.dailyDaseinPractice}`,
+    `- 종합 등급: ${res.daseinSynthesisMatrix.overallDaseinGrade} (세인 탈피 ${describeHeideggerStage(res.daseinSynthesisMatrix.dasManLiberation)} · 기투 ${describeHeideggerStage(res.daseinSynthesisMatrix.entwurfProjection)} · 유한성 직시 ${describeHeideggerStage(res.daseinSynthesisMatrix.seinsMutLucidity)})`,
     `- 핵심 실존 테마: ${res.activeHeideggerTheme.themeTitleKo} [${res.activeHeideggerTheme.themeTitleGerman}]`,
-    `- 핵심 원전 경구: "${res.focalHeideggerAphorism.aphorismKo}" (${res.focalHeideggerAphorism.sourceContext})`,
+    `- 핵심 원전 경구: "${res.focalHeideggerAphorism.aphorismKo}"`,
+    `- 일상 실천 의례: ${res.dailyPracticeRitual}`,
     `- 종합 실존철학 권면: ${res.heideggerComprehensiveGuidance.philosophicalCounsel}`,
+    `- 해석 경계: ${res.interpretiveBoundary}`,
   ].join('\n');
 }

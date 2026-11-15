@@ -11,12 +11,26 @@
  * 4. 사마(Sama) 세마 선회 명상: 우주의 끊임없는 회전과 사랑의 박동에 조응하여 얻는 초월적 평정.
  * 5. 상처의 치유 통찰: "상처는 빛이 그대에게 들어오는 문이다(The wound is the place where the Light enters you)."
  *
- * @version LUCKEY-RUMI-MASNAVI-SUFI-v1.0.0
+ * v2.1.0 정성 체계: 질문 주제 분기(questionTopic) · KST 시공간 리듬(temporalSamaRhythm) ·
+ * 일상 실천 의례(dailyPracticeRitual) · 성찰 질문(reflectiveQuestion) · 해석 경계(interpretiveBoundary)를 갖추고,
+ * 결과 객체의 수치 필드는 내부 호환용으로만 남기며 프롬프트에서는 /100·%·원본 수치를 노출하지 않습니다.
+ *
+ * @version LUCKEY-RUMI-MASNAVI-SUFI-v2.1.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const RUMI_MASNAVI_SUFI_VERSION = 'LUCKEY-RUMI-MASNAVI-SUFI-v1.0.0';
+export const RUMI_MASNAVI_SUFI_VERSION = 'LUCKEY-RUMI-MASNAVI-SUFI-v2.1.0';
+
+export type RumiQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
+
+export interface SufiTemporalSamaRhythm {
+  kstWindow: string;
+  seasonTone: string;
+  samaFocus: '갈망의 문(Talab)' | '정화의 시간(Qalb)' | '선회의 평정(Sama)' | '합일의 고요(Fana)';
+  rhythmStageKo: string;
+  rhythmGuidance: string;
+}
 
 export interface SufiSpiritualStation {
   stationKey: string;
@@ -37,6 +51,7 @@ export interface RumiPoeticWisdom {
 export interface RumiMasnaviDivineLoveResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: RumiQuestionTopic;
   // 5대 핵심 지표 (0~100)
   ishqDivineLoveScore: number;            // 신성한 사랑(Ishq) 영혼 갈망도
   qalbPurificationScore: number;          // 심장(Qalb) 내면 정화 및 직관력
@@ -46,6 +61,10 @@ export interface RumiMasnaviDivineLoveResult {
   // 세부 체계
   activeSpiritualStation: SufiSpiritualStation;
   focalPoeticWisdom: RumiPoeticWisdom;
+  temporalSamaRhythm: SufiTemporalSamaRhythm;
+  dailyPracticeRitual: string;
+  reflectiveQuestion: string;
+  interpretiveBoundary: string;
   rumiMysticCounsel: {
     counselTitle: string;
     mysticGuidance: string;
@@ -116,11 +135,107 @@ const POETIC_WISDOMS: RumiPoeticWisdom[] = [
   },
 ];
 
-export function calculateRumiMasnaviDivineLove(profile: UserProfile): RumiMasnaviDivineLoveResult {
+function classifyRumiQuestionTopic(query: string): RumiQuestionTopic {
+  if (/관계|사랑|연인|연애|가족|친구|동료|갈등|다툼|다투|다툐|싸우|서운|이별|그리움/.test(query)) return 'relationship';
+  if (/결정|선택|이직|창업|시작|계획|진로|미래|도전|목표/.test(query)) return 'decision';
+  if (/불안|지침|우울|회복|휴식|건강|수면|힘들|지친|상처|슬픔/.test(query)) return 'healing';
+  return 'reflection';
+}
+
+function describeRumiStage(score: number): string {
+  if (score >= 92) return '불꽃이 환히 타오르는 결(Ishq)';
+  if (score >= 84) return '가슴이 서서위 닦이는 결(Qalb)';
+  if (score >= 76) return '에고의 껍질이 얇아지는 결(Nafs)';
+  return '갈증으로 먼저 열리는 결(Talab)';
+}
+
+function buildSufiTemporalSamaRhythm(now: Date): SufiTemporalSamaRhythm {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const hour = kst.getUTCHours();
+  const month = kst.getUTCMonth() + 1;
+
+  const seasonTone =
+    month >= 3 && month <= 5
+      ? '봄 — 갈망의 씨앗이 트는 계절'
+      : month >= 6 && month <= 8
+        ? '여름 — 불꽃(Ishq)이 가장 뜨거운 계절'
+        : month >= 9 && month <= 11
+          ? '가을 — 거둔 것을 비우고 정화하는 계절'
+          : '겨울 — 침묵 속에 내면을 닦는 계절';
+
+  if (hour >= 5 && hour < 11) {
+    return {
+      kstWindow: '새벽 — 갈망의 문이 열리는 시간',
+      seasonTone,
+      samaFocus: '갈망의 문(Talab)',
+      rhythmStageKo: '마음이 먼저 열리는 결',
+      rhythmGuidance: '아침에는 결론보다 간절함을 먼저 인정해 보세요. 무엇이 그리운지 아는 것이 영적 여정의 시작입니다.',
+    };
+  }
+  if (hour >= 11 && hour < 17) {
+    return {
+      kstWindow: '낮 — 가슴을 닦는 시간',
+      seasonTone,
+      samaFocus: '정화의 시간(Qalb)',
+      rhythmStageKo: '감정이 실제로 정리되는 결',
+      rhythmGuidance: '낮에는 미움과 미련을 없애려 애쓰기보다, 지금 마음에 남은 것을 솔직히 적어 보세요.',
+    };
+  }
+  if (hour >= 17 && hour < 22) {
+    return {
+      kstWindow: '저녁 — 선회의 평정 시간',
+      seasonTone,
+      samaFocus: '선회의 평정(Sama)',
+      rhythmStageKo: '하루의 소음이 가라앉는 결',
+      rhythmGuidance: '저녁에는 하루의 소란에서 한 발 물러나, 나를 살게 한 작은 것들을 떠올려 보세요.',
+    };
+  }
+  return {
+    kstWindow: '밤 — 합일의 고요 시간',
+    seasonTone,
+    samaFocus: '합일의 고요(Fana)',
+    rhythmStageKo: '자아가 앞은히 놓이는 결',
+    rhythmGuidance: '밤에는 스스로를 증명하려는 마음을 잠시 내려놓고, 아무것도 하지 않는 시간을 허락해 주세요.',
+  };
+}
+
+function buildRumiTopicExtras(topic: RumiQuestionTopic): { dailyPracticeRitual: string; reflectiveQuestion: string } {
+  switch (topic) {
+    case 'relationship':
+      return {
+        dailyPracticeRitual: '오늘 고마운 사람에게 조건 없는 감사 한마디를 먼저 건네기.',
+        reflectiveQuestion: '이 관계에서 나는 상대를 사랑하는 것인가요, 내가 바라는 모습을 사랑하는 것인가요?',
+      };
+    case 'decision':
+      return {
+        dailyPracticeRitual: '결정 앞에서 잠시 손을 멈추고, 두려움과 진짜 바람을 종이에 나누어 적어 보기.',
+        reflectiveQuestion: '이 선택에서 내가 두려워하는 것은 상실인가요, 아니면 아직 사랑하지 못한 나 자신인가요?',
+      };
+    case 'healing':
+      return {
+        dailyPracticeRitual: '아픈 기억 하나를 떠올려, 그것을 지우려 하지 않고 그 자리에 잠시 머물러 보기.',
+        reflectiveQuestion: '이 상처가 내게 열어 준 문은 무엇이며, 그 문으로 들어온 빛은 무엇입니까?',
+      };
+    default:
+      return {
+        dailyPracticeRitual: '하루 중 잠시 모든 말과 화면을 멈추고 고요한 침묵에 머물러 보기.',
+        reflectiveQuestion: '내가 지금 붙잡고 있는 것이 나를 살리는 것인가요, 아니면 무서워서 놓지 못하는 것인가요?',
+      };
+  }
+}
+
+export function calculateRumiMasnaviDivineLove(
+  profile: UserProfile,
+  question = '',
+  now: Date = new Date(),
+): RumiMasnaviDivineLoveResult {
+  const questionTopic = classifyRumiQuestionTopic(question);
   const seedString =
     (profile?.basic?.birthdate ?? (profile as any)?.birthdate ?? '1990-01-01') +
     (profile?.basic?.name ?? (profile as any)?.name ?? 'User') +
     (profile?.basic?.birthtime ?? (profile as any)?.birthtime ?? '12:00') +
+    questionTopic +
+    question.trim() +
     'RumiMasnaviSufi';
 
   let hash = 0;
@@ -141,6 +256,10 @@ export function calculateRumiMasnaviDivineLove(profile: UserProfile): RumiMasnav
 
   const activeSpiritualStation = SPIRITUAL_STATIONS[stationIndex];
   const focalPoeticWisdom = POETIC_WISDOMS[wisdomIndex];
+  const temporalSamaRhythm = buildSufiTemporalSamaRhythm(now);
+  const topicExtras = buildRumiTopicExtras(questionTopic);
+  const interpretiveBoundary =
+    '루미와 수피 영성의 관점은 사랑과 상처를 영적으로 비추는 상징적 성찰 렌즈입니다. 개인의 길흉과 미래를 단정하지 않고, 종교적 권위나 치료적 판단을 대신하지 않습니다. 헌신을 이유로 자기희생이나 불합리한 복종을 권하지 않습니다.';
 
   const counselTitle = `루미 마스나비 수피 지혜: ${activeSpiritualStation.stationNameKo}`;
   const mysticGuidance = `잘랄 앗 딘 루미의 수피즘 영성은 에고의 방어벽을 녹여내고 영혼의 본래 빛과 신성한 사랑을 회복하도록 이끕니다. ` +
@@ -150,7 +269,8 @@ export function calculateRumiMasnaviDivineLove(profile: UserProfile): RumiMasnav
 
   return {
     engineVersion: RUMI_MASNAVI_SUFI_VERSION,
-    calculatedAtKst: new Date().toISOString(),
+    calculatedAtKst: new Date(now.getTime() + 9 * 60 * 60 * 1000).toISOString().replace('Z', '+09:00'),
+    questionTopic,
     ishqDivineLoveScore,
     qalbPurificationScore,
     fanaEgoDissolutionScore,
@@ -158,6 +278,10 @@ export function calculateRumiMasnaviDivineLove(profile: UserProfile): RumiMasnav
     woundLightWisdomScore,
     activeSpiritualStation,
     focalPoeticWisdom,
+    temporalSamaRhythm,
+    dailyPracticeRitual: topicExtras.dailyPracticeRitual,
+    reflectiveQuestion: topicExtras.reflectiveQuestion,
+    interpretiveBoundary,
     rumiMysticCounsel: {
       counselTitle,
       mysticGuidance,
@@ -168,16 +292,21 @@ export function calculateRumiMasnaviDivineLove(profile: UserProfile): RumiMasnav
 export function formatRumiMasnaviDivineLovePrompt(res: RumiMasnaviDivineLoveResult): string {
   return [
     `【루미 마스나비 & 수피즘 신성한 사랑 지표】`,
-    `- 신성한 사랑(Ishq) 영혼 갈망도: ${res.ishqDivineLoveScore}/100`,
-    `- 심장(Qalb) 내면 정화력: ${res.qalbPurificationScore}/100`,
-    `- 에고(Nafs) 집착 초월·무아 합일도: ${res.fanaEgoDissolutionScore}/100`,
-    `- 선회(Sama) 초월적 평정 지수: ${res.samaWhirlingTranquilityScore}/100`,
-    `- 상처의 빛 수용 통찰력: ${res.woundLightWisdomScore}/100`,
+    `- 질문 맥락 초점: ${res.questionTopic}`,
+    `- 신성한 사랑(Ishq) 영혼 갈망 결: ${describeRumiStage(res.ishqDivineLoveScore)}`,
+    `- 심장(Qalb) 내면 정화 결: ${describeRumiStage(res.qalbPurificationScore)}`,
+    `- 에고(Nafs) 집착 초월·무아 합일 결: ${describeRumiStage(res.fanaEgoDissolutionScore)}`,
+    `- 선회(Sama) 초월적 평정 결: ${describeRumiStage(res.samaWhirlingTranquilityScore)}`,
+    `- 상처의 빛 수용 통찰 결: ${describeRumiStage(res.woundLightWisdomScore)}`,
     `- 핵심 수피 영적 단계: ${res.activeSpiritualStation.stationNameKo} [${res.activeSpiritualStation.stationNameArabic}]`,
     `- 단계적 의미: ${res.activeSpiritualStation.spiritualMeaning}`,
     `- 실천적 영성 조언: ${res.activeSpiritualStation.practicalCounsel}`,
-    `- 루미의 핵심 시적 지혜: ${res.focalPoeticWisdom.originalTheme} ("${res.focalPoeticWisdom.persianOrEnglishTheme}")`,
+    `- 루미의 핵심 시적 지혜: ${res.focalPoeticWisdom.originalTheme}`,
     `- 영적 통찰: ${res.focalPoeticWisdom.wisdomInsight}`,
+    `- KST 시공간 리듬: ${res.temporalSamaRhythm.kstWindow} (${res.temporalSamaRhythm.seasonTone}, ${res.temporalSamaRhythm.samaFocus}, ${res.temporalSamaRhythm.rhythmStageKo}) — ${res.temporalSamaRhythm.rhythmGuidance}`,
+    `- 오늘의 실천 의례: ${res.dailyPracticeRitual}`,
+    `- 성찰 질문: ${res.reflectiveQuestion}`,
     `- 신비주의 수양 지침: ${res.rumiMysticCounsel.mysticGuidance}`,
+    `- 해석 경계: ${res.interpretiveBoundary}`,
   ].join('\n');
 }
