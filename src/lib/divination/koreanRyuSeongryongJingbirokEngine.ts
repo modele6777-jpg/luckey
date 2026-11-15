@@ -10,12 +10,12 @@
  * 4. 사리사욕 초월 애국위민(愛國爲民): 모함과 난국 속에서도 흔들림 없이 백성의 굶주림과 고통을 보살피고 공공의 안녕을 위해 목숨을 바쳐 헌신한 청렴과 지조.
  * 5. 현장 중심 실무 위기관리력: 훈련도감(訓鍊都監) 설치, 속오법(束伍法) 편성, 양곡 확보와 작전 조율 등 허장성세를 버리고 실질적 결과를 만들어내는 실사구시적 위기 해결력.
  *
- * @version LUCKEY-RYU-SEONGRYONG-JINGBIROK-v1.0.0
+ * @version LUCKEY-RYU-SEONGRYONG-JINGBIROK-v2.0.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const KOREAN_RYU_SEONGRYONG_VERSION = 'LUCKEY-RYU-SEONGRYONG-JINGBIROK-v1.0.0';
+export const KOREAN_RYU_SEONGRYONG_VERSION = 'LUCKEY-RYU-SEONGRYONG-JINGBIROK-v2.0.0';
 
 export interface JingbirokTheme {
   themeKey: string;
@@ -49,6 +49,27 @@ export interface RyuSeongryongJingbirokResult {
     guidanceTitle: string;
     philosophicalCounsel: string;
   };
+  jingbirokSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
+}
+
+function formatJingbirokKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
+
+function describeJingbirokStage(score: number): string {
+  if (score >= 88) return '유비무환(有備無患) — 과거의 교훈과 선제적 방비가 하나로 맞물린 안정적 위기대응 국면';
+  if (score >= 78) return '징전비후(懲前毖後) — 시행착오를 정직히 복기하며 실무 기반을 다지는 정돈기';
+  return '거안사위(居安思危) — 평온한 일상 속에서 잠재된 변수를 미리 점검하는 예비기';
 }
 
 export const JINGBIROK_THEMES: JingbirokTheme[] = [
@@ -128,7 +149,9 @@ export const JINGBIROK_APHORISMS: JingbirokAphorism[] = [
 ];
 
 export function calculateRyuSeongryongJingbirok(
-  profile: UserProfile
+  profile: UserProfile,
+  query?: string,
+  now: Date = new Date(),
 ): RyuSeongryongJingbirokResult {
   const p = profile as any;
   const name = profile?.basic?.name ?? p?.name ?? '방문자';
@@ -163,9 +186,24 @@ export function calculateRyuSeongryongJingbirok(
     `${activeJingbirokTheme.practicalCounsel} 아울러 류성룡 선생의 가르침 "${focalJingbirokAphorism.aphorismKo}"(${focalJingbirokAphorism.aphorismHanja})을 가슴에 새기고, ` +
     `${focalJingbirokAphorism.actionGuidance}`;
 
+  const calculatedAtKst = formatJingbirokKstTimestamp(now);
+  const avgScore = Math.round(
+    (jingjeonBihuPastReflectionScore +
+      yubimuhwanPreemptivePreparednessScore +
+      daeseungTalentIntegrationScore +
+      selflessDevotionPublicGoodScore +
+      practicalCrisisManagementExecutionScore) /
+      5,
+  );
+  const jingbirokSynthesisMatrix = {
+    dominantTension: `${activeJingbirokTheme.themeTitleKo} ↔ ${focalJingbirokAphorism.sourceContext}`,
+    alignmentState: describeJingbirokStage(avgScore),
+    integratedAction: `${focalJingbirokAphorism.actionGuidance}${query?.trim() ? ` [질문 맥락: ${query.trim()}]` : ''}`,
+  };
+
   return {
     engineVersion: KOREAN_RYU_SEONGRYONG_VERSION,
-    calculatedAtKst: new Date().toISOString(),
+    calculatedAtKst,
     jingjeonBihuPastReflectionScore,
     yubimuhwanPreemptivePreparednessScore,
     daeseungTalentIntegrationScore,
@@ -177,17 +215,23 @@ export function calculateRyuSeongryongJingbirok(
       guidanceTitle,
       philosophicalCounsel,
     },
+    jingbirokSynthesisMatrix,
   };
 }
 
 export function formatRyuSeongryongJingbirokPrompt(res: RyuSeongryongJingbirokResult): string {
-  return [
+  const avgScore = Math.round(
+    (res.jingjeonBihuPastReflectionScore +
+      res.yubimuhwanPreemptivePreparednessScore +
+      res.daeseungTalentIntegrationScore +
+      res.selflessDevotionPublicGoodScore +
+      res.practicalCrisisManagementExecutionScore) /
+      5,
+  );
+  const lines = [
     `【서애 류성룡 《징비록》 징전비후 성찰 & 유비무환 위기대응 지표】`,
-    `- 징전비후 과거 성찰도(懲前毖後): ${res.jingjeonBihuPastReflectionScore}/100`,
-    `- 유비무환 선제적 방비력(居安思危 & 有備無患): ${res.yubimuhwanPreemptivePreparednessScore}/100`,
-    `- 대승적 인재 발탁·연대력(擧賢揚能): ${res.daeseungTalentIntegrationScore}/100`,
-    `- 사리사욕 초월 애국위민도(公心愛民): ${res.selflessDevotionPublicGoodScore}/100`,
-    `- 현장 중심 실무 위기관리력(實事求是 危機管理): ${res.practicalCrisisManagementExecutionScore}/100`,
+    `- 연산 시각: ${res.calculatedAtKst} | 엔진: ${res.engineVersion}`,
+    `- 위기대비 국면: ${describeJingbirokStage(avgScore)}`,
     `- 핵심 징비 테마: ${res.activeJingbirokTheme.themeTitleKo} [${res.activeJingbirokTheme.themeTitleHanja}]`,
     `- 역사적·철학적 통찰: ${res.activeJingbirokTheme.historicalInsight}`,
     `- 실천적 조언: ${res.activeJingbirokTheme.practicalCounsel}`,
@@ -195,5 +239,12 @@ export function formatRyuSeongryongJingbirokPrompt(res: RyuSeongryongJingbirokRe
     `- 한자 원문: "${res.focalJingbirokAphorism.aphorismHanja}" [${res.focalJingbirokAphorism.sourceContext}]`,
     `- 구체적 실천 지침: ${res.focalJingbirokAphorism.actionGuidance}`,
     `- 종합 통찰 권면: ${res.seongryongComprehensiveGuidance.philosophicalCounsel}`,
-  ].join('\n');
+  ];
+  if (res.jingbirokSynthesisMatrix) {
+    lines.push(
+      `- 교차 매트릭스 [핵심 긴장: ${res.jingbirokSynthesisMatrix.dominantTension} | 조율 상태: ${res.jingbirokSynthesisMatrix.alignmentState}]`,
+      `- 통합 실천: ${res.jingbirokSynthesisMatrix.integratedAction}`,
+    );
+  }
+  return lines.join('\n');
 }
