@@ -11,12 +11,12 @@
  *    - 경물(敬物): 미물과 자연 만물까지도 함부로 대하지 않는 지극한 생명 공경
  * 3. 4대 심기 수련(지기금지원위대강) 및 운기 대반전 성화력 산출
  *
- * @version LUCKEY-SUUN-GASI-HEON-v1.0.0
+ * @version LUCKEY-SUUN-GASI-HEON-v2.0.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const SUUN_GASI_HEON_VERSION = 'LUCKEY-SUUN-GASI-HEON-v1.0.0';
+export const SUUN_GASI_HEON_VERSION = 'LUCKEY-SUUN-GASI-HEON-v2.0.0';
 
 export interface SuunCultivationStage {
   stageLevel: number;
@@ -48,6 +48,27 @@ export interface SuunGasiHeonResult {
     hangeulText: string;
     spiritualMeaning: string;
   };
+  suunGasiSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
+}
+
+function formatSuunGasiKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
+
+function describeSuunGasiStage(score: number): string {
+  if (score >= 88) return '용천심검(龍泉心劍) — 삼경의 공경과 부재래지 시호의 결단이 하나로 선 성화기';
+  if (score >= 76) return '지기화합(至氣化合) — 고요한 수양 속에서 하늘·사람·만물을 공경히 잇는 성숙기';
+  return '수덕정심(修德正心) — 작은 습관과 마음가짐부터 바르게 벼려 나가는 입문기';
 }
 
 export type SuunGasiHeonReport = SuunGasiHeonResult;
@@ -91,11 +112,15 @@ function hashSeed(seedStr: string): number {
   return Math.abs(h);
 }
 
-export function calculateSuunGasiHeon(profile?: UserProfile): SuunGasiHeonResult {
+export function calculateSuunGasiHeon(
+  profile?: UserProfile,
+  query?: string,
+  now: Date = new Date(),
+): SuunGasiHeonResult {
   const birthdate = profile?.basic?.birthdate || '1995-03-21';
   const birthtime = profile?.basic?.birthtime || '12:00';
   const name = profile?.basic?.name || 'Inquirer';
-  const seed = hashSeed(`SUUN-GASI-HEON-${birthdate}-${birthtime}-${name}`);
+  const seed = hashSeed(`SUUN-GASI-HEON-${birthdate}-${birthtime}-${name}-${query ?? ''}`);
 
   const yongcheonSwordSeverancePower = (seed % 41) + 60; // 60~100
   const samgyeongReverenceHarmony = ((seed >> 3) % 39) + 62; // 62~100
@@ -112,9 +137,24 @@ export function calculateSuunGasiHeon(profile?: UserProfile): SuunGasiHeonResult
   const verseIdx = (seed >> 6) % GEOMGYEOL_VERSES.length;
   const geomgyeolVerse = GEOMGYEOL_VERSES[verseIdx];
 
+  const calculatedAtKst = formatSuunGasiKstTimestamp(now);
+  const avgScore = Math.round(
+    (yongcheonSwordSeverancePower +
+      samgyeongReverenceHarmony +
+      buJaeRaeTimingAwakening +
+      jiGiGeumJiCosmicQiFlow +
+      sudeokHeartPurityIndex) /
+      5,
+  );
+  const suunGasiSynthesisMatrix = {
+    dominantTension: `${activeCultivationStage.stageNameKo} ↔ ${primarySamgyeongVirtue.virtueNameKo}`,
+    alignmentState: describeSuunGasiStage(avgScore),
+    integratedAction: `${primarySamgyeongVirtue.actionablePractice}${query?.trim() ? ` [질문 맥락: ${query.trim()}]` : ''}`,
+  };
+
   return {
     engineVersion: SUUN_GASI_HEON_VERSION,
-    calculatedAtKst: getKstDateString(),
+    calculatedAtKst,
     yongcheonSwordSeverancePower,
     samgyeongReverenceHarmony,
     buJaeRaeTimingAwakening,
@@ -123,24 +163,38 @@ export function calculateSuunGasiHeon(profile?: UserProfile): SuunGasiHeonResult
     activeCultivationStage,
     primarySamgyeongVirtue,
     geomgyeolVerse,
+    suunGasiSynthesisMatrix,
   };
 }
 
 export function formatSuunGasiHeonPrompt(result: SuunGasiHeonResult): string {
-  return `[🗡️ 동학 수운 최제우 《용담유사》 검결(劍訣) 심기수련 & 삼경사상(三敬) 신탁 리포트]
-- 엔진 버전: ${result.engineVersion}
-- 용천검(龍泉劍) 심검 번뇌 결단력: ${result.yongcheonSwordSeverancePower}% (미혹과 악연을 베어내는 단호함)
-- 삼경(경천·경인·경물) 합일 조화율: ${result.samgyeongReverenceHarmony}% (사인여천의 지극한 공경력)
-- 부재래지 시호(不再來之時乎) 타이밍 각성력: ${result.buJaeRaeTimingAwakening}% (천재일우 골든타임 포착)
-- 지기금지(至氣今至) 원초 우주기 수용도: ${result.jiGiGeumJiCosmicQiFlow}% (대자연의 지극한 생명력 순환)
-- 수덕문(修德文) 덕성 정화 및 덕행 실천력: ${result.sudeokHeartPurityIndex}%
-- 현행 심기 수련 단계: **[${result.activeCultivationStage.stageNameKo} (${result.activeCultivationStage.stageHanja})]**
-  → 심검 상태: ${result.activeCultivationStage.innerSwordState}
-  → 운기 영역: ${result.activeCultivationStage.cosmicResonanceDomain}
-- 최우선 삼경(三敬) 실천 덕목: **[${result.primarySamgyeongVirtue.virtueNameKo} (${result.primarySamgyeongVirtue.virtueHanja})]**
-  → 본질: ${result.primarySamgyeongVirtue.coreEssence}
-  → 실천 지침: ${result.primarySamgyeongVirtue.actionablePractice}
-- 용담유사 비전 가사: 《${result.geomgyeolVerse.verseTitle}》
-  → 원문: "${result.geomgyeolVerse.hangeulText}"
-  → 영적 해석: ${result.geomgyeolVerse.spiritualMeaning}`;
+  const avgScore = Math.round(
+    (result.yongcheonSwordSeverancePower +
+      result.samgyeongReverenceHarmony +
+      result.buJaeRaeTimingAwakening +
+      result.jiGiGeumJiCosmicQiFlow +
+      result.sudeokHeartPurityIndex) /
+      5,
+  );
+  const lines = [
+    `[🗡️ 동학 수운 최제우 《용담유사》 검결(劍訣) 심기수련 & 삼경사상(三敬) 신탁 리포트]`,
+    `- 연산 시각: ${result.calculatedAtKst} | 엔진 버전: ${result.engineVersion}`,
+    `- 심기 수련 국면: ${describeSuunGasiStage(avgScore)}`,
+    `- 현행 심기 수련 단계: **[${result.activeCultivationStage.stageNameKo} (${result.activeCultivationStage.stageHanja})]**`,
+    `  → 심검 상태: ${result.activeCultivationStage.innerSwordState}`,
+    `  → 운기 영역: ${result.activeCultivationStage.cosmicResonanceDomain}`,
+    `- 최우선 삼경(三敬) 실천 덕목: **[${result.primarySamgyeongVirtue.virtueNameKo} (${result.primarySamgyeongVirtue.virtueHanja})]**`,
+    `  → 본질: ${result.primarySamgyeongVirtue.coreEssence}`,
+    `  → 실천 지침: ${result.primarySamgyeongVirtue.actionablePractice}`,
+    `- 용담유사 비전 가사: 《${result.geomgyeolVerse.verseTitle}》`,
+    `  → 원문: "${result.geomgyeolVerse.hangeulText}"`,
+    `  → 영적 해석: ${result.geomgyeolVerse.spiritualMeaning}`,
+  ];
+  if (result.suunGasiSynthesisMatrix) {
+    lines.push(
+      `- 교차 매트릭스 [핵심 긴장: ${result.suunGasiSynthesisMatrix.dominantTension} | 조율 상태: ${result.suunGasiSynthesisMatrix.alignmentState}]`,
+      `- 통합 실천: ${result.suunGasiSynthesisMatrix.integratedAction}`,
+    );
+  }
+  return lines.join('\n');
 }
