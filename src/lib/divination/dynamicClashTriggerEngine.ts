@@ -21,7 +21,7 @@ import {
   EARTHLY_BRANCHES
 } from '../sajuAnalysis';
 
-export const DYNAMIC_CLASH_ENGINE_VERSION = 'LUCKEY-CLASH-v1.0.0';
+export const DYNAMIC_CLASH_ENGINE_VERSION = 'LUCKEY-CLASH-v2.0.0';
 
 export type ClashType = 'six_clash' | 'three_penalties' | 'self_penalty' | 'six_harm' | 'six_destruction' | 'wonjin';
 export type HarmonyType = 'six_harmony' | 'three_harmony';
@@ -60,6 +60,7 @@ export interface HarmonyTriggerItem {
 export interface DynamicClashResult {
   engineVersion: string;
   targetDateIso: string;
+  calculatedAtKst: string;
   currentPillars: {
     yearZhi: string;
     monthZhi: string;
@@ -67,8 +68,8 @@ export interface DynamicClashResult {
     dayGan: string;
     dayGanZhiKo: string;
   };
-  volatilityScore: number; // 0 ~ 100 (변동성·돌파 에너지)
-  harmonyScore: number;    // 0 ~ 100 (조화·안정 에너지)
+  volatilityScore: number; // 내부 호환용 (프롬프트 비노출)
+  harmonyScore: number;    // 내부 호환용 (프롬프트 비노출)
   netStatus: 'explosive_change' | 'high_tension' | 'balanced_movement' | 'peaceful_flow';
   activeClashes: ClashTriggerItem[];
   activeHarmonies: HarmonyTriggerItem[];
@@ -78,7 +79,60 @@ export interface DynamicClashResult {
     avoidNow: string;
     goldenKey: string;
   };
+  situationalClashAudit: {
+    focusTheme: string;
+    clashCue: string;
+    tacticalStep: string;
+  };
+  temporalClashRhythm: {
+    kstTimeLabel: string;
+    triggerWatchWindow: string;
+    seasonalClashTone: string;
+    temporalGuidance: string;
+  };
+  clashSynthesisMatrix: {
+    coreInsight: string;
+    recommendedAction: string;
+    cautionNotice: string;
+  };
+  boundaryNotice: string;
   summary: string;
+}
+
+function getTemporalClashRhythm(now: Date) {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  const hour = kst.getUTCHours();
+  const month = kst.getUTCMonth() + 1;
+
+  const triggerWatchWindow =
+    hour >= 5 && hour < 11
+      ? '아침 충·합 점검창 — 오늘 일진과 원국의 맞부딪힘을 먼저 읽고 동선을 조율하는 시간'
+      : hour >= 11 && hour < 17
+        ? '정오 전환 실행창 — 충의 추진력을 새로운 시도나 정리 작업으로 승화하기 좋은 시간'
+        : hour >= 17 && hour < 22
+          ? '황혼 완충창 — 낮 동안 쌓인 긴장과 마찰을 호흡으로 풀고 합 기운을 챙기는 시간'
+          : '심야 안정창 — 급한 결단이나 날카로운 연락을 멈추고 내일을 준비하는 시간';
+
+  const seasonalClashTone =
+    month >= 3 && month <= 5
+      ? '봄 · 발산 돌파절 (묵은 관성을 깨고 새 흐름을 여는 시기)'
+      : month >= 6 && month <= 8
+        ? '여름 · 열기 조율절 (과열된 충돌을 냉정한 구조화로 다스릴 시기)'
+        : month >= 9 && month <= 11
+          ? '가을 · 정리 결단절 (불필요한 마찰을 정리하고 핵심을 남기는 시기)'
+          : '겨울 · 내실 보존절 (무리한 충돌을 피하고 에너지를 비축하는 시기)';
+
+  return {
+    kstTimeLabel: `${y}-${m}-${d} ${hh}:${mm} KST`,
+    triggerWatchWindow,
+    seasonalClashTone,
+    temporalGuidance: `${triggerWatchWindow} · ${seasonalClashTone}의 흐름에 맞추어 움직이십시오.`,
+  };
 }
 
 // 6충 정의 및 해석
@@ -193,8 +247,10 @@ export function calculateDynamicClashTrigger(params?: {
   profile?: UserProfile | null;
   saju?: SajuAnalysisResult | null;
   targetDate?: Date;
+  question?: string;
 }): DynamicClashResult {
   const now = params?.targetDate || new Date();
+  const q = (params?.question || '').trim();
   const saju = params?.saju || calculateDetailedSaju(params?.profile || null);
   const currentPillars = getKstDailyPillars(now);
 
@@ -492,13 +548,26 @@ export function calculateDynamicClashTrigger(params?: {
       : `합(合)의 흐름: 사람들과 따뜻하게 교류하며 시스템의 내실을 다지는 안정감`
   };
 
-  const summary = `[오늘의 동적 충합] 변동성 지수 ${volatilityScore}점 / 조화 지수 ${harmonyScore}점 (${netStatus}). ` +
-    (primaryClash ? `주요 트리거: ${primaryClash.name} (${primaryClash.intensity}점). ` : '특이 충형살 없음. ') +
-    (primaryHarm ? `지원 합: ${primaryHarm.name} (+${primaryHarm.boostScore}점).` : '');
+  const summary = `[오늘의 동적 충합] 상태: ${netStatus}. ` +
+    (primaryClash ? `주요 트리거: ${primaryClash.name}. ` : '특이 충형살 없음. ') +
+    (primaryHarm ? `지원 합: ${primaryHarm.name}.` : '');
+
+  const temporalClashRhythm = getTemporalClashRhythm(now);
+  const situationalClashAudit = {
+    focusTheme: q ? `${currentPillars.dayGanZhiKo} · 질문 맥락 충합 감사` : `${currentPillars.dayGanZhiKo} · 일진 충합 흐름`,
+    clashCue: primaryClash ? `${primaryClash.name}: ${primaryClash.manifestation}` : '특이 충형 격발 없음',
+    tacticalStep: todayActionMatrix.doNow,
+  };
+  const clashSynthesisMatrix = {
+    coreInsight: todayActionMatrix.goldenKey,
+    recommendedAction: todayActionMatrix.doNow,
+    cautionNotice: todayActionMatrix.avoidNow,
+  };
 
   return {
     engineVersion: DYNAMIC_CLASH_ENGINE_VERSION,
     targetDateIso: now.toISOString(),
+    calculatedAtKst: temporalClashRhythm.kstTimeLabel,
     currentPillars,
     volatilityScore,
     harmonyScore,
@@ -507,6 +576,10 @@ export function calculateDynamicClashTrigger(params?: {
     activeHarmonies,
     primaryAlert,
     todayActionMatrix,
+    situationalClashAudit,
+    temporalClashRhythm,
+    clashSynthesisMatrix,
+    boundaryNotice: '본 결과는 사주 지지 충·합 상징에 기반한 정성적 리듬 안내이며, 흉살 예언이나 확정적 예측이 아닙니다.',
     summary
   };
 }
@@ -515,17 +588,33 @@ export function calculateDynamicClashTrigger(params?: {
  * 프롬프트 주입용 포맷터
  */
 export function formatDynamicClashPrompt(res: DynamicClashResult): string {
+  const statusLabel =
+    res.netStatus === 'explosive_change'
+      ? '강한 변동·돌파 국면'
+      : res.netStatus === 'high_tension'
+        ? '긴장·조율 국면'
+        : res.netStatus === 'balanced_movement'
+          ? '균형 이동 국면'
+          : '평온한 순행 국면';
+
   const clashList = res.activeClashes.length > 0
-    ? res.activeClashes.map(c => `  • [${c.type.toUpperCase()}] ${c.name}: ${c.manifestation} (에너지 강도: ${c.intensity}점) → 행동 승화: ${c.sublimationAction}`).join('\n')
+    ? res.activeClashes.map(c => {
+        const tone = c.intensity >= 80 ? '강한 자극' : c.intensity >= 60 ? '뚜렷한 파동' : '잔잔한 주의';
+        return `  • [${c.type.toUpperCase()}] ${c.name}: ${c.manifestation} (${tone}) → 행동 승화: ${c.sublimationAction}`;
+      }).join('\n')
     : '  • 오늘 격발된 부정적 충/형/파/해 없음 (평온한 흐름)';
 
   const harmList = res.activeHarmonies.length > 0
-    ? res.activeHarmonies.map(h => `  • [${h.type.toUpperCase()}] ${h.name}: ${h.manifestation} (+${h.boostScore}점) → 활용 전략: ${h.utilizationStrategy}`).join('\n')
+    ? res.activeHarmonies.map(h => {
+        const tone = h.boostScore >= 80 ? '강력한 시너지' : '부드러운 협력';
+        return `  • [${h.type.toUpperCase()}] ${h.name}: ${h.manifestation} (${tone}) → 활용 전략: ${h.utilizationStrategy}`;
+      }).join('\n')
     : '  • 특별한 합국 형성 없음';
 
   return `[실시간 삼형·육충·파해 동적 트리거 리포트 (엔진: ${res.engineVersion})]
+- 연산 시각: ${res.calculatedAtKst}
 - 오늘 일진: ${res.currentPillars.dayGanZhiKo} | 세운: ${res.currentPillars.yearZhi}년
-- 오늘의 변동성 지수(돌파/충격): ${res.volatilityScore}점 / 조화 지수(안정/협력): ${res.harmonyScore}점 [상태: ${res.netStatus}]
+- 오늘의 충·합 기조: **${statusLabel}** (${res.netStatus})
 - 활성 충/형/파/해(Clashes & Penalties):
 ${clashList}
 - 활성 합(Harmonies):
@@ -534,6 +623,10 @@ ${harmList}
   • 집중할 행동(Do): ${res.todayActionMatrix.doNow}
   • 피할 함정(Avoid): ${res.todayActionMatrix.avoidNow}
   • 골든 마인드셋: "${res.todayActionMatrix.goldenKey}"
+- 질문 맥락 감사 (${res.situationalClashAudit.focusTheme}): ${res.situationalClashAudit.clashCue}
+- KST 시공간 리듬: ${res.temporalClashRhythm.triggerWatchWindow} / ${res.temporalClashRhythm.seasonalClashTone}
+- 교차 매트릭스: 핵심(${res.clashSynthesisMatrix.coreInsight}) | 실행(${res.clashSynthesisMatrix.recommendedAction}) | 주의(${res.clashSynthesisMatrix.cautionNotice})
+- 해석 경계: ${res.boundaryNotice}
 ※ 루시 지침: 충(沖)이나 형(刑)이 발생했다고 해서 불길한 액운으로 겁주지 마십시오. 충은 낡은 껍질을 깨고 새로운 아이디어를 분출시키는 강력한 에너지입니다. 사용자가 오늘 마주할 수 있는 감정적/업무적 파동을 짚어주고, 이를 창조적 결단으로 승화할 수 있도록 실용적으로 안내하십시오.`;
 }
 

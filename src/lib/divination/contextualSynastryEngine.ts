@@ -76,6 +76,59 @@ export interface ContextualSynastryResult {
     suggestedInvitation: string;
     keyDynamicNote: string;
   };
+  situationalSynastryAudit: {
+    focusTheme: string;
+    bondNote: string;
+    tacticalStep: string;
+  };
+  temporalSynastryRhythm: {
+    kstTimeLabel: string;
+    dialogueWindow: string;
+    seasonalBondTone: string;
+    temporalGuidance: string;
+  };
+  synastrySynthesisMatrix: {
+    coreInsight: string;
+    recommendedAction: string;
+    cautionNotice: string;
+  };
+  boundaryNotice: string;
+}
+
+function getTemporalSynastryRhythm(now: Date) {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  const hour = kst.getUTCHours();
+  const month = kst.getUTCMonth() + 1;
+
+  const dialogueWindow =
+    hour >= 5 && hour < 11
+      ? '아침 맑은 대화창 — 선입견 없이 상대의 입장을 담백하게 헤아리기 좋은 시간'
+      : hour >= 11 && hour < 17
+        ? '정오 조율창 — 실질적인 약속이나 협력의 경계를 분명히 맞추기 좋은 시간'
+        : hour >= 17 && hour < 22
+          ? '황혼 공감창 — 감정의 온도를 부드럽게 나누고 오해를 풀기 좋은 시간'
+          : '심야 성찰창 — 즉각적인 연락보다 내 마음의 기대와 경계를 먼저 정리할 시간';
+
+  const seasonalBondTone =
+    month >= 3 && month <= 5
+      ? '봄 · 인연 발아절 (새로운 연결이 가볍게 싹트는 시기)'
+      : month >= 6 && month <= 8
+        ? '여름 · 교감 확장절 (솔직한 표현과 활력이 관계를 이끄는 시기)'
+        : month >= 9 && month <= 11
+          ? '가을 · 신뢰 결실절 (약속과 현실적 호흡이 깊어지는 시기)'
+          : '겨울 · 내면 정돈절 (서로의 고유한 공간을 존중하며 내실을 다지는 시기)';
+
+  return {
+    kstTimeLabel: `${y}-${m}-${d} ${hh}:${mm} KST`,
+    dialogueWindow,
+    seasonalBondTone,
+    temporalGuidance: `${dialogueWindow} · ${seasonalBondTone}의 흐름에 맞추어 소통하십시오.`,
+  };
 }
 
 const RELATION_KEYWORDS: Record<DetectedRelationshipCategory, { koName: string; regex: RegExp; stance: string; dynamic: string }> = {
@@ -211,8 +264,9 @@ export function calculateContextualSynastry(options: {
   questionText?: string;
   myProfile?: UserProfile;
   currentProfiles?: ChatTargetProfile[];
+  targetDate?: Date;
 }): ContextualSynastryResult {
-  const now = new Date();
+  const now = options.targetDate || new Date();
   const nowUtcIso = now.toISOString();
   const nowKstIso = new Date(now.getTime() + 9 * 60 * 60 * 1000).toISOString().replace('Z', '+09:00');
 
@@ -297,10 +351,22 @@ export function calculateContextualSynastry(options: {
       : '상대방의 생년월일이나 별자리를 알려주시면 1초 만에 듀얼 매트릭스 궁합을 정밀 연산해 드립니다.',
   };
 
+  const temporalSynastryRhythm = getTemporalSynastryRhythm(now);
+  const situationalSynastryAudit = {
+    focusTheme: relEntity ? `${relEntity.categoryKoName} · 맥락 조율` : '인연 맥락 대기',
+    bondNote: conversationalGuidance.keyDynamicNote,
+    tacticalStep: conversationalGuidance.recommendedStance,
+  };
+  const synastrySynthesisMatrix = {
+    coreInsight: compatibilityMatrix ? `${compatibilityMatrix.grade} — ${compatibilityMatrix.title}` : conversationalGuidance.recommendedStance,
+    recommendedAction: conversationalGuidance.suggestedInvitation,
+    cautionNotice: '상대의 기질 차이를 통제하려 들지 말고 서로의 경계와 속도를 존중하십시오.',
+  };
+
   return {
-    engineVersion: 'LUCKEY-CS-DME-v1.0.0',
+    engineVersion: 'LUCKEY-CS-DME-v2.0.0',
     calculatedAtUtc: nowUtcIso,
-    calculatedAtKst: nowKstIso,
+    calculatedAtKst: temporalSynastryRhythm.kstTimeLabel,
     timestamp: now.getTime(),
 
     hasRelationshipContext: Boolean(relEntity || matchedPartner),
@@ -318,6 +384,10 @@ export function calculateContextualSynastry(options: {
 
     compatibilityMatrix,
     conversationalGuidance,
+    situationalSynastryAudit,
+    temporalSynastryRhythm,
+    synastrySynthesisMatrix,
+    boundaryNotice: '본 결과는 사주·숙요·점성술 원형과 대화 맥락을 결합한 정성적 관계 가이드이며, 상대의 마음을 단정하는 예측이 아닙니다.',
   };
 }
 
@@ -334,18 +404,19 @@ export function formatContextualSynastryPrompt(res: ContextualSynastryResult): s
 
   let matrixBlock = '';
   if (mat && partner) {
+    const complementTone = mat.saju.elementComplement.score >= 80 ? '높은 상호 보완' : mat.saju.elementComplement.score >= 60 ? '안정적 조화' : '각별한 배려 필요';
     matrixBlock = `
 [👥 실측 듀얼 매트릭스 궁합 데이터 (Dual Matrix Synastry)]:
 ======================================================================
 상대방 대상: ${partner.name} (${partner.relationshipTag} · ${partner.birthdate || '생년월일 미상'})
-종합 궁합 점수: ★ ${mat.score}점 [${mat.grade}] · "${mat.title}"
+인연 등급 및 결: ★ [${mat.grade}] · "${mat.title}"
 요약: ${mat.summary}
 
 1. 사주 결합 분석:
    - 본인 일간: ${mat.saju.personA.dayMaster} (${mat.saju.personA.dominantElement}) vs 상대 일간: ${mat.saju.personB.dayMaster} (${mat.saju.personB.dominantElement})
    - 천간 관계: ${mat.saju.stemRelation.name} (${mat.saju.stemRelation.desc})
    - 일지 관계: ${mat.saju.branchRelation.name} (${mat.saju.branchRelation.desc})
-   - 오행 상호 보완도: ${mat.saju.elementComplement.score}점 (${mat.saju.elementComplement.summary})
+   - 오행 상호 보완 기조: ${complementTone} (${mat.saju.elementComplement.summary})
      * 나에게 부족해 상대에게 채우는 기운: [${mat.saju.elementComplement.aNeedsFromB.join(', ') || '없음(자급)'}]
      * 상대에게 부족해 내가 채워주는 기운: [${mat.saju.elementComplement.bNeedsFromA.join(', ') || '없음(자급)'}]
 
@@ -373,11 +444,15 @@ export function formatContextualSynastryPrompt(res: ContextualSynastryResult): s
   return `[👥 대화 속 인연 자동 감지 & 듀얼 매트릭스 백그라운드 로드 (Contextual Synastry Engine)]
 ======================================================================
 엔진 버전: ${res.engineVersion} | 기준 일시: ${res.calculatedAtKst}
-관계 감지 상태: ${ent ? `[${ent.categoryKoName}] 감지 (신뢰도 ${Math.round(ent.confidence * 100)}%)` : '등록된 상대방 프로필 로드'}
+관계 감지 상태: ${ent ? `[${ent.categoryKoName}] 감지` : '등록된 상대방 프로필 로드'}
 상대방 프로필 연동: ${res.partnerProfileLoaded ? `성공 (${partner?.name})` : '미연동(가이드 모드)'}
 ${matrixBlock}
+- 질문 맥락 감사 (${res.situationalSynastryAudit.focusTheme}): ${res.situationalSynastryAudit.tacticalStep}
+- KST 시공간 리듬: ${res.temporalSynastryRhythm.dialogueWindow} / ${res.temporalSynastryRhythm.seasonalBondTone}
+- 교차 매트릭스: 핵심(${res.synastrySynthesisMatrix.coreInsight}) | 실행(${res.synastrySynthesisMatrix.recommendedAction}) | 주의(${res.synastrySynthesisMatrix.cautionNotice})
+- 해석 경계: ${res.boundaryNotice}
 ======================================================================
 [★ 루시 관계 상담 지침]:
-- 상대방과의 실측 듀얼 매트릭스 수치가 제공된 경우, 두 사람의 천간합·일지육합, 오행 보완도, 숙요 27숙 인연 등급을 유기적으로 녹여내어 입체적이고 다정한 해답을 줘.
+- 상대방과의 실측 듀얼 매트릭스가 제공된 경우, 두 사람의 천간합·일지육합, 오행 보완 기조, 숙요 27숙 인연 등급을 유기적으로 녹여내어 입체적이고 다정한 해답을 줘.
 - 상대방을 통제하려 하기보다 서로의 기질적 차이를 인정하고 배려하는 지혜로운 관계 성장의 길을 제시해줘.`;
 }
