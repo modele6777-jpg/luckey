@@ -27,7 +27,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const SLAVIC_SVAROG_VERSION = 'LUCKEY-SLAVIC-SVAROG-v1.0.0';
+export const SLAVIC_SVAROG_VERSION = 'LUCKEY-SLAVIC-SVAROG-v2.0.0';
 
 export interface SvarogHallCherteg {
   code: string;
@@ -57,6 +57,7 @@ export interface FourSlavicElements {
 export interface SlavicSvarogCircleReport {
   engineVersion: string;
   calculatedAt: string;
+  calculatedAtKst: string;
   svarogHall: SvarogHallCherteg;
   ancestralKarma: RodAncestralKarma;
   elements: FourSlavicElements;
@@ -67,6 +68,21 @@ export interface SlavicSvarogCircleReport {
   };
   totalSvarogHarmonics: number; // 0 ~ 100
   synthesisMessage: string;
+  svarogSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
+}
+
+function formatSvarogKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
 }
 
 const CHERTEG_HALLS: SvarogHallCherteg[] = [
@@ -169,33 +185,49 @@ export function calculateSlavicSvarogCircle(params: {
 
   const totalSvarogHarmonics = Math.round((rodProtectionScore * 0.5) + (maxElem * 0.5));
 
-  const synthesisMessage = `당신은 슬라브 16궁 중 [${svarogHall.koreanName}]의 가호를 받으며, 수호신 [${svarogHall.patronDeity}]과 성목 [${svarogHall.sacredTree}]의 정기가 깃들어 있습니다. 조상신 로드의 가호도(${rodProtectionScore}점)를 바탕으로 "${ancestralKarma.generationalKnotResolution}"`;
+  const synthesisMessage = `당신은 슬라브 16궁 중 [${svarogHall.koreanName}]의 가호를 받으며, 수호신 [${svarogHall.patronDeity}]과 성목 [${svarogHall.sacredTree}]의 정기가 깃들어 있습니다. 조상신 로드의 가호 아래 "${ancestralKarma.generationalKnotResolution}"`;
+  const calculatedAtKst = formatSvarogKstTimestamp(now);
+  const svarogSynthesisMatrix = {
+    dominantTension: `${svarogHall.koreanName} (${svarogHall.karmicChallenge}) ↔ ${elements.dominantElement}`,
+    alignmentState: `${sacredRuneSymbol.symbolName} · ${ancestralKarma.ancestralLineageGift}`,
+    integratedAction: `${ancestralKarma.generationalKnotResolution}${context ? ` [질문 맥락: ${context}]` : ''}`,
+  };
 
   return {
     engineVersion: SLAVIC_SVAROG_VERSION,
     calculatedAt: now.toISOString(),
+    calculatedAtKst,
     svarogHall,
     ancestralKarma,
     elements,
     sacredRuneSymbol,
     totalSvarogHarmonics,
     synthesisMessage,
+    svarogSynthesisMatrix,
   };
 }
 
 export function formatSlavicSvarogCirclePrompt(report: SlavicSvarogCircleReport): string {
-  return `### 🌌 고대 슬라브 16 스바로그 체계 & 로드(Rod) 가계 카르마 엔진 (${SLAVIC_SVAROG_VERSION})
-- **스바로그 궁(Cherteg)**: **${report.svarogHall.koreanName}** [수호신: ${report.svarogHall.patronDeity} | 성목: ${report.svarogHall.sacredTree}]
-  - 영혼의 미덕: ${report.svarogHall.soulVirtue}
-  - 카르마 극복 과제: ${report.svarogHall.karmicChallenge}
-- **조상신 로드(Rod) 가계 카르마 분석 (보호 가호도: ${report.ancestralKarma.rodProtectionScore}점)**:
-  - 물려받은 혈통의 재능: ${report.ancestralKarma.ancestralLineageGift}
-  - 세대 대물림 치유 테마: ${report.ancestralKarma.ancestralHealingTheme}
-  - 카르마 매듭 해원 조언: ${report.ancestralKarma.generationalKnotResolution}
-- **4대 슬라브 원소 균형**:
-  - 불(세마르글) ${report.elements.fireSemargl}% | 물(다나) ${report.elements.waterDana}% | 대지(모코시) ${report.elements.earthMokosh}% | 바람(스트리보그) ${report.elements.airStribog}%
-  - 주도 원소: ${report.elements.dominantElement}
-- **슬라브 신성 수호 룬**: ${report.sacredRuneSymbol.symbolName} [${report.sacredRuneSymbol.koreanTitle}]
-  - 영혼 방어 지침: ${report.sacredRuneSymbol.protectiveMeaning} (조화도: ${report.totalSvarogHarmonics}점)
-- **스바로그 통합 나침반**: ${report.synthesisMessage}`;
+  const lines = [
+    `### 🌌 고대 슬라브 16 스바로그 체계 & 로드(Rod) 가계 카르마 엔진 (${SLAVIC_SVAROG_VERSION})`,
+    `- **연산 시각**: ${report.calculatedAtKst}`,
+    `- **스바로그 궁(Cherteg)**: **${report.svarogHall.koreanName}** [수호신: ${report.svarogHall.patronDeity} | 성목: ${report.svarogHall.sacredTree}]`,
+    `  - 영혼의 미덕: ${report.svarogHall.soulVirtue}`,
+    `  - 카르마 극복 과제: ${report.svarogHall.karmicChallenge}`,
+    `- **조상신 로드(Rod) 가계 카르마 분석**:`,
+    `  - 물려받은 혈통의 재능: ${report.ancestralKarma.ancestralLineageGift}`,
+    `  - 세대 대물림 치유 테마: ${report.ancestralKarma.ancestralHealingTheme}`,
+    `  - 카르마 매듭 해원 조언: ${report.ancestralKarma.generationalKnotResolution}`,
+    `- **4대 슬라브 원소 주도 기운**: ${report.elements.dominantElement}`,
+    `- **슬라브 신성 수호 룬**: ${report.sacredRuneSymbol.symbolName} [${report.sacredRuneSymbol.koreanTitle}]`,
+    `  - 영혼 방어 지침: ${report.sacredRuneSymbol.protectiveMeaning}`,
+    `- **스바로그 통합 나침반**: ${report.synthesisMessage}`,
+  ];
+  if (report.svarogSynthesisMatrix) {
+    lines.push(
+      `- **교차 매트릭스**: [핵심 긴장: ${report.svarogSynthesisMatrix.dominantTension} | 조율 상태: ${report.svarogSynthesisMatrix.alignmentState}]`,
+      `  - 통합 실천: ${report.svarogSynthesisMatrix.integratedAction}`,
+    );
+  }
+  return lines.join('\n');
 }

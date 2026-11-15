@@ -3182,6 +3182,8 @@ test('Guiguzi Liangtouqian Decision Matrix Engine: calculates two heads gua, des
 test('Slavic Svarog Circle & Rod Ancestral Karma Engine: calculates svarog hall, rod karma blessing and elements', () => {
   const rep = calculateSlavicSvarogCircle({ profile });
   assert.equal(rep.engineVersion, SLAVIC_SVAROG_VERSION);
+  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(rep.svarogSynthesisMatrix?.integratedAction));
   assert(rep.svarogHall.koreanName.length > 0);
   assert(rep.ancestralKarma.rodProtectionScore >= 0 && rep.ancestralKarma.rodProtectionScore <= 100);
   assert(rep.elements.dominantElement.length > 0);
@@ -3189,6 +3191,8 @@ test('Slavic Svarog Circle & Rod Ancestral Karma Engine: calculates svarog hall,
   const prompt = formatSlavicSvarogCirclePrompt(rep);
   assert(prompt.includes('고대 슬라브 16 스바로그 체계 & 로드(Rod) 가계 카르마 엔진'));
   assert(prompt.includes(rep.svarogHall.koreanName));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100') && !prompt.includes('%'));
 });
 
 test('Essene Communion Tree Engine: calculates morning/evening angels, tree trinity and guidance', () => {
@@ -3501,11 +3505,15 @@ test('Finnish Kalevala Sampo Engine: calculates 3 Sampo wings and Sisu resilienc
 test('Shanhaijing Sacred Beasts Engine: calculates directional beast and shielding index', () => {
   const rep = calculateShanhaijingSacredBeasts({ profile });
   assert.equal(rep.engineVersion, SHANHAIJING_SACRED_BEASTS_ENGINE_VERSION);
+  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(rep.shanhaijingSynthesisMatrix?.integratedAction));
   assert(rep.spiritualShieldingIndex >= 0 && rep.spiritualShieldingIndex <= 100);
   assert(rep.activeBeast.name.length > 0);
   const prompt = formatShanhaijingSacredBeastsPrompt(rep);
   assert(prompt.includes('고대 동양 산해경(山海經) 8방위 신성 영수(神獸) & 오행 방호 실측 데이터'));
   assert(prompt.includes(rep.activeBeast.name));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100') && !prompt.includes('/ 100'));
 });
 
 test('Jain Gunasthana Karma Engine: calculates 14 Gunasthanas and Ratnatraya balance', () => {
@@ -7210,6 +7218,8 @@ test('Rainer Maria Rilke Letters to a Young Poet Engine: calculates Loving Solit
 test('Miguel de Cervantes Don Quixote Engine: calculates Noble Idealism, Courage Against Windmills, and Humor Resilience', () => {
   const rep = calculateSpanishMiguelDeCervantesDonQuixote(profile);
   assert.equal(rep.engineVersion, SPANISH_MIGUEL_DE_CERVANTES_DON_QUIXOTE_VERSION);
+  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(rep.cervantesSynthesisMatrix?.integratedAction));
   assert(rep.nobleIdealismScore >= 0 && rep.nobleIdealismScore <= 100);
   assert(rep.courageAgainstWindmillsIndex >= 0 && rep.courageAgainstWindmillsIndex <= 100);
   assert(rep.quixoteSanchoBalanceScore >= 0 && rep.quixoteSanchoBalanceScore <= 100);
@@ -7219,6 +7229,8 @@ test('Miguel de Cervantes Don Quixote Engine: calculates Noble Idealism, Courage
   const prompt = formatSpanishMiguelDeCervantesDonQuixotePrompt(rep);
   assert(prompt.includes('미겔 데 세르반테스 《돈키호테》 고결한 이상주의·풍차 앞 불굴의 용기 지표'));
   assert(prompt.includes(rep.activeCervantesTheme.themeTitleKo));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
 });
 
 test('Ilyeon Samguk Yusa Engine: calculates Hongik Ingan Pride, Hyangga Healing, and Cheoyong Tolerance', () => {

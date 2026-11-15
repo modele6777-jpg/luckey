@@ -8,12 +8,12 @@
  * 4. 상처와 실패를 유쾌한 웃음으로 승화하는 해학적 회복탄력성 (Satirical Wit & Compassionate Humor Resilience Index): 비극과 환멸 앞에서도 인간을 향한 따스한 해학과 연민을 잃지 않는 명랑한 힘.
  * 5. 세상의 규정을 넘어 스스로 기사가 되는 자기창조적 주체성 (Autonomous Self-Creation & Sovereign Identity Score): 늙은 시골 귀족 아론소 키하노의 무력함을 딛고 고결한 돈키호테로 다시 태어나는 주체적 결단.
  *
- * @version LUCKEY-CERVANTES-DON-QUIXOTE-v1.0.0
+ * @version LUCKEY-CERVANTES-DON-QUIXOTE-v2.0.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const SPANISH_MIGUEL_DE_CERVANTES_DON_QUIXOTE_VERSION = 'LUCKEY-CERVANTES-DON-QUIXOTE-v1.0.0';
+export const SPANISH_MIGUEL_DE_CERVANTES_DON_QUIXOTE_VERSION = 'LUCKEY-CERVANTES-DON-QUIXOTE-v2.0.0';
 
 export interface CervantesTheme {
   themeKey: string;
@@ -47,6 +47,21 @@ export interface SpanishMiguelDeCervantesDonQuixoteResult {
     guidanceTitle: string;
     philosophicalCounsel: string;
   };
+  cervantesSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
+}
+
+function formatCervantesKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
 }
 
 export const CERVANTES_THEMES: CervantesTheme[] = [
@@ -124,6 +139,7 @@ function hashString(str: string): number {
 export function calculateSpanishMiguelDeCervantesDonQuixote(
   profile?: UserProfile,
   query?: string,
+  now: Date = new Date(),
 ): SpanishMiguelDeCervantesDonQuixoteResult {
   const p = profile as any;
   const name = profile?.basic?.name ?? p?.name ?? '남희';
@@ -156,9 +172,16 @@ export function calculateSpanishMiguelDeCervantesDonQuixote(
     `${activeCervantesTheme.practicalCounsel} 세르반테스의 명언 "${focalCervantesAphorism.aphorismKo}" (${focalCervantesAphorism.aphorismSpanish})을 마음에 새기고, ` +
     `${focalCervantesAphorism.actionGuidance}`;
 
+  const calculatedAtKst = formatCervantesKstTimestamp(now);
+  const cervantesSynthesisMatrix = {
+    dominantTension: `${activeCervantesTheme.themeTitleKo} ↔ 현실의 풍차`,
+    alignmentState: `${focalCervantesAphorism.sourceContext}`,
+    integratedAction: `${activeCervantesTheme.practicalCounsel} · ${focalCervantesAphorism.actionGuidance}${query?.trim() ? ` [질문 맥락: ${query.trim()}]` : ''}`,
+  };
+
   return {
     engineVersion: SPANISH_MIGUEL_DE_CERVANTES_DON_QUIXOTE_VERSION,
-    calculatedAtKst: new Date().toISOString(),
+    calculatedAtKst,
     nobleIdealismScore,
     courageAgainstWindmillsIndex,
     quixoteSanchoBalanceScore,
@@ -170,19 +193,16 @@ export function calculateSpanishMiguelDeCervantesDonQuixote(
       guidanceTitle,
       philosophicalCounsel,
     },
+    cervantesSynthesisMatrix,
   };
 }
 
 export function formatSpanishMiguelDeCervantesDonQuixotePrompt(
   res: SpanishMiguelDeCervantesDonQuixoteResult,
 ): string {
-  return [
+  const lines = [
     `【미겔 데 세르반테스 《돈키호테》 고결한 이상주의·풍차 앞 불굴의 용기 지표】`,
-    `- 고결한 이상주의와 기사도 정신(Noble Idealism): ${res.nobleIdealismScore}/100`,
-    `- 거대한 풍차 앞 불굴의 용기(Courage Against Windmills): ${res.courageAgainstWindmillsIndex}/100`,
-    `- 이상과 현실의 조화·진솔한 우정(Quixote-Sancho Balance): ${res.quixoteSanchoBalanceScore}/100`,
-    `- 실패를 승화하는 해학적 회복탄력성(Humor Resilience): ${res.compassionateHumorResilienceIndex}/100`,
-    `- 스스로 기사가 되는 자기창조적 주체성(Autonomous Self-Creation): ${res.autonomousSelfCreationScore}/100`,
+    `- 연산 시각: ${res.calculatedAtKst} | 엔진 버전: ${res.engineVersion}`,
     `- 핵심 세르반테스 테마: ${res.activeCervantesTheme.themeTitleKo} [${res.activeCervantesTheme.themeTitleEn}]`,
     `- 문학적 통찰: ${res.activeCervantesTheme.literaryInsight}`,
     `- 행동 조언: ${res.activeCervantesTheme.practicalCounsel}`,
@@ -191,5 +211,12 @@ export function formatSpanishMiguelDeCervantesDonQuixotePrompt(
     `- 원전 출처: [${res.focalCervantesAphorism.sourceContext}]`,
     `- 구체적 실천 지침: ${res.focalCervantesAphorism.actionGuidance}`,
     `- 종합 세르반테스 권면: ${res.cervantesComprehensiveGuidance.philosophicalCounsel}`,
-  ].join('\n');
+  ];
+  if (res.cervantesSynthesisMatrix) {
+    lines.push(
+      `- 교차 매트릭스 [핵심 긴장: ${res.cervantesSynthesisMatrix.dominantTension} | 조율 상태: ${res.cervantesSynthesisMatrix.alignmentState}]`,
+      `- 통합 실천: ${res.cervantesSynthesisMatrix.integratedAction}`,
+    );
+  }
+  return lines.join('\n');
 }

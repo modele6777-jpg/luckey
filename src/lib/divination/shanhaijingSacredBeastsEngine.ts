@@ -23,7 +23,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const SHANHAIJING_SACRED_BEASTS_ENGINE_VERSION = '1.0.0';
+export const SHANHAIJING_SACRED_BEASTS_ENGINE_VERSION = '2.0.0';
 
 export interface SacredBeast {
   name: string;
@@ -38,11 +38,27 @@ export interface SacredBeast {
 export interface ShanhaijingReport {
   engineVersion: string;
   calculatedAt: string;
+  calculatedAtKst: string;
   spiritualShieldingIndex: number; // 영적 방호 및 벽사 차폐율 0~100
   activeBeast: SacredBeast;
   elementHarmony: string;
   repellingAction: string; // 벽사 개운 실천
   shanhaijingWisdom: string;
+  shanhaijingSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
+}
+
+function formatShanhaijingKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
 }
 
 const SACRED_BEASTS: SacredBeast[] = [
@@ -127,11 +143,17 @@ const SACRED_BEASTS: SacredBeast[] = [
 export function calculateShanhaijingSacredBeasts(options?: {
   profile?: UserProfile;
   targetInstantTime?: string;
+  question?: string;
+  now?: Date;
 }): ShanhaijingReport {
   const profile = options?.profile;
-  const now = options?.targetInstantTime ? new Date(options.targetInstantTime) : new Date();
+  const now = options?.now ?? (options?.targetInstantTime ? new Date(options.targetInstantTime) : new Date());
+  const q = options?.question?.trim() || '';
 
   let seed = 3388; // 산해경 원전 상징수
+  for (let i = 0; i < q.length; i++) {
+    seed = (seed * 31 + q.charCodeAt(i)) % 1000003;
+  }
 
   if (profile?.basic?.birthdate) {
     const parts = profile.basic.birthdate.split('-').map(Number);
@@ -171,16 +193,24 @@ export function calculateShanhaijingSacredBeasts(options?: {
   ];
   const repellingAction = repellingActions[seed % repellingActions.length];
 
-  const shanhaijingWisdom = `산해경 주재 영수 [${activeBeast.name}(${activeBeast.nameHanja})]의 가호 아래 방호 지수 ${spiritualShieldingIndex}점의 결계가 형성되었습니다. ${activeBeast.auspiciousMessage}`;
+  const shanhaijingWisdom = `산해경 주재 영수 [${activeBeast.name}(${activeBeast.nameHanja})]의 가호 아래 방호 결계가 형성되었습니다. ${activeBeast.auspiciousMessage}`;
+  const calculatedAtKst = formatShanhaijingKstTimestamp(now);
+  const shanhaijingSynthesisMatrix = {
+    dominantTension: `${activeBeast.name} (${activeBeast.direction}) ↔ ${elementHarmony}`,
+    alignmentState: `${activeBeast.spiritualProtection}`,
+    integratedAction: `${repellingAction}${q ? ` [질문 맥락: ${q}]` : ''}`,
+  };
 
   return {
     engineVersion: SHANHAIJING_SACRED_BEASTS_ENGINE_VERSION,
     calculatedAt: now.toISOString(),
+    calculatedAtKst,
     spiritualShieldingIndex,
     activeBeast,
     elementHarmony,
     repellingAction,
-    shanhaijingWisdom
+    shanhaijingWisdom,
+    shanhaijingSynthesisMatrix,
   };
 }
 
@@ -192,8 +222,8 @@ export function formatShanhaijingSacredBeastsPrompt(report: ShanhaijingReport): 
 
   return `[🐉 고대 동양 산해경(山海經) 8방위 신성 영수(神獸) & 오행 방호 실측 데이터]
 ======================================================================
-엔진 버전: ${report.engineVersion} | 연산 시각: ${report.calculatedAt}
-영적 방호 및 벽사 차폐율: ${report.spiritualShieldingIndex} / 100점 | 오행 상생: ${report.elementHarmony}
+엔진 버전: v${report.engineVersion} | 연산 시각: ${report.calculatedAtKst}
+오행 상생: ${report.elementHarmony}
 ======================================================================
 1. [주재 신성 영수 (Sacred Beast)]:
    - 영수명: [${b.name}] (${b.nameHanja})
@@ -202,8 +232,8 @@ export function formatShanhaijingSacredBeastsPrompt(report: ShanhaijingReport): 
    - 영적 수호력: ${b.spiritualProtection}
    - 길상 전언: "${b.auspiciousMessage}"
 
-2. [벽사(辟邪) 개운 실천 & 산해경 지혜]:
+2. [벽사(辟邪) 개운 실천 & 교차 매트릭스]:
    - 벽사 행동 처방: ${report.repellingAction}
-   - 종합 수호 조언: ${report.shanhaijingWisdom}
+   - 종합 수호 조언: ${report.shanhaijingWisdom}${report.shanhaijingSynthesisMatrix ? `\n   - 교차 매트릭스 [핵심 긴장: ${report.shanhaijingSynthesisMatrix.dominantTension} | 조율 상태: ${report.shanhaijingSynthesisMatrix.alignmentState}]\n   - 통합 실천: ${report.shanhaijingSynthesisMatrix.integratedAction}` : ''}
 ======================================================================`;
 }
