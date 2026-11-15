@@ -4,8 +4,6 @@ import { ScreenPortal } from '@/components/layout/ScreenPortal';
 import { LucyModeTransition } from '@/components/chat/LucyModeTransition';
 import { isLucyTarotDrawRequest, isLucyTarotDrawOpen } from '@/lib/lucyTarotIntegrity';
 import { useSyncedChatDraft } from '@/hooks/useSyncedChatDraft';
-import { queueChatForward, takeChatForward, forwardedChatPrompt } from '@/lib/lucyChatForward';
-import { ChatBubbleForward } from '@/components/chat/ChatBubbleForward';
 import { LUCY_PRO_PATH, resolveLucyPageChannels } from '@/lib/lucyChatPageMode';
 import React, { useState, useEffect, useLayoutEffect, useRef, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -842,11 +840,6 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
   const abortGenerating = abortNormalGenerating;
   const chatAccount = firebaseUser?.uid || safeSessionStorage.getItem('prism_auth_uid') || 'device';
   const librarySessionKey = `lucy:${chatAccount}:${chatScope}`;
-  const forwardBubble = useCallback((text: string) => {
-    const payload = queueChatForward(chatAccount, chatScope, text);
-    (window as any).__prismAllowRouteChangeUntil = Date.now() + 1500;
-    navigate(payload.to === 'lucy-pro' ? '/chat?mode=plus' : '/chat');
-  }, [chatAccount, chatScope, navigate]);
 
   const handleAbortGeneration = useCallback(() => {
     try {
@@ -3406,11 +3399,6 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
     };
   }, [location]);
 
-  useEffect(() => {
-    if (!isLucyReady) return;
-    const payload = takeChatForward(chatAccount, chatScope);
-    if (payload) void handleSendRef.current(forwardedChatPrompt(payload), pro ? [...ALL_CHANNELS] : undefined);
-  }, [chatAccount, chatScope, isLucyReady, pro]);
 
   const handleCopy = (id: string, text: string) => {
     navigator.clipboard.writeText(text);
@@ -3900,7 +3888,6 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
                   {/* Message Bubble(s) */}
                   {isUser ? (
                     <>
-                      <ChatBubbleForward text={textContent} targetLabel={pro ? '일반 루시' : '루시 프로'} onForward={forwardBubble}>
                       <div
                         data-forward-bubble
                         className={`p-4 sm:p-5 rounded-2xl sm:rounded-3xl text-sm sm:text-[15px] lg:text-base leading-relaxed select-text min-w-0 max-w-full overflow-x-hidden break-words [overflow-wrap:anywhere] transition-colors duration-300 ${
@@ -3922,7 +3909,6 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
                       </div>
 
                       {/* User Action buttons: Copy & TTS */}
-                      </ChatBubbleForward>
                       <div className="flex items-center gap-1.5 mt-1.5 flex-wrap justify-end pr-1">
                         <button
                           onClick={() => handleCopy(msgId, textContent)}
@@ -3965,8 +3951,6 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
                   ) : (
                     <>
                       <LucyKakaoBubbleGroup
-                        onForward={forwardBubble}
-                      forwardTargetLabel={pro ? '일반 루시' : '루시 프로'}
                       msgId={msgId}
                       verifiedTarotMarkers={msg.tarotDraw?.source === 'app-random' ? msg.tarotDraw.markers : undefined}
                       revealedTarotCardIds={msg.tarotDraw?.revealedCardIds}
