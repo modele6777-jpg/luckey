@@ -15,7 +15,7 @@ import { PhysicalTarotInputModal } from './PhysicalTarotInputModal';
 import { useTarotCardBack } from '@/hooks/useTarotCardBack';
 import { playAudioHaptic } from '@/lib/audioHaptics';
 import { triggerTarotScreenVibration } from '@/utils/tarotEffects';
-import { LANDSCAPE_ARC_TOP, landscapeFanMetrics, placeRingCards } from './tarotRingLayout';
+import { LANDSCAPE_ARC_TOP, clampFanToWidth, fanCardWidth, landscapeFanMetrics, portraitFanMetrics, placeRingCards } from './tarotRingLayout';
 
 export interface SelectedTarotCardEntry extends TarotCard {
   touchMetadata?: any | null;
@@ -248,10 +248,10 @@ export const TarotSpread: React.FC<TarotSpreadProps> = ({
       ? 'w-16 h-24 sm:w-20 sm:h-30 md:w-24 md:h-36'
       : 'w-22 h-34 md:w-30 md:h-46';
   const slotsWrapClass = isMobile
-    ? 'flex flex-wrap items-center justify-center gap-1.5 sm:gap-2 max-w-[96vw]'
+    ? 'flex w-full max-w-full flex-wrap items-center justify-center gap-1.5 sm:gap-2'
     : compactSlots
-      ? 'flex flex-wrap items-end justify-center gap-2 sm:gap-3 max-w-[92vw]'
-      : 'flex items-center justify-center gap-4 md:gap-6';
+      ? 'flex w-full max-w-full flex-wrap items-end justify-center gap-2 sm:gap-3'
+      : 'flex w-full max-w-full items-center justify-center gap-4 md:gap-6';
 
   const activeSource = useMemo(() => {
     return deckSource && deckSource.length > 0 ? deckSource : TAROT_DECK;
@@ -444,30 +444,24 @@ export const TarotSpread: React.FC<TarotSpreadProps> = ({
   // Responsive layout calibration
   useEffect(() => {
     const updateRadius = () => {
-      const bounds = containerRef.current?.getBoundingClientRect();
-      const w = bounds?.width || window.innerWidth;
-      const h = bounds?.height || window.innerHeight;
+      const node = containerRef.current;
+      const w = node?.clientWidth || window.innerWidth;
+      const h = node?.clientHeight || window.innerHeight;
       const isLandscape = w > h;
       setIsLandscapeLayout(isLandscape);
+      const cardWidth = fanCardWidth(w);
 
       if (isLandscape) {
         const fan = landscapeFanMetrics(h, LANDSCAPE_ARC_TOP);
+        const fitted = clampFanToWidth(fan.radius, fan.yOffset, w, h, cardWidth);
+        setRadius(fitted.radius);
+        setYOffset(fitted.yOffset);
+        setIsMobile(w < 700);
+      } else {
+        const fan = portraitFanMetrics(w, h, cardWidth);
         setRadius(fan.radius);
         setYOffset(fan.yOffset);
-        setIsMobile(w < 700);
-      } else if (w < 540) {
-        // iPhone Duo 5.4" Outer Cover Screen in Portrait (Compact vertical ergonomics)
-        setRadius(Math.max(280, Math.min(340, Math.round(h * 0.40))));
-        setYOffset(Math.max(270, Math.min(340, Math.round(h * 0.41))));
-        setIsMobile(true);
-      } else if (w < 768) {
-        setRadius(460);
-        setYOffset(500);
-        setIsMobile(true);
-      } else {
-        setRadius(640);
-        setYOffset(700);
-        setIsMobile(false);
+        setIsMobile(w < 768);
       }
     };
 
@@ -1058,6 +1052,8 @@ export const TarotSpread: React.FC<TarotSpreadProps> = ({
         <div
           ref={wheelLayerRef}
           className="absolute left-1/2 top-1/2 z-[30]"
+          data-fan-radius={radius}
+          data-fan-card-width={fanCardWidth(containerRef.current?.clientWidth || (typeof window !== 'undefined' ? window.innerWidth : 0))}
           style={{
             transform: buildWheelTransform(rotationRef.current),
             willChange: 'transform',
@@ -1279,7 +1275,8 @@ export const TarotSpread: React.FC<TarotSpreadProps> = ({
 
       {/* Bottom Quick Control Bar (Opaque surface, zero backdrop-blur) */}
       <div
-        className="relative z-[320] isolate flex items-center justify-center gap-1.5 sm:gap-3 px-2 sm:px-4 py-2 sm:py-3 bg-zinc-950 border-t border-yellow-500/20 w-full touch-none select-none overscroll-none"
+        data-tarot-controls
+        className="relative z-[320] isolate box-border flex w-full min-w-0 max-w-full items-center justify-center gap-1.5 px-2 py-2 bg-zinc-950 border-t border-yellow-500/20 touch-none select-none overscroll-none"
         style={{
           touchAction: 'none',
           overscrollBehavior: 'none',
@@ -1289,11 +1286,11 @@ export const TarotSpread: React.FC<TarotSpreadProps> = ({
         <button
           type="button"
           onClick={() => handleQuickSpin('left')}
-          className="px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-lg sm:rounded-xl bg-zinc-900 border border-yellow-500/25 hover:border-yellow-400 text-yellow-300 text-xs font-semibold flex items-center gap-1 active:scale-95 transition-transform cursor-pointer shrink-0"
+          className="min-w-0 flex-1 basis-0 max-w-[8.5rem] px-2 py-1.5 rounded-lg bg-zinc-900 border border-yellow-500/25 hover:border-yellow-400 text-yellow-300 text-xs font-semibold flex items-center justify-center gap-1 active:scale-95 transition-transform cursor-pointer"
           title="왼쪽 카드들을 가운데로 이동"
         >
-          <ChevronLeft size={14} />
-          <span className="hidden min-[380px]:inline">좌회전</span>
+          <ChevronLeft size={14} className="shrink-0" />
+          <span className="truncate">좌회전</span>
         </button>
 
         <button
@@ -1309,7 +1306,7 @@ export const TarotSpread: React.FC<TarotSpreadProps> = ({
             handleShuffleDeck();
           }}
           disabled={activeWheelCards.length < 2}
-          className="px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-lg sm:rounded-xl bg-zinc-900 border border-yellow-500/40 hover:border-yellow-400 text-yellow-200 text-xs font-bold flex items-center gap-1 sm:gap-1.5 active:scale-95 transition-transform cursor-pointer shrink"
+          className="min-w-0 flex-1 basis-0 max-w-[8.5rem] px-2 py-1.5 rounded-lg bg-zinc-900 border border-yellow-500/40 hover:border-yellow-400 text-yellow-200 text-xs font-bold flex items-center justify-center gap-1 active:scale-95 transition-transform cursor-pointer"
           title={`현재 남은 ${activeWheelCards.length}장의 덱을 셔플합니다 (이미 뽑은 카드는 덱에 다시 들어가지 않습니다)`}
         >
           <Shuffle size={13} className="text-yellow-400 shrink-0" />
@@ -1320,20 +1317,20 @@ export const TarotSpread: React.FC<TarotSpreadProps> = ({
           type="button"
           onClick={handleAutoPick}
           disabled={shuffleStatus === 'shuffling' || selectedEntries.length >= maxCards}
-          className="px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-lg sm:rounded-xl bg-yellow-500 text-zinc-950 font-bold text-xs flex items-center gap-1 sm:gap-1.5 hover:bg-yellow-400 active:scale-95 transition-transform disabled:opacity-40 disabled:pointer-events-none cursor-pointer shrink-0"
+          className="min-w-0 flex-1 basis-0 max-w-[8.5rem] px-2 py-1.5 rounded-lg bg-yellow-500 text-zinc-950 font-bold text-xs flex items-center justify-center gap-1 hover:bg-yellow-400 active:scale-95 transition-transform disabled:opacity-40 disabled:pointer-events-none cursor-pointer"
         >
-          <Sparkles size={13} />
-          <span className="whitespace-nowrap">자동 한 장</span>
+          <Sparkles size={13} className="shrink-0" />
+          <span className="truncate">자동 한 장</span>
         </button>
 
         <button
           type="button"
           onClick={() => handleQuickSpin('right')}
-          className="px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-lg sm:rounded-xl bg-zinc-900 border border-yellow-500/25 hover:border-yellow-400 text-yellow-300 text-xs font-semibold flex items-center gap-1 active:scale-95 transition-transform cursor-pointer shrink-0"
+          className="min-w-0 flex-1 basis-0 max-w-[8.5rem] px-2 py-1.5 rounded-lg bg-zinc-900 border border-yellow-500/25 hover:border-yellow-400 text-yellow-300 text-xs font-semibold flex items-center justify-center gap-1 active:scale-95 transition-transform cursor-pointer"
           title="오른쪽 카드들을 가운데로 이동"
         >
-          <span className="hidden min-[380px]:inline">우회전</span>
-          <ChevronRight size={14} />
+          <span className="truncate">우회전</span>
+          <ChevronRight size={14} className="shrink-0" />
         </button>
       </div>
 
