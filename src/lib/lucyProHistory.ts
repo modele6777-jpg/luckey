@@ -1,5 +1,6 @@
+import { rememberChatDays } from './dailyChatMemoryStore';
 import { safeLocalStorage } from '@/utils/safeStorage';
-import { getTodayDateKey, formatDateKey } from './dailyCache';
+import { getLucyChatDay as getTodayDateKey, formatLucyChatDay as formatDateKey } from './lucyChatDay';
 import { LUCY_MASTER_CHANNELS } from './lucyChatPageMode';
 import type { UnifiedMessage } from './chatHistorySync';
 
@@ -19,6 +20,7 @@ export function loadProHistory(account: string): ProDailyHistory {
   const key = proHistoryKey(account);
   let raw: unknown = null;
   try { raw = JSON.parse(safeLocalStorage.getItem(key) || 'null'); } catch { /* Reset malformed Pro data only. */ }
+  if (Array.isArray((raw as ProDailyHistory)?.messages)) rememberChatDays((raw as ProDailyHistory).messages, account);
   const current = normalizeProHistory(raw);
   if ((raw as ProDailyHistory | null)?.day !== current.day) {
     if (raw) safeLocalStorage.setItem(`${key}:previous`, JSON.stringify(raw));
@@ -27,5 +29,6 @@ export function loadProHistory(account: string): ProDailyHistory {
   return current;
 }
 export function saveProHistory(account: string, messages: UnifiedMessage[], resetAt?:number): void {
+  rememberChatDays(messages, account);
   safeLocalStorage.setItem(proHistoryKey(account), JSON.stringify(normalizeProHistory({ day: getTodayDateKey(), messages,resetAt:resetAt??loadProHistory(account).resetAt })));
 }

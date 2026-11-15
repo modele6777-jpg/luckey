@@ -1,9 +1,10 @@
+import { rememberChatDays } from '@/lib/dailyChatMemoryStore';
 import { syncDataSignature } from '@/lib/continuousDataSync';
 import { recoveringSubscription } from '@/lib/recoveringSubscription';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type React from 'react';
 import { loadProHistory, saveProHistory, freshProHistory, normalizeProHistory, proHistoryKey } from '@/lib/lucyProHistory';
-import { getTodayDateKey } from '@/lib/dailyCache';
+import { getLucyChatDay as getTodayDateKey, subscribeLucyMidnight } from '@/lib/lucyChatDay';
 import { hasRealUserConversation, mergeUnifiedMessages, type UnifiedMessage, type PersonaType } from '@/lib/chatHistorySync';
 import { auth, db, doc, onSnapshot, setDoc, getDocFromServer } from '@/lib/firebase';
 import { cleanFirestoreData } from '@/lib/sharedStateSync';
@@ -87,11 +88,12 @@ export function useLucyProConversation(account: string, cloudUid?: string) {
     };
     const onStorage = (event: StorageEvent) => { if (event.key === proHistoryKey(account)) check(); };
     check();
+    const stopMidnight = subscribeLucyMidnight(check);
     const timer = window.setInterval(check, 30000);
     window.addEventListener('focus', check);
     window.addEventListener('storage', onStorage);
     document.addEventListener('visibilitychange', check);
-    return () => { window.clearInterval(timer); window.removeEventListener('focus', check); window.removeEventListener('storage', onStorage); document.removeEventListener('visibilitychange', check); };
+    return () => { stopMidnight(); window.clearInterval(timer); window.removeEventListener('focus', check); window.removeEventListener('storage', onStorage); document.removeEventListener('visibilitychange', check); };
   }, [account, abort, cloudUid]);
   useEffect(() => {
     if (!cloudUid) return;
@@ -100,6 +102,7 @@ export function useLucyProConversation(account: string, cloudUid?: string) {
       if (snapshot.metadata.hasPendingWrites || snapshot.metadata.fromCache || auth.currentUser?.uid !== cloudUid) return;
       const day = getTodayDateKey();
       const remote = snapshot.data()?.pro;
+      if (Array.isArray(remote?.messages)) rememberChatDays(remote.messages, account);
       const current = resetRef.current;
       const history=loadProHistory(account);
       const localReset = Math.max(current.uid === cloudUid && current.day === day ? current.at : 0,history.resetAt||0);

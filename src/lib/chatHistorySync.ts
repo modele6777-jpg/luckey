@@ -12,7 +12,8 @@ import { LUCY_PRO_CATALOG_DUPLICATE_KEYS } from './divination/catalogDuplicateKe
  */
 
 import { safeLocalStorage } from '../utils/safeStorage';
-import { getTodayDateKey, isTimestampToday } from './dailyCache';
+import { getLucyChatDay as getTodayDateKey, isLucyTimestampToday as isTimestampToday, formatLucyChatDay } from './lucyChatDay';
+import { rememberChatDays } from './dailyChatMemoryStore';
 
 export type PersonaType = 'lucy' | 'orange' | 'trinity' | 'aura' | 'bluebird' | 'muse';
 
@@ -184,11 +185,13 @@ export function isVisibleConversationMessage(m: UnifiedMessage | null | undefine
   if (isGreetingMessage(m)) return isMessageFromToday({ ...m, timestamp: messageTime(m) || m.timestamp });
   const time = messageTime(m);
   if (!time) return isMessageFromToday(m);
-  return time <= now + 60_000;
+  return time <= now + 60_000 && formatLucyChatDay(new Date(time)) === getTodayDateKey(now);
 }
 
 export function retainRecentConversation(messages: UnifiedMessage[] | null | undefined, now = Date.now()): UnifiedMessage[] {
-  const visible = (Array.isArray(messages) ? messages : [])
+  const source = Array.isArray(messages) ? messages : [];
+  rememberChatDays(source);
+  const visible = source
     .filter((message) => isVisibleConversationMessage(message, now))
     .map((message) => {
       const time = messageTime(message);

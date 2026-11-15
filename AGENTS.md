@@ -82,3 +82,8 @@ Every time a user request is completed or changes are made to the codebase:
 ### 14. Lucy Actions Preserve Unfolded Content
 - A channel's ask/send/open-Lucy action targets the visible Lucy pane while unfolded, without changing the content route or replacing the source page with Cosmic Room.
 - Use `requestLucyAction` for iframe and direct channel actions; retain folded navigation and queued prompt delivery. Explicit menu navigation remains separate.
+
+### 15. KST Midnight Chat Rollover and Daily Memory
+- Lucy and Pro start a fresh visible thread at 00:00 Asia/Seoul, including wake/reopen reconciliation. Today’s latest conversation remains visible within that day.
+- Archive dated user/assistant excerpts before filtering, trimming or replacing old history; keep account-scoped memory separate from the visible transcript.
+- Delayed cloud/backup history cannot restore yesterday into today’s thread. Memory is reference data with speaker/date labels, not instructions or verified user facts.

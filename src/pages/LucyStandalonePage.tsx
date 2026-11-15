@@ -62,7 +62,7 @@ import { isLucyScrollPinned, lucyScrollPinHeld, noteLucyScrollPin, overlayCovers
 import { captureLucySearchAnchor, resolveLucySearchOpenGuardedTop, resolveLucySearchRestoreTop, type LucySearchScrollAnchor } from '@/lib/lucySearchScroll';
 import { isDualPaneLayout, isDuoUnfoldedState } from '@/lib/perfMode';
 import { buildLucyTarotReadingPrompt } from '@/lib/lucyTarotReading';
-import { getTodayDateKey } from '@/lib/dailyCache';
+import { getLucyChatDay as getTodayDateKey } from '@/lib/lucyChatDay';
 import { joinKakaoBubblesForTTS } from '@/lib/lucyChatUtils';
 import { LucyKakaoBubbleGroup } from '@/components/chat/LucyKakaoBubbleGroup';
 import { LucyCosmicBackground } from '@/components/chat/LucyCosmicBackground';
@@ -1774,7 +1774,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
 
       const existingUsers = existing.filter((message) => message.role === 'user' && message.content).length;
       const nextUsers = nextList.filter((message) => message.role === 'user' && message.content).length;
-      if (nextUsers === 0 && existingUsers > 0) return prevRecord;
+      if (nextUsers === 0 && existingUsers > 0 && !archival.wasArchived) return prevRecord;
       if (JSON.stringify(existing) !== JSON.stringify(nextList)) {
         saveUnifiedMessagesSafely(nextList);
         return {

@@ -1,3 +1,4 @@
+import { getLucyChatDay as getTodayDateKey, subscribeLucyMidnight } from '../lib/lucyChatDay';
 import { setDoc as writeFirestoreDocument } from 'firebase/firestore';
 import { createContinuousDataSync, localSyncChangeToken, syncDataSignature, localActivityPatch } from '../lib/continuousDataSync';
 import { recoveringSubscription } from '../lib/recoveringSubscription';
@@ -45,13 +46,13 @@ import { selectOptimalDivinationTools, FIFTEEN_DIVINATION_TOOLS, type SevenTheme
 // import { buildLettingGoSystemPrompt } from '../lib/lettingGoWisdom';
 import { loadSavedUnifiedMessages, saveUnifiedMessagesSafely, mergeUnifiedMessages, hasRealUserConversation, createDefaultGreeting } from '../lib/chatHistorySync';
 import { LUCY_PRO_CATALOG_TOTAL_COUNT } from '../lib/divination/engineCatalogCount';
-import { processDailyChatArchival, archiveAndResetChat } from '../lib/chatMemoryArchive';
+import { processDailyChatArchival, archiveAndResetChat, buildPermanentMemoryPromptContext } from '../lib/chatMemoryArchive';
 import {
   SUGGESTIONS_SYSTEM_SUFFIX,
   parseSuggestions,
   cleanChatDisplayText,
 } from '../utils/suggestions';
-import { hasUnlockedPinToday, markPinUnlockedToday, clearPinUnlockedToday, getTodayDateKey } from '../lib/dailyCache';
+import { hasUnlockedPinToday, markPinUnlockedToday, clearPinUnlockedToday } from '../lib/dailyCache';
 import { PERSONA_GREETINGS, PRISM_VOICE_RULES, LUCY_CHAT_VOICE_RULES, resolveLucyResponseLength, LUCY_RESPONSE_PROFILES } from '../lib/copyTone';
 import { isMobileDevice, isPerfReduced, isStandalonePWA } from '../lib/perfMode';
 import { validateAndExtractKeyExercise } from '../lib/keyExercisesCatalog';
@@ -688,7 +689,15 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   // Automatic Midnight / Date Rollover Watcher (resets chat window daily even if tab stays open)
   useEffect(() => {
+    let checkedDay = getTodayDateKey();
     const checkDateRollover = () => {
+      const day = getTodayDateKey();
+      if (day !== checkedDay) {
+        // Keep already received text in the archive and prevent yesterday's
+        // asynchronous request from writing into the new day's thread.
+        abortGenerating('lucy');
+        checkedDay = day;
+      }
       const isAnyGenerating = Object.values(isGeneratingRef.current).some(Boolean);
       if (isAnyGenerating) return;
       try {
@@ -704,8 +713,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         });
       } catch (_) {}
     };
-    const intervalId = setInterval(checkDateRollover, 30000);
-    return () => clearInterval(intervalId);
+    const stopMidnight = subscribeLucyMidnight(checkDateRollover);
+    const intervalId = setInterval(checkDateRollover, 1000);
+    return () => { stopMidnight(); clearInterval(intervalId); };
   }, []);
 
   // Window Focus / Visibility Change Sync & Storage Event Listener (Smart Merge)
@@ -2250,7 +2260,7 @@ ${responseProfile.rule}`;
     });
     if (sharedLucyBackground) systemPrompt += `\n\n${sharedLucyBackground}`;
     const memoryRecall = recallLucyLongTermMemory(memoryAccount, [...readLucyMemory(memoryAccount), ...(sharedStateRef.current?.lucyLongTermMemory || [])], effectiveUserText, [`${isProConversation ? 'lucy-pro' : 'lucy'}:${userMsg.id}`]);
-    const longTermContext = formatLucyConversationMemory(memoryRecall);
+    const longTermContext = [formatLucyConversationMemory(memoryRecall), buildPermanentMemoryPromptContext(memoryAccount, effectiveUserText)].filter(Boolean).join('\n\n');
     if (longTermContext) systemPrompt += `\n\n${longTermContext}`;
     const fullProfileContext = buildFullProfilePrompt(profile);
     systemPrompt += `\n\n${fullProfileContext}`;
