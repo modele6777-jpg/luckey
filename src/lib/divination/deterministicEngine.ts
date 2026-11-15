@@ -3185,7 +3185,7 @@ try {
   // 206. 고대 로마 세네카 인생의 짧음에 대하여 & 시간 주권 평정 엔진
   const senecaTimeSovereigntyResult = calculateSupplement('senecaTimeSovereigntyResult', () => ((() => {
     try {
-      return calculateSenecaTimeSovereignty(profile);
+      return calculateSenecaTimeSovereignty(profile, question, now);
     } catch (_) {
       return null;
     }
@@ -3212,7 +3212,7 @@ try {
   // 209. 고대 로마 키케로 의무론 도덕적 선(Honestum) & 유용성(Utile) 조화 처세 엔진
   const ciceroDeOfficiisResult = calculateSupplement('ciceroDeOfficiisResult', () => ((() => {
     try {
-      return calculateCiceroDeOfficiis(profile);
+      return calculateCiceroDeOfficiis(profile, question, now);
     } catch (_) {
       return null;
     }
@@ -3563,7 +3563,7 @@ try {
   // 246. 로마 마르쿠스 아우렐리우스 명상록 내면의 성채 & 스토아 실존 평정 지혜 엔진
   const marcusAureliusMeditationsCitadelResult = calculateSupplement('marcusAureliusMeditationsCitadelResult', () => ((() => {
     try {
-      return calculateMarcusAureliusMeditationsCitadel(profile);
+      return calculateMarcusAureliusMeditationsCitadel(profile, question, now);
     } catch (_) {
       return null;
     }
@@ -4919,10 +4919,10 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'chineseWangYangmingLiangzhiXinxue', nameKo: '양명학 왕양명 전습록 치양지 지행합일 심학', icon: '📜', category: 'deep_master', summary: '왕양명의 치양지와 지행합일로 내면의 맑은 직관을 즉각적인 실천으로 이어 냅니다.' },
   { key: 'ancientGreekSocraticMaieuticDaimon', nameKo: '소크라테스 산파술 다이몬 영혼성찰 무지의지', icon: '🏛️', category: 'deep_master', summary: '소크라테스의 산파술과 무지의 지로 헛된 전제를 비우고 내면의 다이몬 목소리를 듣습니다.' },
   { key: 'chineseMenciusFourSproutsHoyeon', nameKo: '맹자 사단사덕 호연지기 부동심 대장부', icon: '🌊', category: 'deep_master', summary: '맹자의 사단(四端)과 집의(集義)로 조급한 조장을 경계하고 떳떳한 호연지기를 기릅니다.' },
-  { key: 'romanSenecaTimeSovereignty', nameKo: '세네카 인생의짧음에대하여 시간주권 마음의평정', icon: '⏳', category: 'deep_master' },
+  { key: 'romanSenecaTimeSovereignty', nameKo: '세네카 인생의짧음에대하여 시간주권 마음의평정', icon: '⏳', category: 'deep_master', summary: '세네카의 시간 주권과 마음의 평정 철학으로 흩어진 오늘의 시간을 회수하고 유예 없는 현재를 세웁니다.' },
   { key: 'ancientGreekPlatonicIdeaCave', nameKo: '플라톤 동굴의비유 이데아 상기설 4대추덕', icon: '🏛️', category: 'deep_master', summary: '감각의 그림자를 벗어나 4대 추덕과 변증법적 사유로 본질(이데아)을 비춥니다.' },
   { key: 'koreanToegyeSeonghakSipdo', nameKo: '퇴계 이황 성학십도 거경궁리 상성성 경철학', icon: '📜', category: 'deep_master' },
-  { key: 'romanCiceroDeOfficiisHonestum', nameKo: '키케로 의무론 도덕적선 유용성조화 신의품위', icon: '⚖️', category: 'deep_master' },
+  { key: 'romanCiceroDeOfficiisHonestum', nameKo: '키케로 의무론 도덕적선 유용성조화 신의품위', icon: '⚖️', category: 'deep_master', summary: '키케로의 《의무론》으로 도덕적 선(Honestum)과 실익(Utile)의 일치를 가려내 신의와 품격 있는 결단을 돕습니다.' },
   { key: 'ancientGreekEpictetusDichotomyOfControl', nameKo: '에픽테토스 엥케이리디온 통제이분법 프로하이레시스 도덕의지', icon: '🏛️', category: 'deep_master', summary: '내게 달린 것과 달리지 않은 것을 가려내 내면의 자유의지(Prohairesis)와 평정을 세웁니다.' },
   { key: 'ancientChineseConfuciusAnalectsZhitianming', nameKo: '공자 논어 지천명 극기복례 군자도', icon: '📜', category: 'deep_master', summary: '공자의 인·예와 극기복례, 지천명 수양으로 삶의 자리에서 흔들림 없는 중심을 세웁니다.' },
   { key: 'baruchSpinozaEthicaConatusAmorDei', nameKo: '스피노자 에티카 코나투스 신즉자연 영원의상관조', icon: '✨', category: 'deep_master', summary: '스피노자의 코나투스와 영원의 상 아래에서 감정의 인과를 명료히 이해하고 능동적 기쁨으로 나아갑니다.' },
