@@ -384,6 +384,15 @@ export function mergeUnifiedMessages(
 /**
  * 로컬스토리지에서 오늘의 대화 기록만 복원 (대화 기록이 없으면 기본 루시 인사말 반환)
  */
+/** Restore newly saved messages even when the stored/current counts are equal.
+ * Current overlapping messages win so an in-flight streamed reply cannot regress. */
+export function restoreLatestConversation(current: UnifiedMessage[], saved: UnifiedMessage[]): UnifiedMessage[] {
+  const merged = retainRecentConversation(mergeUnifiedMessages(saved, current));
+  if (merged.length === current.length && merged.every((message, index) =>
+    message === current[index] || JSON.stringify(message) === JSON.stringify(current[index]))) return current;
+  return merged;
+}
+
 export function loadSavedUnifiedMessages(): UnifiedMessage[] {
   try {
     // 1. Primary V3

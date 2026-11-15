@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { retainRecentConversation, loadSavedUnifiedMessages, saveUnifiedMessagesSafely } from '../src/lib/chatHistorySync';
+import { retainRecentConversation, restoreLatestConversation, loadSavedUnifiedMessages, saveUnifiedMessagesSafely } from '../src/lib/chatHistorySync';
 import { processDailyChatArchival } from '../src/lib/chatMemoryArchive';
 import { safeLocalStorage } from '../src/utils/safeStorage';
 import type { UnifiedMessage } from '../src/lib/chatHistorySync';
@@ -49,4 +49,22 @@ test('saved history reloads the recent messages instead of only a greeting', () 
   const loaded = loadSavedUnifiedMessages();
   assert.ok(loaded.some((entry) => entry.id === 'kept-user'));
   assert.equal(loaded.some((entry) => entry.id === 'ancient'), false);
+});
+
+
+test('entry restoration merges a newer saved thread even when message counts match', () => {
+  const current = [message('old-user', 5000), message('old-reply', 4000, 'model')];
+  const saved = [message('new-user', 2000), message('new-reply', 1000, 'model')];
+  const restored = restoreLatestConversation(current, saved);
+  assert.equal(restored.at(-1)?.id, 'new-reply');
+  assert.ok(restored.some(entry => entry.id === 'new-user'));
+});
+
+test('restoring saved history never replaces an active reply with an older partial copy', () => {
+  const user = message('stream-user', 2000);
+  const current = [user, { ...message('stream-answer', 1000, 'model'), content: '현재 이어지는 더 긴 답변' }];
+  const saved = [user, { ...message('stream-answer', 1000, 'model'), content: '현재' }];
+  const restored = restoreLatestConversation(current, saved);
+  assert.equal(restored.at(-1)?.content, '현재 이어지는 더 긴 답변');
+  assert.equal(restored, current);
 });
