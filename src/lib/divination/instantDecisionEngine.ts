@@ -34,6 +34,18 @@
 import { hexagram, type Yao } from './iching';
 import { calculateQimen } from './eventCharts';
 
+export const INSTANT_DECISION_ENGINE_VERSION = 'LUCKEY-IDE-v2.0.0';
+
+function formatInstantDecisionKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
+
 export type DecisionVerdictGrade =
   | '적극 추진 (Strong Go)'
   | '전략적 진행 (Moderate Go)'
@@ -128,6 +140,12 @@ export interface InstantDecisionResult {
       avoidNow: string;
       optimalWindow: string;
     };
+  };
+
+  instantDecisionSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
   };
 }
 
@@ -230,7 +248,7 @@ export function calculateInstantDecision(options?: {
 
   // KST (UTC+9) 기준 시간 요소 추출
   const kstTime = new Date(now.getTime() + 9 * 3600000);
-  const nowKstIso = kstTime.toISOString().replace('Z', '+09:00');
+  const nowKstIso = formatInstantDecisionKstTimestamp(now);
 
   const year = kstTime.getUTCFullYear();
   const month = kstTime.getUTCMonth() + 1;
@@ -415,8 +433,14 @@ export function calculateInstantDecision(options?: {
     optimalWindow = `이 안건은 잠시 내려놓고 본래의 본업과 평온에 집중하기`;
   }
 
+  const instantDecisionSynthesisMatrix = {
+    dominantTension: `${primaryHex.name}(${cheYongPrimary.relationType}) ↔ ${changedHex.name}(${cheYongChanged.relationType})`,
+    alignmentState: `${grade} · ${dominantGate}(${gateNature})`,
+    integratedAction: `${doNow}${options?.questionText ? ` [질문 맥락: ${options.questionText.slice(0, 40)}]` : ''}`,
+  };
+
   return {
-    engineVersion: 'LUCKEY-IDE-v1.0.0',
+    engineVersion: INSTANT_DECISION_ENGINE_VERSION,
     calculatedAtUtc: nowUtcIso,
     calculatedAtKst: nowKstIso,
     timestamp: now.getTime(),
@@ -480,6 +504,7 @@ export function calculateInstantDecision(options?: {
         optimalWindow,
       },
     },
+    instantDecisionSynthesisMatrix,
   };
 }
 
@@ -494,8 +519,8 @@ export function formatInstantDecisionPrompt(res: InstantDecisionResult): string 
 
   return `[⚡ 즉시 결단 매화역수 & 기문둔갑 시가팔문 실측 데이터 (Instant Chrono-Decision Core)]
 ======================================================================
-엔진 버전: ${res.engineVersion} | 질의 시각: ${res.targetInstantTime}
-종합 결단 승부수: ★ ${v.finalScore}점 [${v.grade}]
+엔진 버전: ${res.engineVersion} | 기준 시각: ${res.calculatedAtKst} | 질의 시각: ${res.targetInstantTime}
+종합 결단 방향: ★ [${v.grade}]
 결론: "${v.oneLineConclusion}"
 ======================================================================
 1. [소강절 매화역수(梅花易數) 시간작괘 실측]:
@@ -506,7 +531,6 @@ export function formatInstantDecisionPrompt(res: InstantDecisionResult): string 
    - 체용(體用) 생극 분석:
      * 본괘 체용: [${m.cheYongPrimary.relationType}] (${m.cheYongPrimary.relationQuality}) -> ${m.cheYongPrimary.description}
      * 변괘 체용: [${m.cheYongChanged.relationType}] (${m.cheYongChanged.relationQuality}) -> ${m.cheYongChanged.description}
-     * 매화역수 지수: ${m.meihuaScore}점
 
 2. [기문둔갑 시가팔문(時家八門) 실시간 국수]:
    - 현재 시진: ${q.currentHourBranch} | 주도 팔문: ★ [${q.dominantGate}] (${q.gateNature})
@@ -518,6 +542,10 @@ export function formatInstantDecisionPrompt(res: InstantDecisionResult): string 
    - 지금 취할 행동(DO): ${v.actionProtocol.doNow}
    - 지금 피할 행동(AVOID): ${v.actionProtocol.avoidNow}
    - 최적의 실행 시간대: ${v.actionProtocol.optimalWindow}
+${res.instantDecisionSynthesisMatrix ? `4. [교차 매트릭스]:
+   - 핵심 긴장: ${res.instantDecisionSynthesisMatrix.dominantTension}
+   - 조율 상태: ${res.instantDecisionSynthesisMatrix.alignmentState}
+   - 통합 실천: ${res.instantDecisionSynthesisMatrix.integratedAction}` : ''}
 ======================================================================
 [★ 루시 즉시 결단 답변 지침]:
 - 사용자가 '지금 할까 말까?', 'A vs B', '연락할까?', '계약할까?'를 물었을 때 위 실측 괘와 기문 8문을 명쾌한 승부수 언어로 풀어줘.
