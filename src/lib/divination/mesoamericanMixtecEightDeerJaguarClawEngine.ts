@@ -15,7 +15,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const MIXTEC_EIGHT_DEER_VERSION = 'LUCKEY-MIXTEC-EIGHT-DEER-v1.0.0';
+export const MIXTEC_EIGHT_DEER_VERSION = 'LUCKEY-MIXTEC-EIGHT-DEER-v2.0.0';
 
 export interface EightDeerHeroRank {
   rankLevel: number;
@@ -46,6 +46,17 @@ export interface MixtecEightDeerResult {
     sceneTitle: string;
     historicWisdom: string;
   };
+  mixtecSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
+}
+
+function describeMixtecStage(score: number): string {
+  if (score >= 86) return '틸란통고 대통합(Grand Alliance) — 용기와 동맹·산해의 자원이 한 줄기로 맞물린 도약기';
+  if (score >= 74) return '코덱스 균형(Codex Balance) — 명분과 실리 사이에서 우군을 확보하며 나아가는 안정기';
+  return '조상 동굴 성찰(Cave Oracle) — 내면의 직관을 고르고 다음 동맹을 준비하는 정돈기';
 }
 
 export type MixtecEightDeerReport = MixtecEightDeerResult;
@@ -74,10 +85,14 @@ const NUTTALL_SCENES = [
   { sceneTitle: '산악과 해안의 대행진', historicWisdom: '서로 다른 재능과 배경을 가진 이들이 하나의 꿈 아래 모일 때, 그 누구도 넘보지 못할 거대한 역사가 된다.' },
 ];
 
-function getKstDateString(): string {
-  const now = new Date();
-  const kst = new Date(now.getTime() + (9 * 60 + now.getTimezoneOffset()) * 60000);
-  return kst.toISOString().replace('T', ' ').substring(0, 19) + ' KST';
+function getKstDateString(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
 }
 
 function hashSeed(seedStr: string): number {
@@ -89,11 +104,15 @@ function hashSeed(seedStr: string): number {
   return Math.abs(h);
 }
 
-export function calculateMixtecEightDeer(profile?: UserProfile): MixtecEightDeerResult {
+export function calculateMixtecEightDeer(
+  profile?: UserProfile,
+  query?: string,
+  now: Date = new Date(),
+): MixtecEightDeerResult {
   const birthdate = profile?.basic?.birthdate || '1995-03-21';
   const birthtime = profile?.basic?.birthtime || '12:00';
   const name = profile?.basic?.name || 'Inquirer';
-  const seed = hashSeed(`MIXTEC-EIGHT-DEER-${birthdate}-${birthtime}-${name}`);
+  const seed = hashSeed(`MIXTEC-EIGHT-DEER-${birthdate}-${birthtime}-${name}-${query ?? ''}`);
 
   const jaguarClawCourageForce = (seed % 41) + 60; // 60~100
   const sacredAllianceUnificationScore = ((seed >> 3) % 43) + 58; // 58~100
@@ -110,9 +129,18 @@ export function calculateMixtecEightDeer(profile?: UserProfile): MixtecEightDeer
   const sceneIdx = (seed >> 6) % NUTTALL_SCENES.length;
   const codexNuttallScene = NUTTALL_SCENES[sceneIdx];
 
+  const composite = Math.round(
+    (jaguarClawCourageForce + sacredAllianceUnificationScore + ancestralCaveOracleClarity + mountainCoastSynthesisBalance + turquoiseNoseOrnamentHonor) / 5
+  );
+  const mixtecSynthesisMatrix = {
+    dominantTension: `${activeHeroRank.rankNameKo} ↔ ${primaryStrategicVirtue.virtueNameKo}`,
+    alignmentState: describeMixtecStage(composite),
+    integratedAction: `${primaryStrategicVirtue.actionableDirective}${query?.trim() ? ` [질문 맥락: ${query.trim()}]` : ''}`,
+  };
+
   return {
     engineVersion: MIXTEC_EIGHT_DEER_VERSION,
-    calculatedAtKst: getKstDateString(),
+    calculatedAtKst: getKstDateString(now),
     jaguarClawCourageForce,
     sacredAllianceUnificationScore,
     ancestralCaveOracleClarity,
@@ -121,23 +149,32 @@ export function calculateMixtecEightDeer(profile?: UserProfile): MixtecEightDeer
     activeHeroRank,
     primaryStrategicVirtue,
     codexNuttallScene,
+    mixtecSynthesisMatrix,
   };
 }
 
 export function formatMixtecEightDeerPrompt(result: MixtecEightDeerResult): string {
-  return `[🐆 메소아메리카 믹스테크 《8-사슴 재규어 발톱(Eight Deer)》 연맹 결성 & 통일 리포트]
-- 엔진 버전: ${result.engineVersion}
-- 재규어 발톱의 용기 및 결단력: ${result.jaguarClawCourageForce}%
-- 신성 동맹 결성 및 네트워크 통합력: ${result.sacredAllianceUnificationScore}%
-- 조상 동굴 신탁 영적 명료도: ${result.ancestralCaveOracleClarity}%
-- 산악과 해안의 자원 조화율: ${result.mountainCoastSynthesisBalance}%
-- 터키석 코 장신구의 주권적 영예: ${result.turquoiseNoseOrnamentHonor}%
-- 현행 전술적 품계: **[${result.activeHeroRank.rankNameKo} (${result.activeHeroRank.rankNameMixtec})]**
-  → 관장 영역: ${result.activeHeroRank.territorialDomain}
-  → 전략적 강점: ${result.activeHeroRank.strategicSuperpower}
-- 최우선 전략 덕목: **[${result.primaryStrategicVirtue.virtueNameKo} (${result.primaryStrategicVirtue.mixtecTitle})]**
-  → 핵심 본질: ${result.primaryStrategicVirtue.coreEssence}
-  → 실천 지침: ${result.primaryStrategicVirtue.actionableDirective}
-- 코덱스 조체-누탈 전승 장면: 《${result.codexNuttallScene.sceneTitle}》
-  → 역사적 지혜: "${result.codexNuttallScene.historicWisdom}"`;
+  const composite = Math.round(
+    (result.jaguarClawCourageForce + result.sacredAllianceUnificationScore + result.ancestralCaveOracleClarity + result.mountainCoastSynthesisBalance + result.turquoiseNoseOrnamentHonor) / 5
+  );
+  const lines = [
+    `[🐆 메소아메리카 믹스테크 《8-사슴 재규어 발톱(Eight Deer)》 연맹 결성 & 통일 리포트]`,
+    `- 연산 시각: ${result.calculatedAtKst} | 엔진 버전: ${result.engineVersion}`,
+    `- 전략 통합 국면: ${describeMixtecStage(composite)}`,
+    `- 현행 전술적 품계: **[${result.activeHeroRank.rankNameKo} (${result.activeHeroRank.rankNameMixtec})]**`,
+    `  → 관장 영역: ${result.activeHeroRank.territorialDomain}`,
+    `  → 전략적 강점: ${result.activeHeroRank.strategicSuperpower}`,
+    `- 최우선 전략 덕목: **[${result.primaryStrategicVirtue.virtueNameKo} (${result.primaryStrategicVirtue.mixtecTitle})]**`,
+    `  → 핵심 본질: ${result.primaryStrategicVirtue.coreEssence}`,
+    `  → 실천 지침: ${result.primaryStrategicVirtue.actionableDirective}`,
+    `- 코덱스 조체-누탈 전승 장면: 《${result.codexNuttallScene.sceneTitle}》`,
+    `  → 역사적 지혜: "${result.codexNuttallScene.historicWisdom}"`,
+  ];
+  if (result.mixtecSynthesisMatrix) {
+    lines.push(
+      `- 교차 매트릭스 [핵심 긴장: ${result.mixtecSynthesisMatrix.dominantTension} | 조율 상태: ${result.mixtecSynthesisMatrix.alignmentState}]`,
+      `- 통합 실천: ${result.mixtecSynthesisMatrix.integratedAction}`,
+    );
+  }
+  return lines.join('\n');
 }

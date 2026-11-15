@@ -6,7 +6,7 @@
  * 질문 맥락에 반응하는 정성적 성찰과 유연한 위기 전환 지침으로 연결합니다.
  */
 
-export const MESOAMERICAN_POPOL_VUH_ENGINE_VERSION = 'LUCKEY-POPOL-VUH-HERO-TWINS-v1.1.0';
+export const MESOAMERICAN_POPOL_VUH_ENGINE_VERSION = 'LUCKEY-POPOL-VUH-HERO-TWINS-v2.0.0';
 
 export type PopolVuhQuestionTheme = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -19,6 +19,7 @@ export type PopolVuhTransformationPhase =
 export interface PopolVuhReport {
   engineVersion: string;
   calculatedAt: string;
+  calculatedAtKst: string;
   questionTheme: PopolVuhQuestionTheme;
   activeTrialHouse: {
     houseNumber: number;
@@ -41,6 +42,34 @@ export interface PopolVuhReport {
   reflectionFocus: string;
   counselNote: string;
   boundaryNotice: string;
+  popolVuhSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
+}
+
+function formatPopolVuhKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
+
+function describePopolVuhStage(phase: PopolVuhTransformationPhase): string {
+  switch (phase) {
+    case 'SOLAR_LUNAR_ASCENT':
+      return '태양과 달의 비상(Solar-Lunar Ascent) — 시발바의 어둠을 건너 새벽빛으로 도약하는 개화기';
+    case 'ASH_REBIRTH':
+      return '재 속의 부활(Ash Rebirth) — 낡은 틀을 태우고 새로운 형태로 거듭나는 전환기';
+    case 'CLEVER_REVERSAL':
+      return '트릭스터 반전(Clever Reversal) — 정면 충돌 대신 기지와 유머로 판을 뒤집는 묘수기';
+    default:
+      return '시발바 관문 통과(Underworld Trial) — 흔들리지 않는 숨과 관찰로 시련의 방을 건너는 인내기';
+  }
 }
 
 const XIBALBA_HOUSES = [
@@ -186,9 +215,17 @@ export function calculatePopolVuhHeroTwins(params: {
   const heroicTransformationVerdict = `${activeTrialHouse.houseNameKo}의 시험을 ${twinArchetype.twinName}의 기지로 건너 새벽빛으로 도약하는 전환 국면`;
   const underworldVictoryRule = qualitative.practice;
 
+  const calculatedAtKst = formatPopolVuhKstTimestamp(now);
+  const popolVuhSynthesisMatrix = {
+    dominantTension: `${activeTrialHouse.houseNameKo} ↔ ${twinArchetype.twinName}`,
+    alignmentState: describePopolVuhStage(transformationPhase),
+    integratedAction: `${qualitative.practice}${question ? ` [질문 맥락: ${question}]` : ''}`,
+  };
+
   return {
     engineVersion: MESOAMERICAN_POPOL_VUH_ENGINE_VERSION,
     calculatedAt: now.toISOString(),
+    calculatedAtKst,
     questionTheme,
     activeTrialHouse,
     twinArchetype,
@@ -201,21 +238,31 @@ export function calculatePopolVuhHeroTwins(params: {
     reflectionFocus: qualitative.reflection,
     counselNote: qualitative.counsel,
     boundaryNotice: '마야 포폴 부 쌍둥이 영웅 상징은 우열을 가르는 점수가 아니라 위기를 유연하게 전환하기 위한 정성적 성찰 프레임입니다.',
+    popolVuhSynthesisMatrix,
   };
 }
 
 export function formatPopolVuhHeroTwinsPrompt(report: PopolVuhReport): string {
   const h = report.activeTrialHouse;
-  return `### 🐆 고대 마야 포폴 부(Popol Vuh) 쌍둥이 영웅 & 시발바 시련 돌파 실측 데이터 (${report.engineVersion})
-- **질문 맥락 & 변모 국면**: ${report.questionTheme} · ${report.transformationPhase}
-- **현재 돌파 중인 시련의 방**: 제${h.houseNumber}관문 - ${h.houseNameKo} (${h.houseNameMaya})
-- **조응하는 쌍둥이 영웅**: ${report.twinArchetype.twinName} (${report.twinArchetype.celestialSymbol})
-- **직면한 핵심 위기 요인**: ${h.coreHazard}
-- **영웅들의 트릭스터 돌파 전략**: ${h.heroicCounterStrategy}
-- **영혼의 변모 판정**: ${report.heroicTransformationVerdict}
-- **실천 조언**: ${report.practiceGuidance}
-- **일상 의례**: ${report.ritualAction}
-- **성찰 질문**: ${report.reflectionFocus}
-- **조언 요약**: ${report.counselNote}
-- **해석 경계**: ${report.boundaryNotice}`;
+  const lines = [
+    `### 🐆 고대 마야 포폴 부(Popol Vuh) 쌍둥이 영웅 & 시발바 시련 돌파 실측 데이터 (${report.engineVersion})`,
+    `- **연산 시각**: ${report.calculatedAtKst} | **질문 맥락 & 변모 국면**: ${report.questionTheme} · ${describePopolVuhStage(report.transformationPhase)}`,
+    `- **현재 돌파 중인 시련의 방**: 제${h.houseNumber}관문 - ${h.houseNameKo} (${h.houseNameMaya})`,
+    `- **조응하는 쌍둥이 영웅**: ${report.twinArchetype.twinName} (${report.twinArchetype.celestialSymbol})`,
+    `- **직면한 핵심 위기 요인**: ${h.coreHazard}`,
+    `- **영웅들의 트릭스터 돌파 전략**: ${h.heroicCounterStrategy}`,
+    `- **영혼의 변모 판정**: ${report.heroicTransformationVerdict}`,
+    `- **실천 조언**: ${report.practiceGuidance}`,
+    `- **일상 의례**: ${report.ritualAction}`,
+    `- **성찰 질문**: ${report.reflectionFocus}`,
+    `- **조언 요약**: ${report.counselNote}`,
+    `- **해석 경계**: ${report.boundaryNotice}`,
+  ];
+  if (report.popolVuhSynthesisMatrix) {
+    lines.push(
+      `- **교차 매트릭스**: [핵심 긴장: ${report.popolVuhSynthesisMatrix.dominantTension} | 조율 상태: ${report.popolVuhSynthesisMatrix.alignmentState}]`,
+      `- **통합 실천**: ${report.popolVuhSynthesisMatrix.integratedAction}`,
+    );
+  }
+  return lines.join('\n');
 }
