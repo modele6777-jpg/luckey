@@ -14,7 +14,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const PLUM_BLOSSOM_MEIHUA_ORACLE_ENGINE_VERSION = '1.0.0';
+export const PLUM_BLOSSOM_MEIHUA_ORACLE_ENGINE_VERSION = '2.0.0';
 
 export type MeihuaTrigram = {
   num: number;
@@ -47,6 +47,7 @@ export type TiYongRelation = '용생체(用生體 - 대길)' | '체용비화(體
 
 export interface PlumBlossomMeihuaReport {
   engineVersion: string;
+  calculatedAtKst: string;
   timestamp: string;
   benGua: MeihuaHexagram; // 본괘 (현재의 상태)
   huGua: MeihuaHexagram; // 호괘 (숨겨진 중간 과정)
@@ -58,6 +59,21 @@ export interface PlumBlossomMeihuaReport {
   auspiciousScore: number; // 0 ~ 100 길흉 지수
   shaoYongJudgment: string; // 소강절 선생의 단언
   temporalTimingGuidance: string; // 시중(時中) 돌파 타이밍과 행동 처방
+  meihuaSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
+}
+
+function formatMeihuaKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
 }
 
 // 오행 생극 판정
@@ -184,8 +200,16 @@ export function calculatePlumBlossomMeihuaOracle(options?: {
   const temporalTimingGuidance = `현재 본괘는 ${benGua.fullName}이며, ${movingLine}효가 동하여 체(${tiGua.name})와 용(${yongGua.name})의 관계가 [${tiYongRelation}]를 이룹니다. ` +
     `호괘(${huGua.fullName})의 과정을 거쳐 종국에는 변괘(${bianGua.fullName})로 귀결되니, ${shaoYongJudgment}`;
 
+  const calculatedAtKst = formatMeihuaKstTimestamp(now);
+  const meihuaSynthesisMatrix = {
+    dominantTension: `체괘 ${tiGua.name}(${tiGua.element}) ↔ 용괘 ${yongGua.name}(${yongGua.element})`,
+    alignmentState: `${tiYongRelation} — 본괘 ${benGua.fullName} → 변괘 ${bianGua.fullName}`,
+    integratedAction: `${shaoYongJudgment}${question ? ` [질문 맥락: ${question}]` : ''}`,
+  };
+
   return {
     engineVersion: PLUM_BLOSSOM_MEIHUA_ORACLE_ENGINE_VERSION,
+    calculatedAtKst,
     timestamp: now.toISOString(),
     benGua,
     huGua,
@@ -197,16 +221,26 @@ export function calculatePlumBlossomMeihuaOracle(options?: {
     auspiciousScore,
     shaoYongJudgment,
     temporalTimingGuidance,
+    meihuaSynthesisMatrix,
   };
 }
 
 export function formatPlumBlossomMeihuaOraclePrompt(rep: PlumBlossomMeihuaReport): string {
-  return `[송대 소강절 선생 매화역수(梅花易數) 체용생극 선천 작괘 실측 데이터]
-· 엔진 버전: v${rep.engineVersion}
-· 본괘(本卦): ${rep.benGua.fullName} [상괘 ${rep.benGua.upper.name}(${rep.benGua.upper.element}) / 하괘 ${rep.benGua.lower.name}(${rep.benGua.lower.element})]
-· 동효(動爻): 제 ${rep.movingLine}효 동함 | 체괘: ${rep.tiGua.name}(${rep.tiGua.element}) vs 용괘: ${rep.yongGua.name}(${rep.yongGua.element})
-· 체용 생극 판정: ${rep.tiYongRelation} (길흉 점수: ${rep.auspiciousScore}/100)
-· 호괘(互卦 - 내재 과정): ${rep.huGua.fullName} | 변괘(變卦 - 종국 결실): ${rep.bianGua.fullName}
-· 소강절 선생 심역 단언: ${rep.shaoYongJudgment}
-· 시중(時中) 돌파 지침: ${rep.temporalTimingGuidance}`;
+  const lines = [
+    `[송대 소강절 선생 매화역수(梅花易數) 체용생극 선천 작괘 실측 데이터]`,
+    `· 연산 시각: ${rep.calculatedAtKst} | 엔진 버전: v${rep.engineVersion}`,
+    `· 본괘(本卦): ${rep.benGua.fullName} [상괘 ${rep.benGua.upper.name}(${rep.benGua.upper.element}) / 하괘 ${rep.benGua.lower.name}(${rep.benGua.lower.element})]`,
+    `· 동효(動爻): 제 ${rep.movingLine}효 동함 | 체괘: ${rep.tiGua.name}(${rep.tiGua.element}) vs 용괘: ${rep.yongGua.name}(${rep.yongGua.element})`,
+    `· 체용 생극 판정: ${rep.tiYongRelation}`,
+    `· 호괘(互卦 - 내재 과정): ${rep.huGua.fullName} | 변괘(變卦 - 종국 결실): ${rep.bianGua.fullName}`,
+    `· 소강절 선생 심역 단언: ${rep.shaoYongJudgment}`,
+    `· 시중(時中) 돌파 지침: ${rep.temporalTimingGuidance}`,
+  ];
+  if (rep.meihuaSynthesisMatrix) {
+    lines.push(
+      `· 교차 매트릭스 [핵심 긴장: ${rep.meihuaSynthesisMatrix.dominantTension} | 조율 상태: ${rep.meihuaSynthesisMatrix.alignmentState}]`,
+      `· 통합 실천: ${rep.meihuaSynthesisMatrix.integratedAction}`,
+    );
+  }
+  return lines.join('\n');
 }
