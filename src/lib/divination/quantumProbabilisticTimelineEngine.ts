@@ -19,7 +19,17 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const QUANTUM_TIMELINE_VERSION = 'LUCKEY-TIMELINE-v1.0.0';
+export const QUANTUM_TIMELINE_VERSION = 'LUCKEY-TIMELINE-v2.0.0';
+
+function formatQuantumTimelineKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
 
 export interface TimelineTrack {
   trackName: string;
@@ -32,6 +42,7 @@ export interface TimelineTrack {
 export interface QuantumProbabilisticTimelineReport {
   engineVersion: string;
   calculatedAt: string;
+  calculatedAtKst: string;
   baselineTimeline: TimelineTrack;
   optimalQuantumTimeline: TimelineTrack;
   bifurcationWindow: {
@@ -45,11 +56,17 @@ export interface QuantumProbabilisticTimelineReport {
   };
   quantumJumpFeasibilityScore: number; // 퀀텀 점프 실현 가능성 지수 (0 ~ 100)
   synthesisPromptGuidance: string;
+  quantumTimelineSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
 }
 
 export function runQuantumProbabilisticTimelineEngine(
   profile?: UserProfile,
-  targetDate: Date = new Date()
+  targetDate: Date = new Date(),
+  question?: string
 ): QuantumProbabilisticTimelineReport {
   const sajuRes = calculateDetailedSaju(profile || null);
 
@@ -128,8 +145,15 @@ export function runQuantumProbabilisticTimelineEngine(
 
   const quantumJumpFeasibilityScore = optimalProbability;
 
-  const synthesisPromptGuidance = `[LUCKEY 양자 다중우주 타임라인 분기 & 퀀텀 점프 v1.0.0]
-- 최상위 타임라인 실현 확률: ${optimalProbability}% (베이스라인 관성: ${baselineProbability}%)
+  const calculatedAtKst = formatQuantumTimelineKstTimestamp(targetDate);
+  const q = (question || '').trim();
+  const quantumTimelineSynthesisMatrix = {
+    dominantTension: `${baselineTimeline.trackName} ↔ ${optimalQuantumTimeline.trackName}`,
+    alignmentState: `분기점: ${criticalDateRange} · ${coreDecisionChoice}`,
+    integratedAction: `${physicalAnchorAction}${q ? ` [질문 맥락: ${q}]` : ''}`,
+  };
+
+  const synthesisPromptGuidance = `[LUCKEY 양자 다중우주 타임라인 분기 & 퀀텀 점프 ${QUANTUM_TIMELINE_VERSION} | ${calculatedAtKst}]
 - 6개월 후 최적 궤도 시나리오: [Timeline Prime] ${optimalOutcome}
 - 6개월 후 베이스라인 관성 시나리오: [Timeline Alpha] ${baselineOutcome}
 - 타임라인 분기점(Bifurcation Point): ${criticalDateRange}
@@ -137,11 +161,14 @@ export function runQuantumProbabilisticTimelineEngine(
 - 퀀텀 붕괴 3대 촉매:
   * 정체성 도약: "${identityShift}"
   * 물리적 1순위 행동: ${physicalAnchorAction}
-  * 주의할 습관: ${limitingPattern}`;
+  * 주의할 습관: ${limitingPattern}
+- 교차 매트릭스: [핵심 긴장: ${quantumTimelineSynthesisMatrix.dominantTension} | 조율 상태: ${quantumTimelineSynthesisMatrix.alignmentState}]
+  * 통합 실천: ${quantumTimelineSynthesisMatrix.integratedAction}`;
 
   return {
     engineVersion: QUANTUM_TIMELINE_VERSION,
     calculatedAt: targetDate.toISOString(),
+    calculatedAtKst,
     baselineTimeline,
     optimalQuantumTimeline,
     bifurcationWindow: {
@@ -154,7 +181,8 @@ export function runQuantumProbabilisticTimelineEngine(
       limitingPattern
     },
     quantumJumpFeasibilityScore,
-    synthesisPromptGuidance
+    synthesisPromptGuidance,
+    quantumTimelineSynthesisMatrix,
   };
 }
 
@@ -164,10 +192,11 @@ export function calculateQuantumProbabilisticTimeline(params?: {
   profile?: UserProfile | null;
   saju?: SajuAnalysisResult | null;
   targetDate?: Date;
+  question?: string;
 }): QuantumProbabilisticTimelineResult {
   const profile = params?.profile || undefined;
   const targetDate = params?.targetDate || new Date();
-  return runQuantumProbabilisticTimelineEngine(profile, targetDate);
+  return runQuantumProbabilisticTimelineEngine(profile, targetDate, params?.question);
 }
 
 export function formatQuantumProbabilisticTimelinePrompt(res: QuantumProbabilisticTimelineResult): string {

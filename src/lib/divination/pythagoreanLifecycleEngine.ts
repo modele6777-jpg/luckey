@@ -16,7 +16,17 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const PYTHAGOREAN_LIFECYCLE_VERSION = 'LUCKEY-PYTH-v1.0.0';
+export const PYTHAGOREAN_LIFECYCLE_VERSION = 'LUCKEY-PYTH-v2.0.0';
+
+function formatPythagoreanKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
 
 export interface PinnacleInfo {
   index: 1 | 2 | 3 | 4;
@@ -50,6 +60,7 @@ export interface PersonalYearInfo {
 export interface PythagoreanLifecycleResult {
   engineVersion: string;
   calculatedAtIso: string;
+  calculatedAtKst: string;
   birthdateStr: string;
   currentAge: number;
   lifePathNumber: number;
@@ -74,6 +85,11 @@ export interface PythagoreanLifecycleResult {
   };
 
   summary: string;
+  pythagoreanSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
 }
 
 // 단일 자릿수 축약 헬퍼
@@ -224,6 +240,7 @@ const PERSONAL_YEAR_METADATA: Record<number, { phase: PersonalYearInfo['cyclePha
 export function calculatePythagoreanLifecycle(params?: {
   profile?: UserProfile | null;
   targetDate?: Date;
+  question?: string;
 }): PythagoreanLifecycleResult {
   const now = params?.targetDate || new Date();
   const birthdateStr = params?.profile?.basic?.birthdate || '1994-01-24';
@@ -362,9 +379,18 @@ export function calculatePythagoreanLifecycle(params?: {
     `현재 [${currentPinnacle.name}] 진행 중(${currentPinnacle.startAge}~${currentPinnacle.endAge}세). ` +
     `올해 개인년도는 [${personalYearNum}년차: ${currentPersonalYear.cyclePhase}]입니다.`;
 
+  const calculatedAtKst = formatPythagoreanKstTimestamp(now);
+  const q = (params?.question || '').trim();
+  const pythagoreanSynthesisMatrix = {
+    dominantTension: `${currentPinnacle.name} ↔ ${currentChallenge.name}`,
+    alignmentState: `개인년도 제${personalYearNum}년(${currentPersonalYear.cyclePhase}) · 라이프 패스 ${lifePathNumber}`,
+    integratedAction: `${currentPersonalYear.actionGuidance}${q ? ` [질문 맥락: ${q}]` : ''}`,
+  };
+
   return {
     engineVersion: PYTHAGOREAN_LIFECYCLE_VERSION,
     calculatedAtIso: now.toISOString(),
+    calculatedAtKst,
     birthdateStr,
     currentAge,
     lifePathNumber,
@@ -375,7 +401,8 @@ export function calculatePythagoreanLifecycle(params?: {
     currentChallenge,
     currentPersonalYear,
     lifecycleStrategy,
-    summary
+    summary,
+    pythagoreanSynthesisMatrix,
   };
 }
 
@@ -386,20 +413,27 @@ export function formatPythagoreanLifecyclePrompt(res: PythagoreanLifecycleResult
   const pList = res.pinnacles.map(p => `  • 제${p.index} 피너클 [숫자 ${p.number}]: ${p.stageName} (${p.startAge}~${p.endAge === 99 ? '이후' : p.endAge}세) - ${p.theme}`).join('\n');
   const cList = res.challenges.map(c => `  • 제${c.index} 챌린지 [숫자 ${c.number}]: ${c.title} - ${c.coreLesson}`).join('\n');
 
-  return `[피타고라스 4대 피너클(Pinnacles) & 챌린지(Challenges) 생애 주기 리포트 (엔진: ${res.engineVersion})]
-- 프로필: 생년월일 ${res.birthdateStr} (현재 만 ${res.currentAge}세) | 라이프 패스: ${res.lifePathNumber}${res.masterNumber ? ` (마스터 넘버 ${res.masterNumber})` : ''}
-- 4대 피너클(황금 도약기) 타임라인:
-${pList}
-  ★ 현재 진행 중인 피너클: [${res.currentPinnacle.name}: ${res.currentPinnacle.stageName}] - 진행 ${res.currentPinnacle.progressYear}년차 (남은 기간: 약 ${res.currentPinnacle.yearsRemaining}년)
-  ★ 현재 피너클의 기회: ${res.currentPinnacle.opportunities} (재물 에너지: ${res.currentPinnacle.financialEnergy})
-- 4대 챌린지(인생 극복 과제):
-${cList}
-  ★ 현재 직면한 챌린지: [${res.currentChallenge.name}] - ${res.currentChallenge.title}
-  ★ 극복 솔루션 키: ${res.currentChallenge.sublimationKey} (함정 주의: ${res.currentChallenge.trapToAvoid})
-- 올해 개인년도(Personal Year): [제${res.currentPersonalYear.yearNumber}년: ${res.currentPersonalYear.cyclePhase}]
-  • 개인년 테마: ${res.currentPersonalYear.theme}
-  • 개인년 행동 조언: ${res.currentPersonalYear.actionGuidance}
-- 인생 종합 전략: ${res.lifecycleStrategy.goldenOpportunity}
-※ 루시 지침: 서양 수비학의 4대 피너클은 동양의 10년 대운과 정밀하게 공명하는 인생의 사계절입니다. 현재 나이대가 피너클의 어느 전환기에 있는지, 올해 개인년도 9년 사이클에서 어떤 단계인지와 챌린지 극복 방안을 명쾌하고 희망적으로 연결해 주세요.`;
+  const lines = [
+    `[피타고라스 4대 피너클(Pinnacles) & 챌린지(Challenges) 생애 주기 리포트 (엔진: ${res.engineVersion} | ${res.calculatedAtKst})]`,
+    `- 프로필: 생년월일 ${res.birthdateStr} (현재 만 ${res.currentAge}세) | 라이프 패스: ${res.lifePathNumber}${res.masterNumber ? ` (마스터 넘버 ${res.masterNumber})` : ''}`,
+    `- 4대 피너클(황금 도약기) 타임라인:\n${pList}`,
+    `  ★ 현재 진행 중인 피너클: [${res.currentPinnacle.name}: ${res.currentPinnacle.stageName}] - 진행 ${res.currentPinnacle.progressYear}년차 (남은 기간: 약 ${res.currentPinnacle.yearsRemaining}년)`,
+    `  ★ 현재 피너클의 기회: ${res.currentPinnacle.opportunities} (재물 에너지: ${res.currentPinnacle.financialEnergy})`,
+    `- 4대 챌린지(인생 극복 과제):\n${cList}`,
+    `  ★ 현재 직면한 챌린지: [${res.currentChallenge.name}] - ${res.currentChallenge.title}`,
+    `  ★ 극복 솔루션 키: ${res.currentChallenge.sublimationKey} (함정 주의: ${res.currentChallenge.trapToAvoid})`,
+    `- 올해 개인년도(Personal Year): [제${res.currentPersonalYear.yearNumber}년: ${res.currentPersonalYear.cyclePhase}]`,
+    `  • 개인년 테마: ${res.currentPersonalYear.theme}`,
+    `  • 개인년 행동 조언: ${res.currentPersonalYear.actionGuidance}`,
+    `- 인생 종합 전략: ${res.lifecycleStrategy.goldenOpportunity}`,
+  ];
+  if (res.pythagoreanSynthesisMatrix) {
+    lines.push(
+      `- 교차 매트릭스: [핵심 긴장: ${res.pythagoreanSynthesisMatrix.dominantTension} | 조율 상태: ${res.pythagoreanSynthesisMatrix.alignmentState}]`,
+      `  • 통합 실천: ${res.pythagoreanSynthesisMatrix.integratedAction}`,
+    );
+  }
+  lines.push(`※ 루시 지침: 서양 수비학의 4대 피너클은 동양의 10년 대운과 정밀하게 공명하는 인생의 사계절입니다. 현재 나이대가 피너클의 어느 전환기에 있는지, 올해 개인년도 9년 사이클에서 어떤 단계인지와 챌린지 극복 방안을 명쾌하고 희망적으로 연결해 주세요.`);
+  return lines.join('\n');
 }
 

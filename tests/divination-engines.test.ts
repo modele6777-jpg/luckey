@@ -2068,8 +2068,10 @@ test('Twelve Spirits Cycle Engine: 사주 12신살 완전 순환 궤도 및 일�
 });
 
 test('Pythagorean Lifecycle Engine: 피타고라스 4대 피너클 & 챌린지 생애 주기 검증', () => {
-  const res = calculatePythagoreanLifecycle({ profile, targetDate: new Date('2026-11-02T19:00:00+09:00') });
+  const res = calculatePythagoreanLifecycle({ profile, targetDate: new Date('2026-11-02T19:00:00+09:00'), question: '인생 전환기' });
   assert.equal(res.engineVersion, PYTHAGOREAN_LIFECYCLE_VERSION);
+  assert(res.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(res.pythagoreanSynthesisMatrix?.integratedAction));
   assert.equal(res.pinnacles.length, 4);
   assert.equal(res.challenges.length, 4);
   assert(res.currentPersonalYear.yearNumber >= 1 && res.currentPersonalYear.yearNumber <= 9);
@@ -2080,6 +2082,7 @@ test('Pythagorean Lifecycle Engine: 피타고라스 4대 피너클 & 챌린지 �
   assert(prompt.includes('4대 피너클'));
   assert(prompt.includes('4대 챌린지'));
   assert(prompt.includes('개인년도'));
+  assert(prompt.includes('교차 매트릭스'));
 });
 
 test('Astrological Decan & Sabian Engine: 점성술 36 데칸 & 사비안 심볼 360° 영혼 메타포 검증', () => {
@@ -2335,15 +2338,19 @@ test('Sleep Subconscious Engine: 수면 사운드 안내 및 3단계 나이트 �
 });
 
 test('Quantum Leap Timing Engine: 퀀텀 점프 준비도 및 골든 모멘텀 검증', () => {
-  const res = calculateQuantumLeapTiming({ profile, targetDate: new Date('2026-11-03T08:00:00+09:00') });
+  const res = calculateQuantumLeapTiming({ profile, targetDate: new Date('2026-11-03T08:00:00+09:00'), question: '승부수 타이밍' });
   assert.equal(res.engineVersion, QUANTUM_LEAP_VERSION);
+  assert(res.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(res.quantumLeapSynthesisMatrix?.integratedAction));
   assert(res.leapReadinessScore >= 0 && res.leapReadinessScore <= 100);
   assert(res.currentPhase.titleKo.length > 0);
   assert(res.goldenWindow.bestTimingDesc.length > 0);
   const prompt = formatQuantumLeapPrompt(res);
   assert(prompt.includes(QUANTUM_LEAP_VERSION));
-  assert(prompt.includes('퀀텀 점프 준비도'));
+  assert(prompt.includes('퀀텀 점프 준비 상태'));
   assert(prompt.includes('골든 모멘텀'));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
 });
 
 test('Elemental Resonance Engine: 오행 생극제화 및 상생 순환 루프 검증', () => {
@@ -2632,14 +2639,18 @@ test('Akashic Records Oracle Engine: 아카식 레코드 영혼 서약 & 카르�
 });
 
 test('Quantum Probabilistic Timeline Engine: 양자 다중우주 타임라인 분기 & 퀀텀 점프 검증', () => {
-  const res = calculateQuantumProbabilisticTimeline({ profile, targetDate: new Date('2026-11-03T10:00:00+09:00') });
+  const res = calculateQuantumProbabilisticTimeline({ profile, targetDate: new Date('2026-11-03T10:00:00+09:00'), question: '미래 분기' });
   assert.equal(res.engineVersion, QUANTUM_TIMELINE_VERSION);
+  assert(res.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(res.quantumTimelineSynthesisMatrix?.integratedAction));
   assert(res.baselineTimeline.probabilityPercent + res.optimalQuantumTimeline.probabilityPercent === 100);
   assert(res.bifurcationWindow.criticalDateRange.length > 0);
   assert(res.quantumCollapseCatalyst.identityShift.length > 0);
   const prompt = formatQuantumProbabilisticTimelinePrompt(res);
   assert(prompt.includes('LUCKEY 양자 다중우주 타임라인 분기 & 퀀텀 점프'));
   assert(prompt.includes(res.optimalQuantumTimeline.projectedOutcome6Months));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('%'));
 });
 
 test('Somatic Body Armoring Engine: 빌헬름 라이히 7대 신체 갑옷 해제 & 체성 감각 검증', () => {

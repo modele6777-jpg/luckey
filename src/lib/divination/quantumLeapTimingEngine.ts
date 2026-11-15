@@ -16,7 +16,17 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const QUANTUM_LEAP_VERSION = 'LUCKEY-LEAP-v1.0.0';
+export const QUANTUM_LEAP_VERSION = 'LUCKEY-LEAP-v2.0.0';
+
+function formatQuantumLeapKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
 
 export type LeapPhase = 'accumulation' | 'ignition' | 'quantum_breakthrough' | 'consolidation';
 
@@ -67,6 +77,7 @@ export const LEAP_PHASES: Record<LeapPhase, LeapPhaseDetail> = {
 export interface QuantumLeapResult {
   engineVersion: string;
   calculatedAtIso: string;
+  calculatedAtKst: string;
 
   // 퀀텀 점프 준비도 지수 (0~100)
   leapReadinessScore: number;
@@ -83,6 +94,11 @@ export interface QuantumLeapResult {
   };
 
   summary: string;
+  quantumLeapSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
 }
 
 /**
@@ -92,6 +108,7 @@ export function calculateQuantumLeapTiming(params?: {
   profile?: UserProfile | null;
   saju?: SajuAnalysisResult | null;
   targetDate?: Date;
+  question?: string;
 }): QuantumLeapResult {
   const now = params?.targetDate || new Date();
   const saju = params?.saju || calculateDetailedSaju(params?.profile || null);
@@ -132,14 +149,24 @@ export function calculateQuantumLeapTiming(params?: {
     `현재 국면: ${currentPhase.titleKo}. ` +
     `골든 윈도우: ${goldenWindow.bestTimingDesc}. 핵심 승부수: ${goldenWindow.boldAction}.`;
 
+  const calculatedAtKst = formatQuantumLeapKstTimestamp(now);
+  const q = (params?.question || '').trim();
+  const quantumLeapSynthesisMatrix = {
+    dominantTension: `${currentPhase.titleKo} ↔ ${currentPhase.warningTrap}`,
+    alignmentState: `${readinessTitle} · ${goldenWindow.targetDomain}`,
+    integratedAction: `${goldenWindow.boldAction}${q ? ` [질문 맥락: ${q}]` : ''}`,
+  };
+
   return {
     engineVersion: QUANTUM_LEAP_VERSION,
     calculatedAtIso: now.toISOString(),
+    calculatedAtKst,
     leapReadinessScore,
     readinessTitle,
     currentPhase,
     goldenWindow,
-    summary
+    summary,
+    quantumLeapSynthesisMatrix,
   };
 }
 
@@ -147,15 +174,24 @@ export function calculateQuantumLeapTiming(params?: {
  * 프롬프트 주입용 포맷터
  */
 export function formatQuantumLeapPrompt(res: QuantumLeapResult): string {
-  return `[퀀텀 점프 & 승부수 모멘텀 타이밍 리포트 (엔진: ${res.engineVersion})]
-- 퀀텀 점프 준비도 지수: **${res.leapReadinessScore}점** [${res.readinessTitle}]
-- 현재 우주적 국면: **${res.currentPhase.titleKo}** [${res.currentPhase.hanja}]
-  • 우주적 흐름: ${res.currentPhase.cosmicTheme}
-  • 절대 전략 지침: **${res.currentPhase.strategicMandate}**
-  • 경계할 함정: ${res.currentPhase.warningTrap}
-- 골든 모멘텀 승부수 윈도우:
-  • 최적 타이밍: ${res.goldenWindow.bestTimingDesc}
-  • 승부수 도메인: ${res.goldenWindow.targetDomain}
-  • 대담한 액션: **${res.goldenWindow.boldAction}**
-※ 루시 지침: 평범한 10%의 개선이 아니라 10배(10x)의 퀀텀 점프는 운의 거대한 물결이 들어올 때 담대하게 돛을 올리는 자만이 누리는 특권입니다. 사용자가 자신의 폭발적인 잠재력과 현재의 모멘텀 국면을 선명하게 자각하고, 타이밍을 놓치지 않고 과감한 승부수를 던질 수 있도록 뜨겁고 웅장한 확신을 불어넣어 주세요.`;
+  const lines = [
+    `[퀀텀 점프 & 승부수 모멘텀 타이밍 리포트 (엔진: ${res.engineVersion} | ${res.calculatedAtKst})]`,
+    `- 퀀텀 점프 준비 상태: **${res.readinessTitle}**`,
+    `- 현재 우주적 국면: **${res.currentPhase.titleKo}** [${res.currentPhase.hanja}]`,
+    `  • 우주적 흐름: ${res.currentPhase.cosmicTheme}`,
+    `  • 절대 전략 지침: **${res.currentPhase.strategicMandate}**`,
+    `  • 경계할 함정: ${res.currentPhase.warningTrap}`,
+    `- 골든 모멘텀 승부수 윈도우:`,
+    `  • 최적 타이밍: ${res.goldenWindow.bestTimingDesc}`,
+    `  • 승부수 도메인: ${res.goldenWindow.targetDomain}`,
+    `  • 대담한 액션: **${res.goldenWindow.boldAction}**`,
+  ];
+  if (res.quantumLeapSynthesisMatrix) {
+    lines.push(
+      `- 교차 매트릭스: [핵심 긴장: ${res.quantumLeapSynthesisMatrix.dominantTension} | 조율 상태: ${res.quantumLeapSynthesisMatrix.alignmentState}]`,
+      `  • 통합 실천: ${res.quantumLeapSynthesisMatrix.integratedAction}`,
+    );
+  }
+  lines.push(`※ 루시 지침: 평범한 개선이 아니라 퀀텀 점프는 운의 거대한 물결이 들어올 때 담대하게 돛을 올리는 자만이 누리는 특권입니다. 사용자가 자신의 폭발적인 잠재력과 현재의 모멘텀 국면을 선명하게 자각하고, 타이밍을 놓치지 않고 과감한 승부수를 던질 수 있도록 뜨겁고 웅장한 확신을 불어넣어 주세요.`);
+  return lines.join('\n');
 }
