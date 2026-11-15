@@ -2513,8 +2513,10 @@ test('Ikigai Destiny Compass Engine: 이키가이 천직 4대 교집합 & 소명
 });
 
 test('Serendipity Synchronicity Engine: 양자 동시성 & 세렌디피티 행운 가속 검증', () => {
-  const res = calculateSerendipitySynchronicity({ profile, targetDate: new Date('2026-11-03T10:00:00+09:00') });
+  const res = calculateSerendipitySynchronicity({ profile, targetDate: new Date('2026-11-03T10:00:00+09:00'), question: '오늘의 행운 신호' });
   assert.equal(res.engineVersion, SERENDIPITY_SYNCHRONICITY_VERSION);
+  assert(res.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(res.serendipitySynthesisMatrix?.integratedAction));
   assert(res.synchronicityScore >= 0 && res.synchronicityScore <= 100);
   assert(res.serendipityVelocity >= 0 && res.serendipityVelocity <= 100);
   assert(res.angelNumberSign.numberCode.length > 0);
@@ -2522,6 +2524,8 @@ test('Serendipity Synchronicity Engine: 양자 동시성 & 세렌디피티 행�
   const prompt = formatSerendipitySynchronicityPrompt(res);
   assert(prompt.includes('LUCKEY 양자 동시성 & 세렌디피티 행운 가속'));
   assert(prompt.includes(res.activeLuckyPortal));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
 });
 
 test('Human Design BodyGraph Engine: 휴먼 디자인 9대 에너지 센터 및 오라 검증', () => {
@@ -2597,8 +2601,10 @@ test('Ancestral Epigenetic Karma Engine: 조상 혈통 업력 & 후성유전학�
 });
 
 test('Shamanic Animal Totem Engine: 샤머니즘 파워 애니멀 & 12지지 스피릿 토템 검증', () => {
-  const res = calculateShamanicAnimalTotem({ profile, targetDate: new Date('2026-11-03T10:00:00+09:00') });
+  const res = calculateShamanicAnimalTotem({ profile, targetDate: new Date('2026-11-03T10:00:00+09:00'), question: '내 수호 동물' });
   assert.equal(res.engineVersion, SHAMANIC_ANIMAL_TOTEM_VERSION);
+  assert(res.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(res.totemSynthesisMatrix?.integratedAction));
   assert(res.primaryTotem.animalName.length > 0);
   assert(res.totemicResonanceScore >= 0 && res.totemicResonanceScore <= 100);
   assert(res.callOfTheWildRitual.length > 0);
@@ -2606,6 +2612,8 @@ test('Shamanic Animal Totem Engine: 샤머니즘 파워 애니멀 & 12지지 스
   const prompt = formatShamanicAnimalTotemPrompt(res);
   assert(prompt.includes('LUCKEY 샤머니즘 파워 애니멀 & 12지지 스피릿 토템'));
   assert(prompt.includes(res.primaryTotem.animalName));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
 });
 
 test('Hero Myth Monomyth Engine: 조셉 캠벨 영웅의 여정 12단계 & 운명 돌파 검증', () => {
@@ -2681,8 +2689,10 @@ test('Supreme Wisdom Trinity Engine: 기적수업 × 초기불교 × 영지주�
 });
 
 test('Sacred Vortex Geometry Engine: 황금비 영혼 수비학 & 보텍스 기하학 검증', () => {
-  const res = calculateSacredVortexGeometry({ profile, targetDate: new Date('2026-11-04T10:00:00+09:00') });
+  const res = calculateSacredVortexGeometry({ profile, targetDate: new Date('2026-11-04T10:00:00+09:00'), question: '영혼 기하학' });
   assert.equal(res.engineVersion, SACRED_VORTEX_VERSION);
+  assert(res.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(res.vortexSynthesisMatrix?.integratedAction));
   assert(res.soulGeometryTitle.length > 0);
   assert(res.platonicSolid.solidName.length > 0);
   assert.equal('geometricFrequencyHz' in res.platonicSolid, false);
@@ -2690,6 +2700,8 @@ test('Sacred Vortex Geometry Engine: 황금비 영혼 수비학 & 보텍스 기�
   const prompt = formatSacredVortexGeometryPrompt(res);
   assert(prompt.includes('LUCKEY 황금비 영혼 수비학 & 보텍스 기하학'));
   assert(prompt.includes(res.platonicSolid.solidName));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
   assert.doesNotMatch(prompt, /\bHz\b|Solfeggio|솔페지오|주파수/i);
 });
 

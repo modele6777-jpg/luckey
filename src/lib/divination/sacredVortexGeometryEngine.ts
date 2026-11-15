@@ -19,7 +19,17 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const SACRED_VORTEX_VERSION = 'LUCKEY-SACRED-VORTEX-v1.0.0';
+export const SACRED_VORTEX_VERSION = 'LUCKEY-SACRED-VORTEX-v2.0.0';
+
+function formatSacredVortexKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
 
 export interface PlatonicSolidArchetype {
   solidName: string;            // 플라톤 다면체 명칭
@@ -37,17 +47,24 @@ export interface VortexNodeDynamics {
 export interface SacredVortexGeometryReport {
   engineVersion: string;
   calculatedAt: string;
+  calculatedAtKst: string;
   soulGeometryTitle: string;
   platonicSolid: PlatonicSolidArchetype;
   vortexDynamics: VortexNodeDynamics;
   sacredGeometryMantra: string;
   goldenRatioActionGuidance: string;
   synthesisPromptGuidance: string;
+  vortexSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
 }
 
 export function runSacredVortexGeometryEngine(
   profile?: UserProfile,
-  targetDate: Date = new Date()
+  targetDate: Date = new Date(),
+  question?: string
 ): SacredVortexGeometryReport {
   const sajuRes = calculateDetailedSaju(profile || null);
 
@@ -124,20 +141,30 @@ export function runSacredVortexGeometryEngine(
 
   const sacredGeometryMantra = `내 안의 영혼 기하학은 우주의 황금비율과 완벽하게 공명합니다. 3-6-9 보텍스 장이 열리며 모든 혼란은 가장 우아한 신성한 질서로 정렬됩니다.`;
 
-  const synthesisPromptGuidance = `[LUCKEY 황금비 영혼 수비학 & 보텍스 기하학 v1.0.0]
+  const calculatedAtKst = formatSacredVortexKstTimestamp(targetDate);
+  const q = (question || '').trim();
+  const vortexSynthesisMatrix = {
+    dominantTension: `${solidName} ↔ ${teslaNumberPattern}`,
+    alignmentState: `${fibonacciExpansionStage} · ${elementalCosmology}`,
+    integratedAction: `${goldenRatioActionGuidance}${q ? ` [질문 맥락: ${q}]` : ''}`,
+  };
+
+  const synthesisPromptGuidance = `[LUCKEY 황금비 영혼 수비학 & 보텍스 기하학 ${SACRED_VORTEX_VERSION} | ${calculatedAtKst}]
 - 영혼 기하학 원형: [${soulGeometryTitle}]
   * 플라톤 다면체: ${solidName} (${elementalCosmology})
   * 토러스 장 순환 특성: ${torusFieldFlowQuality}
 - 테슬라 3-6-9 보텍스 다이내믹스:
   * 활성 보텍스 노드: ${teslaNumberPattern}
   * 피보나치 황금 나선 주기: ${fibonacciExpansionStage}
-  * 황금비 정렬 지수: ${phiRatioAlignmentScore}점
 - 일상 에너지 증폭 가이드: ${goldenRatioActionGuidance}
-- 신성 기하학 조율 만트라: "${sacredGeometryMantra}"`;
+- 신성 기하학 조율 만트라: "${sacredGeometryMantra}"
+- 교차 매트릭스: [핵심 긴장: ${vortexSynthesisMatrix.dominantTension} | 조율 상태: ${vortexSynthesisMatrix.alignmentState}]
+  * 통합 실천: ${vortexSynthesisMatrix.integratedAction}`;
 
   return {
     engineVersion: SACRED_VORTEX_VERSION,
     calculatedAt: targetDate.toISOString(),
+    calculatedAtKst,
     soulGeometryTitle,
     platonicSolid: {
       solidName,
@@ -152,7 +179,8 @@ export function runSacredVortexGeometryEngine(
     },
     sacredGeometryMantra,
     goldenRatioActionGuidance,
-    synthesisPromptGuidance
+    synthesisPromptGuidance,
+    vortexSynthesisMatrix,
   };
 }
 
@@ -162,10 +190,11 @@ export function calculateSacredVortexGeometry(params?: {
   profile?: UserProfile | null;
   saju?: SajuAnalysisResult | null;
   targetDate?: Date;
+  question?: string;
 }): SacredVortexGeometryResult {
   const profile = params?.profile || undefined;
   const targetDate = params?.targetDate || new Date();
-  return runSacredVortexGeometryEngine(profile, targetDate);
+  return runSacredVortexGeometryEngine(profile, targetDate, params?.question);
 }
 
 export function formatSacredVortexGeometryPrompt(res: SacredVortexGeometryResult): string {

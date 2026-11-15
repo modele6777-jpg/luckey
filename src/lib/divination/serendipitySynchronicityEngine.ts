@@ -16,7 +16,17 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const SERENDIPITY_SYNCHRONICITY_VERSION = 'LUCKEY-SERENDIPITY-v1.0.0';
+export const SERENDIPITY_SYNCHRONICITY_VERSION = 'LUCKEY-SERENDIPITY-v2.0.0';
+
+function formatSerendipityKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
 
 export type LuckyPortalType = 
   | '비즈니스 돌파구 포털 (Business Quantum Leap)'
@@ -27,6 +37,7 @@ export type LuckyPortalType =
 export interface SerendipitySynchronicityReport {
   engineVersion: string;
   calculatedAt: string;
+  calculatedAtKst: string;
   synchronicityScore: number;     // 우주적 동시성 지수 (0 ~ 100)
   serendipityVelocity: number;    // 행운 가속도 (0 ~ 100)
   activeLuckyPortal: LuckyPortalType;
@@ -40,11 +51,17 @@ export interface SerendipitySynchronicityReport {
     luckyVibeTrigger: string;     // 행운을 증폭시키는 감각적 트리거 (색상/음식/향)
   };
   synthesisPromptGuidance: string;
+  serendipitySynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
 }
 
 export function runSerendipitySynchronicityEngine(
   profile?: UserProfile,
-  targetDate: Date = new Date()
+  targetDate: Date = new Date(),
+  question?: string
 ): SerendipitySynchronicityReport {
   const sajuRes = calculateDetailedSaju(profile || null);
 
@@ -107,17 +124,27 @@ export function runSerendipitySynchronicityEngine(
   const synchronicityScore = 77 + (syncSeed % 22); // 77 ~ 98점
   const serendipityVelocity = 75 + ((targetDate.getDate() * 9 + targetDate.getHours() * 3 + (ganCode % 7)) % 24); // 75 ~ 98점
 
-  const synthesisPromptGuidance = `[LUCKEY 양자 동시성 & 세렌디피티 행운 가속 v1.0.0]
+  const calculatedAtKst = formatSerendipityKstTimestamp(targetDate);
+  const q = (question || '').trim();
+  const serendipitySynthesisMatrix = {
+    dominantTension: `${activeLuckyPortal} ↔ 엔젤 넘버 [${numberCode}]`,
+    alignmentState: `최적 윈도우: ${optimalHourWindow} · 바이브: ${luckyVibeTrigger}`,
+    integratedAction: `${microShiftAction}${q ? ` [질문 맥락: ${q}]` : ''}`,
+  };
+
+  const synthesisPromptGuidance = `[LUCKEY 양자 동시성 & 세렌디피티 행운 가속 ${SERENDIPITY_SYNCHRONICITY_VERSION} | ${calculatedAtKst}]
 - 활성 행운 포털: [${activeLuckyPortal}]
-- 우주적 동시성 지수: ${synchronicityScore}점 / 세렌디피티 가속도: ${serendipityVelocity}점
 - 엔젤 넘버 사인: [${numberCode}] "${spiritualMeaning}"
 - 세렌디피티 촉매 행동: ${microShiftAction}
 - 최적 동시성 윈도우: ${optimalHourWindow}
-- 행운 증폭 바이브: ${luckyVibeTrigger}`;
+- 행운 증폭 바이브: ${luckyVibeTrigger}
+- 교차 매트릭스: [핵심 긴장: ${serendipitySynthesisMatrix.dominantTension} | 조율 상태: ${serendipitySynthesisMatrix.alignmentState}]
+  * 통합 실천: ${serendipitySynthesisMatrix.integratedAction}`;
 
   return {
     engineVersion: SERENDIPITY_SYNCHRONICITY_VERSION,
     calculatedAt: targetDate.toISOString(),
+    calculatedAtKst,
     synchronicityScore,
     serendipityVelocity,
     activeLuckyPortal,
@@ -130,7 +157,8 @@ export function runSerendipitySynchronicityEngine(
       optimalHourWindow,
       luckyVibeTrigger
     },
-    synthesisPromptGuidance
+    synthesisPromptGuidance,
+    serendipitySynthesisMatrix,
   };
 }
 
@@ -140,10 +168,11 @@ export function calculateSerendipitySynchronicity(params?: {
   profile?: UserProfile | null;
   saju?: SajuAnalysisResult | null;
   targetDate?: Date;
+  question?: string;
 }): SerendipitySynchronicityResult {
   const profile = params?.profile || undefined;
   const targetDate = params?.targetDate || new Date();
-  return runSerendipitySynchronicityEngine(profile, targetDate);
+  return runSerendipitySynchronicityEngine(profile, targetDate, params?.question);
 }
 
 export function formatSerendipitySynchronicityPrompt(res: SerendipitySynchronicityResult): string {
