@@ -2121,10 +2121,27 @@ test('Karmic Nodes Engine: 카르믹 노드 축 및 영혼 진화 궤적 검증'
   assert(res.evolutionReadinessScore >= 0 && res.evolutionReadinessScore <= 100);
   assert(res.chiron.healerGift.length > 0);
   assert(res.lilith.rawPower.length > 0);
+  assert(res.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(res.karmicNodesSynthesisMatrix?.integratedAction));
   const prompt = formatKarmicNodesPrompt(res);
   assert(prompt.includes(KARMIC_NODES_ENGINE_VERSION));
   assert(prompt.includes('카르믹 노드 축'));
   assert(prompt.includes('키론'));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
+});
+
+test('Karmic Synastry Resonance Engine: 카르믹 시나스트리 및 인연 공명 검증', () => {
+  const res = calculateKarmicSynastry(profile, null, '동반자 인연', new Date('2026-11-03T08:00:00+09:00'));
+  assert.equal(res.engineVersion, KARMIC_SYNASTRY_VERSION);
+  assert(res.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(res.synastrySynthesisMatrix?.integratedAction));
+  const prompt = formatKarmicSynastryPrompt(res);
+  assert(prompt.includes('카르믹 시나스트리'));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
 });
 
 test('Mental Resilience Engine: 위기 돌파 슈퍼파워 및 주역 난괘 탈출 검증', () => {
@@ -2499,9 +2516,14 @@ test('Hero Myth Monomyth Engine: 조셉 캠벨 영웅의 여정 12단계 & 운�
   assert(res.theUltimateOrdeal.length > 0);
   assert(res.theSacredElixir.length > 0);
   assert(res.heroicBreakthroughAction.length > 0);
+  assert(res.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(res.monomythSynthesisMatrix?.integratedAction));
   const prompt = formatHeroMythMonomythPrompt(res);
   assert(prompt.includes('LUCKEY 조셉 캠벨 영웅의 여정 12단계 모노미스'));
   assert(prompt.includes(res.heroicArchetype));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
 });
 
 test('Akashic Records Oracle Engine: 아카식 레코드 영혼 서약 & 카르믹 청사진 검증', () => {

@@ -18,7 +18,7 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const HERO_MONOMYTH_VERSION = 'LUCKEY-MONOMYTH-v1.0.0';
+export const HERO_MONOMYTH_VERSION = 'LUCKEY-MONOMYTH-v2.0.0';
 
 export interface HeroJourneyStage {
   stepNumber: number;          // 1 ~ 12
@@ -31,6 +31,7 @@ export interface HeroJourneyStage {
 export interface HeroMythMonomythReport {
   engineVersion: string;
   calculatedAt: string;
+  calculatedAtKst: string;
   heroicArchetype: string;     // 영웅의 신화적 타이틀
   currentStage: HeroJourneyStage;
   theUltimateOrdeal: string;   // 현재 마주한 가장 깊은 동굴 속 용(Dragon)과의 결전
@@ -38,6 +39,27 @@ export interface HeroMythMonomythReport {
   heroicBreakthroughAction: string; // 다음 문턱을 넘기 위한 1순위 돌파 결단
   monomythPowerScore: number;  // 영웅적 서사 추진력 (0 ~ 100)
   synthesisPromptGuidance: string;
+  monomythSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
+}
+
+function formatMonomythKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
+
+function describeMonomythStage(score: number): string {
+  if (score >= 92) return '영약 귀환기 (시련을 넘어 얻은 지혜를 현실에 구현하는 강력한 서사 흐름)';
+  if (score >= 86) return '문턱 돌파기 (두려움을 직면하고 새로운 세계로 진입하는 추진 국면)';
+  return '소명 각성기 (익숙한 질서를 넘어 내면의 부름을 확인하는 흐름)';
 }
 
 export function runHeroMythMonomythEngine(
@@ -109,8 +131,19 @@ export function runHeroMythMonomythEngine(
   }
 
   const monomythPowerScore = 82 + (seed % 17);
+  const calculatedAtKst = formatMonomythKstTimestamp(targetDate);
 
-  const synthesisPromptGuidance = `[LUCKEY 조셉 캠벨 영웅의 여정 12단계 모노미스 v1.0.0]
+  const monomythSynthesisMatrix = {
+    dominantTension: `${currentStage.stageName} ↔ ${theUltimateOrdeal}`,
+    alignmentState:
+      monomythPowerScore >= 90
+        ? '영웅의 원형과 현실 돌파 결단이 일치하는 도약 국면'
+        : '가장 깊은 동굴의 시련을 통해 내면의 영약을 정련하는 국면',
+    integratedAction: `${heroicBreakthroughAction} (${currentStage.hiddenBlessing})`,
+  };
+
+  const synthesisPromptGuidance = `[LUCKEY 조셉 캠벨 영웅의 여정 12단계 모노미스 v2.0.0]
+- 연산 시각: ${calculatedAtKst}
 - 영웅의 신화적 정체성: [${heroicArchetype}]
 - 현재 위치한 여정의 관문: ${currentStage.stageName}
   * 신화적 테마: ${currentStage.mythicTheme}
@@ -119,18 +152,22 @@ export function runHeroMythMonomythEngine(
 - 통과해야 할 가장 깊은 동굴(Ordeal): ${theUltimateOrdeal}
 - 승리의 마법 영약(The Sacred Elixir): ${theSacredElixir}
 - 문턱을 넘는 영웅적 돌파 결단: ${heroicBreakthroughAction}
-- 신화적 서사 추진력: ${monomythPowerScore}점`;
+- 신화적 서사 추진력: ${describeMonomythStage(monomythPowerScore)}
+- 교차 매트릭스 [핵심 긴장: ${monomythSynthesisMatrix.dominantTension} | 조율 상태: ${monomythSynthesisMatrix.alignmentState}]
+- 통합 실천: ${monomythSynthesisMatrix.integratedAction}`;
 
   return {
     engineVersion: HERO_MONOMYTH_VERSION,
     calculatedAt: targetDate.toISOString(),
+    calculatedAtKst,
     heroicArchetype,
     currentStage,
     theUltimateOrdeal,
     theSacredElixir,
     heroicBreakthroughAction,
     monomythPowerScore,
-    synthesisPromptGuidance
+    synthesisPromptGuidance,
+    monomythSynthesisMatrix,
   };
 }
 

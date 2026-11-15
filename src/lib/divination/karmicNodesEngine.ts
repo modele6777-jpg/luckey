@@ -21,7 +21,7 @@ import {
   type NatalChartResult
 } from '../astrologyAnalysis';
 
-export const KARMIC_NODES_ENGINE_VERSION = 'LUCKEY-NODE-v1.0.0';
+export const KARMIC_NODES_ENGINE_VERSION = 'LUCKEY-NODE-v2.0.0';
 
 export interface NodeAxisDetail {
   northSign: string;
@@ -47,6 +47,7 @@ export interface LilithInsight {
 export interface KarmicNodesResult {
   engineVersion: string;
   calculatedAtIso: string;
+  calculatedAtKst: string;
 
   // 카르믹 노드 축 (북쪽 노드 & 남쪽 노드)
   nodeAxis: NodeAxisDetail;
@@ -63,6 +64,21 @@ export interface KarmicNodesResult {
   soulPhaseTitle: string;
 
   summary: string;
+  karmicNodesSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
+}
+
+function formatKarmicNodesKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
 }
 
 // 12대 노드 축 정통 점성술 매핑
@@ -211,20 +227,29 @@ export function calculateKarmicNodes(params?: {
     soulPhaseTitle = '본질 자각 및 정렬기 (Soul Awakening)';
   }
 
+  const calculatedAtKst = formatKarmicNodesKstTimestamp(now);
+  const karmicNodesSynthesisMatrix = {
+    dominantTension: `${nodeAxis.northSign} (진화 과제) ↔ ${nodeAxis.southSign} (컴포트 존)`,
+    alignmentState: `${soulPhaseTitle} — 키론의 치유 역량과 릴리스의 주체성이 북쪽 노드로 수렴하는 국면`,
+    integratedAction: `${nodeAxis.evolutionStrategy} | ${lilith.shadowToMaster}`,
+  };
+
   const summary = `[카르믹 노드] 축: ${nodeAxis.axisName} (${nodeAxis.northSign} ➔ ${nodeAxis.southSign}). ` +
     `영혼의 과제: ${nodeAxis.soulQuest}. 컴포트 존 탈출: ${nodeAxis.comfortZoneTrap}. ` +
-    `키론 치유자 무기: ${chiron.sign} [${chiron.healerGift}]. 릴리스 야성: ${lilith.sign}. 영혼 진화 지수: ${evolutionReadinessScore}점 [${soulPhaseTitle}].`;
+    `키론 치유자 무기: ${chiron.sign} [${chiron.healerGift}]. 릴리스 야성: ${lilith.sign}. 영혼 진화 흐름: ${soulPhaseTitle}.`;
 
   return {
     engineVersion: KARMIC_NODES_ENGINE_VERSION,
     calculatedAtIso: now.toISOString(),
+    calculatedAtKst,
     nodeAxis,
     chiron,
     lilith,
     evolutionReadinessScore,
     soulPhase,
     soulPhaseTitle,
-    summary
+    summary,
+    karmicNodesSynthesisMatrix,
   };
 }
 
@@ -232,17 +257,26 @@ export function calculateKarmicNodes(params?: {
  * 프롬프트 주입용 포맷터
  */
 export function formatKarmicNodesPrompt(res: KarmicNodesResult): string {
-  return `[카르믹 노드 & 영혼 진화 궤적 리포트 (엔진: ${res.engineVersion})]
-- 카르믹 노드 축: **${res.nodeAxis.axisName}**
-  • 북쪽 노드(진화 과제): **${res.nodeAxis.northSign}** ➔ ${res.nodeAxis.soulQuest}
-  • 남쪽 노드(함정 컴포트 존): **${res.nodeAxis.southSign}** ➔ ${res.nodeAxis.comfortZoneTrap}
-  • 진화 돌파 전략: ${res.nodeAxis.evolutionStrategy}
-- 키론(Chiron - 영혼의 상처와 치유 무기): [${res.chiron.sign}]
-  • 근원 상처: ${res.chiron.primalWound}
-  • 치유자 무기: ${res.chiron.healerGift}
-- 블랙문 릴리스(Lilith - 무검열 야성적 잠재력): [${res.lilith.sign}]
-  • 원초적 에너지: ${res.lilith.rawPower}
-  • 그림자 마스터리: ${res.lilith.shadowToMaster}
-- 영혼 진화 완성도: **${res.evolutionReadinessScore}점** [${res.soulPhaseTitle}]
-※ 루시 지침: 카르마는 과거의 죄가 아니라 '이번 생에서 활짝 꽃피워야 할 영혼의 진화 테마'입니다. 사용자가 익숙한 컴포트 존(남쪽 노드)에 머무르며 스스로를 제한하지 않도록, 북쪽 노드가 가리키는 담대한 도전과 키론이 선사한 독보적인 무기를 따뜻하고 강렬하게 일깨워 주세요.`;
+  const lines = [
+    `[카르믹 노드 & 영혼 진화 궤적 리포트 (엔진: ${res.engineVersion} | 연산 시각: ${res.calculatedAtKst})]`,
+    `- 카르믹 노드 축: **${res.nodeAxis.axisName}**`,
+    `  • 북쪽 노드(진화 과제): **${res.nodeAxis.northSign}** ➔ ${res.nodeAxis.soulQuest}`,
+    `  • 남쪽 노드(함정 컴포트 존): **${res.nodeAxis.southSign}** ➔ ${res.nodeAxis.comfortZoneTrap}`,
+    `  • 진화 돌파 전략: ${res.nodeAxis.evolutionStrategy}`,
+    `- 키론(Chiron - 영혼의 상처와 치유 무기): [${res.chiron.sign}]`,
+    `  • 근원 상처: ${res.chiron.primalWound}`,
+    `  • 치유자 무기: ${res.chiron.healerGift}`,
+    `- 블랙문 릴리스(Lilith - 무검열 야성적 잠재력): [${res.lilith.sign}]`,
+    `  • 원초적 에너지: ${res.lilith.rawPower}`,
+    `  • 그림자 마스터리: ${res.lilith.shadowToMaster}`,
+    `- 영혼 진화 단계: **${res.soulPhaseTitle}**`,
+    `※ 루시 지침: 카르마는 과거의 죄가 아니라 '이번 생에서 활짝 꽃피워야 할 영혼의 진화 테마'입니다. 사용자가 익숙한 컴포트 존(남쪽 노드)에 머무르며 스스로를 제한하지 않도록, 북쪽 노드가 가리키는 담대한 도전과 키론이 선사한 독보적인 무기를 따뜻하고 강렬하게 일깨워 주세요.`,
+  ];
+  if (res.karmicNodesSynthesisMatrix) {
+    lines.push(
+      `- 교차 매트릭스 [핵심 긴장: ${res.karmicNodesSynthesisMatrix.dominantTension} | 조율 상태: ${res.karmicNodesSynthesisMatrix.alignmentState}]`,
+      `- 통합 실천: ${res.karmicNodesSynthesisMatrix.integratedAction}`,
+    );
+  }
+  return lines.join('\n');
 }

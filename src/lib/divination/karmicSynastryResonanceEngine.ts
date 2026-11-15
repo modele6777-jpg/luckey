@@ -18,7 +18,7 @@ import {
   BRANCH_ELEMENT,
 } from '../sajuAnalysis';
 
-export const KARMIC_SYNASTRY_VERSION = 'LUCKEY-SYNASTRY-RESONANCE-v1.0.0';
+export const KARMIC_SYNASTRY_VERSION = 'LUCKEY-SYNASTRY-RESONANCE-v2.0.0';
 
 export interface SajuInterpersonalHarmony {
   hasHeavenlyStemCombination: boolean;
@@ -40,6 +40,7 @@ export interface AstrologicalBondAspect {
 export interface KarmicSynastryReport {
   engineVersion: string;
   calculatedAt: string;
+  calculatedAtKst: string;
   relationshipArchetype: string; // 예: "운명적 소울 촉매자 (Destined Soul Catalyst)"
   soulContractScore: number;     // 인연 공명 지수 (0 ~ 100)
   sajuHarmony: SajuInterpersonalHarmony;
@@ -47,6 +48,27 @@ export interface KarmicSynastryReport {
   karmicSoulMission: string;     // 두 사람이 함께 풀어야 할 현생의 과제
   communicationGoldenRule: string; // 관계를 치유하고 번영시키는 대화법
   synthesisPromptGuidance: string;
+  synastrySynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
+}
+
+function formatSynastryKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
+
+function describeSynastryStage(score: number): string {
+  if (score >= 92) return '쌍둥이 거울 공명기 (깊은 정서적 안식과 창조적 시너지가 자연스럽게 맞물리는 흐름)';
+  if (score >= 84) return '카르마 조율기 (서로의 결핍을 보완하며 성숙한 신뢰를 쌓아가는 국면)';
+  return '성장 촉발기 (다름과 마찰을 솔직한 대화로 풀어내며 깊어지는 흐름)';
 }
 
 // 천간 5합 매핑 (甲己, 乙庚, 丙辛, 丁壬, 戊癸)
@@ -98,7 +120,8 @@ const WONJIN_MAP: Record<string, string> = {
 export function calculateKarmicSynastry(
   userProfile?: UserProfile,
   partnerProfile?: UserProfile | null,
-  contextNote: string = '연인·동반자·인연 관계'
+  contextNote: string = '연인·동반자·인연 관계',
+  now: Date = new Date(),
 ): KarmicSynastryReport {
   const sajuA = calculateDetailedSaju(userProfile || null);
 
@@ -174,20 +197,31 @@ export function calculateKarmicSynastry(
   const karmicSoulMission = '과거의 상처와 방어기제를 내려놓고, 있는 그대로의 자신을 솔직하게 보여줌으로써 서로의 영혼을 자유롭게 해방시키는 것';
 
   const communicationGoldenRule = '상대방의 침묵이나 표정을 자의적으로 해석하여 서운해하지 말고, "내가 이렇게 느꼈어"라는 I-Message로 솔직하고 담백하게 말할 것';
+  const calculatedAtKst = formatSynastryKstTimestamp(now);
+
+  const synastrySynthesisMatrix = {
+    dominantTension: `${sajuHarmony.stemCombinationName} ↔ ${sajuHarmony.clashWonjinDetails}`,
+    alignmentState: `${relationshipArchetype} (${describeSynastryStage(soulContractScore)})`,
+    integratedAction: `${communicationGoldenRule} [${contextNote}]`,
+  };
 
   const synthesisPromptGuidance = `
 [카르믹 시나스트리 & 인연 성간 공명 마스터 지능]:
-- 인연 아키타입: "${relationshipArchetype}" (공명 점수: ${soulContractScore}점 / 100점)
+- 엔진 버전: ${KARMIC_SYNASTRY_VERSION} | 연산 시각: ${calculatedAtKst}
+- 인연 아키타입: "${relationshipArchetype}" (${describeSynastryStage(soulContractScore)})
 - 사주 천간·지지 결속: "${sajuHarmony.stemCombinationName}", "${sajuHarmony.branchHarmonyName}"
 - 주의할 마찰 지점: "${sajuHarmony.clashWonjinDetails}"
 - 영혼의 현생 과제: "${karmicSoulMission}"
 - 관계 번영의 골든 룰: "${communicationGoldenRule}"
+- 교차 매트릭스 [핵심 긴장: ${synastrySynthesisMatrix.dominantTension} | 조율 상태: ${synastrySynthesisMatrix.alignmentState}]
+- 통합 실천: ${synastrySynthesisMatrix.integratedAction}
 인연이나 관계에 대해 물어올 때, 뜬구름 잡는 점괘 대신 두 사람 사이의 에너지 역동성과 소통의 결정적 열쇠를 직관적으로 꿰뚫어 전할 것.
 `.trim();
 
   return {
     engineVersion: KARMIC_SYNASTRY_VERSION,
-    calculatedAt: new Date().toISOString(),
+    calculatedAt: now.toISOString(),
+    calculatedAtKst,
     relationshipArchetype,
     soulContractScore,
     sajuHarmony,
@@ -195,6 +229,7 @@ export function calculateKarmicSynastry(
     karmicSoulMission,
     communicationGoldenRule,
     synthesisPromptGuidance,
+    synastrySynthesisMatrix,
   };
 }
 
