@@ -23,7 +23,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const SHINTO_KOTODAMA_FOUR_SOULS_ENGINE_VERSION = '1.0.0';
+export const SHINTO_KOTODAMA_FOUR_SOULS_ENGINE_VERSION = '2.0.0';
 
 export interface FourSoulsBalance {
   aramitamaScore: number; // 荒魂 (용기, 돌파) 0~100
@@ -44,12 +44,28 @@ export interface KotodamaVibration {
 export interface ShintoKotodamaReport {
   engineVersion: string;
   calculatedAt: string;
+  calculatedAtKst: string;
   naohiPurityIndex: number; // 나오히(直霊) 본원 청정도 0~100
   fourSouls: FourSoulsBalance;
   kotodama: KotodamaVibration;
   blessingKami: string; // 수호 신격 원형
   misogiAction: string; // 미소기(禊) 정화 실천
   spiritualAdvice: string;
+  shintoSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
+}
+
+function formatShintoKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
 }
 
 const KOTODAMA_SOUNDS: KotodamaVibration[] = [
@@ -102,11 +118,17 @@ const KAMI_ARCHETYPES = [
 export function calculateShintoKotodama(options?: {
   profile?: UserProfile;
   targetInstantTime?: string;
+  question?: string;
+  now?: Date;
 }): ShintoKotodamaReport {
   const profile = options?.profile;
-  const now = options?.targetInstantTime ? new Date(options.targetInstantTime) : new Date();
+  const now = options?.now ?? (options?.targetInstantTime ? new Date(options.targetInstantTime) : new Date());
+  const q = options?.question?.trim() || '';
 
   let seed = 7331;
+  for (let i = 0; i < q.length; i++) {
+    seed = (seed * 31 + q.charCodeAt(i)) % 1000003;
+  }
 
   if (profile?.basic?.birthdate) {
     const parts = profile.basic.birthdate.split('-').map(Number);
@@ -178,15 +200,24 @@ export function calculateShintoKotodama(options?: {
     advice = '따뜻한 사랑과 물질적·정서적 번영의 에너지가 충만합니다. 베풀고 나누는 행위가 배가 되어 더 큰 결실로 되돌아오는 호순환의 파동 속에 있습니다.';
   }
 
+  const calculatedAtKst = formatShintoKstTimestamp(now);
+  const shintoSynthesisMatrix = {
+    dominantTension: `${dominant.name} ↔ ${kotodama.coreSound}`,
+    alignmentState: `${blessingKami}`,
+    integratedAction: `${misogiAction}${q ? ` [질문 맥락: ${q}]` : ''}`,
+  };
+
   return {
     engineVersion: SHINTO_KOTODAMA_FOUR_SOULS_ENGINE_VERSION,
     calculatedAt: now.toISOString(),
+    calculatedAtKst,
     naohiPurityIndex,
     fourSouls,
     kotodama,
     blessingKami,
     misogiAction,
-    spiritualAdvice: advice
+    spiritualAdvice: advice,
+    shintoSynthesisMatrix,
   };
 }
 
@@ -199,25 +230,21 @@ export function formatShintoKotodamaPrompt(report: ShintoKotodamaReport): string
 
   return `[⛩️ 고대 일본 신도 고토다마(言霊) 50음령 & 4혼1생(四魂一志) 영혼 조화 실측 데이터]
 ======================================================================
-엔진 버전: ${report.engineVersion} | 연산 시각: ${report.calculatedAt}
-나오히(直霊) 본원 청정도: ${report.naohiPurityIndex} / 100점 | 수호 신격: ${report.blessingKami}
+엔진 버전: v${report.engineVersion} | 연산 시각: ${report.calculatedAtKst}
+수호 신격: ${report.blessingKami}
 ======================================================================
-1. [일영사혼(一霊四魂) 에너지 밸런스]:
+1. [일영사혼(一霊四魂) 영혼 균형]:
    - 주재 혼(Dominant Soul): [${fs.dominantSoul}]
    - 주재 영혼 특성: ${fs.dominantSoulTrait}
-   - 4혼 세부 밸런스:
-     * 아라미타마 (荒魂 · 용기/돌파): ${fs.aramitamaScore}점
-     * 니기미타마 (和魂 · 화합/평화): ${fs.nigimitamaScore}점
-     * 쿠시미타마 (奇魂 · 지혜/통찰): ${fs.kushimitamaScore}점
-     * 사키미타마 (幸魂 · 사랑/번영): ${fs.sakimitamaScore}점
+   - 사혼(四魂) 각 영역 흐름: 아라미타마(용기·돌파) / 니기미타마(화합·평화) / 쿠시미타마(지혜·통찰) / 사키미타마(사랑·번영)
 
-2. [고토다마(言霊) 진동수 & 개운 언령]:
+2. [고토다마(言霊) 진동 & 개운 언령]:
    - 주재 음령: [${kd.coreSound}] (${kd.soundElement})
    - 영적 역할: ${kd.vibrationalRole}
    - 개운 고토다마 칙령: "${kd.kotodamaChant}"
 
-3. [미소기(禊) 정화 처방 & 행동 지침]:
+3. [미소기(禊) 정화 처방 & 교차 매트릭스]:
    - 추천 정화 실천: ${report.misogiAction}
-   - 종합 카르마 조언: ${report.spiritualAdvice}
+   - 종합 카르마 조언: ${report.spiritualAdvice}${report.shintoSynthesisMatrix ? `\n   - 교차 매트릭스 [핵심 긴장: ${report.shintoSynthesisMatrix.dominantTension} | 조율 상태: ${report.shintoSynthesisMatrix.alignmentState}]\n   - 통합 실천: ${report.shintoSynthesisMatrix.integratedAction}` : ''}
 ======================================================================`;
 }
