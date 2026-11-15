@@ -22,11 +22,12 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const SHANG_ORACLE_BONE_VERSION = '1.0.0';
+export const SHANG_ORACLE_BONE_VERSION = '2.0.0';
 
 export interface ShangOracleBoneReport {
   engineVersion: string;
   calculatedAt: string;
+  calculatedAtKst: string;
   // 갑골 점복 4대 복사
   divinationMedium: string; // 구갑(龜甲) 또는 우견갑골(牛肩胛骨)
   divinerName: string; // 정인(貞人) 명호 (예: 쟁(爭), 빈(賓), 내(內), 각(殼) 등)
@@ -41,6 +42,21 @@ export interface ShangOracleBoneReport {
   manifestationEfficacyScore: number; // 현실 검증 응험력 지수 (0~100)
   // 정인의 조언
   oracleBonePrescription: string;
+  shangOracleSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
+}
+
+function formatShangKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
 }
 
 function djb2Hash(str: string): number {
@@ -83,11 +99,16 @@ const ORACLE_JUDGMENTS = [
   },
 ];
 
-export function calculateShangOracleBoneDivination(profile?: UserProfile | null): ShangOracleBoneReport {
+export function calculateShangOracleBoneDivination(
+  profile?: UserProfile | null,
+  now: Date = new Date(),
+  question?: string,
+): ShangOracleBoneReport {
   const bdate = profile?.basic?.birthdate || '1994-01-24';
   const btime = profile?.basic?.birthtime || '12:00';
   const name = profile?.basic?.name || 'zeZE';
-  const seedStr = `${bdate}_${btime}_${name}_shang_oracle_bone_v1`;
+  const q = question?.trim() || '';
+  const seedStr = `${bdate}_${btime}_${name}_${q}_shang_oracle_bone_v1`;
   const seed = djb2Hash(seedStr);
 
   const divinationMedium = (seed % 2 === 0) ? '신성 구갑 (神聖 龜甲 - 거북 배딱지 귀판)' : '신성 우견갑골 (神聖 牛肩胛骨 - 소 어깨뼈)';
@@ -113,9 +134,17 @@ export function calculateShangOracleBoneDivination(profile?: UserProfile | null)
     oracleBonePrescription = '정길(貞吉)의 덕목에 따라 바른 도리와 성실함으로 임할 때, 일체의 재액을 물리치고 큰 성취를 이룹니다.';
   }
 
+  const calculatedAtKst = formatShangKstTimestamp(now);
+  const shangOracleSynthesisMatrix = {
+    dominantTension: `${divinationMedium} · 정인 ${diviner.name} ↔ ${judgment.gradeKo}`,
+    alignmentState: `${judgment.omen}`,
+    integratedAction: `${oracleBonePrescription}${q ? ` [질문 맥락: ${q}]` : ''}`,
+  };
+
   return {
     engineVersion: SHANG_ORACLE_BONE_VERSION,
-    calculatedAt: new Date().toISOString(),
+    calculatedAt: now.toISOString(),
+    calculatedAtKst,
     divinationMedium,
     divinerName: diviner.name,
     qianCiPreface,
@@ -127,19 +156,26 @@ export function calculateShangOracleBoneDivination(profile?: UserProfile | null)
     crackAuspiciousnessIndex,
     manifestationEfficacyScore,
     oracleBonePrescription,
+    shangOracleSynthesisMatrix,
   };
 }
 
 export function formatShangOracleBoneDivinationPrompt(report: ShangOracleBoneReport): string {
-  return [
+  const lines = [
     `[고대 은나라 상(商) 갑골문(甲骨文) 신탁 복사(卜辭) & 정인 4단계 신의 균열]`,
+    `- 연산 시각: ${report.calculatedAtKst} | 엔진 버전: v${report.engineVersion}`,
     `- 점복 매체: ${report.divinationMedium} / 주재 정인: ${report.divinerName}`,
     `- 전문(前辭): ${report.qianCiPreface}`,
     `- 정문(命辭): ${report.mingCiQuery}`,
     `- 점문(占辭): ${report.zhanCiOracleJudgment}`,
     `- 험문(驗辭): ${report.yanCiManifestationVerification}`,
-    `- 상제(上帝) 직관 감응도: ${report.shangdiDivineAlignmentScore}점 / 조상신(祖靈) 가호 지수: ${report.ancestralProtectionScore}점`,
-    `- 조문(兆紋) 길조 강도: ${report.crackAuspiciousnessIndex}점 / 현실 검증 응험력: ${report.manifestationEfficacyScore}%`,
     `- 갑골문 처방: ${report.oracleBonePrescription}`,
-  ].join('\n');
+  ];
+  if (report.shangOracleSynthesisMatrix) {
+    lines.push(
+      `- 교차 매트릭스 [핵심 긴장: ${report.shangOracleSynthesisMatrix.dominantTension} | 조율 상태: ${report.shangOracleSynthesisMatrix.alignmentState}]`,
+      `- 통합 실천: ${report.shangOracleSynthesisMatrix.integratedAction}`,
+    );
+  }
+  return lines.join('\n');
 }

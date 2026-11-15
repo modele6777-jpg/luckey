@@ -574,7 +574,9 @@ test('Samjae/GyoUn skips without birthdate, degrades without gender, and renders
   const r=calculateSamjaeGyoUn({profile:sgProfile,targetYear:2026});
   assert.equal(r.status,'calculated');assert.equal(r.engineVersion,SAMJAE_GYOUN_ENGINE_VERSION);
   const prompt=formatSamjaeGyoUnPrompt(r);
-  assert(prompt.includes('LUCKEY-SG-v1.0.0')&&prompt.includes('삼재')&&prompt.includes('교운기')&&prompt.includes('바이오웰니스'));
+  assert(prompt.includes(SAMJAE_GYOUN_ENGINE_VERSION)&&prompt.includes('삼재')&&prompt.includes('교운기')&&prompt.includes('바이오웰니스'));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(Boolean(r.samjaeGyoUnSynthesisMatrix?.integratedAction));
   assert.equal(formatSamjaeGyoUnPrompt(skipped),'');
   const noGender=calculateSamjaeGyoUn({profile:{basic:{birthdate:'2000-08-16'}},targetYear:2026});
   assert.equal(noGender.status,'calculated');
@@ -2347,6 +2349,8 @@ test('Strategic Leverage Engine: 전략 협상 및 손자병법 기문 레버리
 test('Shadow Archetype Engine: 융 심리학 그림자 자아 & 골든 섀도우 연금술 검증', () => {
   const res = calculateShadowArchetype({ profile, targetDate: new Date('2026-11-03T10:00:00+09:00') });
   assert.equal(res.engineVersion, SHADOW_ARCHETYPE_VERSION);
+  assert(res.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(res.shadowSynthesisMatrix?.integratedAction));
   assert(res.shadowIntegrationScore >= 0 && res.shadowIntegrationScore <= 100);
   assert(res.subconsciousDepth >= 0 && res.subconsciousDepth <= 100);
   assert(res.primaryShadow.coreWound.length > 0);
@@ -2354,6 +2358,8 @@ test('Shadow Archetype Engine: 융 심리학 그림자 자아 & 골든 섀도우
   const prompt = formatShadowArchetypePrompt(res);
   assert(prompt.includes('LUCKEY 융 심리학 그림자 자아 & 골든 섀도우 연금술'));
   assert(prompt.includes(res.primaryShadow.archetype));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
 });
 
 test('Biorhythm Peak Flow Engine: 3대 생체 바이오리듬 & 크로노타입 황금 피크 검증', () => {
@@ -4413,6 +4419,8 @@ test('Inca Andean Three Pacha Ayni Engine: calculates three pachas, sacred recip
 test('Shang Oracle Bone Divination Engine: calculates oracle bone medium, diviner judgment and crack auspiciousness', () => {
   const rep = calculateShangOracleBoneDivination(profile);
   assert.equal(rep.engineVersion, SHANG_ORACLE_BONE_VERSION);
+  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(rep.shangOracleSynthesisMatrix?.integratedAction));
   assert(rep.divinationMedium.length > 0);
   assert(rep.divinerName.length > 0);
   assert(rep.shangdiDivineAlignmentScore >= 0 && rep.shangdiDivineAlignmentScore <= 100);
@@ -4422,6 +4430,8 @@ test('Shang Oracle Bone Divination Engine: calculates oracle bone medium, divine
   const prompt = formatShangOracleBoneDivinationPrompt(rep);
   assert(prompt.includes('고대 은나라 상(商) 갑골문(甲骨文) 신탁 복사(卜辭) & 정인 4단계 신의 균열'));
   assert(prompt.includes(rep.divinerName));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100') && !prompt.includes('%'));
 });
 
 test('Korean Cheonbugyeong Eighty One Cosmic Engine: calculates heaven earth human, 3jin 3mang and budongbon', () => {

@@ -16,7 +16,7 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const SHADOW_ARCHETYPE_VERSION = 'LUCKEY-SHADOW-v1.0.0';
+export const SHADOW_ARCHETYPE_VERSION = 'LUCKEY-SHADOW-v2.0.0';
 
 export type ShadowArchetypeName = 
   | '파괴적 검투사 (The Fierce Gladiator · 편관형)'
@@ -41,6 +41,7 @@ export interface GoldenShadowDetail {
 export interface ShadowArchetypeReport {
   engineVersion: string;
   calculatedAt: string;
+  calculatedAtKst: string;
   primaryShadow: ShadowArchetypeDetail;
   goldenShadow: GoldenShadowDetail;
   shadowIntegrationScore: number;  // 그림자 통합 성숙도 (0 ~ 100)
@@ -51,6 +52,21 @@ export interface ShadowArchetypeReport {
     integrationAction: string;     // 행동으로 그림자를 승화시키는 액션
   };
   synthesisPromptGuidance: string;
+  shadowSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
+}
+
+function formatShadowKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
 }
 
 export function runShadowArchetypeEngine(
@@ -136,25 +152,35 @@ export function runShadowArchetypeEngine(
     integrationAction: `그림자가 뿜어내는 거친 에너지를 억누르지 말고, [${goldenShadow.goldenGift}]의 창작 및 비즈니스 돌파 실행으로 즉각 치환하기`
   };
 
-  const synthesisPromptGuidance = `[LUCKEY 융 심리학 그림자 자아 & 골든 섀도우 연금술 v1.0.0]
+  const calculatedAtKst = formatShadowKstTimestamp(targetDate);
+  const shadowSynthesisMatrix = {
+    dominantTension: `${primaryShadow.archetype} ↔ ${goldenShadow.goldenGift}`,
+    alignmentState: `${primaryShadow.dominantTenGod} 트리거 통찰 → ${goldenShadow.highestPotential}`,
+    integratedAction: transmutationRitual.integrationAction,
+  };
+
+  const synthesisPromptGuidance = `[LUCKEY 융 심리학 그림자 자아 & 골든 섀도우 연금술 v2.0.0 | 연산 시각: ${calculatedAtKst}]
 - 그림자 원형: [${primaryShadow.archetype}] (지배 십신: ${primaryShadow.dominantTenGod})
 - 내면 근원 상처: ${primaryShadow.coreWound}
 - 무의식 폭발 트리거: ${primaryShadow.shadowTrigger}
 - 주의해야 할 독성 패턴: ${primaryShadow.toxicPattern}
 - 각성된 골든 섀도우 권능: [${goldenShadow.goldenGift}] ${goldenShadow.hiddenGeniusPower}
 - 궁극의 완성형 자아: ${goldenShadow.highestPotential}
-- 그림자 통합 성숙도: ${shadowIntegrationScore}점 / 무의식 심연 감응도: ${subconsciousDepth}점
+- 교차 매트릭스 [핵심 긴장: ${shadowSynthesisMatrix.dominantTension} | 조율 상태: ${shadowSynthesisMatrix.alignmentState}]
+  * 통합 실천: ${shadowSynthesisMatrix.integratedAction}
 - 실전 연금술 리추얼: ${transmutationRitual.integrationAction}`;
 
   return {
     engineVersion: SHADOW_ARCHETYPE_VERSION,
     calculatedAt: targetDate.toISOString(),
+    calculatedAtKst,
     primaryShadow,
     goldenShadow,
     shadowIntegrationScore,
     subconsciousDepth,
     transmutationRitual,
-    synthesisPromptGuidance
+    synthesisPromptGuidance,
+    shadowSynthesisMatrix,
   };
 }
 
