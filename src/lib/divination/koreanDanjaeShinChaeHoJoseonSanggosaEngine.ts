@@ -9,12 +9,12 @@
  * 4. 민중 직접 혁명 역동성 및 변혁 의지(People's Direct Transformation Dynamics Score): 타협이나 잔꾀가 아닌 깨어난 민중의 주체적 힘과 본질적 행동으로 부조리를 쇄신하는 강력한 실천력.
  * 5. 낭가(郞家) 사상 기개 및 불굴 회복탄력성(Nangga Spirit & Indomitable Courage Score): 고대 상무(尙武) 정신과 풍류를 계승하여 어떠한 극한 시련 속에서도 당당히 일어서는 불굴의 기개.
  *
- * @version LUCKEY-DANJAE-SHIN-CHAE-HO-v1.0.0
+ * @version LUCKEY-DANJAE-SHIN-CHAE-HO-v2.0.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const KOREAN_DANJAE_SHIN_CHAE_HO_VERSION = 'LUCKEY-DANJAE-SHIN-CHAE-HO-v1.0.0';
+export const KOREAN_DANJAE_SHIN_CHAE_HO_VERSION = 'LUCKEY-DANJAE-SHIN-CHAE-HO-v2.0.0';
 
 export interface DanjaeTheme {
   themeKey: string;
@@ -47,6 +47,27 @@ export interface KoreanDanjaeShinChaeHoJoseonSanggosaResult {
     guidanceTitle: string;
     philosophicalCounsel: string;
   };
+  danjaeSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
+}
+
+function formatDanjaeKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
+
+function describeDanjaeStage(score: number): string {
+  if (score >= 90) return '아·비아 주체(我與非我) — 흔들리지 않는 자기 정체성과 낭가의 기개가 하나로 맞물린 돌파기';
+  if (score >= 85) return '비타협 지조(不屈志操) — 외부의 기준에 휩쓸리지 않고 본질을 똑바로 세우는 정돈기';
+  return '역사혼 자각(歷史魂自覺) — 지나온 경험의 맥락을 되짚으며 주체적 중심을 가다듬는 시기';
 }
 
 export const DANJAE_THEMES: DanjaeTheme[] = [
@@ -123,6 +144,7 @@ export const DANJAE_APHORISMS: DanjaeAphorism[] = [
 export function calculateKoreanDanjaeShinChaeHoJoseonSanggosa(
   profile?: UserProfile,
   query?: string,
+  now: Date = new Date(),
 ): KoreanDanjaeShinChaeHoJoseonSanggosaResult {
   const p = profile as any;
   const name = profile?.basic?.name ?? p?.name ?? '남희';
@@ -157,9 +179,24 @@ export function calculateKoreanDanjaeShinChaeHoJoseonSanggosa(
     `${activeDanjaeTheme.practicalCounsel} 아울러 단재의 명언 "${focalDanjaeAphorism.aphorismKo}"를 가슴에 깊이 새기며, ` +
     `${focalDanjaeAphorism.actionGuidance}`;
 
+  const calculatedAtKst = formatDanjaeKstTimestamp(now);
+  const avgScore = Math.round(
+    (ahSubjectiveConsciousnessIndex +
+      uncompromisingIndependenceScore +
+      historicalIdentityReclamationScore +
+      peoplesDirectRevolutionDynamic +
+      indomitableDanjaeResilienceIndex) /
+      5,
+  );
+  const danjaeSynthesisMatrix = {
+    dominantTension: `${activeDanjaeTheme.themeTitleKo} ↔ ${focalDanjaeAphorism.sourceContext}`,
+    alignmentState: describeDanjaeStage(avgScore),
+    integratedAction: `${focalDanjaeAphorism.actionGuidance}${query?.trim() ? ` [질문 맥락: ${query.trim()}]` : ''}`,
+  };
+
   return {
     engineVersion: KOREAN_DANJAE_SHIN_CHAE_HO_VERSION,
-    calculatedAtKst: new Date().toISOString(),
+    calculatedAtKst,
     ahSubjectiveConsciousnessIndex,
     uncompromisingIndependenceScore,
     historicalIdentityReclamationScore,
@@ -171,19 +208,25 @@ export function calculateKoreanDanjaeShinChaeHoJoseonSanggosa(
       guidanceTitle,
       philosophicalCounsel,
     },
+    danjaeSynthesisMatrix,
   };
 }
 
 export function formatKoreanDanjaeShinChaeHoJoseonSanggosaPrompt(
   res: KoreanDanjaeShinChaeHoJoseonSanggosaResult,
 ): string {
-  return [
+  const avgScore = Math.round(
+    (res.ahSubjectiveConsciousnessIndex +
+      res.uncompromisingIndependenceScore +
+      res.historicalIdentityReclamationScore +
+      res.peoplesDirectRevolutionDynamic +
+      res.indomitableDanjaeResilienceIndex) /
+      5,
+  );
+  const lines = [
     `【단재 신채호 《조선상고사》 & 〈조선혁명선언〉 아(我)의 주체자각 & 자주독립 지표】`,
-    `- 아(我)의 주체 자각 및 자립 의식도(Ah Subjective Self-Consciousness): ${res.ahSubjectiveConsciousnessIndex}/100`,
-    `- 비타협적 자주독립 및 결백 지조 지수(Uncompromising Sovereign Integrity): ${res.uncompromisingIndependenceScore}/100`,
-    `- 왜곡 극복 및 역사혼 주체 통찰력(Historical Soul Reclamation Insight): ${res.historicalIdentityReclamationScore}/100`,
-    `- 민중 직접 혁명 역동성 및 변혁 의지(People's Direct Transformation Dynamics): ${res.peoplesDirectRevolutionDynamic}/100`,
-    `- 낭가(郞家) 사상 기개 및 불굴 회복탄력성(Nangga Spirit & Indomitable Courage): ${res.indomitableDanjaeResilienceIndex}/100`,
+    `- 연산 시각: ${res.calculatedAtKst} | 엔진: ${res.engineVersion}`,
+    `- 주체 역사의식 국면: ${describeDanjaeStage(avgScore)}`,
     `- 핵심 역사철학 테마: ${res.activeDanjaeTheme.themeTitleKo} [${res.activeDanjaeTheme.themeTitleEn}]`,
     `- 역사철학적 통찰: ${res.activeDanjaeTheme.historicalInsight}`,
     `- 실천적 조언: ${res.activeDanjaeTheme.practicalCounsel}`,
@@ -191,5 +234,12 @@ export function formatKoreanDanjaeShinChaeHoJoseonSanggosaPrompt(
     `- 원전 출처: [${res.focalDanjaeAphorism.sourceContext}]`,
     `- 구체적 실천 지침: ${res.focalDanjaeAphorism.actionGuidance}`,
     `- 종합 단재 주체 권면: ${res.danjaeComprehensiveGuidance.philosophicalCounsel}`,
-  ].join('\n');
+  ];
+  if (res.danjaeSynthesisMatrix) {
+    lines.push(
+      `- 교차 매트릭스 [핵심 긴장: ${res.danjaeSynthesisMatrix.dominantTension} | 조율 상태: ${res.danjaeSynthesisMatrix.alignmentState}]`,
+      `- 통합 실천: ${res.danjaeSynthesisMatrix.integratedAction}`,
+    );
+  }
+  return lines.join('\n');
 }

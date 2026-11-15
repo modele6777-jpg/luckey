@@ -8,12 +8,12 @@
  * 4. 좁은 방 흰 바람벽에 글자를 띄우듯 삶을 응시하는 심층 자아성찰도 (White Wall Contemplation & Deep Self-Reflection Index): 차가운 방안에서 자신과 운명을 조용히 반추하며 사랑과 슬픔의 무게를 오롯이 감당하는 성찰의 깊이.
  * 5. 눈 내리는 밤 나타샤와 흰 당나귀를 타고 가듯 초연한 심신 회복탄력성 (Serene Steadfast Acceptance & Poetic Resilience Score): 막막한 현실 앞에서도 고조곤히 내면의 순수한 이상을 품고 눈길을 묵묵히 걸어가는 초연한 서정적 평정심.
  *
- * @version LUCKEY-BAEK-SEOK-DEER-WHITE-WALL-POETIC-PURITY-v1.0.0
+ * @version LUCKEY-BAEK-SEOK-DEER-WHITE-WALL-POETIC-PURITY-v2.0.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const KOREAN_BAEK_SEOK_DEER_WHITE_WALL_POETIC_PURITY_VERSION = 'LUCKEY-BAEK-SEOK-DEER-WHITE-WALL-POETIC-PURITY-v1.0.0';
+export const KOREAN_BAEK_SEOK_DEER_WHITE_WALL_POETIC_PURITY_VERSION = 'LUCKEY-BAEK-SEOK-DEER-WHITE-WALL-POETIC-PURITY-v2.0.0';
 
 export interface BaekSeokTheme {
   themeKey: string;
@@ -46,6 +46,27 @@ export interface KoreanBaekSeokDeerWhiteWallPoeticPurityResult {
     guidanceTitle: string;
     philosophicalCounsel: string;
   };
+  baekSeokSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
+}
+
+function formatBaekSeokKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
+
+function describeBaekSeokStage(score: number): string {
+  if (score >= 95) return '흰 바람벽의 고요(白壁觀照) — 외로움과 쓸쓸함마저 맑은 영혼의 빛으로 승화되는 순수의 정점';
+  if (score >= 91) return '눈길 위의 당나귀(雪路超然) — 세속의 소란과 거리를 두고 내면의 지조를 지키는 담담한 국면';
+  return '토속의 온기(土俗溫情) — 소박한 일상의 정과 맑은 양심의 피를 가만히 보듬는 시기';
 }
 
 export const BAEK_SEOK_THEMES: BaekSeokTheme[] = [
@@ -118,6 +139,7 @@ function hashString(str: string): number {
 export function calculateKoreanBaekSeokDeerWhiteWallPoeticPurity(
   profile?: UserProfile,
   query?: string,
+  now: Date = new Date(),
 ): KoreanBaekSeokDeerWhiteWallPoeticPurityResult {
   const p = profile as any;
   const name = profile?.basic?.name ?? p?.name ?? '남희';
@@ -149,9 +171,24 @@ export function calculateKoreanBaekSeokDeerWhiteWallPoeticPurity(
     `${activeBaekSeokTheme.practicalCounsel} 백석 시인의 명구 "${focalBaekSeokAphorism.aphorismKo}"을 가슴에 품고, ` +
     `${focalBaekSeokAphorism.actionGuidance}`;
 
+  const calculatedAtKst = formatBaekSeokKstTimestamp(now);
+  const avgScore = Math.round(
+    (nobleSolitudePurityScore +
+      folkWarmthCommunityAffinityIndex +
+      unyieldingPoeticIntegrityScore +
+      transcendentWhiteWallReflectionIndex +
+      sereneSteadfastResilienceScore) /
+      5,
+  );
+  const baekSeokSynthesisMatrix = {
+    dominantTension: `${activeBaekSeokTheme.themeTitleKo} ↔ ${focalBaekSeokAphorism.sourceContext}`,
+    alignmentState: describeBaekSeokStage(avgScore),
+    integratedAction: `${focalBaekSeokAphorism.actionGuidance}${query?.trim() ? ` [질문 맥락: ${query.trim()}]` : ''}`,
+  };
+
   return {
     engineVersion: KOREAN_BAEK_SEOK_DEER_WHITE_WALL_POETIC_PURITY_VERSION,
-    calculatedAtKst: new Date().toISOString(),
+    calculatedAtKst,
     nobleSolitudePurityScore,
     folkWarmthCommunityAffinityIndex,
     unyieldingPoeticIntegrityScore,
@@ -163,19 +200,25 @@ export function calculateKoreanBaekSeokDeerWhiteWallPoeticPurity(
       guidanceTitle,
       philosophicalCounsel,
     },
+    baekSeokSynthesisMatrix,
   };
 }
 
 export function formatKoreanBaekSeokDeerWhiteWallPoeticPurityPrompt(
   res: KoreanBaekSeokDeerWhiteWallPoeticPurityResult,
 ): string {
-  return [
+  const avgScore = Math.round(
+    (res.nobleSolitudePurityScore +
+      res.folkWarmthCommunityAffinityIndex +
+      res.unyieldingPoeticIntegrityScore +
+      res.transcendentWhiteWallReflectionIndex +
+      res.sereneSteadfastResilienceScore) /
+      5,
+  );
+  const lines = [
     `【백석 《사슴·흰 바람벽이 있어》 순수 고결성·맑은 존엄(Poetic Purity) 지표】`,
-    `- 영혼의 맑은 고결성 지수(Noble Solitude & Soul Purity): ${res.nobleSolitudePurityScore}/100`,
-    `- 토속적 정감 및 공동체 연대 지표(Folk Warmth & Community Affinity): ${res.folkWarmthCommunityAffinityIndex}/100`,
-    `- 시적 지조 및 자존감 유지도(Unyielding Poetic Integrity & Dignity): ${res.unyieldingPoeticIntegrityScore}/100`,
-    `- 흰 바람벽 심층 자아성찰도(White Wall Contemplation & Self-Reflection): ${res.transcendentWhiteWallReflectionIndex}/100`,
-    `- 눈길 위의 초연한 회복탄력성(Serene Steadfast Poetic Resilience): ${res.sereneSteadfastResilienceScore}/100`,
+    `- 연산 시각: ${res.calculatedAtKst} | 엔진: ${res.engineVersion}`,
+    `- 시적 순수 국면: ${describeBaekSeokStage(avgScore)}`,
     `- 핵심 백석 테마: ${res.activeBaekSeokTheme.themeTitleKo} [${res.activeBaekSeokTheme.themeTitleEn}]`,
     `- 실천적 통찰: ${res.activeBaekSeokTheme.pragmaticInsight}`,
     `- 행동 조언: ${res.activeBaekSeokTheme.practicalCounsel}`,
@@ -183,5 +226,12 @@ export function formatKoreanBaekSeokDeerWhiteWallPoeticPurityPrompt(
     `- 원전 출처: [${res.focalBaekSeokAphorism.sourceContext}]`,
     `- 구체적 실천 지침: ${res.focalBaekSeokAphorism.actionGuidance}`,
     `- 종합 백석 권면: ${res.baekSeokComprehensiveGuidance.philosophicalCounsel}`,
-  ].join('\n');
+  ];
+  if (res.baekSeokSynthesisMatrix) {
+    lines.push(
+      `- 교차 매트릭스 [핵심 긴장: ${res.baekSeokSynthesisMatrix.dominantTension} | 조율 상태: ${res.baekSeokSynthesisMatrix.alignmentState}]`,
+      `- 통합 실천: ${res.baekSeokSynthesisMatrix.integratedAction}`,
+    );
+  }
+  return lines.join('\n');
 }
