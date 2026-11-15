@@ -1,10 +1,10 @@
 /**
  * Qualitative literary perspectives drawn from Hermann Hesse's works.
  * This engine intentionally emits no personal scores, diagnosis, prediction, or attributed quotation.
- * @version LUCKEY-HESSE-DEMIAN-STEPPENWOLF-v1.0.0
+ * @version LUCKEY-HESSE-DEMIAN-STEPPENWOLF-v2.0.0
  */
 
-export const GERMAN_HERMANN_HESSE_DEMIAN_STEPPENWOLF_VERSION = 'LUCKEY-HESSE-DEMIAN-STEPPENWOLF-v1.0.0';
+export const GERMAN_HERMANN_HESSE_DEMIAN_STEPPENWOLF_VERSION = 'LUCKEY-HESSE-DEMIAN-STEPPENWOLF-v2.0.0';
 
 export interface HesseTheme {
   themeKey: string;
@@ -20,6 +20,11 @@ export interface GermanHermannHesseDemianSteppenwolfResult {
   hesseComprehensiveGuidance: {
     guidanceTitle: string;
     philosophicalCounsel: string;
+  };
+  hesseSteppenwolfSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
   };
 }
 
@@ -68,6 +73,11 @@ function selectHesseTheme(query?: string): HesseTheme {
 
 export function calculateGermanHermannHesseDemianSteppenwolf(query?: string): GermanHermannHesseDemianSteppenwolfResult {
   const activeHesseTheme = selectHesseTheme(query);
+  const hesseSteppenwolfSynthesisMatrix = {
+    dominantTension: `${activeHesseTheme.themeTitleKo} ↔ 현실의 작은 시도`,
+    alignmentState: '문학적 성찰을 통한 자기 이해와 조율 국면',
+    integratedAction: activeHesseTheme.practicalCounsel,
+  };
   return {
     engineVersion: GERMAN_HERMANN_HESSE_DEMIAN_STEPPENWOLF_VERSION,
     activeHesseTheme,
@@ -75,15 +85,24 @@ export function calculateGermanHermannHesseDemianSteppenwolf(query?: string): Ge
       guidanceTitle: `헤르만 헤세 작품에서 얻는 참고 관점: ${activeHesseTheme.themeTitleKo}`,
       philosophicalCounsel: `${activeHesseTheme.spiritualInsight} ${activeHesseTheme.practicalCounsel} 이 내용은 문학적 참고이며, 심리 평가·진단·치료 또는 미래 예측이 아닙니다.`,
     },
+    hesseSteppenwolfSynthesisMatrix,
   };
 }
 
 export function formatGermanHermannHesseDemianSteppenwolfPrompt(res: GermanHermannHesseDemianSteppenwolfResult): string {
-  return [
+  const lines = [
     '【헤르만 헤세 작품에서 얻은 문학적 참고】',
+    `- 엔진 버전: ${res.engineVersion}`,
     `- 질문과 관련해 살펴볼 주제: ${res.activeHesseTheme.themeTitleKo}`,
     `- 작품 맥락: ${res.activeHesseTheme.spiritualInsight}`,
     `- 조심스럽게 적용할 제안: ${res.activeHesseTheme.practicalCounsel}`,
     '- 이는 문학적 해석을 위한 참고일 뿐, 개인 점수·심리 진단·치료·미래 예측이 아닙니다.',
-  ].join('\n');
+  ];
+  if (res.hesseSteppenwolfSynthesisMatrix) {
+    lines.push(
+      `- 교차 매트릭스 [핵심 긴장: ${res.hesseSteppenwolfSynthesisMatrix.dominantTension} | 조율 상태: ${res.hesseSteppenwolfSynthesisMatrix.alignmentState}]`,
+      `- 통합 실천: ${res.hesseSteppenwolfSynthesisMatrix.integratedAction}`,
+    );
+  }
+  return lines.join('\n');
 }
