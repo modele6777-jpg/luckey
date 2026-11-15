@@ -8,12 +8,12 @@
  * 4. 낡은 법을 뛰어넘는 보편적 사랑과 천상의 정의 지수 (Cosmic Justice & Universal Love Index): 맹목적 형식주의 율법을 넘어 인간을 살리는 사랑과 정의의 조화.
  * 5. 폭풍과 운명의 파도를 헤쳐 나가는 불굴의 영웅적 회복탄력성 (Indomitable Will & Heroic Resilience Score): 가혹한 시련과 역경 속에서도 인간의 존엄을 지키며 묵묵히 전진하는 힘.
  *
- * @version LUCKEY-VICTOR-HUGO-LES-MISERABLES-v1.0.0
+ * @version LUCKEY-VICTOR-HUGO-LES-MISERABLES-v2.0.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const FRENCH_VICTOR_HUGO_LES_MISERABLES_VERSION = 'LUCKEY-VICTOR-HUGO-LES-MISERABLES-v1.0.0';
+export const FRENCH_VICTOR_HUGO_LES_MISERABLES_VERSION = 'LUCKEY-VICTOR-HUGO-LES-MISERABLES-v2.0.0';
 
 export interface HugoTheme {
   themeKey: string;
@@ -46,6 +46,11 @@ export interface FrenchVictorHugoLesMiserablesResult {
   hugoComprehensiveGuidance: {
     guidanceTitle: string;
     philosophicalCounsel: string;
+  };
+  hugoSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
   };
 }
 
@@ -120,9 +125,26 @@ function hashString(str: string): number {
   return hash;
 }
 
+function formatHugoKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
+
+function describeHugoStage(score: number): string {
+  if (score >= 95) return '숭고한 구원기 (자비와 양심적 결단이 온전히 빛나는 흐름)';
+  if (score >= 91) return '강인한 연대기 (고통 속에서도 존엄과 연대를 붙드는 흐름)';
+  return '묵묵한 인내기 (어두운 밤을 건너 새벽의 빛을 준비하는 흐름)';
+}
+
 export function calculateFrenchVictorHugoLesMiserables(
   profile?: UserProfile,
   query?: string,
+  now: Date = new Date(),
 ): FrenchVictorHugoLesMiserablesResult {
   const p = profile as any;
   const name = profile?.basic?.name ?? p?.name ?? '남희';
@@ -154,9 +176,18 @@ export function calculateFrenchVictorHugoLesMiserables(
     `${activeHugoTheme.practicalCounsel} 위고의 명언 "${focalHugoAphorism.aphorismKo}" (${focalHugoAphorism.aphorismFrench})을 마음에 새기고, ` +
     `${focalHugoAphorism.actionGuidance}`;
 
+  const hugoSynthesisMatrix = {
+    dominantTension: `${activeHugoTheme.themeTitleKo} ↔ ${focalHugoAphorism.sourceContext}`,
+    alignmentState:
+      mercyAndRedemptionScore >= 94 && moralConscienceDignityIndex >= 94
+        ? '자비와 도덕적 양심의 숭고한 공명'
+        : '어둠을 건너 연대와 용기로 나아가는 국면',
+    integratedAction: `${activeHugoTheme.practicalCounsel} (${focalHugoAphorism.actionGuidance})`,
+  };
+
   return {
     engineVersion: FRENCH_VICTOR_HUGO_LES_MISERABLES_VERSION,
-    calculatedAtKst: new Date().toISOString(),
+    calculatedAtKst: formatHugoKstTimestamp(now),
     mercyAndRedemptionScore,
     moralConscienceDignityIndex,
     humanitarianSolidarityScore,
@@ -168,19 +199,21 @@ export function calculateFrenchVictorHugoLesMiserables(
       guidanceTitle,
       philosophicalCounsel,
     },
+    hugoSynthesisMatrix,
   };
 }
 
 export function formatFrenchVictorHugoLesMiserablesPrompt(
   res: FrenchVictorHugoLesMiserablesResult,
 ): string {
-  return [
+  const lines = [
     `【빅토르 위고 《레 미제라블》 자비와 도덕적 양심·인도주의 지표】`,
-    `- 미리엘 주교의 자비와 구원도(Mercy & Redemption Grace): ${res.mercyAndRedemptionScore}/100`,
-    `- 양심적 결단과 숭고한 도덕성 지표(Moral Conscience & Dignity): ${res.moralConscienceDignityIndex}/100`,
-    `- 인도주의적 연대감(Humanitarian Solidarity): ${res.humanitarianSolidarityScore}/100`,
-    `- 보편적 사랑과 천상의 정의 지수(Cosmic Justice & Love): ${res.cosmicJusticeIdealIndex}/100`,
-    `- 불굴의 영웅적 회복탄력성(Indomitable Heroic Resilience): ${res.indomitableHeroicResilience}/100`,
+    `- 엔진 버전: ${res.engineVersion} | 연산 시각: ${res.calculatedAtKst}`,
+    `- 미리엘 주교의 자비와 구원도(Mercy & Redemption Grace): ${describeHugoStage(res.mercyAndRedemptionScore)}`,
+    `- 양심적 결단과 숭고한 도덕성 지표(Moral Conscience & Dignity): ${describeHugoStage(res.moralConscienceDignityIndex)}`,
+    `- 인도주의적 연대감(Humanitarian Solidarity): ${describeHugoStage(res.humanitarianSolidarityScore)}`,
+    `- 보편적 사랑과 천상의 정의 지수(Cosmic Justice & Love): ${describeHugoStage(res.cosmicJusticeIdealIndex)}`,
+    `- 불굴의 영웅적 회복탄력성(Indomitable Heroic Resilience): ${describeHugoStage(res.indomitableHeroicResilience)}`,
     `- 핵심 위고 테마: ${res.activeHugoTheme.themeTitleKo} [${res.activeHugoTheme.themeTitleEn}]`,
     `- 인도주의적 통찰: ${res.activeHugoTheme.humanitarianInsight}`,
     `- 행동 조언: ${res.activeHugoTheme.practicalCounsel}`,
@@ -188,5 +221,12 @@ export function formatFrenchVictorHugoLesMiserablesPrompt(
     `- 원전 출처: [${res.focalHugoAphorism.sourceContext}]`,
     `- 구체적 실천 지침: ${res.focalHugoAphorism.actionGuidance}`,
     `- 종합 위고 권면: ${res.hugoComprehensiveGuidance.philosophicalCounsel}`,
-  ].join('\n');
+  ];
+  if (res.hugoSynthesisMatrix) {
+    lines.push(
+      `- 교차 매트릭스 [핵심 긴장: ${res.hugoSynthesisMatrix.dominantTension} | 조율 상태: ${res.hugoSynthesisMatrix.alignmentState}]`,
+      `- 통합 실천: ${res.hugoSynthesisMatrix.integratedAction}`,
+    );
+  }
+  return lines.join('\n');
 }

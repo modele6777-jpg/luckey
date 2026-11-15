@@ -9,12 +9,12 @@
  * 4. 인간 조건의 불완전성 수용 및 자연스런 삶 조화도(Acceptance of Human Condition & Natural Life Score): 억지 꾸밈없이 소박하게 살아가는 삶의 기술.
  * 5. 영혼의 뒷방(Arrière-Boutique) 내적 자유 및 자립도(Inner Freedom & Spiritual Sanctuary Index): 세상의 풍파 속에서도 독립된 영혼의 안식처를 간직하는 힘.
  *
- * @version LUCKEY-MONTAIGNE-ESSAYS-QUE-SAIS-JE-v1.0.0
+ * @version LUCKEY-MONTAIGNE-ESSAYS-QUE-SAIS-JE-v2.0.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const FRENCH_MICHEL_DE_MONTAIGNE_VERSION = 'LUCKEY-MONTAIGNE-ESSAYS-QUE-SAIS-JE-v1.0.0';
+export const FRENCH_MICHEL_DE_MONTAIGNE_VERSION = 'LUCKEY-MONTAIGNE-ESSAYS-QUE-SAIS-JE-v2.0.0';
 
 export interface MontaigneTheme {
   themeKey: string;
@@ -47,6 +47,11 @@ export interface FrenchMichelDeMontaigneEssaysResult {
   montaigneComprehensiveGuidance: {
     guidanceTitle: string;
     philosophicalCounsel: string;
+  };
+  montaigneSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
   };
 }
 
@@ -126,9 +131,26 @@ export const MONTAIGNE_APHORISMS: MontaigneAphorism[] = [
   },
 ];
 
+function formatMontaigneKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
+
+function describeMontaigneStage(score: number): string {
+  if (score >= 92) return '맑은 겸양기 (독단을 비우고 영혼의 뒷방이 단단히 선 흐름)';
+  if (score >= 85) return '온건한 성찰기 (솔직한 자기 관찰과 중용이 고르게 흐르는 국면)';
+  return '담백한 관조기 (억지 꾸밈을 덜어내고 자연의 순리를 따르는 흐름)';
+}
+
 export function calculateFrenchMichelDeMontaigneEssays(
   profile?: UserProfile,
   query?: string,
+  now: Date = new Date(),
 ): FrenchMichelDeMontaigneEssaysResult {
   const p = profile as any;
   const name = profile?.basic?.name ?? p?.name ?? '남희';
@@ -163,9 +185,18 @@ export function calculateFrenchMichelDeMontaigneEssays(
     `${activeMontaigneTheme.practicalCounsel} 몽테뉴의 통찰 "${focalMontaigneAphorism.aphorismKo}"를 되새기며, ` +
     `${focalMontaigneAphorism.actionGuidance}`;
 
+  const montaigneSynthesisMatrix = {
+    dominantTension: `${activeMontaigneTheme.themeTitleKo} ↔ ${focalMontaigneAphorism.sourceContext}`,
+    alignmentState:
+      epistemicHumilityQueSaisJeIndex >= 88 && innerFreedomSanctuaryIndex >= 88
+        ? '겸양과 내적 자유의 고차원 조화'
+        : '독단을 비우고 자기 관찰로 중심을 세우는 국면',
+    integratedAction: `${activeMontaigneTheme.practicalCounsel} (${focalMontaigneAphorism.actionGuidance})`,
+  };
+
   return {
     engineVersion: FRENCH_MICHEL_DE_MONTAIGNE_VERSION,
-    calculatedAtKst: new Date().toISOString(),
+    calculatedAtKst: formatMontaigneKstTimestamp(now),
     epistemicHumilityQueSaisJeIndex,
     candidSelfObservationIntrospectionScore,
     toleranceMiddleWayPrudenceIndex,
@@ -177,19 +208,21 @@ export function calculateFrenchMichelDeMontaigneEssays(
       guidanceTitle,
       philosophicalCounsel,
     },
+    montaigneSynthesisMatrix,
   };
 }
 
 export function formatFrenchMichelDeMontaigneEssaysPrompt(
   res: FrenchMichelDeMontaigneEssaysResult,
 ): string {
-  return [
+  const lines = [
     `【미셸 드 몽테뉴 《수상록(Les Essais)》 "내가 무엇을 아는가" 지혜 지표】`,
-    `- "내가 무엇을 아는가" 지적 겸양도(Epistemic Humility & Que Sais-Je): ${res.epistemicHumilityQueSaisJeIndex}/100`,
-    `- 솔직한 자기 관찰 및 내면 성찰력(Candid Self-Observation): ${res.candidSelfObservationIntrospectionScore}/100`,
-    `- 관용 및 중용의 분별력(Tolerance & Middle-Way Prudence): ${res.toleranceMiddleWayPrudenceIndex}/100`,
-    `- 인간 조건 수용 및 소박한 삶의 조화도(Acceptance of Human Condition): ${res.humanConditionAcceptanceScore}/100`,
-    `- 영혼의 뒷방(Arrière-Boutique) 내적 자유도(Inner Freedom Sanctuary): ${res.innerFreedomSanctuaryIndex}/100`,
+    `- 엔진 버전: ${res.engineVersion} | 연산 시각: ${res.calculatedAtKst}`,
+    `- "내가 무엇을 아는가" 지적 겸양도(Epistemic Humility & Que Sais-Je): ${describeMontaigneStage(res.epistemicHumilityQueSaisJeIndex)}`,
+    `- 솔직한 자기 관찰 및 내면 성찰력(Candid Self-Observation): ${describeMontaigneStage(res.candidSelfObservationIntrospectionScore)}`,
+    `- 관용 및 중용의 분별력(Tolerance & Middle-Way Prudence): ${describeMontaigneStage(res.toleranceMiddleWayPrudenceIndex)}`,
+    `- 인간 조건 수용 및 소박한 삶의 조화도(Acceptance of Human Condition): ${describeMontaigneStage(res.humanConditionAcceptanceScore)}`,
+    `- 영혼의 뒷방(Arrière-Boutique) 내적 자유도(Inner Freedom Sanctuary): ${describeMontaigneStage(res.innerFreedomSanctuaryIndex)}`,
     `- 핵심 몽테뉴 성찰 테마: ${res.activeMontaigneTheme.themeTitleKo} [${res.activeMontaigneTheme.themeTitleEn}]`,
     `- 실용주의적 통찰: ${res.activeMontaigneTheme.pragmaticInsight}`,
     `- 실천적 조언: ${res.activeMontaigneTheme.practicalCounsel}`,
@@ -198,5 +231,12 @@ export function formatFrenchMichelDeMontaigneEssaysPrompt(
     `- 원전 출처: [${res.focalMontaigneAphorism.sourceContext}]`,
     `- 구체적 실천 지침: ${res.focalMontaigneAphorism.actionGuidance}`,
     `- 종합 몽테뉴 인문주의 권면: ${res.montaigneComprehensiveGuidance.philosophicalCounsel}`,
-  ].join('\n');
+  ];
+  if (res.montaigneSynthesisMatrix) {
+    lines.push(
+      `- 교차 매트릭스 [핵심 긴장: ${res.montaigneSynthesisMatrix.dominantTension} | 조율 상태: ${res.montaigneSynthesisMatrix.alignmentState}]`,
+      `- 통합 실천: ${res.montaigneSynthesisMatrix.integratedAction}`,
+    );
+  }
+  return lines.join('\n');
 }
