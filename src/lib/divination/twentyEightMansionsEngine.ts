@@ -48,7 +48,17 @@
  *    향후 28일(4주기 1순환) 내 최적 택일 후보일을 함께 제시한다.
  */
 
-export const TWENTY_EIGHT_MANSIONS_ENGINE_VERSION = 'LUCKEY-TM-v1.0.0';
+export const TWENTY_EIGHT_MANSIONS_ENGINE_VERSION = 'LUCKEY-TM-v2.0.0';
+
+function formatMansionsKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
 
 export const TWENTY_EIGHT_MANSIONS_METHOD =
   '천상열차분야지도(天象列次分野之圖) 기반 28수(二十八宿) 4방신 포국 정통 7원 4주기 직성 산법: 율리우스적일(JDN) 기준 직성 색인 (JDN+11) mod 28 결정론 산출(정통 기원점 1685-02-04 성宿 직일), 28일 주기 연속 회귀, 요일-칠요 완전 일치 검증, 일진 간지 병산, 직성 길흉 5등급(대길·길·평·흉·대흉) × 오행 상성 × 칠요 정성 가중 6대 영역(계약·협상/런칭·개업/출행·여행/재물·투자/인연·혼인/휴식·치유) 100점 만점 택일 스코어 및 28일 내 최적 후보일 산출';
@@ -118,6 +128,7 @@ export interface QuadrantTransition {
 export interface TwentyEightMansionsResult {
   status: 'calculated';
   engineVersion: string;
+  calculatedAtKst: string;
   method: string;
   targetDate: string; // 한국 표준시(KST) 기준 대상 일자 (YYYY-MM-DD)
   julianDayNumber: number;
@@ -132,6 +143,11 @@ export interface TwentyEightMansionsResult {
   threeEnclosuresResonance?: ThreeEnclosuresResonance;
   celestialBeastAlignment?: CelestialBeastAlignment;
   quadrantTransition?: QuadrantTransition;
+  mansionsSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
 }
 
 /** 28수 원시 정의 (색인 0=각(角) ~ 27=진(軫), 정통 회귀 순서) */
@@ -324,8 +340,9 @@ function domainScoreOf(domainDef: (typeof DOMAINS)[number], raw: (typeof MANSION
  * 28수 일진 결정론적 계산 함수
  * (동일한 대상 날짜 → 항상 100% 동일한 직성·스코어 산출)
  */
-export function calculateTwentyEightMansions(params: { targetDate?: Date }): TwentyEightMansionsResult {
+export function calculateTwentyEightMansions(params: { targetDate?: Date; question?: string }): TwentyEightMansionsResult {
   const target = params.targetDate || new Date();
+  const calculatedAtKst = formatMansionsKstTimestamp(target);
   const { year: y, month: m, day: d } = kstDateParts(target);
 
   // 1. 율리우스적일(JDN) 및 일진(日辰) 간지 병산
@@ -492,9 +509,17 @@ export function calculateTwentyEightMansions(params: { targetDate?: Date }): Twe
   const overallVerdict = `금일(${targetDateString}, ${dayGanZhi}일 · ${weekday}) 직성은 ${mansion.group}의 ${mansion.name}(${mansion.hanja})수 — ${mansion.grade}입니다. 칠요 ${mansion.luminary}가 요일(${weekdayLuminary})과 ${luminaryWeekdayAligned ? '완전히 일치' : '불일치'}하는 정통 7원 4주기 직성입니다. 가장 유리한 영역은 ${bestDomain.domainKo}(${bestDomain.score}점), 가장 삼가야 할 영역은 ${worstDomain.domainKo}(${worstDomain.score}점)입니다.`;
   const overallGuide = `${mansion.name}수 상징 신수 ${mansion.animal}의 기상을 따라 ${mansion.gradeMeaning} 종합 가이드: ${bestDomain.domainKo}을(를) 금일 집행하거나 ${bestDomain.bestDates[0].date}(${bestDomain.bestDates[0].mansionName}수, ${bestDomain.bestDates[0].score}점)로 택일하고, ${worstDomain.domainKo}의 확정적 행위는 ${worstDomain.bestDates[0].date}(${worstDomain.bestDates[0].mansionName}수, ${worstDomain.bestDates[0].score}점) 이후로 미루십시오.`;
 
+  const q = (params.question || '').trim();
+  const mansionsSynthesisMatrix = {
+    dominantTension: `${mansion.fullName}(${mansion.grade}) ↔ ${worstDomain.domainKo}`,
+    alignmentState: `${celestialCourt} · ${celestialBeastAlignment.directionMatch} · ${phaseName}`,
+    integratedAction: `${bestDomain.actionGuide}${q ? ` [질문 맥락: ${q}]` : ''}`,
+  };
+
   return {
     status: 'calculated',
     engineVersion: TWENTY_EIGHT_MANSIONS_ENGINE_VERSION,
+    calculatedAtKst,
     method: TWENTY_EIGHT_MANSIONS_METHOD,
     targetDate: targetDateString,
     julianDayNumber: jdn,
@@ -509,6 +534,7 @@ export function calculateTwentyEightMansions(params: { targetDate?: Date }): Twe
     threeEnclosuresResonance,
     celestialBeastAlignment,
     quadrantTransition,
+    mansionsSynthesisMatrix,
   };
 }
 
@@ -523,32 +549,35 @@ export function formatTwentyEightMansionsPrompt(result: TwentyEightMansionsResul
   const domainLines = result.domainScores
     .map(
       (s) =>
-        `  * ${s.domainKo}(${s.domainEn}): ${s.score}점 [${s.grade}등급] — 최적 후보일 ${s.bestDates.map((b) => `${b.date} ${b.mansionName}수(${b.score}점)`).join(', ')}\n    · 수리 근거: ${s.reason}\n    · 개운 가이드: ${s.actionGuide}`,
+        `  * ${s.domainKo}(${s.domainEn}): [${s.grade}등급] — 최적 후보일 ${s.bestDates.map((b) => `${b.date} ${b.mansionName}수`).join(', ')}\n    · 개운 가이드: ${s.actionGuide}`,
     )
     .join('\n');
 
   const enclosureBlock = result.threeEnclosuresResonance
-    ? `\n- 천문 3원(三垣) 공명: ${result.threeEnclosuresResonance.celestialCourt} (공명도 ${result.threeEnclosuresResonance.resonanceScore}점)\n  * 3원 테마: ${result.threeEnclosuresResonance.courtTheme}`
+    ? `\n- 천문 3원(三垣) 공명: ${result.threeEnclosuresResonance.celestialCourt}\n  * 3원 테마: ${result.threeEnclosuresResonance.courtTheme}`
     : '';
   const beastBlock = result.celestialBeastAlignment
-    ? `\n- 4방신 신수 조화: ${result.celestialBeastAlignment.beastName} — ${result.celestialBeastAlignment.directionMatch} (조화도 ${result.celestialBeastAlignment.harmonyIndex}점)\n  * 방위 전술: ${result.celestialBeastAlignment.tacticalOrientationAdvice}`
+    ? `\n- 4방신 신수 조화: ${result.celestialBeastAlignment.beastName} — ${result.celestialBeastAlignment.directionMatch}`
     : '';
   const quadrantBlock = result.quadrantTransition
     ? `\n- 28일 순환 국면: ${result.quadrantTransition.phaseName} (순환 ${result.quadrantTransition.cycleDay}일차)\n  * 위상 에너지: ${result.quadrantTransition.phaseEnergy}\n  * 완급 조절: ${result.quadrantTransition.pacingGuide}`
     : '';
+  const matrixBlock = result.mansionsSynthesisMatrix
+    ? `\n- 28수 천문 교차 매트릭스: 핵심 긴장(${result.mansionsSynthesisMatrix.dominantTension}) · 조율 상태(${result.mansionsSynthesisMatrix.alignmentState}) · 통합 실천(${result.mansionsSynthesisMatrix.integratedAction})`
+    : '';
 
   return `
-[천상열차분야지도(天象列次分野之圖) 28수 일진·택일 결정론적 산출 리포트 (${TWENTY_EIGHT_MANSIONS_ENGINE_VERSION})]
+[천상열차분야지도(天象列次分野之圖) 28수 일진·택일 결정론적 산출 리포트 (${TWENTY_EIGHT_MANSIONS_ENGINE_VERSION} | ${result.calculatedAtKst})]
 - 대상 일자: ${result.targetDate} (한국 표준시) · 율리우스적일 ${result.julianDayNumber}
 - 당일 일진(日辰): ${result.dayGanZhi}일 · ${result.weekday} (요일 칠요: ${result.weekdayLuminary})
 - 28수 직성(直星): ${result.mansion.fullName} — ${result.mansion.group} · ${result.mansion.index + 1}번째 수
   * 오행·칠요: ${result.mansion.element} / ${result.mansion.luminary} · 상징 신수: ${result.mansion.animal} · 길흉 본의: ${result.mansion.grade}
   * 본의 요해: ${result.mansion.gradeMeaning}
   * 7원 4주기 검증: 직성 칠요(${result.mansion.luminary}) ↔ 요일(${result.weekdayLuminary}) ${result.luminaryWeekdayAligned ? '완전 일치' : '불일치'}${enclosureBlock}${beastBlock}${quadrantBlock}
-- 6대 영역 택일(擇日) 스코어:
+- 6대 영역 택일(擇日) 등급:
 ${domainLines}
 - 종합 판정: ${result.overallVerdict}
-- 종합 개운 가이드: ${result.overallGuide}
-- [AI 해석 절대 지침]: 본 리포트는 율리우스적일 기준 28수 회귀 주기로 계산된 100% 확정 수리입니다. 직성 등급과 영역별 점수를 임의로 바꾸지 말고, 택일 권고일과 개운 행동 가이드를 충실히 반영해 상담하십시오.
+- 종합 개운 가이드: ${result.overallGuide}${matrixBlock}
+- [AI 해석 절대 지침]: 본 리포트는 율리우스적일 기준 28수 회귀 주기로 계산된 100% 확정 수리입니다. 직성 등급과 택일 권고일, 개운 행동 가이드를 충실히 반영해 상담하십시오.
 `.trim();
 }
