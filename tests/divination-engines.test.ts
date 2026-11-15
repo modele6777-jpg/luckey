@@ -2638,6 +2638,8 @@ test('Etheric Aura Biofield Engine: 에테르 오라 생체장 & 쉴딩 결계 �
 test('Saju Classic Yongshin Prescription Engine: 사주 정통 3대 원전 용신·격국·조후 검증', () => {
   const res = calculateSajuClassicYongshin({ profile, targetDate: new Date('2026-11-04T14:00:00+09:00') });
   assert.equal(res.engineVersion, SAJU_CLASSIC_YONGSHIN_VERSION);
+  assert(res.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(res.yongshinSynthesisMatrix?.integratedAction));
   assert(res.yongshinMasterTitle.length > 0);
   assert(res.geokguk.geokgukName.length > 0);
   assert(['성격 (成格)', '파격 (破格)', '패중유성 (敗中有成)'].includes(res.geokguk.formationStatus));
@@ -2646,6 +2648,8 @@ test('Saju Classic Yongshin Prescription Engine: 사주 정통 3대 원전 용�
   const prompt = formatSajuClassicYongshinPrompt(res);
   assert(prompt.includes('LUCKEY 정통 사주 3대 원전 용신·격국·조후 심층'));
   assert(prompt.includes(res.geokguk.geokgukName));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
 });
 
 test('Tarot Tree of Life Shadow Engine: 타로 카발라 생명나무 22경로 & 섀도우 미러 검증', () => {
@@ -2840,11 +2844,14 @@ test('Saju Destiny Exporter: formats 9:16 Instagram Story viral caption correctl
 test('Saju Twelve Stages & Tomb Unlock Engine: calculates lifecycle vitality and tomb storages', () => {
   const rep = calculateSajuTwelveStagesTomb(profile);
   assert.equal(rep.engineVersion, SAJU_12STAGES_TOMB_VERSION);
+  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(rep.tombSynthesisMatrix?.integratedAction));
   assert(rep.pillarsVitality.length === 4);
   assert(rep.peakVitalityStage.length > 0);
   const prompt = formatSajuTwelveStagesTombPrompt(rep);
   assert(prompt.includes(rep.peakVitalityStage) || prompt.includes('사주 12운성'));
   assert(prompt.includes('2026 병오년'));
+  assert(prompt.includes('교차 매트릭스'));
 });
 
 test('Tarot Elemental Court Persona Engine: maps 16 court cards and 4 elemental balance', () => {
@@ -3834,6 +3841,8 @@ test('Tibetan Phowa Rainbow Body Engine: calculates Rigpa clarity and 5 Buddha w
 test('Plum Blossom Meihua Oracle Engine: calculates ben/hu/bian gua and ti-yong relations', () => {
   const rep = calculatePlumBlossomMeihuaOracle({ profile });
   assert.equal(rep.engineVersion, PLUM_BLOSSOM_MEIHUA_ORACLE_ENGINE_VERSION);
+  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(rep.meihuaSynthesisMatrix?.integratedAction));
   assert(rep.movingLine >= 1 && rep.movingLine <= 6);
   assert(rep.auspiciousScore >= 0 && rep.auspiciousScore <= 100);
   assert(rep.benGua.fullName.length > 0);
@@ -3841,6 +3850,8 @@ test('Plum Blossom Meihua Oracle Engine: calculates ben/hu/bian gua and ti-yong 
   const prompt = formatPlumBlossomMeihuaOraclePrompt(rep);
   assert(prompt.includes('송대 소강절 선생 매화역수(梅花易數) 체용생극 선천 작괘 실측 데이터'));
   assert(prompt.includes(rep.tiYongRelation));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
 });
 
 test('Greek Moirai Ananke Fate Engine: calculates Clotho, Lachesis, Atropos powers and necessity ratio', () => {

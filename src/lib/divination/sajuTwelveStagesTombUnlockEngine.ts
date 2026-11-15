@@ -18,7 +18,7 @@ import {
   STEM_ELEMENT,
 } from '../sajuAnalysis';
 
-export const SAJU_12STAGES_TOMB_VERSION = 'LUCKEY-SAJU-12STAGES-TOMB-v1.0.0';
+export const SAJU_12STAGES_TOMB_VERSION = 'LUCKEY-SAJU-12STAGES-TOMB-v2.0.0';
 
 export interface TwelveStagePillarVitality {
   pillarName: '년주 (근본)' | '월주 (사회)' | '일주 (본원)' | '시주 (결실)';
@@ -42,6 +42,7 @@ export interface TombStorageAnalysis {
 export interface SajuTwelveStagesTombReport {
   engineVersion: string;
   calculatedAt: string;
+  calculatedAtKst: string;
   dayMasterArchetype: string;
   pillarsVitality: TwelveStagePillarVitality[];
   peakVitalityStage: string; // 사주 원국 내 가장 왕성한 운성
@@ -50,6 +51,21 @@ export interface SajuTwelveStagesTombReport {
   tombKeyActionGuidance: string; // 묘고지 잠재력을 깨우는 1순위 행동
   annual2026TombInteraction: string; // 2026 병오년과의 개고/자극 반응
   synthesisPromptGuidance: string;
+  tombSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
+}
+
+function formatTombKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
 }
 
 // 12운성 기본 에너지 점수 및 라이프사이클 정의
@@ -226,18 +242,28 @@ export function calculateSajuTwelveStagesTomb(
     annual2026TombInteraction = '2026 병오년의 午(오)가 원국의 未(미)와 만나 오미(午未) 육합으로 조화로운 기운을 형성하며, 인연과 귀인의 도움이 따릅니다.';
   }
 
+  const calculatedAtKst = formatTombKstTimestamp(targetDate);
+  const tombSynthesisMatrix = {
+    dominantTension: `최고 활력 ${peakVitalityStage} ↔ ${hasTombStorage ? tombStorages[0].storageType : '건록·제왕 순수 추구'}`,
+    alignmentState: `${annual2026TombInteraction}`,
+    integratedAction: tombKeyActionGuidance,
+  };
+
   const synthesisPromptGuidance = `
-[사주 12운성 & 4대 묘고지(진·술·축·미) 개고 마스터 지능]:
+[사주 12운성 & 4대 묘고지(진·술·축·미) 개고 마스터 지능 | 연산 시각: ${calculatedAtKst}]:
 - 최고 전성기 운성: "${peakVitalityStage}" (원국 내 기둥 활력 분포: ${pillarsVitality.map(p => `${p.pillarName}:${p.stageName}`).join(', ')})
 - 보유 묘고지 현황: ${hasTombStorage ? tombStorages.map(t => `${t.branchKorean}(${t.storageType}, 개고여부:${t.isUnlocked ? '개방' : '잠금'})`).join(' / ') : '묘고지 미보유(순수 건록/제왕 추구형)'}
 - 개고 돌파 행동 처방: "${tombKeyActionGuidance}"
 - 2026 병오년 상호작용: "${annual2026TombInteraction}"
+- 교차 매트릭스 [핵심 긴장: ${tombSynthesisMatrix.dominantTension} | 조율 상태: ${tombSynthesisMatrix.alignmentState}]
+  * 통합 실천: ${tombSynthesisMatrix.integratedAction}
 내담자에게 "사주를 보니~"라는 진부한 서론 없이, 내면에 잠든 보물 창고(묘고지)와 지금 발휘해야 할 운성 에너지("${peakVitalityStage}")의 힘을 현실적 비유로 짚어줄 것.
 `.trim();
 
   return {
     engineVersion: SAJU_12STAGES_TOMB_VERSION,
     calculatedAt: targetDate.toISOString(),
+    calculatedAtKst,
     dayMasterArchetype: `${dayGan} (${dayMaster?.symbolName || '본원'})`,
     pillarsVitality,
     peakVitalityStage,
@@ -246,6 +272,7 @@ export function calculateSajuTwelveStagesTomb(
     tombKeyActionGuidance,
     annual2026TombInteraction,
     synthesisPromptGuidance,
+    tombSynthesisMatrix,
   };
 }
 
