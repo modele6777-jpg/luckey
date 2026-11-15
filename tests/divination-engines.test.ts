@@ -5454,9 +5454,14 @@ test('Johann Wolfgang von Goethe Faust Striving Engine: calculates Striving Salv
   assert(rep.mephistoNegationOvercomeScore >= 0 && rep.mephistoNegationOvercomeScore <= 100);
   assert(rep.eternalFeminineUpliftScore >= 0 && rep.eternalFeminineUpliftScore <= 100);
   assert(rep.activeGoetheTheme.themeTitleKo.length > 0);
+  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(rep.goetheSynthesisMatrix?.integratedAction));
   const prompt = formatJohannWolfgangGoetheFaustStrivingPrompt(rep);
   assert(prompt.includes('괴테 《파우스트》 영혼 구원 갈망 노력 & 현재 순간 몰입 지표'));
   assert(prompt.includes(rep.activeGoetheTheme.themeTitleKo));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
 });
 
 test('Dante Alighieri Divine Comedy Ascent Engine: calculates Wayfinding, Inferno Shadow Confront, and Cosmic Love', () => {
@@ -5716,9 +5721,14 @@ test('Gottfried Leibniz Monadology Engine: calculates Pre-established Harmony, M
   assert(rep.bestPossibleWorldOptimismIndex >= 0 && rep.bestPossibleWorldOptimismIndex <= 100);
   assert(rep.sufficientReasonInsightScore >= 0 && rep.sufficientReasonInsightScore <= 100);
   assert(rep.activeLeibnizTheme.themeTitleKo.length > 0);
+  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(rep.leibnizSynthesisMatrix?.integratedAction));
   const prompt = formatGottfriedLeibnizMonadologyHarmonyPrompt(rep);
   assert(prompt.includes('라이프니츠 《단자론》 예정조화 & 최선의 세계 지표'));
   assert(prompt.includes(rep.activeLeibnizTheme.themeTitleKo));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
 });
 
 test('John Locke Human Understanding Engine: calculates Tabula Rasa, Sensation/Reflection, and Natural Rights', () => {
@@ -6176,9 +6186,14 @@ test('Friedrich Schiller Aesthetic Education Engine: calculates Play Drive, Aest
   assert(rep.graceAndDignityIntegrityScore >= 0 && rep.graceAndDignityIntegrityScore <= 100);
   assert(rep.aestheticHealingWholenessResilienceScore >= 0 && rep.aestheticHealingWholenessResilienceScore <= 100);
   assert(rep.activeSchillerTheme.themeTitleKo.length > 0);
+  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(rep.schillerSynthesisMatrix?.integratedAction));
   const prompt = formatGermanFriedrichSchillerAestheticEducationPrompt(rep);
   assert(prompt.includes('프리드리히 실러 《인간의 미적 교육에 관한 편지》 놀이 충동 및 미적 자유 지표'));
   assert(prompt.includes(rep.activeSchillerTheme.themeTitleKo));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
 });
 
 test('Hong Dae-yong Uisan Mundap Engine: calculates Infinite Universe, Earth Rotation, and In-Mul-Gyun Equality', () => {

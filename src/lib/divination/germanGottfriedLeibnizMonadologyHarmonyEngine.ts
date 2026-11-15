@@ -8,12 +8,12 @@
  * 4. 최선의 가능한 세계 실존적 긍정 낙관성(The Best of All Possible Worlds / Le meilleur des mondes possibles): 어둠과 모순 속에서도 우주의 섭리가 가장 위대한 선과 조화를 향해 있음을 신뢰하는 궁극의 긍정.
  * 5. 충족이유율 인과적 의미 통찰력(Principle of Sufficient Reason / Principium rationis sufficientis): 어떤 일도 까닭 없이 일어나지 않는다는 철칙 아래 모든 사건의 근원적 의미와 교훈을 찾아내는 혜안.
  *
- * @version LUCKEY-GOTTFRIED-LEIBNIZ-MONADOLOGY-v1.0.0
+ * @version LUCKEY-GOTTFRIED-LEIBNIZ-MONADOLOGY-v2.0.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const GERMAN_GOTTFRIED_LEIBNIZ_VERSION = 'LUCKEY-GOTTFRIED-LEIBNIZ-MONADOLOGY-v1.0.0';
+export const GERMAN_GOTTFRIED_LEIBNIZ_VERSION = 'LUCKEY-GOTTFRIED-LEIBNIZ-MONADOLOGY-v2.0.0';
 
 export interface LeibnizTheme {
   themeKey: string;
@@ -46,6 +46,11 @@ export interface GottfriedLeibnizMonadologyHarmonyResult {
   leibnizComprehensiveGuidance: {
     guidanceTitle: string;
     philosophicalCounsel: string;
+  };
+  leibnizSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
   };
 }
 
@@ -118,8 +123,26 @@ export const LEIBNIZ_APHORISMS: LeibnizAphorism[] = [
   },
 ];
 
+function formatLeibnizKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
+
+function describeLeibnizStage(score: number): string {
+  if (score >= 92) return '명석한 예정조화기 (단자의 내적 활력과 우주적 질서가 투명하게 공명하는 흐름)';
+  if (score >= 83) return '정갈한 통각기 (미소지각을 넘어 충족이유율의 인과가 선명히 읽히는 흐름)';
+  return '고요한 내면 정돈기 (외부의 소음을 닫고 고유한 관점을 가다듬는 흐름)';
+}
+
 export function calculateGottfriedLeibnizMonadologyHarmony(
-  profile: UserProfile
+  profile: UserProfile,
+  query?: string,
+  now: Date = new Date(),
 ): GottfriedLeibnizMonadologyHarmonyResult {
   const p = profile as any;
   const name = profile?.basic?.name ?? p?.name ?? '방문자';
@@ -127,7 +150,7 @@ export function calculateGottfriedLeibnizMonadologyHarmony(
   const birthTime = profile?.basic?.birthtime ?? p?.birthTime ?? p?.birthtime ?? '12:00';
   const gender = profile?.basic?.gender ?? p?.gender ?? 'neutral';
 
-  const seedString = `GOTTFRIED-LEIBNIZ-MONADOLOGY:${name}:${birthDate}:${birthTime}:${gender}`;
+  const seedString = `GOTTFRIED-LEIBNIZ-MONADOLOGY:${name}:${birthDate}:${birthTime}:${gender}:${query ?? ''}`;
 
   let hash = 0;
   for (let i = 0; i < seedString.length; i++) {
@@ -154,9 +177,18 @@ export function calculateGottfriedLeibnizMonadologyHarmony(
     `${activeLeibnizTheme.practicalCounsel} 아울러 《단자론》의 원전 명제 "${focalLeibnizAphorism.aphorismKo}"(${focalLeibnizAphorism.aphorismEn})를 깊이 마음에 새기고, ` +
     `${focalLeibnizAphorism.actionGuidance}`;
 
+  const leibnizSynthesisMatrix = {
+    dominantTension: `${activeLeibnizTheme.themeTitleKo} ↔ ${focalLeibnizAphorism.sourceContext}`,
+    alignmentState:
+      preEstablishedHarmonyScore >= 88 && bestPossibleWorldOptimismIndex >= 88
+        ? '예정조화와 최선의 세계 낙관의 고차원 공명'
+        : '내면의 단자적 중심과 충족이유율의 질서를 조율하는 국면',
+    integratedAction: `${activeLeibnizTheme.practicalCounsel} (${focalLeibnizAphorism.actionGuidance})`,
+  };
+
   return {
     engineVersion: GERMAN_GOTTFRIED_LEIBNIZ_VERSION,
-    calculatedAtKst: new Date().toISOString(),
+    calculatedAtKst: formatLeibnizKstTimestamp(now),
     preEstablishedHarmonyScore,
     monadIntrinsicVitalityIndex,
     apperceptionClarityScore,
@@ -168,17 +200,19 @@ export function calculateGottfriedLeibnizMonadologyHarmony(
       guidanceTitle,
       philosophicalCounsel,
     },
+    leibnizSynthesisMatrix,
   };
 }
 
 export function formatGottfriedLeibnizMonadologyHarmonyPrompt(res: GottfriedLeibnizMonadologyHarmonyResult): string {
-  return [
+  const lines = [
     `【라이프니츠 《단자론》 예정조화 & 최선의 세계 지표】`,
-    `- 예정조화설 우주적 질서 조화도(Pre-established Harmony): ${res.preEstablishedHarmonyScore}/100`,
-    `- 단자 고유 자족성 및 내적 생명 활력도(Monad Vis Viva): ${res.monadIntrinsicVitalityIndex}/100`,
-    `- 미소지각에서 통각으로의 의식 명징도(Apperception): ${res.apperceptionClarityScore}/100`,
-    `- 최선의 가능한 세계 긍정 낙관성(Best Possible World): ${res.bestPossibleWorldOptimismIndex}/100`,
-    `- 충족이유율 인과적 의미 통찰력(Sufficient Reason): ${res.sufficientReasonInsightScore}/100`,
+    `- 엔진 버전: ${res.engineVersion} | 연산 시각: ${res.calculatedAtKst}`,
+    `- 예정조화설 우주적 질서 조화도(Pre-established Harmony): ${describeLeibnizStage(res.preEstablishedHarmonyScore)}`,
+    `- 단자 고유 자족성 및 내적 생명 활력도(Monad Vis Viva): ${describeLeibnizStage(res.monadIntrinsicVitalityIndex)}`,
+    `- 미소지각에서 통각으로의 의식 명징도(Apperception): ${describeLeibnizStage(res.apperceptionClarityScore)}`,
+    `- 최선의 가능한 세계 긍정 낙관성(Best Possible World): ${describeLeibnizStage(res.bestPossibleWorldOptimismIndex)}`,
+    `- 충족이유율 인과적 의미 통찰력(Sufficient Reason): ${describeLeibnizStage(res.sufficientReasonInsightScore)}`,
     `- 핵심 단자론 테마: ${res.activeLeibnizTheme.themeTitleKo} [${res.activeLeibnizTheme.themeTitleEn}]`,
     `- 실존적 통찰: ${res.activeLeibnizTheme.existentialInsight}`,
     `- 실천적 조언: ${res.activeLeibnizTheme.practicalCounsel}`,
@@ -186,5 +220,12 @@ export function formatGottfriedLeibnizMonadologyHarmonyPrompt(res: GottfriedLeib
     `- 원전 출처: "${res.focalLeibnizAphorism.aphorismEn}" [${res.focalLeibnizAphorism.sourceContext}]`,
     `- 구체적 실천 지침: ${res.focalLeibnizAphorism.actionGuidance}`,
     `- 종합 합리주의 철학 권면: ${res.leibnizComprehensiveGuidance.philosophicalCounsel}`,
-  ].join('\n');
+  ];
+  if (res.leibnizSynthesisMatrix) {
+    lines.push(
+      `- 교차 매트릭스 [핵심 긴장: ${res.leibnizSynthesisMatrix.dominantTension} | 조율 상태: ${res.leibnizSynthesisMatrix.alignmentState}]`,
+      `- 통합 실천: ${res.leibnizSynthesisMatrix.integratedAction}`,
+    );
+  }
+  return lines.join('\n');
 }

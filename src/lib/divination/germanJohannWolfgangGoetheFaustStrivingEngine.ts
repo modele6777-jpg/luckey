@@ -10,12 +10,12 @@
  * 4. 메피스토펠레스의 냉소와 회의 극복: 모든 것을 부정하고 갉아먹는 악마적 회의주의를 오히려 생명력을 북돋우는 반작용으로 삼아 더 높은 차원으로 도약.
  * 5. 영원한 여성성(Das Ewig-Weibliche)과 유기적 변형(Metamorphose): 시련과 상처를 유기적 성장의 거름으로 삼아 영혼을 끝없이 고양하는 초월적 지혜.
  *
- * @version LUCKEY-GOETHE-FAUST-STRIVING-v1.0.0
+ * @version LUCKEY-GOETHE-FAUST-STRIVING-v2.0.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const GERMAN_GOETHE_FAUST_VERSION = 'LUCKEY-GOETHE-FAUST-STRIVING-v1.0.0';
+export const GERMAN_GOETHE_FAUST_VERSION = 'LUCKEY-GOETHE-FAUST-STRIVING-v2.0.0';
 
 export interface GoetheTheme {
   themeKey: string;
@@ -48,6 +48,11 @@ export interface JohannWolfgangGoetheFaustStrivingResult {
   goetheComprehensiveGuidance: {
     guidanceTitle: string;
     philosophicalCounsel: string;
+  };
+  goetheSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
   };
 }
 
@@ -113,8 +118,26 @@ export const GOETHE_APHORISMS: GoetheAphorism[] = [
   },
 ];
 
+function formatGoetheKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
+
+function describeGoetheStage(score: number): string {
+  if (score >= 92) return '뜨거운 비상(飛翔)기 (끝없는 갈망과 현재 순간의 몰입이 하나로 빛나는 흐름)';
+  if (score >= 83) return '결단의 행동기 (질풍노도의 추진력으로 회의와 한계를 돌파하는 흐름)';
+  return '유기적 변형기 (방황을 자양분 삼아 다음 도약을 준비하는 흐름)';
+}
+
 export function calculateGermanJohannWolfgangGoetheFaustStriving(
-  profile: UserProfile
+  profile: UserProfile,
+  query?: string,
+  now: Date = new Date(),
 ): JohannWolfgangGoetheFaustStrivingResult {
   const p = profile as any;
   const name = profile?.basic?.name ?? p?.name ?? '방문자';
@@ -122,7 +145,7 @@ export function calculateGermanJohannWolfgangGoetheFaustStriving(
   const birthTime = profile?.basic?.birthtime ?? p?.birthTime ?? p?.birthtime ?? '12:00';
   const gender = profile?.basic?.gender ?? p?.gender ?? 'neutral';
 
-  const seedString = `GOETHE-FAUST-STRIVING:${name}:${birthDate}:${birthTime}:${gender}`;
+  const seedString = `GOETHE-FAUST-STRIVING:${name}:${birthDate}:${birthTime}:${gender}:${query ?? ''}`;
 
   let hash = 0;
   for (let i = 0; i < seedString.length; i++) {
@@ -149,9 +172,18 @@ export function calculateGermanJohannWolfgangGoetheFaustStriving(
     `${activeGoetheTheme.practicalCounsel} 괴테의 불멸의 명언 "${focalGoetheAphorism.aphorismKo}"(${focalGoetheAphorism.aphorismEn})을 가슴에 새기고, ` +
     `${focalGoetheAphorism.actionGuidance}`;
 
+  const goetheSynthesisMatrix = {
+    dominantTension: `${activeGoetheTheme.themeTitleKo} ↔ ${focalGoetheAphorism.sourceContext}`,
+    alignmentState:
+      eternalStrivingEndeavorScore >= 88 && verweileDochMomentPresenceScore >= 86
+        ? '영원한 갈망과 현재 몰입의 숭고한 공명'
+        : '방황과 냉소를 딛고 창조적 행동으로 나아가는 국면',
+    integratedAction: `${activeGoetheTheme.practicalCounsel} (${focalGoetheAphorism.actionGuidance})`,
+  };
+
   return {
     engineVersion: GERMAN_GOETHE_FAUST_VERSION,
-    calculatedAtKst: new Date().toISOString(),
+    calculatedAtKst: formatGoetheKstTimestamp(now),
     eternalStrivingEndeavorScore,
     verweileDochMomentPresenceScore,
     sturmUndDrangPassionDriveScore,
@@ -163,17 +195,19 @@ export function calculateGermanJohannWolfgangGoetheFaustStriving(
       guidanceTitle,
       philosophicalCounsel,
     },
+    goetheSynthesisMatrix,
   };
 }
 
 export function formatJohannWolfgangGoetheFaustStrivingPrompt(res: JohannWolfgangGoetheFaustStrivingResult): string {
-  return [
+  const lines = [
     `【괴테 《파우스트》 영혼 구원 갈망 노력 & 현재 순간 몰입 지표】`,
-    `- 끊임없는 노력 갈망 영혼 구원력(Striving Salvation): ${res.eternalStrivingEndeavorScore}/100`,
-    `- 현재 순간 숭고한 몰입도(Verweile doch!): ${res.verweileDochMomentPresenceScore}/100`,
-    `- 질풍노도 창조적 행동력(Sturm und Drang): ${res.sturmUndDrangPassionDriveScore}/100`,
-    `- 냉소·회의적 부정성 극복력(Mephisto Overcome): ${res.mephistoNegationOvercomeScore}/100`,
-    `- 영원한 여성성 영혼 고양도(Das Ewig-Weibliche): ${res.eternalFeminineUpliftScore}/100`,
+    `- 엔진 버전: ${res.engineVersion} | 연산 시각: ${res.calculatedAtKst}`,
+    `- 끊임없는 노력 갈망 영혼 구원력(Striving Salvation): ${describeGoetheStage(res.eternalStrivingEndeavorScore)}`,
+    `- 현재 순간 숭고한 몰입도(Verweile doch!): ${describeGoetheStage(res.verweileDochMomentPresenceScore)}`,
+    `- 질풍노도 창조적 행동력(Sturm und Drang): ${describeGoetheStage(res.sturmUndDrangPassionDriveScore)}`,
+    `- 냉소·회의적 부정성 극복력(Mephisto Overcome): ${describeGoetheStage(res.mephistoNegationOvercomeScore)}`,
+    `- 영원한 여성성 영혼 고양도(Das Ewig-Weibliche): ${describeGoetheStage(res.eternalFeminineUpliftScore)}`,
     `- 핵심 파우스트 테마: ${res.activeGoetheTheme.themeTitleKo} [${res.activeGoetheTheme.themeTitleEn}]`,
     `- 철학적 통찰: ${res.activeGoetheTheme.philosophicalInsight}`,
     `- 실천적 조언: ${res.activeGoetheTheme.practicalCounsel}`,
@@ -181,5 +215,12 @@ export function formatJohannWolfgangGoetheFaustStrivingPrompt(res: JohannWolfgan
     `- 원문: "${res.focalGoetheAphorism.aphorismEn}" [${res.focalGoetheAphorism.sourceContext}]`,
     `- 구체적 실천 지침: ${res.focalGoetheAphorism.actionGuidance}`,
     `- 종합 통찰 권면: ${res.goetheComprehensiveGuidance.philosophicalCounsel}`,
-  ].join('\n');
+  ];
+  if (res.goetheSynthesisMatrix) {
+    lines.push(
+      `- 교차 매트릭스 [핵심 긴장: ${res.goetheSynthesisMatrix.dominantTension} | 조율 상태: ${res.goetheSynthesisMatrix.alignmentState}]`,
+      `- 통합 실천: ${res.goetheSynthesisMatrix.integratedAction}`,
+    );
+  }
+  return lines.join('\n');
 }
