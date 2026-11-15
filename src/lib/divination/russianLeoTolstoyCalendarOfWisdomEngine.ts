@@ -14,7 +14,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const RUSSIAN_LEO_TOLSTOY_VERSION = 'LUCKEY-LEO-TOLSTOY-WISDOM-v1.0.0';
+export const RUSSIAN_LEO_TOLSTOY_VERSION = 'LUCKEY-LEO-TOLSTOY-WISDOM-v2.0.0';
 
 export interface TolstoyTheme {
   themeKey: string;
@@ -48,6 +48,27 @@ export interface RussianLeoTolstoyCalendarOfWisdomResult {
     guidanceTitle: string;
     philosophicalCounsel: string;
   };
+  tolstoySynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
+}
+
+function formatTolstoyKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
+
+function describeTolstoyStage(score: number): string {
+  if (score >= 90) return '야스나야 폴랴나 각성(Sacred Simplicity) — 아가페 사랑과 순결한 양심, 정직한 노동이 맑게 합일되는 청명기';
+  if (score >= 82) return '인생독본 순항(Calendar of Wisdom) — 허영을 덜어내고 온유한 용서와 소박함으로 일상을 지키는 안정기';
+  return '고백의 침묵(Confession Vigil) — 바깥 비교를 멈추고 내면의 양심 소리에 다시 귀 기울이는 정돈기';
 }
 
 export const TOLSTOY_THEMES: TolstoyTheme[] = [
@@ -120,7 +141,9 @@ export const TOLSTOY_APHORISMS: TolstoyAphorism[] = [
 ];
 
 export function calculateRussianLeoTolstoyCalendarOfWisdom(
-  profile: UserProfile
+  profile: UserProfile,
+  query?: string,
+  now: Date = new Date(),
 ): RussianLeoTolstoyCalendarOfWisdomResult {
   const p = profile as any;
   const name = profile?.basic?.name ?? p?.name ?? '방문자';
@@ -128,7 +151,7 @@ export function calculateRussianLeoTolstoyCalendarOfWisdom(
   const birthTime = profile?.basic?.birthtime ?? p?.birthTime ?? p?.birthtime ?? '12:00';
   const gender = profile?.basic?.gender ?? p?.gender ?? 'neutral';
 
-  const seedString = `LEO-TOLSTOY-CALENDAR-WISDOM:${name}:${birthDate}:${birthTime}:${gender}`;
+  const seedString = `LEO-TOLSTOY-CALENDAR-WISDOM:${name}:${birthDate}:${birthTime}:${gender}:${query ?? ''}`;
 
   let hash = 0;
   for (let i = 0; i < seedString.length; i++) {
@@ -155,9 +178,19 @@ export function calculateRussianLeoTolstoyCalendarOfWisdom(
     `${activeTolstoyTheme.practicalCounsel} 아울러 톨스토이의 불멸의 명언 "${focalTolstoyAphorism.aphorismKo}"(${focalTolstoyAphorism.aphorismRu})를 가슴에 품고, ` +
     `${focalTolstoyAphorism.actionGuidance}`;
 
+  const calculatedAtKst = formatTolstoyKstTimestamp(now);
+  const composite = Math.round(
+    (spiritualAwakeningScore + agapeLoveAltruismIndex + simpleLifeLaborHarmonyScore + nonViolencePeaceEquanimityIndex + existentialConscienceIntegrityScore) / 5
+  );
+  const tolstoySynthesisMatrix = {
+    dominantTension: `${activeTolstoyTheme.themeTitleKo} ↔ ${focalTolstoyAphorism.sourceContext}`,
+    alignmentState: describeTolstoyStage(composite),
+    integratedAction: `${focalTolstoyAphorism.actionGuidance}${query?.trim() ? ` [질문 맥락: ${query.trim()}]` : ''}`,
+  };
+
   return {
     engineVersion: RUSSIAN_LEO_TOLSTOY_VERSION,
-    calculatedAtKst: new Date().toISOString(),
+    calculatedAtKst,
     spiritualAwakeningScore,
     agapeLoveAltruismIndex,
     simpleLifeLaborHarmonyScore,
@@ -169,17 +202,18 @@ export function calculateRussianLeoTolstoyCalendarOfWisdom(
       guidanceTitle,
       philosophicalCounsel,
     },
+    tolstoySynthesisMatrix,
   };
 }
 
 export function formatRussianLeoTolstoyCalendarOfWisdomPrompt(res: RussianLeoTolstoyCalendarOfWisdomResult): string {
-  return [
+  const composite = Math.round(
+    (res.spiritualAwakeningScore + res.agapeLoveAltruismIndex + res.simpleLifeLaborHarmonyScore + res.nonViolencePeaceEquanimityIndex + res.existentialConscienceIntegrityScore) / 5
+  );
+  const lines = [
     `【레프 톨스토이 《인생독본·사람은 무엇으로 사는가》 영적 각성 & 아가페 사랑 지표】`,
-    `- 내면 영적 각성도(Spiritual Awakening): ${res.spiritualAwakeningScore}/100`,
-    `- 아가페 사랑과 이타심 지수(Agape Love & Altruism): ${res.agapeLoveAltruismIndex}/100`,
-    `- 단순한 삶과 노동 조화도(Simple Life & Labor): ${res.simpleLifeLaborHarmonyScore}/100`,
-    `- 비폭력 평화와 용서 지수(Non-Violence & Forgiveness): ${res.nonViolencePeaceEquanimityIndex}/100`,
-    `- 실존적 양심 진실성(Conscience Integrity): ${res.existentialConscienceIntegrityScore}/100`,
+    `- 연산 시각: ${res.calculatedAtKst} | 엔진 버전: ${res.engineVersion}`,
+    `- 영성 각성 국면: ${describeTolstoyStage(composite)}`,
     `- 핵심 영적 테마: ${res.activeTolstoyTheme.themeTitleKo} [${res.activeTolstoyTheme.themeTitleRu}]`,
     `- 실존적 통찰: ${res.activeTolstoyTheme.existentialInsight}`,
     `- 실천적 조언: ${res.activeTolstoyTheme.practicalCounsel}`,
@@ -187,5 +221,12 @@ export function formatRussianLeoTolstoyCalendarOfWisdomPrompt(res: RussianLeoTol
     `- 원전 출처: [${res.focalTolstoyAphorism.sourceContext}]`,
     `- 구체적 실천 지침: ${res.focalTolstoyAphorism.actionGuidance}`,
     `- 종합 톨스토이 영성 권면: ${res.tolstoyComprehensiveGuidance.philosophicalCounsel}`,
-  ].join('\n');
+  ];
+  if (res.tolstoySynthesisMatrix) {
+    lines.push(
+      `- 교차 매트릭스 [핵심 긴장: ${res.tolstoySynthesisMatrix.dominantTension} | 조율 상태: ${res.tolstoySynthesisMatrix.alignmentState}]`,
+      `- 통합 실천: ${res.tolstoySynthesisMatrix.integratedAction}`,
+    );
+  }
+  return lines.join('\n');
 }

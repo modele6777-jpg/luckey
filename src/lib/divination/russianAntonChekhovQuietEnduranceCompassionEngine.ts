@@ -13,7 +13,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const RUSSIAN_ANTON_CHEKHOV_QUIET_ENDURANCE_COMPASSION_VERSION = 'LUCKEY-ANTON-CHEKHOV-QUIET-ENDURANCE-COMPASSION-v1.0.0';
+export const RUSSIAN_ANTON_CHEKHOV_QUIET_ENDURANCE_COMPASSION_VERSION = 'LUCKEY-ANTON-CHEKHOV-QUIET-ENDURANCE-COMPASSION-v2.0.0';
 
 export interface ChekhovTheme {
   themeKey: string;
@@ -47,6 +47,27 @@ export interface RussianAntonChekhovQuietEnduranceCompassionResult {
     guidanceTitle: string;
     philosophicalCounsel: string;
   };
+  chekhovSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
+}
+
+function formatChekhovKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
+
+function describeChekhovStage(score: number): string {
+  if (score >= 93) return '바냐의 새벽(Quiet Dawn) — 허위의식을 벗고 묵묵한 일상 노동과 담담한 자비가 한데 어우러지는 성숙기';
+  if (score >= 88) return '자작나무 숲(Planting One Tree) — 내면의 소박한 품격을 지키며 오늘 할 일을 차분히 쌓아가는 안정기';
+  return '갈매기의 관조(Stillness) — 소란한 평가를 내려놓고 있는 그대로의 진실을 조용히 직시하는 성찰기';
 }
 
 export const CHEKHOV_THEMES: ChekhovTheme[] = [
@@ -123,6 +144,7 @@ function hashString(str: string): number {
 export function calculateRussianAntonChekhovQuietEnduranceCompassion(
   profile?: UserProfile,
   query?: string,
+  now: Date = new Date(),
 ): RussianAntonChekhovQuietEnduranceCompassionResult {
   const p = profile as any;
   const name = profile?.basic?.name ?? p?.name ?? '남희';
@@ -154,9 +176,19 @@ export function calculateRussianAntonChekhovQuietEnduranceCompassion(
     `${activeChekhovTheme.practicalCounsel} 체호프의 권면 "${focalChekhovAphorism.aphorismKo}" (${focalChekhovAphorism.aphorismRussian})를 기억하며, ` +
     `${focalChekhovAphorism.actionGuidance}`;
 
+  const calculatedAtKst = formatChekhovKstTimestamp(now);
+  const composite = Math.round(
+    (unpretentiousTruthfulnessScore + quietEnduranceDiligenceIndex + subtleCompassionEmpathyIndex + innerDecencyIntegrityScore + gentleFortitudeHopeResilience) / 5
+  );
+  const chekhovSynthesisMatrix = {
+    dominantTension: `${activeChekhovTheme.themeTitleKo} ↔ ${focalChekhovAphorism.sourceContext}`,
+    alignmentState: describeChekhovStage(composite),
+    integratedAction: `${focalChekhovAphorism.actionGuidance}${query?.trim() ? ` [질문 맥락: ${query.trim()}]` : ''}`,
+  };
+
   return {
     engineVersion: RUSSIAN_ANTON_CHEKHOV_QUIET_ENDURANCE_COMPASSION_VERSION,
-    calculatedAtKst: new Date().toISOString(),
+    calculatedAtKst,
     unpretentiousTruthfulnessScore,
     quietEnduranceDiligenceIndex,
     subtleCompassionEmpathyIndex,
@@ -168,19 +200,20 @@ export function calculateRussianAntonChekhovQuietEnduranceCompassion(
       guidanceTitle,
       philosophicalCounsel,
     },
+    chekhovSynthesisMatrix,
   };
 }
 
 export function formatRussianAntonChekhovQuietEnduranceCompassionPrompt(
   res: RussianAntonChekhovQuietEnduranceCompassionResult,
 ): string {
-  return [
+  const composite = Math.round(
+    (res.unpretentiousTruthfulnessScore + res.quietEnduranceDiligenceIndex + res.subtleCompassionEmpathyIndex + res.innerDecencyIntegrityScore + res.gentleFortitudeHopeResilience) / 5
+  );
+  const lines = [
     `【안톤 체호프 《바냐 아저씨·갈매기》 일상의 진실·묵묵한 인내 지표】`,
-    `- 허위의식 타파 및 일상의 진실 직시도(Unpretentious Truthfulness & Reality): ${res.unpretentiousTruthfulnessScore}/100`,
-    `- 묵묵한 일상 노동과 성실한 인내 지수(Quiet Endurance & Diligence): ${res.quietEnduranceDiligenceIndex}/100`,
-    `- 상처받은 인간을 향한 담담한 자비 지표(Subtle Compassion & Empathy): ${res.subtleCompassionEmpathyIndex}/100`,
-    `- 내면의 소박한 품격 지수(Inner Decency & Quiet Integrity): ${res.innerDecencyIntegrityScore}/100`,
-    `- 은근한 희망과 심신 회복탄력성(Gentle Fortitude & Unfading Hope): ${res.gentleFortitudeHopeResilience}/100`,
+    `- 연산 시각: ${res.calculatedAtKst} | 엔진 버전: ${res.engineVersion}`,
+    `- 실존 성찰 국면: ${describeChekhovStage(composite)}`,
     `- 핵심 체호프 테마: ${res.activeChekhovTheme.themeTitleKo} [${res.activeChekhovTheme.themeTitleEn}]`,
     `- 실존적 통찰: ${res.activeChekhovTheme.existentialInsight}`,
     `- 행동 조언: ${res.activeChekhovTheme.practicalCounsel}`,
@@ -188,5 +221,12 @@ export function formatRussianAntonChekhovQuietEnduranceCompassionPrompt(
     `- 원전 출처: [${res.focalChekhovAphorism.sourceContext}]`,
     `- 구체적 실천 지침: ${res.focalChekhovAphorism.actionGuidance}`,
     `- 종합 체호프 권면: ${res.chekhovComprehensiveGuidance.philosophicalCounsel}`,
-  ].join('\n');
+  ];
+  if (res.chekhovSynthesisMatrix) {
+    lines.push(
+      `- 교차 매트릭스 [핵심 긴장: ${res.chekhovSynthesisMatrix.dominantTension} | 조율 상태: ${res.chekhovSynthesisMatrix.alignmentState}]`,
+      `- 통합 실천: ${res.chekhovSynthesisMatrix.integratedAction}`,
+    );
+  }
+  return lines.join('\n');
 }
