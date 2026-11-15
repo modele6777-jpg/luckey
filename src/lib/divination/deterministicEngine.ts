@@ -4072,7 +4072,7 @@ try {
   // 305. 프랑스 미셸 푸코 《감시와 처벌·주체의 해석학》 담론과 규율 권력의 해체 & 자기 배려(Souci de soi)·존재의 미학 실존 지혜 엔진
   const frenchMichelFoucaultCareOfSelfAestheticsResult = calculateSupplement('frenchMichelFoucaultCareOfSelfAestheticsResult', () => ((() => {
     try {
-      return calculateFrenchMichelFoucaultCareOfSelfAesthetics(profile);
+      return calculateFrenchMichelFoucaultCareOfSelfAesthetics(profile, question, now);
     } catch (_) {
       return null;
     }
@@ -4108,7 +4108,7 @@ try {
   // 309. 프랑스 자크 데리다 《그라마톨로지·법의 힘》 해체(Deconstruction)·차연(Différance)·미결정성·아포리아 돌파 지혜 엔진
   const frenchJacquesDerridaDeconstructionDifferanceResult = calculateSupplement('frenchJacquesDerridaDeconstructionDifferanceResult', () => ((() => {
     try {
-      return calculateFrenchJacquesDerridaDeconstructionDifferance(profile);
+      return calculateFrenchJacquesDerridaDeconstructionDifferance(profile, question, now);
     } catch (_) {
       return null;
     }
@@ -4126,7 +4126,7 @@ try {
   // 311. 프랑스 롤랑 바르트 《신화론·밝은 방·텍스트의 즐거움》 저자의 죽음·푼크툼(Punctum)·기호학적 탈신화화 지혜 엔진
   const frenchRolandBarthesSemioticsPunctumResult = calculateSupplement('frenchRolandBarthesSemioticsPunctumResult', () => ((() => {
     try {
-      return calculateFrenchRolandBarthesSemioticsPunctum(profile);
+      return calculateFrenchRolandBarthesSemioticsPunctum(profile, question, now);
     } catch (_) {
       return null;
     }

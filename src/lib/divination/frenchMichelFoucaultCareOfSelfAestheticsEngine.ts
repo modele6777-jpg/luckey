@@ -13,7 +13,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const FRENCH_MICHEL_FOUCAULT_CARE_OF_SELF_VERSION = 'LUCKEY-MICHEL-FOUCAULT-CARE-OF-SELF-v1.0.0';
+export const FRENCH_MICHEL_FOUCAULT_CARE_OF_SELF_VERSION = 'LUCKEY-MICHEL-FOUCAULT-CARE-OF-SELF-v2.1.0';
 
 export interface FoucaultTheme {
   themeKey: string;
@@ -43,6 +43,9 @@ export interface FrenchMichelFoucaultCareOfSelfAestheticsResult {
   // 세부 분석
   activeFoucaultTheme: FoucaultTheme;
   focalFoucaultAphorism: FoucaultAphorism;
+  dailyPracticeRitual: string;
+  reflectiveQuestion: string;
+  interpretiveBoundary: string;
   foucaultComprehensiveGuidance: {
     guidanceTitle: string;
     philosophicalCounsel: string;
@@ -127,9 +130,16 @@ function hashString(str: string): number {
   return hash;
 }
 
+function describeFoucaultStage(score: number): string {
+  if (score >= 95) return '깊고 단단한 주체적 자각으로 발현되는 국면';
+  if (score >= 91) return '차분히 내면 주권을 회복하며 흐르는 단계';
+  return '외부의 시선을 걷어 내고 조용히 정돈되는 흐름';
+}
+
 export function calculateFrenchMichelFoucaultCareOfSelfAesthetics(
   profile?: UserProfile,
   query?: string,
+  now: Date = new Date(),
 ): FrenchMichelFoucaultCareOfSelfAestheticsResult {
   const p = profile as any;
   const name = profile?.basic?.name ?? p?.name ?? '남희';
@@ -137,7 +147,8 @@ export function calculateFrenchMichelFoucaultCareOfSelfAesthetics(
   const birthTime = profile?.basic?.birthtime ?? p?.birthTime ?? p?.birthtime ?? '12:00';
   const gender = profile?.basic?.gender ?? p?.gender ?? 'neutral';
 
-  const seedString = `MICHEL-FOUCAULT-CARE-OF-SELF:${name}:${birthDate}:${birthTime}:${gender}:${query ?? ''}`;
+  const kstDate = new Date(now.getTime() + 9 * 60 * 60 * 1000).toISOString().slice(0, 10);
+  const seedString = `MICHEL-FOUCAULT-CARE-OF-SELF:${name}:${birthDate}:${birthTime}:${gender}:${kstDate}:${query ?? ''}`;
   const baseHash = hashString(seedString);
   const absHash = Math.abs(baseHash);
 
@@ -161,9 +172,17 @@ export function calculateFrenchMichelFoucaultCareOfSelfAesthetics(
     `${activeFoucaultTheme.practicalCounsel} 푸코의 불후의 철학 명제 "${focalFoucaultAphorism.aphorismKo}" (${focalFoucaultAphorism.aphorismFrench})를 깊이 새기며, ` +
     `${focalFoucaultAphorism.actionGuidance}`;
 
+  const dailyPracticeRitual =
+    '오늘 남의 시선이나 평가 때문이 아니라 오직 나 자신을 돌보기 위한 작은 의식(산책, 침묵, 기록) 한 가지를 스스로 선물해 보세요.';
+  const reflectiveQuestion = query?.trim()
+    ? `‘${query.trim().slice(0, 48)}’에서 내가 눈치를 보느라 아직 꺼내지 못한 나만의 파레시아(진실한 목소리)는 무엇인가요?`
+    : '지금 내 삶을 관습의 복제품이 아니라 하나의 작품으로 빚기 위해 가장 먼저 내려놓을 외부 기준은 무엇인가요?';
+  const interpretiveBoundary =
+    '미셸 푸코의 자기 배려·존재의 미학 관점은 미래를 예측하거나 점수를 매기는 계산이 아니라, 타율적 시선에서 벗어나 자기 주권을 성찰하는 상징적 렌즈입니다.';
+
   return {
     engineVersion: FRENCH_MICHEL_FOUCAULT_CARE_OF_SELF_VERSION,
-    calculatedAtKst: new Date().toISOString(),
+    calculatedAtKst: now.toISOString(),
     careOfSelfEpimeleiaScore,
     discourseDisciplineLiberationIndex,
     aestheticsOfExistenceScore,
@@ -171,6 +190,9 @@ export function calculateFrenchMichelFoucaultCareOfSelfAesthetics(
     selfMasteryGovernanceScore,
     activeFoucaultTheme,
     focalFoucaultAphorism,
+    dailyPracticeRitual,
+    reflectiveQuestion,
+    interpretiveBoundary,
     foucaultComprehensiveGuidance: {
       guidanceTitle,
       philosophicalCounsel,
@@ -183,17 +205,20 @@ export function formatFrenchMichelFoucaultCareOfSelfAestheticsPrompt(
 ): string {
   return [
     `【미셸 푸코 《주체의 해석학·자기 배려》 규율권력 탈피 및 존재의 미학 지표】`,
-    `- 자기 배려 및 내면 수양(Care of the Self): ${res.careOfSelfEpimeleiaScore}/100`,
-    `- 규율 권력 및 정상성 탈피(Discipline Liberation): ${res.discourseDisciplineLiberationIndex}/100`,
-    `- 존재의 미학 및 삶의 예술화(Aesthetics of Existence): ${res.aestheticsOfExistenceScore}/100`,
-    `- 파레시아 진실 발언 용기(Parrhesia & Courage of Truth): ${res.parrhesiaTruthCourageIndex}/100`,
-    `- 자기 통치성 및 내면 주권(Self-Mastery Governance): ${res.selfMasteryGovernanceScore}/100`,
+    `- 자기 배려 및 내면 수양(Care of the Self): ${describeFoucaultStage(res.careOfSelfEpimeleiaScore)}`,
+    `- 규율 권력 및 정상성 탈피(Discipline Liberation): ${describeFoucaultStage(res.discourseDisciplineLiberationIndex)}`,
+    `- 존재의 미학 및 삶의 예술화(Aesthetics of Existence): ${describeFoucaultStage(res.aestheticsOfExistenceScore)}`,
+    `- 파레시아 진실 발언 용기(Parrhesia & Courage of Truth): ${describeFoucaultStage(res.parrhesiaTruthCourageIndex)}`,
+    `- 자기 통치성 및 내면 주권(Self-Mastery Governance): ${describeFoucaultStage(res.selfMasteryGovernanceScore)}`,
     `- 핵심 푸코 테마: ${res.activeFoucaultTheme.themeTitleKo} [${res.activeFoucaultTheme.themeTitleEn}]`,
     `- 실천적 통찰: ${res.activeFoucaultTheme.pragmaticInsight}`,
     `- 행동 조언: ${res.activeFoucaultTheme.practicalCounsel}`,
     `- 푸코 원전 명언: "${res.focalFoucaultAphorism.aphorismKo}" (${res.focalFoucaultAphorism.aphorismFrench})`,
     `- 원전 출처: [${res.focalFoucaultAphorism.sourceContext}]`,
     `- 구체적 실천 지침: ${res.focalFoucaultAphorism.actionGuidance}`,
+    `- 일상 실천 의례: ${res.dailyPracticeRitual}`,
+    `- 성찰 질문: ${res.reflectiveQuestion}`,
+    `- 해석 경계: ${res.interpretiveBoundary}`,
     `- 종합 푸코 권면: ${res.foucaultComprehensiveGuidance.philosophicalCounsel}`,
   ].join('\n');
 }

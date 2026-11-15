@@ -7732,6 +7732,52 @@ test('v2.1.0 pure qualitative prompts (no /100 or raw scores): Confucius, Menciu
   assert.ok(yangmingPrompt.includes('해석 경계'));
 });
 
+test('v2.1.0 qualitative prompt reform: Jacques Derrida, Michel Foucault, and Roland Barthes hide raw scores', () => {
+  const profile = {
+    basic: {
+      name: '남희',
+      birthdate: '1988-05-12',
+      birthtime: '09:30',
+      gender: 'female' as const,
+      calendarType: 'solar' as const,
+    },
+  };
+  const now = new Date('2026-11-15T11:40:00+09:00');
+
+  const derrida = calculateFrenchJacquesDerridaDeconstructionDifferance(profile, '이분법적 선택 앞에서 막막해요', now);
+  assert.equal(derrida.engineVersion, 'LUCKEY-JACQUES-DERRIDA-DECONSTRUCTION-DIFFERANCE-v2.1.0');
+  assert.ok(derrida.dailyPracticeRitual.length > 0);
+  assert.ok(derrida.reflectiveQuestion.length > 0);
+  assert.ok(derrida.interpretiveBoundary.length > 0);
+  const derridaPrompt = formatFrenchJacquesDerridaDeconstructionDifferancePrompt(derrida);
+  assert.ok(!derridaPrompt.includes('/100') && !derridaPrompt.includes('%'));
+  assert.ok(derridaPrompt.includes('일상 실천 의례'));
+  assert.ok(derridaPrompt.includes('성찰 질문'));
+  assert.ok(derridaPrompt.includes('해석 경계'));
+
+  const foucault = calculateFrenchMichelFoucaultCareOfSelfAesthetics(profile, '남들 기준 말고 내 방식대로 살고 싶어요', now);
+  assert.equal(foucault.engineVersion, 'LUCKEY-MICHEL-FOUCAULT-CARE-OF-SELF-v2.1.0');
+  assert.ok(foucault.dailyPracticeRitual.length > 0);
+  assert.ok(foucault.reflectiveQuestion.length > 0);
+  assert.ok(foucault.interpretiveBoundary.length > 0);
+  const foucaultPrompt = formatFrenchMichelFoucaultCareOfSelfAestheticsPrompt(foucault);
+  assert.ok(!foucaultPrompt.includes('/100') && !foucaultPrompt.includes('%'));
+  assert.ok(foucaultPrompt.includes('일상 실천 의례'));
+  assert.ok(foucaultPrompt.includes('성찰 질문'));
+  assert.ok(foucaultPrompt.includes('해석 경계'));
+
+  const barthes = calculateFrenchRolandBarthesSemioticsPunctum(profile, '익숙한 일상에 새로운 의미를 찾고 싶어요', now);
+  assert.equal(barthes.engineVersion, 'LUCKEY-ROLAND-BARTHES-SEMIOTICS-PUNCTUM-v2.1.0');
+  assert.ok(barthes.dailyPracticeRitual.length > 0);
+  assert.ok(barthes.reflectiveQuestion.length > 0);
+  assert.ok(barthes.interpretiveBoundary.length > 0);
+  const barthesPrompt = formatFrenchRolandBarthesSemioticsPunctumPrompt(barthes);
+  assert.ok(!barthesPrompt.includes('/100') && !barthesPrompt.includes('%'));
+  assert.ok(barthesPrompt.includes('일상 실천 의례'));
+  assert.ok(barthesPrompt.includes('성찰 질문'));
+  assert.ok(barthesPrompt.includes('해석 경계'));
+});
+
 
 
 
