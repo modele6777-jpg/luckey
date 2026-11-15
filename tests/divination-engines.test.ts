@@ -5934,9 +5934,14 @@ test('Yun Dong-ju Sky Wind Stars Poetry Engine: calculates Pure Conscience, Well
   assert(rep.starCountingImmortalLoveIndex >= 0 && rep.starCountingImmortalLoveIndex <= 100);
   assert(rep.lanternHopeResilienceScore >= 0 && rep.lanternHopeResilienceScore <= 100);
   assert(rep.activeYunDongJuTheme.themeTitleKo.length > 0);
+  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(rep.yunDongJuSynthesisMatrix?.integratedAction));
   const prompt = formatKoreanYunDongJuSkyWindStarsPoetryPrompt(rep);
   assert(prompt.includes('윤동주 《하늘과 바람과 별과 시》 순결한 양심 & 실존성찰 지표'));
   assert(prompt.includes(rep.activeYunDongJuTheme.themeTitleKo));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
 });
 
 test('Leo Tolstoy Calendar of Wisdom Engine: calculates Spiritual Awakening, Agape Love, Simplicity, and Conscience Integrity', () => {
@@ -5981,9 +5986,14 @@ test('Lee Yuk-sa Gwangya Peak Engine: calculates Peak Resilience, Steel Rainbow,
   assert(rep.sowingPoorSongSeedVirtueIndex >= 0 && rep.sowingPoorSongSeedVirtueIndex <= 100);
   assert(rep.pureIntegrityCheongpodoScore >= 0 && rep.pureIntegrityCheongpodoScore <= 100);
   assert(rep.activeLeeYukSaTheme.themeTitleKo.length > 0);
+  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(rep.leeYukSaSynthesisMatrix?.integratedAction));
   const prompt = formatKoreanLeeYukSaGwangyaPeakPrompt(rep);
   assert(prompt.includes('이육사 《광야·절정·청포도》 강철 무지개 실존의지 & 선구자 지표'));
   assert(prompt.includes(rep.activeLeeYukSaTheme.themeTitleKo));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
 });
 
 test('Hermann Hesse Demian Siddhartha Engine: calculates Abraxas Self-Actualization, Polarity Harmonization, and River Wisdom', () => {
@@ -6965,9 +6975,14 @@ test('Kim So-wol Azalea Flower Poetic Grace Engine: calculates Devoted Love, Gri
   assert(rep.soulInvocationLongingIndex >= 0 && rep.soulInvocationLongingIndex <= 100);
   assert(rep.dauntlessGrassrootsResilienceScore >= 0 && rep.dauntlessGrassrootsResilienceScore <= 100);
   assert(rep.activeKimSoWolTheme.themeTitleKo.length > 0);
+  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(rep.kimSoWolSynthesisMatrix?.integratedAction));
   const prompt = formatKoreanKimSoWolAzaleaFlowerPoeticGracePrompt(rep);
   assert(prompt.includes('소월 김소월 《진달래꽃·산유화·초혼》 지순한 헌신·슬픔의 승화 지표'));
   assert(prompt.includes(rep.activeKimSoWolTheme.themeTitleKo));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
 });
 
 test('James Joyce engine selects a qualitative literary perspective from the question without fake scores or quotations', () => {
