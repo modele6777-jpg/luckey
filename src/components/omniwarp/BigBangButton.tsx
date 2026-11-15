@@ -26,7 +26,9 @@ import { omniWarpAudio } from '@/lib/omniWarp/omniWarpAudio';
 import { triggerHaptic, startBlackHoleContinuousHaptic, stopBlackHoleContinuousHaptic } from '@/lib/omniWarp/omniWarpHaptics';
 import { safeSessionStorage, safeLocalStorage } from '@/utils/safeStorage';
 import { peekPendingSelection, clearPendingSelection, getLiveSelectedText } from '@/lib/selectionBridge';
-import { isDuoUnfoldedState, isDualPaneLayout } from '@/lib/perfMode';
+import { isDuoUnfoldedState } from '@/lib/perfMode';
+import { isLucyChatScreen } from '@/lib/duoPaneFocus';
+import { isSinglePaneLucyScreen } from '@/lib/workspacePaneDom';
 import { BigBangCircularMeter } from './BigBangCircularMeter';
 // 🎯 미세 드래그 판정 임계값 (터치스크린 미세 떨림/지문 면적 20px 노이즈 면역 + 확실한 드래그 제스처 감지)
 const DRAG_ACTIVATION_THRESHOLD = 26;
@@ -91,24 +93,10 @@ export function BigBangButton() {
       typeof window !== 'undefined'
         ? (window.location.pathname || '/').split('?')[0].split('#')[0]
         : '/';
-    const isSplitChannelView = isDualPaneLayout() && typeof document !== 'undefined' &&
-      Boolean(document.getElementById('duo-content-viewport'));
-    const isDomInLucyChat = !isSplitChannelView &&
-      typeof document !== 'undefined' &&
-      (document.documentElement.classList.contains('in-lucy-chat') ||
-        document.body.classList.contains('in-lucy-chat') ||
-        Boolean(document.querySelector('.lucy-chat-shell')));
-    return (
-      cleanLoc === '/' ||
-      cleanLoc === '/chat' ||
-      cleanLoc === '/lucy' ||
-      winPath === '/' ||
-      winPath === '/chat' ||
-      winPath === '/lucy' ||
-      winPath.includes('/chat') ||
-      winPath.includes('/lucy') ||
-      isDomInLucyChat
-    );
+    // 접힌 화면에서도 루시 채팅 패널은 RetainedPane으로 DOM에 남아 있고 .lucy-chat-shell·
+    // in-lucy-chat 클래스도 그대로 남는다. 따라서 "존재"가 아니라 "지금 루시 채팅이 유일한 화면인지"로
+    // 판정해야 럭키 채널에서 좌우 앱 이동이 잠기지 않는다.
+    return isLucyChatScreen(cleanLoc, winPath, isSinglePaneLucyScreen());
   }, [location]);
 
   const isChatView = checkIsInLucyChat();

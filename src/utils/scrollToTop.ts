@@ -37,8 +37,9 @@ function scrollIframeToTop(iframe: HTMLIFrameElement, behavior: ScrollBehavior) 
 
 function scrollRootsToTop(behavior: ScrollBehavior, targetElement?: HTMLElement | null) {
   // iPhone Duo 듀얼 화면 분할 모드 지원: 탭된 패널(우측 루시 vs 좌측 채널)만 선별 스크롤
-  const duoLucyPane = targetElement?.closest('#duo-lucy-viewport');
-  const duoContentPane = targetElement?.closest('#duo-content-viewport');
+  // 접힌 화면에는 #duo-*-viewport id가 없으므로(data-workspace-pane만 남는다) 두 방식 모두 인정한다.
+  const duoLucyPane = targetElement?.closest<HTMLElement>('#duo-lucy-viewport, [data-workspace-pane="lucy"]');
+  const duoContentPane = targetElement?.closest<HTMLElement>('#duo-content-viewport, [data-workspace-pane="content"]');
 
   if (duoLucyPane) {
     duoLucyPane.querySelectorAll<HTMLElement>('[data-app-scroll-root], .lucy-chat-main, .overflow-y-auto, .overflow-y-scroll').forEach((el) => {

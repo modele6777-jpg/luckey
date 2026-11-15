@@ -1,6 +1,14 @@
 import React, { useEffect } from 'react';
 import { resetAppScroll } from '@/utils/scrollToTop';
 import { playAudioHaptic } from '@/lib/audioHaptics';
+import { resolvePaneHeaderTap } from '@/lib/duoPaneFocus';
+import {
+  getWorkspacePaneElement,
+  isSinglePaneLucyScreen,
+  measureWorkspacePanes,
+  readSafeAreaTop,
+  resolveTapPane,
+} from '@/lib/workspacePaneDom';
 
 /**
  * 📱 아이폰 상태바 상단 중앙 노치(Notch) 탭 최상단 스크롤(Scroll-to-Top) 전역 컨트롤러
@@ -8,6 +16,7 @@ import { playAudioHaptic } from '@/lib/audioHaptics';
  *   1) 상단 로고 말고 상단 중앙 노치부분 누르면 최상단으로 이동
  *   2) 듀얼 화면(iPhone Duo)에서는 반반 쪼개서 중앙 노치부분 누르면 해당 화면만 독립 스크롤
  *   3) 로고, 버튼, 링크, 입력창 등 인터랙티브 요소는 100% 본래 동작 보장 (스크롤 간섭 원천 차단)
+ *   4) 접힌 화면에서도 각 채널의 앱 제목(PROLOGUE·TRINITY…)을 누르면 최상단으로 이동
  */
 export function GlobalScrollToTopOnHeaderTap(): null {
   useEffect(() => {
@@ -16,15 +25,6 @@ export function GlobalScrollToTopOnHeaderTap(): null {
     let startTime = 0;
     let isDragging = false;
     let lastTouchScrollAt = 0;
-
-    const getSafeAreaTop = (): number => {
-      if (typeof window === 'undefined') return 44;
-      const rootSat = parseInt(
-        getComputedStyle(document.documentElement).getPropertyValue('--sat') || '0',
-        10
-      );
-      return rootSat > 0 ? rootSat : 44;
-    };
 
     const isInteractiveElement = (el: HTMLElement | null): boolean => {
       if (!el) return false;
@@ -36,10 +36,10 @@ export function GlobalScrollToTopOnHeaderTap(): null {
     };
 
     /**
-     * 🎯 상단 중앙 노치(Notch) 영역 터치 판별 및 스크롤 대상 패널 반환
+     * 🎯 상단 노치·앱 제목 터치 판별 및 스크롤 대상 패널 반환
      * - 반환값:
-     *   - HTMLElement: 해당 화면/패널만 선별 스크롤 (듀얼 모드 좌/우 패널 또는 단일 화면)
-     *   - false: 노치 영역이 아니거나 인터랙티브 요소 터치 (스크롤하지 않음)
+     *   - HTMLElement: 해당 화면/패널만 선별 스크롤 (듀얼 모드 좌/우 패널 또는 접힌 단일 화면)
+     *   - false: 헤더 영역이 아니거나 인터랙티브 요소 터치 (스크롤하지 않음)
      */
     const getNotchScrollTarget = (
       clientX: number,
@@ -48,77 +48,18 @@ export function GlobalScrollToTopOnHeaderTap(): null {
     ): HTMLElement | null | false => {
       if (isInteractiveElement(target)) return false;
 
-      // 상단 상태바/노치 및 헤더 여백 터치 감지 영역 (상단 ~ 78px 또는 safe-area + 28px)
-      const safeAreaThreshold = Math.max(76, getSafeAreaTop() + 28);
-      if (clientY > safeAreaThreshold) return false;
+      const pane = resolvePaneHeaderTap(clientX, clientY, measureWorkspacePanes(), readSafeAreaTop());
+      if (!pane) return false;
 
-      // 1. 듀얼 스크린 (iPhone Duo 펼친 화면: 좌측 채널 vs 우측 루시)
-      const contentPane = document.getElementById('duo-content-viewport');
-      const lucyPane = document.getElementById('duo-lucy-viewport');
-      const isDual = Boolean(
-        contentPane &&
-        lucyPane &&
-        contentPane.offsetParent !== null &&
-        lucyPane.offsetParent !== null
-      );
-
-      if (isDual && contentPane && lucyPane) {
-        const contentRect = contentPane.getBoundingClientRect();
-        const lucyRect = lucyPane.getBoundingClientRect();
-        const isSideBySide = Math.abs(contentRect.top - lucyRect.top) < 30;
-
-        if (isSideBySide) {
-          // 📱 좌측 화면(콘텐츠 뷰포트) 노치: 좌측 0~70px(로고) 제외, 우측 여백 전까지
-          if (
-            clientX >= contentRect.left + 70 &&
-            clientX <= contentRect.right - 20
-          ) {
-            return contentPane;
-          }
-
-          // 📱 우측 화면(루시 채팅창) 노치: 좌측 로고/버튼 제외, 중앙부 터치
-          if (
-            clientX >= lucyRect.left + 80 &&
-            clientX <= lucyRect.right - 80
-          ) {
-            return lucyPane;
-          }
-        } else {
-          // 📱 상하 듀얼 화면 (세로 회전 펼침)
-          // 상단 화면(콘텐츠 뷰포트) 노치
-          if (clientY <= safeAreaThreshold && clientX >= 70 && clientX <= window.innerWidth - 30) {
-            return contentPane;
-          }
-
-          // 하단 화면(루시 채팅창) 노치
-          if (
-            clientY >= lucyRect.top &&
-            clientY <= lucyRect.top + safeAreaThreshold &&
-            clientX >= 70 &&
-            clientX <= window.innerWidth - 30
-          ) {
-            return lucyPane;
-          }
-        }
-
-        // 듀얼 모드에서 노치 영역 밖을 터치한 경우 스크롤 무시
-        return false;
-      }
-
-      // 2. 단일 화면 (접힌 화면 또는 일반 모바일) 중앙 노치
-      // 좌측 로고 영역(0~70px) 및 우측 여백 제외 중앙 상단 탭
-      if (clientX >= 70 && clientX <= window.innerWidth - 30) {
-        return target;
-      }
-
-      return false;
+      // 스크롤은 탭한 요소가 아니라 실제로 화면에 떠 있는 패널 범위에서만 일어나야 한다.
+      return getWorkspacePaneElement(pane.pane) ?? target;
     };
 
     const executeScrollToTop = (scrollTarget: HTMLElement | null) => {
-      const isLucyTarget = Boolean(
-        scrollTarget?.closest('#duo-lucy-viewport, .lucy-chat-shell') ||
-        (!document.getElementById('duo-content-viewport') && document.querySelector('.lucy-chat-shell'))
-      );
+      // 접힌 화면에서도 루시 채팅 패널은 DOM에 남아 있으므로, 존재가 아니라 이 탭이
+      // 어느 패널에서 났는지로 판정한다. 루시가 아니면 채널 본문을 직접 최상단으로 올린다.
+      const tappedPane = resolveTapPane(scrollTarget);
+      const isLucyTarget = tappedPane === 'lucy' || (tappedPane === null && isSinglePaneLucyScreen());
       // Lucy handles this event on its own message scroller; avoid scheduling a second
       // smooth scroll across every scrollable descendant in the pane.
       if (!isLucyTarget) resetAppScroll('smooth', scrollTarget);
