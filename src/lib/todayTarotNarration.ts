@@ -1,7 +1,7 @@
 import { getTodayDateKey } from '@/lib/dailyCache';
 import { getTarotCardImageUrl, TAROT_DECK, getEffectiveTarotKeywords, getTarotReversedData, getTarotCardCaution, type TarotCard } from '@/data/tarotData';
 import { prepareNaturalSpeechText } from '@/utils/speechText';
-import { extractConciseSummary, stripSummaryFromTarotText, deduplicateReadingText } from '@/lib/tarotSummaryUtils';
+import { stripSummaryFromTarotText, deduplicateReadingText } from '@/lib/tarotSummaryUtils';
 import { ensureCompleteTarotReading } from '@/lib/trinity/utils';
 
 export const DAILY_TAROT_CAUTION = '타로는 미래를 결정짓는 절대적 예언이 아니라, 자신의 내면을 성찰하고 더 나은 선택을 돕는 지혜의 나침반입니다. 맹목적인 믿음을 지양하고, 모든 운명의 결정권과 최종 열쇠는 언제나 당신 자신의 주체적인 의지와 지혜에 있습니다.';
@@ -95,7 +95,7 @@ export function getTodayAnchorTarotCard(uid?: string): TarotCard {
 /**
  * 데일리 타로 결과를 바탕으로 낭독 버전 챕터와 음성 텍스트를 구조화
  */
-export function buildTarotNarrationContent(dailyResult: any): TarotNarrationData {
+export function buildTarotNarrationContent(dailyResult: any, summaryBullets: string[] = []): TarotNarrationData {
   const today = getTodayDateKey();
   if (!dailyResult) {
     return {
@@ -147,13 +147,13 @@ export function buildTarotNarrationContent(dailyResult: any): TarotNarrationData
     )
   );
 
-  const conciseSummaryBullets = extractConciseSummary(fullSourceText, drawnCard || dailyResult);
+  const conciseSummaryBullets = summaryBullets;
   const cleanDiag = cleanDiagnosisText(fullSourceText);
 
   const summarySpeechText = prepareNaturalSpeechText(
     conciseSummaryBullets.length > 0
       ? conciseSummaryBullets.map((b) => b.replace(/^\[[^\]]+\]\s*/, '')).join('. ')
-      : `${nameKo} 카드가 오늘 하루 당신에게 전하는 명쾌한 방향과 실천 처방입니다.`
+      : ''
   );
 
   const rawRemedy = String(

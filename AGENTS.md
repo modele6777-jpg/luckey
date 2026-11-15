@@ -62,3 +62,8 @@ Every time a user request is completed or changes are made to the codebase:
 ### 10. TTS Sentence Scroll Ownership
 - While TTS is speaking/loading, sentence tracking owns the conversation viewport, including forced entry/reveal/background bottom-follow. Do not race it with top/bottom animations.
 - Center each newly committed spoken sentence on the next frame, with no dead zone or delayed smooth animation. Coalesce notifications and respect actual manual gestures.
+
+### 11. Interpretive Tarot Three-Line Summary
+- The tarot reading and daily narration summary must be written in a separate AI pass from the completed full body, using the existing AI connection. Never substitute selected/copied body sentences on failure.
+- Keep current situation, direction/caution and practical action distinct; preserve the body's uncertainty and do not add unsupported facts.
+- Share generated lines across display, summary TTS and sharing; ignore stale requests and provide retry if generation fails.

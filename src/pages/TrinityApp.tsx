@@ -1,3 +1,4 @@
+import { useInterpretiveTarotSummary } from '@/hooks/useInterpretiveTarotSummary';
 import '@/styles/tarot-reading.css';
 import { DuoWorkspace, WorkspacePortal } from '@/components/layout/DuoWorkspace';
 import React, {
@@ -1695,24 +1696,12 @@ function playDailyCardChimeAsync() {
     return TAROT_DECK.filter((card) => !drawnCardIds.includes(card.id));
   }, [drawnCardIds]);
 
-  // Auto concise 3-bullet summary for tarot readings (현재 에너지·방향과 주의점·실천 행동, 각 줄 완결)
-  const conciseSummaryBullets = useMemo(() => {
-    if (!tarotResult || tarotResult.trim().length < 40) return [];
-    const profile = sharedState?.userProfile || getPersistentUserProfile();
-    const sajuInfo = calculateDetailedSaju(profile);
-    const contextCards = drawnCards && drawnCards.length > 0
-      ? drawnCards
-      : (dailyResult?.drawnCard ? [dailyResult.drawnCard] : (dailyDrawnCard ? [dailyDrawnCard] : []));
-
-    return extractConciseSummary(tarotResult, {
-      cards: contextCards,
-      card: contextCards[0] || dailyResult?.drawnCard || dailyDrawnCard,
-      saju: sajuInfo,
-      concern: tarotConcern,
-      theme: tarotConcernAnalysis.theme,
-      kind: tarotConcernAnalysis.kind,
-    });
-  }, [tarotResult, drawnCards, dailyResult, dailyDrawnCard, sharedState, tarotConcern, tarotConcernAnalysis]);
+  const interpretiveSummary = useInterpretiveTarotSummary(
+    tarotResult,
+    isDailyTarotConcern(tarotConcern) ? '오늘의 타로 리딩' : tarotConcern,
+    !isTarotGenerating && !isDailyOracleLoading,
+  );
+  const conciseSummaryBullets = interpretiveSummary.bullets;
 
   // 예/아니오 타로 결과에서 모델이 명시한 상징적 참고만 표시하고 판정을 자동 생성하지 않음
   const tarotYesNoVerdict = useMemo(() => {
@@ -2765,7 +2754,7 @@ ${buildTarotInterpretationGuidance({ question: tarotConcern, hasAppDraw: true })
           const card = selectedCards[0];
           const today = getTodayDateKey();
           const uid = firebaseUser?.uid || "guest";
-          const quickSummary = extractConciseSummary(finalResponse, { concern: tarotConcern, theme: concernAnalysis.theme, kind: concernAnalysis.kind, cards: selectedCards }).join(' ') || `${card.nameKo} 카드가 전하는 오늘의 영험한 비전입니다.`;
+          const quickSummary = ''; // The dedicated interpretation pass supplies the summary.
           const updatedDaily = {
             drawnCard: card,
             diagnosis: finalResponse,
@@ -4143,6 +4132,8 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
                                       </div>
                                     ) : (
                                       <div className="space-y-4">
+                                          {interpretiveSummary.loading && <p role="status" className="text-sm text-amber-200">전체 리딩을 해석해 핵심 3줄 요약을 작성하고 있어요.</p>}
+                                          {interpretiveSummary.error && <div role="status" className="text-sm text-amber-200">요약을 생성하지 못했어요. <button type="button" onClick={interpretiveSummary.retry} className="underline">요약 다시 만들기</button></div>}
                                           {/* 💬 내가 한 질문 상단 표시 (핵심 요약이 아직 생성 중일 때도 즉시 표시) */}
                                           {((isEffectiveDailyTarot(tarotConcern, customSpread, tarotSpreadRecommendation) || isDailyTarotConcern(tarotConcern)) || tarotConcern?.trim()) && conciseSummaryBullets.length === 0 && (
                                             <div className="px-4 py-3 rounded-2xl bg-gradient-to-r from-amber-500/15 via-yellow-500/10 to-purple-500/15 border border-amber-400/35 flex items-start gap-2.5 shadow-md">

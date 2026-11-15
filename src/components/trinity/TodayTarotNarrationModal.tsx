@@ -1,3 +1,4 @@
+import { useInterpretiveTarotSummary } from '@/hooks/useInterpretiveTarotSummary';
 import { ScreenPortal } from '@/components/layout/ScreenPortal';
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
@@ -102,9 +103,14 @@ export function TodayTarotNarrationModal({
     resumeDelayMs: 3000,
   });
 
+  const interpretiveSummary = useInterpretiveTarotSummary(
+    dailyResult?.diagnosis || dailyResult?.reading || dailyResult?.summary,
+    '오늘의 타로 리딩',
+    isOpen,
+  );
   const narrationData = useMemo(() => {
-    return buildTarotNarrationContent(dailyResult);
-  }, [dailyResult]);
+    return buildTarotNarrationContent(dailyResult, interpretiveSummary.bullets);
+  }, [dailyResult, interpretiveSummary.bullets]);
 
   // 잔여 덱 계산 (오늘의 타로 1장 + 누적된 추가 질문 카드들 완전 제외)
   const dailyDrawnCardIds = useMemo(() => {
@@ -590,6 +596,8 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
                 </div>
               </div>
 
+              {interpretiveSummary.loading && <p role="status" className="text-sm text-amber-200">전체 리딩을 해석해 핵심 3줄 요약을 작성하고 있어요.</p>}
+              {interpretiveSummary.error && <div role="status" className="text-sm text-amber-200">요약을 생성하지 못했어요. <button type="button" onClick={interpretiveSummary.retry} className="underline">요약 다시 만들기</button></div>}
               {/* 🌟 1. 핵심 3줄 요약 첫 칸 고정 렌더링 (원클릭 요약 TTS 지원) */}
               {narrationData.conciseSummaryBullets.length > 0 && (
                 <div className="pt-1 pb-3">
