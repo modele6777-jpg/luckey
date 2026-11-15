@@ -9,12 +9,12 @@
  * 4. 가난한 노래의 씨앗 파종 실천력(Sowing the Seed of Poor Song Index): "지금 눈 내리고 매화 향기 홀로 아득하니 내 여기 가난한 노래의 씨를 뿌려라" 황무지에 희망과 진실의 싹을 틔우는 선구자적 헌신도.
  * 5. 청포도 결백 순결 지조 지수(Pure Integrity of Cheongpodo Score): "내 고장 칠월은 청포도가 익어가는 시절" 은쟁반 위에 하이얀 모시 수건을 마련하듯 고결한 이상과 신의를 지키는 순결성.
  *
- * @version LUCKEY-LEE-YUK-SA-GWANGYA-v1.0.0
+ * @version LUCKEY-LEE-YUK-SA-GWANGYA-v2.0.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const KOREAN_LEE_YUK_SA_VERSION = 'LUCKEY-LEE-YUK-SA-GWANGYA-v1.0.0';
+export const KOREAN_LEE_YUK_SA_VERSION = 'LUCKEY-LEE-YUK-SA-GWANGYA-v2.0.0';
 
 export interface LeeYukSaTheme {
   themeKey: string;
@@ -48,6 +48,27 @@ export interface KoreanLeeYukSaGwangyaPeakResult {
     guidanceTitle: string;
     philosophicalCounsel: string;
   };
+  leeYukSaSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
+}
+
+function formatLeeYukSaKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
+
+function describeLeeYukSaStage(score: number): string {
+  if (score >= 90) return '백마 탄 초인(白馬超人) — 극한의 시련을 뚫고 새 시대의 문을 여는 강철 무지개의 비약기';
+  if (score >= 85) return '매화 향기(梅花暗香) — 눈보라 속에서도 가난한 노래의 씨앗을 묵묵히 심는 선구자적 정진기';
+  return '청포도의 결백(靑葡萄潔白) — 은쟁반과 모시 수건을 정갈히 마련하며 때를 기다리는 지조의 시기';
 }
 
 export const LEE_YUK_SA_THEMES: LeeYukSaTheme[] = [
@@ -120,7 +141,9 @@ export const LEE_YUK_SA_APHORISMS: LeeYukSaAphorism[] = [
 ];
 
 export function calculateKoreanLeeYukSaGwangyaPeak(
-  profile: UserProfile
+  profile: UserProfile,
+  query?: string,
+  now: Date = new Date(),
 ): KoreanLeeYukSaGwangyaPeakResult {
   const p = profile as any;
   const name = profile?.basic?.name ?? p?.name ?? '방문자';
@@ -162,9 +185,24 @@ export function calculateKoreanLeeYukSaGwangyaPeak(
     `${activeLeeYukSaTheme.practicalCounsel} 아울러 이육사 시인의 명구 "${focalLeeYukSaAphorism.famousLineKo}"(${focalLeeYukSaAphorism.poemTitleKo})를 마음에 품고, ` +
     `${focalLeeYukSaAphorism.actionGuidance}`;
 
+  const calculatedAtKst = formatLeeYukSaKstTimestamp(now);
+  const avgScore = Math.round(
+    (peakResilienceInBitterSeasonScore +
+      steelRainbowTranscendenceIndex +
+      visionaryCallingOfHeroScore +
+      sowingPoorSongSeedVirtueIndex +
+      pureIntegrityCheongpodoScore) /
+      5,
+  );
+  const leeYukSaSynthesisMatrix = {
+    dominantTension: `${activeLeeYukSaTheme.themeTitleKo} ↔ ${focalLeeYukSaAphorism.poemTitleKo}`,
+    alignmentState: describeLeeYukSaStage(avgScore),
+    integratedAction: `${focalLeeYukSaAphorism.actionGuidance}${query?.trim() ? ` [질문 맥락: ${query.trim()}]` : ''}`,
+  };
+
   return {
     engineVersion: KOREAN_LEE_YUK_SA_VERSION,
-    calculatedAtKst: new Date().toISOString(),
+    calculatedAtKst,
     peakResilienceInBitterSeasonScore,
     steelRainbowTranscendenceIndex,
     visionaryCallingOfHeroScore,
@@ -176,17 +214,23 @@ export function calculateKoreanLeeYukSaGwangyaPeak(
       guidanceTitle,
       philosophicalCounsel,
     },
+    leeYukSaSynthesisMatrix,
   };
 }
 
 export function formatKoreanLeeYukSaGwangyaPeakPrompt(res: KoreanLeeYukSaGwangyaPeakResult): string {
-  return [
+  const avgScore = Math.round(
+    (res.peakResilienceInBitterSeasonScore +
+      res.steelRainbowTranscendenceIndex +
+      res.visionaryCallingOfHeroScore +
+      res.sowingPoorSongSeedVirtueIndex +
+      res.pureIntegrityCheongpodoScore) /
+      5,
+  );
+  const lines = [
     `【이육사 《광야·절정·청포도》 강철 무지개 실존의지 & 선구자 지표】`,
-    `- 절정 극복 실존 의지(Peak Resilience): ${res.peakResilienceInBitterSeasonScore}/100`,
-    `- 강철 무지개 실존 초극도(Steel Rainbow Transcendence): ${res.steelRainbowTranscendenceIndex}/100`,
-    `- 백마 탄 초인 소명의식(Visionary Calling of Hero): ${res.visionaryCallingOfHeroScore}/100`,
-    `- 가난한 노래 씨앗 파종력(Sowing Song Seed): ${res.sowingPoorSongSeedVirtueIndex}/100`,
-    `- 청포도 결백 순결 지조(Pure Integrity Cheongpodo): ${res.pureIntegrityCheongpodoScore}/100`,
+    `- 연산 시각: ${res.calculatedAtKst} | 엔진: ${res.engineVersion}`,
+    `- 실존 의지 국면: ${describeLeeYukSaStage(avgScore)}`,
     `- 핵심 실존 테마: ${res.activeLeeYukSaTheme.themeTitleKo}`,
     `- 실존적 통찰: ${res.activeLeeYukSaTheme.existentialInsight}`,
     `- 실천적 조언: ${res.activeLeeYukSaTheme.practicalCounsel}`,
@@ -194,5 +238,12 @@ export function formatKoreanLeeYukSaGwangyaPeakPrompt(res: KoreanLeeYukSaGwangya
     `- 시적 출처: [${res.focalLeeYukSaAphorism.sourceContext}]`,
     `- 구체적 실천 지침: ${res.focalLeeYukSaAphorism.actionGuidance}`,
     `- 종합 이육사 실존의지 권면: ${res.leeYukSaComprehensiveGuidance.philosophicalCounsel}`,
-  ].join('\n');
+  ];
+  if (res.leeYukSaSynthesisMatrix) {
+    lines.push(
+      `- 교차 매트릭스 [핵심 긴장: ${res.leeYukSaSynthesisMatrix.dominantTension} | 조율 상태: ${res.leeYukSaSynthesisMatrix.alignmentState}]`,
+      `- 통합 실천: ${res.leeYukSaSynthesisMatrix.integratedAction}`,
+    );
+  }
+  return lines.join('\n');
 }

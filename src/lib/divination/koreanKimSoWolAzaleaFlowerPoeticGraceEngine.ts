@@ -8,12 +8,12 @@
  * 4. 부르다가 내가 죽을 이름을 부르는 영혼의 진솔한 열망 지표 (Soul Invocation / ChoHon Passionate Sincerity Index): 허공 중에 헤어진 이름을 목놓아 부르는 《초혼》의 절절함처럼 형식과 체면을 넘어 가장 진실한 자기 영혼의 외침을 표현하는 용기.
  * 5. 우리의 보습 대일 땅을 일구어 나가는 강인한 민초 회복탄력성 (Dauntless Grassroots Resilience & Fertile Hope Score): "바라건대는 우리에게 우리의 보습 대일 땅이 있었더면"처럼 척박하고 메마른 땅에서도 끝내 쟁기를 쥐고 희망의 밭을 일구어 내는 꺾이지 않는 생명력.
  *
- * @version LUCKEY-KIM-SO-WOL-AZALEA-POETIC-GRACE-v1.0.0
+ * @version LUCKEY-KIM-SO-WOL-AZALEA-POETIC-GRACE-v2.0.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const KOREAN_KIM_SO_WOL_AZALEA_VERSION = 'LUCKEY-KIM-SO-WOL-AZALEA-POETIC-GRACE-v1.0.0';
+export const KOREAN_KIM_SO_WOL_AZALEA_VERSION = 'LUCKEY-KIM-SO-WOL-AZALEA-POETIC-GRACE-v2.0.0';
 
 export interface KimSoWolTheme {
   themeKey: string;
@@ -46,6 +46,27 @@ export interface KoreanKimSoWolAzaleaResult {
     guidanceTitle: string;
     philosophicalCounsel: string;
   };
+  kimSoWolSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
+}
+
+function formatKimSoWolKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
+
+function describeKimSoWolStage(score: number): string {
+  if (score >= 95) return '애이불비의 승화(哀而不悲) — 상실의 아픔마저 고결한 축복과 절제의 노래로 빚어내는 원숙기';
+  if (score >= 91) return '산유화의 달관(山友花觀照) — 홀로 피고 지는 자연의 리듬 속에서 중심을 지키는 평정기';
+  return '보습의 생명력(耕地生氣) — 거친 현실을 묵묵히 일구며 희망의 싹을 틔우는 성실한 다짐기';
 }
 
 export const KIM_SO_WOL_THEMES: KimSoWolTheme[] = [
@@ -119,6 +140,7 @@ function hashString(str: string): number {
 export function calculateKoreanKimSoWolAzaleaFlowerPoeticGrace(
   profile?: UserProfile,
   query?: string,
+  now: Date = new Date(),
 ): KoreanKimSoWolAzaleaResult {
   const p = profile as any;
   const name = profile?.basic?.name ?? p?.name ?? '남희';
@@ -150,9 +172,24 @@ export function calculateKoreanKimSoWolAzaleaFlowerPoeticGrace(
     `${activeKimSoWolTheme.practicalCounsel} 김소월 시인의 불후의 명구 "${focalKimSoWolAphorism.aphorismKo}"를 가슴에 품고, ` +
     `${focalKimSoWolAphorism.actionGuidance}`;
 
+  const calculatedAtKst = formatKimSoWolKstTimestamp(now);
+  const avgScore = Math.round(
+    (devotedLoveBlessingScore +
+      griefPoeticSublimationIndex +
+      sanYuHwaNatureAttunementScore +
+      soulInvocationLongingIndex +
+      dauntlessGrassrootsResilienceScore) /
+      5,
+  );
+  const kimSoWolSynthesisMatrix = {
+    dominantTension: `${activeKimSoWolTheme.themeTitleKo} ↔ ${focalKimSoWolAphorism.sourceContext}`,
+    alignmentState: describeKimSoWolStage(avgScore),
+    integratedAction: `${focalKimSoWolAphorism.actionGuidance}${query?.trim() ? ` [질문 맥락: ${query.trim()}]` : ''}`,
+  };
+
   return {
     engineVersion: KOREAN_KIM_SO_WOL_AZALEA_VERSION,
-    calculatedAtKst: new Date().toISOString(),
+    calculatedAtKst,
     devotedLoveBlessingScore,
     griefPoeticSublimationIndex,
     sanYuHwaNatureAttunementScore,
@@ -164,19 +201,25 @@ export function calculateKoreanKimSoWolAzaleaFlowerPoeticGrace(
       guidanceTitle,
       philosophicalCounsel,
     },
+    kimSoWolSynthesisMatrix,
   };
 }
 
 export function formatKoreanKimSoWolAzaleaFlowerPoeticGracePrompt(
   res: KoreanKimSoWolAzaleaResult,
 ): string {
-  return [
+  const avgScore = Math.round(
+    (res.devotedLoveBlessingScore +
+      res.griefPoeticSublimationIndex +
+      res.sanYuHwaNatureAttunementScore +
+      res.soulInvocationLongingIndex +
+      res.dauntlessGrassrootsResilienceScore) /
+      5,
+  );
+  const lines = [
     `【소월 김소월 《진달래꽃·산유화·초혼》 지순한 헌신·슬픔의 승화 지표】`,
-    `- 지순한 헌신과 축복 지표(Devoted Love & Blessing): ${res.devotedLoveBlessingScore}/100`,
-    `- 슬픔의 서정적 승화 지수(Poetic Grief Sublimation): ${res.griefPoeticSublimationIndex}/100`,
-    `- 산유화 자연 순환 달관도(SanYuHwa Nature Attunement): ${res.sanYuHwaNatureAttunementScore}/100`,
-    `- 영혼의 진솔한 열망 지표(Soul Invocation Sincerity): ${res.soulInvocationLongingIndex}/100`,
-    `- 강인한 민초 회복탄력성(Dauntless Grassroots Resilience): ${res.dauntlessGrassrootsResilienceScore}/100`,
+    `- 연산 시각: ${res.calculatedAtKst} | 엔진: ${res.engineVersion}`,
+    `- 서정적 승화 국면: ${describeKimSoWolStage(avgScore)}`,
     `- 핵심 김소월 테마: ${res.activeKimSoWolTheme.themeTitleKo} [${res.activeKimSoWolTheme.themeTitleEn}]`,
     `- 시적 사색: ${res.activeKimSoWolTheme.poeticInsight}`,
     `- 행동 조언: ${res.activeKimSoWolTheme.practicalCounsel}`,
@@ -184,5 +227,12 @@ export function formatKoreanKimSoWolAzaleaFlowerPoeticGracePrompt(
     `- 원전 출처: [${res.focalKimSoWolAphorism.sourceContext}]`,
     `- 구체적 실천 지침: ${res.focalKimSoWolAphorism.actionGuidance}`,
     `- 종합 김소월 권면: ${res.kimSoWolComprehensiveGuidance.philosophicalCounsel}`,
-  ].join('\n');
+  ];
+  if (res.kimSoWolSynthesisMatrix) {
+    lines.push(
+      `- 교차 매트릭스 [핵심 긴장: ${res.kimSoWolSynthesisMatrix.dominantTension} | 조율 상태: ${res.kimSoWolSynthesisMatrix.alignmentState}]`,
+      `- 통합 실천: ${res.kimSoWolSynthesisMatrix.integratedAction}`,
+    );
+  }
+  return lines.join('\n');
 }
