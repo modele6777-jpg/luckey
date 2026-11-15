@@ -801,14 +801,16 @@ function AppContent() {
   const isChatView = isLucyRoute;
 
   const updateNotice = (
-    <UpdateNoticeModal
-      key={updateNoticeKey}
-      isOpen={isUpdateNoticeOpen}
-      entries={updateEntries}
-      mode={updateNoticeMode}
-      onClose={dismissUpdateNotice}
-      onApply={handleApplyUpdateNow}
-    />
+    <OverlayPaneContext.Provider value="main">
+      <UpdateNoticeModal
+        key={updateNoticeKey}
+        isOpen={isUpdateNoticeOpen}
+        entries={updateEntries}
+        mode={updateNoticeMode}
+        onClose={dismissUpdateNotice}
+        onApply={handleApplyUpdateNow}
+      />
+    </OverlayPaneContext.Provider>
   );
 
   // Standalone routes bypass full auth gating immediately so they never hang on key/calm/chat entry

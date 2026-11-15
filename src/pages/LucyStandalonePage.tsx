@@ -2355,6 +2355,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
       return;
     }
     const distanceFromBottom = scrollHeight - (scrollTop + clientHeight);
+    if (document.querySelector('[data-screen-overlay-layer]:not(:empty)')) return;
     if (distanceFromBottom > 80) {
       isUserScrolledUpRef.current = true;
       setShowReturnToRecentConversation(true);
