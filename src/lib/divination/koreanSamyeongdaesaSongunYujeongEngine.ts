@@ -8,12 +8,12 @@
  * 4. 경세구민(經世救民) 실천적 보살행 지표 (Pragmatic Bodhisattva Action Index): 추상적 명분이나 형식에 얽매이지 않고 고통받는 현실의 백성을 구원하기 위해 분연히 행동하는 실천력.
  * 5. 출세간적 무소유 청빈 및 초연한 회복탄력성 (Renunciation & Magnanimous Resilience Score): 지극한 공을 세운 뒤에도 권력과 영화에 연연하지 않고 산사로 돌아가 평정을 지키는 초연한 무소유.
  *
- * @version LUCKEY-SAMYEONGDAESA-SONGUN-YUJEONG-v1.0.0
+ * @version LUCKEY-SAMYEONGDAESA-SONGUN-YUJEONG-v2.0.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const KOREAN_SAMYEONGDAESA_SONGUN_YUJEONG_VERSION = 'LUCKEY-SAMYEONGDAESA-SONGUN-YUJEONG-v1.0.0';
+export const KOREAN_SAMYEONGDAESA_SONGUN_YUJEONG_VERSION = 'LUCKEY-SAMYEONGDAESA-SONGUN-YUJEONG-v2.0.0';
 
 export interface SamyeongTheme {
   themeKey: string;
@@ -47,6 +47,27 @@ export interface KoreanSamyeongdaesaSongunYujeongResult {
     guidanceTitle: string;
     philosophicalCounsel: string;
   };
+  samyeongSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
+}
+
+function formatSamyeongKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
+
+function describeSamyeongStage(score: number): string {
+  if (score >= 92) return '자비구제(慈悲救濟) — 흔들림 없는 담판의 기개와 대자대비의 평정이 하나로 선 구국기';
+  if (score >= 88) return '분충서난(奮忠抒難) — 형식에 얽매이지 않고 현실의 어려움을 풀어내는 실천기';
+  return '사료불의(事了拂衣) — 공과 집착을 내려놓고 맑은 중심을 고요히 지키는 수양기';
 }
 
 export const SAMYEONG_THEMES: SamyeongTheme[] = [
@@ -130,6 +151,7 @@ function hashString(str: string): number {
 export function calculateKoreanSamyeongdaesaSongunYujeong(
   profile?: UserProfile,
   query?: string,
+  now: Date = new Date(),
 ): KoreanSamyeongdaesaSongunYujeongResult {
   const p = profile as any;
   const name = profile?.basic?.name ?? p?.name ?? '남희';
@@ -160,9 +182,24 @@ export function calculateKoreanSamyeongdaesaSongunYujeong(
     `${activeSamyeongTheme.practicalCounsel} 사명대사의 불후의 명구 "${focalSamyeongAphorism.aphorismKo}" (${focalSamyeongAphorism.aphorismHanja})를 깊이 새기며, ` +
     `${focalSamyeongAphorism.actionGuidance}`;
 
+  const calculatedAtKst = formatSamyeongKstTimestamp(now);
+  const avgScore = Math.round(
+    (righteousDevotionScore +
+      diplomaticRescueIndex +
+      transcendentCompassionScore +
+      pragmaticBodhisattvaIndex +
+      renunciationResilienceScore) /
+      5,
+  );
+  const samyeongSynthesisMatrix = {
+    dominantTension: `${activeSamyeongTheme.themeTitleKo} ↔ ${focalSamyeongAphorism.sourceContext}`,
+    alignmentState: describeSamyeongStage(avgScore),
+    integratedAction: `${focalSamyeongAphorism.actionGuidance}${query?.trim() ? ` [질문 맥락: ${query.trim()}]` : ''}`,
+  };
+
   return {
     engineVersion: KOREAN_SAMYEONGDAESA_SONGUN_YUJEONG_VERSION,
-    calculatedAtKst: new Date().toISOString(),
+    calculatedAtKst,
     righteousDevotionScore,
     diplomaticRescueIndex,
     transcendentCompassionScore,
@@ -174,19 +211,25 @@ export function calculateKoreanSamyeongdaesaSongunYujeong(
       guidanceTitle,
       philosophicalCounsel,
     },
+    samyeongSynthesisMatrix,
   };
 }
 
 export function formatKoreanSamyeongdaesaSongunYujeongPrompt(
   res: KoreanSamyeongdaesaSongunYujeongResult,
 ): string {
-  return [
+  const avgScore = Math.round(
+    (res.righteousDevotionScore +
+      res.diplomaticRescueIndex +
+      res.transcendentCompassionScore +
+      res.pragmaticBodhisattvaIndex +
+      res.renunciationResilienceScore) /
+      5,
+  );
+  const lines = [
     `【사명대사 송운 유정 《분충서난록》 호국대의 및 자비구제 지표】`,
-    `- 살신성인 호국대의 및 용기(Righteous Devotion & Sacrifice): ${res.righteousDevotionScore}/100`,
-    `- 외교적 담판 지략 및 자비구제(Diplomatic Rescue & Statesmanship): ${res.diplomaticRescueIndex}/100`,
-    `- 생사초월 자비희사 도량(Transcendent Equanimity & Compassion): ${res.transcendentCompassionScore}/100`,
-    `- 경세구민 실천적 보살행(Pragmatic Bodhisattva Action): ${res.pragmaticBodhisattvaIndex}/100`,
-    `- 출세간적 무소유 청빈 및 회복탄력성(Renunciation & Resilience): ${res.renunciationResilienceScore}/100`,
+    `- 연산 시각: ${res.calculatedAtKst} | 엔진: ${res.engineVersion}`,
+    `- 호국 자비 국면: ${describeSamyeongStage(avgScore)}`,
     `- 핵심 사명대사 테마: ${res.activeSamyeongTheme.themeTitleKo} [${res.activeSamyeongTheme.themeTitleEn}]`,
     `- 실천적 통찰: ${res.activeSamyeongTheme.pragmaticInsight}`,
     `- 행동 조언: ${res.activeSamyeongTheme.practicalCounsel}`,
@@ -194,5 +237,12 @@ export function formatKoreanSamyeongdaesaSongunYujeongPrompt(
     `- 원전 출처: [${res.focalSamyeongAphorism.sourceContext}]`,
     `- 구체적 실천 지침: ${res.focalSamyeongAphorism.actionGuidance}`,
     `- 종합 사명대사 권면: ${res.samyeongComprehensiveGuidance.philosophicalCounsel}`,
-  ].join('\n');
+  ];
+  if (res.samyeongSynthesisMatrix) {
+    lines.push(
+      `- 교차 매트릭스 [핵심 긴장: ${res.samyeongSynthesisMatrix.dominantTension} | 조율 상태: ${res.samyeongSynthesisMatrix.alignmentState}]`,
+      `- 통합 실천: ${res.samyeongSynthesisMatrix.integratedAction}`,
+    );
+  }
+  return lines.join('\n');
 }

@@ -4212,9 +4212,12 @@ test('Chonggamnok Ten Sanctuaries Engine: calculates geomantic sanctuaries, gong
   assert(rep.dailyPracticeRitual.length > 0);
   assert(rep.reflectiveQuestion.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
+  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(rep.chonggamnokSynthesisMatrix?.integratedAction));
   const prompt = formatChonggamnokPrompt(rep);
   assert(prompt.includes('조선 비전 정감록 10승지 영맥 & 보신 피난처 실측 데이터'));
   assert(prompt.includes(rep.dominantSanctuary.nameKo));
+  assert(prompt.includes('교차 매트릭스'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });
@@ -4547,9 +4550,14 @@ test('Korean Jeon Bongjun Nokdu General Engine: calculates Sabal Tongmun solidar
   assert(rep.bogukAnminPeaceStabilityScore >= 0 && rep.bogukAnminPeaceStabilityScore <= 100);
   assert(rep.cheongpodoSpringResilience >= 0 && rep.cheongpodoSpringResilience <= 100);
   assert(rep.activeNokduStage.stageNameHanja.length > 0);
+  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(rep.nokduSynthesisMatrix?.integratedAction));
   const prompt = formatJeonBongjunNokduPrompt(rep);
   assert(prompt.includes('한국 근대 동학농민혁명 《녹두장군 전봉준》'));
   assert(prompt.includes(rep.activeNokduStage.stageNameKo));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
 });
 
 test('Mesopotamian Atrahasis Flood Wisdom Engine: calculates reed wall intuition, ark crafting resilience and equilibrium pact', () => {
@@ -6617,9 +6625,14 @@ test('Samyeongdaesa Songun Yujeong Engine: calculates Righteous Devotion, Diplom
   assert(rep.pragmaticBodhisattvaIndex >= 0 && rep.pragmaticBodhisattvaIndex <= 100);
   assert(rep.renunciationResilienceScore >= 0 && rep.renunciationResilienceScore <= 100);
   assert(rep.activeSamyeongTheme.themeTitleKo.length > 0);
+  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(rep.samyeongSynthesisMatrix?.integratedAction));
   const prompt = formatKoreanSamyeongdaesaSongunYujeongPrompt(rep);
   assert(prompt.includes('사명대사 송운 유정 《분충서난록》 호국대의 및 자비구제 지표'));
   assert(prompt.includes(rep.activeSamyeongTheme.themeTitleKo));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
 });
 
 test('Shin Saimdang Chochungdo Art Virtue Engine: calculates Nature Vitality, Filial Concord, and Sage Self-Realization', () => {
