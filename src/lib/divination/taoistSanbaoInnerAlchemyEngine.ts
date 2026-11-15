@@ -18,7 +18,17 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const TAOIST_SANBAO_VERSION = 'LUCKEY-TAOIST-SANBAO-v1.0.0';
+export const TAOIST_SANBAO_VERSION = 'LUCKEY-TAOIST-SANBAO-v2.0.0';
+
+function formatSanbaoKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
 
 export interface SanbaoEnergyLevels {
   jing: number;  // 0 ~ 100 정(精) 에너지 잔여량
@@ -29,6 +39,7 @@ export interface SanbaoEnergyLevels {
 export interface TaoistSanbaoReport {
   engineVersion: string;
   calculatedAt: string;
+  calculatedAtKst: string;
   energyLevels: SanbaoEnergyLevels;
   dominantTreasure: '정 (Jing - 신체 활력)' | '기 (Qi - 실행과 호흡)' | '신 (Shen - 영적 통찰)';
   depletedTreasure: '정 (Jing - 수면·체력 고갈)' | '기 (Qi - 기력·감정 소진)' | '신 (Shen - 정신적 과부하)';
@@ -40,11 +51,17 @@ export interface TaoistSanbaoReport {
   overallHarmonyScore: number;  // 0 ~ 100 삼보 조화도
   dantianPrescription: string;  // 단전 집중 처방
   taoistBreathingPractice: string; // 일일 조식(調息) 실천법
+  sanbaoSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
 }
 
 export function calculateTaoistSanbaoInnerAlchemy(
   profile?: UserProfile | null,
-  targetDate: Date = new Date()
+  targetDate: Date = new Date(),
+  question?: string
 ): TaoistSanbaoReport {
   let birthSum = 11;
   let birthYear = 1992;
@@ -129,31 +146,38 @@ export function calculateTaoistSanbaoInnerAlchemy(
     : '상단전(인당·니환궁): 미간 사이의 긴장을 풀고 눈을 감은 채 맑고 푸른 호수를 바라보듯 머릿속 과열을 식히세요.';
 
   const taoistBreathingPractice = `도교 복식 조식법: 숨을 들이쉴 때 아랫배를 부드럽게 부풀리고(4초), 2초간 멈춘 뒤, 천천히 입으로 숨을 내쉬며(6초) 몸속의 탁기(濁氣)를 배출하세요. 3회 반복으로 정·기·신이 즉각 정렬됩니다.`;
+  const calculatedAtKst = formatSanbaoKstTimestamp(targetDate);
+  const q = (question || '').trim();
+  const sanbaoSynthesisMatrix = {
+    dominantTension: `${dominantTreasure} ↔ ${depletedTreasure}`,
+    alignmentState: `${alchemyPhase.phaseName} — ${alchemyPhase.meaning}`,
+    integratedAction: `${alchemyPhase.transformationTask}${q ? ` [질문 맥락: ${q}]` : ''}`,
+  };
 
   return {
     engineVersion: TAOIST_SANBAO_VERSION,
     calculatedAt: targetDate.toISOString(),
+    calculatedAtKst,
     energyLevels,
     dominantTreasure,
     depletedTreasure,
     alchemyPhase,
     overallHarmonyScore: Math.max(30, Math.min(99, overallHarmonyScore)),
     dantianPrescription,
-    taoistBreathingPractice
+    taoistBreathingPractice,
+    sanbaoSynthesisMatrix,
   };
 }
 
 export function formatTaoistSanbaoInnerAlchemyPrompt(report: TaoistSanbaoReport): string {
-  return `### ☯️ 도교 내단학(內丹學) 삼보(三寶: 정·기·신) 생체 에너지 순환 & 연정화기 엔진 (${TAOIST_SANBAO_VERSION})
-- **삼보 에너지 밸런스**:
-  - 하단전 정(精 - 신체 활력/원기): ${report.energyLevels.jing}% / 100%
-  - 중단전 기(氣 - 호흡/감정/실행력): ${report.energyLevels.qi}% / 100%
-  - 상단전 신(神 - 직관/통찰/의식): ${report.energyLevels.shen}% / 100%
-- **삼보 조화 점수**: ${report.overallHarmonyScore}점 / 100점
+  const matrixLine = report.sanbaoSynthesisMatrix
+    ? `\n- **삼보 교차 매트릭스**: 핵심 긴장(${report.sanbaoSynthesisMatrix.dominantTension}) · 조율 상태(${report.sanbaoSynthesisMatrix.alignmentState}) · 통합 실천(${report.sanbaoSynthesisMatrix.integratedAction})`
+    : '';
+  return `### ☯️ 도교 내단학(內丹學) 삼보(三寶: 정·기·신) 생체 에너지 순환 & 연정화기 엔진 (${TAOIST_SANBAO_VERSION} | ${report.calculatedAtKst})
 - **현재 우세 에너지**: ${report.dominantTreasure}
 - **우선 보충 필요(누수처)**: ${report.depletedTreasure}
 - **내단학 변환 국면**: ${report.alchemyPhase.phaseName} [${report.alchemyPhase.meaning}]
 - **내단 승화 핵심 과제**: ${report.alchemyPhase.transformationTask}
 - **단전(丹田) 집중 가이드**: ${report.dantianPrescription}
-- **일일 도교 조식법 (Breathing)**: ${report.taoistBreathingPractice}`;
+- **일일 도교 조식법 (Breathing)**: ${report.taoistBreathingPractice}${matrixLine}`;
 }
