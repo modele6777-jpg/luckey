@@ -9,12 +9,12 @@
  * 4. 목적론적 재해석 및 미래 창조력(Teleological Reframing & Future Creation Index): 과거 트라우마에 얽매이지 않고 지금 여기서 새로운 목적을 선택하는 힘.
  * 5. 불완전할 용기 및 공감적 연결 회복탄력성(Courage to Be Imperfect & Empathetic Connection Score): 완벽주의의 가면을 벗고 온전한 나로 마주하는 회복탄력성.
  *
- * @version LUCKEY-ADLER-INDIVIDUAL-PSYCHOLOGY-v1.1.0
+ * @version LUCKEY-ADLER-INDIVIDUAL-PSYCHOLOGY-v2.0.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const AUSTRIAN_ALFRED_ADLER_INDIVIDUAL_PSYCHOLOGY_VERSION = 'LUCKEY-ADLER-INDIVIDUAL-PSYCHOLOGY-v1.1.0';
+export const AUSTRIAN_ALFRED_ADLER_INDIVIDUAL_PSYCHOLOGY_VERSION = 'LUCKEY-ADLER-INDIVIDUAL-PSYCHOLOGY-v2.0.0';
 
 export type AdlerQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -59,6 +59,16 @@ export interface AustrianAlfredAdlerIndividualPsychologyResult {
   ritualAction: string;
   reflectionFocus: string;
   boundaryNotice: string;
+  situationalAdlerAudit: {
+    focusTheme: string;
+    taskSeparationCue: string;
+    tacticalStep: string;
+  };
+  adlerSynthesisMatrix: {
+    coreInsight: string;
+    recommendedAction: string;
+    cautionNotice: string;
+  };
   adlerComprehensiveGuidance: {
     guidanceTitle: string;
     philosophicalCounsel: string;
@@ -262,10 +272,23 @@ export function calculateAustrianAlfredAdlerIndividualPsychology(
     `아들러의 격언 "${focalAdlerAphorism.aphorismKo}"를 가슴에 품고, ${focalAdlerAphorism.actionGuidance}`;
 
   const boundaryNotice = '아들러 개인심리학 해석은 심리적 성찰과 과제 분리를 돕는 상징·철학 관점이며, 의학적·임상적 심리 진단을 대체하지 않습니다.';
+  const baseDate = now ?? new Date();
+  const kst = new Date(baseDate.getTime() + 9 * 60 * 60 * 1000);
+  const kstTimeLabel = `${temporalAdlerRhythm.kstDateLabel.replace(' KST', '')} ${String(kst.getUTCHours()).padStart(2, '0')}:${String(kst.getUTCMinutes()).padStart(2, '0')} KST`;
+  const situationalAdlerAudit = {
+    focusTheme: `${questionTopic} · 과제 분리와 용기`,
+    taskSeparationCue: temporalAdlerRhythm.courageTone,
+    tacticalStep: topicGuidance.ritualAction,
+  };
+  const adlerSynthesisMatrix = {
+    coreInsight: activeAdlerTheme.themeTitleKo,
+    recommendedAction: topicGuidance.practiceGuidance,
+    cautionNotice: '타인의 과제까지 내 어깨에 짊어지거나 완벽해야 사랑받는다는 불안에 갇히지 마십시오.',
+  };
 
   return {
     engineVersion: AUSTRIAN_ALFRED_ADLER_INDIVIDUAL_PSYCHOLOGY_VERSION,
-    calculatedAtKst: (now ?? new Date()).toISOString(),
+    calculatedAtKst: kstTimeLabel,
     inferiorityTranscendenceHealthyStrivingScore,
     communityFeelingContributionIndex,
     separationOfTasksCourageScore,
@@ -279,6 +302,8 @@ export function calculateAustrianAlfredAdlerIndividualPsychology(
     ritualAction: topicGuidance.ritualAction,
     reflectionFocus: topicGuidance.reflectionFocus,
     boundaryNotice,
+    situationalAdlerAudit,
+    adlerSynthesisMatrix,
     adlerComprehensiveGuidance: {
       guidanceTitle,
       philosophicalCounsel,
@@ -290,7 +315,8 @@ export function formatAustrianAlfredAdlerIndividualPsychologyPrompt(
   res: AustrianAlfredAdlerIndividualPsychologyResult,
 ): string {
   return [
-    `【알프레트 아들러 《인간이해》 & 《삶의 의미》 열등감 극복 및 공동체 감각 지혜 지표】`,
+    `【알프레트 아들러 《인간이해》 & 《삶의 의미》 열등감 극복 및 공동체 감각 지혜 지표 (${res.engineVersion})】`,
+    `- 연산 시각: ${res.calculatedAtKst}`,
     `- 질문 주제 맥락: ${res.questionTopic}`,
     `- KST 시공간 리듬: ${res.temporalAdlerRhythm.kstDateLabel} · ${res.temporalAdlerRhythm.timeWindowKo} (${res.temporalAdlerRhythm.courageTone}) — ${res.temporalAdlerRhythm.rhythmDirective}`,
     `- 핵심 아들러 테마: ${res.activeAdlerTheme.themeTitleKo} [${res.activeAdlerTheme.themeTitleEn}]`,
@@ -299,6 +325,7 @@ export function formatAustrianAlfredAdlerIndividualPsychologyPrompt(
     `- 질문 맞춤 실천 가이드: ${res.practiceGuidance}`,
     `- 일상 실천 의례: ${res.ritualAction}`,
     `- 핵심 성찰 질문: ${res.reflectionFocus}`,
+    `- 교차 매트릭스: 핵심(${res.adlerSynthesisMatrix.coreInsight}) | 실행(${res.adlerSynthesisMatrix.recommendedAction}) | 주의(${res.adlerSynthesisMatrix.cautionNotice})`,
     `- 아들러 원전 명언: "${res.focalAdlerAphorism.aphorismKo}"`,
     `- 원문 인용: "${res.focalAdlerAphorism.aphorismEn}"`,
     `- 원전 출처: [${res.focalAdlerAphorism.sourceContext}]`,
