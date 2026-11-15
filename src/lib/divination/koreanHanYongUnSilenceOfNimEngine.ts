@@ -2,10 +2,10 @@
  * Qualitative literary perspectives drawn from Manhae Han Yong-un's works.
  * The poem context was checked against https://www.korea.kr/news/cultureColumnView.do?newsId=148887804.
  * This engine intentionally emits no personal scores, diagnosis, prediction, or attributed quotation.
- * @version LUCKEY-HAN-YONG-UN-SILENCE-OF-NIM-v1.0.0
+ * @version LUCKEY-HAN-YONG-UN-SILENCE-OF-NIM-v2.0.0
  */
 
-export const KOREAN_HAN_YONG_UN_SILENCE_OF_NIM_VERSION = 'LUCKEY-HAN-YONG-UN-SILENCE-OF-NIM-v1.0.0';
+export const KOREAN_HAN_YONG_UN_SILENCE_OF_NIM_VERSION = 'LUCKEY-HAN-YONG-UN-SILENCE-OF-NIM-v2.0.0';
 
 export interface HanYongUnTheme {
   themeKey: string;
@@ -21,6 +21,11 @@ export interface KoreanHanYongUnSilenceOfNimResult {
   hanYongUnComprehensiveGuidance: {
     guidanceTitle: string;
     philosophicalCounsel: string;
+  };
+  hanYongUnSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
   };
 }
 
@@ -69,6 +74,11 @@ function selectHanYongUnTheme(query?: string): HanYongUnTheme {
 
 export function calculateKoreanHanYongUnSilenceOfNim(query?: string): KoreanHanYongUnSilenceOfNimResult {
   const activeHanYongUnTheme = selectHanYongUnTheme(query);
+  const hanYongUnSynthesisMatrix = {
+    dominantTension: `${activeHanYongUnTheme.themeTitleKo} ↔ ${activeHanYongUnTheme.themeTitleEn}`,
+    alignmentState: '문학적 참고 관점 — 개인의 감정이나 미래를 단정하지 않고 작품의 주제를 비추는 정성적 성찰',
+    integratedAction: `${activeHanYongUnTheme.practicalCounsel}${query?.trim() ? ` [질문 맥락: ${query.trim()}]` : ''}`,
+  };
   return {
     engineVersion: KOREAN_HAN_YONG_UN_SILENCE_OF_NIM_VERSION,
     activeHanYongUnTheme,
@@ -76,15 +86,24 @@ export function calculateKoreanHanYongUnSilenceOfNim(query?: string): KoreanHanY
       guidanceTitle: `한용운 작품에서 얻는 참고 관점: ${activeHanYongUnTheme.themeTitleKo}`,
       philosophicalCounsel: `${activeHanYongUnTheme.poeticInsight} ${activeHanYongUnTheme.practicalCounsel} 이 내용은 문학적 참고이며, 개인의 감정·관계·미래를 측정하거나 예측한 결과가 아닙니다.`,
     },
+    hanYongUnSynthesisMatrix,
   };
 }
 
 export function formatKoreanHanYongUnSilenceOfNimPrompt(res: KoreanHanYongUnSilenceOfNimResult): string {
-  return [
+  const lines = [
     '【한용운 작품에서 얻은 문학적 참고】',
+    `- 엔진: ${res.engineVersion}`,
     `- 질문과 관련해 살펴볼 주제: ${res.activeHanYongUnTheme.themeTitleKo}`,
     `- 작품 맥락: ${res.activeHanYongUnTheme.poeticInsight}`,
     `- 조심스럽게 적용할 제안: ${res.activeHanYongUnTheme.practicalCounsel}`,
     '- 이는 문학적 해석을 위한 참고일 뿐, 개인 점수·진단·관계 결과·미래 예측이 아닙니다.',
-  ].join('\n');
+  ];
+  if (res.hanYongUnSynthesisMatrix) {
+    lines.push(
+      `- 교차 매트릭스 [핵심 긴장: ${res.hanYongUnSynthesisMatrix.dominantTension} | 조율 상태: ${res.hanYongUnSynthesisMatrix.alignmentState}]`,
+      `- 통합 실천: ${res.hanYongUnSynthesisMatrix.integratedAction}`,
+    );
+  }
+  return lines.join('\n');
 }

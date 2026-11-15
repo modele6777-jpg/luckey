@@ -6127,9 +6127,14 @@ test('Danjae Shin Chae-ho Joseon Sanggosa Engine: calculates Ah vs Non-Ah Subjec
   assert(rep.peoplesDirectRevolutionDynamic >= 0 && rep.peoplesDirectRevolutionDynamic <= 100);
   assert(rep.indomitableDanjaeResilienceIndex >= 0 && rep.indomitableDanjaeResilienceIndex <= 100);
   assert(rep.activeDanjaeTheme.themeTitleKo.length > 0);
+  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(rep.danjaeSynthesisMatrix?.integratedAction));
   const prompt = formatKoreanDanjaeShinChaeHoJoseonSanggosaPrompt(rep);
   assert(prompt.includes('단재 신채호 《조선상고사》 & 〈조선혁명선언〉 아(我)의 주체자각 & 자주독립 지표'));
   assert(prompt.includes(rep.activeDanjaeTheme.themeTitleKo));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
 });
 
 test('Charles de Montesquieu Spirit of Laws Engine: calculates Checks and Balances, Political Liberty, Contextual Prudence, and Civic Virtue', () => {
@@ -6776,9 +6781,14 @@ test('Baek Seok Deer and White Wall Poetic Purity Engine: calculates Noble Solit
   assert(rep.transcendentWhiteWallReflectionIndex >= 0 && rep.transcendentWhiteWallReflectionIndex <= 100);
   assert(rep.sereneSteadfastResilienceScore >= 0 && rep.sereneSteadfastResilienceScore <= 100);
   assert(rep.activeBaekSeokTheme.themeTitleKo.length > 0);
+  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(rep.baekSeokSynthesisMatrix?.integratedAction));
   const prompt = formatKoreanBaekSeokDeerWhiteWallPoeticPurityPrompt(rep);
   assert(prompt.includes('백석 《사슴·흰 바람벽이 있어》 순수 고결성·맑은 존엄(Poetic Purity) 지표'));
   assert(prompt.includes(rep.activeBaekSeokTheme.themeTitleKo));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
 });
 
 test('Paul Ricoeur Narrative Identity and Healing Engine: calculates Emplotment, Ipso-Identity, and Forgiveness Resilience', () => {
@@ -7000,8 +7010,10 @@ test('Han Yong-un engine uses a verified literary theme, query matching, and no 
   assert.equal(rep.activeHanYongUnTheme.themeKey, 'silenceOfNimSublimation');
   assert.equal(Object.hasOwn(rep, 'paradoxicalLoveTranscendenceScore'), false);
   assert.equal(Object.hasOwn(rep, 'calculatedAtKst'), false);
+  assert(Boolean(rep.hanYongUnSynthesisMatrix?.integratedAction));
   const prompt = formatKoreanHanYongUnSilenceOfNimPrompt(rep);
   assert.match(prompt, /문학적 참고/);
+  assert(prompt.includes('교차 매트릭스'));
   assert.doesNotMatch(prompt, /\/100|마음은 본래 자유로운|님은 갔으나 반드시 다시 온다|원전 명구/);
 
   const integrity = calculateKoreanHanYongUnSilenceOfNim('자유와 양심, 자주와 존엄');
