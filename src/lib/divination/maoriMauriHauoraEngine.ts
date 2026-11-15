@@ -14,7 +14,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const MAORI_MAURI_HAUORA_ENGINE_VERSION = '1.0.0';
+export const MAORI_MAURI_HAUORA_ENGINE_VERSION = '2.0.0';
 
 export interface HauoraPillar {
   id: 'taha_tinana' | 'taha_hinengaro' | 'taha_whanau' | 'taha_wairua';
@@ -29,6 +29,7 @@ export interface HauoraPillar {
 export interface MaoriMauriHauoraReport {
   engineVersion: string;
   timestamp: string;
+  calculatedAtKst: string;
   mauriVitalityIndex: number; // 0 ~ 100 마우리(생명 에너지 불꽃) 지수
   manaSovereigntyScore: number; // 0 ~ 100 마나(영적 위엄 및 현실 권능) 지수
   pillars: {
@@ -40,11 +41,33 @@ export interface MaoriMauriHauoraReport {
     vulnerablePillar: HauoraPillar;
   };
   kaitiakitangaPrescription: string; // 대지 수호 및 관계 회복 실천 처방
+  maoriSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
+}
+
+function formatMaoriKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
+
+function describeMaoriStage(score: number): string {
+  if (score >= 80) return '마우리 오라(Mauri Ora) — 4대 기둥의 생명 불꽃이 맑고 고르게 타오르는 조화기';
+  if (score >= 60) return '테 화레 조율(Whare Balance) — 강점 기둥을 바탕으로 취약 기둥을 보듬는 안정기';
+  return '카이티아키 돌봄(Kaitiaki Care) — 지친 기둥부터 먼저 어루만져 숨을 고르는 회복기';
 }
 
 export function calculateMaoriMauriHauora(options?: {
   profile?: UserProfile | null;
   question?: string;
+  now?: Date;
 }): MaoriMauriHauoraReport {
   const profile = options?.profile;
   const question = (options?.question || '').trim();
@@ -125,9 +148,18 @@ export function calculateMaoriMauriHauora(options?: {
     kaitiakitangaPrescription = '밤하늘의 별을 바라보며 깊은 호흡으로 자신이 우주 전체와 긴밀히 연결되어 있음을 묵상하고 영혼의 평화를 확언하십시오.';
   }
 
+  const baseTime = options?.now ?? new Date();
+  const calculatedAtKst = formatMaoriKstTimestamp(baseTime);
+  const maoriSynthesisMatrix = {
+    dominantTension: `${dominantPillar.nameKo} ↔ ${vulnerablePillar.nameKo}`,
+    alignmentState: describeMaoriStage(mauriVitalityIndex),
+    integratedAction: `${kaitiakitangaPrescription}${question ? ` [질문 맥락: ${question}]` : ''}`,
+  };
+
   return {
     engineVersion: MAORI_MAURI_HAUORA_ENGINE_VERSION,
-    timestamp: new Date().toISOString(),
+    timestamp: baseTime.toISOString(),
+    calculatedAtKst,
     mauriVitalityIndex,
     manaSovereigntyScore,
     pillars: {
@@ -139,19 +171,29 @@ export function calculateMaoriMauriHauora(options?: {
       vulnerablePillar,
     },
     kaitiakitangaPrescription,
+    maoriSynthesisMatrix,
   };
 }
 
 export function formatMaoriMauriHauoraPrompt(rep: MaoriMauriHauoraReport): string {
-  return `[고대 마오리 하우오라 4대 기둥 & 마우리(Mauri) 생명력 실측 데이터]
-· 엔진 버전: v${rep.engineVersion}
-· 마우리(Mauri 생명 불꽃) 지수: ${rep.mauriVitalityIndex}/100 | 마나(Mana 영적 위엄) 주권도: ${rep.manaSovereigntyScore}%
-· 테 화레 타파 화(Te Whare Tapa Whā) 4대 웰빙 기둥:
-  1) 육체적 기둥 (Taha Tinana): ${rep.pillars.tahaTinana.vitalityScore}% [${rep.pillars.tahaTinana.status}] — ${rep.pillars.tahaTinana.counsel}
-  2) 정신·감정적 기둥 (Taha Hinengaro): ${rep.pillars.tahaHinengaro.vitalityScore}% [${rep.pillars.tahaHinengaro.status}] — ${rep.pillars.tahaHinengaro.counsel}
-  3) 관계·가족적 기둥 (Taha Whānau): ${rep.pillars.tahaWhanau.vitalityScore}% [${rep.pillars.tahaWhanau.status}] — ${rep.pillars.tahaWhanau.counsel}
-  4) 영적 기둥 (Taha Wairua): ${rep.pillars.tahaWairua.vitalityScore}% [${rep.pillars.tahaWairua.status}] — ${rep.pillars.tahaWairua.counsel}
-· 핵심 강점 기둥: ${rep.pillars.dominantPillar.nameKo} (${rep.pillars.dominantPillar.nameMaori}) — ${rep.pillars.dominantPillar.vitalityScore}%
-· 우선 보살핌 기둥: ${rep.pillars.vulnerablePillar.nameKo} (${rep.pillars.vulnerablePillar.nameMaori}) — ${rep.pillars.vulnerablePillar.vitalityScore}%
-· 카이티아키탕가(Kaitiakitanga) 전인적 회복 처방: ${rep.kaitiakitangaPrescription}`;
+  const lines = [
+    `[고대 마오리 하우오라 4대 기둥 & 마우리(Mauri) 생명력 실측 데이터]`,
+    `· 연산 시각: ${rep.calculatedAtKst} | 엔진 버전: v${rep.engineVersion}`,
+    `· 마우리 생명 국면: ${describeMaoriStage(rep.mauriVitalityIndex)}`,
+    `· 테 화레 타파 화(Te Whare Tapa Whā) 4대 웰빙 기둥:`,
+    `  1) 육체적 기둥 (Taha Tinana): [${rep.pillars.tahaTinana.status}] — ${rep.pillars.tahaTinana.counsel}`,
+    `  2) 정신·감정적 기둥 (Taha Hinengaro): [${rep.pillars.tahaHinengaro.status}] — ${rep.pillars.tahaHinengaro.counsel}`,
+    `  3) 관계·가족적 기둥 (Taha Whānau): [${rep.pillars.tahaWhanau.status}] — ${rep.pillars.tahaWhanau.counsel}`,
+    `  4) 영적 기둥 (Taha Wairua): [${rep.pillars.tahaWairua.status}] — ${rep.pillars.tahaWairua.counsel}`,
+    `· 핵심 강점 기둥: ${rep.pillars.dominantPillar.nameKo} (${rep.pillars.dominantPillar.nameMaori})`,
+    `· 우선 보살핌 기둥: ${rep.pillars.vulnerablePillar.nameKo} (${rep.pillars.vulnerablePillar.nameMaori})`,
+    `· 카이티아키탕가(Kaitiakitanga) 전인적 회복 처방: ${rep.kaitiakitangaPrescription}`,
+  ];
+  if (rep.maoriSynthesisMatrix) {
+    lines.push(
+      `· 교차 매트릭스 [핵심 긴장: ${rep.maoriSynthesisMatrix.dominantTension} | 조율 상태: ${rep.maoriSynthesisMatrix.alignmentState}]`,
+      `· 통합 실천: ${rep.maoriSynthesisMatrix.integratedAction}`,
+    );
+  }
+  return lines.join('\n');
 }
