@@ -1341,7 +1341,7 @@ try {
   const chronoTransitResult = calculateSupplement('chronoTransitResult', () => (calculateChronoTransit({ profile, targetDate: now, question })));
   const lifeSeasonTimingResult = calculateSupplement('lifeSeasonTimingResult', () => (calculateLifeSeasonTiming({ profile, targetYear: now.getFullYear() })));
   const energeticPrescriptionResult = calculateSupplement('energeticPrescriptionResult', () => (calculateEnergeticPrescription({ profile, currentDate: now })));
-  const contextualSynastryResult = calculateSupplement('contextualSynastryResult', () => (calculateContextualSynastry({ questionText: question, myProfile: profile })));
+  const contextualSynastryResult = calculateSupplement('contextualSynastryResult', () => (calculateContextualSynastry({ questionText: question, myProfile: profile, targetDate: now })));
   const instantDecisionResult = calculateSupplement('instantDecisionResult', () => (calculateInstantDecision({ instant: now, questionText: question })));
   const ziweiFlyingStarsResult = calculateSupplement('ziweiFlyingStarsResult', () => (calculateZiweiFlyingStars({ profile, targetYear: now.getFullYear() })));
   const specialStarsResult = calculateSupplement('specialStarsResult', () => (calculateSpecialStarsMatrix({ profile })));
@@ -1442,7 +1442,7 @@ try {
   const dynamicClashResult = calculateSupplement('dynamicClashResult', () => (birthdateStr && profile
     ? (() => {
         try {
-          return calculateDynamicClashTrigger({ profile, targetDate: now });
+          return calculateDynamicClashTrigger({ profile, targetDate: now, question });
         } catch (_) {
           return null;
         }
@@ -1695,7 +1695,7 @@ try {
   const destinySynastryEchoResult = calculateSupplement('destinySynastryEchoResult', () => (birthdateStr && profile
     ? (() => {
         try {
-          return calculateDestinySynastryEcho({ profile, targetDate: now });
+          return calculateDestinySynastryEcho({ profile, targetDate: now, question });
         } catch (_) {
           return null;
         }

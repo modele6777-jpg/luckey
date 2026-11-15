@@ -16,7 +16,7 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const DESTINY_SYNASTRY_ECHO_VERSION = 'LUCKEY-ECHO-v1.0.0';
+export const DESTINY_SYNASTRY_ECHO_VERSION = 'LUCKEY-ECHO-v2.0.0';
 
 export type KarmicGravityType = 
   | '카르마 거울형 (Karmic Mirror · 자아 투사와 결핍 치유)'
@@ -27,9 +27,10 @@ export type KarmicGravityType =
 export interface DestinySynastryEchoReport {
   engineVersion: string;
   calculatedAt: string;
+  calculatedAtKst: string;
   gravityType: KarmicGravityType;
-  karmicEchoScore: number;         // 운명적 공명 지수 (0 ~ 100)
-  soulConnectionDepth: number;     // 영혼 차원 연결 깊이 (0 ~ 100)
+  karmicEchoScore: number;         // 운명적 공명 지수 (내부 호환용, 프롬프트 비노출)
+  soulConnectionDepth: number;     // 영혼 차원 연결 깊이 (내부 호환용, 프롬프트 비노출)
   relationshipDynamics: {
     magneticPullFactor: string;    // 두 사람을 강력히 끌어당기는 근원 인력
     blindspotVulnerability: string; // 무의식적으로 부딪히는 갈등 취약점
@@ -40,12 +41,66 @@ export interface DestinySynastryEchoReport {
     deescalationPhrase: string;    // 갈등 발생 시 긴장을 푸는 마법의 한마디
     optimalEngagementPace: string; // 최적의 관계 호흡 및 거리 유지법
   };
+  situationalEchoAudit: {
+    focusTheme: string;
+    gravityNote: string;
+    tacticalStep: string;
+  };
+  temporalEchoRhythm: {
+    kstTimeLabel: string;
+    resonanceWindow: string;
+    seasonalEchoTone: string;
+    temporalGuidance: string;
+  };
+  echoSynthesisMatrix: {
+    coreInsight: string;
+    recommendedAction: string;
+    cautionNotice: string;
+  };
+  boundaryNotice: string;
   synthesisPromptGuidance: string;
+}
+
+function getTemporalEchoRhythm(now: Date) {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  const hour = kst.getUTCHours();
+  const month = kst.getUTCMonth() + 1;
+
+  const resonanceWindow =
+    hour >= 5 && hour < 11
+      ? '아침 맑은 공명창 — 상대의 의도를 왜곡 없이 바라보고 먼저 안부를 건네기 좋은 시간'
+      : hour >= 11 && hour < 17
+        ? '정오 실무 조율창 — 현실적인 협력과 역할 경계를 명료히 나누기 좋은 시간'
+        : hour >= 17 && hour < 22
+          ? '황혼 공감 회복창 — 감정의 파동을 부드럽게 가라앉히고 진심을 나누기 좋은 시간'
+          : '심야 내면 거울창 — 상대에 대한 투사를 거두고 내 감정의 뿌리를 조용히 살피는 시간';
+
+  const seasonalEchoTone =
+    month >= 3 && month <= 5
+      ? '봄 · 인연 개화절 (새로운 소통의 물꼬를 트는 시기)'
+      : month >= 6 && month <= 8
+        ? '여름 · 공명 증폭절 (열정과 솔직한 교류가 힘을 얻는 시기)'
+        : month >= 9 && month <= 11
+          ? '가을 · 카르마 정산절 (오래된 매듭을 풀고 건강한 경계를 세우는 시기)'
+          : '겨울 · 영혼 심화절 (조용한 신뢰와 내면의 성숙을 다지는 시기)';
+
+  return {
+    kstTimeLabel: `${y}-${m}-${d} ${hh}:${mm} KST`,
+    resonanceWindow,
+    seasonalEchoTone,
+    temporalGuidance: `${resonanceWindow} · ${seasonalEchoTone}의 결에 맞추어 관계를 조율하십시오.`,
+  };
 }
 
 export function runDestinySynastryEchoEngine(
   profile?: UserProfile,
-  targetDate: Date = new Date()
+  targetDate: Date = new Date(),
+  question?: string
 ): DestinySynastryEchoReport {
   const sajuRes = calculateDetailedSaju(profile || null);
 
@@ -101,23 +156,50 @@ export function runDestinySynastryEchoEngine(
     optimalEngagementPace = '깊은 정신적 교감과 현실적 자율성의 완벽한 50:50 균형 유지하기';
   }
 
-  const karmicEchoScore = 76 + (echoSeed % 23); // 76 ~ 98점
-  const soulConnectionDepth = 74 + ((targetDate.getDate() * 9 + targetDate.getHours() * 2 + (ganCode % 13)) % 25); // 74 ~ 98점
+  const karmicEchoScore = 76 + (echoSeed % 23); // 76 ~ 98
+  const soulConnectionDepth = 74 + ((targetDate.getDate() * 9 + targetDate.getHours() * 2 + (ganCode % 13)) % 25); // 74 ~ 98
+  const echoTone = karmicEchoScore >= 90 ? '강렬한 공명' : karmicEchoScore >= 83 ? '안정적 공명' : '잔잔한 조응';
+  const depthTone = soulConnectionDepth >= 90 ? '깊은 영혼 결속' : soulConnectionDepth >= 82 ? '성숙한 상호 이해' : '점진적 신뢰 형성';
+  const temporalEchoRhythm = getTemporalEchoRhythm(targetDate);
+  const q = (question || '').trim();
+  const situationalEchoAudit = /갈등|싸움|오해|거리|연락/.test(q)
+    ? {
+        focusTheme: `${gravityType.split(' ')[0]} · 갈등 완화 코드`,
+        gravityNote: blindspotVulnerability,
+        tacticalStep: deescalationPhrase,
+      }
+    : {
+        focusTheme: `${gravityType.split(' ')[0]} · 관계 진화 과제`,
+        gravityNote: magneticPullFactor,
+        tacticalStep: evolutionaryLesson,
+      };
+  const echoSynthesisMatrix = {
+    coreInsight: `[${gravityType}] ${magneticPullFactor}`,
+    recommendedAction: `${mindOpeningKeyword} · ${optimalEngagementPace}`,
+    cautionNotice: blindspotVulnerability,
+  };
+  const boundaryNotice = '본 결과는 사주·시나스트리 상징에 기반한 정성적 관계 성찰 가이드이며, 상대방의 감정이나 미래를 단정하지 않습니다.';
 
-  const synthesisPromptGuidance = `[LUCKEY 다차원 운명 공명 에코 & 카르마적 인연 중력 v1.0.0]
+  const synthesisPromptGuidance = `[LUCKEY 다차원 운명 공명 에코 & 카르마적 인연 중력 v2.0.0]
+- 연산 시각: ${temporalEchoRhythm.kstTimeLabel}
 - 인연 중력 아키타입: [${gravityType}]
-- 운명적 공명 지수: ${karmicEchoScore}점 / 영혼 차원 연결 깊이: ${soulConnectionDepth}점
+- 공명 기조: ${echoTone} / 연결 깊이 기조: ${depthTone}
 - 핵심 인력 요인: ${magneticPullFactor}
 - 무의식적 갈등 취약점: ${blindspotVulnerability}
 - 영혼의 진화 성장 과제: ${evolutionaryLesson}
 - 소통 마스터 코드:
   * 마음을 여는 핵심: ${mindOpeningKeyword}
   * 갈등 완화 치트키: ${deescalationPhrase}
-  * 최적 호흡/거리: ${optimalEngagementPace}`;
+  * 최적 호흡/거리: ${optimalEngagementPace}
+- 질문 맥락 감사 (${situationalEchoAudit.focusTheme}): ${situationalEchoAudit.tacticalStep}
+- KST 시공간 리듬: ${temporalEchoRhythm.resonanceWindow} / ${temporalEchoRhythm.seasonalEchoTone}
+- 교차 매트릭스: 핵심(${echoSynthesisMatrix.coreInsight}) | 실행(${echoSynthesisMatrix.recommendedAction}) | 주의(${echoSynthesisMatrix.cautionNotice})
+- 해석 경계: ${boundaryNotice}`;
 
   return {
     engineVersion: DESTINY_SYNASTRY_ECHO_VERSION,
     calculatedAt: targetDate.toISOString(),
+    calculatedAtKst: temporalEchoRhythm.kstTimeLabel,
     gravityType,
     karmicEchoScore,
     soulConnectionDepth,
@@ -131,6 +213,10 @@ export function runDestinySynastryEchoEngine(
       deescalationPhrase,
       optimalEngagementPace
     },
+    situationalEchoAudit,
+    temporalEchoRhythm,
+    echoSynthesisMatrix,
+    boundaryNotice,
     synthesisPromptGuidance
   };
 }
@@ -141,10 +227,11 @@ export function calculateDestinySynastryEcho(params?: {
   profile?: UserProfile | null;
   saju?: SajuAnalysisResult | null;
   targetDate?: Date;
+  question?: string;
 }): DestinySynastryEchoResult {
   const profile = params?.profile || undefined;
   const targetDate = params?.targetDate || new Date();
-  return runDestinySynastryEchoEngine(profile, targetDate);
+  return runDestinySynastryEchoEngine(profile, targetDate, params?.question);
 }
 
 export function formatDestinySynastryEchoPrompt(res: DestinySynastryEchoResult): string {

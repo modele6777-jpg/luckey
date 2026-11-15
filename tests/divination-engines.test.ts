@@ -2024,16 +2024,19 @@ test('HeLuoLiShu Engine: 사주·주역 융합 선천괘·후천괘·원당효 �
 });
 
 test('Dynamic Clash Trigger Engine: 실시간 삼형·육충·파해 동적 격발 및 에너지 승화 검증', () => {
-  const res = calculateDynamicClashTrigger({ profile, targetDate: new Date('2026-11-02T19:00:00+09:00') });
+  const res = calculateDynamicClashTrigger({ profile, targetDate: new Date('2026-11-02T19:00:00+09:00'), question: '오늘 조심할 점' });
   assert.equal(res.engineVersion, DYNAMIC_CLASH_ENGINE_VERSION);
   assert(res.volatilityScore >= 0 && res.volatilityScore <= 100);
   assert(res.harmonyScore >= 0 && res.harmonyScore <= 100);
   assert(['explosive_change', 'high_tension', 'balanced_movement', 'peaceful_flow'].includes(res.netStatus));
   assert(res.todayActionMatrix.doNow.length > 0);
   assert(res.todayActionMatrix.avoidNow.length > 0);
+  assert(res.calculatedAtKst.includes('KST'));
   const prompt = formatDynamicClashPrompt(res);
   assert(prompt.includes(DYNAMIC_CLASH_ENGINE_VERSION));
   assert(prompt.includes('오늘 일진'));
+  assert(prompt.includes('KST'));
+  assert(!prompt.includes('/100') && !prompt.includes('%') && !prompt.includes('점수'));
 });
 
 test('Twelve Spirits Cycle Engine: 사주 12신살 완전 순환 궤도 및 일진 페르소나 검증', () => {
@@ -2350,15 +2353,18 @@ test('Biorhythm Peak Flow Engine: 3대 생체 바이오리듬 & 크로노타입 
 });
 
 test('Destiny Synastry Echo Engine: 다차원 운명 공명 에코 & 카르마적 인연 중력 검증', () => {
-  const res = calculateDestinySynastryEcho({ profile, targetDate: new Date('2026-11-03T10:00:00+09:00') });
+  const res = calculateDestinySynastryEcho({ profile, targetDate: new Date('2026-11-03T10:00:00+09:00'), question: '상대와의 갈등 조율' });
   assert.equal(res.engineVersion, DESTINY_SYNASTRY_ECHO_VERSION);
   assert(res.karmicEchoScore >= 0 && res.karmicEchoScore <= 100);
   assert(res.soulConnectionDepth >= 0 && res.soulConnectionDepth <= 100);
   assert(res.relationshipDynamics.magneticPullFactor.length > 0);
   assert(res.goldenCommunicationCode.mindOpeningKeyword.length > 0);
+  assert(res.calculatedAtKst.includes('KST'));
   const prompt = formatDestinySynastryEchoPrompt(res);
   assert(prompt.includes('LUCKEY 다차원 운명 공명 에코 & 카르마적 인연 중력'));
   assert(prompt.includes(res.gravityType));
+  assert(prompt.includes('KST'));
+  assert(!prompt.includes('/100') && !prompt.includes('%') && !prompt.includes('점수'));
 });
 
 test('Micro-Habit Karma Engine: 21일 카르마 리셋 & 오행 마이크로 해빗 검증', () => {
