@@ -8,12 +8,12 @@
  * 4. 허영과 관습을 벗겨낸 참된 자아 발견 지수 (Authentic Self-Discovery Beyond Social Vanity Index): 게르망트 공작 부인의 살롱 같은 세속의 헛된 사교와 인정 욕망을 벗어던지고 내면의 순수한 진실을 빚어내는 용기.
  * 5. 시간의 파도 속에서도 내면의 성전을 짓는 영원성 회복탄력성 (Time Transcendence & Inner Cathedral Resilience Score): 육체와 세월의 쇠락 앞에서도 흔들리지 않고 한 권의 책을 엮듯 내면의 불멸하는 성전을 완성해 가는 꿋꿋한 영혼의 힘.
  *
- * @version LUCKEY-PROUST-LOST-TIME-REGAINED-v1.0.0
+ * @version LUCKEY-PROUST-LOST-TIME-REGAINED-v2.0.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const FRENCH_MARCEL_PROUST_LOST_TIME_VERSION = 'LUCKEY-PROUST-LOST-TIME-REGAINED-v1.0.0';
+export const FRENCH_MARCEL_PROUST_LOST_TIME_VERSION = 'LUCKEY-PROUST-LOST-TIME-REGAINED-v2.0.0';
 
 export interface ProustTheme {
   themeKey: string;
@@ -43,6 +43,11 @@ export interface FrenchMarcelProustLostTimeResult {
   // 세부 분석
   activeProustTheme: ProustTheme;
   focalProustAphorism: ProustAphorism;
+  proustSynthesisMatrix: {
+    coreInsight: string;
+    recommendedAction: string;
+    cautionNotice: string;
+  };
   proustComprehensiveGuidance: {
     guidanceTitle: string;
     philosophicalCounsel: string;
@@ -123,9 +128,16 @@ function hashString(str: string): number {
   return hash;
 }
 
+function describeProustIntensity(score: number): string {
+  if (score >= 95) return '매우 깊고 선명하게 깨어나는 감각의 공명';
+  if (score >= 91) return '안정적으로 살아 숨 쉬며 기억을 밝히는 흐름';
+  return '조용히 내면의 여백 속에서 숙성되는 국면';
+}
+
 export function calculateFrenchMarcelProustLostTimeRegained(
   profile?: UserProfile,
   query?: string,
+  now: Date = new Date(),
 ): FrenchMarcelProustLostTimeResult {
   const p = profile as any;
   const name = profile?.basic?.name ?? p?.name ?? '남희';
@@ -157,9 +169,17 @@ export function calculateFrenchMarcelProustLostTimeRegained(
     `${activeProustTheme.practicalCounsel} 프루스트의 원전 명제 "${focalProustAphorism.aphorismKo}"을 마음에 새기고, ` +
     `${focalProustAphorism.actionGuidance}`;
 
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const kstTimeLabel = `${kst.toISOString().slice(0, 10)} ${String(kst.getUTCHours()).padStart(2, '0')}:${String(kst.getUTCMinutes()).padStart(2, '0')} KST`;
+  const proustSynthesisMatrix = {
+    coreInsight: activeProustTheme.themeTitleKo,
+    recommendedAction: activeProustTheme.practicalCounsel,
+    cautionNotice: '지나간 시간의 후회나 세속적 인정 욕망에 갇혀 지금 눈앞의 살아있는 감각과 시선을 놓치지 마십시오.',
+  };
+
   return {
     engineVersion: FRENCH_MARCEL_PROUST_LOST_TIME_VERSION,
-    calculatedAtKst: new Date().toISOString(),
+    calculatedAtKst: kstTimeLabel,
     involuntaryMemoryDepthScore,
     lostTimeRegainedWisdomIndex,
     subtleSensoryAestheticsScore,
@@ -167,6 +187,7 @@ export function calculateFrenchMarcelProustLostTimeRegained(
     timeTranscendenceResilienceScore,
     activeProustTheme,
     focalProustAphorism,
+    proustSynthesisMatrix,
     proustComprehensiveGuidance: {
       guidanceTitle,
       philosophicalCounsel,
@@ -178,15 +199,17 @@ export function formatFrenchMarcelProustLostTimeRegainedPrompt(
   res: FrenchMarcelProustLostTimeResult,
 ): string {
   return [
-    `【마르셀 프루스트 《잃어버린 시간을 찾아서》 비자발적 기억·되찾은 시간 지표】`,
-    `- 비자발적 기억과 감각의 심층 복원도(Involuntary Memory Depth): ${res.involuntaryMemoryDepthScore}/100`,
-    `- 되찾은 시간과 영원한 진실 통찰(Lost Time Regained Wisdom): ${res.lostTimeRegainedWisdomIndex}/100`,
-    `- 미세 감각 포착과 예술적 안목도(Subtle Sensory Aesthetics): ${res.subtleSensoryAestheticsScore}/100`,
-    `- 허영을 벗긴 참된 자아 발견 지수(Authentic Self-Discovery): ${res.authenticSelfDiscoveryIndex}/100`,
-    `- 시간 초월과 내면 성전 구축 회복탄력성(Time Transcendence Resilience): ${res.timeTranscendenceResilienceScore}/100`,
+    `【마르셀 프루스트 《잃어버린 시간을 찾아서》 비자발적 기억·되찾은 시간 지표 (${res.engineVersion})】`,
+    `- 연산 시각: ${res.calculatedAtKst}`,
+    `- 비자발적 기억과 감각의 심층 복원도(Involuntary Memory Depth): ${describeProustIntensity(res.involuntaryMemoryDepthScore)}`,
+    `- 되찾은 시간과 영원한 진실 통찰(Lost Time Regained Wisdom): ${describeProustIntensity(res.lostTimeRegainedWisdomIndex)}`,
+    `- 미세 감각 포착과 예술적 안목도(Subtle Sensory Aesthetics): ${describeProustIntensity(res.subtleSensoryAestheticsScore)}`,
+    `- 허영을 벗긴 참된 자아 발견 지수(Authentic Self-Discovery): ${describeProustIntensity(res.authenticSelfDiscoveryIndex)}`,
+    `- 시간 초월과 내면 성전 구축 회복탄력성(Time Transcendence Resilience): ${describeProustIntensity(res.timeTranscendenceResilienceScore)}`,
     `- 핵심 프루스트 테마: ${res.activeProustTheme.themeTitleKo} [${res.activeProustTheme.themeTitleEn}]`,
     `- 문학적 사색: ${res.activeProustTheme.literaryInsight}`,
     `- 행동 조언: ${res.activeProustTheme.practicalCounsel}`,
+    `- 교차 매트릭스: 핵심(${res.proustSynthesisMatrix.coreInsight}) | 실행(${res.proustSynthesisMatrix.recommendedAction}) | 주의(${res.proustSynthesisMatrix.cautionNotice})`,
     `- 프루스트 원전 명제: "${res.focalProustAphorism.aphorismKo}"`,
     `- 원문: (${res.focalProustAphorism.aphorismFrench})`,
     `- 원전 출처: [${res.focalProustAphorism.sourceContext}]`,

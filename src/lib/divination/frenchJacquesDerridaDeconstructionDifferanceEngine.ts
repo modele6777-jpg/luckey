@@ -8,7 +8,7 @@
  * 4. 조건 없는 환대 및 타자성 포용 지수 (Unconditional Hospitality & Alterity Openness Index): 내 계산과 규칙을 타자에게 강요하지 않고, 예기치 않은 사건과 낯선 다름을 기꺼이 맞아들이는 열린 포용력.
  * 5. 파르마콘(Pharmakon: 독이자 약) 양면성 변용 치유력 (Pharmakon Dual-Nature Alchemy Score): 나를 위협하거나 고통스럽게 만드는 위기 속에서 오히려 가장 강력한 치유와 혁신의 약효를 길어 올리는 연금술적 지혜.
  *
- * @version LUCKEY-JACQUES-DERRIDA-DECONSTRUCTION-DIFFERANCE-v1.0.0
+ * @version LUCKEY-JACQUES-DERRIDA-DECONSTRUCTION-DIFFERANCE-v2.1.0
  */
 
 import type { UserProfile } from '../sharedState';
@@ -46,6 +46,11 @@ export interface FrenchJacquesDerridaDeconstructionDifferanceResult {
   dailyPracticeRitual: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
+  derridaSynthesisMatrix: {
+    coreInsight: string;
+    recommendedAction: string;
+    cautionNotice: string;
+  };
   derridaComprehensiveGuidance: {
     guidanceTitle: string;
     philosophicalCounsel: string;
@@ -173,9 +178,17 @@ export function calculateFrenchJacquesDerridaDeconstructionDifferance(
   const interpretiveBoundary =
     '자크 데리다의 해체·차연 관점은 정답을 단정하거나 미래를 예측하는 도구가 아니라, 고정관념을 흔들어 더 열린 선택을 성찰하는 상징적 렌즈입니다.';
 
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const kstTimeLabel = `${kst.toISOString().slice(0, 10)} ${String(kst.getUTCHours()).padStart(2, '0')}:${String(kst.getUTCMinutes()).padStart(2, '0')} KST`;
+  const derridaSynthesisMatrix = {
+    coreInsight: activeDerridaTheme.themeTitleKo,
+    recommendedAction: dailyPracticeRitual,
+    cautionNotice: '성급한 이분법적 단정이나 기존 위계의 틀 안에 새로운 타자성과 가능성을 가두지 마십시오.',
+  };
+
   return {
     engineVersion: FRENCH_JACQUES_DERRIDA_DECONSTRUCTION_DIFFERANCE_VERSION,
-    calculatedAtKst: now.toISOString(),
+    calculatedAtKst: kstTimeLabel,
     differancePostponementSpacializationScore,
     binaryOppositionDeconstructionIndex,
     aporiaBreakthroughResolutionScore,
@@ -186,6 +199,7 @@ export function calculateFrenchJacquesDerridaDeconstructionDifferance(
     dailyPracticeRitual,
     reflectiveQuestion,
     interpretiveBoundary,
+    derridaSynthesisMatrix,
     derridaComprehensiveGuidance: {
       guidanceTitle,
       philosophicalCounsel,
@@ -197,7 +211,8 @@ export function formatFrenchJacquesDerridaDeconstructionDifferancePrompt(
   res: FrenchJacquesDerridaDeconstructionDifferanceResult,
 ): string {
   return [
-    `【자크 데리다 《그라마톨로지》 해체(Deconstruction)·차연(Différance) 지표】`,
+    `【자크 데리다 《그라마톨로지》 해체(Deconstruction)·차연(Différance) 지표 (${res.engineVersion})】`,
+    `- 연산 시각: ${res.calculatedAtKst}`,
     `- 차연 및 의미 생성 지연·차이 유연성(Différance): ${describeDerridaStage(res.differancePostponementSpacializationScore)}`,
     `- 이항대립 해체 및 제3의 지평 개척력: ${describeDerridaStage(res.binaryOppositionDeconstructionIndex)}`,
     `- 아포리아 대면 및 역설적 결단력: ${describeDerridaStage(res.aporiaBreakthroughResolutionScore)}`,
@@ -211,6 +226,7 @@ export function formatFrenchJacquesDerridaDeconstructionDifferancePrompt(
     `- 구체적 실천 지침: ${res.focalDerridaAphorism.actionGuidance}`,
     `- 일상 실천 의례: ${res.dailyPracticeRitual}`,
     `- 성찰 질문: ${res.reflectiveQuestion}`,
+    `- 교차 매트릭스: 핵심(${res.derridaSynthesisMatrix.coreInsight}) | 실행(${res.derridaSynthesisMatrix.recommendedAction}) | 주의(${res.derridaSynthesisMatrix.cautionNotice})`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
     `- 종합 데리다 권면: ${res.derridaComprehensiveGuidance.philosophicalCounsel}`,
   ].join('\n');
