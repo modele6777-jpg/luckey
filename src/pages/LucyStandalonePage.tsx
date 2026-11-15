@@ -60,6 +60,7 @@ import {
 import { processDailyChatArchival } from '@/lib/chatMemoryArchive';
 import { drawLucyTarotCards, formatTarotMarker } from '@/utils/tarotDetector';
 import { isLucyScrollPinned, lucyScrollPinHeld, noteLucyScrollPin, overlayCoversElement, releaseLucyScrollPin } from '@/lib/lucyScrollPin';
+import { captureLucySearchAnchor, resolveLucySearchRestoreTop, type LucySearchScrollAnchor } from '@/lib/lucySearchScroll';
 import { isDualPaneLayout, isDuoUnfoldedState } from '@/lib/perfMode';
 import { buildLucyTarotReadingPrompt } from '@/lib/lucyTarotReading';
 import { getTodayDateKey } from '@/lib/dailyCache';
@@ -975,6 +976,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
   const [attachedImage, setAttachedImage] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const searchInputRef = useRef<HTMLInputElement | null>(null);
 
   // 🔍 상단 검색창 활성화 및 하단 입력창 포커스 시 전 모드(루시·루시플러스·루시프로·루시플러스프로) 공통으로 빅뱅버튼 숨김 클래스 연동
   useEffect(() => {
@@ -1220,6 +1222,9 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
   const chatEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const messagesWrapperRef = useRef<HTMLDivElement>(null);
+  // 검색이 목록을 걸러내기 전에 읽고 있던 위치를 보관한다. 검색을 닫으면 이 자리로 되돌린다.
+  const searchScrollAnchorRef = useRef<LucySearchScrollAnchor | null>(null);
+  const searchWasOpenRef = useRef(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const isTTSActive = useTTSActive();
   const isUserScrolledUpRef = useRef(false);
@@ -2625,6 +2630,65 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
     };
   }, [scrollToBottom]);
 
+  // 🔎 검색 열기·닫기. 검색은 대화 목록 자체를 걸러내므로 닫을 때 검색어도 함께 비운다.
+  const closeSearch = useCallback(() => {
+    setSearchQuery('');
+    setIsSearchOpen(false);
+  }, []);
+
+  const toggleSearch = useCallback(() => {
+    if (isSearchOpen) closeSearch();
+    else setIsSearchOpen(true);
+  }, [isSearchOpen, closeSearch]);
+
+  // 검색창은 preventScroll로 포커스만 준다. autoFocus는 iOS에서 뷰포트까지 끌어올려 대화를 튀게 만든다.
+  useEffect(() => {
+    if (!isSearchOpen) return;
+    const focusSearch = () => searchInputRef.current?.focus({ preventScroll: true });
+    focusSearch();
+    const frame = requestAnimationFrame(focusSearch);
+    return () => cancelAnimationFrame(frame);
+  }, [isSearchOpen]);
+
+  // 검색을 열기 전에 읽고 있던 자리를 기억해 두고, 검색을 닫으면 그 자리로 되돌린다.
+  // (필터링으로 목록이 줄 때 브라우저가 scrollTop을 0으로 물리적 클램프하기 때문에, 기억해 두지 않으면 대화가 최상단에 남는다.)
+  useLayoutEffect(() => {
+    const wasOpen = searchWasOpenRef.current;
+    if (wasOpen === isSearchOpen) return;
+    searchWasOpenRef.current = isSearchOpen;
+    const container = messagesContainerRef.current;
+    if (!container) return;
+    if (isSearchOpen) {
+      searchScrollAnchorRef.current = captureLucySearchAnchor(container.scrollTop, container.scrollHeight, container.clientHeight);
+      return;
+    }
+    const anchor = searchScrollAnchorRef.current;
+    searchScrollAnchorRef.current = null;
+    cancelTopScrollAnimation();
+    isAutoScrollingRef.current = true;
+    if (autoScrollTimerRef.current) clearTimeout(autoScrollTimerRef.current);
+    autoScrollTimerRef.current = setTimeout(() => { isAutoScrollingRef.current = false; }, 200);
+    container.scrollTo({
+      top: resolveLucySearchRestoreTop(anchor, container.scrollHeight, container.clientHeight),
+      behavior: 'auto',
+    });
+    const readingHistory = Boolean(anchor && !anchor.pinnedToBottom);
+    isUserScrolledUpRef.current = readingHistory;
+    noteLucyScrollPin(!readingHistory);
+    setShowReturnToRecentConversation(readingHistory);
+  }, [isSearchOpen, cancelTopScrollAnimation]);
+
+  // 검색 중에는 필터링된 최신 일치 메시지(하단)를 보여준다. 이 이동은 검색이 만든 것이므로
+  // 사용자가 위로 올린 것으로 오판해 자동 스크롤을 잠그지 않는다.
+  useLayoutEffect(() => {
+    if (!isSearchOpen || !searchQuery.trim()) return;
+    if (ttsBlocksAutoScrollRef.current) return;
+    isUserScrolledUpRef.current = false;
+    setShowReturnToRecentConversation(false);
+    noteLucyScrollPin(true);
+    scrollToBottom(true, false);
+  }, [isSearchOpen, searchQuery, scrollToBottom]);
+
 
   // Handle image attachment with auto-compression (prevents stuttering & infinite scroll)
   const handleImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -3127,6 +3191,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
         data-lucy-header-tap-scroll="true"
         onClick={(event) => {
           const target = event.target;
+          // 검색창 영역(data-no-scroll-top)은 제외한다. 검색 중 이 영역 탭이 대화를 최상단으로 끌어올리면 안 된다.
           if (target instanceof HTMLElement && target.closest('button, a, input, select, textarea, [role="button"], [data-no-scroll-top]')) return;
           scrollToConversationTop();
         }}
@@ -3185,7 +3250,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
           <div className="lucy-header-actions flex items-center gap-1.5 sm:gap-2 shrink-0">
             {/* 1. 검색 (Search Toggle) */}
             <button
-              onClick={() => setIsSearchOpen(!isSearchOpen)}
+              onClick={toggleSearch}
               className={`p-2 rounded-xl text-xs font-semibold transition-all cursor-pointer flex items-center justify-center ${
                 isSearchOpen
                   ? 'bg-amber-100 dark:bg-amber-500/20 text-amber-900 dark:text-amber-300 border border-amber-300 dark:border-amber-500/40'
@@ -3268,6 +3333,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: 'auto', opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
+              data-no-scroll-top="true"
               className="overflow-hidden"
             >
               <div className={`flex items-center gap-2 border rounded-xl px-3 py-1.5 focus-within:border-amber-400 transition-all ${
@@ -3275,6 +3341,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
               }`}>
                 <Search size={14} className={isLight ? 'text-slate-400 shrink-0' : 'text-white/70 shrink-0'} />
                 <input
+                  ref={searchInputRef}
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
@@ -3283,7 +3350,6 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
                     isLight ? 'text-slate-800 placeholder-slate-400' : 'text-white placeholder-white/60'
                   }`}
                   style={{ color: isLight ? '#1e293b' : '#ffffff' }}
-                  autoFocus
                 />
                 {searchQuery && (
                   <span className="text-[11px] font-medium text-amber-700 dark:text-amber-300 bg-amber-100 dark:bg-amber-950/70 px-1.5 py-0.5 rounded">
@@ -3291,7 +3357,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
                   </span>
                 )}
                 <button 
-                  onClick={() => { setSearchQuery(''); setIsSearchOpen(false); }}
+                  onClick={closeSearch}
                   className="text-slate-400 hover:text-slate-700 dark:hover:text-white p-1 cursor-pointer"
                 >
                   <X size={14} />
