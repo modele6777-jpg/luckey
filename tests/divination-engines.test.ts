@@ -5440,9 +5440,26 @@ test('King Sejong Hunminjeongeum Aemin Engine: calculates Aemin Creativity, Barr
   assert(rep.jiphyeonjeonCollectiveWisdom >= 0 && rep.jiphyeonjeonCollectiveWisdom <= 100);
   assert(rep.saengsaengJirakVitalityScore >= 0 && rep.saengsaengJirakVitalityScore <= 100);
   assert(rep.activeHunminTheme.themeTitleHanja.length > 0);
+  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(rep.sejongSynthesisMatrix?.integratedAction));
   const prompt = formatKingSejongHunminjeongeumAeminPrompt(rep);
   assert(prompt.includes('세종대왕 《훈민정음》 어제서문 애민창조 & 여민락 지혜 지표'));
   assert(prompt.includes(rep.activeHunminTheme.themeTitleKo));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
+});
+
+test('Dasan Mokmin Simseo Engine: calculates Yeoyudang, Yulgi, and Silsagusi matrix', () => {
+  const rep = calculateDasanMokminSimseo(profile);
+  assert.equal(rep.engineVersion, KOREAN_DASAN_MOKMIN_SIMSEO_VERSION);
+  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(rep.dasanSynthesisMatrix?.integratedAction));
+  const prompt = formatDasanMokminSimseoPrompt(rep);
+  assert(prompt.includes('다산 정약용 목민심서'));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
 });
 
 test('Jang Bogo Cheonghaejin Maritime Pioneer Engine: calculates Maritime Vision, Trust Network, and Wave Breaker Resilience', () => {
@@ -6287,9 +6304,14 @@ test('Hong Dae-yong Uisan Mundap Engine: calculates Infinite Universe, Earth Rot
   assert(rep.scientificEmpiricismDisillusionmentIndex >= 0 && rep.scientificEmpiricismDisillusionmentIndex <= 100);
   assert(rep.magnanimousGeomungoResilienceScore >= 0 && rep.magnanimousGeomungoResilienceScore <= 100);
   assert(rep.activeHongDaeYongTheme.themeTitleKo.length > 0);
+  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(rep.hongDaeYongSynthesisMatrix?.integratedAction));
   const prompt = formatKoreanDamheonHongDaeYongUisanMundapPrompt(rep);
   assert(prompt.includes('담헌 홍대용 《의산문답》 지전설·무한우주론 및 인물균 지혜 지표'));
   assert(prompt.includes(rep.activeHongDaeYongTheme.themeTitleKo));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
 });
 
 test('Wittgenstein Language Game and Silence Engine: calculates Logical Clarity, Silence, and Meaning as Use', () => {
