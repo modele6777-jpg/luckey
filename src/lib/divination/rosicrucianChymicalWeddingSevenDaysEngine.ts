@@ -18,7 +18,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const ROSICRUCIAN_CHYMICAL_WEDDING_ENGINE_VERSION = '1.0.0';
+export const ROSICRUCIAN_CHYMICAL_WEDDING_ENGINE_VERSION = '2.0.0';
 
 export interface RosicrucianAlchemicalStage {
   dayNumber: number;
@@ -33,6 +33,7 @@ export interface RosicrucianAlchemicalStage {
 export interface RosicrucianChymicalWeddingReport {
   engineVersion: string;
   timestamp: string;
+  calculatedAtKst: string;
   chymicalUnionScore: number; // 0 ~ 100 아니마-아니무스 신성 결합도
   philosophersStoneIndex: number; // 0 ~ 100 현자의 돌 완성 지수
   sevenDaysTransmutationRate: number; // 0 ~ 100 7일간의 연금술 변성 성취율
@@ -41,6 +42,27 @@ export interface RosicrucianChymicalWeddingReport {
   activeAlchemicalPhase: string; // 현재 주재하는 4원 연금술 국면
   rosicrucianGuidance: string; // 장미십자회 지혜 지침
   alchemicalTransmutationRitual: string; // 연금술 영혼 정화 리추얼
+  rosicrucianSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
+}
+
+function formatRosicrucianKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
+
+function describeRosicrucianStage(score: number, phase: string): string {
+  if (score >= 84) return `현자의 돌 완성기(${phase}) — 대극의 갈등이 황금빛 통합으로 무르익어 영혼의 빛이 맑게 드러나는 시기`;
+  if (score >= 70) return `연금술 증류기(${phase}) — 불필요한 아집과 불순물을 걸러내고 본질적 통합을 향해 정제되는 시기`;
+  return `내면 도가니 점화기(${phase}) — 낡은 습관과 미련을 내려놓고 새로운 변성을 준비하는 시기`;
 }
 
 const SEVEN_DAYS_BASE: Omit<RosicrucianAlchemicalStage, 'resonanceScore'>[] = [
@@ -155,9 +177,20 @@ export function calculateRosicrucianChymicalWedding(
   const rosicrucianGuidance = `장미십자회의 연금술 비전 《화학적 결혼》은 선언합니다: "너 자신 안에서 죽고, 너 자신 안에서 거룩한 태양으로 다시 태어나라." 현재 당신의 영혼이 통과 중인 성스러운 단계는 [${dominantStage.dayName}]이며, 연금술적 국면은 [${activeAlchemicalPhase}]입니다. ${dominantStage.spiritualTransmutation}. 대극의 갈등은 분열이 아니라 황금빛 통합을 위해 마련된 거룩한 도가니입니다.`;
   const alchemicalTransmutationRitual = `가슴 중심에 십자가와 붉은 장미, 그리고 날아오르는 불사조의 빛을 시각화하십시오: "나의 낡은 번뇌는 순수한 불꽃 속에 용해되고, 신성한 지혜의 황금석이 내 안에서 온전히 빛난다."`;
 
+  const calculatedAtKst = formatRosicrucianKstTimestamp(now);
+  const composite = Math.round(
+    (chymicalUnionScore + philosophersStoneIndex + sevenDaysTransmutationRate + phoenixRebirthVibration) / 4
+  );
+  const rosicrucianSynthesisMatrix = {
+    dominantTension: `${dominantStage.dayName} ↔ ${activeAlchemicalPhase}`,
+    alignmentState: describeRosicrucianStage(composite, activeAlchemicalPhase),
+    integratedAction: `${dominantStage.spiritualTransmutation}${question.trim() ? ` [질문 맥락: ${question.trim()}]` : ''}`,
+  };
+
   return {
     engineVersion: ROSICRUCIAN_CHYMICAL_WEDDING_ENGINE_VERSION,
     timestamp: now.toISOString(),
+    calculatedAtKst,
     chymicalUnionScore,
     philosophersStoneIndex,
     sevenDaysTransmutationRate,
@@ -166,19 +199,30 @@ export function calculateRosicrucianChymicalWedding(
     activeAlchemicalPhase,
     rosicrucianGuidance,
     alchemicalTransmutationRitual,
+    rosicrucianSynthesisMatrix,
   };
 }
 
 export function formatRosicrucianChymicalWeddingPrompt(report: RosicrucianChymicalWeddingReport): string {
-  return `### 🌹 장미십자회 《화학적 결혼》 7일 연금술 영혼 승화 실측 데이터 (v${report.engineVersion})
-- **주재 연금술 단계**: ${report.dominantStage.dayName} (${report.dominantStage.latinStage})
-- **활성 연금술 국면**: ${report.activeAlchemicalPhase}
-- **단계적 상징 의미**: ${report.dominantStage.symbolicMeaning}
-- **영적 변성 핵심**: ${report.dominantStage.spiritualTransmutation}
-- **아니마-아니무스 신성 결합도**: ${report.chymicalUnionScore}/100
-- **현자의 돌(Lapis) 완성 지수**: ${report.philosophersStoneIndex}/100
-- **7일 연금술 변성 성취율**: ${report.sevenDaysTransmutationRate}/100
-- **불사조 부활 영적 진동**: ${report.phoenixRebirthVibration}/100
-- **장미십자회 지혜 지침**: ${report.rosicrucianGuidance}
-- **연금술 정화 리추얼**: ${report.alchemicalTransmutationRitual}`;
+  const composite = Math.round(
+    (report.chymicalUnionScore + report.philosophersStoneIndex + report.sevenDaysTransmutationRate + report.phoenixRebirthVibration) / 4
+  );
+  const lines = [
+    `### 🌹 장미십자회 《화학적 결혼》 7일 연금술 영혼 승화 실측 데이터 (v${report.engineVersion})`,
+    `- **연산 시각**: ${report.calculatedAtKst}`,
+    `- **주재 연금술 단계**: ${report.dominantStage.dayName} (${report.dominantStage.latinStage})`,
+    `- **활성 연금술 국면**: ${report.activeAlchemicalPhase}`,
+    `- **영혼 변성 상태**: ${describeRosicrucianStage(composite, report.activeAlchemicalPhase)}`,
+    `- **단계적 상징 의미**: ${report.dominantStage.symbolicMeaning}`,
+    `- **영적 변성 핵심**: ${report.dominantStage.spiritualTransmutation}`,
+    `- **장미십자회 지혜 지침**: ${report.rosicrucianGuidance}`,
+    `- **연금술 정화 리추얼**: ${report.alchemicalTransmutationRitual}`,
+  ];
+  if (report.rosicrucianSynthesisMatrix) {
+    lines.push(
+      `- **교차 매트릭스**: [핵심 긴장: ${report.rosicrucianSynthesisMatrix.dominantTension} | 조율 상태: ${report.rosicrucianSynthesisMatrix.alignmentState}]`,
+      `- **통합 실천**: ${report.rosicrucianSynthesisMatrix.integratedAction}`,
+    );
+  }
+  return lines.join('\n');
 }

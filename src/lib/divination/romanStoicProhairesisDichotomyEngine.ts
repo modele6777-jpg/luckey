@@ -18,7 +18,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const ROMAN_STOIC_PROHAIRESIS_ENGINE_VERSION = '1.0.0';
+export const ROMAN_STOIC_PROHAIRESIS_ENGINE_VERSION = '2.0.0';
 
 export interface StoicVirtue {
   id: string;
@@ -32,6 +32,7 @@ export interface StoicVirtue {
 export interface RomanStoicProhairesisReport {
   engineVersion: string;
   timestamp: string;
+  calculatedAtKst: string;
   internalControlFocusScore: number; // 0 ~ 100 통제 가능한 내면 집중도
   externalSurrenderScore: number; // 0 ~ 100 통제 불가능한 외면 초연도
   amorFatiScore: number; // 0 ~ 100 아모르 파티(운명애) 지수
@@ -40,6 +41,27 @@ export interface RomanStoicProhairesisReport {
   secondaryVirtue: StoicVirtue; // 보조 스토아 덕목
   mementoMoriPerspective: string; // 메멘토 모리 본질 통찰
   prohairesisActionGuidance: string; // 프로하이레시스 결단 실천 지침
+  stoicSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
+}
+
+function formatStoicProhairesisKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
+
+function describeStoicProhairesisStage(score: number): string {
+  if (score >= 84) return '아파테이아 부동심(Apatheia Serenity) — 외적 변수를 초연하게 수용하고 내면의 이성적 선택의지가 명료한 상태';
+  if (score >= 70) return '프로하이레시스 정련(Prohairesis Focus) — 통제 가능한 행동과 태도에 중심을 모아 흔들림을 줄이는 상태';
+  return '통제 이분법 자각(Dichotomy Awakening) — 내 소관 밖의 불안을 내려놓고 지금의 판단을 고르는 상태';
 }
 
 const STOIC_VIRTUES_BASE: Omit<StoicVirtue, 'affinityScore'>[] = [
@@ -146,9 +168,20 @@ export function calculateRomanStoicProhairesis(
     prohairesisActionGuidance = `요동치는 생각의 물결을 한 발짝 뒤에서 관조하며 ${dominantVirtue.nameKo}의 덕목을 상기하십시오. 내면의 통제권을 회복할 때 평정과 승리가 함께 깃듭니다.`;
   }
 
+  const calculatedAtKst = formatStoicProhairesisKstTimestamp(now);
+  const composite = Math.round(
+    (internalControlFocusScore + externalSurrenderScore + amorFatiScore + apatheiaInnerPeaceScore) / 4
+  );
+  const stoicSynthesisMatrix = {
+    dominantTension: `${dominantVirtue.nameKo} ↔ ${secondaryVirtue.nameKo}`,
+    alignmentState: describeStoicProhairesisStage(composite),
+    integratedAction: `${dominantVirtue.prescription}${contextText.trim() ? ` [질문 맥락: ${contextText.trim()}]` : ''}`,
+  };
+
   return {
     engineVersion: ROMAN_STOIC_PROHAIRESIS_ENGINE_VERSION,
     timestamp: now.toISOString(),
+    calculatedAtKst,
     internalControlFocusScore,
     externalSurrenderScore,
     amorFatiScore,
@@ -157,22 +190,31 @@ export function calculateRomanStoicProhairesis(
     secondaryVirtue,
     mementoMoriPerspective,
     prohairesisActionGuidance,
+    stoicSynthesisMatrix,
   };
 }
 
 export function formatRomanStoicProhairesisPrompt(
   report: RomanStoicProhairesisReport
 ): string {
-  return [
+  const composite = Math.round(
+    (report.internalControlFocusScore + report.externalSurrenderScore + report.amorFatiScore + report.apatheiaInnerPeaceScore) / 4
+  );
+  const lines = [
     `### 🏛️ 고대 로마 스토아학파 세네카·에픽테토스 아파테이아 & 프로하이레시스 통제이분법 리포트`,
-    `- 엔진 버전: v${report.engineVersion}`,
-    `- 내면 통제 집중도: ${report.internalControlFocusScore}/100 (내 권능 안의 일에 집중)`,
-    `- 외면 초연 수용도: ${report.externalSurrenderScore}/100 (통제 밖 변수에 대한 초연함)`,
-    `- 아모르 파티(운명애): ${report.amorFatiScore}/100 · 아파테이아(부동심 평정): ${report.apatheiaInnerPeaceScore}/100`,
-    `- 핵심 스토아 덕목: ${report.dominantVirtue.nameKo} (${report.dominantVirtue.affinityScore}점) — ${report.dominantVirtue.principle}`,
-    `- 보조 스토아 덕목: ${report.secondaryVirtue.nameKo} (${report.secondaryVirtue.affinityScore}점) — ${report.secondaryVirtue.principle}`,
+    `- 연산 시각: ${report.calculatedAtKst} | 엔진 버전: v${report.engineVersion}`,
+    `- 통제 이분법 국면: ${describeStoicProhairesisStage(composite)}`,
+    `- 핵심 스토아 덕목: ${report.dominantVirtue.nameKo} — ${report.dominantVirtue.principle}`,
+    `- 보조 스토아 덕목: ${report.secondaryVirtue.nameKo} — ${report.secondaryVirtue.principle}`,
     `- 메멘토 모리 통찰: ${report.mementoMoriPerspective}`,
     `- 프로하이레시스 결단 지침: ${report.prohairesisActionGuidance}`,
     `- [AI 해석 지침]: 스토아 철학의 '통제 이분법'을 적용하여, 질문자가 바꿀 수 없는 외적 결과·타인의 반응에 얽매이지 않고 오직 자신의 온전한 통제 영역(선택·태도·실행)에 집중하여 부동심(Apatheia)을 얻도록 명쾌하고 품격 있게 조언하십시오.`,
-  ].join('\n');
+  ];
+  if (report.stoicSynthesisMatrix) {
+    lines.push(
+      `- 교차 매트릭스 [핵심 긴장: ${report.stoicSynthesisMatrix.dominantTension} | 조율 상태: ${report.stoicSynthesisMatrix.alignmentState}]`,
+      `- 통합 실천: ${report.stoicSynthesisMatrix.integratedAction}`,
+    );
+  }
+  return lines.join('\n');
 }
