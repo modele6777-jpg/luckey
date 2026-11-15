@@ -25,7 +25,17 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const SOMATIC_ARMORING_VERSION = 'LUCKEY-SOMATIC-v1.0.0';
+export const SOMATIC_ARMORING_VERSION = 'LUCKEY-SOMATIC-v2.0.0';
+
+function formatSomaticKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
 
 export interface BodyArmorSegment {
   segmentName: string;
@@ -39,6 +49,7 @@ export interface BodyArmorSegment {
 export interface SomaticBodyArmoringReport {
   engineVersion: string;
   calculatedAt: string;
+  calculatedAtKst: string;
   primaryArmorSegment: BodyArmorSegment;
   secondaryArmorSegment: BodyArmorSegment;
   lifeForceEnergyFlowScore: number; // 오르곤(생명력) 순환 지수 (0 ~ 100)
@@ -49,11 +60,17 @@ export interface SomaticBodyArmoringReport {
     guide: string;
   };
   synthesisPromptGuidance: string;
+  somaticSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
 }
 
 export function runSomaticBodyArmoringEngine(
   profile?: UserProfile,
-  targetDate: Date = new Date()
+  targetDate: Date = new Date(),
+  question?: string
 ): SomaticBodyArmoringReport {
   const sajuRes = calculateDetailedSaju(profile || null);
 
@@ -175,25 +192,36 @@ export function runSomaticBodyArmoringEngine(
     guide: '코로 4초간 들이마시고 7초간 숨을 멈춘 뒤, 입으로 "후-" 소리를 내며 8초간 가장 길게 내쉽니다. 3분간 반복하면 부교감신경이 즉각 활성화되며 굳어있던 신체 갑옷이 부드럽게 녹아내립니다.'
   };
 
-  const synthesisPromptGuidance = `[LUCKEY 빌헬름 라이히 7대 신체 갑옷 해제 & 체성 감각 v1.0.0]
-- 1순위 집중 신체 갑옷: [${primarySegment.segmentName}] (경직도: ${primarySegment.tensionLevelScore}점)
+  const calculatedAtKst = formatSomaticKstTimestamp(targetDate);
+  const q = (question || '').trim();
+  const somaticSynthesisMatrix = {
+    dominantTension: `${primarySegment.segmentName} ↔ ${secondarySegment.segmentName}`,
+    alignmentState: `미주신경 리셋: ${vagusNerveResetPrescription.technique} · 오행: ${element}`,
+    integratedAction: `${primarySegment.somaticReleaseExercise}${q ? ` [질문 맥락: ${q}]` : ''}`,
+  };
+
+  const synthesisPromptGuidance = `[LUCKEY 빌헬름 라이히 7대 신체 갑옷 해제 & 체성 감각 ${SOMATIC_ARMORING_VERSION} | ${calculatedAtKst}]
+- 1순위 집중 신체 갑옷: [${primarySegment.segmentName}]
   * 신체 부위: ${primarySegment.bodyLocation}
   * 억압된 감정: "${primarySegment.repressedEmotion}"
   * 심리적 방어 기제: ${primarySegment.psychologicalPattern}
   * 소매틱 해소 운동법: ${primarySegment.somaticReleaseExercise}
 - 2순위 신체 갑옷: [${secondarySegment.segmentName}] (${secondarySegment.bodyLocation})
-- 생명력(Orgone) 순환 지수: ${lifeForceEnergyFlowScore}점
-- 미주신경 리셋 처방: [${vagusNerveResetPrescription.technique} ${vagusNerveResetPrescription.durationSeconds}초] ${vagusNerveResetPrescription.guide}`;
+- 미주신경 리셋 처방: [${vagusNerveResetPrescription.technique} ${vagusNerveResetPrescription.durationSeconds}초] ${vagusNerveResetPrescription.guide}
+- 교차 매트릭스: [핵심 긴장: ${somaticSynthesisMatrix.dominantTension} | 조율 상태: ${somaticSynthesisMatrix.alignmentState}]
+  * 통합 실천: ${somaticSynthesisMatrix.integratedAction}`;
 
   return {
     engineVersion: SOMATIC_ARMORING_VERSION,
     calculatedAt: targetDate.toISOString(),
+    calculatedAtKst,
     primaryArmorSegment: primarySegment,
     secondaryArmorSegment: secondarySegment,
     lifeForceEnergyFlowScore,
     groundingSomaticChecklist,
     vagusNerveResetPrescription,
-    synthesisPromptGuidance
+    synthesisPromptGuidance,
+    somaticSynthesisMatrix,
   };
 }
 
@@ -203,10 +231,11 @@ export function calculateSomaticBodyArmoring(params?: {
   profile?: UserProfile | null;
   saju?: SajuAnalysisResult | null;
   targetDate?: Date;
+  question?: string;
 }): SomaticBodyArmoringResult {
   const profile = params?.profile || undefined;
   const targetDate = params?.targetDate || new Date();
-  return runSomaticBodyArmoringEngine(profile, targetDate);
+  return runSomaticBodyArmoringEngine(profile, targetDate, params?.question);
 }
 
 export function formatSomaticBodyArmoringPrompt(res: SomaticBodyArmoringResult): string {

@@ -17,7 +17,17 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const SOUL_JOURNEY_TAROT_VERSION = 'LUCKEY-JOURNEY-v1.0.0';
+export const SOUL_JOURNEY_TAROT_VERSION = 'LUCKEY-JOURNEY-v2.0.0';
+
+function formatSoulJourneyKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
 
 export type JourneyStage = '제1막: 자아 확립과 지상 탐험 (1~7)' | '제2막: 그림자 대면과 내적 연금술 (8~14)' | '제3막: 영적 각성과 우주적 통합 (15~21)' | '프롤로그/에필로그: 순수한 잠재력 (0)';
 
@@ -44,6 +54,7 @@ export interface ElementalSuitBalance {
 export interface SoulJourneyTarotReport {
   engineVersion: string;
   calculatedAt: string;
+  calculatedAtKst: string;
   currentArchetype: MajorArchetypeDetail;
   elementalBalance: ElementalSuitBalance;
   riteOfPassage: {
@@ -53,6 +64,11 @@ export interface SoulJourneyTarotReport {
     alchemyScore: number; // 0~100
   };
   synthesisPromptGuidance: string;
+  soulJourneySynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
 }
 
 const MAJOR_ARCANA_LIST: Array<Omit<MajorArchetypeDetail, 'resonancePower'>> = [
@@ -258,7 +274,8 @@ const MAJOR_ARCANA_LIST: Array<Omit<MajorArchetypeDetail, 'resonancePower'>> = [
 
 export function runSoulJourneyTarotEngine(
   profile?: UserProfile,
-  targetDate: Date = new Date()
+  targetDate: Date = new Date(),
+  question?: string
 ): SoulJourneyTarotReport {
   const sajuRes = calculateDetailedSaju(profile || null);
 
@@ -326,20 +343,32 @@ export function runSoulJourneyTarotEngine(
     alchemyScore: Math.round((resonancePower + wandsScore + pentaclesScore) / 3)
   };
 
-  const synthesisPromptGuidance = `[LUCKEY 영혼 타로 여정 지능 v1.0.0]
-- 현재 활성 메이저 아키타입: ${currentArchetype.number}번 ${currentArchetype.nameKo} (${currentArchetype.nameEn}) [영혼 공명도: ${currentArchetype.resonancePower}%]
+  const calculatedAtKst = formatSoulJourneyKstTimestamp(targetDate);
+  const q = (question || '').trim();
+  const soulJourneySynthesisMatrix = {
+    dominantTension: `${currentArchetype.nameKo} ↔ ${currentArchetype.shadowTrap}`,
+    alignmentState: `우세 원소: ${dominantSuit} · 보완 원소: ${lackingSuit}`,
+    integratedAction: `${currentArchetype.transcendenceKey}${q ? ` [질문 맥락: ${q}]` : ''}`,
+  };
+
+  const synthesisPromptGuidance = `[LUCKEY 영혼 타로 여정 지능 ${SOUL_JOURNEY_TAROT_VERSION} | ${calculatedAtKst}]
+- 현재 활성 메이저 아키타입: ${currentArchetype.number}번 ${currentArchetype.nameKo} (${currentArchetype.nameEn})
 - 영혼의 여정 단계: ${currentArchetype.stage}
 - 핵심 레슨 & 통과 의례: ${currentArchetype.coreLesson} (주의 함정: ${currentArchetype.shadowTrap})
 - 초월 열쇠 리추얼: ${currentArchetype.transcendenceKey}
-- 4원소 마이너 슈트 현황: 우세=${dominantSuit} / 보완필요=${lackingSuit} (완드:${wandsScore}점, 컵:${cupsScore}점, 소드:${swordsScore}점, 펜타클:${pentaclesScore}점)`;
+- 4원소 마이너 슈트 균형: 우세=${dominantSuit} / 보완필요=${lackingSuit}
+- 교차 매트릭스: [핵심 긴장: ${soulJourneySynthesisMatrix.dominantTension} | 조율 상태: ${soulJourneySynthesisMatrix.alignmentState}]
+  * 통합 실천: ${soulJourneySynthesisMatrix.integratedAction}`;
 
   return {
     engineVersion: SOUL_JOURNEY_TAROT_VERSION,
     calculatedAt: targetDate.toISOString(),
+    calculatedAtKst,
     currentArchetype,
     elementalBalance,
     riteOfPassage,
-    synthesisPromptGuidance
+    synthesisPromptGuidance,
+    soulJourneySynthesisMatrix,
   };
 }
 
@@ -349,10 +378,11 @@ export function calculateSoulJourneyTarot(params?: {
   profile?: UserProfile | null;
   saju?: SajuAnalysisResult | null;
   targetDate?: Date;
+  question?: string;
 }): SoulJourneyTarotResult {
   const profile = params?.profile || undefined;
   const targetDate = params?.targetDate || new Date();
-  return runSoulJourneyTarotEngine(profile, targetDate);
+  return runSoulJourneyTarotEngine(profile, targetDate, params?.question);
 }
 
 export function formatSoulJourneyTarotPrompt(res: SoulJourneyTarotResult): string {

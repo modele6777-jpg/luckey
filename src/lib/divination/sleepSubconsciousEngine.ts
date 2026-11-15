@@ -16,7 +16,17 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const SLEEP_SUBCONSCIOUS_VERSION = 'LUCKEY-SLEEP-v1.0.0';
+export const SLEEP_SUBCONSCIOUS_VERSION = 'LUCKEY-SLEEP-v2.0.0';
+
+function formatSleepKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
 
 export interface NightResetRitual {
   step1BrainDump: string;       // 1단계: 뇌신경 전압 해제 (머릿속 생각 털어내기)
@@ -33,6 +43,7 @@ export interface DreamDecodingClue {
 export interface SleepSubconsciousResult {
   engineVersion: string;
   calculatedAtIso: string;
+  calculatedAtKst: string;
 
   // 수면 회복 잠재력 지수 (0~100)
   sleepRecoveryScore: number;
@@ -51,6 +62,11 @@ export interface SleepSubconsciousResult {
   dreamDecoding: DreamDecodingClue;
 
   summary: string;
+  sleepSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
 }
 
 /**
@@ -60,6 +76,7 @@ export function calculateSleepSubconscious(params?: {
   profile?: UserProfile | null;
   saju?: SajuAnalysisResult | null;
   targetDate?: Date;
+  question?: string;
 }): SleepSubconsciousResult {
   const now = params?.targetDate || new Date();
   const saju = params?.saju || calculateDetailedSaju(params?.profile || null);
@@ -101,15 +118,25 @@ export function calculateSleepSubconscious(params?: {
   const summary = `[수면 무의식 엔진] 회복 잠재력: ${sleepRecoveryScore}점 [${sleepQualityTitle}]. ` +
     `편안한 사운드 스케이프와 3단계 나이트 리셋, 꿈 인큐베이션을 안내합니다.`;
 
+  const calculatedAtKst = formatSleepKstTimestamp(now);
+  const q = (params?.question || '').trim();
+  const sleepSynthesisMatrix = {
+    dominantTension: `${sleepQualityTitle} ↔ ${dreamDecoding.dreamSymbolCategory}`,
+    alignmentState: `사운드: ${soundscape.recommendedSounds}`,
+    integratedAction: `${nightRitual.step3Incubation}${q ? ` [질문 맥락: ${q}]` : ''}`,
+  };
+
   return {
     engineVersion: SLEEP_SUBCONSCIOUS_VERSION,
     calculatedAtIso: now.toISOString(),
+    calculatedAtKst,
     sleepRecoveryScore,
     sleepQualityTitle,
     soundscape,
     nightRitual,
     dreamDecoding,
-    summary
+    summary,
+    sleepSynthesisMatrix,
   };
 }
 
@@ -117,18 +144,27 @@ export function calculateSleepSubconscious(params?: {
  * 프롬프트 주입용 포맷터
  */
 export function formatSleepSubconsciousPrompt(res: SleepSubconsciousResult): string {
-  return `[수면 회복 & 무의식 직관 디코딩 리포트 (엔진: ${res.engineVersion})]
-- 수면 회복 잠재력 지수: **${res.sleepRecoveryScore}점** [${res.sleepQualityTitle}]
-- 수면 사운드 가이드:
-  • 추천 사운드: ${res.soundscape.recommendedSounds}
-  • 활용 안내: ${res.soundscape.listeningGuidance}
-- 3단계 나이트 리셋 리추얼:
-  • ${res.nightRitual.step1BrainDump}
-  • ${res.nightRitual.step2ThermalRelease}
-  • ${res.nightRitual.step3Incubation}
-- 꿈 직관 디코딩:
-  • 상징 테마: ${res.dreamDecoding.dreamSymbolCategory}
-  • 무의식 메시지: ${res.dreamDecoding.subconsciousMessage}
-  • 아침 10초 직관 포착: "${res.dreamDecoding.lucidAwakeningPrompt}"
-※ 루시 지침: 수면은 단순히 하루를 끄는 오프(Off) 버튼이 아니라, 몸과 마음이 쉬고 새로운 영감을 정리하는 시간입니다. 사용자가 하루의 피로를 부드럽게 털어내고, 자신에게 편안한 소리와 차분한 나이트 리셋을 선택하도록 다정하고 평온하게 안내해 주세요.`;
+  const lines = [
+    `[수면 회복 & 무의식 직관 디코딩 리포트 (엔진: ${res.engineVersion} | ${res.calculatedAtKst})]`,
+    `- 수면 회복 잠재력 상태: **${res.sleepQualityTitle}**`,
+    `- 수면 사운드 가이드:`,
+    `  • 추천 사운드: ${res.soundscape.recommendedSounds}`,
+    `  • 활용 안내: ${res.soundscape.listeningGuidance}`,
+    `- 3단계 나이트 리셋 리추얼:`,
+    `  • ${res.nightRitual.step1BrainDump}`,
+    `  • ${res.nightRitual.step2ThermalRelease}`,
+    `  • ${res.nightRitual.step3Incubation}`,
+    `- 꿈 직관 디코딩:`,
+    `  • 상징 테마: ${res.dreamDecoding.dreamSymbolCategory}`,
+    `  • 무의식 메시지: ${res.dreamDecoding.subconsciousMessage}`,
+    `  • 아침 10초 직관 포착: "${res.dreamDecoding.lucidAwakeningPrompt}"`,
+  ];
+  if (res.sleepSynthesisMatrix) {
+    lines.push(
+      `- 교차 매트릭스: [핵심 긴장: ${res.sleepSynthesisMatrix.dominantTension} | 조율 상태: ${res.sleepSynthesisMatrix.alignmentState}]`,
+      `  • 통합 실천: ${res.sleepSynthesisMatrix.integratedAction}`,
+    );
+  }
+  lines.push(`※ 루시 지침: 수면은 단순히 하루를 끄는 오프(Off) 버튼이 아니라, 몸과 마음이 쉬고 새로운 영감을 정리하는 시간입니다. 사용자가 하루의 피로를 부드럽게 털어내고, 자신에게 편안한 소리와 차분한 나이트 리셋을 선택하도록 다정하고 평온하게 안내해 주세요.`);
+  return lines.join('\n');
 }
