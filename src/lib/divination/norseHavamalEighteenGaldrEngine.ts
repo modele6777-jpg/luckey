@@ -9,7 +9,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const NORSE_HAVAMAL_GALDR_ENGINE_VERSION = '1.0.0';
+export const NORSE_HAVAMAL_GALDR_ENGINE_VERSION = '2.0.0';
 
 export interface HavamalGaldrCharm {
   orderNumber: number;
@@ -26,6 +26,7 @@ export interface HavamalGaldrCharm {
 export interface NorseHavamalEighteenGaldrReport {
   engineVersion: string;
   timestamp: string;
+  calculatedAtKst: string;
   yggdrasilWisdomDepth: number; // 0 ~ 100 위그드라실 세계수 영지 심도
   odinRuneMasteryIndex: number; // 0 ~ 100 오딘 룬 장악 지수
   valkyrieShieldIntegrity: number; // 0 ~ 100 발키리 영혼 방패 온전성
@@ -33,6 +34,27 @@ export interface NorseHavamalEighteenGaldrReport {
   dominantGaldrCharm: HavamalGaldrCharm; // 현재 가장 강하게 공명하는 18대 게알드르
   havamalElderGuidance: string; // 하바말 고대 지혜 잠언
   norseRunicGaldrChant: string; // 게알드르 수호 창팅
+  havamalSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
+}
+
+function formatHavamalKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
+
+function describeHavamalStage(score: number): string {
+  if (score >= 85) return '오딘의 영지(Odin Mastery) — 위그드라실의 시련을 통과해 룬의 주권과 방패가 온전히 선 시기';
+  if (score >= 72) return '게알드르 조율(Galdr Attunement) — 주문의 힘으로 흔들리는 감정을 가라앉히고 중심을 세우는 시기';
+  return '침묵의 인내(Silent Endurance) — 외부의 공세를 멈추고 내면의 회복력을 모으는 준비기';
 }
 
 const EIGHTEEN_GALDR_BASE: Omit<HavamalGaldrCharm, 'resonanceDegree'>[] = [
@@ -100,9 +122,10 @@ const EIGHTEEN_GALDR_BASE: Omit<HavamalGaldrCharm, 'resonanceDegree'>[] = [
 
 export function calculateNorseHavamalEighteenGaldr(
   profile?: UserProfile | null,
-  referenceDate = new Date()
+  referenceDate = new Date(),
+  query?: string,
 ): NorseHavamalEighteenGaldrReport {
-  const seedString = `${profile?.basic?.birthdate || '1994-01-24'}_${profile?.basic?.birthtime || '12:00'}_${profile?.basic?.name || 'zeZE'}`;
+  const seedString = `${profile?.basic?.birthdate || '1994-01-24'}_${profile?.basic?.birthtime || '12:00'}_${profile?.basic?.name || 'zeZE'}_${query ?? ''}`;
   let hash = 0;
   for (let i = 0; i < seedString.length; i++) {
     hash = (hash * 33 + seedString.charCodeAt(i)) >>> 0;
@@ -130,9 +153,20 @@ export function calculateNorseHavamalEighteenGaldr(
   const havamalElderGuidance = `《하바말》 고대의 잠언: "상처를 두려워하는 자는 결코 지혜의 룬을 얻지 못한다." 현재 당신을 수호하는 룬은 [${dominantGaldrCharm.runeName}]이며, [${dominantGaldrCharm.charmName}]의 힘이 당신의 여정을 호위합니다.`;
   const norseRunicGaldrChant = `[게알드르 룬 창팅]: "${dominantGaldrCharm.activationMantra}" ${dominantGaldrCharm.spiritualMastery}.`;
 
+  const calculatedAtKst = formatHavamalKstTimestamp(referenceDate);
+  const composite = Math.round(
+    (yggdrasilWisdomDepth + odinRuneMasteryIndex + valkyrieShieldIntegrity + fateWyrdResilience) / 4
+  );
+  const havamalSynthesisMatrix = {
+    dominantTension: `${dominantGaldrCharm.norseTitle} (${dominantGaldrCharm.magicalDomain}) ↔ ${dominantGaldrCharm.runeName}`,
+    alignmentState: describeHavamalStage(composite),
+    integratedAction: `${dominantGaldrCharm.spiritualMastery}${query?.trim() ? ` [질문 맥락: ${query.trim()}]` : ''}`,
+  };
+
   return {
     engineVersion: NORSE_HAVAMAL_GALDR_ENGINE_VERSION,
     timestamp: referenceDate.toISOString(),
+    calculatedAtKst,
     yggdrasilWisdomDepth,
     odinRuneMasteryIndex,
     valkyrieShieldIntegrity,
@@ -140,21 +174,30 @@ export function calculateNorseHavamalEighteenGaldr(
     dominantGaldrCharm,
     havamalElderGuidance,
     norseRunicGaldrChant,
+    havamalSynthesisMatrix,
   };
 }
 
 export function formatNorseHavamalEighteenGaldrPrompt(report: NorseHavamalEighteenGaldrReport): string {
-  return `### ᚱ 고에다 하바말 오딘의 18대 게알드르 룬 비전 주문 실측 데이터 (v${report.engineVersion})
-- **주재 게알드르 주문**: ${report.dominantGaldrCharm.charmName} (${report.dominantGaldrCharm.norseTitle})
-- **상응 룬 문자**: ${report.dominantGaldrCharm.primaryRune} - ${report.dominantGaldrCharm.runeName}
-- **비전 마법 영역**: ${report.dominantGaldrCharm.magicalDomain}
-- **영적 달성 핵심**: ${report.dominantGaldrCharm.spiritualMastery}
-- **룬 공명도**: ${report.dominantGaldrCharm.resonanceDegree}/100
-- **위그드라실 세계수 영지 심도**: ${report.yggdrasilWisdomDepth}/100
-- **오딘 룬 장악 지수**: ${report.odinRuneMasteryIndex}/100
-- **발키리 영혼 방패 온전성**: ${report.valkyrieShieldIntegrity}/100
-- **우르드 운명 복원력**: ${report.fateWyrdResilience}/100
-- **하바말 고대 지혜 잠언**: ${report.havamalElderGuidance}
-- **게알드르 룬 창팅**: ${report.norseRunicGaldrChant}`;
+  const composite = Math.round(
+    (report.yggdrasilWisdomDepth + report.odinRuneMasteryIndex + report.valkyrieShieldIntegrity + report.fateWyrdResilience) / 4
+  );
+  const lines = [
+    `### ᚱ 고에다 하바말 오딘의 18대 게알드르 룬 비전 주문 실측 데이터 (v${report.engineVersion})`,
+    `- **연산 시각**: ${report.calculatedAtKst} | **비전 주문 국면**: ${describeHavamalStage(composite)}`,
+    `- **주재 게알드르 주문**: ${report.dominantGaldrCharm.charmName} (${report.dominantGaldrCharm.norseTitle})`,
+    `- **상응 룬 문자**: ${report.dominantGaldrCharm.primaryRune} - ${report.dominantGaldrCharm.runeName}`,
+    `- **비전 마법 영역**: ${report.dominantGaldrCharm.magicalDomain}`,
+    `- **영적 달성 핵심**: ${report.dominantGaldrCharm.spiritualMastery}`,
+    `- **하바말 고대 지혜 잠언**: ${report.havamalElderGuidance}`,
+    `- **게알드르 룬 창팅**: ${report.norseRunicGaldrChant}`,
+  ];
+  if (report.havamalSynthesisMatrix) {
+    lines.push(
+      `- **교차 매트릭스**: [핵심 긴장: ${report.havamalSynthesisMatrix.dominantTension} | 조율 상태: ${report.havamalSynthesisMatrix.alignmentState}]`,
+      `- **통합 실천**: ${report.havamalSynthesisMatrix.integratedAction}`,
+    );
+  }
+  return lines.join('\n');
 }
 
