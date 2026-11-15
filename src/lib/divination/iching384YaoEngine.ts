@@ -15,7 +15,7 @@
 import type { UserProfile } from '../sharedState';
 import { parseBirthTime } from '../birthDateTime';
 
-export const ICHING_384YAO_ENGINE_VERSION = 'LUCKEY-ICHING-384YAO-v1.0.0';
+export const ICHING_384YAO_ENGINE_VERSION = 'LUCKEY-ICHING-384YAO-v2.0.0';
 
 export interface HexagramSimple {
   number: number;
@@ -45,6 +45,21 @@ export interface Iching384YaoReport {
   nuclearHexagram: HexagramSimple;     // 호괘 (互卦)
   timeTimingDecision: '진격(Strong Go)' | '시중(時中 - 때를 기다림)' | '전환(Pivot)' | '성찰(Inner Work)';
   hexagramQuadStrategy: string;
+  ichingSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
+}
+
+function formatIchingKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
 }
 
 const HEXAGRAM_CATALOG: Record<number, { nameKo: string; hanja: string; upper: string; lower: string; desc: string }> = {
@@ -136,9 +151,16 @@ export function calculateIching384Yao(params: {
 
   const hexagramQuadStrategy = `현재 국면(${original.nameKo})에서 가장 중요한 분기점은 ${YAO_TITLES[changingYaoPos - 1]}입니다. 이 상황을 상대방의 시선(종괘 ${reversed.nameKo})과 숨겨진 이면(착괘 ${inverse.nameKo})으로 교차 검증해보면, 사건의 내면적 핵심(호괘 ${nuclear.nameKo})은 '진실한 소통과 내실'에 있습니다. 결국 필연적인 흐름(지괘 ${transformed.nameKo})으로 전개될 것이니, ${timeTimingDecision}의 지혜로 처신하십시오.`;
 
+  const calculatedAtKst = formatIchingKstTimestamp(now);
+  const ichingSynthesisMatrix = {
+    dominantTension: `${original.nameKo}(${YAO_TITLES[changingYaoPos - 1]}) ↔ 지괘 ${transformed.nameKo}`,
+    alignmentState: `${timeTimingDecision} — 내핵 ${nuclear.nameKo}·이면 ${inverse.nameKo}·상대시선 ${reversed.nameKo} 교차 검증`,
+    integratedAction: `${yaoInfo.advice}${params.question?.trim() ? ` [질문 맥락: ${params.question.trim()}]` : ''}`,
+  };
+
   return {
     engineVersion: ICHING_384YAO_ENGINE_VERSION,
-    calculatedAtKst: kst.toISOString().replace('Z', '+09:00'),
+    calculatedAtKst,
     originalHexagram: { number: baseNum, ...original, meaning: original.desc, upperTrigram: original.upper, lowerTrigram: original.lower },
     changingYao: {
       yaoPosition: changingYaoPos,
@@ -153,10 +175,14 @@ export function calculateIching384Yao(params: {
     nuclearHexagram: { number: nuclearNum, ...nuclear, meaning: nuclear.desc, upperTrigram: nuclear.upper, lowerTrigram: nuclear.lower },
     timeTimingDecision,
     hexagramQuadStrategy,
+    ichingSynthesisMatrix,
   };
 }
 
 export function formatIching384YaoPrompt(report: Iching384YaoReport): string {
+  const matrixBlock = report.ichingSynthesisMatrix
+    ? `\n3. 🧭 [교차 매트릭스]:\n   - 핵심 긴장: ${report.ichingSynthesisMatrix.dominantTension}\n   - 조율 상태: ${report.ichingSynthesisMatrix.alignmentState}\n   - 통합 실천: ${report.ichingSynthesisMatrix.integratedAction}\n`
+    : '';
   return `[☯️ 주역 384효 동효(動爻) & 착종복잡 4대 변괘 실측 데이터]
 ======================================================================
 엔진 버전: ${report.engineVersion}
@@ -175,7 +201,7 @@ export function formatIching384YaoPrompt(report: Iching384YaoReport): string {
    - **착괘(錯卦 / 숨겨진 대극 이면)**: 제${report.inverseHexagram.number}괘 ${report.inverseHexagram.nameKo} (${report.inverseHexagram.meaning})
    - **종괘(綜卦 / 상대방의 시선)**: 제${report.reversedHexagram.number}괘 ${report.reversedHexagram.nameKo} (${report.reversedHexagram.meaning})
    - **호괘(互卦 / 감춰진 내면적 본질)**: 제${report.nuclearHexagram.number}괘 ${report.nuclearHexagram.nameKo} (${report.nuclearHexagram.meaning})
-
+${matrixBlock}
 ★ 주역 입체 통합 전략:
 "${report.hexagramQuadStrategy}"
 ======================================================================`;

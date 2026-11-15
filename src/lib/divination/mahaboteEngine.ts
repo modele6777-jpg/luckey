@@ -37,7 +37,7 @@
 import type { UserProfile } from '../sharedState';
 import { parseBirthTime } from '../birthDateTime';
 
-export const MAHABOTE_ENGINE_VERSION = 'LUCKEY-MB-v1.1.0';
+export const MAHABOTE_ENGINE_VERSION = 'LUCKEY-MB-v2.0.0';
 
 export const MAHABOTE_METHOD =
   '미얀마 정통 마하보테(Mahabote) 7궁 수리 산법: 소수력(ME=서기-638) 7제 잉여수 기반 7대 하우스(빙가·아타·야자·아디파디·마라나·띠케·푸티) 포국, 8요일 행성·영수(靈獸) 입궁, 본명궁(Root House) 3대 길흉 판정, 행성 친화도·4대 영역 가중치, 당해 연도 나이 다샤(Age Transit) 및 방위·색상 개운 처방 결정론 산출';
@@ -103,6 +103,7 @@ export interface MahaboteTransitInteraction {
 export interface MahaboteResult {
   status: 'calculated' | 'skipped' | 'error';
   engineVersion: string;
+  calculatedAtKst?: string;
   method: string;
   myanmarEra: number;
   remainder: number;
@@ -129,7 +130,22 @@ export interface MahaboteResult {
   planetaryAffinity?: MahabotePlanetaryAffinity;
   domainAffinities?: MahaboteDomainAffinities;
   transitInteraction?: MahaboteTransitInteraction;
+  mahaboteSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
   note?: string;
+}
+
+function formatMahaboteKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
 }
 
 // 7대 행성 기본 정보 (미얀마 전통 숫자: 일1, 월2, 화3, 수4, 목5, 금6, 토0)
@@ -351,9 +367,17 @@ export function calculateMahabote(params: {
     },
   };
 
+  const calculatedAtKst = formatMahaboteKstTimestamp();
+  const mahaboteSynthesisMatrix = {
+    dominantTension: `${rootPlacement.houseName} ↔ ${transitHouse.name}`,
+    alignmentState: `${phase} — ${primaryLifeDomain}`,
+    integratedAction: transitAdvice,
+  };
+
   return {
     status: 'calculated',
     engineVersion: MAHABOTE_ENGINE_VERSION,
+    calculatedAtKst,
     method: MAHABOTE_METHOD,
     myanmarEra: me,
     remainder,
@@ -375,6 +399,7 @@ export function calculateMahabote(params: {
     planetaryAffinity,
     domainAffinities,
     transitInteraction,
+    mahaboteSynthesisMatrix,
   };
 }
 
@@ -393,6 +418,7 @@ export function formatMahabotePrompt(result: MahaboteResult): string {
   const pa = result.planetaryAffinity;
   const da = result.domainAffinities;
   const ti = result.transitInteraction;
+  const sm = result.mahaboteSynthesisMatrix;
 
   const housesSummary = result.houses
     .map(
@@ -403,15 +429,15 @@ export function formatMahabotePrompt(result: MahaboteResult): string {
 
   return `
 [미얀마 마하보테(Mahabote) 7궁 명반 결정론적 산출 리포트 (${result.engineVersion})]
+- 연산 시각: ${result.calculatedAtKst ?? 'KST'}
 - 소수력(緬曆): ${result.myanmarEra}년 (잉여수: ${result.remainder})
 - 출생 요일 행성: ${result.birthWeekday} · ${bp.animal} (수호원소: ${bp.element})
 - 본명궁(Root House): ${rh?.houseName} [${rh?.category}]
   * 판정: ${rh?.evaluation}
-- 행성 조화도 및 친화수리: ${pa?.planetaryHarmonyScore}점
+- 행성 조화도 및 친화수리:
   * 우호 행성: ${pa?.friendlyPlanets.join(', ')} | 주의 행성: ${pa?.challengingPlanets.join(', ')}
   * 친화 조언: ${pa?.affinityAdvice}
 - 4대 인생 영역 친화도:
-  * 명예·리더십: ${da?.leadershipHonor}점 | 재물·번영: ${da?.wealthProsperity}점 | 내실·통찰: ${da?.wisdomFortitude}점 | 위기돌파: ${da?.innovationBreakthrough}점
   * 핵심 소명 영역: ${da?.primaryLifeDomain}
 - 7대 하우스 포국도:
 ${housesSummary}
@@ -423,7 +449,7 @@ ${housesSummary}
   * 4분기 실행 포커스: 1분기(${ti?.quarterlyFocus.q1}) -> 2분기(${ti?.quarterlyFocus.q2}) -> 3분기(${ti?.quarterlyFocus.q3}) -> 4분기(${ti?.quarterlyFocus.q4})
 - 개운 처방:
   * 길방위: ${rem?.luckyDirection} · 행운 색상: ${rem?.luckyColors.join(', ')} · 수호 보석: ${rem?.luckyGemstone}
-  * 실천법: ${rem?.spiritualPractice}
+  * 실천법: ${rem?.spiritualPractice}${sm ? `\n- 교차 매트릭스 [핵심 긴장: ${sm.dominantTension} | 조율 상태: ${sm.alignmentState}]\n  * 통합 실천: ${sm.integratedAction}` : ''}
 - [AI 해석 절대 지침]: 본 데이터는 미얀마 7궁 마하보테 정통 수리로 계산된 불변의 팩트입니다. 본명궁 및 현재 나이 다샤 하우스의 길흉을 왜곡하지 말고 상담에 정확히 반영하십시오.
 `.trim();
 }
