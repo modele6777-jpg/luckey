@@ -9,12 +9,12 @@
  *    - 흐베르겔미르(Hvergelmir): 모든 강의 시원이자 깊은 잠재력의 원초적 응축.
  * 3. 9대 우주계(Nine Realms) 수호 품계 및 라그나로크 이후 귐레(Gimlé)의 황금빛 소생 조언 산출
  *
- * @version LUCKEY-EDDIC-YGGDRASIL-v1.0.0
+ * @version LUCKEY-EDDIC-YGGDRASIL-v2.0.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const EDDIC_YGGDRASIL_VERSION = 'LUCKEY-EDDIC-YGGDRASIL-v1.0.0';
+export const EDDIC_YGGDRASIL_VERSION = 'LUCKEY-EDDIC-YGGDRASIL-v2.0.0';
 
 export interface YggdrasilRealmStage {
   stageLevel: number;
@@ -45,6 +45,17 @@ export interface EddicYggdrasilResult {
     verseTitle: string;
     propheticWisdom: string;
   };
+  eddicSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
+}
+
+function describeEddicStage(score: number): string {
+  if (score >= 86) return '귐레 소생(Gimlé Renewal) — 세 줄기 뿌리와 세 샘의 지혜가 황금빛으로 조율되는 도약기';
+  if (score >= 74) return '우르드 직조(Urðarbrunnr Weave) — 중심축이 안정되어 일상의 실천이 운명으로 엮이는 순항기';
+  return '미미르 관조(Mímir Stillness) — 조급한 결단을 멈추고 지혜의 샘 앞에서 숨을 고르는 성찰기';
 }
 
 export type EddicYggdrasilReport = EddicYggdrasilResult;
@@ -73,10 +84,14 @@ const VOLUSPA_EPIPHANIES = [
   { verseTitle: '라그나로크를 지나 솟아오르는 이다뵐 평원', propheticWisdom: '모든 낡은 것이 불타 사라진 자리에서 비로소 가장 순수하고 아름다운 삶의 꽃이 피어난다.' },
 ];
 
-function getKstDateString(): string {
-  const now = new Date();
-  const kst = new Date(now.getTime() + (9 * 60 + now.getTimezoneOffset()) * 60000);
-  return kst.toISOString().replace('T', ' ').substring(0, 19) + ' KST';
+function getKstDateString(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
 }
 
 function hashSeed(seedStr: string): number {
@@ -88,11 +103,15 @@ function hashSeed(seedStr: string): number {
   return Math.abs(h);
 }
 
-export function calculateEddicYggdrasil(profile?: UserProfile): EddicYggdrasilResult {
+export function calculateEddicYggdrasil(
+  profile?: UserProfile,
+  query?: string,
+  now: Date = new Date(),
+): EddicYggdrasilResult {
   const birthdate = profile?.basic?.birthdate || '1995-03-21';
   const birthtime = profile?.basic?.birthtime || '12:00';
   const name = profile?.basic?.name || 'Inquirer';
-  const seed = hashSeed(`EDDIC-YGGDRASIL-${birthdate}-${birthtime}-${name}`);
+  const seed = hashSeed(`EDDIC-YGGDRASIL-${birthdate}-${birthtime}-${name}-${query ?? ''}`);
 
   const yggdrasilCosmicAxisStability = (seed % 41) + 60; // 60~100
   const urdarbrunnrFateWeavingForce = ((seed >> 3) % 43) + 58; // 58~100
@@ -109,9 +128,18 @@ export function calculateEddicYggdrasil(profile?: UserProfile): EddicYggdrasilRe
   const epiphanyIdx = (seed >> 6) % VOLUSPA_EPIPHANIES.length;
   const voluspaEpiphany = VOLUSPA_EPIPHANIES[epiphanyIdx];
 
+  const composite = Math.round(
+    (yggdrasilCosmicAxisStability + urdarbrunnrFateWeavingForce + mimirSpringWisdomDepth + nineRealmsResonanceEquilibrium + gimleGoldenRenewalPower) / 5
+  );
+  const eddicSynthesisMatrix = {
+    dominantTension: `${activeRealmStage.stageNameOldNorse} ↔ ${primaryNorseVirtue.norseMotto}`,
+    alignmentState: describeEddicStage(composite),
+    integratedAction: `${primaryNorseVirtue.actionableDirective}${query?.trim() ? ` [질문 맥락: ${query.trim()}]` : ''}`,
+  };
+
   return {
     engineVersion: EDDIC_YGGDRASIL_VERSION,
-    calculatedAtKst: getKstDateString(),
+    calculatedAtKst: getKstDateString(now),
     yggdrasilCosmicAxisStability,
     urdarbrunnrFateWeavingForce,
     mimirSpringWisdomDepth,
@@ -120,23 +148,32 @@ export function calculateEddicYggdrasil(profile?: UserProfile): EddicYggdrasilRe
     activeRealmStage,
     primaryNorseVirtue,
     voluspaEpiphany,
+    eddicSynthesisMatrix,
   };
 }
 
 export function formatEddicYggdrasilPrompt(result: EddicYggdrasilResult): string {
-  return `[🌳 고대 북유럽 고에다 《위그드라실(Yggdrasil)》 9대 우주계 & 3대 영천 소생 리포트]
-- 엔진 버전: ${result.engineVersion}
-- 세계수 우주 중심축 안정도: ${result.yggdrasilCosmicAxisStability}%
-- 우르드의 샘 운명 직조 및 인과 통찰력: ${result.urdarbrunnrFateWeavingForce}%
-- 미미르의 샘 근원적 지혜 심도: ${result.mimirSpringWisdomDepth}%
-- 9대 우주계 조화 및 균형도: ${result.nineRealmsResonanceEquilibrium}%
-- 라그나로크를 넘어서는 황금빛 재생력: ${result.gimleGoldenRenewalPower}%
-- 현행 우주계 수호 품계: **[${result.activeRealmStage.stageNameKo} (${result.activeRealmStage.stageNameOldNorse})]**
-  → 관장 영역: ${result.activeRealmStage.realmDomain}
-  → 우주적 소생 축복: ${result.activeRealmStage.cosmicRenewalBlessing}
-- 최우선 노르드 덕목: **[${result.primaryNorseVirtue.virtueNameKo} (${result.primaryNorseVirtue.norseMotto})]**
-  → 핵심 본질: ${result.primaryNorseVirtue.coreEssence}
-  → 실천 지침: ${result.primaryNorseVirtue.actionableDirective}
-- 볼루스파 예언의 신성한 장엄: 《${result.voluspaEpiphany.verseTitle}》
-  → 예언적 지혜: "${result.voluspaEpiphany.propheticWisdom}"`;
+  const composite = Math.round(
+    (result.yggdrasilCosmicAxisStability + result.urdarbrunnrFateWeavingForce + result.mimirSpringWisdomDepth + result.nineRealmsResonanceEquilibrium + result.gimleGoldenRenewalPower) / 5
+  );
+  const lines = [
+    `[🌳 고대 북유럽 고에다 《위그드라실(Yggdrasil)》 9대 우주계 & 3대 영천 소생 리포트]`,
+    `- 연산 시각: ${result.calculatedAtKst} | 엔진 버전: ${result.engineVersion}`,
+    `- 우주계 소생 국면: ${describeEddicStage(composite)}`,
+    `- 현행 우주계 수호 품계: **[${result.activeRealmStage.stageNameKo} (${result.activeRealmStage.stageNameOldNorse})]**`,
+    `  → 관장 영역: ${result.activeRealmStage.realmDomain}`,
+    `  → 우주적 소생 축복: ${result.activeRealmStage.cosmicRenewalBlessing}`,
+    `- 최우선 노르드 덕목: **[${result.primaryNorseVirtue.virtueNameKo} (${result.primaryNorseVirtue.norseMotto})]**`,
+    `  → 핵심 본질: ${result.primaryNorseVirtue.coreEssence}`,
+    `  → 실천 지침: ${result.primaryNorseVirtue.actionableDirective}`,
+    `- 볼루스파 예언의 신성한 장엄: 《${result.voluspaEpiphany.verseTitle}》`,
+    `  → 예언적 지혜: "${result.voluspaEpiphany.propheticWisdom}"`,
+  ];
+  if (result.eddicSynthesisMatrix) {
+    lines.push(
+      `- 교차 매트릭스 [핵심 긴장: ${result.eddicSynthesisMatrix.dominantTension} | 조율 상태: ${result.eddicSynthesisMatrix.alignmentState}]`,
+      `- 통합 실천: ${result.eddicSynthesisMatrix.integratedAction}`,
+    );
+  }
+  return lines.join('\n');
 }

@@ -21,7 +21,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const NORSE_VOLVA_SEIDR_NINE_REALMS_ENGINE_VERSION = '1.0.0';
+export const NORSE_VOLVA_SEIDR_NINE_REALMS_ENGINE_VERSION = '2.0.0';
 
 export interface YggdrasilRealm {
   id: string;
@@ -35,6 +35,7 @@ export interface YggdrasilRealm {
 export interface NorseVolvaSeidrNineRealmsReport {
   engineVersion: string;
   timestamp: string;
+  calculatedAtKst: string;
   seidrIntuitionClarity: number; // 0 ~ 100 세이드 직관 명료도
   huginnThoughtScore: number; // 0 ~ 100 후긴(사고/미래 예측) 지수
   muninMemoryScore: number; // 0 ~ 100 무닌(기억/과거 성찰) 지수
@@ -44,6 +45,27 @@ export interface NorseVolvaSeidrNineRealmsReport {
   secondaryRealm: YggdrasilRealm; // 보조 가이드 영역
   volvaPropheticVision: string; // 볼바의 예언적 통찰
   seidrSpindleGroundingRitual: string; // 세이드 물레 접지 리추얼
+  volvaSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
+}
+
+function formatVolvaKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
+
+function describeVolvaStage(score: number): string {
+  if (score >= 84) return '김레 여명(Gimlé Dawn) — 후긴의 직관과 무닌의 성찰이 위그드라실 수액 위에서 맑게 통합되는 명징기';
+  if (score >= 70) return '세이드 물레 조율(Seiðr Weave) — 운명의 실타래를 차분히 펴며 주재 영역의 힘을 다지는 안정기';
+  return '니플헤임 관조(Niflheim Stillness) — 바깥 소음을 끄고 물레의 중심을 다시 잡는 회복기';
 }
 
 const YGGDRASIL_REALMS_BASE: Omit<YggdrasilRealm, 'resonanceScore'>[] = [
@@ -165,9 +187,20 @@ export function calculateNorseVolvaSeidrNineRealms(
   const volvaPropheticVision = `볼바의 지팡이가 가리키는 곳은 위그드라실의 [${dominantRealm.nameKo}(${dominantRealm.norseName})]입니다. ${dominantRealm.propheticGift}이 당신의 운명실(Wyrd)을 바르게 펴고 있으며, 보조 영역 [${secondaryRealm.nameKo}]의 지원으로 거센 폭풍 속에서도 흔들리지 않는 뿌리를 내리게 됩니다.`;
   const seidrSpindleGroundingRitual = `바닥에 두 발을 굳건히 딛고 세계수 위그드라실의 수액이 척추를 타고 흐르는 것을 심상화하며 읊조리십시오: "나는 후긴의 날카로운 지혜와 무닌의 깊은 성찰을 통합한다. 어떤 시련도 내 본래의 운명을 꺾을 수 없다."`;
 
+  const calculatedAtKst = formatVolvaKstTimestamp(now);
+  const composite = Math.round(
+    (seidrIntuitionClarity + huginnThoughtScore + muninMemoryScore + yggdrasilSapShieldPower + wyrdFateWeavingResonance) / 5
+  );
+  const volvaSynthesisMatrix = {
+    dominantTension: `${dominantRealm.nameKo} (${dominantRealm.domain}) ↔ ${secondaryRealm.nameKo}`,
+    alignmentState: describeVolvaStage(composite),
+    integratedAction: `${dominantRealm.propheticGift}${question.trim() ? ` [질문 맥락: ${question.trim()}]` : ''}`,
+  };
+
   return {
     engineVersion: NORSE_VOLVA_SEIDR_NINE_REALMS_ENGINE_VERSION,
     timestamp: now.toISOString(),
+    calculatedAtKst,
     seidrIntuitionClarity,
     huginnThoughtScore,
     muninMemoryScore,
@@ -177,19 +210,30 @@ export function calculateNorseVolvaSeidrNineRealms(
     secondaryRealm,
     volvaPropheticVision,
     seidrSpindleGroundingRitual,
+    volvaSynthesisMatrix,
   };
 }
 
 export function formatNorseVolvaSeidrNineRealmsPrompt(rep: NorseVolvaSeidrNineRealmsReport): string {
-  return `[고대 북유럽 볼바 세이드 직관 & 위그드라실 9대 세계 실측 데이터]
-· 엔진 버전: v${rep.engineVersion}
-· 세이드 직관 명료도: ${rep.seidrIntuitionClarity}/100 | 위그드라실 수액 결계력: ${rep.yggdrasilSapShieldPower}/100
-· 오딘의 두 까마귀: 후긴(사고/미래) ${rep.huginnThoughtScore}/100 vs 무닌(기억/과거) ${rep.muninMemoryScore}/100
-· 운명의 실타래(Wyrd) 조율도: ${rep.wyrdFateWeavingResonance}/100
-· 주재 공명 영역: [${rep.dominantRealm.nameKo} (${rep.dominantRealm.norseName})] — 공명도 ${rep.dominantRealm.resonanceScore}%
-  - 신성한 영토: ${rep.dominantRealm.domain}
-  - 예언적 은사: ${rep.dominantRealm.propheticGift}
-· 보조 영역: [${rep.secondaryRealm.nameKo} (${rep.secondaryRealm.norseName})] — 공명도 ${rep.secondaryRealm.resonanceScore}%
-· 볼바의 예언적 통찰: ${rep.volvaPropheticVision}
-· 세이드 물레 접지 리추얼: ${rep.seidrSpindleGroundingRitual}`;
+  const composite = Math.round(
+    (rep.seidrIntuitionClarity + rep.huginnThoughtScore + rep.muninMemoryScore + rep.yggdrasilSapShieldPower + rep.wyrdFateWeavingResonance) / 5
+  );
+  const lines = [
+    `[고대 북유럽 볼바 세이드 직관 & 위그드라실 9대 세계 실측 데이터]`,
+    `· 연산 시각: ${rep.calculatedAtKst} | 엔진 버전: v${rep.engineVersion}`,
+    `· 세이드 직관 국면: ${describeVolvaStage(composite)}`,
+    `· 주재 공명 영역: [${rep.dominantRealm.nameKo} (${rep.dominantRealm.norseName})]`,
+    `  - 신성한 영토: ${rep.dominantRealm.domain}`,
+    `  - 예언적 은사: ${rep.dominantRealm.propheticGift}`,
+    `· 보조 영역: [${rep.secondaryRealm.nameKo} (${rep.secondaryRealm.norseName})] — ${rep.secondaryRealm.domain}`,
+    `· 볼바의 예언적 통찰: ${rep.volvaPropheticVision}`,
+    `· 세이드 물레 접지 리추얼: ${rep.seidrSpindleGroundingRitual}`,
+  ];
+  if (rep.volvaSynthesisMatrix) {
+    lines.push(
+      `· 교차 매트릭스: [핵심 긴장: ${rep.volvaSynthesisMatrix.dominantTension} | 조율 상태: ${rep.volvaSynthesisMatrix.alignmentState}]`,
+      `· 통합 실천: ${rep.volvaSynthesisMatrix.integratedAction}`,
+    );
+  }
+  return lines.join('\n');
 }

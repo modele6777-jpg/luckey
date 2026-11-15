@@ -3920,9 +3920,14 @@ test('Norse Volva Seidr Nine Realms Engine: calculates nine realms resonance and
   assert(rep.muninMemoryScore >= 0 && rep.muninMemoryScore <= 100);
   assert(rep.yggdrasilSapShieldPower >= 0 && rep.yggdrasilSapShieldPower <= 100);
   assert(rep.dominantRealm.nameKo.length > 0);
+  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(rep.volvaSynthesisMatrix?.integratedAction));
   const prompt = formatNorseVolvaSeidrNineRealmsPrompt(rep);
   assert(prompt.includes('고대 북유럽 볼바 세이드 직관 & 위그드라실 9대 세계 실측 데이터'));
   assert(prompt.includes(rep.dominantRealm.nameKo));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
 });
 
 test('Zhuangzi Xiaoyaoyou Butterfly Engine: calculates absolute freedom, rocs flight and butterfly dream', () => {
@@ -4460,9 +4465,14 @@ test('Polynesian Wayfinding Star Compass Engine: calculates Star Compass houses,
   assert(rep.islandFindingArrivalCertainty >= 0 && rep.islandFindingArrivalCertainty <= 100);
   assert(rep.primaryStarHouse.hawaiianName.length > 0);
   assert(rep.guidingZenithStar.hawaiianName.length > 0);
+  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(rep.wayfindingSynthesisMatrix?.integratedAction));
   const prompt = formatPolynesianWayfindingPrompt(rep);
   assert(prompt.includes('고대 폴리네시아 마우이 《웨이파인딩 32방위 스타 컴퍼스》 항해'));
   assert(prompt.includes(rep.primaryStarHouse.hawaiianName));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
 });
 
 test('Korean Wonhyo Hwajaeng One Mind Engine: calculates One Mind Two Gates, Hwajaeng resolution and Mu-Ae freedom', () => {
@@ -4652,9 +4662,14 @@ test('Scandinavian Eddic Yggdrasil Nine Realms Engine: calculates cosmic axis, U
   assert(rep.nineRealmsResonanceEquilibrium >= 0 && rep.nineRealmsResonanceEquilibrium <= 100);
   assert(rep.gimleGoldenRenewalPower >= 0 && rep.gimleGoldenRenewalPower <= 100);
   assert(rep.activeRealmStage.stageNameOldNorse.length > 0);
+  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(rep.eddicSynthesisMatrix?.integratedAction));
   const prompt = formatEddicYggdrasilPrompt(rep);
   assert(prompt.includes('고대 북유럽 고에다 《위그드라실(Yggdrasil)》'));
   assert(prompt.includes(rep.activeRealmStage.stageNameKo));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
 });
 
 test('Korean Yi Sun-sin Nanjung Ilgi Strategic Engine: calculates Pilsa Jeuksaeng resolution, chokepoint tactic and Hansando composure', () => {
