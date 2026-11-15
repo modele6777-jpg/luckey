@@ -1,7 +1,7 @@
 import { OverlayPaneContext } from './OverlayPaneContext';
 import { useOverlayPane } from '@/hooks/useOverlayPane';
 import { useMainOverlayViewport } from '@/hooks/useMainOverlayViewport';
-import { holdLucyScrollPin, noteLucyScrollPin } from '@/lib/lucyScrollPin';
+import { holdLucyScrollPin, noteLucyScrollPin, rectsOverlap } from '@/lib/lucyScrollPin';
 import { ScreenOverlayContext, isTopScreenOverlay, useScreenOverlayLayer } from './ScreenPortal';
 import React, { forwardRef, useEffect, useRef, type HTMLAttributes, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
@@ -27,8 +27,15 @@ export function WorkspacePortal({ children, onClose }: { children: ReactNode; on
     const scroller = document.querySelector<HTMLElement>('.lucy-chat-main');
     const savedTop = scroller?.scrollTop ?? 0;
     const pinned = !!scroller && scroller.scrollHeight - scroller.scrollTop - scroller.clientHeight <= 80;
-    noteLucyScrollPin(pinned);
+    const portalBox = portalRef.current?.getBoundingClientRect();
+    const coversLucy = !!scroller && !!portalBox && (
+      portalBox.width > 24 && portalBox.height > 24
+        ? rectsOverlap(portalBox, scroller.getBoundingClientRect())
+        : portalRef.current?.dataset.overlayPane !== 'content'
+    );
+    if (coversLucy) noteLucyScrollPin(pinned);
     const restoreChatScroll = () => {
+      if (!coversLucy) return;
       const node = document.querySelector<HTMLElement>('.lucy-chat-main');
       if (!node) return;
       const behavior = node.style.scrollBehavior;
@@ -67,7 +74,7 @@ export function WorkspacePortal({ children, onClose }: { children: ReactNode; on
     document.addEventListener('keydown', handleKeyDown);
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
-      holdLucyScrollPin();
+      if (coversLucy) holdLucyScrollPin();
       if (previousFocus?.isConnected) previousFocus.focus({ preventScroll: true });
       restoreChatScroll();
       requestAnimationFrame(() => {

@@ -59,7 +59,7 @@ import {
 } from '@/lib/chatHistorySync';
 import { processDailyChatArchival } from '@/lib/chatMemoryArchive';
 import { drawLucyTarotCards, formatTarotMarker } from '@/utils/tarotDetector';
-import { isLucyScrollPinned, lucyScrollPinHeld, noteLucyScrollPin } from '@/lib/lucyScrollPin';
+import { isLucyScrollPinned, lucyScrollPinHeld, noteLucyScrollPin, overlayCoversElement, releaseLucyScrollPin } from '@/lib/lucyScrollPin';
 import { isDualPaneLayout, isDuoUnfoldedState } from '@/lib/perfMode';
 import { buildLucyTarotReadingPrompt } from '@/lib/lucyTarotReading';
 import { getTodayDateKey } from '@/lib/dailyCache';
@@ -2356,10 +2356,9 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
       return;
     }
     const distanceFromBottom = scrollHeight - (scrollTop + clientHeight);
-    const overlayOpen = !!document.querySelector('[data-screen-overlay-layer]:not(:empty)');
-    // Closing a popup removes the layer before iOS finishes restoring scrollTop.
-    if (overlayOpen || lucyScrollPinHeld()) {
-      if (!isUserScrolledUpRef.current && (isLucyScrollPinned() || distanceFromBottom <= 80)) followLatestLayoutRef.current();
+    // Only a layer over this conversation may ignore layout noise. A content-pane dialog stays independent.
+    if (!isUserScrolledUpRef.current && (overlayCoversElement(container) || lucyScrollPinHeld())) {
+      if (isLucyScrollPinned() || distanceFromBottom <= 80) followLatestLayoutRef.current();
       return;
     }
     if (distanceFromBottom > 80) {
@@ -2380,7 +2379,8 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
     const onWheel = (e: WheelEvent) => {
       if (e.deltaY < -2) {
         // 위로 휠 스크롤 시 즉시 사용자 수동 조작 모드로 전환하여 하단 끌어당김 방지
-        if (document.querySelector('[data-screen-overlay-layer]:not(:empty)') || lucyScrollPinHeld()) return;
+        if (overlayCoversElement(container)) return;
+        releaseLucyScrollPin();
         isUserScrolledUpRef.current = true;
         noteLucyScrollPin(false);
       } else if (e.deltaY > 2) {
@@ -2393,7 +2393,8 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
     };
     let touchY: number | null = null;
     const readOlder = () => {
-      if (document.querySelector('[data-screen-overlay-layer]:not(:empty)') || lucyScrollPinHeld()) return;
+      if (overlayCoversElement(container)) return;
+      releaseLucyScrollPin();
       isUserScrolledUpRef.current = true;
       noteLucyScrollPin(false);
       setShowReturnToRecentConversation(true);

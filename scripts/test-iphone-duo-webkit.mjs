@@ -13,7 +13,12 @@ import { LucyEngineCatalogDialog } from './src/components/chat/LucyEngineCatalog
 import { PromptLibraryModal } from './src/components/chat/PromptLibraryModal';
 import { UpdateNoticeModal } from './src/components/UpdateNoticeModal';
 import { visualViewportMatchesLayout } from './src/lib/mainOverlayViewport';
+import { holdLucyScrollPin, lucyScrollPinHeld, overlayCoversElement, releaseLucyScrollPin } from './src/lib/lucyScrollPin';
 window.visualMatches = visualViewportMatchesLayout;
+window.overlayCovers = overlayCoversElement;
+window.holdPin = holdLucyScrollPin;
+window.pinHeld = lucyScrollPinHeld;
+window.releasePin = releaseLucyScrollPin;
 window.activations = 0;
 function Libraries() {
   const [open, setOpen] = React.useState(null);
@@ -198,6 +203,30 @@ try {
   };
   await unfold({ width: 900, height: 640 }, 'landscape');
   await page.screenshot({ path: '/opt/cursor/artifacts/iphone-unfolded-dialog.png' });
+  const coverage = await page.evaluate(() => {
+    const chat = document.querySelector('.lucy-chat-main');
+    const coveredByLucyDialog = window.overlayCovers(chat);
+    const contentLayer = document.createElement('div');
+    contentLayer.dataset.screenOverlayLayer = '';
+    contentLayer.style.cssText = 'position:fixed;left:0;top:0;width:30%;height:80%';
+    contentLayer.appendChild(document.createElement('div'));
+    document.body.appendChild(contentLayer);
+    const contentAlone = (() => {
+      const dialog = document.querySelector('.duo-portal');
+      const previous = dialog?.style.display ?? '';
+      if (dialog) dialog.style.display = 'none';
+      const covered = window.overlayCovers(chat);
+      if (dialog) dialog.style.display = previous;
+      return covered;
+    })();
+    contentLayer.remove();
+    window.holdPin(5000);
+    window.releasePin();
+    return { coveredByLucyDialog, contentAlone, holdCleared: window.pinHeld() === false };
+  });
+  assert.equal(coverage.coveredByLucyDialog, true, 'A Lucy dialog covers the conversation');
+  assert.equal(coverage.contentAlone, false, 'A content-pane layer must not freeze Lucy scrolling');
+  assert.equal(coverage.holdCleared, true, 'Reading older messages can cancel the post-close hold');
   await unfold({ width: 700, height: 980 }, 'portrait');
 
   await page.evaluate(() => window.dispatchEvent(new Event('show-notice')));
