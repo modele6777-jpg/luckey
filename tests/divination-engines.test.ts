@@ -3032,9 +3032,14 @@ test('Nordic Elder Futhark Runes Engine: calculates birth rune, norns trio and b
   assert(rep.nornsTrio.skuldFuture.runeNumber >= 1 && rep.nornsTrio.skuldFuture.runeNumber <= 24);
   assert(rep.cosmicWyrdResonanceScore >= 0 && rep.cosmicWyrdResonanceScore <= 100);
   assert(rep.bindruneTalisman.combinedRunes.length >= 2);
+  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(rep.runesSynthesisMatrix?.integratedAction));
   const prompt = formatNordicElderFutharkRunesPrompt(rep);
   assert(prompt.includes('북유럽 24 엘더 푸사르크 룬'));
   assert(prompt.includes(rep.birthRune.koreanName));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
 });
 
 test('Delphic Maxims Oracle Engine: calculates soul maxim, situational oracle and clarity', () => {
@@ -3594,9 +3599,14 @@ test('Nordic Yggdrasil Nine Realms Engine: calculates dominant realm and Bifrost
   assert(rep.yggdrasilAxisAlignmentScore >= 0 && rep.yggdrasilAxisAlignmentScore <= 100);
   assert(rep.bifrostBridgeClearance >= 0 && rep.bifrostBridgeClearance <= 100);
   assert(rep.dominantRealm.nameKo.length > 0);
+  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(rep.yggdrasilSynthesisMatrix?.integratedAction));
   const prompt = formatNordicYggdrasilRealmsPrompt(rep);
   assert(prompt.includes('고대 북유럽 세계수 위그드라실(Yggdrasil) 9대 영역 실측 데이터'));
   assert(prompt.includes(rep.dominantRealm.nameKo));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
 });
 
 test('Egyptian Maat Feather Heart Engine: calculates heart lightness and Maat verdict', () => {
@@ -4210,9 +4220,14 @@ test('Norse Havamal Eighteen Galdr Engine: calculates eighteen runic charms, ygg
   assert(rep.valkyrieShieldIntegrity >= 0 && rep.valkyrieShieldIntegrity <= 100);
   assert(rep.fateWyrdResilience >= 0 && rep.fateWyrdResilience <= 100);
   assert(rep.dominantGaldrCharm.charmName.length > 0);
+  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(rep.havamalSynthesisMatrix?.integratedAction));
   const prompt = formatNorseHavamalEighteenGaldrPrompt(rep);
   assert(prompt.includes('고에다 하바말 오딘의 18대 게알드르 룬 비전 주문 실측 데이터'));
   assert(prompt.includes(rep.dominantGaldrCharm.charmName));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
 });
 
 test('Ibn Arabi Wahdat al-Wujud Heart Wisdom Engine: calculates prophetic heart facets, divine tajalli and mirror purity', () => {
