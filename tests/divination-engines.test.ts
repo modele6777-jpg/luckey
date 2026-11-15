@@ -5136,9 +5136,12 @@ test('Blaise Pascal Pensees Engine: calculates Thinking reed dignity, Heart intu
   assert(rep.dualInfinitiesPerspectiveScore >= 0 && rep.dualInfinitiesPerspectiveScore <= 100);
   assert(rep.divertissementTranquilityScore >= 0 && rep.divertissementTranquilityScore <= 100);
   assert(rep.activeThematicThought.thoughtTitleFrench.length > 0);
+  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(rep.pascalSynthesisMatrix?.integratedAction));
   const prompt = formatPascalPenseesHeartReasonPrompt(rep);
   assert(prompt.includes('블레즈 파스칼 팡세(Pensées) 사유하는 갈대 & 심장의 논리 지표'));
   assert(prompt.includes(rep.activeThematicThought.thoughtTitleKo));
+  assert(prompt.includes('교차 매트릭스'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });
@@ -5976,9 +5979,14 @@ test('Charles de Montesquieu Spirit of Laws Engine: calculates Checks and Balanc
   assert(rep.civicVirtuePublicSpiritScore >= 0 && rep.civicVirtuePublicSpiritScore <= 100);
   assert(rep.enlightenedPluralismToleranceIndex >= 0 && rep.enlightenedPluralismToleranceIndex <= 100);
   assert(rep.activeMontesquieuTheme.themeTitleKo.length > 0);
+  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(rep.montesquieuSynthesisMatrix?.integratedAction));
   const prompt = formatFrenchMontesquieuSpiritOfLawsPrompt(rep);
   assert(prompt.includes('샤를 드 몽테스키외 《법의 정신》 견제와 균형 & 권력분립 지표'));
   assert(prompt.includes(rep.activeMontesquieuTheme.themeTitleKo));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
 });
 
 test('Gaston Bachelard Poetics of Space Engine: calculates Material Imagination, House Sanctuary, Candle Meditation, and Dual Spiral', () => {
@@ -6083,9 +6091,12 @@ test('Voltaire Candide and Tolerance Engine: calculates Cultivate Our Garden Dev
   assert(rep.justiceAdvocacyConscienceScore >= 0 && rep.justiceAdvocacyConscienceScore <= 100);
   assert(rep.realisticDisillusionmentClarityIndex >= 0 && rep.realisticDisillusionmentClarityIndex <= 100);
   assert(rep.activeVoltaireTheme.themeTitleKo.length > 0);
+  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(rep.voltaireSynthesisMatrix?.integratedAction));
   const prompt = formatFrenchVoltaireCandideTolerancePrompt(rep);
   assert(prompt.includes('볼테르 《캉디드》 & 《관용론》 일상 실천 및 관용 지혜 지표'));
   assert(prompt.includes(rep.activeVoltaireTheme.themeTitleKo));
+  assert(prompt.includes('교차 매트릭스'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });

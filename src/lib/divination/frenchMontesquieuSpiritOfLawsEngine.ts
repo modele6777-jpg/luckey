@@ -9,12 +9,12 @@
  * 4. 공화국 시민적 덕성 및 공공선 헌신도(Civic Virtue & Public Spirit Score): 사사로운 욕망을 절제하고 공동체의 신뢰와 공익을 지키는 내적 기개.
  * 5. 계몽적 관용 및 다원주의 개방도(Enlightened Pluralism & Mutual Tolerance Index): 편견과 독단을 털어내고 서로 다른 개성과 문화를 존중하는 열린 안목.
  *
- * @version LUCKEY-MONTESQUIEU-SPIRIT-OF-LAWS-v1.0.0
+ * @version LUCKEY-MONTESQUIEU-SPIRIT-OF-LAWS-v2.0.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const FRENCH_MONTESQUIEU_SPIRIT_OF_LAWS_VERSION = 'LUCKEY-MONTESQUIEU-SPIRIT-OF-LAWS-v1.0.0';
+export const FRENCH_MONTESQUIEU_SPIRIT_OF_LAWS_VERSION = 'LUCKEY-MONTESQUIEU-SPIRIT-OF-LAWS-v2.0.0';
 
 export interface MontesquieuTheme {
   themeKey: string;
@@ -47,6 +47,11 @@ export interface FrenchMontesquieuSpiritOfLawsResult {
   montesquieuComprehensiveGuidance: {
     guidanceTitle: string;
     philosophicalCounsel: string;
+  };
+  montesquieuSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
   };
 }
 
@@ -126,9 +131,26 @@ export const MONTESQUIEU_APHORISMS: MontesquieuAphorism[] = [
   },
 ];
 
+function formatMontesquieuKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
+
+function describeMontesquieuStage(score: number): string {
+  if (score >= 90) return '명철한 균형기 (견제·법치·중용의 질서가 조화롭게 자리한 흐름)';
+  if (score >= 82) return '안정된 입헌기 (원칙과 유연성이 차분히 균형을 이루는 흐름)';
+  return '고요한 정돈기 (독단과 과잉을 덜고 맥락적 중용을 다지는 흐름)';
+}
+
 export function calculateFrenchMontesquieuSpiritOfLaws(
   profile?: UserProfile,
   query?: string,
+  now: Date = new Date(),
 ): FrenchMontesquieuSpiritOfLawsResult {
   const p = profile as any;
   const name = profile?.basic?.name ?? p?.name ?? '남희';
@@ -163,9 +185,18 @@ export function calculateFrenchMontesquieuSpiritOfLaws(
     `${activeMontesquieuTheme.practicalCounsel} 아울러 몽테스키외의 명언 "${focalMontesquieuAphorism.aphorismKo}"를 되새기며, ` +
     `${focalMontesquieuAphorism.actionGuidance}`;
 
+  const montesquieuSynthesisMatrix = {
+    dominantTension: `${activeMontesquieuTheme.themeTitleKo} ↔ ${focalMontesquieuAphorism.sourceContext}`,
+    alignmentState:
+      checksAndBalancesPrudenceIndex >= 88 && contextualSpiritOfLawsWisdomIndex >= 88
+        ? '고차원 균형·맥락 조화 공명'
+        : '원칙과 현실의 중용적 조율',
+    integratedAction: `${activeMontesquieuTheme.practicalCounsel} (${focalMontesquieuAphorism.actionGuidance})`,
+  };
+
   return {
     engineVersion: FRENCH_MONTESQUIEU_SPIRIT_OF_LAWS_VERSION,
-    calculatedAtKst: new Date().toISOString(),
+    calculatedAtKst: formatMontesquieuKstTimestamp(now),
     checksAndBalancesPrudenceIndex,
     politicalLibertyTemperanceScore,
     contextualSpiritOfLawsWisdomIndex,
@@ -177,19 +208,21 @@ export function calculateFrenchMontesquieuSpiritOfLaws(
       guidanceTitle,
       philosophicalCounsel,
     },
+    montesquieuSynthesisMatrix,
   };
 }
 
 export function formatFrenchMontesquieuSpiritOfLawsPrompt(
   res: FrenchMontesquieuSpiritOfLawsResult,
 ): string {
-  return [
+  const lines = [
     `【샤를 드 몽테스키외 《법의 정신》 견제와 균형 & 권력분립 지표】`,
-    `- 견제와 균형 및 권력분립 균형 감각(Checks & Balances Prudence): ${res.checksAndBalancesPrudenceIndex}/100`,
-    `- 법치 기반 정치적 자유 및 절제된 자율성(Political Liberty & Temperance): ${res.politicalLibertyTemperanceScore}/100`,
-    `- 상황 맥락 부합 및 입법적 중용 지혜(Spirit of Laws & Contextual Insight): ${res.contextualSpiritOfLawsWisdomIndex}/100`,
-    `- 공화국 시민적 덕성 및 공공선 헌신도(Civic Virtue & Public Spirit): ${res.civicVirtuePublicSpiritScore}/100`,
-    `- 계몽적 관용 및 다원주의 개방도(Enlightened Pluralism & Tolerance): ${res.enlightenedPluralismToleranceIndex}/100`,
+    `- 엔진 버전: ${res.engineVersion} | 연산 시각: ${res.calculatedAtKst}`,
+    `- 견제와 균형 및 권력분립 균형 감각(Checks & Balances Prudence): ${describeMontesquieuStage(res.checksAndBalancesPrudenceIndex)}`,
+    `- 법치 기반 정치적 자유 및 절제된 자율성(Political Liberty & Temperance): ${describeMontesquieuStage(res.politicalLibertyTemperanceScore)}`,
+    `- 상황 맥락 부합 및 입법적 중용 지혜(Spirit of Laws & Contextual Insight): ${describeMontesquieuStage(res.contextualSpiritOfLawsWisdomIndex)}`,
+    `- 공화국 시민적 덕성 및 공공선 헌신도(Civic Virtue & Public Spirit): ${describeMontesquieuStage(res.civicVirtuePublicSpiritScore)}`,
+    `- 계몽적 관용 및 다원주의 개방도(Enlightened Pluralism & Tolerance): ${describeMontesquieuStage(res.enlightenedPluralismToleranceIndex)}`,
     `- 핵심 법의 정신 테마: ${res.activeMontesquieuTheme.themeTitleKo} [${res.activeMontesquieuTheme.themeTitleEn}]`,
     `- 실용주의적 통찰: ${res.activeMontesquieuTheme.pragmaticInsight}`,
     `- 실천적 조언: ${res.activeMontesquieuTheme.practicalCounsel}`,
@@ -198,5 +231,12 @@ export function formatFrenchMontesquieuSpiritOfLawsPrompt(
     `- 원전 출처: [${res.focalMontesquieuAphorism.sourceContext}]`,
     `- 구체적 실천 지침: ${res.focalMontesquieuAphorism.actionGuidance}`,
     `- 종합 몽테스키외 철학 권면: ${res.montesquieuComprehensiveGuidance.philosophicalCounsel}`,
-  ].join('\n');
+  ];
+  if (res.montesquieuSynthesisMatrix) {
+    lines.push(
+      `- 교차 매트릭스 [핵심 긴장: ${res.montesquieuSynthesisMatrix.dominantTension} | 조율 상태: ${res.montesquieuSynthesisMatrix.alignmentState}]`,
+      `- 통합 실천: ${res.montesquieuSynthesisMatrix.integratedAction}`,
+    );
+  }
+  return lines.join('\n');
 }

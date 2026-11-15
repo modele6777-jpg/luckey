@@ -8,12 +8,12 @@
  * 4. 파스칼의 내기(Pari de Pascal): 불확실한 삶 속에서 의미와 영원한 가치를 향해 전 존재를 던지는 실존적 결단의 용기.
  * 5. 오락과 기만(Divertissement)의 탈피: 내면의 공허를 회피하기 위한 헛된 부산스러움을 멈추고 고요히 참된 자아와 대면하는 평정심.
  *
- * @version LUCKEY-PASCAL-PENSEES-HEART-REASON-v1.1.0
+ * @version LUCKEY-PASCAL-PENSEES-HEART-REASON-v2.0.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const PASCAL_PENSEES_HEART_REASON_VERSION = 'LUCKEY-PASCAL-PENSEES-HEART-REASON-v1.1.0';
+export const PASCAL_PENSEES_HEART_REASON_VERSION = 'LUCKEY-PASCAL-PENSEES-HEART-REASON-v2.0.0';
 
 export type PascalQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -62,6 +62,11 @@ export interface PascalPenseesHeartReasonResult {
   dailyPracticeRitual: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
+  pascalSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
 }
 
 export type PascalPenseesHeartReasonReport = PascalPenseesHeartReasonResult;
@@ -185,6 +190,16 @@ function describePascalQualitativeStage(score: number): string {
   return '고요한 숙성기 (소음을 걷어내고 본질을 응시하는 흐름)';
 }
 
+function formatPascalKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
+
 export function calculatePascalPenseesHeartReason(
   profile: UserProfile,
   question?: string,
@@ -251,9 +266,18 @@ export function calculatePascalPenseesHeartReason(
     `${activeThematicThought.existentialCounsel} 또한 파스칼의 명제인 '${focalPenseesMaxim.maximKo}'(${focalPenseesMaxim.coreDimension})을 마음에 새겨, ` +
     `${focalPenseesMaxim.practicalAction}`;
 
+  const pascalSynthesisMatrix = {
+    dominantTension: `${activeThematicThought.thoughtTitleKo} ↔ ${temporalRhythm.kstSlot}`,
+    alignmentState:
+      heartIntuitionFinesseScore >= 85 && thinkingReedDignityScore >= 85
+        ? '기하학적 정신과 심장 직관의 고차원 공명'
+        : '소음을 비우고 심장의 제1원리를 가다듬는 숙성기',
+    integratedAction: `${topicPack.ritual} (${focalPenseesMaxim.practicalAction})`,
+  };
+
   return {
     engineVersion: PASCAL_PENSEES_HEART_REASON_VERSION,
-    calculatedAtKst: targetDate.toISOString(),
+    calculatedAtKst: formatPascalKstTimestamp(targetDate),
     thinkingReedDignityScore,
     heartIntuitionFinesseScore,
     existentialWagerResolveScore,
@@ -271,12 +295,14 @@ export function calculatePascalPenseesHeartReason(
     dailyPracticeRitual: topicPack.ritual,
     reflectiveQuestion: topicPack.question,
     interpretiveBoundary: '본 관점은 파스칼 《팡세》의 철학적 상징을 바탕으로 내면의 사유와 직관을 돕는 성찰 도구이며, 우열을 가르는 수치나 확정적 예언이 아닙니다.',
+    pascalSynthesisMatrix,
   };
 }
 
 export function formatPascalPenseesHeartReasonPrompt(res: PascalPenseesHeartReasonResult): string {
-  return [
+  const lines = [
     `【블레즈 파스칼 팡세(Pensées) 사유하는 갈대 & 심장의 논리 지표】`,
+    `- 엔진 버전: ${res.engineVersion} | 연산 시각: ${res.calculatedAtKst}`,
     `- 사유하는 갈대(Roseau pensant) 지적 존엄 흐름: ${describePascalQualitativeStage(res.thinkingReedDignityScore)}`,
     `- 심장의 논리(Le cœur a ses raisons) 직관 섬세도: ${describePascalQualitativeStage(res.heartIntuitionFinesseScore)}`,
     `- 파스칼의 내기(Pari) 실존적 가치 결단 흐름: ${describePascalQualitativeStage(res.existentialWagerResolveScore)}`,
@@ -294,5 +320,12 @@ export function formatPascalPenseesHeartReasonPrompt(res: PascalPenseesHeartReas
     `- 핵심 성찰 질문: ${res.reflectiveQuestion}`,
     `- 통합 실존 처방: ${res.pascalPersonalCounsel.philosophicalGuidance}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
-  ].join('\n');
+  ];
+  if (res.pascalSynthesisMatrix) {
+    lines.push(
+      `- 교차 매트릭스 [핵심 긴장: ${res.pascalSynthesisMatrix.dominantTension} | 조율 상태: ${res.pascalSynthesisMatrix.alignmentState}]`,
+      `- 통합 실천: ${res.pascalSynthesisMatrix.integratedAction}`,
+    );
+  }
+  return lines.join('\n');
 }
