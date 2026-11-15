@@ -21,7 +21,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const SHUGENDO_YAMABUSHI_TEN_REALMS_ENGINE_VERSION = '1.0.0';
+export const SHUGENDO_YAMABUSHI_TEN_REALMS_ENGINE_VERSION = '2.0.0';
 
 export interface TenRealmStage {
   id: string;
@@ -35,6 +35,7 @@ export interface TenRealmStage {
 export interface ShugendoYamabushiTenRealmsReport {
   engineVersion: string;
   timestamp: string;
+  calculatedAtKst: string;
   symbolicRebirthScore: number; // 0 ~ 100 의사재생(擬死再生) 통과도
   sixRootsPurificationScore: number; // 0 ~ 100 6근청정(六根淸淨) 정화도
   kujiKiriWardDefenseScore: number; // 0 ~ 100 구지신인(九字神印: 臨兵鬪者皆陣烈在前) 결계력
@@ -42,6 +43,21 @@ export interface ShugendoYamabushiTenRealmsReport {
   highestAwakenedRealm: TenRealmStage; // 가장 높이 개화된 영적 계위
   yamabushiAsceticPointers: string; // 야마부시 산악 지혜 요결
   waterfallTakiGyoRitual: string; // 타키교(폭포 수마) 심신 정화 처방
+  shugendoSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
+}
+
+function formatShugendoKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
 }
 
 const TEN_REALMS_BASE: Omit<TenRealmStage, 'purificationScore'>[] = [
@@ -171,9 +187,17 @@ export function calculateShugendoYamabushiTenRealms(
   const yamabushiAsceticPointers = `오미네산의 험준한 절벽을 오르듯, 현재 당신의 영혼은 [${currentInitiationRealm.nameKo}(${currentInitiationRealm.kanji})]의 시련을 통과하고 있습니다. ${currentInitiationRealm.transmutationTask}에 집중할 때 비로소 [${highestAwakenedRealm.nameKo}]의 본래 힘이 발현됩니다.`;
   const waterfallTakiGyoRitual = `찬 물로 세수를 하거나 샤워 시 30초간 냉수를 쐬며 "육근청정(六根淸淨), 구지신인 임·병·투·자·개·진·열·재·전(臨兵鬪者皆陣烈在前)"을 마음속으로 외쳐 사기(邪氣)를 물리치고 중심을 세우십시오.`;
 
+  const calculatedAtKst = formatShugendoKstTimestamp(now);
+  const shugendoSynthesisMatrix = {
+    dominantTension: `${currentInitiationRealm.nameKo}(${currentInitiationRealm.kanji}) ↔ ${highestAwakenedRealm.nameKo}(${highestAwakenedRealm.kanji})`,
+    alignmentState: `${currentInitiationRealm.spiritualDomain}`,
+    integratedAction: `${currentInitiationRealm.transmutationTask} · ${waterfallTakiGyoRitual}`,
+  };
+
   return {
     engineVersion: SHUGENDO_YAMABUSHI_TEN_REALMS_ENGINE_VERSION,
     timestamp: now.toISOString(),
+    calculatedAtKst,
     symbolicRebirthScore,
     sixRootsPurificationScore,
     kujiKiriWardDefenseScore,
@@ -181,18 +205,26 @@ export function calculateShugendoYamabushiTenRealms(
     highestAwakenedRealm,
     yamabushiAsceticPointers,
     waterfallTakiGyoRitual,
+    shugendoSynthesisMatrix,
   };
 }
 
 export function formatShugendoYamabushiTenRealmsPrompt(rep: ShugendoYamabushiTenRealmsReport): string {
-  return `[고대 일본 슈겐도(修驗道) 야마부시 10계수행 & 6근청정 실측 데이터]
-· 엔진 버전: v${rep.engineVersion}
-· 의사재생(擬死再生) 통과도: ${rep.symbolicRebirthScore}/100 | 6근청정(六根淸淨) 정화도: ${rep.sixRootsPurificationScore}/100
-· 구지신인(九字神印) 결계 방어력: ${rep.kujiKiriWardDefenseScore}/100
-· 현재 당면 통과의례 계위: [${rep.currentInitiationRealm.nameKo} (${rep.currentInitiationRealm.kanji})] — 정화도 ${rep.currentInitiationRealm.purificationScore}%
-  - 영적 영역: ${rep.currentInitiationRealm.spiritualDomain}
-  - 전환 과제: ${rep.currentInitiationRealm.transmutationTask}
-· 최고 개화 영적 계위: [${rep.highestAwakenedRealm.nameKo} (${rep.highestAwakenedRealm.kanji})] — 정화도 ${rep.highestAwakenedRealm.purificationScore}%
-· 야마부시 산악 지혜 요결: ${rep.yamabushiAsceticPointers}
-· 폭포 수마(타키교) 심신 정화 리추얼: ${rep.waterfallTakiGyoRitual}`;
+  const lines = [
+    `[고대 일본 슈겐도(修驗道) 야마부시 10계수행 & 6근청정 실측 데이터]`,
+    `· 연산 시각: ${rep.calculatedAtKst} | 엔진 버전: v${rep.engineVersion}`,
+    `· 현재 당면 통과의례 계위: [${rep.currentInitiationRealm.nameKo} (${rep.currentInitiationRealm.kanji})]`,
+    `  - 영적 영역: ${rep.currentInitiationRealm.spiritualDomain}`,
+    `  - 전환 과제: ${rep.currentInitiationRealm.transmutationTask}`,
+    `· 최고 개화 영적 계위: [${rep.highestAwakenedRealm.nameKo} (${rep.highestAwakenedRealm.kanji})]`,
+    `· 야마부시 산악 지혜 요결: ${rep.yamabushiAsceticPointers}`,
+    `· 폭포 수마(타키교) 심신 정화 리추얼: ${rep.waterfallTakiGyoRitual}`,
+  ];
+  if (rep.shugendoSynthesisMatrix) {
+    lines.push(
+      `· 교차 매트릭스 [핵심 긴장: ${rep.shugendoSynthesisMatrix.dominantTension} | 조율 상태: ${rep.shugendoSynthesisMatrix.alignmentState}]`,
+      `· 통합 실천: ${rep.shugendoSynthesisMatrix.integratedAction}`,
+    );
+  }
+  return lines.join('\n');
 }

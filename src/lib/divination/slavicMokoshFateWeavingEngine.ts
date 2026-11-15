@@ -13,7 +13,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const SLAVIC_MOKOSH_FATE_WEAVING_ENGINE_VERSION = '1.0.0';
+export const SLAVIC_MOKOSH_FATE_WEAVING_ENGINE_VERSION = '2.0.0';
 
 export interface ThreadOfFate {
   id: 'dolya' | 'nedolya' | 'spindle';
@@ -27,6 +27,7 @@ export interface ThreadOfFate {
 export interface SlavicMokoshFateWeavingReport {
   engineVersion: string;
   timestamp: string;
+  calculatedAtKst: string;
   earthFertilityIndex: number; // 0 ~ 100 대지 모성 풍요 지수
   fateTensionScore: number; // 0 ~ 100 운명 실타래 장력 및 회복탄력성
   threads: {
@@ -37,14 +38,31 @@ export interface SlavicMokoshFateWeavingReport {
   };
   seasonalPhase: string; // 계절적 직조 국면 (파종·개화·수확·안식)
   reweavingPrescription: string; // 운명 재직조 개운 처방
+  mokoshSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
+}
+
+function formatMokoshKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
 }
 
 export function calculateSlavicMokoshFateWeaving(options?: {
   profile?: UserProfile | null;
   question?: string;
+  now?: Date;
 }): SlavicMokoshFateWeavingReport {
   const profile = options?.profile;
   const question = (options?.question || '').trim();
+  const now = options?.now ?? new Date();
 
   let seed = 999;
   const bdate = profile?.basic?.birthdate || '1990-01-01';
@@ -103,9 +121,17 @@ export function calculateSlavicMokoshFateWeaving(options?: {
     reweavingPrescription = '따뜻한 차 한 잔을 마시며 대지의 기운에 감사하고, 오늘 하루 정직한 노동과 성실한 루틴으로 운명의 날실을 촘촘히 짜십시오.';
   }
 
+  const calculatedAtKst = formatMokoshKstTimestamp(now);
+  const mokoshSynthesisMatrix = {
+    dominantTension: `${dolya.nameKo} ↔ ${nedolya.nameKo}`,
+    alignmentState: `${seasonalPhase}`,
+    integratedAction: `${reweavingPrescription}${question ? ` [질문 맥락: ${question}]` : ''}`,
+  };
+
   return {
     engineVersion: SLAVIC_MOKOSH_FATE_WEAVING_ENGINE_VERSION,
-    timestamp: new Date().toISOString(),
+    timestamp: now.toISOString(),
+    calculatedAtKst,
     earthFertilityIndex,
     fateTensionScore,
     threads: {
@@ -116,17 +142,26 @@ export function calculateSlavicMokoshFateWeaving(options?: {
     },
     seasonalPhase,
     reweavingPrescription,
+    mokoshSynthesisMatrix,
   };
 }
 
 export function formatSlavicMokoshFateWeavingPrompt(rep: SlavicMokoshFateWeavingReport): string {
-  return `[고대 슬라브 모코시(Mokosh) 운명의 실타래 & 대지 모성 실측 데이터]
-· 엔진 버전: v${rep.engineVersion}
-· 대지 모성 풍요 지수: ${rep.earthFertilityIndex}/100 | 운명 실타래 장력 탄력도: ${rep.fateTensionScore}%
-· 계절적 직조 국면: ${rep.seasonalPhase}
-· 운명의 3대 실타래 밸런스 (${rep.threads.balanceRatio}):
-  1) ${rep.threads.dolya.nameKo}: 강도 ${rep.threads.dolya.strength}% — ${rep.threads.dolya.weavingMessage}
-  2) ${rep.threads.nedolya.nameKo}: 강도 ${rep.threads.nedolya.strength}% — ${rep.threads.nedolya.weavingMessage}
-  3) ${rep.threads.spindle.nameKo}: 장악력 ${rep.threads.spindle.strength}% — ${rep.threads.spindle.weavingMessage}
-· 모코시의 운명 재직조(Re-weaving) 개운 처방: ${rep.reweavingPrescription}`;
+  const lines = [
+    `[고대 슬라브 모코시(Mokosh) 운명의 실타래 & 대지 모성 실측 데이터]`,
+    `· 연산 시각: ${rep.calculatedAtKst} | 엔진 버전: v${rep.engineVersion}`,
+    `· 계절적 직조 국면: ${rep.seasonalPhase}`,
+    `· 운명의 3대 실타래 흐름:`,
+    `  1) ${rep.threads.dolya.nameKo}: ${rep.threads.dolya.weavingMessage}`,
+    `  2) ${rep.threads.nedolya.nameKo}: ${rep.threads.nedolya.weavingMessage}`,
+    `  3) ${rep.threads.spindle.nameKo}: ${rep.threads.spindle.weavingMessage}`,
+    `· 모코시의 운명 재직조(Re-weaving) 개운 처방: ${rep.reweavingPrescription}`,
+  ];
+  if (rep.mokoshSynthesisMatrix) {
+    lines.push(
+      `· 교차 매트릭스 [핵심 긴장: ${rep.mokoshSynthesisMatrix.dominantTension} | 조율 상태: ${rep.mokoshSynthesisMatrix.alignmentState}]`,
+      `· 통합 실천: ${rep.mokoshSynthesisMatrix.integratedAction}`,
+    );
+  }
+  return lines.join('\n');
 }

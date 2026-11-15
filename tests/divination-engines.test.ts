@@ -3465,11 +3465,15 @@ test('Hindu Nadi Agastya Palm Leaf Engine: calculates 14 Kandams and Shanti Pari
 test('Shinto Kotodama Four Souls Engine: calculates Ichirei Shikon balance and Kotodama chant', () => {
   const rep = calculateShintoKotodama({ profile });
   assert.equal(rep.engineVersion, SHINTO_KOTODAMA_FOUR_SOULS_ENGINE_VERSION);
+  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(rep.shintoSynthesisMatrix?.integratedAction));
   assert(rep.naohiPurityIndex >= 0 && rep.naohiPurityIndex <= 100);
   assert(rep.fourSouls.dominantSoul.length > 0);
   const prompt = formatShintoKotodamaPrompt(rep);
   assert(prompt.includes('고대 일본 신도 고토다마(言霊) 50음령 & 4혼1생(四魂一志) 영혼 조화 실측 데이터'));
   assert(prompt.includes(rep.fourSouls.dominantSoul));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100') && !prompt.includes('100점'));
 });
 
 test('Aboriginal Dreamtime Songlines Engine: calculates ancestral totem and Kurunpa index', () => {
@@ -3589,12 +3593,16 @@ test('Maori Mauri Hauora Engine: calculates 4 Hauora pillars and Mauri vitality 
 test('Slavic Mokosh Fate Weaving Engine: calculates Dolya/Nedolya fate threads and fertility index', () => {
   const rep = calculateSlavicMokoshFateWeaving({ profile });
   assert.equal(rep.engineVersion, SLAVIC_MOKOSH_FATE_WEAVING_ENGINE_VERSION);
+  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(rep.mokoshSynthesisMatrix?.integratedAction));
   assert(rep.earthFertilityIndex >= 0 && rep.earthFertilityIndex <= 100);
   assert(rep.fateTensionScore >= 0 && rep.fateTensionScore <= 100);
   assert(rep.threads.dolya.strength > 0);
   const prompt = formatSlavicMokoshFateWeavingPrompt(rep);
   assert(prompt.includes('고대 슬라브 모코시(Mokosh) 운명의 실타래 & 대지 모성 실측 데이터'));
   assert(prompt.includes(rep.threads.dolya.nameKo));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100') && !prompt.includes('%'));
 });
 
 test('Sumerian Gilgamesh Trials Engine: calculates 12 trials and heroic resilience score', () => {
@@ -3918,6 +3926,8 @@ test('Toltec Nagual Dreaming Engine: calculates four agreements and second atten
 test('Shugendo Yamabushi Ten Realms Engine: calculates ten realms purification and symbolic rebirth', () => {
   const rep = calculateShugendoYamabushiTenRealms({ profile });
   assert.equal(rep.engineVersion, SHUGENDO_YAMABUSHI_TEN_REALMS_ENGINE_VERSION);
+  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(rep.shugendoSynthesisMatrix?.integratedAction));
   assert(rep.symbolicRebirthScore >= 0 && rep.symbolicRebirthScore <= 100);
   assert(rep.sixRootsPurificationScore >= 0 && rep.sixRootsPurificationScore <= 100);
   assert(rep.kujiKiriWardDefenseScore >= 0 && rep.kujiKiriWardDefenseScore <= 100);
@@ -3926,6 +3936,8 @@ test('Shugendo Yamabushi Ten Realms Engine: calculates ten realms purification a
   const prompt = formatShugendoYamabushiTenRealmsPrompt(rep);
   assert(prompt.includes('고대 일본 슈겐도(修驗道) 야마부시 10계수행 & 6근청정 실측 데이터'));
   assert(prompt.includes(rep.currentInitiationRealm.nameKo));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100') && !prompt.includes('%'));
   assert.doesNotMatch(prompt, /\bHz\b|Solfeggio|솔페지오|주파수/i);
 });
 
