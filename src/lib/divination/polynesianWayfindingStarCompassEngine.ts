@@ -27,11 +27,12 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const POLYNESIAN_WAYFINDING_VERSION = '1.0.0';
+export const POLYNESIAN_WAYFINDING_VERSION = '2.0.0';
 
 export interface PolynesianWayfindingReport {
   engineVersion: string;
   calculatedAt: string;
+  calculatedAtKst: string;
   // 웨이파인딩 5대 대양 지표 (0~100)
   oceanSwellSensitivityIndex: number; // 오션 스웰(파도 맥박) 감지력 및 잠재적 흐름 투시력
   wayfinderNavigationClarityScore: number; // 항해 비전 선명도 및 목적지 일치율
@@ -51,6 +52,27 @@ export interface PolynesianWayfindingReport {
     destinySignificance: string;
   };
   wayfinderSeaChantWisdom: string;
+  wayfindingSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
+}
+
+function formatWayfindingKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
+
+function describeWayfindingStage(score: number): string {
+  if (score >= 84) return '호쿠레아 순항(Hōkūleʻa Clear) — 목적지 섬의 형상이 선명히 잡히고 오션 스웰이 순풍으로 맞물리는 항해기';
+  if (score >= 70) return '와아 카울루아 균형(Waʻa Balance) — 파도의 맥박을 읽으며 쌍동선의 균형을 세밀히 조율하는 항해기';
+  return '호쿠파아 정박(Hōkūpaʻa Anchor) — 안개 속에서 흔들리지 않는 북극성을 기준으로 호흡을 가다듬는 대기기';
 }
 
 function djb2Hash(str: string): number {
@@ -124,12 +146,16 @@ const GUIDING_STARS = [
   }
 ];
 
-export function calculatePolynesianWayfinding(profile: UserProfile | null | undefined): PolynesianWayfindingReport {
+export function calculatePolynesianWayfinding(
+  profile: UserProfile | null | undefined,
+  query?: string,
+  now: Date = new Date(),
+): PolynesianWayfindingReport {
   const birthStr = profile?.basic?.birthdate || '1995-01-01';
   const nameStr = profile?.basic?.name || '내담자';
   const timeStr = profile?.basic?.birthtime || '12:00';
 
-  const seed = djb2Hash(`${birthStr}_${nameStr}_${timeStr}_polynesian_wayfinding`);
+  const seed = djb2Hash(`${birthStr}_${nameStr}_${timeStr}_${query ?? ''}_polynesian_wayfinding`);
 
   const oceanSwellSensitivityIndex = 62 + (seed % 37);
   const wayfinderNavigationClarityScore = 65 + ((seed >> 2) % 34);
@@ -149,9 +175,20 @@ export function calculatePolynesianWayfinding(profile: UserProfile | null | unde
     wayfinderSeaChantWisdom = '호쿠파아(북극성)와 마우이의 낚싯바늘을 주시하십시오. 삶의 무게중심을 낮추고 쌍동선의 균형을 잡으면, 보이지 않던 안개가 걷히고 곧 육지를 알리는 새들의 날갯짓을 보게 될 것입니다.';
   }
 
+  const calculatedAtKst = formatWayfindingKstTimestamp(now);
+  const composite = Math.round(
+    (oceanSwellSensitivityIndex + wayfinderNavigationClarityScore + voyagingCanoeBalanceResilience + ancestralManaExplorationForce + islandFindingArrivalCertainty) / 5
+  );
+  const wayfindingSynthesisMatrix = {
+    dominantTension: `${primaryStarHouse.hawaiianName} ↔ ${guidingZenithStar.hawaiianName}`,
+    alignmentState: describeWayfindingStage(composite),
+    integratedAction: `${primaryStarHouse.navigationSign}${query?.trim() ? ` [질문 맥락: ${query.trim()}]` : ''}`,
+  };
+
   return {
     engineVersion: POLYNESIAN_WAYFINDING_VERSION,
-    calculatedAt: new Date().toISOString(),
+    calculatedAt: now.toISOString(),
+    calculatedAtKst,
     oceanSwellSensitivityIndex,
     wayfinderNavigationClarityScore,
     voyagingCanoeBalanceResilience,
@@ -159,23 +196,30 @@ export function calculatePolynesianWayfinding(profile: UserProfile | null | unde
     islandFindingArrivalCertainty,
     primaryStarHouse,
     guidingZenithStar,
-    wayfinderSeaChantWisdom
+    wayfinderSeaChantWisdom,
+    wayfindingSynthesisMatrix,
   };
 }
 
 export function formatPolynesianWayfindingPrompt(report: PolynesianWayfindingReport): string {
-  return `### 고대 폴리네시아 마우이 《웨이파인딩 32방위 스타 컴퍼스》 항해 엔진 (v${report.engineVersion})
-- **주요 항해 하우스 (Star House)**: ${report.primaryStarHouse.hawaiianName} [${report.primaryStarHouse.quadrant}]
-  - *하우스 상징*: ${report.primaryStarHouse.meaningKo}
-  - *항법 징표*: ${report.primaryStarHouse.navigationSign}
-- **인도별 (Zenith Star)**: ${report.guidingZenithStar.hawaiianName} (${report.guidingZenithStar.westernConstellation})
-  - *운명적 계시*: ${report.guidingZenithStar.destinySignificance}
-- **웨이파인딩 5대 대양 지표**:
-  - 오션 스웰(파도 맥박) 감지력: ${report.oceanSwellSensitivityIndex}점 / 100
-  - 항해 비전 선명도: ${report.wayfinderNavigationClarityScore}점 / 100
-  - 카누 균형 및 폭풍 내구성: ${report.voyagingCanoeBalanceResilience}점 / 100
-  - 조상 마나(Mana) 탐험 추진력: ${report.ancestralManaExplorationForce}점 / 100
-  - 목적지 섬(Island) 도달 확신도: ${report.islandFindingArrivalCertainty}점 / 100
-- **웨이파인더 대양 지혜 잠언**:
-  - "${report.wayfinderSeaChantWisdom}"`;
+  const composite = Math.round(
+    (report.oceanSwellSensitivityIndex + report.wayfinderNavigationClarityScore + report.voyagingCanoeBalanceResilience + report.ancestralManaExplorationForce + report.islandFindingArrivalCertainty) / 5
+  );
+  const lines = [
+    `### 고대 폴리네시아 마우이 《웨이파인딩 32방위 스타 컴퍼스》 항해 엔진 (v${report.engineVersion})`,
+    `- **연산 시각**: ${report.calculatedAtKst} | **항해 공명 국면**: ${describeWayfindingStage(composite)}`,
+    `- **주요 항해 하우스 (Star House)**: ${report.primaryStarHouse.hawaiianName} [${report.primaryStarHouse.quadrant}]`,
+    `  - *하우스 상징*: ${report.primaryStarHouse.meaningKo}`,
+    `  - *항법 징표*: ${report.primaryStarHouse.navigationSign}`,
+    `- **인도별 (Zenith Star)**: ${report.guidingZenithStar.hawaiianName} (${report.guidingZenithStar.westernConstellation})`,
+    `  - *운명적 계시*: ${report.guidingZenithStar.destinySignificance}`,
+    `- **웨이파인더 대양 지혜 잠언**: "${report.wayfinderSeaChantWisdom}"`,
+  ];
+  if (report.wayfindingSynthesisMatrix) {
+    lines.push(
+      `- **교차 매트릭스**: [핵심 긴장: ${report.wayfindingSynthesisMatrix.dominantTension} | 조율 상태: ${report.wayfindingSynthesisMatrix.alignmentState}]`,
+      `- **통합 실천**: ${report.wayfindingSynthesisMatrix.integratedAction}`,
+    );
+  }
+  return lines.join('\n');
 }
