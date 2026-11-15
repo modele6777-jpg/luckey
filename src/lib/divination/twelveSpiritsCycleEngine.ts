@@ -23,7 +23,17 @@ import {
   EARTHLY_BRANCHES
 } from '../sajuAnalysis';
 
-export const TWELVE_SPIRITS_ENGINE_VERSION = 'LUCKEY-SPIRIT-v1.0.0';
+export const TWELVE_SPIRITS_ENGINE_VERSION = 'LUCKEY-SPIRIT-v2.0.0';
+
+function formatSpiritsKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
 
 export type SpiritName =
   | '겁살' | '재살' | '천살' | '지살'
@@ -217,6 +227,7 @@ function buildTwelveSpiritsMap(anchorBranch: string): Record<string, SpiritName>
 export interface TwelveSpiritsResult {
   engineVersion: string;
   targetDateIso: string;
+  calculatedAtKst: string;
   anchorYearBranch: string;
   anchorDayBranch: string;
   
@@ -253,6 +264,11 @@ export interface TwelveSpiritsResult {
   };
 
   summary: string;
+  twelveSpiritsSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
 }
 
 /**
@@ -285,6 +301,7 @@ export function calculateTwelveSpiritsCycle(params?: {
   profile?: UserProfile | null;
   saju?: SajuAnalysisResult | null;
   targetDate?: Date;
+  question?: string;
 }): TwelveSpiritsResult {
   const now = params?.targetDate || new Date();
   const saju = params?.saju || calculateDetailedSaju(params?.profile || null);
@@ -340,16 +357,26 @@ export function calculateTwelveSpiritsCycle(params?: {
 
   const summary = `[12신살 궤도] 오늘 일진(${todayDaySpirit.branchKo})은 내면 [${primarySpirit.name}(${primarySpirit.hanja})] · 사회적 [${secondarySpirit.name}(${secondarySpirit.hanja})] 국면입니다. 추천 페르소나: ${primarySpirit.dailyPersona}. 핵심 무기: ${primarySpirit.superpower}.`;
 
+  const calculatedAtKst = formatSpiritsKstTimestamp(now);
+  const q = (params?.question || '').trim();
+  const twelveSpiritsSynthesisMatrix = {
+    dominantTension: `${primarySpirit.name}(${primarySpirit.hanja}) ↔ ${secondarySpirit.name}(${secondarySpirit.hanja})`,
+    alignmentState: `${primarySpirit.nature} · ${todayDaySpirit.branchKo} 일진`,
+    integratedAction: `${primarySpirit.actionGuidance}${q ? ` [질문 맥락: ${q}]` : ''}`,
+  };
+
   return {
     engineVersion: TWELVE_SPIRITS_ENGINE_VERSION,
     targetDateIso: now.toISOString(),
+    calculatedAtKst,
     anchorYearBranch: yearAnchor,
     anchorDayBranch: dayAnchor,
     natalPillarsSpirits,
     todayDaySpirit,
     annualSeunSpirit,
     todayStrategy,
-    summary
+    summary,
+    twelveSpiritsSynthesisMatrix,
   };
 }
 
@@ -359,15 +386,18 @@ export function calculateTwelveSpiritsCycle(params?: {
 export function formatTwelveSpiritsPrompt(res: TwelveSpiritsResult): string {
   const dSpirit = res.todayDaySpirit.dayBase;
   const ySpirit = res.todayDaySpirit.yearBase;
+  const matrixLine = res.twelveSpiritsSynthesisMatrix
+    ? `\n- 12신살 교차 매트릭스: 핵심 긴장(${res.twelveSpiritsSynthesisMatrix.dominantTension}) · 조율 상태(${res.twelveSpiritsSynthesisMatrix.alignmentState}) · 통합 실천(${res.twelveSpiritsSynthesisMatrix.integratedAction})`
+    : '';
 
-  return `[사주 12신살(겁재천지년월망장반역육화) 완전 순환 궤도 리포트 (엔진: ${res.engineVersion})]
+  return `[사주 12신살(겁재천지년월망장반역육화) 완전 순환 궤도 리포트 (엔진: ${res.engineVersion} | ${res.calculatedAtKst})]
 - 오늘 일진(${res.todayDaySpirit.branchKo}) 배속:
   • 내면/심리 궤도(일지 기준): [${dSpirit.name}(${dSpirit.hanja})] - ${dSpirit.alias} (${dSpirit.nature})
   • 대외/사회 궤도(년지 기준): [${ySpirit.name}(${ySpirit.hanja})] - ${ySpirit.alias} (${ySpirit.nature})
 - 오늘 추천 페르소나: ${res.todayStrategy.recommendedPersona}
 - 오늘 발휘할 슈퍼파워: ${res.todayStrategy.superpowerToUse}
 - 피해야 할 함정: ${res.todayStrategy.trapToAvoid}
-- 하루 실천 지침: ${res.todayStrategy.coreAdvice}
+- 하루 실천 지침: ${res.todayStrategy.coreAdvice}${matrixLine}
 ※ 루시 지침: 12신살은 하루하루 운의 파도 속에서 내가 어떤 역할을 맡아야 가장 자연스럽고 강력한지를 알려주는 행동 나침반입니다. 오늘 사용자가 발휘해야 할 '슈퍼파워'와 조심할 '함정'을 자연스러운 조언으로 녹여내세요.`;
 }
 

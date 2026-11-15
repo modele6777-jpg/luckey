@@ -2070,8 +2070,10 @@ test('Dynamic Clash Trigger Engine: 실시간 삼형·육충·파해 동적 격�
 });
 
 test('Twelve Spirits Cycle Engine: 사주 12신살 완전 순환 궤도 및 일진 페르소나 검증', () => {
-  const res = calculateTwelveSpiritsCycle({ profile, targetDate: new Date('2026-11-02T19:00:00+09:00') });
+  const res = calculateTwelveSpiritsCycle({ profile, targetDate: new Date('2026-11-02T19:00:00+09:00'), question: '오늘의 행동 전략' });
   assert.equal(res.engineVersion, TWELVE_SPIRITS_ENGINE_VERSION);
+  assert(res.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(res.twelveSpiritsSynthesisMatrix?.integratedAction));
   assert(res.todayDaySpirit.dayBase.name.length > 0);
   assert(res.todayDaySpirit.yearBase.name.length > 0);
   assert(res.todayStrategy.recommendedPersona.length > 0);
@@ -2080,6 +2082,9 @@ test('Twelve Spirits Cycle Engine: 사주 12신살 완전 순환 궤도 및 일�
   assert(prompt.includes(TWELVE_SPIRITS_ENGINE_VERSION));
   assert(prompt.includes('오늘 일진'));
   assert(prompt.includes('추천 페르소나'));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
 });
 
 test('Pythagorean Lifecycle Engine: 피타고라스 4대 피너클 & 챌린지 생애 주기 검증', () => {
@@ -2432,14 +2437,19 @@ test('Soul Journey Tarot Engine: 영혼 연금술 3단계 및 4원소 균형 검
 });
 
 test('Transcendental Meditation Engine: 초월 명상 및 마음 안정 안내 검증', () => {
-  const res = calculateTranscendentalMeditation({ profile, targetDate: new Date('2026-11-03T10:00:00+09:00') });
+  const res = calculateTranscendentalMeditation({ profile, targetDate: new Date('2026-11-03T10:00:00+09:00'), question: '마음의 평정' });
   assert.equal(res.engineVersion, TRANSCENDENTAL_MEDITATION_VERSION);
+  assert(res.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(res.zenSynthesisMatrix?.integratedAction));
   assert(res.equanimityScore >= 0 && res.equanimityScore <= 100);
   assert(res.prescription.intendedMindState.length > 0);
   assert(res.ichingZenState.mantraText.length > 0);
   const prompt = formatTranscendentalMeditationPrompt(res);
   assert(prompt.includes('LUCKEY 초월 명상 & 마음 안정 지능'));
   assert(prompt.includes(res.zenEnergyArchetype));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
   assert.doesNotMatch(prompt, /\bHz\b|Solfeggio|솔페지오|뇌파|주파수/i);
 });
 
@@ -4150,8 +4160,10 @@ test('Chaldean Mul Apin Astrology Engine: calculates celestial paths, ruling pla
 });
 
 test('Toltec Nagual Dreaming Engine: calculates four agreements and second attention', () => {
-  const rep = calculateToltecNagualDreaming({ profile });
+  const rep = calculateToltecNagualDreaming({ profile, question: '현실 자각' });
   assert.equal(rep.engineVersion, TOLTEC_NAGUAL_DREAMING_ENGINE_VERSION);
+  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(rep.toltecSynthesisMatrix?.integratedAction));
   assert.equal(rep.agreements.length, 4);
   assert(rep.secondAttentionIndex >= 0 && rep.secondAttentionIndex <= 100);
   assert(rep.mitoteClarityScore >= 0 && rep.mitoteClarityScore <= 100);
@@ -4160,6 +4172,9 @@ test('Toltec Nagual Dreaming Engine: calculates four agreements and second atten
   const prompt = formatToltecNagualDreamingPrompt(rep);
   assert(prompt.includes('고대 톨텍 나구알리즘 4대 약속 & 꿈의 제2주의 실측 데이터'));
   assert(prompt.includes(rep.primaryAgreement.nameKo));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
 });
 
 test('Shugendo Yamabushi Ten Realms Engine: calculates ten realms purification and symbolic rebirth', () => {
