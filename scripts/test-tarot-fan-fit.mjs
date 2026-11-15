@@ -7,10 +7,8 @@ const fixture = `
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { TarotSpread } from './src/components/trinity/TarotSpread';
+import { OverlayPaneContext } from './src/components/layout/OverlayPaneContext';
 import { isDuoUnfoldedState } from './src/lib/perfMode';
-import { fanCardWidth, maxFanRadius } from './src/components/trinity/tarotRingLayout';
-window.fanCardWidth = fanCardWidth;
-window.maxFanRadius = maxFanRadius;
 window.applyDuo = () => {
   const state = isDuoUnfoldedState();
   const root = document.documentElement;
@@ -20,14 +18,31 @@ window.applyDuo = () => {
   document.body.classList.toggle('duo-unfolded-mode', state.unfolded);
   document.body.classList.toggle('duo-unfolded-portrait', state.unfolded && state.orientation === 'portrait');
   document.body.classList.toggle('duo-unfolded-landscape', state.unfolded && state.orientation === 'landscape');
+  const content = document.getElementById('duo-content-viewport');
+  const lucy = document.getElementById('duo-lucy-viewport');
+  if (!state.unfolded) {
+    content.style.cssText = 'display:flex;width:100%;height:100%;flex:1 1 0%;min-height:0';
+    lucy.style.cssText = 'display:none';
+  } else if (state.orientation === 'portrait') {
+    content.style.cssText = 'display:flex;height:50%;min-height:50%;max-height:50%;width:100%;flex:0 0 50%';
+    lucy.style.cssText = 'display:flex;height:50%;min-height:50%;max-height:50%;width:100%;flex:0 0 50%';
+  } else {
+    content.style.cssText = 'display:flex;width:50vw;min-width:50vw;max-width:50vw;height:100%;flex:0 0 50vw';
+    lucy.style.cssText = 'display:flex;flex:1 1 0px;width:calc(50vw - var(--sites-sidebar-width, 80px));height:100%';
+  }
   window.dispatchEvent(new Event('resize'));
   return state;
 };
 function App(){
-  return <TarotSpread onComplete={()=>{}} onCancel={()=>{}} maxCards={3} spreadName="기적수업 지각전환 스프레드" positions={['에고의 환영과 두려움','거룩한 순간과 지각의 전환','참된 용서와 평화의 기적']} />;
+  return (
+    <OverlayPaneContext.Provider value="content">
+      <TarotSpread onComplete={()=>{}} onCancel={()=>{}} maxCards={3} spreadName="기적수업 지각전환 스프레드" positions={['에고의 환영과 두려움','거룩한 순간과 지각의 전환','참된 용서와 평화의 기적']} />
+    </OverlayPaneContext.Provider>
+  );
 }
-createRoot(document.getElementById('root')).render(<App/>);
+createRoot(document.getElementById('mount')).render(<App/>);
 `;
+
 const bundle = await build({
   stdin: { contents: fixture, resolveDir: process.cwd(), loader: 'tsx' },
   bundle: true, write: false, format: 'iife', loader: { '.css': 'empty' },
@@ -35,6 +50,22 @@ const bundle = await build({
 });
 const css = (await readdir('dist/assets')).find(file => /^main-.*\.css$/.test(file));
 const browser = await webkit.launch({ headless: true });
+
+function expectedFan(width, height) {
+  if (width > height) {
+    const yOffset = Math.round(height / 2 + 96);
+    return { radius: Math.round(height / 2 + yOffset - 100), yOffset };
+  }
+  if (width < 540) {
+    return {
+      radius: Math.max(280, Math.min(340, Math.round(height * 0.40))),
+      yOffset: Math.max(270, Math.min(340, Math.round(height * 0.41))),
+    };
+  }
+  if (width < 768) return { radius: 460, yOffset: 500 };
+  return { radius: 640, yOffset: 700 };
+}
+
 try {
   const page = await browser.newPage({
     viewport: { width: 690, height: 1024 },
@@ -42,88 +73,123 @@ try {
     isMobile: true,
     deviceScaleFactor: 1,
   });
-  await page.setContent(`<!doctype html><html><head><meta name="viewport" content="width=device-width, initial-scale=1"></head><body>
-<main class="sites-pinned-main"><div id="root"></div></main>
-<aside class="sites-pinned-sidebar"></aside>
+  await page.setContent(`<!doctype html><html class="dark"><head><meta name="viewport" content="width=device-width, initial-scale=1"></head><body>
+<div id="root"><div class="prism-app-shell">
+<main class="sites-pinned-main flex-1 min-h-0 overflow-x-hidden relative w-full flex flex-col">
+  <div class="w-full h-full min-h-0 overflow-hidden flex relative flex-col">
+    <div id="duo-content-viewport" data-workspace-pane="content" class="duo-folded-view shrink-0 flex flex-col overflow-hidden relative" style="display:flex;width:100%;height:100%;flex:1 1 0%;min-height:0">
+      <div id="mount"></div>
+    </div>
+    <div id="duo-lucy-viewport" data-workspace-pane="lucy" style="display:none"></div>
+  </div>
+</main>
+</div></div>
+<aside class="sites-pinned-sidebar" id="main-sidebar-navigation"></aside>
 </body></html>`);
   await page.addStyleTag({ content: await readFile(`dist/assets/${css}`, 'utf8') });
   await page.addStyleTag({ content: `
-    html, body { margin: 0; height: 100%; background: #05070d; }
-    .sites-pinned-main { position: fixed; top: 0; left: 0; bottom: 0; right: var(--rail, 120px); }
-    .sites-pinned-sidebar {
-      position: fixed !important; top: 0 !important; right: 0 !important; bottom: 0 !important; left: auto !important;
-      width: var(--rail, 120px) !important; height: 100% !important; max-width: none !important; background: #151d29;
+    html.tarot-gutter .sites-pinned-main {
+      width: calc(100% - var(--sites-sidebar-width) - 80px) !important;
+      max-width: calc(100% - var(--sites-sidebar-width) - 80px) !important;
     }
   ` });
   await page.addScriptTag({ content: bundle.outputFiles[0].text });
   await page.locator('#tarot-stage-container').waitFor({ state: 'visible' });
 
-  const check = async (label, { duo = false, rail = 120 } = {}) => {
-    await page.evaluate(({ duo, rail }) => {
-      document.documentElement.style.setProperty('--rail', `${rail}px`);
+  const check = async (label, { duo = false, rail = 120, gutter = false, sideRail = true } = {}) => {
+    await page.evaluate(({ duo, rail, gutter }) => {
       document.documentElement.style.setProperty('--sites-sidebar-width', `${rail}px`);
+      document.documentElement.classList.toggle('tarot-gutter', gutter);
       if (duo) window.applyDuo();
       else {
         for (const node of [document.documentElement, document.body]) {
           node.classList.remove('duo-unfolded-mode', 'duo-unfolded-portrait', 'duo-unfolded-landscape');
         }
+        document.getElementById('duo-content-viewport').style.cssText = 'display:flex;width:100%;height:100%;flex:1 1 0%;min-height:0';
+        document.getElementById('duo-lucy-viewport').style.cssText = 'display:none';
         window.dispatchEvent(new Event('resize'));
       }
-    }, { duo, rail });
+    }, { duo, rail, gutter });
     await page.evaluate(() => new Promise(resolve => {
       requestAnimationFrame(() => requestAnimationFrame(resolve));
     }));
     const box = await page.evaluate(() => {
       const rect = (element) => {
+        if (!element) return null;
         const bounds = element.getBoundingClientRect();
         return { left: bounds.left, right: bounds.right, top: bounds.top, bottom: bounds.bottom, width: bounds.width, height: bounds.height };
       };
       const stage = document.getElementById('tarot-stage-container');
-      const rail = document.querySelector('.sites-pinned-sidebar');
+      const railEl = document.querySelector('.sites-pinned-sidebar');
       const controls = stage.querySelector('[data-tarot-controls]');
       const wheel = stage.querySelector('[data-fan-radius]');
+      const wheelBox = stage.querySelector('.cursor-grab') || wheel?.parentElement;
       const buttons = [...controls.querySelectorAll('button')].map(button => ({ text: button.textContent.replace(/\s+/g, ''), ...rect(button) }));
       const stageBox = rect(stage);
       const stageCenter = stageBox.left + stageBox.width / 2;
-      const centerCard = [...stage.querySelectorAll('[data-card-id]')].map(rect).sort((a, b) => Math.abs((a.left + a.right) / 2 - stageCenter) - Math.abs((b.left + b.right) / 2 - stageCenter))[0];
+      const cards = [...stage.querySelectorAll('[data-card-id]')].map(rect);
+      const centerCard = cards.slice().sort((a, b) => Math.abs((a.left + a.right) / 2 - stageCenter) - Math.abs((b.left + b.right) / 2 - stageCenter))[0];
+      const fanRight = cards.reduce((max, card) => Math.max(max, card.right), 0);
       return {
         stage: stageBox,
-        rail: rect(rail),
-        controls: rect(controls),
+        rail: rect(railEl),
+        wheel: rect(wheelBox),
         buttons,
         radius: Number(wheel?.dataset.fanRadius || 0),
-        cardWidth: window.fanCardWidth(stage.clientWidth),
-        limit: window.maxFanRadius(stage.clientWidth),
+        yOffset: Number(wheel?.dataset.fanYOffset || 0),
         center: centerCard ? (centerCard.left + centerCard.right) / 2 : null,
+        fanRight,
       };
     });
     assert(box.stage.width > 120 && box.stage.height > 120, `${label} stage has a canvas`);
-    const coversRail = box.stage.left < box.rail.right - 1 && box.stage.right > box.rail.left + 1 && box.stage.top < box.rail.bottom - 1 && box.stage.bottom > box.rail.top + 1;
+    const coversRail = box.stage.left < box.rail.right - 1 && box.stage.right > box.rail.left + 1
+      && box.stage.top < box.rail.bottom - 1 && box.stage.bottom > box.rail.top + 1;
     assert(!coversRail, `${label} stage stays out of the rail ${JSON.stringify(box.stage)} rail ${JSON.stringify(box.rail)}`);
-    assert(box.controls.left >= box.stage.left - 1 && box.controls.right <= box.stage.right + 1, `${label} control row stays in the stage`);
+    if (sideRail) {
+      assert(Math.abs(box.stage.right - box.rail.left) <= 2, `${label} stage meets the rail, stage ${box.stage.right} rail ${box.rail.left}`);
+      assert(box.stage.left <= 2, `${label} stage starts at the content edge`);
+    }
+    const fan = expectedFan(box.wheel.width, box.wheel.height);
+    assert.equal(box.radius, fan.radius, `${label} keeps the original radius for ${box.wheel.width}x${box.wheel.height}`);
+    assert.equal(box.yOffset, fan.yOffset, `${label} keeps the original hub offset`);
+    assert(box.buttons.length === 4, `${label} has four controls`);
     for (const button of box.buttons) {
       assert(button.left >= box.stage.left - 1 && button.right <= box.stage.right + 1, `${label} ${button.text} is inside the content width`);
-      assert(button.text.length > 0, `${label} control label is present`);
+      assert(button.width > 24, `${label} ${button.text} is visible`);
     }
-    assert(box.radius <= box.limit + 1, `${label} fan radius ${box.radius} fits column limit ${box.limit}`);
-    assert(box.center != null && Math.abs(box.center - (box.stage.left + box.stage.width / 2)) < 16, `${label} front card is centered in the content column`);
+    assert(box.center != null && Math.abs(box.center - (box.stage.left + box.stage.width / 2)) < 24, `${label} front card is centered`);
+    if (sideRail && box.radius > box.stage.width / 2) {
+      assert(box.fanRight >= box.stage.right - 2, `${label} fan reaches the rail edge, fan ${box.fanRight} stage ${box.stage.right}`);
+    }
     return box;
   };
 
-  const screenshot = await check('690x1024 side rail', { rail: 120 });
-  assert(screenshot.stage.width >= 540 && screenshot.stage.width <= 590, `screenshot column uses the width beside the 120px rail, got ${screenshot.stage.width}`);
+  const fitted = await check('690x1024 side rail', { rail: 120 });
+  assert(fitted.stage.width >= 540 && fitted.stage.width <= 590, `column beside the 120px rail, got ${fitted.stage.width}`);
+  assert.equal(fitted.radius, 460, 'wide portrait fan keeps the original 460 radius');
+  assert.equal(fitted.yOffset, 500, 'wide portrait fan keeps the original hub');
   await page.screenshot({ path: '/opt/cursor/artifacts/tarot-fan-690.png' });
+
+  const gutter = await check('690x1024 gutter before rail', { rail: 120, gutter: true });
+  assert(Math.abs(gutter.stage.right - gutter.rail.left) <= 2, 'gutter is closed up to the rail');
+  assert(gutter.stage.width > 540, `gutter fix uses the full column, got ${gutter.stage.width}`);
+  await page.screenshot({ path: '/opt/cursor/artifacts/tarot-fan-690-gutter.png' });
 
   await page.setViewportSize({ width: 393, height: 852 });
   await check('393x852 folded rail', { rail: 80 });
+  await page.screenshot({ path: '/opt/cursor/artifacts/tarot-fan-393.png' });
 
   await page.setViewportSize({ width: 900, height: 640 });
-  await check('900x640 unfolded landscape rail', { duo: true, rail: 80 });
+  const landscape = await check('900x640 unfolded landscape', { duo: true, rail: 80, sideRail: false });
+  assert(landscape.stage.right <= landscape.rail.left - 40, 'landscape fan stays in the content pane');
+  assert(landscape.radius !== 460 || landscape.wheel.width >= 540, 'landscape uses the landscape arc');
+  await page.screenshot({ path: '/opt/cursor/artifacts/tarot-fan-900.png' });
 
   await page.setViewportSize({ width: 700, height: 980 });
-  await check('700x980 portrait rail', { duo: true, rail: 80 });
+  await check('700x980 portrait', { duo: true, rail: 80, sideRail: false });
+  await page.screenshot({ path: '/opt/cursor/artifacts/tarot-fan-700.png' });
 
-  console.log('PASS: tarot fan and controls stay centered inside the content column beside the rail');
+  console.log('PASS: original tarot fan fills the width up to the rail');
 } finally {
   await browser.close();
 }

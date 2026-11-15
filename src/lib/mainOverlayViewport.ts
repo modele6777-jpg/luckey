@@ -2,6 +2,8 @@ import type { OverlayPane } from './overlayPane';
 export interface MainOverlayViewport { left: number; top: number; width: number; height: number }
 
 const VISUAL_WIDTH_TOLERANCE = 24;
+/** A cover-screen gutter between the layout canvas and a screen-edge rail. A wider gap is another pane. */
+const RAIL_GUTTER_MAX = 160;
 
 /**
  * Keyboard shrink keeps the same width and may pan vertically.
@@ -67,6 +69,16 @@ export function measureMainOverlayViewport(pane: OverlayPane = 'main'): MainOver
       left = Math.max(left, rect.left); top = Math.max(top, rect.top);
       right = Math.min(right, rect.right); bottom = Math.min(bottom, rect.bottom);
     }
+  }
+  // The layout canvas can stop short of a rail anchored to the screen edge,
+  // leaving a dark gutter. The popup fills up to that rail and no farther.
+  if (navigation && getComputedStyle(navigation).display !== 'none') {
+    const nav = navigation.getBoundingClientRect();
+    const span = bottom - top;
+    const besideRail = nav.width > 0 && nav.height >= Math.max(120, span * 0.8)
+      && nav.top <= top + 8 && nav.bottom >= bottom - 8
+      && nav.left >= right - 1 && nav.left - right <= RAIL_GUTTER_MAX;
+    if (besideRail) right = nav.left;
   }
   const width = Math.max(0, right - left);
   const height = Math.max(0, bottom - top);
