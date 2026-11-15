@@ -67,8 +67,8 @@ export function subscribeMainOverlayViewport(listener: () => void): () => void {
       frame = 0;
       const main = document.querySelector('.sites-pinned-main');
       const navigation = document.querySelector('.sites-pinned-sidebar');
-      const content = document.getElementById('duo-content-viewport');
-      const lucy = document.getElementById('duo-lucy-viewport');
+      const content = document.getElementById('duo-content-viewport') ?? document.querySelector('[data-workspace-pane="content"]');
+      const lucy = document.getElementById('duo-lucy-viewport') ?? document.querySelector('[data-workspace-pane="lucy"]');
       if (main !== trackedMain || navigation !== trackedNavigation || content !== trackedContent || lucy !== trackedLucy) {
         resize.disconnect();
         if (main) resize.observe(main);

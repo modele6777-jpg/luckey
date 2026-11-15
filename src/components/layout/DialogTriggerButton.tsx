@@ -12,6 +12,7 @@ export function DialogTriggerButton({ onClick, onPointerDown, onPointerUp, onPoi
     onClick?.(event);
   };
   return <button {...props} type={type}
+    style={{ touchAction: 'manipulation', ...props.style }}
     onPointerDown={event => {
       rememberOverlayPane(event.currentTarget, { x: event.clientX, y: event.clientY });
       onPointerDown?.(event);
