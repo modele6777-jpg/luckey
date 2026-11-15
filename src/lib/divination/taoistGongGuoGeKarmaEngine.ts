@@ -1,6 +1,16 @@
 import { UserProfile } from '../sharedState';
 
-export const TAOIST_GONG_GUO_GE_KARMA_ENGINE_VERSION = '1.1.0';
+export const TAOIST_GONG_GUO_GE_KARMA_ENGINE_VERSION = '2.0.0';
+
+function formatGongGuoGeKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
 
 export type GongGuoGeQuestionTheme = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -27,6 +37,11 @@ export interface TaoistGongGuoGeKarmaReport {
   counselNote: string;
   boundaryNotice: string;
   synthesisPrompt: string;
+  gongGuoGeSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
 }
 
 const MERIT_SYSTEMS = [
@@ -164,9 +179,15 @@ export function calculateTaoistGongGuoGeKarma(
   const netMeritScore = 85 + ((seed * 7 + kst.getUTCHours() * 3) % 36);
   const karmicShieldingIndex = 75 + ((seed * 13 + kst.getUTCDate() * 5) % 24);
   const qualitative = buildGongGuoGeQualitativeFields(merit, questionTheme);
+  const calculatedAtKst = formatGongGuoGeKstTimestamp(targetDate);
+  const gongGuoGeSynthesisMatrix = {
+    dominantTension: `${questionTheme} ↔ ${merit.mode}`,
+    alignmentState: `${merit.domain} · ${merit.constellation}`,
+    integratedAction: `${qualitative.ritual}${trimmedQ ? ` [질문 맥락: ${trimmedQ}]` : ''}`,
+  };
 
   const synthesisPrompt = `
-[도교 태상감응편(太上感應篇) & 공과격(功過格) 적선개운 성찰 리포트 (${TAOIST_GONG_GUO_GE_KARMA_ENGINE_VERSION})]
+[도교 태상감응편(太上感應篇) & 공과격(功過格) 적선개운 성찰 리포트 (${TAOIST_GONG_GUO_GE_KARMA_ENGINE_VERSION} | ${calculatedAtKst})]
 - **질문 맥락 & 수양 방향**: ${questionTheme} · ${merit.mode}
 - **주재 공덕 영역**: ${merit.domain}
 - **감응 북두성좌**: ${merit.constellation}
@@ -175,12 +196,13 @@ export function calculateTaoistGongGuoGeKarma(
 - **일상 의례**: ${qualitative.ritual}
 - **성찰 질문**: ${qualitative.reflection}
 - **조언 요약**: ${qualitative.counsel}
+- **공과격 교차 매트릭스**: 핵심 긴장(${gongGuoGeSynthesisMatrix.dominantTension}) · 조율 상태(${gongGuoGeSynthesisMatrix.alignmentState}) · 통합 실천(${gongGuoGeSynthesisMatrix.integratedAction})
 - **해석 경계**: ${'태상감응편과 공과격 상징은 점수나 인과 심판이 아니라 오늘의 마음씀과 일상 행동을 성찰하기 위한 정성적 안내입니다.'}
 `.trim();
 
   return {
     engineVersion: TAOIST_GONG_GUO_GE_KARMA_ENGINE_VERSION,
-    calculatedAtKst: kst.toISOString().replace('T', ' ').slice(0, 19) + ' KST',
+    calculatedAtKst,
     questionTheme,
     cultivationMode: merit.mode,
     meritDomain: merit.domain,
@@ -195,6 +217,7 @@ export function calculateTaoistGongGuoGeKarma(
     counselNote: qualitative.counsel,
     boundaryNotice: '태상감응편과 공과격 상징은 점수나 인과 심판이 아니라 오늘의 마음씀과 일상 행동을 성찰하기 위한 정성적 안내입니다.',
     synthesisPrompt,
+    gongGuoGeSynthesisMatrix,
   };
 }
 

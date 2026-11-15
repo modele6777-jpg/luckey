@@ -3415,14 +3415,18 @@ test('Babylonian Enuma Elish & Tablets of Destiny Engine: calculates patron deit
 });
 
 test('Taoist Huangting Jing Internal Palaces Engine: calculates palaces, guardian spirit and prescription', () => {
-  const rep = calculateTaoistHuangtingJing(profile);
+  const rep = calculateTaoistHuangtingJing(profile, { question: '내면 양생' });
   assert.equal(rep.engineVersion, TAOIST_HUANGTING_VERSION);
+  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(rep.huangtingSynthesisMatrix?.integratedAction));
   assert(rep.palaces.dominantPalace.length > 0);
   assert(rep.guardianSpirit.spiritName.length > 0);
   assert(rep.illuminationScore >= 0 && rep.illuminationScore <= 100);
   const prompt = formatTaoistHuangtingJingPrompt(rep);
   assert(prompt.includes('도교 상청파 황정경(黃庭經) 신체 오장 신성좌 & 존사 엔진'));
   assert(prompt.includes(rep.guardianSpirit.spiritName));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
 });
 
 test('Persian Amesha Spenta & Baresman Engine: calculates immortal, baresman scores and avestan guidance', () => {
@@ -3566,6 +3570,8 @@ test('Egyptian Hermetic Cartouche Engine: calculates divine cartouche and qualit
 test('Taoist Gong Guo Ge Karma Engine: calculates merit domain and qualitative guidance', () => {
   const rep = calculateTaoistGongGuoGeKarma(profile, new Date(), '이직 결정을 어떻게 해야 할까요?');
   assert.equal(rep.engineVersion, TAOIST_GONG_GUO_GE_KARMA_ENGINE_VERSION);
+  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(rep.gongGuoGeSynthesisMatrix?.integratedAction));
   assert.equal(rep.questionTheme, 'decision');
   assert(rep.meritDomain.length > 0);
   assert(rep.practiceGuidance.length > 0);
@@ -3575,6 +3581,7 @@ test('Taoist Gong Guo Ge Karma Engine: calculates merit domain and qualitative g
   const prompt = formatTaoistGongGuoGeKarmaPrompt(rep);
   assert(prompt.includes('도교 태상감응편(太上感應篇) & 공과격(功過格) 적선개운 성찰 리포트'));
   assert(prompt.includes(rep.meritDomain));
+  assert(prompt.includes('교차 매트릭스'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('점**'));
 });
@@ -4369,6 +4376,8 @@ test('Alexandrian Decan Thirty Six Gods Engine: provides qualitative Kairos post
 test('Taoist Liezi Wind Riding Engine: calculates wind riding unity, Muhayu rest index and tranquil emptiness', () => {
   const rep = calculateTaoistLieziWindRiding({ profile, question: '열자 어풍동행 무하유지향' });
   assert.equal(rep.engineVersion, TAOIST_LIEZI_ENGINE_VERSION);
+  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(rep.lieziSynthesisMatrix?.integratedAction));
   assert(rep.windRidingUnityScore >= 0 && rep.windRidingUnityScore <= 100);
   assert(rep.muhayuRestIndex >= 0 && rep.muhayuRestIndex <= 100);
   assert(rep.tranquilEmptinessScore >= 0 && rep.tranquilEmptinessScore <= 100);
@@ -4377,6 +4386,9 @@ test('Taoist Liezi Wind Riding Engine: calculates wind riding unity, Muhayu rest
   const prompt = formatTaoistLieziWindRidingPrompt(rep);
   assert(prompt.includes('도가 열자 어풍동행 & 무하유지향 진인 유유자적 실측 데이터'));
   assert(prompt.includes(rep.dominantStage.nameKo));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
 });
 
 test('Samkhya Twenty-Five Tattvas Engine: calculates Viveka discernment, Guna balance and Kaivalya liberation index', () => {

@@ -28,7 +28,17 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const TAOIST_HUANGTING_VERSION = 'LUCKEY-TAOIST-HUANGTING-v1.0.0';
+export const TAOIST_HUANGTING_VERSION = 'LUCKEY-TAOIST-HUANGTING-v2.0.0';
+
+function formatHuangtingKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
 
 export interface CinnabarPalaceStatus {
   upperNiwanScore: number;         // 0 ~ 100 상단전 니환궁 (정신/통찰)
@@ -48,11 +58,17 @@ export interface VisceraGuardianSpirit {
 export interface TaoistHuangtingJingReport {
   engineVersion: string;
   calculatedAt: string;
+  calculatedAtKst: string;
   palaces: CinnabarPalaceStatus;
   guardianSpirit: VisceraGuardianSpirit;
   illuminationScore: number;       // 0 ~ 100 회광반조 내적 조화도
   huangtingPrescription: string;   // 황정경 실천 양생법
   synthesisMessage: string;
+  huangtingSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
 }
 
 const VISCERA_SPIRITS: VisceraGuardianSpirit[] = [
@@ -93,8 +109,13 @@ const VISCERA_SPIRITS: VisceraGuardianSpirit[] = [
   },
 ];
 
-export function calculateTaoistHuangtingJing(profile?: UserProfile): TaoistHuangtingJingReport {
-  const now = new Date();
+export function calculateTaoistHuangtingJing(
+  profile?: UserProfile,
+  options?: { targetDate?: Date; question?: string }
+): TaoistHuangtingJingReport {
+  const now = options?.targetDate || new Date();
+  const calculatedAtKst = formatHuangtingKstTimestamp(now);
+  const q = (options?.question || '').trim();
   const birthStr = profile?.basic?.birthdate || '1990-01-01';
   const nameStr = profile?.basic?.name || 'Huangting';
 
@@ -118,11 +139,18 @@ export function calculateTaoistHuangtingJing(profile?: UserProfile): TaoistHuang
 
   const huangtingPrescription = `황정경 존사법: 숨을 들이쉴 때 [${guardianSpirit.robedColor}]의 신성한 빛이 [${guardianSpirit.organ}]을 가득 채우는 것을 마음의 눈으로 바라보며(존사), "${guardianSpirit.innerPreservationMantra}"를 가만히 묵상하세요.`;
 
-  const synthesisMessage = `황정내경경 원전에 따라, 당신의 삼단전 중 [${dominantPalace}]이 중심을 잡고 있으며 오늘 주재하는 내장신은 [${guardianSpirit.spiritName}]입니다 (내적 조화도: ${illuminationScore}점).`;
+  const synthesisMessage = `황정내경경 원전에 따라, 당신의 삼단전 중 [${dominantPalace}]이 중심을 잡고 있으며 오늘 주재하는 내장신은 [${guardianSpirit.spiritName}]입니다.`;
+
+  const huangtingSynthesisMatrix = {
+    dominantTension: `${dominantPalace} ↔ ${guardianSpirit.organ}`,
+    alignmentState: `진신: ${guardianSpirit.spiritName} (${guardianSpirit.courtesyName}) · ${guardianSpirit.robedColor}`,
+    integratedAction: `${guardianSpirit.innerPreservationMantra}${q ? ` [질문 맥락: ${q}]` : ''}`,
+  };
 
   return {
     engineVersion: TAOIST_HUANGTING_VERSION,
     calculatedAt: now.toISOString(),
+    calculatedAtKst,
     palaces: {
       upperNiwanScore,
       middleJiangScore,
@@ -133,17 +161,20 @@ export function calculateTaoistHuangtingJing(profile?: UserProfile): TaoistHuang
     illuminationScore,
     huangtingPrescription,
     synthesisMessage,
+    huangtingSynthesisMatrix,
   };
 }
 
 export function formatTaoistHuangtingJingPrompt(report: TaoistHuangtingJingReport): string {
-  return `### ☯️ 도교 상청파 황정경(黃庭經) 신체 오장 신성좌 & 존사 엔진 (${TAOIST_HUANGTING_VERSION})
-- **삼단전(三丹田) 신체 궁전 균형 (회광반조 조화도: ${report.illuminationScore}점)**:
-  - 상단전 니환궁(정신): ${report.palaces.upperNiwanScore}점 | 중단전 강궁(감정): ${report.palaces.middleJiangScore}점 | 하단전 기해궁(원기): ${report.palaces.lowerQihaiScore}점
+  const matrixLine = report.huangtingSynthesisMatrix
+    ? `\n- **황정 교차 매트릭스**: 핵심 긴장(${report.huangtingSynthesisMatrix.dominantTension}) · 조율 상태(${report.huangtingSynthesisMatrix.alignmentState}) · 통합 실천(${report.huangtingSynthesisMatrix.integratedAction})`
+    : '';
+  return `### ☯️ 도교 상청파 황정경(黃庭經) 신체 오장 신성좌 & 존사 엔진 (${TAOIST_HUANGTING_VERSION} | ${report.calculatedAtKst})
+- **삼단전(三丹田) 신체 궁전 균형**:
   - 현재 주도 단전: **${report.palaces.dominantPalace}**
 - **오장 주재 진신(眞神)**: **${report.guardianSpirit.organ} - ${report.guardianSpirit.spiritName}** (자: ${report.guardianSpirit.courtesyName})
   - 신성 복식: ${report.guardianSpirit.robedColor}
   - 오장신 존사 잠언: "${report.guardianSpirit.innerPreservationMantra}"
 - **황정경 내관 양생 처방**: ${report.huangtingPrescription}
-- **황정 통합 나침반**: ${report.synthesisMessage}`;
+- **황정 통합 나침반**: ${report.synthesisMessage}${matrixLine}`;
 }
