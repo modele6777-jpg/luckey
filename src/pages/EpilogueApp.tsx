@@ -877,7 +877,7 @@ export default function EpilogueApp() {
             </div>
             <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-white/15 dark:bg-slate-900">
               <label htmlFor="profile-chart-reference" className="mb-2 block text-sm font-semibold text-slate-900 dark:text-slate-100">명식·해석 참고자료</label>
-              <p className="mb-3 text-xs leading-relaxed text-slate-600 dark:text-slate-300">직접 보관한 명식·계산 기준·선호하는 풀이 방식입니다. Lucy와 Lucy +가 대화에서 함께 참고하며, 수정한 내용은 자동 저장됩니다.</p>
+              <p className="mb-3 text-xs leading-relaxed text-slate-600 dark:text-slate-300">직접 보관한 명식·계산 기준·선호하는 풀이 방식입니다. Lucy가 대화에서 함께 참고하며, 수정한 내용은 자동 저장됩니다.</p>
               <textarea id="profile-chart-reference" value={fate.referenceNotes} maxLength={18000} rows={10}
                 onChange={(e) => setFate((f) => ({ ...f, referenceNotes: e.target.value }))}
                 placeholder="명식과 계산 기준, 해석 참고자료를 입력하세요."

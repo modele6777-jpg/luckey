@@ -17,7 +17,7 @@ export function LucyModeTransition({ active, isPlusMode, isProMode }: LucyModeTr
   }, [isPlusMode, isProMode]);
 
   if (!active || typeof document === 'undefined') return null;
-  const name = `Lucy${isPlusMode ? ' +' : ''}${isProMode ? ' Pro' : ''}`;
+  const name = `Lucy${isProMode ? ' Pro' : ''}`;
   const markerStyle = (marker: keyof ModeAppearance) => ({
     '--lucy-marker-from': change.from[marker] ? 1 : 0.08,
     '--lucy-marker-to': change.to[marker] ? 1 : 0.08,
@@ -30,9 +30,6 @@ export function LucyModeTransition({ active, isPlusMode, isProMode }: LucyModeTr
       <strong className="lucy-transition-wordmark" aria-hidden="true">
         Lucy
         <span className="lucy-transition-markers">
-          {(change.from.plus || change.to.plus) && (
-            <span key={`plus-${change.from.plus}-${change.to.plus}`} className="lucy-transition-marker" data-marker="plus" data-direction={markerDirection('plus')} style={markerStyle('plus')}>+</span>
-          )}
           {(change.from.pro || change.to.pro) && (
             <span key={`pro-${change.from.pro}-${change.to.pro}`} className="lucy-transition-marker lucy-transition-pro" data-marker="pro" data-direction={markerDirection('pro')} style={markerStyle('pro')}>Pro</span>
           )}

@@ -777,7 +777,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
       setModeTransitioningTier(validTarget);
       setTimeout(() => setModeTransitioningTier(null), 550);
       triggerHaptic('whitehole');
-      setModeSwitchToast(validTarget === 'plus' ? '🌿 Lucy +' : '✨ Lucy');
+      setModeSwitchToast(validTarget === 'plus' ? '🌿 Lucy' : '✨ Lucy');
       setTimeout(() => setModeSwitchToast(null), 2000);
     };
 
@@ -1047,7 +1047,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
       setModeTransitioningTier(expected);
       setTimeout(() => setModeTransitioningTier(null), 550);
       try { triggerHaptic('whitehole'); } catch (_) {}
-      setModeSwitchToast(expected === 'plus' ? '🌿 Lucy +' : '✨ Lucy');
+      setModeSwitchToast(expected === 'plus' ? '🌿 Lucy' : '✨ Lucy');
       setTimeout(() => setModeSwitchToast(null), 2000);
     }
   }, [location, isDuoUnfolded, pro, lucyTier]);
@@ -1076,7 +1076,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
             setModeTransitioningTier(targetTier);
             setTimeout(() => setModeTransitioningTier(null), 550);
             try { triggerHaptic('whitehole'); } catch (_) {}
-            setModeSwitchToast(targetTier === 'plus' ? '🌿 듀오 펼침 · Lucy +' : '✨ 듀오 접힘 · Lucy');
+            setModeSwitchToast(targetTier === 'plus' ? '🌿 듀오 펼침 · Lucy' : '✨ 듀오 접힘 · Lucy');
             setTimeout(() => setModeSwitchToast(null), 2000);
             return targetTier;
           });
@@ -2240,7 +2240,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
     ) && isDuoUnfoldedState().unfolded;
     const clean = location ? location.split('?')[0].split('#')[0] : '/';
     const isCosmic = isDual && (clean === '/' || clean === '/chat' || clean === '/lucy' || clean === '/chat/pro');
-    const activeTitle = isCosmic ? 'Lucy+' : 'Lucy';
+    const activeTitle = 'Lucy';
     document.title = activeTitle;
 
     let manifestTag = document.querySelector('link[rel="manifest"]') as HTMLLinkElement | null;
@@ -2266,7 +2266,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
     let appleTitleTag = document.querySelector('meta[name="apple-mobile-web-app-title"]') as HTMLMetaElement | null;
     const prevAppleTitle = appleTitleTag ? appleTitleTag.getAttribute('content') : null;
     if (appleTitleTag) {
-      appleTitleTag.setAttribute('content', isCosmic ? 'Lucy+' : 'Lucy');
+      appleTitleTag.setAttribute('content', 'Lucy');
     }
 
     let statusBarStyleTag = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]') as HTMLMetaElement | null;
@@ -2744,7 +2744,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
 - ${chCfg ? `이 테마의 주력 운명학 도구: ${chCfg.fusionPhilosophy}` : `${SPECIAL_CHANNELS[channels[0]].name}의 전문적 통찰을 바탕으로 현실적 대안과 조언을 깊이 있게 설명해 줘.`}`;
       extraSystemContext = extraSystemContext ? `${extraSystemContext}\n\n${singleContext}` : singleContext;
     } else if (isMaster) {
-      const masterContext = `[루시플러스 통합 상담]
+      const masterContext = `[루시 통합 상담]
 - 질문과 관련하여 실제 계산 데이터가 전달된 도구만 비교하고, 없는 계산을 실행했다고 말하지 마.
 - 상징적 조언은 상징이라고 밝히고, 계산 실패·입력 부족은 정직하게 안내해. 엔진 개수로 정확성을 주장하지 마.`;
       extraSystemContext = extraSystemContext ? `${extraSystemContext}\n\n${masterContext}` : masterContext;
