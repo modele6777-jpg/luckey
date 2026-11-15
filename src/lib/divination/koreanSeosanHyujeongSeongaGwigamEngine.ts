@@ -8,12 +8,12 @@
  * 4. 삼가회통(三家會通): 유교의 인(仁)과 예(禮), 도교의 무위청정(無爲淸淨), 불교의 자비와 해탈이 궁극적으로 한마음(一心)의 다른 표현임을 밝히는 포용적 통찰.
  * 5. 살신구세(殺身救世)의 보살행: 산중의 적막한 선정에만 안주하지 않고, 임진왜란 국난 속에서 팔도 의승군을 이끌어 백성을 지켜낸 자비와 대의(大義)의 거룩한 실천.
  *
- * @version LUCKEY-SEOSAN-SEONGA-GWIGAM-v1.0.0
+ * @version LUCKEY-SEOSAN-SEONGA-GWIGAM-v2.0.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const SEOSAN_SEONGA_GWIGAM_VERSION = 'LUCKEY-SEOSAN-SEONGA-GWIGAM-v1.0.0';
+export const SEOSAN_SEONGA_GWIGAM_VERSION = 'LUCKEY-SEOSAN-SEONGA-GWIGAM-v2.0.0';
 
 export interface SeosanTheme {
   themeKey: string;
@@ -47,6 +47,27 @@ export interface SeosanHyujeongSeongaGwigamResult {
     counselTitle: string;
     philosophicalGuidance: string;
   };
+  seosanSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
+}
+
+function formatSeosanKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
+
+function describeSeosanStage(score: number): string {
+  if (score >= 88) return '일물영명(一物靈明) — 본래 맑은 마음과 대승적 실천이 하나로 통하는 경지';
+  if (score >= 78) return '선교원융(禪敎圓融) — 직관의 깊이와 현실의 법도가 조화를 이루는 국면';
+  return '활구참선(活句參禪) — 복잡한 사량분별을 내려놓고 본질을 단박에 살피는 시기';
 }
 
 export type SeosanHyujeongSeongaGwigamReport = SeosanHyujeongSeongaGwigamResult;
@@ -120,7 +141,11 @@ const SEOSAN_MAXIMS: SeosanMaxim[] = [
   },
 ];
 
-export function calculateSeosanHyujeongSeongaGwigam(profile: UserProfile): SeosanHyujeongSeongaGwigamResult {
+export function calculateSeosanHyujeongSeongaGwigam(
+  profile: UserProfile,
+  query?: string,
+  now: Date = new Date(),
+): SeosanHyujeongSeongaGwigamResult {
   const seedString =
     (profile?.basic?.birthdate ?? (profile as any)?.birthdate ?? '1990-01-01') +
     (profile?.basic?.name ?? (profile as any)?.name ?? 'User') +
@@ -152,9 +177,24 @@ export function calculateSeosanHyujeongSeongaGwigam(profile: UserProfile): Seosa
     `${activeSeosanTheme.meditativeCounsel} 또한 서산대사의 명구인 '${focalSeosanMaxim.maximKo}'(${focalSeosanMaxim.dharmaDimension})을 마음에 새겨, ` +
     `${focalSeosanMaxim.mindDirective}`;
 
+  const calculatedAtKst = formatSeosanKstTimestamp(now);
+  const avgScore = Math.round(
+    (ilmulYeongmyeongClarityScore +
+      hwalkuDirectPiercingScore +
+      seonGyoHarmoniousIntegrationScore +
+      samgaHoetongBreadthScore +
+      daeseungBodhisattvaActionScore) /
+      5,
+  );
+  const seosanSynthesisMatrix = {
+    dominantTension: `${activeSeosanTheme.themeTitleKo} ↔ ${focalSeosanMaxim.dharmaDimension}`,
+    alignmentState: describeSeosanStage(avgScore),
+    integratedAction: `${focalSeosanMaxim.mindDirective}${query?.trim() ? ` [질문 맥락: ${query.trim()}]` : ''}`,
+  };
+
   return {
     engineVersion: SEOSAN_SEONGA_GWIGAM_VERSION,
-    calculatedAtKst: new Date().toISOString(),
+    calculatedAtKst,
     ilmulYeongmyeongClarityScore,
     hwalkuDirectPiercingScore,
     seonGyoHarmoniousIntegrationScore,
@@ -166,17 +206,23 @@ export function calculateSeosanHyujeongSeongaGwigam(profile: UserProfile): Seosa
       counselTitle,
       philosophicalGuidance,
     },
+    seosanSynthesisMatrix,
   };
 }
 
 export function formatSeosanHyujeongSeongaGwigamPrompt(res: SeosanHyujeongSeongaGwigamResult): string {
-  return [
+  const avgScore = Math.round(
+    (res.ilmulYeongmyeongClarityScore +
+      res.hwalkuDirectPiercingScore +
+      res.seonGyoHarmoniousIntegrationScore +
+      res.samgaHoetongBreadthScore +
+      res.daeseungBodhisattvaActionScore) /
+      5,
+  );
+  const lines = [
     `【서산대사 선가귀감(禪家龜鑑) 일물영명 & 활구참선 지표】`,
-    `- 일물영명(一物靈明) 본마음 청정도: ${res.ilmulYeongmyeongClarityScore}/100`,
-    `- 활구참선(活句參禪) 본질 관통력: ${res.hwalkuDirectPiercingScore}/100`,
-    `- 선교원융(禪敎圓融) 이론·실천 조화도: ${res.seonGyoHarmoniousIntegrationScore}/100`,
-    `- 삼가회통(三家會通) 다원 시각 포용력: ${res.samgaHoetongBreadthScore}/100`,
-    `- 대승적 구세(救世) 결단 및 자비행: ${res.daeseungBodhisattvaActionScore}/100`,
+    `- 연산 시각: ${res.calculatedAtKst} | 엔진: ${res.engineVersion}`,
+    `- 선교원융 국면: ${describeSeosanStage(avgScore)}`,
     `- 핵심 선지 테마: ${res.activeSeosanTheme.themeTitleKo} [${res.activeSeosanTheme.themeTitleHanja}]`,
     `- 선학적 통찰: ${res.activeSeosanTheme.philosophicalInsight}`,
     `- 관조적 조언: ${res.activeSeosanTheme.meditativeCounsel}`,
@@ -184,5 +230,12 @@ export function formatSeosanHyujeongSeongaGwigamPrompt(res: SeosanHyujeongSeonga
     `- 한문 원문: "${res.focalSeosanMaxim.maximHanja}" [${res.focalSeosanMaxim.dharmaDimension}]`,
     `- 마음가짐 실천 지침: ${res.focalSeosanMaxim.mindDirective}`,
     `- 통합 선지 처방: ${res.seosanPersonalCounsel.philosophicalGuidance}`,
-  ].join('\n');
+  ];
+  if (res.seosanSynthesisMatrix) {
+    lines.push(
+      `- 교차 매트릭스 [핵심 긴장: ${res.seosanSynthesisMatrix.dominantTension} | 조율 상태: ${res.seosanSynthesisMatrix.alignmentState}]`,
+      `- 통합 실천: ${res.seosanSynthesisMatrix.integratedAction}`,
+    );
+  }
+  return lines.join('\n');
 }

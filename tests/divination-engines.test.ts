@@ -5103,9 +5103,14 @@ test('Uisang Hwaeom Ilseung Beopgyedo Engine: calculates Beopseong Wonnyung, San
   assert(rep.firstMindAwakeningScore >= 0 && rep.firstMindAwakeningScore <= 100);
   assert(rep.ancientImmobilityBuddhaScore >= 0 && rep.ancientImmobilityBuddhaScore <= 100);
   assert(rep.activeBeopgyeVerse.hanjaVerse.length > 0);
+  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(rep.uisangSynthesisMatrix?.integratedAction));
   const prompt = formatUisangHwaeomIlseungBeopgyePrompt(rep);
   assert(prompt.includes('의상대사 화엄일승법계도 & 법성게 원융무애 지표'));
   assert(prompt.includes(rep.activeBeopgyeVerse.hanjaVerse));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
 });
 
 test('Montaigne Essais Wisdom Engine: calculates Que sais-je inquiry, Self-introspection honesty, Natural moderation, and Equanimity', () => {
@@ -5150,9 +5155,14 @@ test('Jinul Jeonghye Ssangsu Engine: calculates Donoh insight, Jeomsu cultivatio
   assert(rep.seongjeokEquanimityScore >= 0 && rep.seongjeokEquanimityScore <= 100);
   assert(rep.gongjeokYeongjiScore >= 0 && rep.gongjeokYeongjiScore <= 100);
   assert(rep.activeCorePrinciple.principleHanja.length > 0);
+  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(rep.jinulSynthesisMatrix?.integratedAction));
   const prompt = formatJinulJeonghyeSsangsuPrompt(rep);
   assert(prompt.includes('보조국사 수심결 & 정혜쌍수·돈오점수 지표'));
   assert(prompt.includes(rep.activeCorePrinciple.principleHanja));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
 });
 
 test('Giordano Bruno Infinite Universe Engine: calculates Infinite cosmos vision, Heroic furore, and Sovereign conscience', () => {
@@ -5275,9 +5285,14 @@ test('Seosan Daesa Hyujeong Seonga Gwigam Engine: calculates Ilmul yeongmyeong, 
   assert(rep.samgaHoetongBreadthScore >= 0 && rep.samgaHoetongBreadthScore <= 100);
   assert(rep.daeseungBodhisattvaActionScore >= 0 && rep.daeseungBodhisattvaActionScore <= 100);
   assert(rep.activeSeosanTheme.themeTitleHanja.length > 0);
+  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(rep.seosanSynthesisMatrix?.integratedAction));
   const prompt = formatSeosanHyujeongSeongaGwigamPrompt(rep);
   assert(prompt.includes('서산대사 선가귀감(禪家龜鑑) 일물영명 & 활구참선 지표'));
   assert(prompt.includes(rep.activeSeosanTheme.themeTitleKo));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
 });
 
 test('Carl Gustav Jung Individuation Archetype Engine: calculates Self realization, Shadow integration, and Anima/Animus syzygy', () => {

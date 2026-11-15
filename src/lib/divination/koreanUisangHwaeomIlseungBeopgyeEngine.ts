@@ -12,12 +12,12 @@
  *    - 초발심시변정각(初發心時便正覺) 생사열반상공화(生死涅槃常共和): 처음 깨달음을 향해 발심한 바로 그 자리가 온전한 정각이며, 생사와 열반이 언제나 함께 어우러진다.
  *    - 구래부동명위불(舊來不動名爲佛): 예로부터 본래 움직임 없는 그 참성품을 일러 부처라 한다.
  *
- * @version LUCKEY-UISANG-HWAEOM-BEOPGYE-v1.0.0
+ * @version LUCKEY-UISANG-HWAEOM-BEOPGYE-v2.0.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const UISANG_HWAEOM_BEOPGYE_VERSION = 'LUCKEY-UISANG-HWAEOM-BEOPGYE-v1.0.0';
+export const UISANG_HWAEOM_BEOPGYE_VERSION = 'LUCKEY-UISANG-HWAEOM-BEOPGYE-v2.0.0';
 
 export interface BeopgyeSealVerse {
   verseKey: string;
@@ -50,6 +50,27 @@ export interface UisangHwaeomIlseungBeopgyeResult {
     counselTitle: string;
     beopgyeGuidance: string;
   };
+  uisangSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
+}
+
+function formatUisangKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
+
+function describeUisangStage(score: number): string {
+  if (score >= 88) return '법성원융(法性圓融) — 하나와 전체가 걸림 없이 상즉상입하는 원융무애의 흐름';
+  if (score >= 78) return '초발심시변정각(初發心時便正覺) — 초심의 순수함과 일상의 현존이 잇닿는 국면';
+  return '구래부동(舊來不動) — 바깥의 파란 속에서도 본래 고요한 중심으로 돌아오는 시기';
 }
 
 export type UisangHwaeomIlseungBeopgyeReport = UisangHwaeomIlseungBeopgyeResult;
@@ -112,7 +133,11 @@ const HWAEOM_GATES: HwaeomSpiritualGate[] = [
   },
 ];
 
-export function calculateUisangHwaeomIlseungBeopgye(profile: UserProfile): UisangHwaeomIlseungBeopgyeResult {
+export function calculateUisangHwaeomIlseungBeopgye(
+  profile: UserProfile,
+  query?: string,
+  now: Date = new Date(),
+): UisangHwaeomIlseungBeopgyeResult {
   const seedString =
     (profile?.basic?.birthdate ?? (profile as any)?.birthdate ?? '1990-01-01') +
     (profile?.basic?.name ?? (profile as any)?.name ?? 'User') +
@@ -144,9 +169,24 @@ export function calculateUisangHwaeomIlseungBeopgye(profile: UserProfile): Uisan
     `${activeBeopgyeVerse.practicalReflection} 또한 '${focalSpiritualGate.gateNameKo}'의 가르침을 마음에 두어, ` +
     `${focalSpiritualGate.dailyMeditation}`;
 
+  const calculatedAtKst = formatUisangKstTimestamp(now);
+  const avgScore = Math.round(
+    (beopseongWonnyungScore +
+      sangjeukSangipInterpenetrationScore +
+      microMacroCosmosScore +
+      firstMindAwakeningScore +
+      ancientImmobilityBuddhaScore) /
+      5,
+  );
+  const uisangSynthesisMatrix = {
+    dominantTension: `${activeBeopgyeVerse.hanjaVerse} ↔ ${focalSpiritualGate.gateNameKo}`,
+    alignmentState: describeUisangStage(avgScore),
+    integratedAction: `${focalSpiritualGate.dailyMeditation}${query?.trim() ? ` [질문 맥락: ${query.trim()}]` : ''}`,
+  };
+
   return {
     engineVersion: UISANG_HWAEOM_BEOPGYE_VERSION,
-    calculatedAtKst: new Date().toISOString(),
+    calculatedAtKst,
     beopseongWonnyungScore,
     sangjeukSangipInterpenetrationScore,
     microMacroCosmosScore,
@@ -158,22 +198,35 @@ export function calculateUisangHwaeomIlseungBeopgye(profile: UserProfile): Uisan
       counselTitle,
       beopgyeGuidance,
     },
+    uisangSynthesisMatrix,
   };
 }
 
 export function formatUisangHwaeomIlseungBeopgyePrompt(res: UisangHwaeomIlseungBeopgyeResult): string {
-  return [
+  const avgScore = Math.round(
+    (res.beopseongWonnyungScore +
+      res.sangjeukSangipInterpenetrationScore +
+      res.microMacroCosmosScore +
+      res.firstMindAwakeningScore +
+      res.ancientImmobilityBuddhaScore) /
+      5,
+  );
+  const lines = [
     `【의상대사 화엄일승법계도 & 법성게 원융무애 지표】`,
-    `- 법성원융무이상(본성 원융 조화도): ${res.beopseongWonnyungScore}/100`,
-    `- 일중일체다중일(상즉상입 연기 통찰력): ${res.sangjeukSangipInterpenetrationScore}/100`,
-    `- 일미진중함시방(미시·거시 우주 직관력): ${res.microMacroCosmosScore}/100`,
-    `- 초발심시변정각(초심과 본각 일치 실천력): ${res.firstMindAwakeningScore}/100`,
-    `- 구래부동명위불(본래 부동 평정도): ${res.ancientImmobilityBuddhaScore}/100`,
+    `- 연산 시각: ${res.calculatedAtKst} | 엔진: ${res.engineVersion}`,
+    `- 화엄 원융 국면: ${describeUisangStage(avgScore)}`,
     `- 핵심 법성게 구절: ${res.activeBeopgyeVerse.hanjaVerse} [${res.activeBeopgyeVerse.koreanPronunciation}]`,
     `- 게송의 철학적 의미: ${res.activeBeopgyeVerse.philosophicalMeaning}`,
     `- 실천적 성찰 조언: ${res.activeBeopgyeVerse.practicalReflection}`,
     `- 화엄 영성 관문: ${res.focalSpiritualGate.gateNameKo}`,
     `- 인다라망 통찰: ${res.focalSpiritualGate.indranetWisdom}`,
     `- 일상 참구 지침: ${res.uisangHwaeomCounsel.beopgyeGuidance}`,
-  ].join('\n');
+  ];
+  if (res.uisangSynthesisMatrix) {
+    lines.push(
+      `- 교차 매트릭스 [핵심 긴장: ${res.uisangSynthesisMatrix.dominantTension} | 조율 상태: ${res.uisangSynthesisMatrix.alignmentState}]`,
+      `- 통합 실천: ${res.uisangSynthesisMatrix.integratedAction}`,
+    );
+  }
+  return lines.join('\n');
 }

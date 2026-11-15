@@ -16,12 +16,12 @@
  * 4. 공적영지(空寂靈知):
  *    - 모양도 자취도 없이 텅 비었으나(空寂), 마주하는 모든 것을 신령하게 알아차리고 작용하는(靈知) 본래 마음.
  *
- * @version LUCKEY-JINUL-JEONGHYE-SSANGSU-v1.0.0
+ * @version LUCKEY-JINUL-JEONGHYE-SSANGSU-v2.0.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const JINUL_JEONGHYE_SSANGSU_VERSION = 'LUCKEY-JINUL-JEONGHYE-SSANGSU-v1.0.0';
+export const JINUL_JEONGHYE_SSANGSU_VERSION = 'LUCKEY-JINUL-JEONGHYE-SSANGSU-v2.0.0';
 
 export interface SusimgyeolCorePrinciple {
   principleKey: string;
@@ -55,6 +55,27 @@ export interface JinulJeonghyeSsangsuResult {
     counselTitle: string;
     mindPurificationGuidance: string;
   };
+  jinulSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
+}
+
+function formatJinulKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
+
+function describeJinulStage(score: number): string {
+  if (score >= 88) return '성적등지(惺寂等持) — 맑은 깨어있음과 흔들림 없는 적적이 조화를 이루는 경지';
+  if (score >= 78) return '정혜쌍수(定慧雙修) — 고요한 안정과 명철한 통찰을 두 바퀴처럼 아우르는 국면';
+  return '돈오점수(頓悟漸修) — 본래 면목을 비추며 일상의 습기를 차분히 녹여가는 정진기';
 }
 
 export type JinulJeonghyeSsangsuReport = JinulJeonghyeSsangsuResult;
@@ -121,7 +142,11 @@ const ZEN_METAPHORS: JinulZenMetaphor[] = [
   },
 ];
 
-export function calculateJinulJeonghyeSsangsu(profile: UserProfile): JinulJeonghyeSsangsuResult {
+export function calculateJinulJeonghyeSsangsu(
+  profile: UserProfile,
+  query?: string,
+  now: Date = new Date(),
+): JinulJeonghyeSsangsuResult {
   const seedString =
     (profile?.basic?.birthdate ?? (profile as any)?.birthdate ?? '1990-01-01') +
     (profile?.basic?.name ?? (profile as any)?.name ?? 'User') +
@@ -153,9 +178,24 @@ export function calculateJinulJeonghyeSsangsu(profile: UserProfile): JinulJeongh
     `${activeCorePrinciple.cultivationAdvice} 또한 《수심결》의 비유인 '${focalZenMetaphor.metaphorTitleKo}'를 마음에 새겨, ` +
     `${focalZenMetaphor.practicalAction}`;
 
+  const calculatedAtKst = formatJinulKstTimestamp(now);
+  const avgScore = Math.round(
+    (donohInsightScore +
+      jeomsuCultivationScore +
+      jeonghyeBalanceScore +
+      seongjeokEquanimityScore +
+      gongjeokYeongjiScore) /
+      5,
+  );
+  const jinulSynthesisMatrix = {
+    dominantTension: `${activeCorePrinciple.principleHanja} ↔ ${focalZenMetaphor.metaphorTitleKo}`,
+    alignmentState: describeJinulStage(avgScore),
+    integratedAction: `${focalZenMetaphor.practicalAction}${query?.trim() ? ` [질문 맥락: ${query.trim()}]` : ''}`,
+  };
+
   return {
     engineVersion: JINUL_JEONGHYE_SSANGSU_VERSION,
-    calculatedAtKst: new Date().toISOString(),
+    calculatedAtKst,
     donohInsightScore,
     jeomsuCultivationScore,
     jeonghyeBalanceScore,
@@ -167,17 +207,23 @@ export function calculateJinulJeonghyeSsangsu(profile: UserProfile): JinulJeongh
       counselTitle,
       mindPurificationGuidance,
     },
+    jinulSynthesisMatrix,
   };
 }
 
 export function formatJinulJeonghyeSsangsuPrompt(res: JinulJeonghyeSsangsuResult): string {
-  return [
+  const avgScore = Math.round(
+    (res.donohInsightScore +
+      res.jeomsuCultivationScore +
+      res.jeonghyeBalanceScore +
+      res.seongjeokEquanimityScore +
+      res.gongjeokYeongjiScore) /
+      5,
+  );
+  const lines = [
     `【보조국사 수심결 & 정혜쌍수·돈오점수 지표】`,
-    `- 돈오(頓悟) 본래면목 단박 자각도: ${res.donohInsightScore}/100`,
-    `- 점수(漸修) 습기 정화 및 지속 정진력: ${res.jeomsuCultivationScore}/100`,
-    `- 정혜쌍수(定慧雙修) 고요와 지혜 평형도: ${res.jeonghyeBalanceScore}/100`,
-    `- 성적등지(惺寂等持) 깨어있음과 평정 지수: ${res.seongjeokEquanimityScore}/100`,
-    `- 공적영지(空寂靈知) 텅 빈 앎 직관력: ${res.gongjeokYeongjiScore}/100`,
+    `- 연산 시각: ${res.calculatedAtKst} | 엔진: ${res.engineVersion}`,
+    `- 선학 수양 국면: ${describeJinulStage(avgScore)}`,
     `- 핵심 수심결 원리: ${res.activeCorePrinciple.principleNameKo} [${res.activeCorePrinciple.principleHanja}]`,
     `- 선학적 의미: ${res.activeCorePrinciple.zenMeaning}`,
     `- 실천적 수양 조언: ${res.activeCorePrinciple.cultivationAdvice}`,
@@ -185,5 +231,12 @@ export function formatJinulJeonghyeSsangsuPrompt(res: JinulJeonghyeSsangsuResult
     `- 원전 구절: "${res.focalZenMetaphor.metaphorSourceText}"`,
     `- 비유의 통찰: ${res.focalZenMetaphor.insight}`,
     `- 마음 수양 행동 지침: ${res.jinulMindCounsel.mindPurificationGuidance}`,
-  ].join('\n');
+  ];
+  if (res.jinulSynthesisMatrix) {
+    lines.push(
+      `- 교차 매트릭스 [핵심 긴장: ${res.jinulSynthesisMatrix.dominantTension} | 조율 상태: ${res.jinulSynthesisMatrix.alignmentState}]`,
+      `- 통합 실천: ${res.jinulSynthesisMatrix.integratedAction}`,
+    );
+  }
+  return lines.join('\n');
 }
