@@ -19,7 +19,17 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const SHAMANIC_ANIMAL_TOTEM_VERSION = 'LUCKEY-TOTEM-v1.0.0';
+export const SHAMANIC_ANIMAL_TOTEM_VERSION = 'LUCKEY-TOTEM-v2.0.0';
+
+function formatShamanicTotemKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
 
 export interface TotemAnimalInfo {
   animalName: string;
@@ -32,6 +42,7 @@ export interface TotemAnimalInfo {
 export interface ShamanicAnimalTotemReport {
   engineVersion: string;
   calculatedAt: string;
+  calculatedAtKst: string;
   primaryTotem: TotemAnimalInfo;  // 주 수호 토템
   shadowAnimal: TotemAnimalInfo;  // 그림자 동물
   messengerGuide: TotemAnimalInfo;// 일일/시즌 메신저 가이드
@@ -39,11 +50,17 @@ export interface ShamanicAnimalTotemReport {
   callOfTheWildRitual: string;    // 파워 애니멀 소환 및 접속 리추얼
   tabooWarning: string;           // 토템의 힘을 약화시키는 금기 사항
   synthesisPromptGuidance: string;
+  totemSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
 }
 
 export function runShamanicAnimalTotemEngine(
   profile?: UserProfile,
-  targetDate: Date = new Date()
+  targetDate: Date = new Date(),
+  question?: string
 ): ShamanicAnimalTotemReport {
   const sajuRes = calculateDetailedSaju(profile || null);
 
@@ -108,26 +125,37 @@ export function runShamanicAnimalTotemEngine(
 
   const tabooWarning = '타인의 비위를 맞추기 위해 스스로의 맹수다운 결기를 죽이고 비굴하게 굴복하는 태도를 경계하세요. 토템의 기운이 급격히 소진됩니다.';
 
-  const synthesisPromptGuidance = `[LUCKEY 샤머니즘 파워 애니멀 & 12지지 스피릿 토템 v1.0.0]
+  const calculatedAtKst = formatShamanicTotemKstTimestamp(targetDate);
+  const q = (question || '').trim();
+  const totemSynthesisMatrix = {
+    dominantTension: `${primaryTotem.animalName} ↔ ${shadowAnimal.animalName}`,
+    alignmentState: `메신저: ${messengerGuide.animalName} · 원소: ${element}`,
+    integratedAction: `${callOfTheWildRitual}${q ? ` [질문 맥락: ${q}]` : ''}`,
+  };
+
+  const synthesisPromptGuidance = `[LUCKEY 샤머니즘 파워 애니멀 & 12지지 스피릿 토템 ${SHAMANIC_ANIMAL_TOTEM_VERSION} | ${calculatedAtKst}]
 - 주 수호 토템: [${primaryTotem.animalName}]
   * 핵심 능력: ${primaryTotem.corePower}
   * 영적 전언: "${primaryTotem.spiritMessage}"
 - 그림자 동물(Shadow Guide): [${shadowAnimal.animalName}] (${shadowAnimal.corePower})
 - 시의적 메신저: [${messengerGuide.animalName}] ("${messengerGuide.spiritMessage}")
-- 토템 공명 지수: ${totemicResonanceScore}점
 - 야생의 부름 소환법: ${callOfTheWildRitual}
-- 절대적 금기: ${tabooWarning}`;
+- 절대적 금기: ${tabooWarning}
+- 교차 매트릭스: [핵심 긴장: ${totemSynthesisMatrix.dominantTension} | 조율 상태: ${totemSynthesisMatrix.alignmentState}]
+  * 통합 실천: ${totemSynthesisMatrix.integratedAction}`;
 
   return {
     engineVersion: SHAMANIC_ANIMAL_TOTEM_VERSION,
     calculatedAt: targetDate.toISOString(),
+    calculatedAtKst,
     primaryTotem,
     shadowAnimal,
     messengerGuide,
     totemicResonanceScore,
     callOfTheWildRitual,
     tabooWarning,
-    synthesisPromptGuidance
+    synthesisPromptGuidance,
+    totemSynthesisMatrix,
   };
 }
 
@@ -137,10 +165,11 @@ export function calculateShamanicAnimalTotem(params?: {
   profile?: UserProfile | null;
   saju?: SajuAnalysisResult | null;
   targetDate?: Date;
+  question?: string;
 }): ShamanicAnimalTotemResult {
   const profile = params?.profile || undefined;
   const targetDate = params?.targetDate || new Date();
-  return runShamanicAnimalTotemEngine(profile, targetDate);
+  return runShamanicAnimalTotemEngine(profile, targetDate, params?.question);
 }
 
 export function formatShamanicAnimalTotemPrompt(res: ShamanicAnimalTotemResult): string {
