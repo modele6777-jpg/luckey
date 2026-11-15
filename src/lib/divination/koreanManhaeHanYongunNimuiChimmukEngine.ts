@@ -8,12 +8,12 @@
  * 4. 진흙 속에서도 물들지 않는 출오염(出汚染) 연꽃 지조: 어떤 회유와 탄압 속에서도 호적에 이름을 올리지 않고 북향집(심우장)을 지키며 끝까지 민족의 얼을 수호한 백절불굴의 순결한 절의.
  * 5. 대의단(大疑團)과 철저한 깨달음의 원융 평정심: 백담사와 오세암의 혹독한 참선 속에서 분별망상을 털어내고, 생사의 고뇌를 꿰뚫어 만유일체의 대자유에 도달한 선사(禪師)의 심령 평정.
  *
- * @version LUCKEY-MANHAE-HAN-YONGUN-NIMUI-CHIMMUK-v1.0.0
+ * @version LUCKEY-MANHAE-HAN-YONGUN-NIMUI-CHIMMUK-v2.0.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const KOREAN_MANHAE_HAN_YONGUN_VERSION = 'LUCKEY-MANHAE-HAN-YONGUN-NIMUI-CHIMMUK-v1.0.0';
+export const KOREAN_MANHAE_HAN_YONGUN_VERSION = 'LUCKEY-MANHAE-HAN-YONGUN-NIMUI-CHIMMUK-v2.0.0';
 
 export interface HanYongunTheme {
   themeKey: string;
@@ -47,6 +47,27 @@ export interface ManhaeHanYongunNimuiChimmukResult {
     guidanceTitle: string;
     philosophicalCounsel: string;
   };
+  manhaeSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
+}
+
+function formatManhaeKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
+
+function describeManhaeStage(score: number): string {
+  if (score >= 90) return '만유일체 대각(萬有一體 大覺) — 상실의 침묵마저 자유와 사랑의 노래로 승화한 원숙기';
+  if (score >= 80) return '출오염 빙옥(出汚染 氷玉) — 세파 속에서도 고결한 지조와 유신의 기개를 지키는 성숙기';
+  return '대의단 참구(大疑團 參究) — 흔들리는 마음을 화두 삼아 본래의 자유를 찾아가는 정진기';
 }
 
 export const HAN_YONGUN_THEMES: HanYongunTheme[] = [
@@ -119,7 +140,9 @@ export const HAN_YONGUN_APHORISMS: HanYongunAphorism[] = [
 ];
 
 export function calculateManhaeHanYongunNimuiChimmuk(
-  profile: UserProfile
+  profile: UserProfile,
+  query?: string,
+  now: Date = new Date(),
 ): ManhaeHanYongunNimuiChimmukResult {
   const p = profile as any;
   const name = profile?.basic?.name ?? p?.name ?? '방문자';
@@ -127,7 +150,7 @@ export function calculateManhaeHanYongunNimuiChimmuk(
   const birthTime = profile?.basic?.birthtime ?? p?.birthTime ?? p?.birthtime ?? '12:00';
   const gender = profile?.basic?.gender ?? p?.gender ?? 'neutral';
 
-  const seedString = `MANHAE-HAN-YONGUN-NIMUI-CHIMMUK:${name}:${birthDate}:${birthTime}:${gender}`;
+  const seedString = `MANHAE-HAN-YONGUN-NIMUI-CHIMMUK:${name}:${birthDate}:${birthTime}:${gender}:${query ?? ''}`;
 
   let hash = 0;
   for (let i = 0; i < seedString.length; i++) {
@@ -154,9 +177,24 @@ export function calculateManhaeHanYongunNimuiChimmuk(
     `${activeHanYongunTheme.practicalCounsel} 아울러 만해 선사의 불후의 명구 "${focalHanYongunAphorism.aphorismKo}"(${focalHanYongunAphorism.aphorismHanjaOrContext})를 깊이 마음에 새기고, ` +
     `${focalHanYongunAphorism.actionGuidance}`;
 
+  const calculatedAtKst = formatManhaeKstTimestamp(now);
+  const avgScore = Math.round(
+    (nimuiChimmukTranscendentLoveScore +
+      gongyakSamjangIndependenceSovereigntyScore +
+      buddhistYusinReformationEnergyScore +
+      unyieldingLotusIntegrityIndex +
+      hwaduGreatDoubtEnlightenmentScore) /
+      5,
+  );
+  const manhaeSynthesisMatrix = {
+    dominantTension: `${activeHanYongunTheme.themeTitleKo} ↔ ${focalHanYongunAphorism.sourceContext}`,
+    alignmentState: describeManhaeStage(avgScore),
+    integratedAction: `${focalHanYongunAphorism.actionGuidance}${query?.trim() ? ` [질문 맥락: ${query.trim()}]` : ''}`,
+  };
+
   return {
     engineVersion: KOREAN_MANHAE_HAN_YONGUN_VERSION,
-    calculatedAtKst: new Date().toISOString(),
+    calculatedAtKst,
     nimuiChimmukTranscendentLoveScore,
     gongyakSamjangIndependenceSovereigntyScore,
     buddhistYusinReformationEnergyScore,
@@ -168,17 +206,23 @@ export function calculateManhaeHanYongunNimuiChimmuk(
       guidanceTitle,
       philosophicalCounsel,
     },
+    manhaeSynthesisMatrix,
   };
 }
 
 export function formatManhaeHanYongunNimuiChimmukPrompt(res: ManhaeHanYongunNimuiChimmukResult): string {
-  return [
+  const avgScore = Math.round(
+    (res.nimuiChimmukTranscendentLoveScore +
+      res.gongyakSamjangIndependenceSovereigntyScore +
+      res.buddhistYusinReformationEnergyScore +
+      res.unyieldingLotusIntegrityIndex +
+      res.hwaduGreatDoubtEnlightenmentScore) /
+      5,
+  );
+  const lines = [
     `【만해 한용운 《님의 침묵》 역설적 사랑 & 자주 지조 지표】`,
-    `- 님의 침묵 초연 사랑 승화도(님을 보내지 않는 사랑): ${res.nimuiChimmukTranscendentLoveScore}/100`,
-    `- 공약삼장 자주독립 및 당당한 평화 지수(公約三章): ${res.gongyakSamjangIndependenceSovereigntyScore}/100`,
-    `- 낡은 타성 타파 조선불교유신 혁신 정진력(朝鮮佛敎維新): ${res.buddhistYusinReformationEnergyScore}/100`,
-    `- 출오염 연꽃 순결 지조 지수(出汚染 淨節): ${res.unyieldingLotusIntegrityIndex}/100`,
-    `- 대의단 타파 및 만유일체 원융 평정심(大疑團 圓融): ${res.hwaduGreatDoubtEnlightenmentScore}/100`,
+    `- 연산 시각: ${res.calculatedAtKst} | 엔진: ${res.engineVersion}`,
+    `- 선시·지조 국면: ${describeManhaeStage(avgScore)}`,
     `- 핵심 선시·독립 테마: ${res.activeHanYongunTheme.themeTitleKo} [${res.activeHanYongunTheme.themeTitleHanja}]`,
     `- 실존적 통찰: ${res.activeHanYongunTheme.existentialInsight}`,
     `- 실천적 조언: ${res.activeHanYongunTheme.practicalCounsel}`,
@@ -186,5 +230,12 @@ export function formatManhaeHanYongunNimuiChimmukPrompt(res: ManhaeHanYongunNimu
     `- 원전 출처: "${res.focalHanYongunAphorism.aphorismHanjaOrContext}" [${res.focalHanYongunAphorism.sourceContext}]`,
     `- 구체적 실천 지침: ${res.focalHanYongunAphorism.actionGuidance}`,
     `- 종합 만해 독립정신·선사 권면: ${res.hanYongunComprehensiveGuidance.philosophicalCounsel}`,
-  ].join('\n');
+  ];
+  if (res.manhaeSynthesisMatrix) {
+    lines.push(
+      `- 교차 매트릭스 [핵심 긴장: ${res.manhaeSynthesisMatrix.dominantTension} | 조율 상태: ${res.manhaeSynthesisMatrix.alignmentState}]`,
+      `- 통합 실천: ${res.manhaeSynthesisMatrix.integratedAction}`,
+    );
+  }
+  return lines.join('\n');
 }

@@ -1,6 +1,6 @@
 import { UserProfile } from '../sharedState';
 
-export const HINDU_NADI_AGASTYA_PALM_LEAF_ENGINE_VERSION = '1.0.0';
+export const HINDU_NADI_AGASTYA_PALM_LEAF_ENGINE_VERSION = '2.0.0';
 
 export interface HinduNadiAgastyaPalmLeafReport {
   engineVersion: string;
@@ -14,6 +14,27 @@ export interface HinduNadiAgastyaPalmLeafReport {
   shantiParikharamRemedy: string;
   dharmaFulfillmentIndex: number;
   synthesisPrompt: string;
+  nadiSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
+}
+
+function formatNadiKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
+
+function describeNadiStage(score: number): string {
+  if (score >= 95) return '모크샤 다르마(Moksha Dharma) — 전생의 선업과 현생의 소명이 온전히 맞물린 개화기';
+  if (score >= 89) return '산치타 정화(Sanchita Shanti) — 인과의 매듭을 부드럽게 풀며 소명을 실천하는 성숙기';
+  return '프라랍다 각성(Prarabdha Awakening) — 야자잎의 가르침을 일상의 샨티 실천으로 여는 준비기';
 }
 
 const FOURTEEN_KANDAMS = [
@@ -177,11 +198,17 @@ export function calculateHinduNadiAgastyaPalmLeaf(options?: {
   const thumbPattern = THUMB_CHAKRA_PATTERNS[thumbIdx];
 
   const dharmaFulfillmentIndex = 85 + ((seed * 7 + kst.getUTCHours() * 5) % 15);
+  const calculatedAtKst = formatNadiKstTimestamp(now);
+  const nadiSynthesisMatrix = {
+    dominantTension: `제${kandam.kandamNum}칸담 ${kandam.name} ↔ ${thumbPattern}`,
+    alignmentState: describeNadiStage(dharmaFulfillmentIndex),
+    integratedAction: `${kandam.remedy}${options?.question?.trim() ? ` [질문 맥락: ${options.question.trim()}]` : ''}`,
+  };
 
   const synthesisPrompt = `
 [남인도 나디 점성술(Nadi Astrology) & 아가스티야 야자잎 14 칸담 실측 데이터]
 ======================================================================
-엔진 버전: ${HINDU_NADI_AGASTYA_PALM_LEAF_ENGINE_VERSION} | 기준 일시: ${kst.toISOString().replace('T', ' ').slice(0, 19)} KST
+엔진 버전: ${HINDU_NADI_AGASTYA_PALM_LEAF_ENGINE_VERSION} | 기준 일시: ${calculatedAtKst}
 ----------------------------------------------------------------------
 1. 📜 [아가스티야 야자잎(Ola Leaves) 활성 칸담 & 지문 문양]:
    - 활성 칸담: **제${kandam.kandamNum}칸담** [${kandam.name}]
@@ -192,14 +219,17 @@ export function calculateHinduNadiAgastyaPalmLeaf(options?: {
 3. ☸️ [전생 카르마(Prarabdha Karma) & 샨티 해원 처방]:
    - 전생 카르마 통찰: ${kandam.pastKarma}
    - 🎯 샨티 파리카람(해원/개운 처방): **${kandam.remedy}**
-   - 다르마(Dharma) 성취 완성도: **${dharmaFulfillmentIndex}%**
+   - 다르마(Dharma) 성취 국면: **${describeNadiStage(dharmaFulfillmentIndex)}**
+4. 🧭 [교차 매트릭스]:
+   - 핵심 긴장: ${nadiSynthesisMatrix.dominantTension} | 조율 상태: ${nadiSynthesisMatrix.alignmentState}
+   - 통합 실천: ${nadiSynthesisMatrix.integratedAction}
 ======================================================================
 [AI 해석 절대 지침]: 본 리포트는 남인도 타밀 싯다 성자 아가스티야 무니의 야자잎 나디 점성술 14대 칸담 체계에 입각한 100% 결정론적 산출물입니다. 전생의 인과와 이번 생의 소명(Dharma), 그리고 구체적인 샨티 파리카람 처방을 상담자에게 온화하고 깊이 있는 성자의 어조로 전하십시오.
 `.trim();
 
   return {
     engineVersion: HINDU_NADI_AGASTYA_PALM_LEAF_ENGINE_VERSION,
-    calculatedAtKst: kst.toISOString().replace('T', ' ').slice(0, 19) + ' KST',
+    calculatedAtKst,
     activeKandamNumber: kandam.kandamNum,
     kandamName: kandam.name,
     kandamTheme: kandam.theme,
@@ -209,6 +239,7 @@ export function calculateHinduNadiAgastyaPalmLeaf(options?: {
     shantiParikharamRemedy: kandam.remedy,
     dharmaFulfillmentIndex,
     synthesisPrompt,
+    nadiSynthesisMatrix,
   };
 }
 

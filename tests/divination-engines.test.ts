@@ -3406,9 +3406,14 @@ test('Hindu Nadi Agastya Palm Leaf Engine: calculates 14 Kandams and Shanti Pari
   assert.equal(rep.engineVersion, HINDU_NADI_AGASTYA_PALM_LEAF_ENGINE_VERSION);
   assert(rep.activeKandamNumber >= 1 && rep.activeKandamNumber <= 14);
   assert(rep.dharmaFulfillmentIndex >= 0 && rep.dharmaFulfillmentIndex <= 100);
+  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(rep.nadiSynthesisMatrix?.integratedAction));
   const prompt = formatHinduNadiAgastyaPalmLeafPrompt(rep);
   assert(prompt.includes('남인도 나디 점성술(Nadi Astrology) & 아가스티야 야자잎 14 칸담 실측 데이터'));
   assert(prompt.includes(rep.kandamName));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
 });
 
 test('Shinto Kotodama Four Souls Engine: calculates Ichirei Shikon balance and Kotodama chant', () => {
@@ -4711,9 +4716,14 @@ test('Korean Jeong Yak-yong Mongmin Simseo Engine: calculates Cheongnyeom integr
   assert(rep.bonggongPublicDutyLoyaltyIndex >= 0 && rep.bonggongPublicDutyLoyaltyIndex <= 100);
   assert(rep.jinhwangCrisisManagementResilience >= 0 && rep.jinhwangCrisisManagementResilience <= 100);
   assert(rep.activeOfficialStage.stageNameHanja.length > 0);
+  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(rep.mongminSynthesisMatrix?.integratedAction));
   const prompt = formatJeongYakyongMongminPrompt(rep);
   assert(prompt.includes('다산 정약용 선생 《목민심서(牧民心書)》'));
   assert(prompt.includes(rep.activeOfficialStage.stageNameKo));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
 });
 
 test('Ancient Greek Heraclitus Panta Rhei Engine: calculates flux index, Logos harmony, eternal fire and hidden harmonia', () => {
@@ -5867,9 +5877,14 @@ test('Manhae Han Yong-un Nimui Chimmuk Engine: calculates Transcendent Love, Gon
   assert(rep.unyieldingLotusIntegrityIndex >= 0 && rep.unyieldingLotusIntegrityIndex <= 100);
   assert(rep.hwaduGreatDoubtEnlightenmentScore >= 0 && rep.hwaduGreatDoubtEnlightenmentScore <= 100);
   assert(rep.activeHanYongunTheme.themeTitleKo.length > 0);
+  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(rep.manhaeSynthesisMatrix?.integratedAction));
   const prompt = formatManhaeHanYongunNimuiChimmukPrompt(rep);
   assert(prompt.includes('만해 한용운 《님의 침묵》 역설적 사랑 & 자주 지조 지표'));
   assert(prompt.includes(rep.activeHanYongunTheme.themeTitleKo));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
 });
 
 test('Gottfried Leibniz Monadology Engine: calculates Pre-established Harmony, Monad Vis Viva, and Apperception', () => {
