@@ -78,3 +78,7 @@ Every time a user request is completed or changes are made to the codebase:
 - JavaScript layout choices use `useContentCanvasCompact`, observing the content pane; never use the physical screen or full browser width for card/form layouts inside a pane.
 - Keep fields and media within their canvas. Wide tables/lists must remain accessible by scrolling, and short screens must keep controls reachable.
 - Preserve existing pane retention, theme isolation, popup bounds and audio rules. Check the route/tab catalog at folded, split and unfolded widths when changing the shared layout.
+
+### 14. Lucy Actions Preserve Unfolded Content
+- A channel's ask/send/open-Lucy action targets the visible Lucy pane while unfolded, without changing the content route or replacing the source page with Cosmic Room.
+- Use `requestLucyAction` for iframe and direct channel actions; retain folded navigation and queued prompt delivery. Explicit menu navigation remains separate.

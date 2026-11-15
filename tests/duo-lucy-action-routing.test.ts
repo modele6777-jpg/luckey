@@ -29,8 +29,8 @@ test('Lucy actions avoid navigation in the split while still updating persona an
 });
 
 test('the chat pane stays the same logical pane when CSS swaps its physical left/right position', () => {
-  assert.match(appSource, /id="duo-content-viewport"/);
-  assert.match(appSource, /id="duo-lucy-viewport"/);
+  assert.match(appSource, /data-workspace-pane="content"/);
+  assert.match(appSource, /data-workspace-pane="lucy"/);
   assert.match(appSource, /isDuoPanesSwapped \? 'flex-row-reverse' : 'flex-row'/);
   assert.match(appSource, /setDuoPanesSwapped\(\(previous\) => !previous\)/);
 });

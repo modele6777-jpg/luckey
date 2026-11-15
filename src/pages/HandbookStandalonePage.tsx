@@ -1,3 +1,4 @@
+import { requestLucyAction } from '@/lib/duoLucyActionRouting';
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { useLocation } from 'wouter';
 import { Volume2, VolumeX, Sparkles } from 'lucide-react';
@@ -290,7 +291,7 @@ export default function HandbookStandalonePage() {
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
         onBackToPrism={() => navigate('/')}
-        onNavigateToLucy={() => navigate('/chat')}
+        onNavigateToLucy={() => requestLucyAction()}
         totalVersesCount={verses.length}
         onOpenCalendar={() => setIsCalendarOpen(true)}
         onExportBookletPDF={() => exportLibraryAsBookletPDF(verses, userDisplayName)}

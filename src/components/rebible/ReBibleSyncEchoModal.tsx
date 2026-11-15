@@ -1,3 +1,4 @@
+import { requestLucyAction } from '@/lib/duoLucyActionRouting';
 import { ScreenPortal } from '@/components/layout/ScreenPortal';
 import React, { useState, useEffect } from 'react';
 import { 
@@ -205,18 +206,9 @@ export const ReBibleSyncEchoModal: React.FC<ReBibleSyncEchoModalProps> = ({
 
       const prompt = `루시야, 오늘 리바이블 [${bookTitle} - ${title}] 기록에 대해 상담하고 싶어.\n\n📖 [기록된 사건/여정]\n${fact}\n\n✨ [루시의 관점 · 지혜의 구절]\n${insight}${userReflection.trim() ? `\n\n💭 [나의 성찰]\n${userReflection}` : ''}\n\n이 주제의 본질을 되새기고, 앞으로 내 삶에 적용할 수 있는 구체적인 조언과 따뜻한 통찰을 전해줘.`;
 
-      sessionStorage.setItem('lucy_pro_pending_channel', 'master');
-      sessionStorage.setItem('lucy_injected_auto_send', prompt);
-      sessionStorage.setItem('lucy_injected_input_draft', prompt);
-
-      window.dispatchEvent(new CustomEvent('lucy-inject-message', {
-        detail: { prompt, channel: 'master' }
-      }));
+      requestLucyAction({ prompt, channel: 'master' });
     } catch (_) {}
     onClose();
-    if (typeof window !== 'undefined') {
-      window.dispatchEvent(new CustomEvent('prism-navigate', { detail: { path: '/chat' } }));
-    }
   };
 
   const quickReflections = [

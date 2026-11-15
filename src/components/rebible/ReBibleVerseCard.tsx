@@ -1,3 +1,4 @@
+import { requestLucyAction } from '@/lib/duoLucyActionRouting';
 import React, { useState } from 'react';
 import { 
   BookMarked, 
@@ -22,7 +23,6 @@ import { ReBibleVerse } from '../../types/rebible';
 import { cleanFactText, isVerseFinalized } from '../../lib/rebibleStorage';
 import { playTTS, stopTTS } from '../../utils/tts';
 import { exportVerseAsCardImage } from '../../utils/rebibleExporter';
-import { useLocation } from 'wouter';
 
 interface ReBibleVerseCardProps {
   verse: ReBibleVerse;
@@ -37,7 +37,6 @@ export const ReBibleVerseCard: React.FC<ReBibleVerseCardProps> = ({
   onAddAnnotation,
   onDeleteAnnotation
 }) => {
-  const [, navigate] = useLocation();
   const [isAnnotationsOpen, setIsAnnotationsOpen] = useState(false);
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -109,15 +108,9 @@ export const ReBibleVerseCard: React.FC<ReBibleVerseCardProps> = ({
 
       const topicText = `루시야, 내 리바이블 인생 경전 [${verse.reference} ${verse.title}] 기록에 대해 깊이 있는 상담과 조언을 나누고 싶어.\n\n📅 기록일: ${formattedDate}${emotionTags ? `\n🏷️ 키워드: ${emotionTags}` : ''}\n\n📖 [기록된 여정 (Fact)]\n${cleanedFact}\n\n✨ [루시의 관점 · 지혜의 구절 (Insight)]\n${verse.insight}${annotationSummary}\n\n이 기록의 의미를 되새기고, 내 삶과 마음에 더 깊은 치유와 구체적인 실천 방향을 5대 지능으로 통찰해 줘.`;
 
-      sessionStorage.setItem('lucy_pro_pending_channel', 'master');
-      sessionStorage.setItem('lucy_injected_auto_send', topicText);
-      sessionStorage.setItem('lucy_injected_input_draft', topicText);
-
-      window.dispatchEvent(new CustomEvent('lucy-inject-message', {
-        detail: { prompt: topicText, channel: 'master' }
-      }));
+      requestLucyAction({ prompt: topicText, channel: 'master' });
     } catch (_) {}
-    navigate('/chat');
+
   };
 
   const handleToggleRecitation = async () => {

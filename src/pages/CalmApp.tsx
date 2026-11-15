@@ -1,3 +1,5 @@
+import { requestLucyAction } from '@/lib/duoLucyActionRouting';
+import { isLucyChatPath } from '@/lib/duoPaneFocus';
 import { ScreenPortal } from '@/components/layout/ScreenPortal';
 import { useContentCanvasCompact } from '@/hooks/useContentCanvasCompact';
 import React, { useEffect, useRef, useState, useCallback } from "react";
@@ -168,14 +170,12 @@ export default function CalmApp() {
 
       // 3. Forward pending prism toss payload or navigation to Lucy
       if (e.data.type === "NAVIGATE_LUCKEY") {
-        if (e.data.text) {
-          try {
-            sessionStorage.setItem('lucy_injected_auto_send', e.data.text);
-            sessionStorage.setItem('lucy_injected_input_draft', e.data.text);
-            window.dispatchEvent(new CustomEvent('lucy:dynamic_inject', { detail: { prompt: e.data.text } }));
-          } catch (_) {}
+        const target = e.data.path || '/chat';
+        if (isLucyChatPath(target)) {
+          requestLucyAction({ prompt: e.data.text });
+        } else {
+          navigate(target);
         }
-        navigate(e.data.path || "/chat");
       }
     };
     window.addEventListener("message", handleMessage);
