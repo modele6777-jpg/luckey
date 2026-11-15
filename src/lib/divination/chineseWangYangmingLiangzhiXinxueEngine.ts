@@ -3,12 +3,12 @@
  *
  * 명나라 유학자 왕양명(王陽明, 왕수인)의 《전습록(傳習錄)》 원전 기반.
  *
- * @version LUCKEY-WANG-YANGMING-LIANGZHI-v2.0.0
+ * @version LUCKEY-WANG-YANGMING-LIANGZHI-v2.1.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const WANG_YANGMING_LIANGZHI_VERSION = 'LUCKEY-WANG-YANGMING-LIANGZHI-v2.0.0';
+export const WANG_YANGMING_LIANGZHI_VERSION = 'LUCKEY-WANG-YANGMING-LIANGZHI-v2.1.0';
 
 export interface XinxueStage {
   stageLevel: number;
@@ -66,6 +66,9 @@ export interface WangYangmingXinxueResult {
     counselTitle: string;
     philosophicalGuidance: string;
   };
+  dailyPracticeRitual: string;
+  reflectiveQuestion: string;
+  interpretiveBoundary: string;
 }
 
 export type WangYangmingXinxueReport = WangYangmingXinxueResult;
@@ -276,6 +279,13 @@ export function calculateWangYangmingXinxue(
     `복잡한 계산이나 남의 눈치를 보기보다 내면의 맑은 직관이 가리키는 바른길을 즉각 실천하십시오. ` +
     `${activeXinxueStage.actionBlessing}을 바탕으로 사전마련(事上磨鍊)하십시오. 일 속에서 마음을 단련할 때 어떤 장벽도 돌파할 수 있습니다.`;
 
+  const dailyPracticeRitual =
+    `${situationalXinxueAudit.shiShangMoLianAction} (${temporalLiangzhiRhythm.rhythmDirective})`;
+  const reflectiveQuestion =
+    `지금 내 마음의 거울을 흐리는 심중적(心中賊)은 무엇이며, 앎과 행함을 하나로 묶는 오늘의 첫 걸음은 어디입니까?`;
+  const interpretiveBoundary =
+    '이 관점은 점수가 아니라 왕양명 《전습록》의 치양지·지행합일·사전마련 틀로 현재 질문의 실천 결을 비추는 상징적 성찰입니다.';
+
   return {
     engineVersion: WANG_YANGMING_LIANGZHI_VERSION,
     calculatedAtKst: (now ?? new Date()).toISOString(),
@@ -293,23 +303,34 @@ export function calculateWangYangmingXinxue(
       counselTitle,
       philosophicalGuidance,
     },
+    dailyPracticeRitual,
+    reflectiveQuestion,
+    interpretiveBoundary,
   };
+}
+
+function describeYangmingStage(score: number): string {
+  if (score >= 88) return '영명 발현(티끌 없이 맑게 비추는 결)';
+  if (score >= 76) return '사전마련(일 속에서 단련되는 흐름)';
+  return '심중적 성찰(마음의 도적을 가려내는 단계)';
 }
 
 export function formatWangYangmingXinxuePrompt(res: WangYangmingXinxueResult): string {
   return [
-    `【명나라 양명학 왕양명(王陽明) 치양지(致良知) & 지행합일(知行合一) 심학 지표】`,
-    `- 치양지(致良知) 본래직관 발현도: ${res.liangzhiIntuitionScore}/100`,
-    `- 지행합일(知行合一) 실천 행동력: ${res.zhiXingUnityPower}/100`,
-    `- 심즉리(心卽理) 내면자성 확신도: ${res.xinZhiLiMindCoreIntegrity}/100`,
-    `- 사전마련(事上磨鍊) 현실단련 회복력: ${res.shiShangMoLianResilience}/100`,
-    `- 발본색원(拔本塞源) 사욕차단 청정도: ${res.baBenSaiYuanSelflessPurity}/100`,
+    `【명나라 양명학 왕양명(王陽明) 치양지(致良知) & 지행합일(知行合一) 심학 성찰 (${res.engineVersion})】`,
+    `- 치양지(致良知) 본래직관: ${describeYangmingStage(res.liangzhiIntuitionScore)}`,
+    `- 지행합일(知行合一) 실천 결: ${describeYangmingStage(res.zhiXingUnityPower)}`,
+    `- 심즉리(心卽理) 내면자성: ${describeYangmingStage(res.xinZhiLiMindCoreIntegrity)}`,
+    `- 사전마련(事上磨鍊) 단련: ${describeYangmingStage(res.shiShangMoLianResilience)}`,
+    `- 발본색원(拔本塞源) 청정: ${describeYangmingStage(res.baBenSaiYuanSelflessPurity)}`,
     `- 현재 심학 수양 단계: ${res.activeXinxueStage.stageNameHanja} (${res.activeXinxueStage.stageNameKo})`,
     `- 질문 맥락 심학 처방 (${res.situationalXinxueAudit.themeKo} · ${res.situationalXinxueAudit.chuanxiluCitation}): "${res.situationalXinxueAudit.translationKo}" [${res.situationalXinxueAudit.hanjaQuote}]`,
     `- 마음의 도적(心中賊): ${res.situationalXinxueAudit.innerThiefTrap}`,
-    `- 사전마련 실천: ${res.situationalXinxueAudit.shiShangMoLianAction}`,
-    `- KST 양지 리듬: ${res.temporalLiangzhiRhythm.kstWindow} (${res.temporalLiangzhiRhythm.xinxueFocus}, 명료도 ${res.temporalLiangzhiRhythm.liangzhiClarityIndex}/100) — ${res.temporalLiangzhiRhythm.rhythmDirective}`,
-    `- 양명학 매트릭스: 양지 명료 ${res.yangmingSynthesisMatrix.liangzhiClarity} / 지행 합일 ${res.yangmingSynthesisMatrix.zhiXingUnity} / 사전마련 ${res.yangmingSynthesisMatrix.shiShangMoLianDepth} (종합 ${res.yangmingSynthesisMatrix.overallSynthesis}/100)`,
+    `- 일일 사전마련 의례: ${res.dailyPracticeRitual}`,
+    `- KST 양지 리듬: ${res.temporalLiangzhiRhythm.kstWindow} (${res.temporalLiangzhiRhythm.xinxueFocus}, ${res.temporalLiangzhiRhythm.seasonalTone}, 명료 결: ${describeYangmingStage(res.temporalLiangzhiRhythm.liangzhiClarityIndex)})`,
+    `- 양명학 조화 흐름: 양지 명료 [${describeYangmingStage(res.yangmingSynthesisMatrix.liangzhiClarity)}] / 지행 합일 [${describeYangmingStage(res.yangmingSynthesisMatrix.zhiXingUnity)}] / 사전마련 [${describeYangmingStage(res.yangmingSynthesisMatrix.shiShangMoLianDepth)}]`,
+    `- 성찰 질문: ${res.reflectiveQuestion}`,
     `- 철학적 처방: ${res.xinxuePhilosophicalCounsel.philosophicalGuidance}`,
+    `- 해석 경계: ${res.interpretiveBoundary}`,
   ].join('\n');
 }

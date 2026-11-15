@@ -7,12 +7,12 @@
  * 3. 극기복례(克己復禮): 사사로운 욕망을 이겨내고 본래의 도리와 예법으로 돌아감.
  * 4. 군자탄탕탕(君子坦蕩蕩): 소인의 조급하고 궁색한 근심(小人長戚戚)을 벗어나 마음에 걸림이 없는 넓고 평정한 품격.
  *
- * @version LUCKEY-CONFUCIUS-ZHITIANMING-v2.0.0
+ * @version LUCKEY-CONFUCIUS-ZHITIANMING-v2.1.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const CONFUCIUS_ZHITIANMING_VERSION = 'LUCKEY-CONFUCIUS-ZHITIANMING-v2.0.0';
+export const CONFUCIUS_ZHITIANMING_VERSION = 'LUCKEY-CONFUCIUS-ZHITIANMING-v2.1.0';
 
 export interface ConfuciusLifeStage {
   stageKey: string;
@@ -72,6 +72,10 @@ export interface ConfuciusAnalectsZhitianmingResult {
   situationalAnalects: SituationalAnalects;
   temporalJunziRhythm: TemporalJunziRhythm;
   junziCultivationMatrix: JunziCultivationMatrix;
+  // v2.1.0 순수 정성 실천·경계 필드
+  dailyPracticeRitual: string;
+  reflectiveQuestion: string;
+  interpretiveBoundary: string;
 }
 
 export type ConfuciusAnalectsZhitianmingReport = ConfuciusAnalectsZhitianmingResult;
@@ -311,6 +315,12 @@ export function calculateConfuciusAnalectsZhitianming(
     `현재 당신의 질문('${situationalAnalects.themeKo}')은 '${activeLifeStage.stageNameKo}'에 조응합니다. ${activeLifeStage.actionGuidance} ` +
     `특히 ${focalVirtue.virtueKo}의 덕목을 지키며 "${situationalAnalects.classicalQuote}"의 정신을 되새기십시오.`;
 
+  const dailyPracticeRitual =
+    `${temporalJunziRhythm.dailyCultivationPractice} (${junziCultivationMatrix.dailyThreeReflections})`;
+  const reflectiveQuestion = situationalAnalects.reflectionPrompt;
+  const interpretiveBoundary =
+    '이 관점은 점수가 아니라 공자 《논어》의 인·의·예·지·신과 군자도(君子道) 수양 틀로 현재 질문의 도리와 태도를 비추는 상징적 성찰입니다.';
+
   return {
     engineVersion: CONFUCIUS_ZHITIANMING_VERSION,
     calculatedAtKst: isoKst,
@@ -328,22 +338,32 @@ export function calculateConfuciusAnalectsZhitianming(
     situationalAnalects,
     temporalJunziRhythm,
     junziCultivationMatrix,
+    dailyPracticeRitual,
+    reflectiveQuestion,
+    interpretiveBoundary,
   };
+}
+
+function describeConfuciusStage(score: number): string {
+  if (score >= 88) return '완숙한 발현(원숙하고 흔들림 없는 결)';
+  if (score >= 76) return '안정된 축적(꾸준히 무르익는 흐름)';
+  return '기초 다짐(일상에서 길러 가는 싹)';
 }
 
 export function formatConfuciusAnalectsZhitianmingPrompt(res: ConfuciusAnalectsZhitianmingResult): string {
   return [
-    `【공자 논어 지천명 & 극기복례 군자도 지표 (${res.engineVersion})】`,
-    `- 지천명 통찰: ${res.tianmingAttunementScore}/100 | 인(仁): ${res.renBenevolenceCoreScore}/100 | 예(禮): ${res.liDecorumHarmonyScore}/100`,
-    `- 극기복례 복원력: ${res.kejiFuliDisciplineScore}/100 | 군자탄탕탕 평정심: ${res.junziEquanimityScore}/100`,
+    `【공자 논어 지천명 & 극기복례 군자도 성찰 (${res.engineVersion})】`,
+    `- 내면 덕목 결: 지천명 통찰 [${describeConfuciusStage(res.tianmingAttunementScore)}] | 인(仁) [${describeConfuciusStage(res.renBenevolenceCoreScore)}] | 예(禮) [${describeConfuciusStage(res.liDecorumHarmonyScore)}]`,
+    `- 수양 태도: 극기복례 절제 [${describeConfuciusStage(res.kejiFuliDisciplineScore)}] | 군자탄탕탕 평정심 [${describeConfuciusStage(res.junziEquanimityScore)}]`,
     `- 조응하는 생애 마디: ${res.activeLifeStage.stageNameHanja} (${res.activeLifeStage.stageNameKo})`,
     `- 질문 맥락 논어 처방(${res.situationalAnalects.chapterCitation}): ${res.situationalAnalects.themeKo}`,
     `  · 원전 경구: "${res.situationalAnalects.classicalQuote}" — ${res.situationalAnalects.modernInsight}`,
-    `  · 성찰 물음: ${res.situationalAnalects.reflectionPrompt}`,
-    `- KST 시공간 리듬: ${res.temporalJunziRhythm.kstPhaseLabel} · ${res.temporalJunziRhythm.seasonContext} (예절 조화도 ${res.temporalJunziRhythm.liHarmonyIndex}/100)`,
-    `- 일일 수양 실천: ${res.temporalJunziRhythm.dailyCultivationPractice}`,
-    `- 군자 수양 매트릭스: 인예 일치 ${res.junziCultivationMatrix.renLiCohesion} / 극기 절제 ${res.junziCultivationMatrix.kejiRestraint} / 천명 수용 ${res.junziCultivationMatrix.tianmingAcceptance} → [${res.junziCultivationMatrix.priorityVirtueFocus}]`,
+    `  · 성찰 물음: ${res.reflectiveQuestion}`,
+    `- KST 시공간 리듬: ${res.temporalJunziRhythm.kstPhaseLabel} · ${res.temporalJunziRhythm.seasonContext} (예절 조화: ${describeConfuciusStage(res.temporalJunziRhythm.liHarmonyIndex)})`,
+    `- 일일 수양 의례: ${res.dailyPracticeRitual}`,
+    `- 군자 수양 방향: 인예 일치 [${describeConfuciusStage(res.junziCultivationMatrix.renLiCohesion)}] / 극기 절제 [${describeConfuciusStage(res.junziCultivationMatrix.kejiRestraint)}] / 천명 수용 [${describeConfuciusStage(res.junziCultivationMatrix.tianmingAcceptance)}] → [${res.junziCultivationMatrix.priorityVirtueFocus}]`,
     `- 핵심 수양 덕목: ${res.focalVirtue.virtueKo}`,
     `- 철학적 수양 지침: ${res.confucianPhilosophicalCounsel.philosophicalGuidance}`,
+    `- 해석 경계: ${res.interpretiveBoundary}`,
   ].join('\n');
 }
