@@ -4,6 +4,7 @@ import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import { motion, AnimatePresence } from 'motion/react';
 import {
   X,
+  ArrowLeft,
   Sparkles,
   AlertCircle,
   Volume2,
@@ -48,6 +49,7 @@ export interface TodayTarotNarrationModalProps {
   initialMode?: 'narration' | 'text';
   onConsultLucy?: (cardContext: string) => void;
   onGoToTarotWheel?: () => void;
+  onGoToTarotMain?: () => void;
 }
 
 export function TodayTarotNarrationModal({
@@ -56,6 +58,7 @@ export function TodayTarotNarrationModal({
   dailyResult,
   onConsultLucy,
   onGoToTarotWheel,
+  onGoToTarotMain,
 }: TodayTarotNarrationModalProps) {
   const [selectedVoice, setSelectedVoice] = useState<'Lucy' | 'Kore'>('Lucy');
   const [activeSpeechType, setActiveSpeechType] = useState<'full' | 'summary' | null>(null);
@@ -394,6 +397,13 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
             </div>
 
             <div className="flex items-center gap-2 shrink-0">
+              {onGoToTarotMain && (
+                <button type="button" onClick={() => { handleClose(); onGoToTarotMain(); }}
+                  className="flex items-center gap-1 rounded-xl border border-yellow-400/30 bg-yellow-500/10 px-2.5 py-2 text-xs font-bold text-yellow-200"
+                  aria-label="타로 리딩 메인으로">
+                  <ArrowLeft size={15} /><span>리딩 메인</span>
+                </button>
+              )}
               {card && (
                 <TodayTarotShareButton
                   data={shareData}
@@ -696,22 +706,15 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
           <div className="flex flex-col sm:flex-row items-center justify-between gap-2.5 pt-2 border-t border-white/10">
             {/* Left: 1-per-day status or other tarot inquiry */}
             {card ? (
-              <div className="flex items-center gap-2 w-full sm:w-auto">
+              <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
                 <div className="px-3.5 py-2 rounded-xl bg-yellow-500/10 border border-yellow-500/25 text-yellow-300/90 text-xs font-medium flex items-center justify-center gap-1.5 shadow-sm">
                   <Sparkles size={13} className="text-yellow-400" />
                   <span>오늘의 타로 1일 1회 완료 (내일 00시 리셋)</span>
                 </div>
-                {onGoToTarotWheel && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      handleClose();
-                      onGoToTarotWheel();
-                    }}
-                    className="px-3.5 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-white/80 hover:text-white border border-white/10 text-xs font-medium transition-all cursor-pointer"
-                    title="다른 고민으로 타로 상담실 이동"
-                  >
-                    <span>다른 고민 질문하기</span>
+                {onGoToTarotMain && (
+                  <button type="button" onClick={() => { handleClose(); onGoToTarotMain(); }}
+                    className="px-3.5 py-2 rounded-xl bg-yellow-500/15 hover:bg-yellow-500/25 text-yellow-200 border border-yellow-400/30 text-xs font-bold cursor-pointer">
+                    타로 리딩 메인으로
                   </button>
                 )}
               </div>

@@ -1,0 +1,13 @@
+import {chromium,webkit} from '@playwright/test';
+import assert from 'node:assert/strict';
+const safari=process.env.LUCKEY_TEST_BROWSER==='webkit';
+const browser=await(safari?webkit:chromium).launch({headless:true,...(safari?{executablePath:process.env.LUCKEY_WEBKIT_EXECUTABLE}:{executablePath:'/usr/bin/chromium',args:['--no-sandbox']})});
+try{
+ const page=await browser.newPage({viewport:{width:1100,height:900}});page.setDefaultTimeout(20000);
+ await page.addInitScript(()=>{const d=new Date(),today=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;localStorage.setItem('lu_unlocked_date',today);sessionStorage.setItem('profileModalDismissed','1');sessionStorage.setItem('pwa_prompt_dismissed','true');const card={id:'major_0',name:'The Fool',nameKo:'바보',type:'major',keywords:['새로운 시작','가능성'],reversed:false};const diagnosis='### 1. 현재 마음\n새로운 시작을 앞두고 설렘과 조심스러운 마음을 함께 느끼고 있습니다.\n### 2. 상징\n가벼운 발걸음은 새로운 시도를 의미합니다.\n### 3. 방향\n준비할 내용을 확인하며 자신의 속도로 시작하세요.\n### 4. 실천\n오늘 작은 계획을 하나 적어 보세요.\n### 5. 축복\n스스로 선택한 길에서 차분하게 배워 나가기를 바랍니다.';const daily={dateKey:today,drawnCard:card,diagnosis,tarotConcern:'오늘의 타로'};localStorage.setItem(`trinity_daily_result_guest_${today}`,JSON.stringify(daily));localStorage.setItem(`limit_daily_trinity_guest_${today}`,'true');localStorage.setItem('trinity_active_tarot_session',JSON.stringify({dateKey:today,drawnCards:[card],tarotResult:diagnosis,tarotConcern:'오늘의 타로'}));window.dailyTestKey=`trinity_daily_result_guest_${today}`;window.limitTestKey=`limit_daily_trinity_guest_${today}`;});
+ await page.route('**/api/**',r=>r.abort());await page.goto((process.env.LUCKEY_TEST_URL||'http://127.0.0.1:4174')+'/trinity?tab=tarot');
+ const back=page.locator('.tarot-reading-panel').getByRole('button',{name:'타로 리딩 메인으로',exact:true});await back.waitFor({state:'visible'});await back.click();
+ const concern=page.locator('#tarot-concern-input');await concern.waitFor({state:'visible'});assert.equal(await concern.inputValue(),'');await page.waitForTimeout(500);assert(await concern.isVisible(),'The old daily result must not automatically replace the main screen');
+ const preserved=await page.evaluate(()=>({card:JSON.parse(localStorage.getItem(window.dailyTestKey)).drawnCard.id,limit:localStorage.getItem(window.limitTestKey)}));assert.deepEqual(preserved,{card:'major_0',limit:'true'});await concern.fill('이번 주에 새로운 공부를 시작할까요?');assert.equal(await concern.inputValue(),'이번 주에 새로운 공부를 시작할까요?');
+ console.log('PASS: daily result returns to an editable tarot main screen without redrawing, restoring the result over it, or clearing the saved daily card/limit');
+}finally{await browser.close();}

@@ -1696,6 +1696,35 @@ function playDailyCardChimeAsync() {
     return TAROT_DECK.filter((card) => !drawnCardIds.includes(card.id));
   }, [drawnCardIds]);
 
+  const goToTarotMain = useCallback(() => {
+    // Daily results and the one-draw limit are stored independently and stay intact.
+    setShowDailyModal(false);
+    setShowTarot(false);
+    setActiveMode('tarot');
+    setStage('landing');
+    setTarotVirtualMode(false);
+    setDrawnCards(null);
+    setTarotResult(null);
+    setTarotConcern('');
+    setCustomSpread(null);
+    setZoomedCard(null);
+    setFollowUpEntries([]);
+    setTarotSubMessages([]);
+    setSmartTarotQuestions([]);
+    setHideTarotPopup(false);
+    setNotice(previous => ({ ...previous, open: false }));
+    sessionStorage.removeItem('prism_tarot_focus_daily');
+    sessionStorage.removeItem('prism_tarot_open_main');
+    localStorage.removeItem('trinity_active_tarot_session');
+    localStorage.removeItem('trinity_followup_tarot_entries');
+    resetAppScroll();
+  }, []);
+
+  useEffect(() => {
+    window.addEventListener('prism:tarot-main', goToTarotMain);
+    return () => window.removeEventListener('prism:tarot-main', goToTarotMain);
+  }, [goToTarotMain]);
+
   const interpretiveSummary = useInterpretiveTarotSummary(
     tarotResult,
     isDailyTarotConcern(tarotConcern) ? '오늘의 타로 리딩' : tarotConcern,
@@ -2169,6 +2198,11 @@ function playDailyCardChimeAsync() {
   useEffect(() => {
     if (activeMode !== "tarot" || typeof window === "undefined") return;
 
+    if (sessionStorage.getItem('prism_tarot_open_main')) {
+      goToTarotMain();
+      return;
+    }
+
     const shouldFocusDaily = sessionStorage.getItem('prism_tarot_focus_daily');
     if (shouldFocusDaily) {
       sessionStorage.removeItem('prism_tarot_focus_daily');
@@ -2186,7 +2220,7 @@ function playDailyCardChimeAsync() {
 
     // 🌟 오늘 이미 오늘의 타로를 뽑았고 화면에 카드가 비어있다면, 오늘의 타로 결과를 자동으로 복원
     if (!drawnCards && !tarotResult) {
-      if (customSpread?.theme === 'daily' || isDailyTarotConcern(tarotConcern) || isTrinityDailyLockedToday()) {
+      if (customSpread?.theme === 'daily' || isDailyTarotConcern(tarotConcern)) {
         const restored = restoreTodayDailyResult(customSpread?.theme === 'daily' || isDailyTarotConcern(tarotConcern));
         if (customSpread?.theme === 'daily' || isDailyTarotConcern(tarotConcern)) {
           const targetCard = restored?.drawnCard || dailyResult?.drawnCard || dailyDrawnCard;
@@ -2214,7 +2248,7 @@ function playDailyCardChimeAsync() {
         }
       } catch (_) {}
     }
-  }, [activeMode, customSpread?.theme, tarotConcern, dailyResult, dailyDrawnCard, restoreTodayDailyResult, resetTarotSession, isTrinityDailyLockedToday, drawnCards, tarotResult]);
+  }, [activeMode, customSpread?.theme, tarotConcern, dailyResult, dailyDrawnCard, restoreTodayDailyResult, resetTarotSession, isTrinityDailyLockedToday, drawnCards, tarotResult, goToTarotMain]);
 
   const handleSend = async (customMsg?: string, sendOpts?: OracleDeepInsightSendOpts) => {
     const userMsg = (customMsg || chatInput).trim();
@@ -3428,7 +3462,12 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-wrap items-center justify-end gap-2">
+                      {(tarotResult || drawnCards) && !isTarotGenerating && (
+                        <button type="button" onClick={goToTarotMain}
+                          className="px-3 py-2 rounded-xl border border-yellow-400/40 bg-yellow-500/15 text-yellow-200 text-xs font-bold"
+                          aria-label="타로 리딩 메인으로">리딩 메인으로</button>
+                      )}
                       <button
                         type="button"
                         onClick={() => setShowTarotCardBackModal(true)}
@@ -4876,6 +4915,7 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
       {/* Today's Ruling Card / Daily Result Modal (통합 텍스트 리딩 & 실시간 음성 낭독) */}
       <TodayTarotNarrationModal
         isOpen={showDailyModal}
+        onGoToTarotMain={goToTarotMain}
         onClose={() => setShowDailyModal(false)}
         dailyResult={dailyResult}
         onConsultLucy={(context) => {

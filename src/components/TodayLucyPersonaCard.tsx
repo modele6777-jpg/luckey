@@ -612,6 +612,15 @@ export function TodayLucyPersonaCard({
       {/* 🔮 오늘의 타로 통합 결과 & 음성 낭독 모달 */}
       <TodayTarotNarrationModal
         isOpen={isTarotNarrationOpen}
+        onGoToTarotMain={() => {
+          setIsTarotNarrationOpen(false);
+          sessionStorage.removeItem('prism_tarot_focus_daily');
+          sessionStorage.setItem('prism_tarot_open_main', 'true');
+          sessionStorage.setItem('prism_target_tab', 'tarot');
+          window.dispatchEvent(new CustomEvent('prism:tarot-main'));
+          navigate('/trinity?tab=tarot');
+          window.dispatchEvent(new CustomEvent('nav-click-active', { detail: { path: '/trinity?tab=tarot', tab: 'tarot' } }));
+        }}
         onClose={() => setIsTarotNarrationOpen(false)}
         dailyResult={todayTarotResult}
         onConsultLucy={(cardContext) => {
