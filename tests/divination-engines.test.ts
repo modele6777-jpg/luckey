@@ -5528,6 +5528,9 @@ test('Henri Bergson Elan Vital Engine: calculates Pure Duration, Elan Vital, and
   const prompt = formatHenriBergsonElanVitalPrompt(rep);
   assert(prompt.includes('앙리 베르그송 《시간과 자유의지·창조적 진화》 순수 지속 & 생명의 도약 성찰 가이드'));
   assert(prompt.includes(rep.activeBergsonTheme.themeTitleKo));
+  assert.ok(rep.calculatedAtKst.includes('KST'));
+  assert.ok(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
 });
 
 test('Albert Camus Absurd Revolt Engine: calculates Absurd Lucidity, Unceasing Revolt, and Sisyphus Happiness', () => {
@@ -5995,6 +5998,8 @@ test('Gaston Bachelard Poetics of Space Engine: calculates Material Imagination,
   assert(prompt.includes('가스통 바슐라르 《공간의 시학》 & 《촛불의 미학》 몽상의 시학 지표'));
   assert(prompt.includes(rep.activeBachelardTheme.themeTitleKo));
   assert(prompt.includes('질문 맞춤 실천 가이드'));
+  assert.ok(rep.calculatedAtKst.includes('KST'));
+  assert.ok(prompt.includes('교차 매트릭스'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });
@@ -6188,6 +6193,9 @@ test('Gilles Deleuze Rhizome and Becoming Engine: calculates Rhizomatic Connecti
   const prompt = formatFrenchGillesDeleuzeRhizomeBecomingPrompt(rep);
   assert(prompt.includes('들뢰즈 《천 개의 고원·차이와 반복》 리좀·탈영토화·생성 성찰 가이드'));
   assert(prompt.includes(rep.activeDeleuzeTheme.themeTitleKo));
+  assert.ok(rep.calculatedAtKst.includes('KST'));
+  assert.ok(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
 });
 
 test('Heo Jun Dongui Bogam Yangsaeng Engine: calculates Tong-Jeuk-Bul-Tong, Cheon-In-Sang-Eung, and Chi-Mi-Byeong', () => {

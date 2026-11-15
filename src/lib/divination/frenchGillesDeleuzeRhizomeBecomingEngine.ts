@@ -9,12 +9,12 @@
  * 4. 창조적 '되기(Devenir / Becoming)' 변용 역동성 (Creative Becoming & Transformation): 고정된 정체성에 머물지 않고 끊임없이 새로운 존재로 변용하며 성장하는 활력.
  * 5. 고착 극복 및 잠재력 해방 회복탄력성 (Liberation of Potential & Resilience): 억압적인 도그마나 결핍의 환상을 부수고 내재적 충만과 생명 에너지를 회복하는 힘.
  *
- * @version LUCKEY-DELEUZE-RHIZOME-BECOMING-v1.1.0
+ * @version LUCKEY-DELEUZE-RHIZOME-BECOMING-v2.0.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const FRENCH_GILLES_DELEUZE_RHIZOME_BECOMING_VERSION = 'LUCKEY-DELEUZE-RHIZOME-BECOMING-v1.1.0';
+export const FRENCH_GILLES_DELEUZE_RHIZOME_BECOMING_VERSION = 'LUCKEY-DELEUZE-RHIZOME-BECOMING-v2.0.0';
 
 export type DeleuzeQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -59,6 +59,11 @@ export interface FrenchGillesDeleuzeRhizomeBecomingResult {
   dailyPracticeRitual: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
+  deleuzeSynthesisMatrix: {
+    coreInsight: string;
+    recommendedAction: string;
+    cautionNotice: string;
+  };
   deleuzeComprehensiveGuidance: {
     guidanceTitle: string;
     philosophicalCounsel: string;
@@ -294,9 +299,17 @@ export function calculateFrenchGillesDeleuzeRhizomeBecoming(
     `${activeDeleuzeTheme.practicalCounsel} ${practiceGuidance} 들뢰즈의 명언 "${focalDeleuzeAphorism.aphorismKo} (${focalDeleuzeAphorism.aphorismOriginal})"을 되새기며, ` +
     `${focalDeleuzeAphorism.actionGuidance}`;
 
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const kstTimeLabel = `${temporalDeleuzeRhythm.kstDateLabel} ${String(kst.getUTCHours()).padStart(2, '0')}:${String(kst.getUTCMinutes()).padStart(2, '0')} KST`;
+  const deleuzeSynthesisMatrix = {
+    coreInsight: activeDeleuzeTheme.themeTitleKo,
+    recommendedAction: practiceGuidance,
+    cautionNotice: '익숙한 위계와 고정 관념의 영토에 안주해 새로운 접속과 변용의 탈주선을 닫아버리지 마십시오.',
+  };
+
   return {
     engineVersion: FRENCH_GILLES_DELEUZE_RHIZOME_BECOMING_VERSION,
-    calculatedAtKst: temporalDeleuzeRhythm.kstDateLabel,
+    calculatedAtKst: kstTimeLabel,
     questionTopic,
     temporalDeleuzeRhythm,
     rhizomaticHorizontalConnectionIndex,
@@ -310,6 +323,7 @@ export function calculateFrenchGillesDeleuzeRhizomeBecoming(
     dailyPracticeRitual,
     reflectiveQuestion,
     interpretiveBoundary,
+    deleuzeSynthesisMatrix,
     deleuzeComprehensiveGuidance: {
       guidanceTitle,
       philosophicalCounsel,
@@ -321,7 +335,8 @@ export function formatFrenchGillesDeleuzeRhizomeBecomingPrompt(
   res: FrenchGillesDeleuzeRhizomeBecomingResult,
 ): string {
   return [
-    `【들뢰즈 《천 개의 고원·차이와 반복》 리좀·탈영토화·생성 성찰 가이드】`,
+    `【들뢰즈 《천 개의 고원·차이와 반복》 리좀·탈영토화·생성 성찰 가이드 (${res.engineVersion})】`,
+    `- 연산 시각: ${res.calculatedAtKst}`,
     `- 질문 주제 맥락: ${res.questionTopic}`,
     `- KST 시공간 리듬: ${res.temporalDeleuzeRhythm.kstDateLabel} · ${res.temporalDeleuzeRhythm.timeBand} (${res.temporalDeleuzeRhythm.nomadicTempo})`,
     `- 시공간 권면: ${res.temporalDeleuzeRhythm.temporalGuidance}`,
@@ -336,6 +351,7 @@ export function formatFrenchGillesDeleuzeRhizomeBecomingPrompt(
     `- 맥락 맞춤 가이드: ${res.practiceGuidance}`,
     `- 오늘의 실천 의례(${res.questionTopic}): ${res.dailyPracticeRitual}`,
     `- 성찰 질문: ${res.reflectiveQuestion}`,
+    `- 교차 매트릭스: 핵심(${res.deleuzeSynthesisMatrix.coreInsight}) | 실행(${res.deleuzeSynthesisMatrix.recommendedAction}) | 주의(${res.deleuzeSynthesisMatrix.cautionNotice})`,
     `- 들뢰즈 원전 명언: "${res.focalDeleuzeAphorism.aphorismKo}" (${res.focalDeleuzeAphorism.aphorismOriginal})`,
     `- 원전 출처: [${res.focalDeleuzeAphorism.sourceContext}]`,
     `- 구체적 실천 지침: ${res.focalDeleuzeAphorism.actionGuidance}`,
