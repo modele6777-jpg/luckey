@@ -8,12 +8,12 @@
  * 4. 사회계약과 상호 신뢰 연대도(Social Contract & Fiduciary Trust): 지배와 복종이 아닌 자유로운 동의와 상호 신뢰를 바탕으로 공정한 연대와 협력을 구축하는 역량.
  * 5. 관용과 다원성 존중·온건한 실용 분별력(Toleration & Practical Prudence): 서로 다른 신념과 개성을 포용하며, 맹목적 광신을 배격하고 상식과 이성에 기반한 평화적 공존을 이끄는 지혜.
  *
- * @version LUCKEY-JOHN-LOCKE-UNDERSTANDING-v1.1.0
+ * @version LUCKEY-JOHN-LOCKE-UNDERSTANDING-v2.0.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const BRITISH_JOHN_LOCKE_VERSION = 'LUCKEY-JOHN-LOCKE-UNDERSTANDING-v1.1.0';
+export const BRITISH_JOHN_LOCKE_VERSION = 'LUCKEY-JOHN-LOCKE-UNDERSTANDING-v2.0.0';
 
 export type LockeQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -58,6 +58,11 @@ export interface JohnLockeHumanUnderstandingResult {
   ritualAction: string;
   reflectionFocus: string;
   boundaryNotice: string;
+  lockeSynthesisMatrix: {
+    coreInsight: string;
+    recommendedAction: string;
+    cautionNotice: string;
+  };
   lockeComprehensiveGuidance: {
     guidanceTitle: string;
     philosophicalCounsel: string;
@@ -255,10 +260,18 @@ export function calculateJohnLockeHumanUnderstanding(
     `${focalLockeAphorism.actionGuidance}`;
 
   const boundaryNotice = '존 로크 경험론 해석은 열린 수용과 상호 존중의 관점을 제안하는 상징·성찰 도구이며, 법적·의학적 판단이나 미래 예언이 아닙니다.';
+  const baseDate = now ?? new Date();
+  const kst = new Date(baseDate.getTime() + 9 * 60 * 60 * 1000);
+  const kstTimeLabel = `${temporalLockeRhythm.kstDateLabel} ${String(kst.getUTCHours()).padStart(2, '0')}:${String(kst.getUTCMinutes()).padStart(2, '0')} KST`;
+  const lockeSynthesisMatrix = {
+    coreInsight: activeLockeTheme.themeTitleKo,
+    recommendedAction: topicGuidance.practiceGuidance,
+    cautionNotice: '과거의 선입견에 기대어 눈앞의 경험적 사실을 왜곡하거나 타인의 권리를 침해하지 마십시오.',
+  };
 
   return {
     engineVersion: BRITISH_JOHN_LOCKE_VERSION,
-    calculatedAtKst: (now ?? new Date()).toISOString(),
+    calculatedAtKst: kstTimeLabel,
     tabulaRasaOpenReceptivityScore,
     sensationReflectionBalanceIndex,
     naturalRightsInviolabilityScore,
@@ -272,6 +285,7 @@ export function calculateJohnLockeHumanUnderstanding(
     ritualAction: topicGuidance.ritualAction,
     reflectionFocus: topicGuidance.reflectionFocus,
     boundaryNotice,
+    lockeSynthesisMatrix,
     lockeComprehensiveGuidance: {
       guidanceTitle,
       philosophicalCounsel,
@@ -281,7 +295,8 @@ export function calculateJohnLockeHumanUnderstanding(
 
 export function formatJohnLockeHumanUnderstandingPrompt(res: JohnLockeHumanUnderstandingResult): string {
   return [
-    `【존 로크 《인간 오성론》 타불라 라사 & 천부인권 지표】`,
+    `【존 로크 《인간 오성론》 타불라 라사 & 천부인권 지표 (${res.engineVersion})】`,
+    `- 연산 시각: ${res.calculatedAtKst}`,
     `- 질문 주제 맥락: ${res.questionTopic}`,
     `- KST 시공간 리듬: ${res.temporalLockeRhythm.kstDateLabel} · ${res.temporalLockeRhythm.timeWindowKo} (${res.temporalLockeRhythm.empiricalTone}) — ${res.temporalLockeRhythm.rhythmDirective}`,
     `- 핵심 경험론 테마: ${res.activeLockeTheme.themeTitleKo} [${res.activeLockeTheme.themeTitleEn}]`,
@@ -290,6 +305,7 @@ export function formatJohnLockeHumanUnderstandingPrompt(res: JohnLockeHumanUnder
     `- 질문 맞춤 실천 가이드: ${res.practiceGuidance}`,
     `- 일상 실천 의례: ${res.ritualAction}`,
     `- 핵심 성찰 질문: ${res.reflectionFocus}`,
+    `- 교차 매트릭스: 핵심(${res.lockeSynthesisMatrix.coreInsight}) | 실행(${res.lockeSynthesisMatrix.recommendedAction}) | 주의(${res.lockeSynthesisMatrix.cautionNotice})`,
     `- 핵심 원전 경구: "${res.focalLockeAphorism.aphorismKo}"`,
     `- 원전 출처: "${res.focalLockeAphorism.aphorismEn}" [${res.focalLockeAphorism.sourceContext}]`,
     `- 구체적 실천 지침: ${res.focalLockeAphorism.actionGuidance}`,

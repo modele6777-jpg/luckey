@@ -10,12 +10,12 @@
  * 4. 다수의 횡포(Tyranny of the Majority) 경계: 법적 억압보다 더 위험한 사회적 관습과 여론의 독재에 맞서 자신의 고유한 가치관을 지키는 지적 용기.
  * 5. 질적 공리주의(Qualitative Utilitarianism): "만족한 돼지보다 불만족한 인간이 되는 것이 낫고, 만족한 바보보다 불만족한 소크라테스가 되는 것이 낫다" - 감각적 쾌락을 넘어선 정신적 고결함과 내적 성숙 추구.
  *
- * @version LUCKEY-JS-MILL-ON-LIBERTY-v1.1.0
+ * @version LUCKEY-JS-MILL-ON-LIBERTY-v2.0.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const BRITISH_JS_MILL_VERSION = 'LUCKEY-JS-MILL-ON-LIBERTY-v1.1.0';
+export const BRITISH_JS_MILL_VERSION = 'LUCKEY-JS-MILL-ON-LIBERTY-v2.0.0';
 
 export type MillQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -60,6 +60,11 @@ export interface JohnStuartMillOnLibertyIndividualityResult {
   ritualAction: string;
   reflectionFocus: string;
   boundaryNotice: string;
+  millSynthesisMatrix: {
+    coreInsight: string;
+    recommendedAction: string;
+    cautionNotice: string;
+  };
   millComprehensiveGuidance: {
     guidanceTitle: string;
     philosophicalCounsel: string;
@@ -264,10 +269,18 @@ export function calculateJohnStuartMillOnLibertyIndividuality(
     `${focalMillAphorism.actionGuidance}`;
 
   const boundaryNotice = '존 스튜어트 밀 자유론 해석은 자율성과 개별성 성찰을 돕는 상징·철학 관점이며, 법률 자문이나 확정적 예측이 아닙니다.';
+  const baseDate = now ?? new Date();
+  const kst = new Date(baseDate.getTime() + 9 * 60 * 60 * 1000);
+  const kstTimeLabel = `${temporalMillRhythm.kstDateLabel} ${String(kst.getUTCHours()).padStart(2, '0')}:${String(kst.getUTCMinutes()).padStart(2, '0')} KST`;
+  const millSynthesisMatrix = {
+    coreInsight: activeMillTheme.themeTitleKo,
+    recommendedAction: topicGuidance.practiceGuidance,
+    cautionNotice: '다수의 관습적 압력에 내 고유한 개별성을 지우거나 타인의 영역을 침범하지 마십시오.',
+  };
 
   return {
     engineVersion: BRITISH_JS_MILL_VERSION,
-    calculatedAtKst: (now ?? new Date()).toISOString(),
+    calculatedAtKst: kstTimeLabel,
     individualityAutonomyScore,
     harmPrincipleClarityScore,
     thoughtConscienceLibertyScore,
@@ -281,6 +294,7 @@ export function calculateJohnStuartMillOnLibertyIndividuality(
     ritualAction: topicGuidance.ritualAction,
     reflectionFocus: topicGuidance.reflectionFocus,
     boundaryNotice,
+    millSynthesisMatrix,
     millComprehensiveGuidance: {
       guidanceTitle,
       philosophicalCounsel,
@@ -290,7 +304,8 @@ export function calculateJohnStuartMillOnLibertyIndividuality(
 
 export function formatJohnStuartMillOnLibertyIndividualityPrompt(res: JohnStuartMillOnLibertyIndividualityResult): string {
   return [
-    `【존 스튜어트 밀 《자유론》 개별성 자율성 & 해악 원칙 지표】`,
+    `【존 스튜어트 밀 《자유론》 개별성 자율성 & 해악 원칙 지표 (${res.engineVersion})】`,
+    `- 연산 시각: ${res.calculatedAtKst}`,
     `- 질문 주제 맥락: ${res.questionTopic}`,
     `- KST 시공간 리듬: ${res.temporalMillRhythm.kstDateLabel} · ${res.temporalMillRhythm.timeWindowKo} (${res.temporalMillRhythm.libertyTone}) — ${res.temporalMillRhythm.rhythmDirective}`,
     `- 핵심 자유 테마: ${res.activeMillTheme.themeTitleKo} [${res.activeMillTheme.themeTitleEn}]`,
@@ -299,6 +314,7 @@ export function formatJohnStuartMillOnLibertyIndividualityPrompt(res: JohnStuart
     `- 질문 맞춤 실천 가이드: ${res.practiceGuidance}`,
     `- 일상 실천 의례: ${res.ritualAction}`,
     `- 핵심 성찰 질문: ${res.reflectionFocus}`,
+    `- 교차 매트릭스: 핵심(${res.millSynthesisMatrix.coreInsight}) | 실행(${res.millSynthesisMatrix.recommendedAction}) | 주의(${res.millSynthesisMatrix.cautionNotice})`,
     `- 핵심 경구: "${res.focalMillAphorism.aphorismKo}"`,
     `- 영문 원문: "${res.focalMillAphorism.aphorismEn}" [${res.focalMillAphorism.sourceContext}]`,
     `- 구체적 실천 지침: ${res.focalMillAphorism.actionGuidance}`,
