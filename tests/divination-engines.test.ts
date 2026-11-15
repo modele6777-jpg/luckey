@@ -5500,10 +5500,13 @@ test('Ralph Waldo Emerson Self-Reliance Engine: calculates qualitative Self-Reli
   assert(rep.reflectionFocus.length > 0);
   assert(rep.counselNote.length > 0);
   assert(rep.boundaryNotice.length > 0);
+  assert(rep.calculatedAtKst.includes('KST'));
+  assert(rep.emersonSynthesisMatrix.coreInsight.length > 0);
   assert(rep.activeEmersonTheme.themeTitleKo.length > 0);
   const prompt = formatRalphWaldoEmersonSelfReliancePrompt(rep);
   assert(prompt.includes('랠프 월도 에머슨 《자기신뢰》 & 《자연》 오버소울 비순응 자립 지표'));
   assert(prompt.includes(rep.activeEmersonTheme.themeTitleKo));
+  assert(prompt.includes('KST'));
   assert(!prompt.includes('/100'));
 });
 
@@ -6083,11 +6086,14 @@ test('Walt Whitman Leaves of Grass Engine: calculates Song of Myself, Multitudes
   assert(rep.democraticFreedomOpenRoadIndex >= 0 && rep.democraticFreedomOpenRoadIndex <= 100);
   assert(rep.cyclicalNatureOptimisticResilienceScore >= 0 && rep.cyclicalNatureOptimisticResilienceScore <= 100);
   assert(rep.activeWhitmanTheme.themeTitleKo.length > 0);
+  assert(rep.calculatedAtKst.includes('KST'));
+  assert(rep.whitmanSynthesisMatrix.coreInsight.length > 0);
   assert(rep.practiceGuidance.length > 0 && rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.boundaryNotice.length > 0);
   const prompt = formatAmericanWaltWhitmanLeavesOfGrassPrompt(rep);
   assert(prompt.includes('월트 휘트먼 《풀잎(Leaves of Grass)》 우주적 생명 찬가 지표'));
   assert(prompt.includes(rep.activeWhitmanTheme.themeTitleKo));
   assert(prompt.includes('2026-11-14'));
+  assert(prompt.includes('KST'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });
@@ -6473,10 +6479,13 @@ test('John Dewey Pragmatic Inquiry and Growth Engine: calculates qualitative Ref
   assert(rep.reflectionFocus.length > 0);
   assert(rep.counselNote.length > 0);
   assert(rep.boundaryNotice.length > 0);
+  assert(rep.calculatedAtKst.includes('KST'));
+  assert(rep.deweySynthesisMatrix.coreInsight.length > 0);
   assert(rep.activeDeweyTheme.themeTitleKo.length > 0);
   const prompt = formatAmericanJohnDeweyPragmaticInquiryGrowthPrompt(rep);
   assert(prompt.includes('존 듀이 《경험과 자연·민주주의와 교육》 반성적 사고(Reflective Inquiry)·성장 지표'));
   assert(prompt.includes(rep.activeDeweyTheme.themeTitleKo));
+  assert(prompt.includes('KST'));
   assert(!prompt.includes('/100'));
 });
 

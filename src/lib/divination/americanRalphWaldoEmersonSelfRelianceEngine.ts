@@ -8,12 +8,12 @@
  * 4. 자연과의 합일(Transparent Eyeball): 에고의 조급함을 비우고 자연의 리듬으로 호흡하는 투명한 응시
  * 5. 창조적 독창성(Creative Originality): 모방을 멈추고 자신만의 고유한 과업을 꽃피움
  *
- * @version LUCKEY-RALPH-WALDO-EMERSON-v1.1.0
+ * @version LUCKEY-RALPH-WALDO-EMERSON-v2.0.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const AMERICAN_RALPH_WALDO_EMERSON_VERSION = 'LUCKEY-RALPH-WALDO-EMERSON-v1.1.0';
+export const AMERICAN_RALPH_WALDO_EMERSON_VERSION = 'LUCKEY-RALPH-WALDO-EMERSON-v2.0.0';
 
 export type EmersonQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -52,9 +52,61 @@ export interface RalphWaldoEmersonSelfRelianceResult {
   reflectionFocus: string;
   counselNote: string;
   boundaryNotice: string;
+  situationalEmersonAudit: {
+    focusTheme: string;
+    autonomyCue: string;
+    tacticalStep: string;
+  };
+  temporalEmersonRhythm: {
+    kstTimeLabel: string;
+    solitudeWindow: string;
+    seasonalNatureTone: string;
+    temporalGuidance: string;
+  };
+  emersonSynthesisMatrix: {
+    coreInsight: string;
+    recommendedAction: string;
+    cautionNotice: string;
+  };
   emersonComprehensiveGuidance: {
     guidanceTitle: string;
     philosophicalCounsel: string;
+  };
+}
+
+function getTemporalEmersonRhythm(now: Date) {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  const hour = kst.getUTCHours();
+  const month = kst.getUTCMonth() + 1;
+
+  const solitudeWindow =
+    hour >= 5 && hour < 11
+      ? '아침 투명한 눈동자창 — 타인의 평가가 스며들기 전 내면의 첫 직관을 붙잡기 좋은 시간'
+      : hour >= 11 && hour < 17
+        ? '정오 비순응 결단창 — 군중의 눈치를 넘어 내 소신대로 단단히 선택하기 좋은 시간'
+        : hour >= 17 && hour < 22
+          ? '황혼 자연 합일창 — 하루의 비교와 소음을 씻어내고 숲·하늘의 리듬으로 돌아가는 시간'
+          : '심야 오버소울창 — 세상의 기준표를 덮고 내 안의 철의 현(Iron String)에 귀 기울이는 시간';
+
+  const seasonalNatureTone =
+    month >= 3 && month <= 5
+      ? '봄 · 자연 소생절 (내면의 고유한 싹을 틔우는 시기)'
+      : month >= 6 && month <= 8
+        ? '여름 · 창조 발산절 (자기만의 땅을 힘차게 경작하는 시기)'
+        : month >= 9 && month <= 11
+          ? '가을 · 독립 성숙절 (어리석은 일관성을 벗고 본질만 남기는 시기)'
+          : '겨울 · 고독 정진절 (조용한 자기신뢰의 뿌리를 깊게 내리는 시기)';
+
+  return {
+    kstTimeLabel: `${y}-${m}-${d} ${hh}:${mm} KST`,
+    solitudeWindow,
+    seasonalNatureTone,
+    temporalGuidance: `${solitudeWindow} · ${seasonalNatureTone}의 결을 따라 자립하십시오.`,
   };
 }
 
@@ -233,10 +285,21 @@ export function calculateRalphWaldoEmersonSelfReliance(
 
   const counselNote = `'${activeEmersonTheme.themeTitleKo}' 테마와 '${focalEmersonAphorism.aphorismKo}' 경구가 어우러져 '${topicGuide.posture}'를 비춥니다.`;
   const boundaryNotice = '이 관점은 에머슨의 초월주의 철학을 바탕으로 한 상징적 성찰 안내이며, 확정적 미래 예측이나 의학적·법률적 조언이 아닙니다.';
+  const temporalEmersonRhythm = getTemporalEmersonRhythm(now);
+  const situationalEmersonAudit = {
+    focusTheme: `${questionTopic} · 자기신뢰`,
+    autonomyCue: topicGuide.posture,
+    tacticalStep: topicGuide.ritual,
+  };
+  const emersonSynthesisMatrix = {
+    coreInsight: activeEmersonTheme.themeTitleKo,
+    recommendedAction: topicGuide.practice,
+    cautionNotice: '남의 밭을 부러워하는 모방과 어제의 말에 매이는 어리석은 일관성을 경계하십시오.',
+  };
 
   return {
     engineVersion: AMERICAN_RALPH_WALDO_EMERSON_VERSION,
-    calculatedAtKst: formatKstIso(now),
+    calculatedAtKst: temporalEmersonRhythm.kstTimeLabel,
     questionTopic,
     selfReliancePosture: topicGuide.posture,
     selfRelianceAutonomyScore,
@@ -251,6 +314,9 @@ export function calculateRalphWaldoEmersonSelfReliance(
     reflectionFocus: topicGuide.reflection,
     counselNote,
     boundaryNotice,
+    situationalEmersonAudit,
+    temporalEmersonRhythm,
+    emersonSynthesisMatrix,
     emersonComprehensiveGuidance: {
       guidanceTitle,
       philosophicalCounsel,
@@ -260,8 +326,10 @@ export function calculateRalphWaldoEmersonSelfReliance(
 
 export function formatRalphWaldoEmersonSelfReliancePrompt(res: RalphWaldoEmersonSelfRelianceResult): string {
   return [
-    `【랠프 월도 에머슨 《자기신뢰》 & 《자연》 오버소울 비순응 자립 지표】`,
+    `【랠프 월도 에머슨 《자기신뢰》 & 《자연》 오버소울 비순응 자립 지표 (${res.engineVersion})】`,
+    `- 연산 시각: ${res.calculatedAtKst}`,
     `- 질문 맥락 초점: ${res.questionTopic} | 자기신뢰 태도: ${res.selfReliancePosture}`,
+    `- KST 시공간 리듬: ${res.temporalEmersonRhythm.solitudeWindow} / ${res.temporalEmersonRhythm.seasonalNatureTone}`,
     `- 핵심 초월주의 테마: ${res.activeEmersonTheme.themeTitleKo} [${res.activeEmersonTheme.themeTitleEn}]`,
     `- 초월주의적 통찰: ${res.activeEmersonTheme.transcendentalInsight}`,
     `- 실천적 조언: ${res.activeEmersonTheme.practicalCounsel}`,
@@ -271,6 +339,7 @@ export function formatRalphWaldoEmersonSelfReliancePrompt(res: RalphWaldoEmerson
     `- 맥락별 실행 조언: ${res.practiceGuidance}`,
     `- 오늘의 작은 의례: ${res.ritualAction}`,
     `- 성찰 질문: ${res.reflectionFocus}`,
+    `- 교차 매트릭스: 핵심(${res.emersonSynthesisMatrix.coreInsight}) | 실행(${res.emersonSynthesisMatrix.recommendedAction}) | 주의(${res.emersonSynthesisMatrix.cautionNotice})`,
     `- 핵심 조언 요약: ${res.counselNote}`,
     `- 해석 경계: ${res.boundaryNotice}`,
     `- 종합 철학 권면: ${res.emersonComprehensiveGuidance.philosophicalCounsel}`,
