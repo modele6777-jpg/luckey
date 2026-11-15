@@ -6095,9 +6095,14 @@ test('Maewoldang Kim Si-seup Geumo Sinhwa Engine: calculates Fangwairen Freedom,
   assert(rep.threeTeachingsSyncreticHarmonyIndex >= 0 && rep.threeTeachingsSyncreticHarmonyIndex <= 100);
   assert(rep.cheonghanSolitudeTranscendenceScore >= 0 && rep.cheonghanSolitudeTranscendenceScore <= 100);
   assert(rep.activeMaewoldangTheme.themeTitleKo.length > 0);
+  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(rep.maewoldangSynthesisMatrix?.integratedAction));
   const prompt = formatKoreanMaewoldangKimSiSeupGeumoSinhwaPrompt(rep);
   assert(prompt.includes('매월당 김시습 《금오신화》 방외인 자유혼 & 절의·삼교원융 지표'));
   assert(prompt.includes(rep.activeMaewoldangTheme.themeTitleKo));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
 });
 
 test('William James Pragmatism Will to Believe Engine: calculates Cash-Value, Will to Believe, Stream of Consciousness, and Healthy-Mindedness', () => {
@@ -6611,9 +6616,14 @@ test('Shin Saimdang Chochungdo Art Virtue Engine: calculates Nature Vitality, Fi
   assert(rep.modestEleganceIndex >= 0 && rep.modestEleganceIndex <= 100);
   assert(rep.nurturingWisdomScore >= 0 && rep.nurturingWisdomScore <= 100);
   assert(rep.activeSaimdangTheme.themeTitleKo.length > 0);
+  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(rep.saimdangSynthesisMatrix?.integratedAction));
   const prompt = formatKoreanShinSaimdangChochungdoArtVirtuePrompt(rep);
   assert(prompt.includes('신사임당 《초충도》 자연관조 및 현철자아실현 지표'));
   assert(prompt.includes(rep.activeSaimdangTheme.themeTitleKo));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
 });
 
 test('Edmund Husserl Phenomenological Reduction Engine: calculates Epoché Suspension, Zu den Sachen selbst, and Wesensschau Insight', () => {
@@ -6861,9 +6871,14 @@ test('Seopo Kim Man-jung Guunmong Illusory Awakening Engine: calculates Fame Pen
   assert(rep.filialDevotionLiterarySublimationScore >= 0 && rep.filialDevotionLiterarySublimationScore <= 100);
   assert(rep.transcendentEquanimityResilience >= 0 && rep.transcendentEquanimityResilience <= 100);
   assert(rep.activeGuunmongTheme.themeTitleKo.length > 0);
+  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(rep.guunmongSynthesisMatrix?.integratedAction));
   const prompt = formatKoreanSeopoKimManJungGuunmongAwakeningPrompt(rep);
   assert(prompt.includes('서포 김만중 《구운몽·사씨남정기》 일장춘몽 각성·반야공관 지표'));
   assert(prompt.includes(rep.activeGuunmongTheme.themeTitleKo));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
 });
 
 test('Virginia Woolf Room of One\'s Own Engine: calculates Autonomy, Moments of Being, and Androgynous Mind', () => {
