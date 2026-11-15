@@ -22,7 +22,17 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const TIBETAN_BARDO_VERSION = 'LUCKEY-TIBETAN-BARDO-v1.0.0';
+export const TIBETAN_BARDO_VERSION = 'LUCKEY-TIBETAN-BARDO-v2.0.0';
+
+function formatBardoKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
 
 export interface BardoStateInfo {
   stateNo: number;
@@ -36,11 +46,17 @@ export interface BardoStateInfo {
 export interface TibetanBardoReport {
   engineVersion: string;
   calculatedAt: string;
+  calculatedAtKst: string;
   currentBardoState: BardoStateInfo;
   awarenessClarityScore: number; // 0 ~ 100 의식 명징도 및 자각 지수
   clearLightRecognition: string; // 근원적 맑은 빛(Rigpa)의 통찰
   bardoNavigationGuidance: string; // 중간 상태를 안전하게 건너는 항해 나침반
   dailyZenAnchor: string;         // 일상에서 마음의 중심을 잡는 닻
+  bardoSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
 }
 
 const BARDO_STATES: BardoStateInfo[] = [
@@ -96,7 +112,8 @@ const BARDO_STATES: BardoStateInfo[] = [
 
 export function calculateTibetanBardoNavigation(
   profile?: UserProfile | null,
-  targetDate: Date = new Date()
+  targetDate: Date = new Date(),
+  question?: string
 ): TibetanBardoReport {
   let birthSum = 8;
   let birthYear = 1990;
@@ -139,25 +156,37 @@ export function calculateTibetanBardoNavigation(
 
   const dailyZenAnchor = `[티베트 릭파(Rigpa) 찰나 자각법]: 가슴이 답답하거나 혼란스러울 때마다 "이 또한 지나가는 마음의 그림자일 뿐이다"라고 세 번 속삭이며, 가슴 중앙의 맑은 허공을 바라보세요.`;
 
+  const calculatedAtKst = formatBardoKstTimestamp(targetDate);
+  const q = (question || '').trim();
+  const bardoSynthesisMatrix = {
+    dominantTension: `${currentBardoState.nameKo} ↔ 환영의 함정`,
+    alignmentState: `영적 기회(${currentBardoState.spiritualOpportunity})`,
+    integratedAction: `${dailyZenAnchor}${q ? ` [질문 맥락: ${q}]` : ''}`,
+  };
+
   return {
     engineVersion: TIBETAN_BARDO_VERSION,
     calculatedAt: targetDate.toISOString(),
+    calculatedAtKst,
     currentBardoState,
     awarenessClarityScore,
     clearLightRecognition,
     bardoNavigationGuidance,
-    dailyZenAnchor
+    dailyZenAnchor,
+    bardoSynthesisMatrix,
   };
 }
 
 export function formatTibetanBardoNavigationPrompt(report: TibetanBardoReport): string {
-  return `### ☸️ 티베트 불교 바르도(Bardo) 6대 환생 상태 & 전환기 의식 항해 엔진 (${TIBETAN_BARDO_VERSION})
+  const matrixLine = report.bardoSynthesisMatrix
+    ? `\n- **바르도 교차 매트릭스**: 핵심 긴장(${report.bardoSynthesisMatrix.dominantTension}) · 조율 상태(${report.bardoSynthesisMatrix.alignmentState}) · 통합 실천(${report.bardoSynthesisMatrix.integratedAction})`
+    : '';
+  return `### ☸️ 티베트 불교 바르도(Bardo) 6대 환생 상태 & 전환기 의식 항해 엔진 (${TIBETAN_BARDO_VERSION} | ${report.calculatedAtKst})
 - **현재 바르도 국면**: ${report.currentBardoState.nameTibetan} (${report.currentBardoState.nameKo})
 - **전환기적 현실 맥락**: ${report.currentBardoState.transitionalContext}
-- **의식 명징도 자각 지수**: ${report.awarenessClarityScore}점 / 100점
 - **영적 도약의 기회**: ${report.currentBardoState.spiritualOpportunity}
 - **주의해야 할 환영의 함정**: ${report.currentBardoState.illusoryTrap}
 - **근원적 맑은 빛(Rigpa) 통찰**: "${report.clearLightRecognition}"
 - **바르도 항해 나침반 지침**: ${report.bardoNavigationGuidance}
-- **일일 릭파(자각) 닻 내리기**: ${report.dailyZenAnchor}`;
+- **일일 릭파(자각) 닻 내리기**: ${report.dailyZenAnchor}${matrixLine}`;
 }

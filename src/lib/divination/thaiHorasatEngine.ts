@@ -43,7 +43,17 @@ import type { UserProfile } from '../sharedState';
 import { resolveEffectiveSolarDate } from '../lunarCalendar';
 import { parseBirthTime } from '../birthDateTime';
 
-export const THAI_HORASAT_ENGINE_VERSION = 'LUCKEY-TH-v1.0.0';
+export const THAI_HORASAT_ENGINE_VERSION = 'LUCKEY-TH-v2.0.0';
+
+function formatThaiHorasatKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
 
 export const THAI_HORASAT_METHOD =
   '태국 정통 호라삿(Horasat) 결정론 산법: 8대 행성 요일(일 태양·월 달·화 화성·수낮 수성·수밤 라후·목 목성·금 금성·토 토성) 수호신 전수 데이터, 마하탁사(Maha Thaksa) 108년 생애 대운 주기(태양6→달15→화성8→수성17→토성10→목성19→라후12→금성21) 구간 산출 및 8대 속성(라차·데차·시리·물라·우사하·몬뜨리·사뚜·칼라키니) 길흉 판정, 4대 원소(흙 Din·물 Nam·바람 Lom·불 Fai) 출생 월 본명 원소 및 신체 장기 활력 진단과 아유르베다 식단·허브·휴식 개운 처방';
@@ -331,6 +341,7 @@ export interface ThaiHorasatResult {
   status: 'calculated' | 'skipped' | 'error';
   engineVersion: string;
   method: string;
+  calculatedAtKst?: string;
   birthInput?: {
     solarDateString: string;
     originalDateString: string;
@@ -355,6 +366,11 @@ export interface ThaiHorasatResult {
     luckyColors: ReadonlyArray<string>;
     luckyDirection: string;
     practice: string; // 개운 실천법
+  };
+  horasatSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
   };
   note?: string;
 }
@@ -556,6 +572,7 @@ export function calculateThaiHorasat(params: {
   profile?: UserProfile | null;
   targetYear?: number;
   targetDate?: Date;
+  question?: string;
 }): ThaiHorasatResult {
   const birthdateStr = params.profile?.basic?.birthdate?.trim() || '';
   if (!birthdateStr) {
@@ -635,10 +652,19 @@ export function calculateThaiHorasat(params: {
     const mahaThaksaAntardasha = calculateThaiMahaThaksaAntardasha(birthPlanet.id, currentSegment.planetId, currentSegment.years, currentSegment.startAge, cyclePosition);
     const seasonalThaatTactics = calculateThaiSeasonalThaatTactics(birthThaat.id);
 
+    const calculatedAtKst = formatThaiHorasatKstTimestamp(targetDate);
+    const q = (params.question || '').trim();
+    const horasatSynthesisMatrix = {
+      dominantTension: `${birthPlanet.thaiName}(${birthPlanet.planet}) ↔ ${currentSegment.planet.thaiName}(${currentSegment.planet.planet})`,
+      alignmentState: `${attribute.korean}(${attribute.verdictClass}) · 본명 원소(${birthThaat.korean}) · ${planetaryFriendEnemyDynamic.relationshipType}`,
+      integratedAction: `${mahaThaksaAntardasha.actionAdvice}${q ? ` [질문 맥락: ${q}]` : ''}`,
+    };
+
     return {
       status: 'calculated',
       engineVersion: THAI_HORASAT_ENGINE_VERSION,
       method: THAI_HORASAT_METHOD,
+      calculatedAtKst,
       birthInput: {
         solarDateString: resolved.solarDateString,
         originalDateString: birthdateStr,
@@ -679,6 +705,7 @@ export function calculateThaiHorasat(params: {
         luckyDirection: birthPlanet.direction,
         practice: `${birthPlanet.direction} 방위의 ${birthPlanet.animal} 상징을 가까이하고 ${birthPlanet.colors.join('·')} 색을 몸에 두르며, ${birthThaat.herbs} — 출생 수호신 ${birthPlanet.thaiName}께 ${birthPlanet.planet}의 결에 맞춘 공양을 드리면 길운이 증폭됩니다.`,
       },
+      horasatSynthesisMatrix,
       note: timeNote || undefined,
     };
   } catch (err: any) {
@@ -702,20 +729,19 @@ export function formatThaiHorasatPrompt(result: ThaiHorasatResult): string {
   const timeline = m.sequence.map((s) => `${s.planet.thaiName} ${s.startAge}~${s.endAge}세(${s.years}년)`).join(' → ');
 
   const lines = [
-    `[태국 정통 호라삿(Horasat) 8요일 · 마하탁사 대운 & 4원소 활력 리포트 (${THAI_HORASAT_ENGINE_VERSION})]`,
+    `[태국 정통 호라삿(Horasat) 8요일 · 마하탁사 대운 & 4원소 활력 리포트 (${THAI_HORASAT_ENGINE_VERSION} | ${result.calculatedAtKst || formatThaiHorasatKstTimestamp()})]`,
     `- 출생 기준: ${birth.solarDateString} ${birth.weekday}${birth.isLunar ? '(음력 → 양력 환산)' : ''}${birth.timeKnown ? ` · 생시 ${birth.birthHour}시` : ' · 생시 미입력'}`,
     `- 출생 수호신: ${result.birthDayPlanet.thaiName}(${result.birthDayPlanet.translit}) — ${result.birthDayPlanet.planet} / ${result.birthDayPlanet.animal} / 길방위 ${result.birthDayPlanet.direction} / 행운색 ${result.birthDayPlanet.colors.join('·')}`,
     result.note ? `- [주의] ${result.note}` : '',
     `- 8요일 수호신 전수: ${result.eightDayPlanets!.map((p) => `${p.weekday}=${p.thaiName}(${p.planet}, ${p.cycleYears}년)`).join(' · ')}`,
     `- 마하탁사(Maha Thaksa) 108년 대운: 출생 행성 기점 순환 [${timeline}]`,
     `- 현재 대운: 만태 나이 ${m.ageCounting}세 → ${cur.planet.thaiName}(${cur.planet.planet}) ${cur.startAge}~${cur.endAge}세 구간 (잔여 ${cur.yearsLeft}년)`,
-    `- 8대 속성 판정: ${cur.attribute.thai} ${cur.attribute.korean} [${cur.attribute.verdictClass} · ${cur.attribute.score}점]`,
+    `- 8대 속성 판정: ${cur.attribute.thai} ${cur.attribute.korean} [${cur.attribute.verdictClass}]`,
     `  * 길흉: ${cur.verdict}`,
     `- 4대 원소(Thaat) 진단: 타고난 원소 ${fe.birthThaat.korean}(${fe.birthThaat.thai}, 담당 ${fe.birthThaat.bodySystems}) / 현재 시즌 원소 ${fe.currentThaat.korean}(${fe.currentThaat.thai})`,
     `  * 원소 균형: ${fe.balanceNote}`,
-    `  * 활력 에너지 지수: ${fe.vitalityIndex}/100`,
     result.planetaryFriendEnemyDynamic
-      ? `[호라삿 행성 친우·원수 역학]\n- 관계 유형: ${result.planetaryFriendEnemyDynamic.relationshipType} · 친화 공명 지수 ${result.planetaryFriendEnemyDynamic.affinityScore}/100\n  * 상호작용: ${result.planetaryFriendEnemyDynamic.strategicInteraction}`
+      ? `[호라삿 행성 친우·원수 역학]\n- 관계 유형: ${result.planetaryFriendEnemyDynamic.relationshipType}\n  * 상호작용: ${result.planetaryFriendEnemyDynamic.strategicInteraction}`
       : '',
     result.mahaThaksaAntardasha
       ? `[마하탁사 소운(Antardasha)]\n- 현재 소운 지배성: ${result.mahaThaksaAntardasha.antardashaPlanetName} (제${result.mahaThaksaAntardasha.subCycleOrder}소운 · 속성: ${result.mahaThaksaAntardasha.antardashaAttribute}) · 템포: ${result.mahaThaksaAntardasha.pacingTempo}\n  * 실행 가이드: ${result.mahaThaksaAntardasha.actionAdvice}`
@@ -725,6 +751,9 @@ export function formatThaiHorasatPrompt(result: ThaiHorasatResult): string {
       : '',
     `- 개운 처방: 행운색 ${rem.luckyColors.join('·')} · 길방위 ${rem.luckyDirection}`,
     `  * 실천법: ${rem.practice}`,
+    result.horasatSynthesisMatrix
+      ? `- 호라삿 교차 매트릭스: 핵심 긴장(${result.horasatSynthesisMatrix.dominantTension}) · 조율 상태(${result.horasatSynthesisMatrix.alignmentState}) · 통합 실천(${result.horasatSynthesisMatrix.integratedAction})`
+      : '',
     `- [AI 해석 절대 지침]: 본 리포트는 태국 정통 호라삿 수리로 산출된 100% 확정 배속입니다. 수호신·대운 구간·속성 등급·원소 진단을 임의로 바꾸지 말고 상담에 정확히 반영하십시오.`,
   ];
 

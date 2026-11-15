@@ -32,7 +32,17 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const TIBETAN_BON_NINE_WAYS_VERSION = 'LUCKEY-TIBETAN-BON-NINE-WAYS-v1.0.0';
+export const TIBETAN_BON_NINE_WAYS_VERSION = 'LUCKEY-TIBETAN-BON-NINE-WAYS-v2.0.0';
+
+function formatBonKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
 
 export interface BonWayPath {
   wayIndex: number;              // 1 ~ 9
@@ -53,11 +63,17 @@ export interface BonVitalityEnergy {
 export interface TibetanBonReport {
   engineVersion: string;
   calculatedAt: string;
+  calculatedAtKst: string;
   activeWay: BonWayPath;         // 현재 공명하는 본교 영적 길
   primaryVitality: BonVitalityEnergy; // 가장 강화가 필요한 주재 영혼 에너지
   vitalities: BonVitalityEnergy[];    // 5대 영혼 에너지 전수 상태
   primordialPurityIndex: number; // 0 ~ 100 융드룽 본원 청정도
   yungdrungMantraDecree: string; // 불멸의 진언 칙령
+  bonSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
 }
 
 const NINE_BON_WAYS: BonWayPath[] = [
@@ -137,7 +153,7 @@ const NINE_BON_WAYS: BonWayPath[] = [
 
 export function calculateTibetanBonNineWays(
   profile: UserProfile,
-  options?: { contextText?: string }
+  options?: { contextText?: string; question?: string }
 ): TibetanBonReport {
   let birthYear = 1990;
   let birthMonth = 6;
@@ -228,29 +244,42 @@ export function calculateTibetanBonNineWays(
   ];
   const yungdrungMantraDecree = MANTRAS[(birthDay + birthMonth) % MANTRAS.length];
 
+  const now = new Date();
+  const calculatedAtKst = formatBonKstTimestamp(now);
+  const q = (options?.question || options?.contextText || '').trim();
+  const bonSynthesisMatrix = {
+    dominantTension: `${activeWay.koreanName} ↔ ${primaryVitality.name}`,
+    alignmentState: `${activeWay.category} · 핵심 보강(${primaryVitality.koreanMeaning})`,
+    integratedAction: `${primaryVitality.harmonizationNote}${q ? ` [질문 맥락: ${q}]` : ''}`,
+  };
+
   return {
     engineVersion: TIBETAN_BON_NINE_WAYS_VERSION,
-    calculatedAt: new Date().toISOString(),
+    calculatedAt: now.toISOString(),
+    calculatedAtKst,
     activeWay,
     primaryVitality,
     vitalities,
     primordialPurityIndex,
-    yungdrungMantraDecree
+    yungdrungMantraDecree,
+    bonSynthesisMatrix,
   };
 }
 
 export function formatTibetanBonNineWaysPrompt(report: TibetanBonReport): string {
   const vitLines = report.vitalities
-    .map(v => `   * ${v.name} (${v.koreanMeaning}): ${v.strengthScore}점 - ${v.harmonizationNote}`)
+    .map(v => `   * ${v.name} (${v.koreanMeaning}): ${v.harmonizationNote}`)
     .join('\n');
+  const matrixLine = report.bonSynthesisMatrix
+    ? `\n- 본교 교차 매트릭스: 핵심 긴장(${report.bonSynthesisMatrix.dominantTension}) · 조율 상태(${report.bonSynthesisMatrix.alignmentState}) · 통합 실천(${report.bonSynthesisMatrix.integratedAction})`
+    : '';
 
-  return `[티베트 정통 본교(Bon) 카르마 9승 & 5대 영혼 수호 융드룽 엔진]
+  return `[티베트 정통 본교(Bon) 카르마 9승 & 5대 영혼 수호 융드룽 엔진 (${TIBETAN_BON_NINE_WAYS_VERSION} | ${report.calculatedAtKst})]
 - 공명 영적 길: ${report.activeWay.tibetanName} [${report.activeWay.koreanName}] (${report.activeWay.category})
   * 신성 수행: ${report.activeWay.sacredPractice}
   * 영혼 나침반: ${report.activeWay.soulGuidance}
-- 융드룽 본원 청정도 지수: ${report.primordialPurityIndex}점 (100점 만점)
-- 핵심 보강 영혼 활력소: ${report.primaryVitality.name} (${report.primaryVitality.strengthScore}점)
+- 핵심 보강 영혼 활력소: ${report.primaryVitality.name} (${report.primaryVitality.koreanMeaning})
 - 5대 영혼 생명력(Vitality) 조화도:
 ${vitLines}
-- 융드룽 불멸의 진언 칙령: "${report.yungdrungMantraDecree}"`;
+- 융드룽 불멸의 진언 칙령: "${report.yungdrungMantraDecree}"${matrixLine}`;
 }

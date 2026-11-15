@@ -1424,13 +1424,17 @@ test('Thai Horasat engine: determinism, safe fallback, Wednesday-night note and 
 
   // 프롬프트 포맷터: 버전·수호신·대운·원소 포함
   const prompt = formatThaiHorasatPrompt(r1);
-  assert(prompt.includes('LUCKEY-TH-v1.0.0'));
+  assert(prompt.includes(THAI_HORASAT_ENGINE_VERSION));
+  assert(prompt.includes('KST'));
+  assert(prompt.includes('호라삿 교차 매트릭스'));
   assert(prompt.includes('호라삿') && prompt.includes('마하탁사') && prompt.includes('4대 원소'));
   assert(prompt.includes('프라 숙'));
   assert(prompt.includes('108년'));
   assert(prompt.includes('데차'));
   assert(prompt.includes('물(Nam)'));
   assert(prompt.includes('AI 해석 절대 지침'));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
   assert(THAI_HORASAT_METHOD.length > 0);
   assert.equal(formatThaiHorasatPrompt(skipped), '');
 });
@@ -1442,9 +1446,11 @@ test('Thai Horasat engine binds into the deterministic engine report and prompt'
   assert.equal(report.thaiHorasatResult!.status, 'calculated');
   assert.equal(report.thaiHorasatResult!.mahaThaksa!.totalYears, 108);
   assert.equal(report.thaiHorasatResult!.mahaThaksa!.birthPlanetId, 'venus');
+  assert(report.thaiHorasatResult!.calculatedAtKst?.endsWith('KST'));
+  assert(Boolean(report.thaiHorasatResult!.horasatSynthesisMatrix?.integratedAction));
   assert.equal(report.tools.thai_astrology.status, 'calculated'); // partial → calculated 승격
   const prompt = formatDeterministicEnginePrompt(report);
-  assert(prompt.includes('LUCKEY-TH-v1.0.0'));
+  assert(prompt.includes(THAI_HORASAT_ENGINE_VERSION));
   // 태국 호라삿 친우·원수 역학, 마하탁사 소운, 4원소 계절 결단 윈도우 검증
   assert(report.thaiHorasatResult!.planetaryFriendEnemyDynamic !== null && report.thaiHorasatResult!.planetaryFriendEnemyDynamic !== undefined);
   assert(report.thaiHorasatResult!.planetaryFriendEnemyDynamic!.affinityScore >= 40 && report.thaiHorasatResult!.planetaryFriendEnemyDynamic!.affinityScore <= 98);
@@ -3156,14 +3162,19 @@ test('Taoist Sanbao Inner Alchemy Engine: calculates Jing-Qi-Shen and alchemy ph
 });
 
 test('Tibetan Bardo Navigation Engine: maps 6 bardo states and clear light insight', () => {
-  const rep = calculateTibetanBardoNavigation(profile);
+  const rep = calculateTibetanBardoNavigation(profile, new Date('2026-11-16T08:00:00+09:00'), '전환기 방향');
   assert.equal(rep.engineVersion, TIBETAN_BARDO_VERSION);
+  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(rep.bardoSynthesisMatrix?.integratedAction));
   assert(rep.currentBardoState.stateNo >= 1 && rep.currentBardoState.stateNo <= 6);
   assert(rep.awarenessClarityScore >= 0 && rep.awarenessClarityScore <= 100);
   assert(rep.clearLightRecognition.length > 0);
   const prompt = formatTibetanBardoNavigationPrompt(rep);
   assert(prompt.includes('티베트 불교 바르도'));
   assert(prompt.includes(rep.currentBardoState.nameKo));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
 });
 
 test('Mesopotamian Seven Gates Engine: calculates planetary gate and resurrection power', () => {
@@ -3536,14 +3547,19 @@ test('Tieban Shenshu & Tai Xuan Numerology Engine: calculates inherent clause, a
 });
 
 test('Tibetan Bon Nine Ways & Five Soul Vitalities Engine: calculates active way, vitalities and mantra', () => {
-  const rep = calculateTibetanBonNineWays(profile);
+  const rep = calculateTibetanBonNineWays(profile, { question: '영혼 정화와 균형' });
   assert.equal(rep.engineVersion, TIBETAN_BON_NINE_WAYS_VERSION);
+  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(rep.bonSynthesisMatrix?.integratedAction));
   assert(rep.activeWay.tibetanName.length > 0);
   assert.equal(rep.vitalities.length, 5);
   assert(rep.primordialPurityIndex >= 0 && rep.primordialPurityIndex <= 100);
   const prompt = formatTibetanBonNineWaysPrompt(rep);
   assert(prompt.includes('티베트 정통 본교(Bon) 카르마 9승 & 5대 영혼 수호 융드룽 엔진'));
   assert(prompt.includes(rep.activeWay.koreanName));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
 });
 
 test('Eleusinian Mysteries Initiation & Rebirth Engine: calculates grade, station and rebirth score', () => {
