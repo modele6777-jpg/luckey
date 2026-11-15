@@ -10,12 +10,12 @@
  *    - 진황(賑荒): 재난과 위기 상황에서 지체 없이 자원을 투입해 사람을 살림.
  * 3. 7대 청백리 품계 및 다산초당 친필 성찰 조언 산출
  *
- * @version LUCKEY-JEONG-YAKYONG-MONGMIN-v1.0.0
+ * @version LUCKEY-JEONG-YAKYONG-MONGMIN-v2.0.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const JEONG_YAKYONG_MONGMIN_VERSION = 'LUCKEY-JEONG-YAKYONG-MONGMIN-v1.0.0';
+export const JEONG_YAKYONG_MONGMIN_VERSION = 'LUCKEY-JEONG-YAKYONG-MONGMIN-v2.0.0';
 
 export interface MongminOfficialStage {
   stageLevel: number;
@@ -46,6 +46,17 @@ export interface JeongYakyongMongminResult {
     manuscriptChapterTitle: string;
     practicalWisdom: string;
   };
+  mongminSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
+}
+
+function describeMongminStage(score: number): string {
+  if (score >= 88) return '청백리 율기(淸白吏 律己) — 사심을 비우고 공정함과 애민의 도리를 바로 세운 원숙기';
+  if (score >= 76) return '봉공 애민(奉公 愛民) — 원칙을 지키며 어려운 이의 숨통을 틔우는 안정기';
+  return '초심 수신(初心 修身) — 작은 일상의 절제와 성찰부터 다져 나가는 준비기';
 }
 
 export type JeongYakyongMongminReport = JeongYakyongMongminResult;
@@ -74,10 +85,14 @@ const DASAN_LEGACIES = [
   { manuscriptChapterTitle: '두 아들에게 보낸 하피첩의 편지', practicalWisdom: '가난은 부끄러운 것이 아니나 뜻이 없는 것은 부끄러운 것이니, 책을 읽고 농사를 지으며 떳떳한 영혼으로 살아가라.' },
 ];
 
-function getKstDateString(): string {
-  const now = new Date();
-  const kst = new Date(now.getTime() + (9 * 60 + now.getTimezoneOffset()) * 60000);
-  return kst.toISOString().replace('T', ' ').substring(0, 19) + ' KST';
+function getKstDateString(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
 }
 
 function hashSeed(seedStr: string): number {
@@ -89,11 +104,15 @@ function hashSeed(seedStr: string): number {
   return Math.abs(h);
 }
 
-export function calculateJeongYakyongMongmin(profile?: UserProfile): JeongYakyongMongminResult {
+export function calculateJeongYakyongMongmin(
+  profile?: UserProfile,
+  query?: string,
+  now: Date = new Date(),
+): JeongYakyongMongminResult {
   const birthdate = profile?.basic?.birthdate || '1995-03-21';
   const birthtime = profile?.basic?.birthtime || '12:00';
   const name = profile?.basic?.name || 'Inquirer';
-  const seed = hashSeed(`JEONG-YAKYONG-MONGMIN-${birthdate}-${birthtime}-${name}`);
+  const seed = hashSeed(`JEONG-YAKYONG-MONGMIN-${birthdate}-${birthtime}-${name}-${query ?? ''}`);
 
   const cheongnyeomIntegrityPurityScore = (seed % 41) + 60; // 60~100
   const yulgiSelfDisciplineForce = ((seed >> 3) % 43) + 58; // 58~100
@@ -110,9 +129,24 @@ export function calculateJeongYakyongMongmin(profile?: UserProfile): JeongYakyon
   const legacyIdx = (seed >> 6) % DASAN_LEGACIES.length;
   const dasanChodangLegacy = DASAN_LEGACIES[legacyIdx];
 
+  const calculatedAtKst = getKstDateString(now);
+  const avgScore = Math.round(
+    (cheongnyeomIntegrityPurityScore +
+      yulgiSelfDisciplineForce +
+      aeminCompassionWelfarePower +
+      bonggongPublicDutyLoyaltyIndex +
+      jinhwangCrisisManagementResilience) /
+      5,
+  );
+  const mongminSynthesisMatrix = {
+    dominantTension: `${activeOfficialStage.stageNameKo} ↔ ${primaryMongminVirtue.virtueNameKo}`,
+    alignmentState: describeMongminStage(avgScore),
+    integratedAction: `${primaryMongminVirtue.actionableDirective}${query?.trim() ? ` [질문 맥락: ${query.trim()}]` : ''}`,
+  };
+
   return {
     engineVersion: JEONG_YAKYONG_MONGMIN_VERSION,
-    calculatedAtKst: getKstDateString(),
+    calculatedAtKst,
     cheongnyeomIntegrityPurityScore,
     yulgiSelfDisciplineForce,
     aeminCompassionWelfarePower,
@@ -121,23 +155,37 @@ export function calculateJeongYakyongMongmin(profile?: UserProfile): JeongYakyon
     activeOfficialStage,
     primaryMongminVirtue,
     dasanChodangLegacy,
+    mongminSynthesisMatrix,
   };
 }
 
 export function formatJeongYakyongMongminPrompt(result: JeongYakyongMongminResult): string {
-  return `[📜 다산 정약용 선생 《목민심서(牧民心書)》 율기수신 & 애민청렴 리포트]
-- 엔진 버전: ${result.engineVersion}
-- 청렴결백(淸廉潔白) 사심 배제 및 결백도: ${result.cheongnyeomIntegrityPurityScore}%
-- 율기(律己) 내면 수양 및 엄격한 자기 절제력: ${result.yulgiSelfDisciplineForce}%
-- 애민(愛民) 약자 보살핌 및 구휼 자비력: ${result.aeminCompassionWelfarePower}%
-- 봉공(奉公) 공평무사 및 원칙 준수도: ${result.bonggongPublicDutyLoyaltyIndex}%
-- 진황(賑荒) 위기 대처 및 민생 안정력: ${result.jinhwangCrisisManagementResilience}%
-- 현행 청백리 품계: **[${result.activeOfficialStage.stageNameKo} (${result.activeOfficialStage.stageNameHanja})]**
-  → 관장 영역: ${result.activeOfficialStage.governanceDomain}
-  → 청렴 실천 축복: ${result.activeOfficialStage.integrityBlessing}
-- 최우선 목민 덕목: **[${result.primaryMongminVirtue.virtueNameKo} (${result.primaryMongminVirtue.hanjaMotto})]**
-  → 핵심 본질: ${result.primaryMongminVirtue.coreEssence}
-  → 실천 지침: ${result.primaryMongminVirtue.actionableDirective}
-- 다산초당 실학의 불멸 유산: 《${result.dasanChodangLegacy.manuscriptChapterTitle}》
-  → 실사구시 불멸 지혜: "${result.dasanChodangLegacy.practicalWisdom}"`;
+  const avgScore = Math.round(
+    (result.cheongnyeomIntegrityPurityScore +
+      result.yulgiSelfDisciplineForce +
+      result.aeminCompassionWelfarePower +
+      result.bonggongPublicDutyLoyaltyIndex +
+      result.jinhwangCrisisManagementResilience) /
+      5,
+  );
+  const lines = [
+    `[📜 다산 정약용 선생 《목민심서(牧民心書)》 율기수신 & 애민청렴 리포트]`,
+    `- 연산 시각: ${result.calculatedAtKst} | 엔진 버전: ${result.engineVersion}`,
+    `- 목민 성찰 국면: ${describeMongminStage(avgScore)}`,
+    `- 현행 청백리 품계: **[${result.activeOfficialStage.stageNameKo} (${result.activeOfficialStage.stageNameHanja})]**`,
+    `  → 관장 영역: ${result.activeOfficialStage.governanceDomain}`,
+    `  → 청렴 실천 축복: ${result.activeOfficialStage.integrityBlessing}`,
+    `- 최우선 목민 덕목: **[${result.primaryMongminVirtue.virtueNameKo} (${result.primaryMongminVirtue.hanjaMotto})]**`,
+    `  → 핵심 본질: ${result.primaryMongminVirtue.coreEssence}`,
+    `  → 실천 지침: ${result.primaryMongminVirtue.actionableDirective}`,
+    `- 다산초당 실학의 불멸 유산: 《${result.dasanChodangLegacy.manuscriptChapterTitle}》`,
+    `  → 실사구시 불멸 지혜: "${result.dasanChodangLegacy.practicalWisdom}"`,
+  ];
+  if (result.mongminSynthesisMatrix) {
+    lines.push(
+      `- 교차 매트릭스 [핵심 긴장: ${result.mongminSynthesisMatrix.dominantTension} | 조율 상태: ${result.mongminSynthesisMatrix.alignmentState}]`,
+      `- 통합 실천: ${result.mongminSynthesisMatrix.integratedAction}`,
+    );
+  }
+  return lines.join('\n');
 }
