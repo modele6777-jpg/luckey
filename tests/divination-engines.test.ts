@@ -5436,6 +5436,8 @@ test('Jean-Jacques Rousseau Nature Authenticity Engine: calculates Inherent Good
   const prompt = formatJeanJacquesRousseauNatureAuthenticityPrompt(rep);
   assert(prompt.includes('장 자크 루소 《에밀·사회계약론》 인간 본성 자연 회복 & 진정성 지표'));
   assert(prompt.includes(rep.activeRousseauTheme.themeTitleKo));
+  assert.ok(rep.calculatedAtKst.includes('KST'));
+  assert.ok(prompt.includes('교차 매트릭스'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });
@@ -6461,6 +6463,9 @@ test('Jacques Derrida Deconstruction and Differance Engine: calculates Differanc
   const prompt = formatFrenchJacquesDerridaDeconstructionDifferancePrompt(rep);
   assert(prompt.includes('자크 데리다 《그라마톨로지》 해체(Deconstruction)·차연(Différance) 지표'));
   assert(prompt.includes(rep.activeDerridaTheme.themeTitleKo));
+  assert.ok(rep.calculatedAtKst.includes('KST'));
+  assert.ok(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
 });
 
 test('Jurgen Habermas Communicative Action and Public Sphere Engine: calculates Better Argument, Mutual Understanding, and Lifeworld Defense', () => {
@@ -6691,6 +6696,9 @@ test('Marcel Proust Lost Time Regained Engine: calculates Involuntary Memory, Ti
   const prompt = formatFrenchMarcelProustLostTimeRegainedPrompt(rep);
   assert(prompt.includes('마르셀 프루스트 《잃어버린 시간을 찾아서》 비자발적 기억·되찾은 시간 지표'));
   assert(prompt.includes(rep.activeProustTheme.themeTitleKo));
+  assert.ok(rep.calculatedAtKst.includes('KST'));
+  assert.ok(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
 });
 
 test('Kim So-wol Azalea Flower Poetic Grace Engine: calculates Devoted Love, Grief Sublimation, and Grassroots Resilience', () => {
