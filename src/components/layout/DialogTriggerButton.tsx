@@ -18,8 +18,6 @@ export function DialogTriggerButton({ onClick, onPointerDown, onPointerUp, onPoi
       onPointerDown?.(event);
       if (event.button !== 0 || !event.isPrimary || event.defaultPrevented) return;
       press.current = { id: event.pointerId, x: event.clientX, y: event.clientY, cancelled: false };
-      // Keep the composer from moving the target before activation.
-      event.preventDefault();
     }}
     onPointerMove={event => {
       onPointerMove?.(event);
@@ -31,7 +29,7 @@ export function DialogTriggerButton({ onClick, onPointerDown, onPointerUp, onPoi
       onPointerUp?.(event);
       const start = press.current;
       press.current = null;
-      if (event.pointerType === 'mouse' || event.defaultPrevented || !start || start.id !== event.pointerId || start.cancelled || Math.hypot(event.clientX - start.x, event.clientY - start.y) > 12) return;
+      if (event.pointerType === 'mouse' || event.defaultPrevented || !start || start.id !== event.pointerId || start.cancelled || Math.hypot(event.clientX - start.x, event.clientY - start.y) > 20) return;
       lastTouchActivation.current = Date.now();
       event.preventDefault();
       activate(event);
