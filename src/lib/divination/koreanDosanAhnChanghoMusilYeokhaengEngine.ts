@@ -8,12 +8,12 @@
  * 4. 애기애타(愛己愛他): 나 자신을 참되고 건전한 인격으로 갈고닦음으로써 타인과 공동체를 온전하게 사랑하는 상생 인격 완성.
  * 5. 주인정신(主人精神): "우리 중에 인물이 없는 것은 인물이 되려고 마음먹고 힘쓰는 사람이 없는 까닭이다", 남 탓하지 않고 스스로 역사의 주인이 되어 책임을 지는 주체적 결단력.
  *
- * @version LUCKEY-DOSAN-AHN-CHANGHO-MUSIL-YEOKHAENG-v1.0.0
+ * @version LUCKEY-DOSAN-AHN-CHANGHO-MUSIL-YEOKHAENG-v2.0.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const KOREAN_DOSAN_AHN_CHANGHO_VERSION = 'LUCKEY-DOSAN-AHN-CHANGHO-MUSIL-YEOKHAENG-v1.0.0';
+export const KOREAN_DOSAN_AHN_CHANGHO_VERSION = 'LUCKEY-DOSAN-AHN-CHANGHO-MUSIL-YEOKHAENG-v2.0.0';
 
 export interface DosanTheme {
   themeKey: string;
@@ -47,6 +47,27 @@ export interface DosanAhnChanghoMusilYeokhaengResult {
     guidanceTitle: string;
     philosophicalCounsel: string;
   };
+  dosanSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
+}
+
+function formatDosanKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
+
+function describeDosanStage(score: number): string {
+  if (score >= 90) return '무실역행(務實力行) — 참됨과 묵묵한 실행력이 하나로 맞물려 신뢰를 세우는 성숙기';
+  if (score >= 82) return '주인정신(主人精神) — 남 탓을 멈추고 스스로 삶의 중심에 서서 돌파하는 국면';
+  return '애기애타(愛己愛他) — 자신을 먼저 정직히 닦으며 이웃과 화합의 기운을 기르는 시기';
 }
 
 export const DOSAN_THEMES: DosanTheme[] = [
@@ -119,7 +140,9 @@ export const DOSAN_APHORISMS: DosanAphorism[] = [
 ];
 
 export function calculateDosanAhnChanghoMusilYeokhaeng(
-  profile: UserProfile
+  profile: UserProfile,
+  query?: string,
+  now: Date = new Date(),
 ): DosanAhnChanghoMusilYeokhaengResult {
   const p = profile as any;
   const name = profile?.basic?.name ?? p?.name ?? '방문자';
@@ -154,9 +177,24 @@ export function calculateDosanAhnChanghoMusilYeokhaeng(
     `${activeDosanTheme.practicalCounsel} 아울러 도산 선생의 불멸의 경구 "${focalDosanAphorism.aphorismKo}"(${focalDosanAphorism.aphorismHanja})을 가슴 깊이 새기고, ` +
     `${focalDosanAphorism.actionGuidance}`;
 
+  const calculatedAtKst = formatDosanKstTimestamp(now);
+  const avgScore = Math.round(
+    (musilTruthfulnessScore +
+      yeokhaengActionPowerScore +
+      chunguiYonggamIntegrityScore +
+      aegiAetaCharacterIndex +
+      masterMindOwnerResponsibilityScore) /
+      5,
+  );
+  const dosanSynthesisMatrix = {
+    dominantTension: `${activeDosanTheme.themeTitleKo} ↔ ${focalDosanAphorism.sourceContext}`,
+    alignmentState: describeDosanStage(avgScore),
+    integratedAction: `${focalDosanAphorism.actionGuidance}${query?.trim() ? ` [질문 맥락: ${query.trim()}]` : ''}`,
+  };
+
   return {
     engineVersion: KOREAN_DOSAN_AHN_CHANGHO_VERSION,
-    calculatedAtKst: new Date().toISOString(),
+    calculatedAtKst,
     musilTruthfulnessScore,
     yeokhaengActionPowerScore,
     chunguiYonggamIntegrityScore,
@@ -168,17 +206,23 @@ export function calculateDosanAhnChanghoMusilYeokhaeng(
       guidanceTitle,
       philosophicalCounsel,
     },
+    dosanSynthesisMatrix,
   };
 }
 
 export function formatDosanAhnChanghoMusilYeokhaengPrompt(res: DosanAhnChanghoMusilYeokhaengResult): string {
-  return [
+  const avgScore = Math.round(
+    (res.musilTruthfulnessScore +
+      res.yeokhaengActionPowerScore +
+      res.chunguiYonggamIntegrityScore +
+      res.aegiAetaCharacterIndex +
+      res.masterMindOwnerResponsibilityScore) /
+      5,
+  );
+  const lines = [
     `【도산 안창호 《무실역행》 인격혁명 & 주인정신 지표】`,
-    `- 무실 참됨 및 성실도(務實): ${res.musilTruthfulnessScore}/100`,
-    `- 역행 실천 및 실행력(力行): ${res.yeokhaengActionPowerScore}/100`,
-    `- 충의용감 신의와 도덕적 용기(忠義勇敢): ${res.chunguiYonggamIntegrityScore}/100`,
-    `- 애기애타 상생 인격 완성도(愛己愛他): ${res.aegiAetaCharacterIndex}/100`,
-    `- 주인정신 주체적 책임성(主人精神): ${res.masterMindOwnerResponsibilityScore}/100`,
+    `- 연산 시각: ${res.calculatedAtKst} | 엔진: ${res.engineVersion}`,
+    `- 인격·실천 국면: ${describeDosanStage(avgScore)}`,
     `- 핵심 실천 테마: ${res.activeDosanTheme.themeTitleKo} [${res.activeDosanTheme.themeTitleHanja}]`,
     `- 실존적 통찰: ${res.activeDosanTheme.existentialInsight}`,
     `- 실천적 조언: ${res.activeDosanTheme.practicalCounsel}`,
@@ -186,5 +230,12 @@ export function formatDosanAhnChanghoMusilYeokhaengPrompt(res: DosanAhnChanghoMu
     `- 원문 출처: "${res.focalDosanAphorism.aphorismHanja}" [${res.focalDosanAphorism.sourceContext}]`,
     `- 구체적 실천 지침: ${res.focalDosanAphorism.actionGuidance}`,
     `- 종합 인격혁명 권면: ${res.dosanComprehensiveGuidance.philosophicalCounsel}`,
-  ].join('\n');
+  ];
+  if (res.dosanSynthesisMatrix) {
+    lines.push(
+      `- 교차 매트릭스 [핵심 긴장: ${res.dosanSynthesisMatrix.dominantTension} | 조율 상태: ${res.dosanSynthesisMatrix.alignmentState}]`,
+      `- 통합 실천: ${res.dosanSynthesisMatrix.integratedAction}`,
+    );
+  }
+  return lines.join('\n');
 }

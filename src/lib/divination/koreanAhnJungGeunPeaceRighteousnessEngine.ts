@@ -9,12 +9,12 @@
  * 4. 일일부독서(一日不讀書) 지적 수양 및 지속적 성찰도(Intellectual Cultivation & Reading Index): "하루라도 책을 읽지 않으면 입안에 가시가 돋는다"는 학문과 수양의 성실성.
  * 5. 백인당중유태화(百忍堂中有泰和) 숭고한 인내와 대도 평정심(Sublime Patience & Magnanimous Peace Score): 시련 속에서도 큰 뜻을 품고 마음의 평화를 지키는 도량.
  *
- * @version LUCKEY-AHN-JUNG-GEUN-PEACE-RIGHTEOUSNESS-v1.0.0
+ * @version LUCKEY-AHN-JUNG-GEUN-PEACE-RIGHTEOUSNESS-v2.0.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const KOREAN_AHN_JUNG_GEUN_VERSION = 'LUCKEY-AHN-JUNG-GEUN-PEACE-RIGHTEOUSNESS-v1.0.0';
+export const KOREAN_AHN_JUNG_GEUN_VERSION = 'LUCKEY-AHN-JUNG-GEUN-PEACE-RIGHTEOUSNESS-v2.0.0';
 
 export interface AhnJungGeunTheme {
   themeKey: string;
@@ -48,6 +48,27 @@ export interface KoreanAhnJungGeunPeaceRighteousnessResult {
     guidanceTitle: string;
     philosophicalCounsel: string;
   };
+  ahnJungGeunSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
+}
+
+function formatAhnJungGeunKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
+
+function describeAhnJungGeunStage(score: number): string {
+  if (score >= 92) return '견리사의(見利思義) — 이익보다 의리를 앞세우는 맑은 기개와 흔들림 없는 평화의 정점';
+  if (score >= 88) return '일일부독서(一日不讀書) — 매일의 배움과 수양으로 내면의 중심을 단단히 세우는 국면';
+  return '백인당중유태화(百忍堂中有泰和) — 깊은 인내와 절제로 큰 화평을 예비하는 시기';
 }
 
 export const AHN_JUNG_GEUN_THEMES: AhnJungGeunTheme[] = [
@@ -124,6 +145,7 @@ function hashString(str: string): number {
 export function calculateKoreanAhnJungGeunPeaceRighteousness(
   profile?: UserProfile,
   query?: string,
+  now: Date = new Date(),
 ): KoreanAhnJungGeunPeaceRighteousnessResult {
   const p = profile as any;
   const name = profile?.basic?.name ?? p?.name ?? '남희';
@@ -153,9 +175,24 @@ export function calculateKoreanAhnJungGeunPeaceRighteousness(
     `${activeAhnJungGeunTheme.practicalCounsel} 안 의사의 유묵 "${focalAhnJungGeunAphorism.aphorismKo} (${focalAhnJungGeunAphorism.aphorismHanja})"를 가슴에 새기며, ` +
     `${focalAhnJungGeunAphorism.actionGuidance}`;
 
+  const calculatedAtKst = formatAhnJungGeunKstTimestamp(now);
+  const avgScore = Math.round(
+    (moralRighteousnessOverGainScore +
+      sovereignPeaceCoexistenceIndex +
+      courageousDevotionFortitudeScore +
+      intellectualCultivationReadingIndex +
+      sublimePatienceMagnanimousPeaceScore) /
+      5,
+  );
+  const ahnJungGeunSynthesisMatrix = {
+    dominantTension: `${activeAhnJungGeunTheme.themeTitleKo} ↔ ${focalAhnJungGeunAphorism.aphorismHanja}`,
+    alignmentState: describeAhnJungGeunStage(avgScore),
+    integratedAction: `${focalAhnJungGeunAphorism.actionGuidance}${query?.trim() ? ` [질문 맥락: ${query.trim()}]` : ''}`,
+  };
+
   return {
     engineVersion: KOREAN_AHN_JUNG_GEUN_VERSION,
-    calculatedAtKst: new Date().toISOString(),
+    calculatedAtKst,
     moralRighteousnessOverGainScore,
     sovereignPeaceCoexistenceIndex,
     courageousDevotionFortitudeScore,
@@ -167,19 +204,25 @@ export function calculateKoreanAhnJungGeunPeaceRighteousness(
       guidanceTitle,
       philosophicalCounsel,
     },
+    ahnJungGeunSynthesisMatrix,
   };
 }
 
 export function formatKoreanAhnJungGeunPeaceRighteousnessPrompt(
   res: KoreanAhnJungGeunPeaceRighteousnessResult,
 ): string {
-  return [
+  const avgScore = Math.round(
+    (res.moralRighteousnessOverGainScore +
+      res.sovereignPeaceCoexistenceIndex +
+      res.courageousDevotionFortitudeScore +
+      res.intellectualCultivationReadingIndex +
+      res.sublimePatienceMagnanimousPeaceScore) /
+      5,
+  );
+  const lines = [
     `【안중근 의사 《동양평화론》 및 〈견리사의 견위수명〉 대의·평화 지표】`,
-    `- 견리사의(見利思義) 도덕적 결단력(Moral Righteousness Over Gain): ${res.moralRighteousnessOverGainScore}/100`,
-    `- 동양평화론(東洋平和論) 상생 평화 비전(Sovereign Peace & Coexistence): ${res.sovereignPeaceCoexistenceIndex}/100`,
-    `- 견위수명(見危授命) 대의 헌신 용기(Courageous Devotion & Fortitude): ${res.courageousDevotionFortitudeScore}/100`,
-    `- 일일부독서(一日不讀書) 지적 수양도(Intellectual Cultivation & Reading): ${res.intellectualCultivationReadingIndex}/100`,
-    `- 백인당중유태화(百忍堂中有泰和) 숭고한 인내심(Sublime Patience & Peace): ${res.sublimePatienceMagnanimousPeaceScore}/100`,
+    `- 연산 시각: ${res.calculatedAtKst} | 엔진: ${res.engineVersion}`,
+    `- 대의·평화 국면: ${describeAhnJungGeunStage(avgScore)}`,
     `- 핵심 안중근 의사 대의 테마: ${res.activeAhnJungGeunTheme.themeTitleKo} [${res.activeAhnJungGeunTheme.themeTitleEn}]`,
     `- 실천적 대의 통찰: ${res.activeAhnJungGeunTheme.pragmaticInsight}`,
     `- 선비의 행동 조언: ${res.activeAhnJungGeunTheme.practicalCounsel}`,
@@ -187,5 +230,12 @@ export function formatKoreanAhnJungGeunPeaceRighteousnessPrompt(
     `- 원전 출처: [${res.focalAhnJungGeunAphorism.sourceContext}]`,
     `- 구체적 실천 지침: ${res.focalAhnJungGeunAphorism.actionGuidance}`,
     `- 종합 안중근 의사 대의 권면: ${res.ahnJungGeunComprehensiveGuidance.philosophicalCounsel}`,
-  ].join('\n');
+  ];
+  if (res.ahnJungGeunSynthesisMatrix) {
+    lines.push(
+      `- 교차 매트릭스 [핵심 긴장: ${res.ahnJungGeunSynthesisMatrix.dominantTension} | 조율 상태: ${res.ahnJungGeunSynthesisMatrix.alignmentState}]`,
+      `- 통합 실천: ${res.ahnJungGeunSynthesisMatrix.integratedAction}`,
+    );
+  }
+  return lines.join('\n');
 }

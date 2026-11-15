@@ -5732,9 +5732,14 @@ test('Baekbeom Kim Gu My Desire Culture Engine: calculates High Power of Culture
   assert(rep.selfReliantIndependenceWillScore >= 0 && rep.selfReliantIndependenceWillScore <= 100);
   assert(rep.baekbeomHumilityPublicLoveIndex >= 0 && rep.baekbeomHumilityPublicLoveIndex <= 100);
   assert(rep.activeKimGuTheme.themeTitleKo.length > 0);
+  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(rep.kimGuSynthesisMatrix?.integratedAction));
   const prompt = formatBaekbeomKimGuMyDesireCulturePrompt(rep);
   assert(prompt.includes('백범 김구 《백범일지》 높은 문화의 힘 & 자주독립 실천 지표'));
   assert(prompt.includes(rep.activeKimGuTheme.themeTitleKo));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
 });
 
 test('Martin Heidegger Being and Time Engine: calculates In-der-Welt-sein, Eigentlichkeit, and Sein-zum-Tode', () => {
@@ -5780,9 +5785,14 @@ test('Dosan Ahn Chang-ho Musil Yeokhaeng Engine: calculates Musil, Yeokhaeng, an
   assert(rep.aegiAetaCharacterIndex >= 0 && rep.aegiAetaCharacterIndex <= 100);
   assert(rep.masterMindOwnerResponsibilityScore >= 0 && rep.masterMindOwnerResponsibilityScore <= 100);
   assert(rep.activeDosanTheme.themeTitleKo.length > 0);
+  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(rep.dosanSynthesisMatrix?.integratedAction));
   const prompt = formatDosanAhnChanghoMusilYeokhaengPrompt(rep);
   assert(prompt.includes('도산 안창호 《무실역행》 인격혁명 & 주인정신 지표'));
   assert(prompt.includes(rep.activeDosanTheme.themeTitleKo));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
 });
 
 test('Henry David Thoreau Walden Engine: provides qualitative Simplicity guidance, question context and hides raw scores', () => {
@@ -6295,9 +6305,14 @@ test('Ahn Jung-geun Peace and Righteousness Engine: calculates Moral Righteousne
   assert(rep.intellectualCultivationReadingIndex >= 0 && rep.intellectualCultivationReadingIndex <= 100);
   assert(rep.sublimePatienceMagnanimousPeaceScore >= 0 && rep.sublimePatienceMagnanimousPeaceScore <= 100);
   assert(rep.activeAhnJungGeunTheme.themeTitleKo.length > 0);
+  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(rep.ahnJungGeunSynthesisMatrix?.integratedAction));
   const prompt = formatKoreanAhnJungGeunPeaceRighteousnessPrompt(rep);
   assert(prompt.includes('안중근 의사 《동양평화론》 및 〈견리사의 견위수명〉 대의·평화 지표'));
   assert(prompt.includes(rep.activeAhnJungGeunTheme.themeTitleKo));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
 });
 
 test('Alfred Adler Individual Psychology Engine: calculates Inferiority Transcendence, Community Feeling, and Separation of Tasks', () => {
