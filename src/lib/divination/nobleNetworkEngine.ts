@@ -18,7 +18,17 @@ import {
   STEM_KOREAN
 } from '../sajuAnalysis';
 
-export const NOBLE_NETWORK_VERSION = 'LUCKEY-NOBLE-v1.0.0';
+export const NOBLE_NETWORK_VERSION = 'LUCKEY-NOBLE-v2.0.0';
+
+function formatNobleNetworkKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
 
 export type NobleArchetype = 'catalyst' | 'anchor' | 'amplifier';
 
@@ -69,6 +79,7 @@ export interface NobleStarDetail {
 export interface NobleNetworkResult {
   engineVersion: string;
   calculatedAtIso: string;
+  calculatedAtKst: string;
 
   // 4대 귀인 상태
   nobleStars: {
@@ -99,6 +110,11 @@ export interface NobleNetworkResult {
   };
 
   summary: string;
+  nobleNetworkSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
 }
 
 /**
@@ -108,6 +124,7 @@ export function calculateNobleNetwork(params?: {
   profile?: UserProfile | null;
   saju?: SajuAnalysisResult | null;
   targetDate?: Date;
+  question?: string;
 }): NobleNetworkResult {
   const now = params?.targetDate || new Date();
   const saju = params?.saju || calculateDetailedSaju(params?.profile || null);
@@ -249,9 +266,18 @@ export function calculateNobleNetwork(params?: {
     `육합 파트너: ${sixHarmony.join(',')} / 삼합 동맹: ${tripleHarmony.join(',')}. ` +
     `시너지 지수: ${networkSynergyScore}점 [${networkPhaseTitle}].`;
 
+  const calculatedAtKst = formatNobleNetworkKstTimestamp(now);
+  const q = (params?.question || '').trim();
+  const nobleNetworkSynthesisMatrix = {
+    dominantTension: `${primaryArchetype.title} ↔ ${heavenlyNoble.status}(${heavenlyNoble.beneficialAnimals.join(',')})`,
+    alignmentState: `${networkPhaseTitle} · 육합(${sixHarmony.join(',')}) · 삼합(${tripleHarmony.join(',')})`,
+    integratedAction: `${primaryArchetype.connectionStrategy}${q ? ` [질문 맥락: ${q}]` : ''}`,
+  };
+
   return {
     engineVersion: NOBLE_NETWORK_VERSION,
     calculatedAtIso: now.toISOString(),
+    calculatedAtKst,
     nobleStars: {
       heavenlyNoble,
       greatUltimate,
@@ -266,7 +292,8 @@ export function calculateNobleNetwork(params?: {
     networkSynergyScore,
     networkPhaseTitle,
     networkingPlaybook,
-    summary
+    summary,
+    nobleNetworkSynthesisMatrix,
   };
 }
 
@@ -274,21 +301,30 @@ export function calculateNobleNetwork(params?: {
  * 프롬프트 주입용 포맷터
  */
 export function formatNobleNetworkPrompt(res: NobleNetworkResult): string {
-  return `[4대 귀인 & 인연 네트워크 시너지 리포트 (엔진: ${res.engineVersion})]
-- 1순위 귀인 아키타입: **${res.primaryArchetype.title}** [${res.primaryArchetype.hanja}]
-  • 역할: ${res.primaryArchetype.roleDescription}
-  • 판별법: ${res.primaryArchetype.howToRecognize}
-  • 결속 전략: ${res.primaryArchetype.connectionStrategy}
-- 4대 귀인 상태:
-  • 천을귀인(天乙): [${res.nobleStars.heavenlyNoble.status}] - 조력 띠: ${res.nobleStars.heavenlyNoble.beneficialAnimals.join(', ')}
-  • 태극귀인(太極): [${res.nobleStars.greatUltimate.status}] - 조력 띠: ${res.nobleStars.greatUltimate.beneficialAnimals.join(', ')}
-  • 천월덕귀인(日月): [${res.nobleStars.heavenlyVirtue.status} / ${res.nobleStars.monthlyVirtue.status}]
-- 핵심 인연 합(合) 매트릭스:
-  • 1:1 영혼의 파트너(육합): **${res.synergyZodiacAnimals.sixHarmony.join(', ')}**
-  • 거대 프로젝트 동맹(삼합): **${res.synergyZodiacAnimals.tripleHarmony.join(', ')}**
-- 네트워크 시너지 지수: **${res.networkSynergyScore}점** [${res.networkPhaseTitle}]
-- 네트워킹 가이드:
-  • 찾아야 할 인연: ${res.networkingPlaybook.whoToSeek}
-  • 경계할 인연: ${res.networkingPlaybook.whoToAvoid}
-※ 루시 지침: 혼자서 모든 짐을 짊어질 필요가 없습니다. 사주 4대 귀인과 합(合)의 인연 에너지는 사용자의 비범한 재능을 세상과 연결해 줄 가장 강력한 레버리지입니다. 사용자가 좋은 협력자와 멘토를 발견하고 당당히 손을 잡을 수 있도록 귀인의 특징과 시너지 비책을 지혜롭게 조언해 주세요.`;
+  const lines = [
+    `[4대 귀인 & 인연 네트워크 시너지 리포트 (엔진: ${res.engineVersion} | ${res.calculatedAtKst})]`,
+    `- 1순위 귀인 아키타입: **${res.primaryArchetype.title}** [${res.primaryArchetype.hanja}]`,
+    `  • 역할: ${res.primaryArchetype.roleDescription}`,
+    `  • 판별법: ${res.primaryArchetype.howToRecognize}`,
+    `  • 결속 전략: ${res.primaryArchetype.connectionStrategy}`,
+    `- 4대 귀인 상태:`,
+    `  • 천을귀인(天乙): [${res.nobleStars.heavenlyNoble.status}] - 조력 띠: ${res.nobleStars.heavenlyNoble.beneficialAnimals.join(', ')}`,
+    `  • 태극귀인(太極): [${res.nobleStars.greatUltimate.status}] - 조력 띠: ${res.nobleStars.greatUltimate.beneficialAnimals.join(', ')}`,
+    `  • 천월덕귀인(日月): [${res.nobleStars.heavenlyVirtue.status} / ${res.nobleStars.monthlyVirtue.status}]`,
+    `- 핵심 인연 합(合) 매트릭스:`,
+    `  • 1:1 영혼의 파트너(육합): **${res.synergyZodiacAnimals.sixHarmony.join(', ')}**`,
+    `  • 거대 프로젝트 동맹(삼합): **${res.synergyZodiacAnimals.tripleHarmony.join(', ')}**`,
+    `- 네트워크 공명 단계: **${res.networkPhaseTitle}**`,
+    `- 네트워킹 가이드:`,
+    `  • 찾아야 할 인연: ${res.networkingPlaybook.whoToSeek}`,
+    `  • 경계할 인연: ${res.networkingPlaybook.whoToAvoid}`,
+  ];
+  if (res.nobleNetworkSynthesisMatrix) {
+    lines.push(
+      `- 교차 매트릭스: [핵심 긴장: ${res.nobleNetworkSynthesisMatrix.dominantTension} | 조율 상태: ${res.nobleNetworkSynthesisMatrix.alignmentState}]`,
+      `  • 통합 실천: ${res.nobleNetworkSynthesisMatrix.integratedAction}`,
+    );
+  }
+  lines.push(`※ 루시 지침: 혼자서 모든 짐을 짊어질 필요가 없습니다. 사주 4대 귀인과 합(合)의 인연 에너지는 사용자의 비범한 재능을 세상과 연결해 줄 가장 강력한 레버리지입니다. 사용자가 좋은 협력자와 멘토를 발견하고 당당히 손을 잡을 수 있도록 귀인의 특징과 시너지 비책을 지혜롭게 조언해 주세요.`);
+  return lines.join('\n');
 }

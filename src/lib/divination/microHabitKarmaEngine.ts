@@ -16,7 +16,17 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const MICRO_HABIT_KARMA_VERSION = 'LUCKEY-HABIT-v1.0.0';
+export const MICRO_HABIT_KARMA_VERSION = 'LUCKEY-HABIT-v2.0.0';
+
+function formatMicroHabitKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
 
 export type HabitKarmaArchetype = 
   | '점화형 스타터 (The Catalyst Starter · 시작은 빠르나 유지 보강형)'
@@ -35,6 +45,7 @@ export interface MicroHabitDetail {
 export interface MicroHabitKarmaReport {
   engineVersion: string;
   calculatedAt: string;
+  calculatedAtKst: string;
   archetype: HabitKarmaArchetype;
   neuroplasticityScore: number;  // 신경가소성 재배선 지수 (0 ~ 100)
   karmaStreakIndex: number;      // 21일 루틴 안착 모멘텀 (0 ~ 100)
@@ -45,11 +56,17 @@ export interface MicroHabitKarmaReport {
     days15to21: string;          // 15~21일차: 카르마 잠금 (무의식적 본능화)
   };
   synthesisPromptGuidance: string;
+  microHabitSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
 }
 
 export function runMicroHabitKarmaEngine(
   profile?: UserProfile,
-  targetDate: Date = new Date()
+  targetDate: Date = new Date(),
+  question?: string
 ): MicroHabitKarmaReport {
   const sajuRes = calculateDetailedSaju(profile || null);
 
@@ -130,24 +147,35 @@ export function runMicroHabitKarmaEngine(
     days15to21: '카르마 잠금 단계: 의식적 노력 없이 자동 발동하는 정체성 차원의 본능적 습관으로 안착'
   };
 
-  const synthesisPromptGuidance = `[LUCKEY 21일 카르마 리셋 & 오행 마이크로 해빗 v1.0.0]
+  const calculatedAtKst = formatMicroHabitKstTimestamp(targetDate);
+  const q = (question || '').trim();
+  const microHabitSynthesisMatrix = {
+    dominantTension: `${archetype} ↔ ${microHabit.elementTheme}`,
+    alignmentState: `점화 트리거: ${microHabit.cueTrigger}`,
+    integratedAction: `${microHabit.twoMinuteAction}${q ? ` [질문 맥락: ${q}]` : ''}`,
+  };
+
+  const synthesisPromptGuidance = `[LUCKEY 21일 카르마 리셋 & 오행 마이크로 해빗 ${MICRO_HABIT_KARMA_VERSION} | ${calculatedAtKst}]
 - 습관 카르마 아키타입: [${archetype}]
-- 신경가소성 재배선 지수: ${neuroplasticityScore}점 / 21일 안착 모멘텀: ${karmaStreakIndex}점
 - 오행 맞춤 2분 마이크로 액션: [${microHabit.elementTheme}] ${microHabit.twoMinuteAction}
 - 점화 트리거: ${microHabit.cueTrigger}
 - 도파민 감각 보상: ${microHabit.dopamineReward}
 - 정체성 각인 선언: ${microHabit.habitIdentityAffirmation}
-- 21일 안착 로드맵: [1~7일] ${twentyOneDayMilestone.days1to7} | [8~14일] ${twentyOneDayMilestone.days8to14} | [15~21일] ${twentyOneDayMilestone.days15to21}`;
+- 21일 안착 로드맵: [1~7일] ${twentyOneDayMilestone.days1to7} | [8~14일] ${twentyOneDayMilestone.days8to14} | [15~21일] ${twentyOneDayMilestone.days15to21}
+- 교차 매트릭스: [핵심 긴장: ${microHabitSynthesisMatrix.dominantTension} | 조율 상태: ${microHabitSynthesisMatrix.alignmentState}]
+  • 통합 실천: ${microHabitSynthesisMatrix.integratedAction}`;
 
   return {
     engineVersion: MICRO_HABIT_KARMA_VERSION,
     calculatedAt: targetDate.toISOString(),
+    calculatedAtKst,
     archetype,
     neuroplasticityScore,
     karmaStreakIndex,
     microHabit,
     twentyOneDayMilestone,
-    synthesisPromptGuidance
+    synthesisPromptGuidance,
+    microHabitSynthesisMatrix,
   };
 }
 
@@ -157,10 +185,11 @@ export function calculateMicroHabitKarma(params?: {
   profile?: UserProfile | null;
   saju?: SajuAnalysisResult | null;
   targetDate?: Date;
+  question?: string;
 }): MicroHabitKarmaResult {
   const profile = params?.profile || undefined;
   const targetDate = params?.targetDate || new Date();
-  return runMicroHabitKarmaEngine(profile, targetDate);
+  return runMicroHabitKarmaEngine(profile, targetDate, params?.question);
 }
 
 export function formatMicroHabitKarmaPrompt(res: MicroHabitKarmaResult): string {

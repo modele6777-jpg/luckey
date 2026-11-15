@@ -29,6 +29,18 @@ import {
   type FiveElement,
 } from '../sajuAnalysis';
 
+export const MONTHLY_FLOW_ENGINE_VERSION = 'LUCKEY-MFE-v2.0.0';
+
+function formatMonthlyFlowKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
+
 export interface MonthFlowItem {
   monthOrder: number; // 1~12 (음력 절기월 기준)
   solarMonthName: string; // "양력 2월경 (입춘~경칩)"
@@ -91,6 +103,11 @@ export interface MonthlyFlowResult {
   };
 
   yearOverallFlowSummary: string;
+  monthlyFlowSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
 }
 
 // 오호둔월법 (연간에 따라 1월 인월의 천간 결정)
@@ -152,10 +169,11 @@ const WONJIN: Record<string, string> = {
 export function calculateMonthlyFlow(options?: {
   profile?: UserProfile;
   targetYear?: number;
+  question?: string;
 }): MonthlyFlowResult {
   const now = new Date();
   const nowUtcIso = now.toISOString();
-  const nowKstIso = new Date(now.getTime() + 9 * 3600000).toISOString().replace('Z', '+09:00');
+  const nowKstIso = formatMonthlyFlowKstTimestamp(now);
 
   const targetYear = options?.targetYear || now.getFullYear();
   const saju: SajuAnalysisResult = calculateDetailedSaju(options?.profile);
@@ -356,8 +374,16 @@ export function calculateMonthlyFlow(options?: {
   const topMonth = sortedByScore[0];
   const yearOverallFlowSummary = `${yearGanZhiKr}에는 전반적으로 ${topMonth.monthOrder}월(${topMonth.ganZhi})에 운의 파동이 정점에 달하며, 분기별로는 ${quarterlyStrategies.reduce((prev, cur) => cur.quarterScore > prev.quarterScore ? cur : prev).quarterName}에 가장 강력한 성취 시너지가 일어납니다.`;
 
+  const topQuarter = quarterlyStrategies.reduce((prev, cur) => cur.quarterScore > prev.quarterScore ? cur : prev);
+  const q = (options?.question || '').trim();
+  const monthlyFlowSynthesisMatrix = {
+    dominantTension: `${topMonth.monthOrder}월(${topMonth.ganZhi}) ↔ ${cautionMonths[0] || '안정 분기'}`,
+    alignmentState: `${yearGanZhiKr} · ${topQuarter.quarterName}`,
+    integratedAction: `${topMonth.monthlyActionTip}${q ? ` [질문 맥락: ${q}]` : ''}`,
+  };
+
   return {
-    engineVersion: 'LUCKEY-MFE-v1.0.0',
+    engineVersion: MONTHLY_FLOW_ENGINE_VERSION,
     calculatedAtUtc: nowUtcIso,
     calculatedAtKst: nowKstIso,
     timestamp: now.getTime(),
@@ -375,6 +401,7 @@ export function calculateMonthlyFlow(options?: {
       cautionMonths,
     },
     yearOverallFlowSummary,
+    monthlyFlowSynthesisMatrix,
   };
 }
 
@@ -386,17 +413,17 @@ export function formatMonthlyFlowPrompt(res: MonthlyFlowResult): string {
     `   • [${m.monthOrder}월 · ${m.ganZhi}] (${m.solarMonthName} | ${m.solarApproxRange}):
      - 십신: 간 [${m.tenGodGan}] / 지 [${m.tenGodZhi}] | 12운성: [${m.twelveStage}]
      - 지지 결합: ${m.branchRelation.name} (${m.branchRelation.description})
-     - 길흉 스코어: ★ ${m.score}점 [${m.grade}] | 테마: ${m.themeTag}
+     - 흐름 등급: ★ [${m.grade}] | 테마: ${m.themeTag}
      - 실천 조언: ${m.monthlyActionTip}`
   ).join('\n\n');
 
   const qLines = res.quarterlyStrategies.map(q =>
-    `   - [${q.quarterName}] (평균 ${q.quarterScore}점): ${q.seasonTheme} -> 주력: ${q.primaryFocus} (주의: ${q.riskManagement})`
+    `   - [${q.quarterName}]: ${q.seasonTheme} -> 주력: ${q.primaryFocus} (주의: ${q.riskManagement})`
   ).join('\n');
 
   return `[📅 12개월 월운(月運) & 분기 타이밍 실측 데이터 (Monthly Flow Matrix Core)]
 ======================================================================
-엔진 버전: ${res.engineVersion} | 기준 세운: ★ ${res.yearGanZhiKr} | 일간: ${res.dayMasterText}
+엔진 버전: ${res.engineVersion} | 기준 시각: ${res.calculatedAtKst} | 기준 세운: ★ ${res.yearGanZhiKr} | 일간: ${res.dayMasterText}
 연간 총평: "${res.yearOverallFlowSummary}"
 ======================================================================
 1. [라이프 의사결정 골든 먼스(Golden Month) 타임라인]:
@@ -410,6 +437,7 @@ ${qLines}
 
 3. [12개월 절기월별 정밀 운세 도감]:
 ${monthLines}
+${res.monthlyFlowSynthesisMatrix ? `\n4. [교차 매트릭스]:\n   - 핵심 긴장: ${res.monthlyFlowSynthesisMatrix.dominantTension}\n   - 조율 상태: ${res.monthlyFlowSynthesisMatrix.alignmentState}\n   - 통합 실천: ${res.monthlyFlowSynthesisMatrix.integratedAction}` : ''}
 ======================================================================
 [★ 루시 월운 상담 지침]:
 - 사용자가 '몇 월이 좋아?', '이직 언제 할까?', '올해 하반기 운세는?' 등을 물었을 때 위 12개월 실측 타임라인 데이터를 근거로 구체적인 달(Month)과 시기를 명쾌하게 짚어줘.
