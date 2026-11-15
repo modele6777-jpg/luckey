@@ -2751,8 +2751,10 @@ test('Sacred Vortex Geometry Engine: 황금비 영혼 수비학 & 보텍스 기�
 });
 
 test('Taoist Neidan Meridian Engine: 도교 내단 양생 & 진기 순환 경락 시계 검증', () => {
-  const res = calculateTaoistNeidanMeridian({ profile, targetDate: new Date('2026-11-04T10:00:00+09:00') });
+  const res = calculateTaoistNeidanMeridian({ profile, targetDate: new Date('2026-11-04T10:00:00+09:00'), question: '기혈 순환' });
   assert.equal(res.engineVersion, TAOIST_NEIDAN_VERSION);
+  assert(res.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(res.neidanSynthesisMatrix?.integratedAction));
   assert(res.dantianArchetype.length > 0);
   assert(res.threeTreasures.jingLevelScore >= 0 && res.threeTreasures.jingLevelScore <= 100);
   assert(res.threeTreasures.qiLevelScore >= 0 && res.threeTreasures.qiLevelScore <= 100);
@@ -2762,6 +2764,8 @@ test('Taoist Neidan Meridian Engine: 도교 내단 양생 & 진기 순환 경락
   const prompt = formatTaoistNeidanMeridianPrompt(res);
   assert(prompt.includes('LUCKEY 도교 내단 양생 & 진기 순환 경락 시계'));
   assert(prompt.includes(res.dantianArchetype));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
 });
 
 test('Synchronicity Omen Engine: 칼 융 동시성 징조 해독 & 오멘 매트릭스 검증', () => {
@@ -3120,8 +3124,10 @@ test('Celtic Tree Ogham Engine: derives birth guardian tree and seasonal oracle'
 });
 
 test('Taoist Sanbao Inner Alchemy Engine: calculates Jing-Qi-Shen and alchemy phase', () => {
-  const rep = calculateTaoistSanbaoInnerAlchemy(profile);
+  const rep = calculateTaoistSanbaoInnerAlchemy(profile, new Date(), '삼보 균형');
   assert.equal(rep.engineVersion, TAOIST_SANBAO_VERSION);
+  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(rep.sanbaoSynthesisMatrix?.integratedAction));
   assert(rep.energyLevels.jing >= 0 && rep.energyLevels.jing <= 100);
   assert(rep.energyLevels.qi >= 0 && rep.energyLevels.qi <= 100);
   assert(rep.energyLevels.shen >= 0 && rep.energyLevels.shen <= 100);
@@ -3129,6 +3135,9 @@ test('Taoist Sanbao Inner Alchemy Engine: calculates Jing-Qi-Shen and alchemy ph
   const prompt = formatTaoistSanbaoInnerAlchemyPrompt(rep);
   assert(prompt.includes('도교 내단학'));
   assert(prompt.includes(rep.dominantTreasure));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
 });
 
 test('Tibetan Bardo Navigation Engine: maps 6 bardo states and clear light insight', () => {
@@ -4014,14 +4023,19 @@ test('Celtic Tuatha Four Treasures Engine: calculates heroic destiny and dominan
 });
 
 test('Taoist Shangqing 24 Spirits Engine: calculates three dantians and active true spirit', () => {
-  const rep = calculateTaoistShangqingTwentyFourSpirits({ profile });
+  const rep = calculateTaoistShangqingTwentyFourSpirits({ profile, question: '상청 존사' });
   assert.equal(rep.engineVersion, TAOIST_SHANGQING_TWENTY_FOUR_SPIRITS_ENGINE_VERSION);
+  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(rep.shangqingSynthesisMatrix?.integratedAction));
   assert(rep.shangqingAttunementScore >= 0 && rep.shangqingAttunementScore <= 100);
   assert(rep.spiritualShieldRate >= 0 && rep.spiritualShieldRate <= 100);
   assert(rep.activeTrueSpirit.nameKo.length > 0);
   const prompt = formatTaoistShangqingTwentyFourSpiritsPrompt(rep);
   assert(prompt.includes('고대 중국 도홍경(陶弘景) 진고(眞誥) 상청파(上淸派) 24성도 존사(存思) 통령 실측 데이터'));
   assert(prompt.includes(rep.activeTrueSpirit.nameKo));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
 });
 
 test('Tibetan Phowa Rainbow Body Engine: calculates Rigpa clarity and 5 Buddha wisdoms', () => {

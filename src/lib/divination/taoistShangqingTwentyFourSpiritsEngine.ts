@@ -13,7 +13,17 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const TAOIST_SHANGQING_TWENTY_FOUR_SPIRITS_ENGINE_VERSION = '1.0.0';
+export const TAOIST_SHANGQING_TWENTY_FOUR_SPIRITS_ENGINE_VERSION = '2.0.0';
+
+function formatShangqingKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
 
 export interface DantianEnergy {
   dantian: '상단전 니환궁(泥丸宮)' | '중단전 강궁(絳宮)' | '하단전 기해(氣海)';
@@ -36,6 +46,7 @@ export interface ShangqingTrueSpirit {
 export interface TaoistShangqingTwentyFourSpiritsReport {
   engineVersion: string;
   timestamp: string;
+  calculatedAtKst: string;
   shangqingAttunementScore: number; // 0 ~ 100 상청 통령 감응 지수
   spiritualShieldRate: number; // 0 ~ 100 사기 차폐 및 호신율 (%)
   threeDantians: {
@@ -45,6 +56,11 @@ export interface TaoistShangqingTwentyFourSpiritsReport {
   };
   activeTrueSpirit: ShangqingTrueSpirit;
   zunsiPrescription: string; // 도홍경 진고 존사 개운 처방
+  shangqingSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
 }
 
 const SHANGQING_SPIRITS_DEF: ShangqingTrueSpirit[] = [
@@ -153,10 +169,17 @@ export function calculateTaoistShangqingTwentyFourSpirits(options?: {
   const activeTrueSpirit = SHANGQING_SPIRITS_DEF[spiritIdx];
 
   const zunsiPrescription = `도홍경 《진고》의 가르침에 따라, 하루 일과 중 5분간 눈을 감고 ${activeTrueSpirit.nameKo}의 존사 비결("${activeTrueSpirit.contemplationMantra}")을 실행하십시오. ${activeTrueSpirit.dantianAffinity}에 빛이 모여 사기가 침범하지 못할 것입니다.`;
+  const calculatedAtKst = formatShangqingKstTimestamp(now);
+  const shangqingSynthesisMatrix = {
+    dominantTension: `상단전(${upperNiwan.state}) ↔ 중단전(${middleJiangGong.state}) ↔ 하단전(${lowerQihai.state})`,
+    alignmentState: `진신: ${activeTrueSpirit.nameKo} (${activeTrueSpirit.dantianAffinity} · ${activeTrueSpirit.bodyDomain})`,
+    integratedAction: `${activeTrueSpirit.contemplationMantra}${question ? ` [질문 맥락: ${question}]` : ''}`,
+  };
 
   return {
     engineVersion: TAOIST_SHANGQING_TWENTY_FOUR_SPIRITS_ENGINE_VERSION,
     timestamp: now.toISOString(),
+    calculatedAtKst,
     shangqingAttunementScore,
     spiritualShieldRate,
     threeDantians: {
@@ -166,20 +189,23 @@ export function calculateTaoistShangqingTwentyFourSpirits(options?: {
     },
     activeTrueSpirit,
     zunsiPrescription,
+    shangqingSynthesisMatrix,
   };
 }
 
 export function formatTaoistShangqingTwentyFourSpiritsPrompt(rep: TaoistShangqingTwentyFourSpiritsReport): string {
+  const matrixLine = rep.shangqingSynthesisMatrix
+    ? `\n· 상청 교차 매트릭스: 핵심 긴장(${rep.shangqingSynthesisMatrix.dominantTension}) · 조율 상태(${rep.shangqingSynthesisMatrix.alignmentState}) · 통합 실천(${rep.shangqingSynthesisMatrix.integratedAction})`
+    : '';
   return `[고대 중국 도홍경(陶弘景) 진고(眞誥) 상청파(上淸派) 24성도 존사(存思) 통령 실측 데이터]
-· 엔진 버전: v${rep.engineVersion}
-· 상청 통령 감응 지수: ${rep.shangqingAttunementScore}/100 | 사기(邪氣) 차폐율: ${rep.spiritualShieldRate}%
+· 엔진 버전: v${rep.engineVersion} | 기준 시각: ${rep.calculatedAtKst}
 · 삼단전(三丹田) 영적 기운 밸런스:
-  1) 상단전 니환궁 (직관/뇌): ${rep.threeDantians.upperNiwan.energyLevel}% [${rep.threeDantians.upperNiwan.state}]
-  2) 중단전 강궁 (정서/심장): ${rep.threeDantians.middleJiangGong.energyLevel}% [${rep.threeDantians.middleJiangGong.state}]
-  3) 하단전 기해 (원기/신장): ${rep.threeDantians.lowerQihai.energyLevel}% [${rep.threeDantians.lowerQihai.state}]
+  1) 상단전 니환궁 (직관/뇌): [${rep.threeDantians.upperNiwan.state}]
+  2) 중단전 강궁 (정서/심장): [${rep.threeDantians.middleJiangGong.state}]
+  3) 하단전 기해 (원기/신장): [${rep.threeDantians.lowerQihai.state}]
 · 감응 주재 진신(眞神): ${rep.activeTrueSpirit.nameKo} (${rep.activeTrueSpirit.hanja})
   - 귀속 영역: ${rep.activeTrueSpirit.dantianAffinity} [부위: ${rep.activeTrueSpirit.bodyDomain}]
   - 신명 직능: ${rep.activeTrueSpirit.functionDesc}
   - 존사(存思) 관조 비결: "${rep.activeTrueSpirit.contemplationMantra}"
-· 도홍경 진고 현실 통령 처방: ${rep.zunsiPrescription}`;
+· 도홍경 진고 현실 통령 처방: ${rep.zunsiPrescription}${matrixLine}`;
 }

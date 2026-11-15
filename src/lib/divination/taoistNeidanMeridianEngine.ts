@@ -20,7 +20,17 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const TAOIST_NEIDAN_VERSION = 'LUCKEY-TAOIST-NEIDAN-v1.0.0';
+export const TAOIST_NEIDAN_VERSION = 'LUCKEY-TAOIST-NEIDAN-v2.0.0';
+
+function formatNeidanKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
 
 export interface ThreeTreasuresLevel {
   jingLevelScore: number;         // 정(精): 신장 수기, 육체적 활력과 면역 원천 (0 ~ 100)
@@ -40,6 +50,7 @@ export interface MeridianCirculationStatus {
 export interface TaoistNeidanMeridianReport {
   engineVersion: string;
   calculatedAt: string;
+  calculatedAtKst: string;
   dantianArchetype: string;       // 단전 에너지 아키타입
   threeTreasures: ThreeTreasuresLevel;
   meridianCirculation: MeridianCirculationStatus;
@@ -51,11 +62,17 @@ export interface TaoistNeidanMeridianReport {
   };
   taoistAlchemyWisdom: string;
   synthesisPromptGuidance: string;
+  neidanSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
 }
 
 export function runTaoistNeidanMeridianEngine(
   profile?: UserProfile,
-  targetDate: Date = new Date()
+  targetDate: Date = new Date(),
+  question?: string
 ): TaoistNeidanMeridianReport {
   const sajuRes = calculateDetailedSaju(profile || null);
 
@@ -149,26 +166,31 @@ export function runTaoistNeidanMeridianEngine(
   }
 
   const meridianVitalityIndex = 80 + (seed % 18);
+  const calculatedAtKst = formatNeidanKstTimestamp(targetDate);
+  const q = (question || '').trim();
+  const neidanSynthesisMatrix = {
+    dominantTension: `${dantianArchetype} ↔ ${currentMeridian.name}`,
+    alignmentState: `연단 단계: ${predominantTreasureState} · 관문: ${microcosmicOrbitGate}`,
+    integratedAction: `${methodName} (${targetDantian}) — ${practiceSteps}${q ? ` [질문 맥락: ${q}]` : ''}`,
+  };
 
-  const synthesisPromptGuidance = `[LUCKEY 도교 내단 양생 & 진기 순환 경락 시계 v1.0.0]
+  const synthesisPromptGuidance = `[LUCKEY 도교 내단 양생 & 진기 순환 경락 시계 ${TAOIST_NEIDAN_VERSION} | ${calculatedAtKst}]
 - 단전 에너지 아키타입: [${dantianArchetype}]
-- 삼보(三寶) 충전 현황:
-  * 정(精 - 생명력/면역): ${jingLevelScore}점
-  * 기(氣 - 순환/소화): ${qiLevelScore}점
-  * 신(神 - 직관/정신): ${shenLevelScore}점
+- 삼보(三寶) 연단 상태:
   * 연단 단계: ${predominantTreasureState}
 - 자오유주(子午流注) 경락 시계:
   * 현재 주도 경락: ${currentMeridian.name} (${currentMeridian.organ})
   * 최적 활성 시간: ${currentMeridian.window}
   * 소주천 집중 관문: ${microcosmicOrbitGate}
-  * 경락 기혈 순환도: ${meridianVitalityIndex}점
 - 내단 기공 호흡 처방: [${methodName}] (${targetDantian}, 약 3분)
   * 실천법: ${practiceSteps}
-- 도가 양생 지혜: "${taoistAlchemyWisdom}"`;
+- 도가 양생 지혜: "${taoistAlchemyWisdom}"
+- 내단 교차 매트릭스: 핵심 긴장(${neidanSynthesisMatrix.dominantTension}) · 조율 상태(${neidanSynthesisMatrix.alignmentState}) · 통합 실천(${neidanSynthesisMatrix.integratedAction})`;
 
   return {
     engineVersion: TAOIST_NEIDAN_VERSION,
     calculatedAt: targetDate.toISOString(),
+    calculatedAtKst,
     dantianArchetype,
     threeTreasures: {
       jingLevelScore,
@@ -190,7 +212,8 @@ export function runTaoistNeidanMeridianEngine(
       durationMinutes: 3
     },
     taoistAlchemyWisdom,
-    synthesisPromptGuidance
+    synthesisPromptGuidance,
+    neidanSynthesisMatrix,
   };
 }
 
@@ -200,10 +223,11 @@ export function calculateTaoistNeidanMeridian(params?: {
   profile?: UserProfile | null;
   saju?: SajuAnalysisResult | null;
   targetDate?: Date;
+  question?: string;
 }): TaoistNeidanMeridianResult {
   const profile = params?.profile || undefined;
   const targetDate = params?.targetDate || new Date();
-  return runTaoistNeidanMeridianEngine(profile, targetDate);
+  return runTaoistNeidanMeridianEngine(profile, targetDate, params?.question);
 }
 
 export function formatTaoistNeidanMeridianPrompt(res: TaoistNeidanMeridianResult): string {
