@@ -746,7 +746,7 @@ export const playTTSInChunks = async (
         break;
       }
 
-      // 완독 성공 시 위치를 초기화하고 마지막 청크 뒤에만 완료 새 지저귐 재생
+      // 완독 성공 시 위치를 초기화하고 마지막 청크 뒤에만 옅은 완료 띵동 재생
       if (isLastChunk) {
         lastTTSProgress = null;
         if (shouldPlayTTSCompletionChime(options)) {
