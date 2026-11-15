@@ -55,13 +55,18 @@ let highlightFrame = 0;
 function selectHighlightOwner() {
   cancelAnimationFrame(highlightFrame);
   highlightFrame = requestAnimationFrame(() => {
-    const candidates = [...highlightCandidates.entries()].filter(([element]) => {
+    const connected = [...highlightCandidates.entries()].filter(([element]) => {
       if (!element.isConnected) return false;
       if (element.closest('[aria-hidden="true"], [hidden]')) return false;
       return true;
     });
 
-    if (!candidates.length) return;
+    if (!connected.length) return;
+
+    // The same sentence can also be drawn in an older message bubble. The bubble
+    // being read owns the underline (the scroll follow already prefers it).
+    const playing = connected.filter(([element]) => element.closest('[data-tts-playing-message="true"]'));
+    const candidates = playing.length ? playing : connected;
 
     // Ownership order: the strongest textual match first, then the copy the
     // reader is actually looking at. When the spoken sentence is outside the
