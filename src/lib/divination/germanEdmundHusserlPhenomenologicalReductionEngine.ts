@@ -8,12 +8,12 @@
  * 4. 의식의 지향성 및 몰입 통합력 (Intentionality & Coherent Focus Index): 의식이 흩어지지 않고 뚜렷한 목표 대상을 향해 의미를 구성하고 에너지를 한곳에 모으는 지향적 일관성.
  * 5. 생활세계(Lebenswelt) 접지 및 구체적 현실성 (Lebenswelt Grounding & Reality Alignment Score): 메마른 추상적 도식이나 공리적 관념에 갇히지 않고 살아 숨 쉬는 구체적 삶의 대지에 확고히 발딛는 현실 감각.
  *
- * @version LUCKEY-EDMUND-HUSSERL-PHENOMENOLOGY-v1.0.0
+ * @version LUCKEY-EDMUND-HUSSERL-PHENOMENOLOGY-v2.0.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const GERMAN_EDMUND_HUSSERL_PHENOMENOLOGY_VERSION = 'LUCKEY-EDMUND-HUSSERL-PHENOMENOLOGY-v1.0.0';
+export const GERMAN_EDMUND_HUSSERL_PHENOMENOLOGY_VERSION = 'LUCKEY-EDMUND-HUSSERL-PHENOMENOLOGY-v2.0.0';
 
 export interface HusserlTheme {
   themeKey: string;
@@ -46,6 +46,11 @@ export interface GermanEdmundHusserlPhenomenologicalReductionResult {
   husserlComprehensiveGuidance: {
     guidanceTitle: string;
     philosophicalCounsel: string;
+  };
+  husserlSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
   };
 }
 
@@ -127,9 +132,26 @@ function hashString(str: string): number {
   return hash;
 }
 
+function formatHusserlKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
+
+function describeHusserlStage(score: number): string {
+  if (score >= 94) return '명징한 본질직관기 (선입견을 비우고 사태의 핵심 구조가 선명히 드러나는 흐름)';
+  if (score >= 90) return '정갈한 에포케기 (판단을 유보하고 직접 경험의 원천으로 돌아가는 흐름)';
+  return '차분한 생활세계 접지기 (구체적 삶의 현장에 의식의 지향성을 모으는 흐름)';
+}
+
 export function calculateGermanEdmundHusserlPhenomenologicalReduction(
   profile?: UserProfile,
   query?: string,
+  now: Date = new Date(),
 ): GermanEdmundHusserlPhenomenologicalReductionResult {
   const p = profile as any;
   const name = profile?.basic?.name ?? p?.name ?? '남희';
@@ -161,9 +183,18 @@ export function calculateGermanEdmundHusserlPhenomenologicalReduction(
     `${activeHusserlTheme.practicalCounsel} 후설의 불후의 철학 명제 "${focalHusserlAphorism.aphorismKo}" (${focalHusserlAphorism.aphorismGerman})를 깊이 성찰하며, ` +
     `${focalHusserlAphorism.actionGuidance}`;
 
+  const husserlSynthesisMatrix = {
+    dominantTension: `${activeHusserlTheme.themeTitleKo} ↔ ${focalHusserlAphorism.sourceContext}`,
+    alignmentState:
+      phenomenologicalEpochéScore >= 93 && essentialWesensschauScore >= 92
+        ? '에포케 판단중지와 본질직관의 투명한 조화'
+        : '선입견을 괄호치고 생활세계의 구체적 본질을 응시하는 국면',
+    integratedAction: `${activeHusserlTheme.practicalCounsel} (${focalHusserlAphorism.actionGuidance})`,
+  };
+
   return {
     engineVersion: GERMAN_EDMUND_HUSSERL_PHENOMENOLOGY_VERSION,
-    calculatedAtKst: new Date().toISOString(),
+    calculatedAtKst: formatHusserlKstTimestamp(now),
     phenomenologicalEpochéScore,
     returnToThingsThemselvesIndex,
     essentialWesensschauScore,
@@ -175,19 +206,21 @@ export function calculateGermanEdmundHusserlPhenomenologicalReduction(
       guidanceTitle,
       philosophicalCounsel,
     },
+    husserlSynthesisMatrix,
   };
 }
 
 export function formatGermanEdmundHusserlPhenomenologicalReductionPrompt(
   res: GermanEdmundHusserlPhenomenologicalReductionResult,
 ): string {
-  return [
+  const lines = [
     `【에드문트 후설 《순수현상학의 이념들》 현상학적 환원 및 본질직관 지표】`,
-    `- 판단중지(에포케) 및 편견 괄호치기(Phenomenological Epoché): ${res.phenomenologicalEpochéScore}/100`,
-    `- 사태 자체로의 환원 및 직접 직관(Zu den Sachen selbst Index): ${res.returnToThingsThemselvesIndex}/100`,
-    `- 본질직관 및 핵심 구조 파악(Wesensschau Insight): ${res.essentialWesensschauScore}/100`,
-    `- 의식의 지향성 및 몰입 통합력(Intentionality & Focus): ${res.intentionalityFocusIndex}/100`,
-    `- 생활세계 접지 및 구체적 현실성(Lebenswelt Grounding): ${res.lebensweltGroundingScore}/100`,
+    `- 엔진 버전: ${res.engineVersion} | 연산 시각: ${res.calculatedAtKst}`,
+    `- 판단중지(에포케) 및 편견 괄호치기(Phenomenological Epoché): ${describeHusserlStage(res.phenomenologicalEpochéScore)}`,
+    `- 사태 자체로의 환원 및 직접 직관(Zu den Sachen selbst Index): ${describeHusserlStage(res.returnToThingsThemselvesIndex)}`,
+    `- 본질직관 및 핵심 구조 파악(Wesensschau Insight): ${describeHusserlStage(res.essentialWesensschauScore)}`,
+    `- 의식의 지향성 및 몰입 통합력(Intentionality & Focus): ${describeHusserlStage(res.intentionalityFocusIndex)}`,
+    `- 생활세계 접지 및 구체적 현실성(Lebenswelt Grounding): ${describeHusserlStage(res.lebensweltGroundingScore)}`,
     `- 핵심 후설 테마: ${res.activeHusserlTheme.themeTitleKo} [${res.activeHusserlTheme.themeTitleEn}]`,
     `- 실천적 통찰: ${res.activeHusserlTheme.pragmaticInsight}`,
     `- 행동 조언: ${res.activeHusserlTheme.practicalCounsel}`,
@@ -195,5 +228,12 @@ export function formatGermanEdmundHusserlPhenomenologicalReductionPrompt(
     `- 원전 출처: [${res.focalHusserlAphorism.sourceContext}]`,
     `- 구체적 실천 지침: ${res.focalHusserlAphorism.actionGuidance}`,
     `- 종합 후설 권면: ${res.husserlComprehensiveGuidance.philosophicalCounsel}`,
-  ].join('\n');
+  ];
+  if (res.husserlSynthesisMatrix) {
+    lines.push(
+      `- 교차 매트릭스 [핵심 긴장: ${res.husserlSynthesisMatrix.dominantTension} | 조율 상태: ${res.husserlSynthesisMatrix.alignmentState}]`,
+      `- 통합 실천: ${res.husserlSynthesisMatrix.integratedAction}`,
+    );
+  }
+  return lines.join('\n');
 }

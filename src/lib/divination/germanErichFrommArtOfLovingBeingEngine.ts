@@ -9,12 +9,12 @@
  * 4. 적극적 자유 및 주체적 자립도(Positive Freedom & Autonomous Individuation Score): 불안과 고독을 피해 맹목적으로 순응하지 않고 사랑과 생산적 일로 연대하는 참된 자유.
  * 5. 생산적 생명 지향 및 사랑의 기술 성숙도(Productive Orientation & Biophilia Vitality Score): 삶을 긍정하고 사랑하며(Biophilia) 자신의 창조적 잠재력을 온전히 꽃피우는 성숙도.
  *
- * @version LUCKEY-ERICH-FROMM-LOVE-BEING-v1.0.0
+ * @version LUCKEY-ERICH-FROMM-LOVE-BEING-v2.0.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const GERMAN_ERICH_FROMM_VERSION = 'LUCKEY-ERICH-FROMM-LOVE-BEING-v1.0.0';
+export const GERMAN_ERICH_FROMM_VERSION = 'LUCKEY-ERICH-FROMM-LOVE-BEING-v2.0.0';
 
 export interface FrommTheme {
   themeKey: string;
@@ -47,6 +47,11 @@ export interface GermanErichFrommArtOfLovingBeingResult {
   frommComprehensiveGuidance: {
     guidanceTitle: string;
     philosophicalCounsel: string;
+  };
+  frommSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
   };
 }
 
@@ -126,9 +131,26 @@ export const FROMM_APHORISMS: FrommAphorism[] = [
   },
 ];
 
+function formatFrommKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
+
+function describeFrommStage(score: number): string {
+  if (score >= 92) return '충만한 존재기 (소유적 집착을 비우고 능동적 사랑과 자유가 빛나는 흐름)';
+  if (score >= 85) return '성숙한 배려기 (상대의 고유성을 존중하며 생산적 연대가 자라는 흐름)';
+  return '고요한 자립기 (인본주의적 양심을 따라 내면의 중심을 다지는 흐름)';
+}
+
 export function calculateGermanErichFrommArtOfLovingBeing(
   profile?: UserProfile,
   query?: string,
+  now: Date = new Date(),
 ): GermanErichFrommArtOfLovingBeingResult {
   const p = profile as any;
   const name = profile?.basic?.name ?? p?.name ?? '남희';
@@ -163,9 +185,18 @@ export function calculateGermanErichFrommArtOfLovingBeing(
     `${activeFrommTheme.practicalCounsel} 아울러 프롬의 명언 "${focalFrommAphorism.aphorismKo}"를 되새기며, ` +
     `${focalFrommAphorism.actionGuidance}`;
 
+  const frommSynthesisMatrix = {
+    dominantTension: `${activeFrommTheme.themeTitleKo} ↔ ${focalFrommAphorism.sourceContext}`,
+    alignmentState:
+      activeCareAndResponsibilityIndex >= 89 && beingModeFulfillmentIndex >= 88
+        ? '능동적 사랑과 존재 양식의 고차원 조화'
+        : '소유적 불안을 내려놓고 주체적 자립과 배려를 세우는 국면',
+    integratedAction: `${activeFrommTheme.practicalCounsel} (${focalFrommAphorism.actionGuidance})`,
+  };
+
   return {
     engineVersion: GERMAN_ERICH_FROMM_VERSION,
-    calculatedAtKst: new Date().toISOString(),
+    calculatedAtKst: formatFrommKstTimestamp(now),
     activeCareAndResponsibilityIndex,
     respectAndKnowledgeWisdomScore,
     beingModeFulfillmentIndex,
@@ -177,19 +208,21 @@ export function calculateGermanErichFrommArtOfLovingBeing(
       guidanceTitle,
       philosophicalCounsel,
     },
+    frommSynthesisMatrix,
   };
 }
 
 export function formatGermanErichFrommArtOfLovingBeingPrompt(
   res: GermanErichFrommArtOfLovingBeingResult,
 ): string {
-  return [
+  const lines = [
     `【에리히 프롬 《사랑의 기술》 & 《소유냐 존재냐》 능동적 사랑과 존재 지표】`,
-    `- 능동적 배려와 응답 책임 지수(Active Care & Responsibility): ${res.activeCareAndResponsibilityIndex}/100`,
-    `- 존재 존중 및 깊은 통찰 지혜도(Respect & Deep Knowledge): ${res.respectAndKnowledgeWisdomScore}/100`,
-    `- 존재적 실존 충만도(Being Mode Fulfillment): ${res.beingModeFulfillmentIndex}/100`,
-    `- 적극적 자유 및 주체적 자립도(Positive Freedom & Autonomy): ${res.positiveFreedomAutonomyScore}/100`,
-    `- 생산적 생명 지향 및 사랑의 기술 성숙도(Productive Orientation & Biophilia): ${res.productiveOrientationVitalityScore}/100`,
+    `- 엔진 버전: ${res.engineVersion} | 연산 시각: ${res.calculatedAtKst}`,
+    `- 능동적 배려와 응답 책임 지수(Active Care & Responsibility): ${describeFrommStage(res.activeCareAndResponsibilityIndex)}`,
+    `- 존재 존중 및 깊은 통찰 지혜도(Respect & Deep Knowledge): ${describeFrommStage(res.respectAndKnowledgeWisdomScore)}`,
+    `- 존재적 실존 충만도(Being Mode Fulfillment): ${describeFrommStage(res.beingModeFulfillmentIndex)}`,
+    `- 적극적 자유 및 주체적 자립도(Positive Freedom & Autonomy): ${describeFrommStage(res.positiveFreedomAutonomyScore)}`,
+    `- 생산적 생명 지향 및 사랑의 기술 성숙도(Productive Orientation & Biophilia): ${describeFrommStage(res.productiveOrientationVitalityScore)}`,
     `- 핵심 인본주의 테마: ${res.activeFrommTheme.themeTitleKo} [${res.activeFrommTheme.themeTitleEn}]`,
     `- 인본주의적 통찰: ${res.activeFrommTheme.humanisticInsight}`,
     `- 실천적 조언: ${res.activeFrommTheme.practicalCounsel}`,
@@ -198,5 +231,12 @@ export function formatGermanErichFrommArtOfLovingBeingPrompt(
     `- 원전 출처: [${res.focalFrommAphorism.sourceContext}]`,
     `- 구체적 실천 지침: ${res.focalFrommAphorism.actionGuidance}`,
     `- 종합 프롬 사랑 권면: ${res.frommComprehensiveGuidance.philosophicalCounsel}`,
-  ].join('\n');
+  ];
+  if (res.frommSynthesisMatrix) {
+    lines.push(
+      `- 교차 매트릭스 [핵심 긴장: ${res.frommSynthesisMatrix.dominantTension} | 조율 상태: ${res.frommSynthesisMatrix.alignmentState}]`,
+      `- 통합 실천: ${res.frommSynthesisMatrix.integratedAction}`,
+    );
+  }
+  return lines.join('\n');
 }
