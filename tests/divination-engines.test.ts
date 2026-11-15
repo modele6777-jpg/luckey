@@ -2386,9 +2386,14 @@ test('Ikigai Destiny Compass Engine: 이키가이 천직 4대 교집합 & 소명
   assert(res.quadrants.passion.score >= 0 && res.quadrants.passion.score <= 100);
   assert(res.soulCallingTitle.length > 0);
   assert(res.monetizationPath.phase1Validation.length > 0);
+  assert(res.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(res.ikigaiSynthesisMatrix?.integratedAction));
   const prompt = formatIkigaiDestinyCompassPrompt(res);
   assert(prompt.includes('LUCKEY 이키가이 천직 4대 교집합 & 소명 나침반'));
   assert(prompt.includes(res.soulCallingTitle));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
 });
 
 test('Serendipity Synchronicity Engine: 양자 동시성 & 세렌디피티 행운 가속 검증', () => {
@@ -4959,9 +4964,14 @@ test('Upanishadic Tat Tvam Asi Engine: calculates Brahman-Atman unity, Maya pier
   assert(rep.satChitAnandaPureConsciousnessScore >= 0 && rep.satChitAnandaPureConsciousnessScore <= 100);
   assert(rep.prajnaSpiritualWisdomScore >= 0 && rep.prajnaSpiritualWisdomScore <= 100);
   assert(rep.activeMahavakya.vakyaSanskrit.length > 0);
+  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(rep.upanishadicSynthesisMatrix?.integratedAction));
   const prompt = formatUpanishadicTatTvamAsiPrompt(rep);
   assert(prompt.includes('우파니샤드 타트 트밤 아시 & 범아일여 순수의식 지표'));
   assert(prompt.includes(rep.activeMahavakya.vakyaNameKo));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
 });
 
 test('Choe Han-gi Gihak Unwha Engine: calculates Unwhagi cosmic flow, Singitong perceptual mind, Chucheuk empirical insight, and Daedong harmony', () => {
@@ -5855,9 +5865,14 @@ test('Rabindranath Tagore Gitanjali Engine: calculates Cosmic Soul Communion, Bh
   assert(rep.lyricNatureHarmonizationIndex >= 0 && rep.lyricNatureHarmonizationIndex <= 100);
   assert(rep.lampOfTheEastResilienceScore >= 0 && rep.lampOfTheEastResilienceScore <= 100);
   assert(rep.activeTagoreTheme.themeTitleKo.length > 0);
+  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(rep.tagoreSynthesisMatrix?.integratedAction));
   const prompt = formatIndianRabindranathTagoreGitanjaliPrompt(rep);
   assert(prompt.includes('타고르 《기탄잘리·동방의 등불》 우주적 영혼합일 & 두려움 없는 자유 지표'));
   assert(prompt.includes(rep.activeTagoreTheme.themeTitleKo));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
 });
 
 test('Lee Yuk-sa Gwangya Peak Engine: calculates Peak Resilience, Steel Rainbow, Hero Calling, Sowing Song Seed, and Pure Integrity', () => {

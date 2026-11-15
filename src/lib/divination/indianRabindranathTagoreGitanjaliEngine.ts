@@ -9,12 +9,12 @@
  * 4. 자연과의 서정적 합일 조화도(Lyric Nature Harmonization Index): 비바람, 대지, 꽃잎, 강물의 흐름 속에서 신성한 질서와 아름다움을 발견하는 서정적 평정심.
  * 5. 동방의 등불 희망 회복탄력성(Lamp of the East Resilience Score): 짙은 어둠과 시련의 밤 속에서도 내면의 꺼지지 않는 등불을 밝혀 밝은 새벽을 여는 숭고한 회복력.
  *
- * @version LUCKEY-TAGORE-GITANJALI-v1.0.0
+ * @version LUCKEY-TAGORE-GITANJALI-v2.0.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const INDIAN_TAGORE_GITANJALI_VERSION = 'LUCKEY-TAGORE-GITANJALI-v1.0.0';
+export const INDIAN_TAGORE_GITANJALI_VERSION = 'LUCKEY-TAGORE-GITANJALI-v2.0.0';
 
 export interface TagoreTheme {
   themeKey: string;
@@ -47,6 +47,11 @@ export interface IndianRabindranathTagoreGitanjaliResult {
   tagoreComprehensiveGuidance: {
     guidanceTitle: string;
     philosophicalCounsel: string;
+  };
+  tagoreSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
   };
 }
 
@@ -119,8 +124,26 @@ export const TAGORE_APHORISMS: TagoreAphorism[] = [
   },
 ];
 
+function formatTagoreKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
+
+function describeTagoreStage(score: number): string {
+  if (score >= 90) return '동방의 등불 개명기 (어둠과 두려움을 넘어 영혼의 자유와 우주적 공명이 충만한 흐름)';
+  if (score >= 82) return '서정적 바크티(Bhakti) 합일기 (일상과 자연 속에서 고요한 감사와 헌신이 깊어지는 국면)';
+  return '질그릇 비움 성찰기 (에고의 집착을 덜어내며 새로운 생명의 노래를 맞이하는 흐름)';
+}
+
 export function calculateIndianRabindranathTagoreGitanjali(
-  profile: UserProfile
+  profile: UserProfile,
+  query?: string,
+  now: Date = new Date(),
 ): IndianRabindranathTagoreGitanjaliResult {
   const p = profile as any;
   const name = profile?.basic?.name ?? p?.name ?? '방문자';
@@ -128,7 +151,7 @@ export function calculateIndianRabindranathTagoreGitanjali(
   const birthTime = profile?.basic?.birthtime ?? p?.birthTime ?? p?.birthtime ?? '12:00';
   const gender = profile?.basic?.gender ?? p?.gender ?? 'neutral';
 
-  const seedString = `TAGORE-GITANJALI-SONG:${name}:${birthDate}:${birthTime}:${gender}`;
+  const seedString = `TAGORE-GITANJALI-SONG:${name}:${birthDate}:${birthTime}:${gender}:${query ?? ''}`;
 
   let hash = 0;
   for (let i = 0; i < seedString.length; i++) {
@@ -155,9 +178,18 @@ export function calculateIndianRabindranathTagoreGitanjali(
     `${activeTagoreTheme.practicalCounsel} 아울러 타고르의 명구 "${focalTagoreAphorism.aphorismKo}"(${focalTagoreAphorism.aphorismBengali})를 깊이 묵상하고, ` +
     `${focalTagoreAphorism.actionGuidance}`;
 
+  const tagoreSynthesisMatrix = {
+    dominantTension: `${activeTagoreTheme.themeTitleKo} ↔ ${focalTagoreAphorism.sourceContext}`,
+    alignmentState:
+      cosmicSoulCommunionScore >= 85 && fearlessFreedomMindScore >= 85
+        ? '두려움 없는 영혼의 자유와 우주적 서정 합일'
+        : '질그릇을 비워 새 생명의 노래를 받아들이는 정화 국면',
+    integratedAction: `${activeTagoreTheme.practicalCounsel} (${focalTagoreAphorism.actionGuidance})`,
+  };
+
   return {
     engineVersion: INDIAN_TAGORE_GITANJALI_VERSION,
-    calculatedAtKst: new Date().toISOString(),
+    calculatedAtKst: formatTagoreKstTimestamp(now),
     cosmicSoulCommunionScore,
     pureDevotionalBhaktiIndex,
     fearlessFreedomMindScore,
@@ -169,17 +201,19 @@ export function calculateIndianRabindranathTagoreGitanjali(
       guidanceTitle,
       philosophicalCounsel,
     },
+    tagoreSynthesisMatrix,
   };
 }
 
 export function formatIndianRabindranathTagoreGitanjaliPrompt(res: IndianRabindranathTagoreGitanjaliResult): string {
-  return [
+  const lines = [
     `【타고르 《기탄잘리·동방의 등불》 우주적 영혼합일 & 두려움 없는 자유 지표】`,
-    `- 우주적 영혼 교감도(Cosmic Soul Communion): ${res.cosmicSoulCommunionScore}/100`,
-    `- 순수한 영혼 헌신도(Pure Devotional Bhakti): ${res.pureDevotionalBhaktiIndex}/100`,
-    `- 두려움 없는 열린 자유도(Fearless Freedom of Mind): ${res.fearlessFreedomMindScore}/100`,
-    `- 자연 서정 합일 조화도(Lyric Nature Harmony): ${res.lyricNatureHarmonizationIndex}/100`,
-    `- 동방의 등불 희망 회복탄력성(Lamp of the East): ${res.lampOfTheEastResilienceScore}/100`,
+    `- 엔진 버전: ${res.engineVersion} | 연산 시각: ${res.calculatedAtKst}`,
+    `- 우주적 영혼 교감도(Cosmic Soul Communion): ${describeTagoreStage(res.cosmicSoulCommunionScore)}`,
+    `- 순수한 영혼 헌신도(Pure Devotional Bhakti): ${describeTagoreStage(res.pureDevotionalBhaktiIndex)}`,
+    `- 두려움 없는 열린 자유도(Fearless Freedom of Mind): ${describeTagoreStage(res.fearlessFreedomMindScore)}`,
+    `- 자연 서정 합일 조화도(Lyric Nature Harmony): ${describeTagoreStage(res.lyricNatureHarmonizationIndex)}`,
+    `- 동방의 등불 희망 회복탄력성(Lamp of the East): ${describeTagoreStage(res.lampOfTheEastResilienceScore)}`,
     `- 핵심 영적 테마: ${res.activeTagoreTheme.themeTitleKo} [${res.activeTagoreTheme.themeTitleEn}]`,
     `- 실존적 통찰: ${res.activeTagoreTheme.existentialInsight}`,
     `- 실천적 조언: ${res.activeTagoreTheme.practicalCounsel}`,
@@ -187,5 +221,12 @@ export function formatIndianRabindranathTagoreGitanjaliPrompt(res: IndianRabindr
     `- 원전 출처: [${res.focalTagoreAphorism.sourceContext}]`,
     `- 구체적 실천 지침: ${res.focalTagoreAphorism.actionGuidance}`,
     `- 종합 타고르 영성 권면: ${res.tagoreComprehensiveGuidance.philosophicalCounsel}`,
-  ].join('\n');
+  ];
+  if (res.tagoreSynthesisMatrix) {
+    lines.push(
+      `- 교차 매트릭스 [핵심 긴장: ${res.tagoreSynthesisMatrix.dominantTension} | 조율 상태: ${res.tagoreSynthesisMatrix.alignmentState}]`,
+      `- 통합 실천: ${res.tagoreSynthesisMatrix.integratedAction}`,
+    );
+  }
+  return lines.join('\n');
 }

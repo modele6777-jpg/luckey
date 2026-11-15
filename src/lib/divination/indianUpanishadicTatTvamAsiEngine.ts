@@ -11,12 +11,12 @@
  * 4. 마야(Maya)의 장막 투시: 겉으로 드러난 현상계의 환영을 꿰뚫어 불변의 실재를 직관함.
  * 5. 프라즈냐(Prajna) 지혜: 일체의 분별과 대립을 초월한 비이원적(Advaita) 절대 평정심.
  *
- * @version LUCKEY-UPANISHADIC-TAT-TVAM-ASI-v1.0.0
+ * @version LUCKEY-UPANISHADIC-TAT-TVAM-ASI-v2.0.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const UPANISHADIC_TAT_TVAM_ASI_VERSION = 'LUCKEY-UPANISHADIC-TAT-TVAM-ASI-v1.0.0';
+export const UPANISHADIC_TAT_TVAM_ASI_VERSION = 'LUCKEY-UPANISHADIC-TAT-TVAM-ASI-v2.0.0';
 
 export interface UpanishadicMahavakya {
   vakyaKey: string;
@@ -49,6 +49,11 @@ export interface UpanishadicTatTvamAsiResult {
   upanishadicCounsel: {
     counselTitle: string;
     spiritualGuidance: string;
+  };
+  upanishadicSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
   };
 }
 
@@ -102,11 +107,32 @@ const UPANISHADIC_TEACHINGS: UpanishadicTeaching[] = [
   },
 ];
 
-export function calculateUpanishadicTatTvamAsi(profile: UserProfile): UpanishadicTatTvamAsiResult {
+function formatUpanishadicKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
+
+function describeUpanishadicStage(score: number): string {
+  if (score >= 88) return '투리야(Turiya) 순수의식기 (이원적 분별을 넘어 범아일여의 고요가 밝아지는 흐름)';
+  if (score >= 76) return '넷티 넷티(Neti Neti) 관조기 (현상의 환영을 가볍게 내려놓고 본질을 응시하는 국면)';
+  return '마야(Maya) 투시 입문기 (흔들리는 생각과 감정을 한 걸음 물러나 바라보는 흐름)';
+}
+
+export function calculateUpanishadicTatTvamAsi(
+  profile: UserProfile,
+  query?: string,
+  now: Date = new Date(),
+): UpanishadicTatTvamAsiResult {
   const seedString =
     (profile?.basic?.birthdate ?? (profile as any)?.birthdate ?? '1990-01-01') +
     (profile?.basic?.name ?? (profile as any)?.name ?? 'User') +
     (profile?.basic?.birthtime ?? (profile as any)?.birthtime ?? '12:00') +
+    (query ?? '') +
     'IndianUpanishadicTatTvamAsi';
 
   let hash = 0;
@@ -134,9 +160,18 @@ export function calculateUpanishadicTatTvamAsi(profile: UserProfile): Upanishadi
     `${activeMahavakya.meditativeFocus} 아울러 '${focalUpanishadicTeaching.teachingNameKo}'의 통찰을 통해, ` +
     `${focalUpanishadicTeaching.contemplativeInsight}`;
 
+  const upanishadicSynthesisMatrix = {
+    dominantTension: `${activeMahavakya.vakyaNameKo} ↔ ${focalUpanishadicTeaching.teachingNameKo}`,
+    alignmentState:
+      brahmanAtmanUnityScore >= 82 && satChitAnandaPureConsciousnessScore >= 82
+        ? '사트-치트-아난다의 비이원적 순수의식 합일'
+        : '넷티 넷티 관조를 통해 환영과 집착을 걷어내는 정화 국면',
+    integratedAction: `${activeMahavakya.meditativeFocus} (${focalUpanishadicTeaching.contemplativeInsight})`,
+  };
+
   return {
     engineVersion: UPANISHADIC_TAT_TVAM_ASI_VERSION,
-    calculatedAtKst: new Date().toISOString(),
+    calculatedAtKst: formatUpanishadicKstTimestamp(now),
     brahmanAtmanUnityScore,
     mayaIllusionPiercingScore,
     netiNetiDetachmentScore,
@@ -148,17 +183,19 @@ export function calculateUpanishadicTatTvamAsi(profile: UserProfile): Upanishadi
       counselTitle,
       spiritualGuidance,
     },
+    upanishadicSynthesisMatrix,
   };
 }
 
 export function formatUpanishadicTatTvamAsiPrompt(res: UpanishadicTatTvamAsiResult): string {
-  return [
+  const lines = [
     `【우파니샤드 타트 트밤 아시 & 범아일여 순수의식 지표】`,
-    `- 범아일여(Brahman-Atman) 합일도: ${res.brahmanAtmanUnityScore}/100`,
-    `- 마야(Maya) 환상 통찰 투시력: ${res.mayaIllusionPiercingScore}/100`,
-    `- 넷티 넷티(Neti Neti) 무집착 초연도: ${res.netiNetiDetachmentScore}/100`,
-    `- 사트-치트-아난다 순수의식 지복도: ${res.satChitAnandaPureConsciousnessScore}/100`,
-    `- 프라즈냐(Prajna) 영적 직관 지혜력: ${res.prajnaSpiritualWisdomScore}/100`,
+    `- 엔진 버전: ${res.engineVersion} | 연산 시각: ${res.calculatedAtKst}`,
+    `- 범아일여(Brahman-Atman) 합일도: ${describeUpanishadicStage(res.brahmanAtmanUnityScore)}`,
+    `- 마야(Maya) 환상 통찰 투시력: ${describeUpanishadicStage(res.mayaIllusionPiercingScore)}`,
+    `- 넷티 넷티(Neti Neti) 무집착 초연도: ${describeUpanishadicStage(res.netiNetiDetachmentScore)}`,
+    `- 사트-치트-아난다 순수의식 지복도: ${describeUpanishadicStage(res.satChitAnandaPureConsciousnessScore)}`,
+    `- 프라즈냐(Prajna) 영적 직관 지혜력: ${describeUpanishadicStage(res.prajnaSpiritualWisdomScore)}`,
     `- 감응 대명제(Mahavakya): ${res.activeMahavakya.vakyaNameKo} [${res.activeMahavakya.vakyaSanskrit}]`,
     `- 출전: ${res.activeMahavakya.sourceUpanishad}`,
     `- 핵심 각성: ${res.activeMahavakya.coreRealization}`,
@@ -167,5 +204,12 @@ export function formatUpanishadicTatTvamAsiPrompt(res: UpanishadicTatTvamAsiResu
     `- 철학적 깊이: ${res.focalUpanishadicTeaching.philosophicalDepth}`,
     `- 관조적 통찰: ${res.focalUpanishadicTeaching.contemplativeInsight}`,
     `- 영적 수양 지침: ${res.upanishadicCounsel.spiritualGuidance}`,
-  ].join('\n');
+  ];
+  if (res.upanishadicSynthesisMatrix) {
+    lines.push(
+      `- 교차 매트릭스 [핵심 긴장: ${res.upanishadicSynthesisMatrix.dominantTension} | 조율 상태: ${res.upanishadicSynthesisMatrix.alignmentState}]`,
+      `- 통합 실천: ${res.upanishadicSynthesisMatrix.integratedAction}`,
+    );
+  }
+  return lines.join('\n');
 }
