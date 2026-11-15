@@ -9,12 +9,12 @@
  * 4. 백년대계 건국 설계력(Architectural Foresight Index): 눈앞의 이익에 매몰되지 않고 백 년, 천 년을 내다보며 한양 도성과 제도의 기틀을 닦는 거시적 비전.
  * 5. 불굴의 실천 지조 지수(Indomitable Reform Tenacity Score): 유배와 시련 속에서도 백성의 땀방울을 가슴에 품고 마침내 새로운 시대를 열어젖힌 불굴의 기개.
  *
- * @version LUCKEY-JEONG-DO-JEON-MINBON-v1.0.0
+ * @version LUCKEY-JEONG-DO-JEON-MINBON-v2.0.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const KOREAN_JEONG_DO_JEON_VERSION = 'LUCKEY-JEONG-DO-JEON-MINBON-v1.0.0';
+export const KOREAN_JEONG_DO_JEON_VERSION = 'LUCKEY-JEONG-DO-JEON-MINBON-v2.0.0';
 
 export interface SambongTheme {
   themeKey: string;
@@ -48,6 +48,27 @@ export interface KoreanSambongJeongDoJeonMinbonReformResult {
     guidanceTitle: string;
     philosophicalCounsel: string;
   };
+  sambongSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
+}
+
+function formatSambongKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
+
+function describeSambongStage(score: number): string {
+  if (score >= 90) return '민본위민(民本爲民) — 공공의 원칙과 백년대계 설계가 흔들림 없이 맞물리는 개혁의 적기';
+  if (score >= 84) return '정도경국(正道經國) — 시대의 변화에 맞춰 낡은 틀을 유연하게 정비하는 국면';
+  return '불굴역경(不屈逆境) — 현장의 목소리를 살피며 공정한 기틀을 차분히 다지는 시기';
 }
 
 export const SAMBONG_THEMES: SambongTheme[] = [
@@ -136,6 +157,7 @@ export const SAMBONG_APHORISMS: SambongAphorism[] = [
 export function calculateKoreanSambongJeongDoJeonMinbonReform(
   profile?: UserProfile,
   query?: string,
+  now: Date = new Date(),
 ): KoreanSambongJeongDoJeonMinbonReformResult {
   const p = profile as any;
   const name = profile?.basic?.name ?? p?.name ?? '남희';
@@ -170,9 +192,24 @@ export function calculateKoreanSambongJeongDoJeonMinbonReform(
     `${activeSambongTheme.practicalCounsel} 아울러 삼봉 선생의 불멸의 원전 명언 "${focalSambongAphorism.aphorismKo}"(${focalSambongAphorism.aphorismHanja})를 가슴에 품고, ` +
     `${focalSambongAphorism.actionGuidance}`;
 
+  const calculatedAtKst = formatSambongKstTimestamp(now);
+  const avgScore = Math.round(
+    (minbonPeopleServingScore +
+      jeongdoInstitutionalReformScore +
+      cleanGovernanceIntegrityIndex +
+      architecturalForesightIndex +
+      indomitableReformTenacityScore) /
+      5,
+  );
+  const sambongSynthesisMatrix = {
+    dominantTension: `${activeSambongTheme.themeTitleKo} ↔ ${focalSambongAphorism.sourceContext}`,
+    alignmentState: describeSambongStage(avgScore),
+    integratedAction: `${focalSambongAphorism.actionGuidance}${query?.trim() ? ` [질문 맥락: ${query.trim()}]` : ''}`,
+  };
+
   return {
     engineVersion: KOREAN_JEONG_DO_JEON_VERSION,
-    calculatedAtKst: new Date().toISOString(),
+    calculatedAtKst,
     minbonPeopleServingScore,
     jeongdoInstitutionalReformScore,
     cleanGovernanceIntegrityIndex,
@@ -184,19 +221,25 @@ export function calculateKoreanSambongJeongDoJeonMinbonReform(
       guidanceTitle,
       philosophicalCounsel,
     },
+    sambongSynthesisMatrix,
   };
 }
 
 export function formatKoreanSambongJeongDoJeonMinbonReformPrompt(
   res: KoreanSambongJeongDoJeonMinbonReformResult,
 ): string {
-  return [
+  const avgScore = Math.round(
+    (res.minbonPeopleServingScore +
+      res.jeongdoInstitutionalReformScore +
+      res.cleanGovernanceIntegrityIndex +
+      res.architecturalForesightIndex +
+      res.indomitableReformTenacityScore) /
+      5,
+  );
+  const lines = [
     `【삼봉 정도전 《조선경국전·경제문감》 민본사상 & 정도(正道) 개혁 실천 지표】`,
-    `- 민본 섬김 및 위민 지수(Minbon People Serving): ${res.minbonPeopleServingScore}/100`,
-    `- 정도 제도개혁 추진력(Institutional Reform): ${res.jeongdoInstitutionalReformScore}/100`,
-    `- 청렴 공정성 지수(Clean Governance Integrity): ${res.cleanGovernanceIntegrityIndex}/100`,
-    `- 백년대계 건국 설계력(Architectural Foresight): ${res.architecturalForesightIndex}/100`,
-    `- 불굴의 실천 지조 지수(Indomitable Reform Tenacity): ${res.indomitableReformTenacityScore}/100`,
+    `- 연산 시각: ${res.calculatedAtKst} | 엔진: ${res.engineVersion}`,
+    `- 민본 개혁 국면: ${describeSambongStage(avgScore)}`,
     `- 핵심 민본 테마: ${res.activeSambongTheme.themeTitleKo} [${res.activeSambongTheme.themeTitleHanja}]`,
     `- 실존적 통찰: ${res.activeSambongTheme.existentialInsight}`,
     `- 실천적 조언: ${res.activeSambongTheme.practicalCounsel}`,
@@ -204,5 +247,12 @@ export function formatKoreanSambongJeongDoJeonMinbonReformPrompt(
     `- 원전 출처: [${res.focalSambongAphorism.sourceContext}]`,
     `- 구체적 실천 지침: ${res.focalSambongAphorism.actionGuidance}`,
     `- 종합 삼봉 민본 권면: ${res.sambongComprehensiveGuidance.philosophicalCounsel}`,
-  ].join('\n');
+  ];
+  if (res.sambongSynthesisMatrix) {
+    lines.push(
+      `- 교차 매트릭스 [핵심 긴장: ${res.sambongSynthesisMatrix.dominantTension} | 조율 상태: ${res.sambongSynthesisMatrix.alignmentState}]`,
+      `- 통합 실천: ${res.sambongSynthesisMatrix.integratedAction}`,
+    );
+  }
+  return lines.join('\n');
 }

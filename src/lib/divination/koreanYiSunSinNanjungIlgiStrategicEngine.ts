@@ -12,12 +12,12 @@
  *    - 장졸들과의 동고동락(Soldier-General Solidarity): 땀과 눈물을 함께 흘리며 쌓아 올린 절대적 신뢰.
  * 3. 7대 전술적 품계 및 난중일기 친필 성찰 조언 산출
  *
- * @version LUCKEY-YISUNSIN-NANJUNG-ILGI-v1.0.0
+ * @version LUCKEY-YISUNSIN-NANJUNG-ILGI-v2.0.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const YISUNSIN_NANJUNG_ILGI_VERSION = 'LUCKEY-YISUNSIN-NANJUNG-ILGI-v1.0.0';
+export const YISUNSIN_NANJUNG_ILGI_VERSION = 'LUCKEY-YISUNSIN-NANJUNG-ILGI-v2.0.0';
 
 export interface YiSunSinStrategicStage {
   stageLevel: number;
@@ -48,6 +48,17 @@ export interface YiSunSinNanjungIlgiResult {
     diaryEntryTitle: string;
     immortalWisdom: string;
   };
+  yiSunSinSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
+}
+
+function describeYiSunSinStage(score: number): string {
+  if (score >= 88) return '필사즉생(必死則生) — 흔들림 없는 각오와 정밀한 판세 읽기가 하나로 맞물리는 승전의 흐름';
+  if (score >= 78) return '일부당경(一夫當逕) — 핵심 길목을 선점하고 침착하게 주도권을 굳히는 국면';
+  return '유비무환(有備無患) — 한산도의 고요 속에서 방비와 내실을 다지며 때를 기다리는 시기';
 }
 
 export type YiSunSinNanjungIlgiReport = YiSunSinNanjungIlgiResult;
@@ -76,10 +87,14 @@ const NANJUNG_REFLECTIONS = [
   { diaryEntryTitle: '마지막 북소리와 붉은 노을', immortalWisdom: '나의 죽음을 적에게 알리지 말라 하셨듯, 진정한 영웅은 나의 이름이 아니라 남겨진 이들의 평화만을 바란다.' },
 ];
 
-function getKstDateString(): string {
-  const now = new Date();
-  const kst = new Date(now.getTime() + (9 * 60 + now.getTimezoneOffset()) * 60000);
-  return kst.toISOString().replace('T', ' ').substring(0, 19) + ' KST';
+function getKstDateString(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
 }
 
 function hashSeed(seedStr: string): number {
@@ -91,7 +106,11 @@ function hashSeed(seedStr: string): number {
   return Math.abs(h);
 }
 
-export function calculateYiSunSinNanjungIlgi(profile?: UserProfile): YiSunSinNanjungIlgiResult {
+export function calculateYiSunSinNanjungIlgi(
+  profile?: UserProfile,
+  query?: string,
+  now: Date = new Date(),
+): YiSunSinNanjungIlgiResult {
   const birthdate = profile?.basic?.birthdate || '1995-03-21';
   const birthtime = profile?.basic?.birthtime || '12:00';
   const name = profile?.basic?.name || 'Inquirer';
@@ -112,9 +131,23 @@ export function calculateYiSunSinNanjungIlgi(profile?: UserProfile): YiSunSinNan
   const reflectionIdx = (seed >> 6) % NANJUNG_REFLECTIONS.length;
   const nanjungIlgiReflection = NANJUNG_REFLECTIONS[reflectionIdx];
 
+  const avgScore = Math.round(
+    (pilsaJeuksaengResolutionForce +
+      ilbuDanggyeongNarrowChokepointPower +
+      hansandoMoonlitComposureScore +
+      reconnaissanceIntelClarityIndex +
+      geobukseonImpregnableShieldPower) /
+      5,
+  );
+  const yiSunSinSynthesisMatrix = {
+    dominantTension: `${activeStrategicStage.stageNameKo} ↔ ${primaryChungmuVirtue.hanjaMotto}`,
+    alignmentState: describeYiSunSinStage(avgScore),
+    integratedAction: `${primaryChungmuVirtue.actionableDirective}${query?.trim() ? ` [질문 맥락: ${query.trim()}]` : ''}`,
+  };
+
   return {
     engineVersion: YISUNSIN_NANJUNG_ILGI_VERSION,
-    calculatedAtKst: getKstDateString(),
+    calculatedAtKst: getKstDateString(now),
     pilsaJeuksaengResolutionForce,
     ilbuDanggyeongNarrowChokepointPower,
     hansandoMoonlitComposureScore,
@@ -123,23 +156,37 @@ export function calculateYiSunSinNanjungIlgi(profile?: UserProfile): YiSunSinNan
     activeStrategicStage,
     primaryChungmuVirtue,
     nanjungIlgiReflection,
+    yiSunSinSynthesisMatrix,
   };
 }
 
 export function formatYiSunSinNanjungIlgiPrompt(result: YiSunSinNanjungIlgiResult): string {
-  return `[⚔️ 충무공 이순신 장군 친필 《난중일기(亂中日記)》 필사즉생(必死則生) 전략 리포트]
-- 엔진 버전: ${result.engineVersion}
-- 필사즉생(必死則生) 사즉생 각오 및 결단력: ${result.pilsaJeuksaengResolutionForce}%
-- 일부당경(一夫當逕) 길목 선점 지략: ${result.ilbuDanggyeongNarrowChokepointPower}%
-- 한산섬 달 밝은 밤 심기 평정 및 고독의 승화: ${result.hansandoMoonlitComposureScore}%
-- 정밀 척후 및 정세 투시 명료도: ${result.reconnaissanceIntelClarityIndex}%
-- 거북선 돌파력 및 철벽 방호력: ${result.geobukseonImpregnableShieldPower}%
-- 현행 전술적 품계: **[${result.activeStrategicStage.stageNameKo} (${result.activeStrategicStage.stageNameHanja})]**
-  → 관장 영역: ${result.activeStrategicStage.commandDomain}
-  → 해전 돌파 축복: ${result.activeStrategicStage.navalBreakthroughBlessing}
-- 최우선 충무 덕목: **[${result.primaryChungmuVirtue.virtueNameKo} (${result.primaryChungmuVirtue.hanjaMotto})]**
-  → 핵심 본질: ${result.primaryChungmuVirtue.coreEssence}
-  → 실천 지침: ${result.primaryChungmuVirtue.actionableDirective}
-- 난중일기 친필 성찰의 불멸성: 《${result.nanjungIlgiReflection.diaryEntryTitle}》
-  → 불멸의 지혜: "${result.nanjungIlgiReflection.immortalWisdom}"`;
+  const avgScore = Math.round(
+    (result.pilsaJeuksaengResolutionForce +
+      result.ilbuDanggyeongNarrowChokepointPower +
+      result.hansandoMoonlitComposureScore +
+      result.reconnaissanceIntelClarityIndex +
+      result.geobukseonImpregnableShieldPower) /
+      5,
+  );
+  const lines = [
+    `[⚔️ 충무공 이순신 장군 친필 《난중일기(亂中日記)》 필사즉생(必死則生) 전략 리포트]`,
+    `- 연산 시각: ${result.calculatedAtKst} | 엔진: ${result.engineVersion}`,
+    `- 해전 전략 국면: ${describeYiSunSinStage(avgScore)}`,
+    `- 현행 전술적 품계: **[${result.activeStrategicStage.stageNameKo} (${result.activeStrategicStage.stageNameHanja})]**`,
+    `  → 관장 영역: ${result.activeStrategicStage.commandDomain}`,
+    `  → 해전 돌파 축복: ${result.activeStrategicStage.navalBreakthroughBlessing}`,
+    `- 최우선 충무 덕목: **[${result.primaryChungmuVirtue.virtueNameKo} (${result.primaryChungmuVirtue.hanjaMotto})]**`,
+    `  → 핵심 본질: ${result.primaryChungmuVirtue.coreEssence}`,
+    `  → 실천 지침: ${result.primaryChungmuVirtue.actionableDirective}`,
+    `- 난중일기 친필 성찰의 불멸성: 《${result.nanjungIlgiReflection.diaryEntryTitle}》`,
+    `  → 불멸의 지혜: "${result.nanjungIlgiReflection.immortalWisdom}"`,
+  ];
+  if (result.yiSunSinSynthesisMatrix) {
+    lines.push(
+      `- 교차 매트릭스 [핵심 긴장: ${result.yiSunSinSynthesisMatrix.dominantTension} | 조율 상태: ${result.yiSunSinSynthesisMatrix.alignmentState}]`,
+      `- 통합 실천: ${result.yiSunSinSynthesisMatrix.integratedAction}`,
+    );
+  }
+  return lines.join('\n');
 }

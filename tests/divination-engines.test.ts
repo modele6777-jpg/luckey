@@ -4589,9 +4589,14 @@ test('Korean Yi Sun-sin Nanjung Ilgi Strategic Engine: calculates Pilsa Jeuksaen
   assert(rep.reconnaissanceIntelClarityIndex >= 0 && rep.reconnaissanceIntelClarityIndex <= 100);
   assert(rep.geobukseonImpregnableShieldPower >= 0 && rep.geobukseonImpregnableShieldPower <= 100);
   assert(rep.activeStrategicStage.stageNameHanja.length > 0);
+  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(rep.yiSunSinSynthesisMatrix?.integratedAction));
   const prompt = formatYiSunSinNanjungIlgiPrompt(rep);
   assert(prompt.includes('충무공 이순신 장군 친필 《난중일기(亂中日記)》'));
   assert(prompt.includes(rep.activeStrategicStage.stageNameKo));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
 });
 
 test('Ancient Egyptian Ptah Memphite Theology Engine: calculates heart thought conceptualization, tongue utterance and Maat alignment', () => {
@@ -5446,9 +5451,14 @@ test('Ryu Seong-ryong Jingbirok Engine: calculates Jingjeon Bihu past reflection
   assert(rep.selflessDevotionPublicGoodScore >= 0 && rep.selflessDevotionPublicGoodScore <= 100);
   assert(rep.practicalCrisisManagementExecutionScore >= 0 && rep.practicalCrisisManagementExecutionScore <= 100);
   assert(rep.activeJingbirokTheme.themeTitleHanja.length > 0);
+  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(rep.jingbirokSynthesisMatrix?.integratedAction));
   const prompt = formatRyuSeongryongJingbirokPrompt(rep);
   assert(prompt.includes('서애 류성룡 《징비록》 징전비후 성찰 & 유비무환 위기대응 지표'));
   assert(prompt.includes(rep.activeJingbirokTheme.themeTitleKo));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
 });
 
 test('King Sejong Hunminjeongeum Aemin Engine: calculates Aemin Creativity, Barrier Break, and Yeominrak', () => {
@@ -6008,9 +6018,14 @@ test('Sambong Jeong Do-jeon Minbon Reform Engine: calculates Minbon Serving, Ins
   assert(rep.architecturalForesightIndex >= 0 && rep.architecturalForesightIndex <= 100);
   assert(rep.indomitableReformTenacityScore >= 0 && rep.indomitableReformTenacityScore <= 100);
   assert(rep.activeSambongTheme.themeTitleKo.length > 0);
+  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(rep.sambongSynthesisMatrix?.integratedAction));
   const prompt = formatKoreanSambongJeongDoJeonMinbonReformPrompt(rep);
   assert(prompt.includes('삼봉 정도전 《조선경국전·경제문감》 민본사상 & 정도(正道) 개혁 실천 지표'));
   assert(prompt.includes(rep.activeSambongTheme.themeTitleKo));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
 });
 
 test('Bertrand Russell Conquest of Happiness Engine: calculates Zest for Life, Overcoming Self-Absorption, Constructive Work, and Rational Equanimity', () => {
