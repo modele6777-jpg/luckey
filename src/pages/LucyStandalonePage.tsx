@@ -1,3 +1,4 @@
+import { useLibrarySessionState } from '@/hooks/useLibrarySessionState';
 import { DialogTriggerButton } from '@/components/layout/DialogTriggerButton';
 import { LucyModeName } from '@/components/chat/LucyModeName';
 import { ScreenPortal } from '@/components/layout/ScreenPortal';
@@ -836,6 +837,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
   // Both modes now send to conversationId 'lucy', so abort the same runtime.
   const abortGenerating = abortNormalGenerating;
   const chatAccount = firebaseUser?.uid || safeSessionStorage.getItem('prism_auth_uid') || 'device';
+  const librarySessionKey = `lucy:${chatAccount}:${chatScope}`;
   const forwardBubble = useCallback((text: string) => {
     const payload = queueChatForward(chatAccount, chatScope, text);
     (window as any).__prismAllowRouteChangeUntil = Date.now() + 1500;
@@ -1005,7 +1007,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
     activeText: null as string | null,
     activeSentence: null as string | null,
   });
-  const [isPromptLibraryOpen, setIsPromptLibraryOpen] = useState(false);
+  const [isPromptLibraryOpen, setIsPromptLibraryOpen] = useLibrarySessionState<boolean>(`${librarySessionKey}:prompt:open`, false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const isInputComposingRef = useRef(false);
   const chatFooterRef = useRef<HTMLElement | null>(null);
@@ -1832,7 +1834,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
 
   // 프로필 모달 상태
   const [isChatProfileModalOpen, setIsChatProfileModalOpen] = useState(false);
-  const [isEngineCatalogOpen, setIsEngineCatalogOpen] = useState(false);
+  const [isEngineCatalogOpen, setIsEngineCatalogOpen] = useLibrarySessionState<boolean>(`${librarySessionKey}:engine:open`, false);
   const [openUsageMessageId, setOpenUsageMessageId] = useState<string | null>(null);
   const [editingChatProfile, setEditingChatProfile] = useState<ChatTargetProfile | null>(null);
 
@@ -4237,6 +4239,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
 
       {/* 📖 13페이지 추천 질문 라이브러리 모달 */}
       <PromptLibraryModal
+        sessionKey={`${librarySessionKey}:prompt`}
         isOpen={isPromptLibraryOpen}
         onClose={() => setIsPromptLibraryOpen(false)}
         onSelectPrompt={handleSelectPromptFromLibrary}
@@ -4254,6 +4257,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
       />
 
       <LucyEngineCatalogDialog
+        sessionKey={`${librarySessionKey}:engine`}
         isOpen={isEngineCatalogOpen}
         onClose={() => setIsEngineCatalogOpen(false)}
         isLight={isLight}

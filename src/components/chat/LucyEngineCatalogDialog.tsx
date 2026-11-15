@@ -1,6 +1,7 @@
+import { defaultLibrarySessionKey, useLibrarySessionState, useLibrarySessionScroll } from '@/hooks/useLibrarySessionState';
 import { DialogBackdrop } from '@/components/layout/DialogBackdrop';
 import './chat-library-layout.css';
-import React, { useMemo, useState } from 'react';
+import React, { useMemo } from 'react';
 import { Search, Sparkles, X } from 'lucide-react';
 import { WorkspacePortal } from '@/components/layout/DuoWorkspace';
 import { type DceEngineMeta } from '@/lib/divination/deterministicEngine';
@@ -16,6 +17,7 @@ import {
 
 interface LucyEngineCatalogDialogProps {
   isOpen: boolean;
+  sessionKey?: string;
   onClose: () => void;
   isLight: boolean;
 }
@@ -33,10 +35,11 @@ function matchesFilter(engine: DceEngineMeta, filter: CatalogFilter) {
   return filter === 'all' || engine.category === filter;
 }
 
-export function LucyEngineCatalogDialog({ isOpen, onClose, isLight }: LucyEngineCatalogDialogProps) {
-  const [filter, setFilter] = useState<CatalogFilter>('all');
-  const [themeFilter, setThemeFilter] = useState<CatalogThemeFilter>('all');
-  const [query, setQuery] = useState('');
+export function LucyEngineCatalogDialog({ isOpen, onClose, isLight, sessionKey = defaultLibrarySessionKey('engine-library') }: LucyEngineCatalogDialogProps) {
+  const [filter, setFilter] = useLibrarySessionState<CatalogFilter>(`${sessionKey}:filter`, 'all');
+  const [themeFilter, setThemeFilter] = useLibrarySessionState<CatalogThemeFilter>(`${sessionKey}:theme`, 'all');
+  const [query, setQuery] = useLibrarySessionState<string>(`${sessionKey}:query`, '');
+  const scroll = useLibrarySessionScroll(`${sessionKey}:scroll`, isOpen);
 
   const filteredEngines = useMemo(() => {
     const normalizedQuery = query.trim().toLocaleLowerCase();
@@ -101,7 +104,7 @@ export function LucyEngineCatalogDialog({ isOpen, onClose, isLight }: LucyEngine
             </button>
           </header>
 
-          <div data-app-scroll-root="" data-testid="lucy-engine-catalog-list" tabIndex={0}
+          <div ref={scroll.ref} onScroll={scroll.onScroll} data-app-scroll-root="" data-testid="lucy-engine-catalog-list" tabIndex={0}
             aria-label="엔진 목록, 세로로 스크롤할 수 있습니다" className="chat-library-scroll overflow-y-auto">
             <div className="chat-library-toolbar shrink-0 border-b border-inherit px-4 py-2.5 sm:px-6">
               <p id="lucy-engine-catalog-intro" className={`text-xs leading-relaxed sm:text-sm ${muted}`}>

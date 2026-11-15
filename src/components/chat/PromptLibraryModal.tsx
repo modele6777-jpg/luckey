@@ -1,3 +1,4 @@
+import { defaultLibrarySessionKey, useLibrarySessionState, useLibrarySessionScroll } from '@/hooks/useLibrarySessionState';
 import { DialogBackdrop } from '@/components/layout/DialogBackdrop';
 import './chat-library-layout.css';
 import React, { useState, useMemo, useCallback } from 'react';
@@ -20,6 +21,7 @@ import {
 
 interface PromptLibraryModalProps {
   isOpen: boolean;
+  sessionKey?: string;
   onClose: () => void;
   onSelectPrompt: (
     promptText: string,
@@ -33,11 +35,13 @@ export const PromptLibraryModal: React.FC<PromptLibraryModalProps> = ({
   isOpen,
   onClose,
   onSelectPrompt,
+  sessionKey = defaultLibrarySessionKey('prompt-library'),
 }) => {
-  const [selectedCategory, setSelectedCategory] = useState<string>('all');
-  const [selectedTool, setSelectedTool] = useState<string>('all');
-  const [searchQuery, setSearchQuery] = useState<string>('');
-  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [selectedCategory, setSelectedCategory] = useLibrarySessionState<string>(`${sessionKey}:category`, 'all');
+  const [selectedTool, setSelectedTool] = useLibrarySessionState<string>(`${sessionKey}:tool`, 'all');
+  const [searchQuery, setSearchQuery] = useLibrarySessionState<string>(`${sessionKey}:query`, '');
+  const [currentPage, setCurrentPage] = useLibrarySessionState<number>(`${sessionKey}:page`, 1);
+  const scroll = useLibrarySessionScroll(`${sessionKey}:scroll`, isOpen);
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
   // Category counts
@@ -148,7 +152,7 @@ export const PromptLibraryModal: React.FC<PromptLibraryModalProps> = ({
             </button>
           </div>
 
-          <div className="chat-library-scroll overflow-y-auto" data-testid="prompt-library-list" data-app-scroll-root="" tabIndex={0} aria-label="추천 질문 목록, 세로로 스크롤할 수 있습니다">
+          <div ref={scroll.ref} onScroll={scroll.onScroll} className="chat-library-scroll overflow-y-auto" data-testid="prompt-library-list" data-app-scroll-root="" tabIndex={0} aria-label="추천 질문 목록, 세로로 스크롤할 수 있습니다">
             {/* Search Bar & Filters Section */}
             <div className="chat-library-toolbar p-4 sm:px-7 sm:py-3.5 border-b border-slate-100 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-900/60 shrink-0 space-y-3">
               {/* Search Input */}
