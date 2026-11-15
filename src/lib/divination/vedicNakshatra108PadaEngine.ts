@@ -1,6 +1,16 @@
 import { UserProfile } from '../sharedState';
 
-export const VEDIC_NAKSHATRA_108_PADA_ENGINE_VERSION = '1.0.0';
+export const VEDIC_NAKSHATRA_108_PADA_ENGINE_VERSION = '2.0.0';
+
+function formatNakshatra108KstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
 
 export interface VedicNakshatra108PadaReport {
   engineVersion: string;
@@ -21,6 +31,11 @@ export interface VedicNakshatra108PadaReport {
   dharmaPathScore: number;
   sanskritMantra: string;
   synthesisPrompt: string;
+  nakshatra108SynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
 }
 
 const NAKSHATRAS = [
@@ -70,7 +85,8 @@ const ZODIAC_SIGNS = [
 
 export function calculateVedicNakshatra108Pada(
   profile?: UserProfile | null,
-  targetDate: Date = new Date()
+  targetDate: Date = new Date(),
+  question?: string
 ): VedicNakshatra108PadaReport {
   const kst = new Date(targetDate.getTime() + 9 * 3600000);
   const nowUtc = targetDate.getTime();
@@ -130,11 +146,18 @@ export function calculateVedicNakshatra108Pada(
     '옴 나모 바가바테 바수데바야 (Om Namo Bhagavate Vasudevaya)',
   ];
   const sanskritMantra = mantras[(seed + pada) % mantras.length];
+  const calculatedAtKst = formatNakshatra108KstTimestamp(targetDate);
+  const q = (question || '').trim();
+  const nakshatra108SynthesisMatrix = {
+    dominantTension: `${nakshatra.nameKo} 제${pada}파다 ↔ ${navamsha.name}`,
+    alignmentState: `${nakshatra.gana} · ${nakshatra.tattva} · ${nakshatra.deity}`,
+    integratedAction: `${sanskritMantra} · ${nakshatra.mission}${q ? ` [질문 맥락: ${q}]` : ''}`,
+  };
 
   const synthesisPrompt = `
 [베다 27나크샤트라 & 108파다(Pada) 카르마 성좌 정밀 실측 데이터]
 ======================================================================
-엔진 버전: ${VEDIC_NAKSHATRA_108_PADA_ENGINE_VERSION} | 기준 일시: ${kst.toISOString().replace('T', ' ').slice(0, 19)} KST
+엔진 버전: ${VEDIC_NAKSHATRA_108_PADA_ENGINE_VERSION} | 기준 일시: ${calculatedAtKst}
 ----------------------------------------------------------------------
 1. 🕉️ [출생 나크샤트라 & 108 파다 위치]:
    - 본명 성좌: 제${nakshatra.index}/27성좌 **${nakshatra.nameKo} (${nakshatra.sanskrit})**
@@ -144,17 +167,20 @@ export function calculateVedicNakshatra108Pada(
    - 주재신(Deity): ${nakshatra.deity}
    - 군(Gana): ${nakshatra.gana} | 원소(Tattva): ${nakshatra.tattva}
    - 상징(Symbol): ${nakshatra.symbol} | 영적 토템(Yoni): ${nakshatra.animal}
-3. 🎯 [카르마적 영혼 소명 및 수리 지표]:
+3. 🎯 [카르마적 영혼 소명 및 만트라]:
    - 영혼 소명: ${nakshatra.mission}
-   - 다르마 성취 지수: **${dharmaPathScore}/100점**
    - 개운 산스크리트 비자 만트라: **${sanskritMantra}**
+4. 🧭 [108파다 교차 매트릭스]:
+   - 핵심 긴장: ${nakshatra108SynthesisMatrix.dominantTension}
+   - 조율 상태: ${nakshatra108SynthesisMatrix.alignmentState}
+   - 통합 실천: ${nakshatra108SynthesisMatrix.integratedAction}
 ======================================================================
 [AI 해석 절대 지침]: 본 리포트는 베딕 점성술 항성황도 27나크샤트라와 108파다 정밀 분할도에 입각한 100% 결정론적 산출물입니다. 나크샤트라 명칭과 108파다 번호, 나밤샤 귀속궁을 임의로 변경하지 말고 상담자의 카르마적 소명과 현실 행동 나침반으로 일관되게 상담에 직결하십시오.
 `.trim();
 
   return {
     engineVersion: VEDIC_NAKSHATRA_108_PADA_ENGINE_VERSION,
-    calculatedAtKst: kst.toISOString().replace('T', ' ').slice(0, 19) + ' KST',
+    calculatedAtKst,
     nakshatraIndex: nakshatra.index,
     nakshatraNameKo: nakshatra.nameKo,
     nakshatraSanskrit: nakshatra.sanskrit,
@@ -171,6 +197,7 @@ export function calculateVedicNakshatra108Pada(
     dharmaPathScore,
     sanskritMantra,
     synthesisPrompt,
+    nakshatra108SynthesisMatrix,
   };
 }
 
