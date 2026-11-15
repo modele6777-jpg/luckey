@@ -3524,8 +3524,10 @@ test('Druid Thirteen Moon Trees & Ogham Engine: calculates birth tree, active tr
 });
 
 test('Tieban Shenshu & Tai Xuan Numerology Engine: calculates inherent clause, affinity clause and accord', () => {
-  const rep = calculateTiebanShenshu(profile);
+  const rep = calculateTiebanShenshu(profile, { question: '선천 운명과 시기' });
   assert.equal(rep.engineVersion, TIEBAN_SHENSHU_VERSION);
+  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(rep.tiebanSynthesisMatrix?.integratedAction));
   assert(rep.inherentPrimeNumber > 0);
   assert(rep.kuaName.length > 0);
   assert(rep.inherentClause.clauseNumber >= 1 && rep.inherentClause.clauseNumber <= 12000);
@@ -3544,6 +3546,9 @@ test('Tieban Shenshu & Tai Xuan Numerology Engine: calculates inherent clause, a
   assert(prompt.includes('원회운세'));
   assert(prompt.includes('12율려'));
   assert(prompt.includes('결단 윈도우'));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
 });
 
 test('Tibetan Bon Nine Ways & Five Soul Vitalities Engine: calculates active way, vitalities and mantra', () => {
@@ -4070,8 +4075,10 @@ test('Taoist Shangqing 24 Spirits Engine: calculates three dantians and active t
 });
 
 test('Tibetan Phowa Rainbow Body Engine: calculates Rigpa clarity and 5 Buddha wisdoms', () => {
-  const rep = calculateTibetanPhowaRainbowBody({ profile });
+  const rep = calculateTibetanPhowaRainbowBody({ profile, question: '본각 정렬' });
   assert.equal(rep.engineVersion, TIBETAN_PHOWA_RAINBOW_BODY_ENGINE_VERSION);
+  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(rep.phowaSynthesisMatrix?.integratedAction));
   assert(rep.rigpaClarityScore >= 0 && rep.rigpaClarityScore <= 100);
   assert(rep.phowaReadinessIndex >= 0 && rep.phowaReadinessIndex <= 100);
   assert(rep.rainbowBodyAlignmentScore >= 0 && rep.rainbowBodyAlignmentScore <= 100);
@@ -4079,6 +4086,9 @@ test('Tibetan Phowa Rainbow Body Engine: calculates Rigpa clarity and 5 Buddha w
   const prompt = formatTibetanPhowaRainbowBodyPrompt(rep);
   assert(prompt.includes('티베트 족첸(Dzogchen) 릭파 본각 & 무지개체(Jalü) 5대 지혜 실측 데이터'));
   assert(prompt.includes(rep.primaryWisdom.nameKo));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
 });
 
 test('Plum Blossom Meihua Oracle Engine: calculates ben/hu/bian gua and ti-yong relations', () => {
@@ -7591,8 +7601,10 @@ test('Han Yong-un engine uses a verified literary theme, query matching, and no 
 });
 
 test('Tojeong engine: enhanced trigram analysis, five-element relation, and seasonal flow weighting', () => {
-  const r = calculateTojeong({ profile: { basic: { birthdate: '1990-05-20', lunarSolar: 'lunar' as const } }, targetYear: 2026 });
+  const r = calculateTojeong({ profile: { basic: { birthdate: '1990-05-20', lunarSolar: 'lunar' as const } }, targetYear: 2026, question: '올해의 신수' });
   assert.equal(r.status, 'calculated');
+  assert(r.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(r.tojeongSynthesisMatrix?.integratedAction));
   assert.ok(r.trigramAnalysis);
   assert.equal(r.trigramAnalysis.upperElement, '목(木)');
   assert.equal(r.trigramAnalysis.lowerElement, '목(木)');
@@ -7607,6 +7619,9 @@ test('Tojeong engine: enhanced trigram analysis, five-element relation, and seas
   const prompt = formatTojeongPrompt(r);
   assert(prompt.includes('오행 생극제화 및 사계절 순환 심층 분석'));
   assert(prompt.includes('비화(比和)'));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
 });
 
 test('Kyusei engine: enhanced 8-directional scores matrix and honmyosei annual star synergy', () => {

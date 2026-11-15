@@ -15,7 +15,17 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const TIBETAN_PHOWA_RAINBOW_BODY_ENGINE_VERSION = '1.0.0';
+export const TIBETAN_PHOWA_RAINBOW_BODY_ENGINE_VERSION = '2.0.0';
+
+function formatPhowaKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
 
 export interface FiveBuddhaWisdom {
   id: string;
@@ -32,6 +42,7 @@ export interface FiveBuddhaWisdom {
 export interface TibetanPhowaRainbowBodyReport {
   engineVersion: string;
   timestamp: string;
+  calculatedAtKst: string;
   rigpaClarityScore: number; // 0 ~ 100 릭파(본각) 각성도
   phowaReadinessIndex: number; // 0 ~ 100 전환 돌파/의식 전이력
   rainbowBodyAlignmentScore: number; // 0 ~ 100 무지개체 정렬도
@@ -40,6 +51,11 @@ export interface TibetanPhowaRainbowBodyReport {
   transmutationPath: string; // 번뇌→지혜 승화 경로
   dzogchenDirectPointers: string; // 족첸 본각 직관 요결
   dailyPhowaRitual: string; // 일상 의식 집중 및 정화 처방
+  phowaSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
 }
 
 const FIVE_BUDDHA_WISDOMS: Omit<FiveBuddhaWisdom, 'resonanceScore'>[] = [
@@ -129,9 +145,17 @@ export function calculateTibetanPhowaRainbowBody(options?: {
   const dzogchenDirectPointers = `생각을 쫓지도 막지도 말며, 일어나는 모든 번뇌의 바탕인 본래 맑은 본각(Rigpa)을 직시하십시오. ${primaryWisdom.nameKo}의 빛이 혼탁한 시야를 걷어냅니다.`;
   const dailyPhowaRitual = `정수리 백회(Brahmarandhra)에 ${primaryWisdom.colorRay}을 시각화하고, 숨을 들이쉴 때 청정한 본각을 채우고 내쉴 때 잡념을 허공으로 전이(Phowa)하십시오. (${primaryWisdom.meditationAdvice})`;
 
+  const calculatedAtKst = formatPhowaKstTimestamp(now);
+  const phowaSynthesisMatrix = {
+    dominantTension: `${primaryWisdom.nameKo} ↔ ${secondaryWisdom.nameKo}`,
+    alignmentState: `${primaryWisdom.colorRay} · 원소(${primaryWisdom.element})`,
+    integratedAction: `${dailyPhowaRitual}${question ? ` [질문 맥락: ${question}]` : ''}`,
+  };
+
   return {
     engineVersion: TIBETAN_PHOWA_RAINBOW_BODY_ENGINE_VERSION,
     timestamp: now.toISOString(),
+    calculatedAtKst,
     rigpaClarityScore,
     phowaReadinessIndex,
     rainbowBodyAlignmentScore,
@@ -140,17 +164,20 @@ export function calculateTibetanPhowaRainbowBody(options?: {
     transmutationPath,
     dzogchenDirectPointers,
     dailyPhowaRitual,
+    phowaSynthesisMatrix,
   };
 }
 
 export function formatTibetanPhowaRainbowBodyPrompt(rep: TibetanPhowaRainbowBodyReport): string {
+  const matrixLine = rep.phowaSynthesisMatrix
+    ? `\n· 포와·무지개체 교차 매트릭스: 핵심 긴장(${rep.phowaSynthesisMatrix.dominantTension}) · 조율 상태(${rep.phowaSynthesisMatrix.alignmentState}) · 통합 실천(${rep.phowaSynthesisMatrix.integratedAction})`
+    : '';
   return `[티베트 족첸(Dzogchen) 릭파 본각 & 무지개체(Jalü) 5대 지혜 실측 데이터]
-· 엔진 버전: v${rep.engineVersion}
-· 릭파(Rigpa) 본각 각성도: ${rep.rigpaClarityScore}/100 | 포와(Phowa) 의식 전이력: ${rep.phowaReadinessIndex}/100 | 무지개체 정렬도: ${rep.rainbowBodyAlignmentScore}/100
-· 주재 지혜 광선: ${rep.primaryWisdom.nameKo} — 공명도 ${rep.primaryWisdom.resonanceScore}%
+· 엔진 버전: v${rep.engineVersion} | ${rep.calculatedAtKst}
+· 주재 지혜 광선: ${rep.primaryWisdom.nameKo}
   - 지혜 유형: ${rep.primaryWisdom.wisdomType} [빛: ${rep.primaryWisdom.colorRay} / 원소: ${rep.primaryWisdom.element}]
   - 번뇌 승화: ${rep.primaryWisdom.transmutation}
-· 보조 지혜 광선: ${rep.secondaryWisdom.nameKo} — 공명도 ${rep.secondaryWisdom.resonanceScore}%
+· 보조 지혜 광선: ${rep.secondaryWisdom.nameKo} (${rep.secondaryWisdom.colorRay})
 · 족첸 본각 직관 요결: ${rep.dzogchenDirectPointers}
-· 일상 포와 정화 리추얼: ${rep.dailyPhowaRitual}`;
+· 일상 포와 정화 리추얼: ${rep.dailyPhowaRitual}${matrixLine}`;
 }

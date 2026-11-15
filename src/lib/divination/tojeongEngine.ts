@@ -24,7 +24,7 @@
 import type { UserProfile } from '../sharedState';
 import { convertLunarToSolar, convertSolarToLunar, resolveEffectiveSolarDate } from '../lunarCalendar';
 
-export const TOJEONG_ENGINE_VERSION = 'LUCKEY-TJ-v1.0.0';
+export const TOJEONG_ENGINE_VERSION = 'LUCKEY-TJ-v2.0.0';
 
 export const TOJEONG_METHOD =
   '조선 정통 이지함 토정비결 수리 산법(태세수·월건수·일진수 작괘) 기반 144괘문 결정론적 계산';
@@ -87,6 +87,11 @@ export interface TojeongResult {
   annualSummary: string;
   monthlyFortunes: TojeongMonthlyFortune[];
   trigramAnalysis?: TojeongTrigramAnalysis;
+  tojeongSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -448,7 +453,12 @@ const GRADE_CLOSER: Record<TojeongLuckGrade, string> = {
 
 function kstTimestamps(now: Date) {
   const kst = new Date(now.getTime() + 9 * 3600000);
-  return { utc: now.toISOString(), kst: kst.toISOString().replace('Z', '+09:00') };
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return { utc: now.toISOString(), kst: `${y}-${m}-${d} ${hh}:${mm} KST` };
 }
 
 function skippedResult(targetYear: number, note: string): TojeongResult {
@@ -489,7 +499,7 @@ function skippedResult(targetYear: number, note: string): TojeongResult {
  * 조선 정통 이지함 토정비결 작괘 산법으로 당해 연도(기본값: 현재 연도)의 괘문을 결정론적으로 산출한다.
  * 생년월일이 없거나 판별할 수 없으면 status 'skipped'로 명확히 알린다.
  */
-export function calculateTojeong(params: { profile?: UserProfile | null; targetYear?: number }): TojeongResult {
+export function calculateTojeong(params: { profile?: UserProfile | null; targetYear?: number; question?: string }): TojeongResult {
   const now = new Date();
   const targetYear = params.targetYear ?? now.getFullYear();
   const profile = params.profile ?? null;
@@ -577,6 +587,12 @@ export function calculateTojeong(params: { profile?: UserProfile | null; targetY
   );
 
   const { utc, kst } = kstTimestamps(now);
+  const q = (params.question || '').trim();
+  const tojeongSynthesisMatrix = {
+    dominantTension: `${hexagramName}(${hexagramCode}괘) · ${moving.label}`,
+    alignmentState: `${trigramAnalysis.elementRelation} · 성운기(${trigramAnalysis.seasonalFlow.peakSeason})`,
+    integratedAction: `${trigramAnalysis.hexagramEssenceAdvice}${q ? ` [질문 맥락: ${q}]` : ''}`,
+  };
 
   return {
     status: 'calculated',
@@ -607,6 +623,7 @@ export function calculateTojeong(params: { profile?: UserProfile | null; targetY
     annualSummary,
     monthlyFortunes,
     trigramAnalysis,
+    tojeongSynthesisMatrix,
   };
 }
 
@@ -735,9 +752,13 @@ export function formatTojeongPrompt(result: TojeongResult): string {
     .map((m) => `   • ${m.month}월: ${m.fortune}\n     → 실천 조언: ${m.tip}`)
     .join('\n');
 
+  const matrixBlock = result.tojeongSynthesisMatrix
+    ? `\n- 토정비결 교차 매트릭스: 핵심 긴장(${result.tojeongSynthesisMatrix.dominantTension}) · 조율 상태(${result.tojeongSynthesisMatrix.alignmentState}) · 통합 실천(${result.tojeongSynthesisMatrix.integratedAction})`
+    : '';
+
   return `[🔮 토정비결(土亭秘訣) ${result.targetYear}년 ${result.hexagramCode}괘 실측 데이터 (Tojeong 144-Hexagram Core)]
 ======================================================================
-엔진 버전: ${result.engineVersion} | 대상 연도: ${result.targetYear}년 (${result.targetYearGanZhi}년)
+엔진 버전: ${result.engineVersion} | 기준 시점: ${result.calculatedAtKst} | 대상 연도: ${result.targetYear}년 (${result.targetYearGanZhi}년)
 작괘 근거: 세는나이 ${result.ageKorean}세 + 태세수 ${result.taeseCount} → 상괘 ${result.upperGua} | ${result.birthMonthGanZhi}월(${result.birthMonthLength === 30 ? '큰달 30일' : `작은달 ${result.birthMonthLength}일`}·월건수 ${result.wolgeonCount}) → 중괘 ${result.middleGua} | ${result.birthdayGanZhi}일(일진수 ${result.iljinCount}) → 하괘 ${result.lowerGua}
 음력 생일 기준: ${result.lunarBirth.year}년 ${result.lunarBirth.month}월 ${result.lunarBirth.day}일${result.lunarBirth.isLeapMonth ? '(윤달·평달 계산)' : ''} | 본괘: ${result.hexagramName} (${result.upperTrigram} 상괘 / ${result.lowerTrigram} 내괘, ${result.movingLineLabel})
 길흉 등급: [${result.luckGrade}]
@@ -748,9 +769,8 @@ export function formatTojeongPrompt(result: TojeongResult): string {
 ${monthLines}${result.trigramAnalysis ? `\n======================================================================
 [상·중괘 오행 생극제화 및 사계절 순환 심층 분석]
 - 상괘 오행: ${result.trigramAnalysis.upperElement} vs 중괘 오행: ${result.trigramAnalysis.lowerElement} → [${result.trigramAnalysis.elementRelation}] (${result.trigramAnalysis.elementRelationDesc})
-- 괘상 기운 조화도: ${result.trigramAnalysis.harmonyScore}점/100점
-- 사계절 운기 흐름: 봄 ${result.trigramAnalysis.seasonalFlow.springScore}점 · 여름 ${result.trigramAnalysis.seasonalFlow.summerScore}점 · 가을 ${result.trigramAnalysis.seasonalFlow.autumnScore}점 · 겨울 ${result.trigramAnalysis.seasonalFlow.winterScore}점 (최고 성운기: ${result.trigramAnalysis.seasonalFlow.peakSeason})
-- 핵심 개운 지침: ${result.trigramAnalysis.hexagramEssenceAdvice}` : ''}
+- 최고 성운기: ${result.trigramAnalysis.seasonalFlow.peakSeason}
+- 핵심 개운 지침: ${result.trigramAnalysis.hexagramEssenceAdvice}` : ''}${matrixBlock}
 ======================================================================
 [★ 루시 토정비결 상담 지침]:
 - 위 괘문은 태세수·월건수·일진수 수리로 직접 작괘한 확정 데이터다. 괘 코드(${result.hexagramCode})와 다른 괘를 지어내지 마십시오.
