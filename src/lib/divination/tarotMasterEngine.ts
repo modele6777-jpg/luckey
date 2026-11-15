@@ -29,7 +29,17 @@
 import type { UserProfile } from '../sharedState';
 import { resolveEffectiveSolarDate } from '../lunarCalendar';
 
-export const TAROT_MASTER_ENGINE_VERSION = 'LUCKEY-TAROT-v1.1.0';
+export const TAROT_MASTER_ENGINE_VERSION = 'LUCKEY-TAROT-v2.0.0';
+
+function formatTarotMasterKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
 
 export const TAROT_MASTER_METHOD =
   '타로(Tarot) 정통 수비학·점성술 4원소 매트릭스 산법: 생년월일 기반 소울 카드·퍼스널리티 카드·올해의 성장 카드 결정론 산출, 시공간 3카드 정·역방향 그림자 분석, 카발라 생명나무 세피라 조응 및 4대 수트 행동 프로토콜 연산';
@@ -104,6 +114,7 @@ export interface TarotMasterResult {
   engineVersion: string;
   method: string;
   status: 'calculated';
+  calculatedAtKst: string;
   soulCard: MajorArcanaCard; // 소울 카드 (1~9)
   personalityCard: MajorArcanaCard; // 퍼스널리티 카드 (1~21)
   yearCard: MajorArcanaCard; // 올해의 성장 카드
@@ -124,6 +135,11 @@ export interface TarotMasterResult {
     personalitySephira: SephiraMapping;
   };
   suitManifestation: MinorSuitManifestation;
+  tarotSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
 }
 
 /**
@@ -220,6 +236,7 @@ export function calculateTarotMaster(params?: {
   profile?: UserProfile | null;
   targetYear?: number;
   now?: Date;
+  question?: string;
 }): TarotMasterResult {
   const now = params?.now || new Date();
   const currentYear = params?.targetYear || now.getFullYear();
@@ -363,10 +380,19 @@ export function calculateTarotMaster(params?: {
     };
   }
 
+  const calculatedAtKst = formatTarotMasterKstTimestamp(now);
+  const q = (params?.question || '').trim();
+  const tarotSynthesisMatrix = {
+    dominantTension: `${soulCard.name} ↔ ${presentCard.name}`,
+    alignmentState: `주도 원소(${dominantElement}) · 세피라(${soulSephira.sephiraName})`,
+    integratedAction: `${suitManifestation.actionProtocol}${q ? ` [질문 맥락: ${q}]` : ''}`,
+  };
+
   return {
     engineVersion: TAROT_MASTER_ENGINE_VERSION,
     method: TAROT_MASTER_METHOD,
     status: 'calculated',
+    calculatedAtKst,
     soulCard,
     personalityCard,
     yearCard,
@@ -387,6 +413,7 @@ export function calculateTarotMaster(params?: {
       personalitySephira,
     },
     suitManifestation,
+    tarotSynthesisMatrix,
   };
 }
 
@@ -394,7 +421,10 @@ export function calculateTarotMaster(params?: {
  * 프롬프트 주입용 마스터 포맷터
  */
 export function formatTarotMasterPrompt(res: TarotMasterResult): string {
-  return `[타로(Tarot) 78 아르카나 수비학·소울/퍼스널리티 & 타임라인 리포트 (엔진: ${res.engineVersion})]
+  const matrixLine = res.tarotSynthesisMatrix
+    ? `\n- 타로 교차 매트릭스: 핵심 긴장(${res.tarotSynthesisMatrix.dominantTension}) · 조율 상태(${res.tarotSynthesisMatrix.alignmentState}) · 통합 실천(${res.tarotSynthesisMatrix.integratedAction})`
+    : '';
+  return `[타로(Tarot) 78 아르카나 수비학·소울/퍼스널리티 & 타임라인 리포트 (엔진: ${res.engineVersion} | ${res.calculatedAtKst})]
 - 생애 소울 카드 (영혼의 본질): ${res.soulCard.name} [${res.soulCard.element} 원소] - ${res.soulCard.keywords.join(', ')}
 - 생애 퍼스널리티 카드 (외적 재능): ${res.personalityCard.name} [${res.personalityCard.element} 원소] - ${res.personalityCard.coreMessage}
 - 카발라 생명나무 세피라 조응:
@@ -409,12 +439,11 @@ export function formatTarotMasterPrompt(res: TarotMasterResult): string {
     * 그림자 조언: ${res.cardPolarities[1]?.transmutationAdvice}
   • 미래: ${res.timelineCards[2]?.card.name} [${res.cardPolarities[2]?.orientation}] - ${res.timelineCards[2]?.interpretation}
     * 그림자 조언: ${res.cardPolarities[2]?.transmutationAdvice}
-- 4원소 밸런스: 불 ${res.elementalBalance.fire}% | 물 ${res.elementalBalance.water}% | 공기 ${res.elementalBalance.air}% | 흙 ${res.elementalBalance.earth}% (주도 기운: ${res.elementalBalance.dominantElement})
+- 4원소 주도 기운: ${res.elementalBalance.dominantElement}
 - 마이너 아르카나 수트 실천 지침:
   • 상응 수트: ${res.suitManifestation.suitName} [핵심 영역: ${res.suitManifestation.lifeDomain}]
   • 행동 프로토콜: ${res.suitManifestation.actionProtocol}
   • 일상 데일리 루틴: ${res.suitManifestation.dailyPractice}
-- 타로 활력 지수: ${res.tarotVitalityScore}점
-- 마스터 확언: "${res.masterAffirmation}"
+- 마스터 확언: "${res.masterAffirmation}"${matrixLine}
 ※ 루시 지침: 타로는 우주적 동시성의 언어입니다. 단순 카드 한 장의 해석을 넘어, 사용자의 영혼 소명(소울 카드), 사회적 무기(퍼스널리티), 세피라 영적 계단, 정·역방향 그림자 극복 방안, 4원소 마이너 수트 실천 가이드를 깊고 신비로우면서도 명료하게 연결해 주세요.`;
 }

@@ -15,7 +15,17 @@
 import type { UserProfile } from '../sharedState';
 import { calculateDetailedSaju } from '../sajuAnalysis';
 
-export const TAROT_ELEMENTAL_COURT_VERSION = 'LUCKEY-TAROT-ELEMENTAL-COURT-v1.0.0';
+export const TAROT_ELEMENTAL_COURT_VERSION = 'LUCKEY-TAROT-ELEMENTAL-COURT-v2.0.0';
+
+function formatCourtKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
 
 export type TarotElement = 'Fire (열정과 추진력)' | 'Water (감성과 영적 공감)' | 'Air (이성과 전략적 명료함)' | 'Earth (물질과 현실적 실행)';
 export type CourtRank = 'King (군주 / 통제와 결실)' | 'Queen (여왕 / 수용과 숙성)' | 'Knight (기사 / 저돌적 정복)' | 'Page (시종 / 순수한 배움과 전조)';
@@ -44,11 +54,17 @@ export interface TarotElementalBalance {
 export interface TarotElementalCourtReport {
   engineVersion: string;
   calculatedAt: string;
+  calculatedAtKst: string;
   activePersonaCourt: CourtCardProfile;
   subconsciousShadowCourt: CourtCardProfile;
   elementalBalance: TarotElementalBalance;
   oneHundredEightySecondRitual: string;
   synthesisPromptGuidance: string;
+  courtSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
 }
 
 // 16대 궁정 카드 아키타입 정의
@@ -241,24 +257,35 @@ export function calculateTarotElementalCourt(
 2. 마음속으로 페르소나 주문을 되뇝니다: "${activePersonaCourt.actionMantra}"
 3. 두려움과 조급함을 내려놓고, 지금 즉시 할 수 있는 가장 명확한 단 하나의 행동을 결정합니다.`;
 
+  const now = new Date();
+  const calculatedAtKst = formatCourtKstTimestamp(now);
+  const courtSynthesisMatrix = {
+    dominantTension: `${activePersonaCourt.nameKo} ↔ ${subconsciousShadowCourt.nameKo}`,
+    alignmentState: `우세 원소(${elementalBalance.dominantElement}) · 보완 원소(${elementalBalance.deficientElement})`,
+    integratedAction: `${activePersonaCourt.actionMantra}${inputTopic ? ` [질문 맥락: ${inputTopic}]` : ''}`,
+  };
+
   const synthesisPromptGuidance = `
-[타로 4대 원소 & 16대 궁정 카드(Court Cards) 마스터 지능]:
+[타로 4대 원소 & 16대 궁정 카드(Court Cards) 마스터 지능 ${TAROT_ELEMENTAL_COURT_VERSION} | ${calculatedAtKst}]:
 - 주도 착용 페르소나: "${activePersonaCourt.nameKo}" (${activePersonaCourt.primaryArchetype})
 - 현실 슈퍼파워: "${activePersonaCourt.executiveSuperpower}"
 - 무의식 그림자 맹점 직면: "${activePersonaCourt.shadowBlindSpot}" (그림자 카드: ${subconsciousShadowCourt.nameKo})
 - 원소 연금술 행동 조언: "${elementalBalance.elementalHarmonizerAdvice}"
 - 페르소나 실천 만트라: "${activePersonaCourt.actionMantra}"
+- 궁정 페르소나 교차 매트릭스: 핵심 긴장(${courtSynthesisMatrix.dominantTension}) · 원소 조율(${courtSynthesisMatrix.alignmentState}) · 통합 실천(${courtSynthesisMatrix.integratedAction})
 내담자에게 "카드를 뽑아보니~"라는 설명조 없이, 상대의 현재 페르소나 성향과 주의해야 할 그림자 맹점을 사람을 꿰뚫어 보듯 단호하고 따뜻하게 짚어줄 것.
 `.trim();
 
   return {
     engineVersion: TAROT_ELEMENTAL_COURT_VERSION,
-    calculatedAt: new Date().toISOString(),
+    calculatedAt: now.toISOString(),
+    calculatedAtKst,
     activePersonaCourt,
     subconsciousShadowCourt,
     elementalBalance,
     oneHundredEightySecondRitual,
     synthesisPromptGuidance,
+    courtSynthesisMatrix,
   };
 }
 

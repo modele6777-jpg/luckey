@@ -1968,9 +1968,11 @@ test('Iching Master Engine: 64괘 4대 대칭 괘상(본·지·호·착·종) �
 });
 
 test('Tarot Master Engine: 78 아르카나 수비학 소울·퍼스널리티·연간 카드 및 4원소 밸런스 검증', () => {
-  const res = calculateTarotMaster({ profile, targetYear: 2026 });
+  const res = calculateTarotMaster({ profile, targetYear: 2026, question: '올해의 방향' });
   assert.equal(res.status, 'calculated');
   assert.equal(res.engineVersion, TAROT_MASTER_ENGINE_VERSION);
+  assert(res.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(res.tarotSynthesisMatrix?.integratedAction));
   assert(res.soulCard.number >= 1 && res.soulCard.number <= 9);
   assert(res.personalityCard.number >= 1 && res.personalityCard.number <= 21);
   assert(res.yearCard.number >= 1 && res.yearCard.number <= 21);
@@ -1989,6 +1991,9 @@ test('Tarot Master Engine: 78 아르카나 수비학 소울·퍼스널리티·�
   assert(prompt.includes('3카드 타임라인 스프레드'));
   assert(prompt.includes('카발라 생명나무 세피라 조응'));
   assert(prompt.includes('마이너 아르카나 수트 실천 지침'));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
 });
 
 test('Ziwei Flying Stars Engine: 유년 사화 동적 비성 및 삼방사정 밸런스 검증', () => {
@@ -2816,8 +2821,10 @@ test('Saju Classic Yongshin Prescription Engine: 사주 정통 3대 원전 용�
 });
 
 test('Tarot Tree of Life Shadow Engine: 타로 카발라 생명나무 22경로 & 섀도우 미러 검증', () => {
-  const res = calculateTarotTreeOfLifeShadow({ profile, targetDate: new Date('2026-11-04T14:00:00+09:00') });
+  const res = calculateTarotTreeOfLifeShadow({ profile, targetDate: new Date('2026-11-04T14:00:00+09:00'), question: '그림자 통합' });
   assert.equal(res.engineVersion, TAROT_KABBALAH_SHADOW_VERSION);
+  assert(res.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(res.kabbalahShadowSynthesisMatrix?.integratedAction));
   assert(res.tarotEsotericTitle.length > 0);
   assert(res.ascensionPath.pathNumber >= 11 && res.ascensionPath.pathNumber <= 32);
   assert(res.shadowMirror.consciousLightCard.length > 0);
@@ -2826,6 +2833,9 @@ test('Tarot Tree of Life Shadow Engine: 타로 카발라 생명나무 22경로 &
   const prompt = formatTarotTreeOfLifeShadowPrompt(res);
   assert(prompt.includes('LUCKEY 타로 카발라 생명나무 & 섀도우 미러 심층'));
   assert(prompt.includes(res.shadowMirror.consciousLightCard));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
 });
 
 test('Deterministic Engine: 15대 운명학 도구 전원 calculated 완료 및 신설 마스터 엔진 바인딩 검증', () => {
@@ -3020,12 +3030,17 @@ test('Saju Twelve Stages & Tomb Unlock Engine: calculates lifecycle vitality and
 test('Tarot Elemental Court Persona Engine: maps 16 court cards and 4 elemental balance', () => {
   const rep = calculateTarotElementalCourt(profile, '커리어 이직과 결단');
   assert.equal(rep.engineVersion, TAROT_ELEMENTAL_COURT_VERSION);
+  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(rep.courtSynthesisMatrix?.integratedAction));
   assert(rep.activePersonaCourt.nameKo.length > 0);
   assert(rep.subconsciousShadowCourt.nameKo.length > 0);
   assert(rep.elementalBalance.firePercentage >= 0);
   const prompt = formatTarotElementalCourtPrompt(rep);
   assert(prompt.includes('타로 4대 원소'));
   assert(prompt.includes(rep.activePersonaCourt.nameKo));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
 });
 
 test('Karmic Synastry Resonance Engine: calculates interpersonal bond score and soul contract', () => {
