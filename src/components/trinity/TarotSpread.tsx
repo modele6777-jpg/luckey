@@ -100,13 +100,6 @@ function frontLocalAngle(rotationDeg: number): number {
   return front;
 }
 
-function compactSlotLabel(label: string, index: number): string {
-  const named = label.match(/년주|월주|일주|시주/);
-  if (named) return named[0];
-  const stripped = label.replace(/^\s*\d+\s*[.·]\s*/, '').split(/[([]/)[0].trim();
-  return stripped || String(index + 1);
-}
-
 /**
  * Stack by distance from the card at the front of the ring.
  * Index order puts every card on the right under its neighbor (a smear) and every
@@ -928,7 +921,7 @@ export const TarotSpread: React.FC<TarotSpreadProps> = ({
     >
       {/* Unified Top Header Layer: Action Buttons & Perfectly Centered Info Banner */}
       <div
-        className="absolute top-0 left-0 right-0 z-[320] w-full pointer-events-none flex flex-col items-center"
+        className="relative z-[320] w-full shrink-0 pointer-events-none flex flex-col items-center tarot-draw-header"
         style={{
           paddingTop: 'calc(env(safe-area-inset-top, 0px) + 6px)',
           paddingLeft: 12,
@@ -1004,36 +997,34 @@ export const TarotSpread: React.FC<TarotSpreadProps> = ({
 
       {isLandscapeLayout && (
         <div
-          className="relative z-[120] shrink-0 w-full px-3 pb-1.5 pointer-events-none"
+          className="relative z-[120] shrink-0 w-full px-3 pb-2 tarot-draw-summary" data-tarot-selection-summary
           style={{
-            paddingTop: hasConcern || hasSpreadMeta
-              ? 'calc(env(safe-area-inset-top, 0px) + 6.75rem)'
-              : 'calc(env(safe-area-inset-top, 0px) + 3.1rem)',
+            paddingTop: 10,
           }}
         >
-          <div className="flex items-center gap-2">
-            <div className="flex min-w-0 flex-1 items-center gap-1.5 overflow-x-auto">
+          <div className="flex items-start gap-2">
+            <div className="tarot-selection-grid">
               {Array.from({ length: maxCards }).map((_, i) => {
                 const entry = selectedEntries[i];
                 const fullLabel = positions[i] || `Card ${i + 1}`;
-                const shortLabel = compactSlotLabel(fullLabel, i);
+
                 return (
                   <div
                     key={`land-slot-${i}`}
                     title={entry ? `${fullLabel} · ${entry.card.nameKo}` : fullLabel}
-                    className="flex h-9 shrink-0 items-center gap-1.5 rounded-full border border-yellow-500/40 bg-zinc-950 px-2.5"
+                    className="tarot-selection-item"
                   >
                     <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-yellow-500/20 px-1 text-xs font-black leading-none text-yellow-100">
                       {i + 1}
                     </span>
-                    <span className="text-xs font-bold leading-none text-yellow-50">{shortLabel}</span>
+                    <span className="min-w-0 text-xs font-semibold leading-relaxed text-yellow-50">{fullLabel}</span>
                     {entry && (
                       <button
                         type="button"
                         onClick={() => {
                           setZoomedCard({ card: { ...entry.card, reversed: entry.reversed }, slotName: fullLabel });
                         }}
-                        className="pointer-events-auto max-w-[7rem] truncate text-xs font-semibold text-yellow-300"
+                        className="tarot-selection-card pointer-events-auto text-xs font-semibold text-yellow-300"
                       >
                         {entry.card.nameKo}
                       </button>
@@ -1042,7 +1033,7 @@ export const TarotSpread: React.FC<TarotSpreadProps> = ({
                 );
               })}
             </div>
-            <span className="shrink-0 text-xs font-bold text-yellow-200">
+            <span className="tarot-selection-count shrink-0 text-xs font-bold text-yellow-200">
               {selectedEntries.length}/{maxCards}
             </span>
           </div>
@@ -1152,15 +1143,7 @@ export const TarotSpread: React.FC<TarotSpreadProps> = ({
           data-tarot-slots
           className="absolute z-[95] pointer-events-none flex w-full flex-col items-center justify-center gap-1.5 px-2 sm:gap-4 md:gap-6"
           style={{
-            top: isMobile
-                ? hasConcern || hasSpreadMeta
-                  ? 'calc(env(safe-area-inset-top, 0px) + 6.2rem)'
-                  : 'calc(env(safe-area-inset-top, 0px) + 3.0rem)'
-                : hasConcern || hasSpreadMeta
-                  ? compactSlots
-                    ? 'calc(env(safe-area-inset-top, 0px) + 9.5rem)'
-                    : 'calc(env(safe-area-inset-top, 0px) + 8.5rem)'
-                  : 'calc(env(safe-area-inset-top, 0px) + 4.5rem)',
+            top: 12,
           }}
         >
           <div className={slotsWrapClass}>

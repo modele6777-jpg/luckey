@@ -36,7 +36,7 @@ window.applyDuo = () => {
 function App(){
   return (
     <OverlayPaneContext.Provider value="content">
-      <TarotSpread onComplete={()=>{}} onCancel={()=>{}} maxCards={4} spreadName="기적수업 지각전환 스프레드" positions={['현재 재정 상태','돈이 막히는 지점','들어올 기회','실천 조언']} />
+      <TarotSpread onComplete={()=>{}} onCancel={()=>{}} maxCards={4} spreadName="기적수업 지각전환 스프레드" positions={['에고의 환영과 두려움','거룩한 순간과 지각의 전환','참된 용서와 마음의 평화','앞으로 실천할 구체적인 조언']} />
     </OverlayPaneContext.Provider>
   );
 }
@@ -139,6 +139,8 @@ try {
     }
     assert(box.radius > 0 && box.radius <= box.wheel.width * 0.54 + 1, `${label} arc fits its local width`);
     assert(box.wheel.height / 2 + box.yOffset >= box.wheel.height, `${label} hub stays below the visible stage`);
+    const labels = await page.locator('[data-tarot-selection-summary] .tarot-selection-item').evaluateAll(items => items.map(item => ({width:item.clientWidth, scroll:item.scrollWidth, label:item.querySelector('span:nth-child(2)')?.textContent})));
+    for (const item of labels) assert(item.scroll <= item.width + 1, `${label} full label fits: ${item.label}`);
     assert(box.buttons.length === 4, `${label} has four controls`);
     for (const button of box.buttons) {
       assert(button.left >= box.stage.left - 1 && button.right <= box.stage.right + 1, `${label} ${button.text} is inside the content width`);
