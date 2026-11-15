@@ -678,6 +678,10 @@ function getCuratedPrompts(
 
 export type LucyTier = 'ai' | 'plus';
 
+// 추천 질문 마키: 기존 CSS 흐름(38초에 한 바퀴)과 같은 속도, 조작이 끝난 뒤 1.2초 뒤 자동 재개
+const PROMPTS_MARQUEE_FLOW_DURATION_MS = 38000;
+const PROMPTS_MARQUEE_RESUME_DELAY_MS = 1200;
+
 const detectPageChannels = (text: string, options: { allowMaster?: boolean } = {}) =>
   detectLucyChannelsFromText(text, { allowMaster: Boolean(options.allowMaster) });
 
@@ -1987,6 +1991,202 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
   const refreshPrompts = useCallback(() => {
     setCurrentPrompts(getCuratedPrompts(activeProfiles, selectedMode, activeChannels));
   }, [activeProfiles, selectedMode, activeChannels]);
+
+  // 🌀 추천 질문 예시 마키: 자동 흐름 + 손가락·포인터 드래그·휠 양방향 무한 스크롤
+  const promptsMarqueeRef = useRef<HTMLDivElement | null>(null);
+  const promptsMarqueeHoldRef = useRef<{ hover: boolean; dragging: boolean; touched: boolean; resumeAt: number }>({
+    hover: false,
+    dragging: false,
+    touched: false,
+    resumeAt: 0,
+  });
+  const promptsMarqueeDragRef = useRef<{ active: boolean; pointerId: number; startX: number; startScroll: number; moved: boolean }>({
+    active: false,
+    pointerId: -1,
+    startX: 0,
+    startScroll: 0,
+    moved: false,
+  });
+  const promptsMarqueeSuppressClickRef = useRef(false);
+  // 루프 폭은 매 프레임 다시 재면 레이아웃을 계속 강제로 읽게 되므로 측정값을 캐시하고,
+  // 질문 목록·트랙 폭이 바뀔 때만(ResizeObserver) 무효화한다.
+  const promptsMarqueeLoopCacheRef = useRef(0);
+
+  // 루프 폭: 트랙은 질문 목록을 두 번 복제해 그린다. 복제본이 시작되는 지점까지의 실제 거리를
+  // 루프 주기로 쓰고(칩 사이 gap까지 정확히 일치), 측정이 안 되면 scrollWidth의 절반으로 대체한다.
+  const measurePromptsMarqueeLoop = useCallback((force = false) => {
+    if (!force && promptsMarqueeLoopCacheRef.current > 0) return promptsMarqueeLoopCacheRef.current;
+    const container = promptsMarqueeRef.current;
+    if (!container) return 0;
+    const track = container.firstElementChild as HTMLElement | null;
+    if (!track) return 0;
+    const halfWidth = track.scrollWidth / 2;
+    const count = currentPrompts.length;
+    let loop = halfWidth;
+    if (count > 0 && track.children.length >= count * 2) {
+      const firstChip = track.children[0] as HTMLElement;
+      const loopStartChip = track.children[count] as HTMLElement;
+      const exactPeriod = loopStartChip.offsetLeft - firstChip.offsetLeft;
+      if (exactPeriod > 0 && Math.abs(exactPeriod - halfWidth) <= 16) loop = exactPeriod;
+    }
+    promptsMarqueeLoopCacheRef.current = loop > 0 ? loop : 0;
+    return loop;
+  }, [currentPrompts.length]);
+
+  // 스크롤 위치를 루프 폭으로 감는다: 앞으로 넘어가면 -loop, 뒤로 넘어가면 +loop → 양방향 무한 순환
+  const wrapPromptsMarquee = useCallback((target?: number) => {
+    const container = promptsMarqueeRef.current;
+    if (!container) return;
+    const loop = measurePromptsMarqueeLoop();
+    if (!(loop > 0)) return;
+    const base = typeof target === 'number' ? target : container.scrollLeft;
+    const next = ((base % loop) + loop) % loop;
+    if (Math.abs(next - container.scrollLeft) > 0.01) container.scrollLeft = next;
+  }, [measurePromptsMarqueeLoop]);
+
+  const holdPromptsMarquee = useCallback((key: 'hover' | 'dragging' | 'touched', held: boolean) => {
+    const state = promptsMarqueeHoldRef.current;
+    state[key] = held;
+    if (!held) state.resumeAt = performance.now() + PROMPTS_MARQUEE_RESUME_DELAY_MS;
+  }, []);
+
+  useEffect(() => {
+    const container = promptsMarqueeRef.current;
+    if (!container) return;
+    const hold = promptsMarqueeHoldRef.current;
+    const reduceMotionQuery = typeof window.matchMedia === 'function'
+      ? window.matchMedia('(prefers-reduced-motion: reduce)')
+      : null;
+    let frame = 0;
+    let lastTimestamp = 0;
+    let pendingPixels = 0;
+
+    const advance = (timestamp: number) => {
+      frame = window.requestAnimationFrame(advance);
+      if (!lastTimestamp) {
+        lastTimestamp = timestamp;
+        return;
+      }
+      const deltaMs = Math.min(120, timestamp - lastTimestamp);
+      lastTimestamp = timestamp;
+      // prefers-reduced-motion: 자동 흐름만 멈추고 수동 스크롤은 그대로 둔다
+      if (reduceMotionQuery?.matches) return;
+      // 호버·드래그·터치 중에는 멈추고, 조작이 끝난 뒤 짧은 유예(1.2초) 후 재개
+      if (hold.hover || hold.dragging || hold.touched) return;
+      if (timestamp < hold.resumeAt) return;
+      const loop = measurePromptsMarqueeLoop();
+      if (!(loop > 0)) return;
+      pendingPixels += (loop / PROMPTS_MARQUEE_FLOW_DURATION_MS) * deltaMs;
+      const stepPixels = Math.floor(pendingPixels);
+      if (stepPixels <= 0) return;
+      pendingPixels -= stepPixels;
+      // 컨테이너 폭을 넘어서면 브라우저가 값을 잘라 버리므로 정수 기준으로 한 번 감아 준다
+      const loopPixels = Math.max(1, Math.round(loop));
+      let next = container.scrollLeft + stepPixels;
+      if (next >= loopPixels) next -= loopPixels;
+      container.scrollLeft = next;
+    };
+
+    // 터치 관성 스크롤처럼 브라우저가 직접 움직인 위치도 범위 밖으로 나가지 않게 감는다
+    const handleNativeScroll = () => wrapPromptsMarquee();
+    // 휠: deltaX와 세로 deltaY를 모두 가로 이동으로 반영(넘치는 내용이 없으면 개입하지 않는다)
+    const handleNativeWheel = (event: WheelEvent) => {
+      if (container.scrollWidth <= container.clientWidth + 2) return;
+      const delta = Math.abs(event.deltaY) > Math.abs(event.deltaX) ? event.deltaY : event.deltaX;
+      if (!delta) return;
+      event.preventDefault();
+      const unit = event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? container.clientWidth : 1;
+      wrapPromptsMarquee(container.scrollLeft + delta * unit);
+    };
+
+    container.addEventListener('scroll', handleNativeScroll, { passive: true });
+    container.addEventListener('wheel', handleNativeWheel, { passive: false });
+    // 질문 목록·트랙 폭이 바뀌면(모드 전환·폰트 로딩·화면 회전) 루프 폭을 다시 잡는다
+    const track = container.firstElementChild as HTMLElement | null;
+    const resizeObserver = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(() => {
+      promptsMarqueeLoopCacheRef.current = 0;
+      measurePromptsMarqueeLoop(true);
+    }) : null;
+    if (track && resizeObserver) resizeObserver.observe(track);
+    measurePromptsMarqueeLoop(true);
+    // 0에서 시작하면 왼쪽(이전 질문)으로 밀 자리가 없으므로 1px 안쪽에서 출발한다
+    if (container.scrollLeft <= 0) container.scrollLeft = 1;
+    frame = window.requestAnimationFrame(advance);
+
+    return () => {
+      window.cancelAnimationFrame(frame);
+      container.removeEventListener('scroll', handleNativeScroll);
+      container.removeEventListener('wheel', handleNativeWheel);
+      resizeObserver?.disconnect();
+    };
+  }, [currentPrompts.length, measurePromptsMarqueeLoop, wrapPromptsMarquee]);
+
+  const handlePromptsMarqueePointerEnter = (event: React.PointerEvent<HTMLDivElement>) => {
+    if (event.pointerType === 'mouse') holdPromptsMarquee('hover', true);
+  };
+
+  const endPromptsMarqueeDrag = (event?: React.PointerEvent<HTMLDivElement>) => {
+    const drag = promptsMarqueeDragRef.current;
+    if (!drag.active) return;
+    if (drag.moved) {
+      // 드래그 직후 같은 손짓이 칩 클릭(질문 전송)으로 새어 들어가지 않게 한 번 막는다
+      promptsMarqueeSuppressClickRef.current = true;
+      window.setTimeout(() => { promptsMarqueeSuppressClickRef.current = false; }, 320);
+    }
+    drag.active = false;
+    drag.pointerId = -1;
+    drag.moved = false;
+    holdPromptsMarquee('dragging', false);
+    const container = promptsMarqueeRef.current;
+    if (container && event && container.hasPointerCapture?.(event.pointerId)) {
+      try { container.releasePointerCapture(event.pointerId); } catch { /* noop */ }
+    }
+  };
+
+  const handlePromptsMarqueePointerLeave = (event: React.PointerEvent<HTMLDivElement>) => {
+    if (event.pointerType === 'mouse') holdPromptsMarquee('hover', false);
+    endPromptsMarqueeDrag(event);
+  };
+
+  const handlePromptsMarqueePointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
+    // 터치는 브라우저의 가로 팬(관성 포함)을 그대로 쓰고, 마우스·펜 드래그만 직접 처리한다
+    if (event.pointerType === 'touch' || event.button !== 0) return;
+    const container = promptsMarqueeRef.current;
+    if (!container || container.scrollWidth <= container.clientWidth + 2) return;
+    const drag = promptsMarqueeDragRef.current;
+    drag.active = true;
+    drag.pointerId = event.pointerId;
+    drag.startX = event.clientX;
+    drag.startScroll = container.scrollLeft;
+    drag.moved = false;
+    holdPromptsMarquee('dragging', true);
+  };
+
+  const handlePromptsMarqueePointerMove = (event: React.PointerEvent<HTMLDivElement>) => {
+    const drag = promptsMarqueeDragRef.current;
+    if (!drag.active || event.pointerId !== drag.pointerId) return;
+    const container = promptsMarqueeRef.current;
+    if (!container) return;
+    const dx = event.clientX - drag.startX;
+    if (!drag.moved && Math.abs(dx) > 4) {
+      drag.moved = true;
+      // 실제로 끌기 시작한 뒤에만 포인터를 잡는다 — 단순 클릭에서 포인터를 잡으면
+      // click 이벤트가 칩이 아니라 컨테이너로 가서 질문 선택이 막힌다.
+      try { container.setPointerCapture(event.pointerId); } catch { /* noop */ }
+    }
+    if (!drag.moved) return;
+    wrapPromptsMarquee(drag.startScroll - dx);
+  };
+
+  const handlePromptsMarqueeClickCapture = (event: React.MouseEvent<HTMLDivElement>) => {
+    if (!promptsMarqueeSuppressClickRef.current) return;
+    promptsMarqueeSuppressClickRef.current = false;
+    event.preventDefault();
+    event.stopPropagation();
+  };
+
+  const handlePromptsMarqueeTouchStart = () => holdPromptsMarquee('touched', true);
+  const handlePromptsMarqueeTouchEnd = () => holdPromptsMarquee('touched', false);
 
   // 말풍선 배지 / 추천 카드 클릭 시: AI 모드를 유지한 채 해당 채널 조합(단일·융합·마스터)을 즉시 반영
   const handleActivateMessageMode = (targetChannels: SpecialChannel[], targetIsMaster: boolean, label?: string) => {
@@ -4062,9 +4262,24 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
               <RefreshCw size={10} className={`sm:w-2.5 sm:h-2.5 text-amber-600 dark:text-amber-400 ${isLucyGenerating ? 'animate-spin' : ''}`} />
             </button>
 
-            {/* 가로 무한 흐름 추천 질문 리스트 (GPU 가속 연속 마키) */}
+            {/* 가로 무한 흐름 추천 질문 리스트 (자동 흐름 + 손가락·휠·드래그 양방향 스크롤) */}
             {currentPrompts.length > 0 && (
-              <div aria-label="추천 질문 예시" className="lucy-prompts-marquee-container flex-1 min-w-0 flex items-center py-0 h-full overflow-hidden select-none">
+              <div
+                ref={promptsMarqueeRef}
+                aria-label="추천 질문 예시"
+                className="lucy-prompts-marquee-container flex-1 min-w-0 flex items-center py-0 h-full select-none"
+                onPointerEnter={handlePromptsMarqueePointerEnter}
+                onPointerLeave={handlePromptsMarqueePointerLeave}
+                onPointerDown={handlePromptsMarqueePointerDown}
+                onPointerMove={handlePromptsMarqueePointerMove}
+                onPointerUp={endPromptsMarqueeDrag}
+                onPointerCancel={endPromptsMarqueeDrag}
+                onTouchStart={handlePromptsMarqueeTouchStart}
+                onTouchEnd={handlePromptsMarqueeTouchEnd}
+                onTouchCancel={handlePromptsMarqueeTouchEnd}
+                onClickCapture={handlePromptsMarqueeClickCapture}
+                onDragStart={(event) => event.preventDefault()}
+              >
                 <div className="lucy-prompts-marquee-track">
                   {[...currentPrompts, ...currentPrompts].map((promptText, promptIdx) => (
                     <button
@@ -4072,6 +4287,9 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
                       type="button"
                       onClick={() => handleSelectRecommendationChip(promptText)}
                       disabled={isLucyGenerating}
+                      aria-hidden={promptIdx >= currentPrompts.length ? true : undefined}
+                      tabIndex={promptIdx >= currentPrompts.length ? -1 : undefined}
+                      draggable={false}
                       className={`shrink-0 px-2.5 sm:px-3 h-[22px] sm:h-[24px] flex items-center rounded-full border text-[10px] sm:text-[11.5px] font-medium transition-all shadow-2xs cursor-pointer active:scale-95 disabled:opacity-40 whitespace-nowrap leading-none ${
                         isLight
                           ? 'bg-[#fffdf9]/90 hover:bg-amber-50 border-amber-200/80 hover:border-amber-300 text-slate-800 hover:text-amber-950'
