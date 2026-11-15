@@ -4,15 +4,37 @@ export interface SpeechProgress {
   paused: boolean;
 }
 
-/** Providers return audio without alignment. Allocate sentence boundaries within
- * its measured duration; never count request latency or paused wall time. */
+/**
+ * Audio time a sentence of the reading really takes.
+ * Providers return audio without alignment, so sentence boundaries are
+ * allocated inside the measured duration by weight. Characters carry the bulk
+ * of it, but pauses and spoken-out numbers are real audio time too: a sentence
+ * ending a thought pauses longer than one that is cut by a comma, and a number
+ * such as 2026 is read as several syllables while it is four glyphs on screen.
+ */
+export function sentenceWeight(sentence: string): number {
+  const text = String(sentence || '').trim();
+  if (!text) return 1;
+
+  const spokenCharacters = text.replace(/\s/g, '').length;
+  const clauses = (text.match(/[,，;；:：]/g) || []).length;
+  const numericRuns: string[] = text.match(/\d+(?:[.,]\d+)*/g) || [];
+  const numericSyllables = numericRuns
+    .reduce((sum, run) => sum + run.replace(/\D/g, '').length * 1.5, 0);
+  const endsThought = /[.!?。！？…]["'”’)\]]*$/.test(text);
+
+  return Math.max(1, spokenCharacters + clauses * 1.5 + numericSyllables + (endsThought ? 4 : 1.5));
+}
+
+/** Published a beat before the exact boundary so the drawn underline lands with the voice. */
+const HIGHLIGHT_LEAD_SECONDS = 0.12;
+
 export function sentenceIndexAtProgress(sentences: string[], progress: SpeechProgress): number {
   if (!sentences.length || !Number.isFinite(progress.elapsed) || !Number.isFinite(progress.duration) || progress.duration <= 0) return -1;
-  const weights = sentences.map(sentence => Math.max(1,
-    sentence.replace(/\s/g, '').length + (sentence.match(/[,，;；:：]/g)?.length || 0) * 2 + 4,
-  ));
+  const weights = sentences.map(sentenceWeight);
   const total = weights.reduce((sum, weight) => sum + weight, 0);
-  const position = Math.max(0, Math.min(1, progress.elapsed / progress.duration)) * total;
+  const elapsed = Math.max(0, progress.elapsed + HIGHLIGHT_LEAD_SECONDS);
+  const position = Math.max(0, Math.min(1, elapsed / progress.duration)) * total;
   let boundary = 0;
   for (let index = 0; index < weights.length - 1; index++) {
     boundary += weights[index];

@@ -1,6 +1,15 @@
 import React, { useMemo, useRef, useEffect, useState } from 'react';
 import { useTTSState } from '@/utils/tts';
-import { prepareNaturalSpeechText } from '@/utils/speechText';
+import {
+  MIN_SENTENCE_MATCH_SCORE,
+  bestSentenceGroupIndex,
+  cleanSentenceForMatching,
+  isSentenceActive,
+  scoreSentenceMatch,
+} from '@/lib/ttsHighlightMatch';
+
+// Alignment logic lives in a React-free module so it can be regression tested.
+export { cleanSentenceForMatching, isSentenceActive };
 
 /**
  * Recursively extracts plain text content from any React node tree.
@@ -24,117 +33,6 @@ export function extractTextContent(node: React.ReactNode): string {
   return '';
 }
 
-/**
- * Clean string for fuzzy speech-to-text sentence alignment.
- * Normalizes ordinals/cardinals, speech idioms, acronyms, symbols, punctuation, emojis, quotes, whitespace.
- * Ensures 100% parity between raw UI text (including headings & bold text) and prepareNaturalSpeechText output.
- */
-const cleanSentenceCache = new Map<string, string>();
-const tokenCache = new Map<string, string[]>();
-
-/**
- * Clean string for fuzzy speech-to-text sentence alignment.
- * Memoized with an in-memory cache to eliminate repeated regex work during TTS playback.
- */
-export function cleanSentenceForMatching(s: string): string {
-  if (!s) return '';
-  const rawKey = String(s);
-  const cached = cleanSentenceCache.get(rawKey);
-  if (cached !== undefined) return cached;
-
-  let str = prepareNaturalSpeechText(rawKey);
-
-  str = str
-    .replace(/(?:첫째|첫번째|1번|일번)/g, '1')
-    .replace(/(?:둘째|두번째|2번|이번)/g, '2')
-    .replace(/(?:셋째|세번째|3번|삼번)/g, '3')
-    .replace(/(?:넷째|네번째|4번|사번)/g, '4')
-    .replace(/(?:다섯째|다섯번째|5번|오번)/g, '5')
-    .replace(/(?:여섯째|여섯번째|6번|육번)/g, '6')
-    .replace(/(?:일곱째|일곱번째|7번|칠번)/g, '7')
-    .replace(/(?:여덟째|여덟번째|8번|팔번)/g, '8')
-    .replace(/(?:아홉째|아홉번째|9번|구번)/g, '9')
-    .replace(/(?:열째|열번째|10번|십번)/g, '10');
-
-  const result = str.replace(/[^가-힣a-zA-Z0-9]/g, '').toLowerCase();
-  if (cleanSentenceCache.size > 2000) {
-    cleanSentenceCache.clear();
-  }
-  cleanSentenceCache.set(rawKey, result);
-  return result;
-}
-
-function getCleanedTokens(sentence: string): string[] {
-  const cached = tokenCache.get(sentence);
-  if (cached !== undefined) return cached;
-
-  const tokens = prepareNaturalSpeechText(sentence)
-    .replace(/[^가-힣a-zA-Z0-9\s]/g, ' ')
-    .split(/\s+/)
-    .map((t) => cleanSentenceForMatching(t))
-    .filter((t) => t.length >= 2);
-
-  if (tokenCache.size > 1500) {
-    tokenCache.clear();
-  }
-  tokenCache.set(sentence, tokens);
-  return tokens;
-}
-
-function getCommonPrefixLength(a: string, b: string): number {
-  const max = Math.min(a.length, b.length);
-  let i = 0;
-  while (i < max && a[i] === b[i]) {
-    i++;
-  }
-  return i;
-}
-
-/**
- * Tests whether a given sentence or heading matches the currently active TTS sentence/chunk.
- * Conservative matching: only the current spoken sentence is considered active.
- */
-export function isSentenceActive(sentence: string, activeText: string | null | undefined): boolean {
-  if (!activeText || !sentence) return false;
-
-  const cleanS = cleanSentenceForMatching(sentence);
-  const cleanA = cleanSentenceForMatching(activeText);
-  if (cleanS.length < 2 || cleanA.length < 2) return false;
-
-  if (cleanS === cleanA) return true;
-  // Long quoted text can be split across several audio chunks.
-  if (cleanA.length >= 18 && cleanS.includes(cleanA)) return true;
-
-  const longer = cleanS.length >= cleanA.length ? cleanS : cleanA;
-  const shorter = longer === cleanS ? cleanA : cleanS;
-
-  const inclusionDelta = longer.length - shorter.length;
-  if (shorter.length >= 8 && (longer.includes(shorter) || shorter.includes(longer))) {
-    if (inclusionDelta <= 12 || shorter.length / longer.length >= 0.7) {
-      return true;
-    }
-  }
-
-  const prefixLen = getCommonPrefixLength(cleanS, cleanA);
-  const maxLen = Math.max(cleanS.length, cleanA.length);
-  if (prefixLen >= 12 && prefixLen / maxLen >= 0.78) {
-    return true;
-  }
-
-  if (shorter.length >= 8) {
-    const tokensS = getCleanedTokens(sentence);
-    const tokensA = getCleanedTokens(activeText);
-    if (tokensS.length >= 1 && tokensA.length >= 1) {
-      const tokenSetA = new Set(tokensA);
-      const shared = Array.from(new Set(tokensS.filter((tok) => tok.length >= 2 && tokenSetA.has(tok))));
-      if (shared.length >= 2 && shared.length / Math.min(tokensS.length, tokensA.length) >= 0.5) {
-        return true;
-      }
-    }
-  }
-
-  return false;
-}
 
 /**
  * Premium highlighter marker styling:
@@ -146,12 +44,18 @@ export const TTS_HIGHLIGHT_CLASS =
 
 // A sentence can be rendered in a list, a nested paragraph and an open dialog.
 // Give exactly one mounted candidate ownership instead of scrolling/highlighting all copies.
-const highlightCandidates = new Map<HTMLElement, (active: boolean) => void>();
+interface HighlightCandidate {
+  update: (active: boolean) => void;
+  score: number;
+  order: number;
+}
+const highlightCandidates = new Map<HTMLElement, HighlightCandidate>();
+let highlightCandidateOrder = 0;
 let highlightFrame = 0;
 function selectHighlightOwner() {
   cancelAnimationFrame(highlightFrame);
   highlightFrame = requestAnimationFrame(() => {
-    const candidates = [...highlightCandidates.keys()].filter((element) => {
+    const candidates = [...highlightCandidates.entries()].filter(([element]) => {
       if (!element.isConnected) return false;
       if (element.closest('[aria-hidden="true"], [hidden]')) return false;
       return true;
@@ -159,22 +63,41 @@ function selectHighlightOwner() {
 
     if (!candidates.length) return;
 
-    const viewportCenter = window.innerHeight / 2;
-    let owner: HTMLElement | null = candidates[0];
-    let bestDistance = Number.POSITIVE_INFINITY;
+    // Ownership order: the strongest textual match first, then the copy the
+    // reader is actually looking at. When the spoken sentence is outside the
+    // viewport, the freshest mark — the one just rendered for that sentence —
+    // takes it (and auto-scroll follows it) instead of the first mark in the
+    // document, which used to fling the reading back up the page.
+    const viewportHeight = window.innerHeight;
+    const viewportCenter = viewportHeight / 2;
+    const topScore = candidates.reduce((max, [, entry]) => Math.max(max, entry.score), -1);
 
-    for (const element of candidates) {
+    let owner: HTMLElement | null = null;
+    let bestDistance = Number.POSITIVE_INFINITY;
+    for (const [element, entry] of candidates) {
+      if (entry.score < topScore) continue;
       const rect = element.getBoundingClientRect();
-      const center = rect.top + rect.height / 2;
-      const distance = Math.abs(center - viewportCenter);
-      if (rect.bottom > 0 && rect.top < window.innerHeight && distance < bestDistance) {
+      if (rect.bottom <= 0 || rect.top >= viewportHeight) continue;
+      const distance = Math.abs(rect.top + rect.height / 2 - viewportCenter);
+      if (distance < bestDistance) {
         owner = element;
         bestDistance = distance;
       }
     }
 
-    for (const [element, update] of highlightCandidates) {
-      update(element === owner);
+    if (!owner) {
+      let freshestOrder = -1;
+      for (const [element, entry] of candidates) {
+        if (entry.score < topScore) continue;
+        if (entry.order > freshestOrder) {
+          freshestOrder = entry.order;
+          owner = element;
+        }
+      }
+    }
+
+    for (const [element, entry] of candidates) {
+      entry.update(element === owner);
     }
   });
 }
@@ -186,17 +109,24 @@ export function TTSHighlightMark({
   children,
   className = '',
   isLight = false,
+  matchScore = 1,
 }: {
   children: React.ReactNode;
   className?: string;
   isLight?: boolean;
+  matchScore?: number;
 }) {
   const markRef = useRef<HTMLSpanElement>(null);
   const [ownsHighlight, setOwnsHighlight] = useState(true);
   useEffect(() => {
     const element = markRef.current;
     if (!element) return;
-    highlightCandidates.set(element, setOwnsHighlight);
+    highlightCandidateOrder += 1;
+    highlightCandidates.set(element, {
+      update: setOwnsHighlight,
+      score: matchScore,
+      order: highlightCandidateOrder,
+    });
     selectHighlightOwner();
     if (typeof window !== 'undefined') {
       window.dispatchEvent(new CustomEvent('prism:tts-sentence-highlighted', { detail: { element } }));
@@ -205,7 +135,7 @@ export function TTSHighlightMark({
       highlightCandidates.delete(element);
       selectHighlightOwner();
     };
-  }, []);
+  }, [matchScore]);
 
   const themeClass = isLight
     ? 'tts-active-sentence-highlight bg-amber-200/90 text-amber-950 px-1.5 py-0.5 rounded border-b-2 border-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.3)] [font-weight:inherit] [font-size:inherit] [line-height:inherit]'
@@ -237,8 +167,9 @@ export function highlightHeading(
   const fullText = extractTextContent(children);
   if (!fullText.trim()) return children;
 
-  if (isSentenceActive(fullText, activeSentence)) {
-    return <TTSHighlightMark isLight={isLight}>{children}</TTSHighlightMark>;
+  const score = scoreSentenceMatch(fullText, activeSentence);
+  if (score >= MIN_SENTENCE_MATCH_SCORE) {
+    return <TTSHighlightMark isLight={isLight} matchScore={score}>{children}</TTSHighlightMark>;
   }
 
   return children;
@@ -396,20 +327,25 @@ export function highlightSentencesInChildren(
   const groupedSentences = groupReactNodesIntoSentences(React.Children.toArray(children));
 
   if (groupedSentences.length <= 1) {
-    if (isSentenceActive(fullContainerText, activeSentence)) {
-      return <TTSHighlightMark isLight={isLight}>{children}</TTSHighlightMark>;
+    const score = scoreSentenceMatch(fullContainerText, activeSentence);
+    if (score >= MIN_SENTENCE_MATCH_SCORE) {
+      return <TTSHighlightMark isLight={isLight} matchScore={score}>{children}</TTSHighlightMark>;
     }
     return children;
   }
 
   // 3. Multi-sentence paragraph or block (may contain <strong> bold elements inside any sentence):
-  // Match each sentence group's aggregated text against activeSentence, and wrap the matching sentence group in a single <TTSHighlightMark>.
-  let anyGroupMatched = false;
+  // Only the sentence group with the strongest match may own the highlight — the first
+  // merely-passing group used to keep it, so the underline trailed the voice by a sentence.
+  const bestIndex = bestSentenceGroupIndex(groupedSentences.map((group) => group.text), activeSentence);
+  const bestScore = bestIndex >= 0
+    ? scoreSentenceMatch(groupedSentences[bestIndex].text, activeSentence)
+    : 0;
+
   const renderedGroups = groupedSentences.map((group, idx) => {
-    if (!anyGroupMatched && group.text.trim() && isSentenceActive(group.text, activeSentence)) {
-      anyGroupMatched = true;
+    if (idx === bestIndex) {
       return (
-        <TTSHighlightMark key={`sent-mark-${idx}`} isLight={isLight}>
+        <TTSHighlightMark key={`sent-mark-${idx}`} isLight={isLight} matchScore={bestScore}>
           {group.nodes.map((n, nIdx) => (
             <React.Fragment key={nIdx}>{n}</React.Fragment>
           ))}
@@ -425,7 +361,7 @@ export function highlightSentencesInChildren(
     );
   });
 
-  if (anyGroupMatched) {
+  if (bestIndex >= 0) {
     return <>{renderedGroups}</>;
   }
 
@@ -446,8 +382,12 @@ function ActiveTTSHighlightedText({
   className?: string;
   isLight?: boolean;
 }) {
-  const { isSpeaking, activeText, currentSentence } = useTTSState();
-  const activeTarget = isSpeaking
+  const { isSpeaking, isLoading, isPaused, activeText, currentSentence } = useTTSState();
+  // Keep the underline through chunk boundaries (the audio for the next part is
+  // still being generated) and while paused, so it no longer blinks off between
+  // parts of a long reading.
+  const readingActive = isSpeaking || isLoading || Boolean(isPaused);
+  const activeTarget = readingActive
     ? currentSentence || (activeText && activeText.length <= 280 ? activeText : null)
     : null;
 
