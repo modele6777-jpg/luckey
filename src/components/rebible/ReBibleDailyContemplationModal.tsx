@@ -1,3 +1,4 @@
+import { requestLucyAction } from '@/lib/duoLucyActionRouting';
 import { ScreenPortal } from '@/components/layout/ScreenPortal';
 import React, { useState, useEffect } from 'react';
 import { 
@@ -217,17 +218,9 @@ export const ReBibleDailyContemplationModal: React.FC<ReBibleDailyContemplationM
                     if (!selectedVerse) return;
                     try {
                       const prompt = `루시야, 오늘 소환된 내 인생 경전 [${selectedVerse.reference} ${selectedVerse.title}]에 대해 묵상하며 상담하고 싶어.\n\n📖 [기록된 사건/여정]\n${cleanFactText(selectedVerse.fact)}\n\n✨ [루시의 관점 · 지혜의 구절]\n${selectedVerse.insight}\n\n과거의 이 깨달음이 지금의 나에게 주는 의미와, 앞으로 더 확장해 나갈 지혜에 대해 따뜻한 조언을 해줘.`;
-                      sessionStorage.setItem('lucy_pro_pending_channel', 'master');
-                      sessionStorage.setItem('lucy_injected_auto_send', prompt);
-                      sessionStorage.setItem('lucy_injected_input_draft', prompt);
-                      window.dispatchEvent(new CustomEvent('lucy-inject-message', {
-                        detail: { prompt, channel: 'master' }
-                      }));
+                      requestLucyAction({ prompt, channel: 'master' });
                     } catch (_) {}
                     onClose();
-                    if (typeof window !== 'undefined') {
-                      window.dispatchEvent(new CustomEvent('prism-navigate', { detail: { path: '/chat' } }));
-                    }
                   }}
                   className="w-full py-2.5 px-4 rounded-2xl text-xs font-bold border border-amber-500/50 bg-amber-500/15 text-amber-950 hover:bg-amber-500/30 transition flex items-center justify-center gap-1.5 active:scale-95 cursor-pointer"
                 >
