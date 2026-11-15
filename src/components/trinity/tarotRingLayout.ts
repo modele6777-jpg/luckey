@@ -61,7 +61,41 @@ export function landscapeFanMetrics(containerHeight: number, arcTop = LANDSCAPE_
   return { radius, yOffset, arcTop, hubClearance, originY, arcTopY: originY - radius };
 }
 
-/** Neighbor gaps around the circle, including the wrap from the last card back to the first. */
+/**
+ * Portrait (and any tall) fan: card centers sit on a circle whose top clears
+ * the spread slots and whose sides reach the control bar. A fixed radius
+ * left a black band under the arc whenever the pane was taller than that circle.
+ */
+export function portraitFanMetrics(width: number, height: number, arcTop: number): {
+  radius: number;
+  yOffset: number;
+  arcTop: number;
+  originY: number;
+  arcTopY: number;
+  bottomY: number;
+} {
+  const w = Math.max(160, width);
+  const h = Math.max(220, height);
+  const sideInset = 2;
+  // Side cards are tilted, so their bodies hang below the center. This inset
+  // keeps that body just above the shuffle bar instead of clipping it or floating.
+  const bottomInset = w < 540 ? 40 : w < 768 ? 48 : 56;
+  const halfW = Math.max(56, w / 2 - sideInset);
+  const bottomY = h - bottomInset;
+  const top = Math.min(Math.max(96, arcTop), bottomY - 120);
+  const span = bottomY - top;
+  const originY = (bottomY + top) / 2 + (halfW * halfW) / (2 * span);
+  const radius = originY - top;
+  const yOffset = originY - h / 2;
+  return {
+    radius: Math.round(radius),
+    yOffset: Math.round(yOffset),
+    arcTop: Math.round(top),
+    originY: Math.round(originY),
+    arcTopY: Math.round(top),
+    bottomY,
+  };
+}
 export function ringNeighborGaps(angles: ArrayLike<number>, activeIndices: readonly number[]): number[] {
   const gaps: number[] = [];
   const m = activeIndices.length;

@@ -8,7 +8,7 @@ const bundle = await build({
   platform: 'node',
   format: 'esm',
 });
-const { placeRingCards, ringNeighborGaps, landscapeFanMetrics, LANDSCAPE_ARC_TOP } = await import(
+const { placeRingCards, ringNeighborGaps, landscapeFanMetrics, portraitFanMetrics, LANDSCAPE_ARC_TOP } = await import(
   'data:text/javascript;base64,' + Buffer.from(bundle.outputFiles[0].text).toString('base64')
 );
 
@@ -65,6 +65,18 @@ for (const height of [220, 360, 520]) {
   const fan = landscapeFanMetrics(height, LANDSCAPE_ARC_TOP);
   assert.equal(fan.arcTopY, LANDSCAPE_ARC_TOP, `arc starts below the spread at h=${height}`);
   assert.ok(fan.originY >= height + fan.hubClearance - 1, `glow center stays below the buttons at h=${height}`);
+}
+
+// iPad / unfolded split: a tall pane used to keep a fixed radius and a black band
+// between the arc and the shuffle bar. The sides of the circle must reach that bar.
+for (const [width, height, arcTop] of [[390, 700, 250], [592, 764, 400], [834, 1100, 460]]) {
+  const fan = portraitFanMetrics(width, height, arcTop);
+  const halfW = width / 2 - 2;
+  const dy = fan.bottomY - fan.originY;
+  const xAtBottom = Math.sqrt(Math.max(0, fan.radius ** 2 - dy ** 2));
+  assert.ok(Math.abs(xAtBottom - halfW) < 3, `fan reaches the side edges at the bar (${width}x${height}): ${xAtBottom} vs ${halfW}`);
+  assert.ok(fan.arcTopY <= arcTop + 1, `fan stays under the slots at ${width}x${height}`);
+  assert.ok(fan.radius > 100 && Number.isFinite(fan.yOffset));
 }
 
 console.log('Tarot ring gap: even spacing, preserved order, and seam closure passed for 78 down to fewer cards.');

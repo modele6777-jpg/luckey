@@ -15,7 +15,7 @@ import { PhysicalTarotInputModal } from './PhysicalTarotInputModal';
 import { useTarotCardBack } from '@/hooks/useTarotCardBack';
 import { playAudioHaptic } from '@/lib/audioHaptics';
 import { triggerTarotScreenVibration } from '@/utils/tarotEffects';
-import { LANDSCAPE_ARC_TOP, landscapeFanMetrics, placeRingCards } from './tarotRingLayout';
+import { LANDSCAPE_ARC_TOP, landscapeFanMetrics, placeRingCards, portraitFanMetrics } from './tarotRingLayout';
 
 export interface SelectedTarotCardEntry extends TarotCard {
   touchMetadata?: any | null;
@@ -455,19 +455,21 @@ export const TarotSpread: React.FC<TarotSpreadProps> = ({
         setRadius(fan.radius);
         setYOffset(fan.yOffset);
         setIsMobile(w < 700);
-      } else if (w < 540) {
-        // iPhone Duo 5.4" Outer Cover Screen in Portrait (Compact vertical ergonomics)
-        setRadius(Math.max(280, Math.min(340, Math.round(h * 0.40))));
-        setYOffset(Math.max(270, Math.min(340, Math.round(h * 0.41))));
-        setIsMobile(true);
-      } else if (w < 768) {
-        setRadius(460);
-        setYOffset(500);
-        setIsMobile(true);
       } else {
-        setRadius(640);
-        setYOffset(700);
-        setIsMobile(false);
+        // Tall pane (phone, or one half of an unfolded / iPad split). The old
+        // fixed radius left the arc in the middle and a black band above the buttons.
+        const slot = containerRef.current?.querySelector('[data-tarot-slots]');
+        const cardHalf = w >= 768 ? 84 : w >= 540 ? 72 : 58;
+        const lift = w >= 768 ? 22 : 16;
+        let arcTop = (w < 540 ? 230 : w < 768 ? 280 : 320) + cardHalf;
+        if (slot && bounds) {
+          const slotBox = slot.getBoundingClientRect();
+          arcTop = Math.round(slotBox.bottom - bounds.top + cardHalf + lift);
+        }
+        const fan = portraitFanMetrics(w, h, arcTop);
+        setRadius(fan.radius);
+        setYOffset(fan.yOffset);
+        setIsMobile(w < 768);
       }
     };
 
@@ -915,7 +917,6 @@ export const TarotSpread: React.FC<TarotSpreadProps> = ({
         touchAction: 'none',
         overscrollBehavior: 'none',
         paddingTop: 'env(safe-area-inset-top, 0px)',
-        paddingBottom: 'env(safe-area-inset-bottom, 0px)',
         paddingLeft: 'env(safe-area-inset-left, 0px)',
         paddingRight: 'env(safe-area-inset-right, 0px)',
       }}
@@ -1142,6 +1143,7 @@ export const TarotSpread: React.FC<TarotSpreadProps> = ({
         {/* Selected card slots with a brief burst when a card is drawn. */}
         {!isLandscapeLayout && (
         <div
+          data-tarot-slots
           className="absolute z-[95] pointer-events-none flex w-full flex-col items-center justify-center gap-1.5 px-2 sm:gap-4 md:gap-6"
           style={{
             top: isMobile
