@@ -13,7 +13,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const SCOTTISH_DAVID_HUME_VERSION = 'LUCKEY-DAVID-HUME-TREATISE-HUMAN-NATURE-v1.0.0';
+export const SCOTTISH_DAVID_HUME_VERSION = 'LUCKEY-DAVID-HUME-TREATISE-HUMAN-NATURE-v2.0.0';
 
 export interface HumeTheme {
   themeKey: string;
@@ -47,6 +47,27 @@ export interface DavidHumeTreatiseHumanNatureResult {
     guidanceTitle: string;
     philosophicalCounsel: string;
   };
+  humeSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
+}
+
+function formatHumeKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
+
+function describeHumeStage(score: number): string {
+  if (score >= 86) return '온유한 철학적 평정(Gentle Composure) — 독단을 내려놓고 따뜻한 공감과 명랑한 균형으로 일상을 누리는 상태';
+  if (score >= 78) return '온건한 회의와 공감(Mitigated Sympathy) — 성급한 확신을 거두고 상식과 경험의 지혜로 유연하게 조율하는 상태';
+  return '경험의 시선 회복(Common Life Anchor) — 공허한 사변에서 벗어나 살아있는 정념과 현실 감각을 되찾는 상태';
 }
 
 export const HUME_THEMES: HumeTheme[] = [
@@ -119,7 +140,9 @@ export const HUME_APHORISMS: HumeAphorism[] = [
 ];
 
 export function calculateDavidHumeTreatiseHumanNature(
-  profile: UserProfile
+  profile: UserProfile,
+  query?: string,
+  now: Date = new Date(),
 ): DavidHumeTreatiseHumanNatureResult {
   const p = profile as any;
   const name = profile?.basic?.name ?? p?.name ?? '방문자';
@@ -127,7 +150,7 @@ export function calculateDavidHumeTreatiseHumanNature(
   const birthTime = profile?.basic?.birthtime ?? p?.birthTime ?? p?.birthtime ?? '12:00';
   const gender = profile?.basic?.gender ?? p?.gender ?? 'neutral';
 
-  const seedString = `DAVID-HUME-TREATISE-HUMAN-NATURE:${name}:${birthDate}:${birthTime}:${gender}`;
+  const seedString = `DAVID-HUME-TREATISE-HUMAN-NATURE:${name}:${birthDate}:${birthTime}:${gender}:${query ?? ''}`;
 
   let hash = 0;
   for (let i = 0; i < seedString.length; i++) {
@@ -154,9 +177,19 @@ export function calculateDavidHumeTreatiseHumanNature(
     `${activeHumeTheme.practicalCounsel} 아울러 주저 《인간 오성에 관한 탐구》의 명구 "${focalHumeAphorism.aphorismKo}"(${focalHumeAphorism.aphorismEn})를 깊이 새기고, ` +
     `${focalHumeAphorism.actionGuidance}`;
 
+  const calculatedAtKst = formatHumeKstTimestamp(now);
+  const composite = Math.round(
+    (mitigatedSkepticismScore + sympathyBenevolenceEmpathyScore + passionsReasonHarmonyScore + customExperienceWisdomIndex + gentleComposurePeaceScore) / 5
+  );
+  const humeSynthesisMatrix = {
+    dominantTension: `${activeHumeTheme.themeTitleKo} ↔ ${focalHumeAphorism.sourceContext}`,
+    alignmentState: describeHumeStage(composite),
+    integratedAction: `${focalHumeAphorism.actionGuidance}${query?.trim() ? ` [질문 맥락: ${query.trim()}]` : ''}`,
+  };
+
   return {
     engineVersion: SCOTTISH_DAVID_HUME_VERSION,
-    calculatedAtKst: new Date().toISOString(),
+    calculatedAtKst,
     mitigatedSkepticismScore,
     sympathyBenevolenceEmpathyScore,
     passionsReasonHarmonyScore,
@@ -168,17 +201,18 @@ export function calculateDavidHumeTreatiseHumanNature(
       guidanceTitle,
       philosophicalCounsel,
     },
+    humeSynthesisMatrix,
   };
 }
 
 export function formatDavidHumeTreatiseHumanNaturePrompt(res: DavidHumeTreatiseHumanNatureResult): string {
-  return [
+  const composite = Math.round(
+    (res.mitigatedSkepticismScore + res.sympathyBenevolenceEmpathyScore + res.passionsReasonHarmonyScore + res.customExperienceWisdomIndex + res.gentleComposurePeaceScore) / 5
+  );
+  const lines = [
     `【데이비드 흄 《인간 본성에 관한 논고》 온건한 회의주의 & 공감 지표】`,
-    `- 온건한 회의주의 독단 탈피도(Mitigated Skepticism): ${res.mitigatedSkepticismScore}/100`,
-    `- 공감과 온정적 인류애 지수(Sympathy & Benevolence): ${res.sympathyBenevolenceEmpathyScore}/100`,
-    `- 정념과 이성의 조화도(Passions & Practical Reason): ${res.passionsReasonHarmonyScore}/100`,
-    `- 경험과 관습의 실용 지혜(Custom & Experience): ${res.customExperienceWisdomIndex}/100`,
-    `- 온유한 철학적 평정심(Gentle Philosophical Composure): ${res.gentleComposurePeaceScore}/100`,
+    `- 연산 시각: ${res.calculatedAtKst} | 엔진 버전: ${res.engineVersion}`,
+    `- 경험론적 평정 국면: ${describeHumeStage(composite)}`,
     `- 핵심 경험론 테마: ${res.activeHumeTheme.themeTitleKo} [${res.activeHumeTheme.themeTitleEn}]`,
     `- 실존적 통찰: ${res.activeHumeTheme.existentialInsight}`,
     `- 실천적 조언: ${res.activeHumeTheme.practicalCounsel}`,
@@ -186,5 +220,12 @@ export function formatDavidHumeTreatiseHumanNaturePrompt(res: DavidHumeTreatiseH
     `- 원전 출처: "${res.focalHumeAphorism.aphorismEn}" [${res.focalHumeAphorism.sourceContext}]`,
     `- 구체적 실천 지침: ${res.focalHumeAphorism.actionGuidance}`,
     `- 종합 경험주의 철학 권면: ${res.humeComprehensiveGuidance.philosophicalCounsel}`,
-  ].join('\n');
+  ];
+  if (res.humeSynthesisMatrix) {
+    lines.push(
+      `- 교차 매트릭스 [핵심 긴장: ${res.humeSynthesisMatrix.dominantTension} | 조율 상태: ${res.humeSynthesisMatrix.alignmentState}]`,
+      `- 통합 실천: ${res.humeSynthesisMatrix.integratedAction}`,
+    );
+  }
+  return lines.join('\n');
 }

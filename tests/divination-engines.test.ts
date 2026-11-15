@@ -4166,9 +4166,14 @@ test('Samkhya Twenty-Five Tattvas Engine: calculates Viveka discernment, Guna ba
   assert(rep.prakritiEntanglementRisk >= 0 && rep.prakritiEntanglementRisk <= 100);
   assert.equal(rep.gunaBalance.sattva + rep.gunaBalance.rajas + rep.gunaBalance.tamas, 100);
   assert(rep.dominantTattva.nameKo.length > 0);
+  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(rep.samkhyaSynthesisMatrix?.integratedAction));
   const prompt = formatSamkhyaTwentyFiveTattvasPrompt(rep);
   assert(prompt.includes('고대 인도 상키야(Samkhya) 25타트바 & 푸루샤-프라크리티 분별지 실측 리포트'));
   assert(prompt.includes(rep.dominantTattva.nameKo));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
 });
 
 test('Neo-Confucian Four-Seven Li-Qi Engine: calculates Sadan alignment, Chiljeong balance and Geogyeong concentration', () => {
@@ -5996,9 +6001,14 @@ test('David Hume Treatise of Human Nature Engine: calculates Mitigated Skepticis
   assert(rep.customExperienceWisdomIndex >= 0 && rep.customExperienceWisdomIndex <= 100);
   assert(rep.gentleComposurePeaceScore >= 0 && rep.gentleComposurePeaceScore <= 100);
   assert(rep.activeHumeTheme.themeTitleKo.length > 0);
+  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(rep.humeSynthesisMatrix?.integratedAction));
   const prompt = formatDavidHumeTreatiseHumanNaturePrompt(rep);
   assert(prompt.includes('데이비드 흄 《인간 본성에 관한 논고》 온건한 회의주의 & 공감 지표'));
   assert(prompt.includes(rep.activeHumeTheme.themeTitleKo));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
 });
 
 test('Manhae Han Yong-un Nimui Chimmuk Engine: calculates Transcendent Love, Gongyak Samjang, and Lotus Integrity', () => {
@@ -6106,9 +6116,14 @@ test('Adam Smith Moral Sentiments Engine: calculates Impartial Spectator, Sympat
   assert(rep.justiceBeneficenceHarmonyIndex >= 0 && rep.justiceBeneficenceHarmonyIndex <= 100);
   assert(rep.praiseworthinessIntegrityScore >= 0 && rep.praiseworthinessIntegrityScore <= 100);
   assert(rep.activeAdamSmithTheme.themeTitleKo.length > 0);
+  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(rep.adamSmithSynthesisMatrix?.integratedAction));
   const prompt = formatScottishAdamSmithMoralSentimentsPrompt(rep);
   assert(prompt.includes('아담 스미스 《도덕감정론》 공정한 관찰자 & 공감·자기통제 지표'));
   assert(prompt.includes(rep.activeAdamSmithTheme.themeTitleKo));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
 });
 
 test('Yun Dong-ju Sky Wind Stars Poetry Engine: calculates Pure Conscience, Wellspring Reflection, Compassion, and Lantern of Hope', () => {
