@@ -5951,9 +5951,14 @@ test('Erich Fromm Art of Loving Being Engine: calculates Active Care, Respect & 
   assert(rep.positiveFreedomAutonomyScore >= 0 && rep.positiveFreedomAutonomyScore <= 100);
   assert(rep.productiveOrientationVitalityScore >= 0 && rep.productiveOrientationVitalityScore <= 100);
   assert(rep.activeFrommTheme.themeTitleKo.length > 0);
+  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(rep.frommSynthesisMatrix?.integratedAction));
   const prompt = formatGermanErichFrommArtOfLovingBeingPrompt(rep);
   assert(prompt.includes('에리히 프롬 《사랑의 기술》 & 《소유냐 존재냐》 능동적 사랑과 존재 지표'));
   assert(prompt.includes(rep.activeFrommTheme.themeTitleKo));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
 });
 
 test('Danjae Shin Chae-ho Joseon Sanggosa Engine: calculates Ah vs Non-Ah Subjective Consciousness, Sovereign Integrity, and Nangga Spirit', () => {
@@ -6037,9 +6042,14 @@ test('Albert Schweitzer Reverence for Life Engine: calculates Reverence for Life
   assert(rep.infiniteResponsibilityConscienceIndex >= 0 && rep.infiniteResponsibilityConscienceIndex <= 100);
   assert(rep.spiritualEquanimityHarmonyIndex >= 0 && rep.spiritualEquanimityHarmonyIndex <= 100);
   assert(rep.activeSchweitzerTheme.themeTitleKo.length > 0);
+  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(rep.schweitzerSynthesisMatrix?.integratedAction));
   const prompt = formatGermanAlbertSchweitzerReverenceForLifePrompt(rep);
   assert(prompt.includes('알베르트 슈바이처 《생명에 대한 경외》 & 《문화와 윤리》 생명외경 지표'));
   assert(prompt.includes(rep.activeSchweitzerTheme.themeTitleKo));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
 });
 
 test('Michel de Montaigne Essays Engine: calculates Epistemic Humility, Candid Self-Observation, and Inner Freedom Sanctuary', () => {
@@ -6398,9 +6408,14 @@ test('Edmund Husserl Phenomenological Reduction Engine: calculates Epoché Suspe
   assert(rep.intentionalityFocusIndex >= 0 && rep.intentionalityFocusIndex <= 100);
   assert(rep.lebensweltGroundingScore >= 0 && rep.lebensweltGroundingScore <= 100);
   assert(rep.activeHusserlTheme.themeTitleKo.length > 0);
+  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(rep.husserlSynthesisMatrix?.integratedAction));
   const prompt = formatGermanEdmundHusserlPhenomenologicalReductionPrompt(rep);
   assert(prompt.includes('에드문트 후설 《순수현상학의 이념들》 현상학적 환원 및 본질직관 지표'));
   assert(prompt.includes(rep.activeHusserlTheme.themeTitleKo));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
 });
 
 test('Michel Foucault Care of Self Aesthetics Engine: calculates Care of Self, Discipline Liberation, and Parrhesia Courage', () => {

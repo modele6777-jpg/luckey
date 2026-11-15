@@ -9,12 +9,12 @@
  * 4. 무한한 도덕적 책임 및 양심 각성도(Infinite Ethical Responsibility Score): 무심코 지나치는 작은 생명까지 소중히 아끼는 세심한 양심.
  * 5. 영혼의 평정 및 사색적 조화력(Spiritual Equanimity & Bach Harmony Index): 바흐 오르간 음악과 깊은 사색을 통해 얻는 내면의 맑은 평온.
  *
- * @version LUCKEY-ALBERT-SCHWEITZER-REVERENCE-v1.0.0
+ * @version LUCKEY-ALBERT-SCHWEITZER-REVERENCE-v2.0.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const GERMAN_ALBERT_SCHWEITZER_VERSION = 'LUCKEY-ALBERT-SCHWEITZER-REVERENCE-v1.0.0';
+export const GERMAN_ALBERT_SCHWEITZER_VERSION = 'LUCKEY-ALBERT-SCHWEITZER-REVERENCE-v2.0.0';
 
 export interface SchweitzerTheme {
   themeKey: string;
@@ -47,6 +47,11 @@ export interface GermanAlbertSchweitzerReverenceForLifeResult {
   schweitzerComprehensiveGuidance: {
     guidanceTitle: string;
     philosophicalCounsel: string;
+  };
+  schweitzerSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
   };
 }
 
@@ -126,9 +131,26 @@ export const SCHWEITZER_APHORISMS: SchweitzerAphorism[] = [
   },
 ];
 
+function formatSchweitzerKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
+
+function describeSchweitzerStage(score: number): string {
+  if (score >= 93) return '깊은 경외기 (생명 외경과 헌신적 연민이 투명하게 빛나는 흐름)';
+  if (score >= 86) return '성실한 봉사기 (도덕적 책임과 실천적 친절이 고르게 이어지는 흐름)';
+  return '고요한 사색기 (내면의 평정을 다지며 양심의 중심을 세우는 흐름)';
+}
+
 export function calculateGermanAlbertSchweitzerReverenceForLife(
   profile?: UserProfile,
   query?: string,
+  now: Date = new Date(),
 ): GermanAlbertSchweitzerReverenceForLifeResult {
   const p = profile as any;
   const name = profile?.basic?.name ?? p?.name ?? '남희';
@@ -163,9 +185,18 @@ export function calculateGermanAlbertSchweitzerReverenceForLife(
     `${activeSchweitzerTheme.practicalCounsel} 슈바이처의 가르침 "${focalSchweitzerAphorism.aphorismKo}"를 가슴에 품고, ` +
     `${focalSchweitzerAphorism.actionGuidance}`;
 
+  const schweitzerSynthesisMatrix = {
+    dominantTension: `${activeSchweitzerTheme.themeTitleKo} ↔ ${focalSchweitzerAphorism.sourceContext}`,
+    alignmentState:
+      reverenceForLifeEthicalIndex >= 90 && altruisticServiceDevotionScore >= 89
+        ? '생명 경외와 헌신적 봉사의 깊은 공명'
+        : '내면의 윤리적 중심과 실천적 친절을 조율하는 국면',
+    integratedAction: `${activeSchweitzerTheme.practicalCounsel} (${focalSchweitzerAphorism.actionGuidance})`,
+  };
+
   return {
     engineVersion: GERMAN_ALBERT_SCHWEITZER_VERSION,
-    calculatedAtKst: new Date().toISOString(),
+    calculatedAtKst: formatSchweitzerKstTimestamp(now),
     reverenceForLifeEthicalIndex,
     altruisticServiceDevotionScore,
     culturalMoralRenewalScore,
@@ -177,19 +208,21 @@ export function calculateGermanAlbertSchweitzerReverenceForLife(
       guidanceTitle,
       philosophicalCounsel,
     },
+    schweitzerSynthesisMatrix,
   };
 }
 
 export function formatGermanAlbertSchweitzerReverenceForLifePrompt(
   res: GermanAlbertSchweitzerReverenceForLifeResult,
 ): string {
-  return [
+  const lines = [
     `【알베르트 슈바이처 《생명에 대한 경외》 & 《문화와 윤리》 생명외경 지표】`,
-    `- 생명에 대한 경외 및 윤리적 감응도(Reverence for Life): ${res.reverenceForLifeEthicalIndex}/100`,
-    `- 이타적 봉사 및 자기희생 실천력(Altruistic Service Devotion): ${res.altruisticServiceDevotionScore}/100`,
-    `- 문화와 문명의 내면적 도덕 쇄신도(Civilizational Moral Renewal): ${res.culturalMoralRenewalScore}/100`,
-    `- 무한한 도덕적 책임 및 양심 각성도(Infinite Ethical Responsibility): ${res.infiniteResponsibilityConscienceIndex}/100`,
-    `- 영혼의 평정 및 사색적 조화력(Spiritual Equanimity & Bach Harmony): ${res.spiritualEquanimityHarmonyIndex}/100`,
+    `- 엔진 버전: ${res.engineVersion} | 연산 시각: ${res.calculatedAtKst}`,
+    `- 생명에 대한 경외 및 윤리적 감응도(Reverence for Life): ${describeSchweitzerStage(res.reverenceForLifeEthicalIndex)}`,
+    `- 이타적 봉사 및 자기희생 실천력(Altruistic Service Devotion): ${describeSchweitzerStage(res.altruisticServiceDevotionScore)}`,
+    `- 문화와 문명의 내면적 도덕 쇄신도(Civilizational Moral Renewal): ${describeSchweitzerStage(res.culturalMoralRenewalScore)}`,
+    `- 무한한 도덕적 책임 및 양심 각성도(Infinite Ethical Responsibility): ${describeSchweitzerStage(res.infiniteResponsibilityConscienceIndex)}`,
+    `- 영혼의 평정 및 사색적 조화력(Spiritual Equanimity & Bach Harmony): ${describeSchweitzerStage(res.spiritualEquanimityHarmonyIndex)}`,
     `- 핵심 생명경외 테마: ${res.activeSchweitzerTheme.themeTitleKo} [${res.activeSchweitzerTheme.themeTitleEn}]`,
     `- 실용주의적 통찰: ${res.activeSchweitzerTheme.pragmaticInsight}`,
     `- 실천적 조언: ${res.activeSchweitzerTheme.practicalCounsel}`,
@@ -198,5 +231,12 @@ export function formatGermanAlbertSchweitzerReverenceForLifePrompt(
     `- 원전 출처: [${res.focalSchweitzerAphorism.sourceContext}]`,
     `- 구체적 실천 지침: ${res.focalSchweitzerAphorism.actionGuidance}`,
     `- 종합 슈바이처 생명철학 권면: ${res.schweitzerComprehensiveGuidance.philosophicalCounsel}`,
-  ].join('\n');
+  ];
+  if (res.schweitzerSynthesisMatrix) {
+    lines.push(
+      `- 교차 매트릭스 [핵심 긴장: ${res.schweitzerSynthesisMatrix.dominantTension} | 조율 상태: ${res.schweitzerSynthesisMatrix.alignmentState}]`,
+      `- 통합 실천: ${res.schweitzerSynthesisMatrix.integratedAction}`,
+    );
+  }
+  return lines.join('\n');
 }
