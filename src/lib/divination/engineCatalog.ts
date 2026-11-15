@@ -170,3 +170,94 @@ export const ENGINE_CATALOG_THEME_COUNTS = LUCY_PRO_CATALOG_ENGINES.reduce(
   },
   { prologue: 0, orange: 0, trinity: 0, aura: 0, bluebird: 0, muse: 0, epilogue: 0 },
 );
+
+export type EngineCatalogCategoryFilter = 'all' | 'foundational' | 'deep_master';
+export type EngineCatalogThemeFilter = 'all' | SevenThemeChannel;
+
+export interface EngineCatalogSelection {
+  category?: EngineCatalogCategoryFilter;
+  theme?: EngineCatalogThemeFilter;
+  query?: string;
+}
+
+export interface EngineCatalogChipCounts {
+  /** Category chips are counted over the theme+query basis, so they add up to the visible list. */
+  categories: { all: number } & Record<DceEngineMeta['category'], number>;
+  /** Theme chips are counted over the category+query basis, so each number matches its section header. */
+  themes: { all: number } & Record<SevenThemeChannel, number>;
+}
+
+export function matchesCatalogQuery(engine: DceEngineMeta, query: string): boolean {
+  const normalizedQuery = query.trim().toLocaleLowerCase();
+  if (!normalizedQuery) return true;
+
+  const themeInfo = LUCY_PRO_CHANNEL_THEMES.find(item => item.id === getEngineCatalogTheme(engine));
+  return [
+    engine.nameKo,
+    engine.key,
+    engine.summary ?? '',
+    getEngineCatalogMeaning(engine),
+    themeInfo?.label ?? '',
+    themeInfo?.description ?? '',
+  ].some(value => value.toLocaleLowerCase().includes(normalizedQuery));
+}
+
+/** Filters the catalog by any combination of category, channel theme, and search query. */
+export function filterCatalogEngines(
+  selection: EngineCatalogSelection = {},
+  engines: readonly DceEngineMeta[] = LUCY_PRO_CATALOG_ENGINES,
+): DceEngineMeta[] {
+  const category = selection.category ?? 'all';
+  const theme = selection.theme ?? 'all';
+  const query = selection.query ?? '';
+
+  return engines.filter(engine => {
+    if (category !== 'all' && engine.category !== category) return false;
+    if (theme !== 'all' && getEngineCatalogTheme(engine) !== theme) return false;
+    return matchesCatalogQuery(engine, query);
+  });
+}
+
+export function countCatalogByCategory(engines: readonly DceEngineMeta[]): { all: number } & Record<DceEngineMeta['category'], number> {
+  const counts = { all: 0, foundational: 0, deep_master: 0 } as { all: number } & Record<DceEngineMeta['category'], number>;
+  for (const engine of engines) {
+    counts.all += 1;
+    counts[engine.category] += 1;
+  }
+  return counts;
+}
+
+export function countCatalogByTheme(engines: readonly DceEngineMeta[]): { all: number } & Record<SevenThemeChannel, number> {
+  const counts: { all: number } & Record<SevenThemeChannel, number> = {
+    all: 0, prologue: 0, orange: 0, trinity: 0, aura: 0, bluebird: 0, muse: 0, epilogue: 0,
+  };
+  for (const engine of engines) {
+    counts.all += 1;
+    counts[getEngineCatalogTheme(engine)] += 1;
+  }
+  return counts;
+}
+
+/**
+ * Resolves one catalog selection into the visible engines and the two chip rows.
+ * The category chips ignore the active category but keep theme+query, and the theme
+ * chips ignore the active theme but keep category+query, so every chip number agrees
+ * with the list it would show (the old static totals disagreed once a filter was on).
+ */
+export function selectCatalogEngines(
+  selection: EngineCatalogSelection = {},
+  engines: readonly DceEngineMeta[] = LUCY_PRO_CATALOG_ENGINES,
+): { engines: DceEngineMeta[]; counts: EngineCatalogChipCounts } {
+  const themeBasis = filterCatalogEngines({ theme: selection.theme, query: selection.query }, engines);
+  const categoryBasis = filterCatalogEngines({ category: selection.category, query: selection.query }, engines);
+
+  return {
+    engines: selection.category && selection.category !== 'all'
+      ? themeBasis.filter(engine => engine.category === selection.category)
+      : themeBasis,
+    counts: {
+      categories: countCatalogByCategory(themeBasis),
+      themes: countCatalogByTheme(categoryBasis),
+    },
+  };
+}
