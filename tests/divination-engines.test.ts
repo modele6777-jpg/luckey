@@ -19,6 +19,7 @@ import { calculateTwelveSpiritsCycle, formatTwelveSpiritsPrompt, TWELVE_SPIRITS_
 import { calculatePythagoreanLifecycle, formatPythagoreanLifecyclePrompt, PYTHAGOREAN_LIFECYCLE_VERSION } from '../src/lib/divination/pythagoreanLifecycleEngine';
 import { calculateAstrologicalDecanSabian, formatAstrologicalDecanSabianPrompt, ASTRO_DECAN_SABIAN_VERSION } from '../src/lib/divination/astrologicalDecanSabianEngine';
 import { calculateMedicalBioMatrix, formatMedicalBioMatrixPrompt, MEDICAL_BIO_MATRIX_VERSION } from '../src/lib/divination/medicalBioMatrixEngine';
+import { calculateLifeSeasonTiming, formatLifeSeasonTimingPrompt, LIFE_SEASON_ENGINE_VERSION } from '../src/lib/divination/lifeSeasonTimingEngine';
 import { calculateWealthPipeline, formatWealthPipelinePrompt, WEALTH_PIPELINE_VERSION } from '../src/lib/divination/wealthPipelineEngine';
 import { calculateKarmicNodes, formatKarmicNodesPrompt, KARMIC_NODES_ENGINE_VERSION } from '../src/lib/divination/karmicNodesEngine';
 import { calculateMentalResilience, formatMentalResiliencePrompt, MENTAL_RESILIENCE_VERSION } from '../src/lib/divination/mentalResilienceEngine';
@@ -2100,8 +2101,10 @@ test('Astrological Decan & Sabian Engine: 점성술 36 데칸 & 사비안 심볼
 });
 
 test('Medical Bio-Matrix Engine: 오행 한난조습 및 메디컬 점성술 장부 취약도 검증', () => {
-  const res = calculateMedicalBioMatrix({ profile, targetDate: new Date('2026-11-02T19:00:00+09:00') });
+  const res = calculateMedicalBioMatrix({ profile, targetDate: new Date('2026-11-02T19:00:00+09:00'), question: '체질 관리' });
   assert.equal(res.engineVersion, MEDICAL_BIO_MATRIX_VERSION);
+  assert(res.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(res.bioMatrixSynthesisMatrix?.integratedAction));
   assert(res.temperament.coldScore >= 0 && res.temperament.coldScore <= 100);
   assert(res.temperament.heatScore >= 0 && res.temperament.heatScore <= 100);
   assert(res.vulnerableOrgans.length > 0);
@@ -2111,6 +2114,21 @@ test('Medical Bio-Matrix Engine: 오행 한난조습 및 메디컬 점성술 장
   assert(prompt.includes(MEDICAL_BIO_MATRIX_VERSION));
   assert(prompt.includes('체질 기후 진단'));
   assert(prompt.includes('취약 장부'));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
+});
+
+test('Life Season Timing Engine: 10년 대운 및 교운기 타이밍 검증', () => {
+  const res = calculateLifeSeasonTiming({ profile, targetYear: 2026, question: '올해의 계절' });
+  assert(res !== null);
+  assert.equal(res.engineVersion, LIFE_SEASON_ENGINE_VERSION);
+  assert(res.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(res.lifeSeasonSynthesisMatrix?.integratedAction));
+  const prompt = formatLifeSeasonTimingPrompt(res);
+  assert(prompt.includes(LIFE_SEASON_ENGINE_VERSION));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('%'));
+  assert(!prompt.includes('/100'));
 });
 
 test('Wealth Pipeline Engine: 재물 창출 아키타입 및 골든 윈도우 타이밍 검증', () => {
@@ -2158,8 +2176,10 @@ test('Karmic Synastry Resonance Engine: 카르믹 시나스트리 및 인연 공
 });
 
 test('Mental Resilience Engine: 위기 돌파 슈퍼파워 및 주역 난괘 탈출 검증', () => {
-  const res = calculateMentalResilience({ profile, targetDate: new Date('2026-11-03T08:00:00+09:00') });
+  const res = calculateMentalResilience({ profile, targetDate: new Date('2026-11-03T08:00:00+09:00'), question: '돌파 전략' });
   assert.equal(res.engineVersion, MENTAL_RESILIENCE_VERSION);
+  assert(res.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(res.resilienceSynthesisMatrix?.integratedAction));
   assert(res.resilienceScore >= 0 && res.resilienceScore <= 100);
   assert(res.primaryBreakthroughPower.breakthroughGift.length > 0);
   assert(res.hexagramWisdom.escapeRoute.length > 0);
@@ -2168,6 +2188,8 @@ test('Mental Resilience Engine: 위기 돌파 슈퍼파워 및 주역 난괘 탈
   assert(prompt.includes(MENTAL_RESILIENCE_VERSION));
   assert(prompt.includes('위기 돌파 슈퍼파워'));
   assert(prompt.includes('멘탈 쉴드'));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
 });
 
 test('Noble Network Engine: 4대 귀인 및 인연 네트워크 시너지 검증', () => {

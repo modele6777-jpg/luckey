@@ -37,6 +37,18 @@ import {
 } from '../sajuAnalysis';
 import { getAstronomicalSajuYear } from '../astronomicalSolarTerms';
 
+export const LIFE_SEASON_ENGINE_VERSION = 'LUCKEY-LIFE-SEASON-v2.0.0';
+
+function formatLifeSeasonKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
+
 export interface DaewoonPeriod {
   order: number;
   ganZhi: string;
@@ -159,6 +171,11 @@ export interface LifeSeasonTimingResult {
   // 종합 요약 헤드라인
   headline: string;
   lucyCoreAdvice: string;
+  lifeSeasonSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
 }
 
 /**
@@ -177,6 +194,7 @@ function branchToSeason(branch: string): '봄' | '여름' | '가을' | '겨울' 
 export function calculateLifeSeasonTiming(params: {
   profile?: UserProfile | null;
   targetYear?: number;
+  question?: string;
 }): LifeSeasonTimingResult | null {
   const saju = calculateDetailedSaju(params.profile);
   if (!saju || !saju.hasBirthInfo) return null;
@@ -188,9 +206,7 @@ export function calculateLifeSeasonTiming(params: {
   const targetWesternAge = targetKoreanAge - 1;
 
   const nowUtcIso = now.toISOString();
-  const kstNowMs = now.getTime() + 9 * 3600 * 1000;
-  const kstDate = new Date(kstNowMs);
-  const nowKstIso = `${kstDate.getUTCFullYear()}-${String(kstDate.getUTCMonth() + 1).padStart(2, '0')}-${String(kstDate.getUTCDate()).padStart(2, '0')}T${String(kstDate.getUTCHours()).padStart(2, '0')}:${String(kstDate.getUTCMinutes()).padStart(2, '0')}:00+09:00`;
+  const nowKstIso = formatLifeSeasonKstTimestamp(now);
 
   const daewunDetail = saju.daewunDetail;
   const daewunNumber = daewunDetail.daewunNumber || 1;
@@ -436,8 +452,15 @@ export function calculateLifeSeasonTiming(params: {
     ? `지금 제제는 인생의 큰 10년이 바뀌는 [${gyowungiPhase}]에 머물고 있어. 판이 바뀔 때는 억지로 힘을 주기보다, 낡은 짐을 내려놓고 마음을 맑게 비우는 게 가장 강력한 지혜야.`
     : `지금 제제는 [${curD.ganKr}${curD.zhiKr} 대운]의 [${dominantPhase}]를 순항 중이야. 인생의 [${currentSeason.split(' ')[0]}] 계절에 맞춰 서두르지 말고 단단하게 나아가자!`;
 
+  const q = (params.question || '').trim();
+  const lifeSeasonSynthesisMatrix = {
+    dominantTension: `${curD.ganKr}${curD.zhiKr}대운(${yearsInCurrentDaewoon}년차) ↔ ${gyowungiPhase}`,
+    alignmentState: `${currentSeason} · ${elementAffinity}`,
+    integratedAction: `${actionProtocol}${q ? ` [질문 맥락: ${q}]` : ''}`,
+  };
+
   return {
-    engineVersion: 'LUCKEY-LIFE-SEASON-v1.0.0',
+    engineVersion: LIFE_SEASON_ENGINE_VERSION,
     calculatedAtUtc: nowUtcIso,
     calculatedAtKst: nowKstIso,
     timestamp: now.getTime(),
@@ -492,6 +515,7 @@ export function calculateLifeSeasonTiming(params: {
     decisionTimings,
     headline,
     lucyCoreAdvice,
+    lifeSeasonSynthesisMatrix,
   };
 }
 
@@ -513,15 +537,14 @@ export function formatLifeSeasonTimingPrompt(result: LifeSeasonTimingResult): st
 
   return `[⏳ 10년 대운(大運) & 세운·교운기 타이밍 정밀 실측 데이터 (Life Season Timing)]
 ======================================================================
-기준 시각: ${result.calculatedAtKst} (KST) | 엔진: ${result.engineVersion}
+기준 시각: ${result.calculatedAtKst} | 엔진: ${result.engineVersion}
 현재 나이: ${result.targetKoreanAge}세(만 ${result.targetWesternAge}세) | 대운수: ${result.daewoonBasics.daewunNumber} (${result.daewoonBasics.directionText})
 실시간 타이밍 헤드라인: ${result.headline}
 ======================================================================
 
 1. 🌊 [현재 통과 중인 10년 대운 심층 분석]
 - 현재 대운: ${cd.koreanName} (${cd.startAge}세 ~ ${cd.endAge}세 / ${cd.startYear}년 ~ ${cd.endYear}년)
-- 대운 진행도: 10년 중 **${cd.yearsInCurrentDaewoon}년 차** 통과 중 (진행률 ${cd.progressPercent}%)
-- 주도 에너지 구간: **${cd.dominantPhase}**
+- 대운 진행도: 10년 중 **${cd.yearsInCurrentDaewoon}년 차** 통과 중 (${cd.dominantPhase})
 - 천간/지지 십신 및 12운성: 천간 [${cd.tenGodGan}] / 지지 [${cd.tenGodZhi}] (${cd.twelveStage})
 - 용신 부합성: [${cd.elementAffinity}] - ${cd.affinityDescription}
 
@@ -542,17 +565,18 @@ export function formatLifeSeasonTimingPrompt(result: LifeSeasonTimingResult): st
 - 3대 축 종합: ${syn.threePillarSynthesis}
 
 5. 🎯 [영역별 최적 라이프 디시전 타이밍]
-- 이직 / 커리어 이동: [${dt.careerMove.timingGrade} - ${dt.careerMove.score}점] - ${dt.careerMove.headline} (${dt.careerMove.actionAdvice})
-- 창업 / 신사업 도전: [${dt.businessLaunch.timingGrade} - ${dt.businessLaunch.score}점] - ${dt.businessLaunch.headline} (${dt.businessLaunch.actionAdvice})
-- 자산 / 투자 / 재물: [${dt.wealthInvestment.timingGrade} - ${dt.wealthInvestment.score}점] - ${dt.wealthInvestment.headline} (${dt.wealthInvestment.actionAdvice})
-- 학업 / 자격증 취득: [${dt.studyCertification.timingGrade} - ${dt.studyCertification.score}점] - ${dt.studyCertification.headline} (${dt.studyCertification.actionAdvice})
-- 휴식 / 심신 리뉴얼: [${dt.restRenewal.timingGrade} - ${dt.restRenewal.score}점] - ${dt.restRenewal.headline} (${dt.restRenewal.actionAdvice})
+- 이직 / 커리어 이동: [${dt.careerMove.timingGrade}] - ${dt.careerMove.headline} (${dt.careerMove.actionAdvice})
+- 창업 / 신사업 도전: [${dt.businessLaunch.timingGrade}] - ${dt.businessLaunch.headline} (${dt.businessLaunch.actionAdvice})
+- 자산 / 투자 / 재물: [${dt.wealthInvestment.timingGrade}] - ${dt.wealthInvestment.headline} (${dt.wealthInvestment.actionAdvice})
+- 학업 / 자격증 취득: [${dt.studyCertification.timingGrade}] - ${dt.studyCertification.headline} (${dt.studyCertification.actionAdvice})
+- 휴식 / 심신 리뉴얼: [${dt.restRenewal.timingGrade}] - ${dt.restRenewal.headline} (${dt.restRenewal.actionAdvice})
 
 6. 📜 [8대 대운 전 생애 타임라인 참조]
 ${timelineRows}
+${result.lifeSeasonSynthesisMatrix ? `\n7. 🔗 [교차 매트릭스]\n- 핵심 긴장: ${result.lifeSeasonSynthesisMatrix.dominantTension}\n- 조율 상태: ${result.lifeSeasonSynthesisMatrix.alignmentState}\n- 통합 실천: ${result.lifeSeasonSynthesisMatrix.integratedAction}` : ''}
 
 [★ 대화 적용 절대 지침]:
-사용자가 대운, 세운, 인생의 타이밍, 이직/창업 시기, 언제 해야 할지 등을 물어볼 때 위 정밀 계산 데이터를 100% 인용해.
+사용자가 대운, 세운, 인생의 타이밍, 이직/창업 시기, 언제 해야 할지 등을 물어볼 때 위 정밀 계산 데이터를 근거로 활용해.
 "몇 살부터 몇 살까지 무슨 대운이고 지금 몇 년 차인지", "인생의 어떤 계절(봄/여름/가을/겨울)을 지나고 있는지",
 "교운기(환절기)에 해당하는지"를 구체적이고 명쾌하며 다정한 친구(반말 구어체)의 품격으로 전달해줘.`;
 }

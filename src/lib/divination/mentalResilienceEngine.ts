@@ -16,7 +16,17 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const MENTAL_RESILIENCE_VERSION = 'LUCKEY-RESIL-v1.0.0';
+export const MENTAL_RESILIENCE_VERSION = 'LUCKEY-RESIL-v2.0.0';
+
+function formatResilienceKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
 
 export interface CrisisSuperpower {
   name: string;
@@ -42,6 +52,7 @@ export interface MentalShieldProtocol {
 export interface MentalResilienceResult {
   engineVersion: string;
   calculatedAtIso: string;
+  calculatedAtKst: string;
 
   // 멘탈 회복탄력성 지수 (0~100)
   resilienceScore: number;
@@ -59,6 +70,11 @@ export interface MentalResilienceResult {
   mentalShield: MentalShieldProtocol;
 
   summary: string;
+  resilienceSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
 }
 
 // 주역 4대 난괘 탈출 지혜
@@ -96,6 +112,7 @@ export function calculateMentalResilience(params?: {
   profile?: UserProfile | null;
   saju?: SajuAnalysisResult | null;
   targetDate?: Date;
+  question?: string;
 }): MentalResilienceResult {
   const now = params?.targetDate || new Date();
   const saju = params?.saju || calculateDetailedSaju(params?.profile || null);
@@ -195,9 +212,18 @@ export function calculateMentalResilience(params?: {
     `돌파 무기: ${primaryBreakthroughPower.name}(${primaryBreakthroughPower.hanja}). ` +
     `주역 난괘 탈출: ${hexagramWisdom.hexagramName} [${hexagramWisdom.escapeRoute.slice(0, 30)}...].`;
 
+  const calculatedAtKst = formatResilienceKstTimestamp(now);
+  const q = (params?.question || '').trim();
+  const resilienceSynthesisMatrix = {
+    dominantTension: `${hexagramWisdom.hexagramName} ↔ ${primaryBreakthroughPower.name}`,
+    alignmentState: `${pressureResistanceTitle}`,
+    integratedAction: `${primaryBreakthroughPower.actionTrigger}${q ? ` [질문 맥락: ${q}]` : ''}`,
+  };
+
   return {
     engineVersion: MENTAL_RESILIENCE_VERSION,
     calculatedAtIso: now.toISOString(),
+    calculatedAtKst,
     resilienceScore,
     pressureResistanceLevel,
     pressureResistanceTitle,
@@ -205,7 +231,8 @@ export function calculateMentalResilience(params?: {
     primaryBreakthroughPower,
     hexagramWisdom,
     mentalShield,
-    summary
+    summary,
+    resilienceSynthesisMatrix,
   };
 }
 
@@ -213,18 +240,27 @@ export function calculateMentalResilience(params?: {
  * 프롬프트 주입용 포맷터
  */
 export function formatMentalResiliencePrompt(res: MentalResilienceResult): string {
-  return `[위기 돌파 & 멘탈 리질리언스 지수 리포트 (엔진: ${res.engineVersion})]
-- 멘탈 회복탄력성 지수: **${res.resilienceScore}점** [${res.pressureResistanceTitle}]
-- 위기 돌파 슈퍼파워: **${res.primaryBreakthroughPower.name} (${res.primaryBreakthroughPower.hanja})**
-  • 원천: ${res.primaryBreakthroughPower.source}
-  • 돌파 잠재력: ${res.primaryBreakthroughPower.breakthroughGift}
-  • 액션 트리거: ${res.primaryBreakthroughPower.actionTrigger}
-- 주역 난괘(難卦) 탈출 지혜: **${res.hexagramWisdom.hexagramName}**
-  • 난관의 본질: ${res.hexagramWisdom.crisisTheme}
-  • 탈출 해법: ${res.hexagramWisdom.escapeRoute}
-- 3단계 멘탈 쉴드 프로토콜:
-  • ${res.mentalShield.step1Detachment}
-  • ${res.mentalShield.step2Realignment}
-  • ${res.mentalShield.step3PinpointStrike}
-※ 루시 지침: 괴강·백호·양인 같은 고전의 흉살은 극한의 압박이 닥쳤을 때 비범한 성과를 내는 '초인적 돌파 무기'입니다. 사용자가 스트레스나 막힘을 느낄 때 위축되지 않도록, 내면에 잠든 강철 같은 돌파력과 주역의 지혜로운 탈출 해법을 든든하고 단단하게 전해 주세요.`;
+  const lines = [
+    `[위기 돌파 & 멘탈 리질리언스 지수 리포트 (엔진: ${res.engineVersion} | ${res.calculatedAtKst})]`,
+    `- 멘탈 회복탄력성 상태: **${res.pressureResistanceTitle}**`,
+    `- 위기 돌파 슈퍼파워: **${res.primaryBreakthroughPower.name} (${res.primaryBreakthroughPower.hanja})**`,
+    `  • 원천: ${res.primaryBreakthroughPower.source}`,
+    `  • 돌파 잠재력: ${res.primaryBreakthroughPower.breakthroughGift}`,
+    `  • 액션 트리거: ${res.primaryBreakthroughPower.actionTrigger}`,
+    `- 주역 난괘(難卦) 탈출 지혜: **${res.hexagramWisdom.hexagramName}**`,
+    `  • 난관의 본질: ${res.hexagramWisdom.crisisTheme}`,
+    `  • 탈출 해법: ${res.hexagramWisdom.escapeRoute}`,
+    `- 3단계 멘탈 쉴드 프로토콜:`,
+    `  • ${res.mentalShield.step1Detachment}`,
+    `  • ${res.mentalShield.step2Realignment}`,
+    `  • ${res.mentalShield.step3PinpointStrike}`,
+  ];
+  if (res.resilienceSynthesisMatrix) {
+    lines.push(
+      `- 교차 매트릭스: [핵심 긴장: ${res.resilienceSynthesisMatrix.dominantTension} | 조율 상태: ${res.resilienceSynthesisMatrix.alignmentState}]`,
+      `  • 통합 실천: ${res.resilienceSynthesisMatrix.integratedAction}`,
+    );
+  }
+  lines.push(`※ 루시 지침: 괴강·백호·양인 같은 고전의 흉살은 극한의 압박이 닥쳤을 때 비범한 성과를 내는 '초인적 돌파 무기'입니다. 사용자가 스트레스나 막힘을 느낄 때 위축되지 않도록, 내면에 잠든 강철 같은 돌파력과 주역의 지혜로운 탈출 해법을 든든하고 단단하게 전해 주세요.`);
+  return lines.join('\n');
 }
