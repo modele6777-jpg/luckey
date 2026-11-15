@@ -3326,7 +3326,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
                     </span>
                   )}
 
-                  {!isUser && (
+                  {!isUser && actuallyUsedEngines.length > 0 && (
                     <button
                       type="button"
                       data-message-mode-badge="true"
@@ -3352,7 +3352,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
                         </span>
                       )) : (
                         <span className={`inline-flex items-center rounded-full border px-2 py-0.5 ${isLight ? 'border-slate-200 bg-slate-100 text-slate-700' : 'border-white/20 bg-white/10 text-slate-100'}`}>
-                          {actuallyUsedEngines.length > 0 ? '실제 사용 엔진' : '엔진 기록 없음'}
+                          실제 사용 엔진
                         </span>
                       )}
                     </button>
@@ -3360,7 +3360,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
 
                   <span className={`text-[10px] ${isLight ? 'text-slate-400' : 'text-white/70'}`}>{timeStr}</span>
                 </div>
-                {!isUser && isUsageDetailsOpen && (
+                {!isUser && actuallyUsedEngines.length > 0 && isUsageDetailsOpen && (
                   <section
                     role="dialog"
                     aria-label="이번 답변에서 실제 사용한 엔진"
