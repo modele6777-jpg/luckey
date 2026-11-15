@@ -10,12 +10,12 @@
  * 4. 우아함과 존엄의 인격적 품격 지수(Grace and Dignity / Anmut und Würde Integrity Score): 시련 앞의 침착한 존엄과 삶 속의 자연스러운 우아함의 조화.
  * 5. 미적 승화를 통한 갈등 치유 및 회복탄력성(Aesthetic Healing & Wholeness Resilience Score): 분열과 파편화된 자아를 온전한 전인성(Wholeness)으로 치유하는 회복탄력성.
  *
- * @version LUCKEY-SCHILLER-AESTHETIC-EDUCATION-v1.0.0
+ * @version LUCKEY-SCHILLER-AESTHETIC-EDUCATION-v2.0.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const GERMAN_FRIEDRICH_SCHILLER_AESTHETIC_EDUCATION_VERSION = 'LUCKEY-SCHILLER-AESTHETIC-EDUCATION-v1.0.0';
+export const GERMAN_FRIEDRICH_SCHILLER_AESTHETIC_EDUCATION_VERSION = 'LUCKEY-SCHILLER-AESTHETIC-EDUCATION-v2.0.0';
 
 export interface SchillerTheme {
   themeKey: string;
@@ -48,6 +48,11 @@ export interface GermanFriedrichSchillerAestheticEducationResult {
   schillerComprehensiveGuidance: {
     guidanceTitle: string;
     philosophicalCounsel: string;
+  };
+  schillerSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
   };
 }
 
@@ -129,9 +134,26 @@ function hashString(str: string): number {
   return hash;
 }
 
+function formatSchillerKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
+
+function describeSchillerStage(score: number): string {
+  if (score >= 93) return '자유로운 놀이기 (감각과 이성이 조화롭게 어우러져 살아있는 형상이 피어나는 흐름)';
+  if (score >= 86) return '우아한 균형기 (물질적 압박을 넘어 품격과 평온이 고르게 흐르는 국면)';
+  return '차분한 조율기 (내면의 분열을 다독이며 전인적 조화를 세우는 흐름)';
+}
+
 export function calculateGermanFriedrichSchillerAestheticEducation(
   profile?: UserProfile,
   query?: string,
+  now: Date = new Date(),
 ): GermanFriedrichSchillerAestheticEducationResult {
   const p = profile as any;
   const name = profile?.basic?.name ?? p?.name ?? '남희';
@@ -161,9 +183,18 @@ export function calculateGermanFriedrichSchillerAestheticEducation(
     `${activeSchillerTheme.practicalCounsel} 실러의 명언 "${focalSchillerAphorism.aphorismKo}"를 되새기며, ` +
     `${focalSchillerAphorism.actionGuidance}`;
 
+  const schillerSynthesisMatrix = {
+    dominantTension: `${activeSchillerTheme.themeTitleKo} ↔ ${focalSchillerAphorism.sourceContext}`,
+    alignmentState:
+      spieltriebPlayDriveHarmonyScore >= 90 && aestheticStateFreedomIndex >= 89
+        ? '놀이 충동과 미적 자유의 고차원 조화'
+        : '강박을 비우고 우아함과 존엄의 균형을 세우는 국면',
+    integratedAction: `${activeSchillerTheme.practicalCounsel} (${focalSchillerAphorism.actionGuidance})`,
+  };
+
   return {
     engineVersion: GERMAN_FRIEDRICH_SCHILLER_AESTHETIC_EDUCATION_VERSION,
-    calculatedAtKst: new Date().toISOString(),
+    calculatedAtKst: formatSchillerKstTimestamp(now),
     spieltriebPlayDriveHarmonyScore,
     aestheticStateFreedomIndex,
     livingFormBeautyCreativityScore,
@@ -175,19 +206,21 @@ export function calculateGermanFriedrichSchillerAestheticEducation(
       guidanceTitle,
       philosophicalCounsel,
     },
+    schillerSynthesisMatrix,
   };
 }
 
 export function formatGermanFriedrichSchillerAestheticEducationPrompt(
   res: GermanFriedrichSchillerAestheticEducationResult,
 ): string {
-  return [
+  const lines = [
     `【프리드리히 실러 《인간의 미적 교육에 관한 편지》 놀이 충동 및 미적 자유 지표】`,
-    `- 놀이 충동 및 감각·이성 조화도(Spieltrieb Play Drive Harmony): ${res.spieltriebPlayDriveHarmonyScore}/100`,
-    `- 미적 상태 및 내면 자유 지표(Aesthetic State of Inner Freedom): ${res.aestheticStateFreedomIndex}/100`,
-    `- 살아있는 형상 창조성(Living Form / Lebende Gestalt Creativity): ${res.livingFormBeautyCreativityScore}/100`,
-    `- 우아함과 존엄의 품격 지수(Grace and Dignity Integrity): ${res.graceAndDignityIntegrityScore}/100`,
-    `- 미적 치유 및 전인성 회복탄력성(Aesthetic Wholeness Resilience): ${res.aestheticHealingWholenessResilienceScore}/100`,
+    `- 엔진 버전: ${res.engineVersion} | 연산 시각: ${res.calculatedAtKst}`,
+    `- 놀이 충동 및 감각·이성 조화도(Spieltrieb Play Drive Harmony): ${describeSchillerStage(res.spieltriebPlayDriveHarmonyScore)}`,
+    `- 미적 상태 및 내면 자유 지표(Aesthetic State of Inner Freedom): ${describeSchillerStage(res.aestheticStateFreedomIndex)}`,
+    `- 살아있는 형상 창조성(Living Form / Lebende Gestalt Creativity): ${describeSchillerStage(res.livingFormBeautyCreativityScore)}`,
+    `- 우아함과 존엄의 품격 지수(Grace and Dignity Integrity): ${describeSchillerStage(res.graceAndDignityIntegrityScore)}`,
+    `- 미적 치유 및 전인성 회복탄력성(Aesthetic Wholeness Resilience): ${describeSchillerStage(res.aestheticHealingWholenessResilienceScore)}`,
     `- 핵심 실러 미적 테마: ${res.activeSchillerTheme.themeTitleKo} [${res.activeSchillerTheme.themeTitleEn}]`,
     `- 실천적 통찰: ${res.activeSchillerTheme.pragmaticInsight}`,
     `- 행동 조언: ${res.activeSchillerTheme.practicalCounsel}`,
@@ -196,5 +229,12 @@ export function formatGermanFriedrichSchillerAestheticEducationPrompt(
     `- 원전 출처: [${res.focalSchillerAphorism.sourceContext}]`,
     `- 구체적 실천 지침: ${res.focalSchillerAphorism.actionGuidance}`,
     `- 종합 실러 미학 권면: ${res.schillerComprehensiveGuidance.philosophicalCounsel}`,
-  ].join('\n');
+  ];
+  if (res.schillerSynthesisMatrix) {
+    lines.push(
+      `- 교차 매트릭스 [핵심 긴장: ${res.schillerSynthesisMatrix.dominantTension} | 조율 상태: ${res.schillerSynthesisMatrix.alignmentState}]`,
+      `- 통합 실천: ${res.schillerSynthesisMatrix.integratedAction}`,
+    );
+  }
+  return lines.join('\n');
 }
