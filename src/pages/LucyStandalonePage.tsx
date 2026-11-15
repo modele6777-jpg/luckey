@@ -3429,7 +3429,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
                   <section
                     role="dialog"
                     aria-label="이번 답변에서 실제 사용한 엔진"
-                    className={`mb-2 ml-1 w-[min(92vw,26rem)] max-h-64 overflow-y-auto rounded-xl border p-3 text-xs shadow-lg ${isLight ? 'border-slate-200 bg-white text-slate-800' : 'border-white/15 bg-slate-900 text-slate-100'}`}
+                    className={`mb-2 ml-1 w-[calc(100%-0.5rem)] max-w-[26rem] min-w-0 max-h-64 overflow-y-auto overflow-x-hidden rounded-xl border p-3 text-xs shadow-lg ${isLight ? 'border-slate-200 bg-white text-slate-800' : 'border-white/15 bg-slate-900 text-slate-100'}`}
                   >
                     <div className="mb-2 font-semibold">이번 답변에 실제 사용된 엔진 ({actuallyUsedEngines.length})</div>
                     {actuallyUsedEngines.length > 0 ? (
@@ -3439,10 +3439,10 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
                             key={group.status}
                             data-testid="used-engine-category-group"
                             data-engine-category={group.status}
-                            className="flex flex-wrap items-center gap-x-2 gap-y-1"
+                            className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1"
                           >
                             <span data-testid="used-engine-category-label" className="shrink-0 font-semibold">{group.label}:</span>
-                            <ul className="flex flex-wrap gap-1.5">
+                            <ul className="flex min-w-0 max-w-full flex-wrap gap-1.5">
                               {group.engines.map((engine, engineIndex) => {
                                 const engineBadgeTheme = getEngineBadgeTheme(engine.toolId);
                                 return (
