@@ -1,9 +1,8 @@
 {
-  "version": "1.7.495",
-  "builtAt": "2026-11-15T02:10:00.000Z",
-  "summary": "팝업 접힘·펼침 레이어 추적 보강 및 iOS 터치 트리거 반응성 개선",
+  "version": "1.7.496",
+  "builtAt": "2026-11-15T02:16:00.000Z",
+  "summary": "팝업 닫힘 시 대화 스크롤이 예전 내역으로 올라가지 않도록 포커스 스크롤 차단",
   "items": [
-    "DialogTriggerButton에 touchAction: manipulation을 적용해 iOS Safari에서 엔진·관점 목록과 추천질문 라이브러리 탭 지연·누락 방지",
-    "mainOverlayViewport ResizeObserver가 접힘·펼침 전환 전후의 content/lucy 워크스페이스 패널을 직접 추적하도록 보강"
+    "WorkspacePortal 열림·닫힘 시 focus({ preventScroll: true })를 적용해 팝업 종료 후 대화창 스크롤이 과거 메시지로 튀어 올라가는 현상 방지"
   ]
 }

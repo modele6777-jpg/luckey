@@ -25,7 +25,7 @@ export function WorkspacePortal({ children, onClose }: { children: ReactNode; on
   useEffect(() => {
     const previousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     const focusable = () => Array.from(portalRef.current?.querySelectorAll<HTMLElement>('button:not([disabled]), a[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex="0"]') || []).filter(element => element.getClientRects().length > 0);
-    focusable()[0]?.focus();
+    focusable()[0]?.focus({ preventScroll: true });
     const handleKeyDown = (event: KeyboardEvent) => {
       if (!isTopScreenOverlay(portalRef.current)) return;
       const target = event.target instanceof Element ? event.target : null;
@@ -52,7 +52,7 @@ export function WorkspacePortal({ children, onClose }: { children: ReactNode; on
     document.addEventListener('keydown', handleKeyDown);
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
-      if (previousFocus?.isConnected) previousFocus.focus();
+      if (previousFocus?.isConnected) previousFocus.focus({ preventScroll: true });
     };
   }, []);
   if (typeof document === 'undefined') return null;
