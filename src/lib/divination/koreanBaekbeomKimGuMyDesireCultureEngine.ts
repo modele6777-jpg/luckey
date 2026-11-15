@@ -8,12 +8,12 @@
  * 4. 자주독립의 결단 (自主獨立): 남에게 의지하거나 외세에 휘둘리지 않고, 스스로 주인이 되어 민족과 개인의 자주적 존엄을 굳건히 세우는 주체적 자주성.
  * 5. 백범의 겸손과 서민적 사랑 (白凡 謙遜 & 愛民愛人): 가장 낮은 백정(白)과 범부(凡)의 애국심과 진정성을 품고, 모든 사람을 차별 없이 형제자매로 귀히 섬기는 대승적 사랑.
  *
- * @version LUCKEY-BAEKBEOM-KIM-GU-MY-DESIRE-CULTURE-v1.0.0
+ * @version LUCKEY-BAEKBEOM-KIM-GU-MY-DESIRE-CULTURE-v2.0.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const KOREAN_BAEKBEOM_KIM_GU_VERSION = 'LUCKEY-BAEKBEOM-KIM-GU-MY-DESIRE-CULTURE-v1.0.0';
+export const KOREAN_BAEKBEOM_KIM_GU_VERSION = 'LUCKEY-BAEKBEOM-KIM-GU-MY-DESIRE-CULTURE-v2.0.0';
 
 export interface KimGuTheme {
   themeKey: string;
@@ -47,6 +47,27 @@ export interface BaekbeomKimGuMyDesireCultureResult {
     guidanceTitle: string;
     philosophicalCounsel: string;
   };
+  kimGuSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
+}
+
+function formatKimGuKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
+
+function describeKimGuStage(score: number): string {
+  if (score >= 90) return '문화강국(文化之力) — 나를 행복하게 하고 남에게도 온기를 전하는 높은 문화의 힘이 무르익은 국면';
+  if (score >= 82) return '답설야중거(踏雪野中去) — 오늘 내딛는 정직한 한 걸음이 누군가의 이정표가 되는 성찰기';
+  return '백범지지(白凡之志) — 겸손과 자주독립의 초심을 다지며 내면의 품격을 가꾸는 시기';
 }
 
 export const KIM_GU_THEMES: KimGuTheme[] = [
@@ -119,7 +140,9 @@ export const KIM_GU_APHORISMS: KimGuAphorism[] = [
 ];
 
 export function calculateBaekbeomKimGuMyDesireCulture(
-  profile: UserProfile
+  profile: UserProfile,
+  query?: string,
+  now: Date = new Date(),
 ): BaekbeomKimGuMyDesireCultureResult {
   const p = profile as any;
   const name = profile?.basic?.name ?? p?.name ?? '방문자';
@@ -154,9 +177,24 @@ export function calculateBaekbeomKimGuMyDesireCulture(
     `${activeKimGuTheme.practicalCounsel} 아울러 선생의 결연한 경구 "${focalKimGuAphorism.aphorismKo}"을 마음에 새기고, ` +
     `${focalKimGuAphorism.actionGuidance}`;
 
+  const calculatedAtKst = formatKimGuKstTimestamp(now);
+  const avgScore = Math.round(
+    (highCulturalPowerSpiritualScore +
+      hongikInganUniversalPeaceScore +
+      snowFieldExemplaryGuidanceScore +
+      selfReliantIndependenceWillScore +
+      baekbeomHumilityPublicLoveIndex) /
+      5,
+  );
+  const kimGuSynthesisMatrix = {
+    dominantTension: `${activeKimGuTheme.themeTitleKo} ↔ ${focalKimGuAphorism.sourceContext}`,
+    alignmentState: describeKimGuStage(avgScore),
+    integratedAction: `${focalKimGuAphorism.actionGuidance}${query?.trim() ? ` [질문 맥락: ${query.trim()}]` : ''}`,
+  };
+
   return {
     engineVersion: KOREAN_BAEKBEOM_KIM_GU_VERSION,
-    calculatedAtKst: new Date().toISOString(),
+    calculatedAtKst,
     highCulturalPowerSpiritualScore,
     hongikInganUniversalPeaceScore,
     snowFieldExemplaryGuidanceScore,
@@ -168,17 +206,23 @@ export function calculateBaekbeomKimGuMyDesireCulture(
       guidanceTitle,
       philosophicalCounsel,
     },
+    kimGuSynthesisMatrix,
   };
 }
 
 export function formatBaekbeomKimGuMyDesireCulturePrompt(res: BaekbeomKimGuMyDesireCultureResult): string {
-  return [
+  const avgScore = Math.round(
+    (res.highCulturalPowerSpiritualScore +
+      res.hongikInganUniversalPeaceScore +
+      res.snowFieldExemplaryGuidanceScore +
+      res.selfReliantIndependenceWillScore +
+      res.baekbeomHumilityPublicLoveIndex) /
+      5,
+  );
+  const lines = [
     `【백범 김구 《백범일지》 높은 문화의 힘 & 자주독립 실천 지표】`,
-    `- 높은 문화의 힘 영성도(文化之力): ${res.highCulturalPowerSpiritualScore}/100`,
-    `- 홍익인간 온 인류 상생평화도(弘益人間): ${res.hongikInganUniversalPeaceScore}/100`,
-    `- 답설야중거 솔선수범 지침력(踏雪野中去): ${res.snowFieldExemplaryGuidanceScore}/100`,
-    `- 주체적 자주독립 결단도(自主獨立): ${res.selfReliantIndependenceWillScore}/100`,
-    `- 백범의 겸손 애민애인 지수(愛民愛人): ${res.baekbeomHumilityPublicLoveIndex}/100`,
+    `- 연산 시각: ${res.calculatedAtKst} | 엔진: ${res.engineVersion}`,
+    `- 문화·자주 국면: ${describeKimGuStage(avgScore)}`,
     `- 핵심 민족혼 테마: ${res.activeKimGuTheme.themeTitleKo} [${res.activeKimGuTheme.themeTitleHanja}]`,
     `- 백범 정신 통찰: ${res.activeKimGuTheme.baekbeomInsight}`,
     `- 실천적 조언: ${res.activeKimGuTheme.practicalCounsel}`,
@@ -186,5 +230,12 @@ export function formatBaekbeomKimGuMyDesireCulturePrompt(res: BaekbeomKimGuMyDes
     `- 원전 출처: "${res.focalKimGuAphorism.aphorismHanjaOrOriginal}" [${res.focalKimGuAphorism.sourceContext}]`,
     `- 구체적 실천 지침: ${res.focalKimGuAphorism.actionGuidance}`,
     `- 종합 백범사상 권면: ${res.kimGuComprehensiveGuidance.philosophicalCounsel}`,
-  ].join('\n');
+  ];
+  if (res.kimGuSynthesisMatrix) {
+    lines.push(
+      `- 교차 매트릭스 [핵심 긴장: ${res.kimGuSynthesisMatrix.dominantTension} | 조율 상태: ${res.kimGuSynthesisMatrix.alignmentState}]`,
+      `- 통합 실천: ${res.kimGuSynthesisMatrix.integratedAction}`,
+    );
+  }
+  return lines.join('\n');
 }
