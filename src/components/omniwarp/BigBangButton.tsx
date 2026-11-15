@@ -1641,6 +1641,7 @@ export function BigBangButton() {
         <div
           ref={hoverContainerRef}
           data-bigbang="true"
+          data-tap-sound="off"
           data-cycle-navigation-disabled={isCycleNavigationDisabled ? 'true' : 'false'}
           onPointerDown={handlePointerDown}
           onPointerUp={handlePointerUp}
