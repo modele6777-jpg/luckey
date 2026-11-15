@@ -9,12 +9,12 @@
  * 4. 비인칭적 흥미와 여가의 활력도(Impersonal Interests & Leisure Vitality Index): 생업의 중압감에서 벗어나 마음을 회복시키는 순수한 취미와 폭넓은 시야.
  * 5. 합리적 이성과 회복탄력성 지수(Rational Equanimity & Resilience Score): 피할 수 없는 불행 앞에서도 불필요한 감정 소모를 멈추고 냉철하고 따뜻한 이성으로 극복하는 지혜.
  *
- * @version LUCKEY-BERTRAND-RUSSELL-HAPPINESS-v1.1.0
+ * @version LUCKEY-BERTRAND-RUSSELL-HAPPINESS-v2.0.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const BRITISH_BERTRAND_RUSSELL_VERSION = 'LUCKEY-BERTRAND-RUSSELL-HAPPINESS-v1.1.0';
+export const BRITISH_BERTRAND_RUSSELL_VERSION = 'LUCKEY-BERTRAND-RUSSELL-HAPPINESS-v2.0.0';
 
 export type RussellQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -59,6 +59,11 @@ export interface BritishBertrandRussellConquestOfHappinessResult {
   ritualAction: string;
   reflectionFocus: string;
   boundaryNotice: string;
+  russellSynthesisMatrix: {
+    coreInsight: string;
+    recommendedAction: string;
+    cautionNotice: string;
+  };
   russellComprehensiveGuidance: {
     guidanceTitle: string;
     philosophicalCounsel: string;
@@ -270,10 +275,18 @@ export function calculateBritishBertrandRussellConquestOfHappiness(
     `${focalRussellAphorism.actionGuidance}`;
 
   const boundaryNotice = '버트런드 러셀 철학 해석은 삶의 태도와 시선 전환을 돕는 상징·성찰 관점이며, 임상적·의학적 진단이나 확정 예언이 아닙니다.';
+  const baseDate = now ?? new Date();
+  const kst = new Date(baseDate.getTime() + 9 * 60 * 60 * 1000);
+  const kstTimeLabel = `${temporalRussellRhythm.kstDateLabel} ${String(kst.getUTCHours()).padStart(2, '0')}:${String(kst.getUTCMinutes()).padStart(2, '0')} KST`;
+  const russellSynthesisMatrix = {
+    coreInsight: activeRussellTheme.themeTitleKo,
+    recommendedAction: topicGuidance.practiceGuidance,
+    cautionNotice: '과도한 자의식과 남과의 비교 속에 갇혀 외부 세계의 열정적 관심(Zest)을 놓치지 마십시오.',
+  };
 
   return {
     engineVersion: BRITISH_BERTRAND_RUSSELL_VERSION,
-    calculatedAtKst: (now ?? new Date()).toISOString(),
+    calculatedAtKst: kstTimeLabel,
     zestForLifeIndex,
     overcomingSelfAbsorptionIndex,
     constructiveWorkFulfillmentScore,
@@ -287,6 +300,7 @@ export function calculateBritishBertrandRussellConquestOfHappiness(
     ritualAction: topicGuidance.ritualAction,
     reflectionFocus: topicGuidance.reflectionFocus,
     boundaryNotice,
+    russellSynthesisMatrix,
     russellComprehensiveGuidance: {
       guidanceTitle,
       philosophicalCounsel,
@@ -298,7 +312,8 @@ export function formatBritishBertrandRussellConquestOfHappinessPrompt(
   res: BritishBertrandRussellConquestOfHappinessResult,
 ): string {
   return [
-    `【버트런드 러셀 《행복의 정복》 열정적 관심 & 합리적 낙관 지표】`,
+    `【버트런드 러셀 《행복의 정복》 열정적 관심 & 합리적 낙관 지표 (${res.engineVersion})】`,
+    `- 연산 시각: ${res.calculatedAtKst}`,
     `- 질문 주제 맥락: ${res.questionTopic}`,
     `- KST 시공간 리듬: ${res.temporalRussellRhythm.kstDateLabel} · ${res.temporalRussellRhythm.timeWindowKo} (${res.temporalRussellRhythm.zestTone}) — ${res.temporalRussellRhythm.rhythmDirective}`,
     `- 핵심 행복 테마: ${res.activeRussellTheme.themeTitleKo} [${res.activeRussellTheme.themeTitleEn}]`,
@@ -307,6 +322,7 @@ export function formatBritishBertrandRussellConquestOfHappinessPrompt(
     `- 질문 맞춤 실천 가이드: ${res.practiceGuidance}`,
     `- 일상 실천 의례: ${res.ritualAction}`,
     `- 핵심 성찰 질문: ${res.reflectionFocus}`,
+    `- 교차 매트릭스: 핵심(${res.russellSynthesisMatrix.coreInsight}) | 실행(${res.russellSynthesisMatrix.recommendedAction}) | 주의(${res.russellSynthesisMatrix.cautionNotice})`,
     `- 러셀 원전 명언: "${res.focalRussellAphorism.aphorismKo}"`,
     `- 영문 원전: "${res.focalRussellAphorism.aphorismEn}"`,
     `- 원전 출처: [${res.focalRussellAphorism.sourceContext}]`,

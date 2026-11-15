@@ -9,12 +9,12 @@
  * 4. '의미는 곧 사용' 삶의 현장 실천 지수 (Meaning as Use & Practical Action Score): 추상적 사변에 매몰되지 않고 삶의 구체적 현장에서 행동과 실천으로 가치를 드러내는 지혜.
  * 5. 헛된 관념 혼란 치료 및 해방 회복탄력성 (Therapeutic Dissolution & Mental Clarity Score): 딱정벌레 상자의 비유처럼 사적인 집착과 언어의 미망을 털어내고 평정을 되찾는 힘.
  *
- * @version LUCKEY-WITTGENSTEIN-LANGUAGE-GAME-SILENCE-v1.1.0
+ * @version LUCKEY-WITTGENSTEIN-LANGUAGE-GAME-SILENCE-v2.0.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const AUSTRIAN_WITTGENSTEIN_LANGUAGE_GAME_SILENCE_VERSION = 'LUCKEY-WITTGENSTEIN-LANGUAGE-GAME-SILENCE-v1.1.0';
+export const AUSTRIAN_WITTGENSTEIN_LANGUAGE_GAME_SILENCE_VERSION = 'LUCKEY-WITTGENSTEIN-LANGUAGE-GAME-SILENCE-v2.0.0';
 
 export type WittgensteinQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -59,6 +59,11 @@ export interface AustrianWittgensteinLanguageGameSilenceResult {
   ritualAction: string;
   reflectionFocus: string;
   boundaryNotice: string;
+  wittgensteinSynthesisMatrix: {
+    coreInsight: string;
+    recommendedAction: string;
+    cautionNotice: string;
+  };
   wittgensteinComprehensiveGuidance: {
     guidanceTitle: string;
     philosophicalCounsel: string;
@@ -263,10 +268,18 @@ export function calculateAustrianWittgensteinLanguageGameSilence(
     `${focalWittgensteinAphorism.actionGuidance}`;
 
   const boundaryNotice = '비트겐슈타인 언어게임·침묵 관점은 사고의 혼란을 덜고 맥락을 살피기 위한 철학적 성찰 도구이며, 실증적 사실 검증이나 전문 상담을 대신하지 않습니다.';
+  const baseDate = now ?? new Date();
+  const kst = new Date(baseDate.getTime() + 9 * 60 * 60 * 1000);
+  const kstTimeLabel = `${temporalWittgensteinRhythm.kstDateLabel.replace(' KST', '')} ${String(kst.getUTCHours()).padStart(2, '0')}:${String(kst.getUTCMinutes()).padStart(2, '0')} KST`;
+  const wittgensteinSynthesisMatrix = {
+    coreInsight: activeWittgensteinTheme.themeTitleKo,
+    recommendedAction: topicGuidance.practiceGuidance,
+    cautionNotice: '말할 수 없는 영역을 억지 문장으로 규정하려다 스스로 만든 언어의 덫(파리병)에 갇히지 마십시오.',
+  };
 
   return {
     engineVersion: AUSTRIAN_WITTGENSTEIN_LANGUAGE_GAME_SILENCE_VERSION,
-    calculatedAtKst: (now ?? new Date()).toISOString(),
+    calculatedAtKst: kstTimeLabel,
     logicalClarityTractatusPrecisionIndex,
     mysticalSilenceReverenceScore,
     languageGameContextualFlexibilityIndex,
@@ -280,6 +293,7 @@ export function calculateAustrianWittgensteinLanguageGameSilence(
     ritualAction: topicGuidance.ritualAction,
     reflectionFocus: topicGuidance.reflectionFocus,
     boundaryNotice,
+    wittgensteinSynthesisMatrix,
     wittgensteinComprehensiveGuidance: {
       guidanceTitle,
       philosophicalCounsel,
@@ -291,7 +305,8 @@ export function formatAustrianWittgensteinLanguageGameSilencePrompt(
   res: AustrianWittgensteinLanguageGameSilenceResult,
 ): string {
   return [
-    `【비트겐슈타인 《논리철학논고·철학적 탐구》 언어게임·침묵 지혜 지표】`,
+    `【비트겐슈타인 《논리철학논고·철학적 탐구》 언어게임·침묵 지혜 지표 (${res.engineVersion})】`,
+    `- 연산 시각: ${res.calculatedAtKst}`,
     `- 질문 주제 맥락: ${res.questionTopic}`,
     `- KST 시공간 리듬: ${res.temporalWittgensteinRhythm.kstDateLabel} · ${res.temporalWittgensteinRhythm.timeWindowKo} (${res.temporalWittgensteinRhythm.languageTone}) — ${res.temporalWittgensteinRhythm.rhythmDirective}`,
     `- 핵심 비트겐슈타인 테마: ${res.activeWittgensteinTheme.themeTitleKo} [${res.activeWittgensteinTheme.themeTitleEn}]`,
@@ -300,6 +315,7 @@ export function formatAustrianWittgensteinLanguageGameSilencePrompt(
     `- 질문 맞춤 실천 가이드: ${res.practiceGuidance}`,
     `- 일상 실천 의례: ${res.ritualAction}`,
     `- 핵심 성찰 질문: ${res.reflectionFocus}`,
+    `- 교차 매트릭스: 핵심(${res.wittgensteinSynthesisMatrix.coreInsight}) | 실행(${res.wittgensteinSynthesisMatrix.recommendedAction}) | 주의(${res.wittgensteinSynthesisMatrix.cautionNotice})`,
     `- 비트겐슈타인 원전 명언: "${res.focalWittgensteinAphorism.aphorismKo}" (${res.focalWittgensteinAphorism.aphorismOriginal})`,
     `- 원전 출처: [${res.focalWittgensteinAphorism.sourceContext}]`,
     `- 구체적 실천 지침: ${res.focalWittgensteinAphorism.actionGuidance}`,

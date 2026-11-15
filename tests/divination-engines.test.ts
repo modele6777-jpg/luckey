@@ -7231,6 +7231,8 @@ test('v1.1.0 qualitative/temporal deepening without score exposure: Kafka, Buber
   assert.ok(kafka.temporalKafkaRhythm.timeWindowKo.includes('가면을 벗는 시간'));
   const kafkaPrompt = formatAustrianFranzKafkaExistentialTruthPrompt(kafka);
   assert.ok(kafkaPrompt.includes('질문 맥락 초점(decision)'));
+  assert.ok(kafka.calculatedAtKst.includes('KST'));
+  assert.ok(kafkaPrompt.includes('교차 매트릭스'));
   assert.ok(!kafkaPrompt.includes('/100'));
 
   const buber = calculateAustrianMartinBuberIAndThou(testProfile, '소중한 사람과의 관계와 대화가 어긋난 것 같아요', now);
@@ -7293,6 +7295,8 @@ test('qualitative & temporal deepening: Adler Individual Psychology, Viktor Fran
   assert.ok(witt.practiceGuidance.length > 0 && witt.ritualAction.length > 0 && witt.boundaryNotice.length > 0);
   const wittPrompt = formatAustrianWittgensteinLanguageGameSilencePrompt(witt);
   assert.ok(wittPrompt.includes('질문 주제 맥락: healing'));
+  assert.ok(witt.calculatedAtKst.includes('KST'));
+  assert.ok(wittPrompt.includes('교차 매트릭스'));
   assert.ok(!wittPrompt.includes('/100'));
 });
 
@@ -7314,6 +7318,8 @@ test('qualitative & temporal deepening: Bertrand Russell, Virginia Woolf, and Wi
   assert.ok(russell.practiceGuidance.length > 0 && russell.ritualAction.length > 0 && russell.boundaryNotice.length > 0);
   const russellPrompt = formatBritishBertrandRussellConquestOfHappinessPrompt(russell);
   assert.ok(russellPrompt.includes('질문 주제 맥락: decision'));
+  assert.ok(russell.calculatedAtKst.includes('KST'));
+  assert.ok(russellPrompt.includes('교차 매트릭스'));
   assert.ok(!russellPrompt.includes('/100'));
 
   const woolf = calculateBritishVirginiaWoolfRoomOfOnesOwn(testProfile, '요즘 마음이 지치고 나만의 시간이 필요해요', now);
