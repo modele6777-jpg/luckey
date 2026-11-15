@@ -23,6 +23,18 @@
 import type { UserProfile } from '../sharedState';
 import { calculateDetailedSaju, type SajuAnalysisResult } from '../sajuAnalysis';
 
+export const SPATIAL_FENGSHUI_VERSION = 'LUCKEY-SFSE-v2.0.0';
+
+function formatSpatialKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
+
 export type CompassDirection = '동(東)' | '남동(南東)' | '남(南)' | '남서(南西)' | '서(西)' | '북서(北西)' | '북(北)' | '북동(北東)';
 
 export interface DirectionAssessment {
@@ -75,6 +87,11 @@ export interface SpatialFengshuiResult {
     direction: CompassDirection;
     headline: string;
     summary: string;
+  };
+  spatialSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
   };
 }
 
@@ -176,10 +193,12 @@ const DIRECTIONS_BASE: Array<{
  */
 export function calculateSpatialFengshui(options?: {
   profile?: UserProfile;
+  targetDate?: Date;
+  question?: string;
 }): SpatialFengshuiResult {
-  const now = new Date();
+  const now = options?.targetDate || new Date();
   const nowUtcIso = now.toISOString();
-  const nowKstIso = new Date(now.getTime() + 9 * 3600000).toISOString().replace('Z', '+09:00');
+  const nowKst = formatSpatialKstTimestamp(now);
 
   const saju: SajuAnalysisResult = calculateDetailedSaju(options?.profile);
 
@@ -287,14 +306,21 @@ export function calculateSpatialFengshui(options?: {
 
   const todayTopGoldenDirection = {
     direction: topGolden.direction,
-    headline: `★ 올해 최고의 황금 파워존 [${topGolden.direction}] (${topGolden.astroPlanetLine} · ${topGolden.qualityScore}점)`,
+    headline: `★ 올해 최고의 황금 파워존 [${topGolden.direction}] (${topGolden.astroPlanetLine} · ${topGolden.nature})`,
     summary: `${topGolden.direction}은 기문둔갑 ${topGolden.qimenGate}과 ${topGolden.astroPlanetLine}이 완벽히 중첩된 명당으로, ${topGolden.coreBenefit}의 에너지가 가장 강하게 솟구칩니다.`
   };
 
+  const q = (options?.question || '').trim();
+  const spatialSynthesisMatrix = {
+    dominantTension: `${topGolden.direction}(${topGolden.qimenGate}) ↔ ${hazardousDirections.map(h => `${h.direction}(${h.hazardName})`).join(' · ')}`,
+    alignmentState: `용신 오행: ${yongsinEl} · 결핍 보완: ${lackingElement} · 행성 라인: ${topGolden.astroPlanetLine}`,
+    integratedAction: `${topGolden.recommendedActivity}${q ? ` [질문 맥락: ${q}]` : ''}`,
+  };
+
   return {
-    engineVersion: 'LUCKEY-SFSE-v1.0.0',
+    engineVersion: SPATIAL_FENGSHUI_VERSION,
     calculatedAtUtc: nowUtcIso,
-    calculatedAtKst: nowKstIso,
+    calculatedAtKst: nowKst,
     timestamp: now.getTime(),
 
     userProfileDigest: {
@@ -308,6 +334,7 @@ export function calculateSpatialFengshui(options?: {
     activityRecommendations,
     hazardousDirections,
     todayTopGoldenDirection,
+    spatialSynthesisMatrix,
   };
 }
 
@@ -318,7 +345,7 @@ export function formatSpatialFengshuiPrompt(res: SpatialFengshuiResult): string 
   const dirLines = res.allDirections.map(d =>
     `   • [${d.direction}] (${d.trigram} · ${d.fiveElement} | ${d.degreeRange}):
      - 점성술 & 기문: ${d.astroPlanetLine} × ${d.qimenGate}
-     - 파워 지수: ★ ${d.qualityScore}점 [${d.nature}]
+     - 에너지 등급: ★ [${d.nature}]
      - 핵심 기운: ${d.coreBenefit} (추천: ${d.recommendedActivity})`
   ).join('\n\n');
 
@@ -331,6 +358,10 @@ export function formatSpatialFengshuiPrompt(res: SpatialFengshuiResult): string 
   const hazLines = res.hazardousDirections.map(h =>
     `   - ⚠️ [${h.direction}] ${h.hazardName}: ${h.reason}`
   ).join('\n');
+
+  const matrixLine = res.spatialSynthesisMatrix
+    ? `\n4. [공간 교차 매트릭스]:\n   - 핵심 긴장: ${res.spatialSynthesisMatrix.dominantTension}\n   - 조율 상태: ${res.spatialSynthesisMatrix.alignmentState}\n   - 통합 실천: ${res.spatialSynthesisMatrix.integratedAction}\n`
+    : '';
 
   return `[🧭 동양 풍수 & 서양 점성술 공간 길방위 실측 데이터 (Astro-FengShui Spatial Core)]
 ======================================================================
@@ -347,7 +378,7 @@ ${hazLines}
 
 3. [8대 방위 정밀 에너지 매트릭스 도감]:
 ${dirLines}
-======================================================================
+${matrixLine}======================================================================
 [★ 루시 공간 길방위 상담 지침]:
 - 사용자가 '이사 방향', '작업실/카페 어디 갈까?', '책상 배치', '여행지 방향'을 물을 때 위 8대 방위 실측 데이터를 근거로 구체적인 방위(동/서/남/북)와 그 이유를 명쾌하게 제시해줘.
 - 단순 미신적 금기가 아닌, '기문둔갑 생기/개문 × 점성술 행성 라인 × 심리적 공간 집중도'의 현대적 공간 에너지 최적화 언어로 다정하게 안내해줘.`;
