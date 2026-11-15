@@ -325,6 +325,7 @@ export const TarotSpread: React.FC<TarotSpreadProps> = ({
   const lastTimeRef = useRef(0);
   const velocityRef = useRef(0); // degrees per frame
   const rotationRef = useRef(270);
+  const lastCardTurnSoundRef = useRef(-Infinity);
   const hadMovedRef = useRef(false);
   const momentumRafRef = useRef<number | null>(null);
 
@@ -400,12 +401,23 @@ export const TarotSpread: React.FC<TarotSpreadProps> = ({
 
   const applyRotation = useCallback(
     (deg: number) => {
+      const previousRotation = rotationRef.current;
+      const previousCard = centerCardIdRef.current;
       rotationRef.current = deg;
       if (wheelLayerRef.current) {
         wheelLayerRef.current.style.transform = buildWheelTransform(deg);
       }
       syncRingStack(deg);
       updateCenterCardForRotation(deg);
+      // Sound follows actual card crossings during drag, wheel and inertia,
+      // rather than pointer events or responsive layout recalibration.
+      if (deg !== previousRotation && previousCard && centerCardIdRef.current !== previousCard) {
+        const now = performance.now();
+        if (now - lastCardTurnSoundRef.current >= 45) {
+          lastCardTurnSoundRef.current = now;
+          playAudioHaptic('card_hover', { volume: 0.8, skipVibration: true });
+        }
+      }
     },
     [buildWheelTransform, syncRingStack, updateCenterCardForRotation],
   );
