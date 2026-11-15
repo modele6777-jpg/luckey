@@ -9,12 +9,12 @@
  * 4. 페르소나(Persona) 유연성: 사회적 적응을 위한 가면(Persona)과 진정한 내적 자기를 혼동하지 않고 유연하게 상황을 조율하는 경계 지혜.
  * 5. 동시성(Synchronicity): 물리적 인과율을 넘어 내면의 심리 상태와 외부 세계의 사건이 깊은 상징적 의미로 연결되는 초인과적 유의미한 일치 직관.
  *
- * @version LUCKEY-SWISS-JUNG-INDIVIDUATION-v1.0.0
+ * @version LUCKEY-SWISS-JUNG-INDIVIDUATION-v2.0.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const SWISS_JUNG_INDIVIDUATION_VERSION = 'LUCKEY-SWISS-JUNG-INDIVIDUATION-v1.0.0';
+export const SWISS_JUNG_INDIVIDUATION_VERSION = 'LUCKEY-SWISS-JUNG-INDIVIDUATION-v2.0.0';
 
 export interface JungArchetypeTheme {
   themeKey: string;
@@ -48,6 +48,21 @@ export interface JungIndividuationArchetypeResult {
     counselTitle: string;
     philosophicalGuidance: string;
   };
+  jungSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
+}
+
+function formatJungKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
 }
 
 export type JungIndividuationArchetypeReport = JungIndividuationArchetypeResult;
@@ -128,11 +143,17 @@ const JUNG_APHORISMS: JungAphorism[] = [
   },
 ];
 
-export function calculateJungIndividuationArchetype(profile: UserProfile): JungIndividuationArchetypeResult {
+export function calculateJungIndividuationArchetype(
+  profile: UserProfile,
+  question?: string,
+  now: Date = new Date(),
+): JungIndividuationArchetypeResult {
+  const q = (question || '').trim();
   const seedString =
     (profile?.basic?.birthdate ?? (profile as any)?.birthdate ?? '1990-01-01') +
     (profile?.basic?.name ?? (profile as any)?.name ?? 'User') +
     (profile?.basic?.birthtime ?? (profile as any)?.birthtime ?? '12:00') +
+    q +
     'SwissJungIndividuationArchetype';
 
   let hash = 0;
@@ -160,9 +181,16 @@ export function calculateJungIndividuationArchetype(profile: UserProfile): JungI
     `${activeJungTheme.individuationCounsel} 아울러 융의 명제인 '${focalJungAphorism.aphorismKo}'(${focalJungAphorism.archetypeDimension})을 마음에 새겨, ` +
     `${focalJungAphorism.practicalAction}`;
 
+  const calculatedAtKst = formatJungKstTimestamp(now);
+  const jungSynthesisMatrix = {
+    dominantTension: `${activeJungTheme.themeTitleKo} ↔ ${focalJungAphorism.archetypeDimension}`,
+    alignmentState: `${activeJungTheme.themeTitleGerman} · 개성화 통합`,
+    integratedAction: `${focalJungAphorism.practicalAction}${q ? ` [질문 맥락: ${q}]` : ''}`,
+  };
+
   return {
     engineVersion: SWISS_JUNG_INDIVIDUATION_VERSION,
-    calculatedAtKst: new Date().toISOString(),
+    calculatedAtKst,
     individuationSelfRealizationScore,
     shadowIntegrationCourageScore,
     animaAnimusHarmoniousBalanceScore,
@@ -174,17 +202,13 @@ export function calculateJungIndividuationArchetype(profile: UserProfile): JungI
       counselTitle,
       philosophicalGuidance,
     },
+    jungSynthesisMatrix,
   };
 }
 
 export function formatJungIndividuationArchetypePrompt(res: JungIndividuationArchetypeResult): string {
-  return [
-    `【카를 융 개성화(Individuation) & 원형 통합 지표】`,
-    `- 개성화 자기 실현도(Self): ${res.individuationSelfRealizationScore}/100`,
-    `- 그림자 직시 및 통합력(Shadow): ${res.shadowIntegrationCourageScore}/100`,
-    `- 아니마/아니무스 대극 조화도(Syzygy): ${res.animaAnimusHarmoniousBalanceScore}/100`,
-    `- 페르소나 유연성 지수(Persona): ${res.personaFlexibilityWisdomScore}/100`,
-    `- 동시성 의미 직관력(Synchronicity): ${res.synchronicityMeaningfulInsightScore}/100`,
+  const lines = [
+    `【카를 융 개성화(Individuation) & 원형 통합 지표 (${res.engineVersion} | ${res.calculatedAtKst})】`,
     `- 핵심 분석 테마: ${res.activeJungTheme.themeTitleKo} [${res.activeJungTheme.themeTitleGerman}]`,
     `- 심리학적 통찰: ${res.activeJungTheme.psychologicalInsight}`,
     `- 개성화 조언: ${res.activeJungTheme.individuationCounsel}`,
@@ -192,5 +216,12 @@ export function formatJungIndividuationArchetypePrompt(res: JungIndividuationArc
     `- 독일어 원문: "${res.focalJungAphorism.aphorismGerman}" [${res.focalJungAphorism.archetypeDimension}]`,
     `- 실천적 행동 지침: ${res.focalJungAphorism.practicalAction}`,
     `- 통합 심리 처방: ${res.jungPersonalCounsel.philosophicalGuidance}`,
-  ].join('\n');
+  ];
+  if (res.jungSynthesisMatrix) {
+    lines.push(
+      `- 교차 매트릭스: [핵심 긴장: ${res.jungSynthesisMatrix.dominantTension} | 조율 상태: ${res.jungSynthesisMatrix.alignmentState}]`,
+      `  · 통합 실천: ${res.jungSynthesisMatrix.integratedAction}`,
+    );
+  }
+  return lines.join('\n');
 }

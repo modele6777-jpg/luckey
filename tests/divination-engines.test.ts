@@ -3632,12 +3632,16 @@ test('Slavic Mokosh Fate Weaving Engine: calculates Dolya/Nedolya fate threads a
 test('Sumerian Gilgamesh Trials Engine: calculates 12 trials and heroic resilience score', () => {
   const rep = calculateSumerianGilgameshTrials({ profile });
   assert.equal(rep.engineVersion, SUMERIAN_GILGAMESH_TRIALS_ENGINE_VERSION);
+  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(rep.gilgameshSynthesisMatrix?.integratedAction));
   assert(rep.heroicResilienceScore >= 0 && rep.heroicResilienceScore <= 100);
   assert(rep.immortalityWisdomIndex >= 0 && rep.immortalityWisdomIndex <= 100);
   assert(rep.activeTrial.nameKo.length > 0);
   const prompt = formatSumerianGilgameshTrialsPrompt(rep);
   assert(prompt.includes('고대 메소포타미아 길가메시 서사시 12관문 불멸 여정 실측 데이터'));
   assert(prompt.includes(rep.activeTrial.nameKo));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
 });
 
 test('Hawaiian Kahuna Three Selves Engine: calculates 3 selves harmony and mana resonance score', () => {
@@ -3991,6 +3995,8 @@ test('Gnostic Pistis Sophia Pleroma Engine: calculates twelve aeons resonance an
 test('Sumerian Inanna Underworld Descent Engine: calculates seven gates stripping and resurrection vitality', () => {
   const rep = calculateSumerianInannaUnderworldDescent({ profile, question: '그림자와 영혼의 부활' });
   assert.equal(rep.engineVersion, SUMERIAN_INANNA_UNDERWORLD_DESCENT_ENGINE_VERSION);
+  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(rep.inannaSynthesisMatrix?.integratedAction));
   assert.equal(rep.gates.length, 7);
   assert(rep.underworldSevenGatesPassRate >= 0 && rep.underworldSevenGatesPassRate <= 100);
   assert(rep.spiritualResurrectionVitality >= 0 && rep.spiritualResurrectionVitality <= 100);
@@ -3999,6 +4005,8 @@ test('Sumerian Inanna Underworld Descent Engine: calculates seven gates strippin
   const prompt = formatSumerianInannaUnderworldDescentPrompt(rep);
   assert(prompt.includes('고대 수메르 이난나 명계 하강 7대 관문 & 부활 실측 데이터'));
   assert(prompt.includes(rep.currentCrucialGate.gateName));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
 });
 
 test('Norse Volva Seidr Nine Realms Engine: calculates nine realms resonance and huginn/munin scores', () => {
@@ -5542,6 +5550,8 @@ test('Seosan Daesa Hyujeong Seonga Gwigam Engine: calculates Ilmul yeongmyeong, 
 test('Carl Gustav Jung Individuation Archetype Engine: calculates Self realization, Shadow integration, and Anima/Animus syzygy', () => {
   const rep = calculateJungIndividuationArchetype(profile);
   assert.equal(rep.engineVersion, SWISS_JUNG_INDIVIDUATION_VERSION);
+  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(rep.jungSynthesisMatrix?.integratedAction));
   assert(rep.individuationSelfRealizationScore >= 0 && rep.individuationSelfRealizationScore <= 100);
   assert(rep.shadowIntegrationCourageScore >= 0 && rep.shadowIntegrationCourageScore <= 100);
   assert(rep.animaAnimusHarmoniousBalanceScore >= 0 && rep.animaAnimusHarmoniousBalanceScore <= 100);
@@ -5551,6 +5561,8 @@ test('Carl Gustav Jung Individuation Archetype Engine: calculates Self realizati
   const prompt = formatJungIndividuationArchetypePrompt(rep);
   assert(prompt.includes('카를 융 개성화(Individuation) & 원형 통합 지표'));
   assert(prompt.includes(rep.activeJungTheme.themeTitleKo));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
 });
 
 test('G.W.F. Hegel Dialectical Aufheben Engine: calculates Dialectical synthesis, Mutual recognition, and Sittlichkeit harmony', () => {

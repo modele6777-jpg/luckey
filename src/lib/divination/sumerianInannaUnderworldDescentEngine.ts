@@ -10,7 +10,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const SUMERIAN_INANNA_UNDERWORLD_DESCENT_ENGINE_VERSION = '1.1.0';
+export const SUMERIAN_INANNA_UNDERWORLD_DESCENT_ENGINE_VERSION = '2.0.0';
 
 export type InannaQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 export type InannaDescentPhase = 'THRESHOLD_DESCENT' | 'ZERO_POINT_SUSPENSION' | 'ENKI_REVIVAL';
@@ -27,6 +27,7 @@ export interface UnderworldGate {
 export interface SumerianInannaUnderworldDescentReport {
   engineVersion: string;
   timestamp: string;
+  calculatedAtKst: string;
   underworldSevenGatesPassRate: number;
   spiritualResurrectionVitality: number;
   ereshkigalShadowReconciliation: number;
@@ -42,6 +43,21 @@ export interface SumerianInannaUnderworldDescentReport {
   boundaryNotice: string;
   inannaResurrectionGuidance: string;
   enkiLifeRestorationRitual: string;
+  inannaSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
+}
+
+function formatInannaKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
 }
 
 const UNDERWORLD_GATES_BASE: Omit<UnderworldGate, 'passageScore'>[] = [
@@ -199,9 +215,17 @@ export function calculateSumerianInannaUnderworldDescent(
   const inannaResurrectionGuidance = `명계의 일곱 관문 중 지금 가장 깊이 비추어 볼 지점은 ${currentCrucialGate.gateName}입니다. ${currentCrucialGate.relicStripped}을 내려놓듯 ${currentCrucialGate.shadowPersona}를 거둘 때 어둠과의 화해와 회복이 열립니다.`;
   const enkiLifeRestorationRitual = TOPIC_RITUAL_ACTION[questionTopic];
 
+  const calculatedAtKst = formatInannaKstTimestamp(now);
+  const inannaSynthesisMatrix = {
+    dominantTension: `${currentCrucialGate.gateName}(${currentCrucialGate.relicStripped}) ↔ ${currentCrucialGate.shadowPersona}`,
+    alignmentState: `${descentPhaseLabel}`,
+    integratedAction: `${ritualAction}${question ? ` [질문 맥락: ${question}]` : ''}`,
+  };
+
   return {
     engineVersion: SUMERIAN_INANNA_UNDERWORLD_DESCENT_ENGINE_VERSION,
     timestamp: now.toISOString(),
+    calculatedAtKst,
     underworldSevenGatesPassRate,
     spiritualResurrectionVitality,
     ereshkigalShadowReconciliation,
@@ -217,12 +241,13 @@ export function calculateSumerianInannaUnderworldDescent(
     boundaryNotice,
     inannaResurrectionGuidance,
     enkiLifeRestorationRitual,
+    inannaSynthesisMatrix,
   };
 }
 
 export function formatSumerianInannaUnderworldDescentPrompt(rep: SumerianInannaUnderworldDescentReport): string {
-  return [
-    `[고대 수메르 이난나 명계 하강 7대 관문 & 부활 실측 데이터]`,
+  const lines = [
+    `[고대 수메르 이난나 명계 하강 7대 관문 & 부활 실측 데이터 (v${rep.engineVersion} | ${rep.calculatedAtKst})]`,
     `· 하강 국면: ${rep.descentPhaseLabel}`,
     `· 현재 직면한 핵심 탈각 관문: ${rep.currentCrucialGate.gateName} (${rep.currentCrucialGate.relicStripped})`,
     `  - 직면 그림자: ${rep.currentCrucialGate.shadowPersona}`,
@@ -231,5 +256,12 @@ export function formatSumerianInannaUnderworldDescentPrompt(rep: SumerianInannaU
     `· 일상 의례: ${rep.ritualAction}`,
     `· 성찰 질문: ${rep.reflectionFocus}`,
     `· 해석 경계: ${rep.boundaryNotice}`,
-  ].join('\n');
+  ];
+  if (rep.inannaSynthesisMatrix) {
+    lines.push(
+      `· 교차 매트릭스: [핵심 긴장: ${rep.inannaSynthesisMatrix.dominantTension} | 조율 상태: ${rep.inannaSynthesisMatrix.alignmentState}]`,
+      `  - 통합 실천: ${rep.inannaSynthesisMatrix.integratedAction}`,
+    );
+  }
+  return lines.join('\n');
 }
