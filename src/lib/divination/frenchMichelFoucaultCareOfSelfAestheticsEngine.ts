@@ -8,7 +8,7 @@
  * 4. 파레시아(Parrhesia, 진실을 말할 용기) 지수 (Parrhesia & Courage of Truth Index): 위험과 손실을 감수하더라도 침묵이나 위선적 타협을 거부하고 자기 진실을 당당히 선언하는 실천적 용기.
  * 5. 자기 통치성 및 내면의 자유 주권 지표 (Self-Mastery & Autonomous Governance Score): 타인이나 충동의 노예가 되지 않고 자신의 욕망과 정념을 스스로 다스려 참된 주권을 행사하는 내적 자율성.
  *
- * @version LUCKEY-MICHEL-FOUCAULT-CARE-OF-SELF-v1.0.0
+ * @version LUCKEY-MICHEL-FOUCAULT-CARE-OF-SELF-v2.1.0
  */
 
 import type { UserProfile } from '../sharedState';
@@ -46,6 +46,11 @@ export interface FrenchMichelFoucaultCareOfSelfAestheticsResult {
   dailyPracticeRitual: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
+  foucaultSynthesisMatrix: {
+    coreInsight: string;
+    recommendedAction: string;
+    cautionNotice: string;
+  };
   foucaultComprehensiveGuidance: {
     guidanceTitle: string;
     philosophicalCounsel: string;
@@ -180,9 +185,17 @@ export function calculateFrenchMichelFoucaultCareOfSelfAesthetics(
   const interpretiveBoundary =
     '미셸 푸코의 자기 배려·존재의 미학 관점은 미래를 예측하거나 점수를 매기는 계산이 아니라, 타율적 시선에서 벗어나 자기 주권을 성찰하는 상징적 렌즈입니다.';
 
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const kstTimeLabel = `${kst.toISOString().slice(0, 10)} ${String(kst.getUTCHours()).padStart(2, '0')}:${String(kst.getUTCMinutes()).padStart(2, '0')} KST`;
+  const foucaultSynthesisMatrix = {
+    coreInsight: activeFoucaultTheme.themeTitleKo,
+    recommendedAction: dailyPracticeRitual,
+    cautionNotice: '외부의 시선이나 정상성의 규범을 내면의 검열관으로 삼아 스스로의 주권을 위축시키지 마십시오.',
+  };
+
   return {
     engineVersion: FRENCH_MICHEL_FOUCAULT_CARE_OF_SELF_VERSION,
-    calculatedAtKst: now.toISOString(),
+    calculatedAtKst: kstTimeLabel,
     careOfSelfEpimeleiaScore,
     discourseDisciplineLiberationIndex,
     aestheticsOfExistenceScore,
@@ -193,6 +206,7 @@ export function calculateFrenchMichelFoucaultCareOfSelfAesthetics(
     dailyPracticeRitual,
     reflectiveQuestion,
     interpretiveBoundary,
+    foucaultSynthesisMatrix,
     foucaultComprehensiveGuidance: {
       guidanceTitle,
       philosophicalCounsel,
@@ -204,7 +218,8 @@ export function formatFrenchMichelFoucaultCareOfSelfAestheticsPrompt(
   res: FrenchMichelFoucaultCareOfSelfAestheticsResult,
 ): string {
   return [
-    `【미셸 푸코 《주체의 해석학·자기 배려》 규율권력 탈피 및 존재의 미학 지표】`,
+    `【미셸 푸코 《주체의 해석학·자기 배려》 규율권력 탈피 및 존재의 미학 지표 (${res.engineVersion})】`,
+    `- 연산 시각: ${res.calculatedAtKst}`,
     `- 자기 배려 및 내면 수양(Care of the Self): ${describeFoucaultStage(res.careOfSelfEpimeleiaScore)}`,
     `- 규율 권력 및 정상성 탈피(Discipline Liberation): ${describeFoucaultStage(res.discourseDisciplineLiberationIndex)}`,
     `- 존재의 미학 및 삶의 예술화(Aesthetics of Existence): ${describeFoucaultStage(res.aestheticsOfExistenceScore)}`,
@@ -218,6 +233,7 @@ export function formatFrenchMichelFoucaultCareOfSelfAestheticsPrompt(
     `- 구체적 실천 지침: ${res.focalFoucaultAphorism.actionGuidance}`,
     `- 일상 실천 의례: ${res.dailyPracticeRitual}`,
     `- 성찰 질문: ${res.reflectiveQuestion}`,
+    `- 교차 매트릭스: 핵심(${res.foucaultSynthesisMatrix.coreInsight}) | 실행(${res.foucaultSynthesisMatrix.recommendedAction}) | 주의(${res.foucaultSynthesisMatrix.cautionNotice})`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
     `- 종합 푸코 권면: ${res.foucaultComprehensiveGuidance.philosophicalCounsel}`,
   ].join('\n');

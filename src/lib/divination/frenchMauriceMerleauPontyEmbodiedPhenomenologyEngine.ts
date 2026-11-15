@@ -8,12 +8,12 @@
  * 4. 예술적 감각 안목 및 창조적 표현 (Sensory Aesthetic Eye & Creative Expression): 세잔의 회화처럼 고정관념을 넘어 사물의 보이지 않는 본질을 가시화하는 심미안.
  * 5. 현상학적 접지 및 심신 회복탄력성 (Phenomenological Grounding & Vital Equanimity): 관념의 분열과 피로를 털어내고 지금 살아 숨 쉬는 대지와 삶의 감각으로 닻을 내리는 회복탄력성.
  *
- * @version LUCKEY-MERLEAU-PONTY-EMBODIED-PHENOMENOLOGY-v1.1.0
+ * @version LUCKEY-MERLEAU-PONTY-EMBODIED-PHENOMENOLOGY-v2.0.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const FRENCH_MAURICE_MERLEAU_PONTY_EMBODIED_PHENOMENOLOGY_VERSION = 'LUCKEY-MERLEAU-PONTY-EMBODIED-PHENOMENOLOGY-v1.1.0';
+export const FRENCH_MAURICE_MERLEAU_PONTY_EMBODIED_PHENOMENOLOGY_VERSION = 'LUCKEY-MERLEAU-PONTY-EMBODIED-PHENOMENOLOGY-v2.0.0';
 
 export type MerleauPontyQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -58,6 +58,11 @@ export interface FrenchMauriceMerleauPontyEmbodiedPhenomenologyResult {
   dailyPracticeRitual: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
+  pontySynthesisMatrix: {
+    coreInsight: string;
+    recommendedAction: string;
+    cautionNotice: string;
+  };
   pontyComprehensiveGuidance: {
     guidanceTitle: string;
     philosophicalCounsel: string;
@@ -294,9 +299,17 @@ export function calculateFrenchMauriceMerleauPontyEmbodiedPhenomenology(
     `${activePontyTheme.practicalCounsel} ${practiceGuidance} 메를로퐁티 선생의 원전 명언 "${focalPontyAphorism.aphorismKo}" (${focalPontyAphorism.aphorismFrench})을 가슴에 품고, ` +
     `${focalPontyAphorism.actionGuidance}`;
 
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const kstTimeLabel = `${kst.toISOString().slice(0, 10)} ${String(kst.getUTCHours()).padStart(2, '0')}:${String(kst.getUTCMinutes()).padStart(2, '0')} KST`;
+  const pontySynthesisMatrix = {
+    coreInsight: activePontyTheme.themeTitleKo,
+    recommendedAction: dailyPracticeRitual,
+    cautionNotice: '머릿속 사변과 추상적 분석에만 매달려 지금 몸이 보내는 살아있는 감각과 현장의 신호를 외면하지 마십시오.',
+  };
+
   return {
     engineVersion: FRENCH_MAURICE_MERLEAU_PONTY_EMBODIED_PHENOMENOLOGY_VERSION,
-    calculatedAtKst: temporalMerleauPontyRhythm.kstDateLabel,
+    calculatedAtKst: kstTimeLabel,
     questionTopic,
     temporalMerleauPontyRhythm,
     corpsSujetEmbodimentScore,
@@ -310,6 +323,7 @@ export function calculateFrenchMauriceMerleauPontyEmbodiedPhenomenology(
     dailyPracticeRitual,
     reflectiveQuestion,
     interpretiveBoundary,
+    pontySynthesisMatrix,
     pontyComprehensiveGuidance: {
       guidanceTitle,
       philosophicalCounsel,
@@ -321,7 +335,8 @@ export function formatFrenchMauriceMerleauPontyEmbodiedPhenomenologyPrompt(
   res: FrenchMauriceMerleauPontyEmbodiedPhenomenologyResult,
 ): string {
   return [
-    `【모리스 메를로퐁티 《지각의 현상학·눈과 마음》 신체-주체 및 원초적 지각 성찰 가이드】`,
+    `【모리스 메를로퐁티 《지각의 현상학·눈과 마음》 신체-주체 및 원초적 지각 성찰 가이드 (${res.engineVersion})】`,
+    `- 연산 시각: ${res.calculatedAtKst}`,
     `- 질문 주제 맥락: ${res.questionTopic}`,
     `- KST 시공간 리듬: ${res.temporalMerleauPontyRhythm.kstDateLabel} · ${res.temporalMerleauPontyRhythm.timeBand} (${res.temporalMerleauPontyRhythm.embodiedTempo})`,
     `- 시공간 권면: ${res.temporalMerleauPontyRhythm.temporalGuidance}`,
@@ -336,6 +351,7 @@ export function formatFrenchMauriceMerleauPontyEmbodiedPhenomenologyPrompt(
     `- 맥락 맞춤 가이드: ${res.practiceGuidance}`,
     `- 오늘의 실천 의례(${res.questionTopic}): ${res.dailyPracticeRitual}`,
     `- 성찰 질문: ${res.reflectiveQuestion}`,
+    `- 교차 매트릭스: 핵심(${res.pontySynthesisMatrix.coreInsight}) | 실행(${res.pontySynthesisMatrix.recommendedAction}) | 주의(${res.pontySynthesisMatrix.cautionNotice})`,
     `- 메를로퐁티 원전 명언: "${res.focalPontyAphorism.aphorismKo}" (${res.focalPontyAphorism.aphorismFrench})`,
     `- 원전 출처: [${res.focalPontyAphorism.sourceContext}]`,
     `- 구체적 실천 지침: ${res.focalPontyAphorism.actionGuidance}`,
