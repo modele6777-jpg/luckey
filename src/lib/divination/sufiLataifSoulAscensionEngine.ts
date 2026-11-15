@@ -23,7 +23,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const SUFI_LATAIF_VERSION = 'LUCKEY-SUFI-LATAIF-v1.0.0';
+export const SUFI_LATAIF_VERSION = 'LUCKEY-SUFI-LATAIF-v2.0.0';
 
 export interface LataifCenter {
   name: string;             // 아랍어 명칭 (Qalb, Ruh, Sirr 등)
@@ -38,6 +38,7 @@ export interface LataifCenter {
 export interface SufiLataifReport {
   engineVersion: string;
   calculatedAt: string;
+  calculatedAtKst: string;
   lataifCenters: LataifCenter[];
   currentSpiritualStation: {
     stationName: string;    // 마캄 (Maqam)
@@ -50,6 +51,21 @@ export interface SufiLataifReport {
   spiritualHeartPurityScore: number; // 0 ~ 100 심장의 맑음 지수
   sufiDhikrPrescription: string;      // 수피 지크르(묵상과 현존) 실천 처방
   rumiWisdomQuote: string;           // 루미의 영적 조언
+  lataifSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
+}
+
+function formatLataifKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
 }
 
 const LATAIF_DEFINITIONS = [
@@ -124,8 +140,10 @@ const MAQAM_STATIONS = [
 export function calculateSufiLataifSoulAscension(params: {
   profile?: UserProfile | null;
   targetDate?: Date;
+  question?: string;
 }): SufiLataifReport {
   const now = params.targetDate || new Date();
+  const q = params.question?.trim() || '';
   
   // 생년월일 수비학 시드 계산
   let birthSeed = 42;
@@ -166,9 +184,17 @@ export function calculateSufiLataifSoulAscension(params: {
 
   const rumiWisdomQuote = `"당신이 찾는 상처는 빛이 당신에게 들어가는 자리입니다. 슬픔이 당신의 마음을 뒤흔들 때, 그것은 더 큰 기쁨을 맞이하기 위해 심장의 방을 청소하는 중입니다." (잘랄루딘 루미)`;
 
+  const calculatedAtKst = formatLataifKstTimestamp(now);
+  const lataifSynthesisMatrix = {
+    dominantTension: `${dominantActiveCenter.koreanName} ↔ ${mostNeedingPurification.koreanName} (${mostNeedingPurification.shadowTrap})`,
+    alignmentState: `${currentSpiritualStation.stationName} · ${currentSpiritualStation.stationLevel}`,
+    integratedAction: `${currentSpiritualStation.transcendenceTask}${q ? ` [질문 맥락: ${q}]` : ''}`,
+  };
+
   return {
     engineVersion: SUFI_LATAIF_VERSION,
     calculatedAt: now.toISOString(),
+    calculatedAtKst,
     lataifCenters,
     currentSpiritualStation,
     dominantActiveCenter,
@@ -176,17 +202,27 @@ export function calculateSufiLataifSoulAscension(params: {
     spiritualHeartPurityScore,
     sufiDhikrPrescription,
     rumiWisdomQuote,
+    lataifSynthesisMatrix,
   };
 }
 
 export function formatSufiLataifSoulAscensionPrompt(report: SufiLataifReport): string {
-  return `### 🕊️ 정통 수피즘 심장의 7대 라타이프(Lataif) 영혼 정화 & 미크라즈 상승 엔진 (${SUFI_LATAIF_VERSION})
-- **현재 영적 스테이션 (Maqam)**: [${report.currentSpiritualStation.stationName}] (${report.currentSpiritualStation.stationLevel})
-  - 핵심 영적 화두: ${report.currentSpiritualStation.coreTheme}
-  - 승천 초월 과제: ${report.currentSpiritualStation.transcendenceTask}
-- **가장 활성화된 라타이프**: ${report.dominantActiveCenter.koreanName} (${report.dominantActiveCenter.location}, ${report.dominantActiveCenter.activationLevel}점)
-- **정화가 필요한 라타이프**: ${report.mostNeedingPurification.koreanName} (${report.mostNeedingPurification.shadowTrap})
-- **심장의 맑음 지수 (Purity Score)**: ${report.spiritualHeartPurityScore}점 / 100점
-- **수피 지크르(Dhikr) 처방**: ${report.sufiDhikrPrescription}
-- **루미(Rumi)의 영적 조언**: ${report.rumiWisdomQuote}`;
+  const lines = [
+    `### 🕊️ 정통 수피즘 심장의 7대 라타이프(Lataif) 영혼 정화 & 미크라즈 상승 엔진 (${SUFI_LATAIF_VERSION})`,
+    `- **연산 시각**: ${report.calculatedAtKst}`,
+    `- **현재 영적 스테이션 (Maqam)**: [${report.currentSpiritualStation.stationName}] (${report.currentSpiritualStation.stationLevel})`,
+    `  - 핵심 영적 화두: ${report.currentSpiritualStation.coreTheme}`,
+    `  - 승천 초월 과제: ${report.currentSpiritualStation.transcendenceTask}`,
+    `- **가장 활성화된 라타이프**: ${report.dominantActiveCenter.koreanName} (${report.dominantActiveCenter.location}, ${report.dominantActiveCenter.subtleCapacity})`,
+    `- **정화가 필요한 라타이프**: ${report.mostNeedingPurification.koreanName} (${report.mostNeedingPurification.shadowTrap})`,
+    `- **수피 지크르(Dhikr) 처방**: ${report.sufiDhikrPrescription}`,
+    `- **루미(Rumi)의 영적 조언**: ${report.rumiWisdomQuote}`,
+  ];
+  if (report.lataifSynthesisMatrix) {
+    lines.push(
+      `- **교차 매트릭스**: [핵심 긴장: ${report.lataifSynthesisMatrix.dominantTension} | 조율 상태: ${report.lataifSynthesisMatrix.alignmentState}]`,
+      `  - 통합 실천: ${report.lataifSynthesisMatrix.integratedAction}`,
+    );
+  }
+  return lines.join('\n');
 }
