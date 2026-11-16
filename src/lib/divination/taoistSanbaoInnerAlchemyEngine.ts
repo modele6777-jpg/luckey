@@ -18,7 +18,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const TAOIST_SANBAO_VERSION = 'LUCKEY-TAOIST-SANBAO-v2.0.0';
+export const TAOIST_SANBAO_VERSION = 'LUCKEY-TAOIST-SANBAO-v2.1.0';
 
 function formatSanbaoKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -27,7 +27,7 @@ function formatSanbaoKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
 }
 
 export interface SanbaoEnergyLevels {
@@ -51,6 +51,8 @@ export interface TaoistSanbaoReport {
   overallHarmonyScore: number;  // 0 ~ 100 삼보 조화도
   dantianPrescription: string;  // 단전 집중 처방
   taoistBreathingPractice: string; // 일일 조식(調息) 실천법
+  reflectiveQuestion: string;
+  interpretiveBoundary: string;
   sanbaoSynthesisMatrix?: {
     dominantTension: string;
     alignmentState: string;
@@ -148,6 +150,11 @@ export function calculateTaoistSanbaoInnerAlchemy(
   const taoistBreathingPractice = `도교 복식 조식법: 숨을 들이쉴 때 아랫배를 부드럽게 부풀리고(4초), 2초간 멈춘 뒤, 천천히 입으로 숨을 내쉬며(6초) 몸속의 탁기(濁氣)를 배출하세요. 3회 반복으로 정·기·신이 즉각 정렬됩니다.`;
   const calculatedAtKst = formatSanbaoKstTimestamp(targetDate);
   const q = (question || '').trim();
+  const reflectiveQuestion = q
+    ? `"${q}" 앞에서 ${dominantTreasure}의 기운을 낭비하지 않고 ${depletedTreasure}을 채우기 위해, 오늘 가장 먼저 줄여야 할 소모는 무엇입니까?`
+    : `${alchemyPhase.phaseName} 국면에서 ${alchemyPhase.transformationTask}을 시작하기 위해, 지금 당장 내려놓을 수 있는 긴장은 무엇입니까?`;
+  const interpretiveBoundary =
+    '도교 내단학 삼보(정·기·신)와 단전·조식법 상징은 몸과 마음의 휴식과 호흡 리듬을 살피기 위한 양생적 은유이며, 단정적 미래 예측이나 의학적 진단·처방을 대체하지 않습니다.';
   const sanbaoSynthesisMatrix = {
     dominantTension: `${dominantTreasure} ↔ ${depletedTreasure}`,
     alignmentState: `${alchemyPhase.phaseName} — ${alchemyPhase.meaning}`,
@@ -165,6 +172,8 @@ export function calculateTaoistSanbaoInnerAlchemy(
     overallHarmonyScore: Math.max(30, Math.min(99, overallHarmonyScore)),
     dantianPrescription,
     taoistBreathingPractice,
+    reflectiveQuestion,
+    interpretiveBoundary,
     sanbaoSynthesisMatrix,
   };
 }
@@ -179,5 +188,7 @@ export function formatTaoistSanbaoInnerAlchemyPrompt(report: TaoistSanbaoReport)
 - **내단학 변환 국면**: ${report.alchemyPhase.phaseName} [${report.alchemyPhase.meaning}]
 - **내단 승화 핵심 과제**: ${report.alchemyPhase.transformationTask}
 - **단전(丹田) 집중 가이드**: ${report.dantianPrescription}
-- **일일 도교 조식법 (Breathing)**: ${report.taoistBreathingPractice}${matrixLine}`;
+- **일일 도교 조식법 (Breathing)**: ${report.taoistBreathingPractice}${matrixLine}
+- **성찰 질문**: ${report.reflectiveQuestion}
+- **해석 경계**: ${report.interpretiveBoundary}`;
 }

@@ -13,7 +13,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const TAOIST_SHANGQING_TWENTY_FOUR_SPIRITS_ENGINE_VERSION = '2.0.0';
+export const TAOIST_SHANGQING_TWENTY_FOUR_SPIRITS_ENGINE_VERSION = '2.1.0';
 
 function formatShangqingKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -22,7 +22,7 @@ function formatShangqingKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
 }
 
 export interface DantianEnergy {
@@ -55,7 +55,10 @@ export interface TaoistShangqingTwentyFourSpiritsReport {
     lowerQihai: DantianEnergy;
   };
   activeTrueSpirit: ShangqingTrueSpirit;
+  secondaryTrueSpirit: ShangqingTrueSpirit;
   zunsiPrescription: string; // 도홍경 진고 존사 개운 처방
+  reflectiveQuestion: string;
+  interpretiveBoundary: string;
   shangqingSynthesisMatrix?: {
     dominantTension: string;
     alignmentState: string;
@@ -167,12 +170,18 @@ export function calculateTaoistShangqingTwentyFourSpirits(options?: {
 
   const spiritIdx = seed % SHANGQING_SPIRITS_DEF.length;
   const activeTrueSpirit = SHANGQING_SPIRITS_DEF[spiritIdx];
+  const secondaryTrueSpirit = SHANGQING_SPIRITS_DEF[(spiritIdx + 1) % SHANGQING_SPIRITS_DEF.length];
 
   const zunsiPrescription = `도홍경 《진고》의 가르침에 따라, 하루 일과 중 5분간 눈을 감고 ${activeTrueSpirit.nameKo}의 존사 비결("${activeTrueSpirit.contemplationMantra}")을 실행하십시오. ${activeTrueSpirit.dantianAffinity}에 빛이 모여 사기가 침범하지 못할 것입니다.`;
   const calculatedAtKst = formatShangqingKstTimestamp(now);
+  const reflectiveQuestion = question
+    ? `"${question}"의 자리에서 ${activeTrueSpirit.nameKo}의 고요한 중심과 보조 ${secondaryTrueSpirit.nameKo}의 조력을 함께 세우려면, 지금 어떤 잡념부터 비워내겠습니까?`
+    : `${activeTrueSpirit.dantianAffinity}의 기운을 밝히며 5분간 존사(存思)를 실천할 때, 오늘 마음속에서 가장 먼저 가라앉히고 싶은 소음은 무엇입니까?`;
+  const interpretiveBoundary =
+    '도홍경 《진고》 상청파 24진신과 삼단전 존사(存思) 상징은 내면의 집중과 정서적 평정을 돕기 위한 전통 관조 은유이며, 단정적 미래 예측이나 의학적·영적 처방을 대체하지 않습니다.';
   const shangqingSynthesisMatrix = {
     dominantTension: `상단전(${upperNiwan.state}) ↔ 중단전(${middleJiangGong.state}) ↔ 하단전(${lowerQihai.state})`,
-    alignmentState: `진신: ${activeTrueSpirit.nameKo} (${activeTrueSpirit.dantianAffinity} · ${activeTrueSpirit.bodyDomain})`,
+    alignmentState: `주재 진신: ${activeTrueSpirit.nameKo} · 보조 교차: ${secondaryTrueSpirit.nameKo} (${activeTrueSpirit.dantianAffinity})`,
     integratedAction: `${activeTrueSpirit.contemplationMantra}${question ? ` [질문 맥락: ${question}]` : ''}`,
   };
 
@@ -188,7 +197,10 @@ export function calculateTaoistShangqingTwentyFourSpirits(options?: {
       lowerQihai,
     },
     activeTrueSpirit,
+    secondaryTrueSpirit,
     zunsiPrescription,
+    reflectiveQuestion,
+    interpretiveBoundary,
     shangqingSynthesisMatrix,
   };
 }
@@ -207,5 +219,8 @@ export function formatTaoistShangqingTwentyFourSpiritsPrompt(rep: TaoistShangqin
   - 귀속 영역: ${rep.activeTrueSpirit.dantianAffinity} [부위: ${rep.activeTrueSpirit.bodyDomain}]
   - 신명 직능: ${rep.activeTrueSpirit.functionDesc}
   - 존사(存思) 관조 비결: "${rep.activeTrueSpirit.contemplationMantra}"
-· 도홍경 진고 현실 통령 처방: ${rep.zunsiPrescription}${matrixLine}`;
+· 보조 교차 진신: ${rep.secondaryTrueSpirit.nameKo} (${rep.secondaryTrueSpirit.dantianAffinity})
+· 도홍경 진고 현실 통령 처방: ${rep.zunsiPrescription}${matrixLine}
+· 성찰 질문: ${rep.reflectiveQuestion}
+· 해석 경계: ${rep.interpretiveBoundary}`;
 }

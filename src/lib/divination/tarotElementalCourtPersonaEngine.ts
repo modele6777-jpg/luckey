@@ -15,7 +15,7 @@
 import type { UserProfile } from '../sharedState';
 import { calculateDetailedSaju } from '../sajuAnalysis';
 
-export const TAROT_ELEMENTAL_COURT_VERSION = 'LUCKEY-TAROT-ELEMENTAL-COURT-v2.0.0';
+export const TAROT_ELEMENTAL_COURT_VERSION = 'LUCKEY-TAROT-ELEMENTAL-COURT-v2.1.0';
 
 function formatCourtKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -24,7 +24,7 @@ function formatCourtKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
 }
 
 export type TarotElement = 'Fire (열정과 추진력)' | 'Water (감성과 영적 공감)' | 'Air (이성과 전략적 명료함)' | 'Earth (물질과 현실적 실행)';
@@ -60,6 +60,8 @@ export interface TarotElementalCourtReport {
   elementalBalance: TarotElementalBalance;
   oneHundredEightySecondRitual: string;
   synthesisPromptGuidance: string;
+  reflectiveQuestion: string;
+  interpretiveBoundary: string;
   courtSynthesisMatrix?: {
     dominantTension: string;
     alignmentState: string;
@@ -259,10 +261,16 @@ export function calculateTarotElementalCourt(
 
   const now = new Date();
   const calculatedAtKst = formatCourtKstTimestamp(now);
+  const q = inputTopic.trim();
+  const reflectiveQuestion = q
+    ? `"${q}" 앞에서 [${activePersonaCourt.nameKo}]의 강점을 쓰면서도 [${subconsciousShadowCourt.nameKo}]의 맹점에 휩쓸리지 않으려면, 오늘 어떤 한 걸음을 의식적으로 늦추거나 분명히 하겠습니까?`
+    : `[${activePersonaCourt.nameKo}]의 태도로 하루를 열 때, 지금 내 안에서 가장 먼저 다독여야 할 [${subconsciousShadowCourt.nameKo}]의 그림자는 무엇입니까?`;
+  const interpretiveBoundary =
+    '타로 16대 궁정 카드와 4대 원소 상징은 현재의 대인 태도와 내면의 맹점을 비추는 심리·원형적 관점이며, 단정적 미래 예측이나 의학·법률·재무 판단을 대체하지 않습니다.';
   const courtSynthesisMatrix = {
     dominantTension: `${activePersonaCourt.nameKo} ↔ ${subconsciousShadowCourt.nameKo}`,
     alignmentState: `우세 원소(${elementalBalance.dominantElement}) · 보완 원소(${elementalBalance.deficientElement})`,
-    integratedAction: `${activePersonaCourt.actionMantra}${inputTopic ? ` [질문 맥락: ${inputTopic}]` : ''}`,
+    integratedAction: `${activePersonaCourt.actionMantra}${q ? ` [질문 맥락: ${q}]` : ''}`,
   };
 
   const synthesisPromptGuidance = `
@@ -273,6 +281,8 @@ export function calculateTarotElementalCourt(
 - 원소 연금술 행동 조언: "${elementalBalance.elementalHarmonizerAdvice}"
 - 페르소나 실천 만트라: "${activePersonaCourt.actionMantra}"
 - 궁정 페르소나 교차 매트릭스: 핵심 긴장(${courtSynthesisMatrix.dominantTension}) · 원소 조율(${courtSynthesisMatrix.alignmentState}) · 통합 실천(${courtSynthesisMatrix.integratedAction})
+- 성찰 질문: ${reflectiveQuestion}
+- 해석 경계: ${interpretiveBoundary}
 내담자에게 "카드를 뽑아보니~"라는 설명조 없이, 상대의 현재 페르소나 성향과 주의해야 할 그림자 맹점을 사람을 꿰뚫어 보듯 단호하고 따뜻하게 짚어줄 것.
 `.trim();
 
@@ -285,6 +295,8 @@ export function calculateTarotElementalCourt(
     elementalBalance,
     oneHundredEightySecondRitual,
     synthesisPromptGuidance,
+    reflectiveQuestion,
+    interpretiveBoundary,
     courtSynthesisMatrix,
   };
 }

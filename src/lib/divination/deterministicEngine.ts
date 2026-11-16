@@ -2015,7 +2015,7 @@ try {
   // 75. 도교 내단학 삼보(정·기·신) 생체 에너지 순환 & 연정화기 엔진
   const taoistSanbaoResult = calculateSupplement('taoistSanbaoResult', () => ((() => {
     try {
-      return calculateTaoistSanbaoInnerAlchemy(profile, now);
+      return calculateTaoistSanbaoInnerAlchemy(profile, now, question);
     } catch (_) {
       return null;
     }
@@ -4781,7 +4781,7 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'hellenisticLots', nameKo: '헬레니즘 포르투나 롯', icon: '🏛️', category: 'deep_master' },
   { key: 'iching384Yao', nameKo: '주역 384효 동효변괘', icon: '☯️', category: 'deep_master' },
   { key: 'sajuTwelveStagesTomb', nameKo: '12운성 묘고지 개고', icon: '🗝️', category: 'deep_master' },
-  { key: 'tarotElementalCourt', nameKo: '타로 16 코트 페르소나', icon: '🎭', category: 'deep_master' },
+  { key: 'tarotElementalCourt', nameKo: '타로 16 코트 페르소나', icon: '🎭', category: 'deep_master', summary: '타로 16대 궁정 카드와 4대 원소 상징으로 현재의 외적 태도와 내면의 그림자 맹점을 비추는 관점' },
   { key: 'karmicSynastry', nameKo: '카르믹 시나스트리', icon: '💫', category: 'deep_master' },
   { key: 'fiveEmotionsPulse', nameKo: '오행 칠정 심신맥파', icon: '💓', category: 'deep_master' },
   { key: 'hermeticKybalion', nameKo: '카이발리온 7대 우주법칙', icon: '📜', category: 'deep_master', summary: '정신성·상응·극성·리듬의 7대 우주 원리로 지금의 흔들림을 원인 주도권으로 전환합니다.' },
@@ -4789,7 +4789,7 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'alchemicalTransmutation', nameKo: '서양 연금술 7단계', icon: '⚗️', category: 'deep_master', summary: '흑화·백화·황화·적화의 연금술 7단계로 지금 겪는 시련이 어떤 내면 변환 과정인지 읽어 줍니다.' },
   { key: 'ziweiHuaJi', nameKo: '자미두수 화기 전화위복', icon: '🌌', category: 'deep_master', summary: '자미두수 생년 화기(化忌)가 깃든 결핍의 궁위를 독보적 장인정신과 전화위복의 돌파구로 승화합니다.' },
   { key: 'celticTreeOgham', nameKo: '켈트 오검 수목지혜', icon: '🌲', category: 'deep_master' },
-  { key: 'taoistSanbao', nameKo: '도교 삼보 내단에너지', icon: '☯️', category: 'deep_master' },
+  { key: 'taoistSanbao', nameKo: '도교 삼보 내단에너지', icon: '☯️', category: 'deep_master', summary: '도교 내단학 삼보(정·기·신)의 균형과 연정화기·연기화신 상징으로 몸과 마음의 소모와 회복을 살피는 관점' },
   { key: 'tibetanBardo', nameKo: '티베트 바르도 6환생', icon: '☸️', category: 'deep_master' },
   { key: 'mesopotamianSevenGates', nameKo: '메소포타미아 7관문', icon: '🏛️', category: 'deep_master' },
   { key: 'egyptianDecans', nameKo: '이집트 36데칸', icon: '🏺', category: 'deep_master', summary: '덴데라 36데칸 항성 수호신과 원소·부적 상징으로 영혼의 항해 방향을 비추는 관점' },
@@ -4845,7 +4845,7 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'vedicMahavakya', nameKo: '베다 4대 마하바키야 각성', icon: '🕉️', category: 'deep_master' },
   { key: 'sumerianApkalluWisdom', nameKo: '수메르 엔키 7압갈루 현자', icon: '🐟', category: 'deep_master', summary: '에리두 엔키의 7대 압갈루 현자와 압수(담수) 정화 상징으로 현재의 난관을 풀 지혜와 행동 원칙을 비추는 관점' },
   { key: 'celticTuathaFourTreasures', nameKo: '켈트 투아하 4대 신성보물', icon: '🗡️', category: 'deep_master' },
-  { key: 'taoistShangqingTwentyFourSpirits', nameKo: '도교 진고 상청 24성도', icon: '✨', category: 'deep_master' },
+  { key: 'taoistShangqingTwentyFourSpirits', nameKo: '도교 진고 상청 24성도', icon: '✨', category: 'deep_master', summary: '도홍경 《진고》 상청파 삼단전과 24진신 존사(存思) 상징으로 내면의 평정과 집중을 돕는 관점' },
   { key: 'tibetanPhowaRainbowBody', nameKo: '티베트 족첸 릭파 무지개체', icon: '🌈', category: 'deep_master' },
   { key: 'plumBlossomMeihuaOracle', nameKo: '소강절 매화역수 체용생극', icon: '🌸', category: 'deep_master' },
   { key: 'greekMoiraiAnankeFate', nameKo: '그리스 모이라이 운명실타래', icon: '🧶', category: 'deep_master', summary: '그리스 신화의 클로토·라케시스·아트로포스 삼여신과 아낭케 물레를 통해 시작·조율·매듭의 카이로스 국면을 분별합니다.' },
