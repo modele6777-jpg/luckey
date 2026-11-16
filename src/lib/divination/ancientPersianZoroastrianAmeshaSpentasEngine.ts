@@ -21,7 +21,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const ZOROASTRIAN_AMESHA_SPENTAS_VERSION = 'LUCKEY-ZOROASTRIAN-AMESHA-SPENTAS-v2.0.0';
+export const ZOROASTRIAN_AMESHA_SPENTAS_VERSION = 'LUCKEY-ZOROASTRIAN-AMESHA-SPENTAS-v2.1.0';
 
 export interface AmeshaSpentaStage {
   stageLevel: number;
@@ -195,7 +195,7 @@ function buildSynthesisMatrix(
 
 function getKstDateString(now: Date): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
-  return kst.toISOString().replace('T', ' ').substring(0, 19) + ' KST';
+  return kst.toISOString().replace('T', ' ').substring(0, 19) + ' +09:00 KST';
 }
 
 function hashSeed(seedStr: string): number {
@@ -270,5 +270,6 @@ export function formatZoroastrianAmeshaSpentasPrompt(result: ZoroastrianAmeshaSp
   → 시의 조언: ${result.temporalAtarRhythm.timingAdvice}
 - 아메샤 스펜타 교차 매트릭스: ${result.ameshaSynthesisMatrix.synthesizedVerdict}
 - 아베스타 신성 불꽃의 계시: 《${result.avestaSacredFireEpiphany.fireSceneTitle}》
-  → 빛의 불멸 지혜: "${result.avestaSacredFireEpiphany.luminousWisdom}"`;
+  → 빛의 불멸 지혜: "${result.avestaSacredFireEpiphany.luminousWisdom}"
+- 해석 경계: 아베스타 아메샤 스펜타와 아샤(Asha) 진리 상징을 빌린 정성적 빛의 조화 참고 관점이며, 수치 점수나 확정 예언이 아닙니다.`;
 }
