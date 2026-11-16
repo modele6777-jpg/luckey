@@ -13,7 +13,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const SCOTTISH_DAVID_HUME_VERSION = 'LUCKEY-DAVID-HUME-TREATISE-HUMAN-NATURE-v2.0.0';
+export const SCOTTISH_DAVID_HUME_VERSION = 'LUCKEY-DAVID-HUME-TREATISE-HUMAN-NATURE-v2.1.0';
 
 export interface HumeTheme {
   themeKey: string;
@@ -42,11 +42,14 @@ export interface DavidHumeTreatiseHumanNatureResult {
   gentleComposurePeaceScore: number;            // 극단과 광신을 경계하는 온유한 평정심 (Gentle Composure)
   // 세부 분석
   activeHumeTheme: HumeTheme;
+  secondaryHumeTheme: HumeTheme;
   focalHumeAphorism: HumeAphorism;
   humeComprehensiveGuidance: {
     guidanceTitle: string;
     philosophicalCounsel: string;
   };
+  reflectiveQuestion: string;
+  interpretiveBoundary: string;
   humeSynthesisMatrix?: {
     dominantTension: string;
     alignmentState: string;
@@ -61,7 +64,7 @@ function formatHumeKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
 }
 
 function describeHumeStage(score: number): string {
@@ -166,9 +169,11 @@ export function calculateDavidHumeTreatiseHumanNature(
   const gentleComposurePeaceScore = 75 + ((absHash >> 12) % 24);
 
   const themeIndex = (absHash >> 4) % HUME_THEMES.length;
+  const secondaryThemeIndex = (themeIndex + 1 + ((absHash >> 5) % (HUME_THEMES.length - 1))) % HUME_THEMES.length;
   const aphorismIndex = (absHash >> 7) % HUME_APHORISMS.length;
 
   const activeHumeTheme = HUME_THEMES[themeIndex];
+  const secondaryHumeTheme = HUME_THEMES[secondaryThemeIndex];
   const focalHumeAphorism = HUME_APHORISMS[aphorismIndex];
 
   const guidanceTitle = `데이비드 흄 온건한 회의주의와 공감 지혜: ${activeHumeTheme.themeTitleKo}`;
@@ -182,10 +187,15 @@ export function calculateDavidHumeTreatiseHumanNature(
     (mitigatedSkepticismScore + sympathyBenevolenceEmpathyScore + passionsReasonHarmonyScore + customExperienceWisdomIndex + gentleComposurePeaceScore) / 5
   );
   const humeSynthesisMatrix = {
-    dominantTension: `${activeHumeTheme.themeTitleKo} ↔ ${focalHumeAphorism.sourceContext}`,
+    dominantTension: `${activeHumeTheme.themeTitleKo} ↔ ${secondaryHumeTheme.themeTitleKo}`,
     alignmentState: describeHumeStage(composite),
     integratedAction: `${focalHumeAphorism.actionGuidance}${query?.trim() ? ` [질문 맥락: ${query.trim()}]` : ''}`,
   };
+  const trimmedQ = query?.trim() ?? '';
+  const reflectiveQuestion = trimmedQ
+    ? `지금 고민하시는 '${trimmedQ}'에서 성급한 독단을 한 걸음 거두고 경험과 온유한 공감(Sympathy)으로 다시 바라보면 어떤 유연한 길이 보입니까?`
+    : `오늘 붙잡고 있는 확신 가운데, 온건한 회의주의의 여백과 타인을 향한 따뜻한 공감을 함께 열어 둘 부분은 어디입니까?`;
+  const interpretiveBoundary = '이 리포트는 데이비드 흄의 경험론과 인간 본성론 철학을 바탕으로 한 성찰 비유이며, 사실적 인과 단정이나 미래 예측이 아닙니다.';
 
   return {
     engineVersion: SCOTTISH_DAVID_HUME_VERSION,
@@ -196,11 +206,14 @@ export function calculateDavidHumeTreatiseHumanNature(
     customExperienceWisdomIndex,
     gentleComposurePeaceScore,
     activeHumeTheme,
+    secondaryHumeTheme,
     focalHumeAphorism,
     humeComprehensiveGuidance: {
       guidanceTitle,
       philosophicalCounsel,
     },
+    reflectiveQuestion,
+    interpretiveBoundary,
     humeSynthesisMatrix,
   };
 }
@@ -214,6 +227,7 @@ export function formatDavidHumeTreatiseHumanNaturePrompt(res: DavidHumeTreatiseH
     `- 연산 시각: ${res.calculatedAtKst} | 엔진 버전: ${res.engineVersion}`,
     `- 경험론적 평정 국면: ${describeHumeStage(composite)}`,
     `- 핵심 경험론 테마: ${res.activeHumeTheme.themeTitleKo} [${res.activeHumeTheme.themeTitleEn}]`,
+    `- 보조 교차 테마: ${res.secondaryHumeTheme.themeTitleKo} [${res.secondaryHumeTheme.themeTitleEn}]`,
     `- 실존적 통찰: ${res.activeHumeTheme.existentialInsight}`,
     `- 실천적 조언: ${res.activeHumeTheme.practicalCounsel}`,
     `- 핵심 원전 경구: "${res.focalHumeAphorism.aphorismKo}"`,
@@ -227,5 +241,9 @@ export function formatDavidHumeTreatiseHumanNaturePrompt(res: DavidHumeTreatiseH
       `- 통합 실천: ${res.humeSynthesisMatrix.integratedAction}`,
     );
   }
+  lines.push(
+    `- 성찰 질문: ${res.reflectiveQuestion}`,
+    `- 해석 경계: ${res.interpretiveBoundary}`,
+  );
   return lines.join('\n');
 }

@@ -4622,7 +4622,7 @@ test('Taoist Liezi Wind Riding Engine: calculates wind riding unity, Muhayu rest
 });
 
 test('Samkhya Twenty-Five Tattvas Engine: calculates Viveka discernment, Guna balance and Kaivalya liberation index', () => {
-  const rep = calculateSamkhyaTwentyFiveTattvas({ profile, question: '상키야 25타트바 분별지' });
+  const rep = calculateSamkhyaTwentyFiveTattvas({ profile, question: '상키야 25타트바 분별지', now: new Date('2026-11-17T05:35:00+09:00') });
   assert.equal(rep.engineVersion, SAMKHYA_TATTVAS_ENGINE_VERSION);
   assert(rep.vivekaDiscernmentScore >= 0 && rep.vivekaDiscernmentScore <= 100);
   assert(rep.kaivalyaLiberationIndex >= 0 && rep.kaivalyaLiberationIndex <= 100);
@@ -4630,12 +4630,16 @@ test('Samkhya Twenty-Five Tattvas Engine: calculates Viveka discernment, Guna ba
   assert(rep.prakritiEntanglementRisk >= 0 && rep.prakritiEntanglementRisk <= 100);
   assert.equal(rep.gunaBalance.sattva + rep.gunaBalance.rajas + rep.gunaBalance.tamas, 100);
   assert(rep.dominantTattva.nameKo.length > 0);
-  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(Boolean(rep.samkhyaSynthesisMatrix?.integratedAction));
+  assert(rep.reflectiveQuestion.includes('상키야 25타트바 분별지'));
+  assert(rep.interpretiveBoundary.includes('성찰 비유'));
   const prompt = formatSamkhyaTwentyFiveTattvasPrompt(rep);
   assert(prompt.includes('고대 인도 상키야(Samkhya) 25타트바 & 푸루샤-프라크리티 분별지 실측 리포트'));
   assert(prompt.includes(rep.dominantTattva.nameKo));
   assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('성찰 질문'));
+  assert(prompt.includes('해석 경계'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });
@@ -6621,7 +6625,7 @@ test('Henry David Thoreau Walden Engine: provides qualitative Simplicity guidanc
 });
 
 test('David Hume Treatise of Human Nature Engine: calculates Mitigated Skepticism, Sympathy, and Gentle Composure', () => {
-  const rep = calculateDavidHumeTreatiseHumanNature(profile);
+  const rep = calculateDavidHumeTreatiseHumanNature(profile, '확신과 공감의 균형', new Date('2026-11-17T05:35:00+09:00'));
   assert.equal(rep.engineVersion, SCOTTISH_DAVID_HUME_VERSION);
   assert(rep.mitigatedSkepticismScore >= 0 && rep.mitigatedSkepticismScore <= 100);
   assert(rep.sympathyBenevolenceEmpathyScore >= 0 && rep.sympathyBenevolenceEmpathyScore <= 100);
@@ -6629,12 +6633,18 @@ test('David Hume Treatise of Human Nature Engine: calculates Mitigated Skepticis
   assert(rep.customExperienceWisdomIndex >= 0 && rep.customExperienceWisdomIndex <= 100);
   assert(rep.gentleComposurePeaceScore >= 0 && rep.gentleComposurePeaceScore <= 100);
   assert(rep.activeHumeTheme.themeTitleKo.length > 0);
-  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(rep.secondaryHumeTheme.themeTitleKo.length > 0);
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(Boolean(rep.humeSynthesisMatrix?.integratedAction));
+  assert(rep.reflectiveQuestion.includes('확신과 공감의 균형'));
+  assert(rep.interpretiveBoundary.includes('성찰 비유'));
   const prompt = formatDavidHumeTreatiseHumanNaturePrompt(rep);
   assert(prompt.includes('데이비드 흄 《인간 본성에 관한 논고》 온건한 회의주의 & 공감 지표'));
   assert(prompt.includes(rep.activeHumeTheme.themeTitleKo));
+  assert(prompt.includes('보조 교차 테마'));
   assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('성찰 질문'));
+  assert(prompt.includes('해석 경계'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });
@@ -6744,7 +6754,7 @@ test('Plotinus Enneads Henosis Engine: calculates The One, Nous, Psyche, Henosis
 });
 
 test('Adam Smith Moral Sentiments Engine: calculates Impartial Spectator, Sympathy, Self-Command, and Praiseworthiness', () => {
-  const rep = calculateScottishAdamSmithMoralSentiments(profile);
+  const rep = calculateScottishAdamSmithMoralSentiments(profile, '원칙과 온정의 조화', new Date('2026-11-17T05:35:00+09:00'));
   assert.equal(rep.engineVersion, SCOTTISH_ADAM_SMITH_VERSION);
   assert(rep.impartialSpectatorConscienceScore >= 0 && rep.impartialSpectatorConscienceScore <= 100);
   assert(rep.mutualSympathyFellowFeelingIndex >= 0 && rep.mutualSympathyFellowFeelingIndex <= 100);
@@ -6752,12 +6762,18 @@ test('Adam Smith Moral Sentiments Engine: calculates Impartial Spectator, Sympat
   assert(rep.justiceBeneficenceHarmonyIndex >= 0 && rep.justiceBeneficenceHarmonyIndex <= 100);
   assert(rep.praiseworthinessIntegrityScore >= 0 && rep.praiseworthinessIntegrityScore <= 100);
   assert(rep.activeAdamSmithTheme.themeTitleKo.length > 0);
-  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(rep.secondaryAdamSmithTheme.themeTitleKo.length > 0);
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(Boolean(rep.adamSmithSynthesisMatrix?.integratedAction));
+  assert(rep.reflectiveQuestion.includes('원칙과 온정의 조화'));
+  assert(rep.interpretiveBoundary.includes('성찰 비유'));
   const prompt = formatScottishAdamSmithMoralSentimentsPrompt(rep);
   assert(prompt.includes('아담 스미스 《도덕감정론》 공정한 관찰자 & 공감·자기통제 지표'));
   assert(prompt.includes(rep.activeAdamSmithTheme.themeTitleKo));
+  assert(prompt.includes('보조 교차 테마'));
   assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('성찰 질문'));
+  assert(prompt.includes('해석 경계'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });
