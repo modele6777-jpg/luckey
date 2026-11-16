@@ -15,7 +15,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const TIBETAN_PHOWA_RAINBOW_BODY_ENGINE_VERSION = '2.0.0';
+export const TIBETAN_PHOWA_RAINBOW_BODY_ENGINE_VERSION = '2.1.0';
 
 function formatPhowaKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -24,7 +24,7 @@ function formatPhowaKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
 }
 
 export interface FiveBuddhaWisdom {
@@ -51,6 +51,8 @@ export interface TibetanPhowaRainbowBodyReport {
   transmutationPath: string; // 번뇌→지혜 승화 경로
   dzogchenDirectPointers: string; // 족첸 본각 직관 요결
   dailyPhowaRitual: string; // 일상 의식 집중 및 정화 처방
+  reflectiveQuestion: string;
+  interpretiveBoundary: string;
   phowaSynthesisMatrix?: {
     dominantTension: string;
     alignmentState: string;
@@ -146,6 +148,11 @@ export function calculateTibetanPhowaRainbowBody(options?: {
   const dailyPhowaRitual = `정수리 백회(Brahmarandhra)에 ${primaryWisdom.colorRay}을 시각화하고, 숨을 들이쉴 때 청정한 본각을 채우고 내쉴 때 잡념을 허공으로 전이(Phowa)하십시오. (${primaryWisdom.meditationAdvice})`;
 
   const calculatedAtKst = formatPhowaKstTimestamp(now);
+  const reflectiveQuestion = question
+    ? `"${question}"의 번뇌를 ${primaryWisdom.nameKo}의 지혜로 비추고 보조 ${secondaryWisdom.nameKo}의 균형을 더할 때, 지금 가장 고요히 놓아보낼 집착은 무엇입니까?`
+    : `${primaryWisdom.colorRay}의 자각으로 호흡을 가다듬을 때, 오늘 마음속에서 가장 먼저 맑히고 싶은 감정의 흔들림은 무엇입니까?`;
+  const interpretiveBoundary =
+    '티베트 족첸(Dzogchen) 릭파와 포와·5대 붓다 지혜 상징은 내면의 명징함과 감정 승화를 돕기 위한 관조적 은유이며, 단정적 미래 예측이나 의학적 처방을 대체하지 않습니다.';
   const phowaSynthesisMatrix = {
     dominantTension: `${primaryWisdom.nameKo} ↔ ${secondaryWisdom.nameKo}`,
     alignmentState: `${primaryWisdom.colorRay} · 원소(${primaryWisdom.element})`,
@@ -164,6 +171,8 @@ export function calculateTibetanPhowaRainbowBody(options?: {
     transmutationPath,
     dzogchenDirectPointers,
     dailyPhowaRitual,
+    reflectiveQuestion,
+    interpretiveBoundary,
     phowaSynthesisMatrix,
   };
 }
@@ -179,5 +188,7 @@ export function formatTibetanPhowaRainbowBodyPrompt(rep: TibetanPhowaRainbowBody
   - 번뇌 승화: ${rep.primaryWisdom.transmutation}
 · 보조 지혜 광선: ${rep.secondaryWisdom.nameKo} (${rep.secondaryWisdom.colorRay})
 · 족첸 본각 직관 요결: ${rep.dzogchenDirectPointers}
-· 일상 포와 정화 리추얼: ${rep.dailyPhowaRitual}${matrixLine}`;
+· 일상 포와 정화 리추얼: ${rep.dailyPhowaRitual}${matrixLine}
+· 성찰 질문: ${rep.reflectiveQuestion}
+· 해석 경계: ${rep.interpretiveBoundary}`;
 }

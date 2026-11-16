@@ -2024,7 +2024,7 @@ try {
   // 76. 티베트 불교 바르도 6대 환생 상태 & 전환기 의식 항해 엔진
   const tibetanBardoResult = calculateSupplement('tibetanBardoResult', () => ((() => {
     try {
-      return calculateTibetanBardoNavigation(profile, now);
+      return calculateTibetanBardoNavigation(profile, now, question);
     } catch (_) {
       return null;
     }
@@ -2240,7 +2240,7 @@ try {
   // 100. 티베트 정통 본교(Bon) 카르마 9승 & 5대 영혼 수호 융드룽 엔진
   const tibetanBonResult = calculateSupplement('tibetanBonResult', () => ((() => {
     try {
-      return calculateTibetanBonNineWays(profile);
+      return calculateTibetanBonNineWays(profile, { question });
     } catch (_) {
       return null;
     }
@@ -4790,7 +4790,7 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'ziweiHuaJi', nameKo: '자미두수 화기 전화위복', icon: '🌌', category: 'deep_master', summary: '자미두수 생년 화기(化忌)가 깃든 결핍의 궁위를 독보적 장인정신과 전화위복의 돌파구로 승화합니다.' },
   { key: 'celticTreeOgham', nameKo: '켈트 오검 수목지혜', icon: '🌲', category: 'deep_master' },
   { key: 'taoistSanbao', nameKo: '도교 삼보 내단에너지', icon: '☯️', category: 'deep_master', summary: '도교 내단학 삼보(정·기·신)의 균형과 연정화기·연기화신 상징으로 몸과 마음의 소모와 회복을 살피는 관점' },
-  { key: 'tibetanBardo', nameKo: '티베트 바르도 6환생', icon: '☸️', category: 'deep_master' },
+  { key: 'tibetanBardo', nameKo: '티베트 바르도 6환생', icon: '☸️', category: 'deep_master', summary: '티베트 사자의 서 6대 바르도 중음 상징으로 인생 전환기의 혼란과 자각의 틈을 비추는 관점' },
   { key: 'mesopotamianSevenGates', nameKo: '메소포타미아 7관문', icon: '🏛️', category: 'deep_master' },
   { key: 'egyptianDecans', nameKo: '이집트 36데칸', icon: '🏺', category: 'deep_master', summary: '덴데라 36데칸 항성 수호신과 원소·부적 상징으로 영혼의 항해 방향을 비추는 관점' },
   { key: 'sufiLataif', nameKo: '수피 7라타이프', icon: '🕌', category: 'deep_master' },
@@ -4814,7 +4814,7 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'zhongLuAlchemy', nameKo: '종여내단 3품선도 환원', icon: '☯️', category: 'deep_master' },
   { key: 'druidMoonTrees', nameKo: '켈트 드루이드 13달나무', icon: '🌲', category: 'deep_master' },
   { key: 'tiebanShenshu', nameKo: '철판신수 12000조식', icon: '📜', category: 'deep_master' },
-  { key: 'tibetanBonNineWays', nameKo: '티베트 본교 9승 융드룽', icon: '卐', category: 'deep_master' },
+  { key: 'tibetanBonNineWays', nameKo: '티베트 본교 9승 융드룽', icon: '卐', category: 'deep_master', summary: '티베트 본교 9승과 5대 영혼 활력소 상징으로 일상 정화와 내면의 중심을 살피는 관점' },
   { key: 'eleusinianMysteries', nameKo: '엘레우시스 영혼입사의례', icon: '🌾', category: 'deep_master' },
   { key: 'vedicNakshatra108Pada', nameKo: '베다 108파다 카르마성좌', icon: '🕉️', category: 'deep_master' },
   { key: 'egyptianHermeticCartouche', nameKo: '이집트 헤르메스 카르투슈', icon: '𓋹', category: 'deep_master', summary: '고대 이집트 헤르메스주의 카르투슈 원형과 영혼 삼위일체(카·바·아크)를 통해 실천·개성·통찰의 조화를 비춥니다.' },
@@ -4846,7 +4846,7 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'sumerianApkalluWisdom', nameKo: '수메르 엔키 7압갈루 현자', icon: '🐟', category: 'deep_master', summary: '에리두 엔키의 7대 압갈루 현자와 압수(담수) 정화 상징으로 현재의 난관을 풀 지혜와 행동 원칙을 비추는 관점' },
   { key: 'celticTuathaFourTreasures', nameKo: '켈트 투아하 4대 신성보물', icon: '🗡️', category: 'deep_master' },
   { key: 'taoistShangqingTwentyFourSpirits', nameKo: '도교 진고 상청 24성도', icon: '✨', category: 'deep_master', summary: '도홍경 《진고》 상청파 삼단전과 24진신 존사(存思) 상징으로 내면의 평정과 집중을 돕는 관점' },
-  { key: 'tibetanPhowaRainbowBody', nameKo: '티베트 족첸 릭파 무지개체', icon: '🌈', category: 'deep_master' },
+  { key: 'tibetanPhowaRainbowBody', nameKo: '티베트 족첸 릭파 무지개체', icon: '🌈', category: 'deep_master', summary: '티베트 족첸 릭파와 5대 붓다 지혜 상징으로 번뇌를 맑은 자각으로 승화하는 관점' },
   { key: 'plumBlossomMeihuaOracle', nameKo: '소강절 매화역수 체용생극', icon: '🌸', category: 'deep_master' },
   { key: 'greekMoiraiAnankeFate', nameKo: '그리스 모이라이 운명실타래', icon: '🧶', category: 'deep_master', summary: '그리스 신화의 클로토·라케시스·아트로포스 삼여신과 아낭케 물레를 통해 시작·조율·매듭의 카이로스 국면을 분별합니다.' },
   { key: 'egyptianSphinxDreamOracle', nameKo: '이집트 스핑크스 꿈신탁', icon: '🦁', category: 'deep_master', summary: '투트모세 4세 꿈의 비석과 스핑크스 4대 테트라모르프(지혜·용기·인내·조망)로 장애물 돌파를 비추는 관점' },
