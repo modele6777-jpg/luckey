@@ -12,12 +12,12 @@
  *    - 장졸들과의 동고동락(Soldier-General Solidarity): 땀과 눈물을 함께 흘리며 쌓아 올린 절대적 신뢰.
  * 3. 7대 전술적 품계 및 난중일기 친필 성찰 조언 산출
  *
- * @version LUCKEY-YISUNSIN-NANJUNG-ILGI-v2.0.0
+ * @version LUCKEY-YISUNSIN-NANJUNG-ILGI-v2.1.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const YISUNSIN_NANJUNG_ILGI_VERSION = 'LUCKEY-YISUNSIN-NANJUNG-ILGI-v2.0.0';
+export const YISUNSIN_NANJUNG_ILGI_VERSION = 'LUCKEY-YISUNSIN-NANJUNG-ILGI-v2.1.0';
 
 export interface YiSunSinStrategicStage {
   stageLevel: number;
@@ -38,7 +38,14 @@ export interface YiSunSinNanjungIlgiResult {
   geobukseonImpregnableShieldPower: number; // 거북선 돌파력 및 철벽 방호력
   // 세부 명세
   activeStrategicStage: YiSunSinStrategicStage;
+  secondaryStrategicStage: YiSunSinStrategicStage;
   primaryChungmuVirtue: {
+    virtueNameKo: string;
+    hanjaMotto: string;
+    coreEssence: string;
+    actionableDirective: string;
+  };
+  secondaryChungmuVirtue: {
     virtueNameKo: string;
     hanjaMotto: string;
     coreEssence: string;
@@ -48,6 +55,8 @@ export interface YiSunSinNanjungIlgiResult {
     diaryEntryTitle: string;
     immortalWisdom: string;
   };
+  reflectiveQuestion: string;
+  interpretiveBoundary: string;
   yiSunSinSynthesisMatrix?: {
     dominantTension: string;
     alignmentState: string;
@@ -94,7 +103,7 @@ function getKstDateString(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 KST`;
 }
 
 function hashSeed(seedStr: string): number {
@@ -123,13 +132,24 @@ export function calculateYiSunSinNanjungIlgi(
   const geobukseonImpregnableShieldPower = ((seed >> 9) % 38) + 63; // 63~100
 
   const stageIdx = (seed >> 2) % STRATEGIC_STAGES.length;
+  const secondaryStageIdx = (stageIdx + 1 + ((seed >> 4) % (STRATEGIC_STAGES.length - 1))) % STRATEGIC_STAGES.length;
   const activeStrategicStage = STRATEGIC_STAGES[stageIdx];
+  const secondaryStrategicStage = STRATEGIC_STAGES[secondaryStageIdx];
 
   const virtueIdx = (seed >> 4) % CHUNGMU_VIRTUES.length;
+  const secondaryVirtueIdx = (virtueIdx + 1 + ((seed >> 6) % (CHUNGMU_VIRTUES.length - 1))) % CHUNGMU_VIRTUES.length;
   const primaryChungmuVirtue = CHUNGMU_VIRTUES[virtueIdx];
+  const secondaryChungmuVirtue = CHUNGMU_VIRTUES[secondaryVirtueIdx];
 
   const reflectionIdx = (seed >> 6) % NANJUNG_REFLECTIONS.length;
   const nanjungIlgiReflection = NANJUNG_REFLECTIONS[reflectionIdx];
+
+  const trimmedQuery = query?.trim();
+  const reflectiveQuestion = trimmedQuery
+    ? `충무공의 《난중일기》 '${primaryChungmuVirtue.hanjaMotto}'와 '${secondaryChungmuVirtue.hanjaMotto}'를 비추어 볼 때, "${trimmedQuery}"에서 힘을 분산시키지 않고 반드시 먼저 지켜야 할 좁은 길목은 어디인가요?`
+    : `지금 맞선 국면에서, '${activeStrategicStage.stageNameKo}'의 침착함과 '${secondaryStrategicStage.stageNameKo}'의 돌파력을 함께 살리려면 무엇을 먼저 정찰하고 대비해야 할까요?`;
+
+  const interpretiveBoundary = '이 지표는 충무공 이순신 장군의 친필 《난중일기》에 담긴 필사즉생·일부당경·유비무환·정중여산의 전략 정신을 결단과 대비 태도를 성찰하는 정성적 거울로 해석한 것이며, 현실의 구체적 승패를 단정하는 예언이 아닙니다.';
 
   const avgScore = Math.round(
     (pilsaJeuksaengResolutionForce +
@@ -154,8 +174,12 @@ export function calculateYiSunSinNanjungIlgi(
     reconnaissanceIntelClarityIndex,
     geobukseonImpregnableShieldPower,
     activeStrategicStage,
+    secondaryStrategicStage,
     primaryChungmuVirtue,
+    secondaryChungmuVirtue,
     nanjungIlgiReflection,
+    reflectiveQuestion,
+    interpretiveBoundary,
     yiSunSinSynthesisMatrix,
   };
 }
@@ -174,13 +198,17 @@ export function formatYiSunSinNanjungIlgiPrompt(result: YiSunSinNanjungIlgiResul
     `- 연산 시각: ${result.calculatedAtKst} | 엔진: ${result.engineVersion}`,
     `- 해전 전략 국면: ${describeYiSunSinStage(avgScore)}`,
     `- 현행 전술적 품계: **[${result.activeStrategicStage.stageNameKo} (${result.activeStrategicStage.stageNameHanja})]**`,
+    `- 보조 교차 품계: **[${result.secondaryStrategicStage.stageNameKo} (${result.secondaryStrategicStage.stageNameHanja})]**`,
     `  → 관장 영역: ${result.activeStrategicStage.commandDomain}`,
     `  → 해전 돌파 축복: ${result.activeStrategicStage.navalBreakthroughBlessing}`,
     `- 최우선 충무 덕목: **[${result.primaryChungmuVirtue.virtueNameKo} (${result.primaryChungmuVirtue.hanjaMotto})]**`,
+    `- 보조 교차 덕목: **[${result.secondaryChungmuVirtue.virtueNameKo} (${result.secondaryChungmuVirtue.hanjaMotto})]**`,
     `  → 핵심 본질: ${result.primaryChungmuVirtue.coreEssence}`,
     `  → 실천 지침: ${result.primaryChungmuVirtue.actionableDirective}`,
     `- 난중일기 친필 성찰의 불멸성: 《${result.nanjungIlgiReflection.diaryEntryTitle}》`,
     `  → 불멸의 지혜: "${result.nanjungIlgiReflection.immortalWisdom}"`,
+    `- 성찰 질문: ${result.reflectiveQuestion}`,
+    `- 해석 경계: ${result.interpretiveBoundary}`,
   ];
   if (result.yiSunSinSynthesisMatrix) {
     lines.push(

@@ -3023,7 +3023,7 @@ try {
   // 188. 충무공 이순신 장군 친필 《난중일기》 필사즉생 전략 & 명량 대역전 결의 엔진
   const yiSunSinNanjungIlgiResult = calculateSupplement('yiSunSinNanjungIlgiResult', () => ((() => {
     try {
-      return calculateYiSunSinNanjungIlgi(profile);
+      return calculateYiSunSinNanjungIlgi(profile, question, now);
     } catch (_) {
       return null;
     }
@@ -3131,7 +3131,7 @@ try {
   // 200. 조선 율곡 이이 선생 《격몽요결》 입지·혁구습·구용구사 수신실천 엔진
   const yulgokGyeokmongResult = calculateSupplement('yulgokGyeokmongResult', () => ((() => {
     try {
-      return calculateYulgokGyeokmong(profile);
+      return calculateYulgokGyeokmong(profile, question, now);
     } catch (_) {
       return null;
     }
@@ -3203,7 +3203,7 @@ try {
   // 208. 한국 조선 성리학 퇴계 이황 성학십도 경(敬) 철학 & 거경궁리 심법 엔진
   const toegyeSeonghakSipdoResult = calculateSupplement('toegyeSeonghakSipdoResult', () => ((() => {
     try {
-      return calculateToegyeSeonghakSipdo(profile);
+      return calculateToegyeSeonghakSipdo(profile, question, now);
     } catch (_) {
       return null;
     }
@@ -4901,7 +4901,7 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'koreanJeonBongjunNokduGeneral', nameKo: '동학농민혁명 녹두장군 전봉준 사발통문 백산창의', icon: '📜', category: 'deep_master', summary: '녹두장군 전봉준의 사발통문 수평 연대와 백산 창의 4대 강령으로 불의에 굴하지 않는 공동체 정의와 회복력을 세웁니다.' },
   { key: 'atrahasisFloodWisdom', nameKo: '메소포타미아 아트라하시스 지혜의방주 대홍수정화 절제', icon: '🌊', category: 'deep_master' },
   { key: 'eddicYggdrasilNineRealms', nameKo: '북유럽 고에다 위그드라실 9대우주계 3대영천 소생', icon: '🌳', category: 'deep_master' },
-  { key: 'yiSunSinNanjungIlgiStrategic', nameKo: '충무공 이순신 난중일기 필사즉생 명량대역전', icon: '⚔️', category: 'deep_master' },
+  { key: 'yiSunSinNanjungIlgiStrategic', nameKo: '충무공 이순신 난중일기 필사즉생 명량대역전', icon: '⚔️', category: 'deep_master', summary: '충무공 이순신 장군의 친필 《난중일기》에 담긴 필사즉생·일부당경·유비무환의 전략 정신으로 불리한 국면에서 핵심 길목을 선점하는 결단과 대비를 비춥니다.' },
   { key: 'ptahMemphiteHeartTongueCreation', nameKo: '이집트 멤피스신학 프타 심장구상 말씀선포 창조', icon: '🏛️', category: 'deep_master', summary: '샤바카 석비의 심장 구상(Ib)과 말씀 선포(Hu) 원리로 생각과 실행의 일치를 비추는 관점' },
   { key: 'celticLughSamildanachAllArts', nameKo: '켈트 투아하데다난 루 라바다 8대만능기예 마그투이레드', icon: '⚡', category: 'deep_master' },
   { key: 'koreanChoeHyeonbaeHangeulGeulbon', nameKo: '외솔 최현배 우리말본 한글 말글자주권 문화얼', icon: '📖', category: 'deep_master', summary: '외솔 최현배 선생의 우리말본 정신으로 쉬운 말글의 진실한 소통과 흔들리지 않는 문화 자주권을 세웁니다.' },
@@ -4913,7 +4913,7 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'romanAureliusInnerCitadel', nameKo: '로마 철학황제 마르쿠스 아우렐리우스 명상록 내면의성채', icon: '🏛️', category: 'deep_master', summary: '《명상록》의 내면 성채와 통제 이분법으로 외부 소음을 덜고 주권적 평정을 세웁니다.' },
   { key: 'laoziDaodejingWaterWay', nameKo: '노자 도덕경 81장 상선약수 화광동진 무위자연', icon: '☯️', category: 'deep_master', summary: '상선약수와 무위자연의 물길로 억지 다툼을 내려놓고 유약승강강의 길을 엽니다.' },
   { key: 'ancientGreekEpicureanTetrapharmakos', nameKo: '에피쿠로스 4대치유약 테트라파르마코스 아타락시아 영혼평정', icon: '🌿', category: 'deep_master', summary: '에피쿠로스의 4대 치유약과 욕망 3분류로 막연한 불안을 덜고 아타락시아의 평정을 빚습니다.' },
-  { key: 'koreanYulgokGyeokmongYogyeol', nameKo: '율곡 이이 격몽요결 입지혁구습 구용구사 수신실천', icon: '📖', category: 'deep_master' },
+  { key: 'koreanYulgokGyeokmongYogyeol', nameKo: '율곡 이이 격몽요결 입지혁구습 구용구사 수신실천', icon: '📖', category: 'deep_master', summary: '율곡 이이의 《격몽요결》 입지·혁구습·구용구사 수양론으로 묵은 습관을 단호히 끊고 바른 뜻과 단정한 일상 태도를 세우는 길을 비춥니다.' },
   { key: 'ancientGreekAristotleMesotesEudaimonia', nameKo: '아리스토텔레스 니코마코스 윤리학 중용 에우다이모니아', icon: '⚖️', category: 'deep_master', summary: '결핍과 과도함의 양극단 사이에서 실천적 지혜(Phronesis)로 중용(Mesotes)의 황금 지점을 찾습니다.' },
   { key: 'ancientIndianBhagavadGitaKarmaYoga', nameKo: '바가바드 기타 카르마 요가 니슈카마 카르마 무집착', icon: '🕉️', category: 'deep_master', summary: '바가바드 기타의 니슈카마 카르마와 스와다르마로 결과 집착을 내려놓고 현재의 본분에 흔들림 없이 임합니다.' },
   { key: 'chineseWangYangmingLiangzhiXinxue', nameKo: '양명학 왕양명 전습록 치양지 지행합일 심학', icon: '📜', category: 'deep_master', summary: '왕양명의 치양지와 지행합일로 내면의 맑은 직관을 즉각적인 실천으로 이어 냅니다.' },
@@ -4921,7 +4921,7 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'chineseMenciusFourSproutsHoyeon', nameKo: '맹자 사단사덕 호연지기 부동심 대장부', icon: '🌊', category: 'deep_master', summary: '맹자의 사단(四端)과 집의(集義)로 조급한 조장을 경계하고 떳떳한 호연지기를 기릅니다.' },
   { key: 'romanSenecaTimeSovereignty', nameKo: '세네카 인생의짧음에대하여 시간주권 마음의평정', icon: '⏳', category: 'deep_master', summary: '세네카의 시간 주권과 마음의 평정 철학으로 흩어진 오늘의 시간을 회수하고 유예 없는 현재를 세웁니다.' },
   { key: 'ancientGreekPlatonicIdeaCave', nameKo: '플라톤 동굴의비유 이데아 상기설 4대추덕', icon: '🏛️', category: 'deep_master', summary: '감각의 그림자를 벗어나 4대 추덕과 변증법적 사유로 본질(이데아)을 비춥니다.' },
-  { key: 'koreanToegyeSeonghakSipdo', nameKo: '퇴계 이황 성학십도 거경궁리 상성성 경철학', icon: '📜', category: 'deep_master' },
+  { key: 'koreanToegyeSeonghakSipdo', nameKo: '퇴계 이황 성학십도 거경궁리 상성성 경철학', icon: '📜', category: 'deep_master', summary: '퇴계 이황의 《성학십도》에 담긴 경(敬)·거경궁리·상성성 심법으로 흩어진 마음을 한곳에 모으고 사물의 이치를 차분히 밝히는 길을 비춥니다.' },
   { key: 'romanCiceroDeOfficiisHonestum', nameKo: '키케로 의무론 도덕적선 유용성조화 신의품위', icon: '⚖️', category: 'deep_master', summary: '키케로의 《의무론》으로 도덕적 선(Honestum)과 실익(Utile)의 일치를 가려내 신의와 품격 있는 결단을 돕습니다.' },
   { key: 'ancientGreekEpictetusDichotomyOfControl', nameKo: '에픽테토스 엥케이리디온 통제이분법 프로하이레시스 도덕의지', icon: '🏛️', category: 'deep_master', summary: '내게 달린 것과 달리지 않은 것을 가려내 내면의 자유의지(Prohairesis)와 평정을 세웁니다.' },
   { key: 'ancientChineseConfuciusAnalectsZhitianming', nameKo: '공자 논어 지천명 극기복례 군자도', icon: '📜', category: 'deep_master', summary: '공자의 인·예와 극기복례, 지천명 수양으로 삶의 자리에서 흔들림 없는 중심을 세웁니다.' },
