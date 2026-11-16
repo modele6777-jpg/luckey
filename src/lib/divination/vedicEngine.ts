@@ -46,7 +46,7 @@ import { resolveEffectiveSolarDate } from '../lunarCalendar';
 import { parseBirthTime } from '../birthDateTime';
 import { calculateNatalChart, ZODIAC_SIGNS } from '../astrologyAnalysis';
 
-export const VEDIC_ENGINE_VERSION = 'LUCKEY-VD-v2.0.0';
+export const VEDIC_ENGINE_VERSION = 'LUCKEY-VD-v2.1.0';
 
 function formatVedicKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -55,7 +55,7 @@ function formatVedicKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
 }
 
 export const VEDIC_METHOD =
@@ -162,6 +162,9 @@ export interface VedicResult {
   dashaPlanetarySynergy?: DashaPlanetarySynergy | null;
   kendraTrikonaProsperity?: KendraTrikonaProsperity | null;
   purusharthaAlignment?: PurusharthaAlignment | null;
+  secondaryAxis?: string;
+  reflectiveQuestion?: string;
+  interpretiveBoundary?: string;
   vedicSynthesisMatrix?: {
     dominantTension: string;
     alignmentState: string;
@@ -625,6 +628,12 @@ export function calculateVedicAdvanced(params: {
   const refNow = params.targetDate || new Date();
   const calculatedAtKst = formatVedicKstTimestamp(refNow);
   const q = (params.question || '').trim();
+  const secondaryAxis = `${surya.name}(수리야·태양) ↔ ${chandra.name}(찬드라·달)`;
+  const reflectiveQuestion = q
+    ? `‘${q}’ 앞에서 현재 ${currentDasha ? `${currentDasha.mahadasha.lord}-${currentDasha.antardasha.lord}` : nakshatra.name} 다샤 흐름과 ${purusharthaAlignment.primarySpiritualAim}을 어떻게 연결해 실천하시겠습니까?`
+    : `${nakshatra.name} 나크샤트라의 기질과 ${purusharthaAlignment.primarySpiritualAim} 사이에서 지금 가장 먼저 다듬을 삶의 중심축은 무엇입니까?`;
+  const interpretiveBoundary =
+    '해석 경계: 본 베딕 조티시 리포트는 라히리 근방 선형 아얀암사 근사식에 기반한 천문·상징 프레임이며, 경계일 전후의 나크샤트라·다샤 판정이나 현실적 중대 결정은 실제 정황과 함께 신중히 판단해야 합니다.';
   const vedicSynthesisMatrix = {
     dominantTension: currentDasha
       ? `${currentDasha.mahadasha.lord} 마하다샤 ↔ ${currentDasha.antardasha.lord} 안타르다샤`
@@ -654,6 +663,9 @@ export function calculateVedicAdvanced(params: {
     dashaPlanetarySynergy,
     kendraTrikonaProsperity,
     purusharthaAlignment,
+    secondaryAxis,
+    reflectiveQuestion,
+    interpretiveBoundary,
     vedicSynthesisMatrix,
   };
 }
@@ -712,6 +724,15 @@ export function formatVedicPrompt(result: VedicResult): string {
   const matrixLine = result.vedicSynthesisMatrix
     ? `\n- 베딕 조티시 교차 매트릭스: 핵심 긴장(${result.vedicSynthesisMatrix.dominantTension}) · 조율 상태(${result.vedicSynthesisMatrix.alignmentState}) · 통합 실천(${result.vedicSynthesisMatrix.integratedAction})`
     : '';
+  const secondaryLine = result.secondaryAxis
+    ? `\n- 보조 교차 축: ${result.secondaryAxis}`
+    : '';
+  const reflectionLine = result.reflectiveQuestion
+    ? `\n- 성찰 질문: ${result.reflectiveQuestion}`
+    : '';
+  const boundaryLine = result.interpretiveBoundary
+    ? `\n- ${result.interpretiveBoundary}`
+    : '';
 
   const timelineLines = result.mahadashas
     .map((m) => {
@@ -737,7 +758,7 @@ ${nakshatraLines}
 ${rashiLines}
 ${currentLines}
 ${synergyLine ? synergyLine + '\n' : ''}${kendraLine ? kendraLine + '\n' : ''}${purusharthaLine ? purusharthaLine + '\n' : ''}- 120년 빔쇼타리 다샤 전수 타임라인 (9 마하다샤 × 9 안타르다샤 = ${result.antardashaCount}구간, 태양년 365.25일 환산):
-${timelineLines}${matrixLine}
+${timelineLines}${matrixLine}${secondaryLine}${reflectionLine}${boundaryLine}
 - [AI 해석 절대 지침]: 본 리포트는 항성황도 천문 계산으로 산출된 100% 확정 수리입니다. 나크샤트라·파다·다샤 주인과 기간을 임의로 바꾸지 말고, 마하다샤(대운 주제)와 안타르다샤(소운 세부)의 계층 구조에 맞춰 상담하십시오. 아얀암사는 평균 세차율 근사이므로 나크샤트라·파다·다샤 경계일 전후 1일 이내의 결과는 단정하지 마십시오.
 `.trim();
 }

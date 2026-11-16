@@ -23,7 +23,7 @@ import {
   EARTHLY_BRANCHES
 } from '../sajuAnalysis';
 
-export const TWELVE_SPIRITS_ENGINE_VERSION = 'LUCKEY-SPIRIT-v2.0.0';
+export const TWELVE_SPIRITS_ENGINE_VERSION = 'LUCKEY-SPIRIT-v2.1.0';
 
 function formatSpiritsKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -32,7 +32,7 @@ function formatSpiritsKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
 }
 
 export type SpiritName =
@@ -264,6 +264,9 @@ export interface TwelveSpiritsResult {
   };
 
   summary: string;
+  secondarySpirit?: SpiritMetadata;
+  reflectiveQuestion: string;
+  interpretiveBoundary: string;
   twelveSpiritsSynthesisMatrix?: {
     dominantTension: string;
     alignmentState: string;
@@ -359,6 +362,11 @@ export function calculateTwelveSpiritsCycle(params?: {
 
   const calculatedAtKst = formatSpiritsKstTimestamp(now);
   const q = (params?.question || '').trim();
+  const reflectiveQuestion = q
+    ? `‘${q}’ 앞에서 오늘 내면의 ${primarySpirit.name}(${primarySpirit.hanja})과 대외적 ${secondarySpirit.name}(${secondarySpirit.hanja})의 기운 중 어느 쪽 역할에 더 무게를 두고 움직이겠습니까?`
+    : `오늘 ${primarySpirit.name}(${primarySpirit.hanja})이 열어 주는 힘과 ${secondarySpirit.name}(${secondarySpirit.hanja})이 비추는 무대 사이에서 가장 먼저 선택할 행동은 무엇입니까?`;
+  const interpretiveBoundary =
+    '해석 경계: 12신살은 삼합 궤도와 일진·세운의 지지 순환을 통해 오늘의 태도와 행동 역할을 비추는 명리적·상징적 나침반이며, 개인의 자유 의지나 구체적 성패를 단정하지 않습니다.';
   const twelveSpiritsSynthesisMatrix = {
     dominantTension: `${primarySpirit.name}(${primarySpirit.hanja}) ↔ ${secondarySpirit.name}(${secondarySpirit.hanja})`,
     alignmentState: `${primarySpirit.nature} · ${todayDaySpirit.branchKo} 일진`,
@@ -376,6 +384,9 @@ export function calculateTwelveSpiritsCycle(params?: {
     annualSeunSpirit,
     todayStrategy,
     summary,
+    secondarySpirit,
+    reflectiveQuestion,
+    interpretiveBoundary,
     twelveSpiritsSynthesisMatrix,
   };
 }
@@ -398,6 +409,8 @@ export function formatTwelveSpiritsPrompt(res: TwelveSpiritsResult): string {
 - 오늘 발휘할 슈퍼파워: ${res.todayStrategy.superpowerToUse}
 - 피해야 할 함정: ${res.todayStrategy.trapToAvoid}
 - 하루 실천 지침: ${res.todayStrategy.coreAdvice}${matrixLine}
+- 성찰 질문: ${res.reflectiveQuestion}
+- ${res.interpretiveBoundary}
 ※ 루시 지침: 12신살은 하루하루 운의 파도 속에서 내가 어떤 역할을 맡아야 가장 자연스럽고 강력한지를 알려주는 행동 나침반입니다. 오늘 사용자가 발휘해야 할 '슈퍼파워'와 조심할 '함정'을 자연스러운 조언으로 녹여내세요.`;
 }
 
