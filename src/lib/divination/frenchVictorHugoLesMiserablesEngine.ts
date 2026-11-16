@@ -13,7 +13,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const FRENCH_VICTOR_HUGO_LES_MISERABLES_VERSION = 'LUCKEY-VICTOR-HUGO-LES-MISERABLES-v2.0.0';
+export const FRENCH_VICTOR_HUGO_LES_MISERABLES_VERSION = 'LUCKEY-VICTOR-HUGO-LES-MISERABLES-v2.1.0';
 
 export interface HugoTheme {
   themeKey: string;
@@ -132,7 +132,7 @@ function formatHugoKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 KST`;
 }
 
 function describeHugoStage(score: number): string {
@@ -228,5 +228,6 @@ export function formatFrenchVictorHugoLesMiserablesPrompt(
       `- 통합 실천: ${res.hugoSynthesisMatrix.integratedAction}`,
     );
   }
+  lines.push(`- 해석 경계: 빅토르 위고의 자비·도덕적 양심·연대 상징을 빌린 정성적 성찰 관점이며, 개인 점수나 미래 단정이 아닙니다.`);
   return lines.join('\n');
 }
