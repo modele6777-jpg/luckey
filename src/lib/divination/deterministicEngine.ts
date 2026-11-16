@@ -1347,7 +1347,7 @@ try {
   const specialStarsResult = calculateSupplement('specialStarsResult', () => (calculateSpecialStarsMatrix({ profile, targetDate: now, question })));
   const monthlyFlowResult = calculateSupplement('monthlyFlowResult', () => (calculateMonthlyFlow({ profile, targetYear: now.getFullYear() })));
   const spatialFengshuiResult = calculateSupplement('spatialFengshuiResult', () => (calculateSpatialFengshui({ profile, targetDate: now, question })));
-  const vitalityCurveResult = calculateSupplement('vitalityCurveResult', () => (calculateVitalityCurve({ profile, now, question })));
+  const vitalityCurveResult = calculateSupplement('vitalityCurveResult', () => (calculateVitalityCurve({ profile, question })));
   const tojeongResult = calculateSupplement('tojeongResult', () => (birthdateStr && profile
     ? (() => {
         try {
