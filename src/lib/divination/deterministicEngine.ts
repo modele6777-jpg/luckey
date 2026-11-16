@@ -3680,7 +3680,7 @@ try {
   // 259. 스코틀랜드 데이비드 흄 인간 본성에 관한 논고 온건한 회의주의 & 공감·온유한 평정 지혜 엔진
   const davidHumeTreatiseHumanNatureResult = calculateSupplement('davidHumeTreatiseHumanNatureResult', () => ((() => {
     try {
-      return calculateDavidHumeTreatiseHumanNature(profile);
+      return calculateDavidHumeTreatiseHumanNature(profile, question, now);
     } catch (_) {
       return null;
     }
@@ -3734,7 +3734,7 @@ try {
   // 265. 스코틀랜드 아담 스미스 도덕감정론 공정한 관찰자 & 공감·자기통제 도덕감정 지혜 엔진
   const scottishAdamSmithMoralSentimentsResult = calculateSupplement('scottishAdamSmithMoralSentimentsResult', () => ((() => {
     try {
-      return calculateScottishAdamSmithMoralSentiments(profile);
+      return calculateScottishAdamSmithMoralSentiments(profile, question, now);
     } catch (_) {
       return null;
     }
@@ -4869,7 +4869,7 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'sumerianEnumaElishFiftyNames', nameKo: '에누마 엘리시 50대 이름', icon: '⚔️', category: 'deep_master' },
   { key: 'alexandrianDecanThirtySixGods', nameKo: '알렉산드리아 36대 데칸', icon: '⌛', category: 'deep_master', summary: '헤르메스주의 36대 데칸 시간 성령의 상징으로 조급한 시계 시간 너머의 결정적 타이밍(카이로스)과 삶의 리듬을 성찰합니다.' },
   { key: 'taoistLieziWindRiding', nameKo: '열자 어풍동행 무하유지향', icon: '🍃', category: 'deep_master' },
-  { key: 'samkhyaTwentyFiveTattvas', nameKo: '상키야 25타트바 분별지', icon: '🧘', category: 'deep_master' },
+  { key: 'samkhyaTwentyFiveTattvas', nameKo: '상키야 25타트바 분별지', icon: '🧘', category: 'deep_master', summary: '순수 관조자 푸루샤와 물질 자연 프라크리티의 25타트바 및 3구나 균형을 살피어 분별지(비베카)를 세우는 관점' },
   { key: 'neoConfucianFourSevenLiQi', nameKo: '성리학 사칠이기 거경궁리', icon: '📜', category: 'deep_master', summary: '성리학의 이기지묘(理氣之妙)와 사단칠정론(四端七情論), 거경궁리·주일무적 수양 원리로 감정의 중절과 본연지성의 중심을 비춥니다.' },
   { key: 'etruscanAugurSixteenSky', nameKo: '에트루리아 16천궁 아우구르', icon: '🦅', category: 'deep_master', summary: '에트루리아 16천궁 템플룸과 아우구르 조점(비행조·음성조) 상징으로 결단 시의를 비추는 관점' },
   { key: 'rosicrucianChymicalWedding', nameKo: '로젠크로이츠 화학적 결혼 7일 연금술', icon: '🌹', category: 'deep_master' },

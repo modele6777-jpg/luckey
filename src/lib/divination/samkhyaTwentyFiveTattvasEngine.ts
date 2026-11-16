@@ -23,7 +23,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const SAMKHYA_TATTVAS_ENGINE_VERSION = 'LUCKEY-SAMKHYA-TATTVAS-v2.0.0';
+export const SAMKHYA_TATTVAS_ENGINE_VERSION = 'LUCKEY-SAMKHYA-TATTVAS-v2.1.0';
 
 export interface SamkhyaTattvaInfo {
   index: number;
@@ -54,6 +54,8 @@ export interface SamkhyaTwentyFiveTattvasReport {
   prakritiEntanglementRisk: number;  // 0 ~ 100 물질계 동일시/속박 위험도
   samkhyaPhilosophicalGuidance: string;
   mindPurificationPrescription: string;
+  reflectiveQuestion: string;
+  interpretiveBoundary: string;
   samkhyaSynthesisMatrix?: {
     dominantTension: string;
     alignmentState: string;
@@ -68,7 +70,7 @@ function formatSamkhyaKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
 }
 
 function describeSamkhyaStage(score: number, dominantGuna: string): string {
@@ -392,6 +394,12 @@ export function calculateSamkhyaTwentyFiveTattvas(params: {
     integratedAction: `${mindPurificationPrescription}${question.trim() ? ` [질문 맥락: ${question.trim()}]` : ''}`,
   };
 
+  const trimmedQ = question.trim();
+  const reflectiveQuestion = trimmedQ
+    ? `지금 품으신 '${trimmedQ}'의 자리에서, 찰나의 감정이나 물질적 동일시(Prakriti)를 넘어 고요한 순수 관조자(Purusha)의 눈으로 바라보면 무엇이 본질로 남습니까?`
+    : `오늘 마음이 흔들리는 순간, '${dominantTattva.nameKo}'의 작용을 내 본체로 착각하지 않고 한 걸음 물러나 관조할 수 있는 여백은 어디에 있습니까?`;
+  const interpretiveBoundary = '이 리포트는 고대 인도 상키야 철학의 25타트바와 3구나 상징을 바탕으로 자기 인식을 돕는 성찰 비유이며, 의학적·심리학적 진단이나 미래 단정이 아닙니다.';
+
   return {
     engineVersion: SAMKHYA_TATTVAS_ENGINE_VERSION,
     calculatedAtKst,
@@ -404,6 +412,8 @@ export function calculateSamkhyaTwentyFiveTattvas(params: {
     prakritiEntanglementRisk,
     samkhyaPhilosophicalGuidance,
     mindPurificationPrescription,
+    reflectiveQuestion,
+    interpretiveBoundary,
     samkhyaSynthesisMatrix,
   };
 }
@@ -430,5 +440,9 @@ export function formatSamkhyaTwentyFiveTattvasPrompt(rep: SamkhyaTwentyFiveTattv
       `· 통합 실천: ${rep.samkhyaSynthesisMatrix.integratedAction}`,
     );
   }
+  lines.push(
+    `· 성찰 질문: ${rep.reflectiveQuestion}`,
+    `· 해석 경계: ${rep.interpretiveBoundary}`,
+  );
   return lines.join('\n');
 }

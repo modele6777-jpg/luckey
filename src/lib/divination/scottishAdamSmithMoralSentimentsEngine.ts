@@ -13,7 +13,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const SCOTTISH_ADAM_SMITH_VERSION = 'LUCKEY-ADAM-SMITH-MORAL-SENTIMENTS-v2.0.0';
+export const SCOTTISH_ADAM_SMITH_VERSION = 'LUCKEY-ADAM-SMITH-MORAL-SENTIMENTS-v2.1.0';
 
 export interface AdamSmithTheme {
   themeKey: string;
@@ -42,11 +42,14 @@ export interface ScottishAdamSmithMoralSentimentsResult {
   praiseworthinessIntegrityScore: number;       // 칭찬받을 자격 및 내적 진실성 (Praiseworthiness Integrity)
   // 세부 분석
   activeAdamSmithTheme: AdamSmithTheme;
+  secondaryAdamSmithTheme: AdamSmithTheme;
   focalAdamSmithAphorism: AdamSmithAphorism;
   adamSmithComprehensiveGuidance: {
     guidanceTitle: string;
     philosophicalCounsel: string;
   };
+  reflectiveQuestion: string;
+  interpretiveBoundary: string;
   adamSmithSynthesisMatrix?: {
     dominantTension: string;
     alignmentState: string;
@@ -61,7 +64,7 @@ function formatAdamSmithKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
 }
 
 function describeAdamSmithStage(score: number): string {
@@ -166,9 +169,11 @@ export function calculateScottishAdamSmithMoralSentiments(
   const praiseworthinessIntegrityScore = 73 + ((absHash >> 12) % 26);
 
   const themeIndex = (absHash >> 4) % ADAM_SMITH_THEMES.length;
+  const secondaryThemeIndex = (themeIndex + 1 + ((absHash >> 5) % (ADAM_SMITH_THEMES.length - 1))) % ADAM_SMITH_THEMES.length;
   const aphorismIndex = (absHash >> 7) % ADAM_SMITH_APHORISMS.length;
 
   const activeAdamSmithTheme = ADAM_SMITH_THEMES[themeIndex];
+  const secondaryAdamSmithTheme = ADAM_SMITH_THEMES[secondaryThemeIndex];
   const focalAdamSmithAphorism = ADAM_SMITH_APHORISMS[aphorismIndex];
 
   const guidanceTitle = `아담 스미스 도덕감정론 공정한 관찰자와 자기통제 지혜: ${activeAdamSmithTheme.themeTitleKo}`;
@@ -182,10 +187,15 @@ export function calculateScottishAdamSmithMoralSentiments(
     (impartialSpectatorConscienceScore + mutualSympathyFellowFeelingIndex + selfCommandEquanimityScore + justiceBeneficenceHarmonyIndex + praiseworthinessIntegrityScore) / 5
   );
   const adamSmithSynthesisMatrix = {
-    dominantTension: `${activeAdamSmithTheme.themeTitleKo} ↔ ${focalAdamSmithAphorism.sourceContext}`,
+    dominantTension: `${activeAdamSmithTheme.themeTitleKo} ↔ ${secondaryAdamSmithTheme.themeTitleKo}`,
     alignmentState: describeAdamSmithStage(composite),
     integratedAction: `${focalAdamSmithAphorism.actionGuidance}${query?.trim() ? ` [질문 맥락: ${query.trim()}]` : ''}`,
   };
+  const trimmedQ = query?.trim() ?? '';
+  const reflectiveQuestion = trimmedQ
+    ? `지금 고민하시는 '${trimmedQ}' 앞에서, 사사로운 이해관계를 비운 가슴속 공정한 관찰자(Impartial Spectator)는 어떤 태도를 가장 품위 있게 승인하겠습니까?`
+    : `오늘 마주한 선택에서 세속의 평판(Praise)보다 내면의 양심이 스스로 칭찬받을 만하다고 여기는(Praiseworthiness) 기준은 무엇입니까?`;
+  const interpretiveBoundary = '이 리포트는 아담 스미스 《도덕감정론》의 공정한 관찰자와 공감 철학을 바탕으로 한 성찰 비유이며, 윤리적 단정이나 미래 예측이 아닙니다.';
 
   return {
     engineVersion: SCOTTISH_ADAM_SMITH_VERSION,
@@ -196,11 +206,14 @@ export function calculateScottishAdamSmithMoralSentiments(
     justiceBeneficenceHarmonyIndex,
     praiseworthinessIntegrityScore,
     activeAdamSmithTheme,
+    secondaryAdamSmithTheme,
     focalAdamSmithAphorism,
     adamSmithComprehensiveGuidance: {
       guidanceTitle,
       philosophicalCounsel,
     },
+    reflectiveQuestion,
+    interpretiveBoundary,
     adamSmithSynthesisMatrix,
   };
 }
@@ -214,6 +227,7 @@ export function formatScottishAdamSmithMoralSentimentsPrompt(res: ScottishAdamSm
     `- 연산 시각: ${res.calculatedAtKst} | 엔진 버전: ${res.engineVersion}`,
     `- 도덕감정 성숙 국면: ${describeAdamSmithStage(composite)}`,
     `- 핵심 도덕감정 테마: ${res.activeAdamSmithTheme.themeTitleKo} [${res.activeAdamSmithTheme.themeTitleEn}]`,
+    `- 보조 교차 테마: ${res.secondaryAdamSmithTheme.themeTitleKo} [${res.secondaryAdamSmithTheme.themeTitleEn}]`,
     `- 실존적 통찰: ${res.activeAdamSmithTheme.existentialInsight}`,
     `- 실천적 조언: ${res.activeAdamSmithTheme.practicalCounsel}`,
     `- 핵심 원전 명언: "${res.focalAdamSmithAphorism.aphorismKo}" [${res.focalAdamSmithAphorism.aphorismEn}]`,
@@ -227,5 +241,9 @@ export function formatScottishAdamSmithMoralSentimentsPrompt(res: ScottishAdamSm
       `- 통합 실천: ${res.adamSmithSynthesisMatrix.integratedAction}`,
     );
   }
+  lines.push(
+    `- 성찰 질문: ${res.reflectiveQuestion}`,
+    `- 해석 경계: ${res.interpretiveBoundary}`,
+  );
   return lines.join('\n');
 }
