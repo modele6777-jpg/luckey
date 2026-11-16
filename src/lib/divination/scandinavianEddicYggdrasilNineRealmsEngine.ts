@@ -9,12 +9,12 @@
  *    - 흐베르겔미르(Hvergelmir): 모든 강의 시원이자 깊은 잠재력의 원초적 응축.
  * 3. 9대 우주계(Nine Realms) 수호 품계 및 라그나로크 이후 귐레(Gimlé)의 황금빛 소생 조언 산출
  *
- * @version LUCKEY-EDDIC-YGGDRASIL-v2.0.0
+ * @version LUCKEY-EDDIC-YGGDRASIL-v2.1.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const EDDIC_YGGDRASIL_VERSION = 'LUCKEY-EDDIC-YGGDRASIL-v2.0.0';
+export const EDDIC_YGGDRASIL_VERSION = 'LUCKEY-EDDIC-YGGDRASIL-v2.1.0';
 
 export interface YggdrasilRealmStage {
   stageLevel: number;
@@ -50,6 +50,7 @@ export interface EddicYggdrasilResult {
     alignmentState: string;
     integratedAction: string;
   };
+  interpretiveBoundary: string;
 }
 
 function describeEddicStage(score: number): string {
@@ -149,6 +150,7 @@ export function calculateEddicYggdrasil(
     primaryNorseVirtue,
     voluspaEpiphany,
     eddicSynthesisMatrix,
+    interpretiveBoundary: '본 고대 북유럽 고에다 위그드라실 리포트는 노르드 신화·철학 상징 체계에 기반한 정성적 성찰 안내이며, 확정적 미래 예언이 아닙니다.',
   };
 }
 
@@ -175,5 +177,6 @@ export function formatEddicYggdrasilPrompt(result: EddicYggdrasilResult): string
       `- 통합 실천: ${result.eddicSynthesisMatrix.integratedAction}`,
     );
   }
+  lines.push(`- 해석 경계: ${result.interpretiveBoundary}`);
   return lines.join('\n');
 }
