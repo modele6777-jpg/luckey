@@ -9591,3 +9591,36 @@ test('Choe Chiwon Pungryudo, Chusa Sehando, and Dasan Mokmin Simseo v2.1.0 inclu
   const dsPrompt = formatDasanMokminSimseoPrompt(ds);
   assert.ok(dsPrompt.includes('+09:00') && dsPrompt.includes('보조 교차 아포리즘') && dsPrompt.includes('성찰 질문') && dsPrompt.includes('해석 경계'));
 });
+
+test('Machiavelli Virtu Fortuna, Pico Dignity, and Thomas Aquinas Summa v2.1.0 include +09:00 KST, dual cross-check, reflective question, and interpretive boundary', () => {
+  const profile = { basic: { name: '제제', birthdate: '1994-01-24', birthtime: '12:00', gender: 'male' } } as any;
+  const now = new Date('2026-11-16T04:55:00Z');
+  const query = '불확실한 상황에서 주도권과 신의를 함께 지키고 싶습니다';
+
+  const mv = calculateMachiavelliVirtuFortuna(profile, query, now);
+  assert.equal(mv.engineVersion, ITALIAN_MACHIAVELLI_VERSION);
+  assert.match(mv.calculatedAtKst, /\+09:00/);
+  assert.notEqual(mv.secondaryMachiavelliAphorism.aphorismKey, mv.focalMachiavelliAphorism.aphorismKey);
+  assert.ok(mv.reflectiveQuestion.includes(query));
+  assert.ok(mv.interpretiveBoundary.includes('성찰'));
+  const mvPrompt = formatMachiavelliVirtuFortunaPrompt(mv);
+  assert.ok(mvPrompt.includes('+09:00') && mvPrompt.includes('보조 교차 경구') && mvPrompt.includes('성찰 질문') && mvPrompt.includes('해석 경계'));
+
+  const pc = calculateItalianPicoDellaMirandolaDignity(profile, query, now);
+  assert.equal(pc.engineVersion, ITALIAN_PICO_DELLA_MIRANDOLA_DIGNITY_VERSION);
+  assert.match(pc.calculatedAtKst, /\+09:00/);
+  assert.notEqual(pc.secondaryPicoAphorism.aphorismKey, pc.focalPicoAphorism.aphorismKey);
+  assert.ok(pc.reflectiveQuestion.includes(query));
+  assert.ok(pc.interpretiveBoundary.includes('성찰'));
+  const pcPrompt = formatItalianPicoDellaMirandolaDignityPrompt(pc);
+  assert.ok(pcPrompt.includes('+09:00') && pcPrompt.includes('보조 교차 명언') && pcPrompt.includes('성찰 질문') && pcPrompt.includes('해석 경계'));
+
+  const aq = calculateThomasAquinasSummaTheologiae(profile, query, now);
+  assert.equal(aq.engineVersion, ITALIAN_THOMAS_AQUINAS_VERSION);
+  assert.match(aq.calculatedAtKst, /\+09:00/);
+  assert.notEqual(aq.secondaryAquinasAphorism.aphorismKey, aq.focalAquinasAphorism.aphorismKey);
+  assert.ok(aq.reflectiveQuestion.includes(query));
+  assert.ok(aq.interpretiveBoundary.includes('성찰'));
+  const aqPrompt = formatThomasAquinasSummaTheologiaePrompt(aq);
+  assert.ok(aqPrompt.includes('+09:00') && aqPrompt.includes('보조 교차 경구') && aqPrompt.includes('성찰 질문') && aqPrompt.includes('해석 경계'));
+});

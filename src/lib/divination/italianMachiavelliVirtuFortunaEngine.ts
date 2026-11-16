@@ -15,7 +15,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const ITALIAN_MACHIAVELLI_VERSION = 'LUCKEY-MACHIAVELLI-VIRTU-FORTUNA-v2.0.0';
+export const ITALIAN_MACHIAVELLI_VERSION = 'LUCKEY-MACHIAVELLI-VIRTU-FORTUNA-v2.1.0';
 
 export interface MachiavelliTheme {
   themeKey: string;
@@ -45,6 +45,9 @@ export interface MachiavelliVirtuFortunaResult {
   // 세부 체계
   activeMachiavelliTheme: MachiavelliTheme;
   focalMachiavelliAphorism: MachiavelliAphorism;
+  secondaryMachiavelliAphorism: MachiavelliAphorism;
+  reflectiveQuestion: string;
+  interpretiveBoundary: string;
   machiavelliPersonalCounsel: {
     counselTitle: string;
     philosophicalGuidance: string;
@@ -146,7 +149,7 @@ function formatMachiavelliKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 KST`;
 }
 
 function describeMachiavelliStage(score: number): string {
@@ -183,9 +186,16 @@ export function calculateMachiavelliVirtuFortuna(
 
   const themeIndex = (absHash >> 4) % MACHIAVELLI_THEMES.length;
   const aphorismIndex = (absHash >> 7) % MACHIAVELLI_APHORISMS.length;
+  const secondaryAphorismIndex = (aphorismIndex + 1 + ((absHash >> 10) % (MACHIAVELLI_APHORISMS.length - 1))) % MACHIAVELLI_APHORISMS.length;
 
   const activeMachiavelliTheme = MACHIAVELLI_THEMES[themeIndex];
   const focalMachiavelliAphorism = MACHIAVELLI_APHORISMS[aphorismIndex];
+  const secondaryMachiavelliAphorism = MACHIAVELLI_APHORISMS[secondaryAphorismIndex];
+  const trimmedQuery = query?.trim();
+  const reflectiveQuestion = trimmedQuery
+    ? `'${trimmedQuery}'에서 운명(Fortuna) 탓으로 돌릴 변명을 걷어 내고 내가 지금 당장 주도권을 쥐고 쌓아야 할 비르투의 제방은 무엇인가요?`
+    : `지금 내 상황에서 여우의 기민함으로 먼저 피해야 할 함정과 사자의 결단력으로 밀고 나가야 할 과제는 각각 무엇인가요?`;
+  const interpretiveBoundary = '마키아벨리 비르투·포르투나 관점은 미래의 길흉 예단이 아니라, 현실 역학과 주체적 전략 선택을 비추는 르네상스 성찰 렌즈입니다.';
 
   const counselTitle = `마키아벨리 군주론 비르투 지혜: ${activeMachiavelliTheme.themeTitleKo}`;
   const philosophicalGuidance = `니콜로 마키아벨리의 현실주의 철학은 운명의 수동적 희생자가 되지 않고 주체적 역량(Virtù)으로 삶의 판을 장악하도록 일깨웁니다. ` +
@@ -212,6 +222,9 @@ export function calculateMachiavelliVirtuFortuna(
     effectualTruthRealismScore,
     activeMachiavelliTheme,
     focalMachiavelliAphorism,
+    secondaryMachiavelliAphorism,
+    reflectiveQuestion,
+    interpretiveBoundary,
     machiavelliPersonalCounsel: {
       counselTitle,
       philosophicalGuidance,
@@ -233,9 +246,12 @@ export function formatMachiavelliVirtuFortunaPrompt(res: MachiavelliVirtuFortuna
     `- 현실주의 정치 통찰: ${res.activeMachiavelliTheme.politicalInsight}`,
     `- 전략적 조언: ${res.activeMachiavelliTheme.strategicCounsel}`,
     `- 핵심 경구: "${res.focalMachiavelliAphorism.aphorismKo}"`,
+    `- 보조 교차 경구: "${res.secondaryMachiavelliAphorism.aphorismKo}" [${res.secondaryMachiavelliAphorism.textualContext}]`,
     `- 이탈리아어 원문: "${res.focalMachiavelliAphorism.aphorismItalian}" [${res.focalMachiavelliAphorism.textualContext}]`,
     `- 실천적 행동 지침: ${res.focalMachiavelliAphorism.practicalAction}`,
     `- 통합 전략 권면: ${res.machiavelliPersonalCounsel.philosophicalGuidance}`,
+    `- 성찰 질문: ${res.reflectiveQuestion}`,
+    `- 해석 경계: ${res.interpretiveBoundary}`,
   ];
   if (res.machiavelliSynthesisMatrix) {
     lines.push(

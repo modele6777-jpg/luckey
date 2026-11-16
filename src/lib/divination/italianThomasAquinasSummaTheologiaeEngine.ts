@@ -15,7 +15,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const ITALIAN_THOMAS_AQUINAS_VERSION = 'LUCKEY-THOMAS-AQUINAS-SUMMA-THEOLOGIAE-v2.0.0';
+export const ITALIAN_THOMAS_AQUINAS_VERSION = 'LUCKEY-THOMAS-AQUINAS-SUMMA-THEOLOGIAE-v2.1.0';
 
 export interface AquinasTheme {
   themeKey: string;
@@ -45,6 +45,9 @@ export interface ThomasAquinasSummaTheologiaeResult {
   // 세부 분석
   activeAquinasTheme: AquinasTheme;
   focalAquinasAphorism: AquinasAphorism;
+  secondaryAquinasAphorism: AquinasAphorism;
+  reflectiveQuestion: string;
+  interpretiveBoundary: string;
   aquinasComprehensiveGuidance: {
     guidanceTitle: string;
     philosophicalCounsel: string;
@@ -139,7 +142,7 @@ function formatAquinasKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 KST`;
 }
 
 function describeAquinasStage(score: number): string {
@@ -176,9 +179,16 @@ export function calculateThomasAquinasSummaTheologiae(
 
   const themeIndex = (absHash >> 4) % AQUINAS_THEMES.length;
   const aphorismIndex = (absHash >> 7) % AQUINAS_APHORISMS.length;
+  const secondaryAphorismIndex = (aphorismIndex + 1 + ((absHash >> 10) % (AQUINAS_APHORISMS.length - 1))) % AQUINAS_APHORISMS.length;
 
   const activeAquinasTheme = AQUINAS_THEMES[themeIndex];
   const focalAquinasAphorism = AQUINAS_APHORISMS[aphorismIndex];
+  const secondaryAquinasAphorism = AQUINAS_APHORISMS[secondaryAphorismIndex];
+  const trimmedQuery = query?.trim();
+  const reflectiveQuestion = trimmedQuery
+    ? `'${trimmedQuery}'에서 냉철한 이성의 분별력(Prudentia)과 흔들리지 않는 신의를 함께 세울 수 있는 선택은 무엇인가요?`
+    : `지금 내 하루에서 당장의 작은 이익 대신 궁극적 선(Summum Bonum)과 양심의 질서에 맞게 바로잡아야 할 기준은 무엇인가요?`;
+  const interpretiveBoundary = '토마스 아퀴나스 신학대전 관점은 미래의 길흉 예단이 아니라, 이성과 신앙의 조화 및 덕론적 분별을 비추는 스콜라 성찰 렌즈입니다.';
 
   const guidanceTitle = `토마스 아퀴나스 신학대전 덕론 지혜: ${activeAquinasTheme.themeTitleKo}`;
   const philosophicalCounsel = `토마스 아퀴나스의 스콜라 철학은 합리적 이성과 깊은 영성의 아름다운 화해를 제시합니다. ` +
@@ -205,6 +215,9 @@ export function calculateThomasAquinasSummaTheologiae(
     beatificVisionSupremeGoodScore,
     activeAquinasTheme,
     focalAquinasAphorism,
+    secondaryAquinasAphorism,
+    reflectiveQuestion,
+    interpretiveBoundary,
     aquinasComprehensiveGuidance: {
       guidanceTitle,
       philosophicalCounsel,
@@ -226,9 +239,12 @@ export function formatThomasAquinasSummaTheologiaePrompt(res: ThomasAquinasSumma
     `- 신학·철학적 통찰: ${res.activeAquinasTheme.theologicalInsight}`,
     `- 실천적 조언: ${res.activeAquinasTheme.practicalCounsel}`,
     `- 핵심 경구: "${res.focalAquinasAphorism.aphorismKo}"`,
+    `- 보조 교차 경구: "${res.secondaryAquinasAphorism.aphorismKo}" [${res.secondaryAquinasAphorism.summaReference}]`,
     `- 라틴어 원문: "${res.focalAquinasAphorism.aphorismLatin}" [${res.focalAquinasAphorism.summaReference}]`,
     `- 구체적 실천 지침: ${res.focalAquinasAphorism.actionGuidance}`,
     `- 종합 통찰 권면: ${res.aquinasComprehensiveGuidance.philosophicalCounsel}`,
+    `- 성찰 질문: ${res.reflectiveQuestion}`,
+    `- 해석 경계: ${res.interpretiveBoundary}`,
   ];
   if (res.aquinasSynthesisMatrix) {
     lines.push(
