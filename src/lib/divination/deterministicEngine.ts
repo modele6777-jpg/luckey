@@ -1464,7 +1464,7 @@ try {
   const pythagoreanLifecycleResult = calculateSupplement('pythagoreanLifecycleResult', () => (birthdateStr && profile
     ? (() => {
         try {
-          return calculatePythagoreanLifecycle({ profile, targetDate: now });
+          return calculatePythagoreanLifecycle({ profile, targetDate: now, question });
         } catch (_) {
           return null;
         }
@@ -2915,7 +2915,7 @@ try {
   // 176. 고대 폴리네시아 마우이 《웨이파인딩 32방위 스타 컴퍼스》 & 호쿠레아 신성 인도 엔진
   const polynesianWayfindingResult = calculateSupplement('polynesianWayfindingResult', () => ((() => {
     try {
-      return calculatePolynesianWayfinding(profile);
+      return calculatePolynesianWayfinding(profile, question, now);
     } catch (_) {
       return null;
     }
@@ -3365,7 +3365,7 @@ try {
   // 224. 이탈리아 르네상스 조르다노 브루노 무한우주론 & 영웅적 열정(Eroico Furore) 비상 엔진
   const brunoInfiniteUniverseResult = calculateSupplement('brunoInfiniteUniverseResult', () => ((() => {
     try {
-      return calculateRenaissanceBrunoInfiniteUniverse(profile);
+      return calculateRenaissanceBrunoInfiniteUniverse(profile, question, now);
     } catch (_) {
       return null;
     }
@@ -4743,7 +4743,7 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'heLuoLiShu', nameKo: '하락이수 수리원당효', icon: '🔢', category: 'deep_master' },
   { key: 'dynamicClash', nameKo: '충형파해 동적트리거', icon: '💥', category: 'deep_master' },
   { key: 'twelveSpirits', nameKo: '12신살 주기', icon: '💫', category: 'deep_master' },
-  { key: 'pythagoreanLifecycle', nameKo: '피타고라스 생애주기', icon: '📐', category: 'deep_master' },
+  { key: 'pythagoreanLifecycle', nameKo: '피타고라스 생애주기', icon: '📐', category: 'deep_master', summary: '피타고라스 4대 피너클과 4대 챌린지, 9년 개인년도 주기로 현재 생애 전환기의 기회와 극복 과제를 짚는 관점' },
   { key: 'astrologicalDecanSabian', nameKo: '사비안 심볼·데칸', icon: '🔮', category: 'deep_master' },
   { key: 'medicalBioMatrix', nameKo: '메디컬 바이오 매트릭스', icon: '🩺', category: 'deep_master' },
   { key: 'wealthPipeline', nameKo: '부의 파이프라인', icon: '💎', category: 'deep_master' },
@@ -4889,7 +4889,7 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'lakotaMedicineWheel', nameKo: '라코타 수족 와칸 탕카 성스러운 메디슨 휠', icon: '🪶', category: 'deep_master', summary: '라코타 수족의 와칸 탕카와 4방위 메디슨 휠·미타쿠예 오야신 철학으로 만물과의 연결성과 균형 잡힌 방향 감각을 비춥니다.' },
   { key: 'gyeogamYurok', nameKo: '격암 남사고 격암유록 궁궁을을 사중구생', icon: '📜', category: 'deep_master' },
   { key: 'heianOnmyodoSeimei', nameKo: '헤이안 음양도 아베노 세이메이 12천장 식신', icon: '⭐', category: 'deep_master' },
-  { key: 'polynesianWayfinding', nameKo: '폴리네시아 마우이 웨이파인딩 32방위 스타컴퍼스', icon: '🧭', category: 'deep_master' },
+  { key: 'polynesianWayfinding', nameKo: '폴리네시아 마우이 웨이파인딩 32방위 스타컴퍼스', icon: '🧭', category: 'deep_master', summary: '나침반 없이 별자리 집과 파도의 맥박(오션 스웰)으로 섬을 찾아가는 고대 폴리네시아 항법 상징으로 방향타를 잡는 관점' },
   { key: 'wonhyoHwajaeng', nameKo: '신라 원효대사 십문화쟁론 일심이문 무애', icon: '🕊️', category: 'deep_master', summary: '원효대사의 일심이문과 화쟁 원리로 양극단의 시비를 녹이고 무애의 회통을 엽니다.' },
   { key: 'mayiMianxiang', nameKo: '마의도사 마의상법 12궁 관상 심상합일', icon: '👤', category: 'deep_master' },
   { key: 'egyptianAmduat', nameKo: '이집트 암두아트 12시간 라 밤의항해 케프리부활', icon: '🌅', category: 'deep_master', summary: '암두아트의 서 12시간 밤의 항해와 케프리 부활 상징으로 시련 돌파와 새벽 전환을 읽는 관점' },
@@ -4937,7 +4937,7 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'frenchMontaigneEssaisWisdom', nameKo: '몽테뉴 수상록 자기성찰 독단탈피 회의주의 중용', icon: '📖', category: 'deep_master' },
   { key: 'ancientIndianNagarjunaMadhyamakaSunyata', nameKo: '용수 중론 팔불중도 연기즉공 이제설 공성지혜', icon: '☸️', category: 'deep_master', summary: '용수 《중론》의 팔불중도와 연기즉공 사유로 고정관념의 양극단을 해체하고 걸림 없는 변화의 길을 봅니다.' },
   { key: 'koreanJinulJeonghyeSsangsuDonohJeomsu', nameKo: '보조국사 지눌 수심결 정혜쌍수 돈오점수 성적등지', icon: '📜', category: 'deep_master', summary: '보조국사 지눌 《수심결》의 돈오점수와 정혜쌍수 원리로 단박의 자각을 일상의 고요와 지혜로 차분히 닦아 나갑니다.' },
-  { key: 'renaissanceBrunoInfiniteUniverseHeroicFurore', nameKo: '조르다노 브루노 무한우주론 영웅적열정 정신주권', icon: '🌌', category: 'deep_master' },
+  { key: 'renaissanceBrunoInfiniteUniverseHeroicFurore', nameKo: '조르다노 브루노 무한우주론 영웅적열정 정신주권', icon: '🌌', category: 'deep_master', summary: '폐쇄된 수정 구체를 깨는 브루노의 무한우주론과 영웅적 열정(Eroico Furore)으로 사고의 한계를 돌파하는 관점' },
   { key: 'frenchPascalPenseesHeartReason', nameKo: '블레즈 파스칼 팡세 사유하는갈대 심장의논리 파스칼의내기', icon: '🌾', category: 'deep_master', summary: '블레즈 파스칼의 《팡세》 사상으로 헛된 소음을 멈추고 사유하는 갈대의 존엄과 심장의 직관·결단을 비춥니다.' },
   { key: 'germanSchopenhauerWillRepresentation', nameKo: '쇼펜하우어 의지와표상 맹목적의지초월 심미적관조 동포애자비', icon: '🎼', category: 'deep_master', summary: '쇼펜하우어의 의지와 표상 철학으로 맹목적 욕망에서 한 걸음 물러나 심미적 관조와 자비·적정 거리를 회복합니다.' },
   { key: 'koreanChusaKimJeonghuiSehando', nameKo: '추사 김정희 세한도 송백후조 역경극복지조 문자향서권기', icon: '🌲', category: 'deep_master', summary: '추사 김정희의 세한도 송백후조와 문자향 서권기로 역경 속에서도 흔들리지 않는 지조와 담백한 본질을 비춥니다.' },

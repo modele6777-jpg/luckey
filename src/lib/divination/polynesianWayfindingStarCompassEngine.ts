@@ -27,7 +27,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const POLYNESIAN_WAYFINDING_VERSION = '2.0.0';
+export const POLYNESIAN_WAYFINDING_VERSION = '2.1.0';
 
 export interface PolynesianWayfindingReport {
   engineVersion: string;
@@ -46,12 +46,20 @@ export interface PolynesianWayfindingReport {
     meaningKo: string;
     navigationSign: string;
   };
+  secondaryStarHouse: {
+    hawaiianName: string;
+    quadrant: string;
+    meaningKo: string;
+    navigationSign: string;
+  };
   guidingZenithStar: {
     hawaiianName: string;
     westernConstellation: string;
     destinySignificance: string;
   };
   wayfinderSeaChantWisdom: string;
+  reflectiveQuestion: string;
+  interpretiveBoundary: string;
   wayfindingSynthesisMatrix?: {
     dominantTension: string;
     alignmentState: string;
@@ -66,7 +74,7 @@ function formatWayfindingKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
 }
 
 function describeWayfindingStage(score: number): string {
@@ -164,6 +172,7 @@ export function calculatePolynesianWayfinding(
   const islandFindingArrivalCertainty = 64 + ((seed >> 8) % 35);
 
   const primaryStarHouse = STAR_HOUSES[seed % STAR_HOUSES.length];
+  const secondaryStarHouse = STAR_HOUSES[(seed + 1 + ((seed >> 5) % (STAR_HOUSES.length - 1))) % STAR_HOUSES.length];
   const guidingZenithStar = GUIDING_STARS[(seed >> 3) % GUIDING_STARS.length];
 
   let wayfinderSeaChantWisdom = '';
@@ -176,13 +185,19 @@ export function calculatePolynesianWayfinding(
   }
 
   const calculatedAtKst = formatWayfindingKstTimestamp(now);
+  const q = query?.trim() || '';
+  const reflectiveQuestion = q
+    ? `'${q}'의 항로 위에서 지금 ${primaryStarHouse.hawaiianName}의 방향타와 ${secondaryStarHouse.hawaiianName}의 보조 징조 중 먼저 살필 바닷길은 무엇입니까?`
+    : `지금 마음속에 품은 목적지 섬(${guidingZenithStar.hawaiianName})을 향해 ${primaryStarHouse.hawaiianName}의 돛을 어떻게 조율하시겠습니까?`;
+  const interpretiveBoundary =
+    '이 리딩은 고대 폴리네시아 웨이파인딩 스타 컴퍼스와 천정 인도별 상징에 빗댄 정성 성찰 비유이며, 실제 항해·이동·진로 결정을 대신하는 예측이 아닙니다.';
   const composite = Math.round(
     (oceanSwellSensitivityIndex + wayfinderNavigationClarityScore + voyagingCanoeBalanceResilience + ancestralManaExplorationForce + islandFindingArrivalCertainty) / 5
   );
   const wayfindingSynthesisMatrix = {
-    dominantTension: `${primaryStarHouse.hawaiianName} ↔ ${guidingZenithStar.hawaiianName}`,
+    dominantTension: `${primaryStarHouse.hawaiianName} ↔ ${secondaryStarHouse.hawaiianName} ↔ ${guidingZenithStar.hawaiianName}`,
     alignmentState: describeWayfindingStage(composite),
-    integratedAction: `${primaryStarHouse.navigationSign}${query?.trim() ? ` [질문 맥락: ${query.trim()}]` : ''}`,
+    integratedAction: `${primaryStarHouse.navigationSign}${q ? ` [질문 맥락: ${q}]` : ''}`,
   };
 
   return {
@@ -195,8 +210,11 @@ export function calculatePolynesianWayfinding(
     ancestralManaExplorationForce,
     islandFindingArrivalCertainty,
     primaryStarHouse,
+    secondaryStarHouse,
     guidingZenithStar,
     wayfinderSeaChantWisdom,
+    reflectiveQuestion,
+    interpretiveBoundary,
     wayfindingSynthesisMatrix,
   };
 }
@@ -211,9 +229,11 @@ export function formatPolynesianWayfindingPrompt(report: PolynesianWayfindingRep
     `- **주요 항해 하우스 (Star House)**: ${report.primaryStarHouse.hawaiianName} [${report.primaryStarHouse.quadrant}]`,
     `  - *하우스 상징*: ${report.primaryStarHouse.meaningKo}`,
     `  - *항법 징표*: ${report.primaryStarHouse.navigationSign}`,
+    `- **보조 교차 하우스**: ${report.secondaryStarHouse.hawaiianName} [${report.secondaryStarHouse.quadrant}] — ${report.secondaryStarHouse.meaningKo}`,
     `- **인도별 (Zenith Star)**: ${report.guidingZenithStar.hawaiianName} (${report.guidingZenithStar.westernConstellation})`,
     `  - *운명적 계시*: ${report.guidingZenithStar.destinySignificance}`,
     `- **웨이파인더 대양 지혜 잠언**: "${report.wayfinderSeaChantWisdom}"`,
+    `- **성찰 질문**: ${report.reflectiveQuestion}`,
   ];
   if (report.wayfindingSynthesisMatrix) {
     lines.push(
@@ -221,5 +241,6 @@ export function formatPolynesianWayfindingPrompt(report: PolynesianWayfindingRep
       `- **통합 실천**: ${report.wayfindingSynthesisMatrix.integratedAction}`,
     );
   }
+  lines.push(`- **해석 경계**: ${report.interpretiveBoundary}`);
   return lines.join('\n');
 }
