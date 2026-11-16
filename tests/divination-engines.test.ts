@@ -2717,10 +2717,11 @@ test('Hero Myth Monomyth Engine: 조셉 캠벨 영웅의 여정 12단계 & 운�
   assert(res.heroicBreakthroughAction.length > 0);
   assert(res.calculatedAtKst.endsWith('KST'));
   assert(Boolean(res.monomythSynthesisMatrix?.integratedAction));
+  assert(res.interpretiveBoundary.length > 0);
   const prompt = formatHeroMythMonomythPrompt(res);
   assert(prompt.includes('LUCKEY 조셉 캠벨 영웅의 여정 12단계 모노미스'));
   assert(prompt.includes(res.heroicArchetype));
-  assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('교차 매트릭스') && prompt.includes('해석 경계'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });
@@ -5712,10 +5713,11 @@ test('Montaigne Essais Wisdom Engine: calculates Que sais-je inquiry, Self-intro
   assert(rep.activeThematicEssay.essayTitleFrench.length > 0);
   assert(rep.calculatedAtKst.endsWith('KST'));
   assert(Boolean(rep.montaigneEssaisSynthesisMatrix?.integratedAction));
+  assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatMontaigneEssaisWisdomPrompt(rep);
   assert(prompt.includes('몽테뉴 수상록(Essais) 회의주의·자기성찰 지표'));
   assert(prompt.includes(rep.activeThematicEssay.essayTitleKo));
-  assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('교차 매트릭스') && prompt.includes('해석 경계'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });
@@ -6703,10 +6705,11 @@ test('Hermann Hesse Demian Siddhartha Engine: calculates Abraxas Self-Actualizat
   assert(rep.activeHesseTheme.themeTitleKo.length > 0);
   assert(rep.calculatedAtKst.endsWith('KST'));
   assert(Boolean(rep.hesseSynthesisMatrix?.integratedAction));
+  assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatGermanSwissHermannHesseDemianSiddharthaPrompt(rep);
   assert(prompt.includes('헤르만 헤세 《데미안·싯다르타》 아브락사스 자아실현 & 내면의 길 지표'));
   assert(prompt.includes(rep.activeHesseTheme.themeTitleKo));
-  assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('교차 매트릭스') && prompt.includes('해석 경계'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });

@@ -14,7 +14,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const GERMAN_HERMANN_HESSE_VERSION = 'LUCKEY-HERMANN-HESSE-WISDOM-v2.0.0';
+export const GERMAN_HERMANN_HESSE_VERSION = 'LUCKEY-HERMANN-HESSE-WISDOM-v2.1.0';
 
 export interface HesseTheme {
   themeKey: string;
@@ -53,6 +53,7 @@ export interface GermanSwissHermannHesseDemianSiddharthaResult {
     alignmentState: string;
     integratedAction: string;
   };
+  interpretiveBoundary: string;
 }
 
 export const HESSE_THEMES: HesseTheme[] = [
@@ -216,6 +217,7 @@ export function calculateGermanSwissHermannHesseDemianSiddhartha(
       philosophicalCounsel,
     },
     hesseSynthesisMatrix,
+    interpretiveBoundary: '본 헤르만 헤세 자아실현 지혜 리포트는 문학·실존 철학 원형에 기반한 정성적 내면 성찰 안내이며, 확정적 길흉 예단이나 심리 치료를 대신하지 않습니다.',
   };
 }
 
@@ -244,5 +246,6 @@ export function formatGermanSwissHermannHesseDemianSiddharthaPrompt(
       `- 통합 실천: ${res.hesseSynthesisMatrix.integratedAction}`,
     );
   }
+  lines.push(`- 해석 경계: ${res.interpretiveBoundary}`);
   return lines.join('\n');
 }
