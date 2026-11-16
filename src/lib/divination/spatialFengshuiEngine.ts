@@ -32,7 +32,7 @@ function formatSpatialKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
 }
 
 export type CompassDirection = '동(東)' | '남동(南東)' | '남(南)' | '남서(南西)' | '서(西)' | '북서(北西)' | '북(北)' | '북동(北東)';
@@ -93,6 +93,7 @@ export interface SpatialFengshuiResult {
     alignmentState: string;
     integratedAction: string;
   };
+  reflectiveQuestion?: string;
   interpretiveBoundary: string;
 }
 
@@ -338,6 +339,9 @@ export function calculateSpatialFengshui(options?: {
     hazardousDirections,
     todayTopGoldenDirection,
     spatialSynthesisMatrix,
+    reflectiveQuestion: q
+      ? `‘${q}’을(를) 실행할 때 오늘의 최고 길방위 ${topGolden.direction}(${topGolden.qimenGate})과 피해야 할 방위를 고려해 어디에 자리를 잡으시겠습니까?`
+      : `결핍된 ${lackingElement} 기운을 채우고 ${topGolden.direction}(${topGolden.qimenGate})의 생기를 받기 위해 오늘 공간이나 책상 배치를 어떻게 다듬어 보시겠습니까?`,
     interpretiveBoundary,
   };
 }
@@ -364,7 +368,7 @@ export function formatSpatialFengshuiPrompt(res: SpatialFengshuiResult): string 
   ).join('\n');
 
   const matrixLine = res.spatialSynthesisMatrix
-    ? `\n4. [공간 교차 매트릭스]:\n   - 핵심 긴장: ${res.spatialSynthesisMatrix.dominantTension}\n   - 조율 상태: ${res.spatialSynthesisMatrix.alignmentState}\n   - 통합 실천: ${res.spatialSynthesisMatrix.integratedAction}\n   - 해석 경계: ${res.interpretiveBoundary}\n`
+    ? `\n4. [공간 교차 매트릭스]:\n   - 핵심 긴장: ${res.spatialSynthesisMatrix.dominantTension}\n   - 조율 상태: ${res.spatialSynthesisMatrix.alignmentState}\n   - 통합 실천: ${res.spatialSynthesisMatrix.integratedAction}${res.reflectiveQuestion ? `\n   - 성찰 질문: ${res.reflectiveQuestion}` : ''}\n   - 해석 경계: ${res.interpretiveBoundary}\n`
     : `\n4. [해석 경계]: ${res.interpretiveBoundary}\n`;
 
   return `[🧭 동양 풍수 & 서양 점성술 공간 길방위 실측 데이터 (Astro-FengShui Spatial Core)]

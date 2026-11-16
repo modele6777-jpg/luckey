@@ -33,7 +33,7 @@ function formatSpecialStarsKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
 }
 
 export type PillarLocation = '년주(사회적기반)' | '월주(직업·커리어)' | '일주(핵심자아)' | '시주(비밀잠재력)';
@@ -90,6 +90,7 @@ export interface SpecialStarsResult {
     alignmentState: string;
     integratedAction: string;
   };
+  reflectiveQuestion?: string;
   interpretiveBoundary: string;
 }
 
@@ -504,6 +505,9 @@ export function calculateSpecialStarsMatrix(options?: {
     topSuperpowers,
     overallSynthesis,
     specialStarsSynthesisMatrix,
+    reflectiveQuestion: q
+      ? `‘${q}’ 앞에서 ${leadStar ? `${leadStar.starName}(${leadStar.pillar})의 강점인 ‘${leadStar.title}’` : '안정적인 명식의 균형'}을 어떤 실행 무대로 연결하시겠습니까?`
+      : `감지된 ${detectedStars.length}개 신살 중 ${leadStar ? `${leadStar.starName}(${leadStar.pillar})` : '고유한 균형 감각'}을 오늘의 일과 관계에서 가장 건강하게 발현할 한 걸음은 무엇입니까?`,
     interpretiveBoundary,
   };
 }
@@ -524,7 +528,7 @@ export function formatSpecialStarsPrompt(res: SpecialStarsResult): string {
   ).join('\n');
 
   const matrixLine = res.specialStarsSynthesisMatrix
-    ? `\n4. [신살 교차 매트릭스]:\n   - 핵심 긴장: ${res.specialStarsSynthesisMatrix.dominantTension}\n   - 조율 상태: ${res.specialStarsSynthesisMatrix.alignmentState}\n   - 통합 실천: ${res.specialStarsSynthesisMatrix.integratedAction}\n   - 해석 경계: ${res.interpretiveBoundary}\n`
+    ? `\n4. [신살 교차 매트릭스]:\n   - 핵심 긴장: ${res.specialStarsSynthesisMatrix.dominantTension}\n   - 조율 상태: ${res.specialStarsSynthesisMatrix.alignmentState}\n   - 통합 실천: ${res.specialStarsSynthesisMatrix.integratedAction}${res.reflectiveQuestion ? `\n   - 성찰 질문: ${res.reflectiveQuestion}` : ''}\n   - 해석 경계: ${res.interpretiveBoundary}\n`
     : `\n4. [해석 경계]: ${res.interpretiveBoundary}\n`;
 
   return `[⭐ 15대 신살 위치별 슈퍼파워 치환 실측 데이터 (Special Stars Matrix Core)]

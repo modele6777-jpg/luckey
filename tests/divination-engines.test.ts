@@ -2592,11 +2592,14 @@ test('Strategic Leverage Engine: 전략 협상 및 손자병법 기문 레버리
 test('Spatial Fengshui Engine: 동양 풍수·점성술 공간 길방위 v2.1.0 교차 매트릭스 검증', () => {
   const res = calculateSpatialFengshui({ profile, targetDate: new Date('2026-11-03T10:00:00+09:00'), question: '작업실 방향' });
   assert.equal(res.engineVersion, SPATIAL_FENGSHUI_VERSION);
-  assert(res.calculatedAtKst.endsWith('KST'));
+  assert(res.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert(res.reflectiveQuestion?.includes('작업실 방향'));
   assert(Boolean(res.spatialSynthesisMatrix?.integratedAction));
   assert(res.interpretiveBoundary.length > 0);
   assert(res.allDirections.length === 8);
   const prompt = formatSpatialFengshuiPrompt(res);
+  assert(prompt.includes('+09:00 (KST)'));
+  assert(prompt.includes('성찰 질문'));
   assert(prompt.includes('공간 교차 매트릭스') && prompt.includes('해석 경계'));
   assert(!prompt.includes('/100'));
 });
@@ -2604,10 +2607,13 @@ test('Spatial Fengshui Engine: 동양 풍수·점성술 공간 길방위 v2.1.0 
 test('Special Stars Matrix Engine: 15대 신살 슈퍼파워 치환 v2.1.0 교차 매트릭스 검증', () => {
   const res = calculateSpecialStarsMatrix({ profile, targetDate: new Date('2026-11-03T10:00:00+09:00'), question: '타고난 무기' });
   assert.equal(res.engineVersion, SPECIAL_STARS_VERSION);
-  assert(res.calculatedAtKst.endsWith('KST'));
+  assert(res.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert(res.reflectiveQuestion?.includes('타고난 무기'));
   assert(Boolean(res.specialStarsSynthesisMatrix?.integratedAction));
   assert(res.interpretiveBoundary.length > 0);
   const prompt = formatSpecialStarsPrompt(res);
+  assert(prompt.includes('+09:00 (KST)'));
+  assert(prompt.includes('성찰 질문'));
   assert(prompt.includes('신살 교차 매트릭스') && prompt.includes('해석 경계'));
   assert(!prompt.includes('/100'));
 });

@@ -92,6 +92,7 @@ export interface ContextualSynastryResult {
     recommendedAction: string;
     cautionNotice: string;
   };
+  reflectiveQuestion: string;
   boundaryNotice: string;
 }
 
@@ -124,7 +125,7 @@ function getTemporalSynastryRhythm(now: Date) {
           : '겨울 · 내면 정돈절 (서로의 고유한 공간을 존중하며 내실을 다지는 시기)';
 
   return {
-    kstTimeLabel: `${y}-${m}-${d} ${hh}:${mm} KST`,
+    kstTimeLabel: `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`,
     dialogueWindow,
     seasonalBondTone,
     temporalGuidance: `${dialogueWindow} · ${seasonalBondTone}의 흐름에 맞추어 소통하십시오.`,
@@ -364,7 +365,7 @@ export function calculateContextualSynastry(options: {
   };
 
   return {
-    engineVersion: 'LUCKEY-CS-DME-v2.0.0',
+    engineVersion: 'LUCKEY-CS-DME-v2.1.0',
     calculatedAtUtc: nowUtcIso,
     calculatedAtKst: temporalSynastryRhythm.kstTimeLabel,
     timestamp: now.getTime(),
@@ -387,6 +388,9 @@ export function calculateContextualSynastry(options: {
     situationalSynastryAudit,
     temporalSynastryRhythm,
     synastrySynthesisMatrix,
+    reflectiveQuestion: matchedPartner && compatibilityMatrix
+      ? `${matchedPartner.name} 님과의 ${compatibilityMatrix.grade}(${compatibilityMatrix.title}) 흐름 속에서 오늘 서로의 경계를 지키며 먼저 건넬 따뜻한 말 한마디는 무엇입니까?`
+      : `${relEntity ? `${relEntity.categoryKoName}의 ` : ''}관계 흐름을 조율하기 위해 지금 상대에게 확인하거나 표현하고 싶은 본심은 무엇입니까?`,
     boundaryNotice: '본 결과는 사주·숙요·점성술 원형과 대화 맥락을 결합한 정성적 관계 가이드이며, 상대의 마음을 단정하는 예측이 아닙니다.',
   };
 }
@@ -450,6 +454,7 @@ ${matrixBlock}
 - 질문 맥락 감사 (${res.situationalSynastryAudit.focusTheme}): ${res.situationalSynastryAudit.tacticalStep}
 - KST 시공간 리듬: ${res.temporalSynastryRhythm.dialogueWindow} / ${res.temporalSynastryRhythm.seasonalBondTone}
 - 교차 매트릭스: 핵심(${res.synastrySynthesisMatrix.coreInsight}) | 실행(${res.synastrySynthesisMatrix.recommendedAction}) | 주의(${res.synastrySynthesisMatrix.cautionNotice})
+- 성찰 질문: ${res.reflectiveQuestion}
 - 해석 경계: ${res.boundaryNotice}
 ======================================================================
 [★ 루시 관계 상담 지침]:
