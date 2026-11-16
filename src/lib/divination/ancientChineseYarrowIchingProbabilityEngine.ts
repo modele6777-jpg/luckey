@@ -6,7 +6,7 @@
  * 동효·정효의 시중(時中) 태도를 정성적 행동 성찰에 연결합니다.
  */
 
-export const ANCIENT_YARROW_PROBABILITY_ENGINE_VERSION = 'LUCKEY-YARROW-PROBABILITY-v2.0.0';
+export const ANCIENT_YARROW_PROBABILITY_ENGINE_VERSION = 'LUCKEY-YARROW-PROBABILITY-v2.1.0';
 
 export type YarrowQuestionTheme = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -79,7 +79,7 @@ function getTemporalYarrowRhythm(now: Date) {
           : '겨울 · 복(復)·곤(坤) 비축기 (조용히 힘을 기르며 시중의 때를 기다리는 시기)';
 
   return {
-    kstTimeLabel: `${y}-${m}-${d} ${hh}:${mm} KST`,
+    kstTimeLabel: `${y}-${m}-${d} ${hh}:${mm} +09:00 KST`,
     dayanWatchWindow,
     seasonalChangeTone,
     temporalGuidance: `${dayanWatchWindow} · ${seasonalChangeTone}의 결에 맞추어 시중(時中)의 처세 태도를 유지하십시오.`,
@@ -312,7 +312,7 @@ export function formatAncientYarrowProbabilityPrompt(report: YarrowProbabilityRe
           ? '7/16 최빈 수용 분기 (유순한 내실 비축)'
           : '3/16 극양 전환 분기 (성취의 결실과 절제)';
 
-  return `### 🎋 고대 중국 주역 대연지수 49책 시초점 확률 실측 데이터 (${report.engineVersion})
+  return `### 🎋 고대 중국 주역 대연지수 49책 시초점 상징 수리 관점 (${report.engineVersion})
 - **연산 시각**: ${report.calculatedAtKst}
 - **산출 효(爻) 수리값**: ${report.dominantYaoValue} (${report.remainingStalks}책 / 4) - [${report.yaoNameKo}]
 - **동효 여부**: ${report.isChangingLine ? '동효 (국면 전환기)' : '정효 (안정 유지기)'}
@@ -325,5 +325,5 @@ export function formatAncientYarrowProbabilityPrompt(report: YarrowProbabilityRe
 - **실천 조언**: ${report.practiceGuidance}
 - **일상 의례**: ${report.ritualAction}
 - **성찰 질문**: ${report.reflectionFocus}
-- **참고 경계**: ${report.boundaryNotice}`;
+- **해석 경계**: ${report.boundaryNotice}`;
 }
