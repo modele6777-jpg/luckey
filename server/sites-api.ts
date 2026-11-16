@@ -1,5 +1,5 @@
 import { getSitesAIConfig } from '../scripts/sites-ai-provider.mjs';
-import { handleTTS } from './api-lib/ttsHandler.ts';
+import type { handleTTS } from './api-lib/ttsHandler.ts';
 import { stripInternalSpeechDirectives } from '../src/utils/speechText.ts';
 import { buildDailyBgmRecipe, renderDailyBgmBytes } from './api-lib/generateDailyBgm.ts';
 import { buildVerifiedArtRecommendation, MUSE_ART_CATALOG } from './api-lib/museArtCatalog.ts';
@@ -162,7 +162,7 @@ async function proxyImage(request: Request, fetchApi: Fetcher) {
   throw new ApiError(502, '작품 이미지의 이동 횟수가 너무 많습니다.');
 }
 
-export async function handleSitesApi(request: Request, env: Runtime, fetchApi: Fetcher = fetch, synthesize: typeof handleTTS = handleTTS): Promise<Response | null> {
+export async function handleSitesApi(request: Request, env: Runtime, fetchApi: Fetcher = fetch, synthesize?: typeof handleTTS): Promise<Response | null> {
   const route = new URL(request.url).pathname;
   if (!routes.has(route)) return null;
   const method = route === '/api/health' || route.endsWith('/proxy') ? 'GET' : 'POST';
@@ -200,6 +200,27 @@ export async function handleSitesApi(request: Request, env: Runtime, fetchApi: F
     }
     if (route === '/api/ai/tts') {
       const speech = required(stripInternalSpeechDirectives(required(body.text, '낭독할 문장', 4000)), '낭독할 문장', 4000);
+      if (!synthesize) {
+        // Sites Workers do not support the Node TLS transport used by Edge TTS.
+        // Keep synthesis on the existing app backend and never forward Site cookies/tokens.
+        const upstream = new URL(env.LUCKEY_API_ORIGIN || 'https://luckey-six.vercel.app');
+        if (upstream.protocol !== 'https:' || upstream.origin === new URL(request.url).origin) {
+          throw new ApiError(503, '음성 서버 연결 설정을 확인해 주세요.', undefined, 'TTS_NOT_CONFIGURED');
+        }
+        upstream.pathname = '/api/ai/tts'; upstream.search = ''; upstream.hash = '';
+        const response = await fetchApi(upstream.href, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ...body, text: speech }), redirect: 'manual', signal: request.signal,
+        });
+        if (response.status >= 300 && response.status < 400 || !response.headers.get('Content-Type')?.includes('application/json')) {
+          throw new ApiError(502, '음성 서버에 연결하지 못했습니다.', undefined, 'TTS_UPSTREAM_UNAVAILABLE');
+        }
+        const headers = new Headers({ 'Content-Type': 'application/json', 'Cache-Control': 'no-store' });
+        for (const name of ['Retry-After', 'X-TTS-Diagnostic-ID']) {
+          const value = response.headers.get(name); if (value) headers.set(name,value);
+        }
+        return new Response(response.body,{status:response.status,headers});
+      }
       try {
         return json(await synthesize({ text: speech, voice: body.voice, requestId: request.headers.get('x-vercel-id') || undefined }));
       } catch (edgeError) {
