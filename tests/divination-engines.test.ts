@@ -9225,3 +9225,24 @@ test('Egyptian 36 Decans, Etruscan Augur, and Finnish Kalevala Sampo v2.1.0 incl
   const fkPrompt = formatFinnishKalevalaSampoPrompt(fk);
   assert.ok(fkPrompt.includes('해석 경계') && fkPrompt.includes('+09:00') && !fkPrompt.includes('실측 데이터'));
 });
+
+test('Marcel Proust, Montesquieu, and Paul Ricoeur v2.1.0 include +09:00 KST and interpretive boundary', () => {
+  const now = new Date('2026-11-16T03:05:00Z');
+  const pr = calculateFrenchMarcelProustLostTimeRegained(profile, '지나간 기억의 의미를 되찾고 싶어요', now);
+  assert.equal(pr.engineVersion, FRENCH_MARCEL_PROUST_LOST_TIME_VERSION);
+  assert.ok(pr.calculatedAtKst.includes('+09:00'));
+  const prPrompt = formatFrenchMarcelProustLostTimeRegainedPrompt(pr);
+  assert.ok(prPrompt.includes('해석 경계') && prPrompt.includes('+09:00'));
+
+  const mn = calculateFrenchMontesquieuSpiritOfLaws(profile, '균형 있는 결정을 내리고 싶어요', now);
+  assert.equal(mn.engineVersion, FRENCH_MONTESQUIEU_SPIRIT_OF_LAWS_VERSION);
+  assert.ok(mn.calculatedAtKst.includes('+09:00'));
+  const mnPrompt = formatFrenchMontesquieuSpiritOfLawsPrompt(mn);
+  assert.ok(mnPrompt.includes('해석 경계') && mnPrompt.includes('+09:00'));
+
+  const rc = calculateFrenchPaulRicoeurNarrativeIdentityHealing(profile, '상처받은 마음을 이야기로 풀어내고 싶어요', now);
+  assert.equal(rc.engineVersion, FRENCH_PAUL_RICOEUR_NARRATIVE_IDENTITY_HEALING_VERSION);
+  assert.ok(rc.calculatedAtKst.includes('+09:00'));
+  const rcPrompt = formatFrenchPaulRicoeurNarrativeIdentityHealingPrompt(rc);
+  assert.ok(rcPrompt.includes('해석 경계') && rcPrompt.includes('+09:00'));
+});
