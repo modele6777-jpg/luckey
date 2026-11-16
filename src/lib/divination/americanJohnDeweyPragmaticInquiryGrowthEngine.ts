@@ -7,12 +7,12 @@
  * 3. 성장 그 자체로서의 삶(Growth as an End in Itself): 완결된 결과보다 배우며 확장하는 과정의 생명력
  * 4. 유기체-환경 상호작용(Transaction): 주어진 조건과 호흡하며 새로운 질서를 빚어내는 개척력
  *
- * @version LUCKEY-JOHN-DEWEY-PRAGMATIC-INQUIRY-GROWTH-v2.0.0
+ * @version LUCKEY-JOHN-DEWEY-PRAGMATIC-INQUIRY-GROWTH-v2.1.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const AMERICAN_JOHN_DEWEY_PRAGMATIC_INQUIRY_GROWTH_VERSION = 'LUCKEY-JOHN-DEWEY-PRAGMATIC-INQUIRY-GROWTH-v2.0.0';
+export const AMERICAN_JOHN_DEWEY_PRAGMATIC_INQUIRY_GROWTH_VERSION = 'LUCKEY-JOHN-DEWEY-PRAGMATIC-INQUIRY-GROWTH-v2.1.0';
 
 export type DeweyQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -51,6 +51,7 @@ export interface AmericanJohnDeweyPragmaticInquiryGrowthResult {
   reflectionFocus: string;
   counselNote: string;
   boundaryNotice: string;
+  interpretiveBoundary: string;
   situationalDeweyAudit: {
     focusTheme: string;
     inquiryCue: string;
@@ -305,6 +306,7 @@ export function calculateAmericanJohnDeweyPragmaticInquiryGrowth(
     reflectionFocus: topicGuide.reflection,
     counselNote,
     boundaryNotice,
+    interpretiveBoundary: boundaryNotice,
     situationalDeweyAudit,
     temporalDeweyRhythm,
     deweySynthesisMatrix,

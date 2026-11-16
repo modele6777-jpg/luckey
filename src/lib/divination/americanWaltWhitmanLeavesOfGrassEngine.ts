@@ -9,12 +9,12 @@
  * 4. 격식과 두려움을 떨치고 나아가는 자유로운 개척정신(Democratic Freedom & Open Road Spirit Index): 열린 길(Open Road)을 향해 성큼 발을 내딛는 모험심.
  * 5. 삶과 죽음의 영원한 순환 속에서 피어나는 낙관적 회복탄력성(Cycle of Nature & Optimistic Resilience Score): 절망을 넘어 빛을 향해 고개를 드는 생명력.
  *
- * @version LUCKEY-WHITMAN-LEAVES-OF-GRASS-v2.0.0
+ * @version LUCKEY-WHITMAN-LEAVES-OF-GRASS-v2.1.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const AMERICAN_WALT_WHITMAN_VERSION = 'LUCKEY-WHITMAN-LEAVES-OF-GRASS-v2.0.0';
+export const AMERICAN_WALT_WHITMAN_VERSION = 'LUCKEY-WHITMAN-LEAVES-OF-GRASS-v2.1.0';
 
 export type WhitmanQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -59,6 +59,7 @@ export interface AmericanWaltWhitmanLeavesOfGrassResult {
   ritualAction: string;
   reflectionFocus: string;
   boundaryNotice: string;
+  interpretiveBoundary?: string;
   situationalWhitmanAudit: {
     focusTheme: string;
     vitalityCue: string;
@@ -293,6 +294,7 @@ export function calculateAmericanWaltWhitmanLeavesOfGrass(
     ritualAction: topicGuidance.ritualAction,
     reflectionFocus: topicGuidance.reflectionFocus,
     boundaryNotice,
+    interpretiveBoundary: boundaryNotice,
     situationalWhitmanAudit,
     whitmanSynthesisMatrix,
     whitmanComprehensiveGuidance: {
