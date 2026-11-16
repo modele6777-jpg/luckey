@@ -9690,3 +9690,36 @@ test('Choe Hangi Gihak, Danjae Shin Chae-ho, and Dosan Ahn Changho v2.1.0 includ
   const dsPrompt = formatDosanAhnChanghoMusilYeokhaengPrompt(ds);
   assert.ok(dsPrompt.includes('+09:00') && dsPrompt.includes('보조 교차 경구') && dsPrompt.includes('성찰 질문') && dsPrompt.includes('해석 경계'));
 });
+
+test('Choe Hyeonbae Geulbon, Damheon Hong Dae-yong, and Gosan Yoon Seon-do v2.1.0 include +09:00 KST, dual cross-check, reflective question, and interpretive boundary', () => {
+  const profile = { basic: { name: '제제', birthdate: '1994-01-24', birthtime: '12:00', gender: 'male' } } as any;
+  const now = new Date('2026-11-16T05:25:00Z');
+  const query = '편견을 벗고 맑고 정직한 중심을 세우고 싶습니다';
+
+  const ch = calculateChoeHyeonbaeGeulbon(profile, query, now);
+  assert.equal(ch.engineVersion, CHOE_HYEONBAE_GEULBON_VERSION);
+  assert.match(ch.calculatedAtKst, /\+09:00/);
+  assert.notEqual(ch.secondaryOesolVirtue.koreanMotto, ch.primaryOesolVirtue.koreanMotto);
+  assert.ok(ch.reflectiveQuestion.includes(query));
+  assert.ok(ch.interpretiveBoundary.includes('성찰'));
+  const chPrompt = formatChoeHyeonbaeGeulbonPrompt(ch);
+  assert.ok(chPrompt.includes('+09:00') && chPrompt.includes('보조 교차 덕목') && chPrompt.includes('성찰 질문') && chPrompt.includes('해석 경계'));
+
+  const hd = calculateKoreanDamheonHongDaeYongUisanMundap(profile, query, now);
+  assert.equal(hd.engineVersion, KOREAN_DAMHEON_HONG_DAE_YONG_UISAN_MUNDAP_VERSION);
+  assert.match(hd.calculatedAtKst, /\+09:00/);
+  assert.notEqual(hd.secondaryHongDaeYongAphorism.aphorismKey, hd.focalHongDaeYongAphorism.aphorismKey);
+  assert.ok(hd.reflectiveQuestion.includes(query));
+  assert.ok(hd.interpretiveBoundary.includes('성찰'));
+  const hdPrompt = formatKoreanDamheonHongDaeYongUisanMundapPrompt(hd);
+  assert.ok(hdPrompt.includes('+09:00') && hdPrompt.includes('보조 교차 명언') && hdPrompt.includes('성찰 질문') && hdPrompt.includes('해석 경계'));
+
+  const ys = calculateKoreanGosanYoonSeonDoFiveFriends(profile, query, now);
+  assert.equal(ys.engineVersion, KOREAN_GOSAN_YOON_SEON_DO_FIVE_FRIENDS_VERSION);
+  assert.match(ys.calculatedAtKst, /\+09:00/);
+  assert.notEqual(ys.secondaryYoonAphorism.aphorismKey, ys.focalYoonAphorism.aphorismKey);
+  assert.ok(ys.reflectiveQuestion.includes(query));
+  assert.ok(ys.interpretiveBoundary.includes('성찰'));
+  const ysPrompt = formatKoreanGosanYoonSeonDoFiveFriendsPrompt(ys);
+  assert.ok(ysPrompt.includes('+09:00') && ysPrompt.includes('보조 교차 시가') && ysPrompt.includes('성찰 질문') && ysPrompt.includes('해석 경계'));
+});

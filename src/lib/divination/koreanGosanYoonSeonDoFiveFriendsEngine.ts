@@ -18,7 +18,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const KOREAN_GOSAN_YOON_SEON_DO_FIVE_FRIENDS_VERSION = 'LUCKEY-GO-SAN-YOON-SEON-DO-FIVE-FRIENDS-v2.0.0';
+export const KOREAN_GOSAN_YOON_SEON_DO_FIVE_FRIENDS_VERSION = 'LUCKEY-GO-SAN-YOON-SEON-DO-FIVE-FRIENDS-v2.1.0';
 
 export interface YoonSeonDoTheme {
   themeKey: string;
@@ -48,6 +48,9 @@ export interface KoreanGosanYoonSeonDoFiveFriendsResult {
   // 세부 분석
   activeYoonTheme: YoonSeonDoTheme;
   focalYoonAphorism: YoonSeonDoAphorism;
+  secondaryYoonAphorism: YoonSeonDoAphorism;
+  reflectiveQuestion: string;
+  interpretiveBoundary: string;
   yoonComprehensiveGuidance: {
     guidanceTitle: string;
     philosophicalCounsel: string;
@@ -66,7 +69,7 @@ function formatYoonKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 KST`;
 }
 
 function describeYoonStage(score: number): string {
@@ -176,9 +179,16 @@ export function calculateKoreanGosanYoonSeonDoFiveFriends(
 
   const themeIndex = (absHash >> 5) % YOON_SEON_DO_THEMES.length;
   const aphorismIndex = (absHash >> 8) % YOON_SEON_DO_APHORISMS.length;
+  const secondaryAphorismIndex = (aphorismIndex + 1 + ((absHash >> 11) % (YOON_SEON_DO_APHORISMS.length - 1))) % YOON_SEON_DO_APHORISMS.length;
 
   const activeYoonTheme = YOON_SEON_DO_THEMES[themeIndex];
   const focalYoonAphorism = YOON_SEON_DO_APHORISMS[aphorismIndex];
+  const secondaryYoonAphorism = YOON_SEON_DO_APHORISMS[secondaryAphorismIndex];
+  const trimmedQuery = query?.trim();
+  const reflectiveQuestion = trimmedQuery
+    ? `'${trimmedQuery}' 앞에서 속을 비운 대나무의 허심(虛心)과 그치지 않는 물의 끈기 가운데 지금 더 필요한 태도는 무엇인가요?`
+    : `세속의 소음 속에서 수·석·송·죽·월 다섯 벗처럼 흔들리지 않고 지켜 낼 나만의 청백한 중심은 무엇인가요?`;
+  const interpretiveBoundary = '고산 윤선도 오우가·어부사시사 관점은 길흉 예단이 아니라, 변치 않는 신의와 허심의 평온을 비추는 선비 성찰 렌즈입니다.';
 
   const guidanceTitle = `고산 윤선도 오우가·어부사시사 지혜: ${activeYoonTheme.themeTitleKo}`;
   const philosophicalCounsel = `조선 국문학의 최고봉 고산 윤선도 선생은 《오우가(五友歌)》를 통해 수·석·송·죽·월의 불변하는 지조와 청백함을 노래하고, ` +
@@ -212,6 +222,9 @@ export function calculateKoreanGosanYoonSeonDoFiveFriends(
     seyeonjeongSolitaryResilienceScore,
     activeYoonTheme,
     focalYoonAphorism,
+    secondaryYoonAphorism,
+    reflectiveQuestion,
+    interpretiveBoundary,
     yoonComprehensiveGuidance: {
       guidanceTitle,
       philosophicalCounsel,
@@ -239,9 +252,12 @@ export function formatKoreanGosanYoonSeonDoFiveFriendsPrompt(
     `- 실천적 통찰: ${res.activeYoonTheme.pragmaticInsight}`,
     `- 행동 조언: ${res.activeYoonTheme.practicalCounsel}`,
     `- 윤선도 원전 시가: "${res.focalYoonAphorism.aphorismKo}"`,
+    `- 보조 교차 시가: "${res.secondaryYoonAphorism.aphorismKo}" [${res.secondaryYoonAphorism.sourceContext}]`,
     `- 원전 출처: [${res.focalYoonAphorism.sourceContext}]`,
     `- 구체적 실천 지침: ${res.focalYoonAphorism.actionGuidance}`,
     `- 종합 윤선도 권면: ${res.yoonComprehensiveGuidance.philosophicalCounsel}`,
+    `- 성찰 질문: ${res.reflectiveQuestion}`,
+    `- 해석 경계: ${res.interpretiveBoundary}`,
   ];
   if (res.yoonSynthesisMatrix) {
     lines.push(

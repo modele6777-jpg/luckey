@@ -3050,7 +3050,7 @@ try {
   // 191. 외솔 최현배 선생 《우리말본》 & 한글 말글 자주권 문화 얼 계승 엔진
   const choeHyeonbaeGeulbonResult = calculateSupplement('choeHyeonbaeGeulbonResult', () => ((() => {
     try {
-      return calculateChoeHyeonbaeGeulbon(profile);
+      return calculateChoeHyeonbaeGeulbon(profile, question, now);
     } catch (_) {
       return null;
     }
@@ -3959,7 +3959,7 @@ try {
   // 290. 대한민국 담헌 홍대용 《의산문답》 지전설·무한우주론 & 인물균(人物均) 개방지성 지혜 엔진
   const koreanDamheonHongDaeYongUisanMundapResult = calculateSupplement('koreanDamheonHongDaeYongUisanMundapResult', () => ((() => {
     try {
-      return calculateKoreanDamheonHongDaeYongUisanMundap(profile);
+      return calculateKoreanDamheonHongDaeYongUisanMundap(profile, question, now);
     } catch (_) {
       return null;
     }
@@ -4013,7 +4013,7 @@ try {
   // 296. 대한민국 고산 윤선도 《오우가·어부사시사》 수석송죽월 5우 청백지조 & 사계절 순환 심미적 안빈낙도 지혜 엔진
   const koreanGosanYoonSeonDoFiveFriendsResult = calculateSupplement('koreanGosanYoonSeonDoFiveFriendsResult', () => ((() => {
     try {
-      return calculateKoreanGosanYoonSeonDoFiveFriends(profile);
+      return calculateKoreanGosanYoonSeonDoFiveFriends(profile, question, now);
     } catch (_) {
       return null;
     }
@@ -4904,7 +4904,7 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'yiSunSinNanjungIlgiStrategic', nameKo: '충무공 이순신 난중일기 필사즉생 명량대역전', icon: '⚔️', category: 'deep_master' },
   { key: 'ptahMemphiteHeartTongueCreation', nameKo: '이집트 멤피스신학 프타 심장구상 말씀선포 창조', icon: '🏛️', category: 'deep_master', summary: '샤바카 석비의 심장 구상(Ib)과 말씀 선포(Hu) 원리로 생각과 실행의 일치를 비추는 관점' },
   { key: 'celticLughSamildanachAllArts', nameKo: '켈트 투아하데다난 루 라바다 8대만능기예 마그투이레드', icon: '⚡', category: 'deep_master' },
-  { key: 'koreanChoeHyeonbaeHangeulGeulbon', nameKo: '외솔 최현배 우리말본 한글 말글자주권 문화얼', icon: '📖', category: 'deep_master' },
+  { key: 'koreanChoeHyeonbaeHangeulGeulbon', nameKo: '외솔 최현배 우리말본 한글 말글자주권 문화얼', icon: '📖', category: 'deep_master', summary: '외솔 최현배 선생의 우리말본 정신으로 쉬운 말글의 진실한 소통과 흔들리지 않는 문화 자주권을 세웁니다.' },
   { key: 'zoroastrianAmeshaSpentasLight', nameKo: '페르시아 조로아스터교 6대 신성불멸자 빛의조화', icon: '🔥', category: 'deep_master', summary: '아베스타 6대 아메샤 스펜타와 선한 생각·말·행동(후마타·후크타·흐바르시타)의 빛의 조화를 비추는 관점' },
   { key: 'delphicChilonSpartanModeration', nameKo: '델포이 7현인 스파르타 킬론 너자신을알라 중용절제', icon: '🏛️', category: 'deep_master', summary: '델포이 7현인 킬론의 자기 객관화(Gnothi Seauton)와 과유불급(Meden Agan) 절제를 비추는 관점' },
   { key: 'koreanJeongYakyongMongminSimseo', nameKo: '다산 정약용 목민심서 율기수신 애민청렴 공평무사', icon: '📜', category: 'deep_master' },

@@ -15,7 +15,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const CHOE_HYEONBAE_GEULBON_VERSION = 'LUCKEY-CHOE-HYEONBAE-GEULBON-v2.0.0';
+export const CHOE_HYEONBAE_GEULBON_VERSION = 'LUCKEY-CHOE-HYEONBAE-GEULBON-v2.1.0';
 
 export interface HangeulGeulbonStage {
   stageLevel: number;
@@ -42,6 +42,14 @@ export interface ChoeHyeonbaeGeulbonResult {
     coreEssence: string;
     actionableDirective: string;
   };
+  secondaryOesolVirtue: {
+    virtueNameKo: string;
+    koreanMotto: string;
+    coreEssence: string;
+    actionableDirective: string;
+  };
+  reflectiveQuestion: string;
+  interpretiveBoundary: string;
   oesolLegacyReflection: {
     manuscriptTitle: string;
     nationalSoulWisdom: string;
@@ -60,7 +68,7 @@ function formatGeulbonKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 KST`;
 }
 
 function describeGeulbonStage(score: number): string {
@@ -131,6 +139,13 @@ export function calculateChoeHyeonbaeGeulbon(
 
   const virtueIdx = (seed >> 4) % OESOL_VIRTUES.length;
   const primaryOesolVirtue = OESOL_VIRTUES[virtueIdx];
+  const secondaryVirtueIdx = (virtueIdx + 1 + ((seed >> 11) % (OESOL_VIRTUES.length - 1))) % OESOL_VIRTUES.length;
+  const secondaryOesolVirtue = OESOL_VIRTUES[secondaryVirtueIdx];
+  const trimmedQuery = query?.trim();
+  const reflectiveQuestion = trimmedQuery
+    ? `'${trimmedQuery}'를 남에게 뽐내거나 어렵게 돌리지 않고 가장 쉬운 우리말과 정직한 글본(원칙)으로 정리하면 핵심 한 줄은 무엇인가요?`
+    : `지금 내 일에서 헛된 껍데기를 벗고 진실한 말글과 체계적인 기록으로 세울 기둥 하나는 무엇인가요?`;
+  const interpretiveBoundary = '외솔 최현배 우리말본·한글 글본 관점은 길흉 예단이 아니라, 주체적인 말글 정체성과 진솔한 소통을 비추는 문화 성찰 렌즈입니다.';
 
   const legacyIdx = (seed >> 6) % OESOL_LEGACIES.length;
   const oesolLegacyReflection = OESOL_LEGACIES[legacyIdx];
@@ -160,6 +175,9 @@ export function calculateChoeHyeonbaeGeulbon(
     hangulRevivalCivilizationPower,
     activeGeulbonStage,
     primaryOesolVirtue,
+    secondaryOesolVirtue,
+    reflectiveQuestion,
+    interpretiveBoundary,
     oesolLegacyReflection,
     geulbonSynthesisMatrix,
   };
@@ -182,10 +200,13 @@ export function formatChoeHyeonbaeGeulbonPrompt(result: ChoeHyeonbaeGeulbonResul
     `  → 관장 영역: ${result.activeGeulbonStage.linguisticDomain}`,
     `  → 문화 계몽 축복: ${result.activeGeulbonStage.culturalEnlightenmentBlessing}`,
     `- 최우선 외솔 덕목: **[${result.primaryOesolVirtue.virtueNameKo} (${result.primaryOesolVirtue.koreanMotto})]**`,
+    `- 보조 교차 덕목: **[${result.secondaryOesolVirtue.virtueNameKo} (${result.secondaryOesolVirtue.koreanMotto})]**`,
     `  → 핵심 본질: ${result.primaryOesolVirtue.coreEssence}`,
     `  → 실천 지침: ${result.primaryOesolVirtue.actionableDirective}`,
     `- 외솔의 민족혼 유산: 《${result.oesolLegacyReflection.manuscriptTitle}》`,
     `  → 겨레의 불멸 지혜: "${result.oesolLegacyReflection.nationalSoulWisdom}"`,
+    `- 성찰 질문: ${result.reflectiveQuestion}`,
+    `- 해석 경계: ${result.interpretiveBoundary}`,
   ];
   if (result.geulbonSynthesisMatrix) {
     lines.push(
