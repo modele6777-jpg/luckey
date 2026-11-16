@@ -2204,7 +2204,7 @@ try {
   // 96. 고대 수메르 에리두 창세력 & 50대 메(Me) 신성 문명 규범 엔진
   const sumerianFiftyMesResult = calculateSupplement('sumerianFiftyMesResult', () => ((() => {
     try {
-      return calculateSumerianFiftyMes(profile);
+      return calculateSumerianFiftyMes(profile, question, now);
     } catch (_) {
       return null;
     }
@@ -4810,7 +4810,7 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'babylonianEnumaElish', nameKo: '바빌로니아 운명의서판', icon: '🏛️', category: 'deep_master', summary: '에누마 엘리쉬 서사시와 운명의 서판 상징을 바탕으로 현재의 혼돈을 질서화할 수호 천체와 주권적 실천 방향을 짚어 주는 관점' },
   { key: 'taoistHuangtingJing', nameKo: '도교 황정경 오장존사', icon: '☯️', category: 'deep_master' },
   { key: 'persianAmeshaSpenta', nameKo: '페르시아 아메샤스펜타', icon: '🔥', category: 'deep_master', summary: '아베스타 6대 아메샤 스펜타 수호 불멸자와 바르숨 정렬을 비추어 선한 의지와 내면의 조화를 가다듬는 관점' },
-  { key: 'sumerianFiftyMes', nameKo: '수메르 50대메 신성문명', icon: '🏺', category: 'deep_master' },
+  { key: 'sumerianFiftyMes', nameKo: '수메르 50대메 신성문명', icon: '🏺', category: 'deep_master', summary: '수메르 에리두 50대 메(Me) 문명 규범과 주권·소통·치유의 원형으로 오늘의 실천 기준을 비추는 관점' },
   { key: 'zhongLuAlchemy', nameKo: '종여내단 3품선도 환원', icon: '☯️', category: 'deep_master' },
   { key: 'druidMoonTrees', nameKo: '켈트 드루이드 13달나무', icon: '🌲', category: 'deep_master' },
   { key: 'tiebanShenshu', nameKo: '철판신수 12000조식', icon: '📜', category: 'deep_master' },
@@ -4831,7 +4831,7 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'koreanDangunCheonbuin', nameKo: '단군 천부인 3보 홍익광명', icon: '🇰🇷', category: 'deep_master' },
   { key: 'maoriMauriHauora', nameKo: '마오리 하우오라 마우리생명력', icon: '🌿', category: 'deep_master', summary: '뉴질랜드 마오리 〈테 화레 타파 화〉 4대 기둥(신체·정신·관계·영혼)과 마우리(Mauri) 생명력으로 삶의 균형을 세우는 전인적 회복 지침을 비춥니다.' },
   { key: 'slavicMokoshFateWeaving', nameKo: '슬라브 모코시 운명실타래', icon: '🧶', category: 'deep_master' },
-  { key: 'sumerianGilgameshTrials', nameKo: '길가메시 서사시 12관문', icon: '🏛️', category: 'deep_master' },
+  { key: 'sumerianGilgameshTrials', nameKo: '길가메시 서사시 12관문', icon: '🏛️', category: 'deep_master', summary: '길가메시 서사시 12관문 통과의례와 엔키두 동반자 원형으로 현재의 시련과 레거시 방향을 짚어 주는 관점' },
   { key: 'hawaiianKahunaThreeSelves', nameKo: '하와이 카후나 3대 자아 마나', icon: '🌺', category: 'deep_master', summary: '하와이 카후나 전통의 우니히필리(내면아이)·우하네(의식)·아우마쿠아(초의식) 3대 자아를 정렬하고 마나(Mana) 호흡과 카라(Kala) 해방 리추얼을 안내합니다.' },
   { key: 'nordicYggdrasilRealms', nameKo: '북유럽 위그드라실 9대 영역', icon: '🌳', category: 'deep_master', summary: '세계수 위그드라실 9대 영역과 비프로스트 다리 균형으로 주도 영역·그림자 긴장·행동 지침을 비추는 관점' },
   { key: 'egyptianMaatFeatherHeart', nameKo: '이집트 마아트 심장무게', icon: '🪶', category: 'deep_master', summary: '마아트 진리의 깃털과 심장(Ib) 저울질 상징으로 양심의 명료함과 마음의 짐 덜기를 비추는 관점' },
@@ -4843,7 +4843,7 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'romanJanus', nameKo: '로마 야누스 문턱전이', icon: '🚪', category: 'deep_master', summary: '과거와 미래를 함께 보는 로마 야누스 4대 문턱 상징으로 지금 닫을 경계와 새로 열 발걸음을 가르는 관점' },
   { key: 'baopuziElixirs', nameKo: '포박자 구전환단 선도', icon: '🍶', category: 'deep_master', summary: '갈홍 《포박자》의 구전환단과 시진 화후 리듬으로 정기신 회복과 소박한 양생 처방을 전합니다.' },
   { key: 'vedicMahavakya', nameKo: '베다 4대 마하바키야 각성', icon: '🕉️', category: 'deep_master' },
-  { key: 'sumerianApkalluWisdom', nameKo: '수메르 엔키 7압갈루 현자', icon: '🐟', category: 'deep_master' },
+  { key: 'sumerianApkalluWisdom', nameKo: '수메르 엔키 7압갈루 현자', icon: '🐟', category: 'deep_master', summary: '에리두 엔키의 7대 압갈루 현자와 압수(담수) 정화 상징으로 현재의 난관을 풀 지혜와 행동 원칙을 비추는 관점' },
   { key: 'celticTuathaFourTreasures', nameKo: '켈트 투아하 4대 신성보물', icon: '🗡️', category: 'deep_master' },
   { key: 'taoistShangqingTwentyFourSpirits', nameKo: '도교 진고 상청 24성도', icon: '✨', category: 'deep_master' },
   { key: 'tibetanPhowaRainbowBody', nameKo: '티베트 족첸 릭파 무지개체', icon: '🌈', category: 'deep_master' },

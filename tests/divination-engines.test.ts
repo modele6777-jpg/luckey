@@ -3592,15 +3592,21 @@ test('Persian Amesha Spenta & Baresman Engine: calculates immortal, baresman sco
 });
 
 test('Sumerian Fifty Mes & Civilization Engine: calculates primary me, creation index and decree', () => {
-  const rep = calculateSumerianFiftyMes(profile);
+  const rep = calculateSumerianFiftyMes(profile, '새 프로젝트의 기준을 어떻게 세울까요?');
   assert.equal(rep.engineVersion, SUMERIAN_FIFTY_MES_VERSION);
-  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(rep.calculatedAtKst.includes('+09:00 (KST)'));
   assert(Boolean(rep.fiftyMesSynthesisMatrix?.integratedAction));
   assert(rep.primaryMe.koreanName.length > 0);
+  assert(rep.secondaryMe.koreanName.length > 0);
+  assert(rep.reflectiveQuestion.length > 0);
+  assert(rep.interpretiveBoundary.includes('예측'));
   assert(rep.creationIndex >= 0 && rep.creationIndex <= 100);
   const prompt = formatSumerianFiftyMesPrompt(rep);
   assert(prompt.includes('고대 수메르 에리두 50대 메(Me) 신성 문명 규범 엔진'));
   assert(prompt.includes(rep.primaryMe.koreanName));
+  assert(prompt.includes('보조 교차 메(Me)'));
+  assert(prompt.includes('성찰 질문'));
+  assert(prompt.includes('해석 경계'));
   assert(prompt.includes('교차 매트릭스'));
   assert(!prompt.includes('/100'));
 });
@@ -3982,16 +3988,22 @@ test('Slavic Mokosh Fate Weaving Engine: calculates Dolya/Nedolya fate threads a
 });
 
 test('Sumerian Gilgamesh Trials Engine: calculates 12 trials and heroic resilience score', () => {
-  const rep = calculateSumerianGilgameshTrials({ profile });
+  const rep = calculateSumerianGilgameshTrials({ profile, question: '이 전환기를 어떻게 통과할까요?' });
   assert.equal(rep.engineVersion, SUMERIAN_GILGAMESH_TRIALS_ENGINE_VERSION);
-  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(rep.calculatedAtKst.includes('+09:00 (KST)'));
   assert(Boolean(rep.gilgameshSynthesisMatrix?.integratedAction));
   assert(rep.heroicResilienceScore >= 0 && rep.heroicResilienceScore <= 100);
   assert(rep.immortalityWisdomIndex >= 0 && rep.immortalityWisdomIndex <= 100);
   assert(rep.activeTrial.nameKo.length > 0);
+  assert(rep.secondaryTrial.nameKo.length > 0);
+  assert(rep.reflectiveQuestion.length > 0);
+  assert(rep.interpretiveBoundary.includes('예언'));
   const prompt = formatSumerianGilgameshTrialsPrompt(rep);
   assert(prompt.includes('고대 메소포타미아 길가메시 서사시 12관문 불멸 여정 실측 데이터'));
   assert(prompt.includes(rep.activeTrial.nameKo));
+  assert(prompt.includes('보조 교차 관문'));
+  assert(prompt.includes('성찰 질문'));
+  assert(prompt.includes('해석 경계'));
   assert(prompt.includes('교차 매트릭스'));
   assert(!prompt.includes('/100'));
 });
@@ -4210,16 +4222,21 @@ test('Vedic Mahavakya Consciousness Engine: calculates qualitative Brahman conte
 });
 
 test('Sumerian Apkallu Wisdom Engine: calculates 7 sages resonance and Apsu clarity', () => {
-  const rep = calculateSumerianApkalluWisdom({ profile });
+  const rep = calculateSumerianApkalluWisdom({ profile, question: '지금 가장 먼저 세워야 할 원칙은 무엇인가요?' });
   assert.equal(rep.engineVersion, SUMERIAN_APKALLU_WISDOM_ENGINE_VERSION);
-  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(rep.calculatedAtKst.includes('+09:00 (KST)'));
   assert(Boolean(rep.apkalluSynthesisMatrix?.integratedAction));
   assert(rep.apkalluResonanceScore >= 0 && rep.apkalluResonanceScore <= 100);
   assert(rep.apsuClarityIndex >= 0 && rep.apsuClarityIndex <= 100);
   assert(rep.activeSage.nameKo.length > 0);
+  assert(rep.secondarySage.nameKo.length > 0);
+  assert(rep.reflectiveQuestion.length > 0);
+  assert(rep.interpretiveBoundary.includes('예언'));
   const prompt = formatSumerianApkalluWisdomPrompt(rep);
   assert(prompt.includes('고대 수메르 에리두 엔키(Enki) 7대 압갈루(Apkallu) 현자 신성 지혜 실측 데이터'));
   assert(prompt.includes(rep.activeSage.nameKo));
+  assert(prompt.includes('성찰 질문'));
+  assert(prompt.includes('해석 경계'));
   assert(prompt.includes('교차 매트릭스'));
   assert(!prompt.includes('/100'));
 });
