@@ -3132,14 +3132,18 @@ test('Saju Twelve Stages & Tomb Unlock Engine: calculates lifecycle vitality and
 test('Tarot Elemental Court Persona Engine: maps 16 court cards and 4 elemental balance', () => {
   const rep = calculateTarotElementalCourt(profile, '커리어 이직과 결단');
   assert.equal(rep.engineVersion, TAROT_ELEMENTAL_COURT_VERSION);
-  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(rep.calculatedAtKst.includes('+09:00 (KST)'));
   assert(Boolean(rep.courtSynthesisMatrix?.integratedAction));
   assert(rep.activePersonaCourt.nameKo.length > 0);
   assert(rep.subconsciousShadowCourt.nameKo.length > 0);
   assert(rep.elementalBalance.firePercentage >= 0);
+  assert(rep.reflectiveQuestion.length > 0);
+  assert(rep.interpretiveBoundary.includes('예측'));
   const prompt = formatTarotElementalCourtPrompt(rep);
   assert(prompt.includes('타로 4대 원소'));
   assert(prompt.includes(rep.activePersonaCourt.nameKo));
+  assert(prompt.includes('성찰 질문'));
+  assert(prompt.includes('해석 경계'));
   assert(prompt.includes('교차 매트릭스'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
@@ -3249,15 +3253,19 @@ test('Celtic Tree Ogham Engine: derives birth guardian tree and seasonal oracle'
 test('Taoist Sanbao Inner Alchemy Engine: calculates Jing-Qi-Shen and alchemy phase', () => {
   const rep = calculateTaoistSanbaoInnerAlchemy(profile, new Date(), '삼보 균형');
   assert.equal(rep.engineVersion, TAOIST_SANBAO_VERSION);
-  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(rep.calculatedAtKst.includes('+09:00 (KST)'));
   assert(Boolean(rep.sanbaoSynthesisMatrix?.integratedAction));
   assert(rep.energyLevels.jing >= 0 && rep.energyLevels.jing <= 100);
   assert(rep.energyLevels.qi >= 0 && rep.energyLevels.qi <= 100);
   assert(rep.energyLevels.shen >= 0 && rep.energyLevels.shen <= 100);
   assert(rep.overallHarmonyScore >= 0 && rep.overallHarmonyScore <= 100);
+  assert(rep.reflectiveQuestion.length > 0);
+  assert(rep.interpretiveBoundary.includes('예측'));
   const prompt = formatTaoistSanbaoInnerAlchemyPrompt(rep);
   assert(prompt.includes('도교 내단학'));
   assert(prompt.includes(rep.dominantTreasure));
+  assert(prompt.includes('성찰 질문'));
+  assert(prompt.includes('해석 경계'));
   assert(prompt.includes('교차 매트릭스'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
@@ -4286,14 +4294,20 @@ test('Celtic Tuatha Four Treasures Engine: calculates heroic destiny and dominan
 test('Taoist Shangqing 24 Spirits Engine: calculates three dantians and active true spirit', () => {
   const rep = calculateTaoistShangqingTwentyFourSpirits({ profile, question: '상청 존사' });
   assert.equal(rep.engineVersion, TAOIST_SHANGQING_TWENTY_FOUR_SPIRITS_ENGINE_VERSION);
-  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(rep.calculatedAtKst.includes('+09:00 (KST)'));
   assert(Boolean(rep.shangqingSynthesisMatrix?.integratedAction));
   assert(rep.shangqingAttunementScore >= 0 && rep.shangqingAttunementScore <= 100);
   assert(rep.spiritualShieldRate >= 0 && rep.spiritualShieldRate <= 100);
   assert(rep.activeTrueSpirit.nameKo.length > 0);
+  assert(rep.secondaryTrueSpirit.nameKo.length > 0);
+  assert(rep.reflectiveQuestion.length > 0);
+  assert(rep.interpretiveBoundary.includes('예측'));
   const prompt = formatTaoistShangqingTwentyFourSpiritsPrompt(rep);
   assert(prompt.includes('고대 중국 도홍경(陶弘景) 진고(眞誥) 상청파(上淸派) 24성도 존사(存思) 통령 실측 데이터'));
   assert(prompt.includes(rep.activeTrueSpirit.nameKo));
+  assert(prompt.includes('보조 교차 진신'));
+  assert(prompt.includes('성찰 질문'));
+  assert(prompt.includes('해석 경계'));
   assert(prompt.includes('교차 매트릭스'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
