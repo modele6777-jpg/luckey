@@ -191,6 +191,65 @@ test('passes Gemini SSE streams through and enforces the per-isolate request lim
   assert.equal(calls, 21);
 });
 
+test('analyzes diary entries directly with Gemini JSON and preserves the existing response fields', async () => {
+  let calls = 0;
+  globalThis.fetch = (async (input, init) => {
+    calls++;
+    const request = new Request(input, init);
+    assert.equal(request.url, 'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions');
+    assert.equal(request.headers.get('Authorization'), 'Bearer test-only-not-a-real-key');
+    const payload = await request.json() as Record<string, any>;
+    assert.deepEqual(payload.response_format, { type: 'json_object' });
+    return Response.json({ choices: [{ message: { content: '{"keywords":["산책","비","마음"],"emotions":["평온"]}' } }] });
+  }) as typeof fetch;
+  const response = await worker.fetch(new Request('https://preview.example/api/ai/analyze-entry', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'CF-Connecting-IP': '198.51.100.201' },
+    body: JSON.stringify({ title: '비 온 뒤', content: '저녁에 걸으며 마음을 정리했다.', type: 'daily' }),
+  }), env(undefined, 'test-only-not-a-real-key'));
+  assert.equal(response.status, 200);
+  assert.deepEqual(await response.json(), { keywords: ['산책', '비', '마음'], emotions: ['평온'], source: 'model' });
+  assert.equal(calls, 1);
+});
+
+test('returns the existing local comfort fallback for a Bluebird blessing without calling Gemini', async () => {
+  let called = false;
+  globalThis.fetch = (async () => {
+    called = true;
+    return new Response('unexpected');
+  }) as typeof fetch;
+  const response = await worker.fetch(new Request('https://preview.example/api/ai/secret-blessing', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'CF-Connecting-IP': '198.51.100.202' },
+    body: JSON.stringify({ content: '회사 일이 너무 힘들다', userName: '쭈' }),
+  }), env());
+  assert.equal(response.status, 200);
+  assert.deepEqual(await response.json(), {
+    comfortMantra: '쭈 님, 일터의 무거운 책임감을 잠시 내려놓고, 오늘 밤은 오직 당신만을 위한 따뜻하고 포근한 쉼을 누리세요.',
+    source: 'engine',
+  });
+  assert.equal(called, false);
+});
+
+test('recommends a Bluebird note mood from the Gemini JSON contract', async () => {
+  globalThis.fetch = (async () => Response.json({
+    choices: [{ message: { content: '{"moodTag":"tears","reason":"남모르게 삼킨 슬픔이 담겨 있습니다."}' } }],
+  })) as typeof fetch;
+  const response = await worker.fetch(new Request('https://preview.example/api/ai/secret-mood-recommend', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'CF-Connecting-IP': '198.51.100.203' },
+    body: JSON.stringify({ content: '오늘은 눈물이 났다.' }),
+  }), env(undefined, 'test-only-not-a-real-key'));
+  assert.equal(response.status, 200);
+  assert.deepEqual(await response.json(), {
+    moodTag: 'tears',
+    moodLabel: '남모를 눈물',
+    emoji: '💧',
+    reason: '남모르게 삼킨 슬픔이 담겨 있습니다.',
+    source: 'model',
+  });
+});
+
 test('proxies API method, query, body, authorization and stream while filtering forwarding headers', async () => {
   let seenRequest: Request | undefined;
   globalThis.fetch = (async (input) => {

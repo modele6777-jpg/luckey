@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.7.658",
+    "builtAt": "2026-11-17T07:59:45+09:00",
+    "summary": "일기 분석과 Bluebird 쪽지 API를 Cloudflare Worker에서 직접 처리",
+    "items": [
+      "/api/ai/analyze-entry를 Gemini로 직접 처리하고 JSON 분석 실패 시 기존 규칙 기반 분석으로 fallback",
+      "/api/ai/secret-blessing 및 /api/ai/secret-mood-recommend를 Gemini로 직접 처리하고 기존 엔진 fallback 유지",
+      "요청 크기 제한과 isolate별 최선 노력 분당 제한 적용; 그 밖의 API는 Vercel 프록시 유지"
+    ]
+  },
+  {
     "version": "1.7.657",
     "builtAt": "2026-11-17T07:48:01+09:00",
     "summary": "Cloudflare Worker에서 Gemini 채팅 완료 API 직접 제공",
