@@ -1,5 +1,5 @@
 /**
- * 📉 TTS 응답 파서 (v1.7.621)
+ * 📉 TTS 응답 파서 (v1.7.622)
  *
  * `/api/ai/tts`가 `Accept: audio/*` / `responseFormat: "binary"` 요청에는 오디오 바이트를
  * 그대로 돌려줍니다(base64 JSON 대비 Origin 전송량 -25%). 이 모듈은 바이너리와 기존

@@ -8,7 +8,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const BALINESE_TRI_HITA_KARANA_ENGINE_VERSION = 'LUCKEY-BALINESE-TRI-HITA-v2.0.0';
+export const BALINESE_TRI_HITA_KARANA_ENGINE_VERSION = 'LUCKEY-BALINESE-TRI-HITA-v2.1.0';
 
 export interface BalineseSacredSanctuary {
   id: string;
@@ -45,6 +45,7 @@ export interface BalineseSynthesisMatrix {
 export interface BalineseTriHitaKaranaReport {
   engineVersion: string;
   timestamp: string;
+  calculatedAtKst: string;
   parhyanganDivineHarmony: number;
   pawonganHumanityEmpathy: number;
   palemahanEcologyBalance: number;
@@ -55,6 +56,7 @@ export interface BalineseTriHitaKaranaReport {
   triHitaSynthesisMatrix: BalineseSynthesisMatrix;
   balineseCosmicGuidance: string;
   tirtaHolyWaterBlessing: string;
+  interpretiveBoundary: string;
 }
 
 const BALINESE_SANCTUARIES_BASE: Omit<BalineseSacredSanctuary, 'sanctuaryResonanceScore'>[] = [
@@ -279,9 +281,14 @@ export function calculateBalineseTriHitaKarana(
 
   const tirtaHolyWaterBlessing = `손에 깨끗한 물을 담아 이마(마음의 정화), 입술(말의 정화), 가슴(행위의 정화)에 세 방울씩 가볍게 얹으며 '티르타(Tirta, 성스러운 생명수)'가 모든 해묵은 피로와 부정적 에너지를 말끔히 씻어냄을 명상하십시오.`;
 
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const calculatedAtKst = `${kst.toISOString().slice(0, 19)}+09:00`;
+  const interpretiveBoundary = '본 발리 트리 히타 카라나 리포트는 신성·인간·자연의 조화를 비추는 정성적 성찰 안내이며, 확정적 길흉 예단이 아닙니다.';
+
   return {
     engineVersion: BALINESE_TRI_HITA_KARANA_ENGINE_VERSION,
     timestamp: now.toISOString(),
+    calculatedAtKst,
     parhyanganDivineHarmony,
     pawonganHumanityEmpathy,
     palemahanEcologyBalance,
@@ -292,13 +299,14 @@ export function calculateBalineseTriHitaKarana(
     triHitaSynthesisMatrix,
     balineseCosmicGuidance,
     tirtaHolyWaterBlessing,
+    interpretiveBoundary,
   };
 }
 
 export function formatBalineseTriHitaKaranaPrompt(report: BalineseTriHitaKaranaReport): string {
   const s = report.activeSanctuary;
   return `[발리 힌두교 트리 히타 카라나 3대 우주 조화 & 3업 정화 실측 데이터]
-- 엔진 버전: v${report.engineVersion}
+- 엔진 버전: v${report.engineVersion} | 기준 시각(KST): ${report.calculatedAtKst}
 - 주재 공명 발리 대성소: ${s.nameKo} (${s.balineseName} / ${s.cardinalDirection})
   * 수호 서기: ${s.guardianAspect}
   * 영적 공명 미덕: ${s.spiritualResonanceVirtue}
@@ -311,5 +319,6 @@ export function formatBalineseTriHitaKaranaPrompt(report: BalineseTriHitaKaranaR
 - 삼위일체 교차 매트릭스: 조화 등급(${report.triHitaSynthesisMatrix.trinityBalanceGrade}) · ${report.triHitaSynthesisMatrix.karmaPurificationNote}
   * 오늘의 실천: ${report.triHitaSynthesisMatrix.dailyOfferingDirective}
 - 트리 히타 카라나 우주 지혜 지침: ${report.balineseCosmicGuidance}
-- 티르타(Tirta) 성수 정화 명상: ${report.tirtaHolyWaterBlessing}`;
+- 티르타(Tirta) 성수 정화 명상: ${report.tirtaHolyWaterBlessing}
+- 해석 경계: ${report.interpretiveBoundary}`;
 }

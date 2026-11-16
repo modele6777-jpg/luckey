@@ -5,7 +5,7 @@ import express from 'express';
 import handler from '../api/ai/daily-bgm.ts';
 
 /**
- * 📉 Fast Origin Transfer 절감 회귀 기준 (v1.7.621)
+ * 📉 Fast Origin Transfer 절감 회귀 기준 (v1.7.622)
  * - `GET /api/ai/daily-bgm?...&format=wav`는 base64 JSON이 아니라 바이너리 audio/wav를
  *   Edge CDN 캐시 헤더와 함께 돌려준다.
  * - 같은 파라미터는 항상 같은 바이트 → 같은 URL은 CDN/브라우저 캐시에서 재사용된다.

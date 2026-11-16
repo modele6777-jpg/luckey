@@ -6,7 +6,7 @@ import handler, { ttsWantsBinaryResponse } from '../api/ai/tts.ts';
 import { parseTTSAudioResponse, detectAudioEncoding } from '../src/utils/ttsBinaryResponse.ts';
 
 /**
- * 📉 TTS 응답 바이너리 전환 회귀 기준 (v1.7.621)
+ * 📉 TTS 응답 바이너리 전환 회귀 기준 (v1.7.622)
  * - base64 JSON(+33%) 대신 원본 오디오 바이트를 돌려주되, 기존 JSON 호출은 그대로 동작한다.
  * - 재생·오디오 세션 로직은 손대지 않고, 클라이언트 파서가 두 형식을 같은 모양으로 읽는다.
  */

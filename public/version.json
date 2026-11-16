@@ -1,6 +1,6 @@
 {
-  "version": "1.7.621",
-  "builtAt": "2026-11-16T02:10:00.000Z",
+  "version": "1.7.622",
+  "builtAt": "2026-11-16T02:25:00.000Z",
   "summary": "Vercel Fast Origin Transfer 절감: 데일리 BGM GET 바이너리·Edge CDN 캐시, TTS 바이너리 응답, 작품 프록시 캐시 헤더",
   "items": [
     "데일리 BGM: GET /api/ai/daily-bgm?...&format=wav 바이너리 audio/wav + Cache-Control(public, s-maxage=604800) 응답으로 Edge CDN 캐시 사용, base64(+33%) 제거 (POST JSON은 하위 호환 유지)",

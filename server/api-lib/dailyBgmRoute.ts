@@ -1,7 +1,7 @@
 import type { Response } from "express";
 
 /**
- * 📉 데일리 BGM 전송량 절감용 공용 라우트 (v1.7.621)
+ * 📉 데일리 BGM 전송량 절감용 공용 라우트 (v1.7.622)
  *
  * 기존 `POST /api/ai/daily-bgm`은 48초 스테레오 WAV(약 8.1MB)를 base64 JSON으로
  * 감싸 돌려주어 호출마다 +33% 오버헤드가 붙었고, POST라서 Vercel Edge CDN 캐시를

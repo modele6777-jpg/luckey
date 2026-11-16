@@ -339,7 +339,7 @@ type TTSBinaryPreference = {
 };
 
 /**
- * 📉 TTS 전송량 절감 (v1.7.621)
+ * 📉 TTS 전송량 절감 (v1.7.622)
  * WAV 바이트를 base64 JSON(`audioContent`)으로 감싸면 매 응답이 +33% 부풀어
  * Origin 전송량이 됩니다. 클라이언트가 `Accept: audio/*`, `responseFormat: "binary"`,
  * 또는 `?format=binary`로 요청하면 원본 바이트를 그대로 내보냅니다.

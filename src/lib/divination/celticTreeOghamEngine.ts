@@ -28,7 +28,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const CELTIC_OGHAM_VERSION = 'LUCKEY-CELTIC-OGHAM-v2.0.0';
+export const CELTIC_OGHAM_VERSION = 'LUCKEY-CELTIC-OGHAM-v2.1.0';
 
 export interface OghamTree {
   nameOgham: string;
@@ -66,6 +66,7 @@ export interface OghamSynthesisMatrix {
 export interface CelticTreeOghamReport {
   engineVersion: string;
   calculatedAt: string;
+  calculatedAtKst: string;
   birthGuardianTree: OghamTree;
   seasonalOracleTree: OghamTree;
   druidWisdomScore: number;     // 내부 연산용
@@ -74,6 +75,7 @@ export interface CelticTreeOghamReport {
   oghamSynthesisMatrix: OghamSynthesisMatrix;
   treeMedicinePrescription: string;
   natureAttunementAffirmation: string;
+  interpretiveBoundary: string;
 }
 
 const CELTIC_TREES: OghamTree[] = [
@@ -367,9 +369,14 @@ export function calculateCelticTreeOgham(
     nextGroveStep: situationalOghamAudit.druidMedicineAction,
   };
 
+  const kst = new Date(targetDate.getTime() + 9 * 60 * 60 * 1000);
+  const calculatedAtKst = `${kst.toISOString().slice(0, 19)}+09:00`;
+  const interpretiveBoundary = '본 켈트 오검 수목 오라클 리포트는 13태음월 수목 상징에 기반한 정성적 성찰 안내이며, 확정적 예언이 아닙니다.';
+
   return {
     engineVersion: CELTIC_OGHAM_VERSION,
     calculatedAt: targetDate.toISOString(),
+    calculatedAtKst,
     birthGuardianTree,
     seasonalOracleTree,
     druidWisdomScore,
@@ -377,12 +384,14 @@ export function calculateCelticTreeOgham(
     temporalOghamRhythm,
     oghamSynthesisMatrix,
     treeMedicinePrescription,
-    natureAttunementAffirmation
+    natureAttunementAffirmation,
+    interpretiveBoundary
   };
 }
 
 export function formatCelticTreeOghamPrompt(report: CelticTreeOghamReport): string {
   return `### 🌲 고대 켈트 오검(Ogham) 수목 지혜 & 수호목 오라클 엔진 (${CELTIC_OGHAM_VERSION})
+- **기준 시각(KST)**: ${report.calculatedAtKst}
 - **본명 수호목 (Birth Tree)**: ${report.birthGuardianTree.nameOgham} [${report.birthGuardianTree.nameTreeKo} (${report.birthGuardianTree.nameTreeEn})]
   - 오검 신성 문자: ${report.birthGuardianTree.oghamLetter} | 수호 원소: ${report.birthGuardianTree.element} | 주기: ${report.birthGuardianTree.periodKo}
   - 수호목 핵심 키워드: ${report.birthGuardianTree.guardianKeyword}
@@ -396,5 +405,6 @@ export function formatCelticTreeOghamPrompt(report: CelticTreeOghamReport): stri
   - 시간대 지침: ${report.temporalOghamRhythm.attunementGuidance}
 - **수목 교차 매트릭스**: ${report.oghamSynthesisMatrix.birthSeasonalLink}
 - **수목 치유 처방 (Tree Medicine)**: ${report.treeMedicinePrescription}
-- **자연 조율 확언 (Affirmation)**: ${report.natureAttunementAffirmation}`;
+- **자연 조율 확언 (Affirmation)**: ${report.natureAttunementAffirmation}
+- **해석 경계**: ${report.interpretiveBoundary}`;
 }

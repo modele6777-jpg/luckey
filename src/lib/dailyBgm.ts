@@ -422,7 +422,7 @@ function buildDailyBgmRequestUrl(input: DailyBgmInput, trackKey: string): string
 }
 
 /**
- * 📉 v1.7.621: 48초 WAV를 base64 JSON(+33%)으로 받던 POST를
+ * 📉 v1.7.622: 48초 WAV를 base64 JSON(+33%)으로 받던 POST를
  * Edge CDN 캐시를 타는 GET 바이너리 요청으로 바꿉니다.
  * 구버전 서버(POST 전용)에서는 예전 JSON 경로로 자동 폴백합니다.
  */
