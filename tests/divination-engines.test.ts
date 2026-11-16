@@ -2110,19 +2110,23 @@ test('Twelve Spirits Cycle Engine: 사주 12신살 완전 순환 궤도 및 일�
 test('Pythagorean Lifecycle Engine: 피타고라스 4대 피너클 & 챌린지 생애 주기 검증', () => {
   const res = calculatePythagoreanLifecycle({ profile, targetDate: new Date('2026-11-02T19:00:00+09:00'), question: '인생 전환기' });
   assert.equal(res.engineVersion, PYTHAGOREAN_LIFECYCLE_VERSION);
-  assert(res.calculatedAtKst.endsWith('KST'));
+  assert(res.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(Boolean(res.pythagoreanSynthesisMatrix?.integratedAction));
   assert.equal(res.pinnacles.length, 4);
   assert.equal(res.challenges.length, 4);
   assert(res.currentPersonalYear.yearNumber >= 1 && res.currentPersonalYear.yearNumber <= 9);
   assert(res.currentPinnacle.number >= 1 && res.currentPinnacle.number <= 9);
   assert(res.currentChallenge.number >= 0 && res.currentChallenge.number <= 8);
+  assert(res.reflectiveQuestion.includes('인생 전환기'));
+  assert(res.interpretiveBoundary.includes('성찰 비유'));
   const prompt = formatPythagoreanLifecyclePrompt(res);
   assert(prompt.includes(PYTHAGOREAN_LIFECYCLE_VERSION));
   assert(prompt.includes('4대 피너클'));
   assert(prompt.includes('4대 챌린지'));
   assert(prompt.includes('개인년도'));
   assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('성찰 질문'));
+  assert(prompt.includes('해석 경계'));
 });
 
 test('Astrological Decan & Sabian Engine: 점성술 36 데칸 & 사비안 심볼 360° 영혼 메타포 검증', () => {
@@ -5001,7 +5005,7 @@ test('Japanese Heian Onmyodo Seimei Engine: calculates 12 heavenly generals, Shi
 });
 
 test('Polynesian Wayfinding Star Compass Engine: calculates Star Compass houses, Zenith stars and Ocean Swell', () => {
-  const rep = calculatePolynesianWayfinding(profile);
+  const rep = calculatePolynesianWayfinding(profile, '새 프로젝트의 항로를 어떻게 잡을까요?', new Date('2026-11-17T05:25:00+09:00'));
   assert.equal(rep.engineVersion, POLYNESIAN_WAYFINDING_VERSION);
   assert(rep.oceanSwellSensitivityIndex >= 0 && rep.oceanSwellSensitivityIndex <= 100);
   assert(rep.wayfinderNavigationClarityScore >= 0 && rep.wayfinderNavigationClarityScore <= 100);
@@ -5009,13 +5013,19 @@ test('Polynesian Wayfinding Star Compass Engine: calculates Star Compass houses,
   assert(rep.ancestralManaExplorationForce >= 0 && rep.ancestralManaExplorationForce <= 100);
   assert(rep.islandFindingArrivalCertainty >= 0 && rep.islandFindingArrivalCertainty <= 100);
   assert(rep.primaryStarHouse.hawaiianName.length > 0);
+  assert(rep.secondaryStarHouse.hawaiianName.length > 0);
   assert(rep.guidingZenithStar.hawaiianName.length > 0);
-  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(Boolean(rep.wayfindingSynthesisMatrix?.integratedAction));
+  assert(rep.reflectiveQuestion.includes('새 프로젝트'));
+  assert(rep.interpretiveBoundary.includes('성찰 비유'));
   const prompt = formatPolynesianWayfindingPrompt(rep);
   assert(prompt.includes('고대 폴리네시아 마우이 《웨이파인딩 32방위 스타 컴퍼스》 항해'));
   assert(prompt.includes(rep.primaryStarHouse.hawaiianName));
+  assert(prompt.includes('보조 교차 하우스'));
   assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('성찰 질문'));
+  assert(prompt.includes('해석 경계'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });
@@ -5904,7 +5914,7 @@ test('Jinul Jeonghye Ssangsu Engine: calculates Donoh insight, Jeomsu cultivatio
 });
 
 test('Giordano Bruno Infinite Universe Engine: calculates Infinite cosmos vision, Heroic furore, and Sovereign conscience', () => {
-  const rep = calculateRenaissanceBrunoInfiniteUniverse(profile);
+  const rep = calculateRenaissanceBrunoInfiniteUniverse(profile, '기존 틀을 깨고 도전하고 싶습니다', new Date('2026-11-17T05:25:00+09:00'));
   assert.equal(rep.engineVersion, BRUNO_INFINITE_UNIVERSE_VERSION);
   assert(rep.infiniteCosmosVisionScore >= 0 && rep.infiniteCosmosVisionScore <= 100);
   assert(rep.heroicFurorePassionScore >= 0 && rep.heroicFurorePassionScore <= 100);
@@ -5912,12 +5922,18 @@ test('Giordano Bruno Infinite Universe Engine: calculates Infinite cosmos vision
   assert(rep.actaeonTransformationScore >= 0 && rep.actaeonTransformationScore <= 100);
   assert(rep.unboundedAutonomyScore >= 0 && rep.unboundedAutonomyScore <= 100);
   assert(rep.activeCosmicAspect.aspectLatinOrItalian.length > 0);
-  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(rep.secondaryCosmicAspect.aspectLatinOrItalian.length > 0);
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(Boolean(rep.brunoSynthesisMatrix?.integratedAction));
+  assert(rep.reflectiveQuestion.includes('기존 틀을 깨고'));
+  assert(rep.interpretiveBoundary.includes('성찰 비유'));
   const prompt = formatRenaissanceBrunoInfiniteUniversePrompt(rep);
   assert(prompt.includes('브루노 무한우주론 & 영웅적 열정(Eroico Furore) 지표'));
   assert(prompt.includes(rep.activeCosmicAspect.aspectLatinOrItalian));
+  assert(prompt.includes('보조 교차 관점'));
   assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('성찰 질문'));
+  assert(prompt.includes('해석 경계'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });

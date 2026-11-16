@@ -16,7 +16,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const PYTHAGOREAN_LIFECYCLE_VERSION = 'LUCKEY-PYTH-v2.0.0';
+export const PYTHAGOREAN_LIFECYCLE_VERSION = 'LUCKEY-PYTH-v2.1.0';
 
 function formatPythagoreanKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -25,7 +25,7 @@ function formatPythagoreanKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
 }
 
 export interface PinnacleInfo {
@@ -85,6 +85,8 @@ export interface PythagoreanLifecycleResult {
   };
 
   summary: string;
+  reflectiveQuestion: string;
+  interpretiveBoundary: string;
   pythagoreanSynthesisMatrix?: {
     dominantTension: string;
     alignmentState: string;
@@ -381,6 +383,11 @@ export function calculatePythagoreanLifecycle(params?: {
 
   const calculatedAtKst = formatPythagoreanKstTimestamp(now);
   const q = (params?.question || '').trim();
+  const reflectiveQuestion = q
+    ? `'${q}'의 국면에서 현재 [${currentPinnacle.name}]의 기회와 [${currentChallenge.name}]의 과제를 함께 비추어 볼 때, 지금 먼저 바로잡을 한 가지는 무엇입니까?`
+    : `올해 개인년도 제${personalYearNum}년(${currentPersonalYear.cyclePhase})의 흐름 속에서 ${currentChallenge.sublimationKey}를 어떻게 실천하시겠습니까?`;
+  const interpretiveBoundary =
+    '이 리딩은 피타고라스 수비학 4대 피너클·챌린지와 개인년도 주기에 기반한 정성 성찰 비유이며, 생애 사건이나 재정 결과를 확정적으로 예측하지 않습니다.';
   const pythagoreanSynthesisMatrix = {
     dominantTension: `${currentPinnacle.name} ↔ ${currentChallenge.name}`,
     alignmentState: `개인년도 제${personalYearNum}년(${currentPersonalYear.cyclePhase}) · 라이프 패스 ${lifePathNumber}`,
@@ -402,6 +409,8 @@ export function calculatePythagoreanLifecycle(params?: {
     currentPersonalYear,
     lifecycleStrategy,
     summary,
+    reflectiveQuestion,
+    interpretiveBoundary,
     pythagoreanSynthesisMatrix,
   };
 }
@@ -426,6 +435,7 @@ export function formatPythagoreanLifecyclePrompt(res: PythagoreanLifecycleResult
     `  • 개인년 테마: ${res.currentPersonalYear.theme}`,
     `  • 개인년 행동 조언: ${res.currentPersonalYear.actionGuidance}`,
     `- 인생 종합 전략: ${res.lifecycleStrategy.goldenOpportunity}`,
+    `- 성찰 질문: ${res.reflectiveQuestion}`,
   ];
   if (res.pythagoreanSynthesisMatrix) {
     lines.push(
@@ -433,6 +443,7 @@ export function formatPythagoreanLifecyclePrompt(res: PythagoreanLifecycleResult
       `  • 통합 실천: ${res.pythagoreanSynthesisMatrix.integratedAction}`,
     );
   }
+  lines.push(`- 해석 경계: ${res.interpretiveBoundary}`);
   lines.push(`※ 루시 지침: 서양 수비학의 4대 피너클은 동양의 10년 대운과 정밀하게 공명하는 인생의 사계절입니다. 현재 나이대가 피너클의 어느 전환기에 있는지, 올해 개인년도 9년 사이클에서 어떤 단계인지와 챌린지 극복 방안을 명쾌하고 희망적으로 연결해 주세요.`);
   return lines.join('\n');
 }
