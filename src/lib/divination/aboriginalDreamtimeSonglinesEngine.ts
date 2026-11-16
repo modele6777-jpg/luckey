@@ -29,7 +29,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const ABORIGINAL_DREAMTIME_SONGLINES_ENGINE_VERSION = '2.0.0';
+export const ABORIGINAL_DREAMTIME_SONGLINES_ENGINE_VERSION = '2.1.0';
 
 export type DreamtimeQuestionTheme = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -65,6 +65,7 @@ export interface DreamtimeSynthesisMatrix {
 export interface DreamtimeSonglineReport {
   engineVersion: string;
   calculatedAt: string;
+  calculatedAtKst: string;
   questionTheme: DreamtimeQuestionTheme;
   kurunpaLifeForceIndex: number; // 내부 참조용
   kurunpaPosture: string; // 쿠룬파 정성적 상태
@@ -341,9 +342,13 @@ export function calculateAboriginalDreamtimeSonglines(options?: {
     nextWalkaboutStep: situationalDreamtimeAudit.walkaboutPrescription,
   };
 
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const calculatedAtKst = `${kst.toISOString().slice(0, 19)}+09:00`;
+
   return {
     engineVersion: ABORIGINAL_DREAMTIME_SONGLINES_ENGINE_VERSION,
     calculatedAt: now.toISOString(),
+    calculatedAtKst,
     questionTheme,
     kurunpaLifeForceIndex,
     kurunpaPosture,
@@ -371,7 +376,7 @@ export function formatAboriginalDreamtimeSonglinesPrompt(report: DreamtimeSongli
 
   return `[🪃 호주 원주민 드림타임(Dreamtime) 송라인 & 8대 토템 영혼 나침반 성찰 관점]
 ======================================================================
-엔진 버전: ${report.engineVersion} | 연산 시각: ${report.calculatedAt} | 질문 맥락: ${report.questionTheme}
+엔진 버전: ${report.engineVersion} | 연산 시각(KST): ${report.calculatedAtKst} | 질문 맥락: ${report.questionTheme}
 쿠룬파(Kurunpa) 상태: ${report.kurunpaPosture}
 ======================================================================
 1. [주재 선조 토템 정령 (Ancestral Totem)]:

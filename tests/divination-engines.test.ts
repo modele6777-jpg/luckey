@@ -7848,6 +7848,7 @@ test('Dreamtime Songlines, Eleusinian Mysteries, and Babylonian Enuma Elish prov
 
   const dreamtime = calculateAboriginalDreamtimeSonglines({ profile: testProfile, targetInstantTime: testDate.toISOString(), question: '이직 결정을 앞두고 방향이 고민돼요' });
   assert.equal(dreamtime.questionTheme, 'decision');
+  assert.ok(dreamtime.calculatedAtKst.endsWith('+09:00'));
   assert.ok(dreamtime.practiceGuidance.length > 10);
   assert.ok(dreamtime.ritualAction.length > 10);
   assert.ok(dreamtime.reflectionFocus.length > 10);
@@ -7855,6 +7856,7 @@ test('Dreamtime Songlines, Eleusinian Mysteries, and Babylonian Enuma Elish prov
   const dreamtimePrompt = formatAboriginalDreamtimeSonglinesPrompt(dreamtime);
   assert(!dreamtimePrompt.includes('/100'));
   assert(!dreamtimePrompt.includes('점)'));
+  assert(dreamtimePrompt.includes('+09:00'));
 
   const eleusis = calculateEleusinianMysteries(testProfile, { now: testDate, question: '최근 관계 갈등 때문에 마음이 지쳤어요' });
   assert.equal(eleusis.questionTheme, 'relationship');
@@ -8474,12 +8476,15 @@ test('Aztec Tonalamatl, Balinese Tri Hita Karana, and Celtic Tuatha Four Treasur
   const now = new Date('2026-11-15T04:55:00+09:00');
 
   const aztec = calculateAztecTonalamatl({ profile, question: '새로운 프로젝트를 시작하려는데 방향이 고민됩니다', now });
-  assert.equal(aztec.engineVersion, 'LUCKEY-AZTEC-TONALAMATL-v2.0.0');
+  assert.equal(aztec.engineVersion, AZTEC_TONALAMATL_ENGINE_VERSION);
+  assert.ok(aztec.calculatedAtKst.endsWith('+09:00'));
+  assert.ok(aztec.interpretiveBoundary.length > 0);
   assert.ok(aztec.situationalTonalamatlAudit.focusAxis.length > 0);
   assert.ok(aztec.temporalTonalamatlRhythm.sunPhase.length > 0);
   assert.ok(aztec.tonalamatlSynthesisMatrix.ollinActionDirective.length > 0);
   const aztecPrompt = formatAztecTonalamatlPrompt(aztec);
   assert.ok(!aztecPrompt.includes('/100') && !aztecPrompt.includes('%'));
+  assert.ok(aztecPrompt.includes('+09:00') && aztecPrompt.includes('해석 경계'));
 
   const balinese = calculateBalineseTriHitaKarana(profile, '가족과의 관계에서 말의 온도를 조율하고 싶습니다', now);
   assert.equal(balinese.engineVersion, 'LUCKEY-BALINESE-TRI-HITA-v2.0.0');
@@ -8965,11 +8970,12 @@ test('Ziwei HuaJi v2.1.0, Zoroastrian Asha v2.0.0, and Yoruba Ifa Odu v2.1.0 out
   assert.ok(huajiPrompt.includes('해석 경계') && huajiPrompt.includes('+09:00') && huajiPrompt.includes('교차 매트릭스'));
 
   const asha = calculateZoroastrianAshaTruth({ profile, contextText: '관계에서 솔직하게 말해야 할지 고민돼요', now });
-  assert.equal(asha.engineVersion, 'LUCKEY-ZOROASTRIAN-ASHA-v2.0.0');
+  assert.equal(asha.engineVersion, ZOROASTRIAN_ASHA_VERSION);
   assert.ok(asha.calculatedAtKst.endsWith('+09:00'));
+  assert.ok(Boolean(asha.ashaSynthesisMatrix?.integratedAction));
   const ashaPrompt = formatZoroastrianAshaTruthPrompt(asha);
   assert.ok(!ashaPrompt.includes('/100') && !ashaPrompt.includes('%') && !ashaPrompt.includes('점 /'));
-  assert.ok(ashaPrompt.includes('해석 경계') && ashaPrompt.includes('+09:00'));
+  assert.ok(ashaPrompt.includes('해석 경계') && ashaPrompt.includes('+09:00') && ashaPrompt.includes('교차 매트릭스'));
 
   const ifa = calculateYorubaIfaOdu({ profile, targetDate: now, question: '새로운 선택 앞에서 어떤 태도를 가져야 할까요?' });
   assert.equal(ifa.engineVersion, YORUBA_IFA_ODU_ENGINE_VERSION);
