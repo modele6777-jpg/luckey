@@ -8,12 +8,12 @@
  * 4. 불협화음 직시 및 긴장 감내력 (Dissonance Tolerance & Aesthetic Resistance Index): 가짜 조화나 거짓된 낙관론의 마취에 기대지 않고, 현실의 갈등과 불협화음(Dissonanz)을 정직하게 버텨내며 예술적 긴장으로 승화하는 힘.
  * 5. 성좌(Konstellation)적 사고 및 입체적 구원 지표 (Constellation Thinking & Multidimensional Redemption Score): 닫힌 하나의 교조에 갇히지 않고 여러 개념과 현상들을 별자리처럼 입체적으로 엮어 진리의 다채로운 단면을 직관하는 사유력.
  *
- * @version LUCKEY-THEODOR-ADORNO-NEGATIVE-DIALECTICS-v2.0.0
+ * @version LUCKEY-THEODOR-ADORNO-NEGATIVE-DIALECTICS-v2.1.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const GERMAN_THEODOR_ADORNO_NEGATIVE_DIALECTICS_VERSION = 'LUCKEY-THEODOR-ADORNO-NEGATIVE-DIALECTICS-v2.0.0';
+export const GERMAN_THEODOR_ADORNO_NEGATIVE_DIALECTICS_VERSION = 'LUCKEY-THEODOR-ADORNO-NEGATIVE-DIALECTICS-v2.1.0';
 
 export interface AdornoTheme {
   themeKey: string;
@@ -43,6 +43,9 @@ export interface GermanTheodorAdornoNegativeDialecticsMinimaMoraliaResult {
   // 세부 분석
   activeAdornoTheme: AdornoTheme;
   focalAdornoAphorism: AdornoAphorism;
+  secondaryAdornoAphorism: AdornoAphorism;
+  reflectiveQuestion: string;
+  interpretiveBoundary: string;
   adornoComprehensiveGuidance: {
     guidanceTitle: string;
     philosophicalCounsel: string;
@@ -139,7 +142,15 @@ function formatAdornoKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 KST`;
+}
+
+function buildAdornoReflectiveQuestion(theme: AdornoTheme, query?: string): string {
+  const trimmed = query?.trim();
+  if (trimmed) {
+    return `'${trimmed}'에서 값싼 조화나 효율의 잣대에 삼켜지지 않도록 끝까지 지켜내야 할 나만의 비동일자(Das Nichtidentische)는 무엇인가요? (${theme.themeTitleKo})`;
+  }
+  return `지금 내가 당연하게 받아들이고 있는 관행이나 비교의 기준 가운데, 정직한 불협화음으로 다시 물어야 할 것은 무엇인가요? (${theme.themeTitleKo})`;
 }
 
 function describeAdornoStage(score: number): string {
@@ -171,9 +182,14 @@ export function calculateGermanTheodorAdornoNegativeDialecticsMinimaMoralia(
 
   const themeIndex = (absHash >> 5) % ADORNO_THEMES.length;
   const aphorismIndex = (absHash >> 8) % ADORNO_APHORISMS.length;
+  const secondaryOffset = 1 + ((absHash >> 11) % (ADORNO_APHORISMS.length - 1));
+  const secondaryAphorismIndex = (aphorismIndex + secondaryOffset) % ADORNO_APHORISMS.length;
 
   const activeAdornoTheme = ADORNO_THEMES[themeIndex];
   const focalAdornoAphorism = ADORNO_APHORISMS[aphorismIndex];
+  const secondaryAdornoAphorism = ADORNO_APHORISMS[secondaryAphorismIndex];
+  const reflectiveQuestion = buildAdornoReflectiveQuestion(activeAdornoTheme, query);
+  const interpretiveBoundary = '테오도어 아도르노 부정변증법 관점은 타인이나 사회를 일방적으로 재단하는 도구가 아니라, 획일화와 도구적 이성 속에서 고유한 차이를 성찰하는 비판철학 렌즈입니다.';
 
   const guidanceTitle = `테오도어 아도르노 부정변증법과 미니마 모랄리아 지혜: ${activeAdornoTheme.themeTitleKo}`;
   const philosophicalCounsel = `20세기 프랑크푸르트 학파의 대표 사상가 테오도어 아도르노 선생은 《부정변증법》과 《미니마 모랄리아》를 통해 ` +
@@ -202,6 +218,9 @@ export function calculateGermanTheodorAdornoNegativeDialecticsMinimaMoralia(
     constellationDialecticsScore,
     activeAdornoTheme,
     focalAdornoAphorism,
+    secondaryAdornoAphorism,
+    reflectiveQuestion,
+    interpretiveBoundary,
     adornoComprehensiveGuidance: {
       guidanceTitle,
       philosophicalCounsel,
@@ -227,7 +246,12 @@ export function formatGermanTheodorAdornoNegativeDialecticsMinimaMoraliaPrompt(
     `- 아도르노 원전 격언: "${res.focalAdornoAphorism.aphorismKo}" (${res.focalAdornoAphorism.aphorismGerman})`,
     `- 원전 출처: [${res.focalAdornoAphorism.sourceContext}]`,
     `- 구체적 실천 지침: ${res.focalAdornoAphorism.actionGuidance}`,
+    `- 보조 원전 테제: "${res.secondaryAdornoAphorism.aphorismKo}" (${res.secondaryAdornoAphorism.aphorismGerman})`,
+    `- 보조 원전 출처: [${res.secondaryAdornoAphorism.sourceContext}]`,
+    `- 보조 실천 지침: ${res.secondaryAdornoAphorism.actionGuidance}`,
+    `- 성찰 질문: ${res.reflectiveQuestion}`,
     `- 종합 아도르노 권면: ${res.adornoComprehensiveGuidance.philosophicalCounsel}`,
+    `- 해석 경계: ${res.interpretiveBoundary}`,
   ];
   if (res.adornoSynthesisMatrix) {
     lines.push(

@@ -9427,3 +9427,36 @@ test('Habermas, Jaspers, and Benjamin v2.1.0 include +09:00 KST, secondary aphor
   assert.ok(bjPrompt.includes('+09:00') && bjPrompt.includes('보조 원전 테제') && bjPrompt.includes('성찰 질문') && bjPrompt.includes('해석 경계'));
   assert.doesNotMatch(bjPrompt.split('\n').filter((l) => !l.startsWith('- 엔진 버전')).join('\n'), /\d+\s*점|\d+\s*%|점수\s*\d/);
 });
+
+test('Adorno, Hawaiian Huna, and Kahuna Three Selves v2.1.0 include +09:00 KST, dual cross-check, reflective question, and interpretive boundary', () => {
+  const profile = { basic: { name: '제제', birthdate: '1994-01-24', birthtime: '12:00', gender: 'male' } } as any;
+  const now = new Date('2026-11-16T04:05:00Z');
+  const query = '복잡한 감정의 매듭을 풀고 나만의 중심을 지키고 싶습니다';
+
+  const ad = calculateGermanTheodorAdornoNegativeDialecticsMinimaMoralia(profile, query, now);
+  assert.equal(ad.engineVersion, GERMAN_THEODOR_ADORNO_NEGATIVE_DIALECTICS_VERSION);
+  assert.match(ad.calculatedAtKst, /\+09:00/);
+  assert.notEqual(ad.secondaryAdornoAphorism.aphorismKey, ad.focalAdornoAphorism.aphorismKey);
+  assert.ok(ad.reflectiveQuestion.includes(query));
+  assert.ok(ad.interpretiveBoundary.includes('성찰'));
+  const adPrompt = formatGermanTheodorAdornoNegativeDialecticsMinimaMoraliaPrompt(ad);
+  assert.ok(adPrompt.includes('+09:00') && adPrompt.includes('보조 원전 테제') && adPrompt.includes('성찰 질문') && adPrompt.includes('해석 경계'));
+
+  const hu = calculateHawaiianHunaHooponopono({ profile, contextText: query });
+  assert.equal(hu.engineVersion, HAWAIIAN_HUNA_VERSION);
+  assert.match(hu.calculatedAtKst, /\+09:00/);
+  assert.notEqual(hu.secondaryPrinciple.code, hu.activePrinciple.code);
+  assert.ok(hu.hunaSynthesisMatrix.reflectiveQuestion.includes(query));
+  assert.ok(hu.interpretiveBoundary.includes('성찰'));
+  const huPrompt = formatHawaiianHunaHooponoponoPrompt(hu);
+  assert.ok(huPrompt.includes('+09:00') && huPrompt.includes('보조 교차 원리') && huPrompt.includes('성찰 질문') && huPrompt.includes('해석 경계'));
+
+  const kh = calculateHawaiianKahunaThreeSelves({ profile, question: query, now });
+  assert.equal(kh.engineVersion, HAWAIIAN_KAHUNA_THREE_SELVES_ENGINE_VERSION);
+  assert.match(kh.calculatedAtKst, /\+09:00/);
+  assert.notEqual(kh.secondaryManaPikoState, kh.currentManaPikoState);
+  assert.ok(kh.kahunaSynthesisMatrix.reflectiveQuestion.includes(query));
+  assert.ok(kh.interpretiveBoundary.includes('성찰'));
+  const khPrompt = formatHawaiianKahunaThreeSelvesPrompt(kh);
+  assert.ok(khPrompt.includes('+09:00') && khPrompt.includes('보조 조율 축') && khPrompt.includes('성찰 질문') && khPrompt.includes('해석 경계'));
+});

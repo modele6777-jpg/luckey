@@ -28,7 +28,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const HAWAIIAN_HUNA_VERSION = 'LUCKEY-HAWAIIAN-HUNA-v2.0.0';
+export const HAWAIIAN_HUNA_VERSION = 'LUCKEY-HAWAIIAN-HUNA-v2.1.0';
 
 export interface HunaPrincipleGuidance {
   code: 'IKE' | 'KALA' | 'MAKIA' | 'MANAWA' | 'ALOHA' | 'MANA' | 'PONO';
@@ -59,10 +59,12 @@ export interface HawaiianHunaReport {
   calculatedAt: string;
   calculatedAtKst: string;
   activePrinciple: HunaPrincipleGuidance;
+  secondaryPrinciple: HunaPrincipleGuidance;
   threeSelves: ThreeSelvesBalance;
   hooponopono: HooponoponoPrescription;
   totalHealingHarmonics: number; // 0 ~ 100
   synthesisMessage: string;
+  interpretiveBoundary: string;
   situationalHunaAudit: {
     questionFocus: string;
     akaCordTension: string;
@@ -160,14 +162,21 @@ export function calculateHawaiianHunaHooponopono(
 
   const seed = (birthYear * 13 + birthMonth * 37 + birthDay * 19 + currentYear * 7 + currentMonth * 29 + currentDay * 11 + textHash) % 10000;
 
-  // 1. 활성 후나 원리 결정
+  // 1. 활성 후나 원리 결정 (이중 교차)
   const principleIndex = seed % HUNA_PRINCIPLES.length;
+  const secondaryPrincipleIndex = (principleIndex + 1 + ((seed >> 3) % (HUNA_PRINCIPLES.length - 1))) % HUNA_PRINCIPLES.length;
   const selectedMeta = HUNA_PRINCIPLES[principleIndex];
+  const secondaryMeta = HUNA_PRINCIPLES[secondaryPrincipleIndex];
   const resonanceScore = 70 + ((seed * 7) % 29); // 70 ~ 98점
+  const secondaryResonanceScore = 68 + ((seed * 11) % 30);
 
   const activePrinciple: HunaPrincipleGuidance = {
     ...selectedMeta,
     resonanceScore,
+  };
+  const secondaryPrinciple: HunaPrincipleGuidance = {
+    ...secondaryMeta,
+    resonanceScore: secondaryResonanceScore,
   };
 
   // 2. 3대 자아 조화도 산출
@@ -214,7 +223,7 @@ export function calculateHawaiianHunaHooponopono(
   const kstDate = new Date(kstMs);
   const kstHour = kstDate.getUTCHours();
   const kstMonth = kstDate.getUTCMonth() + 1;
-  const calculatedAtKst = `${kstDate.getUTCFullYear()}-${String(kstMonth).padStart(2, '0')}-${String(kstDate.getUTCDate()).padStart(2, '0')} ${String(kstHour).padStart(2, '0')}:${String(kstDate.getUTCMinutes()).padStart(2, '0')} KST`;
+  const calculatedAtKst = `${kstDate.getUTCFullYear()}-${String(kstMonth).padStart(2, '0')}-${String(kstDate.getUTCDate()).padStart(2, '0')} ${String(kstHour).padStart(2, '0')}:${String(kstDate.getUTCMinutes()).padStart(2, '0')} +09:00 KST`;
 
   const qLower = (effectiveContextText || '').toLowerCase();
   const questionFocus = /연애|사랑|관계|결혼|재회|이별|가족/.test(qLower)
@@ -249,10 +258,14 @@ export function calculateHawaiianHunaHooponopono(
 
   const ritualTimingNote = `${alohaManaWindow}과 ${pacificTidePhase}가 겹치므로, ${selectedMeta.actionGuideline}`;
 
+  const trimmedQuery = (effectiveContextText || '').trim();
+  const interpretiveBoundary = '하와이 후나·호오포노포노 관점은 의료적 치료나 외부 사건의 인과를 단정하는 도구가 아니라, 내면의 기억과 감정을 돌보는 영적 성찰 렌즈입니다.';
   const hunaSynthesisMatrix = {
     coreMandate: `[${activePrinciple.hawaiianName}] 원리를 기준으로 ${questionFocus}을 수행하십시오.`,
     sacredBoundary: '외부 탓이나 자기 비난의 기억을 재생하지 말고, 모든 경험을 4대 정화 진언의 대상으로 돌리십시오.',
-    reflectiveQuestion: `지금 내 마음속 불편함은 어떤 오래된 기억이 다시 재생되고 있다는 신호일까요?`,
+    reflectiveQuestion: trimmedQuery
+      ? `'${trimmedQuery}'에서 내 마음속에 올라오는 불편함은 어떤 오래된 기억이 정화를 기다리고 있다는 신호일까요? (${activePrinciple.hawaiianName})`
+      : `지금 내 마음속 불편함은 어떤 오래된 기억이 다시 재생되고 있다는 신호일까요? (${activePrinciple.hawaiianName})`,
   };
 
   return {
@@ -260,6 +273,7 @@ export function calculateHawaiianHunaHooponopono(
     calculatedAt: now.toISOString(),
     calculatedAtKst,
     activePrinciple,
+    secondaryPrinciple,
     threeSelves: {
       unihipiliScore,
       uhaneScore,
@@ -270,6 +284,7 @@ export function calculateHawaiianHunaHooponopono(
     hooponopono,
     totalHealingHarmonics,
     synthesisMessage,
+    interpretiveBoundary,
     situationalHunaAudit: {
       questionFocus,
       akaCordTension,
@@ -292,6 +307,7 @@ export function formatHawaiianHunaHooponoponoPrompt(report: HawaiianHunaReport):
 - **활성 후나 원리(Huna Principle)**: ${report.activePrinciple.hawaiianName} [${report.activePrinciple.koreanMeaning}]
   - 핵심 원리: "${report.activePrinciple.coreAxiom}"
   - 실천 지침: ${report.activePrinciple.actionGuideline}
+- **보조 교차 원리**: ${report.secondaryPrinciple.hawaiianName} [${report.secondaryPrinciple.koreanMeaning}] — "${report.secondaryPrinciple.coreAxiom}" (${report.secondaryPrinciple.actionGuideline})
 - **3대 자아 상태(Three Selves)**: 우니히필리 [${report.threeSelves.innerChildStatus}] · 우하네(의식 분별) · 아우마쿠아(고위 초의식)
 - **호오포노포노 정화 처방(Ho'oponopono Cleansing)**:
   - 집중 정화 테마: ${report.hooponopono.cleansingFocusTheme}
@@ -300,5 +316,6 @@ export function formatHawaiianHunaHooponoponoPrompt(report: HawaiianHunaReport):
   - 마나(Mana) 생명력 충전: ${report.hooponopono.manaReplenishmentAdvice}
 - **시공간 리듬**: ${report.temporalHunaRhythm.alohaManaWindow} · ${report.temporalHunaRhythm.pacificTidePhase}
 - **치유 통합 나침반**: ${report.synthesisMessage}
-- **교차 매트릭스**: ${report.hunaSynthesisMatrix.coreMandate} | 경계: ${report.hunaSynthesisMatrix.sacredBoundary} | 성찰 질문: "${report.hunaSynthesisMatrix.reflectiveQuestion}"`;
+- **교차 매트릭스**: ${report.hunaSynthesisMatrix.coreMandate} | 경계: ${report.hunaSynthesisMatrix.sacredBoundary} | 성찰 질문: "${report.hunaSynthesisMatrix.reflectiveQuestion}"
+- **해석 경계**: ${report.interpretiveBoundary}`;
 }
