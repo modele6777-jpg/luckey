@@ -18,7 +18,7 @@ import {
   STEM_KOREAN
 } from '../sajuAnalysis';
 
-export const NOBLE_NETWORK_VERSION = 'LUCKEY-NOBLE-v2.0.0';
+export const NOBLE_NETWORK_VERSION = 'LUCKEY-NOBLE-v2.1.0';
 
 function formatNobleNetworkKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -115,6 +115,7 @@ export interface NobleNetworkResult {
     alignmentState: string;
     integratedAction: string;
   };
+  interpretiveBoundary: string;
 }
 
 /**
@@ -294,6 +295,7 @@ export function calculateNobleNetwork(params?: {
     networkingPlaybook,
     summary,
     nobleNetworkSynthesisMatrix,
+    interpretiveBoundary: '본 4대 귀인 & 인연 네트워크 리포트는 명리 길신과 합(合) 상징에 기반한 정성적 대인관계 참고 안내이며, 타인의 실제 성향이나 관계 성패를 단정하지 않습니다.',
   };
 }
 
@@ -325,6 +327,7 @@ export function formatNobleNetworkPrompt(res: NobleNetworkResult): string {
       `  • 통합 실천: ${res.nobleNetworkSynthesisMatrix.integratedAction}`,
     );
   }
+  lines.push(`- 해석 경계: ${res.interpretiveBoundary}`);
   lines.push(`※ 루시 지침: 혼자서 모든 짐을 짊어질 필요가 없습니다. 사주 4대 귀인과 합(合)의 인연 에너지는 사용자의 비범한 재능을 세상과 연결해 줄 가장 강력한 레버리지입니다. 사용자가 좋은 협력자와 멘토를 발견하고 당당히 손을 잡을 수 있도록 귀인의 특징과 시너지 비책을 지혜롭게 조언해 주세요.`);
   return lines.join('\n');
 }

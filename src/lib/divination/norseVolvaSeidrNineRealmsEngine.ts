@@ -21,7 +21,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const NORSE_VOLVA_SEIDR_NINE_REALMS_ENGINE_VERSION = '2.0.0';
+export const NORSE_VOLVA_SEIDR_NINE_REALMS_ENGINE_VERSION = '2.1.0';
 
 export interface YggdrasilRealm {
   id: string;
@@ -50,6 +50,7 @@ export interface NorseVolvaSeidrNineRealmsReport {
     alignmentState: string;
     integratedAction: string;
   };
+  interpretiveBoundary: string;
 }
 
 function formatVolvaKstTimestamp(now: Date = new Date()): string {
@@ -211,6 +212,7 @@ export function calculateNorseVolvaSeidrNineRealms(
     volvaPropheticVision,
     seidrSpindleGroundingRitual,
     volvaSynthesisMatrix,
+    interpretiveBoundary: '본 북유럽 볼바 세이드 & 위그드라실 9대 세계 리포트는 에다 신화 상징에 기반한 정성적 직관 성찰 안내이며, 확정적 미래 예언이 아닙니다.',
   };
 }
 
@@ -235,5 +237,6 @@ export function formatNorseVolvaSeidrNineRealmsPrompt(rep: NorseVolvaSeidrNineRe
       `· 통합 실천: ${rep.volvaSynthesisMatrix.integratedAction}`,
     );
   }
+  lines.push(`· 해석 경계: ${rep.interpretiveBoundary}`);
   return lines.join('\n');
 }
