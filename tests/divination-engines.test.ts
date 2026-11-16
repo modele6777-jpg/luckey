@@ -2201,11 +2201,12 @@ test('Karmic Nodes Engine: 카르믹 노드 축 및 영혼 진화 궤적 검증'
   assert(res.lilith.rawPower.length > 0);
   assert(res.calculatedAtKst.endsWith('KST'));
   assert(Boolean(res.karmicNodesSynthesisMatrix?.integratedAction));
+  assert(res.interpretiveBoundary.length > 0);
   const prompt = formatKarmicNodesPrompt(res);
   assert(prompt.includes(KARMIC_NODES_ENGINE_VERSION));
   assert(prompt.includes('카르믹 노드 축'));
   assert(prompt.includes('키론'));
-  assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('교차 매트릭스') && prompt.includes('해석 경계'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });
@@ -2346,11 +2347,23 @@ test('Instant Decision Engine: 매화역수·기문둔갑 즉시 결단 검증',
   assert.equal(res.engineVersion, INSTANT_DECISION_ENGINE_VERSION);
   assert(res.calculatedAtKst.endsWith('KST'));
   assert(Boolean(res.instantDecisionSynthesisMatrix?.integratedAction));
+  assert(res.interpretiveBoundary.length > 0);
   assert(res.verdict.finalScore >= 0 && res.verdict.finalScore <= 100);
   const prompt = formatInstantDecisionPrompt(res);
   assert(prompt.includes(INSTANT_DECISION_ENGINE_VERSION));
-  assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('교차 매트릭스') && prompt.includes('해석 경계'));
   assert(!prompt.includes('/100'));
+});
+
+test('Iching 384 Yao Engine: 주역 384효 동효 & 착종복잡 4대 변괘 및 해석 경계 검증', () => {
+  const res = calculateIching384Yao({ profile, question: '변화의 시점', targetDate: new Date('2026-11-17T04:30:00+09:00') });
+  assert.equal(res.engineVersion, ICHING_384YAO_ENGINE_VERSION);
+  assert(res.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(res.ichingSynthesisMatrix?.integratedAction));
+  assert(res.interpretiveBoundary.length > 0);
+  const prompt = formatIching384YaoPrompt(res);
+  assert(prompt.includes(ICHING_384YAO_ENGINE_VERSION));
+  assert(prompt.includes('교차 매트릭스') && prompt.includes('해석 경계'));
 });
 
 test('Deep Work Flow Engine: 딥워크 몰입 아키타입 및 최적 환경 매트릭스 검증', () => {

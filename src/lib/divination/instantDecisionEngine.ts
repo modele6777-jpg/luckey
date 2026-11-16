@@ -34,7 +34,7 @@
 import { hexagram, type Yao } from './iching';
 import { calculateQimen } from './eventCharts';
 
-export const INSTANT_DECISION_ENGINE_VERSION = 'LUCKEY-IDE-v2.0.0';
+export const INSTANT_DECISION_ENGINE_VERSION = 'LUCKEY-IDE-v2.1.0';
 
 function formatInstantDecisionKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -147,6 +147,7 @@ export interface InstantDecisionResult {
     alignmentState: string;
     integratedAction: string;
   };
+  interpretiveBoundary: string;
 }
 
 // 팔괘 선천수 및 음양효 비트 (소강절 선천팔괘수: 1건, 2태, 3리, 4진, 5손, 6감, 7간, 8곤)
@@ -505,6 +506,7 @@ export function calculateInstantDecision(options?: {
       },
     },
     instantDecisionSynthesisMatrix,
+    interpretiveBoundary: '본 매화역수·기문둔갑 즉시 결단 리포트는 시간작괘와 시가팔문 원리에 기반한 정성적 타이밍 성찰 안내이며, 법률·투자·계약의 확정적 판단을 대신하지 않습니다.',
   };
 }
 
@@ -546,6 +548,7 @@ ${res.instantDecisionSynthesisMatrix ? `4. [교차 매트릭스]:
    - 핵심 긴장: ${res.instantDecisionSynthesisMatrix.dominantTension}
    - 조율 상태: ${res.instantDecisionSynthesisMatrix.alignmentState}
    - 통합 실천: ${res.instantDecisionSynthesisMatrix.integratedAction}` : ''}
+- 해석 경계: ${res.interpretiveBoundary}
 ======================================================================
 [★ 루시 즉시 결단 답변 지침]:
 - 사용자가 '지금 할까 말까?', 'A vs B', '연락할까?', '계약할까?'를 물었을 때 위 실측 괘와 기문 8문을 명쾌한 승부수 언어로 풀어줘.
