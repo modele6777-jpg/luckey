@@ -3419,7 +3419,7 @@ try {
   // 230. 조선 서산대사 휴정 선가귀감 일물영명 & 활구참선 선교원융 엔진
   const seosanHyujeongSeongaGwigamResult = calculateSupplement('seosanHyujeongSeongaGwigamResult', () => ((() => {
     try {
-      return calculateSeosanHyujeongSeongaGwigam(profile);
+      return calculateSeosanHyujeongSeongaGwigam(profile, question, now);
     } catch (_) {
       return null;
     }
@@ -4067,7 +4067,7 @@ try {
   // 302. 대한민국 사명대사 송운 유정 《분충서난록·사명당대사집》 살신성인 호국대의 & 대일담판 3,500포로 쇄환 자비구제·출세간 초연 지혜 엔진
   const koreanSamyeongdaesaSongunYujeongResult = calculateSupplement('koreanSamyeongdaesaSongunYujeongResult', () => ((() => {
     try {
-      return calculateKoreanSamyeongdaesaSongunYujeong(profile);
+      return calculateKoreanSamyeongdaesaSongunYujeong(profile, question, now);
     } catch (_) {
       return null;
     }
@@ -4202,7 +4202,7 @@ try {
   // 317. 대한민국 서포 김만중 《구운몽·사씨남정기》 일장춘몽 세속 환상 각성 & 금강경 공관·지극한 효성·초연한 회복탄력성 지혜 엔진
   const koreanSeopoKimManJungGuunmongAwakeningResult = calculateSupplement('koreanSeopoKimManJungGuunmongAwakeningResult', () => ((() => {
     try {
-      return calculateKoreanSeopoKimManJungGuunmongAwakening(profile);
+      return calculateKoreanSeopoKimManJungGuunmongAwakening(profile, question, now);
     } catch (_) {
       return null;
     }
@@ -4943,7 +4943,7 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'koreanChusaKimJeonghuiSehando', nameKo: '추사 김정희 세한도 송백후조 역경극복지조 문자향서권기', icon: '🌲', category: 'deep_master', summary: '추사 김정희의 세한도 송백후조와 문자향 서권기로 역경 속에서도 흔들리지 않는 지조와 담백한 본질을 비춥니다.' },
   { key: 'danishKierkegaardStagesOfLife', nameKo: '쇠렌 키르케고르 단독자 실존3단계 이것이냐저것이냐 신앙도약', icon: '⚖️', category: 'deep_master', summary: '키르케고르의 미적·윤리적·종교적 실존 단계에서 불안을 딛고 단독자의 결단으로 도약합니다.' },
   { key: 'germanNietzscheZarathustraAmorFati', nameKo: '프리드리히 니체 차라투스트라 초인 아모르파티 영원회귀', icon: '🦅', category: 'deep_master', summary: '니체의 아모르 파티(운명애)와 3단계 정신 변신으로 주어진 필연을 창조적 자기 극복의 힘으로 바꿉니다.' },
-  { key: 'koreanSeosanHyujeongSeongaGwigam', nameKo: '서산대사 휴정 선가귀감 일물영명 활구참선 선교원융', icon: '📿', category: 'deep_master' },
+  { key: 'koreanSeosanHyujeongSeongaGwigam', nameKo: '서산대사 휴정 선가귀감 일물영명 활구참선 선교원융', icon: '📿', category: 'deep_master', summary: '청허당 서산대사 휴정의 《선가귀감》으로 사량분별의 죽은 글귀를 깨고 본래 밝은 한 물건(일물영명)을 자각해 선교원융과 자비구제의 길을 비춥니다.' },
   { key: 'swissJungIndividuationArchetype', nameKo: '카를 융 개성화 원형통합 그림자 아니마아니무스 동시성', icon: '🎭', category: 'deep_master' },
   { key: 'germanHegelDialecticalAufheben', nameKo: '헤겔 정신현상학 변증법적지양 정반합 인륜성 미네르바올빼미', icon: '🏛️', category: 'deep_master', summary: '헤겔의 변증법적 지양(Aufheben)과 상호 인정을 통해 모순과 대립을 더 높은 차원의 통합으로 승화합니다.' },
   { key: 'koreanDasanJeongYagyongMokminSimseo', nameKo: '다산 정약용 목민심서 여유당신독 율기청렴 애민 실사구시', icon: '📜', category: 'deep_master', summary: '다산 정약용의 여유당 신독과 실사구시 정신으로 신중한 절제와 사실 기반의 실질적 해법을 안내합니다.' },

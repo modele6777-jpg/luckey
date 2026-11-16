@@ -8,12 +8,12 @@
  * 4. 경세구민(經世救民) 실천적 보살행 지표 (Pragmatic Bodhisattva Action Index): 추상적 명분이나 형식에 얽매이지 않고 고통받는 현실의 백성을 구원하기 위해 분연히 행동하는 실천력.
  * 5. 출세간적 무소유 청빈 및 초연한 회복탄력성 (Renunciation & Magnanimous Resilience Score): 지극한 공을 세운 뒤에도 권력과 영화에 연연하지 않고 산사로 돌아가 평정을 지키는 초연한 무소유.
  *
- * @version LUCKEY-SAMYEONGDAESA-SONGUN-YUJEONG-v2.0.0
+ * @version LUCKEY-SAMYEONGDAESA-SONGUN-YUJEONG-v2.1.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const KOREAN_SAMYEONGDAESA_SONGUN_YUJEONG_VERSION = 'LUCKEY-SAMYEONGDAESA-SONGUN-YUJEONG-v2.0.0';
+export const KOREAN_SAMYEONGDAESA_SONGUN_YUJEONG_VERSION = 'LUCKEY-SAMYEONGDAESA-SONGUN-YUJEONG-v2.1.0';
 
 export interface SamyeongTheme {
   themeKey: string;
@@ -42,7 +42,11 @@ export interface KoreanSamyeongdaesaSongunYujeongResult {
   renunciationResilienceScore: number;        // 출세간적 무소유 청빈 및 초연한 회복탄력성 (Renunciation & Resilience)
   // 세부 분석
   activeSamyeongTheme: SamyeongTheme;
+  secondarySamyeongTheme: SamyeongTheme;
   focalSamyeongAphorism: SamyeongAphorism;
+  secondarySamyeongAphorism: SamyeongAphorism;
+  reflectiveQuestion: string;
+  interpretiveBoundary: string;
   samyeongComprehensiveGuidance: {
     guidanceTitle: string;
     philosophicalCounsel: string;
@@ -61,7 +65,7 @@ function formatSamyeongKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 KST`;
 }
 
 function describeSamyeongStage(score: number): string {
@@ -170,10 +174,21 @@ export function calculateKoreanSamyeongdaesaSongunYujeong(
   const renunciationResilienceScore = 89 + ((absHash >> 13) % 10);
 
   const themeIndex = (absHash >> 5) % SAMYEONG_THEMES.length;
+  const secondaryThemeIndex = (themeIndex + 1 + ((absHash >> 7) % (SAMYEONG_THEMES.length - 1))) % SAMYEONG_THEMES.length;
   const aphorismIndex = (absHash >> 8) % SAMYEONG_APHORISMS.length;
+  const secondaryAphorismIndex = (aphorismIndex + 1 + ((absHash >> 11) % (SAMYEONG_APHORISMS.length - 1))) % SAMYEONG_APHORISMS.length;
 
   const activeSamyeongTheme = SAMYEONG_THEMES[themeIndex];
+  const secondarySamyeongTheme = SAMYEONG_THEMES[secondaryThemeIndex];
   const focalSamyeongAphorism = SAMYEONG_APHORISMS[aphorismIndex];
+  const secondarySamyeongAphorism = SAMYEONG_APHORISMS[secondaryAphorismIndex];
+
+  const trimmedQuery = query?.trim();
+  const reflectiveQuestion = trimmedQuery
+    ? `사명대사의 '${activeSamyeongTheme.themeTitleKo}'와 '${secondarySamyeongTheme.themeTitleKo}'를 비추어 볼 때, "${trimmedQuery}"에서 사적인 안위를 넘어 끝까지 지켜야 할 대의와 자비의 결단은 무엇인가요?`
+    : `지금 당신이 마주한 갈등이나 위기 속에서, '${activeSamyeongTheme.themeTitleKo}'의 담대한 기개와 '${secondarySamyeongTheme.themeTitleKo}'의 초연함을 함께 세우려면 무엇을 내려놓고 무엇을 지켜야 할까요?`;
+
+  const interpretiveBoundary = '이 지표는 사명대사 송운 유정의 《분충서난록》과 《사명당대사집》의 호국 대의·담판 지략·자비구제·무소유 철학을 오늘의 선택을 비추는 정성적 성찰 틀로 해석한 결과이며, 실제 협상·법적 판단·구체적 위기 대응을 대신하는 확정 예측이 아닙니다.';
 
   const guidanceTitle = `사명대사 송운 유정 호국 대의와 자비 구제 지혜: ${activeSamyeongTheme.themeTitleKo}`;
   const philosophicalCounsel = `조선 중기 국난을 극복한 구국의 선승이자 불세출의 외교가 사명대사 송운 유정 선생은 《분충서난록》과 대일 강화담판을 통해 ` +
@@ -206,7 +221,11 @@ export function calculateKoreanSamyeongdaesaSongunYujeong(
     pragmaticBodhisattvaIndex,
     renunciationResilienceScore,
     activeSamyeongTheme,
+    secondarySamyeongTheme,
     focalSamyeongAphorism,
+    secondarySamyeongAphorism,
+    reflectiveQuestion,
+    interpretiveBoundary,
     samyeongComprehensiveGuidance: {
       guidanceTitle,
       philosophicalCounsel,
@@ -231,11 +250,15 @@ export function formatKoreanSamyeongdaesaSongunYujeongPrompt(
     `- 연산 시각: ${res.calculatedAtKst} | 엔진: ${res.engineVersion}`,
     `- 호국 자비 국면: ${describeSamyeongStage(avgScore)}`,
     `- 핵심 사명대사 테마: ${res.activeSamyeongTheme.themeTitleKo} [${res.activeSamyeongTheme.themeTitleEn}]`,
+    `- 보조 교차 테마: ${res.secondarySamyeongTheme.themeTitleKo} [${res.secondarySamyeongTheme.themeTitleEn}]`,
     `- 실천적 통찰: ${res.activeSamyeongTheme.pragmaticInsight}`,
     `- 행동 조언: ${res.activeSamyeongTheme.practicalCounsel}`,
     `- 사명대사 원전 명언: "${res.focalSamyeongAphorism.aphorismKo}" (${res.focalSamyeongAphorism.aphorismHanja})`,
+    `- 보조 교차 명언: "${res.secondarySamyeongAphorism.aphorismKo}" (${res.secondarySamyeongAphorism.aphorismHanja})`,
     `- 원전 출처: [${res.focalSamyeongAphorism.sourceContext}]`,
     `- 구체적 실천 지침: ${res.focalSamyeongAphorism.actionGuidance}`,
+    `- 성찰 질문: ${res.reflectiveQuestion}`,
+    `- 해석 경계: ${res.interpretiveBoundary}`,
     `- 종합 사명대사 권면: ${res.samyeongComprehensiveGuidance.philosophicalCounsel}`,
   ];
   if (res.samyeongSynthesisMatrix) {
