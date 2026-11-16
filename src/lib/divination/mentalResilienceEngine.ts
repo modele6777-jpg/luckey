@@ -16,7 +16,7 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const MENTAL_RESILIENCE_VERSION = 'LUCKEY-RESIL-v2.0.0';
+export const MENTAL_RESILIENCE_VERSION = 'LUCKEY-RESIL-v2.1.0';
 
 function formatResilienceKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -75,6 +75,7 @@ export interface MentalResilienceResult {
     alignmentState: string;
     integratedAction: string;
   };
+  interpretiveBoundary: string;
 }
 
 // 주역 4대 난괘 탈출 지혜
@@ -233,6 +234,7 @@ export function calculateMentalResilience(params?: {
     mentalShield,
     summary,
     resilienceSynthesisMatrix,
+    interpretiveBoundary: '본 멘탈 리질리언스 리포트는 사주 신살과 주역 난괘 상징에 기반한 정성적 심리 회복 안내이며, 전문 의학·심리 치료를 대신하지 않습니다.',
   };
 }
 
@@ -261,6 +263,7 @@ export function formatMentalResiliencePrompt(res: MentalResilienceResult): strin
       `  • 통합 실천: ${res.resilienceSynthesisMatrix.integratedAction}`,
     );
   }
+  lines.push(`- 해석 경계: ${res.interpretiveBoundary}`);
   lines.push(`※ 루시 지침: 괴강·백호·양인 같은 고전의 흉살은 극한의 압박이 닥쳤을 때 비범한 성과를 내는 '초인적 돌파 무기'입니다. 사용자가 스트레스나 막힘을 느낄 때 위축되지 않도록, 내면에 잠든 강철 같은 돌파력과 주역의 지혜로운 탈출 해법을 든든하고 단단하게 전해 주세요.`);
   return lines.join('\n');
 }
