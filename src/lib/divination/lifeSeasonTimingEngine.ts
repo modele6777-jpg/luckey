@@ -37,7 +37,7 @@ import {
 } from '../sajuAnalysis';
 import { getAstronomicalSajuYear } from '../astronomicalSolarTerms';
 
-export const LIFE_SEASON_ENGINE_VERSION = 'LUCKEY-LIFE-SEASON-v2.0.0';
+export const LIFE_SEASON_ENGINE_VERSION = 'LUCKEY-LIFE-SEASON-v2.1.0';
 
 function formatLifeSeasonKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -176,6 +176,7 @@ export interface LifeSeasonTimingResult {
     alignmentState: string;
     integratedAction: string;
   };
+  interpretiveBoundary: string;
 }
 
 /**
@@ -516,6 +517,7 @@ export function calculateLifeSeasonTiming(params: {
     headline,
     lucyCoreAdvice,
     lifeSeasonSynthesisMatrix,
+    interpretiveBoundary: '본 10년 대운·교운기 타이밍 리포트는 명리 대운수·세운 역법 상징에 기반한 정성적 시기 성찰 안내이며, 미래 사건의 단정적 예언이 아닙니다.',
   };
 }
 
@@ -574,6 +576,7 @@ export function formatLifeSeasonTimingPrompt(result: LifeSeasonTimingResult): st
 6. 📜 [8대 대운 전 생애 타임라인 참조]
 ${timelineRows}
 ${result.lifeSeasonSynthesisMatrix ? `\n7. 🔗 [교차 매트릭스]\n- 핵심 긴장: ${result.lifeSeasonSynthesisMatrix.dominantTension}\n- 조율 상태: ${result.lifeSeasonSynthesisMatrix.alignmentState}\n- 통합 실천: ${result.lifeSeasonSynthesisMatrix.integratedAction}` : ''}
+- 해석 경계: ${result.interpretiveBoundary}
 
 [★ 대화 적용 절대 지침]:
 사용자가 대운, 세운, 인생의 타이밍, 이직/창업 시기, 언제 해야 할지 등을 물어볼 때 위 정밀 계산 데이터를 근거로 활용해.
