@@ -63,6 +63,7 @@ export interface HenryDavidThoreauWaldenResult {
   reflectionFocus: string;
   counselNote: string;
   boundaryNotice: string;
+  interpretiveBoundary: string;
   thoreauComprehensiveGuidance: {
     guidanceTitle: string;
     philosophicalCounsel: string;
@@ -308,6 +309,7 @@ export function calculateHenryDavidThoreauWalden(
     reflectionFocus,
     counselNote,
     boundaryNotice,
+    interpretiveBoundary: boundaryNotice,
     thoreauComprehensiveGuidance: {
       guidanceTitle,
       philosophicalCounsel,

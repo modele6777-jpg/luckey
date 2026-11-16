@@ -63,6 +63,7 @@ export interface HannahArendtVitaActivaResult {
   reflectionFocus: string;
   counselNote: string;
   boundaryNotice: string;
+  interpretiveBoundary: string;
   arendtComprehensiveGuidance: {
     guidanceTitle: string;
     philosophicalCounsel: string;
@@ -308,6 +309,7 @@ export function calculateHannahArendtVitaActiva(
     reflectionFocus,
     counselNote,
     boundaryNotice,
+    interpretiveBoundary: boundaryNotice,
     arendtComprehensiveGuidance: {
       guidanceTitle,
       philosophicalCounsel,

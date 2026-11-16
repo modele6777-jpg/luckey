@@ -4780,6 +4780,7 @@ test('Alexandrian Decan Thirty Six Gods Engine: provides qualitative Kairos post
   assert(rep.ritualAction.length > 0);
   assert(rep.reflectionFocus.length > 0);
   assert(rep.boundaryNotice.length > 0);
+  assert(rep.interpretiveBoundary.length > 0);
   assert(rep.dominantDecan.nameKo.length > 0);
   assert(rep.calculatedAtKst.includes('KST'));
   assert(rep.temporalDecanRhythm.hermeticWatchWindow.length > 0);
@@ -6787,6 +6788,7 @@ test('Hannah Arendt Vita Activa Engine: provides qualitative Natality guidance, 
   assert(rep.ritualAction.length > 0);
   assert(rep.reflectionFocus.length > 0);
   assert(rep.boundaryNotice.length > 0);
+  assert(rep.interpretiveBoundary.length > 0);
   assert(rep.activeArendtTheme.themeTitleKo.length > 0);
   const prompt = formatHannahArendtVitaActivaPrompt(rep);
   assert(prompt.includes('한나 아렌트 《인간의 조건》 활동적 삶 & 탄생성 지표'));
@@ -6822,6 +6824,7 @@ test('Henry David Thoreau Walden Engine: provides qualitative Simplicity guidanc
   assert(rep.ritualAction.length > 0);
   assert(rep.reflectionFocus.length > 0);
   assert(rep.boundaryNotice.length > 0);
+  assert(rep.interpretiveBoundary.length > 0);
   assert(rep.activeThoreauTheme.themeTitleKo.length > 0);
   const prompt = formatHenryDavidThoreauWaldenPrompt(rep);
   assert(prompt.includes('헨리 데이비드 소로 《월든》 단순함 & 양심 지표'));

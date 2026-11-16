@@ -10,7 +10,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const ALEXANDRIAN_DECAN_ENGINE_VERSION = '2.0.0';
+export const ALEXANDRIAN_DECAN_ENGINE_VERSION = '2.1.0';
 
 export type DecanQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -53,6 +53,7 @@ export interface AlexandrianDecanThirtySixGodsReport {
   reflectionFocus: string;
   counselNote: string;
   boundaryNotice: string;
+  interpretiveBoundary: string;
   alexandrianHermeticDecree: string;
   celestialDecanSealGuidance: string;
 }
@@ -277,6 +278,7 @@ export function calculateAlexandrianDecanThirtySixGods(
     reflectionFocus,
     counselNote,
     boundaryNotice,
+    interpretiveBoundary: boundaryNotice,
     alexandrianHermeticDecree,
     celestialDecanSealGuidance,
   };
