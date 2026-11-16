@@ -1410,7 +1410,7 @@ try {
   // 18. 정통 밀교 숙요경 27숙 본명숙 & 6대 관계성 3거리 매트릭스 엔진
   const sukuyoAdvancedResult = calculateSupplement('sukuyoAdvancedResult', () => ((() => {
     try {
-      return calculateSukuyoAdvanced({ profile });
+      return calculateSukuyoAdvanced({ profile, now, question });
     } catch (_) {
       return null;
     }
@@ -4738,10 +4738,10 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'auspiciousStars', nameKo: '천을귀인·길성망', icon: '✨', category: 'deep_master' },
   { key: 'geokguk', nameKo: '정통 10대 격국', icon: '📜', category: 'deep_master' },
   { key: 'twentyEightMansions', nameKo: '28수 일진 택일', icon: '🌠', category: 'deep_master', summary: '천상열차분야지도 28수 직성과 7원 4주기·3원 공명·4방신 조화로 당일 택일과 행동 완급을 비추는 관점' },
-  { key: 'sukuyoAdvanced', nameKo: '27숙 심층 매트릭스', icon: '🌙', category: 'deep_master' },
+  { key: 'sukuyoAdvanced', nameKo: '27숙 심층 매트릭스', icon: '🌙', category: 'deep_master', summary: '밀교 숙요경 27숙 본명숙·7대 숙격·3구 비법과 6대 관계성 3거리 매트릭스로 기질과 인연 역학을 비추는 관점' },
   { key: 'vedicAdvanced', nameKo: '베딕 120년 다샤', icon: '🕉️', category: 'deep_master', summary: '항성황도 27나크샤트라와 120년 빔쇼타리 다샤(마하·안타르다샤)로 현재 대운·소운의 카르마적 중심축을 비추는 관점' },
-  { key: 'heLuoLiShu', nameKo: '하락이수 수리원당효', icon: '🔢', category: 'deep_master' },
-  { key: 'dynamicClash', nameKo: '충형파해 동적트리거', icon: '💥', category: 'deep_master' },
+  { key: 'heLuoLiShu', nameKo: '하락이수 수리원당효', icon: '🔢', category: 'deep_master', summary: '하도낙서 천수·지수로 사주를 주역 선천본괘·원당효·후천변괘로 치환해 생애 전·후반기 전환을 비추는 관점' },
+  { key: 'dynamicClash', nameKo: '충형파해 동적트리거', icon: '💥', category: 'deep_master', summary: '사주 원국과 일진·세운 지지의 육충·삼형·합국 격발을 포착해 긴장을 창조적 결단으로 승화하는 관점' },
   { key: 'twelveSpirits', nameKo: '12신살 주기', icon: '💫', category: 'deep_master', summary: '삼합국 기반 12신살의 내면·사회 궤도 순환으로 오늘의 추천 페르소나와 핵심 강점·함정을 비추는 관점' },
   { key: 'pythagoreanLifecycle', nameKo: '피타고라스 생애주기', icon: '📐', category: 'deep_master', summary: '피타고라스 4대 피너클과 4대 챌린지, 9년 개인년도 주기로 현재 생애 전환기의 기회와 극복 과제를 짚는 관점' },
   { key: 'astrologicalDecanSabian', nameKo: '사비안 심볼·데칸', icon: '🔮', category: 'deep_master' },
