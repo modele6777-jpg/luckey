@@ -582,8 +582,9 @@ test('Samjae/GyoUn skips without birthdate, degrades without gender, and renders
   assert.equal(r.status,'calculated');assert.equal(r.engineVersion,SAMJAE_GYOUN_ENGINE_VERSION);
   const prompt=formatSamjaeGyoUnPrompt(r);
   assert(prompt.includes(SAMJAE_GYOUN_ENGINE_VERSION)&&prompt.includes('삼재')&&prompt.includes('교운기')&&prompt.includes('바이오웰니스'));
-  assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('교차 매트릭스')&&prompt.includes('해석 경계'));
   assert(Boolean(r.samjaeGyoUnSynthesisMatrix?.integratedAction));
+  assert(Boolean(r.interpretiveBoundary?.length));
   assert.equal(formatSamjaeGyoUnPrompt(skipped),'');
   const noGender=calculateSamjaeGyoUn({profile:{basic:{birthdate:'2000-08-16'}},targetYear:2026});
   assert.equal(noGender.status,'calculated');
@@ -3105,12 +3106,13 @@ test('Saju Twelve Stages & Tomb Unlock Engine: calculates lifecycle vitality and
   assert.equal(rep.engineVersion, SAJU_12STAGES_TOMB_VERSION);
   assert(rep.calculatedAtKst.endsWith('KST'));
   assert(Boolean(rep.tombSynthesisMatrix?.integratedAction));
+  assert(rep.interpretiveBoundary.length > 0);
   assert(rep.pillarsVitality.length === 4);
   assert(rep.peakVitalityStage.length > 0);
   const prompt = formatSajuTwelveStagesTombPrompt(rep);
   assert(prompt.includes(rep.peakVitalityStage) || prompt.includes('사주 12운성'));
   assert(prompt.includes('2026 병오년'));
-  assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('교차 매트릭스') && prompt.includes('해석 경계'));
 });
 
 test('Tarot Elemental Court Persona Engine: maps 16 court cards and 4 elemental balance', () => {
@@ -5279,10 +5281,11 @@ test('Scandinavian Eddic Yggdrasil Nine Realms Engine: calculates cosmic axis, U
   assert(rep.activeRealmStage.stageNameOldNorse.length > 0);
   assert(rep.calculatedAtKst.endsWith('KST'));
   assert(Boolean(rep.eddicSynthesisMatrix?.integratedAction));
+  assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatEddicYggdrasilPrompt(rep);
   assert(prompt.includes('고대 북유럽 고에다 《위그드라실(Yggdrasil)》'));
   assert(prompt.includes(rep.activeRealmStage.stageNameKo));
-  assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('교차 매트릭스') && prompt.includes('해석 경계'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });
