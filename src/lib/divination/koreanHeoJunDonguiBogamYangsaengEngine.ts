@@ -14,7 +14,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const KOREAN_HEO_JUN_DONGUI_BOGAM_YANGSAENG_VERSION = 'LUCKEY-HEO-JUN-DONGUI-BOGAM-YANGSAENG-v2.0.0';
+export const KOREAN_HEO_JUN_DONGUI_BOGAM_YANGSAENG_VERSION = 'LUCKEY-HEO-JUN-DONGUI-BOGAM-YANGSAENG-v2.1.0';
 
 export interface HeoJunTheme {
   themeKey: string;
@@ -44,6 +44,9 @@ export interface KoreanHeoJunDonguiBogamYangsaengResult {
   // 세부 분석
   activeHeoJunTheme: HeoJunTheme;
   focalHeoJunAphorism: HeoJunAphorism;
+  secondaryHeoJunAphorism: HeoJunAphorism;
+  reflectiveQuestion: string;
+  interpretiveBoundary: string;
   heoJunComprehensiveGuidance: {
     guidanceTitle: string;
     philosophicalCounsel: string;
@@ -62,7 +65,7 @@ function formatHeoJunKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 KST`;
 }
 
 function describeHeoJunStage(score: number): string {
@@ -172,9 +175,16 @@ export function calculateKoreanHeoJunDonguiBogamYangsaeng(
 
   const themeIndex = (absHash >> 5) % HEO_JUN_THEMES.length;
   const aphorismIndex = (absHash >> 8) % HEO_JUN_APHORISMS.length;
+  const secondaryAphorismIndex = (aphorismIndex + 1 + ((absHash >> 11) % (HEO_JUN_APHORISMS.length - 1))) % HEO_JUN_APHORISMS.length;
 
   const activeHeoJunTheme = HEO_JUN_THEMES[themeIndex];
   const focalHeoJunAphorism = HEO_JUN_APHORISMS[aphorismIndex];
+  const secondaryHeoJunAphorism = HEO_JUN_APHORISMS[secondaryAphorismIndex];
+  const trimmedQuery = query?.trim();
+  const reflectiveQuestion = trimmedQuery
+    ? `'${trimmedQuery}'를 밀어붙이기 전에 지금 내 몸과 마음의 정기신(精氣神) 흐름 중 막혀 있거나 먼저 숨을 고를 곳은 어디인가요?`
+    : `병이나 소진이 겉으로 드러나기 전에 오늘 미리 돌보고 비워 둘 생활 리듬 한 가지는 무엇인가요?`;
+  const interpretiveBoundary = '구암 허준 동의보감 양생 관점은 의학적 진단이나 길흉 예단이 아니라, 순환·절제·치미병의 자기 돌봄을 비추는 성찰 렌즈입니다.';
 
   const guidanceTitle = `구암 허준 동의보감 양생 지혜: ${activeHeoJunTheme.themeTitleKo}`;
   const philosophicalCounsel = `조선의 의성 구암 허준 선생은 '통즉불통(通則不痛)'의 소통과 순환, '천인상응(天人相應)'의 전인적 조화, 그리고 병이 생기기 전에 근원을 다스리는 '치미병(治未病)'의 불후의 양생 지혜를 《동의보감》에 집대성했습니다. ` +
@@ -207,6 +217,9 @@ export function calculateKoreanHeoJunDonguiBogamYangsaeng(
     beneficentCompassionHealingResilienceScore,
     activeHeoJunTheme,
     focalHeoJunAphorism,
+    secondaryHeoJunAphorism,
+    reflectiveQuestion,
+    interpretiveBoundary,
     heoJunComprehensiveGuidance: {
       guidanceTitle,
       philosophicalCounsel,
@@ -234,9 +247,12 @@ export function formatKoreanHeoJunDonguiBogamYangsaengPrompt(
     `- 실천적 통찰: ${res.activeHeoJunTheme.pragmaticInsight}`,
     `- 행동 조언: ${res.activeHeoJunTheme.practicalCounsel}`,
     `- 허준 동의보감 원전 명언: "${res.focalHeoJunAphorism.aphorismKo}" (${res.focalHeoJunAphorism.aphorismHanja})`,
+    `- 보조 교차 명언: "${res.secondaryHeoJunAphorism.aphorismKo}" [${res.secondaryHeoJunAphorism.sourceContext}]`,
     `- 원전 출처: [${res.focalHeoJunAphorism.sourceContext}]`,
     `- 구체적 실천 지침: ${res.focalHeoJunAphorism.actionGuidance}`,
     `- 종합 허준 양생 권면: ${res.heoJunComprehensiveGuidance.philosophicalCounsel}`,
+    `- 성찰 질문: ${res.reflectiveQuestion}`,
+    `- 해석 경계: ${res.interpretiveBoundary}`,
   ];
   if (res.heoJunSynthesisMatrix) {
     lines.push(

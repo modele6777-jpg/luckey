@@ -13,7 +13,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const KOREAN_HYECHO_VERSION = 'LUCKEY-HYECHO-WANGOCHEON-v2.0.0';
+export const KOREAN_HYECHO_VERSION = 'LUCKEY-HYECHO-WANGOCHEON-v2.1.0';
 
 export interface HyechoTheme {
   themeKey: string;
@@ -43,6 +43,9 @@ export interface HyechoWangOcheonchukgukjeonResult {
   // 세부 분석
   activeHyechoTheme: HyechoTheme;
   focalHyechoAphorism: HyechoAphorism;
+  secondaryHyechoAphorism: HyechoAphorism;
+  reflectiveQuestion: string;
+  interpretiveBoundary: string;
   hyechoComprehensiveGuidance: {
     guidanceTitle: string;
     philosophicalCounsel: string;
@@ -61,7 +64,7 @@ function formatHyechoKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 KST`;
 }
 
 function describeHyechoStage(score: number): string {
@@ -167,9 +170,16 @@ export function calculateHyechoWangOcheonchukgukjeon(
 
   const themeIndex = (absHash >> 4) % HYECHO_THEMES.length;
   const aphorismIndex = (absHash >> 7) % HYECHO_APHORISMS.length;
+  const secondaryAphorismIndex = (aphorismIndex + 1 + ((absHash >> 10) % (HYECHO_APHORISMS.length - 1))) % HYECHO_APHORISMS.length;
 
   const activeHyechoTheme = HYECHO_THEMES[themeIndex];
   const focalHyechoAphorism = HYECHO_APHORISMS[aphorismIndex];
+  const secondaryHyechoAphorism = HYECHO_APHORISMS[secondaryAphorismIndex];
+  const trimmedQuery = query?.trim();
+  const reflectiveQuestion = trimmedQuery
+    ? `'${trimmedQuery}'라는 낯선 고개 앞에서 두려움을 내려놓고 오늘 실제로 내디딜 수 있는 순례자의 첫걸음 하나는 무엇인가요?`
+    : `지금 내가 낯설다는 이유로 망설이고 있지만 직접 걸어 보고 확인해야 할 미지의 길 하나는 무엇인가요?`;
+  const interpretiveBoundary = '혜초 왕오천축국전 구도 순례 관점은 길흉 예단이 아니라, 미지 개척과 현장 실증·내면 평정을 비추는 순례 성찰 렌즈입니다.';
 
   const guidanceTitle = `혜초 왕오천축국전 구도 순례와 역경 극복 지혜: ${activeHyechoTheme.themeTitleKo}`;
   const philosophicalCounsel = `신라 혜초 스님의 왕오천축국전 정신은 두려움 없는 불굴의 구도 순례와 사막·설산의 역경을 뚫는 회복탄력성, 망향의 외로움을 평정으로 승화하는 맑은 영성을 일깨웁니다. ` +
@@ -202,6 +212,9 @@ export function calculateHyechoWangOcheonchukgukjeon(
     bodhisattvaFieldWisdomScore,
     activeHyechoTheme,
     focalHyechoAphorism,
+    secondaryHyechoAphorism,
+    reflectiveQuestion,
+    interpretiveBoundary,
     hyechoComprehensiveGuidance: {
       guidanceTitle,
       philosophicalCounsel,
@@ -227,9 +240,12 @@ export function formatHyechoWangOcheonchukgukjeonPrompt(res: HyechoWangOcheonchu
     `- 실존적 통찰: ${res.activeHyechoTheme.existentialInsight}`,
     `- 실천적 조언: ${res.activeHyechoTheme.practicalCounsel}`,
     `- 핵심 원전 시구: "${res.focalHyechoAphorism.aphorismKo}" [${res.focalHyechoAphorism.aphorismHanja}]`,
+    `- 보조 교차 시구: "${res.secondaryHyechoAphorism.aphorismKo}" [${res.secondaryHyechoAphorism.sourceContext}]`,
     `- 원전 출처: [${res.focalHyechoAphorism.sourceContext}]`,
     `- 구체적 실천 지침: ${res.focalHyechoAphorism.actionGuidance}`,
     `- 종합 구도 순례 철학 권면: ${res.hyechoComprehensiveGuidance.philosophicalCounsel}`,
+    `- 성찰 질문: ${res.reflectiveQuestion}`,
+    `- 해석 경계: ${res.interpretiveBoundary}`,
   ];
   if (res.hyechoSynthesisMatrix) {
     lines.push(
