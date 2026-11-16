@@ -82,6 +82,7 @@ export interface DreamtimeSonglineReport {
   reflectionFocus: string;
   counselNote: string;
   boundaryNotice: string;
+  interpretiveBoundary: string;
 }
 
 const TOTEMS: AncestralTotem[] = [
@@ -365,6 +366,7 @@ export function calculateAboriginalDreamtimeSonglines(options?: {
     reflectionFocus: themed.reflection,
     counselNote: `[드림타임 송라인 성찰] ${activeTotem.name} · ${songline.direction} — ${themed.practice}`,
     boundaryNotice: '호주 원주민 드림타임(Jukurrpa)과 다디리(Dadirri) 개념을 바탕으로 한 상징적·성찰적 관점이며, 확정적 예언이나 의학적·재정적 진단이 아닙니다.',
+    interpretiveBoundary: '호주 원주민 드림타임(Jukurrpa)과 다디리(Dadirri) 개념을 바탕으로 한 상징적·성찰적 관점이며, 확정적 예언이나 의학적·재정적 진단이 아닙니다.',
   };
 }
 

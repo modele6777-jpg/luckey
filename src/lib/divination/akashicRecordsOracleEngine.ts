@@ -61,6 +61,7 @@ export interface AkashicRecordsOracleReport {
   situationalAkashicAudit: AkashicSituationalAudit;
   temporalAkashicRhythm: AkashicTemporalRhythm;
   akashicSynthesisMatrix: AkashicSynthesisMatrix;
+  interpretiveBoundary: string;
   synthesisPromptGuidance: string;
 }
 
@@ -240,6 +241,8 @@ export function runAkashicRecordsOracleEngine(
   const kst = new Date(targetDate.getTime() + 9 * 3600 * 1000);
   const calculatedAtKst = `${kst.toISOString().slice(0, 19)}+09:00`;
 
+  const interpretiveBoundary = '본 리포트는 아카식 레코드 상징 아키타입에 기반한 정성적 성찰 안내이며, 확정적 예언이 아닙니다.';
+
   const synthesisPromptGuidance = `[LUCKEY 아카식 레코드 영혼 서약 & 카르믹 청사진 v2.1.0]
 - 연산 시각: ${calculatedAtKst}
 - 영혼의 기원: [${originSystem}]
@@ -270,6 +273,7 @@ export function runAkashicRecordsOracleEngine(
     situationalAkashicAudit,
     temporalAkashicRhythm,
     akashicSynthesisMatrix,
+    interpretiveBoundary,
     synthesisPromptGuidance
   };
 }

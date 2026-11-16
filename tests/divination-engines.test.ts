@@ -2820,10 +2820,12 @@ test('Akashic Records Oracle Engine: 아카식 레코드 영혼 서약 & 카르�
   assert(res.soulOrigin.originSystem.length > 0);
   assert(res.soulContract.primaryLesson.length > 0);
   assert(res.akashicAccessMantra.length > 0);
+  assert(res.interpretiveBoundary.length > 0);
   assert(res.soulClarityIndex >= 0 && res.soulClarityIndex <= 100);
   const prompt = formatAkashicRecordsOraclePrompt(res);
   assert(prompt.includes('LUCKEY 아카식 레코드 영혼 서약 & 카르믹 청사진'));
   assert(prompt.includes(res.soulOrigin.originSystem));
+  assert(prompt.includes('해석 경계'));
   assert(!prompt.includes('/100') && !prompt.includes('자각도:'));
 });
 
@@ -3279,9 +3281,11 @@ test('Alchemical Transmutation Engine: calculates 7 stages and 4 opus phases', (
   assert(rep.situationalAlchemicalAudit.hermeticQuote.length > 0);
   assert(rep.temporalOpusRhythm.alchemicalHourWindow.length > 0);
   assert(rep.opusSynthesisMatrix.synthesizedVerdict.length > 0);
+  assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatAlchemicalTransmutationPrompt(rep);
   assert(prompt.includes('연금술 7단계 영혼 변환'));
   assert(prompt.includes(rep.currentStage.nameKo));
+  assert(prompt.includes('해석 경계'));
   assert(!prompt.includes('% / 100%'));
 });
 
@@ -3962,9 +3966,11 @@ test('Aboriginal Dreamtime Songlines Engine: calculates ancestral totem and Kuru
   assert.equal(rep.engineVersion, ABORIGINAL_DREAMTIME_SONGLINES_ENGINE_VERSION);
   assert(rep.kurunpaLifeForceIndex >= 0 && rep.kurunpaLifeForceIndex <= 100);
   assert(rep.activeTotem.name.length > 0);
+  assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatAboriginalDreamtimeSonglinesPrompt(rep);
   assert(prompt.includes('호주 원주민 드림타임(Dreamtime) 송라인 & 8대 토템 영혼 나침반'));
   assert(prompt.includes(rep.activeTotem.name));
+  assert(prompt.includes('해석 경계'));
   assert(!prompt.includes('/100') && !prompt.includes('점수'));
 });
 
