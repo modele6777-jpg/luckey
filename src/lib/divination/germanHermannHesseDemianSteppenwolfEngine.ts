@@ -4,7 +4,7 @@
  * @version LUCKEY-HESSE-DEMIAN-STEPPENWOLF-v2.0.0
  */
 
-export const GERMAN_HERMANN_HESSE_DEMIAN_STEPPENWOLF_VERSION = 'LUCKEY-HESSE-DEMIAN-STEPPENWOLF-v2.0.0';
+export const GERMAN_HERMANN_HESSE_DEMIAN_STEPPENWOLF_VERSION = 'LUCKEY-HESSE-DEMIAN-STEPPENWOLF-v2.1.0';
 
 export interface HesseTheme {
   themeKey: string;
@@ -16,6 +16,7 @@ export interface HesseTheme {
 
 export interface GermanHermannHesseDemianSteppenwolfResult {
   engineVersion: string;
+  calculatedAtKst: string;
   activeHesseTheme: HesseTheme;
   hesseComprehensiveGuidance: {
     guidanceTitle: string;
@@ -71,8 +72,10 @@ function selectHesseTheme(query?: string): HesseTheme {
   return HESSE_THEMES.find(theme => theme.themeKey === match?.[1]) ?? HESSE_THEMES[0];
 }
 
-export function calculateGermanHermannHesseDemianSteppenwolf(query?: string): GermanHermannHesseDemianSteppenwolfResult {
+export function calculateGermanHermannHesseDemianSteppenwolf(query?: string, now: Date = new Date()): GermanHermannHesseDemianSteppenwolfResult {
   const activeHesseTheme = selectHesseTheme(query);
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const calculatedAtKst = `${kst.toISOString().slice(0, 19)}+09:00`;
   const hesseSteppenwolfSynthesisMatrix = {
     dominantTension: `${activeHesseTheme.themeTitleKo} ↔ 현실의 작은 시도`,
     alignmentState: '문학적 성찰을 통한 자기 이해와 조율 국면',
@@ -80,6 +83,7 @@ export function calculateGermanHermannHesseDemianSteppenwolf(query?: string): Ge
   };
   return {
     engineVersion: GERMAN_HERMANN_HESSE_DEMIAN_STEPPENWOLF_VERSION,
+    calculatedAtKst,
     activeHesseTheme,
     hesseComprehensiveGuidance: {
       guidanceTitle: `헤르만 헤세 작품에서 얻는 참고 관점: ${activeHesseTheme.themeTitleKo}`,
@@ -93,10 +97,11 @@ export function formatGermanHermannHesseDemianSteppenwolfPrompt(res: GermanHerma
   const lines = [
     '【헤르만 헤세 작품에서 얻은 문학적 참고】',
     `- 엔진 버전: ${res.engineVersion}`,
+    `- 연산 시각: ${res.calculatedAtKst}`,
     `- 질문과 관련해 살펴볼 주제: ${res.activeHesseTheme.themeTitleKo}`,
     `- 작품 맥락: ${res.activeHesseTheme.spiritualInsight}`,
     `- 조심스럽게 적용할 제안: ${res.activeHesseTheme.practicalCounsel}`,
-    '- 이는 문학적 해석을 위한 참고일 뿐, 개인 점수·심리 진단·치료·미래 예측이 아닙니다.',
+    '- 해석 경계: 이는 문학적 해석을 위한 참고일 뿐, 개인 점수·심리 진단·치료·미래 예측이 아닙니다.',
   ];
   if (res.hesseSteppenwolfSynthesisMatrix) {
     lines.push(

@@ -9,7 +9,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const HERMETIC_POIMANDRES_ENGINE_VERSION = '2.0.0';
+export const HERMETIC_POIMANDRES_ENGINE_VERSION = '2.1.0';
 
 export type PoimandresQuestionFocus = 'career' | 'relationship' | 'anxiety' | 'decision' | 'spiritual';
 
@@ -49,6 +49,7 @@ export interface PoimandresSynthesisMatrix {
 export interface HermeticPoimandresAscensionReport {
   engineVersion: string;
   timestamp: string;
+  calculatedAtKst: string;
   questionFocus: PoimandresQuestionFocus;
   nousDivineIntellectResonanceScore: number;
   planetaryPassionsPurificationRate: number;
@@ -298,9 +299,13 @@ export function calculateHermeticPoimandres(
   const poimandresHermeticGuidance = `포이만드레스는 말합니다: "잠에서 깨어나라, 진리의 빛을 보고 너 자신이 불멸의 영혼임을 기억하라." 현재 정화의 중심축은 [${dominantSphere.nameKo}]입니다. ${dominantSphere.purifiedPassion}을 던져버리고, ${dominantSphere.virtueIllumination}의 옷을 입으십시오. 7대 천계의 껍질을 벗을 때 옥도아드의 찬란한 영광이 열립니다.`;
   const nousLightAscensionRitual = `머리 위에서 찬란하게 빛나는 신성한 불꽃을 상상하며 심호흡하십시오: "거룩하신 누스여, 거짓된 유혹의 굴레를 벗고 순수한 영적 지성의 빛으로 충만하노니, 내 영혼이 만유의 거룩한 생명과 합일된다."`;
 
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const calculatedAtKst = `${kst.toISOString().slice(0, 19)}+09:00`;
+
   return {
     engineVersion: HERMETIC_POIMANDRES_ENGINE_VERSION,
     timestamp: now.toISOString(),
+    calculatedAtKst,
     questionFocus,
     nousDivineIntellectResonanceScore,
     planetaryPassionsPurificationRate,
@@ -319,6 +324,7 @@ export function calculateHermeticPoimandres(
 export function formatHermeticPoimandresPrompt(rep: HermeticPoimandresAscensionReport): string {
   return `[고대 헤르메스주의 포이만드레스 7대 천계 탈각 & 옥도아드 각성 실측 데이터]
 · 엔진 버전: v${rep.engineVersion}
+· 연산 시각: ${rep.calculatedAtKst}
 · 누스·옥도아드 정성 상태: ${rep.poimandresSynthesisMatrix.nousResonanceLabel} (${rep.poimandresSynthesisMatrix.ogdoadReadinessLabel})
 · 주재 정화 천계: [${rep.dominantSphere.nameKo} (${rep.dominantSphere.greek})]
   - 주재자: ${rep.dominantSphere.planetaryRuler}
@@ -336,5 +342,6 @@ export function formatHermeticPoimandresPrompt(rep: HermeticPoimandresAscensionR
   - 시의성 지침: ${rep.temporalOgdoadRhythm.timingAdvice}
 · 포이만드레스 교차 종합: ${rep.poimandresSynthesisMatrix.synthesizedVerdict}
 · 포이만드레스 신성 지혜 지침: ${rep.poimandresHermeticGuidance}
-· 누스 빛의 상승 리추얼: ${rep.nousLightAscensionRitual}`;
+· 누스 빛의 상승 리추얼: ${rep.nousLightAscensionRitual}
+· 해석 경계: 본 리포트는 《코르푸스 헤르메티쿰》 포이만드레스 상징에 기반한 정성적 성찰 안내이며, 확정적 예언이 아닙니다.`;
 }
