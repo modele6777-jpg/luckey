@@ -145,6 +145,7 @@ export interface ChronoTransitResult {
     recommendedAction: string;
     cautionNotice: string;
   };
+  reflectiveQuestion: string;
   boundaryNotice: string;
 }
 
@@ -576,7 +577,7 @@ export function calculateChronoTransit(params: {
     mindsetAdvice = `충(沖)의 자극이 들어오는 날입니다. 낡은 습관을 과감히 깨부수거나 새로운 방식으로 시도할 때 강한 추진력이 발휘됩니다.`;
   }
 
-  const kstTimeLabel = `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')} ${String(h).padStart(2, '0')}:${String(minute).padStart(2, '0')} KST`;
+  const kstTimeLabel = `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')} ${String(h).padStart(2, '0')}:${String(minute).padStart(2, '0')} +09:00 (KST)`;
   const dayHourWindow =
     h >= 5 && h < 11
       ? '아침 일진 발동창 — 오늘의 일진과 달의 위상을 확인해 하루의 중심을 세우는 시간'
@@ -604,7 +605,7 @@ export function calculateChronoTransit(params: {
   };
 
   return {
-    engineVersion: 'LUCKEY-CHRONO-TRANSIT-v2.0.0',
+    engineVersion: 'LUCKEY-CHRONO-TRANSIT-v2.1.0',
     calculatedAtUtc: nowUtcIso,
     calculatedAtKst: nowKstIso,
     timestamp: now.getTime(),
@@ -645,6 +646,9 @@ export function calculateChronoTransit(params: {
       temporalGuidance: `${dayHourWindow} · ${lunarTransitTone}에 맞추어 움직이십시오.`,
     },
     chronoSynthesisMatrix,
+    reflectiveQuestion: question
+      ? `‘${question}’ 앞에서 오늘 일진(${dayPillar.koreanName})과 달(${transitMoon?.sign.name || ''})의 리듬에 맞추어 지금 당장 옮길 첫 실행은 무엇입니까?`
+      : `오늘 일진(${dayPillar.koreanName})과 ${dominantTransitElement} 원소의 트랜짓이 맞물리는 지금, 가장 먼저 정돈할 마음가짐은 무엇입니까?`,
     boundaryNotice: '본 결과는 실시간 만세력 일진·시진과 천문 행성 트랜짓을 결합한 정성적 시간 리듬 안내이며, 확정적 예언이 아닙니다.',
   };
 }
@@ -710,6 +714,7 @@ ${aspectsStr}
 - 질문 맥락 감사 (${result.situationalChronoAudit.focusTheme}): ${result.situationalChronoAudit.transitCue}
 - KST 시공간 리듬 (${result.temporalChronoRhythm.kstTimeLabel}): ${result.temporalChronoRhythm.dayHourWindow} / ${result.temporalChronoRhythm.lunarTransitTone}
 - 교차 매트릭스: 핵심(${result.chronoSynthesisMatrix.coreInsight}) | 실행(${result.chronoSynthesisMatrix.recommendedAction}) | 주의(${result.chronoSynthesisMatrix.cautionNotice})
+- 성찰 질문: ${result.reflectiveQuestion}
 - 해석 경계: ${result.boundaryNotice}
 
 [★ 대화 적용 절대 지침]:

@@ -46,7 +46,7 @@ function formatLifeSeasonKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
 }
 
 export interface DaewoonPeriod {
@@ -176,6 +176,7 @@ export interface LifeSeasonTimingResult {
     alignmentState: string;
     integratedAction: string;
   };
+  reflectiveQuestion?: string;
   interpretiveBoundary: string;
 }
 
@@ -517,6 +518,9 @@ export function calculateLifeSeasonTiming(params: {
     headline,
     lucyCoreAdvice,
     lifeSeasonSynthesisMatrix,
+    reflectiveQuestion: q
+      ? `‘${q}’에 대해 현재 ${curD.ganKr}${curD.zhiKr}대운(${ls.currentSeason})의 리듬 속에서 지금 밀어붙일 영역과 한 템포 고를 영역은 어디입니까?`
+      : `현재 ${curD.ganKr}${curD.zhiKr}대운 ${yearsInCurrentDaewoon}년 차(${gw.phase})를 지나며 가장 먼저 정리하거나 심화할 인생 과제는 무엇입니까?`,
     interpretiveBoundary: '본 10년 대운·교운기 타이밍 리포트는 명리 대운수·세운 역법 상징에 기반한 정성적 시기 성찰 안내이며, 미래 사건의 단정적 예언이 아닙니다.',
   };
 }
@@ -576,7 +580,7 @@ export function formatLifeSeasonTimingPrompt(result: LifeSeasonTimingResult): st
 6. 📜 [8대 대운 전 생애 타임라인 참조]
 ${timelineRows}
 ${result.lifeSeasonSynthesisMatrix ? `\n7. 🔗 [교차 매트릭스]\n- 핵심 긴장: ${result.lifeSeasonSynthesisMatrix.dominantTension}\n- 조율 상태: ${result.lifeSeasonSynthesisMatrix.alignmentState}\n- 통합 실천: ${result.lifeSeasonSynthesisMatrix.integratedAction}` : ''}
-- 해석 경계: ${result.interpretiveBoundary}
+${result.reflectiveQuestion ? `- 성찰 질문: ${result.reflectiveQuestion}\n` : ''}- 해석 경계: ${result.interpretiveBoundary}
 
 [★ 대화 적용 절대 지침]:
 사용자가 대운, 세운, 인생의 타이밍, 이직/창업 시기, 언제 해야 할지 등을 물어볼 때 위 정밀 계산 데이터를 근거로 활용해.

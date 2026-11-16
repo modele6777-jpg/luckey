@@ -33,7 +33,7 @@ function formatEnergeticKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
 }
 
 export type ElementBalanceStatus = '완전결핍(Void)' | '부족(Deficient)' | '적정(Balanced)' | '과다(Excess)';
@@ -121,6 +121,7 @@ export interface EnergeticPrescriptionResult {
     alignmentState: string;
     integratedAction: string;
   };
+  reflectiveQuestion?: string;
 
   interpretiveBoundary: string;
 }
@@ -539,6 +540,9 @@ export function calculateEnergeticPrescription(options: {
     microRituals,
     lifestyleRemedy,
     energeticSynthesisMatrix,
+    reflectiveQuestion: q
+      ? `‘${q}’ 앞에서 부족한 ${primaryLacking} 기운을 채우기 위해 오늘 60초 동안 바로 실천할 마이크로 루틴은 무엇입니까?`
+      : `용신 ${therapeuticYongsin}과 결핍 ${primaryLacking}의 균형을 위해 오늘 몸과 공간에서 가장 먼저 돌볼 한 가지는 무엇입니까?`,
     interpretiveBoundary: '본 결핍 오행·바이오 에너지 처방은 명리 오행 균형에 기반한 일상 웰니스 성찰 안내이며, 의학적 진단이나 치료를 대신하지 않습니다.',
   };
 }
@@ -590,7 +594,7 @@ ${res.energeticSynthesisMatrix ? `5. [교차 매트릭스]:
    - 핵심 긴장: ${res.energeticSynthesisMatrix.dominantTension}
    - 조율 상태: ${res.energeticSynthesisMatrix.alignmentState}
    - 통합 실천: ${res.energeticSynthesisMatrix.integratedAction}` : ''}
-   - 해석 경계: ${res.interpretiveBoundary}
+   ${res.reflectiveQuestion ? `- 성찰 질문: ${res.reflectiveQuestion}\n   ` : ''}- 해석 경계: ${res.interpretiveBoundary}
 ======================================================================
 [★ 루시 답변 가이드]:
 - 사용자가 피로, 건강, 개운, 오행, 라이프스타일을 물을 때 위 실측 데이터를 기반으로 지혜롭고 자상하게 처방해줘.
