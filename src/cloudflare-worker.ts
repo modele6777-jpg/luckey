@@ -36,6 +36,10 @@ function isApiPath(pathname: string): boolean {
   return pathname === '/api' || pathname.startsWith('/api/');
 }
 
+function isHealthPath(pathname: string): boolean {
+  return pathname === '/health' || pathname === '/api/health';
+}
+
 function assetPathFor(pathname: string): string {
   if (/^\/(chat|lucy)(\/|$)/.test(pathname)) return '/chat.html';
   if (/^\/(handbook|rebible)(\/|$)/.test(pathname)) return '/handbook.html';
@@ -52,6 +56,27 @@ function rejectCrossOrigin(request: Request, requestUrl: URL): Response | null {
     return Response.json({ error: 'Cross-origin request rejected.' }, { status: 403 });
   }
   return null;
+}
+
+function healthResponse(request: Request, requestUrl: URL): Response {
+  const headers = new Headers({
+    'Cache-Control': 'no-store',
+    'Content-Type': 'application/json; charset=utf-8',
+    'X-Luckey-API-Backend': 'cloudflare-worker',
+    'Access-Control-Allow-Methods': 'GET, HEAD, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+  });
+  if (request.headers.has('Origin')) {
+    headers.set('Access-Control-Allow-Origin', requestUrl.origin);
+    headers.append('Vary', 'Origin');
+  }
+  if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers });
+  if (request.method !== 'GET' && request.method !== 'HEAD') {
+    headers.set('Allow', 'GET, HEAD, OPTIONS');
+    return Response.json({ error: 'Method not allowed' }, { status: 405, headers });
+  }
+  if (request.method === 'HEAD') return new Response(null, { status: 200, headers });
+  return Response.json({ status: 'ok' }, { status: 200, headers });
 }
 
 function buildUpstreamRequest(request: Request, requestUrl: URL): Request {
@@ -123,6 +148,7 @@ export const worker = {
     const requestUrl = new URL(request.url);
     const originError = rejectCrossOrigin(request, requestUrl);
     if (originError) return originError;
+    if (isHealthPath(requestUrl.pathname)) return healthResponse(request, requestUrl);
     if (isApiPath(requestUrl.pathname)) return proxyApi(request, requestUrl);
     return serveAsset(request, requestUrl, env);
   },

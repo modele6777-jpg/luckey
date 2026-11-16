@@ -1,5 +1,14 @@
 [
   {
+    "version": "1.7.656",
+    "builtAt": "2026-11-17T07:23:00+09:00",
+    "summary": "Cloudflare Worker에서 헬스체크 API 직접 제공",
+    "items": [
+      "\/health 및 \/api\/health를 Cloudflare에서 직접 응답해 헬스체크 요청의 Vercel 의존 제거",
+      "그 밖의 API는 기존 동작을 유지하도록 Vercel 프록시를 계속 사용"
+    ]
+  },
+  {
     "version": "1.7.655",
     "builtAt": "2026-11-16T22:01:00+09:00",
     "summary": "Cloudflare Workers 프리뷰 배포 구성 추가",
