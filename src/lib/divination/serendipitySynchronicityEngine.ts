@@ -16,7 +16,7 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const SERENDIPITY_SYNCHRONICITY_VERSION = 'LUCKEY-SERENDIPITY-v2.0.0';
+export const SERENDIPITY_SYNCHRONICITY_VERSION = 'LUCKEY-SERENDIPITY-v2.1.0';
 
 function formatSerendipityKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -56,6 +56,7 @@ export interface SerendipitySynchronicityReport {
     alignmentState: string;
     integratedAction: string;
   };
+  interpretiveBoundary: string;
 }
 
 export function runSerendipitySynchronicityEngine(
@@ -132,6 +133,8 @@ export function runSerendipitySynchronicityEngine(
     integratedAction: `${microShiftAction}${q ? ` [질문 맥락: ${q}]` : ''}`,
   };
 
+  const interpretiveBoundary = '본 양자 동시성 & 세렌디피티 리포트는 융 동시성 상징과 일진 수리에 기반한 정성적 행동 안내이며, 확률·수익을 보장하지 않습니다.';
+
   const synthesisPromptGuidance = `[LUCKEY 양자 동시성 & 세렌디피티 행운 가속 ${SERENDIPITY_SYNCHRONICITY_VERSION} | ${calculatedAtKst}]
 - 활성 행운 포털: [${activeLuckyPortal}]
 - 엔젤 넘버 사인: [${numberCode}] "${spiritualMeaning}"
@@ -139,7 +142,8 @@ export function runSerendipitySynchronicityEngine(
 - 최적 동시성 윈도우: ${optimalHourWindow}
 - 행운 증폭 바이브: ${luckyVibeTrigger}
 - 교차 매트릭스: [핵심 긴장: ${serendipitySynthesisMatrix.dominantTension} | 조율 상태: ${serendipitySynthesisMatrix.alignmentState}]
-  * 통합 실천: ${serendipitySynthesisMatrix.integratedAction}`;
+  * 통합 실천: ${serendipitySynthesisMatrix.integratedAction}
+- 해석 경계: ${interpretiveBoundary}`;
 
   return {
     engineVersion: SERENDIPITY_SYNCHRONICITY_VERSION,
@@ -159,6 +163,7 @@ export function runSerendipitySynchronicityEngine(
     },
     synthesisPromptGuidance,
     serendipitySynthesisMatrix,
+    interpretiveBoundary,
   };
 }
 

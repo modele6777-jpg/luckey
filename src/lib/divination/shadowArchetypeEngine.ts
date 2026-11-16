@@ -16,7 +16,7 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const SHADOW_ARCHETYPE_VERSION = 'LUCKEY-SHADOW-v2.0.0';
+export const SHADOW_ARCHETYPE_VERSION = 'LUCKEY-SHADOW-v2.1.0';
 
 export type ShadowArchetypeName = 
   | '파괴적 검투사 (The Fierce Gladiator · 편관형)'
@@ -57,6 +57,7 @@ export interface ShadowArchetypeReport {
     alignmentState: string;
     integratedAction: string;
   };
+  interpretiveBoundary: string;
 }
 
 function formatShadowKstTimestamp(now: Date = new Date()): string {
@@ -159,7 +160,9 @@ export function runShadowArchetypeEngine(
     integratedAction: transmutationRitual.integrationAction,
   };
 
-  const synthesisPromptGuidance = `[LUCKEY 융 심리학 그림자 자아 & 골든 섀도우 연금술 v2.0.0 | 연산 시각: ${calculatedAtKst}]
+  const interpretiveBoundary = '본 그림자 자아 & 골든 섀도우 리포트는 분석심리학 원형과 십신 상징에 기반한 정성적 자기 성찰 안내이며, 임상 심리·정신의학적 진단을 대신하지 않습니다.';
+
+  const synthesisPromptGuidance = `[LUCKEY 융 심리학 그림자 자아 & 골든 섀도우 연금술 v2.1.0 | 연산 시각: ${calculatedAtKst}]
 - 그림자 원형: [${primaryShadow.archetype}] (지배 십신: ${primaryShadow.dominantTenGod})
 - 내면 근원 상처: ${primaryShadow.coreWound}
 - 무의식 폭발 트리거: ${primaryShadow.shadowTrigger}
@@ -168,7 +171,8 @@ export function runShadowArchetypeEngine(
 - 궁극의 완성형 자아: ${goldenShadow.highestPotential}
 - 교차 매트릭스 [핵심 긴장: ${shadowSynthesisMatrix.dominantTension} | 조율 상태: ${shadowSynthesisMatrix.alignmentState}]
   * 통합 실천: ${shadowSynthesisMatrix.integratedAction}
-- 실전 연금술 리추얼: ${transmutationRitual.integrationAction}`;
+- 실전 연금술 리추얼: ${transmutationRitual.integrationAction}
+- 해석 경계: ${interpretiveBoundary}`;
 
   return {
     engineVersion: SHADOW_ARCHETYPE_VERSION,
@@ -181,6 +185,7 @@ export function runShadowArchetypeEngine(
     transmutationRitual,
     synthesisPromptGuidance,
     shadowSynthesisMatrix,
+    interpretiveBoundary,
   };
 }
 

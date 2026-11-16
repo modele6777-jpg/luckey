@@ -2556,6 +2556,7 @@ test('Shadow Archetype Engine: 융 심리학 그림자 자아 & 골든 섀도우
   assert.equal(res.engineVersion, SHADOW_ARCHETYPE_VERSION);
   assert(res.calculatedAtKst.endsWith('KST'));
   assert(Boolean(res.shadowSynthesisMatrix?.integratedAction));
+  assert(res.interpretiveBoundary.length > 0);
   assert(res.shadowIntegrationScore >= 0 && res.shadowIntegrationScore <= 100);
   assert(res.subconsciousDepth >= 0 && res.subconsciousDepth <= 100);
   assert(res.primaryShadow.coreWound.length > 0);
@@ -2563,7 +2564,7 @@ test('Shadow Archetype Engine: 융 심리학 그림자 자아 & 골든 섀도우
   const prompt = formatShadowArchetypePrompt(res);
   assert(prompt.includes('LUCKEY 융 심리학 그림자 자아 & 골든 섀도우 연금술'));
   assert(prompt.includes(res.primaryShadow.archetype));
-  assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('교차 매트릭스') && prompt.includes('해석 경계'));
   assert(!prompt.includes('/100'));
 });
 
@@ -2639,6 +2640,7 @@ test('Serendipity Synchronicity Engine: 양자 동시성 & 세렌디피티 행�
   assert.equal(res.engineVersion, SERENDIPITY_SYNCHRONICITY_VERSION);
   assert(res.calculatedAtKst.endsWith('KST'));
   assert(Boolean(res.serendipitySynthesisMatrix?.integratedAction));
+  assert(res.interpretiveBoundary.length > 0);
   assert(res.synchronicityScore >= 0 && res.synchronicityScore <= 100);
   assert(res.serendipityVelocity >= 0 && res.serendipityVelocity <= 100);
   assert(res.angelNumberSign.numberCode.length > 0);
@@ -2646,7 +2648,7 @@ test('Serendipity Synchronicity Engine: 양자 동시성 & 세렌디피티 행�
   const prompt = formatSerendipitySynchronicityPrompt(res);
   assert(prompt.includes('LUCKEY 양자 동시성 & 세렌디피티 행운 가속'));
   assert(prompt.includes(res.activeLuckyPortal));
-  assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('교차 매트릭스') && prompt.includes('해석 경계'));
   assert(!prompt.includes('/100'));
 });
 
@@ -2727,6 +2729,7 @@ test('Shamanic Animal Totem Engine: 샤머니즘 파워 애니멀 & 12지지 스
   assert.equal(res.engineVersion, SHAMANIC_ANIMAL_TOTEM_VERSION);
   assert(res.calculatedAtKst.endsWith('KST'));
   assert(Boolean(res.totemSynthesisMatrix?.integratedAction));
+  assert(res.interpretiveBoundary.length > 0);
   assert(res.primaryTotem.animalName.length > 0);
   assert(res.totemicResonanceScore >= 0 && res.totemicResonanceScore <= 100);
   assert(res.callOfTheWildRitual.length > 0);
@@ -2734,7 +2737,7 @@ test('Shamanic Animal Totem Engine: 샤머니즘 파워 애니멀 & 12지지 스
   const prompt = formatShamanicAnimalTotemPrompt(res);
   assert(prompt.includes('LUCKEY 샤머니즘 파워 애니멀 & 12지지 스피릿 토템'));
   assert(prompt.includes(res.primaryTotem.animalName));
-  assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('교차 매트릭스') && prompt.includes('해석 경계'));
   assert(!prompt.includes('/100'));
 });
 
