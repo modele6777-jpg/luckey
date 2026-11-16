@@ -2471,6 +2471,7 @@ test('Rune Matrix Engine: 고대 노르딕 룬 동시성 3대 스프레드 검�
   assert.equal(res.engineVersion, RUNE_MATRIX_VERSION);
   assert(res.calculatedAtKst.endsWith('KST'));
   assert(Boolean(res.runeSynthesisMatrix?.integratedAction));
+  assert(res.interpretiveBoundary.length > 0);
   assert(res.runePowerScore >= 0 && res.runePowerScore <= 100);
   assert(res.spread.originRune.name.length > 0);
   assert(res.spread.challengeRune.name.length > 0);
@@ -2478,7 +2479,7 @@ test('Rune Matrix Engine: 고대 노르딕 룬 동시성 3대 스프레드 검�
   const prompt = formatRuneMatrixPrompt(res);
   assert(prompt.includes(RUNE_MATRIX_VERSION));
   assert(prompt.includes('고대 노르딕 룬 동시성 매트릭스'));
-  assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('교차 매트릭스') && prompt.includes('해석 경계'));
   assert(!prompt.includes('/100'));
 });
 
@@ -2823,6 +2824,7 @@ test('Sacred Vortex Geometry Engine: 황금비 영혼 수비학 & 보텍스 기�
   assert.equal(res.engineVersion, SACRED_VORTEX_VERSION);
   assert(res.calculatedAtKst.endsWith('KST'));
   assert(Boolean(res.vortexSynthesisMatrix?.integratedAction));
+  assert(res.interpretiveBoundary.length > 0);
   assert(res.soulGeometryTitle.length > 0);
   assert(res.platonicSolid.solidName.length > 0);
   assert.equal('geometricFrequencyHz' in res.platonicSolid, false);
@@ -2830,7 +2832,7 @@ test('Sacred Vortex Geometry Engine: 황금비 영혼 수비학 & 보텍스 기�
   const prompt = formatSacredVortexGeometryPrompt(res);
   assert(prompt.includes('LUCKEY 황금비 영혼 수비학 & 보텍스 기하학'));
   assert(prompt.includes(res.platonicSolid.solidName));
-  assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('교차 매트릭스') && prompt.includes('해석 경계'));
   assert(!prompt.includes('/100'));
   assert.doesNotMatch(prompt, /\bHz\b|Solfeggio|솔페지오|주파수/i);
 });
@@ -2891,6 +2893,7 @@ test('Saju Classic Yongshin Prescription Engine: 사주 정통 3대 원전 용�
   assert.equal(res.engineVersion, SAJU_CLASSIC_YONGSHIN_VERSION);
   assert(res.calculatedAtKst.endsWith('KST'));
   assert(Boolean(res.yongshinSynthesisMatrix?.integratedAction));
+  assert(res.interpretiveBoundary.length > 0);
   assert(res.yongshinMasterTitle.length > 0);
   assert(res.geokguk.geokgukName.length > 0);
   assert(['성격 (成格)', '파격 (破格)', '패중유성 (敗中有成)'].includes(res.geokguk.formationStatus));
@@ -2899,7 +2902,7 @@ test('Saju Classic Yongshin Prescription Engine: 사주 정통 3대 원전 용�
   const prompt = formatSajuClassicYongshinPrompt(res);
   assert(prompt.includes('LUCKEY 정통 사주 3대 원전 용신·격국·조후 심층'));
   assert(prompt.includes(res.geokguk.geokgukName));
-  assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('교차 매트릭스') && prompt.includes('해석 경계'));
   assert(!prompt.includes('/100'));
 });
 

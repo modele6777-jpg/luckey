@@ -19,7 +19,7 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const SACRED_VORTEX_VERSION = 'LUCKEY-SACRED-VORTEX-v2.0.0';
+export const SACRED_VORTEX_VERSION = 'LUCKEY-SACRED-VORTEX-v2.1.0';
 
 function formatSacredVortexKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -59,6 +59,7 @@ export interface SacredVortexGeometryReport {
     alignmentState: string;
     integratedAction: string;
   };
+  interpretiveBoundary: string;
 }
 
 export function runSacredVortexGeometryEngine(
@@ -149,6 +150,8 @@ export function runSacredVortexGeometryEngine(
     integratedAction: `${goldenRatioActionGuidance}${q ? ` [질문 맥락: ${q}]` : ''}`,
   };
 
+  const interpretiveBoundary = '본 신성 기하학 보텍스 리포트는 플라톤 다면체와 수리 상징 비유에 기반한 정성적 균형 안내이며, 의학적·물리적 처방이 아닙니다.';
+
   const synthesisPromptGuidance = `[LUCKEY 황금비 영혼 수비학 & 보텍스 기하학 ${SACRED_VORTEX_VERSION} | ${calculatedAtKst}]
 - 영혼 기하학 원형: [${soulGeometryTitle}]
   * 플라톤 다면체: ${solidName} (${elementalCosmology})
@@ -159,7 +162,8 @@ export function runSacredVortexGeometryEngine(
 - 일상 에너지 증폭 가이드: ${goldenRatioActionGuidance}
 - 신성 기하학 조율 만트라: "${sacredGeometryMantra}"
 - 교차 매트릭스: [핵심 긴장: ${vortexSynthesisMatrix.dominantTension} | 조율 상태: ${vortexSynthesisMatrix.alignmentState}]
-  * 통합 실천: ${vortexSynthesisMatrix.integratedAction}`;
+  * 통합 실천: ${vortexSynthesisMatrix.integratedAction}
+- 해석 경계: ${interpretiveBoundary}`;
 
   return {
     engineVersion: SACRED_VORTEX_VERSION,
@@ -181,6 +185,7 @@ export function runSacredVortexGeometryEngine(
     goldenRatioActionGuidance,
     synthesisPromptGuidance,
     vortexSynthesisMatrix,
+    interpretiveBoundary,
   };
 }
 
