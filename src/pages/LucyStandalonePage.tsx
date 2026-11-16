@@ -2432,7 +2432,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
       if (cleanAnswer) {
         await playTTSInChunks(cleanAnswer, 'Aoede', 110, undefined, undefined, {
           isChatMode: true,
-          allowChatCompletionChime: true,
+          skipCompletionChime: true,
           isAutoPlay: true,
         });
       }
@@ -3432,7 +3432,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
       // Starting a sequence emits an idle reset first. Assign its owner after that reset.
       const playback = playTTSInChunks(clean, _voice === 'Charon' ? 'Charon' : 'Aoede', 220, undefined, undefined, {
         isChatMode: true,
-        allowChatCompletionChime: true,
+        skipCompletionChime: true,
       });
       setPlayingMsgId(id);
       await playback;

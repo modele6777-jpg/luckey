@@ -11,6 +11,7 @@ Every time a user request is completed or changes are made to the codebase:
 5. **Mandatory Git Commit & Push**: Always stage all changes (`git add .`), create a descriptive commit message with the version number, and push to remote repository (`git push`).
 
 ### 2. Permanent External Music Continuity
+- Lucy chat TTS ends silently, for both automatic and manual playback. Legacy chat completion opt-ins must not enable a chime; preserve completion sounds for non-chat narration.
 - External music (Apple Music, Spotify, Melon, etc.) must keep playing throughout the app, including while in-app BGM is explicitly enabled.
 - BGM, effects, navigation and idle audio use nonexclusive `ambient`. User clarification on 2026-11-14 gives active TTS priority for screen-off/app-switch playback: TTS alone may use `playback`, returning to `ambient` on pause, stop or completion. External music may pause during TTS on iOS.
 - BGM must not publish OS Media Session controls. Explicit TTS may publish speech pause/play/stop controls for background playback; remove them when TTS ends.

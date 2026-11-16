@@ -14,20 +14,20 @@ const manualTtsSource = lucySource.slice(
   lucySource.indexOf('// Export full conversation as Markdown'),
 );
 
- test('chat completion chirp is quiet by default and only an explicit Lucy opt-in enables it', () => {
+test('chat completion stays quiet even when a legacy caller opts in', () => {
   assert.equal(shouldPlayTTSCompletionChime(), true);
   assert.equal(shouldPlayTTSCompletionChime({ isChatMode: true }), false);
-  assert.equal(shouldPlayTTSCompletionChime({ isChatMode: true, allowChatCompletionChime: true }), true);
+  assert.equal(shouldPlayTTSCompletionChime({ isChatMode: true, allowChatCompletionChime: true }), false);
   assert.equal(shouldPlayTTSCompletionChime({ isChatMode: true, allowChatCompletionChime: true, skipCompletionChime: true }), false);
   assert.equal(shouldPlayTTSCompletionChime({ skipCompletionChime: true }), false);
 });
 
-test('Lucy auto and manual TTS each use one complete sequence and chirp only after its last chunk', () => {
+test('Lucy auto and manual TTS each use one complete sequence without a completion chime', () => {
   assert.match(ttsSource, /if \(isLastChunk\)\s*\{[\s\S]*?if \(shouldPlayTTSCompletionChime\(options\)\)[\s\S]*?playAiResultNotification\(\)/);
-  assert.match(autoTtsSource, /joinKakaoBubblesForTTS\([\s\S]*?playTTSInChunks\(cleanAnswer,[\s\S]*?isChatMode: true,[\s\S]*?allowChatCompletionChime: true,[\s\S]*?isAutoPlay: true/);
+  assert.match(autoTtsSource, /joinKakaoBubblesForTTS\([\s\S]*?playTTSInChunks\(cleanAnswer,[\s\S]*?isChatMode: true,[\s\S]*?skipCompletionChime: true,[\s\S]*?isAutoPlay: true/);
   assert.equal([...autoTtsSource.matchAll(/playTTSInChunks\(/g)].length, 1);
-  assert.match(manualTtsSource, /playTTSInChunks\(clean,[\s\S]*?isChatMode: true,[\s\S]*?allowChatCompletionChime: true/);
+  assert.match(manualTtsSource, /playTTSInChunks\(clean,[\s\S]*?isChatMode: true,[\s\S]*?skipCompletionChime: true/);
   assert.equal([...manualTtsSource.matchAll(/playTTSInChunks\(/g)].length, 1);
-  assert.doesNotMatch(autoTtsSource, /skipCompletionChime:\s*true/);
-  assert.doesNotMatch(manualTtsSource, /skipCompletionChime:\s*true/);
+  assert.doesNotMatch(autoTtsSource, /allowChatCompletionChime:\s*true/);
+  assert.doesNotMatch(manualTtsSource, /allowChatCompletionChime:\s*true/);
 });

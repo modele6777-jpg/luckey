@@ -1,10 +1,11 @@
 export interface TTSCompletionPolicyOptions {
   skipCompletionChime?: boolean;
   isChatMode?: boolean;
+  /** Legacy compatibility only: chat completion sounds stay disabled. */
   allowChatCompletionChime?: boolean;
 }
 
-/** Chat TTS is quiet by default; callers must explicitly opt in to a completion chirp. */
+/** Chat TTS always ends quietly; completion sounds belong to non-chat narration. */
 export function shouldPlayTTSCompletionChime(options?: TTSCompletionPolicyOptions): boolean {
-  return !options?.skipCompletionChime && (!options?.isChatMode || options.allowChatCompletionChime === true);
+  return !options?.skipCompletionChime && !options?.isChatMode;
 }
