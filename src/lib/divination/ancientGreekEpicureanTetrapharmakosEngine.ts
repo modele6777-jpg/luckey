@@ -9,7 +9,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const EPICUREAN_TETRAPHARMAKOS_VERSION = 'LUCKEY-EPICUREAN-TETRAPHARMAKOS-v2.1.0';
+export const EPICUREAN_TETRAPHARMAKOS_VERSION = 'LUCKEY-EPICUREAN-TETRAPHARMAKOS-v2.2.0';
 
 export interface EpicureanStage {
   stageLevel: number;
@@ -64,6 +64,11 @@ export interface EpicureanTetrapharmakosResult {
   situationalRemedy: EpicureanSituationalRemedy;
   temporalGardenRhythm: EpicureanTemporalGardenRhythm;
   desireTaxonomyMatrix: EpicureanDesireTaxonomyMatrix;
+  epicureanSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
 }
 
 export type EpicureanTetrapharmakosReport = EpicureanTetrapharmakosResult;
@@ -261,6 +266,13 @@ export function calculateEpicureanTetrapharmakos(
       ? '공허한 욕망(명예·비교)이 잘 비워져 있습니다. 소박한 자족(Autarkeia)과 정원의 우정을 그대로 누리세요.'
       : '타인의 시선이나 과도한 성취 압박(공허한 욕망)이 스며들기 쉽습니다. 필수적인 기쁨 외에는 과감히 덜어내세요.';
 
+  const trimmedQ = (question || '').trim();
+  const epicureanSynthesisMatrix = {
+    dominantTension: `${primaryTetrapharmakosPrinciple.principleTitleKo} ↔ ${describeDesireBalance(vainEmptyRatio)}`,
+    alignmentState: `${activeEpicureanStage.stageNameGreek} · ${temporalGardenRhythm.gardenPhaseKo}`,
+    integratedAction: `${autarkeiaDirective}${trimmedQ ? ` [질문 맥락: ${trimmedQ}]` : ''}`,
+  };
+
   return {
     engineVersion: EPICUREAN_TETRAPHARMAKOS_VERSION,
     calculatedAtKst: getKstDateString(now),
@@ -280,11 +292,15 @@ export function calculateEpicureanTetrapharmakos(
       vainEmptyRatio,
       autarkeiaDirective,
     },
+    epicureanSynthesisMatrix,
   };
 }
 
 export function formatEpicureanTetrapharmakosPrompt(result: EpicureanTetrapharmakosResult): string {
   const avgCore = Math.round((result.ataraxiaSoulTranquilityScore + result.aponiaPhysicalEaseBalance + result.tetrapharmakosRemedyMastery) / 3);
+  const matrixLine = result.epicureanSynthesisMatrix
+    ? `\n- 에피쿠로스 교차 매트릭스: 핵심 긴장(${result.epicureanSynthesisMatrix.dominantTension}) · 조율 상태(${result.epicureanSynthesisMatrix.alignmentState}) · 통합 실천(${result.epicureanSynthesisMatrix.integratedAction})`
+    : '';
   return `[🌿 고대 그리스 에피쿠로스 《테트라파르마코스》 영혼 평정 아타락시아 리포트]
 - 엔진 버전: ${result.engineVersion} | 연산 시각: ${result.calculatedAtKst}
 - 아타락시아 정원 위상: **${describeEpicureanStage(avgCore)}**
@@ -302,5 +318,5 @@ export function formatEpicureanTetrapharmakosPrompt(result: EpicureanTetrapharma
   → 자족 지침: ${result.desireTaxonomyMatrix.autarkeiaDirective}
 - 에피쿠로스 정원의 불멸 계시: 《${result.epicureanGardenEpiphany.gardenSceneTitle}》
   → 아타락시아 지혜: "${result.epicureanGardenEpiphany.peacefulWisdom}"
-- 해석 경계: 본 리포트는 에피쿠로스 정원 철학의 치유 상징에 기반한 정성적 성찰 안내이며, 의학적·심리적 진단이 아닙니다.`;
+- 해석 경계: 본 리포트는 에피쿠로스 정원 철학의 치유 상징에 기반한 정성적 성찰 안내이며, 의학적·심리적 진단이 아닙니다.${matrixLine}`;
 }

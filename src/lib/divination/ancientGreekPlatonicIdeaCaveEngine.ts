@@ -13,7 +13,13 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const PLATONIC_IDEA_CAVE_VERSION = 'LUCKEY-PLATONIC-IDEA-CAVE-v2.1.0';
+export const PLATONIC_IDEA_CAVE_VERSION = 'LUCKEY-PLATONIC-IDEA-CAVE-v2.2.0';
+
+function getPlatoKstString(now?: Date): string {
+  const base = now ?? new Date();
+  const kst = new Date(base.getTime() + 9 * 3600 * 1000);
+  return `${kst.toISOString().slice(0, 19)}+09:00`;
+}
 
 export interface PlatonicAscentStage {
   stageLevel: number;
@@ -77,6 +83,11 @@ export interface PlatonicIdeaCaveResult {
   dailyPracticeRitual: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
+  platoSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
 }
 
 export type PlatonicIdeaCaveReport = PlatonicIdeaCaveResult;
@@ -305,9 +316,16 @@ export function calculatePlatonicIdeaCave(
   const interpretiveBoundary =
     '플라톤 동굴의 비유와 이데아 성찰은 외적 결과를 예단하는 점술이 아니라, 현상의 그림자 너머 본질과 4대 추덕의 균형을 비추는 변증법적 사유 도구입니다.';
 
+  const trimmedQ = (question ?? '').trim();
+  const platoSynthesisMatrix = {
+    dominantTension: `${situationalCaveAscent.shadowIllusionTrap} ↔ ${activeAscentStage.stageNameGreek}`,
+    alignmentState: `${focalCardinalVirtue.virtueGreek} · ${temporalDialecticRhythm.soulChariotFocus}`,
+    integratedAction: `${situationalCaveAscent.katabasisPractice}${trimmedQ ? ` [질문 맥락: ${trimmedQ}]` : ''}`,
+  };
+
   return {
     engineVersion: PLATONIC_IDEA_CAVE_VERSION,
-    calculatedAtKst: (now ?? new Date()).toISOString(),
+    calculatedAtKst: getPlatoKstString(now),
     ideaTruthOrientationScore,
     shadowIllusionLiberationScore,
     anamnesisSoulIntuitionScore,
@@ -325,6 +343,7 @@ export function calculatePlatonicIdeaCave(
     dailyPracticeRitual,
     reflectiveQuestion,
     interpretiveBoundary,
+    platoSynthesisMatrix,
   };
 }
 
@@ -335,8 +354,11 @@ function describePlatonicStage(score: number): string {
 }
 
 export function formatPlatonicIdeaCavePrompt(res: PlatonicIdeaCaveResult): string {
+  const matrixLine = res.platoSynthesisMatrix
+    ? `- 플라톤 교차 매트릭스: 핵심 긴장(${res.platoSynthesisMatrix.dominantTension}) · 조율 상태(${res.platoSynthesisMatrix.alignmentState}) · 통합 실천(${res.platoSynthesisMatrix.integratedAction})`
+    : '';
   return [
-    `【고대 그리스 플라톤 동굴의 비유 & 이데아 4대 추덕 지표 (${res.engineVersion})】`,
+    `【고대 그리스 플라톤 동굴의 비유 & 이데아 4대 추덕 지표 (${res.engineVersion} | ${res.calculatedAtKst})】`,
     `- 진리·해방 결: 이데아 지향(${describePlatonicStage(res.ideaTruthOrientationScore)}) · 그림자 탈피(${describePlatonicStage(res.shadowIllusionLiberationScore)}) · 상기 직관(${describePlatonicStage(res.anamnesisSoulIntuitionScore)})`,
     `- 추덕·비상 결: 4대 추덕 조화(${describePlatonicStage(res.cardinalVirtuesHarmonyScore)}) · 변증법적 상승(${describePlatonicStage(res.dialecticAscentPowerScore)})`,
     `- 영혼 상승 단계: ${res.activeAscentStage.stageNameGreek} (${res.activeAscentStage.stageNameKo})`,
@@ -351,5 +373,6 @@ export function formatPlatonicIdeaCavePrompt(res: PlatonicIdeaCaveResult): strin
     `- 오늘의 실천 의례: ${res.dailyPracticeRitual}`,
     `- 핵심 성찰 질문: ${res.reflectiveQuestion}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
-  ].join('\n');
+    matrixLine,
+  ].filter(Boolean).join('\n');
 }

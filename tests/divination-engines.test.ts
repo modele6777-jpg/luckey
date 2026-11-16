@@ -7984,12 +7984,15 @@ test('v2.0.0 qualitative/temporal/matrix deepening: Plato Cave, Epictetus Dichot
 
   const plato = calculatePlatonicIdeaCave(testProfile, '선택의 갈림길에서 진로 고민이 깊어요', now);
   assert.equal(plato.engineVersion, PLATONIC_IDEA_CAVE_VERSION);
+  assert.ok(plato.calculatedAtKst.endsWith('+09:00'));
+  assert.ok(Boolean(plato.platoSynthesisMatrix?.integratedAction));
   assert.ok(plato.situationalCaveAscent.dialogueSource.includes('국가'));
   assert.ok(plato.temporalDialecticRhythm.noeticClarityIndex >= 50 && plato.temporalDialecticRhythm.noeticClarityIndex <= 99);
   assert.ok(plato.ideaAscentMatrix.overallSynthesis >= 50);
   const platoPrompt = formatPlatonicIdeaCavePrompt(plato);
   assert.ok(platoPrompt.includes('질문 맥락 동굴 처방'));
   assert.ok(platoPrompt.includes('이데아 상승 매트릭스'));
+  assert.ok(platoPrompt.includes('교차 매트릭스'));
 
   const epictetus = calculateEpictetusDichotomyOfControl(testProfile, '남의 시선과 평판 때문에 자꾸 위축돼요', now);
   assert.equal(epictetus.engineVersion, EPICTETUS_CONTROL_VERSION);
@@ -8957,16 +8960,18 @@ test('Epicurus, Heraclitus, and Laozi v2.1.0 output qualitative stages and KST w
   const ep = calculateEpicureanTetrapharmakos(profile, '미래에 대한 불안 때문에 마음이 조급해요', now);
   assert.equal(ep.engineVersion, EPICUREAN_TETRAPHARMAKOS_VERSION);
   assert.ok(ep.calculatedAtKst.endsWith('+09:00'));
+  assert.ok(Boolean(ep.epicureanSynthesisMatrix?.integratedAction));
   const epPrompt = formatEpicureanTetrapharmakosPrompt(ep);
   assert.ok(!epPrompt.includes('/100') && !epPrompt.includes('%'));
-  assert.ok(epPrompt.includes('해석 경계') && epPrompt.includes('+09:00'));
+  assert.ok(epPrompt.includes('해석 경계') && epPrompt.includes('+09:00') && epPrompt.includes('교차 매트릭스'));
 
   const he = calculateHeraclitusPantaRhei(profile, '변화의 갈림길에서 중심을 잡고 싶어요', now);
   assert.equal(he.engineVersion, HERACLITUS_PANTA_RHEI_VERSION);
   assert.ok(he.calculatedAtKst.endsWith('+09:00'));
+  assert.ok(Boolean(he.heraclitusSynthesisMatrix?.integratedAction));
   const hePrompt = formatHeraclitusPantaRheiPrompt(he);
   assert.ok(!hePrompt.includes('/100') && !hePrompt.includes('%'));
-  assert.ok(hePrompt.includes('해석 경계') && hePrompt.includes('+09:00'));
+  assert.ok(hePrompt.includes('해석 경계') && hePrompt.includes('+09:00') && hePrompt.includes('교차 매트릭스'));
 
   const la = calculateLaoziDaodejing(profile, '억지로 애쓰기보다 순리에 맞추고 싶어요', now);
   assert.equal(la.engineVersion, LAOZI_DAODEJING_VERSION);
