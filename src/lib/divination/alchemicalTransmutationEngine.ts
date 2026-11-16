@@ -73,6 +73,7 @@ export interface AlchemicalTransmutationReport {
   opusSynthesisMatrix: OpusSynthesisMatrix;
   opusMagnumGuidance: string;
   dailyAlchemicalRitual: string;
+  interpretiveBoundary: string;
 }
 
 const ALCHEMICAL_STAGES: AlchemicalStage[] = [
@@ -353,6 +354,7 @@ export function calculateAlchemicalTransmutation(
     opusSynthesisMatrix,
     opusMagnumGuidance,
     dailyAlchemicalRitual,
+    interpretiveBoundary: '본 리포트는 서양 연금술 7단계와 융 심층심리학 상징에 기반한 정성적 성찰 안내이며, 의학적·재정적 처방이 아닙니다.',
   };
 }
 
