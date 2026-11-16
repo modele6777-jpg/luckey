@@ -794,6 +794,8 @@ test('Sukuyo partner matrix: 양방향 궁합, 27숙 전수 매트릭스, 결정
   assert(prompt.includes('규목랑(奎木狼)'));
   assert(prompt.includes('27숙 전수 양방향 매트릭스'));
   assert(prompt.includes('교차 매트릭스'));
+  assert(Boolean(r1.interpretiveBoundary && r1.interpretiveBoundary.length > 0));
+  assert(prompt.includes('해석 경계'));
   assert(!prompt.includes('/100'));
   // 결정론 엔진 통합 바인딩
   const report = runDeterministicEngine({ profile: syProfile, question: '내 본명숙과 궁합 알려줘' });
@@ -2523,12 +2525,13 @@ test('Strategic Leverage Engine: 전략 협상 및 손자병법 기문 레버리
   assert.equal(res.engineVersion, STRATEGIC_LEVERAGE_VERSION);
   assert(res.calculatedAtKst.endsWith('KST'));
   assert(Boolean(res.leverageSynthesisMatrix?.integratedAction));
+  assert(res.interpretiveBoundary.length > 0);
   assert(res.leverageScore >= 0 && res.leverageScore <= 100);
   assert(res.sunTzuTactic.coreMaxim.length > 0);
   assert(res.strategicActionPlan.openingMove.length > 0);
   const prompt = formatStrategicLeveragePrompt(res);
   assert(prompt.includes('LUCKEY 전략 협상 & 손자병법 기문 레버리지'));
-  assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('교차 매트릭스') && prompt.includes('해석 경계'));
   assert(!prompt.includes('/100'));
 });
 
@@ -3321,13 +3324,14 @@ test('Sufi Seven Lataif Soul Ascension Engine: calculates spiritual station and 
   assert.equal(rep.engineVersion, SUFI_LATAIF_VERSION);
   assert(rep.calculatedAtKst.endsWith('KST'));
   assert(Boolean(rep.lataifSynthesisMatrix?.integratedAction));
+  assert(rep.interpretiveBoundary.length > 0);
   assert.equal(rep.lataifCenters.length, 7);
   assert(rep.spiritualHeartPurityScore >= 0 && rep.spiritualHeartPurityScore <= 100);
   assert(rep.currentSpiritualStation.stationName.length > 0);
   const prompt = formatSufiLataifSoulAscensionPrompt(rep);
   assert(prompt.includes('정통 수피즘 심장의 7대 라타이프'));
   assert(prompt.includes(rep.dominantActiveCenter.koreanName));
-  assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('교차 매트릭스') && prompt.includes('해석 경계'));
   assert(!prompt.includes('/100'));
 });
 

@@ -16,7 +16,7 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const STRATEGIC_LEVERAGE_VERSION = 'LUCKEY-LEVERAGE-v2.0.0';
+export const STRATEGIC_LEVERAGE_VERSION = 'LUCKEY-LEVERAGE-v2.1.0';
 
 function formatLeverageKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -63,6 +63,7 @@ export interface StrategicLeverageReport {
     alignmentState: string;
     integratedAction: string;
   };
+  interpretiveBoundary: string;
 }
 
 export function runStrategicLeverageEngine(
@@ -154,6 +155,8 @@ export function runStrategicLeverageEngine(
     return tactic.chapter;
   }
 
+  const interpretiveBoundary = '본 전략 협상 & 손자병법 기문 레버리지 리포트는 고전 병법과 기문둔갑 상징에 기반한 정성적 협상 프레임워크 안내이며, 실제 계약·법적 의사결정을 대신하지 않습니다.';
+
   const synthesisPromptGuidance = `[LUCKEY 전략 협상 & 손자병법 기문 레버리지 ${STRATEGIC_LEVERAGE_VERSION} | ${calculatedAtKst}]
 - 기문둔갑 작전 모드: ${activeQimenDoor}
 - 협상 페르소나 롤: ${powerDynamicRole}
@@ -162,7 +165,8 @@ export function runStrategicLeverageEngine(
   * 심리 레버리지: ${sunTzuTactic.psychologicalLeverage}
 - 실전 액션 플랜: [초반] ${strategicActionPlan.openingMove} | [카운터] ${strategicActionPlan.counterStrategy} | [금기사항] ${strategicActionPlan.criticalTaboo}
 - 교차 매트릭스: [핵심 긴장: ${leverageSynthesisMatrix.dominantTension} | 조율 상태: ${leverageSynthesisMatrix.alignmentState}]
-  * 통합 실천: ${leverageSynthesisMatrix.integratedAction}`;
+  * 통합 실천: ${leverageSynthesisMatrix.integratedAction}
+- 해석 경계: ${interpretiveBoundary}`;
 
   return {
     engineVersion: STRATEGIC_LEVERAGE_VERSION,
@@ -176,6 +180,7 @@ export function runStrategicLeverageEngine(
     strategicActionPlan,
     synthesisPromptGuidance,
     leverageSynthesisMatrix,
+    interpretiveBoundary,
   };
 }
 
