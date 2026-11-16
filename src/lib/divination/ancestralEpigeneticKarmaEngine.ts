@@ -18,7 +18,7 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const ANCESTRAL_KARMA_VERSION = 'LUCKEY-ANCESTRAL-v2.0.0';
+export const ANCESTRAL_KARMA_VERSION = 'LUCKEY-ANCESTRAL-v2.1.0';
 
 export interface AncestralLineageImprint {
   generationTheme: string;        // 혈통을 관통하는 핵심 테마
@@ -56,6 +56,7 @@ export interface AncestralEpigeneticKarmaReport {
     cautionNotice: string;
   };
   boundaryNotice: string;
+  interpretiveBoundary: string;
   synthesisPromptGuidance: string;
 }
 
@@ -232,6 +233,7 @@ export function runAncestralEpigeneticKarmaEngine(
     temporalAncestralRhythm,
     ancestralSynthesisMatrix,
     boundaryNotice,
+    interpretiveBoundary: boundaryNotice,
     synthesisPromptGuidance
   };
 }

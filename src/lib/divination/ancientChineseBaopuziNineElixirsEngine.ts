@@ -58,6 +58,7 @@ export interface BaopuziElixirsReport {
   situationalBaopuziAudit: SituationalBaopuziAudit;
   temporalElixirRhythm: TemporalElixirRhythm;
   baopuziSynthesisMatrix: BaopuziSynthesisMatrix;
+  interpretiveBoundary: string;
   geHongTaoistAdvice: string;
 }
 
@@ -266,6 +267,7 @@ export function calculateBaopuziElixirs(params?: BaopuziElixirsParams): BaopuziE
 
   const kst = new Date(now.getTime() + 9 * 3600 * 1000);
   const calculatedAtKst = `${kst.toISOString().slice(0, 19)}+09:00`;
+  const interpretiveBoundary = '본 리포트는 갈홍 《포박자》의 도교 양생 상징에 기반한 정성적 건강 성찰 안내이며, 의학적 진단이 아닙니다.';
 
   return {
     engineVersion: BAOPUZI_ELIXIRS_ENGINE_VERSION,
@@ -278,6 +280,7 @@ export function calculateBaopuziElixirs(params?: BaopuziElixirsParams): BaopuziE
     situationalBaopuziAudit,
     temporalElixirRhythm,
     baopuziSynthesisMatrix,
+    interpretiveBoundary,
     geHongTaoistAdvice: advices[seed % advices.length],
   };
 }
@@ -299,6 +302,6 @@ export function formatBaopuziElixirsPrompt(report: BaopuziElixirsReport): string
   * 계절 장부 초점: ${report.temporalElixirRhythm.seasonalOrganFocus}
   * 시의성 지침: ${report.temporalElixirRhythm.cultivationTimingAdvice}
 - 포박자 갈홍의 훈계: ${report.geHongTaoistAdvice}
-- 해석 경계: 본 리포트는 갈홍 《포박자》의 도교 양생 상징에 기반한 정성적 건강 성찰 안내이며, 의학적 진단이 아닙니다.
+- 해석 경계: ${report.interpretiveBoundary}
 - 루시 가이드: 수치 점수를 나열하지 말고, 피로나 스트레스로 지친 질문자에게 무리한 일정을 잠시 멈추고 내면의 정기(원기)를 충전하는 소박하고 실질적인 양생 처방을 따뜻하게 일러줘.`;
 }

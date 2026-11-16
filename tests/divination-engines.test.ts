@@ -2778,6 +2778,7 @@ test('Ancestral Epigenetic Karma Engine: 조상 혈통 업력 & 후성유전학�
   assert(res.calculatedAtKst.includes('KST'));
   assert(res.temporalAncestralRhythm.lineageWatchWindow.length > 0);
   assert(res.ancestralSynthesisMatrix.coreInsight.length > 0);
+  assert(res.interpretiveBoundary.length > 0);
   const prompt = formatAncestralEpigeneticKarmaPrompt(res);
   assert(prompt.includes('LUCKEY 조상 혈통 업력 & 후성유전학적 카르마 정화'));
   assert(prompt.includes(res.lineageArchetype));
@@ -4330,6 +4331,7 @@ test('Baopuzi Ge Hong Nine Turn Elixir Engine: calculates alchemy rank and vital
   assert(rep.situationalBaopuziAudit.baopuziVerse.length > 0);
   assert(rep.temporalElixirRhythm.shichenWindow.length > 0);
   assert(rep.baopuziSynthesisMatrix.synthesizedGuidance.length > 0);
+  assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatBaopuziElixirsPrompt(rep);
   assert(prompt.includes('고대 도교 포박자(抱朴子) 갈홍 구전환단(九轉還丹) 무병장수 실측 데이터'));
   assert(prompt.includes(rep.activeElixirPhase.elixirNameKo));
@@ -5647,6 +5649,7 @@ test('Ancient Chinese Mozi Gyeom-Ae Universal Love Engine: calculates Gyeom-Ae l
   assert(rep.jeolYongSimplicityPurity >= 0 && rep.jeolYongSimplicityPurity <= 100);
   assert(rep.tianZhiCosmicJusticeScore >= 0 && rep.tianZhiCosmicJusticeScore <= 100);
   assert(rep.activeMohistStage.stageNameHanja.length > 0);
+  assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatMoziGyeomAePrompt(rep);
   assert(prompt.includes('춘추전국시대 묵가(墨家) 묵자(墨子) 겸애교리'));
   assert(prompt.includes(rep.activeMohistStage.stageNameKo));
