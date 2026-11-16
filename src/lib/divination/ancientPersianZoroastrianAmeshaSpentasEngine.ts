@@ -77,6 +77,7 @@ export interface ZoroastrianAmeshaSpentasResult {
   situationalAvestaAudit: AvestaSituationalAudit;
   temporalAtarRhythm: ZoroastrianTemporalRhythm;
   ameshaSynthesisMatrix: AmeshaSynthesisMatrix;
+  interpretiveBoundary: string;
 }
 
 export type ZoroastrianAmeshaSpentasReport = ZoroastrianAmeshaSpentasResult;
@@ -236,6 +237,7 @@ export function calculateZoroastrianAmeshaSpentas(
   const situationalAvestaAudit = buildSituationalAudit(question, primaryZoroastrianTriad);
   const temporalAtarRhythm = buildTemporalRhythm(now, seed);
   const ameshaSynthesisMatrix = buildSynthesisMatrix(activeSpentaStage, primaryZoroastrianTriad, situationalAvestaAudit, temporalAtarRhythm);
+  const interpretiveBoundary = '아베스타 아메샤 스펜타와 아샤(Asha) 진리 상징을 빌린 정성적 빛의 조화 참고 관점이며, 수치 점수나 확정 예언이 아닙니다.';
 
   return {
     engineVersion: ZOROASTRIAN_AMESHA_SPENTAS_VERSION,
@@ -251,6 +253,7 @@ export function calculateZoroastrianAmeshaSpentas(
     situationalAvestaAudit,
     temporalAtarRhythm,
     ameshaSynthesisMatrix,
+    interpretiveBoundary,
   };
 }
 
@@ -271,5 +274,5 @@ export function formatZoroastrianAmeshaSpentasPrompt(result: ZoroastrianAmeshaSp
 - 아메샤 스펜타 교차 매트릭스: ${result.ameshaSynthesisMatrix.synthesizedVerdict}
 - 아베스타 신성 불꽃의 계시: 《${result.avestaSacredFireEpiphany.fireSceneTitle}》
   → 빛의 불멸 지혜: "${result.avestaSacredFireEpiphany.luminousWisdom}"
-- 해석 경계: 아베스타 아메샤 스펜타와 아샤(Asha) 진리 상징을 빌린 정성적 빛의 조화 참고 관점이며, 수치 점수나 확정 예언이 아닙니다.`;
+- 해석 경계: ${result.interpretiveBoundary}`;
 }
