@@ -13,7 +13,12 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const BUDDHIST_YOGACARA_CONSCIOUSNESS_ENGINE_VERSION = '2.0.0';
+export const BUDDHIST_YOGACARA_CONSCIOUSNESS_ENGINE_VERSION = '2.1.0';
+
+function toKstIso(now: Date): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  return kst.toISOString().replace('Z', '+09:00');
+}
 
 export type YogacaraQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -52,6 +57,7 @@ export interface YogacaraSynthesisMatrix {
 export interface BuddhistYogacaraConsciousnessReport {
   engineVersion: string;
   timestamp: string;
+  calculatedAtKst: string;
   alayaPurificationScore: number;
   manasEgoTranscendenceRate: number;
   fourWisdomsHarmonizationIndex: number;
@@ -276,6 +282,7 @@ export function calculateBuddhistYogacaraConsciousness(
   return {
     engineVersion: BUDDHIST_YOGACARA_CONSCIOUSNESS_ENGINE_VERSION,
     timestamp: now.toISOString(),
+    calculatedAtKst: toKstIso(now),
     alayaPurificationScore,
     manasEgoTranscendenceRate,
     fourWisdomsHarmonizationIndex,
@@ -295,6 +302,7 @@ export function calculateBuddhistYogacaraConsciousness(
 export function formatBuddhistYogacaraConsciousnessPrompt(rep: BuddhistYogacaraConsciousnessReport): string {
   return `[불교 유식학 8식 정화 & 아뢰야식 전식득지(轉識得智) 실측 데이터]
 · 엔진 버전: v${rep.engineVersion}
+· 연산 시각: ${rep.calculatedAtKst}
 · 주재 전식득지 지혜: [${rep.dominantWisdom.nameKo} (${rep.dominantWisdom.sanskrit})]
   - 근본 전환: ${rep.dominantWisdom.rootConsciousness}
   - 지혜 원리: ${rep.dominantWisdom.wisdomPrinciple}

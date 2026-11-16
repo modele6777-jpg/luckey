@@ -4292,7 +4292,7 @@ try {
   // 327. 제임스 조이스 작품에서 질문과 관련된 문학적 관점을 선택하는 질적 참고 엔진
   const irishJamesJoyceUlyssesEpiphanyResult = calculateSupplement('irishJamesJoyceUlyssesEpiphanyResult', () => ((() => {
     try {
-      return calculateIrishJamesJoyceUlyssesEpiphany(question);
+      return calculateIrishJamesJoyceUlyssesEpiphany(question, now);
     } catch (_) {
       return null;
     }
@@ -4807,7 +4807,7 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'esseneCommunion', nameKo: '에세네 14대 천사교감', icon: '🕊️', category: 'deep_master' },
   { key: 'huangdiFiveMovementsSixQi', nameKo: '황제내경 오운육기 기상의학', icon: '📜', category: 'deep_master' },
   { key: 'pythagoreanTetraktys', nameKo: '피타고라스 테트락티스 신성기하', icon: '📐', category: 'deep_master' },
-  { key: 'babylonianEnumaElish', nameKo: '바빌로니아 운명의서판', icon: '🏛️', category: 'deep_master' },
+  { key: 'babylonianEnumaElish', nameKo: '바빌로니아 운명의서판', icon: '🏛️', category: 'deep_master', summary: '에누마 엘리쉬 서사시와 운명의 서판 상징을 바탕으로 현재의 혼돈을 질서화할 수호 천체와 주권적 실천 방향을 짚어 주는 관점' },
   { key: 'taoistHuangtingJing', nameKo: '도교 황정경 오장존사', icon: '☯️', category: 'deep_master' },
   { key: 'persianAmeshaSpenta', nameKo: '페르시아 아메샤스펜타', icon: '🔥', category: 'deep_master' },
   { key: 'sumerianFiftyMes', nameKo: '수메르 50대메 신성문명', icon: '🏺', category: 'deep_master' },
@@ -4857,7 +4857,7 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'sumerianInannaUnderworldDescent', nameKo: '수메르 이난나 명계하강 7대관문', icon: '👑', category: 'deep_master', summary: '수메르 이난나 신화의 7대 관문 탈각 상징으로 외적 가면과 방어기제를 내려놓고 내면의 회복을 성찰합니다.' },
   { key: 'norseVolvaSeidrNineRealms', nameKo: '북유럽 볼바 세이드 9대세계', icon: '🌲', category: 'deep_master' },
   { key: 'zhuangziXiaoyaoyouButterfly', nameKo: '도가 장자 소요유 호접몽', icon: '🦋', category: 'deep_master', summary: '장자 《소요유》·《제물론》의 비유로 시비와 득실의 좁은 틀을 벗어나 대붕과 호접몽의 자유로운 시야를 엽니다.' },
-  { key: 'buddhistYogacaraConsciousness', nameKo: '불교 유식학 8식 전식득지', icon: '☸️', category: 'deep_master' },
+  { key: 'buddhistYogacaraConsciousness', nameKo: '불교 유식학 8식 전식득지', icon: '☸️', category: 'deep_master', summary: '유식학의 8식과 아뢰야식 종자 이론을 바탕으로 분별·집착의 뿌리를 살피고 사지(四智)의 청정한 실천으로 전환하는 관점' },
   { key: 'vedicMandukyaTuriya', nameKo: '만두키야 우파니샤드 투리야 순수의식', icon: '🕉️', category: 'deep_master', summary: '만두키야 우파니샤드의 각성·꿈·숙면 너머 제4의 순수의식(투리야) 자리에서 감정의 파도를 관조합니다.' },
   { key: 'kabbalisticZoharSoul', nameKo: '카발라 조하르 5대 영혼 층위', icon: '🕎', category: 'deep_master' },
   { key: 'romanStoicProhairesis', nameKo: '로마 스토아 통제이분법', icon: '🏛️', category: 'deep_master' },

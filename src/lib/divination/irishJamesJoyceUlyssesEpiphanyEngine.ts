@@ -3,10 +3,15 @@
  * Epiphany is located in Stephen Hero; see https://www.joyceproject.com/notes/Wk-bJZUBeQi-aLQfd7Cb.
  * Ulysses episode 4 presents Bloom's household cat, not a lost cat.
  * This engine intentionally emits no personal scores, diagnosis, prediction, or attributed quotation.
- * @version LUCKEY-JOYCE-ULYSSES-EPIPHANY-v2.0.0
+ * @version LUCKEY-JOYCE-ULYSSES-EPIPHANY-v2.1.0
  */
 
-export const IRISH_JAMES_JOYCE_ULYSSES_EPIPHANY_VERSION = 'LUCKEY-JOYCE-ULYSSES-EPIPHANY-v2.0.0';
+export const IRISH_JAMES_JOYCE_ULYSSES_EPIPHANY_VERSION = 'LUCKEY-JOYCE-ULYSSES-EPIPHANY-v2.1.0';
+
+function toKstIso(now: Date): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  return kst.toISOString().replace('Z', '+09:00');
+}
 
 export interface JoyceTheme {
   themeKey: string;
@@ -18,6 +23,7 @@ export interface JoyceTheme {
 
 export interface IrishJamesJoyceUlyssesEpiphanyResult {
   engineVersion: string;
+  calculatedAtKst: string;
   activeJoyceTheme: JoyceTheme;
   joyceComprehensiveGuidance: {
     guidanceTitle: string;
@@ -28,6 +34,7 @@ export interface IrishJamesJoyceUlyssesEpiphanyResult {
     alignmentState: string;
     integratedAction: string;
   };
+  boundaryNotice: string;
 }
 
 export const JOYCE_THEMES: JoyceTheme[] = [
@@ -73,21 +80,26 @@ function selectJoyceTheme(query?: string): JoyceTheme {
   return JOYCE_THEMES.find(theme => theme.themeKey === match?.[1]) ?? JOYCE_THEMES[0];
 }
 
-export function calculateIrishJamesJoyceUlyssesEpiphany(query?: string): IrishJamesJoyceUlyssesEpiphanyResult {
+export function calculateIrishJamesJoyceUlyssesEpiphany(query?: string, nowArg?: Date): IrishJamesJoyceUlyssesEpiphanyResult {
+  const now = nowArg ?? new Date();
+  const calculatedAtKst = toKstIso(now);
   const activeJoyceTheme = selectJoyceTheme(query);
   const joyceSynthesisMatrix = {
     dominantTension: `${activeJoyceTheme.themeTitleKo} ↔ 일상의 작은 행동`,
     alignmentState: '문학적 에피파니를 통한 일상 관찰과 조율 국면',
     integratedAction: activeJoyceTheme.practicalCounsel,
   };
+  const boundaryNotice = '이는 제임스 조이스의 문학 작품을 통한 성찰적 참고일 뿐, 개인 점수·심리 진단·확정적 미래 예측이 아닙니다.';
   return {
     engineVersion: IRISH_JAMES_JOYCE_ULYSSES_EPIPHANY_VERSION,
+    calculatedAtKst,
     activeJoyceTheme,
     joyceComprehensiveGuidance: {
       guidanceTitle: `제임스 조이스 작품에서 얻는 참고 관점: ${activeJoyceTheme.themeTitleKo}`,
       philosophicalCounsel: `${activeJoyceTheme.literaryInsight} ${activeJoyceTheme.practicalCounsel} 이 내용은 문학을 통한 참고이며, 개인의 성격이나 미래를 측정한 결과가 아닙니다.`,
     },
     joyceSynthesisMatrix,
+    boundaryNotice,
   };
 }
 
@@ -95,10 +107,11 @@ export function formatIrishJamesJoyceUlyssesEpiphanyPrompt(res: IrishJamesJoyceU
   const lines = [
     '【제임스 조이스 작품에서 얻은 문학적 참고】',
     `- 엔진 버전: ${res.engineVersion}`,
+    `- 연산 시각: ${res.calculatedAtKst}`,
     `- 질문과 관련해 살펴볼 주제: ${res.activeJoyceTheme.themeTitleKo}`,
     `- 작품 맥락: ${res.activeJoyceTheme.literaryInsight}`,
     `- 조심스럽게 적용할 제안: ${res.activeJoyceTheme.practicalCounsel}`,
-    '- 이는 문학적 해석을 위한 참고일 뿐, 개인 점수·심리 진단·미래 예측이 아닙니다.',
+    `- 해석 경계: ${res.boundaryNotice}`,
   ];
   if (res.joyceSynthesisMatrix) {
     lines.push(

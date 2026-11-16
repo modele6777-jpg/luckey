@@ -19,7 +19,12 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const BABYLONIAN_ENUMA_ELISH_VERSION = 'LUCKEY-BABYLONIAN-ENUMA-ELISH-v2.0.0';
+export const BABYLONIAN_ENUMA_ELISH_VERSION = 'LUCKEY-BABYLONIAN-ENUMA-ELISH-v2.1.0';
+
+function toKstIso(now: Date): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  return kst.toISOString().replace('Z', '+09:00');
+}
 
 export type BabylonianQuestionTheme = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -64,6 +69,7 @@ export interface BabylonianSynthesisMatrix {
 export interface BabylonianEnumaElishReport {
   engineVersion: string;
   calculatedAt: string;
+  calculatedAtKst: string;
   questionTheme: BabylonianQuestionTheme;
   patronDeity: BabylonianPatronDeity;
   destinyEdict: TabletsOfDestinyEdict;
@@ -309,6 +315,7 @@ export function calculateBabylonianEnumaElish(
   return {
     engineVersion: BABYLONIAN_ENUMA_ELISH_VERSION,
     calculatedAt: now.toISOString(),
+    calculatedAtKst: toKstIso(now),
     questionTheme,
     patronDeity,
     destinyEdict,
@@ -329,6 +336,7 @@ export function calculateBabylonianEnumaElish(
 
 export function formatBabylonianEnumaElishPrompt(report: BabylonianEnumaElishReport): string {
   return `### 🏛️ 고대 바빌로니아 에누마 엘리쉬 & 운명의 서판 성찰 관점 (${BABYLONIAN_ENUMA_ELISH_VERSION})
+- **연산 시각**: ${report.calculatedAtKst}
 - **질문 맥락**: ${report.questionTheme} | **질서화 국면**: ${report.orderingPosture}
 - **바빌로니아 수호신**: **${report.patronDeity.koreanName}** [천체: ${report.patronDeity.celestialDomain}]
   - 신성한 권능: ${report.patronDeity.divineAttribute}
