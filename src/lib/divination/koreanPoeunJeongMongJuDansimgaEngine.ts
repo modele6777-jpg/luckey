@@ -8,12 +8,12 @@
  * 4. 동방이학지조 도학 정통성 및 솔선수범 지표 (Foundational Scholarship & Moral Governance Index): 주자가례와 도학의 기틀을 확립하고 학문과 실천을 일치시킨 선비 정신.
  * 5. 시련 앞 불굴의 선비 기개 및 의연한 회복탄력성 (Undaunted Scholar Integrity & Resilience Score): 망국의 풍파와 생사의 갈림길에서도 한 점 흐트러짐 없는 의연한 품격과 평정심.
  *
- * @version LUCKEY-POEUN-JEONG-MONG-JU-DANSIMGA-v2.0.0
+ * @version LUCKEY-POEUN-JEONG-MONG-JU-DANSIMGA-v2.1.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const KOREAN_POEUN_JEONG_MONG_JU_DANSIMGA_VERSION = 'LUCKEY-POEUN-JEONG-MONG-JU-DANSIMGA-v2.0.0';
+export const KOREAN_POEUN_JEONG_MONG_JU_DANSIMGA_VERSION = 'LUCKEY-POEUN-JEONG-MONG-JU-DANSIMGA-v2.1.0';
 
 export interface PoeunTheme {
   themeKey: string;
@@ -42,7 +42,11 @@ export interface KoreanPoeunJeongMongJuDansimgaResult {
   undauntedIntegrityResilienceScore: number;      // 불굴의 선비 기개 및 회복탄력성 (Undaunted Integrity Resilience)
   // 세부 분석
   activePoeunTheme: PoeunTheme;
+  secondaryPoeunTheme: PoeunTheme;
   focalPoeunAphorism: PoeunAphorism;
+  secondaryPoeunAphorism: PoeunAphorism;
+  reflectiveQuestion: string;
+  interpretiveBoundary: string;
   poeunComprehensiveGuidance: {
     guidanceTitle: string;
     philosophicalCounsel: string;
@@ -61,7 +65,7 @@ function formatPoeunKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 KST`;
 }
 
 function describePoeunStage(score: number): string {
@@ -170,10 +174,21 @@ export function calculateKoreanPoeunJeongMongJuDansimga(
   const undauntedIntegrityResilienceScore = 88 + ((absHash >> 13) % 11);
 
   const themeIndex = (absHash >> 5) % POEUN_THEMES.length;
+  const secondaryThemeIndex = (themeIndex + 1 + ((absHash >> 9) % (POEUN_THEMES.length - 1))) % POEUN_THEMES.length;
   const aphorismIndex = (absHash >> 8) % POEUN_APHORISMS.length;
+  const secondaryAphorismIndex = (aphorismIndex + 1 + ((absHash >> 11) % (POEUN_APHORISMS.length - 1))) % POEUN_APHORISMS.length;
 
   const activePoeunTheme = POEUN_THEMES[themeIndex];
+  const secondaryPoeunTheme = POEUN_THEMES[secondaryThemeIndex];
   const focalPoeunAphorism = POEUN_APHORISMS[aphorismIndex];
+  const secondaryPoeunAphorism = POEUN_APHORISMS[secondaryAphorismIndex];
+
+  const cleanQuery = query?.trim();
+  const reflectiveQuestion = cleanQuery
+    ? `"${cleanQuery}" 앞에서, 눈앞의 유불리를 넘어 끝까지 지켜야 할 나만의 일편단심은 무엇인가?`
+    : `지금 내가 마주한 선택 앞에서, 유혹이나 압박에도 흔들리지 않고 끝까지 지켜야 할 신의는 무엇인가?`;
+  const interpretiveBoundary =
+    '이 포은 정몽주 《단심가》 해석은 신의·대의·외교적 기품·선비 기개의 상징적 성찰 프레임이며, 현실의 법적·실무적 판단이나 단정적 미래 예언을 대신하지 않습니다.';
 
   const guidanceTitle = `포은 정몽주 단심가 일편단심 지조 및 경세외교 지혜: ${activePoeunTheme.themeTitleKo}`;
   const philosophicalCounsel = `동방이학지조이자 불굴의 충절을 상징하는 포은 정몽주 선생은 《단심가》를 통해 ` +
@@ -206,7 +221,11 @@ export function calculateKoreanPoeunJeongMongJuDansimga(
     foundationalScholarshipGovernanceIndex,
     undauntedIntegrityResilienceScore,
     activePoeunTheme,
+    secondaryPoeunTheme,
     focalPoeunAphorism,
+    secondaryPoeunAphorism,
+    reflectiveQuestion,
+    interpretiveBoundary,
     poeunComprehensiveGuidance: {
       guidanceTitle,
       philosophicalCounsel,
@@ -231,11 +250,15 @@ export function formatKoreanPoeunJeongMongJuDansimgaPrompt(
     `- 연산 시각: ${res.calculatedAtKst} | 엔진: ${res.engineVersion}`,
     `- 충절·경세 국면: ${describePoeunStage(avgScore)}`,
     `- 핵심 포은 테마: ${res.activePoeunTheme.themeTitleKo} [${res.activePoeunTheme.themeTitleEn}]`,
+    `- 보조 교차 테마: ${res.secondaryPoeunTheme.themeTitleKo} [${res.secondaryPoeunTheme.themeTitleEn}]`,
     `- 실천적 통찰: ${res.activePoeunTheme.pragmaticInsight}`,
     `- 행동 조언: ${res.activePoeunTheme.practicalCounsel}`,
     `- 포은 원전 명구: "${res.focalPoeunAphorism.aphorismKo}" (${res.focalPoeunAphorism.aphorismHanja})`,
+    `- 보조 교차 명구: "${res.secondaryPoeunAphorism.aphorismKo}" (${res.secondaryPoeunAphorism.aphorismHanja})`,
     `- 원전 출처: [${res.focalPoeunAphorism.sourceContext}]`,
     `- 구체적 실천 지침: ${res.focalPoeunAphorism.actionGuidance}`,
+    `- 성찰 질문: ${res.reflectiveQuestion}`,
+    `- 해석 경계: ${res.interpretiveBoundary}`,
     `- 종합 포은 권면: ${res.poeunComprehensiveGuidance.philosophicalCounsel}`,
   ];
   if (res.poeunSynthesisMatrix) {
