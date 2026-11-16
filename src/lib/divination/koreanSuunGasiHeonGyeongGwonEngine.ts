@@ -11,12 +11,12 @@
  *    - 경물(敬物): 미물과 자연 만물까지도 함부로 대하지 않는 지극한 생명 공경
  * 3. 4대 심기 수련(지기금지원위대강) 및 운기 대반전 성화력 산출
  *
- * @version LUCKEY-SUUN-GASI-HEON-v2.0.0
+ * @version LUCKEY-SUUN-GASI-HEON-v2.1.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const SUUN_GASI_HEON_VERSION = 'LUCKEY-SUUN-GASI-HEON-v2.0.0';
+export const SUUN_GASI_HEON_VERSION = 'LUCKEY-SUUN-GASI-HEON-v2.1.0';
 
 export interface SuunCultivationStage {
   stageLevel: number;
@@ -37,7 +37,14 @@ export interface SuunGasiHeonResult {
   sudeokHeartPurityIndex: number; // 수덕문(修德文) 덕성 정화 및 덕행 실천력
   // 세부 명세
   activeCultivationStage: SuunCultivationStage;
+  secondaryCultivationStage: SuunCultivationStage;
   primarySamgyeongVirtue: {
+    virtueNameKo: string;
+    virtueHanja: string;
+    coreEssence: string;
+    actionablePractice: string;
+  };
+  secondarySamgyeongVirtue: {
     virtueNameKo: string;
     virtueHanja: string;
     coreEssence: string;
@@ -48,6 +55,8 @@ export interface SuunGasiHeonResult {
     hangeulText: string;
     spiritualMeaning: string;
   };
+  reflectiveQuestion: string;
+  interpretiveBoundary: string;
   suunGasiSynthesisMatrix?: {
     dominantTension: string;
     alignmentState: string;
@@ -62,7 +71,7 @@ function formatSuunGasiKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 KST`;
 }
 
 function describeSuunGasiStage(score: number): string {
@@ -129,13 +138,24 @@ export function calculateSuunGasiHeon(
   const sudeokHeartPurityIndex = ((seed >> 9) % 38) + 63; // 63~100
 
   const stageIdx = (seed >> 2) % SUUN_STAGES.length;
+  const secondaryStageIdx = (stageIdx + 1 + ((seed >> 4) % (SUUN_STAGES.length - 1))) % SUUN_STAGES.length;
   const activeCultivationStage = SUUN_STAGES[stageIdx];
+  const secondaryCultivationStage = SUUN_STAGES[secondaryStageIdx];
 
   const virtueIdx = (seed >> 4) % SAMGYEONG_VIRTUES.length;
+  const secondaryVirtueIdx = (virtueIdx + 1 + ((seed >> 6) % (SAMGYEONG_VIRTUES.length - 1))) % SAMGYEONG_VIRTUES.length;
   const primarySamgyeongVirtue = SAMGYEONG_VIRTUES[virtueIdx];
+  const secondarySamgyeongVirtue = SAMGYEONG_VIRTUES[secondaryVirtueIdx];
 
   const verseIdx = (seed >> 6) % GEOMGYEOL_VERSES.length;
   const geomgyeolVerse = GEOMGYEOL_VERSES[verseIdx];
+
+  const trimmedQuery = query?.trim();
+  const reflectiveQuestion = trimmedQuery
+    ? `수운 최제우의 《용담유사》 검결 '${primarySamgyeongVirtue.virtueNameKo}'와 '${secondarySamgyeongVirtue.virtueNameKo}'를 비추어 볼 때, "${trimmedQuery}"에서 용천검처럼 단호히 베어내야 할 미혹은 무엇인가요?`
+    : `지금 부재래지 시호(不再來之 時乎)의 문턱에서, '${activeCultivationStage.stageNameKo}'의 심검과 '${secondaryCultivationStage.stageNameKo}'의 수양을 함께 세우려면 무엇을 먼저 결단해야 할까요?`;
+
+  const interpretiveBoundary = '이 지표는 동학 수운 최제우 대신사의 《용담유사》 검결·삼경사상(경천·경인·경물)·수덕문 수양 원리를 내면 결단과 공경 태도 성찰의 거울로 해석한 것이며, 구체적 사건의 성패를 단정하는 예언이 아닙니다.';
 
   const calculatedAtKst = formatSuunGasiKstTimestamp(now);
   const avgScore = Math.round(
@@ -161,8 +181,12 @@ export function calculateSuunGasiHeon(
     jiGiGeumJiCosmicQiFlow,
     sudeokHeartPurityIndex,
     activeCultivationStage,
+    secondaryCultivationStage,
     primarySamgyeongVirtue,
+    secondarySamgyeongVirtue,
     geomgyeolVerse,
+    reflectiveQuestion,
+    interpretiveBoundary,
     suunGasiSynthesisMatrix,
   };
 }
@@ -181,14 +205,18 @@ export function formatSuunGasiHeonPrompt(result: SuunGasiHeonResult): string {
     `- 연산 시각: ${result.calculatedAtKst} | 엔진 버전: ${result.engineVersion}`,
     `- 심기 수련 국면: ${describeSuunGasiStage(avgScore)}`,
     `- 현행 심기 수련 단계: **[${result.activeCultivationStage.stageNameKo} (${result.activeCultivationStage.stageHanja})]**`,
+    `- 보조 교차 단계: **[${result.secondaryCultivationStage.stageNameKo} (${result.secondaryCultivationStage.stageHanja})]**`,
     `  → 심검 상태: ${result.activeCultivationStage.innerSwordState}`,
     `  → 운기 영역: ${result.activeCultivationStage.cosmicResonanceDomain}`,
     `- 최우선 삼경(三敬) 실천 덕목: **[${result.primarySamgyeongVirtue.virtueNameKo} (${result.primarySamgyeongVirtue.virtueHanja})]**`,
+    `- 보조 교차 덕목: **[${result.secondarySamgyeongVirtue.virtueNameKo} (${result.secondarySamgyeongVirtue.virtueHanja})]**`,
     `  → 본질: ${result.primarySamgyeongVirtue.coreEssence}`,
     `  → 실천 지침: ${result.primarySamgyeongVirtue.actionablePractice}`,
     `- 용담유사 비전 가사: 《${result.geomgyeolVerse.verseTitle}》`,
     `  → 원문: "${result.geomgyeolVerse.hangeulText}"`,
     `  → 영적 해석: ${result.geomgyeolVerse.spiritualMeaning}`,
+    `- 성찰 질문: ${result.reflectiveQuestion}`,
+    `- 해석 경계: ${result.interpretiveBoundary}`,
   ];
   if (result.suunGasiSynthesisMatrix) {
     lines.push(

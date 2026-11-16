@@ -2375,7 +2375,7 @@ try {
   // 115. 고대 마오리 하우오라 4대 기둥 & 마우리(Mauri) 생명력 영혼 수호 엔진
   const maoriMauriHauoraResult = calculateSupplement('maoriMauriHauoraResult', () => ((() => {
     try {
-      return calculateMaoriMauriHauora({ profile, question });
+      return calculateMaoriMauriHauora({ profile, question, now });
     } catch (_) {
       return null;
     }
@@ -2888,7 +2888,7 @@ try {
   // 173. 북미 원주민 라코타 수족 와칸 탕카 & 4대 방향 성스러운 의약 휠(Medicine Wheel) 엔진
   const lakotaMedicineWheelResult = calculateSupplement('lakotaMedicineWheelResult', () => ((() => {
     try {
-      return calculateLakotaMedicineWheel(profile);
+      return calculateLakotaMedicineWheel(profile, question, now);
     } catch (_) {
       return null;
     }
@@ -2969,7 +2969,7 @@ try {
   // 182. 동학 수운 최제우 《용담유사》 검결 심기수련 & 삼경사상 신탁 엔진
   const suunGasiHeonResult = calculateSupplement('suunGasiHeonResult', () => ((() => {
     try {
-      return calculateSuunGasiHeon(profile);
+      return calculateSuunGasiHeon(profile, question, now);
     } catch (_) {
       return null;
     }
@@ -4829,7 +4829,7 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'jainGunasthanaKarma', nameKo: '자이나 14군아스타나 카르마', icon: '🪷', category: 'deep_master' },
   { key: 'celticAwenTaliesin', nameKo: '켈트 탈리에신 아웬영감', icon: '🔮', category: 'deep_master' },
   { key: 'koreanDangunCheonbuin', nameKo: '단군 천부인 3보 홍익광명', icon: '🇰🇷', category: 'deep_master' },
-  { key: 'maoriMauriHauora', nameKo: '마오리 하우오라 마우리생명력', icon: '🌿', category: 'deep_master' },
+  { key: 'maoriMauriHauora', nameKo: '마오리 하우오라 마우리생명력', icon: '🌿', category: 'deep_master', summary: '뉴질랜드 마오리 〈테 화레 타파 화〉 4대 기둥(신체·정신·관계·영혼)과 마우리(Mauri) 생명력으로 삶의 균형을 세우는 전인적 회복 지침을 비춥니다.' },
   { key: 'slavicMokoshFateWeaving', nameKo: '슬라브 모코시 운명실타래', icon: '🧶', category: 'deep_master' },
   { key: 'sumerianGilgameshTrials', nameKo: '길가메시 서사시 12관문', icon: '🏛️', category: 'deep_master' },
   { key: 'hawaiianKahunaThreeSelves', nameKo: '하와이 카후나 3대 자아 마나', icon: '🌺', category: 'deep_master', summary: '하와이 카후나 전통의 우니히필리(내면아이)·우하네(의식)·아우마쿠아(초의식) 3대 자아를 정렬하고 마나(Mana) 호흡과 카라(Kala) 해방 리추얼을 안내합니다.' },
@@ -4886,7 +4886,7 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'shangOracleBoneDivination', nameKo: '은나라 갑골문 신탁 복사 정인 균열', icon: '🐢', category: 'deep_master' },
   { key: 'cheonbugyeongEightyOne', nameKo: '단군 단학 천부경 81자 삼일신고 성통광명', icon: '☀️', category: 'deep_master' },
   { key: 'hinduSriYantra', nameKo: '힌두 탄트라 스리 얀트라 9나바요니 바인두', icon: '🔺', category: 'deep_master', summary: '스리 얀트라의 9대 교차 삼각형과 9층 아바라나 회랑을 통해 의식(시바)과 에너지(샤크티)의 중심 균형을 안내합니다.' },
-  { key: 'lakotaMedicineWheel', nameKo: '라코타 수족 와칸 탕카 성스러운 메디슨 휠', icon: '🪶', category: 'deep_master' },
+  { key: 'lakotaMedicineWheel', nameKo: '라코타 수족 와칸 탕카 성스러운 메디슨 휠', icon: '🪶', category: 'deep_master', summary: '라코타 수족의 와칸 탕카와 4방위 메디슨 휠·미타쿠예 오야신 철학으로 만물과의 연결성과 균형 잡힌 방향 감각을 비춥니다.' },
   { key: 'gyeogamYurok', nameKo: '격암 남사고 격암유록 궁궁을을 사중구생', icon: '📜', category: 'deep_master' },
   { key: 'heianOnmyodoSeimei', nameKo: '헤이안 음양도 아베노 세이메이 12천장 식신', icon: '⭐', category: 'deep_master' },
   { key: 'polynesianWayfinding', nameKo: '폴리네시아 마우이 웨이파인딩 32방위 스타컴퍼스', icon: '🧭', category: 'deep_master' },
@@ -4895,7 +4895,7 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'egyptianAmduat', nameKo: '이집트 암두아트 12시간 라 밤의항해 케프리부활', icon: '🌅', category: 'deep_master', summary: '암두아트의 서 12시간 밤의 항해와 케프리 부활 상징으로 시련 돌파와 새벽 전환을 읽는 관점' },
   { key: 'celticDruidBrehonLawJustice', nameKo: '고대 켈트 브레혼 법전 4대 우주정의 에릭', icon: '⚖️', category: 'deep_master' },
   { key: 'mesopotamianNisabaScribe', nameKo: '수메르 서기 니사바 청금석 서판 갈대첨필 천문수리', icon: '📐', category: 'deep_master' },
-  { key: 'koreanSuunGasiHeon', nameKo: '동학 수운 최제우 용담유사 검결 심기수련 삼경', icon: '🗡️', category: 'deep_master' },
+  { key: 'koreanSuunGasiHeon', nameKo: '동학 수운 최제우 용담유사 검결 심기수련 삼경', icon: '🗡️', category: 'deep_master', summary: '동학 수운 최제우의 《용담유사》 검결과 삼경사상(경천·경인·경물)으로 미혹을 끊고 다시 오지 않을 때(시호)를 붙잡는 결단을 비춥니다.' },
   { key: 'eleusinianTriptolemosCivilization', nameKo: '엘레우시스 트리프톨레모스 황금전차 농경3대율법', icon: '🌾', category: 'deep_master', summary: '엘레우시스 밀의 트리프톨레모스 3대 율법과 파종·수확 리듬으로 성실한 결실을 비추는 관점' },
   { key: 'mixtecEightDeerJaguarClaw', nameKo: '믹스테크 8-사슴 재규어발톱 동맹결성 통일', icon: '🐆', category: 'deep_master' },
   { key: 'koreanJeonBongjunNokduGeneral', nameKo: '동학농민혁명 녹두장군 전봉준 사발통문 백산창의', icon: '📜', category: 'deep_master', summary: '녹두장군 전봉준의 사발통문 수평 연대와 백산 창의 4대 강령으로 불의에 굴하지 않는 공동체 정의와 회복력을 세웁니다.' },
