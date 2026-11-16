@@ -15,7 +15,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const NORTH_AFRICAN_AUGUSTINE_VERSION = 'LUCKEY-AUGUSTINE-CONFESSIONES-ILLUMINATIO-v2.0.0';
+export const NORTH_AFRICAN_AUGUSTINE_VERSION = 'LUCKEY-AUGUSTINE-CONFESSIONES-ILLUMINATIO-v2.1.0';
 
 export interface AugustineTheme {
   themeKey: string;
@@ -54,6 +54,7 @@ export interface AugustineConfessionesIlluminatioResult {
     alignmentState: string;
     integratedAction: string;
   };
+  interpretiveBoundary: string;
 }
 
 function formatAugustineKstTimestamp(now: Date = new Date()): string {
@@ -218,6 +219,7 @@ export function calculateAugustineConfessionesIlluminatio(
       philosophicalGuidance,
     },
     augustineSynthesisMatrix,
+    interpretiveBoundary: '본 아우구스티누스 고백록 리포트는 교부철학의 내면 조명 사유에 기반한 정성적 성찰 안내이며, 의학·심리 치료를 대신하지 않습니다.',
   };
 }
 
@@ -243,5 +245,6 @@ export function formatAugustineConfessionesIlluminatioPrompt(res: AugustineConfe
       `- 통합 실천: ${res.augustineSynthesisMatrix.integratedAction}`,
     );
   }
+  lines.push(`- 해석 경계: ${res.interpretiveBoundary}`);
   return lines.join('\n');
 }
