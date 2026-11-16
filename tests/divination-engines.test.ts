@@ -1057,6 +1057,8 @@ test('Burmese Mahabote: 7-house chart calculation, root house, age transit, Rahu
   assert(prompt.includes('행성 조화도 및 친화수리'));
   assert(prompt.includes('4대 인생 영역 친화도'));
   assert(prompt.includes('교차 매트릭스'));
+  assert(r1.interpretiveBoundary && r1.interpretiveBoundary.length > 0);
+  assert(prompt.includes('해석 경계'));
   assert(!prompt.includes('/100'));
   assert(r1.calculatedAtKst?.endsWith('KST'));
 
@@ -2147,6 +2149,7 @@ test('Medical Bio-Matrix Engine: 오행 한난조습 및 메디컬 점성술 장
   assert.equal(res.engineVersion, MEDICAL_BIO_MATRIX_VERSION);
   assert(res.calculatedAtKst.endsWith('KST'));
   assert(Boolean(res.bioMatrixSynthesisMatrix?.integratedAction));
+  assert(res.interpretiveBoundary.length > 0);
   assert(res.temperament.coldScore >= 0 && res.temperament.coldScore <= 100);
   assert(res.temperament.heatScore >= 0 && res.temperament.heatScore <= 100);
   assert(res.vulnerableOrgans.length > 0);
@@ -2156,7 +2159,7 @@ test('Medical Bio-Matrix Engine: 오행 한난조습 및 메디컬 점성술 장
   assert(prompt.includes(MEDICAL_BIO_MATRIX_VERSION));
   assert(prompt.includes('체질 기후 진단'));
   assert(prompt.includes('취약 장부'));
-  assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('교차 매트릭스') && prompt.includes('해석 경계'));
   assert(!prompt.includes('/100'));
 });
 
@@ -2166,9 +2169,10 @@ test('Life Season Timing Engine: 10년 대운 및 교운기 타이밍 검증', (
   assert.equal(res.engineVersion, LIFE_SEASON_ENGINE_VERSION);
   assert(res.calculatedAtKst.endsWith('KST'));
   assert(Boolean(res.lifeSeasonSynthesisMatrix?.integratedAction));
+  assert(res.interpretiveBoundary.length > 0);
   const prompt = formatLifeSeasonTimingPrompt(res);
   assert(prompt.includes(LIFE_SEASON_ENGINE_VERSION));
-  assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('교차 매트릭스') && prompt.includes('해석 경계'));
   assert(!prompt.includes('%'));
   assert(!prompt.includes('/100'));
 });
