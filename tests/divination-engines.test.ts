@@ -8798,6 +8798,8 @@ test('v2.1.0 qualitative prompt reform: Jacques Derrida, Michel Foucault, and Ro
 test('Korean Yutjeom engine: five qualitative stances without raw scores or a claimed cast', () => {
   const rep = calculateKoreanYutjeomFourStickOracle(profile, '이직을 해야 할지 고민이에요', new Date('2026-11-15T03:00:00Z'));
   assert.equal(rep.engineVersion, KOREAN_YUTJEOM_FOUR_STICK_VERSION);
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00'));
+  assert.ok(Boolean(rep.yutjeomSynthesisMatrix?.integratedAction));
   assert.equal(rep.actualCastRecorded, false);
   assert.equal(rep.questionTopic, 'decision');
   assert.ok(rep.activeStanceTheme.stanceNameKo.length > 0);
@@ -8811,6 +8813,7 @@ test('Korean Yutjeom engine: five qualitative stances without raw scores or a cl
   assert.ok(prompt.includes('해석 경계'));
   assert.ok(prompt.includes('KST 시공간 리듬'));
   assert.ok(prompt.includes('낮 — 가락을 주고받는 시간'));
+  assert.ok(prompt.includes('+09:00') && prompt.includes('교차 매트릭스'));
 
   const relationship = calculateKoreanYutjeomFourStickOracle(profile, '가족과 자꾸 다투어요');
   assert.equal(relationship.questionTopic, 'relationship');
@@ -8999,16 +9002,18 @@ test('Wonhyo, Aurelius Inner Citadel, and Vedic Pancha Kosha v2.1.0 output quali
   const wo = calculateWonhyoHwajaeng(profile, '서로 다른 의견 사이에서 마음을 모으고 싶어요', now);
   assert.equal(wo.engineVersion, WONHYO_HWAJAENG_VERSION);
   assert.ok(wo.calculatedAtKst.endsWith('+09:00'));
+  assert.ok(Boolean(wo.wonhyoSynthesisMatrix?.integratedAction));
   const woPrompt = formatWonhyoHwajaengPrompt(wo);
   assert.ok(!woPrompt.includes('/100') && !woPrompt.includes('%') && !woPrompt.includes('점 '));
-  assert.ok(woPrompt.includes('해석 경계') && woPrompt.includes('+09:00'));
+  assert.ok(woPrompt.includes('해석 경계') && woPrompt.includes('+09:00') && woPrompt.includes('교차 매트릭스'));
 
   const au = calculateAureliusInnerCitadel(profile, '외부 평가에 흔들리지 않고 중심을 지키고 싶어요', now);
   assert.equal(au.engineVersion, AURELIUS_INNER_CITADEL_VERSION);
   assert.ok(au.calculatedAtKst.endsWith('+09:00'));
+  assert.ok(Boolean(au.aureliusSynthesisMatrix?.integratedAction));
   const auPrompt = formatAureliusInnerCitadelPrompt(au);
   assert.ok(!auPrompt.includes('/100') && !auPrompt.includes('%'));
-  assert.ok(auPrompt.includes('해석 경계') && auPrompt.includes('+09:00'));
+  assert.ok(auPrompt.includes('해석 경계') && auPrompt.includes('+09:00') && auPrompt.includes('교차 매트릭스'));
 
   const pk = calculateVedicPanchaKosha({ profile, question: '몸과 마음이 지쳐 호흡이 얕아진 느낌이에요', now });
   assert.equal(pk.engineVersion, VEDIC_PANCHA_KOSHA_ENGINE_VERSION);
