@@ -9,12 +9,12 @@
  * 4. 사랑의 투쟁 실존적 소통력(Loving Struggle Authentic Communication Score): 가면을 벗고 온 인격으로 마주하여 서로의 실존을 일깨우는 진실한 영혼의 소통력.
  * 5. 이성과 실존의 조화 균형도(Reason & Existenz Harmonization Index): 비합리적 광신이나 맹목적 허무에 빠지지 않고, 명철한 이성과 깊은 실존적 깊이를 통합하는 원숙도.
  *
- * @version LUCKEY-KARL-JASPERS-EXISTENZ-v2.0.0
+ * @version LUCKEY-KARL-JASPERS-EXISTENZ-v2.1.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const GERMAN_KARL_JASPERS_VERSION = 'LUCKEY-KARL-JASPERS-EXISTENZ-v2.0.0';
+export const GERMAN_KARL_JASPERS_VERSION = 'LUCKEY-KARL-JASPERS-EXISTENZ-v2.1.0';
 
 export interface JaspersTheme {
   themeKey: string;
@@ -44,6 +44,9 @@ export interface GermanKarlJaspersExistenzGrenzsituationenResult {
   // 세부 분석
   activeJaspersTheme: JaspersTheme;
   focalJaspersAphorism: JaspersAphorism;
+  secondaryJaspersAphorism: JaspersAphorism;
+  reflectiveQuestion: string;
+  interpretiveBoundary: string;
   jaspersComprehensiveGuidance: {
     guidanceTitle: string;
     philosophicalCounsel: string;
@@ -145,7 +148,15 @@ function formatJaspersKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 KST`;
+}
+
+function buildJaspersReflectiveQuestion(theme: JaspersTheme, query?: string): string {
+  const trimmed = query?.trim();
+  if (trimmed) {
+    return `'${trimmed}'에서 내가 바꿀 수 없는 한계상황(Grenzsituation)을 정면으로 인정한 뒤, 그 너머로 내딛을 실존적 선택은 무엇인가요? (${theme.themeTitleKo})`;
+  }
+  return `지금 내 곁의 소중한 사람과 가면을 벗고 나눌 수 있는 '사랑의 투쟁'의 진실한 한마디는 무엇인가요? (${theme.themeTitleKo})`;
 }
 
 function describeJaspersStage(score: number): string {
@@ -182,9 +193,14 @@ export function calculateGermanKarlJaspersExistenzGrenzsituationen(
 
   const themeIndex = (absHash >> 4) % JASPERS_THEMES.length;
   const aphorismIndex = (absHash >> 7) % JASPERS_APHORISMS.length;
+  const secondaryOffset = 1 + ((absHash >> 10) % (JASPERS_APHORISMS.length - 1));
+  const secondaryAphorismIndex = (aphorismIndex + secondaryOffset) % JASPERS_APHORISMS.length;
 
   const activeJaspersTheme = JASPERS_THEMES[themeIndex];
   const focalJaspersAphorism = JASPERS_APHORISMS[aphorismIndex];
+  const secondaryJaspersAphorism = JASPERS_APHORISMS[secondaryAphorismIndex];
+  const reflectiveQuestion = buildJaspersReflectiveQuestion(activeJaspersTheme, query);
+  const interpretiveBoundary = '카를 야스퍼스 실존철학 관점은 심리 진단이나 미래 운명 단정이 아니라, 한계상황 속에서 실존적 결단과 소통을 비추는 철학적 성찰 렌즈입니다.';
 
   const guidanceTitle = `카를 야스퍼스 실존과 한계상황 지혜: ${activeJaspersTheme.themeTitleKo}`;
   const philosophicalCounsel = `실존철학의 거장 카를 야스퍼스의 《철학》은 피할 수 없는 한계상황(Grenzsituationen)을 직시하고, 타인과의 진실한 실존적 소통(Existentielle Kommunikation)을 통해 참된 자아로 도약하도록 이끕니다. ` +
@@ -211,6 +227,9 @@ export function calculateGermanKarlJaspersExistenzGrenzsituationen(
     reasonExistenzHarmonizationIndex,
     activeJaspersTheme,
     focalJaspersAphorism,
+    secondaryJaspersAphorism,
+    reflectiveQuestion,
+    interpretiveBoundary,
     jaspersComprehensiveGuidance: {
       guidanceTitle,
       philosophicalCounsel,
@@ -237,7 +256,12 @@ export function formatGermanKarlJaspersExistenzGrenzsituationenPrompt(
     `- 독일어 원전: "${res.focalJaspersAphorism.aphorismDe}"`,
     `- 원전 출처: [${res.focalJaspersAphorism.sourceContext}]`,
     `- 구체적 실천 지침: ${res.focalJaspersAphorism.actionGuidance}`,
+    `- 보조 원전 테제: "${res.secondaryJaspersAphorism.aphorismKo}" ("${res.secondaryJaspersAphorism.aphorismDe}")`,
+    `- 보조 원전 출처: [${res.secondaryJaspersAphorism.sourceContext}]`,
+    `- 보조 실천 지침: ${res.secondaryJaspersAphorism.actionGuidance}`,
+    `- 성찰 질문: ${res.reflectiveQuestion}`,
     `- 종합 야스퍼스 실존 권면: ${res.jaspersComprehensiveGuidance.philosophicalCounsel}`,
+    `- 해석 경계: ${res.interpretiveBoundary}`,
   ];
   if (res.jaspersSynthesisMatrix) {
     lines.push(

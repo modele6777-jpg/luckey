@@ -8,12 +8,12 @@
  * 4. 산책자(Flâneur)의 변증법적 직관 및 수집가 안목 (Flâneur Intuition & Collector Gaze Index): 일상의 사소하고 잊힌 파편, 거리의 풍경 속에서 시대의 본질과 숨겨진 보물을 번뜩이는 직관으로 길어 올리는 관찰력.
  * 5. 파편의 알레고리 및 구원의 희망 점화력 (Allegorical Fragment Redemption Score): 부서지고 미완성된 한계 상황 속에서도 절망에 함몰되지 않고, 작은 틈새에서 구원의 불꽃을 재구성하는 회복탄력성.
  *
- * @version LUCKEY-WALTER-BENJAMIN-AURA-NOWTIME-v2.0.0
+ * @version LUCKEY-WALTER-BENJAMIN-AURA-NOWTIME-v2.1.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const GERMAN_WALTER_BENJAMIN_AURA_NOWTIME_VERSION = 'LUCKEY-WALTER-BENJAMIN-AURA-NOWTIME-v2.0.0';
+export const GERMAN_WALTER_BENJAMIN_AURA_NOWTIME_VERSION = 'LUCKEY-WALTER-BENJAMIN-AURA-NOWTIME-v2.1.0';
 
 export interface BenjaminTheme {
   themeKey: string;
@@ -43,6 +43,9 @@ export interface GermanWalterBenjaminAuraNowTimeResult {
   // 세부 분석
   activeBenjaminTheme: BenjaminTheme;
   focalBenjaminAphorism: BenjaminAphorism;
+  secondaryBenjaminAphorism: BenjaminAphorism;
+  reflectiveQuestion: string;
+  interpretiveBoundary: string;
   benjaminComprehensiveGuidance: {
     guidanceTitle: string;
     philosophicalCounsel: string;
@@ -139,7 +142,15 @@ function formatBenjaminKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 KST`;
+}
+
+function buildBenjaminReflectiveQuestion(theme: BenjaminTheme, query?: string): string {
+  const trimmed = query?.trim();
+  if (trimmed) {
+    return `'${trimmed}'에서 남들이 하는 복제와 관성을 끊고, 바로 지금-시간(Jetztzeit)의 작은 문으로 들어설 나만의 일회적 결단은 무엇인가요? (${theme.themeTitleKo})`;
+  }
+  return `지금 지나쳐 버리기 쉬운 일상의 사소한 파편 가운데, 다시 주워 모아 구원의 의미를 빚어낼 작은 불씨는 어디에 있나요? (${theme.themeTitleKo})`;
 }
 
 function describeBenjaminStage(score: number): string {
@@ -171,9 +182,14 @@ export function calculateGermanWalterBenjaminAuraNowTime(
 
   const themeIndex = (absHash >> 5) % BENJAMIN_THEMES.length;
   const aphorismIndex = (absHash >> 8) % BENJAMIN_APHORISMS.length;
+  const secondaryOffset = 1 + ((absHash >> 11) % (BENJAMIN_APHORISMS.length - 1));
+  const secondaryAphorismIndex = (aphorismIndex + secondaryOffset) % BENJAMIN_APHORISMS.length;
 
   const activeBenjaminTheme = BENJAMIN_THEMES[themeIndex];
   const focalBenjaminAphorism = BENJAMIN_APHORISMS[aphorismIndex];
+  const secondaryBenjaminAphorism = BENJAMIN_APHORISMS[secondaryAphorismIndex];
+  const reflectiveQuestion = buildBenjaminReflectiveQuestion(activeBenjaminTheme, query);
+  const interpretiveBoundary = '발터 벤야민 비판미학 관점은 사건의 성패나 미래 예언이 아니라, 지금-여기의 고유성과 일상의 파편을 읽는 문화·철학적 성찰 렌즈입니다.';
 
   const guidanceTitle = `발터 벤야민 아우라와 지금-시간의 지혜: ${activeBenjaminTheme.themeTitleKo}`;
   const philosophicalCounsel = `20세기 최고의 비판 사상가이자 문화비평가 발터 벤야민 선생은 《역사의 개념에 대하여》와 《기술복제시대의 예술작품》을 통해 ` +
@@ -202,6 +218,9 @@ export function calculateGermanWalterBenjaminAuraNowTime(
     allegoricalRedemptionScore,
     activeBenjaminTheme,
     focalBenjaminAphorism,
+    secondaryBenjaminAphorism,
+    reflectiveQuestion,
+    interpretiveBoundary,
     benjaminComprehensiveGuidance: {
       guidanceTitle,
       philosophicalCounsel,
@@ -227,7 +246,12 @@ export function formatGermanWalterBenjaminAuraNowTimePrompt(
     `- 벤야민 원전 테제: "${res.focalBenjaminAphorism.aphorismKo}" (${res.focalBenjaminAphorism.aphorismGerman})`,
     `- 원전 출처: [${res.focalBenjaminAphorism.sourceContext}]`,
     `- 구체적 실천 지침: ${res.focalBenjaminAphorism.actionGuidance}`,
+    `- 보조 원전 테제: "${res.secondaryBenjaminAphorism.aphorismKo}" (${res.secondaryBenjaminAphorism.aphorismGerman})`,
+    `- 보조 원전 출처: [${res.secondaryBenjaminAphorism.sourceContext}]`,
+    `- 보조 실천 지침: ${res.secondaryBenjaminAphorism.actionGuidance}`,
+    `- 성찰 질문: ${res.reflectiveQuestion}`,
     `- 종합 벤야민 권면: ${res.benjaminComprehensiveGuidance.philosophicalCounsel}`,
+    `- 해석 경계: ${res.interpretiveBoundary}`,
   ];
   if (res.benjaminSynthesisMatrix) {
     lines.push(
