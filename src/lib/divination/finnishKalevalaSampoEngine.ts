@@ -22,7 +22,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const FINNISH_KALEVALA_SAMPO_ENGINE_VERSION = '2.0.0';
+export const FINNISH_KALEVALA_SAMPO_ENGINE_VERSION = '2.1.0';
 
 export interface SampoSituationalAudit {
   sampoAxis: string;
@@ -63,6 +63,7 @@ export interface KalevalaRuno {
 export interface FinnishKalevalaSampoReport {
   engineVersion: string;
   calculatedAt: string;
+  calculatedAtKst: string;
   sisuResilienceIndex: number; // 내부 연산용
   sampoBalance: SampoWingsBalance;
   activeRuno: KalevalaRuno;
@@ -299,9 +300,13 @@ export function calculateFinnishKalevalaSampo(options?: {
     nextSampoStep: situationalSampoAudit.artisanAction,
   };
 
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const calculatedAtKst = kst.toISOString().replace('T', ' ').substring(0, 19) + ' +09:00 KST';
+
   return {
     engineVersion: FINNISH_KALEVALA_SAMPO_ENGINE_VERSION,
     calculatedAt: now.toISOString(),
+    calculatedAtKst,
     sisuResilienceIndex,
     sampoBalance,
     activeRuno,
@@ -322,7 +327,8 @@ export function formatFinnishKalevalaSampoPrompt(report: FinnishKalevalaSampoRep
   const r = report.activeRuno;
   const wingGrade = (s: number) => (s >= 80 ? '풍성' : s >= 62 ? '안정' : '배양중');
 
-  return `[🌾 고대 핀란드 칼레발라(Kalevala) 삼포(Sampo) & 9대 룬가 실측 데이터 (v${report.engineVersion})]
+  return `[🌾 고대 핀란드 칼레발라(Kalevala) 삼포(Sampo) & 9대 룬가 상징 관점 (v${report.engineVersion})]
+- 기준 시각: ${report.calculatedAtKst}
 - 시수(Sisu) 회복탄력 위상: ${report.sampoSynthesisMatrix.sisuGrade} | 수호 정령: ${report.guardianNatureSpirit}
 1. [기적의 맷돌 삼포(Sampo) 3대 번영 밸런스]:
    - 주재 번영 날개: [${sb.dominantWing}]
@@ -344,5 +350,6 @@ export function formatFinnishKalevalaSampoPrompt(report: FinnishKalevalaSampoRep
 4. [북유럽식 치유 처방 & 칼레발라 지혜]:
    - 교차 매트릭스: ${report.sampoSynthesisMatrix.wingRunoLink}
    - 실천 처방: ${report.forestHealingPractice}
-   - 칼레발라 총평: ${report.kalevalaWisdom}`;
+   - 칼레발라 총평: ${report.kalevalaWisdom}
+   - 해석 경계: 칼레발라 삼포 3대 날개와 시수(Sisu) 상징을 빌린 정성적 회복탄력 참고 관점이며, 수치 평가나 미래 단정이 아닙니다.`;
 }
