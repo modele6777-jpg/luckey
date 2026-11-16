@@ -8,7 +8,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const BAOPUZI_ELIXIRS_ENGINE_VERSION = 'LUCKEY-BAOPUZI-ELIXIRS-v2.0.0';
+export const BAOPUZI_ELIXIRS_ENGINE_VERSION = 'LUCKEY-BAOPUZI-ELIXIRS-v2.1.0';
 
 export type BaopuziQuestionFocus = 'health' | 'career' | 'relationship' | 'decision' | 'spiritual';
 
@@ -43,6 +43,7 @@ export interface BaopuziSynthesisMatrix {
 
 export interface BaopuziElixirsReport {
   engineVersion: string;
+  calculatedAtKst: string;
   questionFocus: BaopuziQuestionFocus;
   vitalityPreservationScore: number; // 내부 계산 지표
   alchemicalRefinementLevel: number; // 1-9 구전환단 화후(火候) 연마 단계
@@ -263,8 +264,12 @@ export function calculateBaopuziElixirs(params?: BaopuziElixirsParams): BaopuziE
     '포박자 갈홍의 잠언: "하루의 피로는 그날 밤 수면 속에서 완전히 녹여내야 내일의 금단이 맺힌다."',
   ];
 
+  const kst = new Date(now.getTime() + 9 * 3600 * 1000);
+  const calculatedAtKst = `${kst.toISOString().slice(0, 19)}+09:00`;
+
   return {
     engineVersion: BAOPUZI_ELIXIRS_ENGINE_VERSION,
+    calculatedAtKst,
     questionFocus,
     vitalityPreservationScore: vitality,
     alchemicalRefinementLevel: rank,
@@ -278,7 +283,8 @@ export function calculateBaopuziElixirs(params?: BaopuziElixirsParams): BaopuziE
 }
 
 export function formatBaopuziElixirsPrompt(report: BaopuziElixirsReport): string {
-  return `[고대 도교 포박자(抱朴子) 갈홍 구전환단(九轉還丹) 무병장수 실측 데이터 (${report.engineVersion})]
+  return `[고대 도교 포박자(抱朴子) 갈홍 구전환단(九轉還丹) 무병장수 정성 리포트 (${report.engineVersion})]
+- 연산 시각: ${report.calculatedAtKst}
 - 금단 연마 단계: ${report.alchemicalRefinementLevel}전 [${report.activeElixirPhase.elixirNameKo}] (${report.activeElixirPhase.elixirNameZh})
   * 효능: ${report.activeElixirPhase.transformativePower}
   * 생활 양생 실천: ${report.activeElixirPhase.nourishingPractice}
@@ -293,5 +299,6 @@ export function formatBaopuziElixirsPrompt(report: BaopuziElixirsReport): string
   * 계절 장부 초점: ${report.temporalElixirRhythm.seasonalOrganFocus}
   * 시의성 지침: ${report.temporalElixirRhythm.cultivationTimingAdvice}
 - 포박자 갈홍의 훈계: ${report.geHongTaoistAdvice}
+- 해석 경계: 본 리포트는 갈홍 《포박자》의 도교 양생 상징에 기반한 정성적 건강 성찰 안내이며, 의학적 진단이 아닙니다.
 - 루시 가이드: 수치 점수를 나열하지 말고, 피로나 스트레스로 지친 질문자에게 무리한 일정을 잠시 멈추고 내면의 정기(원기)를 충전하는 소박하고 실질적인 양생 처방을 따뜻하게 일러줘.`;
 }

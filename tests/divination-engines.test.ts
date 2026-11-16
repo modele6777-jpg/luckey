@@ -8999,3 +8999,24 @@ test('Wonhyo, Aurelius Inner Citadel, and Vedic Pancha Kosha v2.1.0 output quali
   assert.ok(!pkPrompt.includes('/100') && !pkPrompt.includes('%') && !pkPrompt.includes('점)'));
   assert.ok(pkPrompt.includes('해석 경계') && pkPrompt.includes('+09:00'));
 });
+
+test('Akashic Records, Alchemical Transmutation, and Baopuzi Elixirs v2.1.0 include KST and interpretive boundary', () => {
+  const now = new Date('2026-11-16T00:25:00Z');
+  const ak = calculateAkashicRecordsOracle({ profile, targetDate: now, question: '이직과 소명 사이에서 고민돼요' });
+  assert.equal(ak.engineVersion, AKASHIC_RECORDS_VERSION);
+  assert.ok(ak.calculatedAtKst.endsWith('+09:00'));
+  const akPrompt = formatAkashicRecordsOraclePrompt(ak);
+  assert.ok(akPrompt.includes('해석 경계') && akPrompt.includes('+09:00'));
+
+  const al = calculateAlchemicalTransmutation(profile, now, '반복되는 시련의 의미를 알고 싶어요');
+  assert.equal(al.engineVersion, ALCHEMICAL_TRANSMUTATION_VERSION);
+  assert.ok(al.calculatedAtKst.endsWith('+09:00'));
+  const alPrompt = formatAlchemicalTransmutationPrompt(al);
+  assert.ok(alPrompt.includes('해석 경계') && alPrompt.includes('+09:00'));
+
+  const ba = calculateBaopuziElixirs({ profile, question: '몸이 무겁고 기력이 부족해요', now });
+  assert.equal(ba.engineVersion, BAOPUZI_ELIXIRS_ENGINE_VERSION);
+  assert.ok(ba.calculatedAtKst.endsWith('+09:00'));
+  const baPrompt = formatBaopuziElixirsPrompt(ba);
+  assert.ok(baPrompt.includes('해석 경계') && baPrompt.includes('+09:00'));
+});
