@@ -17,7 +17,7 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const TRANSCENDENTAL_MEDITATION_VERSION = 'LUCKEY-ZEN-v2.0.0';
+export const TRANSCENDENTAL_MEDITATION_VERSION = 'LUCKEY-ZEN-v2.1.0';
 
 function formatZenKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -26,7 +26,7 @@ function formatZenKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
 }
 
 export type MeditationStyle = 
@@ -63,6 +63,8 @@ export interface TranscendentalMeditationReport {
     mantraText: string;
   };
   synthesisPromptGuidance: string;
+  reflectiveQuestion: string;
+  interpretiveBoundary: string;
   zenSynthesisMatrix?: {
     dominantTension: string;
     alignmentState: string;
@@ -167,20 +169,27 @@ export function runTranscendentalMeditationEngine(
 
   const calculatedAtKst = formatZenKstTimestamp(targetDate);
   const q = (question || '').trim();
+  const reflectiveQuestion = q
+    ? `"${q}" 앞에서 [${zenEnergyArchetype}]의 중심으로 돌아와 ${intendedMindState}을 회복하려면, 지금 잠시 멈추고 내려놓아야 할 생각은 무엇입니까?`
+    : `${primaryStyle}의 호흡을 따라 ${optimalTimeWindow}에 마음을 가다듬을 때, 오늘 가장 고요히 비우고 싶은 긴장은 무엇입니까?`;
+  const interpretiveBoundary =
+    '초월 명상 & 마음 안정 가이드는 사주 오행과 주역 상징에 기반한 호흡·관조 리추얼 참고이며, 단정적 미래 예측이나 의학적 치료·진단을 대체하지 않습니다.';
   const zenSynthesisMatrix = {
     dominantTension: `${zenEnergyArchetype} ↔ ${intendedMindState}`,
     alignmentState: `${ichingZenState.hexagramName} · ${optimalTimeWindow}`,
     integratedAction: `${mentalAnchor}${q ? ` [질문 맥락: ${q}]` : ''}`,
   };
 
-  const synthesisPromptGuidance = `[LUCKEY 초월 명상 & 마음 안정 지능 v2.0.0 | ${calculatedAtKst}]
+  const synthesisPromptGuidance = `[LUCKEY 초월 명상 & 마음 안정 지능 ${TRANSCENDENTAL_MEDITATION_VERSION} | ${calculatedAtKst}]
 - 명상 페르소나 아키타입: ${zenEnergyArchetype}
 - 추천 명상 양식: ${primaryStyle}
 - 명상 의도: ${intendedMindState}
 - 오늘 최적 명상 윈도우: ${optimalTimeWindow}
 - 호흡 및 자세: [자세] ${posture} | [호흡] ${breathRatio} | [닻] ${mentalAnchor}
 - 주역 젠 만트라 (${ichingZenState.hexagramName}): "${ichingZenState.mantraText}"
-- 초월 명상 교차 매트릭스: 핵심 긴장(${zenSynthesisMatrix.dominantTension}) · 조율 상태(${zenSynthesisMatrix.alignmentState}) · 통합 실천(${zenSynthesisMatrix.integratedAction})`;
+- 초월 명상 교차 매트릭스: 핵심 긴장(${zenSynthesisMatrix.dominantTension}) · 조율 상태(${zenSynthesisMatrix.alignmentState}) · 통합 실천(${zenSynthesisMatrix.integratedAction})
+- 성찰 질문: ${reflectiveQuestion}
+- 해석 경계: ${interpretiveBoundary}`;
 
   return {
     engineVersion: TRANSCENDENTAL_MEDITATION_VERSION,
@@ -192,6 +201,8 @@ export function runTranscendentalMeditationEngine(
     prescription,
     ichingZenState,
     synthesisPromptGuidance,
+    reflectiveQuestion,
+    interpretiveBoundary,
     zenSynthesisMatrix,
   };
 }

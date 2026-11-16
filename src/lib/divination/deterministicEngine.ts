@@ -1651,7 +1651,7 @@ try {
   const transcendentalMeditationResult = calculateSupplement('transcendentalMeditationResult', () => (birthdateStr && profile
     ? (() => {
         try {
-          return calculateTranscendentalMeditation({ profile, targetDate: now });
+          return calculateTranscendentalMeditation({ profile, targetDate: now, question });
         } catch (_) {
           return null;
         }
@@ -4755,7 +4755,7 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'sleepSubconscious', nameKo: '수면 무의식 뇌파', icon: '💤', category: 'deep_master' },
   { key: 'quantumLeap', nameKo: '퀀텀 점프 가능성', icon: '🚀', category: 'deep_master' },
   { key: 'soulJourneyTarot', nameKo: '영혼 여정 타로', icon: '🎴', category: 'deep_master' },
-  { key: 'transcendentalMeditation', nameKo: '초월 명상 가이드', icon: '🧘', category: 'deep_master' },
+  { key: 'transcendentalMeditation', nameKo: '초월 명상 가이드', icon: '🧘', category: 'deep_master', summary: '사주 오행과 주역 젠 만트라 상징으로 현재에 맞는 호흡·자세·명상 리듬을 살피는 관점' },
   { key: 'strategicLeverage', nameKo: '전략적 레버리지', icon: '🎯', category: 'deep_master' },
   { key: 'shadowArchetype', nameKo: '융 그림자 원형', icon: '🌑', category: 'deep_master' },
   { key: 'biorhythmPeakFlow', nameKo: '바이오리듬 피크', icon: '📈', category: 'deep_master' },
@@ -4842,7 +4842,7 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'vedicPanchaKosha', nameKo: '인도 베단타 5대 코샤', icon: '🧘', category: 'deep_master', summary: '타이티리야 우파니샤드의 5대 코샤(육체·호흡·감정·지성·지복) 중 지금 돌봄이 필요한 층위를 짚어 줍니다.' },
   { key: 'romanJanus', nameKo: '로마 야누스 문턱전이', icon: '🚪', category: 'deep_master', summary: '과거와 미래를 함께 보는 로마 야누스 4대 문턱 상징으로 지금 닫을 경계와 새로 열 발걸음을 가르는 관점' },
   { key: 'baopuziElixirs', nameKo: '포박자 구전환단 선도', icon: '🍶', category: 'deep_master', summary: '갈홍 《포박자》의 구전환단과 시진 화후 리듬으로 정기신 회복과 소박한 양생 처방을 전합니다.' },
-  { key: 'vedicMahavakya', nameKo: '베다 4대 마하바키야 각성', icon: '🕉️', category: 'deep_master' },
+  { key: 'vedicMahavakya', nameKo: '베다 4대 마하바키야 각성', icon: '🕉️', category: 'deep_master', summary: '베다 우파니샤드 4대 마하바키야와 불이론(Non-duality) 상징으로 자아의 중심을 성찰하는 관점' },
   { key: 'sumerianApkalluWisdom', nameKo: '수메르 엔키 7압갈루 현자', icon: '🐟', category: 'deep_master', summary: '에리두 엔키의 7대 압갈루 현자와 압수(담수) 정화 상징으로 현재의 난관을 풀 지혜와 행동 원칙을 비추는 관점' },
   { key: 'celticTuathaFourTreasures', nameKo: '켈트 투아하 4대 신성보물', icon: '🗡️', category: 'deep_master' },
   { key: 'taoistShangqingTwentyFourSpirits', nameKo: '도교 진고 상청 24성도', icon: '✨', category: 'deep_master', summary: '도홍경 《진고》 상청파 삼단전과 24진신 존사(存思) 상징으로 내면의 평정과 집중을 돕는 관점' },
@@ -4851,7 +4851,7 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'greekMoiraiAnankeFate', nameKo: '그리스 모이라이 운명실타래', icon: '🧶', category: 'deep_master', summary: '그리스 신화의 클로토·라케시스·아트로포스 삼여신과 아낭케 물레를 통해 시작·조율·매듭의 카이로스 국면을 분별합니다.' },
   { key: 'egyptianSphinxDreamOracle', nameKo: '이집트 스핑크스 꿈신탁', icon: '🦁', category: 'deep_master', summary: '투트모세 4세 꿈의 비석과 스핑크스 4대 테트라모르프(지혜·용기·인내·조망)로 장애물 돌파를 비추는 관점' },
   { key: 'chaldeanMulApinAstrology', nameKo: '칼데아 물핀 12조디악', icon: '✨', category: 'deep_master' },
-  { key: 'toltecNagualDreaming', nameKo: '톨텍 나구알리즘 4대 약속', icon: '🦅', category: 'deep_master' },
+  { key: 'toltecNagualDreaming', nameKo: '톨텍 나구알리즘 4대 약속', icon: '🦅', category: 'deep_master', summary: '톨텍 나구알리즘 4대 약속과 토날·나구알 상징으로 언어 습관과 현실 자각을 점검하는 관점' },
   { key: 'shugendoYamabushiTenRealms', nameKo: '슈겐도 야마부시 10계수행', icon: '🏔️', category: 'deep_master', summary: '일본 슈겐도 야마부시 10계 수행과 6근청정 상징으로 지금 통과할 내면 관문과 정화 리추얼을 짚어 주는 관점' },
   { key: 'gnosticPistisSophiaPleroma', nameKo: '영지주의 소피아 플레로마', icon: '🕊️', category: 'deep_master', summary: '12에온과 소피아의 회개 여정을 비춰 외부 통제망 너머 내면의 프뉴마 불꽃을 일깨웁니다.' },
   { key: 'sumerianInannaUnderworldDescent', nameKo: '수메르 이난나 명계하강 7대관문', icon: '👑', category: 'deep_master', summary: '수메르 이난나 신화의 7대 관문 탈각 상징으로 외적 가면과 방어기제를 내려놓고 내면의 회복을 성찰합니다.' },

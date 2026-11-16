@@ -15,7 +15,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const TOLTEC_NAGUAL_DREAMING_ENGINE_VERSION = '2.0.0';
+export const TOLTEC_NAGUAL_DREAMING_ENGINE_VERSION = '2.1.0';
 
 function formatToltecKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -24,7 +24,7 @@ function formatToltecKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
 }
 
 export interface ToltecAgreement {
@@ -48,8 +48,11 @@ export interface ToltecNagualDreamingReport {
   stalkingMasteryScore: number; // 0 ~ 100 자기 기만 포착(Stalking) 숙달도
   agreements: ToltecAgreement[];
   primaryAgreement: ToltecAgreement; // 가장 강화가 시급한 핵심 약속
+  secondaryAgreement: ToltecAgreement; // 보조 교차 약속
   dreamerGuidance: string; // 꿈꾸는 자의 현실 조율 지침
   warriorStalkingRitual: string; // 톨텍 전사의 자기 정화 리추얼
+  reflectiveQuestion: string;
+  interpretiveBoundary: string;
   toltecSynthesisMatrix?: {
     dominantTension: string;
     alignmentState: string;
@@ -135,6 +138,7 @@ export function calculateToltecNagualDreaming(
   // 점수가 가장 낮은 약속이 지금 당장 의식적으로 챙겨야 할 핵심 약속
   const sortedByUrgency = [...agreements].sort((a, b) => a.masteryScore - b.masteryScore);
   const primaryAgreement = sortedByUrgency[0];
+  const secondaryAgreement = sortedByUrgency[1];
 
   const nagualRaw = 35 + ((seed * 13) % 31);
   const nagualRatio = Math.min(65, Math.max(35, nagualRaw));
@@ -147,10 +151,16 @@ export function calculateToltecNagualDreaming(
   const dreamerGuidance = `현재 토날(물질·에고)과 나구알(영적·지각자)의 흐름 속에서, 기생충의 소음(미토테)을 잠재우기 위해 가장 시급한 열쇠는 '${primaryAgreement.nameKo}'입니다. 타인의 투사와 내면의 지레짐작을 분리할 때 제2주의가 깨어납니다.`;
   const warriorStalkingRitual = `호흡을 가다듬고 가슴에 손을 얹은 뒤 선언하십시오: "나는 타인의 환영에 반응하지 않으며, 오직 나의 무결한 진실 속에서 깨어 꿈꾼다." (${primaryAgreement.impeccableAction})`;
   const calculatedAtKst = formatToltecKstTimestamp(now);
+  const q = question.trim();
+  const reflectiveQuestion = q
+    ? `"${q}"의 자리에서 [${primaryAgreement.nameKo}]을 세우고 보조 [${secondaryAgreement.nameKo}]의 균형을 함께 지키기 위해, 지금 가장 먼저 내려놓아야 할 지레짐작은 무엇입니까?`
+    : `[${primaryAgreement.nameKo}]의 약속을 오늘 하루 실천할 때, 내 안의 미토테(소음)가 가장 쉽게 파고드는 순간은 언제입니까?`;
+  const interpretiveBoundary =
+    '톨텍 나구알리즘 4대 약속과 토날·나구알 상징은 언어 습관과 내면의 자각을 점검하기 위한 철학적 관조 은유이며, 단정적 미래 예측이나 의학적·심리적 진단을 대체하지 않습니다.';
   const toltecSynthesisMatrix = {
     dominantTension: `${primaryAgreement.nameKo} ↔ ${primaryAgreement.shadowTrap}`,
-    alignmentState: nagualRatio >= tonalRatio ? '나구알(지각자) 우위' : '토날(현실) 우위',
-    integratedAction: `${primaryAgreement.impeccableAction}${question ? ` [질문 맥락: ${question}]` : ''}`,
+    alignmentState: `${nagualRatio >= tonalRatio ? '나구알(지각자) 우위' : '토날(현실) 우위'} · 보조 교차(${secondaryAgreement.nameKo})`,
+    integratedAction: `${primaryAgreement.impeccableAction}${q ? ` [질문 맥락: ${q}]` : ''}`,
   };
 
   return {
@@ -164,8 +174,11 @@ export function calculateToltecNagualDreaming(
     stalkingMasteryScore,
     agreements,
     primaryAgreement,
+    secondaryAgreement,
     dreamerGuidance,
     warriorStalkingRitual,
+    reflectiveQuestion,
+    interpretiveBoundary,
     toltecSynthesisMatrix,
   };
 }
@@ -181,6 +194,9 @@ export function formatToltecNagualDreamingPrompt(rep: ToltecNagualDreamingReport
 ${rep.agreements.map((a) => `  - ${a.nameKo}: [위반 덫: ${a.shadowTrap}]`).join('\n')}
 · 최우선 의식 수복 약속: [${rep.primaryAgreement.nameKo}]
   - 실천 행동: ${rep.primaryAgreement.impeccableAction}
+· 보조 교차 약속: [${rep.secondaryAgreement.nameKo}] (${rep.secondaryAgreement.impeccableAction})
 · 꿈꾸는 자의 현실 조율 지침: ${rep.dreamerGuidance}
-· 톨텍 전사 스토킹 리추얼: ${rep.warriorStalkingRitual}${matrixLine}`;
+· 톨텍 전사 스토킹 리추얼: ${rep.warriorStalkingRitual}${matrixLine}
+· 성찰 질문: ${rep.reflectiveQuestion}
+· 해석 경계: ${rep.interpretiveBoundary}`;
 }
