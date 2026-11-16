@@ -78,6 +78,7 @@ export interface AstrologicalDecanSabianResult {
     actionableSoulAdvice: string;
   };
   summary: string;
+  reflectiveQuestion?: string;
   boundaryNotice: string;
   interpretiveBoundary: string;
 }
@@ -301,6 +302,10 @@ export function calculateAstrologicalDecanSabian(params?: {
   };
 
   const summary = `[데칸 & 사비안] 태양은 ${sun.decan.title}(${sun.decan.subRuler} 관할), 사비안: ${sun.sabian.symbolTitle}. 달은 ${moon.decan.title}, 사비안: ${moon.sabian.symbolTitle}.`;
+  const q = (params?.question || '').trim();
+  const reflectiveQuestion = q
+    ? `"${q}" 앞에서 태양 데칸(${sun.decan.title})의 빛과 달 사비안(${moon.sabian.symbolTitle})의 내면 감각 중 어느 쪽을 먼저 신뢰해 보고 싶으신가요?`
+    : `오늘 태양 [${sun.decan.title}]과 달 [${moon.decan.title}]의 상징이 만나는 지점에서 가장 먼저 깨우고 싶은 나만의 표현 방식은 무엇인가요?`;
   const boundaryNotice = '본 결과는 36 데칸 부지배성과 사비안 심볼 360° 원형에 따른 정성적 상징 해석이며, 확정적 길흉 판정이 아닙니다.';
 
   return {
@@ -319,6 +324,7 @@ export function calculateAstrologicalDecanSabian(params?: {
       actionableSoulAdvice
     },
     summary,
+    reflectiveQuestion,
     boundaryNotice,
     interpretiveBoundary: boundaryNotice,
   };
@@ -354,6 +360,6 @@ export function formatAstrologicalDecanSabianPrompt(res: AstrologicalDecanSabian
   • 핵심 본질: "${res.soulPoetics.coreIdentityMetaphor}"
   • 무의식 풍경: "${res.soulPoetics.innerEmotionalLandscape}"
   • 실천 지침: "${res.soulPoetics.actionableSoulAdvice}"
-- 해석 경계: ${res.boundaryNotice}`;
+${res.reflectiveQuestion ? `- 성찰 질문: ${res.reflectiveQuestion}\n` : ''}- 해석 경계: ${res.boundaryNotice}`;
 }
 
