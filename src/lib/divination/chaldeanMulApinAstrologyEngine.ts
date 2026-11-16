@@ -7,7 +7,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const CHALDEAN_MUL_APIN_ASTROLOGY_ENGINE_VERSION = 'LUCKEY-CHALDEAN-MULAPIN-v2.0.0';
+export const CHALDEAN_MUL_APIN_ASTROLOGY_ENGINE_VERSION = 'LUCKEY-CHALDEAN-MULAPIN-v2.1.0';
 
 export type CelestialPath =
   | '엔릴의 길(Way of Enlil - 북천/절대원칙과 법도)'
@@ -46,6 +46,7 @@ export interface ChaldeanSynthesisMatrix {
 export interface ChaldeanMulApinAstrologyReport {
   engineVersion: string;
   timestamp: string;
+  calculatedAtKst: string;
   celestialPath: CelestialPath;
   pathAlignmentScore: number;
   rulingPlanet: ChaldeanPlanet;
@@ -55,6 +56,7 @@ export interface ChaldeanMulApinAstrologyReport {
   mulApinSynthesisMatrix: ChaldeanSynthesisMatrix;
   noeticFireGuidance: string;
   astronomicalActionAdvice: string;
+  interpretiveBoundary: string;
 }
 
 const BABYLONIAN_CONSTELLATIONS = [
@@ -241,9 +243,14 @@ export function calculateChaldeanMulApinAstrology(options?: {
   const astronomicalActionAdvice = `물핀 천문 점토판의 길: 지금 당신의 운명 궤적은 [${celestialPath}]을 지나고 있습니다. ` +
     `원초 별자리 [${cMeta.name}]의 수호를 받아, 잔재주보다는 원칙을 지키고 약속된 질서를 확고히 이행할 때 하늘이 길을 열어줍니다.`;
 
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const calculatedAtKst = `${kst.toISOString().slice(0, 19)}+09:00`;
+  const interpretiveBoundary = '본 칼데아 물핀 천문 신탁 리포트는 고대 메소포타미아 천상로 상징에 기반한 정성적 지혜 안내이며, 확정적 점성 예언이 아닙니다.';
+
   return {
     engineVersion: CHALDEAN_MUL_APIN_ASTROLOGY_ENGINE_VERSION,
     timestamp: now.toISOString(),
+    calculatedAtKst,
     celestialPath,
     pathAlignmentScore,
     rulingPlanet,
@@ -253,12 +260,13 @@ export function calculateChaldeanMulApinAstrology(options?: {
     mulApinSynthesisMatrix,
     noeticFireGuidance,
     astronomicalActionAdvice,
+    interpretiveBoundary,
   };
 }
 
 export function formatChaldeanMulApinAstrologyPrompt(rep: ChaldeanMulApinAstrologyReport): string {
   return `[고대 메소포타미아 칼데아 12조디악 원형 & 바빌로니아 물핀(MUL.APIN) 천문 신탁 실측 데이터]
-· 엔진 버전: v${rep.engineVersion}
+· 엔진 버전: v${rep.engineVersion} | 기준 시각(KST): ${rep.calculatedAtKst}
 · 천상 3대로(Celestial Path): ${rep.celestialPath}
 · 칼데아 주재 행성: ${rep.rulingPlanet.nameKo} [${rep.rulingPlanet.virtue}]
 · 바빌로니아 물핀 별자리: ${rep.mulApinConstellation}
@@ -270,5 +278,6 @@ export function formatChaldeanMulApinAstrologyPrompt(rep: ChaldeanMulApinAstrolo
 · 천문 교차 매트릭스: 조응(${rep.mulApinSynthesisMatrix.pathResonanceGrade}) · ${rep.mulApinSynthesisMatrix.planetConstellationLink}
   - 다음 행동: ${rep.mulApinSynthesisMatrix.nextAstronomicalStep}
 · 칼데아 지성 불꽃(Noetic Fire): ${rep.noeticFireGuidance}
-· 천문학적 행동 처방: ${rep.astronomicalActionAdvice}`;
+· 천문학적 행동 처방: ${rep.astronomicalActionAdvice}
+· 해석 경계: ${rep.interpretiveBoundary}`;
 }

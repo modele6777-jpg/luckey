@@ -29,7 +29,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const DRUID_MOON_TREES_VERSION = 'LUCKEY-DRUID-MOON-TREES-v2.0.0';
+export const DRUID_MOON_TREES_VERSION = 'LUCKEY-DRUID-MOON-TREES-v2.1.0';
 
 export interface DruidTreeSituationalAudit {
   groveFocus: string;
@@ -64,6 +64,7 @@ export interface DruidMoonTreeInfo {
 export interface DruidMoonTreesReport {
   engineVersion: string;
   calculatedAt: string;
+  calculatedAtKst: string;
   birthTree: DruidMoonTreeInfo;
   activeCycleTree: DruidMoonTreeInfo;
   resonanceScore: number;          // 내부 연산용
@@ -72,6 +73,7 @@ export interface DruidMoonTreesReport {
   treeSynthesisMatrix: DruidTreeSynthesisMatrix;
   forestGuidance: string;
   synthesisMessage: string;
+  interpretiveBoundary: string;
 }
 
 const THIRTEEN_TREES: DruidMoonTreeInfo[] = [
@@ -302,9 +304,14 @@ export function calculateDruidMoonTrees(
     nextGroveStep: situationalTreeAudit.forestAction,
   };
 
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const calculatedAtKst = `${kst.toISOString().slice(0, 19)}+09:00`;
+  const interpretiveBoundary = '본 켈트 드루이드 13달나무 리포트는 수목 역법의 자연 상징에 기반한 정성적 성찰 안내이며, 확정적 길흉 예단이 아닙니다.';
+
   return {
     engineVersion: DRUID_MOON_TREES_VERSION,
     calculatedAt: now.toISOString(),
+    calculatedAtKst,
     birthTree,
     activeCycleTree,
     resonanceScore,
@@ -313,11 +320,13 @@ export function calculateDruidMoonTrees(
     treeSynthesisMatrix,
     forestGuidance,
     synthesisMessage,
+    interpretiveBoundary,
   };
 }
 
 export function formatDruidMoonTreesPrompt(report: DruidMoonTreesReport): string {
   return `### 🌲 켈트 드루이드 13대 달나무(Moon Trees) & 오검 주술 엔진 (${DRUID_MOON_TREES_VERSION})
+- **기준 시각(KST)**: ${report.calculatedAtKst}
 - **당신의 탄생 수호목**: **${report.birthTree.koreanName}** [오검: ${report.birthTree.oghamLetter}]
   - 관할 기간: ${report.birthTree.calendarRange}
   - 신성한 권능: ${report.birthTree.sacredAttribute}
@@ -329,5 +338,6 @@ export function formatDruidMoonTreesPrompt(report: DruidMoonTreesReport): string
   - 시간대 지침: ${report.temporalTreeRhythm.groveTimingDirective}
 - **교차 매트릭스**: ${report.treeSynthesisMatrix.birthCycleLink}
 - **숲의 지혜 처방**: ${report.forestGuidance}
-- **드루이드 통합 나침반**: ${report.synthesisMessage}`;
+- **드루이드 통합 나침반**: ${report.synthesisMessage}
+- **해석 경계**: ${report.interpretiveBoundary}`;
 }
