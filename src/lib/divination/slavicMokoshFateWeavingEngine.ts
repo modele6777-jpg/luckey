@@ -13,7 +13,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const SLAVIC_MOKOSH_FATE_WEAVING_ENGINE_VERSION = '2.0.0';
+export const SLAVIC_MOKOSH_FATE_WEAVING_ENGINE_VERSION = '2.1.0';
 
 export interface ThreadOfFate {
   id: 'dolya' | 'nedolya' | 'spindle';
@@ -37,7 +37,10 @@ export interface SlavicMokoshFateWeavingReport {
     balanceRatio: string;
   };
   seasonalPhase: string; // 계절적 직조 국면 (파종·개화·수확·안식)
+  secondaryPhase: string; // 보조 교차 직조 국면
   reweavingPrescription: string; // 운명 재직조 개운 처방
+  reflectiveQuestion: string; // 내담자 성찰 질문
+  interpretiveBoundary: string; // 상징 해석 경계 고지
   mokoshSynthesisMatrix?: {
     dominantTension: string;
     alignmentState: string;
@@ -52,7 +55,7 @@ function formatMokoshKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
 }
 
 export function calculateSlavicMokoshFateWeaving(options?: {
@@ -110,7 +113,9 @@ export function calculateSlavicMokoshFateWeaving(options?: {
   const fateTensionScore = Math.min(100, Math.max(30, Math.floor(100 - (nedolyaStrength * 0.6) + (spindleStrength * 0.4))));
 
   const phases = ['파종의 시기 (새로운 인연과 기획을 심을 때)', '성장의 시기 (가꾸고 정성을 쏟을 때)', '수확의 시기 (결과를 거두고 보상을 취할 때)', '안식의 시기 (내실을 다지고 충전할 때)'];
-  const seasonalPhase = phases[seed % 4];
+  const phaseIdx = seed % 4;
+  const seasonalPhase = phases[phaseIdx];
+  const secondaryPhase = phases[(phaseIdx + 1) % 4];
 
   let reweavingPrescription = '';
   if (nedolyaStrength >= 55) {
@@ -122,9 +127,14 @@ export function calculateSlavicMokoshFateWeaving(options?: {
   }
 
   const calculatedAtKst = formatMokoshKstTimestamp(now);
+  const reflectiveQuestion = question
+    ? `"${question}"의 매듭 앞에서 돌랴(황금실)의 기회를 키우기 위해, 네돌랴(회색실)에서 지금 가장 먼저 풀어내야 할 집착은 무엇입니까?`
+    : `오늘 모코시의 물레를 돌릴 때, ${seasonalPhase}의 흐름 속에서 ${secondaryPhase}로 건너가기 위해 먼저 정리할 일 한 가지는 무엇입니까?`;
+  const interpretiveBoundary =
+    '슬라브 모코시(Mokosh) 운명의 실타래 상징은 삶의 흐름과 마음의 매듭을 성찰하기 위한 은유적 관점이며, 미래 사건의 단정적 예언이나 의학·법률·재무 판단을 대체하지 않습니다.';
   const mokoshSynthesisMatrix = {
     dominantTension: `${dolya.nameKo} ↔ ${nedolya.nameKo}`,
-    alignmentState: `${seasonalPhase}`,
+    alignmentState: `${seasonalPhase} · 보조 국면: ${secondaryPhase}`,
     integratedAction: `${reweavingPrescription}${question ? ` [질문 맥락: ${question}]` : ''}`,
   };
 
@@ -141,7 +151,10 @@ export function calculateSlavicMokoshFateWeaving(options?: {
       balanceRatio: `길운(Dolya) ${dolyaStrength}% vs 액운(Nedolya) ${nedolyaStrength}%`,
     },
     seasonalPhase,
+    secondaryPhase,
     reweavingPrescription,
+    reflectiveQuestion,
+    interpretiveBoundary,
     mokoshSynthesisMatrix,
   };
 }
@@ -150,12 +163,14 @@ export function formatSlavicMokoshFateWeavingPrompt(rep: SlavicMokoshFateWeaving
   const lines = [
     `[고대 슬라브 모코시(Mokosh) 운명의 실타래 & 대지 모성 실측 데이터]`,
     `· 연산 시각: ${rep.calculatedAtKst} | 엔진 버전: v${rep.engineVersion}`,
-    `· 계절적 직조 국면: ${rep.seasonalPhase}`,
+    `· 계절적 직조 국면: ${rep.seasonalPhase} (보조 교차: ${rep.secondaryPhase})`,
     `· 운명의 3대 실타래 흐름:`,
     `  1) ${rep.threads.dolya.nameKo}: ${rep.threads.dolya.weavingMessage}`,
     `  2) ${rep.threads.nedolya.nameKo}: ${rep.threads.nedolya.weavingMessage}`,
     `  3) ${rep.threads.spindle.nameKo}: ${rep.threads.spindle.weavingMessage}`,
     `· 모코시의 운명 재직조(Re-weaving) 개운 처방: ${rep.reweavingPrescription}`,
+    `· 성찰 질문: ${rep.reflectiveQuestion}`,
+    `· 해석 경계: ${rep.interpretiveBoundary}`,
   ];
   if (rep.mokoshSynthesisMatrix) {
     lines.push(

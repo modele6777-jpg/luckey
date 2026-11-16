@@ -3474,17 +3474,23 @@ test('Guiguzi Liangtouqian Decision Matrix Engine: calculates two heads gua, des
 });
 
 test('Slavic Svarog Circle & Rod Ancestral Karma Engine: calculates svarog hall, rod karma blessing and elements', () => {
-  const rep = calculateSlavicSvarogCircle({ profile });
+  const rep = calculateSlavicSvarogCircle({ profile, contextText: '가계와 일의 균형을 어떻게 잡을까요?' });
   assert.equal(rep.engineVersion, SLAVIC_SVAROG_VERSION);
-  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(rep.calculatedAtKst.includes('+09:00 (KST)'));
   assert(Boolean(rep.svarogSynthesisMatrix?.integratedAction));
   assert(rep.svarogHall.koreanName.length > 0);
+  assert(rep.secondaryHall.koreanName.length > 0);
+  assert(rep.reflectiveQuestion.length > 0);
+  assert(rep.interpretiveBoundary.includes('예측'));
   assert(rep.ancestralKarma.rodProtectionScore >= 0 && rep.ancestralKarma.rodProtectionScore <= 100);
   assert(rep.elements.dominantElement.length > 0);
   assert(rep.sacredRuneSymbol.symbolName.length > 0);
   const prompt = formatSlavicSvarogCirclePrompt(rep);
   assert(prompt.includes('고대 슬라브 16 스바로그 체계 & 로드(Rod) 가계 카르마 엔진'));
   assert(prompt.includes(rep.svarogHall.koreanName));
+  assert(prompt.includes('보조 교차 궁'));
+  assert(prompt.includes('성찰 질문'));
+  assert(prompt.includes('해석 경계'));
   assert(prompt.includes('교차 매트릭스'));
   assert(!prompt.includes('/100') && !prompt.includes('%'));
 });
@@ -3976,16 +3982,22 @@ test('Maori Mauri Hauora Engine: calculates 4 Hauora pillars and Mauri vitality 
 });
 
 test('Slavic Mokosh Fate Weaving Engine: calculates Dolya/Nedolya fate threads and fertility index', () => {
-  const rep = calculateSlavicMokoshFateWeaving({ profile });
+  const rep = calculateSlavicMokoshFateWeaving({ profile, question: '지금 얽힌 매듭을 어떻게 풀까요?' });
   assert.equal(rep.engineVersion, SLAVIC_MOKOSH_FATE_WEAVING_ENGINE_VERSION);
-  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(rep.calculatedAtKst.includes('+09:00 (KST)'));
   assert(Boolean(rep.mokoshSynthesisMatrix?.integratedAction));
   assert(rep.earthFertilityIndex >= 0 && rep.earthFertilityIndex <= 100);
   assert(rep.fateTensionScore >= 0 && rep.fateTensionScore <= 100);
   assert(rep.threads.dolya.strength > 0);
+  assert(rep.secondaryPhase.length > 0);
+  assert(rep.reflectiveQuestion.length > 0);
+  assert(rep.interpretiveBoundary.includes('예언'));
   const prompt = formatSlavicMokoshFateWeavingPrompt(rep);
   assert(prompt.includes('고대 슬라브 모코시(Mokosh) 운명의 실타래 & 대지 모성 실측 데이터'));
   assert(prompt.includes(rep.threads.dolya.nameKo));
+  assert(prompt.includes('보조 교차'));
+  assert(prompt.includes('성찰 질문'));
+  assert(prompt.includes('해석 경계'));
   assert(prompt.includes('교차 매트릭스'));
   assert(!prompt.includes('/100') && !prompt.includes('%'));
 });
@@ -4365,18 +4377,24 @@ test('Toltec Nagual Dreaming Engine: calculates four agreements and second atten
 });
 
 test('Shugendo Yamabushi Ten Realms Engine: calculates ten realms purification and symbolic rebirth', () => {
-  const rep = calculateShugendoYamabushiTenRealms({ profile });
+  const rep = calculateShugendoYamabushiTenRealms({ profile, question: '마음이 흔들릴 때 중심을 잡으려면 어떻게 할까요?' });
   assert.equal(rep.engineVersion, SHUGENDO_YAMABUSHI_TEN_REALMS_ENGINE_VERSION);
-  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(rep.calculatedAtKst.includes('+09:00 (KST)'));
   assert(Boolean(rep.shugendoSynthesisMatrix?.integratedAction));
   assert(rep.symbolicRebirthScore >= 0 && rep.symbolicRebirthScore <= 100);
   assert(rep.sixRootsPurificationScore >= 0 && rep.sixRootsPurificationScore <= 100);
   assert(rep.kujiKiriWardDefenseScore >= 0 && rep.kujiKiriWardDefenseScore <= 100);
   assert.equal('horagaiResonanceFrequency' in rep, false);
   assert(rep.currentInitiationRealm.nameKo.length > 0);
+  assert(rep.secondaryRealm.nameKo.length > 0);
+  assert(rep.reflectiveQuestion.length > 0);
+  assert(rep.interpretiveBoundary.includes('예언'));
   const prompt = formatShugendoYamabushiTenRealmsPrompt(rep);
   assert(prompt.includes('고대 일본 슈겐도(修驗道) 야마부시 10계수행 & 6근청정 실측 데이터'));
   assert(prompt.includes(rep.currentInitiationRealm.nameKo));
+  assert(prompt.includes('보조 교차 계위'));
+  assert(prompt.includes('성찰 질문'));
+  assert(prompt.includes('해석 경계'));
   assert(prompt.includes('교차 매트릭스'));
   assert(!prompt.includes('/100') && !prompt.includes('%'));
   assert.doesNotMatch(prompt, /\bHz\b|Solfeggio|솔페지오|주파수/i);
