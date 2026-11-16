@@ -15,7 +15,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const JEON_BONGJUN_NOKDU_VERSION = 'LUCKEY-JEON-BONGJUN-NOKDU-v2.0.0';
+export const JEON_BONGJUN_NOKDU_VERSION = 'LUCKEY-JEON-BONGJUN-NOKDU-v2.1.0';
 
 export interface NokduGeneralStage {
   stageLevel: number;
@@ -42,6 +42,14 @@ export interface JeonBongjunNokduResult {
     coreEssence: string;
     actionableDirective: string;
   };
+  secondaryRighteousManifesto: {
+    manifestoTitleKo: string;
+    hanjaMotto: string;
+    coreEssence: string;
+    actionableDirective: string;
+  };
+  reflectiveQuestion: string;
+  interpretiveBoundary: string;
   donghakPeasantLegacy: {
     legacyTitle: string;
     historicalWisdom: string;
@@ -60,7 +68,7 @@ function formatNokduKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 KST`;
 }
 
 function describeNokduStage(score: number): string {
@@ -131,6 +139,13 @@ export function calculateJeonBongjunNokdu(
 
   const manifestoIdx = (seed >> 4) % RIGHTEOUS_MANIFESTOS.length;
   const primaryRighteousManifesto = RIGHTEOUS_MANIFESTOS[manifestoIdx];
+  const secondaryManifestoIdx = (manifestoIdx + 1 + ((seed >> 11) % (RIGHTEOUS_MANIFESTOS.length - 1))) % RIGHTEOUS_MANIFESTOS.length;
+  const secondaryRighteousManifesto = RIGHTEOUS_MANIFESTOS[secondaryManifestoIdx];
+  const trimmedQuery = query?.trim();
+  const reflectiveQuestion = trimmedQuery
+    ? `'${trimmedQuery}'를 혼자 짊어지지 않고 사발통문처럼 나란히 손잡고 함께 풀어 갈 동료나 연대의 방식은 무엇인가요?`
+    : `지금 내가 윗사람이나 눈치에 기대지 않고 동학의 수평 연대 정신으로 당당히 세워야 할 원칙 하나는 무엇인가요?`;
+  const interpretiveBoundary = '녹두장군 전봉준 사발통문·백산 창의 관점은 길흉 예단이 아니라, 수평적 연대와 대의의 용기를 비추는 역사 성찰 렌즈입니다.';
 
   const legacyIdx = (seed >> 6) % DONGHAK_LEGACIES.length;
   const donghakPeasantLegacy = DONGHAK_LEGACIES[legacyIdx];
@@ -160,6 +175,9 @@ export function calculateJeonBongjunNokdu(
     cheongpodoSpringResilience,
     activeNokduStage,
     primaryRighteousManifesto,
+    secondaryRighteousManifesto,
+    reflectiveQuestion,
+    interpretiveBoundary,
     donghakPeasantLegacy,
     nokduSynthesisMatrix,
   };
@@ -182,10 +200,13 @@ export function formatJeonBongjunNokduPrompt(result: JeonBongjunNokduResult): st
     `  → 관장 영역: ${result.activeNokduStage.righteousDomain}`,
     `  → 민중 회복력 축복: ${result.activeNokduStage.peasantResilienceBlessing}`,
     `- 최우선 행동 강령: **[${result.primaryRighteousManifesto.manifestoTitleKo}]**`,
+    `- 보조 교차 강령: **[${result.secondaryRighteousManifesto.manifestoTitleKo}]** (${result.secondaryRighteousManifesto.hanjaMotto})`,
     `  → 핵심 본질: ${result.primaryRighteousManifesto.coreEssence}`,
     `  → 실천 지침: ${result.primaryRighteousManifesto.actionableDirective}`,
     `- 동학농민혁명 불멸의 유산: 《${result.donghakPeasantLegacy.legacyTitle}》`,
     `  → 역사적 지혜: "${result.donghakPeasantLegacy.historicalWisdom}"`,
+    `- 성찰 질문: ${result.reflectiveQuestion}`,
+    `- 해석 경계: ${result.interpretiveBoundary}`,
   ];
   if (result.nokduSynthesisMatrix) {
     lines.push(

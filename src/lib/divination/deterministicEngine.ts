@@ -2996,7 +2996,7 @@ try {
   // 185. 한국 근대 동학농민혁명 녹두장군 전봉준 《사발통문》 & 백산 창의 4대 강령 의기 결집 엔진
   const jeonBongjunNokduResult = calculateSupplement('jeonBongjunNokduResult', () => ((() => {
     try {
-      return calculateJeonBongjunNokdu(profile);
+      return calculateJeonBongjunNokdu(profile, question, now);
     } catch (_) {
       return null;
     }
@@ -3518,7 +3518,7 @@ try {
   // 241. 신라 해상왕 장보고 청해진 글로벌 해상무역 & 신의 개척 실천 엔진
   const jangBogoCheonghaejinMaritimePioneerResult = calculateSupplement('jangBogoCheonghaejinMaritimePioneerResult', () => ((() => {
     try {
-      return calculateJangBogoCheonghaejinMaritimePioneer(profile);
+      return calculateJangBogoCheonghaejinMaritimePioneer(profile, question, now);
     } catch (_) {
       return null;
     }
@@ -4256,7 +4256,7 @@ try {
   // 323. 대한민국 보각국사 일연 선사 《삼국유사》 홍익인간 자주 자긍심·향가 서정 치유·처용 관용과 문화 회복탄력성 지혜 엔진
   const koreanIlyeonSamgukYusaResult = calculateSupplement('koreanIlyeonSamgukYusaResult', () => ((() => {
     try {
-      return calculateKoreanIlyeonSamgukYusa(profile);
+      return calculateKoreanIlyeonSamgukYusa(profile, question, now);
     } catch (_) {
       return null;
     }
@@ -4898,7 +4898,7 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'koreanSuunGasiHeon', nameKo: '동학 수운 최제우 용담유사 검결 심기수련 삼경', icon: '🗡️', category: 'deep_master' },
   { key: 'eleusinianTriptolemosCivilization', nameKo: '엘레우시스 트리프톨레모스 황금전차 농경3대율법', icon: '🌾', category: 'deep_master', summary: '엘레우시스 밀의 트리프톨레모스 3대 율법과 파종·수확 리듬으로 성실한 결실을 비추는 관점' },
   { key: 'mixtecEightDeerJaguarClaw', nameKo: '믹스테크 8-사슴 재규어발톱 동맹결성 통일', icon: '🐆', category: 'deep_master' },
-  { key: 'koreanJeonBongjunNokduGeneral', nameKo: '동학농민혁명 녹두장군 전봉준 사발통문 백산창의', icon: '📜', category: 'deep_master' },
+  { key: 'koreanJeonBongjunNokduGeneral', nameKo: '동학농민혁명 녹두장군 전봉준 사발통문 백산창의', icon: '📜', category: 'deep_master', summary: '녹두장군 전봉준의 사발통문 수평 연대와 백산 창의 4대 강령으로 불의에 굴하지 않는 공동체 정의와 회복력을 세웁니다.' },
   { key: 'atrahasisFloodWisdom', nameKo: '메소포타미아 아트라하시스 지혜의방주 대홍수정화 절제', icon: '🌊', category: 'deep_master' },
   { key: 'eddicYggdrasilNineRealms', nameKo: '북유럽 고에다 위그드라실 9대우주계 3대영천 소생', icon: '🌳', category: 'deep_master' },
   { key: 'yiSunSinNanjungIlgiStrategic', nameKo: '충무공 이순신 난중일기 필사즉생 명량대역전', icon: '⚔️', category: 'deep_master' },

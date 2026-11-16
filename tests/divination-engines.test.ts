@@ -9756,3 +9756,36 @@ test('Heo Gyun, Heo Jun, and Hyecho v2.1.0 include +09:00 KST, dual cross-check,
   const hcPrompt = formatHyechoWangOcheonchukgukjeonPrompt(hc);
   assert.ok(hcPrompt.includes('+09:00') && hcPrompt.includes('보조 교차 시구') && hcPrompt.includes('성찰 질문') && hcPrompt.includes('해석 경계'));
 });
+
+test('Ilyeon, Jang Bogo, and Jeon Bongjun v2.1.0 include +09:00 KST, dual cross-check, reflective question, and interpretive boundary', () => {
+  const profile = { basic: { name: '제제', birthdate: '1994-01-24', birthtime: '12:00', gender: 'male' } } as any;
+  const now = new Date('2026-11-16T05:45:00Z');
+  const query = '거친 파도를 넘어 동료들과 새로운 길을 열고 싶습니다';
+
+  const il = calculateKoreanIlyeonSamgukYusa(profile, query, now);
+  assert.equal(il.engineVersion, KOREAN_ILYEON_SAMGUK_YUSA_VERSION);
+  assert.match(il.calculatedAtKst, /\+09:00/);
+  assert.notEqual(il.secondaryIlyeonAphorism.aphorismKey, il.focalIlyeonAphorism.aphorismKey);
+  assert.ok(il.reflectiveQuestion.includes(query));
+  assert.ok(il.interpretiveBoundary.includes('성찰'));
+  const ilPrompt = formatKoreanIlyeonSamgukYusaPrompt(il);
+  assert.ok(ilPrompt.includes('+09:00') && ilPrompt.includes('보조 교차 격언') && ilPrompt.includes('성찰 질문') && ilPrompt.includes('해석 경계'));
+
+  const jb = calculateJangBogoCheonghaejinMaritimePioneer(profile, query, now);
+  assert.equal(jb.engineVersion, KOREAN_JANG_BOGO_VERSION);
+  assert.match(jb.calculatedAtKst, /\+09:00/);
+  assert.notEqual(jb.secondaryCheonghaeAphorism.aphorismKey, jb.focalCheonghaeAphorism.aphorismKey);
+  assert.ok(jb.reflectiveQuestion.includes(query));
+  assert.ok(jb.interpretiveBoundary.includes('성찰'));
+  const jbPrompt = formatJangBogoCheonghaejinMaritimePioneerPrompt(jb);
+  assert.ok(jbPrompt.includes('+09:00') && jbPrompt.includes('보조 교차 경구') && jbPrompt.includes('성찰 질문') && jbPrompt.includes('해석 경계'));
+
+  const jbj = calculateJeonBongjunNokdu(profile, query, now);
+  assert.equal(jbj.engineVersion, JEON_BONGJUN_NOKDU_VERSION);
+  assert.match(jbj.calculatedAtKst, /\+09:00/);
+  assert.notEqual(jbj.secondaryRighteousManifesto.hanjaMotto, jbj.primaryRighteousManifesto.hanjaMotto);
+  assert.ok(jbj.reflectiveQuestion.includes(query));
+  assert.ok(jbj.interpretiveBoundary.includes('성찰'));
+  const jbjPrompt = formatJeonBongjunNokduPrompt(jbj);
+  assert.ok(jbjPrompt.includes('+09:00') && jbjPrompt.includes('보조 교차 강령') && jbjPrompt.includes('성찰 질문') && jbjPrompt.includes('해석 경계'));
+});
