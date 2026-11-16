@@ -2404,6 +2404,7 @@ test('Sleep Subconscious Engine: 수면 사운드 안내 및 3단계 나이트 �
   assert.equal(res.engineVersion, SLEEP_SUBCONSCIOUS_VERSION);
   assert(res.calculatedAtKst.endsWith('KST'));
   assert(Boolean(res.sleepSynthesisMatrix?.integratedAction));
+  assert(res.interpretiveBoundary.length > 0);
   assert(res.sleepRecoveryScore >= 0 && res.sleepRecoveryScore <= 100);
   assert(res.soundscape.recommendedSounds.length > 0);
   assert(res.nightRitual.step1BrainDump.length > 0);
@@ -2412,7 +2413,7 @@ test('Sleep Subconscious Engine: 수면 사운드 안내 및 3단계 나이트 �
   assert(prompt.includes(SLEEP_SUBCONSCIOUS_VERSION));
   assert(prompt.includes('수면 회복 잠재력'));
   assert(prompt.includes('나이트 리셋 리추얼'));
-  assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('교차 매트릭스') && prompt.includes('해석 경계'));
   assert(!prompt.includes('/100'));
   assert.doesNotMatch(prompt, /\bHz\b|Solfeggio|솔페지오|델타파|세타파|뇌파|주파수/i);
 });
@@ -2489,13 +2490,14 @@ test('Soul Journey Tarot Engine: 영혼 연금술 3단계 및 4원소 균형 검
   assert.equal(res.engineVersion, SOUL_JOURNEY_TAROT_VERSION);
   assert(res.calculatedAtKst.endsWith('KST'));
   assert(Boolean(res.soulJourneySynthesisMatrix?.integratedAction));
+  assert(res.interpretiveBoundary.length > 0);
   assert(res.currentArchetype.number >= 0 && res.currentArchetype.number <= 21);
   assert(res.elementalBalance.wands.score >= 0 && res.elementalBalance.wands.score <= 100);
   assert(res.riteOfPassage.alchemyScore >= 0 && res.riteOfPassage.alchemyScore <= 100);
   const prompt = formatSoulJourneyTarotPrompt(res);
   assert(prompt.includes('LUCKEY 영혼 타로 여정 지능'));
   assert(prompt.includes(res.currentArchetype.nameKo));
-  assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('교차 매트릭스') && prompt.includes('해석 경계'));
   assert(!prompt.includes('%'));
 });
 
@@ -2793,6 +2795,7 @@ test('Somatic Body Armoring Engine: 빌헬름 라이히 7대 신체 갑옷 해�
   assert.equal(res.engineVersion, SOMATIC_ARMORING_VERSION);
   assert(res.calculatedAtKst.endsWith('KST'));
   assert(Boolean(res.somaticSynthesisMatrix?.integratedAction));
+  assert(res.interpretiveBoundary.length > 0);
   assert(res.primaryArmorSegment.segmentName.length > 0);
   assert(res.primaryArmorSegment.tensionLevelScore >= 0 && res.primaryArmorSegment.tensionLevelScore <= 100);
   assert(res.lifeForceEnergyFlowScore >= 0 && res.lifeForceEnergyFlowScore <= 100);
@@ -2800,7 +2803,7 @@ test('Somatic Body Armoring Engine: 빌헬름 라이히 7대 신체 갑옷 해�
   const prompt = formatSomaticBodyArmoringPrompt(res);
   assert(prompt.includes('LUCKEY 빌헬름 라이히 7대 신체 갑옷 해제 & 체성 감각'));
   assert(prompt.includes(res.primaryArmorSegment.segmentName));
-  assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('교차 매트릭스') && prompt.includes('해석 경계'));
   assert(!prompt.includes('/100'));
 });
 

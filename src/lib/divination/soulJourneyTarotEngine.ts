@@ -17,7 +17,7 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const SOUL_JOURNEY_TAROT_VERSION = 'LUCKEY-JOURNEY-v2.0.0';
+export const SOUL_JOURNEY_TAROT_VERSION = 'LUCKEY-JOURNEY-v2.1.0';
 
 function formatSoulJourneyKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -69,6 +69,7 @@ export interface SoulJourneyTarotReport {
     alignmentState: string;
     integratedAction: string;
   };
+  interpretiveBoundary: string;
 }
 
 const MAJOR_ARCANA_LIST: Array<Omit<MajorArchetypeDetail, 'resonancePower'>> = [
@@ -351,6 +352,8 @@ export function runSoulJourneyTarotEngine(
     integratedAction: `${currentArchetype.transcendenceKey}${q ? ` [질문 맥락: ${q}]` : ''}`,
   };
 
+  const interpretiveBoundary = '본 영혼의 타로 여정 & 4원소 연금술 리포트는 타로 메이저 아르카나 원형과 생년월일 수비학에 기반한 정성적 성찰 안내이며, 확정적 미래 예언이 아닙니다.';
+
   const synthesisPromptGuidance = `[LUCKEY 영혼 타로 여정 지능 ${SOUL_JOURNEY_TAROT_VERSION} | ${calculatedAtKst}]
 - 현재 활성 메이저 아키타입: ${currentArchetype.number}번 ${currentArchetype.nameKo} (${currentArchetype.nameEn})
 - 영혼의 여정 단계: ${currentArchetype.stage}
@@ -358,7 +361,8 @@ export function runSoulJourneyTarotEngine(
 - 초월 열쇠 리추얼: ${currentArchetype.transcendenceKey}
 - 4원소 마이너 슈트 균형: 우세=${dominantSuit} / 보완필요=${lackingSuit}
 - 교차 매트릭스: [핵심 긴장: ${soulJourneySynthesisMatrix.dominantTension} | 조율 상태: ${soulJourneySynthesisMatrix.alignmentState}]
-  * 통합 실천: ${soulJourneySynthesisMatrix.integratedAction}`;
+  * 통합 실천: ${soulJourneySynthesisMatrix.integratedAction}
+- 해석 경계: ${interpretiveBoundary}`;
 
   return {
     engineVersion: SOUL_JOURNEY_TAROT_VERSION,
@@ -369,6 +373,7 @@ export function runSoulJourneyTarotEngine(
     riteOfPassage,
     synthesisPromptGuidance,
     soulJourneySynthesisMatrix,
+    interpretiveBoundary,
   };
 }
 
