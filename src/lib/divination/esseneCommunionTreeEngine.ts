@@ -36,7 +36,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const ESSENE_COMMUNION_VERSION = 'LUCKEY-ESSENE-COMMUNION-v2.0.0';
+export const ESSENE_COMMUNION_VERSION = 'LUCKEY-ESSENE-COMMUNION-v2.1.0';
 
 export interface EsseneAngel {
   realm: 'earthly' | 'heavenly';
@@ -60,10 +60,12 @@ export interface EsseneCommunionReport {
   calculatedAtKst: string;
   morningEarthlyAngel: EsseneAngel;
   eveningHeavenlyAngel: EsseneAngel;
+  secondaryEarthlyAngel: EsseneAngel;
   treeTrinity: EsseneTreeTrinity;
   communionVibrationalScore: number; // 0 ~ 100 종합 교감 점수
   dailyEsseneGuidance: string;
   synthesisMessage: string;
+  interpretiveBoundary: string;
   situationalEsseneAudit: {
     questionFocus: string;
     trinityBalanceNote: string;
@@ -217,9 +219,11 @@ export function calculateEsseneCommunion(
 
   const dayOfYear = Math.floor((now.getTime() - new Date(now.getUTCFullYear(), 0, 1).getTime()) / (1000 * 60 * 60 * 24));
   const morningIdx = (seed + dayOfYear) % EARTHLY_ANGELS.length;
+  const secondaryEarthlyIdx = (morningIdx + 1 + ((seed >> 3) % (EARTHLY_ANGELS.length - 1))) % EARTHLY_ANGELS.length;
   const eveningIdx = (seed + dayOfYear + 3) % HEAVENLY_ANGELS.length;
 
   const morningEarthlyAngel = EARTHLY_ANGELS[morningIdx];
+  const secondaryEarthlyAngel = EARTHLY_ANGELS[secondaryEarthlyIdx];
   const eveningHeavenlyAngel = HEAVENLY_ANGELS[eveningIdx];
 
   // 생명나무 삼위일체 지수 산출
@@ -248,7 +252,7 @@ export function calculateEsseneCommunion(
   const kstDate = new Date(kstMs);
   const kstHour = kstDate.getUTCHours();
   const kstMonth = kstDate.getUTCMonth() + 1;
-  const calculatedAtKst = `${kstDate.getUTCFullYear()}-${String(kstMonth).padStart(2, '0')}-${String(kstDate.getUTCDate()).padStart(2, '0')} ${String(kstHour).padStart(2, '0')}:${String(kstDate.getUTCMinutes()).padStart(2, '0')} KST`;
+  const calculatedAtKst = `${kstDate.getUTCFullYear()}-${String(kstMonth).padStart(2, '0')}-${String(kstDate.getUTCDate()).padStart(2, '0')} ${String(kstHour).padStart(2, '0')}:${String(kstDate.getUTCMinutes()).padStart(2, '0')} +09:00 KST`;
 
   const qLower = question.toLowerCase();
   const questionFocus = /연애|사랑|관계|결혼|가족|화해|인연/.test(qLower)
@@ -287,10 +291,14 @@ export function calculateEsseneCommunion(
 
   const ritualTimingNote = `현재 ${qumranCommunionWindow}에 맞춰 ${morningEarthlyAngel.koreanName}과 ${eveningHeavenlyAngel.koreanName}의 묵상을 이어가십시오.`;
 
+  const trimmedQuestion = question.trim();
+  const interpretiveBoundary = '에세네파 14대 천사 교감 관점은 의학적 치료나 미래 예단이 아니라, 자연과의 호흡·감정 정화·의로운 실천을 돌아보는 영성 성찰 렌즈입니다.';
   const esseneSynthesisMatrix = {
     coreMandate: `${communionAnchor}을 중심으로 ${questionFocus}을 실천하며 삼위일체 균형을 세우십시오.`,
     sacredBoundary: '조급한 자기비난이나 감정의 탁한 앙금을 방치하지 말고, 물·호흡·침묵으로 먼저 정화한 뒤 말하고 행동하십시오.',
-    reflectiveQuestion: `오늘 내 생각·감정·행동 중 대지 어머니의 온기나 천상 아버지의 고요가 가장 필요한 한 자리는 어디인가요?`,
+    reflectiveQuestion: trimmedQuestion
+      ? `'${trimmedQuestion}'에서 ${morningEarthlyAngel.koreanName}의 정화와 ${eveningHeavenlyAngel.koreanName}의 고요가 가장 먼저 닿아야 할 자리에는 어떤 마음이 있나요?`
+      : `오늘 내 생각·감정·행동 중 대지 어머니의 온기나 천상 아버지의 고요가 가장 필요한 한 자리는 어디인가요?`,
   };
 
   return {
@@ -299,6 +307,7 @@ export function calculateEsseneCommunion(
     calculatedAtKst,
     morningEarthlyAngel,
     eveningHeavenlyAngel,
+    secondaryEarthlyAngel,
     treeTrinity: {
       thoughtPurityScore,
       feelingTendernessScore,
@@ -308,6 +317,7 @@ export function calculateEsseneCommunion(
     communionVibrationalScore,
     dailyEsseneGuidance,
     synthesisMessage,
+    interpretiveBoundary,
     situationalEsseneAudit: {
       questionFocus,
       trinityBalanceNote,
@@ -335,10 +345,12 @@ export function formatEsseneCommunionPrompt(report: EsseneCommunionReport): stri
   - 교감 시점: ${report.eveningHeavenlyAngel.communionTime}
   - 영적 은총 및 정화: ${report.eveningHeavenlyAngel.spiritualGift}
   - 저녁 묵상 명상문: "${report.eveningHeavenlyAngel.contemplativeMantra}"
+- **보조 지상 교감 천사**: **${report.secondaryEarthlyAngel.koreanName}** (${report.secondaryEarthlyAngel.originalEsseneName}) — ${report.secondaryEarthlyAngel.spiritualGift}
 - **에세네 생명나무 삼위일체 균형**: ${report.treeTrinity.harmonicEquilibrium}
 - **시공간 교감 리듬**: ${report.temporalEsseneRhythm.qumranCommunionWindow} · ${report.temporalEsseneRhythm.seasonalTreePhase}
 - **에세네 일일 나침반**:
   - 실천 지침: ${report.dailyEsseneGuidance}
   - 통합 조언: ${report.synthesisMessage}
-- **교차 매트릭스**: ${report.esseneSynthesisMatrix.coreMandate} | 경계: ${report.esseneSynthesisMatrix.sacredBoundary} | 성찰 질문: "${report.esseneSynthesisMatrix.reflectiveQuestion}"`;
+- **교차 매트릭스**: ${report.esseneSynthesisMatrix.coreMandate} | 경계: ${report.esseneSynthesisMatrix.sacredBoundary} | 성찰 질문: "${report.esseneSynthesisMatrix.reflectiveQuestion}"
+- **해석 경계**: ${report.interpretiveBoundary}`;
 }

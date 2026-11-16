@@ -12,7 +12,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const GREEK_MOIRAI_ANANKE_FATE_ENGINE_VERSION = '2.0.0';
+export const GREEK_MOIRAI_ANANKE_FATE_ENGINE_VERSION = '2.1.0';
 
 export interface MoiraiGoddessAspect {
   name: string;
@@ -31,10 +31,12 @@ export interface GreekMoiraiAnankeFateReport {
   lachesis: MoiraiGoddessAspect; // 측정과 배분의 실
   atropos: MoiraiGoddessAspect; // 결단과 종결의 실
   dominantGoddess: '클로토(새로운 발원)' | '라케시스(조율과 배분)' | '아트로포스(단호한 매듭)';
+  secondaryGoddessNote: string;
   necessityRatio: number; // 0 ~ 100 아낭케 우주 필연성 지수
   spindleAlignment: string; // 물레 회전 방향 및 영혼의 공명
   kairosTimingGuidance: string; // 카이로스(결정적 시점) 돌파 지침
   mythOfErSoulChoice: string; // 에르의 신화에 따른 영혼의 지혜 처방
+  interpretiveBoundary: string;
   situationalMoiraiAudit: {
     questionFocus: string;
     threadStage: string;
@@ -115,12 +117,22 @@ export function calculateGreekMoiraiAnankeFate(options?: {
   };
 
   let dominantGoddess: '클로토(새로운 발원)' | '라케시스(조율과 배분)' | '아트로포스(단호한 매듭)';
+  let secondaryGoddessNote: string;
   if (clothoScore >= lachesisScore && clothoScore >= atroposScore) {
     dominantGoddess = '클로토(새로운 발원)';
+    secondaryGoddessNote = lachesisScore >= atroposScore
+      ? `보조 여신 라케시스(조율과 배분): ${lachesis.insight}`
+      : `보조 여신 아트로포스(단호한 매듭): ${atropos.insight}`;
   } else if (lachesisScore >= atroposScore) {
     dominantGoddess = '라케시스(조율과 배분)';
+    secondaryGoddessNote = clothoScore >= atroposScore
+      ? `보조 여신 클로토(새로운 발원): ${clotho.insight}`
+      : `보조 여신 아트로포스(단호한 매듭): ${atropos.insight}`;
   } else {
     dominantGoddess = '아트로포스(단호한 매듭)';
+    secondaryGoddessNote = clothoScore >= lachesisScore
+      ? `보조 여신 클로토(새로운 발원): ${clotho.insight}`
+      : `보조 여신 라케시스(조율과 배분): ${lachesis.insight}`;
   }
 
   const necessityRatio = Math.round((clothoScore * 0.3 + lachesisScore * 0.35 + atroposScore * 0.35));
@@ -142,7 +154,7 @@ export function calculateGreekMoiraiAnankeFate(options?: {
   const kstDate = new Date(kstMs);
   const kstHour = kstDate.getUTCHours();
   const kstMonth = kstDate.getUTCMonth() + 1;
-  const calculatedAtKst = `${kstDate.getUTCFullYear()}-${String(kstMonth).padStart(2, '0')}-${String(kstDate.getUTCDate()).padStart(2, '0')} ${String(kstHour).padStart(2, '0')}:${String(kstDate.getUTCMinutes()).padStart(2, '0')} KST`;
+  const calculatedAtKst = `${kstDate.getUTCFullYear()}-${String(kstMonth).padStart(2, '0')}-${String(kstDate.getUTCDate()).padStart(2, '0')} ${String(kstHour).padStart(2, '0')}:${String(kstDate.getUTCMinutes()).padStart(2, '0')} +09:00 KST`;
 
   const qLower = question.toLowerCase();
   const questionFocus = /연애|사랑|결혼|재회|관계|이별|짝|배우자/.test(qLower)
@@ -187,10 +199,13 @@ export function calculateGreekMoiraiAnankeFate(options?: {
 
   const kairosActionNote = `현재 ${olympianHourWindow}과 ${seasonalSpindlePhase}가 교차하므로, ${kairosTimingGuidance}`;
 
+  const interpretiveBoundary = '고대 그리스 모이라이·아낭케 관점은 피할 수 없는 숙명을 선고하는 도구가 아니라, 현재 국면의 시작·조율·매듭을 주체적으로 분별하는 신화적 성찰 렌즈입니다.';
   const moiraiSynthesisMatrix = {
     coreMandate: `${dominantGoddess}의 축에서 ${questionFocus}을 수행하며 주체적으로 실타래를 쥐십시오.`,
     sacredBoundary: `아낭케의 물레가 전하는 경계: ${spindleWarning}`,
-    reflectiveQuestion: `지금 내 손에 쥔 실타래 중 클로토처럼 새로 잣아야 할 것과 아트로포스처럼 단호히 끊어야 할 것은 무엇인가요?`,
+    reflectiveQuestion: question
+      ? `'${question}'에서 ${dominantGoddess}의 흐름 속에 새로 잣거나 단호히 매듭지어야 할 한 가닥은 무엇인가요?`
+      : `지금 내 손에 쥔 실타래 중 클로토처럼 새로 잣아야 할 것과 아트로포스처럼 단호히 끊어야 할 것은 무엇인가요?`,
   };
 
   return {
@@ -201,10 +216,12 @@ export function calculateGreekMoiraiAnankeFate(options?: {
     lachesis,
     atropos,
     dominantGoddess,
+    secondaryGoddessNote,
     necessityRatio,
     spindleAlignment,
     kairosTimingGuidance,
     mythOfErSoulChoice,
+    interpretiveBoundary,
     situationalMoiraiAudit: {
       questionFocus,
       threadStage,
@@ -225,6 +242,7 @@ export function formatGreekMoiraiAnankeFatePrompt(rep: GreekMoiraiAnankeFateRepo
   return `[고대 그리스 델포이 삼여신 모이라이(Moirai) 운명의 실타래 & 아낭케(Ananke) 필연 실측 데이터]
 · 엔진 버전: v${rep.engineVersion} | 기준 시각(KST): ${rep.temporalMoiraiRhythm.calculatedAtKst}
 · 주도적 운명 여신: ${rep.dominantGoddess}
+· ${rep.secondaryGoddessNote}
 · 질문 맥락 감사: ${rep.situationalMoiraiAudit.questionFocus} (${rep.situationalMoiraiAudit.threadStage})
 · 필연성 위상: ${rep.situationalMoiraiAudit.anankeTensionNote}
 · 클로토(방적·발원) [${rep.clotho.threadTension}]: ${rep.clotho.insight}
@@ -235,5 +253,6 @@ export function formatGreekMoiraiAnankeFatePrompt(rep: GreekMoiraiAnankeFateRepo
 · 카이로스 타이밍 돌파 지침: ${rep.kairosTimingGuidance}
 · 에르의 신화 영혼 처방: ${rep.mythOfErSoulChoice}
 · 교차 매트릭스 핵심 지침: ${rep.moiraiSynthesisMatrix.coreMandate}
-· 신성 경계 및 성찰 질문: ${rep.moiraiSynthesisMatrix.sacredBoundary} | "${rep.moiraiSynthesisMatrix.reflectiveQuestion}"`;
+· 신성 경계 및 성찰 질문: ${rep.moiraiSynthesisMatrix.sacredBoundary} | "${rep.moiraiSynthesisMatrix.reflectiveQuestion}"
+· 해석 경계: ${rep.interpretiveBoundary}`;
 }

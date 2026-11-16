@@ -1,6 +1,6 @@
 import { UserProfile } from '../sharedState';
 
-export const EGYPTIAN_HERMETIC_CARTOUCHE_ENGINE_VERSION = '2.0.0';
+export const EGYPTIAN_HERMETIC_CARTOUCHE_ENGINE_VERSION = '2.1.0';
 
 export type HermeticQuestionFocus = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -9,6 +9,8 @@ export interface EgyptianHermeticCartoucheReport {
   calculatedAtKst: string;
   questionFocus: HermeticQuestionFocus;
   primaryCartoucheName: string;
+  secondaryCartoucheName: string;
+  secondaryCartoucheDecree: string;
   hieroglyphSymbol: string;
   divineArchetype: string;
   sacredDomain: string;
@@ -35,7 +37,9 @@ export interface EgyptianHermeticCartoucheReport {
     coreInsight: string;
     recommendedAction: string;
     cautionNotice: string;
+    reflectiveQuestion: string;
   };
+  interpretiveBoundary: string;
   boundaryNotice: string;
   synthesisPrompt: string;
 }
@@ -68,7 +72,7 @@ function getTemporalHermeticRhythm(kst: Date) {
           : '겨울 · 페레트(재생기) — 내면의 빛을 응축하며 다음 도약을 준비하는 시기';
 
   return {
-    kstTimeLabel: `${y}-${m}-${d} ${hh}:${mm} KST`,
+    kstTimeLabel: `${y}-${m}-${d} ${hh}:${mm} +09:00 KST`,
     nileWatchWindow,
     seasonalSolarTone,
     temporalGuidance: `${nileWatchWindow} · ${seasonalSolarTone}의 리듬에 맞추어 카르투슈의 뜻을 실천하십시오.`,
@@ -237,7 +241,9 @@ export function calculateEgyptianHermeticCartouche(
   }
 
   const cartoucheIdx = Math.abs(seed + kst.getUTCMonth() + kst.getUTCDate()) % CARTOUCHES.length;
+  const secondaryIdx = (cartoucheIdx + 1 + (Math.abs(seed >> 3) % (CARTOUCHES.length - 1))) % CARTOUCHES.length;
   const cartouche = CARTOUCHES[cartoucheIdx];
+  const secondaryCartouche = CARTOUCHES[secondaryIdx];
 
   const kaVitality = 72 + ((seed * 3 + kst.getUTCHours() * 7) % 27);
   const baIndividuality = 70 + ((seed * 5 + kst.getUTCDate() * 9) % 29);
@@ -268,11 +274,16 @@ export function calculateEgyptianHermeticCartouche(
 
   const guidance = buildHermeticGuidance(dominantAxis, questionFocus, cartouche.name);
   const temporalHermeticRhythm = getTemporalHermeticRhythm(kst);
+  const trimmedQuestion = q.trim();
   const hermeticSynthesisMatrix = {
     coreInsight: `[${cartouche.name}] ${triadHarmonyState}`,
     recommendedAction: guidance.practiceGuidance,
     cautionNotice: guidance.reflectionFocus,
+    reflectiveQuestion: trimmedQuestion
+      ? `'${trimmedQuestion}'에서 ${cartouche.name}의 원형과 ${secondaryCartouche.name}의 균형이 비추는 가장 정직한 내면의 기준은 무엇인가요?`
+      : `지금 내 삶의 중심에서 ${cartouche.name}의 빛으로 가장 먼저 정돈해야 할 한 가지는 무엇인가요?`,
   };
+  const interpretiveBoundary = '고대 이집트 헤르메스 카르투슈 관점은 점술적 예단이나 심리 진단이 아니라, 영혼의 균형과 실천을 비추는 상징적 성찰 렌즈입니다.';
   const boundaryNotice = '이는 고대 이집트 헤르메스주의 상징에 기반한 자기 성찰 참고일 뿐, 개인 점수·심리 진단·미래 예측이 아닙니다.';
 
   const synthesisPrompt = `
@@ -290,13 +301,14 @@ export function calculateEgyptianHermeticCartouche(
    - 에메랄드 타블렛 원리: ${emeraldMaxim}
 3. 📜 [헤르메스주의 칙령 & 시공간 성찰 가이드]:
    - 칙령: "${cartouche.decree}"
+   - 보조 교차 카르투슈: **${secondaryCartouche.name}** — "${secondaryCartouche.decree}" (${secondaryCartouche.domain})
    - 실천 조언: ${guidance.practiceGuidance}
    - 일상 의례: ${guidance.ritualAction}
-   - 성찰 질문: ${guidance.reflectionFocus}
+   - 성찰 질문: ${hermeticSynthesisMatrix.reflectiveQuestion}
    - 조언 요약: ${guidance.counselNote}
    - KST 시공간 리듬: ${temporalHermeticRhythm.nileWatchWindow} / ${temporalHermeticRhythm.seasonalSolarTone}
    - 교차 매트릭스: 핵심(${hermeticSynthesisMatrix.coreInsight}) | 실행(${hermeticSynthesisMatrix.recommendedAction}) | 성찰(${hermeticSynthesisMatrix.cautionNotice})
-   - 경계 안내: ${boundaryNotice}
+   - 해석 경계: ${interpretiveBoundary}
 ======================================================================
 `.trim();
 
@@ -305,6 +317,8 @@ export function calculateEgyptianHermeticCartouche(
     calculatedAtKst: temporalHermeticRhythm.kstTimeLabel,
     questionFocus,
     primaryCartoucheName: cartouche.name,
+    secondaryCartoucheName: secondaryCartouche.name,
+    secondaryCartoucheDecree: secondaryCartouche.decree,
     hieroglyphSymbol: cartouche.symbol,
     divineArchetype: cartouche.archetype,
     sacredDomain: cartouche.domain,
@@ -323,6 +337,7 @@ export function calculateEgyptianHermeticCartouche(
     counselNote: guidance.counselNote,
     temporalHermeticRhythm,
     hermeticSynthesisMatrix,
+    interpretiveBoundary,
     boundaryNotice,
     synthesisPrompt,
   };
