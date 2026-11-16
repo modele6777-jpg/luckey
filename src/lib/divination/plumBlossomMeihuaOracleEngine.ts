@@ -14,7 +14,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const PLUM_BLOSSOM_MEIHUA_ORACLE_ENGINE_VERSION = '2.0.0';
+export const PLUM_BLOSSOM_MEIHUA_ORACLE_ENGINE_VERSION = '2.1.0';
 
 export type MeihuaTrigram = {
   num: number;
@@ -64,6 +64,7 @@ export interface PlumBlossomMeihuaReport {
     alignmentState: string;
     integratedAction: string;
   };
+  interpretiveBoundary: string;
 }
 
 function formatMeihuaKstTimestamp(now: Date = new Date()): string {
@@ -222,6 +223,7 @@ export function calculatePlumBlossomMeihuaOracle(options?: {
     shaoYongJudgment,
     temporalTimingGuidance,
     meihuaSynthesisMatrix,
+    interpretiveBoundary: '본 매화역수 체용생극 리포트는 선천 8괘 수리 상징에 기반한 정성적 흐름 참고 안내이며, 확정적 미래 예언이 아닙니다.',
   };
 }
 
@@ -242,5 +244,6 @@ export function formatPlumBlossomMeihuaOraclePrompt(rep: PlumBlossomMeihuaReport
       `· 통합 실천: ${rep.meihuaSynthesisMatrix.integratedAction}`,
     );
   }
+  lines.push(`· 해석 경계: ${rep.interpretiveBoundary}`);
   return lines.join('\n');
 }

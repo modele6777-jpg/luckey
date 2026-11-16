@@ -4249,6 +4249,7 @@ test('Plum Blossom Meihua Oracle Engine: calculates ben/hu/bian gua and ti-yong 
   assert.equal(rep.engineVersion, PLUM_BLOSSOM_MEIHUA_ORACLE_ENGINE_VERSION);
   assert(rep.calculatedAtKst.endsWith('KST'));
   assert(Boolean(rep.meihuaSynthesisMatrix?.integratedAction));
+  assert(rep.interpretiveBoundary.length > 0);
   assert(rep.movingLine >= 1 && rep.movingLine <= 6);
   assert(rep.auspiciousScore >= 0 && rep.auspiciousScore <= 100);
   assert(rep.benGua.fullName.length > 0);
@@ -4256,7 +4257,7 @@ test('Plum Blossom Meihua Oracle Engine: calculates ben/hu/bian gua and ti-yong 
   const prompt = formatPlumBlossomMeihuaOraclePrompt(rep);
   assert(prompt.includes('송대 소강절 선생 매화역수(梅花易數) 체용생극 선천 작괘 실측 데이터'));
   assert(prompt.includes(rep.tiYongRelation));
-  assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('교차 매트릭스') && prompt.includes('해석 경계'));
   assert(!prompt.includes('/100'));
 });
 
@@ -4477,10 +4478,11 @@ test('Patanjali Ashtanga Yoga Sutra Engine: calculates citta vritti nirodha and 
   assert(rep.dominantYogaLimb.nameKo.length > 0);
   assert(rep.calculatedAtKst.endsWith('KST'));
   assert(Boolean(rep.yogaSynthesisMatrix?.integratedAction));
+  assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatPatanjaliAshtangaYogaPrompt(rep);
   assert(prompt.includes('요가 수트라'));
   assert(prompt.includes(rep.dominantYogaLimb.nameKo));
-  assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('교차 매트릭스') && prompt.includes('해석 경계'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });
@@ -6105,10 +6107,11 @@ test('Aurelius Augustine Confessiones Illuminatio Engine: calculates Interior Il
   assert(rep.activeAugustineTheme.themeTitleLatin.length > 0);
   assert(rep.calculatedAtKst.endsWith('KST'));
   assert(Boolean(rep.augustineSynthesisMatrix?.integratedAction));
+  assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatAugustineConfessionesIlluminatioPrompt(rep);
   assert(prompt.includes('아우구스티누스 《고백록》 내적 조명 & 안식 평정심 지표'));
   assert(prompt.includes(rep.activeAugustineTheme.themeTitleKo));
-  assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('교차 매트릭스') && prompt.includes('해석 경계'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });

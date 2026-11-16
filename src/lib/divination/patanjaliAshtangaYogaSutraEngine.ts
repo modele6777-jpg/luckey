@@ -22,7 +22,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const PATANJALI_ASHTANGA_YOGA_ENGINE_VERSION = '2.0.0';
+export const PATANJALI_ASHTANGA_YOGA_ENGINE_VERSION = '2.1.0';
 
 export interface YogaLimb {
   id: string;
@@ -52,6 +52,7 @@ export interface PatanjaliAshtangaYogaReport {
     alignmentState: string;
     integratedAction: string;
   };
+  interpretiveBoundary: string;
 }
 
 function formatPatanjaliKstTimestamp(now: Date = new Date()): string {
@@ -242,6 +243,7 @@ export function calculatePatanjaliAshtangaYoga(
     dharanaFocusPrescription,
     samadhiClarityGuidance,
     yogaSynthesisMatrix,
+    interpretiveBoundary: '본 파탄잘리 요가 수트라 8지칙 리포트는 고전 요가 철학에 기반한 정성적 마음 수련 안내이며, 의학·심리 진단을 대신하지 않습니다.',
   };
 }
 
@@ -267,5 +269,6 @@ export function formatPatanjaliAshtangaYogaPrompt(
       `- 통합 실천: ${report.yogaSynthesisMatrix.integratedAction}`,
     );
   }
+  lines.push(`- 해석 경계: ${report.interpretiveBoundary}`);
   return lines.join('\n');
 }
