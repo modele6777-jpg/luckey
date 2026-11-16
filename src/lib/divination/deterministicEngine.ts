@@ -4875,7 +4875,7 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'rosicrucianChymicalWedding', nameKo: '로젠크로이츠 화학적 결혼 7일 연금술', icon: '🌹', category: 'deep_master' },
   { key: 'aztecTonalamatl', nameKo: '아즈텍 토날포왈리 20대 일진 성력', icon: '☀️', category: 'deep_master' },
   { key: 'mongolianTengriHiimori', nameKo: '몽골 텡그리즘 풍마 히모리 영혼', icon: '🐎', category: 'deep_master' },
-  { key: 'gaelicWheelFireFestivals', nameKo: '게일 4대 화제 축제 휠 오브 더 이어', icon: '🔥', category: 'deep_master' },
+  { key: 'gaelicWheelFireFestivals', nameKo: '게일 4대 화제 축제 휠 오브 더 이어', icon: '🔥', category: 'deep_master', summary: '삼하인·임볼크·벨테인·루나사 4대 화제 축제와 콜리니 역법으로 계절 순환·정화·결실을 비추는 관점' },
   { key: 'norseHavamalEighteenGaldr', nameKo: '하바말 오딘 18대 게알드르 룬 비전', icon: 'ᚱ', category: 'deep_master' },
   { key: 'ibnArabiWahdatAlWujud', nameKo: '이븐 아라비 존재의 단일성 심장 영지', icon: '🪞', category: 'deep_master' },
   { key: 'chonggamnokTenSanctuaries', nameKo: '정감록 10승지 영맥 피난처', icon: '⛰️', category: 'deep_master', summary: '《정감록》 감결의 궁궁을을과 10승지 영맥 비유로 세파 속에서도 내면의 중심과 평온한 안식처를 지키는 성찰을 이끕니다.' },

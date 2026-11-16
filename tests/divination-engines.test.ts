@@ -9246,3 +9246,24 @@ test('Marcel Proust, Montesquieu, and Paul Ricoeur v2.1.0 include +09:00 KST and
   const rcPrompt = formatFrenchPaulRicoeurNarrativeIdentityHealingPrompt(rc);
   assert.ok(rcPrompt.includes('해석 경계') && rcPrompt.includes('+09:00'));
 });
+
+test('Victor Hugo, Gaelic Wheel Fire Festivals, and Albert Schweitzer v2.1.0 include +09:00 KST and interpretive boundary', () => {
+  const now = new Date('2026-11-16T03:15:00Z');
+  const hg = calculateFrenchVictorHugoLesMiserables(profile, '양심과 연대의 결단을 내리고 싶어요', now);
+  assert.equal(hg.engineVersion, FRENCH_VICTOR_HUGO_LES_MISERABLES_VERSION);
+  assert.ok(hg.calculatedAtKst.includes('+09:00'));
+  const hgPrompt = formatFrenchVictorHugoLesMiserablesPrompt(hg);
+  assert.ok(hgPrompt.includes('해석 경계') && hgPrompt.includes('+09:00'));
+
+  const gw = calculateGaelicWheelFireFestivals(profile, now, '계절의 전환점에서 방향을 잡고 싶어요');
+  assert.equal(gw.engineVersion, GAELIC_FIRE_FESTIVALS_ENGINE_VERSION);
+  assert.ok(gw.calculatedAtKst.includes('+09:00'));
+  const gwPrompt = formatGaelicWheelFireFestivalsPrompt(gw);
+  assert.ok(gwPrompt.includes('해석 경계') && gwPrompt.includes('+09:00') && !gwPrompt.includes('실측 데이터'));
+
+  const sc = calculateGermanAlbertSchweitzerReverenceForLife(profile, '타인과의 관계에서 따뜻함을 지키고 싶어요', now);
+  assert.equal(sc.engineVersion, GERMAN_ALBERT_SCHWEITZER_VERSION);
+  assert.ok(sc.calculatedAtKst.includes('+09:00'));
+  const scPrompt = formatGermanAlbertSchweitzerReverenceForLifePrompt(sc);
+  assert.ok(scPrompt.includes('해석 경계') && scPrompt.includes('+09:00'));
+});

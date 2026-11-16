@@ -14,7 +14,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const GERMAN_ALBERT_SCHWEITZER_VERSION = 'LUCKEY-ALBERT-SCHWEITZER-REVERENCE-v2.0.0';
+export const GERMAN_ALBERT_SCHWEITZER_VERSION = 'LUCKEY-ALBERT-SCHWEITZER-REVERENCE-v2.1.0';
 
 export interface SchweitzerTheme {
   themeKey: string;
@@ -138,7 +138,7 @@ function formatSchweitzerKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 KST`;
 }
 
 function describeSchweitzerStage(score: number): string {
@@ -238,5 +238,6 @@ export function formatGermanAlbertSchweitzerReverenceForLifePrompt(
       `- 통합 실천: ${res.schweitzerSynthesisMatrix.integratedAction}`,
     );
   }
+  lines.push(`- 해석 경계: 슈바이처의 생명 경외·이타적 봉사 상징을 빌린 정성적 윤리 성찰 관점이며, 수치 평가나 미래 단정이 아닙니다.`);
   return lines.join('\n');
 }

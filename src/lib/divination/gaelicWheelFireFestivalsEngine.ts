@@ -8,7 +8,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const GAELIC_FIRE_FESTIVALS_ENGINE_VERSION = '2.0.0';
+export const GAELIC_FIRE_FESTIVALS_ENGINE_VERSION = '2.1.0';
 
 export interface GaelicFestivalStation {
   id: 'samhain' | 'imbolc' | 'bealtaine' | 'lughnasadh';
@@ -46,6 +46,7 @@ export interface GaelicSynthesisMatrix {
 export interface GaelicWheelFireFestivalsReport {
   engineVersion: string;
   timestamp: string;
+  calculatedAtKst: string;
   wheelCycleHarmonyScore: number;
   celticFireVibration: number;
   tuathaDeDanannBlessing: number;
@@ -238,9 +239,13 @@ export function calculateGaelicWheelFireFestivals(
   const gaelicOmenGuidance = `고대 켈트 순환의 휠에 따르면, 현재 당신의 영혼은 [${activeStation.nameKo}]의 파동권에 머물고 있습니다. ${activeStation.spiritualVirtue}.`;
   const sacredHearthfireRitual = `[게일 난로불 리추얼]: ${activeStation.ritualPrescription} 성스러운 수호신 [${activeStation.presidingDeity}]의 기운이 당신의 안식을 지켜줍니다.`;
 
+  const kst = new Date(referenceDate.getTime() + 9 * 60 * 60 * 1000);
+  const calculatedAtKst = kst.toISOString().replace('T', ' ').substring(0, 19) + ' +09:00 KST';
+
   return {
     engineVersion: GAELIC_FIRE_FESTIVALS_ENGINE_VERSION,
     timestamp: referenceDate.toISOString(),
+    calculatedAtKst,
     wheelCycleHarmonyScore,
     celticFireVibration,
     tuathaDeDanannBlessing,
@@ -255,7 +260,8 @@ export function calculateGaelicWheelFireFestivals(
 }
 
 export function formatGaelicWheelFireFestivalsPrompt(report: GaelicWheelFireFestivalsReport): string {
-  return `### 휠 오브 더 이어 켈트 4대 화제 축제 실측 데이터 (v${report.engineVersion})
+  return `### 휠 오브 더 이어 켈트 4대 화제 축제 상징 관점 (v${report.engineVersion})
+- **기준 시각**: ${report.calculatedAtKst}
 - **주재 화제 절기**: ${report.activeStation.nameKo} (${report.activeStation.gaelicName})
 - **계절 국면**: ${report.activeStation.seasonAspect} (${report.gaelicSynthesisMatrix.cycleHarmonyGrade})
 - **수호 신격**: ${report.activeStation.presidingDeity}
@@ -267,5 +273,6 @@ export function formatGaelicWheelFireFestivalsPrompt(report: GaelicWheelFireFest
   - 시간대 지침: ${report.temporalGaelicRhythm.seasonalGuidance}
 - **순환 교차 매트릭스**: ${report.gaelicSynthesisMatrix.stationElementLink}
 - **켈트 드루이드 지혜 지침**: ${report.gaelicOmenGuidance}
-- **성스러운 난로불 리추얼**: ${report.sacredHearthfireRitual}`;
+- **성스러운 난로불 리추얼**: ${report.sacredHearthfireRitual}
+- **해석 경계**: 게일 4대 화제 축제와 콜리니 역법 상징을 빌린 정성적 계절 순환 참고 관점이며, 개인 점수나 확정 예언이 아닙니다.`;
 }
