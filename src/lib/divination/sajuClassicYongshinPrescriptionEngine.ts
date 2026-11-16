@@ -20,7 +20,7 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const SAJU_CLASSIC_YONGSHIN_VERSION = 'LUCKEY-SAJU-CLASSIC-v2.0.0';
+export const SAJU_CLASSIC_YONGSHIN_VERSION = 'LUCKEY-SAJU-CLASSIC-v2.1.0';
 
 export interface ClassicGeokgukAnalysis {
   geokgukName: string;          // 격국 명칭 (정관격, 식신격, 편재격 등)
@@ -61,6 +61,7 @@ export interface SajuClassicYongshinReport {
     alignmentState: string;
     integratedAction: string;
   };
+  interpretiveBoundary: string;
 }
 
 function formatYongshinKstTimestamp(now: Date = new Date()): string {
@@ -212,7 +213,9 @@ export function runSajuClassicYongshinEngine(
     integratedAction: actionMap[primaryYongshinElement],
   };
 
-  const synthesisPromptGuidance = `[LUCKEY 정통 사주 3대 원전 용신·격국·조후 심층 v2.0.0 | 연산 시각: ${calculatedAtKst}]
+  const interpretiveBoundary = '본 정통 3대 원전 용신 리포트는 자평진전·궁통보감·적천수 명리 체계에 기반한 정성적 조율 안내이며, 의학·재무 전문 자문을 대신하지 않습니다.';
+
+  const synthesisPromptGuidance = `[LUCKEY 정통 사주 3대 원전 용신·격국·조후 심층 v2.1.0 | 연산 시각: ${calculatedAtKst}]
 - 격국 성패 (자평진전): [${geokgukName}] - ${formationStatus}
   * 구응신: ${savingGraceGod}
   * 사회적 재능: ${socioeconomicTalent}
@@ -227,7 +230,8 @@ export function runSajuClassicYongshinEngine(
   * 돌파 1순위 행동: ${actionMap[primaryYongshinElement]}
 - 교차 매트릭스 [핵심 긴장: ${yongshinSynthesisMatrix.dominantTension} | 조율 상태: ${yongshinSynthesisMatrix.alignmentState}]
   * 통합 실천: ${yongshinSynthesisMatrix.integratedAction}
-- 고전 명리 지침: "${deepClassicalMantra}"`;
+- 고전 명리 지침: "${deepClassicalMantra}"
+- 해석 경계: ${interpretiveBoundary}`;
 
   return {
     engineVersion: SAJU_CLASSIC_YONGSHIN_VERSION,
@@ -258,6 +262,7 @@ export function runSajuClassicYongshinEngine(
     deepClassicalMantra,
     synthesisPromptGuidance,
     yongshinSynthesisMatrix,
+    interpretiveBoundary,
   };
 }
 

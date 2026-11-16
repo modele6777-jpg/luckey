@@ -16,7 +16,7 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const RUNE_MATRIX_VERSION = 'LUCKEY-RUNE-v2.0.0';
+export const RUNE_MATRIX_VERSION = 'LUCKEY-RUNE-v2.1.0';
 
 export interface RuneDetail {
   id: number;                  // 1~24
@@ -204,6 +204,7 @@ export interface RuneMatrixResult {
     alignmentState: string;
     integratedAction: string;
   };
+  interpretiveBoundary: string;
 }
 
 function formatRuneKstTimestamp(now: Date = new Date()): string {
@@ -286,6 +287,7 @@ export function calculateRuneMatrix(params?: {
     oracleStateTitle,
     summary,
     runeSynthesisMatrix,
+    interpretiveBoundary: '본 엘더 푸타르크 룬 동시성 리포트는 북유럽 룬 상징 체계에 기반한 정성적 성찰 안내이며, 확정적 미래 예언이 아닙니다.',
   };
 }
 
@@ -315,6 +317,7 @@ export function formatRuneMatrixPrompt(res: RuneMatrixResult): string {
       `  • 통합 실천: ${res.runeSynthesisMatrix.integratedAction}`,
     );
   }
+  lines.push(`- 해석 경계: ${res.interpretiveBoundary}`);
   lines.push(
     `※ 루시 지침: 룬 문자는 거친 북해를 건너던 바이킹들이 자연의 법칙과 운명의 신비를 새겨 넣은 강력한 수호 상징입니다. 오늘 사용자의 무의식을 관통하는 3개의 룬 상징을 통해, 지금 마주한 도전 과제를 돌파하고 찬란한 성취(Sowilo/Dagaz)로 나아갈 수 있도록 북유럽 신화의 용기와 지혜를 담아 대화에 융합해 주세요.`,
   );
