@@ -2313,12 +2313,15 @@ test('Noble Network Engine: 4대 귀인 및 인연 네트워크 시너지 검증
 test('Monthly Flow Engine: 12개월 월운 및 분기 타이밍 검증', () => {
   const res = calculateMonthlyFlow({ profile, targetYear: 2026, question: '이직 적기' });
   assert.equal(res.engineVersion, MONTHLY_FLOW_ENGINE_VERSION);
-  assert(res.calculatedAtKst.endsWith('KST'));
+  assert(res.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert(res.reflectiveQuestion?.includes('이직 적기'));
   assert(Boolean(res.monthlyFlowSynthesisMatrix?.integratedAction));
   assert(res.interpretiveBoundary.length > 0);
   assert.equal(res.monthlyTimeline.length, 12);
   const prompt = formatMonthlyFlowPrompt(res);
   assert(prompt.includes(MONTHLY_FLOW_ENGINE_VERSION));
+  assert(prompt.includes('+09:00 (KST)'));
+  assert(prompt.includes('성찰 질문'));
   assert(prompt.includes('교차 매트릭스') && prompt.includes('해석 경계'));
   assert(!prompt.includes('/100'));
 });
@@ -2403,12 +2406,15 @@ test('Energetic Prescription Engine: 결핍 오행 바이오 에너지 맞춤 �
 test('Instant Decision Engine: 매화역수·기문둔갑 즉시 결단 검증', () => {
   const res = calculateInstantDecision({ instant: new Date('2026-11-16T06:00:00+09:00'), questionText: '지금 추진할까요' });
   assert.equal(res.engineVersion, INSTANT_DECISION_ENGINE_VERSION);
-  assert(res.calculatedAtKst.endsWith('KST'));
+  assert(res.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert(res.reflectiveQuestion?.includes('지금 추진할까요'));
   assert(Boolean(res.instantDecisionSynthesisMatrix?.integratedAction));
   assert(res.interpretiveBoundary.length > 0);
   assert(res.verdict.finalScore >= 0 && res.verdict.finalScore <= 100);
   const prompt = formatInstantDecisionPrompt(res);
   assert(prompt.includes(INSTANT_DECISION_ENGINE_VERSION));
+  assert(prompt.includes('+09:00 (KST)'));
+  assert(prompt.includes('성찰 질문'));
   assert(prompt.includes('교차 매트릭스') && prompt.includes('해석 경계'));
   assert(!prompt.includes('/100'));
 });

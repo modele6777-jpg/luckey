@@ -173,6 +173,7 @@ export interface AuspiciousStarsResult {
 
   actionGuide: string[];
   summary: string;
+  reflectiveQuestion?: string;
   interpretiveBoundary: string;
 }
 
@@ -757,6 +758,9 @@ export function calculateAuspiciousStars(params: {
       nobleSynthesisMatrix,
       actionGuide,
       summary,
+      reflectiveQuestion: params.question
+        ? `‘${params.question}’ 앞에서 원국에 발현된 길신(${hits.length}종)의 강점을 어떤 사람·협업 기회와 연결하시겠습니까?`
+        : `원국에 자리한 길신(${hits.length}종)의 길력을 일상의 신뢰와 준비된 실력으로 살리기 위해 오늘 가장 먼저 실천할 행동은 무엇입니까?`,
     };
   } catch (err: any) {
     return { ...base, status: 'error', note: err?.message || '길신 매트릭스 계산 오류' };
@@ -834,7 +838,7 @@ ${resonanceTxt}
 ${res.actionGuide.map((a, i) => `   ${i + 1}. ${a}`).join('\n')}${auditTxt}${temporalTxt}${matrixSynthTxt}
 
 종합: ${res.summary}
-해석 경계: ${res.interpretiveBoundary}
+${res.reflectiveQuestion ? `성찰 질문: ${res.reflectiveQuestion}\n` : ''}해석 경계: ${res.interpretiveBoundary}
 ======================================================================
 [★ 루시 길신 상담 지침]:
 - 위 데이터는 결정론 엔진(${res.engineVersion})의 100% 수리 산출입니다. 길신의 위치(일지 천을 = 내 몸과 배우자궁, 년/월/시지 천을 = 사회·직업·말년)를 구분해 해석하세요.
