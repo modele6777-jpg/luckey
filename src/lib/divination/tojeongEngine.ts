@@ -24,7 +24,7 @@
 import type { UserProfile } from '../sharedState';
 import { convertLunarToSolar, convertSolarToLunar, resolveEffectiveSolarDate } from '../lunarCalendar';
 
-export const TOJEONG_ENGINE_VERSION = 'LUCKEY-TJ-v2.0.0';
+export const TOJEONG_ENGINE_VERSION = 'LUCKEY-TJ-v2.1.0';
 
 export const TOJEONG_METHOD =
   '조선 정통 이지함 토정비결 수리 산법(태세수·월건수·일진수 작괘) 기반 144괘문 결정론적 계산';
@@ -92,6 +92,7 @@ export interface TojeongResult {
     alignmentState: string;
     integratedAction: string;
   };
+  interpretiveBoundary?: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -593,6 +594,7 @@ export function calculateTojeong(params: { profile?: UserProfile | null; targetY
     alignmentState: `${trigramAnalysis.elementRelation} · 성운기(${trigramAnalysis.seasonalFlow.peakSeason})`,
     integratedAction: `${trigramAnalysis.hexagramEssenceAdvice}${q ? ` [질문 맥락: ${q}]` : ''}`,
   };
+  const interpretiveBoundary = '본 토정비결 144괘문 리포트는 태세·월건·일진 작괘 수리에 기반한 전통 세시 운세 안내이며, 확정적 길흉 예언이 아닙니다.';
 
   return {
     status: 'calculated',
@@ -624,6 +626,7 @@ export function calculateTojeong(params: { profile?: UserProfile | null; targetY
     monthlyFortunes,
     trigramAnalysis,
     tojeongSynthesisMatrix,
+    interpretiveBoundary,
   };
 }
 
@@ -770,7 +773,7 @@ ${monthLines}${result.trigramAnalysis ? `\n=====================================
 [상·중괘 오행 생극제화 및 사계절 순환 심층 분석]
 - 상괘 오행: ${result.trigramAnalysis.upperElement} vs 중괘 오행: ${result.trigramAnalysis.lowerElement} → [${result.trigramAnalysis.elementRelation}] (${result.trigramAnalysis.elementRelationDesc})
 - 최고 성운기: ${result.trigramAnalysis.seasonalFlow.peakSeason}
-- 핵심 개운 지침: ${result.trigramAnalysis.hexagramEssenceAdvice}` : ''}${matrixBlock}
+- 핵심 개운 지침: ${result.trigramAnalysis.hexagramEssenceAdvice}` : ''}${matrixBlock}${result.interpretiveBoundary ? `\n- 해석 경계: ${result.interpretiveBoundary}` : ''}
 ======================================================================
 [★ 루시 토정비결 상담 지침]:
 - 위 괘문은 태세수·월건수·일진수 수리로 직접 작괘한 확정 데이터다. 괘 코드(${result.hexagramCode})와 다른 괘를 지어내지 마십시오.
