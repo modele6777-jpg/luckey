@@ -53,6 +53,9 @@ export default async function handler(req: { method?: string; query?: Record<str
   if (!isAllowedImageProxyUrl(url)) {
     return res.status(400).json({ error: "Invalid image URL" });
   }
+  // 결정론적 리다이렉트: 같은 원본 주소는 항상 같은 Location이므로 Edge CDN이 재사용합니다.
+  // 이 헤더가 없으면 작품 화면을 열 때마다 프록시 함수가 Origin 호출로 집계됩니다.
+  res.setHeader("Cache-Control", "public, max-age=3600, s-maxage=86400, stale-while-revalidate=86400");
   // 브라우저가 원본 CDN에서 바로 이미지를 받아가도록 302 redirect 합니다.
   return res.redirect(302, url);
 }

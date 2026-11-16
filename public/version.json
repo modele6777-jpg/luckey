@@ -1,10 +1,10 @@
 {
-  "version": "1.7.620",
-  "builtAt": "2026-11-16T01:40:00.000Z",
-  "summary": "조로아스터교 아샤·드림타임 송라인·아즈텍 토날라마틀 3대 엔진 KST(+09:00)·교차 매트릭스·해석 경계 고도화",
+  "version": "1.7.621",
+  "builtAt": "2026-11-16T02:10:00.000Z",
+  "summary": "Vercel Fast Origin Transfer 절감: 데일리 BGM GET 바이너리·Edge CDN 캐시, TTS 바이너리 응답, 작품 프록시 캐시 헤더",
   "items": [
-    "조로아스터교 아샤 진실 엔진(v2.1.0): 아샤 교차 매트릭스 및 질문 맥락 통합 (전 엔진 SynthesisMatrix 100% 탑재 완료)",
-    "호주 원주민 드림타임 송라인 엔진(v2.1.0): KST(+09:00) 표준 시공간 표기 및 테스트 검증 추가",
-    "아즈텍 토날라마틀 성력 엔진(v2.1.0): KST(+09:00) 표기 및 해석 경계 고도화"
+    "데일리 BGM: GET /api/ai/daily-bgm?...&format=wav 바이너리 audio/wav + Cache-Control(public, s-maxage=604800) 응답으로 Edge CDN 캐시 사용, base64(+33%) 제거 (POST JSON은 하위 호환 유지)",
+    "TTS: Accept: audio/*·responseFormat=binary·?format=binary 요청 시 base64 JSON 대신 원본 오디오 바이트 + X-TTS-* 메타데이터 응답 (기존 JSON 호환)",
+    "클라이언트: 데일리 BGM GET 전환·동일 트랙 동시 요청 1회 병합, TTS 바이너리 수신 파서 추가 및 작품 프록시 302 리다이렉트에 CDN 캐시 헤더 추가"
   ]
 }

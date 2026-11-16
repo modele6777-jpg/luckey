@@ -1,4 +1,5 @@
 import { getSharedAudioContext } from '@/lib/audio';
+import { parseTTSAudioResponse } from '@/utils/ttsBinaryResponse';
 
 const chunkAudioCache = new Map<string, Promise<AudioBuffer | null>>();
 let activeSourceNode: AudioBufferSourceNode | null = null;
@@ -29,26 +30,24 @@ export async function fetchAndDecodeChunkAudio(text: string): Promise<AudioBuffe
     try {
       const response = await fetch('/api/ai/tts', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: clean, voice: 'Kore', emotion: '차분' }),
+        headers: { 'Content-Type': 'application/json', Accept: 'audio/wav, audio/mpeg' },
+        body: JSON.stringify({ text: clean, voice: 'Kore', emotion: '차분', responseFormat: 'binary' }),
       });
 
       if (!response.ok) return null;
-      const data = await response.json();
-      if (!data?.audioContent) return null;
-
-      const binary = atob(data.audioContent);
-      const bytes = new Uint8Array(binary.length);
-      for (let i = 0; i < binary.length; i++) {
-        bytes[i] = binary.charCodeAt(i);
-      }
-
+      // 📉 base64 JSON(+33%) 대신 원본 오디오 바이트를 바로 디코드합니다.
+      const audio = await parseTTSAudioResponse(response);
+      if (!audio?.bytes.length) return null;
+      const bytes = audio.bytes;
       const audioCtx = getSharedAudioContext();
       if (audioCtx.state === 'suspended') {
         await audioCtx.resume();
       }
 
-      const decoded = await audioCtx.decodeAudioData(bytes.buffer.slice(0));
+      // 디코더는 원본 ArrayBuffer를 소유하므로 복사본을 넘깁니다.
+      const copy = new Uint8Array(bytes.length);
+      copy.set(bytes);
+      const decoded = await audioCtx.decodeAudioData(copy.buffer);
       return decoded;
     } catch (err) {
       console.warn('[StreamingDocentEngine] Chunk decode error:', err);

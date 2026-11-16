@@ -26,6 +26,7 @@ import { isIOSDevice } from '../lib/perfMode';
 import { registerAudioDeviceChangeListener } from '../lib/audioDeviceChangeMonitor';
 import { shouldPlayTTSCompletionChime, type TTSCompletionPolicyOptions } from '../lib/ttsCompletionPolicy';
 import { getResumableTTSChunkIndex, type TTSChunkProgress } from '../lib/ttsChunkResume';
+import { parseTTSAudioResponse } from './ttsBinaryResponse';
 
 export interface TTSPlaybackOptions extends TTSCompletionPolicyOptions {
   isAutoPlay?: boolean;
@@ -180,8 +181,10 @@ function requestAIAudio(text: string, emotion?: string, voice = 'Aoede', session
         await pauseForTTSSlot(Math.max(rateWait, gapWait), session, controller.signal);
         lastTTSProviderRequestAt = Date.now();
         const response = await fetch('/api/ai/tts', {
-          method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ text: normalizeTextForSpeech(text), voice, emotion }), signal: controller.signal,
+          method: 'POST',
+          // 📉 바이너리 오디오를 우선 요청합니다(base64 JSON 대비 Origin 전송량 -25%).
+          headers: { 'Content-Type': 'application/json', Accept: 'audio/wav, audio/mpeg' },
+          body: JSON.stringify({ text: normalizeTextForSpeech(text), voice, emotion, responseFormat: 'binary' }), signal: controller.signal,
         });
         if (controller.signal.aborted) throw new Error('음성 요청이 취소되었습니다.');
         if (!response.ok) {
@@ -220,9 +223,9 @@ function requestAIAudio(text: string, emotion?: string, voice = 'Aoede', session
           }
           throw new TTSAudioRequestError(response.status === 401 || response.status === 403 ? 'AI 음성 API 인증·권한을 확인해 주세요.' : 'AI 음성을 생성하지 못했습니다. 잠시 후 다시 눌러 주세요.', response.status, String(failure?.code || ''), failure?.diagnosticId);
         }
-        const data = await response.json();
-        if (!data?.audioContent) throw new TTSAudioRequestError('AI 음성 응답이 비어 있습니다. 다시 눌러 주세요.', 502);
-        return { audioContent: data.audioContent, encoding: data.encoding === 'pcm' ? 'pcm' as const : data.encoding === 'wav' ? 'wav' as const : 'mp3' as const, sampleRate: data.sampleRate ?? 24000 };
+        const audio = await parseTTSAudioResponse(response);
+        if (!audio?.audioContent) throw new TTSAudioRequestError('AI 음성 응답이 비어 있습니다. 다시 눌러 주세요.', 502);
+        return { audioContent: audio.audioContent, encoding: audio.encoding, sampleRate: audio.sampleRate };
       }
       throw new TTSAudioRequestError('음성 요청이 일시적으로 몰려 잠시 지연되었습니다. 약 3초 뒤 다시 눌러 주세요.', 429, 'MEDIA_RATE_LIMIT');
       })()]);

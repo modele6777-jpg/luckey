@@ -409,26 +409,49 @@ function base64ToBlob(base64: string, mime = 'audio/wav'): Blob {
   return new Blob([bytes], { type: mime });
 }
 
-export async function ensureDailyBgmGenerated(input: DailyBgmInput): Promise<DailyBgmTrack> {
-  const name = input.focusPlaylist.trim() || '데일리 추천 사운드';
-  const artist = getDailyBgmArtist(input.appId);
-  const trackKey = buildDailyBgmTrackKey(input);
+function buildDailyBgmRequestUrl(input: DailyBgmInput, trackKey: string): string {
+  const params = new URLSearchParams({
+    focusPlaylist: input.focusPlaylist,
+    dateKey: input.dateKey,
+    trackKey,
+    format: 'wav',
+  });
+  if (input.cardName) params.set('cardName', input.cardName);
+  if (input.symbol) params.set('symbol', input.symbol);
+  return `/api/ai/daily-bgm?${params.toString()}`;
+}
 
-  const cachedRecord = await readDailyBgmRecord(trackKey);
-  if (cachedRecord && !isCurrentDailyBgmRecord(cachedRecord)) {
-    await deleteDailyBgmRecordByKey(trackKey);
-  } else {
-    const cachedUrl = await getDailyBgmBlobUrl(trackKey);
-    if (cachedUrl) {
-      return {
-        name,
-        url: cachedUrl,
-        artist,
-        trackKey,
-      };
+/**
+ * 📉 v1.7.621: 48초 WAV를 base64 JSON(+33%)으로 받던 POST를
+ * Edge CDN 캐시를 타는 GET 바이너리 요청으로 바꿉니다.
+ * 구버전 서버(POST 전용)에서는 예전 JSON 경로로 자동 폴백합니다.
+ */
+async function fetchDailyBgmBlob(input: DailyBgmInput, trackKey: string): Promise<Blob> {
+  const response = await fetch(buildDailyBgmRequestUrl(input, trackKey), {
+    method: 'GET',
+    headers: { Accept: 'audio/wav' },
+    // CDN 캐시(max-age=86400)를 브라우저도 그대로 재사용합니다.
+    cache: 'default',
+  });
+
+  if (response.ok) {
+    const contentType = (response.headers.get('Content-Type') || '').toLowerCase();
+    if (contentType.startsWith('audio/')) {
+      const buffer = await response.arrayBuffer();
+      if (buffer.byteLength > 44) return new Blob([buffer], { type: 'audio/wav' });
+      throw new Error('Daily BGM response missing audio');
     }
+    const data = await response.json().catch(() => null) as { audioContent?: string; encoding?: string } | null;
+    if (data?.audioContent) return base64ToBlob(data.audioContent, 'audio/wav');
+    throw new Error('Daily BGM response missing audio');
   }
 
+  // GET을 모르는 구버전 배포(405/404)나 라우팅 미지원이면 기존 POST 경로를 씁니다.
+  if ([404, 405, 501].includes(response.status)) return fetchDailyBgmBlobLegacy(input, trackKey);
+  throw new Error(`Daily BGM generation failed (${response.status})`);
+}
+
+async function fetchDailyBgmBlobLegacy(input: DailyBgmInput, trackKey: string): Promise<Blob> {
   const response = await fetch('/api/ai/daily-bgm', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -449,19 +472,55 @@ export async function ensureDailyBgmGenerated(input: DailyBgmInput): Promise<Dai
   if (!data?.audioContent) {
     throw new Error('Daily BGM response missing audio');
   }
+  return base64ToBlob(data.audioContent, data.encoding === 'wav' ? 'audio/wav' : 'audio/wav');
+}
 
-  const blob = base64ToBlob(data.audioContent, data.encoding === 'wav' ? 'audio/wav' : 'audio/wav');
-  await writeDailyBgmRecord(trackKey, blob, { name, artist });
+// 같은 트랙을 여러 앱/탭이 동시에 요청해도 네트워크 호출은 한 번만 나갑니다.
+const pendingDailyBgm = new Map<string, Promise<DailyBgmTrack>>();
 
-  const blobUrl = URL.createObjectURL(blob);
-  blobUrlCache.set(trackKey, blobUrl);
+export async function ensureDailyBgmGenerated(input: DailyBgmInput): Promise<DailyBgmTrack> {
+  const name = input.focusPlaylist.trim() || '데일리 추천 사운드';
+  const artist = getDailyBgmArtist(input.appId);
+  const trackKey = buildDailyBgmTrackKey(input);
 
-  return {
-    name,
-    url: blobUrl,
-    artist,
-    trackKey,
-  };
+  const cachedRecord = await readDailyBgmRecord(trackKey);
+  if (cachedRecord && !isCurrentDailyBgmRecord(cachedRecord)) {
+    await deleteDailyBgmRecordByKey(trackKey);
+  } else {
+    const cachedUrl = await getDailyBgmBlobUrl(trackKey);
+    if (cachedUrl) {
+      return {
+        name,
+        url: cachedUrl,
+        artist,
+        trackKey,
+      };
+    }
+  }
+
+  const inFlight = pendingDailyBgm.get(trackKey);
+  if (inFlight) return inFlight;
+
+  const task = (async (): Promise<DailyBgmTrack> => {
+    const blob = await fetchDailyBgmBlob(input, trackKey);
+    await writeDailyBgmRecord(trackKey, blob, { name, artist });
+
+    const blobUrl = URL.createObjectURL(blob);
+    blobUrlCache.set(trackKey, blobUrl);
+
+    return {
+      name,
+      url: blobUrl,
+      artist,
+      trackKey,
+    };
+  })();
+
+  pendingDailyBgm.set(trackKey, task);
+  task.catch(() => {}).finally(() => {
+    if (pendingDailyBgm.get(trackKey) === task) pendingDailyBgm.delete(trackKey);
+  });
+  return task;
 }
 
 export type PersistedBgmTrack = {
