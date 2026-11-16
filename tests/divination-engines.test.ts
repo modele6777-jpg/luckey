@@ -2251,6 +2251,7 @@ test('Noble Network Engine: 4대 귀인 및 인연 네트워크 시너지 검증
   assert.equal(res.engineVersion, NOBLE_NETWORK_VERSION);
   assert(res.calculatedAtKst.endsWith('KST'));
   assert(Boolean(res.nobleNetworkSynthesisMatrix?.integratedAction));
+  assert(res.interpretiveBoundary.length > 0);
   assert(['catalyst', 'anchor', 'amplifier'].includes(res.primaryArchetype.type));
   assert(res.networkSynergyScore >= 0 && res.networkSynergyScore <= 100);
   assert(res.synergyZodiacAnimals.sixHarmony.length > 0);
@@ -2260,7 +2261,7 @@ test('Noble Network Engine: 4대 귀인 및 인연 네트워크 시너지 검증
   assert(prompt.includes(NOBLE_NETWORK_VERSION));
   assert(prompt.includes('1순위 귀인 아키타입'));
   assert(prompt.includes('천을귀인'));
-  assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('교차 매트릭스') && prompt.includes('해석 경계'));
   assert(!prompt.includes('/100'));
 });
 
@@ -2269,10 +2270,11 @@ test('Monthly Flow Engine: 12개월 월운 및 분기 타이밍 검증', () => {
   assert.equal(res.engineVersion, MONTHLY_FLOW_ENGINE_VERSION);
   assert(res.calculatedAtKst.endsWith('KST'));
   assert(Boolean(res.monthlyFlowSynthesisMatrix?.integratedAction));
+  assert(res.interpretiveBoundary.length > 0);
   assert.equal(res.monthlyTimeline.length, 12);
   const prompt = formatMonthlyFlowPrompt(res);
   assert(prompt.includes(MONTHLY_FLOW_ENGINE_VERSION));
-  assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('교차 매트릭스') && prompt.includes('해석 경계'));
   assert(!prompt.includes('/100'));
 });
 
@@ -4371,10 +4373,11 @@ test('Norse Volva Seidr Nine Realms Engine: calculates nine realms resonance and
   assert(rep.dominantRealm.nameKo.length > 0);
   assert(rep.calculatedAtKst.endsWith('KST'));
   assert(Boolean(rep.volvaSynthesisMatrix?.integratedAction));
+  assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatNorseVolvaSeidrNineRealmsPrompt(rep);
   assert(prompt.includes('고대 북유럽 볼바 세이드 직관 & 위그드라실 9대 세계 실측 데이터'));
   assert(prompt.includes(rep.dominantRealm.nameKo));
-  assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('교차 매트릭스') && prompt.includes('해석 경계'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });
