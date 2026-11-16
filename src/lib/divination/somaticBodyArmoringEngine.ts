@@ -25,7 +25,7 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const SOMATIC_ARMORING_VERSION = 'LUCKEY-SOMATIC-v2.0.0';
+export const SOMATIC_ARMORING_VERSION = 'LUCKEY-SOMATIC-v2.1.0';
 
 function formatSomaticKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -65,6 +65,7 @@ export interface SomaticBodyArmoringReport {
     alignmentState: string;
     integratedAction: string;
   };
+  interpretiveBoundary: string;
 }
 
 export function runSomaticBodyArmoringEngine(
@@ -200,6 +201,8 @@ export function runSomaticBodyArmoringEngine(
     integratedAction: `${primarySegment.somaticReleaseExercise}${q ? ` [질문 맥락: ${q}]` : ''}`,
   };
 
+  const interpretiveBoundary = '본 빌헬름 라이히 7대 신체 갑옷 & 체성 감각 리포트는 사주 오행과 신체심리학 상징에 기반한 정성적 이완 안내이며, 의학적·물리치료적 진단을 대신하지 않습니다.';
+
   const synthesisPromptGuidance = `[LUCKEY 빌헬름 라이히 7대 신체 갑옷 해제 & 체성 감각 ${SOMATIC_ARMORING_VERSION} | ${calculatedAtKst}]
 - 1순위 집중 신체 갑옷: [${primarySegment.segmentName}]
   * 신체 부위: ${primarySegment.bodyLocation}
@@ -209,7 +212,8 @@ export function runSomaticBodyArmoringEngine(
 - 2순위 신체 갑옷: [${secondarySegment.segmentName}] (${secondarySegment.bodyLocation})
 - 미주신경 리셋 처방: [${vagusNerveResetPrescription.technique} ${vagusNerveResetPrescription.durationSeconds}초] ${vagusNerveResetPrescription.guide}
 - 교차 매트릭스: [핵심 긴장: ${somaticSynthesisMatrix.dominantTension} | 조율 상태: ${somaticSynthesisMatrix.alignmentState}]
-  * 통합 실천: ${somaticSynthesisMatrix.integratedAction}`;
+  * 통합 실천: ${somaticSynthesisMatrix.integratedAction}
+- 해석 경계: ${interpretiveBoundary}`;
 
   return {
     engineVersion: SOMATIC_ARMORING_VERSION,
@@ -222,6 +226,7 @@ export function runSomaticBodyArmoringEngine(
     vagusNerveResetPrescription,
     synthesisPromptGuidance,
     somaticSynthesisMatrix,
+    interpretiveBoundary,
   };
 }
 

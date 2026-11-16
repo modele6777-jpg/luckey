@@ -16,7 +16,7 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const SLEEP_SUBCONSCIOUS_VERSION = 'LUCKEY-SLEEP-v2.0.0';
+export const SLEEP_SUBCONSCIOUS_VERSION = 'LUCKEY-SLEEP-v2.1.0';
 
 function formatSleepKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -67,6 +67,7 @@ export interface SleepSubconsciousResult {
     alignmentState: string;
     integratedAction: string;
   };
+  interpretiveBoundary: string;
 }
 
 /**
@@ -126,6 +127,8 @@ export function calculateSleepSubconscious(params?: {
     integratedAction: `${nightRitual.step3Incubation}${q ? ` [질문 맥락: ${q}]` : ''}`,
   };
 
+  const interpretiveBoundary = '본 수면 회복 & 무의식 직관 리포트는 사주 12운성과 상징 수리에 기반한 정성적 야간 이완 안내이며, 수면의학적·정신의학적 진단을 대신하지 않습니다.';
+
   return {
     engineVersion: SLEEP_SUBCONSCIOUS_VERSION,
     calculatedAtIso: now.toISOString(),
@@ -137,6 +140,7 @@ export function calculateSleepSubconscious(params?: {
     dreamDecoding,
     summary,
     sleepSynthesisMatrix,
+    interpretiveBoundary,
   };
 }
 
@@ -165,6 +169,7 @@ export function formatSleepSubconsciousPrompt(res: SleepSubconsciousResult): str
       `  • 통합 실천: ${res.sleepSynthesisMatrix.integratedAction}`,
     );
   }
+  lines.push(`- 해석 경계: ${res.interpretiveBoundary}`);
   lines.push(`※ 루시 지침: 수면은 단순히 하루를 끄는 오프(Off) 버튼이 아니라, 몸과 마음이 쉬고 새로운 영감을 정리하는 시간입니다. 사용자가 하루의 피로를 부드럽게 털어내고, 자신에게 편안한 소리와 차분한 나이트 리셋을 선택하도록 다정하고 평온하게 안내해 주세요.`);
   return lines.join('\n');
 }
