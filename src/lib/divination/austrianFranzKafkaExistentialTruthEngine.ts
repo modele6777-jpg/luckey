@@ -13,7 +13,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const AUSTRIAN_FRANZ_KAFKA_EXISTENTIAL_TRUTH_VERSION = 'LUCKEY-FRANZ-KAFKA-EXISTENTIAL-TRUTH-v2.0.0';
+export const AUSTRIAN_FRANZ_KAFKA_EXISTENTIAL_TRUTH_VERSION = 'LUCKEY-FRANZ-KAFKA-EXISTENTIAL-TRUTH-v2.1.0';
 
 export type KafkaQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -67,6 +67,7 @@ export interface AustrianFranzKafkaExistentialTruthResult {
   questionTopic: KafkaQuestionTopic;
   situationalKafkaAudit: KafkaSituationalAudit;
   temporalKafkaRhythm: KafkaTemporalRhythm;
+  interpretiveBoundary: string;
   kafkaSynthesisMatrix: {
     coreInsight: string;
     recommendedAction: string;
@@ -322,6 +323,7 @@ export function calculateAustrianFranzKafkaExistentialTruth(
     questionTopic,
     situationalKafkaAudit,
     temporalKafkaRhythm,
+    interpretiveBoundary: situationalKafkaAudit.boundaryNotice,
     kafkaSynthesisMatrix,
     kafkaComprehensiveGuidance: {
       guidanceTitle,

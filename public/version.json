@@ -1,10 +1,10 @@
 {
-  "version": "1.7.706",
-  "builtAt": "2026-11-17T08:35:00+09:00",
-  "summary": "24시간 에너지곡선·삼재 교운기·정통 10대 격국 3대 엔진 v2.1.0 성찰 질문 및 카탈로그 뜻 등록(v1.7.706)",
+  "version": "1.7.707",
+  "builtAt": "2026-11-17T08:40:00+09:00",
+  "summary": "데칸·사비안·아들러·카프카 3대 엔진 v2.1.0 및 해석 경계 표준 연동(v1.7.707)",
   "items": [
-    "24시간 에너지곡선(vitalityCurveEngine v2.1.0): 질문 반응형 성찰 질문(reflectiveQuestion) 신설 및 질문 인자 연동",
-    "삼재·교운기 변곡점(samjaeGyoUnEngine v2.1.0): 질문 반응형 성찰 질문(reflectiveQuestion) 및 KST·질문 인자 연동",
-    "정통 10대 격국(geokgukEngine v2.1.0): v2.1.0 판올림 및 성찰 질문(reflectiveQuestion) 신설, 3종 ALL_DCE_ENGINES summary 등록"
+    "점성술 36 데칸 & 사비안 심볼 엔진(v2.1.0): interpretiveBoundary 표준 필드 연동",
+    "오스트리아 알프레트 아들러 개인심리학 엔진(v2.1.0): interpretiveBoundary 표준 필드 연동",
+    "프란츠 카프카 실존 진실 엔진(v2.1.0): interpretiveBoundary 표준 필드 연동"
   ]
 }
