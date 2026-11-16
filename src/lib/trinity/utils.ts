@@ -2008,7 +2008,7 @@ ${isDailyTarotConcern(concern) || (concern && /오늘|하루|데일리|daily/i.t
 }
 
 /**
- * 타로 결과가 중간에 끊기거나 미완성으로 남지 않도록 5단계 완결성을 보장하는 함수
+ * 기존 폴백과 서식 보완은 유지하되, 완성된 상담 본문에 상투적 장을 덧붙이지 않습니다.
  */
 export function ensureCompleteTarotReading(
   text: string,
@@ -2020,53 +2020,8 @@ export function ensureCompleteTarotReading(
   }
 
   let cleaned = text.trim();
-  const leadCard = cards && cards.length > 0 ? (cards[cards.length - 1] || cards[0]) : null;
-
-  // 1. 4단계 및 5단계 완결성 엄밀 판정 (모든 스프레드 테마별 헤더 포용)
-  const step4Pattern = /(?:###\s*(?:[🌿👑💎🌟⚡🏆💰🌅💌☯️🛤️🕯️☀️🧭]\s*)?4[\.\s]|4단계|운의\s*흐름을\s*바꿀|개운\s*가이드|실천\s*처방|1일\s*1실천|실천\s*행동)/;
-  const step5Pattern = /(?:###\s*(?:[✨👑💎🌟⚡🏆💰🌅💌☯️🛤️🕯️☀️🧭]\s*)?5[\.\s]|5단계|영혼의\s*한마디|당신의\s*길을\s*축복하는|황금빛\s*축복|축복과\s*확언|희망의\s*축복|마스터플랜|최종\s*결실)/;
-
-  const hasStep4 = step4Pattern.test(cleaned);
-  const hasStep5 = step5Pattern.test(cleaned);
-
-  let step5IsIncomplete = false;
-  if (hasStep5) {
-    const step5Idx = cleaned.search(step5Pattern);
-    const step5Content = cleaned.slice(step5Idx);
-    // 5단계 헤더 이후 본문 길이가 40자 미만이거나 마침표/인용부호 없이 중단된 경우
-    if (step5Content.length < 45 || /[,;:—\-\s]$/.test(cleaned)) {
-      step5IsIncomplete = true;
-    }
-  }
-
-  // 2. 누락되거나 잘린 섹션을 카드 맞춤형으로 온전히 보완
-  if (!hasStep4) {
-    cleaned += `\n\n### 🌿 4. 운의 흐름을 바꿀 마스터의 실천 처방 (개운 가이드)\n- **마음의 정돈**: 타인의 시선이나 조급함에 휘둘리지 말고 내면의 고요한 직관을 신뢰하세요.\n- **오늘의 핵심 실천**: 가벼운 심호흡과 함께 맑은 물 한 잔을 마시며 마음의 중심을 단단히 잡으세요.`;
-  }
-
-  if (!hasStep5 || step5IsIncomplete) {
-    if (step5IsIncomplete) {
-      const step5Idx = cleaned.search(step5Pattern);
-      cleaned = cleaned.slice(0, step5Idx).trim();
-    }
-    const dynamicBlessing = getCardSoulBlessing(leadCard, concern);
-    const isDaily = isDailyTarotConcern(concern) || (concern && /오늘|하루|데일리|daily/i.test(concern));
-    const step5Header = isDaily
-      ? '### ✨ 5. 오늘 하루를 지켜줄 황금빛 축복과 확언'
-      : '### ✨ 5. 당신의 길을 축복하는 영혼의 한마디';
-    const affirmationText = isDaily
-      ? `\n\n- **오늘의 황금빛 확언**: "${getCardDailyAffirmation(leadCard, concern)}"`
-      : '';
-    cleaned += `\n\n${step5Header}\n> _"${dynamicBlessing}"_${affirmationText}`;
-  } else if (isDailyTarotConcern(concern) || (concern && /오늘|하루|데일리|daily/i.test(concern))) {
-    // 이미 5단계가 있는 경우, 데일리 타로 전용 규격 헤더 및 확언 누락 보완
-    if (/당신의\s*길을\s*축복하는\s*영혼의\s*한마디/.test(cleaned)) {
-      cleaned = cleaned.replace(/###\s*[✨👑💎🌟⚡🏆💰🌅💌☯️🛤️🕯️☀️🧭\s]*5[\.\s][^\r\n]*당신의\s*길을\s*축복하는\s*영혼의\s*한마디/g, '### ✨ 5. 오늘 하루를 지켜줄 황금빛 축복과 확언');
-    }
-    if (!/오늘의\s*황금빛\s*확언|황금빛\s*확언/.test(cleaned)) {
-      cleaned += `\n\n- **오늘의 황금빛 확언**: "${getCardDailyAffirmation(leadCard, concern)}"`;
-    }
-  }
+  // A complete conversational reading need not contain five numbered chapters.
+  // Never append generic advice or a second conclusion to valid model output.
 
   // 3. 미완성 마크다운 서식 닫기
   const quoteCount = (cleaned.match(/"/g) || []).length;

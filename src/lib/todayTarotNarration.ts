@@ -237,7 +237,7 @@ export function buildTarotNarrationContent(dailyResult: any, summaryBullets: str
 
   // Full unified narration flow
   const fullSpeech = prepareNaturalSpeechText(
-    `${ch1Speech} ${chSummarySpeech ? `핵심 요약입니다. ${chSummarySpeech}. ` : ''}전체 심층 리딩입니다. ${ch3Speech} ${ch4Speech} 주의사항을 전해드립니다. ${DAILY_TAROT_CAUTION}`
+    `${nameKo}, ${orientationSpeech} 카드가 나왔어요. ${ch3Speech} 참고로 오늘의 행운 숫자는 ${luckyNumber}, 색은 ${luckyColor}예요. ${DAILY_TAROT_CAUTION}`
   );
 
   return {

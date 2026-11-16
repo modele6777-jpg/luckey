@@ -1,3 +1,4 @@
+import { TAROT_READING_VOICE } from '../src/lib/tarotReadingVoice.ts';
 import { synthesizeGeminiSpeech } from './api-lib/geminiMedia.ts';
 import { getSitesAIConfig } from '../scripts/sites-ai-provider.mjs';
 import type { handleTTS } from './api-lib/ttsHandler.ts';
@@ -249,7 +250,7 @@ export async function handleSitesApi(request: Request, env: Runtime, fetchApi: F
       const fields = ['diagnosis', 'luckyNumber', 'luckyColor', 'remedy', 'symbol', 'spiritualEnergy', 'blessingMessage', 'focusPlaylist'];
       const result = await objectReply(request, env, fetchApi,
         sedona ? '선택한 카드와 테마를 중심으로 감정을 허용하고 놓아버리는 세도나 질문, 차분한 확언과 구체적인 실천을 안내하세요. 의학적 진단이나 치유 보장은 하지 마세요.'
-          : '선택한 카드의 정역 방향과 고유 상징을 중심으로 오늘의 타로 리딩을 작성하세요. diagnosis에는 최상단 핵심 3줄 요약과 중복 없는 다섯 개의 마크다운 절을 포함하세요. 미래나 운세를 사실로 확정하지 말고 성찰과 실천을 돕는 관점으로 쓰세요.',
+          : `선택한 카드의 정역방향과 고유 의미를 오늘의 상황에 연결하세요. diagnosis는 1. 오늘의 첫 인상, 2. 카드가 들려주는 이야기, 3. 주의할 점, 4. 오늘 해볼 한 가지, 5. 생각해 볼 질문의 다섯 마크다운 절로 나누되 첫인상·주의점·행동·질문은 각각 1~2문장만 쓰세요. 2번 절에서만 해석의 근거를 충분히 풀고 다른 절은 같은 뜻을 반복하지 마세요. ${TAROT_READING_VOICE}`,
         body, fields);
       return json(Object.fromEntries(fields.map(field => [field, result[field]])));
     }

@@ -1,3 +1,4 @@
+import { TAROT_READING_VOICE } from './tarotReadingVoice';
 import { getEffectiveTarotKeywords, getTarotReversedData } from '@/data/tarotData';
 import { formatTarotMarker, type DetectedTarotCard } from '@/utils/tarotDetector';
 
@@ -7,7 +8,7 @@ export const LUCY_TAROT_RESPONSE_PROFILE = {
   rule: `[타로 구체적 리딩 및 말풍선 구성 — 이번 카드 추첨에 우선 적용]
 - 일반 수다의 짧은 답변이나 마스터의 15개 도구 나열 대신, 실제로 뽑힌 카드 각각의 해석에 충분한 분량을 써.
 - 카드마다 이름·배열 위치·정역방향, 전통적 의미, 대표 상징과 의미의 연결, 질문에 대한 구체적 적용을 빠짐없이 설명해.
-- 카드별로 2~3개의 짧은 단락을 사용하고 마지막에 종합 리딩과 실천 조언을 덧붙여. 빈 줄로 단락을 구분하고 친근한 반말 완결문으로 말해.
+- 카드마다 중요한 뜻과 질문에 맞는 근거를 한 번 설명하고, 다음 카드와의 연결로 이야기를 이어가. 마지막에는 중복 종합 대신 구체적인 행동 하나만 남겨. 빈 줄로 단락을 구분하고 친근한 반말 완결문으로 말해.
 - 여러 장이면 한 장도 생략하지 말고 카드 사이의 공통점·긴장·흐름을 함께 풀어줘.`,
 };
 
@@ -36,5 +37,6 @@ ${descriptions}
 6. 여러 장이면 카드별 해설 뒤에 서로 어떻게 연결되는지 종합해. 시간 흐름은 가능한 시나리오로 설명해. 한 장이면 그 카드의 기회와 주의점을 균형 있게 정리해.
 7. 질문에 대한 직접적인 답, 오늘 할 수 있는 구체적인 행동 1~2개, 피하면 좋은 행동 1개로 마무리해. 질문에 정보가 부족해도 먼저 가능한 범위에서 풀이하고 마지막에 필요한 확인 질문 하나만 해.
 8. 미래·날짜·성공 여부를 확정하지 마. '카드는 자기성찰을 위한 참고이고, 선택은 너에게 있어'라는 취지를 짧게 자연스럽게 전해.
-${LUCY_TAROT_RESPONSE_PROFILE.rule}`;
+${LUCY_TAROT_RESPONSE_PROFILE.rule}
+${TAROT_READING_VOICE}`;
 }

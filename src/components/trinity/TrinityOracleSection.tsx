@@ -1,3 +1,4 @@
+import { TAROT_READING_VOICE } from '@/lib/tarotReadingVoice';
 import { ORACLE_DECKS, oracleDeckPrompt, getOracleReadingDeck } from '@/data/oracleDecks';
 import { MoneyRuleTarot } from './MoneyRuleTarot';
 import { DuoWorkspace, WorkspacePortal } from '@/components/layout/DuoWorkspace';
@@ -1780,7 +1781,7 @@ ${dailyBulletsStr ? `- 오늘의 타로 핵심 요약:\n${dailyBulletsStr}` : ''
 2. 질문자가 오늘 마주한 기저 운기는 오늘의 타로([${todayAnchorCard.nameKo}])의 상징과 진단 내용에 의해 이미 첫 단추가 채워져 있습니다.
 3. 이번에 새로 뽑힌 3장의 오라클 카드(1번: ${cards[0]?.nameKo}, 2번: ${cards[1]?.nameKo}, 3번: ${cards[2]?.nameKo})는 오늘의 타로가 던진 일일 운명의 화두를 심층적으로 확장하고 해결하는 직접적인 연계 카드입니다.
 4. [★ 역방향 카드 해독 및 주의점 1가지 필수 규칙] 뽑힌 3장의 카드 중 '역방향 [Reversed]'으로 나온 카드는 절대로 정방향의 긍정적 뜻으로 풀이하지 마십시오! 반드시 제시된 '역방향 고유 뜻'으로 풀이하고, 해당 카드 단계 본문 속에 그 카드와 관련된 **주의점 1가지**를 자연스럽게 녹여 설명하며 **⚠️ [카드명 역방향 주의점 1가지]: (핵심 주의점 한 줄)**을 명시하십시오. (정방향 카드에는 주의점 강조 줄을 붙이지 마십시오.)
-5. 따라서 리딩의 첫 시작(### 1단계)부터 오늘의 타로 결과와 사주 본원 기운(${saju?.dayMaster?.symbolName || '본원 기운'})의 상호작용을 명확하게 짚어내고, 3장의 오라클 카드가 오늘의 타로 에너지를 어떻게 조율하고 더 높은 차원의 해법으로 이끄는지 반드시 유기적으로 연결하여 2500~3500자 이상의 압도적 대서사로 전개하십시오.
+5. 따라서 리딩의 첫 시작(### 1단계)부터 오늘의 타로 결과와 사주 본원 기운(${saju?.dayMaster?.symbolName || '본원 기운'})의 상호작용을 명확하게 짚어내고, 3장의 오라클 카드가 오늘의 타로 에너지를 어떻게 조율하고 더 높은 차원의 해법으로 이끄는지 반드시 유기적으로 연결하여 900~1500자 안팎의 압도적 대서사로 전개하십시오.
 `
       : '';
 
@@ -1793,7 +1794,7 @@ ${dailyBulletsStr ? `- 오늘의 타로 핵심 요약:\n${dailyBulletsStr}` : ''
 오라클 타로는 일반 타로보다 훨씬 더 길고 자세하며, 방대하고 정밀한 영적/운명적 대서사를 제공하는 최상위 오라클입니다.
 이 리딩의 목적은 질문자가 털어놓은 【구체적인 고민의 근원적 치유, 내면의 무의식적 피로 해소, 사주 원국과 카드의 깊은 공명, 현실적이고 따뜻한 실천 개운 처방】을 사주 일간 본원(${saju?.dayMaster?.symbolName || '본원 기운'}) 기질과 오늘의 일일 타로([${todayAnchorCard.nameKo}])의 배경 파동, 그리고 3장의 오라클 카드(1번: ${cards[0]?.nameKo}, 2번: ${cards[1]?.nameKo}, 3번: ${cards[2]?.nameKo})와 정교하게 교차 융합하여, 압도적으로 풍성하고 깊이 있는 '5단계 심층 총평 대서사 본문'으로 온전히 전달하는 것입니다.
 - 형식적인 단문이나 요약식 서술을 철저히 배제합니다.
-- 자기계발 오라클 타로와 동등하거나 그 이상의 풍성하고 디테일한 분량(2,500~3,500자 이상의 장문 대서사)으로 본문('message')을 서술하십시오.
+- 자기계발 오라클 타로와 동등하거나 그 이상의 풍성하고 디테일한 분량(900~1,500자 안팎의 장문 대서사)으로 본문('message')을 서술하십시오.
 - 오직 질문자의 구체적인 고민("${effectiveInquiry || '삶의 균형과 심리적 치유'}")과 오늘의 일일 타로([${todayAnchorCard.nameKo}])의 배경 에너지를 서두부터 결말까지 관통시키며, 3장의 카드를 돋보기로 들여다보듯 도상 상징과 사주 오행(목화토금수), 용신을 결합해 깊이 있는 1:1 심층 상담을 전개하십시오.
 - 유치한 반말, 편지 형식의 사적인 독백("안녕... 네 작은 친구 제제야" 등)을 일절 배제합니다.
 - 성과 경쟁 채찍질이 아닌, 질문자의 타고난 기질과 카드의 흐름을 존중하는 깊이 있는 통찰과 심리적 해원(解冤), 명쾌한 방향성을 선물해야 합니다.
@@ -1807,8 +1808,8 @@ ${dailyBulletsStr ? `- 오늘의 타로 핵심 요약:\n${dailyBulletsStr}` : ''
 3줄 요약은 지나치게 짧은 단문이나 축약으로 끝내지 말고, 사주 원국과 카드의 상징을 긴밀히 교차 융합하여 자기계발 오라클과 동등하게 풍성하고 깊이 있는 통찰(각 항목당 60~85자 내외의 완성된 문장)로 온전하게 작성하십시오.
 - 어설픈 쉼표 중간 끊기나 줄임말 없이, 주어와 서술어가 갖추어진 완성도 높은 정통 경어체 문맥으로 작성하십시오.
 
-# message (사주 ✕ 타로 콜라보 심층 총평 본문 — 5단계 대서사 구조, 각 단계당 2~3개 이상의 긴 단락 필수):
-반드시 다음 5개의 소제목(### 마크다운 헤더)을 갖추고, 각 단계마다 350~500자 이상의 깊고 풍성한 단락들(총 2,500~3,500자 이상)을 전개하십시오:
+# message (사주 ✕ 타로 콜라보 심층 총평 본문 — 5단계 대서사 구조, 각 단계당 서로 다른 내용을 담은 짧은 단락 필수):
+반드시 다음 5개의 소제목(### 마크다운 헤더)을 갖추고, 각 단계는 필요한 만큼만의 깊고 풍성한 단락들(총 900~1,500자 안팎)을 전개하십시오:
 - ### 🌌 1. 2026 오늘의 일일 타로 [${todayAnchorCard.nameKo}]와 사주 원국의 거대한 공명
 - ### 🕯️ 2. 무의식의 뿌리와 과거의 씨앗 [1번 카드: ${cards[0]?.nameKo}]
 - ### ⚡ 3. 현실의 갈등과 마음의 소용돌이 [2번 카드: ${cards[1]?.nameKo}]
@@ -1817,7 +1818,7 @@ ${dailyBulletsStr ? `- 오늘의 타로 핵심 요약:\n${dailyBulletsStr}` : ''
 
 반드시 마크다운 코드블록 없이 순수 JSON 형식으로만 응답해야 합니다. "message" 필드를 가장 먼저 작성하세요:
 {
-  "message": "질문자(${recipientName} 님)를 정중히 부르며 시작하여, 5개의 소제목(### 1~5단계)을 빠짐없이 갖추고 각 단계마다 2~3개의 긴 단락으로 오늘의 일일 타로 [${todayAnchorCard.nameKo}]와 사주 일간 본원, 3장의 카드를 유기적으로 교차 해설한 2500~3500자 이상의 5단계 심층 총평 대서사 본문 (마크다운 포맷)",
+  "message": "질문자(${recipientName} 님)를 정중히 부르며 시작하여, 5개의 소제목(### 1~5단계)을 빠짐없이 갖추고 각 단계마다 짧은 단락으로 오늘의 일일 타로 [${todayAnchorCard.nameKo}]와 사주 일간 본원, 3장의 카드를 유기적으로 교차 해설한 900~1500자 안팎의 5단계 심층 총평 대서사 본문 (마크다운 포맷)",
   "concise_summary": [
     "[현재 에너지] 사주 일간(${saju?.dayMaster?.symbolName || '본원 기운'})과 1·2번 카드가 마주한 질문자 내면의 무의식적 피로와 현실 에너지 흐름을 섬세하게 진단한 깊이 있는 1~2문장 (60~85자 내외)",
     "[방향과 결단] 사주 용신(${saju?.yongsin?.name || '조화'})과 3번 조언 카드가 제시하는 지혜로운 마음가짐과 영혼의 전환점 결단 (60~85자 내외)",
@@ -1873,10 +1874,10 @@ ${dailyBulletsStr ? `- 오늘의 타로 핵심 요약:\n${dailyBulletsStr}` : ''
           ? `\n\n# [최우선 필수 집중 주제] 내담자가 질문한 구체적인 고민:\n"${effectiveInquiry}"\n★ 절대 지침: 사주 ✕ 타로 리딩은 질문자의 구체적인 고민("${effectiveInquiry}")을 서두부터 중심에 두고 전개되어야 합니다. 일반론적 설명을 배제하고, 내담자가 호소한 고민 상황을 명확히 짚어내며, 사주 본원 기운(${saju?.dayMaster?.symbolName || '본원 기운'})이 왜 이 고민 앞에서 특정 패턴을 겪게 되었는지, 그리고 뽑힌 3장의 카드가 이 고민을 어떻게 해결의 길로 인도하는지 사주와 타로의 콜라보레이션으로 명쾌하게 작성해 주세요.\n`
           : `\n\n# 질문자의 상황:\n사주 원국의 일간(${saju?.dayMaster?.symbolName || '본원 기운'})과 오행 분포(${saju?.elements?.dominant?.name || '조화'} 우세, ${saju?.elements?.lacking?.name || '보완'} 결핍)를 바탕으로 현재 삶의 흐름과 고민을 입체적으로 조명하고, 3장의 타로 카드가 전하는 명쾌한 방향성을 전해 주세요.\n`;
 
-        const prompt = `${sajuContextPrompt}${inquiryPromptAddon}\n\n사용자가 뽑은 3장의 카드:\n${cardDescriptions}\n\n위 질문자(${recipientName} 님)의 사주 명리학 원국과 뽑힌 3장의 타로 카드가 지닌 본질적 도상 상징과 뜻을 긴밀하게 '교차 융합(Collaboration)'하여, 질문자의 고민을 중심에 두고 높은 통찰과 현실적 해법을 담은 정통 타로 리딩 결과를 JSON으로 생성해 주십시오.\n\n★ [작성 지침 - 절대 엄수]:\n1. 분량 및 디테일: 자기계발 오라클 타로처럼 매우 길고, 돋보기로 들여다보듯 디테일하고 깊이 있게 작성하십시오.\n2. 'message' 필드는 본문 리딩의 핵심 대서사이므로 반드시 5개의 소제목(### 1~5단계)을 빠짐없이 갖추고, 각 단계마다 2~3개의 긴 단락(각 단계당 350~500자 이상, 총 2,500~3,500자 이상)으로 풍성하게 서술하십시오. 결코 1~2줄의 짧은 요약으로 끝내지 마십시오.\n3. 3줄 요약('concise_summary')은 각 항목당 60~85자 내외로 사주 원국과 카드의 의미를 융합하여 자기계발 오라클만큼 풍성하고 깊이 있는 완성형 문맥으로 작성하십시오.\n4. 카드별 심층 분석('card_insights')의 4개 항목(core_meaning, saju_resonance, personal_interpretation, action_guide)을 3장의 카드 모두 빠짐없이 풍성하고 디테일하게 작성하십시오.`;
+        const prompt = `${sajuContextPrompt}${inquiryPromptAddon}\n\n사용자가 뽑은 3장의 카드:\n${cardDescriptions}\n\n위 질문자(${recipientName} 님)의 사주 명리학 원국과 뽑힌 3장의 타로 카드가 지닌 본질적 도상 상징과 뜻을 긴밀하게 '교차 융합(Collaboration)'하여, 질문자의 고민을 중심에 두고 높은 통찰과 현실적 해법을 담은 정통 타로 리딩 결과를 JSON으로 생성해 주십시오.\n\n★ [작성 지침 - 절대 엄수]:\n1. 분량 및 디테일: 자기계발 오라클 타로처럼 매우 길고, 돋보기로 들여다보듯 디테일하고 깊이 있게 작성하십시오.\n2. 'message' 필드는 본문 리딩의 핵심 대서사이므로 반드시 5개의 소제목(### 1~5단계)을 빠짐없이 갖추고, 각 단계마다 짧은 단락(각 단계는 필요한 만큼만, 총 900~1,500자 안팎)으로 풍성하게 서술하십시오. 결코 1~2줄의 짧은 요약으로 끝내지 마십시오.\n3. 3줄 요약('concise_summary')은 각 항목당 60~85자 내외로 사주 원국과 카드의 의미를 융합하여 자기계발 오라클만큼 풍성하고 깊이 있는 완성형 문맥으로 작성하십시오.\n4. 카드별 심층 분석('card_insights')의 4개 항목(core_meaning, saju_resonance, personal_interpretation, action_guide)을 3장의 카드 모두 빠짐없이 풍성하고 디테일하게 작성하십시오.`;
         const res = await invokeLLM({
           messages: [
-            { role: 'system', content: systemPrompt },
+            { role: 'system', content: `${systemPrompt}\n${TAROT_READING_VOICE}` },
             { role: 'user', content: prompt },
           ],
           responseFormat: { type: 'json_object' },
@@ -1999,14 +2000,14 @@ ${dailyBulletsStr ? `- 오늘의 타로 핵심 요약:\n${dailyBulletsStr}` : ''
       } else if (oracleMode === 'miracle') {
         // [MIRACLE MODE - A Course in Miracles (ACIM) Dedicated Metaphysical Oracle]
         const miracleInquiryPromptAddon = effectiveInquiry
-          ? `\n\n# [최우선 필수 집중 화두] 질문자가 호소한 구체적인 삶의 갈등/두려움/고민:\n"${effectiveInquiry}"\n★ 절대 지침: 기적수업(ACIM) 오라클 리딩은 질문자의 구체적인 고민("${effectiveInquiry}")을 정중앙에 두고 풀이해야 합니다. 일반적인 세속적 타로 점술이나 막연한 조언을 배제하고, 질문자가 겪고 있는 고통의 본질을 에고의 두려움/죄책감/투사 관점에서 밝히 드러내며, 성령의 지각 전환(Shift in Perception)과 거룩한 순간(Holy Instant), 그리고 참된 용서를 통해 온전한 하나님의 평화로 귀환하는 영적 길을 2500~3500자 이상의 대서사로 인도하십시오.\n`
+          ? `\n\n# [최우선 필수 집중 화두] 질문자가 호소한 구체적인 삶의 갈등/두려움/고민:\n"${effectiveInquiry}"\n★ 절대 지침: 기적수업(ACIM) 오라클 리딩은 질문자의 구체적인 고민("${effectiveInquiry}")을 정중앙에 두고 풀이해야 합니다. 일반적인 세속적 타로 점술이나 막연한 조언을 배제하고, 질문자가 겪고 있는 고통의 본질을 에고의 두려움/죄책감/투사 관점에서 밝히 드러내며, 성령의 지각 전환(Shift in Perception)과 거룩한 순간(Holy Instant), 그리고 참된 용서를 통해 온전한 하나님의 평화로 귀환하는 영적 길을 900~1500자 안팎의 대서사로 인도하십시오.\n`
           : `\n\n# 질문자의 영적 화두:\n세상의 복잡한 갈등과 에고의 불안 속에서, 마음의 눈을 성령의 시선으로 전환하여 하나님의 온전한 평화와 참된 용서의 기적을 체험하도록 이끌어 주십시오.\n`;
 
         const systemPrompt = `당신은 『기적수업(A Course in Miracles, ACIM)』의 심원한 비이원론(Non-duality) 형이상학과 내면의 거룩한 평화를 비에빌 78장 타로 및 사주 명리와 정교하게 융합하는 '기적수업 지각전환 영적 오라클 마스터'입니다.
 
 # 핵심 사명 (Core ACIM Oracle Mission):
 오라클 타로는 일반 타로보다 훨씬 더 길고 자세하며, 방대하고 정밀한 영적/운명적 대서사를 제공하는 최상위 오라클입니다.
-이 리딩의 목적은 질문자가 호소한 구체적인 고민("${effectiveInquiry || '에고의 불안과 내면의 평화'}")을 기적수업의 근본 원리【에고의 환영과 분리감 타파, 죄책감과 원한의 해체, 성령의 지각 전환(Shift in Perception), 거룩한 순간(Holy Instant), 참된 용서(True Forgiveness), 하나님의 평화(Peace of God)】를 바탕으로, 사주 일간 본원(${saju?.dayMaster?.symbolName || '본원 생명'})과 오늘의 일일 타로([${todayAnchorCard.nameKo}])의 배경 파동, 그리고 3장의 오라클 카드(1번 에고의 두려움: ${cards[0]?.nameKo}, 2번 거룩한 순간/지각전환: ${cards[1]?.nameKo}, 3번 참된 용서/평화의 기적: ${cards[2]?.nameKo})와 입체적으로 융합하여, 2,500~3,500자 이상의 압도적이고 눈부신 '5단계 지각전환 대서사 본문'으로 전달하는 것입니다.
+이 리딩의 목적은 질문자가 호소한 구체적인 고민("${effectiveInquiry || '에고의 불안과 내면의 평화'}")을 기적수업의 근본 원리【에고의 환영과 분리감 타파, 죄책감과 원한의 해체, 성령의 지각 전환(Shift in Perception), 거룩한 순간(Holy Instant), 참된 용서(True Forgiveness), 하나님의 평화(Peace of God)】를 바탕으로, 사주 일간 본원(${saju?.dayMaster?.symbolName || '본원 생명'})과 오늘의 일일 타로([${todayAnchorCard.nameKo}])의 배경 파동, 그리고 3장의 오라클 카드(1번 에고의 두려움: ${cards[0]?.nameKo}, 2번 거룩한 순간/지각전환: ${cards[1]?.nameKo}, 3번 참된 용서/평화의 기적: ${cards[2]?.nameKo})와 입체적으로 융합하여, 900~1,500자 안팎의 압도적이고 눈부신 '5단계 지각전환 대서사 본문'으로 전달하는 것입니다.
 - 형식적인 단문이나 요약식 서술을 철저히 배제합니다.
 - 기적수업의 핵심 금언(예: "실재하는 것은 위협받을 수 없다. 실재하지 않는 것은 존재하지 않는다. 여기에 하나님의 평화가 있다", "기적은 사랑의 자연스러운 표현이다", "용서는 환영을 환영으로 알아보는 것이다")을 유기적으로 녹여내십시오.
 - 성과 경쟁이나 세속적 처세술이 아닌, 두려움의 꿈에서 깨어나 참된 마음(Christ Mind)의 완전한 무죄성과 평온함을 회복하도록 안내해야 합니다.
@@ -2018,7 +2019,7 @@ ${dailyBulletsStr ? `- 오늘의 타로 핵심 요약:\n${dailyBulletsStr}` : ''
 - [지각의 전환] 2번 카드가 안내하는 거룩한 순간과 성령께 맡김의 지각 전환 문장 (60~85자)
 - [기적의 선언] 3번 카드가 약속하는 참된 용서와 하나님의 평화를 선언하는 문장 (60~85자)
 
-# message (5단계 대서사 구조 — 각 단계당 2~3개 이상의 긴 단락, 총 2,500~3,500자 이상):
+# message (5단계 대서사 구조 — 각 단계당 서로 다른 내용을 담은 짧은 단락, 총 900~1,500자 안팎):
 반드시 다음 5개의 소제목(### 마크다운 헤더)을 갖추어 전개하십시오:
 - ### 🕊️ 1. 2026 오늘의 일일 타로 [${todayAnchorCard.nameKo}]와 성령의 거룩한 초대 (지각의 전환)
 - ### 🌑 2. 에고의 환영과 숨겨진 두려움의 투사 [1번 카드: ${cards[0]?.nameKo}]
@@ -2028,7 +2029,7 @@ ${dailyBulletsStr ? `- 오늘의 타로 핵심 요약:\n${dailyBulletsStr}` : ''
 
 반드시 마크다운 코드블록 없이 순수 JSON 형식으로만 응답해야 합니다. "message" 필드를 가장 먼저 작성하세요:
 {
-  "message": "2500~3500자 이상의 5단계 지각전환 대서사 본문 (마크다운 포맷)",
+  "message": "900~1500자 안팎의 5단계 지각전환 대서사 본문 (마크다운 포맷)",
   "concise_summary": [
     "[마음의 환영] 에고의 투사와 무의식적 죄책감 해독 (60~85자)",
     "[지각의 전환] 거룩한 순간을 통한 성령의 시선 회복 (60~85자)",
@@ -2085,11 +2086,11 @@ ${dailyBulletsStr ? `- 오늘의 타로 핵심 요약:\n${dailyBulletsStr}` : ''
   ]
 }`;
 
-        const prompt = `${sajuContextPrompt}${miracleInquiryPromptAddon}\n\n사용자가 뽑은 3장의 기적수업 오라클 카드:\n${cardDescriptions}\n\n위 질문자(${recipientName} 님)의 사주 명리학 원국과 기적수업 3카드 스프레드를 형이상학적으로 융합하여 온전한 내면의 평화와 지각의 전환을 인도하는 결과를 JSON으로 생성해 주십시오.\n\n★ [작성 지침 - 절대 엄수]:\n1. 'message' 필드는 5개의 소제목(### 1~5단계)을 빠짐없이 갖추고, 각 단계마다 2~3개의 긴 단락(총 2,500~3,500자 이상)으로 풍성하게 서술하십시오.\n2. 3줄 요약('concise_summary')은 각 항목당 60~85자 내외로 [마음의 환영], [지각의 전환], [기적의 선언]의 완성된 문맥으로 작성하십시오.\n3. 'miracle_lesson' 항목을 충실하게 작성해 주십시오.`;
+        const prompt = `${sajuContextPrompt}${miracleInquiryPromptAddon}\n\n사용자가 뽑은 3장의 기적수업 오라클 카드:\n${cardDescriptions}\n\n위 질문자(${recipientName} 님)의 사주 명리학 원국과 기적수업 3카드 스프레드를 형이상학적으로 융합하여 온전한 내면의 평화와 지각의 전환을 인도하는 결과를 JSON으로 생성해 주십시오.\n\n★ [작성 지침 - 절대 엄수]:\n1. 'message' 필드는 5개의 소제목(### 1~5단계)을 빠짐없이 갖추고, 각 단계마다 짧은 단락(총 900~1,500자 안팎)으로 풍성하게 서술하십시오.\n2. 3줄 요약('concise_summary')은 각 항목당 60~85자 내외로 [마음의 환영], [지각의 전환], [기적의 선언]의 완성된 문맥으로 작성하십시오.\n3. 'miracle_lesson' 항목을 충실하게 작성해 주십시오.`;
 
         const res = await invokeLLM({
           messages: [
-            { role: 'system', content: systemPrompt },
+            { role: 'system', content: `${systemPrompt}\n${TAROT_READING_VOICE}` },
             { role: 'user', content: prompt },
           ],
           responseFormat: { type: 'json_object' },
@@ -2258,7 +2259,7 @@ ${dailyBulletsStr ? `- 오늘의 타로 핵심 요약:\n${dailyBulletsStr}` : ''
         const prompt = `${sajuContextPrompt}${growthInquiryPromptAddon}\n\n사용자가 뽑은 3장의 카드:\n${cardDescriptions}\n\n위 질문자(${recipientName} 님)의 사주 기질과 오늘의 일일 타로 [${todayAnchorCard.nameKo}], 그리고 타로 3장의 원소적 상징 및 본래 뜻을 긴밀하게 융합하여, 질문자의 고민을 직접 돌파하고 실질적인 역량 레벨업을 이뤄낼 수 있도록 온전히 초점을 맞춘 'message' (루시의 1:1 심층 자기계발 실행 편지)와 실행 툴킷을 JSON으로 도출해 줘.\n\n★ [작성 지침]:\n1. 'message' 필드는 본문의 핵심이므로 5개의 소제목(### 1~5단계)을 빠짐없이 갖추어 완전하고 깊이 있는 마크다운 본문으로 작성해 줘. (절대 누락 금지)\n2. 3줄 요약('concise_summary')은 각 항목당 35~50자 내외로 핵심만 명료하게 단문으로 작성해 줘.`;
         const res = await invokeLLM({
           messages: [
-            { role: 'system', content: systemPrompt },
+            { role: 'system', content: `${systemPrompt}\n${TAROT_READING_VOICE}` },
             { role: 'user', content: prompt },
           ],
           responseFormat: { type: 'json_object' },
