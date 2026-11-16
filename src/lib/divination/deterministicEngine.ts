@@ -1347,7 +1347,7 @@ try {
   const specialStarsResult = calculateSupplement('specialStarsResult', () => (calculateSpecialStarsMatrix({ profile, targetDate: now, question })));
   const monthlyFlowResult = calculateSupplement('monthlyFlowResult', () => (calculateMonthlyFlow({ profile, targetYear: now.getFullYear() })));
   const spatialFengshuiResult = calculateSupplement('spatialFengshuiResult', () => (calculateSpatialFengshui({ profile, targetDate: now, question })));
-  const vitalityCurveResult = calculateSupplement('vitalityCurveResult', () => (calculateVitalityCurve({ profile })));
+  const vitalityCurveResult = calculateSupplement('vitalityCurveResult', () => (calculateVitalityCurve({ profile, question })));
   const tojeongResult = calculateSupplement('tojeongResult', () => (birthdateStr && profile
     ? (() => {
         try {
@@ -1371,7 +1371,7 @@ try {
   const samjaeGyoUnResult = calculateSupplement('samjaeGyoUnResult', () => (birthdateStr && profile
     ? (() => {
         try {
-          const res = calculateSamjaeGyoUn({ profile, targetYear: now.getFullYear() });
+          const res = calculateSamjaeGyoUn({ profile, targetYear: now.getFullYear(), now, question });
           return res.status === 'calculated' ? res : null;
         } catch (_) {
           return null;
@@ -4733,10 +4733,10 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'specialStarsMatrix', nameKo: '15대 신살 슈퍼파워', icon: '⭐', category: 'deep_master', summary: '년·월·일·시 4주에 배치된 15대 정통 신살을 현대 커리어와 창작의 독점적 강점으로 승화해 비추는 관점' },
   { key: 'monthlyFlow', nameKo: '12개월 월운 플로우', icon: '📅', category: 'deep_master', summary: '오호둔월법 12절기월의 십신·12운성·지지합충과 사계절 분기 전략으로 월별 타이밍을 비추는 관점' },
   { key: 'spatialFengshui', nameKo: '공간 길방위 풍수', icon: '🧭', category: 'deep_master', summary: '기문둔갑 팔문과 점성술 행성 라인, 사주 용신 오행을 결합해 8방위 공간 배치와 길방위를 비추는 관점' },
-  { key: 'vitalityCurve', nameKo: '24시간 에너지곡선', icon: '🧬', category: 'deep_master' },
-  { key: 'samjaeGyoUn', nameKo: '삼재·교운기 변곡점', icon: '🔄', category: 'deep_master' },
+  { key: 'vitalityCurve', nameKo: '24시간 에너지곡선', icon: '🧬', category: 'deep_master', summary: '12운성(포태법) 수리로 일지·월지·현재 시진의 3대 바이오리듬과 12시진 에너지 조위 곡선을 비추는 관점' },
+  { key: 'samjaeGyoUn', nameKo: '삼재·교운기 변곡점', icon: '🔄', category: 'deep_master', summary: '삼합 묘지 앵커 기반 들·눌·날 삼재 등급과 대운 교체 전후 교운기·접목운 환절기를 비추는 관점' },
   { key: 'auspiciousStars', nameKo: '천을귀인·길성망', icon: '✨', category: 'deep_master', summary: '천을·문창·학당·문곡·천덕·월덕 6대 길신과 공망·충형 간섭, 도래 시기로 조력 인연을 비추는 관점' },
-  { key: 'geokguk', nameKo: '정통 10대 격국', icon: '📜', category: 'deep_master' },
+  { key: 'geokguk', nameKo: '정통 10대 격국', icon: '📜', category: 'deep_master', summary: '자평진전 월령 사령·투간 수리로 4길신 순용·4흉신 역용과 성격·파격·구응·상신을 판정하는 관점' },
   { key: 'twentyEightMansions', nameKo: '28수 일진 택일', icon: '🌠', category: 'deep_master', summary: '천상열차분야지도 28수 직성과 7원 4주기·3원 공명·4방신 조화로 당일 택일과 행동 완급을 비추는 관점' },
   { key: 'sukuyoAdvanced', nameKo: '27숙 심층 매트릭스', icon: '🌙', category: 'deep_master', summary: '밀교 숙요경 27숙 본명숙·7대 숙격·3구 비법과 6대 관계성 3거리 매트릭스로 기질과 인연 역학을 비추는 관점' },
   { key: 'vedicAdvanced', nameKo: '베딕 120년 다샤', icon: '🕉️', category: 'deep_master', summary: '항성황도 27나크샤트라와 120년 빔쇼타리 다샤(마하·안타르다샤)로 현재 대운·소운의 카르마적 중심축을 비추는 관점' },

@@ -45,7 +45,7 @@ import {
   BRANCH_KOREAN,
 } from '../sajuAnalysis';
 
-export const GEOKGUK_ENGINE_VERSION = 'LUCKEY-GG-v2.0.0';
+export const GEOKGUK_ENGINE_VERSION = 'LUCKEY-GG-v2.1.0';
 
 export const GEOKGUK_METHOD =
   '자평진전(子平眞詮) 정통 격국 수리 산법: 월령 본기·중기·초기 사령 및 투간 대조(본기>중기>초기 우선), 월지 건록·양인 직취 판정, 4길신 순용(정관·재성·정인·식신의 재성/인성 보좌·식신생재·관인상생)과 4흉신 역용(칠살·상관·편인·양인의 식신제살·살인상생·상관패인·상관생재·재성제인·양인가살) 성격(成格) 점검, 상관견관·군겁쟁재·도식·신약살왕 등 파격(破格) 원인 및 구응(救應) 검출, 상신(相神) 식별 및 격국 기반 직업·사회적 재능 리포트 결정론적 산출';
@@ -131,6 +131,7 @@ export interface GeokgukResult {
     recommendedAction: string;
     cautionNotice: string;
   };
+  reflectiveQuestion?: string;
   boundaryNotice?: string;
   note?: string;
 }
@@ -885,6 +886,9 @@ export function calculateGeokguk(params: {
     };
 
     const boundaryNotice = '본 결과는 자평진전 월령 사령·투간 수리에 기반한 정성적 성향·적성 안내이며, 우열이나 확정적 진로 판정이 아닙니다.';
+    const reflectiveQuestion = question
+      ? `"${question}"의 문제를 풀 때 내 ${decision.geokgukFull} 구조의 강점과 상신(${decision.sangSin?.tenGodName ?? '조율 축'})을 어떤 역할로 먼저 세우시겠어요?`
+      : `${decision.geokgukFull}(${decision.verdict})이 일과 관계에서 가장 자연스럽게 힘을 발휘할 수 있는 무대는 어디라고 느끼시나요?`;
 
     return {
       status: 'calculated',
@@ -928,6 +932,7 @@ export function calculateGeokguk(params: {
       situationalGeokgukAudit,
       temporalGeokgukRhythm,
       geokgukSynthesisMatrix,
+      reflectiveQuestion,
       boundaryNotice,
     };
   } catch (err: any) {
@@ -1015,6 +1020,9 @@ export function formatGeokgukPrompt(result: GeokgukResult): string {
   }
 
   if (result.boundaryNotice) lines.push(`- 해석 경계: ${result.boundaryNotice}`);
+  if ((result as GeokgukResult & { reflectiveQuestion?: string }).reflectiveQuestion) {
+    lines.push(`- 성찰 질문: ${(result as GeokgukResult & { reflectiveQuestion?: string }).reflectiveQuestion}`);
+  }
   lines.push(`- [AI 해석 절대 지침]: 본 리포트는 자평진전(子平眞詮) 월령 사령·투간 수리로 결정론 산출된 격국 판정입니다. 격국 명칭, 성격(成格)/파격(破格)/구응(救應) 판정, 상신을 임의 변경하지 말고, 이를 축으로 성격·재능·직업 방향 상담을 전개하십시오.`);
 
   return lines.join('\n');
