@@ -1,4 +1,3 @@
-import OpenAI from "openai";
 import { GoogleGenAI } from "@google/genai";
 import { getGeminiApiKey } from "../geminiKey.ts";
 import {
@@ -124,58 +123,6 @@ ${JSON.stringify(facts, null, 2)}
   }
 }
 
-async function personalizeWithOpenAI(
-  base: ArtRecommendationPayload,
-  currentMood: string,
-  userContext: string,
-  signal?: AbortSignal,
-): Promise<Pick<ArtRecommendationPayload, "whyRecommended" | "challenges"> | null> {
-  const openAIKey = (process.env.OPENAI_API_KEY || process.env.AI_API_KEY || "").trim();
-  if (!openAIKey) return null;
-
-  const facts = {
-    title: base.title,
-    creator: base.creator,
-    famousPoem: base.famousPoem.title,
-    famousSong: base.famousSong.title,
-  };
-
-  try {
-    const openai = new OpenAI({ apiKey: openAIKey, timeout: 10000, maxRetries: 0 });
-    const response = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      temperature: 0.35,
-      response_format: { type: "json_object" },
-      messages: [
-        {
-          role: "system",
-          content:
-            "Return JSON with whyRecommended and challenges only. Never change artwork, artist, poem, or song names from the provided facts.",
-        },
-        {
-          role: "user",
-          content: `Facts: ${JSON.stringify(facts)}\nMood: ${currentMood}\nContext: ${userContext || "none"}`,
-        },
-      ],
-    }, signal ? { signal } : undefined);
-    const rawText = response.choices[0]?.message?.content;
-    if (!rawText) return null;
-    const parsed = JSON.parse(rawText) as {
-      whyRecommended?: string;
-      challenges?: string[];
-    };
-    if (!parsed.whyRecommended || !Array.isArray(parsed.challenges) || parsed.challenges.length < 2) {
-      return null;
-    }
-    return {
-      whyRecommended: parsed.whyRecommended,
-      challenges: parsed.challenges.slice(0, 2),
-    };
-  } catch (err) {
-    console.warn("[Recommend Art] OpenAI personalization failed:", err);
-    return null;
-  }
-}
 
 export async function buildDailyArtRecommendation(
   req: RecommendArtRequest,
@@ -198,8 +145,7 @@ export async function buildDailyArtRecommendation(
   const personalizationDeadline = AbortSignal.timeout(10000);
 
   const personalized =
-    (await personalizeWithGemini(base, currentMood, userContext, userConcern, personalizationDeadline)) ||
-    (await personalizeWithOpenAI(base, currentMood, userContext, personalizationDeadline));
+    await personalizeWithGemini(base, currentMood, userContext, userConcern, personalizationDeadline);
 
   if (!personalized) return base;
 

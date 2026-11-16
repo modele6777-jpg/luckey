@@ -294,7 +294,7 @@ type TTSFailoverDependencies = {
   synthesizeEdge?: (options: { text: string; voice?: string; emotion?: string; requestId?: string }) => Promise<TTSAudioResponse>;
 };
 
-/** Gemini is primary; server-only Edge audio is a fallback and never masks Gemini diagnostics. */
+/** Gemini-only speech, with legacy dependency shape retained for callers. */
 export async function synthesizeSpeechWithFallback(
   text: string,
   voice?: string,
@@ -303,32 +303,15 @@ export async function synthesizeSpeechWithFallback(
   diagnosticId?: string,
 ): Promise<TTSAudioResponse> {
   const requestId = createTtsDiagnosticId(diagnosticId);
-  let geminiResult: TTSAudioResult | null = null;
-  let geminiError: unknown;
+  // Legacy export name retained; Gemini failures never switch providers.
   try {
-    geminiResult = await (dependencies.synthesizeGemini || synthesizeWithGemini)(text, voice, undefined, emotion, requestId);
-  } catch (error) {
-    geminiError = error;
-    if (error && typeof error === 'object') Object.assign(error, { diagnosticId: requestId });
-    const failure = error as { model?: string };
-    logTtsDiagnostic({ event: 'primary_failure', requestId, provider: 'gemini', model: failure?.model || process.env.GEMINI_TTS_MODEL || DEFAULT_TTS_MODELS[0], error });
-  }
-  if (geminiResult) return geminiResult;
-
-  const synthesizeEdge = dependencies.synthesizeEdge || (async (options) => {
-    const { handleTTS } = await import("../../server/api-lib/ttsHandler.ts");
-    return handleTTS(options);
-  });
-  try {
-    const result = await synthesizeEdge({ text, voice, emotion, requestId });
-    if (geminiError) logTtsDiagnostic({ event: 'fallback_success', requestId, provider: 'edge-neural', model: result.voice, primaryError: geminiError });
+    const result = await (dependencies.synthesizeGemini || synthesizeWithGemini)(text, voice, undefined, emotion, requestId);
+    if (!result) throw Object.assign(new Error('Gemini 음성 응답이 비어 있습니다.'), { status: 502, code: 'TTS_EMPTY_RESPONSE' });
     return result;
-  } catch (edgeError) {
-    if (geminiError) {
-      logTtsDiagnostic({ event: 'fallback_chain_failure', requestId, provider: 'fallback-chain', primaryError: geminiError, fallbackError: edgeError });
-      throw geminiError;
-    }
-    throw edgeError;
+  } catch (error) {
+    if (error && typeof error === 'object') Object.assign(error, { diagnosticId: requestId });
+    logTtsDiagnostic({ event: 'primary_failure', requestId, provider: 'gemini', error });
+    throw error;
   }
 }
 
@@ -422,7 +405,7 @@ export default async function handler(
       responseFormat: typeof body.responseFormat === "string" ? body.responseFormat : undefined,
     });
 
-    // Server-only Gemini → Edge Neural TTS. Browser-native and translator voices are excluded.
+    // Server-only Gemini TTS. Browser-native and translator voices are excluded.
     const result = await synthesizeSpeechWithFallback(text, voice, emotion, {}, requestId);
     if (wantsBinary) {
       sendBinaryTTSResponse(res, result);

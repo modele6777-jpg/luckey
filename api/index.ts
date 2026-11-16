@@ -100,7 +100,7 @@ app.post([/.*\/chat\/completions$/, "/api/openai/v1/chat/completions", "/openai/
 
   try {
     const ai = new GoogleGenAI({ apiKey: geminiApiKey });
-    const rawRequestedModel = req.body.model || "gemini-flash-lite-latest";
+    const rawRequestedModel = /^gemini-[a-zA-Z0-9._-]+$/.test(String(req.body.model || "")) ? req.body.model : "gemini-flash-lite-latest";
     const model = (rawRequestedModel === "gemini-4-argon" || rawRequestedModel.includes("argon") || rawRequestedModel.includes("2.5") || rawRequestedModel.includes("2.0"))
       ? "gemini-flash-lite-latest"
       : rawRequestedModel;
@@ -131,7 +131,7 @@ app.post([/.*\/chat\/completions$/, "/api/openai/v1/chat/completions", "/openai/
       return res.status(400).json({ error: "A final user message is required" });
     }
 
-    const generationConfig = { ...(systemPrompt ? { systemInstruction: systemPrompt } : {}), ...(Number.isInteger(req.body.max_tokens) ? { maxOutputTokens: Math.min(2048, Math.max(1, req.body.max_tokens)) } : { maxOutputTokens: 1024 }) };
+    const generationConfig = { ...(req.body.response_format?.type === "json_object" ? { responseMimeType: "application/json" } : {}), ...(systemPrompt ? { systemInstruction: systemPrompt } : {}), ...(Number.isInteger(req.body.max_tokens) ? { maxOutputTokens: Math.min(2048, Math.max(1, req.body.max_tokens)) } : { maxOutputTokens: 1024 }) };
     const { response, modelUsed } = await requestWithModelFallback(
       model,
       getLucyRequestFallbacks(model, req.body.review_mode),
@@ -196,21 +196,12 @@ app.post("/api/ai/tts", async (req, res) => {
   }
 });
 
-// Image generation endpoint using free Pollinations AI on Vercel
 app.post("/api/ai/image", async (req, res) => {
-  const { prompt, aspectRatio = "1:1" } = req.body;
-  if (!prompt) {
-    return res.status(400).json({ error: "Empty prompt" });
-  }
-
-  const dims = aspectRatio === "16:9"
-    ? { width: 768, height: 432 }
-    : aspectRatio === "9:16"
-      ? { width: 432, height: 768 }
-      : { width: 512, height: 512 };
-
-  const pollinationsUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=${dims.width}&height=${dims.height}&seed=${Math.floor(Math.random() * 1000000)}&nologo=true&model=flux`;
-  return res.status(200).json({ imageUrl: pollinationsUrl });
+  try {
+    const { generateImage } = await import('../server/_core/imageGeneration.ts');
+    const result = await generateImage(req.body || {});
+    return res.json({ imageUrl: result.url });
+  } catch (error: any) { return res.status(error.status || 502).json({ error: error.message }); }
 });
 
 // Diary analysis endpoint on Vercel

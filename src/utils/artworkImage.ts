@@ -180,10 +180,9 @@ export function getArtworkImageBadgeInfo(
  * 서버 API·원작 직링이 모두 실패해도 이 URL은 항상 그림을 만들어 냅니다.
  */
 export function buildPollinationsArtworkUrl(art: ArtworkImageInput): string {
-  const prompt = encodeURIComponent(
-    `Masterpiece oil painting of "${art.title}" by ${art.creator}, ${art.era || ''}, fine art museum gallery quality`,
-  );
-  return `https://image.pollinations.ai/prompt/${prompt}?width=1024&height=768&nologo=true&model=turbo`;
+  // Generation is asynchronous and server-only; show no unrelated external fallback.
+  return '';
+
 }
 
 /** 위키미디어 썸네일 URL을 원본 풀 해상도 URL로 변환합니다. (항링크·리사이즈 제한 회피) */
@@ -250,7 +249,7 @@ export async function resolveArtworkImage(
   const fallback: ResolvedArtworkImage = {
     url: fallbackUrl,
     displayUrl: fallbackUrl,
-    source: "pollinations",
+    source: "ai_replica",
   };
   let response: Response;
   let data: { url?: string; displayUrl?: string; source?: ArtworkImageSource; error?: string } | null;

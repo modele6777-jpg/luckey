@@ -1,3 +1,5 @@
+import { generateImage } from '../_core/imageGeneration.ts';
+import { getGeminiApiKey } from '../geminiKey.ts';
 import type { Response } from "express";
 import { getXaiApiKey } from "./xaiKey.ts";
 import { buildOriginalSearchQuery, extractOriginalLanguage } from "../_shared/artSearchQuery.ts";
@@ -39,12 +41,7 @@ const ALLOWED_MIMES = new Set([
   "image/gif",
 ]);
 
-const GROK_VISION_MODELS = [
-  process.env.XAI_VISION_MODEL || "grok-2-vision-1212",
-  process.env.XAI_MODEL || "grok-4.3",
-  "grok-4.20",
-  "grok-3",
-];
+
 
 const BLOCKED_TITLE_PATTERNS = [
   "logo",
@@ -254,9 +251,8 @@ export function buildPollinationsUrlFromPrompt(
   width = 800,
   height = 600,
 ): string {
-  const seed = getDateSeed(`muse_art_${art.title}_${art.creator}`);
-  const trimmed = prompt.slice(0, 1400);
-  return `https://image.pollinations.ai/prompt/${encodeURIComponent(trimmed)}?width=${width}&height=${height}&seed=${seed}&nologo=true&model=turbo`;
+  return ''; // Legacy URL-only API: Gemini generation requires a server POST.
+
 }
 
 export function isAllowedImageProxyUrl(url: string): boolean {
@@ -656,7 +652,7 @@ async function buildVisionReplicaPrompt(
   art: ArtworkImageInput,
   referenceUrl: string,
 ): Promise<string | null> {
-  const apiKey = getXaiApiKey();
+  const apiKey = getGeminiApiKey();
   if (!apiKey) return null;
 
   const title = sanitizeForPrompt(
@@ -669,9 +665,9 @@ async function buildVisionReplicaPrompt(
 
   let lastError: unknown = null;
 
-  for (const model of GROK_VISION_MODELS) {
+  for (const model of ['gemini-3.1-flash-lite']) {
     try {
-      const response = await fetch("https://api.x.ai/v1/chat/completions", {
+      const response = await fetch("https://generativelanguage.googleapis.com/v1beta/openai/chat/completions", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -790,13 +786,9 @@ export async function resolveMuseArtworkImage(
     }
   }
 
-  // 🎨 Fallback synthesis with ultra-high quality prompt & resolution
-  const pollinationsUrl = buildPollinationsArtUrl(art, 1024, 768);
-  return {
-    url: pollinationsUrl,
-    displayUrl: pollinationsUrl,
-    source: "pollinations",
-  };
+  const { url } = await generateImage({ prompt: `Artistic reinterpretation of ${art.title} by ${art.creator}. ${art.description || ''}`, aspectRatio: '4:3' });
+  return { url, displayUrl: url, source: 'ai_replica' };
+
 }
 
 interface CachedImage {

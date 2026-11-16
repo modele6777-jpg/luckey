@@ -34,42 +34,11 @@ export async function synthesizeGrokTTS(
   text: string,
   options: GrokTtsOptions & { emotion?: string },
 ): Promise<Buffer> {
-  const voiceId = (options.voiceId || mapPersonaToGrokVoice()).toLowerCase();
-  const language = options.language || resolveGrokLanguage(text);
-  const speed = options.speed ?? resolveGrokSpeed(options.emotion);
-
-  const response = await fetch('https://api.x.ai/v1/tts', {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${options.apiKey}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      text,
-      voice_id: voiceId,
-      language,
-      speed,
-      output_format: {
-        codec: 'mp3',
-        sample_rate: 24000,
-        bit_rate: 128000,
-      },
-    }),
-  });
-
-  if (!response.ok) {
-    const detail = await response.text().catch(() => '');
-    throw new Error(`Grok TTS error ${response.status}${detail ? `: ${detail.slice(0, 200)}` : ''}`);
-  }
-
-  const contentType = response.headers.get('content-type') || '';
-  if (contentType.includes('application/json')) {
-    const payload = await response.json() as { audio?: string };
-    if (!payload.audio) throw new Error('Grok TTS returned JSON without audio');
-    return Buffer.from(payload.audio, 'base64');
-  }
-
-  return Buffer.from(await response.arrayBuffer());
+  // Compatibility export for old callers; never use the legacy provider key.
+  const { synthesizeGeminiSpeech } = await import('./api-lib/geminiMedia.ts');
+  const { getGeminiApiKey } = await import('./geminiKey.ts');
+  const result = await synthesizeGeminiSpeech(text, options.voiceId, { ...process.env, GEMINI_API_KEY: getGeminiApiKey() });
+  return Buffer.from(result.audioContent, 'base64');
 }
 
 export function getXaiApiKey(): string {

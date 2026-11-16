@@ -1,4 +1,4 @@
-import { getSitesAIConfig, describeOpenAIFailure } from './sites-ai-provider.mjs';
+import { getSitesAIConfig } from './sites-ai-provider.mjs';
 // Server-only adapter: use Google's OpenAI-compatible API so conversation
 // history, image parts and SSE keep the format expected by the chat client.
 export async function handleSitesGeminiChat(request, env, fetchApi = fetch) {
@@ -8,8 +8,7 @@ export async function handleSitesGeminiChat(request, env, fetchApi = fetch) {
     return Response.json({ error: 'POST 요청을 사용해 주세요.' }, { status: 405, headers: { Allow: 'POST' } });
   }
   const { provider, key } = getSitesAIConfig(env);
-  const isOpenAI = provider === 'openai';
-  const providerName = isOpenAI ? 'OpenAI' : 'Gemini';
+  const providerName = 'Gemini';
   if (!key) return Response.json({ error: `${providerName} API 키가 설정되지 않았습니다.` }, { status: 503 });
   let input;
   try { input = await request.json(); }
@@ -19,20 +18,19 @@ export async function handleSitesGeminiChat(request, env, fetchApi = fetch) {
     !(typeof message.content === 'string' || Array.isArray(message.content)))) {
     return Response.json({ error: '대화 내용을 확인해 주세요.' }, { status: 400 });
   }
-  const model = String(isOpenAI ? env.OPENAI_CHAT_MODEL || 'gpt-5.4-mini' : env.GEMINI_MODEL || 'gemini-3.1-flash-lite').trim();
-  const reasoningModel = isOpenAI && /^gpt-[56]/.test(model);
+  const model = String(env.GEMINI_MODEL || 'gemini-3.1-flash-lite').trim();
+  if (!/^gemini-[a-zA-Z0-9._-]+$/.test(model)) return Response.json({ error: 'Gemini 모델 설정을 확인해 주세요.' }, { status: 503 });
   const payload = {
     model,
     messages: input.messages.map(({ role, content }) => ({ role: role === 'developer' ? 'system' : role, content })),
     stream: input.stream === true,
   };
-  if (!reasoningModel && Number.isFinite(input.temperature)) payload.temperature = Math.max(0, Math.min(2, input.temperature));
-  if (Number.isFinite(input.max_tokens) && input.max_tokens > 0) payload[reasoningModel ? 'max_completion_tokens' : 'max_tokens'] = Math.min(32768, Math.floor(input.max_tokens));
+  if (Number.isFinite(input.temperature)) payload.temperature = Math.max(0, Math.min(2, input.temperature));
+  if (Number.isFinite(input.max_tokens) && input.max_tokens > 0) payload.max_tokens = Math.min(32768, Math.floor(input.max_tokens));
   if (input.response_format?.type === 'json_object') payload.response_format = { type: 'json_object' };
   const thinking = input.thinking_level || input.reasoning_effort;
-  if (!isOpenAI && ['minimal', 'low', 'medium', 'high'].includes(thinking)) payload.reasoning_effort = thinking;
-  if (reasoningModel) payload.reasoning_effort = ['low', 'medium', 'high'].includes(thinking) ? thinking : 'low';
-  const models = [...new Set([model, String(isOpenAI ? env.OPENAI_FALLBACK_MODEL || '' : env.GEMINI_FALLBACK_MODEL || 'gemini-3.5-flash-lite').trim()])].filter(Boolean);
+  if (['minimal', 'low', 'medium', 'high'].includes(thinking)) payload.reasoning_effort = thinking;
+  const models = [...new Set([model, String(env.GEMINI_FALLBACK_MODEL || 'gemini-3.5-flash-lite').trim()])].filter(value => /^gemini-[a-zA-Z0-9._-]+$/.test(value));
   try {
     let upstream;
     for (let attempt = 0; attempt < models.length; attempt++) {
@@ -41,7 +39,7 @@ export async function handleSitesGeminiChat(request, env, fetchApi = fetch) {
       // The fallback may support different thinking controls; retain conversation and output format.
       if (attempt > 0) delete attemptPayload.reasoning_effort;
       try {
-        upstream = await fetchApi(isOpenAI ? 'https://api.openai.com/v1/chat/completions' : 'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions', {
+        upstream = await fetchApi('https://generativelanguage.googleapis.com/v1beta/openai/chat/completions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${key}` },
       body: JSON.stringify(attemptPayload),
@@ -59,17 +57,13 @@ export async function handleSitesGeminiChat(request, env, fetchApi = fetch) {
     }
     if (!upstream.ok) {
       // Never echo raw provider messages or secret/request details.
-      let failure;
-      try { failure = await upstream.json(); } catch (_) {}
-      const diagnosis = isOpenAI ? describeOpenAIFailure(upstream, failure) : null;
-      const quotaExhausted = diagnosis?.quota || diagnosis?.zeroLimit;
       const status = upstream.status;
-      const error = status === 429 ? (quotaExhausted ? 'OpenAI API 잔액 또는 프로젝트 사용 한도를 확인해 주세요.' : `${providerName} 요청이 일시적으로 제한됐습니다. 잠시 후 다시 시도해 주세요.`)
+      const error = status === 429 ? `${providerName} 요청이 일시적으로 제한됐습니다. 잠시 후 다시 시도해 주세요.`
         : status === 401 || status === 403 ? `등록된 ${providerName} API 키의 유효성과 사용 권한을 확인해 주세요.`
         : status === 404 ? `설정된 ${providerName} 모델을 사용할 수 없습니다.`
         : status === 400 ? `${providerName}가 요청을 처리하지 못했습니다. 대화 내용을 확인해 주세요.`
         : `${providerName} 서버에 일시적인 오류가 발생했습니다. 다시 시도해 주세요.`;
-      return Response.json({ error, ...(diagnosis ? { providerCode: diagnosis.code, ...(diagnosis.kind ? { limitKind: diagnosis.kind } : {}), ...(diagnosis.limit !== undefined ? { limit: diagnosis.limit } : {}) } : {}) }, { status: [400, 401, 403, 404, 429].includes(status) ? status : 502, headers: status === 429 && !quotaExhausted && diagnosis ? { 'Retry-After': String(diagnosis.retryAfterSeconds) } : {} });
+      return Response.json({ error }, { status: [400, 401, 403, 404, 429].includes(status) ? status : 502 });
     }
     return new Response(upstream.body, {
       headers: {

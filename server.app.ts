@@ -20,8 +20,6 @@ import { calmRouter } from "./server/calmRouter";
 import path from "path";
 import { fileURLToPath } from "url";
 import { GoogleGenAI } from "@google/genai";
-import { OpenAI } from "openai";
-import Anthropic from "@anthropic-ai/sdk";
 import { createProxyMiddleware, fixRequestBody } from "http-proxy-middleware";
 import { buildSpecificSedonaDailyOracle } from "./src/lib/dailyTarotOracle";
 import { installAsyncRouteGuard } from "./server/api-lib/routeGuard";
@@ -32,49 +30,8 @@ const _dirname = typeof __dirname !== "undefined" ? __dirname : process.cwd();
 import { getGeminiApiKey } from "./server/geminiKey";
 export { getGeminiApiKey };
 
-function getAIConfig() {
-  let aiType = (process.env.AI_TYPE || '').toLowerCase().trim();
-  let apiKey = process.env.AI_API_KEY || '';
-
-  // Auto-detection based on API key prefix or explicit separate API keys
-  if (process.env.XAI_API_KEY) {
-    aiType = 'grok';
-    apiKey = process.env.XAI_API_KEY;
-  } else if (process.env.GROK_API_KEY) {
-    aiType = 'grok';
-    apiKey = process.env.GROK_API_KEY;
-  } else if (process.env.GROQ_API_KEY) {
-    aiType = 'groq';
-    apiKey = process.env.GROQ_API_KEY;
-  } else if (apiKey.startsWith('xai-')) {
-    aiType = 'grok';
-  } else if (apiKey.startsWith('gsk_')) {
-    aiType = 'groq';
-  }
-
-  // Default fallback if still empty
-  if (!aiType || aiType === 'poe') {
-    aiType = 'gemini';
-  }
-
-  // Resolve API Key correctly
-  if (!apiKey) {
-    if (aiType === 'grok') {
-      apiKey = process.env.XAI_API_KEY || process.env.GROK_API_KEY || process.env.AI_API_KEY || '';
-    } else if (aiType === 'groq') {
-      apiKey = process.env.GROQ_API_KEY || '';
-    } else if (aiType === 'gemini') {
-      apiKey = getGeminiApiKey();
-    }
-  }
-
-  // If Grok/Groq was selected but no key is available, fall back to Gemini.
-  if ((aiType === 'grok' || aiType === 'groq') && !apiKey) {
-    aiType = 'gemini';
-    apiKey = getGeminiApiKey();
-  }
-
-  return { aiType, apiKey };
+function getAIConfig(): { aiType: string; apiKey: string } {
+  return { aiType: 'gemini', apiKey: getGeminiApiKey() };
 }
 
 const KOREAN_ONLY_OUTPUT_RULE = `[모든 앱 공통 언어 및 문장 가독성 원칙]:
@@ -462,138 +419,7 @@ async function startServer() {
         return res.status(200).json({ text: response.text });
       } 
       
-      else if (aiType === 'openai') {
-        const openai = new OpenAI({ apiKey });
-        const messages: any[] = [];
-        if (systemInstruction) messages.push({ role: "system", content: systemInstruction });
-        messages.push({ role: "user", content: prompt });
-
-        const response = await openai.chat.completions.create({
-          model: "gpt-4o",
-          messages,
-          response_format: responseSchema ? { type: "json_object" } : undefined
-        });
-        return res.status(200).json({ text: response.choices[0].message.content });
-      }
-
-      else if (aiType === 'claude') {
-        const anthropic = new Anthropic({ apiKey });
-        const response = await anthropic.messages.create({
-          model: "claude-3-5-sonnet-20240620",
-          system: systemInstruction,
-          max_tokens: 4096,
-          messages: [{ role: "user", content: prompt }],
-        });
-        // @ts-ignore
-        return res.status(200).json({ text: response.content[0].text });
-      }
-
-      else if (aiType === 'manus') {
-        const manus = new OpenAI({ 
-          apiKey: apiKey, 
-          baseURL: "https://api.manus.ai/v1" 
-        });
-        const response = await manus.chat.completions.create({
-          model: "manus-1", 
-          messages: [{ role: "user", content: prompt }],
-        });
-        return res.status(200).json({ text: response.choices[0].message.content });
-      }
-
-      // 狩?Grok (xAI) - ?꾩쟾 吏??
-      else if (aiType === 'grok') {
-        const grok = new OpenAI({
-          apiKey: apiKey,
-          baseURL: "https://api.x.ai/v1"
-        });
-
-        const messages: any[] = [{ role: "system", content: KOREAN_ONLY_OUTPUT_RULE }];
-        if (systemInstruction) messages.push({ role: "system", content: systemInstruction });
-        messages.push({ role: "user", content: prompt });
-
-        const modelsToTry = [process.env.XAI_MODEL || "grok-4.3", "grok-4.20", "grok-4.20-0309-non-reasoning", "grok-3"];
-        if (requestedModel && !modelsToTry.includes(requestedModel)) {
-          modelsToTry.unshift(requestedModel);
-        }
-
-        let response;
-        let lastError = null;
-
-        for (const currentModel of modelsToTry) {
-          try {
-            response = await grok.chat.completions.create({
-              model: currentModel,
-              messages,
-              temperature: 0.7,
-              max_tokens: 8192,
-              response_format: responseSchema ? { type: "json_object" } : undefined
-            });
-            lastError = null;
-            break;
-          } catch (err: any) {
-            console.warn(`[grok] Model ${currentModel} failed, trying fallback...`, err.message || err);
-            lastError = err;
-          }
-        }
-
-        if (lastError || !response) {
-          throw lastError || new Error("All Grok models failed.");
-        }
-
-        return res.status(200).json({ 
-          text: response.choices[0].message.content 
-        });
-      }
-
-      // 狩?Groq - ?꾩쟾 吏??
-      else if (aiType === 'groq') {
-        const groq = new OpenAI({
-          apiKey: apiKey,
-          baseURL: "https://api.groq.com/openai/v1"
-        });
-
-        const messages: any[] = [];
-        if (systemInstruction) messages.push({ role: "system", content: systemInstruction });
-        messages.push({ role: "user", content: prompt });
-
-        try {
-          const response = await groq.chat.completions.create({
-            model: requestedModel || "llama-3.3-70b-versatile",
-            messages,
-            temperature: 0.7,
-            max_tokens: 8192,
-            response_format: responseSchema ? { type: "json_object" } : undefined
-          });
-
-          return res.status(200).json({ 
-            text: response.choices[0].message.content 
-          });
-        } catch (groqErr: any) {
-          console.warn("[groq] Failed in /api/ai, falling back to Gemini...", groqErr);
-          const geminiKey = getGeminiApiKey();
-          if (geminiKey) {
-            const ai = new GoogleGenAI({ apiKey: geminiKey });
-            const config: any = {};
-            if (systemInstruction) config.systemInstruction = systemInstruction;
-            if (responseSchema) {
-              config.responseMimeType = "application/json";
-              config.responseSchema = responseSchema;
-            }
-            const { response } = await callGeminiContentWithFallback(
-              ai,
-              [{ role: "user", parts: [{ text: prompt }] }],
-              config
-            );
-            return res.status(200).json({ text: response.text });
-          } else {
-            throw groqErr;
-          }
-        }
-      }
-
-      else {
-        throw new Error(`AI_TYPE '${aiType}' is not supported yet.`);
-      }
+      else { throw new Error('Gemini API 설정을 확인해 주세요.'); }
 
     } catch (error: any) {
       console.error("AI execution error:", error);
@@ -603,172 +429,13 @@ async function startServer() {
 
   // ?대?吏 ?앹꽦??Grok 吏??異붽?
   app.post("/api/ai/image", async (req, res) => {
-    const configObj = getAIConfig();
-    let aiType = configObj.aiType;
-    if (aiType !== 'gemini' && aiType !== 'grok') {
-      if (getGeminiApiKey()) {
-        aiType = 'gemini';
-      }
-    }
-    const apiKey = configObj.apiKey || getGeminiApiKey() || '';
-    const { prompt, aspectRatio = "1:1", fast = false } = req.body;
-
-    const buildPollinationsUrl = () => {
-      const dims = aspectRatio === "16:9"
-        ? { width: 768, height: 432 }
-        : aspectRatio === "9:16"
-          ? { width: 432, height: 768 }
-          : { width: 512, height: 512 };
-      return `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=${dims.width}&height=${dims.height}&seed=${Math.floor(Math.random() * 1000000)}&nologo=true&model=flux`;
-    };
-
-    const performPollinationsFallback = async (urlOnly = true) => {
-      console.warn("[API] Falling back to Pollinations AI for free image generation...");
-      const pollinationsUrl = buildPollinationsUrl();
-      if (urlOnly) return pollinationsUrl;
-
-      const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), 15000);
-      try {
-        const pollRes = await fetch(pollinationsUrl, { signal: controller.signal });
-        if (pollRes.ok) {
-          const arrayBuffer = await pollRes.arrayBuffer();
-          const base64 = Buffer.from(arrayBuffer).toString('base64');
-          return `data:image/jpeg;base64,${base64}`;
-        }
-        throw new Error(`Pollinations API returned status ${pollRes.status}`);
-      } finally {
-        clearTimeout(timer);
-      }
-    };
-
-    if (fast) {
-      return res.status(200).json({ imageUrl: buildPollinationsUrl() });
-    }
-
-    if (!apiKey) {
-      try {
-        const fallbackUrl = await performPollinationsFallback(true);
-        return res.status(200).json({ imageUrl: fallbackUrl });
-      } catch (fallbackErr: any) {
-        return res.status(400).json({ error: "Missing API Key and fallback failed: " + fallbackErr.message });
-      }
-    }
-
     try {
-      if (aiType === 'grok') {
-        const grok = new OpenAI({
-          apiKey,
-          baseURL: "https://api.x.ai/v1"
-        });
-
-        const validRatio = ["1:1", "16:9", "9:16", "4:3", "3:4"].includes(aspectRatio) ? aspectRatio : "1:1";
-        const grokImageModels = ["grok-imagine-image-quality", "grok-imagine-image", "grok-3-image-preview", "grok-2-image-1212"];
-        let lastGrokImageErr: any = null;
-
-        for (const imageModel of grokImageModels) {
-          try {
-            const response = await Promise.race([
-              grok.images.generate({
-                model: imageModel,
-                prompt,
-                aspect_ratio: validRatio,
-                n: 1,
-              } as any),
-              new Promise((_, reject) => setTimeout(() => reject(new Error("Grok image timeout")), 8000)),
-            ]) as any;
-            const imageUrl = response.data?.[0]?.url;
-            if (imageUrl) {
-              return res.status(200).json({ imageUrl });
-            }
-          } catch (err: any) {
-            lastGrokImageErr = err;
-            console.warn(`[grok] ${imageModel} failed, trying next model...`, err.message || err);
-          }
-        }
-
-        console.warn("[grok] All image models failed, resorting to Pollinations AI fallback...", lastGrokImageErr?.message || lastGrokImageErr);
-        const fallbackUrl = await performPollinationsFallback(true);
-        return res.status(200).json({ imageUrl: fallbackUrl });
-      }
-      else if (aiType === 'gemini') {
-        const ai = new GoogleGenAI({
-          apiKey,
-          httpOptions: {
-            headers: {
-              'User-Agent': 'aistudio-build',
-            }
-          }
-        });
-        let imageUrl = "";
-        let lastError = null;
-
-        const validRatio = ["1:1", "3:4", "4:3", "9:16", "16:9"].includes(aspectRatio) ? aspectRatio : "1:1";
-        const modelsToTry = [
-          'gemini-3.1-flash-lite-image',
-          'gemini-3.1-flash-image',
-          'gemini-3-pro-image'
-        ];
-
-        for (const modelName of modelsToTry) {
-          try {
-            console.log(`[API] Attempting image generation with model: ${modelName}`);
-            const result = await Promise.race([
-              ai.models.generateContent({
-                model: modelName,
-                contents: {
-                  parts: [{ text: prompt }]
-                },
-                config: {
-                  imageConfig: {
-                    aspectRatio: validRatio as any,
-                  }
-                }
-              }),
-              new Promise((_, reject) => setTimeout(() => reject(new Error("Image generation timeout")), 15000))
-            ]) as any;
-
-            const parts = result.candidates?.[0]?.content?.parts;
-            if (parts && Array.isArray(parts)) {
-              for (const part of parts) {
-                if (part.inlineData?.data) {
-                  const mime = part.inlineData.mimeType || 'image/png';
-                  imageUrl = `data:${mime};base64,${part.inlineData.data}`;
-                  break;
-                }
-              }
-            }
-
-            if (imageUrl) {
-              console.log(`[API] Successfully generated image with model: ${modelName}`);
-              break;
-            }
-          } catch (e: any) {
-            console.warn(`[API] Model ${modelName} image generation failed:`, e?.message?.slice(0, 120) || e);
-            lastError = e;
-          }
-        }
-
-        if (imageUrl) {
-          return res.status(200).json({ imageUrl });
-        } else {
-          try {
-            const fallbackUrl = await performPollinationsFallback(true);
-            return res.status(200).json({ imageUrl: fallbackUrl });
-          } catch (fallbackErr: any) {
-            console.error("[API] Fallback image generation failed:", fallbackErr);
-            throw lastError || new Error("Failed image generation and fallback.");
-          }
-        }
-      }
-      throw new Error("Image generation not supported for this AI.");
-    } catch (error: any) {
-      console.error("Image generation error:", error);
-      return res.status(500).json({ error: error.message });
-    }
+      const { generateImage } = await import('./server/_core/imageGeneration');
+      const result = await generateImage(req.body || {});
+      return res.json({ imageUrl: result.url });
+    } catch (error: any) { return res.status(error.status || 502).json({ error: error.message }); }
   });
 
-  // 湲곕줉 AI ?먮룞 遺꾩꽍 諛?愿???ㅼ썙??媛먯젙 ?쒓렇 異붿텧
   app.post("/api/ai/analyze-entry", async (req, res) => {
     const { title = "", content = "", type = "" } = req.body;
 
@@ -836,31 +503,6 @@ ${content}
         }
       } catch (geminiError) {
         console.warn("[Analyze AI] Gemini primary analysis failed, trying secondary fallback:", geminiError);
-      }
-    }
-
-    // 2. OpenAI / ? AI ?ㅺ? ?덈뒗 寃쎌슦??2李?fallback
-    const openAIKey = process.env.OPENAI_API_KEY || process.env.AI_API_KEY || "";
-    if (openAIKey) {
-      try {
-        const openai = new OpenAI({ apiKey: openAIKey });
-        const response = await openai.chat.completions.create({
-          model: "gpt-4o-mini",
-          messages: [
-            { role: "system", content: "You are a professional meta-cognitive psychologist helping to analyze diary/record entries. Output JSON matching the request structure." },
-            { role: "user", content: prompt }
-          ],
-          response_format: { type: "json_object" }
-        });
-        const rawText = response.choices[0]?.message?.content;
-        if (rawText) {
-          const parsed = JSON.parse(rawText.trim());
-          if (parsed && Array.isArray(parsed.keywords) && Array.isArray(parsed.emotions)) {
-            return res.status(200).json(parsed);
-          }
-        }
-      } catch (openaiError) {
-        console.warn("[Analyze AI] OpenAI fallback analysis failed:", openaiError);
       }
     }
 
@@ -1463,12 +1105,6 @@ ${content}
       return baseReply + keyGuideNotice;
     };
 
-    const apiKey = process.env.POE_API_KEY || "sk-poe-FRnvSpccjv6g5J3KPj-P_5LV_9D5ACKOSjBaibibaho";
-    const poe = new OpenAI({
-      apiKey: apiKey,
-      baseURL: "https://api.poe.com/v1"
-    });
-
     const runGeminiFallback = async (errorMsg: string) => {
       console.log(`[server/API/openai] Active routing to Gemini engine. Context: ${errorMsg}`);
       try {
@@ -1810,137 +1446,7 @@ ${content}
     };
 
     try {
-      const { aiType, apiKey } = getAIConfig();
-      const hasMultimodal = JSON.stringify(req.body.messages || "").includes("data:") || 
-                            JSON.stringify(req.body.messages || "").includes("image_url") ||
-                            JSON.stringify(req.body.messages || "").includes("application/pdf");
-
-      if ((aiType === 'grok' || aiType === 'groq') && apiKey && apiKey.trim().length > 5 && !hasMultimodal) {
-        const baseURL = aiType === 'grok' ? "https://api.x.ai/v1" : "https://api.groq.com/openai/v1";
-        const client = new OpenAI({
-          apiKey: apiKey,
-          baseURL,
-        });
-
-        if (aiType === 'grok') {
-          // Dynamic list of Grok models for fallback in case the chosen one is deprecated
-          const requestedModel = req.body.model || "";
-          const defaultGrokModels = [process.env.XAI_MODEL || "grok-4.3", "grok-4.20", "grok-4.20-0309-non-reasoning", "grok-3"];
-          let modelsToTry = defaultGrokModels;
-          if (requestedModel && requestedModel.toLowerCase().includes("grok")) {
-            modelsToTry = [requestedModel, ...defaultGrokModels.filter((model) => model !== requestedModel)];
-          }
-
-          let success = false;
-          let lastErr: any = null;
-
-          for (const currentModel of modelsToTry) {
-            try {
-              if (req.body.stream) {
-                const stream = await client.chat.completions.create({
-                  model: currentModel,
-                  messages: withKoreanOnlyOutput(req.body.messages),
-                  stream: true,
-                  temperature: req.body.temperature ?? 0.7,
-                  response_format: req.body.response_format,
-                });
-
-                res.setHeader('Content-Type', 'text/event-stream');
-                res.setHeader('Cache-Control', 'no-cache, no-store, no-transform');
-                res.setHeader('Connection', 'keep-alive');
-                res.setHeader('X-Accel-Buffering', 'no');
-                res.setHeader('Content-Encoding', 'none');
-                if ((res as any).flushHeaders) {
-                  (res as any).flushHeaders();
-                }
-
-                for await (const chunk of stream) {
-                  res.write(`data: ${JSON.stringify(chunk)}\n\n`);
-                  if ((res as any).flush) {
-                    (res as any).flush();
-                  }
-                }
-                res.write('data: [DONE]\n\n');
-                res.end();
-                return;
-              } else {
-                const completion = await client.chat.completions.create({
-                  model: currentModel,
-                  messages: withKoreanOnlyOutput(req.body.messages),
-                  temperature: req.body.temperature ?? 0.7,
-                  response_format: req.body.response_format,
-                });
-                return res.status(200).json(completion);
-              }
-              success = true;
-              break;
-            } catch (err: any) {
-              console.warn(`[grok] Target model "${currentModel}" failed, trying fallback model... Error:`, err.message || err);
-              lastErr = err;
-            }
-          }
-          if (!success) {
-            console.warn("[grok] All chat models failed, engaging Gemini fallback...", lastErr?.message || lastErr);
-            return await runGeminiFallback("All Grok models failed: " + (lastErr?.message || "unknown error"));
-          }
-        } else {
-          // Groq
-          let model = req.body.model || "";
-          if (!model || (!model.toLowerCase().includes("llama") && !model.toLowerCase().includes("mixtral") && !model.toLowerCase().includes("gemma"))) {
-            model = "llama-3.3-70b-versatile";
-          }
-
-          if (req.body.stream) {
-            try {
-              const stream = await client.chat.completions.create({
-                model: model,
-                messages: req.body.messages,
-                stream: true,
-                temperature: req.body.temperature ?? 0.7,
-                response_format: req.body.response_format,
-              });
-
-              res.setHeader('Content-Type', 'text/event-stream');
-              res.setHeader('Cache-Control', 'no-cache, no-store, no-transform');
-              res.setHeader('Connection', 'keep-alive');
-              res.setHeader('X-Accel-Buffering', 'no');
-              res.setHeader('Content-Encoding', 'none');
-              if ((res as any).flushHeaders) {
-                (res as any).flushHeaders();
-              }
-
-              for await (const chunk of stream) {
-                res.write(`data: ${JSON.stringify(chunk)}\n\n`);
-                if ((res as any).flush) {
-                  (res as any).flush();
-                }
-              }
-              res.write('data: [DONE]\n\n');
-              res.end();
-              return;
-            } catch (streamErr: any) {
-              console.warn("[groq] Streaming failed, engaging robust Gemini fallback...", streamErr);
-              return await runGeminiFallback("Groq stream failed: " + streamErr.message);
-            }
-          } else {
-            try {
-              const completion = await client.chat.completions.create({
-                model: model,
-                messages: req.body.messages,
-                temperature: req.body.temperature ?? 0.7,
-                response_format: req.body.response_format,
-              });
-              return res.status(200).json(completion);
-            } catch (groqErr: any) {
-              console.warn("[groq] Call failed, engaging robust Gemini fallback...", groqErr);
-              return await runGeminiFallback("Groq call failed: " + groqErr.message);
-            }
-          }
-        }
-      } else {
-        // Direct routing to the robust Gemini fallback with proper top-level error isolation
-        await runGeminiFallback("Direct routing to Gemini engine");
-      }
+      await runGeminiFallback('Gemini-only routing');
     } catch (err: any) {
       console.error(`[server/API/openai] Critical crash in model completions routing for AI_TYPE = ${process.env.AI_TYPE}:`, err);
       if (!res.headersSent) {

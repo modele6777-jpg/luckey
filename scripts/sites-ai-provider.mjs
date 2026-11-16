@@ -1,10 +1,8 @@
 // Runtime secrets stay server-side. Accept the owner's existing Sites key name.
 export function getSitesAIConfig(env) {
-  const openai = String(env.OPENAI_API_KEY || env['open ai'] || env.openai || '').trim();
-  const gemini = String(env.gemini || env.GEMINI_API_KEY || env.GOOGLE_GENAI_API_KEY || '').trim();
-  const requested = String(env.AI_PROVIDER || '').toLowerCase();
-  const provider = requested === 'gemini' ? 'gemini' : requested === 'openai' || openai ? 'openai' : 'gemini';
-  return { provider, key: provider === 'openai' ? openai : gemini };
+  const key = [env.gemini, env.GEMINI_API_KEY, env.GOOGLE_GENAI_API_KEY, env.GOOGLE_API_KEY, env.AI_API_KEY]
+    .map(value => String(value || '').trim()).find(value => value && !/^(sk-|xai-|gsk_)/.test(value)) || '';
+  return { provider: 'gemini', key };
 }
 
 // Return only allowlisted metadata; raw provider errors can contain account/key details.

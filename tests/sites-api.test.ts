@@ -168,7 +168,7 @@ test('Sites reports a rejected speech provider without retrying it or exposing i
     const response = await handleSitesApi(request('/api/ai/tts', { text: '안녕하세요.' }), {}, fetch, synthesize);
     assert.equal(response?.status, 503);
     const result = await response!.json();
-    assert.equal(result.code, 'TTS_EDGE_ACCESS_DENIED');
+    assert.equal(result.code, 'TTS_ACCESS_DENIED');
     assert.ok(result.diagnosticId);
     assert.equal(response!.headers.get('X-TTS-Diagnostic-ID'), result.diagnosticId);
     assert.ok(!JSON.stringify(result).includes('private upstream details'));
@@ -193,9 +193,9 @@ test('daily and zero image quotas do not promise recovery after a minute', async
 });
 
 test('health reports the configured AI provider and independent speech provider', async () => {
-  const response = await handleSitesApi(new Request('https://test.invalid/api/health'), { 'open ai': 'openai-test-secret' });
+  const response = await handleSitesApi(new Request('https://test.invalid/api/health'), { gemini: 'gemini-test-secret', 'open ai': 'openai-test-secret' });
   const health = await response!.json();
-  assert.equal(health.provider, 'openai');
-  assert.equal(health.speechProvider, 'edge');
+  assert.equal(health.provider, 'gemini');
+  assert.equal(health.speechProvider, 'gemini');
   assert.ok(!JSON.stringify(health).includes('openai-test-secret'));
 });

@@ -1,4 +1,6 @@
-import { synthesizeWithEdgeTTS } from './edgeTts.ts';
+import { synthesizeGeminiSpeech } from './geminiMedia.ts';
+import { getGeminiApiKey } from '../geminiKey.ts';
+const synthesizeDefault = (text: string, voice?: string) => synthesizeGeminiSpeech(text, voice, { ...process.env, GEMINI_API_KEY: getGeminiApiKey() });
 import { classifyTtsError, createTtsDiagnosticId, logTtsDiagnostic } from './ttsDiagnostics.ts';
 
 export interface TTSHandlerOptions {
@@ -38,7 +40,7 @@ function stripInternalSpeechDirectives(text: string): string {
 function publicFailure(errorType: string): { status: number; code: string; message: string } {
   switch (errorType) {
     case 'invalid_key': return { status: 503, code: 'TTS_INVALID_KEY', message: '서버 음성 인증 설정을 확인해 주세요.' };
-    case 'permission_denied': return { status: 503, code: 'TTS_EDGE_ACCESS_DENIED', message: '서버 음성 제공자의 접근이 거부되었습니다. 잠시 후 다시 시도해 주세요.' };
+    case 'permission_denied': return { status: 503, code: 'TTS_ACCESS_DENIED', message: '서버 음성 제공자의 접근이 거부되었습니다. 잠시 후 다시 시도해 주세요.' };
     case 'model_unavailable': return { status: 503, code: 'TTS_MODEL_UNAVAILABLE', message: '요청한 음성 모델을 사용할 수 없습니다.' };
     case 'quota_exhausted': return { status: 429, code: 'TTS_QUOTA_EXHAUSTED', message: '음성 제공자의 사용 한도가 소진되었습니다.' };
     case 'rate_limited': return { status: 429, code: 'TTS_RATE_LIMITED', message: '음성 요청이 일시적으로 제한되었습니다. 잠시 후 다시 시도해 주세요.' };
@@ -51,22 +53,22 @@ function publicFailure(errorType: string): { status: number; code: string; messa
 }
 
 /** Synthesize with Edge Neural TTS and retain diagnostic categories at the API boundary. */
-export function createTTSHandler(synthesize: typeof synthesizeWithEdgeTTS = synthesizeWithEdgeTTS) {
+export function createTTSHandler(synthesize: (text: string, voice?: string) => Promise<TTSHandlerResult> = synthesizeDefault) {
   let providerUnavailableUntil = 0;
   return async function handleTTS(options: TTSHandlerOptions): Promise<TTSHandlerResult> {
     const requestId = createTtsDiagnosticId(options.requestId);
-    const model = options.voice || 'ko-KR-SunHiNeural';
+    const model = options.voice || 'Aoede';
     if (Date.now() < providerUnavailableUntil) {
-      const failure = Object.assign(new Error('Edge TTS access was recently denied.'), {
+      const failure = Object.assign(new Error('Gemini TTS access was recently denied.'), {
         status: 503,
         providerStatus: 403,
-        code: 'TTS_EDGE_ACCESS_DENIED',
+        code: 'TTS_ACCESS_DENIED',
         diagnosticId: requestId,
       });
-      logTtsDiagnostic({ event: 'provider_cooldown', requestId, provider: 'edge-neural', model, error: failure });
+      logTtsDiagnostic({ event: 'provider_cooldown', requestId, provider: 'gemini', model, error: failure });
       throw Object.assign(new Error('서버 음성 제공자의 접근이 잠시 제한되어 있습니다.'), {
         status: 503,
-        code: 'TTS_EDGE_ACCESS_DENIED',
+        code: 'TTS_ACCESS_DENIED',
         diagnosticId: requestId,
         providerStatus: 403,
       });
@@ -77,7 +79,7 @@ export function createTTSHandler(synthesize: typeof synthesizeWithEdgeTTS = synt
     try {
       return await synthesize(speech, options.voice);
     } catch (error) {
-      const diagnosis = classifyTtsError(error, 'edge-neural');
+      const diagnosis = classifyTtsError(error, 'gemini');
       const upstreamStatus = diagnosis.providerStatus ?? diagnosis.status;
       if (upstreamStatus === 401 || upstreamStatus === 403 || diagnosis.errorType === 'permission_denied') {
         providerUnavailableUntil = Date.now() + 60_000;
@@ -85,7 +87,7 @@ export function createTTSHandler(synthesize: typeof synthesizeWithEdgeTTS = synt
       logTtsDiagnostic({
         event: 'provider_failure',
         requestId,
-        provider: 'edge-neural',
+        provider: 'gemini',
         model,
         error,
         durationMs: Date.now() - startedAt,

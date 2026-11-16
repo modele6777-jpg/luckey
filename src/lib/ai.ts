@@ -38,7 +38,7 @@ export function parseImageDataUrl(url: string): { mimeType: string; data: string
 // @ts-ignore
 const geminiApiKey = import.meta.env?.VITE_GEMINI_API_KEY || import.meta.env?.VITE_AI_API_KEY || '';
 // @ts-ignore
-const aiType = (import.meta.env?.VITE_AI_TYPE || "gemini").toLowerCase().trim();
+const aiType = "gemini";
 
 const genAI = (aiType === "gemini" && geminiApiKey) ? new GoogleGenAI({ apiKey: geminiApiKey }) : null;
 const useOpenAI = aiType !== 'gemini' || !genAI;
@@ -59,7 +59,7 @@ const resolvedPrimaryGeminiModel =
     ? "gemini-flash-lite-latest"
     : rawEnvModel;
 
-export const modelName = aiType === "grok" ? "grok-4.3" : resolvedPrimaryGeminiModel;
+export const modelName = resolvedPrimaryGeminiModel;
 
 /** 루시 채팅 전용 초고속 모델 (TTFT ~0.8s). 구글 서버 503 일시 장애 모델 배제 및 활성 모델 우선 */
 export const LUCY_CHAT_MODEL = "gemini-flash-lite-latest";

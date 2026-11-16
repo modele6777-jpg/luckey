@@ -56,13 +56,7 @@ const LUMI_SYSTEM_PROMPT = `당신은 '루미'입니다. Bluebird(블루버드)�
 - 마크다운을 적절히 활용해 읽기 쉽게 작성합니다.
 - 명곡·시·명화 추천은 본문 흐름에 자연스럽게 녹여 쓰되, 각 항목이 명확히 구분되게 합니다.`;
 
-const GROK_VISION_MODELS = [
-  process.env.XAI_VISION_MODEL || "grok-2-vision-1212",
-  process.env.XAI_MODEL || "grok-4.3",
-  "grok-4.20",
-  "grok-4.20-0309-non-reasoning",
-  "grok-3",
-];
+
 
 function buildFirstUserText(req: BluebirdDocentRequest): string {
   return `[오늘의 예술 작품 맥락]
@@ -151,44 +145,6 @@ export async function handleBluebirdDocent(req: BluebirdDocentRequest): Promise<
     throw new Error("작품 제목과 테마가 필요합니다.");
   }
   const prompt = `${LUMI_SYSTEM_PROMPT}\n\n${req.isFirstMessage === false ? buildFollowUpUserText(req, req.messages?.at(-1)?.content || req.prompt || '') : buildFirstUserText(req)}`;
-  const xaiKey = getXaiApiKey();
-  let lastError: unknown = null;
-  if (xaiKey && req.imageUrl?.trim()) {
-
-  const history = Array.isArray(req.messages) ? req.messages : [];
-  const { default: OpenAI } = await import("openai");
-  const grok = new OpenAI({ apiKey: xaiKey, baseURL: "https://api.x.ai/v1", timeout: 10000 });
-  const isAudioMode = req.mode === "audio";
-  const baseMessages = buildGrokMessages(req, history);
-  const messages = isAudioMode
-    ? [
-        {
-          ...baseMessages[0],
-          content: `${typeof baseMessages[0].content === "string" ? baseMessages[0].content : LUMI_SYSTEM_PROMPT}${LUMI_AUDIO_SUFFIX}`,
-        },
-        ...baseMessages.slice(1),
-      ]
-    : baseMessages;
-
-  for (const model of GROK_VISION_MODELS.slice(0, 1)) {
-    try {
-      const response = await grok.chat.completions.create({
-        model,
-        messages,
-        temperature: 0.75,
-        max_tokens: 4096,
-      });
-      const reply = response.choices[0]?.message?.content?.trim();
-      if (!reply) {
-        throw new Error("Grok가 빈 응답을 반환했습니다.");
-      }
-      return { reply, source: 'model' };
-    } catch (err) {
-      lastError = err;
-      console.warn(`[bluebird/docent] Model ${model} failed:`, describeGeminiError(err));
-    }
-  }
-  }
   const geminiKey = getGeminiApiKey();
   if (geminiKey) {
     try {
@@ -204,6 +160,6 @@ export async function handleBluebirdDocent(req: BluebirdDocentRequest): Promise<
       console.warn('[bluebird/docent] gemini failed:', describeGeminiError(error));
     }
   }
-  if (lastError) console.warn('[bluebird/docent] using curated fallback:', describeGeminiError(lastError));
+
   return { reply: curatedBluebirdReply(req), source: 'engine' };
 }

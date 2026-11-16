@@ -1,3 +1,4 @@
+import { synthesizeGeminiSpeech } from './api-lib/geminiMedia.ts';
 import { getSitesAIConfig } from '../scripts/sites-ai-provider.mjs';
 import type { handleTTS } from './api-lib/ttsHandler.ts';
 import { stripInternalSpeechDirectives } from '../src/utils/speechText.ts';
@@ -169,7 +170,7 @@ export async function handleSitesApi(request: Request, env: Runtime, fetchApi: F
   if (request.method !== method) return Response.json({ error: `${method} 요청을 사용해 주세요.` }, { status: 405, headers: { Allow: method, 'Cache-Control': 'no-store' } });
   try {
     // TTS는 무료·무제한 Edge TTS로 전면 교체되어 API 키가 전혀 필요 없습니다.
-    if (route === '/api/health') return json({ status: 'ok', aiConfigured: Boolean(getSitesAIConfig(env).key), provider: getSitesAIConfig(env).provider, speechConfigured: true, speechProvider: 'edge', runtime: 'sites' });
+    if (route === '/api/health') return json({ status: 'ok', aiConfigured: Boolean(getSitesAIConfig(env).key), provider: getSitesAIConfig(env).provider, speechConfigured: Boolean(getSitesAIConfig(env).key), speechProvider: 'gemini', runtime: 'sites' });
     if (route.endsWith('/proxy')) return await proxyImage(request, fetchApi);
     const limit = 8 * 1024 * 1024;
     if (Number(request.headers.get('Content-Length')) > limit) throw new ApiError(413, '요청이 너무 큽니다.');
@@ -201,28 +202,10 @@ export async function handleSitesApi(request: Request, env: Runtime, fetchApi: F
     if (route === '/api/ai/tts') {
       const speech = required(stripInternalSpeechDirectives(required(body.text, '낭독할 문장', 4000)), '낭독할 문장', 4000);
       if (!synthesize) {
-        // Sites Workers do not support the Node TLS transport used by Edge TTS.
-        // Keep synthesis on the existing app backend and never forward Site cookies/tokens.
-        const upstream = new URL(env.LUCKEY_API_ORIGIN || 'https://luckey-six.vercel.app');
-        if (upstream.protocol !== 'https:' || upstream.origin === new URL(request.url).origin) {
-          throw new ApiError(503, '음성 서버 연결 설정을 확인해 주세요.', undefined, 'TTS_NOT_CONFIGURED');
-        }
-        upstream.pathname = '/api/ai/tts'; upstream.search = ''; upstream.hash = '';
-        const response = await fetchApi(upstream.href, {
-          method: 'POST', headers: { 'Content-Type': 'application/json' },
-          // 이 릴레이는 JSON 오디오 계약만 소비합니다. 클라이언트의 바이너리 선호가
-          // 업스트림 응답 형식을 바꾸지 않도록 항상 JSON을 명시합니다.
-          body: JSON.stringify({ ...body, responseFormat: 'json', text: speech }), redirect: 'manual', signal: request.signal,
-        });
-        if (response.status >= 300 && response.status < 400 || !response.headers.get('Content-Type')?.includes('application/json')) {
-          throw new ApiError(502, '음성 서버에 연결하지 못했습니다.', undefined, 'TTS_UPSTREAM_UNAVAILABLE');
-        }
-        const headers = new Headers({ 'Content-Type': 'application/json', 'Cache-Control': 'no-store' });
-        for (const name of ['Retry-After', 'X-TTS-Diagnostic-ID']) {
-          const value = response.headers.get(name); if (value) headers.set(name,value);
-        }
-        return new Response(response.body,{status:response.status,headers});
+        try { return json(await synthesizeGeminiSpeech(speech, body.voice, env, fetchApi, request.signal)); }
+        catch (error: any) { throw new ApiError(error.status || 502, error.message || 'Gemini 음성 생성에 실패했습니다.'); }
       }
+
       try {
         return json(await synthesize({ text: speech, voice: body.voice, requestId: request.headers.get('x-vercel-id') || undefined }));
       } catch (edgeError) {

@@ -2,7 +2,6 @@ import express, { Request, Response } from "express";
 import path from "path";
 import fs from "fs";
 import { GoogleGenAI } from "@google/genai";
-import { OpenAI } from "openai";
 import { getGeminiApiKey } from "./geminiKey.ts";
 
 export const calmRouter = express.Router();
@@ -201,35 +200,6 @@ ${exercisesContext}
       }
     } catch (err: any) {
       console.warn("[calmRouter] Gemini generate error:", err?.message || err);
-    }
-  }
-
-  // Fallback OpenAI
-  if (process.env.OPENAI_API_KEY) {
-    try {
-      const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-      const completion = await openai.chat.completions.create({
-        model: "gpt-4o-mini",
-        response_format: { type: "json_object" },
-        messages: [
-          { role: "system", content: SYSTEM_PROMPT },
-          { role: "user", content: userPromptWithContext }
-        ],
-        temperature: 0.7
-      });
-
-      const text = completion.choices[0]?.message?.content?.trim() || "";
-      const parsed = JSON.parse(text);
-
-      return res.json({
-        grounding: parsed.grounding,
-        healing: parsed.healing,
-        liberation: parsed.liberation,
-        recommendedExercises,
-        source: "openai-gpt-4o-mini"
-      });
-    } catch (openAiErr: any) {
-      console.warn("[calmRouter] OpenAI fallback failed:", openAiErr?.message || openAiErr);
     }
   }
 

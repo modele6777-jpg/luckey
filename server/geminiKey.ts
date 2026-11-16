@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 
-const ENV_NAMES = ['GEMINI_API_KEY', 'GOOGLE_GENAI_API_KEY', 'GOOGLE_API_KEY', 'AI_API_KEY', 'API_KEY'] as const;
+const ENV_NAMES = ['gemini', 'GEMINI_API_KEY', 'GOOGLE_GENAI_API_KEY', 'GOOGLE_API_KEY', 'AI_API_KEY', 'API_KEY'] as const;
 const REVOKED_KEY_SHA256 = '02bc908b91ef41035014545462215b70ab30a25164d0c2a8a260629b41cc3ebc';
 
 function normalizeEnvKey(raw: string | undefined): string {

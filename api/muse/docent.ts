@@ -92,36 +92,6 @@ const MUSE_SYSTEM_PROMPT = `당신은 세계적 미술관의 수석 오디오 �
 - 명시·명곡을 부록처럼 짧게만 언급
 - 마크다운, 목록 기호, 괄호 지시문(음성 모드)`;
 
-function normalizeApiKey(raw: unknown): string {
-  return String(raw || "").trim().replace(/^["']|["']$/g, "");
-}
-
-function getXaiApiKey(): string {
-  const candidates = [
-    process.env.XAI_API_KEY,
-    process.env.GROK_API_KEY,
-    process.env.xAI,
-    process.env.XAI,
-  ];
-  for (const raw of candidates) {
-    const key = normalizeApiKey(raw);
-    if (key && (key.startsWith("xai-") || key.startsWith("sk-xai-"))) return key;
-  }
-  return "";
-}
-
-function getOpenAIApiKey(): string {
-  const candidates = [
-    process.env.OPENAI_API_KEY,
-    process.env.AI_API_KEY,
-  ];
-  for (const raw of candidates) {
-    const key = normalizeApiKey(raw);
-    if (key && (key.startsWith("sk-proj-") || (key.startsWith("sk-") && !key.startsWith("sk-xai-")))) return key;
-  }
-  return "";
-}
-
 function formatPoemContext(poem?: MuseDocentPoem): string {
   if (!poem?.title) return "오늘의 명시: 잔잔한 서정시";
   return [
@@ -300,75 +270,7 @@ async function tryGemini(messages: GrokMessage[], maxTokens: number): Promise<st
   return null;
 }
 
-async function tryXai(messages: GrokMessage[], maxTokens: number): Promise<string | null> {
-  const xaiKey = getXaiApiKey();
-  if (!xaiKey) return null;
 
-  const models = ["grok-2-vision-1212"];
-
-  for (const model of models) {
-    try {
-      const res = await fetch("https://api.x.ai/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${xaiKey}`,
-        },
-        body: JSON.stringify({
-          model,
-          messages,
-          temperature: 0.55,
-          max_tokens: maxTokens,
-        }),
-        signal: AbortSignal.timeout(7000),
-      });
-
-      if (!res.ok) continue;
-      const data = await res.json() as { choices?: Array<{ message?: { content?: string } }> };
-      const reply = data?.choices?.[0]?.message?.content?.trim();
-      if (reply) return reply;
-    } catch (e) {
-      console.warn(`[muse/docent] xAI model ${model} failed:`, e instanceof Error ? e.message : e);
-    }
-  }
-
-  return null;
-}
-
-async function tryOpenAI(messages: GrokMessage[], maxTokens: number): Promise<string | null> {
-  const openAIKey = getOpenAIApiKey();
-  if (!openAIKey) return null;
-
-  const models = ["gpt-4o-mini"];
-
-  for (const model of models) {
-    try {
-      const res = await fetch("https://api.openai.com/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${openAIKey}`,
-        },
-        body: JSON.stringify({
-          model,
-          messages,
-          temperature: 0.55,
-          max_tokens: maxTokens,
-        }),
-        signal: AbortSignal.timeout(6000),
-      });
-
-      if (!res.ok) continue;
-      const data = await res.json() as { choices?: Array<{ message?: { content?: string } }> };
-      const reply = data?.choices?.[0]?.message?.content?.trim();
-      if (reply) return reply;
-    } catch (e) {
-      console.warn(`[muse/docent] OpenAI model ${model} failed:`, e instanceof Error ? e.message : e);
-    }
-  }
-
-  return null;
-}
 
 export async function handleMuseDocent(req: MuseDocentRequest): Promise<{ reply: string; source: 'model' | 'engine' }> {
   const history = Array.isArray(req.messages) ? req.messages : [];
@@ -386,14 +288,6 @@ export async function handleMuseDocent(req: MuseDocentRequest): Promise<{ reply:
   if (!expired() && getGeminiApiKey()) {
     const geminiReply = await tryGemini(buildMessages(false), maxTokens);
     if (geminiReply) return { reply: geminiReply, source: 'model' };
-  }
-  if (!expired() && getXaiApiKey()) {
-    const xaiReply = await tryXai(buildMessages(!!visionImageUrl), maxTokens);
-    if (xaiReply) return { reply: xaiReply, source: 'model' };
-  }
-  if (!expired() && getOpenAIApiKey()) {
-    const openAIReply = await tryOpenAI(buildMessages(false), maxTokens);
-    if (openAIReply) return { reply: openAIReply, source: 'model' };
   }
   return { reply: generateCuratedDocentScript(req), source: 'engine' };
 }
