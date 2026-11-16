@@ -70,6 +70,7 @@ export interface MentalResilienceResult {
   mentalShield: MentalShieldProtocol;
 
   summary: string;
+  reflectiveQuestion?: string;
   resilienceSynthesisMatrix?: {
     dominantTension: string;
     alignmentState: string;
@@ -220,6 +221,9 @@ export function calculateMentalResilience(params?: {
     alignmentState: `${pressureResistanceTitle}`,
     integratedAction: `${primaryBreakthroughPower.actionTrigger}${q ? ` [질문 맥락: ${q}]` : ''}`,
   };
+  const reflectiveQuestion = q
+    ? `"${q}"에서 오는 압박감을 감정 전압에서 분리할 때, ${primaryBreakthroughPower.name}의 힘으로 가장 먼저 실행할 한 단계는 무엇인가요?`
+    : `${hexagramWisdom.hexagramName}의 국면에서 호흡 세 번으로 감정 전압을 낮춘 뒤 바로 가동하고 싶은 나만의 회복 루틴은 무엇일까요?`;
 
   return {
     engineVersion: MENTAL_RESILIENCE_VERSION,
@@ -233,6 +237,7 @@ export function calculateMentalResilience(params?: {
     hexagramWisdom,
     mentalShield,
     summary,
+    reflectiveQuestion,
     resilienceSynthesisMatrix,
     interpretiveBoundary: '본 멘탈 리질리언스 리포트는 사주 신살과 주역 난괘 상징에 기반한 정성적 심리 회복 안내이며, 전문 의학·심리 치료를 대신하지 않습니다.',
   };
@@ -262,6 +267,9 @@ export function formatMentalResiliencePrompt(res: MentalResilienceResult): strin
       `- 교차 매트릭스: [핵심 긴장: ${res.resilienceSynthesisMatrix.dominantTension} | 조율 상태: ${res.resilienceSynthesisMatrix.alignmentState}]`,
       `  • 통합 실천: ${res.resilienceSynthesisMatrix.integratedAction}`,
     );
+  }
+  if (res.reflectiveQuestion) {
+    lines.push(`- 성찰 질문: ${res.reflectiveQuestion}`);
   }
   lines.push(`- 해석 경계: ${res.interpretiveBoundary}`);
   lines.push(`※ 루시 지침: 괴강·백호·양인 같은 고전의 흉살은 극한의 압박이 닥쳤을 때 비범한 성과를 내는 '초인적 돌파 무기'입니다. 사용자가 스트레스나 막힘을 느낄 때 위축되지 않도록, 내면에 잠든 강철 같은 돌파력과 주역의 지혜로운 탈출 해법을 든든하고 단단하게 전해 주세요.`);

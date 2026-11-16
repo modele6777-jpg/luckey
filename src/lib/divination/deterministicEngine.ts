@@ -1508,7 +1508,7 @@ try {
   const karmicNodesResult = calculateSupplement('karmicNodesResult', () => (birthdateStr && profile
     ? (() => {
         try {
-          return calculateKarmicNodes({ profile, targetDate: now });
+          return calculateKarmicNodes({ profile, targetDate: now, question });
         } catch (_) {
           return null;
         }
@@ -1519,7 +1519,7 @@ try {
   const mentalResilienceResult = calculateSupplement('mentalResilienceResult', () => (birthdateStr && profile
     ? (() => {
         try {
-          return calculateMentalResilience({ profile, targetDate: now });
+          return calculateMentalResilience({ profile, targetDate: now, question });
         } catch (_) {
           return null;
         }
@@ -1530,7 +1530,7 @@ try {
   const nobleNetworkResult = calculateSupplement('nobleNetworkResult', () => (birthdateStr && profile
     ? (() => {
         try {
-          return calculateNobleNetwork({ profile, targetDate: now });
+          return calculateNobleNetwork({ profile, targetDate: now, question });
         } catch (_) {
           return null;
         }
@@ -4747,9 +4747,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'astrologicalDecanSabian', nameKo: '사비안 심볼·데칸', icon: '🔮', category: 'deep_master', summary: '서양 점성술 36 데칸 부지배성과 사비안 심볼 360° 원형으로 태양·달·상승궁의 영혼 메타포를 비추는 관점' },
   { key: 'medicalBioMatrix', nameKo: '메디컬 바이오 매트릭스', icon: '🩺', category: 'deep_master', summary: '사주 오행 한난조습 체질과 서양 메디컬 점성술 장부 매핑으로 취약 부위·피로 리듬·웰니스 처방을 비추는 관점' },
   { key: 'wealthPipeline', nameKo: '부의 파이프라인', icon: '💎', category: 'deep_master', summary: '사주 십신 재물 아키타입과 금여록·암록·천을귀인 길성으로 수익 엔진과 자금 골든 윈도우를 비추는 관점' },
-  { key: 'karmicNodes', nameKo: '카르믹 노드', icon: '🪐', category: 'deep_master' },
-  { key: 'mentalResilience', nameKo: '멘탈 리질리언스', icon: '🛡️', category: 'deep_master' },
-  { key: 'nobleNetwork', nameKo: '귀인 네트워크', icon: '🤝', category: 'deep_master' },
+  { key: 'karmicNodes', nameKo: '카르믹 노드', icon: '🪐', category: 'deep_master', summary: '점성학 남·북 노드와 키론·블랙문 릴리스 상징으로 익숙한 컴포트 존과 영혼 진화 과제를 비추는 관점' },
+  { key: 'mentalResilience', nameKo: '멘탈 리질리언스', icon: '🛡️', category: 'deep_master', summary: '사주 괴강·백호·양인 돌파력과 주역 4대 난괘 탈출 지혜로 스트레스 회복 리듬을 비추는 관점' },
+  { key: 'nobleNetwork', nameKo: '귀인 네트워크', icon: '🤝', category: 'deep_master', summary: '천을·태극·천월덕 4대 귀인과 육합·삼합 인연 띠로 협력 시너지와 관계 균형을 비추는 관점' },
   { key: 'contractShield', nameKo: '계약·협상 실드', icon: '📑', category: 'deep_master' },
   { key: 'deepWorkFlow', nameKo: '딥워크 몰입 리듬', icon: '🌊', category: 'deep_master' },
   { key: 'sleepSubconscious', nameKo: '수면 무의식 뇌파', icon: '💤', category: 'deep_master' },
