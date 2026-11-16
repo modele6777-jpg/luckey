@@ -8,12 +8,12 @@
  * 4. 상처와 실패를 유쾌한 웃음으로 승화하는 해학적 회복탄력성 (Satirical Wit & Compassionate Humor Resilience Index): 비극과 환멸 앞에서도 인간을 향한 따스한 해학과 연민을 잃지 않는 명랑한 힘.
  * 5. 세상의 규정을 넘어 스스로 기사가 되는 자기창조적 주체성 (Autonomous Self-Creation & Sovereign Identity Score): 늙은 시골 귀족 아론소 키하노의 무력함을 딛고 고결한 돈키호테로 다시 태어나는 주체적 결단.
  *
- * @version LUCKEY-CERVANTES-DON-QUIXOTE-v2.0.0
+ * @version LUCKEY-CERVANTES-DON-QUIXOTE-v2.1.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const SPANISH_MIGUEL_DE_CERVANTES_DON_QUIXOTE_VERSION = 'LUCKEY-CERVANTES-DON-QUIXOTE-v2.0.0';
+export const SPANISH_MIGUEL_DE_CERVANTES_DON_QUIXOTE_VERSION = 'LUCKEY-CERVANTES-DON-QUIXOTE-v2.1.0';
 
 export interface CervantesTheme {
   themeKey: string;
@@ -52,6 +52,7 @@ export interface SpanishMiguelDeCervantesDonQuixoteResult {
     alignmentState: string;
     integratedAction: string;
   };
+  interpretiveBoundary: string;
 }
 
 function formatCervantesKstTimestamp(now: Date = new Date()): string {
@@ -179,6 +180,8 @@ export function calculateSpanishMiguelDeCervantesDonQuixote(
     integratedAction: `${activeCervantesTheme.practicalCounsel} · ${focalCervantesAphorism.actionGuidance}${query?.trim() ? ` [질문 맥락: ${query.trim()}]` : ''}`,
   };
 
+  const interpretiveBoundary = '본 세르반테스 《돈키호테》 지혜 리포트는 고전 문학 원전과 수리 시드에 기반한 정성적 성찰 안내이며, 미래 사건의 단정적 예언이 아닙니다.';
+
   return {
     engineVersion: SPANISH_MIGUEL_DE_CERVANTES_DON_QUIXOTE_VERSION,
     calculatedAtKst,
@@ -194,6 +197,7 @@ export function calculateSpanishMiguelDeCervantesDonQuixote(
       philosophicalCounsel,
     },
     cervantesSynthesisMatrix,
+    interpretiveBoundary,
   };
 }
 
@@ -218,5 +222,6 @@ export function formatSpanishMiguelDeCervantesDonQuixotePrompt(
       `- 통합 실천: ${res.cervantesSynthesisMatrix.integratedAction}`,
     );
   }
+  lines.push(`- 해석 경계: ${res.interpretiveBoundary}`);
   return lines.join('\n');
 }

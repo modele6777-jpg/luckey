@@ -24,7 +24,7 @@ import {
   type SajuAnalysisResult,
 } from '../sajuAnalysis';
 
-export const SPECIAL_STARS_VERSION = 'LUCKEY-SSME-v2.0.0';
+export const SPECIAL_STARS_VERSION = 'LUCKEY-SSME-v2.1.0';
 
 function formatSpecialStarsKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -90,6 +90,7 @@ export interface SpecialStarsResult {
     alignmentState: string;
     integratedAction: string;
   };
+  interpretiveBoundary: string;
 }
 
 // 15대 신살 기준 정의
@@ -483,6 +484,8 @@ export function calculateSpecialStarsMatrix(options?: {
     integratedAction: `${leadStar ? leadStar.title : '안정적 장기 역량 축적'}${q ? ` [질문 맥락: ${q}]` : ''}`,
   };
 
+  const interpretiveBoundary = '본 15대 신살 위치별 슈퍼파워 리포트는 고전 명리 신살의 현대적 강점 은유에 기반한 자기 이해 안내이며, 길흉을 단정짓지 않습니다.';
+
   return {
     engineVersion: SPECIAL_STARS_VERSION,
     calculatedAtUtc: nowUtcIso,
@@ -501,6 +504,7 @@ export function calculateSpecialStarsMatrix(options?: {
     topSuperpowers,
     overallSynthesis,
     specialStarsSynthesisMatrix,
+    interpretiveBoundary,
   };
 }
 
@@ -520,8 +524,8 @@ export function formatSpecialStarsPrompt(res: SpecialStarsResult): string {
   ).join('\n');
 
   const matrixLine = res.specialStarsSynthesisMatrix
-    ? `\n4. [신살 교차 매트릭스]:\n   - 핵심 긴장: ${res.specialStarsSynthesisMatrix.dominantTension}\n   - 조율 상태: ${res.specialStarsSynthesisMatrix.alignmentState}\n   - 통합 실천: ${res.specialStarsSynthesisMatrix.integratedAction}\n`
-    : '';
+    ? `\n4. [신살 교차 매트릭스]:\n   - 핵심 긴장: ${res.specialStarsSynthesisMatrix.dominantTension}\n   - 조율 상태: ${res.specialStarsSynthesisMatrix.alignmentState}\n   - 통합 실천: ${res.specialStarsSynthesisMatrix.integratedAction}\n   - 해석 경계: ${res.interpretiveBoundary}\n`
+    : `\n4. [해석 경계]: ${res.interpretiveBoundary}\n`;
 
   return `[⭐ 15대 신살 위치별 슈퍼파워 치환 실측 데이터 (Special Stars Matrix Core)]
 ======================================================================
