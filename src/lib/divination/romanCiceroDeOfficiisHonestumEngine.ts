@@ -13,7 +13,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const CICERO_DE_OFFICIIS_VERSION = 'LUCKEY-CICERO-DE-OFFICIIS-v2.1.0';
+export const CICERO_DE_OFFICIIS_VERSION = 'LUCKEY-CICERO-DE-OFFICIIS-v2.2.0';
 
 export interface CiceroVirtueFoundation {
   foundationLatin: string;
@@ -61,6 +61,11 @@ export interface CiceroDeOfficiisResult {
   dailyPracticeRitual: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
+  ciceroSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
 }
 
 export type CiceroDeOfficiisReport = CiceroDeOfficiisResult;
@@ -251,6 +256,13 @@ export function calculateCiceroDeOfficiis(
     `《${activeHarmonyCriterion.criterionTitleLatin}》의 원칙에 따라 ${situationalDutyFocus.honestumDirective} ` +
     `특히 ${activeVirtueFoundation.foundationKo}의 덕목을 일상에서 단정하게 실천하십시오. ${activeVirtueFoundation.dutyApplication}`;
 
+  const trimmedQ = (question ?? '').trim();
+  const ciceroSynthesisMatrix = {
+    dominantTension: `${situationalDutyFocus.detectedTheme} ↔ ${activeVirtueFoundation.foundationLatin}`,
+    alignmentState: `${temporalCiceroRhythm.kstPhaseLabel} · ${temporalCiceroRhythm.decorumStageKo}`,
+    integratedAction: `${situationalDutyFocus.honestumDirective}${trimmedQ ? ` [질문 맥락: ${trimmedQ}]` : ''}`,
+  };
+
   return {
     engineVersion: CICERO_DE_OFFICIIS_VERSION,
     calculatedAtKst: isoKst,
@@ -270,10 +282,14 @@ export function calculateCiceroDeOfficiis(
     dailyPracticeRitual: `${temporalCiceroRhythm.recommendedPractice} · ${situationalDutyFocus.honestumDirective}`,
     reflectiveQuestion: situationalDutyFocus.reflectiveQuestion,
     interpretiveBoundary: '키케로 의무론 성찰은 이해득실을 대신 계산해 주는 점술이 아니라, 도덕적 선(Honestum)과 신의(Fides), 시민적 품격(Decorum)의 관점에서 선택을 비추어 보는 윤리적 관점입니다.',
+    ciceroSynthesisMatrix,
   };
 }
 
 export function formatCiceroDeOfficiisPrompt(res: CiceroDeOfficiisResult): string {
+  const matrixLine = res.ciceroSynthesisMatrix
+    ? `- 키케로 교차 매트릭스: 핵심 긴장(${res.ciceroSynthesisMatrix.dominantTension}) · 조율 상태(${res.ciceroSynthesisMatrix.alignmentState}) · 통합 실천(${res.ciceroSynthesisMatrix.integratedAction})`
+    : '';
   return [
     `【고대 로마 키케로 의무론 도덕적 선 & 유용성 조화 지표 (${res.engineVersion})】`,
     `- 도덕적 선(Honestum): ${describeCiceroStage(res.honestumMoralDutyScore)} | 선과 유용성 조화: ${describeCiceroStage(res.utileJustHarmonyScore)} | 신의(Fides): ${describeCiceroStage(res.fidesPromiseFaithScore)}`,
@@ -286,5 +302,6 @@ export function formatCiceroDeOfficiisPrompt(res: CiceroDeOfficiisResult): strin
     `- 성찰 질문: "${res.reflectiveQuestion}"`,
     `- 철학적 처방: ${res.ciceroPhilosophicalCounsel.philosophicalGuidance}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
-  ].join('\n');
+    matrixLine,
+  ].filter(Boolean).join('\n');
 }

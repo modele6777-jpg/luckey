@@ -13,7 +13,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const ROMAN_MARCUS_AURELIUS_VERSION = 'LUCKEY-MARCUS-AURELIUS-CITADEL-v2.1.0';
+export const ROMAN_MARCUS_AURELIUS_VERSION = 'LUCKEY-MARCUS-AURELIUS-CITADEL-v2.2.0';
 
 export interface MeditationsTheme {
   themeKey: string;
@@ -63,6 +63,11 @@ export interface MarcusAureliusMeditationsCitadelResult {
   dailyPracticeRitual: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
+  marcusSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
 }
 
 export const MEDITATIONS_THEMES: MeditationsTheme[] = [
@@ -275,6 +280,13 @@ export function calculateMarcusAureliusMeditationsCitadel(
     `${situationalCitadelFocus.citadelDirective} 또한 '${activeMeditationsTheme.themeTitleKo}'의 관점에서 ${activeMeditationsTheme.practicalCounsel} ` +
     `《명상록》의 경구 "${focalMeditationsAphorism.aphorismKo}"(${focalMeditationsAphorism.aphorismGreekOrLatin})을 마음에 새기며 ${focalMeditationsAphorism.actionGuidance}`;
 
+  const trimmedQ = (question ?? '').trim();
+  const marcusSynthesisMatrix = {
+    dominantTension: `${situationalCitadelFocus.detectedTheme} ↔ ${activeMeditationsTheme.themeTitleKo}`,
+    alignmentState: `${temporalAureliusRhythm.kstPhaseLabel} · ${temporalAureliusRhythm.citadelStageKo}`,
+    integratedAction: `${situationalCitadelFocus.citadelDirective}${trimmedQ ? ` [질문 맥락: ${trimmedQ}]` : ''}`,
+  };
+
   return {
     engineVersion: ROMAN_MARCUS_AURELIUS_VERSION,
     calculatedAtKst: isoKst,
@@ -294,10 +306,14 @@ export function calculateMarcusAureliusMeditationsCitadel(
     dailyPracticeRitual: `${temporalAureliusRhythm.recommendedPractice} · ${situationalCitadelFocus.citadelDirective}`,
     reflectiveQuestion: situationalCitadelFocus.reflectiveQuestion,
     interpretiveBoundary: '마르쿠스 아우렐리우스 명상록 성찰은 미래의 길흉을 점치는 도구가 아니라, 통제할 수 있는 내면의 판단과 평정(아파테이아)을 지키기 위한 스토아 철학 관점입니다.',
+    marcusSynthesisMatrix,
   };
 }
 
 export function formatMarcusAureliusMeditationsCitadelPrompt(res: MarcusAureliusMeditationsCitadelResult): string {
+  const matrixLine = res.marcusSynthesisMatrix
+    ? `- 마르쿠스 교차 매트릭스: 핵심 긴장(${res.marcusSynthesisMatrix.dominantTension}) · 조율 상태(${res.marcusSynthesisMatrix.alignmentState}) · 통합 실천(${res.marcusSynthesisMatrix.integratedAction})`
+    : '';
   return [
     `【마르쿠스 아우렐리우스 《명상록》 내면의 성채 & 스토아 실존 평정 지표 (${res.engineVersion})】`,
     `- 내면의 성채(Hegemonikon): ${describeAureliusStage(res.innerCitadelResilienceScore)} | 로고스 섭리 순응: ${describeAureliusStage(res.logosProvidenceAlignmentScore)} | 메멘토 모리: ${describeAureliusStage(res.mementoMoriClarityQuotient)}`,
@@ -310,5 +326,6 @@ export function formatMarcusAureliusMeditationsCitadelPrompt(res: MarcusAurelius
     `- 핵심 경구: "${res.focalMeditationsAphorism.aphorismKo}" [${res.focalMeditationsAphorism.sourceContext}]`,
     `- 종합 철학 권면: ${res.aureliusComprehensiveGuidance.philosophicalCounsel}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
-  ].join('\n');
+    matrixLine,
+  ].filter(Boolean).join('\n');
 }
