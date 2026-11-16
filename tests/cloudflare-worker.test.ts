@@ -213,6 +213,96 @@ test('analyzes diary entries directly with Gemini JSON and preserves the existin
   assert.equal(calls, 1);
 });
 
+test('generates images directly with Gemini and preserves the imageUrl data URL contract', async () => {
+  let upstream: Request | undefined;
+  let providerPayload: any;
+  globalThis.fetch = (async (input, init) => {
+    upstream = new Request(input, init);
+    providerPayload = await upstream.json();
+    return Response.json({ candidates: [{ content: { parts: [{ inlineData: { mimeType: 'image/png', data: 'iVBORw0KGgo=' } }] } }] });
+  }) as typeof fetch;
+
+  const response = await worker.fetch(new Request('https://preview.example/api/ai/image', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Origin: 'https://preview.example' },
+    body: JSON.stringify({ prompt: '노을 아래 바다', aspectRatio: '16:9' }),
+  }), env(undefined, 'test-only-not-a-real-key'));
+
+  assert.ok(upstream);
+  assert.equal(upstream!.url, 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite-image:generateContent');
+  assert.equal(upstream!.method, 'POST');
+  assert.equal(upstream!.headers.get('x-goog-api-key'), 'test-only-not-a-real-key');
+  assert.deepEqual(providerPayload.contents, [{ role: 'user', parts: [{ text: '노을 아래 바다' }] }]);
+  assert.deepEqual(providerPayload.generationConfig, {
+    responseModalities: ['TEXT', 'IMAGE'], imageConfig: { aspectRatio: '16:9' },
+  });
+  assert.equal(response.status, 200);
+  assert.equal(response.headers.get('Cache-Control'), 'no-store');
+  assert.equal(response.headers.get('X-Luckey-API-Backend'), 'cloudflare-worker');
+  assert.deepEqual(await response.json(), { imageUrl: 'data:image/png;base64,iVBORw0KGgo=' });
+});
+
+test('rejects missing-key, invalid, wrong-method, and oversized image requests before Gemini', async () => {
+  let called = false;
+  globalThis.fetch = (async () => {
+    called = true;
+    throw new Error('No external provider call is allowed in this test');
+  }) as typeof fetch;
+
+  const missingKey = await worker.fetch(new Request('https://preview.example/api/ai/image', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ prompt: '꽃' }),
+  }), env());
+  assert.equal(missingKey.status, 503);
+
+  const emptyPrompt = await worker.fetch(new Request('https://preview.example/api/ai/image', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ prompt: '  ' }),
+  }), env(undefined, 'test-only-not-a-real-key'));
+  assert.equal(emptyPrompt.status, 400);
+
+  const longPrompt = await worker.fetch(new Request('https://preview.example/api/ai/image', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ prompt: 'x'.repeat(8001) }),
+  }), env(undefined, 'test-only-not-a-real-key'));
+  assert.equal(longPrompt.status, 413);
+
+  const tooLarge = await worker.fetch(new Request('https://preview.example/api/ai/image', {
+    method: 'POST', headers: { 'Content-Type': 'application/json', 'Content-Length': '65537' }, body: '{}',
+  }), env(undefined, 'test-only-not-a-real-key'));
+  assert.equal(tooLarge.status, 413);
+
+  const wrongMethod = await worker.fetch(new Request('https://preview.example/api/ai/image'), env());
+  assert.equal(wrongMethod.status, 405);
+  assert.equal(wrongMethod.headers.get('Allow'), 'POST');
+  assert.equal(called, false);
+});
+
+test('maps image provider quota failures safely and never relays provider details', async () => {
+  globalThis.fetch = (async () => Response.json({
+    error: { message: 'private provider text', details: [{ '@type': 'type.googleapis.com/google.rpc.RetryInfo', retryDelay: '7.2s' }] },
+  }, { status: 429 })) as typeof fetch;
+  const response = await worker.fetch(new Request('https://preview.example/api/ai/image', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ prompt: '꽃' }),
+  }), env(undefined, 'test-only-not-a-real-key'));
+  assert.equal(response.status, 429);
+  assert.equal(response.headers.get('Retry-After'), '8');
+  const result = await response.json() as Record<string, unknown>;
+  assert.equal(result.code, 'MEDIA_RATE_LIMIT');
+  assert.equal(JSON.stringify(result).includes('private provider text'), false);
+});
+
+test('rejects an oversized generated image before returning its base64 data URL', async () => {
+  const oversizedBase64 = 'AAAA'.repeat(Math.ceil((2 * 1024 * 1024) / 3) + 1);
+  globalThis.fetch = (async () => Response.json({
+    candidates: [{ content: { parts: [{ inlineData: { mimeType: 'image/png', data: oversizedBase64 } }] } }],
+  })) as typeof fetch;
+  const response = await worker.fetch(new Request('https://preview.example/api/ai/image', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ prompt: '큰 이미지' }),
+  }), env(undefined, 'test-only-not-a-real-key'));
+  assert.equal(response.status, 502);
+  const result = await response.json() as Record<string, unknown>;
+  assert.equal(result.code, 'IMAGE_RESPONSE_TOO_LARGE');
+  assert.equal('imageUrl' in result, false);
+});
+
 test('returns the existing local comfort fallback for a Bluebird blessing without calling Gemini', async () => {
   let called = false;
   globalThis.fetch = (async () => {
@@ -335,6 +425,30 @@ test('proxies API method, query, body, authorization and stream while filtering 
   assert.equal(response.status, 207);
   assert.equal(await response.text(), 'streamed');
   assert.equal(response.headers.get('Access-Control-Allow-Origin'), 'https://preview.example');
+});
+
+test('keeps TTS, Vault sync/relay, and MCP routes on the fixed Vercel proxy', async () => {
+  const seen: string[] = [];
+  globalThis.fetch = (async (input) => {
+    seen.push((input as Request).url);
+    return Response.json({ ok: true });
+  }) as typeof fetch;
+
+  const cases: Array<{ path: string; method: 'GET' | 'POST'; body?: string }> = [
+    { path: '/api/ai/tts', method: 'POST', body: JSON.stringify({ text: '안녕하세요.' }) },
+    { path: '/api/sync/vault/pull/example-user', method: 'GET' },
+    { path: '/api/sync/relay/create', method: 'POST', body: JSON.stringify({ payload: 'test' }) },
+    { path: '/api/mcp', method: 'POST', body: JSON.stringify({ jsonrpc: '2.0', method: 'initialize', id: 1 }) },
+  ];
+  for (const item of cases) {
+    const response = await worker.fetch(new Request(`https://preview.example${item.path}`, {
+      method: item.method,
+      headers: { ...(item.body ? { 'Content-Type': 'application/json' } : {}) },
+      ...(item.body ? { body: item.body } : {}),
+    }), env());
+    assert.equal(response.status, 200);
+  }
+  assert.deepEqual(seen, cases.map(item => `https://luckey-six.vercel.app${item.path}`));
 });
 
 test('rewrites same-origin upstream redirects without following them', async () => {

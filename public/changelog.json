@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.7.659",
+    "builtAt": "2026-11-17T08:24:00+09:00",
+    "summary": "이미지 생성 API를 Cloudflare Worker에서 직접 처리",
+    "items": [
+      "/api/ai/image를 기존 Gemini 키로 Worker에서 직접 처리하고 imageUrl 응답 형식을 유지",
+      "요청·Gemini 응답·이미지 크기 제한과 안전한 오류 처리를 추가; 실제 공급자 호출 없이 모의 응답으로 검증",
+      "TTS, Vault 동기화·relay, MCP 및 그 밖의 미이전 API는 기존 Vercel 프록시 유지"
+    ]
+  },
+  {
     "version": "1.7.658",
     "builtAt": "2026-11-17T07:59:45+09:00",
     "summary": "일기 분석과 Bluebird 쪽지 API를 Cloudflare Worker에서 직접 처리",

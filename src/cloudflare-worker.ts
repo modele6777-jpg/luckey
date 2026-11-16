@@ -4,6 +4,7 @@ const API_ORIGIN = 'https://luckey-six.vercel.app';
 const API_URL = new URL(API_ORIGIN);
 import { handleCloudflareGeminiSideRoute, isCloudflareGeminiSidePath } from './cloudflare-gemini-side-routes.ts';
 import { handleCloudflareSafeApi, isCloudflareSafeApiPath } from './cloudflare-safe-api.ts';
+import { handleCloudflareImageApi, isCloudflareImageApiPath } from './cloudflare-image-api.ts';
 
 const HOP_BY_HOP_HEADERS = [
   'connection',
@@ -156,6 +157,7 @@ export const worker = {
     if (isHealthPath(requestUrl.pathname)) return healthResponse(request, requestUrl);
     if (isChatCompletionsPath(requestUrl.pathname)) return handleCloudflareGeminiChat(request, env);
     if (isCloudflareGeminiSidePath(requestUrl.pathname)) return handleCloudflareGeminiSideRoute(request, env);
+    if (isCloudflareImageApiPath(requestUrl.pathname)) return handleCloudflareImageApi(request, env);
     if (isCloudflareSafeApiPath(requestUrl.pathname)) return handleCloudflareSafeApi(request);
     if (isApiPath(requestUrl.pathname)) return proxyApi(request, requestUrl);
     return serveAsset(request, requestUrl, env);
