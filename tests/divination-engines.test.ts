@@ -8945,22 +8945,24 @@ test('Schopenhauer v2.1.0, Mandukya Turiya v2.0.0, and Zhuangzi v2.0.0 engines o
   assert.ok(mandukyaPrompt.includes('일상 관조 실천') && mandukyaPrompt.includes('해석 경계') && mandukyaPrompt.includes('+09:00') && mandukyaPrompt.includes('교차 매트릭스'));
 
   const zhuangzi = calculateZhuangziXiaoyaoyouButterfly({ profile, question: '진로 선택 앞에서 남들 시선이 자꾸 신경 쓰여요', now });
-  assert.equal(zhuangzi.engineVersion, '2.0.0');
+  assert.equal(zhuangzi.engineVersion, ZHUANGZI_XIAOYAOYOU_BUTTERFLY_ENGINE_VERSION);
   assert.ok(zhuangzi.calculatedAtKst.endsWith('+09:00'));
+  assert.ok(Boolean(zhuangzi.zhuangziSynthesisMatrix?.integratedAction));
   assert.ok(zhuangzi.dailyPracticeRitual.length > 0 && zhuangzi.reflectiveQuestion.length > 0 && zhuangzi.interpretiveBoundary.length > 0);
   const zhuangziPrompt = formatZhuangziXiaoyaoyouButterflyPrompt(zhuangzi);
   assert.ok(!zhuangziPrompt.includes('/100') && !zhuangziPrompt.includes('%'));
-  assert.ok(zhuangziPrompt.includes('일상 관조 실천') && zhuangziPrompt.includes('해석 경계') && zhuangziPrompt.includes('+09:00'));
+  assert.ok(zhuangziPrompt.includes('일상 관조 실천') && zhuangziPrompt.includes('해석 경계') && zhuangziPrompt.includes('+09:00') && zhuangziPrompt.includes('교차 매트릭스'));
 });
 
-test('Ziwei HuaJi v2.0.0, Zoroastrian Asha v2.0.0, and Yoruba Ifa Odu v2.0.0 output qualitative stages and KST without /100 or %', () => {
+test('Ziwei HuaJi v2.1.0, Zoroastrian Asha v2.0.0, and Yoruba Ifa Odu v2.1.0 output qualitative stages and KST without /100 or %', () => {
   const now = new Date('2026-11-15T23:54:00Z');
   const huaji = calculateZiweiHuaJiTransformation(profile, now, '일과 커리어에서 자꾸 막히는 느낌이 들어요');
-  assert.equal(huaji.engineVersion, 'LUCKEY-ZW-HUAJI-v2.0.0');
+  assert.equal(huaji.engineVersion, ZIWEI_HUAJI_VERSION);
   assert.ok(huaji.calculatedAtKst.endsWith('+09:00'));
+  assert.ok(Boolean(huaji.huajiSynthesisMatrix?.integratedAction));
   const huajiPrompt = formatZiweiHuaJiTransformationPrompt(huaji);
   assert.ok(!huajiPrompt.includes('/100') && !huajiPrompt.includes('%') && !huajiPrompt.includes('점 /'));
-  assert.ok(huajiPrompt.includes('해석 경계') && huajiPrompt.includes('+09:00'));
+  assert.ok(huajiPrompt.includes('해석 경계') && huajiPrompt.includes('+09:00') && huajiPrompt.includes('교차 매트릭스'));
 
   const asha = calculateZoroastrianAshaTruth({ profile, contextText: '관계에서 솔직하게 말해야 할지 고민돼요', now });
   assert.equal(asha.engineVersion, 'LUCKEY-ZOROASTRIAN-ASHA-v2.0.0');
@@ -8970,11 +8972,12 @@ test('Ziwei HuaJi v2.0.0, Zoroastrian Asha v2.0.0, and Yoruba Ifa Odu v2.0.0 out
   assert.ok(ashaPrompt.includes('해석 경계') && ashaPrompt.includes('+09:00'));
 
   const ifa = calculateYorubaIfaOdu({ profile, targetDate: now, question: '새로운 선택 앞에서 어떤 태도를 가져야 할까요?' });
-  assert.equal(ifa.engineVersion, '2.0.0');
+  assert.equal(ifa.engineVersion, YORUBA_IFA_ODU_ENGINE_VERSION);
   assert.ok(ifa.calculatedAtKst.endsWith('+09:00'));
+  assert.ok(Boolean(ifa.ifaSynthesisMatrix?.integratedAction));
   const ifaPrompt = formatYorubaIfaOduPrompt(ifa);
   assert.ok(!ifaPrompt.includes('/100') && !ifaPrompt.includes('%'));
-  assert.ok(ifaPrompt.includes('해석 경계') && ifaPrompt.includes('+09:00'));
+  assert.ok(ifaPrompt.includes('해석 경계') && ifaPrompt.includes('+09:00') && ifaPrompt.includes('교차 매트릭스'));
 });
 
 test('Epicurus, Heraclitus, and Laozi v2.1.0 output qualitative stages and KST without /100 or %', () => {

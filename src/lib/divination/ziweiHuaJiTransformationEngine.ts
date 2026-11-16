@@ -17,7 +17,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const ZIWEI_HUAJI_VERSION = 'LUCKEY-ZW-HUAJI-v2.0.0';
+export const ZIWEI_HUAJI_VERSION = 'LUCKEY-ZW-HUAJI-v2.1.0';
 
 export interface HuaJiStarInfo {
   starNameKo: string;
@@ -48,6 +48,11 @@ export interface ZiweiHuaJiReport {
   dailyBreakthroughAction: string; // 오늘 당장 실행할 반전 행동
   reflectiveQuestion: string;
   interpretiveBoundary: string;
+  huajiSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
 }
 
 function describeZiweiResilienceStage(index: number): string {
@@ -211,6 +216,12 @@ export function calculateZiweiHuaJiTransformation(
 
   const dailyBreakthroughAction = `[화기전화 실천]: 오늘 하루, [${karmicPalace.lifeDomain}]에서 나를 불안하게 만드는 문제를 회피하지 말고, ${huaJiStar.breakthroughGift}의 관점에서 딱 1가지의 실행 가능한 돌파 조치를 취하세요.`;
 
+  const huajiSynthesisMatrix = {
+    dominantTension: `${huaJiStar.starNameKo}(${huaJiStar.starNameHanja}) ↔ ${karmicPalace.palaceNameKo}(${karmicPalace.lifeDomain})`,
+    alignmentState: `${resilienceStage} · ${huaJiStar.archetype}`,
+    integratedAction: `${dailyBreakthroughAction}${question ? ` [질문 맥락: ${question}]` : ''}`,
+  };
+
   return {
     engineVersion: ZIWEI_HUAJI_VERSION,
     calculatedAt: targetDate.toISOString(),
@@ -224,11 +235,15 @@ export function calculateZiweiHuaJiTransformation(
     transmutationStrategy,
     dailyBreakthroughAction,
     reflectiveQuestion,
-    interpretiveBoundary
+    interpretiveBoundary,
+    huajiSynthesisMatrix
   };
 }
 
 export function formatZiweiHuaJiTransformationPrompt(report: ZiweiHuaJiReport): string {
+  const matrixLine = report.huajiSynthesisMatrix
+    ? `\n- **화기 교차 매트릭스**: 핵심 긴장(${report.huajiSynthesisMatrix.dominantTension}) · 조율 상태(${report.huajiSynthesisMatrix.alignmentState}) · 통합 실천(${report.huajiSynthesisMatrix.integratedAction})`
+    : '';
   return `### 🔮 도교 자미두수 화기(化忌)·살성 정화 & 전화위복(轉禍爲福) 해원 엔진 (${ZIWEI_HUAJI_VERSION})
 - **연산 시각**: ${report.calculatedAtKst}
 - **생년 천간 & 화기 성좌**: ${report.birthYearStem} ➔ **${report.huaJiStar.starNameKo} (${report.huaJiStar.starNameHanja})**
@@ -242,5 +257,5 @@ export function formatZiweiHuaJiTransformationPrompt(report: ZiweiHuaJiReport): 
 - **화기 승화 마스터 전략**: ${report.transmutationStrategy}
 - **일일 전화위복 실천 과제**: ${report.dailyBreakthroughAction}
 - **성찰 질문**: ${report.reflectiveQuestion}
-- **해석 경계**: ${report.interpretiveBoundary}`;
+- **해석 경계**: ${report.interpretiveBoundary}${matrixLine}`;
 }

@@ -1,6 +1,6 @@
 import { UserProfile } from '../sharedState';
 
-export const YORUBA_IFA_ODU_ENGINE_VERSION = '2.0.0';
+export const YORUBA_IFA_ODU_ENGINE_VERSION = '2.1.0';
 
 export interface YorubaIfaOduReport {
   engineVersion: string;
@@ -23,6 +23,11 @@ export interface YorubaIfaOduReport {
   reflectiveQuestion: string;
   interpretiveBoundary: string;
   synthesisPrompt: string;
+  ifaSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
 }
 
 function describeIfaAlignmentStage(score: number): string {
@@ -250,6 +255,13 @@ export function calculateYorubaIfaOdu(options?: {
   const reflectiveQuestion = `${odu.name}의 시선으로 볼 때, 지금 내가 억지로 붙잡거나 미루고 있는 선택 한 가지는 무엇인가요?`;
   const interpretiveBoundary = '본 이파(Ifá) 오두 결과는 서아프리카 구전 신탁 상징에 기반한 정성적 성찰 안내이며, 확정적 길흉 예단이 아닙니다.';
 
+  const trimmedQ = (options?.question || '').trim();
+  const ifaSynthesisMatrix = {
+    dominantTension: `${odu.name} (${odu.orisha}) ↔ ${situationalIfaFocus.focusTheme}`,
+    alignmentState: `${alignmentStage} · ${odu.blessing}`,
+    integratedAction: `${dailyPracticeRitual}${trimmedQ ? ` [질문 맥락: ${trimmedQ}]` : ''}`,
+  };
+
   const synthesisPrompt = `
 [서아프리카 요루바 이파(Ifá) 16 오두 & 오룬밀라 운명의 지혜 정성 리포트]
 ======================================================================
@@ -269,6 +281,10 @@ export function calculateYorubaIfaOdu(options?: {
    - 오늘의 에보 실천: **${dailyPracticeRitual}**
    - 성찰 질문: ${reflectiveQuestion}
    - 해석 경계: ${interpretiveBoundary}
+4. 🧭 [이파 교차 매트릭스]:
+   - 핵심 긴장: ${ifaSynthesisMatrix.dominantTension}
+   - 조율 상태: ${ifaSynthesisMatrix.alignmentState}
+   - 통합 실천: ${ifaSynthesisMatrix.integratedAction}
 ======================================================================
 [AI 해석 절대 지침]: 본 리포트는 유네스코 인류무형문화유산인 서아프리카 정통 이파(Ifá) 16 메지 오두 체계에 입각한 순수 정성적 신탁 데이터입니다. 숫자 점수 없이 오두의 상징과 에보(Ebó) 행동 처방을 상담자의 현실 고민과 따뜻하게 연결하십시오.
 `.trim();
@@ -291,6 +307,7 @@ export function calculateYorubaIfaOdu(options?: {
     reflectiveQuestion,
     interpretiveBoundary,
     synthesisPrompt,
+    ifaSynthesisMatrix,
   };
 }
 
