@@ -2141,7 +2141,7 @@ try {
   // 89. 고대 슬라브 베다 신화 16 스바로그 체계 & 로드(Rod) 영혼 가계 카르마 엔진
   const slavicSvarogResult = calculateSupplement('slavicSvarogResult', () => ((() => {
     try {
-      return calculateSlavicSvarogCircle({ profile, contextText: question });
+      return calculateSlavicSvarogCircle({ profile, contextText: question, referenceDate: now });
     } catch (_) {
       return null;
     }
@@ -2384,7 +2384,7 @@ try {
   // 116. 고대 슬라브 모코시(Mokosh) 운명의 실타래 & 대지 모성 직관 엔진
   const slavicMokoshFateWeavingResult = calculateSupplement('slavicMokoshFateWeavingResult', () => ((() => {
     try {
-      return calculateSlavicMokoshFateWeaving({ profile, question });
+      return calculateSlavicMokoshFateWeaving({ profile, question, now });
     } catch (_) {
       return null;
     }
@@ -4803,7 +4803,7 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'zoroastrianAsha', nameKo: '조로아스터 아샤 진실', icon: '🔥', category: 'deep_master', summary: '고대 페르시아 아베스타의 아샤(진리)와 선한 생각·말·행동 3대 축으로 모호한 타협을 가려냅니다.' },
   { key: 'hinduKundalini', nameKo: '힌두 쿤달리니 나디각성', icon: '🕉️', category: 'deep_master' },
   { key: 'guiguziLiangtouqian', nameKo: '귀곡자 양구령 72변화', icon: '📜', category: 'deep_master' },
-  { key: 'slavicSvarog', nameKo: '슬라브 16스바로그 로드카르마', icon: '🌌', category: 'deep_master' },
+  { key: 'slavicSvarog', nameKo: '슬라브 16스바로그 로드카르마', icon: '🌌', category: 'deep_master', summary: '슬라브 16 스바로그 궁과 로드(Rod) 가계 카르마·성목 상징으로 타고난 기질과 관계 매듭 해원을 비추는 관점' },
   { key: 'esseneCommunion', nameKo: '에세네 14대 천사교감', icon: '🕊️', category: 'deep_master', summary: '고대 에세네 평화의 복음에 따라 대지 어머니와 천상 아버지의 14대 천사 교감으로 생각·감정·행동 삼위일체의 정화와 안식을 안내합니다.' },
   { key: 'huangdiFiveMovementsSixQi', nameKo: '황제내경 오운육기 기상의학', icon: '📜', category: 'deep_master' },
   { key: 'pythagoreanTetraktys', nameKo: '피타고라스 테트락티스 신성기하', icon: '📐', category: 'deep_master', summary: '피타고라스 1·2·3·4 테트락티스 창조 층위와 영혼 루트수로 관념을 현실의 실행·결실로 구체화하는 관점' },
@@ -4830,7 +4830,7 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'celticAwenTaliesin', nameKo: '켈트 탈리에신 아웬영감', icon: '🔮', category: 'deep_master' },
   { key: 'koreanDangunCheonbuin', nameKo: '단군 천부인 3보 홍익광명', icon: '🇰🇷', category: 'deep_master' },
   { key: 'maoriMauriHauora', nameKo: '마오리 하우오라 마우리생명력', icon: '🌿', category: 'deep_master', summary: '뉴질랜드 마오리 〈테 화레 타파 화〉 4대 기둥(신체·정신·관계·영혼)과 마우리(Mauri) 생명력으로 삶의 균형을 세우는 전인적 회복 지침을 비춥니다.' },
-  { key: 'slavicMokoshFateWeaving', nameKo: '슬라브 모코시 운명실타래', icon: '🧶', category: 'deep_master' },
+  { key: 'slavicMokoshFateWeaving', nameKo: '슬라브 모코시 운명실타래', icon: '🧶', category: 'deep_master', summary: '슬라브 모코시 대지 모신의 돌랴(행운)·네돌랴(시련) 실타래와 물레 상징으로 현재의 운명 직조 국면을 살피는 관점' },
   { key: 'sumerianGilgameshTrials', nameKo: '길가메시 서사시 12관문', icon: '🏛️', category: 'deep_master', summary: '길가메시 서사시 12관문 통과의례와 엔키두 동반자 원형으로 현재의 시련과 레거시 방향을 짚어 주는 관점' },
   { key: 'hawaiianKahunaThreeSelves', nameKo: '하와이 카후나 3대 자아 마나', icon: '🌺', category: 'deep_master', summary: '하와이 카후나 전통의 우니히필리(내면아이)·우하네(의식)·아우마쿠아(초의식) 3대 자아를 정렬하고 마나(Mana) 호흡과 카라(Kala) 해방 리추얼을 안내합니다.' },
   { key: 'nordicYggdrasilRealms', nameKo: '북유럽 위그드라실 9대 영역', icon: '🌳', category: 'deep_master', summary: '세계수 위그드라실 9대 영역과 비프로스트 다리 균형으로 주도 영역·그림자 긴장·행동 지침을 비추는 관점' },
@@ -4852,7 +4852,7 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'egyptianSphinxDreamOracle', nameKo: '이집트 스핑크스 꿈신탁', icon: '🦁', category: 'deep_master', summary: '투트모세 4세 꿈의 비석과 스핑크스 4대 테트라모르프(지혜·용기·인내·조망)로 장애물 돌파를 비추는 관점' },
   { key: 'chaldeanMulApinAstrology', nameKo: '칼데아 물핀 12조디악', icon: '✨', category: 'deep_master' },
   { key: 'toltecNagualDreaming', nameKo: '톨텍 나구알리즘 4대 약속', icon: '🦅', category: 'deep_master' },
-  { key: 'shugendoYamabushiTenRealms', nameKo: '슈겐도 야마부시 10계수행', icon: '🏔️', category: 'deep_master' },
+  { key: 'shugendoYamabushiTenRealms', nameKo: '슈겐도 야마부시 10계수행', icon: '🏔️', category: 'deep_master', summary: '일본 슈겐도 야마부시 10계 수행과 6근청정 상징으로 지금 통과할 내면 관문과 정화 리추얼을 짚어 주는 관점' },
   { key: 'gnosticPistisSophiaPleroma', nameKo: '영지주의 소피아 플레로마', icon: '🕊️', category: 'deep_master', summary: '12에온과 소피아의 회개 여정을 비춰 외부 통제망 너머 내면의 프뉴마 불꽃을 일깨웁니다.' },
   { key: 'sumerianInannaUnderworldDescent', nameKo: '수메르 이난나 명계하강 7대관문', icon: '👑', category: 'deep_master', summary: '수메르 이난나 신화의 7대 관문 탈각 상징으로 외적 가면과 방어기제를 내려놓고 내면의 회복을 성찰합니다.' },
   { key: 'norseVolvaSeidrNineRealms', nameKo: '북유럽 볼바 세이드 9대세계', icon: '🌲', category: 'deep_master' },
