@@ -29,7 +29,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const LAKOTA_MEDICINE_WHEEL_ENGINE_VERSION = '2.0.0';
+export const LAKOTA_MEDICINE_WHEEL_ENGINE_VERSION = '2.1.0';
 
 export interface LakotaMedicineWheelReport {
   engineVersion: string;
@@ -50,6 +50,13 @@ export interface LakotaMedicineWheelReport {
     totemGuide: string;
     soulTeaching: string;
   };
+  secondarySacredDirection: {
+    directionKo: string;
+    lakotaTerm: string;
+    elementAndColor: string;
+    totemGuide: string;
+    soulTeaching: string;
+  };
   // 미타쿠예 오야신 및 4대 미덕
   mitakuyeOyasinInterconnectedness: number; // 만물 친족성 및 관계망 연결도 (0~100)
   activeCardinalVirtue: {
@@ -58,6 +65,14 @@ export interface LakotaMedicineWheelReport {
     meaning: string;
     practicalAction: string;
   };
+  secondaryCardinalVirtue: {
+    virtueKo: string;
+    lakotaName: string;
+    meaning: string;
+    practicalAction: string;
+  };
+  reflectiveQuestion: string;
+  interpretiveBoundary: string;
   wakanTankaSacredGuidance: string;
   lakotaSynthesisMatrix?: {
     dominantTension: string;
@@ -73,7 +88,7 @@ function formatLakotaKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 KST`;
 }
 
 function describeLakotaStage(score: number): string {
@@ -170,8 +185,22 @@ export function calculateLakotaMedicineWheel(
   const minScore = Math.min(...scores);
   const medicineWheelBalanceIndex = Math.max(50, Math.round(100 - (maxScore - minScore) * 1.5));
 
-  const primarySacredDirection = LAKOTA_DIRECTIONS[seed % LAKOTA_DIRECTIONS.length];
-  const activeCardinalVirtue = LAKOTA_CARDINAL_VIRTUES[(seed >> 3) % LAKOTA_CARDINAL_VIRTUES.length];
+  const dirIdx = seed % LAKOTA_DIRECTIONS.length;
+  const secondaryDirIdx = (dirIdx + 1 + ((seed >> 2) % (LAKOTA_DIRECTIONS.length - 1))) % LAKOTA_DIRECTIONS.length;
+  const primarySacredDirection = LAKOTA_DIRECTIONS[dirIdx];
+  const secondarySacredDirection = LAKOTA_DIRECTIONS[secondaryDirIdx];
+
+  const virtueIdx = (seed >> 3) % LAKOTA_CARDINAL_VIRTUES.length;
+  const secondaryVirtueIdx = (virtueIdx + 1 + ((seed >> 5) % (LAKOTA_CARDINAL_VIRTUES.length - 1))) % LAKOTA_CARDINAL_VIRTUES.length;
+  const activeCardinalVirtue = LAKOTA_CARDINAL_VIRTUES[virtueIdx];
+  const secondaryCardinalVirtue = LAKOTA_CARDINAL_VIRTUES[secondaryVirtueIdx];
+
+  const trimmedQuery = query?.trim();
+  const reflectiveQuestion = trimmedQuery
+    ? `라코타 메디슨 휠의 '${primarySacredDirection.lakotaTerm}'와 '${secondarySacredDirection.lakotaTerm}'를 비추어 볼 때, "${trimmedQuery}"에서 미타쿠예 오야신(모든 친족과의 연결)을 회복하기 위해 필요한 미덕은 무엇인가요?`
+    : `지금 성스러운 원(Cangleska Wakan) 안에서, '${primarySacredDirection.totemGuide}'의 시선과 '${secondarySacredDirection.totemGuide}'의 지혜를 함께 살리려면 어느 방향을 먼저 돌봐야 할까요?`;
+
+  const interpretiveBoundary = '이 지표는 라코타 수(Lakota Sioux)족의 《와칸 탕카》·성스러운 의약 휠(Medicine Wheel)·미타쿠예 오야신 사상을 방향성과 관계 균형 성찰의 거울로 해석한 것이며, 구체적 사건의 성패를 단정하는 예언이 아닙니다.';
 
   const mitakuyeOyasinInterconnectedness = 65 + ((seed >> 8) % 34);
 
@@ -203,8 +232,12 @@ export function calculateLakotaMedicineWheel(
     northEnduranceWisdomScore,
     medicineWheelBalanceIndex,
     primarySacredDirection,
+    secondarySacredDirection,
     mitakuyeOyasinInterconnectedness,
     activeCardinalVirtue,
+    secondaryCardinalVirtue,
+    reflectiveQuestion,
+    interpretiveBoundary,
     wakanTankaSacredGuidance,
     lakotaSynthesisMatrix,
   };
@@ -216,10 +249,14 @@ export function formatLakotaMedicineWheelPrompt(report: LakotaMedicineWheelRepor
     `- 연산 시각: ${report.calculatedAtKst} | 엔진: ${report.engineVersion}`,
     `- 메디슨 휠 균형 국면: ${describeLakotaStage(report.medicineWheelBalanceIndex)}`,
     `- 감응 성스러운 방향: ${report.primarySacredDirection.directionKo} [라코타명: ${report.primarySacredDirection.lakotaTerm}]`,
+    `- 보조 교차 방향: ${report.secondarySacredDirection.directionKo} [라코타명: ${report.secondarySacredDirection.lakotaTerm}]`,
     `  * 상징 원소/색상: ${report.primarySacredDirection.elementAndColor} | 토템 영수: ${report.primarySacredDirection.totemGuide}`,
     `  * 영적 가르침: ${report.primarySacredDirection.soulTeaching}`,
     `- 활성화 4대 부족 미덕: ${report.activeCardinalVirtue.virtueKo} (${report.activeCardinalVirtue.lakotaName}) - ${report.activeCardinalVirtue.meaning}`,
+    `- 보조 교차 미덕: ${report.secondaryCardinalVirtue.virtueKo} (${report.secondaryCardinalVirtue.lakotaName})`,
     `  * 실천 지침: ${report.activeCardinalVirtue.practicalAction}`,
+    `- 성찰 질문: ${report.reflectiveQuestion}`,
+    `- 해석 경계: ${report.interpretiveBoundary}`,
     `- 와칸 탕카(Wakan Tanka) 신성 조언: ${report.wakanTankaSacredGuidance}`,
   ];
   if (report.lakotaSynthesisMatrix) {
