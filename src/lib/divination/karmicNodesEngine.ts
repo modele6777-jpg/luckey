@@ -21,7 +21,7 @@ import {
   type NatalChartResult
 } from '../astrologyAnalysis';
 
-export const KARMIC_NODES_ENGINE_VERSION = 'LUCKEY-NODE-v2.0.0';
+export const KARMIC_NODES_ENGINE_VERSION = 'LUCKEY-NODE-v2.1.0';
 
 export interface NodeAxisDetail {
   northSign: string;
@@ -69,6 +69,7 @@ export interface KarmicNodesResult {
     alignmentState: string;
     integratedAction: string;
   };
+  interpretiveBoundary: string;
 }
 
 function formatKarmicNodesKstTimestamp(now: Date = new Date()): string {
@@ -250,6 +251,7 @@ export function calculateKarmicNodes(params?: {
     soulPhaseTitle,
     summary,
     karmicNodesSynthesisMatrix,
+    interpretiveBoundary: '본 카르믹 노드·영혼 진화 궤적 리포트는 점성학 노드·키론·릴리스 상징에 기반한 정성적 자기 성찰 안내이며, 확정적 운명 예단이 아닙니다.',
   };
 }
 
@@ -278,5 +280,6 @@ export function formatKarmicNodesPrompt(res: KarmicNodesResult): string {
       `- 통합 실천: ${res.karmicNodesSynthesisMatrix.integratedAction}`,
     );
   }
+  lines.push(`- 해석 경계: ${res.interpretiveBoundary}`);
   return lines.join('\n');
 }
