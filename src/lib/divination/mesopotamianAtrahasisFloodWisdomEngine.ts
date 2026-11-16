@@ -15,7 +15,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const ATRAHASIS_FLOOD_VERSION = 'LUCKEY-ATRAHASIS-FLOOD-v2.0.0';
+export const ATRAHASIS_FLOOD_VERSION = 'LUCKEY-ATRAHASIS-FLOOD-v2.1.0';
 
 export interface AtrahasisWisdomRank {
   rankLevel: number;
@@ -36,7 +36,14 @@ export interface AtrahasisFloodResult {
   sacredEquilibriumPactHarmony: number; // 우주적 공존 서약 및 절제의 조화도
   // 세부 명세
   activeWisdomRank: AtrahasisWisdomRank;
+  secondaryWisdomRank: AtrahasisWisdomRank;
   primaryArkVirtue: {
+    virtueNameKo: string;
+    akkadianMotto: string;
+    coreEssence: string;
+    actionableDirective: string;
+  };
+  secondaryArkVirtue: {
     virtueNameKo: string;
     akkadianMotto: string;
     coreEssence: string;
@@ -46,6 +53,8 @@ export interface AtrahasisFloodResult {
     tabletSceneTitle: string;
     primordialWisdom: string;
   };
+  reflectiveQuestion: string;
+  interpretiveBoundary: string;
   atrahasisSynthesisMatrix?: {
     dominantTension: string;
     alignmentState: string;
@@ -92,7 +101,7 @@ function getKstDateString(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 KST`;
 }
 
 function hashSeed(seedStr: string): number {
@@ -121,13 +130,23 @@ export function calculateAtrahasisFlood(
   const sacredEquilibriumPactHarmony = ((seed >> 9) % 38) + 63; // 63~100
 
   const rankIdx = (seed >> 2) % ATRAHASIS_RANKS.length;
+  const secondaryRankIdx = (rankIdx + 1 + ((seed >> 3) % (ATRAHASIS_RANKS.length - 1))) % ATRAHASIS_RANKS.length;
   const activeWisdomRank = ATRAHASIS_RANKS[rankIdx];
+  const secondaryWisdomRank = ATRAHASIS_RANKS[secondaryRankIdx];
 
   const virtueIdx = (seed >> 4) % ARK_VIRTUES.length;
+  const secondaryVirtueIdx = (virtueIdx + 1 + ((seed >> 5) % (ARK_VIRTUES.length - 1))) % ARK_VIRTUES.length;
   const primaryArkVirtue = ARK_VIRTUES[virtueIdx];
+  const secondaryArkVirtue = ARK_VIRTUES[secondaryVirtueIdx];
 
   const epiphanyIdx = (seed >> 6) % ATRAHASIS_EPIPHANIES.length;
   const floodEpicEpiphany = ATRAHASIS_EPIPHANIES[epiphanyIdx];
+
+  const trimmedQuery = query?.trim();
+  const reflectiveQuestion = trimmedQuery
+    ? `아트라하시스의 '${activeWisdomRank.rankNameKo}'와 보조 위상 '${secondaryWisdomRank.rankNameKo}'를 비추어 볼 때, "${trimmedQuery}"에서 갈대벽 너머의 고요한 직관으로 지켜내야 할 본질은 무엇인가요?`
+    : `지금 '${primaryArkVirtue.virtueNameKo}'와 '${secondaryArkVirtue.virtueNameKo}'의 지혜를 함께 살려 소란을 가라앉히려면 무엇을 먼저 내려놓아야 할까요?`;
+  const interpretiveBoundary = '이 지표는 고대 바빌로니아 점토판 서사시 《아트라하시스》의 갈대벽 직관과 생명의 방주·절제 서약 사상을 위기 대응과 내면 성찰의 거울로 해석한 것이며, 구체적 사건의 성패를 단정하는 예언이 아닙니다.';
 
   const composite = Math.round(
     (reedWallIntuitionScore + arkCraftingResilienceForce + sevenDayStormPurificationIndex + seedPreservationWisdomPower + sacredEquilibriumPactHarmony) / 5
@@ -147,8 +166,12 @@ export function calculateAtrahasisFlood(
     seedPreservationWisdomPower,
     sacredEquilibriumPactHarmony,
     activeWisdomRank,
+    secondaryWisdomRank,
     primaryArkVirtue,
+    secondaryArkVirtue,
     floodEpicEpiphany,
+    reflectiveQuestion,
+    interpretiveBoundary,
     atrahasisSynthesisMatrix,
   };
 }
@@ -162,13 +185,17 @@ export function formatAtrahasisFloodPrompt(result: AtrahasisFloodResult): string
     `- 연산 시각: ${result.calculatedAtKst} | 엔진 버전: ${result.engineVersion}`,
     `- 방주 지혜 국면: ${describeAtrahasisStage(composite)}`,
     `- 현행 지혜의 품계: **[${result.activeWisdomRank.rankNameKo} (${result.activeWisdomRank.rankNameAkkadian})]**`,
+    `- 보조 교차 품계: **[${result.secondaryWisdomRank.rankNameKo} (${result.secondaryWisdomRank.rankNameAkkadian})]**`,
     `  → 관장 영역: ${result.activeWisdomRank.cosmicDomain}`,
     `  → 방주 보전 축복: ${result.activeWisdomRank.arkPreservationBlessing}`,
     `- 최우선 방주 덕목: **[${result.primaryArkVirtue.virtueNameKo} (${result.primaryArkVirtue.akkadianMotto})]**`,
+    `- 보조 교차 덕목: **[${result.secondaryArkVirtue.virtueNameKo} (${result.secondaryArkVirtue.akkadianMotto})]** — ${result.secondaryArkVirtue.actionableDirective}`,
     `  → 핵심 본질: ${result.primaryArkVirtue.coreEssence}`,
     `  → 실천 지침: ${result.primaryArkVirtue.actionableDirective}`,
     `- 점토판 신성 서판 전승: 《${result.floodEpicEpiphany.tabletSceneTitle}》`,
     `  → 원초적 지혜: "${result.floodEpicEpiphany.primordialWisdom}"`,
+    `- 성찰 질문: ${result.reflectiveQuestion}`,
+    `- 해석 경계: ${result.interpretiveBoundary}`,
   ];
   if (result.atrahasisSynthesisMatrix) {
     lines.push(

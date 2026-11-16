@@ -2960,7 +2960,7 @@ try {
   // 181. 수메르 서기 니사바 청금석 서판 갈대첨필 천문수리 계측 엔진
   const mesopotamianNisabaResult = calculateSupplement('mesopotamianNisabaResult', () => ((() => {
     try {
-      return calculateMesopotamianNisaba(profile);
+      return calculateMesopotamianNisaba(profile, question, now);
     } catch (_) {
       return null;
     }
@@ -2987,7 +2987,7 @@ try {
   // 184. 메소아메리카 믹스테크 영웅 군주 8-사슴 재규어 발톱 연맹 결성 & 260일 성력 통일 엔진
   const mixtecEightDeerResult = calculateSupplement('mixtecEightDeerResult', () => ((() => {
     try {
-      return calculateMixtecEightDeer(profile);
+      return calculateMixtecEightDeer(profile, question, now);
     } catch (_) {
       return null;
     }
@@ -3005,7 +3005,7 @@ try {
   // 186. 고대 메소포타미아 서사시 《아트라하시스》 지혜의 방주 & 절제·균형 회복 엔진
   const atrahasisFloodResult = calculateSupplement('atrahasisFloodResult', () => ((() => {
     try {
-      return calculateAtrahasisFlood(profile);
+      return calculateAtrahasisFlood(profile, question, now);
     } catch (_) {
       return null;
     }
@@ -4894,12 +4894,12 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'mayiMianxiang', nameKo: '마의도사 마의상법 12궁 관상 심상합일', icon: '👤', category: 'deep_master' },
   { key: 'egyptianAmduat', nameKo: '이집트 암두아트 12시간 라 밤의항해 케프리부활', icon: '🌅', category: 'deep_master', summary: '암두아트의 서 12시간 밤의 항해와 케프리 부활 상징으로 시련 돌파와 새벽 전환을 읽는 관점' },
   { key: 'celticDruidBrehonLawJustice', nameKo: '고대 켈트 브레혼 법전 4대 우주정의 에릭', icon: '⚖️', category: 'deep_master' },
-  { key: 'mesopotamianNisabaScribe', nameKo: '수메르 서기 니사바 청금석 서판 갈대첨필 천문수리', icon: '📐', category: 'deep_master' },
+  { key: 'mesopotamianNisabaScribe', nameKo: '수메르 서기 니사바 청금석 서판 갈대첨필 천문수리', icon: '📐', category: 'deep_master', summary: '수메르 지혜·도량형 여신 니사바의 갈대첨필과 청금석 서판 원리로 기록의 정밀함과 공정한 분별의 기준을 비춥니다.' },
   { key: 'koreanSuunGasiHeon', nameKo: '동학 수운 최제우 용담유사 검결 심기수련 삼경', icon: '🗡️', category: 'deep_master', summary: '동학 수운 최제우의 《용담유사》 검결과 삼경사상(경천·경인·경물)으로 미혹을 끊고 다시 오지 않을 때(시호)를 붙잡는 결단을 비춥니다.' },
   { key: 'eleusinianTriptolemosCivilization', nameKo: '엘레우시스 트리프톨레모스 황금전차 농경3대율법', icon: '🌾', category: 'deep_master', summary: '엘레우시스 밀의 트리프톨레모스 3대 율법과 파종·수확 리듬으로 성실한 결실을 비추는 관점' },
-  { key: 'mixtecEightDeerJaguarClaw', nameKo: '믹스테크 8-사슴 재규어발톱 동맹결성 통일', icon: '🐆', category: 'deep_master' },
+  { key: 'mixtecEightDeerJaguarClaw', nameKo: '믹스테크 8-사슴 재규어발톱 동맹결성 통일', icon: '🐆', category: 'deep_master', summary: '메소아메리카 믹스테크 《코덱스 조체 누탈》의 8-사슴 재규어 발톱 서사로 용기 있는 결단과 신의 동맹의 길을 비춥니다.' },
   { key: 'koreanJeonBongjunNokduGeneral', nameKo: '동학농민혁명 녹두장군 전봉준 사발통문 백산창의', icon: '📜', category: 'deep_master', summary: '녹두장군 전봉준의 사발통문 수평 연대와 백산 창의 4대 강령으로 불의에 굴하지 않는 공동체 정의와 회복력을 세웁니다.' },
-  { key: 'atrahasisFloodWisdom', nameKo: '메소포타미아 아트라하시스 지혜의방주 대홍수정화 절제', icon: '🌊', category: 'deep_master' },
+  { key: 'atrahasisFloodWisdom', nameKo: '메소포타미아 아트라하시스 지혜의방주 대홍수정화 절제', icon: '🌊', category: 'deep_master', summary: '고대 바빌로니아 《아트라하시스》 서사시의 갈대벽 직관과 생명의 방주·절제 서약 사상으로 위기 속 본질 보전을 비춥니다.' },
   { key: 'eddicYggdrasilNineRealms', nameKo: '북유럽 고에다 위그드라실 9대우주계 3대영천 소생', icon: '🌳', category: 'deep_master' },
   { key: 'yiSunSinNanjungIlgiStrategic', nameKo: '충무공 이순신 난중일기 필사즉생 명량대역전', icon: '⚔️', category: 'deep_master', summary: '충무공 이순신 장군의 친필 《난중일기》에 담긴 필사즉생·일부당경·유비무환의 전략 정신으로 불리한 국면에서 핵심 길목을 선점하는 결단과 대비를 비춥니다.' },
   { key: 'ptahMemphiteHeartTongueCreation', nameKo: '이집트 멤피스신학 프타 심장구상 말씀선포 창조', icon: '🏛️', category: 'deep_master', summary: '샤바카 석비의 심장 구상(Ib)과 말씀 선포(Hu) 원리로 생각과 실행의 일치를 비추는 관점' },

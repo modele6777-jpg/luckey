@@ -15,7 +15,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const MIXTEC_EIGHT_DEER_VERSION = 'LUCKEY-MIXTEC-EIGHT-DEER-v2.0.0';
+export const MIXTEC_EIGHT_DEER_VERSION = 'LUCKEY-MIXTEC-EIGHT-DEER-v2.1.0';
 
 export interface EightDeerHeroRank {
   rankLevel: number;
@@ -36,7 +36,14 @@ export interface MixtecEightDeerResult {
   turquoiseNoseOrnamentHonor: number; // 터키석 코 장신구의 주권적 영예
   // 세부 명세
   activeHeroRank: EightDeerHeroRank;
+  secondaryHeroRank: EightDeerHeroRank;
   primaryStrategicVirtue: {
+    virtueNameKo: string;
+    mixtecTitle: string;
+    coreEssence: string;
+    actionableDirective: string;
+  };
+  secondaryStrategicVirtue: {
     virtueNameKo: string;
     mixtecTitle: string;
     coreEssence: string;
@@ -46,6 +53,8 @@ export interface MixtecEightDeerResult {
     sceneTitle: string;
     historicWisdom: string;
   };
+  reflectiveQuestion: string;
+  interpretiveBoundary: string;
   mixtecSynthesisMatrix?: {
     dominantTension: string;
     alignmentState: string;
@@ -92,7 +101,7 @@ function getKstDateString(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 KST`;
 }
 
 function hashSeed(seedStr: string): number {
@@ -121,13 +130,23 @@ export function calculateMixtecEightDeer(
   const turquoiseNoseOrnamentHonor = ((seed >> 9) % 38) + 63; // 63~100
 
   const rankIdx = (seed >> 2) % EIGHT_DEER_RANKS.length;
+  const secondaryRankIdx = (rankIdx + 1 + ((seed >> 3) % (EIGHT_DEER_RANKS.length - 1))) % EIGHT_DEER_RANKS.length;
   const activeHeroRank = EIGHT_DEER_RANKS[rankIdx];
+  const secondaryHeroRank = EIGHT_DEER_RANKS[secondaryRankIdx];
 
   const virtueIdx = (seed >> 4) % STRATEGIC_VIRTUES.length;
+  const secondaryVirtueIdx = (virtueIdx + 1 + ((seed >> 5) % (STRATEGIC_VIRTUES.length - 1))) % STRATEGIC_VIRTUES.length;
   const primaryStrategicVirtue = STRATEGIC_VIRTUES[virtueIdx];
+  const secondaryStrategicVirtue = STRATEGIC_VIRTUES[secondaryVirtueIdx];
 
   const sceneIdx = (seed >> 6) % NUTTALL_SCENES.length;
   const codexNuttallScene = NUTTALL_SCENES[sceneIdx];
+
+  const trimmedQuery = query?.trim();
+  const reflectiveQuestion = trimmedQuery
+    ? `8-사슴 재규어 발톱의 '${activeHeroRank.rankNameKo}'와 보조 흐름 '${secondaryHeroRank.rankNameKo}'를 비추어 볼 때, "${trimmedQuery}"에서 지금 가장 먼저 맺어야 할 신의와 동맹은 무엇인가요?`
+    : `지금 '${primaryStrategicVirtue.virtueNameKo}'의 결단과 '${secondaryStrategicVirtue.virtueNameKo}'의 균형 사이에서 오늘 실행할 한 걸음은 무엇일까요?`;
+  const interpretiveBoundary = '이 지표는 11세기 메소아메리카 믹스테크 《코덱스 조체 누탈》의 8-사슴 재규어 발톱 영웅 서사와 동맹 전략을 자기 성찰의 거울로 해석한 것이며, 구체적 사건의 성패를 단정하는 예언이 아닙니다.';
 
   const composite = Math.round(
     (jaguarClawCourageForce + sacredAllianceUnificationScore + ancestralCaveOracleClarity + mountainCoastSynthesisBalance + turquoiseNoseOrnamentHonor) / 5
@@ -147,8 +166,12 @@ export function calculateMixtecEightDeer(
     mountainCoastSynthesisBalance,
     turquoiseNoseOrnamentHonor,
     activeHeroRank,
+    secondaryHeroRank,
     primaryStrategicVirtue,
+    secondaryStrategicVirtue,
     codexNuttallScene,
+    reflectiveQuestion,
+    interpretiveBoundary,
     mixtecSynthesisMatrix,
   };
 }
@@ -162,13 +185,17 @@ export function formatMixtecEightDeerPrompt(result: MixtecEightDeerResult): stri
     `- 연산 시각: ${result.calculatedAtKst} | 엔진 버전: ${result.engineVersion}`,
     `- 전략 통합 국면: ${describeMixtecStage(composite)}`,
     `- 현행 전술적 품계: **[${result.activeHeroRank.rankNameKo} (${result.activeHeroRank.rankNameMixtec})]**`,
+    `- 보조 교차 품계: **[${result.secondaryHeroRank.rankNameKo} (${result.secondaryHeroRank.rankNameMixtec})]**`,
     `  → 관장 영역: ${result.activeHeroRank.territorialDomain}`,
     `  → 전략적 강점: ${result.activeHeroRank.strategicSuperpower}`,
     `- 최우선 전략 덕목: **[${result.primaryStrategicVirtue.virtueNameKo} (${result.primaryStrategicVirtue.mixtecTitle})]**`,
+    `- 보조 교차 덕목: **[${result.secondaryStrategicVirtue.virtueNameKo} (${result.secondaryStrategicVirtue.mixtecTitle})]** — ${result.secondaryStrategicVirtue.actionableDirective}`,
     `  → 핵심 본질: ${result.primaryStrategicVirtue.coreEssence}`,
     `  → 실천 지침: ${result.primaryStrategicVirtue.actionableDirective}`,
     `- 코덱스 조체-누탈 전승 장면: 《${result.codexNuttallScene.sceneTitle}》`,
     `  → 역사적 지혜: "${result.codexNuttallScene.historicWisdom}"`,
+    `- 성찰 질문: ${result.reflectiveQuestion}`,
+    `- 해석 경계: ${result.interpretiveBoundary}`,
   ];
   if (result.mixtecSynthesisMatrix) {
     lines.push(
