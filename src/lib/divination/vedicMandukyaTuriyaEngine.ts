@@ -16,7 +16,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const VEDIC_MANDUKYA_TURIYA_ENGINE_VERSION = '2.0.0';
+export const VEDIC_MANDUKYA_TURIYA_ENGINE_VERSION = '2.1.0';
 
 export interface MandukyaConsciousnessState {
   id: string;
@@ -45,6 +45,11 @@ export interface VedicMandukyaTuriyaReport {
   dailyPracticeRitual: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
+  mandukyaSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
 }
 
 const MANDUKYA_STATES_BASE: Omit<MandukyaConsciousnessState, 'resonanceScore'>[] = [
@@ -182,6 +187,13 @@ export function calculateVedicMandukyaTuriya(
   const mandukyaUpanishadGuidance = `당신은 몸도, 스쳐가는 감정도, 불안한 생각도 아닙니다. 그 모든 것을 바라보는 초연한 목격자(Sakshi)입니다. 지금 조명되는 상태는 [${dominantState.nameKo}]입니다. ${dominantState.spiritualGift}의 힘을 신뢰하십시오. (${situationalTuriyaFocus})`;
   const omPranavaMeditationRitual = `숨을 들이마시고 내쉬며 마음속으로 길게 'A-U-M...'을 울린 뒤, 음률이 멎은 고요한 침묵에 머무르십시오: "사르밤 칼비담 브라만(Sarvam Khalvidam Brahman) — 모든 것은 신성한 의식이며, 나는 영원한 순수 지각자이다."`;
 
+  const trimmedQ = question.trim();
+  const mandukyaSynthesisMatrix = {
+    dominantTension: `${dominantState.nameKo} ↔ ${secondaryState.nameKo}`,
+    alignmentState: `${describeMandukyaStage(turiyaPureConsciousnessScore)} · ${dominantState.aumLetter}`,
+    integratedAction: `${dailyPracticeRitual}${trimmedQ ? ` [질문 맥락: ${trimmedQ}]` : ''}`,
+  };
+
   return {
     engineVersion: VEDIC_MANDUKYA_TURIYA_ENGINE_VERSION,
     timestamp: now.toISOString(),
@@ -198,10 +210,14 @@ export function calculateVedicMandukyaTuriya(
     dailyPracticeRitual,
     reflectiveQuestion,
     interpretiveBoundary: interpretBoundary,
+    mandukyaSynthesisMatrix,
   };
 }
 
 export function formatVedicMandukyaTuriyaPrompt(rep: VedicMandukyaTuriyaReport): string {
+  const matrixLine = rep.mandukyaSynthesisMatrix
+    ? `· 만두키야 교차 매트릭스: 핵심 긴장(${rep.mandukyaSynthesisMatrix.dominantTension}) · 조율 상태(${rep.mandukyaSynthesisMatrix.alignmentState}) · 통합 실천(${rep.mandukyaSynthesisMatrix.integratedAction})`
+    : '';
   return `[고대 인도 만두키야 우파니샤드 4대 의식 & 투리야(Turiya) 순수의식 정성 관조]
 · 엔진 버전: v${rep.engineVersion} | 기준 시각(KST): ${rep.calculatedAtKst}
 · 투리야 순수의식 각성: ${describeMandukyaStage(rep.turiyaPureConsciousnessScore)} | 옴(AUM) 파동 공명: ${describeMandukyaStage(rep.aumSyllableResonanceIndex)}
@@ -216,5 +232,5 @@ export function formatVedicMandukyaTuriyaPrompt(rep: VedicMandukyaTuriyaReport):
 · 일상 관조 실천: ${rep.dailyPracticeRitual}
 · 성찰 질문: ${rep.reflectiveQuestion}
 · 옴 프라나바 침묵 명상 리추얼: ${rep.omPranavaMeditationRitual}
-· 해석 경계: ${rep.interpretiveBoundary}`;
+· 해석 경계: ${rep.interpretiveBoundary}${matrixLine ? `\n${matrixLine}` : ''}`;
 }
