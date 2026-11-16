@@ -19,7 +19,7 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const QUANTUM_TIMELINE_VERSION = 'LUCKEY-TIMELINE-v2.0.0';
+export const QUANTUM_TIMELINE_VERSION = 'LUCKEY-TIMELINE-v2.1.0';
 
 function formatQuantumTimelineKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -61,6 +61,7 @@ export interface QuantumProbabilisticTimelineReport {
     alignmentState: string;
     integratedAction: string;
   };
+  interpretiveBoundary: string;
 }
 
 export function runQuantumProbabilisticTimelineEngine(
@@ -153,6 +154,8 @@ export function runQuantumProbabilisticTimelineEngine(
     integratedAction: `${physicalAnchorAction}${q ? ` [질문 맥락: ${q}]` : ''}`,
   };
 
+  const interpretiveBoundary = '본 양자 타임라인 분기 리포트는 선택의 기로를 비추는 정성적 시나리오 성찰 안내이며, 물리적 미래의 확정 예언이 아닙니다.';
+
   const synthesisPromptGuidance = `[LUCKEY 양자 다중우주 타임라인 분기 & 퀀텀 점프 ${QUANTUM_TIMELINE_VERSION} | ${calculatedAtKst}]
 - 6개월 후 최적 궤도 시나리오: [Timeline Prime] ${optimalOutcome}
 - 6개월 후 베이스라인 관성 시나리오: [Timeline Alpha] ${baselineOutcome}
@@ -163,7 +166,8 @@ export function runQuantumProbabilisticTimelineEngine(
   * 물리적 1순위 행동: ${physicalAnchorAction}
   * 주의할 습관: ${limitingPattern}
 - 교차 매트릭스: [핵심 긴장: ${quantumTimelineSynthesisMatrix.dominantTension} | 조율 상태: ${quantumTimelineSynthesisMatrix.alignmentState}]
-  * 통합 실천: ${quantumTimelineSynthesisMatrix.integratedAction}`;
+  * 통합 실천: ${quantumTimelineSynthesisMatrix.integratedAction}
+- 해석 경계: ${interpretiveBoundary}`;
 
   return {
     engineVersion: QUANTUM_TIMELINE_VERSION,
@@ -183,6 +187,7 @@ export function runQuantumProbabilisticTimelineEngine(
     quantumJumpFeasibilityScore,
     synthesisPromptGuidance,
     quantumTimelineSynthesisMatrix,
+    interpretiveBoundary,
   };
 }
 

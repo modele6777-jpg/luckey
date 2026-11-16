@@ -2421,6 +2421,7 @@ test('Quantum Leap Timing Engine: 퀀텀 점프 준비도 및 골든 모멘텀 �
   assert.equal(res.engineVersion, QUANTUM_LEAP_VERSION);
   assert(res.calculatedAtKst.endsWith('KST'));
   assert(Boolean(res.quantumLeapSynthesisMatrix?.integratedAction));
+  assert(res.interpretiveBoundary.length > 0);
   assert(res.leapReadinessScore >= 0 && res.leapReadinessScore <= 100);
   assert(res.currentPhase.titleKo.length > 0);
   assert(res.goldenWindow.bestTimingDesc.length > 0);
@@ -2428,7 +2429,7 @@ test('Quantum Leap Timing Engine: 퀀텀 점프 준비도 및 골든 모멘텀 �
   assert(prompt.includes(QUANTUM_LEAP_VERSION));
   assert(prompt.includes('퀀텀 점프 준비 상태'));
   assert(prompt.includes('골든 모멘텀'));
-  assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('교차 매트릭스') && prompt.includes('해석 경계'));
   assert(!prompt.includes('/100'));
 });
 
@@ -2771,13 +2772,14 @@ test('Quantum Probabilistic Timeline Engine: 양자 다중우주 타임라인 �
   assert.equal(res.engineVersion, QUANTUM_TIMELINE_VERSION);
   assert(res.calculatedAtKst.endsWith('KST'));
   assert(Boolean(res.quantumTimelineSynthesisMatrix?.integratedAction));
+  assert(res.interpretiveBoundary.length > 0);
   assert(res.baselineTimeline.probabilityPercent + res.optimalQuantumTimeline.probabilityPercent === 100);
   assert(res.bifurcationWindow.criticalDateRange.length > 0);
   assert(res.quantumCollapseCatalyst.identityShift.length > 0);
   const prompt = formatQuantumProbabilisticTimelinePrompt(res);
   assert(prompt.includes('LUCKEY 양자 다중우주 타임라인 분기 & 퀀텀 점프'));
   assert(prompt.includes(res.optimalQuantumTimeline.projectedOutcome6Months));
-  assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('교차 매트릭스') && prompt.includes('해석 경계'));
   assert(!prompt.includes('%'));
 });
 
@@ -4688,10 +4690,11 @@ test('Rosicrucian Chymical Wedding Engine: calculates seven days transmutation, 
   assert(rep.dominantStage.dayName.length > 0);
   assert(rep.calculatedAtKst.endsWith('KST'));
   assert(Boolean(rep.rosicrucianSynthesisMatrix?.integratedAction));
+  assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatRosicrucianChymicalWeddingPrompt(rep);
   assert(prompt.includes('장미십자회 《화학적 결혼》 7일 연금술 영혼 승화 실측 데이터'));
   assert(prompt.includes(rep.dominantStage.dayName));
-  assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('교차 매트릭스') && prompt.includes('해석 경계'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });
