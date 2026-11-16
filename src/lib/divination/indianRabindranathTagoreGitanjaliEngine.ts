@@ -14,7 +14,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const INDIAN_TAGORE_GITANJALI_VERSION = 'LUCKEY-TAGORE-GITANJALI-v2.0.0';
+export const INDIAN_TAGORE_GITANJALI_VERSION = 'LUCKEY-TAGORE-GITANJALI-v2.1.0';
 
 export interface TagoreTheme {
   themeKey: string;
@@ -44,6 +44,9 @@ export interface IndianRabindranathTagoreGitanjaliResult {
   // 세부 분석
   activeTagoreTheme: TagoreTheme;
   focalTagoreAphorism: TagoreAphorism;
+  secondaryTagoreAphorism: TagoreAphorism;
+  reflectiveQuestion: string;
+  interpretiveBoundary: string;
   tagoreComprehensiveGuidance: {
     guidanceTitle: string;
     philosophicalCounsel: string;
@@ -131,7 +134,7 @@ function formatTagoreKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 KST`;
 }
 
 function describeTagoreStage(score: number): string {
@@ -168,9 +171,16 @@ export function calculateIndianRabindranathTagoreGitanjali(
 
   const themeIndex = (absHash >> 4) % TAGORE_THEMES.length;
   const aphorismIndex = (absHash >> 7) % TAGORE_APHORISMS.length;
+  const secondaryAphorismIndex = (aphorismIndex + 1 + ((absHash >> 10) % (TAGORE_APHORISMS.length - 1))) % TAGORE_APHORISMS.length;
 
   const activeTagoreTheme = TAGORE_THEMES[themeIndex];
   const focalTagoreAphorism = TAGORE_APHORISMS[aphorismIndex];
+  const secondaryTagoreAphorism = TAGORE_APHORISMS[secondaryAphorismIndex];
+  const trimmedQuery = query?.trim();
+  const reflectiveQuestion = trimmedQuery
+    ? `'${trimmedQuery}' 앞에서 마음의 두려움을 내려놓고 '${activeTagoreTheme.themeTitleKo}'의 노래를 따른다면 오늘 가장 먼저 열고 싶은 창은 무엇인가요?`
+    : `지금 내 안에서 '${activeTagoreTheme.themeTitleKo}'의 빛이 들어오지 못하도록 닫아걸고 있는 작은 두려움은 무엇인가요?`;
+  const interpretiveBoundary = '타고르 기탄잘리·동방의 등불 관점은 미래의 길흉 예언이 아니라, 두려움을 넘어선 내면의 자유와 서정적 감응을 비추는 문학·영성 성찰 렌즈입니다.';
 
   const guidanceTitle = `타고르 기탄잘리 우주적 영혼합일 지혜: ${activeTagoreTheme.themeTitleKo}`;
   const philosophicalCounsel = `아시아의 성자 라빈드라나트 타고르의 《기탄잘리》와 《동방의 등불》은 두려움을 넘어선 영혼의 무한한 자유, 자연과 우주의 신성한 생명력과의 합일, 그리고 어둠을 밝히는 불멸의 희망을 노래합니다. ` +
@@ -197,6 +207,9 @@ export function calculateIndianRabindranathTagoreGitanjali(
     lampOfTheEastResilienceScore,
     activeTagoreTheme,
     focalTagoreAphorism,
+    secondaryTagoreAphorism,
+    reflectiveQuestion,
+    interpretiveBoundary,
     tagoreComprehensiveGuidance: {
       guidanceTitle,
       philosophicalCounsel,
@@ -218,9 +231,12 @@ export function formatIndianRabindranathTagoreGitanjaliPrompt(res: IndianRabindr
     `- 실존적 통찰: ${res.activeTagoreTheme.existentialInsight}`,
     `- 실천적 조언: ${res.activeTagoreTheme.practicalCounsel}`,
     `- 타고르 원전 명구: "${res.focalTagoreAphorism.aphorismKo}" [${res.focalTagoreAphorism.aphorismBengali}]`,
+    `- 보조 교차 명구: "${res.secondaryTagoreAphorism.aphorismKo}" [${res.secondaryTagoreAphorism.sourceContext}]`,
     `- 원전 출처: [${res.focalTagoreAphorism.sourceContext}]`,
     `- 구체적 실천 지침: ${res.focalTagoreAphorism.actionGuidance}`,
     `- 종합 타고르 영성 권면: ${res.tagoreComprehensiveGuidance.philosophicalCounsel}`,
+    `- 성찰 질문: ${res.reflectiveQuestion}`,
+    `- 해석 경계: ${res.interpretiveBoundary}`,
   ];
   if (res.tagoreSynthesisMatrix) {
     lines.push(

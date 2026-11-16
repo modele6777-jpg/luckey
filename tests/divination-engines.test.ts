@@ -9525,3 +9525,36 @@ test('Hindu Nadi Agastya, Sri Yantra, and Ikigai v2.1.0 include +09:00 KST, dual
   const ikPrompt = formatIkigaiDestinyCompassPrompt(ik);
   assert.ok(ikPrompt.includes('+09:00') && ikPrompt.includes('성찰 질문') && ikPrompt.includes('해석 경계'));
 });
+
+test('Tagore Gitanjali, Upanishadic Tat Tvam Asi, and Dante Divine Comedy v2.1.0 include +09:00 KST, dual cross-check, reflective question, and interpretive boundary', () => {
+  const profile = { basic: { name: '제제', birthdate: '1994-01-24', birthtime: '12:00', gender: 'male' } } as any;
+  const now = new Date('2026-11-16T04:35:00Z');
+  const query = '두려움을 내려놓고 흔들리지 않는 내면의 길을 찾고 싶습니다';
+
+  const tg = calculateIndianRabindranathTagoreGitanjali(profile, query, now);
+  assert.equal(tg.engineVersion, INDIAN_TAGORE_GITANJALI_VERSION);
+  assert.match(tg.calculatedAtKst, /\+09:00/);
+  assert.notEqual(tg.secondaryTagoreAphorism.aphorismKey, tg.focalTagoreAphorism.aphorismKey);
+  assert.ok(tg.reflectiveQuestion.includes(query));
+  assert.ok(tg.interpretiveBoundary.includes('성찰'));
+  const tgPrompt = formatIndianRabindranathTagoreGitanjaliPrompt(tg);
+  assert.ok(tgPrompt.includes('+09:00') && tgPrompt.includes('보조 교차 명구') && tgPrompt.includes('성찰 질문') && tgPrompt.includes('해석 경계'));
+
+  const up = calculateUpanishadicTatTvamAsi(profile, query, now);
+  assert.equal(up.engineVersion, UPANISHADIC_TAT_TVAM_ASI_VERSION);
+  assert.match(up.calculatedAtKst, /\+09:00/);
+  assert.notEqual(up.secondaryMahavakya.vakyaKey, up.activeMahavakya.vakyaKey);
+  assert.ok(up.reflectiveQuestion.includes(query));
+  assert.ok(up.interpretiveBoundary.includes('명상'));
+  const upPrompt = formatUpanishadicTatTvamAsiPrompt(up);
+  assert.ok(upPrompt.includes('+09:00') && upPrompt.includes('보조 교차 대명제') && upPrompt.includes('성찰 질문') && upPrompt.includes('해석 경계'));
+
+  const dn = calculateItalianDanteAlighieriDivineComedyAscent(profile, query, now);
+  assert.equal(dn.engineVersion, ITALIAN_DANTE_COMEDY_VERSION);
+  assert.match(dn.calculatedAtKst, /\+09:00/);
+  assert.notEqual(dn.secondaryDanteAphorism.aphorismKey, dn.focalDanteAphorism.aphorismKey);
+  assert.ok(dn.reflectiveQuestion.includes(query));
+  assert.ok(dn.interpretiveBoundary.includes('성찰'));
+  const dnPrompt = formatDanteAlighieriDivineComedyAscentPrompt(dn);
+  assert.ok(dnPrompt.includes('+09:00') && dnPrompt.includes('보조 교차 경구') && dnPrompt.includes('성찰 질문') && dnPrompt.includes('해석 경계'));
+});

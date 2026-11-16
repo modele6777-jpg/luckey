@@ -3257,7 +3257,7 @@ try {
   // 214. 고대 인도 우파니샤드 타트 트밤 아시 & 범아일여 순수의식 엔진
   const upanishadicTatTvamAsiResult = calculateSupplement('upanishadicTatTvamAsiResult', () => ((() => {
     try {
-      return calculateUpanishadicTatTvamAsi(profile);
+      return calculateUpanishadicTatTvamAsi(profile, question, now);
     } catch (_) {
       return null;
     }
@@ -3554,7 +3554,7 @@ try {
   // 245. 이탈리아 단테 알리기에리 신곡 영혼 상승 지옥·연옥·천국 사랑 광명 지혜 엔진
   const italianDanteAlighieriDivineComedyAscentResult = calculateSupplement('italianDanteAlighieriDivineComedyAscentResult', () => ((() => {
     try {
-      return calculateItalianDanteAlighieriDivineComedyAscent(profile);
+      return calculateItalianDanteAlighieriDivineComedyAscent(profile, question, now);
     } catch (_) {
       return null;
     }
@@ -3761,7 +3761,7 @@ try {
   // 268. 인도 벵골 라빈드라나트 타고르 기탄잘리 & 동방의 등불 우주적 영혼합일 지혜 엔진
   const indianRabindranathTagoreGitanjaliResult = calculateSupplement('indianRabindranathTagoreGitanjaliResult', () => ((() => {
     try {
-      return calculateIndianRabindranathTagoreGitanjali(profile);
+      return calculateIndianRabindranathTagoreGitanjali(profile, question, now);
     } catch (_) {
       return null;
     }
@@ -4927,7 +4927,7 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'ancientChineseConfuciusAnalectsZhitianming', nameKo: '공자 논어 지천명 극기복례 군자도', icon: '📜', category: 'deep_master', summary: '공자의 인·예와 극기복례, 지천명 수양으로 삶의 자리에서 흔들림 없는 중심을 세웁니다.' },
   { key: 'baruchSpinozaEthicaConatusAmorDei', nameKo: '스피노자 에티카 코나투스 신즉자연 영원의상관조', icon: '✨', category: 'deep_master', summary: '스피노자의 코나투스와 영원의 상 아래에서 감정의 인과를 명료히 이해하고 능동적 기쁨으로 나아갑니다.' },
   { key: 'germanKantCategoricalImperativeSynthesis', nameKo: '칸트 정언명령 목적의왕국 자율성 도덕법칙', icon: '⚖️', category: 'deep_master', summary: '칸트의 정언명령과 목적의 왕국 원리로 이해관계를 넘어 스스로 떳떳한 자율적 도덕 기준을 세웁니다.' },
-  { key: 'indianUpanishadicTatTvamAsi', nameKo: '우파니샤드 타트트밤아시 범아일여 순수의식', icon: '🕉️', category: 'deep_master' },
+  { key: 'indianUpanishadicTatTvamAsi', nameKo: '우파니샤드 타트트밤아시 범아일여 순수의식', icon: '🕉️', category: 'deep_master', summary: '우파니샤드의 타트 트밤 아시와 넷티 넷티 관조를 통해 덧없는 분별을 넘어 본래 순수 의식의 고요를 비춥니다.' },
   { key: 'koreanChoeHangiGihakUnwha', nameKo: '혜강 최한기 기학 신기통 운화기 추측지리', icon: '📜', category: 'deep_master' },
   { key: 'ancientChineseSunTzuArtOfWarStrategy', nameKo: '손자병법 오사칠계 부전승 피실격허 전략', icon: '⚔️', category: 'deep_master', summary: '정면 소모전을 피하고 5사와 피실격허·부전승의 지혜로 가장 무리 없는 활로를 읽습니다.' },
   { key: 'frenchDescartesCogitoClaraDistincta', nameKo: '데카르트 방법서설 코기토 명석판명 지성직관', icon: '💡', category: 'deep_master', summary: '데카르트의 방법적 회의와 명석판명(Clara et Distincta) 4대 규칙으로 모호한 불안을 걷어내고 사유 주체의 확고한 결단을 세웁니다.' },

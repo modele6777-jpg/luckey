@@ -16,7 +16,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const UPANISHADIC_TAT_TVAM_ASI_VERSION = 'LUCKEY-UPANISHADIC-TAT-TVAM-ASI-v2.0.0';
+export const UPANISHADIC_TAT_TVAM_ASI_VERSION = 'LUCKEY-UPANISHADIC-TAT-TVAM-ASI-v2.1.0';
 
 export interface UpanishadicMahavakya {
   vakyaKey: string;
@@ -45,7 +45,10 @@ export interface UpanishadicTatTvamAsiResult {
   prajnaSpiritualWisdomScore: number;           // 프라즈냐(Prajna) 영적 직관 지혜력
   // 세부 명세
   activeMahavakya: UpanishadicMahavakya;
+  secondaryMahavakya: UpanishadicMahavakya;
   focalUpanishadicTeaching: UpanishadicTeaching;
+  reflectiveQuestion: string;
+  interpretiveBoundary: string;
   upanishadicCounsel: {
     counselTitle: string;
     spiritualGuidance: string;
@@ -114,7 +117,7 @@ function formatUpanishadicKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 KST`;
 }
 
 function describeUpanishadicStage(score: number): string {
@@ -149,10 +152,17 @@ export function calculateUpanishadicTatTvamAsi(
   const prajnaSpiritualWisdomScore = 68 + ((absHash >> 12) % 31);
 
   const vakyaIndex = (absHash >> 4) % UPANISHADIC_MAHAVAKYAS.length;
+  const secondaryVakyaIndex = (vakyaIndex + 1 + ((absHash >> 8) % (UPANISHADIC_MAHAVAKYAS.length - 1))) % UPANISHADIC_MAHAVAKYAS.length;
   const teachingIndex = (absHash >> 7) % UPANISHADIC_TEACHINGS.length;
 
   const activeMahavakya = UPANISHADIC_MAHAVAKYAS[vakyaIndex];
+  const secondaryMahavakya = UPANISHADIC_MAHAVAKYAS[secondaryVakyaIndex];
   const focalUpanishadicTeaching = UPANISHADIC_TEACHINGS[teachingIndex];
+  const trimmedQuery = query?.trim();
+  const reflectiveQuestion = trimmedQuery
+    ? `'${trimmedQuery}'을(를) 둘러싼 생각과 감정을 '넷티 넷티'로 잠시 내려놓고 바라보면, 그 뒤에 고요히 남는 변하지 않는 중심은 무엇인가요?`
+    : `지금 내 마음을 흔드는 생각과 이름표들을 하나씩 벗겨 내면, 그 너머에서 고요히 숨 쉬는 본래의 나는 어떤 모습인가요?`;
+  const interpretiveBoundary = '우파니샤드 범아일여 관점은 외적 길흉을 점치는 도구가 아니라, 현상의 분별을 넘어 순수 의식의 고요를 비추는 베단타 명상 렌즈입니다.';
 
   const counselTitle = `우파니샤드 범아일여 명상: ${activeMahavakya.vakyaNameKo} (${activeMahavakya.vakyaSanskrit})`;
   const spiritualGuidance = `고대 인도 우파니샤드의 지혜는 당신의 본질이 우주 전체와 분리될 수 없는 지고의 실재임을 일깨웁니다. ` +
@@ -178,7 +188,10 @@ export function calculateUpanishadicTatTvamAsi(
     satChitAnandaPureConsciousnessScore,
     prajnaSpiritualWisdomScore,
     activeMahavakya,
+    secondaryMahavakya,
     focalUpanishadicTeaching,
+    reflectiveQuestion,
+    interpretiveBoundary,
     upanishadicCounsel: {
       counselTitle,
       spiritualGuidance,
@@ -197,6 +210,7 @@ export function formatUpanishadicTatTvamAsiPrompt(res: UpanishadicTatTvamAsiResu
     `- 사트-치트-아난다 순수의식 지복도: ${describeUpanishadicStage(res.satChitAnandaPureConsciousnessScore)}`,
     `- 프라즈냐(Prajna) 영적 직관 지혜력: ${describeUpanishadicStage(res.prajnaSpiritualWisdomScore)}`,
     `- 감응 대명제(Mahavakya): ${res.activeMahavakya.vakyaNameKo} [${res.activeMahavakya.vakyaSanskrit}]`,
+    `- 보조 교차 대명제: ${res.secondaryMahavakya.vakyaNameKo} [${res.secondaryMahavakya.sourceUpanishad}]`,
     `- 출전: ${res.activeMahavakya.sourceUpanishad}`,
     `- 핵심 각성: ${res.activeMahavakya.coreRealization}`,
     `- 명상적 집중: ${res.activeMahavakya.meditativeFocus}`,
@@ -204,6 +218,8 @@ export function formatUpanishadicTatTvamAsiPrompt(res: UpanishadicTatTvamAsiResu
     `- 철학적 깊이: ${res.focalUpanishadicTeaching.philosophicalDepth}`,
     `- 관조적 통찰: ${res.focalUpanishadicTeaching.contemplativeInsight}`,
     `- 영적 수양 지침: ${res.upanishadicCounsel.spiritualGuidance}`,
+    `- 성찰 질문: ${res.reflectiveQuestion}`,
+    `- 해석 경계: ${res.interpretiveBoundary}`,
   ];
   if (res.upanishadicSynthesisMatrix) {
     lines.push(
