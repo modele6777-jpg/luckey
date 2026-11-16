@@ -5384,6 +5384,7 @@ test('Ancient Greek Eleusinian Triptolemos Engine: calculates dragon chariot, sa
   assert(rep.situationalEleusisAudit.homericHymnCitation.length > 0);
   assert(rep.temporalEleusisRhythm.eleusisFlightWindow.length > 0);
   assert(rep.triptolemosSynthesisMatrix.synthesizedVerdict.length > 0);
+  assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatEleusinianTriptolemosPrompt(rep);
   assert(prompt.includes('고대 그리스 엘레우시스 밀의 《트리프톨레모스(Triptolemos)》'));
   assert(prompt.includes(rep.activeChariotStage.stageNameKo));
@@ -5643,6 +5644,7 @@ test('Ancient Greek Heraclitus Panta Rhei Engine: calculates flux index, Logos h
   assert(rep.situationalReflection.reflectionPrompt.length > 0);
   assert(rep.temporalFluxContext.dayPhaseKo.length > 0);
   assert(rep.dialecticPolarityMatrix.tensionHarmonyRatio >= 0 && rep.dialecticPolarityMatrix.tensionHarmonyRatio <= 100);
+  assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatHeraclitusPantaRheiPrompt(rep);
   assert(prompt.includes('에페소스 헤라클레이토스 만물유전(Panta Rhei)'));
   assert(prompt.includes(rep.activeHeraclitusStage.stageNameKo));
@@ -5710,6 +5712,7 @@ test('Ancient Greek Epicurean Tetrapharmakos Engine: calculates ataraxia tranqui
   assert(rep.philiaGardenFriendshipForce >= 0 && rep.philiaGardenFriendshipForce <= 100);
   assert(rep.katastematicPleasureClarity >= 0 && rep.katastematicPleasureClarity <= 100);
   assert(rep.activeEpicureanStage.stageNameGreek.length > 0);
+  assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatEpicureanTetrapharmakosPrompt(rep);
   assert(prompt.includes('고대 그리스 에피쿠로스 《테트라파르마코스》'));
   assert(prompt.includes(rep.activeEpicureanStage.stageNameKo));

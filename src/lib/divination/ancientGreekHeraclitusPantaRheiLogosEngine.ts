@@ -85,6 +85,7 @@ export interface HeraclitusPantaRheiResult {
     alignmentState: string;
     integratedAction: string;
   };
+  interpretiveBoundary: string;
 }
 
 export type HeraclitusPantaRheiReport = HeraclitusPantaRheiResult;
@@ -302,6 +303,8 @@ export function calculateHeraclitusPantaRhei(
     integratedAction: `${situationalReflection.dialecticShift}${trimmedQ ? ` [질문 맥락: ${trimmedQ}]` : ''}`,
   };
 
+  const interpretiveBoundary = '본 리포트는 헤라클레이토스 단편 철학에 기반한 정성적 변화 성찰 안내이며, 확정적 미래 예단이 아닙니다.';
+
   return {
     engineVersion: HERACLITUS_PANTA_RHEI_VERSION,
     calculatedAtKst: getKstDateString(now),
@@ -317,6 +320,7 @@ export function calculateHeraclitusPantaRhei(
     temporalFluxContext,
     dialecticPolarityMatrix,
     heraclitusSynthesisMatrix,
+    interpretiveBoundary,
   };
 }
 
@@ -342,5 +346,5 @@ export function formatHeraclitusPantaRheiPrompt(result: HeraclitusPantaRheiResul
   → 실천 지침: ${result.primaryDialecticWisdom.actionableDirective}
 - 로고스의 우주적 계시: 《${result.logosCosmicInsight.insightTitle}》
   → 철학적 조언: "${result.logosCosmicInsight.philosophicalCounsel}"
-- 해석 경계: 본 리포트는 헤라클레이토스 단편 철학에 기반한 정성적 변화 성찰 안내이며, 확정적 미래 예단이 아닙니다.${matrixLine}`;
+- 해석 경계: ${result.interpretiveBoundary}${matrixLine}`;
 }

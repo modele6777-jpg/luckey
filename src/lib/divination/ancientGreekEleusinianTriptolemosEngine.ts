@@ -70,6 +70,7 @@ export interface EleusinianTriptolemosResult {
   situationalEleusisAudit: EleusinianSituationalAudit;
   temporalEleusisRhythm: EleusinianTemporalRhythm;
   triptolemosSynthesisMatrix: TriptolemosSynthesisMatrix;
+  interpretiveBoundary: string;
 }
 
 export type EleusinianTriptolemosReport = EleusinianTriptolemosResult;
@@ -229,6 +230,7 @@ export function calculateEleusinianTriptolemos(
   const situationalEleusisAudit = buildSituationalAudit(question, primaryTriadicLaw);
   const temporalEleusisRhythm = buildTemporalRhythm(now, seed);
   const triptolemosSynthesisMatrix = buildSynthesisMatrix(activeChariotStage, primaryTriadicLaw, situationalEleusisAudit, temporalEleusisRhythm);
+  const interpretiveBoundary = '엘레우시스 밀의 트리프톨레모스 3대 율법 상징을 빌린 정성적 성찰 관점이며, 개인 평가나 미래 단정이 아닙니다.';
 
   return {
     engineVersion: ELEUSINIAN_TRIPTOLEMOS_VERSION,
@@ -244,6 +246,7 @@ export function calculateEleusinianTriptolemos(
     situationalEleusisAudit,
     temporalEleusisRhythm,
     triptolemosSynthesisMatrix,
+    interpretiveBoundary,
   };
 }
 
@@ -264,5 +267,5 @@ export function formatEleusinianTriptolemosPrompt(result: EleusinianTriptolemosR
 - 트리프톨레모스 교차 매트릭스: ${result.triptolemosSynthesisMatrix.synthesizedVerdict}
 - 엘레우시스 신비 비전: 《${result.eleusinianEpiphany.visionTitle}》
   → 영적 지혜: "${result.eleusinianEpiphany.spiritualWisdom}"
-- 해석 경계: 엘레우시스 밀의 트리프톨레모스 3대 율법 상징을 빌린 정성적 성찰 관점이며, 개인 평가나 미래 단정이 아닙니다.`;
+- 해석 경계: ${result.interpretiveBoundary}`;
 }

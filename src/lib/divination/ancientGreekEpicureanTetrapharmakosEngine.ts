@@ -69,6 +69,7 @@ export interface EpicureanTetrapharmakosResult {
     alignmentState: string;
     integratedAction: string;
   };
+  interpretiveBoundary: string;
 }
 
 export type EpicureanTetrapharmakosReport = EpicureanTetrapharmakosResult;
@@ -273,6 +274,8 @@ export function calculateEpicureanTetrapharmakos(
     integratedAction: `${autarkeiaDirective}${trimmedQ ? ` [질문 맥락: ${trimmedQ}]` : ''}`,
   };
 
+  const interpretiveBoundary = '본 리포트는 에피쿠로스 정원 철학의 치유 상징에 기반한 정성적 성찰 안내이며, 의학적·심리적 진단이 아닙니다.';
+
   return {
     engineVersion: EPICUREAN_TETRAPHARMAKOS_VERSION,
     calculatedAtKst: getKstDateString(now),
@@ -293,6 +296,7 @@ export function calculateEpicureanTetrapharmakos(
       autarkeiaDirective,
     },
     epicureanSynthesisMatrix,
+    interpretiveBoundary,
   };
 }
 
@@ -318,5 +322,5 @@ export function formatEpicureanTetrapharmakosPrompt(result: EpicureanTetrapharma
   → 자족 지침: ${result.desireTaxonomyMatrix.autarkeiaDirective}
 - 에피쿠로스 정원의 불멸 계시: 《${result.epicureanGardenEpiphany.gardenSceneTitle}》
   → 아타락시아 지혜: "${result.epicureanGardenEpiphany.peacefulWisdom}"
-- 해석 경계: 본 리포트는 에피쿠로스 정원 철학의 치유 상징에 기반한 정성적 성찰 안내이며, 의학적·심리적 진단이 아닙니다.${matrixLine}`;
+- 해석 경계: ${result.interpretiveBoundary}${matrixLine}`;
 }
