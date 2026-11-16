@@ -3813,16 +3813,22 @@ test('Hindu Nadi Agastya Palm Leaf Engine: calculates 14 Kandams and Shanti Pari
 });
 
 test('Shinto Kotodama Four Souls Engine: calculates Ichirei Shikon balance and Kotodama chant', () => {
-  const rep = calculateShintoKotodama({ profile });
+  const rep = calculateShintoKotodama({ profile, question: '말과 마음의 조화', now: new Date('2026-11-17T05:45:00+09:00') });
   assert.equal(rep.engineVersion, SHINTO_KOTODAMA_FOUR_SOULS_ENGINE_VERSION);
-  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(Boolean(rep.shintoSynthesisMatrix?.integratedAction));
   assert(rep.naohiPurityIndex >= 0 && rep.naohiPurityIndex <= 100);
   assert(rep.fourSouls.dominantSoul.length > 0);
+  assert(rep.fourSouls.secondarySoul.length > 0);
+  assert(rep.reflectiveQuestion.includes('말과 마음의 조화'));
+  assert(rep.interpretiveBoundary.includes('성찰 비유'));
   const prompt = formatShintoKotodamaPrompt(rep);
   assert(prompt.includes('고대 일본 신도 고토다마(言霊) 50음령 & 4혼1생(四魂一志) 영혼 조화 실측 데이터'));
   assert(prompt.includes(rep.fourSouls.dominantSoul));
+  assert(prompt.includes('보조 교차 혼'));
   assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('성찰 질문'));
+  assert(prompt.includes('해석 경계'));
   assert(!prompt.includes('/100') && !prompt.includes('100점'));
 });
 
@@ -3849,16 +3855,22 @@ test('Finnish Kalevala Sampo Engine: calculates 3 Sampo wings and Sisu resilienc
 });
 
 test('Shanhaijing Sacred Beasts Engine: calculates directional beast and shielding index', () => {
-  const rep = calculateShanhaijingSacredBeasts({ profile });
+  const rep = calculateShanhaijingSacredBeasts({ profile, question: '새로운 환경의 경계와 수호', now: new Date('2026-11-17T05:45:00+09:00') });
   assert.equal(rep.engineVersion, SHANHAIJING_SACRED_BEASTS_ENGINE_VERSION);
-  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(Boolean(rep.shanhaijingSynthesisMatrix?.integratedAction));
   assert(rep.spiritualShieldingIndex >= 0 && rep.spiritualShieldingIndex <= 100);
   assert(rep.activeBeast.name.length > 0);
+  assert(rep.secondaryBeast.name.length > 0);
+  assert(rep.reflectiveQuestion.includes('새로운 환경의 경계와 수호'));
+  assert(rep.interpretiveBoundary.includes('성찰 비유'));
   const prompt = formatShanhaijingSacredBeastsPrompt(rep);
   assert(prompt.includes('고대 동양 산해경(山海經) 8방위 신성 영수(神獸) & 오행 방호 실측 데이터'));
   assert(prompt.includes(rep.activeBeast.name));
+  assert(prompt.includes('보조 교차 영수'));
   assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('성찰 질문'));
+  assert(prompt.includes('해석 경계'));
   assert(!prompt.includes('/100') && !prompt.includes('/ 100'));
 });
 
@@ -4885,20 +4897,26 @@ test('Inca Andean Three Pacha Ayni Engine: calculates three pachas, sacred recip
 });
 
 test('Shang Oracle Bone Divination Engine: calculates oracle bone medium, diviner judgment and crack auspiciousness', () => {
-  const rep = calculateShangOracleBoneDivination(profile);
+  const rep = calculateShangOracleBoneDivination(profile, new Date('2026-11-17T05:45:00+09:00'), '중요한 결단의 방향');
   assert.equal(rep.engineVersion, SHANG_ORACLE_BONE_VERSION);
-  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(Boolean(rep.shangOracleSynthesisMatrix?.integratedAction));
   assert(rep.divinationMedium.length > 0);
   assert(rep.divinerName.length > 0);
+  assert(rep.secondaryDivinerName.length > 0);
   assert(rep.shangdiDivineAlignmentScore >= 0 && rep.shangdiDivineAlignmentScore <= 100);
   assert(rep.ancestralProtectionScore >= 0 && rep.ancestralProtectionScore <= 100);
   assert(rep.crackAuspiciousnessIndex >= 0 && rep.crackAuspiciousnessIndex <= 100);
   assert(rep.manifestationEfficacyScore >= 0 && rep.manifestationEfficacyScore <= 100);
+  assert(rep.reflectiveQuestion.includes('중요한 결단의 방향'));
+  assert(rep.interpretiveBoundary.includes('성찰 비유'));
   const prompt = formatShangOracleBoneDivinationPrompt(rep);
   assert(prompt.includes('고대 은나라 상(商) 갑골문(甲骨文) 신탁 복사(卜辭) & 정인 4단계 신의 균열'));
   assert(prompt.includes(rep.divinerName));
+  assert(prompt.includes('보조 정인'));
   assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('성찰 질문'));
+  assert(prompt.includes('해석 경계'));
   assert(!prompt.includes('/100') && !prompt.includes('%'));
 });
 

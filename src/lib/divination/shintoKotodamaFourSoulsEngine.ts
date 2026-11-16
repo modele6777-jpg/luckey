@@ -23,7 +23,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const SHINTO_KOTODAMA_FOUR_SOULS_ENGINE_VERSION = '2.0.0';
+export const SHINTO_KOTODAMA_FOUR_SOULS_ENGINE_VERSION = '2.1.0';
 
 export interface FourSoulsBalance {
   aramitamaScore: number; // 荒魂 (용기, 돌파) 0~100
@@ -32,6 +32,7 @@ export interface FourSoulsBalance {
   sakimitamaScore: number; // 幸魂 (사랑, 번영) 0~100
   dominantSoul: '아라미타마 (荒魂 · 용기)' | '니기미타마 (和魂 · 친화)' | '쿠시미타마 (奇魂 · 지혜)' | '사키미타마 (幸魂 · 번영)';
   dominantSoulTrait: string;
+  secondarySoul: '아라미타마 (荒魂 · 용기)' | '니기미타마 (和魂 · 친화)' | '쿠시미타마 (奇魂 · 지혜)' | '사키미타마 (幸魂 · 번영)';
 }
 
 export interface KotodamaVibration {
@@ -51,6 +52,8 @@ export interface ShintoKotodamaReport {
   blessingKami: string; // 수호 신격 원형
   misogiAction: string; // 미소기(禊) 정화 실천
   spiritualAdvice: string;
+  reflectiveQuestion: string;
+  interpretiveBoundary: string;
   shintoSynthesisMatrix?: {
     dominantTension: string;
     alignmentState: string;
@@ -65,7 +68,7 @@ function formatShintoKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
 }
 
 const KOTODAMA_SOUNDS: KotodamaVibration[] = [
@@ -160,6 +163,7 @@ export function calculateShintoKotodama(options?: {
 
   scores.sort((a, b) => b.score - a.score);
   const dominant = scores[0];
+  const secondary = scores[1];
 
   const fourSouls: FourSoulsBalance = {
     aramitamaScore: s1,
@@ -167,7 +171,8 @@ export function calculateShintoKotodama(options?: {
     kushimitamaScore: s3,
     sakimitamaScore: s4,
     dominantSoul: dominant.name,
-    dominantSoulTrait: dominant.trait
+    dominantSoulTrait: dominant.trait,
+    secondarySoul: secondary.name,
   };
 
   // 3. 고토다마 5음령 선정
@@ -202,10 +207,14 @@ export function calculateShintoKotodama(options?: {
 
   const calculatedAtKst = formatShintoKstTimestamp(now);
   const shintoSynthesisMatrix = {
-    dominantTension: `${dominant.name} ↔ ${kotodama.coreSound}`,
+    dominantTension: `${dominant.name} ↔ ${secondary.name} · ${kotodama.coreSound}`,
     alignmentState: `${blessingKami}`,
     integratedAction: `${misogiAction}${q ? ` [질문 맥락: ${q}]` : ''}`,
   };
+  const reflectiveQuestion = q
+    ? `지금 고민하시는 '${q}' 앞에서, '${dominant.name}'의 기운을 맑은 나오히(直霊)의 중심으로 조율해 내뱉을 첫 번째 언령은 무엇입니까?`
+    : `오늘 하루 내 말과 호흡 속에 깃든 고토다마(言霊)가 '${dominant.name}'의 덕목을 어떻게 부드럽게 현실에 빚어낼 수 있겠습니까?`;
+  const interpretiveBoundary = '이 리포트는 고대 신도 일영사혼(一霊四魂)과 고토다마 언령 상징을 바탕으로 한 내면 조율 비유이며, 종교적 예언이나 의학적 진단이 아닙니다.';
 
   return {
     engineVersion: SHINTO_KOTODAMA_FOUR_SOULS_ENGINE_VERSION,
@@ -217,6 +226,8 @@ export function calculateShintoKotodama(options?: {
     blessingKami,
     misogiAction,
     spiritualAdvice: advice,
+    reflectiveQuestion,
+    interpretiveBoundary,
     shintoSynthesisMatrix,
   };
 }
@@ -234,7 +245,7 @@ export function formatShintoKotodamaPrompt(report: ShintoKotodamaReport): string
 수호 신격: ${report.blessingKami}
 ======================================================================
 1. [일영사혼(一霊四魂) 영혼 균형]:
-   - 주재 혼(Dominant Soul): [${fs.dominantSoul}]
+   - 주재 혼(Dominant Soul): [${fs.dominantSoul}] | 보조 교차 혼: [${fs.secondarySoul}]
    - 주재 영혼 특성: ${fs.dominantSoulTrait}
    - 사혼(四魂) 각 영역 흐름: 아라미타마(용기·돌파) / 니기미타마(화합·평화) / 쿠시미타마(지혜·통찰) / 사키미타마(사랑·번영)
 
@@ -246,5 +257,7 @@ export function formatShintoKotodamaPrompt(report: ShintoKotodamaReport): string
 3. [미소기(禊) 정화 처방 & 교차 매트릭스]:
    - 추천 정화 실천: ${report.misogiAction}
    - 종합 카르마 조언: ${report.spiritualAdvice}${report.shintoSynthesisMatrix ? `\n   - 교차 매트릭스 [핵심 긴장: ${report.shintoSynthesisMatrix.dominantTension} | 조율 상태: ${report.shintoSynthesisMatrix.alignmentState}]\n   - 통합 실천: ${report.shintoSynthesisMatrix.integratedAction}` : ''}
+   - 성찰 질문: ${report.reflectiveQuestion}
+   - 해석 경계: ${report.interpretiveBoundary}
 ======================================================================`;
 }
