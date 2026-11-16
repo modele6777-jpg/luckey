@@ -3356,7 +3356,7 @@ try {
   // 223. 한국 고려 보조국사 지눌 수심결 정혜쌍수 & 돈오점수 선학 지혜 엔진
   const jinulJeonghyeSsangsuResult = calculateSupplement('jinulJeonghyeSsangsuResult', () => ((() => {
     try {
-      return calculateJinulJeonghyeSsangsu(profile);
+      return calculateJinulJeonghyeSsangsu(profile, question, now);
     } catch (_) {
       return null;
     }
@@ -3509,7 +3509,7 @@ try {
   // 240. 조선 세종대왕 훈민정음 어제서문 애민창조 & 여민락 실용 집현전 지혜 엔진
   const kingSejongHunminjeongeumAeminResult = calculateSupplement('kingSejongHunminjeongeumAeminResult', () => ((() => {
     try {
-      return calculateKingSejongHunminjeongeumAemin(profile);
+      return calculateKingSejongHunminjeongeumAemin(profile, question, now);
     } catch (_) {
       return null;
     }
@@ -4283,7 +4283,7 @@ try {
   // 326. 대한민국 소월 김소월 시인 《진달래꽃·산유화·초혼》 지순한 헌신적 사랑·한(恨)의 서정적 승화·자연 달관과 민초 회복탄력성 지혜 엔진
   const koreanKimSoWolAzaleaResult = calculateSupplement('koreanKimSoWolAzaleaResult', () => ((() => {
     try {
-      return calculateKoreanKimSoWolAzaleaFlowerPoeticGrace(profile);
+      return calculateKoreanKimSoWolAzaleaFlowerPoeticGrace(profile, question, now);
     } catch (_) {
       return null;
     }
@@ -4936,7 +4936,7 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'koreanUisangHwaeomIlseungBeopgye', nameKo: '신라 의상대사 화엄일승법계도 법성게 원융무애', icon: '☸️', category: 'deep_master' },
   { key: 'frenchMontaigneEssaisWisdom', nameKo: '몽테뉴 수상록 자기성찰 독단탈피 회의주의 중용', icon: '📖', category: 'deep_master' },
   { key: 'ancientIndianNagarjunaMadhyamakaSunyata', nameKo: '용수 중론 팔불중도 연기즉공 이제설 공성지혜', icon: '☸️', category: 'deep_master', summary: '용수 《중론》의 팔불중도와 연기즉공 사유로 고정관념의 양극단을 해체하고 걸림 없는 변화의 길을 봅니다.' },
-  { key: 'koreanJinulJeonghyeSsangsuDonohJeomsu', nameKo: '보조국사 지눌 수심결 정혜쌍수 돈오점수 성적등지', icon: '📜', category: 'deep_master' },
+  { key: 'koreanJinulJeonghyeSsangsuDonohJeomsu', nameKo: '보조국사 지눌 수심결 정혜쌍수 돈오점수 성적등지', icon: '📜', category: 'deep_master', summary: '보조국사 지눌 《수심결》의 돈오점수와 정혜쌍수 원리로 단박의 자각을 일상의 고요와 지혜로 차분히 닦아 나갑니다.' },
   { key: 'renaissanceBrunoInfiniteUniverseHeroicFurore', nameKo: '조르다노 브루노 무한우주론 영웅적열정 정신주권', icon: '🌌', category: 'deep_master' },
   { key: 'frenchPascalPenseesHeartReason', nameKo: '블레즈 파스칼 팡세 사유하는갈대 심장의논리 파스칼의내기', icon: '🌾', category: 'deep_master', summary: '블레즈 파스칼의 《팡세》 사상으로 헛된 소음을 멈추고 사유하는 갈대의 존엄과 심장의 직관·결단을 비춥니다.' },
   { key: 'germanSchopenhauerWillRepresentation', nameKo: '쇼펜하우어 의지와표상 맹목적의지초월 심미적관조 동포애자비', icon: '🎼', category: 'deep_master', summary: '쇼펜하우어의 의지와 표상 철학으로 맹목적 욕망에서 한 걸음 물러나 심미적 관조와 자비·적정 거리를 회복합니다.' },

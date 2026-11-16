@@ -8,12 +8,12 @@
  * 4. 부르다가 내가 죽을 이름을 부르는 영혼의 진솔한 열망 지표 (Soul Invocation / ChoHon Passionate Sincerity Index): 허공 중에 헤어진 이름을 목놓아 부르는 《초혼》의 절절함처럼 형식과 체면을 넘어 가장 진실한 자기 영혼의 외침을 표현하는 용기.
  * 5. 우리의 보습 대일 땅을 일구어 나가는 강인한 민초 회복탄력성 (Dauntless Grassroots Resilience & Fertile Hope Score): "바라건대는 우리에게 우리의 보습 대일 땅이 있었더면"처럼 척박하고 메마른 땅에서도 끝내 쟁기를 쥐고 희망의 밭을 일구어 내는 꺾이지 않는 생명력.
  *
- * @version LUCKEY-KIM-SO-WOL-AZALEA-POETIC-GRACE-v2.0.0
+ * @version LUCKEY-KIM-SO-WOL-AZALEA-POETIC-GRACE-v2.1.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const KOREAN_KIM_SO_WOL_AZALEA_VERSION = 'LUCKEY-KIM-SO-WOL-AZALEA-POETIC-GRACE-v2.0.0';
+export const KOREAN_KIM_SO_WOL_AZALEA_VERSION = 'LUCKEY-KIM-SO-WOL-AZALEA-POETIC-GRACE-v2.1.0';
 
 export interface KimSoWolTheme {
   themeKey: string;
@@ -41,7 +41,11 @@ export interface KoreanKimSoWolAzaleaResult {
   dauntlessGrassrootsResilienceScore: number;            // 강인한 민초 회복탄력성 (Dauntless Grassroots Resilience)
   // 세부 분석
   activeKimSoWolTheme: KimSoWolTheme;
+  secondaryKimSoWolTheme: KimSoWolTheme;
   focalKimSoWolAphorism: KimSoWolAphorism;
+  secondaryKimSoWolAphorism: KimSoWolAphorism;
+  reflectiveQuestion: string;
+  interpretiveBoundary: string;
   kimSoWolComprehensiveGuidance: {
     guidanceTitle: string;
     philosophicalCounsel: string;
@@ -60,7 +64,7 @@ function formatKimSoWolKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 KST`;
 }
 
 function describeKimSoWolStage(score: number): string {
@@ -159,10 +163,20 @@ export function calculateKoreanKimSoWolAzaleaFlowerPoeticGrace(
   const dauntlessGrassrootsResilienceScore = 92 + ((absHash >> 13) % 7);
 
   const themeIndex = (absHash >> 5) % KIM_SO_WOL_THEMES.length;
+  const secondaryThemeIndex = (themeIndex + 1 + ((absHash >> 6) % (KIM_SO_WOL_THEMES.length - 1))) % KIM_SO_WOL_THEMES.length;
   const aphorismIndex = (absHash >> 8) % KIM_SO_WOL_APHORISMS.length;
+  const secondaryAphorismIndex = (aphorismIndex + 1 + ((absHash >> 11) % (KIM_SO_WOL_APHORISMS.length - 1))) % KIM_SO_WOL_APHORISMS.length;
 
   const activeKimSoWolTheme = KIM_SO_WOL_THEMES[themeIndex];
+  const secondaryKimSoWolTheme = KIM_SO_WOL_THEMES[secondaryThemeIndex];
   const focalKimSoWolAphorism = KIM_SO_WOL_APHORISMS[aphorismIndex];
+  const secondaryKimSoWolAphorism = KIM_SO_WOL_APHORISMS[secondaryAphorismIndex];
+
+  const reflectiveQuestion = query?.trim()
+    ? `'${query.trim()}'을(를) 품은 마음속에서 ${activeKimSoWolTheme.themeTitleKo.split(' — ')[0]}과 ${secondaryKimSoWolTheme.themeTitleKo.split(' — ')[0]} 중 지금 더 깊이 어루만지고 싶은 정서는 무엇인가요?`
+    : `오늘 당신의 마음자리에서 ${activeKimSoWolTheme.themeTitleKo.split(' — ')[0]}과 ${secondaryKimSoWolTheme.themeTitleKo.split(' — ')[0]} 가운데 가장 울림이 큰 시심은 무엇인가요?`;
+  const interpretiveBoundary =
+    '이 소월 김소월 시정신 지표는 한국 서정시의 상징을 빌려 마음의 결을 비추는 정성적 성찰 프레임이며, 단정적 예언이나 심리 진단이 아닙니다.';
 
   const guidanceTitle = `소월 김소월 진달래꽃의 헌신과 산유화의 생명 달관: ${activeKimSoWolTheme.themeTitleKo}`;
   const philosophicalCounsel = `대한민국 민족 서정시의 불멸의 거장 소월 김정식 시인은 《진달래꽃》, 《산유화》, 《초혼》을 통해 ` +
@@ -196,7 +210,11 @@ export function calculateKoreanKimSoWolAzaleaFlowerPoeticGrace(
     soulInvocationLongingIndex,
     dauntlessGrassrootsResilienceScore,
     activeKimSoWolTheme,
+    secondaryKimSoWolTheme,
     focalKimSoWolAphorism,
+    secondaryKimSoWolAphorism,
+    reflectiveQuestion,
+    interpretiveBoundary,
     kimSoWolComprehensiveGuidance: {
       guidanceTitle,
       philosophicalCounsel,
@@ -221,12 +239,16 @@ export function formatKoreanKimSoWolAzaleaFlowerPoeticGracePrompt(
     `- 연산 시각: ${res.calculatedAtKst} | 엔진: ${res.engineVersion}`,
     `- 서정적 승화 국면: ${describeKimSoWolStage(avgScore)}`,
     `- 핵심 김소월 테마: ${res.activeKimSoWolTheme.themeTitleKo} [${res.activeKimSoWolTheme.themeTitleEn}]`,
+    `- 보조 교차 테마: ${res.secondaryKimSoWolTheme.themeTitleKo} [${res.secondaryKimSoWolTheme.themeTitleEn}]`,
     `- 시적 사색: ${res.activeKimSoWolTheme.poeticInsight}`,
     `- 행동 조언: ${res.activeKimSoWolTheme.practicalCounsel}`,
     `- 김소월 원전 명시: "${res.focalKimSoWolAphorism.aphorismKo}"`,
+    `- 보조 교차 명시: "${res.secondaryKimSoWolAphorism.aphorismKo}" [${res.secondaryKimSoWolAphorism.sourceContext}]`,
     `- 원전 출처: [${res.focalKimSoWolAphorism.sourceContext}]`,
     `- 구체적 실천 지침: ${res.focalKimSoWolAphorism.actionGuidance}`,
     `- 종합 김소월 권면: ${res.kimSoWolComprehensiveGuidance.philosophicalCounsel}`,
+    `- 성찰 질문: ${res.reflectiveQuestion}`,
+    `- 해석 경계: ${res.interpretiveBoundary}`,
   ];
   if (res.kimSoWolSynthesisMatrix) {
     lines.push(

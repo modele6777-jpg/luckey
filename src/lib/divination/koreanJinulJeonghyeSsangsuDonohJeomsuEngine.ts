@@ -16,12 +16,12 @@
  * 4. 공적영지(空寂靈知):
  *    - 모양도 자취도 없이 텅 비었으나(空寂), 마주하는 모든 것을 신령하게 알아차리고 작용하는(靈知) 본래 마음.
  *
- * @version LUCKEY-JINUL-JEONGHYE-SSANGSU-v2.0.0
+ * @version LUCKEY-JINUL-JEONGHYE-SSANGSU-v2.1.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const JINUL_JEONGHYE_SSANGSU_VERSION = 'LUCKEY-JINUL-JEONGHYE-SSANGSU-v2.0.0';
+export const JINUL_JEONGHYE_SSANGSU_VERSION = 'LUCKEY-JINUL-JEONGHYE-SSANGSU-v2.1.0';
 
 export interface SusimgyeolCorePrinciple {
   principleKey: string;
@@ -50,7 +50,11 @@ export interface JinulJeonghyeSsangsuResult {
   gongjeokYeongjiScore: number;          // 공적영지(空寂靈知) 텅 빈 앎의 순수 직관력
   // 세부 체계
   activeCorePrinciple: SusimgyeolCorePrinciple;
+  secondaryCorePrinciple: SusimgyeolCorePrinciple;
   focalZenMetaphor: JinulZenMetaphor;
+  secondaryZenMetaphor: JinulZenMetaphor;
+  reflectiveQuestion: string;
+  interpretiveBoundary: string;
   jinulMindCounsel: {
     counselTitle: string;
     mindPurificationGuidance: string;
@@ -69,7 +73,7 @@ function formatJinulKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 KST`;
 }
 
 function describeJinulStage(score: number): string {
@@ -151,6 +155,7 @@ export function calculateJinulJeonghyeSsangsu(
     (profile?.basic?.birthdate ?? (profile as any)?.birthdate ?? '1990-01-01') +
     (profile?.basic?.name ?? (profile as any)?.name ?? 'User') +
     (profile?.basic?.birthtime ?? (profile as any)?.birthtime ?? '12:00') +
+    (query ?? '') +
     'JinulJeonghyeSsangsu';
 
   let hash = 0;
@@ -167,10 +172,20 @@ export function calculateJinulJeonghyeSsangsu(
   const gongjeokYeongjiScore = 69 + ((absHash >> 12) % 30);
 
   const principleIndex = (absHash >> 4) % SUSIMGYEOL_PRINCIPLES.length;
+  const secondaryPrincipleIndex = (principleIndex + 1 + ((absHash >> 5) % (SUSIMGYEOL_PRINCIPLES.length - 1))) % SUSIMGYEOL_PRINCIPLES.length;
   const metaphorIndex = (absHash >> 7) % ZEN_METAPHORS.length;
+  const secondaryMetaphorIndex = (metaphorIndex + 1 + ((absHash >> 10) % (ZEN_METAPHORS.length - 1))) % ZEN_METAPHORS.length;
 
   const activeCorePrinciple = SUSIMGYEOL_PRINCIPLES[principleIndex];
+  const secondaryCorePrinciple = SUSIMGYEOL_PRINCIPLES[secondaryPrincipleIndex];
   const focalZenMetaphor = ZEN_METAPHORS[metaphorIndex];
+  const secondaryZenMetaphor = ZEN_METAPHORS[secondaryMetaphorIndex];
+
+  const reflectiveQuestion = query?.trim()
+    ? `'${query.trim()}' 앞에서 ${activeCorePrinciple.principleNameKo}과 ${secondaryCorePrinciple.principleNameKo} 가운데 지금 당신의 마음을 가장 먼저 고요히 비추는 거울은 어느 쪽인가요?`
+    : `지금 일상에서 ${activeCorePrinciple.principleNameKo}과 ${secondaryCorePrinciple.principleNameKo} 중 더 오래 다독여야 할 습기는 무엇인가요?`;
+  const interpretiveBoundary =
+    '이 지눌 《수심결》 선학 지표는 돈오점수·정혜쌍수의 사유를 비추는 정성적 성찰 프레임이며, 심리·의료적 진단이나 확정적 길흉 예언이 아닙니다.';
 
   const counselTitle = `보조국사 수심결 선학: ${activeCorePrinciple.principleHanja}`;
   const mindPurificationGuidance = `고려 보조국사 지눌의 선학 지혜는 본래 면목의 완전함을 믿고 일상에서 정혜를 고르게 닦아 참된 자유를 얻도록 이끕니다. ` +
@@ -202,7 +217,11 @@ export function calculateJinulJeonghyeSsangsu(
     seongjeokEquanimityScore,
     gongjeokYeongjiScore,
     activeCorePrinciple,
+    secondaryCorePrinciple,
     focalZenMetaphor,
+    secondaryZenMetaphor,
+    reflectiveQuestion,
+    interpretiveBoundary,
     jinulMindCounsel: {
       counselTitle,
       mindPurificationGuidance,
@@ -225,12 +244,16 @@ export function formatJinulJeonghyeSsangsuPrompt(res: JinulJeonghyeSsangsuResult
     `- 연산 시각: ${res.calculatedAtKst} | 엔진: ${res.engineVersion}`,
     `- 선학 수양 국면: ${describeJinulStage(avgScore)}`,
     `- 핵심 수심결 원리: ${res.activeCorePrinciple.principleNameKo} [${res.activeCorePrinciple.principleHanja}]`,
+    `- 보조 교차 원리: ${res.secondaryCorePrinciple.principleNameKo} [${res.secondaryCorePrinciple.principleHanja}]`,
     `- 선학적 의미: ${res.activeCorePrinciple.zenMeaning}`,
     `- 실천적 수양 조언: ${res.activeCorePrinciple.cultivationAdvice}`,
     `- 핵심 선적 비유: ${res.focalZenMetaphor.metaphorTitleKo}`,
+    `- 보조 교차 비유: ${res.secondaryZenMetaphor.metaphorTitleKo}`,
     `- 원전 구절: "${res.focalZenMetaphor.metaphorSourceText}"`,
     `- 비유의 통찰: ${res.focalZenMetaphor.insight}`,
     `- 마음 수양 행동 지침: ${res.jinulMindCounsel.mindPurificationGuidance}`,
+    `- 성찰 질문: ${res.reflectiveQuestion}`,
+    `- 해석 경계: ${res.interpretiveBoundary}`,
   ];
   if (res.jinulSynthesisMatrix) {
     lines.push(
