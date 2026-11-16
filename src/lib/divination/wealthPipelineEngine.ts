@@ -18,7 +18,7 @@ import {
   STEM_KOREAN
 } from '../sajuAnalysis';
 
-export const WEALTH_PIPELINE_VERSION = 'LUCKEY-WEALTH-v2.0.0';
+export const WEALTH_PIPELINE_VERSION = 'LUCKEY-WEALTH-v2.1.0';
 
 function formatWealthKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -123,6 +123,7 @@ export interface WealthPipelineResult {
   };
 
   summary: string;
+  interpretiveBoundary: string;
   wealthSynthesisMatrix?: {
     dominantTension: string;
     alignmentState: string;
@@ -242,6 +243,8 @@ export function calculateWealthPipeline(params?: {
   const summary = `[재물 파이프라인] 유형: ${archetype.name} (${archetype.hanja}). ` +
     `재물 길성: ${hasGoldenCarriage ? '금여록(金輿) ' : ''}${hasDarkProsperity ? '암록(暗祿) ' : ''}${hasHeavenlyNoble ? '천을귀인(天乙) ' : ''}` +
     `골든 윈도우: [${goldenWindowStatus}].`;
+  const interpretiveBoundary =
+    '재물·비즈니스 파이프라인 분석은 사주 십신·길성의 상징적 경향을 바탕으로 한 전략적 자기 점검 참고이며, 특정 투자 수익이나 사업 성패를 보장하지 않습니다.';
 
   return {
     engineVersion: WEALTH_PIPELINE_VERSION,
@@ -268,6 +271,7 @@ export function calculateWealthPipeline(params?: {
     },
     actionGuide,
     summary,
+    interpretiveBoundary,
     wealthSynthesisMatrix,
   };
 }
@@ -297,5 +301,6 @@ export function formatWealthPipelinePrompt(res: WealthPipelineResult): string {
   • 1순위 추진 과제: ${res.actionGuide.immediatePriority}
   • 스케일업 전략: ${res.actionGuide.revenueStrategy}
   • 자금 리스크 방어: ${res.actionGuide.spendingWarning}${matrixLine}
+- 해석 경계: ${res.interpretiveBoundary}
 ※ 루시 지침: 재물운은 단순한 '횡재'가 아니라 시스템과 타이밍의 결합입니다. 사용자가 타고난 재물 창출 아키타입(식신생재 메이커형인지, 재생관 플랫폼형인지 등)을 명쾌하게 짚어주고, 오늘과 올해의 자금 흐름 골든 윈도우를 실질적인 비즈니스 전략으로 조언해 주세요.`;
 }

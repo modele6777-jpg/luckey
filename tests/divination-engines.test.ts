@@ -2218,6 +2218,7 @@ test('Wealth Pipeline Engine: 재물 창출 아키타입 및 골든 윈도우 �
   assert.equal(res.engineVersion, WEALTH_PIPELINE_VERSION);
   assert(res.calculatedAtKst.endsWith('KST'));
   assert(Boolean(res.wealthSynthesisMatrix?.integratedAction));
+  assert(res.interpretiveBoundary.length > 0);
   assert(['builder', 'scaler', 'investor', 'optimizer'].includes(res.archetype.type));
   assert(res.timing.annualWealthScore >= 0 && res.timing.annualWealthScore <= 100);
   assert(res.timing.monthlyCashFlowScore >= 0 && res.timing.monthlyCashFlowScore <= 100);
@@ -2227,6 +2228,7 @@ test('Wealth Pipeline Engine: 재물 창출 아키타입 및 골든 윈도우 �
   assert(prompt.includes('재물 아키타입'));
   assert(prompt.includes('골든 윈도우'));
   assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('해석 경계'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });
@@ -2488,6 +2490,7 @@ test('Yin-Yang Polarity Engine: 음양 수리 분포 및 24시간 바이폴라 �
   assert.equal(res.engineVersion, YIN_YANG_POLARITY_VERSION);
   assert(res.calculatedAtKst.endsWith('KST'));
   assert(Boolean(res.polaritySynthesisMatrix?.integratedAction));
+  assert(res.interpretiveBoundary.length > 0);
   assert.equal(res.distribution.yangCount + res.distribution.yinCount, 8);
   assert(res.balanceScore >= 0 && res.balanceScore <= 100);
   assert(res.timeSlots.yangActionWindow.length > 0);
@@ -2496,6 +2499,7 @@ test('Yin-Yang Polarity Engine: 음양 수리 분포 및 24시간 바이폴라 �
   assert(prompt.includes(YIN_YANG_POLARITY_VERSION));
   assert(prompt.includes('음양 극성 밸런스'));
   assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('해석 경계'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });
@@ -5950,6 +5954,7 @@ test('Sun Tzu Art of War Strategy Engine: calculates Five Factors, unfought vict
   assert(rep.reflectionFocus.length > 0);
   assert(rep.counselNote.length > 0);
   assert(rep.boundaryNotice.length > 0);
+  assert(rep.interpretiveBoundary.length > 0);
   assert(rep.focalFiveFactor.factorHanja.length > 0);
   assert(rep.situationalStrategyAudit.artOfWarChapter.length > 0);
   assert(rep.temporalSunTzuRhythm.campaignWindow.length > 0);
@@ -5957,6 +5962,7 @@ test('Sun Tzu Art of War Strategy Engine: calculates Five Factors, unfought vict
   const prompt = formatSunTzuArtOfWarStrategyPrompt(rep);
   assert(prompt.includes('손자병법 오사칠계 & 부전승 피실격허 전략 지표'));
   assert(prompt.includes(rep.focalFiveFactor.factorHanja));
+  assert(prompt.includes('해석 경계'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });
