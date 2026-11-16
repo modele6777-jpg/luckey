@@ -8,12 +8,12 @@
  * 4. 소박함 속의 고결한 품격 지표 (Modest Elegance & Quiet Rectitude Index): 화려함을 좇지 않고 단아하고 청초한 인품으로 삶의 균형과 단단한 중심을 지키는 품격.
  * 5. 현명한 감화 및 동반성장 지혜 지표 (Nurturing Wisdom & Co-Evolution Score): 강요와 억압 없이 온화한 모범과 덕성으로 주변 인연을 올바르게 성장시키는 지혜.
  *
- * @version LUCKEY-SHIN-SAIMDANG-CHOCHUNGDO-ART-VIRTUE-v2.0.0
+ * @version LUCKEY-SHIN-SAIMDANG-CHOCHUNGDO-ART-VIRTUE-v2.1.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const KOREAN_SHIN_SAIMDANG_CHOCHUNGDO_ART_VIRTUE_VERSION = 'LUCKEY-SHIN-SAIMDANG-CHOCHUNGDO-ART-VIRTUE-v2.0.0';
+export const KOREAN_SHIN_SAIMDANG_CHOCHUNGDO_ART_VIRTUE_VERSION = 'LUCKEY-SHIN-SAIMDANG-CHOCHUNGDO-ART-VIRTUE-v2.1.0';
 
 export interface SaimdangTheme {
   themeKey: string;
@@ -42,7 +42,11 @@ export interface KoreanShinSaimdangChochungdoArtVirtueResult {
   nurturingWisdomScore: number;                 // 현명한 감화 및 동반성장 지혜 지표 (Nurturing Wisdom & Co-Evolution)
   // 세부 분석
   activeSaimdangTheme: SaimdangTheme;
+  secondarySaimdangTheme: SaimdangTheme;
   focalSaimdangAphorism: SaimdangAphorism;
+  secondarySaimdangAphorism: SaimdangAphorism;
+  reflectiveQuestion: string;
+  interpretiveBoundary: string;
   saimdangComprehensiveGuidance: {
     guidanceTitle: string;
     philosophicalCounsel: string;
@@ -61,7 +65,7 @@ function formatSaimdangKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 KST`;
 }
 
 function describeSaimdangStage(score: number): string {
@@ -170,10 +174,21 @@ export function calculateKoreanShinSaimdangChochungdoArtVirtue(
   const nurturingWisdomScore = 88 + ((absHash >> 13) % 11);
 
   const themeIndex = (absHash >> 5) % SAIMDANG_THEMES.length;
+  const secondaryThemeIndex = (themeIndex + 1 + ((absHash >> 7) % (SAIMDANG_THEMES.length - 1))) % SAIMDANG_THEMES.length;
   const aphorismIndex = (absHash >> 8) % SAIMDANG_APHORISMS.length;
+  const secondaryAphorismIndex = (aphorismIndex + 1 + ((absHash >> 11) % (SAIMDANG_APHORISMS.length - 1))) % SAIMDANG_APHORISMS.length;
 
   const activeSaimdangTheme = SAIMDANG_THEMES[themeIndex];
+  const secondarySaimdangTheme = SAIMDANG_THEMES[secondaryThemeIndex];
   const focalSaimdangAphorism = SAIMDANG_APHORISMS[aphorismIndex];
+  const secondarySaimdangAphorism = SAIMDANG_APHORISMS[secondaryAphorismIndex];
+
+  const trimmedQuery = query?.trim();
+  const reflectiveQuestion = trimmedQuery
+    ? `신사임당의 '${activeSaimdangTheme.themeTitleKo}'와 '${secondarySaimdangTheme.themeTitleKo}'를 비추어 볼 때, "${trimmedQuery}"에서 지나치기 쉬운 작은 디테일과 끝까지 지켜야 할 소박한 진심은 무엇인가요?`
+    : `지금 마음을 쓰는 일 앞에서, '${activeSaimdangTheme.themeTitleKo}'의 세심한 관조와 '${secondarySaimdangTheme.themeTitleKo}'의 단아한 기품을 함께 살리려면 무엇을 덜어내야 할까요?`;
+
+  const interpretiveBoundary = '이 지표는 신사임당 선생의 《초충도》·《사친》·《유대관령망친정》과 가훈 잠언에 담긴 생명 관조·효애성심·주체적 예술 정신을 오늘의 선택과 태도를 성찰하는 참고 틀로 해석한 것이며, 구체적 사건이나 성패를 단정하는 예언이 아닙니다.';
 
   const guidanceTitle = `신사임당 초충도 자연관조와 현철자아실현 지혜: ${activeSaimdangTheme.themeTitleKo}`;
   const philosophicalCounsel = `조선 중기 최고의 예술가이자 현철한 사상가 신사임당 선생은 《초충도》와 《사친》을 통해 ` +
@@ -207,7 +222,11 @@ export function calculateKoreanShinSaimdangChochungdoArtVirtue(
     modestEleganceIndex,
     nurturingWisdomScore,
     activeSaimdangTheme,
+    secondarySaimdangTheme,
     focalSaimdangAphorism,
+    secondarySaimdangAphorism,
+    reflectiveQuestion,
+    interpretiveBoundary,
     saimdangComprehensiveGuidance: {
       guidanceTitle,
       philosophicalCounsel,
@@ -232,11 +251,15 @@ export function formatKoreanShinSaimdangChochungdoArtVirtuePrompt(
     `- 연산 시각: ${res.calculatedAtKst} | 엔진: ${res.engineVersion}`,
     `- 초충도·현철 국면: ${describeSaimdangStage(avgScore)}`,
     `- 핵심 신사임당 테마: ${res.activeSaimdangTheme.themeTitleKo} [${res.activeSaimdangTheme.themeTitleEn}]`,
+    `- 보조 교차 테마: ${res.secondarySaimdangTheme.themeTitleKo} [${res.secondarySaimdangTheme.themeTitleEn}]`,
     `- 실천적 통찰: ${res.activeSaimdangTheme.pragmaticInsight}`,
     `- 행동 조언: ${res.activeSaimdangTheme.practicalCounsel}`,
     `- 신사임당 원전 명언: "${res.focalSaimdangAphorism.aphorismKo}" (${res.focalSaimdangAphorism.aphorismHanja})`,
+    `- 보조 교차 명언: "${res.secondarySaimdangAphorism.aphorismKo}" (${res.secondarySaimdangAphorism.aphorismHanja})`,
     `- 원전 출처: [${res.focalSaimdangAphorism.sourceContext}]`,
     `- 구체적 실천 지침: ${res.focalSaimdangAphorism.actionGuidance}`,
+    `- 성찰 질문: ${res.reflectiveQuestion}`,
+    `- 해석 경계: ${res.interpretiveBoundary}`,
     `- 종합 신사임당 권면: ${res.saimdangComprehensiveGuidance.philosophicalCounsel}`,
   ];
   if (res.saimdangSynthesisMatrix) {
