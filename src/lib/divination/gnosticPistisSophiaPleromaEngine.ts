@@ -9,7 +9,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const GNOSTIC_PISTIS_SOPHIA_PLEROMA_ENGINE_VERSION = '2.0.0';
+export const GNOSTIC_PISTIS_SOPHIA_PLEROMA_ENGINE_VERSION = '2.1.0';
 
 export type GnosticQuestionFocus = 'career' | 'relationship' | 'anxiety' | 'decision' | 'spiritual';
 
@@ -48,6 +48,7 @@ export interface PleromaSynthesisMatrix {
 export interface GnosticPistisSophiaPleromaReport {
   engineVersion: string;
   timestamp: string;
+  calculatedAtKst: string;
   questionFocus: GnosticQuestionFocus;
   pneumaSpiritualSparkScore: number;
   gnosisLiberationIndex: number;
@@ -329,9 +330,13 @@ export function calculateGnosticPistisSophiaPleroma(
   const gnosticAwakeningGuidance = `당신은 물질계의 결핍에 종속된 피조물이 아니라, 플레로마의 빛에서 발원한 순수한 '프뉴마(영적 불꽃)'입니다. 현재 주재 에온 [${primaryAeon.nameKo}(${primaryAeon.greekName})]이 부여하는 [${primaryAeon.illuminationGift}]을 가동할 때 아르콘의 망상이 해체됩니다.`;
   const pneumaIgnitionRitual = `가슴 한가운데 꺼지지 않는 황금빛 백색 불꽃을 관조하며 선언하십시오: "나는 이 세상에 속해 있으나 이 세상의 물질적 조건에 갇히지 않는다. 내 안의 프뉴마는 플레로마의 영원한 빛과 하나이다."`;
 
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const calculatedAtKst = `${kst.toISOString().slice(0, 19)}+09:00`;
+
   return {
     engineVersion: GNOSTIC_PISTIS_SOPHIA_PLEROMA_ENGINE_VERSION,
     timestamp: now.toISOString(),
+    calculatedAtKst,
     questionFocus,
     pneumaSpiritualSparkScore,
     gnosisLiberationIndex,
@@ -351,6 +356,7 @@ export function calculateGnosticPistisSophiaPleroma(
 export function formatGnosticPistisSophiaPleromaPrompt(rep: GnosticPistisSophiaPleromaReport): string {
   return `[고대 영지주의(Gnosticism) 피스티스 소피아 12에온 & 플레로마 실측 데이터]
 · 엔진 버전: v${rep.engineVersion}
+· 연산 시각: ${rep.calculatedAtKst}
 · 프뉴마·플레로마 정성 상태: ${rep.pleromaSynthesisMatrix.pneumaSparkLabel} (${rep.pleromaSynthesisMatrix.pleromaFullnessLabel})
 · 주재 공명 에온: [${rep.primaryAeon.nameKo} (${rep.primaryAeon.greekName})]
   - 신성한 속성: ${rep.primaryAeon.divineAttribute}
@@ -368,5 +374,6 @@ export function formatGnosticPistisSophiaPleromaPrompt(rep: GnosticPistisSophiaP
   - 시의성 지침: ${rep.temporalPleromaRhythm.timingAdvice}
 · 플레로마 교차 종합: ${rep.pleromaSynthesisMatrix.synthesizedVerdict}
 · 영지주의 각성 지침: ${rep.gnosticAwakeningGuidance}
-· 프뉴마 점화 명상 리추얼: ${rep.pneumaIgnitionRitual}`;
+· 프뉴마 점화 명상 리추얼: ${rep.pneumaIgnitionRitual}
+· 해석 경계: 본 리포트는 나그 함마디 문서와 《피스티스 소피아》 상징에 기반한 정성적 성찰 안내이며, 확정적 예언이 아닙니다.`;
 }
