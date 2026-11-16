@@ -12,7 +12,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const MOZI_GYEOM_AE_VERSION = 'LUCKEY-MOZI-GYEOM-AE-v2.0.0';
+export const MOZI_GYEOM_AE_VERSION = 'LUCKEY-MOZI-GYEOM-AE-v2.1.0';
 
 export type MoziQuestionTopic = 'relationship' | 'decision' | 'simplicity' | 'reflection';
 
@@ -70,6 +70,7 @@ export interface MoziGyeomAeResult {
   temporalMohistRhythm: MoziTemporalRhythm;
   mohistSynthesisMatrix: MoziSynthesisMatrix;
   boundaryNotice: string;
+  interpretiveBoundary: string;
 }
 
 export type MoziGyeomAeReport = MoziGyeomAeResult;
@@ -271,6 +272,7 @@ export function calculateMoziGyeomAe(
     temporalMohistRhythm,
     mohistSynthesisMatrix,
     boundaryNotice,
+    interpretiveBoundary: boundaryNotice,
   };
 }
 
