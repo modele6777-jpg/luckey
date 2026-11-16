@@ -2176,6 +2176,7 @@ test('Astrological Decan & Sabian Engine: 점성술 36 데칸 & 사비안 심볼
   assert(res.calculatedAtKst.includes('KST'));
   assert(res.temporalSabianRhythm.planetaryHourTone.length > 0);
   assert(res.sabianSynthesisMatrix.coreInsight.length > 0);
+  assert(res.interpretiveBoundary.length > 0);
   const prompt = formatAstrologicalDecanSabianPrompt(res);
   assert(prompt.includes(ASTRO_DECAN_SABIAN_VERSION));
   assert(prompt.includes('사비안 심볼'));
@@ -7485,6 +7486,7 @@ test('Alfred Adler Individual Psychology Engine: calculates Inferiority Transcen
   assert(rep.teleologicalReframingCreationIndex >= 0 && rep.teleologicalReframingCreationIndex <= 100);
   assert(rep.courageToBeImperfectResilienceScore >= 0 && rep.courageToBeImperfectResilienceScore <= 100);
   assert(rep.activeAdlerTheme.themeTitleKo.length > 0);
+  assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatAustrianAlfredAdlerIndividualPsychologyPrompt(rep);
   assert(prompt.includes('알프레트 아들러 《인간이해》 & 《삶의 의미》 열등감 극복 및 공동체 감각 지혜 지표'));
   assert(prompt.includes(rep.activeAdlerTheme.themeTitleKo));
@@ -7669,6 +7671,7 @@ test('Franz Kafka Existential Truth Engine: calculates Existential Honesty, Inne
   assert(rep.frozenSeaPiercingInsightIndex >= 0 && rep.frozenSeaPiercingInsightIndex <= 100);
   assert(rep.transformativeSolitudeResilienceScore >= 0 && rep.transformativeSolitudeResilienceScore <= 100);
   assert(rep.activeKafkaTheme.themeTitleKo.length > 0);
+  assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatAustrianFranzKafkaExistentialTruthPrompt(rep);
   assert(prompt.includes('프란츠 카프카 《변신·성》 부조리 직시와 실존적 정직성 및 내적 존엄성 지표'));
   assert(prompt.includes(rep.activeKafkaTheme.themeTitleKo));

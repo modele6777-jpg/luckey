@@ -16,7 +16,7 @@
 import type { UserProfile } from '../sharedState';
 import { calculateNatalChart, type NatalChartResult, type NatalPlacement, type ZodiacSignInfo } from '../astrologyAnalysis';
 
-export const ASTRO_DECAN_SABIAN_VERSION = 'LUCKEY-ASTRO-DS-v2.0.0';
+export const ASTRO_DECAN_SABIAN_VERSION = 'LUCKEY-ASTRO-DS-v2.1.0';
 
 export interface DecanInfo {
   signId: string;
@@ -79,6 +79,7 @@ export interface AstrologicalDecanSabianResult {
   };
   summary: string;
   boundaryNotice: string;
+  interpretiveBoundary: string;
 }
 
 // 36 데칸 메타데이터 사전 (12사인 × 3데칸)
@@ -300,6 +301,7 @@ export function calculateAstrologicalDecanSabian(params?: {
   };
 
   const summary = `[데칸 & 사비안] 태양은 ${sun.decan.title}(${sun.decan.subRuler} 관할), 사비안: ${sun.sabian.symbolTitle}. 달은 ${moon.decan.title}, 사비안: ${moon.sabian.symbolTitle}.`;
+  const boundaryNotice = '본 결과는 36 데칸 부지배성과 사비안 심볼 360° 원형에 따른 정성적 상징 해석이며, 확정적 길흉 판정이 아닙니다.';
 
   return {
     engineVersion: ASTRO_DECAN_SABIAN_VERSION,
@@ -317,7 +319,8 @@ export function calculateAstrologicalDecanSabian(params?: {
       actionableSoulAdvice
     },
     summary,
-    boundaryNotice: '본 결과는 36 데칸 부지배성과 사비안 심볼 360° 원형에 따른 정성적 상징 해석이며, 확정적 길흉 판정이 아닙니다.',
+    boundaryNotice,
+    interpretiveBoundary: boundaryNotice,
   };
 }
 

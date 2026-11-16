@@ -14,7 +14,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const AUSTRIAN_ALFRED_ADLER_INDIVIDUAL_PSYCHOLOGY_VERSION = 'LUCKEY-ADLER-INDIVIDUAL-PSYCHOLOGY-v2.0.0';
+export const AUSTRIAN_ALFRED_ADLER_INDIVIDUAL_PSYCHOLOGY_VERSION = 'LUCKEY-ADLER-INDIVIDUAL-PSYCHOLOGY-v2.1.0';
 
 export type AdlerQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -59,6 +59,7 @@ export interface AustrianAlfredAdlerIndividualPsychologyResult {
   ritualAction: string;
   reflectionFocus: string;
   boundaryNotice: string;
+  interpretiveBoundary: string;
   situationalAdlerAudit: {
     focusTheme: string;
     taskSeparationCue: string;
@@ -302,6 +303,7 @@ export function calculateAustrianAlfredAdlerIndividualPsychology(
     ritualAction: topicGuidance.ritualAction,
     reflectionFocus: topicGuidance.reflectionFocus,
     boundaryNotice,
+    interpretiveBoundary: boundaryNotice,
     situationalAdlerAudit,
     adlerSynthesisMatrix,
     adlerComprehensiveGuidance: {
