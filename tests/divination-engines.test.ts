@@ -2216,9 +2216,10 @@ test('Karmic Synastry Resonance Engine: 카르믹 시나스트리 및 인연 공
   assert.equal(res.engineVersion, KARMIC_SYNASTRY_VERSION);
   assert(res.calculatedAtKst.endsWith('KST'));
   assert(Boolean(res.synastrySynthesisMatrix?.integratedAction));
+  assert(res.interpretiveBoundary.length > 0);
   const prompt = formatKarmicSynastryPrompt(res);
   assert(prompt.includes('카르믹 시나스트리'));
-  assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('교차 매트릭스') && prompt.includes('해석 경계'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });
@@ -2317,6 +2318,7 @@ test('Life Domain Wheel Engine: 6대 핵심 라이프 도메인 밸런스 휠 �
   assert.equal(res.engineVersion, LIFE_DOMAIN_WHEEL_VERSION);
   assert(res.calculatedAtKst.endsWith('KST'));
   assert(Boolean(res.wheelSynthesisMatrix?.integratedAction));
+  assert(res.interpretiveBoundary.length > 0);
   assert(res.wheelBalanceScore >= 0 && res.wheelBalanceScore <= 100);
   assert(res.primaryBreakthroughDomain.titleKo.length > 0);
   assert(res.rechargeDomain.titleKo.length > 0);
@@ -2325,7 +2327,7 @@ test('Life Domain Wheel Engine: 6대 핵심 라이프 도메인 밸런스 휠 �
   assert(prompt.includes(LIFE_DOMAIN_WHEEL_VERSION));
   assert(prompt.includes('라이프 휠 균형도'));
   assert(prompt.includes('1순위 돌파 도메인'));
-  assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('교차 매트릭스') && prompt.includes('해석 경계'));
   assert(!prompt.includes('/100'));
 });
 
@@ -7952,9 +7954,11 @@ test('Kyusei engine: enhanced 8-directional scores matrix and honmyosei annual s
   assert.equal(r.honmyoseiSynergy.annualStarRelation, '비화(比和)');
   assert(r.honmyoseiSynergy.synergyScore >= 0 && r.honmyoseiSynergy.synergyScore <= 100);
   assert.ok(r.honmyoseiSynergy.annualThemeGuidance.length > 0);
+  assert.ok(r.interpretiveBoundary && r.interpretiveBoundary.length > 0);
   const prompt = formatKyuseiPrompt(r);
   assert(prompt.includes('8대 방위별 목적 적합도 매트릭스'));
   assert(prompt.includes('본명성-연성 조화도'));
+  assert(prompt.includes('해석 경계'));
 });
 
 test('Taiyi engine: enhanced macro strategic matrix, balance score, and decision window timing', () => {

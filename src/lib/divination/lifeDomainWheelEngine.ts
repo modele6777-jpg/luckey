@@ -16,7 +16,7 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const LIFE_DOMAIN_WHEEL_VERSION = 'LUCKEY-WHEEL-v2.0.0';
+export const LIFE_DOMAIN_WHEEL_VERSION = 'LUCKEY-WHEEL-v2.1.0';
 
 function formatWheelKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -70,6 +70,7 @@ export interface LifeDomainWheelResult {
     alignmentState: string;
     integratedAction: string;
   };
+  interpretiveBoundary: string;
 }
 
 /**
@@ -226,6 +227,7 @@ export function calculateLifeDomainWheel(params?: {
     rechargeDomain,
     summary,
     wheelSynthesisMatrix,
+    interpretiveBoundary: '본 라이프 12궁 밸런스 휠 리포트는 명리·자미·점성 12궁 상징에 기반한 정성적 삶의 균형 성찰 안내이며, 의학·재무적 확정 진단을 대신하지 않습니다.',
   };
 }
 
@@ -253,6 +255,7 @@ export function formatLifeDomainWheelPrompt(res: LifeDomainWheelResult): string 
       `  • 통합 실천: ${res.wheelSynthesisMatrix.integratedAction}`,
     );
   }
+  lines.push(`- 해석 경계: ${res.interpretiveBoundary}`);
   lines.push(`※ 루시 지침: 인생은 한쪽 바퀴만 거대해서는 멀리 굴러갈 수 없습니다. 사용자의 독보적인 창작·커리어 강점을 최고조로 끌어올리면서도, 신체 활력과 내면 평온이라는 기초 바퀴가 펑크 나지 않도록 전체 라이프 밸런스를 균형 있고 조화롭게 조망해 주세요.`);
   return lines.join('\n');
 }
