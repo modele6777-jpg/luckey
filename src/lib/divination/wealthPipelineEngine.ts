@@ -18,7 +18,17 @@ import {
   STEM_KOREAN
 } from '../sajuAnalysis';
 
-export const WEALTH_PIPELINE_VERSION = 'LUCKEY-WEALTH-v1.0.0';
+export const WEALTH_PIPELINE_VERSION = 'LUCKEY-WEALTH-v2.0.0';
+
+function formatWealthKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
 
 export type WealthArchetype =
   | 'builder'   // 기술 장인형 파이프라인 (식신생재: 소프트웨어, IP, 창작)
@@ -78,6 +88,7 @@ export const WEALTH_ARCHETYPES: Record<WealthArchetype, WealthArchetypeInfo> = {
 export interface WealthPipelineResult {
   engineVersion: string;
   calculatedAtIso: string;
+  calculatedAtKst: string;
 
   // 재물 구조 분석
   structure: {
@@ -112,6 +123,11 @@ export interface WealthPipelineResult {
   };
 
   summary: string;
+  wealthSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
 }
 
 /**
@@ -121,6 +137,7 @@ export function calculateWealthPipeline(params?: {
   profile?: UserProfile | null;
   saju?: SajuAnalysisResult | null;
   targetDate?: Date;
+  question?: string;
 }): WealthPipelineResult {
   const now = params?.targetDate || new Date();
   const saju = params?.saju || calculateDetailedSaju(params?.profile || null);
@@ -214,13 +231,22 @@ export function calculateWealthPipeline(params?: {
     spendingWarning: archetype.pitfallToAvoid
   };
 
+  const calculatedAtKst = formatWealthKstTimestamp(now);
+  const q = (params?.question || '').trim();
+  const wealthSynthesisMatrix = {
+    dominantTension: `${archetype.name} ↔ ${archetype.pitfallToAvoid.slice(0, 28)}`,
+    alignmentState: `${goldenWindowStatus} · ${hasGoldenCarriage ? '금여록' : '자수성가'}`,
+    integratedAction: `${actionGuide.immediatePriority}${q ? ` [질문 맥락: ${q}]` : ''}`,
+  };
+
   const summary = `[재물 파이프라인] 유형: ${archetype.name} (${archetype.hanja}). ` +
     `재물 길성: ${hasGoldenCarriage ? '금여록(金輿) ' : ''}${hasDarkProsperity ? '암록(暗祿) ' : ''}${hasHeavenlyNoble ? '천을귀인(天乙) ' : ''}` +
-    `연간 재물 지수: ${annualWealthScore}점 / 현금흐름 지수: ${monthlyCashFlowScore}점 [${goldenWindowStatus}].`;
+    `골든 윈도우: [${goldenWindowStatus}].`;
 
   return {
     engineVersion: WEALTH_PIPELINE_VERSION,
     calculatedAtIso: now.toISOString(),
+    calculatedAtKst,
     structure: {
       tenGodWealthRatio: {
         shiksin: shiksinCount,
@@ -241,7 +267,8 @@ export function calculateWealthPipeline(params?: {
       goldenWindowDesc
     },
     actionGuide,
-    summary
+    summary,
+    wealthSynthesisMatrix,
   };
 }
 
@@ -254,20 +281,21 @@ export function formatWealthPipelinePrompt(res: WealthPipelineResult): string {
     res.structure.hasDarkProsperity ? '암록(暗祿·어디선가 은밀하게 자금이 융통되는 숨은 복록)' : null,
     res.structure.hasHeavenlyNoble ? '천을귀인(天乙·자금 위기 시 나타나는 귀인 후원)' : null
   ].filter(Boolean);
+  const matrixLine = res.wealthSynthesisMatrix
+    ? `\n- 재물 교차 매트릭스: 핵심 긴장(${res.wealthSynthesisMatrix.dominantTension}) · 조율 상태(${res.wealthSynthesisMatrix.alignmentState}) · 통합 실천(${res.wealthSynthesisMatrix.integratedAction})`
+    : '';
 
-  return `[재물·비즈니스 포춘 파이프라인 리포트 (엔진: ${res.engineVersion})]
+  return `[재물·비즈니스 포춘 파이프라인 리포트 (엔진: ${res.engineVersion} | ${res.calculatedAtKst})]
 - 재물 아키타입: **${res.archetype.name}** [${res.archetype.hanja}]
   • 핵심 엔진: ${res.archetype.primaryCashEngine}
   • 확장 전략: ${res.archetype.scalingStrategy}
   • 주의 함정: ${res.archetype.pitfallToAvoid}
 - 특수 재물 길성: ${specials.length > 0 ? specials.join(', ') : '자수성가형 순수 노력 지향'}
-- 재물 타이밍 지표:
-  • 연간 재물 활력 스코어: **${res.timing.annualWealthScore}점**
-  • 당월 현금흐름 스코어: **${res.timing.monthlyCashFlowScore}점**
+- 재물 타이밍 국면:
   • 골든 윈도우 상태: [${res.timing.goldenWindowStatus}] - ${res.timing.goldenWindowDesc}
 - 추천 비즈니스 액션:
   • 1순위 추진 과제: ${res.actionGuide.immediatePriority}
   • 스케일업 전략: ${res.actionGuide.revenueStrategy}
-  • 자금 리스크 방어: ${res.actionGuide.spendingWarning}
+  • 자금 리스크 방어: ${res.actionGuide.spendingWarning}${matrixLine}
 ※ 루시 지침: 재물운은 단순한 '횡재'가 아니라 시스템과 타이밍의 결합입니다. 사용자가 타고난 재물 창출 아키타입(식신생재 메이커형인지, 재생관 플랫폼형인지 등)을 명쾌하게 짚어주고, 오늘과 올해의 자금 흐름 골든 윈도우를 실질적인 비즈니스 전략으로 조언해 주세요.`;
 }
