@@ -8,7 +8,13 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const FOUR_NOBLE_TRUTHS_VERSION = 'LUCKEY-FOUR-NOBLE-TRUTHS-v2.1.0';
+export const FOUR_NOBLE_TRUTHS_VERSION = 'LUCKEY-FOUR-NOBLE-TRUTHS-v2.2.0';
+
+function getBuddhaKstString(now?: Date): string {
+  const base = now ?? new Date();
+  const kst = new Date(base.getTime() + 9 * 3600 * 1000);
+  return `${kst.toISOString().slice(0, 19)}+09:00`;
+}
 
 export interface BuddhistNobleTruth {
   truthHanja: string;
@@ -70,6 +76,11 @@ export interface AncientIndianFourNobleTruthsResult {
   dailyPracticeRitual: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
+  buddhistSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
 }
 
 export type AncientIndianFourNobleTruthsReport = AncientIndianFourNobleTruthsResult;
@@ -311,9 +322,16 @@ export function calculateAncientIndianFourNobleTruths(
   const interpretiveBoundary =
     `초기불교 사성제와 팔정도는 길흉을 단정하는 예언이 아니라, 괴로움의 원인을 살펴 중도(中道)의 실천으로 마음을 고요히 이끄는 상징·성찰 관점입니다.`;
 
+  const trimmedQ = (question ?? '').trim();
+  const buddhistSynthesisMatrix = {
+    dominantTension: `${situationalDharmaAudit.cravingKnot} ↔ ${activeNobleTruth.truthHanja}`,
+    alignmentState: `${focalEightfoldFactor.pathFactorHanja} · ${temporalSatiRhythm.threeTrainingsFocus}`,
+    integratedAction: `${situationalDharmaAudit.eightfoldActionStep}${trimmedQ ? ` [질문 맥락: ${trimmedQ}]` : ''}`,
+  };
+
   return {
     engineVersion: FOUR_NOBLE_TRUTHS_VERSION,
-    calculatedAtKst: (now ?? new Date()).toISOString(),
+    calculatedAtKst: getBuddhaKstString(now),
     fourNobleTruthsClarityScore,
     eightfoldPathBalanceScore,
     cravingExtinctionNirodhaScore,
@@ -331,6 +349,7 @@ export function calculateAncientIndianFourNobleTruths(
     dailyPracticeRitual,
     reflectiveQuestion,
     interpretiveBoundary,
+    buddhistSynthesisMatrix,
   };
 }
 
@@ -342,8 +361,11 @@ function describeBuddhistStage(score: number): string {
 }
 
 export function formatAncientIndianFourNobleTruthsPrompt(res: AncientIndianFourNobleTruthsResult): string {
+  const matrixLine = res.buddhistSynthesisMatrix
+    ? `- 사성제·팔정도 교차 매트릭스: 핵심 긴장(${res.buddhistSynthesisMatrix.dominantTension}) · 조율 상태(${res.buddhistSynthesisMatrix.alignmentState}) · 통합 실천(${res.buddhistSynthesisMatrix.integratedAction})`
+    : '';
   return [
-    `【초기불교 사성제 & 팔정도 고집멸도 지표】`,
+    `【초기불교 사성제 & 팔정도 고집멸도 지표 (${res.engineVersion} | ${res.calculatedAtKst})】`,
     `- 사성제 인과 명석함: ${describeBuddhistStage(res.fourNobleTruthsClarityScore)}`,
     `- 팔정도 삼학 실천 균형: ${describeBuddhistStage(res.eightfoldPathBalanceScore)}`,
     `- 갈애 소멸 열반 평정: ${describeBuddhistStage(res.cravingExtinctionNirodhaScore)}`,
@@ -360,5 +382,6 @@ export function formatAncientIndianFourNobleTruthsPrompt(res: AncientIndianFourN
     `- 오늘의 실천 의례: ${res.dailyPracticeRitual}`,
     `- 성찰 질문: ${res.reflectiveQuestion}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
-  ].join('\n');
+    matrixLine,
+  ].filter(Boolean).join('\n');
 }
