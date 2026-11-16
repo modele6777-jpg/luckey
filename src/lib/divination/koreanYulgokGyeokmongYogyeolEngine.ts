@@ -10,12 +10,12 @@
  * 4. 독서(讀書): 이치를 궁구하여 일상에서 실천하는 실학적 성찰.
  * 5. 사친(事親)·접인(接人)·처세(處世): 가족을 공경하고 사람을 대함에 정성을 다하는 실천궁행.
  *
- * @version LUCKEY-YULGOK-GYEOKMONG-v2.0.0
+ * @version LUCKEY-YULGOK-GYEOKMONG-v2.1.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const YULGOK_GYEOKMONG_VERSION = 'LUCKEY-YULGOK-GYEOKMONG-v2.0.0';
+export const YULGOK_GYEOKMONG_VERSION = 'LUCKEY-YULGOK-GYEOKMONG-v2.1.0';
 
 export interface YulgokStage {
   stageLevel: number;
@@ -36,7 +36,14 @@ export interface YulgokGyeokmongResult {
   jisinMoralDignitySincerity: number; // 지신 수신처세의 진정성 및 위엄
   // 세부 명세
   activeScholarStage: YulgokStage;
+  secondaryScholarStage: YulgokStage;
   primaryYulgokPrecept: {
+    preceptTitleKo: string;
+    hanjaMotto: string;
+    coreEssence: string;
+    actionableDirective: string;
+  };
+  secondaryYulgokPrecept: {
     preceptTitleKo: string;
     hanjaMotto: string;
     coreEssence: string;
@@ -46,6 +53,8 @@ export interface YulgokGyeokmongResult {
     studySceneTitle: string;
     virtuousWisdom: string;
   };
+  reflectiveQuestion: string;
+  interpretiveBoundary: string;
   yulgokSynthesisMatrix?: {
     dominantTension: string;
     alignmentState: string;
@@ -86,7 +95,7 @@ function getKstDateString(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 KST`;
 }
 
 function describeYulgokStage(score: number): string {
@@ -121,13 +130,24 @@ export function calculateYulgokGyeokmong(
   const jisinMoralDignitySincerity = ((seed >> 9) % 38) + 63; // 63~100
 
   const stageIdx = (seed >> 2) % YULGOK_STAGES.length;
+  const secondaryStageIdx = (stageIdx + 1 + ((seed >> 4) % (YULGOK_STAGES.length - 1))) % YULGOK_STAGES.length;
   const activeScholarStage = YULGOK_STAGES[stageIdx];
+  const secondaryScholarStage = YULGOK_STAGES[secondaryStageIdx];
 
   const preceptIdx = (seed >> 4) % YULGOK_PRECEPTS.length;
+  const secondaryPreceptIdx = (preceptIdx + 1 + ((seed >> 6) % (YULGOK_PRECEPTS.length - 1))) % YULGOK_PRECEPTS.length;
   const primaryYulgokPrecept = YULGOK_PRECEPTS[preceptIdx];
+  const secondaryYulgokPrecept = YULGOK_PRECEPTS[secondaryPreceptIdx];
 
   const epiphanyIdx = (seed >> 6) % GYEOKMONG_EPIPHANIES.length;
   const gyeokmongMasteryEpiphany = GYEOKMONG_EPIPHANIES[epiphanyIdx];
+
+  const trimmedQuery = query?.trim();
+  const reflectiveQuestion = trimmedQuery
+    ? `율곡 이이의 《격몽요결》 '${primaryYulgokPrecept.preceptTitleKo}'와 '${secondaryYulgokPrecept.preceptTitleKo}'를 비추어 볼 때, "${trimmedQuery}"에서 미루던 옛 습관을 끊고 바로 세워야 할 뜻은 무엇인가요?`
+    : `지금 삶의 방향을 다잡는 자리에서, '${activeScholarStage.stageNameKo}'의 중심과 '${secondaryScholarStage.stageNameKo}'의 실천을 함께 열기 위해 오늘 끊어낼 습관은 무엇일까요?`;
+
+  const interpretiveBoundary = '이 지표는 율곡 이이 선생의 《격몽요결》 입지·혁구습·구용구사·독서궁리 수양 원칙을 일상 습관과 태도를 점검하는 정성적 거울로 해석한 결과이며, 미래의 구체적 성패를 단정하는 예언이 아닙니다.';
 
   const avgScore = Math.round(
     (ipjiNobleAspirationIndex +
@@ -152,8 +172,12 @@ export function calculateYulgokGyeokmong(
     dokseoInquiryPracticalWisdom,
     jisinMoralDignitySincerity,
     activeScholarStage,
+    secondaryScholarStage,
     primaryYulgokPrecept,
+    secondaryYulgokPrecept,
     gyeokmongMasteryEpiphany,
+    reflectiveQuestion,
+    interpretiveBoundary,
     yulgokSynthesisMatrix,
   };
 }
@@ -172,13 +196,17 @@ export function formatYulgokGyeokmongPrompt(result: YulgokGyeokmongResult): stri
     `- 연산 시각: ${result.calculatedAtKst} | 엔진: ${result.engineVersion}`,
     `- 수양 국면: ${describeYulgokStage(avgScore)}`,
     `- 현행 수양적 품계: **[${result.activeScholarStage.stageNameKo} (${result.activeScholarStage.stageNameHanja})]**`,
+    `- 보조 교차 품계: **[${result.secondaryScholarStage.stageNameKo} (${result.secondaryScholarStage.stageNameHanja})]**`,
     `  → 관장 영역: ${result.activeScholarStage.scholarDomain}`,
     `  → 성현의 축복: ${result.activeScholarStage.sagelyBlessing}`,
     `- 최우선 격몽 지침: **[${result.primaryYulgokPrecept.preceptTitleKo} (${result.primaryYulgokPrecept.hanjaMotto})]**`,
+    `- 보조 교차 지침: **[${result.secondaryYulgokPrecept.preceptTitleKo} (${result.secondaryYulgokPrecept.hanjaMotto})]**`,
     `  → 핵심 본질: ${result.primaryYulgokPrecept.coreEssence}`,
     `  → 실천 지침: ${result.primaryYulgokPrecept.actionableDirective}`,
     `- 격몽요결 불멸의 가르침: 《${result.gyeokmongMasteryEpiphany.studySceneTitle}》`,
     `  → 율곡 선생의 지혜: "${result.gyeokmongMasteryEpiphany.virtuousWisdom}"`,
+    `- 성찰 질문: ${result.reflectiveQuestion}`,
+    `- 해석 경계: ${result.interpretiveBoundary}`,
   ];
   if (result.yulgokSynthesisMatrix) {
     lines.push(

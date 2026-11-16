@@ -8,12 +8,12 @@
  * 4. 거경궁리(居敬窮理): 안으로는 마음을 경건히 보존하고(居敬), 밖으로는 사물의 이치를 끝까지 탐구함(窮理).
  * 5. 심통성정(心統性情): 마음은 타고난 본성(性)과 밖으로 드러나는 감정(情)을 통솔하는 주재자.
  *
- * @version LUCKEY-TOEGYE-SEONGHAK-SIPDO-v2.0.0
+ * @version LUCKEY-TOEGYE-SEONGHAK-SIPDO-v2.1.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const TOEGYE_SEONGHAK_SIPDO_VERSION = 'LUCKEY-TOEGYE-SEONGHAK-SIPDO-v2.0.0';
+export const TOEGYE_SEONGHAK_SIPDO_VERSION = 'LUCKEY-TOEGYE-SEONGHAK-SIPDO-v2.1.0';
 
 export interface SeonghakDiagram {
   diagramNumber: number;
@@ -41,7 +41,11 @@ export interface ToegyeSeonghakSipdoResult {
   seonghakIntegrationPracticeScore: number;  // 성학십도 지행합일 실천력
   // 세부 명세
   activeSeonghakDiagram: SeonghakDiagram;
+  secondarySeonghakDiagram: SeonghakDiagram;
   focalGyeongPractice: GyeongPractice;
+  secondaryGyeongPractice: GyeongPractice;
+  reflectiveQuestion: string;
+  interpretiveBoundary: string;
   toegyePhilosophicalCounsel: {
     counselTitle: string;
     philosophicalGuidance: string;
@@ -60,7 +64,7 @@ function formatToegyeKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 KST`;
 }
 
 function describeToegyeStage(score: number): string {
@@ -182,10 +186,21 @@ export function calculateToegyeSeonghakSipdo(
   const seonghakIntegrationPracticeScore = 63 + ((absHash >> 12) % 36);
 
   const diagramIndex = (absHash >> 4) % SEONGHAK_DIAGRAMS.length;
+  const secondaryDiagramIndex = (diagramIndex + 1 + ((absHash >> 6) % (SEONGHAK_DIAGRAMS.length - 1))) % SEONGHAK_DIAGRAMS.length;
   const practiceIndex = (absHash >> 7) % GYEONG_PRACTICES.length;
+  const secondaryPracticeIndex = (practiceIndex + 1 + ((absHash >> 10) % (GYEONG_PRACTICES.length - 1))) % GYEONG_PRACTICES.length;
 
   const activeSeonghakDiagram = SEONGHAK_DIAGRAMS[diagramIndex];
+  const secondarySeonghakDiagram = SEONGHAK_DIAGRAMS[secondaryDiagramIndex];
   const focalGyeongPractice = GYEONG_PRACTICES[practiceIndex];
+  const secondaryGyeongPractice = GYEONG_PRACTICES[secondaryPracticeIndex];
+
+  const trimmedQuery = query?.trim();
+  const reflectiveQuestion = trimmedQuery
+    ? `퇴계 이황의 《${activeSeonghakDiagram.diagramTitleHanja}》와 《${secondarySeonghakDiagram.diagramTitleHanja}》를 비추어 볼 때, "${trimmedQuery}"에서 흩어진 마음을 하나로 모으는 경(敬)의 태도는 무엇인가요?`
+    : `지금 마음을 쓰는 일 앞에서, '${activeSeonghakDiagram.diagramTitleHanja}'의 근원과 '${secondarySeonghakDiagram.diagramTitleHanja}'의 실천을 함께 살리려면 무엇을 단정히 해야 할까요?`;
+
+  const interpretiveBoundary = '이 지표는 퇴계 이황 선생의 《성학십도》와 《자성록》에 담긴 경(敬)·거경궁리·상성성·심통성정 수양 철학을 내면 집중과 태도 성찰의 거울로 해석한 것이며, 구체적 사건의 성패를 단정하는 예언이 아닙니다.';
 
   const counselTitle = `퇴계 성학십도와 경(敬) 심법: ${activeSeonghakDiagram.diagramTitleHanja}`;
   const philosophicalGuidance = `퇴계 선생의 가르침에 따르면 만사의 성패는 마음을 하나로 모으는 경(敬)에 달려 있습니다. ` +
@@ -216,7 +231,11 @@ export function calculateToegyeSeonghakSipdo(
     jeongjeEomsukDignityScore,
     seonghakIntegrationPracticeScore,
     activeSeonghakDiagram,
+    secondarySeonghakDiagram,
     focalGyeongPractice,
+    secondaryGyeongPractice,
+    reflectiveQuestion,
+    interpretiveBoundary,
     toegyePhilosophicalCounsel: {
       counselTitle,
       philosophicalGuidance,
@@ -239,10 +258,14 @@ export function formatToegyeSeonghakSipdoPrompt(res: ToegyeSeonghakSipdoResult):
     `- 연산 시각: ${res.calculatedAtKst} | 엔진: ${res.engineVersion}`,
     `- 경(敬) 수양 국면: ${describeToegyeStage(avgScore)}`,
     `- 성학십도 도상: ${res.activeSeonghakDiagram.diagramTitleHanja} (${res.activeSeonghakDiagram.diagramTitleKo})`,
+    `- 보조 교차 도상: ${res.secondarySeonghakDiagram.diagramTitleHanja} (${res.secondarySeonghakDiagram.diagramTitleKo})`,
     `- 핵심 수양 원리: ${res.activeSeonghakDiagram.corePrinciple}`,
     `- 도상 실천 지침: ${res.activeSeonghakDiagram.cultivationMethod}`,
     `- 핵심 경(敬) 심법: ${res.focalGyeongPractice.practiceHanja} - ${res.focalGyeongPractice.practiceKo}`,
+    `- 보조 교차 심법: ${res.secondaryGyeongPractice.practiceHanja} - ${res.secondaryGyeongPractice.practiceKo}`,
     `- 심법 실천 요결: ${res.focalGyeongPractice.dailyApplication}`,
+    `- 성찰 질문: ${res.reflectiveQuestion}`,
+    `- 해석 경계: ${res.interpretiveBoundary}`,
     `- 철학적 처방: ${res.toegyePhilosophicalCounsel.philosophicalGuidance}`,
   ];
   if (res.toegyeSynthesisMatrix) {
