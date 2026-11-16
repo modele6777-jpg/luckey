@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import worker from '../src/cloudflare-worker.ts';
+import { sajuChartFromInput } from '../server/api-lib/sajuChartApi.ts';
 
 type AssetEnv = { ASSETS: { fetch(request: Request): Promise<Response> }; GEMINI_API_KEY?: string };
 const env = (asset: (request: Request) => Promise<Response> | Response = () => new Response('asset'), apiKey?: string): AssetEnv => ({
@@ -248,6 +249,57 @@ test('recommends a Bluebird note mood from the Gemini JSON contract', async () =
     reason: '남모르게 삼킨 슬픔이 담겨 있습니다.',
     source: 'model',
   });
+});
+
+test('calculates saju locally with the existing response contract and no upstream request', async () => {
+  let forwarded = false;
+  globalThis.fetch = (async () => {
+    forwarded = true;
+    throw new Error('Saju must not contact an upstream');
+  }) as typeof fetch;
+  const input = { year: 1990, month: 5, day: 15, birthtime: '13:30', isLunar: false };
+  const response = await worker.fetch(new Request('https://preview.example/api/saju/chart', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Origin: 'https://preview.example' },
+    body: JSON.stringify(input),
+  }), env());
+  assert.equal(response.status, 200);
+  assert.deepEqual(await response.json(), sajuChartFromInput(input));
+  assert.equal(forwarded, false);
+
+  const invalid = await worker.fetch(new Request('https://preview.example/api/saju/chart', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}',
+  }), env());
+  assert.equal(invalid.status, 400);
+  assert.equal((await invalid.json()).code, 'invalid_year');
+
+  const oversized = await worker.fetch(new Request('https://preview.example/api/saju/chart', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ extra: 'x'.repeat(17 * 1024) }),
+  }), env());
+  assert.equal(oversized.status, 413);
+});
+
+test('redirects artwork requests only to the existing allowlist without proxying bytes', async () => {
+  let fetched = false;
+  globalThis.fetch = (async () => {
+    fetched = true;
+    throw new Error('The Worker returns a redirect instead of fetching the image');
+  }) as typeof fetch;
+  const source = 'https://upload.wikimedia.org/wikipedia/commons/1/12/sample.jpg?width=800';
+  const url = `https://preview.example/api/muse/artwork-image/proxy?url=${encodeURIComponent(source)}`;
+  const response = await worker.fetch(new Request(url), env());
+  assert.equal(response.status, 302);
+  assert.equal(response.headers.get('Location'), source);
+  assert.match(response.headers.get('Cache-Control') || '', /s-maxage=86400/);
+  assert.equal(fetched, false);
+
+  for (const unsafe of ['http://upload.wikimedia.org/a.png', 'https://127.0.0.1/a.png', 'https://example.com/a.png', 'https://user@upload.wikimedia.org/a.png']) {
+    const rejected = await worker.fetch(new Request(`https://preview.example/api/muse/artwork-image/proxy?url=${encodeURIComponent(unsafe)}`), env());
+    assert.equal(rejected.status, 400);
+  }
+  const method = await worker.fetch(new Request(url, { method: 'POST' }), env());
+  assert.equal(method.status, 405);
 });
 
 test('proxies API method, query, body, authorization and stream while filtering forwarding headers', async () => {
