@@ -13,7 +13,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const RUSSIAN_FYODOR_DOSTOEVSKY_KARAMAZOV_SOUL_COMPASSION_VERSION = 'LUCKEY-FYODOR-DOSTOEVSKY-KARAMAZOV-SOUL-COMPASSION-v2.0.0';
+export const RUSSIAN_FYODOR_DOSTOEVSKY_KARAMAZOV_SOUL_COMPASSION_VERSION = 'LUCKEY-FYODOR-DOSTOEVSKY-KARAMAZOV-SOUL-COMPASSION-v2.1.0';
 
 export interface DostoevskyTheme {
   themeKey: string;
@@ -52,6 +52,10 @@ export interface RussianFyodorDostoevskyKaramazovSoulCompassionResult {
     alignmentState: string;
     integratedAction: string;
   };
+  // v2.1.0 심층 보강: 이중 원전 교차·성찰 질문·해석 경계
+  secondaryDostoevskyAphorism?: DostoevskyAphorism;
+  reflectiveDostoevskyQuestion: string;
+  interpretiveBoundary: string;
 }
 
 function formatDostoevskyKstTimestamp(now: Date = new Date()): string {
@@ -61,7 +65,7 @@ function formatDostoevskyKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 KST`;
 }
 
 function describeDostoevskyStage(score: number): string {
@@ -167,6 +171,20 @@ export function calculateRussianFyodorDostoevskyKaramazovSoulCompassion(
 
   const activeDostoevskyTheme = DOSTOEVSKY_THEMES[themeIndex];
   const focalDostoevskyAphorism = DOSTOEVSKY_APHORISMS[aphorismIndex];
+  // 같은 저작의 명언만 반복하지 않도록 다른 원전에서 보조 테제를 하나 더 세운다(초점 테제와 항상 다름).
+  const secondaryDostoevskyOffset = 1 + ((absHash >> 11) % (DOSTOEVSKY_APHORISMS.length - 1));
+  const secondaryDostoevskyAphorism =
+    DOSTOEVSKY_APHORISMS[(aphorismIndex + secondaryDostoevskyOffset) % DOSTOEVSKY_APHORISMS.length];
+
+  // 질문에 반응하는 정성 성찰 질문: 지금 붙잡은 테마의 언어로 되묻는다.
+  const trimmedDostoevskyQuery = (query ?? '').trim();
+  const reflectiveDostoevskyQuestion =
+    `지금 내가 '${activeDostoevskyTheme.themeTitleKo}'의 눈으로 본다면, ` +
+    `내 안의 모순과 눈앞의 사람이 지닌 상처를 어느 쪽도 미화하지 않고 함께 안을 수 있는 한 걸음은 무엇일까요?` +
+    (trimmedDostoevskyQuery ? ` (이 물음은 당신이 건넨 '${trimmedDostoevskyQuery}'에 대한 성찰입니다.)` : '');
+
+  const interpretiveBoundary =
+    '도스토옙스키 문학의 심연 직시·적극적 사랑 상징을 빌린 정성적 성찰 관점이며, 영혼 진단이나 사람의 됨됨이 평가, 사건의 성패·미래 단정이 아닙니다.';
 
   const guidanceTitle = `도스토옙스키 영혼의 심연과 대자비의 지혜: ${activeDostoevskyTheme.themeTitleKo}`;
   const philosophicalCounsel = `러시아 문학과 실존주의 심리학의 거장 표도르 도스토옙스키 선생은 《카라마조프 가의 형제들》과 《죄와 벌》을 통해 ` +
@@ -201,6 +219,9 @@ export function calculateRussianFyodorDostoevskyKaramazovSoulCompassion(
       philosophicalCounsel,
     },
     dostoevskySynthesisMatrix,
+    secondaryDostoevskyAphorism,
+    reflectiveDostoevskyQuestion,
+    interpretiveBoundary,
   };
 }
 
@@ -228,5 +249,16 @@ export function formatRussianFyodorDostoevskyKaramazovSoulCompassionPrompt(
       `- 통합 실천: ${res.dostoevskySynthesisMatrix.integratedAction}`,
     );
   }
+  if (res.secondaryDostoevskyAphorism) {
+    lines.push(
+      `- 보조 원전 테제: "${res.secondaryDostoevskyAphorism.aphorismKo}" (${res.secondaryDostoevskyAphorism.aphorismRussian})`,
+      `- 보조 원전 출처: [${res.secondaryDostoevskyAphorism.sourceContext}]`,
+      `- 보조 실천 지침: ${res.secondaryDostoevskyAphorism.actionGuidance}`,
+    );
+  }
+  lines.push(
+    `- 성찰 질문: ${res.reflectiveDostoevskyQuestion}`,
+    `- 해석 경계: ${res.interpretiveBoundary}`,
+  );
   return lines.join('\n');
 }
