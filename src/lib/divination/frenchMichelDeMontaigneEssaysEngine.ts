@@ -9,12 +9,12 @@
  * 4. 인간 조건의 불완전성 수용 및 자연스런 삶 조화도(Acceptance of Human Condition & Natural Life Score): 억지 꾸밈없이 소박하게 살아가는 삶의 기술.
  * 5. 영혼의 뒷방(Arrière-Boutique) 내적 자유 및 자립도(Inner Freedom & Spiritual Sanctuary Index): 세상의 풍파 속에서도 독립된 영혼의 안식처를 간직하는 힘.
  *
- * @version LUCKEY-MONTAIGNE-ESSAYS-QUE-SAIS-JE-v2.0.0
+ * @version LUCKEY-MONTAIGNE-ESSAYS-QUE-SAIS-JE-v2.1.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const FRENCH_MICHEL_DE_MONTAIGNE_VERSION = 'LUCKEY-MONTAIGNE-ESSAYS-QUE-SAIS-JE-v2.0.0';
+export const FRENCH_MICHEL_DE_MONTAIGNE_VERSION = 'LUCKEY-MONTAIGNE-ESSAYS-QUE-SAIS-JE-v2.1.0';
 
 export interface MontaigneTheme {
   themeKey: string;
@@ -44,6 +44,9 @@ export interface FrenchMichelDeMontaigneEssaysResult {
   // 세부 분석
   activeMontaigneTheme: MontaigneTheme;
   focalMontaigneAphorism: MontaigneAphorism;
+  secondaryMontaigneAphorism: MontaigneAphorism;
+  reflectiveQuestion: string;
+  interpretiveBoundary: string;
   montaigneComprehensiveGuidance: {
     guidanceTitle: string;
     philosophicalCounsel: string;
@@ -138,7 +141,15 @@ function formatMontaigneKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 KST`;
+}
+
+function buildMontaigneReflectiveQuestion(theme: MontaigneTheme, query?: string): string {
+  const trimmed = query?.trim();
+  if (trimmed) {
+    return `'${trimmed}' 앞에서 내가 당연하다고 믿고 있는 전제 중 "내가 무엇을 아는가(Que sais-je?)"라고 한 걸음 물러나 다시 볼 여지는 무엇인가요? (${theme.themeTitleKo})`;
+  }
+  return `지금 내 마음의 뒷방(Arrière-boutique)을 지키며 꾸밈없이 마주해야 할 자기 자신의 모습은 무엇인가요? (${theme.themeTitleKo})`;
 }
 
 function describeMontaigneStage(score: number): string {
@@ -175,9 +186,14 @@ export function calculateFrenchMichelDeMontaigneEssays(
 
   const themeIndex = (absHash >> 5) % MONTAIGNE_THEMES.length;
   const aphorismIndex = (absHash >> 8) % MONTAIGNE_APHORISMS.length;
+  const secondaryOffset = 1 + ((absHash >> 11) % (MONTAIGNE_APHORISMS.length - 1));
+  const secondaryAphorismIndex = (aphorismIndex + secondaryOffset) % MONTAIGNE_APHORISMS.length;
 
   const activeMontaigneTheme = MONTAIGNE_THEMES[themeIndex];
   const focalMontaigneAphorism = MONTAIGNE_APHORISMS[aphorismIndex];
+  const secondaryMontaigneAphorism = MONTAIGNE_APHORISMS[secondaryAphorismIndex];
+  const reflectiveQuestion = buildMontaigneReflectiveQuestion(activeMontaigneTheme, query);
+  const interpretiveBoundary = '몽테뉴 《수상록》 관점은 우열 판정이나 미래 단정이 아니라, 지적 겸양과 솔직한 자기 관찰을 돕는 인문학적 성찰 렌즈입니다.';
 
   const guidanceTitle = `미셸 드 몽테뉴 수상록 지혜: ${activeMontaigneTheme.themeTitleKo}`;
   const philosophicalCounsel = `프랑스 르네상스 인문주의와 에세이의 창시자 미셸 드 몽테뉴는 "내가 무엇을 아는가(Que sais-je?)"라는 인식론적 겸양과 성탑 서재(Arrière-boutique)의 내적 자유를 가르칩니다. ` +
@@ -204,6 +220,9 @@ export function calculateFrenchMichelDeMontaigneEssays(
     innerFreedomSanctuaryIndex,
     activeMontaigneTheme,
     focalMontaigneAphorism,
+    secondaryMontaigneAphorism,
+    reflectiveQuestion,
+    interpretiveBoundary,
     montaigneComprehensiveGuidance: {
       guidanceTitle,
       philosophicalCounsel,
@@ -230,7 +249,12 @@ export function formatFrenchMichelDeMontaigneEssaysPrompt(
     `- 영문 원전: "${res.focalMontaigneAphorism.aphorismEn}"`,
     `- 원전 출처: [${res.focalMontaigneAphorism.sourceContext}]`,
     `- 구체적 실천 지침: ${res.focalMontaigneAphorism.actionGuidance}`,
+    `- 보조 원전 테제: "${res.secondaryMontaigneAphorism.aphorismKo}"`,
+    `- 보조 원전 출처: [${res.secondaryMontaigneAphorism.sourceContext}]`,
+    `- 보조 실천 지침: ${res.secondaryMontaigneAphorism.actionGuidance}`,
+    `- 성찰 질문: ${res.reflectiveQuestion}`,
     `- 종합 몽테뉴 인문주의 권면: ${res.montaigneComprehensiveGuidance.philosophicalCounsel}`,
+    `- 해석 경계: ${res.interpretiveBoundary}`,
   ];
   if (res.montaigneSynthesisMatrix) {
     lines.push(

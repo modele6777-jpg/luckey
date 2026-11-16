@@ -10,12 +10,12 @@
  * 4. 메피스토펠레스의 냉소와 회의 극복: 모든 것을 부정하고 갉아먹는 악마적 회의주의를 오히려 생명력을 북돋우는 반작용으로 삼아 더 높은 차원으로 도약.
  * 5. 영원한 여성성(Das Ewig-Weibliche)과 유기적 변형(Metamorphose): 시련과 상처를 유기적 성장의 거름으로 삼아 영혼을 끝없이 고양하는 초월적 지혜.
  *
- * @version LUCKEY-GOETHE-FAUST-STRIVING-v2.0.0
+ * @version LUCKEY-GOETHE-FAUST-STRIVING-v2.1.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const GERMAN_GOETHE_FAUST_VERSION = 'LUCKEY-GOETHE-FAUST-STRIVING-v2.0.0';
+export const GERMAN_GOETHE_FAUST_VERSION = 'LUCKEY-GOETHE-FAUST-STRIVING-v2.1.0';
 
 export interface GoetheTheme {
   themeKey: string;
@@ -45,6 +45,9 @@ export interface JohannWolfgangGoetheFaustStrivingResult {
   // 세부 분석
   activeGoetheTheme: GoetheTheme;
   focalGoetheAphorism: GoetheAphorism;
+  secondaryGoetheAphorism: GoetheAphorism;
+  reflectiveQuestion: string;
+  interpretiveBoundary: string;
   goetheComprehensiveGuidance: {
     guidanceTitle: string;
     philosophicalCounsel: string;
@@ -125,7 +128,15 @@ function formatGoetheKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 KST`;
+}
+
+function buildGoetheReflectiveQuestion(theme: GoetheTheme, query?: string): string {
+  const trimmed = query?.trim();
+  if (trimmed) {
+    return `'${trimmed}' 앞에서 냉소와 망설임을 멈추고 오늘 당장 행동(Tat)으로 옮길 수 있는 가장 작은 한 걸음은 무엇인가요? (${theme.themeTitleKo})`;
+  }
+  return `지금 이 순간 온 마음을 다해 "멈추어라, 너는 참으로 아름답구나"라고 부를 수 있는 삶의 장면은 무엇인가요? (${theme.themeTitleKo})`;
 }
 
 function describeGoetheStage(score: number): string {
@@ -162,9 +173,14 @@ export function calculateGermanJohannWolfgangGoetheFaustStriving(
 
   const themeIndex = (absHash >> 4) % GOETHE_THEMES.length;
   const aphorismIndex = (absHash >> 7) % GOETHE_APHORISMS.length;
+  const secondaryOffset = 1 + ((absHash >> 10) % (GOETHE_APHORISMS.length - 1));
+  const secondaryAphorismIndex = (aphorismIndex + secondaryOffset) % GOETHE_APHORISMS.length;
 
   const activeGoetheTheme = GOETHE_THEMES[themeIndex];
   const focalGoetheAphorism = GOETHE_APHORISMS[aphorismIndex];
+  const secondaryGoetheAphorism = GOETHE_APHORISMS[secondaryAphorismIndex];
+  const reflectiveQuestion = buildGoetheReflectiveQuestion(activeGoetheTheme, query);
+  const interpretiveBoundary = '괴테 《파우스트》 관점은 성패 예언이나 도덕적 심판이 아니라, 끊임없는 갈망과 현재 몰입을 비추는 문학·철학적 성찰 렌즈입니다.';
 
   const guidanceTitle = `괴테 파우스트 갈망 노력 지혜: ${activeGoetheTheme.themeTitleKo}`;
   const philosophicalCounsel = `괴테의 파우스트 철학은 방황과 한계를 딛고 멈추지 않는 갈망으로 현재 순간에 온전히 몰입하는 영혼의 구원을 안내합니다. ` +
@@ -191,6 +207,9 @@ export function calculateGermanJohannWolfgangGoetheFaustStriving(
     eternalFeminineUpliftScore,
     activeGoetheTheme,
     focalGoetheAphorism,
+    secondaryGoetheAphorism,
+    reflectiveQuestion,
+    interpretiveBoundary,
     goetheComprehensiveGuidance: {
       guidanceTitle,
       philosophicalCounsel,
@@ -214,7 +233,12 @@ export function formatJohannWolfgangGoetheFaustStrivingPrompt(res: JohannWolfgan
     `- 핵심 경구: "${res.focalGoetheAphorism.aphorismKo}"`,
     `- 원문: "${res.focalGoetheAphorism.aphorismEn}" [${res.focalGoetheAphorism.sourceContext}]`,
     `- 구체적 실천 지침: ${res.focalGoetheAphorism.actionGuidance}`,
+    `- 보조 원전 테제: "${res.secondaryGoetheAphorism.aphorismKo}"`,
+    `- 보조 원전 출처: "${res.secondaryGoetheAphorism.aphorismEn}" [${res.secondaryGoetheAphorism.sourceContext}]`,
+    `- 보조 실천 지침: ${res.secondaryGoetheAphorism.actionGuidance}`,
+    `- 성찰 질문: ${res.reflectiveQuestion}`,
     `- 종합 통찰 권면: ${res.goetheComprehensiveGuidance.philosophicalCounsel}`,
+    `- 해석 경계: ${res.interpretiveBoundary}`,
   ];
   if (res.goetheSynthesisMatrix) {
     lines.push(

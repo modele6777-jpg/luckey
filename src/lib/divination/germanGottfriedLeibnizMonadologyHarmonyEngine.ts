@@ -8,12 +8,12 @@
  * 4. 최선의 가능한 세계 실존적 긍정 낙관성(The Best of All Possible Worlds / Le meilleur des mondes possibles): 어둠과 모순 속에서도 우주의 섭리가 가장 위대한 선과 조화를 향해 있음을 신뢰하는 궁극의 긍정.
  * 5. 충족이유율 인과적 의미 통찰력(Principle of Sufficient Reason / Principium rationis sufficientis): 어떤 일도 까닭 없이 일어나지 않는다는 철칙 아래 모든 사건의 근원적 의미와 교훈을 찾아내는 혜안.
  *
- * @version LUCKEY-GOTTFRIED-LEIBNIZ-MONADOLOGY-v2.0.0
+ * @version LUCKEY-GOTTFRIED-LEIBNIZ-MONADOLOGY-v2.1.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const GERMAN_GOTTFRIED_LEIBNIZ_VERSION = 'LUCKEY-GOTTFRIED-LEIBNIZ-MONADOLOGY-v2.0.0';
+export const GERMAN_GOTTFRIED_LEIBNIZ_VERSION = 'LUCKEY-GOTTFRIED-LEIBNIZ-MONADOLOGY-v2.1.0';
 
 export interface LeibnizTheme {
   themeKey: string;
@@ -43,6 +43,9 @@ export interface GottfriedLeibnizMonadologyHarmonyResult {
   // 세부 분석
   activeLeibnizTheme: LeibnizTheme;
   focalLeibnizAphorism: LeibnizAphorism;
+  secondaryLeibnizAphorism: LeibnizAphorism;
+  reflectiveQuestion: string;
+  interpretiveBoundary: string;
   leibnizComprehensiveGuidance: {
     guidanceTitle: string;
     philosophicalCounsel: string;
@@ -130,7 +133,15 @@ function formatLeibnizKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 KST`;
+}
+
+function buildLeibnizReflectiveQuestion(theme: LeibnizTheme, query?: string): string {
+  const trimmed = query?.trim();
+  if (trimmed) {
+    return `'${trimmed}'의 혼란 너머에서 지금 내 내면의 시계를 먼저 조율할 때 자연스레 풀릴 충족이유와 조화의 단서는 무엇인가요? (${theme.themeTitleKo})`;
+  }
+  return `지금 막연히 스치는 미소지각을 또렷한 통각으로 끌어올려 조화롭게 정돈할 삶의 자리는 어디인가요? (${theme.themeTitleKo})`;
 }
 
 function describeLeibnizStage(score: number): string {
@@ -167,9 +178,14 @@ export function calculateGottfriedLeibnizMonadologyHarmony(
 
   const themeIndex = (absHash >> 4) % LEIBNIZ_THEMES.length;
   const aphorismIndex = (absHash >> 7) % LEIBNIZ_APHORISMS.length;
+  const secondaryOffset = 1 + ((absHash >> 10) % (LEIBNIZ_APHORISMS.length - 1));
+  const secondaryAphorismIndex = (aphorismIndex + secondaryOffset) % LEIBNIZ_APHORISMS.length;
 
   const activeLeibnizTheme = LEIBNIZ_THEMES[themeIndex];
   const focalLeibnizAphorism = LEIBNIZ_APHORISMS[aphorismIndex];
+  const secondaryLeibnizAphorism = LEIBNIZ_APHORISMS[secondaryAphorismIndex];
+  const reflectiveQuestion = buildLeibnizReflectiveQuestion(activeLeibnizTheme, query);
+  const interpretiveBoundary = '라이프니츠 단자론·예정조화 관점은 운명론적 단정이나 사건 예언이 아니라, 인과의 의미와 내적 조화를 살피는 철학적 성찰 렌즈입니다.';
 
   const guidanceTitle = `라이프니츠 단자론 예정조화와 최선의 세계 지혜: ${activeLeibnizTheme.themeTitleKo}`;
   const philosophicalCounsel = `고트프리트 빌헬름 라이프니츠의 단자론 철학은 개별 영혼이 우주 전체를 비추는 살아있는 거울이며, 모든 만남과 사건이 보이지 않는 예정조화 속에서 최선의 선을 향해 나아감을 일깨웁니다. ` +
@@ -196,6 +212,9 @@ export function calculateGottfriedLeibnizMonadologyHarmony(
     sufficientReasonInsightScore,
     activeLeibnizTheme,
     focalLeibnizAphorism,
+    secondaryLeibnizAphorism,
+    reflectiveQuestion,
+    interpretiveBoundary,
     leibnizComprehensiveGuidance: {
       guidanceTitle,
       philosophicalCounsel,
@@ -219,7 +238,12 @@ export function formatGottfriedLeibnizMonadologyHarmonyPrompt(res: GottfriedLeib
     `- 핵심 원전 경구: "${res.focalLeibnizAphorism.aphorismKo}"`,
     `- 원전 출처: "${res.focalLeibnizAphorism.aphorismEn}" [${res.focalLeibnizAphorism.sourceContext}]`,
     `- 구체적 실천 지침: ${res.focalLeibnizAphorism.actionGuidance}`,
+    `- 보조 원전 테제: "${res.secondaryLeibnizAphorism.aphorismKo}"`,
+    `- 보조 원전 출처: "${res.secondaryLeibnizAphorism.aphorismEn}" [${res.secondaryLeibnizAphorism.sourceContext}]`,
+    `- 보조 실천 지침: ${res.secondaryLeibnizAphorism.actionGuidance}`,
+    `- 성찰 질문: ${res.reflectiveQuestion}`,
     `- 종합 합리주의 철학 권면: ${res.leibnizComprehensiveGuidance.philosophicalCounsel}`,
+    `- 해석 경계: ${res.interpretiveBoundary}`,
   ];
   if (res.leibnizSynthesisMatrix) {
     lines.push(

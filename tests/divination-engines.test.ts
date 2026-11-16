@@ -9355,3 +9355,39 @@ test('Dostoevsky, Tolstoy, and Chekhov designs stay qualitative without numeric 
     assert.doesNotMatch(body, /\d+\s*점|\d+\s*%|점수\s*\d/);
   }
 });
+
+test('Montaigne, Leibniz, and Goethe v2.1.0 include +09:00 KST, secondary aphorism cross-check, reflective question, and interpretive boundary', () => {
+  const profile = { basic: { name: '제제', birthdate: '1994-01-24', birthtime: '12:00', gender: 'male' } } as any;
+  const now = new Date('2026-11-16T03:45:00Z');
+  const query = '새로운 도전 앞에서 흔들리지 않는 기준을 잡고 싶습니다';
+
+  const mt = calculateFrenchMichelDeMontaigneEssays(profile, query, now);
+  assert.equal(mt.engineVersion, FRENCH_MICHEL_DE_MONTAIGNE_VERSION);
+  assert.match(mt.calculatedAtKst, /\+09:00/);
+  assert.notEqual(mt.secondaryMontaigneAphorism.aphorismKey, mt.focalMontaigneAphorism.aphorismKey);
+  assert.ok(mt.reflectiveQuestion.includes(query));
+  assert.ok(mt.interpretiveBoundary.includes('성찰'));
+  const mtPrompt = formatFrenchMichelDeMontaigneEssaysPrompt(mt);
+  assert.ok(mtPrompt.includes('+09:00') && mtPrompt.includes('보조 원전 테제') && mtPrompt.includes('성찰 질문') && mtPrompt.includes('해석 경계'));
+  assert.doesNotMatch(mtPrompt.split('\n').filter((l) => !l.startsWith('- 엔진 버전')).join('\n'), /\d+\s*점|\d+\s*%|점수\s*\d/);
+
+  const lb = calculateGottfriedLeibnizMonadologyHarmony(profile, query, now);
+  assert.equal(lb.engineVersion, GERMAN_GOTTFRIED_LEIBNIZ_VERSION);
+  assert.match(lb.calculatedAtKst, /\+09:00/);
+  assert.notEqual(lb.secondaryLeibnizAphorism.aphorismKey, lb.focalLeibnizAphorism.aphorismKey);
+  assert.ok(lb.reflectiveQuestion.includes(query));
+  assert.ok(lb.interpretiveBoundary.includes('성찰'));
+  const lbPrompt = formatGottfriedLeibnizMonadologyHarmonyPrompt(lb);
+  assert.ok(lbPrompt.includes('+09:00') && lbPrompt.includes('보조 원전 테제') && lbPrompt.includes('성찰 질문') && lbPrompt.includes('해석 경계'));
+  assert.doesNotMatch(lbPrompt.split('\n').filter((l) => !l.startsWith('- 엔진 버전')).join('\n'), /\d+\s*점|\d+\s*%|점수\s*\d/);
+
+  const gt = calculateGermanJohannWolfgangGoetheFaustStriving(profile, query, now);
+  assert.equal(gt.engineVersion, GERMAN_GOETHE_FAUST_VERSION);
+  assert.match(gt.calculatedAtKst, /\+09:00/);
+  assert.notEqual(gt.secondaryGoetheAphorism.aphorismKey, gt.focalGoetheAphorism.aphorismKey);
+  assert.ok(gt.reflectiveQuestion.includes(query));
+  assert.ok(gt.interpretiveBoundary.includes('성찰'));
+  const gtPrompt = formatJohannWolfgangGoetheFaustStrivingPrompt(gt);
+  assert.ok(gtPrompt.includes('+09:00') && gtPrompt.includes('보조 원전 테제') && gtPrompt.includes('성찰 질문') && gtPrompt.includes('해석 경계'));
+  assert.doesNotMatch(gtPrompt.split('\n').filter((l) => !l.startsWith('- 엔진 버전')).join('\n'), /\d+\s*점|\d+\s*%|점수\s*\d/);
+});
