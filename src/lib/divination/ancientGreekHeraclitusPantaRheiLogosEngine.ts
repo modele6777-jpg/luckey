@@ -13,7 +13,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const HERACLITUS_PANTA_RHEI_VERSION = 'LUCKEY-HERACLITUS-PANTA-RHEI-v2.1.0';
+export const HERACLITUS_PANTA_RHEI_VERSION = 'LUCKEY-HERACLITUS-PANTA-RHEI-v2.2.0';
 
 export interface HeraclitusStage {
   stageLevel: number;
@@ -80,6 +80,11 @@ export interface HeraclitusPantaRheiResult {
   situationalReflection: HeraclitusSituationalReflection;
   temporalFluxContext: HeraclitusTemporalFluxContext;
   dialecticPolarityMatrix: HeraclitusDialecticPolarityMatrix;
+  heraclitusSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
 }
 
 export type HeraclitusPantaRheiReport = HeraclitusPantaRheiResult;
@@ -290,6 +295,13 @@ export function calculateHeraclitusPantaRhei(
         : '긴장이 과도해져 한쪽으로 쏠리기 쉬운 국면입니다. 당장 결론을 밀어붙이기보다 반대편 시각에서 빠진 퍼즐 조각 하나를 먼저 확인하십시오.',
   };
 
+  const trimmedQ = (question || '').trim();
+  const heraclitusSynthesisMatrix = {
+    dominantTension: `${dialecticPolarityMatrix.dominantTensionPair} · ${situationalReflection.fragmentRef}`,
+    alignmentState: `${activeHeraclitusStage.stageNameGreek} · ${temporalFluxContext.fluxAttitude}`,
+    integratedAction: `${situationalReflection.dialecticShift}${trimmedQ ? ` [질문 맥락: ${trimmedQ}]` : ''}`,
+  };
+
   return {
     engineVersion: HERACLITUS_PANTA_RHEI_VERSION,
     calculatedAtKst: getKstDateString(now),
@@ -304,10 +316,14 @@ export function calculateHeraclitusPantaRhei(
     situationalReflection,
     temporalFluxContext,
     dialecticPolarityMatrix,
+    heraclitusSynthesisMatrix,
   };
 }
 
 export function formatHeraclitusPantaRheiPrompt(result: HeraclitusPantaRheiResult): string {
+  const matrixLine = result.heraclitusSynthesisMatrix
+    ? `\n- 헤라클레이토스 교차 매트릭스: 핵심 긴장(${result.heraclitusSynthesisMatrix.dominantTension}) · 조율 상태(${result.heraclitusSynthesisMatrix.alignmentState}) · 통합 실천(${result.heraclitusSynthesisMatrix.integratedAction})`
+    : '';
   return `[🌊 고대 그리스 에페소스 헤라클레이토스 만물유전(Panta Rhei) & 로고스 대립물 조화 리포트]
 - 엔진 버전: ${result.engineVersion} | 연산 시각: ${result.calculatedAtKst}
 - 로고스 조화 위상: **${describeLogosHarmonyStage(result.dialecticPolarityMatrix.tensionHarmonyRatio)}**
@@ -326,5 +342,5 @@ export function formatHeraclitusPantaRheiPrompt(result: HeraclitusPantaRheiResul
   → 실천 지침: ${result.primaryDialecticWisdom.actionableDirective}
 - 로고스의 우주적 계시: 《${result.logosCosmicInsight.insightTitle}》
   → 철학적 조언: "${result.logosCosmicInsight.philosophicalCounsel}"
-- 해석 경계: 본 리포트는 헤라클레이토스 단편 철학에 기반한 정성적 변화 성찰 안내이며, 확정적 미래 예단이 아닙니다.`;
+- 해석 경계: 본 리포트는 헤라클레이토스 단편 철학에 기반한 정성적 변화 성찰 안내이며, 확정적 미래 예단이 아닙니다.${matrixLine}`;
 }
