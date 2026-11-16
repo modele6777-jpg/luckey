@@ -2817,6 +2817,7 @@ test('Supreme Wisdom Trinity Engine: 기적수업 × 초기불교 × 영지주�
   assert.equal(res.engineVersion, SUPREME_WISDOM_TRINITY_VERSION);
   assert(res.calculatedAtKst.endsWith('KST'));
   assert(Boolean(res.trinitySynthesisMatrix?.integratedAction));
+  assert(res.interpretiveBoundary.length > 0);
   assert(res.trinitySynthesisCore.length > 0);
   assert(res.acim.workbookLessonQuote.length > 0);
   assert(res.acim.holyInstantShift.length > 0);
@@ -2827,7 +2828,7 @@ test('Supreme Wisdom Trinity Engine: 기적수업 × 초기불교 × 영지주�
   const prompt = formatSupremeWisdomTrinityPrompt(res);
   assert(prompt.includes('LUCKEY 궁극의 영적 3위1체 마스터 지혜'));
   assert(prompt.includes(res.trinitySynthesisCore));
-  assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('교차 매트릭스') && prompt.includes('해석 경계'));
   assert(!prompt.includes('/100'));
 });
 
@@ -4675,6 +4676,7 @@ test('Sumerian Enuma Elish Fifty Names Engine: calculates Tiamat subjugation, fo
   assert.equal(rep.engineVersion, ENUMA_ELISH_ENGINE_VERSION);
   assert(rep.calculatedAtKst.endsWith('KST'));
   assert(Boolean(rep.enumaElishSynthesisMatrix?.integratedAction));
+  assert(rep.interpretiveBoundary.length > 0);
   assert(rep.tiamatSubjugationOrderScore >= 0 && rep.tiamatSubjugationOrderScore <= 100);
   assert(rep.fiftySacredNamesResonanceIndex >= 0 && rep.fiftySacredNamesResonanceIndex <= 100);
   assert(rep.cosmicSovereigntyScore >= 0 && rep.cosmicSovereigntyScore <= 100);
@@ -4684,7 +4686,7 @@ test('Sumerian Enuma Elish Fifty Names Engine: calculates Tiamat subjugation, fo
   const prompt = formatSumerianEnumaElishFiftyNamesPrompt(rep);
   assert(prompt.includes('바빌로니아 에누마 엘리시 마르두크 50대 이름 & 4대 바람 정복 실측 데이터'));
   assert(prompt.includes(rep.dominantSacredName.nameKo));
-  assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('교차 매트릭스') && prompt.includes('해석 경계'));
   assert(!prompt.includes('/100'));
 });
 
@@ -6193,6 +6195,7 @@ test('Carl Gustav Jung Individuation Archetype Engine: calculates Self realizati
   assert.equal(rep.engineVersion, SWISS_JUNG_INDIVIDUATION_VERSION);
   assert(rep.calculatedAtKst.endsWith('KST'));
   assert(Boolean(rep.jungSynthesisMatrix?.integratedAction));
+  assert(rep.interpretiveBoundary.length > 0);
   assert(rep.individuationSelfRealizationScore >= 0 && rep.individuationSelfRealizationScore <= 100);
   assert(rep.shadowIntegrationCourageScore >= 0 && rep.shadowIntegrationCourageScore <= 100);
   assert(rep.animaAnimusHarmoniousBalanceScore >= 0 && rep.animaAnimusHarmoniousBalanceScore <= 100);
@@ -6202,7 +6205,7 @@ test('Carl Gustav Jung Individuation Archetype Engine: calculates Self realizati
   const prompt = formatJungIndividuationArchetypePrompt(rep);
   assert(prompt.includes('카를 융 개성화(Individuation) & 원형 통합 지표'));
   assert(prompt.includes(rep.activeJungTheme.themeTitleKo));
-  assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('교차 매트릭스') && prompt.includes('해석 경계'));
   assert(!prompt.includes('/100'));
 });
 

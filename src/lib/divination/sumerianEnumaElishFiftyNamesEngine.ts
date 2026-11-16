@@ -20,7 +20,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const ENUMA_ELISH_ENGINE_VERSION = '2.0.0';
+export const ENUMA_ELISH_ENGINE_VERSION = '2.1.0';
 
 export interface MardukSacredName {
   id: string;
@@ -56,6 +56,7 @@ export interface SumerianEnumaElishFiftyNamesReport {
     alignmentState: string;
     integratedAction: string;
   };
+  interpretiveBoundary: string;
 }
 
 function formatEnumaElishKstTimestamp(now: Date = new Date()): string {
@@ -197,6 +198,8 @@ export function calculateSumerianEnumaElishFiftyNames(
     integratedAction: `${dominantSacredName.actionVirtue}${question ? ` [질문 맥락: ${question}]` : ''}`,
   };
 
+  const interpretiveBoundary = '본 에누마 엘리시 마르두크 50대 이름 리포트는 고대 메소포타미아 서사시 원전과 수리 시드에 기반한 상징적 결단 안내이며, 절대적 예언이 아닙니다.';
+
   return {
     engineVersion: ENUMA_ELISH_ENGINE_VERSION,
     timestamp: now.toISOString(),
@@ -210,6 +213,7 @@ export function calculateSumerianEnumaElishFiftyNames(
     enumaElishVictoryDecree,
     tabletOfDestinyGuidance,
     enumaElishSynthesisMatrix,
+    interpretiveBoundary,
   };
 }
 
@@ -231,5 +235,6 @@ export function formatSumerianEnumaElishFiftyNamesPrompt(rep: SumerianEnumaElish
       `  - 통합 실천: ${rep.enumaElishSynthesisMatrix.integratedAction}`,
     );
   }
+  lines.push(`· 해석 경계: ${rep.interpretiveBoundary}`);
   return lines.join('\n');
 }

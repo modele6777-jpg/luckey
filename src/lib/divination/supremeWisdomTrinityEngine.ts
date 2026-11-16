@@ -23,7 +23,7 @@ import { ACIM_SACRED_QUOTES, ACIM_CORE_CANON } from '../acimWisdom';
 import { NIKAYA_SACRED_QUOTES, EARLY_BUDDHISM_CORE_CANON } from '../earlyBuddhismWisdom';
 import { GNOSTIC_SACRED_QUOTES, GNOSTIC_CORE_CANON } from '../gnosticWisdom';
 
-export const SUPREME_WISDOM_TRINITY_VERSION = 'LUCKEY-TRINITY-WISDOM-v2.0.0';
+export const SUPREME_WISDOM_TRINITY_VERSION = 'LUCKEY-TRINITY-WISDOM-v2.1.0';
 
 function formatTrinityKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -76,6 +76,7 @@ export interface SupremeWisdomTrinityReport {
     alignmentState: string;
     integratedAction: string;
   };
+  interpretiveBoundary: string;
 }
 
 export function runSupremeWisdomTrinityEngine(
@@ -169,6 +170,8 @@ export function runSupremeWisdomTrinityEngine(
     integratedAction: `${gnosisAction.slice(0, 60)}${q ? ` [질문 맥락: ${q}]` : ''}`,
   };
 
+  const interpretiveBoundary = '본 영적 3위1체 마스터 지혜 리포트는 기적수업·초기불교·영지주의 문헌과 사주 오행 상징을 결합한 내면 성찰 안내이며, 종교적 교리 강요나 의학적 치료를 대체하지 않습니다.';
+
   const synthesisPromptGuidance = `[🕊️ LUCKEY 궁극의 영적 3위1체 마스터 지혜 (기적수업 × 초기불교 × 영지주의) ${SUPREME_WISDOM_TRINITY_VERSION} | ${calculatedAtKst}]
 ======================================================================
 ■ 핵심 통합 화두: ${trinitySynthesisCore}
@@ -197,6 +200,8 @@ export function runSupremeWisdomTrinityEngine(
   * 핵심 긴장: ${trinitySynthesisMatrix.dominantTension}
   * 조율 상태: ${trinitySynthesisMatrix.alignmentState}
   * 통합 실천: ${trinitySynthesisMatrix.integratedAction}
+
+■ 5. 해석 경계: ${interpretiveBoundary}
 
 ■ 루시의 체화 지침:
 ${lucyWisdomGuidance}
@@ -233,6 +238,7 @@ ${lucyWisdomGuidance}
     lucyWisdomGuidance,
     synthesisPromptGuidance,
     trinitySynthesisMatrix,
+    interpretiveBoundary,
   };
 }
 

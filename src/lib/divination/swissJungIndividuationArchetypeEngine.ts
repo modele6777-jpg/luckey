@@ -9,12 +9,12 @@
  * 4. 페르소나(Persona) 유연성: 사회적 적응을 위한 가면(Persona)과 진정한 내적 자기를 혼동하지 않고 유연하게 상황을 조율하는 경계 지혜.
  * 5. 동시성(Synchronicity): 물리적 인과율을 넘어 내면의 심리 상태와 외부 세계의 사건이 깊은 상징적 의미로 연결되는 초인과적 유의미한 일치 직관.
  *
- * @version LUCKEY-SWISS-JUNG-INDIVIDUATION-v2.0.0
+ * @version LUCKEY-SWISS-JUNG-INDIVIDUATION-v2.1.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const SWISS_JUNG_INDIVIDUATION_VERSION = 'LUCKEY-SWISS-JUNG-INDIVIDUATION-v2.0.0';
+export const SWISS_JUNG_INDIVIDUATION_VERSION = 'LUCKEY-SWISS-JUNG-INDIVIDUATION-v2.1.0';
 
 export interface JungArchetypeTheme {
   themeKey: string;
@@ -53,6 +53,7 @@ export interface JungIndividuationArchetypeResult {
     alignmentState: string;
     integratedAction: string;
   };
+  interpretiveBoundary: string;
 }
 
 function formatJungKstTimestamp(now: Date = new Date()): string {
@@ -188,6 +189,8 @@ export function calculateJungIndividuationArchetype(
     integratedAction: `${focalJungAphorism.practicalAction}${q ? ` [질문 맥락: ${q}]` : ''}`,
   };
 
+  const interpretiveBoundary = '본 카를 융 개성화·원형 통합 리포트는 분석심리학 원전과 수리 시드에 기반한 자기 성찰 안내이며, 임상 심리 진단이나 치료를 대신하지 않습니다.';
+
   return {
     engineVersion: SWISS_JUNG_INDIVIDUATION_VERSION,
     calculatedAtKst,
@@ -203,6 +206,7 @@ export function calculateJungIndividuationArchetype(
       philosophicalGuidance,
     },
     jungSynthesisMatrix,
+    interpretiveBoundary,
   };
 }
 
@@ -223,5 +227,6 @@ export function formatJungIndividuationArchetypePrompt(res: JungIndividuationArc
       `  · 통합 실천: ${res.jungSynthesisMatrix.integratedAction}`,
     );
   }
+  lines.push(`- 해석 경계: ${res.interpretiveBoundary}`);
   return lines.join('\n');
 }
