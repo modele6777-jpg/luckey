@@ -2015,8 +2015,10 @@ test('Tarot Master Engine: 78 아르카나 수비학 소울·퍼스널리티·�
 });
 
 test('Ziwei Flying Stars Engine: 유년 사화 동적 비성 및 삼방사정 밸런스 검증', () => {
-  const res = calculateZiweiFlyingStars({ profile, targetYear: 2026 });
+  const res = calculateZiweiFlyingStars({ profile, targetYear: 2026, question: '올해 재물과 커리어 방향' });
   assert.equal(res.engineVersion, ZIWEI_FLYING_STARS_ENGINE_VERSION);
+  assert(res.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(res.ziweiFlyingSynthesisMatrix?.integratedAction));
   assert.equal(res.targetYear, 2026);
   assert(res.mutagens.lu.starName.length > 0);
   assert(res.mutagens.quan.starName.length > 0);
@@ -2034,6 +2036,9 @@ test('Ziwei Flying Stars Engine: 유년 사화 동적 비성 및 삼방사정 �
   assert(prompt.includes('삼방사정(三方四正) 사화 집결도'));
   assert(prompt.includes('록기교충(祿忌交衝) 리스크 방어선'));
   assert(prompt.includes('유년 4분기 완급 조절 타임라인'));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
 });
 
 test('HeLuoLiShu Engine: 사주·주역 융합 선천괘·후천괘·원당효 일생 마스터플랜 검증', () => {
@@ -3537,6 +3542,8 @@ test('Sumerian Fifty Mes & Civilization Engine: calculates primary me, creation 
 test('Zhong-Lu Inner Alchemy & Three Immortals Engine: calculates stages, tier and kan-li qualitative posture', () => {
   const rep = calculateZhongLuInnerAlchemy(profile, '요즘 너무 지쳐서 회복하고 싶어요');
   assert.equal(rep.engineVersion, ZHONG_LU_INNER_ALCHEMY_VERSION);
+  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(rep.zhongLuSynthesisMatrix?.integratedAction));
   assert.equal(rep.questionTheme, 'healing');
   assert(rep.immortalityTier.koreanTitle.length > 0);
   assert(rep.kanLiPosture.length > 0);
@@ -3547,6 +3554,7 @@ test('Zhong-Lu Inner Alchemy & Three Immortals Engine: calculates stages, tier a
   const prompt = formatZhongLuInnerAlchemyPrompt(rep);
   assert(prompt.includes('도교 종려권·여동빈 종여내단(鍾呂內丹) 3품 선도 & 환원 엔진'));
   assert(prompt.includes(rep.immortalityTier.koreanTitle));
+  assert(prompt.includes('교차 매트릭스'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('조화도:'));
 });
