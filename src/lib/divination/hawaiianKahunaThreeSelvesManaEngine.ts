@@ -5,7 +5,7 @@
  * 3대 자아(우니히필리·우하네·아우마쿠아)의 삼위일체 정렬과 신성한 생명 에너지 마나(Mana) 순환을 연동합니다.
  */
 
-export const HAWAIIAN_KAHUNA_THREE_SELVES_ENGINE_VERSION = 'LUCKEY-HAWAIIAN-KAHUNA-v2.0.0';
+export const HAWAIIAN_KAHUNA_THREE_SELVES_ENGINE_VERSION = 'LUCKEY-HAWAIIAN-KAHUNA-v2.1.0';
 
 export interface KahunaSelfState {
   selfType: '우니히필리 (Unihipili - 잠재의식/내면아이)' | '우하네 (Uhane - 의식/이성적 자아)' | '아우마쿠아 (Aumakua - 초의식/신성한 고차원 자아)';
@@ -25,8 +25,10 @@ export interface KahunaManaReport {
   aumakua: KahunaSelfState;
   manaResonanceScore: number; // 0 ~ 100 (3대 자아 마나 흐름 정렬도)
   currentManaPikoState: '피코 포오 (Piko Poʻo - 정수리 영적 연결)' | '피코 피코 (Piko Piko - 배꼽 현재 육체 중심)' | '피코 마이 (Piko Mai - 조상 및 뿌리 에너지)';
+  secondaryManaPikoState: '피코 포오 (Piko Poʻo - 정수리 영적 연결)' | '피코 피코 (Piko Piko - 배꼽 현재 육체 중심)' | '피코 마이 (Piko Mai - 조상 및 뿌리 에너지)';
   kalaCleansingRitual: string; // 카라(Kala) 해방 및 무결성 회복
   haBreathingPrescription: string; // 마나 축적 하(Ha) 호흡법
+  interpretiveBoundary: string;
   situationalKahunaAudit: {
     questionFocus: string;
     pikoAlignmentNote: string;
@@ -145,7 +147,9 @@ export function calculateHawaiianKahunaThreeSelves(params: {
     '피코 피코 (Piko Piko - 배꼽 현재 육체 중심)',
     '피코 마이 (Piko Mai - 조상 및 뿌리 에너지)',
   ];
-  const currentManaPikoState = pikoStates[Math.abs(seed) % pikoStates.length];
+  const pikoIdx = Math.abs(seed) % pikoStates.length;
+  const currentManaPikoState = pikoStates[pikoIdx];
+  const secondaryManaPikoState = pikoStates[(pikoIdx + 1 + (Math.abs(seed >> 3) % (pikoStates.length - 1))) % pikoStates.length];
 
   const kalaCleansingRitual = '카라(Kala) 리추얼: "과거의 모든 죄책감과 매듭을 지금 이 순간 완전히 풉니다(Kala). 나의 우니히필리야, 우리는 안전하며 자유롭다."라고 3회 소리 내어 읊조리세요.';
   const haBreathingPrescription = '하(Ha) 호흡법 처방: 코로 4박자 동안 깊게 마시고, 4박자 멈추며 마나를 단전에 응축한 뒤, "하~" 소리와 함께 입으로 4박자 내쉬는 호흡을 4회 반복하여 생명 에너지를 완충하세요.';
@@ -154,7 +158,7 @@ export function calculateHawaiianKahunaThreeSelves(params: {
   const kstDate = new Date(kstMs);
   const kstHour = kstDate.getUTCHours();
   const kstMonth = kstDate.getUTCMonth() + 1;
-  const calculatedAtKst = `${kstDate.getUTCFullYear()}-${String(kstMonth).padStart(2, '0')}-${String(kstDate.getUTCDate()).padStart(2, '0')} ${String(kstHour).padStart(2, '0')}:${String(kstDate.getUTCMinutes()).padStart(2, '0')} KST`;
+  const calculatedAtKst = `${kstDate.getUTCFullYear()}-${String(kstMonth).padStart(2, '0')}-${String(kstDate.getUTCDate()).padStart(2, '0')} ${String(kstHour).padStart(2, '0')}:${String(kstDate.getUTCMinutes()).padStart(2, '0')} +09:00 KST`;
 
   const qLower = question.toLowerCase();
   const questionFocus = /연애|사랑|관계|결혼|재회|이별/.test(qLower)
@@ -186,10 +190,14 @@ export function calculateHawaiianKahunaThreeSelves(params: {
 
   const pikoTimingNote = `${kahunaManaWindow}과 ${seasonalTradewindPhase}에 맞춰 ${currentManaPikoState}을 의식적으로 호흡하십시오.`;
 
+  const trimmedQuestion = question.trim();
+  const interpretiveBoundary = '하와이 카후나 3대 자아 관점은 의학적 진단이나 미래 예단이 아니라, 내면의 감정(우니히필리)·이성(우하네)·직관(아우마쿠아)의 조화를 비추는 성찰 렌즈입니다.';
   const kahunaSynthesisMatrix = {
     coreMandate: `${currentManaPikoState}을 중심축으로 ${questionFocus}을 실행하십시오.`,
     sacredBoundary: '우하네의 과도한 통제로 우니히필리를 억압하지 말고, 먼저 감정을 달랜 뒤 이성적 결정을 내리십시오.',
-    reflectiveQuestion: `지금 내 안의 내면 아이(우니히필리)가 가장 듣고 싶어 하는 안심의 한마디는 무엇인가요?`,
+    reflectiveQuestion: trimmedQuestion
+      ? `'${trimmedQuestion}'에서 내 안의 내면 아이(우니히필리)가 지금 가장 듣고 싶어 하는 안심의 한마디는 무엇인가요? (${currentManaPikoState})`
+      : `지금 내 안의 내면 아이(우니히필리)가 가장 듣고 싶어 하는 안심의 한마디는 무엇인가요? (${currentManaPikoState})`,
   };
 
   return {
@@ -201,8 +209,10 @@ export function calculateHawaiianKahunaThreeSelves(params: {
     aumakua,
     manaResonanceScore,
     currentManaPikoState,
+    secondaryManaPikoState,
     kalaCleansingRitual,
     haBreathingPrescription,
+    interpretiveBoundary,
     situationalKahunaAudit: {
       questionFocus,
       pikoAlignmentNote,
@@ -222,12 +232,13 @@ export function formatHawaiianKahunaThreeSelvesPrompt(report: KahunaManaReport):
   return `### 🌺 고대 하와이 카후나 3대 자아 & 마나 공명 실측 데이터 (${report.engineVersion})
 - **기준 시각(KST)**: ${report.temporalKahunaRhythm.calculatedAtKst}
 - **질문 맥락 & 피코(Piko) 감사**: ${report.situationalKahunaAudit.questionFocus} | ${report.situationalKahunaAudit.pikoAlignmentNote}
-- **현재 집중 마나 중심축 (Piko)**: ${report.currentManaPikoState}
+- **현재 집중 마나 중심축 (Piko)**: ${report.currentManaPikoState} (보조 조율 축: ${report.secondaryManaPikoState})
 - **우니히필리 (Unihipili - 잠재의식/내면아이)**: 상태: ${report.unihipili.dominantNeedOrBlock} | 처방: ${report.unihipili.harmonyPrescription}
 - **우하네 (Uhane - 의식/이성적 자아)**: 상태: ${report.uhane.dominantNeedOrBlock} | 처방: ${report.uhane.harmonyPrescription}
 - **아우마쿠아 (Aumakua - 초의식/신성한 자아)**: 상태: ${report.aumakua.dominantNeedOrBlock} | 처방: ${report.aumakua.harmonyPrescription}
 - **시공간 리듬**: ${report.temporalKahunaRhythm.kahunaManaWindow} · ${report.temporalKahunaRhythm.seasonalTradewindPhase}
 - **카라(Kala) 해방 리추얼**: ${report.kalaCleansingRitual}
 - **마나 충전 하(Ha) 호흡법**: ${report.haBreathingPrescription}
-- **교차 매트릭스**: ${report.kahunaSynthesisMatrix.coreMandate} | 경계: ${report.kahunaSynthesisMatrix.sacredBoundary} | 성찰 질문: "${report.kahunaSynthesisMatrix.reflectiveQuestion}"`;
+- **교차 매트릭스**: ${report.kahunaSynthesisMatrix.coreMandate} | 경계: ${report.kahunaSynthesisMatrix.sacredBoundary} | 성찰 질문: "${report.kahunaSynthesisMatrix.reflectiveQuestion}"
+- **해석 경계**: ${report.interpretiveBoundary}`;
 }
