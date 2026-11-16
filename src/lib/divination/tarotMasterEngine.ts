@@ -29,7 +29,7 @@
 import type { UserProfile } from '../sharedState';
 import { resolveEffectiveSolarDate } from '../lunarCalendar';
 
-export const TAROT_MASTER_ENGINE_VERSION = 'LUCKEY-TAROT-v2.0.0';
+export const TAROT_MASTER_ENGINE_VERSION = 'LUCKEY-TAROT-v2.1.0';
 
 function formatTarotMasterKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -140,6 +140,7 @@ export interface TarotMasterResult {
     alignmentState: string;
     integratedAction: string;
   };
+  interpretiveBoundary: string;
 }
 
 /**
@@ -388,6 +389,8 @@ export function calculateTarotMaster(params?: {
     integratedAction: `${suitManifestation.actionProtocol}${q ? ` [질문 맥락: ${q}]` : ''}`,
   };
 
+  const interpretiveBoundary = '본 타로 78 아르카나 마스터 리포트는 수비학·4원소·생명나무 상징 체계에 기반한 자기 성찰 안내이며, 결정론적 운명 단정이 아닙니다.';
+
   return {
     engineVersion: TAROT_MASTER_ENGINE_VERSION,
     method: TAROT_MASTER_METHOD,
@@ -414,6 +417,7 @@ export function calculateTarotMaster(params?: {
     },
     suitManifestation,
     tarotSynthesisMatrix,
+    interpretiveBoundary,
   };
 }
 
@@ -445,5 +449,6 @@ export function formatTarotMasterPrompt(res: TarotMasterResult): string {
   • 행동 프로토콜: ${res.suitManifestation.actionProtocol}
   • 일상 데일리 루틴: ${res.suitManifestation.dailyPractice}
 - 마스터 확언: "${res.masterAffirmation}"${matrixLine}
+- 해석 경계: ${res.interpretiveBoundary}
 ※ 루시 지침: 타로는 우주적 동시성의 언어입니다. 단순 카드 한 장의 해석을 넘어, 사용자의 영혼 소명(소울 카드), 사회적 무기(퍼스널리티), 세피라 영적 계단, 정·역방향 그림자 극복 방안, 4원소 마이너 수트 실천 가이드를 깊고 신비로우면서도 명료하게 연결해 주세요.`;
 }

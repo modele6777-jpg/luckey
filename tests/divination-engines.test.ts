@@ -645,6 +645,7 @@ test('Taiyi Shenshu: 16-palace calculation, 72 Ju, Jusan/Gaeksan and prompt form
   assert(r1.palaces.length === 16);
   assert(r1.threeGi !== null);
   assert(r1.fiveBlessings !== null);
+  assert((r1.interpretiveBoundary ?? '').length > 0);
 
   // Determinism check
   const r2 = calculateTaiyi({ profile, targetYear: 2026 });
@@ -656,7 +657,7 @@ test('Taiyi Shenshu: 16-palace calculation, 72 Ju, Jusan/Gaeksan and prompt form
   assert(prompt.includes('태을신수'));
   assert(prompt.includes('주산'));
   assert(prompt.includes('객산'));
-  assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('교차 매트릭스') && prompt.includes('해석 경계'));
   assert(!prompt.includes('/100'));
 
   // Skipped without birthdate
@@ -1997,6 +1998,7 @@ test('Tarot Master Engine: 78 아르카나 수비학 소울·퍼스널리티·�
   assert.equal(res.engineVersion, TAROT_MASTER_ENGINE_VERSION);
   assert(res.calculatedAtKst.endsWith('KST'));
   assert(Boolean(res.tarotSynthesisMatrix?.integratedAction));
+  assert(res.interpretiveBoundary.length > 0);
   assert(res.soulCard.number >= 1 && res.soulCard.number <= 9);
   assert(res.personalityCard.number >= 1 && res.personalityCard.number <= 21);
   assert(res.yearCard.number >= 1 && res.yearCard.number <= 21);
@@ -2015,7 +2017,7 @@ test('Tarot Master Engine: 78 아르카나 수비학 소울·퍼스널리티·�
   assert(prompt.includes('3카드 타임라인 스프레드'));
   assert(prompt.includes('카발라 생명나무 세피라 조응'));
   assert(prompt.includes('마이너 아르카나 수트 실천 지침'));
-  assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('교차 매트릭스') && prompt.includes('해석 경계'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });
@@ -2883,6 +2885,7 @@ test('Synchronicity Omen Engine: 칼 융 동시성 징조 해독 & 오멘 매트
   assert.equal(res.engineVersion, SYNCHRONICITY_OMEN_VERSION);
   assert(res.calculatedAtKst.endsWith('KST'));
   assert(Boolean(res.synchronicitySynthesisMatrix?.integratedAction));
+  assert(res.interpretiveBoundary.length > 0);
   assert(res.dominantOmenTheme.length > 0);
   assert(res.synchronicityChannel.primaryChannelName.length > 0);
   assert(['GREEN_ACCELERATE', 'AMBER_PAUSE_OBSERVE', 'GOLDEN_QUANTUM_LEAP'].includes(res.synchronicityChannel.manifestationSignal));
@@ -2891,7 +2894,7 @@ test('Synchronicity Omen Engine: 칼 융 동시성 징조 해독 & 오멘 매트
   const prompt = formatSynchronicityOmenPrompt(res);
   assert(prompt.includes('LUCKEY 칼 융 동시성 징조 해독 & 오멘 매트릭스'));
   assert(prompt.includes(res.dominantOmenTheme));
-  assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('교차 매트릭스') && prompt.includes('해석 경계'));
   assert(!prompt.includes('/100'));
 });
 

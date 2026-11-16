@@ -39,7 +39,7 @@ import type { UserProfile } from '../sharedState';
 import { resolveEffectiveSolarDate } from '../lunarCalendar';
 import { parseBirthTime } from '../birthDateTime';
 
-export const TAIYI_ENGINE_VERSION = 'LUCKEY-TY-v2.0.0';
+export const TAIYI_ENGINE_VERSION = 'LUCKEY-TY-v2.1.0';
 
 function formatTaiyiKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -126,6 +126,7 @@ export interface TaiyiResult {
     alignmentState: string;
     integratedAction: string;
   };
+  interpretiveBoundary?: string;
   note?: string;
 }
 
@@ -368,6 +369,8 @@ export function calculateTaiyi(params: {
     integratedAction: `${macroStrategicMatrix.tacticalWindowAdvice}${q ? ` [질문 맥락: ${q}]` : ''}`,
   };
 
+  const interpretiveBoundary = '본 태을신수 16궁 연국 리포트는 정통 적년 수리와 주객 산법에 기반한 거시 흐름 참고 지표이며, 확정적 승패 예언이나 투자·법률 자문이 아닙니다.';
+
   return {
     status: 'calculated',
     engineVersion: TAIYI_ENGINE_VERSION,
@@ -402,6 +405,7 @@ export function calculateTaiyi(params: {
     macroActionStrategy,
     macroStrategicMatrix,
     taiyiSynthesisMatrix,
+    interpretiveBoundary,
   };
 }
 
@@ -502,7 +506,7 @@ export function formatTaiyiPrompt(result: TaiyiResult): string {
   * 결단 실행 윈도우: ${result.macroStrategicMatrix.tacticalWindowAdvice}` : ''}${result.taiyiSynthesisMatrix ? `\n- 교차 매트릭스:
   * 핵심 긴장: ${result.taiyiSynthesisMatrix.dominantTension}
   * 조율 상태: ${result.taiyiSynthesisMatrix.alignmentState}
-  * 통합 실천: ${result.taiyiSynthesisMatrix.integratedAction}` : ''}
+  * 통합 실천: ${result.taiyiSynthesisMatrix.integratedAction}` : ''}${result.interpretiveBoundary ? `\n- 해석 경계: ${result.interpretiveBoundary}` : ''}
 - [AI 해석 절대 지침]: 본 리포트는 100% 전통 역법 수리로 계산된 실측 데이터입니다. 주산/객산 수리 및 승부 판정을 임의 변경하지 말고, 거시적 타이밍과 시대 흐름 조언에 충실히 반영하십시오.
 `.trim();
 }
