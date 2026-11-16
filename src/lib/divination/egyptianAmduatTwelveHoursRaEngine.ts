@@ -24,7 +24,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const EGYPTIAN_AMDUAT_VERSION = '2.0.0';
+export const EGYPTIAN_AMDUAT_VERSION = '2.1.0';
 
 export interface AmduatSituationalAudit {
   duatGateFocus: string;
@@ -73,6 +73,7 @@ export interface EgyptianAmduatReport {
   temporalAmduatRhythm: AmduatTemporalRhythm;
   amduatSynthesisMatrix: AmduatSynthesisMatrix;
   amduatHieroglyphicWisdom: string;
+  calculatedAtKst: string;
 }
 
 function djb2Hash(str: string): number {
@@ -278,9 +279,13 @@ export function calculateEgyptianAmduat(
     nextBarqueStep: situationalAmduatAudit.barqueAction,
   };
 
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const calculatedAtKst = kst.toISOString().replace('T', ' ').substring(0, 19) + ' +09:00 KST';
+
   return {
     engineVersion: EGYPTIAN_AMDUAT_VERSION,
     calculatedAt: now.toISOString(),
+    calculatedAtKst,
     khepriRebirthLuminosityScore,
     apophisChaosDispellingForce,
     midnightRaOsirisUnionPower,
@@ -299,6 +304,7 @@ export function formatEgyptianAmduatPrompt(report: EgyptianAmduatReport): string
   const khepriGrade = report.khepriRebirthLuminosityScore >= 85 ? '찬란함' : report.khepriRebirthLuminosityScore >= 72 ? '안정' : '응축중';
   const apophisGrade = report.apophisChaosDispellingForce >= 82 ? '강건함' : '수호중';
   return `### 고대 이집트 《암두아트의 서》 12시간 태양신 라의 밤의 저승 항해 & 케프리 부활 엔진 (v${report.engineVersion})
+- **기준 시각**: ${report.calculatedAtKst}
 - **현재 통과 시간대**: 제${report.currentAmduatHour.hourNumber}시간 [${report.currentAmduatHour.hourNameAncient}] - ${report.currentAmduatHour.hourTheme}
   - *영적 시험*: ${report.currentAmduatHour.cosmicTrial}
   - *승리의 축복*: ${report.currentAmduatHour.victoryBlessing}
@@ -312,5 +318,6 @@ export function formatEgyptianAmduatPrompt(report: EgyptianAmduatReport): string
   - *시간대 지침*: ${report.temporalAmduatRhythm.voyageGuidance}
 - **교차 매트릭스**: ${report.amduatSynthesisMatrix.hourGuardianLink}
 - **암두아트 상형문자 지혜 잠언**:
-  - "${report.amduatHieroglyphicWisdom}"`;
+  - "${report.amduatHieroglyphicWisdom}"
+- **해석 경계**: 암두아트의 서 밤의 항해와 케프리 부활 상징을 빌린 정성적 순환 성찰 관점이며, 수치 등급이나 미래 단정이 아닙니다.`;
 }

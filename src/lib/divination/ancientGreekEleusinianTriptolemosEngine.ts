@@ -14,7 +14,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const ELEUSINIAN_TRIPTOLEMOS_VERSION = 'LUCKEY-ELEUSINIAN-TRIPTOLEMOS-v2.0.0';
+export const ELEUSINIAN_TRIPTOLEMOS_VERSION = 'LUCKEY-ELEUSINIAN-TRIPTOLEMOS-v2.1.0';
 
 export interface TriptolemosChariotStage {
   stageLevel: number;
@@ -188,7 +188,7 @@ function buildSynthesisMatrix(
 
 function getKstDateString(now: Date): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
-  return kst.toISOString().replace('T', ' ').substring(0, 19) + ' KST';
+  return kst.toISOString().replace('T', ' ').substring(0, 19) + ' +09:00 KST';
 }
 
 function hashSeed(seedStr: string): number {
@@ -263,5 +263,6 @@ export function formatEleusinianTriptolemosPrompt(result: EleusinianTriptolemosR
   → 시의 조언: ${result.temporalEleusisRhythm.timingAdvice}
 - 트리프톨레모스 교차 매트릭스: ${result.triptolemosSynthesisMatrix.synthesizedVerdict}
 - 엘레우시스 신비 비전: 《${result.eleusinianEpiphany.visionTitle}》
-  → 영적 지혜: "${result.eleusinianEpiphany.spiritualWisdom}"`;
+  → 영적 지혜: "${result.eleusinianEpiphany.spiritualWisdom}"
+- 해석 경계: 엘레우시스 밀의 트리프톨레모스 3대 율법 상징을 빌린 정성적 성찰 관점이며, 개인 평가나 미래 단정이 아닙니다.`;
 }

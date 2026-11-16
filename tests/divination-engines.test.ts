@@ -9162,3 +9162,24 @@ test('Yarrow I Ching, Ptah Memphite, and Delphic Chilon v2.1.0 include +09:00 KS
   const chPrompt = formatDelphicChilonPrompt(ch);
   assert.ok(chPrompt.includes('해석 경계') && chPrompt.includes('+09:00'));
 });
+
+test('Eleusinian Triptolemos, Zoroastrian Amesha Spentas, and Egyptian Amduat v2.1.0 include +09:00 KST and interpretive boundary', () => {
+  const now = new Date('2026-11-16T02:35:00Z');
+  const tr = calculateEleusinianTriptolemos(profile, '새로운 일을 시작하며 좋은 씨앗을 뿌리고 싶습니다', now);
+  assert.equal(tr.engineVersion, ELEUSINIAN_TRIPTOLEMOS_VERSION);
+  assert.ok(tr.calculatedAtKst.includes('+09:00'));
+  const trPrompt = formatEleusinianTriptolemosPrompt(tr);
+  assert.ok(trPrompt.includes('해석 경계') && trPrompt.includes('+09:00'));
+
+  const am = calculateZoroastrianAmeshaSpentas(profile, '갈등 상황에서 올바른 선택을 하고 싶습니다', now);
+  assert.equal(am.engineVersion, ZOROASTRIAN_AMESHA_SPENTAS_VERSION);
+  assert.ok(am.calculatedAtKst.includes('+09:00'));
+  const amPrompt = formatZoroastrianAmeshaSpentasPrompt(am);
+  assert.ok(amPrompt.includes('해석 경계') && amPrompt.includes('+09:00'));
+
+  const ad = calculateEgyptianAmduat(profile, now, '밤을 건너 새 출발을 준비하고 싶어요');
+  assert.equal(ad.engineVersion, EGYPTIAN_AMDUAT_VERSION);
+  assert.ok(ad.calculatedAtKst.includes('+09:00'));
+  const adPrompt = formatEgyptianAmduatPrompt(ad);
+  assert.ok(adPrompt.includes('해석 경계') && adPrompt.includes('+09:00'));
+});
