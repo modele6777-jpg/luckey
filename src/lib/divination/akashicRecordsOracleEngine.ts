@@ -14,7 +14,7 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const AKASHIC_RECORDS_VERSION = 'LUCKEY-AKASHIC-v2.0.0';
+export const AKASHIC_RECORDS_VERSION = 'LUCKEY-AKASHIC-v2.1.0';
 
 export interface SoulOriginDetails {
   originSystem: string;          // 영혼 기원 항성계 / 아키타입
@@ -52,6 +52,7 @@ export interface AkashicSynthesisMatrix {
 export interface AkashicRecordsOracleReport {
   engineVersion: string;
   calculatedAt: string;
+  calculatedAtKst: string;
   soulOrigin: SoulOriginDetails;
   soulContract: SacredSoulContract;
   soulAgeMaturity: string;
@@ -236,7 +237,11 @@ export function runAkashicRecordsOracleEngine(
     nextContractStep: situationalAkashicAudit.groundingPractice,
   };
 
-  const synthesisPromptGuidance = `[LUCKEY 아카식 레코드 영혼 서약 & 카르믹 청사진 v2.0.0]
+  const kst = new Date(targetDate.getTime() + 9 * 3600 * 1000);
+  const calculatedAtKst = `${kst.toISOString().slice(0, 19)}+09:00`;
+
+  const synthesisPromptGuidance = `[LUCKEY 아카식 레코드 영혼 서약 & 카르믹 청사진 v2.1.0]
+- 연산 시각: ${calculatedAtKst}
 - 영혼의 기원: [${originSystem}]
   * 본질적 파동: ${soulEssenceQuality}
   * 지상에서의 사명: ${cosmicMission}
@@ -250,11 +255,13 @@ export function runAkashicRecordsOracleEngine(
 - KST 시공간 리듬 (${temporalAkashicRhythm.kstHour}시): ${temporalAkashicRhythm.akashicAccessWindow} · ${temporalAkashicRhythm.seasonalEvolutionPhase} (${temporalAkashicRhythm.libraryTempo})
   * 시간대 지침: ${temporalAkashicRhythm.timingGuidance}
 - 아카식 교차 매트릭스: ${akashicSynthesisMatrix.originContractLink}
-- 아카식 접속 만트라: "${akashicAccessMantra}"`;
+- 아카식 접속 만트라: "${akashicAccessMantra}"
+- 해석 경계: 본 리포트는 아카식 레코드 상징 아키타입에 기반한 정성적 성찰 안내이며, 확정적 예언이 아닙니다.`;
 
   return {
     engineVersion: AKASHIC_RECORDS_VERSION,
     calculatedAt: targetDate.toISOString(),
+    calculatedAtKst,
     soulOrigin,
     soulContract,
     soulAgeMaturity,

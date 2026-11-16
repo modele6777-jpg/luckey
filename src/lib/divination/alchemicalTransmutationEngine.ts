@@ -14,7 +14,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const ALCHEMICAL_TRANSMUTATION_VERSION = 'LUCKEY-ALCHEM-TRANSMUTE-v2.0.0';
+export const ALCHEMICAL_TRANSMUTATION_VERSION = 'LUCKEY-ALCHEM-TRANSMUTE-v2.1.0';
 
 export type AlchemicalQuestionFocus = 'career' | 'relationship' | 'anxiety' | 'change' | 'spiritual';
 
@@ -61,6 +61,7 @@ export interface OpusSynthesisMatrix {
 export interface AlchemicalTransmutationReport {
   engineVersion: string;
   calculatedAt: string;
+  calculatedAtKst: string;
   questionFocus: AlchemicalQuestionFocus;
   currentStage: AlchemicalStage;
   currentPhase: AlchemicalPhase;
@@ -334,9 +335,13 @@ export function calculateAlchemicalTransmutation(
 
   const dailyAlchemicalRitual = `[${currentStage.element}] 에너지 정화 리추얼: 하루 중 조용한 3분을 내어, 현재 나를 짓누르는 [${primaMateria}]을/를 연금술의 도가니 속에 넣고 천천히 숨을 내쉬며 불태우거나 녹여내는 시각화를 진행하세요.`;
 
+  const kst = new Date(targetDate.getTime() + 9 * 3600 * 1000);
+  const calculatedAtKst = `${kst.toISOString().slice(0, 19)}+09:00`;
+
   return {
     engineVersion: ALCHEMICAL_TRANSMUTATION_VERSION,
     calculatedAt: targetDate.toISOString(),
+    calculatedAtKst,
     questionFocus,
     currentStage,
     currentPhase,
@@ -353,6 +358,7 @@ export function calculateAlchemicalTransmutation(
 
 export function formatAlchemicalTransmutationPrompt(report: AlchemicalTransmutationReport): string {
   return `### ⚗️ 서양 정통 연금술 7단계 영혼 변환 & 심리적 승화 엔진 (${ALCHEMICAL_TRANSMUTATION_VERSION})
+- **연산 시각**: ${report.calculatedAtKst}
 - **현재 연금술 단계**: ${report.currentStage.nameLatin} (${report.currentStage.nameKo}) [원소: ${report.currentStage.element}]
 - **4대 연금술 국면**: ${report.currentPhase.phaseName} (상징: ${report.currentPhase.colorSymbol} · ${report.currentPhase.opusState})
 - **정화할 원재료 (Prima Materia)**: ${report.primaMateria}
@@ -368,5 +374,6 @@ export function formatAlchemicalTransmutationPrompt(report: AlchemicalTransmutat
   - 시의성 지침: ${report.temporalOpusRhythm.timingGuidance}
 - **연금술 교차 매트릭스**: ${report.opusSynthesisMatrix.synthesizedVerdict} (${report.opusSynthesisMatrix.coagulatioReadiness})
 - **대업(Opus Magnum) 완수 지침**: ${report.opusMagnumGuidance}
-- **일일 연금술 정화 리추얼**: ${report.dailyAlchemicalRitual}`;
+- **일일 연금술 정화 리추얼**: ${report.dailyAlchemicalRitual}
+- **해석 경계**: 본 리포트는 서양 연금술 7단계와 융 심층심리학 상징에 기반한 정성적 성찰 안내이며, 의학적·재정적 처방이 아닙니다.`;
 }
