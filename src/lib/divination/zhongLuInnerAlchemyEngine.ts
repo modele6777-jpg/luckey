@@ -11,7 +11,17 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const ZHONG_LU_INNER_ALCHEMY_VERSION = 'LUCKEY-ZHONG-LU-ALCHEMY-v1.1.0';
+export const ZHONG_LU_INNER_ALCHEMY_VERSION = 'LUCKEY-ZHONG-LU-ALCHEMY-v2.0.0';
+
+function formatZhongLuKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
 
 export type ZhongLuQuestionTheme = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -38,6 +48,7 @@ export interface ImmortalityTierResonance {
 export interface ZhongLuAlchemyReport {
   engineVersion: string;
   calculatedAt: string;
+  calculatedAtKst: string;
   questionTheme: ZhongLuQuestionTheme;
   kanLiState: KanLiBalanceState;
   kanLiPosture: string;
@@ -51,6 +62,11 @@ export interface ZhongLuAlchemyReport {
   reflectionFocus: string;
   counselNote: string;
   boundaryNotice: string;
+  zhongLuSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
 }
 
 const IMMORTALITY_TIERS: ImmortalityTierResonance[] = [
@@ -175,10 +191,17 @@ export function calculateZhongLuInnerAlchemy(
 
   const qualitative = buildZhongLuQualitativeFields(immortalityTier, dominantStage, kanLiPosture, questionTheme);
   const synthesisMessage = `종려내단 선도 원전에 따라 [${immortalityTier.koreanTitle}]의 흐름 위에 있으며, 현재 중심 연단 국면은 [${dominantStage}]입니다.`;
+  const calculatedAtKst = formatZhongLuKstTimestamp(now);
+  const zhongLuSynthesisMatrix = {
+    dominantTension: `${kanLiState} ↔ ${dominantStage.split('(')[0].trim()}`,
+    alignmentState: `${immortalityTier.koreanTitle} · ${questionTheme}`,
+    integratedAction: `${qualitative.ritual}${trimmedQ ? ` [질문 맥락: ${trimmedQ}]` : ''}`,
+  };
 
   return {
     engineVersion: ZHONG_LU_INNER_ALCHEMY_VERSION,
     calculatedAt: now.toISOString(),
+    calculatedAtKst,
     questionTheme,
     kanLiState,
     kanLiPosture,
@@ -197,11 +220,15 @@ export function calculateZhongLuInnerAlchemy(
     reflectionFocus: qualitative.reflection,
     counselNote: qualitative.counsel,
     boundaryNotice: '종여내단 3품 선도와 수화기제 상징은 우열 점수가 아니라 심신 균형과 일상의 리듬을 살피기 위한 정성적 양생 프레임입니다.',
+    zhongLuSynthesisMatrix,
   };
 }
 
 export function formatZhongLuInnerAlchemyPrompt(report: ZhongLuAlchemyReport): string {
-  return `### ☯️ 도교 종려권·여동빈 종여내단(鍾呂內丹) 3품 선도 & 환원 엔진 (${ZHONG_LU_INNER_ALCHEMY_VERSION})
+  const matrixLine = report.zhongLuSynthesisMatrix
+    ? `\n- **종여내단 교차 매트릭스**: 핵심 긴장(${report.zhongLuSynthesisMatrix.dominantTension}) · 조율 상태(${report.zhongLuSynthesisMatrix.alignmentState}) · 통합 실천(${report.zhongLuSynthesisMatrix.integratedAction})`
+    : '';
+  return `### ☯️ 도교 종려권·여동빈 종여내단(鍾呂內丹) 3품 선도 & 환원 엔진 (${ZHONG_LU_INNER_ALCHEMY_VERSION} | ${report.calculatedAtKst})
 - **질문 맥락 & 수화기제 상태**: ${report.questionTheme} · ${report.kanLiState}
 - **수화기제 조화 국면**: ${report.kanLiPosture}
 - **현재 주도 연단 단계**: **${report.stageScores.dominantStage}**
@@ -213,5 +240,5 @@ export function formatZhongLuInnerAlchemyPrompt(report: ZhongLuAlchemyReport): s
 - **일상 의례**: ${report.ritualAction}
 - **성찰 질문**: ${report.reflectionFocus}
 - **조언 요약**: ${report.counselNote}
-- **해석 경계**: ${report.boundaryNotice}`;
+- **해석 경계**: ${report.boundaryNotice}${matrixLine}`;
 }

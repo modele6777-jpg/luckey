@@ -28,7 +28,17 @@ import { calculateZiwei } from './birthCharts';
 import { resolveEffectiveSolarDate } from '../lunarCalendar';
 import { parseBirthTime } from '../birthDateTime';
 
-export const ZIWEI_FLYING_STARS_ENGINE_VERSION = 'LUCKEY-ZFSE-v1.1.0';
+export const ZIWEI_FLYING_STARS_ENGINE_VERSION = 'LUCKEY-ZFSE-v2.0.0';
+
+function formatZiweiFlyingKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
 
 export type MutagenType = '화록(化祿)' | '화권(化權)' | '화과(化科)' | '화기(化忌)';
 
@@ -110,6 +120,11 @@ export interface ZiweiFlyingStarsResult {
   sanFangSiZhengBalance: SanFangSiZhengBalance;
   luJiConflictDynamics: LuJiConflictDynamics;
   quarterlyPacing: QuarterlyFlyingStarsPacing[];
+  ziweiFlyingSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
 }
 
 // 십간사화 정통 기준표
@@ -182,10 +197,11 @@ const BRANCHES_HANJA = ['子', '丑', '寅', '卯', '辰', '巳', '午', '未', 
 export function calculateZiweiFlyingStars(options?: {
   profile?: UserProfile;
   targetYear?: number;
+  question?: string;
 }): ZiweiFlyingStarsResult {
   const now = new Date();
   const nowUtcIso = now.toISOString();
-  const nowKstIso = new Date(now.getTime() + 9 * 3600000).toISOString().replace('Z', '+09:00');
+  const nowKstIso = formatZiweiFlyingKstTimestamp(now);
 
   const targetYear = options?.targetYear || now.getFullYear();
 
@@ -408,6 +424,13 @@ export function calculateZiweiFlyingStars(options?: {
   const keyVulnerability = `${jiPlacement.targetPalaceName}의 ${jiPlacement.starName} 화기: 세부 조건의 불협화음이나 소모적 마찰 주의`;
   const strategicVerdict = `화록으로 씨를 뿌리고 화권으로 과감히 밀어붙이되, 화기 자리에서는 한 박자 쉬어가는 완급 조절이 올해의 대승을 완성합니다.`;
 
+  const q = (options?.question || '').trim();
+  const ziweiFlyingSynthesisMatrix = {
+    dominantTension: `${luPlacement.targetPalaceName}(화록) ↔ ${jiPlacement.targetPalaceName}(화기) [${relationType}]`,
+    alignmentState: `${yearGanZhiKr} · ${patternGrade}`,
+    integratedAction: `${strategicVerdict}${q ? ` [질문 맥락: ${q}]` : ''}`,
+  };
+
   return {
     engineVersion: ZIWEI_FLYING_STARS_ENGINE_VERSION,
     calculatedAtUtc: nowUtcIso,
@@ -445,6 +468,7 @@ export function calculateZiweiFlyingStars(options?: {
     sanFangSiZhengBalance,
     luJiConflictDynamics,
     quarterlyPacing,
+    ziweiFlyingSynthesisMatrix,
   };
 }
 
@@ -457,10 +481,13 @@ export function formatZiweiFlyingStarsPrompt(res: ZiweiFlyingStarsResult): strin
   const s = res.yearlyStrategy;
   const sf = res.sanFangSiZhengBalance;
   const lj = res.luJiConflictDynamics;
+  const matrixLine = res.ziweiFlyingSynthesisMatrix
+    ? `\n6. [자미두수 비성 교차 매트릭스]:\n   - 핵심 긴장: ${res.ziweiFlyingSynthesisMatrix.dominantTension}\n   - 조율 상태: ${res.ziweiFlyingSynthesisMatrix.alignmentState}\n   - 통합 실천: ${res.ziweiFlyingSynthesisMatrix.integratedAction}`
+    : '';
 
   return `[🌌 자미두수 유년 사화(四化) 동적 비성 실측 데이터 (Ziwei Flying Stars Core)]
 ======================================================================
-엔진 버전: ${res.engineVersion} | 기준 세운: ★ ${res.yearGanZhiKr}
+엔진 버전: ${res.engineVersion} | 기준 일시: ${res.calculatedAtKst} | 기준 세운: ★ ${res.yearGanZhiKr}
 명반 축: 명궁 지지 [${res.natalChartSummary.soulPalaceBranch}] · 신궁(身宮) [${res.natalChartSummary.bodyPalaceBranch}] · 국수 [${res.natalChartSummary.fiveElementsClass}]
 ======================================================================
 1. [올해 4대 사화(四化) 동적 비성 낙궁(落宮) 실측]:
@@ -482,7 +509,7 @@ export function formatZiweiFlyingStarsPrompt(res: ZiweiFlyingStarsResult): strin
 
 2. [삼방사정(三方四正) 사화 집결도 및 돌파력]:
    - 핵심 축: ${sf.myMingPalaceName} + 삼합(${sf.sanFangPalaces.join('·')}) + 대궁(${sf.siZhengOppositePalace})
-   - 돌파력 스코어: ${sf.breakthroughPowerScore}점 [${sf.patternGrade}]
+   - 위상 격국: [${sf.patternGrade}]
    - 핵심 역학 진단: ${sf.coreDynamicsAdvice}
 
 3. [록기교충(祿忌交衝) 리스크 방어선]:
@@ -499,7 +526,7 @@ ${res.quarterlyPacing.map((q) => `   - ${q.quarter}: ${q.pacingTheme} -> ${q.tac
    - 인연 & 심신 밸런스 축: ${s.relationshipAndHealthAxis}
    - 최대 기회: ${s.keyOpportunity}
    - 최대 병목: ${s.keyVulnerability}
-   - 결론적 승부수: "${s.strategicVerdict}"
+   - 결론적 승부수: "${s.strategicVerdict}"${matrixLine}
 ======================================================================
 [★ 루시 자미두수 비성 상담 지침]:
 - 사용자가 올해 운세, 커리어 방향, 재물운, 직업 이동, 스트레스 원인을 물을 때 위 실측 사화 낙궁(화록/화권/화과/화기), 삼방사정 돌파력, 록기 방어선, 4분기 타임라인을 명쾌한 인생의 나침반으로 제시해줘.
