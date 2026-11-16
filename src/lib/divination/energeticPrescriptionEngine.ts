@@ -24,7 +24,7 @@ import {
   type FiveElement
 } from '../sajuAnalysis';
 
-export const ENERGETIC_PRESCRIPTION_ENGINE_VERSION = 'LUCKEY-EPE-v2.0.0';
+export const ENERGETIC_PRESCRIPTION_ENGINE_VERSION = 'LUCKEY-EPE-v2.1.0';
 
 function formatEnergeticKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -121,6 +121,8 @@ export interface EnergeticPrescriptionResult {
     alignmentState: string;
     integratedAction: string;
   };
+
+  interpretiveBoundary: string;
 }
 
 // 오행별 메타데이터 매핑
@@ -537,6 +539,7 @@ export function calculateEnergeticPrescription(options: {
     microRituals,
     lifestyleRemedy,
     energeticSynthesisMatrix,
+    interpretiveBoundary: '본 결핍 오행·바이오 에너지 처방은 명리 오행 균형에 기반한 일상 웰니스 성찰 안내이며, 의학적 진단이나 치료를 대신하지 않습니다.',
   };
 }
 
@@ -587,6 +590,7 @@ ${res.energeticSynthesisMatrix ? `5. [교차 매트릭스]:
    - 핵심 긴장: ${res.energeticSynthesisMatrix.dominantTension}
    - 조율 상태: ${res.energeticSynthesisMatrix.alignmentState}
    - 통합 실천: ${res.energeticSynthesisMatrix.integratedAction}` : ''}
+   - 해석 경계: ${res.interpretiveBoundary}
 ======================================================================
 [★ 루시 답변 가이드]:
 - 사용자가 피로, 건강, 개운, 오행, 라이프스타일을 물을 때 위 실측 데이터를 기반으로 지혜롭고 자상하게 처방해줘.

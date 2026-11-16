@@ -39,7 +39,7 @@ import type { UserProfile } from '../sharedState';
 import { calculateDetailedSaju, BRANCH_KOREAN, type SajuAnalysisResult } from '../sajuAnalysis';
 import { getAstronomicalSajuYear } from '../astronomicalSolarTerms';
 
-export const AUSPICIOUS_STARS_ENGINE_VERSION = 'LUCKEY-AS-v2.0.0';
+export const AUSPICIOUS_STARS_ENGINE_VERSION = 'LUCKEY-AS-v2.1.0';
 
 export const AUSPICIOUS_STARS_METHOD =
   '천을(갑무경축미·을기자신·병정해유·임계사묘·신인오, 일간+년간 4주 대조, 일지/년월시지 분해)·문창(전통 가요)·학당(장생지)·문곡(상관 록지)·천덕·월덕(월지 기준) 6대 길신 매트릭스, 일지 순 공망과 충형 간섭 길력 보정, 세운·대운 지지 귀인 도래 타임라인 및 상호 귀인 인연 매칭 결정론 산출';
@@ -173,6 +173,7 @@ export interface AuspiciousStarsResult {
 
   actionGuide: string[];
   summary: string;
+  interpretiveBoundary: string;
 }
 
 const STEMS_HANJA = ['甲', '乙', '丙', '丁', '戊', '己', '庚', '辛', '壬', '癸'];
@@ -632,6 +633,7 @@ export function calculateAuspiciousStars(params: {
     resonance: null,
     actionGuide: [],
     summary: '',
+    interpretiveBoundary: '본 천을귀인·길신 매트릭스 리포트는 명리 고전 길신 원리에 기반한 정성적 성찰 안내이며, 확정적 길흉 예단이 아닙니다.',
   };
 
   try {
@@ -832,6 +834,7 @@ ${resonanceTxt}
 ${res.actionGuide.map((a, i) => `   ${i + 1}. ${a}`).join('\n')}${auditTxt}${temporalTxt}${matrixSynthTxt}
 
 종합: ${res.summary}
+해석 경계: ${res.interpretiveBoundary}
 ======================================================================
 [★ 루시 길신 상담 지침]:
 - 위 데이터는 결정론 엔진(${res.engineVersion})의 100% 수리 산출입니다. 길신의 위치(일지 천을 = 내 몸과 배우자궁, 년/월/시지 천을 = 사회·직업·말년)를 구분해 해석하세요.

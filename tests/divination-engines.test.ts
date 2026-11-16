@@ -609,7 +609,8 @@ test('Auspicious stars: 천을귀인 via year stem, kongwang/chung/hyeong interf
   assert.equal(t.upcomingYears[0].year,2027);assert.equal(t.upcomingYears[0].ganZhi,'丁未');
   assert(t.upcomingYears[0].arrivedNobles.includes('천을귀인'));
   const prompt=formatAuspiciousStarsPrompt(r);
-  assert(prompt.includes(AUSPICIOUS_STARS_ENGINE_VERSION)&&prompt.includes('천을귀인')&&prompt.includes('공망'));
+  assert(prompt.includes(AUSPICIOUS_STARS_ENGINE_VERSION)&&prompt.includes('천을귀인')&&prompt.includes('공망')&&prompt.includes('해석 경계'));
+  assert(r.interpretiveBoundary.length>0);
   assert(!prompt.includes('/100')&&!prompt.includes('%'));
 });
 test('Auspicious stars: resonance detects when the partner holds my noble branch; skips without profile',()=>{
@@ -2332,10 +2333,11 @@ test('Energetic Prescription Engine: 결핍 오행 바이오 에너지 맞춤 �
   assert.equal(res.engineVersion, ENERGETIC_PRESCRIPTION_ENGINE_VERSION);
   assert(res.calculatedAtKst.endsWith('KST'));
   assert(Boolean(res.energeticSynthesisMatrix?.integratedAction));
+  assert(res.interpretiveBoundary.length > 0);
   assert(res.microRituals.length > 0);
   const prompt = formatEnergeticPrescriptionPrompt(res);
   assert(prompt.includes(ENERGETIC_PRESCRIPTION_ENGINE_VERSION));
-  assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('교차 매트릭스') && prompt.includes('해석 경계'));
   assert(!prompt.includes('/100'));
 });
 
@@ -2841,12 +2843,15 @@ test('Synchronicity Omen Engine: 칼 융 동시성 징조 해독 & 오멘 매트
 test('Etheric Aura Biofield Engine: 에테르 오라 생체장 & 쉴딩 결계 검증', () => {
   const res = calculateEthericAuraBiofield({ profile, targetDate: new Date('2026-11-04T14:00:00+09:00') });
   assert.equal(res.engineVersion, ETHERIC_AURA_VERSION);
+  assert(res.calculatedAtKst.endsWith('+09:00'));
+  assert(res.interpretiveBoundary.length > 0);
   assert(res.auraBiofieldTitle.length > 0);
   assert(res.spectrum.primaryColor.length > 0);
   assert(res.shielding.integrityScore >= 0 && res.shielding.integrityScore <= 100);
   assert(res.shielding.vulnerableZone.length > 0);
   const prompt = formatEthericAuraBiofieldPrompt(res);
   assert(prompt.includes('LUCKEY 에테르 오라 생체장 & 쉴딩'));
+  assert(prompt.includes('+09:00') && prompt.includes('해석 경계'));
   assert(prompt.includes(res.spectrum.primaryColor));
   assert(!prompt.includes('/100') && !prompt.includes('%'));
 });
