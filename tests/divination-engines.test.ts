@@ -9493,3 +9493,35 @@ test('Egyptian Hermetic Cartouche, Essene Communion, and Greek Moirai v2.1.0 inc
   const moPrompt = formatGreekMoiraiAnankeFatePrompt(mo);
   assert.ok(moPrompt.includes('+09:00') && moPrompt.includes('보조 여신') && moPrompt.includes('성찰 질문') && moPrompt.includes('해석 경계'));
 });
+
+test('Hindu Nadi Agastya, Sri Yantra, and Ikigai v2.1.0 include +09:00 KST, dual cross-check, reflective question, and interpretive boundary', () => {
+  const profile = { basic: { name: '제제', birthdate: '1994-01-24', birthtime: '12:00', gender: 'male' } } as any;
+  const now = new Date('2026-11-16T04:25:00Z');
+  const query = '내 일의 소명을 선명하게 세우고 균형을 잡고 싶습니다';
+
+  const na = calculateHinduNadiAgastyaPalmLeaf({ profile, targetDate: now, question: query });
+  assert.equal(na.engineVersion, HINDU_NADI_AGASTYA_PALM_LEAF_ENGINE_VERSION);
+  assert.match(na.calculatedAtKst, /\+09:00/);
+  assert.notEqual(na.secondaryKandamNumber, na.activeKandamNumber);
+  assert.ok(na.reflectiveQuestion.includes(query));
+  assert.ok(na.interpretiveBoundary.includes('성찰'));
+  const naPrompt = formatHinduNadiAgastyaPalmLeafPrompt(na);
+  assert.ok(naPrompt.includes('+09:00') && naPrompt.includes('보조 교차 칸담') && naPrompt.includes('성찰 질문') && naPrompt.includes('해석 경계'));
+
+  const sy = calculateHinduSriYantraSacredGeometry(profile, now, query);
+  assert.equal(sy.engineVersion, SRI_YANTRA_ENGINE_VERSION);
+  assert.match(sy.calculatedAtKst, /\+09:00/);
+  assert.notEqual(sy.secondaryAvaranaChakra.level, sy.primaryAvaranaChakra.level);
+  assert.ok(sy.sriYantraSynthesisMatrix.reflectiveQuestion.includes(query));
+  assert.ok(sy.interpretiveBoundary.includes('성찰'));
+  const syPrompt = formatHinduSriYantraSacredGeometryPrompt(sy);
+  assert.ok(syPrompt.includes('+09:00') && syPrompt.includes('보조 교차 회랑') && syPrompt.includes('성찰 질문') && syPrompt.includes('해석 경계'));
+
+  const ik = calculateIkigaiDestinyCompass({ profile, targetDate: now, question: query });
+  assert.equal(ik.engineVersion, IKIGAI_DESTINY_COMPASS_VERSION);
+  assert.match(ik.calculatedAtKst, /\+09:00/);
+  assert.ok(ik.reflectiveQuestion.includes(query));
+  assert.ok(ik.interpretiveBoundary.includes('성찰'));
+  const ikPrompt = formatIkigaiDestinyCompassPrompt(ik);
+  assert.ok(ikPrompt.includes('+09:00') && ikPrompt.includes('성찰 질문') && ikPrompt.includes('해석 경계'));
+});
