@@ -15,7 +15,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const MESOPOTAMIAN_NISABA_VERSION = 'LUCKEY-MESOPOTAMIAN-NISABA-v2.0.0';
+export const MESOPOTAMIAN_NISABA_VERSION = 'LUCKEY-MESOPOTAMIAN-NISABA-v2.1.0';
 
 export interface NisabaScribeRank {
   rankLevel: number;
@@ -36,7 +36,13 @@ export interface MesopotamianNisabaResult {
   astralMulConstellationResonance: number; // 성좌 관측(MUL) 우주 리듬 일치율
   // 세부 명세
   activeScribeRank: NisabaScribeRank;
+  secondaryScribeRank: NisabaScribeRank;
   primaryCuneiformVerdict: {
+    sumerianWord: string;
+    meaningKo: string;
+    sacredGuidance: string;
+  };
+  secondaryCuneiformVerdict: {
     sumerianWord: string;
     meaningKo: string;
     sacredGuidance: string;
@@ -45,6 +51,8 @@ export interface MesopotamianNisabaResult {
     tabletSection: string;
     wisdomVerse: string;
   };
+  reflectiveQuestion: string;
+  interpretiveBoundary: string;
   nisabaSynthesisMatrix?: {
     dominantTension: string;
     alignmentState: string;
@@ -91,7 +99,7 @@ function getKstDateString(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 KST`;
 }
 
 function hashSeed(seedStr: string): number {
@@ -120,13 +128,23 @@ export function calculateMesopotamianNisaba(
   const astralMulConstellationResonance = ((seed >> 9) % 38) + 63; // 63~100
 
   const rankIdx = (seed >> 2) % NISABA_RANKS.length;
+  const secondaryRankIdx = (rankIdx + 1 + ((seed >> 3) % (NISABA_RANKS.length - 1))) % NISABA_RANKS.length;
   const activeScribeRank = NISABA_RANKS[rankIdx];
+  const secondaryScribeRank = NISABA_RANKS[secondaryRankIdx];
 
   const verdictIdx = (seed >> 4) % CUNEIFORM_VERDICTS.length;
+  const secondaryVerdictIdx = (verdictIdx + 1 + ((seed >> 5) % (CUNEIFORM_VERDICTS.length - 1))) % CUNEIFORM_VERDICTS.length;
   const primaryCuneiformVerdict = CUNEIFORM_VERDICTS[verdictIdx];
+  const secondaryCuneiformVerdict = CUNEIFORM_VERDICTS[secondaryVerdictIdx];
 
   const decreeIdx = (seed >> 6) % LAPISLAZULI_DECREES.length;
   const lapislazuliDecree = LAPISLAZULI_DECREES[decreeIdx];
+
+  const trimmedQuery = query?.trim();
+  const reflectiveQuestion = trimmedQuery
+    ? `니사바의 '${activeScribeRank.rankNameKo}'와 보조 역할 '${secondaryScribeRank.rankNameKo}'의 시선으로 볼 때, "${trimmedQuery}"에서 청금석 서판에 가장 분명히 바로잡아 적어야 할 기준은 무엇인가요?`
+    : `지금 '${primaryCuneiformVerdict.sumerianWord}'의 원칙과 '${secondaryCuneiformVerdict.sumerianWord}'의 균형을 함께 세워 정돈할 일은 무엇일까요?`;
+  const interpretiveBoundary = '이 지표는 고대 수메르 서기와 도량형·천문 측량의 여신 니사바(Nisaba) 전승을 기록의 정밀함과 공정한 분별의 거울로 해석한 것이며, 구체적 사건의 성패를 단정하는 예언이 아닙니다.';
 
   const composite = Math.round(
     (reedStylusPrecisionIndex + lapislazuliTabletClarityScore + edubbaIntellectualGrowth + sacredNindanMeasureBalance + astralMulConstellationResonance) / 5
@@ -146,8 +164,12 @@ export function calculateMesopotamianNisaba(
     sacredNindanMeasureBalance,
     astralMulConstellationResonance,
     activeScribeRank,
+    secondaryScribeRank,
     primaryCuneiformVerdict,
+    secondaryCuneiformVerdict,
     lapislazuliDecree,
+    reflectiveQuestion,
+    interpretiveBoundary,
     nisabaSynthesisMatrix,
   };
 }
@@ -161,11 +183,15 @@ export function formatMesopotamianNisabaPrompt(result: MesopotamianNisabaResult)
     `- 연산 시각: ${result.calculatedAtKst} | 엔진 버전: ${result.engineVersion}`,
     `- 서기 수리 국면: ${describeNisabaStage(composite)}`,
     `- 현행 서기 지위: ${result.activeScribeRank.rankNameKo} (${result.activeScribeRank.rankSumerian})`,
+    `- 보조 교차 서기 지위: ${result.secondaryScribeRank.rankNameKo} (${result.secondaryScribeRank.rankSumerian})`,
     `- 관장 천문 영역: ${result.activeScribeRank.astralDomain} [속성: ${result.activeScribeRank.celestialAttribute}]`,
     `- 핵심 쐐기문자 명제: **[${result.primaryCuneiformVerdict.sumerianWord}]** - ${result.primaryCuneiformVerdict.meaningKo}`,
+    `- 보조 교차 명제: **[${result.secondaryCuneiformVerdict.sumerianWord}]** - ${result.secondaryCuneiformVerdict.sacredGuidance}`,
     `  → 서기의 지침: ${result.primaryCuneiformVerdict.sacredGuidance}`,
     `- 청금석 서판 신탁: 《${result.lapislazuliDecree.tabletSection}》`,
     `  → 고대 찬가: "${result.lapislazuliDecree.wisdomVerse}"`,
+    `- 성찰 질문: ${result.reflectiveQuestion}`,
+    `- 해석 경계: ${result.interpretiveBoundary}`,
   ];
   if (result.nisabaSynthesisMatrix) {
     lines.push(
