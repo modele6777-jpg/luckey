@@ -9183,3 +9183,24 @@ test('Eleusinian Triptolemos, Zoroastrian Amesha Spentas, and Egyptian Amduat v2
   const adPrompt = formatEgyptianAmduatPrompt(ad);
   assert.ok(adPrompt.includes('해석 경계') && adPrompt.includes('+09:00'));
 });
+
+test('Delphic Maxims, Egyptian Maat Feather Heart, and Egyptian Sphinx Dream Oracle v2.1.0 include +09:00 KST and interpretive boundary', () => {
+  const now = new Date('2026-11-16T02:45:00Z');
+  const dm = calculateDelphicMaximsOracle({ profile, targetDate: now, question: '결정과 약속의 기준' });
+  assert.equal(dm.engineVersion, DELPHIC_MAXIMS_VERSION);
+  assert.ok(dm.calculatedAtKst.includes('+09:00'));
+  const dmPrompt = formatDelphicMaximsOraclePrompt(dm);
+  assert.ok(dmPrompt.includes('해석 경계') && dmPrompt.includes('+09:00'));
+
+  const mt = calculateEgyptianMaatFeatherHeart({ profile, now, question: '이직 결정을 앞두고 마음이 무거워요' });
+  assert.equal(mt.engineVersion, EGYPTIAN_MAAT_FEATHER_ENGINE_VERSION);
+  assert.ok(mt.calculatedAtKst.includes('+09:00'));
+  const mtPrompt = formatEgyptianMaatFeatherHeartPrompt(mt);
+  assert.ok(mtPrompt.includes('해석 경계') && mtPrompt.includes('+09:00') && !mtPrompt.includes('실측 데이터'));
+
+  const sx = calculateEgyptianSphinxDreamOracle({ profile, now, question: '사소한 잡무와 불안을 걷어내고 싶습니다' });
+  assert.equal(sx.engineVersion, EGYPTIAN_SPHINX_DREAM_ORACLE_ENGINE_VERSION);
+  assert.ok(sx.calculatedAtKst.includes('+09:00'));
+  const sxPrompt = formatEgyptianSphinxDreamOraclePrompt(sx);
+  assert.ok(sxPrompt.includes('해석 경계') && sxPrompt.includes('+09:00') && !sxPrompt.includes('실측 데이터'));
+});

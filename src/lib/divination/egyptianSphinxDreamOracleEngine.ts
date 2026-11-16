@@ -8,7 +8,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const EGYPTIAN_SPHINX_DREAM_ORACLE_ENGINE_VERSION = 'LUCKEY-EGYPTIAN-SPHINX-v2.0.0';
+export const EGYPTIAN_SPHINX_DREAM_ORACLE_ENGINE_VERSION = 'LUCKEY-EGYPTIAN-SPHINX-v2.1.0';
 
 export interface SphinxVirtue {
   nameKo: string;
@@ -48,6 +48,7 @@ export interface SphinxSynthesisMatrix {
 export interface EgyptianSphinxDreamOracleReport {
   engineVersion: string;
   timestamp: string;
+  calculatedAtKst: string;
   tetramorph: SphinxTetramorphAspects;
   dominantVirtue: string;
   sandCleansingIndex: number;
@@ -244,9 +245,13 @@ export function calculateEgyptianSphinxDreamOracle(options?: {
   const reHorakhtyDawnCommand = `지평선에서 솟구치는 아침 태양 레-호라크티의 빛이 당신을 비춥니다. ` +
     `어둠과 나태를 떨치고 오늘 가장 먼저 매듭지어야 할 핵심 과업을 향해 한 치의 망설임 없이 전진하십시오.`;
 
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const calculatedAtKst = kst.toISOString().replace('T', ' ').substring(0, 19) + ' +09:00 KST';
+
   return {
     engineVersion: EGYPTIAN_SPHINX_DREAM_ORACLE_ENGINE_VERSION,
     timestamp: now.toISOString(),
+    calculatedAtKst,
     tetramorph,
     dominantVirtue,
     sandCleansingIndex,
@@ -260,8 +265,8 @@ export function calculateEgyptianSphinxDreamOracle(options?: {
 }
 
 export function formatEgyptianSphinxDreamOraclePrompt(rep: EgyptianSphinxDreamOracleReport): string {
-  return `[고대 이집트 투트모세 4세 스핑크스 영혼 꿈신탁 & 태양신 레-호라크티 실측 데이터]
-· 엔진 버전: v${rep.engineVersion}
+  return `[고대 이집트 투트모세 4세 스핑크스 영혼 꿈신탁 & 태양신 레-호라크티 상징 관점]
+· 엔진 버전: v${rep.engineVersion} | 기준 시각: ${rep.calculatedAtKst}
 · 스핑크스 지배적 신성 원형: ${rep.dominantVirtue} (정화 상태: ${rep.sphinxSynthesisMatrix.sandClearanceGrade})
 · 인간의 머리(지혜): ${rep.tetramorph.humanHead.powerDesc}
 · 사자의 심장(용기): ${rep.tetramorph.lionHeart.powerDesc}
@@ -276,5 +281,6 @@ export function formatEgyptianSphinxDreamOraclePrompt(rep: EgyptianSphinxDreamOr
   - 왕권 행동: ${rep.sphinxSynthesisMatrix.sovereignStep}
 · 꿈의 비석 신성 약조: ${rep.thutmosePromise}
 · 스핑크스 수수께끼 해법: ${rep.sphinxRiddleInsight}
-· 레-호라크티 여명 행동 명령: ${rep.reHorakhtyDawnCommand}`;
+· 레-호라크티 여명 행동 명령: ${rep.reHorakhtyDawnCommand}
+· 해석 경계: 투트모세 4세 꿈의 비석과 스핑크스 4대 테트라모르프 상징을 빌린 정성적 조망 참고 관점이며, 개인 점수나 확정 예언이 아닙니다.`;
 }
