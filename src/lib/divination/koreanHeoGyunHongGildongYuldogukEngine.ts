@@ -13,7 +13,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const KOREAN_HEO_GYUN_HONG_GILDONG_YULDOGUK_VERSION = 'LUCKEY-HEO-GYUN-HONG-GILDONG-YULDOGUK-v2.0.0';
+export const KOREAN_HEO_GYUN_HONG_GILDONG_YULDOGUK_VERSION = 'LUCKEY-HEO-GYUN-HONG-GILDONG-YULDOGUK-v2.1.0';
 
 export interface HeoGyunTheme {
   themeKey: string;
@@ -43,6 +43,9 @@ export interface KoreanHeoGyunHongGildongYuldogukResult {
   // 세부 분석
   activeHeoGyunTheme: HeoGyunTheme;
   focalHeoGyunAphorism: HeoGyunAphorism;
+  secondaryHeoGyunAphorism: HeoGyunAphorism;
+  reflectiveQuestion: string;
+  interpretiveBoundary: string;
   heoGyunComprehensiveGuidance: {
     guidanceTitle: string;
     philosophicalCounsel: string;
@@ -61,7 +64,7 @@ function formatHeoGyunKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 KST`;
 }
 
 function describeHeoGyunStage(score: number): string {
@@ -164,9 +167,16 @@ export function calculateKoreanHeoGyunHongGildongYuldoguk(
 
   const themeIndex = (absHash >> 5) % HEO_GYUN_THEMES.length;
   const aphorismIndex = (absHash >> 8) % HEO_GYUN_APHORISMS.length;
+  const secondaryAphorismIndex = (aphorismIndex + 1 + ((absHash >> 11) % (HEO_GYUN_APHORISMS.length - 1))) % HEO_GYUN_APHORISMS.length;
 
   const activeHeoGyunTheme = HEO_GYUN_THEMES[themeIndex];
   const focalHeoGyunAphorism = HEO_GYUN_APHORISMS[aphorismIndex];
+  const secondaryHeoGyunAphorism = HEO_GYUN_APHORISMS[secondaryAphorismIndex];
+  const trimmedQuery = query?.trim();
+  const reflectiveQuestion = trimmedQuery
+    ? `'${trimmedQuery}' 앞에서 낡은 관습과 눈치 때문에 스스로 가두고 있던 역량을 풀어 율도국처럼 새로 열 수 있는 길은 무엇인가요?`
+    : `지금 내가 당연한 관행으로 받아들이며 스스로의 재능이나 정당한 목소리를 억누르고 있는 틀 한 가지는 무엇인가요?`;
+  const interpretiveBoundary = '교산 허균 홍길동전·유재론·호민론 관점은 길흉 예단이 아니라, 편견 타파와 주체적 개척을 비추는 개혁 성찰 렌즈입니다.';
 
   const guidanceTitle = `교산 허균 개혁과 율도국의 지혜: ${activeHeoGyunTheme.themeTitleKo}`;
   const philosophicalCounsel = `조선 중기 개혁 사상가이자 최초 한글 소설의 대문호 교산 허균 선생은 ` +
@@ -201,6 +211,9 @@ export function calculateKoreanHeoGyunHongGildongYuldoguk(
     progressiveReformResilience,
     activeHeoGyunTheme,
     focalHeoGyunAphorism,
+    secondaryHeoGyunAphorism,
+    reflectiveQuestion,
+    interpretiveBoundary,
     heoGyunComprehensiveGuidance: {
       guidanceTitle,
       philosophicalCounsel,
@@ -228,9 +241,12 @@ export function formatKoreanHeoGyunHongGildongYuldogukPrompt(
     `- 개혁 사상적 통찰: ${res.activeHeoGyunTheme.reformInsight}`,
     `- 행동 조언: ${res.activeHeoGyunTheme.practicalCounsel}`,
     `- 허균 원전 테제: "${res.focalHeoGyunAphorism.aphorismKo}" (${res.focalHeoGyunAphorism.aphorismHanja})`,
+    `- 보조 교차 테제: "${res.secondaryHeoGyunAphorism.aphorismKo}" [${res.secondaryHeoGyunAphorism.sourceContext}]`,
     `- 원전 출처: [${res.focalHeoGyunAphorism.sourceContext}]`,
     `- 구체적 실천 지침: ${res.focalHeoGyunAphorism.actionGuidance}`,
     `- 종합 허균 권면: ${res.heoGyunComprehensiveGuidance.philosophicalCounsel}`,
+    `- 성찰 질문: ${res.reflectiveQuestion}`,
+    `- 해석 경계: ${res.interpretiveBoundary}`,
   ];
   if (res.heoGyunSynthesisMatrix) {
     lines.push(

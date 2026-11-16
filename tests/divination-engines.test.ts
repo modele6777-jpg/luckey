@@ -9723,3 +9723,36 @@ test('Choe Hyeonbae Geulbon, Damheon Hong Dae-yong, and Gosan Yoon Seon-do v2.1.
   const ysPrompt = formatKoreanGosanYoonSeonDoFiveFriendsPrompt(ys);
   assert.ok(ysPrompt.includes('+09:00') && ysPrompt.includes('보조 교차 시가') && ysPrompt.includes('성찰 질문') && ysPrompt.includes('해석 경계'));
 });
+
+test('Heo Gyun, Heo Jun, and Hyecho v2.1.0 include +09:00 KST, dual cross-check, reflective question, and interpretive boundary', () => {
+  const profile = { basic: { name: '제제', birthdate: '1994-01-24', birthtime: '12:00', gender: 'male' } } as any;
+  const now = new Date('2026-11-16T05:35:00Z');
+  const query = '막힌 흐름을 뚫고 낯선 길을 개척하고 싶습니다';
+
+  const hg = calculateKoreanHeoGyunHongGildongYuldoguk(profile, query, now);
+  assert.equal(hg.engineVersion, KOREAN_HEO_GYUN_HONG_GILDONG_YULDOGUK_VERSION);
+  assert.match(hg.calculatedAtKst, /\+09:00/);
+  assert.notEqual(hg.secondaryHeoGyunAphorism.aphorismKey, hg.focalHeoGyunAphorism.aphorismKey);
+  assert.ok(hg.reflectiveQuestion.includes(query));
+  assert.ok(hg.interpretiveBoundary.includes('성찰'));
+  const hgPrompt = formatKoreanHeoGyunHongGildongYuldogukPrompt(hg);
+  assert.ok(hgPrompt.includes('+09:00') && hgPrompt.includes('보조 교차 테제') && hgPrompt.includes('성찰 질문') && hgPrompt.includes('해석 경계'));
+
+  const hj = calculateKoreanHeoJunDonguiBogamYangsaeng(profile, query, now);
+  assert.equal(hj.engineVersion, KOREAN_HEO_JUN_DONGUI_BOGAM_YANGSAENG_VERSION);
+  assert.match(hj.calculatedAtKst, /\+09:00/);
+  assert.notEqual(hj.secondaryHeoJunAphorism.aphorismKey, hj.focalHeoJunAphorism.aphorismKey);
+  assert.ok(hj.reflectiveQuestion.includes(query));
+  assert.ok(hj.interpretiveBoundary.includes('성찰'));
+  const hjPrompt = formatKoreanHeoJunDonguiBogamYangsaengPrompt(hj);
+  assert.ok(hjPrompt.includes('+09:00') && hjPrompt.includes('보조 교차 명언') && hjPrompt.includes('성찰 질문') && hjPrompt.includes('해석 경계'));
+
+  const hc = calculateHyechoWangOcheonchukgukjeon(profile, query, now);
+  assert.equal(hc.engineVersion, KOREAN_HYECHO_VERSION);
+  assert.match(hc.calculatedAtKst, /\+09:00/);
+  assert.notEqual(hc.secondaryHyechoAphorism.aphorismKey, hc.focalHyechoAphorism.aphorismKey);
+  assert.ok(hc.reflectiveQuestion.includes(query));
+  assert.ok(hc.interpretiveBoundary.includes('성찰'));
+  const hcPrompt = formatHyechoWangOcheonchukgukjeonPrompt(hc);
+  assert.ok(hcPrompt.includes('+09:00') && hcPrompt.includes('보조 교차 시구') && hcPrompt.includes('성찰 질문') && hcPrompt.includes('해석 경계'));
+});

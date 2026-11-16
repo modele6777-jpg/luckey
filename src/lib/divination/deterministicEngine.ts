@@ -3716,7 +3716,7 @@ try {
   // 263. 신라 혜초 왕오천축국전 구도 순례 개척 & 설산사막 극복·망향 서정 평정 지혜 엔진
   const hyechoWangOcheonchukgukjeonResult = calculateSupplement('hyechoWangOcheonchukgukjeonResult', () => ((() => {
     try {
-      return calculateHyechoWangOcheonchukgukjeon(profile);
+      return calculateHyechoWangOcheonchukgukjeon(profile, question, now);
     } catch (_) {
       return null;
     }
@@ -3986,7 +3986,7 @@ try {
   // 293. 대한민국 구암 허준 《동의보감》 신형장부도·천인상응 & 통즉불통·치미병(治未病) 양생 지혜 엔진
   const koreanHeoJunDonguiBogamYangsaengResult = calculateSupplement('koreanHeoJunDonguiBogamYangsaengResult', () => ((() => {
     try {
-      return calculateKoreanHeoJunDonguiBogamYangsaeng(profile);
+      return calculateKoreanHeoJunDonguiBogamYangsaeng(profile, question, now);
     } catch (_) {
       return null;
     }
@@ -4229,7 +4229,7 @@ try {
   // 320. 대한민국 교산 허균 《홍길동전·유재론·호민론》 인재 등용 혁신 & 호민의 기개·율도국 개척 지혜 엔진
   const koreanHeoGyunHongGildongYuldogukResult = calculateSupplement('koreanHeoGyunHongGildongYuldogukResult', () => ((() => {
     try {
-      return calculateKoreanHeoGyunHongGildongYuldoguk(profile);
+      return calculateKoreanHeoGyunHongGildongYuldoguk(profile, question, now);
     } catch (_) {
       return null;
     }
