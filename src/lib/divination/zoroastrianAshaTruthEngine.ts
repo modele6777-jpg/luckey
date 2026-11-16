@@ -24,7 +24,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const ZOROASTRIAN_ASHA_VERSION = 'LUCKEY-ZOROASTRIAN-ASHA-v2.0.0';
+export const ZOROASTRIAN_ASHA_VERSION = 'LUCKEY-ZOROASTRIAN-ASHA-v2.1.0';
 
 export interface ThreefoldPillars {
   humataScore: number;     // 선한 생각 (0 ~ 100)
@@ -61,6 +61,11 @@ export interface ZoroastrianAshaReport {
   reflectiveQuestion: string;
   interpretiveBoundary: string;
   synthesisTruthMaxim: string;
+  ashaSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
 }
 
 function describeAshaStage(score: number): string {
@@ -161,6 +166,13 @@ export function calculateZoroastrianAshaTruth(
 
   const synthesisTruthMaxim = '아베스타 원전의 가르침: "오직 하나의 길만이 존재하니, 그것은 진리(Asha)의 길이며, 다른 모든 길은 신기루에 불과하다." 당당한 진실의 선택이 내면의 평안과 신뢰를 부릅니다.';
 
+  const trimmedCtx = (effectiveContextText || '').trim();
+  const ashaSynthesisMatrix = {
+    dominantTension: `${discernment.currentTrialTheme} ↔ ${sacredAtar.flameRadianceState}`,
+    alignmentState: `${ashaQualitativeStage} · ${dominantPillarStrengths}`,
+    integratedAction: `${dailyPracticeRitual}${trimmedCtx ? ` [질문 맥락: ${trimmedCtx}]` : ''}`,
+  };
+
   return {
     engineVersion: ZOROASTRIAN_ASHA_VERSION,
     calculatedAt: now.toISOString(),
@@ -181,10 +193,14 @@ export function calculateZoroastrianAshaTruth(
     reflectiveQuestion,
     interpretiveBoundary,
     synthesisTruthMaxim,
+    ashaSynthesisMatrix,
   };
 }
 
 export function formatZoroastrianAshaTruthPrompt(report: ZoroastrianAshaReport): string {
+  const matrixLine = report.ashaSynthesisMatrix
+    ? `\n- **아샤 교차 매트릭스**: 핵심 긴장(${report.ashaSynthesisMatrix.dominantTension}) · 조율 상태(${report.ashaSynthesisMatrix.alignmentState}) · 통합 실천(${report.ashaSynthesisMatrix.integratedAction})`
+    : '';
   return `### 🔥 고대 조로아스터교 아샤(Asha) 신성 우주 질서 & 3대 선행 진실 엔진 (${ZOROASTRIAN_ASHA_VERSION})
 - **연산 시각**: ${report.calculatedAtKst}
 - **아샤(Asha) 진리 정렬 단계**: ${report.ashaQualitativeStage}
@@ -202,5 +218,5 @@ export function formatZoroastrianAshaTruthPrompt(report: ZoroastrianAshaReport):
 - **오늘의 실천 의례**: ${report.dailyPracticeRitual}
 - **성찰 질문**: ${report.reflectiveQuestion}
 - **우주적 진리 잠언**: ${report.synthesisTruthMaxim}
-- **해석 경계**: ${report.interpretiveBoundary}`;
+- **해석 경계**: ${report.interpretiveBoundary}${matrixLine}`;
 }

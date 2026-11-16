@@ -9,7 +9,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const AZTEC_TONALAMATL_ENGINE_VERSION = 'LUCKEY-AZTEC-TONALAMATL-v2.0.0';
+export const AZTEC_TONALAMATL_ENGINE_VERSION = 'LUCKEY-AZTEC-TONALAMATL-v2.1.0';
 
 export interface AztecDaySign {
   signNumber: number;
@@ -45,6 +45,7 @@ export interface AztecSynthesisMatrix {
 export interface AztecTonalamatlReport {
   engineVersion: string;
   timestamp: string;
+  calculatedAtKst: string;
   tonalliSolarVitalityScore: number;
   teyoliaHeartPurityIndex: number;
   ihiyotlBreathPowerScore: number;
@@ -56,6 +57,7 @@ export interface AztecTonalamatlReport {
   tonalamatlSynthesisMatrix: AztecSynthesisMatrix;
   aztecTonalamatlGuidance: string;
   tonalliSunSalutationRitual: string;
+  interpretiveBoundary: string;
 }
 
 const TWENTY_SIGNS_BASE: Omit<AztecDaySign, 'resonanceScore'>[] = [
@@ -398,9 +400,14 @@ export function calculateAztecTonalamatl(
   const aztecTonalamatlGuidance = `아즈텍 토날포왈리 성력서는 가르칩니다: "태양의 전사는 자신의 토날리(Tonalli)를 의식의 불꽃으로 지피며 어둠을 가른다." 현재 당신의 운명을 비추는 성스러운 일진은 [${dominantDaySign.nameKo}]이며, 수호신은 [${dominantDaySign.patronDeity}]입니다. ${dominantDaySign.cosmicDestinyPower}.`;
   const tonalliSunSalutationRitual = `아침 태양을 마주하고 정수리를 곧게 펴며 심호흡하십시오: "제5의 태양 토나티우의 광명이 나의 토날리를 가득 채우니, 두려움 없이 올린(Ollin)의 거룩한 우주적 변화를 향해 나아간다."`;
 
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const calculatedAtKst = `${kst.toISOString().slice(0, 19)}+09:00`;
+  const interpretiveBoundary = '본 아즈텍 토날라마틀 성력 리포트는 고대 메소아메리카 260일 신성 역법 상징에 기반한 정성적 성찰 안내이며, 확정적 길흉 예단이 아닙니다.';
+
   return {
     engineVersion: AZTEC_TONALAMATL_ENGINE_VERSION,
     timestamp: now.toISOString(),
+    calculatedAtKst,
     tonalliSolarVitalityScore,
     teyoliaHeartPurityIndex,
     ihiyotlBreathPowerScore,
@@ -412,11 +419,13 @@ export function calculateAztecTonalamatl(
     tonalamatlSynthesisMatrix,
     aztecTonalamatlGuidance,
     tonalliSunSalutationRitual,
+    interpretiveBoundary,
   };
 }
 
 export function formatAztecTonalamatlPrompt(report: AztecTonalamatlReport): string {
   return `### ☀️ 고대 아즈텍 토날포왈리 20대 일진 & 토날라마틀 성력 실측 데이터 (v${report.engineVersion})
+- **기준 시각(KST)**: ${report.calculatedAtKst}
 - **주재 성스러운 일진**: ${report.dominantDaySign.nameKo} (${report.dominantDaySign.nahuatlName})
 - **일진 수호 주재신**: ${report.dominantDaySign.patronDeity}
 - **원소적 성질**: ${report.dominantDaySign.elementNature}
@@ -430,5 +439,6 @@ export function formatAztecTonalamatlPrompt(report: AztecTonalamatlReport): stri
 - **삼중 영혼 교차 매트릭스**: 토날리(${report.tonalamatlSynthesisMatrix.solarClarityGrade}) · ${report.tonalamatlSynthesisMatrix.heartAlignmentState}
   * 통합 행동 지침: ${report.tonalamatlSynthesisMatrix.ollinActionDirective}
 - **토날라마틀 지혜 지침**: ${report.aztecTonalamatlGuidance}
-- **토날리 태양 경배 리추얼**: ${report.tonalliSunSalutationRitual}`;
+- **토날리 태양 경배 리추얼**: ${report.tonalliSunSalutationRitual}
+- **해석 경계**: ${report.interpretiveBoundary}`;
 }
