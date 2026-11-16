@@ -512,7 +512,20 @@ export function calculateTwentyEightMansions(params: { targetDate?: Date; questi
   const overallVerdict = `금일(${targetDateString}, ${dayGanZhi}일 · ${weekday}) 직성은 ${mansion.group}의 ${mansion.name}(${mansion.hanja})수 — ${mansion.grade}입니다. 칠요 ${mansion.luminary}가 요일(${weekdayLuminary})과 ${luminaryWeekdayAligned ? '완전히 일치' : '불일치'}하는 정통 7원 4주기 직성입니다. 가장 유리한 영역은 ${bestDomain.domainKo}(${bestDomain.score}점), 가장 삼가야 할 영역은 ${worstDomain.domainKo}(${worstDomain.score}점)입니다.`;
   const overallGuide = `${mansion.name}수 상징 신수 ${mansion.animal}의 기상을 따라 ${mansion.gradeMeaning} 종합 가이드: ${bestDomain.domainKo}을(를) 금일 집행하거나 ${bestDomain.bestDates[0].date}(${bestDomain.bestDates[0].mansionName}수, ${bestDomain.bestDates[0].score}점)로 택일하고, ${worstDomain.domainKo}의 확정적 행위는 ${worstDomain.bestDates[0].date}(${worstDomain.bestDates[0].mansionName}수, ${worstDomain.bestDates[0].score}점) 이후로 미루십시오.`;
 
-  const oppositeMansion = MANSIONS[(mansionIndex + 14) % 28];
+  const oppositeIdx = (mansionIndex + 14) % 28;
+  const oppRaw = MANSIONS_28[oppositeIdx];
+  const oppositeMansion: TwentyEightMansionsStar = {
+    index: oppositeIdx,
+    name: oppRaw.name,
+    hanja: oppRaw.hanja,
+    fullName: oppRaw.fullName,
+    group: oppRaw.group,
+    element: LUMINARY_TO_ELEMENT[oppRaw.luminary],
+    luminary: oppRaw.luminary,
+    animal: oppRaw.animalKo,
+    grade: oppRaw.grade,
+    gradeMeaning: oppRaw.gradeMeaning,
+  };
   const q = (params.question || '').trim();
   const reflectiveQuestion = q
     ? `‘${q}’에 대해 오늘 ${mansion.fullName}의 흐름을 취하고 대칭 별자리 ${oppositeMansion.fullName}이 비추는 반대편 균형을 어떻게 보완하시겠습니까?`
