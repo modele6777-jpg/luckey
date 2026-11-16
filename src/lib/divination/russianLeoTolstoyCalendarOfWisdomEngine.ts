@@ -14,7 +14,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const RUSSIAN_LEO_TOLSTOY_VERSION = 'LUCKEY-LEO-TOLSTOY-WISDOM-v2.0.0';
+export const RUSSIAN_LEO_TOLSTOY_VERSION = 'LUCKEY-LEO-TOLSTOY-WISDOM-v2.1.0';
 
 export interface TolstoyTheme {
   themeKey: string;
@@ -53,6 +53,10 @@ export interface RussianLeoTolstoyCalendarOfWisdomResult {
     alignmentState: string;
     integratedAction: string;
   };
+  // v2.1.0 심층 보강: 이중 원전 교차·성찰 질문·해석 경계
+  secondaryTolstoyAphorism?: TolstoyAphorism;
+  reflectiveTolstoyQuestion: string;
+  interpretiveBoundary: string;
 }
 
 function formatTolstoyKstTimestamp(now: Date = new Date()): string {
@@ -62,7 +66,7 @@ function formatTolstoyKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 KST`;
 }
 
 function describeTolstoyStage(score: number): string {
@@ -171,6 +175,20 @@ export function calculateRussianLeoTolstoyCalendarOfWisdom(
 
   const activeTolstoyTheme = TOLSTOY_THEMES[themeIndex];
   const focalTolstoyAphorism = TOLSTOY_APHORISMS[aphorismIndex];
+  // 같은 저작의 명언만 반복하지 않도록 다른 원전에서 보조 테제를 하나 더 세운다(초점 테제와 항상 다름).
+  const secondaryTolstoyOffset = 1 + ((absHash >> 11) % (TOLSTOY_APHORISMS.length - 1));
+  const secondaryTolstoyAphorism =
+    TOLSTOY_APHORISMS[(aphorismIndex + secondaryTolstoyOffset) % TOLSTOY_APHORISMS.length];
+
+  // 질문에 반응하는 정성 성찰 질문: 지금 붙잡은 테마의 언어로 되묻는다.
+  const trimmedTolstoyQuery = (query ?? '').trim();
+  const reflectiveTolstoyQuestion =
+    `지금 내가 '${activeTolstoyTheme.themeTitleKo}'의 자리에서 본다면, ` +
+    `나를 지치게 하는 허영을 조용히 내려놓고 오늘 이웃에게 건넬 수 있는 소박한 사랑의 구체적 행동은 무엇일까요?` +
+    (trimmedTolstoyQuery ? ` (이 물음은 당신이 건넨 '${trimmedTolstoyQuery}'에 대한 성찰입니다.)` : '');
+
+  const interpretiveBoundary =
+    '톨스토이 문학의 영적 각성·아가페 사랑 상징을 빌린 정성적 성찰 관점이며, 종교적 판단이나 죄의 평가, 사건의 성패·미래 단정이 아닙니다.';
 
   const guidanceTitle = `레프 톨스토이 인생독본 영적 각성과 사랑 지혜: ${activeTolstoyTheme.themeTitleKo}`;
   const philosophicalCounsel = `러시아의 대문호 레프 톨스토이의 《인생독본》과 《사람은 무엇으로 사는가》는 세속의 허영과 물질적 번잡함을 털어내고, 오직 타인을 향한 사랑과 순결한 양심, 소박한 노동 속에서 참된 평화를 찾도록 안내합니다. ` +
@@ -203,6 +221,9 @@ export function calculateRussianLeoTolstoyCalendarOfWisdom(
       philosophicalCounsel,
     },
     tolstoySynthesisMatrix,
+    secondaryTolstoyAphorism,
+    reflectiveTolstoyQuestion,
+    interpretiveBoundary,
   };
 }
 
@@ -228,5 +249,16 @@ export function formatRussianLeoTolstoyCalendarOfWisdomPrompt(res: RussianLeoTol
       `- 통합 실천: ${res.tolstoySynthesisMatrix.integratedAction}`,
     );
   }
+  if (res.secondaryTolstoyAphorism) {
+    lines.push(
+      `- 보조 원전 테제: "${res.secondaryTolstoyAphorism.aphorismKo}" [${res.secondaryTolstoyAphorism.aphorismRu}]`,
+      `- 보조 원전 출처: [${res.secondaryTolstoyAphorism.sourceContext}]`,
+      `- 보조 실천 지침: ${res.secondaryTolstoyAphorism.actionGuidance}`,
+    );
+  }
+  lines.push(
+    `- 성찰 질문: ${res.reflectiveTolstoyQuestion}`,
+    `- 해석 경계: ${res.interpretiveBoundary}`,
+  );
   return lines.join('\n');
 }

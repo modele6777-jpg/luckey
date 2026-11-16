@@ -9288,3 +9288,70 @@ test('Edmund Husserl, Erich Fromm, and Friedrich Schiller v2.1.0 include +09:00 
   const shPrompt = formatGermanFriedrichSchillerAestheticEducationPrompt(sh);
   assert.ok(shPrompt.includes('해석 경계') && shPrompt.includes('+09:00'));
 });
+
+test('Dostoevsky, Tolstoy, and Chekhov v2.1.0 deepen with dual-source thesis, reflection question, +09:00 KST and interpretive boundary', () => {
+  const now = new Date('2026-11-16T04:00:00Z');
+  const question = '가족과의 오랜 갈등을 어떻게 풀어야 할까요';
+
+  const ds = calculateRussianFyodorDostoevskyKaramazovSoulCompassion(profile, question, now);
+  assert.equal(ds.engineVersion, RUSSIAN_FYODOR_DOSTOEVSKY_KARAMAZOV_SOUL_COMPASSION_VERSION);
+  assert.match(ds.engineVersion, /v2\.1\.0$/);
+  assert.ok(ds.calculatedAtKst.includes('+09:00'));
+  assert.ok(ds.secondaryDostoevskyAphorism);
+  assert.notEqual(ds.secondaryDostoevskyAphorism?.aphorismKey, ds.focalDostoevskyAphorism.aphorismKey);
+  assert.ok(ds.reflectiveDostoevskyQuestion.includes(ds.activeDostoevskyTheme.themeTitleKo));
+  assert.ok(ds.reflectiveDostoevskyQuestion.includes(question));
+  assert.ok(ds.interpretiveBoundary.includes('정성적'));
+  const dsPrompt = formatRussianFyodorDostoevskyKaramazovSoulCompassionPrompt(ds);
+  assert.ok(dsPrompt.includes('+09:00'));
+  assert.ok(dsPrompt.includes('보조 원전 테제') && dsPrompt.includes(ds.secondaryDostoevskyAphorism!.aphorismKo));
+  assert.ok(dsPrompt.includes('성찰 질문') && dsPrompt.includes('해석 경계'));
+
+  const tl = calculateRussianLeoTolstoyCalendarOfWisdom(profile, question, now);
+  assert.equal(tl.engineVersion, RUSSIAN_LEO_TOLSTOY_VERSION);
+  assert.match(tl.engineVersion, /v2\.1\.0$/);
+  assert.ok(tl.calculatedAtKst.includes('+09:00'));
+  assert.ok(tl.secondaryTolstoyAphorism);
+  assert.notEqual(tl.secondaryTolstoyAphorism?.aphorismKey, tl.focalTolstoyAphorism.aphorismKey);
+  assert.ok(tl.reflectiveTolstoyQuestion.includes(tl.activeTolstoyTheme.themeTitleKo));
+  assert.ok(tl.reflectiveTolstoyQuestion.includes(question));
+  assert.ok(tl.interpretiveBoundary.includes('정성적'));
+  const tlPrompt = formatRussianLeoTolstoyCalendarOfWisdomPrompt(tl);
+  assert.ok(tlPrompt.includes('+09:00'));
+  assert.ok(tlPrompt.includes('보조 원전 테제') && tlPrompt.includes(tl.secondaryTolstoyAphorism!.aphorismKo));
+  assert.ok(tlPrompt.includes('성찰 질문') && tlPrompt.includes('해석 경계'));
+
+  const ck = calculateRussianAntonChekhovQuietEnduranceCompassion(profile, question, now);
+  assert.equal(ck.engineVersion, RUSSIAN_ANTON_CHEKHOV_QUIET_ENDURANCE_COMPASSION_VERSION);
+  assert.match(ck.engineVersion, /v2\.1\.0$/);
+  assert.ok(ck.calculatedAtKst.includes('+09:00'));
+  assert.ok(ck.secondaryChekhovAphorism);
+  assert.notEqual(ck.secondaryChekhovAphorism?.aphorismKey, ck.focalChekhovAphorism.aphorismKey);
+  assert.ok(ck.reflectiveChekhovQuestion.includes(ck.activeChekhovTheme.themeTitleKo));
+  assert.ok(ck.reflectiveChekhovQuestion.includes(question));
+  assert.ok(ck.interpretiveBoundary.includes('정성적'));
+  const ckPrompt = formatRussianAntonChekhovQuietEnduranceCompassionPrompt(ck);
+  assert.ok(ckPrompt.includes('+09:00'));
+  assert.ok(ckPrompt.includes('보조 원전 테제') && ckPrompt.includes(ck.secondaryChekhovAphorism!.aphorismKo));
+  assert.ok(ckPrompt.includes('성찰 질문') && ckPrompt.includes('해석 경계'));
+});
+
+test('Dostoevsky, Tolstoy, and Chekhov designs stay qualitative without numeric exposure in prompt text', () => {
+  const now = new Date('2026-11-16T04:00:00Z');
+  const dsPrompt = formatRussianFyodorDostoevskyKaramazovSoulCompassionPrompt(
+    calculateRussianFyodorDostoevskyKaramazovSoulCompassion(profile, '', now),
+  );
+  const tlPrompt = formatRussianLeoTolstoyCalendarOfWisdomPrompt(
+    calculateRussianLeoTolstoyCalendarOfWisdom(profile, '', now),
+  );
+  const ckPrompt = formatRussianAntonChekhovQuietEnduranceCompassionPrompt(
+    calculateRussianAntonChekhovQuietEnduranceCompassion(profile, '', now),
+  );
+  for (const prompt of [dsPrompt, tlPrompt, ckPrompt]) {
+    const body = prompt
+      .split('\n')
+      .filter((line) => !line.startsWith('- 연산 시각'))
+      .join('\n');
+    assert.doesNotMatch(body, /\d+\s*점|\d+\s*%|점수\s*\d/);
+  }
+});

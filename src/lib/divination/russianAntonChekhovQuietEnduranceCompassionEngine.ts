@@ -13,7 +13,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const RUSSIAN_ANTON_CHEKHOV_QUIET_ENDURANCE_COMPASSION_VERSION = 'LUCKEY-ANTON-CHEKHOV-QUIET-ENDURANCE-COMPASSION-v2.0.0';
+export const RUSSIAN_ANTON_CHEKHOV_QUIET_ENDURANCE_COMPASSION_VERSION = 'LUCKEY-ANTON-CHEKHOV-QUIET-ENDURANCE-COMPASSION-v2.1.0';
 
 export interface ChekhovTheme {
   themeKey: string;
@@ -52,6 +52,10 @@ export interface RussianAntonChekhovQuietEnduranceCompassionResult {
     alignmentState: string;
     integratedAction: string;
   };
+  // v2.1.0 심층 보강: 이중 원전 교차·성찰 질문·해석 경계
+  secondaryChekhovAphorism?: ChekhovAphorism;
+  reflectiveChekhovQuestion: string;
+  interpretiveBoundary: string;
 }
 
 function formatChekhovKstTimestamp(now: Date = new Date()): string {
@@ -61,7 +65,7 @@ function formatChekhovKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 KST`;
 }
 
 function describeChekhovStage(score: number): string {
@@ -167,6 +171,20 @@ export function calculateRussianAntonChekhovQuietEnduranceCompassion(
 
   const activeChekhovTheme = CHEKHOV_THEMES[themeIndex];
   const focalChekhovAphorism = CHEKHOV_APHORISMS[aphorismIndex];
+  // 같은 저작의 명언만 반복하지 않도록 다른 원전에서 보조 테제를 하나 더 세운다(초점 테제와 항상 다름).
+  const secondaryChekhovOffset = 1 + ((absHash >> 11) % (CHEKHOV_APHORISMS.length - 1));
+  const secondaryChekhovAphorism =
+    CHEKHOV_APHORISMS[(aphorismIndex + secondaryChekhovOffset) % CHEKHOV_APHORISMS.length];
+
+  // 질문에 반응하는 정성 성찰 질문: 지금 붙잡은 테마의 언어로 되묻는다.
+  const trimmedChekhovQuery = (query ?? '').trim();
+  const reflectiveChekhovQuestion =
+    `지금 내가 '${activeChekhovTheme.themeTitleKo}'의 자리에 선다면, ` +
+    `소란스러운 평가와 자기 연민을 내려놓고 오늘 꾸준히 해낼 수 있는 조그마한 일 하나와 곁의 지친 이에게 건넬 말 한마디는 무엇일까요?` +
+    (trimmedChekhovQuery ? ` (이 물음은 당신이 건넨 '${trimmedChekhovQuery}'에 대한 성찰입니다.)` : '');
+
+  const interpretiveBoundary =
+    '체호프 문학의 일상 진실 직시·묵묵한 인내 상징을 빌린 정성적 성찰 관점이며, 심리 진단이나 성격 평가, 사건의 성패·미래 단정이 아닙니다.';
 
   const guidanceTitle = `안톤 체호프 일상의 진실과 묵묵한 인내의 지혜: ${activeChekhovTheme.themeTitleKo}`;
   const philosophicalCounsel = `러시아 문학의 위대한 휴머니스트 안톤 체호프 선생은 《바냐 아저씨》와 《갈매기》를 통해 ` +
@@ -201,6 +219,9 @@ export function calculateRussianAntonChekhovQuietEnduranceCompassion(
       philosophicalCounsel,
     },
     chekhovSynthesisMatrix,
+    secondaryChekhovAphorism,
+    reflectiveChekhovQuestion,
+    interpretiveBoundary,
   };
 }
 
@@ -228,5 +249,16 @@ export function formatRussianAntonChekhovQuietEnduranceCompassionPrompt(
       `- 통합 실천: ${res.chekhovSynthesisMatrix.integratedAction}`,
     );
   }
+  if (res.secondaryChekhovAphorism) {
+    lines.push(
+      `- 보조 원전 테제: "${res.secondaryChekhovAphorism.aphorismKo}" (${res.secondaryChekhovAphorism.aphorismRussian})`,
+      `- 보조 원전 출처: [${res.secondaryChekhovAphorism.sourceContext}]`,
+      `- 보조 실천 지침: ${res.secondaryChekhovAphorism.actionGuidance}`,
+    );
+  }
+  lines.push(
+    `- 성찰 질문: ${res.reflectiveChekhovQuestion}`,
+    `- 해석 경계: ${res.interpretiveBoundary}`,
+  );
   return lines.join('\n');
 }
