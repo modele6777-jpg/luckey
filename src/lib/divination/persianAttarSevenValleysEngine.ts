@@ -19,7 +19,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const ATTAR_SEVEN_VALLEYS_ENGINE_VERSION = '2.0.0';
+export const ATTAR_SEVEN_VALLEYS_ENGINE_VERSION = '2.1.0';
 
 export interface AttarValley {
   id: string;
@@ -43,6 +43,8 @@ export interface PersianAttarSevenValleysReport {
   secondaryValley: AttarValley; // 보조 계곡
   attarSufiWisdomGuidance: string; // 아타르 수피 지혜 지침
   simurghMirrorMeditationRitual: string; // 시무르그 신성 거울 명상 리추얼
+  reflectiveQuestion: string;
+  interpretiveBoundary: string;
   attarSynthesisMatrix?: {
     dominantTension: string;
     alignmentState: string;
@@ -57,7 +59,15 @@ function formatAttarKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
+}
+
+function buildAttarReflectiveQuestion(valley: AttarValley, question: string): string {
+  const focus = question.trim();
+  if (focus) {
+    return `'${focus}'라는 물음을 품고 ${valley.nameKo}을 건널 때, 바깥에서 찾던 답 중 사실 내 안에서 이미 알고 있던 것은 무엇인가요?`;
+  }
+  return `${valley.nameKo}의 순례자 입장에서 볼 때, 지금 가장 먼저 비워 내야 할 익숙한 집착이나 체면은 무엇인가요?`;
 }
 
 function describeAttarStage(score: number): string {
@@ -178,6 +188,8 @@ export function calculatePersianAttarSevenValleys(
   const simurghMirrorMeditationRitual = `가슴 한가운데 잔잔한 거울 같은 호수를 떠올리십시오. 그 호수 위로 찬란한 무지개 깃털을 가진 영조(靈鳥) 시무르그가 비칩니다: "내가 찾는 진리가 곧 나 자신이며, 내 안의 에고가 고요히 녹아내릴 때 영원한 신성의 숨결이 피어난다."`;
 
   const calculatedAtKst = formatAttarKstTimestamp(now);
+  const reflectiveQuestion = buildAttarReflectiveQuestion(dominantValley, question);
+  const interpretiveBoundary = '아타르 《새들의 회의》 7대 계곡과 시무르그 상징은 내면 성찰을 돕는 수피 문학적 비유로만 활용하며, 확정적 미래 예언이나 현실적 의사결정의 단독 근거로 쓰지 않습니다.';
   const composite = Math.round(
     (simurghMirrorResonanceScore + sevenValleysPassageProgress + fanaEgoDissolutionRate + baqaDivinePermanenceIndex) / 4
   );
@@ -199,6 +211,8 @@ export function calculatePersianAttarSevenValleys(
     secondaryValley,
     attarSufiWisdomGuidance,
     simurghMirrorMeditationRitual,
+    reflectiveQuestion,
+    interpretiveBoundary,
     attarSynthesisMatrix,
   };
 }
@@ -225,5 +239,9 @@ export function formatPersianAttarSevenValleysPrompt(rep: PersianAttarSevenValle
       `· 통합 실천: ${rep.attarSynthesisMatrix.integratedAction}`,
     );
   }
+  lines.push(
+    `· 성찰 질문: ${rep.reflectiveQuestion}`,
+    `· 해석 경계: ${rep.interpretiveBoundary}`,
+  );
   return lines.join('\n');
 }

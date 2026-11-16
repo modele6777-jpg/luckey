@@ -6,7 +6,7 @@
  * 현대인의 역경 돌파, 결단력, 영혼의 성숙도에 연동합니다.
  */
 
-export const PERSIAN_MITHRAIC_SPHERES_ENGINE_VERSION = 'LUCKEY-MITHRAIC-SPHERES-v2.0.0';
+export const PERSIAN_MITHRAIC_SPHERES_ENGINE_VERSION = 'LUCKEY-MITHRAIC-SPHERES-v2.1.0';
 
 export interface MithraicGrade {
   gradeLevel: number;
@@ -24,10 +24,13 @@ export interface MithraicSpheresReport {
   calculatedAt: string;
   calculatedAtKst: string;
   activeGrade: MithraicGrade;
+  secondaryGrade: MithraicGrade;
   solInvictusScore: number; // 0 ~ 100 (불패의 태양 회복탄력성 지수)
   astralLadderAscensionRate: number; // 0 ~ 100
   mithraicOathOfLight: string;
   masterBreakthroughPrescription: string;
+  reflectiveQuestion: string;
+  interpretiveBoundary: string;
   mithraicSynthesisMatrix?: {
     dominantTension: string;
     alignmentState: string;
@@ -42,7 +45,15 @@ function formatMithraicKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
+}
+
+function buildMithraicReflectiveQuestion(grade: MithraicGrade, question: string): string {
+  const focus = question.trim();
+  if (focus) {
+    return `'${focus}'라는 과제를 앞에 두고 제${grade.gradeLevel}계단 ${grade.gradeTitleKo}의 시험을 지나며, 타협하지 않고 지켜야 할 나만의 기준선은 무엇인가요?`;
+  }
+  return `제${grade.gradeLevel}계단 ${grade.gradeTitleKo}의 관점에서 볼 때, 오늘 회피하지 않고 정면으로 돌파해야 할 작은 문턱은 무엇인가요?`;
 }
 
 function describeMithraicStage(score: number): string {
@@ -145,6 +156,8 @@ export function calculatePersianMithraicSpheres(params: {
 
   const gradeIndex = Math.abs(seed) % SEVEN_GRADES.length;
   const activeGrade = SEVEN_GRADES[gradeIndex];
+  const secondaryIndex = (gradeIndex + 1 + (Math.abs(seed) % (SEVEN_GRADES.length - 1))) % SEVEN_GRADES.length;
+  const secondaryGrade = SEVEN_GRADES[secondaryIndex];
 
   const solInvictusScore = 65 + (Math.abs(seed * 5) % 34);
   const astralLadderAscensionRate = 60 + (Math.abs(seed * 11) % 39);
@@ -153,9 +166,11 @@ export function calculatePersianMithraicSpheres(params: {
   const masterBreakthroughPrescription = `당신의 영혼은 지금 미트라 7대 천계 사다리의 제${activeGrade.gradeLevel}계단 [${activeGrade.gradeTitleKo}]을 통과하고 있습니다. '${activeGrade.initiationTrial}'을 두려워하지 말고, '${activeGrade.gradeActionRule}'을 실천하여 영혼의 주권을 완성하세요.`;
 
   const calculatedAtKst = formatMithraicKstTimestamp(now);
+  const reflectiveQuestion = buildMithraicReflectiveQuestion(activeGrade, question);
+  const interpretiveBoundary = '미트라 7대 천계 사다리 상징은 역경 돌파와 자기 규율을 비추는 고대 입문 비유로만 활용하며, 미래의 확정적 길흉 예측이나 법률·재무·의학 판단의 근거로 단정하지 않습니다.';
   const composite = Math.round((solInvictusScore + astralLadderAscensionRate) / 2);
   const mithraicSynthesisMatrix = {
-    dominantTension: `제${activeGrade.gradeLevel}계단 ${activeGrade.gradeTitleKo} ↔ ${activeGrade.planetaryRuler}`,
+    dominantTension: `제${activeGrade.gradeLevel}계단 ${activeGrade.gradeTitleKo} ↔ 제${secondaryGrade.gradeLevel}계단 ${secondaryGrade.gradeTitleKo}`,
     alignmentState: describeMithraicStage(composite),
     integratedAction: `${activeGrade.gradeActionRule}${question.trim() ? ` [질문 맥락: ${question.trim()}]` : ''}`,
   };
@@ -165,21 +180,26 @@ export function calculatePersianMithraicSpheres(params: {
     calculatedAt: now.toISOString(),
     calculatedAtKst,
     activeGrade,
+    secondaryGrade,
     solInvictusScore,
     astralLadderAscensionRate,
     mithraicOathOfLight,
     masterBreakthroughPrescription,
+    reflectiveQuestion,
+    interpretiveBoundary,
     mithraicSynthesisMatrix,
   };
 }
 
 export function formatPersianMithraicSpheresPrompt(report: MithraicSpheresReport): string {
   const g = report.activeGrade;
+  const sg = report.secondaryGrade;
   const composite = Math.round((report.solInvictusScore + report.astralLadderAscensionRate) / 2);
   const lines = [
     `### ☀️ 고대 페르시아 미트라(Mithra) 7대 행성 입문 천계 사다리 실측 데이터 (${report.engineVersion})`,
     `- **연산 시각**: ${report.calculatedAtKst} | **광명 입문 국면**: ${describeMithraicStage(composite)}`,
     `- **현재 천계 사다리 계단**: 제${g.gradeLevel}단계 - ${g.gradeTitleKo} (${g.gradeTitleEn})`,
+    `- **보조 교차 계단**: 제${sg.gradeLevel}단계 - ${sg.gradeTitleKo} (${sg.planetaryRuler} | ${sg.elementSymbol})`,
     `- **주관 행성 및 원소**: ${g.planetaryRuler} | ${g.elementSymbol}`,
     `- **통과해야 할 입문 시험**: ${g.initiationTrial}`,
     `- **해방되는 불패의 태양 권능**: ${g.invictusPower}`,
@@ -191,5 +211,9 @@ export function formatPersianMithraicSpheresPrompt(report: MithraicSpheresReport
       `- **통합 실천**: ${report.mithraicSynthesisMatrix.integratedAction}`,
     );
   }
+  lines.push(
+    `- **성찰 질문**: ${report.reflectiveQuestion}`,
+    `- **해석 경계**: ${report.interpretiveBoundary}`,
+  );
   return lines.join('\n');
 }

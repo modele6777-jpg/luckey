@@ -3551,17 +3551,23 @@ test('Taoist Huangting Jing Internal Palaces Engine: calculates palaces, guardia
 });
 
 test('Persian Amesha Spenta & Baresman Engine: calculates immortal, baresman scores and avestan guidance', () => {
-  const rep = calculatePersianAmeshaSpenta(profile);
+  const rep = calculatePersianAmeshaSpenta(profile, '갈등 상황에서 맑은 중심을 지키고 싶습니다', new Date('2026-11-17T05:00:00+09:00'));
   assert.equal(rep.engineVersion, PERSIAN_AMESHA_SPENTA_VERSION);
   assert(rep.patronImmortal.koreanName.length > 0);
+  assert(rep.secondaryImmortal.koreanName.length > 0);
   assert(rep.totalRadianceScore >= 0 && rep.totalRadianceScore <= 100);
   assert(rep.baresman.twigsHarmonicState.length > 0);
-  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(Boolean(rep.ameshaSynthesisMatrix?.integratedAction));
+  assert(rep.reflectiveQuestion.includes('갈등 상황'));
+  assert(rep.interpretiveBoundary.includes('상징 비유'));
   const prompt = formatPersianAmeshaSpentaPrompt(rep);
   assert(prompt.includes('고대 페르시아 바르숨 & 6대 아메샤 스펜타 조화 엔진'));
   assert(prompt.includes(rep.patronImmortal.koreanName));
+  assert(prompt.includes('보조 공명 불멸자'));
   assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('성찰 질문'));
+  assert(prompt.includes('해석 경계'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });
@@ -4015,17 +4021,23 @@ test('Egyptian Maat Feather Heart Engine: calculates heart lightness and Maat ve
 });
 
 test('Persian Mithraic Seven Spheres Engine: calculates Mithraic grade and Sol Invictus score', () => {
-  const rep = calculatePersianMithraicSpheres({ profile });
+  const rep = calculatePersianMithraicSpheres({ profile, question: '어려운 결단을 앞두고 있습니다', now: new Date('2026-11-17T05:00:00+09:00') });
   assert.equal(rep.engineVersion, PERSIAN_MITHRAIC_SPHERES_ENGINE_VERSION);
   assert(rep.solInvictusScore >= 0 && rep.solInvictusScore <= 100);
   assert(rep.astralLadderAscensionRate >= 0 && rep.astralLadderAscensionRate <= 100);
   assert(rep.activeGrade.gradeLevel >= 1 && rep.activeGrade.gradeLevel <= 7);
-  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(rep.secondaryGrade.gradeLevel >= 1 && rep.secondaryGrade.gradeLevel <= 7);
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(Boolean(rep.mithraicSynthesisMatrix?.integratedAction));
+  assert(rep.reflectiveQuestion.includes('결단'));
+  assert(rep.interpretiveBoundary.includes('입문 비유'));
   const prompt = formatPersianMithraicSpheresPrompt(rep);
   assert(prompt.includes('고대 페르시아 미트라(Mithra) 7대 행성 입문 천계 사다리 실측 데이터'));
   assert(prompt.includes(rep.activeGrade.gradeTitleKo));
+  assert(prompt.includes('보조 교차 계단'));
   assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('성찰 질문'));
+  assert(prompt.includes('해석 경계'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });
@@ -4481,12 +4493,16 @@ test('Persian Attar Seven Valleys Engine: calculates seven valleys passage, Simu
   assert(rep.fanaEgoDissolutionRate >= 0 && rep.fanaEgoDissolutionRate <= 100);
   assert(rep.baqaDivinePermanenceIndex >= 0 && rep.baqaDivinePermanenceIndex <= 100);
   assert(rep.dominantValley.nameKo.length > 0);
-  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(Boolean(rep.attarSynthesisMatrix?.integratedAction));
+  assert(rep.reflectiveQuestion.includes('시무르그'));
+  assert(rep.interpretiveBoundary.includes('문학적 비유'));
   const prompt = formatPersianAttarSevenValleysPrompt(rep);
   assert(prompt.includes('페르시아 수피즘 아타르 \'새들의 회의\' 7대 계곡 & 시무르그 실측 데이터'));
   assert(prompt.includes(rep.dominantValley.nameKo));
   assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('성찰 질문'));
+  assert(prompt.includes('해석 경계'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });

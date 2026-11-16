@@ -2195,7 +2195,7 @@ try {
   // 95. 고대 페르시아 바르숨(Baresman) & 6대 아메샤 스펜타 조화 엔진
   const persianAmeshaSpentaResult = calculateSupplement('persianAmeshaSpentaResult', () => ((() => {
     try {
-      return calculatePersianAmeshaSpenta(profile);
+      return calculatePersianAmeshaSpenta(profile, question, now);
     } catch (_) {
       return null;
     }
@@ -4809,7 +4809,7 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'pythagoreanTetraktys', nameKo: '피타고라스 테트락티스 신성기하', icon: '📐', category: 'deep_master' },
   { key: 'babylonianEnumaElish', nameKo: '바빌로니아 운명의서판', icon: '🏛️', category: 'deep_master', summary: '에누마 엘리쉬 서사시와 운명의 서판 상징을 바탕으로 현재의 혼돈을 질서화할 수호 천체와 주권적 실천 방향을 짚어 주는 관점' },
   { key: 'taoistHuangtingJing', nameKo: '도교 황정경 오장존사', icon: '☯️', category: 'deep_master' },
-  { key: 'persianAmeshaSpenta', nameKo: '페르시아 아메샤스펜타', icon: '🔥', category: 'deep_master' },
+  { key: 'persianAmeshaSpenta', nameKo: '페르시아 아메샤스펜타', icon: '🔥', category: 'deep_master', summary: '아베스타 6대 아메샤 스펜타 수호 불멸자와 바르숨 정렬을 비추어 선한 의지와 내면의 조화를 가다듬는 관점' },
   { key: 'sumerianFiftyMes', nameKo: '수메르 50대메 신성문명', icon: '🏺', category: 'deep_master' },
   { key: 'zhongLuAlchemy', nameKo: '종여내단 3품선도 환원', icon: '☯️', category: 'deep_master' },
   { key: 'druidMoonTrees', nameKo: '켈트 드루이드 13달나무', icon: '🌲', category: 'deep_master' },
@@ -4835,7 +4835,7 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'hawaiianKahunaThreeSelves', nameKo: '하와이 카후나 3대 자아 마나', icon: '🌺', category: 'deep_master', summary: '하와이 카후나 전통의 우니히필리(내면아이)·우하네(의식)·아우마쿠아(초의식) 3대 자아를 정렬하고 마나(Mana) 호흡과 카라(Kala) 해방 리추얼을 안내합니다.' },
   { key: 'nordicYggdrasilRealms', nameKo: '북유럽 위그드라실 9대 영역', icon: '🌳', category: 'deep_master', summary: '세계수 위그드라실 9대 영역과 비프로스트 다리 균형으로 주도 영역·그림자 긴장·행동 지침을 비추는 관점' },
   { key: 'egyptianMaatFeatherHeart', nameKo: '이집트 마아트 심장무게', icon: '🪶', category: 'deep_master', summary: '마아트 진리의 깃털과 심장(Ib) 저울질 상징으로 양심의 명료함과 마음의 짐 덜기를 비추는 관점' },
-  { key: 'persianMithraicSpheres', nameKo: '페르시아 미트라 7천구', icon: '☀️', category: 'deep_master' },
+  { key: 'persianMithraicSpheres', nameKo: '페르시아 미트라 7천구', icon: '☀️', category: 'deep_master', summary: '미트라교 7대 행성 천계 사다리와 불패의 태양(솔 인빅투스) 상징으로 현재의 입문 과제와 돌파 태도를 비추는 관점' },
   { key: 'orpheicMysteries', nameKo: '그리스 오르페우스 므네모시네', icon: '🎶', category: 'deep_master' },
   { key: 'popolVuhHeroTwins', nameKo: '마야 포폴부 쌍둥이영웅', icon: '🌽', category: 'deep_master' },
   { key: 'ancientYarrowProbability', nameKo: '주역 대연지수 49책 시초점', icon: '🌿', category: 'deep_master', summary: '주역 계사전 49책 시초점의 삼변 수리 구조로 동효·정효의 시중(時中) 처세 흐름을 읽는 관점' },
@@ -4863,7 +4863,7 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'romanStoicProhairesis', nameKo: '로마 스토아 통제이분법', icon: '🏛️', category: 'deep_master' },
   { key: 'patanjaliAshtangaYoga', nameKo: '파탄잘리 요가 8지칙', icon: '🧘', category: 'deep_master' },
   { key: 'koreanPungryudoHwarang', nameKo: '신라 풍류도 화랑오계', icon: '🌸', category: 'deep_master' },
-  { key: 'persianAttarSevenValleys', nameKo: '페르시아 아타르 새들의 회의 7대 계곡', icon: '🕊️', category: 'deep_master' },
+  { key: 'persianAttarSevenValleys', nameKo: '페르시아 아타르 새들의 회의 7대 계곡', icon: '🕊️', category: 'deep_master', summary: '아타르 《새들의 회의》 7대 영혼의 계곡과 시무르그 거울 상징으로 집착을 비우고 본래 자아를 돌아보는 관점' },
   { key: 'hermeticPoimandres', nameKo: '헤르메스주의 포이만드레스 8대 천계', icon: '🌟', category: 'deep_master', summary: '7대 행성 구체의 세속 정념을 벗고 제8천 옥도아드의 누스(신성 지성)로 깨어나는 상승 과정을 비춥니다.' },
   { key: 'kashmirShaivismSpanda', nameKo: '카슈미르 시바파 스판다 우주 맥동', icon: '🔱', category: 'deep_master' },
   { key: 'sumerianEnumaElishFiftyNames', nameKo: '에누마 엘리시 50대 이름', icon: '⚔️', category: 'deep_master' },

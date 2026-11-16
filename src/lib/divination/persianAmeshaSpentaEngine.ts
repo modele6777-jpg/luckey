@@ -25,7 +25,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const PERSIAN_AMESHA_SPENTA_VERSION = 'LUCKEY-PERSIAN-AMESHA-SPENTA-v2.0.0';
+export const PERSIAN_AMESHA_SPENTA_VERSION = 'LUCKEY-PERSIAN-AMESHA-SPENTA-v2.1.0';
 
 export interface AmeshaSpentaImmortal {
   avestanName: string;
@@ -47,10 +47,13 @@ export interface PersianAmeshaSpentaReport {
   calculatedAt: string;
   calculatedAtKst: string;
   patronImmortal: AmeshaSpentaImmortal;
+  secondaryImmortal: AmeshaSpentaImmortal;
   baresman: BaresmanAlignment;
   totalRadianceScore: number;
   avestanGuidance: string;
   synthesisMessage: string;
+  reflectiveQuestion: string;
+  interpretiveBoundary: string;
   ameshaSynthesisMatrix?: {
     dominantTension: string;
     alignmentState: string;
@@ -65,7 +68,15 @@ function formatAmeshaKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
+}
+
+function buildAmeshaReflectiveQuestion(patron: AmeshaSpentaImmortal, query?: string): string {
+  const focus = query?.trim();
+  if (focus) {
+    return `'${focus}'에 대해 판단할 때, ${patron.avestanName}의 미덕(${patron.sacredAttribute.slice(0, 28)}...)에 비추어 지금 가장 먼저 바로잡아야 할 마음가짐은 무엇인가요?`;
+  }
+  return `오늘의 수호 불멸자 ${patron.koreanName}의 시선에서, 흩어진 마음을 하나로 묶기 위해 오늘 내려놓아야 할 사소한 번뇌는 무엇인가요?`;
 }
 
 function describeAmeshaStage(score: number): string {
@@ -136,6 +147,8 @@ export function calculatePersianAmeshaSpenta(
 
   const immortalIdx = (seed + now.getUTCDay()) % SIX_IMMORTALS.length;
   const patronImmortal = SIX_IMMORTALS[immortalIdx];
+  const secondaryIdx = (immortalIdx + 1 + (seed % (SIX_IMMORTALS.length - 1))) % SIX_IMMORTALS.length;
+  const secondaryImmortal = SIX_IMMORTALS[secondaryIdx];
 
   const mindConcentrationScore = 74 + ((seed * 3 + now.getUTCHours() * 7) % 25);
   const emotionalHarmonyScore = 72 + ((seed * 5 + now.getUTCDate() * 9) % 27);
@@ -154,8 +167,10 @@ export function calculatePersianAmeshaSpenta(
   const synthesisMessage = `아베스타 가타 원전에 따라, 당신의 영혼은 6대 아메샤 스펜타 중 [${patronImmortal.koreanName}]의 신성한 가호를 받습니다.`;
 
   const calculatedAtKst = formatAmeshaKstTimestamp(now);
+  const reflectiveQuestion = buildAmeshaReflectiveQuestion(patronImmortal, query);
+  const interpretiveBoundary = '조로아스터교 아베스타의 6대 아메샤 스펜타는 신화적·윤리적 상징 비유로만 활용하며, 미래의 확정적 사건 예측이나 의학적·재무적 판단의 근거로 단정하지 않습니다.';
   const ameshaSynthesisMatrix = {
-    dominantTension: `${patronImmortal.avestanName} ↔ ${patronImmortal.guardianDominion}`,
+    dominantTension: `${patronImmortal.avestanName} ↔ ${secondaryImmortal.avestanName}`,
     alignmentState: describeAmeshaStage(totalRadianceScore),
     integratedAction: `${patronImmortal.contemplativeMantra}${query?.trim() ? ` [질문 맥락: ${query.trim()}]` : ''}`,
   };
@@ -165,6 +180,7 @@ export function calculatePersianAmeshaSpenta(
     calculatedAt: now.toISOString(),
     calculatedAtKst,
     patronImmortal,
+    secondaryImmortal,
     baresman: {
       mindConcentrationScore,
       emotionalHarmonyScore,
@@ -174,6 +190,8 @@ export function calculatePersianAmeshaSpenta(
     totalRadianceScore,
     avestanGuidance,
     synthesisMessage,
+    reflectiveQuestion,
+    interpretiveBoundary,
     ameshaSynthesisMatrix,
   };
 }
@@ -186,6 +204,7 @@ export function formatPersianAmeshaSpentaPrompt(report: PersianAmeshaSpentaRepor
     `  - 신성 미덕: ${report.patronImmortal.sacredAttribute}`,
     `  - 관할 영역: ${report.patronImmortal.guardianDominion}`,
     `  - 가타 명상 잠언: "${report.patronImmortal.contemplativeMantra}"`,
+    `- **보조 공명 불멸자**: **${report.secondaryImmortal.koreanName}** (${report.secondaryImmortal.avestanName}) — ${report.secondaryImmortal.guardianDominion}`,
     `- **바르숨(Baresman) 정렬 상태**: ${report.baresman.twigsHarmonicState}`,
     `- **아베스타 일일 나침반**: ${report.avestanGuidance}`,
     `- **아메샤 스펜타 통합 결론**: ${report.synthesisMessage}`,
@@ -196,5 +215,9 @@ export function formatPersianAmeshaSpentaPrompt(report: PersianAmeshaSpentaRepor
       `- **통합 실천**: ${report.ameshaSynthesisMatrix.integratedAction}`,
     );
   }
+  lines.push(
+    `- **성찰 질문**: ${report.reflectiveQuestion}`,
+    `- **해석 경계**: ${report.interpretiveBoundary}`,
+  );
   return lines.join('\n');
 }
