@@ -15,7 +15,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const GERMAN_FRIEDRICH_SCHILLER_AESTHETIC_EDUCATION_VERSION = 'LUCKEY-SCHILLER-AESTHETIC-EDUCATION-v2.0.0';
+export const GERMAN_FRIEDRICH_SCHILLER_AESTHETIC_EDUCATION_VERSION = 'LUCKEY-SCHILLER-AESTHETIC-EDUCATION-v2.1.0';
 
 export interface SchillerTheme {
   themeKey: string;
@@ -141,7 +141,7 @@ function formatSchillerKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 KST`;
 }
 
 function describeSchillerStage(score: number): string {
@@ -236,5 +236,6 @@ export function formatGermanFriedrichSchillerAestheticEducationPrompt(
       `- 통합 실천: ${res.schillerSynthesisMatrix.integratedAction}`,
     );
   }
+  lines.push(`- 해석 경계: 실러의 놀이 충동(Spieltrieb)·우아함과 존엄 상징을 빌린 정성적 조화 성찰 관점이며, 수치 평가나 확정 예언이 아닙니다.`);
   return lines.join('\n');
 }

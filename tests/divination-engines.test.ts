@@ -9267,3 +9267,24 @@ test('Victor Hugo, Gaelic Wheel Fire Festivals, and Albert Schweitzer v2.1.0 inc
   const scPrompt = formatGermanAlbertSchweitzerReverenceForLifePrompt(sc);
   assert.ok(scPrompt.includes('해석 경계') && scPrompt.includes('+09:00'));
 });
+
+test('Edmund Husserl, Erich Fromm, and Friedrich Schiller v2.1.0 include +09:00 KST and interpretive boundary', () => {
+  const now = new Date('2026-11-16T03:25:00Z');
+  const hs = calculateGermanEdmundHusserlPhenomenologicalReduction(profile, '편견을 내려놓고 본질을 보고 싶어요', now);
+  assert.equal(hs.engineVersion, GERMAN_EDMUND_HUSSERL_PHENOMENOLOGY_VERSION);
+  assert.ok(hs.calculatedAtKst.includes('+09:00'));
+  const hsPrompt = formatGermanEdmundHusserlPhenomenologicalReductionPrompt(hs);
+  assert.ok(hsPrompt.includes('해석 경계') && hsPrompt.includes('+09:00'));
+
+  const fr = calculateGermanErichFrommArtOfLovingBeing(profile, '건강한 사랑과 자립의 균형을 잡고 싶어요', now);
+  assert.equal(fr.engineVersion, GERMAN_ERICH_FROMM_VERSION);
+  assert.ok(fr.calculatedAtKst.includes('+09:00'));
+  const frPrompt = formatGermanErichFrommArtOfLovingBeingPrompt(fr);
+  assert.ok(frPrompt.includes('해석 경계') && frPrompt.includes('+09:00'));
+
+  const sh = calculateGermanFriedrichSchillerAestheticEducation(profile, '마음의 여유와 품격을 지키고 싶어요', now);
+  assert.equal(sh.engineVersion, GERMAN_FRIEDRICH_SCHILLER_AESTHETIC_EDUCATION_VERSION);
+  assert.ok(sh.calculatedAtKst.includes('+09:00'));
+  const shPrompt = formatGermanFriedrichSchillerAestheticEducationPrompt(sh);
+  assert.ok(shPrompt.includes('해석 경계') && shPrompt.includes('+09:00'));
+});
