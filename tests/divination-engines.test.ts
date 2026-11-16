@@ -3277,14 +3277,20 @@ test('Taoist Sanbao Inner Alchemy Engine: calculates Jing-Qi-Shen and alchemy ph
 test('Tibetan Bardo Navigation Engine: maps 6 bardo states and clear light insight', () => {
   const rep = calculateTibetanBardoNavigation(profile, new Date('2026-11-16T08:00:00+09:00'), '전환기 방향');
   assert.equal(rep.engineVersion, TIBETAN_BARDO_VERSION);
-  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(rep.calculatedAtKst.includes('+09:00 (KST)'));
   assert(Boolean(rep.bardoSynthesisMatrix?.integratedAction));
   assert(rep.currentBardoState.stateNo >= 1 && rep.currentBardoState.stateNo <= 6);
+  assert(rep.secondaryBardoState.stateNo >= 1 && rep.secondaryBardoState.stateNo <= 6);
   assert(rep.awarenessClarityScore >= 0 && rep.awarenessClarityScore <= 100);
   assert(rep.clearLightRecognition.length > 0);
+  assert(rep.reflectiveQuestion.length > 0);
+  assert(rep.interpretiveBoundary.includes('예측'));
   const prompt = formatTibetanBardoNavigationPrompt(rep);
   assert(prompt.includes('티베트 불교 바르도'));
   assert(prompt.includes(rep.currentBardoState.nameKo));
+  assert(prompt.includes('다음 전환 국면'));
+  assert(prompt.includes('성찰 질문'));
+  assert(prompt.includes('해석 경계'));
   assert(prompt.includes('교차 매트릭스'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
@@ -3715,14 +3721,20 @@ test('Tieban Shenshu & Tai Xuan Numerology Engine: calculates inherent clause, a
 test('Tibetan Bon Nine Ways & Five Soul Vitalities Engine: calculates active way, vitalities and mantra', () => {
   const rep = calculateTibetanBonNineWays(profile, { question: '영혼 정화와 균형' });
   assert.equal(rep.engineVersion, TIBETAN_BON_NINE_WAYS_VERSION);
-  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(rep.calculatedAtKst.includes('+09:00 (KST)'));
   assert(Boolean(rep.bonSynthesisMatrix?.integratedAction));
   assert(rep.activeWay.tibetanName.length > 0);
+  assert(rep.secondaryWay.tibetanName.length > 0);
   assert.equal(rep.vitalities.length, 5);
   assert(rep.primordialPurityIndex >= 0 && rep.primordialPurityIndex <= 100);
+  assert(rep.reflectiveQuestion.length > 0);
+  assert(rep.interpretiveBoundary.includes('예측'));
   const prompt = formatTibetanBonNineWaysPrompt(rep);
   assert(prompt.includes('티베트 정통 본교(Bon) 카르마 9승 & 5대 영혼 수호 융드룽 엔진'));
   assert(prompt.includes(rep.activeWay.koreanName));
+  assert(prompt.includes('보조 교차 영적 길'));
+  assert(prompt.includes('성찰 질문'));
+  assert(prompt.includes('해석 경계'));
   assert(prompt.includes('교차 매트릭스'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
@@ -4320,15 +4332,19 @@ test('Taoist Shangqing 24 Spirits Engine: calculates three dantians and active t
 test('Tibetan Phowa Rainbow Body Engine: calculates Rigpa clarity and 5 Buddha wisdoms', () => {
   const rep = calculateTibetanPhowaRainbowBody({ profile, question: '본각 정렬' });
   assert.equal(rep.engineVersion, TIBETAN_PHOWA_RAINBOW_BODY_ENGINE_VERSION);
-  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(rep.calculatedAtKst.includes('+09:00 (KST)'));
   assert(Boolean(rep.phowaSynthesisMatrix?.integratedAction));
   assert(rep.rigpaClarityScore >= 0 && rep.rigpaClarityScore <= 100);
   assert(rep.phowaReadinessIndex >= 0 && rep.phowaReadinessIndex <= 100);
   assert(rep.rainbowBodyAlignmentScore >= 0 && rep.rainbowBodyAlignmentScore <= 100);
   assert(rep.primaryWisdom.nameKo.length > 0);
+  assert(rep.reflectiveQuestion.length > 0);
+  assert(rep.interpretiveBoundary.includes('예측'));
   const prompt = formatTibetanPhowaRainbowBodyPrompt(rep);
   assert(prompt.includes('티베트 족첸(Dzogchen) 릭파 본각 & 무지개체(Jalü) 5대 지혜 실측 데이터'));
   assert(prompt.includes(rep.primaryWisdom.nameKo));
+  assert(prompt.includes('성찰 질문'));
+  assert(prompt.includes('해석 경계'));
   assert(prompt.includes('교차 매트릭스'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
