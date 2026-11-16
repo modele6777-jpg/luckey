@@ -9391,3 +9391,39 @@ test('Montaigne, Leibniz, and Goethe v2.1.0 include +09:00 KST, secondary aphori
   assert.ok(gtPrompt.includes('+09:00') && gtPrompt.includes('보조 원전 테제') && gtPrompt.includes('성찰 질문') && gtPrompt.includes('해석 경계'));
   assert.doesNotMatch(gtPrompt.split('\n').filter((l) => !l.startsWith('- 엔진 버전')).join('\n'), /\d+\s*점|\d+\s*%|점수\s*\d/);
 });
+
+test('Habermas, Jaspers, and Benjamin v2.1.0 include +09:00 KST, secondary aphorism cross-check, reflective question, and interpretive boundary', () => {
+  const profile = { basic: { name: '제제', birthdate: '1994-01-24', birthtime: '12:00', gender: 'male' } } as any;
+  const now = new Date('2026-11-16T03:55:00Z');
+  const query = '복잡한 갈등 속에서도 진실한 대화와 나만의 기준을 세우고 싶습니다';
+
+  const hb = calculateGermanJurgenHabermasCommunicativeAction(profile, query, now);
+  assert.equal(hb.engineVersion, GERMAN_JURGEN_HABERMAS_COMMUNICATIVE_ACTION_VERSION);
+  assert.match(hb.calculatedAtKst, /\+09:00/);
+  assert.notEqual(hb.secondaryHabermasAphorism.aphorismKey, hb.focalHabermasAphorism.aphorismKey);
+  assert.ok(hb.reflectiveQuestion.includes(query));
+  assert.ok(hb.interpretiveBoundary.includes('성찰'));
+  const hbPrompt = formatGermanJurgenHabermasCommunicativeActionPrompt(hb);
+  assert.ok(hbPrompt.includes('+09:00') && hbPrompt.includes('보조 원전 테제') && hbPrompt.includes('성찰 질문') && hbPrompt.includes('해석 경계'));
+  assert.doesNotMatch(hbPrompt.split('\n').filter((l) => !l.startsWith('- 엔진 버전')).join('\n'), /\d+\s*점|\d+\s*%|점수\s*\d/);
+
+  const jp = calculateGermanKarlJaspersExistenzGrenzsituationen(profile, query, now);
+  assert.equal(jp.engineVersion, GERMAN_KARL_JASPERS_VERSION);
+  assert.match(jp.calculatedAtKst, /\+09:00/);
+  assert.notEqual(jp.secondaryJaspersAphorism.aphorismKey, jp.focalJaspersAphorism.aphorismKey);
+  assert.ok(jp.reflectiveQuestion.includes(query));
+  assert.ok(jp.interpretiveBoundary.includes('성찰'));
+  const jpPrompt = formatGermanKarlJaspersExistenzGrenzsituationenPrompt(jp);
+  assert.ok(jpPrompt.includes('+09:00') && jpPrompt.includes('보조 원전 테제') && jpPrompt.includes('성찰 질문') && jpPrompt.includes('해석 경계'));
+  assert.doesNotMatch(jpPrompt.split('\n').filter((l) => !l.startsWith('- 엔진 버전')).join('\n'), /\d+\s*점|\d+\s*%|점수\s*\d/);
+
+  const bj = calculateGermanWalterBenjaminAuraNowTime(profile, query, now);
+  assert.equal(bj.engineVersion, GERMAN_WALTER_BENJAMIN_AURA_NOWTIME_VERSION);
+  assert.match(bj.calculatedAtKst, /\+09:00/);
+  assert.notEqual(bj.secondaryBenjaminAphorism.aphorismKey, bj.focalBenjaminAphorism.aphorismKey);
+  assert.ok(bj.reflectiveQuestion.includes(query));
+  assert.ok(bj.interpretiveBoundary.includes('성찰'));
+  const bjPrompt = formatGermanWalterBenjaminAuraNowTimePrompt(bj);
+  assert.ok(bjPrompt.includes('+09:00') && bjPrompt.includes('보조 원전 테제') && bjPrompt.includes('성찰 질문') && bjPrompt.includes('해석 경계'));
+  assert.doesNotMatch(bjPrompt.split('\n').filter((l) => !l.startsWith('- 엔진 버전')).join('\n'), /\d+\s*점|\d+\s*%|점수\s*\d/);
+});

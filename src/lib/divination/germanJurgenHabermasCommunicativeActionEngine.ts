@@ -8,12 +8,12 @@
  * 4. 생활세계의 식민화 방어 및 인간성 수호 지수 (Lifeworld Colonization Resistance Index): 돈과 권력, 기계적 효율성의 논리가 삶의 본질적 의미와 따뜻한 유대를 침범하지 못하도록 지켜내는 주체성.
  * 5. 숙의적 공감 및 성숙한 합의 도출력 (Deliberative Consensus & Co-Creative Synthesis Score): 성급한 타협이나 독단을 넘어 깊이 있는 숙의(Deliberation)를 통해 모두가 상생하는 차원 높은 해법을 창출하는 역량.
  *
- * @version LUCKEY-JURGEN-HABERMAS-COMMUNICATIVE-ACTION-v2.0.0
+ * @version LUCKEY-JURGEN-HABERMAS-COMMUNICATIVE-ACTION-v2.1.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const GERMAN_JURGEN_HABERMAS_COMMUNICATIVE_ACTION_VERSION = 'LUCKEY-JURGEN-HABERMAS-COMMUNICATIVE-ACTION-v2.0.0';
+export const GERMAN_JURGEN_HABERMAS_COMMUNICATIVE_ACTION_VERSION = 'LUCKEY-JURGEN-HABERMAS-COMMUNICATIVE-ACTION-v2.1.0';
 
 export interface HabermasTheme {
   themeKey: string;
@@ -43,6 +43,9 @@ export interface GermanJurgenHabermasCommunicativeActionResult {
   // 세부 분석
   activeHabermasTheme: HabermasTheme;
   focalHabermasAphorism: HabermasAphorism;
+  secondaryHabermasAphorism: HabermasAphorism;
+  reflectiveQuestion: string;
+  interpretiveBoundary: string;
   habermasComprehensiveGuidance: {
     guidanceTitle: string;
     philosophicalCounsel: string;
@@ -132,7 +135,15 @@ function formatHabermasKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 KST`;
+}
+
+function buildHabermasReflectiveQuestion(theme: HabermasTheme, query?: string): string {
+  const trimmed = query?.trim();
+  if (trimmed) {
+    return `'${trimmed}'의 대화에서 상대를 이기려는 전략적 셈법을 멈추고, 더 나은 논증과 상호이해가 자랄 수 있게 내가 먼저 열어야 할 말의 자리는 무엇인가요? (${theme.themeTitleKo})`;
+  }
+  return `지금 내 일상의 관계(생활세계)를 숫자와 효율의 논리로부터 지켜내기 위해 진심으로 귀 기울여야 할 목소리는 누구의 것인가요? (${theme.themeTitleKo})`;
 }
 
 function describeHabermasStage(score: number): string {
@@ -164,9 +175,14 @@ export function calculateGermanJurgenHabermasCommunicativeAction(
 
   const themeIndex = (absHash >> 5) % HABERMAS_THEMES.length;
   const aphorismIndex = (absHash >> 8) % HABERMAS_APHORISMS.length;
+  const secondaryOffset = 1 + ((absHash >> 11) % (HABERMAS_APHORISMS.length - 1));
+  const secondaryAphorismIndex = (aphorismIndex + secondaryOffset) % HABERMAS_APHORISMS.length;
 
   const activeHabermasTheme = HABERMAS_THEMES[themeIndex];
   const focalHabermasAphorism = HABERMAS_APHORISMS[aphorismIndex];
+  const secondaryHabermasAphorism = HABERMAS_APHORISMS[secondaryAphorismIndex];
+  const reflectiveQuestion = buildHabermasReflectiveQuestion(activeHabermasTheme, query);
+  const interpretiveBoundary = '하버마스 의사소통행위 관점은 관계의 성패를 단정하거나 상대를 심판하는 도구가 아니라, 왜곡 없는 대화와 상호이해를 비추는 비판철학적 성찰 렌즈입니다.';
 
   const guidanceTitle = `위르겐 하버마스 의사소통과 공론장의 지혜: ${activeHabermasTheme.themeTitleKo}`;
   const philosophicalCounsel = `현대 비판 이론의 거목 위르겐 하버마스 선생은 《의사소통행위이론》과 《공론장의 구조변동》을 통해 ` +
@@ -195,6 +211,9 @@ export function calculateGermanJurgenHabermasCommunicativeAction(
     deliberativeDemocraticConsensusScore,
     activeHabermasTheme,
     focalHabermasAphorism,
+    secondaryHabermasAphorism,
+    reflectiveQuestion,
+    interpretiveBoundary,
     habermasComprehensiveGuidance: {
       guidanceTitle,
       philosophicalCounsel,
@@ -220,7 +239,12 @@ export function formatGermanJurgenHabermasCommunicativeActionPrompt(
     `- 하버마스 원전 테제: "${res.focalHabermasAphorism.aphorismKo}" (${res.focalHabermasAphorism.aphorismGerman})`,
     `- 원전 출처: [${res.focalHabermasAphorism.sourceContext}]`,
     `- 구체적 실천 지침: ${res.focalHabermasAphorism.actionGuidance}`,
+    `- 보조 원전 테제: "${res.secondaryHabermasAphorism.aphorismKo}" (${res.secondaryHabermasAphorism.aphorismGerman})`,
+    `- 보조 원전 출처: [${res.secondaryHabermasAphorism.sourceContext}]`,
+    `- 보조 실천 지침: ${res.secondaryHabermasAphorism.actionGuidance}`,
+    `- 성찰 질문: ${res.reflectiveQuestion}`,
     `- 종합 하버마스 권면: ${res.habermasComprehensiveGuidance.philosophicalCounsel}`,
+    `- 해석 경계: ${res.interpretiveBoundary}`,
   ];
   if (res.habermasSynthesisMatrix) {
     lines.push(
