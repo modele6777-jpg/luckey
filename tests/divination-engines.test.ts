@@ -9080,3 +9080,24 @@ test('Hermetic Poimandres, Hermann Hesse, and Han Yong-un v2.1.0 include KST and
   const hyPrompt = formatKoreanHanYongUnSilenceOfNimPrompt(hy);
   assert.ok(hyPrompt.includes('해석 경계') && hyPrompt.includes('+09:00'));
 });
+
+test('James Joyce, Babylonian Enuma Elish, and Buddhist Yogacara v2.1.0 include KST and interpretive boundary', () => {
+  const now = new Date('2026-11-16T00:55:00Z');
+  const jj = calculateIrishJamesJoyceUlyssesEpiphany('일상의 작은 순간을 살피고 싶어요', now);
+  assert.equal(jj.engineVersion, IRISH_JAMES_JOYCE_ULYSSES_EPIPHANY_VERSION);
+  assert.ok(jj.calculatedAtKst.endsWith('+09:00'));
+  const jjPrompt = formatIrishJamesJoyceUlyssesEpiphanyPrompt(jj);
+  assert.ok(jjPrompt.includes('해석 경계') && jjPrompt.includes('+09:00'));
+
+  const ba = calculateBabylonianEnumaElish(profile, now, '혼돈을 정리하고 결단을 내리고 싶어요');
+  assert.equal(ba.engineVersion, BABYLONIAN_ENUMA_ELISH_VERSION);
+  assert.ok(ba.calculatedAtKst.endsWith('+09:00'));
+  const baPrompt = formatBabylonianEnumaElishPrompt(ba);
+  assert.ok(baPrompt.includes('해석 경계') && baPrompt.includes('+09:00'));
+
+  const yo = calculateBuddhistYogacaraConsciousness({ profile, question: '마음의 분별과 집착을 내려놓고 싶어요', now });
+  assert.equal(yo.engineVersion, BUDDHIST_YOGACARA_CONSCIOUSNESS_ENGINE_VERSION);
+  assert.ok(yo.calculatedAtKst.endsWith('+09:00'));
+  const yoPrompt = formatBuddhistYogacaraConsciousnessPrompt(yo);
+  assert.ok(yoPrompt.includes('해석 경계') && yoPrompt.includes('+09:00'));
+});
