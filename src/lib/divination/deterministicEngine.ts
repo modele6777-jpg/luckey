@@ -4864,7 +4864,7 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'patanjaliAshtangaYoga', nameKo: '파탄잘리 요가 8지칙', icon: '🧘', category: 'deep_master' },
   { key: 'koreanPungryudoHwarang', nameKo: '신라 풍류도 화랑오계', icon: '🌸', category: 'deep_master' },
   { key: 'persianAttarSevenValleys', nameKo: '페르시아 아타르 새들의 회의 7대 계곡', icon: '🕊️', category: 'deep_master' },
-  { key: 'hermeticPoimandres', nameKo: '헤르메스주의 포이만드레스 8대 천계', icon: '🌟', category: 'deep_master' },
+  { key: 'hermeticPoimandres', nameKo: '헤르메스주의 포이만드레스 8대 천계', icon: '🌟', category: 'deep_master', summary: '7대 행성 구체의 세속 정념을 벗고 제8천 옥도아드의 누스(신성 지성)로 깨어나는 상승 과정을 비춥니다.' },
   { key: 'kashmirShaivismSpanda', nameKo: '카슈미르 시바파 스판다 우주 맥동', icon: '🔱', category: 'deep_master' },
   { key: 'sumerianEnumaElishFiftyNames', nameKo: '에누마 엘리시 50대 이름', icon: '⚔️', category: 'deep_master' },
   { key: 'alexandrianDecanThirtySixGods', nameKo: '알렉산드리아 36대 데칸', icon: '⌛', category: 'deep_master', summary: '헤르메스주의 36대 데칸 시간 성령의 상징으로 조급한 시계 시간 너머의 결정적 타이밍(카이로스)과 삶의 리듬을 성찰합니다.' },

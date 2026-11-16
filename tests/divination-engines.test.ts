@@ -9052,3 +9052,24 @@ test('Ayurveda, Gnostic Pistis Sophia, and Hermetic Kybalion v2.1.0 include KST 
   const kyPrompt = formatHermeticKybalionPrompt(ky);
   assert.ok(kyPrompt.includes('해석 경계') && kyPrompt.includes('+09:00'));
 });
+
+test('Hermetic Poimandres, Hermann Hesse, and Han Yong-un v2.1.0 include KST and interpretive boundary', () => {
+  const now = new Date('2026-11-16T00:45:00Z');
+  const po = calculateHermeticPoimandres({ profile, question: '일곱 천계의 정념을 내려놓고 싶어요', now });
+  assert.equal(po.engineVersion, HERMETIC_POIMANDRES_ENGINE_VERSION);
+  assert.ok(po.calculatedAtKst.endsWith('+09:00'));
+  const poPrompt = formatHermeticPoimandresPrompt(po);
+  assert.ok(poPrompt.includes('해석 경계') && poPrompt.includes('+09:00'));
+
+  const he = calculateGermanHermannHesseDemianSteppenwolf('변화와 성장의 시기에 있어요', now);
+  assert.equal(he.engineVersion, GERMAN_HERMANN_HESSE_DEMIAN_STEPPENWOLF_VERSION);
+  assert.ok(he.calculatedAtKst.endsWith('+09:00'));
+  const hePrompt = formatGermanHermannHesseDemianSteppenwolfPrompt(he);
+  assert.ok(hePrompt.includes('해석 경계') && hePrompt.includes('+09:00'));
+
+  const hy = calculateKoreanHanYongUnSilenceOfNim('이별의 아픔 속에서 희망을 찾고 싶어요', now);
+  assert.equal(hy.engineVersion, KOREAN_HAN_YONG_UN_SILENCE_OF_NIM_VERSION);
+  assert.ok(hy.calculatedAtKst.endsWith('+09:00'));
+  const hyPrompt = formatKoreanHanYongUnSilenceOfNimPrompt(hy);
+  assert.ok(hyPrompt.includes('해석 경계') && hyPrompt.includes('+09:00'));
+});

@@ -5,7 +5,7 @@
  * @version LUCKEY-HAN-YONG-UN-SILENCE-OF-NIM-v2.0.0
  */
 
-export const KOREAN_HAN_YONG_UN_SILENCE_OF_NIM_VERSION = 'LUCKEY-HAN-YONG-UN-SILENCE-OF-NIM-v2.0.0';
+export const KOREAN_HAN_YONG_UN_SILENCE_OF_NIM_VERSION = 'LUCKEY-HAN-YONG-UN-SILENCE-OF-NIM-v2.1.0';
 
 export interface HanYongUnTheme {
   themeKey: string;
@@ -17,6 +17,7 @@ export interface HanYongUnTheme {
 
 export interface KoreanHanYongUnSilenceOfNimResult {
   engineVersion: string;
+  calculatedAtKst: string;
   activeHanYongUnTheme: HanYongUnTheme;
   hanYongUnComprehensiveGuidance: {
     guidanceTitle: string;
@@ -72,8 +73,10 @@ function selectHanYongUnTheme(query?: string): HanYongUnTheme {
   return HAN_YONG_UN_THEMES.find(theme => theme.themeKey === match?.[1]) ?? HAN_YONG_UN_THEMES[0];
 }
 
-export function calculateKoreanHanYongUnSilenceOfNim(query?: string): KoreanHanYongUnSilenceOfNimResult {
+export function calculateKoreanHanYongUnSilenceOfNim(query?: string, now: Date = new Date()): KoreanHanYongUnSilenceOfNimResult {
   const activeHanYongUnTheme = selectHanYongUnTheme(query);
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const calculatedAtKst = `${kst.toISOString().slice(0, 19)}+09:00`;
   const hanYongUnSynthesisMatrix = {
     dominantTension: `${activeHanYongUnTheme.themeTitleKo} ↔ ${activeHanYongUnTheme.themeTitleEn}`,
     alignmentState: '문학적 참고 관점 — 개인의 감정이나 미래를 단정하지 않고 작품의 주제를 비추는 정성적 성찰',
@@ -81,6 +84,7 @@ export function calculateKoreanHanYongUnSilenceOfNim(query?: string): KoreanHanY
   };
   return {
     engineVersion: KOREAN_HAN_YONG_UN_SILENCE_OF_NIM_VERSION,
+    calculatedAtKst,
     activeHanYongUnTheme,
     hanYongUnComprehensiveGuidance: {
       guidanceTitle: `한용운 작품에서 얻는 참고 관점: ${activeHanYongUnTheme.themeTitleKo}`,
@@ -94,10 +98,11 @@ export function formatKoreanHanYongUnSilenceOfNimPrompt(res: KoreanHanYongUnSile
   const lines = [
     '【한용운 작품에서 얻은 문학적 참고】',
     `- 엔진: ${res.engineVersion}`,
+    `- 연산 시각: ${res.calculatedAtKst}`,
     `- 질문과 관련해 살펴볼 주제: ${res.activeHanYongUnTheme.themeTitleKo}`,
     `- 작품 맥락: ${res.activeHanYongUnTheme.poeticInsight}`,
     `- 조심스럽게 적용할 제안: ${res.activeHanYongUnTheme.practicalCounsel}`,
-    '- 이는 문학적 해석을 위한 참고일 뿐, 개인 점수·진단·관계 결과·미래 예측이 아닙니다.',
+    '- 해석 경계: 이는 문학적 해석을 위한 참고일 뿐, 개인 점수·진단·관계 결과·미래 예측이 아닙니다.',
   ];
   if (res.hanYongUnSynthesisMatrix) {
     lines.push(
