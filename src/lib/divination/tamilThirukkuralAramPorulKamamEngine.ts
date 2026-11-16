@@ -14,7 +14,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const TAMIL_THIRUKKURAL_ARAM_PORUL_KAMAM_VERSION = 'LUCKEY-TAMIL-THIRUKKURAL-ARAM-PORUL-KAMAM-v2.1.0';
+export const TAMIL_THIRUKKURAL_ARAM_PORUL_KAMAM_VERSION = 'LUCKEY-TAMIL-THIRUKKURAL-ARAM-PORUL-KAMAM-v2.2.0';
 
 export type ThirukkuralQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -57,6 +57,11 @@ export interface TamilThirukkuralAramPorulKamamResult {
   thirukkuralComprehensiveGuidance: {
     guidanceTitle: string;
     classicalCounsel: string;
+  };
+  thirukkuralSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
   };
 }
 
@@ -267,9 +272,18 @@ export function calculateTamilThirukkuralAramPorulKamam(
   const interpretiveBoundary =
     '타밀 티루쿠랄 관점은 덕·재물·사랑의 균형을 비추는 상징적 성찰 렌즈입니다. 역본마다 문장 표현이 달라 원문을 그대로 옮기지 않으며, 개인의 길흉과 미래를 단정하지 않습니다. 덕과 사랑을 이유로 자기희생이나 무조건적 복종을 권하지 않고, 동의·안전·법적 경계를 존중합니다.';
 
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const calculatedAtKst = kst.toISOString().replace('Z', '+09:00');
+  const trimmedQ = (question ?? '').trim();
+  const thirukkuralSynthesisMatrix = {
+    dominantTension: `${situationalThirukkuralAudit.bookFocusKo} ↔ ${activeThirukkuralTheme.chapterReference}`,
+    alignmentState: `${temporalThirukkuralRhythm.kstWindow} · ${temporalThirukkuralRhythm.virtueFocus}`,
+    integratedAction: `${situationalThirukkuralAudit.firstStepAdvice}${trimmedQ ? ` [질문 맥락: ${trimmedQ}]` : ''}`,
+  };
+
   return {
     engineVersion: TAMIL_THIRUKKURAL_ARAM_PORUL_KAMAM_VERSION,
-    calculatedAtKst: now.toISOString(),
+    calculatedAtKst,
     questionTopic: topic,
     activeThirukkuralTheme,
     situationalThirukkuralAudit,
@@ -285,13 +299,17 @@ export function calculateTamilThirukkuralAramPorulKamam(
         `${activeThirukkuralTheme.focusAdvice} 그리고 ${situationalThirukkuralAudit.questionMapping} ` +
         `지금의 리듬은 ${temporalThirukkuralRhythm.kstWindow}의 결이므로, ${temporalThirukkuralRhythm.rhythmGuidance}`,
     },
+    thirukkuralSynthesisMatrix,
   };
 }
 
 export function formatTamilThirukkuralAramPorulKamamPrompt(res: TamilThirukkuralAramPorulKamamResult): string {
+  const matrixLine = res.thirukkuralSynthesisMatrix
+    ? `- 티루쿠랄 교차 매트릭스: 핵심 긴장(${res.thirukkuralSynthesisMatrix.dominantTension}) · 조율 상태(${res.thirukkuralSynthesisMatrix.alignmentState}) · 통합 실천(${res.thirukkuralSynthesisMatrix.integratedAction})`
+    : '';
   return [
-    `【타밀 《티루쿠랄》 아람·포룰·카맘 삼편 성찰 지표】`,
-    `- 질문 맥락 초점: ${res.questionTopic}`,
+    `【타밀 《티루쿠랄》 아람·포룰·카맘 삼편 성찰 지표 (${res.engineVersion})】`,
+    `- 기준 시각(KST): ${res.calculatedAtKst} | 질문 맥락 초점: ${res.questionTopic}`,
     `- 오늘 비추는 편과 장: ${res.activeThirukkuralTheme.bookNameKo} · ${res.activeThirukkuralTheme.chapterReference}`,
     `- 타밀 원표기: ${res.activeThirukkuralTheme.bookNameTamil}`,
     `- 편의 주제: ${res.activeThirukkuralTheme.thematicInsight}`,
@@ -304,5 +322,6 @@ export function formatTamilThirukkuralAramPorulKamamPrompt(res: TamilThirukkural
     `- 성찰 질문: ${res.reflectiveQuestion}`,
     `- 종합 권면: ${res.thirukkuralComprehensiveGuidance.classicalCounsel}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
-  ].join('\n');
+    matrixLine,
+  ].filter(Boolean).join('\n');
 }

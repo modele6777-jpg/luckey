@@ -10,7 +10,7 @@
  * 질문 맥락 병목 진단, KST 프라나 시공간 리듬, 상하층 코샤 브리지 매트릭스를 통합합니다.
  */
 
-export const VEDIC_PANCHA_KOSHA_ENGINE_VERSION = 'LUCKEY-PANCHA-KOSHA-v2.1.0';
+export const VEDIC_PANCHA_KOSHA_ENGINE_VERSION = 'LUCKEY-PANCHA-KOSHA-v2.2.0';
 
 export interface KoshaLayer {
   layerIndex: number;
@@ -54,6 +54,11 @@ export interface PanchaKoshaReport {
   temporalPranaRhythm: TemporalPranaRhythm;
   koshaBridgeMatrix: KoshaBridgeMatrix;
   blissPrescription: string;
+  panchaKoshaSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
 }
 
 function classifyQuestionKosha(question: string, fallbackLayerIdx: number): QuestionKoshaResonance {
@@ -266,6 +271,12 @@ export function calculateVedicPanchaKosha(params: {
 
   const kst = new Date(now.getTime() + 9 * 3600 * 1000);
   const calculatedAtKst = `${kst.toISOString().slice(0, 19)}+09:00`;
+  const trimmedQ = question.trim();
+  const panchaKoshaSynthesisMatrix = {
+    dominantTension: `${lowestAlignedLayer.koshaNameKo} ↔ ${questionKoshaResonance.focusKoshaKo}`,
+    alignmentState: `${temporalPranaRhythm.doshaWindowKo} · ${koshaBridgeMatrix.lowerSupportLayerKo} → ${koshaBridgeMatrix.upperAspirationLayerKo}`,
+    integratedAction: `${lowestAlignedLayer.clearingAction}${trimmedQ ? ` [질문 맥락: ${trimmedQ}]` : ''}`,
+  };
 
   return {
     engineVersion: VEDIC_PANCHA_KOSHA_ENGINE_VERSION,
@@ -278,6 +289,7 @@ export function calculateVedicPanchaKosha(params: {
     temporalPranaRhythm,
     koshaBridgeMatrix,
     blissPrescription,
+    panchaKoshaSynthesisMatrix,
   };
 }
 
@@ -289,6 +301,9 @@ function describeKoshaAlignmentStage(index: number): string {
 
 export function formatVedicPanchaKoshaPrompt(report: PanchaKoshaReport): string {
   const low = report.lowestAlignedLayer;
+  const matrixLine = report.panchaKoshaSynthesisMatrix
+    ? `\n- **5대 코샤 교차 매트릭스**: 핵심 긴장(${report.panchaKoshaSynthesisMatrix.dominantTension}) · 조율 상태(${report.panchaKoshaSynthesisMatrix.alignmentState}) · 통합 실천(${report.panchaKoshaSynthesisMatrix.integratedAction})`
+    : '';
   return `### 🕉️ 고대 인도 베단타 5대 코샤(Pancha Kosha) 층위별 정렬 정성 리포트 (${report.engineVersion})
 - **연산 시각**: ${report.calculatedAtKst}
 - **아트만(Atman) 정렬 위상**: ${describeKoshaAlignmentStage(report.atmanRealizationIndex)}
@@ -303,5 +318,5 @@ export function formatVedicPanchaKoshaPrompt(report: PanchaKoshaReport): string 
 - **5대 층위별 역할 개요**:
 ${report.layers.map(l => `  * ${l.koshaNameKo}: ${l.dimension}`).join('\n')}
 - **지복 회복 행동 처방**: ${report.blissPrescription}
-- **해석 경계**: 본 리포트는 타이티리야 우파니샤드의 5대 코샤 상징에 기반한 정성적 심신 성찰 안내이며, 의학적 진단이 아닙니다.`;
+- **해석 경계**: 본 리포트는 타이티리야 우파니샤드의 5대 코샤 상징에 기반한 정성적 심신 성찰 안내이며, 의학적 진단이 아닙니다.${matrixLine}`;
 }

@@ -8824,6 +8824,8 @@ test('Tamil Thirukkural engine: Aram, Porul and Kamam guidance stay qualitative 
   const rep = calculateTamilThirukkuralAramPorulKamam(profile, '연인과 자꾸 다투어요', new Date('2026-11-15T12:00:00Z'));
   assert.equal(rep.engineVersion, TAMIL_THIRUKKURAL_ARAM_PORUL_KAMAM_VERSION);
   assert.equal(rep.questionTopic, 'relationship');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00'));
+  assert.ok(Boolean(rep.thirukkuralSynthesisMatrix?.integratedAction));
   assert.ok(rep.activeThirukkuralTheme.chapterReference.length > 0);
   assert.ok(rep.situationalThirukkuralAudit.questionMapping.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('역본마다 문장 표현이 달라'));
@@ -8833,6 +8835,7 @@ test('Tamil Thirukkural engine: Aram, Porul and Kamam guidance stay qualitative 
   assert.ok(prompt.includes('오늘의 실천 의례'));
   assert.ok(prompt.includes('성찰 질문'));
   assert.ok(prompt.includes('해석 경계'));
+  assert.ok(prompt.includes('+09:00') && prompt.includes('교차 매트릭스'));
   assert.doesNotMatch(prompt, /"[^"]{10,}"/);
 
   const decision = calculateTamilThirukkuralAramPorulKamam(profile, '창업을 시작해도 될까요');
@@ -8933,12 +8936,13 @@ test('Schopenhauer v2.1.0, Mandukya Turiya v2.0.0, and Zhuangzi v2.0.0 engines o
   assert.ok(schopenhauerPrompt.includes('해석 경계') && schopenhauerPrompt.includes('+09:00'));
 
   const mandukya = calculateVedicMandukyaTuriya({ profile, question: '수면이 불안하고 마음이 자꾸 흔들려요', now });
-  assert.equal(mandukya.engineVersion, '2.0.0');
+  assert.equal(mandukya.engineVersion, VEDIC_MANDUKYA_TURIYA_ENGINE_VERSION);
   assert.ok(mandukya.calculatedAtKst.endsWith('+09:00'));
+  assert.ok(Boolean(mandukya.mandukyaSynthesisMatrix?.integratedAction));
   assert.ok(mandukya.dailyPracticeRitual.length > 0 && mandukya.reflectiveQuestion.length > 0 && mandukya.interpretiveBoundary.length > 0);
   const mandukyaPrompt = formatVedicMandukyaTuriyaPrompt(mandukya);
   assert.ok(!mandukyaPrompt.includes('/100') && !mandukyaPrompt.includes('%'));
-  assert.ok(mandukyaPrompt.includes('일상 관조 실천') && mandukyaPrompt.includes('해석 경계') && mandukyaPrompt.includes('+09:00'));
+  assert.ok(mandukyaPrompt.includes('일상 관조 실천') && mandukyaPrompt.includes('해석 경계') && mandukyaPrompt.includes('+09:00') && mandukyaPrompt.includes('교차 매트릭스'));
 
   const zhuangzi = calculateZhuangziXiaoyaoyouButterfly({ profile, question: '진로 선택 앞에서 남들 시선이 자꾸 신경 쓰여요', now });
   assert.equal(zhuangzi.engineVersion, '2.0.0');
@@ -9021,9 +9025,10 @@ test('Wonhyo, Aurelius Inner Citadel, and Vedic Pancha Kosha v2.1.0 output quali
   const pk = calculateVedicPanchaKosha({ profile, question: '몸과 마음이 지쳐 호흡이 얕아진 느낌이에요', now });
   assert.equal(pk.engineVersion, VEDIC_PANCHA_KOSHA_ENGINE_VERSION);
   assert.ok(pk.calculatedAtKst.endsWith('+09:00'));
+  assert.ok(Boolean(pk.panchaKoshaSynthesisMatrix?.integratedAction));
   const pkPrompt = formatVedicPanchaKoshaPrompt(pk);
   assert.ok(!pkPrompt.includes('/100') && !pkPrompt.includes('%') && !pkPrompt.includes('점)'));
-  assert.ok(pkPrompt.includes('해석 경계') && pkPrompt.includes('+09:00'));
+  assert.ok(pkPrompt.includes('해석 경계') && pkPrompt.includes('+09:00') && pkPrompt.includes('교차 매트릭스'));
 });
 
 test('Akashic Records, Alchemical Transmutation, and Baopuzi Elixirs v2.1.0 include KST and interpretive boundary', () => {
