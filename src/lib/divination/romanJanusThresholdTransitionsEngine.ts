@@ -7,7 +7,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const ROMAN_JANUS_ENGINE_VERSION = 'LUCKEY-ROMAN-JANUS-v2.0.0';
+export const ROMAN_JANUS_ENGINE_VERSION = 'LUCKEY-ROMAN-JANUS-v2.1.0';
 
 export type JanusQuestionFocus = 'relationship' | 'decision' | 'healing' | 'reflection';
 export type JanusLiminalPhase = 'THRESHOLD_CLOSURE' | 'PASSAGE_OPENING' | 'BOUNDARY_GUARD' | 'COVENANT_BRIDGE';
@@ -35,13 +35,22 @@ export interface RomanJanusReport {
     portalSymbol: string;
     actionKey: string;
   };
+  secondaryJanusGateway: {
+    gatewayNumber: number;
+    gatewayNameKo: string;
+    gatewayNameLa: string;
+    portalSymbol: string;
+    actionKey: string;
+  };
   janusTempleDoorStatus: 'OPEN' | 'CLOSED';
   sacredKeyPrescription: string;
   practiceGuidance: string;
   ritualAction: string;
   reflectionFocus: string;
+  reflectiveQuestion: string;
   counselNote: string;
   boundaryNotice: string;
+  interpretiveBoundary: string;
   janusSynthesisMatrix?: {
     dominantTension: string;
     alignmentState: string;
@@ -56,7 +65,15 @@ function formatJanusKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
+}
+
+function buildJanusReflectiveQuestion(gatewayNameKo: string, reflectionFocus: string, question?: string): string {
+  const focus = question?.trim();
+  if (focus) {
+    return `'${focus}'라는 문턱 앞에서 ${gatewayNameKo}을 지날 때, 과거에 감사히 두고 갈 것과 앞으로 가져갈 한 가지는 각각 무엇인가요?`;
+  }
+  return reflectionFocus;
 }
 
 function describeJanusStage(score: number, doorStatus: 'OPEN' | 'CLOSED'): string {
@@ -268,6 +285,8 @@ export function calculateRomanJanus(params?: RomanJanusParams): RomanJanusReport
 
   const gatewayIdx = Math.abs(seed) % JANUS_GATEWAYS.length;
   const activeGateway = JANUS_GATEWAYS[gatewayIdx];
+  const secondaryGatewayIdx = (gatewayIdx + 1 + (Math.abs(seed) % (JANUS_GATEWAYS.length - 1))) % JANUS_GATEWAYS.length;
+  const secondaryGateway = JANUS_GATEWAYS[secondaryGatewayIdx];
   const questionFocus = classifyJanusQuestion(question);
 
   const doorStatus: 'OPEN' | 'CLOSED' = futureReadiness > pastClosure ? 'OPEN' : 'CLOSED';
@@ -288,8 +307,10 @@ export function calculateRomanJanus(params?: RomanJanusParams): RomanJanusReport
 
   const guidance = buildJanusGuidance(activeGateway.gatewayNumber, questionFocus);
   const calculatedAtKst = formatJanusKstTimestamp(now);
+  const reflectiveQuestion = buildJanusReflectiveQuestion(activeGateway.gatewayNameKo, guidance.reflectionFocus, question);
+  const boundaryNotice = '이는 로마 야누스 문턱 상징에 기반한 전환기 성찰 참고일 뿐, 개인 점수·심리 진단·미래 예측이 아닙니다.';
   const janusSynthesisMatrix = {
-    dominantTension: `${activeGateway.gatewayNameKo} ↔ 신전 문(${doorStatus})`,
+    dominantTension: `${activeGateway.gatewayNameKo} ↔ ${secondaryGateway.gatewayNameKo} (${doorStatus})`,
     alignmentState: describeJanusStage(thresholdBalance, doorStatus),
     integratedAction: `${guidance.practiceGuidance}${question.trim() ? ` [질문 맥락: ${question.trim()}]` : ''}`,
   };
@@ -311,13 +332,22 @@ export function calculateRomanJanus(params?: RomanJanusParams): RomanJanusReport
       portalSymbol: activeGateway.portalSymbol,
       actionKey: activeGateway.actionKey,
     },
+    secondaryJanusGateway: {
+      gatewayNumber: secondaryGateway.gatewayNumber,
+      gatewayNameKo: secondaryGateway.gatewayNameKo,
+      gatewayNameLa: secondaryGateway.gatewayNameLa,
+      portalSymbol: secondaryGateway.portalSymbol,
+      actionKey: secondaryGateway.actionKey,
+    },
     janusTempleDoorStatus: doorStatus,
     sacredKeyPrescription: JANUS_PRESCRIPTIONS[Math.abs(seed) % JANUS_PRESCRIPTIONS.length],
     practiceGuidance: guidance.practiceGuidance,
     ritualAction: guidance.ritualAction,
     reflectionFocus: guidance.reflectionFocus,
+    reflectiveQuestion,
     counselNote: guidance.counselNote,
-    boundaryNotice: '이는 로마 야누스 문턱 상징에 기반한 전환기 성찰 참고일 뿐, 개인 점수·심리 진단·미래 예측이 아닙니다.',
+    boundaryNotice,
+    interpretiveBoundary: boundaryNotice,
     janusSynthesisMatrix,
   };
 }
@@ -331,12 +361,13 @@ export function formatRomanJanusPrompt(report: RomanJanusReport): string {
     `- 현재 활성 문턱: ${report.activeJanusGateway.gatewayNumber}번 [${report.activeJanusGateway.gatewayNameKo}] (${report.activeJanusGateway.gatewayNameLa})`,
     `  * 상징: ${report.activeJanusGateway.portalSymbol}`,
     `  * 핵심 행동: ${report.activeJanusGateway.actionKey}`,
+    `- 보조 교차 문턱: ${report.secondaryJanusGateway.gatewayNumber}번 [${report.secondaryJanusGateway.gatewayNameKo}] (${report.secondaryJanusGateway.gatewayNameLa}) — ${report.secondaryJanusGateway.portalSymbol}`,
     `- 야누스 열쇠 처방: ${report.sacredKeyPrescription}`,
     `- 실천 조언: ${report.practiceGuidance}`,
     `- 일상 의례: ${report.ritualAction}`,
-    `- 성찰 질문: ${report.reflectionFocus}`,
+    `- 성찰 질문: ${report.reflectiveQuestion}`,
     `- 조언 요약: ${report.counselNote}`,
-    `- 경계 안내: ${report.boundaryNotice}`,
+    `- 해석 경계: ${report.interpretiveBoundary}`,
   ];
   if (report.janusSynthesisMatrix) {
     lines.push(
