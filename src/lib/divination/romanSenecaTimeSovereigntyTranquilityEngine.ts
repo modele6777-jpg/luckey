@@ -13,7 +13,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const SENECA_TIME_SOVEREIGNTY_VERSION = 'LUCKEY-SENECA-TIME-SOVEREIGNTY-v2.1.0';
+export const SENECA_TIME_SOVEREIGNTY_VERSION = 'LUCKEY-SENECA-TIME-SOVEREIGNTY-v2.2.0';
 
 export interface SenecaStage {
   stageLevel: number;
@@ -60,6 +60,11 @@ export interface SenecaTimeSovereigntyResult {
   dailyPracticeRitual: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
+  senecaSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
 }
 
 export type SenecaTimeSovereigntyReport = SenecaTimeSovereigntyResult;
@@ -262,6 +267,13 @@ export function calculateSenecaTimeSovereignty(
     `${activeSenecaStage.stoicTimePrinciple} ${situationalTimeFocus.reclaimDirective} ` +
     `삶을 뒤로 미루지 않고(Non differtur vita) 지금 이 순간에 현존할 때 어떤 불안에도 흔들리지 않는 마음의 평정(Tranquillitas)이 자리 잡습니다.`;
 
+  const trimmedQ = (question ?? '').trim();
+  const senecaSynthesisMatrix = {
+    dominantTension: `${situationalTimeFocus.detectedTheme} ↔ ${activeSenecaStage.stageNameLatin}`,
+    alignmentState: `${temporalSenecaRhythm.kstPhaseLabel} · ${temporalSenecaRhythm.tranquilityStageKo}`,
+    integratedAction: `${situationalTimeFocus.reclaimDirective}${trimmedQ ? ` [질문 맥락: ${trimmedQ}]` : ''}`,
+  };
+
   return {
     engineVersion: SENECA_TIME_SOVEREIGNTY_VERSION,
     calculatedAtKst: isoKst,
@@ -281,10 +293,14 @@ export function calculateSenecaTimeSovereignty(
     dailyPracticeRitual: `${temporalSenecaRhythm.recommendedPractice} · ${situationalTimeFocus.reclaimDirective}`,
     reflectiveQuestion: situationalTimeFocus.reflectiveQuestion,
     interpretiveBoundary: '세네카의 시간 주권과 평정 지혜는 길흉을 예단하는 점술이 아니라, 유예와 불안에 빼앗긴 오늘의 시간을 자신에게 되돌려놓도록 돕는 스토아 철학 성찰 프레임입니다.',
+    senecaSynthesisMatrix,
   };
 }
 
 export function formatSenecaTimeSovereigntyPrompt(res: SenecaTimeSovereigntyResult): string {
+  const matrixLine = res.senecaSynthesisMatrix
+    ? `- 세네카 교차 매트릭스: 핵심 긴장(${res.senecaSynthesisMatrix.dominantTension}) · 조율 상태(${res.senecaSynthesisMatrix.alignmentState}) · 통합 실천(${res.senecaSynthesisMatrix.integratedAction})`
+    : '';
   return [
     `【고대 로마 세네카 인생의 짧음에 대하여 & 시간 주권 평정 지표 (${res.engineVersion})】`,
     `- 시간 주권 흐름: ${describeSenecaStage(res.timeSovereigntyReclaimScore)} | 마음의 평정: ${describeSenecaStage(res.tranquillitasInnerPeaceIndex)} | 현재 현존: ${describeSenecaStage(res.presentMomentLivingPower)}`,
@@ -297,5 +313,6 @@ export function formatSenecaTimeSovereigntyPrompt(res: SenecaTimeSovereigntyResu
     `- 세네카 명언: "${res.primarySenecaAphorism.themeKo}" [${res.primarySenecaAphorism.latinClassic}]`,
     `- 철학적 처방: ${res.senecaPhilosophicalCounsel.philosophicalGuidance}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
-  ].join('\n');
+    matrixLine,
+  ].filter(Boolean).join('\n');
 }
