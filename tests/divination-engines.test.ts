@@ -3565,12 +3565,15 @@ test('Zhong-Lu Inner Alchemy & Three Immortals Engine: calculates stages, tier a
 test('Druid Thirteen Moon Trees & Ogham Engine: calculates birth tree, active tree and resonance', () => {
   const rep = calculateDruidMoonTrees(profile);
   assert.equal(rep.engineVersion, DRUID_MOON_TREES_VERSION);
+  assert(rep.calculatedAtKst.endsWith('+09:00'));
+  assert(rep.interpretiveBoundary.length > 0);
   assert(rep.birthTree.koreanName.length > 0);
   assert(rep.activeCycleTree.koreanName.length > 0);
   assert(rep.resonanceScore >= 0 && rep.resonanceScore <= 100);
   const prompt = formatDruidMoonTreesPrompt(rep);
   assert(prompt.includes('켈트 드루이드 13대 달나무(Moon Trees) & 오검 주술 엔진'));
   assert(prompt.includes(rep.birthTree.koreanName));
+  assert(prompt.includes('+09:00') && prompt.includes('해석 경계'));
   assert(!prompt.includes('/100') && !prompt.includes('점수'));
 });
 
@@ -8504,24 +8507,30 @@ test('Aztec Tonalamatl, Balinese Tri Hita Karana, and Celtic Tuatha Four Treasur
   assert.ok(balinesePrompt.includes('+09:00') && balinesePrompt.includes('해석 경계'));
 
   const celtic = calculateCelticTuathaFourTreasures({ profile, question: '중요한 결정을 앞두고 돌파력이 필요합니다', now });
-  assert.equal(celtic.engineVersion, 'LUCKEY-CELTIC-TUATHA-v2.0.0');
+  assert.equal(celtic.engineVersion, CELTIC_TUATHA_FOUR_TREASURES_ENGINE_VERSION);
+  assert.ok(celtic.calculatedAtKst.endsWith('+09:00'));
+  assert.ok(celtic.interpretiveBoundary.length > 0);
   assert.ok(celtic.situationalTuathaAudit.battlefieldTheme.length > 0);
   assert.ok(celtic.temporalTuathaRhythm.celticDayWindow.length > 0);
   assert.ok(celtic.tuathaSynthesisMatrix.nextHeroicStep.length > 0);
   const celticPrompt = formatCelticTuathaFourTreasuresPrompt(celtic);
   assert.ok(!celticPrompt.includes('/100') && !celticPrompt.includes('%'));
+  assert.ok(celticPrompt.includes('+09:00') && celticPrompt.includes('해석 경계'));
 });
 
 test('Chaldean Mul Apin, Egyptian Sphinx Dream, and Etruscan Augur v2.0.0: qualitative/temporal audits without prompt score leaks', () => {
   const now = new Date('2026-11-15T05:05:00+09:00');
 
   const chaldean = calculateChaldeanMulApinAstrology({ profile, question: '새 프로젝트 계약을 앞두고 원칙을 점검하고 싶습니다', now });
-  assert.equal(chaldean.engineVersion, 'LUCKEY-CHALDEAN-MULAPIN-v2.0.0');
+  assert.equal(chaldean.engineVersion, CHALDEAN_MUL_APIN_ASTROLOGY_ENGINE_VERSION);
+  assert.ok(chaldean.calculatedAtKst.endsWith('+09:00'));
+  assert.ok(chaldean.interpretiveBoundary.length > 0);
   assert.ok(chaldean.situationalMulApinAudit.celestialFocus.length > 0);
   assert.ok(chaldean.temporalMulApinRhythm.zigguratWatch.length > 0);
   assert.ok(chaldean.mulApinSynthesisMatrix.nextAstronomicalStep.length > 0);
   const chaldeanPrompt = formatChaldeanMulApinAstrologyPrompt(chaldean);
   assert.ok(!chaldeanPrompt.includes('/100') && !chaldeanPrompt.includes('%'));
+  assert.ok(chaldeanPrompt.includes('+09:00') && chaldeanPrompt.includes('해석 경계'));
 
   const sphinx = calculateEgyptianSphinxDreamOracle({ profile, question: '사소한 잡무와 불안을 걷어내고 싶습니다', now });
   assert.equal(sphinx.engineVersion, 'LUCKEY-EGYPTIAN-SPHINX-v2.0.0');

@@ -8,7 +8,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const CELTIC_TUATHA_FOUR_TREASURES_ENGINE_VERSION = 'LUCKEY-CELTIC-TUATHA-v2.0.0';
+export const CELTIC_TUATHA_FOUR_TREASURES_ENGINE_VERSION = 'LUCKEY-CELTIC-TUATHA-v2.1.0';
 
 export interface TuathaTreasure {
   id: 'lia_fail' | 'spear_of_lugh' | 'sword_of_nuada' | 'cauldron_of_dagda';
@@ -45,6 +45,7 @@ export interface CelticTuathaSynthesisMatrix {
 export interface CelticTuathaFourTreasuresReport {
   engineVersion: string;
   timestamp: string;
+  calculatedAtKst: string;
   tuathaHeroResonance: number;
   treasures: {
     liaFail: TuathaTreasure;
@@ -58,6 +59,7 @@ export interface CelticTuathaFourTreasuresReport {
   tuathaSynthesisMatrix: CelticTuathaSynthesisMatrix;
   danaGoddessBlessing: string;
   heroicActionPrescription: string;
+  interpretiveBoundary: string;
 }
 
 const TREASURES_DEF: Record<TuathaTreasure['id'], Omit<TuathaTreasure, 'resonanceScore'>> = {
@@ -256,9 +258,14 @@ export function calculateCelticTuathaFourTreasures(options?: {
     heroicActionPrescription = '초조함을 내려놓고 자신과 타인에게 너그러운 자양분을 나누며 회복의 시간을 충분히 가지십시오.';
   }
 
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const calculatedAtKst = `${kst.toISOString().slice(0, 19)}+09:00`;
+  const interpretiveBoundary = '본 켈트 투아하 데 다난 4대 보물 리포트는 에린 신화 원형에 기반한 정성적 영웅 성찰 안내이며, 확정적 승패 예단이 아닙니다.';
+
   return {
     engineVersion: CELTIC_TUATHA_FOUR_TREASURES_ENGINE_VERSION,
     timestamp: now.toISOString(),
+    calculatedAtKst,
     tuathaHeroResonance,
     treasures: {
       liaFail,
@@ -272,12 +279,13 @@ export function calculateCelticTuathaFourTreasures(options?: {
     tuathaSynthesisMatrix,
     danaGoddessBlessing,
     heroicActionPrescription,
+    interpretiveBoundary,
   };
 }
 
 export function formatCelticTuathaFourTreasuresPrompt(rep: CelticTuathaFourTreasuresReport): string {
   return `[고대 아일랜드 켈트 투아하 데 다난(Tuatha Dé Danann) 4대 보물 영웅 운명 실측 데이터]
-· 엔진 버전: v${rep.engineVersion}
+· 엔진 버전: v${rep.engineVersion} | 기준 시각(KST): ${rep.calculatedAtKst}
 · 핵심 지배 신성 보물: ${rep.treasures.dominantTreasure.nameKo} (${rep.treasures.dominantTreasure.irishName})
   - 방위 및 원소: ${rep.treasures.dominantTreasure.direction} | ${rep.treasures.dominantTreasure.element}
   - 영웅 원형: ${rep.treasures.dominantTreasure.archetype}
@@ -290,5 +298,6 @@ export function formatCelticTuathaFourTreasuresPrompt(rep: CelticTuathaFourTreas
 · 사대 보물 교차 매트릭스: ${rep.tuathaSynthesisMatrix.sovereigntyAlignment} — ${rep.tuathaSynthesisMatrix.elementBalanceNote}
   - 다음 영웅적 발걸음: ${rep.tuathaSynthesisMatrix.nextHeroicStep}
 · 모신 다누의 신성 축복: ${rep.danaGoddessBlessing}
-· 현실 돌파 영웅 행동 처방: ${rep.heroicActionPrescription}`;
+· 현실 돌파 영웅 행동 처방: ${rep.heroicActionPrescription}
+· 해석 경계: ${rep.interpretiveBoundary}`;
 }
