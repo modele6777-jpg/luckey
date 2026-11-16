@@ -7,7 +7,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const VEDIC_MAHAVAKYA_ENGINE_VERSION = 'LUCKEY-VEDIC-MAHAVAKYA-v2.0.0';
+export const VEDIC_MAHAVAKYA_ENGINE_VERSION = 'LUCKEY-VEDIC-MAHAVAKYA-v2.1.0';
 
 function formatMahavakyaKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -16,7 +16,7 @@ function formatMahavakyaKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
 }
 
 export type MahavakyaQuestionFocus = 'relationship' | 'decision' | 'healing' | 'reflection';
@@ -43,12 +43,18 @@ export interface VedicMahavakyaReport {
     philosophicalGnosis: string;
     realLifeAffirmation: string;
   };
+  secondaryMahavakya: {
+    vedaSourceKo: string;
+    sanskritPhrase: string;
+    koreanMeaning: string;
+  };
   shankaraNonDualWisdom: string;
   practiceGuidance: string;
   ritualAction: string;
   reflectionFocus: string;
   counselNote: string;
   boundaryNotice: string;
+  interpretiveBoundary: string;
   mahavakyaSynthesisMatrix?: {
     dominantTension: string;
     alignmentState: string;
@@ -259,6 +265,7 @@ export function calculateVedicMahavakya(params?: VedicMahavakyaParams): VedicMah
 
   const vakyaIdx = Math.abs(seed) % FOUR_MAHAVAKYAS.length;
   const activeVakya = FOUR_MAHAVAKYAS[vakyaIdx];
+  const secondaryVakya = FOUR_MAHAVAKYAS[(vakyaIdx + 1) % FOUR_MAHAVAKYAS.length];
   const questionFocus = classifyMahavakyaQuestion(question);
 
   const vrittiPattern =
@@ -282,9 +289,11 @@ export function calculateVedicMahavakya(params?: VedicMahavakyaParams): VedicMah
   const q = question.trim();
   const mahavakyaSynthesisMatrix = {
     dominantTension: `${activeVakya.sanskritPhrase} ↔ ${vrittiPattern}`,
-    alignmentState: `${vivekaLens} · ${questionFocus}`,
+    alignmentState: `${vivekaLens} · 보조 교차(${secondaryVakya.sanskritPhrase}) · ${questionFocus}`,
     integratedAction: `${guidance.ritualAction}${q ? ` [질문 맥락: ${q}]` : ''}`,
   };
+  const interpretiveBoundary =
+    '이는 베다 우파니샤드 4대 마하바키야 철학에 기반한 상징적 자기 성찰 참고일 뿐, 개인 점수·심리 진단·단정적 미래 예측이 아닙니다.';
 
   return {
     engineVersion: VEDIC_MAHAVAKYA_ENGINE_VERSION,
@@ -302,12 +311,18 @@ export function calculateVedicMahavakya(params?: VedicMahavakyaParams): VedicMah
       philosophicalGnosis: activeVakya.philosophicalGnosis,
       realLifeAffirmation: activeVakya.realLifeAffirmation,
     },
+    secondaryMahavakya: {
+      vedaSourceKo: secondaryVakya.vedaSourceKo,
+      sanskritPhrase: secondaryVakya.sanskritPhrase,
+      koreanMeaning: secondaryVakya.koreanMeaning,
+    },
     shankaraNonDualWisdom: SHANKARA_NON_DUAL_ADVICES[Math.abs(seed) % SHANKARA_NON_DUAL_ADVICES.length],
     practiceGuidance: guidance.practiceGuidance,
     ritualAction: guidance.ritualAction,
     reflectionFocus: guidance.reflectionFocus,
     counselNote: guidance.counselNote,
-    boundaryNotice: '이는 베다 우파니샤드 철학에 기반한 상징적 자기 성찰 참고일 뿐, 개인 점수·심리 진단·미래 예측이 아닙니다.',
+    boundaryNotice: interpretiveBoundary,
+    interpretiveBoundary,
     mahavakyaSynthesisMatrix,
   };
 }
@@ -324,10 +339,11 @@ export function formatVedicMahavakyaPrompt(report: VedicMahavakyaReport): string
   * 뜻: ${report.activeMahavakya.koreanMeaning}
   * 영적 본질: ${report.activeMahavakya.philosophicalGnosis}
   * 현실 확언: "${report.activeMahavakya.realLifeAffirmation}"
+- 보조 교차 대선언: [${report.secondaryMahavakya.sanskritPhrase}] (${report.secondaryMahavakya.koreanMeaning})
 - 샹카라 불이론(Non-duality) 조언: ${report.shankaraNonDualWisdom}
 - 실천 조언: ${report.practiceGuidance}
 - 일상 의례: ${report.ritualAction}
 - 성찰 질문: ${report.reflectionFocus}
 - 조언 요약: ${report.counselNote}
-- 경계 안내: ${report.boundaryNotice}${matrixLine}`;
+- 해석 경계: ${report.interpretiveBoundary}${matrixLine}`;
 }

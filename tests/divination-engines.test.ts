@@ -2506,14 +2506,18 @@ test('Soul Journey Tarot Engine: 영혼 연금술 3단계 및 4원소 균형 검
 test('Transcendental Meditation Engine: 초월 명상 및 마음 안정 안내 검증', () => {
   const res = calculateTranscendentalMeditation({ profile, targetDate: new Date('2026-11-03T10:00:00+09:00'), question: '마음의 평정' });
   assert.equal(res.engineVersion, TRANSCENDENTAL_MEDITATION_VERSION);
-  assert(res.calculatedAtKst.endsWith('KST'));
+  assert(res.calculatedAtKst.includes('+09:00 (KST)'));
   assert(Boolean(res.zenSynthesisMatrix?.integratedAction));
   assert(res.equanimityScore >= 0 && res.equanimityScore <= 100);
   assert(res.prescription.intendedMindState.length > 0);
   assert(res.ichingZenState.mantraText.length > 0);
+  assert(res.reflectiveQuestion.length > 0);
+  assert(res.interpretiveBoundary.includes('예측'));
   const prompt = formatTranscendentalMeditationPrompt(res);
   assert(prompt.includes('LUCKEY 초월 명상 & 마음 안정 지능'));
   assert(prompt.includes(res.zenEnergyArchetype));
+  assert(prompt.includes('성찰 질문'));
+  assert(prompt.includes('해석 경계'));
   assert(prompt.includes('교차 매트릭스'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
@@ -4261,18 +4265,21 @@ test('Baopuzi Ge Hong Nine Turn Elixir Engine: calculates alchemy rank and vital
 test('Vedic Mahavakya Consciousness Engine: calculates qualitative Brahman contemplation', () => {
   const rep = calculateVedicMahavakya({ profile, question: '가까운 사람과의 관계가 서운합니다' });
   assert.equal(rep.engineVersion, VEDIC_MAHAVAKYA_ENGINE_VERSION);
-  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(rep.calculatedAtKst.includes('+09:00 (KST)'));
   assert(Boolean(rep.mahavakyaSynthesisMatrix?.integratedAction));
   assert.equal(rep.questionFocus, 'relationship');
   assert(rep.brahmanRealizationScore >= 0 && rep.brahmanRealizationScore <= 100);
   assert(rep.innerSohamResonance >= 0 && rep.innerSohamResonance <= 100);
   assert(rep.activeMahavakya.sanskritPhrase.length > 0);
+  assert(rep.secondaryMahavakya.sanskritPhrase.length > 0);
   assert(rep.practiceGuidance.length > 0);
   assert(rep.ritualAction.length > 0);
-  assert(rep.boundaryNotice.includes('예측이 아닙니다'));
+  assert(rep.interpretiveBoundary.includes('예측'));
   const prompt = formatVedicMahavakyaPrompt(rep);
   assert(prompt.includes('고대 인도 베다 우파니샤드 4대 마하바키야(Mahāvākya) 대선언 실측 데이터'));
   assert(prompt.includes(rep.activeMahavakya.sanskritPhrase));
+  assert(prompt.includes('보조 교차 대선언'));
+  assert(prompt.includes('해석 경계'));
   assert(prompt.includes('교차 매트릭스'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
@@ -4413,16 +4420,22 @@ test('Chaldean Mul Apin Astrology Engine: calculates celestial paths, ruling pla
 test('Toltec Nagual Dreaming Engine: calculates four agreements and second attention', () => {
   const rep = calculateToltecNagualDreaming({ profile, question: '현실 자각' });
   assert.equal(rep.engineVersion, TOLTEC_NAGUAL_DREAMING_ENGINE_VERSION);
-  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(rep.calculatedAtKst.includes('+09:00 (KST)'));
   assert(Boolean(rep.toltecSynthesisMatrix?.integratedAction));
   assert.equal(rep.agreements.length, 4);
   assert(rep.secondAttentionIndex >= 0 && rep.secondAttentionIndex <= 100);
   assert(rep.mitoteClarityScore >= 0 && rep.mitoteClarityScore <= 100);
   assert(rep.tonalRatio + rep.nagualRatio === 100);
   assert(rep.primaryAgreement.nameKo.length > 0);
+  assert(rep.secondaryAgreement.nameKo.length > 0);
+  assert(rep.reflectiveQuestion.length > 0);
+  assert(rep.interpretiveBoundary.includes('예측'));
   const prompt = formatToltecNagualDreamingPrompt(rep);
   assert(prompt.includes('고대 톨텍 나구알리즘 4대 약속 & 꿈의 제2주의 실측 데이터'));
   assert(prompt.includes(rep.primaryAgreement.nameKo));
+  assert(prompt.includes('보조 교차 약속'));
+  assert(prompt.includes('성찰 질문'));
+  assert(prompt.includes('해석 경계'));
   assert(prompt.includes('교차 매트릭스'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
