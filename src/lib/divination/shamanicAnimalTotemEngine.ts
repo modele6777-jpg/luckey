@@ -19,7 +19,7 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const SHAMANIC_ANIMAL_TOTEM_VERSION = 'LUCKEY-TOTEM-v2.0.0';
+export const SHAMANIC_ANIMAL_TOTEM_VERSION = 'LUCKEY-TOTEM-v2.1.0';
 
 function formatShamanicTotemKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -55,6 +55,7 @@ export interface ShamanicAnimalTotemReport {
     alignmentState: string;
     integratedAction: string;
   };
+  interpretiveBoundary: string;
 }
 
 export function runShamanicAnimalTotemEngine(
@@ -133,6 +134,8 @@ export function runShamanicAnimalTotemEngine(
     integratedAction: `${callOfTheWildRitual}${q ? ` [질문 맥락: ${q}]` : ''}`,
   };
 
+  const interpretiveBoundary = '본 샤머니즘 파워 애니멀 & 12지지 토템 리포트는 전통 동물 영성과 오행 상징에 기반한 정성적 성찰 안내이며, 확정적 미래 예언이 아닙니다.';
+
   const synthesisPromptGuidance = `[LUCKEY 샤머니즘 파워 애니멀 & 12지지 스피릿 토템 ${SHAMANIC_ANIMAL_TOTEM_VERSION} | ${calculatedAtKst}]
 - 주 수호 토템: [${primaryTotem.animalName}]
   * 핵심 능력: ${primaryTotem.corePower}
@@ -142,7 +145,8 @@ export function runShamanicAnimalTotemEngine(
 - 야생의 부름 소환법: ${callOfTheWildRitual}
 - 절대적 금기: ${tabooWarning}
 - 교차 매트릭스: [핵심 긴장: ${totemSynthesisMatrix.dominantTension} | 조율 상태: ${totemSynthesisMatrix.alignmentState}]
-  * 통합 실천: ${totemSynthesisMatrix.integratedAction}`;
+  * 통합 실천: ${totemSynthesisMatrix.integratedAction}
+- 해석 경계: ${interpretiveBoundary}`;
 
   return {
     engineVersion: SHAMANIC_ANIMAL_TOTEM_VERSION,
@@ -156,6 +160,7 @@ export function runShamanicAnimalTotemEngine(
     tabooWarning,
     synthesisPromptGuidance,
     totemSynthesisMatrix,
+    interpretiveBoundary,
   };
 }
 
