@@ -16,6 +16,12 @@ import { handleSajuChartPost } from "../server/api-lib/sajuChartRoute.ts";
 import { handleSecretBlessingPost, handleSecretMoodPost } from "../server/api-lib/secretNoteRoute.ts";
 import { heuristicDiaryAnalysis, requestDiaryAnalysis } from "../server/api-lib/analyzeEntry.ts";
 import { applyRestrictedCors, guardRestrictedRoute, isRestrictedAppRoute, rateLimit, requestPath } from "../server/api-lib/publicAccess.ts";
+import {
+  dailyBgmFormat,
+  isDailyBgmParamError,
+  readDailyBgmParams,
+  replyDailyBgm,
+} from "../server/api-lib/dailyBgmRoute.ts";
 
 const app = express();
 installAsyncRouteGuard(app);
@@ -256,35 +262,38 @@ ${content}
 });
 
 // 데일리 카드 전용 BGM 생성 (시드 기반 고유 WAV)
+// GET: 쿼리만으로 결정되는 바이너리 WAV + Edge CDN 캐시 헤더 (전송량 절감)
+// POST: 기존 base64 JSON 응답 유지 (하위 호환)
+const dailyBgmResponseForRequest = async (req: express.Request, res: express.Response) => {
+  if (req.method === "GET" || req.method === "HEAD") {
+    const params = readDailyBgmParams(req.query as Record<string, unknown>);
+    if (isDailyBgmParamError(params)) {
+      res.setHeader("Cache-Control", "no-store");
+      return res.status(400).json(params);
+    }
+    return replyDailyBgm(res, params, dailyBgmFormat(req.query as Record<string, unknown>, req.method));
+  }
+  const params = readDailyBgmParams({ ...(req.body || {}), ...(req.query as Record<string, unknown>) });
+  if (isDailyBgmParamError(params)) {
+    return res.status(400).json(params);
+  }
+  return replyDailyBgm(res, params, dailyBgmFormat(req.query as Record<string, unknown>, req.method));
+};
+
+app.get("/api/ai/daily-bgm", async (req, res) => {
+  try {
+    return await dailyBgmResponseForRequest(req, res);
+  } catch (err: unknown) {
+    console.error("[daily-bgm] error:", err);
+    const message = err instanceof Error ? err.message : "Daily BGM generation failed";
+    res.setHeader("Cache-Control", "no-store");
+    return res.status(500).json({ error: message });
+  }
+});
+
 app.post("/api/ai/daily-bgm", async (req, res) => {
   try {
-    const {
-      focusPlaylist,
-      cardName,
-      symbol,
-      dateKey,
-      trackKey,
-    } = req.body || {};
-
-    if (!focusPlaylist || !dateKey || !trackKey) {
-      return res.status(400).json({ error: "focusPlaylist, dateKey, trackKey are required" });
-    }
-
-    const { generateDailyBgmBuffer } = await import("../server/api-lib/generateDailyBgm.ts");
-    const { buffer, durationSec } = generateDailyBgmBuffer({
-      focusPlaylist: String(focusPlaylist),
-      cardName: cardName ? String(cardName) : undefined,
-      symbol: symbol ? String(symbol) : undefined,
-      dateKey: String(dateKey),
-      trackKey: String(trackKey),
-    });
-
-    return res.status(200).json({
-      audioContent: buffer.toString("base64"),
-      encoding: "wav",
-      trackKey: String(trackKey),
-      durationSec,
-    });
+    return await dailyBgmResponseForRequest(req, res);
   } catch (err: unknown) {
     console.error("[daily-bgm] error:", err);
     const message = err instanceof Error ? err.message : "Daily BGM generation failed";

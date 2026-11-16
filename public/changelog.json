@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.7.622",
+    "builtAt": "2026-11-16T02:25:00.000Z",
+    "summary": "Vercel Fast Origin Transfer 절감: 데일리 BGM GET 바이너리·Edge CDN 캐시, TTS 바이너리 응답, 작품 프록시 캐시 헤더",
+    "items": [
+      "데일리 BGM: GET /api/ai/daily-bgm?...&format=wav 바이너리 audio/wav + Cache-Control(public, s-maxage=604800) 응답으로 Edge CDN 캐시 사용, base64(+33%) 제거 (POST JSON은 하위 호환 유지)",
+      "TTS: Accept: audio/*·responseFormat=binary·?format=binary 요청 시 base64 JSON 대신 원본 오디오 바이트 + X-TTS-* 메타데이터 응답 (기존 JSON 호환)",
+      "클라이언트: 데일리 BGM GET 전환·동일 트랙 동시 요청 1회 병합, TTS 바이너리 수신 파서 추가 및 작품 프록시 302 리다이렉트에 CDN 캐시 헤더 추가"
+    ]
+  },
+  {
     "version": "1.7.621",
     "builtAt": "2026-11-16T01:50:00.000Z",
     "summary": "발리 트리 히타 카라나·켈트 아웬 탈리에신·켈트 오검 3대 엔진 KST(+09:00) 및 해석 경계 고도화",

@@ -210,7 +210,9 @@ export async function handleSitesApi(request: Request, env: Runtime, fetchApi: F
         upstream.pathname = '/api/ai/tts'; upstream.search = ''; upstream.hash = '';
         const response = await fetchApi(upstream.href, {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ ...body, text: speech }), redirect: 'manual', signal: request.signal,
+          // 이 릴레이는 JSON 오디오 계약만 소비합니다. 클라이언트의 바이너리 선호가
+          // 업스트림 응답 형식을 바꾸지 않도록 항상 JSON을 명시합니다.
+          body: JSON.stringify({ ...body, responseFormat: 'json', text: speech }), redirect: 'manual', signal: request.signal,
         });
         if (response.status >= 300 && response.status < 400 || !response.headers.get('Content-Type')?.includes('application/json')) {
           throw new ApiError(502, '음성 서버에 연결하지 못했습니다.', undefined, 'TTS_UPSTREAM_UNAVAILABLE');

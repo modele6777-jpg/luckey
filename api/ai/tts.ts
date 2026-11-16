@@ -332,8 +332,61 @@ export async function synthesizeSpeechWithFallback(
   }
 }
 
+type TTSBinaryPreference = {
+  acceptHeader?: string;
+  format?: string;
+  responseFormat?: string;
+};
+
+/**
+ * 📉 TTS 전송량 절감 (v1.7.622)
+ * WAV 바이트를 base64 JSON(`audioContent`)으로 감싸면 매 응답이 +33% 부풀어
+ * Origin 전송량이 됩니다. 클라이언트가 `Accept: audio/*`, `responseFormat: "binary"`,
+ * 또는 `?format=binary`로 요청하면 원본 바이트를 그대로 내보냅니다.
+ * 아무 표시도 없는 기존 호출(`Accept: *\/*` 포함)은 지금처럼 JSON을 받습니다.
+ */
+export function ttsWantsBinaryResponse(input: TTSBinaryPreference): boolean {
+  const format = String(input.format || "").toLowerCase();
+  const responseFormat = String(input.responseFormat || "").toLowerCase();
+  const binaryRequested = (value: string) => ["binary", "audio", "raw", "wav", "mp3", "mpeg"].includes(value);
+  if (binaryRequested(responseFormat) || binaryRequested(format)) return true;
+  if (responseFormat === "json" || format === "json") return false;
+  const accept = String(input.acceptHeader || "").toLowerCase();
+  if (!accept) return false;
+  return accept
+    .split(",")
+    .map((part) => part.split(";")[0].trim())
+    .some((type) => type.startsWith("audio/"));
+}
+
+function binaryContentType(encoding: string): string {
+  if (encoding === "mp3") return "audio/mpeg";
+  if (encoding === "pcm") return "audio/L16";
+  return "audio/wav";
+}
+
+/** base64 JSON 대신 원본 오디오 바이트를 스트리밍합니다. 진단 ID 헤더는 유지됩니다. */
+export function sendBinaryTTSResponse(res: Response, result: TTSAudioResponse): void {
+  const bytes = Buffer.from(result.audioContent, "base64");
+  res.setHeader("Content-Type", binaryContentType(result.encoding));
+  res.setHeader("Content-Length", String(bytes.length));
+  // 낭독문에는 사용자의 대화 내용이 담길 수 있으므로 공유 캐시에 저장하지 않습니다.
+  res.setHeader("Cache-Control", "private, max-age=0, no-store");
+  res.setHeader("X-TTS-Encoding", result.encoding);
+  res.setHeader("X-TTS-Sample-Rate", String(result.sampleRate ?? 24000));
+  res.setHeader("X-TTS-Voice", result.voice || "Aoede");
+  if (result.provider) res.setHeader("X-TTS-Provider", result.provider);
+  res.setHeader("Access-Control-Expose-Headers", "X-TTS-Encoding, X-TTS-Sample-Rate, X-TTS-Voice, X-TTS-Provider, X-TTS-Diagnostic-ID");
+  res.status(200).end(bytes);
+}
+
 export default async function handler(
-  req: { method?: string; body?: unknown; headers?: Record<string, string | string[] | undefined> },
+  req: {
+    method?: string;
+    body?: unknown;
+    query?: Record<string, unknown>;
+    headers?: Record<string, string | string[] | undefined>;
+  },
   res: Response,
 ) {
   const vercelId = req.headers?.['x-vercel-id'];
@@ -362,8 +415,19 @@ export default async function handler(
     const emotion = body.emotion ? String(body.emotion) : undefined;
     if (!text) return res.status(400).json({ error: "Empty speech text" });
 
+    const acceptHeader = req.headers?.accept;
+    const wantsBinary = ttsWantsBinaryResponse({
+      acceptHeader: Array.isArray(acceptHeader) ? acceptHeader.join(",") : acceptHeader,
+      format: typeof req.query?.format === "string" ? req.query.format : undefined,
+      responseFormat: typeof body.responseFormat === "string" ? body.responseFormat : undefined,
+    });
+
     // Server-only Gemini → Edge Neural TTS. Browser-native and translator voices are excluded.
     const result = await synthesizeSpeechWithFallback(text, voice, emotion, {}, requestId);
+    if (wantsBinary) {
+      sendBinaryTTSResponse(res, result);
+      return;
+    }
     return res.status(200).json(result);
   } catch (err: unknown) {
     const failure = err as { status?: number; code?: string; retryAfterSeconds?: number; diagnosticId?: string; model?: string };
