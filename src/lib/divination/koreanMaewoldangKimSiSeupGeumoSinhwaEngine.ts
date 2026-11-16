@@ -9,12 +9,12 @@
  * 4. 유불도 삼교 원융 회통력(Confucian-Buddhist-Taoist Syncretic Harmony Index): 유교의 의리, 불교의 무상과 자비, 도교의 무위자연을 두루 꿰뚫어 사유의 담벼락을 허무는 원융무애한 지혜.
  * 5. 청한 고독 내면 승화도(Cheonghan Solitude Transcendence Score): 금오산과 수락산, 관악산의 거친 산하 속에서도 차(茶)와 시(詩)로 고독을 맑은 영성으로 벼려낸 예술적 내공.
  *
- * @version LUCKEY-KIM-SI-SEUP-GEUMO-v2.0.0
+ * @version LUCKEY-KIM-SI-SEUP-GEUMO-v2.1.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const KOREAN_KIM_SI_SEUP_VERSION = 'LUCKEY-KIM-SI-SEUP-GEUMO-v2.0.0';
+export const KOREAN_KIM_SI_SEUP_VERSION = 'LUCKEY-KIM-SI-SEUP-GEUMO-v2.1.0';
 
 export interface MaewoldangTheme {
   themeKey: string;
@@ -43,7 +43,11 @@ export interface KoreanMaewoldangKimSiSeupGeumoSinhwaResult {
   cheonghanSolitudeTranscendenceScore: number;   // 청한 고독 내면 승화도 (Cheonghan Solitude Transcendence)
   // 세부 분석
   activeMaewoldangTheme: MaewoldangTheme;
+  secondaryMaewoldangTheme: MaewoldangTheme;
   focalMaewoldangAphorism: MaewoldangAphorism;
+  secondaryMaewoldangAphorism: MaewoldangAphorism;
+  reflectiveQuestion: string;
+  interpretiveBoundary: string;
   maewoldangComprehensiveGuidance: {
     guidanceTitle: string;
     philosophicalCounsel: string;
@@ -62,7 +66,7 @@ function formatMaewoldangKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 KST`;
 }
 
 function describeMaewoldangStage(score: number): string {
@@ -181,10 +185,20 @@ export function calculateKoreanMaewoldangKimSiSeupGeumoSinhwa(
   const cheonghanSolitudeTranscendenceScore = 76 + ((absHash >> 12) % 23);
 
   const themeIndex = (absHash >> 4) % MAEWOLDANG_THEMES.length;
+  const secondaryThemeIndex = (themeIndex + 1 + ((absHash >> 5) % (MAEWOLDANG_THEMES.length - 1))) % MAEWOLDANG_THEMES.length;
   const aphorismIndex = (absHash >> 7) % MAEWOLDANG_APHORISMS.length;
+  const secondaryAphorismIndex = (aphorismIndex + 1 + ((absHash >> 10) % (MAEWOLDANG_APHORISMS.length - 1))) % MAEWOLDANG_APHORISMS.length;
 
   const activeMaewoldangTheme = MAEWOLDANG_THEMES[themeIndex];
+  const secondaryMaewoldangTheme = MAEWOLDANG_THEMES[secondaryThemeIndex];
   const focalMaewoldangAphorism = MAEWOLDANG_APHORISMS[aphorismIndex];
+  const secondaryMaewoldangAphorism = MAEWOLDANG_APHORISMS[secondaryAphorismIndex];
+
+  const reflectiveQuestion = query?.trim()
+    ? `'${query.trim()}'을(를) 마주하며 ${activeMaewoldangTheme.themeTitleKo.split(' — ')[0]}과 ${secondaryMaewoldangTheme.themeTitleKo.split(' — ')[0]} 가운데 지금 세속의 잣대를 벗어나 지켜낼 양심은 무엇인가요?`
+    : `오늘 당신의 마음속에서 ${activeMaewoldangTheme.themeTitleKo.split(' — ')[0]}과 ${secondaryMaewoldangTheme.themeTitleKo.split(' — ')[0]} 중 가장 맑게 빛나는 자리는 어디인가요?`;
+  const interpretiveBoundary =
+    '이 매월당 김시습 《금오신화》 방외인 지표는 절의·자유혼·삼교 회통의 사유를 비추는 정성적 성찰 프레임이며, 확정적 길흉 예언이 아닙니다.';
 
   const guidanceTitle = `매월당 김시습 방외인 자유혼과 절의 지혜: ${activeMaewoldangTheme.themeTitleKo}`;
   const philosophicalCounsel = `조선 최초의 한문소설 《금오신화》를 창작하고 세속의 영달을 초월하여 양심의 지조를 지킨 방외인 매월당 김시습 선생의 사상은, 얽매임 없는 자유로운 영혼(方外人)과 맑고 시린 절의(淸寒), 지극한 사랑과 유불도 삼교의 원융을 가르칩니다. ` +
@@ -216,7 +230,11 @@ export function calculateKoreanMaewoldangKimSiSeupGeumoSinhwa(
     threeTeachingsSyncreticHarmonyIndex,
     cheonghanSolitudeTranscendenceScore,
     activeMaewoldangTheme,
+    secondaryMaewoldangTheme,
     focalMaewoldangAphorism,
+    secondaryMaewoldangAphorism,
+    reflectiveQuestion,
+    interpretiveBoundary,
     maewoldangComprehensiveGuidance: {
       guidanceTitle,
       philosophicalCounsel,
@@ -241,12 +259,16 @@ export function formatKoreanMaewoldangKimSiSeupGeumoSinhwaPrompt(
     `- 연산 시각: ${res.calculatedAtKst} | 엔진: ${res.engineVersion}`,
     `- 방외·삼교원융 국면: ${describeMaewoldangStage(avgScore)}`,
     `- 핵심 매월당 테마: ${res.activeMaewoldangTheme.themeTitleKo} [${res.activeMaewoldangTheme.themeTitleHanja}]`,
+    `- 보조 교차 테마: ${res.secondaryMaewoldangTheme.themeTitleKo} [${res.secondaryMaewoldangTheme.themeTitleHanja}]`,
     `- 실존적 통찰: ${res.activeMaewoldangTheme.existentialInsight}`,
     `- 실천적 조언: ${res.activeMaewoldangTheme.practicalCounsel}`,
     `- 매월당 원전 명언: "${res.focalMaewoldangAphorism.aphorismKo}" [${res.focalMaewoldangAphorism.aphorismHanja}]`,
+    `- 보조 교차 명언: "${res.secondaryMaewoldangAphorism.aphorismKo}" [${res.secondaryMaewoldangAphorism.sourceContext}]`,
     `- 원전 출처: [${res.focalMaewoldangAphorism.sourceContext}]`,
     `- 구체적 실천 지침: ${res.focalMaewoldangAphorism.actionGuidance}`,
     `- 종합 매월당 권면: ${res.maewoldangComprehensiveGuidance.philosophicalCounsel}`,
+    `- 성찰 질문: ${res.reflectiveQuestion}`,
+    `- 해석 경계: ${res.interpretiveBoundary}`,
   ];
   if (res.maewoldangSynthesisMatrix) {
     lines.push(

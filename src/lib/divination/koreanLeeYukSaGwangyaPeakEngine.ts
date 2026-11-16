@@ -9,12 +9,12 @@
  * 4. 가난한 노래의 씨앗 파종 실천력(Sowing the Seed of Poor Song Index): "지금 눈 내리고 매화 향기 홀로 아득하니 내 여기 가난한 노래의 씨를 뿌려라" 황무지에 희망과 진실의 싹을 틔우는 선구자적 헌신도.
  * 5. 청포도 결백 순결 지조 지수(Pure Integrity of Cheongpodo Score): "내 고장 칠월은 청포도가 익어가는 시절" 은쟁반 위에 하이얀 모시 수건을 마련하듯 고결한 이상과 신의를 지키는 순결성.
  *
- * @version LUCKEY-LEE-YUK-SA-GWANGYA-v2.0.0
+ * @version LUCKEY-LEE-YUK-SA-GWANGYA-v2.1.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const KOREAN_LEE_YUK_SA_VERSION = 'LUCKEY-LEE-YUK-SA-GWANGYA-v2.0.0';
+export const KOREAN_LEE_YUK_SA_VERSION = 'LUCKEY-LEE-YUK-SA-GWANGYA-v2.1.0';
 
 export interface LeeYukSaTheme {
   themeKey: string;
@@ -43,7 +43,11 @@ export interface KoreanLeeYukSaGwangyaPeakResult {
   pureIntegrityCheongpodoScore: number;      // 청포도 결백 순결 지조 지수 (Pure Integrity of Cheongpodo)
   // 세부 분석
   activeLeeYukSaTheme: LeeYukSaTheme;
+  secondaryLeeYukSaTheme: LeeYukSaTheme;
   focalLeeYukSaAphorism: LeeYukSaAphorism;
+  secondaryLeeYukSaAphorism: LeeYukSaAphorism;
+  reflectiveQuestion: string;
+  interpretiveBoundary: string;
   leeYukSaComprehensiveGuidance: {
     guidanceTitle: string;
     philosophicalCounsel: string;
@@ -62,7 +66,7 @@ function formatLeeYukSaKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 KST`;
 }
 
 function describeLeeYukSaStage(score: number): string {
@@ -151,7 +155,7 @@ export function calculateKoreanLeeYukSaGwangyaPeak(
   const birthTime = profile?.basic?.birthtime ?? p?.birthTime ?? p?.birthtime ?? '12:00';
   const gender = profile?.basic?.gender ?? p?.gender ?? 'neutral';
 
-  const seedString = `LEE-YUK-SA-GWANGYA-PEAK:${name}:${birthDate}:${birthTime}:${gender}`;
+  const seedString = `LEE-YUK-SA-GWANGYA-PEAK:${name}:${birthDate}:${birthTime}:${gender}:${query ?? ''}`;
 
   let hash = 0;
   for (let i = 0; i < seedString.length; i++) {
@@ -167,7 +171,9 @@ export function calculateKoreanLeeYukSaGwangyaPeak(
   const pureIntegrityCheongpodoScore = 75 + ((absHash >> 12) % 24);
 
   const themeIndex = (absHash >> 4) % LEE_YUK_SA_THEMES.length;
+  const secondaryThemeIndex = (themeIndex + 1 + ((absHash >> 5) % (LEE_YUK_SA_THEMES.length - 1))) % LEE_YUK_SA_THEMES.length;
   const aphorismIndex = (absHash >> 7) % LEE_YUK_SA_APHORISMS.length;
+  const secondaryAphorismIndex = (aphorismIndex + 1 + ((absHash >> 10) % (LEE_YUK_SA_APHORISMS.length - 1))) % LEE_YUK_SA_APHORISMS.length;
 
   const rawTheme = LEE_YUK_SA_THEMES[themeIndex] as any;
   const activeLeeYukSaTheme: LeeYukSaTheme = {
@@ -177,7 +183,22 @@ export function calculateKoreanLeeYukSaGwangyaPeak(
     existentialInsight: rawTheme.existentialInsight ?? rawTheme.themeInsight,
     practicalCounsel: rawTheme.practicalCounsel,
   };
+  const rawSecondaryTheme = LEE_YUK_SA_THEMES[secondaryThemeIndex] as any;
+  const secondaryLeeYukSaTheme: LeeYukSaTheme = {
+    themeKey: rawSecondaryTheme.themeKey,
+    themeTitleKo: rawSecondaryTheme.themeTitleKo,
+    themeTitleEn: rawSecondaryTheme.themeTitleEn,
+    existentialInsight: rawSecondaryTheme.existentialInsight ?? rawSecondaryTheme.themeInsight,
+    practicalCounsel: rawSecondaryTheme.practicalCounsel,
+  };
   const focalLeeYukSaAphorism = LEE_YUK_SA_APHORISMS[aphorismIndex];
+  const secondaryLeeYukSaAphorism = LEE_YUK_SA_APHORISMS[secondaryAphorismIndex];
+
+  const reflectiveQuestion = query?.trim()
+    ? `'${query.trim()}' 앞에서 ${activeLeeYukSaTheme.themeTitleKo.split(':')[0]}과 ${secondaryLeeYukSaTheme.themeTitleKo.split(':')[0]} 가운데 지금 꺾이지 않고 심어야 할 노래의 씨는 무엇인가요?`
+    : `지금 겨울의 칼날 같은 현실에서 ${activeLeeYukSaTheme.themeTitleKo.split(':')[0]}과 ${secondaryLeeYukSaTheme.themeTitleKo.split(':')[0]} 중 가장 먼저 일으켜 세울 기개는 무엇인가요?`;
+  const interpretiveBoundary =
+    '이 이육사 《광야·절정》 실존의지 지표는 시인의 저항 정신과 초월의 상징을 빌린 정성적 성찰 프레임이며, 확정적 미래 예언이 아닙니다.';
 
   const guidanceTitle = `이육사 광야와 절정 강철 무지개 실존의지 지혜: ${activeLeeYukSaTheme.themeTitleKo}`;
   const philosophicalCounsel = `민족의 거목 이육사 시인의 《광야》와 《절정》은 매운 계절의 서릿발 칼날 위에서도 꺾이지 않는 강철 무지개의 기개, 눈 내리는 황무지에 가난한 노래의 씨를 뿌리는 선구자적 소명의식, 그리고 은쟁반에 모시 수건을 받치는 순결한 지조를 전합니다. ` +
@@ -209,7 +230,11 @@ export function calculateKoreanLeeYukSaGwangyaPeak(
     sowingPoorSongSeedVirtueIndex,
     pureIntegrityCheongpodoScore,
     activeLeeYukSaTheme,
+    secondaryLeeYukSaTheme,
     focalLeeYukSaAphorism,
+    secondaryLeeYukSaAphorism,
+    reflectiveQuestion,
+    interpretiveBoundary,
     leeYukSaComprehensiveGuidance: {
       guidanceTitle,
       philosophicalCounsel,
@@ -232,12 +257,16 @@ export function formatKoreanLeeYukSaGwangyaPeakPrompt(res: KoreanLeeYukSaGwangya
     `- 연산 시각: ${res.calculatedAtKst} | 엔진: ${res.engineVersion}`,
     `- 실존 의지 국면: ${describeLeeYukSaStage(avgScore)}`,
     `- 핵심 실존 테마: ${res.activeLeeYukSaTheme.themeTitleKo}`,
+    `- 보조 교차 테마: ${res.secondaryLeeYukSaTheme.themeTitleKo}`,
     `- 실존적 통찰: ${res.activeLeeYukSaTheme.existentialInsight}`,
     `- 실천적 조언: ${res.activeLeeYukSaTheme.practicalCounsel}`,
     `- 이육사 불멸의 시구: "${res.focalLeeYukSaAphorism.famousLineKo}" [${res.focalLeeYukSaAphorism.poemTitleKo}]`,
+    `- 보조 교차 시구: "${res.secondaryLeeYukSaAphorism.famousLineKo}" [${res.secondaryLeeYukSaAphorism.poemTitleKo}]`,
     `- 시적 출처: [${res.focalLeeYukSaAphorism.sourceContext}]`,
     `- 구체적 실천 지침: ${res.focalLeeYukSaAphorism.actionGuidance}`,
     `- 종합 이육사 실존의지 권면: ${res.leeYukSaComprehensiveGuidance.philosophicalCounsel}`,
+    `- 성찰 질문: ${res.reflectiveQuestion}`,
+    `- 해석 경계: ${res.interpretiveBoundary}`,
   ];
   if (res.leeYukSaSynthesisMatrix) {
     lines.push(
