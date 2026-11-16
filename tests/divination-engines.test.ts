@@ -8048,12 +8048,15 @@ test('v2.0.0 qualitative/temporal/matrix deepening: Four Noble Truths, Nagarjuna
 
   const frankl = calculateViktorFranklLogotherapy(testProfile, '요즘 너무 공허하고 삶의 의욕이 안 나요', now);
   assert.equal(frankl.engineVersion, AUSTRIAN_VIKTOR_FRANKL_VERSION);
+  assert.ok(frankl.calculatedAtKst.endsWith('+09:00'));
+  assert.ok(Boolean(frankl.franklSynthesisMatrix?.integratedAction));
   assert.ok(frankl.situationalMeaningAudit.sourceCitation.includes('죽음의 수용소에서'));
   assert.ok(frankl.temporalMeaningRhythm.logotherapyClarityIndex >= 50 && frankl.temporalMeaningRhythm.logotherapyClarityIndex <= 99);
   assert.ok(frankl.logotherapyMatrix.overallSynthesis >= 50);
   const franklPrompt = formatViktorFranklLogotherapyPrompt(frankl);
   assert.ok(franklPrompt.includes('질문 맥락 의미 감사'));
   assert.ok(franklPrompt.includes('로고테라피 매트릭스'));
+  assert.ok(franklPrompt.includes('+09:00') && franklPrompt.includes('교차 매트릭스'));
 });
 
 test('v2.0.0 qualitative/temporal/matrix deepening: Spinoza Ethica, Mencius Hoyeon, and Wang Yangming Liangzhi', () => {
@@ -8850,6 +8853,8 @@ test('reworked Heidegger engine exposes qualitative stages instead of raw scores
 test('reworked Rumi engine takes the question and KST rhythm without exposing raw scores', () => {
   const rep = calculateRumiMasnaviDivineLove(profile, '상처가 아직 아파요', new Date('2026-11-14T21:00:00Z'));
   assert.equal(rep.engineVersion, RUMI_MASNAVI_SUFI_VERSION);
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00'));
+  assert.ok(Boolean(rep.rumiSynthesisMatrix?.integratedAction));
   assert.equal(rep.questionTopic, 'healing');
   assert.ok(rep.temporalSamaRhythm.kstWindow.includes('새벽'));
   assert.ok(rep.dailyPracticeRitual.length > 0 && rep.reflectiveQuestion.length > 0 && rep.interpretiveBoundary.length > 0);
@@ -8857,6 +8862,7 @@ test('reworked Rumi engine takes the question and KST rhythm without exposing ra
   assert.ok(!prompt.includes('/100') && !prompt.includes('%') && !prompt.includes('점수'));
   assert.ok(prompt.includes('KST 시공간 리듬'));
   assert.ok(prompt.includes('오늘의 실천 의례'));
+  assert.ok(prompt.includes('+09:00') && prompt.includes('교차 매트릭스'));
   assert.ok(prompt.includes(rep.activeSpiritualStation.stationNameKo));
 });
 
@@ -8982,9 +8988,10 @@ test('Epicurus, Heraclitus, and Laozi v2.1.0 output qualitative stages and KST w
   const la = calculateLaoziDaodejing(profile, '억지로 애쓰기보다 순리에 맞추고 싶어요', now);
   assert.equal(la.engineVersion, LAOZI_DAODEJING_VERSION);
   assert.ok(la.calculatedAtKst.endsWith('+09:00'));
+  assert.ok(Boolean(la.laoziSynthesisMatrix?.integratedAction));
   const laPrompt = formatLaoziDaodejingPrompt(la);
   assert.ok(!laPrompt.includes('/100') && !laPrompt.includes('%'));
-  assert.ok(laPrompt.includes('해석 경계') && laPrompt.includes('+09:00'));
+  assert.ok(laPrompt.includes('해석 경계') && laPrompt.includes('+09:00') && laPrompt.includes('교차 매트릭스'));
 });
 
 test('Wonhyo, Aurelius Inner Citadel, and Vedic Pancha Kosha v2.1.0 output qualitative stages and KST without /100 or %', () => {

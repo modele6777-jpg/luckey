@@ -14,7 +14,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const LAOZI_DAODEJING_VERSION = 'LUCKEY-LAOZI-DAODEJING-v2.1.0';
+export const LAOZI_DAODEJING_VERSION = 'LUCKEY-LAOZI-DAODEJING-v2.2.0';
 
 export interface DaodejingStage {
   stageLevel: number;
@@ -81,6 +81,11 @@ export interface LaoziDaodejingResult {
   chapterResonance: DaodejingChapterResonance;
   seasonalWaterFlow: DaodejingSeasonalWaterFlow;
   softStrengthMatrix: DaodejingSoftStrengthMatrix;
+  laoziSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
 }
 
 export type LaoziDaodejingReport = LaoziDaodejingResult;
@@ -294,6 +299,13 @@ export function calculateLaoziDaodejing(
         : '스스로 기준을 너무 굳게 세워 피로가 쌓이기 쉬운 상태입니다. 오늘 한 가지는 완성도보다 여백과 유연성을 우선해 보십시오.',
   };
 
+  const trimmedQ = (question || '').trim();
+  const laoziSynthesisMatrix = {
+    dominantTension: `${chapterResonance.chapterTitle} ↔ ${describeDaodejingWaterStage(nonContentionHarmonyScore)}`,
+    alignmentState: `${activeDaodejingStage.stageNameHanja} · ${seasonalWaterFlow.shichenName}`,
+    integratedAction: `${chapterResonance.wuweiUnburdeningTip}${trimmedQ ? ` [질문 맥락: ${trimmedQ}]` : ''}`,
+  };
+
   return {
     engineVersion: LAOZI_DAODEJING_VERSION,
     calculatedAtKst: getKstDateString(now),
@@ -308,10 +320,14 @@ export function calculateLaoziDaodejing(
     chapterResonance,
     seasonalWaterFlow,
     softStrengthMatrix,
+    laoziSynthesisMatrix,
   };
 }
 
 export function formatLaoziDaodejingPrompt(result: LaoziDaodejingResult): string {
+  const matrixLine = result.laoziSynthesisMatrix
+    ? `\n- 노자 도덕경 교차 매트릭스: 핵심 긴장(${result.laoziSynthesisMatrix.dominantTension}) · 조율 상태(${result.laoziSynthesisMatrix.alignmentState}) · 통합 실천(${result.laoziSynthesisMatrix.integratedAction})`
+    : '';
   return `[☯️ 고대 중국 노자(老子) 《도덕경(道德經)》 상선약수 & 무위자연 리포트]
 - 엔진 버전: ${result.engineVersion} | 연산 시각: ${result.calculatedAtKst}
 - 도가 수기(水氣) 위상: **${describeDaodejingWaterStage(result.softStrengthMatrix.nonContentionHarmonyScore)}**
@@ -329,5 +345,5 @@ export function formatLaoziDaodejingPrompt(result: LaoziDaodejingResult): string
   → 실천 지침: ${result.primaryDaoPrinciple.actionableDirective}
 - 도덕경 불멸의 계시: 《${result.daodejingCosmicEpiphany.chapterSceneTitle}》
   → 무위의 지혜: "${result.daodejingCosmicEpiphany.timelessWisdom}"
-- 해석 경계: 본 리포트는 노자 《도덕경》의 무위·상선약수 철학에 기반한 정성적 성찰 안내이며, 확정적 길흉 예단이 아닙니다.`;
+- 해석 경계: 본 리포트는 노자 《도덕경》의 무위·상선약수 철학에 기반한 정성적 성찰 안내이며, 확정적 길흉 예단이 아닙니다.${matrixLine}`;
 }

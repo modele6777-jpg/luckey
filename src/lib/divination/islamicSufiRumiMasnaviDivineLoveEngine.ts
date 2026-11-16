@@ -20,7 +20,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const RUMI_MASNAVI_SUFI_VERSION = 'LUCKEY-RUMI-MASNAVI-SUFI-v2.1.0';
+export const RUMI_MASNAVI_SUFI_VERSION = 'LUCKEY-RUMI-MASNAVI-SUFI-v2.2.0';
 
 export type RumiQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -68,6 +68,11 @@ export interface RumiMasnaviDivineLoveResult {
   rumiMysticCounsel: {
     counselTitle: string;
     mysticGuidance: string;
+  };
+  rumiSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
   };
 }
 
@@ -267,6 +272,13 @@ export function calculateRumiMasnaviDivineLove(
     `${activeSpiritualStation.practicalCounsel} 또한 루미의 통찰인 '${focalPoeticWisdom.originalTheme}'를 마음에 새겨, ` +
     `${focalPoeticWisdom.guidance}`;
 
+  const trimmedQ = question.trim();
+  const rumiSynthesisMatrix = {
+    dominantTension: `${focalPoeticWisdom.originalTheme} ↔ ${activeSpiritualStation.stationNameKo}`,
+    alignmentState: `${temporalSamaRhythm.samaFocus} · ${questionTopic}`,
+    integratedAction: `${topicExtras.dailyPracticeRitual}${trimmedQ ? ` [질문 맥락: ${trimmedQ}]` : ''}`,
+  };
+
   return {
     engineVersion: RUMI_MASNAVI_SUFI_VERSION,
     calculatedAtKst: new Date(now.getTime() + 9 * 60 * 60 * 1000).toISOString().replace('Z', '+09:00'),
@@ -286,12 +298,16 @@ export function calculateRumiMasnaviDivineLove(
       counselTitle,
       mysticGuidance,
     },
+    rumiSynthesisMatrix,
   };
 }
 
 export function formatRumiMasnaviDivineLovePrompt(res: RumiMasnaviDivineLoveResult): string {
+  const matrixLine = res.rumiSynthesisMatrix
+    ? `- 루미 수피 교차 매트릭스: 핵심 긴장(${res.rumiSynthesisMatrix.dominantTension}) · 조율 상태(${res.rumiSynthesisMatrix.alignmentState}) · 통합 실천(${res.rumiSynthesisMatrix.integratedAction})`
+    : '';
   return [
-    `【루미 마스나비 & 수피즘 신성한 사랑 지표】`,
+    `【루미 마스나비 & 수피즘 신성한 사랑 지표 (${res.engineVersion} | ${res.calculatedAtKst})】`,
     `- 질문 맥락 초점: ${res.questionTopic}`,
     `- 신성한 사랑(Ishq) 영혼 갈망 결: ${describeRumiStage(res.ishqDivineLoveScore)}`,
     `- 심장(Qalb) 내면 정화 결: ${describeRumiStage(res.qalbPurificationScore)}`,
@@ -308,5 +324,6 @@ export function formatRumiMasnaviDivineLovePrompt(res: RumiMasnaviDivineLoveResu
     `- 성찰 질문: ${res.reflectiveQuestion}`,
     `- 신비주의 수양 지침: ${res.rumiMysticCounsel.mysticGuidance}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
-  ].join('\n');
+    matrixLine,
+  ].filter(Boolean).join('\n');
 }

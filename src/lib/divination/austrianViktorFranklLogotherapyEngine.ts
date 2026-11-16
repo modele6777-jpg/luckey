@@ -6,7 +6,13 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const AUSTRIAN_VIKTOR_FRANKL_VERSION = 'LUCKEY-VIKTOR-FRANKL-LOGOTHERAPY-v2.1.0';
+export const AUSTRIAN_VIKTOR_FRANKL_VERSION = 'LUCKEY-VIKTOR-FRANKL-LOGOTHERAPY-v2.2.0';
+
+function getFranklKstString(now?: Date): string {
+  const base = now ?? new Date();
+  const kst = new Date(base.getTime() + 9 * 3600 * 1000);
+  return `${kst.toISOString().slice(0, 19)}+09:00`;
+}
 
 export type FranklQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -71,6 +77,11 @@ export interface ViktorFranklLogotherapyResult {
   franklComprehensiveGuidance: {
     guidanceTitle: string;
     philosophicalCounsel: string;
+  };
+  franklSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
   };
 }
 
@@ -334,9 +345,16 @@ export function calculateViktorFranklLogotherapy(
 
   const boundaryNotice = '로고테라피 의미치료 관점은 삶의 태도와 의미를 성찰하는 철학적·상징적 조언이며, 전문 의료·정신건강 진료를 대신하지 않습니다.';
 
+  const trimmedQ = (question ?? '').trim();
+  const franklSynthesisMatrix = {
+    dominantTension: `${situationalMeaningAudit.existentialVacuumTrap} ↔ ${activeFranklTheme.themeTitleKo}`,
+    alignmentState: `${temporalMeaningRhythm.valuePathFocus} · ${questionTopic}`,
+    integratedAction: `${situationalMeaningAudit.attitudeShiftAction}${trimmedQ ? ` [질문 맥락: ${trimmedQ}]` : ''}`,
+  };
+
   return {
     engineVersion: AUSTRIAN_VIKTOR_FRANKL_VERSION,
-    calculatedAtKst: (now ?? new Date()).toISOString(),
+    calculatedAtKst: getFranklKstString(now),
     lastHumanFreedomAttitudeScore,
     willToMeaningDriveScore,
     tragicOptimismResilienceScore,
@@ -355,12 +373,16 @@ export function calculateViktorFranklLogotherapy(
       guidanceTitle,
       philosophicalCounsel,
     },
+    franklSynthesisMatrix,
   };
 }
 
 export function formatViktorFranklLogotherapyPrompt(res: ViktorFranklLogotherapyResult): string {
+  const matrixLine = res.franklSynthesisMatrix
+    ? `- 빅터 프랭클 교차 매트릭스: 핵심 긴장(${res.franklSynthesisMatrix.dominantTension}) · 조율 상태(${res.franklSynthesisMatrix.alignmentState}) · 통합 실천(${res.franklSynthesisMatrix.integratedAction})`
+    : '';
   return [
-    `【빅터 프랭클 《죽음의 수용소에서》 시련 속 최후의 자유 & 의미치료 지표】`,
+    `【빅터 프랭클 《죽음의 수용소에서》 시련 속 최후의 자유 & 의미치료 지표 (${res.engineVersion} | ${res.calculatedAtKst})】`,
     `- 질문 주제 맥락: ${res.questionTopic}`,
     `- 핵심 의미치료 테마: ${res.activeFranklTheme.themeTitleKo} [${res.activeFranklTheme.themeTitleGerman}]`,
     `- 로고테라피 통찰: ${res.activeFranklTheme.logotherapyInsight}`,
@@ -374,5 +396,6 @@ export function formatViktorFranklLogotherapyPrompt(res: ViktorFranklLogotherapy
     `- 핵심 성찰 질문: ${res.reflectionFocus}`,
     `- 종합 의미치료 권면: ${res.franklComprehensiveGuidance.philosophicalCounsel}`,
     `- 해석 경계: ${res.boundaryNotice}`,
-  ].join('\n');
+    matrixLine,
+  ].filter(Boolean).join('\n');
 }
