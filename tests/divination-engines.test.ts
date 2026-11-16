@@ -4280,6 +4280,7 @@ test('Ancient Yarrow I Ching Probability Engine: calculates dominant yao and Day
   assert(rep.yaoNameKo.length > 0);
   assert(rep.timelinessPosture.length > 0);
   assert(rep.practiceGuidance.length > 0 && rep.ritualAction.length > 0 && rep.boundaryNotice.length > 0);
+  assert(rep.interpretiveBoundary.length > 0);
   assert(rep.calculatedAtKst.includes('KST'));
   assert(rep.temporalYarrowRhythm.dayanWatchWindow.length > 0);
   assert(rep.yarrowSynthesisMatrix.coreInsight.length > 0);
@@ -5522,6 +5523,7 @@ test('Ancient Egyptian Ptah Memphite Theology Engine: calculates heart thought c
   assert(rep.situationalPtahAudit.shabakaInscription.length > 0);
   assert(rep.temporalPtahRhythm.workshopWindow.length > 0);
   assert(rep.ptahSynthesisMatrix.synthesizedVerdict.length > 0);
+  assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatPtahMemphitePrompt(rep);
   assert(prompt.includes('고대 이집트 멤피스 신학 《프타(Ptah)》'));
   assert(prompt.includes(rep.activeCreationStage.stageNameKo));
@@ -5593,6 +5595,7 @@ test('Ancient Greek Delphic Chilon Know Thyself Engine: calculates Gnothi Seauto
   assert(rep.situationalChilonAudit.delphicInscription.length > 0);
   assert(rep.temporalDelphicRhythm.sanctuaryWindow.length > 0);
   assert(rep.chilonSynthesisMatrix.synthesizedVerdict.length > 0);
+  assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatDelphicChilonPrompt(rep);
   assert(prompt.includes('델포이 아폴론 신전 7현인 《스파르타의 킬론(Chilon)》'));
   assert(prompt.includes(rep.activeSageStage.stageNameKo));
