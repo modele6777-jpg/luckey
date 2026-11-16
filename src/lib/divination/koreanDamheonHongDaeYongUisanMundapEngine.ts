@@ -14,7 +14,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const KOREAN_DAMHEON_HONG_DAE_YONG_UISAN_MUNDAP_VERSION = 'LUCKEY-HONG-DAE-YONG-UISAN-MUNDAP-v2.0.0';
+export const KOREAN_DAMHEON_HONG_DAE_YONG_UISAN_MUNDAP_VERSION = 'LUCKEY-HONG-DAE-YONG-UISAN-MUNDAP-v2.1.0';
 
 export interface HongDaeYongTheme {
   themeKey: string;
@@ -44,6 +44,9 @@ export interface KoreanDamheonHongDaeYongUisanMundapResult {
   // 세부 분석
   activeHongDaeYongTheme: HongDaeYongTheme;
   focalHongDaeYongAphorism: HongDaeYongAphorism;
+  secondaryHongDaeYongAphorism: HongDaeYongAphorism;
+  reflectiveQuestion: string;
+  interpretiveBoundary: string;
   hongDaeYongComprehensiveGuidance: {
     guidanceTitle: string;
     philosophicalCounsel: string;
@@ -62,7 +65,7 @@ function formatHongDaeYongKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 KST`;
 }
 
 function describeHongDaeYongStage(score: number): string {
@@ -172,9 +175,16 @@ export function calculateKoreanDamheonHongDaeYongUisanMundap(
 
   const themeIndex = (absHash >> 5) % HONG_DAE_YONG_THEMES.length;
   const aphorismIndex = (absHash >> 8) % HONG_DAE_YONG_APHORISMS.length;
+  const secondaryAphorismIndex = (aphorismIndex + 1 + ((absHash >> 11) % (HONG_DAE_YONG_APHORISMS.length - 1))) % HONG_DAE_YONG_APHORISMS.length;
 
   const activeHongDaeYongTheme = HONG_DAE_YONG_THEMES[themeIndex];
   const focalHongDaeYongAphorism = HONG_DAE_YONG_APHORISMS[aphorismIndex];
+  const secondaryHongDaeYongAphorism = HONG_DAE_YONG_APHORISMS[secondaryAphorismIndex];
+  const trimmedQuery = query?.trim();
+  const reflectiveQuestion = trimmedQuery
+    ? `'${trimmedQuery}'를 내 좁은 기준에서 벗어나 무한우주와 인물균(人物均)의 열린 시선으로 바라보면 새로 보이는 사실은 무엇인가요?`
+    : `지금 내가 당연하다고 믿고 있는 중심주의나 편견 가운데 실증적으로 다시 따져 볼 한 가지는 무엇인가요?`;
+  const interpretiveBoundary = '담헌 홍대용 의산문답·무한우주론 관점은 길흉 예단이 아니라, 탈편견 실증주의와 대등한 개방 지성을 비추는 실학 성찰 렌즈입니다.';
 
   const guidanceTitle = `담헌 홍대용 우주·실학 개방 지혜: ${activeHongDaeYongTheme.themeTitleKo}`;
   const philosophicalCounsel = `조선 실학의 최고 우주론자 담헌 홍대용 선생은 '지전설(地轉說)'과 '무한우주론'을 통해 편협한 중심주의를 깨뜨리고, 인간과 자연이 평등하다는 '인물균(人物均)'의 위대한 지혜를 열었습니다. ` +
@@ -207,6 +217,9 @@ export function calculateKoreanDamheonHongDaeYongUisanMundap(
     magnanimousGeomungoResilienceScore,
     activeHongDaeYongTheme,
     focalHongDaeYongAphorism,
+    secondaryHongDaeYongAphorism,
+    reflectiveQuestion,
+    interpretiveBoundary,
     hongDaeYongComprehensiveGuidance: {
       guidanceTitle,
       philosophicalCounsel,
@@ -234,9 +247,12 @@ export function formatKoreanDamheonHongDaeYongUisanMundapPrompt(
     `- 실천적 통찰: ${res.activeHongDaeYongTheme.pragmaticInsight}`,
     `- 행동 조언: ${res.activeHongDaeYongTheme.practicalCounsel}`,
     `- 담헌 홍대용 원전 명언: "${res.focalHongDaeYongAphorism.aphorismKo}" (${res.focalHongDaeYongAphorism.aphorismHanja})`,
+    `- 보조 교차 명언: "${res.secondaryHongDaeYongAphorism.aphorismKo}" [${res.secondaryHongDaeYongAphorism.sourceContext}]`,
     `- 원전 출처: [${res.focalHongDaeYongAphorism.sourceContext}]`,
     `- 구체적 실천 지침: ${res.focalHongDaeYongAphorism.actionGuidance}`,
     `- 종합 담헌 우주·실학 권면: ${res.hongDaeYongComprehensiveGuidance.philosophicalCounsel}`,
+    `- 성찰 질문: ${res.reflectiveQuestion}`,
+    `- 해석 경계: ${res.interpretiveBoundary}`,
   ];
   if (res.hongDaeYongSynthesisMatrix) {
     lines.push(
