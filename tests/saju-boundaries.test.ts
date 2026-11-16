@@ -117,7 +117,9 @@ test('calculateChronoTransit produces valid pillars, transits, and prompt', asyn
 
   const result = calculateChronoTransit({ profile: mockProfile, targetDate: testDate });
   assert.ok(result);
-  assert.equal(result.engineVersion, 'LUCKEY-CHRONO-TRANSIT-v2.0.0');
+  assert.equal(result.engineVersion, 'LUCKEY-CHRONO-TRANSIT-v2.1.0');
+  assert.ok(result.temporalChronoRhythm.kstTimeLabel.includes('+09:00 (KST)'));
+  assert.ok(result.reflectiveQuestion.length > 0);
 
   // 동양 만세력 검증
   assert.equal(result.easternPillars.year.gan, '丙');
@@ -137,5 +139,7 @@ test('calculateChronoTransit produces valid pillars, transits, and prompt', asyn
   assert.ok(prompt.includes('실시간 일진(日辰) & 행성 트랜짓(Transit)'));
   assert.ok(prompt.includes('오늘의 사주 4주 만세력 실측'));
   assert.ok(prompt.includes('하늘의 실시간 행성 트랜짓 실측'));
+  assert.ok(prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('성찰 질문'));
 });
 

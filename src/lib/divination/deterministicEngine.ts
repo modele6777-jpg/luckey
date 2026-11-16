@@ -1339,8 +1339,8 @@ try {
   const notImplementedCount = allTools.filter(t => t.status === 'not_implemented').length;
 
   const chronoTransitResult = calculateSupplement('chronoTransitResult', () => (calculateChronoTransit({ profile, targetDate: now, question })));
-  const lifeSeasonTimingResult = calculateSupplement('lifeSeasonTimingResult', () => (calculateLifeSeasonTiming({ profile, targetYear: now.getFullYear() })));
-  const energeticPrescriptionResult = calculateSupplement('energeticPrescriptionResult', () => (calculateEnergeticPrescription({ profile, currentDate: now })));
+  const lifeSeasonTimingResult = calculateSupplement('lifeSeasonTimingResult', () => (calculateLifeSeasonTiming({ profile, targetYear: now.getFullYear(), question })));
+  const energeticPrescriptionResult = calculateSupplement('energeticPrescriptionResult', () => (calculateEnergeticPrescription({ profile, currentDate: now, question })));
   const contextualSynastryResult = calculateSupplement('contextualSynastryResult', () => (calculateContextualSynastry({ questionText: question, myProfile: profile, targetDate: now })));
   const instantDecisionResult = calculateSupplement('instantDecisionResult', () => (calculateInstantDecision({ instant: now, questionText: question })));
   const ziweiFlyingStarsResult = calculateSupplement('ziweiFlyingStarsResult', () => (calculateZiweiFlyingStars({ profile, targetYear: now.getFullYear(), question })));
@@ -4724,9 +4724,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'taiyi', nameKo: '태을신수', icon: '🏛️', category: 'foundational' },
 
   // 심층 마스터 백그라운드 엔진
-  { key: 'chronoTransit', nameKo: '실시간 행성 트랜짓', icon: '🌌', category: 'deep_master' },
-  { key: 'lifeSeasonTiming', nameKo: '10년대운 생애주기', icon: '⏳', category: 'deep_master' },
-  { key: 'energeticPrescription', nameKo: '오행 바이오에너지', icon: '🧪', category: 'deep_master' },
+  { key: 'chronoTransit', nameKo: '실시간 행성 트랜짓', icon: '🌌', category: 'deep_master', summary: '실시간 사주 일진·시진과 천문 10대 행성 트랜짓 아스펙트를 결합해 오늘의 시간 맞춤 전략을 비추는 관점' },
+  { key: 'lifeSeasonTiming', nameKo: '10년대운 생애주기', icon: '⏳', category: 'deep_master', summary: '10년 대운 타임라인·교운기 환절기·인생 4계절 메타포로 현재 생애 타이밍과 선택 방향을 비추는 관점' },
+  { key: 'energeticPrescription', nameKo: '오행 바이오에너지', icon: '🧪', category: 'deep_master', summary: '사주 오행 결핍·과다와 장부·차크라를 연결해 60초 마이크로 루틴과 라이프스타일 처방을 제안하는 관점' },
   { key: 'contextualSynastry', nameKo: '대화 인연 동적궁합', icon: '👥', category: 'deep_master' },
   { key: 'instantDecision', nameKo: '시가팔문 즉시결단', icon: '⚡', category: 'deep_master' },
   { key: 'ziweiFlyingStars', nameKo: '자미두수 유년사화', icon: '🌌', category: 'deep_master', summary: '당해 십간사화(록·권·과·기)의 12궁 비성과 삼방사정·록기교충을 통해 기회와 리스크 방어선을 비추는 관점' },

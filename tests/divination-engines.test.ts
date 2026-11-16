@@ -2207,11 +2207,14 @@ test('Life Season Timing Engine: 10년 대운 및 교운기 타이밍 검증', (
   const res = calculateLifeSeasonTiming({ profile, targetYear: 2026, question: '올해의 계절' });
   assert(res !== null);
   assert.equal(res.engineVersion, LIFE_SEASON_ENGINE_VERSION);
-  assert(res.calculatedAtKst.endsWith('KST'));
+  assert(res.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert(res.reflectiveQuestion?.includes('올해의 계절'));
   assert(Boolean(res.lifeSeasonSynthesisMatrix?.integratedAction));
   assert(res.interpretiveBoundary.length > 0);
   const prompt = formatLifeSeasonTimingPrompt(res);
   assert(prompt.includes(LIFE_SEASON_ENGINE_VERSION));
+  assert(prompt.includes('+09:00 (KST)'));
+  assert(prompt.includes('성찰 질문'));
   assert(prompt.includes('교차 매트릭스') && prompt.includes('해석 경계'));
   assert(!prompt.includes('%'));
   assert(!prompt.includes('/100'));
@@ -2384,12 +2387,15 @@ test('Life Domain Wheel Engine: 6대 핵심 라이프 도메인 밸런스 휠 �
 test('Energetic Prescription Engine: 결핍 오행 바이오 에너지 맞춤 처방 검증', () => {
   const res = calculateEnergeticPrescription({ profile, currentDate: new Date('2026-11-16T06:00:00+09:00'), question: '활력 회복' });
   assert.equal(res.engineVersion, ENERGETIC_PRESCRIPTION_ENGINE_VERSION);
-  assert(res.calculatedAtKst.endsWith('KST'));
+  assert(res.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert(res.reflectiveQuestion?.includes('활력 회복'));
   assert(Boolean(res.energeticSynthesisMatrix?.integratedAction));
   assert(res.interpretiveBoundary.length > 0);
   assert(res.microRituals.length > 0);
   const prompt = formatEnergeticPrescriptionPrompt(res);
   assert(prompt.includes(ENERGETIC_PRESCRIPTION_ENGINE_VERSION));
+  assert(prompt.includes('+09:00 (KST)'));
+  assert(prompt.includes('성찰 질문'));
   assert(prompt.includes('교차 매트릭스') && prompt.includes('해석 경계'));
   assert(!prompt.includes('/100'));
 });
