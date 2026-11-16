@@ -13,7 +13,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const AYURVEDIC_TRIDOSHA_VERSION = 'LUCKEY-AYURVEDIC-TRIDOSHA-v2.1.0';
+export const AYURVEDIC_TRIDOSHA_VERSION = 'LUCKEY-AYURVEDIC-TRIDOSHA-v2.2.0';
 
 export type AyurvedicQuestionFocus = 'stress' | 'relationship' | 'career' | 'health' | 'spiritual';
 
@@ -83,6 +83,7 @@ export interface AyurvedicTridoshaReport {
   temporalDinacharyaRhythm: TemporalDinacharyaRhythm;
   tridoshaSynthesisMatrix: TridoshaSynthesisMatrix;
   tridoshaHarmonizationGuidance: string;
+  interpretiveBoundary: string;
 }
 
 function detectAyurvedicFocus(question: string): AyurvedicQuestionFocus {
@@ -339,6 +340,7 @@ export function calculateAyurvedicTridoshaPrana(params: {
   };
 
   const tridoshaHarmonizationGuidance = `당신의 선천 체질은 [${prakritiConstitution.dominantDosha}] (${prakritiConstitution.constitutionType})이며, 현재 ${subtleEnergyBalance}을 보이고 있습니다. ${dinacharya.pranayamaBreathing}을 통해 몸과 마음의 조화를 지키십시오.`;
+  const interpretiveBoundary = '본 리포트는 아유르베다 《차라카 삼히타》 체질·생체시계 상징에 기반한 정성적 양생 안내이며, 의학적 진단이나 처방이 아닙니다.';
 
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
   const calculatedAtKst = `${kst.toISOString().slice(0, 19)}+09:00`;
@@ -361,6 +363,7 @@ export function calculateAyurvedicTridoshaPrana(params: {
     temporalDinacharyaRhythm,
     tridoshaSynthesisMatrix,
     tridoshaHarmonizationGuidance,
+    interpretiveBoundary,
   };
 }
 
@@ -386,5 +389,5 @@ export function formatAyurvedicTridoshaPranaPrompt(report: AyurvedicTridoshaRepo
   - 저녁 이완: ${report.dinacharya.eveningRestoration}
 - **교차 매트릭스 종합**: ${report.tridoshaSynthesisMatrix.synthesizedVerdict}
 - **심신 조화 지침**: ${report.tridoshaHarmonizationGuidance}
-- **해석 경계**: 본 리포트는 아유르베다 《차라카 삼히타》 체질·생체시계 상징에 기반한 정성적 양생 안내이며, 의학적 진단이나 처방이 아닙니다.`;
+- **해석 경계**: ${report.interpretiveBoundary}`;
 }
