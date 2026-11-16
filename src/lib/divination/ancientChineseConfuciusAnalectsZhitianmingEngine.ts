@@ -12,7 +12,17 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const CONFUCIUS_ZHITIANMING_VERSION = 'LUCKEY-CONFUCIUS-ZHITIANMING-v2.1.0';
+export const CONFUCIUS_ZHITIANMING_VERSION = 'LUCKEY-CONFUCIUS-ZHITIANMING-v2.2.0';
+
+function formatConfuciusKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
 
 export interface ConfuciusLifeStage {
   stageKey: string;
@@ -76,6 +86,11 @@ export interface ConfuciusAnalectsZhitianmingResult {
   dailyPracticeRitual: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
+  confuciusSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
 }
 
 export type ConfuciusAnalectsZhitianmingReport = ConfuciusAnalectsZhitianmingResult;
@@ -282,7 +297,8 @@ export function calculateConfuciusAnalectsZhitianming(
   const activeLifeStage = LIFE_STAGES[stageIndex];
   const focalVirtue = CORE_VIRTUES[virtueIndex];
 
-  const { hour, month, isoKst } = getKstComponents(now);
+  const { hour, month } = getKstComponents(now);
+  const isoKst = formatConfuciusKstTimestamp(now);
   const situationalAnalects = analyzeSituationalAnalects(question, focalVirtue);
   const temporalJunziRhythm = buildTemporalJunziRhythm(hour, month, liDecorumHarmonyScore);
 
@@ -321,6 +337,13 @@ export function calculateConfuciusAnalectsZhitianming(
   const interpretiveBoundary =
     '이 관점은 점수가 아니라 공자 《논어》의 인·의·예·지·신과 군자도(君子道) 수양 틀로 현재 질문의 도리와 태도를 비추는 상징적 성찰입니다.';
 
+  const trimmedQ = (question ?? '').trim();
+  const confuciusSynthesisMatrix = {
+    dominantTension: `${situationalAnalects.themeKo} ↔ ${priorityVirtueFocus}`,
+    alignmentState: `${activeLifeStage.stageNameHanja} · ${focalVirtue.virtueHanja}`,
+    integratedAction: `${dailyPracticeRitual}${trimmedQ ? ` [질문 맥락: ${trimmedQ}]` : ''}`,
+  };
+
   return {
     engineVersion: CONFUCIUS_ZHITIANMING_VERSION,
     calculatedAtKst: isoKst,
@@ -341,6 +364,7 @@ export function calculateConfuciusAnalectsZhitianming(
     dailyPracticeRitual,
     reflectiveQuestion,
     interpretiveBoundary,
+    confuciusSynthesisMatrix,
   };
 }
 
@@ -351,8 +375,11 @@ function describeConfuciusStage(score: number): string {
 }
 
 export function formatConfuciusAnalectsZhitianmingPrompt(res: ConfuciusAnalectsZhitianmingResult): string {
+  const matrixLine = res.confuciusSynthesisMatrix
+    ? `- 논어 교차 매트릭스: 핵심 긴장(${res.confuciusSynthesisMatrix.dominantTension}) · 조율 상태(${res.confuciusSynthesisMatrix.alignmentState}) · 통합 실천(${res.confuciusSynthesisMatrix.integratedAction})`
+    : '';
   return [
-    `【공자 논어 지천명 & 극기복례 군자도 성찰 (${res.engineVersion})】`,
+    `【공자 논어 지천명 & 극기복례 군자도 성찰 (${res.engineVersion} | ${res.calculatedAtKst})】`,
     `- 내면 덕목 결: 지천명 통찰 [${describeConfuciusStage(res.tianmingAttunementScore)}] | 인(仁) [${describeConfuciusStage(res.renBenevolenceCoreScore)}] | 예(禮) [${describeConfuciusStage(res.liDecorumHarmonyScore)}]`,
     `- 수양 태도: 극기복례 절제 [${describeConfuciusStage(res.kejiFuliDisciplineScore)}] | 군자탄탕탕 평정심 [${describeConfuciusStage(res.junziEquanimityScore)}]`,
     `- 조응하는 생애 마디: ${res.activeLifeStage.stageNameHanja} (${res.activeLifeStage.stageNameKo})`,
@@ -365,5 +392,6 @@ export function formatConfuciusAnalectsZhitianmingPrompt(res: ConfuciusAnalectsZ
     `- 핵심 수양 덕목: ${res.focalVirtue.virtueKo}`,
     `- 철학적 수양 지침: ${res.confucianPhilosophicalCounsel.philosophicalGuidance}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
-  ].join('\n');
+    matrixLine,
+  ].filter(Boolean).join('\n');
 }
