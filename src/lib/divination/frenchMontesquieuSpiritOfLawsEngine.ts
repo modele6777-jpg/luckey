@@ -14,7 +14,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const FRENCH_MONTESQUIEU_SPIRIT_OF_LAWS_VERSION = 'LUCKEY-MONTESQUIEU-SPIRIT-OF-LAWS-v2.0.0';
+export const FRENCH_MONTESQUIEU_SPIRIT_OF_LAWS_VERSION = 'LUCKEY-MONTESQUIEU-SPIRIT-OF-LAWS-v2.1.0';
 
 export interface MontesquieuTheme {
   themeKey: string;
@@ -138,7 +138,7 @@ function formatMontesquieuKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 KST`;
 }
 
 function describeMontesquieuStage(score: number): string {
@@ -238,5 +238,6 @@ export function formatFrenchMontesquieuSpiritOfLawsPrompt(
       `- 통합 실천: ${res.montesquieuSynthesisMatrix.integratedAction}`,
     );
   }
+  lines.push(`- 해석 경계: 몽테스키외의 견제와 균형·중용 철학 상징을 빌린 정성적 의사결정 참고 관점이며, 수치 평가나 확정 예언이 아닙니다.`);
   return lines.join('\n');
 }

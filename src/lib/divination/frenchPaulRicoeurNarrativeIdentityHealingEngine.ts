@@ -13,7 +13,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const FRENCH_PAUL_RICOEUR_NARRATIVE_IDENTITY_HEALING_VERSION = 'LUCKEY-PAUL-RICOEUR-NARRATIVE-IDENTITY-HEALING-v2.0.0';
+export const FRENCH_PAUL_RICOEUR_NARRATIVE_IDENTITY_HEALING_VERSION = 'LUCKEY-PAUL-RICOEUR-NARRATIVE-IDENTITY-HEALING-v2.1.0';
 
 export interface RicoeurTheme {
   themeKey: string;
@@ -167,7 +167,7 @@ export function calculateFrenchPaulRicoeurNarrativeIdentityHealing(
     `${focalRicoeurAphorism.actionGuidance}`;
 
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
-  const kstTimeLabel = `${kst.toISOString().slice(0, 10)} ${String(kst.getUTCHours()).padStart(2, '0')}:${String(kst.getUTCMinutes()).padStart(2, '0')} KST`;
+  const kstTimeLabel = `${kst.toISOString().slice(0, 10)} ${String(kst.getUTCHours()).padStart(2, '0')}:${String(kst.getUTCMinutes()).padStart(2, '0')} +09:00 KST`;
   const ricoeurSynthesisMatrix = {
     coreInsight: activeRicoeurTheme.themeTitleKo,
     recommendedAction: activeRicoeurTheme.practicalCounsel,
@@ -211,5 +211,6 @@ export function formatFrenchPaulRicoeurNarrativeIdentityHealingPrompt(
     `- 원전 출처: [${res.focalRicoeurAphorism.sourceContext}]`,
     `- 구체적 실천 지침: ${res.focalRicoeurAphorism.actionGuidance}`,
     `- 종합 리쾨르 권면: ${res.ricoeurComprehensiveGuidance.philosophicalCounsel}`,
+    `- 해석 경계: 폴 리쾨르의 서사적 정체성과 화해·용서 해석학 상징을 빌린 정성적 치유 성찰 관점이며, 심리 진단이나 미래 단정이 아닙니다.`,
   ].join('\n');
 }

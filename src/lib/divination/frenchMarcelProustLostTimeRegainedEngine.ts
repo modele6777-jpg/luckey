@@ -13,7 +13,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const FRENCH_MARCEL_PROUST_LOST_TIME_VERSION = 'LUCKEY-PROUST-LOST-TIME-REGAINED-v2.0.0';
+export const FRENCH_MARCEL_PROUST_LOST_TIME_VERSION = 'LUCKEY-PROUST-LOST-TIME-REGAINED-v2.1.0';
 
 export interface ProustTheme {
   themeKey: string;
@@ -170,7 +170,7 @@ export function calculateFrenchMarcelProustLostTimeRegained(
     `${focalProustAphorism.actionGuidance}`;
 
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
-  const kstTimeLabel = `${kst.toISOString().slice(0, 10)} ${String(kst.getUTCHours()).padStart(2, '0')}:${String(kst.getUTCMinutes()).padStart(2, '0')} KST`;
+  const kstTimeLabel = `${kst.toISOString().slice(0, 10)} ${String(kst.getUTCHours()).padStart(2, '0')}:${String(kst.getUTCMinutes()).padStart(2, '0')} +09:00 KST`;
   const proustSynthesisMatrix = {
     coreInsight: activeProustTheme.themeTitleKo,
     recommendedAction: activeProustTheme.practicalCounsel,
@@ -215,5 +215,6 @@ export function formatFrenchMarcelProustLostTimeRegainedPrompt(
     `- 원전 출처: [${res.focalProustAphorism.sourceContext}]`,
     `- 구체적 실천 지침: ${res.focalProustAphorism.actionGuidance}`,
     `- 종합 프루스트 권면: ${res.proustComprehensiveGuidance.philosophicalCounsel}`,
+    `- 해석 경계: 프루스트의 비자발적 기억과 되찾은 시간 상징을 빌린 정성적 내면 성찰 관점이며, 개인 평가나 미래 단정이 아닙니다.`,
   ].join('\n');
 }
