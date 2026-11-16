@@ -3266,7 +3266,7 @@ try {
   // 215. 한국 조선 실학 혜강 최한기 기학 & 신기통 운화 지혜 엔진
   const choeHangiGihakUnwhaResult = calculateSupplement('choeHangiGihakUnwhaResult', () => ((() => {
     try {
-      return calculateChoeHangiGihakUnwha(profile);
+      return calculateChoeHangiGihakUnwha(profile, question, now);
     } catch (_) {
       return null;
     }
@@ -3662,7 +3662,7 @@ try {
   // 257. 대한민국 도산 안창호 무실역행 & 애기애타 인격혁명·주인정신 실천 엔진
   const dosanAhnChanghoMusilYeokhaengResult = calculateSupplement('dosanAhnChanghoMusilYeokhaengResult', () => ((() => {
     try {
-      return calculateDosanAhnChanghoMusilYeokhaeng(profile);
+      return calculateDosanAhnChanghoMusilYeokhaeng(profile, question, now);
     } catch (_) {
       return null;
     }
@@ -3851,7 +3851,7 @@ try {
   // 278. 대한민국 단재 신채호 조선상고사 아(我)의 주체자각 & 비타협 자주독립 지혜 엔진
   const koreanDanjaeShinChaeHoJoseonSanggosaResult = calculateSupplement('koreanDanjaeShinChaeHoJoseonSanggosaResult', () => ((() => {
     try {
-      return calculateKoreanDanjaeShinChaeHoJoseonSanggosa(profile);
+      return calculateKoreanDanjaeShinChaeHoJoseonSanggosa(profile, question, now);
     } catch (_) {
       return null;
     }
@@ -4928,7 +4928,7 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'baruchSpinozaEthicaConatusAmorDei', nameKo: '스피노자 에티카 코나투스 신즉자연 영원의상관조', icon: '✨', category: 'deep_master', summary: '스피노자의 코나투스와 영원의 상 아래에서 감정의 인과를 명료히 이해하고 능동적 기쁨으로 나아갑니다.' },
   { key: 'germanKantCategoricalImperativeSynthesis', nameKo: '칸트 정언명령 목적의왕국 자율성 도덕법칙', icon: '⚖️', category: 'deep_master', summary: '칸트의 정언명령과 목적의 왕국 원리로 이해관계를 넘어 스스로 떳떳한 자율적 도덕 기준을 세웁니다.' },
   { key: 'indianUpanishadicTatTvamAsi', nameKo: '우파니샤드 타트트밤아시 범아일여 순수의식', icon: '🕉️', category: 'deep_master', summary: '우파니샤드의 타트 트밤 아시와 넷티 넷티 관조를 통해 덧없는 분별을 넘어 본래 순수 의식의 고요를 비춥니다.' },
-  { key: 'koreanChoeHangiGihakUnwha', nameKo: '혜강 최한기 기학 신기통 운화기 추측지리', icon: '📜', category: 'deep_master' },
+  { key: 'koreanChoeHangiGihakUnwha', nameKo: '혜강 최한기 기학 신기통 운화기 추측지리', icon: '📜', category: 'deep_master', summary: '혜강 최한기 선생의 기학과 신기통 사상으로 감각·사유의 소통을 트고 경험적 추측으로 현실의 변화를 헤아립니다.' },
   { key: 'ancientChineseSunTzuArtOfWarStrategy', nameKo: '손자병법 오사칠계 부전승 피실격허 전략', icon: '⚔️', category: 'deep_master', summary: '정면 소모전을 피하고 5사와 피실격허·부전승의 지혜로 가장 무리 없는 활로를 읽습니다.' },
   { key: 'frenchDescartesCogitoClaraDistincta', nameKo: '데카르트 방법서설 코기토 명석판명 지성직관', icon: '💡', category: 'deep_master', summary: '데카르트의 방법적 회의와 명석판명(Clara et Distincta) 4대 규칙으로 모호한 불안을 걷어내고 사유 주체의 확고한 결단을 세웁니다.' },
   { key: 'ancientIndianEarlyBuddhistFourNobleTruths', nameKo: '초기불교 사성제 팔정도 고집멸도 중도해탈', icon: '☸️', category: 'deep_master', summary: '고집멸도 사성제와 팔정도의 삼학(계·정·혜)으로 갈애의 매듭을 풀고 지금-여기 중도의 평정을 엽니다.' },

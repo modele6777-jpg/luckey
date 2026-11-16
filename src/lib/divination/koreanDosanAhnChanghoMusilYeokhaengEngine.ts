@@ -13,7 +13,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const KOREAN_DOSAN_AHN_CHANGHO_VERSION = 'LUCKEY-DOSAN-AHN-CHANGHO-MUSIL-YEOKHAENG-v2.0.0';
+export const KOREAN_DOSAN_AHN_CHANGHO_VERSION = 'LUCKEY-DOSAN-AHN-CHANGHO-MUSIL-YEOKHAENG-v2.1.0';
 
 export interface DosanTheme {
   themeKey: string;
@@ -43,6 +43,9 @@ export interface DosanAhnChanghoMusilYeokhaengResult {
   // 세부 분석
   activeDosanTheme: DosanTheme;
   focalDosanAphorism: DosanAphorism;
+  secondaryDosanAphorism: DosanAphorism;
+  reflectiveQuestion: string;
+  interpretiveBoundary: string;
   dosanComprehensiveGuidance: {
     guidanceTitle: string;
     philosophicalCounsel: string;
@@ -61,7 +64,7 @@ function formatDosanKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 KST`;
 }
 
 function describeDosanStage(score: number): string {
@@ -150,7 +153,7 @@ export function calculateDosanAhnChanghoMusilYeokhaeng(
   const birthTime = profile?.basic?.birthtime ?? p?.birthTime ?? p?.birthtime ?? '12:00';
   const gender = profile?.basic?.gender ?? p?.gender ?? 'neutral';
 
-  const seedString = `DOSAN-AHN-CHANGHO-MUSIL-YEOKHAENG:${name}:${birthDate}:${birthTime}:${gender}`;
+  const seedString = `DOSAN-AHN-CHANGHO-MUSIL-YEOKHAENG:${name}:${birthDate}:${birthTime}:${gender}:${query ?? ''}`;
 
   let hash = 0;
   for (let i = 0; i < seedString.length; i++) {
@@ -167,9 +170,16 @@ export function calculateDosanAhnChanghoMusilYeokhaeng(
 
   const themeIndex = (absHash >> 4) % DOSAN_THEMES.length;
   const aphorismIndex = (absHash >> 7) % DOSAN_APHORISMS.length;
+  const secondaryAphorismIndex = (aphorismIndex + 1 + ((absHash >> 10) % (DOSAN_APHORISMS.length - 1))) % DOSAN_APHORISMS.length;
 
   const activeDosanTheme = DOSAN_THEMES[themeIndex];
   const focalDosanAphorism = DOSAN_APHORISMS[aphorismIndex];
+  const secondaryDosanAphorism = DOSAN_APHORISMS[secondaryAphorismIndex];
+  const trimmedQuery = query?.trim();
+  const reflectiveQuestion = trimmedQuery
+    ? `'${trimmedQuery}'에서 남 탓이나 변명을 멈추고 내가 주인정신으로 오늘 당장 역행(力行)할 작은 실천 한 가지는 무엇인가요?`
+    : `오늘 내 말과 행동에서 헛된 껍데기를 덜어 내고 무실(務實)의 참됨으로 채울 한 가지는 무엇인가요?`;
+  const interpretiveBoundary = '도산 안창호 무실역행·주인정신 관점은 길흉 예단이 아니라, 성실한 실천과 자기 책임의 인격 수양을 비추는 성찰 렌즈입니다.';
 
   const guidanceTitle = `도산 안창호 무실역행과 주인정신 실천: ${activeDosanTheme.themeTitleKo}`;
   const philosophicalCounsel = `도산 안창호 선생의 무실역행 정신은 거짓을 버리고 참됨을 일삼으며, 남 탓하지 않고 스스로 주인이 되어 작은 실천을 꾸준히 쌓아갈 것을 가르칩니다. ` +
@@ -202,6 +212,9 @@ export function calculateDosanAhnChanghoMusilYeokhaeng(
     masterMindOwnerResponsibilityScore,
     activeDosanTheme,
     focalDosanAphorism,
+    secondaryDosanAphorism,
+    reflectiveQuestion,
+    interpretiveBoundary,
     dosanComprehensiveGuidance: {
       guidanceTitle,
       philosophicalCounsel,
@@ -227,9 +240,12 @@ export function formatDosanAhnChanghoMusilYeokhaengPrompt(res: DosanAhnChanghoMu
     `- 실존적 통찰: ${res.activeDosanTheme.existentialInsight}`,
     `- 실천적 조언: ${res.activeDosanTheme.practicalCounsel}`,
     `- 핵심 도산 경구: "${res.focalDosanAphorism.aphorismKo}"`,
+    `- 보조 교차 경구: "${res.secondaryDosanAphorism.aphorismKo}" [${res.secondaryDosanAphorism.sourceContext}]`,
     `- 원문 출처: "${res.focalDosanAphorism.aphorismHanja}" [${res.focalDosanAphorism.sourceContext}]`,
     `- 구체적 실천 지침: ${res.focalDosanAphorism.actionGuidance}`,
     `- 종합 인격혁명 권면: ${res.dosanComprehensiveGuidance.philosophicalCounsel}`,
+    `- 성찰 질문: ${res.reflectiveQuestion}`,
+    `- 해석 경계: ${res.interpretiveBoundary}`,
   ];
   if (res.dosanSynthesisMatrix) {
     lines.push(
