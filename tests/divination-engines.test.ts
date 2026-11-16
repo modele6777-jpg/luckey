@@ -3315,7 +3315,7 @@ test('Mayan Tzolkin Sacred Calendar Engine: calculates 260 Kin and galactic reso
 });
 
 test('Nordic Elder Futhark Runes Engine: calculates birth rune, norns trio and bindrune', () => {
-  const rep = calculateNordicElderFutharkRunes({ profile });
+  const rep = calculateNordicElderFutharkRunes({ profile, question: '새 프로젝트 시작 타이밍이 맞을까요?' });
   assert.equal(rep.engineVersion, NORDIC_RUNES_VERSION);
   assert(rep.birthRune.runeNumber >= 1 && rep.birthRune.runeNumber <= 24);
   assert(rep.nornsTrio.urdPast.runeNumber >= 1 && rep.nornsTrio.urdPast.runeNumber <= 24);
@@ -3323,12 +3323,17 @@ test('Nordic Elder Futhark Runes Engine: calculates birth rune, norns trio and b
   assert(rep.nornsTrio.skuldFuture.runeNumber >= 1 && rep.nornsTrio.skuldFuture.runeNumber <= 24);
   assert(rep.cosmicWyrdResonanceScore >= 0 && rep.cosmicWyrdResonanceScore <= 100);
   assert(rep.bindruneTalisman.combinedRunes.length >= 2);
-  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert(Boolean(rep.runesSynthesisMatrix?.secondaryRuneSummary));
   assert(Boolean(rep.runesSynthesisMatrix?.integratedAction));
+  assert(rep.reflectiveQuestion.includes('새 프로젝트'));
+  assert(rep.interpretiveBoundary.includes('참고용 비유'));
   const prompt = formatNordicElderFutharkRunesPrompt(rep);
   assert(prompt.includes('북유럽 24 엘더 푸사르크 룬'));
   assert(prompt.includes(rep.birthRune.koreanName));
   assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('성찰 질문'));
+  assert(prompt.includes('해석 경계'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });
@@ -3968,17 +3973,23 @@ test('Hawaiian Kahuna Three Selves Engine: calculates 3 selves harmony and mana 
 });
 
 test('Nordic Yggdrasil Nine Realms Engine: calculates dominant realm and Bifrost clearance', () => {
-  const rep = calculateNordicYggdrasilRealms({ profile });
+  const rep = calculateNordicYggdrasilRealms({ profile, question: '지금 방향을 유지할지 전환할지 고민입니다.' });
   assert.equal(rep.engineVersion, NORDIC_YGGDRASIL_NINE_REALMS_ENGINE_VERSION);
   assert(rep.yggdrasilAxisAlignmentScore >= 0 && rep.yggdrasilAxisAlignmentScore <= 100);
   assert(rep.bifrostBridgeClearance >= 0 && rep.bifrostBridgeClearance <= 100);
   assert(rep.dominantRealm.nameKo.length > 0);
-  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(rep.secondaryRealm.nameKo.length > 0);
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(Boolean(rep.yggdrasilSynthesisMatrix?.integratedAction));
+  assert(rep.reflectiveQuestion.includes('고민'));
+  assert(rep.interpretiveBoundary.includes('참고용 비유'));
   const prompt = formatNordicYggdrasilRealmsPrompt(rep);
   assert(prompt.includes('고대 북유럽 세계수 위그드라실(Yggdrasil) 9대 영역 실측 데이터'));
   assert(prompt.includes(rep.dominantRealm.nameKo));
+  assert(prompt.includes('보조 교차 영역'));
   assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('성찰 질문'));
+  assert(prompt.includes('해석 경계'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });
@@ -4695,19 +4706,25 @@ test('Gaelic Wheel Four Fire Festivals Engine: calculates fire festival stations
 });
 
 test('Norse Havamal Eighteen Galdr Engine: calculates eighteen runic charms, yggdrasil depth and odin mastery', () => {
-  const rep = calculateNorseHavamalEighteenGaldr(profile);
+  const rep = calculateNorseHavamalEighteenGaldr(profile, new Date('2026-11-17T04:50:00+09:00'), '어려운 협상을 앞두고 마음을 다잡고 싶어요');
   assert.equal(rep.engineVersion, NORSE_HAVAMAL_GALDR_ENGINE_VERSION);
   assert(rep.yggdrasilWisdomDepth >= 0 && rep.yggdrasilWisdomDepth <= 100);
   assert(rep.odinRuneMasteryIndex >= 0 && rep.odinRuneMasteryIndex <= 100);
   assert(rep.valkyrieShieldIntegrity >= 0 && rep.valkyrieShieldIntegrity <= 100);
   assert(rep.fateWyrdResilience >= 0 && rep.fateWyrdResilience <= 100);
   assert(rep.dominantGaldrCharm.charmName.length > 0);
-  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(rep.secondaryGaldrCharm.charmName.length > 0);
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(Boolean(rep.havamalSynthesisMatrix?.integratedAction));
+  assert(rep.reflectiveQuestion.includes('협상'));
+  assert(rep.interpretiveBoundary.includes('성찰용 비유'));
   const prompt = formatNorseHavamalEighteenGaldrPrompt(rep);
   assert(prompt.includes('고에다 하바말 오딘의 18대 게알드르 룬 비전 주문 실측 데이터'));
   assert(prompt.includes(rep.dominantGaldrCharm.charmName));
+  assert(prompt.includes('보조 공명 주문'));
   assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('성찰 질문'));
+  assert(prompt.includes('해석 경계'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });
