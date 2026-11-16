@@ -3180,12 +3180,15 @@ test('Ziwei HuaJi Transformation Engine: maps stem hua-ji and breakthrough gift'
 test('Celtic Tree Ogham Engine: derives birth guardian tree and seasonal oracle', () => {
   const rep = calculateCelticTreeOgham(profile);
   assert.equal(rep.engineVersion, CELTIC_OGHAM_VERSION);
+  assert(rep.calculatedAtKst.endsWith('+09:00'));
+  assert(rep.interpretiveBoundary.length > 0);
   assert(rep.birthGuardianTree.nameTreeKo.length > 0);
   assert(rep.druidWisdomScore >= 0 && rep.druidWisdomScore <= 100);
   assert(rep.treeMedicinePrescription.length > 0);
   const prompt = formatCelticTreeOghamPrompt(rep);
   assert(prompt.includes('켈트 오검'));
   assert(prompt.includes(rep.birthGuardianTree.nameTreeKo));
+  assert(prompt.includes('+09:00') && prompt.includes('해석 경계'));
   assert(!prompt.includes('/100') && !prompt.includes('점수'));
 });
 
@@ -3813,11 +3816,14 @@ test('Jain Gunasthana Karma Engine: calculates 14 Gunasthanas and Ratnatraya bal
 test('Celtic Awen Taliesin Engine: calculates Awen 3 rays and metamorphosis phase', () => {
   const rep = calculateCelticAwenTaliesin({ profile });
   assert.equal(rep.engineVersion, CELTIC_AWEN_TALIESIN_ENGINE_VERSION);
+  assert(rep.calculatedAtKst.endsWith('+09:00'));
+  assert(rep.interpretiveBoundary.length > 0);
   assert(rep.awenFlowIndex >= 0 && rep.awenFlowIndex <= 100);
   assert(rep.awenRays.dominantRay.length > 0);
   const prompt = formatCelticAwenTaliesinPrompt(rep);
   assert(prompt.includes('고대 켈트 바드 탈리에신(Taliesin) 가마솥 & 아웬(Awen) 영감 실측 데이터'));
   assert(prompt.includes(rep.activeMetamorphosis.animalTotem));
+  assert(prompt.includes('+09:00') && prompt.includes('해석 경계'));
   assert(!prompt.includes('/ 100') && !prompt.includes('점수'));
 });
 
@@ -8487,12 +8493,15 @@ test('Aztec Tonalamatl, Balinese Tri Hita Karana, and Celtic Tuatha Four Treasur
   assert.ok(aztecPrompt.includes('+09:00') && aztecPrompt.includes('해석 경계'));
 
   const balinese = calculateBalineseTriHitaKarana(profile, '가족과의 관계에서 말의 온도를 조율하고 싶습니다', now);
-  assert.equal(balinese.engineVersion, 'LUCKEY-BALINESE-TRI-HITA-v2.0.0');
+  assert.equal(balinese.engineVersion, BALINESE_TRI_HITA_KARANA_ENGINE_VERSION);
+  assert.ok(balinese.calculatedAtKst.endsWith('+09:00'));
+  assert.ok(balinese.interpretiveBoundary.length > 0);
   assert.ok(balinese.situationalTriHitaAudit.harmonyAxis.length > 0);
   assert.ok(balinese.temporalTriHitaRhythm.sandhyaPhase.length > 0);
   assert.ok(balinese.triHitaSynthesisMatrix.dailyOfferingDirective.length > 0);
   const balinesePrompt = formatBalineseTriHitaKaranaPrompt(balinese);
   assert.ok(!balinesePrompt.includes('/100') && !balinesePrompt.includes('%'));
+  assert.ok(balinesePrompt.includes('+09:00') && balinesePrompt.includes('해석 경계'));
 
   const celtic = calculateCelticTuathaFourTreasures({ profile, question: '중요한 결정을 앞두고 돌파력이 필요합니다', now });
   assert.equal(celtic.engineVersion, 'LUCKEY-CELTIC-TUATHA-v2.0.0');
