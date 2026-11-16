@@ -16,7 +16,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const SUMERIAN_APKALLU_WISDOM_ENGINE_VERSION = '2.0.0';
+export const SUMERIAN_APKALLU_WISDOM_ENGINE_VERSION = '2.1.0';
 
 export interface ApkalluSage {
   id: string;
@@ -39,6 +39,8 @@ export interface SumerianApkalluWisdomReport {
   secondarySage: ApkalluSage;
   enkiDecree: string; // 엔키 신의 신성 칙령
   meRestorationGuidance: string; // 메(Me) 질서 회복을 위한 현실 실천 지침
+  reflectiveQuestion: string; // 내담자 성찰 질문
+  interpretiveBoundary: string; // 상징 해석 경계 고지
   apkalluSynthesisMatrix?: {
     dominantTension: string;
     alignmentState: string;
@@ -53,7 +55,7 @@ function formatApkalluKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
 }
 
 const APKALLU_SAGES: Omit<ApkalluSage, 'resonancePower'>[] = [
@@ -156,6 +158,11 @@ export function calculateSumerianApkalluWisdom(options?: {
   const meRestorationGuidance = `${activeSage.nameKo}의 가호에 따라 ${activeSage.title}의 역량을 현실에 발현하십시오. ${secondarySage.nameKo}의 조언("${secondarySage.divineWisdom}")을 겸비하면 일의 매듭이 자연스럽게 풀릴 것입니다.`;
 
   const calculatedAtKst = formatApkalluKstTimestamp(now);
+  const reflectiveQuestion = question
+    ? `"${question}"의 갈림길에서 ${activeSage.nameKo}(${activeSage.title})의 원칙을 먼저 세운다면, ${secondarySage.nameKo}의 시선으로 당장 덜어내야 할 조급함은 무엇입니까?`
+    : `지금 일상에서 ${activeSage.nameKo}(${activeSage.element})의 지혜를 현실의 한 가지 행동으로 옮긴다면 무엇부터 정돈하시겠습니까?`;
+  const interpretiveBoundary =
+    '고대 수메르 압갈루(Apkallu) 7현자 상징은 내면의 판단 기준과 행동 태도를 성찰하기 위한 은유적 관점이며, 미래 사건의 단정적 예언이나 의학·법률·재무 판단을 대체하지 않습니다.';
   const apkalluSynthesisMatrix = {
     dominantTension: `${activeSage.nameKo}(${activeSage.element}) ↔ ${secondarySage.nameKo}(${secondarySage.element})`,
     alignmentState: `${activeSage.title} · ${secondarySage.title}`,
@@ -172,6 +179,8 @@ export function calculateSumerianApkalluWisdom(options?: {
     secondarySage,
     enkiDecree,
     meRestorationGuidance,
+    reflectiveQuestion,
+    interpretiveBoundary,
     apkalluSynthesisMatrix,
   };
 }
@@ -187,6 +196,8 @@ export function formatSumerianApkalluWisdomPrompt(rep: SumerianApkalluWisdomRepo
     `  - 조력 조언: "${rep.secondarySage.divineWisdom}"`,
     `· 지혜신 엔키의 칙령: ${rep.enkiDecree}`,
     `· 메(Me) 질서 회복 처방: ${rep.meRestorationGuidance}`,
+    `· 성찰 질문: ${rep.reflectiveQuestion}`,
+    `· 해석 경계: ${rep.interpretiveBoundary}`,
   ];
   if (rep.apkalluSynthesisMatrix) {
     lines.push(

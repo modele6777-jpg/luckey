@@ -5,7 +5,7 @@
  * 12대 영웅적 통과의례 및 영혼 불멸 탐색 관문을 현대 심리 분석과 사주·운명학적 맥락에 연동합니다.
  */
 
-export const SUMERIAN_GILGAMESH_TRIALS_ENGINE_VERSION = 'LUCKEY-GILGAMESH-TRIALS-v2.0.0';
+export const SUMERIAN_GILGAMESH_TRIALS_ENGINE_VERSION = 'LUCKEY-GILGAMESH-TRIALS-v2.1.0';
 
 export interface GilgameshTrial {
   gateNumber: number;
@@ -22,10 +22,13 @@ export interface GilgameshTrialsReport {
   calculatedAt: string;
   calculatedAtKst: string;
   activeTrial: GilgameshTrial;
+  secondaryTrial: GilgameshTrial;
   heroicResilienceScore: number; // 0 ~ 100
   immortalityWisdomIndex: number; // 0 ~ 100 (필멸을 수용하고 영원한 레거시를 세우는 지혜)
   soulCompanionType: string; // 영혼의 거울 동반자 (엔키두 원형)
   legacyBuildingPrescription: string;
+  reflectiveQuestion: string;
+  interpretiveBoundary: string;
   gilgameshSynthesisMatrix?: {
     dominantTension: string;
     alignmentState: string;
@@ -40,7 +43,7 @@ function formatGilgameshKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
 }
 
 const TWELVE_TRIALS: GilgameshTrial[] = [
@@ -175,6 +178,7 @@ export function calculateSumerianGilgameshTrials(params: {
 
   const trialIndex = Math.abs(seed) % TWELVE_TRIALS.length;
   const activeTrial = TWELVE_TRIALS[trialIndex];
+  const secondaryTrial = TWELVE_TRIALS[(trialIndex + 1) % TWELVE_TRIALS.length];
 
   const heroicResilienceScore = 60 + (Math.abs(seed * 7) % 39);
   const immortalityWisdomIndex = 58 + (Math.abs(seed * 13) % 41);
@@ -190,9 +194,14 @@ export function calculateSumerianGilgameshTrials(params: {
   const legacyBuildingPrescription = `지금 당신의 영혼은 길가메시의 ${activeTrial.gateNumber}번째 관문 [${activeTrial.nameKo}]에 위치해 있습니다. 에고의 함정인 '${activeTrial.egoShadowTrap}'을 경계하고, '${activeTrial.heroicBreakthroughAction}'을 통해 유한한 시간 속에서 영원히 빛날 레거시를 세우세요.`;
 
   const calculatedAtKst = formatGilgameshKstTimestamp(now);
+  const reflectiveQuestion = question
+    ? `"${question}" 앞에서 제${activeTrial.gateNumber}관문(${activeTrial.nameKo})의 에고 함정을 넘어, 제${secondaryTrial.gateNumber}관문(${secondaryTrial.nameKo})으로 건너가기 위해 오늘 실행할 한 가지는 무엇입니까?`
+    : `지금 마주한 과제에서 '${activeTrial.egoShadowTrap}'을 내려놓고 '${activeTrial.heroicBreakthroughAction}'을 실천한다면 어떤 변화가 열리겠습니까?`;
+  const interpretiveBoundary =
+    '길가메시 서사시 12관문 원형은 삶의 전환기와 내면의 성장을 비추는 서사적·상징적 관점이며, 단정적 미래 예언이나 의학·법률·재무 결정을 대체하지 않습니다.';
   const gilgameshSynthesisMatrix = {
     dominantTension: `제${activeTrial.gateNumber}관문(${activeTrial.nameKo}) ↔ ${activeTrial.egoShadowTrap}`,
-    alignmentState: `${activeTrial.cosmicElement} 원형 · ${soulCompanionType}`,
+    alignmentState: `${activeTrial.cosmicElement} 원형 · 보조 관문 제${secondaryTrial.gateNumber}관문(${secondaryTrial.nameKo}) · ${soulCompanionType}`,
     integratedAction: `${activeTrial.heroicBreakthroughAction}${question ? ` [질문 맥락: ${question}]` : ''}`,
   };
 
@@ -201,25 +210,32 @@ export function calculateSumerianGilgameshTrials(params: {
     calculatedAt: now.toISOString(),
     calculatedAtKst,
     activeTrial,
+    secondaryTrial,
     heroicResilienceScore,
     immortalityWisdomIndex,
     soulCompanionType,
     legacyBuildingPrescription,
+    reflectiveQuestion,
+    interpretiveBoundary,
     gilgameshSynthesisMatrix,
   };
 }
 
 export function formatSumerianGilgameshTrialsPrompt(report: GilgameshTrialsReport): string {
   const t = report.activeTrial;
+  const s = report.secondaryTrial;
   const lines = [
     `### 🏛️ 고대 메소포타미아 길가메시 서사시 12관문 불멸 여정 실측 데이터 (${report.engineVersion})`,
     `- **연산 시각**: ${report.calculatedAtKst}`,
     `- **현재 통과의례 관문**: 제${t.gateNumber}관문 - ${t.nameKo} (${t.nameAkkadian}, ${t.cosmicElement}의 원형)`,
+    `- **보조 교차 관문**: 제${s.gateNumber}관문 - ${s.nameKo} (${s.nameAkkadian}, ${s.cosmicElement}의 원형)`,
     `- **원형적 테마**: ${t.archetypalTheme}`,
     `- **경계해야 할 에고의 함정**: ${t.egoShadowTrap}`,
     `- **영웅적 돌파 행동 처방**: ${t.heroicBreakthroughAction}`,
     `- **영혼의 거울 동반자 (엔키두 원형)**: ${report.soulCompanionType}`,
     `- **마스터 레거시 지침**: ${report.legacyBuildingPrescription}`,
+    `- **성찰 질문**: ${report.reflectiveQuestion}`,
+    `- **해석 경계**: ${report.interpretiveBoundary}`,
   ];
   if (report.gilgameshSynthesisMatrix) {
     lines.push(
