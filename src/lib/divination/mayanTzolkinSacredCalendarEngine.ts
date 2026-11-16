@@ -20,7 +20,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const MAYAN_TZOLKIN_VERSION = 'LUCKEY-MAYAN-TZOLKIN-v2.0.0';
+export const MAYAN_TZOLKIN_VERSION = 'LUCKEY-MAYAN-TZOLKIN-v2.1.0';
 
 export interface SolarSealInfo {
   index: number;            // 0 ~ 19
@@ -58,6 +58,8 @@ export interface MayanTzolkinReport {
   galacticHarmonicResonanceScore: number; // 0 ~ 100 은하 공명 지수
   dailyTzolkinMission: string;            // 오늘의 촐킨 신성 미션
   sacredAltarAction: string;              // 마야 4방위 정렬 행동
+  reflectiveQuestion: string;
+  interpretiveBoundary: string;
   tzolkinSynthesisMatrix?: {
     dominantTension: string;
     alignmentState: string;
@@ -72,7 +74,7 @@ function formatTzolkinKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 KST`;
 }
 
 function describeTzolkinStage(score: number): string {
@@ -193,6 +195,11 @@ export function calculateMayanTzolkinSacredCalendar(params: {
   const sacredAltarAction = `오늘 창가나 책상에서 ${todayKin.seal.directionColor.split(' ')[0]} 방향을 3초간 바라보며, 호흡을 가다듬고 ${todayKin.seal.sacredKeywords}를 조용히 읊조리십시오.`;
 
   const calculatedAtKst = formatTzolkinKstTimestamp(now);
+  const trimmedQuery = params.query?.trim();
+  const reflectiveQuestion = trimmedQuery
+    ? `본명 킨(${birthKin.seal.koreanName})과 오늘의 킨(${todayKin.seal.koreanName})이 맞물린 촐킨의 날에, "${trimmedQuery}"에서 ${todayKin.tone.toneNameKo}의 원리로 가장 먼저 세워야 할 의도는 무엇인가요?`
+    : `오늘의 ${todayKin.seal.directionColor} 기운과 내 본명 킨 '${birthKin.seal.sacredKeywords}'가 만나는 자리에서, 지금 바로 실천할 작은 정렬은 무엇일까요?`;
+  const interpretiveBoundary = '이 지표는 고대 마야 촐킨(Tzolk’in) 260일 신성력의 20 나왈(태양 문양)과 13 은하 톤 체계를 시간 리듬과 내면 성찰의 거울로 해석한 것이며, 구체적 사건의 성패를 단정하는 예언이 아닙니다.';
   const tzolkinSynthesisMatrix = {
     dominantTension: `${birthKin.seal.koreanName} (${birthKin.seal.directionColor}) ↔ ${todayKin.seal.koreanName} (${todayKin.seal.directionColor})`,
     alignmentState: describeTzolkinStage(galacticHarmonicResonanceScore),
@@ -208,6 +215,8 @@ export function calculateMayanTzolkinSacredCalendar(params: {
     galacticHarmonicResonanceScore,
     dailyTzolkinMission,
     sacredAltarAction,
+    reflectiveQuestion,
+    interpretiveBoundary,
     tzolkinSynthesisMatrix,
   };
 }
@@ -224,6 +233,8 @@ export function formatMayanTzolkinSacredCalendarPrompt(report: MayanTzolkinRepor
     `  - 오늘의 창조 파워: ${report.todayKin.tone.creativePower}`,
     `- **오늘의 촐킨 신성 미션**: ${report.dailyTzolkinMission}`,
     `- **마야 4방위 정렬 행동**: ${report.sacredAltarAction}`,
+    `- **성찰 질문**: ${report.reflectiveQuestion}`,
+    `- **해석 경계**: ${report.interpretiveBoundary}`,
   ];
   if (report.tzolkinSynthesisMatrix) {
     lines.push(

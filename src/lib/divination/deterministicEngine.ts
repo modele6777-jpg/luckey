@@ -2060,7 +2060,7 @@ try {
   // 80. 고대 마야 촐킨 260일 신성력 20 나왈 & 13 은하 톤 엔진
   const mayanTzolkinResult = calculateSupplement('mayanTzolkinResult', () => ((() => {
     try {
-      return calculateMayanTzolkinSacredCalendar({ profile, targetDate: now });
+      return calculateMayanTzolkinSacredCalendar({ profile, targetDate: now, query: question });
     } catch (_) {
       return null;
     }
@@ -4794,7 +4794,7 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'mesopotamianSevenGates', nameKo: '메소포타미아 7관문', icon: '🏛️', category: 'deep_master' },
   { key: 'egyptianDecans', nameKo: '이집트 36데칸', icon: '🏺', category: 'deep_master', summary: '덴데라 36데칸 항성 수호신과 원소·부적 상징으로 영혼의 항해 방향을 비추는 관점' },
   { key: 'sufiLataif', nameKo: '수피 7라타이프', icon: '🕌', category: 'deep_master' },
-  { key: 'mayanTzolkin', nameKo: '마야 촐킨 260일', icon: '☀️', category: 'deep_master' },
+  { key: 'mayanTzolkin', nameKo: '마야 촐킨 260일', icon: '☀️', category: 'deep_master', summary: '고대 마야 촐킨(Tzolk’in) 260일 신성력의 20 나왈(태양 문양)과 13 은하 톤으로 본명 킨과 오늘의 킨이 만나는 파동적 사명을 비춥니다.' },
   { key: 'nordicRunes', nameKo: '북유럽 24룬 노른직조', icon: 'ᚱ', category: 'deep_master' },
   { key: 'delphicMaxims', nameKo: '그리스 델포이 147잠언', icon: '🏛️', category: 'deep_master', summary: '아폴론 신전 147대 잠언으로 자아성찰(Gnothi Seauton)·중용(Meden Agan)·신의(Engua)의 균형을 비추는 관점' },
   { key: 'ayurvedicTridosha', nameKo: '인도 아유르베다 도샤', icon: '🌿', category: 'deep_master', summary: '바타·피타·카파 체질과 KST 생체시계 리듬을 맞춰 몸과 마음의 프라나 균형을 돌봅니다.' },
@@ -4870,11 +4870,11 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'alexandrianDecanThirtySixGods', nameKo: '알렉산드리아 36대 데칸', icon: '⌛', category: 'deep_master', summary: '헤르메스주의 36대 데칸 시간 성령의 상징으로 조급한 시계 시간 너머의 결정적 타이밍(카이로스)과 삶의 리듬을 성찰합니다.' },
   { key: 'taoistLieziWindRiding', nameKo: '열자 어풍동행 무하유지향', icon: '🍃', category: 'deep_master' },
   { key: 'samkhyaTwentyFiveTattvas', nameKo: '상키야 25타트바 분별지', icon: '🧘', category: 'deep_master' },
-  { key: 'neoConfucianFourSevenLiQi', nameKo: '성리학 사칠이기 거경궁리', icon: '📜', category: 'deep_master' },
+  { key: 'neoConfucianFourSevenLiQi', nameKo: '성리학 사칠이기 거경궁리', icon: '📜', category: 'deep_master', summary: '성리학의 이기지묘(理氣之妙)와 사단칠정론(四端七情論), 거경궁리·주일무적 수양 원리로 감정의 중절과 본연지성의 중심을 비춥니다.' },
   { key: 'etruscanAugurSixteenSky', nameKo: '에트루리아 16천궁 아우구르', icon: '🦅', category: 'deep_master', summary: '에트루리아 16천궁 템플룸과 아우구르 조점(비행조·음성조) 상징으로 결단 시의를 비추는 관점' },
   { key: 'rosicrucianChymicalWedding', nameKo: '로젠크로이츠 화학적 결혼 7일 연금술', icon: '🌹', category: 'deep_master' },
   { key: 'aztecTonalamatl', nameKo: '아즈텍 토날포왈리 20대 일진 성력', icon: '☀️', category: 'deep_master' },
-  { key: 'mongolianTengriHiimori', nameKo: '몽골 텡그리즘 풍마 히모리 영혼', icon: '🐎', category: 'deep_master' },
+  { key: 'mongolianTengriHiimori', nameKo: '몽골 텡그리즘 풍마 히모리 영혼', icon: '🐎', category: 'deep_master', summary: '몽골 텡그리즘의 영원한 푸른 하늘·에투겐 대지모신과 히모리(바람의 말)·쉴드 영혼의 기백으로 장애를 돌파하는 내면의 힘을 비춥니다.' },
   { key: 'gaelicWheelFireFestivals', nameKo: '게일 4대 화제 축제 휠 오브 더 이어', icon: '🔥', category: 'deep_master', summary: '삼하인·임볼크·벨테인·루나사 4대 화제 축제와 콜리니 역법으로 계절 순환·정화·결실을 비추는 관점' },
   { key: 'norseHavamalEighteenGaldr', nameKo: '하바말 오딘 18대 게알드르 룬 비전', icon: 'ᚱ', category: 'deep_master' },
   { key: 'ibnArabiWahdatAlWujud', nameKo: '이븐 아라비 존재의 단일성 심장 영지', icon: '🪞', category: 'deep_master' },

@@ -21,7 +21,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const MONGOLIAN_TENGRI_HIIMORI_ENGINE_VERSION = '2.0.0';
+export const MONGOLIAN_TENGRI_HIIMORI_ENGINE_VERSION = '2.1.0';
 
 export interface TengriSpiritualAspect {
   id: string;
@@ -42,9 +42,12 @@ export interface MongolianTengriHiimoriReport {
   suldImmortalSpiritPower: number; // 0 ~ 100 쉴드 불멸의 기개와 중심력
   etugenMotherEarthRooting: number; // 0 ~ 100 에투겐 대지모신 그라운딩 안정도
   dominantAspect: TengriSpiritualAspect; // 주재하는 텡그리즘 영적 양상
+  secondaryAspect: TengriSpiritualAspect; // 보조 교차 텡그리즘 영적 양상
   guardianTngriDomain: string; // 99 텡그리 수호 진영
   tengriGuidance: string; // 텡그리즘 지혜 지침
   hiimoriFlagRaisingRitual: string; // 히모리 풍마 깃발 게양 리추얼
+  reflectiveQuestion: string;
+  interpretiveBoundary: string;
   tengriSynthesisMatrix?: {
     dominantTension: string;
     alignmentState: string;
@@ -59,7 +62,7 @@ function formatTengriKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 KST`;
 }
 
 function describeTengriStage(score: number): string {
@@ -153,6 +156,7 @@ export function calculateMongolianTengriHiimori(
 
   aspects.sort((a, b) => b.resonanceScore - a.resonanceScore);
   const dominantAspect = aspects[0];
+  const secondaryAspect = aspects[1];
 
   const hiimoriWindHorseVitalityScore = Math.min(100, Math.max(45, 55 + ((seed * 27) % 43)));
   const tengriBlueSkyResonanceIndex = Math.min(100, Math.max(42, 53 + ((seed * 21) % 45)));
@@ -167,6 +171,11 @@ export function calculateMongolianTengriHiimori(
   const hiimoriFlagRaisingRitual = `높은 언덕이나 창밖 푸른 하늘을 우러르며 양팔을 가볍게 들고 호흡하십시오: "믕케 텡그리인 후츤 도르(Möngke Tengri-yin Küchün-dür - 영원한 하늘의 힘 아래)! 내 안의 풍마 히모리가 세찬 바람을 타고 승리의 깃발을 휘날린다."`;
 
   const calculatedAtKst = formatTengriKstTimestamp(now);
+  const trimmedQuery = question?.trim();
+  const reflectiveQuestion = trimmedQuery
+    ? `푸른 하늘 텡그리의 '${dominantAspect.nameKo}'와 보조 흐름 '${secondaryAspect.nameKo}'를 비추어 볼 때, "${trimmedQuery}"에서 히모리(바람의 말)를 다시 일으키기 위해 놓아야 할 두려움은 무엇인가요?`
+    : `지금 '${dominantAspect.nameKo}'의 기백과 '${secondaryAspect.nameKo}'의 온기를 함께 살려 쉴드(Süld)의 중심을 세우려면 무엇을 먼저 선택해야 할까요?`;
+  const interpretiveBoundary = '이 지표는 몽골 텡그리즘(Tengrism)의 영원한 푸른 하늘·에투겐 대지모신·3대 영혼(쉴드·아미·쉰스)·히모리 풍마 사상을 기백과 내면 중심 성찰의 거울로 해석한 것이며, 구체적 사건의 성패를 단정하는 예언이 아닙니다.';
   const composite = Math.round(
     (hiimoriWindHorseVitalityScore + tengriBlueSkyResonanceIndex + suldImmortalSpiritPower + etugenMotherEarthRooting) / 4
   );
@@ -185,9 +194,12 @@ export function calculateMongolianTengriHiimori(
     suldImmortalSpiritPower,
     etugenMotherEarthRooting,
     dominantAspect,
+    secondaryAspect,
     guardianTngriDomain,
     tengriGuidance,
     hiimoriFlagRaisingRitual,
+    reflectiveQuestion,
+    interpretiveBoundary,
     tengriSynthesisMatrix,
   };
 }
@@ -200,12 +212,15 @@ export function formatMongolianTengriHiimoriPrompt(report: MongolianTengriHiimor
     `### 🐎 몽골 텡그리즘 99 텡그리 & 히모리 풍마 영혼 공명 실측 데이터 (v${report.engineVersion})`,
     `- **연산 시각**: ${report.calculatedAtKst} | **풍마 공명 국면**: ${describeTengriStage(composite)}`,
     `- **주재 천상 영적 양상**: ${report.dominantAspect.nameKo} (${report.dominantAspect.mongolianTerm})`,
+    `- **보조 교차 영적 양상**: ${report.secondaryAspect.nameKo} (${report.secondaryAspect.mongolianTerm})`,
     `- **텡그리즘 관할 영역**: ${report.dominantAspect.tengriDomain}`,
     `- **천상적 권능**: ${report.dominantAspect.heavenlyPower}`,
     `- **영적 축복과 가호**: ${report.dominantAspect.spiritualBlessing}`,
     `- **99 텡그리 수호 진영**: ${report.guardianTngriDomain}`,
     `- **텡그리즘 지혜 지침**: ${report.tengriGuidance}`,
     `- **히모리 풍마 게양 리추얼**: ${report.hiimoriFlagRaisingRitual}`,
+    `- **성찰 질문**: ${report.reflectiveQuestion}`,
+    `- **해석 경계**: ${report.interpretiveBoundary}`,
   ];
   if (report.tengriSynthesisMatrix) {
     lines.push(

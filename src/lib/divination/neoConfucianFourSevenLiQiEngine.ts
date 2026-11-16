@@ -23,7 +23,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const NEO_CONFUCIAN_LIQI_ENGINE_VERSION = 'LUCKEY-NEO-CONFUCIAN-LIQI-v2.0.0';
+export const NEO_CONFUCIAN_LIQI_ENGINE_VERSION = 'LUCKEY-NEO-CONFUCIAN-LIQI-v2.1.0';
 
 export interface SadanVirtueInfo {
   nameKo: string;
@@ -45,7 +45,9 @@ export interface NeoConfucianFourSevenLiQiReport {
   engineVersion: string;
   calculatedAtKst: string;
   dominantSadan: SadanVirtueInfo;
+  secondarySadan: SadanVirtueInfo;
   dominantChiljeong: ChiljeongEmotionInfo;
+  secondaryChiljeong: { nameKo: string; hanja: string; emotionType: string; harmonizationKey: string };
   sadanAlignmentScore: number;         // 0 ~ 100 사단 도덕 발현도
   chiljeongBalanceScore: number;       // 0 ~ 100 칠정 중절(中節) 조화 지수
   liQiHarmonyIndex: number;            // 0 ~ 100 이기지묘(理氣之妙) 밸런스
@@ -53,6 +55,8 @@ export interface NeoConfucianFourSevenLiQiReport {
   geogyeongConcentrationIndex: number; // 0 ~ 100 거경(居敬) 주일무적 집중도
   neoConfucianMasterGuidance: string;
   mindCultivationPrescription: string;
+  reflectiveQuestion: string;
+  interpretiveBoundary: string;
   liQiSynthesisMatrix?: {
     dominantTension: string;
     alignmentState: string;
@@ -67,7 +71,7 @@ function formatNeoConfucianKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 KST`;
 }
 
 function describeLiQiStage(score: number): string {
@@ -151,11 +155,15 @@ export function calculateNeoConfucianFourSevenLiQi(params: {
 
   // 1. Dominant Sadan (Four Beginnings)
   const sadanIdx = seed % SADAN_VIRTUES.length;
+  const secondarySadanIdx = (sadanIdx + 1 + ((seed >> 2) % (SADAN_VIRTUES.length - 1))) % SADAN_VIRTUES.length;
   const dominantSadan = SADAN_VIRTUES[sadanIdx];
+  const secondarySadan = SADAN_VIRTUES[secondarySadanIdx];
 
   // 2. Dominant Chiljeong (Seven Emotions)
   const chiljeongIdx = (seed * 13 + 7) % CHILJEONG_EMOTIONS.length;
+  const secondaryChiljeongIdx = (chiljeongIdx + 1 + ((seed >> 3) % (CHILJEONG_EMOTIONS.length - 1))) % CHILJEONG_EMOTIONS.length;
   const rawChiljeong = CHILJEONG_EMOTIONS[chiljeongIdx];
+  const secondaryChiljeong = CHILJEONG_EMOTIONS[secondaryChiljeongIdx];
 
   const statusSeed = (seed * 7 + day) % 10;
   let moderationStatus: ChiljeongEmotionInfo['moderationStatus'] = '중절(中節·조화)';
@@ -178,6 +186,11 @@ export function calculateNeoConfucianFourSevenLiQi(params: {
   const geogyeongConcentrationIndex = Math.min(100, Math.max(55, Math.round(62 + ((seed * 23 + hour * 7) % 37))));
 
   const calculatedAtKst = formatNeoConfucianKstTimestamp(now);
+  const trimmedQuery = question?.trim();
+  const reflectiveQuestion = trimmedQuery
+    ? `사단 '${dominantSadan.nameKo}'과 보조 덕목 '${secondarySadan.nameKo}'를 비추어 볼 때, "${trimmedQuery}"에서 칠정 '${dominantChiljeong.nameKo}'의 치우침을 중절(中節)로 되돌리는 첫걸음은 무엇인가요?`
+    : `지금 '${dominantSadan.nameKo}'의 본연지성과 '${dominantChiljeong.nameKo}'의 기운 사이에서 주일무적(主一無適)의 중심을 지키려면 무엇을 먼저 정돈해야 할까요?`;
+  const interpretiveBoundary = '이 지표는 성리학의 이기지묘(理氣之妙)·사단칠정론·거경궁리(居敬窮理) 수양론을 감정 조율과 도덕적 성찰의 거울로 해석한 것이며, 구체적 사건의 성패를 단정하는 예언이 아닙니다.';
   const composite = Math.round(
     (sadanAlignmentScore + chiljeongBalanceScore + liQiHarmonyIndex + originalNaturePurityScore + geogyeongConcentrationIndex) / 5
   );
@@ -196,7 +209,9 @@ export function calculateNeoConfucianFourSevenLiQi(params: {
     engineVersion: NEO_CONFUCIAN_LIQI_ENGINE_VERSION,
     calculatedAtKst,
     dominantSadan,
+    secondarySadan,
     dominantChiljeong,
+    secondaryChiljeong,
     sadanAlignmentScore,
     chiljeongBalanceScore,
     liQiHarmonyIndex,
@@ -204,6 +219,8 @@ export function calculateNeoConfucianFourSevenLiQi(params: {
     geogyeongConcentrationIndex,
     neoConfucianMasterGuidance,
     mindCultivationPrescription,
+    reflectiveQuestion,
+    interpretiveBoundary,
     liQiSynthesisMatrix,
   };
 }
@@ -217,12 +234,16 @@ export function formatNeoConfucianFourSevenLiQiPrompt(rep: NeoConfucianFourSeven
     `· 연산 시각: ${rep.calculatedAtKst} | 버전: ${rep.engineVersion}`,
     `· 이기 수양 국면: ${describeLiQiStage(composite)}`,
     `· 주재 사단(四端): [${rep.dominantSadan.nameKo}] — 덕목: ${rep.dominantSadan.cardinalVirtue}`,
+    `· 보조 교차 사단: [${rep.secondarySadan.nameKo}] — 덕목: ${rep.secondarySadan.cardinalVirtue}`,
     `  - 도덕적 의미: ${rep.dominantSadan.meaning}`,
     `  - 실천 행동: ${rep.dominantSadan.moralAction}`,
     `· 감정 칠정(七情) 현황: [${rep.dominantChiljeong.nameKo}] — 조화 상태: ${rep.dominantChiljeong.moderationStatus}`,
+    `· 보조 교차 칠정: [${rep.secondaryChiljeong.nameKo}] — ${rep.secondaryChiljeong.harmonizationKey}`,
     `  - 감정 조율 요체: ${rep.dominantChiljeong.harmonizationKey}`,
     `· 성리학 거경 지침: ${rep.neoConfucianMasterGuidance}`,
     `· 주일무적 마음 수양 처방: ${rep.mindCultivationPrescription}`,
+    `· 성찰 질문: ${rep.reflectiveQuestion}`,
+    `· 해석 경계: ${rep.interpretiveBoundary}`,
   ];
   if (rep.liQiSynthesisMatrix) {
     lines.push(
