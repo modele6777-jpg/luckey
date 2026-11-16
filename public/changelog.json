@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.7.708",
+    "builtAt": "2026-11-17T08:50:00+09:00",
+    "summary": "사비안 심볼·데칸·메디컬 바이오·부의 파이프라인 3대 엔진 성찰 질문 및 카탈로그 뜻 등록(v1.7.708)",
+    "items": [
+      "사비안 심볼·데칸(astrologicalDecanSabianEngine v2.1.0): 질문 반응형 성찰 질문(reflectiveQuestion) 신설 및 summary 등록",
+      "메디컬 바이오 매트릭스(medicalBioMatrixEngine v2.1.0): 질문 반응형 성찰 질문(reflectiveQuestion)·질문 인자 연동 및 summary 등록",
+      "부의 파이프라인(wealthPipelineEngine v2.0.0): 질문 반응형 성찰 질문(reflectiveQuestion)·질문 인자 연동 및 summary 등록"
+    ]
+  },
+  {
     "version": "1.7.707",
     "builtAt": "2026-11-17T08:40:00+09:00",
     "summary": "데칸·사비안·아들러·카프카 3대 엔진 v2.1.0 및 해석 경계 표준 연동(v1.7.707)",

@@ -93,6 +93,7 @@ export interface MedicalBioMatrixResult {
   };
 
   summary: string;
+  reflectiveQuestion?: string;
   bioMatrixSynthesisMatrix?: {
     dominantTension: string;
     alignmentState: string;
@@ -326,6 +327,9 @@ export function calculateMedicalBioMatrix(params?: {
     alignmentState: `태양궁 ${sunFocus.zodiacSign}(${sunFocus.governedBodyPart}) · 달궁 ${moonFocus.zodiacSign}`,
     integratedAction: `${prescriptions.sleepAndRecoveryRitual}${q ? ` [질문 맥락: ${q}]` : ''}`,
   };
+  const reflectiveQuestion = q
+    ? `"${q}"에 몰입하는 동안 오늘 가장 먼저 신호를 보낼 수 있는 ${primaryWeakness.organs}·${moonFocus.governedBodyPart}을 위해 3분만 비워 줄 수 있는 시간은 언제인가요?`
+    : `${primaryConstitution} 체질과 ${primaryWeakness.organs}(${primaryWeakness.status})의 균형을 위해 오늘 밤 취침 전 가장 가볍게 실천할 회복 리추얼 하나는 무엇일까요?`;
 
   return {
     engineVersion: MEDICAL_BIO_MATRIX_VERSION,
@@ -350,6 +354,7 @@ export function calculateMedicalBioMatrix(params?: {
     fatigueRiskLevel,
     prescriptions,
     summary,
+    reflectiveQuestion,
     bioMatrixSynthesisMatrix,
     interpretiveBoundary: '본 바이오 매트릭스 리포트는 오행 한난조습과 메디컬 점성술 상징에 기반한 정성적 웰니스 참고 안내이며, 의학적 진단이나 처방을 대체하지 않습니다.',
   };
@@ -379,6 +384,9 @@ export function formatMedicalBioMatrixPrompt(res: MedicalBioMatrixResult): strin
       `- 교차 매트릭스: [핵심 긴장: ${res.bioMatrixSynthesisMatrix.dominantTension} | 조율 상태: ${res.bioMatrixSynthesisMatrix.alignmentState}]`,
       `  • 통합 실천: ${res.bioMatrixSynthesisMatrix.integratedAction}`,
     );
+  }
+  if (res.reflectiveQuestion) {
+    lines.push(`- 성찰 질문: ${res.reflectiveQuestion}`);
   }
   lines.push(`- 해석 경계: ${res.interpretiveBoundary}`);
   lines.push(`※ 루시 지침: 질병을 의학적으로 진단하지 마십시오. 사주 한난조습과 메디컬 점성술의 오랜 지혜를 바탕으로 사용자의 오늘의 컨디션과 생체 피로도를 따뜻하게 위로하고, 실천 가능한 영양·수면 웰니스 가이드를 다정하게 조언해 주세요.`);

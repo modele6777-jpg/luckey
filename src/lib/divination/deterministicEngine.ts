@@ -1486,7 +1486,7 @@ try {
   const medicalBioMatrixResult = calculateSupplement('medicalBioMatrixResult', () => (birthdateStr && profile
     ? (() => {
         try {
-          return calculateMedicalBioMatrix({ profile, targetDate: now });
+          return calculateMedicalBioMatrix({ profile, targetDate: now, question });
         } catch (_) {
           return null;
         }
@@ -1497,7 +1497,7 @@ try {
   const wealthPipelineResult = calculateSupplement('wealthPipelineResult', () => (birthdateStr && profile
     ? (() => {
         try {
-          return calculateWealthPipeline({ profile, targetDate: now });
+          return calculateWealthPipeline({ profile, targetDate: now, question });
         } catch (_) {
           return null;
         }
@@ -4744,9 +4744,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'dynamicClash', nameKo: '충형파해 동적트리거', icon: '💥', category: 'deep_master', summary: '사주 원국과 일진·세운 지지의 육충·삼형·합국 격발을 포착해 긴장을 창조적 결단으로 승화하는 관점' },
   { key: 'twelveSpirits', nameKo: '12신살 주기', icon: '💫', category: 'deep_master', summary: '삼합국 기반 12신살의 내면·사회 궤도 순환으로 오늘의 추천 페르소나와 핵심 강점·함정을 비추는 관점' },
   { key: 'pythagoreanLifecycle', nameKo: '피타고라스 생애주기', icon: '📐', category: 'deep_master', summary: '피타고라스 4대 피너클과 4대 챌린지, 9년 개인년도 주기로 현재 생애 전환기의 기회와 극복 과제를 짚는 관점' },
-  { key: 'astrologicalDecanSabian', nameKo: '사비안 심볼·데칸', icon: '🔮', category: 'deep_master' },
-  { key: 'medicalBioMatrix', nameKo: '메디컬 바이오 매트릭스', icon: '🩺', category: 'deep_master' },
-  { key: 'wealthPipeline', nameKo: '부의 파이프라인', icon: '💎', category: 'deep_master' },
+  { key: 'astrologicalDecanSabian', nameKo: '사비안 심볼·데칸', icon: '🔮', category: 'deep_master', summary: '서양 점성술 36 데칸 부지배성과 사비안 심볼 360° 원형으로 태양·달·상승궁의 영혼 메타포를 비추는 관점' },
+  { key: 'medicalBioMatrix', nameKo: '메디컬 바이오 매트릭스', icon: '🩺', category: 'deep_master', summary: '사주 오행 한난조습 체질과 서양 메디컬 점성술 장부 매핑으로 취약 부위·피로 리듬·웰니스 처방을 비추는 관점' },
+  { key: 'wealthPipeline', nameKo: '부의 파이프라인', icon: '💎', category: 'deep_master', summary: '사주 십신 재물 아키타입과 금여록·암록·천을귀인 길성으로 수익 엔진과 자금 골든 윈도우를 비추는 관점' },
   { key: 'karmicNodes', nameKo: '카르믹 노드', icon: '🪐', category: 'deep_master' },
   { key: 'mentalResilience', nameKo: '멘탈 리질리언스', icon: '🛡️', category: 'deep_master' },
   { key: 'nobleNetwork', nameKo: '귀인 네트워크', icon: '🤝', category: 'deep_master' },
