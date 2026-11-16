@@ -9025,3 +9025,24 @@ test('Akashic Records, Alchemical Transmutation, and Baopuzi Elixirs v2.1.0 incl
   const baPrompt = formatBaopuziElixirsPrompt(ba);
   assert.ok(baPrompt.includes('해석 경계') && baPrompt.includes('+09:00'));
 });
+
+test('Ayurveda, Gnostic Pistis Sophia, and Hermetic Kybalion v2.1.0 include KST and interpretive boundary', () => {
+  const now = new Date('2026-11-16T00:35:00Z');
+  const ay = calculateAyurvedicTridoshaPrana({ profile, targetDate: now, question: '피로가 쌓이고 잠이 얕아요' });
+  assert.equal(ay.engineVersion, AYURVEDIC_TRIDOSHA_VERSION);
+  assert.ok(ay.calculatedAtKst.endsWith('+09:00'));
+  const ayPrompt = formatAyurvedicTridoshaPranaPrompt(ay);
+  assert.ok(ayPrompt.includes('해석 경계') && ayPrompt.includes('+09:00'));
+
+  const gn = calculateGnosticPistisSophiaPleroma({ profile, question: '혼란 속에서 중심을 잡고 싶어요', now });
+  assert.equal(gn.engineVersion, GNOSTIC_PISTIS_SOPHIA_PLEROMA_ENGINE_VERSION);
+  assert.ok(gn.calculatedAtKst.endsWith('+09:00'));
+  const gnPrompt = formatGnosticPistisSophiaPleromaPrompt(gn);
+  assert.ok(gnPrompt.includes('해석 경계') && gnPrompt.includes('+09:00'));
+
+  const ky = calculateHermeticKybalion(profile, now, '중요한 결정을 앞두고 마음이 흔들려요');
+  assert.equal(ky.engineVersion, HERMETIC_KYBALION_VERSION);
+  assert.ok(ky.calculatedAtKst.endsWith('+09:00'));
+  const kyPrompt = formatHermeticKybalionPrompt(ky);
+  assert.ok(kyPrompt.includes('해석 경계') && kyPrompt.includes('+09:00'));
+});

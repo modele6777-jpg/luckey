@@ -11,7 +11,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const HERMETIC_KYBALION_VERSION = 'LUCKEY-HERMETIC-KYBALION-v2.0.0';
+export const HERMETIC_KYBALION_VERSION = 'LUCKEY-HERMETIC-KYBALION-v2.1.0';
 
 export type KybalionQuestionFocus = 'career' | 'relationship' | 'anxiety' | 'decision' | 'spiritual';
 
@@ -49,6 +49,7 @@ export interface KybalionSynthesisMatrix {
 export interface HermeticKybalionReport {
   engineVersion: string;
   calculatedAt: string;
+  calculatedAtKst: string;
   questionFocus: KybalionQuestionFocus;
   masterPrinciple: {
     nameKo: string;
@@ -279,9 +280,13 @@ export function calculateHermeticKybalion(
     synthesizedVerdict: `${master.nameKo}와 ${temporalPendulumRhythm.pendulumWindow}이 맞물려, [${chosenDuality.shift}]를 실천할 때 리듬의 주도권을 회복합니다.`,
   };
 
+  const kst = new Date(targetDate.getTime() + 9 * 60 * 60 * 1000);
+  const calculatedAtKst = `${kst.toISOString().slice(0, 19)}+09:00`;
+
   return {
     engineVersion: HERMETIC_KYBALION_VERSION,
     calculatedAt: targetDate.toISOString(),
+    calculatedAtKst,
     questionFocus,
     masterPrinciple: {
       nameKo: master.nameKo,
@@ -310,6 +315,7 @@ export function formatHermeticKybalionPrompt(rep: HermeticKybalionReport): strin
 
   return `[헤르메스 카이발리온 7대 우주 불변 법칙 리포트 (The Kybalion Principles)]
 - 엔진 버전: ${rep.engineVersion}
+- 연산 시각: ${rep.calculatedAtKst}
 - 현재 주도 우주 원리: ${rep.masterPrinciple.nameKo} (${rep.masterPrinciple.nameEn})
   • 핵심 통찰: "${rep.masterPrinciple.coreInsight}"
   • 정신 연금술 키: ${rep.masterPrinciple.alchemicalKey}
@@ -328,5 +334,6 @@ export function formatHermeticKybalionPrompt(rep: HermeticKybalionReport): strin
 ${principlesStr}
 - 카이발리온 교차 종합: ${rep.kybalionSynthesisMatrix.synthesizedVerdict}
 - 행동 지침: ${rep.hermeticWisdomDirective}
+- 해석 경계: 본 리포트는 《카이발리온》 7대 우주 원리 상징에 기반한 정성적 성찰 안내이며, 확정적 예언이 아닙니다.
 ※ 상담 시 수치 점수를 언급하지 말고, 내담자가 겪는 외적 고민을 '원인과 결과', '극성', '리듬' 등 우주 법칙의 상호작용 관점에서 조망해 주어 스스로 삶의 통제권을 회복하도록 이끌어주세요.`;
 }
