@@ -15,7 +15,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const TAOIST_LIEZI_ENGINE_VERSION = '2.0.0';
+export const TAOIST_LIEZI_ENGINE_VERSION = '2.1.0';
 
 function formatLieziKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -24,7 +24,7 @@ function formatLieziKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
 }
 
 export interface LieziWindStage {
@@ -49,6 +49,8 @@ export interface TaoistLieziWindRidingReport {
   secondaryStage: LieziWindStage;
   lieziWindDecree: string; // 열자 어풍 지혜 선언
   wuweiActionMeditation: string; // 무위자연 행동 명상
+  reflectiveQuestion: string; // 내담자 성찰 질문
+  interpretiveBoundary: string; // 상징 해석 경계 고지
   lieziSynthesisMatrix?: {
     dominantTension: string;
     alignmentState: string;
@@ -153,6 +155,11 @@ export function calculateTaoistLieziWindRiding(
 
   const calculatedAtKst = formatLieziKstTimestamp(now);
   const q = question.trim();
+  const reflectiveQuestion = q
+    ? `"${q}" 앞에서 [${dominantStage.nameHanja}]의 바람을 타기 위해, 보조 심법 [${secondaryStage.nameHanja}]에서 오늘 먼저 내려놓을 집착은 무엇입니까?`
+    : `${dominantStage.nameKo}의 흐름 속에서 힘을 빼고 순풍에 몸을 맡길 때, 지금 가장 먼저 멈출 수 있는 쓸데없는 애씀은 무엇입니까?`;
+  const interpretiveBoundary =
+    '도가 열자 어풍동행·무하유지향 상징은 마음의 집착을 덜고 순리에 맞추는 태도를 돌아보기 위한 은유적 관점이며, 단정적 미래 예측이나 의학·법률·재무 판단을 대체하지 않습니다.';
   const lieziSynthesisMatrix = {
     dominantTension: `${dominantStage.nameHanja} ↔ ${secondaryStage.nameHanja}`,
     alignmentState: `심신 영역: ${dominantStage.mindCultivationDomain}`,
@@ -171,6 +178,8 @@ export function calculateTaoistLieziWindRiding(
     secondaryStage,
     lieziWindDecree,
     wuweiActionMeditation,
+    reflectiveQuestion,
+    interpretiveBoundary,
     lieziSynthesisMatrix,
   };
 }
@@ -185,7 +194,9 @@ export function formatTaoistLieziWindRidingPrompt(rep: TaoistLieziWindRidingRepo
   - 심신 영역: ${rep.dominantStage.mindCultivationDomain}
   - 어풍 권능: ${rep.dominantStage.windRidingPower}
   - 초월 지침: ${rep.dominantStage.transcendenceGuidance}
-· 보조 심법: [${rep.secondaryStage.nameHanja} (${rep.secondaryStage.nameKo})]
+· 보조 교차 심법: [${rep.secondaryStage.nameHanja} (${rep.secondaryStage.nameKo})]
 · 열자 어풍 지혜 선언: ${rep.lieziWindDecree}
-· 무위자연 행동 명상: ${rep.wuweiActionMeditation}${matrixLine}`;
+· 무위자연 행동 명상: ${rep.wuweiActionMeditation}${matrixLine}
+· 성찰 질문: ${rep.reflectiveQuestion}
+· 해석 경계: ${rep.interpretiveBoundary}`;
 }

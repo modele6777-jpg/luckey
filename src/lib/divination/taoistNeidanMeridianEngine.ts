@@ -20,7 +20,7 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const TAOIST_NEIDAN_VERSION = 'LUCKEY-TAOIST-NEIDAN-v2.0.0';
+export const TAOIST_NEIDAN_VERSION = 'LUCKEY-TAOIST-NEIDAN-v2.1.0';
 
 function formatNeidanKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -29,7 +29,7 @@ function formatNeidanKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
 }
 
 export interface ThreeTreasuresLevel {
@@ -54,6 +54,11 @@ export interface TaoistNeidanMeridianReport {
   dantianArchetype: string;       // 단전 에너지 아키타입
   threeTreasures: ThreeTreasuresLevel;
   meridianCirculation: MeridianCirculationStatus;
+  secondaryMeridian: {
+    activeMeridianName: string;
+    meridianOrganSystem: string;
+    optimalTimeWindow: string;
+  };
   neidanBreathingPrescription: {
     methodName: string;
     targetDantian: string;        // 하단전 / 중단전 / 상단전
@@ -62,6 +67,8 @@ export interface TaoistNeidanMeridianReport {
   };
   taoistAlchemyWisdom: string;
   synthesisPromptGuidance: string;
+  reflectiveQuestion: string;
+  interpretiveBoundary: string;
   neidanSynthesisMatrix?: {
     dominantTension: string;
     alignmentState: string;
@@ -102,6 +109,12 @@ export function runTaoistNeidanMeridianEngine(
   ];
 
   const currentMeridian = meridians[timeSlot % 12];
+  const nextMeridian = meridians[(timeSlot + 1) % 12];
+  const secondaryMeridian = {
+    activeMeridianName: nextMeridian.name,
+    meridianOrganSystem: nextMeridian.organ,
+    optimalTimeWindow: nextMeridian.window,
+  };
 
   // 수리 연산 시드
   const ganCode = dayMaster.charCodeAt(0) + dayBranch.charCodeAt(0);
@@ -168,9 +181,14 @@ export function runTaoistNeidanMeridianEngine(
   const meridianVitalityIndex = 80 + (seed % 18);
   const calculatedAtKst = formatNeidanKstTimestamp(targetDate);
   const q = (question || '').trim();
+  const reflectiveQuestion = q
+    ? `"${q}" 앞에서 ${currentMeridian.name}의 흐름을 다스리며 다음 시진 ${nextMeridian.name}으로 넘어가기 위해, 지금 호흡으로 가라앉힐 긴장은 무엇입니까?`
+    : `${dantianArchetype}의 중심을 세우면서 ${methodName}을 3분 실천할 때, 오늘 가장 먼저 쉬게 해 줄 몸과 마음의 부위는 어디입니까?`;
+  const interpretiveBoundary =
+    '도교 내단 삼보(정·기·신)와 자오유주 경락 시계 상징은 호흡과 일상 리듬을 돌보기 위한 양생적 관점이며, 단정적 미래 예측이나 의학적 진단·처방을 대체하지 않습니다.';
   const neidanSynthesisMatrix = {
     dominantTension: `${dantianArchetype} ↔ ${currentMeridian.name}`,
-    alignmentState: `연단 단계: ${predominantTreasureState} · 관문: ${microcosmicOrbitGate}`,
+    alignmentState: `연단 단계: ${predominantTreasureState} · 보조 경락: ${nextMeridian.name} · 관문: ${microcosmicOrbitGate}`,
     integratedAction: `${methodName} (${targetDantian}) — ${practiceSteps}${q ? ` [질문 맥락: ${q}]` : ''}`,
   };
 
@@ -180,12 +198,15 @@ export function runTaoistNeidanMeridianEngine(
   * 연단 단계: ${predominantTreasureState}
 - 자오유주(子午流注) 경락 시계:
   * 현재 주도 경락: ${currentMeridian.name} (${currentMeridian.organ})
+  * 보조 교차 경락: ${nextMeridian.name} (${nextMeridian.organ} · ${nextMeridian.window})
   * 최적 활성 시간: ${currentMeridian.window}
   * 소주천 집중 관문: ${microcosmicOrbitGate}
 - 내단 기공 호흡 처방: [${methodName}] (${targetDantian}, 약 3분)
   * 실천법: ${practiceSteps}
 - 도가 양생 지혜: "${taoistAlchemyWisdom}"
-- 내단 교차 매트릭스: 핵심 긴장(${neidanSynthesisMatrix.dominantTension}) · 조율 상태(${neidanSynthesisMatrix.alignmentState}) · 통합 실천(${neidanSynthesisMatrix.integratedAction})`;
+- 내단 교차 매트릭스: 핵심 긴장(${neidanSynthesisMatrix.dominantTension}) · 조율 상태(${neidanSynthesisMatrix.alignmentState}) · 통합 실천(${neidanSynthesisMatrix.integratedAction})
+- 성찰 질문: ${reflectiveQuestion}
+- 해석 경계: ${interpretiveBoundary}`;
 
   return {
     engineVersion: TAOIST_NEIDAN_VERSION,
@@ -205,6 +226,7 @@ export function runTaoistNeidanMeridianEngine(
       microcosmicOrbitGate,
       meridianVitalityIndex
     },
+    secondaryMeridian,
     neidanBreathingPrescription: {
       methodName,
       targetDantian,
@@ -213,6 +235,8 @@ export function runTaoistNeidanMeridianEngine(
     },
     taoistAlchemyWisdom,
     synthesisPromptGuidance,
+    reflectiveQuestion,
+    interpretiveBoundary,
     neidanSynthesisMatrix,
   };
 }

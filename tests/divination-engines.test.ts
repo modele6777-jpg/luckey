@@ -2847,9 +2847,12 @@ test('Sacred Vortex Geometry Engine: 황금비 영혼 수비학 & 보텍스 기�
 test('Taoist Neidan Meridian Engine: 도교 내단 양생 & 진기 순환 경락 시계 검증', () => {
   const res = calculateTaoistNeidanMeridian({ profile, targetDate: new Date('2026-11-04T10:00:00+09:00'), question: '기혈 순환' });
   assert.equal(res.engineVersion, TAOIST_NEIDAN_VERSION);
-  assert(res.calculatedAtKst.endsWith('KST'));
+  assert(res.calculatedAtKst.includes('+09:00 (KST)'));
   assert(Boolean(res.neidanSynthesisMatrix?.integratedAction));
   assert(res.dantianArchetype.length > 0);
+  assert(res.secondaryMeridian.activeMeridianName.length > 0);
+  assert(res.reflectiveQuestion.length > 0);
+  assert(res.interpretiveBoundary.includes('예측'));
   assert(res.threeTreasures.jingLevelScore >= 0 && res.threeTreasures.jingLevelScore <= 100);
   assert(res.threeTreasures.qiLevelScore >= 0 && res.threeTreasures.qiLevelScore <= 100);
   assert(res.threeTreasures.shenLevelScore >= 0 && res.threeTreasures.shenLevelScore <= 100);
@@ -2858,6 +2861,9 @@ test('Taoist Neidan Meridian Engine: 도교 내단 양생 & 진기 순환 경락
   const prompt = formatTaoistNeidanMeridianPrompt(res);
   assert(prompt.includes('LUCKEY 도교 내단 양생 & 진기 순환 경락 시계'));
   assert(prompt.includes(res.dantianArchetype));
+  assert(prompt.includes('보조 교차 경락'));
+  assert(prompt.includes('성찰 질문'));
+  assert(prompt.includes('해석 경계'));
   assert(prompt.includes('교차 매트릭스'));
   assert(!prompt.includes('/100'));
 });
@@ -3569,14 +3575,20 @@ test('Babylonian Enuma Elish & Tablets of Destiny Engine: calculates patron deit
 test('Taoist Huangting Jing Internal Palaces Engine: calculates palaces, guardian spirit and prescription', () => {
   const rep = calculateTaoistHuangtingJing(profile, { question: '내면 양생' });
   assert.equal(rep.engineVersion, TAOIST_HUANGTING_VERSION);
-  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(rep.calculatedAtKst.includes('+09:00 (KST)'));
   assert(Boolean(rep.huangtingSynthesisMatrix?.integratedAction));
   assert(rep.palaces.dominantPalace.length > 0);
   assert(rep.guardianSpirit.spiritName.length > 0);
+  assert(rep.secondarySpirit.spiritName.length > 0);
+  assert(rep.reflectiveQuestion.length > 0);
+  assert(rep.interpretiveBoundary.includes('예측'));
   assert(rep.illuminationScore >= 0 && rep.illuminationScore <= 100);
   const prompt = formatTaoistHuangtingJingPrompt(rep);
   assert(prompt.includes('도교 상청파 황정경(黃庭經) 신체 오장 신성좌 & 존사 엔진'));
   assert(prompt.includes(rep.guardianSpirit.spiritName));
+  assert(prompt.includes('보조 교차 진신'));
+  assert(prompt.includes('성찰 질문'));
+  assert(prompt.includes('해석 경계'));
   assert(prompt.includes('교차 매트릭스'));
   assert(!prompt.includes('/100'));
 });
@@ -4664,16 +4676,22 @@ test('Alexandrian Decan Thirty Six Gods Engine: provides qualitative Kairos post
 test('Taoist Liezi Wind Riding Engine: calculates wind riding unity, Muhayu rest index and tranquil emptiness', () => {
   const rep = calculateTaoistLieziWindRiding({ profile, question: '열자 어풍동행 무하유지향' });
   assert.equal(rep.engineVersion, TAOIST_LIEZI_ENGINE_VERSION);
-  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(rep.calculatedAtKst.includes('+09:00 (KST)'));
   assert(Boolean(rep.lieziSynthesisMatrix?.integratedAction));
   assert(rep.windRidingUnityScore >= 0 && rep.windRidingUnityScore <= 100);
   assert(rep.muhayuRestIndex >= 0 && rep.muhayuRestIndex <= 100);
   assert(rep.tranquilEmptinessScore >= 0 && rep.tranquilEmptinessScore <= 100);
   assert(rep.nonAttachmentFluidityRate >= 0 && rep.nonAttachmentFluidityRate <= 100);
   assert(rep.dominantStage.nameKo.length > 0);
+  assert(rep.secondaryStage.nameKo.length > 0);
+  assert(rep.reflectiveQuestion.length > 0);
+  assert(rep.interpretiveBoundary.includes('예측'));
   const prompt = formatTaoistLieziWindRidingPrompt(rep);
   assert(prompt.includes('도가 열자 어풍동행 & 무하유지향 진인 유유자적 실측 데이터'));
   assert(prompt.includes(rep.dominantStage.nameKo));
+  assert(prompt.includes('보조 교차 심법'));
+  assert(prompt.includes('성찰 질문'));
+  assert(prompt.includes('해석 경계'));
   assert(prompt.includes('교차 매트릭스'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
