@@ -14,7 +14,7 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const ETHERIC_AURA_VERSION = 'LUCKEY-ETHERIC-AURA-v2.0.0';
+export const ETHERIC_AURA_VERSION = 'LUCKEY-ETHERIC-AURA-v2.1.0';
 
 export interface AuraLayerSpectrum {
   primaryLayerName: string;
@@ -54,6 +54,7 @@ export interface AuraSynthesisMatrix {
 export interface EthericAuraBiofieldReport {
   engineVersion: string;
   calculatedAt: string;
+  calculatedAtKst: string;
   auraBiofieldTitle: string;
   spectrum: AuraLayerSpectrum;
   shielding: BiofieldShieldingDiagnosis;
@@ -61,6 +62,7 @@ export interface EthericAuraBiofieldReport {
   temporalAuraRhythm: AuraTemporalRhythm;
   auraSynthesisMatrix: AuraSynthesisMatrix;
   dailyAuraCareGuidance: string;
+  interpretiveBoundary: string;
   synthesisPromptGuidance: string;
 }
 
@@ -215,7 +217,12 @@ export function runEthericAuraBiofieldEngine(
     nextShieldingStep,
   };
 
-  const synthesisPromptGuidance = `[LUCKEY 에테르 오라 생체장 & 쉴딩 v2.0.0]
+  const kst = new Date(targetDate.getTime() + 9 * 60 * 60 * 1000);
+  const calculatedAtKst = `${kst.toISOString().slice(0, 19)}+09:00`;
+  const interpretiveBoundary = '본 에테르 오라 생체장 리포트는 오행·명상 원형에 기반한 정성적 자기 돌봄 안내이며, 의학적 진단이나 전자기장 측정을 대신하지 않습니다.';
+
+  const synthesisPromptGuidance = `[LUCKEY 에테르 오라 생체장 & 쉴딩 v2.1.0]
+- 기준 시각(KST): ${calculatedAtKst}
 - 오라 생체장 스펙트럼: [${auraBiofieldTitle}]
   * 주 활성 층위: ${primaryLayerName}
   * 주 발광 색채: ${primaryColor}
@@ -231,11 +238,13 @@ export function runEthericAuraBiofieldEngine(
 - KST 시공간 리듬 (${temporalAuraRhythm.kstHour}시): ${temporalAuraRhythm.biofieldWindow} · ${temporalAuraRhythm.seasonalElementBalance} (${temporalAuraRhythm.shieldTempo})
   * 시간대 지침: ${temporalAuraRhythm.careDirective}
 - 오라 교차 매트릭스: ${spectrumShieldLink}
-- 오라 보호 확언: "${shieldingAffirmation}"`;
+- 오라 보호 확언: "${shieldingAffirmation}"
+- 해석 경계: ${interpretiveBoundary}`;
 
   return {
     engineVersion: ETHERIC_AURA_VERSION,
     calculatedAt: targetDate.toISOString(),
+    calculatedAtKst,
     auraBiofieldTitle,
     spectrum: {
       primaryLayerName,
@@ -253,6 +262,7 @@ export function runEthericAuraBiofieldEngine(
     temporalAuraRhythm,
     auraSynthesisMatrix,
     dailyAuraCareGuidance,
+    interpretiveBoundary,
     synthesisPromptGuidance
   };
 }
