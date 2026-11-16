@@ -3924,6 +3924,7 @@ test('Arabic Ilm al-Raml Engine: calculates 16 geomantic figures and Qadi verdic
   assert(rep.calculatedAtKst.includes('KST'));
   assert(rep.temporalRamlRhythm.geomanticWatchWindow.length > 0);
   assert(rep.ramlSynthesisMatrix.coreInsight.length > 0);
+  assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatArabicIlmAlRamlPrompt(rep);
   assert(prompt.includes('고대 아랍 일무 알-람말(‘Ilm al-Raml) 16 형상 & 지오맨시(Geomancy) 지혜 실측 데이터'));
   assert(prompt.includes(rep.figureNameLatin));
@@ -5577,6 +5578,7 @@ test('Ancient Persian Zoroastrian Amesha Spentas Engine: calculates Vohu Manah, 
   assert(rep.situationalAvestaAudit.gathasCitation.length > 0);
   assert(rep.temporalAtarRhythm.gahWatchWindow.length > 0);
   assert(rep.ameshaSynthesisMatrix.synthesizedVerdict.length > 0);
+  assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatZoroastrianAmeshaSpentasPrompt(rep);
   assert(prompt.includes('고대 페르시아 조로아스터교 《아베스타(Avesta)》'));
   assert(prompt.includes(rep.activeSpentaStage.stageNameKo));
@@ -6978,6 +6980,7 @@ test('Plotinus Enneads Henosis Engine: calculates The One, Nous, Psyche, Henosis
   assert(rep.henosisMysticAscentUnionIndex >= 0 && rep.henosisMysticAscentUnionIndex <= 100);
   assert(rep.innerBeautySculptingVirtueScore >= 0 && rep.innerBeautySculptingVirtueScore <= 100);
   assert(rep.activePlotinusTheme.themeTitleKo.length > 0);
+  assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatAncientGreekPlotinusEnneadsHenosisPrompt(rep);
   assert(prompt.includes('플로티노스 《엔네아데스》 일자유출설 & 영적 귀환 지표'));
   assert(prompt.includes(rep.activePlotinusTheme.themeTitleKo));
