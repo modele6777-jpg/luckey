@@ -24,7 +24,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const MESOPOTAMIAN_GATES_VERSION = 'LUCKEY-MESO-GATES-v2.0.0';
+export const MESOPOTAMIAN_GATES_VERSION = 'LUCKEY-MESO-GATES-v2.1.0';
 
 export interface PlanetaryGateInfo {
   gateNumber: number;
@@ -50,6 +50,7 @@ export interface MesopotamianSevenGatesReport {
     alignmentState: string;
     integratedAction: string;
   };
+  interpretiveBoundary: string;
 }
 
 function formatSevenGatesKstTimestamp(now: Date = new Date()): string {
@@ -193,6 +194,7 @@ export function calculateMesopotamianSevenGates(
     sevenGatesOracleGuidance,
     ancientSumerianBlessing,
     sevenGatesSynthesisMatrix,
+    interpretiveBoundary: '본 메소포타미아 7대 행성 관문 리포트는 인안나 신화 상징에 기반한 정성적 내면 성찰 안내이며, 현실 사건의 확정적 예언이 아닙니다.',
   };
 }
 
@@ -216,5 +218,6 @@ export function formatMesopotamianSevenGatesPrompt(report: MesopotamianSevenGate
       `- **통합 실천**: ${report.sevenGatesSynthesisMatrix.integratedAction}`,
     );
   }
+  lines.push(`- **해석 경계**: ${report.interpretiveBoundary}`);
   return lines.join('\n');
 }

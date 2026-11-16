@@ -2233,6 +2233,7 @@ test('Mental Resilience Engine: 위기 돌파 슈퍼파워 및 주역 난괘 탈
   assert.equal(res.engineVersion, MENTAL_RESILIENCE_VERSION);
   assert(res.calculatedAtKst.endsWith('KST'));
   assert(Boolean(res.resilienceSynthesisMatrix?.integratedAction));
+  assert(res.interpretiveBoundary.length > 0);
   assert(res.resilienceScore >= 0 && res.resilienceScore <= 100);
   assert(res.primaryBreakthroughPower.breakthroughGift.length > 0);
   assert(res.hexagramWisdom.escapeRoute.length > 0);
@@ -2241,7 +2242,7 @@ test('Mental Resilience Engine: 위기 돌파 슈퍼파워 및 주역 난괘 탈
   assert(prompt.includes(MENTAL_RESILIENCE_VERSION));
   assert(prompt.includes('위기 돌파 슈퍼파워'));
   assert(prompt.includes('멘탈 쉴드'));
-  assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('교차 매트릭스') && prompt.includes('해석 경계'));
   assert(!prompt.includes('/100'));
 });
 
@@ -2595,6 +2596,7 @@ test('Micro-Habit Karma Engine: 21일 카르마 리셋 & 오행 마이크로 해
   assert.equal(res.engineVersion, MICRO_HABIT_KARMA_VERSION);
   assert(res.calculatedAtKst.endsWith('KST'));
   assert(Boolean(res.microHabitSynthesisMatrix?.integratedAction));
+  assert(res.interpretiveBoundary.length > 0);
   assert(res.neuroplasticityScore >= 0 && res.neuroplasticityScore <= 100);
   assert(res.karmaStreakIndex >= 0 && res.karmaStreakIndex <= 100);
   assert(res.microHabit.twoMinuteAction.length > 0);
@@ -2602,7 +2604,7 @@ test('Micro-Habit Karma Engine: 21일 카르마 리셋 & 오행 마이크로 해
   const prompt = formatMicroHabitKarmaPrompt(res);
   assert(prompt.includes('LUCKEY 21일 카르마 리셋 & 오행 마이크로 해빗'));
   assert(prompt.includes(res.archetype));
-  assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('교차 매트릭스') && prompt.includes('해석 경계'));
   assert(!prompt.includes('/100'));
 });
 
@@ -3258,10 +3260,11 @@ test('Mesopotamian Seven Gates Engine: calculates planetary gate and resurrectio
   assert(rep.liberationTask.length > 0);
   assert(rep.calculatedAtKst.endsWith('KST'));
   assert(Boolean(rep.sevenGatesSynthesisMatrix?.integratedAction));
+  assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatMesopotamianSevenGatesPrompt(rep);
   assert(prompt.includes('고대 메소포타미아 7대 행성 관문'));
   assert(prompt.includes(rep.activeGate.gateNameAkkadian));
-  assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('교차 매트릭스') && prompt.includes('해석 경계'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });

@@ -16,7 +16,7 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const MICRO_HABIT_KARMA_VERSION = 'LUCKEY-HABIT-v2.0.0';
+export const MICRO_HABIT_KARMA_VERSION = 'LUCKEY-HABIT-v2.1.0';
 
 function formatMicroHabitKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -61,6 +61,7 @@ export interface MicroHabitKarmaReport {
     alignmentState: string;
     integratedAction: string;
   };
+  interpretiveBoundary: string;
 }
 
 export function runMicroHabitKarmaEngine(
@@ -155,6 +156,8 @@ export function runMicroHabitKarmaEngine(
     integratedAction: `${microHabit.twoMinuteAction}${q ? ` [질문 맥락: ${q}]` : ''}`,
   };
 
+  const interpretiveBoundary = '본 21일 카르마 리셋 & 오행 마이크로 해빗 리포트는 오행 체질과 행동 습관 이론에 기반한 정성적 자기관리 안내이며, 의학·임상 처방이 아닙니다.';
+
   const synthesisPromptGuidance = `[LUCKEY 21일 카르마 리셋 & 오행 마이크로 해빗 ${MICRO_HABIT_KARMA_VERSION} | ${calculatedAtKst}]
 - 습관 카르마 아키타입: [${archetype}]
 - 오행 맞춤 2분 마이크로 액션: [${microHabit.elementTheme}] ${microHabit.twoMinuteAction}
@@ -163,7 +166,8 @@ export function runMicroHabitKarmaEngine(
 - 정체성 각인 선언: ${microHabit.habitIdentityAffirmation}
 - 21일 안착 로드맵: [1~7일] ${twentyOneDayMilestone.days1to7} | [8~14일] ${twentyOneDayMilestone.days8to14} | [15~21일] ${twentyOneDayMilestone.days15to21}
 - 교차 매트릭스: [핵심 긴장: ${microHabitSynthesisMatrix.dominantTension} | 조율 상태: ${microHabitSynthesisMatrix.alignmentState}]
-  • 통합 실천: ${microHabitSynthesisMatrix.integratedAction}`;
+  • 통합 실천: ${microHabitSynthesisMatrix.integratedAction}
+- 해석 경계: ${interpretiveBoundary}`;
 
   return {
     engineVersion: MICRO_HABIT_KARMA_VERSION,
@@ -176,6 +180,7 @@ export function runMicroHabitKarmaEngine(
     twentyOneDayMilestone,
     synthesisPromptGuidance,
     microHabitSynthesisMatrix,
+    interpretiveBoundary,
   };
 }
 
