@@ -23,7 +23,7 @@
 import type { UserProfile } from '../sharedState';
 import { calculateDetailedSaju, type SajuAnalysisResult } from '../sajuAnalysis';
 
-export const SPATIAL_FENGSHUI_VERSION = 'LUCKEY-SFSE-v2.0.0';
+export const SPATIAL_FENGSHUI_VERSION = 'LUCKEY-SFSE-v2.1.0';
 
 function formatSpatialKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -93,6 +93,7 @@ export interface SpatialFengshuiResult {
     alignmentState: string;
     integratedAction: string;
   };
+  interpretiveBoundary: string;
 }
 
 // 8대 방위 기본 정의
@@ -317,6 +318,8 @@ export function calculateSpatialFengshui(options?: {
     integratedAction: `${topGolden.recommendedActivity}${q ? ` [질문 맥락: ${q}]` : ''}`,
   };
 
+  const interpretiveBoundary = '본 동양 풍수·점성술 공간 길방위 리포트는 기문둔갑 팔문과 사주 오행 상징에 기반한 정성적 공간 배치 참고용이며, 부동산·투자·건축의 절대적 기준이 아닙니다.';
+
   return {
     engineVersion: SPATIAL_FENGSHUI_VERSION,
     calculatedAtUtc: nowUtcIso,
@@ -335,6 +338,7 @@ export function calculateSpatialFengshui(options?: {
     hazardousDirections,
     todayTopGoldenDirection,
     spatialSynthesisMatrix,
+    interpretiveBoundary,
   };
 }
 
@@ -360,8 +364,8 @@ export function formatSpatialFengshuiPrompt(res: SpatialFengshuiResult): string 
   ).join('\n');
 
   const matrixLine = res.spatialSynthesisMatrix
-    ? `\n4. [공간 교차 매트릭스]:\n   - 핵심 긴장: ${res.spatialSynthesisMatrix.dominantTension}\n   - 조율 상태: ${res.spatialSynthesisMatrix.alignmentState}\n   - 통합 실천: ${res.spatialSynthesisMatrix.integratedAction}\n`
-    : '';
+    ? `\n4. [공간 교차 매트릭스]:\n   - 핵심 긴장: ${res.spatialSynthesisMatrix.dominantTension}\n   - 조율 상태: ${res.spatialSynthesisMatrix.alignmentState}\n   - 통합 실천: ${res.spatialSynthesisMatrix.integratedAction}\n   - 해석 경계: ${res.interpretiveBoundary}\n`
+    : `\n4. [해석 경계]: ${res.interpretiveBoundary}\n`;
 
   return `[🧭 동양 풍수 & 서양 점성술 공간 길방위 실측 데이터 (Astro-FengShui Spatial Core)]
 ======================================================================
