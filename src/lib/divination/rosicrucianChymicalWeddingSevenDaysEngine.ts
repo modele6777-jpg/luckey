@@ -18,7 +18,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const ROSICRUCIAN_CHYMICAL_WEDDING_ENGINE_VERSION = '2.0.0';
+export const ROSICRUCIAN_CHYMICAL_WEDDING_ENGINE_VERSION = '2.1.0';
 
 export interface RosicrucianAlchemicalStage {
   dayNumber: number;
@@ -47,6 +47,7 @@ export interface RosicrucianChymicalWeddingReport {
     alignmentState: string;
     integratedAction: string;
   };
+  interpretiveBoundary: string;
 }
 
 function formatRosicrucianKstTimestamp(now: Date = new Date()): string {
@@ -200,6 +201,7 @@ export function calculateRosicrucianChymicalWedding(
     rosicrucianGuidance,
     alchemicalTransmutationRitual,
     rosicrucianSynthesisMatrix,
+    interpretiveBoundary: '본 장미십자회 화학적 결혼 리포트는 17세기 연금술 상징 체계에 기반한 정성적 내면 성찰 안내이며, 의학·심리 치료를 대신하지 않습니다.',
   };
 }
 
@@ -224,5 +226,6 @@ export function formatRosicrucianChymicalWeddingPrompt(report: RosicrucianChymic
       `- **통합 실천**: ${report.rosicrucianSynthesisMatrix.integratedAction}`,
     );
   }
+  lines.push(`- **해석 경계**: ${report.interpretiveBoundary}`);
   return lines.join('\n');
 }
