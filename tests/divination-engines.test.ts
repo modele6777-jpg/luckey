@@ -9460,3 +9460,36 @@ test('Adorno, Hawaiian Huna, and Kahuna Three Selves v2.1.0 include +09:00 KST, 
   const khPrompt = formatHawaiianKahunaThreeSelvesPrompt(kh);
   assert.ok(khPrompt.includes('+09:00') && khPrompt.includes('보조 조율 축') && khPrompt.includes('성찰 질문') && khPrompt.includes('해석 경계'));
 });
+
+test('Egyptian Hermetic Cartouche, Essene Communion, and Greek Moirai v2.1.0 include +09:00 KST, dual cross-check, reflective question, and interpretive boundary', () => {
+  const profile = { basic: { name: '제제', birthdate: '1994-01-24', birthtime: '12:00', gender: 'male' } } as any;
+  const now = new Date('2026-11-16T04:15:00Z');
+  const query = '새로운 방향을 정하고 마음의 균형을 되찾고 싶습니다';
+
+  const ca = calculateEgyptianHermeticCartouche(profile, now, query);
+  assert.equal(ca.engineVersion, EGYPTIAN_HERMETIC_CARTOUCHE_ENGINE_VERSION);
+  assert.match(ca.calculatedAtKst, /\+09:00/);
+  assert.notEqual(ca.secondaryCartoucheName, ca.primaryCartoucheName);
+  assert.ok(ca.hermeticSynthesisMatrix.reflectiveQuestion.includes(query));
+  assert.ok(ca.interpretiveBoundary.includes('성찰'));
+  const caPrompt = formatEgyptianHermeticCartouchePrompt(ca);
+  assert.ok(caPrompt.includes('+09:00') && caPrompt.includes('보조 교차 카르투슈') && caPrompt.includes('성찰 질문') && caPrompt.includes('해석 경계'));
+
+  const es = calculateEsseneCommunion(profile, now, query);
+  assert.equal(es.engineVersion, ESSENE_COMMUNION_VERSION);
+  assert.match(es.calculatedAtKst, /\+09:00/);
+  assert.notEqual(es.secondaryEarthlyAngel.koreanName, es.morningEarthlyAngel.koreanName);
+  assert.ok(es.esseneSynthesisMatrix.reflectiveQuestion.includes(query));
+  assert.ok(es.interpretiveBoundary.includes('성찰'));
+  const esPrompt = formatEsseneCommunionPrompt(es);
+  assert.ok(esPrompt.includes('+09:00') && esPrompt.includes('보조 지상 교감 천사') && esPrompt.includes('성찰 질문') && esPrompt.includes('해석 경계'));
+
+  const mo = calculateGreekMoiraiAnankeFate({ profile, question: query, now });
+  assert.equal(mo.engineVersion, GREEK_MOIRAI_ANANKE_FATE_ENGINE_VERSION);
+  assert.match(mo.calculatedAtKst, /\+09:00/);
+  assert.ok(mo.secondaryGoddessNote.includes('보조 여신'));
+  assert.ok(mo.moiraiSynthesisMatrix.reflectiveQuestion.includes(query));
+  assert.ok(mo.interpretiveBoundary.includes('성찰'));
+  const moPrompt = formatGreekMoiraiAnankeFatePrompt(mo);
+  assert.ok(moPrompt.includes('+09:00') && moPrompt.includes('보조 여신') && moPrompt.includes('성찰 질문') && moPrompt.includes('해석 경계'));
+});
