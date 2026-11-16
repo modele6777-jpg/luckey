@@ -8,12 +8,12 @@
  * 4. 피실격허(避實擊虛)와 수형(水形): 단단한 정면충돌을 피하고 빈틈과 활로로 흐름
  * 5. 이우위직(以迂爲直): 돌아가는 우회로를 가장 빠른 지름길로 삼는 지혜
  *
- * @version LUCKEY-SUNTZU-STRATEGY-v2.0.0
+ * @version LUCKEY-SUNTZU-STRATEGY-v2.1.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const SUNTZU_STRATEGY_VERSION = 'LUCKEY-SUNTZU-STRATEGY-v2.0.0';
+export const SUNTZU_STRATEGY_VERSION = 'LUCKEY-SUNTZU-STRATEGY-v2.1.0';
 
 export type SunTzuQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -73,6 +73,7 @@ export interface SunTzuArtOfWarStrategyResult {
   reflectionFocus: string;
   counselNote: string;
   boundaryNotice: string;
+  interpretiveBoundary: string;
   situationalStrategyAudit: SunTzuSituationalAudit;
   temporalSunTzuRhythm: SunTzuTemporalRhythm;
   sunTzuSynthesisMatrix: SunTzuSynthesisMatrix;
@@ -355,6 +356,7 @@ export function calculateSunTzuArtOfWarStrategy(
     reflectionFocus: topicGuide.reflection,
     counselNote,
     boundaryNotice,
+    interpretiveBoundary: boundaryNotice,
     situationalStrategyAudit,
     temporalSunTzuRhythm,
     sunTzuSynthesisMatrix,
