@@ -18,7 +18,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const ROMAN_STOIC_PROHAIRESIS_ENGINE_VERSION = '2.0.0';
+export const ROMAN_STOIC_PROHAIRESIS_ENGINE_VERSION = '2.1.0';
 
 export interface StoicVirtue {
   id: string;
@@ -41,6 +41,8 @@ export interface RomanStoicProhairesisReport {
   secondaryVirtue: StoicVirtue; // 보조 스토아 덕목
   mementoMoriPerspective: string; // 메멘토 모리 본질 통찰
   prohairesisActionGuidance: string; // 프로하이레시스 결단 실천 지침
+  reflectiveQuestion: string;
+  interpretiveBoundary: string;
   stoicSynthesisMatrix?: {
     dominantTension: string;
     alignmentState: string;
@@ -55,7 +57,15 @@ function formatStoicProhairesisKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
+}
+
+function buildStoicReflectiveQuestion(virtue: StoicVirtue, contextText: string): string {
+  const focus = contextText.trim();
+  if (focus) {
+    return `'${focus}'를 마주하며 ${virtue.nameKo}을 기준으로 삼을 때, 내 통제 밖의 결과는 놓아두고 지금 온전히 내가 선택할 행동 한 가지는 무엇인가요?`;
+  }
+  return `${virtue.nameKo}의 관점에서 볼 때, 오늘 내 에너지를 갉아먹지만 사실 내 소관이 아닌 걱정 한 가지는 무엇인가요?`;
 }
 
 function describeStoicProhairesisStage(score: number): string {
@@ -169,6 +179,8 @@ export function calculateRomanStoicProhairesis(
   }
 
   const calculatedAtKst = formatStoicProhairesisKstTimestamp(now);
+  const reflectiveQuestion = buildStoicReflectiveQuestion(dominantVirtue, contextText);
+  const interpretiveBoundary = '스토아 통제 이분법과 프로하이레시스 해석은 태도와 선택을 가다듬는 철학적 성찰 비유일 뿐, 미래 사건 예측이나 의학적·법률적 조언이 아닙니다.';
   const composite = Math.round(
     (internalControlFocusScore + externalSurrenderScore + amorFatiScore + apatheiaInnerPeaceScore) / 4
   );
@@ -190,6 +202,8 @@ export function calculateRomanStoicProhairesis(
     secondaryVirtue,
     mementoMoriPerspective,
     prohairesisActionGuidance,
+    reflectiveQuestion,
+    interpretiveBoundary,
     stoicSynthesisMatrix,
   };
 }
@@ -216,5 +230,9 @@ export function formatRomanStoicProhairesisPrompt(
       `- 통합 실천: ${report.stoicSynthesisMatrix.integratedAction}`,
     );
   }
+  lines.push(
+    `- 성찰 질문: ${report.reflectiveQuestion}`,
+    `- 해석 경계: ${report.interpretiveBoundary}`,
+  );
   return lines.join('\n');
 }

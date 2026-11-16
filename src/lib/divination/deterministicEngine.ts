@@ -2168,7 +2168,7 @@ try {
   // 92. 피타고라스 테트락티스(Tetraktys) 10대 신성기하 & 게마트리아 조화 엔진
   const pythagoreanTetraktysResult = calculateSupplement('pythagoreanTetraktysResult', () => ((() => {
     try {
-      return calculatePythagoreanTetraktys(profile);
+      return calculatePythagoreanTetraktys(profile, question, now);
     } catch (_) {
       return null;
     }
@@ -4806,7 +4806,7 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'slavicSvarog', nameKo: '슬라브 16스바로그 로드카르마', icon: '🌌', category: 'deep_master' },
   { key: 'esseneCommunion', nameKo: '에세네 14대 천사교감', icon: '🕊️', category: 'deep_master', summary: '고대 에세네 평화의 복음에 따라 대지 어머니와 천상 아버지의 14대 천사 교감으로 생각·감정·행동 삼위일체의 정화와 안식을 안내합니다.' },
   { key: 'huangdiFiveMovementsSixQi', nameKo: '황제내경 오운육기 기상의학', icon: '📜', category: 'deep_master' },
-  { key: 'pythagoreanTetraktys', nameKo: '피타고라스 테트락티스 신성기하', icon: '📐', category: 'deep_master' },
+  { key: 'pythagoreanTetraktys', nameKo: '피타고라스 테트락티스 신성기하', icon: '📐', category: 'deep_master', summary: '피타고라스 1·2·3·4 테트락티스 창조 층위와 영혼 루트수로 관념을 현실의 실행·결실로 구체화하는 관점' },
   { key: 'babylonianEnumaElish', nameKo: '바빌로니아 운명의서판', icon: '🏛️', category: 'deep_master', summary: '에누마 엘리쉬 서사시와 운명의 서판 상징을 바탕으로 현재의 혼돈을 질서화할 수호 천체와 주권적 실천 방향을 짚어 주는 관점' },
   { key: 'taoistHuangtingJing', nameKo: '도교 황정경 오장존사', icon: '☯️', category: 'deep_master' },
   { key: 'persianAmeshaSpenta', nameKo: '페르시아 아메샤스펜타', icon: '🔥', category: 'deep_master', summary: '아베스타 6대 아메샤 스펜타 수호 불멸자와 바르숨 정렬을 비추어 선한 의지와 내면의 조화를 가다듬는 관점' },
@@ -4840,7 +4840,7 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'popolVuhHeroTwins', nameKo: '마야 포폴부 쌍둥이영웅', icon: '🌽', category: 'deep_master' },
   { key: 'ancientYarrowProbability', nameKo: '주역 대연지수 49책 시초점', icon: '🌿', category: 'deep_master', summary: '주역 계사전 49책 시초점의 삼변 수리 구조로 동효·정효의 시중(時中) 처세 흐름을 읽는 관점' },
   { key: 'vedicPanchaKosha', nameKo: '인도 베단타 5대 코샤', icon: '🧘', category: 'deep_master', summary: '타이티리야 우파니샤드의 5대 코샤(육체·호흡·감정·지성·지복) 중 지금 돌봄이 필요한 층위를 짚어 줍니다.' },
-  { key: 'romanJanus', nameKo: '로마 야누스 문턱전이', icon: '🚪', category: 'deep_master' },
+  { key: 'romanJanus', nameKo: '로마 야누스 문턱전이', icon: '🚪', category: 'deep_master', summary: '과거와 미래를 함께 보는 로마 야누스 4대 문턱 상징으로 지금 닫을 경계와 새로 열 발걸음을 가르는 관점' },
   { key: 'baopuziElixirs', nameKo: '포박자 구전환단 선도', icon: '🍶', category: 'deep_master', summary: '갈홍 《포박자》의 구전환단과 시진 화후 리듬으로 정기신 회복과 소박한 양생 처방을 전합니다.' },
   { key: 'vedicMahavakya', nameKo: '베다 4대 마하바키야 각성', icon: '🕉️', category: 'deep_master' },
   { key: 'sumerianApkalluWisdom', nameKo: '수메르 엔키 7압갈루 현자', icon: '🐟', category: 'deep_master' },
@@ -4860,7 +4860,7 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'buddhistYogacaraConsciousness', nameKo: '불교 유식학 8식 전식득지', icon: '☸️', category: 'deep_master', summary: '유식학의 8식과 아뢰야식 종자 이론을 바탕으로 분별·집착의 뿌리를 살피고 사지(四智)의 청정한 실천으로 전환하는 관점' },
   { key: 'vedicMandukyaTuriya', nameKo: '만두키야 우파니샤드 투리야 순수의식', icon: '🕉️', category: 'deep_master', summary: '만두키야 우파니샤드의 각성·꿈·숙면 너머 제4의 순수의식(투리야) 자리에서 감정의 파도를 관조합니다.' },
   { key: 'kabbalisticZoharSoul', nameKo: '카발라 조하르 5대 영혼 층위', icon: '🕎', category: 'deep_master' },
-  { key: 'romanStoicProhairesis', nameKo: '로마 스토아 통제이분법', icon: '🏛️', category: 'deep_master' },
+  { key: 'romanStoicProhairesis', nameKo: '로마 스토아 통제이분법', icon: '🏛️', category: 'deep_master', summary: '스토아 철학의 통제 이분법과 프로하이레시스로 내 소관 밖의 불안을 비우고 지금 선택할 태도를 세우는 관점' },
   { key: 'patanjaliAshtangaYoga', nameKo: '파탄잘리 요가 8지칙', icon: '🧘', category: 'deep_master' },
   { key: 'koreanPungryudoHwarang', nameKo: '신라 풍류도 화랑오계', icon: '🌸', category: 'deep_master' },
   { key: 'persianAttarSevenValleys', nameKo: '페르시아 아타르 새들의 회의 7대 계곡', icon: '🕊️', category: 'deep_master', summary: '아타르 《새들의 회의》 7대 영혼의 계곡과 시무르그 거울 상징으로 집착을 비우고 본래 자아를 돌아보는 관점' },

@@ -26,7 +26,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const PYTHAGOREAN_TETRAKTYS_VERSION = 'LUCKEY-PYTHAGOREAN-TETRAKTYS-v2.0.0';
+export const PYTHAGOREAN_TETRAKTYS_VERSION = 'LUCKEY-PYTHAGOREAN-TETRAKTYS-v2.1.0';
 
 export interface TetraktysLevelDistribution {
   monadIdeaWeight: number;         // 0 ~ 100% 모나드(영감/의도)
@@ -34,6 +34,7 @@ export interface TetraktysLevelDistribution {
   triadHarmonyWeight: number;       // 0 ~ 100% 트리아드(구조/조화)
   tetradManifestWeight: number;    // 0 ~ 100% 테트라드(실행/물질화)
   dominantTier: string;
+  secondaryTier: string;
 }
 
 export interface GematriaHarmonicSignature {
@@ -52,6 +53,8 @@ export interface PythagoreanTetraktysReport {
   manifestationObstacleBreakthrough: string;
   sacredGeometryAffirmation: string;
   synthesisMessage: string;
+  reflectiveQuestion: string;
+  interpretiveBoundary: string;
   tetraktysSynthesisMatrix?: {
     dominantTension: string;
     alignmentState: string;
@@ -66,7 +69,15 @@ function formatTetraktysKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
+}
+
+function buildTetraktysReflectiveQuestion(dominantTier: string, queryStr: string): string {
+  const focus = queryStr.trim();
+  if (focus) {
+    return `'${focus}'를 현실에 세우는 과정에서 현재 주도 층위(${dominantTier})를 다음 단계로 넘기기 위해 오늘 10분 안에 실행할 구체적 매듭은 무엇인가요?`;
+  }
+  return `테트락티스 4단계 가운데 지금 [${dominantTier}]에 머물러 있는 생각 하나를 손에 잡히는 결과물로 옮긴다면 첫 단추는 무엇일까요?`;
 }
 
 function describeTetraktysStage(score: number): string {
@@ -126,11 +137,14 @@ export function calculatePythagoreanTetraktys(
   const triadHarmonyWeight = Math.round((rawTriad / totalRaw) * 100);
   const tetradManifestWeight = 100 - (monadIdeaWeight + dyadPolarityWeight + triadHarmonyWeight);
 
-  let dominantTier = '테트라드 (현실 물질화 및 결실 단계)';
-  const maxW = Math.max(monadIdeaWeight, dyadPolarityWeight, triadHarmonyWeight, tetradManifestWeight);
-  if (maxW === monadIdeaWeight) dominantTier = '모나드 (새로운 영감 및 순수 의도 점화 단계)';
-  else if (maxW === dyadPolarityWeight) dominantTier = '디아드 (선택과 방향성 조율, 인연 협업 단계)';
-  else if (maxW === triadHarmonyWeight) dominantTier = '트리아드 (체계적 구조화 및 조화로운 종합 단계)';
+  const tierEntries = [
+    { label: '모나드 (새로운 영감 및 순수 의도 점화 단계)', w: monadIdeaWeight },
+    { label: '디아드 (선택과 방향성 조율, 인연 협업 단계)', w: dyadPolarityWeight },
+    { label: '트리아드 (체계적 구조화 및 조화로운 종합 단계)', w: triadHarmonyWeight },
+    { label: '테트라드 (현실 물질화 및 결실 단계)', w: tetradManifestWeight },
+  ].sort((a, b) => b.w - a.w);
+  const dominantTier = tierEntries[0].label;
+  const secondaryTier = tierEntries[1].label;
 
   const realityManifestationIndex = Math.min(98, Math.max(62, Math.round(tetradManifestWeight * 1.8 + triadHarmonyWeight * 0.9)));
 
@@ -145,8 +159,10 @@ export function calculatePythagoreanTetraktys(
 
   const synthesisMessage = `피타고라스 테트락티스 기하학에 따르면, 당신의 영혼 루트수는 [${soulRootNumber}]이며 현재 [${dominantTier}]에 있습니다. ${describeTetraktysStage(realityManifestationIndex)} 흐름에 맞춰 "${manifestationObstacleBreakthrough}"`;
   const calculatedAtKst = formatTetraktysKstTimestamp(now);
+  const reflectiveQuestion = buildTetraktysReflectiveQuestion(dominantTier, queryStr);
+  const interpretiveBoundary = '피타고라스 테트락티스와 게마트리아 환원은 실행과 구조화를 돌아보는 수비학적 상징 비유일 뿐, 확정적 미래 예측이나 재무·투자 판단의 근거가 아닙니다.';
   const tetraktysSynthesisMatrix = {
-    dominantTension: `${dominantTier} ↔ ${sacredRatio.name}`,
+    dominantTension: `${dominantTier} ↔ ${secondaryTier}`,
     alignmentState: describeTetraktysStage(realityManifestationIndex),
     integratedAction: `${manifestationObstacleBreakthrough}${queryStr.trim() ? ` [질문 맥락: ${queryStr.trim()}]` : ''}`,
   };
@@ -166,11 +182,14 @@ export function calculatePythagoreanTetraktys(
       triadHarmonyWeight,
       tetradManifestWeight,
       dominantTier,
+      secondaryTier,
     },
     realityManifestationIndex,
     manifestationObstacleBreakthrough,
     sacredGeometryAffirmation,
     synthesisMessage,
+    reflectiveQuestion,
+    interpretiveBoundary,
     tetraktysSynthesisMatrix,
   };
 }
@@ -183,6 +202,7 @@ export function formatPythagoreanTetraktysPrompt(report: PythagoreanTetraktysRep
     `  - 우주적 화음 상징: ${report.harmonicSignature.cosmicHarmonicMeaning}`,
     `- **테트락티스 창조 국면**: ${describeTetraktysStage(report.realityManifestationIndex)}`,
     `- **현재 주도 층위**: **${report.tetraktysDistribution.dominantTier}**`,
+    `- **보조 교차 층위**: ${report.tetraktysDistribution.secondaryTier}`,
     `- **물질화 돌파 지침**: ${report.manifestationObstacleBreakthrough}`,
     `- **신성 기하 확언문**: "${report.sacredGeometryAffirmation}"`,
     `- **테트락티스 통합 결론**: ${report.synthesisMessage}`,
@@ -193,5 +213,9 @@ export function formatPythagoreanTetraktysPrompt(report: PythagoreanTetraktysRep
       `- **통합 실천**: ${report.tetraktysSynthesisMatrix.integratedAction}`,
     );
   }
+  lines.push(
+    `- **성찰 질문**: ${report.reflectiveQuestion}`,
+    `- **해석 경계**: ${report.interpretiveBoundary}`,
+  );
   return lines.join('\n');
 }
