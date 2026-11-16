@@ -1,6 +1,6 @@
 import { UserProfile } from '../sharedState';
 
-export const VEDIC_NAKSHATRA_108_PADA_ENGINE_VERSION = '2.0.0';
+export const VEDIC_NAKSHATRA_108_PADA_ENGINE_VERSION = '2.1.0';
 
 function formatNakshatra108KstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -9,7 +9,7 @@ function formatNakshatra108KstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
 }
 
 export interface VedicNakshatra108PadaReport {
@@ -30,6 +30,15 @@ export interface VedicNakshatra108PadaReport {
   karmicSoulMission: string;
   dharmaPathScore: number;
   sanskritMantra: string;
+  secondaryNakshatra: {
+    index: number;
+    nameKo: string;
+    sanskrit: string;
+    deity: string;
+    mission: string;
+  };
+  reflectiveQuestion: string;
+  interpretiveBoundary: string;
   synthesisPrompt: string;
   nakshatra108SynthesisMatrix?: {
     dominantTension: string;
@@ -146,10 +155,23 @@ export function calculateVedicNakshatra108Pada(
     '옴 나모 바가바테 바수데바야 (Om Namo Bhagavate Vasudevaya)',
   ];
   const sanskritMantra = mantras[(seed + pada) % mantras.length];
+  const secondaryNakshatraRaw = NAKSHATRAS[(nakshatraIndexZero + 13) % NAKSHATRAS.length];
+  const secondaryNakshatra = {
+    index: secondaryNakshatraRaw.index,
+    nameKo: secondaryNakshatraRaw.nameKo,
+    sanskrit: secondaryNakshatraRaw.sanskrit,
+    deity: secondaryNakshatraRaw.deity,
+    mission: secondaryNakshatraRaw.mission,
+  };
   const calculatedAtKst = formatNakshatra108KstTimestamp(targetDate);
   const q = (question || '').trim();
+  const reflectiveQuestion = q
+    ? `"${q}"에 대해 ${nakshatra.nameKo} 제${pada}파다의 소명(${nakshatra.mission})과 대칭 성좌 ${secondaryNakshatra.nameKo}의 지혜를 어떻게 현실 행동으로 이어 볼까요?`
+    : `오늘 ${nakshatra.nameKo} 제${pada}파다의 힘과 맞은편 ${secondaryNakshatra.nameKo} 성좌의 균형을 맞추기 위해 어떤 작은 선택을 해 볼 수 있을까요?`;
+  const interpretiveBoundary =
+    '해석 경계: 본 리포트는 베다 27나크샤트라와 108파다 상징 체계를 통해 내면의 소명과 행동 방향을 비추는 철학적·상징적 참고이며, 실제 천문 관측이나 운명의 단정을 대신하지 않습니다.';
   const nakshatra108SynthesisMatrix = {
-    dominantTension: `${nakshatra.nameKo} 제${pada}파다 ↔ ${navamsha.name}`,
+    dominantTension: `${nakshatra.nameKo} 제${pada}파다 ↔ ${navamsha.name} · 보조 성좌 ${secondaryNakshatra.nameKo}`,
     alignmentState: `${nakshatra.gana} · ${nakshatra.tattva} · ${nakshatra.deity}`,
     integratedAction: `${sanskritMantra} · ${nakshatra.mission}${q ? ` [질문 맥락: ${q}]` : ''}`,
   };
@@ -163,6 +185,7 @@ export function calculateVedicNakshatra108Pada(
    - 본명 성좌: 제${nakshatra.index}/27성좌 **${nakshatra.nameKo} (${nakshatra.sanskrit})**
    - 활성 파다: **제${pada}파다 / 4** (전체 108파다 중 제${totalPadaIndex}번째 파다)
    - 나밤샤(D9) 귀속궁: **${navamsha.name}** (지배성: ${navamsha.lord})
+   - 대칭 보조 성좌: 제${secondaryNakshatra.index}성좌 **${secondaryNakshatra.nameKo} (${secondaryNakshatra.sanskrit})** · ${secondaryNakshatra.deity} (${secondaryNakshatra.mission})
 2. 🏛️ [신성 속성 및 에너지 격자]:
    - 주재신(Deity): ${nakshatra.deity}
    - 군(Gana): ${nakshatra.gana} | 원소(Tattva): ${nakshatra.tattva}
@@ -174,6 +197,9 @@ export function calculateVedicNakshatra108Pada(
    - 핵심 긴장: ${nakshatra108SynthesisMatrix.dominantTension}
    - 조율 상태: ${nakshatra108SynthesisMatrix.alignmentState}
    - 통합 실천: ${nakshatra108SynthesisMatrix.integratedAction}
+5. 🪞 [성찰 질문 & 해석 경계]:
+   - 성찰 질문: ${reflectiveQuestion}
+   - ${interpretiveBoundary}
 ======================================================================
 [AI 해석 절대 지침]: 본 리포트는 베딕 점성술 항성황도 27나크샤트라와 108파다 정밀 분할도에 입각한 100% 결정론적 산출물입니다. 나크샤트라 명칭과 108파다 번호, 나밤샤 귀속궁을 임의로 변경하지 말고 상담자의 카르마적 소명과 현실 행동 나침반으로 일관되게 상담에 직결하십시오.
 `.trim();
@@ -196,6 +222,9 @@ export function calculateVedicNakshatra108Pada(
     karmicSoulMission: nakshatra.mission,
     dharmaPathScore,
     sanskritMantra,
+    secondaryNakshatra,
+    reflectiveQuestion,
+    interpretiveBoundary,
     synthesisPrompt,
     nakshatra108SynthesisMatrix,
   };

@@ -2025,7 +2025,10 @@ test('Tarot Master Engine: 78 아르카나 수비학 소울·퍼스널리티·�
 test('Ziwei Flying Stars Engine: 유년 사화 동적 비성 및 삼방사정 밸런스 검증', () => {
   const res = calculateZiweiFlyingStars({ profile, targetYear: 2026, question: '올해 재물과 커리어 방향' });
   assert.equal(res.engineVersion, ZIWEI_FLYING_STARS_ENGINE_VERSION);
-  assert(res.calculatedAtKst.endsWith('KST'));
+  assert(res.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert(Boolean(res.secondaryMutagenAxis));
+  assert(res.reflectiveQuestion.includes('올해 재물과 커리어 방향'));
+  assert(res.interpretiveBoundary.includes('해석 경계'));
   assert(Boolean(res.ziweiFlyingSynthesisMatrix?.integratedAction));
   assert.equal(res.targetYear, 2026);
   assert(res.mutagens.lu.starName.length > 0);
@@ -2037,6 +2040,7 @@ test('Ziwei Flying Stars Engine: 유년 사화 동적 비성 및 삼방사정 �
   assert.equal(res.quarterlyPacing.length, 4);
   const prompt = formatZiweiFlyingStarsPrompt(res);
   assert(prompt.includes(ZIWEI_FLYING_STARS_ENGINE_VERSION));
+  assert(prompt.includes('+09:00 (KST)'));
   assert(prompt.includes('화록(化祿)'));
   assert(prompt.includes('화권(化權)'));
   assert(prompt.includes('화과(化科)'));
@@ -2045,7 +2049,11 @@ test('Ziwei Flying Stars Engine: 유년 사화 동적 비성 및 삼방사정 �
   assert(prompt.includes('록기교충(祿忌交衝) 리스크 방어선'));
   assert(prompt.includes('유년 4분기 완급 조절 타임라인'));
   assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('보조 권과 축'));
+  assert(prompt.includes('성찰 질문'));
+  assert(prompt.includes('해석 경계'));
   assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
   assert(!prompt.includes('%'));
 });
 
@@ -2935,7 +2943,10 @@ test('Saju Classic Yongshin Prescription Engine: 사주 정통 3대 원전 용�
 test('Tarot Tree of Life Shadow Engine: 타로 카발라 생명나무 22경로 & 섀도우 미러 검증', () => {
   const res = calculateTarotTreeOfLifeShadow({ profile, targetDate: new Date('2026-11-04T14:00:00+09:00'), question: '그림자 통합' });
   assert.equal(res.engineVersion, TAROT_KABBALAH_SHADOW_VERSION);
-  assert(res.calculatedAtKst.endsWith('KST'));
+  assert(res.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert(res.secondaryPath.pathNumber >= 11 && res.secondaryPath.pathNumber <= 32);
+  assert(res.reflectiveQuestion.includes('그림자 통합'));
+  assert(res.interpretiveBoundary.includes('해석 경계'));
   assert(Boolean(res.kabbalahShadowSynthesisMatrix?.integratedAction));
   assert(res.tarotEsotericTitle.length > 0);
   assert(res.ascensionPath.pathNumber >= 11 && res.ascensionPath.pathNumber <= 32);
@@ -2944,6 +2955,10 @@ test('Tarot Tree of Life Shadow Engine: 타로 카발라 생명나무 22경로 &
   assert(res.shadowMirror.transmutedSuperpower.length > 0);
   const prompt = formatTarotTreeOfLifeShadowPrompt(res);
   assert(prompt.includes('LUCKEY 타로 카발라 생명나무 & 섀도우 미러 심층'));
+  assert(prompt.includes('+09:00 (KST)'));
+  assert(prompt.includes('보조 교차 경로'));
+  assert(prompt.includes('성찰 질문'));
+  assert(prompt.includes('해석 경계'));
   assert(prompt.includes(res.shadowMirror.consciousLightCard));
   assert(prompt.includes('교차 매트릭스'));
   assert(!prompt.includes('/100'));
@@ -3762,7 +3777,10 @@ test('Eleusinian Mysteries Initiation & Rebirth Engine: calculates grade, statio
 test('Vedic Nakshatra 108 Pada Engine: calculates nakshatra, pada and dharma path score', () => {
   const rep = calculateVedicNakshatra108Pada(profile, new Date(), '카르마 소명');
   assert.equal(rep.engineVersion, VEDIC_NAKSHATRA_108_PADA_ENGINE_VERSION);
-  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert(rep.secondaryNakshatra.index >= 1 && rep.secondaryNakshatra.index <= 27);
+  assert(rep.reflectiveQuestion.includes('카르마 소명'));
+  assert(rep.interpretiveBoundary.includes('해석 경계'));
   assert(Boolean(rep.nakshatra108SynthesisMatrix?.integratedAction));
   assert(rep.nakshatraIndex >= 1 && rep.nakshatraIndex <= 27);
   assert(rep.pada >= 1 && rep.pada <= 4);
@@ -3770,6 +3788,10 @@ test('Vedic Nakshatra 108 Pada Engine: calculates nakshatra, pada and dharma pat
   assert(rep.dharmaPathScore >= 0 && rep.dharmaPathScore <= 100);
   const prompt = formatVedicNakshatra108PadaPrompt(rep);
   assert(prompt.includes('베다 27나크샤트라 & 108파다(Pada) 카르마 성좌 정밀 실측 데이터'));
+  assert(prompt.includes('+09:00 (KST)'));
+  assert(prompt.includes('대칭 보조 성좌'));
+  assert(prompt.includes('성찰 질문'));
+  assert(prompt.includes('해석 경계'));
   assert(prompt.includes(rep.nakshatraNameKo));
   assert(prompt.includes('교차 매트릭스'));
   assert(!prompt.includes('/100'));

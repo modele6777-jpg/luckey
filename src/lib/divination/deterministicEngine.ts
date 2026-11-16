@@ -1343,7 +1343,7 @@ try {
   const energeticPrescriptionResult = calculateSupplement('energeticPrescriptionResult', () => (calculateEnergeticPrescription({ profile, currentDate: now })));
   const contextualSynastryResult = calculateSupplement('contextualSynastryResult', () => (calculateContextualSynastry({ questionText: question, myProfile: profile, targetDate: now })));
   const instantDecisionResult = calculateSupplement('instantDecisionResult', () => (calculateInstantDecision({ instant: now, questionText: question })));
-  const ziweiFlyingStarsResult = calculateSupplement('ziweiFlyingStarsResult', () => (calculateZiweiFlyingStars({ profile, targetYear: now.getFullYear() })));
+  const ziweiFlyingStarsResult = calculateSupplement('ziweiFlyingStarsResult', () => (calculateZiweiFlyingStars({ profile, targetYear: now.getFullYear(), question })));
   const specialStarsResult = calculateSupplement('specialStarsResult', () => (calculateSpecialStarsMatrix({ profile })));
   const monthlyFlowResult = calculateSupplement('monthlyFlowResult', () => (calculateMonthlyFlow({ profile, targetYear: now.getFullYear() })));
   const spatialFengshuiResult = calculateSupplement('spatialFengshuiResult', () => (calculateSpatialFengshui({ profile })));
@@ -1904,7 +1904,7 @@ try {
   const tarotTreeOfLifeShadowResult = calculateSupplement('tarotTreeOfLifeShadowResult', () => (birthdateStr && profile
     ? (() => {
         try {
-          return calculateTarotTreeOfLifeShadow({ profile, targetDate: now });
+          return calculateTarotTreeOfLifeShadow({ profile, targetDate: now, question });
         } catch (_) {
           return null;
         }
@@ -2258,7 +2258,7 @@ try {
   // 102. 인도 베다 27나크샤트라 & 108파다(Pada) 카르마 성좌 정밀 엔진
   const vedicNakshatra108PadaResult = calculateSupplement('vedicNakshatra108PadaResult', () => ((() => {
     try {
-      return calculateVedicNakshatra108Pada(profile);
+      return calculateVedicNakshatra108Pada(profile, now, question);
     } catch (_) {
       return null;
     }
@@ -4729,7 +4729,7 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'energeticPrescription', nameKo: '오행 바이오에너지', icon: '🧪', category: 'deep_master' },
   { key: 'contextualSynastry', nameKo: '대화 인연 동적궁합', icon: '👥', category: 'deep_master' },
   { key: 'instantDecision', nameKo: '시가팔문 즉시결단', icon: '⚡', category: 'deep_master' },
-  { key: 'ziweiFlyingStars', nameKo: '자미두수 유년사화', icon: '🌌', category: 'deep_master' },
+  { key: 'ziweiFlyingStars', nameKo: '자미두수 유년사화', icon: '🌌', category: 'deep_master', summary: '당해 십간사화(록·권·과·기)의 12궁 비성과 삼방사정·록기교충을 통해 기회와 리스크 방어선을 비추는 관점' },
   { key: 'specialStarsMatrix', nameKo: '15대 신살 슈퍼파워', icon: '⭐', category: 'deep_master' },
   { key: 'monthlyFlow', nameKo: '12개월 월운 플로우', icon: '📅', category: 'deep_master' },
   { key: 'spatialFengshui', nameKo: '공간 길방위 풍수', icon: '🧭', category: 'deep_master' },
@@ -4777,7 +4777,7 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'synchronicityOmen', nameKo: '칼 융 동시성 오멘', icon: '🕊️', category: 'deep_master' },
   { key: 'ethericAuraBiofield', nameKo: '에테릭 오라 바이오필드', icon: '✨', category: 'deep_master' },
   { key: 'sajuClassicYongshin', nameKo: '사주 원전 억부용신', icon: '📜', category: 'deep_master' },
-  { key: 'tarotTreeOfLifeShadow', nameKo: '타로 세피로트 그림자', icon: '🌳', category: 'deep_master' },
+  { key: 'tarotTreeOfLifeShadow', nameKo: '타로 세피로트 그림자', icon: '🌳', category: 'deep_master', summary: '카발라 생명나무 22경로와 타로 섀도우 미러를 통해 의식의 빛과 무의식 방어기제를 통합하는 관점' },
   { key: 'hellenisticLots', nameKo: '헬레니즘 포르투나 롯', icon: '🏛️', category: 'deep_master' },
   { key: 'iching384Yao', nameKo: '주역 384효 동효변괘', icon: '☯️', category: 'deep_master' },
   { key: 'sajuTwelveStagesTomb', nameKo: '12운성 묘고지 개고', icon: '🗝️', category: 'deep_master' },
@@ -4816,7 +4816,7 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'tiebanShenshu', nameKo: '철판신수 12000조식', icon: '📜', category: 'deep_master' },
   { key: 'tibetanBonNineWays', nameKo: '티베트 본교 9승 융드룽', icon: '卐', category: 'deep_master', summary: '티베트 본교 9승과 5대 영혼 활력소 상징으로 일상 정화와 내면의 중심을 살피는 관점' },
   { key: 'eleusinianMysteries', nameKo: '엘레우시스 영혼입사의례', icon: '🌾', category: 'deep_master' },
-  { key: 'vedicNakshatra108Pada', nameKo: '베다 108파다 카르마성좌', icon: '🕉️', category: 'deep_master' },
+  { key: 'vedicNakshatra108Pada', nameKo: '베다 108파다 카르마성좌', icon: '🕉️', category: 'deep_master', summary: '베다 27나크샤트라와 108파다·나밤샤(D9) 귀속궁으로 영혼의 소명과 실천 만트라를 비추는 관점' },
   { key: 'egyptianHermeticCartouche', nameKo: '이집트 헤르메스 카르투슈', icon: '𓋹', category: 'deep_master', summary: '고대 이집트 헤르메스주의 카르투슈 원형과 영혼 삼위일체(카·바·아크)를 통해 실천·개성·통찰의 조화를 비춥니다.' },
   { key: 'taoistGongGuoGeKarma', nameKo: '도교 공과격 적선개운', icon: '☯️', category: 'deep_master' },
   { key: 'yorubaIfaOdu', nameKo: '요루바 이파 16오두 신탁', icon: '📿', category: 'deep_master', summary: '서아프리카 요루바 이파 16 메지 오두와 에보(Ebó) 실천으로 막힌 흐름을 여는 지혜를 전합니다.' },

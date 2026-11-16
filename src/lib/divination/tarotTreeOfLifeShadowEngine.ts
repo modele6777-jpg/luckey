@@ -21,7 +21,7 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const TAROT_KABBALAH_SHADOW_VERSION = 'LUCKEY-TAROT-KABBALAH-SHADOW-v2.0.0';
+export const TAROT_KABBALAH_SHADOW_VERSION = 'LUCKEY-TAROT-KABBALAH-SHADOW-v2.1.0';
 
 function formatKabbalahShadowKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -30,7 +30,7 @@ function formatKabbalahShadowKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
 }
 
 export interface TreeOfLifePathMapping {
@@ -56,8 +56,11 @@ export interface TarotTreeOfLifeShadowReport {
   calculatedAtKst: string;
   tarotEsotericTitle: string;
   ascensionPath: TreeOfLifePathMapping;
+  secondaryPath: TreeOfLifePathMapping;
   shadowMirror: TarotShadowMirrorAnalysis;
   soulHermeticAffirmation: string;
+  reflectiveQuestion: string;
+  interpretiveBoundary: string;
   synthesisPromptGuidance: string;
   kabbalahShadowSynthesisMatrix?: {
     dominantTension: string;
@@ -96,6 +99,8 @@ export function runTarotTreeOfLifeShadowEngine(
   const availablePaths = [11, 12, 13, 14, 15, 25, 32];
   const selectedPathNum = availablePaths[code % availablePaths.length];
   const pathInfo = TREE_OF_LIFE_PATHS[selectedPathNum] || TREE_OF_LIFE_PATHS[32];
+  const secondaryPathNum = availablePaths[(code + 3) % availablePaths.length];
+  const secondaryPathInfo = TREE_OF_LIFE_PATHS[secondaryPathNum] || TREE_OF_LIFE_PATHS[11];
 
   // 섀도우 미러 카드 도출 (상보적 반대편 축)
   const shadowCardNum = (pathInfo.majorCard + 11) % 22;
@@ -113,9 +118,14 @@ export function runTarotTreeOfLifeShadowEngine(
   const shadowData = shadowCardMap[shadowCardNum] || shadowCardMap[21];
   const calculatedAtKst = formatKabbalahShadowKstTimestamp(targetDate);
   const q = (question || '').trim();
+  const reflectiveQuestion = q
+    ? `"${q}" 앞에서 [${shadowData.name}]의 방어기제(${shadowData.defenseMechanism})를 내려놓고 [${pathInfo.cardName}]의 관문을 건넌다면 무엇이 달라질까요?`
+    : `지금 [${shadowData.name}]가 비추는 내면의 맹점을 마주하고 제${secondaryPathNum}경로(${secondaryPathInfo.cardName})의 균형으로 옮겨갈 한 걸음은 무엇인가요?`;
+  const interpretiveBoundary =
+    '해석 경계: 본 리포트는 카발라 생명나무 22경로와 타로 섀도우 미러 원형을 바탕으로 내면의 방어기제와 전환 관점을 비추는 상징적 성찰이며, 미래 사건의 단정이나 의료적·심리적 진단을 대신하지 않습니다.';
   const kabbalahShadowSynthesisMatrix = {
     dominantTension: `${pathInfo.cardName} ↔ ${shadowData.name}`,
-    alignmentState: `제${selectedPathNum}경로(${pathInfo.connecting}) · 방어기제(${shadowData.defenseMechanism})`,
+    alignmentState: `제${selectedPathNum}경로(${pathInfo.connecting}) · 보조 제${secondaryPathNum}경로(${secondaryPathInfo.cardName}) · 방어기제(${shadowData.defenseMechanism})`,
     integratedAction: `${shadowData.ritual}${q ? ` [질문 맥락: ${q}]` : ''}`,
   };
 
@@ -127,6 +137,7 @@ export function runTarotTreeOfLifeShadowEngine(
   * 제${selectedPathNum}경로: ${pathInfo.connecting}
   * 주관 메이저 아르카나: [${pathInfo.cardName}] (히브리 문자: ${pathInfo.hebrew})
   * 영혼의 입문 관문: ${pathInfo.gateway}
+  * 보조 교차 경로: 제${secondaryPathNum}경로 ${secondaryPathInfo.connecting} · [${secondaryPathInfo.cardName}] (${secondaryPathInfo.gateway})
 - 타로 섀도우 미러 (무의식 맹점 & 그림자 통합):
   * 의식의 빛 아르카나: [${pathInfo.cardName}]
   * 무의식의 그림자 아르카나: [${shadowData.name}]
@@ -134,7 +145,9 @@ export function runTarotTreeOfLifeShadowEngine(
   * 그림자 변환 초능력 (Transmuted Gold): ${shadowData.superpower}
   * 180초 섀도우 통합 리추얼: ${shadowData.ritual}
 - 에소테릭 타로 확언: "${soulHermeticAffirmation}"
-- 카발라 섀도우 교차 매트릭스: 핵심 긴장(${kabbalahShadowSynthesisMatrix.dominantTension}) · 조율 상태(${kabbalahShadowSynthesisMatrix.alignmentState}) · 통합 실천(${kabbalahShadowSynthesisMatrix.integratedAction})`;
+- 카발라 섀도우 교차 매트릭스: 핵심 긴장(${kabbalahShadowSynthesisMatrix.dominantTension}) · 조율 상태(${kabbalahShadowSynthesisMatrix.alignmentState}) · 통합 실천(${kabbalahShadowSynthesisMatrix.integratedAction})
+- 성찰 질문: ${reflectiveQuestion}
+- ${interpretiveBoundary}`;
 
   return {
     engineVersion: TAROT_KABBALAH_SHADOW_VERSION,
@@ -149,6 +162,14 @@ export function runTarotTreeOfLifeShadowEngine(
       hebrewLetter: pathInfo.hebrew,
       spiritualGatewayTheme: pathInfo.gateway
     },
+    secondaryPath: {
+      pathNumber: secondaryPathNum,
+      connectingSephiroth: secondaryPathInfo.connecting,
+      majorCardNumber: secondaryPathInfo.majorCard,
+      majorCardName: secondaryPathInfo.cardName,
+      hebrewLetter: secondaryPathInfo.hebrew,
+      spiritualGatewayTheme: secondaryPathInfo.gateway
+    },
     shadowMirror: {
       consciousLightCard: pathInfo.cardName,
       shadowBlindSpotCard: shadowData.name,
@@ -157,6 +178,8 @@ export function runTarotTreeOfLifeShadowEngine(
       shadowIntegrationRitual: shadowData.ritual
     },
     soulHermeticAffirmation,
+    reflectiveQuestion,
+    interpretiveBoundary,
     synthesisPromptGuidance,
     kabbalahShadowSynthesisMatrix,
   };
