@@ -14,7 +14,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const KOREAN_JANG_BOGO_VERSION = 'LUCKEY-JANG-BOGO-MARITIME-v2.0.0';
+export const KOREAN_JANG_BOGO_VERSION = 'LUCKEY-JANG-BOGO-MARITIME-v2.1.0';
 
 export interface CheonghaejinTheme {
   themeKey: string;
@@ -44,6 +44,9 @@ export interface JangBogoCheonghaejinMaritimePioneerResult {
   // 세부 분석
   activeCheonghaeTheme: CheonghaejinTheme;
   focalCheonghaeAphorism: CheonghaejinAphorism;
+  secondaryCheonghaeAphorism: CheonghaejinAphorism;
+  reflectiveQuestion: string;
+  interpretiveBoundary: string;
   jangBogoComprehensiveGuidance: {
     guidanceTitle: string;
     philosophicalCounsel: string;
@@ -62,7 +65,7 @@ function formatJangBogoKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 KST`;
 }
 
 function describeJangBogoStage(score: number): string {
@@ -175,9 +178,16 @@ export function calculateJangBogoCheonghaejinMaritimePioneer(
 
   const themeIndex = (absHash >> 4) % CHEONGHAE_THEMES.length;
   const aphorismIndex = (absHash >> 7) % CHEONGHAE_APHORISMS.length;
+  const secondaryAphorismIndex = (aphorismIndex + 1 + ((absHash >> 10) % (CHEONGHAE_APHORISMS.length - 1))) % CHEONGHAE_APHORISMS.length;
 
   const activeCheonghaeTheme = CHEONGHAE_THEMES[themeIndex];
   const focalCheonghaeAphorism = CHEONGHAE_APHORISMS[aphorismIndex];
+  const secondaryCheonghaeAphorism = CHEONGHAE_APHORISMS[secondaryAphorismIndex];
+  const trimmedQuery = query?.trim();
+  const reflectiveQuestion = trimmedQuery
+    ? `'${trimmedQuery}'의 거친 파도를 돌파할 때 단기 이익보다 끝까지 지켜 내야 할 내 신뢰의 약속 한 가지는 무엇인가요?`
+    : `지금 내가 먼저 닻을 올리고 다른 이들과 신의로 연결해 볼 새로운 항로는 어디인가요?`;
+  const interpretiveBoundary = '해상왕 장보고 청해진 관점은 길흉 예단이 아니라, 신의 기반 개척과 글로벌 연대를 비추는 실천 성찰 렌즈입니다.';
 
   const guidanceTitle = `해상왕 장보고 청해진 개척 지혜: ${activeCheonghaeTheme.themeTitleKo}`;
   const philosophicalCounsel = `해상왕 장보고의 청해진 정신은 굳건한 신의와 파도 돌파의 용기로 좁은 한계를 깨고 글로벌 새 항로를 열어가도록 이끕니다. ` +
@@ -210,6 +220,9 @@ export function calculateJangBogoCheonghaejinMaritimePioneer(
     independentStrongholdScore,
     activeCheonghaeTheme,
     focalCheonghaeAphorism,
+    secondaryCheonghaeAphorism,
+    reflectiveQuestion,
+    interpretiveBoundary,
     jangBogoComprehensiveGuidance: {
       guidanceTitle,
       philosophicalCounsel,
@@ -235,9 +248,12 @@ export function formatJangBogoCheonghaejinMaritimePioneerPrompt(res: JangBogoChe
     `- 역사적·철학적 통찰: ${res.activeCheonghaeTheme.historicalInsight}`,
     `- 실천적 조언: ${res.activeCheonghaeTheme.practicalCounsel}`,
     `- 핵심 경구: "${res.focalCheonghaeAphorism.aphorismKo}"`,
+    `- 보조 교차 경구: "${res.secondaryCheonghaeAphorism.aphorismKo}" [${res.secondaryCheonghaeAphorism.sourceContext}]`,
     `- 한자 원문: "${res.focalCheonghaeAphorism.aphorismHanja}" [${res.focalCheonghaeAphorism.sourceContext}]`,
     `- 구체적 실천 지침: ${res.focalCheonghaeAphorism.actionGuidance}`,
     `- 종합 통찰 권면: ${res.jangBogoComprehensiveGuidance.philosophicalCounsel}`,
+    `- 성찰 질문: ${res.reflectiveQuestion}`,
+    `- 해석 경계: ${res.interpretiveBoundary}`,
   ];
   if (res.cheonghaeSynthesisMatrix) {
     lines.push(

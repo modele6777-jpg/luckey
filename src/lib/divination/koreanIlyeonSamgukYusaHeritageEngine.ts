@@ -13,7 +13,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const KOREAN_ILYEON_SAMGUK_YUSA_VERSION = 'LUCKEY-KOREAN-ILYEON-SAMGUK-YUSA-v2.0.0';
+export const KOREAN_ILYEON_SAMGUK_YUSA_VERSION = 'LUCKEY-KOREAN-ILYEON-SAMGUK-YUSA-v2.1.0';
 
 export interface IlyeonTheme {
   themeKey: string;
@@ -43,6 +43,9 @@ export interface KoreanIlyeonSamgukYusaResult {
   // 세부 분석
   activeIlyeonTheme: IlyeonTheme;
   focalIlyeonAphorism: IlyeonAphorism;
+  secondaryIlyeonAphorism: IlyeonAphorism;
+  reflectiveQuestion: string;
+  interpretiveBoundary: string;
   ilyeonComprehensiveGuidance: {
     guidanceTitle: string;
     philosophicalCounsel: string;
@@ -61,7 +64,7 @@ function formatIlyeonKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 KST`;
 }
 
 function describeIlyeonStage(score: number): string {
@@ -165,9 +168,16 @@ export function calculateKoreanIlyeonSamgukYusa(
 
   const themeIndex = (absHash >> 5) % ILYEON_THEMES.length;
   const aphorismIndex = (absHash >> 8) % ILYEON_APHORISMS.length;
+  const secondaryAphorismIndex = (aphorismIndex + 1 + ((absHash >> 11) % (ILYEON_APHORISMS.length - 1))) % ILYEON_APHORISMS.length;
 
   const activeIlyeonTheme = ILYEON_THEMES[themeIndex];
   const focalIlyeonAphorism = ILYEON_APHORISMS[aphorismIndex];
+  const secondaryIlyeonAphorism = ILYEON_APHORISMS[secondaryAphorismIndex];
+  const trimmedQuery = query?.trim();
+  const reflectiveQuestion = trimmedQuery
+    ? `'${trimmedQuery}' 속의 상처나 갈등을 응징이 아니라 향가의 서정과 처용의 너른 관용으로 감싸 안는다면 어떤 새로운 화해가 열릴까요?`
+    : `삶의 무너진 자리에서도 끝내 잃지 않고 후대에 건네고 싶은 나만의 소중한 기억과 얼은 무엇인가요?`;
+  const interpretiveBoundary = '보각국사 일연 삼국유사 관점은 길흉 예단이 아니라, 서정적 치유와 관용·문화적 회복탄력성을 비추는 영성 성찰 렌즈입니다.';
 
   const guidanceTitle = `보각국사 일연 삼국유사의 자주 자긍심과 서정 관용: ${activeIlyeonTheme.themeTitleKo}`;
   const philosophicalCounsel = `고려 후기 민족의 영적 보고 《삼국유사》를 편찬한 보각국사 일연 선사는 ` +
@@ -202,6 +212,9 @@ export function calculateKoreanIlyeonSamgukYusa(
     culturalPreservationResilience,
     activeIlyeonTheme,
     focalIlyeonAphorism,
+    secondaryIlyeonAphorism,
+    reflectiveQuestion,
+    interpretiveBoundary,
     ilyeonComprehensiveGuidance: {
       guidanceTitle,
       philosophicalCounsel,
@@ -229,10 +242,13 @@ export function formatKoreanIlyeonSamgukYusaPrompt(
     `- 역사문학적 통찰: ${res.activeIlyeonTheme.literaryInsight}`,
     `- 행동 조언: ${res.activeIlyeonTheme.practicalCounsel}`,
     `- 삼국유사 원전 격언: "${res.focalIlyeonAphorism.aphorismKo}"`,
+    `- 보조 교차 격언: "${res.secondaryIlyeonAphorism.aphorismKo}" [${res.secondaryIlyeonAphorism.sourceContext}]`,
     `- 한문 원문: (${res.focalIlyeonAphorism.aphorismHanja})`,
     `- 원전 출처: [${res.focalIlyeonAphorism.sourceContext}]`,
     `- 구체적 실천 지침: ${res.focalIlyeonAphorism.actionGuidance}`,
     `- 종합 삼국유사 권면: ${res.ilyeonComprehensiveGuidance.philosophicalCounsel}`,
+    `- 성찰 질문: ${res.reflectiveQuestion}`,
+    `- 해석 경계: ${res.interpretiveBoundary}`,
   ];
   if (res.ilyeonSynthesisMatrix) {
     lines.push(
