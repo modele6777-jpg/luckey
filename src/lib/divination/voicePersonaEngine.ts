@@ -16,7 +16,7 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const VOICE_PERSONA_VERSION = 'LUCKEY-VOICE-v2.0.0';
+export const VOICE_PERSONA_VERSION = 'LUCKEY-VOICE-v2.1.0';
 
 function formatVoicePersonaKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -110,6 +110,7 @@ export interface VoicePersonaResult {
     alignmentState: string;
     integratedAction: string;
   };
+  interpretiveBoundary: string;
 }
 
 /**
@@ -181,6 +182,7 @@ export function calculateVoicePersona(params?: {
     alignmentState: `${persuasionRankTitle} · ${persona.hanja}`,
     integratedAction: `${persona.speakingFormula}${q ? ` [질문 맥락: ${q}]` : ''}`,
   };
+  const interpretiveBoundary = '본 스피치·커뮤니케이션 페르소나 리포트는 명리 식상 및 기질 수리에 기반한 화법 성찰 가이드이며, 심리·임상 평가나 절대적 성과 보증이 아닙니다.';
 
   const summary = `[커뮤니케이션 페르소나] 타입: ${persona.title}. ` +
     `설득력 위상: ${persuasionRankTitle}. ` +
@@ -197,6 +199,7 @@ export function calculateVoicePersona(params?: {
     conversationalBalanceTip,
     summary,
     voiceSynthesisMatrix,
+    interpretiveBoundary,
   };
 }
 
@@ -220,5 +223,6 @@ export function formatVoicePersonaPrompt(res: VoicePersonaResult): string {
   • 갈등 중재: ${res.cheatsheet.conflictMediation}
   • 1:1 대화: ${res.cheatsheet.oneOnOne}
 - 에너지 보완 팁: ${res.conversationalBalanceTip}${matrixLine}
+- 해석 경계: ${res.interpretiveBoundary}
 ※ 루시 지침: 말은 단순한 의사전달이 아니라 현실을 빚어내는 강력한 창조의 도구입니다. 사용자가 자신의 독보적인 화법 강점(본질 관통, 명쾌한 논리)을 십분 발휘하면서도, 상대방의 마음을 부드럽게 무장해제시키는 실전 대화 기술을 자신감 있게 발휘할 수 있도록 북돋워 주세요.`;
 }

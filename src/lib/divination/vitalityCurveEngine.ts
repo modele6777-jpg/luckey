@@ -25,7 +25,7 @@ import {
   type SajuAnalysisResult,
 } from '../sajuAnalysis';
 
-export const VITALITY_CURVE_ENGINE_VERSION = 'LUCKEY-VCE-v2.0.0';
+export const VITALITY_CURVE_ENGINE_VERSION = 'LUCKEY-VCE-v2.1.0';
 
 function formatVitalityKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -96,6 +96,7 @@ export interface VitalityCurveResult {
     alignmentState: string;
     integratedAction: string;
   };
+  interpretiveBoundary: string;
 }
 
 // 12운성 기본 에너지 스코어
@@ -237,6 +238,7 @@ export function calculateVitalityCurve(options?: {
     alignmentState: `${vitalityStateName} · 딥워크(${deepWorkSlots || '09:30~13:30'})`,
     integratedAction: `${actionTip}${q ? ` [질문 맥락: ${q}]` : ''}`,
   };
+  const interpretiveBoundary = '본 12운성 바이오리듬 에너지 곡선 리포트는 사주 포태법 수리 기반의 컨디셔닝 참고 지표이며, 의학적 진단이나 임상 처방이 아닙니다.';
 
   return {
     engineVersion: VITALITY_CURVE_ENGINE_VERSION,
@@ -280,6 +282,7 @@ export function calculateVitalityCurve(options?: {
 
     actionTip,
     vitalitySynthesisMatrix,
+    interpretiveBoundary,
   };
 }
 
@@ -313,6 +316,7 @@ export function formatVitalityCurvePrompt(res: VitalityCurveResult): string {
 
 3. [24시간 12시진 에너지 조위(Tide Curve) 도감]:
 ${curveSample}${matrixLine}
+- 해석 경계: ${res.interpretiveBoundary}
 ======================================================================
 [★ 루시 바이오리듬 상담 지침]:
 - 사용자가 '오늘 피곤해', '언제 집중 잘 될까?', '컨디션 어때?', '새벽 작업 할까?' 등을 물을 때 위 12시진 12운성 조위 실측 데이터를 근거로 구체적인 골든 타임라인을 명쾌하게 제시해줘.

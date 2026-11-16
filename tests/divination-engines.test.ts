@@ -2319,6 +2319,7 @@ test('Voice Persona Engine: 스피치 페르소나 및 설득력 치트키 검�
   assert.equal(res.engineVersion, VOICE_PERSONA_VERSION);
   assert(res.calculatedAtKst.endsWith('KST'));
   assert(Boolean(res.voiceSynthesisMatrix?.integratedAction));
+  assert(res.interpretiveBoundary.length > 0);
   assert(res.persona.title.length > 0);
   assert(res.persuasionScore >= 0 && res.persuasionScore <= 100);
   assert(res.cheatsheet.negotiation.length > 0);
@@ -2327,7 +2328,7 @@ test('Voice Persona Engine: 스피치 페르소나 및 설득력 치트키 검�
   assert(prompt.includes(VOICE_PERSONA_VERSION));
   assert(prompt.includes('1순위 화법 페르소나'));
   assert(prompt.includes('실전 스피치 치트키'));
-  assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('교차 매트릭스') && prompt.includes('해석 경계'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });
@@ -3242,6 +3243,7 @@ test('Vibrational Soul Quest Engine: derives 4 core soul numbers and personal ye
   assert.equal(rep.engineVersion, VIBRATIONAL_SOUL_QUEST_VERSION);
   assert(rep.calculatedAtKst.endsWith('KST'));
   assert(Boolean(rep.soulQuestSynthesisMatrix?.integratedAction));
+  assert(rep.interpretiveBoundary.length > 0);
   assert(rep.soulNumbers.lifePathNumber >= 1);
   assert(rep.soulNumbers.personalYear >= 1 && rep.soulNumbers.personalYear <= 9);
   assert(rep.questArchetype.length > 0);
@@ -3249,7 +3251,7 @@ test('Vibrational Soul Quest Engine: derives 4 core soul numbers and personal ye
   const prompt = formatVibrationalSoulQuestPrompt(rep);
   assert(prompt.includes('고대 수비학 차크라 솔 울림'));
   assert(prompt.includes(rep.questArchetype));
-  assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('교차 매트릭스') && prompt.includes('해석 경계'));
   assert.doesNotMatch(prompt, /\bHz\b|Solfeggio|솔페지오|주파수/i);
 });
 
@@ -3823,10 +3825,11 @@ test('Vitality Curve Engine: calculates 12-stage biorhythm curve and synthesis m
   assert.equal(rep.engineVersion, VITALITY_CURVE_ENGINE_VERSION);
   assert(rep.calculatedAtKst.endsWith('KST'));
   assert(Boolean(rep.vitalitySynthesisMatrix?.integratedAction));
+  assert(rep.interpretiveBoundary.length > 0);
   assert.equal(rep.hourlyTideCurve.length, 12);
   const prompt = formatVitalityCurvePrompt(rep);
   assert(prompt.includes('12운성 바이오리듬 에너지 곡선'));
-  assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('교차 매트릭스') && prompt.includes('해석 경계'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });

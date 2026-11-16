@@ -18,7 +18,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const VIBRATIONAL_SOUL_QUEST_VERSION = 'LUCKEY-SOUL-QUEST-v2.0.0';
+export const VIBRATIONAL_SOUL_QUEST_VERSION = 'LUCKEY-SOUL-QUEST-v2.1.0';
 
 function formatSoulQuestKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -57,6 +57,7 @@ export interface SoulQuestReport {
     alignmentState: string;
     integratedAction: string;
   };
+  interpretiveBoundary: string;
 }
 
 // 수비학 단자리 축약 함수 (마스터 넘버 11, 22, 33 보존)
@@ -181,6 +182,7 @@ export function calculateVibrationalSoulQuest(
     alignmentState: `${selectedArchetype.name} · ${selectedArchetype.chakra}`,
     integratedAction: `${currentTheme.directive}${q ? ` [질문 맥락: ${q}]` : ''}`,
   };
+  const interpretiveBoundary = '본 수비학·차크라 라이프 퀘스트 리포트는 생년월일 수리 주기 기반의 자기 성찰 프레임이며, 의학적 진단이나 확정적 미래 단정이 아닙니다.';
 
   return {
     engineVersion: VIBRATIONAL_SOUL_QUEST_VERSION,
@@ -203,6 +205,7 @@ export function calculateVibrationalSoulQuest(
     dailySoulDirective: currentTheme.directive,
     wisdomQuote: selectedArchetype.quote,
     soulQuestSynthesisMatrix,
+    interpretiveBoundary,
   };
 }
 
@@ -226,5 +229,6 @@ export function formatVibrationalSoulQuestPrompt(rep: SoulQuestReport): string {
   • ${rep.focusChakra.chakraName} - ${rep.focusChakra.activationPoint}
 - 데일리 영혼 퀘스트 행동 강령:
   • ${rep.dailySoulDirective}${matrixLine}
+- 해석 경계: ${rep.interpretiveBoundary}
 ※ 상담 시 내담자에게 현재 나이와 시기가 9년 주기 중 몇 년차(${rep.soulNumbers.personalYear}년차: ${rep.currentCyclePhase})에 해당하는지 짚어주고, 현실의 불안을 '영혼이 겪고 있는 성장의 퀘스트'로 승화시켜 가슴 벅찬 용기를 선물해 주세요.`;
 }
