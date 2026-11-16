@@ -9657,3 +9657,36 @@ test('Ahn Jung-geun, Baek Seok, and Baekbeom Kim Gu v2.1.0 include +09:00 KST, d
   const kgPrompt = formatBaekbeomKimGuMyDesireCulturePrompt(kg);
   assert.ok(kgPrompt.includes('+09:00') && kgPrompt.includes('보조 교차 경구') && kgPrompt.includes('성찰 질문') && kgPrompt.includes('해석 경계'));
 });
+
+test('Choe Hangi Gihak, Danjae Shin Chae-ho, and Dosan Ahn Changho v2.1.0 include +09:00 KST, dual cross-check, reflective question, and interpretive boundary', () => {
+  const profile = { basic: { name: '제제', birthdate: '1994-01-24', birthtime: '12:00', gender: 'male' } } as any;
+  const now = new Date('2026-11-16T05:15:00Z');
+  const query = '흔들리지 않는 주체성과 성실한 실천으로 길을 열고 싶습니다';
+
+  const ch = calculateChoeHangiGihakUnwha(profile, query, now);
+  assert.equal(ch.engineVersion, CHOE_HANGI_GIHAK_UNWHA_VERSION);
+  assert.match(ch.calculatedAtKst, /\+09:00/);
+  assert.notEqual(ch.secondaryGihakPrinciple.principleKey, ch.activeGihakPrinciple.principleKey);
+  assert.ok(ch.reflectiveQuestion.includes(query));
+  assert.ok(ch.interpretiveBoundary.includes('성찰'));
+  const chPrompt = formatChoeHangiGihakUnwhaPrompt(ch);
+  assert.ok(chPrompt.includes('+09:00') && chPrompt.includes('보조 교차 원리') && chPrompt.includes('성찰 질문') && chPrompt.includes('해석 경계'));
+
+  const dj = calculateKoreanDanjaeShinChaeHoJoseonSanggosa(profile, query, now);
+  assert.equal(dj.engineVersion, KOREAN_DANJAE_SHIN_CHAE_HO_VERSION);
+  assert.match(dj.calculatedAtKst, /\+09:00/);
+  assert.notEqual(dj.secondaryDanjaeAphorism.aphorismKey, dj.focalDanjaeAphorism.aphorismKey);
+  assert.ok(dj.reflectiveQuestion.includes(query));
+  assert.ok(dj.interpretiveBoundary.includes('성찰'));
+  const djPrompt = formatKoreanDanjaeShinChaeHoJoseonSanggosaPrompt(dj);
+  assert.ok(djPrompt.includes('+09:00') && djPrompt.includes('보조 교차 명언') && djPrompt.includes('성찰 질문') && djPrompt.includes('해석 경계'));
+
+  const ds = calculateDosanAhnChanghoMusilYeokhaeng(profile, query, now);
+  assert.equal(ds.engineVersion, KOREAN_DOSAN_AHN_CHANGHO_VERSION);
+  assert.match(ds.calculatedAtKst, /\+09:00/);
+  assert.notEqual(ds.secondaryDosanAphorism.aphorismKey, ds.focalDosanAphorism.aphorismKey);
+  assert.ok(ds.reflectiveQuestion.includes(query));
+  assert.ok(ds.interpretiveBoundary.includes('성찰'));
+  const dsPrompt = formatDosanAhnChanghoMusilYeokhaengPrompt(ds);
+  assert.ok(dsPrompt.includes('+09:00') && dsPrompt.includes('보조 교차 경구') && dsPrompt.includes('성찰 질문') && dsPrompt.includes('해석 경계'));
+});

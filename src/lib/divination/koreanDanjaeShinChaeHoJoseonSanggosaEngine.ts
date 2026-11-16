@@ -14,7 +14,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const KOREAN_DANJAE_SHIN_CHAE_HO_VERSION = 'LUCKEY-DANJAE-SHIN-CHAE-HO-v2.0.0';
+export const KOREAN_DANJAE_SHIN_CHAE_HO_VERSION = 'LUCKEY-DANJAE-SHIN-CHAE-HO-v2.1.0';
 
 export interface DanjaeTheme {
   themeKey: string;
@@ -43,6 +43,9 @@ export interface KoreanDanjaeShinChaeHoJoseonSanggosaResult {
   // 세부 분석
   activeDanjaeTheme: DanjaeTheme;
   focalDanjaeAphorism: DanjaeAphorism;
+  secondaryDanjaeAphorism: DanjaeAphorism;
+  reflectiveQuestion: string;
+  interpretiveBoundary: string;
   danjaeComprehensiveGuidance: {
     guidanceTitle: string;
     philosophicalCounsel: string;
@@ -61,7 +64,7 @@ function formatDanjaeKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 KST`;
 }
 
 function describeDanjaeStage(score: number): string {
@@ -169,9 +172,16 @@ export function calculateKoreanDanjaeShinChaeHoJoseonSanggosa(
 
   const themeIndex = (absHash >> 4) % DANJAE_THEMES.length;
   const aphorismIndex = (absHash >> 7) % DANJAE_APHORISMS.length;
+  const secondaryAphorismIndex = (aphorismIndex + 1 + ((absHash >> 10) % (DANJAE_APHORISMS.length - 1))) % DANJAE_APHORISMS.length;
 
   const activeDanjaeTheme = DANJAE_THEMES[themeIndex];
   const focalDanjaeAphorism = DANJAE_APHORISMS[aphorismIndex];
+  const secondaryDanjaeAphorism = DANJAE_APHORISMS[secondaryAphorismIndex];
+  const trimmedQuery = query?.trim();
+  const reflectiveQuestion = trimmedQuery
+    ? `'${trimmedQuery}'에서 남의 기준(非我)에 휩쓸리지 않고 내 안의 주체적 중심(我)으로 똑바로 세울 원칙은 무엇인가요?`
+    : `지금 내 선택 앞에서 미봉책이나 눈치 보기를 멈추고 본질적인 쇄신으로 밀고 나갈 낭가의 기개는 무엇인가요?`;
+  const interpretiveBoundary = '단재 신채호 조선상고사·아와 비아 관점은 길흉 예단이 아니라, 주체성 자각과 비타협적 지조를 비추는 역사 성찰 렌즈입니다.';
 
   const guidanceTitle = `단재 신채호 주체 역사의식 지혜: ${activeDanjaeTheme.themeTitleKo}`;
   const philosophicalCounsel = `근대 한국의 위대한 민족사학자이자 불굴의 독립투사 단재 신채호 선생은 "아(我)와 비아(非我)의 투쟁" 속에서 꼿꼿한 주체성을 세우고, 비타협적 자주독립과 호방한 낭가의 기개로 시련을 극복하도록 일깨웁니다. ` +
@@ -204,6 +214,9 @@ export function calculateKoreanDanjaeShinChaeHoJoseonSanggosa(
     indomitableDanjaeResilienceIndex,
     activeDanjaeTheme,
     focalDanjaeAphorism,
+    secondaryDanjaeAphorism,
+    reflectiveQuestion,
+    interpretiveBoundary,
     danjaeComprehensiveGuidance: {
       guidanceTitle,
       philosophicalCounsel,
@@ -231,9 +244,12 @@ export function formatKoreanDanjaeShinChaeHoJoseonSanggosaPrompt(
     `- 역사철학적 통찰: ${res.activeDanjaeTheme.historicalInsight}`,
     `- 실천적 조언: ${res.activeDanjaeTheme.practicalCounsel}`,
     `- 단재 원전 명언: "${res.focalDanjaeAphorism.aphorismKo}"`,
+    `- 보조 교차 명언: "${res.secondaryDanjaeAphorism.aphorismKo}" [${res.secondaryDanjaeAphorism.sourceContext}]`,
     `- 원전 출처: [${res.focalDanjaeAphorism.sourceContext}]`,
     `- 구체적 실천 지침: ${res.focalDanjaeAphorism.actionGuidance}`,
     `- 종합 단재 주체 권면: ${res.danjaeComprehensiveGuidance.philosophicalCounsel}`,
+    `- 성찰 질문: ${res.reflectiveQuestion}`,
+    `- 해석 경계: ${res.interpretiveBoundary}`,
   ];
   if (res.danjaeSynthesisMatrix) {
     lines.push(

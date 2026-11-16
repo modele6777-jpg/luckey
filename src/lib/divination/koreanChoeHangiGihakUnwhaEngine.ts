@@ -15,7 +15,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const CHOE_HANGI_GIHAK_UNWHA_VERSION = 'LUCKEY-CHOE-HANGI-GIHAK-UNWHA-v2.0.0';
+export const CHOE_HANGI_GIHAK_UNWHA_VERSION = 'LUCKEY-CHOE-HANGI-GIHAK-UNWHA-v2.1.0';
 
 export interface ChoeHangiGihakPrinciple {
   principleKey: string;
@@ -44,6 +44,9 @@ export interface ChoeHangiGihakUnwhaResult {
   // 세부 체계
   activeGihakPrinciple: ChoeHangiGihakPrinciple;
   focalUnwhaPractice: ChoeHangiUnwhaPractice;
+  secondaryGihakPrinciple: ChoeHangiGihakPrinciple;
+  reflectiveQuestion: string;
+  interpretiveBoundary: string;
   choeHangiPhilosophicalCounsel: {
     counselTitle: string;
     practicalGuidance: string;
@@ -62,7 +65,7 @@ function formatChoeHangiKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 KST`;
 }
 
 function describeGihakStage(score: number): string {
@@ -127,6 +130,7 @@ export function calculateChoeHangiGihakUnwha(
     (profile?.basic?.birthdate ?? (profile as any)?.birthdate ?? '1990-01-01') +
     (profile?.basic?.name ?? (profile as any)?.name ?? 'User') +
     (profile?.basic?.birthtime ?? (profile as any)?.birthtime ?? '12:00') +
+    (query ?? '') +
     'ChoeHangiGihakUnwha';
 
   let hash = 0;
@@ -144,9 +148,16 @@ export function calculateChoeHangiGihakUnwha(
 
   const principleIndex = (absHash >> 4) % GIHAK_PRINCIPLES.length;
   const practiceIndex = (absHash >> 7) % UNWHA_PRACTICES.length;
+  const secondaryPrincipleIndex = (principleIndex + 1 + ((absHash >> 10) % (GIHAK_PRINCIPLES.length - 1))) % GIHAK_PRINCIPLES.length;
 
   const activeGihakPrinciple = GIHAK_PRINCIPLES[principleIndex];
   const focalUnwhaPractice = UNWHA_PRACTICES[practiceIndex];
+  const secondaryGihakPrinciple = GIHAK_PRINCIPLES[secondaryPrincipleIndex];
+  const trimmedQuery = query?.trim();
+  const reflectiveQuestion = trimmedQuery
+    ? `'${trimmedQuery}'에서 관념적 억측을 걷어 내고 실제 경험과 신기통(神氣通) 소통으로 바로 확인해 볼 사실은 무엇인가요?`
+    : `지금 내 일에서 막혀 있는 신기(神氣)의 소통을 트이게 할 한 번의 현장 검증(踐驗)은 무엇인가요?`;
+  const interpretiveBoundary = '혜강 최한기 기학·신기통 관점은 길흉 예단이 아니라, 경험적 추측과 막힘없는 소통을 비추는 실학 성찰 렌즈입니다.';
 
   const counselTitle = `혜강 최한기 기학 운화 지혜: ${activeGihakPrinciple.principleNameKo}`;
   const practicalGuidance = `조선 후기 실학자 혜강 최한기 선생의 기학(氣學)은 만물의 끊임없는 변화(運化)와 소통(神氣通)을 통한 실천적 지혜를 가르칩니다. ` +
@@ -179,6 +190,9 @@ export function calculateChoeHangiGihakUnwha(
     daedongUniversalHarmonyScore,
     activeGihakPrinciple,
     focalUnwhaPractice,
+    secondaryGihakPrinciple,
+    reflectiveQuestion,
+    interpretiveBoundary,
     choeHangiPhilosophicalCounsel: {
       counselTitle,
       practicalGuidance,
@@ -201,6 +215,7 @@ export function formatChoeHangiGihakUnwhaPrompt(res: ChoeHangiGihakUnwhaResult):
     `- 연산 시각: ${res.calculatedAtKst} | 엔진: ${res.engineVersion}`,
     `- 기학 운화 국면: ${describeGihakStage(avgScore)}`,
     `- 기학 핵심 원리: ${res.activeGihakPrinciple.principleNameKo}`,
+    `- 보조 교차 원리: ${res.secondaryGihakPrinciple.principleNameKo} [${res.secondaryGihakPrinciple.sourceText}]`,
     `- 출전: ${res.activeGihakPrinciple.sourceText}`,
     `- 우주론적 바탕: ${res.activeGihakPrinciple.coreCosmology}`,
     `- 실천적 조언: ${res.activeGihakPrinciple.practicalCounsel}`,
@@ -208,6 +223,8 @@ export function formatChoeHangiGihakUnwhaPrompt(res: ChoeHangiGihakUnwhaResult):
     `- 인식적 초점: ${res.focalUnwhaPractice.epistemicFocus}`,
     `- 행동 지침: ${res.focalUnwhaPractice.actionGuidance}`,
     `- 철학적 수양 지침: ${res.choeHangiPhilosophicalCounsel.practicalGuidance}`,
+    `- 성찰 질문: ${res.reflectiveQuestion}`,
+    `- 해석 경계: ${res.interpretiveBoundary}`,
   ];
   if (res.gihakSynthesisMatrix) {
     lines.push(
