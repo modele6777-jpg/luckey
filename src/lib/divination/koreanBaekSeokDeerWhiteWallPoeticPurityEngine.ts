@@ -13,7 +13,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const KOREAN_BAEK_SEOK_DEER_WHITE_WALL_POETIC_PURITY_VERSION = 'LUCKEY-BAEK-SEOK-DEER-WHITE-WALL-POETIC-PURITY-v2.0.0';
+export const KOREAN_BAEK_SEOK_DEER_WHITE_WALL_POETIC_PURITY_VERSION = 'LUCKEY-BAEK-SEOK-DEER-WHITE-WALL-POETIC-PURITY-v2.1.0';
 
 export interface BaekSeokTheme {
   themeKey: string;
@@ -42,6 +42,9 @@ export interface KoreanBaekSeokDeerWhiteWallPoeticPurityResult {
   // 세부 분석
   activeBaekSeokTheme: BaekSeokTheme;
   focalBaekSeokAphorism: BaekSeokAphorism;
+  secondaryBaekSeokAphorism: BaekSeokAphorism;
+  reflectiveQuestion: string;
+  interpretiveBoundary: string;
   baekSeokComprehensiveGuidance: {
     guidanceTitle: string;
     philosophicalCounsel: string;
@@ -60,7 +63,7 @@ function formatBaekSeokKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 KST`;
 }
 
 function describeBaekSeokStage(score: number): string {
@@ -159,9 +162,16 @@ export function calculateKoreanBaekSeokDeerWhiteWallPoeticPurity(
 
   const themeIndex = (absHash >> 5) % BAEK_SEOK_THEMES.length;
   const aphorismIndex = (absHash >> 8) % BAEK_SEOK_APHORISMS.length;
+  const secondaryAphorismIndex = (aphorismIndex + 1 + ((absHash >> 11) % (BAEK_SEOK_APHORISMS.length - 1))) % BAEK_SEOK_APHORISMS.length;
 
   const activeBaekSeokTheme = BAEK_SEOK_THEMES[themeIndex];
   const focalBaekSeokAphorism = BAEK_SEOK_APHORISMS[aphorismIndex];
+  const secondaryBaekSeokAphorism = BAEK_SEOK_APHORISMS[secondaryAphorismIndex];
+  const trimmedQuery = query?.trim();
+  const reflectiveQuestion = trimmedQuery
+    ? `'${trimmedQuery}'에서 세속의 소란과 비교를 잠시 내려놓고 흰 바람벽 앞에 마주 선 듯 솔직히 보듬고 싶은 내 마음은 무엇인가요?`
+    : `지금 내 하루에서 외로움이나 쓸쓸함마저 맑은 품격으로 지켜 내며 따뜻하게 안아 주고 싶은 소박한 온기는 무엇인가요?`;
+  const interpretiveBoundary = '백석 사슴·흰 바람벽 관점은 길흉 예단이 아니라, 고독 속의 맑은 존엄과 서정적 회복탄력성을 비추는 문학 성찰 렌즈입니다.';
 
   const guidanceTitle = `백석 시인 순수 고결성과 맑은 존엄의 지혜: ${activeBaekSeokTheme.themeTitleKo}`;
   const philosophicalCounsel = `한국 현대 서정시의 위대한 거장 백석 시인은 《사슴》과 《흰 바람벽이 있어》, 《나와 나타샤와 흰 당나귀》를 통해 ` +
@@ -196,6 +206,9 @@ export function calculateKoreanBaekSeokDeerWhiteWallPoeticPurity(
     sereneSteadfastResilienceScore,
     activeBaekSeokTheme,
     focalBaekSeokAphorism,
+    secondaryBaekSeokAphorism,
+    reflectiveQuestion,
+    interpretiveBoundary,
     baekSeokComprehensiveGuidance: {
       guidanceTitle,
       philosophicalCounsel,
@@ -223,9 +236,12 @@ export function formatKoreanBaekSeokDeerWhiteWallPoeticPurityPrompt(
     `- 실천적 통찰: ${res.activeBaekSeokTheme.pragmaticInsight}`,
     `- 행동 조언: ${res.activeBaekSeokTheme.practicalCounsel}`,
     `- 백석 원전 시구: "${res.focalBaekSeokAphorism.aphorismKo}"`,
+    `- 보조 교차 시구: "${res.secondaryBaekSeokAphorism.aphorismKo}" [${res.secondaryBaekSeokAphorism.sourceContext}]`,
     `- 원전 출처: [${res.focalBaekSeokAphorism.sourceContext}]`,
     `- 구체적 실천 지침: ${res.focalBaekSeokAphorism.actionGuidance}`,
     `- 종합 백석 권면: ${res.baekSeokComprehensiveGuidance.philosophicalCounsel}`,
+    `- 성찰 질문: ${res.reflectiveQuestion}`,
+    `- 해석 경계: ${res.interpretiveBoundary}`,
   ];
   if (res.baekSeokSynthesisMatrix) {
     lines.push(
