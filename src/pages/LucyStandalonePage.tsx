@@ -2489,14 +2489,14 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
     const prevAppleIconHrefs: string[] = [];
     appleTouchIcons.forEach((iconTag) => {
       prevAppleIconHrefs.push(iconTag.href);
-      iconTag.href = '/apple-touch-icon-lucy.png';
+      iconTag.href = '/apple-touch-icon-lucy-v3.png';
     });
 
     const favicons = document.querySelectorAll('link[rel="icon"], link[rel="shortcut icon"]') as NodeListOf<HTMLLinkElement>;
     const prevFaviconHrefs: string[] = [];
     favicons.forEach((favTag) => {
       prevFaviconHrefs.push(favTag.href);
-      favTag.href = '/lucy-icon-192.png';
+      favTag.href = '/lucy-icon-192-v3.png';
     });
 
     let appleTitleTag = document.querySelector('meta[name="apple-mobile-web-app-title"]') as HTMLMetaElement | null;
