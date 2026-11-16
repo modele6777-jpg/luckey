@@ -16,7 +16,17 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const VOICE_PERSONA_VERSION = 'LUCKEY-VOICE-v1.0.0';
+export const VOICE_PERSONA_VERSION = 'LUCKEY-VOICE-v2.0.0';
+
+function formatVoicePersonaKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
 
 export type VoicePersonaType = 'sharp_innovator' | 'artisan_mentor' | 'strategic_commander' | 'visionary_catalyst';
 
@@ -79,6 +89,7 @@ export interface ContextSpeechCheatsheet {
 export interface VoicePersonaResult {
   engineVersion: string;
   calculatedAtIso: string;
+  calculatedAtKst: string;
 
   // 1순위 화법 페르소나
   persona: VoicePersonaDetail;
@@ -94,6 +105,11 @@ export interface VoicePersonaResult {
   conversationalBalanceTip: string;
 
   summary: string;
+  voiceSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
 }
 
 /**
@@ -103,6 +119,7 @@ export function calculateVoicePersona(params?: {
   profile?: UserProfile | null;
   saju?: SajuAnalysisResult | null;
   targetDate?: Date;
+  question?: string;
 }): VoicePersonaResult {
   const now = params?.targetDate || new Date();
   const saju = params?.saju || calculateDetailedSaju(params?.profile || null);
@@ -157,19 +174,29 @@ export function calculateVoicePersona(params?: {
     ? '말에 따뜻한 온기와 눈빛을 2초만 더 머금으면, 상대방은 당신의 날카로운 지성을 비판이 아닌 진심 어린 조언으로 받아들입니다.'
     : '논리의 칼날 뒤에 부드러운 유머 한 스푼을 섞으면 상대의 마음의 문이 완전히 무장해제됩니다.';
 
+  const calculatedAtKst = formatVoicePersonaKstTimestamp(now);
+  const q = (params?.question || '').trim();
+  const voiceSynthesisMatrix = {
+    dominantTension: `${persona.title} ↔ ${persona.pitfallToAvoid.slice(0, 28)}`,
+    alignmentState: `${persuasionRankTitle} · ${persona.hanja}`,
+    integratedAction: `${persona.speakingFormula}${q ? ` [질문 맥락: ${q}]` : ''}`,
+  };
+
   const summary = `[커뮤니케이션 페르소나] 타입: ${persona.title}. ` +
-    `설득력 지수: ${persuasionScore}점 [${persuasionRankTitle}]. ` +
+    `설득력 위상: ${persuasionRankTitle}. ` +
     `핵심 공식: ${persona.speakingFormula}. 주의점: ${persona.pitfallToAvoid.slice(0, 30)}...`;
 
   return {
     engineVersion: VOICE_PERSONA_VERSION,
     calculatedAtIso: now.toISOString(),
+    calculatedAtKst,
     persona,
     persuasionScore,
     persuasionRankTitle,
     cheatsheet,
     conversationalBalanceTip,
-    summary
+    summary,
+    voiceSynthesisMatrix,
   };
 }
 
@@ -177,18 +204,21 @@ export function calculateVoicePersona(params?: {
  * 프롬프트 주입용 포맷터
  */
 export function formatVoicePersonaPrompt(res: VoicePersonaResult): string {
-  return `[스피치 & 커뮤니케이션 페르소나 리포트 (엔진: ${res.engineVersion})]
+  const matrixLine = res.voiceSynthesisMatrix
+    ? `\n- 스피치 교차 매트릭스: 핵심 긴장(${res.voiceSynthesisMatrix.dominantTension}) · 조율 상태(${res.voiceSynthesisMatrix.alignmentState}) · 통합 실천(${res.voiceSynthesisMatrix.integratedAction})`
+    : '';
+  return `[스피치 & 커뮤니케이션 페르소나 리포트 (엔진: ${res.engineVersion} | ${res.calculatedAtKst})]
 - 1순위 화법 페르소나: **${res.persona.title}** [${res.persona.hanja}]
   • 고유 아우라: ${res.persona.coreVibe}
   • 설득 슈퍼파워: ${res.persona.persuasionSuperpower}
   • 말하기 절대 공식: **${res.persona.speakingFormula}**
   • 주의할 대화 맹점: ${res.persona.pitfallToAvoid}
-- 언어 설득력 마스터리: **${res.persuasionScore}점** [${res.persuasionRankTitle}]
+- 언어 설득력 위상: **${res.persuasionRankTitle}**
 - 실전 스피치 치트키:
   • 협상/계약: ${res.cheatsheet.negotiation}
   • 발표/피칭: ${res.cheatsheet.presentation}
   • 갈등 중재: ${res.cheatsheet.conflictMediation}
   • 1:1 대화: ${res.cheatsheet.oneOnOne}
-- 에너지 보완 팁: ${res.conversationalBalanceTip}
+- 에너지 보완 팁: ${res.conversationalBalanceTip}${matrixLine}
 ※ 루시 지침: 말은 단순한 의사전달이 아니라 현실을 빚어내는 강력한 창조의 도구입니다. 사용자가 자신의 독보적인 화법 강점(본질 관통, 명쾌한 논리)을 십분 발휘하면서도, 상대방의 마음을 부드럽게 무장해제시키는 실전 대화 기술을 자신감 있게 발휘할 수 있도록 북돋워 주세요.`;
 }

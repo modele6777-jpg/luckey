@@ -17,7 +17,17 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const YIN_YANG_POLARITY_VERSION = 'LUCKEY-POLAR-v1.0.0';
+export const YIN_YANG_POLARITY_VERSION = 'LUCKEY-POLAR-v2.0.0';
+
+function formatYinYangKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
 
 export interface YinYangDistribution {
   yangCount: number;           // 양의 글자 수 (0~8)
@@ -44,6 +54,7 @@ export interface PolarityNeutralizer {
 export interface YinYangPolarityResult {
   engineVersion: string;
   calculatedAtIso: string;
+  calculatedAtKst: string;
 
   distribution: YinYangDistribution;
   timeSlots: BipolarTimeSlots;
@@ -54,6 +65,11 @@ export interface YinYangPolarityResult {
   balanceGrade: string;
 
   summary: string;
+  polaritySynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
 }
 
 const YANG_GANS = new Set(['甲', '丙', '戊', '庚', '壬']);
@@ -66,6 +82,7 @@ export function calculateYinYangPolarity(params?: {
   profile?: UserProfile | null;
   saju?: SajuAnalysisResult | null;
   targetDate?: Date;
+  question?: string;
 }): YinYangPolarityResult {
   const now = params?.targetDate || new Date();
   const saju = params?.saju || calculateDetailedSaju(params?.profile || null);
@@ -136,13 +153,22 @@ export function calculateYinYangPolarity(params?: {
   else if (balanceScore >= 80) balanceGrade = '안정적 다이내믹 밸런스 (Dynamic Balance)';
   else balanceGrade = '극성 조율 리셋기 (Polarity Tuning)';
 
-  const summary = `[음양 극성 리듬] 陽: ${yangCount}자(${yangPercentage}%) / 陰: ${yinCount}자(${yinPercentage}%). ` +
-    `기질: ${archetypeTitle}. 조화도: ${balanceScore}점 [${balanceGrade}]. ` +
+  const calculatedAtKst = formatYinYangKstTimestamp(now);
+  const q = (params?.question || '').trim();
+  const polaritySynthesisMatrix = {
+    dominantTension: `陽 ${yangCount}글자 ↔ 陰 ${yinCount}글자 (${currentBias})`,
+    alignmentState: `${archetypeTitle} · ${balanceGrade}`,
+    integratedAction: `${neutralizingPractice}${q ? ` [질문 맥락: ${q}]` : ''}`,
+  };
+
+  const summary = `[음양 극성 리듬] 陽 ${yangCount}자 : 陰 ${yinCount}자. ` +
+    `기질: ${archetypeTitle}. 위상: [${balanceGrade}]. ` +
     `추천: 양 실행[${timeSlots.yangActionWindow}] / 음 심화[${timeSlots.yinFocusWindow}].`;
 
   return {
     engineVersion: YIN_YANG_POLARITY_VERSION,
     calculatedAtIso: now.toISOString(),
+    calculatedAtKst,
     distribution: {
       yangCount,
       yinCount,
@@ -159,7 +185,8 @@ export function calculateYinYangPolarity(params?: {
     },
     balanceScore,
     balanceGrade,
-    summary
+    summary,
+    polaritySynthesisMatrix,
   };
 }
 
@@ -167,8 +194,11 @@ export function calculateYinYangPolarity(params?: {
  * 프롬프트 주입용 포맷터
  */
 export function formatYinYangPolarityPrompt(res: YinYangPolarityResult): string {
-  return `[음양 극성 밸런스 & 바이폴라 리듬 엔진 리포트 (엔진: ${res.engineVersion})]
-- 음양 에너지 분포: **陽 ${res.distribution.yangCount}글자 (${res.distribution.yangPercentage}%) : 陰 ${res.distribution.yinCount}글자 (${res.distribution.yinPercentage}%)**
+  const matrixLine = res.polaritySynthesisMatrix
+    ? `\n- 음양 극성 교차 매트릭스: 핵심 긴장(${res.polaritySynthesisMatrix.dominantTension}) · 조율 상태(${res.polaritySynthesisMatrix.alignmentState}) · 통합 실천(${res.polaritySynthesisMatrix.integratedAction})`
+    : '';
+  return `[음양 극성 밸런스 & 바이폴라 리듬 엔진 리포트 (엔진: ${res.engineVersion} | ${res.calculatedAtKst})]
+- 음양 에너지 분포: **陽 ${res.distribution.yangCount}글자 : 陰 ${res.distribution.yinCount}글자**
   • 기질 아키타입: **${res.distribution.archetypeTitle}**
   • 에너지 성향: ${res.distribution.archetypeDescription}
 - 24시간 바이폴라 최적 윈도우:
@@ -177,6 +207,6 @@ export function formatYinYangPolarityPrompt(res: YinYangPolarityResult): string 
 - 극성 밸런스 조율 (${res.neutralizer.currentBias}):
   • 중화 리추얼: ${res.neutralizer.neutralizingPractice}
   • 멘탈 닻: "${res.neutralizer.groundingMantra}"
-- 음양 균형 조화 지수: **${res.balanceScore}점** [${res.balanceGrade}]
+- 음양 균형 위상: **${res.balanceGrade}**${matrixLine}
 ※ 루시 지침: 낮의 태양이 뜨거울 때 달릴 수 있고, 밤의 달빛 아래서 깊은 사색과 시스템 설계가 완성됩니다. 양의 결단과 음의 숙고가 아름다운 리듬으로 교차할 때 지치지 않는 영구 모멘텀이 생깁니다. 대화 시 사용자의 현재 에너지 기질을 존중하며, 과열될 때는 차분한 음의 지혜를, 주저할 때는 시원한 양의 추진력을 자연스럽게 북돋워 주세요.`;
 }

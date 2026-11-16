@@ -2168,8 +2168,10 @@ test('Life Season Timing Engine: 10년 대운 및 교운기 타이밍 검증', (
 });
 
 test('Wealth Pipeline Engine: 재물 창출 아키타입 및 골든 윈도우 타이밍 검증', () => {
-  const res = calculateWealthPipeline({ profile, targetDate: new Date('2026-11-02T19:00:00+09:00') });
+  const res = calculateWealthPipeline({ profile, targetDate: new Date('2026-11-02T19:00:00+09:00'), question: '재물 파이프라인 확장' });
   assert.equal(res.engineVersion, WEALTH_PIPELINE_VERSION);
+  assert(res.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(res.wealthSynthesisMatrix?.integratedAction));
   assert(['builder', 'scaler', 'investor', 'optimizer'].includes(res.archetype.type));
   assert(res.timing.annualWealthScore >= 0 && res.timing.annualWealthScore <= 100);
   assert(res.timing.monthlyCashFlowScore >= 0 && res.timing.monthlyCashFlowScore <= 100);
@@ -2178,6 +2180,9 @@ test('Wealth Pipeline Engine: 재물 창출 아키타입 및 골든 윈도우 �
   assert(prompt.includes(WEALTH_PIPELINE_VERSION));
   assert(prompt.includes('재물 아키타입'));
   assert(prompt.includes('골든 윈도우'));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
 });
 
 test('Karmic Nodes Engine: 카르믹 노드 축 및 영혼 진화 궤적 검증', () => {
@@ -2259,8 +2264,10 @@ test('Monthly Flow Engine: 12개월 월운 및 분기 타이밍 검증', () => {
 });
 
 test('Voice Persona Engine: 스피치 페르소나 및 설득력 치트키 검증', () => {
-  const res = calculateVoicePersona({ profile, targetDate: new Date('2026-11-03T08:00:00+09:00') });
+  const res = calculateVoicePersona({ profile, targetDate: new Date('2026-11-03T08:00:00+09:00'), question: '발표 화법' });
   assert.equal(res.engineVersion, VOICE_PERSONA_VERSION);
+  assert(res.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(res.voiceSynthesisMatrix?.integratedAction));
   assert(res.persona.title.length > 0);
   assert(res.persuasionScore >= 0 && res.persuasionScore <= 100);
   assert(res.cheatsheet.negotiation.length > 0);
@@ -2269,6 +2276,9 @@ test('Voice Persona Engine: 스피치 페르소나 및 설득력 치트키 검�
   assert(prompt.includes(VOICE_PERSONA_VERSION));
   assert(prompt.includes('1순위 화법 페르소나'));
   assert(prompt.includes('실전 스피치 치트키'));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
 });
 
 test('Contract Shield Engine: 계약 분쟁 리스크 및 5대 쉴드 체크리스트 검증', () => {
@@ -2406,8 +2416,10 @@ test('Elemental Resonance Engine: 오행 생극제화 및 상생 순환 루프 �
 });
 
 test('Yin-Yang Polarity Engine: 음양 수리 분포 및 24시간 바이폴라 윈도우 검증', () => {
-  const res = calculateYinYangPolarity({ profile, targetDate: new Date('2026-11-03T08:00:00+09:00') });
+  const res = calculateYinYangPolarity({ profile, targetDate: new Date('2026-11-03T08:00:00+09:00'), question: '오늘의 에너지 리듬' });
   assert.equal(res.engineVersion, YIN_YANG_POLARITY_VERSION);
+  assert(res.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(res.polaritySynthesisMatrix?.integratedAction));
   assert.equal(res.distribution.yangCount + res.distribution.yinCount, 8);
   assert(res.balanceScore >= 0 && res.balanceScore <= 100);
   assert(res.timeSlots.yangActionWindow.length > 0);
@@ -2415,6 +2427,9 @@ test('Yin-Yang Polarity Engine: 음양 수리 분포 및 24시간 바이폴라 �
   const prompt = formatYinYangPolarityPrompt(res);
   assert(prompt.includes(YIN_YANG_POLARITY_VERSION));
   assert(prompt.includes('음양 극성 밸런스'));
+  assert(prompt.includes('교차 매트릭스'));
+  assert(!prompt.includes('/100'));
+  assert(!prompt.includes('%'));
 });
 
 test('Rune Matrix Engine: 고대 노르딕 룬 동시성 3대 스프레드 검증', () => {
