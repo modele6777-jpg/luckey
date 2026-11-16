@@ -13,7 +13,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const HERACLITUS_PANTA_RHEI_VERSION = 'LUCKEY-HERACLITUS-PANTA-RHEI-v2.0.0';
+export const HERACLITUS_PANTA_RHEI_VERSION = 'LUCKEY-HERACLITUS-PANTA-RHEI-v2.1.0';
 
 export interface HeraclitusStage {
   stageLevel: number;
@@ -163,7 +163,13 @@ function getKstDate(now?: Date): Date {
 }
 
 function getKstDateString(now?: Date): string {
-  return getKstDate(now).toISOString().replace('T', ' ').substring(0, 19) + ' KST';
+  return `${getKstDate(now).toISOString().slice(0, 19)}+09:00`;
+}
+
+function describeLogosHarmonyStage(ratio: number): string {
+  if (ratio >= 85) return '깊은 숨은 조화기 (대립하는 긴장이 창조적 선율로 자연스럽게 이어지는 국면)';
+  if (ratio >= 72) return '유연한 물결 조율기 (변화의 흐름을 수용하며 중심을 가다듬는 국면)';
+  return '화로의 전환 준비기 (서두른 결론을 멈추고 반대편 시각을 함께 살필 국면)';
 }
 
 function hashSeed(seedStr: string): number {
@@ -303,12 +309,8 @@ export function calculateHeraclitusPantaRhei(
 
 export function formatHeraclitusPantaRheiPrompt(result: HeraclitusPantaRheiResult): string {
   return `[🌊 고대 그리스 에페소스 헤라클레이토스 만물유전(Panta Rhei) & 로고스 대립물 조화 리포트]
-- 엔진 버전: ${result.engineVersion}
-- 만물유전 변화 수용 및 흐름 유연성: ${result.pantaRheiFluxIndex}%
-- 로고스 대립물의 조화 및 심층 질서도: ${result.logosHarmoniaScore}%
-- 영원한 불(Aei Zoon Pyr) 활력 및 갱신력: ${result.eternalFireVitality}%
-- 보이지 않는 조화(Harmonia Aphanes) 통찰력: ${result.hiddenHarmoniaStrength}%
-- 에난티오드로미아 극과 극 전환 균형도: ${result.enantiodromiaBalance}%
+- 엔진 버전: ${result.engineVersion} | 연산 시각: ${result.calculatedAtKst}
+- 로고스 조화 위상: **${describeLogosHarmonyStage(result.dialecticPolarityMatrix.tensionHarmonyRatio)}**
 - 현행 우주적 위상: **[${result.activeHeraclitusStage.stageNameKo} (${result.activeHeraclitusStage.stageNameGreek})]**
   → 핵심 원리: ${result.activeHeraclitusStage.cosmicPrinciple}
   → 변화의 은총: ${result.activeHeraclitusStage.fluxBlessing}
@@ -317,11 +319,12 @@ export function formatHeraclitusPantaRheiPrompt(result: HeraclitusPantaRheiResul
   → 전환 관점: ${result.situationalReflection.dialecticShift}
 - 시공간 리듬 위상: ${result.temporalFluxContext.dayPhaseKo} / ${result.temporalFluxContext.seasonalPulseKo} (권장 태도: ${result.temporalFluxContext.fluxAttitude})
   → 타이밍 조언: ${result.temporalFluxContext.timingCounsel}
-- 대립물 역학 매트릭스 (${result.dialecticPolarityMatrix.dominantTensionPair}): 긴장-조화 전환율 ${result.dialecticPolarityMatrix.tensionHarmonyRatio}% · 쇄신 불꽃 모멘텀 ${result.dialecticPolarityMatrix.renewalFireMomentum}%
+- 대립물 역학 매트릭스 (${result.dialecticPolarityMatrix.dominantTensionPair}):
   → 활과 리라 전략: ${result.dialecticPolarityMatrix.bowAndLyreStrategy}
 - 최우선 변증법적 지침: **[${result.primaryDialecticWisdom.themeKo} (${result.primaryDialecticWisdom.greekAphorism})]**
   → 핵심 본질: ${result.primaryDialecticWisdom.coreEssence}
   → 실천 지침: ${result.primaryDialecticWisdom.actionableDirective}
 - 로고스의 우주적 계시: 《${result.logosCosmicInsight.insightTitle}》
-  → 철학적 조언: "${result.logosCosmicInsight.philosophicalCounsel}"`;
+  → 철학적 조언: "${result.logosCosmicInsight.philosophicalCounsel}"
+- 해석 경계: 본 리포트는 헤라클레이토스 단편 철학에 기반한 정성적 변화 성찰 안내이며, 확정적 미래 예단이 아닙니다.`;
 }
