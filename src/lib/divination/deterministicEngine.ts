@@ -3392,7 +3392,7 @@ try {
   // 227. 조선 완당 추사 김정희 세한도 송백후조 & 문자향 서권기 품격 엔진
   const chusaKimJeonghuiSehandoResult = calculateSupplement('chusaKimJeonghuiSehandoResult', () => ((() => {
     try {
-      return calculateChusaKimJeonghuiSehando(profile);
+      return calculateChusaKimJeonghuiSehando(profile, question, now);
     } catch (_) {
       return null;
     }
@@ -3446,7 +3446,7 @@ try {
   // 233. 조선 다산 정약용 목민심서 여유당 율기·애민 실사구시 실학 지혜 엔진
   const dasanMokminSimseoResult = calculateSupplement('dasanMokminSimseoResult', () => ((() => {
     try {
-      return calculateDasanMokminSimseo(profile);
+      return calculateDasanMokminSimseo(profile, question, now);
     } catch (_) {
       return null;
     }
@@ -3473,7 +3473,7 @@ try {
   // 236. 신라 고운 최치원 난랑비서 국유현묘지도 풍류도 & 포함삼교 접화군생 조화 엔진
   const choeChiwonPungryudoResult = calculateSupplement('choeChiwonPungryudoResult', () => ((() => {
     try {
-      return calculateChoeChiwonPungryudo(profile);
+      return calculateChoeChiwonPungryudo(profile, question, now);
     } catch (_) {
       return null;
     }
@@ -4940,16 +4940,16 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'renaissanceBrunoInfiniteUniverseHeroicFurore', nameKo: '조르다노 브루노 무한우주론 영웅적열정 정신주권', icon: '🌌', category: 'deep_master' },
   { key: 'frenchPascalPenseesHeartReason', nameKo: '블레즈 파스칼 팡세 사유하는갈대 심장의논리 파스칼의내기', icon: '🌾', category: 'deep_master', summary: '블레즈 파스칼의 《팡세》 사상으로 헛된 소음을 멈추고 사유하는 갈대의 존엄과 심장의 직관·결단을 비춥니다.' },
   { key: 'germanSchopenhauerWillRepresentation', nameKo: '쇼펜하우어 의지와표상 맹목적의지초월 심미적관조 동포애자비', icon: '🎼', category: 'deep_master', summary: '쇼펜하우어의 의지와 표상 철학으로 맹목적 욕망에서 한 걸음 물러나 심미적 관조와 자비·적정 거리를 회복합니다.' },
-  { key: 'koreanChusaKimJeonghuiSehando', nameKo: '추사 김정희 세한도 송백후조 역경극복지조 문자향서권기', icon: '🌲', category: 'deep_master' },
+  { key: 'koreanChusaKimJeonghuiSehando', nameKo: '추사 김정희 세한도 송백후조 역경극복지조 문자향서권기', icon: '🌲', category: 'deep_master', summary: '추사 김정희의 세한도 송백후조와 문자향 서권기로 역경 속에서도 흔들리지 않는 지조와 담백한 본질을 비춥니다.' },
   { key: 'danishKierkegaardStagesOfLife', nameKo: '쇠렌 키르케고르 단독자 실존3단계 이것이냐저것이냐 신앙도약', icon: '⚖️', category: 'deep_master', summary: '키르케고르의 미적·윤리적·종교적 실존 단계에서 불안을 딛고 단독자의 결단으로 도약합니다.' },
   { key: 'germanNietzscheZarathustraAmorFati', nameKo: '프리드리히 니체 차라투스트라 초인 아모르파티 영원회귀', icon: '🦅', category: 'deep_master', summary: '니체의 아모르 파티(운명애)와 3단계 정신 변신으로 주어진 필연을 창조적 자기 극복의 힘으로 바꿉니다.' },
   { key: 'koreanSeosanHyujeongSeongaGwigam', nameKo: '서산대사 휴정 선가귀감 일물영명 활구참선 선교원융', icon: '📿', category: 'deep_master' },
   { key: 'swissJungIndividuationArchetype', nameKo: '카를 융 개성화 원형통합 그림자 아니마아니무스 동시성', icon: '🎭', category: 'deep_master' },
   { key: 'germanHegelDialecticalAufheben', nameKo: '헤겔 정신현상학 변증법적지양 정반합 인륜성 미네르바올빼미', icon: '🏛️', category: 'deep_master', summary: '헤겔의 변증법적 지양(Aufheben)과 상호 인정을 통해 모순과 대립을 더 높은 차원의 통합으로 승화합니다.' },
-  { key: 'koreanDasanJeongYagyongMokminSimseo', nameKo: '다산 정약용 목민심서 여유당신독 율기청렴 애민 실사구시', icon: '📜', category: 'deep_master' },
+  { key: 'koreanDasanJeongYagyongMokminSimseo', nameKo: '다산 정약용 목민심서 여유당신독 율기청렴 애민 실사구시', icon: '📜', category: 'deep_master', summary: '다산 정약용의 여유당 신독과 실사구시 정신으로 신중한 절제와 사실 기반의 실질적 해법을 안내합니다.' },
   { key: 'northAfricanAugustineConfessionesIlluminatio', nameKo: '아우구스티누스 고백록 시간의3중현존 내적조명 은총안식 평정심', icon: '🕯️', category: 'deep_master' },
   { key: 'italianMachiavelliVirtuFortuna', nameKo: '마키아벨리 군주론 비르투역량 포르투나극복 시대조화 여우와사자', icon: '🦁', category: 'deep_master' },
-  { key: 'koreanChoeChiwonPungryudo', nameKo: '최치원 난랑비서 국유현묘지도 풍류도 포함삼교 접화군생 계원필경', icon: '🪶', category: 'deep_master' },
+  { key: 'koreanChoeChiwonPungryudo', nameKo: '최치원 난랑비서 국유현묘지도 풍류도 포함삼교 접화군생 계원필경', icon: '🪶', category: 'deep_master', summary: '고운 최치원의 풍류도와 삼교회통 사상으로 대립을 유연하게 아우르는 상생과 내면의 여유를 비춥니다.' },
   { key: 'italianThomasAquinasSummaTheologiae', nameKo: '토마스 아퀴나스 신학대전 이성신앙조화 5대길 7대덕목 지복직관', icon: '⛪', category: 'deep_master' },
   { key: 'britishFrancisBaconNovumOrganum', nameKo: '프랜시스 베이컨 신기관 4대우상타파 참된귀납 아는것이힘이다 사실검증', icon: '🔬', category: 'deep_master', summary: '프랜시스 베이컨의 신기관 철학으로 마음을 흐리는 4대 우상을 걷어내고 사실과 경험에 뿌리내린 실천적 지성을 세웁니다.' },
   { key: 'koreanRyuSeongryongJingbirok', nameKo: '서애 류성룡 징비록 징전비후 유비무환 거안사위 인재발탁 실사구시', icon: '🛡️', category: 'deep_master' },

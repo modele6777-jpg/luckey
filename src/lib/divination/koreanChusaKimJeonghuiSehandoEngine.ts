@@ -13,7 +13,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const CHUSA_SEHANDO_WISDOM_VERSION = 'LUCKEY-CHUSA-SEHANDO-WISDOM-v2.0.0';
+export const CHUSA_SEHANDO_WISDOM_VERSION = 'LUCKEY-CHUSA-SEHANDO-WISDOM-v2.1.0';
 
 export interface SehandoTheme {
   themeKey: string;
@@ -43,6 +43,9 @@ export interface ChusaKimJeonghuiSehandoResult {
   // 세부 체계
   activeSehandoTheme: SehandoTheme;
   focalChusaMaxim: ChusaMaxim;
+  secondaryChusaMaxim: ChusaMaxim;
+  reflectiveQuestion: string;
+  interpretiveBoundary: string;
   chusaPersonalCounsel: {
     counselTitle: string;
     practicalGuidance: string;
@@ -61,7 +64,7 @@ function formatChusaKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 KST`;
 }
 
 function describeSehandoStage(score: number): string {
@@ -167,9 +170,16 @@ export function calculateChusaKimJeonghuiSehando(
 
   const themeIndex = (absHash >> 4) % SEHANDO_THEMES.length;
   const maximIndex = (absHash >> 7) % CHUSA_MAXIMS.length;
+  const secondaryMaximIndex = (maximIndex + 1 + ((absHash >> 10) % (CHUSA_MAXIMS.length - 1))) % CHUSA_MAXIMS.length;
 
   const activeSehandoTheme = SEHANDO_THEMES[themeIndex];
   const focalChusaMaxim = CHUSA_MAXIMS[maximIndex];
+  const secondaryChusaMaxim = CHUSA_MAXIMS[secondaryMaximIndex];
+  const trimmedQuery = query?.trim();
+  const reflectiveQuestion = trimmedQuery
+    ? `'${trimmedQuery}'이라는 찬바람 속에서도 꺾이지 않고 묵묵히 지켜 내야 할 나만의 송백(원칙과 진심)은 무엇인가요?`
+    : `지금 내 곁에서 겉치레가 아니라 진심으로 신의를 나누고 있는 세한지교(歲寒之交)와 내가 다져야 할 내공의 뿌리는 무엇인가요?`;
+  const interpretiveBoundary = '추사 김정희 세한도·문자향 관점은 길흉 예단이 아니라, 역경 속 지조와 절제된 본질을 비추는 예술·인문 성찰 렌즈입니다.';
 
   const counselTitle = `추사 세한도(歲寒圖) 품격: ${activeSehandoTheme.themeTitleKo}`;
   const practicalGuidance = `추사 김정희 선생의 세한도는 찬바람 부는 겨울 속에서도 꿋꿋한 송백의 기개와 문자향 서권기의 깊은 내공을 지니도록 일깨웁니다. ` +
@@ -202,6 +212,9 @@ export function calculateChusaKimJeonghuiSehando(
     dambaekSimgyeongPurityScore,
     activeSehandoTheme,
     focalChusaMaxim,
+    secondaryChusaMaxim,
+    reflectiveQuestion,
+    interpretiveBoundary,
     chusaPersonalCounsel: {
       counselTitle,
       practicalGuidance,
@@ -227,9 +240,12 @@ export function formatChusaKimJeonghuiSehandoPrompt(res: ChusaKimJeonghuiSehando
     `- 철학적 통찰: ${res.activeSehandoTheme.philosophicalInsight}`,
     `- 역경 극복 조언: ${res.activeSehandoTheme.resilienceCounsel}`,
     `- 핵심 완당 명훈: "${res.focalChusaMaxim.maximKo}"`,
+    `- 보조 교차 명훈: "${res.secondaryChusaMaxim.maximKo}" [${res.secondaryChusaMaxim.virtueDimension}]`,
     `- 한자 원문: "${res.focalChusaMaxim.maximHanja}" [${res.focalChusaMaxim.virtueDimension}]`,
     `- 실천적 행동 지침: ${res.focalChusaMaxim.actionGuidance}`,
     `- 통합 품격 처방: ${res.chusaPersonalCounsel.practicalGuidance}`,
+    `- 성찰 질문: ${res.reflectiveQuestion}`,
+    `- 해석 경계: ${res.interpretiveBoundary}`,
   ];
   if (res.sehandoSynthesisMatrix) {
     lines.push(

@@ -15,7 +15,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const KOREAN_CHOE_CHIWON_VERSION = 'LUCKEY-KOREAN-CHOE-CHIWON-PUNGRYUDO-v2.0.0';
+export const KOREAN_CHOE_CHIWON_VERSION = 'LUCKEY-KOREAN-CHOE-CHIWON-PUNGRYUDO-v2.1.0';
 
 export interface ChoeChiwonTheme {
   themeKey: string;
@@ -45,6 +45,9 @@ export interface ChoeChiwonPungryudoResult {
   // 세부 체계
   activeChoeChiwonTheme: ChoeChiwonTheme;
   focalChoeChiwonAphorism: ChoeChiwonAphorism;
+  secondaryChoeChiwonAphorism: ChoeChiwonAphorism;
+  reflectiveQuestion: string;
+  interpretiveBoundary: string;
   choeChiwonPersonalCounsel: {
     counselTitle: string;
     philosophicalGuidance: string;
@@ -63,7 +66,7 @@ function formatChoeChiwonKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 KST`;
 }
 
 function describePungryudoStage(score: number): string {
@@ -183,9 +186,16 @@ export function calculateChoeChiwonPungryudo(
 
   const themeIndex = (absHash >> 4) % CHOE_CHIWON_THEMES.length;
   const aphorismIndex = (absHash >> 7) % CHOE_CHIWON_APHORISMS.length;
+  const secondaryAphorismIndex = (aphorismIndex + 1 + ((absHash >> 10) % (CHOE_CHIWON_APHORISMS.length - 1))) % CHOE_CHIWON_APHORISMS.length;
 
   const activeChoeChiwonTheme = CHOE_CHIWON_THEMES[themeIndex];
   const focalChoeChiwonAphorism = CHOE_CHIWON_APHORISMS[aphorismIndex];
+  const secondaryChoeChiwonAphorism = CHOE_CHIWON_APHORISMS[secondaryAphorismIndex];
+  const trimmedQuery = query?.trim();
+  const reflectiveQuestion = trimmedQuery
+    ? `'${trimmedQuery}'에서 유·불·선 어느 한쪽에 치우치지 않고 '${activeChoeChiwonTheme.themeTitleKo}'의 넉넉함으로 조율할 수 있는 접점은 무엇인가요?`
+    : `지금 내 일상에서 세속의 시비를 잠시 내려놓고 '${activeChoeChiwonTheme.themeTitleKo}'의 여유를 회복할 수 있는 고요한 틈은 어디에 있나요?`;
+  const interpretiveBoundary = '고운 최치원 풍류도·삼교회통 관점은 미래의 길흉 예단이 아니라, 유연한 조화와 상생의 품격을 비추는 한국 사상 성찰 렌즈입니다.';
 
   const counselTitle = `고운 최치원 풍류도 지혜: ${activeChoeChiwonTheme.themeTitleKo}`;
   const philosophicalGuidance = `고운 최치원 선생의 풍류도(風流道) 사상은 유·불·선을 원융회통하여 모든 생명을 감화하고(接化群生) 자연과 하나 되는 대원융의 멋을 전합니다. ` +
@@ -218,6 +228,9 @@ export function calculateChoeChiwonPungryudo(
     detachedTranscendentalPeaceScore,
     activeChoeChiwonTheme,
     focalChoeChiwonAphorism,
+    secondaryChoeChiwonAphorism,
+    reflectiveQuestion,
+    interpretiveBoundary,
     choeChiwonPersonalCounsel: {
       counselTitle,
       philosophicalGuidance,
@@ -243,9 +256,12 @@ export function formatChoeChiwonPungryudoPrompt(res: ChoeChiwonPungryudoResult):
     `- 사상·문화적 통찰: ${res.activeChoeChiwonTheme.culturalInsight}`,
     `- 풍류도 권면: ${res.activeChoeChiwonTheme.pungryuCounsel}`,
     `- 핵심 명문: "${res.focalChoeChiwonAphorism.aphorismKo}"`,
+    `- 보조 교차 명문: "${res.secondaryChoeChiwonAphorism.aphorismKo}" [${res.secondaryChoeChiwonAphorism.sourceOrigin}]`,
     `- 한문 원전: "${res.focalChoeChiwonAphorism.aphorismHanja}" [${res.focalChoeChiwonAphorism.sourceOrigin}]`,
     `- 실천적 행동 지침: ${res.focalChoeChiwonAphorism.practicalAction}`,
     `- 통합 풍류 권면: ${res.choeChiwonPersonalCounsel.philosophicalGuidance}`,
+    `- 성찰 질문: ${res.reflectiveQuestion}`,
+    `- 해석 경계: ${res.interpretiveBoundary}`,
   ];
   if (res.pungryudoSynthesisMatrix) {
     lines.push(

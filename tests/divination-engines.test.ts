@@ -9558,3 +9558,36 @@ test('Tagore Gitanjali, Upanishadic Tat Tvam Asi, and Dante Divine Comedy v2.1.0
   const dnPrompt = formatDanteAlighieriDivineComedyAscentPrompt(dn);
   assert.ok(dnPrompt.includes('+09:00') && dnPrompt.includes('보조 교차 경구') && dnPrompt.includes('성찰 질문') && dnPrompt.includes('해석 경계'));
 });
+
+test('Choe Chiwon Pungryudo, Chusa Sehando, and Dasan Mokmin Simseo v2.1.0 include +09:00 KST, dual cross-check, reflective question, and interpretive boundary', () => {
+  const profile = { basic: { name: '제제', birthdate: '1994-01-24', birthtime: '12:00', gender: 'male' } } as any;
+  const now = new Date('2026-11-16T04:45:00Z');
+  const query = '원칙을 지키면서도 유연하게 현실 문제를 풀고 싶습니다';
+
+  const cc = calculateChoeChiwonPungryudo(profile, query, now);
+  assert.equal(cc.engineVersion, KOREAN_CHOE_CHIWON_VERSION);
+  assert.match(cc.calculatedAtKst, /\+09:00/);
+  assert.notEqual(cc.secondaryChoeChiwonAphorism.aphorismKey, cc.focalChoeChiwonAphorism.aphorismKey);
+  assert.ok(cc.reflectiveQuestion.includes(query));
+  assert.ok(cc.interpretiveBoundary.includes('성찰'));
+  const ccPrompt = formatChoeChiwonPungryudoPrompt(cc);
+  assert.ok(ccPrompt.includes('+09:00') && ccPrompt.includes('보조 교차 명문') && ccPrompt.includes('성찰 질문') && ccPrompt.includes('해석 경계'));
+
+  const cs = calculateChusaKimJeonghuiSehando(profile, query, now);
+  assert.equal(cs.engineVersion, CHUSA_SEHANDO_WISDOM_VERSION);
+  assert.match(cs.calculatedAtKst, /\+09:00/);
+  assert.notEqual(cs.secondaryChusaMaxim.maximKey, cs.focalChusaMaxim.maximKey);
+  assert.ok(cs.reflectiveQuestion.includes(query));
+  assert.ok(cs.interpretiveBoundary.includes('성찰'));
+  const csPrompt = formatChusaKimJeonghuiSehandoPrompt(cs);
+  assert.ok(csPrompt.includes('+09:00') && csPrompt.includes('보조 교차 명훈') && csPrompt.includes('성찰 질문') && csPrompt.includes('해석 경계'));
+
+  const ds = calculateDasanMokminSimseo(profile, query, now);
+  assert.equal(ds.engineVersion, KOREAN_DASAN_MOKMIN_SIMSEO_VERSION);
+  assert.match(ds.calculatedAtKst, /\+09:00/);
+  assert.notEqual(ds.secondaryDasanAphorism.aphorismKey, ds.focalDasanAphorism.aphorismKey);
+  assert.ok(ds.reflectiveQuestion.includes(query));
+  assert.ok(ds.interpretiveBoundary.includes('성찰'));
+  const dsPrompt = formatDasanMokminSimseoPrompt(ds);
+  assert.ok(dsPrompt.includes('+09:00') && dsPrompt.includes('보조 교차 아포리즘') && dsPrompt.includes('성찰 질문') && dsPrompt.includes('해석 경계'));
+});
