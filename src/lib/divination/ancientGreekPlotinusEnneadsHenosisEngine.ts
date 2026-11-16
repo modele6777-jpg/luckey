@@ -9,7 +9,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const ANCIENT_GREEK_PLOTINUS_VERSION = 'LUCKEY-PLOTINUS-ENNEADS-v2.0.0';
+export const ANCIENT_GREEK_PLOTINUS_VERSION = 'LUCKEY-PLOTINUS-ENNEADS-v2.1.0';
 
 export type PlotinusQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 export type PlotinusAscentStage = 'KATHARSIS_PURIFICATION' | 'NOUS_ILLUMINATION' | 'HENOSIS_STILLNESS';
@@ -69,6 +69,7 @@ export interface AncientGreekPlotinusEnneadsHenosisResult {
   ritualAction: string;
   reflectionFocus: string;
   boundaryNotice: string;
+  interpretiveBoundary: string;
   situationalEnneadsAudit: PlotinusSituationalAudit;
   temporalNousRhythm: PlotinusTemporalRhythm;
   plotinusSynthesisMatrix: PlotinusSynthesisMatrix;
@@ -354,6 +355,7 @@ export function calculateAncientGreekPlotinusEnneadsHenosis(
     ritualAction,
     reflectionFocus,
     boundaryNotice,
+    interpretiveBoundary: boundaryNotice,
     situationalEnneadsAudit,
     temporalNousRhythm,
     plotinusSynthesisMatrix,
