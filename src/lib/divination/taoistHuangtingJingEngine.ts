@@ -28,7 +28,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const TAOIST_HUANGTING_VERSION = 'LUCKEY-TAOIST-HUANGTING-v2.0.0';
+export const TAOIST_HUANGTING_VERSION = 'LUCKEY-TAOIST-HUANGTING-v2.1.0';
 
 function formatHuangtingKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -37,7 +37,7 @@ function formatHuangtingKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
 }
 
 export interface CinnabarPalaceStatus {
@@ -61,9 +61,12 @@ export interface TaoistHuangtingJingReport {
   calculatedAtKst: string;
   palaces: CinnabarPalaceStatus;
   guardianSpirit: VisceraGuardianSpirit;
+  secondarySpirit: VisceraGuardianSpirit;
   illuminationScore: number;       // 0 ~ 100 회광반조 내적 조화도
   huangtingPrescription: string;   // 황정경 실천 양생법
   synthesisMessage: string;
+  reflectiveQuestion: string;
+  interpretiveBoundary: string;
   huangtingSynthesisMatrix?: {
     dominantTension: string;
     alignmentState: string;
@@ -134,6 +137,7 @@ export function calculateTaoistHuangtingJing(
 
   const spiritIdx = (seed + now.getUTCDate()) % VISCERA_SPIRITS.length;
   const guardianSpirit = VISCERA_SPIRITS[spiritIdx];
+  const secondarySpirit = VISCERA_SPIRITS[(spiritIdx + 1) % VISCERA_SPIRITS.length];
 
   const illuminationScore = Math.round((upperNiwanScore + middleJiangScore + lowerQihaiScore) / 3);
 
@@ -141,9 +145,16 @@ export function calculateTaoistHuangtingJing(
 
   const synthesisMessage = `황정내경경 원전에 따라, 당신의 삼단전 중 [${dominantPalace}]이 중심을 잡고 있으며 오늘 주재하는 내장신은 [${guardianSpirit.spiritName}]입니다.`;
 
+  const reflectiveQuestion = q
+    ? `"${q}"의 고비를 넘길 때, ${guardianSpirit.organ}의 진신 ${guardianSpirit.spiritName}과 보조 ${secondarySpirit.organ}의 ${secondarySpirit.spiritName} 가운데 지금 내 몸이 먼저 요청하는 휴식은 무엇입니까?`
+    : `오늘 ${dominantPalace}의 기운을 고르게 유지하면서 ${guardianSpirit.spiritName}의 잠언을 실천하기 위해, 가장 먼저 내려놓을 긴장은 무엇입니까?`;
+
+  const interpretiveBoundary =
+    '도교 상청파 황정경 삼단전·오장 진신(眞神) 상징은 심신의 호흡과 내면의 균형을 살피기 위한 은유적 관점이며, 단정적 미래 예측이나 의학·법률·재무 판단을 대체하지 않습니다.';
+
   const huangtingSynthesisMatrix = {
     dominantTension: `${dominantPalace} ↔ ${guardianSpirit.organ}`,
-    alignmentState: `진신: ${guardianSpirit.spiritName} (${guardianSpirit.courtesyName}) · ${guardianSpirit.robedColor}`,
+    alignmentState: `진신: ${guardianSpirit.spiritName} (${guardianSpirit.courtesyName}) · 보조: ${secondarySpirit.spiritName} · ${guardianSpirit.robedColor}`,
     integratedAction: `${guardianSpirit.innerPreservationMantra}${q ? ` [질문 맥락: ${q}]` : ''}`,
   };
 
@@ -158,9 +169,12 @@ export function calculateTaoistHuangtingJing(
       dominantPalace,
     },
     guardianSpirit,
+    secondarySpirit,
     illuminationScore,
     huangtingPrescription,
     synthesisMessage,
+    reflectiveQuestion,
+    interpretiveBoundary,
     huangtingSynthesisMatrix,
   };
 }
@@ -175,6 +189,9 @@ export function formatTaoistHuangtingJingPrompt(report: TaoistHuangtingJingRepor
 - **오장 주재 진신(眞神)**: **${report.guardianSpirit.organ} - ${report.guardianSpirit.spiritName}** (자: ${report.guardianSpirit.courtesyName})
   - 신성 복식: ${report.guardianSpirit.robedColor}
   - 오장신 존사 잠언: "${report.guardianSpirit.innerPreservationMantra}"
+- **보조 교차 진신**: **${report.secondarySpirit.organ} - ${report.secondarySpirit.spiritName}** (${report.secondarySpirit.robedColor})
 - **황정경 내관 양생 처방**: ${report.huangtingPrescription}
-- **황정 통합 나침반**: ${report.synthesisMessage}${matrixLine}`;
+- **황정 통합 나침반**: ${report.synthesisMessage}${matrixLine}
+- **성찰 질문**: ${report.reflectiveQuestion}
+- **해석 경계**: ${report.interpretiveBoundary}`;
 }

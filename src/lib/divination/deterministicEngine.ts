@@ -1860,7 +1860,7 @@ try {
   const taoistNeidanMeridianResult = calculateSupplement('taoistNeidanMeridianResult', () => (birthdateStr && profile
     ? (() => {
         try {
-          return calculateTaoistNeidanMeridian({ profile, targetDate: now });
+          return calculateTaoistNeidanMeridian({ profile, targetDate: now, question });
         } catch (_) {
           return null;
         }
@@ -2186,7 +2186,7 @@ try {
   // 94. 도교 상청파 황정경(黃庭經) 신체 오장 신성좌 & 존사(存思) 내경 엔진
   const taoistHuangtingJingResult = calculateSupplement('taoistHuangtingJingResult', () => ((() => {
     try {
-      return calculateTaoistHuangtingJing(profile);
+      return calculateTaoistHuangtingJing(profile, { targetDate: now, question });
     } catch (_) {
       return null;
     }
@@ -4773,7 +4773,7 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'somaticBodyArmoring', nameKo: '소매틱 아머링', icon: '🧘', category: 'deep_master' },
   { key: 'supremeWisdomTrinity', nameKo: '3대 지혜 삼위일체', icon: '👑', category: 'deep_master' },
   { key: 'sacredVortexGeometry', nameKo: '황금비 영혼 수비학', icon: '🌀', category: 'deep_master' },
-  { key: 'taoistNeidanMeridian', nameKo: '도교 내단 경락시계', icon: '☯️', category: 'deep_master' },
+  { key: 'taoistNeidanMeridian', nameKo: '도교 내단 경락시계', icon: '☯️', category: 'deep_master', summary: '도교 내단 삼보(정·기·신)와 자오유주 12경락 시계 상징으로 현재 시진의 기혈 순환과 단전 호흡을 짚어 주는 관점' },
   { key: 'synchronicityOmen', nameKo: '칼 융 동시성 오멘', icon: '🕊️', category: 'deep_master' },
   { key: 'ethericAuraBiofield', nameKo: '에테릭 오라 바이오필드', icon: '✨', category: 'deep_master' },
   { key: 'sajuClassicYongshin', nameKo: '사주 원전 억부용신', icon: '📜', category: 'deep_master' },
@@ -4808,7 +4808,7 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'huangdiFiveMovementsSixQi', nameKo: '황제내경 오운육기 기상의학', icon: '📜', category: 'deep_master' },
   { key: 'pythagoreanTetraktys', nameKo: '피타고라스 테트락티스 신성기하', icon: '📐', category: 'deep_master', summary: '피타고라스 1·2·3·4 테트락티스 창조 층위와 영혼 루트수로 관념을 현실의 실행·결실로 구체화하는 관점' },
   { key: 'babylonianEnumaElish', nameKo: '바빌로니아 운명의서판', icon: '🏛️', category: 'deep_master', summary: '에누마 엘리쉬 서사시와 운명의 서판 상징을 바탕으로 현재의 혼돈을 질서화할 수호 천체와 주권적 실천 방향을 짚어 주는 관점' },
-  { key: 'taoistHuangtingJing', nameKo: '도교 황정경 오장존사', icon: '☯️', category: 'deep_master' },
+  { key: 'taoistHuangtingJing', nameKo: '도교 황정경 오장존사', icon: '☯️', category: 'deep_master', summary: '상청파 황정경의 삼단전과 오장 진신 존사 상징으로 심신의 균형과 내관 양생 방향을 비추는 관점' },
   { key: 'persianAmeshaSpenta', nameKo: '페르시아 아메샤스펜타', icon: '🔥', category: 'deep_master', summary: '아베스타 6대 아메샤 스펜타 수호 불멸자와 바르숨 정렬을 비추어 선한 의지와 내면의 조화를 가다듬는 관점' },
   { key: 'sumerianFiftyMes', nameKo: '수메르 50대메 신성문명', icon: '🏺', category: 'deep_master', summary: '수메르 에리두 50대 메(Me) 문명 규범과 주권·소통·치유의 원형으로 오늘의 실천 기준을 비추는 관점' },
   { key: 'zhongLuAlchemy', nameKo: '종여내단 3품선도 환원', icon: '☯️', category: 'deep_master' },
@@ -4868,7 +4868,7 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'kashmirShaivismSpanda', nameKo: '카슈미르 시바파 스판다 우주 맥동', icon: '🔱', category: 'deep_master' },
   { key: 'sumerianEnumaElishFiftyNames', nameKo: '에누마 엘리시 50대 이름', icon: '⚔️', category: 'deep_master' },
   { key: 'alexandrianDecanThirtySixGods', nameKo: '알렉산드리아 36대 데칸', icon: '⌛', category: 'deep_master', summary: '헤르메스주의 36대 데칸 시간 성령의 상징으로 조급한 시계 시간 너머의 결정적 타이밍(카이로스)과 삶의 리듬을 성찰합니다.' },
-  { key: 'taoistLieziWindRiding', nameKo: '열자 어풍동행 무하유지향', icon: '🍃', category: 'deep_master' },
+  { key: 'taoistLieziWindRiding', nameKo: '열자 어풍동행 무하유지향', icon: '🍃', category: 'deep_master', summary: '열자의 망시비·망아집·어풍비상 상징으로 집착을 덜고 순풍에 몸을 맡기는 무위자연의 태도를 살피는 관점' },
   { key: 'samkhyaTwentyFiveTattvas', nameKo: '상키야 25타트바 분별지', icon: '🧘', category: 'deep_master', summary: '순수 관조자 푸루샤와 물질 자연 프라크리티의 25타트바 및 3구나 균형을 살피어 분별지(비베카)를 세우는 관점' },
   { key: 'neoConfucianFourSevenLiQi', nameKo: '성리학 사칠이기 거경궁리', icon: '📜', category: 'deep_master', summary: '성리학의 이기지묘(理氣之妙)와 사단칠정론(四端七情論), 거경궁리·주일무적 수양 원리로 감정의 중절과 본연지성의 중심을 비춥니다.' },
   { key: 'etruscanAugurSixteenSky', nameKo: '에트루리아 16천궁 아우구르', icon: '🦅', category: 'deep_master', summary: '에트루리아 16천궁 템플룸과 아우구르 조점(비행조·음성조) 상징으로 결단 시의를 비추는 관점' },
