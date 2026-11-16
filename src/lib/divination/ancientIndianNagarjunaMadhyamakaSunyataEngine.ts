@@ -6,7 +6,13 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const NAGARJUNA_MADHYAMAKA_VERSION = 'LUCKEY-NAGARJUNA-MADHYAMAKA-v2.1.0';
+export const NAGARJUNA_MADHYAMAKA_VERSION = 'LUCKEY-NAGARJUNA-MADHYAMAKA-v2.2.0';
+
+function getNagarjunaKstString(now?: Date): string {
+  const base = now ?? new Date();
+  const kst = new Date(base.getTime() + 9 * 3600 * 1000);
+  return `${kst.toISOString().slice(0, 19)}+09:00`;
+}
 
 export interface EightfoldNegationAspect {
   aspectKey: string;
@@ -70,6 +76,11 @@ export interface NagarjunaMadhyamakaSunyataResult {
   dailyPracticeRitual: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
+  nagarjunaSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
 }
 
 export type NagarjunaMadhyamakaSunyataReport = NagarjunaMadhyamakaSunyataResult;
@@ -296,9 +307,16 @@ export function calculateNagarjunaMadhyamakaSunyata(
   const interpretiveBoundary =
     `용수 《중론》 팔불중도 엔진은 고정된 운명을 예단하는 도구가 아니라, 양극단과 고정관념을 풀어 유연한 변화를 열도록 돕는 상징·성찰 관점입니다.`;
 
+  const trimmedQ = (question ?? '').trim();
+  const nagarjunaSynthesisMatrix = {
+    dominantTension: `${situationalSunyataAudit.substantialistTrap} ↔ ${activeNegationAspect.aspectHanja}`,
+    alignmentState: `${temporalPratityaRhythm.twoTruthsFocus} · ${focalKarikaWisdom.chapterThemeKo}`,
+    integratedAction: `${situationalSunyataAudit.middleWayDeconstructionStep}${trimmedQ ? ` [질문 맥락: ${trimmedQ}]` : ''}`,
+  };
+
   return {
     engineVersion: NAGARJUNA_MADHYAMAKA_VERSION,
-    calculatedAtKst: (now ?? new Date()).toISOString(),
+    calculatedAtKst: getNagarjunaKstString(now),
     sunyataWisdomScore,
     eightfoldNegationMiddleWayScore,
     pratityasamutpadaGraspScore,
@@ -316,6 +334,7 @@ export function calculateNagarjunaMadhyamakaSunyata(
     dailyPracticeRitual,
     reflectiveQuestion,
     interpretiveBoundary,
+    nagarjunaSynthesisMatrix,
   };
 }
 
@@ -327,8 +346,11 @@ function describeNagarjunaStage(score: number): string {
 }
 
 export function formatNagarjunaMadhyamakaSunyataPrompt(res: NagarjunaMadhyamakaSunyataResult): string {
+  const matrixLine = res.nagarjunaSynthesisMatrix
+    ? `- 용수 중관 교차 매트릭스: 핵심 긴장(${res.nagarjunaSynthesisMatrix.dominantTension}) · 조율 상태(${res.nagarjunaSynthesisMatrix.alignmentState}) · 통합 실천(${res.nagarjunaSynthesisMatrix.integratedAction})`
+    : '';
   return [
-    `【용수 중론 & 팔불중도 공성(Śūnyatā) 지표】`,
+    `【용수 중론 & 팔불중도 공성(Śūnyatā) 지표 (${res.engineVersion} | ${res.calculatedAtKst})】`,
     `- 공성(Śūnyatā) 직관 및 무자성 통찰: ${describeNagarjunaStage(res.sunyataWisdomScore)}`,
     `- 팔불중도(八不中道) 양변 초월 평정: ${describeNagarjunaStage(res.eightfoldNegationMiddleWayScore)}`,
     `- 인연생기(緣起) 상호의존 자각: ${describeNagarjunaStage(res.pratityasamutpadaGraspScore)}`,
@@ -344,5 +366,6 @@ export function formatNagarjunaMadhyamakaSunyataPrompt(res: NagarjunaMadhyamakaS
     `- 오늘의 실천 의례: ${res.dailyPracticeRitual}`,
     `- 성찰 질문: ${res.reflectiveQuestion}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
-  ].join('\n');
+    matrixLine,
+  ].filter(Boolean).join('\n');
 }

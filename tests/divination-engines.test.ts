@@ -8660,6 +8660,8 @@ test('v2.1.0 pure qualitative prompts (zero /100 or % exposure): Bhagavad Gita, 
 
   const gita = calculateBhagavadGitaKarmaYoga(profile, '결과가 불안해서 도무지 집중이 안 돼요', now);
   assert.equal(gita.engineVersion, BHAGAVAD_GITA_KARMA_YOGA_VERSION);
+  assert.ok(gita.calculatedAtKst.endsWith('+09:00'));
+  assert.ok(Boolean(gita.gitaSynthesisMatrix?.integratedAction));
   assert.ok(gita.dailyPracticeRitual.length > 0);
   assert.ok(gita.reflectiveQuestion.length > 0);
   assert.ok(gita.interpretiveBoundary.length > 0);
@@ -8667,10 +8669,12 @@ test('v2.1.0 pure qualitative prompts (zero /100 or % exposure): Bhagavad Gita, 
   assert.ok(!gitaPrompt.includes('/100') && !gitaPrompt.includes('%'));
   assert.ok(gitaPrompt.includes('오늘의 실천 의례'));
   assert.ok(gitaPrompt.includes('성찰 질문'));
-  assert.ok(gitaPrompt.includes('해석 경계'));
+  assert.ok(gitaPrompt.includes('해석 경계') && gitaPrompt.includes('+09:00') && gitaPrompt.includes('교차 매트릭스'));
 
   const buddha = calculateAncientIndianFourNobleTruths(profile, '불안하고 걱정이 많아서 마음이 흔들려요', now);
   assert.equal(buddha.engineVersion, FOUR_NOBLE_TRUTHS_VERSION);
+  assert.ok(buddha.calculatedAtKst.endsWith('+09:00'));
+  assert.ok(Boolean(buddha.buddhistSynthesisMatrix?.integratedAction));
   assert.ok(buddha.dailyPracticeRitual.length > 0);
   assert.ok(buddha.reflectiveQuestion.length > 0);
   assert.ok(buddha.interpretiveBoundary.length > 0);
@@ -8678,10 +8682,12 @@ test('v2.1.0 pure qualitative prompts (zero /100 or % exposure): Bhagavad Gita, 
   assert.ok(!buddhaPrompt.includes('/100') && !buddhaPrompt.includes('%'));
   assert.ok(buddhaPrompt.includes('오늘의 실천 의례'));
   assert.ok(buddhaPrompt.includes('성찰 질문'));
-  assert.ok(buddhaPrompt.includes('해석 경계'));
+  assert.ok(buddhaPrompt.includes('해석 경계') && buddhaPrompt.includes('+09:00') && buddhaPrompt.includes('교차 매트릭스'));
 
   const nagarjuna = calculateNagarjunaMadhyamakaSunyata(profile, '내 생각만 맞다는 고집 때문에 갈등이 생겼어요', now);
   assert.equal(nagarjuna.engineVersion, NAGARJUNA_MADHYAMAKA_VERSION);
+  assert.ok(nagarjuna.calculatedAtKst.endsWith('+09:00'));
+  assert.ok(Boolean(nagarjuna.nagarjunaSynthesisMatrix?.integratedAction));
   assert.ok(nagarjuna.dailyPracticeRitual.length > 0);
   assert.ok(nagarjuna.reflectiveQuestion.length > 0);
   assert.ok(nagarjuna.interpretiveBoundary.length > 0);
@@ -8689,7 +8695,7 @@ test('v2.1.0 pure qualitative prompts (zero /100 or % exposure): Bhagavad Gita, 
   assert.ok(!nagarjunaPrompt.includes('/100') && !nagarjunaPrompt.includes('%'));
   assert.ok(nagarjunaPrompt.includes('오늘의 실천 의례'));
   assert.ok(nagarjunaPrompt.includes('성찰 질문'));
-  assert.ok(nagarjunaPrompt.includes('해석 경계'));
+  assert.ok(nagarjunaPrompt.includes('해석 경계') && nagarjunaPrompt.includes('+09:00') && nagarjunaPrompt.includes('교차 매트릭스'));
 });
 
 test('v2.1.0 pure qualitative prompts (no /100 or raw scores): Confucius, Mencius, and Wang Yangming', () => {

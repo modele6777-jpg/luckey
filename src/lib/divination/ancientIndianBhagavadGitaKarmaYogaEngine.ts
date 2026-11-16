@@ -12,7 +12,13 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const BHAGAVAD_GITA_KARMA_YOGA_VERSION = 'LUCKEY-BHAGAVAD-GITA-KARMA-YOGA-v2.1.0';
+export const BHAGAVAD_GITA_KARMA_YOGA_VERSION = 'LUCKEY-BHAGAVAD-GITA-KARMA-YOGA-v2.2.0';
+
+function getGitaKstString(now?: Date): string {
+  const base = now ?? new Date();
+  const kst = new Date(base.getTime() + 9 * 3600 * 1000);
+  return `${kst.toISOString().slice(0, 19)}+09:00`;
+}
 
 export interface GitaStage {
   stageLevel: number;
@@ -73,6 +79,11 @@ export interface BhagavadGitaKarmaYogaResult {
   dailyPracticeRitual: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
+  gitaSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
 }
 
 export type BhagavadGitaKarmaYogaReport = BhagavadGitaKarmaYogaResult;
@@ -305,9 +316,16 @@ export function calculateBhagavadGitaKarmaYoga(
   const interpretiveBoundary =
     `바가바드 기타 카르마 요가는 미래의 성패를 점치는 도구가 아니라, 결과 집착을 내려놓고 현재의 본분(Swadharma)에 집중하도록 돕는 상징·성찰 관점입니다.`;
 
+  const trimmedQ = (question ?? '').trim();
+  const gitaSynthesisMatrix = {
+    dominantTension: `${situationalKarmaAudit.attachmentTrap} ↔ ${activeGitaStage.sanskritStage}`,
+    alignmentState: `${temporalGunaRhythm.dominantGuna} · ${primaryGitaSutra.themeKo}`,
+    integratedAction: `${situationalKarmaAudit.nishkamaActionStep}${trimmedQ ? ` [질문 맥락: ${trimmedQ}]` : ''}`,
+  };
+
   return {
     engineVersion: BHAGAVAD_GITA_KARMA_YOGA_VERSION,
-    calculatedAtKst: (now ?? new Date()).toISOString(),
+    calculatedAtKst: getGitaKstString(now),
     nishkamaKarmaDetachmentScore,
     swadharmaCallingAlignment,
     samatvamEquanimityIndex,
@@ -322,6 +340,7 @@ export function calculateBhagavadGitaKarmaYoga(
     dailyPracticeRitual,
     reflectiveQuestion,
     interpretiveBoundary,
+    gitaSynthesisMatrix,
   };
 }
 
@@ -333,8 +352,11 @@ function describeGitaStage(score: number): string {
 }
 
 export function formatBhagavadGitaKarmaYogaPrompt(res: BhagavadGitaKarmaYogaResult): string {
+  const matrixLine = res.gitaSynthesisMatrix
+    ? `- 바가바드 기타 교차 매트릭스: 핵심 긴장(${res.gitaSynthesisMatrix.dominantTension}) · 조율 상태(${res.gitaSynthesisMatrix.alignmentState}) · 통합 실천(${res.gitaSynthesisMatrix.integratedAction})`
+    : '';
   return [
-    `【고대 인도 바가바드 기타(Bhagavad Gita) 카르마 요가 & 무집착 행동 관점】`,
+    `【고대 인도 바가바드 기타(Bhagavad Gita) 카르마 요가 & 무집착 행동 관점 (${res.engineVersion} | ${res.calculatedAtKst})】`,
     `- 니슈카마 카르마(Nishkama Karma) 행위 무집착 결: ${describeGitaStage(res.nishkamaKarmaDetachmentScore)}`,
     `- 스와다르마(Swadharma) 영혼 본분 일치 결: ${describeGitaStage(res.swadharmaCallingAlignment)}`,
     `- 사마트밤(Samatvam) 초연 평정심: ${describeGitaStage(res.samatvamEquanimityIndex)}`,
@@ -350,5 +372,6 @@ export function formatBhagavadGitaKarmaYogaPrompt(res: BhagavadGitaKarmaYogaResu
     `- 오늘의 실천 의례: ${res.dailyPracticeRitual}`,
     `- 성찰 질문: ${res.reflectiveQuestion}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
-  ].join('\n');
+    matrixLine,
+  ].filter(Boolean).join('\n');
 }
