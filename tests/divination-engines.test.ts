@@ -9141,3 +9141,24 @@ test('James Joyce, Babylonian Enuma Elish, and Buddhist Yogacara v2.1.0 include 
   const yoPrompt = formatBuddhistYogacaraConsciousnessPrompt(yo);
   assert.ok(yoPrompt.includes('해석 경계') && yoPrompt.includes('+09:00'));
 });
+
+test('Yarrow I Ching, Ptah Memphite, and Delphic Chilon v2.1.0 include +09:00 KST, interpretive boundary, and no score leaks', () => {
+  const now = new Date('2026-11-16T02:25:00Z');
+  const yr = calculateAncientYarrowProbability({ profile, question: '결정 앞에서 시중의 때를 가늠하고 싶어요', now });
+  assert.equal(yr.engineVersion, ANCIENT_YARROW_PROBABILITY_ENGINE_VERSION);
+  assert.ok(yr.calculatedAtKst.includes('+09:00'));
+  const yrPrompt = formatAncientYarrowProbabilityPrompt(yr);
+  assert.ok(yrPrompt.includes('해석 경계') && yrPrompt.includes('+09:00') && !yrPrompt.includes('실측 데이터'));
+
+  const pt = calculatePtahMemphite(profile, '새 프로젝트를 구상하고 현실로 구현하고 싶습니다', now);
+  assert.equal(pt.engineVersion, PTAH_MEMPHITE_VERSION);
+  assert.ok(pt.calculatedAtKst.includes('+09:00'));
+  const ptPrompt = formatPtahMemphitePrompt(pt);
+  assert.ok(ptPrompt.includes('해석 경계') && ptPrompt.includes('+09:00'));
+
+  const ch = calculateDelphicChilon(profile, '중요한 약속과 결정을 앞두고 조심스럽습니다', now);
+  assert.equal(ch.engineVersion, DELPHIC_CHILON_VERSION);
+  assert.ok(ch.calculatedAtKst.includes('+09:00'));
+  const chPrompt = formatDelphicChilonPrompt(ch);
+  assert.ok(chPrompt.includes('해석 경계') && chPrompt.includes('+09:00'));
+});

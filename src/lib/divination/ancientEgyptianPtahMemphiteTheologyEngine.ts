@@ -15,7 +15,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const PTAH_MEMPHITE_VERSION = 'LUCKEY-PTAH-MEMPHITE-v2.0.0';
+export const PTAH_MEMPHITE_VERSION = 'LUCKEY-PTAH-MEMPHITE-v2.1.0';
 
 export interface PtahCreationStage {
   stageLevel: number;
@@ -188,7 +188,7 @@ function buildSynthesisMatrix(
 
 function getKstDateString(now: Date): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
-  return kst.toISOString().replace('T', ' ').substring(0, 19) + ' KST';
+  return kst.toISOString().replace('T', ' ').substring(0, 19) + ' +09:00 KST';
 }
 
 function hashSeed(seedStr: string): number {
@@ -263,5 +263,6 @@ export function formatPtahMemphitePrompt(result: PtahMemphiteResult): string {
   → 시의 조언: ${result.temporalPtahRhythm.timingAdvice}
 - 프타 교차 매트릭스: ${result.ptahSynthesisMatrix.synthesizedVerdict}
 - 샤바카 석비의 불멸의 비전: 《${result.memphiteEpiphany.stoneSceneTitle}》
-  → 영원한 지혜: "${result.memphiteEpiphany.eternalWisdom}"`;
+  → 영원한 지혜: "${result.memphiteEpiphany.eternalWisdom}"
+- 해석 경계: 샤바카 석비의 심장 구상(Ib)과 말씀 선포(Hu) 상징을 빌린 정성적 창조 성찰 관점이며, 개인 능력 점수나 미래 단정이 아닙니다.`;
 }

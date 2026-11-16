@@ -18,7 +18,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const DELPHIC_CHILON_VERSION = 'LUCKEY-DELPHIC-CHILON-v2.0.0';
+export const DELPHIC_CHILON_VERSION = 'LUCKEY-DELPHIC-CHILON-v2.1.0';
 
 export interface DelphicSageStage {
   stageLevel: number;
@@ -192,7 +192,7 @@ function buildSynthesisMatrix(
 
 function getKstDateString(now: Date): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
-  return kst.toISOString().replace('T', ' ').substring(0, 19) + ' KST';
+  return kst.toISOString().replace('T', ' ').substring(0, 19) + ' +09:00 KST';
 }
 
 function hashSeed(seedStr: string): number {
@@ -267,5 +267,6 @@ export function formatDelphicChilonPrompt(result: DelphicChilonResult): string {
   → 시의 조언: ${result.temporalDelphicRhythm.timingAdvice}
 - 킬론 교차 매트릭스: ${result.chilonSynthesisMatrix.synthesizedVerdict}
 - 델포이 신전의 불멸의 신탁: 《${result.delphiTempleEpiphany.sanctuarySceneTitle}》
-  → 철학적 불멸 지혜: "${result.delphiTempleEpiphany.philosophicWisdom}"`;
+  → 철학적 불멸 지혜: "${result.delphiTempleEpiphany.philosophicWisdom}"
+- 해석 경계: 스파르타 현인 킬론의 자기성찰(Gnothi Seauton)·중용(Meden Agan) 상징을 빌린 정성적 절제 참고 관점이며, 수치 평가나 확정 예언이 아닙니다.`;
 }
