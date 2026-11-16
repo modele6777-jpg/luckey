@@ -8,7 +8,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const ETRUSCAN_AUGUR_ENGINE_VERSION = 'LUCKEY-ETRUSCAN-AUGUR-v2.0.0';
+export const ETRUSCAN_AUGUR_ENGINE_VERSION = 'LUCKEY-ETRUSCAN-AUGUR-v2.1.0';
 
 export interface CelestialTemplumRegion {
   regionNumber: number; // 1 ~ 16
@@ -49,6 +49,7 @@ export interface EtruscanSynthesisMatrix {
 
 export interface EtruscanAugurSixteenSkyReport {
   engineVersion: string;
+  calculatedAtKst: string;
   activeRegion: CelestialTemplumRegion;
   augurSign: AugurSignInfo;
   faustusScore: number;
@@ -271,8 +272,12 @@ export function calculateEtruscanAugurSixteenSky(params: {
       : '지금은 무리하게 밀어붙일 때가 아닙니다. 내실을 다지고 다음 길조의 때를 기다리십시오.'
   }`;
 
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const calculatedAtKst = kst.toISOString().replace('T', ' ').substring(0, 19) + ' +09:00 KST';
+
   return {
     engineVersion: ETRUSCAN_AUGUR_ENGINE_VERSION,
+    calculatedAtKst,
     activeRegion,
     augurSign,
     faustusScore,
@@ -288,8 +293,8 @@ export function calculateEtruscanAugurSixteenSky(params: {
 }
 
 export function formatEtruscanAugurSixteenSkyPrompt(rep: EtruscanAugurSixteenSkyReport): string {
-  return `[고대 에트루리아 16천궁 분할 & 아우구르 조점(Auspicium) 실측 리포트]
-· 버전: ${rep.engineVersion}
+  return `[고대 에트루리아 16천궁 분할 & 아우구르 조점(Auspicium) 상징 관점]
+· 버전: ${rep.engineVersion} | 기준 시각: ${rep.calculatedAtKst}
 · 활성 템플룸 구역: [제${rep.activeRegion.regionNumber}구역: ${rep.activeRegion.quadrantKo}] — 성격: ${rep.activeRegion.auspiciousNature}
   - 주재 신성: ${rep.activeRegion.presidingDeity}
   - 천상 의미: ${rep.activeRegion.cosmicSignificance}
@@ -305,5 +310,6 @@ export function formatEtruscanAugurSixteenSkyPrompt(rep: EtruscanAugurSixteenSky
 · 템플룸 교차 매트릭스: ${rep.augurSynthesisMatrix.templumVerdictSummary} · ${rep.augurSynthesisMatrix.signDirectionHarmony}
   - 다음 행동: ${rep.augurSynthesisMatrix.nextAuspiceAction}
 · 아우구르 신관 오라클 지침: ${rep.augurOracleGuidance}
-· 천의 부응 행동 처방: ${rep.auspiceActionPrescription}`;
+· 천의 부응 행동 처방: ${rep.auspiceActionPrescription}
+· 해석 경계: 디스치플리나 에트루스카 16천궁 조점 상징을 빌린 정성적 결단 참고 관점이며, 개인 점수나 확정 예언이 아닙니다.`;
 }

@@ -9204,3 +9204,24 @@ test('Delphic Maxims, Egyptian Maat Feather Heart, and Egyptian Sphinx Dream Ora
   const sxPrompt = formatEgyptianSphinxDreamOraclePrompt(sx);
   assert.ok(sxPrompt.includes('해석 경계') && sxPrompt.includes('+09:00') && !sxPrompt.includes('실측 데이터'));
 });
+
+test('Egyptian 36 Decans, Etruscan Augur, and Finnish Kalevala Sampo v2.1.0 include +09:00 KST and interpretive boundary', () => {
+  const now = new Date('2026-11-16T02:55:00Z');
+  const dc = calculateEgyptianThirtySixDecans({ profile, targetDate: now, question: '오늘 천구 항해 방향이 궁금해요' });
+  assert.equal(dc.engineVersion, EGYPTIAN_DECANS_VERSION);
+  assert.ok(dc.calculatedAtKst.includes('+09:00'));
+  const dcPrompt = formatEgyptianThirtySixDecansPrompt(dc);
+  assert.ok(dcPrompt.includes('해석 경계') && dcPrompt.includes('+09:00'));
+
+  const et = calculateEtruscanAugurSixteenSky({ profile, now, question: '중요한 결정의 타이밍을 살피고 싶습니다' });
+  assert.equal(et.engineVersion, ETRUSCAN_AUGUR_ENGINE_VERSION);
+  assert.ok(et.calculatedAtKst.includes('+09:00'));
+  const etPrompt = formatEtruscanAugurSixteenSkyPrompt(et);
+  assert.ok(etPrompt.includes('해석 경계') && etPrompt.includes('+09:00') && !etPrompt.includes('실측 리포트'));
+
+  const fk = calculateFinnishKalevalaSampo({ profile, targetInstantTime: now.toISOString(), question: '지치지 않고 끝까지 해내고 싶어요' });
+  assert.equal(fk.engineVersion, FINNISH_KALEVALA_SAMPO_ENGINE_VERSION);
+  assert.ok(fk.calculatedAtKst.includes('+09:00'));
+  const fkPrompt = formatFinnishKalevalaSampoPrompt(fk);
+  assert.ok(fkPrompt.includes('해석 경계') && fkPrompt.includes('+09:00') && !fkPrompt.includes('실측 데이터'));
+});

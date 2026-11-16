@@ -17,7 +17,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const EGYPTIAN_DECANS_VERSION = 'LUCKEY-EGYPTIAN-DECANS-v2.0.0';
+export const EGYPTIAN_DECANS_VERSION = 'LUCKEY-EGYPTIAN-DECANS-v2.1.0';
 
 export interface DecanSituationalAudit {
   navigationAxis: string;
@@ -56,6 +56,7 @@ export interface DecanDeityInfo {
 export interface EgyptianThirtySixDecansReport {
   engineVersion: string;
   calculatedAt: string;
+  calculatedAtKst: string;
   birthDecan: DecanDeityInfo;
   currentTransitDecan: DecanDeityInfo;
   stellarResonanceScore: number;  // 내부 연산용
@@ -279,9 +280,13 @@ export function calculateEgyptianThirtySixDecans(params: {
     nextNavigationStep: situationalDecanAudit.altarAction,
   };
 
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const calculatedAtKst = kst.toISOString().replace('T', ' ').substring(0, 19) + ' +09:00 KST';
+
   return {
     engineVersion: EGYPTIAN_DECANS_VERSION,
     calculatedAt: now.toISOString(),
+    calculatedAtKst,
     birthDecan,
     currentTransitDecan,
     stellarResonanceScore,
@@ -295,6 +300,7 @@ export function calculateEgyptianThirtySixDecans(params: {
 
 export function formatEgyptianThirtySixDecansPrompt(report: EgyptianThirtySixDecansReport): string {
   return `### 🏛️ 고대 이집트 36 데칸(Decan) 별자리 수호신 & 누트 천구 항해 엔진 (${EGYPTIAN_DECANS_VERSION})
+- **기준 시각**: ${report.calculatedAtKst}
 - **본명 주재 데칸**: 제${report.birthDecan.decanNumber}데칸 [${report.birthDecan.zodiacSign} ${report.birthDecan.decanDegree}]
   - 수호신격: ${report.birthDecan.guardianDeity} (${report.birthDecan.deityTitle})
   - 원소력 / 수호 부적: ${report.birthDecan.elementalForce} · ${report.birthDecan.sacredAmulet}
@@ -307,5 +313,6 @@ export function formatEgyptianThirtySixDecansPrompt(report: EgyptianThirtySixDec
   - 시간대 지침: ${report.temporalDecanRhythm.navigationTimingDirective}
 - **천구 교차 매트릭스**: ${report.decanSynthesisMatrix.birthTransitLink}
 - **누트(Nut) 천구 항해 지침**: ${report.spiritualNavigationGuidance}
-- **데칸 제단 일상 개운 행동**: ${report.decanAltarPrescription}`;
+- **데칸 제단 일상 개운 행동**: ${report.decanAltarPrescription}
+- **해석 경계**: 덴데라 36데칸 천문 상징을 빌린 정성적 성찰 참고 관점이며, 개인 점수나 확정 예언이 아닙니다.`;
 }
