@@ -1445,7 +1445,8 @@ test('Thai Horasat engine: determinism, safe fallback, Wednesday-night note and 
   const prompt = formatThaiHorasatPrompt(r1);
   assert(prompt.includes(THAI_HORASAT_ENGINE_VERSION));
   assert(prompt.includes('KST'));
-  assert(prompt.includes('호라삿 교차 매트릭스'));
+  assert(prompt.includes('호라삿 교차 매트릭스') && prompt.includes('해석 경계'));
+  assert((r1.interpretiveBoundary ?? '').length > 0);
   assert(prompt.includes('호라삿') && prompt.includes('마하탁사') && prompt.includes('4대 원소'));
   assert(prompt.includes('프라 숙'));
   assert(prompt.includes('108년'));
@@ -3718,6 +3719,7 @@ test('Tieban Shenshu & Tai Xuan Numerology Engine: calculates inherent clause, a
   assert.equal(rep.engineVersion, TIEBAN_SHENSHU_VERSION);
   assert(rep.calculatedAtKst.endsWith('KST'));
   assert(Boolean(rep.tiebanSynthesisMatrix?.integratedAction));
+  assert(rep.interpretiveBoundary.length > 0);
   assert(rep.inherentPrimeNumber > 0);
   assert(rep.kuaName.length > 0);
   assert(rep.inherentClause.clauseNumber >= 1 && rep.inherentClause.clauseNumber <= 12000);
@@ -3736,7 +3738,7 @@ test('Tieban Shenshu & Tai Xuan Numerology Engine: calculates inherent clause, a
   assert(prompt.includes('원회운세'));
   assert(prompt.includes('12율려'));
   assert(prompt.includes('결단 윈도우'));
-  assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('교차 매트릭스') && prompt.includes('해석 경계'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });
@@ -8202,6 +8204,7 @@ test('Tojeong engine: enhanced trigram analysis, five-element relation, and seas
   assert.equal(r.status, 'calculated');
   assert(r.calculatedAtKst.endsWith('KST'));
   assert(Boolean(r.tojeongSynthesisMatrix?.integratedAction));
+  assert((r.interpretiveBoundary ?? '').length > 0);
   assert.ok(r.trigramAnalysis);
   assert.equal(r.trigramAnalysis.upperElement, '목(木)');
   assert.equal(r.trigramAnalysis.lowerElement, '목(木)');
@@ -8216,7 +8219,7 @@ test('Tojeong engine: enhanced trigram analysis, five-element relation, and seas
   const prompt = formatTojeongPrompt(r);
   assert(prompt.includes('오행 생극제화 및 사계절 순환 심층 분석'));
   assert(prompt.includes('비화(比和)'));
-  assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('교차 매트릭스') && prompt.includes('해석 경계'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });

@@ -43,7 +43,7 @@ import type { UserProfile } from '../sharedState';
 import { resolveEffectiveSolarDate } from '../lunarCalendar';
 import { parseBirthTime } from '../birthDateTime';
 
-export const THAI_HORASAT_ENGINE_VERSION = 'LUCKEY-TH-v2.0.0';
+export const THAI_HORASAT_ENGINE_VERSION = 'LUCKEY-TH-v2.1.0';
 
 function formatThaiHorasatKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -372,6 +372,7 @@ export interface ThaiHorasatResult {
     alignmentState: string;
     integratedAction: string;
   };
+  interpretiveBoundary?: string;
   note?: string;
 }
 
@@ -659,6 +660,7 @@ export function calculateThaiHorasat(params: {
       alignmentState: `${attribute.korean}(${attribute.verdictClass}) · 본명 원소(${birthThaat.korean}) · ${planetaryFriendEnemyDynamic.relationshipType}`,
       integratedAction: `${mahaThaksaAntardasha.actionAdvice}${q ? ` [질문 맥락: ${q}]` : ''}`,
     };
+    const interpretiveBoundary = '본 태국 호라삿(Horasat) 8요일·마하탁사·4원소 리포트는 전통 역법·행성 주기 기반의 자기 성찰 안내이며, 의학적 진단이나 확정적 미래 단정이 아닙니다.';
 
     return {
       status: 'calculated',
@@ -706,6 +708,7 @@ export function calculateThaiHorasat(params: {
         practice: `${birthPlanet.direction} 방위의 ${birthPlanet.animal} 상징을 가까이하고 ${birthPlanet.colors.join('·')} 색을 몸에 두르며, ${birthThaat.herbs} — 출생 수호신 ${birthPlanet.thaiName}께 ${birthPlanet.planet}의 결에 맞춘 공양을 드리면 길운이 증폭됩니다.`,
       },
       horasatSynthesisMatrix,
+      interpretiveBoundary,
       note: timeNote || undefined,
     };
   } catch (err: any) {
@@ -754,6 +757,7 @@ export function formatThaiHorasatPrompt(result: ThaiHorasatResult): string {
     result.horasatSynthesisMatrix
       ? `- 호라삿 교차 매트릭스: 핵심 긴장(${result.horasatSynthesisMatrix.dominantTension}) · 조율 상태(${result.horasatSynthesisMatrix.alignmentState}) · 통합 실천(${result.horasatSynthesisMatrix.integratedAction})`
       : '',
+    result.interpretiveBoundary ? `- 해석 경계: ${result.interpretiveBoundary}` : '',
     `- [AI 해석 절대 지침]: 본 리포트는 태국 정통 호라삿 수리로 산출된 100% 확정 배속입니다. 수호신·대운 구간·속성 등급·원소 진단을 임의로 바꾸지 말고 상담에 정확히 반영하십시오.`,
   ];
 

@@ -23,7 +23,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const TIEBAN_SHENSHU_VERSION = 'LUCKEY-TIEBAN-SHENSHU-v2.0.0';
+export const TIEBAN_SHENSHU_VERSION = 'LUCKEY-TIEBAN-SHENSHU-v2.1.0';
 
 function formatTiebanKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -82,6 +82,7 @@ export interface TiebanReport {
     alignmentState: string;
     integratedAction: string;
   };
+  interpretiveBoundary: string;
 }
 
 const TAI_XUAN_STEM_MAP: Record<number, number> = {
@@ -353,6 +354,7 @@ export function calculateTiebanShenshu(
     alignmentState: `${cyclicalPhase} · 주재음(${dominantTone})`,
     integratedAction: `${wisdomClause.actionableGuidance}${q ? ` [질문 맥락: ${q}]` : ''}`,
   };
+  const interpretiveBoundary = '본 철판신수(鐵板神數) 조식 리포트는 태현수·괘기·원회운세 수리에 기반한 성찰 참고 지표이며, 확정적 숙명 예언이나 법률·투자 자문이 아닙니다.';
 
   return {
     engineVersion: TIEBAN_SHENSHU_VERSION,
@@ -369,6 +371,7 @@ export function calculateTiebanShenshu(
     naYinRhythmHarmony,
     tacticalWindows,
     tiebanSynthesisMatrix,
+    interpretiveBoundary,
   };
 }
 
@@ -404,5 +407,6 @@ export function formatTiebanShenshuPrompt(report: TiebanReport): string {
 4. 천기 심층 경책 조식 (제${report.wisdomClause.clauseNumber}조):
    * 경책명: ${report.wisdomClause.title}
    * 잠언 원전: "${report.wisdomClause.classicalPoem}"
-   * 수양 지혜: ${report.wisdomClause.actionableGuidance}${tacticalBlock}${matrixBlock}`;
+   * 수양 지혜: ${report.wisdomClause.actionableGuidance}${tacticalBlock}${matrixBlock}
+- 해석 경계: ${report.interpretiveBoundary}`;
 }
