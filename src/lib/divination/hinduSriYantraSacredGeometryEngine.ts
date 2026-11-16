@@ -26,7 +26,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const SRI_YANTRA_ENGINE_VERSION = '2.0.0';
+export const SRI_YANTRA_ENGINE_VERSION = '2.1.0';
 
 export interface SriYantraSacredGeometryReport {
   engineVersion: string;
@@ -45,6 +45,14 @@ export interface SriYantraSacredGeometryReport {
     archetypalPower: string;
     blessingAdvice: string;
   };
+  secondaryAvaranaChakra: {
+    level: number;
+    sanskritName: string;
+    koreanTitle: string;
+    archetypalPower: string;
+    blessingAdvice: string;
+  };
+  interpretiveBoundary: string;
   // 마하비드야 축복 지표
   sarvaArthaManifestationIndex: number; // 물질적·현실적 번영 달성력 (0~100)
   sarvaRogaharaHealingPower: number; // 심신 번뇌 치유력 (0~100)
@@ -172,7 +180,9 @@ export function calculateHinduSriYantraSacredGeometry(
   );
 
   const avaranaIndex = (seed >> 3) % SRI_AVARANA_CIRCUITS.length;
+  const secondaryAvaranaIndex = (avaranaIndex + 1 + ((seed >> 5) % (SRI_AVARANA_CIRCUITS.length - 1))) % SRI_AVARANA_CIRCUITS.length;
   const primaryAvaranaChakra = SRI_AVARANA_CIRCUITS[avaranaIndex];
+  const secondaryAvaranaChakra = SRI_AVARANA_CIRCUITS[secondaryAvaranaIndex];
 
   let sacredGeometryMeditationGuidance = '';
   if (navaYoniInterlockingHarmony >= 85) {
@@ -187,7 +197,7 @@ export function calculateHinduSriYantraSacredGeometry(
   const kstDate = new Date(kstMs);
   const kstHour = kstDate.getUTCHours();
   const kstMonth = kstDate.getUTCMonth() + 1;
-  const calculatedAtKst = `${kstDate.getUTCFullYear()}-${String(kstMonth).padStart(2, '0')}-${String(kstDate.getUTCDate()).padStart(2, '0')} ${String(kstHour).padStart(2, '0')}:${String(kstDate.getUTCMinutes()).padStart(2, '0')} KST`;
+  const calculatedAtKst = `${kstDate.getUTCFullYear()}-${String(kstMonth).padStart(2, '0')}-${String(kstDate.getUTCDate()).padStart(2, '0')} ${String(kstHour).padStart(2, '0')}:${String(kstDate.getUTCMinutes()).padStart(2, '0')} +09:00 KST`;
 
   const qLower = question.toLowerCase();
   const questionFocus = /연애|사랑|관계|결혼|재회|감정/.test(qLower)
@@ -224,10 +234,13 @@ export function calculateHinduSriYantraSacredGeometry(
 
   const yantraFocusNote = `${brahmaMuhurtaWindow}과 ${seasonalShaktiPhase}가 교차하므로, ${primaryAvaranaChakra.blessingAdvice}`;
 
+  const interpretiveBoundary = '힌두 탄트라 스리 얀트라 관점은 초자연적 예단이나 심리 진단이 아니라, 이성(시바)과 수용성(샤크티)의 중심 균형을 비추는 기하학 명상 렌즈입니다.';
   const sriYantraSynthesisMatrix = {
     coreMandate: `[제${primaryAvaranaChakra.level}층 ${primaryAvaranaChakra.sanskritName}] 회랑을 중심으로 ${questionFocus}을 수행하십시오.`,
     sacredBoundary: '시바(이성)와 샤크티(감성) 중 한쪽으로 치우친 극단적 판단을 경계하고, 바인두 중심의 고요에서 답을 구하십시오.',
-    reflectiveQuestion: `지금 내 삶의 소용돌이 한가운데서 흔들리지 않는 고요한 중심점(바인두)은 어디에 있나요?`,
+    reflectiveQuestion: question
+      ? `'${question}'의 소용돌이 속에서 제${primaryAvaranaChakra.level}층(${primaryAvaranaChakra.sanskritName})과 바인두가 비추는 흔들리지 않는 중심은 어디에 있나요?`
+      : `지금 내 삶의 소용돌이 한가운데서 흔들리지 않는 고요한 중심점(바인두)은 어디에 있나요?`,
   };
 
   return {
@@ -239,6 +252,8 @@ export function calculateHinduSriYantraSacredGeometry(
     navaYoniInterlockingHarmony,
     binduTranscendentalAwakeningScore,
     primaryAvaranaChakra,
+    secondaryAvaranaChakra,
+    interpretiveBoundary,
     sarvaArthaManifestationIndex,
     sarvaRogaharaHealingPower,
     sarvaAnandamayaBlissAlignment,
@@ -266,8 +281,10 @@ export function formatHinduSriYantraSacredGeometryPrompt(report: SriYantraSacred
     `- 활성화 아바라나(Avarana) 회랑: [제${report.primaryAvaranaChakra.level}층] ${report.primaryAvaranaChakra.koreanTitle} (${report.primaryAvaranaChakra.sanskritName})`,
     `  * 신성 원형 힘: ${report.primaryAvaranaChakra.archetypalPower}`,
     `  * 수행 축복 조언: ${report.primaryAvaranaChakra.blessingAdvice}`,
+    `- 보조 교차 회랑: [제${report.secondaryAvaranaChakra.level}층] ${report.secondaryAvaranaChakra.koreanTitle} (${report.secondaryAvaranaChakra.sanskritName}) — ${report.secondaryAvaranaChakra.blessingAdvice}`,
     `- 시공간 리듬: ${report.temporalSriYantraRhythm.brahmaMuhurtaWindow} · ${report.temporalSriYantraRhythm.seasonalShaktiPhase}`,
     `- 신성 기하학 명상 지침: ${report.sacredGeometryMeditationGuidance}`,
     `- 교차 매트릭스: ${report.sriYantraSynthesisMatrix.coreMandate} | 경계: ${report.sriYantraSynthesisMatrix.sacredBoundary} | 성찰 질문: "${report.sriYantraSynthesisMatrix.reflectiveQuestion}"`,
+    `- 해석 경계: ${report.interpretiveBoundary}`,
   ].join('\n');
 }

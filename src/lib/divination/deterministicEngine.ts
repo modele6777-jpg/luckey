@@ -1717,7 +1717,7 @@ try {
   const ikigaiDestinyCompassResult = calculateSupplement('ikigaiDestinyCompassResult', () => (birthdateStr && profile
     ? (() => {
         try {
-          return calculateIkigaiDestinyCompass({ profile, targetDate: now });
+          return calculateIkigaiDestinyCompass({ profile, targetDate: now, question });
         } catch (_) {
           return null;
         }
@@ -4761,7 +4761,7 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'biorhythmPeakFlow', nameKo: '바이오리듬 피크', icon: '📈', category: 'deep_master' },
   { key: 'destinySynastryEcho', nameKo: '운명 공명 에코', icon: '🔔', category: 'deep_master' },
   { key: 'microHabitKarma', nameKo: '마이크로 해빗', icon: '🌱', category: 'deep_master' },
-  { key: 'ikigaiDestinyCompass', nameKo: '이키가이 나침반', icon: '🧭', category: 'deep_master' },
+  { key: 'ikigaiDestinyCompass', nameKo: '이키가이 나침반', icon: '🧭', category: 'deep_master', summary: '열정·전문성·사명·수익성의 4대 교집합을 사주 오행과 연결해 나만의 천직 소명과 3단계 실현 로드맵을 안내합니다.' },
   { key: 'serendipitySynchronicity', nameKo: '세렌디피티 레이더', icon: '🍀', category: 'deep_master' },
   { key: 'humanDesignBodyGraph', nameKo: '휴먼디자인 바디그래프', icon: '🧬', category: 'deep_master' },
   { key: 'chakraVibrationAlignment', nameKo: '차크라 진동 정렬', icon: '🌈', category: 'deep_master' },
@@ -4821,7 +4821,7 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'taoistGongGuoGeKarma', nameKo: '도교 공과격 적선개운', icon: '☯️', category: 'deep_master' },
   { key: 'yorubaIfaOdu', nameKo: '요루바 이파 16오두 신탁', icon: '📿', category: 'deep_master', summary: '서아프리카 요루바 이파 16 메지 오두와 에보(Ebó) 실천으로 막힌 흐름을 여는 지혜를 전합니다.' },
   { key: 'arabicIlmAlRaml', nameKo: '아랍 일무람말 지오맨시', icon: '🏜️', category: 'deep_master' },
-  { key: 'hinduNadiAgastyaPalmLeaf', nameKo: '인도 나디 아가스티야 야자잎', icon: '📜', category: 'deep_master' },
+  { key: 'hinduNadiAgastyaPalmLeaf', nameKo: '인도 나디 아가스티야 야자잎', icon: '📜', category: 'deep_master', summary: '남인도 아가스티야 성자의 14대 칸담과 엄지 지문 문양을 통해 카르마의 맥락과 샨티 실천 처방을 비춥니다.' },
   { key: 'shintoKotodamaFourSouls', nameKo: '신도 4혼1생 고토다마', icon: '⛩️', category: 'deep_master' },
   { key: 'aboriginalDreamtimeSonglines', nameKo: '호주 드림타임 송라인', icon: '🪃', category: 'deep_master' },
   { key: 'finnishKalevalaSampo', nameKo: '핀란드 칼레발라 삼포', icon: '🌾', category: 'deep_master', summary: '칼레발라 삼포 3대 날개(안정·지혜·번영)와 불굴의 시수(Sisu) 회복탄력을 비추는 관점' },
@@ -4885,7 +4885,7 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'incaAndeanThreePachaAyni', nameKo: '잉카 안데스 3대 파차 아이니 호혜', icon: '🦙', category: 'deep_master' },
   { key: 'shangOracleBoneDivination', nameKo: '은나라 갑골문 신탁 복사 정인 균열', icon: '🐢', category: 'deep_master' },
   { key: 'cheonbugyeongEightyOne', nameKo: '단군 단학 천부경 81자 삼일신고 성통광명', icon: '☀️', category: 'deep_master' },
-  { key: 'hinduSriYantra', nameKo: '힌두 탄트라 스리 얀트라 9나바요니 바인두', icon: '🔺', category: 'deep_master' },
+  { key: 'hinduSriYantra', nameKo: '힌두 탄트라 스리 얀트라 9나바요니 바인두', icon: '🔺', category: 'deep_master', summary: '스리 얀트라의 9대 교차 삼각형과 9층 아바라나 회랑을 통해 의식(시바)과 에너지(샤크티)의 중심 균형을 안내합니다.' },
   { key: 'lakotaMedicineWheel', nameKo: '라코타 수족 와칸 탕카 성스러운 메디슨 휠', icon: '🪶', category: 'deep_master' },
   { key: 'gyeogamYurok', nameKo: '격암 남사고 격암유록 궁궁을을 사중구생', icon: '📜', category: 'deep_master' },
   { key: 'heianOnmyodoSeimei', nameKo: '헤이안 음양도 아베노 세이메이 12천장 식신', icon: '⭐', category: 'deep_master' },

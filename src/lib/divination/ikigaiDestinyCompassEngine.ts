@@ -17,7 +17,7 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const IKIGAI_DESTINY_COMPASS_VERSION = 'LUCKEY-IKIGAI-v2.0.0';
+export const IKIGAI_DESTINY_COMPASS_VERSION = 'LUCKEY-IKIGAI-v2.1.0';
 
 export interface IkigaiQuadrants {
   passion: {
@@ -55,6 +55,8 @@ export interface IkigaiDestinyCompassReport {
     phase3Empire: string;         // 3단계: 대체 불가능한 독점적 브랜드 제국 구축
   };
   nextCareerMilestone: string;     // 6개월~1년 내 달성해야 할 1순위 돌파 마일스톤
+  reflectiveQuestion: string;
+  interpretiveBoundary: string;
   synthesisPromptGuidance: string;
   ikigaiSynthesisMatrix?: {
     dominantTension: string;
@@ -70,7 +72,7 @@ function formatIkigaiKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 KST`;
 }
 
 function describeIkigaiStage(score: number): string {
@@ -81,7 +83,8 @@ function describeIkigaiStage(score: number): string {
 
 export function runIkigaiDestinyCompassEngine(
   profile?: UserProfile,
-  targetDate: Date = new Date()
+  targetDate: Date = new Date(),
+  question?: string
 ): IkigaiDestinyCompassReport {
   const sajuRes = calculateDetailedSaju(profile || null);
 
@@ -172,6 +175,11 @@ export function runIkigaiDestinyCompassEngine(
 
   const nextCareerMilestone = `향후 6개월 내 [${soulCallingTitle.split(' ')[0]}] 포지셔닝을 공식화하고, 첫 번째 고부가가치 시그니처 자산을 론칭하여 강력한 현금 흐름 확보하기`;
   const calculatedAtKst = formatIkigaiKstTimestamp(targetDate);
+  const trimmedQuestion = question?.trim();
+  const reflectiveQuestion = trimmedQuestion
+    ? `'${trimmedQuestion}'에서 열정(좋아하는 것)·전문성(잘하는 것)·사명(필요한 것)·수익성 중 지금 가장 먼저 맞물려야 할 한 축은 무엇인가요?`
+    : `지금 내가 쏟고 있는 시간 가운데 열정·전문성·사명·수익성의 네 원이 가장 선명하게 겹치는 한 지점은 어디인가요?`;
+  const interpretiveBoundary = '이키가이 운명 나침반 관점은 적성 검사나 수익 보장이 아니라, 열정·강점·사명·수익성의 균형 좌표를 점검하는 커리어 성찰 렌즈입니다.';
 
   const ikigaiSynthesisMatrix = {
     dominantTension: `${quadrants.passion.coreDriver} ↔ ${quadrants.vocation.monetizationLeverage}`,
@@ -179,10 +187,10 @@ export function runIkigaiDestinyCompassEngine(
       ikigaiAlignmentScore >= 85
         ? '열정·전문성·사명·수익성의 4대 교집합 고밀도 정렬'
         : '전문성과 수익성 사이의 레버리지를 조율하는 확장 국면',
-    integratedAction: `${monetizationPath.phase1Validation} | ${nextCareerMilestone}`,
+    integratedAction: `${monetizationPath.phase1Validation} | ${nextCareerMilestone}${trimmedQuestion ? ` [질문 맥락: ${trimmedQuestion}]` : ''}`,
   };
 
-  const synthesisPromptGuidance = `[LUCKEY 이키가이 천직 4대 교집합 & 소명 나침반 v2.0.0]
+  const synthesisPromptGuidance = `[LUCKEY 이키가이 천직 4대 교집합 & 소명 나침반 v2.1.0]
 - 연산 시각: ${calculatedAtKst}
 - 궁극의 천직 소명 타이틀: [${soulCallingTitle}]
 - 이키가이 정렬 완성도: ${describeIkigaiStage(ikigaiAlignmentScore)}
@@ -194,7 +202,9 @@ export function runIkigaiDestinyCompassEngine(
 - 3단계 수익화 로드맵: [1단계 검증] ${monetizationPath.phase1Validation} | [2단계 스케일] ${monetizationPath.phase2Scaling} | [3단계 제국] ${monetizationPath.phase3Empire}
 - 1순위 커리어 마일스톤: ${nextCareerMilestone}
 - 교차 매트릭스 [핵심 긴장: ${ikigaiSynthesisMatrix.dominantTension} | 조율 상태: ${ikigaiSynthesisMatrix.alignmentState}]
-- 통합 실천: ${ikigaiSynthesisMatrix.integratedAction}`;
+- 통합 실천: ${ikigaiSynthesisMatrix.integratedAction}
+- 성찰 질문: ${reflectiveQuestion}
+- 해석 경계: ${interpretiveBoundary}`;
 
   return {
     engineVersion: IKIGAI_DESTINY_COMPASS_VERSION,
@@ -205,6 +215,8 @@ export function runIkigaiDestinyCompassEngine(
     quadrants,
     monetizationPath,
     nextCareerMilestone,
+    reflectiveQuestion,
+    interpretiveBoundary,
     synthesisPromptGuidance,
     ikigaiSynthesisMatrix,
   };
@@ -216,10 +228,11 @@ export function calculateIkigaiDestinyCompass(params?: {
   profile?: UserProfile | null;
   saju?: SajuAnalysisResult | null;
   targetDate?: Date;
+  question?: string;
 }): IkigaiDestinyCompassResult {
   const profile = params?.profile || undefined;
   const targetDate = params?.targetDate || new Date();
-  return runIkigaiDestinyCompassEngine(profile, targetDate);
+  return runIkigaiDestinyCompassEngine(profile, targetDate, params?.question);
 }
 
 export function formatIkigaiDestinyCompassPrompt(res: IkigaiDestinyCompassResult): string {

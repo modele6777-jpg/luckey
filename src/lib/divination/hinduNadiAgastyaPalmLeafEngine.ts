@@ -1,6 +1,6 @@
 import { UserProfile } from '../sharedState';
 
-export const HINDU_NADI_AGASTYA_PALM_LEAF_ENGINE_VERSION = '2.0.0';
+export const HINDU_NADI_AGASTYA_PALM_LEAF_ENGINE_VERSION = '2.1.0';
 
 export interface HinduNadiAgastyaPalmLeafReport {
   engineVersion: string;
@@ -8,11 +8,15 @@ export interface HinduNadiAgastyaPalmLeafReport {
   activeKandamNumber: number;
   kandamName: string;
   kandamTheme: string;
+  secondaryKandamNumber: number;
+  secondaryKandamName: string;
   thumbChakraPattern: string;
   siddhaAgastyaVerse: string;
   pastLifeKarmaInsight: string;
   shantiParikharamRemedy: string;
   dharmaFulfillmentIndex: number;
+  reflectiveQuestion: string;
+  interpretiveBoundary: string;
   synthesisPrompt: string;
   nadiSynthesisMatrix?: {
     dominantTension: string;
@@ -28,7 +32,7 @@ function formatNadiKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 KST`;
 }
 
 function describeNadiStage(score: number): string {
@@ -192,17 +196,24 @@ export function calculateHinduNadiAgastyaPalmLeaf(options?: {
   }
 
   const kandamIdx = (seed + kst.getUTCDay() * 3 + kst.getUTCDate()) % FOURTEEN_KANDAMS.length;
+  const secondaryKandamIdx = (kandamIdx + 1 + ((seed >> 3) % (FOURTEEN_KANDAMS.length - 1))) % FOURTEEN_KANDAMS.length;
   const kandam = FOURTEEN_KANDAMS[kandamIdx];
+  const secondaryKandam = FOURTEEN_KANDAMS[secondaryKandamIdx];
 
   const thumbIdx = (seed + birthYear) % THUMB_CHAKRA_PATTERNS.length;
   const thumbPattern = THUMB_CHAKRA_PATTERNS[thumbIdx];
 
   const dharmaFulfillmentIndex = 85 + ((seed * 7 + kst.getUTCHours() * 5) % 15);
   const calculatedAtKst = formatNadiKstTimestamp(now);
+  const trimmedQuestion = options?.question?.trim();
+  const reflectiveQuestion = trimmedQuestion
+    ? `'${trimmedQuestion}'에서 제${kandam.kandamNum}칸담(${kandam.name})의 가르침을 따라 지금 가장 부드럽게 내려놓아야 할 인과의 매듭은 무엇인가요?`
+    : `지금 내 일상에서 제${kandam.kandamNum}칸담(${kandam.name})의 샨티 실천으로 가장 먼저 다스려야 할 마음의 걸림은 무엇인가요?`;
+  const interpretiveBoundary = '남인도 나디 아가스티야 야자잎 관점은 결정론적 숙명 예단이 아니라, 내면의 소명과 성찰적 실천을 비추는 상징적 카르마 렌즈입니다.';
   const nadiSynthesisMatrix = {
     dominantTension: `제${kandam.kandamNum}칸담 ${kandam.name} ↔ ${thumbPattern}`,
     alignmentState: describeNadiStage(dharmaFulfillmentIndex),
-    integratedAction: `${kandam.remedy}${options?.question?.trim() ? ` [질문 맥락: ${options.question.trim()}]` : ''}`,
+    integratedAction: `${kandam.remedy}${trimmedQuestion ? ` [질문 맥락: ${trimmedQuestion}]` : ''}`,
   };
 
   const synthesisPrompt = `
@@ -212,10 +223,12 @@ export function calculateHinduNadiAgastyaPalmLeaf(options?: {
 ----------------------------------------------------------------------
 1. 📜 [아가스티야 야자잎(Ola Leaves) 활성 칸담 & 지문 문양]:
    - 활성 칸담: **제${kandam.kandamNum}칸담** [${kandam.name}]
+   - 보조 교차 칸담: **제${secondaryKandam.kandamNum}칸담** [${secondaryKandam.name}] (${secondaryKandam.theme})
    - 칸담 테마: **${kandam.theme}**
    - 엄지 지문 카르마 문양: **${thumbPattern}**
 2. 🕉️ [싯다 아가스티야 성자의 신탁 잠언]:
    - "${kandam.verse}"
+   - 보조 잠언: "${secondaryKandam.verse}"
 3. ☸️ [전생 카르마(Prarabdha Karma) & 샨티 해원 처방]:
    - 전생 카르마 통찰: ${kandam.pastKarma}
    - 🎯 샨티 파리카람(해원/개운 처방): **${kandam.remedy}**
@@ -223,6 +236,8 @@ export function calculateHinduNadiAgastyaPalmLeaf(options?: {
 4. 🧭 [교차 매트릭스]:
    - 핵심 긴장: ${nadiSynthesisMatrix.dominantTension} | 조율 상태: ${nadiSynthesisMatrix.alignmentState}
    - 통합 실천: ${nadiSynthesisMatrix.integratedAction}
+   - 성찰 질문: ${reflectiveQuestion}
+   - 해석 경계: ${interpretiveBoundary}
 ======================================================================
 [AI 해석 절대 지침]: 본 리포트는 남인도 타밀 싯다 성자 아가스티야 무니의 야자잎 나디 점성술 14대 칸담 체계에 입각한 100% 결정론적 산출물입니다. 전생의 인과와 이번 생의 소명(Dharma), 그리고 구체적인 샨티 파리카람 처방을 상담자에게 온화하고 깊이 있는 성자의 어조로 전하십시오.
 `.trim();
@@ -233,11 +248,15 @@ export function calculateHinduNadiAgastyaPalmLeaf(options?: {
     activeKandamNumber: kandam.kandamNum,
     kandamName: kandam.name,
     kandamTheme: kandam.theme,
+    secondaryKandamNumber: secondaryKandam.kandamNum,
+    secondaryKandamName: secondaryKandam.name,
     thumbChakraPattern: thumbPattern,
     siddhaAgastyaVerse: kandam.verse,
     pastLifeKarmaInsight: kandam.pastKarma,
     shantiParikharamRemedy: kandam.remedy,
     dharmaFulfillmentIndex,
+    reflectiveQuestion,
+    interpretiveBoundary,
     synthesisPrompt,
     nadiSynthesisMatrix,
   };
