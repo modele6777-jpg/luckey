@@ -13,7 +13,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const ITALIAN_PICO_DELLA_MIRANDOLA_DIGNITY_VERSION = 'LUCKEY-PICO-DELLA-MIRANDOLA-DIGNITY-v2.0.0';
+export const ITALIAN_PICO_DELLA_MIRANDOLA_DIGNITY_VERSION = 'LUCKEY-PICO-DELLA-MIRANDOLA-DIGNITY-v2.1.0';
 
 export interface PicoTheme {
   themeKey: string;
@@ -43,6 +43,9 @@ export interface ItalianPicoDellaMirandolaDignityResult {
   // 세부 분석
   activePicoTheme: PicoTheme;
   focalPicoAphorism: PicoAphorism;
+  secondaryPicoAphorism: PicoAphorism;
+  reflectiveQuestion: string;
+  interpretiveBoundary: string;
   picoComprehensiveGuidance: {
     guidanceTitle: string;
     philosophicalCounsel: string;
@@ -139,7 +142,7 @@ function formatPicoKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 KST`;
 }
 
 function describePicoStage(score: number): string {
@@ -171,9 +174,16 @@ export function calculateItalianPicoDellaMirandolaDignity(
 
   const themeIndex = (absHash >> 5) % PICO_THEMES.length;
   const aphorismIndex = (absHash >> 8) % PICO_APHORISMS.length;
+  const secondaryAphorismIndex = (aphorismIndex + 1 + ((absHash >> 11) % (PICO_APHORISMS.length - 1))) % PICO_APHORISMS.length;
 
   const activePicoTheme = PICO_THEMES[themeIndex];
   const focalPicoAphorism = PICO_APHORISMS[aphorismIndex];
+  const secondaryPicoAphorism = PICO_APHORISMS[secondaryAphorismIndex];
+  const trimmedQuery = query?.trim();
+  const reflectiveQuestion = trimmedQuery
+    ? `'${trimmedQuery}'에서 남이 정해 준 한계를 벗어나 내가 내 자유의지로 스스로 조각해 내고 싶은 모습은 무엇인가요?`
+    : `지금 내 안에서 나 스스로를 좁은 틀에 가두고 있는 고정관념을 벗고 새롭게 펼쳐 보고 싶은 가능성은 무엇인가요?`;
+  const interpretiveBoundary = '피코 델라 미란돌라 인간 존엄성 관점은 길흉 예단이 아니라, 자유의지와 자기형성 주체성을 비추는 르네상스 인문 성찰 렌즈입니다.';
 
   const guidanceTitle = `피코 델라 미란돌라 인간 존엄성 르네상스 철학 지혜: ${activePicoTheme.themeTitleKo}`;
   const philosophicalCounsel = `르네상스 인본주의 철학의 거장 조반니 피코 델라 미란돌라 백작은 《인간의 존엄성에 관한 연설》을 통해 ` +
@@ -201,6 +211,9 @@ export function calculateItalianPicoDellaMirandolaDignity(
     sovereignDignityResilienceScore,
     activePicoTheme,
     focalPicoAphorism,
+    secondaryPicoAphorism,
+    reflectiveQuestion,
+    interpretiveBoundary,
     picoComprehensiveGuidance: {
       guidanceTitle,
       philosophicalCounsel,
@@ -224,9 +237,12 @@ export function formatItalianPicoDellaMirandolaDignityPrompt(
     `- 실천적 통찰: ${res.activePicoTheme.pragmaticInsight}`,
     `- 행동 조언: ${res.activePicoTheme.practicalCounsel}`,
     `- 피코 원전 명언: "${res.focalPicoAphorism.aphorismKo}" (${res.focalPicoAphorism.aphorismLatin})`,
+    `- 보조 교차 명언: "${res.secondaryPicoAphorism.aphorismKo}" [${res.secondaryPicoAphorism.sourceContext}]`,
     `- 원전 출처: [${res.focalPicoAphorism.sourceContext}]`,
     `- 구체적 실천 지침: ${res.focalPicoAphorism.actionGuidance}`,
     `- 종합 피코 권면: ${res.picoComprehensiveGuidance.philosophicalCounsel}`,
+    `- 성찰 질문: ${res.reflectiveQuestion}`,
+    `- 해석 경계: ${res.interpretiveBoundary}`,
   ];
   if (res.picoSynthesisMatrix) {
     lines.push(

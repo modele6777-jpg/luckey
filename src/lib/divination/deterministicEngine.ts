@@ -3464,7 +3464,7 @@ try {
   // 235. 이탈리아 르네상스 니콜로 마키아벨리 군주론 비르투 역량 & 포르투나 극복 엔진
   const machiavelliVirtuFortunaResult = calculateSupplement('machiavelliVirtuFortunaResult', () => ((() => {
     try {
-      return calculateMachiavelliVirtuFortuna(profile);
+      return calculateMachiavelliVirtuFortuna(profile, question, now);
     } catch (_) {
       return null;
     }
@@ -3482,7 +3482,7 @@ try {
   // 237. 이탈리아 토마스 아퀴나스 신학대전 이성·신앙 조화 & 덕론 종합 엔진
   const thomasAquinasSummaTheologiaeResult = calculateSupplement('thomasAquinasSummaTheologiaeResult', () => ((() => {
     try {
-      return calculateThomasAquinasSummaTheologiae(profile);
+      return calculateThomasAquinasSummaTheologiae(profile, question, now);
     } catch (_) {
       return null;
     }
@@ -4022,7 +4022,7 @@ try {
   // 297. 이탈리아 조반니 피코 델라 미란돌라 《인간의 존엄성에 관한 연설》 자유의지·자기형성 주체성 & 무한한 잠재력·보편적 지혜 융합 엔진
   const italianPicoDellaMirandolaDignityResult = calculateSupplement('italianPicoDellaMirandolaDignityResult', () => ((() => {
     try {
-      return calculateItalianPicoDellaMirandolaDignity(profile);
+      return calculateItalianPicoDellaMirandolaDignity(profile, question, now);
     } catch (_) {
       return null;
     }
@@ -4948,9 +4948,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'germanHegelDialecticalAufheben', nameKo: '헤겔 정신현상학 변증법적지양 정반합 인륜성 미네르바올빼미', icon: '🏛️', category: 'deep_master', summary: '헤겔의 변증법적 지양(Aufheben)과 상호 인정을 통해 모순과 대립을 더 높은 차원의 통합으로 승화합니다.' },
   { key: 'koreanDasanJeongYagyongMokminSimseo', nameKo: '다산 정약용 목민심서 여유당신독 율기청렴 애민 실사구시', icon: '📜', category: 'deep_master', summary: '다산 정약용의 여유당 신독과 실사구시 정신으로 신중한 절제와 사실 기반의 실질적 해법을 안내합니다.' },
   { key: 'northAfricanAugustineConfessionesIlluminatio', nameKo: '아우구스티누스 고백록 시간의3중현존 내적조명 은총안식 평정심', icon: '🕯️', category: 'deep_master' },
-  { key: 'italianMachiavelliVirtuFortuna', nameKo: '마키아벨리 군주론 비르투역량 포르투나극복 시대조화 여우와사자', icon: '🦁', category: 'deep_master' },
+  { key: 'italianMachiavelliVirtuFortuna', nameKo: '마키아벨리 군주론 비르투역량 포르투나극복 시대조화 여우와사자', icon: '🦁', category: 'deep_master', summary: '마키아벨리의 비르투와 포르투나 통찰로 현실 역학을 직시하고 주도권을 쥐는 전략적 결단을 비춥니다.' },
   { key: 'koreanChoeChiwonPungryudo', nameKo: '최치원 난랑비서 국유현묘지도 풍류도 포함삼교 접화군생 계원필경', icon: '🪶', category: 'deep_master', summary: '고운 최치원의 풍류도와 삼교회통 사상으로 대립을 유연하게 아우르는 상생과 내면의 여유를 비춥니다.' },
-  { key: 'italianThomasAquinasSummaTheologiae', nameKo: '토마스 아퀴나스 신학대전 이성신앙조화 5대길 7대덕목 지복직관', icon: '⛪', category: 'deep_master' },
+  { key: 'italianThomasAquinasSummaTheologiae', nameKo: '토마스 아퀴나스 신학대전 이성신앙조화 5대길 7대덕목 지복직관', icon: '⛪', category: 'deep_master', summary: '토마스 아퀴나스 신학대전의 이성과 신앙 조화·7대 덕론으로 합리적 분별과 궁극적 선의 기준을 세웁니다.' },
   { key: 'britishFrancisBaconNovumOrganum', nameKo: '프랜시스 베이컨 신기관 4대우상타파 참된귀납 아는것이힘이다 사실검증', icon: '🔬', category: 'deep_master', summary: '프랜시스 베이컨의 신기관 철학으로 마음을 흐리는 4대 우상을 걷어내고 사실과 경험에 뿌리내린 실천적 지성을 세웁니다.' },
   { key: 'koreanRyuSeongryongJingbirok', nameKo: '서애 류성룡 징비록 징전비후 유비무환 거안사위 인재발탁 실사구시', icon: '🛡️', category: 'deep_master' },
   { key: 'koreanKingSejongHunminjeongeumAemin', nameKo: '세종대왕 훈민정음 어제서문 애민창조 여민락 집현전 실용실사', icon: '📜', category: 'deep_master', summary: '세종대왕의 훈민정음 어제서문과 애민 정신으로 장벽을 허물고 세상을 이롭게 하는 실천적 창의력을 발휘합니다.' },
