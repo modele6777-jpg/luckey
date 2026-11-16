@@ -14,7 +14,17 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const EPICTETUS_CONTROL_VERSION = 'LUCKEY-EPICTETUS-CONTROL-v2.1.0';
+export const EPICTETUS_CONTROL_VERSION = 'LUCKEY-EPICTETUS-CONTROL-v2.2.0';
+
+function formatEpictetusKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
 
 export interface EpictetusControlDomain {
   domainType: 'InternalControl' | 'ExternalCondition';
@@ -79,6 +89,11 @@ export interface EpictetusDichotomyOfControlResult {
   dailyPracticeRitual: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
+  epictetusSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
 }
 
 export type EpictetusDichotomyOfControlReport = EpictetusDichotomyOfControlResult;
@@ -283,9 +298,16 @@ export function calculateEpictetusDichotomyOfControl(
   const interpretiveBoundary =
     '에픽테토스의 통제이분법 통찰은 외부 사건의 성패를 점치는 도구가 아니라, 인상(Phantasia)에 흔들리지 않고 내면의 자유의지(Prohairesis)를 세우기 위한 스토아 성찰 체계입니다.';
 
+  const trimmedQ = (question ?? '').trim();
+  const epictetusSynthesisMatrix = {
+    dominantTension: `${situationalControlAudit.taEphHeminFocus} ↔ ${situationalControlAudit.taOukEphHeminRelease}`,
+    alignmentState: `${activeControlDomain.domainNameGreek} · ${focalToposDiscipline.toposNameKo}`,
+    integratedAction: `${situationalControlAudit.stoicReframeAction}${trimmedQ ? ` [질문 맥락: ${trimmedQ}]` : ''}`,
+  };
+
   return {
     engineVersion: EPICTETUS_CONTROL_VERSION,
-    calculatedAtKst: (now ?? new Date()).toISOString(),
+    calculatedAtKst: formatEpictetusKstTimestamp(now ?? new Date()),
     dichotomyClarityScore,
     prohairesisAutonomyScore,
     adiaphoraDetachmentScore,
@@ -303,6 +325,7 @@ export function calculateEpictetusDichotomyOfControl(
     dailyPracticeRitual,
     reflectiveQuestion,
     interpretiveBoundary,
+    epictetusSynthesisMatrix,
   };
 }
 
@@ -313,8 +336,11 @@ function describeEpictetusStage(score: number): string {
 }
 
 export function formatEpictetusDichotomyOfControlPrompt(res: EpictetusDichotomyOfControlResult): string {
+  const matrixLine = res.epictetusSynthesisMatrix
+    ? `- 통제이분법 교차 매트릭스: 핵심 긴장(${res.epictetusSynthesisMatrix.dominantTension}) · 조율 상태(${res.epictetusSynthesisMatrix.alignmentState}) · 통합 실천(${res.epictetusSynthesisMatrix.integratedAction})`
+    : '';
   return [
-    `【스토아학파 에픽테토스 통제이분법 & 프로하이레시스 지표 (${res.engineVersion})】`,
+    `【스토아학파 에픽테토스 통제이분법 & 프로하이레시스 지표 (${res.engineVersion} | ${res.calculatedAtKst})】`,
     `- 통제·자유의지 결: 이분법 명징(${describeEpictetusStage(res.dichotomyClarityScore)}) · 프로하이레시스 주권(${describeEpictetusStage(res.prohairesisAutonomyScore)})`,
     `- 초연·수양 결: 아디아포라 초연(${describeEpictetusStage(res.adiaphoraDetachmentScore)}) · 3대 토포스 균형(${describeEpictetusStage(res.threeTopoiDisciplineScore)}) · 아파테이아 평정(${describeEpictetusStage(res.apatheiaEquanimityScore)})`,
     `- 통제 영역 판별: ${res.activeControlDomain.domainNameGreek} (${res.activeControlDomain.domainNameKo})`,
@@ -329,5 +355,6 @@ export function formatEpictetusDichotomyOfControlPrompt(res: EpictetusDichotomyO
     `- 오늘의 실천 의례: ${res.dailyPracticeRitual}`,
     `- 핵심 성찰 질문: ${res.reflectiveQuestion}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
-  ].join('\n');
+    matrixLine,
+  ].filter(Boolean).join('\n');
 }

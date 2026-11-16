@@ -7948,21 +7948,26 @@ test('Socratic Maieutic, Aristotle Mesotes, and Confucius Analects engines v2.0.
 
   const aristotle = calculateAristotleMesotes(testProfile, '조급하고 불안해서 자꾸 일을 미루게 돼요', now);
   assert.equal(aristotle.engineVersion, ARISTOTLE_MESOTES_VERSION);
+  assert(aristotle.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(aristotle.aristotleSynthesisMatrix?.integratedAction));
   assert.ok(aristotle.situationalMesotes.ethicsCitation.includes('니코마코스 윤리학'));
   assert.ok(aristotle.temporalPhronesisRhythm.phronesisReadiness >= 45 && aristotle.temporalPhronesisRhythm.phronesisReadiness <= 99);
   assert.ok(aristotle.eudaimoniaBalanceMatrix.goldenMeanStability >= 50);
   const aristotlePrompt = formatAristotleMesotesPrompt(aristotle);
   assert.ok(aristotlePrompt.includes('질문 맥락 불균형 축'));
   assert.ok(aristotlePrompt.includes('에우다이모니아 밸런스 매트릭스'));
+  assert.ok(aristotlePrompt.includes('교차 매트릭스'));
 
   const confucius = calculateConfuciusAnalectsZhitianming(testProfile, '동료와의 관계와 믿음에 갈등이 생겼어요', now);
   assert.equal(confucius.engineVersion, CONFUCIUS_ZHITIANMING_VERSION);
+  assert(confucius.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(confucius.confuciusSynthesisMatrix?.integratedAction));
   assert.ok(confucius.situationalAnalects.classicalQuote.includes('군자화이부동'));
   assert.ok(confucius.temporalJunziRhythm.liHarmonyIndex >= 45 && confucius.temporalJunziRhythm.liHarmonyIndex <= 99);
   assert.ok(confucius.junziCultivationMatrix.renLiCohesion >= 50);
   const confuciusPrompt = formatConfuciusAnalectsZhitianmingPrompt(confucius);
   assert.ok(confuciusPrompt.includes('질문 맥락 논어 처방'));
-  assert.ok(confuciusPrompt.includes('군자 수양 매트릭스'));
+  assert.ok(confuciusPrompt.includes('교차 매트릭스'));
 });
 
 test('v2.0.0 qualitative/temporal/matrix deepening: Plato Cave, Epictetus Dichotomy, and Bhagavad Gita Karma Yoga', () => {
@@ -7988,12 +7993,15 @@ test('v2.0.0 qualitative/temporal/matrix deepening: Plato Cave, Epictetus Dichot
 
   const epictetus = calculateEpictetusDichotomyOfControl(testProfile, '남의 시선과 평판 때문에 자꾸 위축돼요', now);
   assert.equal(epictetus.engineVersion, EPICTETUS_CONTROL_VERSION);
+  assert(epictetus.calculatedAtKst.endsWith('KST'));
+  assert(Boolean(epictetus.epictetusSynthesisMatrix?.integratedAction));
   assert.ok(epictetus.situationalControlAudit.sourceCitation.includes('엥케이리디온'));
   assert.ok(epictetus.temporalProhairesisRhythm.prohairesisClarityIndex >= 50 && epictetus.temporalProhairesisRhythm.prohairesisClarityIndex <= 99);
   assert.ok(epictetus.stoicAutonomyMatrix.overallSynthesis >= 50);
   const epictetusPrompt = formatEpictetusDichotomyOfControlPrompt(epictetus);
   assert.ok(epictetusPrompt.includes('질문 맥락 통제 감사'));
   assert.ok(epictetusPrompt.includes('스토아 자율 매트릭스'));
+  assert.ok(epictetusPrompt.includes('교차 매트릭스'));
 
   const gita = calculateBhagavadGitaKarmaYoga(testProfile, '결과가 불안해서 도무지 집중이 안 돼요', now);
   assert.equal(gita.engineVersion, BHAGAVAD_GITA_KARMA_YOGA_VERSION);

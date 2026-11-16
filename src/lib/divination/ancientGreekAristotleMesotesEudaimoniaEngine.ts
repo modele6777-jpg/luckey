@@ -12,7 +12,17 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const ARISTOTLE_MESOTES_VERSION = 'LUCKEY-ARISTOTLE-MESOTES-EUDAIMONIA-v2.1.0';
+export const ARISTOTLE_MESOTES_VERSION = 'LUCKEY-ARISTOTLE-MESOTES-EUDAIMONIA-v2.2.0';
+
+function formatAristotleKstTimestamp(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+}
 
 export interface AristotleVirtueStage {
   stageLevel: number;
@@ -76,6 +86,11 @@ export interface AristotleMesotesResult {
   dailyPracticeRitual: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
+  aristotleSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
 }
 
 export type AristotleMesotesReport = AristotleMesotesResult;
@@ -270,7 +285,8 @@ export function calculateAristotleMesotes(
   const activeVirtueStage = ARISTOTLE_VIRTUE_STAGES[stageIndex];
   const primaryMesotesWisdom = MESOTES_WISDOMS[wisdomIndex];
 
-  const { hour, month, isoKst } = getKstComponents(now);
+  const { hour, month } = getKstComponents(now);
+  const isoKst = formatAristotleKstTimestamp(now);
   const situationalMesotes = analyzeSituationalMesotes(question, activeVirtueStage);
   const temporalPhronesisRhythm = buildTemporalPhronesisRhythm(hour, month, phronesisPracticalWisdom);
 
@@ -310,6 +326,13 @@ export function calculateAristotleMesotes(
   const interpretiveBoundary =
     '아리스토텔레스의 중용과 에우다이모니아 통찰은 길흉이나 점수를 단정하는 예언이 아니라, 구체적 상황에서 실천적 지혜(Phronesis)로 균형을 가늠하기 위한 철학적 성찰 도구입니다.';
 
+  const trimmedQ = (question ?? '').trim();
+  const aristotleSynthesisMatrix = {
+    dominantTension: `${situationalMesotes.imbalanceAxis} (${situationalMesotes.deficiencyTrap} ↔ ${situationalMesotes.excessTrap})`,
+    alignmentState: `${activeVirtueStage.virtueNameGreek} · ${eudaimoniaBalanceMatrix.dominantAxis}`,
+    integratedAction: `${situationalMesotes.goldenMeanPivot}${trimmedQ ? ` [질문 맥락: ${trimmedQ}]` : ''}`,
+  };
+
   return {
     engineVersion: ARISTOTLE_MESOTES_VERSION,
     calculatedAtKst: isoKst,
@@ -330,6 +353,7 @@ export function calculateAristotleMesotes(
     dailyPracticeRitual,
     reflectiveQuestion,
     interpretiveBoundary,
+    aristotleSynthesisMatrix,
   };
 }
 
@@ -340,8 +364,11 @@ function describeAristotleStage(score: number): string {
 }
 
 export function formatAristotleMesotesPrompt(res: AristotleMesotesResult): string {
+  const matrixLine = res.aristotleSynthesisMatrix
+    ? `- 중용 교차 매트릭스: 핵심 긴장(${res.aristotleSynthesisMatrix.dominantTension}) · 조율 상태(${res.aristotleSynthesisMatrix.alignmentState}) · 통합 실천(${res.aristotleSynthesisMatrix.integratedAction})`
+    : '';
   return [
-    `【고대 그리스 아리스토텔레스 니코마코스 윤리학 중용(Mesotes) & 에우다이모니아 성찰 (${res.engineVersion})】`,
+    `【고대 그리스 아리스토텔레스 니코마코스 윤리학 중용(Mesotes) & 에우다이모니아 성찰 (${res.engineVersion} | ${res.calculatedAtKst})】`,
     `- 중용·번영 결: 중용 황금률(${describeAristotleStage(res.mesotesGoldenMeanScore)}) · 에우다이모니아(${describeAristotleStage(res.eudaimoniaFlourishingIndex)}) · 프로네시스(${describeAristotleStage(res.phronesisPracticalWisdom)})`,
     `- 목적·품격 결: 텔로스 지향(${describeAristotleStage(res.telosPurposeOrientation)}) · 아레테 품격(${describeAristotleStage(res.areteExcellenceIntegrity)})`,
     `- 현재 중용 조율 덕목: ${res.activeVirtueStage.virtueNameGreek} (${res.activeVirtueStage.virtueNameKo})`,
@@ -357,5 +384,6 @@ export function formatAristotleMesotesPrompt(res: AristotleMesotesResult): strin
     `- 오늘의 실천 의례: ${res.dailyPracticeRitual}`,
     `- 핵심 성찰 질문: ${res.reflectiveQuestion}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
-  ].join('\n');
+    matrixLine,
+  ].filter(Boolean).join('\n');
 }
