@@ -54,3 +54,12 @@ test('드래그 직후의 칩 클릭은 막고, 칩 클릭으로 질문을 고�
   assert.match(page, /if \(!drag\.moved\) return;/);
   assert.match(page, /tabIndex=\{promptIdx >= currentPrompts\.length \? -1 : undefined\}/);
 });
+
+
+test('로더가 사라진 뒤 마키가 실제로 마운트되면 자동 흐름 효과를 다시 시작한다', () => {
+  assert.match(page, /if \(!isLucyReady\) return;\s*const container = promptsMarqueeRef\.current/);
+  assert.match(page, /\}, \[isLucyReady, currentPrompts\.length, measurePromptsMarqueeLoop, wrapPromptsMarquee\]\)/);
+  assert.match(page, /PROMPTS_MARQUEE_MAX_PX_PER_SECOND = 22/);
+  assert.match(containerRule, /scroll-behavior:\s*auto/);
+  assert.match(trackRule, /flex:\s*0 0 auto/);
+});

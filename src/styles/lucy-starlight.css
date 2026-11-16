@@ -853,6 +853,7 @@ html[data-lucy-theme='starlight'] .lucy-night .lucy-voice-status { background: #
    사용자가 손가락·휠·드래그로 앞뒤 어느 방향으로든 밀 수 있도록 컨테이너 자체가 가로 스크롤 컨테이너이고,
    내용은 두 번 복제되어 있어 스크롤 위치를 루프 폭만큼 감아 어느 방향으로도 끊김 없이 순환한다. */
 .lucy-prompts-marquee-container {
+  scroll-behavior: auto;
   overflow-x: auto;
   overflow-y: hidden;
   position: relative;
@@ -873,6 +874,7 @@ html[data-lucy-theme='starlight'] .lucy-night .lucy-voice-status { background: #
 }
 
 .lucy-prompts-marquee-track {
+  flex: 0 0 auto;
   display: inline-flex;
   align-items: center;
   gap: 0.375rem;

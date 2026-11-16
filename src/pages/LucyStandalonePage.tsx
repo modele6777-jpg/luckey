@@ -679,6 +679,7 @@ export type LucyTier = 'ai' | 'plus';
 
 // 추천 질문 마키: 기존 CSS 흐름(38초에 한 바퀴)과 같은 속도, 조작이 끝난 뒤 1.2초 뒤 자동 재개
 const PROMPTS_MARQUEE_FLOW_DURATION_MS = 38000;
+const PROMPTS_MARQUEE_MAX_PX_PER_SECOND = 22;
 const PROMPTS_MARQUEE_RESUME_DELAY_MS = 1200;
 
 const detectPageChannels = (text: string, options: { allowMaster?: boolean } = {}) =>
@@ -2081,9 +2082,13 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
   }, []);
 
   useEffect(() => {
+    if (!isLucyReady) return;
     const container = promptsMarqueeRef.current;
     if (!container) return;
     const hold = promptsMarqueeHoldRef.current;
+    // A previous pane/background transition may have swallowed touchend.
+    hold.hover = false; hold.dragging = false; hold.touched = false;
+    hold.resumeAt = 0;
     const reduceMotionQuery = typeof window.matchMedia === 'function'
       ? window.matchMedia('(prefers-reduced-motion: reduce)')
       : null;
@@ -2106,7 +2111,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
       if (timestamp < hold.resumeAt) return;
       const loop = measurePromptsMarqueeLoop();
       if (!(loop > 0)) return;
-      pendingPixels += (loop / PROMPTS_MARQUEE_FLOW_DURATION_MS) * deltaMs;
+      pendingPixels += Math.min(loop / PROMPTS_MARQUEE_FLOW_DURATION_MS, PROMPTS_MARQUEE_MAX_PX_PER_SECOND / 1000) * deltaMs;
       const stepPixels = Math.floor(pendingPixels);
       if (stepPixels <= 0) return;
       pendingPixels -= stepPixels;
@@ -2149,7 +2154,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
       container.removeEventListener('wheel', handleNativeWheel);
       resizeObserver?.disconnect();
     };
-  }, [currentPrompts.length, measurePromptsMarqueeLoop, wrapPromptsMarquee]);
+  }, [isLucyReady, currentPrompts.length, measurePromptsMarqueeLoop, wrapPromptsMarquee]);
 
   const handlePromptsMarqueePointerEnter = (event: React.PointerEvent<HTMLDivElement>) => {
     if (event.pointerType === 'mouse') holdPromptsMarquee('hover', true);
