@@ -38,7 +38,7 @@ function formatMonthlyFlowKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
 }
 
 export interface MonthFlowItem {
@@ -108,6 +108,7 @@ export interface MonthlyFlowResult {
     alignmentState: string;
     integratedAction: string;
   };
+  reflectiveQuestion?: string;
   interpretiveBoundary: string;
 }
 
@@ -403,6 +404,9 @@ export function calculateMonthlyFlow(options?: {
     },
     yearOverallFlowSummary,
     monthlyFlowSynthesisMatrix,
+    reflectiveQuestion: q
+      ? `‘${q}’ 앞에서 올해 가장 힘이 실리는 ${topMonth.monthOrder}월(${topMonth.ganZhi})과 ${topQuarter.quarterName}을 어떻게 준비하시겠습니까?`
+      : `${yearGanZhiKr}의 흐름 속에서 ${topMonth.monthOrder}월(${topMonth.ganZhi})의 도약을 위해 지금 가장 먼저 다져둘 한 가지는 무엇입니까?`,
     interpretiveBoundary: '본 12개월 월운 및 분기 타이밍 리포트는 오호둔월법과 사주 십신·12운성에 기반한 정성적 시기 참고 안내이며, 투자·이직·계약의 확정적 보장이 아닙니다.',
   };
 }
@@ -440,7 +444,7 @@ ${qLines}
 3. [12개월 절기월별 정밀 운세 도감]:
 ${monthLines}
 ${res.monthlyFlowSynthesisMatrix ? `\n4. [교차 매트릭스]:\n   - 핵심 긴장: ${res.monthlyFlowSynthesisMatrix.dominantTension}\n   - 조율 상태: ${res.monthlyFlowSynthesisMatrix.alignmentState}\n   - 통합 실천: ${res.monthlyFlowSynthesisMatrix.integratedAction}` : ''}
-5. [해석 경계]: ${res.interpretiveBoundary}
+${res.reflectiveQuestion ? `   - 성찰 질문: ${res.reflectiveQuestion}\n` : ''}5. [해석 경계]: ${res.interpretiveBoundary}
 ======================================================================
 [★ 루시 월운 상담 지침]:
 - 사용자가 '몇 월이 좋아?', '이직 언제 할까?', '올해 하반기 운세는?' 등을 물었을 때 위 12개월 실측 타임라인 데이터를 근거로 구체적인 달(Month)과 시기를 명쾌하게 짚어줘.

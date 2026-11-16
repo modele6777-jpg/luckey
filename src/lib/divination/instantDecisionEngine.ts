@@ -43,7 +43,7 @@ function formatInstantDecisionKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
 }
 
 export type DecisionVerdictGrade =
@@ -147,6 +147,7 @@ export interface InstantDecisionResult {
     alignmentState: string;
     integratedAction: string;
   };
+  reflectiveQuestion?: string;
   interpretiveBoundary: string;
 }
 
@@ -506,6 +507,9 @@ export function calculateInstantDecision(options?: {
       },
     },
     instantDecisionSynthesisMatrix,
+    reflectiveQuestion: options?.questionText
+      ? `‘${options.questionText.slice(0, 40)}’ 앞에서 본괘 ${primaryHex.name}과 ${dominantGate}(${gateNature})의 신호를 바탕으로 지금 당장 취할 현실적 한 걸음은 무엇입니까?`
+      : `본괘 ${primaryHex.name}에서 변괘 ${changedHex.name}로 흐르는 지금, ${doNow}를 실행하기 위해 먼저 점검할 조건은 무엇입니까?`,
     interpretiveBoundary: '본 매화역수·기문둔갑 즉시 결단 리포트는 시간작괘와 시가팔문 원리에 기반한 정성적 타이밍 성찰 안내이며, 법률·투자·계약의 확정적 판단을 대신하지 않습니다.',
   };
 }
@@ -548,7 +552,7 @@ ${res.instantDecisionSynthesisMatrix ? `4. [교차 매트릭스]:
    - 핵심 긴장: ${res.instantDecisionSynthesisMatrix.dominantTension}
    - 조율 상태: ${res.instantDecisionSynthesisMatrix.alignmentState}
    - 통합 실천: ${res.instantDecisionSynthesisMatrix.integratedAction}` : ''}
-- 해석 경계: ${res.interpretiveBoundary}
+${res.reflectiveQuestion ? `- 성찰 질문: ${res.reflectiveQuestion}\n` : ''}- 해석 경계: ${res.interpretiveBoundary}
 ======================================================================
 [★ 루시 즉시 결단 답변 지침]:
 - 사용자가 '지금 할까 말까?', 'A vs B', '연락할까?', '계약할까?'를 물었을 때 위 실측 괘와 기문 8문을 명쾌한 승부수 언어로 풀어줘.
