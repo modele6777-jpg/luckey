@@ -15,7 +15,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const ITALIAN_DANTE_COMEDY_VERSION = 'LUCKEY-DANTE-DIVINE-COMEDY-v2.0.0';
+export const ITALIAN_DANTE_COMEDY_VERSION = 'LUCKEY-DANTE-DIVINE-COMEDY-v2.1.0';
 
 export interface DanteTheme {
   themeKey: string;
@@ -45,6 +45,9 @@ export interface DanteAlighieriDivineComedyAscentResult {
   // 세부 분석
   activeDanteTheme: DanteTheme;
   focalDanteAphorism: DanteAphorism;
+  secondaryDanteAphorism: DanteAphorism;
+  reflectiveQuestion: string;
+  interpretiveBoundary: string;
   danteComprehensiveGuidance: {
     guidanceTitle: string;
     philosophicalCounsel: string;
@@ -125,7 +128,7 @@ function formatDanteKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 KST`;
 }
 
 function describeDanteStage(score: number): string {
@@ -162,9 +165,16 @@ export function calculateItalianDanteAlighieriDivineComedyAscent(
 
   const themeIndex = (absHash >> 4) % DANTE_THEMES.length;
   const aphorismIndex = (absHash >> 7) % DANTE_APHORISMS.length;
+  const secondaryAphorismIndex = (aphorismIndex + 1 + ((absHash >> 10) % (DANTE_APHORISMS.length - 1))) % DANTE_APHORISMS.length;
 
   const activeDanteTheme = DANTE_THEMES[themeIndex];
   const focalDanteAphorism = DANTE_APHORISMS[aphorismIndex];
+  const secondaryDanteAphorism = DANTE_APHORISMS[secondaryAphorismIndex];
+  const trimmedQuery = query?.trim();
+  const reflectiveQuestion = trimmedQuery
+    ? `'${trimmedQuery}'이라는 어두운 숲 앞에서 지금 회피하지 않고 똑바로 직면한 뒤 별빛을 향해 걸어 나가야 할 한 걸음은 무엇인가요?`
+    : `지금 내 삶의 길목에서 무거운 짐으로 남아 있지만, 정직하게 마주하고 내려놓을수록 가벼워질 마음의 매듭은 무엇인가요?`;
+  const interpretiveBoundary = '단테 《신곡》 영혼 상승 관점은 내세의 심판이나 운명 예단이 아니라, 혼란의 직면과 정화를 거쳐 사랑의 방향을 찾는 문학·성찰 렌즈입니다.';
 
   const guidanceTitle = `단테 신곡 영혼 상승 지혜: ${activeDanteTheme.themeTitleKo}`;
   const philosophicalCounsel = `단테의 신곡 철학은 인생의 어두운 숲을 뚫고 그림자의 직면과 정화를 거쳐 궁극의 광명과 사랑으로 오르는 영혼의 순례를 밝혀줍니다. ` +
@@ -191,6 +201,9 @@ export function calculateItalianDanteAlighieriDivineComedyAscent(
     cosmicLoveHarmonizingScore,
     activeDanteTheme,
     focalDanteAphorism,
+    secondaryDanteAphorism,
+    reflectiveQuestion,
+    interpretiveBoundary,
     danteComprehensiveGuidance: {
       guidanceTitle,
       philosophicalCounsel,
@@ -212,9 +225,12 @@ export function formatDanteAlighieriDivineComedyAscentPrompt(res: DanteAlighieri
     `- 철학적 통찰: ${res.activeDanteTheme.philosophicalInsight}`,
     `- 실천적 조언: ${res.activeDanteTheme.practicalCounsel}`,
     `- 핵심 경구: "${res.focalDanteAphorism.aphorismKo}"`,
+    `- 보조 교차 경구: "${res.secondaryDanteAphorism.aphorismKo}" [${res.secondaryDanteAphorism.sourceContext}]`,
     `- 원문: "${res.focalDanteAphorism.aphorismEn}" [${res.focalDanteAphorism.sourceContext}]`,
     `- 구체적 실천 지침: ${res.focalDanteAphorism.actionGuidance}`,
     `- 종합 통찰 권면: ${res.danteComprehensiveGuidance.philosophicalCounsel}`,
+    `- 성찰 질문: ${res.reflectiveQuestion}`,
+    `- 해석 경계: ${res.interpretiveBoundary}`,
   ];
   if (res.danteSynthesisMatrix) {
     lines.push(
