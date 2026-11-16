@@ -8,12 +8,12 @@
  * 4. 수심정기(守心正氣): 맑은 마음을 오롯이 지키고 바른 기운을 길러 세속의 혼탁함과 두려움을 물리치는 내적 평정심.
  * 5. 후천개벽(後天開闢): 낡은 불평등과 절망의 시대를 넘어서서 새로운 빛과 상생의 새 세상을 여는 과감한 실천적 대전환력.
  *
- * @version LUCKEY-SUUN-CHOE-JEU-DONGHAK-v2.0.0
+ * @version LUCKEY-SUUN-CHOE-JEU-DONGHAK-v2.1.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const KOREAN_SUUN_CHOE_JEU_VERSION = 'LUCKEY-SUUN-CHOE-JEU-DONGHAK-v2.0.0';
+export const KOREAN_SUUN_CHOE_JEU_VERSION = 'LUCKEY-SUUN-CHOE-JEU-DONGHAK-v2.1.0';
 
 export interface DonghakTheme {
   themeKey: string;
@@ -42,7 +42,11 @@ export interface SuunChoeJeuDonghakSicheonjuResult {
   hucheonGaebyeokPioneerScore: number;     // 후천개벽(後天開闢) 시대전환 개척력
   // 세부 분석
   activeDonghakTheme: DonghakTheme;
+  secondaryDonghakTheme: DonghakTheme;
   focalDonghakAphorism: DonghakAphorism;
+  secondaryDonghakAphorism: DonghakAphorism;
+  reflectiveQuestion: string;
+  interpretiveBoundary: string;
   suunComprehensiveGuidance: {
     guidanceTitle: string;
     philosophicalCounsel: string;
@@ -61,7 +65,7 @@ function formatDonghakKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 KST`;
 }
 
 function describeDonghakStage(score: number): string {
@@ -173,10 +177,21 @@ export function calculateSuunChoeJeuDonghakSicheonju(
   const hucheonGaebyeokPioneerScore = 69 + ((absHash >> 12) % 30);
 
   const themeIndex = (absHash >> 4) % DONGHAK_THEMES.length;
+  const secondaryThemeIndex = (themeIndex + 1 + ((absHash >> 6) % (DONGHAK_THEMES.length - 1))) % DONGHAK_THEMES.length;
   const aphorismIndex = (absHash >> 7) % DONGHAK_APHORISMS.length;
+  const secondaryAphorismIndex = (aphorismIndex + 1 + ((absHash >> 10) % (DONGHAK_APHORISMS.length - 1))) % DONGHAK_APHORISMS.length;
 
   const activeDonghakTheme = DONGHAK_THEMES[themeIndex];
+  const secondaryDonghakTheme = DONGHAK_THEMES[secondaryThemeIndex];
   const focalDonghakAphorism = DONGHAK_APHORISMS[aphorismIndex];
+  const secondaryDonghakAphorism = DONGHAK_APHORISMS[secondaryAphorismIndex];
+
+  const trimmedQuery = query?.trim();
+  const reflectiveQuestion = trimmedQuery
+    ? `동학의 '${activeDonghakTheme.themeTitleKo}'와 '${secondaryDonghakTheme.themeTitleKo}'를 비추어 볼 때, "${trimmedQuery}"에서 스스로와 타인의 존엄을 함께 세우는 수심정기(守心正氣)의 선택은 무엇인가요?`
+    : `지금 삶의 전환점 앞에서, '${activeDonghakTheme.themeTitleKo}'의 자각과 '${secondaryDonghakTheme.themeTitleKo}'의 상생을 함께 열기 위해 오늘 내가 먼저 바꿀 태도는 무엇일까요?`;
+
+  const interpretiveBoundary = '이 지표는 수운 최제우 선생의 《동경대전》·〈용담유사〉에 담긴 시천주·사인여천·수심정기·후천개벽 사상을 내면 존엄과 관계 태도를 성찰하는 정성적 영성 틀로 해석한 것이며, 현실의 구체적 성패를 단정하는 확정 예언이 아닙니다.';
 
   const guidanceTitle = `수운 최제우 동학 시천주·개벽 지혜: ${activeDonghakTheme.themeTitleKo}`;
   const philosophicalCounsel = `수운 최제우 선생의 동학 영성은 내 안에 모신 하늘님의 존엄을 깨닫고, 사람을 하늘처럼 섬기며 새 세상을 열도록 촉구합니다. ` +
@@ -208,7 +223,11 @@ export function calculateSuunChoeJeuDonghakSicheonju(
     susimJeonggiEquanimityScore,
     hucheonGaebyeokPioneerScore,
     activeDonghakTheme,
+    secondaryDonghakTheme,
     focalDonghakAphorism,
+    secondaryDonghakAphorism,
+    reflectiveQuestion,
+    interpretiveBoundary,
     suunComprehensiveGuidance: {
       guidanceTitle,
       philosophicalCounsel,
@@ -231,11 +250,15 @@ export function formatSuunChoeJeuDonghakSicheonjuPrompt(res: SuunChoeJeuDonghakS
     `- 연산 시각: ${res.calculatedAtKst} | 엔진: ${res.engineVersion}`,
     `- 동학 개벽 국면: ${describeDonghakStage(avgScore)}`,
     `- 핵심 동학 테마: ${res.activeDonghakTheme.themeTitleKo} [${res.activeDonghakTheme.themeTitleHanja}]`,
+    `- 보조 교차 테마: ${res.secondaryDonghakTheme.themeTitleKo} [${res.secondaryDonghakTheme.themeTitleHanja}]`,
     `- 영성적 통찰: ${res.activeDonghakTheme.spiritualInsight}`,
     `- 실천적 조언: ${res.activeDonghakTheme.practicalCounsel}`,
     `- 핵심 경구: "${res.focalDonghakAphorism.aphorismKo}"`,
+    `- 보조 교차 경구: "${res.secondaryDonghakAphorism.aphorismKo}"`,
     `- 한자 원문: "${res.focalDonghakAphorism.aphorismHanja}" [${res.focalDonghakAphorism.sourceContext}]`,
     `- 구체적 실천 지침: ${res.focalDonghakAphorism.actionGuidance}`,
+    `- 성찰 질문: ${res.reflectiveQuestion}`,
+    `- 해석 경계: ${res.interpretiveBoundary}`,
     `- 종합 영성 권면: ${res.suunComprehensiveGuidance.philosophicalCounsel}`,
   ];
   if (res.donghakSynthesisMatrix) {

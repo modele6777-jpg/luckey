@@ -3077,7 +3077,7 @@ try {
   // 194. 다산 정약용 선생 《목민심서》 율기수신 & 애민청렴 공평무사 엔진
   const jeongYakyongMongminResult = calculateSupplement('jeongYakyongMongminResult', () => ((() => {
     try {
-      return calculateJeongYakyongMongmin(profile);
+      return calculateJeongYakyongMongmin(profile, question, now);
     } catch (_) {
       return null;
     }
@@ -3572,7 +3572,7 @@ try {
   // 247. 한국 동학 수운 최제우 동경대전 시천주 & 사인여천 영성 존엄 및 후천개벽 엔진
   const suunChoeJeuDonghakSicheonjuResult = calculateSupplement('suunChoeJeuDonghakSicheonjuResult', () => ((() => {
     try {
-      return calculateSuunChoeJeuDonghakSicheonju(profile);
+      return calculateSuunChoeJeuDonghakSicheonju(profile, question, now);
     } catch (_) {
       return null;
     }
@@ -4076,7 +4076,7 @@ try {
   // 303. 대한민국 신사임당 《초충도·사친·유대관령망친정》 화육생명 관조 & 효애성심·소박한 격조의 예술적 현철 자아실현 지혜 엔진
   const koreanShinSaimdangChochungdoArtVirtueResult = calculateSupplement('koreanShinSaimdangChochungdoArtVirtueResult', () => ((() => {
     try {
-      return calculateKoreanShinSaimdangChochungdoArtVirtue(profile);
+      return calculateKoreanShinSaimdangChochungdoArtVirtue(profile, question, now);
     } catch (_) {
       return null;
     }
@@ -4907,7 +4907,7 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'koreanChoeHyeonbaeHangeulGeulbon', nameKo: '외솔 최현배 우리말본 한글 말글자주권 문화얼', icon: '📖', category: 'deep_master', summary: '외솔 최현배 선생의 우리말본 정신으로 쉬운 말글의 진실한 소통과 흔들리지 않는 문화 자주권을 세웁니다.' },
   { key: 'zoroastrianAmeshaSpentasLight', nameKo: '페르시아 조로아스터교 6대 신성불멸자 빛의조화', icon: '🔥', category: 'deep_master', summary: '아베스타 6대 아메샤 스펜타와 선한 생각·말·행동(후마타·후크타·흐바르시타)의 빛의 조화를 비추는 관점' },
   { key: 'delphicChilonSpartanModeration', nameKo: '델포이 7현인 스파르타 킬론 너자신을알라 중용절제', icon: '🏛️', category: 'deep_master', summary: '델포이 7현인 킬론의 자기 객관화(Gnothi Seauton)와 과유불급(Meden Agan) 절제를 비추는 관점' },
-  { key: 'koreanJeongYakyongMongminSimseo', nameKo: '다산 정약용 목민심서 율기수신 애민청렴 공평무사', icon: '📜', category: 'deep_master' },
+  { key: 'koreanJeongYakyongMongminSimseo', nameKo: '다산 정약용 목민심서 율기수신 애민청렴 공평무사', icon: '📜', category: 'deep_master', summary: '다산 정약용의 《목민심서》에 담긴 율기·봉공·애민·진황의 실천 철학으로 사사로운 편의를 끊고 공명정대한 판단과 약자 보살핌을 비춥니다.' },
   { key: 'heraclitusPantaRheiLogos', nameKo: '에페소스 헤라클레이토스 만물유전 로고스 대립물조화', icon: '🌊', category: 'deep_master', summary: '만물유전과 활·리라의 팽팽한 긴장 속에서 대립물을 조화로운 로고스로 전환합니다.' },
   { key: 'moziGyeomAeUniversalLove', nameKo: '묵가 묵자 겸애교리 비공절용 공평무사 평화수호', icon: '🛡️', category: 'deep_master' },
   { key: 'romanAureliusInnerCitadel', nameKo: '로마 철학황제 마르쿠스 아우렐리우스 명상록 내면의성채', icon: '🏛️', category: 'deep_master', summary: '《명상록》의 내면 성채와 통제 이분법으로 외부 소음을 덜고 주권적 평정을 세웁니다.' },

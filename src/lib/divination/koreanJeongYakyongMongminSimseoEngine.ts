@@ -10,12 +10,12 @@
  *    - 진황(賑荒): 재난과 위기 상황에서 지체 없이 자원을 투입해 사람을 살림.
  * 3. 7대 청백리 품계 및 다산초당 친필 성찰 조언 산출
  *
- * @version LUCKEY-JEONG-YAKYONG-MONGMIN-v2.0.0
+ * @version LUCKEY-JEONG-YAKYONG-MONGMIN-v2.1.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const JEONG_YAKYONG_MONGMIN_VERSION = 'LUCKEY-JEONG-YAKYONG-MONGMIN-v2.0.0';
+export const JEONG_YAKYONG_MONGMIN_VERSION = 'LUCKEY-JEONG-YAKYONG-MONGMIN-v2.1.0';
 
 export interface MongminOfficialStage {
   stageLevel: number;
@@ -36,7 +36,14 @@ export interface JeongYakyongMongminResult {
   jinhwangCrisisManagementResilience: number; // 진황(賑荒) 위기 대처 및 민생 안정력
   // 세부 명세
   activeOfficialStage: MongminOfficialStage;
+  secondaryOfficialStage: MongminOfficialStage;
   primaryMongminVirtue: {
+    virtueNameKo: string;
+    hanjaMotto: string;
+    coreEssence: string;
+    actionableDirective: string;
+  };
+  secondaryMongminVirtue: {
     virtueNameKo: string;
     hanjaMotto: string;
     coreEssence: string;
@@ -46,6 +53,8 @@ export interface JeongYakyongMongminResult {
     manuscriptChapterTitle: string;
     practicalWisdom: string;
   };
+  reflectiveQuestion: string;
+  interpretiveBoundary: string;
   mongminSynthesisMatrix?: {
     dominantTension: string;
     alignmentState: string;
@@ -92,7 +101,7 @@ function getKstDateString(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 KST`;
 }
 
 function hashSeed(seedStr: string): number {
@@ -121,13 +130,24 @@ export function calculateJeongYakyongMongmin(
   const jinhwangCrisisManagementResilience = ((seed >> 9) % 38) + 63; // 63~100
 
   const stageIdx = (seed >> 2) % MONGMIN_STAGES.length;
+  const secondaryStageIdx = (stageIdx + 1 + ((seed >> 4) % (MONGMIN_STAGES.length - 1))) % MONGMIN_STAGES.length;
   const activeOfficialStage = MONGMIN_STAGES[stageIdx];
+  const secondaryOfficialStage = MONGMIN_STAGES[secondaryStageIdx];
 
   const virtueIdx = (seed >> 4) % MONGMIN_VIRTUES.length;
+  const secondaryVirtueIdx = (virtueIdx + 1 + ((seed >> 6) % (MONGMIN_VIRTUES.length - 1))) % MONGMIN_VIRTUES.length;
   const primaryMongminVirtue = MONGMIN_VIRTUES[virtueIdx];
+  const secondaryMongminVirtue = MONGMIN_VIRTUES[secondaryVirtueIdx];
 
   const legacyIdx = (seed >> 6) % DASAN_LEGACIES.length;
   const dasanChodangLegacy = DASAN_LEGACIES[legacyIdx];
+
+  const trimmedQuery = query?.trim();
+  const reflectiveQuestion = trimmedQuery
+    ? `《목민심서》의 '${primaryMongminVirtue.virtueNameKo}'와 '${secondaryMongminVirtue.virtueNameKo}'를 비추어 볼 때, "${trimmedQuery}"에서 사사로운 편의를 끊고 공명정대하게 지켜야 할 원칙은 무엇인가요?`
+    : `지금 맡은 역할과 판단 앞에서, '${primaryMongminVirtue.virtueNameKo}'의 율기와 '${secondaryMongminVirtue.virtueNameKo}'의 애민을 함께 세우려면 무엇을 먼저 바로잡아야 할까요?`;
+
+  const interpretiveBoundary = '이 지표는 다산 정약용 선생의 《목민심서》 율기·봉공·애민·진황 원칙을 공적·윤리적 선택과 자기 절제를 성찰하는 정성적 거울로 해석한 결과이며, 실제 법률·행정 판단이나 미래 결과를 단정하는 확정 예측이 아닙니다.';
 
   const calculatedAtKst = getKstDateString(now);
   const avgScore = Math.round(
@@ -153,8 +173,12 @@ export function calculateJeongYakyongMongmin(
     bonggongPublicDutyLoyaltyIndex,
     jinhwangCrisisManagementResilience,
     activeOfficialStage,
+    secondaryOfficialStage,
     primaryMongminVirtue,
+    secondaryMongminVirtue,
     dasanChodangLegacy,
+    reflectiveQuestion,
+    interpretiveBoundary,
     mongminSynthesisMatrix,
   };
 }
@@ -173,13 +197,17 @@ export function formatJeongYakyongMongminPrompt(result: JeongYakyongMongminResul
     `- 연산 시각: ${result.calculatedAtKst} | 엔진 버전: ${result.engineVersion}`,
     `- 목민 성찰 국면: ${describeMongminStage(avgScore)}`,
     `- 현행 청백리 품계: **[${result.activeOfficialStage.stageNameKo} (${result.activeOfficialStage.stageNameHanja})]**`,
+    `- 보조 교차 품계: **[${result.secondaryOfficialStage.stageNameKo} (${result.secondaryOfficialStage.stageNameHanja})]**`,
     `  → 관장 영역: ${result.activeOfficialStage.governanceDomain}`,
     `  → 청렴 실천 축복: ${result.activeOfficialStage.integrityBlessing}`,
     `- 최우선 목민 덕목: **[${result.primaryMongminVirtue.virtueNameKo} (${result.primaryMongminVirtue.hanjaMotto})]**`,
+    `- 보조 교차 덕목: **[${result.secondaryMongminVirtue.virtueNameKo} (${result.secondaryMongminVirtue.hanjaMotto})]**`,
     `  → 핵심 본질: ${result.primaryMongminVirtue.coreEssence}`,
     `  → 실천 지침: ${result.primaryMongminVirtue.actionableDirective}`,
     `- 다산초당 실학의 불멸 유산: 《${result.dasanChodangLegacy.manuscriptChapterTitle}》`,
     `  → 실사구시 불멸 지혜: "${result.dasanChodangLegacy.practicalWisdom}"`,
+    `- 성찰 질문: ${result.reflectiveQuestion}`,
+    `- 해석 경계: ${result.interpretiveBoundary}`,
   ];
   if (result.mongminSynthesisMatrix) {
     lines.push(
