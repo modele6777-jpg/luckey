@@ -17,7 +17,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const ZHUANGZI_XIAOYAOYOU_BUTTERFLY_ENGINE_VERSION = '2.0.0';
+export const ZHUANGZI_XIAOYAOYOU_BUTTERFLY_ENGINE_VERSION = '2.1.0';
 
 export interface ZhuangziArchetype {
   id: string;
@@ -44,6 +44,11 @@ export interface ZhuangziXiaoyaoyouButterflyReport {
   dailyPracticeRitual: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
+  zhuangziSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
 }
 
 const ZHUANGZI_ARCHETYPES_BASE: Omit<ZhuangziArchetype, 'affinityScore'>[] = [
@@ -180,6 +185,13 @@ export function calculateZhuangziXiaoyaoyouButterfly(
   const zhuangziFreedomGuidance = `뱁새와 매미의 좁은 가지 다툼에 얽매이지 마십시오. 현재 당신에게 깃든 기운은 [${dominantArchetype.nameKo}(${dominantArchetype.hanja})]의 기상입니다. ${dominantArchetype.spiritualLiberationGift}의 태도를 지닐 때, 사소한 시비는 사라지고 구만 리 장공의 자유로운 바람이 펼쳐집니다. (${situationalZhuangziFocus})`;
   const wuSangWoEmptyRoomRitual = `어깨의 긴장을 풀고 가슴 속 모든 분별과 계산을 허공으로 내쉬며 속삭이십시오: "허실생백(虛室生白), 방을 비우면 저절로 신령한 빛이 차오르듯 나를 비우고 천지의 큰 흐름에 몸을 맡긴다."`;
 
+  const trimmedQ = question.trim();
+  const zhuangziSynthesisMatrix = {
+    dominantTension: `${dominantArchetype.nameKo}(${dominantArchetype.hanja}) ↔ ${secondaryArchetype.nameKo}(${secondaryArchetype.hanja})`,
+    alignmentState: `${describeZhuangziStage(xiaoyaoyouAbsoluteFreedomScore)} · ${describeZhuangziStage(butterflyDreamFluidityScore)}`,
+    integratedAction: `${dailyPracticeRitual}${trimmedQ ? ` [질문 맥락: ${trimmedQ}]` : ''}`,
+  };
+
   return {
     engineVersion: ZHUANGZI_XIAOYAOYOU_BUTTERFLY_ENGINE_VERSION,
     timestamp: now.toISOString(),
@@ -196,10 +208,14 @@ export function calculateZhuangziXiaoyaoyouButterfly(
     dailyPracticeRitual,
     reflectiveQuestion,
     interpretiveBoundary,
+    zhuangziSynthesisMatrix,
   };
 }
 
 export function formatZhuangziXiaoyaoyouButterflyPrompt(rep: ZhuangziXiaoyaoyouButterflyReport): string {
+  const matrixLine = rep.zhuangziSynthesisMatrix
+    ? `\n· 장자 교차 매트릭스: 핵심 긴장(${rep.zhuangziSynthesisMatrix.dominantTension}) · 조율 상태(${rep.zhuangziSynthesisMatrix.alignmentState}) · 통합 실천(${rep.zhuangziSynthesisMatrix.integratedAction})`
+    : '';
   return `[고대 도가 장자 소요유 붕정만리 & 제물론 호접몽 정성 관조]
 · 엔진 버전: v${rep.engineVersion} | 기준 시각(KST): ${rep.calculatedAtKst}
 · 소요유(대자유) 흐름: ${describeZhuangziStage(rep.xiaoyaoyouAbsoluteFreedomScore)} | 대붕 상승 기류: ${describeZhuangziStage(rep.rocAscendingWindResonance)}
@@ -213,5 +229,5 @@ export function formatZhuangziXiaoyaoyouButterflyPrompt(rep: ZhuangziXiaoyaoyouB
 · 일상 관조 실천: ${rep.dailyPracticeRitual}
 · 성찰 질문: ${rep.reflectiveQuestion}
 · 허실생백(虛室生白) 마음비움 리추얼: ${rep.wuSangWoEmptyRoomRitual}
-· 해석 경계: ${rep.interpretiveBoundary}`;
+· 해석 경계: ${rep.interpretiveBoundary}${matrixLine}`;
 }
