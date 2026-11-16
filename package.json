@@ -1,7 +1,7 @@
 {
   "name": "luckey",
   "private": true,
-  "version": "1.7.654",
+  "version": "1.7.655",
   "engines": {
     "node": ">=20.0.0"
   },
@@ -17,12 +17,14 @@
     "lint": "tsc --noEmit",
     "deploy:firestore-rules": "firebase deploy --only firestore:rules",
     "build:sites": "vite build --mode sites && node scripts/build-sites.mjs",
+    "build:cloudflare": "vite build --mode sites",
     "test:webkit": "playwright test --project=webkit-iphone",
     "test:engine-badge-theme": "tsx --test tests/engine-badge-theme.test.ts",
     "test:prompt-marquee": "tsx --test tests/lucy-prompt-marquee-scroll.test.ts",
     "test:sync-vault": "tsx --test tests/server-vault-sync.test.ts",
     "test:tarot-energy-summary": "tsx --test tests/tarot-energy-summary.test.ts",
-    "test:tts-highlight": "tsx --test tests/tts-highlight-match.test.ts"
+    "test:tts-highlight": "tsx --test tests/tts-highlight-match.test.ts",
+    "test:cloudflare": "tsx --test tests/cloudflare-worker.test.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.91.1",

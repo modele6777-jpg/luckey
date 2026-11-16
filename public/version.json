@@ -1,10 +1,10 @@
 {
-  "version": "1.7.654",
-  "builtAt": "2026-11-16T10:21:18.362846+00:00",
-  "summary": "타로 리딩을 자연스러운 상담 흐름으로 개선",
+  "version": "1.7.655",
+  "builtAt": "2026-11-16T22:01:00+09:00",
+  "summary": "Cloudflare Workers 프리뷰 배포 구성 추가",
   "items": [
-    "질문에 바로 답하고 카드 사이의 흐름을 연결하는 공통 상담 문체 적용",
-    "강제 장문·중복 카드 풀이와 본문 뒤 고정 처방 자동 삽입 제거",
-    "오늘의 타로 전체 낭독에서 요약 중복을 제거하고 별도 요약은 유지"
+    "고정 HTTPS Vercel upstream을 사용하는 API 프록시 Worker와 same-origin 검증 추가",
+    "Cloudflare Static Assets에서 chat·Lucy·핸드북 경로와 SPA fallback 제공",
+    "쿠키·Cloudflare·hop-by-hop 전달 헤더를 제거하고 Authorization·본문·쿼리·응답 스트림은 유지"
   ]
 }
