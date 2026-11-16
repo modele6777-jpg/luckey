@@ -14,7 +14,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const LAOZI_DAODEJING_VERSION = 'LUCKEY-LAOZI-DAODEJING-v2.0.0';
+export const LAOZI_DAODEJING_VERSION = 'LUCKEY-LAOZI-DAODEJING-v2.1.0';
 
 export interface DaodejingStage {
   stageLevel: number;
@@ -172,7 +172,13 @@ function getKstDate(now?: Date): Date {
 }
 
 function getKstDateString(now?: Date): string {
-  return getKstDate(now).toISOString().replace('T', ' ').substring(0, 19) + ' KST';
+  return `${getKstDate(now).toISOString().slice(0, 19)}+09:00`;
+}
+
+function describeDaodejingWaterStage(harmonyScore: number): string {
+  if (harmonyScore >= 85) return '상선약수 순류기 (다툼 없이 낮은 자리에서 자연스럽게 길이 열리는 국면)';
+  if (harmonyScore >= 72) return '무위 완급 조율기 (억지 추진을 줄이고 여백을 확보하며 흐름을 타는 국면)';
+  return '화광동진 숙성기 (날카로운 조바심을 누그러뜨리고 내실의 때를 기다릴 국면)';
 }
 
 function hashSeed(seedStr: string): number {
@@ -307,25 +313,21 @@ export function calculateLaoziDaodejing(
 
 export function formatLaoziDaodejingPrompt(result: LaoziDaodejingResult): string {
   return `[☯️ 고대 중국 노자(老子) 《도덕경(道德經)》 상선약수 & 무위자연 리포트]
-- 엔진 버전: ${result.engineVersion}
-- 상선약수 유연 적응도: ${result.waterYieldingAdaptabilityScore}%
-- 무위이무불위 자연 순응력: ${result.wuweiEffortlessActionForce}%
-- 화광동진 포용 및 조화력: ${result.harmoniousLightSofteningIndex}%
-- 지족부욕 지지불태 만족력: ${result.contentmentNonGraspingPower}%
-- 대기만성 지구력 및 심도: ${result.greatVesselPatienceMaturity}%
+- 엔진 버전: ${result.engineVersion} | 연산 시각: ${result.calculatedAtKst}
+- 도가 수기(水氣) 위상: **${describeDaodejingWaterStage(result.softStrengthMatrix.nonContentionHarmonyScore)}**
 - 현행 도가적 품계: **[${result.activeDaodejingStage.stageNameKo} (${result.activeDaodejingStage.stageNameHanja})]**
   → 관장 영역: ${result.activeDaodejingStage.daoDomain}
   → 섭리의 축복: ${result.activeDaodejingStage.cosmicWaterBlessing}
 - 질문 공명 《도덕경》 장(章): **[${result.chapterResonance.chapterTitle}]** — "${result.chapterResonance.translationKo}" (${result.chapterResonance.originalHanja})
   → 성찰 질문: ${result.chapterResonance.reflectionQuestion}
   → 무위 덜어내기: ${result.chapterResonance.wuweiUnburdeningTip}
-- 시공간 수기(水氣) 리듬: ${result.seasonalWaterFlow.shichenName} / ${result.seasonalWaterFlow.seasonalQi} (완급 조율 지수 ${result.seasonalWaterFlow.waterPacingScore}%)
+- 시공간 수기(水氣) 리듬: ${result.seasonalWaterFlow.shichenName} / ${result.seasonalWaterFlow.seasonalQi}
   → 타이밍 조언: ${result.seasonalWaterFlow.effortlessTimingCounsel}
-- 유약승강강 균형 매트릭스: 여백-충만 균형 ${result.softStrengthMatrix.emptinessFullnessRatio}% · 다툼 회피 순리 지수 ${result.softStrengthMatrix.nonContentionHarmonyScore}%
-  → 전략 제언: ${result.softStrengthMatrix.yieldingOverRigidStrategy}
+- 유약승강강 균형 제언: ${result.softStrengthMatrix.yieldingOverRigidStrategy}
 - 최우선 도가 지침: **[${result.primaryDaoPrinciple.principleTitleKo} (${result.primaryDaoPrinciple.hanjaMotto})]**
   → 핵심 본질: ${result.primaryDaoPrinciple.coreEssence}
   → 실천 지침: ${result.primaryDaoPrinciple.actionableDirective}
 - 도덕경 불멸의 계시: 《${result.daodejingCosmicEpiphany.chapterSceneTitle}》
-  → 무위의 지혜: "${result.daodejingCosmicEpiphany.timelessWisdom}"`;
+  → 무위의 지혜: "${result.daodejingCosmicEpiphany.timelessWisdom}"
+- 해석 경계: 본 리포트는 노자 《도덕경》의 무위·상선약수 철학에 기반한 정성적 성찰 안내이며, 확정적 길흉 예단이 아닙니다.`;
 }

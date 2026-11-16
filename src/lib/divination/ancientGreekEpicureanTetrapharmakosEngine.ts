@@ -9,7 +9,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const EPICUREAN_TETRAPHARMAKOS_VERSION = 'LUCKEY-EPICUREAN-TETRAPHARMAKOS-v2.0.0';
+export const EPICUREAN_TETRAPHARMAKOS_VERSION = 'LUCKEY-EPICUREAN-TETRAPHARMAKOS-v2.1.0';
 
 export interface EpicureanStage {
   stageLevel: number;
@@ -94,7 +94,19 @@ const GARDEN_EPIPHANIES = [
 
 function getKstDateString(now: Date): string {
   const kst = new Date(now.getTime() + 9 * 3600 * 1000);
-  return kst.toISOString().replace('T', ' ').substring(0, 19) + ' KST';
+  return `${kst.toISOString().slice(0, 19)}+09:00`;
+}
+
+function describeEpicureanStage(score: number): string {
+  if (score >= 88) return '아타락시아 심화기 (불안의 파도가 잦아들고 소박한 자족이 자리를 잡는 국면)';
+  if (score >= 74) return '정원의 조율기 (필수적인 기쁨과 불필요한 비교를 차분히 가려내는 국면)';
+  return '정화 휴식기 (과도한 긴장과 허영을 덜어내고 몸과 마음의 안녕을 우선할 국면)';
+}
+
+function describeDesireBalance(vainRatio: number): string {
+  if (vainRatio <= 14) return '자연적이고 필수적인 욕망 중심 (소박한 자족이 안정적으로 유지되는 상태)';
+  if (vainRatio <= 20) return '균형 조율 필요 (타인의 시선에서 비롯된 헛된 갈증을 조금씩 덜어낼 상태)';
+  return '욕망 정돈 권고 (공허한 비교와 압박을 내려놓고 필수적 안온함으로 돌아갈 상태)';
 }
 
 function hashSeed(seedStr: string): number {
@@ -272,9 +284,10 @@ export function calculateEpicureanTetrapharmakos(
 }
 
 export function formatEpicureanTetrapharmakosPrompt(result: EpicureanTetrapharmakosResult): string {
+  const avgCore = Math.round((result.ataraxiaSoulTranquilityScore + result.aponiaPhysicalEaseBalance + result.tetrapharmakosRemedyMastery) / 3);
   return `[🌿 고대 그리스 에피쿠로스 《테트라파르마코스》 영혼 평정 아타락시아 리포트]
-- 엔진 버전: ${result.engineVersion}
-- 아타락시아 평정 ${result.ataraxiaSoulTranquilityScore}% · 아포니아 안녕 ${result.aponiaPhysicalEaseBalance}% · 4대 치유약 ${result.tetrapharmakosRemedyMastery}% · 정원 우정 ${result.philiaGardenFriendshipForce}% · 카타스테마틱 자족 ${result.katastematicPleasureClarity}%
+- 엔진 버전: ${result.engineVersion} | 연산 시각: ${result.calculatedAtKst}
+- 아타락시아 정원 위상: **${describeEpicureanStage(avgCore)}**
 - 현행 에피쿠로스적 품계: **[${result.activeEpicureanStage.stageNameKo} (${result.activeEpicureanStage.stageNameGreek})]**
   → 관장 영역: ${result.activeEpicureanStage.gardenDomain}
   → 평정의 축복: ${result.activeEpicureanStage.serenityBlessing}
@@ -285,8 +298,9 @@ export function formatEpicureanTetrapharmakosPrompt(result: EpicureanTetrapharma
   → 원전 경구: ${result.situationalRemedy.classicQuote}
   → 성찰 질문: ${result.situationalRemedy.reflectionPrompt}
 - KST 정원 리듬 (${result.temporalGardenRhythm.gardenPhaseKo}): ${result.temporalGardenRhythm.practiceFocus}
-- 에피쿠로스 욕망 3분류: 자연·필수 ${result.desireTaxonomyMatrix.naturalNecessaryRatio}% / 자연·비필수 ${result.desireTaxonomyMatrix.naturalUnnecessaryRatio}% / 공허한 욕망 ${result.desireTaxonomyMatrix.vainEmptyRatio}%
+- 에피쿠로스 욕망 3분류 진단: **${describeDesireBalance(result.desireTaxonomyMatrix.vainEmptyRatio)}**
   → 자족 지침: ${result.desireTaxonomyMatrix.autarkeiaDirective}
 - 에피쿠로스 정원의 불멸 계시: 《${result.epicureanGardenEpiphany.gardenSceneTitle}》
-  → 아타락시아 지혜: "${result.epicureanGardenEpiphany.peacefulWisdom}"`;
+  → 아타락시아 지혜: "${result.epicureanGardenEpiphany.peacefulWisdom}"
+- 해석 경계: 본 리포트는 에피쿠로스 정원 철학의 치유 상징에 기반한 정성적 성찰 안내이며, 의학적·심리적 진단이 아닙니다.`;
 }

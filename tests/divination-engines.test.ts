@@ -8935,3 +8935,27 @@ test('Ziwei HuaJi v2.0.0, Zoroastrian Asha v2.0.0, and Yoruba Ifa Odu v2.0.0 out
   assert.ok(!ifaPrompt.includes('/100') && !ifaPrompt.includes('%'));
   assert.ok(ifaPrompt.includes('해석 경계') && ifaPrompt.includes('+09:00'));
 });
+
+test('Epicurus, Heraclitus, and Laozi v2.1.0 output qualitative stages and KST without /100 or %', () => {
+  const now = new Date('2026-11-16T00:05:00Z');
+  const ep = calculateEpicureanTetrapharmakos(profile, '미래에 대한 불안 때문에 마음이 조급해요', now);
+  assert.equal(ep.engineVersion, EPICUREAN_TETRAPHARMAKOS_VERSION);
+  assert.ok(ep.calculatedAtKst.endsWith('+09:00'));
+  const epPrompt = formatEpicureanTetrapharmakosPrompt(ep);
+  assert.ok(!epPrompt.includes('/100') && !epPrompt.includes('%'));
+  assert.ok(epPrompt.includes('해석 경계') && epPrompt.includes('+09:00'));
+
+  const he = calculateHeraclitusPantaRhei(profile, '변화의 갈림길에서 중심을 잡고 싶어요', now);
+  assert.equal(he.engineVersion, HERACLITUS_PANTA_RHEI_VERSION);
+  assert.ok(he.calculatedAtKst.endsWith('+09:00'));
+  const hePrompt = formatHeraclitusPantaRheiPrompt(he);
+  assert.ok(!hePrompt.includes('/100') && !hePrompt.includes('%'));
+  assert.ok(hePrompt.includes('해석 경계') && hePrompt.includes('+09:00'));
+
+  const la = calculateLaoziDaodejing(profile, '억지로 애쓰기보다 순리에 맞추고 싶어요', now);
+  assert.equal(la.engineVersion, LAOZI_DAODEJING_VERSION);
+  assert.ok(la.calculatedAtKst.endsWith('+09:00'));
+  const laPrompt = formatLaoziDaodejingPrompt(la);
+  assert.ok(!laPrompt.includes('/100') && !laPrompt.includes('%'));
+  assert.ok(laPrompt.includes('해석 경계') && laPrompt.includes('+09:00'));
+});
