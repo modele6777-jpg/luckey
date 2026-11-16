@@ -2,9 +2,10 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import worker from '../src/cloudflare-worker.ts';
 
-type AssetEnv = { ASSETS: { fetch(request: Request): Promise<Response> } };
-const env = (asset: (request: Request) => Promise<Response> | Response = () => new Response('asset')): AssetEnv => ({
+type AssetEnv = { ASSETS: { fetch(request: Request): Promise<Response> }; GEMINI_API_KEY?: string };
+const env = (asset: (request: Request) => Promise<Response> | Response = () => new Response('asset'), apiKey?: string): AssetEnv => ({
   ASSETS: { fetch: async (request) => asset(request) },
+  ...(apiKey === undefined ? {} : { GEMINI_API_KEY: apiKey }),
 });
 
 const originalFetch = globalThis.fetch;
@@ -56,6 +57,138 @@ test('serves health endpoints directly without forwarding to Vercel', async () =
   assert.equal(unsupported.status, 405);
   assert.equal(unsupported.headers.get('Allow'), 'GET, HEAD, OPTIONS');
   assert.equal(called, false);
+});
+
+test('handles chat completions directly through Gemini with model fallback and a bounded OpenAI-compatible payload', async () => {
+  const received: Array<{ url: string; headers: Headers; payload: any }> = [];
+  globalThis.fetch = (async (input, init) => {
+    const upstreamRequest = new Request(input, init);
+    received.push({ url: upstreamRequest.url, headers: upstreamRequest.headers, payload: await upstreamRequest.json() });
+    if (received.length === 1) return new Response('provider details are not relayed', { status: 404 });
+    return Response.json({
+      id: 'chatcmpl-test',
+      object: 'chat.completion',
+      model: 'gemini-flash-lite-latest',
+      choices: [{ message: { role: 'assistant', content: '{"ok":true}' }, finish_reason: 'stop' }],
+    });
+  }) as typeof fetch;
+
+  const response = await worker.fetch(new Request('https://preview.example/api/openai/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Origin: 'https://preview.example',
+      'CF-Connecting-IP': '198.51.100.101',
+    },
+    body: JSON.stringify({
+      model: 'gemini-3.6-flash',
+      review_mode: 'general',
+      max_tokens: 9000,
+      thinking_level: 'medium',
+      response_format: { type: 'json_object' },
+      messages: [
+        { role: 'system', content: 'Answer in JSON.' },
+        { role: 'assistant', content: 'Ready.' },
+        { role: 'user', content: 'Return a JSON object.' },
+      ],
+    }),
+  }), env(undefined, 'test-only-not-a-real-key'));
+
+  assert.equal(received.length, 2);
+  assert.equal(received[0].url, 'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions');
+  assert.equal(received[0].headers.get('Authorization'), 'Bearer test-only-not-a-real-key');
+  assert.equal(received[0].payload.model, 'gemini-3.6-flash');
+  assert.equal(received[1].payload.model, 'gemini-flash-lite-latest');
+  assert.equal(received[1].payload.max_tokens, 2048);
+  assert.equal(received[1].payload.reasoning_effort, 'medium');
+  assert.deepEqual(received[1].payload.response_format, { type: 'json_object' });
+  assert.deepEqual(received[1].payload.messages, [
+    { role: 'system', content: 'Answer in JSON.' },
+    { role: 'assistant', content: 'Ready.' },
+    { role: 'user', content: 'Return a JSON object.' },
+  ]);
+  assert.equal(response.status, 200);
+  assert.equal(response.headers.get('X-AI-Provider'), 'gemini');
+  assert.equal(response.headers.get('Access-Control-Allow-Origin'), 'https://preview.example');
+  assert.equal((await response.json()).id, 'chatcmpl-test');
+});
+
+test('returns the existing missing-key error without contacting Gemini', async () => {
+  let called = false;
+  globalThis.fetch = (async () => {
+    called = true;
+    return new Response('unexpected');
+  }) as typeof fetch;
+  const response = await worker.fetch(new Request('https://preview.example/api/openai/v1/chat/completions', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'CF-Connecting-IP': '198.51.100.102' },
+    body: JSON.stringify({ messages: [{ role: 'user', content: 'hello' }] }),
+  }), env());
+  assert.equal(response.status, 503);
+  assert.equal((await response.json()).code, 'GEMINI_API_KEY_MISSING');
+  assert.equal(called, false);
+});
+
+test('rejects oversized chat bodies and histories before contacting Gemini', async () => {
+  let called = false;
+  globalThis.fetch = (async () => {
+    called = true;
+    return new Response('unexpected');
+  }) as typeof fetch;
+  const response = await worker.fetch(new Request('https://preview.example/api/openai/v1/chat/completions', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'CF-Connecting-IP': '198.51.100.103' },
+    body: JSON.stringify({ messages: Array.from({ length: 21 }, () => ({ role: 'user', content: 'hi' })) }),
+  }), env(undefined, 'test-only-not-a-real-key'));
+  assert.equal(response.status, 413);
+  assert.equal((await response.json()).code, 'BODY_TOO_LARGE');
+
+  const declaredTooLarge = await worker.fetch(new Request('https://preview.example/api/openai/v1/chat/completions', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Content-Length': '48001', 'CF-Connecting-IP': '198.51.100.104' },
+    body: JSON.stringify({ messages: [{ role: 'user', content: 'hi' }] }),
+  }), env(undefined, 'test-only-not-a-real-key'));
+  assert.equal(declaredTooLarge.status, 413);
+  assert.equal(called, false);
+});
+
+test('passes Gemini SSE streams through and enforces the per-isolate request limit', async () => {
+  let calls = 0;
+  globalThis.fetch = (async (_input, init) => {
+    calls++;
+    if (JSON.parse(String(init?.body)).stream) {
+      return new Response('data: {"choices":[]}\n\ndata: [DONE]\n\n', {
+        headers: { 'Content-Type': 'text/event-stream; charset=utf-8' },
+      });
+    }
+    return Response.json({ choices: [{ message: { content: 'ok' } }] });
+  }) as typeof fetch;
+  const base = 'https://preview.example/api/openai/v1/chat/completions';
+  const streamResponse = await worker.fetch(new Request(base, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'CF-Connecting-IP': '198.51.100.105' },
+    body: JSON.stringify({ stream: true, messages: [{ role: 'user', content: 'hello' }] }),
+  }), env(undefined, 'test-only-not-a-real-key'));
+  assert.equal(streamResponse.headers.get('Content-Type'), 'text/event-stream; charset=utf-8');
+  assert.match(await streamResponse.text(), /data: \[DONE\]/);
+
+  let lastResponse: Response | undefined;
+  for (let index = 0; index < 20; index++) {
+    lastResponse = await worker.fetch(new Request(base, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'CF-Connecting-IP': '198.51.100.106' },
+      body: JSON.stringify({ messages: [{ role: 'user', content: 'hello' }] }),
+    }), env(undefined, 'test-only-not-a-real-key'));
+  }
+  const limited = await worker.fetch(new Request(base, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'CF-Connecting-IP': '198.51.100.106' },
+    body: JSON.stringify({ messages: [{ role: 'user', content: 'hello' }] }),
+  }), env(undefined, 'test-only-not-a-real-key'));
+  assert.equal(lastResponse?.status, 200);
+  assert.equal(limited.status, 429);
+  assert.equal((await limited.json()).code, 'RATE_LIMITED');
+  assert.equal(calls, 21);
 });
 
 test('proxies API method, query, body, authorization and stream while filtering forwarding headers', async () => {

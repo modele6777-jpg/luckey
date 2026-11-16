@@ -1,10 +1,10 @@
 {
-  "version": "1.7.655",
-  "builtAt": "2026-11-16T22:01:00+09:00",
-  "summary": "Cloudflare Workers 프리뷰 배포 구성 추가",
+  "version": "1.7.657",
+  "builtAt": "2026-11-17T07:48:01+09:00",
+  "summary": "Cloudflare Worker에서 Gemini 채팅 완료 API 직접 제공",
   "items": [
-    "고정 HTTPS Vercel upstream을 사용하는 API 프록시 Worker와 same-origin 검증 추가",
-    "Cloudflare Static Assets에서 chat·Lucy·핸드북 경로와 SPA fallback 제공",
-    "쿠키·Cloudflare·hop-by-hop 전달 헤더를 제거하고 Authorization·본문·쿼리·응답 스트림은 유지"
+    "채팅 완료 API와 별칭 경로를 Cloudflare Worker에서 직접 처리하고 Gemini OpenAI 호환 API로 연결",
+    "모델 fallback·JSON·SSE 지원, 요청 크기·대화 수 제한과 isolate별 최선 노력 분당 제한 적용",
+    "그 밖의 API는 Vercel 프록시를 유지하며 Vercel 운영 설정은 변경하지 않음"
   ]
 }

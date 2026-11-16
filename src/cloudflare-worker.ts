@@ -1,3 +1,5 @@
+import { handleCloudflareGeminiChat, isChatCompletionsPath } from './cloudflare-gemini-chat.ts';
+
 const API_ORIGIN = 'https://luckey-six.vercel.app';
 const API_URL = new URL(API_ORIGIN);
 
@@ -30,6 +32,7 @@ const SENSITIVE_FORWARD_HEADERS = [
 
 export interface CloudflareWorkerEnv {
   ASSETS: { fetch(request: Request): Promise<Response> };
+  GEMINI_API_KEY?: string;
 }
 
 function isApiPath(pathname: string): boolean {
@@ -149,6 +152,7 @@ export const worker = {
     const originError = rejectCrossOrigin(request, requestUrl);
     if (originError) return originError;
     if (isHealthPath(requestUrl.pathname)) return healthResponse(request, requestUrl);
+    if (isChatCompletionsPath(requestUrl.pathname)) return handleCloudflareGeminiChat(request, env);
     if (isApiPath(requestUrl.pathname)) return proxyApi(request, requestUrl);
     return serveAsset(request, requestUrl, env);
   },
