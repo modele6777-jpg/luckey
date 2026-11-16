@@ -23,7 +23,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const SHANHAIJING_SACRED_BEASTS_ENGINE_VERSION = '2.0.0';
+export const SHANHAIJING_SACRED_BEASTS_ENGINE_VERSION = '2.1.0';
 
 export interface SacredBeast {
   name: string;
@@ -41,9 +41,12 @@ export interface ShanhaijingReport {
   calculatedAtKst: string;
   spiritualShieldingIndex: number; // 영적 방호 및 벽사 차폐율 0~100
   activeBeast: SacredBeast;
+  secondaryBeast: SacredBeast;
   elementHarmony: string;
   repellingAction: string; // 벽사 개운 실천
   shanhaijingWisdom: string;
+  reflectiveQuestion: string;
+  interpretiveBoundary: string;
   shanhaijingSynthesisMatrix?: {
     dominantTension: string;
     alignmentState: string;
@@ -58,7 +61,7 @@ function formatShanhaijingKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
 }
 
 const SACRED_BEASTS: SacredBeast[] = [
@@ -172,7 +175,9 @@ export function calculateShanhaijingSacredBeasts(options?: {
 
   // 2. 8방위 신수 선정
   const beastIdx = seed % SACRED_BEASTS.length;
+  const secondaryBeastIdx = (beastIdx + 1 + ((seed >> 3) % (SACRED_BEASTS.length - 1))) % SACRED_BEASTS.length;
   const activeBeast = SACRED_BEASTS[beastIdx];
+  const secondaryBeast = SACRED_BEASTS[secondaryBeastIdx];
 
   // 3. 오행 조화도
   const elementHarmonies = [
@@ -196,10 +201,14 @@ export function calculateShanhaijingSacredBeasts(options?: {
   const shanhaijingWisdom = `산해경 주재 영수 [${activeBeast.name}(${activeBeast.nameHanja})]의 가호 아래 방호 결계가 형성되었습니다. ${activeBeast.auspiciousMessage}`;
   const calculatedAtKst = formatShanhaijingKstTimestamp(now);
   const shanhaijingSynthesisMatrix = {
-    dominantTension: `${activeBeast.name} (${activeBeast.direction}) ↔ ${elementHarmony}`,
+    dominantTension: `${activeBeast.name} (${activeBeast.direction}) ↔ ${secondaryBeast.name} (${elementHarmony})`,
     alignmentState: `${activeBeast.spiritualProtection}`,
     integratedAction: `${repellingAction}${q ? ` [질문 맥락: ${q}]` : ''}`,
   };
+  const reflectiveQuestion = q
+    ? `지금 마주하신 '${q}'의 자리에서, '${activeBeast.name}'의 수호 기운을 빌려 과감히 지켜내거나 돌파해야 할 경계는 무엇입니까?`
+    : `오늘 내 마음이 흔들리는 틈으로 들어오는 불필요한 소음을 막고 '${activeBeast.name}'의 덕목을 세울 한 가지는 무엇입니까?`;
+  const interpretiveBoundary = '이 리포트는 《산해경》 8방위 신성 영수와 오행 방호 상징을 바탕으로 한 자기 성찰 비유이며, 초자연적 길흉 단정이나 의학적 조언이 아닙니다.';
 
   return {
     engineVersion: SHANHAIJING_SACRED_BEASTS_ENGINE_VERSION,
@@ -207,9 +216,12 @@ export function calculateShanhaijingSacredBeasts(options?: {
     calculatedAtKst,
     spiritualShieldingIndex,
     activeBeast,
+    secondaryBeast,
     elementHarmony,
     repellingAction,
     shanhaijingWisdom,
+    reflectiveQuestion,
+    interpretiveBoundary,
     shanhaijingSynthesisMatrix,
   };
 }
@@ -226,7 +238,7 @@ export function formatShanhaijingSacredBeastsPrompt(report: ShanhaijingReport): 
 오행 상생: ${report.elementHarmony}
 ======================================================================
 1. [주재 신성 영수 (Sacred Beast)]:
-   - 영수명: [${b.name}] (${b.nameHanja})
+   - 영수명: [${b.name}] (${b.nameHanja}) | 보조 교차 영수: [${report.secondaryBeast.name}] (${report.secondaryBeast.direction})
    - 주재 방위: ${b.direction} | 원소: ${b.element}
    - 신화적 위격: ${b.mythicRole}
    - 영적 수호력: ${b.spiritualProtection}
@@ -235,5 +247,7 @@ export function formatShanhaijingSacredBeastsPrompt(report: ShanhaijingReport): 
 2. [벽사(辟邪) 개운 실천 & 교차 매트릭스]:
    - 벽사 행동 처방: ${report.repellingAction}
    - 종합 수호 조언: ${report.shanhaijingWisdom}${report.shanhaijingSynthesisMatrix ? `\n   - 교차 매트릭스 [핵심 긴장: ${report.shanhaijingSynthesisMatrix.dominantTension} | 조율 상태: ${report.shanhaijingSynthesisMatrix.alignmentState}]\n   - 통합 실천: ${report.shanhaijingSynthesisMatrix.integratedAction}` : ''}
+   - 성찰 질문: ${report.reflectiveQuestion}
+   - 해석 경계: ${report.interpretiveBoundary}
 ======================================================================`;
 }

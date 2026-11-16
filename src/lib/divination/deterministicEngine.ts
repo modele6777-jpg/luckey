@@ -2312,7 +2312,7 @@ try {
   // 108. 고대 일본 신도 고토다마 50음령 & 4혼1생 영혼 조화 엔진
   const shintoKotodamaFourSoulsResult = calculateSupplement('shintoKotodamaFourSoulsResult', () => ((() => {
     try {
-      return calculateShintoKotodama({ profile, targetInstantTime: now.toISOString() });
+      return calculateShintoKotodama({ profile, targetInstantTime: now.toISOString(), question, now });
     } catch (_) {
       return null;
     }
@@ -2339,7 +2339,7 @@ try {
   // 111. 고대 동양 산해경(山海經) 8방위 신성 영수(神獸) & 오행 방호 나침반 엔진
   const shanhaijingSacredBeastsResult = calculateSupplement('shanhaijingSacredBeastsResult', () => ((() => {
     try {
-      return calculateShanhaijingSacredBeasts({ profile, targetInstantTime: now.toISOString() });
+      return calculateShanhaijingSacredBeasts({ profile, targetInstantTime: now.toISOString(), question, now });
     } catch (_) {
       return null;
     }
@@ -2861,7 +2861,7 @@ try {
   // 170. 고대 은나라 상(商) 갑골문(甲骨文) 신탁 복사(卜辭) & 정인 4단계 신의 균열 엔진
   const shangOracleBoneDivinationResult = calculateSupplement('shangOracleBoneDivinationResult', () => ((() => {
     try {
-      return calculateShangOracleBoneDivination(profile);
+      return calculateShangOracleBoneDivination(profile, now, question);
     } catch (_) {
       return null;
     }
@@ -4822,10 +4822,10 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'yorubaIfaOdu', nameKo: '요루바 이파 16오두 신탁', icon: '📿', category: 'deep_master', summary: '서아프리카 요루바 이파 16 메지 오두와 에보(Ebó) 실천으로 막힌 흐름을 여는 지혜를 전합니다.' },
   { key: 'arabicIlmAlRaml', nameKo: '아랍 일무람말 지오맨시', icon: '🏜️', category: 'deep_master' },
   { key: 'hinduNadiAgastyaPalmLeaf', nameKo: '인도 나디 아가스티야 야자잎', icon: '📜', category: 'deep_master', summary: '남인도 아가스티야 성자의 14대 칸담과 엄지 지문 문양을 통해 카르마의 맥락과 샨티 실천 처방을 비춥니다.' },
-  { key: 'shintoKotodamaFourSouls', nameKo: '신도 4혼1생 고토다마', icon: '⛩️', category: 'deep_master' },
+  { key: 'shintoKotodamaFourSouls', nameKo: '신도 4혼1생 고토다마', icon: '⛩️', category: 'deep_master', summary: '일영사혼(아라·니기·쿠시·사키미타마) 균형과 50음령 고토다마 언령 진동으로 내면을 정화·조율하는 관점' },
   { key: 'aboriginalDreamtimeSonglines', nameKo: '호주 드림타임 송라인', icon: '🪃', category: 'deep_master' },
   { key: 'finnishKalevalaSampo', nameKo: '핀란드 칼레발라 삼포', icon: '🌾', category: 'deep_master', summary: '칼레발라 삼포 3대 날개(안정·지혜·번영)와 불굴의 시수(Sisu) 회복탄력을 비추는 관점' },
-  { key: 'shanhaijingSacredBeasts', nameKo: '산해경 8방위 신성영수', icon: '🐉', category: 'deep_master' },
+  { key: 'shanhaijingSacredBeasts', nameKo: '산해경 8방위 신성영수', icon: '🐉', category: 'deep_master', summary: '고대 산해경 8방위 신성 영수와 오행 방호 결계로 벽사·개운의 방향을 살피는 관점' },
   { key: 'jainGunasthanaKarma', nameKo: '자이나 14군아스타나 카르마', icon: '🪷', category: 'deep_master' },
   { key: 'celticAwenTaliesin', nameKo: '켈트 탈리에신 아웬영감', icon: '🔮', category: 'deep_master' },
   { key: 'koreanDangunCheonbuin', nameKo: '단군 천부인 3보 홍익광명', icon: '🇰🇷', category: 'deep_master' },
@@ -4883,7 +4883,7 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'hopiFourWorldsKachina', nameKo: '호피 4대 세계 카치나 정령 지혜', icon: '🦅', category: 'deep_master' },
   { key: 'donghakCheondoismCheonju', nameKo: '동학 시천주 지기금지 인내천 조화', icon: '🕊️', category: 'deep_master' },
   { key: 'incaAndeanThreePachaAyni', nameKo: '잉카 안데스 3대 파차 아이니 호혜', icon: '🦙', category: 'deep_master' },
-  { key: 'shangOracleBoneDivination', nameKo: '은나라 갑골문 신탁 복사 정인 균열', icon: '🐢', category: 'deep_master' },
+  { key: 'shangOracleBoneDivination', nameKo: '은나라 갑골문 신탁 복사 정인 균열', icon: '🐢', category: 'deep_master', summary: '은허 갑골문의 전문·정문·점문·험문 4단계 복사와 정인 균열 상징으로 결단의 초심을 비추는 관점' },
   { key: 'cheonbugyeongEightyOne', nameKo: '단군 단학 천부경 81자 삼일신고 성통광명', icon: '☀️', category: 'deep_master' },
   { key: 'hinduSriYantra', nameKo: '힌두 탄트라 스리 얀트라 9나바요니 바인두', icon: '🔺', category: 'deep_master', summary: '스리 얀트라의 9대 교차 삼각형과 9층 아바라나 회랑을 통해 의식(시바)과 에너지(샤크티)의 중심 균형을 안내합니다.' },
   { key: 'lakotaMedicineWheel', nameKo: '라코타 수족 와칸 탕카 성스러운 메디슨 휠', icon: '🪶', category: 'deep_master', summary: '라코타 수족의 와칸 탕카와 4방위 메디슨 휠·미타쿠예 오야신 철학으로 만물과의 연결성과 균형 잡힌 방향 감각을 비춥니다.' },

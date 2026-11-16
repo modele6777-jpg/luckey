@@ -22,7 +22,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const SHANG_ORACLE_BONE_VERSION = '2.0.0';
+export const SHANG_ORACLE_BONE_VERSION = '2.1.0';
 
 export interface ShangOracleBoneReport {
   engineVersion: string;
@@ -31,6 +31,7 @@ export interface ShangOracleBoneReport {
   // 갑골 점복 4대 복사
   divinationMedium: string; // 구갑(龜甲) 또는 우견갑골(牛肩胛骨)
   divinerName: string; // 정인(貞人) 명호 (예: 쟁(爭), 빈(賓), 내(內), 각(殼) 등)
+  secondaryDivinerName: string; // 보조 교차 정인
   qianCiPreface: string; // 전문 (前辭)
   mingCiQuery: string; // 정문 (命辭)
   zhanCiOracleJudgment: string; // 점문 (占辭)
@@ -42,6 +43,8 @@ export interface ShangOracleBoneReport {
   manifestationEfficacyScore: number; // 현실 검증 응험력 지수 (0~100)
   // 정인의 조언
   oracleBonePrescription: string;
+  reflectiveQuestion: string;
+  interpretiveBoundary: string;
   shangOracleSynthesisMatrix?: {
     dominantTension: string;
     alignmentState: string;
@@ -56,7 +59,7 @@ function formatShangKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
 }
 
 function djb2Hash(str: string): number {
@@ -112,7 +115,10 @@ export function calculateShangOracleBoneDivination(
   const seed = djb2Hash(seedStr);
 
   const divinationMedium = (seed % 2 === 0) ? '신성 구갑 (神聖 龜甲 - 거북 배딱지 귀판)' : '신성 우견갑골 (神聖 牛肩胛骨 - 소 어깨뼈)';
-  const diviner = DIVINER_NAMES[seed % DIVINER_NAMES.length];
+  const divinerIdx = seed % DIVINER_NAMES.length;
+  const secondaryDivinerIdx = (divinerIdx + 1 + ((seed >> 4) % (DIVINER_NAMES.length - 1))) % DIVINER_NAMES.length;
+  const diviner = DIVINER_NAMES[divinerIdx];
+  const secondaryDiviner = DIVINER_NAMES[secondaryDivinerIdx];
   const judgment = ORACLE_JUDGMENTS[(seed >> 2) % ORACLE_JUDGMENTS.length];
 
   const shangdiDivineAlignmentScore = 63 + (seed % 36);
@@ -136,10 +142,14 @@ export function calculateShangOracleBoneDivination(
 
   const calculatedAtKst = formatShangKstTimestamp(now);
   const shangOracleSynthesisMatrix = {
-    dominantTension: `${divinationMedium} · 정인 ${diviner.name} ↔ ${judgment.gradeKo}`,
+    dominantTension: `${divinationMedium} · 정인 ${diviner.name} ↔ 보조 ${secondaryDiviner.name} (${judgment.gradeKo})`,
     alignmentState: `${judgment.omen}`,
     integratedAction: `${oracleBonePrescription}${q ? ` [질문 맥락: ${q}]` : ''}`,
   };
+  const reflectiveQuestion = q
+    ? `지금 물으신 '${q}'의 사안 앞에서, 불꽃에 갈라진 조문(兆紋)처럼 숨기지 못할 마음속 진짜 결단은 무엇입니까?`
+    : `오늘 마주한 갈림길에서, '${judgment.gradeKo}'의 맑은 기준에 비추어 더 정직하게 바로 세워야 할 초심은 어디에 있습니까?`;
+  const interpretiveBoundary = '이 리포트는 고대 은나라 갑골문 점복과 정인 복사 체계를 바탕으로 한 자기 성찰 비유이며, 길흉의 절대적 예언이나 미래 단정이 아닙니다.';
 
   return {
     engineVersion: SHANG_ORACLE_BONE_VERSION,
@@ -147,6 +157,7 @@ export function calculateShangOracleBoneDivination(
     calculatedAtKst,
     divinationMedium,
     divinerName: diviner.name,
+    secondaryDivinerName: secondaryDiviner.name,
     qianCiPreface,
     mingCiQuery,
     zhanCiOracleJudgment,
@@ -156,6 +167,8 @@ export function calculateShangOracleBoneDivination(
     crackAuspiciousnessIndex,
     manifestationEfficacyScore,
     oracleBonePrescription,
+    reflectiveQuestion,
+    interpretiveBoundary,
     shangOracleSynthesisMatrix,
   };
 }
@@ -164,7 +177,7 @@ export function formatShangOracleBoneDivinationPrompt(report: ShangOracleBoneRep
   const lines = [
     `[고대 은나라 상(商) 갑골문(甲骨文) 신탁 복사(卜辭) & 정인 4단계 신의 균열]`,
     `- 연산 시각: ${report.calculatedAtKst} | 엔진 버전: v${report.engineVersion}`,
-    `- 점복 매체: ${report.divinationMedium} / 주재 정인: ${report.divinerName}`,
+    `- 점복 매체: ${report.divinationMedium} / 주재 정인: ${report.divinerName} / 보조 정인: ${report.secondaryDivinerName}`,
     `- 전문(前辭): ${report.qianCiPreface}`,
     `- 정문(命辭): ${report.mingCiQuery}`,
     `- 점문(占辭): ${report.zhanCiOracleJudgment}`,
@@ -177,5 +190,9 @@ export function formatShangOracleBoneDivinationPrompt(report: ShangOracleBoneRep
       `- 통합 실천: ${report.shangOracleSynthesisMatrix.integratedAction}`,
     );
   }
+  lines.push(
+    `- 성찰 질문: ${report.reflectiveQuestion}`,
+    `- 해석 경계: ${report.interpretiveBoundary}`,
+  );
   return lines.join('\n');
 }
