@@ -21,7 +21,7 @@ import {
   EARTHLY_BRANCHES
 } from '../sajuAnalysis';
 
-export const DYNAMIC_CLASH_ENGINE_VERSION = 'LUCKEY-CLASH-v2.0.0';
+export const DYNAMIC_CLASH_ENGINE_VERSION = 'LUCKEY-CLASH-v2.1.0';
 
 export type ClashType = 'six_clash' | 'three_penalties' | 'self_penalty' | 'six_harm' | 'six_destruction' | 'wonjin';
 export type HarmonyType = 'six_harmony' | 'three_harmony';
@@ -95,6 +95,7 @@ export interface DynamicClashResult {
     recommendedAction: string;
     cautionNotice: string;
   };
+  reflectiveQuestion: string;
   boundaryNotice: string;
   summary: string;
 }
@@ -128,7 +129,7 @@ function getTemporalClashRhythm(now: Date) {
           : '겨울 · 내실 보존절 (무리한 충돌을 피하고 에너지를 비축하는 시기)';
 
   return {
-    kstTimeLabel: `${y}-${m}-${d} ${hh}:${mm} KST`,
+    kstTimeLabel: `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`,
     triggerWatchWindow,
     seasonalClashTone,
     temporalGuidance: `${triggerWatchWindow} · ${seasonalClashTone}의 흐름에 맞추어 움직이십시오.`,
@@ -579,6 +580,9 @@ export function calculateDynamicClashTrigger(params?: {
     situationalClashAudit,
     temporalClashRhythm,
     clashSynthesisMatrix,
+    reflectiveQuestion: q
+      ? `‘${q}’ 상황에서 오늘의 충·합 파동(${primaryClash ? primaryClash.name : '평온 흐름'})을 어떤 창조적 결단이나 조율 행동으로 전환하시겠습니까?`
+      : `오늘 일진(${currentPillars.dayGanZhiKo})이 건네는 긴장과 합의 기운 속에서 가장 먼저 내려놓을 관성과 붙잡을 행동은 무엇입니까?`,
     boundaryNotice: '본 결과는 사주 지지 충·합 상징에 기반한 정성적 리듬 안내이며, 흉살 예언이나 확정적 예측이 아닙니다.',
     summary
   };
@@ -626,6 +630,7 @@ ${harmList}
 - 질문 맥락 감사 (${res.situationalClashAudit.focusTheme}): ${res.situationalClashAudit.clashCue}
 - KST 시공간 리듬: ${res.temporalClashRhythm.triggerWatchWindow} / ${res.temporalClashRhythm.seasonalClashTone}
 - 교차 매트릭스: 핵심(${res.clashSynthesisMatrix.coreInsight}) | 실행(${res.clashSynthesisMatrix.recommendedAction}) | 주의(${res.clashSynthesisMatrix.cautionNotice})
+- 성찰 질문: ${res.reflectiveQuestion}
 - 해석 경계: ${res.boundaryNotice}
 ※ 루시 지침: 충(沖)이나 형(刑)이 발생했다고 해서 불길한 액운으로 겁주지 마십시오. 충은 낡은 껍질을 깨고 새로운 아이디어를 분출시키는 강력한 에너지입니다. 사용자가 오늘 마주할 수 있는 감정적/업무적 파동을 짚어주고, 이를 창조적 결단으로 승화할 수 있도록 실용적으로 안내하십시오.`;
 }

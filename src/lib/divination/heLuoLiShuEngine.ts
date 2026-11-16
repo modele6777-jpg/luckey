@@ -32,7 +32,7 @@ import type { UserProfile } from '../sharedState';
 import { calculateDetailedSaju, SajuAnalysisResult } from '../sajuAnalysis';
 import { hexagram } from './iching';
 
-export const HELUOLISHU_ENGINE_VERSION = 'LUCKEY-HL-v2.0.0';
+export const HELUOLISHU_ENGINE_VERSION = 'LUCKEY-HL-v2.1.0';
 
 export const HELUOLISHU_METHOD =
   '하락이수(河洛理數) 정통 상수역학 산법: 사주 8자 하도낙서 천수(25)·지수(30) 치환, 선천본괘(先天本卦)·원당효(元堂爻)·후천변괘(後天變卦) 결정론적 산출, 음양 밸런스·원당효 당위성·10년 대운 주역 궤적 및 청년/장년 2대 인생 주기 지수 산출';
@@ -104,6 +104,7 @@ export interface HeLuoLiShuResult {
     cautionNotice: string;
   };
   lifeTransitionKey: string;
+  reflectiveQuestion: string;
   boundaryNotice: string;
 }
 
@@ -158,7 +159,7 @@ function getTemporalHeLuoRhythm(now: Date) {
           : '겨울 · 북방 1·6 수기(水氣) 응축기 (지혜를 비축하고 내실을 다지는 상수)';
 
   return {
-    kstTimeLabel: `${y}-${m}-${d} ${hh}:${mm} KST`,
+    kstTimeLabel: `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`,
     hetuWatchWindow,
     seasonalLuoshuTone,
     temporalGuidance: `${hetuWatchWindow} · ${seasonalLuoshuTone}의 흐름에 맞추어 원당효의 중심을 지키십시오.`,
@@ -380,6 +381,9 @@ export function calculateHeLuoLiShu(params?: {
     temporalHeLuoRhythm,
     heLuoSynthesisMatrix,
     lifeTransitionKey,
+    reflectiveQuestion: question
+      ? `‘${question}’ 앞에서 선천본괘 ${innateGua.name}의 바탕과 후천변괘 ${acquiredGua.name}의 방향을 연결할 원당 제${yuanTangYao}효의 첫 실천은 무엇입니까?`
+      : `선천 ${innateGua.name}과 후천 ${acquiredGua.name}을 잇는 원당 제${yuanTangYao}효의 소명 중 지금 가장 먼저 깨워야 할 태도는 무엇입니까?`,
     boundaryNotice: '본 결과는 하락이수 상수역학의 사주·주역 상징 치환 모델에 기반한 정성적 성찰 안내이며, 확정적 길흉 판정이 아닙니다.',
   };
 }
@@ -412,6 +416,7 @@ export function formatHeLuoLiShuPrompt(res: HeLuoLiShuResult): string {
 ${dtStr}
 - 대전환 핵심 비결: ${res.lifeTransitionKey}
 - 마스터 거시 전략: "${res.masterStrategicGuidance}"
+- 성찰 질문: ${res.reflectiveQuestion}
 - 해석 경계: ${res.boundaryNotice}
 ※ 루시 지침: 하락이수는 사주 8자가 주역 64괘의 대하드라마로 치환되는 동양 최고봉 수리 명학입니다. 청년기(선천)의 기본 바탕과 30세 이후(후천)의 대성공 괘상, 그리고 평생의 소명이 담긴 원당효를 입체적으로 해설해 주세요.`;
 }

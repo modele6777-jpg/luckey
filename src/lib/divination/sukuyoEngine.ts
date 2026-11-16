@@ -157,6 +157,7 @@ export interface SukuyoResult {
     alignmentState: string;
     integratedAction: string;
   };
+  reflectiveQuestion?: string;
   interpretiveBoundary?: string;
   note?: string;
 }
@@ -168,7 +169,7 @@ function formatSukuyoKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
 }
 
 /** 27숙 원시 정의 (색인 0=각(角) ~ 26=진(軫), 숙요경 27숙 순서 — 우(牛)수 제외) */
@@ -624,6 +625,10 @@ function calculateSanKyuCycle(mansion: SukuyoMansionInfo): SukuyoSanKyuCycle {
     integratedAction: `${sanKyuCycle.actionCompass}${q ? ` [질문 맥락: ${q}]` : ''}`,
   };
 
+  const reflectiveQuestion = q
+    ? `‘${q}’ 앞에서 본명숙 ${mansion.fullName}(${shukgukMeta.hanja})의 기질과 ${sanKyuCycle.nineMansionPhase}의 흐름 중 어떤 강점을 먼저 살리시겠습니까?`
+    : `본명숙 ${mansion.fullName}(${shukgukMeta.hanja})이 비추는 성향과 ${celestialQuadrant.quadrant}의 계절 리듬 사이에서 지금 가장 먼저 다듬을 관계나 과제는 무엇입니까?`;
+
   const interpretiveBoundary = '본 밀교 숙요경 27숙 리포트는 태음력 기반 전통 27숙 상징과 관계 역학에 따른 정성적 이해 안내이며, 인연의 성패를 단정짓지 않습니다.';
 
   return {
@@ -647,6 +652,7 @@ function calculateSanKyuCycle(mansion: SukuyoMansionInfo): SukuyoSanKyuCycle {
     sanKyuCycle,
     partnerMatrix,
     sukuyoSynthesisMatrix,
+    reflectiveQuestion,
     interpretiveBoundary,
   };
 }
@@ -720,7 +726,7 @@ ${deepBlock}
 ${partnerBlock}
 - 6대 관계성 판정 체계: 명(命)=동일 숙의 운명적 거울 · 업·태(業·胎)=영혼의 파트너 · 영·쇠(榮·衰)=번영 vs 소모 · 안·위(安·危)=지지자 vs 긴장 · 성·괴(成·壞)=성취 vs 파괴 · 우·친(友·親)=가장 편안한 유대
 - 3거리 역학: 근거리 1~4숙(즉각적 공명과 마찰) · 중거리 5~13숙(협력과 성장) · 원거리 14~26숙(시공을 넘는 끌림)
-- 해석 경계: ${result.interpretiveBoundary || '본 밀교 숙요경 27숙 리포트는 태음력 기반 전통 27숙 상징과 관계 역학에 따른 정성적 이해 안내이며, 인연의 성패를 단정짓지 않습니다.'}
+${result.reflectiveQuestion ? `- 성찰 질문: ${result.reflectiveQuestion}\n` : ''}- 해석 경계: ${result.interpretiveBoundary || '본 밀교 숙요경 27숙 리포트는 태음력 기반 전통 27숙 상징과 관계 역학에 따른 정성적 이해 안내이며, 인연의 성패를 단정짓지 않습니다.'}
 - [AI 해석 절대 지침]: 본 리포트는 월별 기숙표 기반 27숙 순환 수리로 계산된 100% 확정 수리입니다. 본명숙·숙격·관계 라벨을 임의로 바꾸지 말고, 3거리 역학에 맞춰 상담하십시오.
 `.trim();
 }

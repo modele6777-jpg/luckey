@@ -2085,7 +2085,8 @@ test('HeLuoLiShu Engine: 사주·주역 융합 선천괘·후천괘·원당효 �
   assert(res.yuanTangDetail !== undefined);
   assert(res.yuanTangDetail.potencyScore >= 50 && res.yuanTangDetail.potencyScore <= 98);
   assert.equal(res.decadeTrajectory.length, 5);
-  assert(res.calculatedAtKst.includes('KST'));
+  assert(res.calculatedAtKst.includes('+09:00 (KST)'));
+  assert(res.reflectiveQuestion.includes('직장과 진로의 도약'));
   assert(res.temporalHeLuoRhythm.hetuWatchWindow.length > 0);
   assert(res.heLuoSynthesisMatrix.coreInsight.length > 0);
   const prompt = formatHeLuoLiShuPrompt(res);
@@ -2095,7 +2096,8 @@ test('HeLuoLiShu Engine: 사주·주역 융합 선천괘·후천괘·원당효 �
   assert(prompt.includes('후천변괘'));
   assert(prompt.includes('음양 체질'));
   assert(prompt.includes('생애 대운별 주역 궤적'));
-  assert(prompt.includes('KST'));
+  assert(prompt.includes('+09:00 (KST)'));
+  assert(prompt.includes('성찰 질문'));
   assert(!prompt.includes('/100') && !prompt.includes('%') && !prompt.includes('점수'));
 });
 
@@ -2107,11 +2109,13 @@ test('Dynamic Clash Trigger Engine: 실시간 삼형·육충·파해 동적 격�
   assert(['explosive_change', 'high_tension', 'balanced_movement', 'peaceful_flow'].includes(res.netStatus));
   assert(res.todayActionMatrix.doNow.length > 0);
   assert(res.todayActionMatrix.avoidNow.length > 0);
-  assert(res.calculatedAtKst.includes('KST'));
+  assert(res.calculatedAtKst.includes('+09:00 (KST)'));
+  assert(res.reflectiveQuestion.includes('오늘 조심할 점'));
   const prompt = formatDynamicClashPrompt(res);
   assert(prompt.includes(DYNAMIC_CLASH_ENGINE_VERSION));
   assert(prompt.includes('오늘 일진'));
-  assert(prompt.includes('KST'));
+  assert(prompt.includes('+09:00 (KST)'));
+  assert(prompt.includes('성찰 질문'));
   assert(!prompt.includes('/100') && !prompt.includes('%') && !prompt.includes('점수'));
 });
 
