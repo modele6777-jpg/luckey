@@ -8,12 +8,12 @@
  * 4. 자연과의 합일(Transparent Eyeball): 에고의 조급함을 비우고 자연의 리듬으로 호흡하는 투명한 응시
  * 5. 창조적 독창성(Creative Originality): 모방을 멈추고 자신만의 고유한 과업을 꽃피움
  *
- * @version LUCKEY-RALPH-WALDO-EMERSON-v2.0.0
+ * @version LUCKEY-RALPH-WALDO-EMERSON-v2.1.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const AMERICAN_RALPH_WALDO_EMERSON_VERSION = 'LUCKEY-RALPH-WALDO-EMERSON-v2.0.0';
+export const AMERICAN_RALPH_WALDO_EMERSON_VERSION = 'LUCKEY-RALPH-WALDO-EMERSON-v2.1.0';
 
 export type EmersonQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -52,6 +52,7 @@ export interface RalphWaldoEmersonSelfRelianceResult {
   reflectionFocus: string;
   counselNote: string;
   boundaryNotice: string;
+  interpretiveBoundary: string;
   situationalEmersonAudit: {
     focusTheme: string;
     autonomyCue: string;
@@ -314,6 +315,7 @@ export function calculateRalphWaldoEmersonSelfReliance(
     reflectionFocus: topicGuide.reflection,
     counselNote,
     boundaryNotice,
+    interpretiveBoundary: boundaryNotice,
     situationalEmersonAudit,
     temporalEmersonRhythm,
     emersonSynthesisMatrix,
