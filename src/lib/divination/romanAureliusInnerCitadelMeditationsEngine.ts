@@ -14,7 +14,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const AURELIUS_INNER_CITADEL_VERSION = 'LUCKEY-AURELIUS-INNER-CITADEL-v2.0.0';
+export const AURELIUS_INNER_CITADEL_VERSION = 'LUCKEY-AURELIUS-INNER-CITADEL-v2.1.0';
 
 export interface AureliusStage {
   stageLevel: number;
@@ -156,7 +156,13 @@ function getKstDate(now?: Date): Date {
 }
 
 function getKstDateString(now?: Date): string {
-  return getKstDate(now).toISOString().replace('T', ' ').substring(0, 19) + ' KST';
+  return `${getKstDate(now).toISOString().slice(0, 19)}+09:00`;
+}
+
+function describeCitadelStage(score: number): string {
+  if (score >= 86) return '불침투 성채 확립기 (외부 소음과 인상에 흔들리지 않고 헤게모니콘의 중심을 지키는 국면)';
+  if (score >= 74) return '스토아 주권 조율기 (통제할 수 있는 내면의 선택으로 시선을 돌리는 국면)';
+  return '성채 정비 휴식기 (판단을 잠시 보류하고 존엄과 여백을 먼저 회복할 국면)';
 }
 
 function hashSeed(seedStr: string): number {
@@ -282,27 +288,24 @@ export function calculateAureliusInnerCitadel(
 }
 
 export function formatAureliusInnerCitadelPrompt(result: AureliusInnerCitadelResult): string {
+  const avgCore = Math.round((result.innerCitadelFortressScore + result.hegemonikonSovereignSoul + result.amorFatiCosmicAcceptance) / 3);
   return `[🏛️ 고대 로마 마르쿠스 아우렐리우스 《명상록(Meditations)》 내면의 성채 & 스토아 평정 리포트]
-- 엔진 버전: ${result.engineVersion}
-- 내면의 성채(Inner Citadel) 불침투 평정심: ${result.innerCitadelFortressScore}%
-- 히크 에트 눈크(Hic et nunc, 지금 이 순간) 집중도: ${result.hicEtNuncPresentPresence}%
-- 아모르 파티(Amor Fati) 운명애 및 섭리 순응력: ${result.amorFatiCosmicAcceptance}%
-- 코스모폴리스(Cosmopolis) 공동선 연대감: ${result.cosmopolisCommonGoodIndex}%
-- 헤게모니콘(Hegemonikon) 주권적 이성력: ${result.hegemonikonSovereignSoul}%
+- 엔진 버전: ${result.engineVersion} | 연산 시각: ${result.calculatedAtKst}
+- 내면의 성채 위상: **${describeCitadelStage(avgCore)}**
 - 현행 스토아적 영혼 품계: **[${result.activeAureliusStage.stageNameKo} (${result.activeAureliusStage.stageNameLatin})]**
   → 관장 영역: ${result.activeAureliusStage.stoicDomain}
   → 성채의 축복: ${result.activeAureliusStage.citadelBlessing}
-- 통제 이분법(Dichotomy of Control) 분류 (${result.controlDichotomy.bookReference}, 내부 주권 비중 ${result.controlDichotomy.internalSovereigntyRatio}%):
+- 통제 이분법(Dichotomy of Control) 분류 (${result.controlDichotomy.bookReference}):
   → 내려놓을 외부 변수: ${result.controlDichotomy.uncontrollableNoiseKo}
   → 내가 통제할 주권 선택: ${result.controlDichotomy.sovereignActionKo}
   → 성찰 질문: ${result.controlDichotomy.reflectionQuestion}
 - 일일 스토아 실천 리듬 (${result.dailyStoicPractice.practiceMode}): ${result.dailyStoicPractice.protocolTitleKo}
   → 실천 프로토콜: ${result.dailyStoicPractice.protocolDirective}
-- 성채 방어선 매트릭스: 인상 거리두기 ${result.citadelResilienceMatrix.phantasiaDetachmentScore}% · 아모르 파티 변환력 ${result.citadelResilienceMatrix.amorFatiConversionIndex}%
-  → 공동선 안내: ${result.citadelResilienceMatrix.cosmopolisContributionGuide}
+- 공동선(Cosmopolis) 안내: ${result.citadelResilienceMatrix.cosmopolisContributionGuide}
 - 최우선 명상록 실천 잠언: **[${result.primaryMeditationsPrecept.preceptTitleKo} (${result.primaryMeditationsPrecept.latinAphorism})]**
   → 핵심 본질: ${result.primaryMeditationsPrecept.coreEssence}
   → 실천 지침: ${result.primaryMeditationsPrecept.actionableDirective}
 - 철학 황제의 내면 독백: 《${result.citadelEmperorSoliloquy.soliloquyTitle}》
-  → 고결한 명상 조언: "${result.citadelEmperorSoliloquy.meditativeCounsel}"`;
+  → 고결한 명상 조언: "${result.citadelEmperorSoliloquy.meditativeCounsel}"
+- 해석 경계: 본 리포트는 마르쿠스 아우렐리우스 《명상록》의 스토아 자기 성찰 원리에 기반한 정성적 안내이며, 확정적 예단이 아닙니다.`;
 }

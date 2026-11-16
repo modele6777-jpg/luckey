@@ -8967,3 +8967,27 @@ test('Epicurus, Heraclitus, and Laozi v2.1.0 output qualitative stages and KST w
   assert.ok(!laPrompt.includes('/100') && !laPrompt.includes('%'));
   assert.ok(laPrompt.includes('해석 경계') && laPrompt.includes('+09:00'));
 });
+
+test('Wonhyo, Aurelius Inner Citadel, and Vedic Pancha Kosha v2.1.0 output qualitative stages and KST without /100 or %', () => {
+  const now = new Date('2026-11-16T00:15:00Z');
+  const wo = calculateWonhyoHwajaeng(profile, '서로 다른 의견 사이에서 마음을 모으고 싶어요', now);
+  assert.equal(wo.engineVersion, WONHYO_HWAJAENG_VERSION);
+  assert.ok(wo.calculatedAtKst.endsWith('+09:00'));
+  const woPrompt = formatWonhyoHwajaengPrompt(wo);
+  assert.ok(!woPrompt.includes('/100') && !woPrompt.includes('%') && !woPrompt.includes('점 '));
+  assert.ok(woPrompt.includes('해석 경계') && woPrompt.includes('+09:00'));
+
+  const au = calculateAureliusInnerCitadel(profile, '외부 평가에 흔들리지 않고 중심을 지키고 싶어요', now);
+  assert.equal(au.engineVersion, AURELIUS_INNER_CITADEL_VERSION);
+  assert.ok(au.calculatedAtKst.endsWith('+09:00'));
+  const auPrompt = formatAureliusInnerCitadelPrompt(au);
+  assert.ok(!auPrompt.includes('/100') && !auPrompt.includes('%'));
+  assert.ok(auPrompt.includes('해석 경계') && auPrompt.includes('+09:00'));
+
+  const pk = calculateVedicPanchaKosha({ profile, question: '몸과 마음이 지쳐 호흡이 얕아진 느낌이에요', now });
+  assert.equal(pk.engineVersion, VEDIC_PANCHA_KOSHA_ENGINE_VERSION);
+  assert.ok(pk.calculatedAtKst.endsWith('+09:00'));
+  const pkPrompt = formatVedicPanchaKoshaPrompt(pk);
+  assert.ok(!pkPrompt.includes('/100') && !pkPrompt.includes('%') && !pkPrompt.includes('점)'));
+  assert.ok(pkPrompt.includes('해석 경계') && pkPrompt.includes('+09:00'));
+});

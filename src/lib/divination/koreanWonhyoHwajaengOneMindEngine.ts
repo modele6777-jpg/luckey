@@ -10,7 +10,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const WONHYO_HWAJAENG_VERSION = '2.0.0';
+export const WONHYO_HWAJAENG_VERSION = '2.1.0';
 
 export interface WonhyoSituationalHwajaeng {
   themeKey: 'existence_emptiness' | 'truth_delusion' | 'assertion_refutation' | 'source_return' | 'fearless_freedom';
@@ -38,6 +38,7 @@ export interface WonhyoDialecticHarmonization {
 export interface WonhyoHwajaengReport {
   engineVersion: string;
   calculatedAt: string;
+  calculatedAtKst: string;
   // 원효 화쟁 5대 심성 지표 (0~100)
   oneMindTwoGatesBalance: number;
   hwajaengContradictionResolution: number;
@@ -284,9 +285,13 @@ export function calculateWonhyoHwajaeng(
     wonhyoMasterDharmaWord = '심진여문(心眞如門)의 맑은 거울을 닦으십시오. 현실의 번잡한 생멸 작용에 휘둘리지 말고, 고요히 한 호흡을 머금어 일심(一心)의 근원으로 돌아가면 모든 선택이 선명해집니다.';
   }
 
+  const kst = new Date(now.getTime() + 9 * 3600 * 1000);
+  const calculatedAtKst = `${kst.toISOString().slice(0, 19)}+09:00`;
+
   return {
     engineVersion: WONHYO_HWAJAENG_VERSION,
     calculatedAt: now.toISOString(),
+    calculatedAtKst,
     oneMindTwoGatesBalance,
     hwajaengContradictionResolution,
     wonhyoMuAeFreedomScore,
@@ -305,21 +310,28 @@ export function calculateWonhyoHwajaeng(
   };
 }
 
+function describeWonhyoOneMindStage(score: number): string {
+  if (score >= 86) return '무애 원융회통기 (대립하는 시비를 넘어 일심의 넓은 바다로 회통하는 국면)';
+  if (score >= 74) return '화쟁 조율기 (서로 다른 입장을 배척하지 않고 접점을 찾아가는 국면)';
+  return '심진여 귀일기 (분별의 긴장을 잠시 멈추고 고요한 본성을 먼저 돌볼 국면)';
+}
+
 export function formatWonhyoHwajaengPrompt(report: WonhyoHwajaengReport): string {
+  const avgCore = Math.round((report.oneMindTwoGatesBalance + report.hwajaengContradictionResolution + report.wonhyoMuAeFreedomScore) / 3);
+  const jinYeoDominant = report.temporalOneMindRhythm.jinYeoWeight >= report.temporalOneMindRhythm.saengMyeolWeight;
   return `### 신라 원효대사 《십문화쟁론》 일심이문 & 화쟁 원융회통 엔진 (v${report.engineVersion})
+- **연산 시각**: ${report.calculatedAtKst}
+- **일심 화쟁 위상**: ${describeWonhyoOneMindStage(avgCore)}
 - **주요 화쟁 관문**: ${report.activeHwajaengGate.gateNameKo} (${report.activeHwajaengGate.coreDharma})
   - *회통 명상 처방*: ${report.activeHwajaengGate.meditativeResolution}
 - **질문 맥락 화쟁 성찰 (${report.situationalHwajaeng.themeLabelKo})**:
   - 원전 경구: ${report.situationalHwajaeng.classicQuote}
   - 성찰 질문: ${report.situationalHwajaeng.reflectionPrompt}
 - **KST 일심이문 시공간 리듬 (${report.temporalOneMindRhythm.timeWindowKo} · ${report.temporalOneMindRhythm.seasonKo})**:
-  - 심진여문(고요한 본성) ${report.temporalOneMindRhythm.jinYeoWeight}% : 심생멸문(역동적 실천) ${report.temporalOneMindRhythm.saengMyeolWeight}%
+  - 현재 주도 문(門): ${jinYeoDominant ? '심진여문(고요한 본성 성찰 우위)' : '심생멸문(역동적 현실 실천 우위)'}
   - 리듬 조언: ${report.temporalOneMindRhythm.rhythmGuidance}
-- **원융회통 대립물 조화 매트릭스**:
-  - 집착-방하착 균형 ${report.dialecticHarmonizationMatrix.attachmentVsLettingGo}점 · 자타 불이 포용도 ${report.dialecticHarmonizationMatrix.selfVsOtherHarmony}점 · 조급-정진 완급도 ${report.dialecticHarmonizationMatrix.urgencyVsStillness}점
-  - 무애행 지침: ${report.dialecticHarmonizationMatrix.muAePracticeDirective}
-- **원효 화쟁 5대 심성 지표**:
-  - 일심 조화율 ${report.oneMindTwoGatesBalance}점 · 화쟁 해결력 ${report.hwajaengContradictionResolution}점 · 무애 자유도 ${report.wonhyoMuAeFreedomScore}점 · 원융회통 ${report.wonYungWheTongHarmonization}점 · 심진여 청정 ${report.innerJinYeoPurityIndex}점
+- **원융회통 무애행 지침**: ${report.dialecticHarmonizationMatrix.muAePracticeDirective}
 - **원효 성사 법문 처방**:
-  - "${report.wonhyoMasterDharmaWord}"`;
+  - "${report.wonhyoMasterDharmaWord}"
+- **해석 경계**: 본 리포트는 원효대사의 일심이문·화쟁 사상에 기반한 정성적 성찰 안내이며, 절대적 시비 판정이 아닙니다.`;
 }

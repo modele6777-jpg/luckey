@@ -10,7 +10,7 @@
  * 질문 맥락 병목 진단, KST 프라나 시공간 리듬, 상하층 코샤 브리지 매트릭스를 통합합니다.
  */
 
-export const VEDIC_PANCHA_KOSHA_ENGINE_VERSION = 'LUCKEY-PANCHA-KOSHA-v2.0.0';
+export const VEDIC_PANCHA_KOSHA_ENGINE_VERSION = 'LUCKEY-PANCHA-KOSHA-v2.1.0';
 
 export interface KoshaLayer {
   layerIndex: number;
@@ -46,6 +46,7 @@ export interface KoshaBridgeMatrix {
 export interface PanchaKoshaReport {
   engineVersion: string;
   calculatedAt: string;
+  calculatedAtKst: string;
   layers: KoshaLayer[];
   lowestAlignedLayer: KoshaLayer;
   atmanRealizationIndex: number; // 0 ~ 100
@@ -263,9 +264,13 @@ export function calculateVedicPanchaKosha(params: {
   const atmanRealizationIndex = Math.round(layers.reduce((sum, l) => sum + l.alignmentScore, 0) / layers.length);
   const blissPrescription = `현재 5대 코샤 중 [${lowestAlignedLayer.koshaNameKo}]의 정렬이 가장 시급합니다. '${lowestAlignedLayer.clearingAction}'을 즉시 실행하여 거친 외피를 정화하고, 가장 깊은 곳의 참된 자아(Atman)의 환희를 해방하세요.`;
 
+  const kst = new Date(now.getTime() + 9 * 3600 * 1000);
+  const calculatedAtKst = `${kst.toISOString().slice(0, 19)}+09:00`;
+
   return {
     engineVersion: VEDIC_PANCHA_KOSHA_ENGINE_VERSION,
     calculatedAt: now.toISOString(),
+    calculatedAtKst,
     layers,
     lowestAlignedLayer,
     atmanRealizationIndex,
@@ -276,20 +281,27 @@ export function calculateVedicPanchaKosha(params: {
   };
 }
 
+function describeKoshaAlignmentStage(index: number): string {
+  if (index >= 84) return '아트만 투명 공명기 (다섯 겹의 칼집이 고르게 열려 내면의 평화가 선명한 국면)';
+  if (index >= 72) return '프라나 순환 정돈기 (긴장된 층위를 호흡과 휴식으로 부드럽게 풀어주는 국면)';
+  return '기초 칼집 회복기 (몸과 감정의 피로를 먼저 다독여 바닥을 단단히 세울 국면)';
+}
+
 export function formatVedicPanchaKoshaPrompt(report: PanchaKoshaReport): string {
   const low = report.lowestAlignedLayer;
-  return `### 🕉️ 고대 인도 베단타 5대 코샤(Pancha Kosha) 층위별 정렬 실측 데이터 (${report.engineVersion})
-- **아트만(Atman) 지복 실현 지수**: ${report.atmanRealizationIndex}점 / 100점
-- **가장 정렬이 시급한 칼집 층위**: 제${low.layerIndex}층 [${low.koshaNameKo}] (${low.alignmentScore}점) — 병목: ${low.blockageSymptom}
+  return `### 🕉️ 고대 인도 베단타 5대 코샤(Pancha Kosha) 층위별 정렬 정성 리포트 (${report.engineVersion})
+- **연산 시각**: ${report.calculatedAtKst}
+- **아트만(Atman) 정렬 위상**: ${describeKoshaAlignmentStage(report.atmanRealizationIndex)}
+- **가장 보살핌이 필요한 칼집 층위**: 제${low.layerIndex}층 [${low.koshaNameKo}] — 신호: ${low.blockageSymptom}
 - **질문 맥락 코샤 공명 (제${report.questionKoshaResonance.focusLayerIndex}층 · ${report.questionKoshaResonance.focusKoshaKo})**:
   - 우파니샤드 경구: ${report.questionKoshaResonance.upanishadMantra}
   - 성찰 질문: ${report.questionKoshaResonance.reflectionQuestion}
 - **KST 프라나 시공간 리듬 (${report.temporalPranaRhythm.doshaWindowKo})**:
   - 권장 호흡법: ${report.temporalPranaRhythm.recommendedPranayama}
   - 리듬 조언: ${report.temporalPranaRhythm.rhythmGuidance}
-- **상하층 코샤 브리지 통합 (연결 조화도 ${report.koshaBridgeMatrix.bridgeBalanceScore}점)**:
-  - ${report.koshaBridgeMatrix.integrationPrescription}
-- **5대 층위별 정렬 상태**:
-${report.layers.map(l => `  * ${l.koshaNameKo}: ${l.alignmentScore}점 - ${l.dimension}`).join('\n')}
-- **지복 회복 행동 처방**: ${report.blissPrescription}`;
+- **상하층 코샤 브리지 통합**: ${report.koshaBridgeMatrix.integrationPrescription}
+- **5대 층위별 역할 개요**:
+${report.layers.map(l => `  * ${l.koshaNameKo}: ${l.dimension}`).join('\n')}
+- **지복 회복 행동 처방**: ${report.blissPrescription}
+- **해석 경계**: 본 리포트는 타이티리야 우파니샤드의 5대 코샤 상징에 기반한 정성적 심신 성찰 안내이며, 의학적 진단이 아닙니다.`;
 }
