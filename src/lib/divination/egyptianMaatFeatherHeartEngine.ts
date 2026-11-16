@@ -6,7 +6,7 @@
  * 양심의 명료함, 마음의 짐 내려놓기에 연결하는 정성적 성찰 엔진입니다.
  */
 
-export const EGYPTIAN_MAAT_FEATHER_ENGINE_VERSION = 'LUCKEY-EGYPTIAN-MAAT-v2.0.0';
+export const EGYPTIAN_MAAT_FEATHER_ENGINE_VERSION = 'LUCKEY-EGYPTIAN-MAAT-v2.1.0';
 
 export type MaatQuestionTheme = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -27,6 +27,7 @@ export interface MaatSynthesisMatrix {
 export interface MaatWeighingReport {
   engineVersion: string;
   calculatedAt: string;
+  calculatedAtKst: string;
   questionTheme: MaatQuestionTheme;
   heartLightnessScore: number; // 하위 호환용 내부 참조치 (0 ~ 100)
   balanceState: '조화로운 수평 균형' | '명료하고 가벼운 심장' | '과잉 부담 해소 필요';
@@ -207,9 +208,13 @@ export function calculateEgyptianMaatFeatherHeart(params: {
     nextScaleStep: themeContent.ritualAction,
   };
 
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const calculatedAtKst = kst.toISOString().replace('T', ' ').substring(0, 19) + ' +09:00 KST';
+
   return {
     engineVersion: EGYPTIAN_MAAT_FEATHER_ENGINE_VERSION,
     calculatedAt: now.toISOString(),
+    calculatedAtKst,
     questionTheme,
     heartLightnessScore,
     balanceState,
@@ -229,7 +234,8 @@ export function calculateEgyptianMaatFeatherHeart(params: {
 }
 
 export function formatEgyptianMaatFeatherHeartPrompt(report: MaatWeighingReport): string {
-  return `### ⚖️ 고대 이집트 마아트(Ma'at) 진리의 깃털 & 심장 무게 측정 실측 데이터 (${report.engineVersion})
+  return `### ⚖️ 고대 이집트 마아트(Ma'at) 진리의 깃털 & 심장 무게 측정 상징 관점 (${report.engineVersion})
+- **기준 시각**: ${report.calculatedAtKst}
 - **심장-깃털 균형 상태**: ${report.balanceState} (${report.maatSynthesisMatrix.scaleAlignmentState})
 - **오시리스 심판 저울 판정**: [${report.weighingVerdict}]
 - **주도적 양심 무결성 덕목**: ${report.activeNegativeConfessionVirtue}
@@ -241,5 +247,5 @@ export function formatEgyptianMaatFeatherHeartPrompt(report: MaatWeighingReport)
 - **실천 조언**: ${report.practiceGuidance}
 - **일상 의례**: ${report.ritualAction}
 - **성찰 질문**: ${report.reflectionFocus}
-- **참고 경계**: ${report.boundaryNotice}`;
+- **해석 경계**: ${report.boundaryNotice}`;
 }

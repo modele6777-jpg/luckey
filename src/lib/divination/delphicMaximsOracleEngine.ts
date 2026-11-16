@@ -20,7 +20,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const DELPHIC_MAXIMS_VERSION = 'LUCKEY-DELPHIC-MAXIMS-v2.0.0';
+export const DELPHIC_MAXIMS_VERSION = 'LUCKEY-DELPHIC-MAXIMS-v2.1.0';
 
 export interface DelphicMaximInfo {
   maximIndex: number;            // 1 ~ 147
@@ -268,7 +268,7 @@ export function calculateDelphicMaximsOracle(params: {
   const kstDate = new Date(kstMs);
   const kstHour = kstDate.getUTCHours();
   const kstMonth = kstDate.getUTCMonth() + 1;
-  const calculatedAtKst = `${kstDate.getUTCFullYear()}-${String(kstMonth).padStart(2, '0')}-${String(kstDate.getUTCDate()).padStart(2, '0')} ${String(kstHour).padStart(2, '0')}:${String(kstDate.getUTCMinutes()).padStart(2, '0')} KST`;
+  const calculatedAtKst = `${kstDate.getUTCFullYear()}-${String(kstMonth).padStart(2, '0')}-${String(kstDate.getUTCDate()).padStart(2, '0')} ${String(kstHour).padStart(2, '0')}:${String(kstDate.getUTCMinutes()).padStart(2, '0')} +09:00 KST`;
 
   const qLower = question.toLowerCase();
   const questionFocus = /연애|사랑|관계|결혼|재회|우정|사람/.test(qLower)
@@ -350,5 +350,6 @@ export function formatDelphicMaximsOraclePrompt(report: DelphicMaximsOracleRepor
 - **시공간 리듬**: ${report.temporalDelphicRhythm.sanctuarySolarWindow} · ${report.temporalDelphicRhythm.parnassusSeasonPhase}
 - **피티아 여사제의 신탁 통찰**: ${report.pythianOracleInsight}
 - **델포이 덕성(Arete) 실천 처방**: ${report.delphicVirtuePrescription}
-- **교차 매트릭스**: ${report.delphicSynthesisMatrix.coreMandate} | 경계: ${report.delphicSynthesisMatrix.sacredBoundary} | 성찰 질문: "${report.delphicSynthesisMatrix.reflectiveQuestion}"`;
+- **교차 매트릭스**: ${report.delphicSynthesisMatrix.coreMandate} | 경계: ${report.delphicSynthesisMatrix.sacredBoundary} | 성찰 질문: "${report.delphicSynthesisMatrix.reflectiveQuestion}"
+- **해석 경계**: 아폴론 신전 147 잠언의 중용·자아성찰 상징을 빌린 정성적 처세 참고 관점이며, 개인 점수나 확정 예언이 아닙니다.`;
 }
