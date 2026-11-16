@@ -13,7 +13,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const AUSTRIAN_RAINER_MARIA_RILKE_LETTERS_VERSION = 'LUCKEY-RILKE-LETTERS-TO-YOUNG-POET-v2.0.0';
+export const AUSTRIAN_RAINER_MARIA_RILKE_LETTERS_VERSION = 'LUCKEY-RILKE-LETTERS-TO-YOUNG-POET-v2.1.0';
 
 export type RilkeQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -67,6 +67,7 @@ export interface AustrianRainerMariaRilkeLettersResult {
   questionTopic: RilkeQuestionTopic;
   situationalRilkeAudit: RilkeSituationalAudit;
   temporalRilkeRhythm: RilkeTemporalRhythm;
+  interpretiveBoundary: string;
   rilkeSynthesisMatrix?: {
     coreInsight: string;
     recommendedAction: string;
@@ -308,6 +309,7 @@ export function calculateAustrianRainerMariaRilkeLetters(
     questionTopic,
     situationalRilkeAudit,
     temporalRilkeRhythm,
+    interpretiveBoundary: situationalRilkeAudit.boundaryNotice,
     rilkeSynthesisMatrix: {
       coreInsight: activeRilkeTheme.themeTitleKo,
       recommendedAction: situationalRilkeAudit.practiceGuidance,

@@ -6762,6 +6762,7 @@ test('Viktor Frankl Logotherapy Engine: calculates The Last Human Freedom, Will 
   assert(rep.selfTranscendenceDedicationScore >= 0 && rep.selfTranscendenceDedicationScore <= 100);
   assert(rep.lifeResponsibilityIntegrityIndex >= 0 && rep.lifeResponsibilityIntegrityIndex <= 100);
   assert(rep.activeFranklTheme.themeTitleKo.length > 0);
+  assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatViktorFranklLogotherapyPrompt(rep);
   assert(prompt.includes('빅터 프랭클 《죽음의 수용소에서》 시련 속 최후의 자유 & 의미치료 지표'));
   assert(prompt.includes(rep.activeFranklTheme.themeTitleKo));
@@ -7133,6 +7134,7 @@ test('Martin Buber I and Thou Dialogue Engine: calculates I-Thou Resonance, Auth
   assert(rep.betweenSphereMeaningIndex >= 0 && rep.betweenSphereMeaningIndex <= 100);
   assert(rep.eternalThouCommunionTrustScore >= 0 && rep.eternalThouCommunionTrustScore <= 100);
   assert(rep.activeBuberTheme.themeTitleKo.length > 0);
+  assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatAustrianMartinBuberIAndThouPrompt(rep);
   assert(prompt.includes('마틴 부버 《나와 너》 인격적 만남 & 진정한 대화(Dialogue) 실존 지표'));
   assert(prompt.includes(rep.activeBuberTheme.themeTitleKo));
@@ -8124,6 +8126,7 @@ test('Rainer Maria Rilke Letters to a Young Poet Engine: calculates Loving Solit
   assert(rep.elegiacSublimationScore >= 0 && rep.elegiacSublimationScore <= 100);
   assert(rep.openHorizonResilienceScore >= 0 && rep.openHorizonResilienceScore <= 100);
   assert(rep.activeRilkeTheme.themeTitleKo.length > 0);
+  assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatAustrianRainerMariaRilkeLettersPrompt(rep);
   assert(prompt.includes('라이너 마리아 릴케 《젊은 시인에게 주는 편지·두이노의 비가》 고독 사랑·질문 품기 지표'));
   assert(prompt.includes(rep.activeRilkeTheme.themeTitleKo));

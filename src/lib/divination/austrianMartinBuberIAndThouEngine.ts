@@ -14,7 +14,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const AUSTRIAN_MARTIN_BUBER_VERSION = 'LUCKEY-MARTIN-BUBER-DIALOGUE-v2.0.0';
+export const AUSTRIAN_MARTIN_BUBER_VERSION = 'LUCKEY-MARTIN-BUBER-DIALOGUE-v2.1.0';
 
 export type BuberQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -68,6 +68,7 @@ export interface AustrianMartinBuberIAndThouResult {
   questionTopic: BuberQuestionTopic;
   situationalBuberAudit: BuberSituationalAudit;
   temporalBuberRhythm: BuberTemporalRhythm;
+  interpretiveBoundary: string;
   buberSynthesisMatrix?: {
     coreInsight: string;
     recommendedAction: string;
@@ -324,6 +325,7 @@ export function calculateAustrianMartinBuberIAndThou(
     questionTopic,
     situationalBuberAudit,
     temporalBuberRhythm,
+    interpretiveBoundary: situationalBuberAudit.boundaryNotice,
     buberSynthesisMatrix: {
       coreInsight: activeBuberTheme.themeTitleKo,
       recommendedAction: situationalBuberAudit.practiceGuidance,

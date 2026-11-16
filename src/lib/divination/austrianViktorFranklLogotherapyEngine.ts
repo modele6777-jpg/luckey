@@ -6,7 +6,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const AUSTRIAN_VIKTOR_FRANKL_VERSION = 'LUCKEY-VIKTOR-FRANKL-LOGOTHERAPY-v2.2.0';
+export const AUSTRIAN_VIKTOR_FRANKL_VERSION = 'LUCKEY-VIKTOR-FRANKL-LOGOTHERAPY-v2.3.0';
 
 function getFranklKstString(now?: Date): string {
   const base = now ?? new Date();
@@ -74,6 +74,7 @@ export interface ViktorFranklLogotherapyResult {
   ritualAction: string;
   reflectionFocus: string;
   boundaryNotice: string;
+  interpretiveBoundary: string;
   franklComprehensiveGuidance: {
     guidanceTitle: string;
     philosophicalCounsel: string;
@@ -369,6 +370,7 @@ export function calculateViktorFranklLogotherapy(
     ritualAction,
     reflectionFocus,
     boundaryNotice,
+    interpretiveBoundary: boundaryNotice,
     franklComprehensiveGuidance: {
       guidanceTitle,
       philosophicalCounsel,
