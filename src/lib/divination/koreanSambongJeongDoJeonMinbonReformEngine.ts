@@ -9,12 +9,12 @@
  * 4. 백년대계 건국 설계력(Architectural Foresight Index): 눈앞의 이익에 매몰되지 않고 백 년, 천 년을 내다보며 한양 도성과 제도의 기틀을 닦는 거시적 비전.
  * 5. 불굴의 실천 지조 지수(Indomitable Reform Tenacity Score): 유배와 시련 속에서도 백성의 땀방울을 가슴에 품고 마침내 새로운 시대를 열어젖힌 불굴의 기개.
  *
- * @version LUCKEY-JEONG-DO-JEON-MINBON-v2.0.0
+ * @version LUCKEY-JEONG-DO-JEON-MINBON-v2.1.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const KOREAN_JEONG_DO_JEON_VERSION = 'LUCKEY-JEONG-DO-JEON-MINBON-v2.0.0';
+export const KOREAN_JEONG_DO_JEON_VERSION = 'LUCKEY-JEONG-DO-JEON-MINBON-v2.1.0';
 
 export interface SambongTheme {
   themeKey: string;
@@ -43,7 +43,11 @@ export interface KoreanSambongJeongDoJeonMinbonReformResult {
   indomitableReformTenacityScore: number;    // 불굴의 실천 지조 지수 (Indomitable Reform Tenacity)
   // 세부 분석
   activeSambongTheme: SambongTheme;
+  secondarySambongTheme: SambongTheme;
   focalSambongAphorism: SambongAphorism;
+  secondarySambongAphorism: SambongAphorism;
+  reflectiveQuestion: string;
+  interpretiveBoundary: string;
   sambongComprehensiveGuidance: {
     guidanceTitle: string;
     philosophicalCounsel: string;
@@ -62,7 +66,7 @@ function formatSambongKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 KST`;
 }
 
 function describeSambongStage(score: number): string {
@@ -181,10 +185,21 @@ export function calculateKoreanSambongJeongDoJeonMinbonReform(
   const indomitableReformTenacityScore = 76 + ((absHash >> 12) % 23);
 
   const themeIndex = (absHash >> 4) % SAMBONG_THEMES.length;
+  const secondaryThemeIndex = (themeIndex + 1 + ((absHash >> 8) % (SAMBONG_THEMES.length - 1))) % SAMBONG_THEMES.length;
   const aphorismIndex = (absHash >> 7) % SAMBONG_APHORISMS.length;
+  const secondaryAphorismIndex = (aphorismIndex + 1 + ((absHash >> 11) % (SAMBONG_APHORISMS.length - 1))) % SAMBONG_APHORISMS.length;
 
   const activeSambongTheme = SAMBONG_THEMES[themeIndex];
+  const secondarySambongTheme = SAMBONG_THEMES[secondaryThemeIndex];
   const focalSambongAphorism = SAMBONG_APHORISMS[aphorismIndex];
+  const secondarySambongAphorism = SAMBONG_APHORISMS[secondaryAphorismIndex];
+
+  const cleanQuery = query?.trim();
+  const reflectiveQuestion = cleanQuery
+    ? `"${cleanQuery}"을(를) 설계할 때, 낡은 관행을 넘어 사람에게 실질적 이로움을 주는 정도(正道)는 무엇인가?`
+    : `지금 내가 세우려는 기준과 질서는 사사로운 편의를 넘어 함께하는 이들에게 실질적 유익을 주고 있는가?`;
+  const interpretiveBoundary =
+    '이 삼봉 정도전 《조선경국전·경제문감》 해석은 민본·제도 혁신·공정 설계의 상징적 철학 프레임이며, 현실의 법률·행정적 판단이나 확정적 미래 예측을 대신하지 않습니다.';
 
   const guidanceTitle = `삼봉 정도전 민본사상과 정도개혁 지혜: ${activeSambongTheme.themeTitleKo}`;
   const philosophicalCounsel = `조선 건국의 설계자 삼봉 정도전 선생의 《조선경국전》과 《경제문감》은 사사로운 욕망을 버리고 백성을 하늘처럼 섬기며(民本), 올바른 법과 제도로써 시대를 혁신(正道)하도록 이끕니다. ` +
@@ -216,7 +231,11 @@ export function calculateKoreanSambongJeongDoJeonMinbonReform(
     architecturalForesightIndex,
     indomitableReformTenacityScore,
     activeSambongTheme,
+    secondarySambongTheme,
     focalSambongAphorism,
+    secondarySambongAphorism,
+    reflectiveQuestion,
+    interpretiveBoundary,
     sambongComprehensiveGuidance: {
       guidanceTitle,
       philosophicalCounsel,
@@ -241,11 +260,15 @@ export function formatKoreanSambongJeongDoJeonMinbonReformPrompt(
     `- 연산 시각: ${res.calculatedAtKst} | 엔진: ${res.engineVersion}`,
     `- 민본 개혁 국면: ${describeSambongStage(avgScore)}`,
     `- 핵심 민본 테마: ${res.activeSambongTheme.themeTitleKo} [${res.activeSambongTheme.themeTitleHanja}]`,
+    `- 보조 교차 테마: ${res.secondarySambongTheme.themeTitleKo} [${res.secondarySambongTheme.themeTitleHanja}]`,
     `- 실존적 통찰: ${res.activeSambongTheme.existentialInsight}`,
     `- 실천적 조언: ${res.activeSambongTheme.practicalCounsel}`,
     `- 삼봉 원전 명언: "${res.focalSambongAphorism.aphorismKo}" [${res.focalSambongAphorism.aphorismHanja}]`,
+    `- 보조 교차 명언: "${res.secondarySambongAphorism.aphorismKo}" [${res.secondarySambongAphorism.aphorismHanja}]`,
     `- 원전 출처: [${res.focalSambongAphorism.sourceContext}]`,
     `- 구체적 실천 지침: ${res.focalSambongAphorism.actionGuidance}`,
+    `- 성찰 질문: ${res.reflectiveQuestion}`,
+    `- 해석 경계: ${res.interpretiveBoundary}`,
     `- 종합 삼봉 민본 권면: ${res.sambongComprehensiveGuidance.philosophicalCounsel}`,
   ];
   if (res.sambongSynthesisMatrix) {

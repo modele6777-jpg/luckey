@@ -3500,7 +3500,7 @@ try {
   // 239. 조선 서애 류성룡 징비록 징전비후 성찰 & 유비무환 위기대응 실천 엔진
   const ryuSeongryongJingbirokResult = calculateSupplement('ryuSeongryongJingbirokResult', () => ((() => {
     try {
-      return calculateRyuSeongryongJingbirok(profile);
+      return calculateRyuSeongryongJingbirok(profile, question, now);
     } catch (_) {
       return null;
     }
@@ -3797,7 +3797,7 @@ try {
   // 272. 대한민국 삼봉 정도전 선생 조선경국전 & 경제문감 민본사상 & 정도 개혁 실천 지혜 엔진
   const koreanSambongJeongDoJeonMinbonReformResult = calculateSupplement('koreanSambongJeongDoJeonMinbonReformResult', () => ((() => {
     try {
-      return calculateKoreanSambongJeongDoJeonMinbonReform(profile);
+      return calculateKoreanSambongJeongDoJeonMinbonReform(profile, question, now);
     } catch (_) {
       return null;
     }
@@ -4040,7 +4040,7 @@ try {
   // 299. 대한민국 포은 정몽주 《단심가·포은집》 일편단심(一片丹心) 불변의 지조 & 난세극복 경세외교·대의명분 지혜 엔진
   const koreanPoeunJeongMongJuDansimgaResult = calculateSupplement('koreanPoeunJeongMongJuDansimgaResult', () => ((() => {
     try {
-      return calculateKoreanPoeunJeongMongJuDansimga(profile);
+      return calculateKoreanPoeunJeongMongJuDansimga(profile, question, now);
     } catch (_) {
       return null;
     }
@@ -4952,7 +4952,7 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'koreanChoeChiwonPungryudo', nameKo: '최치원 난랑비서 국유현묘지도 풍류도 포함삼교 접화군생 계원필경', icon: '🪶', category: 'deep_master', summary: '고운 최치원의 풍류도와 삼교회통 사상으로 대립을 유연하게 아우르는 상생과 내면의 여유를 비춥니다.' },
   { key: 'italianThomasAquinasSummaTheologiae', nameKo: '토마스 아퀴나스 신학대전 이성신앙조화 5대길 7대덕목 지복직관', icon: '⛪', category: 'deep_master', summary: '토마스 아퀴나스 신학대전의 이성과 신앙 조화·7대 덕론으로 합리적 분별과 궁극적 선의 기준을 세웁니다.' },
   { key: 'britishFrancisBaconNovumOrganum', nameKo: '프랜시스 베이컨 신기관 4대우상타파 참된귀납 아는것이힘이다 사실검증', icon: '🔬', category: 'deep_master', summary: '프랜시스 베이컨의 신기관 철학으로 마음을 흐리는 4대 우상을 걷어내고 사실과 경험에 뿌리내린 실천적 지성을 세웁니다.' },
-  { key: 'koreanRyuSeongryongJingbirok', nameKo: '서애 류성룡 징비록 징전비후 유비무환 거안사위 인재발탁 실사구시', icon: '🛡️', category: 'deep_master' },
+  { key: 'koreanRyuSeongryongJingbirok', nameKo: '서애 류성룡 징비록 징전비후 유비무환 거안사위 인재발탁 실사구시', icon: '🛡️', category: 'deep_master', summary: '서애 류성룡 선생의 징비록 정신으로 지난 과오를 정직하게 성찰(징전비후)하고 평온할 때 위기를 미리 대비(유비무환)하는 실사구시 위기관리 지혜를 엽니다.' },
   { key: 'koreanKingSejongHunminjeongeumAemin', nameKo: '세종대왕 훈민정음 어제서문 애민창조 여민락 집현전 실용실사', icon: '📜', category: 'deep_master', summary: '세종대왕의 훈민정음 어제서문과 애민 정신으로 장벽을 허물고 세상을 이롭게 하는 실천적 창의력을 발휘합니다.' },
   { key: 'koreanJangBogoCheonghaejinMaritimePioneer', nameKo: '장보고 해상왕 청해진 글로벌무역 신의개척 파도극복 자주국방', icon: '⚓', category: 'deep_master', summary: '장보고의 청해진 해상 네트워크와 신의의 개척 정신으로 거친 파도를 넘어 글로벌 시야의 새 항로를 엽니다.' },
   { key: 'britishJohnStuartMillOnLibertyIndividuality', nameKo: '존 스튜어트 밀 자유론 개별성존중 해악원칙 내면의자유 질적공리', icon: '🕊️', category: 'deep_master', summary: '존 스튜어트 밀의 자유론과 개별성 철학으로 획일성을 탈피하고 온전한 내면의 자주적 자율성을 확립합니다.' },
