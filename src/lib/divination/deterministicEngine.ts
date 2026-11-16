@@ -3635,7 +3635,7 @@ try {
   // 254. 대한민국 백범 김구 백범일지 & 나의 소원 높은 문화의 힘 & 홍익인간 상생 평화와 자주독립 실천 엔진
   const baekbeomKimGuMyDesireCultureResult = calculateSupplement('baekbeomKimGuMyDesireCultureResult', () => ((() => {
     try {
-      return calculateBaekbeomKimGuMyDesireCulture(profile);
+      return calculateBaekbeomKimGuMyDesireCulture(profile, question, now);
     } catch (_) {
       return null;
     }
@@ -3932,7 +3932,7 @@ try {
   // 287. 대한민국 안중근 의사 《동양평화론》 & 〈견리사의 견위수명〉 대의헌신 & 주권평화 지혜 엔진
   const koreanAhnJungGeunPeaceRighteousnessResult = calculateSupplement('koreanAhnJungGeunPeaceRighteousnessResult', () => ((() => {
     try {
-      return calculateKoreanAhnJungGeunPeaceRighteousness(profile);
+      return calculateKoreanAhnJungGeunPeaceRighteousness(profile, question, now);
     } catch (_) {
       return null;
     }
@@ -4175,7 +4175,7 @@ try {
   // 314. 대한민국 백석 《사슴·흰 바람벽이 있어》 가난하고 외롭고 높고 쓸쓸한 순수 고결성 & 토속적 생명력·영혼의 맑은 존엄 지혜 엔진
   const koreanBaekSeokDeerWhiteWallPoeticPurityResult = calculateSupplement('koreanBaekSeokDeerWhiteWallPoeticPurityResult', () => ((() => {
     try {
-      return calculateKoreanBaekSeokDeerWhiteWallPoeticPurity(profile);
+      return calculateKoreanBaekSeokDeerWhiteWallPoeticPurity(profile, question, now);
     } catch (_) {
       return null;
     }

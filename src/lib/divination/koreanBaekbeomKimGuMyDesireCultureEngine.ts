@@ -13,7 +13,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const KOREAN_BAEKBEOM_KIM_GU_VERSION = 'LUCKEY-BAEKBEOM-KIM-GU-MY-DESIRE-CULTURE-v2.0.0';
+export const KOREAN_BAEKBEOM_KIM_GU_VERSION = 'LUCKEY-BAEKBEOM-KIM-GU-MY-DESIRE-CULTURE-v2.1.0';
 
 export interface KimGuTheme {
   themeKey: string;
@@ -43,6 +43,9 @@ export interface BaekbeomKimGuMyDesireCultureResult {
   // 세부 분석
   activeKimGuTheme: KimGuTheme;
   focalKimGuAphorism: KimGuAphorism;
+  secondaryKimGuAphorism: KimGuAphorism;
+  reflectiveQuestion: string;
+  interpretiveBoundary: string;
   kimGuComprehensiveGuidance: {
     guidanceTitle: string;
     philosophicalCounsel: string;
@@ -61,7 +64,7 @@ function formatKimGuKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 KST`;
 }
 
 function describeKimGuStage(score: number): string {
@@ -150,7 +153,7 @@ export function calculateBaekbeomKimGuMyDesireCulture(
   const birthTime = profile?.basic?.birthtime ?? p?.birthTime ?? p?.birthtime ?? '12:00';
   const gender = profile?.basic?.gender ?? p?.gender ?? 'neutral';
 
-  const seedString = `BAEKBEOM-KIM-GU-MY-DESIRE-CULTURE:${name}:${birthDate}:${birthTime}:${gender}`;
+  const seedString = `BAEKBEOM-KIM-GU-MY-DESIRE-CULTURE:${name}:${birthDate}:${birthTime}:${gender}:${query ?? ''}`;
 
   let hash = 0;
   for (let i = 0; i < seedString.length; i++) {
@@ -167,9 +170,16 @@ export function calculateBaekbeomKimGuMyDesireCulture(
 
   const themeIndex = (absHash >> 4) % KIM_GU_THEMES.length;
   const aphorismIndex = (absHash >> 7) % KIM_GU_APHORISMS.length;
+  const secondaryAphorismIndex = (aphorismIndex + 1 + ((absHash >> 10) % (KIM_GU_APHORISMS.length - 1))) % KIM_GU_APHORISMS.length;
 
   const activeKimGuTheme = KIM_GU_THEMES[themeIndex];
   const focalKimGuAphorism = KIM_GU_APHORISMS[aphorismIndex];
+  const secondaryKimGuAphorism = KIM_GU_APHORISMS[secondaryAphorismIndex];
+  const trimmedQuery = query?.trim();
+  const reflectiveQuestion = trimmedQuery
+    ? `'${trimmedQuery}'에서 남과 겨루는 힘보다 나와 이웃을 함께 행복하게 하는 '높은 문화의 힘'과 답설야중거의 발자국은 무엇인가요?`
+    : `오늘 내가 눈 덮인 들판을 걷듯 어지러이 걷지 않고 묵묵히 남기고 싶은 정직한 이정표는 무엇인가요?`;
+  const interpretiveBoundary = '백범 김구 나의 소원·백범일지 관점은 길흉 예단이 아니라, 높은 문화의 힘·홍익인간·솔선수범을 비추는 역사 성찰 렌즈입니다.';
 
   const guidanceTitle = `백범 김구 높은 문화의 힘과 자주독립: ${activeKimGuTheme.themeTitleKo}`;
   const philosophicalCounsel = `백범 김구 선생의 숭고한 민족혼과 문화사상은 외형적 힘을 넘어 영혼을 살리는 높은 문화의 힘과 솔선수범의 도덕적 기개를 일깨웁니다. ` +
@@ -202,6 +212,9 @@ export function calculateBaekbeomKimGuMyDesireCulture(
     baekbeomHumilityPublicLoveIndex,
     activeKimGuTheme,
     focalKimGuAphorism,
+    secondaryKimGuAphorism,
+    reflectiveQuestion,
+    interpretiveBoundary,
     kimGuComprehensiveGuidance: {
       guidanceTitle,
       philosophicalCounsel,
@@ -227,9 +240,12 @@ export function formatBaekbeomKimGuMyDesireCulturePrompt(res: BaekbeomKimGuMyDes
     `- 백범 정신 통찰: ${res.activeKimGuTheme.baekbeomInsight}`,
     `- 실천적 조언: ${res.activeKimGuTheme.practicalCounsel}`,
     `- 핵심 경구: "${res.focalKimGuAphorism.aphorismKo}"`,
+    `- 보조 교차 경구: "${res.secondaryKimGuAphorism.aphorismKo}" [${res.secondaryKimGuAphorism.sourceContext}]`,
     `- 원전 출처: "${res.focalKimGuAphorism.aphorismHanjaOrOriginal}" [${res.focalKimGuAphorism.sourceContext}]`,
     `- 구체적 실천 지침: ${res.focalKimGuAphorism.actionGuidance}`,
     `- 종합 백범사상 권면: ${res.kimGuComprehensiveGuidance.philosophicalCounsel}`,
+    `- 성찰 질문: ${res.reflectiveQuestion}`,
+    `- 해석 경계: ${res.interpretiveBoundary}`,
   ];
   if (res.kimGuSynthesisMatrix) {
     lines.push(

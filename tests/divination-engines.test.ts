@@ -9624,3 +9624,36 @@ test('Machiavelli Virtu Fortuna, Pico Dignity, and Thomas Aquinas Summa v2.1.0 i
   const aqPrompt = formatThomasAquinasSummaTheologiaePrompt(aq);
   assert.ok(aqPrompt.includes('+09:00') && aqPrompt.includes('보조 교차 경구') && aqPrompt.includes('성찰 질문') && aqPrompt.includes('해석 경계'));
 });
+
+test('Ahn Jung-geun, Baek Seok, and Baekbeom Kim Gu v2.1.0 include +09:00 KST, dual cross-check, reflective question, and interpretive boundary', () => {
+  const profile = { basic: { name: '제제', birthdate: '1994-01-24', birthtime: '12:00', gender: 'male' } } as any;
+  const now = new Date('2026-11-16T05:05:00Z');
+  const query = '흔들리지 않는 중심과 따뜻한 연대를 함께 세우고 싶습니다';
+
+  const ag = calculateKoreanAhnJungGeunPeaceRighteousness(profile, query, now);
+  assert.equal(ag.engineVersion, KOREAN_AHN_JUNG_GEUN_VERSION);
+  assert.match(ag.calculatedAtKst, /\+09:00/);
+  assert.notEqual(ag.secondaryAhnJungGeunAphorism.aphorismKey, ag.focalAhnJungGeunAphorism.aphorismKey);
+  assert.ok(ag.reflectiveQuestion.includes(query));
+  assert.ok(ag.interpretiveBoundary.includes('성찰'));
+  const agPrompt = formatKoreanAhnJungGeunPeaceRighteousnessPrompt(ag);
+  assert.ok(agPrompt.includes('+09:00') && agPrompt.includes('보조 교차 유묵') && agPrompt.includes('성찰 질문') && agPrompt.includes('해석 경계'));
+
+  const bs = calculateKoreanBaekSeokDeerWhiteWallPoeticPurity(profile, query, now);
+  assert.equal(bs.engineVersion, KOREAN_BAEK_SEOK_DEER_WHITE_WALL_POETIC_PURITY_VERSION);
+  assert.match(bs.calculatedAtKst, /\+09:00/);
+  assert.notEqual(bs.secondaryBaekSeokAphorism.aphorismKey, bs.focalBaekSeokAphorism.aphorismKey);
+  assert.ok(bs.reflectiveQuestion.includes(query));
+  assert.ok(bs.interpretiveBoundary.includes('성찰'));
+  const bsPrompt = formatKoreanBaekSeokDeerWhiteWallPoeticPurityPrompt(bs);
+  assert.ok(bsPrompt.includes('+09:00') && bsPrompt.includes('보조 교차 시구') && bsPrompt.includes('성찰 질문') && bsPrompt.includes('해석 경계'));
+
+  const kg = calculateBaekbeomKimGuMyDesireCulture(profile, query, now);
+  assert.equal(kg.engineVersion, KOREAN_BAEKBEOM_KIM_GU_VERSION);
+  assert.match(kg.calculatedAtKst, /\+09:00/);
+  assert.notEqual(kg.secondaryKimGuAphorism.aphorismKey, kg.focalKimGuAphorism.aphorismKey);
+  assert.ok(kg.reflectiveQuestion.includes(query));
+  assert.ok(kg.interpretiveBoundary.includes('성찰'));
+  const kgPrompt = formatBaekbeomKimGuMyDesireCulturePrompt(kg);
+  assert.ok(kgPrompt.includes('+09:00') && kgPrompt.includes('보조 교차 경구') && kgPrompt.includes('성찰 질문') && kgPrompt.includes('해석 경계'));
+});

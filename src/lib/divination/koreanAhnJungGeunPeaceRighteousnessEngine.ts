@@ -14,7 +14,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const KOREAN_AHN_JUNG_GEUN_VERSION = 'LUCKEY-AHN-JUNG-GEUN-PEACE-RIGHTEOUSNESS-v2.0.0';
+export const KOREAN_AHN_JUNG_GEUN_VERSION = 'LUCKEY-AHN-JUNG-GEUN-PEACE-RIGHTEOUSNESS-v2.1.0';
 
 export interface AhnJungGeunTheme {
   themeKey: string;
@@ -44,6 +44,9 @@ export interface KoreanAhnJungGeunPeaceRighteousnessResult {
   // 세부 분석
   activeAhnJungGeunTheme: AhnJungGeunTheme;
   focalAhnJungGeunAphorism: AhnJungGeunAphorism;
+  secondaryAhnJungGeunAphorism: AhnJungGeunAphorism;
+  reflectiveQuestion: string;
+  interpretiveBoundary: string;
   ahnJungGeunComprehensiveGuidance: {
     guidanceTitle: string;
     philosophicalCounsel: string;
@@ -62,7 +65,7 @@ function formatAhnJungGeunKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 KST`;
 }
 
 function describeAhnJungGeunStage(score: number): string {
@@ -165,9 +168,16 @@ export function calculateKoreanAhnJungGeunPeaceRighteousness(
 
   const themeIndex = (absHash >> 6) % AHN_JUNG_GEUN_THEMES.length;
   const aphorismIndex = (absHash >> 9) % AHN_JUNG_GEUN_APHORISMS.length;
+  const secondaryAphorismIndex = (aphorismIndex + 1 + ((absHash >> 12) % (AHN_JUNG_GEUN_APHORISMS.length - 1))) % AHN_JUNG_GEUN_APHORISMS.length;
 
   const activeAhnJungGeunTheme = AHN_JUNG_GEUN_THEMES[themeIndex];
   const focalAhnJungGeunAphorism = AHN_JUNG_GEUN_APHORISMS[aphorismIndex];
+  const secondaryAhnJungGeunAphorism = AHN_JUNG_GEUN_APHORISMS[secondaryAphorismIndex];
+  const trimmedQuery = query?.trim();
+  const reflectiveQuestion = trimmedQuery
+    ? `'${trimmedQuery}'에서 눈앞의 작은 이익 대신 끝까지 지켜 내야 할 의리(見利思義)와 상생의 원칙은 무엇인가요?`
+    : `지금 내 선택 앞에서 사사로운 편의를 내려놓고 떳떳한 대의와 하루의 수양(一日不讀書)을 세울 지점은 어디인가요?`;
+  const interpretiveBoundary = '안중근 의사 동양평화·견리사의 관점은 길흉 예단이 아니라, 도덕적 결단·상생 평화·지적 수양을 비추는 역사 성찰 렌즈입니다.';
 
   const guidanceTitle = `안중근 의사 대의·평화 지혜: ${activeAhnJungGeunTheme.themeTitleKo}`;
   const philosophicalCounsel = `대한의 영웅 안중근 의사는 "견리사의 견위수명(見利思義 見危授命)"의 서릿발 같은 도덕적 기개와 《동양평화론》의 원대한 상생 평화 비전을 몸소 남기셨습니다. ` +
@@ -200,6 +210,9 @@ export function calculateKoreanAhnJungGeunPeaceRighteousness(
     sublimePatienceMagnanimousPeaceScore,
     activeAhnJungGeunTheme,
     focalAhnJungGeunAphorism,
+    secondaryAhnJungGeunAphorism,
+    reflectiveQuestion,
+    interpretiveBoundary,
     ahnJungGeunComprehensiveGuidance: {
       guidanceTitle,
       philosophicalCounsel,
@@ -227,9 +240,12 @@ export function formatKoreanAhnJungGeunPeaceRighteousnessPrompt(
     `- 실천적 대의 통찰: ${res.activeAhnJungGeunTheme.pragmaticInsight}`,
     `- 선비의 행동 조언: ${res.activeAhnJungGeunTheme.practicalCounsel}`,
     `- 안중근 의사 불후의 유묵: "${res.focalAhnJungGeunAphorism.aphorismKo}" (${res.focalAhnJungGeunAphorism.aphorismHanja})`,
+    `- 보조 교차 유묵: "${res.secondaryAhnJungGeunAphorism.aphorismKo}" (${res.secondaryAhnJungGeunAphorism.aphorismHanja})`,
     `- 원전 출처: [${res.focalAhnJungGeunAphorism.sourceContext}]`,
     `- 구체적 실천 지침: ${res.focalAhnJungGeunAphorism.actionGuidance}`,
     `- 종합 안중근 의사 대의 권면: ${res.ahnJungGeunComprehensiveGuidance.philosophicalCounsel}`,
+    `- 성찰 질문: ${res.reflectiveQuestion}`,
+    `- 해석 경계: ${res.interpretiveBoundary}`,
   ];
   if (res.ahnJungGeunSynthesisMatrix) {
     lines.push(
