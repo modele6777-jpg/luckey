@@ -23,7 +23,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const CELTIC_AWEN_TALIESIN_ENGINE_VERSION = '2.0.0';
+export const CELTIC_AWEN_TALIESIN_ENGINE_VERSION = '2.1.0';
 
 export interface AwenSituationalAudit {
   cauldronFocus: string;
@@ -64,6 +64,7 @@ export interface MetamorphosisPhase {
 export interface CelticAwenTaliesinReport {
   engineVersion: string;
   calculatedAt: string;
+  calculatedAtKst: string;
   awenFlowIndex: number; // 내부 연산용
   awenRays: AwenRaysBalance;
   activeMetamorphosis: MetamorphosisPhase;
@@ -72,6 +73,7 @@ export interface CelticAwenTaliesinReport {
   awenSynthesisMatrix: AwenSynthesisMatrix;
   cauldronPractice: string; // 가마솥 연단 실천
   taliesinProphecy: string;
+  interpretiveBoundary: string;
 }
 
 const METAMORPHOSIS_PHASES: MetamorphosisPhase[] = [
@@ -260,9 +262,14 @@ export function calculateCelticAwenTaliesin(options?: {
     nextCauldronStep: situationalAwenAudit.bardicAction,
   };
 
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const calculatedAtKst = `${kst.toISOString().slice(0, 19)}+09:00`;
+  const interpretiveBoundary = '본 켈트 아웬 탈리에신 리포트는 웨일스 바드 전통의 상징과 변용을 비추는 정성적 영감 안내이며, 확정적 예언이 아닙니다.';
+
   return {
     engineVersion: CELTIC_AWEN_TALIESIN_ENGINE_VERSION,
     calculatedAt: now.toISOString(),
+    calculatedAtKst,
     awenFlowIndex,
     awenRays,
     activeMetamorphosis,
@@ -270,7 +277,8 @@ export function calculateCelticAwenTaliesin(options?: {
     temporalAwenRhythm,
     awenSynthesisMatrix,
     cauldronPractice,
-    taliesinProphecy
+    taliesinProphecy,
+    interpretiveBoundary
   };
 }
 
@@ -283,7 +291,7 @@ export function formatCelticAwenTaliesinPrompt(report: CelticAwenTaliesinReport)
   const rayStrength = (s: number) => (s >= 80 ? '충만' : s >= 62 ? '조화' : '잠재');
 
   return `[🔮 고대 켈트 바드 탈리에신(Taliesin) 가마솥 & 아웬(Awen) 영감 실측 데이터 (v${report.engineVersion})]
-- 아웬(Awen) 영감 위상: ${report.awenSynthesisMatrix.inspirationState}
+- 기준 시각(KST): ${report.calculatedAtKst} | 아웬(Awen) 영감 위상: ${report.awenSynthesisMatrix.inspirationState}
 1. [신성한 영감 아웬(Awen /|\\) 3대 광선]:
    - 주재 영감 광선: [${r.dominantRay}]
    - 주재 광선 역량: ${r.dominantRayRole}
@@ -304,5 +312,6 @@ export function formatCelticAwenTaliesinPrompt(report: CelticAwenTaliesinReport)
 4. [케리드웬 가마솥 처방 & 탈리에신 신탁]:
    - 교차 매트릭스: ${report.awenSynthesisMatrix.rayTotemLink}
    - 가마솥 연단 실천: ${report.cauldronPractice}
-   - 종합 영감 예언: ${report.taliesinProphecy}`;
+   - 종합 영감 예언: ${report.taliesinProphecy}
+   - 해석 경계: ${report.interpretiveBoundary}`;
 }
