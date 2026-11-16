@@ -41,6 +41,7 @@ export interface YarrowProbabilityReport {
   reflectionFocus: string;
   counselNote: string;
   boundaryNotice: string;
+  interpretiveBoundary: string;
 }
 
 function classifyYarrowTheme(question: string): YarrowQuestionTheme {
@@ -299,6 +300,7 @@ export function calculateAncientYarrowProbability(params: {
     reflectionFocus: themeContent.reflectionFocus,
     counselNote: themeContent.counselNote,
     boundaryNotice,
+    interpretiveBoundary: boundaryNotice,
   };
 }
 

@@ -71,6 +71,7 @@ export interface PtahMemphiteResult {
   situationalPtahAudit: PtahSituationalAudit;
   temporalPtahRhythm: PtahTemporalRhythm;
   ptahSynthesisMatrix: PtahSynthesisMatrix;
+  interpretiveBoundary: string;
 }
 
 export type PtahMemphiteReport = PtahMemphiteResult;
@@ -229,6 +230,7 @@ export function calculatePtahMemphite(
   const situationalPtahAudit = buildSituationalAudit(question, primaryMemphiteVirtue);
   const temporalPtahRhythm = buildTemporalRhythm(now, seed);
   const ptahSynthesisMatrix = buildSynthesisMatrix(activeCreationStage, primaryMemphiteVirtue, situationalPtahAudit, temporalPtahRhythm);
+  const interpretiveBoundary = '샤바카 석비의 심장 구상(Ib)과 말씀 선포(Hu) 상징을 빌린 정성적 창조 성찰 관점이며, 개인 능력 점수나 미래 단정이 아닙니다.';
 
   return {
     engineVersion: PTAH_MEMPHITE_VERSION,
@@ -244,6 +246,7 @@ export function calculatePtahMemphite(
     situationalPtahAudit,
     temporalPtahRhythm,
     ptahSynthesisMatrix,
+    interpretiveBoundary,
   };
 }
 
@@ -264,5 +267,5 @@ export function formatPtahMemphitePrompt(result: PtahMemphiteResult): string {
 - 프타 교차 매트릭스: ${result.ptahSynthesisMatrix.synthesizedVerdict}
 - 샤바카 석비의 불멸의 비전: 《${result.memphiteEpiphany.stoneSceneTitle}》
   → 영원한 지혜: "${result.memphiteEpiphany.eternalWisdom}"
-- 해석 경계: 샤바카 석비의 심장 구상(Ib)과 말씀 선포(Hu) 상징을 빌린 정성적 창조 성찰 관점이며, 개인 능력 점수나 미래 단정이 아닙니다.`;
+- 해석 경계: ${result.interpretiveBoundary}`;
 }
