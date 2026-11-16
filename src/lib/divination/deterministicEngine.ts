@@ -974,7 +974,7 @@ try {
   // 정통 27 나크샤트라 & 120년 빔쇼타리 다샤 확장 수리 (생시 없으면 정오 기준 null-safe)
   const vedicAdvancedResult = params.focusTools?.length && !params.focusTools.includes('vedic') ? null : (() => {
     try {
-      return calculateVedicAdvanced({ profile });
+      return calculateVedicAdvanced({ profile, targetDate: now, question });
     } catch (_) {
       return null;
     }
@@ -1402,7 +1402,7 @@ try {
   // 17. 천상열차분야지도 28수 일진·택일 엔진 (생년월일 무관 당일 일진 기준)
   const twentyEightMansionsResult = calculateSupplement('twentyEightMansionsResult', () => ((() => {
     try {
-      return calculateTwentyEightMansions({ targetDate: now });
+      return calculateTwentyEightMansions({ targetDate: now, question });
     } catch (_) {
       return null;
     }
@@ -1453,7 +1453,7 @@ try {
   const twelveSpiritsResult = calculateSupplement('twelveSpiritsResult', () => (birthdateStr && profile
     ? (() => {
         try {
-          return calculateTwelveSpiritsCycle({ profile, targetDate: now });
+          return calculateTwelveSpiritsCycle({ profile, targetDate: now, question });
         } catch (_) {
           return null;
         }
@@ -4737,12 +4737,12 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'samjaeGyoUn', nameKo: '삼재·교운기 변곡점', icon: '🔄', category: 'deep_master' },
   { key: 'auspiciousStars', nameKo: '천을귀인·길성망', icon: '✨', category: 'deep_master' },
   { key: 'geokguk', nameKo: '정통 10대 격국', icon: '📜', category: 'deep_master' },
-  { key: 'twentyEightMansions', nameKo: '28수 일진 택일', icon: '🌠', category: 'deep_master' },
+  { key: 'twentyEightMansions', nameKo: '28수 일진 택일', icon: '🌠', category: 'deep_master', summary: '천상열차분야지도 28수 직성과 7원 4주기·3원 공명·4방신 조화로 당일 택일과 행동 완급을 비추는 관점' },
   { key: 'sukuyoAdvanced', nameKo: '27숙 심층 매트릭스', icon: '🌙', category: 'deep_master' },
-  { key: 'vedicAdvanced', nameKo: '베딕 120년 다샤', icon: '🕉️', category: 'deep_master' },
+  { key: 'vedicAdvanced', nameKo: '베딕 120년 다샤', icon: '🕉️', category: 'deep_master', summary: '항성황도 27나크샤트라와 120년 빔쇼타리 다샤(마하·안타르다샤)로 현재 대운·소운의 카르마적 중심축을 비추는 관점' },
   { key: 'heLuoLiShu', nameKo: '하락이수 수리원당효', icon: '🔢', category: 'deep_master' },
   { key: 'dynamicClash', nameKo: '충형파해 동적트리거', icon: '💥', category: 'deep_master' },
-  { key: 'twelveSpirits', nameKo: '12신살 주기', icon: '💫', category: 'deep_master' },
+  { key: 'twelveSpirits', nameKo: '12신살 주기', icon: '💫', category: 'deep_master', summary: '삼합국 기반 12신살의 내면·사회 궤도 순환으로 오늘의 추천 페르소나와 핵심 강점·함정을 비추는 관점' },
   { key: 'pythagoreanLifecycle', nameKo: '피타고라스 생애주기', icon: '📐', category: 'deep_master', summary: '피타고라스 4대 피너클과 4대 챌린지, 9년 개인년도 주기로 현재 생애 전환기의 기회와 극복 과제를 짚는 관점' },
   { key: 'astrologicalDecanSabian', nameKo: '사비안 심볼·데칸', icon: '🔮', category: 'deep_master' },
   { key: 'medicalBioMatrix', nameKo: '메디컬 바이오 매트릭스', icon: '🩺', category: 'deep_master' },

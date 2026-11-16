@@ -995,10 +995,16 @@ test('28 Mansions six-domain scoring: bounds, consistency, 28-day date selection
   // 프롬프트 포맷터에 엔진 버전·핵심 수어 포함
   const prompt = formatTwentyEightMansionsPrompt(r);
   assert(prompt.includes(TWENTY_EIGHT_MANSIONS_ENGINE_VERSION));
-  assert(r.calculatedAtKst.endsWith('KST'));
+  assert(r.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert(Boolean(r.oppositeMansion?.fullName));
+  assert(Boolean(r.reflectiveQuestion));
+  assert(r.interpretiveBoundary?.includes('해석 경계'));
   assert(Boolean(r.mansionsSynthesisMatrix?.integratedAction));
   assert(prompt.includes('천상열차분야지도') && prompt.includes('28수 직성'));
   assert(prompt.includes('필월오(畢月烏)') && prompt.includes('계약·협상') && prompt.includes('휴식·치유·내실'));
+  assert(prompt.includes('대칭 보조 별자리'));
+  assert(prompt.includes('성찰 질문'));
+  assert(prompt.includes('해석 경계'));
   assert(prompt.includes('교차 매트릭스'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
@@ -1191,10 +1197,16 @@ test('Vedic engine fixtures: moon sidereal positions match independent panchang 
 test('Vedic current dasha: 1995-03-25 birth at 2026-11-02 falls in Rahu-Sukra antardasha', () => {
   const profile = { basic: { birthdate: '1995-03-25', birthtime: '14:30', gender: 'male' as const, birthCity: '서울' } };
   const r = calculateVedicAdvanced({ profile, targetDate: new Date('2026-11-02T00:00:00Z'), question: '다샤 흐름' });
-  assert(r.calculatedAtKst?.endsWith('KST'));
+  assert(r.calculatedAtKst?.endsWith('+09:00 (KST)'));
+  assert(Boolean(r.secondaryAxis));
+  assert(r.reflectiveQuestion?.includes('다샤 흐름'));
+  assert(r.interpretiveBoundary?.includes('해석 경계'));
   assert(Boolean(r.vedicSynthesisMatrix?.integratedAction));
   const vPrompt = formatVedicPrompt(r);
   assert(vPrompt.includes('교차 매트릭스'));
+  assert(vPrompt.includes('보조 교차 축'));
+  assert(vPrompt.includes('성찰 질문'));
+  assert(vPrompt.includes('해석 경계'));
   assert(!vPrompt.includes('/100'));
   assert(!vPrompt.includes('%'));
   // 잔여 태양 5.24y → 달 10y → 화성 7y 후 라후 18y(22.24y~); 라후-수성 30.19y~32.74y
@@ -1245,7 +1257,7 @@ test('Vedic engine: determinism, null-safe noon fallback, safe skip and prompt f
   assert(prompt.includes('다샤 행성 조화'));
   assert(prompt.includes('켄드라·트리코나 번영'));
   assert(prompt.includes('4대 푸루샤르타 인생 목적'));
-  assert(prompt.includes('LUCKEY-VD-v1.0.0'));
+  assert(prompt.includes(VEDIC_ENGINE_VERSION));
   assert(prompt.includes('빔쇼타리'));
   assert(prompt.includes('나크샤트라'));
   assert(prompt.includes('안타르다샤'));
@@ -2106,7 +2118,10 @@ test('Dynamic Clash Trigger Engine: 실시간 삼형·육충·파해 동적 격�
 test('Twelve Spirits Cycle Engine: 사주 12신살 완전 순환 궤도 및 일진 페르소나 검증', () => {
   const res = calculateTwelveSpiritsCycle({ profile, targetDate: new Date('2026-11-02T19:00:00+09:00'), question: '오늘의 행동 전략' });
   assert.equal(res.engineVersion, TWELVE_SPIRITS_ENGINE_VERSION);
-  assert(res.calculatedAtKst.endsWith('KST'));
+  assert(res.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert(Boolean(res.secondarySpirit?.name));
+  assert(res.reflectiveQuestion.includes('오늘의 행동 전략'));
+  assert(res.interpretiveBoundary.includes('해석 경계'));
   assert(Boolean(res.twelveSpiritsSynthesisMatrix?.integratedAction));
   assert(res.todayDaySpirit.dayBase.name.length > 0);
   assert(res.todayDaySpirit.yearBase.name.length > 0);
@@ -2114,9 +2129,12 @@ test('Twelve Spirits Cycle Engine: 사주 12신살 완전 순환 궤도 및 일�
   assert(res.todayStrategy.superpowerToUse.length > 0);
   const prompt = formatTwelveSpiritsPrompt(res);
   assert(prompt.includes(TWELVE_SPIRITS_ENGINE_VERSION));
+  assert(prompt.includes('+09:00 (KST)'));
   assert(prompt.includes('오늘 일진'));
   assert(prompt.includes('추천 페르소나'));
   assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('성찰 질문'));
+  assert(prompt.includes('해석 경계'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });
