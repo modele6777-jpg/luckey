@@ -3770,7 +3770,7 @@ try {
   // 269. 대한민국 이육사 시인 광야 & 절정 강철 무지개 실존의지 지혜 엔진
   const koreanLeeYukSaGwangyaPeakResult = calculateSupplement('koreanLeeYukSaGwangyaPeakResult', () => ((() => {
     try {
-      return calculateKoreanLeeYukSaGwangyaPeak(profile);
+      return calculateKoreanLeeYukSaGwangyaPeak(profile, question, now);
     } catch (_) {
       return null;
     }
@@ -3824,7 +3824,7 @@ try {
   // 275. 대한민국 매월당 김시습 금오신화 방외인 자유혼 & 절의·삼교원융 지혜 엔진
   const koreanMaewoldangKimSiSeupGeumoSinhwaResult = calculateSupplement('koreanMaewoldangKimSiSeupGeumoSinhwaResult', () => ((() => {
     try {
-      return calculateKoreanMaewoldangKimSiSeupGeumoSinhwa(profile);
+      return calculateKoreanMaewoldangKimSiSeupGeumoSinhwa(profile, question, now);
     } catch (_) {
       return null;
     }
@@ -3878,7 +3878,7 @@ try {
   // 281. 대한민국 남명 조식 선생 《내명자경 외단자의》 경의검 & 성성자 실천 지조 지혜 엔진
   const koreanNammyeongJoSikGyeongUiResult = calculateSupplement('koreanNammyeongJoSikGyeongUiResult', () => ((() => {
     try {
-      return calculateKoreanNammyeongJoSikGyeongUi(profile);
+      return calculateKoreanNammyeongJoSikGyeongUi(profile, question, now);
     } catch (_) {
       return null;
     }

@@ -9,12 +9,12 @@
  * 4. 단성소(丹城疏) 서릿발 직언 및 불굴 지조 지수(Danseongso Uncompromising Integrity Score): 권력 앞에서도 흔들리지 않고 대의와 백성을 위해 진실을 고하는 용기.
  * 5. 산천재(山天齋) 지리산 실천학문 및 의병 배출 기개 지표(Sancheonjae Practical Scholarship & Courage Index): 말 잔치를 배격하고 국난 극복의 실천적 힘을 기르는 현장성.
  *
- * @version LUCKEY-NAMMYEONG-JO-SIK-GYEONG-UI-v2.0.0
+ * @version LUCKEY-NAMMYEONG-JO-SIK-GYEONG-UI-v2.1.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const KOREAN_NAMMYEONG_JO_SIK_VERSION = 'LUCKEY-NAMMYEONG-JO-SIK-GYEONG-UI-v2.0.0';
+export const KOREAN_NAMMYEONG_JO_SIK_VERSION = 'LUCKEY-NAMMYEONG-JO-SIK-GYEONG-UI-v2.1.0';
 
 export interface NammyeongTheme {
   themeKey: string;
@@ -43,7 +43,11 @@ export interface KoreanNammyeongJoSikGyeongUiResult {
   sancheonjaeActionScholarshipIndex: number;   // 산천재(山天齋) 실천학문 및 불굴 기개 지표 (Sancheonjae Action Courage)
   // 세부 분석
   activeNammyeongTheme: NammyeongTheme;
+  secondaryNammyeongTheme: NammyeongTheme;
   focalNammyeongAphorism: NammyeongAphorism;
+  secondaryNammyeongAphorism: NammyeongAphorism;
+  reflectiveQuestion: string;
+  interpretiveBoundary: string;
   nammyeongComprehensiveGuidance: {
     guidanceTitle: string;
     philosophicalCounsel: string;
@@ -62,7 +66,7 @@ function formatNammyeongKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 KST`;
 }
 
 function describeNammyeongStage(score: number): string {
@@ -174,10 +178,20 @@ export function calculateKoreanNammyeongJoSikGyeongUi(
   const sancheonjaeActionScholarshipIndex = 82 + ((absHash >> 12) % 17);
 
   const themeIndex = (absHash >> 5) % NAMMYEONG_THEMES.length;
+  const secondaryThemeIndex = (themeIndex + 1 + ((absHash >> 6) % (NAMMYEONG_THEMES.length - 1))) % NAMMYEONG_THEMES.length;
   const aphorismIndex = (absHash >> 8) % NAMMYEONG_APHORISMS.length;
+  const secondaryAphorismIndex = (aphorismIndex + 1 + ((absHash >> 11) % (NAMMYEONG_APHORISMS.length - 1))) % NAMMYEONG_APHORISMS.length;
 
   const activeNammyeongTheme = NAMMYEONG_THEMES[themeIndex];
+  const secondaryNammyeongTheme = NAMMYEONG_THEMES[secondaryThemeIndex];
   const focalNammyeongAphorism = NAMMYEONG_APHORISMS[aphorismIndex];
+  const secondaryNammyeongAphorism = NAMMYEONG_APHORISMS[secondaryAphorismIndex];
+
+  const reflectiveQuestion = query?.trim()
+    ? `'${query.trim()}' 앞에서 ${activeNammyeongTheme.themeTitleKo.split(' — ')[0]}과 ${secondaryNammyeongTheme.themeTitleKo.split(' — ')[0]} 가운데 지금 내면으로 밝히고 밖으로 결단해야 할 한 가지는 무엇인가요?`
+    : `오늘 당신의 성성자 방울이 울릴 때 ${activeNammyeongTheme.themeTitleKo.split(' — ')[0]}과 ${secondaryNammyeongTheme.themeTitleKo.split(' — ')[0]} 중 가장 먼저 깨워야 할 원칙은 무엇인가요?`;
+  const interpretiveBoundary =
+    '이 남명 조식 경의사상 지표는 내명자경·외단자의의 실천 정신을 비추는 정성적 성찰 프레임이며, 확정적 성패 예언이 아닙니다.';
 
   const guidanceTitle = `남명 조식 경의사상 지혜: ${activeNammyeongTheme.themeTitleKo}`;
   const philosophicalCounsel = `조선 중기 실천적 선비정신의 영수 남명 조식 선생은 안으로 마음을 밝히는 경(敬)과 밖으로 행동을 결단하는 의(義), 성성자 방울의 상시 각성, 그리고 불의에 굴하지 않는 서릿발 실천 지조를 강조합니다. ` +
@@ -209,7 +223,11 @@ export function calculateKoreanNammyeongJoSikGyeongUi(
     danseongsoUprightCourageScore,
     sancheonjaeActionScholarshipIndex,
     activeNammyeongTheme,
+    secondaryNammyeongTheme,
     focalNammyeongAphorism,
+    secondaryNammyeongAphorism,
+    reflectiveQuestion,
+    interpretiveBoundary,
     nammyeongComprehensiveGuidance: {
       guidanceTitle,
       philosophicalCounsel,
@@ -234,13 +252,17 @@ export function formatKoreanNammyeongJoSikGyeongUiPrompt(
     `- 연산 시각: ${res.calculatedAtKst} | 엔진: ${res.engineVersion}`,
     `- 경의 실천 국면: ${describeNammyeongStage(avgScore)}`,
     `- 핵심 경의사상 테마: ${res.activeNammyeongTheme.themeTitleKo} [${res.activeNammyeongTheme.themeTitleEn}]`,
+    `- 보조 교차 테마: ${res.secondaryNammyeongTheme.themeTitleKo} [${res.secondaryNammyeongTheme.themeTitleEn}]`,
     `- 선비정신 실천 통찰: ${res.activeNammyeongTheme.pragmaticInsight}`,
     `- 결단 실천 조언: ${res.activeNammyeongTheme.practicalCounsel}`,
     `- 남명 원전 명훈: "${res.focalNammyeongAphorism.aphorismKo}"`,
+    `- 보조 교차 명훈: "${res.secondaryNammyeongAphorism.aphorismKo}" [${res.secondaryNammyeongAphorism.sourceContext}]`,
     `- 한문 원전: [${res.focalNammyeongAphorism.aphorismHanja}]`,
     `- 원전 출처: [${res.focalNammyeongAphorism.sourceContext}]`,
     `- 구체적 실천 지침: ${res.focalNammyeongAphorism.actionGuidance}`,
     `- 종합 남명 선비정신 권면: ${res.nammyeongComprehensiveGuidance.philosophicalCounsel}`,
+    `- 성찰 질문: ${res.reflectiveQuestion}`,
+    `- 해석 경계: ${res.interpretiveBoundary}`,
   ];
   if (res.nammyeongSynthesisMatrix) {
     lines.push(
