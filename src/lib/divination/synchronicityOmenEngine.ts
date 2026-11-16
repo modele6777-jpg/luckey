@@ -19,7 +19,7 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const SYNCHRONICITY_OMEN_VERSION = 'LUCKEY-SYNCHRONICITY-OMEN-v2.0.0';
+export const SYNCHRONICITY_OMEN_VERSION = 'LUCKEY-SYNCHRONICITY-OMEN-v2.1.0';
 
 function formatSynchronicityKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -59,6 +59,7 @@ export interface SynchronicityOmenReport {
     alignmentState: string;
     integratedAction: string;
   };
+  interpretiveBoundary: string;
 }
 
 export function runSynchronicityOmenEngine(
@@ -149,6 +150,8 @@ export function runSynchronicityOmenEngine(
     integratedAction: `${ritualName}: ${actionStep}${q ? ` [질문 맥락: ${q}]` : ''}`,
   };
 
+  const interpretiveBoundary = '본 칼 융 동시성 징조 해독 리포트는 비인과적 상징 공명과 사주 오행 데이터를 결합한 성찰 안내이며, 일상적 우연의 확정적 예언이나 의학적·법적 판단을 대체하지 않습니다.';
+
   const synthesisPromptGuidance = `[LUCKEY 칼 융 동시성 징조 해독 & 오멘 매트릭스 ${SYNCHRONICITY_OMEN_VERSION} | ${calculatedAtKst}]
 - 동시성 오멘 테마: [${dominantOmenTheme}]
 - 주 활성 채널: ${primaryChannelName}
@@ -161,7 +164,8 @@ export function runSynchronicityOmenEngine(
 - 현실 틈새(Matrix Glitch) 해독 가이드: ${matrixGlitchDecodingGuidance}
 - 동시성 각성 실천 리추얼: [${ritualName}] - ${actionStep}
 - 교차 매트릭스: [핵심 긴장: ${synchronicitySynthesisMatrix.dominantTension} | 조율 상태: ${synchronicitySynthesisMatrix.alignmentState}]
-  * 통합 실천: ${synchronicitySynthesisMatrix.integratedAction}`;
+  * 통합 실천: ${synchronicitySynthesisMatrix.integratedAction}
+- 해석 경계: ${interpretiveBoundary}`;
 
   return {
     engineVersion: SYNCHRONICITY_OMEN_VERSION,
@@ -183,6 +187,7 @@ export function runSynchronicityOmenEngine(
     },
     synthesisPromptGuidance,
     synchronicitySynthesisMatrix,
+    interpretiveBoundary,
   };
 }
 
