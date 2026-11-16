@@ -8,12 +8,12 @@
  * 4. 별을 노래하는 불멸의 사랑과 소명 지수(Star-Counting Immortal Love & Vow Index): "별을 노래하는 마음으로 모든 죽어가는 것을 사랑해야지"라는 불멸의 사랑과 자신에게 주어진 길을 묵묵히 걸어가는 소명의식.
  * 5. 어둠을 뚫고 아침을 기다리는 등불 희망 회복탄력성(Lantern of Hope Resilience Score): 시대의 혹독한 암흑 속에서도 "등불을 밝혀 어둠을 조금 내몰고 시대처럼 올 아침을 기다리는" 불굴의 실존적 희망.
  *
- * @version LUCKEY-YUN-DONG-JU-SKY-STARS-v2.0.0
+ * @version LUCKEY-YUN-DONG-JU-SKY-STARS-v2.1.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const KOREAN_YUN_DONG_JU_VERSION = 'LUCKEY-YUN-DONG-JU-SKY-STARS-v2.0.0';
+export const KOREAN_YUN_DONG_JU_VERSION = 'LUCKEY-YUN-DONG-JU-SKY-STARS-v2.1.0';
 
 export interface YunDongJuTheme {
   themeKey: string;
@@ -42,7 +42,11 @@ export interface KoreanYunDongJuSkyWindStarsPoetryResult {
   lanternHopeResilienceScore: number;              // 어둠 속 등불 희망 회복탄력성 (Lantern of Hope Resilience)
   // 세부 분석
   activeYunDongJuTheme: YunDongJuTheme;
+  secondaryYunDongJuTheme: YunDongJuTheme;
   focalYunDongJuAphorism: YunDongJuAphorism;
+  secondaryYunDongJuAphorism: YunDongJuAphorism;
+  reflectiveQuestion: string;
+  interpretiveBoundary: string;
   yunDongJuComprehensiveGuidance: {
     guidanceTitle: string;
     philosophicalCounsel: string;
@@ -61,7 +65,7 @@ function formatYunDongJuKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 KST`;
 }
 
 function describeYunDongJuStage(score: number): string {
@@ -150,7 +154,7 @@ export function calculateKoreanYunDongJuSkyWindStarsPoetry(
   const birthTime = profile?.basic?.birthtime ?? p?.birthTime ?? p?.birthtime ?? '12:00';
   const gender = profile?.basic?.gender ?? p?.gender ?? 'neutral';
 
-  const seedString = `YUN-DONG-JU-SKY-STARS:${name}:${birthDate}:${birthTime}:${gender}`;
+  const seedString = `YUN-DONG-JU-SKY-STARS:${name}:${birthDate}:${birthTime}:${gender}:${query ?? ''}`;
 
   let hash = 0;
   for (let i = 0; i < seedString.length; i++) {
@@ -166,10 +170,21 @@ export function calculateKoreanYunDongJuSkyWindStarsPoetry(
   const lanternHopeResilienceScore = 74 + ((absHash >> 12) % 25);
 
   const themeIndex = (absHash >> 4) % YUN_DONG_JU_THEMES.length;
+  const secondaryThemeIndex = (themeIndex + 1 + ((absHash >> 6) % (YUN_DONG_JU_THEMES.length - 1))) % YUN_DONG_JU_THEMES.length;
   const aphorismIndex = (absHash >> 7) % YUN_DONG_JU_APHORISMS.length;
+  const secondaryAphorismIndex = (aphorismIndex + 1 + ((absHash >> 10) % (YUN_DONG_JU_APHORISMS.length - 1))) % YUN_DONG_JU_APHORISMS.length;
 
   const activeYunDongJuTheme = YUN_DONG_JU_THEMES[themeIndex];
+  const secondaryYunDongJuTheme = YUN_DONG_JU_THEMES[secondaryThemeIndex];
   const focalYunDongJuAphorism = YUN_DONG_JU_APHORISMS[aphorismIndex];
+  const secondaryYunDongJuAphorism = YUN_DONG_JU_APHORISMS[secondaryAphorismIndex];
+
+  const trimmedQuery = query?.trim();
+  const reflectiveQuestion = trimmedQuery
+    ? `윤동주 시인의 《하늘과 바람과 별과 시》 '${activeYunDongJuTheme.themeTitleEn}'와 '${secondaryYunDongJuTheme.themeTitleEn}'를 비추어 볼 때, "${trimmedQuery}"에서 하늘 아래 부끄럼 없이 지켜내고 싶은 진심은 무엇인가요?`
+    : `지금 자신에게 조용히 손을 내미는 자리에서, '${activeYunDongJuTheme.themeTitleKo}'와 '${secondaryYunDongJuTheme.themeTitleKo}'를 함께 비추는 등불은 무엇일까요?`;
+
+  const interpretiveBoundary = '이 지표는 윤동주 시인의 《하늘과 바람과 별과 시》에 담긴 순결한 양심·자화상 성찰·연민·등불의 희망을 정서적·실존적 성찰의 거울로 해석한 것이며, 현실의 구체적 사건을 단정하는 예언이 아닙니다.';
 
   const guidanceTitle = `윤동주 하늘과 바람과 별과 시 순결한 양심과 실존 성찰: ${activeYunDongJuTheme.themeTitleKo}`;
   const philosophicalCounsel = `대한민국 민족시인 윤동주 선생의 《하늘과 바람과 별과 시》 정신은 하늘을 우러러 한 점 부끄럼 없기를 바라는 순결한 양심, 우물 속 자신을 응시하며 화해하는 자화상의 참회, 모든 죽어가는 것을 사랑하는 섬세한 연민, 그리고 어둠 속에서 등불을 밝혀 아침을 기다리는 불굴의 희망을 일깨웁니다. ` +
@@ -201,7 +216,11 @@ export function calculateKoreanYunDongJuSkyWindStarsPoetry(
     starCountingImmortalLoveIndex,
     lanternHopeResilienceScore,
     activeYunDongJuTheme,
+    secondaryYunDongJuTheme,
     focalYunDongJuAphorism,
+    secondaryYunDongJuAphorism,
+    reflectiveQuestion,
+    interpretiveBoundary,
     yunDongJuComprehensiveGuidance: {
       guidanceTitle,
       philosophicalCounsel,
@@ -224,11 +243,15 @@ export function formatKoreanYunDongJuSkyWindStarsPoetryPrompt(res: KoreanYunDong
     `- 연산 시각: ${res.calculatedAtKst} | 엔진: ${res.engineVersion}`,
     `- 실존 성찰 국면: ${describeYunDongJuStage(avgScore)}`,
     `- 핵심 실존성찰 테마: ${res.activeYunDongJuTheme.themeTitleKo} [${res.activeYunDongJuTheme.themeTitleEn}]`,
+    `- 보조 교차 테마: ${res.secondaryYunDongJuTheme.themeTitleKo} [${res.secondaryYunDongJuTheme.themeTitleEn}]`,
     `- 실존적 통찰: ${res.activeYunDongJuTheme.existentialInsight}`,
     `- 실천적 조언: ${res.activeYunDongJuTheme.practicalCounsel}`,
     `- 핵심 원전 시구: "${res.focalYunDongJuAphorism.verseKo}" [${res.focalYunDongJuAphorism.poemTitleKo}]`,
+    `- 보조 교차 시구: "${res.secondaryYunDongJuAphorism.verseKo}" [${res.secondaryYunDongJuAphorism.poemTitleKo}]`,
     `- 원전 출처: [${res.focalYunDongJuAphorism.sourceContext}]`,
     `- 구체적 실천 지침: ${res.focalYunDongJuAphorism.actionGuidance}`,
+    `- 성찰 질문: ${res.reflectiveQuestion}`,
+    `- 해석 경계: ${res.interpretiveBoundary}`,
     `- 종합 윤동주 문학·실존성찰 권면: ${res.yunDongJuComprehensiveGuidance.philosophicalCounsel}`,
   ];
   if (res.yunDongJuSynthesisMatrix) {

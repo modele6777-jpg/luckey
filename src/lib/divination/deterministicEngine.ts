@@ -3329,7 +3329,7 @@ try {
   // 220. 한국 신라 의상대사 화엄일승법계도 & 법성게 원융무애 엔진
   const uisangHwaeomIlseungBeopgyeResult = calculateSupplement('uisangHwaeomIlseungBeopgyeResult', () => ((() => {
     try {
-      return calculateUisangHwaeomIlseungBeopgye(profile);
+      return calculateUisangHwaeomIlseungBeopgye(profile, question, now);
     } catch (_) {
       return null;
     }
@@ -3689,7 +3689,7 @@ try {
   // 260. 대한민국 만해 한용운 님의 침묵 역설적 사랑 승화 & 불교 유신·자주독립 지조 실천 엔진
   const manhaeHanYongunNimuiChimmukResult = calculateSupplement('manhaeHanYongunNimuiChimmukResult', () => ((() => {
     try {
-      return calculateManhaeHanYongunNimuiChimmuk(profile);
+      return calculateManhaeHanYongunNimuiChimmuk(profile, question, now);
     } catch (_) {
       return null;
     }
@@ -3743,7 +3743,7 @@ try {
   // 266. 대한민국 윤동주 시인 하늘과 바람과 별과 시 순결한 양심 & 별 헤는 밤·자화상 실존성찰 지혜 엔진
   const koreanYunDongJuSkyWindStarsPoetryResult = calculateSupplement('koreanYunDongJuSkyWindStarsPoetryResult', () => ((() => {
     try {
-      return calculateKoreanYunDongJuSkyWindStarsPoetry(profile);
+      return calculateKoreanYunDongJuSkyWindStarsPoetry(profile, question, now);
     } catch (_) {
       return null;
     }
@@ -4933,7 +4933,7 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'frenchDescartesCogitoClaraDistincta', nameKo: '데카르트 방법서설 코기토 명석판명 지성직관', icon: '💡', category: 'deep_master', summary: '데카르트의 방법적 회의와 명석판명(Clara et Distincta) 4대 규칙으로 모호한 불안을 걷어내고 사유 주체의 확고한 결단을 세웁니다.' },
   { key: 'ancientIndianEarlyBuddhistFourNobleTruths', nameKo: '초기불교 사성제 팔정도 고집멸도 중도해탈', icon: '☸️', category: 'deep_master', summary: '고집멸도 사성제와 팔정도의 삼학(계·정·혜)으로 갈애의 매듭을 풀고 지금-여기 중도의 평정을 엽니다.' },
   { key: 'islamicSufiRumiMasnaviDivineLove', nameKo: '루미 마스나비 수피즘 신성한사랑 영혼갈망', icon: '🕊️', category: 'deep_master' },
-  { key: 'koreanUisangHwaeomIlseungBeopgye', nameKo: '신라 의상대사 화엄일승법계도 법성게 원융무애', icon: '☸️', category: 'deep_master' },
+  { key: 'koreanUisangHwaeomIlseungBeopgye', nameKo: '신라 의상대사 화엄일승법계도 법성게 원융무애', icon: '☸️', category: 'deep_master', summary: '신라 의상대사의 《화엄일승법계도》와 《법성게》에 담긴 원융무애·일중일체다중일의 상즉상입 지혜로 분리와 대립을 넘어 조화로운 연결을 비춥니다.' },
   { key: 'frenchMontaigneEssaisWisdom', nameKo: '몽테뉴 수상록 자기성찰 독단탈피 회의주의 중용', icon: '📖', category: 'deep_master' },
   { key: 'ancientIndianNagarjunaMadhyamakaSunyata', nameKo: '용수 중론 팔불중도 연기즉공 이제설 공성지혜', icon: '☸️', category: 'deep_master', summary: '용수 《중론》의 팔불중도와 연기즉공 사유로 고정관념의 양극단을 해체하고 걸림 없는 변화의 길을 봅니다.' },
   { key: 'koreanJinulJeonghyeSsangsuDonohJeomsu', nameKo: '보조국사 지눌 수심결 정혜쌍수 돈오점수 성적등지', icon: '📜', category: 'deep_master', summary: '보조국사 지눌 《수심결》의 돈오점수와 정혜쌍수 원리로 단박의 자각을 일상의 고요와 지혜로 차분히 닦아 나갑니다.' },

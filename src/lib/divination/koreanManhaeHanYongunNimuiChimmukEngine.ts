@@ -8,12 +8,12 @@
  * 4. 진흙 속에서도 물들지 않는 출오염(出汚染) 연꽃 지조: 어떤 회유와 탄압 속에서도 호적에 이름을 올리지 않고 북향집(심우장)을 지키며 끝까지 민족의 얼을 수호한 백절불굴의 순결한 절의.
  * 5. 대의단(大疑團)과 철저한 깨달음의 원융 평정심: 백담사와 오세암의 혹독한 참선 속에서 분별망상을 털어내고, 생사의 고뇌를 꿰뚫어 만유일체의 대자유에 도달한 선사(禪師)의 심령 평정.
  *
- * @version LUCKEY-MANHAE-HAN-YONGUN-NIMUI-CHIMMUK-v2.0.0
+ * @version LUCKEY-MANHAE-HAN-YONGUN-NIMUI-CHIMMUK-v2.1.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const KOREAN_MANHAE_HAN_YONGUN_VERSION = 'LUCKEY-MANHAE-HAN-YONGUN-NIMUI-CHIMMUK-v2.0.0';
+export const KOREAN_MANHAE_HAN_YONGUN_VERSION = 'LUCKEY-MANHAE-HAN-YONGUN-NIMUI-CHIMMUK-v2.1.0';
 
 export interface HanYongunTheme {
   themeKey: string;
@@ -42,7 +42,11 @@ export interface ManhaeHanYongunNimuiChimmukResult {
   hwaduGreatDoubtEnlightenmentScore: number;            // 대의단 타파 및 만유일체 원융 평정심 (大疑團 圓融平靜)
   // 세부 분석
   activeHanYongunTheme: HanYongunTheme;
+  secondaryHanYongunTheme: HanYongunTheme;
   focalHanYongunAphorism: HanYongunAphorism;
+  secondaryHanYongunAphorism: HanYongunAphorism;
+  reflectiveQuestion: string;
+  interpretiveBoundary: string;
   hanYongunComprehensiveGuidance: {
     guidanceTitle: string;
     philosophicalCounsel: string;
@@ -61,7 +65,7 @@ function formatManhaeKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 KST`;
 }
 
 function describeManhaeStage(score: number): string {
@@ -166,10 +170,21 @@ export function calculateManhaeHanYongunNimuiChimmuk(
   const hwaduGreatDoubtEnlightenmentScore = 73 + ((absHash >> 12) % 26);
 
   const themeIndex = (absHash >> 4) % HAN_YONGUN_THEMES.length;
+  const secondaryThemeIndex = (themeIndex + 1 + ((absHash >> 6) % (HAN_YONGUN_THEMES.length - 1))) % HAN_YONGUN_THEMES.length;
   const aphorismIndex = (absHash >> 7) % HAN_YONGUN_APHORISMS.length;
+  const secondaryAphorismIndex = (aphorismIndex + 1 + ((absHash >> 10) % (HAN_YONGUN_APHORISMS.length - 1))) % HAN_YONGUN_APHORISMS.length;
 
   const activeHanYongunTheme = HAN_YONGUN_THEMES[themeIndex];
+  const secondaryHanYongunTheme = HAN_YONGUN_THEMES[secondaryThemeIndex];
   const focalHanYongunAphorism = HAN_YONGUN_APHORISMS[aphorismIndex];
+  const secondaryHanYongunAphorism = HAN_YONGUN_APHORISMS[secondaryAphorismIndex];
+
+  const trimmedQuery = query?.trim();
+  const reflectiveQuestion = trimmedQuery
+    ? `만해 한용운의 《님의 침묵》 '${activeHanYongunTheme.themeTitleHanja}'와 '${secondaryHanYongunTheme.themeTitleHanja}'를 비추어 볼 때, "${trimmedQuery}"에서 침묵 속에 지키며 승화해야 할 신념은 무엇인가요?`
+    : `지금 마음을 다잡는 자리에서, '${activeHanYongunTheme.themeTitleHanja}'의 결기와 '${secondaryHanYongunTheme.themeTitleHanja}'의 지조를 함께 세우려면 무엇을 끊고 무엇을 지켜야 할까요?`;
+
+  const interpretiveBoundary = '이 지표는 만해 한용운 선사의 《님의 침묵》·《조선불교유신론》·《조선독립의 서》에 담긴 역설적 사랑과 자주 지조 철학을 내면 성찰의 거울로 해석한 것이며, 구체적 사건의 성패를 단정하는 예언이 아닙니다.';
 
   const guidanceTitle = `만해 한용운 님의 침묵 사랑과 자주 지조: ${activeHanYongunTheme.themeTitleKo}`;
   const philosophicalCounsel = `만해 한용운 선사의 역설적 사랑과 백절불굴의 지조는 세속의 슬픔과 억압을 딛고, 불멸의 신념과 당당한 자유의 대도를 열어가도록 일깨웁니다. ` +
@@ -201,7 +216,11 @@ export function calculateManhaeHanYongunNimuiChimmuk(
     unyieldingLotusIntegrityIndex,
     hwaduGreatDoubtEnlightenmentScore,
     activeHanYongunTheme,
+    secondaryHanYongunTheme,
     focalHanYongunAphorism,
+    secondaryHanYongunAphorism,
+    reflectiveQuestion,
+    interpretiveBoundary,
     hanYongunComprehensiveGuidance: {
       guidanceTitle,
       philosophicalCounsel,
@@ -224,11 +243,15 @@ export function formatManhaeHanYongunNimuiChimmukPrompt(res: ManhaeHanYongunNimu
     `- 연산 시각: ${res.calculatedAtKst} | 엔진: ${res.engineVersion}`,
     `- 선시·지조 국면: ${describeManhaeStage(avgScore)}`,
     `- 핵심 선시·독립 테마: ${res.activeHanYongunTheme.themeTitleKo} [${res.activeHanYongunTheme.themeTitleHanja}]`,
+    `- 보조 교차 테마: ${res.secondaryHanYongunTheme.themeTitleKo} [${res.secondaryHanYongunTheme.themeTitleHanja}]`,
     `- 실존적 통찰: ${res.activeHanYongunTheme.existentialInsight}`,
     `- 실천적 조언: ${res.activeHanYongunTheme.practicalCounsel}`,
     `- 핵심 원전 경구: "${res.focalHanYongunAphorism.aphorismKo}"`,
+    `- 보조 교차 경구: "${res.secondaryHanYongunAphorism.aphorismKo}" [${res.secondaryHanYongunAphorism.sourceContext}]`,
     `- 원전 출처: "${res.focalHanYongunAphorism.aphorismHanjaOrContext}" [${res.focalHanYongunAphorism.sourceContext}]`,
     `- 구체적 실천 지침: ${res.focalHanYongunAphorism.actionGuidance}`,
+    `- 성찰 질문: ${res.reflectiveQuestion}`,
+    `- 해석 경계: ${res.interpretiveBoundary}`,
     `- 종합 만해 독립정신·선사 권면: ${res.hanYongunComprehensiveGuidance.philosophicalCounsel}`,
   ];
   if (res.manhaeSynthesisMatrix) {
