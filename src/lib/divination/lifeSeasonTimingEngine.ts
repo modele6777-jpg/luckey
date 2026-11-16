@@ -519,8 +519,8 @@ export function calculateLifeSeasonTiming(params: {
     lucyCoreAdvice,
     lifeSeasonSynthesisMatrix,
     reflectiveQuestion: q
-      ? `‘${q}’에 대해 현재 ${curD.ganKr}${curD.zhiKr}대운(${ls.currentSeason})의 리듬 속에서 지금 밀어붙일 영역과 한 템포 고를 영역은 어디입니까?`
-      : `현재 ${curD.ganKr}${curD.zhiKr}대운 ${yearsInCurrentDaewoon}년 차(${gw.phase})를 지나며 가장 먼저 정리하거나 심화할 인생 과제는 무엇입니까?`,
+      ? `‘${q}’에 대해 현재 ${curD.ganKr}${curD.zhiKr}대운(${currentSeason})의 리듬 속에서 지금 밀어붙일 영역과 한 템포 고를 영역은 어디입니까?`
+      : `현재 ${curD.ganKr}${curD.zhiKr}대운 ${yearsInCurrentDaewoon}년 차(${gyowungiPhase})를 지나며 가장 먼저 정리하거나 심화할 인생 과제는 무엇입니까?`,
     interpretiveBoundary: '본 10년 대운·교운기 타이밍 리포트는 명리 대운수·세운 역법 상징에 기반한 정성적 시기 성찰 안내이며, 미래 사건의 단정적 예언이 아닙니다.',
   };
 }

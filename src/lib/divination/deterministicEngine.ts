@@ -1339,7 +1339,7 @@ try {
   const notImplementedCount = allTools.filter(t => t.status === 'not_implemented').length;
 
   const chronoTransitResult = calculateSupplement('chronoTransitResult', () => (calculateChronoTransit({ profile, targetDate: now, question })));
-  const lifeSeasonTimingResult = calculateSupplement('lifeSeasonTimingResult', () => (calculateLifeSeasonTiming({ profile, targetYear: now.getFullYear(), now, question })));
+  const lifeSeasonTimingResult = calculateSupplement('lifeSeasonTimingResult', () => (calculateLifeSeasonTiming({ profile, targetYear: now.getFullYear(), question })));
   const energeticPrescriptionResult = calculateSupplement('energeticPrescriptionResult', () => (calculateEnergeticPrescription({ profile, currentDate: now, question })));
   const contextualSynastryResult = calculateSupplement('contextualSynastryResult', () => (calculateContextualSynastry({ questionText: question, myProfile: profile, targetDate: now })));
   const instantDecisionResult = calculateSupplement('instantDecisionResult', () => (calculateInstantDecision({ instant: now, questionText: question })));
