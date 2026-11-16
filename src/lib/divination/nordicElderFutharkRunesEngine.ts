@@ -19,7 +19,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const NORDIC_RUNES_VERSION = 'LUCKEY-NORDIC-RUNES-v2.0.0';
+export const NORDIC_RUNES_VERSION = 'LUCKEY-NORDIC-RUNES-v2.1.0';
 
 export interface RuneInfo {
   runeNumber: number;          // 1 ~ 24
@@ -54,8 +54,11 @@ export interface NordicElderFutharkRunesReport {
   bindruneTalisman: BindruneTalisman;
   cosmicWyrdResonanceScore: number; // 0 ~ 100 위르드 운명 공명도
   yggdrasilNavigationGuidance: string;
+  reflectiveQuestion: string;
+  interpretiveBoundary: string;
   runesSynthesisMatrix?: {
     dominantTension: string;
+    secondaryRuneSummary: string;
     alignmentState: string;
     integratedAction: string;
   };
@@ -68,7 +71,7 @@ function formatRunesKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm}:00+09:00 (KST)`;
 }
 
 function describeRunesStage(score: number): string {
@@ -436,10 +439,23 @@ export function calculateNordicElderFutharkRunes(params: {
   const yggdrasilNavigationGuidance = `운명의 세 여신 노른이 짜놓은 그물(Wyrd)에서 과거의 뿌리는 [${urdPast.koreanName}], 지금 작동하는 파동은 [${verdandiPresent.koreanName}], 향후 열릴 가능성은 [${skuldFuture.koreanName}]입니다. ${verdandiPresent.uprightInterpretation} 다만 ${verdandiPresent.reversedWarning}`;
 
   const calculatedAtKst = formatRunesKstTimestamp(now);
+  const trimmedQ = params.question?.trim() || '';
+  let qHash = 0;
+  for (let i = 0; i < trimmedQ.length; i++) {
+    qHash = (qHash * 31 + trimmedQ.charCodeAt(i)) >>> 0;
+  }
+  const secondaryRune = ELDER_FUTHARK_LIST[(verdandiIndex + 7 + (qHash % 11)) % 24];
+  const reflectiveQuestion = trimmedQ
+    ? `"${trimmedQ}"라는 물음 앞에서 ${verdandiPresent.koreanName}의 파동과 ${secondaryRune.koreanName}의 교차 지점 중 지금 내가 가장 먼저 붙잡아야 할 실천은 무엇인가요?`
+    : `과거(${urdPast.koreanName})와 현재(${verdandiPresent.koreanName})가 만나는 지점에서 ${secondaryRune.koreanName}이 건네는 오늘의 과제는 무엇인가요?`;
+  const interpretiveBoundary =
+    '이 리포트는 고대 북유럽 24 엘더 푸사르크 룬과 노른의 위르드(Wyrd) 직조 상징을 바탕으로 삶의 흐름과 성찰의 관점을 비추는 참고용 비유이며, 확정된 미래 예언이나 의학·법률·재무적 판단을 대신하지 않습니다.';
+
   const runesSynthesisMatrix = {
     dominantTension: `${birthRune.koreanName} ↔ ${verdandiPresent.koreanName}`,
+    secondaryRuneSummary: `${secondaryRune.runeSymbol} ${secondaryRune.koreanName} (${secondaryRune.wyrdWeavingKeyword})`,
     alignmentState: describeRunesStage(cosmicWyrdResonanceScore),
-    integratedAction: `${verdandiPresent.uprightInterpretation}${params.question?.trim() ? ` [질문 맥락: ${params.question.trim()}]` : ''}`,
+    integratedAction: `${verdandiPresent.uprightInterpretation}${trimmedQ ? ` [질문 맥락: ${trimmedQ}]` : ''}`,
   };
 
   return {
@@ -455,6 +471,8 @@ export function calculateNordicElderFutharkRunes(params: {
     bindruneTalisman,
     cosmicWyrdResonanceScore,
     yggdrasilNavigationGuidance,
+    reflectiveQuestion,
+    interpretiveBoundary,
     runesSynthesisMatrix,
   };
 }
@@ -475,9 +493,13 @@ export function formatNordicElderFutharkRunesPrompt(report: NordicElderFutharkRu
   ];
   if (report.runesSynthesisMatrix) {
     lines.push(
-      `- **교차 매트릭스**: [핵심 긴장: ${report.runesSynthesisMatrix.dominantTension} | 조율 상태: ${report.runesSynthesisMatrix.alignmentState}]`,
+      `- **교차 매트릭스**: [핵심 긴장: ${report.runesSynthesisMatrix.dominantTension} | 보조 교차 룬: ${report.runesSynthesisMatrix.secondaryRuneSummary} | 조율 상태: ${report.runesSynthesisMatrix.alignmentState}]`,
       `- **통합 실천**: ${report.runesSynthesisMatrix.integratedAction}`,
     );
   }
+  lines.push(
+    `- **성찰 질문**: ${report.reflectiveQuestion}`,
+    `- **해석 경계**: ${report.interpretiveBoundary}`,
+  );
   return lines.join('\n');
 }

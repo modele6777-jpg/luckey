@@ -9,7 +9,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const NORSE_HAVAMAL_GALDR_ENGINE_VERSION = '2.0.0';
+export const NORSE_HAVAMAL_GALDR_ENGINE_VERSION = '2.1.0';
 
 export interface HavamalGaldrCharm {
   orderNumber: number;
@@ -32,8 +32,11 @@ export interface NorseHavamalEighteenGaldrReport {
   valkyrieShieldIntegrity: number; // 0 ~ 100 발키리 영혼 방패 온전성
   fateWyrdResilience: number; // 0 ~ 100 우르드 운명 극복 복원력
   dominantGaldrCharm: HavamalGaldrCharm; // 현재 가장 강하게 공명하는 18대 게알드르
+  secondaryGaldrCharm: HavamalGaldrCharm; // 보조 교차 공명 게알드르
   havamalElderGuidance: string; // 하바말 고대 지혜 잠언
   norseRunicGaldrChant: string; // 게알드르 수호 창팅
+  reflectiveQuestion: string;
+  interpretiveBoundary: string;
   havamalSynthesisMatrix?: {
     dominantTension: string;
     alignmentState: string;
@@ -48,7 +51,7 @@ function formatHavamalKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm}:00+09:00 (KST)`;
 }
 
 function describeHavamalStage(score: number): string {
@@ -144,6 +147,7 @@ export function calculateNorseHavamalEighteenGaldr(
 
   charms.sort((a, b) => b.resonanceDegree - a.resonanceDegree);
   const dominantGaldrCharm = charms[0];
+  const secondaryGaldrCharm = charms[1] ?? charms[0];
 
   const yggdrasilWisdomDepth = 68 + ((hash ^ (day * 13)) % 30);
   const odinRuneMasteryIndex = 64 + (((hash >> 2) ^ (hours * 19)) % 34);
@@ -157,10 +161,17 @@ export function calculateNorseHavamalEighteenGaldr(
   const composite = Math.round(
     (yggdrasilWisdomDepth + odinRuneMasteryIndex + valkyrieShieldIntegrity + fateWyrdResilience) / 4
   );
+  const trimmedQ = query?.trim() || '';
+  const reflectiveQuestion = trimmedQ
+    ? `"${trimmedQ}"라는 물음 앞에서 ${dominantGaldrCharm.norseTitle}(${dominantGaldrCharm.magicalDomain})과 ${secondaryGaldrCharm.norseTitle}(${secondaryGaldrCharm.magicalDomain}) 중 지금 내 마음을 지키는 데 더 필요한 주문의 태도는 무엇인가요?`
+    : `${dominantGaldrCharm.norseTitle}의 의지와 ${secondaryGaldrCharm.norseTitle}의 지혜가 함께 가리키는 오늘의 내적 수호 기준은 무엇인가요?`;
+  const interpretiveBoundary =
+    '이 리포트는 아이슬란드 《고에다》 〈하바말〉의 18대 게알드르 룬 비전 상징을 바탕으로 내면의 회복력과 의지를 비추는 성찰용 비유이며, 확정된 미래 예언이나 의학·법률·재무적 판단을 대신하지 않습니다.';
+
   const havamalSynthesisMatrix = {
-    dominantTension: `${dominantGaldrCharm.norseTitle} (${dominantGaldrCharm.magicalDomain}) ↔ ${dominantGaldrCharm.runeName}`,
+    dominantTension: `${dominantGaldrCharm.norseTitle} (${dominantGaldrCharm.magicalDomain}) ↔ ${secondaryGaldrCharm.norseTitle} (${secondaryGaldrCharm.runeName})`,
     alignmentState: describeHavamalStage(composite),
-    integratedAction: `${dominantGaldrCharm.spiritualMastery}${query?.trim() ? ` [질문 맥락: ${query.trim()}]` : ''}`,
+    integratedAction: `${dominantGaldrCharm.spiritualMastery}${trimmedQ ? ` [질문 맥락: ${trimmedQ}]` : ''}`,
   };
 
   return {
@@ -172,8 +183,11 @@ export function calculateNorseHavamalEighteenGaldr(
     valkyrieShieldIntegrity,
     fateWyrdResilience,
     dominantGaldrCharm,
+    secondaryGaldrCharm,
     havamalElderGuidance,
     norseRunicGaldrChant,
+    reflectiveQuestion,
+    interpretiveBoundary,
     havamalSynthesisMatrix,
   };
 }
@@ -186,6 +200,7 @@ export function formatNorseHavamalEighteenGaldrPrompt(report: NorseHavamalEighte
     `### ᚱ 고에다 하바말 오딘의 18대 게알드르 룬 비전 주문 실측 데이터 (v${report.engineVersion})`,
     `- **연산 시각**: ${report.calculatedAtKst} | **비전 주문 국면**: ${describeHavamalStage(composite)}`,
     `- **주재 게알드르 주문**: ${report.dominantGaldrCharm.charmName} (${report.dominantGaldrCharm.norseTitle})`,
+    `- **보조 공명 주문**: ${report.secondaryGaldrCharm.charmName} (${report.secondaryGaldrCharm.norseTitle})`,
     `- **상응 룬 문자**: ${report.dominantGaldrCharm.primaryRune} - ${report.dominantGaldrCharm.runeName}`,
     `- **비전 마법 영역**: ${report.dominantGaldrCharm.magicalDomain}`,
     `- **영적 달성 핵심**: ${report.dominantGaldrCharm.spiritualMastery}`,
@@ -198,6 +213,10 @@ export function formatNorseHavamalEighteenGaldrPrompt(report: NorseHavamalEighte
       `- **통합 실천**: ${report.havamalSynthesisMatrix.integratedAction}`,
     );
   }
+  lines.push(
+    `- **성찰 질문**: ${report.reflectiveQuestion}`,
+    `- **해석 경계**: ${report.interpretiveBoundary}`,
+  );
   return lines.join('\n');
 }
 

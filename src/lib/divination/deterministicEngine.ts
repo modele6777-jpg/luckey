@@ -2069,7 +2069,7 @@ try {
   // 81. 북유럽 24 엘더 푸사르크 룬 문자 & 노른 운명 직조 엔진
   const nordicRunesResult = calculateSupplement('nordicRunesResult', () => ((() => {
     try {
-      return calculateNordicElderFutharkRunes({ profile, targetDate: now });
+      return calculateNordicElderFutharkRunes({ profile, targetDate: now, question });
     } catch (_) {
       return null;
     }
@@ -2798,7 +2798,7 @@ try {
   // 163. 고대 노르웨이 고에다 하바말 오딘의 18대 게알드르 룬 비전 주문 엔진
   const norseHavamalEighteenGaldrResult = calculateSupplement('norseHavamalEighteenGaldrResult', () => ((() => {
     try {
-      return calculateNorseHavamalEighteenGaldr(profile, now);
+      return calculateNorseHavamalEighteenGaldr(profile, now, question);
     } catch (_) {
       return null;
     }
@@ -4795,7 +4795,7 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'egyptianDecans', nameKo: '이집트 36데칸', icon: '🏺', category: 'deep_master', summary: '덴데라 36데칸 항성 수호신과 원소·부적 상징으로 영혼의 항해 방향을 비추는 관점' },
   { key: 'sufiLataif', nameKo: '수피 7라타이프', icon: '🕌', category: 'deep_master' },
   { key: 'mayanTzolkin', nameKo: '마야 촐킨 260일', icon: '☀️', category: 'deep_master', summary: '고대 마야 촐킨(Tzolk’in) 260일 신성력의 20 나왈(태양 문양)과 13 은하 톤으로 본명 킨과 오늘의 킨이 만나는 파동적 사명을 비춥니다.' },
-  { key: 'nordicRunes', nameKo: '북유럽 24룬 노른직조', icon: 'ᚱ', category: 'deep_master' },
+  { key: 'nordicRunes', nameKo: '북유럽 24룬 노른직조', icon: 'ᚱ', category: 'deep_master', summary: '24 엘더 푸사르크 룬과 노른 세 여신(우르드·베르단디·스쿨드)의 위르드 직조 및 바인드룬 수호 상징으로 흐름을 비추는 관점' },
   { key: 'delphicMaxims', nameKo: '그리스 델포이 147잠언', icon: '🏛️', category: 'deep_master', summary: '아폴론 신전 147대 잠언으로 자아성찰(Gnothi Seauton)·중용(Meden Agan)·신의(Engua)의 균형을 비추는 관점' },
   { key: 'ayurvedicTridosha', nameKo: '인도 아유르베다 도샤', icon: '🌿', category: 'deep_master', summary: '바타·피타·카파 체질과 KST 생체시계 리듬을 맞춰 몸과 마음의 프라나 균형을 돌봅니다.' },
   { key: 'hawaiianHuna', nameKo: '호오포노포노 7원리', icon: '🌺', category: 'deep_master', summary: '고대 하와이 후나(Huna) 7대 원리와 호오포노포노 4대 정화 진언으로 내면의 기억과 감정의 매듭을 씻어내고 포노(Pono) 균형을 회복합니다.' },
@@ -4833,7 +4833,7 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'slavicMokoshFateWeaving', nameKo: '슬라브 모코시 운명실타래', icon: '🧶', category: 'deep_master' },
   { key: 'sumerianGilgameshTrials', nameKo: '길가메시 서사시 12관문', icon: '🏛️', category: 'deep_master' },
   { key: 'hawaiianKahunaThreeSelves', nameKo: '하와이 카후나 3대 자아 마나', icon: '🌺', category: 'deep_master', summary: '하와이 카후나 전통의 우니히필리(내면아이)·우하네(의식)·아우마쿠아(초의식) 3대 자아를 정렬하고 마나(Mana) 호흡과 카라(Kala) 해방 리추얼을 안내합니다.' },
-  { key: 'nordicYggdrasilRealms', nameKo: '북유럽 위그드라실 9대 영역', icon: '🌳', category: 'deep_master' },
+  { key: 'nordicYggdrasilRealms', nameKo: '북유럽 위그드라실 9대 영역', icon: '🌳', category: 'deep_master', summary: '세계수 위그드라실 9대 영역과 비프로스트 다리 균형으로 주도 영역·그림자 긴장·행동 지침을 비추는 관점' },
   { key: 'egyptianMaatFeatherHeart', nameKo: '이집트 마아트 심장무게', icon: '🪶', category: 'deep_master', summary: '마아트 진리의 깃털과 심장(Ib) 저울질 상징으로 양심의 명료함과 마음의 짐 덜기를 비추는 관점' },
   { key: 'persianMithraicSpheres', nameKo: '페르시아 미트라 7천구', icon: '☀️', category: 'deep_master' },
   { key: 'orpheicMysteries', nameKo: '그리스 오르페우스 므네모시네', icon: '🎶', category: 'deep_master' },
@@ -4876,7 +4876,7 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'aztecTonalamatl', nameKo: '아즈텍 토날포왈리 20대 일진 성력', icon: '☀️', category: 'deep_master' },
   { key: 'mongolianTengriHiimori', nameKo: '몽골 텡그리즘 풍마 히모리 영혼', icon: '🐎', category: 'deep_master', summary: '몽골 텡그리즘의 영원한 푸른 하늘·에투겐 대지모신과 히모리(바람의 말)·쉴드 영혼의 기백으로 장애를 돌파하는 내면의 힘을 비춥니다.' },
   { key: 'gaelicWheelFireFestivals', nameKo: '게일 4대 화제 축제 휠 오브 더 이어', icon: '🔥', category: 'deep_master', summary: '삼하인·임볼크·벨테인·루나사 4대 화제 축제와 콜리니 역법으로 계절 순환·정화·결실을 비추는 관점' },
-  { key: 'norseHavamalEighteenGaldr', nameKo: '하바말 오딘 18대 게알드르 룬 비전', icon: 'ᚱ', category: 'deep_master' },
+  { key: 'norseHavamalEighteenGaldr', nameKo: '하바말 오딘 18대 게알드르 룬 비전', icon: 'ᚱ', category: 'deep_master', summary: '《고에다》 〈하바말〉 오딘의 18대 게알드르 룬 주문으로 치유·수호·결박 해제의 내적 의지를 비추는 관점' },
   { key: 'ibnArabiWahdatAlWujud', nameKo: '이븐 아라비 존재의 단일성 심장 영지', icon: '🪞', category: 'deep_master' },
   { key: 'chonggamnokTenSanctuaries', nameKo: '정감록 10승지 영맥 피난처', icon: '⛰️', category: 'deep_master', summary: '《정감록》 감결의 궁궁을을과 10승지 영맥 비유로 세파 속에서도 내면의 중심과 평온한 안식처를 지키는 성찰을 이끕니다.' },
   { key: 'balineseTriHitaKarana', nameKo: '발리 트리 히타 카라나 3대 조화', icon: '🌺', category: 'deep_master' },

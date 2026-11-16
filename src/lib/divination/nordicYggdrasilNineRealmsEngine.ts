@@ -5,7 +5,7 @@
  * 비프로스트(Bifrost) 의식의 다리를 현대인의 라이프스타일 에너지 축 및 결단 체계에 연동합니다.
  */
 
-export const NORDIC_YGGDRASIL_NINE_REALMS_ENGINE_VERSION = 'LUCKEY-YGGDRASIL-NINE-REALMS-v2.0.0';
+export const NORDIC_YGGDRASIL_NINE_REALMS_ENGINE_VERSION = 'LUCKEY-YGGDRASIL-NINE-REALMS-v2.1.0';
 
 export interface NordicRealm {
   realmId: number;
@@ -24,11 +24,14 @@ export interface YggdrasilRealmsReport {
   calculatedAt: string;
   calculatedAtKst: string;
   dominantRealm: NordicRealm;
+  secondaryRealm: NordicRealm;
   shadowTensionRealm: NordicRealm;
   yggdrasilAxisAlignmentScore: number; // 0 ~ 100 (세계수 중심축 정렬도)
   bifrostBridgeClearance: number; // 0 ~ 100 (의식과 무의식을 잇는 무지개 다리 통과력)
   runeAttunementKey: string;
   masterCosmicPrescription: string;
+  reflectiveQuestion: string;
+  interpretiveBoundary: string;
   yggdrasilSynthesisMatrix?: {
     dominantTension: string;
     alignmentState: string;
@@ -43,7 +46,7 @@ function formatYggdrasilKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm}:00+09:00 (KST)`;
 }
 
 function describeYggdrasilStage(score: number): string {
@@ -174,9 +177,11 @@ export function calculateNordicYggdrasilRealms(params: {
   seed += now.getDate() * 23 + now.getMonth() * 67;
 
   const dominantIndex = Math.abs(seed) % NINE_REALMS.length;
+  const secondaryIndex = (dominantIndex + 2 + (Math.abs(seed >> 2) % 3)) % NINE_REALMS.length;
   const shadowIndex = (dominantIndex + 4 + (Math.abs(seed >> 3) % 2)) % NINE_REALMS.length;
 
   const dominantRealm = NINE_REALMS[dominantIndex];
+  const secondaryRealm = NINE_REALMS[secondaryIndex];
   const shadowTensionRealm = NINE_REALMS[shadowIndex];
 
   const yggdrasilAxisAlignmentScore = 60 + (Math.abs(seed * 5) % 39);
@@ -187,10 +192,17 @@ export function calculateNordicYggdrasilRealms(params: {
 
   const calculatedAtKst = formatYggdrasilKstTimestamp(now);
   const composite = Math.round((yggdrasilAxisAlignmentScore + bifrostBridgeClearance) / 2);
+  const trimmedQ = question.trim();
+  const reflectiveQuestion = trimmedQ
+    ? `"${trimmedQ}"라는 상황에서 주도 영역(${dominantRealm.nameEn})의 비전과 보조 영역(${secondaryRealm.nameEn})의 힘이 만나는 지점에 어떤 선택이 필요한가요?`
+    : `지금 내 일상은 [${dominantRealm.nameEn}]의 이상과 [${secondaryRealm.nameEn}]의 실천 중 어느 쪽에서 균형을 더 필요로 하나요?`;
+  const interpretiveBoundary =
+    '이 리포트는 고대 북유럽 세계수 위그드라실 9대 영역의 상징 체계를 통해 내면의 균형과 행동 방향을 성찰하는 참고용 비유이며, 확정된 미래 예언이나 의학·법률·재무적 결정을 대체하지 않습니다.';
+
   const yggdrasilSynthesisMatrix = {
     dominantTension: `${dominantRealm.nameKo} ↔ ${shadowTensionRealm.nameKo}`,
     alignmentState: describeYggdrasilStage(composite),
-    integratedAction: `${dominantRealm.realmActionRule}${question.trim() ? ` [질문 맥락: ${question.trim()}]` : ''}`,
+    integratedAction: `${dominantRealm.realmActionRule}${trimmedQ ? ` [질문 맥락: ${trimmedQ}]` : ''}`,
   };
 
   return {
@@ -198,17 +210,21 @@ export function calculateNordicYggdrasilRealms(params: {
     calculatedAt: now.toISOString(),
     calculatedAtKst,
     dominantRealm,
+    secondaryRealm,
     shadowTensionRealm,
     yggdrasilAxisAlignmentScore,
     bifrostBridgeClearance,
     runeAttunementKey,
     masterCosmicPrescription,
+    reflectiveQuestion,
+    interpretiveBoundary,
     yggdrasilSynthesisMatrix,
   };
 }
 
 export function formatNordicYggdrasilRealmsPrompt(report: YggdrasilRealmsReport): string {
   const d = report.dominantRealm;
+  const sec = report.secondaryRealm;
   const s = report.shadowTensionRealm;
   const composite = Math.round((report.yggdrasilAxisAlignmentScore + report.bifrostBridgeClearance) / 2);
   const lines = [
@@ -219,6 +235,7 @@ export function formatNordicYggdrasilRealmsPrompt(report: YggdrasilRealmsReport)
     `  * 원형적 축복: ${d.archetypalGift}`,
     `  * 행동 지침: ${d.realmActionRule}`,
     `  * 주관 룬: ${d.rulingRune}`,
+    `- **보조 교차 영역 (Secondary Realm)**: ${sec.nameKo} (${sec.nameEn}, ${sec.planeLevel}) — ${sec.archetypalGift}`,
     `- **그림자 긴장 영역 (Shadow Realm)**: ${s.nameKo} (${s.nameEn})`,
     `  * 주의할 그림자 도전: ${s.shadowChallenge}`,
     `- **주요 룬 공명 조율 키**: ${report.runeAttunementKey}`,
@@ -230,5 +247,9 @@ export function formatNordicYggdrasilRealmsPrompt(report: YggdrasilRealmsReport)
       `- **통합 실천**: ${report.yggdrasilSynthesisMatrix.integratedAction}`,
     );
   }
+  lines.push(
+    `- **성찰 질문**: ${report.reflectiveQuestion}`,
+    `- **해석 경계**: ${report.interpretiveBoundary}`,
+  );
   return lines.join('\n');
 }
