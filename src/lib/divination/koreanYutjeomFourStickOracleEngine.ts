@@ -14,7 +14,13 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const KOREAN_YUTJEOM_FOUR_STICK_VERSION = 'LUCKEY-KOREAN-YUTJEOM-FOUR-STICKS-v2.1.0';
+export const KOREAN_YUTJEOM_FOUR_STICK_VERSION = 'LUCKEY-KOREAN-YUTJEOM-FOUR-STICKS-v2.2.0';
+
+function getYutKstString(now?: Date): string {
+  const base = now ?? new Date();
+  const kst = new Date(base.getTime() + 9 * 3600 * 1000);
+  return `${kst.toISOString().slice(0, 19)}+09:00`;
+}
 
 export type YutQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -57,6 +63,11 @@ export interface KoreanYutjeomFourStickResult {
   yutjeomComprehensiveGuidance: {
     guidanceTitle: string;
     folkCounsel: string;
+  };
+  yutjeomSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
   };
 }
 
@@ -261,9 +272,16 @@ export function calculateKoreanYutjeomFourStickOracle(
   const interpretiveBoundary =
     '한국 윷점의 상징은 전승마다 해석이 갈리는 민속 자료이므로 미래를 단정하거나 길흉·확률을 계산하는 근거로 쓰지 않습니다. 이 관점은 실제 윷 던지기를 대신하지 않으며, 앱이 기록한 실제 추첨 없이 던졌다고 말하지 않습니다.';
 
+  const trimmedQ = (question ?? '').trim();
+  const yutjeomSynthesisMatrix = {
+    dominantTension: `${activeStanceTheme.stanceNameKo} ↔ ${situationalStanceAudit.stanceNameKo}`,
+    alignmentState: `${temporalYutRhythm.yutFocus} · ${temporalYutRhythm.stanceClarityStage}`,
+    integratedAction: `${situationalStanceAudit.firstStepAdvice}${trimmedQ ? ` [질문 맥락: ${trimmedQ}]` : ''}`,
+  };
+
   return {
     engineVersion: KOREAN_YUTJEOM_FOUR_STICK_VERSION,
-    calculatedAtKst: now.toISOString(),
+    calculatedAtKst: getYutKstString(now),
     questionTopic: topic,
     actualCastRecorded: false,
     activeStanceTheme,
@@ -280,12 +298,16 @@ export function calculateKoreanYutjeomFourStickOracle(
         `${activeStanceTheme.focusAdvice} 그리고 ${situationalStanceAudit.questionMapping} ` +
         `오늘의 리듬은 ${temporalYutRhythm.kstWindow}의 결이므로, ${temporalYutRhythm.rhythmGuidance}`,
     },
+    yutjeomSynthesisMatrix,
   };
 }
 
 export function formatKoreanYutjeomFourStickPrompt(res: KoreanYutjeomFourStickResult): string {
+  const matrixLine = res.yutjeomSynthesisMatrix
+    ? `- 윷점 교차 매트릭스: 핵심 긴장(${res.yutjeomSynthesisMatrix.dominantTension}) · 조율 상태(${res.yutjeomSynthesisMatrix.alignmentState}) · 통합 실천(${res.yutjeomSynthesisMatrix.integratedAction})`
+    : '';
   return [
-    `【한국 윷점(四籌占) 다섯 결 성찰 지표】`,
+    `【한국 윷점(四籌占) 다섯 결 성찰 지표 (${res.engineVersion} | ${res.calculatedAtKst})】`,
     `- 실제 윷 추첨 기록: 이 엔진은 던지기를 대신하지 않음(앱 기록 없음)`,
     `- 질문 맥락 초점: ${res.questionTopic}`,
     `- 오늘 비추는 결: ${res.activeStanceTheme.stanceNameKo} [${res.activeStanceTheme.stanceNameHanja}]`,
@@ -299,5 +321,6 @@ export function formatKoreanYutjeomFourStickPrompt(res: KoreanYutjeomFourStickRe
     `- 성찰 질문: ${res.reflectiveQuestion}`,
     `- 종합 권면: ${res.yutjeomComprehensiveGuidance.folkCounsel}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
-  ].join('\n');
+    matrixLine,
+  ].filter(Boolean).join('\n');
 }

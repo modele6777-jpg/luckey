@@ -10,7 +10,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const WONHYO_HWAJAENG_VERSION = '2.1.0';
+export const WONHYO_HWAJAENG_VERSION = '2.2.0';
 
 export interface WonhyoSituationalHwajaeng {
   themeKey: 'existence_emptiness' | 'truth_delusion' | 'assertion_refutation' | 'source_return' | 'fearless_freedom';
@@ -57,6 +57,11 @@ export interface WonhyoHwajaengReport {
   temporalOneMindRhythm: WonhyoTemporalOneMindRhythm;
   dialecticHarmonizationMatrix: WonhyoDialecticHarmonization;
   wonhyoMasterDharmaWord: string;
+  wonhyoSynthesisMatrix?: {
+    dominantTension: string;
+    alignmentState: string;
+    integratedAction: string;
+  };
 }
 
 function djb2Hash(str: string): number {
@@ -287,6 +292,12 @@ export function calculateWonhyoHwajaeng(
 
   const kst = new Date(now.getTime() + 9 * 3600 * 1000);
   const calculatedAtKst = `${kst.toISOString().slice(0, 19)}+09:00`;
+  const trimmedQ = (question || '').trim();
+  const wonhyoSynthesisMatrix = {
+    dominantTension: `${situational.themeLabelKo} ↔ ${activeHwajaengGate.gateNameKo}`,
+    alignmentState: `${temporalOneMindRhythm.timeWindowKo} · ${temporalOneMindRhythm.seasonKo}`,
+    integratedAction: `${muAePracticeDirective}${trimmedQ ? ` [질문 맥락: ${trimmedQ}]` : ''}`,
+  };
 
   return {
     engineVersion: WONHYO_HWAJAENG_VERSION,
@@ -307,6 +318,7 @@ export function calculateWonhyoHwajaeng(
       muAePracticeDirective,
     },
     wonhyoMasterDharmaWord,
+    wonhyoSynthesisMatrix,
   };
 }
 
@@ -319,6 +331,9 @@ function describeWonhyoOneMindStage(score: number): string {
 export function formatWonhyoHwajaengPrompt(report: WonhyoHwajaengReport): string {
   const avgCore = Math.round((report.oneMindTwoGatesBalance + report.hwajaengContradictionResolution + report.wonhyoMuAeFreedomScore) / 3);
   const jinYeoDominant = report.temporalOneMindRhythm.jinYeoWeight >= report.temporalOneMindRhythm.saengMyeolWeight;
+  const matrixLine = report.wonhyoSynthesisMatrix
+    ? `\n- **원효 화쟁 교차 매트릭스**: 핵심 긴장(${report.wonhyoSynthesisMatrix.dominantTension}) · 조율 상태(${report.wonhyoSynthesisMatrix.alignmentState}) · 통합 실천(${report.wonhyoSynthesisMatrix.integratedAction})`
+    : '';
   return `### 신라 원효대사 《십문화쟁론》 일심이문 & 화쟁 원융회통 엔진 (v${report.engineVersion})
 - **연산 시각**: ${report.calculatedAtKst}
 - **일심 화쟁 위상**: ${describeWonhyoOneMindStage(avgCore)}
@@ -333,5 +348,5 @@ export function formatWonhyoHwajaengPrompt(report: WonhyoHwajaengReport): string
 - **원융회통 무애행 지침**: ${report.dialecticHarmonizationMatrix.muAePracticeDirective}
 - **원효 성사 법문 처방**:
   - "${report.wonhyoMasterDharmaWord}"
-- **해석 경계**: 본 리포트는 원효대사의 일심이문·화쟁 사상에 기반한 정성적 성찰 안내이며, 절대적 시비 판정이 아닙니다.`;
+- **해석 경계**: 본 리포트는 원효대사의 일심이문·화쟁 사상에 기반한 정성적 성찰 안내이며, 절대적 시비 판정이 아닙니다.${matrixLine}`;
 }
