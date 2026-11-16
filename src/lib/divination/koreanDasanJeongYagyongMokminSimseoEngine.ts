@@ -16,7 +16,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const KOREAN_DASAN_MOKMIN_SIMSEO_VERSION = 'LUCKEY-KOREAN-DASAN-MOKMIN-SIMSEO-v2.0.0';
+export const KOREAN_DASAN_MOKMIN_SIMSEO_VERSION = 'LUCKEY-KOREAN-DASAN-MOKMIN-SIMSEO-v2.1.0';
 
 export interface DasanTheme {
   themeKey: string;
@@ -46,6 +46,9 @@ export interface DasanMokminSimseoResult {
   // 세부 체계
   activeDasanTheme: DasanTheme;
   focalDasanAphorism: DasanAphorism;
+  secondaryDasanAphorism: DasanAphorism;
+  reflectiveQuestion: string;
+  interpretiveBoundary: string;
   dasanPersonalCounsel: {
     counselTitle: string;
     philosophicalGuidance: string;
@@ -64,7 +67,7 @@ function formatDasanKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 KST`;
 }
 
 function describeDasanStage(score: number): string {
@@ -177,9 +180,16 @@ export function calculateDasanMokminSimseo(
 
   const themeIndex = (absHash >> 4) % DASAN_THEMES.length;
   const aphorismIndex = (absHash >> 7) % DASAN_APHORISMS.length;
+  const secondaryAphorismIndex = (aphorismIndex + 1 + ((absHash >> 10) % (DASAN_APHORISMS.length - 1))) % DASAN_APHORISMS.length;
 
   const activeDasanTheme = DASAN_THEMES[themeIndex];
   const focalDasanAphorism = DASAN_APHORISMS[aphorismIndex];
+  const secondaryDasanAphorism = DASAN_APHORISMS[secondaryAphorismIndex];
+  const trimmedQuery = query?.trim();
+  const reflectiveQuestion = trimmedQuery
+    ? `'${trimmedQuery}'에서 체면이나 헛된 명분 대신 사실에 근거해 지금 바로 실행할 수 있는 가장 실질적인 한 가지는 무엇인가요?`
+    : `지금 내 선택 앞에서 겨울 살얼음을 건너듯 신중하게 한 번 더 사실을 확인하고 삼가야 할 부분은 무엇인가요?`;
+  const interpretiveBoundary = '다산 정약용 목민심서·실사구시 관점은 미래의 길흉 예단이 아니라, 신중한 절제와 사실 기반 실행을 비추는 실학 성찰 렌즈입니다.';
 
   const counselTitle = `다산 정약용 목민 실학 철학: ${activeDasanTheme.themeTitleKo}`;
   const philosophicalGuidance = `다산 정약용 선생의 실학 정신은 여유당의 신독(愼獨)과 율기청렴의 자세로 사욕을 이기고 실사구시의 지혜를 펼치도록 이끕니다. ` +
@@ -212,6 +222,9 @@ export function calculateDasanMokminSimseo(
     heumheumMeticulousTruthseekingScore,
     activeDasanTheme,
     focalDasanAphorism,
+    secondaryDasanAphorism,
+    reflectiveQuestion,
+    interpretiveBoundary,
     dasanPersonalCounsel: {
       counselTitle,
       philosophicalGuidance,
@@ -237,9 +250,12 @@ export function formatDasanMokminSimseoPrompt(res: DasanMokminSimseoResult): str
     `- 실학적 통찰: ${res.activeDasanTheme.silhakInsight}`,
     `- 목민 처세 조언: ${res.activeDasanTheme.mokminCounsel}`,
     `- 핵심 아포리즘: "${res.focalDasanAphorism.aphorismKo}"`,
+    `- 보조 교차 아포리즘: "${res.secondaryDasanAphorism.aphorismKo}" [${res.secondaryDasanAphorism.silhakDimension}]`,
     `- 한자 원문: "${res.focalDasanAphorism.aphorismHanja}" [${res.focalDasanAphorism.silhakDimension}]`,
     `- 실천적 행동 지침: ${res.focalDasanAphorism.practicalAction}`,
     `- 통합 실학 처방: ${res.dasanPersonalCounsel.philosophicalGuidance}`,
+    `- 성찰 질문: ${res.reflectiveQuestion}`,
+    `- 해석 경계: ${res.interpretiveBoundary}`,
   ];
   if (res.dasanSynthesisMatrix) {
     lines.push(
