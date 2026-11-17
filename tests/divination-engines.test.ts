@@ -10636,3 +10636,29 @@ test('Dewey · Emerson · Whitman v2.2: KST, reflectiveQuestion, and interpretiv
   const whPrompt = formatAmericanWaltWhitmanLeavesOfGrassPrompt(wh);
   assert.ok(whPrompt.includes('KST') && whPrompt.includes('성찰 질문') && whPrompt.includes('해석 경계'));
 });
+
+test('Ancestral · Baopuzi · Mozi v2.3: KST, reflectiveQuestion, and interpretiveBoundary', () => {
+  const now = new Date('2026-11-17T19:40:00Z');
+  const query = '오래된 피로와 갈등을 내려놓고 새 출발을 하고 싶어요';
+
+  const an = calculateAncestralEpigeneticKarma({ profile, targetDate: now, question: query });
+  assert.equal(an.engineVersion, ANCESTRAL_KARMA_VERSION);
+  assert.match(an.calculatedAtKst, /KST/);
+  assert.ok(an.reflectiveQuestion.includes(query));
+  const anPrompt = formatAncestralEpigeneticKarmaPrompt(an);
+  assert.ok(anPrompt.includes('KST') && anPrompt.includes('성찰 질문') && anPrompt.includes('해석 경계'));
+
+  const bp = calculateBaopuziElixirs({ profile, question: query, now });
+  assert.equal(bp.engineVersion, BAOPUZI_ELIXIRS_ENGINE_VERSION);
+  assert.match(bp.calculatedAtKst, /\+09:00/);
+  assert.ok(bp.reflectiveQuestion.includes(query));
+  const bpPrompt = formatBaopuziElixirsPrompt(bp);
+  assert.ok(bpPrompt.includes('+09:00') && bpPrompt.includes('성찰 질문') && bpPrompt.includes('해석 경계'));
+
+  const mz = calculateMoziGyeomAe(profile, query, now);
+  assert.equal(mz.engineVersion, MOZI_GYEOM_AE_VERSION);
+  assert.match(mz.calculatedAtKst, /KST/);
+  assert.ok(mz.reflectiveQuestion.includes(query));
+  const mzPrompt = formatMoziGyeomAePrompt(mz);
+  assert.ok(mzPrompt.includes('KST') && mzPrompt.includes('성찰 질문') && mzPrompt.includes('해석 경계'));
+});
