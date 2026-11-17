@@ -5,7 +5,7 @@
  * 3대 자아(우니히필리·우하네·아우마쿠아)의 삼위일체 정렬과 신성한 생명 에너지 마나(Mana) 순환을 연동합니다.
  */
 
-export const HAWAIIAN_KAHUNA_THREE_SELVES_ENGINE_VERSION = 'LUCKEY-HAWAIIAN-KAHUNA-v2.1.0';
+export const HAWAIIAN_KAHUNA_THREE_SELVES_ENGINE_VERSION = 'LUCKEY-HAWAIIAN-KAHUNA-v2.2.0';
 
 export interface KahunaSelfState {
   selfType: '우니히필리 (Unihipili - 잠재의식/내면아이)' | '우하네 (Uhane - 의식/이성적 자아)' | '아우마쿠아 (Aumakua - 초의식/신성한 고차원 자아)';
@@ -45,6 +45,8 @@ export interface KahunaManaReport {
     sacredBoundary: string;
     reflectiveQuestion: string;
   };
+  ritualAction: string;
+  reflectionFocus: string;
 }
 
 export function calculateHawaiianKahunaThreeSelves(params: {
@@ -200,6 +202,9 @@ export function calculateHawaiianKahunaThreeSelves(params: {
       : `지금 내 안의 내면 아이(우니히필리)가 가장 듣고 싶어 하는 안심의 한마디는 무엇인가요? (${currentManaPikoState})`,
   };
 
+  const ritualAction = `[${currentManaPikoState}] 오늘 4-4-4 하(Ha) 호흡을 4회 반복한 뒤 내면 아이(우니히필리)에게 다정한 안심의 한마디를 건네세요.`;
+  const reflectionFocus = kahunaSynthesisMatrix.reflectiveQuestion;
+
   return {
     engineVersion: HAWAIIAN_KAHUNA_THREE_SELVES_ENGINE_VERSION,
     calculatedAt: now.toISOString(),
@@ -225,6 +230,8 @@ export function calculateHawaiianKahunaThreeSelves(params: {
       pikoTimingNote,
     },
     kahunaSynthesisMatrix,
+    ritualAction,
+    reflectionFocus,
   };
 }
 
@@ -239,6 +246,7 @@ export function formatHawaiianKahunaThreeSelvesPrompt(report: KahunaManaReport):
 - **시공간 리듬**: ${report.temporalKahunaRhythm.kahunaManaWindow} · ${report.temporalKahunaRhythm.seasonalTradewindPhase}
 - **카라(Kala) 해방 리추얼**: ${report.kalaCleansingRitual}
 - **마나 충전 하(Ha) 호흡법**: ${report.haBreathingPrescription}
-- **교차 매트릭스**: ${report.kahunaSynthesisMatrix.coreMandate} | 경계: ${report.kahunaSynthesisMatrix.sacredBoundary} | 성찰 질문: "${report.kahunaSynthesisMatrix.reflectiveQuestion}"
+- **실천 의례(Ritual Action)**: ${report.ritualAction}
+- **교차 매트릭스**: ${report.kahunaSynthesisMatrix.coreMandate} | 경계: ${report.kahunaSynthesisMatrix.sacredBoundary} | 성찰 질문: "${report.reflectionFocus}"
 - **해석 경계**: ${report.interpretiveBoundary}`;
 }
