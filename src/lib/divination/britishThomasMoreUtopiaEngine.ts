@@ -13,7 +13,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const BRITISH_THOMAS_MORE_UTOPIA_VERSION = 'LUCKEY-THOMAS-MORE-UTOPIA-v2.0.0';
+export const BRITISH_THOMAS_MORE_UTOPIA_VERSION = 'LUCKEY-THOMAS-MORE-UTOPIA-v2.1.0';
 
 export type MoreQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -58,6 +58,7 @@ export interface BritishThomasMoreUtopiaResult {
   ritualAction: string;
   reflectionFocus: string;
   boundaryNotice: string;
+  interpretiveBoundary: string;
   moreSynthesisMatrix: {
     coreInsight: string;
     recommendedAction: string;
@@ -290,6 +291,7 @@ export function calculateBritishThomasMoreUtopia(
     ritualAction: topicGuidance.ritualAction,
     reflectionFocus: topicGuidance.reflectionFocus,
     boundaryNotice,
+    interpretiveBoundary: boundaryNotice,
     moreSynthesisMatrix,
     moreComprehensiveGuidance: {
       guidanceTitle,
