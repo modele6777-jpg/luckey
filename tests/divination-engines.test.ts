@@ -10805,3 +10805,29 @@ test('Buber v2.2 · Rilke v2.2 · Frankl v2.4: reflectiveQuestion & KST prompt o
   const frPrompt = formatViktorFranklLogotherapyPrompt(fr);
   assert.ok(frPrompt.includes('+09:00') && frPrompt.includes('성찰 질문') && frPrompt.includes('해석 경계'));
 });
+
+test('Wittgenstein v2.2 · Ayurveda v2.4 · Aztec v2.3: reflectiveQuestion & KST prompt output', () => {
+  const now = new Date('2026-11-18T05:40:00+09:00');
+  const query = '복잡한 생각을 내려놓고 오늘 내 리듬의 중심을 잡고 싶어요';
+
+  const wt = calculateAustrianWittgensteinLanguageGameSilence(profile, query, now);
+  assert.equal(wt.engineVersion, AUSTRIAN_WITTGENSTEIN_LANGUAGE_GAME_SILENCE_VERSION);
+  assert.match(wt.calculatedAtKst, /KST/);
+  assert.ok(wt.reflectiveQuestion.includes(query));
+  const wtPrompt = formatAustrianWittgensteinLanguageGameSilencePrompt(wt);
+  assert.ok(wtPrompt.includes('KST') && wtPrompt.includes('성찰 질문') && wtPrompt.includes('해석 경계'));
+
+  const ay = calculateAyurvedicTridoshaPrana({ profile, targetDate: now, question: query });
+  assert.equal(ay.engineVersion, AYURVEDIC_TRIDOSHA_VERSION);
+  assert.match(ay.calculatedAtKst, /\+09:00/);
+  assert.ok(ay.reflectiveQuestion.includes(query));
+  const ayPrompt = formatAyurvedicTridoshaPranaPrompt(ay);
+  assert.ok(ayPrompt.includes('+09:00') && ayPrompt.includes('성찰 질문') && ayPrompt.includes('해석 경계'));
+
+  const az = calculateAztecTonalamatl({ profile, question: query, now });
+  assert.equal(az.engineVersion, AZTEC_TONALAMATL_ENGINE_VERSION);
+  assert.match(az.calculatedAtKst, /\+09:00/);
+  assert.ok(az.reflectiveQuestion.includes(query));
+  const azPrompt = formatAztecTonalamatlPrompt(az);
+  assert.ok(azPrompt.includes('+09:00') && azPrompt.includes('성찰 질문') && azPrompt.includes('해석 경계'));
+});

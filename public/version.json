@@ -1,10 +1,10 @@
 {
-  "version": "1.7.772",
-  "builtAt": "2026-11-18T05:33:00+09:00",
-  "summary": "키르케고르 실존 3단계, 딥워크 몰입, 델포이 잠언 신탁 3대 엔진 실천 의례 및 성찰 질문 표준 연동(v1.7.772)",
+  "version": "1.7.773",
+  "builtAt": "2026-11-18T05:40:00+09:00",
+  "summary": "비트겐슈타인·아유르베다·아즈텍 토날라마틀 3대 엔진 성찰 질문 및 카탈로그 보강(v1.7.773)",
   "items": [
-    "덴마크 쇠렌 키르케고르 단독자 3단계 실존 도약 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동",
-    "창작 아우라 & 딥워크 몰입 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동",
-    "고대 그리스 델포이 아폴론 신탁 & 147 잠언 엔진(v2.3.0): ritualAction·reflectionFocus 표준 필드 연동"
+    "비트겐슈타인 언어게임·침묵(austrianWittgensteinLanguageGameSilenceEngine v2.2.0): 질문 반응형 reflectiveQuestion 추가 및 프롬프트 출력 연동",
+    "인도 정통 아유르베다 트리도샤(ayurvedicTridoshaPranaEngine v2.4.0): 질문 반응형 reflectiveQuestion 추가 및 프롬프트 출력 연동",
+    "아즈텍 토날라마틀 성력(aztecTonalamatlSacredCalendarEngine v2.3.0): 질문 반응형 reflectiveQuestion 추가·프롬프트 출력 연동 및 ALL_DCE_ENGINES summary 등록"
   ]
 }

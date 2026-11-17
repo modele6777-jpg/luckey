@@ -13,7 +13,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const AYURVEDIC_TRIDOSHA_VERSION = 'LUCKEY-AYURVEDIC-TRIDOSHA-v2.3.0';
+export const AYURVEDIC_TRIDOSHA_VERSION = 'LUCKEY-AYURVEDIC-TRIDOSHA-v2.4.0';
 
 export type AyurvedicQuestionFocus = 'stress' | 'relationship' | 'career' | 'health' | 'spiritual';
 
@@ -85,6 +85,7 @@ export interface AyurvedicTridoshaReport {
   tridoshaHarmonizationGuidance: string;
   ritualAction: string;
   reflectionFocus: string;
+  reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
 
@@ -347,6 +348,11 @@ export function calculateAyurvedicTridoshaPrana(params: {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
   const calculatedAtKst = `${kst.toISOString().slice(0, 19)}+09:00`;
 
+  const reflectionFocus = `${situationalAyurvedaAudit.gunaMentalState} 지금 내 몸의 도샤 균형을 위해 가장 먼저 덜어낼 자극은 무엇인가요?`;
+  const reflectiveQuestion = question.trim()
+    ? `"${question.trim()}"에 마음이 흔들릴 때, 지금 내 몸과 호흡의 균형(${prakritiConstitution.dominantDosha})을 회복하기 위해 가장 먼저 덜어낼 자극은 무엇인가요?`
+    : reflectionFocus;
+
   return {
     engineVersion: AYURVEDIC_TRIDOSHA_VERSION,
     calculatedAt: now.toISOString(),
@@ -366,7 +372,8 @@ export function calculateAyurvedicTridoshaPrana(params: {
     tridoshaSynthesisMatrix,
     tridoshaHarmonizationGuidance,
     ritualAction: `${dinacharya.pranayamaBreathing} (${situationalAyurvedaAudit.sattvicAction})`,
-    reflectionFocus: `${situationalAyurvedaAudit.gunaMentalState} 지금 내 몸의 도샤 균형을 위해 가장 먼저 덜어낼 자극은 무엇인가요?`,
+    reflectionFocus,
+    reflectiveQuestion,
     interpretiveBoundary,
   };
 }
@@ -393,5 +400,6 @@ export function formatAyurvedicTridoshaPranaPrompt(report: AyurvedicTridoshaRepo
   - 저녁 이완: ${report.dinacharya.eveningRestoration}
 - **교차 매트릭스 종합**: ${report.tridoshaSynthesisMatrix.synthesizedVerdict}
 - **심신 조화 지침**: ${report.tridoshaHarmonizationGuidance}
+- **성찰 질문**: ${report.reflectiveQuestion}
 - **해석 경계**: ${report.interpretiveBoundary}`;
 }

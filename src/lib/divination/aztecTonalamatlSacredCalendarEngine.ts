@@ -9,7 +9,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const AZTEC_TONALAMATL_ENGINE_VERSION = 'LUCKEY-AZTEC-TONALAMATL-v2.2.0';
+export const AZTEC_TONALAMATL_ENGINE_VERSION = 'LUCKEY-AZTEC-TONALAMATL-v2.3.0';
 
 export interface AztecDaySign {
   signNumber: number;
@@ -59,6 +59,7 @@ export interface AztecTonalamatlReport {
   tonalliSunSalutationRitual: string;
   ritualAction: string;
   reflectionFocus: string;
+  reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
 
@@ -406,6 +407,11 @@ export function calculateAztecTonalamatl(
   const calculatedAtKst = `${kst.toISOString().slice(0, 19)}+09:00`;
   const interpretiveBoundary = '본 아즈텍 토날라마틀 성력 리포트는 고대 메소아메리카 260일 신성 역법 상징에 기반한 정성적 성찰 안내이며, 확정적 길흉 예단이 아닙니다.';
 
+  const reflectionFocus = `${situationalTonalamatlAudit.focusAxis}에 비추어 오늘 나의 토날리 불꽃을 흐리는 습관 하나는 무엇인가요?`;
+  const reflectiveQuestion = question.trim()
+    ? `"${question.trim()}" 앞에서 오늘 [${dominantDaySign.nameKo}]의 기운으로 다시 지피고 싶은 나의 내면 불꽃(토날리)은 무엇인가요?`
+    : reflectionFocus;
+
   return {
     engineVersion: AZTEC_TONALAMATL_ENGINE_VERSION,
     timestamp: now.toISOString(),
@@ -422,7 +428,8 @@ export function calculateAztecTonalamatl(
     aztecTonalamatlGuidance,
     tonalliSunSalutationRitual,
     ritualAction: tonalliSunSalutationRitual,
-    reflectionFocus: `${situationalTonalamatlAudit.focusAxis}에 비추어 오늘 나의 토날리 불꽃을 흐리는 습관 하나는 무엇인가요?`,
+    reflectionFocus,
+    reflectiveQuestion,
     interpretiveBoundary,
   };
 }
@@ -444,5 +451,6 @@ export function formatAztecTonalamatlPrompt(report: AztecTonalamatlReport): stri
   * 통합 행동 지침: ${report.tonalamatlSynthesisMatrix.ollinActionDirective}
 - **토날라마틀 지혜 지침**: ${report.aztecTonalamatlGuidance}
 - **토날리 태양 경배 리추얼**: ${report.tonalliSunSalutationRitual}
+- **성찰 질문**: ${report.reflectiveQuestion}
 - **해석 경계**: ${report.interpretiveBoundary}`;
 }

@@ -14,7 +14,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const AUSTRIAN_WITTGENSTEIN_LANGUAGE_GAME_SILENCE_VERSION = 'LUCKEY-WITTGENSTEIN-LANGUAGE-GAME-SILENCE-v2.1.0';
+export const AUSTRIAN_WITTGENSTEIN_LANGUAGE_GAME_SILENCE_VERSION = 'LUCKEY-WITTGENSTEIN-LANGUAGE-GAME-SILENCE-v2.2.0';
 
 export type WittgensteinQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -58,6 +58,7 @@ export interface AustrianWittgensteinLanguageGameSilenceResult {
   practiceGuidance: string;
   ritualAction: string;
   reflectionFocus: string;
+  reflectiveQuestion: string;
   boundaryNotice: string;
   interpretiveBoundary: string;
   wittgensteinSynthesisMatrix: {
@@ -293,6 +294,9 @@ export function calculateAustrianWittgensteinLanguageGameSilence(
     practiceGuidance: topicGuidance.practiceGuidance,
     ritualAction: topicGuidance.ritualAction,
     reflectionFocus: topicGuidance.reflectionFocus,
+    reflectiveQuestion: query?.trim()
+      ? `"${query.trim()}" 앞에서 내가 말할 수 있는 사실과 침묵 속에 비워둘 신비를 구분한다면 무엇이 남나요?`
+      : topicGuidance.reflectionFocus,
     boundaryNotice,
     interpretiveBoundary: boundaryNotice,
     wittgensteinSynthesisMatrix,
@@ -317,6 +321,7 @@ export function formatAustrianWittgensteinLanguageGameSilencePrompt(
     `- 질문 맞춤 실천 가이드: ${res.practiceGuidance}`,
     `- 일상 실천 의례: ${res.ritualAction}`,
     `- 핵심 성찰 질문: ${res.reflectionFocus}`,
+    `- 성찰 질문: ${res.reflectiveQuestion}`,
     `- 교차 매트릭스: 핵심(${res.wittgensteinSynthesisMatrix.coreInsight}) | 실행(${res.wittgensteinSynthesisMatrix.recommendedAction}) | 주의(${res.wittgensteinSynthesisMatrix.cautionNotice})`,
     `- 비트겐슈타인 원전 명언: "${res.focalWittgensteinAphorism.aphorismKo}" (${res.focalWittgensteinAphorism.aphorismOriginal})`,
     `- 원전 출처: [${res.focalWittgensteinAphorism.sourceContext}]`,
