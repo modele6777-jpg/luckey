@@ -3775,6 +3775,7 @@ test('Zhong-Lu Inner Alchemy & Three Immortals Engine: calculates stages, tier a
   assert(rep.ritualAction.length > 0);
   assert(rep.reflectionFocus.length > 0);
   assert(rep.boundaryNotice.length > 0);
+  assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatZhongLuInnerAlchemyPrompt(rep);
   assert(prompt.includes('도교 종려권·여동빈 종여내단(鍾呂內丹) 3품 선도 & 환원 엔진'));
   assert(prompt.includes(rep.immortalityTier.koreanTitle));
@@ -3936,6 +3937,7 @@ test('Taoist Gong Guo Ge Karma Engine: calculates merit domain and qualitative g
   assert(rep.ritualAction.length > 0);
   assert(rep.reflectionFocus.length > 0);
   assert(rep.boundaryNotice.length > 0);
+  assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatTaoistGongGuoGeKarmaPrompt(rep);
   assert(prompt.includes('도교 태상감응편(太上感應篇) & 공과격(功過格) 적선개운 성찰 리포트'));
   assert(prompt.includes(rep.meritDomain));
@@ -4350,6 +4352,7 @@ test('Vedic Pancha Kosha Engine: calculates 5 layers alignment and Atman realiza
   assert.equal(rep.layers.length, 5);
   assert(rep.atmanRealizationIndex >= 0 && rep.atmanRealizationIndex <= 100);
   assert(rep.lowestAlignedLayer.layerIndex >= 1 && rep.lowestAlignedLayer.layerIndex <= 5);
+  assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatVedicPanchaKoshaPrompt(rep);
   assert(prompt.includes('고대 인도 베단타 5대 코샤(Pancha Kosha) 층위별 정렬 실측 데이터'));
   assert(prompt.includes(rep.lowestAlignedLayer.koshaNameKo));

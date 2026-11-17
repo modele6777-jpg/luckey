@@ -1,6 +1,6 @@
 import { UserProfile } from '../sharedState';
 
-export const TAOIST_GONG_GUO_GE_KARMA_ENGINE_VERSION = '2.0.0';
+export const TAOIST_GONG_GUO_GE_KARMA_ENGINE_VERSION = '2.1.0';
 
 function formatGongGuoGeKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -42,6 +42,7 @@ export interface TaoistGongGuoGeKarmaReport {
     alignmentState: string;
     integratedAction: string;
   };
+  interpretiveBoundary: string;
 }
 
 const MERIT_SYSTEMS = [
@@ -218,6 +219,7 @@ export function calculateTaoistGongGuoGeKarma(
     boundaryNotice: '태상감응편과 공과격 상징은 점수나 인과 심판이 아니라 오늘의 마음씀과 일상 행동을 성찰하기 위한 정성적 안내입니다.',
     synthesisPrompt,
     gongGuoGeSynthesisMatrix,
+    interpretiveBoundary: '태상감응편과 공과격 상징은 점수나 인과 심판이 아니라 오늘의 마음씀과 일상 행동을 성찰하기 위한 정성적 안내입니다.',
   };
 }
 

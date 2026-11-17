@@ -10,7 +10,7 @@
  * 질문 맥락 병목 진단, KST 프라나 시공간 리듬, 상하층 코샤 브리지 매트릭스를 통합합니다.
  */
 
-export const VEDIC_PANCHA_KOSHA_ENGINE_VERSION = 'LUCKEY-PANCHA-KOSHA-v2.2.0';
+export const VEDIC_PANCHA_KOSHA_ENGINE_VERSION = 'LUCKEY-PANCHA-KOSHA-v2.3.0';
 
 export interface KoshaLayer {
   layerIndex: number;
@@ -59,6 +59,7 @@ export interface PanchaKoshaReport {
     alignmentState: string;
     integratedAction: string;
   };
+  interpretiveBoundary: string;
 }
 
 function classifyQuestionKosha(question: string, fallbackLayerIdx: number): QuestionKoshaResonance {
@@ -290,6 +291,7 @@ export function calculateVedicPanchaKosha(params: {
     koshaBridgeMatrix,
     blissPrescription,
     panchaKoshaSynthesisMatrix,
+    interpretiveBoundary: '베단타 5대 코샤 정렬 결과는 타이티리야 우파니샤드 철학에 기반한 자기 성찰·호흡 안내이며, 의학적 진단이나 확정적 예단이 아닙니다.',
   };
 }
 
