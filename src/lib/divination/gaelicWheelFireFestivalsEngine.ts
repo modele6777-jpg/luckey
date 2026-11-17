@@ -8,7 +8,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const GAELIC_FIRE_FESTIVALS_ENGINE_VERSION = '2.3.0';
+export const GAELIC_FIRE_FESTIVALS_ENGINE_VERSION = '2.4.0';
 
 export interface GaelicFestivalStation {
   id: 'samhain' | 'imbolc' | 'bealtaine' | 'lughnasadh';
@@ -59,6 +59,7 @@ export interface GaelicWheelFireFestivalsReport {
   sacredHearthfireRitual: string;
   ritualAction: string;
   reflectionFocus: string;
+  reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
 
@@ -261,6 +262,9 @@ export function calculateGaelicWheelFireFestivals(
     sacredHearthfireRitual,
     ritualAction: situationalGaelicAudit.druidPrescription,
     reflectionFocus: activeStation.spiritualVirtue,
+    reflectiveQuestion: question.trim()
+      ? `"${question.trim()}"에 비추어 ${activeStation.gaelicName}의 화덕에서 오늘 가장 먼저 살리거나 비워야 할 불씨는 무엇입니까?`
+      : `${activeStation.gaelicName}의 순환 문턱에서 오늘 내면의 난로불을 가장 따뜻하게 지켜줄 한 걸음은 무엇입니까?`,
     interpretiveBoundary: '게일 4대 화제 축제와 콜리니 역법 상징을 빌린 정성적 계절 순환 참고 관점이며, 개인 점수나 확정 예언이 아닙니다.',
   };
 }
@@ -280,5 +284,6 @@ export function formatGaelicWheelFireFestivalsPrompt(report: GaelicWheelFireFest
 - **순환 교차 매트릭스**: ${report.gaelicSynthesisMatrix.stationElementLink}
 - **켈트 드루이드 지혜 지침**: ${report.gaelicOmenGuidance}
 - **성스러운 난로불 리추얼**: ${report.sacredHearthfireRitual}
+- **질문 맞춤 성찰 질문**: ${report.reflectiveQuestion}
 - **해석 경계**: 게일 4대 화제 축제와 콜리니 역법 상징을 빌린 정성적 계절 순환 참고 관점이며, 개인 점수나 확정 예언이 아닙니다.`;
 }

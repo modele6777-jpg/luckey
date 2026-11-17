@@ -9,7 +9,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const GNOSTIC_PISTIS_SOPHIA_PLEROMA_ENGINE_VERSION = '2.2.0';
+export const GNOSTIC_PISTIS_SOPHIA_PLEROMA_ENGINE_VERSION = '2.3.0';
 
 export type GnosticQuestionFocus = 'career' | 'relationship' | 'anxiety' | 'decision' | 'spiritual';
 
@@ -62,6 +62,7 @@ export interface GnosticPistisSophiaPleromaReport {
   pleromaSynthesisMatrix: PleromaSynthesisMatrix;
   gnosticAwakeningGuidance: string;
   pneumaIgnitionRitual: string;
+  reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
 
@@ -332,7 +333,7 @@ export function calculateGnosticPistisSophiaPleroma(
   const pneumaIgnitionRitual = `가슴 한가운데 꺼지지 않는 황금빛 백색 불꽃을 관조하며 선언하십시오: "나는 이 세상에 속해 있으나 이 세상의 물질적 조건에 갇히지 않는다. 내 안의 프뉴마는 플레로마의 영원한 빛과 하나이다."`;
 
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
-  const calculatedAtKst = `${kst.toISOString().slice(0, 19)}+09:00`;
+  const calculatedAtKst = `${kst.toISOString().slice(0, 19).replace('T', ' ')} +09:00 KST`;
 
   return {
     engineVersion: GNOSTIC_PISTIS_SOPHIA_PLEROMA_ENGINE_VERSION,
@@ -351,6 +352,9 @@ export function calculateGnosticPistisSophiaPleroma(
     pleromaSynthesisMatrix,
     gnosticAwakeningGuidance,
     pneumaIgnitionRitual,
+    reflectiveQuestion: question.trim()
+      ? `"${question.trim()}"의 막연한 두려움 너머, 내 안의 [${primaryAeon.nameKo}] 불꽃이 이미 알고 있는 순수한 진실은 무엇입니까?`
+      : `외부의 시선과 통제망을 잠시 내려놓고, [${primaryAeon.nameKo}]의 빛으로 오늘 내 마음이 지키고 싶은 중심은 무엇입니까?`,
     interpretiveBoundary: '본 리포트는 나그 함마디 문서와 《피스티스 소피아》 상징에 기반한 정성적 성찰 안내이며, 확정적 예언이 아닙니다.',
   };
 }
@@ -377,5 +381,6 @@ export function formatGnosticPistisSophiaPleromaPrompt(rep: GnosticPistisSophiaP
 · 플레로마 교차 종합: ${rep.pleromaSynthesisMatrix.synthesizedVerdict}
 · 영지주의 각성 지침: ${rep.gnosticAwakeningGuidance}
 · 프뉴마 점화 명상 리추얼: ${rep.pneumaIgnitionRitual}
+· 질문 맞춤 성찰 질문: ${rep.reflectiveQuestion}
 · 해석 경계: 본 리포트는 나그 함마디 문서와 《피스티스 소피아》 상징에 기반한 정성적 성찰 안내이며, 확정적 예언이 아닙니다.`;
 }
