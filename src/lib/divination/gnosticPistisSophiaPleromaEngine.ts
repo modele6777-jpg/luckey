@@ -9,7 +9,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const GNOSTIC_PISTIS_SOPHIA_PLEROMA_ENGINE_VERSION = '2.1.0';
+export const GNOSTIC_PISTIS_SOPHIA_PLEROMA_ENGINE_VERSION = '2.2.0';
 
 export type GnosticQuestionFocus = 'career' | 'relationship' | 'anxiety' | 'decision' | 'spiritual';
 
@@ -62,6 +62,7 @@ export interface GnosticPistisSophiaPleromaReport {
   pleromaSynthesisMatrix: PleromaSynthesisMatrix;
   gnosticAwakeningGuidance: string;
   pneumaIgnitionRitual: string;
+  interpretiveBoundary: string;
 }
 
 const TWELVE_AEONS_BASE: Omit<DivineAeon, 'resonanceScore'>[] = [
@@ -350,6 +351,7 @@ export function calculateGnosticPistisSophiaPleroma(
     pleromaSynthesisMatrix,
     gnosticAwakeningGuidance,
     pneumaIgnitionRitual,
+    interpretiveBoundary: '본 리포트는 나그 함마디 문서와 《피스티스 소피아》 상징에 기반한 정성적 성찰 안내이며, 확정적 예언이 아닙니다.',
   };
 }
 
