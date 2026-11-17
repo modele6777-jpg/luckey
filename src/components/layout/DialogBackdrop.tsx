@@ -1,10 +1,30 @@
-import { useRef, type HTMLAttributes } from 'react';
+import { useEffect, useRef, type HTMLAttributes } from 'react';
 
 /** A release/click from the opening button must never dismiss a new dialog. */
 export function DialogBackdrop({ onDismiss, children, ...props }: HTMLAttributes<HTMLDivElement> & { onDismiss: () => void }) {
   const armed = useRef(false);
   const freshPress = useRef(false);
+  useEffect(() => {
+    const reset = () => { armed.current = false; freshPress.current = false; };
+    window.addEventListener('resize', reset, { passive: true });
+    window.addEventListener('orientationchange', reset, { passive: true });
+    document.addEventListener('visibilitychange', reset);
+    return () => {
+      window.removeEventListener('resize', reset);
+      window.removeEventListener('orientationchange', reset);
+      document.removeEventListener('visibilitychange', reset);
+    };
+  }, []);
   return <div {...props}
+    onTouchStartCapture={event => {
+      freshPress.current = true;
+      armed.current = event.target === event.currentTarget;
+      props.onTouchStartCapture?.(event);
+    }}
+    onTouchCancel={event => {
+      armed.current = false; freshPress.current = false;
+      props.onTouchCancel?.(event);
+    }}
     onPointerDownCapture={event => {
       freshPress.current = true;
       props.onPointerDownCapture?.(event);
