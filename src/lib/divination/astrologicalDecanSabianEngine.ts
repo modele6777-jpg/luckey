@@ -16,7 +16,7 @@
 import type { UserProfile } from '../sharedState';
 import { calculateNatalChart, type NatalChartResult, type NatalPlacement, type ZodiacSignInfo } from '../astrologyAnalysis';
 
-export const ASTRO_DECAN_SABIAN_VERSION = 'LUCKEY-ASTRO-DS-v2.1.0';
+export const ASTRO_DECAN_SABIAN_VERSION = 'LUCKEY-ASTRO-DS-v2.2.0';
 
 export interface DecanInfo {
   signId: string;
@@ -79,6 +79,8 @@ export interface AstrologicalDecanSabianResult {
   };
   summary: string;
   reflectiveQuestion?: string;
+  ritualAction: string;
+  reflectionFocus: string;
   boundaryNotice: string;
   interpretiveBoundary: string;
 }
@@ -325,6 +327,8 @@ export function calculateAstrologicalDecanSabian(params?: {
     },
     summary,
     reflectiveQuestion,
+    ritualAction: `${sun.decan.coreVibe} — ${actionableSoulAdvice}`,
+    reflectionFocus: reflectiveQuestion,
     boundaryNotice,
     interpretiveBoundary: boundaryNotice,
   };

@@ -39,7 +39,7 @@ import type { UserProfile } from '../sharedState';
 import { calculateDetailedSaju, BRANCH_KOREAN, type SajuAnalysisResult } from '../sajuAnalysis';
 import { getAstronomicalSajuYear } from '../astronomicalSolarTerms';
 
-export const AUSPICIOUS_STARS_ENGINE_VERSION = 'LUCKEY-AS-v2.1.0';
+export const AUSPICIOUS_STARS_ENGINE_VERSION = 'LUCKEY-AS-v2.2.0';
 
 export const AUSPICIOUS_STARS_METHOD =
   '천을(갑무경축미·을기자신·병정해유·임계사묘·신인오, 일간+년간 4주 대조, 일지/년월시지 분해)·문창(전통 가요)·학당(장생지)·문곡(상관 록지)·천덕·월덕(월지 기준) 6대 길신 매트릭스, 일지 순 공망과 충형 간섭 길력 보정, 세운·대운 지지 귀인 도래 타임라인 및 상호 귀인 인연 매칭 결정론 산출';
@@ -174,6 +174,8 @@ export interface AuspiciousStarsResult {
   actionGuide: string[];
   summary: string;
   reflectiveQuestion?: string;
+  ritualAction?: string;
+  reflectionFocus?: string;
   interpretiveBoundary: string;
 }
 
@@ -759,6 +761,10 @@ export function calculateAuspiciousStars(params: {
       actionGuide,
       summary,
       reflectiveQuestion: params.question
+        ? `‘${params.question}’ 앞에서 원국에 발현된 길신(${hits.length}종)의 강점을 어떤 사람·협업 기회와 연결하시겠습니까?`
+        : `원국에 자리한 길신(${hits.length}종)의 길력을 일상의 신뢰와 준비된 실력으로 살리기 위해 오늘 가장 먼저 실천할 행동은 무엇입니까?`,
+      ritualAction: situationalNobleAudit.actionPrescription,
+      reflectionFocus: params.question
         ? `‘${params.question}’ 앞에서 원국에 발현된 길신(${hits.length}종)의 강점을 어떤 사람·협업 기회와 연결하시겠습니까?`
         : `원국에 자리한 길신(${hits.length}종)의 길력을 일상의 신뢰와 준비된 실력으로 살리기 위해 오늘 가장 먼저 실천할 행동은 무엇입니까?`,
     };
