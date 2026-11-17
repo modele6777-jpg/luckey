@@ -7535,6 +7535,7 @@ test('Michel de Montaigne Essays Engine: calculates Epistemic Humility, Candid S
   assert(rep.humanConditionAcceptanceScore >= 0 && rep.humanConditionAcceptanceScore <= 100);
   assert(rep.innerFreedomSanctuaryIndex >= 0 && rep.innerFreedomSanctuaryIndex <= 100);
   assert(rep.activeMontaigneTheme.themeTitleKo.length > 0);
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(rep.calculatedAtKst.endsWith('KST'));
   assert(Boolean(rep.montaigneSynthesisMatrix?.integratedAction));
   const prompt = formatFrenchMichelDeMontaigneEssaysPrompt(rep);
@@ -7892,6 +7893,7 @@ test('Maurice Merleau-Ponty Embodied Phenomenology Engine: calculates Body-Subje
   assert(rep.sensoryCreativeEyeScore >= 0 && rep.sensoryCreativeEyeScore <= 100);
   assert(rep.phenomenologicalGroundingResilienceScore >= 0 && rep.phenomenologicalGroundingResilienceScore <= 100);
   assert(rep.activePontyTheme.themeTitleKo.length > 0);
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatFrenchMauriceMerleauPontyEmbodiedPhenomenologyPrompt(rep);
   assert(prompt.includes('모리스 메를로퐁티 《지각의 현상학·눈과 마음》 신체-주체 및 원초적 지각 성찰 가이드'));
   assert(prompt.includes(rep.activePontyTheme.themeTitleKo));
@@ -8363,6 +8365,7 @@ test('Marcel Proust Lost Time Regained Engine: calculates Involuntary Memory, Ti
   assert(rep.authenticSelfDiscoveryIndex >= 0 && rep.authenticSelfDiscoveryIndex <= 100);
   assert(rep.timeTranscendenceResilienceScore >= 0 && rep.timeTranscendenceResilienceScore <= 100);
   assert(rep.activeProustTheme.themeTitleKo.length > 0);
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatFrenchMarcelProustLostTimeRegainedPrompt(rep);
   assert(prompt.includes('마르셀 프루스트 《잃어버린 시간을 찾아서》 비자발적 기억·되찾은 시간 지표'));

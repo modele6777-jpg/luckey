@@ -1,10 +1,10 @@
 {
-  "version": "1.7.787",
-  "builtAt": "2026-11-18T06:50:00+09:00",
-  "summary": "에라스무스·마아트 깃털·유식학 8식 3대 엔진 성찰 질문 및 KST 표기 보강(v1.7.787)",
+  "version": "1.7.788",
+  "builtAt": "2026-11-18T06:53:00+09:00",
+  "summary": "마르셀 프루스트, 모리스 메를로퐁티, 미셸 드 몽테뉴 3대 엔진 실천 의례 및 성찰 질문 표준 연동(v1.7.788)",
   "items": [
-    "데시데리우스 에라스무스 《우신예찬》(dutchDesideriusErasmusPraiseOfFollyEngine v2.2.0): 질문 반응형 reflectiveQuestion 추가 및 +09:00 KST 표기 통일",
-    "이집트 마아트 진리의 깃털·심장 저울(egyptianMaatFeatherHeartEngine v2.3.0): 질문 반응형 reflectiveQuestion 추가 및 프롬프트 연동",
-    "불교 유식학 8식 전식득지(buddhistYogacaraEightConsciousnessEngine v2.4.0): 질문 반응형 reflectiveQuestion 추가 및 프롬프트 연동"
+    "마르셀 프루스트 《잃어버린 시간을 찾아서》 엔진(v2.3.0): ritualAction·reflectionFocus 표준 필드 연동",
+    "모리스 메를로퐁티 《지각의 현상학·눈과 마음》 엔진(v2.1.0): ritualAction·reflectionFocus 표준 필드 연동",
+    "미셸 드 몽테뉴 《수상록》 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동"
   ]
 }
