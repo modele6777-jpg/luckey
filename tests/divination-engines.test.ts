@@ -899,6 +899,7 @@ test('Geokguk engine: Zipyeong Jinjeon 10-geok judgment, seong/pa/gueung, determ
   const rFixed2 = calculateGeokguk({ profile, now: fixedNow, question: '내 격국과 적성 알려줘' });
   assert.deepEqual(rFixed1, rFixed2);
   assert(rFixed1.calculatedAtKst?.includes('KST'));
+  assert((rFixed1.interpretiveBoundary || '').length > 0);
 
   // 프롬프트 포맷터에 엔진 버전 및 시공간 리듬 포함
   const prompt = formatGeokgukPrompt(rFixed1);
@@ -3099,6 +3100,7 @@ test('Hellenistic Lots Engine: calculates Fortune, Spirit, Eros, Nemesis lots de
   assert(rep.calculatedAtKst.includes('KST'));
   assert(rep.temporalLotsRhythm.hellenisticSectWindow.length > 0);
   assert(rep.lotsSynthesisMatrix.coreInsight.length > 0);
+  assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatHellenisticLotsPrompt(rep);
   assert(prompt.includes(HELLENISTIC_LOTS_ENGINE_VERSION));
   assert(prompt.includes('포르투나의 랏'));
@@ -3271,6 +3273,7 @@ test('Hermetic Kybalion Engine: maps 7 cosmic principles and alchemical shift', 
   assert(rep.situationalKybalionAudit.kybalionMaxim.length > 0);
   assert(rep.temporalPendulumRhythm.pendulumWindow.length > 0);
   assert(rep.kybalionSynthesisMatrix.synthesizedVerdict.length > 0);
+  assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatHermeticKybalionPrompt(rep);
   assert(prompt.includes('헤르메스 카이발리온'));
   assert(prompt.includes(rep.masterPrinciple.nameKo));

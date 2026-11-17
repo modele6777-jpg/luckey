@@ -21,7 +21,7 @@ import type { UserProfile } from '../sharedState';
 import { parseBirthTime } from '../birthDateTime';
 import { resolveEffectiveSolarDate } from '../lunarCalendar';
 
-export const HELLENISTIC_LOTS_ENGINE_VERSION = 'LUCKEY-HELLENISTIC-LOTS-v2.0.0';
+export const HELLENISTIC_LOTS_ENGINE_VERSION = 'LUCKEY-HELLENISTIC-LOTS-v2.1.0';
 
 export interface ArabicLotInfo {
   nameKo: string;
@@ -68,6 +68,7 @@ export interface HellenisticLotsReport {
   };
   cosmicAdvice: string;
   boundaryNotice: string;
+  interpretiveBoundary: string;
 }
 
 const ZODIAC_SIGNS = [
@@ -312,6 +313,7 @@ export function calculateHellenisticLots(params: {
     lotsSynthesisMatrix,
     cosmicAdvice,
     boundaryNotice: '본 결과는 헬레니즘 점성술 4대 아라빅 랏과 섹트 원리에 따른 정성적 상징 해석이며, 확정적 길흉 판정이 아닙니다.',
+    interpretiveBoundary: '본 결과는 헬레니즘 점성술 4대 아라빅 랏과 섹트 원리에 따른 정성적 상징 해석이며, 확정적 길흉 판정이 아닙니다.',
   };
 }
 
