@@ -8,7 +8,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const BALINESE_TRI_HITA_KARANA_ENGINE_VERSION = 'LUCKEY-BALINESE-TRI-HITA-v2.2.0';
+export const BALINESE_TRI_HITA_KARANA_ENGINE_VERSION = 'LUCKEY-BALINESE-TRI-HITA-v2.3.0';
 
 export interface BalineseSacredSanctuary {
   id: string;
@@ -58,6 +58,7 @@ export interface BalineseTriHitaKaranaReport {
   tirtaHolyWaterBlessing: string;
   ritualAction: string;
   reflectionFocus: string;
+  reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
 
@@ -286,6 +287,11 @@ export function calculateBalineseTriHitaKarana(
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
   const calculatedAtKst = `${kst.toISOString().slice(0, 19)}+09:00`;
   const interpretiveBoundary = '본 발리 트리 히타 카라나 리포트는 신성·인간·자연의 조화를 비추는 정성적 성찰 안내이며, 확정적 길흉 예단이 아닙니다.';
+  const reflectionFocus = `${situationalTriHitaAudit.harmonyAxis}의 관점에서 오늘 생각·말·행동(3업) 중 가장 먼저 맑게 정화할 한 가지는 무엇인가요?`;
+  const cleanQuestion = (question || '').trim();
+  const reflectiveQuestion = cleanQuestion
+    ? `"${cleanQuestion}"을 ${situationalTriHitaAudit.harmonyAxis}의 균형으로 비춰 볼 때 지금 가장 먼저 정화할 말이나 마음은 무엇인가요?`
+    : reflectionFocus;
 
   return {
     engineVersion: BALINESE_TRI_HITA_KARANA_ENGINE_VERSION,
@@ -302,7 +308,8 @@ export function calculateBalineseTriHitaKarana(
     balineseCosmicGuidance,
     tirtaHolyWaterBlessing,
     ritualAction: tirtaHolyWaterBlessing,
-    reflectionFocus: `${situationalTriHitaAudit.harmonyAxis}의 관점에서 오늘 생각·말·행동(3업) 중 가장 먼저 맑게 정화할 한 가지는 무엇인가요?`,
+    reflectionFocus,
+    reflectiveQuestion,
     interpretiveBoundary,
   };
 }
@@ -324,5 +331,7 @@ export function formatBalineseTriHitaKaranaPrompt(report: BalineseTriHitaKaranaR
   * 오늘의 실천: ${report.triHitaSynthesisMatrix.dailyOfferingDirective}
 - 트리 히타 카라나 우주 지혜 지침: ${report.balineseCosmicGuidance}
 - 티르타(Tirta) 성수 정화 명상: ${report.tirtaHolyWaterBlessing}
+- 일상 의례: ${report.ritualAction}
+- 성찰 질문: ${report.reflectiveQuestion}
 - 해석 경계: ${report.interpretiveBoundary}`;
 }
