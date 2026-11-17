@@ -15,7 +15,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const GERMAN_FRIEDRICH_SCHILLER_AESTHETIC_EDUCATION_VERSION = 'LUCKEY-SCHILLER-AESTHETIC-EDUCATION-v2.1.0';
+export const GERMAN_FRIEDRICH_SCHILLER_AESTHETIC_EDUCATION_VERSION = 'LUCKEY-SCHILLER-AESTHETIC-EDUCATION-v2.2.0';
 
 export interface SchillerTheme {
   themeKey: string;
@@ -54,6 +54,7 @@ export interface GermanFriedrichSchillerAestheticEducationResult {
     alignmentState: string;
     integratedAction: string;
   };
+  interpretiveBoundary: string;
 }
 
 export const SCHILLER_THEMES: SchillerTheme[] = [
@@ -207,6 +208,7 @@ export function calculateGermanFriedrichSchillerAestheticEducation(
       philosophicalCounsel,
     },
     schillerSynthesisMatrix,
+    interpretiveBoundary: '실러의 놀이 충동(Spieltrieb)·우아함과 존엄 상징을 빌린 정성적 조화 성찰 관점이며, 수치 평가나 확정 예언이 아닙니다.',
   };
 }
 
