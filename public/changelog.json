@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.7.771",
+    "builtAt": "2026-11-18T05:30:00+09:00",
+    "summary": "마틴 부버·릴케·빅터 프랭클 3대 엔진 질문 반응형 성찰 질문 보강(v1.7.771)",
+    "items": [
+      "마틴 부버 나와 너(austrianMartinBuberIAndThouEngine v2.2.0): 질문 반응형 reflectiveQuestion 추가 및 프롬프트 출력 연동",
+      "라이너 마리아 릴케 젊은 시인에게 주는 편지(austrianRainerMariaRilkeLettersToYoungPoetEngine v2.2.0): 질문 반응형 reflectiveQuestion 추가 및 프롬프트 출력 연동",
+      "빅터 프랭클 로고테라피(austrianViktorFranklLogotherapyEngine v2.4.0): 질문 반응형 reflectiveQuestion 추가 및 프롬프트 출력 연동"
+    ]
+  },
+  {
     "version": "1.7.770",
     "builtAt": "2026-11-18T05:23:00+09:00",
     "summary": "크로노-트랜짓, 대화 속 인연 듀얼 매트릭스, 계약·분쟁 쉴드 3대 엔진 실천 의례 및 성찰 질문 표준 연동(v1.7.770)",
