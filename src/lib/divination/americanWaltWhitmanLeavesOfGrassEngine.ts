@@ -14,7 +14,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const AMERICAN_WALT_WHITMAN_VERSION = 'LUCKEY-WHITMAN-LEAVES-OF-GRASS-v2.1.0';
+export const AMERICAN_WALT_WHITMAN_VERSION = 'LUCKEY-WHITMAN-LEAVES-OF-GRASS-v2.2.0';
 
 export type WhitmanQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -58,6 +58,7 @@ export interface AmericanWaltWhitmanLeavesOfGrassResult {
   practiceGuidance: string;
   ritualAction: string;
   reflectionFocus: string;
+  reflectiveQuestion: string;
   boundaryNotice: string;
   interpretiveBoundary?: string;
   situationalWhitmanAudit: {
@@ -278,6 +279,11 @@ export function calculateAmericanWaltWhitmanLeavesOfGrass(
     cautionNotice: '스스로를 작게 재단하거나 어두운 그림자 쪽으로만 시선을 고정하지 마십시오.',
   };
 
+  const trimmedQ = (query ?? '').trim();
+  const reflectiveQuestion = trimmedQ
+    ? `‘${trimmedQ}’라는 물음 속의 흔들림과 모순까지도 넉넉히 품는다면, 오늘 내가 나 자신에게 허락할 자유로운 한 걸음은 무엇인가요?`
+    : topicGuidance.reflectionFocus;
+
   return {
     engineVersion: AMERICAN_WALT_WHITMAN_VERSION,
     calculatedAtKst: kstLabel,
@@ -293,6 +299,7 @@ export function calculateAmericanWaltWhitmanLeavesOfGrass(
     practiceGuidance: topicGuidance.practiceGuidance,
     ritualAction: topicGuidance.ritualAction,
     reflectionFocus: topicGuidance.reflectionFocus,
+    reflectiveQuestion,
     boundaryNotice,
     interpretiveBoundary: boundaryNotice,
     situationalWhitmanAudit,
@@ -317,7 +324,7 @@ export function formatAmericanWaltWhitmanLeavesOfGrassPrompt(
     `- 생명력 행동 조언: ${res.activeWhitmanTheme.practicalCounsel}`,
     `- 질문 맞춤 실천 가이드: ${res.practiceGuidance}`,
     `- 일상 실천 의례: ${res.ritualAction}`,
-    `- 핵심 성찰 질문: ${res.reflectionFocus}`,
+    `- 핵심 성찰 질문: ${res.reflectiveQuestion}`,
     `- 교차 매트릭스: 핵심(${res.whitmanSynthesisMatrix.coreInsight}) | 실행(${res.whitmanSynthesisMatrix.recommendedAction}) | 주의(${res.whitmanSynthesisMatrix.cautionNotice})`,
     `- 휘트먼 원전 명시: "${res.focalWhitmanAphorism.aphorismKo}"`,
     `- 영문 원시 인용: "${res.focalWhitmanAphorism.aphorismEn}"`,
