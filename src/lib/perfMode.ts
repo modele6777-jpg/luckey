@@ -1,4 +1,4 @@
-import { bindVisualViewportLifecycle, prepareViewportAfterUpdate, scheduleVisualViewportSync, syncVisualViewportBox, readViewportSnapshot, resolveLayoutViewportSize, getLayoutViewportProbe, isIosStandaloneWindow } from './visualViewportBox';
+import { bindVisualViewportLifecycle, prepareViewportAfterUpdate, scheduleVisualViewportSync, readViewportSnapshot, resolveLayoutViewportSize, getLayoutViewportProbe, isIosStandaloneWindow } from './visualViewportBox';
 
 export type PerfProfile = 'full' | 'galaxy' | 'duo' | 'iphonexs' | 'pwa' | 'reduced' | 'legacy';
 
@@ -454,7 +454,7 @@ function applyDuoAndViewportFlags(): void {
     }
   }
 
-  syncVisualViewportBox(window);
+  scheduleVisualViewportSync(window);
 }
 
 export function initPerfMode(): PerfProfile {
@@ -678,7 +678,7 @@ export function initNarrowPhoneClass(): void {
     window.addEventListener('pageshow', applySoon);
     window.visualViewport?.addEventListener('resize', applySoon, { passive: true });
     window.visualViewport?.addEventListener('scroll', () => {
-      syncVisualViewportBox(window);
+      scheduleVisualViewportSync(window);
     }, { passive: true });
     bindVisualViewportLifecycle(window);
     scheduleVisualViewportSync(window);

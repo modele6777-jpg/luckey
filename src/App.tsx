@@ -1,4 +1,3 @@
-import { hasOpenScreenOverlay } from './components/layout/ScreenPortal';
 import { RetainedPane } from './components/layout/RetainedPane';
 import { OverlayPaneContext } from './components/layout/OverlayPaneContext';
 import { rememberOverlayPane } from './lib/overlayPane';
@@ -294,6 +293,8 @@ function AppContent() {
   const lastLeftChannelPathRef = React.useRef<string>('/key');
   const previousUnfoldedRef = React.useRef(duoState.unfolded);
   const [foldedCosmicRoom, setFoldedCosmicRoom] = React.useState(false);
+  const [foldedPane, setFoldedPane] = React.useState<'content' | 'lucy' | null>(null);
+  React.useEffect(() => { setFoldedPane(null); }, [location]);
 
   React.useEffect(() => {
     const handleLayoutChange = () => {
@@ -325,11 +326,12 @@ function AppContent() {
         });
         if (cover.kind === 'cosmic') {
           setFoldedCosmicRoom(true);
+          setFoldedPane('content');
         } else {
           setFoldedCosmicRoom(false);
-          // A fold-driven route change would destroy the channel's live dialogs.
-          // Retain both page trees until the user explicitly navigates instead.
-          if (cover.navigateTo && !hasOpenScreenOverlay()) navigate(cover.navigateTo);
+          // Folding changes visibility only. Never replace the source route or
+          // page tree, even when the last interaction was in a portal.
+          setFoldedPane(cover.kind === 'lucy' ? 'lucy' : 'content');
         }
       }
     };
@@ -389,6 +391,7 @@ function AppContent() {
       const targetPath = e?.detail?.path;
       if (targetPath && typeof targetPath === 'string') {
         markIntentionalNav();
+        setFoldedPane(null);
         setFoldedCosmicRoom(false);
         const safePath = resolveCanonicalPath(targetPath);
         navigate(safePath);
@@ -728,7 +731,7 @@ function AppContent() {
   }, [isUnlocked, sharedState?.themeColor, resolvedTheme]);
 
   const isLucyRoute = location === '/' || location === '/chat' || location === '/lucy' || location === '/chat/pro';
-  const showLucyPane = isDuoUnfolded || (isLucyRoute && !foldedCosmicRoom);
+  const showLucyPane = isDuoUnfolded || (foldedPane ? foldedPane === 'lucy' : isLucyRoute && !foldedCosmicRoom);
   const showContentPane = isDuoUnfolded || !showLucyPane;
 
   React.useEffect(() => {
@@ -769,7 +772,7 @@ function AppContent() {
 
     const handleNavClick = (e: any) => {
       const p = e?.detail?.path;
-      if (p) setFoldedCosmicRoom(false);
+      if (p) { setFoldedCosmicRoom(false); setFoldedPane(null); }
       if (p === '/' || p === '/chat' || p === '/lucy') {
         lastTouchedDuoPaneRef.current = mapDuoPaneSide('right', isDuoPanesSwapped);
       } else if (p) {

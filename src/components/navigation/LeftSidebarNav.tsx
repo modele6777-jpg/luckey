@@ -175,13 +175,7 @@ export default function LeftSidebarNav() {
     const handleLayoutChange = () => {
       if (typeof window === 'undefined') return;
       const unfolded = isDualPaneLayout();
-      setIsUnfolded((prev) => {
-        if (prev !== unfolded) {
-          // 화면 전환 시: 펼치면 기본적으로 펼쳐지고, 접으면 기본적으로 네잎클로버 버튼도 접힘
-          setIsChannelsOpen(unfolded);
-        }
-        return unfolded;
-      });
+      setIsUnfolded(unfolded);
     };
     handleLayoutChange();
     window.addEventListener('resize', handleLayoutChange, { passive: true });
@@ -193,6 +187,13 @@ export default function LeftSidebarNav() {
       window.visualViewport?.removeEventListener('resize', handleLayoutChange);
     };
   }, []);
+  const previousUnfolded = useRef(isUnfolded);
+  useEffect(() => {
+    if (previousUnfolded.current !== isUnfolded) {
+      previousUnfolded.current = isUnfolded;
+      setIsChannelsOpen(isUnfolded);
+    }
+  }, [isUnfolded]);
   const [location, navigate] = useLocation();
   const cleanPath = location ? location.split('?')[0].split('#')[0] : '/';
   const { resolvedTheme } = useTheme();
