@@ -8,12 +8,12 @@
  * 4. 사회계약과 상호 신뢰 연대도(Social Contract & Fiduciary Trust): 지배와 복종이 아닌 자유로운 동의와 상호 신뢰를 바탕으로 공정한 연대와 협력을 구축하는 역량.
  * 5. 관용과 다원성 존중·온건한 실용 분별력(Toleration & Practical Prudence): 서로 다른 신념과 개성을 포용하며, 맹목적 광신을 배격하고 상식과 이성에 기반한 평화적 공존을 이끄는 지혜.
  *
- * @version LUCKEY-JOHN-LOCKE-UNDERSTANDING-v2.0.0
+ * @version LUCKEY-JOHN-LOCKE-UNDERSTANDING-v2.2.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const BRITISH_JOHN_LOCKE_VERSION = 'LUCKEY-JOHN-LOCKE-UNDERSTANDING-v2.1.0';
+export const BRITISH_JOHN_LOCKE_VERSION = 'LUCKEY-JOHN-LOCKE-UNDERSTANDING-v2.2.0';
 
 export type LockeQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -57,6 +57,7 @@ export interface JohnLockeHumanUnderstandingResult {
   practiceGuidance: string;
   ritualAction: string;
   reflectionFocus: string;
+  reflectiveQuestion: string;
   boundaryNotice: string;
   interpretiveBoundary: string;
   lockeSynthesisMatrix: {
@@ -263,7 +264,11 @@ export function calculateJohnLockeHumanUnderstanding(
   const boundaryNotice = '존 로크 경험론 해석은 열린 수용과 상호 존중의 관점을 제안하는 상징·성찰 도구이며, 법적·의학적 판단이나 미래 예언이 아닙니다.';
   const baseDate = now ?? new Date();
   const kst = new Date(baseDate.getTime() + 9 * 60 * 60 * 1000);
-  const kstTimeLabel = `${temporalLockeRhythm.kstDateLabel} ${String(kst.getUTCHours()).padStart(2, '0')}:${String(kst.getUTCMinutes()).padStart(2, '0')} KST`;
+  const kstTimeLabel = `${temporalLockeRhythm.kstDateLabel}T${String(kst.getUTCHours()).padStart(2, '0')}:${String(kst.getUTCMinutes()).padStart(2, '0')}:00+09:00 (KST)`;
+  const trimmedQuery = (query ?? '').trim();
+  const reflectiveQuestion = trimmedQuery
+    ? `"${trimmedQuery}"의 상황 앞에 '${activeLockeTheme.themeTitleKo}'의 백지(Tabula Rasa)를 펼친다면, 과거의 선입견 대신 새로 확인한 경험과 정당한 경계는 무엇인가요?`
+    : `오늘 '${activeLockeTheme.themeTitleKo}'의 관점에서, 낡은 편견을 비우고 감각과 반성으로 새롭게 세워 볼 기준 하나는 무엇인가요?`;
   const lockeSynthesisMatrix = {
     coreInsight: activeLockeTheme.themeTitleKo,
     recommendedAction: topicGuidance.practiceGuidance,
@@ -285,6 +290,7 @@ export function calculateJohnLockeHumanUnderstanding(
     practiceGuidance: topicGuidance.practiceGuidance,
     ritualAction: topicGuidance.ritualAction,
     reflectionFocus: topicGuidance.reflectionFocus,
+    reflectiveQuestion,
     boundaryNotice,
     interpretiveBoundary: boundaryNotice,
     lockeSynthesisMatrix,
@@ -307,6 +313,7 @@ export function formatJohnLockeHumanUnderstandingPrompt(res: JohnLockeHumanUnder
     `- 질문 맞춤 실천 가이드: ${res.practiceGuidance}`,
     `- 일상 실천 의례: ${res.ritualAction}`,
     `- 핵심 성찰 질문: ${res.reflectionFocus}`,
+    `- 질문 맞춤 성찰 질문: ${res.reflectiveQuestion}`,
     `- 교차 매트릭스: 핵심(${res.lockeSynthesisMatrix.coreInsight}) | 실행(${res.lockeSynthesisMatrix.recommendedAction}) | 주의(${res.lockeSynthesisMatrix.cautionNotice})`,
     `- 핵심 원전 경구: "${res.focalLockeAphorism.aphorismKo}"`,
     `- 원전 출처: "${res.focalLockeAphorism.aphorismEn}" [${res.focalLockeAphorism.sourceContext}]`,
