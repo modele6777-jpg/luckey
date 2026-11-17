@@ -1,12 +1,22 @@
 [
   {
-    "version": "1.7.717",
-    "builtAt": "2026-11-17T09:42:00+09:00",
-    "summary": "융 그림자 원형·휴먼디자인 바디그래프·에니어그램 영혼통합 3대 엔진 성찰 질문 및 카탈로그 뜻 등록(v1.7.717)",
+    "version": "1.7.718",
+    "builtAt": "2026-11-17T09:45:00+09:00",
+    "summary": "융 그림자 원형·휴먼디자인 바디그래프·에니어그램 영혼통합 3대 엔진 성찰 질문 및 카탈로그 뜻 등록(v1.7.718)",
     "items": [
       "융 그림자 원형(shadowArchetypeEngine v2.1.0): +09:00 (KST) 표기·질문 반응형 성찰 질문(reflectiveQuestion)·question 인자 연동 및 summary 등록",
       "휴먼디자인 바디그래프(humanDesignBodyGraphEngine v2.1.0): +09:00 (KST) 표기·질문 반응형 성찰 질문(reflectiveQuestion) 및 summary 등록",
       "에니어그램 영혼통합(enneagramSoulIntegrationEngine v2.1.0): +09:00 (KST) 표기·질문 반응형 성찰 질문(reflectiveQuestion) 및 summary 등록"
+    ]
+  },
+  {
+    "version": "1.7.717",
+    "builtAt": "2026-11-17T09:40:00+09:00",
+    "summary": "유식학 8식·브레혼 법전·루 사밀다나크 3대 엔진 해석 경계 표준 연동(v1.7.717)",
+    "items": [
+      "불교 유식학 8식 정화 & 전식득지 엔진(v2.2.0): interpretiveBoundary 표준 필드 연동",
+      "고대 켈트 드루이드 브레혼 법전 엔진(v2.1.0): interpretiveBoundary 표준 필드 연동",
+      "아일랜드 켈트 루 사밀다나크 8대 기예 엔진(v2.1.0): interpretiveBoundary 표준 필드 연동"
     ]
   },
   {

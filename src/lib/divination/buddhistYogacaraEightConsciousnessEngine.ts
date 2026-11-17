@@ -13,7 +13,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const BUDDHIST_YOGACARA_CONSCIOUSNESS_ENGINE_VERSION = '2.1.0';
+export const BUDDHIST_YOGACARA_CONSCIOUSNESS_ENGINE_VERSION = '2.2.0';
 
 function toKstIso(now: Date): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -71,6 +71,7 @@ export interface BuddhistYogacaraConsciousnessReport {
   temporalAlayaRhythm: YogacaraTemporalRhythm;
   yogacaraSynthesisMatrix: YogacaraSynthesisMatrix;
   boundaryNotice: string;
+  interpretiveBoundary: string;
 }
 
 const YOGACARA_WISDOMS_BASE: Omit<YogacaraTransformedWisdom, 'resonanceScore'>[] = [
@@ -296,6 +297,7 @@ export function calculateBuddhistYogacaraConsciousness(
     temporalAlayaRhythm,
     yogacaraSynthesisMatrix,
     boundaryNotice,
+    interpretiveBoundary: boundaryNotice,
   };
 }
 

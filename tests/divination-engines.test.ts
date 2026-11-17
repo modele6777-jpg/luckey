@@ -4628,6 +4628,7 @@ test('Buddhist Yogacara Consciousness Engine: calculates eight consciousnesses p
   assert(rep.fourWisdomsHarmonizationIndex >= 0 && rep.fourWisdomsHarmonizationIndex <= 100);
   assert(rep.kleshaDefilementPurificationScore >= 0 && rep.kleshaDefilementPurificationScore <= 100);
   assert(rep.dominantWisdom.nameKo.length > 0);
+  assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatBuddhistYogacaraConsciousnessPrompt(rep);
   assert(prompt.includes('불교 유식학 8식 정화 & 아뢰야식 전식득지(轉識得智) 실측 데이터'));
   assert(prompt.includes(rep.dominantWisdom.nameKo));
@@ -5317,6 +5318,7 @@ test('Celtic Druid Brehon Law Justice Engine: calculates 4 cosmic justices, Cair
   assert(rep.firFlathaTruthSovereigntyIndex >= 0 && rep.firFlathaTruthSovereigntyIndex <= 100);
   assert(rep.brehonArbitrationClarityPower >= 0 && rep.brehonArbitrationClarityPower <= 100);
   assert(rep.activeJusticeRank.rankNameGaelic.length > 0);
+  assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatCelticBrehonLawPrompt(rep);
   assert(prompt.includes('고대 켈트 드루이드 《브레혼 법전(Brehon Law)》'));
   assert(prompt.includes(rep.activeJusticeRank.rankNameKo));
@@ -5545,6 +5547,7 @@ test('Celtic Tuatha Dé Danann Lugh Samildánach Engine: calculates polymath int
   assert(rep.magTuiredStrategicVictoryPower >= 0 && rep.magTuiredStrategicVictoryPower <= 100);
   assert(rep.eightArtsHarmoniousMastery >= 0 && rep.eightArtsHarmoniousMastery <= 100);
   assert(rep.activeCraftRank.rankNameOldIrish.length > 0);
+  assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatLughSamildanachPrompt(rep);
   assert(prompt.includes('켈트 투아하 데 다난 《루 라바다(Lugh Samildánach)》'));
   assert(prompt.includes(rep.activeCraftRank.rankNameKo));
