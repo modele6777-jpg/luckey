@@ -16,7 +16,7 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const CONTRACT_SHIELD_VERSION = 'LUCKEY-SHIELD-v2.0.0';
+export const CONTRACT_SHIELD_VERSION = 'LUCKEY-SHIELD-v2.1.0';
 
 export interface ContractChecklistItem {
   category: string;
@@ -66,6 +66,7 @@ export interface ContractShieldResult {
     cautionNotice: string;
   };
   boundaryNotice: string;
+  interpretiveBoundary: string;
   reflectiveQuestion?: string;
 
   summary: string;
@@ -251,6 +252,7 @@ export function calculateContractShield(params?: {
     temporalShieldRhythm,
     shieldSynthesisMatrix,
     boundaryNotice: '본 결과는 명리·주역 천수송 지혜와 표준 계약 리스크 원칙을 결합한 예방 체크리스트이며, 정식 법률 자문이 아닙니다.',
+    interpretiveBoundary: '본 결과는 명리·주역 천수송 지혜와 표준 계약 리스크 원칙을 결합한 예방 체크리스트이며, 정식 법률 자문이 아닙니다.',
     reflectiveQuestion,
     summary
   };

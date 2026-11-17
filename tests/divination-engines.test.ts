@@ -2354,6 +2354,7 @@ test('Contract Shield Engine: 계약 분쟁 리스크 및 5대 쉴드 체크리�
   assert(res.ichingSongWisdom.hexagram.length > 0);
   assert(res.calculatedAtKst.includes('KST'));
   assert(res.temporalShieldRhythm.negotiationWindow.length > 0);
+  assert(res.interpretiveBoundary.length > 0);
   const prompt = formatContractShieldPrompt(res);
   assert(prompt.includes(CONTRACT_SHIELD_VERSION));
   assert(prompt.includes('계약 & 분쟁 경계 기조'));
@@ -2441,6 +2442,7 @@ test('Deep Work Flow Engine: 딥워크 몰입 아키타입 및 최적 환경 매
   assert(res.calculatedAtKst.includes('KST'));
   assert(res.temporalFlowRhythm.focusWatchWindow.length > 0);
   assert(res.flowSynthesisMatrix.coreInsight.length > 0);
+  assert(res.interpretiveBoundary.length > 0);
   const prompt = formatDeepWorkFlowPrompt(res);
   assert(prompt.includes(DEEP_WORK_FLOW_VERSION));
   assert(prompt.includes('1순위 몰입 아키타입'));
@@ -2663,6 +2665,7 @@ test('Destiny Synastry Echo Engine: 다차원 운명 공명 에코 & 카르마�
   assert(res.relationshipDynamics.magneticPullFactor.length > 0);
   assert(res.goldenCommunicationCode.mindOpeningKeyword.length > 0);
   assert(res.calculatedAtKst.includes('KST'));
+  assert(res.interpretiveBoundary.length > 0);
   const prompt = formatDestinySynastryEchoPrompt(res);
   assert(prompt.includes('LUCKEY 다차원 운명 공명 에코 & 카르마적 인연 중력'));
   assert(prompt.includes(res.gravityType));
