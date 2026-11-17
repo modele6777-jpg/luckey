@@ -1,7 +1,7 @@
 {
-  "version": "1.7.800",
-  "builtAt": "2026-11-18T07:50:00+09:00",
-  "summary": "운명 공명 에코·오행 칠정 심신맥파·데카르트 코기토 3대 엔진 성찰 질문 보강 및 카탈로그 뜻 등록(v1.7.800)",
+  "version": "1.7.801",
+  "builtAt": "2026-11-18T07:53:00+09:00",
+  "summary": "운명 공명 에코·오행 칠정 심신맥파·데카르트 코기토 3대 엔진 성찰 질문 보강 및 카탈로그 뜻 등록(v1.7.801)",
   "items": [
     "운명 공명 에코(destinySynastryEchoEngine v2.3.0): +09:00 KST 표기·질문 반응형 reflectiveQuestion 추가·카탈로그 summary 등록",
     "오행 칠정 심신맥파(fiveEmotionsPulseEngine v2.3.0): +09:00 KST 표기·질문 반응형 reflectiveQuestion 추가·카탈로그 summary 등록",
