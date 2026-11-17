@@ -303,9 +303,11 @@ export function subscribeDuoLayout(onChange: () => void): () => void {
     const queries = DUO_SEGMENT_QUERIES.map(query => {
       try { return window.matchMedia(query); } catch { return null; }
     }).filter((query): query is MediaQueryList => Boolean(query));
-    const renderedResize = typeof ResizeObserver !== 'undefined' && window.navigator && isIosStandaloneWindow(window)
-      ? new ResizeObserver(schedule) : null;
-    if (renderedResize) renderedResize.observe(getLayoutViewportProbe(document));
+    const renderedResize = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(schedule) : null;
+    if (renderedResize) {
+      renderedResize.observe(document.documentElement);
+      renderedResize.observe(getLayoutViewportProbe(document));
+    }
     queries.forEach(query => query.addEventListener?.('change', schedule));
     for (const event of ['resize', 'orientationchange', 'pageshow', 'focus']) window.addEventListener(event, schedule, { passive: true });
     window.visualViewport?.addEventListener('resize', schedule, { passive: true });
