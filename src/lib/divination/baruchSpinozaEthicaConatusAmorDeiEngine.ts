@@ -8,7 +8,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const SPINOZA_CONATUS_AMORDEI_VERSION = 'LUCKEY-SPINOZA-CONATUS-AMORDEI-v2.2.0';
+export const SPINOZA_CONATUS_AMORDEI_VERSION = 'LUCKEY-SPINOZA-CONATUS-AMORDEI-v2.3.0';
 
 function describeSpinozaStage(score: number): string {
   if (score >= 88) return '지적 사랑(Amor Dei)의 고요한 충만 단계';
@@ -66,6 +66,7 @@ export interface BaruchSpinozaEthicaConatusResult {
   practiceGuidance: string;
   ritualAction: string;
   reflectionFocus: string;
+  reflectiveQuestion: string;
   boundaryNotice: string;
   interpretiveBoundary: string;
   spinozaPhilosophicalCounsel: {
@@ -263,6 +264,10 @@ export function calculateBaruchSpinozaEthicaConatus(
   const practiceGuidance = `${activeAffectState.actionCounsel} ${SPINOZA_TOPIC_PRACTICE[questionTopic]}`;
   const ritualAction = SPINOZA_TOPIC_RITUAL[questionTopic];
   const reflectionFocus = SPINOZA_TOPIC_REFLECTION[questionTopic];
+  const cleanQuestion = question.trim();
+  const reflectiveQuestion = cleanQuestion
+    ? `"${cleanQuestion}"에 담긴 수동 정념의 원인을 영원의 상 아래에서 살필 때, 지금 나의 코나투스를 키우는 관점은 무엇인가요?`
+    : reflectionFocus;
   const boundaryNotice = '이 관점은 스피노자 윤리학의 정념 전환과 인과적 이해라는 철학적 틀을 빌린 정성적 성찰이며, 우열의 점수나 확정적 예측이 아닙니다.';
 
   const counselTitle = `스피노자 에티카와 코나투스: ${activeAffectState.affectNameLatin}`;
@@ -284,6 +289,7 @@ export function calculateBaruchSpinozaEthicaConatus(
     practiceGuidance,
     ritualAction,
     reflectionFocus,
+    reflectiveQuestion,
     boundaryNotice,
     interpretiveBoundary: boundaryNotice,
     spinozaPhilosophicalCounsel: {
@@ -301,7 +307,7 @@ export function formatBaruchSpinozaEthicaConatusPrompt(res: BaruchSpinozaEthicaC
     `- 인식의 지평: ${res.focalEpistemicLevel.levelNameKo} [${res.focalEpistemicLevel.levelNameLatin}]`,
     `- 실천 조언 (${res.questionTopic}): ${res.practiceGuidance}`,
     `- 일상 의례: ${res.ritualAction}`,
-    `- 성찰 질문: ${res.reflectionFocus}`,
+    `- 성찰 질문: ${res.reflectiveQuestion}`,
     `- KST 코나투스 리듬 (${res.calculatedAtKst}): ${res.temporalConatusRhythm.kstWindow} (${res.temporalConatusRhythm.epistemicFocus}, ${describeSpinozaStage(res.temporalConatusRhythm.conatusClarityIndex)}) — ${res.temporalConatusRhythm.rhythmDirective}`,
     `- 에티카 매트릭스: 능동 정념 전환(${describeSpinozaStage(res.ethicaSynthesisMatrix.passiveToActiveTransition)}) / 인과 이해 깊이(${describeSpinozaStage(res.ethicaSynthesisMatrix.causalUnderstandingDepth)}) / 영원의 상 평정(${describeSpinozaStage(res.ethicaSynthesisMatrix.amorDeiEquanimity)}) → 종합(${describeSpinozaStage(res.ethicaSynthesisMatrix.overallSynthesis)})`,
     `- 해석 경계: ${res.boundaryNotice}`,

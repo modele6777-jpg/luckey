@@ -19,7 +19,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const BABYLONIAN_ENUMA_ELISH_VERSION = 'LUCKEY-BABYLONIAN-ENUMA-ELISH-v2.2.0';
+export const BABYLONIAN_ENUMA_ELISH_VERSION = 'LUCKEY-BABYLONIAN-ENUMA-ELISH-v2.3.0';
 
 function toKstIso(now: Date): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -80,6 +80,7 @@ export interface BabylonianEnumaElishReport {
   practiceGuidance: string;
   ritualAction: string;
   reflectionFocus: string;
+  reflectiveQuestion: string;
   counselNote: string;
   boundaryNotice: string;
   interpretiveBoundary: string;
@@ -314,6 +315,9 @@ export function calculateBabylonianEnumaElish(
   const synthesisMessage = `에누마 엘리쉬 창조 서사시의 원전에 따라, [${patronDeity.koreanName}]의 상징 아래 ${sovereigntyPosture}에 놓여 있습니다. "${patronDeity.sacredCommandment}"`;
 
   const boundaryNotice = '고대 바빌로니아 에누마 엘리쉬 서사시의 질서·창조 상징을 활용한 성찰적 관점이며, 확정적 예언이나 의학적·재정적 판단을 대신하지 않습니다.';
+  const reflectiveQuestion = question
+    ? `"${question}" 앞에서 ${patronDeity.koreanName}의 질서로 가장 먼저 가닥을 잡아야 할 한 가지는 무엇인가요?`
+    : themed.reflection;
 
   return {
     engineVersion: BABYLONIAN_ENUMA_ELISH_VERSION,
@@ -329,6 +333,7 @@ export function calculateBabylonianEnumaElish(
     practiceGuidance: themed.practice,
     ritualAction: themed.ritual,
     reflectionFocus: themed.reflection,
+    reflectiveQuestion,
     counselNote: `[에누마 엘리쉬 성찰] ${patronDeity.koreanName} · ${chosenEdict.title} — ${themed.practice}`,
     boundaryNotice,
     interpretiveBoundary: boundaryNotice,
@@ -357,7 +362,7 @@ export function formatBabylonianEnumaElishPrompt(report: BabylonianEnumaElishRep
 - **에누마 엘리쉬 교차 매트릭스**: ${report.babylonSynthesisMatrix.synthesizedVerdict}
 - **맥락별 실천 조언**: ${report.practiceGuidance}
 - **일상 의례**: ${report.ritualAction}
-- **성찰 질문**: ${report.reflectionFocus}
+- **성찰 질문**: ${report.reflectiveQuestion}
 - **에누마 엘리쉬 통합 나침반**: ${report.synthesisMessage}
 - **해석 경계**: ${report.boundaryNotice}`;
 }

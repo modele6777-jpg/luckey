@@ -4879,7 +4879,7 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'norseHavamalEighteenGaldr', nameKo: '하바말 오딘 18대 게알드르 룬 비전', icon: 'ᚱ', category: 'deep_master', summary: '《고에다》 〈하바말〉 오딘의 18대 게알드르 룬 주문으로 치유·수호·결박 해제의 내적 의지를 비추는 관점' },
   { key: 'ibnArabiWahdatAlWujud', nameKo: '이븐 아라비 존재의 단일성 심장 영지', icon: '🪞', category: 'deep_master' },
   { key: 'chonggamnokTenSanctuaries', nameKo: '정감록 10승지 영맥 피난처', icon: '⛰️', category: 'deep_master', summary: '《정감록》 감결의 궁궁을을과 10승지 영맥 비유로 세파 속에서도 내면의 중심과 평온한 안식처를 지키는 성찰을 이끕니다.' },
-  { key: 'balineseTriHitaKarana', nameKo: '발리 트리 히타 카라나 3대 조화', icon: '🌺', category: 'deep_master' },
+  { key: 'balineseTriHitaKarana', nameKo: '발리 트리 히타 카라나 3대 조화', icon: '🌺', category: 'deep_master', summary: '발리 힌두 트리 히타 카라나(신성·인간·자연) 3축과 생각·말·행동 3업 정화를 바탕으로 일상의 조화와 균형점을 짚어 주는 관점' },
   { key: 'hopiFourWorldsKachina', nameKo: '호피 4대 세계 카치나 정령 지혜', icon: '🦅', category: 'deep_master' },
   { key: 'donghakCheondoismCheonju', nameKo: '동학 시천주 지기금지 인내천 조화', icon: '🕊️', category: 'deep_master' },
   { key: 'incaAndeanThreePachaAyni', nameKo: '잉카 안데스 3대 파차 아이니 호혜', icon: '🦙', category: 'deep_master' },
