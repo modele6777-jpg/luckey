@@ -13,7 +13,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const KOREAN_DANGUN_CHEONBUIN_ENGINE_VERSION = '2.0.0';
+export const KOREAN_DANGUN_CHEONBUIN_ENGINE_VERSION = '2.1.0';
 
 export interface CheonbuTreasure {
   id: 'mirror' | 'sword' | 'bell';
@@ -65,6 +65,7 @@ export interface KoreanDangunCheonbuinReport {
   };
   ihwaSegyeRemedy: string; // 이화세계 개운 처방
   boundaryNotice: string;
+  interpretiveBoundary: string;
 }
 
 const TREASURES_DEF: Record<'mirror' | 'sword' | 'bell', Omit<CheonbuTreasure, 'activationPower'>> = {
@@ -243,6 +244,7 @@ export function calculateKoreanDangunCheonbuin(options?: {
     cheonbuinSynthesisMatrix,
     ihwaSegyeRemedy,
     boundaryNotice: '본 결과는 《삼국유사》 단군 천부삼인과 홍익인간 상징 체계에 따른 정성적 성찰 안내이며, 확정적 길흉 판정이 아닙니다.',
+    interpretiveBoundary: '본 결과는 《삼국유사》 단군 천부삼인과 홍익인간 상징 체계에 따른 정성적 성찰 안내이며, 확정적 길흉 판정이 아닙니다.',
   };
 }
 
