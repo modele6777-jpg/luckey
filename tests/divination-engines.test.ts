@@ -3532,6 +3532,7 @@ test('Feng Shui Eight Mansions Engine: calculates kua number, east/west mansion 
   assert(rep.calculatedAtKst.includes('KST'));
   assert(rep.temporalFengShuiRhythm.sunDirectionWindow.length > 0);
   assert(rep.fengShuiSynthesisMatrix.coreInsight.length > 0);
+  assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatFengShuiEightMansionsPrompt(rep);
   assert(prompt.includes('동양 정통 풍수 8택(八宅) 공간 에너지'));
   assert(prompt.includes(rep.kuaTrigram));
@@ -4006,6 +4007,7 @@ test('Finnish Kalevala Sampo Engine: calculates 3 Sampo wings and Sisu resilienc
   assert.equal(rep.engineVersion, FINNISH_KALEVALA_SAMPO_ENGINE_VERSION);
   assert(rep.sisuResilienceIndex >= 0 && rep.sisuResilienceIndex <= 100);
   assert(rep.sampoBalance.dominantWing.length > 0);
+  assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatFinnishKalevalaSampoPrompt(rep);
   assert(prompt.includes('고대 핀란드 칼레발라(Kalevala) 삼포(Sampo) & 9대 룬가 실측 데이터'));
   assert(prompt.includes(rep.sampoBalance.dominantWing));
@@ -4906,6 +4908,7 @@ test('Etruscan Augur Sixteen Sky Divination Engine: calculates Faustus auspice s
   assert(rep.cosmicSanctionStrength >= 0 && rep.cosmicSanctionStrength <= 100);
   assert(rep.activeRegion.regionNumber >= 1 && rep.activeRegion.regionNumber <= 16);
   assert(rep.augurSign.sacredSymbol.length > 0);
+  assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatEtruscanAugurSixteenSkyPrompt(rep);
   assert(prompt.includes('고대 에트루리아 16천궁 분할 & 아우구르 조점(Auspicium) 실측 리포트'));
   assert(prompt.includes(rep.activeRegion.quadrantKo));
