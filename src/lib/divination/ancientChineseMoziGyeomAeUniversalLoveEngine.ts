@@ -7,12 +7,12 @@
  * 3. 절용(節用) 및 절장(節葬): 허례허식과 낭비를 없애고 본질과 실용에 집중함
  * 4. 상현(尙賢) 및 천지(天志): 신분을 초월한 능력주의 인재 등용과 하늘의 공평무사한 정의 실천
  *
- * @version LUCKEY-MOZI-GYEOM-AE-v2.0.0
+ * @version LUCKEY-MOZI-GYEOM-AE-v2.2.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const MOZI_GYEOM_AE_VERSION = 'LUCKEY-MOZI-GYEOM-AE-v2.1.0';
+export const MOZI_GYEOM_AE_VERSION = 'LUCKEY-MOZI-GYEOM-AE-v2.2.0';
 
 export type MoziQuestionTopic = 'relationship' | 'decision' | 'simplicity' | 'reflection';
 
@@ -70,6 +70,8 @@ export interface MoziGyeomAeResult {
   temporalMohistRhythm: MoziTemporalRhythm;
   mohistSynthesisMatrix: MoziSynthesisMatrix;
   boundaryNotice: string;
+  ritualAction: string;
+  reflectionFocus: string;
   interpretiveBoundary: string;
 }
 
@@ -255,6 +257,8 @@ export function calculateMoziGyeomAe(
   const temporalMohistRhythm = buildMoziTemporalRhythm(now);
   const mohistSynthesisMatrix = buildMoziSynthesisMatrix(activeMohistStage, questionTopic, temporalMohistRhythm);
   const boundaryNotice = '이 풀이는 묵자 겸애·비공·절용 사상을 오늘의 선택과 관계에 비추어 보는 정성적 실천 지침이며, 수치 우열이나 확정적 예언이 아닙니다.';
+  const ritualAction = situationalMohistAudit.practicalDirective;
+  const reflectionFocus = `오늘 내가 피해야 할 '${situationalMohistAudit.exclusionTrap}' 대신, 나와 상대를 함께 살리는 교상리(${activeMohistStage.stageNameHanja})의 첫걸음은 무엇일까요?`;
 
   return {
     engineVersion: MOZI_GYEOM_AE_VERSION,
@@ -272,6 +276,8 @@ export function calculateMoziGyeomAe(
     temporalMohistRhythm,
     mohistSynthesisMatrix,
     boundaryNotice,
+    ritualAction,
+    reflectionFocus,
     interpretiveBoundary: boundaryNotice,
   };
 }

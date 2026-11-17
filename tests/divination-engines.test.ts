@@ -5607,6 +5607,7 @@ test('Ancient Egyptian Ptah Memphite Theology Engine: calculates heart thought c
   assert(rep.situationalPtahAudit.shabakaInscription.length > 0);
   assert(rep.temporalPtahRhythm.workshopWindow.length > 0);
   assert(rep.ptahSynthesisMatrix.synthesizedVerdict.length > 0);
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatPtahMemphitePrompt(rep);
   assert(prompt.includes('고대 이집트 멤피스 신학 《프타(Ptah)》'));
@@ -5745,6 +5746,7 @@ test('Ancient Chinese Mozi Gyeom-Ae Universal Love Engine: calculates Gyeom-Ae l
   assert(rep.jeolYongSimplicityPurity >= 0 && rep.jeolYongSimplicityPurity <= 100);
   assert(rep.tianZhiCosmicJusticeScore >= 0 && rep.tianZhiCosmicJusticeScore <= 100);
   assert(rep.activeMohistStage.stageNameHanja.length > 0);
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatMoziGyeomAePrompt(rep);
   assert(prompt.includes('춘추전국시대 묵가(墨家) 묵자(墨子) 겸애교리'));
@@ -5841,6 +5843,7 @@ test('Ancient Greek Aristotle Mesotes Eudaimonia Engine: calculates Golden Mean,
   assert(rep.telosPurposeOrientation >= 0 && rep.telosPurposeOrientation <= 100);
   assert(rep.areteExcellenceIntegrity >= 0 && rep.areteExcellenceIntegrity <= 100);
   assert(rep.activeVirtueStage.virtueNameGreek.length > 0);
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatAristotleMesotesPrompt(rep);
   assert(prompt.includes('고대 그리스 아리스토텔레스 니코마코스 윤리학 중용(Mesotes)'));
   assert(prompt.includes(rep.activeVirtueStage.virtueNameKo));
