@@ -16,7 +16,7 @@
 import type { UserProfile } from '../sharedState';
 import { calculateDetailedSaju, type SajuAnalysisResult } from '../sajuAnalysis';
 
-export const FIVE_EMOTIONS_PULSE_VERSION = 'LUCKEY-FIVE-EMOTIONS-v2.0.0';
+export const FIVE_EMOTIONS_PULSE_VERSION = 'LUCKEY-FIVE-EMOTIONS-v2.1.0';
 
 export type TraditionalEmotion = '노(怒-분노/추진)' | '희(喜-환희/산만)' | '사(思-사색/번민)' | '비우(悲憂-슬픔/위축)' | '공경(恐驚-공포/불안)';
 
@@ -64,6 +64,7 @@ export interface FiveEmotionsPulseReport {
     cautionNotice: string;
   };
   boundaryNotice: string;
+  interpretiveBoundary: string;
 }
 
 function getTemporalPulseRhythm(now: Date) {
@@ -292,6 +293,7 @@ export function calculateFiveEmotionsPulse(
     temporalPulseRhythm,
     pulseSynthesisMatrix,
     boundaryNotice: '본 결과는 한의학 황제내경의 오행·칠정 상징 이론을 활용한 정성적 심신 성찰 안내이며, 의학적 진단이 아닙니다.',
+    interpretiveBoundary: '본 결과는 한의학 황제내경의 오행·칠정 상징 이론을 활용한 정성적 심신 성찰 안내이며, 의학적 진단이 아닙니다.',
   };
 }
 

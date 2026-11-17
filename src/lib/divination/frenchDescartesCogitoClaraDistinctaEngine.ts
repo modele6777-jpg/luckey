@@ -19,7 +19,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const DESCARTES_COGITO_VERSION = 'LUCKEY-DESCARTES-COGITO-v2.0.0';
+export const DESCARTES_COGITO_VERSION = 'LUCKEY-DESCARTES-COGITO-v2.1.0';
 
 export type DescartesQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -63,6 +63,7 @@ export interface FrenchDescartesCogitoResult {
   ritualAction: string;
   reflectionFocus: string;
   boundaryNotice: string;
+  interpretiveBoundary: string;
   descartesSynthesisMatrix: {
     coreInsight: string;
     recommendedAction: string;
@@ -274,6 +275,7 @@ export function calculateFrenchDescartesCogito(
     ritualAction: topicGuidance.ritualAction,
     reflectionFocus: topicGuidance.reflectionFocus,
     boundaryNotice,
+    interpretiveBoundary: boundaryNotice,
     descartesSynthesisMatrix,
     descartesPhilosophicalCounsel: {
       counselTitle,

@@ -13,7 +13,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const FRENCH_EMMANUEL_LEVINAS_ETHICS_VERSION = 'LUCKEY-EMMANUEL-LEVINAS-ETHICS-v2.0.0';
+export const FRENCH_EMMANUEL_LEVINAS_ETHICS_VERSION = 'LUCKEY-EMMANUEL-LEVINAS-ETHICS-v2.1.0';
 
 export type LevinasQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -58,6 +58,7 @@ export interface FrenchEmmanuelLevinasFaceOfOtherHospitalityResult {
   ritualAction: string;
   reflectionFocus: string;
   boundaryNotice: string;
+  interpretiveBoundary: string;
   levinasSynthesisMatrix: {
     coreInsight: string;
     recommendedAction: string;
@@ -292,6 +293,7 @@ export function calculateFrenchEmmanuelLevinasFaceOfOtherHospitality(
     ritualAction: topicGuidance.ritualAction,
     reflectionFocus: topicGuidance.reflectionFocus,
     boundaryNotice,
+    interpretiveBoundary: boundaryNotice,
     levinasSynthesisMatrix,
     levinasComprehensiveGuidance: {
       guidanceTitle,
