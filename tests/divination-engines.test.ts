@@ -10750,3 +10750,29 @@ test('Heraclitus v2.4 · Plotinus v2.2 · AmeshaSpentas v2.3: reflectiveQuestion
   const amPrompt = formatZoroastrianAmeshaSpentasPrompt(am);
   assert.ok(amPrompt.includes('KST') && amPrompt.includes('성찰 질문') && amPrompt.includes('해석 경계'));
 });
+
+test('IlmAlRaml v2.3 · Adler v2.2 · Kafka v2.2: reflectiveQuestion & KST prompt output', () => {
+  const now = new Date('2026-11-18T05:20:00+09:00');
+  const query = '복잡한 관계와 선택 앞에서 내 몫의 중심을 세우고 싶어요';
+
+  const rm = calculateArabicIlmAlRaml({ profile, targetDate: now, question: query });
+  assert.equal(rm.engineVersion, ARABIC_ILM_AL_RAML_ENGINE_VERSION);
+  assert.match(rm.calculatedAtKst, /KST/);
+  assert.ok(rm.reflectiveQuestion.includes(query));
+  const rmPrompt = formatArabicIlmAlRamlPrompt(rm);
+  assert.ok(rmPrompt.includes('KST') && rmPrompt.includes('성찰 질문') && rmPrompt.includes('해석 경계'));
+
+  const ad = calculateAustrianAlfredAdlerIndividualPsychology(profile, query, now);
+  assert.equal(ad.engineVersion, AUSTRIAN_ALFRED_ADLER_INDIVIDUAL_PSYCHOLOGY_VERSION);
+  assert.match(ad.calculatedAtKst, /KST/);
+  assert.ok(ad.reflectiveQuestion.includes(query));
+  const adPrompt = formatAustrianAlfredAdlerIndividualPsychologyPrompt(ad);
+  assert.ok(adPrompt.includes('KST') && adPrompt.includes('성찰 질문') && adPrompt.includes('해석 경계'));
+
+  const kf = calculateAustrianFranzKafkaExistentialTruth(profile, query, now);
+  assert.equal(kf.engineVersion, AUSTRIAN_FRANZ_KAFKA_EXISTENTIAL_TRUTH_VERSION);
+  assert.match(kf.calculatedAtKst, /KST/);
+  assert.ok(kf.reflectiveQuestion.includes(query));
+  const kfPrompt = formatAustrianFranzKafkaExistentialTruthPrompt(kf);
+  assert.ok(kfPrompt.includes('KST') && kfPrompt.includes('성찰 질문') && kfPrompt.includes('해석 경계'));
+});

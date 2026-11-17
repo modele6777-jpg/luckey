@@ -8,12 +8,12 @@
  * 4. 얼어붙은 바다를 깨는 도끼와 같은 명민함 (Axe for the Frozen Sea Insight Index): 일상의 무감각과 안일함을 깨부수고 삶의 전율과 본질을 일깨우는 날카로운 통찰력.
  * 5. 깊은 고독의 내면 승화 회복탄력성 (Transformative Solitude & Creative Resilience Score): 고립과 고통의 심연을 정직하게 관통하여 예술적 사색과 내적 순수성으로 승화하는 힘.
  *
- * @version LUCKEY-FRANZ-KAFKA-EXISTENTIAL-TRUTH-v2.0.0
+ * @version LUCKEY-FRANZ-KAFKA-EXISTENTIAL-TRUTH-v2.2.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const AUSTRIAN_FRANZ_KAFKA_EXISTENTIAL_TRUTH_VERSION = 'LUCKEY-FRANZ-KAFKA-EXISTENTIAL-TRUTH-v2.1.0';
+export const AUSTRIAN_FRANZ_KAFKA_EXISTENTIAL_TRUTH_VERSION = 'LUCKEY-FRANZ-KAFKA-EXISTENTIAL-TRUTH-v2.2.0';
 
 export type KafkaQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -67,6 +67,7 @@ export interface AustrianFranzKafkaExistentialTruthResult {
   questionTopic: KafkaQuestionTopic;
   situationalKafkaAudit: KafkaSituationalAudit;
   temporalKafkaRhythm: KafkaTemporalRhythm;
+  reflectiveQuestion: string;
   interpretiveBoundary: string;
   kafkaSynthesisMatrix: {
     coreInsight: string;
@@ -309,6 +310,10 @@ export function calculateAustrianFranzKafkaExistentialTruth(
     recommendedAction: situationalKafkaAudit.practiceGuidance,
     cautionNotice: '외부의 모호함과 타인의 시선에 맞춰 내면의 진실한 중심을 꺾지 마십시오.',
   };
+  const trimmedQ = (query ?? '').trim();
+  const reflectiveQuestion = trimmedQ
+    ? `지금 "${trimmedQ}"의 물음 앞에서, ${situationalKafkaAudit.reflectionFocus}`
+    : situationalKafkaAudit.reflectionFocus;
 
   return {
     engineVersion: AUSTRIAN_FRANZ_KAFKA_EXISTENTIAL_TRUTH_VERSION,
@@ -323,6 +328,7 @@ export function calculateAustrianFranzKafkaExistentialTruth(
     questionTopic,
     situationalKafkaAudit,
     temporalKafkaRhythm,
+    reflectiveQuestion,
     interpretiveBoundary: situationalKafkaAudit.boundaryNotice,
     kafkaSynthesisMatrix,
     kafkaComprehensiveGuidance: {
@@ -345,7 +351,7 @@ export function formatAustrianFranzKafkaExistentialTruthPrompt(
     `- 실천적 통찰: ${res.activeKafkaTheme.pragmaticInsight}`,
     `- 질문 맞춤 조언: ${res.situationalKafkaAudit.practiceGuidance}`,
     `- 일상 의례 제안: ${res.situationalKafkaAudit.ritualAction}`,
-    `- 성찰 질문: ${res.situationalKafkaAudit.reflectionFocus}`,
+    `- 성찰 질문: ${res.reflectiveQuestion}`,
     `- 조언 요약: ${res.situationalKafkaAudit.counselNote}`,
     `- 교차 매트릭스: 핵심(${res.kafkaSynthesisMatrix.coreInsight}) | 실행(${res.kafkaSynthesisMatrix.recommendedAction}) | 주의(${res.kafkaSynthesisMatrix.cautionNotice})`,
     `- 카프카 원전 명언: "${res.focalKafkaAphorism.aphorismKo}" (${res.focalKafkaAphorism.aphorismGerman})`,

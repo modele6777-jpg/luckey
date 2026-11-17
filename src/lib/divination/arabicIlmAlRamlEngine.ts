@@ -1,6 +1,6 @@
 import { UserProfile } from '../sharedState';
 
-export const ARABIC_ILM_AL_RAML_ENGINE_VERSION = '2.2.0';
+export const ARABIC_ILM_AL_RAML_ENGINE_VERSION = '2.3.0';
 
 export interface ArabicIlmAlRamlReport {
   engineVersion: string;
@@ -34,6 +34,7 @@ export interface ArabicIlmAlRamlReport {
   boundaryNotice: string;
   ritualAction: string;
   reflectionFocus: string;
+  reflectiveQuestion: string;
   interpretiveBoundary: string;
   synthesisPrompt: string;
 }
@@ -307,6 +308,10 @@ export function calculateArabicIlmAlRaml(options?: {
     cautionNotice: `4원소 점(${fig.dots})의 균형을 잃지 않도록 성급한 단정을 피하십시오.`,
   };
   const boundaryNotice = '본 결과는 아라비아 일무 알-람말 16 형상 지오맨시 상징에 기반한 정성적 성찰 가이드이며, 확정적 예언이 아닙니다.';
+  const trimmedQ = (options?.question || '').trim();
+  const reflectiveQuestion = trimmedQ
+    ? `지금 "${trimmedQ}"의 물음 앞에서, ${fig.latin}(${fig.house})의 징표가 가리키는 핵심 중 내가 가장 먼저 정리해야 할 현실의 한 걸음은 무엇인가요?`
+    : `${fig.latin}(${fig.house})의 징표가 비추는 지금 국면에서 내가 가장 먼저 분명히 세워야 할 기준은 무엇인가요?`;
 
   const synthesisPrompt = `
 [고대 아랍 일무 알-람말(‘Ilm al-Raml) 16 형상 & 지오맨시(Geomancy) 상징 성찰 참고]
@@ -327,6 +332,7 @@ export function calculateArabicIlmAlRaml(options?: {
    - 질문 맥락 감사 (${situationalRamlAudit.focusTheme}): ${situationalRamlAudit.tacticalStep}
    - KST 시공간 리듬: ${temporalRamlRhythm.geomanticWatchWindow} / ${temporalRamlRhythm.seasonalEarthTone}
    - 교차 매트릭스: 핵심(${ramlSynthesisMatrix.coreInsight}) | 실행(${ramlSynthesisMatrix.recommendedAction}) | 주의(${ramlSynthesisMatrix.cautionNotice})
+   - 성찰 질문: ${reflectiveQuestion}
    - 해석 경계: ${boundaryNotice}
 ======================================================================
 [AI 해석 지침]: 본 리포트는 전통 16개 형상의 상징을 참고해 입력값과 구현된 규칙에 따라 구성한 앱의 성찰 안내이며, 실제 점술 의례나 검증된 확률·예측 결과가 아닙니다. 형상과 카디 판결은 문화적 참고로 설명하고 확정 예언처럼 표현하지 마십시오.
@@ -351,6 +357,7 @@ export function calculateArabicIlmAlRaml(options?: {
     boundaryNotice,
     ritualAction: fig.guidance,
     reflectionFocus: situationalRamlAudit.courtNote,
+    reflectiveQuestion,
     interpretiveBoundary: boundaryNotice,
     synthesisPrompt,
   };

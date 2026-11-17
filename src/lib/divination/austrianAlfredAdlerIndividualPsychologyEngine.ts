@@ -9,12 +9,12 @@
  * 4. 목적론적 재해석 및 미래 창조력(Teleological Reframing & Future Creation Index): 과거 트라우마에 얽매이지 않고 지금 여기서 새로운 목적을 선택하는 힘.
  * 5. 불완전할 용기 및 공감적 연결 회복탄력성(Courage to Be Imperfect & Empathetic Connection Score): 완벽주의의 가면을 벗고 온전한 나로 마주하는 회복탄력성.
  *
- * @version LUCKEY-ADLER-INDIVIDUAL-PSYCHOLOGY-v2.0.0
+ * @version LUCKEY-ADLER-INDIVIDUAL-PSYCHOLOGY-v2.2.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const AUSTRIAN_ALFRED_ADLER_INDIVIDUAL_PSYCHOLOGY_VERSION = 'LUCKEY-ADLER-INDIVIDUAL-PSYCHOLOGY-v2.1.0';
+export const AUSTRIAN_ALFRED_ADLER_INDIVIDUAL_PSYCHOLOGY_VERSION = 'LUCKEY-ADLER-INDIVIDUAL-PSYCHOLOGY-v2.2.0';
 
 export type AdlerQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -58,6 +58,7 @@ export interface AustrianAlfredAdlerIndividualPsychologyResult {
   practiceGuidance: string;
   ritualAction: string;
   reflectionFocus: string;
+  reflectiveQuestion: string;
   boundaryNotice: string;
   interpretiveBoundary: string;
   situationalAdlerAudit: {
@@ -286,6 +287,10 @@ export function calculateAustrianAlfredAdlerIndividualPsychology(
     recommendedAction: topicGuidance.practiceGuidance,
     cautionNotice: '타인의 과제까지 내 어깨에 짊어지거나 완벽해야 사랑받는다는 불안에 갇히지 마십시오.',
   };
+  const trimmedQ = (query ?? '').trim();
+  const reflectiveQuestion = trimmedQ
+    ? `지금 "${trimmedQ}"의 상황 앞에서, ${topicGuidance.reflectionFocus}`
+    : topicGuidance.reflectionFocus;
 
   return {
     engineVersion: AUSTRIAN_ALFRED_ADLER_INDIVIDUAL_PSYCHOLOGY_VERSION,
@@ -302,6 +307,7 @@ export function calculateAustrianAlfredAdlerIndividualPsychology(
     practiceGuidance: topicGuidance.practiceGuidance,
     ritualAction: topicGuidance.ritualAction,
     reflectionFocus: topicGuidance.reflectionFocus,
+    reflectiveQuestion,
     boundaryNotice,
     interpretiveBoundary: boundaryNotice,
     situationalAdlerAudit,
@@ -326,7 +332,7 @@ export function formatAustrianAlfredAdlerIndividualPsychologyPrompt(
     `- 행동 조언: ${res.activeAdlerTheme.practicalCounsel}`,
     `- 질문 맞춤 실천 가이드: ${res.practiceGuidance}`,
     `- 일상 실천 의례: ${res.ritualAction}`,
-    `- 핵심 성찰 질문: ${res.reflectionFocus}`,
+    `- 핵심 성찰 질문: ${res.reflectiveQuestion}`,
     `- 교차 매트릭스: 핵심(${res.adlerSynthesisMatrix.coreInsight}) | 실행(${res.adlerSynthesisMatrix.recommendedAction}) | 주의(${res.adlerSynthesisMatrix.cautionNotice})`,
     `- 아들러 원전 명언: "${res.focalAdlerAphorism.aphorismKo}"`,
     `- 원문 인용: "${res.focalAdlerAphorism.aphorismEn}"`,

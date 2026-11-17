@@ -1,12 +1,22 @@
 [
   {
-    "version": "1.7.769",
-    "builtAt": "2026-11-18T05:20:00+09:00",
-    "summary": "크로노-트랜짓, 대화 속 인연 듀얼 매트릭스, 계약·분쟁 쉴드 3대 엔진 실천 의례 및 성찰 질문 표준 연동(v1.7.769)",
+    "version": "1.7.770",
+    "builtAt": "2026-11-18T05:23:00+09:00",
+    "summary": "크로노-트랜짓, 대화 속 인연 듀얼 매트릭스, 계약·분쟁 쉴드 3대 엔진 실천 의례 및 성찰 질문 표준 연동(v1.7.770)",
     "items": [
       "크로노-트랜짓 실시간 일진·행성 트랜짓 엔진(v2.3.0): ritualAction·reflectionFocus 표준 필드 연동",
       "대화 속 인연 자동 감지 & 듀얼 매트릭스 엔진(v2.3.0): ritualAction·reflectionFocus 표준 필드 연동",
       "계약·분쟁 방어 & 관재구설 쉴드 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동"
+    ]
+  },
+  {
+    "version": "1.7.769",
+    "builtAt": "2026-11-18T05:20:00+09:00",
+    "summary": "아랍 일무 알-람말·아들러·카프카 3대 엔진 성찰 질문 및 카탈로그 보강(v1.7.769)",
+    "items": [
+      "아랍 일무 알-람말 지오맨시(arabicIlmAlRamlEngine v2.3.0): 질문 반응형 reflectiveQuestion 추가 및 ALL_DCE_ENGINES summary 등록",
+      "알프레트 아들러 개인심리학(austrianAlfredAdlerIndividualPsychologyEngine v2.2.0): 질문 반응형 reflectiveQuestion 추가 및 프롬프트 출력 연동",
+      "프란츠 카프카 실존 진실(austrianFranzKafkaExistentialTruthEngine v2.2.0): 질문 반응형 reflectiveQuestion 추가 및 프롬프트 출력 연동"
     ]
   },
   {
