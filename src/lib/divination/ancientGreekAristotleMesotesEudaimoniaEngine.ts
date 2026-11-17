@@ -7,12 +7,12 @@
  * 3. 실천적 지혜 프로네시스(Phronesis): 구체적인 상황 속에서 올바른 행동의 척도를 가늠하는 이성적 판단력.
  * 4. 텔로스(Telos, 목적론): 모든 존재는 내재된 잠재태(Dynamis)를 실현태(Energeia)로 꽃피우려는 궁극의 목적을 지닌다.
  *
- * @version LUCKEY-ARISTOTLE-MESOTES-EUDAIMONIA-v2.0.0
+ * @version LUCKEY-ARISTOTLE-MESOTES-EUDAIMONIA-v2.3.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const ARISTOTLE_MESOTES_VERSION = 'LUCKEY-ARISTOTLE-MESOTES-EUDAIMONIA-v2.2.0';
+export const ARISTOTLE_MESOTES_VERSION = 'LUCKEY-ARISTOTLE-MESOTES-EUDAIMONIA-v2.3.0';
 
 function formatAristotleKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -85,6 +85,8 @@ export interface AristotleMesotesResult {
   // v2.1.0 순수 정성 실천·성찰·경계
   dailyPracticeRitual: string;
   reflectiveQuestion: string;
+  ritualAction: string;
+  reflectionFocus: string;
   interpretiveBoundary: string;
   aristotleSynthesisMatrix?: {
     dominantTension: string;
@@ -352,6 +354,8 @@ export function calculateAristotleMesotes(
     eudaimoniaBalanceMatrix,
     dailyPracticeRitual,
     reflectiveQuestion,
+    ritualAction: dailyPracticeRitual,
+    reflectionFocus: reflectiveQuestion,
     interpretiveBoundary,
     aristotleSynthesisMatrix,
   };
