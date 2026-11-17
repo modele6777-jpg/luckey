@@ -1,12 +1,22 @@
 [
   {
-    "version": "1.7.785",
-    "builtAt": "2026-11-18T06:40:00+09:00",
-    "summary": "자크 데리다, 장 자크 루소, 장 폴 사르트르 3대 엔진 실천 의례 및 성찰 질문 표준 연동(v1.7.785)",
+    "version": "1.7.786",
+    "builtAt": "2026-11-18T06:43:00+09:00",
+    "summary": "자크 데리다, 장 자크 루소, 장 폴 사르트르 3대 엔진 실천 의례 및 성찰 질문 표준 연동(v1.7.786)",
     "items": [
       "자크 데리다 《그라마톨로지》 해체·차연 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동",
       "장 자크 루소 《에밀·사회계약론》 자연·진정성 엔진(v2.1.0): ritualAction·reflectionFocus 표준 필드 연동",
       "장 폴 사르트르 《존재와 무》 실존·앙가주망 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동"
+    ]
+  },
+  {
+    "version": "1.7.785",
+    "builtAt": "2026-11-18T06:40:00+09:00",
+    "summary": "칼데아 물핀·노자 도덕경·마의상법 12궁 3대 엔진 성찰 질문 및 카탈로그 뜻 보강(v1.7.785)",
+    "items": [
+      "칼데아 물핀 12조디악(chaldeanMulApinAstrologyEngine v2.3.0): 질문 반응형 reflectiveQuestion 추가·프롬프트 연동 및 ALL_DCE_ENGINES 카탈로그 summary 등록",
+      "노자 도덕경 상선약수(chineseLaoziDaodejingWaterWayEngine v2.5.0): 질문 반응형 reflectiveQuestion 추가·프롬프트 연동",
+      "마의도사 마의상법 12궁(chineseMayiMianxiangTwelvePalacesEngine v2.3.0): 질문 반응형 reflectiveQuestion 추가·+09:00 KST 표기 통일 및 ALL_DCE_ENGINES 카탈로그 summary 등록"
     ]
   },
   {

@@ -28,7 +28,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const MAYI_MIANXIANG_VERSION = '2.2.0';
+export const MAYI_MIANXIANG_VERSION = '2.3.0';
 
 export interface MayiMianxiangReport {
   engineVersion: string;
@@ -73,6 +73,7 @@ export interface MayiMianxiangReport {
   boundaryNotice: string;
   ritualAction: string;
   reflectionFocus: string;
+  reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
 
@@ -201,7 +202,7 @@ function getTemporalMayiRhythm(now: Date) {
           : '겨울 · 자황응축(紫黃凝縮) 기색 (내면의 고요한 품격이 깊어지는 시기)';
 
   return {
-    kstTimeLabel: `${y}-${m}-${d} ${hh}:${mm} KST`,
+    kstTimeLabel: `${y}-${m}-${d}T${hh}:${mm}:00+09:00`,
     yintangWatchWindow,
     seasonalQiColorTone,
     temporalGuidance: `${yintangWatchWindow} · ${seasonalQiColorTone}의 흐름에 맞추어 상유심생(相由心生)의 여유를 지키십시오.`,
@@ -274,6 +275,10 @@ export function calculateMayiMianxiang(
     cautionNotice: '외적 조건이나 타인의 시선에 과도하게 긴장해 본래의 편안한 기색을 잃지 않도록 경계하십시오.',
   };
 
+  const reflectiveQuestion = question
+    ? `질문 "${question}"을 마주한 지금, 주재 [${primaryPalace.nameKo}]와 심상(心相)의 거울 앞에서 가장 부드럽게 가다듬을 내 태도는 무엇인가요?`
+    : `주재 [${primaryPalace.nameKo}]와 심상(心相)의 거울 앞에서, 지금 내 표정과 마음을 가장 부드럽게 가다듬을 한 가지는 무엇인가요?`;
+
   return {
     engineVersion: MAYI_MIANXIANG_VERSION,
     calculatedAt: now.toISOString(),
@@ -291,7 +296,8 @@ export function calculateMayiMianxiang(
     mayiDaoistMorphologicalAdvice,
     boundaryNotice: '본 결과는 《마의상법》의 심상(心相) 및 12궁 상징 철학에 기반한 정성적 성찰 안내이며, 외모 평가나 확정적 길흉 판정이 아닙니다.',
     ritualAction: situationalMayiAudit.expressionPractice,
-    reflectionFocus: `주재 [${primaryPalace.nameKo}]와 심상(心相)의 거울 앞에서, 지금 내 표정과 마음을 가장 부드럽게 가다듬을 한 가지는 무엇인가요?`,
+    reflectionFocus: reflectiveQuestion,
+    reflectiveQuestion,
     interpretiveBoundary: '본 결과는 《마의상법》의 심상(心相) 및 12궁 상징 철학에 기반한 정성적 성찰 안내이며, 외모 평가나 확정적 길흉 판정이 아닙니다.',
   };
 }
@@ -309,5 +315,6 @@ export function formatMayiMianxiangPrompt(report: MayiMianxiangReport): string {
 - **마의상법 교차 매트릭스**: 핵심(${report.mayiSynthesisMatrix.coreInsight}) | 실행(${report.mayiSynthesisMatrix.recommendedAction}) | 주의(${report.mayiSynthesisMatrix.cautionNotice})
 - **마의도사 심상 처방**:
   - "${report.mayiDaoistMorphologicalAdvice}"
+- **질문 맞춤 성찰 질문**: ${report.reflectiveQuestion}
 - **해석 경계**: ${report.boundaryNotice}`;
 }
