@@ -17,7 +17,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const EGYPTIAN_DECANS_VERSION = 'LUCKEY-EGYPTIAN-DECANS-v2.1.0';
+export const EGYPTIAN_DECANS_VERSION = 'LUCKEY-EGYPTIAN-DECANS-v2.2.0';
 
 export interface DecanSituationalAudit {
   navigationAxis: string;
@@ -65,6 +65,7 @@ export interface EgyptianThirtySixDecansReport {
   decanSynthesisMatrix: DecanSynthesisMatrix;
   spiritualNavigationGuidance: string; // 누트(Nut) 천구 항해 지침
   decanAltarPrescription: string;      // 데칸 제단 일상 개운 행동
+  interpretiveBoundary: string;
 }
 
 const EGYPTIAN_DEITIES_LIST: Array<Omit<DecanDeityInfo, 'decanNumber' | 'zodiacSign' | 'decanDegree'>> = [
@@ -295,6 +296,7 @@ export function calculateEgyptianThirtySixDecans(params: {
     decanSynthesisMatrix,
     spiritualNavigationGuidance,
     decanAltarPrescription,
+    interpretiveBoundary: '덴데라 36데칸 천문 상징을 빌린 정성적 성찰 참고 관점이며, 개인 점수나 확정 예언이 아닙니다.',
   };
 }
 

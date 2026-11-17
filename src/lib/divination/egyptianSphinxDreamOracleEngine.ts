@@ -8,7 +8,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const EGYPTIAN_SPHINX_DREAM_ORACLE_ENGINE_VERSION = 'LUCKEY-EGYPTIAN-SPHINX-v2.1.0';
+export const EGYPTIAN_SPHINX_DREAM_ORACLE_ENGINE_VERSION = 'LUCKEY-EGYPTIAN-SPHINX-v2.2.0';
 
 export interface SphinxVirtue {
   nameKo: string;
@@ -58,6 +58,7 @@ export interface EgyptianSphinxDreamOracleReport {
   thutmosePromise: string;
   sphinxRiddleInsight: string;
   reHorakhtyDawnCommand: string;
+  interpretiveBoundary: string;
 }
 
 function simpleHash(str: string): number {
@@ -261,6 +262,7 @@ export function calculateEgyptianSphinxDreamOracle(options?: {
     thutmosePromise,
     sphinxRiddleInsight,
     reHorakhtyDawnCommand,
+    interpretiveBoundary: '투트모세 4세 꿈의 비석과 스핑크스 4대 테트라모르프 상징을 빌린 정성적 조망 참고 관점이며, 개인 점수나 확정 예언이 아닙니다.',
   };
 }
 
