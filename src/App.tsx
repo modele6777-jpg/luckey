@@ -1,3 +1,4 @@
+import { getOpenScreenOverlayPane } from './components/layout/ScreenPortal';
 import { markFoldRuntime } from './lib/foldRuntimeTrace';
 import { RetainedPane } from './components/layout/RetainedPane';
 import { OverlayPaneContext } from './components/layout/OverlayPaneContext';
@@ -327,7 +328,11 @@ function AppContent() {
           currentPath: window.location.pathname || '/',
           lastLeftChannelPath: lastLeftChannelPathRef.current,
         });
-        if (cover.kind === 'cosmic') {
+        const popupPane = getOpenScreenOverlayPane();
+        if (popupPane) {
+          setFoldedCosmicRoom(popupPane === 'content' && cover.kind === 'cosmic');
+          setFoldedPane(popupPane);
+        } else if (cover.kind === 'cosmic') {
           setFoldedCosmicRoom(true);
           setFoldedPane('content');
         } else {
@@ -772,6 +777,12 @@ function AppContent() {
       rememberOverlayPane(e.target, e instanceof MouseEvent && e.detail !== 0 ? { x: e.clientX, y: e.clientY } : undefined);
       const target = e.target as HTMLElement | null;
       if (!target) return;
+
+      const popupOwner = target.closest<HTMLElement>('[data-overlay-pane]')?.dataset.overlayPane;
+      if (popupOwner === 'content' || popupOwner === 'lucy') {
+        lastTouchedDuoPaneRef.current = popupOwner === 'lucy' ? 'right' : 'left';
+        return;
+      }
 
       if (target.closest('#duo-lucy-viewport')) {
         lastTouchedDuoPaneRef.current = mapDuoPaneSide('right', isDuoPanesSwapped);

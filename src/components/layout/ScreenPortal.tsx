@@ -25,6 +25,25 @@ export function hasOpenScreenOverlay(): boolean {
   });
 }
 
+/** Choose the popup owner before a fold can hide either pane. Geometry may be zero mid-fold. */
+export function getOpenScreenOverlayPane(): 'content' | 'lucy' | null {
+  const layers = Array.from(document.querySelectorAll<HTMLElement>('[data-screen-overlay-layer][data-overlay-pane]'))
+    .filter(layer => layer.childElementCount > 0 && Boolean(layer.querySelector('[role="dialog"], dialog[open], .fixed.inset-0')))
+    .sort((a, b) => (Number(b.style.zIndex) || 10000) - (Number(a.style.zIndex) || 10000));
+  for (const layer of layers) {
+    const owner = layer.dataset.overlayPane;
+    if (owner === 'content' || owner === 'lucy') return owner;
+  }
+  for (const frame of Array.from(document.querySelectorAll('iframe'))) {
+    try {
+      if (!frame.contentDocument?.querySelector('[role="dialog"], dialog[open]')) continue;
+      const owner = frame.closest<HTMLElement>('[data-workspace-pane]')?.dataset.workspacePane;
+      if (owner === 'content' || owner === 'lucy') return owner;
+    } catch { /* Cross-origin frames own their own state. */ }
+  }
+  return null;
+}
+
 /** Only occupied overlays participate; opening order wins over JSX declaration order. */
 export function isTopScreenOverlay(element: HTMLElement | null): boolean {
   const layers = Array.from(document.querySelectorAll<HTMLElement>('[data-screen-overlay-layer]'))
