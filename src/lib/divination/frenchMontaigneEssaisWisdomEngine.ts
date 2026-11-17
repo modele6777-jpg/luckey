@@ -13,7 +13,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const MONTAIGNE_ESSAIS_WISDOM_VERSION = 'LUCKEY-MONTAIGNE-ESSAIS-WISDOM-v2.1.0';
+export const MONTAIGNE_ESSAIS_WISDOM_VERSION = 'LUCKEY-MONTAIGNE-ESSAIS-WISDOM-v2.2.0';
 
 export interface MontaigneThematicEssay {
   essayKey: string;
@@ -51,6 +51,8 @@ export interface MontaigneEssaisWisdomResult {
     alignmentState: string;
     integratedAction: string;
   };
+  ritualAction: string;
+  reflectionFocus: string;
   interpretiveBoundary: string;
 }
 
@@ -191,6 +193,8 @@ export function calculateMontaigneEssaisWisdom(
       humanisticGuidance,
     },
     montaigneEssaisSynthesisMatrix,
+    ritualAction: focalHumanistMaxim.guidance,
+    reflectionFocus: activeThematicEssay.practicalReflection,
     interpretiveBoundary: '본 몽테뉴 수상록 지혜 리포트는 인문주의 철학 원전에 기반한 정성적 자기성찰 안내이며, 확정적 예언이나 심리·의학적 진단을 대신하지 않습니다.',
   };
 }
