@@ -25,7 +25,7 @@ function formatSleepKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
 }
 
 export interface NightResetRitual {
@@ -62,6 +62,7 @@ export interface SleepSubconsciousResult {
   dreamDecoding: DreamDecodingClue;
 
   summary: string;
+  reflectiveQuestion?: string;
   sleepSynthesisMatrix?: {
     dominantTension: string;
     alignmentState: string;
@@ -128,6 +129,9 @@ export function calculateSleepSubconscious(params?: {
   };
 
   const interpretiveBoundary = '본 수면 회복 & 무의식 직관 리포트는 사주 12운성과 상징 수리에 기반한 정성적 야간 이완 안내이며, 수면의학적·정신의학적 진단을 대신하지 않습니다.';
+  const reflectiveQuestion = q
+    ? `"${q}"에 대한 생각을 오늘 밤 무의식 인큐베이션에 맡긴다면, 잠들기 전 내려놓고 싶은 가장 무거운 문장 하나는 무엇인가요?`
+    : `오늘 밤 잠들기 전 뇌신경 전압을 낮추기 위해 머리맡에 한 줄로 비워 두고 싶은 생각은 무엇인가요?`;
 
   return {
     engineVersion: SLEEP_SUBCONSCIOUS_VERSION,
@@ -139,6 +143,7 @@ export function calculateSleepSubconscious(params?: {
     nightRitual,
     dreamDecoding,
     summary,
+    reflectiveQuestion,
     sleepSynthesisMatrix,
     interpretiveBoundary,
   };
@@ -168,6 +173,9 @@ export function formatSleepSubconsciousPrompt(res: SleepSubconsciousResult): str
       `- 교차 매트릭스: [핵심 긴장: ${res.sleepSynthesisMatrix.dominantTension} | 조율 상태: ${res.sleepSynthesisMatrix.alignmentState}]`,
       `  • 통합 실천: ${res.sleepSynthesisMatrix.integratedAction}`,
     );
+  }
+  if (res.reflectiveQuestion) {
+    lines.push(`- 성찰 질문: ${res.reflectiveQuestion}`);
   }
   lines.push(`- 해석 경계: ${res.interpretiveBoundary}`);
   lines.push(`※ 루시 지침: 수면은 단순히 하루를 끄는 오프(Off) 버튼이 아니라, 몸과 마음이 쉬고 새로운 영감을 정리하는 시간입니다. 사용자가 하루의 피로를 부드럽게 털어내고, 자신에게 편안한 소리와 차분한 나이트 리셋을 선택하도록 다정하고 평온하게 안내해 주세요.`);

@@ -116,6 +116,7 @@ export interface DeepWorkFlowResult {
     cautionNotice: string;
   };
   boundaryNotice: string;
+  reflectiveQuestion?: string;
   summary: string;
 }
 
@@ -246,6 +247,9 @@ export function calculateDeepWorkFlow(params?: {
   const summary = `[딥워크 몰입] 아키타입: ${archetype.title} [${flowStateTitle}]. ` +
     `추천 세션: ${archetype.optimalSprintMinutes}분 몰입 / ${archetype.restProtocolMinutes}분 이완. ` +
     `사운드: 집중 음악 또는 브라운 노이즈.`;
+  const reflectiveQuestion = question.trim()
+    ? `"${question.trim()}"에 ${archetype.optimalSprintMinutes}분 단일 몰입을 걸기 전, 지금 당장 꺼 두면 가장 먼저 시야가 맑아질 방해 요소 하나는 무엇인가요?`
+    : `오늘 ${archetype.title} 리듬으로 30초 점화 리추얼을 켠 뒤 가장 먼저 끝내 보고 싶은 단 하나의 결과물은 무엇일까요?`;
 
   return {
     engineVersion: DEEP_WORK_FLOW_VERSION,
@@ -260,6 +264,7 @@ export function calculateDeepWorkFlow(params?: {
     temporalFlowRhythm,
     flowSynthesisMatrix,
     boundaryNotice: '본 결과는 사주 신살·오행 성향과 딥워크 집중 리듬을 결합한 정성적 생산성 가이드이며, 절대적 능력 평가가 아닙니다.',
+    reflectiveQuestion,
     summary
   };
 }
@@ -284,6 +289,6 @@ export function formatDeepWorkFlowPrompt(res: DeepWorkFlowResult): string {
   • 30초 점화 리추얼: ${res.environment.ignitionRitual}
   • 노이즈 차단막: ${res.environment.distractionShield}
 - 창작 길신: 문창(${res.creativeStars.munchang}), 화개(${res.creativeStars.hwagae})
-- 해석 경계: ${res.boundaryNotice}
+${res.reflectiveQuestion ? `- 성찰 질문: ${res.reflectiveQuestion}\n` : ''}- 해석 경계: ${res.boundaryNotice}
 ※ 루시 지침: 진정한 창작과 생산성은 억지로 버티는 노동이 아니라, 방해 없는 환경에서 자신만의 몰입 리듬을 찾는 과정입니다. 사용자가 산만함 없이 집중할 수 있도록 맞춤 세션 시간, 사운드 스케이프와 점화 리추얼을 감각적으로 가이드해 주세요.`;
 }

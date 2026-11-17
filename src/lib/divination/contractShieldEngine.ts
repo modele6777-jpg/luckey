@@ -66,6 +66,7 @@ export interface ContractShieldResult {
     cautionNotice: string;
   };
   boundaryNotice: string;
+  reflectiveQuestion?: string;
 
   summary: string;
 }
@@ -231,6 +232,9 @@ export function calculateContractShield(params?: {
     recommendedAction: 'IP 귀속·책임 상한·과업 범위·지급 기한·서면화 5대 쉴드를 서명 전 모두 확인하십시오.',
     cautionNotice: activeRiskTriggers.join(' / '),
   };
+  const reflectiveQuestion = q
+    ? `"${q}"와 관련해 서명 전 반드시 문장으로 못 박아 두고 싶은 단 하나의 조건(범위·대금·책임 상한)은 무엇인가요?`
+    : `지금 구두로만 오갔거나 암묵적으로 넘기고 있는 합의 중, 오늘 문서 한 줄로 명확히 남기고 싶은 항목은 무엇인가요?`;
 
   return {
     engineVersion: CONTRACT_SHIELD_VERSION,
@@ -247,6 +251,7 @@ export function calculateContractShield(params?: {
     temporalShieldRhythm,
     shieldSynthesisMatrix,
     boundaryNotice: '본 결과는 명리·주역 천수송 지혜와 표준 계약 리스크 원칙을 결합한 예방 체크리스트이며, 정식 법률 자문이 아닙니다.',
+    reflectiveQuestion,
     summary
   };
 }
@@ -272,6 +277,6 @@ ${checklistStr}
 - KST 시공간 협상 리듬: ${res.temporalShieldRhythm.negotiationWindow} / ${res.temporalShieldRhythm.seasonalContractTone}
 - 쉴드 교차 매트릭스: 핵심(${res.shieldSynthesisMatrix.coreInsight}) | 실행(${res.shieldSynthesisMatrix.recommendedAction}) | 주의(${res.shieldSynthesisMatrix.cautionNotice})
 - 액션 프로토콜: ${res.actionProtocol}
-- 해석 경계: ${res.boundaryNotice}
+${res.reflectiveQuestion ? `- 성찰 질문: ${res.reflectiveQuestion}\n` : ''}- 해석 경계: ${res.boundaryNotice}
 ※ 루시 지침: 분쟁을 피하는 최고의 방법은 싸워서 이기는 것이 아니라, 애초에 다툴 여지가 없도록 계약서와 문서에 명확한 방어벽을 쳐두는 것입니다. 사용자가 사업, 외주, 동업, 계약 과정에서 불필요한 관재구설에 휘말리지 않도록 5대 쉴드 체크리스트와 천수송의 지혜를 든든하게 일러주세요.`;
 }
