@@ -29,7 +29,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const ABORIGINAL_DREAMTIME_SONGLINES_ENGINE_VERSION = '2.1.0';
+export const ABORIGINAL_DREAMTIME_SONGLINES_ENGINE_VERSION = '2.2.0';
 
 export type DreamtimeQuestionTheme = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -80,6 +80,7 @@ export interface DreamtimeSonglineReport {
   practiceGuidance: string;
   ritualAction: string;
   reflectionFocus: string;
+  reflectiveQuestion: string;
   counselNote: string;
   boundaryNotice: string;
   interpretiveBoundary: string;
@@ -345,6 +346,8 @@ export function calculateAboriginalDreamtimeSonglines(options?: {
 
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
   const calculatedAtKst = `${kst.toISOString().slice(0, 19)}+09:00`;
+  const qLabel = question.trim() ? `"${question.trim()}"에 대해 ` : '';
+  const reflectiveQuestion = `${qLabel}${themed.reflection}`;
 
   return {
     engineVersion: ABORIGINAL_DREAMTIME_SONGLINES_ENGINE_VERSION,
@@ -364,6 +367,7 @@ export function calculateAboriginalDreamtimeSonglines(options?: {
     practiceGuidance: themed.practice,
     ritualAction: themed.ritual,
     reflectionFocus: themed.reflection,
+    reflectiveQuestion,
     counselNote: `[드림타임 송라인 성찰] ${activeTotem.name} · ${songline.direction} — ${themed.practice}`,
     boundaryNotice: '호주 원주민 드림타임(Jukurrpa)과 다디리(Dadirri) 개념을 바탕으로 한 상징적·성찰적 관점이며, 확정적 예언이나 의학적·재정적 진단이 아닙니다.',
     interpretiveBoundary: '호주 원주민 드림타임(Jukurrpa)과 다디리(Dadirri) 개념을 바탕으로 한 상징적·성찰적 관점이며, 확정적 예언이나 의학적·재정적 진단이 아닙니다.',
@@ -395,7 +399,7 @@ export function formatAboriginalDreamtimeSonglinesPrompt(report: DreamtimeSongli
    - 다디리 수련 실천: ${report.dadirriPractice}
    - 맥락별 실천 조언: ${report.practiceGuidance}
    - 일상 의례: ${report.ritualAction}
-   - 성찰 질문: ${report.reflectionFocus}
+   - 성찰 질문: ${report.reflectiveQuestion}
    - 드림타임 총평: ${report.dreamtimeWisdom}
 
 4. [질문 맥락 감사 & KST 시공간 리듬 (${report.temporalDreamtimeRhythm.kstHour}시)]:

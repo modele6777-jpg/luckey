@@ -10546,3 +10546,29 @@ test('Shadow Archetype · Human Design · Enneagram v2.1.0: KST, reflectiveQuest
   const enPrompt = formatEnneagramSoulIntegrationPrompt(en);
   assert.ok(enPrompt.includes('+09:00') && enPrompt.includes('성찰 질문') && enPrompt.includes('해석 경계'));
 });
+
+test('Dreamtime · Akashic · Alchemical v2.2/v2.3: KST, reflectiveQuestion, and summary', () => {
+  const now = new Date('2026-11-17T19:10:00Z');
+  const query = '지금 내 방향을 어떻게 잡아야 할까요';
+
+  const dr = calculateAboriginalDreamtimeSonglines({ profile, targetInstantTime: now.toISOString(), question: query });
+  assert.equal(dr.engineVersion, ABORIGINAL_DREAMTIME_SONGLINES_ENGINE_VERSION);
+  assert.match(dr.calculatedAtKst, /\+09:00/);
+  assert.ok(dr.reflectiveQuestion.includes(query));
+  const drPrompt = formatAboriginalDreamtimeSonglinesPrompt(dr);
+  assert.ok(drPrompt.includes('+09:00') && drPrompt.includes('성찰 질문') && drPrompt.includes('해석 경계'));
+
+  const ak = calculateAkashicRecordsOracle({ profile, targetDate: now, question: query });
+  assert.equal(ak.engineVersion, AKASHIC_RECORDS_VERSION);
+  assert.match(ak.calculatedAtKst, /\+09:00/);
+  assert.ok(ak.reflectiveQuestion.includes(query));
+  const akPrompt = formatAkashicRecordsOraclePrompt(ak);
+  assert.ok(akPrompt.includes('+09:00') && akPrompt.includes('성찰 질문') && akPrompt.includes('해석 경계'));
+
+  const al = calculateAlchemicalTransmutation(profile, now, query);
+  assert.equal(al.engineVersion, ALCHEMICAL_TRANSMUTATION_VERSION);
+  assert.match(al.calculatedAtKst, /\+09:00/);
+  assert.ok(al.reflectiveQuestion.includes(query));
+  const alPrompt = formatAlchemicalTransmutationPrompt(al);
+  assert.ok(alPrompt.includes('+09:00') && alPrompt.includes('성찰 질문') && alPrompt.includes('해석 경계'));
+});

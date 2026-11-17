@@ -4823,7 +4823,7 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'arabicIlmAlRaml', nameKo: '아랍 일무람말 지오맨시', icon: '🏜️', category: 'deep_master' },
   { key: 'hinduNadiAgastyaPalmLeaf', nameKo: '인도 나디 아가스티야 야자잎', icon: '📜', category: 'deep_master', summary: '남인도 아가스티야 성자의 14대 칸담과 엄지 지문 문양을 통해 카르마의 맥락과 샨티 실천 처방을 비춥니다.' },
   { key: 'shintoKotodamaFourSouls', nameKo: '신도 4혼1생 고토다마', icon: '⛩️', category: 'deep_master', summary: '일영사혼(아라·니기·쿠시·사키미타마) 균형과 50음령 고토다마 언령 진동으로 내면을 정화·조율하는 관점' },
-  { key: 'aboriginalDreamtimeSonglines', nameKo: '호주 드림타임 송라인', icon: '🪃', category: 'deep_master' },
+  { key: 'aboriginalDreamtimeSonglines', nameKo: '호주 드림타임 송라인', icon: '🪃', category: 'deep_master', summary: '호주 원주민 드림타임 송라인과 8대 토템·다디리 고요의 경청으로 현재 걸어야 할 영적 방향을 비춰 줍니다.' },
   { key: 'finnishKalevalaSampo', nameKo: '핀란드 칼레발라 삼포', icon: '🌾', category: 'deep_master', summary: '칼레발라 삼포 3대 날개(안정·지혜·번영)와 불굴의 시수(Sisu) 회복탄력을 비추는 관점' },
   { key: 'shanhaijingSacredBeasts', nameKo: '산해경 8방위 신성영수', icon: '🐉', category: 'deep_master', summary: '고대 산해경 8방위 신성 영수와 오행 방호 결계로 벽사·개운의 방향을 살피는 관점' },
   { key: 'jainGunasthanaKarma', nameKo: '자이나 14군아스타나 카르마', icon: '🪷', category: 'deep_master' },
