@@ -2111,6 +2111,7 @@ test('Dynamic Clash Trigger Engine: 실시간 삼형·육충·파해 동적 격�
   assert(res.todayActionMatrix.avoidNow.length > 0);
   assert(res.calculatedAtKst.includes('+09:00 (KST)'));
   assert(res.reflectiveQuestion.includes('오늘 조심할 점'));
+  assert(res.interpretiveBoundary.length > 0);
   const prompt = formatDynamicClashPrompt(res);
   assert(prompt.includes(DYNAMIC_CLASH_ENGINE_VERSION));
   assert(prompt.includes('오늘 일진'));
@@ -5309,6 +5310,7 @@ test('Egyptian Amduat Twelve Hours Ra Engine: calculates 12 hours of underworld,
   assert(rep.mesektetSolarBarqueSteadiness >= 0 && rep.mesektetSolarBarqueSteadiness <= 100);
   assert(rep.currentAmduatHour.hourNumber >= 1 && rep.currentAmduatHour.hourNumber <= 12);
   assert(rep.solarDeityGuardian.nameAncient.length > 0);
+  assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatEgyptianAmduatPrompt(rep);
   assert(prompt.includes('고대 이집트 《암두아트의 서》 12시간 태양신 라의 밤의 저승 항해 & 케프리 부활'));
   assert(prompt.includes(rep.currentAmduatHour.hourNameAncient));
@@ -7611,7 +7613,7 @@ test('Desiderius Erasmus Praise of Folly Engine: calculates Humorous Wisdom, Dog
   assert(rep.practicalSincereVirtueIndex >= 0 && rep.practicalSincereVirtueIndex <= 100);
   assert(rep.cheerfulResilienceScore >= 0 && rep.cheerfulResilienceScore <= 100);
   assert(rep.activeErasmusTheme.themeTitleKo.length > 0);
-  assert(rep.practiceGuidance.length > 0 && rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.boundaryNotice.length > 0);
+  assert(rep.practiceGuidance.length > 0 && rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.boundaryNotice.length > 0 && rep.interpretiveBoundary.length > 0);
   const prompt = formatDutchDesideriusErasmusPraiseOfFollyPrompt(rep);
   assert(prompt.includes('데시데리우스 에라스무스 《우신예찬》 르네상스 휴머니즘 및 해학·관용 지혜 지표'));
   assert(prompt.includes(rep.activeErasmusTheme.themeTitleKo));
