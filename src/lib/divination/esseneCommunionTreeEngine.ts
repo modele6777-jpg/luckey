@@ -36,7 +36,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const ESSENE_COMMUNION_VERSION = 'LUCKEY-ESSENE-COMMUNION-v2.1.0';
+export const ESSENE_COMMUNION_VERSION = 'LUCKEY-ESSENE-COMMUNION-v2.2.0';
 
 export interface EsseneAngel {
   realm: 'earthly' | 'heavenly';
@@ -66,6 +66,8 @@ export interface EsseneCommunionReport {
   dailyEsseneGuidance: string;
   synthesisMessage: string;
   interpretiveBoundary: string;
+  ritualAction: string;
+  reflectionFocus: string;
   situationalEsseneAudit: {
     questionFocus: string;
     trinityBalanceNote: string;
@@ -318,6 +320,8 @@ export function calculateEsseneCommunion(
     dailyEsseneGuidance,
     synthesisMessage,
     interpretiveBoundary,
+    ritualAction: `${morningEarthlyAngel.contemplativeMantra} · ${eveningHeavenlyAngel.contemplativeMantra}`,
+    reflectionFocus: esseneSynthesisMatrix.reflectiveQuestion,
     situationalEsseneAudit: {
       questionFocus,
       trinityBalanceNote,

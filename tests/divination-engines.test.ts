@@ -2999,6 +2999,7 @@ test('Etheric Aura Biofield Engine: 에테르 오라 생체장 & 쉴딩 결계 �
   assert(res.spectrum.primaryColor.length > 0);
   assert(res.shielding.integrityScore >= 0 && res.shielding.integrityScore <= 100);
   assert(res.shielding.vulnerableZone.length > 0);
+  assert(res.ritualAction.length > 0 && res.reflectionFocus.length > 0);
   const prompt = formatEthericAuraBiofieldPrompt(res);
   assert(prompt.includes('LUCKEY 에테르 오라 생체장 & 쉴딩'));
   assert(prompt.includes('+09:00') && prompt.includes('해석 경계'));
@@ -3656,6 +3657,7 @@ test('Essene Communion Tree Engine: calculates morning/evening angels, tree trin
   assert(rep.communionVibrationalScore >= 0 && rep.communionVibrationalScore <= 100);
   assert(rep.temporalEsseneRhythm.calculatedAtKst.includes('KST'));
   assert(rep.situationalEsseneAudit.questionFocus.length > 0);
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatEsseneCommunionPrompt(rep);
   assert(prompt.includes('에세네파 14대 천사 교감 & 영혼 생명나무 조화 엔진'));
   assert(prompt.includes(rep.morningEarthlyAngel.koreanName));
@@ -4981,6 +4983,7 @@ test('Etruscan Augur Sixteen Sky Divination Engine: calculates Faustus auspice s
   assert(rep.activeRegion.regionNumber >= 1 && rep.activeRegion.regionNumber <= 16);
   assert(rep.augurSign.sacredSymbol.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatEtruscanAugurSixteenSkyPrompt(rep);
   assert(prompt.includes('고대 에트루리아 16천궁 분할 & 아우구르 조점(Auspicium) 실측 리포트'));
   assert(prompt.includes(rep.activeRegion.quadrantKo));
