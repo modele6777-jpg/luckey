@@ -1,10 +1,10 @@
 {
-  "version": "1.7.716",
-  "builtAt": "2026-11-17T09:30:00+09:00",
-  "summary": "토머스 모어·버지니아 울프·셰익스피어 3대 엔진 해석 경계 표준 연동(v1.7.716)",
+  "version": "1.7.717",
+  "builtAt": "2026-11-17T09:42:00+09:00",
+  "summary": "융 그림자 원형·휴먼디자인 바디그래프·에니어그램 영혼통합 3대 엔진 성찰 질문 및 카탈로그 뜻 등록(v1.7.717)",
   "items": [
-    "영국 토머스 모어 유토피아 엔진(v2.1.0): interpretiveBoundary 표준 필드 연동",
-    "영국 버지니아 울프 자기만의 방 엔진(v2.1.0): interpretiveBoundary 표준 필드 연동",
-    "영국 윌리엄 셰익스피어 비극적 지혜 엔진(v2.1.0): interpretiveBoundary 표준 필드 연동"
+    "융 그림자 원형(shadowArchetypeEngine v2.1.0): +09:00 (KST) 표기·질문 반응형 성찰 질문(reflectiveQuestion)·question 인자 연동 및 summary 등록",
+    "휴먼디자인 바디그래프(humanDesignBodyGraphEngine v2.1.0): +09:00 (KST) 표기·질문 반응형 성찰 질문(reflectiveQuestion) 및 summary 등록",
+    "에니어그램 영혼통합(enneagramSoulIntegrationEngine v2.1.0): +09:00 (KST) 표기·질문 반응형 성찰 질문(reflectiveQuestion) 및 summary 등록"
   ]
 }

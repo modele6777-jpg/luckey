@@ -20,7 +20,7 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const HUMAN_DESIGN_BODYGRAPH_VERSION = 'LUCKEY-HUMANDESIGN-v2.0.0';
+export const HUMAN_DESIGN_BODYGRAPH_VERSION = 'LUCKEY-HUMANDESIGN-v2.1.0';
 
 export type HumanDesignType = 'Generator' | 'Manifesting Generator' | 'Projector' | 'Manifestor' | 'Reflector';
 
@@ -64,6 +64,7 @@ export interface HumanDesignBodyGraphReport {
     cautionNotice: string;
   };
   boundaryNotice: string;
+  reflectiveQuestion?: string;
   synthesisPromptGuidance: string;
 }
 
@@ -96,7 +97,7 @@ function getTemporalHdRhythm(now: Date) {
           : '겨울 · 내적 권위 숙성절 (조급함을 내려놓고 몸의 명확한 신호를 기다리는 시기)';
 
   return {
-    kstTimeLabel: `${y}-${m}-${d} ${hh}:${mm} KST`,
+    kstTimeLabel: `${y}-${m}-${d} ${hh}:${mm}:00+09:00 (KST)`,
     auraWatchWindow,
     seasonalDesignTone,
     temporalGuidance: `${auraWatchWindow} · ${seasonalDesignTone}의 결에 맞추어 결정 리듬을 조율하십시오.`,
@@ -304,6 +305,10 @@ export function runHumanDesignBodyGraphEngine(
   };
 
   const boundaryNotice = '본 결과는 휴먼 디자인 아키타입과 사주 오행 구조를 결합한 정성적 자기 이해 가이드이며, 고정된 운명 판정이 아닙니다.';
+  const qHint = (question || '').trim();
+  const reflectiveQuestion = qHint
+    ? `지금 "${qHint.slice(0, 36)}" 문제를 결정할 때, 머리의 조급함 대신 나의 내적 권위(${innerAuthority})는 어떤 신호를 보내고 있나요?`
+    : `오늘 하루 외부의 기대를 잠시 내려놓고 나의 전략(${strategy})을 따랐을 때, 가장 먼저 살아나는 서명 감정(${designType.signatureEmotion})은 무엇인가요?`;
 
   const synthesisPromptGuidance = `[LUCKEY 휴먼 디자인 9대 에너지 센터 & 바디그래프 오라 ${HUMAN_DESIGN_BODYGRAPH_VERSION}]
 - 연산 시각: ${temporalHdRhythm.kstTimeLabel}
@@ -322,6 +327,7 @@ export function runHumanDesignBodyGraphEngine(
   * 시공간 지침: ${temporalHdRhythm.temporalGuidance}
 - 휴먼 디자인 교차 매트릭스: 핵심(${hdSynthesisMatrix.coreInsight}) | 실행(${hdSynthesisMatrix.recommendedAction}) | 주의(${hdSynthesisMatrix.cautionNotice})
 - 탈조건화(De-conditioning) 행동 처방: ${deconditioningAdvice}
+- 성찰 질문: ${reflectiveQuestion}
 - 해석 경계: ${boundaryNotice}`;
 
   return {
@@ -338,6 +344,7 @@ export function runHumanDesignBodyGraphEngine(
     temporalHdRhythm,
     hdSynthesisMatrix,
     boundaryNotice,
+    reflectiveQuestion,
     synthesisPromptGuidance
   };
 }

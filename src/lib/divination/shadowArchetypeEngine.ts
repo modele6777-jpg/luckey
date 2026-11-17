@@ -52,6 +52,7 @@ export interface ShadowArchetypeReport {
     integrationAction: string;     // 행동으로 그림자를 승화시키는 액션
   };
   synthesisPromptGuidance: string;
+  reflectiveQuestion?: string;
   shadowSynthesisMatrix?: {
     dominantTension: string;
     alignmentState: string;
@@ -67,12 +68,13 @@ function formatShadowKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm}:00+09:00 (KST)`;
 }
 
 export function runShadowArchetypeEngine(
   profile?: UserProfile,
-  targetDate: Date = new Date()
+  targetDate: Date = new Date(),
+  question?: string
 ): ShadowArchetypeReport {
   const sajuRes = calculateDetailedSaju(profile || null);
 
@@ -161,6 +163,10 @@ export function runShadowArchetypeEngine(
   };
 
   const interpretiveBoundary = '본 그림자 자아 & 골든 섀도우 리포트는 분석심리학 원형과 십신 상징에 기반한 정성적 자기 성찰 안내이며, 임상 심리·정신의학적 진단을 대신하지 않습니다.';
+  const qHint = (question || '').trim();
+  const reflectiveQuestion = qHint
+    ? `지금 "${qHint.slice(0, 36)}" 앞에서 올라오는 불편함이나 방어심 이면에, 내가 아직 인정하지 않은 [${goldenShadow.goldenGift}]의 어떤 힘이 숨어 있을까요?`
+    : transmutationRitual.dailyPrompt;
 
   const synthesisPromptGuidance = `[LUCKEY 융 심리학 그림자 자아 & 골든 섀도우 연금술 v2.1.0 | 연산 시각: ${calculatedAtKst}]
 - 그림자 원형: [${primaryShadow.archetype}] (지배 십신: ${primaryShadow.dominantTenGod})
@@ -172,6 +178,7 @@ export function runShadowArchetypeEngine(
 - 교차 매트릭스 [핵심 긴장: ${shadowSynthesisMatrix.dominantTension} | 조율 상태: ${shadowSynthesisMatrix.alignmentState}]
   * 통합 실천: ${shadowSynthesisMatrix.integratedAction}
 - 실전 연금술 리추얼: ${transmutationRitual.integrationAction}
+- 성찰 질문: ${reflectiveQuestion}
 - 해석 경계: ${interpretiveBoundary}`;
 
   return {
@@ -184,6 +191,7 @@ export function runShadowArchetypeEngine(
     subconsciousDepth,
     transmutationRitual,
     synthesisPromptGuidance,
+    reflectiveQuestion,
     shadowSynthesisMatrix,
     interpretiveBoundary,
   };
@@ -195,10 +203,11 @@ export function calculateShadowArchetype(params?: {
   profile?: UserProfile | null;
   saju?: SajuAnalysisResult | null;
   targetDate?: Date;
+  question?: string;
 }): ShadowArchetypeResult {
   const profile = params?.profile || undefined;
   const targetDate = params?.targetDate || new Date();
-  return runShadowArchetypeEngine(profile, targetDate);
+  return runShadowArchetypeEngine(profile, targetDate, params?.question);
 }
 
 export function formatShadowArchetypePrompt(res: ShadowArchetypeResult): string {
