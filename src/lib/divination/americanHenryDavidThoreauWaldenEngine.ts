@@ -8,7 +8,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const AMERICAN_HENRY_DAVID_THOREAU_VERSION = 'LUCKEY-HENRY-DAVID-THOREAU-WALDEN-v2.1.0';
+export const AMERICAN_HENRY_DAVID_THOREAU_VERSION = 'LUCKEY-HENRY-DAVID-THOREAU-WALDEN-v2.2.0';
 
 export type ThoreauQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -61,6 +61,7 @@ export interface HenryDavidThoreauWaldenResult {
   practiceGuidance: string;
   ritualAction: string;
   reflectionFocus: string;
+  reflectiveQuestion: string;
   counselNote: string;
   boundaryNotice: string;
   interpretiveBoundary: string;
@@ -150,6 +151,16 @@ function classifyThoreauTopic(question: string): ThoreauQuestionTopic {
 function getKstDateKey(now: Date): string {
   const kstMs = now.getTime() + 9 * 60 * 60 * 1000;
   return new Date(kstMs).toISOString().slice(0, 10);
+}
+
+function formatKstTimestamp(now: Date): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} (+09:00)`;
 }
 
 const THOREAU_TOPIC_GUIDANCE: Record<
@@ -283,6 +294,10 @@ export function calculateHenryDavidThoreauWalden(
   const practiceGuidance = `${activeThoreauTheme.practicalCounsel} ${topicGuide.practice}`;
   const ritualAction = topicGuide.ritual;
   const reflectionFocus = topicGuide.reflection;
+  const trimmedQ = question.trim();
+  const reflectiveQuestion = trimmedQ
+    ? `‘${trimmedQ}’라는 물음을 두고 남의 시선과 체면을 지운다면, 내 안의 다른 북소리가 조용히 가리키는 단순한 진실은 무엇인가요?`
+    : reflectionFocus;
   const counselNote = topicGuide.counsel;
   const boundaryNotice = '헨리 데이비드 소로의 월든 관점은 삶의 본질과 내적 자립을 비추는 철학적 성찰 도구이며, 구체적인 사실 판단이나 미래 예언을 대신하지 않습니다.';
 
@@ -293,7 +308,7 @@ export function calculateHenryDavidThoreauWalden(
 
   return {
     engineVersion: AMERICAN_HENRY_DAVID_THOREAU_VERSION,
-    calculatedAtKst: now.toISOString(),
+    calculatedAtKst: formatKstTimestamp(now),
     questionTopic,
     simplicityEssentialLifeScore,
     natureCommunionHarmoniaScore,
@@ -307,6 +322,7 @@ export function calculateHenryDavidThoreauWalden(
     practiceGuidance,
     ritualAction,
     reflectionFocus,
+    reflectiveQuestion,
     counselNote,
     boundaryNotice,
     interpretiveBoundary: boundaryNotice,
@@ -326,12 +342,12 @@ function describeThoreauStage(score: number): string {
 export function formatHenryDavidThoreauWaldenPrompt(res: HenryDavidThoreauWaldenResult): string {
   return [
     `【헨리 데이비드 소로 《월든》 단순함 & 양심 지표】`,
-    `- 질문 맥락: ${res.questionTopic}`,
+    `- 기준 시각: ${res.calculatedAtKst} | 질문 맥락: ${res.questionTopic}`,
     `- 핵심 초월주의 테마: ${res.activeThoreauTheme.themeTitleKo} [${res.activeThoreauTheme.themeTitleEn}]`,
     `- 실존적 통찰: ${res.activeThoreauTheme.existentialInsight}`,
     `- 실천 조언: ${res.practiceGuidance}`,
     `- 일상 의례: ${res.ritualAction}`,
-    `- 성찰 질문: ${res.reflectionFocus}`,
+    `- 성찰 질문: ${res.reflectiveQuestion}`,
     `- 핵심 원전 경구: "${res.focalThoreauAphorism.aphorismKo}"`,
     `- 원전 출처: "${res.focalThoreauAphorism.aphorismEn}" [${res.focalThoreauAphorism.sourceContext}]`,
     `- KST 월든 리듬: ${res.temporalWaldenRhythm.kstWindow} (${res.temporalWaldenRhythm.waldenFocus}, 흐름 ${describeThoreauStage(res.temporalWaldenRhythm.waldenClarityIndex)}) — ${res.temporalWaldenRhythm.rhythmDirective}`,
