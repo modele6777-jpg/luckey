@@ -13,7 +13,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const GERMAN_HEGEL_DIALECTICAL_VERSION = 'LUCKEY-GERMAN-HEGEL-DIALECTICAL-v2.1.0';
+export const GERMAN_HEGEL_DIALECTICAL_VERSION = 'LUCKEY-GERMAN-HEGEL-DIALECTICAL-v2.2.0';
 
 export interface HegelTheme {
   themeKey: string;
@@ -70,6 +70,8 @@ export interface HegelDialecticalAufhebenResult {
   temporalMinervaRhythm: HegelTemporalMinervaRhythm;
   hegelSynthesisMatrix: HegelSynthesisMatrix;
   dailyPracticeRitual: string;
+  ritualAction: string;
+  reflectionFocus: string;
   interpretiveBoundary: string;
   hegelPersonalCounsel: {
     counselTitle: string;
@@ -323,6 +325,8 @@ export function calculateHegelDialecticalAufheben(
     temporalMinervaRhythm,
     hegelSynthesisMatrix,
     dailyPracticeRitual,
+    ritualAction: dailyPracticeRitual,
+    reflectionFocus: situationalDialecticalAudit.reflectiveQuestion,
     interpretiveBoundary,
     hegelPersonalCounsel: {
       counselTitle,

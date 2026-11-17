@@ -13,7 +13,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const GERMAN_GOTTFRIED_LEIBNIZ_VERSION = 'LUCKEY-GOTTFRIED-LEIBNIZ-MONADOLOGY-v2.1.0';
+export const GERMAN_GOTTFRIED_LEIBNIZ_VERSION = 'LUCKEY-GOTTFRIED-LEIBNIZ-MONADOLOGY-v2.2.0';
 
 export interface LeibnizTheme {
   themeKey: string;
@@ -55,6 +55,8 @@ export interface GottfriedLeibnizMonadologyHarmonyResult {
     alignmentState: string;
     integratedAction: string;
   };
+  ritualAction: string;
+  reflectionFocus: string;
 }
 
 export const LEIBNIZ_THEMES: LeibnizTheme[] = [
@@ -220,6 +222,8 @@ export function calculateGottfriedLeibnizMonadologyHarmony(
       philosophicalCounsel,
     },
     leibnizSynthesisMatrix,
+    ritualAction: focalLeibnizAphorism.actionGuidance,
+    reflectionFocus: reflectiveQuestion,
   };
 }
 

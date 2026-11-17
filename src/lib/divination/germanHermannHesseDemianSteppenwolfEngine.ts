@@ -4,7 +4,7 @@
  * @version LUCKEY-HESSE-DEMIAN-STEPPENWOLF-v2.0.0
  */
 
-export const GERMAN_HERMANN_HESSE_DEMIAN_STEPPENWOLF_VERSION = 'LUCKEY-HESSE-DEMIAN-STEPPENWOLF-v2.2.0';
+export const GERMAN_HERMANN_HESSE_DEMIAN_STEPPENWOLF_VERSION = 'LUCKEY-HESSE-DEMIAN-STEPPENWOLF-v2.3.0';
 
 export interface HesseTheme {
   themeKey: string;
@@ -27,6 +27,8 @@ export interface GermanHermannHesseDemianSteppenwolfResult {
     alignmentState: string;
     integratedAction: string;
   };
+  ritualAction: string;
+  reflectionFocus: string;
   interpretiveBoundary: string;
 }
 
@@ -91,6 +93,8 @@ export function calculateGermanHermannHesseDemianSteppenwolf(query?: string, now
       philosophicalCounsel: `${activeHesseTheme.spiritualInsight} ${activeHesseTheme.practicalCounsel} 이 내용은 문학적 참고이며, 심리 평가·진단·치료 또는 미래 예측이 아닙니다.`,
     },
     hesseSteppenwolfSynthesisMatrix,
+    ritualAction: activeHesseTheme.practicalCounsel,
+    reflectionFocus: activeHesseTheme.spiritualInsight,
     interpretiveBoundary: '이는 문학적 해석을 위한 참고일 뿐, 개인 점수·심리 진단·치료·미래 예측이 아닙니다.',
   };
 }
