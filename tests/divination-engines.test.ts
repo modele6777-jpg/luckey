@@ -11037,3 +11037,29 @@ test('Erasmus Praise of Folly v2.2 · Egyptian Ma\'at v2.3 · Buddhist Yogacara 
   const yogacaraPrompt = formatBuddhistYogacaraConsciousnessPrompt(yogacara);
   assert.ok(yogacaraPrompt.includes('+09:00') && yogacaraPrompt.includes('질문 맞춤 성찰 질문') && yogacaraPrompt.includes('해석 경계'));
 });
+
+test('Druid Moon Trees v2.3 · Finnish Kalevala Sampo v2.4 · Etruscan Augur v2.4: reflectiveQuestion & +09:00 KST prompt output', () => {
+  const now = new Date('2026-11-18T07:00:00+09:00');
+  const query = '새로운 시작 앞에서 지치지 않고 결단의 타이밍을 잡고 싶어요';
+
+  const druid = calculateDruidMoonTrees(profile, now, query);
+  assert.equal(druid.engineVersion, DRUID_MOON_TREES_VERSION);
+  assert.match(druid.calculatedAtKst, /\+09:00/);
+  assert.ok(druid.reflectiveQuestion.includes(query));
+  const druidPrompt = formatDruidMoonTreesPrompt(druid);
+  assert.ok(druidPrompt.includes('+09:00') && druidPrompt.includes('질문 맞춤 성찰 질문') && druidPrompt.includes('해석 경계'));
+
+  const kalevala = calculateFinnishKalevalaSampo({ profile, targetInstantTime: now.toISOString(), question: query });
+  assert.equal(kalevala.engineVersion, FINNISH_KALEVALA_SAMPO_ENGINE_VERSION);
+  assert.match(kalevala.calculatedAtKst, /\+09:00/);
+  assert.ok(kalevala.reflectiveQuestion.includes(query));
+  const kalevalaPrompt = formatFinnishKalevalaSampoPrompt(kalevala);
+  assert.ok(kalevalaPrompt.includes('+09:00') && kalevalaPrompt.includes('질문 맞춤 성찰 질문') && kalevalaPrompt.includes('해석 경계'));
+
+  const etruscan = calculateEtruscanAugurSixteenSky({ profile, question: query, now });
+  assert.equal(etruscan.engineVersion, ETRUSCAN_AUGUR_ENGINE_VERSION);
+  assert.match(etruscan.calculatedAtKst, /\+09:00/);
+  assert.ok(etruscan.reflectiveQuestion.includes(query));
+  const etruscanPrompt = formatEtruscanAugurSixteenSkyPrompt(etruscan);
+  assert.ok(etruscanPrompt.includes('+09:00') && etruscanPrompt.includes('질문 맞춤 성찰 질문') && etruscanPrompt.includes('해석 경계'));
+});

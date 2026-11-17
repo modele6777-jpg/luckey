@@ -4812,7 +4812,7 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'persianAmeshaSpenta', nameKo: '페르시아 아메샤스펜타', icon: '🔥', category: 'deep_master', summary: '아베스타 6대 아메샤 스펜타 수호 불멸자와 바르숨 정렬을 비추어 선한 의지와 내면의 조화를 가다듬는 관점' },
   { key: 'sumerianFiftyMes', nameKo: '수메르 50대메 신성문명', icon: '🏺', category: 'deep_master', summary: '수메르 에리두 50대 메(Me) 문명 규범과 주권·소통·치유의 원형으로 오늘의 실천 기준을 비추는 관점' },
   { key: 'zhongLuAlchemy', nameKo: '종여내단 3품선도 환원', icon: '☯️', category: 'deep_master' },
-  { key: 'druidMoonTrees', nameKo: '켈트 드루이드 13달나무', icon: '🌲', category: 'deep_master' },
+  { key: 'druidMoonTrees', nameKo: '켈트 드루이드 13달나무', icon: '🌲', category: 'deep_master', summary: '켈트 드루이드 13달나무 역법과 오검 문자의 자연 주기로 내면의 리듬을 비추는 관점' },
   { key: 'tiebanShenshu', nameKo: '철판신수 12000조식', icon: '📜', category: 'deep_master' },
   { key: 'tibetanBonNineWays', nameKo: '티베트 본교 9승 융드룽', icon: '卐', category: 'deep_master', summary: '티베트 본교 9승과 5대 영혼 활력소 상징으로 일상 정화와 내면의 중심을 살피는 관점' },
   { key: 'eleusinianMysteries', nameKo: '엘레우시스 영혼입사의례', icon: '🌾', category: 'deep_master' },

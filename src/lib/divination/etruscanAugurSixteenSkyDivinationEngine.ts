@@ -8,7 +8,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const ETRUSCAN_AUGUR_ENGINE_VERSION = 'LUCKEY-ETRUSCAN-AUGUR-v2.3.0';
+export const ETRUSCAN_AUGUR_ENGINE_VERSION = 'LUCKEY-ETRUSCAN-AUGUR-v2.4.0';
 
 export interface CelestialTemplumRegion {
   regionNumber: number; // 1 ~ 16
@@ -64,6 +64,7 @@ export interface EtruscanAugurSixteenSkyReport {
   interpretiveBoundary: string;
   ritualAction: string;
   reflectionFocus: string;
+  reflectiveQuestion: string;
 }
 
 const SIXTEEN_TEMPLUM_REGIONS: CelestialTemplumRegion[] = [
@@ -300,6 +301,7 @@ export function calculateEtruscanAugurSixteenSky(params: {
     interpretiveBoundary: '디스치플리나 에트루스카 16천궁 조점 상징을 빌린 정성적 결단 참고 관점이며, 개인 점수나 확정 예언이 아닙니다.',
     ritualAction,
     reflectionFocus,
+    reflectiveQuestion: reflectionFocus,
   };
 }
 
@@ -322,5 +324,6 @@ export function formatEtruscanAugurSixteenSkyPrompt(rep: EtruscanAugurSixteenSky
   - 다음 행동: ${rep.augurSynthesisMatrix.nextAuspiceAction}
 · 아우구르 신관 오라클 지침: ${rep.augurOracleGuidance}
 · 천의 부응 행동 처방: ${rep.auspiceActionPrescription}
+· 질문 맞춤 성찰 질문: ${rep.reflectiveQuestion}
 · 해석 경계: 디스치플리나 에트루스카 16천궁 조점 상징을 빌린 정성적 결단 참고 관점이며, 개인 점수나 확정 예언이 아닙니다.`;
 }

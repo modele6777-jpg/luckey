@@ -29,7 +29,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const DRUID_MOON_TREES_VERSION = 'LUCKEY-DRUID-MOON-TREES-v2.2.0';
+export const DRUID_MOON_TREES_VERSION = 'LUCKEY-DRUID-MOON-TREES-v2.3.0';
 
 export interface DruidTreeSituationalAudit {
   groveFocus: string;
@@ -75,6 +75,7 @@ export interface DruidMoonTreesReport {
   synthesisMessage: string;
   ritualAction: string;
   reflectionFocus: string;
+  reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
 
@@ -328,6 +329,7 @@ export function calculateDruidMoonTrees(
     synthesisMessage,
     ritualAction,
     reflectionFocus,
+    reflectiveQuestion: reflectionFocus,
     interpretiveBoundary,
   };
 }
@@ -347,5 +349,6 @@ export function formatDruidMoonTreesPrompt(report: DruidMoonTreesReport): string
 - **교차 매트릭스**: ${report.treeSynthesisMatrix.birthCycleLink}
 - **숲의 지혜 처방**: ${report.forestGuidance}
 - **드루이드 통합 나침반**: ${report.synthesisMessage}
+- **질문 맞춤 성찰 질문**: ${report.reflectiveQuestion}
 - **해석 경계**: ${report.interpretiveBoundary}`;
 }

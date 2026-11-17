@@ -1,10 +1,10 @@
 {
-  "version": "1.7.788",
-  "builtAt": "2026-11-18T06:53:00+09:00",
-  "summary": "마르셀 프루스트, 모리스 메를로퐁티, 미셸 드 몽테뉴 3대 엔진 실천 의례 및 성찰 질문 표준 연동(v1.7.788)",
+  "version": "1.7.789",
+  "builtAt": "2026-11-18T07:00:00+09:00",
+  "summary": "드루이드 13달나무·칼레발라 삼포·에트루리아 16천궁 3대 엔진 성찰 질문·카탈로그 뜻 보강(v1.7.789)",
   "items": [
-    "마르셀 프루스트 《잃어버린 시간을 찾아서》 엔진(v2.3.0): ritualAction·reflectionFocus 표준 필드 연동",
-    "모리스 메를로퐁티 《지각의 현상학·눈과 마음》 엔진(v2.1.0): ritualAction·reflectionFocus 표준 필드 연동",
-    "미셸 드 몽테뉴 《수상록》 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동"
+    "켈트 드루이드 13대 달나무(druidThirteenMoonTreesEngine v2.3.0): 질문 반응형 reflectiveQuestion 추가 및 ALL_DCE_ENGINES summary 등록",
+    "핀란드 칼레발라 삼포(finnishKalevalaSampoEngine v2.4.0): 질문 반응형 reflectiveQuestion 추가 및 프롬프트 연동",
+    "에트루리아 16천궁 아우구르(etruscanAugurSixteenSkyDivinationEngine v2.4.0): 질문 반응형 reflectiveQuestion 추가 및 프롬프트 연동"
   ]
 }
