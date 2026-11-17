@@ -13,7 +13,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const PASCAL_PENSEES_HEART_REASON_VERSION = 'LUCKEY-PASCAL-PENSEES-HEART-REASON-v2.0.0';
+export const PASCAL_PENSEES_HEART_REASON_VERSION = 'LUCKEY-PASCAL-PENSEES-HEART-REASON-v2.1.0';
 
 export type PascalQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -61,6 +61,8 @@ export interface PascalPenseesHeartReasonResult {
   questionContextGuide: string;
   dailyPracticeRitual: string;
   reflectiveQuestion: string;
+  ritualAction: string;
+  reflectionFocus: string;
   interpretiveBoundary: string;
   pascalSynthesisMatrix?: {
     dominantTension: string;
@@ -294,6 +296,8 @@ export function calculatePascalPenseesHeartReason(
     questionContextGuide: topicPack.guide,
     dailyPracticeRitual: topicPack.ritual,
     reflectiveQuestion: topicPack.question,
+    ritualAction: topicPack.ritual,
+    reflectionFocus: topicPack.question,
     interpretiveBoundary: '본 관점은 파스칼 《팡세》의 철학적 상징을 바탕으로 내면의 사유와 직관을 돕는 성찰 도구이며, 우열을 가르는 수치나 확정적 예언이 아닙니다.',
     pascalSynthesisMatrix,
   };
