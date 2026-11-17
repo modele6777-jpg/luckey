@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.7.759",
+    "builtAt": "2026-11-18T04:32:00+09:00",
+    "summary": "존 듀이·에머슨·월트 휘트먼 3대 엔진 질문 반응형 성찰 질문 연동(v1.7.759)",
+    "items": [
+      "존 듀이 프래그머티즘(americanJohnDeweyPragmaticInquiryGrowthEngine v2.2.0): 질문 반응형 reflectiveQuestion 추가 및 프롬프트 출력 연동",
+      "랠프 월도 에머슨 자기신뢰(americanRalphWaldoEmersonSelfRelianceEngine v2.2.0): 질문 반응형 reflectiveQuestion 추가 및 프롬프트 출력 연동",
+      "월트 휘트먼 풀잎(americanWaltWhitmanLeavesOfGrassEngine v2.2.0): 질문 반응형 reflectiveQuestion 추가 및 프롬프트 출력 연동"
+    ]
+  },
+  {
     "version": "1.7.758",
     "builtAt": "2026-11-18T04:24:00+09:00",
     "summary": "점성술 36 데칸·사비안, 천을귀인 길신 매트릭스, 아유르베다 3대 도샤 3대 엔진 실천 의례 및 성찰 질문 표준 연동(v1.7.758)",

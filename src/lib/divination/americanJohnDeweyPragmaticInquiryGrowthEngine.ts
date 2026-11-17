@@ -12,7 +12,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const AMERICAN_JOHN_DEWEY_PRAGMATIC_INQUIRY_GROWTH_VERSION = 'LUCKEY-JOHN-DEWEY-PRAGMATIC-INQUIRY-GROWTH-v2.1.0';
+export const AMERICAN_JOHN_DEWEY_PRAGMATIC_INQUIRY_GROWTH_VERSION = 'LUCKEY-JOHN-DEWEY-PRAGMATIC-INQUIRY-GROWTH-v2.2.0';
 
 export type DeweyQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -49,6 +49,7 @@ export interface AmericanJohnDeweyPragmaticInquiryGrowthResult {
   practiceGuidance: string;
   ritualAction: string;
   reflectionFocus: string;
+  reflectiveQuestion: string;
   counselNote: string;
   boundaryNotice: string;
   interpretiveBoundary: string;
@@ -289,6 +290,11 @@ export function calculateAmericanJohnDeweyPragmaticInquiryGrowth(
     cautionNotice: '관념의 시뮬레이션에만 머물지 말고 작고 되돌릴 수 있는 현실의 실험으로 확인하십시오.',
   };
 
+  const trimmedQ = (query ?? '').trim();
+  const reflectiveQuestion = trimmedQ
+    ? `‘${trimmedQ}’라는 물음을 머릿속 고민에만 두지 않고, 오늘 바로 시험해 볼 수 있는 작고 되돌릴 수 있는 실험 한 가지는 무엇인가요?`
+    : topicGuide.reflection;
+
   return {
     engineVersion: AMERICAN_JOHN_DEWEY_PRAGMATIC_INQUIRY_GROWTH_VERSION,
     calculatedAtKst: temporalDeweyRhythm.kstTimeLabel,
@@ -304,6 +310,7 @@ export function calculateAmericanJohnDeweyPragmaticInquiryGrowth(
     practiceGuidance: topicGuide.practice,
     ritualAction: topicGuide.ritual,
     reflectionFocus: topicGuide.reflection,
+    reflectiveQuestion,
     counselNote,
     boundaryNotice,
     interpretiveBoundary: boundaryNotice,
@@ -333,7 +340,7 @@ export function formatAmericanJohnDeweyPragmaticInquiryGrowthPrompt(
     `- 구체적 실천 지침: ${res.focalDeweyAphorism.actionGuidance}`,
     `- 맥락별 실행 조언: ${res.practiceGuidance}`,
     `- 오늘의 작은 의례: ${res.ritualAction}`,
-    `- 성찰 질문: ${res.reflectionFocus}`,
+    `- 성찰 질문: ${res.reflectiveQuestion}`,
     `- 교차 매트릭스: 핵심(${res.deweySynthesisMatrix.coreInsight}) | 실행(${res.deweySynthesisMatrix.recommendedAction}) | 주의(${res.deweySynthesisMatrix.cautionNotice})`,
     `- 핵심 조언 요약: ${res.counselNote}`,
     `- 해석 경계: ${res.boundaryNotice}`,
