@@ -15,7 +15,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const BRITISH_JS_MILL_VERSION = 'LUCKEY-JS-MILL-ON-LIBERTY-v2.1.0';
+export const BRITISH_JS_MILL_VERSION = 'LUCKEY-JS-MILL-ON-LIBERTY-v2.2.0';
 
 export type MillQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -59,6 +59,7 @@ export interface JohnStuartMillOnLibertyIndividualityResult {
   practiceGuidance: string;
   ritualAction: string;
   reflectionFocus: string;
+  reflectiveQuestion: string;
   boundaryNotice: string;
   interpretiveBoundary: string;
   millSynthesisMatrix: {
@@ -272,7 +273,11 @@ export function calculateJohnStuartMillOnLibertyIndividuality(
   const boundaryNotice = '존 스튜어트 밀 자유론 해석은 자율성과 개별성 성찰을 돕는 상징·철학 관점이며, 법률 자문이나 확정적 예측이 아닙니다.';
   const baseDate = now ?? new Date();
   const kst = new Date(baseDate.getTime() + 9 * 60 * 60 * 1000);
-  const kstTimeLabel = `${temporalMillRhythm.kstDateLabel} ${String(kst.getUTCHours()).padStart(2, '0')}:${String(kst.getUTCMinutes()).padStart(2, '0')} KST`;
+  const kstTimeLabel = `${temporalMillRhythm.kstDateLabel} ${String(kst.getUTCHours()).padStart(2, '0')}:${String(kst.getUTCMinutes()).padStart(2, '0')} +09:00 (KST)`;
+  const trimmedQuery = (query ?? '').trim();
+  const reflectiveQuestion = trimmedQuery
+    ? `"${trimmedQuery}"라는 물음 앞에서, 다수의 관습이 아니라 나만의 개별성과 해악 원칙에 비추어 스스로 지키고 싶은 선택은 무엇인가요?`
+    : topicGuidance.reflectionFocus;
   const millSynthesisMatrix = {
     coreInsight: activeMillTheme.themeTitleKo,
     recommendedAction: topicGuidance.practiceGuidance,
@@ -294,6 +299,7 @@ export function calculateJohnStuartMillOnLibertyIndividuality(
     practiceGuidance: topicGuidance.practiceGuidance,
     ritualAction: topicGuidance.ritualAction,
     reflectionFocus: topicGuidance.reflectionFocus,
+    reflectiveQuestion,
     boundaryNotice,
     interpretiveBoundary: boundaryNotice,
     millSynthesisMatrix,
@@ -316,6 +322,7 @@ export function formatJohnStuartMillOnLibertyIndividualityPrompt(res: JohnStuart
     `- 질문 맞춤 실천 가이드: ${res.practiceGuidance}`,
     `- 일상 실천 의례: ${res.ritualAction}`,
     `- 핵심 성찰 질문: ${res.reflectionFocus}`,
+    `- 질문 맞춤 성찰 질문: ${res.reflectiveQuestion}`,
     `- 교차 매트릭스: 핵심(${res.millSynthesisMatrix.coreInsight}) | 실행(${res.millSynthesisMatrix.recommendedAction}) | 주의(${res.millSynthesisMatrix.cautionNotice})`,
     `- 핵심 경구: "${res.focalMillAphorism.aphorismKo}"`,
     `- 영문 원문: "${res.focalMillAphorism.aphorismEn}" [${res.focalMillAphorism.sourceContext}]`,
