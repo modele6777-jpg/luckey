@@ -25,6 +25,7 @@ import {
   Camera,
   Upload,
   RotateCcw,
+  Download,
 } from 'lucide-react';
 import { useApp, getPersistentUserProfile, setPersistentUserProfile } from '@/contexts/AppContext';
 import { useBackgroundMood } from '@/hooks/useBackgroundMood';
@@ -1147,6 +1148,15 @@ export default function EpilogueApp() {
           <EpilogueDiaryView />
         ) : (
           <div className="prism-page-content w-full mx-auto px-3 sm:px-6 pt-4 space-y-6">
+            <button
+              type="button"
+              onClick={() => window.dispatchEvent(new Event('trigger-pwa-install'))}
+              className="mb-4 inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm font-bold text-white/85 hover:bg-white/10 [.pwa-installed_&]:hidden"
+            >
+              <Download size={16} aria-hidden="true" />
+              LucKey 앱 설치
+            </button>
+
             {/* Step Sub-Pills for Profile */}
             <div className="flex items-center justify-center gap-1.5 p-1 rounded-2xl bg-white/[0.03] border border-white/10 backdrop-blur-xl overflow-x-auto no-scrollbar max-w-full">
               {SECTIONS.map((item, idx) => {

@@ -15,9 +15,10 @@ export default function InstallPrompt() {
     const standalone = window.matchMedia('(display-mode: standalone)').matches || (navigator as Navigator & { standalone?: boolean }).standalone;
     if (standalone) { document.documentElement.classList.add('pwa-installed'); return; }
     const ua = navigator.userAgent;
-    const mobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(ua);
+    const iOS = /iPhone|iPad|iPod/i.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    const mobile = iOS || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(ua);
     setIsDesktop(!mobile);
-    setIsIOS(/iPhone|iPad|iPod/i.test(ua));
+    setIsIOS(iOS);
     setIsSamsung(/SamsungBrowser/i.test(ua));
     let timer: ReturnType<typeof setTimeout> | undefined;
     // Dismissing the banner must never disable later manual installation.
@@ -37,13 +38,14 @@ export default function InstallPrompt() {
     return () => { clearTimeout(timer); window.removeEventListener('beforeinstallprompt', beforeInstall); window.removeEventListener('appinstalled', installed); };
   }, []);
   const handleInstallClick = useCallback(async () => {
+    if (document.documentElement.classList.contains('pwa-installed')) return;
     const event = promptRef.current;
     promptRef.current = null;
     if (!event) { setShowGuide(true); return; }
     try {
       await event.prompt();
       const { outcome } = await event.userChoice;
-      if (outcome === 'accepted') setShowPrompt(false);
+      if (outcome === 'accepted') { setShowPrompt(false); setShowGuide(false); }
     } catch { setShowGuide(true); }
   }, []);
   useEffect(() => {
@@ -71,7 +73,7 @@ export default function InstallPrompt() {
     ? {
         title: "Key 앱 설치",
         desc: "홈 화면에 독립 앱으로 추가하여 루시 대화 요약과 직관 행운의 열쇠를 경험해 보세요.",
-        guideTitle: "Key 완전한 앱 설치 방법",
+        guideTitle: "Key 앱 설치 방법",
         guideSubtitle: "아래 순서에 따라 홈 화면에 독립 앱으로 안전하고 신속하게 설치해 보세요.",
         iconSrc: "/luckey-icon-192.png",
       }
@@ -79,14 +81,14 @@ export default function InstallPrompt() {
     ? {
         title: "LUCY 앱 설치",
         desc: "홈 화면에 앱으로 추가하여 온전한 속도와 몰입을 경험해 보세요.",
-        guideTitle: "LUCY 완전한 앱 설치 방법",
+        guideTitle: "LUCY 앱 설치 방법",
         guideSubtitle: "아래 순서에 따라 시스템에 정식으로 호환되는 완전한 앱 형태로 소장 및 설치해 보세요.",
         iconSrc: "/lucy-icon-192.png",
       }
     : {
         title: "LucKey 앱 설치",
         desc: "홈 화면에 앱으로 추가하여 온전한 속도와 7대 우주 페르소나를 경험해 보세요.",
-        guideTitle: "LucKey 완전한 앱 설치 방법",
+        guideTitle: "LucKey 앱 설치 방법",
         guideSubtitle: "아래 순서에 따라 시스템에 정식으로 호환되는 완전한 앱 형태로 소장 및 설치해 보세요.",
         iconSrc: "/icon-192.png",
       };
@@ -198,7 +200,7 @@ export default function InstallPrompt() {
               initial={{ opacity: 0, scale: 0.9, y: 30 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 30 }}
-              className="w-full max-w-sm bg-[#0a0a0f] border border-white/10 rounded-3xl p-6 relative z-10 text-white shadow-2xl"
+              className="w-full max-w-sm max-h-full overflow-y-auto bg-[#0a0a0f] border border-white/10 rounded-3xl p-6 relative z-10 text-white shadow-2xl"
             >
               <button 
                 onClick={() => setShowGuide(false)}
@@ -258,7 +260,7 @@ export default function InstallPrompt() {
                 
                 {isDesktop ? (
                   <div className="w-full space-y-3 text-left text-xs leading-relaxed text-white/75">
-                    <p>PC의 Chrome 또는 Microsoft Edge에서 <strong className="text-white">https://luckey.goldentuna10.chatgpt.site</strong>를 직접 열어 주세요.</p>
+                    <p>PC의 Chrome 또는 Microsoft Edge에서 <a href={window.location.href} target="_blank" rel="noopener noreferrer" className="break-all text-white underline">{window.location.href}</a> 주소를 열어 주세요.</p>
                     <p>Chrome은 주소창의 설치 아이콘 또는 메뉴의 ‘전송, 저장, 공유’ → ‘앱으로 페이지 설치’를 선택하세요.</p>
                     <p>Edge는 메뉴 → ‘앱’ → ‘이 사이트를 앱으로 설치’를 선택하세요. 설치 후 별도 앱 창으로 실행됩니다.</p>
                     <p className="text-white/50">ChatGPT 안의 브라우저에서 설치 창이 뜨지 않으면 위 주소를 PC 브라우저에서 여세요. 설치 메뉴는 브라우저 버전에 따라 다를 수 있습니다.</p>
@@ -279,14 +281,14 @@ export default function InstallPrompt() {
                         <span className="text-[10px] font-bold font-mono text-white/80">2</span>
                       </div>
                       <div className="leading-relaxed text-white/70">
-                        스크롤해 아래의 <span className="font-bold text-white flex items-center gap-1 inline-flex bg-white/10 px-1.5 py-0.5 rounded text-[10px]"><PlusSquare size={11} /> [홈 화면에 추가]</span> 버튼을 누릅니다.
+                        스크롤해 아래의 <span className="font-bold text-white flex items-center gap-1 inline-flex bg-white/10 px-1.5 py-0.5 rounded text-[10px]"><PlusSquare size={11} /> [홈 화면에 추가]</span> 버튼을 누릅니다. <strong>웹 앱으로 열기</strong> 옵션이 보이면 켠 뒤 추가하세요.
                       </div>
                     </div>
 
                     <div className="flex items-start gap-3 bg-[#ff6b6b]/5 p-3.5 rounded-2xl border border-[#ff6b6b]/15 text-[#ff8b8b]">
                       <span className="text-xs shrink-0">⚠️</span>
                       <div className="leading-normal text-[11px]">
-                        <span className="font-bold">중요:</span> iOS는 Safari 브라우저에서만 앱 설치를 지원합니다. 다른 메신저 인앱이나 타사 앱 브라우저 환경인 경우 먼저 <span className="font-bold text-white bg-white/10 px-1 rounded">Safari로 열기</span>를 진행해 주세요.
+                        <span className="font-bold">중요:</span> 인앱 브라우저에서 홈 화면에 추가할 수 없다면 먼저 <span className="font-bold text-white bg-white/10 px-1 rounded">Safari로 열기</span>를 진행해 주세요.
                       </div>
                     </div>
                   </div>
@@ -313,7 +315,7 @@ export default function InstallPrompt() {
                     <div className="flex items-start gap-3 bg-[#ff6b6b]/5 p-3.5 rounded-2xl border border-[#ff6b6b]/15 text-[#ff8b8b]">
                       <span className="text-xs shrink-0">🚨</span>
                       <div className="leading-normal text-[11px]">
-                        <span className="font-bold">삼성인터넷 제한사항:</span> AI Studio의 미리보기 내측 프레임(iframe)에서는 브라우저 보안 규정상 네이티브 앱 설치 프롬프트를 띄울 수 없습니다. <span className="underline font-bold text-white">반드시 우측 상단의 새 창(New Tab) 버튼을 누르고 모바일 브라우저로 접속해</span> 시도해 주세요.
+                        설치 메뉴가 보이지 않으면 이 주소를 삼성 인터넷에서 직접 열어 주세요.
                       </div>
                     </div>
                   </div>
@@ -340,7 +342,7 @@ export default function InstallPrompt() {
                     <div className="flex items-start gap-3 bg-[#ff6b6b]/5 p-3.5 rounded-2xl border border-[#ff6b6b]/15 text-[#ff8b8b]">
                       <span className="text-xs shrink-0">🚨</span>
                       <div className="leading-normal text-[11px]">
-                        <span className="font-bold">보안 안내:</span> AI Studio iFrame 속 개발 미리보기 환경에서는 기술 보안 규정에 의해 PWA 앱 설치 동작이 불가능합니다. <span className="underline font-bold text-white">우측 상단 [새 탭에서 열기] 버튼을 누르고 직접 해당 브라우저 URL로 직접 모바일 기기에서 진입해</span> 주시기 바랍니다.
+                        설치 메뉴가 보이지 않으면 이 주소를 Chrome에서 직접 열어 주세요.
                       </div>
                     </div>
                   </div>

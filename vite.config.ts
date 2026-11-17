@@ -113,6 +113,7 @@ export default defineConfig(({mode}) => {
           enabled: false
         },
         includeAssets: [
+          'manifest.json',
           'icon.svg',
           'favicon.png',
           'icon-192.png',
@@ -141,68 +142,8 @@ export default defineConfig(({mode}) => {
           'manifest-orb.webmanifest',
           'manifest-orb.json',
         ],
-        manifest: {
-          name: "LucKey",
-          short_name: "LucKey",
-          description: "LucKey AI 페르소나 유니버스",
-          id: "/",
-          scope: "/",
-          prefer_related_applications: false,
-          start_url: "/",
-          display: "standalone",
-          orientation: "any",
-          lang: "ko",
-          background_color: "#06070a",
-          theme_color: "#06070a",
-          icons: [
-            {
-              src: "/icon-192-v3.png",
-              sizes: "192x192",
-              type: "image/png",
-              purpose: "any"
-            },
-            {
-              src: "/icon-512-v3.png",
-              sizes: "512x512",
-              type: "image/png",
-              purpose: "any"
-            },
-            {
-              src: "/icon-512-v3.png",
-              sizes: "512x512",
-              type: "image/png",
-              purpose: "maskable"
-            },
-            {
-              src: "/apple-touch-icon-v3.png",
-              sizes: "180x180",
-              type: "image/png",
-              purpose: "any"
-            },
-            {
-              src: "/icon-clover-v3.svg",
-              sizes: "any",
-              type: "image/svg+xml",
-              purpose: "any"
-            },
-          ],
-          shortcuts: [
-            {
-              name: "Lucy",
-              short_name: "Lucy",
-              description: "Lucy와 나누는 소울 & 라이프 지능 대화",
-              url: "/chat",
-              icons: [{ src: "/lucy-icon-192.png", sizes: "192x192" }]
-            },
-            {
-              name: "ReBible",
-              short_name: "ReBible",
-              description: "ReBible 7대 우주 지혜 경전 & 가이드",
-              url: "/handbook",
-              icons: [{ src: "/handbook-icon-192.png", sizes: "192x192" }]
-            }
-          ]
-        },
+        // Each HTML entry already links to its own manifest.
+        manifest: false,
         workbox: {
           globPatterns: ['**/*.{js,mjs,css,html,ico,png,svg}'],
           navigateFallback: 'index.html',
