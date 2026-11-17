@@ -9,7 +9,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const EPICUREAN_TETRAPHARMAKOS_VERSION = 'LUCKEY-EPICUREAN-TETRAPHARMAKOS-v2.3.0';
+export const EPICUREAN_TETRAPHARMAKOS_VERSION = 'LUCKEY-EPICUREAN-TETRAPHARMAKOS-v2.4.0';
 
 export interface EpicureanStage {
   stageLevel: number;
@@ -69,6 +69,10 @@ export interface EpicureanTetrapharmakosResult {
     alignmentState: string;
     integratedAction: string;
   };
+  ritualAction: string;
+  reflectionFocus: string;
+  reflectiveQuestion: string;
+  interpretiveBoundary: string;
   ritualAction: string;
   reflectionFocus: string;
   interpretiveBoundary: string;
@@ -279,6 +283,9 @@ export function calculateEpicureanTetrapharmakos(
   const interpretiveBoundary = '본 리포트는 에피쿠로스 정원 철학의 치유 상징에 기반한 정성적 성찰 안내이며, 의학적·심리적 진단이 아닙니다.';
   const ritualAction = primaryTetrapharmakosPrinciple.actionableDirective;
   const reflectionFocus = remedy.reflectionPrompt;
+  const reflectiveQuestion = trimmedQ
+    ? `'${trimmedQ}'의 불안 앞에서 '${primaryTetrapharmakosPrinciple.principleTitleKo}'을 처방한다면, 지금 당장 내려놓아도 좋은 공허한 욕망은 무엇인가요?`
+    : reflectionFocus;
 
   return {
     engineVersion: EPICUREAN_TETRAPHARMAKOS_VERSION,
@@ -302,6 +309,7 @@ export function calculateEpicureanTetrapharmakos(
     epicureanSynthesisMatrix,
     ritualAction,
     reflectionFocus,
+    reflectiveQuestion,
     interpretiveBoundary,
   };
 }
@@ -322,7 +330,7 @@ export function formatEpicureanTetrapharmakosPrompt(result: EpicureanTetrapharma
   → 실천 지침: ${result.primaryTetrapharmakosPrinciple.actionableDirective}
 - 질문 맥락 처방 (제${result.situationalRemedy.remedyIndex}치유 · ${result.situationalRemedy.classicTextSource}):
   → 원전 경구: ${result.situationalRemedy.classicQuote}
-  → 성찰 질문: ${result.situationalRemedy.reflectionPrompt}
+  → 성찰 질문: ${result.reflectiveQuestion}
 - KST 정원 리듬 (${result.temporalGardenRhythm.gardenPhaseKo}): ${result.temporalGardenRhythm.practiceFocus}
 - 에피쿠로스 욕망 3분류 진단: **${describeDesireBalance(result.desireTaxonomyMatrix.vainEmptyRatio)}**
   → 자족 지침: ${result.desireTaxonomyMatrix.autarkeiaDirective}

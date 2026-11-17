@@ -14,7 +14,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const ELEUSINIAN_TRIPTOLEMOS_VERSION = 'LUCKEY-ELEUSINIAN-TRIPTOLEMOS-v2.2.0';
+export const ELEUSINIAN_TRIPTOLEMOS_VERSION = 'LUCKEY-ELEUSINIAN-TRIPTOLEMOS-v2.3.0';
 
 export interface TriptolemosChariotStage {
   stageLevel: number;
@@ -72,6 +72,7 @@ export interface EleusinianTriptolemosResult {
   triptolemosSynthesisMatrix: TriptolemosSynthesisMatrix;
   ritualAction: string;
   reflectionFocus: string;
+  reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
 
@@ -235,6 +236,10 @@ export function calculateEleusinianTriptolemos(
   const interpretiveBoundary = '엘레우시스 밀의 트리프톨레모스 3대 율법 상징을 빌린 정성적 성찰 관점이며, 개인 평가나 미래 단정이 아닙니다.';
   const ritualAction = situationalEleusisAudit.chariotPrescription;
   const reflectionFocus = `오늘 내가 정직하게 뿌릴 작은 씨앗(${primaryTriadicLaw.lawTitleKo})과, 그 첫 결실을 나눌 대상은 누구인가요?`;
+  const cleanQuestion = question.trim();
+  const reflectiveQuestion = cleanQuestion
+    ? `'${cleanQuestion}'의 자리에서 '${primaryTriadicLaw.lawTitleKo}'을 따른다면, 오늘 대지 위에 가장 먼저 심을 정직한 씨앗은 무엇인가요?`
+    : reflectionFocus;
 
   return {
     engineVersion: ELEUSINIAN_TRIPTOLEMOS_VERSION,
@@ -252,6 +257,7 @@ export function calculateEleusinianTriptolemos(
     triptolemosSynthesisMatrix,
     ritualAction,
     reflectionFocus,
+    reflectiveQuestion,
     interpretiveBoundary,
   };
 }
@@ -273,5 +279,7 @@ export function formatEleusinianTriptolemosPrompt(result: EleusinianTriptolemosR
 - 트리프톨레모스 교차 매트릭스: ${result.triptolemosSynthesisMatrix.synthesizedVerdict}
 - 엘레우시스 신비 비전: 《${result.eleusinianEpiphany.visionTitle}》
   → 영적 지혜: "${result.eleusinianEpiphany.spiritualWisdom}"
+- 오늘의 작은 의례: ${result.ritualAction}
+- 성찰 질문: ${result.reflectiveQuestion}
 - 해석 경계: ${result.interpretiveBoundary}`;
 }

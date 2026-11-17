@@ -1,10 +1,10 @@
 {
-  "version": "1.7.764",
-  "builtAt": "2026-11-18T04:53:00+09:00",
-  "summary": "고대 켈트 오검 수목, 루 라바다 8대 기예, 투아하 데 다난 4대 보물 3대 엔진 실천 의례 및 성찰 질문 표준 연동(v1.7.764)",
+  "version": "1.7.765",
+  "builtAt": "2026-11-18T05:00:00+09:00",
+  "summary": "델포이 킬론·엘레우시스 트립톨레모스·에피쿠로스 사중 처방전 3대 엔진 성찰 질문 연동(v1.7.765)",
   "items": [
-    "고대 켈트 오검 수목 지혜 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동",
-    "켈트 투아하 데 다난 루 라바다 8대 만능 기예 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동",
-    "고대 아일랜드 투아하 데 다난 4대 보물 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동"
+    "델포이 7현인 킬론 자기성찰(ancientGreekDelphicChilonKnowThyselfEngine v2.3.0): 질문 반응형 reflectiveQuestion 추가 및 의례·성찰 질문 프롬프트 출력 연동",
+    "엘레우시스 비전 트립톨레모스(ancientGreekEleusinianTriptolemosEngine v2.3.0): 질문 반응형 reflectiveQuestion 추가 및 의례·성찰 질문 프롬프트 출력 연동",
+    "에피쿠로스 테트라파르마코스(ancientGreekEpicureanTetrapharmakosEngine v2.4.0): 질문 반응형 reflectiveQuestion 추가 및 프롬프트 출력 연동"
   ]
 }
