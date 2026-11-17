@@ -15,7 +15,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const FRENCH_JJ_ROUSSEAU_VERSION = 'LUCKEY-JJ-ROUSSEAU-NATURE-v2.0.0';
+export const FRENCH_JJ_ROUSSEAU_VERSION = 'LUCKEY-JJ-ROUSSEAU-NATURE-v2.1.0';
 
 export type RousseauQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -63,6 +63,8 @@ export interface JeanJacquesRousseauNatureAuthenticityResult {
   questionContextGuide: string;
   dailyPracticeRitual: string;
   reflectiveQuestion: string;
+  ritualAction: string;
+  reflectionFocus: string;
   interpretiveBoundary: string;
   rousseauSynthesisMatrix: {
     coreInsight: string;
@@ -277,6 +279,8 @@ export function calculateFrenchJeanJacquesRousseauNatureAuthenticity(
     questionContextGuide: topicPack.guide,
     dailyPracticeRitual: topicPack.ritual,
     reflectiveQuestion: topicPack.question,
+    ritualAction: topicPack.ritual,
+    reflectionFocus: topicPack.question,
     interpretiveBoundary: '본 관점은 루소의 자연 회복·진정성 사상을 바탕으로 자기 성찰을 돕는 상징적 안내이며, 우열의 점수나 단정적 예언이 아닙니다.',
     rousseauSynthesisMatrix,
   };

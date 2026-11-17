@@ -8,7 +8,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const FRENCH_JEAN_PAUL_SARTRE_VERSION = 'LUCKEY-JEAN-PAUL-SARTRE-EXISTENTIALISM-v2.1.0';
+export const FRENCH_JEAN_PAUL_SARTRE_VERSION = 'LUCKEY-JEAN-PAUL-SARTRE-EXISTENTIALISM-v2.2.0';
 
 export type SartreQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -70,6 +70,8 @@ export interface JeanPaulSartreExistentialismResult {
   questionTopic: SartreQuestionTopic;
   dailyPracticeRitual: string;
   reflectiveQuestion: string;
+  ritualAction: string;
+  reflectionFocus: string;
   interpretiveBoundary: string;
   sartreComprehensiveGuidance: {
     guidanceTitle: string;
@@ -358,6 +360,8 @@ export function calculateJeanPaulSartreExistentialism(
     questionTopic,
     dailyPracticeRitual: qualitativePractice.dailyPracticeRitual,
     reflectiveQuestion: qualitativePractice.reflectiveQuestion,
+    ritualAction: qualitativePractice.dailyPracticeRitual,
+    reflectionFocus: qualitativePractice.reflectiveQuestion,
     interpretiveBoundary: qualitativePractice.interpretiveBoundary,
     sartreComprehensiveGuidance: {
       guidanceTitle,
