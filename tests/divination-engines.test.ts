@@ -6326,6 +6326,7 @@ test('Blaise Pascal Pensees Engine: calculates Thinking reed dignity, Heart intu
   assert(rep.dualInfinitiesPerspectiveScore >= 0 && rep.dualInfinitiesPerspectiveScore <= 100);
   assert(rep.divertissementTranquilityScore >= 0 && rep.divertissementTranquilityScore <= 100);
   assert(rep.activeThematicThought.thoughtTitleFrench.length > 0);
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(rep.calculatedAtKst.endsWith('KST'));
   assert(Boolean(rep.pascalSynthesisMatrix?.integratedAction));
   const prompt = formatPascalPenseesHeartReasonPrompt(rep);
@@ -8106,6 +8107,7 @@ test('Roland Barthes Semiotics and Punctum Engine: calculates Punctum Intuition,
   assert(rep.plaisirDuTexteSensualDelightIndex >= 0 && rep.plaisirDuTexteSensualDelightIndex <= 100);
   assert(rep.polyphonicSignifierFluidityScore >= 0 && rep.polyphonicSignifierFluidityScore <= 100);
   assert(rep.activeBarthesTheme.themeTitleKo.length > 0);
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(rep.calculatedAtKst.endsWith('KST'));
   assert(Boolean(rep.barthesSynthesisMatrix?.integratedAction));
   const prompt = formatFrenchRolandBarthesSemioticsPunctumPrompt(rep);
@@ -8182,6 +8184,7 @@ test('Paul Ricoeur Narrative Identity and Healing Engine: calculates Emplotment,
   assert(rep.metaphoricalInnovationHopeScore >= 0 && rep.metaphoricalInnovationHopeScore <= 100);
   assert(rep.reconciliationForgivenessResilience >= 0 && rep.reconciliationForgivenessResilience <= 100);
   assert(rep.activeRicoeurTheme.themeTitleKo.length > 0);
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatFrenchPaulRicoeurNarrativeIdentityHealingPrompt(rep);
   assert(prompt.includes('폴 리쾨르 《시간과 이야기·자기 자신으로서의 타자》 서사적 정체성·치유 지표'));

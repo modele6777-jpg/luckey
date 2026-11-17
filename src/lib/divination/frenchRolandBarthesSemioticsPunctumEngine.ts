@@ -13,7 +13,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const FRENCH_ROLAND_BARTHES_SEMIOTICS_PUNCTUM_VERSION = 'LUCKEY-ROLAND-BARTHES-SEMIOTICS-PUNCTUM-v2.1.0';
+export const FRENCH_ROLAND_BARTHES_SEMIOTICS_PUNCTUM_VERSION = 'LUCKEY-ROLAND-BARTHES-SEMIOTICS-PUNCTUM-v2.2.0';
 
 export interface BarthesTheme {
   themeKey: string;
@@ -45,6 +45,8 @@ export interface FrenchRolandBarthesSemioticsPunctumResult {
   focalBarthesAphorism: BarthesAphorism;
   dailyPracticeRitual: string;
   reflectiveQuestion: string;
+  ritualAction: string;
+  reflectionFocus: string;
   interpretiveBoundary: string;
   barthesComprehensiveGuidance: {
     guidanceTitle: string;
@@ -209,6 +211,8 @@ export function calculateFrenchRolandBarthesSemioticsPunctum(
     focalBarthesAphorism,
     dailyPracticeRitual,
     reflectiveQuestion,
+    ritualAction: dailyPracticeRitual,
+    reflectionFocus: reflectiveQuestion,
     interpretiveBoundary,
     barthesComprehensiveGuidance: {
       guidanceTitle,

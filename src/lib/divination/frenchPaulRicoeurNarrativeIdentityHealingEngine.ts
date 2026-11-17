@@ -13,7 +13,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const FRENCH_PAUL_RICOEUR_NARRATIVE_IDENTITY_HEALING_VERSION = 'LUCKEY-PAUL-RICOEUR-NARRATIVE-IDENTITY-HEALING-v2.2.0';
+export const FRENCH_PAUL_RICOEUR_NARRATIVE_IDENTITY_HEALING_VERSION = 'LUCKEY-PAUL-RICOEUR-NARRATIVE-IDENTITY-HEALING-v2.3.0';
 
 export interface RicoeurTheme {
   themeKey: string;
@@ -52,6 +52,8 @@ export interface FrenchPaulRicoeurNarrativeIdentityHealingResult {
     guidanceTitle: string;
     philosophicalCounsel: string;
   };
+  ritualAction: string;
+  reflectionFocus: string;
   interpretiveBoundary: string;
 }
 
@@ -190,6 +192,8 @@ export function calculateFrenchPaulRicoeurNarrativeIdentityHealing(
       guidanceTitle,
       philosophicalCounsel,
     },
+    ritualAction: focalRicoeurAphorism.actionGuidance,
+    reflectionFocus: activeRicoeurTheme.practicalCounsel,
     interpretiveBoundary: '폴 리쾨르의 서사적 정체성과 화해·용서 해석학 상징을 빌린 정성적 치유 성찰 관점이며, 심리 진단이나 미래 단정이 아닙니다.',
   };
 }
