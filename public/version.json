@@ -1,10 +1,10 @@
 {
-  "version": "1.7.811",
-  "builtAt": "2026-11-18T08:32:00+09:00",
-  "summary": "헬레니즘 랏·카이발리온·포이만드레스 3대 엔진 성찰 질문·+09:00 KST·카탈로그 뜻 보강(v1.7.811)",
+  "version": "1.7.812",
+  "builtAt": "2026-11-18T08:35:00+09:00",
+  "summary": "벤야민, 피스티스 소피아, 모이라이·아낭케 3대 엔진 실천 의례 및 성찰 질문 표준 연동(v1.7.812)",
   "items": [
-    "헬레니즘 아라빅 랏(v2.2.0)·헤르메스 카이발리온(v2.3.0)·포이만드레스(v2.3.0): 질문 반응형 reflectiveQuestion 및 프롬프트 연동",
-    "3대 엔진 모두 calculatedAtKst +09:00 KST 표준 표기 통일",
-    "deterministicEngine.ts: hellenisticLots 카탈로그 한 줄 summary 등록"
+    "발터 벤야민 《역사의 개념에 대하여》 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동",
+    "영지주의 피스티스 소피아 12에온 엔진(v2.4.0): ritualAction·reflectionFocus 표준 필드 연동",
+    "고대 그리스 모이라이·아낭케 필연 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동"
   ]
 }

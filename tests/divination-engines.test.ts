@@ -4553,9 +4553,11 @@ test('Greek Moirai Ananke Fate Engine: calculates Clotho, Lachesis, Atropos powe
   assert(rep.dominantGoddess.length > 0);
   assert(rep.temporalMoiraiRhythm.calculatedAtKst.includes('KST'));
   assert(rep.situationalMoiraiAudit.questionFocus.length > 0);
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatGreekMoiraiAnankeFatePrompt(rep);
   assert(prompt.includes('고대 그리스 델포이 삼여신 모이라이(Moirai)'));
   assert(prompt.includes(rep.dominantGoddess));
+  assert(prompt.includes('실천 의례:') && prompt.includes('성찰 초점:'));
   assert(!prompt.includes('/100'));
 });
 
@@ -4648,10 +4650,12 @@ test('Gnostic Pistis Sophia Pleroma Engine: calculates twelve aeons resonance an
   assert(rep.situationalGnosticAudit.pistisSophiaVerse.length > 0);
   assert(rep.temporalPleromaRhythm.pleromaHourWindow.length > 0);
   assert(rep.pleromaSynthesisMatrix.synthesizedVerdict.length > 0);
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatGnosticPistisSophiaPleromaPrompt(rep);
   assert(prompt.includes('고대 영지주의(Gnosticism) 피스티스 소피아 12에온 & 플레로마 실측 데이터'));
   assert(prompt.includes(rep.primaryAeon.nameKo));
+  assert(prompt.includes('실천 의례:') && prompt.includes('성찰 초점:'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });
@@ -8042,10 +8046,12 @@ test('Walter Benjamin Aura and Now-Time Engine: calculates Aura Authenticity, An
   assert(rep.activeBenjaminTheme.themeTitleKo.length > 0);
   assert(rep.calculatedAtKst.endsWith('KST'));
   assert(Boolean(rep.benjaminSynthesisMatrix?.integratedAction));
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatGermanWalterBenjaminAuraNowTimePrompt(rep);
   assert(prompt.includes('발터 벤야민 《역사의 개념에 대하여》 아우라·지금-시간(Jetztzeit) 지표'));
   assert(prompt.includes(rep.activeBenjaminTheme.themeTitleKo));
   assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('실천 의례:') && prompt.includes('성찰 초점:'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });

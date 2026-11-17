@@ -13,7 +13,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const GERMAN_WALTER_BENJAMIN_AURA_NOWTIME_VERSION = 'LUCKEY-WALTER-BENJAMIN-AURA-NOWTIME-v2.1.0';
+export const GERMAN_WALTER_BENJAMIN_AURA_NOWTIME_VERSION = 'LUCKEY-WALTER-BENJAMIN-AURA-NOWTIME-v2.2.0';
 
 export interface BenjaminTheme {
   themeKey: string;
@@ -45,6 +45,8 @@ export interface GermanWalterBenjaminAuraNowTimeResult {
   focalBenjaminAphorism: BenjaminAphorism;
   secondaryBenjaminAphorism: BenjaminAphorism;
   reflectiveQuestion: string;
+  ritualAction: string;
+  reflectionFocus: string;
   interpretiveBoundary: string;
   benjaminComprehensiveGuidance: {
     guidanceTitle: string;
@@ -220,6 +222,8 @@ export function calculateGermanWalterBenjaminAuraNowTime(
     focalBenjaminAphorism,
     secondaryBenjaminAphorism,
     reflectiveQuestion,
+    ritualAction: focalBenjaminAphorism.actionGuidance,
+    reflectionFocus: reflectiveQuestion,
     interpretiveBoundary,
     benjaminComprehensiveGuidance: {
       guidanceTitle,
@@ -250,6 +254,8 @@ export function formatGermanWalterBenjaminAuraNowTimePrompt(
     `- 보조 원전 출처: [${res.secondaryBenjaminAphorism.sourceContext}]`,
     `- 보조 실천 지침: ${res.secondaryBenjaminAphorism.actionGuidance}`,
     `- 성찰 질문: ${res.reflectiveQuestion}`,
+    `- 실천 의례: ${res.ritualAction}`,
+    `- 성찰 초점: ${res.reflectionFocus}`,
     `- 종합 벤야민 권면: ${res.benjaminComprehensiveGuidance.philosophicalCounsel}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
   ];
