@@ -22,7 +22,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const DONGHAK_CHEONDOISM_VERSION = '2.0.0';
+export const DONGHAK_CHEONDOISM_VERSION = '2.1.0';
 
 export interface DonghakCheonjuReport {
   engineVersion: string;
@@ -65,6 +65,7 @@ export interface DonghakCheonjuReport {
   };
   sainyeocheonGuidance: string;
   boundaryNotice: string;
+  interpretiveBoundary: string;
 }
 
 function djb2Hash(str: string): number {
@@ -233,6 +234,7 @@ export function calculateDonghakCheondoismCheonju(
     donghakSynthesisMatrix,
     sainyeocheonGuidance,
     boundaryNotice: '본 결과는 《동경대전》 시천주·인내천 철학에 기반한 정성적 성찰 안내이며, 확정적 길흉 판정이 아닙니다.',
+    interpretiveBoundary: '본 결과는 《동경대전》 시천주·인내천 철학에 기반한 정성적 성찰 안내이며, 확정적 길흉 판정이 아닙니다.',
   };
 }
 

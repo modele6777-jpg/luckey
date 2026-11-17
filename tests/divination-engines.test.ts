@@ -4127,6 +4127,7 @@ test('Korean Dangun Cheonbuin Engine: calculates 3 Sacred Treasures and Hongik p
   assert(rep.calculatedAtKst.includes('KST'));
   assert(rep.temporalCheonbuinRhythm.shinsiSkyWindow.length > 0);
   assert(rep.cheonbuinSynthesisMatrix.coreInsight.length > 0);
+  assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatKoreanDangunCheonbuinPrompt(rep);
   assert(prompt.includes('고대 한국 삼국유사 단군 천부인(天符印) 3보 & 홍익인간 광명 실측 데이터'));
   assert(prompt.includes(rep.treasures.dominantTreasure.nameKo));
@@ -5124,6 +5125,7 @@ test('Donghak Cheondoism Cheonju Engine: calculates inner spirituality, cosmic r
   assert(rep.calculatedAtKst.includes('KST'));
   assert(rep.temporalDonghakRhythm.yongdamWatchWindow.length > 0);
   assert(rep.donghakSynthesisMatrix.coreInsight.length > 0);
+  assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatDonghakCheondoismCheonjuPrompt(rep);
   assert(prompt.includes('동학 수운 최제우 시천주(侍天主) & 지기금지 인내천 천지조화'));
   assert(prompt.includes(rep.primaryVirtue.titleKo));
@@ -5192,6 +5194,7 @@ test('Korean Cheonbugyeong Eighty One Cosmic Engine: calculates heaven earth hum
   assert(rep.calculatedAtKst.includes('KST'));
   assert(rep.temporalCheonbuRhythm.samgeukWatchWindow.length > 0);
   assert(rep.cheonbuSynthesisMatrix.coreInsight.length > 0);
+  assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatKoreanCheonbugyeongEightyOnePrompt(rep);
   assert(prompt.includes('단군 단학 천부경(天符經) 81자 우주 매트릭스 & 삼일신고 3진3망 성통광명'));
   assert(prompt.includes(rep.primaryHexagramGua.verseHanja));
