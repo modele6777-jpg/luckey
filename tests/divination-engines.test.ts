@@ -3401,6 +3401,7 @@ test('Egyptian 36 Decans Engine: calculates birth decan and stellar resonance', 
   assert(rep.birthDecan.decanNumber >= 1 && rep.birthDecan.decanNumber <= 36);
   assert(rep.stellarResonanceScore >= 0 && rep.stellarResonanceScore <= 100);
   assert(rep.spiritualNavigationGuidance.length > 0);
+  assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatEgyptianThirtySixDecansPrompt(rep);
   assert(prompt.includes('고대 이집트 36 데칸'));
   assert(prompt.includes(rep.birthDecan.guardianDeity));
@@ -4207,7 +4208,7 @@ test('Egyptian Maat Feather Heart Engine: calculates heart lightness and Maat ve
   assert(rep.weighingVerdict.length > 0);
   assert(rep.activeNegativeConfessionVirtue.length > 0);
   assert(rep.symbolicGuard.anubisRole.length > 0 && rep.symbolicGuard.thothRole.length > 0);
-  assert(rep.practiceGuidance.length > 0 && rep.ritualAction.length > 0 && rep.boundaryNotice.length > 0);
+  assert(rep.practiceGuidance.length > 0 && rep.ritualAction.length > 0 && rep.boundaryNotice.length > 0 && rep.interpretiveBoundary.length > 0);
   const prompt = formatEgyptianMaatFeatherHeartPrompt(rep);
   assert(prompt.includes('고대 이집트 마아트(Ma\'at) 진리의 깃털 & 심장 무게 측정 실측 데이터'));
   assert(prompt.includes(rep.activeNegativeConfessionVirtue));
@@ -4493,6 +4494,7 @@ test('Egyptian Sphinx Dream Oracle Engine: calculates tetramorph virtues and san
   assert(rep.tetramorph.eagleVision.score >= 0 && rep.tetramorph.eagleVision.score <= 100);
   assert(rep.sandCleansingIndex >= 0 && rep.sandCleansingIndex <= 100);
   assert(rep.dominantVirtue.length > 0);
+  assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatEgyptianSphinxDreamOraclePrompt(rep);
   assert(prompt.includes('고대 이집트 투트모세 4세 스핑크스 영혼 꿈신탁'));
   assert(prompt.includes(rep.dominantVirtue));

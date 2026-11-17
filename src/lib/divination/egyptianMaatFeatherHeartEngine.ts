@@ -6,7 +6,7 @@
  * 양심의 명료함, 마음의 짐 내려놓기에 연결하는 정성적 성찰 엔진입니다.
  */
 
-export const EGYPTIAN_MAAT_FEATHER_ENGINE_VERSION = 'LUCKEY-EGYPTIAN-MAAT-v2.1.0';
+export const EGYPTIAN_MAAT_FEATHER_ENGINE_VERSION = 'LUCKEY-EGYPTIAN-MAAT-v2.2.0';
 
 export type MaatQuestionTheme = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -46,6 +46,7 @@ export interface MaatWeighingReport {
   reflectionFocus: string;
   counselNote: string;
   boundaryNotice: string;
+  interpretiveBoundary: string;
 }
 
 function classifyMaatTheme(question: string): MaatQuestionTheme {
@@ -230,6 +231,7 @@ export function calculateEgyptianMaatFeatherHeart(params: {
     reflectionFocus: themeContent.reflectionFocus,
     counselNote: themeContent.counselNote,
     boundaryNotice,
+    interpretiveBoundary: boundaryNotice,
   };
 }
 
