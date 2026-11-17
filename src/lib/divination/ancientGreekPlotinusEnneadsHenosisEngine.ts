@@ -4,12 +4,12 @@
  * 3세기 신플라톤주의 창시자 플로티노스의 《엔네아데스》 사상 기반:
  * 일자(The One), 누스(Nous), 프쉬케(Psyche), 헤노시스(Henosis)의 내면 정화·관조·합일 관점.
  *
- * @version LUCKEY-PLOTINUS-ENNEADS-v2.0.0
+ * @version LUCKEY-PLOTINUS-ENNEADS-v2.2.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const ANCIENT_GREEK_PLOTINUS_VERSION = 'LUCKEY-PLOTINUS-ENNEADS-v2.1.0';
+export const ANCIENT_GREEK_PLOTINUS_VERSION = 'LUCKEY-PLOTINUS-ENNEADS-v2.2.0';
 
 export type PlotinusQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 export type PlotinusAscentStage = 'KATHARSIS_PURIFICATION' | 'NOUS_ILLUMINATION' | 'HENOSIS_STILLNESS';
@@ -68,6 +68,7 @@ export interface AncientGreekPlotinusEnneadsHenosisResult {
   practiceGuidance: string;
   ritualAction: string;
   reflectionFocus: string;
+  reflectiveQuestion: string;
   boundaryNotice: string;
   interpretiveBoundary: string;
   situationalEnneadsAudit: PlotinusSituationalAudit;
@@ -333,14 +334,19 @@ export function calculateAncientGreekPlotinusEnneadsHenosis(
   const practiceGuidance = `${activePlotinusTheme.practicalCounsel} ${PLOTINUS_TOPIC_PRACTICE[questionTopic]}`;
   const ritualAction = PLOTINUS_TOPIC_RITUAL[questionTopic];
   const reflectionFocus = PLOTINUS_TOPIC_REFLECTION[questionTopic];
+  const trimmedQ = question.trim();
+  const reflectiveQuestion = trimmedQ
+    ? `지금 "${trimmedQ}"의 고민 앞에서, ${reflectionFocus}`
+    : reflectionFocus;
   const boundaryNotice = '이 관점은 플로티노스 신플라톤주의의 정화와 관조 상징을 빌린 정성적 성찰이며, 우열의 점수나 확정적 예언이 아닙니다.';
 
   const guidanceTitle = `플로티노스 엔네아데스 일자 유출과 영적 귀환 지혜: ${activePlotinusTheme.themeTitleKo}`;
   const philosophicalCounsel = `${activePlotinusTheme.practicalCounsel} ${PLOTINUS_TOPIC_PRACTICE[questionTopic]} ${focalPlotinusAphorism.actionGuidance}`;
+  const kstIso = `${new Date(now.getTime() + 9 * 60 * 60 * 1000).toISOString().slice(0, 19)}+09:00 (KST)`;
 
   return {
     engineVersion: ANCIENT_GREEK_PLOTINUS_VERSION,
-    calculatedAtKst: now.toISOString(),
+    calculatedAtKst: kstIso,
     theOneSupremeSourceEmanationScore,
     nousIntellectualContemplationIndex,
     psycheSoulSelfCultivationScore,
@@ -354,6 +360,7 @@ export function calculateAncientGreekPlotinusEnneadsHenosis(
     practiceGuidance,
     ritualAction,
     reflectionFocus,
+    reflectiveQuestion,
     boundaryNotice,
     interpretiveBoundary: boundaryNotice,
     situationalEnneadsAudit,
@@ -368,7 +375,7 @@ export function calculateAncientGreekPlotinusEnneadsHenosis(
 
 export function formatAncientGreekPlotinusEnneadsHenosisPrompt(res: AncientGreekPlotinusEnneadsHenosisResult): string {
   return [
-    `【플로티노스 《엔네아데스》 일자유출설 & 영적 귀환 지표】`,
+    `【플로티노스 《엔네아데스》 일자유출설 & 영적 귀환 지표】 (${res.engineVersion} | 기준 시각: ${res.calculatedAtKst})`,
     `- 귀환 단계: ${res.ascentStageLabel}`,
     `- 핵심 영적 테마: ${res.activePlotinusTheme.themeTitleKo} [${res.activePlotinusTheme.themeTitleEn}]`,
     `- 질문 맥락 감사(${res.situationalEnneadsAudit.enneadsRef}): 함정(${res.situationalEnneadsAudit.shadowTrap}) → 변증 질문("${res.situationalEnneadsAudit.dialecticQuestion}") / 정화 실천(${res.situationalEnneadsAudit.katharsisPractice})`,
@@ -377,7 +384,7 @@ export function formatAncientGreekPlotinusEnneadsHenosisPrompt(res: AncientGreek
     `- 실존적 통찰: ${res.activePlotinusTheme.existentialInsight}`,
     `- 실천 조언: ${res.practiceGuidance}`,
     `- 일상 의례: ${res.ritualAction}`,
-    `- 성찰 질문: ${res.reflectionFocus}`,
+    `- 성찰 질문: ${res.reflectiveQuestion}`,
     `- 해석 경계: ${res.boundaryNotice}`,
   ].join('\n');
 }
