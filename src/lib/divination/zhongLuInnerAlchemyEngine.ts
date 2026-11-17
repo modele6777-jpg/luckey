@@ -11,7 +11,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const ZHONG_LU_INNER_ALCHEMY_VERSION = 'LUCKEY-ZHONG-LU-ALCHEMY-v2.0.0';
+export const ZHONG_LU_INNER_ALCHEMY_VERSION = 'LUCKEY-ZHONG-LU-ALCHEMY-v2.1.0';
 
 function formatZhongLuKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -67,6 +67,7 @@ export interface ZhongLuAlchemyReport {
     alignmentState: string;
     integratedAction: string;
   };
+  interpretiveBoundary: string;
 }
 
 const IMMORTALITY_TIERS: ImmortalityTierResonance[] = [
@@ -221,6 +222,7 @@ export function calculateZhongLuInnerAlchemy(
     counselNote: qualitative.counsel,
     boundaryNotice: '종여내단 3품 선도와 수화기제 상징은 우열 점수가 아니라 심신 균형과 일상의 리듬을 살피기 위한 정성적 양생 프레임입니다.',
     zhongLuSynthesisMatrix,
+    interpretiveBoundary: '종여내단 3품 선도와 수화기제 상징은 우열 점수가 아니라 심신 균형과 일상의 리듬을 살피기 위한 정성적 양생 프레임입니다.',
   };
 }
 
