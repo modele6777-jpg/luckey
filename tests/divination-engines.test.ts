@@ -6438,6 +6438,7 @@ test('Francis Bacon Novum Organum Engine: calculates Four Idols overcoming, Indu
   assert(rep.ritualAction.length > 0);
   assert(rep.reflectionFocus.length > 0);
   assert(rep.boundaryNotice.length > 0);
+  assert(rep.interpretiveBoundary.length > 0);
   assert(rep.idolsTribusSpeciesBiasOvercomingScore >= 0 && rep.idolsTribusSpeciesBiasOvercomingScore <= 100);
   assert(rep.idolsSpecusPersonalPrejudiceOvercomingScore >= 0 && rep.idolsSpecusPersonalPrejudiceOvercomingScore <= 100);
   assert(rep.idolsForiLinguisticClarityScore >= 0 && rep.idolsForiLinguisticClarityScore <= 100);
@@ -6548,6 +6549,7 @@ test('John Stuart Mill On Liberty Individuality Engine: calculates Autonomy, Har
   assert(rep.ritualAction.length > 0);
   assert(rep.reflectionFocus.length > 0);
   assert(rep.boundaryNotice.length > 0);
+  assert(rep.interpretiveBoundary.length > 0);
   assert(rep.individualityAutonomyScore >= 0 && rep.individualityAutonomyScore <= 100);
   assert(rep.harmPrincipleClarityScore >= 0 && rep.harmPrincipleClarityScore <= 100);
   assert(rep.thoughtConscienceLibertyScore >= 0 && rep.thoughtConscienceLibertyScore <= 100);
@@ -6941,6 +6943,7 @@ test('John Locke Human Understanding Engine: calculates Tabula Rasa, Sensation/R
   assert(rep.ritualAction.length > 0);
   assert(rep.reflectionFocus.length > 0);
   assert(rep.boundaryNotice.length > 0);
+  assert(rep.interpretiveBoundary.length > 0);
   assert(rep.tabulaRasaOpenReceptivityScore >= 0 && rep.tabulaRasaOpenReceptivityScore <= 100);
   assert(rep.sensationReflectionBalanceIndex >= 0 && rep.sensationReflectionBalanceIndex <= 100);
   assert(rep.naturalRightsInviolabilityScore >= 0 && rep.naturalRightsInviolabilityScore <= 100);

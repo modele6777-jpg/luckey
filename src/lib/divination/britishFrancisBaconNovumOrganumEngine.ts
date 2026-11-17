@@ -15,7 +15,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const BRITISH_FRANCIS_BACON_VERSION = 'LUCKEY-FRANCIS-BACON-NOVUM-ORGANUM-v2.0.0';
+export const BRITISH_FRANCIS_BACON_VERSION = 'LUCKEY-FRANCIS-BACON-NOVUM-ORGANUM-v2.1.0';
 
 export type BaconQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -60,6 +60,7 @@ export interface FrancisBaconNovumOrganumResult {
   ritualAction: string;
   reflectionFocus: string;
   boundaryNotice: string;
+  interpretiveBoundary: string;
   baconSynthesisMatrix: {
     coreInsight: string;
     recommendedAction: string;
@@ -294,6 +295,7 @@ export function calculateFrancisBaconNovumOrganum(
     ritualAction: topicGuidance.ritualAction,
     reflectionFocus: topicGuidance.reflectionFocus,
     boundaryNotice,
+    interpretiveBoundary: boundaryNotice,
     baconSynthesisMatrix,
     baconComprehensiveGuidance: {
       guidanceTitle,
