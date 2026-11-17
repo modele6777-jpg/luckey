@@ -8,7 +8,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const GAELIC_FIRE_FESTIVALS_ENGINE_VERSION = '2.2.0';
+export const GAELIC_FIRE_FESTIVALS_ENGINE_VERSION = '2.3.0';
 
 export interface GaelicFestivalStation {
   id: 'samhain' | 'imbolc' | 'bealtaine' | 'lughnasadh';
@@ -57,6 +57,8 @@ export interface GaelicWheelFireFestivalsReport {
   gaelicSynthesisMatrix: GaelicSynthesisMatrix;
   gaelicOmenGuidance: string;
   sacredHearthfireRitual: string;
+  ritualAction: string;
+  reflectionFocus: string;
   interpretiveBoundary: string;
 }
 
@@ -257,6 +259,8 @@ export function calculateGaelicWheelFireFestivals(
     gaelicSynthesisMatrix,
     gaelicOmenGuidance,
     sacredHearthfireRitual,
+    ritualAction: situationalGaelicAudit.druidPrescription,
+    reflectionFocus: activeStation.spiritualVirtue,
     interpretiveBoundary: '게일 4대 화제 축제와 콜리니 역법 상징을 빌린 정성적 계절 순환 참고 관점이며, 개인 점수나 확정 예언이 아닙니다.',
   };
 }
