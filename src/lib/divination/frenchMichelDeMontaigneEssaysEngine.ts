@@ -14,7 +14,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const FRENCH_MICHEL_DE_MONTAIGNE_VERSION = 'LUCKEY-MONTAIGNE-ESSAYS-QUE-SAIS-JE-v2.1.0';
+export const FRENCH_MICHEL_DE_MONTAIGNE_VERSION = 'LUCKEY-MONTAIGNE-ESSAYS-QUE-SAIS-JE-v2.2.0';
 
 export interface MontaigneTheme {
   themeKey: string;
@@ -46,6 +46,8 @@ export interface FrenchMichelDeMontaigneEssaysResult {
   focalMontaigneAphorism: MontaigneAphorism;
   secondaryMontaigneAphorism: MontaigneAphorism;
   reflectiveQuestion: string;
+  ritualAction: string;
+  reflectionFocus: string;
   interpretiveBoundary: string;
   montaigneComprehensiveGuidance: {
     guidanceTitle: string;
@@ -222,6 +224,8 @@ export function calculateFrenchMichelDeMontaigneEssays(
     focalMontaigneAphorism,
     secondaryMontaigneAphorism,
     reflectiveQuestion,
+    ritualAction: focalMontaigneAphorism.actionGuidance,
+    reflectionFocus: reflectiveQuestion,
     interpretiveBoundary,
     montaigneComprehensiveGuidance: {
       guidanceTitle,

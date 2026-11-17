@@ -13,7 +13,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const FRENCH_MAURICE_MERLEAU_PONTY_EMBODIED_PHENOMENOLOGY_VERSION = 'LUCKEY-MERLEAU-PONTY-EMBODIED-PHENOMENOLOGY-v2.0.0';
+export const FRENCH_MAURICE_MERLEAU_PONTY_EMBODIED_PHENOMENOLOGY_VERSION = 'LUCKEY-MERLEAU-PONTY-EMBODIED-PHENOMENOLOGY-v2.1.0';
 
 export type MerleauPontyQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -57,6 +57,8 @@ export interface FrenchMauriceMerleauPontyEmbodiedPhenomenologyResult {
   practiceGuidance: string;
   dailyPracticeRitual: string;
   reflectiveQuestion: string;
+  ritualAction: string;
+  reflectionFocus: string;
   interpretiveBoundary: string;
   pontySynthesisMatrix: {
     coreInsight: string;
@@ -322,6 +324,8 @@ export function calculateFrenchMauriceMerleauPontyEmbodiedPhenomenology(
     practiceGuidance,
     dailyPracticeRitual,
     reflectiveQuestion,
+    ritualAction: dailyPracticeRitual,
+    reflectionFocus: reflectiveQuestion,
     interpretiveBoundary,
     pontySynthesisMatrix,
     pontyComprehensiveGuidance: {
