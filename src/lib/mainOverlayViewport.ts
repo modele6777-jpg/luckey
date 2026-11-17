@@ -1,6 +1,6 @@
 import { isIosStandaloneWindow, readViewportSnapshot, resolveLayoutViewportSize } from './visualViewportBox';
 import type { OverlayPane } from './overlayPane';
-export interface MainOverlayViewport { left: number; top: number; width: number; height: number }
+export interface MainOverlayViewport { left: number; top: number; width: number; height: number; hidden?: boolean }
 
 const VISUAL_WIDTH_TOLERANCE = 24;
 /** A cover-screen gutter between the layout canvas and a screen-edge rail. A wider gap is another pane. */
@@ -68,7 +68,11 @@ export function measureMainOverlayViewport(pane: OverlayPane = 'main'): MainOver
     }
   }
   if (pane !== 'main') {
-    const rect = paneElement(pane)?.getBoundingClientRect();
+    const paneEl = paneElement(pane);
+    if (paneEl && (getComputedStyle(paneEl).display === 'none' || getComputedStyle(paneEl).visibility === 'hidden')) {
+      return { left: 0, top: 0, width: 0, height: 0, hidden: true };
+    }
+    const rect = paneEl?.getBoundingClientRect();
     if (rect && rect.width > 0 && rect.height > 0) {
       left = Math.max(left, rect.left); top = Math.max(top, rect.top);
       right = Math.min(right, rect.right); bottom = Math.min(bottom, rect.bottom);
@@ -132,7 +136,7 @@ export function subscribeMainOverlayViewport(listener: () => void): () => void {
       }
       const next = measureAll();
       if (snapshot && (['main', 'content', 'lucy'] as const).every(pane =>
-        (['left', 'top', 'width', 'height'] as const).every(key => next[pane][key] === snapshot![pane][key]))) return;
+        (['left', 'top', 'width', 'height', 'hidden'] as const).every(key => next[pane][key] === snapshot![pane][key]))) return;
       snapshot = next;
       listeners.forEach(notify => notify());
     };
