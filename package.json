@@ -1,7 +1,7 @@
 {
   "name": "luckey",
   "private": true,
-  "version": "1.7.751",
+  "version": "1.7.752",
   "engines": {
     "node": ">=20.0.0"
   },
@@ -24,7 +24,8 @@
     "test:sync-vault": "tsx --test tests/server-vault-sync.test.ts",
     "test:tarot-energy-summary": "tsx --test tests/tarot-energy-summary.test.ts",
     "test:tts-highlight": "tsx --test tests/tts-highlight-match.test.ts",
-    "test:cloudflare": "tsx --test tests/cloudflare-worker.test.ts"
+    "test:cloudflare": "tsx --test tests/cloudflare-worker.test.ts",
+    "test:duo-layout": "node scripts/test-duo-responsive-layout.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.91.1",
