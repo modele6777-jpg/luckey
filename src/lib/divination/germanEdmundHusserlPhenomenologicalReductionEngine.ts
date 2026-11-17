@@ -13,7 +13,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const GERMAN_EDMUND_HUSSERL_PHENOMENOLOGY_VERSION = 'LUCKEY-EDMUND-HUSSERL-PHENOMENOLOGY-v2.1.0';
+export const GERMAN_EDMUND_HUSSERL_PHENOMENOLOGY_VERSION = 'LUCKEY-EDMUND-HUSSERL-PHENOMENOLOGY-v2.2.0';
 
 export interface HusserlTheme {
   themeKey: string;
@@ -52,6 +52,7 @@ export interface GermanEdmundHusserlPhenomenologicalReductionResult {
     alignmentState: string;
     integratedAction: string;
   };
+  interpretiveBoundary: string;
 }
 
 export const HUSSERL_THEMES: HusserlTheme[] = [
@@ -207,6 +208,7 @@ export function calculateGermanEdmundHusserlPhenomenologicalReduction(
       philosophicalCounsel,
     },
     husserlSynthesisMatrix,
+    interpretiveBoundary: '후설의 판단중지(에포케)·본질직관·생활세계 상징을 빌린 정성적 성찰 관점이며, 개인 평가나 미래 단정이 아닙니다.',
   };
 }
 
