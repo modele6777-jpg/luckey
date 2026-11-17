@@ -11,7 +11,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const HERMETIC_KYBALION_VERSION = 'LUCKEY-HERMETIC-KYBALION-v2.1.0';
+export const HERMETIC_KYBALION_VERSION = 'LUCKEY-HERMETIC-KYBALION-v2.2.0';
 
 export type KybalionQuestionFocus = 'career' | 'relationship' | 'anxiety' | 'decision' | 'spiritual';
 
@@ -68,6 +68,7 @@ export interface HermeticKybalionReport {
   temporalPendulumRhythm: TemporalPendulumRhythm;
   kybalionSynthesisMatrix: KybalionSynthesisMatrix;
   hermeticWisdomDirective: string;
+  interpretiveBoundary: string;
 }
 
 function detectKybalionFocus(question: string): KybalionQuestionFocus {
@@ -305,6 +306,7 @@ export function calculateHermeticKybalion(
     temporalPendulumRhythm,
     kybalionSynthesisMatrix,
     hermeticWisdomDirective: `현재 당신의 에너지는 '${master.nameKo}'의 법칙 아래 움직이고 있습니다. 리듬은 '${rhythmPhase}' 국면이므로, ${rhythmPhase === '밀물(진전/확장기)' ? '주저하지 말고 의도를 선포하고 적극적으로 실행' : '무리한 확장 대신 내면의 배터리를 충전하고 다음 주기를 준비'}하십시오.`,
+    interpretiveBoundary: '본 리포트는 《카이발리온》 7대 우주 원리 상징에 기반한 정성적 성찰 안내이며, 확정적 예언이 아닙니다.',
   };
 }
 
