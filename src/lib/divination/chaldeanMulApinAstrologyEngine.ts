@@ -7,7 +7,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const CHALDEAN_MUL_APIN_ASTROLOGY_ENGINE_VERSION = 'LUCKEY-CHALDEAN-MULAPIN-v2.1.0';
+export const CHALDEAN_MUL_APIN_ASTROLOGY_ENGINE_VERSION = 'LUCKEY-CHALDEAN-MULAPIN-v2.2.0';
 
 export type CelestialPath =
   | '엔릴의 길(Way of Enlil - 북천/절대원칙과 법도)'
@@ -56,6 +56,8 @@ export interface ChaldeanMulApinAstrologyReport {
   mulApinSynthesisMatrix: ChaldeanSynthesisMatrix;
   noeticFireGuidance: string;
   astronomicalActionAdvice: string;
+  ritualAction: string;
+  reflectionFocus: string;
   interpretiveBoundary: string;
 }
 
@@ -260,6 +262,8 @@ export function calculateChaldeanMulApinAstrology(options?: {
     mulApinSynthesisMatrix,
     noeticFireGuidance,
     astronomicalActionAdvice,
+    ritualAction: situationalMulApinAudit.tabletPrescription,
+    reflectionFocus: `[${rulingPlanet.nameKo}]과 ${cMeta.name}의 궤도 아래, 지금 내가 지키고자 하는 중심 질서는 무엇인가요?`,
     interpretiveBoundary,
   };
 }
