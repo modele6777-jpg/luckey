@@ -12,7 +12,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const MOZI_GYEOM_AE_VERSION = 'LUCKEY-MOZI-GYEOM-AE-v2.2.0';
+export const MOZI_GYEOM_AE_VERSION = 'LUCKEY-MOZI-GYEOM-AE-v2.3.0';
 
 export type MoziQuestionTopic = 'relationship' | 'decision' | 'simplicity' | 'reflection';
 
@@ -72,6 +72,7 @@ export interface MoziGyeomAeResult {
   boundaryNotice: string;
   ritualAction: string;
   reflectionFocus: string;
+  reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
 
@@ -259,6 +260,10 @@ export function calculateMoziGyeomAe(
   const boundaryNotice = '이 풀이는 묵자 겸애·비공·절용 사상을 오늘의 선택과 관계에 비추어 보는 정성적 실천 지침이며, 수치 우열이나 확정적 예언이 아닙니다.';
   const ritualAction = situationalMohistAudit.practicalDirective;
   const reflectionFocus = `오늘 내가 피해야 할 '${situationalMohistAudit.exclusionTrap}' 대신, 나와 상대를 함께 살리는 교상리(${activeMohistStage.stageNameHanja})의 첫걸음은 무엇일까요?`;
+  const trimmedQ = question.trim();
+  const reflectiveQuestion = trimmedQ
+    ? `‘${trimmedQ}’라는 물음 앞에서 소모적 다툼과 허례를 내려놓고, 나와 상대에게 모두 실질적 이로움이 남는 교상리(${activeMohistStage.stageNameHanja})의 한 걸음은 무엇인가요?`
+    : reflectionFocus;
 
   return {
     engineVersion: MOZI_GYEOM_AE_VERSION,
@@ -278,6 +283,7 @@ export function calculateMoziGyeomAe(
     boundaryNotice,
     ritualAction,
     reflectionFocus,
+    reflectiveQuestion,
     interpretiveBoundary: boundaryNotice,
   };
 }
@@ -285,6 +291,7 @@ export function calculateMoziGyeomAe(
 export function formatMoziGyeomAePrompt(result: MoziGyeomAeResult): string {
   return `[🛡️ 춘추전국시대 묵가(墨家) 묵자(墨子) 겸애교리(兼愛交利) & 비공절용 실천 리포트]
 - 엔진 버전: ${result.engineVersion}
+- 연산 시각: ${result.calculatedAtKst}
 - 현행 묵가적 도덕 지평: **[${result.activeMohistStage.stageNameKo} (${result.activeMohistStage.stageNameHanja})]**
   → 관장 영역: ${result.activeMohistStage.ethicalDomain}
   → 실천의 축복: ${result.activeMohistStage.mohistVirtueBlessing}
@@ -296,5 +303,6 @@ export function formatMoziGyeomAePrompt(result: MoziGyeomAeResult): string {
   → 실천 지침: ${result.primaryMohistPrecept.actionableDirective}
 - 묵자의 철옹성 지혜: 《${result.moziFortressWisdom.fortressTitle}》
   → 전략적 조언: "${result.moziFortressWisdom.strategicCounsel}"
+- 성찰 질문: ${result.reflectiveQuestion}
 - 해석 경계: ${result.boundaryNotice}`;
 }

@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.7.761",
+    "builtAt": "2026-11-18T04:40:00+09:00",
+    "summary": "조상 후성유전 카르마·포박자 구전환단·묵자 겸애교리 3대 엔진 질문 반응형 성찰 질문 연동(v1.7.761)",
+    "items": [
+      "조상 혈통 & 후성유전 카르마 정화(ancestralEpigeneticKarmaEngine v2.3.0): 질문 반응형 reflectiveQuestion 추가 및 프롬프트 출력 연동",
+      "도교 포박자 구전환단(ancientChineseBaopuziNineElixirsEngine v2.3.0): 질문 반응형 reflectiveQuestion 추가 및 프롬프트 출력 연동",
+      "묵자 겸애교리 & 비공절용(ancientChineseMoziGyeomAeUniversalLoveEngine v2.3.0): 질문 반응형 reflectiveQuestion 추가 및 KST·성찰 질문 프롬프트 출력 연동"
+    ]
+  },
+  {
     "version": "1.7.760",
     "builtAt": "2026-11-18T04:34:00+09:00",
     "summary": "아즈텍 토날라마틀, 발리 트리 히타 카라나, 생체 바이오리듬 피크 3대 엔진 실천 의례 및 성찰 질문 표준 연동(v1.7.760)",
