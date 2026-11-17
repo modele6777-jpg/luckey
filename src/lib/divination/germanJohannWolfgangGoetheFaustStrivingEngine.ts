@@ -15,7 +15,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const GERMAN_GOETHE_FAUST_VERSION = 'LUCKEY-GOETHE-FAUST-STRIVING-v2.1.0';
+export const GERMAN_GOETHE_FAUST_VERSION = 'LUCKEY-GOETHE-FAUST-STRIVING-v2.2.0';
 
 export interface GoetheTheme {
   themeKey: string;
@@ -47,6 +47,8 @@ export interface JohannWolfgangGoetheFaustStrivingResult {
   focalGoetheAphorism: GoetheAphorism;
   secondaryGoetheAphorism: GoetheAphorism;
   reflectiveQuestion: string;
+  ritualAction: string;
+  reflectionFocus: string;
   interpretiveBoundary: string;
   goetheComprehensiveGuidance: {
     guidanceTitle: string;
@@ -180,6 +182,8 @@ export function calculateGermanJohannWolfgangGoetheFaustStriving(
   const focalGoetheAphorism = GOETHE_APHORISMS[aphorismIndex];
   const secondaryGoetheAphorism = GOETHE_APHORISMS[secondaryAphorismIndex];
   const reflectiveQuestion = buildGoetheReflectiveQuestion(activeGoetheTheme, query);
+  const ritualAction = focalGoetheAphorism.actionGuidance;
+  const reflectionFocus = reflectiveQuestion;
   const interpretiveBoundary = '괴테 《파우스트》 관점은 성패 예언이나 도덕적 심판이 아니라, 끊임없는 갈망과 현재 몰입을 비추는 문학·철학적 성찰 렌즈입니다.';
 
   const guidanceTitle = `괴테 파우스트 갈망 노력 지혜: ${activeGoetheTheme.themeTitleKo}`;
@@ -209,6 +213,8 @@ export function calculateGermanJohannWolfgangGoetheFaustStriving(
     focalGoetheAphorism,
     secondaryGoetheAphorism,
     reflectiveQuestion,
+    ritualAction,
+    reflectionFocus,
     interpretiveBoundary,
     goetheComprehensiveGuidance: {
       guidanceTitle,
@@ -237,6 +243,8 @@ export function formatJohannWolfgangGoetheFaustStrivingPrompt(res: JohannWolfgan
     `- 보조 원전 출처: "${res.secondaryGoetheAphorism.aphorismEn}" [${res.secondaryGoetheAphorism.sourceContext}]`,
     `- 보조 실천 지침: ${res.secondaryGoetheAphorism.actionGuidance}`,
     `- 성찰 질문: ${res.reflectiveQuestion}`,
+    `- 실천 의례: ${res.ritualAction}`,
+    `- 성찰 초점: ${res.reflectionFocus}`,
     `- 종합 통찰 권면: ${res.goetheComprehensiveGuidance.philosophicalCounsel}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
   ];
