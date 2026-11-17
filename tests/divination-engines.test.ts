@@ -4288,6 +4288,7 @@ test('Orpheic Mysteries Engine: calculates memory well awakening and Dionysian e
   assert(rep.practiceGuidance.length > 0 && rep.ritualAction.length > 0 && rep.boundaryNotice.length > 0);
   assert(rep.calculatedAtKst.endsWith('KST'));
   assert(Boolean(rep.orphicSynthesisMatrix?.integratedAction));
+  assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatOrpheicMysteriesPrompt(rep);
   assert(prompt.includes('고대 그리스 오르페우스 신비주의 & 므네모시네 기억의 샘 실측 데이터'));
   assert(prompt.includes(rep.goldTabletPassportCode));
@@ -4625,6 +4626,7 @@ test('Sumerian Inanna Underworld Descent Engine: calculates seven gates strippin
   assert.equal(rep.engineVersion, SUMERIAN_INANNA_UNDERWORLD_DESCENT_ENGINE_VERSION);
   assert(rep.calculatedAtKst.endsWith('KST'));
   assert(Boolean(rep.inannaSynthesisMatrix?.integratedAction));
+  assert(rep.interpretiveBoundary.length > 0);
   assert.equal(rep.gates.length, 7);
   assert(rep.underworldSevenGatesPassRate >= 0 && rep.underworldSevenGatesPassRate <= 100);
   assert(rep.spiritualResurrectionVitality >= 0 && rep.spiritualResurrectionVitality <= 100);
@@ -5755,6 +5757,7 @@ test('Roman Marcus Aurelius Inner Citadel Meditations Engine: calculates Inner C
   assert(rep.controlDichotomy.internalSovereigntyRatio >= 0 && rep.controlDichotomy.internalSovereigntyRatio <= 100);
   assert(rep.dailyStoicPractice.protocolDirective.length > 0);
   assert(rep.citadelResilienceMatrix.amorFatiConversionIndex >= 0 && rep.citadelResilienceMatrix.amorFatiConversionIndex <= 100);
+  assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatAureliusInnerCitadelPrompt(rep);
   assert(prompt.includes('고대 로마 마르쿠스 아우렐리우스 《명상록(Meditations)》'));
   assert(prompt.includes(rep.activeAureliusStage.stageNameKo));
