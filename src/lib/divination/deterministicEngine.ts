@@ -4802,7 +4802,7 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'fengShuiEightMansions', nameKo: '풍수 8택 방위에너지', icon: '🧭', category: 'deep_master', summary: '팔택명괘 4길방(생기·천의·연년·복위)과 시공간 리듬으로 일상 공간과 동선을 조율하는 관점' },
   { key: 'zoroastrianAsha', nameKo: '조로아스터 아샤 진실', icon: '🔥', category: 'deep_master', summary: '고대 페르시아 아베스타의 아샤(진리)와 선한 생각·말·행동 3대 축으로 모호한 타협을 가려냅니다.' },
   { key: 'hinduKundalini', nameKo: '힌두 쿤달리니 나디각성', icon: '🕉️', category: 'deep_master' },
-  { key: 'guiguziLiangtouqian', nameKo: '귀곡자 양구령 72변화', icon: '📜', category: 'deep_master' },
+  { key: 'guiguziLiangtouqian', nameKo: '귀곡자 양구령 72변화', icon: '📜', category: 'deep_master', summary: '년간과 시간의 양두 간지 배합과 선천 성수로 인생 3국면과 종횡가 결단 나침반을 비추는 전략 관점' },
   { key: 'slavicSvarog', nameKo: '슬라브 16스바로그 로드카르마', icon: '🌌', category: 'deep_master', summary: '슬라브 16 스바로그 궁과 로드(Rod) 가계 카르마·성목 상징으로 타고난 기질과 관계 매듭 해원을 비추는 관점' },
   { key: 'esseneCommunion', nameKo: '에세네 14대 천사교감', icon: '🕊️', category: 'deep_master', summary: '고대 에세네 평화의 복음에 따라 대지 어머니와 천상 아버지의 14대 천사 교감으로 생각·감정·행동 삼위일체의 정화와 안식을 안내합니다.' },
   { key: 'huangdiFiveMovementsSixQi', nameKo: '황제내경 오운육기 기상의학', icon: '📜', category: 'deep_master' },

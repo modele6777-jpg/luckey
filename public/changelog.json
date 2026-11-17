@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.7.808",
+    "builtAt": "2026-11-18T08:22:00+09:00",
+    "summary": "게일 4대 화제·피스티스 소피아·귀곡자 3대 엔진 성찰 질문·+09:00 KST·카탈로그 뜻 보강(v1.7.808)",
+    "items": [
+      "게일 4대 화제 축제(v2.4.0)·영지주의 피스티스 소피아(v2.3.0)·귀곡자 양두겸(v2.2.0): 질문 반응형 reflectiveQuestion 및 프롬프트 연동",
+      "피스티스 소피아·귀곡자: calculatedAtKst +09:00 KST 표준 표기 통일",
+      "deterministicEngine.ts: guiguziLiangtouqian 카탈로그 한 줄 summary 등록"
+    ]
+  },
+  {
     "version": "1.7.807",
     "builtAt": "2026-11-18T08:17:00+09:00",
     "summary": "접기·펼치기 후 숨겨진 패널 포털 가림 및 터치 잔류 먹통 오류 수복(v1.7.807)",

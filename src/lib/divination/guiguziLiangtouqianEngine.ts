@@ -26,7 +26,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const GUIGUZI_VERSION = 'LUCKEY-GUIGUZI-LIANGTOUQIAN-v2.1.0';
+export const GUIGUZI_VERSION = 'LUCKEY-GUIGUZI-LIANGTOUQIAN-v2.2.0';
 
 export interface GuiguziGuaStructure {
   yearStem: string;      // 년간 (선천 천명)
@@ -92,6 +92,7 @@ export interface GuiguziLiangtouqianReport {
   };
   strategicClarityScore: number; // 0 ~ 100 결단 명료도 (내부 호환용, 프롬프트 비노출)
   synthesisMessage: string;
+  reflectiveQuestion: string;
   boundaryNotice: string;
   interpretiveBoundary: string;
 }
@@ -146,7 +147,7 @@ function getTemporalGuiguziRhythm(now: Date) {
           : '겨울 · 축력(蓄力) 수비기 (내실을 다지며 결정적 호기를 기다리는 시기)';
 
   return {
-    kstTimeLabel: `${y}-${m}-${d} ${hh}:${mm} KST`,
+    kstTimeLabel: `${y}-${m}-${d} ${hh}:${mm}:00 +09:00 KST`,
     zonghengWatchWindow,
     seasonalCampaignTone,
     temporalGuidance: `${zonghengWatchWindow} · ${seasonalCampaignTone}의 흐름에 맞추어 진격과 수비의 균형을 조율하십시오.`,
@@ -339,6 +340,9 @@ export function calculateGuiguziLiangtouqian(params: {
     guiguziSynthesisMatrix,
     strategicClarityScore,
     synthesisMessage,
+    reflectiveQuestion: context
+      ? `"${context}"의 국면에서 ${guaStructure.destinyStar.starName}의 기운을 살려 지금 먼저 굳히거나 양보할 한 수는 무엇입니까?`
+      : `${strategy.tacticalLabel}의 흐름 속에서 오늘 조용히 내실을 지키고 결단을 집중할 승부처는 어디입니까?`,
     boundaryNotice: '본 결과는 《귀곡선생양두겸》의 고전 명리·전략 상징 체계에 기반한 정성적 성찰 안내이며, 확정적 승패 판정이 아닙니다.',
     interpretiveBoundary: '본 결과는 《귀곡선생양두겸》의 고전 명리·전략 상징 체계에 기반한 정성적 성찰 안내이며, 확정적 승패 판정이 아닙니다.',
   };
@@ -371,5 +375,6 @@ export function formatGuiguziLiangtouqianPrompt(report: GuiguziLiangtouqianRepor
   - 시공간 지침: ${report.temporalGuiguziRhythm.temporalGuidance}
 - **귀곡자 교차 매트릭스**: 핵심(${report.guiguziSynthesisMatrix.coreInsight}) | 실행(${report.guiguziSynthesisMatrix.recommendedAction}) | 주의(${report.guiguziSynthesisMatrix.cautionNotice})
 - **귀곡자 통합 나침반**: ${report.synthesisMessage}
+- **질문 맞춤 성찰 질문**: ${report.reflectiveQuestion}
 - **해석 경계**: ${report.boundaryNotice}`;
 }
