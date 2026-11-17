@@ -14,7 +14,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const BRITISH_BERTRAND_RUSSELL_VERSION = 'LUCKEY-BERTRAND-RUSSELL-HAPPINESS-v2.0.0';
+export const BRITISH_BERTRAND_RUSSELL_VERSION = 'LUCKEY-BERTRAND-RUSSELL-HAPPINESS-v2.1.0';
 
 export type RussellQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -59,6 +59,7 @@ export interface BritishBertrandRussellConquestOfHappinessResult {
   ritualAction: string;
   reflectionFocus: string;
   boundaryNotice: string;
+  interpretiveBoundary: string;
   russellSynthesisMatrix: {
     coreInsight: string;
     recommendedAction: string;
@@ -300,6 +301,7 @@ export function calculateBritishBertrandRussellConquestOfHappiness(
     ritualAction: topicGuidance.ritualAction,
     reflectionFocus: topicGuidance.reflectionFocus,
     boundaryNotice,
+    interpretiveBoundary: boundaryNotice,
     russellSynthesisMatrix,
     russellComprehensiveGuidance: {
       guidanceTitle,
