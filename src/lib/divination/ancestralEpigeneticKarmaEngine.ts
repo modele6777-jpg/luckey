@@ -18,7 +18,7 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const ANCESTRAL_KARMA_VERSION = 'LUCKEY-ANCESTRAL-v2.1.0';
+export const ANCESTRAL_KARMA_VERSION = 'LUCKEY-ANCESTRAL-v2.2.0';
 
 export interface AncestralLineageImprint {
   generationTheme: string;        // 혈통을 관통하는 핵심 테마
@@ -56,6 +56,8 @@ export interface AncestralEpigeneticKarmaReport {
     cautionNotice: string;
   };
   boundaryNotice: string;
+  ritualAction: string;
+  reflectionFocus: string;
   interpretiveBoundary: string;
   synthesisPromptGuidance: string;
 }
@@ -201,6 +203,8 @@ export function runAncestralEpigeneticKarmaEngine(
   };
 
   const boundaryNotice = '본 결과는 사주 년주·일주 상징과 세대 심리 은유를 결합한 정성적 성찰 안내이며, 의학적·유전학적 진단이 아닙니다.';
+  const ritualAction = `[${ritualName}] ${actionGuide}`;
+  const reflectionFocus = `내 대에서 내려놓기로 선택한 [${generationalChainToBreak}] 대신, 오늘 내가 [${inheritedSuperGift}]의 힘으로 새로 열어갈 한 걸음은 무엇인가요?`;
 
   const synthesisPromptGuidance = `[LUCKEY 조상 혈통 업력 & 후성유전학적 카르마 정화 ${ANCESTRAL_KARMA_VERSION}]
 - 연산 시각: ${temporalAncestralRhythm.kstTimeLabel}
@@ -233,6 +237,8 @@ export function runAncestralEpigeneticKarmaEngine(
     temporalAncestralRhythm,
     ancestralSynthesisMatrix,
     boundaryNotice,
+    ritualAction,
+    reflectionFocus,
     interpretiveBoundary: boundaryNotice,
     synthesisPromptGuidance
   };

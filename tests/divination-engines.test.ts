@@ -2806,6 +2806,7 @@ test('Ancestral Epigenetic Karma Engine: 조상 혈통 업력 & 후성유전학�
   assert(res.calculatedAtKst.includes('KST'));
   assert(res.temporalAncestralRhythm.lineageWatchWindow.length > 0);
   assert(res.ancestralSynthesisMatrix.coreInsight.length > 0);
+  assert(res.ritualAction.length > 0 && res.reflectionFocus.length > 0);
   assert(res.interpretiveBoundary.length > 0);
   const prompt = formatAncestralEpigeneticKarmaPrompt(res);
   assert(prompt.includes('LUCKEY 조상 혈통 업력 & 후성유전학적 카르마 정화'));
@@ -4395,6 +4396,7 @@ test('Baopuzi Ge Hong Nine Turn Elixir Engine: calculates alchemy rank and vital
   assert(rep.situationalBaopuziAudit.baopuziVerse.length > 0);
   assert(rep.temporalElixirRhythm.shichenWindow.length > 0);
   assert(rep.baopuziSynthesisMatrix.synthesizedGuidance.length > 0);
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatBaopuziElixirsPrompt(rep);
   assert(prompt.includes('고대 도교 포박자(抱朴子) 갈홍 구전환단(九轉還丹) 무병장수 실측 데이터'));
@@ -5992,6 +5994,7 @@ test('Confucius Analects Zhitianming Engine: calculates life stage wisdom, Ren, 
   assert(rep.kejiFuliDisciplineScore >= 0 && rep.kejiFuliDisciplineScore <= 100);
   assert(rep.junziEquanimityScore >= 0 && rep.junziEquanimityScore <= 100);
   assert(rep.activeLifeStage.stageNameHanja.length > 0);
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatConfuciusAnalectsZhitianmingPrompt(rep);
   assert(prompt.includes('공자 논어 지천명 & 극기복례 군자도 성찰'));
   assert(prompt.includes(rep.activeLifeStage.stageNameKo));

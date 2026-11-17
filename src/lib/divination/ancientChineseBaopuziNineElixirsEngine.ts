@@ -8,7 +8,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const BAOPUZI_ELIXIRS_ENGINE_VERSION = 'LUCKEY-BAOPUZI-ELIXIRS-v2.1.0';
+export const BAOPUZI_ELIXIRS_ENGINE_VERSION = 'LUCKEY-BAOPUZI-ELIXIRS-v2.2.0';
 
 export type BaopuziQuestionFocus = 'health' | 'career' | 'relationship' | 'decision' | 'spiritual';
 
@@ -58,6 +58,8 @@ export interface BaopuziElixirsReport {
   situationalBaopuziAudit: SituationalBaopuziAudit;
   temporalElixirRhythm: TemporalElixirRhythm;
   baopuziSynthesisMatrix: BaopuziSynthesisMatrix;
+  ritualAction: string;
+  reflectionFocus: string;
   interpretiveBoundary: string;
   geHongTaoistAdvice: string;
 }
@@ -268,6 +270,8 @@ export function calculateBaopuziElixirs(params?: BaopuziElixirsParams): BaopuziE
   const kst = new Date(now.getTime() + 9 * 3600 * 1000);
   const calculatedAtKst = `${kst.toISOString().slice(0, 19)}+09:00`;
   const interpretiveBoundary = '본 리포트는 갈홍 《포박자》의 도교 양생 상징에 기반한 정성적 건강 성찰 안내이며, 의학적 진단이 아닙니다.';
+  const ritualAction = situationalBaopuziAudit.elixirNurturingStep;
+  const reflectionFocus = `${rank}전 [${activeElixir.elixirNameKo}]의 결에 비추어, 오늘 내 정기신(精氣神)을 불필요하게 소모시키는 과화(過火) 한 가지를 줄인다면 무엇을 먼저 멈출까요?`;
 
   return {
     engineVersion: BAOPUZI_ELIXIRS_ENGINE_VERSION,
@@ -280,6 +284,8 @@ export function calculateBaopuziElixirs(params?: BaopuziElixirsParams): BaopuziE
     situationalBaopuziAudit,
     temporalElixirRhythm,
     baopuziSynthesisMatrix,
+    ritualAction,
+    reflectionFocus,
     interpretiveBoundary,
     geHongTaoistAdvice: advices[seed % advices.length],
   };

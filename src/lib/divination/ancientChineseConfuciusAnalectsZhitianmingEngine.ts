@@ -7,12 +7,12 @@
  * 3. 극기복례(克己復禮): 사사로운 욕망을 이겨내고 본래의 도리와 예법으로 돌아감.
  * 4. 군자탄탕탕(君子坦蕩蕩): 소인의 조급하고 궁색한 근심(小人長戚戚)을 벗어나 마음에 걸림이 없는 넓고 평정한 품격.
  *
- * @version LUCKEY-CONFUCIUS-ZHITIANMING-v2.1.0
+ * @version LUCKEY-CONFUCIUS-ZHITIANMING-v2.2.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const CONFUCIUS_ZHITIANMING_VERSION = 'LUCKEY-CONFUCIUS-ZHITIANMING-v2.2.0';
+export const CONFUCIUS_ZHITIANMING_VERSION = 'LUCKEY-CONFUCIUS-ZHITIANMING-v2.3.0';
 
 function formatConfuciusKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -85,6 +85,8 @@ export interface ConfuciusAnalectsZhitianmingResult {
   // v2.1.0 순수 정성 실천·경계 필드
   dailyPracticeRitual: string;
   reflectiveQuestion: string;
+  ritualAction: string;
+  reflectionFocus: string;
   interpretiveBoundary: string;
   confuciusSynthesisMatrix?: {
     dominantTension: string;
@@ -363,6 +365,8 @@ export function calculateConfuciusAnalectsZhitianming(
     junziCultivationMatrix,
     dailyPracticeRitual,
     reflectiveQuestion,
+    ritualAction: dailyPracticeRitual,
+    reflectionFocus: reflectiveQuestion,
     interpretiveBoundary,
     confuciusSynthesisMatrix,
   };
