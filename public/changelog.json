@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.7.711",
+    "builtAt": "2026-11-17T09:03:00+09:00",
+    "summary": "카르믹 노드·멘탈 리질리언스·귀인 네트워크 3대 엔진 성찰 질문 및 카탈로그 뜻 등록(v1.7.711)",
+    "items": [
+      "카르믹 노드(karmicNodesEngine v2.1.0): 질문 반응형 성찰 질문(reflectiveQuestion)·질문 인자 연동 및 summary 등록",
+      "멘탈 리질리언스(mentalResilienceEngine v2.0.0): 질문 반응형 성찰 질문(reflectiveQuestion)·질문 인자 연동 및 summary 등록",
+      "귀인 네트워크(nobleNetworkEngine v2.0.0): 질문 반응형 성찰 질문(reflectiveQuestion)·질문 인자 연동 및 summary 등록"
+    ]
+  },
+  {
     "version": "1.7.710",
     "builtAt": "2026-11-17T09:00:00+09:00",
     "summary": "비트겐슈타인·아유르베다 트리도샤·바빌로니아 에누마 엘리쉬 3대 엔진 해석 경계 표준 연동(v1.7.710)",

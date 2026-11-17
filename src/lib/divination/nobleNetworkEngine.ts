@@ -110,6 +110,7 @@ export interface NobleNetworkResult {
   };
 
   summary: string;
+  reflectiveQuestion?: string;
   nobleNetworkSynthesisMatrix?: {
     dominantTension: string;
     alignmentState: string;
@@ -274,6 +275,9 @@ export function calculateNobleNetwork(params?: {
     alignmentState: `${networkPhaseTitle} · 육합(${sixHarmony.join(',')}) · 삼합(${tripleHarmony.join(',')})`,
     integratedAction: `${primaryArchetype.connectionStrategy}${q ? ` [질문 맥락: ${q}]` : ''}`,
   };
+  const reflectiveQuestion = q
+    ? `"${q}"를 혼자 짊어지는 대신 ${primaryArchetype.title}형 협력자나 ${sixHarmony.join(', ')} 띠 인연에게 먼저 건네 볼 수 있는 질문 한 마디는 무엇인가요?`
+    : `오늘 ${networkPhaseTitle} 흐름 속에서 감사 인사를 건네거나 가볍게 안부를 이어 보고 싶은 인연은 누구인가요?`;
 
   return {
     engineVersion: NOBLE_NETWORK_VERSION,
@@ -294,6 +298,7 @@ export function calculateNobleNetwork(params?: {
     networkPhaseTitle,
     networkingPlaybook,
     summary,
+    reflectiveQuestion,
     nobleNetworkSynthesisMatrix,
     interpretiveBoundary: '본 4대 귀인 & 인연 네트워크 리포트는 명리 길신과 합(合) 상징에 기반한 정성적 대인관계 참고 안내이며, 타인의 실제 성향이나 관계 성패를 단정하지 않습니다.',
   };
@@ -326,6 +331,9 @@ export function formatNobleNetworkPrompt(res: NobleNetworkResult): string {
       `- 교차 매트릭스: [핵심 긴장: ${res.nobleNetworkSynthesisMatrix.dominantTension} | 조율 상태: ${res.nobleNetworkSynthesisMatrix.alignmentState}]`,
       `  • 통합 실천: ${res.nobleNetworkSynthesisMatrix.integratedAction}`,
     );
+  }
+  if (res.reflectiveQuestion) {
+    lines.push(`- 성찰 질문: ${res.reflectiveQuestion}`);
   }
   lines.push(`- 해석 경계: ${res.interpretiveBoundary}`);
   lines.push(`※ 루시 지침: 혼자서 모든 짐을 짊어질 필요가 없습니다. 사주 4대 귀인과 합(合)의 인연 에너지는 사용자의 비범한 재능을 세상과 연결해 줄 가장 강력한 레버리지입니다. 사용자가 좋은 협력자와 멘토를 발견하고 당당히 손을 잡을 수 있도록 귀인의 특징과 시너지 비책을 지혜롭게 조언해 주세요.`);
