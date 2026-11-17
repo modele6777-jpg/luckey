@@ -2370,6 +2370,7 @@ test('Contract Shield Engine: 계약 분쟁 리스크 및 5대 쉴드 체크리�
   assert(res.calculatedAtKst.includes('KST'));
   assert(res.temporalShieldRhythm.negotiationWindow.length > 0);
   assert(res.interpretiveBoundary.length > 0);
+  assert(res.ritualAction.length > 0 && res.reflectionFocus.length > 0);
   const prompt = formatContractShieldPrompt(res);
   assert(prompt.includes(CONTRACT_SHIELD_VERSION));
   assert(prompt.includes('계약 & 분쟁 경계 기조'));

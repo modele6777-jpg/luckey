@@ -93,6 +93,8 @@ export interface ContextualSynastryResult {
     cautionNotice: string;
   };
   reflectiveQuestion: string;
+  ritualAction: string;
+  reflectionFocus: string;
   boundaryNotice: string;
   interpretiveBoundary: string;
 }
@@ -365,8 +367,12 @@ export function calculateContextualSynastry(options: {
     cautionNotice: '상대의 기질 차이를 통제하려 들지 말고 서로의 경계와 속도를 존중하십시오.',
   };
 
+  const reflectiveQuestion = matchedPartner && compatibilityMatrix
+    ? `${matchedPartner.name} 님과의 ${compatibilityMatrix.grade}(${compatibilityMatrix.title}) 흐름 속에서 오늘 서로의 경계를 지키며 먼저 건넬 따뜻한 말 한마디는 무엇입니까?`
+    : `${relEntity ? `${relEntity.categoryKoName}의 ` : ''}관계 흐름을 조율하기 위해 지금 상대에게 확인하거나 표현하고 싶은 본심은 무엇입니까?`;
+
   return {
-    engineVersion: 'LUCKEY-CS-DME-v2.2.0',
+    engineVersion: 'LUCKEY-CS-DME-v2.3.0',
     calculatedAtUtc: nowUtcIso,
     calculatedAtKst: temporalSynastryRhythm.kstTimeLabel,
     timestamp: now.getTime(),
@@ -389,9 +395,9 @@ export function calculateContextualSynastry(options: {
     situationalSynastryAudit,
     temporalSynastryRhythm,
     synastrySynthesisMatrix,
-    reflectiveQuestion: matchedPartner && compatibilityMatrix
-      ? `${matchedPartner.name} 님과의 ${compatibilityMatrix.grade}(${compatibilityMatrix.title}) 흐름 속에서 오늘 서로의 경계를 지키며 먼저 건넬 따뜻한 말 한마디는 무엇입니까?`
-      : `${relEntity ? `${relEntity.categoryKoName}의 ` : ''}관계 흐름을 조율하기 위해 지금 상대에게 확인하거나 표현하고 싶은 본심은 무엇입니까?`,
+    reflectiveQuestion,
+    ritualAction: situationalSynastryAudit.tacticalStep,
+    reflectionFocus: reflectiveQuestion,
     boundaryNotice: '본 결과는 사주·숙요·점성술 원형과 대화 맥락을 결합한 정성적 관계 가이드이며, 상대의 마음을 단정하는 예측이 아닙니다.',
     interpretiveBoundary: '본 결과는 사주·숙요·점성술 원형과 대화 맥락을 결합한 정성적 관계 가이드이며, 상대의 마음을 단정하는 예측이 아닙니다.',
   };
