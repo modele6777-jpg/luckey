@@ -1,3 +1,4 @@
+import { markFoldRuntime } from '@/lib/foldRuntimeTrace';
 import { useEffect } from 'react';
 import { syncVisualViewportBox } from '@/lib/visualViewportBox';
 
@@ -16,6 +17,7 @@ export function useViewportScrollLock() {
     const flush = () => {
       frame = 0;
       if (stopped || document.hidden) return;
+      markFoldRuntime('viewport-start');
       // A fold can leave an offset WebKit cannot immediately reset. Retrying
       // the same scrollTo from every scroll event feeds that event back forever.
       const y = inputActive() ? window.scrollY : 0;
@@ -26,6 +28,7 @@ export function useViewportScrollLock() {
         window.scrollTo(0, y);
       }
       syncVisualViewportBox(window);
+      markFoldRuntime('viewport-end');
     };
     const schedule = () => {
       if (!stopped && !frame && !document.hidden) frame = window.requestAnimationFrame(flush);

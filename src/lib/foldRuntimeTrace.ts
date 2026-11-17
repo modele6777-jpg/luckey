@@ -1,0 +1,97 @@
+import { APP_VERSION } from './appVersion';
+
+const ACTIVE = 'luckey-fold-trace-active';
+const RECORD = 'luckey-fold-trace-v1';
+let marker: ((stage: string) => void) | null = null;
+/** No-op unless the user explicitly enabled diagnostics in this tab. */
+export function markFoldRuntime(stage: string): void { marker?.(stage); }
+
+/** Opt-in, local-only trace. No messages, profile, URLs or credentials are recorded. */
+export function installFoldRuntimeTrace(win: Window): void {
+  if (marker) return;
+  let enabled = false;
+  try {
+    const mode = new URLSearchParams(win.location.search).get('foldDebug');
+    if (mode === '0') win.sessionStorage.removeItem(ACTIVE);
+    else if (mode === '1') win.sessionStorage.setItem(ACTIVE, '1');
+    enabled = win.sessionStorage.getItem(ACTIVE) === '1';
+  } catch { return; }
+  if (!enabled) return;
+  let previous: unknown = null;
+  try { previous = JSON.parse(win.localStorage.getItem(RECORD) || 'null'); } catch { /* optional storage */ }
+  const rows: unknown[] = [];
+  const counts: Record<string, number> = {};
+  const cleanup: Array<() => void> = [];
+  let lastWrite = 0;
+  let stage = 'bootstrap';
+  let frameCount = 0;
+  let frame = 0;
+  let lastFrameAt = 0;
+  const startedAt = new Date().toISOString();
+  const save = (reason: string, extra?: unknown) => {
+    const now = Date.now();
+    rows.push({ at: new Date(now).toISOString(), reason, stage,
+      width: win.innerWidth, height: win.innerHeight,
+      visualWidth: win.visualViewport?.width, visualHeight: win.visualViewport?.height,
+      classes: win.document.documentElement.className,
+      hidden: win.document.hidden,
+      standalone: (win.navigator as Navigator & { standalone?: boolean }).standalone === true,
+      frameCount, lastFrameAt, counts: { ...counts }, extra });
+    if (rows.length > 100) rows.shift();
+    lastWrite = now;
+    try { win.localStorage.setItem(RECORD, JSON.stringify({ version: APP_VERSION, startedAt, rows })); } catch { /* optional storage */ }
+  };
+  marker = next => {
+    stage = next;
+    counts[next] = (counts[next] || 0) + 1;
+    if (Date.now() - lastWrite >= 250 || next === 'fold-commit') save('stage');
+  };
+  const listen = (target: EventTarget, name: string, action: EventListener) => {
+    target.addEventListener(name, action, { capture: true, passive: true });
+    cleanup.push(() => target.removeEventListener(name, action, true));
+  };
+  for (const name of ['resize', 'orientationchange', 'pageshow', 'pagehide', 'touchstart', 'pointerdown']) {
+    listen(win, name, () => {
+      counts[name] = (counts[name] || 0) + 1;
+      if (Date.now() - lastWrite >= 250 || name === 'pagehide' || name === 'orientationchange') save(name);
+    });
+  }
+  if (win.visualViewport) listen(win.visualViewport, 'resize', () => {
+    counts.visualResize = (counts.visualResize || 0) + 1;
+    if (Date.now() - lastWrite >= 250) save('visual-resize');
+  });
+  listen(win.document, 'visibilitychange', () => save('visibility'));
+  listen(win, 'error', raw => {
+    const e = raw as ErrorEvent;
+    save('error', { name: e.error?.name, file: e.filename?.split('/').at(-1)?.split('?')[0], line: e.lineno, column: e.colno });
+  });
+  listen(win, 'unhandledrejection', raw => save('rejection', { name: (raw as PromiseRejectionEvent).reason?.name || 'unknown' }));
+  const timer = win.setInterval(() => {
+    save('heartbeat');
+    if (!frame && !win.document.hidden) frame = win.requestAnimationFrame(() => {
+      frame = 0; frameCount++; lastFrameAt = Date.now();
+    });
+  }, 500);
+  const box = win.document.createElement('aside');
+  box.setAttribute('aria-label', '접힘 진단');
+  box.style.cssText = 'position:fixed;z-index:2147483647;left:8px;top:max(8px,env(safe-area-inset-top,0px));max-width:calc(100vw - 100px);padding:8px;background:#111827;color:white;border:1px solid #94a3b8;border-radius:10px;font:12px system-ui;pointer-events:auto';
+  const title = win.document.createElement('span'); title.textContent = `진단 ${APP_VERSION} `;
+  const copy = win.document.createElement('button'); copy.type = 'button'; copy.textContent = '멈춤 기록 복사';
+  const close = win.document.createElement('button'); close.type = 'button'; close.textContent = '진단 종료';
+  for (const b of [copy, close]) b.style.cssText = 'margin:2px;padding:6px;border:1px solid #94a3b8;border-radius:6px;background:#21334d;color:white;font:inherit';
+  box.append(title, copy, close); win.document.body.append(box);
+  copy.onclick = async () => {
+    save('copy');
+    const data = JSON.stringify({ previousRun: previous, currentRun: { version: APP_VERSION, startedAt, rows } }, null, 2);
+    try { await win.navigator.clipboard.writeText(data); copy.textContent = '복사됨'; }
+    catch {
+      const out = win.document.createElement('textarea'); out.readOnly = true; out.value = data;
+      out.style.cssText = 'width:100%;height:120px;background:white;color:black'; box.append(out); out.select();
+    }
+  };
+  close.onclick = () => {
+    marker = null; cleanup.forEach(stop => stop()); win.clearInterval(timer); win.cancelAnimationFrame(frame); box.remove();
+    try { win.sessionStorage.removeItem(ACTIVE); } catch { /* optional storage */ }
+  };
+  save('bootstrap');
+}

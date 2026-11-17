@@ -1,3 +1,4 @@
+import { markFoldRuntime } from './lib/foldRuntimeTrace';
 import { RetainedPane } from './components/layout/RetainedPane';
 import { OverlayPaneContext } from './components/layout/OverlayPaneContext';
 import { rememberOverlayPane } from './lib/overlayPane';
@@ -299,10 +300,12 @@ function AppContent() {
   React.useEffect(() => {
     const handleLayoutChange = () => {
       if (typeof window === 'undefined') return;
+      markFoldRuntime('layout-start');
       const state = isDuoUnfoldedState();
       const wasUnfolded = previousUnfoldedRef.current;
       const isNowUnfolded = state.unfolded;
       previousUnfoldedRef.current = isNowUnfolded;
+      if (wasUnfolded !== isNowUnfolded) markFoldRuntime('fold-commit');
 
       setDuoState(previous => previous.unfolded === state.unfolded && previous.orientation === state.orientation ? previous : state);
       document.documentElement.classList.toggle('duo-unfolded-mode', state.unfolded);
