@@ -14,7 +14,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const FRENCH_MONTESQUIEU_SPIRIT_OF_LAWS_VERSION = 'LUCKEY-MONTESQUIEU-SPIRIT-OF-LAWS-v2.1.0';
+export const FRENCH_MONTESQUIEU_SPIRIT_OF_LAWS_VERSION = 'LUCKEY-MONTESQUIEU-SPIRIT-OF-LAWS-v2.2.0';
 
 export interface MontesquieuTheme {
   themeKey: string;
@@ -53,6 +53,7 @@ export interface FrenchMontesquieuSpiritOfLawsResult {
     alignmentState: string;
     integratedAction: string;
   };
+  interpretiveBoundary: string;
 }
 
 export const MONTESQUIEU_THEMES: MontesquieuTheme[] = [
@@ -209,6 +210,7 @@ export function calculateFrenchMontesquieuSpiritOfLaws(
       philosophicalCounsel,
     },
     montesquieuSynthesisMatrix,
+    interpretiveBoundary: '몽테스키외의 견제와 균형·중용 철학 상징을 빌린 정성적 의사결정 참고 관점이며, 수치 평가나 확정 예언이 아닙니다.',
   };
 }
 

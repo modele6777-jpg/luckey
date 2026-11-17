@@ -13,7 +13,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const FRENCH_MARCEL_PROUST_LOST_TIME_VERSION = 'LUCKEY-PROUST-LOST-TIME-REGAINED-v2.1.0';
+export const FRENCH_MARCEL_PROUST_LOST_TIME_VERSION = 'LUCKEY-PROUST-LOST-TIME-REGAINED-v2.2.0';
 
 export interface ProustTheme {
   themeKey: string;
@@ -52,6 +52,7 @@ export interface FrenchMarcelProustLostTimeResult {
     guidanceTitle: string;
     philosophicalCounsel: string;
   };
+  interpretiveBoundary: string;
 }
 
 export type FrenchMarcelProustLostTimeRegainedResult = FrenchMarcelProustLostTimeResult;
@@ -192,6 +193,7 @@ export function calculateFrenchMarcelProustLostTimeRegained(
       guidanceTitle,
       philosophicalCounsel,
     },
+    interpretiveBoundary: '프루스트의 비자발적 기억과 되찾은 시간 상징을 빌린 정성적 내면 성찰 관점이며, 개인 평가나 미래 단정이 아닙니다.',
   };
 }
 

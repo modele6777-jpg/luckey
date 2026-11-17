@@ -15,7 +15,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const FRENCH_GASTON_BACHELARD_POETICS_VERSION = 'LUCKEY-GASTON-BACHELARD-POETICS-v2.0.0';
+export const FRENCH_GASTON_BACHELARD_POETICS_VERSION = 'LUCKEY-GASTON-BACHELARD-POETICS-v2.1.0';
 
 export type BachelardQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -60,6 +60,7 @@ export interface FrenchGastonBachelardPoeticsOfSpaceResult {
   ritualAction: string;
   reflectionFocus: string;
   boundaryNotice: string;
+  interpretiveBoundary: string;
   bachelardSynthesisMatrix: {
     coreInsight: string;
     recommendedAction: string;
@@ -295,6 +296,7 @@ export function calculateFrenchGastonBachelardPoeticsOfSpace(
     ritualAction: topicGuidance.ritualAction,
     reflectionFocus: topicGuidance.reflectionFocus,
     boundaryNotice,
+    interpretiveBoundary: boundaryNotice,
     bachelardSynthesisMatrix,
     bachelardComprehensiveGuidance: {
       guidanceTitle,

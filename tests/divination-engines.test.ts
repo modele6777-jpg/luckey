@@ -7319,6 +7319,7 @@ test('Charles de Montesquieu Spirit of Laws Engine: calculates Checks and Balanc
   assert(rep.activeMontesquieuTheme.themeTitleKo.length > 0);
   assert(rep.calculatedAtKst.endsWith('KST'));
   assert(Boolean(rep.montesquieuSynthesisMatrix?.integratedAction));
+  assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatFrenchMontesquieuSpiritOfLawsPrompt(rep);
   assert(prompt.includes('샤를 드 몽테스키외 《법의 정신》 견제와 균형 & 권력분립 지표'));
   assert(prompt.includes(rep.activeMontesquieuTheme.themeTitleKo));
@@ -7336,6 +7337,7 @@ test('Gaston Bachelard Poetics of Space Engine: calculates Material Imagination,
   assert(rep.ritualAction.length > 0);
   assert(rep.reflectionFocus.length > 0);
   assert(rep.boundaryNotice.length > 0);
+  assert(rep.interpretiveBoundary.length > 0);
   assert(rep.materialImaginationVitalityIndex >= 0 && rep.materialImaginationVitalityIndex <= 100);
   assert(rep.poeticsOfHouseSanctuaryScore >= 0 && rep.poeticsOfHouseSanctuaryScore <= 100);
   assert(rep.solitaryCandleMeditationIndex >= 0 && rep.solitaryCandleMeditationIndex <= 100);
@@ -8226,6 +8228,7 @@ test('Marcel Proust Lost Time Regained Engine: calculates Involuntary Memory, Ti
   assert(rep.authenticSelfDiscoveryIndex >= 0 && rep.authenticSelfDiscoveryIndex <= 100);
   assert(rep.timeTranscendenceResilienceScore >= 0 && rep.timeTranscendenceResilienceScore <= 100);
   assert(rep.activeProustTheme.themeTitleKo.length > 0);
+  assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatFrenchMarcelProustLostTimeRegainedPrompt(rep);
   assert(prompt.includes('마르셀 프루스트 《잃어버린 시간을 찾아서》 비자발적 기억·되찾은 시간 지표'));
   assert(prompt.includes(rep.activeProustTheme.themeTitleKo));
