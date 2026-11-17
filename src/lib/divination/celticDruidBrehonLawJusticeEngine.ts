@@ -14,7 +14,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const CELTIC_BREHON_LAW_VERSION = 'LUCKEY-CELTIC-BREHON-LAW-v2.2.0';
+export const CELTIC_BREHON_LAW_VERSION = 'LUCKEY-CELTIC-BREHON-LAW-v2.3.0';
 
 export interface BrehonJusticeRank {
   rankLevel: number;
@@ -62,6 +62,7 @@ export interface CelticBrehonLawResult {
   };
   ritualAction: string;
   reflectionFocus: string;
+  reflectiveQuestion: string;
   boundaryNotice: string;
   interpretiveBoundary: string;
 }
@@ -94,12 +95,7 @@ const BREHON_PRECEDENTS = [
 
 function getKstDateString(now: Date): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
-  const y = kst.getUTCFullYear();
-  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
-  const d = String(kst.getUTCDate()).padStart(2, '0');
-  const hh = String(kst.getUTCHours()).padStart(2, '0');
-  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${kst.toISOString().slice(0, 19)}+09:00 (KST)`;
 }
 
 function getTemporalBrehonRhythm(now: Date) {
@@ -188,6 +184,11 @@ export function calculateCelticBrehonLaw(
     cautionNotice: resolutionPrecedent.moralWisdom,
   };
 
+  const reflectionFocus = `${situationalBrehonAudit.focusTheme}의 자리에서 상호 존중(Cairde)과 등가 회복(Éric)을 이루기 위해 오늘 내가 먼저 내놓을 진실은 무엇인가요?`;
+  const reflectiveQuestion = q
+    ? `질문 "${q}" 앞에서 브레혼 법전의 [${primaryBrehonVirtue.nameKo}] 기준을 세운다면, 내가 먼저 지킬 공정한 약속 한 가지는 무엇인가요?`
+    : reflectionFocus;
+
   return {
     engineVersion: CELTIC_BREHON_LAW_VERSION,
     calculatedAtKst: temporalBrehonRhythm.kstTimeLabel,
@@ -203,7 +204,8 @@ export function calculateCelticBrehonLaw(
     temporalBrehonRhythm,
     brehonSynthesisMatrix,
     ritualAction: primaryBrehonVirtue.actionableDirective,
-    reflectionFocus: `${situationalBrehonAudit.focusTheme}의 자리에서 상호 존중(Cairde)과 등가 회복(Éric)을 이루기 위해 오늘 내가 먼저 내놓을 진실은 무엇인가요?`,
+    reflectionFocus,
+    reflectiveQuestion,
     boundaryNotice: '본 결과는 고대 켈트 브레혼 법전의 정의와 회복 철학에 기반한 정성적 관계·합의 가이드이며, 법률 자문이나 확정적 예측이 아닙니다.',
     interpretiveBoundary: '본 결과는 고대 켈트 브레혼 법전의 정의와 회복 철학에 기반한 정성적 관계·합의 가이드이며, 법률 자문이나 확정적 예측이 아닙니다.',
   };
@@ -232,5 +234,6 @@ export function formatCelticBrehonLawPrompt(result: CelticBrehonLawResult): stri
 - 질문 맥락 감사 (${result.situationalBrehonAudit.focusTheme}): ${result.situationalBrehonAudit.tacticalStep}
 - KST 시공간 법정 리듬: ${result.temporalBrehonRhythm.groveCourtWindow} / ${result.temporalBrehonRhythm.seasonalBrehonTone}
 - 브레혼 교차 매트릭스: 핵심(${result.brehonSynthesisMatrix.coreInsight}) | 실행(${result.brehonSynthesisMatrix.recommendedAction}) | 법훈(${result.brehonSynthesisMatrix.cautionNotice})
+- 질문 맞춤 성찰 질문: ${result.reflectiveQuestion}
 - 해석 경계: ${result.boundaryNotice}`;
 }
