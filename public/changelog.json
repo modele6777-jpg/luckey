@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.7.781",
+    "builtAt": "2026-11-18T06:20:00+09:00",
+    "summary": "윌리엄 셰익스피어·켈트 아웬 탈리에신·켈트 오검 수목 3대 엔진 성찰 질문 및 카탈로그 뜻 보강(v1.7.781)",
+    "items": [
+      "윌리엄 셰익스피어 비극적 통찰(britishWilliamShakespeareTragicWisdomEngine v2.2.0): 질문 반응형 reflectiveQuestion 추가·+09:00 (KST) 표기 통일 및 프롬프트 연동",
+      "고대 켈트 바드 탈리에신 & 아웬 영감(celticAwenTaliesinEngine v2.3.0): 질문 반응형 reflectiveQuestion 추가·KST 표기 보강 및 ALL_DCE_ENGINES 카탈로그 summary 등록",
+      "고대 켈트 오검 수목 지혜(celticTreeOghamEngine v2.3.0): 질문 반응형 reflectiveQuestion 추가·KST 표기 보강 및 ALL_DCE_ENGINES 카탈로그 summary 등록"
+    ]
+  },
+  {
     "version": "1.7.780",
     "builtAt": "2026-11-18T06:13:00+09:00",
     "summary": "에세네파 14대 천사 교감, 에테르 오라 생체장, 에트루리아 16천궁 아우구르 3대 엔진 실천 의례 및 성찰 질문 표준 연동(v1.7.780)",

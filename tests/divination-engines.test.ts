@@ -10921,3 +10921,29 @@ test('John Stuart Mill v2.2 · Thomas More v2.2 · Virginia Woolf v2.2: reflecti
   const woolfPrompt = formatBritishVirginiaWoolfRoomOfOnesOwnPrompt(woolf);
   assert.ok(woolfPrompt.includes('+09:00') && woolfPrompt.includes('질문 맞춤 성찰 질문') && woolfPrompt.includes('해석 경계'));
 });
+
+test('William Shakespeare v2.2 · Celtic Awen Taliesin v2.3 · Celtic Tree Ogham v2.3: reflectiveQuestion & +09:00 KST prompt output', () => {
+  const now = new Date('2026-11-18T06:20:00+09:00');
+  const query = '복잡한 관계와 선택 앞에서 내 뿌리와 중심을 흔들리지 않게 지키고 싶어요';
+
+  const shakespeare = calculateBritishWilliamShakespeareTragicWisdom(profile, query, now);
+  assert.equal(shakespeare.engineVersion, BRITISH_WILLIAM_SHAKESPEARE_TRAGIC_WISDOM_VERSION);
+  assert.match(shakespeare.calculatedAtKst, /\+09:00/);
+  assert.ok(shakespeare.reflectiveQuestion.includes(query));
+  const shakespearePrompt = formatBritishWilliamShakespeareTragicWisdomPrompt(shakespeare);
+  assert.ok(shakespearePrompt.includes('+09:00') && shakespearePrompt.includes('질문 맞춤 성찰 질문') && shakespearePrompt.includes('해석 경계'));
+
+  const awen = calculateCelticAwenTaliesin({ profile, targetInstantTime: now.toISOString(), question: query });
+  assert.equal(awen.engineVersion, CELTIC_AWEN_TALIESIN_ENGINE_VERSION);
+  assert.match(awen.calculatedAtKst, /\+09:00/);
+  assert.ok(awen.reflectiveQuestion.includes(query));
+  const awenPrompt = formatCelticAwenTaliesinPrompt(awen);
+  assert.ok(awenPrompt.includes('+09:00') && awenPrompt.includes('질문 맞춤 성찰 질문') && awenPrompt.includes('해석 경계'));
+
+  const ogham = calculateCelticTreeOgham(profile, now, query);
+  assert.equal(ogham.engineVersion, CELTIC_OGHAM_VERSION);
+  assert.match(ogham.calculatedAtKst, /\+09:00/);
+  assert.ok(ogham.reflectiveQuestion.includes(query));
+  const oghamPrompt = formatCelticTreeOghamPrompt(ogham);
+  assert.ok(oghamPrompt.includes('+09:00') && oghamPrompt.includes('질문 맞춤 성찰 질문') && oghamPrompt.includes('해석 경계'));
+});
