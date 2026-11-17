@@ -1,6 +1,6 @@
 import { UserProfile } from '../sharedState';
 
-export const ARABIC_ILM_AL_RAML_ENGINE_VERSION = '2.1.0';
+export const ARABIC_ILM_AL_RAML_ENGINE_VERSION = '2.2.0';
 
 export interface ArabicIlmAlRamlReport {
   engineVersion: string;
@@ -32,6 +32,8 @@ export interface ArabicIlmAlRamlReport {
     cautionNotice: string;
   };
   boundaryNotice: string;
+  ritualAction: string;
+  reflectionFocus: string;
   interpretiveBoundary: string;
   synthesisPrompt: string;
 }
@@ -347,6 +349,8 @@ export function calculateArabicIlmAlRaml(options?: {
     temporalRamlRhythm,
     ramlSynthesisMatrix,
     boundaryNotice,
+    ritualAction: fig.guidance,
+    reflectionFocus: situationalRamlAudit.courtNote,
     interpretiveBoundary: boundaryNotice,
     synthesisPrompt,
   };

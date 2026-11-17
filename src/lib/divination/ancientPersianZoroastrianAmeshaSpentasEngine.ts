@@ -16,12 +16,12 @@
  *    - 아샤의 거룩한 불길로 거짓(Druj)을 물리치고 빛의 세계를 회복함.
  * 3. 질문 맥락 감사·KST 아타르(성화) 시공간 리듬·교차 매트릭스 산출
  *
- * @version LUCKEY-ZOROASTRIAN-AMESHA-SPENTAS-v2.0.0
+ * @version LUCKEY-ZOROASTRIAN-AMESHA-SPENTAS-v2.2.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const ZOROASTRIAN_AMESHA_SPENTAS_VERSION = 'LUCKEY-ZOROASTRIAN-AMESHA-SPENTAS-v2.1.0';
+export const ZOROASTRIAN_AMESHA_SPENTAS_VERSION = 'LUCKEY-ZOROASTRIAN-AMESHA-SPENTAS-v2.2.0';
 
 export interface AmeshaSpentaStage {
   stageLevel: number;
@@ -77,6 +77,8 @@ export interface ZoroastrianAmeshaSpentasResult {
   situationalAvestaAudit: AvestaSituationalAudit;
   temporalAtarRhythm: ZoroastrianTemporalRhythm;
   ameshaSynthesisMatrix: AmeshaSynthesisMatrix;
+  ritualAction: string;
+  reflectionFocus: string;
   interpretiveBoundary: string;
 }
 
@@ -237,6 +239,8 @@ export function calculateZoroastrianAmeshaSpentas(
   const situationalAvestaAudit = buildSituationalAudit(question, primaryZoroastrianTriad);
   const temporalAtarRhythm = buildTemporalRhythm(now, seed);
   const ameshaSynthesisMatrix = buildSynthesisMatrix(activeSpentaStage, primaryZoroastrianTriad, situationalAvestaAudit, temporalAtarRhythm);
+  const ritualAction = primaryZoroastrianTriad.actionableDirective;
+  const reflectionFocus = situationalAvestaAudit.ashaVsDrujDiagnosis;
   const interpretiveBoundary = '아베스타 아메샤 스펜타와 아샤(Asha) 진리 상징을 빌린 정성적 빛의 조화 참고 관점이며, 수치 점수나 확정 예언이 아닙니다.';
 
   return {
@@ -253,6 +257,8 @@ export function calculateZoroastrianAmeshaSpentas(
     situationalAvestaAudit,
     temporalAtarRhythm,
     ameshaSynthesisMatrix,
+    ritualAction,
+    reflectionFocus,
     interpretiveBoundary,
   };
 }
