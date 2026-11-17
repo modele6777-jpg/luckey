@@ -23,7 +23,8 @@ function write(key: string, value: Value) {
   } catch {
     // iOS can reject sessionStorage. The open flag still has to reach the dialog.
   }
-  listeners.get(key)?.forEach(notify => notify());
+  const group = listeners.get(key);
+  if (group) for (const notify of [...group]) if (group.has(notify)) notify();
 }
 
 export function defaultLibrarySessionKey(library: string): string {
