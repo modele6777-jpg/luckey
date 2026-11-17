@@ -16,7 +16,7 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const DESTINY_SYNASTRY_ECHO_VERSION = 'LUCKEY-ECHO-v2.0.0';
+export const DESTINY_SYNASTRY_ECHO_VERSION = 'LUCKEY-ECHO-v2.1.0';
 
 export type KarmicGravityType = 
   | '카르마 거울형 (Karmic Mirror · 자아 투사와 결핍 치유)'
@@ -58,6 +58,7 @@ export interface DestinySynastryEchoReport {
     cautionNotice: string;
   };
   boundaryNotice: string;
+  interpretiveBoundary: string;
   synthesisPromptGuidance: string;
 }
 
@@ -217,6 +218,7 @@ export function runDestinySynastryEchoEngine(
     temporalEchoRhythm,
     echoSynthesisMatrix,
     boundaryNotice,
+    interpretiveBoundary: boundaryNotice,
     synthesisPromptGuidance
   };
 }
