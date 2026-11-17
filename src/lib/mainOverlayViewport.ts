@@ -138,7 +138,9 @@ export function subscribeMainOverlayViewport(listener: () => void): () => void {
       if (snapshot && (['main', 'content', 'lucy'] as const).every(pane =>
         (['left', 'top', 'width', 'height', 'hidden'] as const).every(key => next[pane][key] === snapshot![pane][key]))) return;
       snapshot = next;
-      listeners.forEach(notify => notify());
+      // React can unsubscribe/resubscribe synchronously while notifying.
+      // Iterating the live Set can revisit newly-added listeners indefinitely.
+      for (const notify of [...listeners]) if (listeners.has(notify)) notify();
     };
     const schedule = () => { if (!frame) frame = requestAnimationFrame(refresh); };
     const mutation = new MutationObserver(schedule);
