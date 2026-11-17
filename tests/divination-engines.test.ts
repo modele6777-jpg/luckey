@@ -10834,3 +10834,29 @@ test('Wittgenstein v2.2 · Ayurveda v2.4 · Aztec v2.3: reflectiveQuestion & KST
   const azPrompt = formatAztecTonalamatlPrompt(az);
   assert.ok(azPrompt.includes('+09:00') && azPrompt.includes('성찰 질문') && azPrompt.includes('해석 경계'));
 });
+
+test('Babylonian Enuma Elish v2.3 · Balinese Tri Hita Karana v2.3 · Spinoza Ethica v2.3: reflectiveQuestion & KST prompt output', () => {
+  const now = new Date('2026-11-18T05:50:00+09:00');
+  const query = '복잡한 감정과 선택 사이에서 중심을 잡고 싶어요';
+
+  const ba = calculateBabylonianEnumaElish(profile, now, query);
+  assert.equal(ba.engineVersion, BABYLONIAN_ENUMA_ELISH_VERSION);
+  assert.match(ba.calculatedAtKst, /\+09:00/);
+  assert.ok(ba.reflectiveQuestion.includes(query));
+  const baPrompt = formatBabylonianEnumaElishPrompt(ba);
+  assert.ok(baPrompt.includes('+09:00') && baPrompt.includes('성찰 질문') && baPrompt.includes('해석 경계'));
+
+  const bl = calculateBalineseTriHitaKarana(profile, query, now);
+  assert.equal(bl.engineVersion, BALINESE_TRI_HITA_KARANA_ENGINE_VERSION);
+  assert.match(bl.calculatedAtKst, /\+09:00/);
+  assert.ok(bl.reflectiveQuestion.includes(query));
+  const blPrompt = formatBalineseTriHitaKaranaPrompt(bl);
+  assert.ok(blPrompt.includes('+09:00') && blPrompt.includes('일상 의례') && blPrompt.includes('성찰 질문') && blPrompt.includes('해석 경계'));
+
+  const sp = calculateBaruchSpinozaEthicaConatus(profile, now, query);
+  assert.equal(sp.engineVersion, SPINOZA_CONATUS_AMORDEI_VERSION);
+  assert.match(sp.calculatedAtKst, /\+09:00/);
+  assert.ok(sp.reflectiveQuestion.includes(query));
+  const spPrompt = formatBaruchSpinozaEthicaConatusPrompt(sp);
+  assert.ok(spPrompt.includes('+09:00') && spPrompt.includes('성찰 질문') && spPrompt.includes('해석 경계'));
+});
