@@ -4,6 +4,7 @@ import { ScreenPortal } from '@/components/layout/ScreenPortal';
 import { LucyModeTransition } from '@/components/chat/LucyModeTransition';
 import { isLucyTarotDrawRequest, isLucyTarotDrawOpen } from '@/lib/lucyTarotIntegrity';
 import { useSyncedChatDraft } from '@/hooks/useSyncedChatDraft';
+import { bindLucyLayoutContinuity } from '@/lib/lucyLayoutContinuity';
 import { LUCY_PRO_PATH, resolveLucyPageChannels } from '@/lib/lucyChatPageMode';
 import React, { useState, useEffect, useLayoutEffect, useRef, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -2781,10 +2782,15 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
   // Align it before paint; playback state must never retrigger this entry scroll.
   useLayoutEffect(() => {
     if (!isLucyReady) return;
+    const preserveReadingPosition = isUserScrolledUpRef.current;
     restoreLatestSavedMessages();
-    isUserScrolledUpRef.current = false;
-    setShowReturnToRecentConversation(false);
-    scrollToBottom(true, false);
+    if (preserveReadingPosition) {
+      setShowReturnToRecentConversation(true);
+    } else {
+      isUserScrolledUpRef.current = false;
+      setShowReturnToRecentConversation(false);
+      scrollToBottom(true, false);
+    }
     let second = 0;
     let active = true;
     const align = () => { if (active && !isUserScrolledUpRef.current) scrollToBottom(true, false); };
@@ -2793,7 +2799,20 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
     return () => { active = false; cancelAnimationFrame(first); cancelAnimationFrame(second); };
   }, [isLucyReady, location, scrollToBottom, restoreLatestSavedMessages]);
 
-  // Follow resized geometry at the bottom; revealing a retained pane reopens the latest thread.
+  useEffect(() => {
+    if (!isLucyReady) return;
+    const scroller = messagesContainerRef.current;
+    const input = textareaRef.current;
+    if (!scroller) return;
+    return bindLucyLayoutContinuity(scroller, input, {
+      onRestore: (snapshot) => {
+        isUserScrolledUpRef.current = !snapshot.atBottom;
+        setShowReturnToRecentConversation(!snapshot.atBottom);
+      },
+    });
+  }, [isLucyReady]);
+
+  // Follow the latest thread on reveal unless the user was reading older messages.
   useEffect(() => {
     const container = messagesContainerRef.current;
     if (!container || !isLucyReady) return;
@@ -2802,9 +2821,10 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
       const hidden = container.getBoundingClientRect().height < 2;
       if (!hidden && (wasHidden || !isUserScrolledUpRef.current)) {
         if (wasHidden) restoreLatestSavedMessages();
-        isUserScrolledUpRef.current = false;
-        setShowReturnToRecentConversation(false);
-        scrollToBottom(wasHidden, false);
+        if (!isUserScrolledUpRef.current) {
+          setShowReturnToRecentConversation(false);
+          scrollToBottom(wasHidden, false);
+        }
       }
       wasHidden = hidden;
     };
@@ -3767,6 +3787,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
             return (
               <motion.div
                 key={msgId}
+                data-lucy-message-key={msgId}
                 data-tts-playing-message={playingMsgId === msgId ? 'true' : undefined}
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
