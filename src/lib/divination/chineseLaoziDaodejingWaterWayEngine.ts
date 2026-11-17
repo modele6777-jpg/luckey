@@ -14,7 +14,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const LAOZI_DAODEJING_VERSION = 'LUCKEY-LAOZI-DAODEJING-v2.4.0';
+export const LAOZI_DAODEJING_VERSION = 'LUCKEY-LAOZI-DAODEJING-v2.5.0';
 
 export interface DaodejingStage {
   stageLevel: number;
@@ -88,6 +88,7 @@ export interface LaoziDaodejingResult {
   };
   ritualAction: string;
   reflectionFocus: string;
+  reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
 
@@ -309,6 +310,10 @@ export function calculateLaoziDaodejing(
     integratedAction: `${chapterResonance.wuweiUnburdeningTip}${trimmedQ ? ` [질문 맥락: ${trimmedQ}]` : ''}`,
   };
 
+  const reflectiveQuestion = trimmedQ
+    ? `질문 "${trimmedQ}" 앞에서, 지금 내가 힘을 빼고 물처럼 흘려보낼 수 있는 집착은 무엇이며 [${chapterResonance.chapterTitle}]이 묻는 바는 무엇인가요? (${chapterResonance.reflectionQuestion})`
+    : chapterResonance.reflectionQuestion;
+
   return {
     engineVersion: LAOZI_DAODEJING_VERSION,
     calculatedAtKst: getKstDateString(now),
@@ -325,7 +330,8 @@ export function calculateLaoziDaodejing(
     softStrengthMatrix,
     laoziSynthesisMatrix,
     ritualAction: chapterResonance.wuweiUnburdeningTip,
-    reflectionFocus: chapterResonance.reflectionQuestion,
+    reflectionFocus: reflectiveQuestion,
+    reflectiveQuestion,
     interpretiveBoundary: '본 리포트는 노자 《도덕경》의 무위·상선약수 철학에 기반한 정성적 성찰 안내이며, 확정적 길흉 예단이 아닙니다.',
   };
 }
@@ -351,5 +357,6 @@ export function formatLaoziDaodejingPrompt(result: LaoziDaodejingResult): string
   → 실천 지침: ${result.primaryDaoPrinciple.actionableDirective}
 - 도덕경 불멸의 계시: 《${result.daodejingCosmicEpiphany.chapterSceneTitle}》
   → 무위의 지혜: "${result.daodejingCosmicEpiphany.timelessWisdom}"
+- 질문 맞춤 성찰 질문: ${result.reflectiveQuestion}
 - 해석 경계: 본 리포트는 노자 《도덕경》의 무위·상선약수 철학에 기반한 정성적 성찰 안내이며, 확정적 길흉 예단이 아닙니다.${matrixLine}`;
 }
