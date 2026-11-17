@@ -10863,3 +10863,29 @@ test('Babylonian Enuma Elish v2.3 · Balinese Tri Hita Karana v2.3 · Spinoza Et
   const spPrompt = formatBaruchSpinozaEthicaConatusPrompt(sp);
   assert.ok(spPrompt.includes('+09:00') && spPrompt.includes('성찰 질문') && spPrompt.includes('해석 경계'));
 });
+
+test('Bertrand Russell v2.2 · Francis Bacon v2.2 · John Locke v2.2: reflectiveQuestion & +09:00 KST prompt output', () => {
+  const now = new Date('2026-11-18T06:00:00+09:00');
+  const query = '편견을 내려놓고 나다운 행복과 중심을 세우고 싶어요';
+
+  const ru = calculateBritishBertrandRussellConquestOfHappiness(profile, query, now);
+  assert.equal(ru.engineVersion, BRITISH_BERTRAND_RUSSELL_VERSION);
+  assert.match(ru.calculatedAtKst, /\+09:00/);
+  assert.ok(ru.reflectiveQuestion.includes(query));
+  const ruPrompt = formatBritishBertrandRussellConquestOfHappinessPrompt(ru);
+  assert.ok(ruPrompt.includes('+09:00') && ruPrompt.includes('질문 맞춤 성찰 질문') && ruPrompt.includes('해석 경계'));
+
+  const fb = calculateFrancisBaconNovumOrganum(profile, query, now);
+  assert.equal(fb.engineVersion, BRITISH_FRANCIS_BACON_VERSION);
+  assert.match(fb.calculatedAtKst, /\+09:00/);
+  assert.ok(fb.reflectiveQuestion.includes(query));
+  const fbPrompt = formatFrancisBaconNovumOrganumPrompt(fb);
+  assert.ok(fbPrompt.includes('+09:00') && fbPrompt.includes('질문 맞춤 성찰 질문') && fbPrompt.includes('해석 경계'));
+
+  const jl = calculateJohnLockeHumanUnderstanding(profile, query, now);
+  assert.equal(jl.engineVersion, BRITISH_JOHN_LOCKE_VERSION);
+  assert.match(jl.calculatedAtKst, /\+09:00/);
+  assert.ok(jl.reflectiveQuestion.includes(query));
+  const jlPrompt = formatJohnLockeHumanUnderstandingPrompt(jl);
+  assert.ok(jlPrompt.includes('+09:00') && jlPrompt.includes('질문 맞춤 성찰 질문') && jlPrompt.includes('해석 경계'));
+});

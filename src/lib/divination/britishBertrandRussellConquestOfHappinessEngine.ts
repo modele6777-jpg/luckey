@@ -9,12 +9,12 @@
  * 4. 비인칭적 흥미와 여가의 활력도(Impersonal Interests & Leisure Vitality Index): 생업의 중압감에서 벗어나 마음을 회복시키는 순수한 취미와 폭넓은 시야.
  * 5. 합리적 이성과 회복탄력성 지수(Rational Equanimity & Resilience Score): 피할 수 없는 불행 앞에서도 불필요한 감정 소모를 멈추고 냉철하고 따뜻한 이성으로 극복하는 지혜.
  *
- * @version LUCKEY-BERTRAND-RUSSELL-HAPPINESS-v2.0.0
+ * @version LUCKEY-BERTRAND-RUSSELL-HAPPINESS-v2.2.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const BRITISH_BERTRAND_RUSSELL_VERSION = 'LUCKEY-BERTRAND-RUSSELL-HAPPINESS-v2.1.0';
+export const BRITISH_BERTRAND_RUSSELL_VERSION = 'LUCKEY-BERTRAND-RUSSELL-HAPPINESS-v2.2.0';
 
 export type RussellQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -58,6 +58,7 @@ export interface BritishBertrandRussellConquestOfHappinessResult {
   practiceGuidance: string;
   ritualAction: string;
   reflectionFocus: string;
+  reflectiveQuestion: string;
   boundaryNotice: string;
   interpretiveBoundary: string;
   russellSynthesisMatrix: {
@@ -278,7 +279,11 @@ export function calculateBritishBertrandRussellConquestOfHappiness(
   const boundaryNotice = '버트런드 러셀 철학 해석은 삶의 태도와 시선 전환을 돕는 상징·성찰 관점이며, 임상적·의학적 진단이나 확정 예언이 아닙니다.';
   const baseDate = now ?? new Date();
   const kst = new Date(baseDate.getTime() + 9 * 60 * 60 * 1000);
-  const kstTimeLabel = `${temporalRussellRhythm.kstDateLabel} ${String(kst.getUTCHours()).padStart(2, '0')}:${String(kst.getUTCMinutes()).padStart(2, '0')} KST`;
+  const kstTimeLabel = `${temporalRussellRhythm.kstDateLabel}T${String(kst.getUTCHours()).padStart(2, '0')}:${String(kst.getUTCMinutes()).padStart(2, '0')}:00+09:00 (KST)`;
+  const trimmedQuery = (query ?? '').trim();
+  const reflectiveQuestion = trimmedQuery
+    ? `"${trimmedQuery}"의 고민을 버트런드 러셀의 '${activeRussellTheme.themeTitleKo}' 시선으로 옮길 때, 오늘 자기몰두나 비교 대신 밖을 향해 바로 뻗어 볼 수 있는 작은 열의(Zest) 하나는 무엇인가요?`
+    : `오늘 '${activeRussellTheme.themeTitleKo}'의 관점에서, 내면의 불안이나 비교를 멈추고 세상과 사람에게 호기심으로 건네 볼 작은 행동 하나는 무엇인가요?`;
   const russellSynthesisMatrix = {
     coreInsight: activeRussellTheme.themeTitleKo,
     recommendedAction: topicGuidance.practiceGuidance,
@@ -300,6 +305,7 @@ export function calculateBritishBertrandRussellConquestOfHappiness(
     practiceGuidance: topicGuidance.practiceGuidance,
     ritualAction: topicGuidance.ritualAction,
     reflectionFocus: topicGuidance.reflectionFocus,
+    reflectiveQuestion,
     boundaryNotice,
     interpretiveBoundary: boundaryNotice,
     russellSynthesisMatrix,
@@ -324,6 +330,7 @@ export function formatBritishBertrandRussellConquestOfHappinessPrompt(
     `- 질문 맞춤 실천 가이드: ${res.practiceGuidance}`,
     `- 일상 실천 의례: ${res.ritualAction}`,
     `- 핵심 성찰 질문: ${res.reflectionFocus}`,
+    `- 질문 맞춤 성찰 질문: ${res.reflectiveQuestion}`,
     `- 교차 매트릭스: 핵심(${res.russellSynthesisMatrix.coreInsight}) | 실행(${res.russellSynthesisMatrix.recommendedAction}) | 주의(${res.russellSynthesisMatrix.cautionNotice})`,
     `- 러셀 원전 명언: "${res.focalRussellAphorism.aphorismKo}"`,
     `- 영문 원전: "${res.focalRussellAphorism.aphorismEn}"`,
