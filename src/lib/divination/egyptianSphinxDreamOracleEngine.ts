@@ -8,7 +8,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const EGYPTIAN_SPHINX_DREAM_ORACLE_ENGINE_VERSION = 'LUCKEY-EGYPTIAN-SPHINX-v2.2.0';
+export const EGYPTIAN_SPHINX_DREAM_ORACLE_ENGINE_VERSION = 'LUCKEY-EGYPTIAN-SPHINX-v2.3.0';
 
 export interface SphinxVirtue {
   nameKo: string;
@@ -58,6 +58,8 @@ export interface EgyptianSphinxDreamOracleReport {
   thutmosePromise: string;
   sphinxRiddleInsight: string;
   reHorakhtyDawnCommand: string;
+  ritualAction: string;
+  reflectionFocus: string;
   interpretiveBoundary: string;
 }
 
@@ -248,6 +250,10 @@ export function calculateEgyptianSphinxDreamOracle(options?: {
 
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
   const calculatedAtKst = kst.toISOString().replace('T', ' ').substring(0, 19) + ' +09:00 KST';
+  const ritualAction = `${situationalSphinxAudit.dreamStelePrescription} · ${sphinxSynthesisMatrix.sovereignStep}`;
+  const reflectionFocus = question
+    ? `‘${question}’ 앞에서 내 본질을 덮고 있던 모래(${situationalSphinxAudit.sandObstacleType})를 걷어내고 세울 [${dominantVirtue}]의 왕권은 무엇입니까?`
+    : `오늘 레-호라크티의 여명 앞에서 내가 두려움을 내려놓고 [${dominantVirtue}]으로 먼저 매듭지을 과업은 무엇입니까?`;
 
   return {
     engineVersion: EGYPTIAN_SPHINX_DREAM_ORACLE_ENGINE_VERSION,
@@ -262,6 +268,8 @@ export function calculateEgyptianSphinxDreamOracle(options?: {
     thutmosePromise,
     sphinxRiddleInsight,
     reHorakhtyDawnCommand,
+    ritualAction,
+    reflectionFocus,
     interpretiveBoundary: '투트모세 4세 꿈의 비석과 스핑크스 4대 테트라모르프 상징을 빌린 정성적 조망 참고 관점이며, 개인 점수나 확정 예언이 아닙니다.',
   };
 }
