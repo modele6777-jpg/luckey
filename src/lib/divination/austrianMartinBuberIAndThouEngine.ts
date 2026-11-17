@@ -14,7 +14,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const AUSTRIAN_MARTIN_BUBER_VERSION = 'LUCKEY-MARTIN-BUBER-DIALOGUE-v2.1.0';
+export const AUSTRIAN_MARTIN_BUBER_VERSION = 'LUCKEY-MARTIN-BUBER-DIALOGUE-v2.2.0';
 
 export type BuberQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -68,6 +68,7 @@ export interface AustrianMartinBuberIAndThouResult {
   questionTopic: BuberQuestionTopic;
   situationalBuberAudit: BuberSituationalAudit;
   temporalBuberRhythm: BuberTemporalRhythm;
+  reflectiveQuestion: string;
   interpretiveBoundary: string;
   buberSynthesisMatrix?: {
     coreInsight: string;
@@ -312,6 +313,11 @@ export function calculateAustrianMartinBuberIAndThou(
     `${situationalBuberAudit.practiceGuidance} 부버의 원전 명언 "${focalBuberAphorism.aphorismKo}"(${focalBuberAphorism.aphorismDe})를 마음에 새기며, ` +
     `${temporalBuberRhythm.dailyWatchword}`;
 
+  const trimmedQuery = (query ?? '').trim();
+  const reflectiveQuestion = trimmedQuery
+    ? `지금 품고 계신 "${trimmedQuery}"라는 물음 앞에서, 상대를 내 기준이나 목적에 맞추는 '그것(Es)'이 아니라 온전한 '너(Du)'로 마주할 때 어떤 대화가 열릴까요?`
+    : situationalBuberAudit.reflectionFocus;
+
   return {
     engineVersion: AUSTRIAN_MARTIN_BUBER_VERSION,
     calculatedAtKst: `${kstDayKey} ${String(new Date(now.getTime() + 9 * 60 * 60 * 1000).getUTCHours()).padStart(2, '0')}:${String(new Date(now.getTime() + 9 * 60 * 60 * 1000).getUTCMinutes()).padStart(2, '0')} KST`,
@@ -325,6 +331,7 @@ export function calculateAustrianMartinBuberIAndThou(
     questionTopic,
     situationalBuberAudit,
     temporalBuberRhythm,
+    reflectiveQuestion,
     interpretiveBoundary: situationalBuberAudit.boundaryNotice,
     buberSynthesisMatrix: {
       coreInsight: activeBuberTheme.themeTitleKo,
@@ -351,7 +358,7 @@ export function formatAustrianMartinBuberIAndThouPrompt(
     `- 실존적 통찰: ${res.activeBuberTheme.existentialInsight}`,
     `- 질문 맞춤 조언: ${res.situationalBuberAudit.practiceGuidance}`,
     `- 일상 의례 제안: ${res.situationalBuberAudit.ritualAction}`,
-    `- 성찰 질문: ${res.situationalBuberAudit.reflectionFocus}`,
+    `- 성찰 질문: ${res.reflectiveQuestion}`,
     `- 교차 매트릭스: 핵심(${res.buberSynthesisMatrix?.coreInsight ?? res.activeBuberTheme.themeTitleKo}) | 실행(${res.buberSynthesisMatrix?.recommendedAction ?? res.situationalBuberAudit.practiceGuidance}) | 주의(${res.buberSynthesisMatrix?.cautionNotice ?? '도구화 경계'})`,
     `- 조언 요약: ${res.situationalBuberAudit.counselNote}`,
     `- 부버 원전 명언: "${res.focalBuberAphorism.aphorismKo}" [${res.focalBuberAphorism.aphorismDe}]`,

@@ -6,7 +6,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const AUSTRIAN_VIKTOR_FRANKL_VERSION = 'LUCKEY-VIKTOR-FRANKL-LOGOTHERAPY-v2.3.0';
+export const AUSTRIAN_VIKTOR_FRANKL_VERSION = 'LUCKEY-VIKTOR-FRANKL-LOGOTHERAPY-v2.4.0';
 
 function getFranklKstString(now?: Date): string {
   const base = now ?? new Date();
@@ -73,6 +73,7 @@ export interface ViktorFranklLogotherapyResult {
   logotherapyMatrix: FranklLogotherapyMatrix;
   ritualAction: string;
   reflectionFocus: string;
+  reflectiveQuestion: string;
   boundaryNotice: string;
   interpretiveBoundary: string;
   franklComprehensiveGuidance: {
@@ -347,6 +348,9 @@ export function calculateViktorFranklLogotherapy(
   const boundaryNotice = '로고테라피 의미치료 관점은 삶의 태도와 의미를 성찰하는 철학적·상징적 조언이며, 전문 의료·정신건강 진료를 대신하지 않습니다.';
 
   const trimmedQ = (question ?? '').trim();
+  const reflectiveQuestion = trimmedQ
+    ? `지금 마주한 "${trimmedQ}"라는 상황 속에서 바꿀 수 없는 현실 너머로 내가 여전히 스스로 선택할 수 있는 최후의 태도는 무엇인가요?`
+    : reflectionFocus;
   const franklSynthesisMatrix = {
     dominantTension: `${situationalMeaningAudit.existentialVacuumTrap} ↔ ${activeFranklTheme.themeTitleKo}`,
     alignmentState: `${temporalMeaningRhythm.valuePathFocus} · ${questionTopic}`,
@@ -369,6 +373,7 @@ export function calculateViktorFranklLogotherapy(
     logotherapyMatrix,
     ritualAction,
     reflectionFocus,
+    reflectiveQuestion,
     boundaryNotice,
     interpretiveBoundary: boundaryNotice,
     franklComprehensiveGuidance: {
@@ -395,7 +400,7 @@ export function formatViktorFranklLogotherapyPrompt(res: ViktorFranklLogotherapy
     `- KST 의미 리듬: ${res.temporalMeaningRhythm.kstWindow} (${res.temporalMeaningRhythm.seasonalTone} · ${res.temporalMeaningRhythm.valuePathFocus}) — ${res.temporalMeaningRhythm.rhythmDirective}`,
     `- 로고테라피 매트릭스: 최후의 자유 태도 선택 · 의미를 향한 의지 정렬 · 자기초월 헌신 정성 균형`,
     `- 일상 실천 의례: ${res.ritualAction}`,
-    `- 핵심 성찰 질문: ${res.reflectionFocus}`,
+    `- 핵심 성찰 질문: ${res.reflectiveQuestion}`,
     `- 종합 의미치료 권면: ${res.franklComprehensiveGuidance.philosophicalCounsel}`,
     `- 해석 경계: ${res.boundaryNotice}`,
     matrixLine,
