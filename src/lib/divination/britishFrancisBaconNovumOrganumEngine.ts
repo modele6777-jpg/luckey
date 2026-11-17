@@ -10,12 +10,12 @@
  * 4. 극장의 우상(Idola Theatri) 극복: 과거의 낡은 권위, 검증되지 않은 전통 체계나 독단적 교조주의를 맹종하지 않는 비판적 성찰력.
  * 5. 참된 귀납과 실천적 힘(Inductio Vera & Scientia Potentia Est): "아는 것이 힘이다(Scientia potentia est)"라는 명제처럼, 면밀한 관찰과 사실 검증을 통해 실질적인 변화를 창출하는 실증적 실행력.
  *
- * @version LUCKEY-FRANCIS-BACON-NOVUM-ORGANUM-v2.0.0
+ * @version LUCKEY-FRANCIS-BACON-NOVUM-ORGANUM-v2.2.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const BRITISH_FRANCIS_BACON_VERSION = 'LUCKEY-FRANCIS-BACON-NOVUM-ORGANUM-v2.1.0';
+export const BRITISH_FRANCIS_BACON_VERSION = 'LUCKEY-FRANCIS-BACON-NOVUM-ORGANUM-v2.2.0';
 
 export type BaconQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -59,6 +59,7 @@ export interface FrancisBaconNovumOrganumResult {
   practiceGuidance: string;
   ritualAction: string;
   reflectionFocus: string;
+  reflectiveQuestion: string;
   boundaryNotice: string;
   interpretiveBoundary: string;
   baconSynthesisMatrix: {
@@ -272,7 +273,11 @@ export function calculateFrancisBaconNovumOrganum(
   const boundaryNotice = '프랜시스 베이컨 신기관 해석은 인지적 편향과 사실 검증을 돕는 상징·성찰 관점이며, 미래 예측이나 확정적 판단이 아닙니다.';
   const baseDate = now ?? new Date();
   const kst = new Date(baseDate.getTime() + 9 * 60 * 60 * 1000);
-  const kstTimeLabel = `${temporalBaconRhythm.kstDateLabel} ${String(kst.getUTCHours()).padStart(2, '0')}:${String(kst.getUTCMinutes()).padStart(2, '0')} KST`;
+  const kstTimeLabel = `${temporalBaconRhythm.kstDateLabel}T${String(kst.getUTCHours()).padStart(2, '0')}:${String(kst.getUTCMinutes()).padStart(2, '0')}:00+09:00 (KST)`;
+  const trimmedQuery = (query ?? '').trim();
+  const reflectiveQuestion = trimmedQuery
+    ? `"${trimmedQuery}"의 질문 앞에서 '${activeBaconTheme.themeTitleKo}'을 적용할 때, 희망적 관측이나 막연한 수사 대신 지금 바로 사실로 대조해 볼 한 가지는 무엇인가요?`
+    : `오늘 '${activeBaconTheme.themeTitleKo}'의 잣대로, 내가 당연한 사실처럼 믿어 온 전제 중 반증 사례를 하나 찾아 점검해 볼 것은 무엇인가요?`;
   const baconSynthesisMatrix = {
     coreInsight: activeBaconTheme.themeTitleKo,
     recommendedAction: topicGuidance.practiceGuidance,
@@ -294,6 +299,7 @@ export function calculateFrancisBaconNovumOrganum(
     practiceGuidance: topicGuidance.practiceGuidance,
     ritualAction: topicGuidance.ritualAction,
     reflectionFocus: topicGuidance.reflectionFocus,
+    reflectiveQuestion,
     boundaryNotice,
     interpretiveBoundary: boundaryNotice,
     baconSynthesisMatrix,
@@ -316,6 +322,7 @@ export function formatFrancisBaconNovumOrganumPrompt(res: FrancisBaconNovumOrgan
     `- 질문 맞춤 실천 가이드: ${res.practiceGuidance}`,
     `- 일상 실천 의례: ${res.ritualAction}`,
     `- 핵심 성찰 질문: ${res.reflectionFocus}`,
+    `- 질문 맞춤 성찰 질문: ${res.reflectiveQuestion}`,
     `- 교차 매트릭스: 핵심(${res.baconSynthesisMatrix.coreInsight}) | 실행(${res.baconSynthesisMatrix.recommendedAction}) | 주의(${res.baconSynthesisMatrix.cautionNotice})`,
     `- 핵심 경구: "${res.focalBaconAphorism.aphorismKo}"`,
     `- 라틴어 원문: "${res.focalBaconAphorism.aphorismLatin}" [${res.focalBaconAphorism.novumOrganumRef}]`,

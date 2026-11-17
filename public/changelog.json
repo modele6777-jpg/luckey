@@ -1,12 +1,22 @@
 [
   {
-    "version": "1.7.777",
-    "builtAt": "2026-11-18T06:00:00+09:00",
-    "summary": "오행 공명 증폭, 결핍 오행 바이오 처방, 에니어그램 영혼 통합 3대 엔진 실천 의례 및 성찰 질문 표준 연동(v1.7.777)",
+    "version": "1.7.778",
+    "builtAt": "2026-11-18T06:04:00+09:00",
+    "summary": "오행 공명 증폭, 결핍 오행 바이오 처방, 에니어그램 영혼 통합 3대 엔진 실천 의례 및 성찰 질문 표준 연동(v1.7.778)",
     "items": [
       "오행 생극제화 & 에너지 공명 증폭 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동",
       "결핍 오행 & 바이오 에너지 맞춤 처방 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동",
       "에니어그램 영혼 성격 통합 & 의식 진화 엔진(v2.3.0): ritualAction·reflectionFocus 표준 필드 연동"
+    ]
+  },
+  {
+    "version": "1.7.777",
+    "builtAt": "2026-11-18T06:00:00+09:00",
+    "summary": "러셀 행복의 정복·베이컨 신기관·로크 인간오성론 3대 엔진 성찰 질문 및 KST 시각 보강(v1.7.777)",
+    "items": [
+      "버트런드 러셀 《행복의 정복》(britishBertrandRussellConquestOfHappinessEngine v2.2.0): 질문 반응형 reflectiveQuestion 추가·+09:00 (KST) 표기 통일 및 프롬프트 출력 연동",
+      "프랜시스 베이컨 《신기관》(britishFrancisBaconNovumOrganumEngine v2.2.0): 질문 반응형 reflectiveQuestion 추가·+09:00 (KST) 표기 통일 및 프롬프트 출력 연동",
+      "존 로크 《인간 오성론》(britishJohnLockeHumanUnderstandingEngine v2.2.0): 질문 반응형 reflectiveQuestion 추가·+09:00 (KST) 표기 통일 및 프롬프트 출력 연동"
     ]
   },
   {
