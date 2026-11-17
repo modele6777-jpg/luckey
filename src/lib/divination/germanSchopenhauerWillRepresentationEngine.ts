@@ -12,7 +12,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const SCHOPENHAUER_WILL_REPRESENTATION_VERSION = 'LUCKEY-SCHOPENHAUER-WILL-REPRESENTATION-v2.1.0';
+export const SCHOPENHAUER_WILL_REPRESENTATION_VERSION = 'LUCKEY-SCHOPENHAUER-WILL-REPRESENTATION-v2.2.0';
 
 export interface SchopenhauerTheme {
   themeKey: string;
@@ -72,6 +72,7 @@ export interface SchopenhauerWillRepresentationResult {
     counselTitle: string;
     philosophicalGuidance: string;
   };
+  interpretiveBoundary: string;
 }
 
 export type SchopenhauerWillRepresentationReport = SchopenhauerWillRepresentationResult;
@@ -313,6 +314,7 @@ export function calculateSchopenhauerWillRepresentation(
       counselTitle,
       philosophicalGuidance,
     },
+    interpretiveBoundary: '이 관조는 확정 예언이 아니라 욕망의 소란을 한 걸음 비켜서서 바라보기 위한 철학적 상징 프레임입니다.',
   };
 }
 

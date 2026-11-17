@@ -6236,6 +6236,7 @@ test('Arthur Schopenhauer Will Representation Engine: calculates Will transcende
   assert(rep.situationalWillAudit.focusAxisKo.length > 0);
   assert(rep.temporalContemplationRhythm.heiterkeitSerenityIndex >= 0 && rep.temporalContemplationRhythm.heiterkeitSerenityIndex <= 100);
   assert(rep.schopenhauerSynthesisMatrix.overallSchopenhauerGrade.length > 0);
+  assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatSchopenhauerWillRepresentationPrompt(rep);
   assert(prompt.includes('쇼펜하우어 의지와 표상(Wille und Vorstellung) & 자비(Mitleid) 지표'));
   assert(prompt.includes(rep.activeSchopenhauerTheme.themeTitleKo));
@@ -7539,6 +7540,7 @@ test('Friedrich Schiller Aesthetic Education Engine: calculates Play Drive, Aest
   assert(rep.activeSchillerTheme.themeTitleKo.length > 0);
   assert(rep.calculatedAtKst.endsWith('KST'));
   assert(Boolean(rep.schillerSynthesisMatrix?.integratedAction));
+  assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatGermanFriedrichSchillerAestheticEducationPrompt(rep);
   assert(prompt.includes('프리드리히 실러 《인간의 미적 교육에 관한 편지》 놀이 충동 및 미적 자유 지표'));
   assert(prompt.includes(rep.activeSchillerTheme.themeTitleKo));
@@ -8298,6 +8300,7 @@ test('Hermann Hesse engine matches the question to a literary theme and omits mi
   assert.equal(Object.hasOwn(rep, 'siddharthaRiverEquanimityScore'), false);
   assert.equal(Object.hasOwn(rep, 'calculatedAtKst'), false);
   assert(Boolean(rep.hesseSteppenwolfSynthesisMatrix?.integratedAction));
+  assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatGermanHermannHesseDemianSteppenwolfPrompt(rep);
   assert.match(prompt, /문학적 참고/);
   assert(prompt.includes('교차 매트릭스'));
