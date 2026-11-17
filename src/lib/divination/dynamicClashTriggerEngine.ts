@@ -21,7 +21,7 @@ import {
   EARTHLY_BRANCHES
 } from '../sajuAnalysis';
 
-export const DYNAMIC_CLASH_ENGINE_VERSION = 'LUCKEY-CLASH-v2.2.0';
+export const DYNAMIC_CLASH_ENGINE_VERSION = 'LUCKEY-CLASH-v2.3.0';
 
 export type ClashType = 'six_clash' | 'three_penalties' | 'self_penalty' | 'six_harm' | 'six_destruction' | 'wonjin';
 export type HarmonyType = 'six_harmony' | 'three_harmony';
@@ -96,6 +96,8 @@ export interface DynamicClashResult {
     cautionNotice: string;
   };
   reflectiveQuestion: string;
+  ritualAction: string;
+  reflectionFocus: string;
   boundaryNotice: string;
   interpretiveBoundary: string;
   summary: string;
@@ -566,6 +568,10 @@ export function calculateDynamicClashTrigger(params?: {
     cautionNotice: todayActionMatrix.avoidNow,
   };
 
+  const reflectiveQuestion = q
+    ? `‘${q}’ 상황에서 오늘의 충·합 파동(${primaryClash ? primaryClash.name : '평온 흐름'})을 어떤 창조적 결단이나 조율 행동으로 전환하시겠습니까?`
+    : `오늘 일진(${currentPillars.dayGanZhiKo})이 건네는 긴장과 합의 기운 속에서 가장 먼저 내려놓을 관성과 붙잡을 행동은 무엇입니까?`;
+
   return {
     engineVersion: DYNAMIC_CLASH_ENGINE_VERSION,
     targetDateIso: now.toISOString(),
@@ -581,9 +587,9 @@ export function calculateDynamicClashTrigger(params?: {
     situationalClashAudit,
     temporalClashRhythm,
     clashSynthesisMatrix,
-    reflectiveQuestion: q
-      ? `‘${q}’ 상황에서 오늘의 충·합 파동(${primaryClash ? primaryClash.name : '평온 흐름'})을 어떤 창조적 결단이나 조율 행동으로 전환하시겠습니까?`
-      : `오늘 일진(${currentPillars.dayGanZhiKo})이 건네는 긴장과 합의 기운 속에서 가장 먼저 내려놓을 관성과 붙잡을 행동은 무엇입니까?`,
+    reflectiveQuestion,
+    ritualAction: todayActionMatrix.doNow,
+    reflectionFocus: reflectiveQuestion,
     boundaryNotice: '본 결과는 사주 지지 충·합 상징에 기반한 정성적 리듬 안내이며, 흉살 예언이나 확정적 예측이 아닙니다.',
     interpretiveBoundary: '본 결과는 사주 지지 충·합 상징에 기반한 정성적 리듬 안내이며, 흉살 예언이나 확정적 예측이 아닙니다.',
     summary

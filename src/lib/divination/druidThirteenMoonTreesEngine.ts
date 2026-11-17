@@ -29,7 +29,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const DRUID_MOON_TREES_VERSION = 'LUCKEY-DRUID-MOON-TREES-v2.1.0';
+export const DRUID_MOON_TREES_VERSION = 'LUCKEY-DRUID-MOON-TREES-v2.2.0';
 
 export interface DruidTreeSituationalAudit {
   groveFocus: string;
@@ -73,6 +73,8 @@ export interface DruidMoonTreesReport {
   treeSynthesisMatrix: DruidTreeSynthesisMatrix;
   forestGuidance: string;
   synthesisMessage: string;
+  ritualAction: string;
+  reflectionFocus: string;
   interpretiveBoundary: string;
 }
 
@@ -307,6 +309,10 @@ export function calculateDruidMoonTrees(
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
   const calculatedAtKst = `${kst.toISOString().slice(0, 19)}+09:00`;
   const interpretiveBoundary = '본 켈트 드루이드 13달나무 리포트는 수목 역법의 자연 상징에 기반한 정성적 성찰 안내이며, 확정적 길흉 예단이 아닙니다.';
+  const ritualAction = `${situationalTreeAudit.forestAction} · ${temporalTreeRhythm.groveTimingDirective}`;
+  const reflectionFocus = question.trim()
+    ? `‘${question.trim()}’ 앞에서 탄생 수호목 [${birthTree.koreanName}]과 활성목 [${activeCycleTree.koreanName}]이 가리키는 오늘의 균형점은 무엇입니까?`
+    : `오늘 [${activeCycleTree.koreanName}] 달나무의 주기 속에서 내가 뿌리를 내리고 지키고 싶은 내면의 성역은 무엇입니까?`;
 
   return {
     engineVersion: DRUID_MOON_TREES_VERSION,
@@ -320,6 +326,8 @@ export function calculateDruidMoonTrees(
     treeSynthesisMatrix,
     forestGuidance,
     synthesisMessage,
+    ritualAction,
+    reflectionFocus,
     interpretiveBoundary,
   };
 }

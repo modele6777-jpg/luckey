@@ -2125,6 +2125,7 @@ test('Dynamic Clash Trigger Engine: 실시간 삼형·육충·파해 동적 격�
   assert(res.calculatedAtKst.includes('+09:00 (KST)'));
   assert(res.reflectiveQuestion.includes('오늘 조심할 점'));
   assert(res.interpretiveBoundary.length > 0);
+  assert(res.ritualAction.length > 0 && res.reflectionFocus.length > 0);
   const prompt = formatDynamicClashPrompt(res);
   assert(prompt.includes(DYNAMIC_CLASH_ENGINE_VERSION));
   assert(prompt.includes('오늘 일진'));
@@ -2685,6 +2686,7 @@ test('Destiny Synastry Echo Engine: 다차원 운명 공명 에코 & 카르마�
   assert(res.goldenCommunicationCode.mindOpeningKeyword.length > 0);
   assert(res.calculatedAtKst.includes('KST'));
   assert(res.interpretiveBoundary.length > 0);
+  assert(res.ritualAction.length > 0 && res.reflectionFocus.length > 0);
   const prompt = formatDestinySynastryEchoPrompt(res);
   assert(prompt.includes('LUCKEY 다차원 운명 공명 에코 & 카르마적 인연 중력'));
   assert(prompt.includes(res.gravityType));
@@ -3804,6 +3806,7 @@ test('Druid Thirteen Moon Trees & Ogham Engine: calculates birth tree, active tr
   assert(rep.birthTree.koreanName.length > 0);
   assert(rep.activeCycleTree.koreanName.length > 0);
   assert(rep.resonanceScore >= 0 && rep.resonanceScore <= 100);
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatDruidMoonTreesPrompt(rep);
   assert(prompt.includes('켈트 드루이드 13대 달나무(Moon Trees) & 오검 주술 엔진'));
   assert(prompt.includes(rep.birthTree.koreanName));
