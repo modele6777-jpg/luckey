@@ -17,7 +17,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const KABBALISTIC_ZOHAR_SOUL_ENGINE_VERSION = '2.0.0';
+export const KABBALISTIC_ZOHAR_SOUL_ENGINE_VERSION = '2.1.0';
 
 export interface KabbalisticSoulLevel {
   id: string;
@@ -58,6 +58,7 @@ export interface KabbalisticZoharSoulReport {
   zoharKabbalahGuidance: string; // 조하르 지혜 지침
   einSofLightAscensionRitual: string; // 에인 소프 무한의 빛 상승 리추얼
   boundaryNotice: string;
+  interpretiveBoundary: string;
 }
 
 const ZOHAR_SOUL_LEVELS_BASE: Omit<KabbalisticSoulLevel, 'resonanceScore'>[] = [
@@ -221,6 +222,7 @@ export function calculateKabbalisticZoharSoul(
     zoharKabbalahGuidance,
     einSofLightAscensionRitual,
     boundaryNotice: '카발라 《조하르》의 5대 영혼 층위 상징을 빌려 온 정성적 성찰 관점이며, 확정적 예언이나 의학적·재정적 처방이 아닙니다.',
+    interpretiveBoundary: '카발라 《조하르》의 5대 영혼 층위 상징을 빌려 온 정성적 성찰 관점이며, 확정적 예언이나 의학적·재정적 처방이 아닙니다.',
   };
 }
 
