@@ -4778,7 +4778,7 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'ethericAuraBiofield', nameKo: '에테릭 오라 바이오필드', icon: '✨', category: 'deep_master', summary: '에테르·아스트랄 오라 스펙트럼과 생체장 쉴딩 결계로 에너지 누수를 막고 경계를 세우는 관점' },
   { key: 'sajuClassicYongshin', nameKo: '사주 원전 억부용신', icon: '📜', category: 'deep_master' },
   { key: 'tarotTreeOfLifeShadow', nameKo: '타로 세피로트 그림자', icon: '🌳', category: 'deep_master', summary: '카발라 생명나무 22경로와 타로 섀도우 미러를 통해 의식의 빛과 무의식 방어기제를 통합하는 관점' },
-  { key: 'hellenisticLots', nameKo: '헬레니즘 포르투나 롯', icon: '🏛️', category: 'deep_master' },
+  { key: 'hellenisticLots', nameKo: '헬레니즘 포르투나 롯', icon: '🏛️', category: 'deep_master', summary: '주간·야간 섹트와 포르투나·스피릿·에로스·네메시스 4대 아라빅 랏으로 환경적 복록과 의지적 돌파구를 비추는 관점' },
   { key: 'iching384Yao', nameKo: '주역 384효 동효변괘', icon: '☯️', category: 'deep_master' },
   { key: 'sajuTwelveStagesTomb', nameKo: '12운성 묘고지 개고', icon: '🗝️', category: 'deep_master' },
   { key: 'tarotElementalCourt', nameKo: '타로 16 코트 페르소나', icon: '🎭', category: 'deep_master', summary: '타로 16대 궁정 카드와 4대 원소 상징으로 현재의 외적 태도와 내면의 그림자 맹점을 비추는 관점' },
