@@ -1,10 +1,10 @@
 {
-  "version": "1.7.802",
-  "builtAt": "2026-11-18T07:56:00+09:00",
-  "summary": "라이프니츠, 헤겔, 헤르만 헤세 3대 엔진 실천 의례 및 성찰 질문 표준 연동(v1.7.802)",
+  "version": "1.7.803",
+  "builtAt": "2026-11-18T08:00:00+09:00",
+  "summary": "레비나스·바슐라르·프루스트 3대 엔진 성찰 질문 및 +09:00 KST 표기 보강(v1.7.803)",
   "items": [
-    "라이프니츠 《단자론·변신론》 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동",
-    "헤겔 《정신현상학》 변증법 지양 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동",
-    "헤르만 헤세 《데미안·황야의 이리》 엔진(v2.3.0): ritualAction·reflectionFocus 표준 필드 연동"
+    "레비나스 타자의 얼굴 & 환대(frenchEmmanuelLevinasFaceOfOtherHospitalityEngine v2.2.0): +09:00 KST 표기 및 질문 반응형 reflectiveQuestion 프롬프트 연동",
+    "바슐라르 공간의 시학(frenchGastonBachelardPoeticsOfSpaceEngine v2.2.0): +09:00 KST 표기 및 질문 반응형 reflectiveQuestion 프롬프트 연동",
+    "프루스트 잃어버린 시간을 찾아서(frenchMarcelProustLostTimeRegainedEngine v2.4.0): +09:00 KST 표기 및 질문 반응형 reflectiveQuestion 프롬프트 연동"
   ]
 }

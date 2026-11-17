@@ -15,7 +15,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const FRENCH_GASTON_BACHELARD_POETICS_VERSION = 'LUCKEY-GASTON-BACHELARD-POETICS-v2.1.0';
+export const FRENCH_GASTON_BACHELARD_POETICS_VERSION = 'LUCKEY-GASTON-BACHELARD-POETICS-v2.2.0';
 
 export type BachelardQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -59,6 +59,7 @@ export interface FrenchGastonBachelardPoeticsOfSpaceResult {
   practiceGuidance: string;
   ritualAction: string;
   reflectionFocus: string;
+  reflectiveQuestion: string;
   boundaryNotice: string;
   interpretiveBoundary: string;
   bachelardSynthesisMatrix: {
@@ -273,7 +274,11 @@ export function calculateFrenchGastonBachelardPoeticsOfSpace(
   const boundaryNotice = '가스통 바슐라르 공간의 시학 해석은 내면의 안식과 시적 상상력 회복을 돕는 상징·성찰 관점이며, 임상적 진단이나 확정 예언이 아닙니다.';
   const baseDate = now ?? new Date();
   const kst = new Date(baseDate.getTime() + 9 * 60 * 60 * 1000);
-  const kstTimeLabel = `${temporalBachelardRhythm.kstDateLabel} ${String(kst.getUTCHours()).padStart(2, '0')}:${String(kst.getUTCMinutes()).padStart(2, '0')} KST`;
+  const kstTimeLabel = `${temporalBachelardRhythm.kstDateLabel}T${String(kst.getUTCHours()).padStart(2, '0')}:${String(kst.getUTCMinutes()).padStart(2, '0')}:00+09:00 (KST)`;
+  const qText = (query ?? '').trim();
+  const reflectiveQuestion = qText
+    ? `‘${qText}’의 소음에서 한 걸음 물러나 내 영혼이 촛불처럼 고요히 쉴 수 있는 작은 공간은 어디입니까?`
+    : topicGuidance.reflectionFocus;
   const bachelardSynthesisMatrix = {
     coreInsight: activeBachelardTheme.themeTitleKo,
     recommendedAction: topicGuidance.practiceGuidance,
@@ -294,7 +299,8 @@ export function calculateFrenchGastonBachelardPoeticsOfSpace(
     focalBachelardAphorism,
     practiceGuidance: topicGuidance.practiceGuidance,
     ritualAction: topicGuidance.ritualAction,
-    reflectionFocus: topicGuidance.reflectionFocus,
+    reflectionFocus: reflectiveQuestion,
+    reflectiveQuestion,
     boundaryNotice,
     interpretiveBoundary: boundaryNotice,
     bachelardSynthesisMatrix,
@@ -318,7 +324,7 @@ export function formatFrenchGastonBachelardPoeticsOfSpacePrompt(
     `- 실천적 치유 조언: ${res.activeBachelardTheme.practicalCounsel}`,
     `- 질문 맞춤 실천 가이드: ${res.practiceGuidance}`,
     `- 일상 실천 의례: ${res.ritualAction}`,
-    `- 핵심 성찰 질문: ${res.reflectionFocus}`,
+    `- 질문 맞춤 성찰 질문: ${res.reflectiveQuestion}`,
     `- 교차 매트릭스: 핵심(${res.bachelardSynthesisMatrix.coreInsight}) | 실행(${res.bachelardSynthesisMatrix.recommendedAction}) | 주의(${res.bachelardSynthesisMatrix.cautionNotice})`,
     `- 바슐라르 원전 명언: "${res.focalBachelardAphorism.aphorismKo}"`,
     `- 불문 원전: "${res.focalBachelardAphorism.aphorismEn}"`,
