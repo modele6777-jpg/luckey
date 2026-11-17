@@ -10953,3 +10953,29 @@ test('William Shakespeare v2.2 · Celtic Awen Taliesin v2.3 · Celtic Tree Ogham
   const oghamPrompt = formatCelticTreeOghamPrompt(ogham);
   assert.ok(oghamPrompt.includes('+09:00') && oghamPrompt.includes('질문 맞춤 성찰 질문') && oghamPrompt.includes('해석 경계'));
 });
+
+test('Celtic Brehon Law v2.3 · Lugh Samildanach v2.3 · Tuatha Four Treasures v2.3: reflectiveQuestion & +09:00 KST prompt output', () => {
+  const now = new Date('2026-11-18T06:30:00+09:00');
+  const query = '복잡한 협상과 프로젝트 앞에서 공정한 균형과 돌파력을 지키고 싶어요';
+
+  const brehon = calculateCelticBrehonLaw(profile, now, query);
+  assert.equal(brehon.engineVersion, CELTIC_BREHON_LAW_VERSION);
+  assert.match(brehon.calculatedAtKst, /\+09:00/);
+  assert.ok(brehon.reflectiveQuestion.includes(query));
+  const brehonPrompt = formatCelticBrehonLawPrompt(brehon);
+  assert.ok(brehonPrompt.includes('+09:00') && brehonPrompt.includes('질문 맞춤 성찰 질문') && brehonPrompt.includes('해석 경계'));
+
+  const lugh = calculateLughSamildanach(profile, now, query);
+  assert.equal(lugh.engineVersion, LUGH_SAMILDANACH_VERSION);
+  assert.match(lugh.calculatedAtKst, /\+09:00/);
+  assert.ok(lugh.reflectiveQuestion.includes(query));
+  const lughPrompt = formatLughSamildanachPrompt(lugh);
+  assert.ok(lughPrompt.includes('+09:00') && lughPrompt.includes('질문 맞춤 성찰 질문') && lughPrompt.includes('해석 경계'));
+
+  const treasures = calculateCelticTuathaFourTreasures({ profile, question: query, now });
+  assert.equal(treasures.engineVersion, CELTIC_TUATHA_FOUR_TREASURES_ENGINE_VERSION);
+  assert.match(treasures.calculatedAtKst, /\+09:00/);
+  assert.ok(treasures.reflectiveQuestion.includes(query));
+  const treasuresPrompt = formatCelticTuathaFourTreasuresPrompt(treasures);
+  assert.ok(treasuresPrompt.includes('+09:00') && treasuresPrompt.includes('질문 맞춤 성찰 질문') && treasuresPrompt.includes('해석 경계'));
+});
