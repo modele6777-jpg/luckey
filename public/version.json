@@ -1,10 +1,10 @@
 {
-  "version": "1.7.713",
-  "builtAt": "2026-11-17T09:14:00+09:00",
-  "summary": "스피노자 에티카·바이오리듬 피크·버트런드 러셀 행복의 정복 3대 엔진 해석 경계 표준 연동(v1.7.713)",
+  "version": "1.7.714",
+  "builtAt": "2026-11-17T09:20:00+09:00",
+  "summary": "프랜시스 베이컨·존 로크·존 스튜어트 밀 3대 엔진 해석 경계 표준 연동(v1.7.714)",
   "items": [
-    "바루흐 스피노자 에티카 코나투스 엔진(v2.2.0): interpretiveBoundary 표준 필드 연동",
-    "3대 생체 바이오리듬 & 크로노타입 황금 피크 엔진(v2.1.0): interpretiveBoundary 표준 필드 연동",
-    "영국 버트런드 러셀 행복의 정복 엔진(v2.1.0): interpretiveBoundary 표준 필드 연동"
+    "영국 프랜시스 베이컨 신기관 엔진(v2.1.0): interpretiveBoundary 표준 필드 연동",
+    "영국 존 로크 인간 오성론 엔진(v2.1.0): interpretiveBoundary 표준 필드 연동",
+    "영국 존 스튜어트 밀 자유론 엔진(v2.1.0): interpretiveBoundary 표준 필드 연동"
   ]
 }

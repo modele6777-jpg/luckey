@@ -15,7 +15,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const BRITISH_JS_MILL_VERSION = 'LUCKEY-JS-MILL-ON-LIBERTY-v2.0.0';
+export const BRITISH_JS_MILL_VERSION = 'LUCKEY-JS-MILL-ON-LIBERTY-v2.1.0';
 
 export type MillQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -60,6 +60,7 @@ export interface JohnStuartMillOnLibertyIndividualityResult {
   ritualAction: string;
   reflectionFocus: string;
   boundaryNotice: string;
+  interpretiveBoundary: string;
   millSynthesisMatrix: {
     coreInsight: string;
     recommendedAction: string;
@@ -294,6 +295,7 @@ export function calculateJohnStuartMillOnLibertyIndividuality(
     ritualAction: topicGuidance.ritualAction,
     reflectionFocus: topicGuidance.reflectionFocus,
     boundaryNotice,
+    interpretiveBoundary: boundaryNotice,
     millSynthesisMatrix,
     millComprehensiveGuidance: {
       guidanceTitle,

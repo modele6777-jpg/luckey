@@ -13,7 +13,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const BRITISH_JOHN_LOCKE_VERSION = 'LUCKEY-JOHN-LOCKE-UNDERSTANDING-v2.0.0';
+export const BRITISH_JOHN_LOCKE_VERSION = 'LUCKEY-JOHN-LOCKE-UNDERSTANDING-v2.1.0';
 
 export type LockeQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -58,6 +58,7 @@ export interface JohnLockeHumanUnderstandingResult {
   ritualAction: string;
   reflectionFocus: string;
   boundaryNotice: string;
+  interpretiveBoundary: string;
   lockeSynthesisMatrix: {
     coreInsight: string;
     recommendedAction: string;
@@ -285,6 +286,7 @@ export function calculateJohnLockeHumanUnderstanding(
     ritualAction: topicGuidance.ritualAction,
     reflectionFocus: topicGuidance.reflectionFocus,
     boundaryNotice,
+    interpretiveBoundary: boundaryNotice,
     lockeSynthesisMatrix,
     lockeComprehensiveGuidance: {
       guidanceTitle,
