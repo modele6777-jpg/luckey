@@ -23,7 +23,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const CELTIC_AWEN_TALIESIN_ENGINE_VERSION = '2.1.0';
+export const CELTIC_AWEN_TALIESIN_ENGINE_VERSION = '2.2.0';
 
 export interface AwenSituationalAudit {
   cauldronFocus: string;
@@ -73,6 +73,8 @@ export interface CelticAwenTaliesinReport {
   awenSynthesisMatrix: AwenSynthesisMatrix;
   cauldronPractice: string; // 가마솥 연단 실천
   taliesinProphecy: string;
+  ritualAction: string;
+  reflectionFocus: string;
   interpretiveBoundary: string;
 }
 
@@ -278,6 +280,8 @@ export function calculateCelticAwenTaliesin(options?: {
     awenSynthesisMatrix,
     cauldronPractice,
     taliesinProphecy,
+    ritualAction: cauldronPractice,
+    reflectionFocus: `[${activeMetamorphosis.animalTotem}] 변용의 시선으로 볼 때, 지금 내가 낡은 껍질을 벗고 새롭게 부를 노래는 무엇인가요?`,
     interpretiveBoundary
   };
 }
