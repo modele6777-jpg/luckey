@@ -22,7 +22,7 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const CHAKRA_ALIGNMENT_VERSION = 'LUCKEY-CHAKRA-v2.0.0';
+export const CHAKRA_ALIGNMENT_VERSION = 'LUCKEY-CHAKRA-v2.1.0';
 
 export interface SingleChakraInfo {
   id: string;
@@ -70,6 +70,7 @@ export interface ChakraVibrationAlignmentReport {
     cautionNotice: string;
   };
   boundaryNotice: string;
+  interpretiveBoundary: string;
   synthesisPromptGuidance: string;
 }
 
@@ -303,6 +304,7 @@ ${chakrasSummary}
     temporalChakraRhythm,
     chakraSynthesisMatrix,
     boundaryNotice,
+    interpretiveBoundary: boundaryNotice,
     synthesisPromptGuidance
   };
 }

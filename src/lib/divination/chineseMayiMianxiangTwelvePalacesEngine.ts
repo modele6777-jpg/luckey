@@ -28,7 +28,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const MAYI_MIANXIANG_VERSION = '2.0.0';
+export const MAYI_MIANXIANG_VERSION = '2.1.0';
 
 export interface MayiMianxiangReport {
   engineVersion: string;
@@ -71,6 +71,7 @@ export interface MayiMianxiangReport {
   };
   mayiDaoistMorphologicalAdvice: string;
   boundaryNotice: string;
+  interpretiveBoundary: string;
 }
 
 function djb2Hash(str: string): number {
@@ -287,6 +288,7 @@ export function calculateMayiMianxiang(
     mayiSynthesisMatrix,
     mayiDaoistMorphologicalAdvice,
     boundaryNotice: '본 결과는 《마의상법》의 심상(心相) 및 12궁 상징 철학에 기반한 정성적 성찰 안내이며, 외모 평가나 확정적 길흉 판정이 아닙니다.',
+    interpretiveBoundary: '본 결과는 《마의상법》의 심상(心相) 및 12궁 상징 철학에 기반한 정성적 성찰 안내이며, 외모 평가나 확정적 길흉 판정이 아닙니다.',
   };
 }
 

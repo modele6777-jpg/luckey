@@ -2750,6 +2750,7 @@ test('Chakra Vibration Alignment Engine: frequency-free chakra alignment and bal
   assert(res.calculatedAtKst.includes('KST'));
   assert(res.temporalChakraRhythm.chakraWatchWindow.length > 0);
   assert(res.chakraSynthesisMatrix.coreInsight.length > 0);
+  assert(res.interpretiveBoundary.length > 0);
   const prompt = formatChakraVibrationAlignmentPrompt(res);
   assert(prompt.includes('LUCKEY 7대 차크라 파동 정렬 & 에너지 퀀텀 밸런싱'));
   assert(prompt.includes(res.primaryFocusChakra.name));
@@ -5286,6 +5287,7 @@ test('Chinese Mayi Mianxiang Twelve Palaces Engine: calculates 12 palaces, Qi au
   assert(rep.calculatedAtKst.includes('KST'));
   assert(rep.temporalMayiRhythm.yintangWatchWindow.length > 0);
   assert(rep.mayiSynthesisMatrix.coreInsight.length > 0);
+  assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatMayiMianxiangPrompt(rep);
   assert(prompt.includes('동양 비전 마의도사 《마의상법》 12궁 관상 & 심상합일 기색'));
   assert(prompt.includes(rep.primaryPalace.nameKo));
@@ -5705,6 +5707,7 @@ test('Chinese Laozi Daodejing Water Way Engine: calculates water yielding adapta
   assert.equal(rep.chapterResonance.chapterNumber, 8);
   assert(rep.seasonalWaterFlow.waterPacingScore >= 0 && rep.seasonalWaterFlow.waterPacingScore <= 100);
   assert(rep.softStrengthMatrix.nonContentionHarmonyScore >= 0 && rep.softStrengthMatrix.nonContentionHarmonyScore <= 100);
+  assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatLaoziDaodejingPrompt(rep);
   assert(prompt.includes('고대 중국 노자(老子) 《도덕경(道德經)》'));
   assert(prompt.includes(rep.activeDaodejingStage.stageNameKo));
