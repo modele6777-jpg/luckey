@@ -14,7 +14,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const FRENCH_GILLES_DELEUZE_RHIZOME_BECOMING_VERSION = 'LUCKEY-DELEUZE-RHIZOME-BECOMING-v2.0.0';
+export const FRENCH_GILLES_DELEUZE_RHIZOME_BECOMING_VERSION = 'LUCKEY-DELEUZE-RHIZOME-BECOMING-v2.1.0';
 
 export type DeleuzeQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -58,6 +58,8 @@ export interface FrenchGillesDeleuzeRhizomeBecomingResult {
   practiceGuidance: string;
   dailyPracticeRitual: string;
   reflectiveQuestion: string;
+  ritualAction: string;
+  reflectionFocus: string;
   interpretiveBoundary: string;
   deleuzeSynthesisMatrix: {
     coreInsight: string;
@@ -322,6 +324,8 @@ export function calculateFrenchGillesDeleuzeRhizomeBecoming(
     practiceGuidance,
     dailyPracticeRitual,
     reflectiveQuestion,
+    ritualAction: dailyPracticeRitual,
+    reflectionFocus: reflectiveQuestion,
     interpretiveBoundary,
     deleuzeSynthesisMatrix,
     deleuzeComprehensiveGuidance: {

@@ -6837,6 +6837,7 @@ test('Henri Bergson Elan Vital Engine: calculates Pure Duration, Elan Vital, and
   assert(rep.creativeFreedomUnfoldingScore >= 0 && rep.creativeFreedomUnfoldingScore <= 100);
   assert(rep.openSocietyVitalityIndex >= 0 && rep.openSocietyVitalityIndex <= 100);
   assert(rep.activeBergsonTheme.themeTitleKo.length > 0);
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatHenriBergsonElanVitalPrompt(rep);
   assert(prompt.includes('앙리 베르그송 《시간과 자유의지·창조적 진화》 순수 지속 & 생명의 도약 성찰 가이드'));
   assert(prompt.includes(rep.activeBergsonTheme.themeTitleKo));
@@ -6854,6 +6855,7 @@ test('Albert Camus Absurd Revolt Engine: calculates Absurd Lucidity, Unceasing R
   assert(rep.lucidFreedomAutonomyScore >= 0 && rep.lucidFreedomAutonomyScore <= 100);
   assert(rep.sisyphusHappinessResilienceScore >= 0 && rep.sisyphusHappinessResilienceScore <= 100);
   assert(rep.activeCamusTheme.themeTitleKo.length > 0);
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatAlbertCamusAbsurdRevoltPrompt(rep);
   assert(prompt.includes('알베르 카뮈 《시지프 신화》 부조리의 자각 & 실존적 반항 관점'));
   assert(prompt.includes(rep.activeCamusTheme.themeTitleKo));
@@ -7710,6 +7712,7 @@ test('Gilles Deleuze Rhizome and Becoming Engine: calculates Rhizomatic Connecti
   assert(rep.creativeBecomingVitalityScore >= 0 && rep.creativeBecomingVitalityScore <= 100);
   assert(rep.desiringProductionLiberationResilienceScore >= 0 && rep.desiringProductionLiberationResilienceScore <= 100);
   assert(rep.activeDeleuzeTheme.themeTitleKo.length > 0);
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatFrenchGillesDeleuzeRhizomeBecomingPrompt(rep);
   assert(prompt.includes('들뢰즈 《천 개의 고원·차이와 반복》 리좀·탈영토화·생성 성찰 가이드'));
   assert(prompt.includes(rep.activeDeleuzeTheme.themeTitleKo));

@@ -13,7 +13,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const FRENCH_HENRI_BERGSON_VERSION = 'LUCKEY-HENRI-BERGSON-ELAN-VITAL-v2.0.0';
+export const FRENCH_HENRI_BERGSON_VERSION = 'LUCKEY-HENRI-BERGSON-ELAN-VITAL-v2.1.0';
 
 export type BergsonQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -57,6 +57,8 @@ export interface HenriBergsonElanVitalResult {
   practiceGuidance: string;
   dailyPracticeRitual: string;
   reflectiveQuestion: string;
+  ritualAction: string;
+  reflectionFocus: string;
   interpretiveBoundary: string;
   bergsonSynthesisMatrix: {
     coreInsight: string;
@@ -324,6 +326,8 @@ export function calculateHenriBergsonElanVital(
     practiceGuidance,
     dailyPracticeRitual,
     reflectiveQuestion,
+    ritualAction: dailyPracticeRitual,
+    reflectionFocus: reflectiveQuestion,
     interpretiveBoundary,
     bergsonSynthesisMatrix,
     bergsonComprehensiveGuidance: {
