@@ -1999,6 +1999,7 @@ test('Iching Master Engine: 64괘 4대 대칭 괘상(본·지·호·착·종) �
   assert(res.palGongSeYing.yingYao >= 1 && res.palGongSeYing.yingYao <= 6);
   assert(res.temporalIchingRhythm.divinationWatchWindow.length > 0);
   assert(res.ichingSynthesisMatrix.coreInsight.length > 0);
+  assert(res.interpretiveBoundary.length > 0);
   const prompt = formatIchingMasterPrompt(res);
   assert(prompt.includes(ICHING_MASTER_ENGINE_VERSION));
   assert(prompt.includes('KST'));
@@ -5050,6 +5051,7 @@ test('Ibn Arabi Wahdat al-Wujud Heart Wisdom Engine: calculates prophetic heart 
   assert(rep.perfectHumanMirrorIndex >= 0 && rep.perfectHumanMirrorIndex <= 100);
   assert(rep.heartPurityBarakah >= 0 && rep.heartPurityBarakah <= 100);
   assert(rep.dominantWisdom.prophetName.length > 0);
+  assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatIbnArabiWahdatAlWujudPrompt(rep);
   assert(prompt.includes('이븐 아라비 존재의 단일성(Wahdat al-Wujud) 심장 영지 실측 데이터'));
   assert(prompt.includes(rep.dominantWisdom.prophetName));
@@ -5138,6 +5140,7 @@ test('Inca Andean Three Pacha Ayni Engine: calculates three pachas, sacred recip
   assert(rep.calculatedAtKst.includes('KST'));
   assert(rep.temporalPachaRhythm.intiSolarWindow.length > 0);
   assert(rep.pachaSynthesisMatrix.coreInsight.length > 0);
+  assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatIncaAndeanThreePachaAyniPrompt(rep);
   assert(prompt.includes('고대 잉카 안데스 코스몰로지 3대 파차 & 파차마마 아이니(Ayni) 호혜 조화'));
   assert(prompt.includes(rep.sacredAnimalTotem.animalKo));

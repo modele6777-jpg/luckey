@@ -13,7 +13,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const IBN_ARABI_WAHDAT_ENGINE_VERSION = '2.0.0';
+export const IBN_ARABI_WAHDAT_ENGINE_VERSION = '2.1.0';
 
 export interface PropheticHeartWisdom {
   prophetName: string;
@@ -53,6 +53,7 @@ export interface IbnArabiWahdatAlWujudReport {
   ibnArabiMysticGuidance: string; // 이븐 아라비 영적 잠언
   heartMirrorContemplation: string; // 심장 거울 관조 리추얼
   boundaryNotice: string;
+  interpretiveBoundary: string;
 }
 
 const PROPHETIC_WISDOMS_BASE: Omit<PropheticHeartWisdom, 'innerAlignmentScore'>[] = [
@@ -201,6 +202,7 @@ export function calculateIbnArabiWahdatAlWujud(
     ibnArabiMysticGuidance,
     heartMirrorContemplation,
     boundaryNotice: '안달루시아 수피즘 이븐 아라비의 영지주의 상징을 빌려 온 정성적 성찰 관점이며, 종교적 단정이나 의학적·재정적 처방이 아닙니다.',
+    interpretiveBoundary: '안달루시아 수피즘 이븐 아라비의 영지주의 상징을 빌려 온 정성적 성찰 관점이며, 종교적 단정이나 의학적·재정적 처방이 아닙니다.',
   };
 }
 
