@@ -5,12 +5,12 @@
  * 《실용주의(Pragmatism, 1907)》, 《신념의 의지(The Will to Believe, 1897)》, 《심리학의 원리(The Principles of Psychology, 1890)》,
  * 《종교적 경험의 다양성(The Varieties of Religious Experience, 1902)》 원전 기반.
  *
- * @version LUCKEY-WILLIAM-JAMES-PRAGMATISM-v2.1.0
+ * @version LUCKEY-WILLIAM-JAMES-PRAGMATISM-v2.2.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const AMERICAN_WILLIAM_JAMES_VERSION = 'LUCKEY-WILLIAM-JAMES-PRAGMATISM-v2.1.0';
+export const AMERICAN_WILLIAM_JAMES_VERSION = 'LUCKEY-WILLIAM-JAMES-PRAGMATISM-v2.2.0';
 
 export type JamesQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -72,6 +72,8 @@ export interface AmericanWilliamJamesPragmatismResult {
   jamesSynthesisMatrix: JamesSynthesisMatrix;
   dailyPracticeRitual: string;
   reflectiveQuestion: string;
+  ritualAction: string;
+  reflectionFocus: string;
   interpretiveBoundary: string;
   jamesComprehensiveGuidance: {
     guidanceTitle: string;
@@ -362,6 +364,8 @@ export function calculateAmericanWilliamJamesPragmatism(
     jamesSynthesisMatrix,
     dailyPracticeRitual: topicExtras.dailyPracticeRitual,
     reflectiveQuestion: topicExtras.reflectiveQuestion,
+    ritualAction: topicExtras.dailyPracticeRitual,
+    reflectionFocus: topicExtras.reflectiveQuestion,
     interpretiveBoundary,
     jamesComprehensiveGuidance: {
       guidanceTitle,

@@ -2855,6 +2855,7 @@ test('Akashic Records Oracle Engine: 아카식 레코드 영혼 서약 & 카르�
   assert(res.soulOrigin.originSystem.length > 0);
   assert(res.soulContract.primaryLesson.length > 0);
   assert(res.akashicAccessMantra.length > 0);
+  assert(res.ritualAction.length > 0 && res.reflectionFocus.length > 0);
   assert(res.interpretiveBoundary.length > 0);
   assert(res.soulClarityIndex >= 0 && res.soulClarityIndex <= 100);
   const prompt = formatAkashicRecordsOraclePrompt(res);
@@ -3319,6 +3320,7 @@ test('Alchemical Transmutation Engine: calculates 7 stages and 4 opus phases', (
   assert(rep.situationalAlchemicalAudit.hermeticQuote.length > 0);
   assert(rep.temporalOpusRhythm.alchemicalHourWindow.length > 0);
   assert(rep.opusSynthesisMatrix.synthesizedVerdict.length > 0);
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatAlchemicalTransmutationPrompt(rep);
   assert(prompt.includes('연금술 7단계 영혼 변환'));
@@ -7328,6 +7330,7 @@ test('William James Pragmatism Will to Believe Engine: calculates Cash-Value, Wi
   assert(rep.pluralisticOpennessScore >= 0 && rep.pluralisticOpennessScore <= 100);
   assert(rep.healthyMindedResilienceIndex >= 0 && rep.healthyMindedResilienceIndex <= 100);
   assert(rep.activeJamesTheme.themeTitleKo.length > 0);
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatAmericanWilliamJamesPragmatismPrompt(rep);
   assert(prompt.includes('윌리엄 제임스 《실용주의》 & 《신념의 의지》 실천적 현금가치 지표'));
   assert(prompt.includes(rep.activeJamesTheme.themeTitleKo));
