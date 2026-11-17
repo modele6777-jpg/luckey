@@ -8,7 +8,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const FRENCH_ALBERT_CAMUS_VERSION = 'LUCKEY-ALBERT-CAMUS-ABSURD-REVOLT-v2.1.0';
+export const FRENCH_ALBERT_CAMUS_VERSION = 'LUCKEY-ALBERT-CAMUS-ABSURD-REVOLT-v2.2.0';
 
 export type CamusQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -70,6 +70,8 @@ export interface AlbertCamusAbsurdRevoltResult {
   questionTopic: CamusQuestionTopic;
   dailyPracticeRitual: string;
   reflectiveQuestion: string;
+  ritualAction: string;
+  reflectionFocus: string;
   interpretiveBoundary: string;
   camusComprehensiveGuidance: {
     guidanceTitle: string;
@@ -365,6 +367,8 @@ export function calculateAlbertCamusAbsurdRevolt(
     questionTopic,
     dailyPracticeRitual: qualitativePractice.dailyPracticeRitual,
     reflectiveQuestion: qualitativePractice.reflectiveQuestion,
+    ritualAction: qualitativePractice.dailyPracticeRitual,
+    reflectionFocus: qualitativePractice.reflectiveQuestion,
     interpretiveBoundary: qualitativePractice.interpretiveBoundary,
     camusComprehensiveGuidance: {
       guidanceTitle,
