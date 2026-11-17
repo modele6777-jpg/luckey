@@ -1,10 +1,10 @@
 {
-  "version": "1.7.766",
-  "builtAt": "2026-11-18T05:04:00+09:00",
-  "summary": "델포이 킬론·엘레우시스 트립톨레모스·에피쿠로스 사중 처방전 3대 엔진 성찰 질문 연동(v1.7.766)",
+  "version": "1.7.767",
+  "builtAt": "2026-11-18T05:10:00+09:00",
+  "summary": "마의상법 12궁 관상, 맹자 사단사덕·호연지기, 왕양명 치양지·지행합일 3대 엔진 실천 의례 및 성찰 질문 표준 연동(v1.7.767)",
   "items": [
-    "델포이 7현인 킬론 자기성찰(ancientGreekDelphicChilonKnowThyselfEngine v2.3.0): 질문 반응형 reflectiveQuestion 추가 및 의례·성찰 질문 프롬프트 출력 연동",
-    "엘레우시스 비전 트립톨레모스(ancientGreekEleusinianTriptolemosEngine v2.3.0): 질문 반응형 reflectiveQuestion 추가 및 의례·성찰 질문 프롬프트 출력 연동",
-    "에피쿠로스 테트라파르마코스(ancientGreekEpicureanTetrapharmakosEngine v2.4.0): 질문 반응형 reflectiveQuestion 추가 및 프롬프트 출력 연동"
+    "마의상법 12궁 관상 & 심상합일 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동",
+    "맹자 사단사덕 & 호연지기 양기 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동",
+    "왕양명 전습록 치양지 & 지행합일 심학 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동"
   ]
 }
