@@ -17,7 +17,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const EGYPTIAN_DECANS_VERSION = 'LUCKEY-EGYPTIAN-DECANS-v2.3.0';
+export const EGYPTIAN_DECANS_VERSION = 'LUCKEY-EGYPTIAN-DECANS-v2.4.0';
 
 export interface DecanSituationalAudit {
   navigationAxis: string;
@@ -67,6 +67,7 @@ export interface EgyptianThirtySixDecansReport {
   decanAltarPrescription: string;      // 데칸 제단 일상 개운 행동
   ritualAction: string;
   reflectionFocus: string;
+  reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
 
@@ -304,6 +305,7 @@ export function calculateEgyptianThirtySixDecans(params: {
     decanAltarPrescription,
     ritualAction,
     reflectionFocus,
+    reflectiveQuestion: reflectionFocus,
     interpretiveBoundary: '덴데라 36데칸 천문 상징을 빌린 정성적 성찰 참고 관점이며, 개인 점수나 확정 예언이 아닙니다.',
   };
 }
@@ -324,5 +326,6 @@ export function formatEgyptianThirtySixDecansPrompt(report: EgyptianThirtySixDec
 - **천구 교차 매트릭스**: ${report.decanSynthesisMatrix.birthTransitLink}
 - **누트(Nut) 천구 항해 지침**: ${report.spiritualNavigationGuidance}
 - **데칸 제단 일상 개운 행동**: ${report.decanAltarPrescription}
+- **질문 맞춤 성찰 질문**: ${report.reflectiveQuestion}
 - **해석 경계**: 덴데라 36데칸 천문 상징을 빌린 정성적 성찰 참고 관점이며, 개인 점수나 확정 예언이 아닙니다.`;
 }

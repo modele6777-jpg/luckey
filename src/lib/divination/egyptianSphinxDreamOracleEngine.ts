@@ -8,7 +8,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const EGYPTIAN_SPHINX_DREAM_ORACLE_ENGINE_VERSION = 'LUCKEY-EGYPTIAN-SPHINX-v2.3.0';
+export const EGYPTIAN_SPHINX_DREAM_ORACLE_ENGINE_VERSION = 'LUCKEY-EGYPTIAN-SPHINX-v2.4.0';
 
 export interface SphinxVirtue {
   nameKo: string;
@@ -60,6 +60,7 @@ export interface EgyptianSphinxDreamOracleReport {
   reHorakhtyDawnCommand: string;
   ritualAction: string;
   reflectionFocus: string;
+  reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
 
@@ -270,6 +271,7 @@ export function calculateEgyptianSphinxDreamOracle(options?: {
     reHorakhtyDawnCommand,
     ritualAction,
     reflectionFocus,
+    reflectiveQuestion: reflectionFocus,
     interpretiveBoundary: '투트모세 4세 꿈의 비석과 스핑크스 4대 테트라모르프 상징을 빌린 정성적 조망 참고 관점이며, 개인 점수나 확정 예언이 아닙니다.',
   };
 }
@@ -292,5 +294,6 @@ export function formatEgyptianSphinxDreamOraclePrompt(rep: EgyptianSphinxDreamOr
 · 꿈의 비석 신성 약조: ${rep.thutmosePromise}
 · 스핑크스 수수께끼 해법: ${rep.sphinxRiddleInsight}
 · 레-호라크티 여명 행동 명령: ${rep.reHorakhtyDawnCommand}
+· 질문 맞춤 성찰 질문: ${rep.reflectiveQuestion}
 · 해석 경계: 투트모세 4세 꿈의 비석과 스핑크스 4대 테트라모르프 상징을 빌린 정성적 조망 참고 관점이며, 개인 점수나 확정 예언이 아닙니다.`;
 }
