@@ -16,7 +16,7 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const ELEMENTAL_RESONANCE_VERSION = 'LUCKEY-RESON-v2.2.0';
+export const ELEMENTAL_RESONANCE_VERSION = 'LUCKEY-RESON-v2.3.0';
 
 export type ElementName = '목' | '화' | '토' | '금' | '수';
 
@@ -83,6 +83,7 @@ export interface ElementalResonanceResult {
   interpretiveBoundary: string;
   ritualAction: string;
   reflectionFocus: string;
+  reflectiveQuestion: string;
   summary: string;
 }
 
@@ -131,7 +132,7 @@ function getTemporalElementalRhythm(now: Date) {
           : '겨울 · 수기(水氣) 응축절 (내면의 지혜와 체력을 조용히 기르는 시기)';
 
   return {
-    kstTimeLabel: `${y}-${m}-${d} ${hh}:${mm} KST`,
+    kstTimeLabel: `${y}-${m}-${d}T${hh}:${mm}:00+09:00 (KST)`,
     cycleWatchWindow,
     seasonalElementTone,
     temporalGuidance: `${cycleWatchWindow} · ${seasonalElementTone}의 흐름에 맞추어 부족한 오행 기운을 가볍게 보충하십시오.`,
@@ -321,6 +322,7 @@ export function calculateElementalResonance(params?: {
     interpretiveBoundary: '본 결과는 사주 오행의 상생·순환 구조를 바탕으로 한 정성적 컨디션 참고 안내이며, 확정적 길흉 판정이 아닙니다.',
     ritualAction,
     reflectionFocus,
+    reflectiveQuestion: reflectionFocus,
     summary
   };
 }
@@ -345,6 +347,7 @@ export function formatElementalResonancePrompt(res: ElementalResonanceResult): s
   • 생기 푸드: ${res.amplifier.amplifierFood}
   • 1분 점화 행동: ${res.amplifier.amplifierActivity}
   • 발현 아우라: ${res.amplifier.resonanceAura}
+- 질문 맞춤 성찰 질문: ${res.reflectiveQuestion}
 - 해석 경계: ${res.boundaryNotice}
 ※ 루시 지침: 오행은 단순한 운세 풀이가 아니라 내 몸과 지성을 움직이는 5대 생체 원소입니다. 에너지가 한곳에 고이지 않고 부드럽게 상생하며 흐를 때 최상의 컨디션과 문제 해결력이 터져 나옵니다. 사용자가 오늘 부족한 기운을 가벼운 컬러나 생활 습관으로 가볍게 채워 넣을 수 있도록 감각적인 팁으로 제안해 주세요.`;
 }

@@ -11127,3 +11127,29 @@ test('Eleusinian Mysteries v2.2 · Etheric Aura v2.3 · Feng Shui Eight Mansions
   const fengshuiPrompt = formatFengShuiEightMansionsPrompt(fengshui);
   assert.ok(fengshuiPrompt.includes('+09:00') && fengshuiPrompt.includes('질문 맞춤 성찰 질문') && fengshuiPrompt.includes('해석 경계'));
 });
+
+test('Biorhythm v2.3 · Chakra Vibration v2.3 · Elemental Resonance v2.3: reflectiveQuestion & +09:00 KST prompt output', () => {
+  const now = new Date('2026-11-18T07:35:00+09:00');
+  const query = '지친 컨디션을 회복하고 오늘 집중할 리듬을 찾고 싶어요';
+
+  const bio = calculateBiorhythmPeakFlow({ profile, targetDate: now, question: query });
+  assert.equal(bio.engineVersion, BIORHYTHM_PEAK_FLOW_VERSION);
+  assert.match(bio.calculatedAtKst, /\+09:00/);
+  assert.ok(bio.reflectiveQuestion.includes(query));
+  const bioPrompt = formatBiorhythmPeakFlowPrompt(bio);
+  assert.ok(bioPrompt.includes('+09:00') && bioPrompt.includes('질문 맞춤 성찰 질문') && bioPrompt.includes('해석 경계'));
+
+  const chakra = calculateChakraVibrationAlignment({ profile, targetDate: now, question: query });
+  assert.equal(chakra.engineVersion, CHAKRA_ALIGNMENT_VERSION);
+  assert.match(chakra.calculatedAtKst, /\+09:00/);
+  assert.ok(chakra.reflectiveQuestion.includes(query));
+  const chakraPrompt = formatChakraVibrationAlignmentPrompt(chakra);
+  assert.ok(chakraPrompt.includes('+09:00') && chakraPrompt.includes('질문 맞춤 성찰 질문') && chakraPrompt.includes('해석 경계'));
+
+  const elemental = calculateElementalResonance({ profile, targetDate: now, question: query });
+  assert.equal(elemental.engineVersion, ELEMENTAL_RESONANCE_VERSION);
+  assert.match(elemental.calculatedAtKst, /\+09:00/);
+  assert.ok(elemental.reflectiveQuestion.includes(query));
+  const elementalPrompt = formatElementalResonancePrompt(elemental);
+  assert.ok(elementalPrompt.includes('+09:00') && elementalPrompt.includes('질문 맞춤 성찰 질문') && elementalPrompt.includes('해석 경계'));
+});

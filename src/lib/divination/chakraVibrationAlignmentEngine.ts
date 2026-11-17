@@ -22,7 +22,7 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const CHAKRA_ALIGNMENT_VERSION = 'LUCKEY-CHAKRA-v2.2.0';
+export const CHAKRA_ALIGNMENT_VERSION = 'LUCKEY-CHAKRA-v2.3.0';
 
 export interface SingleChakraInfo {
   id: string;
@@ -72,6 +72,7 @@ export interface ChakraVibrationAlignmentReport {
   boundaryNotice: string;
   ritualAction: string;
   reflectionFocus: string;
+  reflectiveQuestion: string;
   interpretiveBoundary: string;
   synthesisPromptGuidance: string;
 }
@@ -105,7 +106,7 @@ function getTemporalChakraRhythm(now: Date) {
           : '겨울 · 물라다라 수기(水氣) 응축 주기 (깊은 뿌리와 생명력을 조용히 기르는 시기)';
 
   return {
-    kstTimeLabel: `${y}-${m}-${d} ${hh}:${mm} KST`,
+    kstTimeLabel: `${y}-${m}-${d}T${hh}:${mm}:00+09:00 (KST)`,
     chakraWatchWindow,
     seasonalPranaTone,
     temporalGuidance: `${chakraWatchWindow} · ${seasonalPranaTone}의 결에 맞추어 호흡의 리듬을 고르게 유지하십시오.`,
@@ -278,6 +279,10 @@ export function runChakraVibrationAlignmentEngine(
     .map((c) => `  * ${c.koreanName}: ${c.status} (${c.theme})`)
     .join('\n');
 
+  const reflectionFocus = q
+    ? `‘${q}’ 앞에서 [${primaryFocusChakra.name}]의 막힘을 풀기 위해 오늘 내가 몸과 마음에서 가장 먼저 내려놓을 긴장은 무엇인가요?`
+    : `[${primaryFocusChakra.name}]의 막힘을 풀기 위해 오늘 내가 몸과 마음에서 가장 먼저 내려놓을 긴장은 무엇인가요?`;
+
   const synthesisPromptGuidance = `[LUCKEY 7대 차크라 파동 정렬 & 에너지 퀀텀 밸런싱 ${CHAKRA_ALIGNMENT_VERSION}]
 - 연산 시각: ${temporalChakraRhythm.kstTimeLabel}
 - 1순위 집중 치유 차크라: [${primaryFocusChakra.name}] (${chosenChakra.status})
@@ -292,6 +297,7 @@ export function runChakraVibrationAlignmentEngine(
 - 7대 차크라 상태 요약:
 ${chakrasSummary}
 - 쿤달리니 정렬 호흡법: [${kundaliniBreathingPrescription.techniqueName} ${kundaliniBreathingPrescription.durationMinutes}분] ${kundaliniBreathingPrescription.instruction}
+- 질문 맞춤 성찰 질문: ${reflectionFocus}
 - 해석 경계: ${boundaryNotice}`;
 
   return {
@@ -307,7 +313,8 @@ ${chakrasSummary}
     chakraSynthesisMatrix,
     boundaryNotice,
     ritualAction: situationalChakraAudit.groundingStep,
-    reflectionFocus: `[${primaryFocusChakra.name}]의 막힘을 풀기 위해 오늘 내가 몸과 마음에서 가장 먼저 내려놓을 긴장은 무엇인가요?`,
+    reflectionFocus,
+    reflectiveQuestion: reflectionFocus,
     interpretiveBoundary: boundaryNotice,
     synthesisPromptGuidance
   };

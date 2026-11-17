@@ -16,7 +16,7 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const BIORHYTHM_PEAK_FLOW_VERSION = 'LUCKEY-BIOFLOW-v2.2.0';
+export const BIORHYTHM_PEAK_FLOW_VERSION = 'LUCKEY-BIOFLOW-v2.3.0';
 
 export type ChronotypeType = 
   | '사자형 (Lion · 새벽형 몰입 개척자)'
@@ -69,6 +69,7 @@ export interface BiorhythmPeakFlowReport {
   };
   ritualAction: string;
   reflectionFocus: string;
+  reflectiveQuestion: string;
   boundaryNotice: string;
   interpretiveBoundary: string;
   synthesisPromptGuidance: string;
@@ -103,7 +104,7 @@ function getTemporalBioRhythm(now: Date) {
           : '겨울 · 동절기 에너지 보존기 (수면 시간을 충분히 확보하고 오전 빛 노출을 늘리는 시기)';
 
   return {
-    kstTimeLabel: `${y}-${m}-${d} ${hh}:${mm} KST`,
+    kstTimeLabel: `${y}-${m}-${d}T${hh}:${mm}:00+09:00 (KST)`,
     currentPhaseWindow,
     seasonalCircadianTone,
     temporalGuidance: `${currentPhaseWindow} · ${seasonalCircadianTone}의 흐름에 맞추어 하루의 에너지 배분을 조율하십시오.`,
@@ -243,6 +244,10 @@ export function runBiorhythmPeakFlowEngine(
 
   const boundaryNotice = '본 결과는 고전 생체리듬 주기와 크로노타입 모델을 활용한 정성적 컨디션 페이싱 참고용이며, 의학적 진단이 아닙니다.';
 
+  const reflectionFocus = q
+    ? `‘${q}’ 상황에서 ${situationalBioAudit.focusTheme} 흐름을 살리기 위해 오늘 가장 소모적인 일정 하나를 비운다면 무엇을 남기겠습니까?`
+    : `${situationalBioAudit.focusTheme} 흐름 속에서 오늘 가장 소모적인 일정 하나를 비운다면 무엇을 남기겠습니까?`;
+
   const synthesisPromptGuidance = `[LUCKEY 3대 생체 바이오리듬 & 크로노타입 황금 피크 ${BIORHYTHM_PEAK_FLOW_VERSION}]
 - 연산 시각: ${temporalBioRhythm.kstTimeLabel}
 - 크로노타입: ${chronotype}
@@ -258,6 +263,7 @@ export function runBiorhythmPeakFlowEngine(
   * [전략적 결단/협상] ${goldenWindows.strategicDecisionPeak}
   * [재충전 리셋] ${goldenWindows.rechargeWindow}
 - 바이오해킹 행동 처방: ${biohackingPrescription.circadianLightAction}
+- 질문 맞춤 성찰 질문: ${reflectionFocus}
 - 해석 경계: ${boundaryNotice}`;
 
   return {
@@ -279,7 +285,8 @@ export function runBiorhythmPeakFlowEngine(
     temporalBioRhythm,
     bioSynthesisMatrix,
     ritualAction: biohackingPrescription.circadianLightAction,
-    reflectionFocus: `${situationalBioAudit.focusTheme} 흐름 속에서 오늘 가장 소모적인 일정 하나를 비운다면 무엇을 남기겠습니까?`,
+    reflectionFocus,
+    reflectiveQuestion: reflectionFocus,
     boundaryNotice,
     interpretiveBoundary: boundaryNotice,
     synthesisPromptGuidance
