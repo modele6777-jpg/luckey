@@ -28,7 +28,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const CELTIC_OGHAM_VERSION = 'LUCKEY-CELTIC-OGHAM-v2.1.0';
+export const CELTIC_OGHAM_VERSION = 'LUCKEY-CELTIC-OGHAM-v2.2.0';
 
 export interface OghamTree {
   nameOgham: string;
@@ -75,6 +75,8 @@ export interface CelticTreeOghamReport {
   oghamSynthesisMatrix: OghamSynthesisMatrix;
   treeMedicinePrescription: string;
   natureAttunementAffirmation: string;
+  ritualAction: string;
+  reflectionFocus: string;
   interpretiveBoundary: string;
 }
 
@@ -385,6 +387,8 @@ export function calculateCelticTreeOgham(
     oghamSynthesisMatrix,
     treeMedicinePrescription,
     natureAttunementAffirmation,
+    ritualAction: situationalOghamAudit.druidMedicineAction,
+    reflectionFocus: `${birthGuardianTree.nameTreeKo}의 뿌리와 ${seasonalOracleTree.nameTreeKo}의 계절 기운 사이에서 지금 내가 가지치기할 미련은 무엇인가요?`,
     interpretiveBoundary
   };
 }
