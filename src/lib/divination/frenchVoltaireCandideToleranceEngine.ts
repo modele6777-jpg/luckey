@@ -14,7 +14,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const FRENCH_VOLTAIRE_CANDIDE_TOLERANCE_VERSION = 'LUCKEY-VOLTAIRE-CANDIDE-TOLERANCE-v2.0.0';
+export const FRENCH_VOLTAIRE_CANDIDE_TOLERANCE_VERSION = 'LUCKEY-VOLTAIRE-CANDIDE-TOLERANCE-v2.1.0';
 
 export type VoltaireQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -62,6 +62,8 @@ export interface FrenchVoltaireCandideToleranceResult {
   questionContextGuide: string;
   dailyPracticeRitual: string;
   reflectiveQuestion: string;
+  ritualAction: string;
+  reflectionFocus: string;
   interpretiveBoundary: string;
   voltaireSynthesisMatrix?: {
     dominantTension: string;
@@ -291,6 +293,8 @@ export function calculateFrenchVoltaireCandideTolerance(
     questionContextGuide: topicPack.guide,
     dailyPracticeRitual: topicPack.ritual,
     reflectiveQuestion: topicPack.question,
+    ritualAction: topicPack.ritual,
+    reflectionFocus: topicPack.question,
     interpretiveBoundary: '본 관점은 볼테르의 《캉디드》와 《관용론》 사상을 바탕으로 일상의 실천과 열린 시선을 돕는 상징적 안내이며, 우열의 점수나 확정적 예언이 아닙니다.',
     voltaireSynthesisMatrix,
   };
