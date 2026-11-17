@@ -1,9 +1,10 @@
 {
-  "version": "1.7.796",
-  "builtAt": "2026-11-18T07:35:00+09:00",
-  "summary": "아이폰 듀오 펼침 시 단일 화면 고정 및 터치 먹통 오류 수복(v1.7.796)",
+  "version": "1.7.797",
+  "builtAt": "2026-11-18T07:38:00+09:00",
+  "summary": "바이오리듬 피크·차크라 진동 정렬·오행 공명 3대 엔진 성찰 질문 보강 및 카탈로그 뜻 등록(v1.7.797)",
   "items": [
-    "perfMode.ts: 펼침 직후 innerWidth 지연 시 visualViewport·clientWidth 반영 및 ResizeObserver·지연 재측정 보강",
-    "App.tsx·LeftSidebarNav.tsx·LucyStandalonePage.tsx: 펼침 전환 시 뷰포트 박스 재동기화, DOM ID 경합 해소, 잔여 터치 잠금 상태 초기화"
+    "바이오리듬 피크(biorhythmPeakFlowEngine v2.3.0): +09:00 KST 표기·질문 반응형 reflectiveQuestion 추가·카탈로그 summary 등록",
+    "차크라 진동 정렬(chakraVibrationAlignmentEngine v2.3.0): +09:00 KST 표기·질문 반응형 reflectiveQuestion 추가·카탈로그 summary 등록",
+    "오행 생극 공명(elementalResonanceEngine v2.3.0): +09:00 KST 표기·질문 반응형 reflectiveQuestion 프롬프트 연동"
   ]
 }
