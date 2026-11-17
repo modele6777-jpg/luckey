@@ -19,7 +19,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const DESCARTES_COGITO_VERSION = 'LUCKEY-DESCARTES-COGITO-v2.1.0';
+export const DESCARTES_COGITO_VERSION = 'LUCKEY-DESCARTES-COGITO-v2.2.0';
 
 export type DescartesQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -62,6 +62,7 @@ export interface FrenchDescartesCogitoResult {
   practiceGuidance: string;
   ritualAction: string;
   reflectionFocus: string;
+  reflectiveQuestion: string;
   boundaryNotice: string;
   interpretiveBoundary: string;
   descartesSynthesisMatrix: {
@@ -252,7 +253,11 @@ export function calculateFrenchDescartesCogito(
   const boundaryNotice = '데카르트 철학 해석은 명석판명한 사유 정리와 실천적 결단을 돕는 상징·성찰 관점이며, 확정적 미래 예언이나 의학적 진단이 아닙니다.';
   const baseDate = now ?? new Date();
   const kst = new Date(baseDate.getTime() + 9 * 60 * 60 * 1000);
-  const kstTimeLabel = `${temporalDescartesRhythm.kstDateLabel} ${String(kst.getUTCHours()).padStart(2, '0')}:${String(kst.getUTCMinutes()).padStart(2, '0')} KST`;
+  const kstTimeLabel = `${temporalDescartesRhythm.kstDateLabel}T${String(kst.getUTCHours()).padStart(2, '0')}:${String(kst.getUTCMinutes()).padStart(2, '0')}:00+09:00 (KST)`;
+  const qText = (query ?? '').trim();
+  const reflectiveQuestion = qText
+    ? `‘${qText}’ 앞에서 추측과 선입견을 걷어내고 명석판명(Clara et Distincta)하게 확인할 사실 한 가지는 무엇입니까?`
+    : topicGuidance.reflectionFocus;
   const descartesSynthesisMatrix = {
     coreInsight: activeMethodRule.ruleNameKo,
     recommendedAction: topicGuidance.practiceGuidance,
@@ -273,7 +278,8 @@ export function calculateFrenchDescartesCogito(
     focalProvisionalMoralRule,
     practiceGuidance: topicGuidance.practiceGuidance,
     ritualAction: topicGuidance.ritualAction,
-    reflectionFocus: topicGuidance.reflectionFocus,
+    reflectionFocus: reflectiveQuestion,
+    reflectiveQuestion,
     boundaryNotice,
     interpretiveBoundary: boundaryNotice,
     descartesSynthesisMatrix,
@@ -297,7 +303,7 @@ export function formatFrenchDescartesCogitoPrompt(res: FrenchDescartesCogitoResu
     `- 행동 태도 지침: ${res.focalProvisionalMoralRule.counselForAction}`,
     `- 질문 맞춤 실천 가이드: ${res.practiceGuidance}`,
     `- 일상 실천 의례: ${res.ritualAction}`,
-    `- 핵심 성찰 질문: ${res.reflectionFocus}`,
+    `- 질문 맞춤 성찰 질문: ${res.reflectiveQuestion}`,
     `- 교차 매트릭스: 핵심(${res.descartesSynthesisMatrix.coreInsight}) | 실행(${res.descartesSynthesisMatrix.recommendedAction}) | 주의(${res.descartesSynthesisMatrix.cautionNotice})`,
     `- 철학적 직관 지침: ${res.descartesPhilosophicalCounsel.philosophicalGuidance}`,
     `- 해석 경계: ${res.boundaryNotice}`,

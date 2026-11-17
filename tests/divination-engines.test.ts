@@ -11156,3 +11156,29 @@ test('Biorhythm v2.3 · Chakra Vibration v2.3 · Elemental Resonance v2.3: refle
   const elementalPrompt = formatElementalResonancePrompt(elemental);
   assert.ok(elementalPrompt.includes('+09:00') && elementalPrompt.includes('질문 맞춤 성찰 질문') && elementalPrompt.includes('해석 경계'));
 });
+
+test('Destiny Synastry v2.3 · Five Emotions v2.3 · Descartes v2.2: reflectiveQuestion & +09:00 KST prompt output', () => {
+  const now = new Date('2026-11-18T07:50:00+09:00');
+  const query = '복잡한 관계와 갈등 속에서 흔들리지 않는 기준을 세우고 싶어요';
+
+  const synastry = calculateDestinySynastryEcho({ profile, targetDate: now, question: query });
+  assert.equal(synastry.engineVersion, DESTINY_SYNASTRY_ECHO_VERSION);
+  assert.match(synastry.calculatedAtKst, /\+09:00/);
+  assert.ok(synastry.reflectiveQuestion.includes(query));
+  const synastryPrompt = formatDestinySynastryEchoPrompt(synastry);
+  assert.ok(synastryPrompt.includes('+09:00') && synastryPrompt.includes('질문 맞춤 성찰 질문') && synastryPrompt.includes('해석 경계'));
+
+  const emotions = calculateFiveEmotionsPulse(profile, now, query);
+  assert.equal(emotions.engineVersion, FIVE_EMOTIONS_PULSE_VERSION);
+  assert.match(emotions.calculatedAtKst, /\+09:00/);
+  assert.ok(emotions.reflectiveQuestion.includes(query));
+  const emotionsPrompt = formatFiveEmotionsPulsePrompt(emotions);
+  assert.ok(emotionsPrompt.includes('+09:00') && emotionsPrompt.includes('질문 맞춤 성찰 질문') && emotionsPrompt.includes('해석 경계'));
+
+  const descartes = calculateFrenchDescartesCogito(profile, query, now);
+  assert.equal(descartes.engineVersion, DESCARTES_COGITO_VERSION);
+  assert.match(descartes.calculatedAtKst, /\+09:00/);
+  assert.ok(descartes.reflectiveQuestion.includes(query));
+  const descartesPrompt = formatFrenchDescartesCogitoPrompt(descartes);
+  assert.ok(descartesPrompt.includes('+09:00') && descartesPrompt.includes('질문 맞춤 성찰 질문') && descartesPrompt.includes('해석 경계'));
+});

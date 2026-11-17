@@ -16,7 +16,7 @@
 import type { UserProfile } from '../sharedState';
 import { calculateDetailedSaju, type SajuAnalysisResult } from '../sajuAnalysis';
 
-export const FIVE_EMOTIONS_PULSE_VERSION = 'LUCKEY-FIVE-EMOTIONS-v2.2.0';
+export const FIVE_EMOTIONS_PULSE_VERSION = 'LUCKEY-FIVE-EMOTIONS-v2.3.0';
 
 export type TraditionalEmotion = '노(怒-분노/추진)' | '희(喜-환희/산만)' | '사(思-사색/번민)' | '비우(悲憂-슬픔/위축)' | '공경(恐驚-공포/불안)';
 
@@ -67,6 +67,7 @@ export interface FiveEmotionsPulseReport {
   interpretiveBoundary: string;
   ritualAction: string;
   reflectionFocus: string;
+  reflectiveQuestion: string;
 }
 
 function getTemporalPulseRhythm(now: Date) {
@@ -98,7 +99,7 @@ function getTemporalPulseRhythm(now: Date) {
           : '겨울 · 신수(腎水) 저장기 (불안을 내려놓고 따뜻한 휴식으로 정기를 비축하는 시기)';
 
   return {
-    kstTimeLabel: `${y}-${m}-${d} ${hh}:${mm} KST`,
+    kstTimeLabel: `${y}-${m}-${d}T${hh}:${mm}:00+09:00 (KST)`,
     organMeridianWindow,
     seasonalEmotionTone,
     temporalGuidance: `${organMeridianWindow} · ${seasonalEmotionTone}의 흐름에 맞추어 칠정의 중화(中和)를 살피십시오.`,
@@ -303,6 +304,7 @@ export function calculateFiveEmotionsPulse(
     interpretiveBoundary: '본 결과는 한의학 황제내경의 오행·칠정 상징 이론을 활용한 정성적 심신 성찰 안내이며, 의학적 진단이 아닙니다.',
     ritualAction,
     reflectionFocus,
+    reflectiveQuestion: reflectionFocus,
   };
 }
 
@@ -335,6 +337,7 @@ ${pulsesStr}
   • 호흡법: ${rep.balancingPrescription.breathingMethod}
   • 식생 권장: ${rep.balancingPrescription.dietaryAdvice}
   • 행동 강령: ${rep.balancingPrescription.mindDirectives}
+- 질문 맞춤 성찰 질문: ${rep.reflectiveQuestion}
 - 해석 경계: ${rep.boundaryNotice}
 ※ 상담 시 내담자의 말투와 감정 기복이 위 기혈 맥파(${rep.dominantEmotion})와 어떻게 공명하는지 짚어주고, 현실적인 심신 이완 조언을 부드럽게 곁들여주세요.`;
 }
