@@ -221,6 +221,9 @@ const TOPIC_GUIDANCE: Record<EmersonQuestionTopic, {
 
 function classifyQuestionTopic(question?: string): EmersonQuestionTopic {
   const q = (question ?? '').toLowerCase();
+  if (/이직|창업|사업|계약|진로|시험|합격|투자/.test(q)) {
+    return 'decision';
+  }
   if (/연애|사랑|결혼|이별|사람|관계|친구|가족|동료|상사|평판|눈치|갈등/.test(q)) {
     return 'relationship';
   }

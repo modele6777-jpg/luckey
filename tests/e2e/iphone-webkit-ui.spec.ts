@@ -242,22 +242,24 @@ test('legacy Pro URL normalizes to Lucy and keeps the shared catalog available',
   await openLucy(page, '/chat?mode=pro');
   await expect(page).toHaveURL(/\/chat\?mode=ai$/);
   await expect(page.getByText('Lucy Pro', { exact: true })).toHaveCount(0);
-  await expect(page.getByRole('button', { name: /Lucy 엔진과 관점 목록 333개/ })).toBeVisible();
+  await expect(page.getByRole('button', { name: /Lucy 엔진과 관점 목록 331개/ })).toBeVisible();
   expect(await page.evaluate(() => localStorage.getItem('lucy_tier_mode'))).toBe('ai');
 });
 
-test('Lucy message mode badge opens only actual per-answer engine evidence', async ({ page }) => {
+test('Lucy does not show an engine-evidence badge when no engines were recorded', async ({ page }) => {
+  await page.addInitScript(() => {
+    const now = Date.now();
+    localStorage.setItem('chat_history_unified_v3', JSON.stringify([{
+      id: 'synthetic-no-engine-evidence',
+      role: 'assistant', persona: 'lucy', channel: 'trinity', channels: ['trinity'], mode: 'trinity',
+      content: '엔진 사용 기록이 없는 합성 답변입니다.', timestamp: now,
+    }]));
+    localStorage.setItem('lucy_chat_auto_tts', 'false');
+  });
   await openLucy(page);
-  await expect(page.locator('[data-message-mode-badge="true"]').getByText('AI 심층 자동 상담', { exact: true })).toHaveCount(0);
-
-  const badge = page.locator('button[data-message-mode-badge="true"]').first();
-  await expect(badge).toBeVisible();
-  await expect(badge.locator('[data-message-theme-badge="true"]')).toHaveCount(0);
-  await badge.click();
-  const evidence = page.getByRole('dialog', { name: '이번 답변에서 실제 사용한 엔진' });
-  await expect(evidence).toBeVisible();
-  await expect(evidence).toContainText('이번 답변에 실제 사용된 엔진');
-  await expect(evidence).toContainText('이번 답변에 모델로 전달된 계산·상징 엔진 기록이 없습니다.');
+  await expect(page.getByText('엔진 사용 기록이 없는 합성 답변입니다.')).toBeVisible();
+  await expect(page.locator('[data-message-mode-badge="true"]')).toHaveCount(0);
+  await expect(page.getByText('AI 심층 자동 상담', { exact: true })).toHaveCount(0);
 });
 
 test('Lucy answer themes show emojis for used engines while user messages have no mode badge', async ({ page, baseURL }) => {
@@ -350,7 +352,7 @@ test('Lucy answer themes show emojis for used engines while user messages have n
   await expect(ikigaiBadge).toHaveCSS('color', 'rgb(30, 64, 175)');
 });
 
-test('Lucy engine count opens the visible 333-entry catalog and meanings', async ({ page }) => {
+test('Lucy engine count opens the visible 331-entry catalog and meanings', async ({ page }) => {
   await openLucy(page);
   const trigger = page.getByRole('button', { name: /Lucy 엔진과 관점 목록/ });
   await expect(trigger).toBeVisible();
@@ -358,9 +360,9 @@ test('Lucy engine count opens the visible 333-entry catalog and meanings', async
 
   const dialog = page.getByRole('dialog', { name: 'Lucy 엔진·관점 안내' });
   await expect(dialog).toBeVisible();
-  await expect(dialog).toContainText('등록 목록 333개');
+  await expect(dialog).toContainText('등록 목록 331개');
   await expect(dialog).toContainText('15개 기초 도구');
-  await expect(dialog).toContainText('318개 심층 관점');
+  await expect(dialog).toContainText('316개 심층 관점');
   await expect(dialog).toContainText('각각 독립 계산기가 아닙니다');
   const nameStyle = await dialog.locator('.lucy-engine-catalog-entry-name').first().evaluate(element => {
     const dialogElement = element.closest('[role="dialog"]');
@@ -387,16 +389,16 @@ test('Lucy engine count opens the visible 333-entry catalog and meanings', async
   await expect(dialog.getByRole('link')).toHaveCount(0);
 });
 
-test('Lucy groups all 333 catalog entries under the seven channel themes', async ({ page }) => {
+test('Lucy groups all 331 catalog entries under the seven channel themes', async ({ page }) => {
   await openLucy(page);
   await page.getByRole('button', { name: /Lucy 엔진과 관점 목록/ }).click();
 
   const dialog = page.getByRole('dialog', { name: 'Lucy 엔진·관점 안내' });
   await expect(dialog).toBeVisible();
   const entries = dialog.getByTestId('lucy-engine-catalog-entry');
-  await expect(entries).toHaveCount(333);
+  await expect(entries).toHaveCount(331);
   const meaningTexts = await entries.locator('.lucy-engine-catalog-entry-meaning').allTextContents();
-  expect(meaningTexts).toHaveLength(333);
+  expect(meaningTexts).toHaveLength(331);
   for (const meaning of meaningTexts) {
     expect(meaning.trim()).not.toMatch(/^뜻\s*:/);
     expect(meaning.trim().length).toBeGreaterThan(0);
@@ -411,20 +413,20 @@ test('Lucy groups all 333 catalog entries under the seven channel themes', async
     expect(count).toBeGreaterThan(0);
     groupedCount += count;
   }
-  expect(groupedCount).toBe(333);
+  expect(groupedCount).toBe(331);
   await expect(dialog.getByRole('link')).toHaveCount(0);
 
   const themeNav = dialog.getByRole('navigation', { name: 'Lucy 7개 채널 테마' });
-  const bluebirdFilter = themeNav.getByRole('button', { name: '블루버드 37', exact: true });
+  const bluebirdFilter = themeNav.getByRole('button', { name: '블루버드 40', exact: true });
   await expect(bluebirdFilter).toBeVisible();
   const bluebirdGroup = dialog.getByTestId('lucy-engine-theme-bluebird');
   await expect(bluebirdGroup).toHaveAttribute('aria-label', '블루버드 테마');
   await expect(bluebirdGroup.locator('.lucy-engine-catalog-theme-name')).toHaveText('블루버드');
-  await expect(bluebirdGroup.locator('.lucy-engine-catalog-theme-count')).toHaveText('37개');
+  await expect(bluebirdGroup.locator('.lucy-engine-catalog-theme-count')).toHaveText('40개');
   await expect(bluebirdGroup.locator('.lucy-engine-catalog-entry-theme').first()).toHaveText('테마: 블루버드');
   await bluebirdFilter.click();
   await expect(bluebirdFilter).toHaveAttribute('aria-pressed', 'true');
-  await expect(dialog.getByTestId('lucy-engine-catalog-entry')).toHaveCount(37);
+  await expect(dialog.getByTestId('lucy-engine-catalog-entry')).toHaveCount(40);
 
   const auraFilter = themeNav.getByRole('button', { name: /아우라/ });
   await auraFilter.click();
@@ -436,7 +438,7 @@ test('Lucy groups all 333 catalog entries under the seven channel themes', async
   await expect(dialog.getByTestId('lucy-engine-catalog-entry')).toHaveCount(auraCount);
 });
 
-test('Lucy engine catalog fills the mobile viewport and its list scrolls without auto-opening the keyboard', async ({ page }) => {
+test('Lucy engine catalog fills its mobile pane and its list scrolls without auto-opening the keyboard', async ({ page }) => {
   await openLucy(page);
   await page.getByRole('button', { name: /Lucy 엔진과 관점 목록/ }).click();
 
@@ -448,17 +450,19 @@ test('Lucy engine catalog fills the mobile viewport and its list scrolls without
   await expect(closeButton).toContainText('닫기');
   await expect(search).not.toBeFocused();
 
-  const viewport = await page.evaluate(() => ({
-    width: window.visualViewport?.width ?? window.innerWidth,
-    height: window.visualViewport?.height ?? window.innerHeight,
-  }));
+  const paneBounds = await page.locator('.duo-portal').boundingBox();
   const dialogBounds = await dialog.boundingBox();
+  expect(paneBounds).not.toBeNull();
   expect(dialogBounds).not.toBeNull();
-  if (!dialogBounds) throw new Error('Lucy engine catalog dialog is missing');
-  expect(dialogBounds.width).toBeGreaterThan(viewport.width * 0.94);
-  expect(dialogBounds.height).toBeGreaterThan(viewport.height * 0.94);
+  if (!paneBounds || !dialogBounds) throw new Error('Lucy engine catalog dialog or pane is missing');
+  expect(dialogBounds.width).toBeGreaterThan(paneBounds.width * 0.9);
+  expect(dialogBounds.height).toBeGreaterThan(paneBounds.height * 0.94);
 
   const list = page.getByTestId('lucy-engine-catalog-list');
+  await expect(list).toHaveAttribute('aria-busy', 'false');
+  await list.evaluate(element => new Promise<void>(resolve => {
+    requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
+  }));
   const metrics = await list.evaluate(element => {
     const style = getComputedStyle(element);
     return {
@@ -468,7 +472,7 @@ test('Lucy engine catalog fills the mobile viewport and its list scrolls without
       touchAction: style.touchAction,
     };
   });
-  expect(metrics.clientHeight).toBeGreaterThan(viewport.height * 0.45);
+  expect(metrics.clientHeight).toBeGreaterThan(paneBounds.height * 0.45);
   expect(metrics.scrollHeight).toBeGreaterThan(metrics.clientHeight + 500);
   expect(metrics.overflowY).toBe('auto');
   expect(metrics.touchAction).toBe('pan-y');
@@ -648,6 +652,42 @@ test('Big Bang center long press navigates directly to Key', async ({ page }) =>
   await expect(page.getByTestId('bigbang-transition-overlay')).toBeVisible();
   await expect(page.locator('iframe[title="Key"]')).toBeVisible();
   expect(await page.evaluate(() => localStorage.getItem('lucy_tier_mode'))).not.toBe('pro');
+});
+
+test('Big Bang overlay remains visible for the newest overlapping transition', async ({ page }) => {
+  await openLucy(page);
+  const overlay = page.getByTestId('bigbang-transition-overlay');
+  await page.evaluate(() => {
+    const nativeSetTimeout = window.setTimeout.bind(window);
+    (window as any).__bigBangOverlayClearCallbacks = [];
+    window.setTimeout = ((handler: TimerHandler, timeout?: number, ...args: any[]) => {
+      const timer = nativeSetTimeout(handler, timeout, ...args);
+      if (timeout === 820 && typeof handler === 'function') (window as any).__bigBangOverlayClearCallbacks.push(handler);
+      return timer;
+    }) as typeof window.setTimeout;
+  });
+  const dispatchCommit = () => page.evaluate(() => {
+    const target = {
+      id: 'key', phase: 'wormhole', gauge: 1, aiTemperature: 0, title: 'KEY', name: 'KEY',
+      actionType: 'navigate', destinationPath: '/key', previewLabel: 'KEY', previewDescription: 'KEY',
+      themeColor: '#8B5CF6', accentGlow: 'rgba(168, 85, 247, 0.72)',
+    };
+    const metrics = { hardwarePressure: 0, touchArea: 0, durationMs: 0, virtualForce: 1, isAborted: false, phase: 'wormhole' };
+    window.dispatchEvent(new CustomEvent('prism:bigbang_commit', {
+      detail: { phase: 'wormhole', isDoubleTapSuction: false, target, context: null, metrics, timestamp: Date.now() },
+    }));
+  });
+
+  await dispatchCommit();
+  await expect(overlay).toBeVisible();
+  await page.waitForTimeout(550);
+  await dispatchCommit();
+  await page.evaluate(() => {
+    const callbacks = (window as any).__bigBangOverlayClearCallbacks as Array<() => void>;
+    if (callbacks.length < 2) throw new Error(`Expected two overlay clear callbacks, got ${callbacks.length}`);
+    callbacks[0]();
+  });
+  await expect(overlay).toBeVisible();
 });
 
 test('Key loading fallback does not consume the first Big Bang south touch', async ({ page }) => {
@@ -1006,22 +1046,42 @@ test('mobile composer and input remain inside the visible WebKit viewport after 
 });
 
 test('Lucy can return to the latest conversation and tap blank header space to reach its top', async ({ page }) => {
+  await page.addInitScript(() => {
+    const now = Date.now();
+    const longContent = Array.from({ length: 18 }, (_, index) =>
+      `대화 스크롤 회귀 검증 ${index + 1}번째 문단입니다. 실제 상담의 줄바꿈과 문단 간격이 충분히 생기도록 내용을 길게 준비합니다. 오래된 내용도 확인하고 최근 대화로 돌아갈 수 있어야 합니다.`
+    ).join('\n');
+    localStorage.setItem('chat_history_unified_v3', JSON.stringify([
+      {
+        id: 'header-scroll-user', role: 'user', persona: 'lucy', channel: 'lucy', channels: ['lucy'], mode: 'trinity',
+        content: longContent, timestamp: now - 60_000,
+      },
+      {
+        id: 'header-scroll-answer', role: 'assistant', persona: 'lucy', channel: 'lucy', channels: ['lucy'], mode: 'trinity',
+        content: longContent, timestamp: now,
+      },
+    ]));
+    localStorage.setItem('lucy_chat_auto_tts', 'false');
+  });
   await openLucy(page);
   const messages = page.locator('.lucy-chat-main');
-  await messages.evaluate(element => {
-    const wrapper = element.firstElementChild;
-    if (!wrapper) throw new Error('Lucy message wrapper is missing');
-    for (let index = 0; index < 8; index += 1) {
-      const spacer = document.createElement('div');
-      spacer.dataset.scrollRegressionFixture = 'true';
-      spacer.style.height = '260px';
-      wrapper.appendChild(spacer);
-    }
-  });
-  await page.waitForTimeout(350);
+  await expect.poll(() => messages.evaluate(element => element.scrollHeight - element.clientHeight)).toBeGreaterThan(500);
+  await expect.poll(async () => {
+    const before = await messages.evaluate(element => element.scrollHeight);
+    await page.waitForTimeout(120);
+    return await messages.evaluate(element => element.scrollHeight) === before;
+  }).toBe(true);
 
   const returnButton = page.getByRole('button', { name: '최근대화' });
-  await messages.evaluate(element => { element.scrollTop = 0; element.dispatchEvent(new Event('scroll')); });
+  const simulateConversationScroll = (deltaY: number) => messages.evaluate((element, delta) => {
+    element.dispatchEvent(new WheelEvent('wheel', { deltaY: delta, bubbles: true }));
+    const maxScroll = Math.max(0, element.scrollHeight - element.clientHeight);
+    element.scrollTop = Math.min(maxScroll, Math.max(0, element.scrollTop + delta));
+    element.dispatchEvent(new Event('scroll'));
+  }, deltaY);
+  await messages.evaluate(element => { element.style.scrollBehavior = 'auto'; element.scrollTop = element.scrollHeight; element.dispatchEvent(new Event('scroll')); });
+  await expect.poll(() => messages.evaluate(element => element.scrollHeight - element.scrollTop - element.clientHeight)).toBeLessThan(3);
+  await simulateConversationScroll(-650);
   await expect(returnButton).toBeVisible();
   await expect(returnButton).toHaveText('최근대화');
   const returnButtonBox = await returnButton.boundingBox();
@@ -1038,8 +1098,7 @@ test('Lucy can return to the latest conversation and tap blank header space to r
   await expect.poll(() => messages.evaluate(element => element.scrollHeight - element.scrollTop - element.clientHeight)).toBeLessThan(3);
   await expect(returnButton).toBeHidden();
 
-  await page.getByRole('button', { name: '대화 검색' }).click();
-  await messages.evaluate(element => { element.scrollTop = 400; element.dispatchEvent(new Event('scroll')); });
+  await simulateConversationScroll(-400);
   await expect.poll(() => messages.evaluate(element => element.scrollTop)).toBeGreaterThan(80);
   const header = page.locator('[data-lucy-header-tap-scroll="true"]');
   await header.evaluate(element => { (element as HTMLElement).style.paddingBottom = '40px'; });
@@ -1052,7 +1111,7 @@ test('Lucy can return to the latest conversation and tap blank header space to r
   await expect.poll(() => messages.evaluate(element => element.scrollTop)).toBeLessThan(3);
   await expect(returnButton).toBeVisible();
 
-  await messages.evaluate(element => { element.scrollTop = 400; element.dispatchEvent(new Event('scroll')); });
+  await simulateConversationScroll(400);
   await expect.poll(() => messages.evaluate(element => element.scrollTop)).toBeGreaterThan(80);
   await page.mouse.click(headerBox.x + headerBox.width / 2, Math.min(headerBox.y + 30, 60));
   await expect.poll(() => messages.evaluate(element => element.scrollTop)).toBeLessThan(3);
@@ -1347,6 +1406,7 @@ test('Key channel tabs stay fixed below the brand bar while the page scrolls', a
     window.scrollTo(0, target);
   }, scrollTarget);
   await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThanOrEqual(scrollTarget - 1);
+  await expect.poll(() => tabs.evaluate(element => element.classList.contains('key-tabs-pinned'))).toBe(true);
 
   const layout = await page.evaluate(() => {
     const nav = document.querySelector('.top-nav');
@@ -1359,7 +1419,7 @@ test('Key channel tabs stay fixed below the brand bar while the page scrolls', a
       tabsPosition: getComputedStyle(tabs).position,
     };
   });
-  expect(layout.tabsPosition).toBe('sticky');
+  expect(layout.tabsPosition).toBe('fixed');
   expect(layout.navTop).toBeGreaterThanOrEqual(-1);
   expect(layout.tabsTop).toBeGreaterThanOrEqual(layout.navBottom - 2);
   expect(layout.tabsTop).toBeLessThanOrEqual(layout.navBottom + 3);

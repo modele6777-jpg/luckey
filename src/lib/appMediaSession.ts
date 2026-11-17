@@ -1,6 +1,6 @@
 import { setAppAudioActive, setSpeechAudioActive, applyAudioMixingPolicy } from './audioMixingPolicy';
 
-/** Track app audio; only explicit TTS owns background/lock-screen controls. */
+/** Track in-app audio without taking ownership of OS-wide media controls. */
 export type MediaSessionOwner = 'bgm' | 'tts';
 
 export type AppAudioAction = string;
@@ -15,50 +15,7 @@ export interface AppMediaSessionConfig {
 
 const sessionConfigs: Partial<Record<MediaSessionOwner, AppMediaSessionConfig>> = {};
 
-const installedSpeechActions = new Map<string, () => void>();
-let publishedSpeech = false;
-let publishedTitle = '';
-let publishedArtist = '';
-
-/** BGM never replaces external controls. TTS releases ownership when it ends. */
-function publishSpeechControls(config: AppMediaSessionConfig | undefined): void {
-  if (typeof navigator === 'undefined' || !navigator.mediaSession) return;
-  const media = navigator.mediaSession;
-  if (!config) {
-    if (!publishedSpeech) return;
-    for (const action of installedSpeechActions.keys()) {
-      try { media.setActionHandler(action as MediaSessionAction, null); } catch { /* unsupported */ }
-    }
-    installedSpeechActions.clear();
-    media.playbackState = 'none';
-    media.metadata = null;
-    publishedSpeech = false;
-    publishedTitle = publishedArtist = '';
-    return;
-  }
-  publishedSpeech = true;
-  if (typeof MediaMetadata !== 'undefined' && (publishedTitle !== config.title || publishedArtist !== config.artist)) {
-    media.metadata = new MediaMetadata({ title: config.title, artist: config.artist });
-    publishedTitle = config.title;
-    publishedArtist = config.artist;
-  }
-  media.playbackState = config.state;
-  const next = config.actions || {};
-  for (const action of installedSpeechActions.keys()) {
-    if (typeof next[action] !== 'function') {
-      try { media.setActionHandler(action as MediaSessionAction, null); } catch { /* unsupported */ }
-      installedSpeechActions.delete(action);
-    }
-  }
-  for (const [action, handler] of Object.entries(next)) {
-    if (!handler || installedSpeechActions.get(action) === handler) continue;
-    try {
-      media.setActionHandler(action as MediaSessionAction, handler);
-      installedSpeechActions.set(action, handler);
-    } catch { /* unsupported OS control */ }
-  }
-}
-
+/** Keep BGM and TTS on nonexclusive ambient playback; leave OS controls to external players. */
 export function updateAppMediaSession(owner: MediaSessionOwner, config: AppMediaSessionConfig | null): void {
   if (config && (config.state === 'playing' || (owner === 'tts' && config.state === 'paused'))) {
     sessionConfigs[owner] = config;
@@ -73,5 +30,4 @@ export function updateAppMediaSession(owner: MediaSessionOwner, config: AppMedia
   const appAudioIsActive = Object.values(sessionConfigs).some((session) => session?.state === 'playing');
   setAppAudioActive(appAudioIsActive);
   applyAudioMixingPolicy();
-  publishSpeechControls(sessionConfigs.tts);
 }

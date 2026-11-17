@@ -612,6 +612,6 @@ export function formatTwentyEightMansionsPrompt(result: TwentyEightMansionsResul
 ${domainLines}
 - 종합 판정: ${result.overallVerdict}
 - 종합 개운 가이드: ${result.overallGuide}${matrixBlock}${reflectionBlock}${boundaryBlock}
-- [AI 해석 절대 지침]: 본 리포트는 율리우스적일 기준 28수 회귀 주기로 계산된 100% 확정 수리입니다. 직성 등급과 택일 권고일, 개운 행동 가이드를 충실히 반영해 상담하십시오.
+- [AI 해석 지침]: 본 리포트는 율리우스 적일 기준 28수 순환 규칙을 적용한 결정론 계산 참고 자료입니다. 영역별 등급은 규칙 기반 참고값이며 통계적 확률이나 길흉의 보장을 뜻하지 않습니다. 직성 등급과 택일 권고일, 행동 가이드는 확정 예언이 아닌 선택을 돕는 성찰 정보로 안내하십시오.
 `.trim();
 }

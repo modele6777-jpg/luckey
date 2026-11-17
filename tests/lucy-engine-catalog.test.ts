@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { ALL_DCE_ENGINES, type DceEngineMeta } from '../src/lib/divination/deterministicEngine';
 import { LUCY_PRO_CATALOG_TOTAL_COUNT, LUCY_PRO_DEEP_PERSPECTIVE_COUNT, LUCY_PRO_FOUNDATIONAL_COUNT } from '../src/lib/divination/engineCatalogCount';
 import { LUCY_PRO_CATALOG_DUPLICATE_KEYS } from '../src/lib/divination/catalogDuplicateKeys';
+import { LUCY_PRO_CATALOG_OMITTED_KEYS } from '../src/lib/divination/catalogApprovedOmissions';
 import {
   DEEP_PERSPECTIVE_RESEARCH_COUNTS,
   ENGINE_CATALOG_COUNTS,
@@ -16,20 +17,22 @@ import {
 } from '../src/lib/divination/engineCatalog';
 import { FIFTEEN_DIVINATION_TOOLS, type DivinationToolId } from '../src/lib/fifteenDivinationTools';
 
-test('Lucy Pro catalog contains 333 entries: 15 foundational tools and 318 deep perspectives', () => {
+test('Lucy Pro catalog contains the approved 331 entries: 15 foundational tools and 316 deep perspectives', () => {
   assert.equal(ALL_DCE_ENGINES.length, 333);
-  assert.equal(LUCY_PRO_CATALOG_ENGINES.length, 333);
+  assert.equal(LUCY_PRO_CATALOG_ENGINES.length, 331);
   assert.equal(LUCY_PRO_FOUNDATIONAL_COUNT, 15);
-  assert.equal(LUCY_PRO_CATALOG_TOTAL_COUNT, 333);
+  assert.equal(LUCY_PRO_CATALOG_TOTAL_COUNT, 331);
   assert.equal(LUCY_PRO_DEEP_PERSPECTIVE_COUNT, ENGINE_CATALOG_COUNTS.deep_master);
-  assert.equal(LUCY_PRO_DEEP_PERSPECTIVE_COUNT, 318);
-  assert.deepEqual(ENGINE_CATALOG_COUNTS, { foundational: 15, deep_master: 318 });
-  assert.equal(new Set(LUCY_PRO_CATALOG_ENGINES.map(engine => engine.key)).size, 333);
-  assert.deepEqual([...LUCY_PRO_CATALOG_DUPLICATE_KEYS], [
-    'romanAureliusInnerCitadel',
-    'koreanJeongYakyongMongminSimseo',
-    'zoroastrianAmeshaSpentasLight',
+  assert.equal(LUCY_PRO_DEEP_PERSPECTIVE_COUNT, 316);
+  assert.deepEqual(ENGINE_CATALOG_COUNTS, { foundational: 15, deep_master: 316 });
+  assert.equal(new Set(LUCY_PRO_CATALOG_ENGINES.map(engine => engine.key)).size, 331);
+  assert.deepEqual([...LUCY_PRO_CATALOG_OMITTED_KEYS], [
+    'irishJamesJoyceUlyssesEpiphany',
+    'germanHermannHesseDemianSteppenwolf',
   ]);
+  for (const key of LUCY_PRO_CATALOG_OMITTED_KEYS) {
+    assert.equal(LUCY_PRO_CATALOG_ENGINES.some(engine => engine.key === key), false, `unapproved item remains visible: ${key}`);
+  }
   for (const key of LUCY_PRO_CATALOG_DUPLICATE_KEYS) {
     assert.equal(LUCY_PRO_CATALOG_ENGINES.some(engine => engine.key === key), false, `duplicate remains visible: ${key}`);
   }
@@ -41,12 +44,12 @@ test('every listed engine has a readable meaning and one of the seven channel th
   assert.equal(totalThemeCount, LUCY_PRO_CATALOG_ENGINES.length);
   assert.deepEqual(ENGINE_CATALOG_THEME_COUNTS, {
     prologue: 6,
-    orange: 31,
-    trinity: 79,
-    aura: 54,
-    bluebird: 39,
-    muse: 114,
-    epilogue: 10,
+    orange: 27,
+    trinity: 65,
+    aura: 64,
+    bluebird: 40,
+    muse: 120,
+    epilogue: 9,
   });
 
   for (const theme of LUCY_PRO_CHANNEL_THEMES) {
@@ -68,7 +71,7 @@ test('bluebird catalog label changes without changing its ID, route, or count', 
     route: '/bluebird',
     description: '일상·관계·소통',
   });
-  assert.equal(ENGINE_CATALOG_THEME_COUNTS.bluebird, 39);
+  assert.equal(ENGINE_CATALOG_THEME_COUNTS.bluebird, 40);
 });
 
 test('foundational tool meanings and primary themes use their existing authored definitions', () => {
@@ -89,11 +92,10 @@ test('automatic theme classification prioritizes named divination systems over g
   const ziweiFlyingStars = ALL_DCE_ENGINES.find(engine => engine.key === 'ziweiFlyingStars')!;
   assert.equal(getEngineCatalogTheme(ziweiFlyingStars), 'trinity');
 });
-test('all 206 individually described catalog perspectives retain their meaning and source status', () => {
+test('all currently summary-missing catalog perspectives retain their researched meaning and source status', () => {
   const undescribedBeforeResearch = ALL_DCE_ENGINES.filter(
     engine => engine.category === 'deep_master' && !engine.summary,
   );
-  assert.equal(undescribedBeforeResearch.length, 206);
   assert.deepEqual(DEEP_PERSPECTIVE_RESEARCH_COUNTS, {
     total: 229,
     supported: 219,

@@ -188,7 +188,11 @@ export function isVisibleConversationMessage(m: UnifiedMessage | null | undefine
   return time <= now + 60_000 && formatLucyChatDay(new Date(time)) === getTodayDateKey(now);
 }
 
-export function retainRecentConversation(messages: UnifiedMessage[] | null | undefined, now = Date.now()): UnifiedMessage[] {
+export function retainRecentConversation(
+  messages: UnifiedMessage[] | null | undefined,
+  now = Date.now(),
+  preserveAssistantOnly = false,
+): UnifiedMessage[] {
   const source = Array.isArray(messages) ? messages : [];
   rememberChatDays(source);
   const visible = source
@@ -200,7 +204,7 @@ export function retainRecentConversation(messages: UnifiedMessage[] | null | und
     .sort((a, b) => messageTime(a) - messageTime(b));
   const greeting = visible.find((message) => isGreetingMessage(message));
   const conversation = visible.filter((message) => !isGreetingMessage(message)).slice(-RECENT_CONVERSATION_LIMIT);
-  if (!conversation.some((message) => message.role === 'user' && message.content)) {
+  if (!preserveAssistantOnly && !conversation.some((message) => message.role === 'user' && message.content)) {
     return greeting ? [greeting] : [];
   }
   return greeting ? [greeting, ...conversation] : conversation;
@@ -307,16 +311,14 @@ export function mergeUnifiedMessages(
   primary: UnifiedMessage[],
   incoming: UnifiedMessage[]
 ): UnifiedMessage[] {
-  const cleanPrimary = retainRecentConversation(primary);
-  const cleanIncoming = retainRecentConversation(incoming);
+  const cleanPrimary = retainRecentConversation(primary, Date.now(), true);
+  const cleanIncoming = retainRecentConversation(incoming, Date.now(), true);
 
   const hasPrimaryUser = hasRealUserConversation(cleanPrimary);
   const hasIncomingUser = hasRealUserConversation(cleanIncoming);
 
   // 오늘 실제 유저 대화가 아직 없는 경우: 항상 기본 루시 인사말 표시
-  if (!hasPrimaryUser && !hasIncomingUser) {
-    if (cleanPrimary.length > 0) return cleanPrimary;
-    if (cleanIncoming.length > 0) return cleanIncoming;
+  if (!hasPrimaryUser && !hasIncomingUser && cleanPrimary.length === 0 && cleanIncoming.length === 0) {
     return [createDefaultGreeting()];
   }
 
@@ -390,7 +392,7 @@ export function mergeUnifiedMessages(
 /** Restore newly saved messages even when the stored/current counts are equal.
  * Current overlapping messages win so an in-flight streamed reply cannot regress. */
 export function restoreLatestConversation(current: UnifiedMessage[], saved: UnifiedMessage[]): UnifiedMessage[] {
-  const merged = retainRecentConversation(mergeUnifiedMessages(saved, current));
+  const merged = retainRecentConversation(mergeUnifiedMessages(saved, current), Date.now(), true);
   if (merged.length === current.length && merged.every((message, index) =>
     message === current[index] || JSON.stringify(message) === JSON.stringify(current[index]))) return current;
   return merged;
@@ -403,7 +405,7 @@ export function loadSavedUnifiedMessages(): UnifiedMessage[] {
     if (savedV3) {
       const parsed = JSON.parse(savedV3);
       if (Array.isArray(parsed)) {
-        const recent = retainRecentConversation(parsed);
+        const recent = retainRecentConversation(parsed, Date.now(), true);
         if (recent.length > 0) return recent;
       }
     }
@@ -413,7 +415,7 @@ export function loadSavedUnifiedMessages(): UnifiedMessage[] {
     if (savedBackup) {
       const parsed = JSON.parse(savedBackup);
       if (Array.isArray(parsed)) {
-        const recent = retainRecentConversation(parsed);
+        const recent = retainRecentConversation(parsed, Date.now(), true);
         if (recent.length > 0) return recent;
       }
     }

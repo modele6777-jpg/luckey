@@ -6,12 +6,14 @@ import {
   type SevenThemeChannel,
 } from '../fifteenDivinationTools';
 import { LUCY_PRO_CATALOG_DUPLICATE_KEYS } from './catalogDuplicateKeys';
+import { LUCY_PRO_CATALOG_OMITTED_KEYS } from './catalogApprovedOmissions';
 
 /**
- * User-facing Lucy Pro catalog omits only confirmed duplicate entries from the runtime registry.
+ * Keep known duplicates and approved omissions out of the user-facing catalog.
  */
 export const LUCY_PRO_CATALOG_ENGINES = ALL_DCE_ENGINES.filter(
-  engine => !LUCY_PRO_CATALOG_DUPLICATE_KEYS.has(engine.key),
+  engine => !LUCY_PRO_CATALOG_DUPLICATE_KEYS.has(engine.key)
+    && !LUCY_PRO_CATALOG_OMITTED_KEYS.has(engine.key),
 );
 
 export const ENGINE_CATALOG_COUNTS = LUCY_PRO_CATALOG_ENGINES.reduce(

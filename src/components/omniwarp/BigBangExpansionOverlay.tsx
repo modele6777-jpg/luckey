@@ -24,12 +24,15 @@ export function BigBangExpansionOverlay() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const particlesRef = useRef<Particle[]>([]);
   const animFrameRef = useRef<number | null>(null);
+  const clearOverlayTimerRef = useRef<number | null>(null);
+  const clearOverlayGenerationRef = useRef(0);
 
   useEffect(() => {
     const handleCommit = (e: any) => {
       const detail = e.detail as BigBangCommitEventDetail;
       if (detail) {
-        setActiveCommit(detail);
+        const generation = ++clearOverlayGenerationRef.current;
+        if (clearOverlayTimerRef.current !== null) window.clearTimeout(clearOverlayTimerRef.current);
 
         // Spawn Big Bang particles from crystal orb origin (bottom-right button area)
         const canvas = canvasRef.current;
@@ -39,6 +42,7 @@ export function BigBangExpansionOverlay() {
         const globalY = btnRect ? (btnRect.top + btnRect.height / 2) : (window.innerHeight - 60);
         const originX = globalX >= bounds.left && globalX <= bounds.left + bounds.width ? globalX - bounds.left : bounds.width / 2;
         const originY = globalY >= bounds.top && globalY <= bounds.top + bounds.height ? globalY - bounds.top : bounds.height * 0.8;
+        setActiveCommit(detail);
         setOrigin({ x: originX, y: originY });
         const isWhitehole = detail.phase === 'whitehole' || (detail.phase === 'event_horizon' && detail.target?.eventHorizonMode === 'whitehole');
         const isBlackhole = detail.phase === 'blackhole' || (detail.phase === 'event_horizon' && detail.target?.eventHorizonMode === 'blackhole');
@@ -110,15 +114,19 @@ export function BigBangExpansionOverlay() {
         }
 
         // Clear overlay after transition animation completes
-        setTimeout(() => {
+        clearOverlayTimerRef.current = window.setTimeout(() => {
+          if (generation !== clearOverlayGenerationRef.current) return;
           setActiveCommit(null);
+          clearOverlayTimerRef.current = null;
         }, 820);
       }
     };
 
     window.addEventListener('prism:bigbang_commit', handleCommit);
     return () => {
+      clearOverlayGenerationRef.current += 1;
       window.removeEventListener('prism:bigbang_commit', handleCommit);
+      if (clearOverlayTimerRef.current !== null) window.clearTimeout(clearOverlayTimerRef.current);
     };
   }, []);
 

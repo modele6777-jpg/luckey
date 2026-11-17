@@ -819,7 +819,7 @@ export function formatAuspiciousStarsPrompt(res: AuspiciousStarsResult): string 
     ? `\n7. [귀인 교차 매트릭스]: ${res.nobleSynthesisMatrix.nobleStrengthSummary} · ${res.nobleSynthesisMatrix.timingResonanceLink}`
     : '';
 
-  return `[🌟 천을귀인·문창 길신(吉神) 매트릭스 및 인연 매칭 실측 데이터 (Auspicious Noble Stars & Resonance Core)]
+  return `[🌟 천을귀인·문창 길신(吉神) 매트릭스 및 인연 매칭 참고 결과 (Auspicious Noble Stars & Resonance Core)]
 ======================================================================
 엔진 버전: ${res.engineVersion} | 기준 명식: ${res.profileSummary.fourPillarsText}
 일간: ${res.profileSummary.dayMaster} | 년간: ${res.profileSummary.yearStem}
@@ -841,7 +841,7 @@ ${res.actionGuide.map((a, i) => `   ${i + 1}. ${a}`).join('\n')}${auditTxt}${tem
 ${res.reflectiveQuestion ? `성찰 질문: ${res.reflectiveQuestion}\n` : ''}해석 경계: ${res.interpretiveBoundary}
 ======================================================================
 [★ 루시 길신 상담 지침]:
-- 위 데이터는 결정론 엔진(${res.engineVersion})의 100% 수리 산출입니다. 길신의 위치(일지 천을 = 내 몸과 배우자궁, 년/월/시지 천을 = 사회·직업·말년)를 구분해 해석하세요.
+- 위 결과는 전통 명리 규칙을 적용한 결정론 계산 참고 자료이며, 현대 실측이나 검증된 예측 확률을 뜻하지 않습니다. 길신의 위치(일지 천을 = 내 몸과 배우자궁, 년/월/시지 천을 = 사회·직업·말년)는 제공된 계산 결과에 맞춰 설명하세요.
 - 공망·충형 간섭이 감지된 길신은 "귀인이 있으나 스스로의 준비가 길력을 살린다"는 방향으로 균형 있게 안내하고, 점수 수치 대신 발현 성질에 맞춰 들려주세요.
 - 귀인 도래 타임라인의 해를 사용자의 구체적 레버리지(이직, 계약, 투자, 발표, 시험)에 대입해 실행 로드맵으로 제안하세요.`;
 }

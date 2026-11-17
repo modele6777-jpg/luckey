@@ -287,7 +287,7 @@ export function calculateEgyptianHermeticCartouche(
   const boundaryNotice = '이는 고대 이집트 헤르메스주의 상징에 기반한 자기 성찰 참고일 뿐, 개인 점수·심리 진단·미래 예측이 아닙니다.';
 
   const synthesisPrompt = `
-[고대 이집트 헤르메스 카르투슈 & 영혼 3위일체 오라클 실측 데이터]
+[고대 이집트 헤르메스 카르투슈 & 영혼 3위일체 상징 성찰 안내]
 ======================================================================
 엔진 버전: ${EGYPTIAN_HERMETIC_CARTOUCHE_ENGINE_VERSION} | 기준 일시: ${temporalHermeticRhythm.kstTimeLabel} | 질문 맥락: ${questionFocus}
 ----------------------------------------------------------------------

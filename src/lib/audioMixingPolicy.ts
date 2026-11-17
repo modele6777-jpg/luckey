@@ -1,7 +1,4 @@
-/** TTS explicitly takes background-playback priority while it is speaking.
- * Other app audio remains ambient; release the priority on pause, stop or completion.
- * iOS may pause external music while TTS owns this playback session.
- */
+/** Keep Luckey audio nonexclusive; background continuation remains best-effort per platform. */
 let isAudioActive = false;
 let speechAudioActive = false;
 
@@ -12,7 +9,6 @@ export function setAppAudioActive(active: boolean): void {
 
 export function setSpeechAudioActive(active: boolean): void {
   speechAudioActive = active;
-  if (active) isAudioActive = true;
   applyAudioMixingPolicy();
 }
 
@@ -28,8 +24,7 @@ export function applyAudioMixingPolicy(): void {
   if (typeof navigator === 'undefined' || !('audioSession' in navigator)) return;
   try {
     const session = (navigator as Navigator & { audioSession?: { type: string } }).audioSession;
-    const desiredType = speechAudioActive ? 'playback' : 'ambient';
-    if (session && session.type !== desiredType) session.type = desiredType;
+    if (session && session.type !== 'ambient') session.type = 'ambient';
   } catch { /* AudioSession selection is unavailable on some browsers/iOS versions. */ }
 }
 

@@ -85,10 +85,10 @@ const FOURTEEN_KANDAMS = [
   {
     kandamNum: 6,
     name: '치유 & 장애 극복 칸담 (Roga & Shatru Kandam)',
-    theme: '만성 질환 해소, 부채 청산 및 방해자 무력화',
-    verse: '육체의 불균형을 신성한 약초와 올바른 호흡으로 다스리면, 어떤 어둠의 화살도 비껴가리라.',
-    pastKarma: '과로와 스트레스로 신체를 방치했던 카르마를 지혜로운 절제와 양생으로 갚아나가는 과정입니다.',
-    remedy: '소화기관을 정화하는 가벼운 식단을 유지하고, 마음속 원망을 품은 사람을 용서하십시오.',
+    theme: '건강 습관과 생활의 어려움에 대한 성찰, 재정·관계 대응의 점검',
+    verse: '몸의 불편이나 질병의 원인·치료는 상징 점괘로 판단할 수 없습니다. 생활의 돌봄을 돌아보고, 건강 문제는 의료 전문가와 상의하세요.',
+    pastKarma: '전통적 카르마 개념을 빌린 성찰 문구이며, 질병의 원인이나 개인의 책임을 설명하지 않습니다.',
+    remedy: '일상적인 식사·휴식 습관을 살피고, 지속되거나 걱정되는 증상이 있으면 의료 전문가와 상담하십시오.',
   },
   {
     kandamNum: 7,
@@ -217,29 +217,29 @@ export function calculateHinduNadiAgastyaPalmLeaf(options?: {
   };
 
   const synthesisPrompt = `
-[남인도 나디 점성술(Nadi Astrology) & 아가스티야 야자잎 14 칸담 실측 데이터]
+[남인도 나디 점성술(Nadi Astrology) & 아가스티야 야자잎 14 칸담 상징 성찰 자료]
 ======================================================================
 엔진 버전: ${HINDU_NADI_AGASTYA_PALM_LEAF_ENGINE_VERSION} | 기준 일시: ${calculatedAtKst}
 ----------------------------------------------------------------------
-1. 📜 [아가스티야 야자잎(Ola Leaves) 활성 칸담 & 지문 문양]:
-   - 활성 칸담: **제${kandam.kandamNum}칸담** [${kandam.name}]
+1. 📜 [아가스티야 전통에서 영감을 받은 상징 칸담]:
+   - 선택된 칸담(상징): **제${kandam.kandamNum}칸담** [${kandam.name}]
    - 보조 교차 칸담: **제${secondaryKandam.kandamNum}칸담** [${secondaryKandam.name}] (${secondaryKandam.theme})
    - 칸담 테마: **${kandam.theme}**
-   - 엄지 지문 카르마 문양: **${thumbPattern}**
-2. 🕉️ [싯다 아가스티야 성자의 신탁 잠언]:
+   - 입력값 기반 상징 문양: **${thumbPattern}**
+2. 🕉️ [전통에서 영감을 받은 상징 문구]:
    - "${kandam.verse}"
    - 보조 잠언: "${secondaryKandam.verse}"
-3. ☸️ [전생 카르마(Prarabdha Karma) & 샨티 해원 처방]:
-   - 전생 카르마 통찰: ${kandam.pastKarma}
-   - 🎯 샨티 파리카람(해원/개운 처방): **${kandam.remedy}**
-   - 다르마(Dharma) 성취 국면: **${describeNadiStage(dharmaFulfillmentIndex)}**
+3. ☸️ [카르마 성찰 & 일상 실천 참고]:
+   - 카르마를 돌아보는 성찰 문구: ${kandam.pastKarma}
+   - 🎯 일상 실천 참고: **${kandam.remedy}**
+   - 다르마(Dharma) 성찰 단계(상징): **${describeNadiStage(dharmaFulfillmentIndex)}**
 4. 🧭 [교차 매트릭스]:
    - 핵심 긴장: ${nadiSynthesisMatrix.dominantTension} | 조율 상태: ${nadiSynthesisMatrix.alignmentState}
    - 통합 실천: ${nadiSynthesisMatrix.integratedAction}
    - 성찰 질문: ${reflectiveQuestion}
    - 해석 경계: ${interpretiveBoundary}
 ======================================================================
-[AI 해석 절대 지침]: 본 리포트는 남인도 타밀 싯다 성자 아가스티야 무니의 야자잎 나디 점성술 14대 칸담 체계에 입각한 100% 결정론적 산출물입니다. 전생의 인과와 이번 생의 소명(Dharma), 그리고 구체적인 샨티 파리카람 처방을 상담자에게 온화하고 깊이 있는 성자의 어조로 전하십시오.
+[AI 해석 지침]: 본 리포트는 아가스티야 나디 전통에서 영감을 받은 앱 생성 상징 성찰 안내이며, 실제 야자잎 신탁, 전생 사실, 건강 상태·치료 또는 운명을 실측·검증·예측한 결과가 아닙니다. 수치와 칸담은 구현 규칙에 따른 참고값일 뿐 정확도·확률로 해석하지 마십시오. 건강 문제의 원인이나 책임을 카르마로 단정하지 말고, 증상이 지속되거나 걱정되면 의료 전문가와 상담하도록 안내하세요.
 `.trim();
 
   return {

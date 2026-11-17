@@ -152,7 +152,7 @@ function classifyMoreQuestionTopic(query?: string): MoreQuestionTopic {
   const q = (query ?? '').toLowerCase();
   if (/사랑|연애|관계|결혼|이별|가족|친구|갈등|사람|동료|부모/.test(q)) return 'relationship';
   if (/선택|결정|이직|사업|진로|시험|돈|투자|계약|시작|포기|방향/.test(q)) return 'decision';
-  if (/지치|힘들|불안|우울|상처|치유|위로|외로|슬픔|걱정|두려|피곤/.test(q)) return 'healing';
+  if (/지치|지친|쉼|쉬고|쉬어|힘들|불안|우울|상처|치유|위로|외로|슬픔|걱정|두려|피곤/.test(q)) return 'healing';
   return 'reflection';
 }
 

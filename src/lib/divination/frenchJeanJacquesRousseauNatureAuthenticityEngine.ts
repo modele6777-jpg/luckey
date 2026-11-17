@@ -138,7 +138,7 @@ function classifyRousseauQuestionTopic(question?: string): RousseauQuestionTopic
   if (!q) return 'reflection';
   if (/연애|사랑|관계|이별|결혼|재회|상대|사람|친구|가족|동료|마음|호감|갈등|연락/.test(q)) return 'relationship';
   if (/결정|선택|이직|창업|진로|시험|합격|투자|계약|진행|포기|방향|할까|말까/.test(q)) return 'decision';
-  if (/불안|우울|지침|피곤|상처|치유|위로|힘들|걱정|두려|잠|휴식|회복/.test(q)) return 'healing';
+  if (/불안|우울|지침|지치|피곤|상처|치유|위로|힘들|걱정|두려|잠|휴식|쉬고|쉬어|회복/.test(q)) return 'healing';
   return 'reflection';
 }
 

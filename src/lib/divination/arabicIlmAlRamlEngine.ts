@@ -307,7 +307,7 @@ export function calculateArabicIlmAlRaml(options?: {
   const boundaryNotice = '본 결과는 아라비아 일무 알-람말 16 형상 지오맨시 상징에 기반한 정성적 성찰 가이드이며, 확정적 예언이 아닙니다.';
 
   const synthesisPrompt = `
-[고대 아랍 일무 알-람말(‘Ilm al-Raml) 16 형상 & 지오맨시(Geomancy) 지혜 실측 데이터]
+[고대 아랍 일무 알-람말(‘Ilm al-Raml) 16 형상 & 지오맨시(Geomancy) 상징 성찰 참고]
 ======================================================================
 엔진 버전: ${ARABIC_ILM_AL_RAML_ENGINE_VERSION} | 기준 일시: ${temporalRamlRhythm.kstTimeLabel}
 ----------------------------------------------------------------------
@@ -327,7 +327,7 @@ export function calculateArabicIlmAlRaml(options?: {
    - 교차 매트릭스: 핵심(${ramlSynthesisMatrix.coreInsight}) | 실행(${ramlSynthesisMatrix.recommendedAction}) | 주의(${ramlSynthesisMatrix.cautionNotice})
    - 해석 경계: ${boundaryNotice}
 ======================================================================
-[AI 해석 절대 지침]: 본 리포트는 9세기 아랍 이슬람 황금기 및 중세 유럽 지오맨시 정통 16 형상 체계에 입각한 100% 결정론적 산출물입니다. 형상의 기운과 카디 판결, 현실 행동 지침을 결합하여 상담자에게 단호하고 명쾌한 지상(地上)의 나침반을 제공하십시오.
+[AI 해석 지침]: 본 리포트는 전통 16개 형상의 상징을 참고해 입력값과 구현된 규칙에 따라 구성한 앱의 성찰 안내이며, 실제 점술 의례나 검증된 확률·예측 결과가 아닙니다. 형상과 카디 판결은 문화적 참고로 설명하고 확정 예언처럼 표현하지 마십시오.
 `.trim();
 
   return {

@@ -612,7 +612,8 @@ test('Auspicious stars: 천을귀인 via year stem, kongwang/chung/hyeong interf
   const prompt=formatAuspiciousStarsPrompt(r);
   assert(prompt.includes(AUSPICIOUS_STARS_ENGINE_VERSION)&&prompt.includes('천을귀인')&&prompt.includes('공망')&&prompt.includes('해석 경계'));
   assert(r.interpretiveBoundary.length>0);
-  assert(!prompt.includes('/100')&&!prompt.includes('%'));
+  assert(!prompt.includes('/100')&&!prompt.includes('%')&&!prompt.includes('실측 데이터'));
+  assert(prompt.includes('계산 참고 자료')&&!prompt.includes('100% 수리 산출'));
 });
 test('Auspicious stars: resonance detects when the partner holds my noble branch; skips without profile',()=>{
   const r=calculateAuspiciousStars({profile:asProfile,targetYear:2026,partnerProfile:asProfile});
@@ -1009,6 +1010,8 @@ test('28 Mansions six-domain scoring: bounds, consistency, 28-day date selection
   assert(prompt.includes('교차 매트릭스'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
+  assert(prompt.includes('결정론 계산 참고 자료'));
+  assert(!prompt.includes('100% 확정 수리'));
   // 천문 3원, 4방신 신수 조화, 28일 순환 국면 검증
   assert(r.threeEnclosuresResonance?.celestialCourt !== undefined);
   assert(r.threeEnclosuresResonance!.resonanceScore >= 40 && r.threeEnclosuresResonance!.resonanceScore <= 98);
@@ -1275,7 +1278,7 @@ test('Vedic engine binds into the deterministic engine report and prompt', () =>
   assert.equal(report.vedicAdvancedResult!.nakshatra!.name, '우타라아샤다');
   assert.equal(report.tools.vedic.status, 'calculated');
   const prompt = formatDeterministicEnginePrompt(report);
-  assert(prompt.includes('LUCKEY-VD-v1.0.0'));
+  assert(prompt.includes(report.vedicAdvancedResult!.engineVersion));
   const noProfile = runDeterministicEngine({ profile: null });
   assert(noProfile.vedicAdvancedResult?.status === 'skipped');
 });
@@ -1465,7 +1468,9 @@ test('Thai Horasat engine: determinism, safe fallback, Wednesday-night note and 
   assert(prompt.includes('108년'));
   assert(prompt.includes('데차'));
   assert(prompt.includes('물(Nam)'));
-  assert(prompt.includes('AI 해석 절대 지침'));
+  assert(prompt.includes('AI 해석 지침'));
+  assert(prompt.includes('실측 정확도나 운명의 확정을 뜻하지 않습니다'));
+  assert(!prompt.includes('100% 확정 배속'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
   assert(THAI_HORASAT_METHOD.length > 0);
@@ -1491,9 +1496,9 @@ test('Thai Horasat engine binds into the deterministic engine report and prompt'
   assert.ok(report.thaiHorasatResult!.mahaThaksaAntardasha!.antardashaPlanetName.length > 0);
   assert(report.thaiHorasatResult!.seasonalThaatTactics !== null && report.thaiHorasatResult!.seasonalThaatTactics !== undefined);
   assert.ok(report.thaiHorasatResult!.seasonalThaatTactics!.peakActionSeason.length > 0);
-  assert(prompt.includes('호라삿 행성 친우·원수 역학'));
-  assert(prompt.includes('마하탁사 소운(Antardasha)'));
-  assert(prompt.includes('4대 원소(Thaat) 계절 결단 윈도우'));
+  assert(prompt.includes('planetaryFriendEnemyDynamic'));
+  assert(prompt.includes('mahaThaksaAntardasha'));
+  assert(prompt.includes('seasonalThaatTactics'));
   const noProfile = runDeterministicEngine({ profile: null });
   assert(noProfile.thaiHorasatResult?.status === 'skipped');
   assert.equal(noProfile.tools.thai_astrology.status, 'skipped');
@@ -1679,11 +1684,12 @@ test('Kabbalah engine: determinism, null-safe fallback and prompt formatting', (
   assert(!prompt.includes('라이프 패스 세피라: 7 → 게부라'));
   assert(prompt.includes('제17경로'));
   assert(prompt.includes('연인'));
-  assert(prompt.includes('자비(확장) 균형'));
+  assert(prompt.includes('자비(확장)'));
+  assert(prompt.includes('엄격(수축)'));
   assert(prompt.includes('예치라'));
   assert(prompt.includes('KST'));
-  assert(!prompt.includes('/100') && !prompt.includes('%') && !prompt.includes('점수'));
-  assert(prompt.includes('생년월일 게마트리아 수리로 산출된 확정 배속'));
+  assert(!prompt.includes('/100') && !prompt.includes('%'));
+  assert(prompt.includes('게마트리아 결과는 입력한 생년월일과 전통적 대응 규칙을 적용한 참고 자료'));
   assert.equal(formatKabbalahPrompt(skipped), '');
   assert(KABBALAH_METHOD.length > 0);
 });
@@ -1819,7 +1825,7 @@ test('Hongguk Qimen engine binds into the deterministic engine report and prompt
   assert.equal(report.honggukQimenResult!.engineVersion, HONGGUK_QIMEN_ENGINE_VERSION);
   assert.equal(report.tools.qimen.status, 'calculated'); // partial → calculated 승격
   const prompt = formatDeterministicEnginePrompt(report);
-  assert(prompt.includes('LUCKEY-HQ-v1.0.0'));
+  assert(prompt.includes(report.honggukQimenResult!.engineVersion));
   assert(prompt.includes('세효(世爻'));
   // 프로필 없이도 4주 수리는 skipped, 도구 상태는 점시 포국으로 calculated 유지
   const noProfile = runDeterministicEngine({ profile: null, question: '홍국기문으로 내 판세를 봐줘' });
@@ -1967,7 +1973,7 @@ test('Liuren Master Engine: 사과·삼전·12천장 정통 결단 산출 및 �
   assert(prompt.includes('삼전(三傳) 타임라인'));
   assert(prompt.includes('결단 기조'));
   assert(prompt.includes('사과 생극 역학'));
-  assert(prompt.includes('삼전 추진 역학'));
+  assert(prompt.includes('삼전(三傳) 타임라인 & 추진 역학'));
   assert(!prompt.includes('/100') && !prompt.includes('%') && !prompt.includes('점수'));
 });
 
@@ -3629,7 +3635,8 @@ test('Essene Communion Tree Engine: calculates morning/evening angels, tree trin
   const prompt = formatEsseneCommunionPrompt(rep);
   assert(prompt.includes('에세네파 14대 천사 교감 & 영혼 생명나무 조화 엔진'));
   assert(prompt.includes(rep.morningEarthlyAngel.koreanName));
-  assert(!prompt.includes('점'));
+  assert(!prompt.includes('/100') && !prompt.includes('%'));
+  assert(!/미토콘드리아|면역력|소화기관|폐와 뇌|혈관과 신경|자연 치유/.test(prompt));
 });
 
 test('Huangdi Five Movements & Six Qi Engine: calculates movements, heaven/earth rulers and medicine rx', () => {
@@ -3860,9 +3867,13 @@ test('Vedic Nakshatra 108 Pada Engine: calculates nakshatra, pada and dharma pat
   assert(rep.totalPadaIndex >= 1 && rep.totalPadaIndex <= 108);
   assert(rep.dharmaPathScore >= 0 && rep.dharmaPathScore <= 100);
   const prompt = formatVedicNakshatra108PadaPrompt(rep);
-  assert(prompt.includes('베다 27나크샤트라 & 108파다(Pada) 카르마 성좌 정밀 실측 데이터'));
+  assert(prompt.includes('상징 성찰 자료 · 천문 실측 아님'));
+  assert(prompt.includes('생년·출생 시각·이름 시드로 만든 상징'));
+  assert(prompt.includes('달의 경도·출생 장소를 계산하지 않습니다'));
+  assert(!prompt.includes('정밀 실측 데이터'));
+  assert(!prompt.includes('출생 나크샤트라 & 108 파다 위치'));
   assert(prompt.includes('+09:00 (KST)'));
-  assert(prompt.includes('대칭 보조 성좌'));
+  assert(prompt.includes('대칭 보조 나크샤트라(상징)'));
   assert(prompt.includes('성찰 질문'));
   assert(prompt.includes('해석 경계'));
   assert(prompt.includes(rep.nakshatraNameKo));
@@ -3901,10 +3912,10 @@ test('Egyptian Hermetic Cartouche Engine: calculates divine cartouche and qualit
   assert(rep.temporalHermeticRhythm.nileWatchWindow.length > 0);
   assert(rep.hermeticSynthesisMatrix.coreInsight.length > 0);
   const prompt = formatEgyptianHermeticCartouchePrompt(rep);
-  assert(prompt.includes('고대 이집트 헤르메스 카르투슈 & 영혼 3위일체 오라클 실측 데이터'));
+  assert(prompt.includes('고대 이집트 헤르메스 카르투슈 & 영혼 3위일체 상징 성찰 안내'));
   assert(prompt.includes(rep.primaryCartoucheName));
   assert(prompt.includes('KST'));
-  assert(!prompt.includes('/100') && !prompt.includes('%') && !prompt.includes('점수'));
+  assert(!prompt.includes('/100') && !prompt.includes('%'));
 });
 
 test('Taoist Gong Guo Ge Karma Engine: calculates merit domain and qualitative guidance', () => {
@@ -3932,8 +3943,10 @@ test('Yoruba Ifa Odu Engine: calculates 16 Meji Odu and Ebo guidance', () => {
   assert(rep.oduName.length > 0);
   assert(rep.destinyAlignmentScore >= 0 && rep.destinyAlignmentScore <= 100);
   const prompt = formatYorubaIfaOduPrompt(rep);
-  assert(prompt.includes('서아프리카 요루바 이파(Ifá) 16 오두 & 오룬밀라 운명의 지혜 실측 데이터'));
+  assert(prompt.includes('서아프리카 요루바 이파(Ifá) 16 오두 & 오룬밀라 운명의 지혜 정성 리포트'));
   assert(prompt.includes(rep.oduName));
+  assert(prompt.includes('전통 의례를 통한 실제 신탁'));
+  assert(prompt.includes('확정적 예언이 아닙니다'));
 });
 
 test('Arabic Ilm al-Raml Engine: calculates 16 geomantic figures and Qadi verdict', () => {
@@ -3946,9 +3959,11 @@ test('Arabic Ilm al-Raml Engine: calculates 16 geomantic figures and Qadi verdic
   assert(rep.ramlSynthesisMatrix.coreInsight.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatArabicIlmAlRamlPrompt(rep);
-  assert(prompt.includes('고대 아랍 일무 알-람말(‘Ilm al-Raml) 16 형상 & 지오맨시(Geomancy) 지혜 실측 데이터'));
+  assert(prompt.includes('고대 아랍 일무 알-람말(‘Ilm al-Raml) 16 형상 & 지오맨시(Geomancy) 상징 성찰 참고'));
   assert(prompt.includes(rep.figureNameLatin));
   assert(prompt.includes('KST'));
+  assert(prompt.includes('실제 점술 의례나 검증된 확률·예측 결과가 아닙니다'));
+  assert(!prompt.includes('100% 결정론적 산출물'));
   assert(!prompt.includes('/100') && !prompt.includes('%') && !prompt.includes('점수'));
 
   const brehon = calculateCelticBrehonLaw(profile, new Date('2026-11-15T08:15:00+09:00'), '계약 분쟁을 어떻게 풀어야 할까요?');
@@ -3968,9 +3983,11 @@ test('Hindu Nadi Agastya Palm Leaf Engine: calculates 14 Kandams and Shanti Pari
   assert(rep.calculatedAtKst.endsWith('KST'));
   assert(Boolean(rep.nadiSynthesisMatrix?.integratedAction));
   const prompt = formatHinduNadiAgastyaPalmLeafPrompt(rep);
-  assert(prompt.includes('남인도 나디 점성술(Nadi Astrology) & 아가스티야 야자잎 14 칸담 실측 데이터'));
+  assert(prompt.includes('남인도 나디 점성술(Nadi Astrology) & 아가스티야 야자잎 14 칸담 상징 성찰 자료'));
   assert(prompt.includes(rep.kandamName));
   assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('실제 야자잎 신탁'));
+  assert(prompt.includes('건강 문제의 원인이나 책임을 카르마로 단정하지 말고'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });
@@ -4049,10 +4066,11 @@ test('Jain Gunasthana Karma Engine: calculates 14 Gunasthanas and Ratnatraya bal
   assert(rep.temporalJainRhythm.samayikaWindow.length > 0);
   assert(rep.jainSynthesisMatrix.coreInsight.length > 0);
   const prompt = formatJainGunasthanaKarmaPrompt(rep);
-  assert(prompt.includes('고대 인도 자이나교 14 군아스타나 & 삼보(Ratnatraya) 카르마 실측 데이터'));
+  assert(prompt.includes('고대 인도 자이나교 14 군아스타나 & 삼보(Ratnatraya) 카르마 성찰 안내'));
   assert(prompt.includes(rep.activeStage.stageNameKo));
   assert(prompt.includes('KST'));
-  assert(!prompt.includes('/ 100') && !prompt.includes('점수') && !prompt.includes('점'));
+  assert(!prompt.includes('/100') && !prompt.includes('/ 100'));
+  assert(!/\d+\s*점(?:\s*\/\s*100)?/.test(prompt));
 });
 
 test('Celtic Awen Taliesin Engine: calculates Awen 3 rays and metamorphosis phase', () => {
@@ -4307,11 +4325,12 @@ test('Ancient Yarrow I Ching Probability Engine: calculates dominant yao and Day
   assert(rep.temporalYarrowRhythm.dayanWatchWindow.length > 0);
   assert(rep.yarrowSynthesisMatrix.coreInsight.length > 0);
   const prompt = formatAncientYarrowProbabilityPrompt(rep);
-  assert(prompt.includes('고대 중국 주역 대연지수 49책 시초점 확률 실측 데이터'));
+  assert(prompt.includes('고대 중국 주역 대연지수 49책 시초점 상징 수리 관점'));
   assert(prompt.includes(rep.yaoNameKo));
   assert(prompt.includes(rep.practiceGuidance));
   assert(prompt.includes('KST'));
-  assert(!prompt.includes('/100') && !prompt.includes('%') && !prompt.includes('점수'));
+  assert(!prompt.includes('/100') && !prompt.includes('%'));
+  assert(!/\d+\s*점(?:\s*\/\s*100)?/.test(prompt));
 });
 
 test('Vedic Pancha Kosha Engine: calculates 5 layers alignment and Atman realization index', () => {
@@ -4663,7 +4682,8 @@ test('Vedic Mandukya Turiya Engine: calculates four consciousness states, AUM re
   assert(rep.mayaIllusionDissolutionRate >= 0 && rep.mayaIllusionDissolutionRate <= 100);
   assert(rep.dominantState.nameKo.length > 0);
   const prompt = formatVedicMandukyaTuriyaPrompt(rep);
-  assert(prompt.includes('고대 인도 만두키야 우파니샤드 4대 의식 & 투리야(Turiya) 순수의식 실측 데이터'));
+  assert(prompt.includes('고대 인도 만두키야 우파니샤드 4대 의식 & 투리야(Turiya) 순수의식 정성 관조'));
+  assert(!prompt.includes('실측 데이터'));
   assert(prompt.includes(rep.dominantState.nameKo));
 });
 
@@ -4988,7 +5008,7 @@ test('Gaelic Wheel Four Fire Festivals Engine: calculates fire festival stations
   assert(rep.activeStation.nameKo.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatGaelicWheelFireFestivalsPrompt(rep);
-  assert(prompt.includes('휠 오브 더 이어 켈트 4대 화제 축제 실측 데이터'));
+  assert(prompt.includes('휠 오브 더 이어 켈트 4대 화제 축제 상징 관점'));
   assert(prompt.includes(rep.activeStation.nameKo));
   assert(!prompt.includes('/100') && !prompt.includes('%'));
 });
@@ -5116,7 +5136,8 @@ test('Inca Andean Three Pacha Ayni Engine: calculates three pachas, sacred recip
   assert(prompt.includes('고대 잉카 안데스 코스몰로지 3대 파차 & 파차마마 아이니(Ayni) 호혜 조화'));
   assert(prompt.includes(rep.sacredAnimalTotem.animalKo));
   assert(prompt.includes('KST'));
-  assert(!prompt.includes('/100') && !prompt.includes('%') && !prompt.includes('점수'));
+  assert(!prompt.includes('/100') && !prompt.includes('%'));
+  assert(!/\d+\s*점(?:\s*\/\s*100)?/.test(prompt));
 });
 
 test('Shang Oracle Bone Divination Engine: calculates oracle bone medium, diviner judgment and crack auspiciousness', () => {
@@ -5182,7 +5203,7 @@ test('Hindu Sri Yantra Sacred Geometry Engine: calculates Shiva-Shakti polaritie
   assert(prompt.includes('힌두 탄트라 스리 얀트라(Sri Yantra) 9대 나바요니 & 바인두 신성기하학'));
   assert(prompt.includes(rep.primaryAvaranaChakra.sanskritName));
   assert(!prompt.includes('%'));
-  assert(!prompt.includes('점'));
+  assert(!/\d+\s*점(?:\s*\/\s*100)?/.test(prompt));
 });
 
 test('Lakota Medicine Wheel Wakan Tanka Engine: calculates 4 sacred directions, balance index and Mitakuye Oyasin', () => {
@@ -5252,7 +5273,8 @@ test('Japanese Heian Onmyodo Seimei Engine: calculates 12 heavenly generals, Shi
   assert(prompt.includes('일본 헤이안 음양도 아베노 세이메이 《점사략》 12천장 & 식신 사역'));
   assert(prompt.includes(rep.primaryGuardianGeneral.nameKo));
   assert(prompt.includes('KST'));
-  assert(!prompt.includes('/ 100') && !prompt.includes('점 /') && !prompt.includes('점수'));
+  assert(!prompt.includes('/100') && !prompt.includes('/ 100'));
+  assert(!/\d+\s*점(?:\s*\/\s*100)?/.test(prompt));
 });
 
 test('Polynesian Wayfinding Star Compass Engine: calculates Star Compass houses, Zenith stars and Ocean Swell', () => {
@@ -6244,9 +6266,10 @@ test('Arthur Schopenhauer Will Representation Engine: calculates Will transcende
   assert(rep.schopenhauerSynthesisMatrix.overallSchopenhauerGrade.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatSchopenhauerWillRepresentationPrompt(rep);
-  assert(prompt.includes('쇼펜하우어 의지와 표상(Wille und Vorstellung) & 자비(Mitleid) 지표'));
+  assert(prompt.includes('쇼펜하우어 의지와 표상(Wille und Vorstellung) & 자비(Mitleid) 정성 관조'));
   assert(prompt.includes(rep.activeSchopenhauerTheme.themeTitleKo));
   assert(prompt.includes('질문 맥락 관조 렌즈'));
+  assert(!prompt.includes('/100') && !prompt.includes('%'));
 });
 
 test('Chusa Kim Jeong-hui Sehando Engine: calculates Songbaek hudjo integrity, Enduring friendship, and Munjahyang seogwongi', () => {
@@ -6702,6 +6725,8 @@ test('Ralph Waldo Emerson Self-Reliance Engine: calculates qualitative Self-Reli
   const rep = calculateRalphWaldoEmersonSelfReliance(profile, new Date('2026-11-14T18:45:00+09:00'), '남들 눈치를 보지 않고 이직 결정을 내려도 될까요?');
   assert.equal(rep.engineVersion, AMERICAN_RALPH_WALDO_EMERSON_VERSION);
   assert.equal(rep.questionTopic, 'decision');
+  const examRep = calculateRalphWaldoEmersonSelfReliance(profile, new Date('2026-11-14T18:45:00+09:00'), '시험 합격을 위해 어떤 방향으로 준비할까요?');
+  assert.equal(examRep.questionTopic, 'decision');
   assert(rep.selfReliancePosture.length > 0);
   assert(rep.practiceGuidance.length > 0);
   assert(rep.ritualAction.length > 0);
@@ -6746,8 +6771,9 @@ test('Albert Camus Absurd Revolt Engine: calculates Absurd Lucidity, Unceasing R
   assert(rep.sisyphusHappinessResilienceScore >= 0 && rep.sisyphusHappinessResilienceScore <= 100);
   assert(rep.activeCamusTheme.themeTitleKo.length > 0);
   const prompt = formatAlbertCamusAbsurdRevoltPrompt(rep);
-  assert(prompt.includes('알베르 카뮈 《시지프 신화》 부조리의 자각 & 실존적 반항 지표'));
+  assert(prompt.includes('알베르 카뮈 《시지프 신화》 부조리의 자각 & 실존적 반항 관점'));
   assert(prompt.includes(rep.activeCamusTheme.themeTitleKo));
+  assert(!prompt.includes('/100') && !prompt.includes('%'));
 });
 
 test('Yeonam Park Jiwon Yeolha Ilgi Engine: calculates One-Night Nine Crossings, Beopgo Changsin, and Iyongs Husaeng', () => {
@@ -6784,8 +6810,9 @@ test('Jean-Paul Sartre Existentialism Engine: calculates Existence Precedes Esse
   assert(rep.engagementSolidarityActionIndex >= 0 && rep.engagementSolidarityActionIndex <= 100);
   assert(rep.activeSartreTheme.themeTitleKo.length > 0);
   const prompt = formatJeanPaulSartreExistentialismPrompt(rep);
-  assert(prompt.includes('장 폴 사르트르 《존재와 무》 실존적 자유 & 앙가주망 지표'));
+  assert(prompt.includes('장 폴 사르트르 《존재와 무》 실존적 자유 & 앙가주망 관점'));
   assert(prompt.includes(rep.activeSartreTheme.themeTitleKo));
+  assert(!prompt.includes('/100') && !prompt.includes('%'));
 });
 
 test('Viktor Frankl Logotherapy Engine: calculates The Last Human Freedom, Will to Meaning, and Tragic Optimism', () => {
@@ -7651,6 +7678,8 @@ test('Thomas More Utopia Engine: calculates Communal Conscience, Labor-Leisure B
   const rep = calculateBritishThomasMoreUtopia(profile, '일과 쉼의 균형을 지키며 지친 마음을 추스르고 싶어요', new Date('2026-11-14T03:00:00Z'));
   assert.equal(rep.engineVersion, BRITISH_THOMAS_MORE_UTOPIA_VERSION);
   assert.equal(rep.questionTopic, 'healing');
+  const restOnly = calculateBritishThomasMoreUtopia(profile, '요즘 일이 많아 잠깐 쉬고 싶어요', new Date('2026-11-14T03:00:00Z'));
+  assert.equal(restOnly.questionTopic, 'healing');
   assert.equal(rep.temporalMoreRhythm.kstDateLabel, '2026-11-14');
   assert(rep.communalConscienceJusticeScore >= 0 && rep.communalConscienceJusticeScore <= 100);
   assert(rep.laborOtiumBalancedHarmonyIndex >= 0 && rep.laborOtiumBalancedHarmonyIndex <= 100);
@@ -7759,8 +7788,9 @@ test('Simone de Beauvoir Ambiguity & Freedom Engine: calculates Self-Creation, E
   assert(rep.existentialCourageResilienceScore >= 0 && rep.existentialCourageResilienceScore <= 100);
   assert(rep.activeBeauvoirTheme.themeTitleKo.length > 0);
   const prompt = formatFrenchSimoneDeBeauvoirAmbiguityFreedomPrompt(rep);
-  assert(prompt.includes('시몬 드 보부아르 《애매성의 윤리학》 실존적 자기창조 및 상호자유 지표'));
+  assert(prompt.includes('시몬 드 보부아르 《애매성의 윤리학》 실존적 자기창조 및 상호자유 관점'));
   assert(prompt.includes(rep.activeBeauvoirTheme.themeTitleKo));
+  assert(!prompt.includes('/100') && !prompt.includes('%'));
 });
 
 test('Maurice Merleau-Ponty Embodied Phenomenology Engine: calculates Body-Subject Embodiment, Primordial Perception, and Chiasmic Harmony', () => {
@@ -9798,6 +9828,10 @@ test('Yarrow I Ching, Ptah Memphite, and Delphic Chilon v2.1.0 include +09:00 KS
   assert.ok(yr.calculatedAtKst.includes('+09:00'));
   const yrPrompt = formatAncientYarrowProbabilityPrompt(yr);
   assert.ok(yrPrompt.includes('해석 경계') && yrPrompt.includes('+09:00') && !yrPrompt.includes('실측 데이터'));
+  assert.ok(yrPrompt.includes('자료를 더 살피고') && !yrPrompt.includes('가장 확실한 결실'));
+  const yrHealth = calculateAncientYarrowProbability({ profile, question: '몸이 피곤해요', now });
+  assert.match(yrHealth.practiceGuidance, /점괘로 알 수 없습니다/);
+  assert.match(yrHealth.practiceGuidance, /의료 전문가/);
 
   const pt = calculatePtahMemphite(profile, '새 프로젝트를 구상하고 현실로 구현하고 싶습니다', now);
   assert.equal(pt.engineVersion, PTAH_MEMPHITE_VERSION);

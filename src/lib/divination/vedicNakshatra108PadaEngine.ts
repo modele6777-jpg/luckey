@@ -177,22 +177,22 @@ export function calculateVedicNakshatra108Pada(
   };
 
   const synthesisPrompt = `
-[베다 27나크샤트라 & 108파다(Pada) 카르마 성좌 정밀 실측 데이터]
+[베다 27나크샤트라 & 108파다(Pada) 상징 성찰 자료 · 천문 실측 아님]
 ======================================================================
 엔진 버전: ${VEDIC_NAKSHATRA_108_PADA_ENGINE_VERSION} | 기준 일시: ${calculatedAtKst}
 ----------------------------------------------------------------------
-1. 🕉️ [출생 나크샤트라 & 108 파다 위치]:
-   - 본명 성좌: 제${nakshatra.index}/27성좌 **${nakshatra.nameKo} (${nakshatra.sanskrit})**
-   - 활성 파다: **제${pada}파다 / 4** (전체 108파다 중 제${totalPadaIndex}번째 파다)
-   - 나밤샤(D9) 귀속궁: **${navamsha.name}** (지배성: ${navamsha.lord})
-   - 대칭 보조 성좌: 제${secondaryNakshatra.index}성좌 **${secondaryNakshatra.nameKo} (${secondaryNakshatra.sanskrit})** · ${secondaryNakshatra.deity} (${secondaryNakshatra.mission})
+1. 🕉️ [생년·출생 시각·이름 시드로 만든 상징 나크샤트라·파다 참고]:
+   - 상징 나크샤트라: 제${nakshatra.index}/27성좌 **${nakshatra.nameKo} (${nakshatra.sanskrit})**
+   - 상징 파다 인덱스: **제${pada}파다 / 4** (전체 108파다 중 제${totalPadaIndex}번째 파다)
+   - 나밤샤(D9) 대응 상징: **${navamsha.name}** (지배성: ${navamsha.lord})
+   - 대칭 보조 나크샤트라(상징): 제${secondaryNakshatra.index}성좌 **${secondaryNakshatra.nameKo} (${secondaryNakshatra.sanskrit})** · ${secondaryNakshatra.deity} (${secondaryNakshatra.mission})
 2. 🏛️ [신성 속성 및 에너지 격자]:
    - 주재신(Deity): ${nakshatra.deity}
    - 군(Gana): ${nakshatra.gana} | 원소(Tattva): ${nakshatra.tattva}
    - 상징(Symbol): ${nakshatra.symbol} | 영적 토템(Yoni): ${nakshatra.animal}
-3. 🎯 [카르마적 영혼 소명 및 만트라]:
-   - 영혼 소명: ${nakshatra.mission}
-   - 개운 산스크리트 비자 만트라: **${sanskritMantra}**
+3. 🎯 [전통에서 가져온 성찰 주제와 참고 만트라]:
+   - 성찰 주제: ${nakshatra.mission}
+   - 참고 만트라: **${sanskritMantra}**
 4. 🧭 [108파다 교차 매트릭스]:
    - 핵심 긴장: ${nakshatra108SynthesisMatrix.dominantTension}
    - 조율 상태: ${nakshatra108SynthesisMatrix.alignmentState}
@@ -201,7 +201,7 @@ export function calculateVedicNakshatra108Pada(
    - 성찰 질문: ${reflectiveQuestion}
    - ${interpretiveBoundary}
 ======================================================================
-[AI 해석 절대 지침]: 본 리포트는 베딕 점성술 항성황도 27나크샤트라와 108파다 정밀 분할도에 입각한 100% 결정론적 산출물입니다. 나크샤트라 명칭과 108파다 번호, 나밤샤 귀속궁을 임의로 변경하지 말고 상담자의 카르마적 소명과 현실 행동 나침반으로 일관되게 상담에 직결하십시오.
+[AI 해석 지침]: 이 인덱스는 생년월일·출생 시각·이름에서 만든 결정론적 상징값일 뿐, 천문력·항성황도·달의 경도·출생 장소를 계산하지 않습니다. 실제 출생 나크샤트라, 파다, 나밤샤를 나타내거나 검증하지 않으며, 점수도 측정값이 아닙니다. 위 항목을 실제 천문 배치, 객관적 성격 진단, 확정된 카르마 사실처럼 말하지 마십시오. 전통 상징을 활용한 참고용 성찰로만 설명하고, 사용자의 현실 판단을 대신하지 마십시오.
 `.trim();
 
   return {

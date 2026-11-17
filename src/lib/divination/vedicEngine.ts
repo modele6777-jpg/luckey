@@ -759,6 +759,6 @@ ${rashiLines}
 ${currentLines}
 ${synergyLine ? synergyLine + '\n' : ''}${kendraLine ? kendraLine + '\n' : ''}${purusharthaLine ? purusharthaLine + '\n' : ''}- 120년 빔쇼타리 다샤 전수 타임라인 (9 마하다샤 × 9 안타르다샤 = ${result.antardashaCount}구간, 태양년 365.25일 환산):
 ${timelineLines}${matrixLine}${secondaryLine}${reflectionLine}${boundaryLine}
-- [AI 해석 절대 지침]: 본 리포트는 항성황도 천문 계산으로 산출된 100% 확정 수리입니다. 나크샤트라·파다·다샤 주인과 기간을 임의로 바꾸지 말고, 마하다샤(대운 주제)와 안타르다샤(소운 세부)의 계층 구조에 맞춰 상담하십시오. 아얀암사는 평균 세차율 근사이므로 나크샤트라·파다·다샤 경계일 전후 1일 이내의 결과는 단정하지 마십시오.
+- [AI 해석 지침]: 아래 내용은 입력된 출생 정보와 구현된 항성황도 산법을 적용한 계산 참고값이며, 정확성이나 미래 예측을 보장하지 않습니다. 나크샤트라·파다·다샤 주인과 기간은 제공된 계산 결과에 맞춰 설명하십시오. 아얀암사는 평균 세차율 근사이므로 나크샤트라·파다·다샤 경계일 전후 1일 이내의 결과는 단정하지 마십시오.
 `.trim();
 }

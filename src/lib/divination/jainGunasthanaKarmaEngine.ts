@@ -296,12 +296,12 @@ export function formatJainGunasthanaKarmaPrompt(report: JainGunasthanaReport): s
   const r = report.ratnatraya;
   const s = report.activeStage;
 
-  return `[🪷 고대 인도 자이나교 14 군아스타나 & 삼보(Ratnatraya) 카르마 실측 데이터 v${report.engineVersion}]
+  return `[🪷 고대 인도 자이나교 14 군아스타나 & 삼보(Ratnatraya) 카르마 성찰 안내 v${report.engineVersion}]
 ======================================================================
 연산 시각: ${report.calculatedAtKst}
 1. [영혼 진화의 사다리 (14 Gunasthanas)]:
    - 현재 영혼 국면: 제${s.stageNumber}단계 [${s.stageNameKo}] (${s.stageNameSanskrit})
-   - 영적 상태 진단: ${s.soulEvolutionState}
+   - 영적 성찰 국면: ${s.soulEvolutionState}
    - 영혼 상승 지침: "${s.spiritualGuidance}"
 
 2. [자이나 삼보(Ratnatraya) 조화]:

@@ -42,10 +42,16 @@ test('Hongguk-specific requests are never fulfilled by the instant Chabop chart'
 });
 
 test('chat storage merging retains computed results when a partial copy arrives',async()=>{
- const {mergeUnifiedMessages}=await import('../src/lib/chatHistorySync');
+ const {mergeUnifiedMessages,restoreLatestConversation}=await import('../src/lib/chatHistorySync');
  const timestamp=Date.now();
- const merged=mergeUnifiedMessages([{id:'a',role:'model',content:'풀이',timestamp,divinationContext:'[채팅 실제 점술 계산 결과] 값'}],[{id:'a',role:'model',content:'풀이',timestamp,divinationContext:undefined}]);
+ const result={id:'a',role:'model' as const,content:'풀이',timestamp,divinationContext:'[채팅 실제 점술 계산 결과] 값'};
+ const partial={id:'a',role:'model' as const,content:'풀이',timestamp,divinationContext:undefined};
+ const merged=mergeUnifiedMessages([result],[partial]);
  assert.match(merged[0].divinationContext!,/실제 점술/);
+ const reversed=mergeUnifiedMessages([partial],[result]);
+ assert.match(reversed[0].divinationContext!,/실제 점술/);
+ const restored=restoreLatestConversation([],merged);
+ assert.match(restored[0].divinationContext!,/실제 점술/);
 });
 test('shared chat send computes once and retains context for compact retry',async()=>{
  const {readFile}=await import('node:fs/promises');

@@ -758,7 +758,7 @@ export function formatThaiHorasatPrompt(result: ThaiHorasatResult): string {
       ? `- 호라삿 교차 매트릭스: 핵심 긴장(${result.horasatSynthesisMatrix.dominantTension}) · 조율 상태(${result.horasatSynthesisMatrix.alignmentState}) · 통합 실천(${result.horasatSynthesisMatrix.integratedAction})`
       : '',
     result.interpretiveBoundary ? `- 해석 경계: ${result.interpretiveBoundary}` : '',
-    `- [AI 해석 절대 지침]: 본 리포트는 태국 정통 호라삿 수리로 산출된 100% 확정 배속입니다. 수호신·대운 구간·속성 등급·원소 진단을 임의로 바꾸지 말고 상담에 정확히 반영하십시오.`,
+    `- [AI 해석 지침]: 본 리포트는 입력과 구현된 태국 호라삿 규칙에 따른 계산 참고값이며, 실측 정확도나 운명의 확정을 뜻하지 않습니다. 수호신·대운 구간·속성 등급·원소 해석은 제공된 산출값을 바꾸지 않고 성찰을 돕는 전통적 관점으로 안내하십시오.`,
   ];
 
   return lines.filter((l) => l !== '').join('\n');

@@ -321,7 +321,7 @@ export function formatMenciusFourSproutsHoyeonPrompt(res: MenciusFourSproutsHoye
     `- 조장(助長) 함정: ${res.situationalMoralAudit.jojangTrap}`,
     `- 일일 집의(集義) 의례: ${res.dailyPracticeRitual}`,
     `- KST 호연지기 리듬: ${res.temporalHoyeonRhythm.kstWindow} (${res.temporalHoyeonRhythm.sproutFocus}, ${res.temporalHoyeonRhythm.seasonalTone}, 명료 결: ${describeMenciusStage(res.temporalHoyeonRhythm.hoyeonClarityIndex)})`,
-    `- 맹자 조화 흐름: 사단 균형 [${describeMenciusStage(res.menciusSynthesisMatrix.fourSproutsBalance)}] / 집의 축적 [${describeMenciusStage(res.menciusSynthesisMatrix.jiYiAccumulation)}] / 부동심 안정 [${describeMenciusStage(res.menciusSynthesisMatrix.buDongXinSteadiness)}]`,
+    `- 맹자 매트릭스(조화 흐름): 사단 균형 [${describeMenciusStage(res.menciusSynthesisMatrix.fourSproutsBalance)}] / 집의 축적 [${describeMenciusStage(res.menciusSynthesisMatrix.jiYiAccumulation)}] / 부동심 안정 [${describeMenciusStage(res.menciusSynthesisMatrix.buDongXinSteadiness)}]`,
     `- 성찰 질문: ${res.reflectiveQuestion}`,
     `- 철학적 처방: ${res.menciusPhilosophicalCounsel.philosophicalGuidance}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,

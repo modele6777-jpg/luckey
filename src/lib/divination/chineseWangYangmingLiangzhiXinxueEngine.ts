@@ -328,7 +328,7 @@ export function formatWangYangmingXinxuePrompt(res: WangYangmingXinxueResult): s
     `- 마음의 도적(心中賊): ${res.situationalXinxueAudit.innerThiefTrap}`,
     `- 일일 사전마련 의례: ${res.dailyPracticeRitual}`,
     `- KST 양지 리듬: ${res.temporalLiangzhiRhythm.kstWindow} (${res.temporalLiangzhiRhythm.xinxueFocus}, ${res.temporalLiangzhiRhythm.seasonalTone}, 명료 결: ${describeYangmingStage(res.temporalLiangzhiRhythm.liangzhiClarityIndex)})`,
-    `- 양명학 조화 흐름: 양지 명료 [${describeYangmingStage(res.yangmingSynthesisMatrix.liangzhiClarity)}] / 지행 합일 [${describeYangmingStage(res.yangmingSynthesisMatrix.zhiXingUnity)}] / 사전마련 [${describeYangmingStage(res.yangmingSynthesisMatrix.shiShangMoLianDepth)}]`,
+    `- 양명학 매트릭스(조화 흐름): 양지 명료 [${describeYangmingStage(res.yangmingSynthesisMatrix.liangzhiClarity)}] / 지행 합일 [${describeYangmingStage(res.yangmingSynthesisMatrix.zhiXingUnity)}] / 사전마련 [${describeYangmingStage(res.yangmingSynthesisMatrix.shiShangMoLianDepth)}]`,
     `- 성찰 질문: ${res.reflectiveQuestion}`,
     `- 철학적 처방: ${res.xinxuePhilosophicalCounsel.philosophicalGuidance}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,

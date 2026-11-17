@@ -210,7 +210,7 @@ export function calculateDeepWorkFlow(params?: {
     soundscape: '가사가 적은 잔잔한 집중 음악 또는 딥 브라운 노이즈 (Brown Noise)',
     lightingEnvironment: '데스크 스탠드 4000K 뉴트럴 화이트 (주변은 은은한 간접 조명)',
     ignitionRitual: '책상 위 불필요한 물건 10초 정리 ➔ 물 한 모금 ➔ 단 1개의 이번 스프린트 목표 메모 ➔ 즉시 타이머 가동',
-    distractionShield: '모바일 기기 비행기 모드 또는 시야 밖 격리, 메신저 알림 100% 무음 처리'
+    distractionShield: '모바일 기기를 시야 밖에 두거나 방해 금지 모드를 설정하고, 필요한 알림은 남겨 두세요.'
   };
 
   // 4. 창작 신살 분석
