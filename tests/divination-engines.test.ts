@@ -2414,6 +2414,7 @@ test('Energetic Prescription Engine: 결핍 오행 바이오 에너지 맞춤 �
   assert(Boolean(res.energeticSynthesisMatrix?.integratedAction));
   assert(res.interpretiveBoundary.length > 0);
   assert(res.microRituals.length > 0);
+  assert(res.ritualAction.length > 0 && res.reflectionFocus.length > 0);
   const prompt = formatEnergeticPrescriptionPrompt(res);
   assert(prompt.includes(ENERGETIC_PRESCRIPTION_ENGINE_VERSION));
   assert(prompt.includes('+09:00 (KST)'));
@@ -2516,6 +2517,7 @@ test('Elemental Resonance Engine: 오행 생극제화 및 상생 순환 루프 �
   assert(res.temporalElementalRhythm.cycleWatchWindow.length > 0);
   assert(res.elementalSynthesisMatrix.coreInsight.length > 0);
   assert(res.interpretiveBoundary.length > 0);
+  assert(res.ritualAction.length > 0 && res.reflectionFocus.length > 0);
   const prompt = formatElementalResonancePrompt(res);
   assert(prompt.includes(ELEMENTAL_RESONANCE_VERSION));
   assert(prompt.includes('오행 생극제화'));
@@ -2797,6 +2799,7 @@ test('Enneagram Soul Integration Engine: 에니어그램 영혼 성격 통합 �
   assert(res.temporalEnneagramRhythm.centerWatchWindow.length > 0);
   assert(res.enneagramSynthesisMatrix.coreInsight.length > 0);
   assert(res.interpretiveBoundary.length > 0);
+  assert(res.ritualAction.length > 0 && res.reflectionFocus.length > 0);
   const prompt = formatEnneagramSoulIntegrationPrompt(res);
   assert(prompt.includes('LUCKEY 에니어그램 영혼 성격 통합 & 의식 진화'));
   assert(prompt.includes(res.soulType.koreanTitle));

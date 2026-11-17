@@ -16,7 +16,7 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const ELEMENTAL_RESONANCE_VERSION = 'LUCKEY-RESON-v2.1.0';
+export const ELEMENTAL_RESONANCE_VERSION = 'LUCKEY-RESON-v2.2.0';
 
 export type ElementName = '목' | '화' | '토' | '금' | '수';
 
@@ -81,6 +81,8 @@ export interface ElementalResonanceResult {
   };
   boundaryNotice: string;
   interpretiveBoundary: string;
+  ritualAction: string;
+  reflectionFocus: string;
   summary: string;
 }
 
@@ -293,6 +295,11 @@ export function calculateElementalResonance(params?: {
     `1순위 증폭 오행: ${primeElement}(${ELEMENT_HANJA[primeElement]}). ` +
     `공명 컬러: ${amplifierColor}.`;
 
+  const ritualAction = `${situationalResonanceAudit.dailyPractice} · ${amplifierColor}`;
+  const reflectionFocus = question.trim()
+    ? `‘${question.trim()}’ 흐름에서 1순위 보강 오행 [${primeElement}(${ELEMENT_HANJA[primeElement]})]의 순환을 열기 위해 오늘 바로 바꿀 한 가지는 무엇입니까?`
+    : `오늘 [${resonanceGrade}] 상태의 오행 순환 속에서 가장 막혀 있던 ${primeElement} 기운을 부드럽게 흐르게 할 작은 실천은 무엇입니까?`;
+
   return {
     engineVersion: ELEMENTAL_RESONANCE_VERSION,
     calculatedAtIso: now.toISOString(),
@@ -312,6 +319,8 @@ export function calculateElementalResonance(params?: {
     elementalSynthesisMatrix,
     boundaryNotice: '본 결과는 사주 오행의 상생·순환 구조를 바탕으로 한 정성적 컨디션 참고 안내이며, 확정적 길흉 판정이 아닙니다.',
     interpretiveBoundary: '본 결과는 사주 오행의 상생·순환 구조를 바탕으로 한 정성적 컨디션 참고 안내이며, 확정적 길흉 판정이 아닙니다.',
+    ritualAction,
+    reflectionFocus,
     summary
   };
 }
