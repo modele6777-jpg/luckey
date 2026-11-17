@@ -1,3 +1,4 @@
+import { installFoldRuntimeTrace } from './lib/foldRuntimeTrace';
 import { installAudioMixingPolicy } from './lib/audioMixingPolicy';
 import {StrictMode} from 'react';
 import {createRoot} from 'react-dom/client';
@@ -35,6 +36,7 @@ if (typeof window !== 'undefined') {
   }, true);
 }
 
+installFoldRuntimeTrace(window);
 installAudioMixingPolicy();
 if (typeof window !== 'undefined') installSingleAppReload(window);
 initPerfMode();
