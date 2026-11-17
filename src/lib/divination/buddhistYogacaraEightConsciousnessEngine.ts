@@ -13,7 +13,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const BUDDHIST_YOGACARA_CONSCIOUSNESS_ENGINE_VERSION = '2.3.0';
+export const BUDDHIST_YOGACARA_CONSCIOUSNESS_ENGINE_VERSION = '2.4.0';
 
 function toKstIso(now: Date): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -72,6 +72,7 @@ export interface BuddhistYogacaraConsciousnessReport {
   yogacaraSynthesisMatrix: YogacaraSynthesisMatrix;
   ritualAction: string;
   reflectionFocus: string;
+  reflectiveQuestion: string;
   boundaryNotice: string;
   interpretiveBoundary: string;
 }
@@ -282,6 +283,10 @@ export function calculateBuddhistYogacaraConsciousness(
   const yogacaraMindOnlyGuidance = `세상의 모든 고통과 번뇌는 바깥 대상에 있는 것이 아니라 내 마음식(識)의 분별 투사에서 비롯됩니다. 지금 당신에게 개화하는 지혜는 [${dominantWisdom.nameKo}(${dominantWisdom.sanskrit})]입니다. ${dominantWisdom.enlightenedAction}에 집중할 때 망상이 걷히고 성취의 길이 맑아집니다.`;
   const mirrorMeditationRitual = `조용히 호흡을 고르고 가슴 중심에 티끌 없는 거울이 떠오르는 모습을 관상하십시오: "삼계유심 만법유식(三界唯心 萬法唯識), 오고 가는 모든 현상은 거울에 비친 그림자일 뿐 나를 물들이지 못한다."`;
 
+  const reflectiveQuestion = question.trim()
+    ? `질문 "${question.trim()}" 앞에서, ${situationalYogacaraAudit.kleshaRootPattern}이 일으키는 분별을 알아차리고 [${dominantWisdom.nameKo}]의 거울로 비춰 보면 무엇이 가장 먼저 가벼워지나요?`
+    : `${situationalYogacaraAudit.kleshaRootPattern} 앞에서 내가 붙들고 있는 분별은 무엇이며, ${dominantWisdom.nameKo}의 관점으로 어떻게 놓아줄 수 있나요?`;
+
   return {
     engineVersion: BUDDHIST_YOGACARA_CONSCIOUSNESS_ENGINE_VERSION,
     timestamp: now.toISOString(),
@@ -299,7 +304,8 @@ export function calculateBuddhistYogacaraConsciousness(
     temporalAlayaRhythm,
     yogacaraSynthesisMatrix,
     ritualAction: mirrorMeditationRitual,
-    reflectionFocus: `${situationalYogacaraAudit.kleshaRootPattern} 앞에서 내가 붙들고 있는 분별은 무엇이며, ${dominantWisdom.nameKo}의 관점으로 어떻게 놓아줄 수 있나요?`,
+    reflectionFocus: reflectiveQuestion,
+    reflectiveQuestion,
     boundaryNotice,
     interpretiveBoundary: boundaryNotice,
   };
@@ -319,5 +325,6 @@ export function formatBuddhistYogacaraConsciousnessPrompt(rep: BuddhistYogacaraC
 · 유식 교차 매트릭스: 대원경지(${rep.yogacaraSynthesisMatrix.alayaMirrorClarity}) | 평등성지(${rep.yogacaraSynthesisMatrix.manasEgoRelease}) | 성소작지(${rep.yogacaraSynthesisMatrix.actionCompletionReadiness})
 · 유식유심 실천 지침: ${rep.yogacaraMindOnlyGuidance}
 · 대원경지 거울 명상 리추얼: ${rep.mirrorMeditationRitual}
+· 질문 맞춤 성찰 질문: ${rep.reflectiveQuestion}
 · 해석 경계: ${rep.boundaryNotice}`;
 }

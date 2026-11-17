@@ -6,7 +6,7 @@
  * 양심의 명료함, 마음의 짐 내려놓기에 연결하는 정성적 성찰 엔진입니다.
  */
 
-export const EGYPTIAN_MAAT_FEATHER_ENGINE_VERSION = 'LUCKEY-EGYPTIAN-MAAT-v2.2.0';
+export const EGYPTIAN_MAAT_FEATHER_ENGINE_VERSION = 'LUCKEY-EGYPTIAN-MAAT-v2.3.0';
 
 export type MaatQuestionTheme = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -44,6 +44,7 @@ export interface MaatWeighingReport {
   practiceGuidance: string; // getSymbolicPerspective 호환 정성적 조언
   ritualAction: string;
   reflectionFocus: string;
+  reflectiveQuestion: string;
   counselNote: string;
   boundaryNotice: string;
   interpretiveBoundary: string;
@@ -211,6 +212,9 @@ export function calculateEgyptianMaatFeatherHeart(params: {
 
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
   const calculatedAtKst = kst.toISOString().replace('T', ' ').substring(0, 19) + ' +09:00 KST';
+  const reflectiveQuestion = question.trim()
+    ? `질문 "${question.trim()}"을 마아트의 저울 위에 올려놓았을 때, 내 양심을 가볍게 하는 진실과 지금 내려놓아야 할 무게는 무엇인가요? (${themeContent.reflectionFocus})`
+    : themeContent.reflectionFocus;
 
   return {
     engineVersion: EGYPTIAN_MAAT_FEATHER_ENGINE_VERSION,
@@ -228,7 +232,8 @@ export function calculateEgyptianMaatFeatherHeart(params: {
     maatSynthesisMatrix,
     practiceGuidance: themeContent.practiceGuidance,
     ritualAction: themeContent.ritualAction,
-    reflectionFocus: themeContent.reflectionFocus,
+    reflectionFocus: reflectiveQuestion,
+    reflectiveQuestion,
     counselNote: themeContent.counselNote,
     boundaryNotice,
     interpretiveBoundary: boundaryNotice,
@@ -249,5 +254,6 @@ export function formatEgyptianMaatFeatherHeartPrompt(report: MaatWeighingReport)
 - **실천 조언**: ${report.practiceGuidance}
 - **일상 의례**: ${report.ritualAction}
 - **성찰 질문**: ${report.reflectionFocus}
+- **질문 맞춤 성찰 질문**: ${report.reflectiveQuestion}
 - **해석 경계**: ${report.boundaryNotice}`;
 }
