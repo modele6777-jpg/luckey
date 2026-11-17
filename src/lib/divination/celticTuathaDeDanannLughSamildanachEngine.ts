@@ -19,7 +19,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const LUGH_SAMILDANACH_VERSION = 'LUCKEY-LUGH-SAMILDANACH-v2.0.0';
+export const LUGH_SAMILDANACH_VERSION = 'LUCKEY-LUGH-SAMILDANACH-v2.1.0';
 
 export interface LughCraftRank {
   rankLevel: number;
@@ -67,6 +67,7 @@ export interface LughSamildanachResult {
     cautionNotice: string;
   };
   boundaryNotice: string;
+  interpretiveBoundary: string;
 }
 
 export type LughSamildanachReport = LughSamildanachResult;
@@ -206,6 +207,7 @@ export function calculateLughSamildanach(
     temporalLughRhythm,
     lughSynthesisMatrix,
     boundaryNotice: '본 결과는 켈트 신화 루 삼힐다나크의 8대 만능 기예 원형에 기반한 정성적 역량·실행 가이드이며, 확정적 예언이 아닙니다.',
+    interpretiveBoundary: '본 결과는 켈트 신화 루 삼힐다나크의 8대 만능 기예 원형에 기반한 정성적 역량·실행 가이드이며, 확정적 예언이 아닙니다.',
   };
 }
 

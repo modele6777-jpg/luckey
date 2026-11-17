@@ -14,7 +14,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const CELTIC_BREHON_LAW_VERSION = 'LUCKEY-CELTIC-BREHON-LAW-v2.0.0';
+export const CELTIC_BREHON_LAW_VERSION = 'LUCKEY-CELTIC-BREHON-LAW-v2.1.0';
 
 export interface BrehonJusticeRank {
   rankLevel: number;
@@ -61,6 +61,7 @@ export interface CelticBrehonLawResult {
     cautionNotice: string;
   };
   boundaryNotice: string;
+  interpretiveBoundary: string;
 }
 
 export type CelticBrehonLawReport = CelticBrehonLawResult;
@@ -200,6 +201,7 @@ export function calculateCelticBrehonLaw(
     temporalBrehonRhythm,
     brehonSynthesisMatrix,
     boundaryNotice: '본 결과는 고대 켈트 브레혼 법전의 정의와 회복 철학에 기반한 정성적 관계·합의 가이드이며, 법률 자문이나 확정적 예측이 아닙니다.',
+    interpretiveBoundary: '본 결과는 고대 켈트 브레혼 법전의 정의와 회복 철학에 기반한 정성적 관계·합의 가이드이며, 법률 자문이나 확정적 예측이 아닙니다.',
   };
 }
 
