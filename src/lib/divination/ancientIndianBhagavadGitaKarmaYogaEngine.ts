@@ -7,12 +7,12 @@
  * 3. 사마트밤(Samatvam): "성공과 실패, 승리와 패배를 동등하게 바라보며 중심을 잃지 않는 것, 그것을 요가(Yoga)라 부른다."
  * 4. 요가스타 쿠루 카르마니(Yogasthah kuru karmani): "집착을 끊고 신성한 자아에 굳건히 서서 행위하라."
  *
- * @version LUCKEY-BHAGAVAD-GITA-KARMA-YOGA-v2.1.0
+ * @version LUCKEY-BHAGAVAD-GITA-KARMA-YOGA-v2.3.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const BHAGAVAD_GITA_KARMA_YOGA_VERSION = 'LUCKEY-BHAGAVAD-GITA-KARMA-YOGA-v2.2.0';
+export const BHAGAVAD_GITA_KARMA_YOGA_VERSION = 'LUCKEY-BHAGAVAD-GITA-KARMA-YOGA-v2.3.0';
 
 function getGitaKstString(now?: Date): string {
   const base = now ?? new Date();
@@ -78,6 +78,8 @@ export interface BhagavadGitaKarmaYogaResult {
   };
   dailyPracticeRitual: string;
   reflectiveQuestion: string;
+  ritualAction: string;
+  reflectionFocus: string;
   interpretiveBoundary: string;
   gitaSynthesisMatrix?: {
     dominantTension: string;
@@ -339,6 +341,8 @@ export function calculateBhagavadGitaKarmaYoga(
     karmaYogaPhilosophicalCounsel,
     dailyPracticeRitual,
     reflectiveQuestion,
+    ritualAction: dailyPracticeRitual,
+    reflectionFocus: reflectiveQuestion,
     interpretiveBoundary,
     gitaSynthesisMatrix,
   };

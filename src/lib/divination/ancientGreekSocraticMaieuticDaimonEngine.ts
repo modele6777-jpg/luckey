@@ -8,12 +8,12 @@
  * 4. 엘렌코스(Elenchus): 집요한 문답을 통해 헛된 편견을 허물고 참된 앎에 이르는 과정.
  * 5. 에피멜레이아 헤아우투(Epimeleia Heautou): 외적 명예와 부보다 영혼을 가장 훌륭하게 가꾸는 배려.
  *
- * @version LUCKEY-SOCRATIC-MAIEUTIC-DAIMON-v2.1.0
+ * @version LUCKEY-SOCRATIC-MAIEUTIC-DAIMON-v2.2.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const SOCRATIC_MAIEUTIC_DAIMON_VERSION = 'LUCKEY-SOCRATIC-MAIEUTIC-DAIMON-v2.1.0';
+export const SOCRATIC_MAIEUTIC_DAIMON_VERSION = 'LUCKEY-SOCRATIC-MAIEUTIC-DAIMON-v2.2.0';
 
 function describeSocraticStage(score: number): string {
   if (score >= 88) return '명료한 각성 단계';
@@ -80,6 +80,8 @@ export interface SocraticMaieuticDaimonResult {
   dialecticSynthesisMatrix: DialecticSynthesisMatrix;
   dailyPracticeRitual: string;
   reflectiveQuestion: string;
+  ritualAction: string;
+  reflectionFocus: string;
   interpretiveBoundary: string;
 }
 
@@ -331,6 +333,8 @@ export function calculateSocraticMaieuticDaimon(
     dialecticSynthesisMatrix,
     dailyPracticeRitual: `${temporalDaimonionRhythm.recommendedPractice} · ${situationalElenchus.maieuticPrompt}`,
     reflectiveQuestion: situationalElenchus.elenchusQuestion,
+    ritualAction: `${temporalDaimonionRhythm.recommendedPractice} · ${situationalElenchus.maieuticPrompt}`,
+    reflectionFocus: situationalElenchus.elenchusQuestion,
     interpretiveBoundary: '소크라테스 산파술과 다이몬 성찰은 정답을 대신 내려주는 점술이 아니라, 질문자가 스스로 헛된 전제를 비우고 내면의 양심을 들을 수 있도록 돕는 상징적 문답 프레임입니다.',
   };
 }
