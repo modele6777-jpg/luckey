@@ -1,0 +1,411 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+<meta http-equiv="Content-Security-Policy" content="connect-src 'self'; form-action 'self'">
+    <script>
+      // 0-A. Instant Key Gateway Route Shield
+      (function() {
+        try {
+          var p = window.location.pathname;
+          if (p === '/orb' || p.startsWith('/orb/') || p === '/gateway' || p === '/crystal') {
+            window.location.replace('/key' + window.location.search + window.location.hash);
+          }
+        } catch(e) {}
+      })();
+    </script>
+    <script>
+      // Immediate cleanup of stale ServiceWorker & caches on localhost
+      if (typeof window !== 'undefined' && (location.hostname === 'localhost' || location.hostname === '127.0.0.1')) {
+        if ('serviceWorker' in navigator) {
+          navigator.serviceWorker.getRegistrations().then(function(registrations) {
+            for (var i = 0; i < registrations.length; i++) {
+              registrations[i].unregister();
+            }
+          }).catch(function() {});
+        }
+      }
+    </script>
+    <script>
+      // 0. Third-Party Extension & MetaMask / Web3 Error Shield
+      (function() {
+        function isExtensionOrWalletError(err) {
+          if (!err) return false;
+          var msg = String(err.message || err.reason?.message || err.reason || err || '');
+          var stack = String(err.stack || err.reason?.stack || '');
+          var filename = String(err.filename || '');
+          var combined = msg + ' ' + stack + ' ' + filename;
+          return /MetaMask|ethereum|web3|evmProvider|inpage\.js|contentscript|chrome-extension|moz-extension|safari-extension|Failed to connect to MetaMask|walletconnect|phantom/i.test(combined);
+        }
+
+        window.addEventListener('unhandledrejection', function(event) {
+          if (isExtensionOrWalletError(event.reason || event)) {
+            event.preventDefault();
+            if (typeof event.stopImmediatePropagation === 'function') event.stopImmediatePropagation();
+            if (typeof event.stopPropagation === 'function') event.stopPropagation();
+          }
+        }, true);
+
+        window.addEventListener('error', function(event) {
+          if (isExtensionOrWalletError(event.error || event.message || event)) {
+            event.preventDefault();
+            if (typeof event.stopImmediatePropagation === 'function') event.stopImmediatePropagation();
+            if (typeof event.stopPropagation === 'function') event.stopPropagation();
+          }
+        }, true);
+      })();
+
+      // 1. Prevent "Cannot set property fetch of #<Window> which has only a getter" error across all environments
+      (function() {
+        try {
+          var originalFetch = window.fetch;
+          if (originalFetch) {
+            var assignedFetch = originalFetch;
+            var fetchPropDesc = {
+              get: function() {
+                return assignedFetch;
+              },
+              set: function(val) {
+                assignedFetch = val;
+              },
+              configurable: true,
+              enumerable: true
+            };
+            try {
+              Object.defineProperty(window, 'fetch', fetchPropDesc);
+            } catch (e1) {}
+            if (typeof Window !== 'undefined' && Window.prototype) {
+              try {
+                Object.defineProperty(Window.prototype, 'fetch', fetchPropDesc);
+              } catch (e2) {}
+            }
+          }
+        } catch (fetchErr) {
+          console.warn("[FetchShield] Failed to patch fetch setter", fetchErr);
+        }
+      })();
+
+      // Sandbox & compatibility protections
+      (function() {
+        var isRestrictedEnv = (function() {
+          try {
+            var h = location.hostname || '';
+            if (h.includes('google') || h.includes('aistudio') || h.includes('run.app') || (h.includes('vercel.app') === false && h.includes('localhost') === false)) {
+              if (window.top !== window) return true;
+            }
+            if (window.__AI_STUDIO_SANDBOX__ || (document.cookie && document.cookie.includes('aistudio'))) return true;
+            return false;
+          } catch (_) { return false; }
+        })();
+
+        if (!isRestrictedEnv) {
+          console.log('[Prism] Normal environment – skipping sandbox patches for proper mobile persistence.');
+          return;
+        }
+
+        console.warn('[Prism] Restricted/sandbox environment detected – applying compatibility patches.');
+
+        // 1. WebSocket function-based security shield
+        try {
+          const OriginalWebSocket = window.WebSocket;
+          if (OriginalWebSocket) {
+            const SafeWebSocket = function(url, protocols) {
+              if (typeof url === 'string' && (url.includes('vite') || url.includes('/ws') || (url.indexOf('wss://') === 0 && url.includes('run.app')))) {
+                return {
+                  url: url,
+                  readyState: OriginalWebSocket.CLOSED,
+                  bufferedAmount: 0,
+                  extensions: "",
+                  protocol: "",
+                  binaryType: "blob",
+                  send: function() {},
+                  close: function() {},
+                  addEventListener: function() {},
+                  removeEventListener: function() {},
+                  dispatchEvent: function() { return true; },
+                  onopen: null,
+                  onclose: null,
+                  onerror: null,
+                  onmessage: null
+                };
+              }
+              return new OriginalWebSocket(url, protocols);
+            };
+            SafeWebSocket.prototype = OriginalWebSocket.prototype;
+            SafeWebSocket.CONNECTING = OriginalWebSocket.CONNECTING;
+            SafeWebSocket.OPEN = OriginalWebSocket.OPEN;
+            SafeWebSocket.CLOSING = OriginalWebSocket.CLOSING;
+            SafeWebSocket.CLOSED = OriginalWebSocket.CLOSED;
+            window.WebSocket = SafeWebSocket;
+          }
+        } catch (wsErr) {
+          console.warn("[SafeWebSocket] Init failed", wsErr);
+        }
+
+        // 3. High-performance Fail-safe Hybrid Storage Generator (Anti-crash & Data-Preservation) — only in sandbox
+        const nativeLocalStorage = (function() {
+          try { return window.localStorage; } catch(e) { return null; }
+        })();
+        const nativeSessionStorage = (function() {
+          try { return window.sessionStorage; } catch(e) { return null; }
+        })();
+
+        function createHybridStorage(type) {
+          let memoryStore = {};
+          let nativeStorageWorks = false;
+          const native = type === 'localStorage' ? nativeLocalStorage : nativeSessionStorage;
+
+          const proxy = {
+            getItem: function(key) {
+              if (nativeStorageWorks && native) {
+                try {
+                  return native.getItem(key);
+                } catch (err) {
+                   // Fallback to memory on live runtime blocks
+                }
+              }
+              return key in memoryStore ? memoryStore[key] : null;
+            },
+            setItem : function(key, value) {
+              const strVal = String(value);
+              if (nativeStorageWorks && native) {
+                try {
+                  native.setItem(key, strVal);
+                  return;
+                } catch (err) {
+                  // Fallback to memory output
+                }
+              }
+              memoryStore[key] = strVal;
+            },
+            removeItem: function(key ) {
+              if (nativeStorageWorks && native) {
+                try {
+                  native.removeItem(key);
+                  return;
+                } catch (err) {
+                  // Fallback
+                }
+              }
+              delete memoryStore[key];
+            },
+            clear: function() {
+              if (nativeStorageWorks && native) {
+                try {
+                  native.clear();
+                  return;
+                } catch (err) {}
+              }
+              memoryStore = {};
+            },
+            key: function(index) {
+              if (nativeStorageWorks && native) {
+                try {
+                  return native.key(index);
+                } catch (err) {}
+              }
+              return Object.keys(memoryStore)[index] || null;
+            },
+            get length() {
+              if (nativeStorageWorks && native) {
+                try {
+                  return native.length;
+                } catch (err) {}
+              }
+              return Object.keys(memoryStore).length;
+            }
+          };
+
+          // Perform defensive safe testing on native storage
+          try {
+            const testKey = '__hybrid_storage_test_key__';
+            if (native && typeof native.setItem === 'function') {
+              native.setItem(testKey, '1');
+              native.removeItem(testKey);
+              nativeStorageWorks = true;
+            }
+          } catch (e) {
+            console.warn(`[StorageShield] Native ${type} is guarded/blocked. Switching to resilient hybrid mode.`);
+          }
+         return proxy;
+        }
+
+        // Install globals securely before any app bundle script launches
+        window.safeLocalStorage = createHybridStorage('localStorage');
+        window.safeSessionStorage = createHybridStorage('sessionStorage');
+
+        try {
+          const defineOn = function(obj, name, fallback) {
+            try {
+              Object.defineProperty(obj, name, {
+                get: function() { return fallback; },
+                set: function() {},
+                configurable: true,
+                enumerable: true
+              });
+            } catch (err) {
+              try {
+                obj[name] = fallback;
+              } catch (err2) {}
+            }
+          };
+          if (typeof window !== 'undefined') {
+            defineOn(window, 'localStorage', window.safeLocalStorage);
+            defineOn(window, 'sessionStorage', window.safeSessionStorage);
+            if (window.self) {
+              defineOn(window.self, 'localStorage', window.safeLocalStorage);
+              defineOn(window.self, 'sessionStorage', window.safeSessionStorage);
+            }
+          }
+          if (typeof Window !== 'undefined' && Window.prototype) {
+            defineOn(Window.prototype, 'localStorage', window.safeLocalStorage);
+            defineOn(Window.prototype, 'sessionStorage', window.safeSessionStorage);
+          }
+        } catch (polyErr) {
+          console.warn("[StorageShield] Property override failed, proceeding with global proxy namespaces.", polyErr);
+        }
+      })();
+    </script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content" />
+    <title>전체 화면 테스트 · LucKey</title>
+    <meta name="description" content="하나로 연결된 AI 페르소나 유니버스 'LucKey'와 지혜의 경전 'ReBible'" />
+    <meta property="og:title" content="LucKey" />
+    <meta property="og:description" content="하나로 연결된 AI 페르소나 유니버스 'LucKey'와 지혜의 경전 'ReBible'" />
+    <meta property="og:image" content="/app-icon.png" />
+    <meta property="og:site_name" content="LucKey" />
+    <meta name="application-name" content="LucKey" />
+    <link rel="icon" type="image/png" sizes="64x64" href="/favicon.png?clover=3" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/icon-192-v3.png" />
+    <link rel="icon" type="image/png" sizes="512x512" href="/icon-512-v3.png" />
+    <link rel="icon" type="image/svg+xml" href="/icon-clover-v3.svg" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon-v3.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon-v3.png" />
+    <link rel="apple-touch-icon-precomposed" sizes="180x180" href="/apple-touch-icon-v3.png" />
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="LucKey">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="full-screen" content="yes">
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#101722">
+    <meta name="msapplication-tap-highlight" content="no">
+  </head>
+  <body>
+    <div id="root">
+      <div style="position:fixed;inset:0;background:#06070a;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:99999;color:#fff;font-family:-apple-system,BlinkMacSystemFont,sans-serif;user-select:none;overflow:hidden;padding:16px;">
+        <style>
+          @keyframes lkPulseRing { 0%, 100% { transform: scale(0.96); opacity: 0.3; } 50% { transform: scale(1.05); opacity: 0.65; } }
+          @keyframes lkOrbitRotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+          @keyframes lkBoxBreath { 0%, 100% { transform: scale(0.98); } 50% { transform: scale(1.02); } }
+          @keyframes lkTextFade { 0%, 100% { opacity: 0.65; } 50% { opacity: 0.95; } }
+          @keyframes lkSheenSlide { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
+        </style>
+
+        <!-- Subtle Ambient Vignette Glow -->
+        <div style="position:absolute;inset:0;pointer-events:none;display:flex;align-items:center;justify-content:center;">
+          <div style="width:240px;height:240px;border-radius:50%;background:rgba(16,185,129,0.05);filter:blur(64px);"></div>
+          <div style="width:200px;height:200px;border-radius:50%;background:rgba(245,158,11,0.05);filter:blur(48px);position:absolute;"></div>
+        </div>
+
+        <!-- Minimalist Central Emblem: Clover & Key Motif -->
+        <div style="position:relative;z-index:10;display:flex;flex-direction:column;align-items:center;">
+          <div style="position:relative;display:flex;align-items:center;justify-content:center;margin-bottom:20px;">
+            <!-- Outer Breathing Hairline Ring -->
+            <div style="position:absolute;width:72px;height:72px;border-radius:50%;border:1px solid rgba(52,211,153,0.25);animation:lkPulseRing 3s infinite ease-in-out;"></div>
+
+            <!-- Rotating Orbit Ring -->
+            <div style="position:absolute;width:96px;height:96px;border-radius:50%;border:1px dashed rgba(251,191,36,0.2);animation:lkOrbitRotate 16s infinite linear;">
+              <div style="position:absolute;top:0;left:50%;transform:translate(-50%, -50%);width:6px;height:6px;border-radius:50%;background:#fde047;box-shadow:0 0 8px #fde047;"></div>
+            </div>
+
+            <!-- Core Minimal Clover-Key Geometry (SVG 32x32) inside rounded-2xl container -->
+            <div style="width:52px;height:52px;border-radius:16px;background:rgba(24,24,27,0.85);border:1px solid rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:center;box-shadow:0 10px 25px rgba(0,0,0,0.5);backdrop-filter:blur(6px);animation:lkBoxBreath 2.4s infinite ease-in-out;">
+              <svg viewBox="0 0 32 32" fill="none" style="width:30px;height:30px;" xmlns="http://www.w3.org/2000/svg">
+                <!-- Four-leaf Clover subtle petals -->
+                <g stroke="#34d399" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M16 16 C16 11, 12 9, 12 12 C12 15, 16 16, 16 16" fill="#34d399" fill-opacity="0.2"/>
+                  <path d="M16 16 C21 16, 23 12, 20 12 C17 12, 16 16, 16 16" fill="#34d399" fill-opacity="0.2"/>
+                  <path d="M16 16 C16 21, 20 23, 20 20 C20 17, 16 16, 16 16" fill="#34d399" fill-opacity="0.2"/>
+                  <path d="M16 16 C11 16, 9 20, 12 20 C15 20, 16 16, 16 16" fill="#34d399" fill-opacity="0.2"/>
+                </g>
+                <!-- Minimal Golden Celestial Key Accent -->
+                <g stroke="#fcd34d" stroke-width="1.5" stroke-linecap="round">
+                  <circle cx="16" cy="16" r="2.5" fill="#fde047" stroke="none"/>
+                  <path d="M16 18.5 L16 25"/>
+                  <path d="M16 23 L18.5 23"/>
+                  <path d="M16 25 L18 25"/>
+                </g>
+              </svg>
+            </div>
+          </div>
+
+          <!-- LucKey Brand Name -->
+          <div style="margin-bottom:8px;font-size:20px;font-weight:900;letter-spacing:-0.05em;text-transform:uppercase;display:inline-flex;align-items:center;">
+            <span style="background:linear-gradient(90deg, #34d399, #4ade80, #5eead4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 10px rgba(52,211,153,0.8));">LUC</span><span style="background:linear-gradient(90deg, #fcd34d, #fde047, #fbbf24);-webkit-background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 10px rgba(251,191,36,0.8));">KE</span><span style="background:linear-gradient(180deg, #6ee7b7, #34d399, #2dd4bf);-webkit-background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 10px rgba(52,211,153,0.8));">Y</span>
+          </div>
+
+          <!-- Clean Message Indicator -->
+          <p style="font-size:13px;font-weight:500;letter-spacing:0.02em;color:#d4d4d8;margin:0;font-family:-apple-system,BlinkMacSystemFont,sans-serif;text-align:center;animation:lkTextFade 2.2s infinite ease-in-out;">
+            행운과 해답의 문을 여는 중...
+          </p>
+
+          <!-- Minimal Subtitle -->
+          <p style="font-size:10px;letter-spacing:0.2em;color:#71717a;font-family:monospace;margin-top:4px;margin-bottom:0;text-transform:uppercase;text-align:center;">
+            LUCKEY · SOUL SANCTUARY
+          </p>
+
+          <!-- Minimal Hairline Progress Sheen -->
+          <div style="width:130px;height:1.5px;background:rgba(255,255,255,0.1);border-radius:999px;margin-top:14px;overflow:hidden;position:relative;">
+            <div style="width:100%;height:100%;background:linear-gradient(90deg, transparent, #34d399, transparent);animation:lkSheenSlide 1.8s infinite cubic-bezier(0.4, 0, 0.2, 1);"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script>
+      (() => {
+        const recoveryKey = 'prism_chunk_recovery_at';
+        let recovering = false;
+
+        const recoverFromStaleAssets = async () => {
+          if (recovering) return;
+          const lastRecovery = Number(sessionStorage.getItem(recoveryKey) || 0);
+          if (Date.now() - lastRecovery < 30000) return;
+
+          recovering = true;
+          sessionStorage.setItem(recoveryKey, String(Date.now()));
+          try {
+            if ('caches' in window) {
+              const cacheNames = await caches.keys();
+              await Promise.all(cacheNames.map((name) => caches.delete(name)));
+            }
+            if ('serviceWorker' in navigator) {
+              const registrations = await navigator.serviceWorker.getRegistrations();
+              await Promise.all(registrations.map((registration) => registration.update().catch(() => undefined)));
+            }
+          } finally {
+            window.location.reload();
+          }
+        };
+
+        const isStaleAssetError = (value) => {
+          const message = String(value?.message || value?.reason?.message || value?.reason || value || '');
+          return /ChunkLoadError|Loading chunk|Failed to fetch dynamically imported module|Importing a module script failed|preload/i.test(message);
+        };
+
+        window.addEventListener('vite:preloadError', (event) => {
+          event.preventDefault();
+          void recoverFromStaleAssets();
+        });
+        window.addEventListener('unhandledrejection', (event) => {
+          if (isStaleAssetError(event)) void recoverFromStaleAssets();
+        });
+        window.addEventListener('error', (event) => {
+          const failedScript = event.target instanceof HTMLScriptElement &&
+            event.target.src &&
+            (event.target.src.includes('/assets/') || event.target.src.includes('/src/'));
+          if (failedScript || isStaleAssetError(event.error || event.message)) void recoverFromStaleAssets();
+        }, true);
+      })();
+    </script>
+    <script type="module" src="/src/debug/fullAppTest.ts"></script>
+  </body>
+</html>
