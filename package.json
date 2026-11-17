@@ -1,7 +1,7 @@
 {
   "name": "luckey",
   "private": true,
-  "version": "1.7.760",
+  "version": "1.7.761",
   "engines": {
     "node": ">=20.0.0"
   },
@@ -25,9 +25,7 @@
     "test:tarot-energy-summary": "tsx --test tests/tarot-energy-summary.test.ts",
     "test:tts-highlight": "tsx --test tests/tts-highlight-match.test.ts",
     "test:cloudflare": "tsx --test tests/cloudflare-worker.test.ts",
-    "build:fold-test": "vite build --config vite.fold-test.config.ts",
-    "test:fold-dialogs": "tsx --test tests/fold-dialog-dom.test.tsx tests/pwa-fold-geometry.test.ts tests/duo-fold-recovery.test.ts",
-    "build:full-app-test": "vite build --config vite.full-app-test.config.ts && node scripts/prepare-full-app-test.mjs"
+    "test:fold-dialogs": "tsx --test tests/fold-dialog-dom.test.tsx tests/pwa-fold-geometry.test.ts tests/duo-fold-recovery.test.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.91.1",
