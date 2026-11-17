@@ -1,10 +1,10 @@
 {
-  "version": "1.7.718",
-  "builtAt": "2026-11-17T09:45:00+09:00",
-  "summary": "융 그림자 원형·휴먼디자인 바디그래프·에니어그램 영혼통합 3대 엔진 성찰 질문 및 카탈로그 뜻 등록(v1.7.718)",
+  "version": "1.7.719",
+  "builtAt": "2026-11-17T09:50:00+09:00",
+  "summary": "7대 차크라·노자 도덕경·마의상법 12궁 3대 엔진 해석 경계 표준 연동(v1.7.719)",
   "items": [
-    "융 그림자 원형(shadowArchetypeEngine v2.1.0): +09:00 (KST) 표기·질문 반응형 성찰 질문(reflectiveQuestion)·question 인자 연동 및 summary 등록",
-    "휴먼디자인 바디그래프(humanDesignBodyGraphEngine v2.1.0): +09:00 (KST) 표기·질문 반응형 성찰 질문(reflectiveQuestion) 및 summary 등록",
-    "에니어그램 영혼통합(enneagramSoulIntegrationEngine v2.1.0): +09:00 (KST) 표기·질문 반응형 성찰 질문(reflectiveQuestion) 및 summary 등록"
+    "7대 차크라 파동 정렬 엔진(v2.1.0): interpretiveBoundary 표준 필드 연동",
+    "노자 도덕경 상선약수 & 무위자연 엔진(v2.3.0): interpretiveBoundary 표준 필드 연동",
+    "마의상법 12궁 관상 & 심상합일 엔진(v2.1.0): interpretiveBoundary 표준 필드 연동"
   ]
 }
