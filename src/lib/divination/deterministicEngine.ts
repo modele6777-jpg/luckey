@@ -1585,7 +1585,7 @@ try {
   const sleepSubconsciousResult = calculateSupplement('sleepSubconsciousResult', () => (birthdateStr && profile
     ? (() => {
         try {
-          return calculateSleepSubconscious({ profile, targetDate: now });
+          return calculateSleepSubconscious({ profile, targetDate: now, question });
         } catch (_) {
           return null;
         }
@@ -4750,9 +4750,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'karmicNodes', nameKo: '카르믹 노드', icon: '🪐', category: 'deep_master', summary: '점성학 남·북 노드와 키론·블랙문 릴리스 상징으로 익숙한 컴포트 존과 영혼 진화 과제를 비추는 관점' },
   { key: 'mentalResilience', nameKo: '멘탈 리질리언스', icon: '🛡️', category: 'deep_master', summary: '사주 괴강·백호·양인 돌파력과 주역 4대 난괘 탈출 지혜로 스트레스 회복 리듬을 비추는 관점' },
   { key: 'nobleNetwork', nameKo: '귀인 네트워크', icon: '🤝', category: 'deep_master', summary: '천을·태극·천월덕 4대 귀인과 육합·삼합 인연 띠로 협력 시너지와 관계 균형을 비추는 관점' },
-  { key: 'contractShield', nameKo: '계약·협상 실드', icon: '📑', category: 'deep_master' },
-  { key: 'deepWorkFlow', nameKo: '딥워크 몰입 리듬', icon: '🌊', category: 'deep_master' },
-  { key: 'sleepSubconscious', nameKo: '수면 무의식 뇌파', icon: '💤', category: 'deep_master' },
+  { key: 'contractShield', nameKo: '계약·협상 실드', icon: '📑', category: 'deep_master', summary: '사주 칠살·삼형살과 주역 천수송(訟) 지혜로 계약·동업 전 독소조항과 서면 방어벽을 점검하는 관점' },
+  { key: 'deepWorkFlow', nameKo: '딥워크 몰입 리듬', icon: '🌊', category: 'deep_master', summary: '문창·학당·화개 길신과 창작 5하우스 성향으로 자신만의 스프린트 리듬과 점화 리추얼을 비추는 관점' },
+  { key: 'sleepSubconscious', nameKo: '수면 무의식 뇌파', icon: '💤', category: 'deep_master', summary: '사주 12운성 이완 궤적과 달 위상 상징으로 야간 뇌신경 리셋과 꿈 직관 단서를 비추는 관점' },
   { key: 'quantumLeap', nameKo: '퀀텀 점프 가능성', icon: '🚀', category: 'deep_master' },
   { key: 'soulJourneyTarot', nameKo: '영혼 여정 타로', icon: '🎴', category: 'deep_master' },
   { key: 'transcendentalMeditation', nameKo: '초월 명상 가이드', icon: '🧘', category: 'deep_master', summary: '사주 오행과 주역 젠 만트라 상징으로 현재에 맞는 호흡·자세·명상 리듬을 살피는 관점' },
