@@ -13,7 +13,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const GERMAN_JURGEN_HABERMAS_COMMUNICATIVE_ACTION_VERSION = 'LUCKEY-JURGEN-HABERMAS-COMMUNICATIVE-ACTION-v2.1.0';
+export const GERMAN_JURGEN_HABERMAS_COMMUNICATIVE_ACTION_VERSION = 'LUCKEY-JURGEN-HABERMAS-COMMUNICATIVE-ACTION-v2.2.0';
 
 export interface HabermasTheme {
   themeKey: string;
@@ -45,6 +45,8 @@ export interface GermanJurgenHabermasCommunicativeActionResult {
   focalHabermasAphorism: HabermasAphorism;
   secondaryHabermasAphorism: HabermasAphorism;
   reflectiveQuestion: string;
+  ritualAction: string;
+  reflectionFocus: string;
   interpretiveBoundary: string;
   habermasComprehensiveGuidance: {
     guidanceTitle: string;
@@ -182,6 +184,8 @@ export function calculateGermanJurgenHabermasCommunicativeAction(
   const focalHabermasAphorism = HABERMAS_APHORISMS[aphorismIndex];
   const secondaryHabermasAphorism = HABERMAS_APHORISMS[secondaryAphorismIndex];
   const reflectiveQuestion = buildHabermasReflectiveQuestion(activeHabermasTheme, query);
+  const ritualAction = focalHabermasAphorism.actionGuidance;
+  const reflectionFocus = reflectiveQuestion;
   const interpretiveBoundary = '하버마스 의사소통행위 관점은 관계의 성패를 단정하거나 상대를 심판하는 도구가 아니라, 왜곡 없는 대화와 상호이해를 비추는 비판철학적 성찰 렌즈입니다.';
 
   const guidanceTitle = `위르겐 하버마스 의사소통과 공론장의 지혜: ${activeHabermasTheme.themeTitleKo}`;
@@ -213,6 +217,8 @@ export function calculateGermanJurgenHabermasCommunicativeAction(
     focalHabermasAphorism,
     secondaryHabermasAphorism,
     reflectiveQuestion,
+    ritualAction,
+    reflectionFocus,
     interpretiveBoundary,
     habermasComprehensiveGuidance: {
       guidanceTitle,
@@ -243,6 +249,8 @@ export function formatGermanJurgenHabermasCommunicativeActionPrompt(
     `- 보조 원전 출처: [${res.secondaryHabermasAphorism.sourceContext}]`,
     `- 보조 실천 지침: ${res.secondaryHabermasAphorism.actionGuidance}`,
     `- 성찰 질문: ${res.reflectiveQuestion}`,
+    `- 실천 의례: ${res.ritualAction}`,
+    `- 성찰 초점: ${res.reflectionFocus}`,
     `- 종합 하버마스 권면: ${res.habermasComprehensiveGuidance.philosophicalCounsel}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
   ];

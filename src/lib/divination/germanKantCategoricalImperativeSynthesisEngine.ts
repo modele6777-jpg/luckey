@@ -12,7 +12,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const KANT_CATEGORICAL_IMPERATIVE_VERSION = 'LUCKEY-KANT-CATEGORICAL-IMPERATIVE-v2.1.0';
+export const KANT_CATEGORICAL_IMPERATIVE_VERSION = 'LUCKEY-KANT-CATEGORICAL-IMPERATIVE-v2.2.0';
 
 export interface KantImperativeFormula {
   formulaKey: string;
@@ -68,6 +68,8 @@ export interface KantCategoricalImperativeResult {
   temporalReasonRhythm: KantTemporalReasonRhythm;
   kantSynthesisMatrix: KantSynthesisMatrix;
   dailyPracticeRitual: string;
+  ritualAction: string;
+  reflectionFocus: string;
   interpretiveBoundary: string;
   kantPhilosophicalCounsel: {
     counselTitle: string;
@@ -270,6 +272,8 @@ export function calculateKantCategoricalImperative(
     `${temporalReasonRhythm.dailyDutyPractice}`;
 
   const dailyPracticeRitual = `오늘의 정언명령 실천 의례: ${temporalReasonRhythm.dailyDutyPractice} 결정 전 '이 원칙이 보편 법칙이 되어도 떳떳한가'를 한 번 자문하십시오.`;
+  const ritualAction = dailyPracticeRitual;
+  const reflectionFocus = situationalImperativeAudit.reflectiveQuestion;
   const interpretiveBoundary = '이 관점은 칸트의 실천이성과 도덕 법칙의 상징적 비유일 뿐, 현실의 법적·실무적 판단을 대신하지 않습니다.';
 
   return {
@@ -286,6 +290,8 @@ export function calculateKantCategoricalImperative(
     temporalReasonRhythm,
     kantSynthesisMatrix,
     dailyPracticeRitual,
+    ritualAction,
+    reflectionFocus,
     interpretiveBoundary,
     kantPhilosophicalCounsel: {
       counselTitle,
@@ -353,6 +359,8 @@ export function formatKantCategoricalImperativePrompt(res: KantCategoricalImpera
     `- 핵심 정언명령 정식: ${res.activeImperativeFormula.formulaNameKo} [${res.activeImperativeFormula.formulaNameGerman}]`,
     `- 초점 도덕적 준칙: ${res.focalMoralMaxim.maximNameKo} (${res.focalMoralMaxim.dutyDimension})`,
     `- 일상 실천 의례: ${res.dailyPracticeRitual}`,
+    `- 실천 의례: ${res.ritualAction}`,
+    `- 성찰 초점: ${res.reflectionFocus}`,
     `- 철학적 수양 지침: ${res.kantPhilosophicalCounsel.philosophicalGuidance}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
   ].join('\n');

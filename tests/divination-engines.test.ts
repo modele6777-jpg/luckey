@@ -6077,10 +6077,14 @@ test('Kant Categorical Imperative Engine: calculates universal law maxims, human
   assert(rep.situationalImperativeAudit.focusAxisKo.length > 0);
   assert(rep.temporalReasonRhythm.practicalReasonIndex >= 0 && rep.temporalReasonRhythm.practicalReasonIndex <= 100);
   assert(rep.kantSynthesisMatrix.overallKantGrade.length > 0);
+  assert(rep.ritualAction.length > 0);
+  assert(rep.reflectionFocus.length > 0);
   const prompt = formatKantCategoricalImperativePrompt(rep);
   assert(prompt.includes('칸트 정언명령 & 목적의 왕국 자율성 지표'));
   assert(prompt.includes(rep.activeImperativeFormula.formulaNameKo));
   assert(prompt.includes('질문 맥락 정식'));
+  assert(prompt.includes('실천 의례:'));
+  assert(prompt.includes('성찰 초점:'));
 });
 
 test('Upanishadic Tat Tvam Asi Engine: calculates Brahman-Atman unity, Maya piercing, Neti Neti detachment, and Sat-Chit-Ananda', () => {
@@ -6743,10 +6747,14 @@ test('Johann Wolfgang von Goethe Faust Striving Engine: calculates Striving Salv
   assert(rep.activeGoetheTheme.themeTitleKo.length > 0);
   assert(rep.calculatedAtKst.endsWith('KST'));
   assert(Boolean(rep.goetheSynthesisMatrix?.integratedAction));
+  assert(rep.ritualAction.length > 0);
+  assert(rep.reflectionFocus.length > 0);
   const prompt = formatJohannWolfgangGoetheFaustStrivingPrompt(rep);
   assert(prompt.includes('괴테 《파우스트》 영혼 구원 갈망 노력 & 현재 순간 몰입 지표'));
   assert(prompt.includes(rep.activeGoetheTheme.themeTitleKo));
   assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('실천 의례:'));
+  assert(prompt.includes('성찰 초점:'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });
@@ -8100,10 +8108,14 @@ test('Jurgen Habermas Communicative Action and Public Sphere Engine: calculates 
   assert(rep.activeHabermasTheme.themeTitleKo.length > 0);
   assert(rep.calculatedAtKst.endsWith('KST'));
   assert(Boolean(rep.habermasSynthesisMatrix?.integratedAction));
+  assert(rep.ritualAction.length > 0);
+  assert(rep.reflectionFocus.length > 0);
   const prompt = formatGermanJurgenHabermasCommunicativeActionPrompt(rep);
   assert(prompt.includes('위르겐 하버마스 《의사소통행위이론》 더 나은 논증의 힘·공론장 지표'));
   assert(prompt.includes(rep.activeHabermasTheme.themeTitleKo));
   assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('실천 의례:'));
+  assert(prompt.includes('성찰 초점:'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });

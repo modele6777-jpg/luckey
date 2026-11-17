@@ -1,10 +1,10 @@
 {
-  "version": "1.7.803",
-  "builtAt": "2026-11-18T08:00:00+09:00",
-  "summary": "레비나스·바슐라르·프루스트 3대 엔진 성찰 질문 및 +09:00 KST 표기 보강(v1.7.803)",
+  "version": "1.7.804",
+  "builtAt": "2026-11-18T08:03:00+09:00",
+  "summary": "괴테, 하버마스, 칸트 3대 엔진 실천 의례 및 성찰 질문 표준 연동(v1.7.804)",
   "items": [
-    "레비나스 타자의 얼굴 & 환대(frenchEmmanuelLevinasFaceOfOtherHospitalityEngine v2.2.0): +09:00 KST 표기 및 질문 반응형 reflectiveQuestion 프롬프트 연동",
-    "바슐라르 공간의 시학(frenchGastonBachelardPoeticsOfSpaceEngine v2.2.0): +09:00 KST 표기 및 질문 반응형 reflectiveQuestion 프롬프트 연동",
-    "프루스트 잃어버린 시간을 찾아서(frenchMarcelProustLostTimeRegainedEngine v2.4.0): +09:00 KST 표기 및 질문 반응형 reflectiveQuestion 프롬프트 연동"
+    "괴테 《파우스트》 갈망 노력 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동",
+    "하버마스 《의사소통행위이론》 공론장 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동",
+    "칸트 정언명령 & 목적의 왕국 자율성 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동"
   ]
 }
