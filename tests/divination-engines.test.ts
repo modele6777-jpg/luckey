@@ -10578,3 +10578,29 @@ test('Dreamtime · Akashic · Alchemical v2.2/v2.3: KST, reflectiveQuestion, and
   const alPrompt = formatAlchemicalTransmutationPrompt(al);
   assert.ok(alPrompt.includes('+09:00') && alPrompt.includes('성찰 질문') && alPrompt.includes('해석 경계'));
 });
+
+test('Alexandrian Decan · Arendt · Thoreau v2.2: KST, reflectiveQuestion, and interpretiveBoundary', () => {
+  const now = new Date('2026-11-17T19:20:00Z');
+  const query = '새로운 시작을 앞두고 마음이 복잡해요';
+
+  const dec = calculateAlexandrianDecanThirtySixGods({ profile, question: query, now });
+  assert.equal(dec.engineVersion, ALEXANDRIAN_DECAN_ENGINE_VERSION);
+  assert.match(dec.calculatedAtKst, /KST/);
+  assert.ok(dec.reflectiveQuestion.includes(query));
+  const decPrompt = formatAlexandrianDecanThirtySixGodsPrompt(dec);
+  assert.ok(decPrompt.includes('KST') && decPrompt.includes('성찰 질문') && decPrompt.includes('해석 경계'));
+
+  const ar = calculateHannahArendtVitaActiva(profile, query, now);
+  assert.equal(ar.engineVersion, AMERICAN_GERMAN_HANNAH_ARENDT_VERSION);
+  assert.match(ar.calculatedAtKst, /\+09:00/);
+  assert.ok(ar.reflectiveQuestion.includes(query));
+  const arPrompt = formatHannahArendtVitaActivaPrompt(ar);
+  assert.ok(arPrompt.includes('+09:00') && arPrompt.includes('성찰 질문') && arPrompt.includes('해석 경계'));
+
+  const th = calculateHenryDavidThoreauWalden(profile, query, now);
+  assert.equal(th.engineVersion, AMERICAN_HENRY_DAVID_THOREAU_VERSION);
+  assert.match(th.calculatedAtKst, /\+09:00/);
+  assert.ok(th.reflectiveQuestion.includes(query));
+  const thPrompt = formatHenryDavidThoreauWaldenPrompt(th);
+  assert.ok(thPrompt.includes('+09:00') && thPrompt.includes('성찰 질문') && thPrompt.includes('해석 경계'));
+});
