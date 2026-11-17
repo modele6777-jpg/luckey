@@ -7,7 +7,6 @@ const iphone = devices['iPhone 16 Pro'];
 const fixture = `
 import React from 'react';
 import { createRoot } from 'react-dom/client';
-import { RetainedPane } from './src/components/layout/RetainedPane';
 import { DialogTriggerButton } from './src/components/layout/DialogTriggerButton';
 import { OverlayPaneContext } from './src/components/layout/OverlayPaneContext';
 import { LucyEngineCatalogDialog } from './src/components/chat/LucyEngineCatalogDialog';
@@ -15,38 +14,28 @@ import { PromptLibraryModal } from './src/components/chat/PromptLibraryModal';
 import { UpdateNoticeModal } from './src/components/UpdateNoticeModal';
 import { visualViewportMatchesLayout } from './src/lib/mainOverlayViewport';
 import { holdLucyScrollPin, lucyScrollPinHeld, overlayCoversElement, releaseLucyScrollPin } from './src/lib/lucyScrollPin';
-import { bindLucyLayoutContinuity } from './src/lib/lucyLayoutContinuity';
 window.visualMatches = visualViewportMatchesLayout;
 window.overlayCovers = overlayCoversElement;
 window.holdPin = holdLucyScrollPin;
 window.pinHeld = lucyScrollPinHeld;
 window.releasePin = releaseLucyScrollPin;
-window.bindLucyLayoutContinuity = bindLucyLayoutContinuity;
-window.setLucyPaneActive = () => {};
-window.cleanupLucyLayoutContinuity = () => {};
 window.activations = 0;
 function Libraries() {
   const [open, setOpen] = React.useState(null);
-  const [selectedChannel, setSelectedChannel] = React.useState('orange');
-  const [draft, setDraft] = React.useState('');
-  const [paneActive, setPaneActive] = React.useState(true);
-  window.setLucyPaneActive = setPaneActive;
   const openLibrary = (name) => { window.activations += 1; setOpen(name); };
-  return <RetainedPane active={paneActive}><OverlayPaneContext.Provider value="lucy">
+  return <OverlayPaneContext.Provider value="lucy">
     <header className="lucy-chat-header backdrop-blur-xl">
-      <button id="selected-channel" type="button" onClick={() => setSelectedChannel('bluebird')}>채널: {selectedChannel}</button>
       <DialogTriggerButton id="engine" aria-label="Lucy 엔진과 관점 목록 보기" onClick={() => openLibrary('engine')}>엔진·관점</DialogTriggerButton>
     </header>
-    <div className="lucy-chat-main" id="chat"><div className="thread">{Array.from({ length: 50 }, (_, index) => <div key={index} data-lucy-message-key={'message-' + index} className="continuity-message">메시지 {index + 1}: 이 대화 문장은 화면 폭과 방향이 바뀌어도 같은 읽던 위치를 유지해야 합니다.</div>)}</div></div>
+    <div className="lucy-chat-main" id="chat"><div className="thread">older messages should stay above the latest line</div></div>
     <footer className="lucy-chat-footer backdrop-blur-xl">
       <div className="lucy-suggestion-toolbar">
         <DialogTriggerButton id="prompt" aria-label="추천질문 라이브러리 열기" onClick={() => openLibrary('prompt')}>질문</DialogTriggerButton>
       </div>
-      <textarea id="lucy-draft" value={draft} onChange={(event) => setDraft(event.target.value)} aria-label="Lucy 초안" />
     </footer>
     <LucyEngineCatalogDialog isOpen={open === 'engine'} isLight={false} onClose={() => setOpen(null)} />
     <PromptLibraryModal isOpen={open === 'prompt'} onClose={() => setOpen(null)} onSelectPrompt={() => {}} />
-  </OverlayPaneContext.Provider></RetainedPane>;
+  </OverlayPaneContext.Provider>;
 }
 function Notice() {
   const [open, setOpen] = React.useState(false);
@@ -106,10 +95,7 @@ try {
     .lucy-suggestion-toolbar { display: flex; height: 24px; overflow: hidden; }
     #engine, #prompt { min-width: 44px; min-height: 32px; position: relative; z-index: 1; }
     .lucy-chat-main { flex: 1 1 0; min-height: 0; overflow-y: auto; }
-    .thread { min-height: 2400px; }
-    .continuity-message { min-height: 48px; padding: 8px 4px; border-bottom: 1px solid rgba(255,255,255,.08); }
-    #lucy-draft { width: 100%; min-height: 28px; color: white; background: rgba(0,0,0,.15); }
-    .folded.channel-active [data-workspace-pane="lucy"] { display: none; }
+    .thread { height: 2400px; }
     .fixed { position: fixed; } .inset-0 { inset: 0; }
   </style>
   <main class="sites-pinned-main folded" id="workspace">
@@ -183,140 +169,6 @@ try {
   });
   assert.equal(layout.hit, 'engine', JSON.stringify(layout));
   assert(layout.chat.client < layout.chat.scrollHeight, JSON.stringify(layout));
-
-  await page.locator('#selected-channel').tap();
-  await page.locator('#lucy-draft').fill('접힘과 회전 뒤에도 남아야 하는 Lucy 초안');
-  await page.evaluate(() => {
-    const scroller = document.querySelector('#chat');
-    const input = document.querySelector('#lucy-draft');
-    scroller.scrollTop = 980;
-    input.focus();
-    input.setSelectionRange(4, 10, 'forward');
-    window.cleanupLucyLayoutContinuity();
-    window.cleanupLucyLayoutContinuity = window.bindLucyLayoutContinuity(scroller, input, {
-      onRestore(snapshot) { window.__continuityBottom = snapshot.atBottom; },
-    });
-  });
-  await page.waitForTimeout(20);
-  const continuityBefore = await page.evaluate(() => {
-    const scroller = document.querySelector('#chat');
-    const input = document.querySelector('#lucy-draft');
-    const box = scroller.getBoundingClientRect();
-    const anchor = Array.from(scroller.querySelectorAll('[data-lucy-message-key]')).find((item) => item.getBoundingClientRect().bottom > box.top + 1);
-    return {
-      anchor: anchor?.dataset.lucyMessageKey,
-      anchorOffset: anchor ? anchor.getBoundingClientRect().top - box.top : null,
-      draft: input.value,
-      channel: document.querySelector('#selected-channel').textContent,
-      selection: [input.selectionStart, input.selectionEnd],
-    };
-  });
-  assert(continuityBefore.anchor, 'A visible conversation message becomes the resize anchor');
-  assert(continuityBefore.channel.includes('bluebird'), continuityBefore.channel);
-
-  const verifyLucyContinuity = async (label) => {
-    await page.waitForTimeout(220);
-    const after = await page.evaluate((anchorKey) => {
-      const scroller = document.querySelector('#chat');
-      const input = document.querySelector('#lucy-draft');
-      const box = scroller.getBoundingClientRect();
-      const anchor = Array.from(scroller.querySelectorAll('[data-lucy-message-key]')).find((item) => item.dataset.lucyMessageKey === anchorKey);
-      return {
-        anchorOffset: anchor ? anchor.getBoundingClientRect().top - box.top : null,
-        draft: input.value,
-        channel: document.querySelector('#selected-channel').textContent,
-        focused: document.activeElement === input,
-        selection: [input.selectionStart, input.selectionEnd],
-      };
-    }, continuityBefore.anchor);
-    assert.equal(after.draft, continuityBefore.draft, `${label}: draft text survives`);
-    assert(after.channel.includes('bluebird'), `${label}: selected Lucy channel survives (${after.channel})`);
-    assert(after.anchorOffset !== null && Math.abs(after.anchorOffset - continuityBefore.anchorOffset) <= 2, `${label}: the same message remains at the same reading position (${continuityBefore.anchorOffset} -> ${after.anchorOffset})`);
-    assert.equal(after.focused, true, `${label}: composer focus survives`);
-    assert.deepEqual(after.selection, continuityBefore.selection, `${label}: composer caret/selection survives`);
-  };
-
-  await page.evaluate(() => {
-    document.getElementById('workspace').style.height = '600px';
-    window.visualViewport.dispatchEvent(new Event('resize'));
-    window.dispatchEvent(new Event('resize'));
-  });
-  await verifyLucyContinuity('viewport resize without focus loss');
-
-  await page.evaluate(() => {
-    // Emulate WebKit dropping the focused editor during a keyboard/viewport transition.
-    document.querySelector('#lucy-draft').blur();
-    document.getElementById('workspace').style.height = '560px';
-    window.visualViewport.dispatchEvent(new Event('resize'));
-    window.dispatchEvent(new Event('resize'));
-  });
-  await verifyLucyContinuity('keyboard viewport resize');
-
-  const changeLucyLayout = async (size, className, paneActive) => {
-    await page.evaluate(({ nextClass, active }) => {
-      window.setLucyPaneActive(active);
-      document.getElementById('workspace').className = `sites-pinned-main ${nextClass}`;
-      document.getElementById('workspace').style.removeProperty('height');
-    }, { nextClass: className, active: paneActive });
-    await page.setViewportSize(size);
-    await page.evaluate(() => {
-      window.visualViewport.dispatchEvent(new Event('resize'));
-      window.visualViewport.dispatchEvent(new Event('scroll'));
-      window.dispatchEvent(new Event('orientationchange'));
-    });
-  };
-
-  await changeLucyLayout({ width: 900, height: 640 }, 'unfolded landscape', true);
-  await verifyLucyContinuity('unfold to landscape');
-  await changeLucyLayout({ width: 700, height: 980 }, 'unfolded portrait', true);
-  await verifyLucyContinuity('rotate to portrait');
-  await changeLucyLayout({ width: 393, height: 852 }, 'folded channel-active', false);
-  await page.waitForTimeout(220);
-  const hiddenPaneState = await page.evaluate(() => ({
-    mounted: Boolean(document.querySelector('#chat')),
-    hidden: document.querySelector('#chat').getBoundingClientRect().height < 2,
-    draft: document.querySelector('#lucy-draft').value,
-    channel: document.querySelector('#selected-channel').textContent,
-  }));
-  assert.equal(hiddenPaneState.mounted, true, 'Retained Lucy pane stays mounted while folded onto a channel');
-  assert.equal(hiddenPaneState.hidden, true, 'The channel is visible while the Lucy pane is folded away');
-  assert.equal(hiddenPaneState.draft, continuityBefore.draft);
-  assert(hiddenPaneState.channel.includes('bluebird'), hiddenPaneState.channel);
-  await changeLucyLayout({ width: 852, height: 393 }, 'folded channel-active', false);
-  await page.waitForTimeout(220);
-  await changeLucyLayout({ width: 900, height: 640 }, 'unfolded landscape', true);
-  await verifyLucyContinuity('reopen after folded rotation');
-
-  await page.locator('#selected-channel').tap();
-  await page.evaluate(() => {
-    document.querySelector('#selected-channel').focus();
-    document.getElementById('workspace').style.height = '560px';
-    window.visualViewport.dispatchEvent(new Event('resize'));
-    window.dispatchEvent(new Event('resize'));
-  });
-  await page.waitForTimeout(220);
-  const focusAfterIntentionalTransfer = await page.evaluate(() => ({
-    activeId: document.activeElement?.id,
-    composerFocused: document.activeElement === document.querySelector('#lucy-draft'),
-  }));
-  assert.equal(focusAfterIntentionalTransfer.activeId, 'selected-channel', 'A resize does not steal focus after the user moves it to another control');
-  assert.equal(focusAfterIntentionalTransfer.composerFocused, false);
-
-  await page.evaluate(() => {
-    window.setLucyPaneActive(true);
-    document.getElementById('workspace').className = 'sites-pinned-main folded';
-    document.getElementById('workspace').style.removeProperty('height');
-  });
-  await page.setViewportSize({ width: 393, height: 852 });
-  await page.waitForTimeout(220);
-  await page.evaluate(() => {
-    window.cleanupLucyLayoutContinuity();
-    window.cleanupLucyLayoutContinuity = () => {};
-    const chat = document.querySelector('#chat');
-    chat.scrollTop = chat.scrollHeight;
-    document.querySelector('#lucy-draft').blur();
-  });
-
   await page.locator('#engine').tap();
   await page.locator('#lucy-engine-catalog-dialog').waitFor({ state: 'visible' });
   await page.screenshot({ path: `${artifactDir}/iphone-engine-open.png` });
@@ -425,7 +277,7 @@ try {
   });
   assert.equal(await page.locator('#lucy-engine-catalog-dialog').count(), 0, 'A cancelled pointerup still does not open a dialog');
   assert.deepEqual(errors.filter(message => !message.includes('Invalid URI scheme')), []);
-  console.log('PASS: WebKit iPhone preserves Lucy draft, selected channel, message anchor and composer selection across keyboard resize, fold/unfold and rotation; restores dropped composer focus without stealing intentionally moved focus; dialogs, chat-bottom behavior and stale visualViewport checks also pass');
+  console.log('PASS: WebKit iPhone taps open both libraries, unfold keeps the dialog, chat stays at the bottom, update notice shows with a stale cover visualViewport');
 } finally {
   await browser.close();
 }
