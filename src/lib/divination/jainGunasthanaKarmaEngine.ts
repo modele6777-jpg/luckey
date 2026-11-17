@@ -25,7 +25,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const JAIN_GUNASTHANA_KARMA_ENGINE_VERSION = '2.0.0';
+export const JAIN_GUNASTHANA_KARMA_ENGINE_VERSION = '2.1.0';
 
 export interface RatnatrayaBalance {
   darshanaScore: number; // 정견 (올바른 믿음/직관) 0~100
@@ -68,6 +68,7 @@ export interface JainGunasthanaReport {
     recommendedAction: string;
     cautionNotice: string;
   };
+  interpretiveBoundary: string;
   jainWisdom: string;
   boundaryNotice: string;
 }
@@ -286,6 +287,7 @@ export function calculateJainGunasthanaKarma(options?: {
     jainSynthesisMatrix,
     jainWisdom,
     boundaryNotice: '본 결과는 자이나교 《타트바르타 수트라》 14 군아스타나와 삼보 원리에 따른 정성적 성찰이며, 우열을 가르는 점수나 운명적 판정이 아닙니다.',
+    interpretiveBoundary: '본 결과는 자이나교 《타트바르타 수트라》 14 군아스타나와 삼보 원리에 따른 정성적 성찰이며, 우열을 가르는 점수나 운명적 판정이 아닙니다.',
   };
 }
 
