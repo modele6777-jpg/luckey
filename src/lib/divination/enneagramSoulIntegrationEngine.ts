@@ -22,7 +22,7 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const ENNEAGRAM_INTEGRATION_VERSION = 'LUCKEY-ENNEAGRAM-v2.1.0';
+export const ENNEAGRAM_INTEGRATION_VERSION = 'LUCKEY-ENNEAGRAM-v2.2.0';
 
 export interface EnneagramTypeDetails {
   coreNumber: number; // 1 ~ 9
@@ -67,6 +67,7 @@ export interface EnneagramSoulIntegrationReport {
     cautionNotice: string;
   };
   boundaryNotice: string;
+  interpretiveBoundary: string;
   reflectiveQuestion?: string;
   synthesisPromptGuidance: string;
 }
@@ -321,6 +322,7 @@ export function runEnneagramSoulIntegrationEngine(
     temporalEnneagramRhythm,
     enneagramSynthesisMatrix,
     boundaryNotice,
+    interpretiveBoundary: boundaryNotice,
     reflectiveQuestion,
     synthesisPromptGuidance
   };

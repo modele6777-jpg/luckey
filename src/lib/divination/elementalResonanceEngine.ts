@@ -16,7 +16,7 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const ELEMENTAL_RESONANCE_VERSION = 'LUCKEY-RESON-v2.0.0';
+export const ELEMENTAL_RESONANCE_VERSION = 'LUCKEY-RESON-v2.1.0';
 
 export type ElementName = '목' | '화' | '토' | '금' | '수';
 
@@ -80,6 +80,7 @@ export interface ElementalResonanceResult {
     cautionNotice: string;
   };
   boundaryNotice: string;
+  interpretiveBoundary: string;
   summary: string;
 }
 
@@ -310,6 +311,7 @@ export function calculateElementalResonance(params?: {
     temporalElementalRhythm,
     elementalSynthesisMatrix,
     boundaryNotice: '본 결과는 사주 오행의 상생·순환 구조를 바탕으로 한 정성적 컨디션 참고 안내이며, 확정적 길흉 판정이 아닙니다.',
+    interpretiveBoundary: '본 결과는 사주 오행의 상생·순환 구조를 바탕으로 한 정성적 컨디션 참고 안내이며, 확정적 길흉 판정이 아닙니다.',
     summary
   };
 }
