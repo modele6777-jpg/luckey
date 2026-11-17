@@ -23,7 +23,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const CELTIC_AWEN_TALIESIN_ENGINE_VERSION = '2.2.0';
+export const CELTIC_AWEN_TALIESIN_ENGINE_VERSION = '2.3.0';
 
 export interface AwenSituationalAudit {
   cauldronFocus: string;
@@ -75,6 +75,7 @@ export interface CelticAwenTaliesinReport {
   taliesinProphecy: string;
   ritualAction: string;
   reflectionFocus: string;
+  reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
 
@@ -265,8 +266,13 @@ export function calculateCelticAwenTaliesin(options?: {
   };
 
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
-  const calculatedAtKst = `${kst.toISOString().slice(0, 19)}+09:00`;
+  const calculatedAtKst = `${kst.toISOString().slice(0, 19)}+09:00 (KST)`;
   const interpretiveBoundary = '본 켈트 아웬 탈리에신 리포트는 웨일스 바드 전통의 상징과 변용을 비추는 정성적 영감 안내이며, 확정적 예언이 아닙니다.';
+  const trimmedQuestion = options?.question?.trim();
+  const reflectionFocus = `[${activeMetamorphosis.animalTotem}] 변용의 시선으로 볼 때, 지금 내가 낡은 껍질을 벗고 새롭게 부를 노래는 무엇인가요?`;
+  const reflectiveQuestion = trimmedQuestion
+    ? `"${trimmedQuestion}"이라는 물음 앞에서 [${dominantRay.name}]과 [${activeMetamorphosis.animalTotem}]의 기운으로 본다면, 지금 내가 망설임을 벗고 표현할 첫 번째 진실은 무엇인가요?`
+    : reflectionFocus;
 
   return {
     engineVersion: CELTIC_AWEN_TALIESIN_ENGINE_VERSION,
@@ -281,7 +287,8 @@ export function calculateCelticAwenTaliesin(options?: {
     cauldronPractice,
     taliesinProphecy,
     ritualAction: cauldronPractice,
-    reflectionFocus: `[${activeMetamorphosis.animalTotem}] 변용의 시선으로 볼 때, 지금 내가 낡은 껍질을 벗고 새롭게 부를 노래는 무엇인가요?`,
+    reflectionFocus,
+    reflectiveQuestion,
     interpretiveBoundary
   };
 }
@@ -316,6 +323,7 @@ export function formatCelticAwenTaliesinPrompt(report: CelticAwenTaliesinReport)
 4. [케리드웬 가마솥 처방 & 탈리에신 신탁]:
    - 교차 매트릭스: ${report.awenSynthesisMatrix.rayTotemLink}
    - 가마솥 연단 실천: ${report.cauldronPractice}
+   - 질문 맞춤 성찰 질문: ${report.reflectiveQuestion}
    - 종합 영감 예언: ${report.taliesinProphecy}
    - 해석 경계: ${report.interpretiveBoundary}`;
 }
