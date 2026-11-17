@@ -1,10 +1,10 @@
 {
-  "version": "1.7.755",
-  "builtAt": "2026-11-18T04:10:00+09:00",
-  "summary": "용수 중론 팔불중도·조로아스터 아메샤 스펜타·아랍 일무 알-람말 3대 엔진 실천 의례 및 성찰 질문 표준 연동(v1.7.755)",
+  "version": "1.7.756",
+  "builtAt": "2026-11-18T04:15:00+09:00",
+  "summary": "호주 드림타임 송라인·아카식 레코드·서양 연금술 7단계 성찰 질문 및 카탈로그 뜻 연동(v1.7.756)",
   "items": [
-    "용수 중론 팔불중도 공성 엔진(v2.3.0): ritualAction·reflectionFocus 표준 필드 연동",
-    "조로아스터 아메샤 스펜타 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동",
-    "아랍 일무 알-람말 사점 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동"
+    "호주 드림타임 송라인(aboriginalDreamtimeSonglinesEngine v2.2.0): 질문 반응형 reflectiveQuestion 추가 및 ALL_DCE_ENGINES summary 등록",
+    "아카식 레코드(akashicRecordsOracleEngine v2.3.0): 질문 반응형 reflectiveQuestion 추가 및 프롬프트 출력 연동",
+    "서양 연금술 7단계(alchemicalTransmutationEngine v2.3.0): 질문 반응형 reflectiveQuestion 추가 및 프롬프트 출력 연동"
   ]
 }

@@ -14,7 +14,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const ALCHEMICAL_TRANSMUTATION_VERSION = 'LUCKEY-ALCHEM-TRANSMUTE-v2.2.0';
+export const ALCHEMICAL_TRANSMUTATION_VERSION = 'LUCKEY-ALCHEM-TRANSMUTE-v2.3.0';
 
 export type AlchemicalQuestionFocus = 'career' | 'relationship' | 'anxiety' | 'change' | 'spiritual';
 
@@ -75,6 +75,7 @@ export interface AlchemicalTransmutationReport {
   dailyAlchemicalRitual: string;
   ritualAction: string;
   reflectionFocus: string;
+  reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
 
@@ -339,6 +340,8 @@ export function calculateAlchemicalTransmutation(
   const dailyAlchemicalRitual = `[${currentStage.element}] 에너지 정화 리추얼: 하루 중 조용한 3분을 내어, 현재 나를 짓누르는 [${primaMateria}]을/를 연금술의 도가니 속에 넣고 천천히 숨을 내쉬며 불태우거나 녹여내는 시각화를 진행하세요.`;
   const ritualAction = situationalAlchemicalAudit.innerAlchemyPractice;
   const reflectionFocus = `지금의 [${currentStage.nameKo}] 국면에서 "${currentStage.transmutationTask}"를 오늘 내 하루의 한 행동으로 옮긴다면 무엇이 가장 먼저 달라질까요?`;
+  const qLabel = question.trim() ? `"${question.trim()}"에 대해 ` : '';
+  const reflectiveQuestion = `${qLabel}${reflectionFocus}`;
 
   const kst = new Date(targetDate.getTime() + 9 * 3600 * 1000);
   const calculatedAtKst = `${kst.toISOString().slice(0, 19)}+09:00`;
@@ -360,6 +363,7 @@ export function calculateAlchemicalTransmutation(
     dailyAlchemicalRitual,
     ritualAction,
     reflectionFocus,
+    reflectiveQuestion,
     interpretiveBoundary: '본 리포트는 서양 연금술 7단계와 융 심층심리학 상징에 기반한 정성적 성찰 안내이며, 의학적·재정적 처방이 아닙니다.',
   };
 }
@@ -383,5 +387,6 @@ export function formatAlchemicalTransmutationPrompt(report: AlchemicalTransmutat
 - **연금술 교차 매트릭스**: ${report.opusSynthesisMatrix.synthesizedVerdict} (${report.opusSynthesisMatrix.coagulatioReadiness})
 - **대업(Opus Magnum) 완수 지침**: ${report.opusMagnumGuidance}
 - **일일 연금술 정화 리추얼**: ${report.dailyAlchemicalRitual}
+- **성찰 질문**: ${report.reflectiveQuestion}
 - **해석 경계**: 본 리포트는 서양 연금술 7단계와 융 심층심리학 상징에 기반한 정성적 성찰 안내이며, 의학적·재정적 처방이 아닙니다.`;
 }
