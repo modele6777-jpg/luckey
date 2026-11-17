@@ -22,7 +22,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const FINNISH_KALEVALA_SAMPO_ENGINE_VERSION = '2.1.0';
+export const FINNISH_KALEVALA_SAMPO_ENGINE_VERSION = '2.2.0';
 
 export interface SampoSituationalAudit {
   sampoAxis: string;
@@ -73,6 +73,7 @@ export interface FinnishKalevalaSampoReport {
   guardianNatureSpirit: string; // 대자연 수호신
   forestHealingPractice: string; // 숲의 힐링 처방
   kalevalaWisdom: string;
+  interpretiveBoundary: string;
 }
 
 const KALEVALA_RUNOS: KalevalaRuno[] = [
@@ -315,7 +316,8 @@ export function calculateFinnishKalevalaSampo(options?: {
     sampoSynthesisMatrix,
     guardianNatureSpirit,
     forestHealingPractice,
-    kalevalaWisdom
+    kalevalaWisdom,
+    interpretiveBoundary: '칼레발라 삼포 3대 날개와 시수(Sisu) 상징을 빌린 정성적 회복탄력 참고 관점이며, 수치 평가나 미래 단정이 아닙니다.',
   };
 }
 

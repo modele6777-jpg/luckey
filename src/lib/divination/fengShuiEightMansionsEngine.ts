@@ -29,7 +29,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const FENG_SHUI_EIGHT_MANSIONS_VERSION = 'LUCKEY-FENG-SHUI-EIGHT-MANSIONS-v2.0.0';
+export const FENG_SHUI_EIGHT_MANSIONS_VERSION = 'LUCKEY-FENG-SHUI-EIGHT-MANSIONS-v2.1.0';
 
 export type TrigramName = '감(坎, 1궁)' | '곤(坤, 2궁)' | '진(震, 3궁)' | '손(巽, 4궁)' | '건(乾, 6궁)' | '태(兌, 7궁)' | '간(艮, 8궁)' | '이(離, 9궁)';
 
@@ -83,6 +83,7 @@ export interface FengShuiEightMansionsReport {
   };
   spatialHarmonyGuidance: string;
   boundaryNotice: string;
+  interpretiveBoundary: string;
 }
 
 interface TrigramDirectionTable {
@@ -343,6 +344,7 @@ export function calculateFengShuiEightMansions(
     fengShuiSynthesisMatrix,
     spatialHarmonyGuidance,
     boundaryNotice: '본 결과는 동양 팔택명괘(八宅命卦) 방위 원리를 활용한 정성적 공간 배치 참고용이며, 확정적 길흉 판정이 아닙니다.',
+    interpretiveBoundary: '본 결과는 동양 팔택명괘(八宅命卦) 방위 원리를 활용한 정성적 공간 배치 참고용이며, 확정적 길흉 판정이 아닙니다.',
   };
 }
 

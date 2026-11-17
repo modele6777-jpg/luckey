@@ -8,7 +8,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const ETRUSCAN_AUGUR_ENGINE_VERSION = 'LUCKEY-ETRUSCAN-AUGUR-v2.1.0';
+export const ETRUSCAN_AUGUR_ENGINE_VERSION = 'LUCKEY-ETRUSCAN-AUGUR-v2.2.0';
 
 export interface CelestialTemplumRegion {
   regionNumber: number; // 1 ~ 16
@@ -61,6 +61,7 @@ export interface EtruscanAugurSixteenSkyReport {
   augurSynthesisMatrix: EtruscanSynthesisMatrix;
   augurOracleGuidance: string;
   auspiceActionPrescription: string;
+  interpretiveBoundary: string;
 }
 
 const SIXTEEN_TEMPLUM_REGIONS: CelestialTemplumRegion[] = [
@@ -288,7 +289,8 @@ export function calculateEtruscanAugurSixteenSky(params: {
     temporalAugurRhythm,
     augurSynthesisMatrix,
     augurOracleGuidance,
-    auspiceActionPrescription
+    auspiceActionPrescription,
+    interpretiveBoundary: '디스치플리나 에트루스카 16천궁 조점 상징을 빌린 정성적 결단 참고 관점이며, 개인 점수나 확정 예언이 아닙니다.',
   };
 }
 
