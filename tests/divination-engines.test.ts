@@ -611,6 +611,7 @@ test('Auspicious stars: 천을귀인 via year stem, kongwang/chung/hyeong interf
   assert(t.upcomingYears[0].arrivedNobles.includes('천을귀인'));
   const prompt=formatAuspiciousStarsPrompt(r);
   assert(prompt.includes(AUSPICIOUS_STARS_ENGINE_VERSION)&&prompt.includes('천을귀인')&&prompt.includes('공망')&&prompt.includes('해석 경계'));
+  assert(Boolean(r.ritualAction&&r.ritualAction.length>0&&r.reflectionFocus&&r.reflectionFocus.length>0));
   assert(r.interpretiveBoundary.length>0);
   assert(!prompt.includes('/100')&&!prompt.includes('%')&&!prompt.includes('실측 데이터'));
   assert(prompt.includes('계산 참고 자료')&&!prompt.includes('100% 수리 산출'));
@@ -2189,6 +2190,7 @@ test('Astrological Decan & Sabian Engine: 점성술 36 데칸 & 사비안 심볼
   assert(res.calculatedAtKst.includes('KST'));
   assert(res.temporalSabianRhythm.planetaryHourTone.length > 0);
   assert(res.sabianSynthesisMatrix.coreInsight.length > 0);
+  assert(res.ritualAction.length > 0 && res.reflectionFocus.length > 0);
   assert(res.interpretiveBoundary.length > 0);
   const prompt = formatAstrologicalDecanSabianPrompt(res);
   assert(prompt.includes(ASTRO_DECAN_SABIAN_VERSION));
@@ -3517,6 +3519,7 @@ test('Ayurvedic Tridosha & Prana Engine: calculates prakriti, vikriti and subtle
   assert(rep.situationalAyurvedaAudit.charakaSutra.length > 0);
   assert(rep.temporalDinacharyaRhythm.doshaClockWindow.length > 0);
   assert(rep.tridoshaSynthesisMatrix.synthesizedVerdict.length > 0);
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatAyurvedicTridoshaPranaPrompt(rep);
   assert(prompt.includes('인도 정통 아유르베다 3대 도샤'));

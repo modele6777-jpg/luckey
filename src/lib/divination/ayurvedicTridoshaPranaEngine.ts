@@ -13,7 +13,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const AYURVEDIC_TRIDOSHA_VERSION = 'LUCKEY-AYURVEDIC-TRIDOSHA-v2.2.0';
+export const AYURVEDIC_TRIDOSHA_VERSION = 'LUCKEY-AYURVEDIC-TRIDOSHA-v2.3.0';
 
 export type AyurvedicQuestionFocus = 'stress' | 'relationship' | 'career' | 'health' | 'spiritual';
 
@@ -83,6 +83,8 @@ export interface AyurvedicTridoshaReport {
   temporalDinacharyaRhythm: TemporalDinacharyaRhythm;
   tridoshaSynthesisMatrix: TridoshaSynthesisMatrix;
   tridoshaHarmonizationGuidance: string;
+  ritualAction: string;
+  reflectionFocus: string;
   interpretiveBoundary: string;
 }
 
@@ -363,6 +365,8 @@ export function calculateAyurvedicTridoshaPrana(params: {
     temporalDinacharyaRhythm,
     tridoshaSynthesisMatrix,
     tridoshaHarmonizationGuidance,
+    ritualAction: `${dinacharya.pranayamaBreathing} (${situationalAyurvedaAudit.sattvicAction})`,
+    reflectionFocus: `${situationalAyurvedaAudit.gunaMentalState} 지금 내 몸의 도샤 균형을 위해 가장 먼저 덜어낼 자극은 무엇인가요?`,
     interpretiveBoundary,
   };
 }
