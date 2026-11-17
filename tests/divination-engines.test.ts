@@ -3473,6 +3473,7 @@ test('Delphic Maxims Oracle Engine: calculates soul maxim, situational oracle an
   assert(rep.pythianOracleInsight.length > 0);
   assert(rep.temporalDelphicRhythm.calculatedAtKst.includes('KST'));
   assert(rep.situationalDelphicAudit.questionFocus.length > 0);
+  assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatDelphicMaximsOraclePrompt(rep);
   assert(prompt.includes('고대 그리스 델포이 아폴론 신탁'));
   assert(prompt.includes(rep.coreSoulMaxim.greekText));

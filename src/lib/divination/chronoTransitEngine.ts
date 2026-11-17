@@ -147,6 +147,7 @@ export interface ChronoTransitResult {
   };
   reflectiveQuestion: string;
   boundaryNotice: string;
+  interpretiveBoundary: string;
 }
 
 // 행성 한글 명칭 및 심볼 매핑
@@ -605,7 +606,7 @@ export function calculateChronoTransit(params: {
   };
 
   return {
-    engineVersion: 'LUCKEY-CHRONO-TRANSIT-v2.1.0',
+    engineVersion: 'LUCKEY-CHRONO-TRANSIT-v2.2.0',
     calculatedAtUtc: nowUtcIso,
     calculatedAtKst: nowKstIso,
     timestamp: now.getTime(),
@@ -650,6 +651,7 @@ export function calculateChronoTransit(params: {
       ? `‘${question}’ 앞에서 오늘 일진(${dayPillar.koreanName})과 달(${transitMoon?.sign.name || ''})의 리듬에 맞추어 지금 당장 옮길 첫 실행은 무엇입니까?`
       : `오늘 일진(${dayPillar.koreanName})과 ${dominantTransitElement} 원소의 트랜짓이 맞물리는 지금, 가장 먼저 정돈할 마음가짐은 무엇입니까?`,
     boundaryNotice: '본 결과는 실시간 만세력 일진·시진과 천문 행성 트랜짓을 결합한 정성적 시간 리듬 안내이며, 확정적 예언이 아닙니다.',
+    interpretiveBoundary: '본 결과는 실시간 만세력 일진·시진과 천문 행성 트랜짓을 결합한 정성적 시간 리듬 안내이며, 확정적 예언이 아닙니다.',
   };
 }
 

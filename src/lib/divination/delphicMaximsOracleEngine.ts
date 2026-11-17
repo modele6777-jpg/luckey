@@ -20,7 +20,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const DELPHIC_MAXIMS_VERSION = 'LUCKEY-DELPHIC-MAXIMS-v2.1.0';
+export const DELPHIC_MAXIMS_VERSION = 'LUCKEY-DELPHIC-MAXIMS-v2.2.0';
 
 export interface DelphicMaximInfo {
   maximIndex: number;            // 1 ~ 147
@@ -58,6 +58,7 @@ export interface DelphicMaximsOracleReport {
     sacredBoundary: string;
     reflectiveQuestion: string;
   };
+  interpretiveBoundary: string;
 }
 
 const MASTER_DELPHIC_MAXIMS: DelphicMaximInfo[] = [
@@ -334,6 +335,7 @@ export function calculateDelphicMaximsOracle(params: {
       oracleTimingNote,
     },
     delphicSynthesisMatrix,
+    interpretiveBoundary: '아폴론 신전 147 잠언의 중용·자아성찰 상징을 빌린 정성적 처세 참고 관점이며, 개인 점수나 확정 예언이 아닙니다.',
   };
 }
 
