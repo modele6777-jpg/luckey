@@ -1,10 +1,10 @@
 {
-  "version": "1.7.770",
-  "builtAt": "2026-11-18T05:23:00+09:00",
-  "summary": "크로노-트랜짓, 대화 속 인연 듀얼 매트릭스, 계약·분쟁 쉴드 3대 엔진 실천 의례 및 성찰 질문 표준 연동(v1.7.770)",
+  "version": "1.7.771",
+  "builtAt": "2026-11-18T05:30:00+09:00",
+  "summary": "키르케고르 실존 3단계, 딥워크 몰입, 델포이 잠언 신탁 3대 엔진 실천 의례 및 성찰 질문 표준 연동(v1.7.771)",
   "items": [
-    "크로노-트랜짓 실시간 일진·행성 트랜짓 엔진(v2.3.0): ritualAction·reflectionFocus 표준 필드 연동",
-    "대화 속 인연 자동 감지 & 듀얼 매트릭스 엔진(v2.3.0): ritualAction·reflectionFocus 표준 필드 연동",
-    "계약·분쟁 방어 & 관재구설 쉴드 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동"
+    "덴마크 쇠렌 키르케고르 단독자 3단계 실존 도약 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동",
+    "창작 아우라 & 딥워크 몰입 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동",
+    "고대 그리스 델포이 아폴론 신탁 & 147 잠언 엔진(v2.3.0): ritualAction·reflectionFocus 표준 필드 연동"
   ]
 }

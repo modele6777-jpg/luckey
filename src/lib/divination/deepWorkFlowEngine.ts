@@ -17,7 +17,7 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const DEEP_WORK_FLOW_VERSION = 'LUCKEY-FLOW-v2.1.0';
+export const DEEP_WORK_FLOW_VERSION = 'LUCKEY-FLOW-v2.2.0';
 
 export type FlowArchetype = 'deep_architect' | 'furious_sprinter' | 'craftsman_polisher' | 'intuitive_explorer';
 
@@ -118,6 +118,8 @@ export interface DeepWorkFlowResult {
   boundaryNotice: string;
   interpretiveBoundary: string;
   reflectiveQuestion?: string;
+  ritualAction: string;
+  reflectionFocus: string;
   summary: string;
 }
 
@@ -267,6 +269,8 @@ export function calculateDeepWorkFlow(params?: {
     boundaryNotice: '본 결과는 사주 신살·오행 성향과 딥워크 집중 리듬을 결합한 정성적 생산성 가이드이며, 절대적 능력 평가가 아닙니다.',
     interpretiveBoundary: '본 결과는 사주 신살·오행 성향과 딥워크 집중 리듬을 결합한 정성적 생산성 가이드이며, 절대적 능력 평가가 아닙니다.',
     reflectiveQuestion,
+    ritualAction: `${environment.ignitionRitual} · ${situationalFlowAudit.sprintStep}`,
+    reflectionFocus: reflectiveQuestion,
     summary
   };
 }
