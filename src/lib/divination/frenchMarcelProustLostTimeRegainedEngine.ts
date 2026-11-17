@@ -13,7 +13,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const FRENCH_MARCEL_PROUST_LOST_TIME_VERSION = 'LUCKEY-PROUST-LOST-TIME-REGAINED-v2.3.0';
+export const FRENCH_MARCEL_PROUST_LOST_TIME_VERSION = 'LUCKEY-PROUST-LOST-TIME-REGAINED-v2.4.0';
 
 export interface ProustTheme {
   themeKey: string;
@@ -54,6 +54,7 @@ export interface FrenchMarcelProustLostTimeResult {
   };
   ritualAction: string;
   reflectionFocus: string;
+  reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
 
@@ -173,7 +174,11 @@ export function calculateFrenchMarcelProustLostTimeRegained(
     `${focalProustAphorism.actionGuidance}`;
 
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
-  const kstTimeLabel = `${kst.toISOString().slice(0, 10)} ${String(kst.getUTCHours()).padStart(2, '0')}:${String(kst.getUTCMinutes()).padStart(2, '0')} +09:00 KST`;
+  const kstTimeLabel = `${kst.toISOString().slice(0, 10)}T${String(kst.getUTCHours()).padStart(2, '0')}:${String(kst.getUTCMinutes()).padStart(2, '0')}:00+09:00 (KST)`;
+  const qText = (query ?? '').trim();
+  const reflectiveQuestion = qText
+    ? `‘${qText}’ 속에서 스쳐 지나간 시간과 감각을 새로운 눈으로 다시 길어 올린다면 오늘 무엇이 보입니까?`
+    : activeProustTheme.practicalCounsel;
   const proustSynthesisMatrix = {
     coreInsight: activeProustTheme.themeTitleKo,
     recommendedAction: activeProustTheme.practicalCounsel,
@@ -196,7 +201,8 @@ export function calculateFrenchMarcelProustLostTimeRegained(
       philosophicalCounsel,
     },
     ritualAction: focalProustAphorism.actionGuidance,
-    reflectionFocus: activeProustTheme.practicalCounsel,
+    reflectionFocus: reflectiveQuestion,
+    reflectiveQuestion,
     interpretiveBoundary: '프루스트의 비자발적 기억과 되찾은 시간 상징을 빌린 정성적 내면 성찰 관점이며, 개인 평가나 미래 단정이 아닙니다.',
   };
 }
@@ -220,6 +226,7 @@ export function formatFrenchMarcelProustLostTimeRegainedPrompt(
     `- 원문: (${res.focalProustAphorism.aphorismFrench})`,
     `- 원전 출처: [${res.focalProustAphorism.sourceContext}]`,
     `- 구체적 실천 지침: ${res.focalProustAphorism.actionGuidance}`,
+    `- 질문 맞춤 성찰 질문: ${res.reflectiveQuestion}`,
     `- 종합 프루스트 권면: ${res.proustComprehensiveGuidance.philosophicalCounsel}`,
     `- 해석 경계: 프루스트의 비자발적 기억과 되찾은 시간 상징을 빌린 정성적 내면 성찰 관점이며, 개인 평가나 미래 단정이 아닙니다.`,
   ].join('\n');
