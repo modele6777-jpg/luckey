@@ -23,7 +23,7 @@ import {
   getBgmPublicState,
   type BgmPublicState,
 } from '@/components/trinity/BgMusicPlayer';
-import { isDualPaneLayout } from '@/lib/perfMode';
+import { isDualPaneLayout, subscribeDuoLayout } from '@/lib/perfMode';
 import { forceAppUpgradeAndReload } from '@/lib/prismSync';
 import { useApp } from '@/contexts/AppContext';
 import { resetAppScreen } from '@/lib/visualViewportBox';
@@ -178,14 +178,7 @@ export default function LeftSidebarNav() {
       setIsUnfolded(unfolded);
     };
     handleLayoutChange();
-    window.addEventListener('resize', handleLayoutChange, { passive: true });
-    window.addEventListener('orientationchange', handleLayoutChange, { passive: true });
-    window.visualViewport?.addEventListener('resize', handleLayoutChange, { passive: true });
-    return () => {
-      window.removeEventListener('resize', handleLayoutChange);
-      window.removeEventListener('orientationchange', handleLayoutChange);
-      window.visualViewport?.removeEventListener('resize', handleLayoutChange);
-    };
+    return subscribeDuoLayout(handleLayoutChange);
   }, []);
   const previousUnfolded = useRef(isUnfolded);
   useEffect(() => {

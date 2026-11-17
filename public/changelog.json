@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.7.807",
+    "builtAt": "2026-11-18T08:17:00+09:00",
+    "summary": "접기·펼치기 후 숨겨진 패널 포털 가림 및 터치 잔류 먹통 오류 수복(v1.7.807)",
+    "items": [
+      "mainOverlayViewport·useMainOverlayViewport·ScreenPortal: 접힘 시 display:none 처리된 비활성 패널의 ScreenPortal이 반대쪽 화면 전체를 덮어 터치를 막지 않도록 hidden 처리(마운트 상태는 유지)",
+      "App.tsx: resize·orientationchange·visibilitychange 시 잔류 터치/클릭 억제 및 제스처 락 상태 초기화",
+      "LeftSidebarNav.tsx: subscribeDuoLayout 구독으로 접기·펼치기 레이아웃 동기화"
+    ]
+  },
+  {
     "version": "1.7.806",
     "builtAt": "2026-11-18T08:13:00+09:00",
     "summary": "야스퍼스, 하이데거, 니체 3대 엔진 실천 의례 및 성찰 질문 표준 연동(v1.7.806)",

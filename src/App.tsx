@@ -565,6 +565,14 @@ function AppContent() {
     let suppressTouchClickUntil = 0;
     let gestureLockedUrl = '';
     const clearGestureLock = () => { gestureLockedUrl = ''; };
+    const resetTouchGestureState = () => {
+      touchActive = false;
+      touchMoved = false;
+      maxTouchMove = 0;
+      startedOnControl = false;
+      suppressTouchClickUntil = 0;
+      gestureLockedUrl = '';
+    };
 
     const getSafeInsets = () => {
       try {
@@ -706,6 +714,9 @@ function AppContent() {
     window.addEventListener('popstate', handlePopStateCapture, true);
     const navigationEvents = ['prism-navigate', 'nav-click-active', 'prism:bigbang_commit', 'prism:cycle_nav'];
     navigationEvents.forEach(name => window.addEventListener(name, clearGestureLock));
+    window.addEventListener('resize', resetTouchGestureState, { passive: true });
+    window.addEventListener('orientationchange', resetTouchGestureState, { passive: true });
+    document.addEventListener('visibilitychange', resetTouchGestureState);
     return () => {
       window.removeEventListener('touchstart', handleEdgeTouchStart, true);
       window.removeEventListener('touchmove', handleEdgeTouchMove, true);
@@ -715,6 +726,9 @@ function AppContent() {
       window.removeEventListener('click', handleExplicitClickCapture, true);
       window.removeEventListener('popstate', handlePopStateCapture, true);
       navigationEvents.forEach(name => window.removeEventListener(name, clearGestureLock));
+      window.removeEventListener('resize', resetTouchGestureState);
+      window.removeEventListener('orientationchange', resetTouchGestureState);
+      document.removeEventListener('visibilitychange', resetTouchGestureState);
     };
   }, [navigate]);
 

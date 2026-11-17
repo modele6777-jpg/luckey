@@ -30,6 +30,7 @@ export function isTopScreenOverlay(element: HTMLElement | null): boolean {
   const layers = Array.from(document.querySelectorAll<HTMLElement>('[data-screen-overlay-layer]'))
     .filter(layer => {
       if (!layer.childElementCount || !element) return false;
+      if (getComputedStyle(layer).display === 'none') return false;
       const a = layer.getBoundingClientRect();
       const b = element.getBoundingClientRect();
       // Independent pane dialogs must not disable each other's controls.

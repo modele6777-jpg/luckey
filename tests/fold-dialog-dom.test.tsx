@@ -3,6 +3,7 @@ import test from 'node:test';
 import React, { act, useState } from 'react';
 import { Window } from 'happy-dom';
 import { hasOpenScreenOverlay } from '../src/components/layout/ScreenPortal.tsx';
+import { measureMainOverlayViewport } from '../src/lib/mainOverlayViewport.ts';
 import { DialogBackdrop } from '../src/components/layout/DialogBackdrop.tsx';
 import { RetainedPane } from '../src/components/layout/RetainedPane.tsx';
 
@@ -43,6 +44,29 @@ test('zero-width popup ownership and touch-only interactions survive a fold', as
     assert.equal(dismissed, 1);
   } finally {
     if (root) await act(async () => root.unmount());
+    await win.happyDOM.close();
+    for (const [key, descriptor] of saved) { if (descriptor) Object.defineProperty(globalThis, key, descriptor); else delete (globalThis as any)[key]; }
+  }
+});
+
+test('hidden-pane overlay viewport marks itself hidden instead of covering the visible pane', async () => {
+  const win = new Window({ url: 'https://fold-test.invalid' });
+  const names = ['window', 'document', 'getComputedStyle'];
+  const saved = new Map(names.map(key => [key, Object.getOwnPropertyDescriptor(globalThis, key)]));
+  for (const key of names) {
+    const value = key === 'window' ? win : key === 'document' ? win.document : win.getComputedStyle.bind(win);
+    Object.defineProperty(globalThis, key, { value, configurable: true, writable: true });
+  }
+  try {
+    const contentPane = win.document.createElement('div');
+    contentPane.id = 'duo-content-viewport';
+    contentPane.style.display = 'none';
+    win.document.body.appendChild(contentPane);
+    const vp = measureMainOverlayViewport('content');
+    assert.equal(vp.hidden, true);
+    assert.equal(vp.width, 0);
+    assert.equal(vp.height, 0);
+  } finally {
     await win.happyDOM.close();
     for (const [key, descriptor] of saved) { if (descriptor) Object.defineProperty(globalThis, key, descriptor); else delete (globalThis as any)[key]; }
   }
