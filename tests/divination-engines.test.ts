@@ -2772,6 +2772,7 @@ test('Chakra Vibration Alignment Engine: frequency-free chakra alignment and bal
   assert(res.temporalChakraRhythm.chakraWatchWindow.length > 0);
   assert(res.chakraSynthesisMatrix.coreInsight.length > 0);
   assert(res.interpretiveBoundary.length > 0);
+  assert(res.ritualAction.length > 0 && res.reflectionFocus.length > 0);
   const prompt = formatChakraVibrationAlignmentPrompt(res);
   assert(prompt.includes('LUCKEY 7대 차크라 파동 정렬 & 에너지 퀀텀 밸런싱'));
   assert(prompt.includes(res.primaryFocusChakra.name));
@@ -4564,6 +4565,7 @@ test('Chaldean Mul Apin Astrology Engine: calculates celestial paths, ruling pla
   assert(rep.rulingPlanet.resonanceScore >= 0 && rep.rulingPlanet.resonanceScore <= 100);
   assert(rep.celestialPath.length > 0);
   assert(rep.mulApinConstellation.length > 0);
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatChaldeanMulApinAstrologyPrompt(rep);
   assert(prompt.includes('고대 메소포타미아 칼데아 12조디악 원형 & 바빌로니아 물핀(MUL.APIN)'));
   assert(prompt.includes(rep.rulingPlanet.nameKo));
@@ -5802,6 +5804,7 @@ test('Chinese Laozi Daodejing Water Way Engine: calculates water yielding adapta
   assert(rep.seasonalWaterFlow.waterPacingScore >= 0 && rep.seasonalWaterFlow.waterPacingScore <= 100);
   assert(rep.softStrengthMatrix.nonContentionHarmonyScore >= 0 && rep.softStrengthMatrix.nonContentionHarmonyScore <= 100);
   assert(rep.interpretiveBoundary.length > 0);
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatLaoziDaodejingPrompt(rep);
   assert(prompt.includes('고대 중국 노자(老子) 《도덕경(道德經)》'));
   assert(prompt.includes(rep.activeDaodejingStage.stageNameKo));
