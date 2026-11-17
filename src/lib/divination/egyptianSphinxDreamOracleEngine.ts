@@ -251,8 +251,8 @@ export function calculateEgyptianSphinxDreamOracle(options?: {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
   const calculatedAtKst = kst.toISOString().replace('T', ' ').substring(0, 19) + ' +09:00 KST';
   const ritualAction = `${situationalSphinxAudit.dreamStelePrescription} · ${sphinxSynthesisMatrix.sovereignStep}`;
-  const reflectionFocus = req.question?.trim()
-    ? `‘${req.question.trim()}’ 앞에서 내 본질을 덮고 있던 모래(${situationalSphinxAudit.sandObstacleType})를 걷어내고 세울 [${dominantVirtue}]의 왕권은 무엇입니까?`
+  const reflectionFocus = question
+    ? `‘${question}’ 앞에서 내 본질을 덮고 있던 모래(${situationalSphinxAudit.sandObstacleType})를 걷어내고 세울 [${dominantVirtue}]의 왕권은 무엇입니까?`
     : `오늘 레-호라크티의 여명 앞에서 내가 두려움을 내려놓고 [${dominantVirtue}]으로 먼저 매듭지을 과업은 무엇입니까?`;
 
   return {
