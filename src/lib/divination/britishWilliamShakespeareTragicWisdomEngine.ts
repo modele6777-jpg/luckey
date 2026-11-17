@@ -13,7 +13,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const BRITISH_WILLIAM_SHAKESPEARE_TRAGIC_WISDOM_VERSION = 'LUCKEY-SHAKESPEARE-TRAGIC-WISDOM-v2.1.0';
+export const BRITISH_WILLIAM_SHAKESPEARE_TRAGIC_WISDOM_VERSION = 'LUCKEY-SHAKESPEARE-TRAGIC-WISDOM-v2.2.0';
 
 export type ShakespeareQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -57,6 +57,7 @@ export interface BritishWilliamShakespeareTragicWisdomResult {
   practiceGuidance: string;
   ritualAction: string;
   reflectionFocus: string;
+  reflectiveQuestion: string;
   boundaryNotice: string;
   interpretiveBoundary: string;
   shakespeareSynthesisMatrix: {
@@ -270,12 +271,16 @@ export function calculateBritishWilliamShakespeareTragicWisdom(
   const boundaryNotice = '윌리엄 셰익스피어 문학·철학 해석은 인간 본성과 선택을 비추는 상징·성찰 관점이며, 미래의 확정 예언이나 사실 판정이 아닙니다.';
   const baseDate = now ?? new Date();
   const kst = new Date(baseDate.getTime() + 9 * 60 * 60 * 1000);
-  const kstTimeLabel = `${temporalShakespeareRhythm.kstDateLabel} ${String(kst.getUTCHours()).padStart(2, '0')}:${String(kst.getUTCMinutes()).padStart(2, '0')} KST`;
+  const kstTimeLabel = `${temporalShakespeareRhythm.kstDateLabel} ${String(kst.getUTCHours()).padStart(2, '0')}:${String(kst.getUTCMinutes()).padStart(2, '0')}:00+09:00 (KST)`;
   const shakespeareSynthesisMatrix = {
     coreInsight: activeShakespeareTheme.themeTitleKo,
     recommendedAction: topicGuidance.practiceGuidance,
     cautionNotice: '우유부단한 계산이나 오래된 원한에 붙들려 지금 이 순간의 준비와 품위를 잃지 마십시오.',
   };
+  const trimmedQuery = query?.trim();
+  const reflectiveQuestion = trimmedQuery
+    ? `"${trimmedQuery}"이라는 물음 앞에서 셰익스피어의 '${activeShakespeareTheme.themeTitleKo}' 시선으로 볼 때, 지금 내가 끝까지 진실하게 지키고 싶은 중심은 무엇인가요?`
+    : topicGuidance.reflectionFocus;
 
   return {
     engineVersion: BRITISH_WILLIAM_SHAKESPEARE_TRAGIC_WISDOM_VERSION,
@@ -292,6 +297,7 @@ export function calculateBritishWilliamShakespeareTragicWisdom(
     practiceGuidance: topicGuidance.practiceGuidance,
     ritualAction: topicGuidance.ritualAction,
     reflectionFocus: topicGuidance.reflectionFocus,
+    reflectiveQuestion,
     boundaryNotice,
     interpretiveBoundary: boundaryNotice,
     shakespeareSynthesisMatrix,
@@ -316,6 +322,7 @@ export function formatBritishWilliamShakespeareTragicWisdomPrompt(
     `- 질문 맞춤 실천 가이드: ${res.practiceGuidance}`,
     `- 일상 실천 의례: ${res.ritualAction}`,
     `- 핵심 성찰 질문: ${res.reflectionFocus}`,
+    `- 질문 맞춤 성찰 질문: ${res.reflectiveQuestion}`,
     `- 교차 매트릭스: 핵심(${res.shakespeareSynthesisMatrix.coreInsight}) | 실행(${res.shakespeareSynthesisMatrix.recommendedAction}) | 주의(${res.shakespeareSynthesisMatrix.cautionNotice})`,
     `- 셰익스피어 원전 명대사: "${res.focalShakespeareAphorism.aphorismKo}"`,
     `- 원문: (${res.focalShakespeareAphorism.aphorismOriginal})`,
