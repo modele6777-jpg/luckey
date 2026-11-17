@@ -19,7 +19,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const LUGH_SAMILDANACH_VERSION = 'LUCKEY-LUGH-SAMILDANACH-v2.2.0';
+export const LUGH_SAMILDANACH_VERSION = 'LUCKEY-LUGH-SAMILDANACH-v2.3.0';
 
 export interface LughCraftRank {
   rankLevel: number;
@@ -68,6 +68,7 @@ export interface LughSamildanachResult {
   };
   ritualAction: string;
   reflectionFocus: string;
+  reflectiveQuestion: string;
   boundaryNotice: string;
   interpretiveBoundary: string;
 }
@@ -100,12 +101,7 @@ const MAG_TUIRED_EPIPHANIES = [
 
 function getKstDateString(now: Date): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
-  const y = kst.getUTCFullYear();
-  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
-  const d = String(kst.getUTCDate()).padStart(2, '0');
-  const hh = String(kst.getUTCHours()).padStart(2, '0');
-  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${kst.toISOString().slice(0, 19)}+09:00 (KST)`;
 }
 
 function getTemporalLughRhythm(now: Date) {
@@ -194,6 +190,11 @@ export function calculateLughSamildanach(
     cautionNotice: magTuiredEpiphany.celticWisdom,
   };
 
+  const reflectionFocus = `${activeCraftRank.rankNameKo}의 자리에서 지금 내가 흩어진 재주를 모아 일격을 가해야 할 단 하나의 과녁은 무엇인가요?`;
+  const reflectiveQuestion = q
+    ? `질문 "${q}" 앞에서 루 사밀다나크의 [${primaryPolymathVirtue.gaelicMotto}] 지혜를 쓴다면, 지금 내가 하나로 모아야 할 핵심 역량은 무엇인가요?`
+    : reflectionFocus;
+
   return {
     engineVersion: LUGH_SAMILDANACH_VERSION,
     calculatedAtKst: temporalLughRhythm.kstTimeLabel,
@@ -209,7 +210,8 @@ export function calculateLughSamildanach(
     temporalLughRhythm,
     lughSynthesisMatrix,
     ritualAction: primaryPolymathVirtue.actionableDirective,
-    reflectionFocus: `${activeCraftRank.rankNameKo}의 자리에서 지금 내가 흩어진 재주를 모아 일격을 가해야 할 단 하나의 과녁은 무엇인가요?`,
+    reflectionFocus,
+    reflectiveQuestion,
     boundaryNotice: '본 결과는 켈트 신화 루 삼힐다나크의 8대 만능 기예 원형에 기반한 정성적 역량·실행 가이드이며, 확정적 예언이 아닙니다.',
     interpretiveBoundary: '본 결과는 켈트 신화 루 삼힐다나크의 8대 만능 기예 원형에 기반한 정성적 역량·실행 가이드이며, 확정적 예언이 아닙니다.',
   };
@@ -240,5 +242,6 @@ export function formatLughSamildanachPrompt(result: LughSamildanachResult): stri
 - 질문 맥락 감사 (${result.situationalLughAudit.focusTheme}): ${result.situationalLughAudit.tacticalStep}
 - KST 시공간 리듬: ${result.temporalLughRhythm.taraWatchWindow} / ${result.temporalLughRhythm.seasonalSolarTone}
 - 루 교차 매트릭스: 핵심(${result.lughSynthesisMatrix.coreInsight}) | 실행(${result.lughSynthesisMatrix.recommendedAction}) | 계시(${result.lughSynthesisMatrix.cautionNotice})
+- 질문 맞춤 성찰 질문: ${result.reflectiveQuestion}
 - 해석 경계: ${result.boundaryNotice}`;
 }
