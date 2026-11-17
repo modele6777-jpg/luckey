@@ -1,7 +1,7 @@
 {
   "name": "luckey",
   "private": true,
-  "version": "1.7.798",
+  "version": "1.7.799",
   "engines": {
     "node": ">=20.0.0"
   },
@@ -24,7 +24,8 @@
     "test:sync-vault": "tsx --test tests/server-vault-sync.test.ts",
     "test:tarot-energy-summary": "tsx --test tests/tarot-energy-summary.test.ts",
     "test:tts-highlight": "tsx --test tests/tts-highlight-match.test.ts",
-    "test:cloudflare": "tsx --test tests/cloudflare-worker.test.ts"
+    "test:cloudflare": "tsx --test tests/cloudflare-worker.test.ts",
+    "test:fold-dialogs": "tsx --test tests/fold-dialog-dom.test.tsx tests/pwa-fold-geometry.test.ts tests/duo-fold-recovery.test.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.91.1",
@@ -88,7 +89,8 @@
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "@types/three": "^0.186.0",
-    "sharp": "^0.35.4"
+    "sharp": "^0.35.4",
+    "happy-dom": "^21.0.4"
   },
   "allowScripts": {
     "esbuild": true

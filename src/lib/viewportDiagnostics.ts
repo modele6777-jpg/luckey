@@ -1,3 +1,4 @@
+import { isDuoUnfoldedState } from './perfMode';
 import { APP_VERSION } from './appVersion';
 import { readViewportSnapshot } from './visualViewportBox';
 
@@ -38,7 +39,7 @@ export function showViewportDiagnostics(resume = false): void {
     const el = document.querySelector<HTMLElement>(selector);
     if (!el) return null;
     const r = el.getBoundingClientRect(), s = getComputedStyle(el);
-    return { top: r.top, bottom: r.bottom, width: r.width, height: r.height, clientHeight: el.clientHeight, scrollHeight: el.scrollHeight, position: s.position, overflow: s.overflow, transform: s.transform, maxHeight: s.maxHeight };
+    return { top: r.top, bottom: r.bottom, width: r.width, height: r.height, clientHeight: el.clientHeight, scrollHeight: el.scrollHeight, display: s.display, visibility: s.visibility, pointerEvents: s.pointerEvents, position: s.position, overflow: s.overflow, transform: s.transform, maxHeight: s.maxHeight };
   };
   const capture = (reason: string) => {
     if (document.visibilityState === 'hidden') return;
@@ -47,6 +48,7 @@ export function showViewportDiagnostics(resume = false): void {
       reason, at: new Date().toISOString(), version: APP_VERSION,
       viewport: readViewportSnapshot(window),
       device: { userAgent: navigator.userAgent, standalone: (navigator as Navigator & { standalone?: boolean }).standalone, pixelRatio: devicePixelRatio, orientation: screen.orientation?.type },
+      duo: { resolved: isDuoUnfoldedState(), classes: document.documentElement.className, content: rect('[data-workspace-pane="content"]'), lucy: rect('[data-workspace-pane="lucy"]') },
       keyboard: document.documentElement.classList.contains('keyboard-open'),
       insets: Object.fromEntries(['--sat', '--sab', '--app-height', '--vvh', '--vv-top'].map(k => [k, style.getPropertyValue(k)])),
       elements: Object.fromEntries(['html', 'body', '#root', '.prism-app-shell', '.sites-pinned-main', '.sites-pinned-sidebar', '.lucy-chat-shell', '.lucy-chat-footer', '.bottom-safe-fab-center'].map(k => [k, rect(k)])),
@@ -54,7 +56,7 @@ export function showViewportDiagnostics(resume = false): void {
     history.push(data);
     history = history.slice(-12);
     try { sessionStorage.setItem(HISTORY_KEY, JSON.stringify(history)); } catch { /* ignore */ }
-    summary.textContent = `창: ${innerWidth} × ${innerHeight}\n표시: ${visualViewport?.width} × ${visualViewport?.height}\nCSS 높이: ${data.viewport.cssViewportHeight ?? '-'}\n앱 하단: ${data.elements['#root']?.bottom ?? '-'}\n입력창 하단: ${data.elements['.lucy-chat-footer']?.bottom ?? '-'}\n키보드: ${data.keyboard ? '열림' : '닫힘'}`;
+    summary.textContent = `창: ${innerWidth} × ${innerHeight}\n표시: ${visualViewport?.width} × ${visualViewport?.height}\nCSS 폭: ${data.viewport.cssViewportWidth ?? '-'}\n분할 판정: ${data.duo.resolved.unfolded ? '펼침' : '접힘'}\n콘텐츠: ${data.duo.content?.display ?? '없음'} / 루시: ${data.duo.lucy?.display ?? '없음'}\nCSS 높이: ${data.viewport.cssViewportHeight ?? '-'}\n앱 하단: ${data.elements['#root']?.bottom ?? '-'}\n입력창 하단: ${data.elements['.lucy-chat-footer']?.bottom ?? '-'}\n키보드: ${data.keyboard ? '열림' : '닫힘'}`;
     return data;
   };
   copy.onclick = async () => {

@@ -1,4 +1,4 @@
-import { bindVisualViewportLifecycle, prepareViewportAfterUpdate, scheduleVisualViewportSync, syncVisualViewportBox } from './visualViewportBox';
+import { bindVisualViewportLifecycle, prepareViewportAfterUpdate, scheduleVisualViewportSync, syncVisualViewportBox, readViewportSnapshot, resolveLayoutViewportSize, getLayoutViewportProbe, isIosStandaloneWindow } from './visualViewportBox';
 
 export type PerfProfile = 'full' | 'galaxy' | 'duo' | 'iphonexs' | 'pwa' | 'reduced' | 'legacy';
 
@@ -149,10 +149,11 @@ export interface DuoUnfoldedState {
  *
  * iPhone Duo cover is about 450×640 CSS px (installed standalone readings;
  * the 5.4" panel is 1398×2034 physical, about 466×678 at 3x). Ordinary phones
- * are about 390–440 CSS px wide. 540 is the existing portrait cover guard and
- * still sits below the inner display.
+ * are about 390–440 CSS px wide. The reported inner Safari canvas is
+ * 951×537, while the reported cover is 461×678. A 512px guard separates
+ * these without mistaking an ordinary phone rotation for an unfold.
  */
-export const DUO_COVER_MAX_SHORT_SIDE = 540;
+export const DUO_COVER_MAX_SHORT_SIDE = 512;
 
 /**
  * Inner display once the shorter side has cleared the cover.
@@ -242,32 +243,18 @@ function unoccludedHeight(win: Window, width: number, rawHeight: number): number
  */
 export function isDuoUnfoldedState(): DuoUnfoldedState {
   if (typeof window === 'undefined') return { unfolded: false, orientation: 'portrait' };
-  const rawWidth = window.innerWidth;
-  const rawHeight = window.innerHeight;
-  const clientWidth = window.document?.documentElement?.clientWidth || 0;
-  const clientHeight = window.document?.documentElement?.clientHeight || 0;
-  const visual = window.visualViewport;
-  const visualUnzoomed = Boolean(visual && (visual.scale == null || visual.scale <= 1.05));
-  const visualWidth = visualUnzoomed && visual && visual.width > 0 ? visual.width : 0;
-  const visualHeight = visualUnzoomed && visual && visual.height > 0 ? visual.height : 0;
+  const rendered = window.navigator && isIosStandaloneWindow(window)
+    ? resolveLayoutViewportSize(readViewportSnapshot(window))
+    : { width: window.innerWidth, height: window.innerHeight };
+  const width = rendered.width;
+  const rawHeight = rendered.height;
+  if (isViewportSpanned(window)) return resolveDuoViewport(width, rawHeight, true);
 
-  // On iOS Safari/PWA, window.innerWidth can lag behind visualViewport/clientWidth for a few frames when unfolding.
-  const width =
-    rawWidth < DUO_COVER_MAX_SHORT_SIDE && Math.max(clientWidth, visualWidth) >= DUO_INNER_MIN_SHORT_SIDE
-      ? Math.max(rawWidth, clientWidth, visualWidth)
-      : rawWidth;
-  const effectiveRawHeight =
-    rawHeight < DUO_COVER_MAX_SHORT_SIDE && Math.max(clientHeight, visualHeight) >= DUO_INNER_MIN_SHORT_SIDE
-      ? Math.max(rawHeight, clientHeight, visualHeight)
-      : rawHeight;
-
-  if (isViewportSpanned(window)) return resolveDuoViewport(width, effectiveRawHeight, true);
-
-  const fullHeight = unoccludedHeight(window, width, effectiveRawHeight);
+  const fullHeight = unoccludedHeight(window, width, rawHeight);
   const keyboard = keyboardOccludesLayout(window);
-  const collapsed = fullHeight > effectiveRawHeight * 1.12;
-  const height = keyboard || collapsed ? fullHeight : effectiveRawHeight;
-  if (!keyboard && !collapsed) lastDuoLayoutViewport = { width, height: effectiveRawHeight };
+  const collapsed = fullHeight > rawHeight * 1.12;
+  const height = keyboard || collapsed ? fullHeight : rawHeight;
+  if (!keyboard && !collapsed) lastDuoLayoutViewport = { width, height: rawHeight };
   return resolveDuoViewport(width, height, false);
 }
 
@@ -277,46 +264,38 @@ export function subscribeDuoLayout(onChange: () => void): () => void {
   const queries = DUO_SEGMENT_QUERIES.map(query => {
     try { return window.matchMedia(query); } catch { return null; }
   }).filter((query): query is MediaQueryList => Boolean(query));
-  let timers: number[] = [];
   let frame = 0;
-  const handler = () => onChange();
-  const scheduleBurst = () => {
-    onChange();
+  let timers: ReturnType<typeof setTimeout>[] = [];
+  const cancelPending = () => {
     if (frame) window.cancelAnimationFrame(frame);
-    frame = window.requestAnimationFrame(() => {
-      frame = 0;
-      onChange();
-    });
-    for (const t of timers) window.clearTimeout(t);
-    timers = [80, 250, 600, 1200].map((ms) => window.setTimeout(onChange, ms));
-  };
-  queries.forEach(query => query.addEventListener?.('change', scheduleBurst));
-  window.addEventListener('pageshow', scheduleBurst);
-  window.addEventListener('focus', scheduleBurst);
-  window.addEventListener('orientationchange', scheduleBurst, { passive: true });
-  window.screen?.orientation?.addEventListener?.('change', scheduleBurst);
-  if (typeof document !== 'undefined') {
-    document.addEventListener('visibilitychange', scheduleBurst);
-  }
-  const resizeObserver = typeof ResizeObserver !== 'undefined' && typeof document !== 'undefined' && document.documentElement
-    ? new ResizeObserver(handler)
-    : null;
-  if (resizeObserver && document.documentElement) {
-    resizeObserver.observe(document.documentElement);
-  }
-  return () => {
-    if (frame) window.cancelAnimationFrame(frame);
-    for (const t of timers) window.clearTimeout(t);
+    frame = 0;
+    timers.forEach(clearTimeout);
     timers = [];
-    queries.forEach(query => query.removeEventListener?.('change', scheduleBurst));
-    window.removeEventListener('pageshow', scheduleBurst);
-    window.removeEventListener('focus', scheduleBurst);
-    window.removeEventListener('orientationchange', scheduleBurst);
-    window.screen?.orientation?.removeEventListener?.('change', scheduleBurst);
-    if (typeof document !== 'undefined') {
-      document.removeEventListener('visibilitychange', scheduleBurst);
-    }
-    resizeObserver?.disconnect();
+  };
+  const handler = () => {
+    cancelPending();
+    onChange();
+    // WebKit may publish orientation/visibility before the new viewport size.
+    // Reconcile again after layout and after the fold animation has settled.
+    frame = window.requestAnimationFrame(() => { frame = 0; onChange(); });
+    timers = [120, 350].map(delay => setTimeout(onChange, delay));
+  };
+  const renderedResize = typeof ResizeObserver !== 'undefined' && window.navigator && isIosStandaloneWindow(window)
+    ? new ResizeObserver(handler) : null;
+  if (renderedResize) renderedResize.observe(getLayoutViewportProbe(document));
+  queries.forEach(query => query.addEventListener?.('change', handler));
+  for (const event of ['resize', 'orientationchange', 'pageshow', 'focus']) window.addEventListener(event, handler, { passive: true });
+  window.visualViewport?.addEventListener('resize', handler, { passive: true });
+  window.screen?.orientation?.addEventListener?.('change', handler);
+  document.addEventListener('visibilitychange', handler);
+  return () => {
+    cancelPending();
+    renderedResize?.disconnect();
+    queries.forEach(query => query.removeEventListener?.('change', handler));
+    for (const event of ['resize', 'orientationchange', 'pageshow', 'focus']) window.removeEventListener(event, handler);
+    window.visualViewport?.removeEventListener('resize', handler);
+    window.screen?.orientation?.removeEventListener?.('change', handler);
+    document.removeEventListener('visibilitychange', handler);
   };
 }
 
