@@ -334,16 +334,7 @@ function AppContent() {
       }
     };
     handleLayoutChange();
-    window.addEventListener('resize', handleLayoutChange, { passive: true });
-    window.addEventListener('orientationchange', handleLayoutChange, { passive: true });
-    window.visualViewport?.addEventListener('resize', handleLayoutChange, { passive: true });
-    const unsubscribeDuo = subscribeDuoLayout(handleLayoutChange);
-    return () => {
-      window.removeEventListener('resize', handleLayoutChange);
-      window.removeEventListener('orientationchange', handleLayoutChange);
-      window.visualViewport?.removeEventListener('resize', handleLayoutChange);
-      unsubscribeDuo();
-    };
+    return subscribeDuoLayout(handleLayoutChange);
   }, [navigate]);
 
   const isFirstMount = React.useRef(true);

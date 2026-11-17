@@ -260,13 +260,33 @@ export function subscribeDuoLayout(onChange: () => void): () => void {
   const queries = DUO_SEGMENT_QUERIES.map(query => {
     try { return window.matchMedia(query); } catch { return null; }
   }).filter((query): query is MediaQueryList => Boolean(query));
-  const handler = () => onChange();
+  let frame = 0;
+  let timers: ReturnType<typeof setTimeout>[] = [];
+  const cancelPending = () => {
+    if (frame) window.cancelAnimationFrame(frame);
+    frame = 0;
+    timers.forEach(clearTimeout);
+    timers = [];
+  };
+  const handler = () => {
+    cancelPending();
+    onChange();
+    // WebKit may publish orientation/visibility before the new viewport size.
+    // Reconcile again after layout and after the fold animation has settled.
+    frame = window.requestAnimationFrame(() => { frame = 0; onChange(); });
+    timers = [120, 350].map(delay => setTimeout(onChange, delay));
+  };
   queries.forEach(query => query.addEventListener?.('change', handler));
-  window.addEventListener('pageshow', handler);
+  for (const event of ['resize', 'orientationchange', 'pageshow', 'focus']) window.addEventListener(event, handler, { passive: true });
+  window.visualViewport?.addEventListener('resize', handler, { passive: true });
+  window.screen?.orientation?.addEventListener?.('change', handler);
   document.addEventListener('visibilitychange', handler);
   return () => {
+    cancelPending();
     queries.forEach(query => query.removeEventListener?.('change', handler));
-    window.removeEventListener('pageshow', handler);
+    for (const event of ['resize', 'orientationchange', 'pageshow', 'focus']) window.removeEventListener(event, handler);
+    window.visualViewport?.removeEventListener('resize', handler);
+    window.screen?.orientation?.removeEventListener?.('change', handler);
     document.removeEventListener('visibilitychange', handler);
   };
 }

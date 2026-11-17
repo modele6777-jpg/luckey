@@ -60,7 +60,7 @@ import { processDailyChatArchival } from '@/lib/chatMemoryArchive';
 import { drawLucyTarotCards, formatTarotMarker } from '@/utils/tarotDetector';
 import { isLucyScrollPinned, lucyScrollPinHeld, noteLucyScrollPin, overlayCoversElement, releaseLucyScrollPin } from '@/lib/lucyScrollPin';
 import { captureLucySearchAnchor, resolveLucySearchOpenGuardedTop, resolveLucySearchRestoreTop, type LucySearchScrollAnchor } from '@/lib/lucySearchScroll';
-import { isDualPaneLayout, isDuoUnfoldedState } from '@/lib/perfMode';
+import { isDualPaneLayout, isDuoUnfoldedState, subscribeDuoLayout } from '@/lib/perfMode';
 import { buildLucyTarotReadingPrompt } from '@/lib/lucyTarotReading';
 import { getLucyChatDay as getTodayDateKey } from '@/lib/lucyChatDay';
 import { joinKakaoBubblesForTTS } from '@/lib/lucyChatUtils';
@@ -688,13 +688,11 @@ const detectPageChannels = (text: string, options: { allowMaster?: boolean } = {
 function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
   // Lucy and Lucy+ share one required basic-tool + deep-perspective answer policy.
   // 🌟 실제 펼친 듀얼스크린 감지:
-  // 오직 실제 DOM에 '#duo-lucy-viewport' 및 '#duo-content-viewport'가 모두 존재하고 isDuoUnfoldedState().unfolded가 true일 때만 '펼침'으로 판정!
+  // App과 동일한 뷰포트 상태로 판단합니다. React 커밋 전 DOM id는 이전 접힘 상태일 수 있습니다.
   // 접힌 단일 화면에서는 isActuallyUnfoldedDual이 무조건 false!
   const [location, navigate] = useLocation();
 
-  const isActuallyUnfoldedDual = typeof document !== 'undefined' && Boolean(
-    document.getElementById('duo-lucy-viewport') && document.getElementById('duo-content-viewport')
-  ) && isDuoUnfoldedState().unfolded;
+  const isActuallyUnfoldedDual = isDuoUnfoldedState().unfolded;
 
   const [isDuoUnfolded, setIsDuoUnfolded] = useState(() => {
     if (typeof window === 'undefined') return false;
@@ -769,9 +767,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
 
     // ✨ 빅뱅 버튼 탭: 접혀있거나 일반 채널이면 'Lucy', 펼치고 코스믹 룸일 때만 'Lucy +'!
     const handleRevertNormal = (e?: any) => {
-      const isDual = typeof document !== 'undefined' && Boolean(
-        document.getElementById('duo-lucy-viewport') && document.getElementById('duo-content-viewport')
-      ) && isDuoUnfoldedState().unfolded;
+      const isDual = isDuoUnfoldedState().unfolded;
       const path = typeof window !== 'undefined' ? window.location.pathname : '/';
       const isCosmic = isDual && (path === '/' || path === '/chat' || path === '/lucy' || path === '/chat/pro');
       const validTarget: LucyTier = isCosmic ? 'plus' : 'ai';
@@ -1064,9 +1060,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
   // 🧭 채널 이동 감지: 실제 펼친 상태에서 채팅 버튼 눌러 코스믹 룸 진입 시 'Lucy+', 그 외 모든 경우(접힘 또는 다른 채널)엔 무조건 'Lucy'
   useEffect(() => {
     if (pro) return;
-    const isDual = typeof document !== 'undefined' && Boolean(
-      document.getElementById('duo-lucy-viewport') && document.getElementById('duo-content-viewport')
-    ) && isDuoUnfoldedState().unfolded;
+    const isDual = isDuoUnfoldedState().unfolded;
     const clean = location ? location.split('?')[0].split('#')[0] : '/';
     const isCosmic = isDual && (clean === '/' || clean === '/chat' || clean === '/lucy');
     const expected: LucyTier = isCosmic ? 'plus' : 'ai';
@@ -1083,53 +1077,16 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
   }, [location, isDuoUnfolded, pro, lucyTier]);
 
   useEffect(() => {
-    let initialRun = true;
-    const handleLayoutChange = () => {
-      if (typeof window === 'undefined') return;
-      const isDual = Boolean(
-        document.getElementById('duo-lucy-viewport') && document.getElementById('duo-content-viewport')
-      ) && isDuoUnfoldedState().unfolded;
-      setIsDuoUnfolded((prev) => {
-        const clean = window.location.pathname || '/';
-        const isCosmic = isDual && (clean === '/' || clean === '/chat' || clean === '/lucy');
-        const targetTier: LucyTier = isCosmic ? 'plus' : 'ai';
-
-        if (initialRun) {
-          initialRun = false;
-          setLucyTier(targetTier);
-          return isDual;
-        }
-        if (prev !== isDual) {
-          setLucyTier(() => {
-            safeLocalStorage.setItem('lucy_tier_mode', targetTier);
-            safeSessionStorage.setItem('lucy_tier_mode', targetTier);
-            setModeTransitioningTier(targetTier);
-            setTimeout(() => setModeTransitioningTier(null), 550);
-            try { triggerHaptic('whitehole'); } catch (_) {}
-            setModeSwitchToast(targetTier === 'plus' ? '🌿 듀오 펼침 · Lucy' : '✨ 듀오 접힘 · Lucy');
-            setTimeout(() => setModeSwitchToast(null), 2000);
-            return targetTier;
-          });
-        }
-        return isDual;
-      });
-    };
-    handleLayoutChange();
-    window.addEventListener('resize', handleLayoutChange, { passive: true });
-    window.addEventListener('orientationchange', handleLayoutChange, { passive: true });
-    window.visualViewport?.addEventListener('resize', handleLayoutChange, { passive: true });
-    return () => {
-      window.removeEventListener('resize', handleLayoutChange);
-      window.removeEventListener('orientationchange', handleLayoutChange);
-      window.visualViewport?.removeEventListener('resize', handleLayoutChange);
-    };
+    // State updater functions must stay pure. Tier changes and transition badges
+    // are already handled by the effect above, after React commits the layout.
+    const syncLayout = () => setIsDuoUnfolded(isDuoUnfoldedState().unfolded);
+    syncLayout();
+    return subscribeDuoLayout(syncLayout);
   }, []);
 
   // 🛡️ 접힌 상태(Cover Screen)에서는 무조건 기본 'Lucy'(ai)로 리셋
   useEffect(() => {
-    const isDual = typeof document !== 'undefined' && Boolean(
-      document.getElementById('duo-lucy-viewport') && document.getElementById('duo-content-viewport')
-    ) && isDuoUnfoldedState().unfolded;
+    const isDual = isDuoUnfoldedState().unfolded;
     if (!isDual && lucyTier === 'plus') {
       setLucyTier('ai');
       safeLocalStorage.setItem('lucy_tier_mode', 'ai');
@@ -2476,9 +2433,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
   //  Dynamic PWA Manifest & iOS Home-screen Metadata Switcher
   useEffect(() => {
     const prevTitle = document.title;
-    const isDual = typeof document !== 'undefined' && Boolean(
-      document.getElementById('duo-lucy-viewport') && document.getElementById('duo-content-viewport')
-    ) && isDuoUnfoldedState().unfolded;
+    const isDual = isDuoUnfoldedState().unfolded;
     const clean = location ? location.split('?')[0].split('#')[0] : '/';
     const isCosmic = isDual && (clean === '/' || clean === '/chat' || clean === '/lucy' || clean === '/chat/pro');
     const activeTitle = 'Lucy';
