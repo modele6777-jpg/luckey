@@ -26,7 +26,7 @@ function formatSoulJourneyKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
 }
 
 export type JourneyStage = '제1막: 자아 확립과 지상 탐험 (1~7)' | '제2막: 그림자 대면과 내적 연금술 (8~14)' | '제3막: 영적 각성과 우주적 통합 (15~21)' | '프롤로그/에필로그: 순수한 잠재력 (0)';
@@ -64,6 +64,7 @@ export interface SoulJourneyTarotReport {
     alchemyScore: number; // 0~100
   };
   synthesisPromptGuidance: string;
+  reflectiveQuestion?: string;
   soulJourneySynthesisMatrix?: {
     dominantTension: string;
     alignmentState: string;
@@ -353,6 +354,9 @@ export function runSoulJourneyTarotEngine(
   };
 
   const interpretiveBoundary = '본 영혼의 타로 여정 & 4원소 연금술 리포트는 타로 메이저 아르카나 원형과 생년월일 수비학에 기반한 정성적 성찰 안내이며, 확정적 미래 예언이 아닙니다.';
+  const reflectiveQuestion = q
+    ? `"${q}"의 자리에서 ${currentArchetype.nameKo}의 그림자 함정(${currentArchetype.shadowTrap})을 넘어 보완 원소(${lackingSuit})를 한 스푼 더한다면 어떤 선택이 열릴까요?`
+    : `오늘 ${currentArchetype.nameKo} 원형과 부족한 ${lackingSuit} 원소의 균형을 맞추기 위해 삶에 초대해 보고 싶은 태도는 무엇인가요?`;
 
   const synthesisPromptGuidance = `[LUCKEY 영혼 타로 여정 지능 ${SOUL_JOURNEY_TAROT_VERSION} | ${calculatedAtKst}]
 - 현재 활성 메이저 아키타입: ${currentArchetype.number}번 ${currentArchetype.nameKo} (${currentArchetype.nameEn})
@@ -362,6 +366,7 @@ export function runSoulJourneyTarotEngine(
 - 4원소 마이너 슈트 균형: 우세=${dominantSuit} / 보완필요=${lackingSuit}
 - 교차 매트릭스: [핵심 긴장: ${soulJourneySynthesisMatrix.dominantTension} | 조율 상태: ${soulJourneySynthesisMatrix.alignmentState}]
   * 통합 실천: ${soulJourneySynthesisMatrix.integratedAction}
+- 성찰 질문: ${reflectiveQuestion}
 - 해석 경계: ${interpretiveBoundary}`;
 
   return {
@@ -372,6 +377,7 @@ export function runSoulJourneyTarotEngine(
     elementalBalance,
     riteOfPassage,
     synthesisPromptGuidance,
+    reflectiveQuestion,
     soulJourneySynthesisMatrix,
     interpretiveBoundary,
   };
