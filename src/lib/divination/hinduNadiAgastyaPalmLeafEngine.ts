@@ -1,6 +1,6 @@
 import { UserProfile } from '../sharedState';
 
-export const HINDU_NADI_AGASTYA_PALM_LEAF_ENGINE_VERSION = '2.1.0';
+export const HINDU_NADI_AGASTYA_PALM_LEAF_ENGINE_VERSION = '2.2.0';
 
 export interface HinduNadiAgastyaPalmLeafReport {
   engineVersion: string;
@@ -16,6 +16,8 @@ export interface HinduNadiAgastyaPalmLeafReport {
   shantiParikharamRemedy: string;
   dharmaFulfillmentIndex: number;
   reflectiveQuestion: string;
+  ritualAction: string;
+  reflectionFocus: string;
   interpretiveBoundary: string;
   synthesisPrompt: string;
   nadiSynthesisMatrix?: {
@@ -216,6 +218,9 @@ export function calculateHinduNadiAgastyaPalmLeaf(options?: {
     integratedAction: `${kandam.remedy}${trimmedQuestion ? ` [질문 맥락: ${trimmedQuestion}]` : ''}`,
   };
 
+  const ritualAction = `[제${kandam.kandamNum}칸담 · ${kandam.name}] ${kandam.remedy}`;
+  const reflectionFocus = reflectiveQuestion;
+
   const synthesisPrompt = `
 [남인도 나디 점성술(Nadi Astrology) & 아가스티야 야자잎 14 칸담 상징 성찰 자료]
 ======================================================================
@@ -236,7 +241,8 @@ export function calculateHinduNadiAgastyaPalmLeaf(options?: {
 4. 🧭 [교차 매트릭스]:
    - 핵심 긴장: ${nadiSynthesisMatrix.dominantTension} | 조율 상태: ${nadiSynthesisMatrix.alignmentState}
    - 통합 실천: ${nadiSynthesisMatrix.integratedAction}
-   - 성찰 질문: ${reflectiveQuestion}
+   - 실천 의례(Ritual Action): ${ritualAction}
+   - 성찰 질문: ${reflectionFocus}
    - 해석 경계: ${interpretiveBoundary}
 ======================================================================
 [AI 해석 지침]: 본 리포트는 아가스티야 나디 전통에서 영감을 받은 앱 생성 상징 성찰 안내이며, 실제 야자잎 신탁, 전생 사실, 건강 상태·치료 또는 운명을 실측·검증·예측한 결과가 아닙니다. 수치와 칸담은 구현 규칙에 따른 참고값일 뿐 정확도·확률로 해석하지 마십시오. 건강 문제의 원인이나 책임을 카르마로 단정하지 말고, 증상이 지속되거나 걱정되면 의료 전문가와 상담하도록 안내하세요.
@@ -256,6 +262,8 @@ export function calculateHinduNadiAgastyaPalmLeaf(options?: {
     shantiParikharamRemedy: kandam.remedy,
     dharmaFulfillmentIndex,
     reflectiveQuestion,
+    ritualAction,
+    reflectionFocus,
     interpretiveBoundary,
     synthesisPrompt,
     nadiSynthesisMatrix,

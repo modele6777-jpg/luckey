@@ -18,7 +18,7 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const HERO_MONOMYTH_VERSION = 'LUCKEY-MONOMYTH-v2.1.0';
+export const HERO_MONOMYTH_VERSION = 'LUCKEY-MONOMYTH-v2.2.0';
 
 export interface HeroJourneyStage {
   stepNumber: number;          // 1 ~ 12
@@ -44,6 +44,8 @@ export interface HeroMythMonomythReport {
     alignmentState: string;
     integratedAction: string;
   };
+  ritualAction: string;
+  reflectionFocus: string;
   interpretiveBoundary: string;
 }
 
@@ -143,9 +145,11 @@ export function runHeroMythMonomythEngine(
     integratedAction: `${heroicBreakthroughAction} (${currentStage.hiddenBlessing})`,
   };
 
+  const ritualAction = `[${currentStage.stageName} · ${currentStage.archetypalRole}] ${heroicBreakthroughAction}`;
+  const reflectionFocus = `지금 내가 마주한 '${theUltimateOrdeal}' 앞에서 ${currentStage.hiddenBlessing}을(를) 현실로 여는 오늘의 한 걸음은 무엇입니까?`;
   const interpretiveBoundary = '본 조셉 캠벨 영웅의 여정 모노미스 리포트는 신화학 원형과 명리 흐름에 기반한 정성적 서사 성찰 안내이며, 확정적 미래 예언이 아닙니다.';
 
-  const synthesisPromptGuidance = `[LUCKEY 조셉 캠벨 영웅의 여정 12단계 모노미스 v2.1.0]
+  const synthesisPromptGuidance = `[LUCKEY 조셉 캠벨 영웅의 여정 12단계 모노미스 v2.2.0]
 - 연산 시각: ${calculatedAtKst}
 - 영웅의 신화적 정체성: [${heroicArchetype}]
 - 현재 위치한 여정의 관문: ${currentStage.stageName}
@@ -158,6 +162,8 @@ export function runHeroMythMonomythEngine(
 - 신화적 서사 추진력: ${describeMonomythStage(monomythPowerScore)}
 - 교차 매트릭스 [핵심 긴장: ${monomythSynthesisMatrix.dominantTension} | 조율 상태: ${monomythSynthesisMatrix.alignmentState}]
 - 통합 실천: ${monomythSynthesisMatrix.integratedAction}
+- 실천 의례(Ritual Action): ${ritualAction}
+- 성찰 초점(Reflection Focus): ${reflectionFocus}
 - 해석 경계: ${interpretiveBoundary}`;
 
   return {
@@ -172,6 +178,8 @@ export function runHeroMythMonomythEngine(
     monomythPowerScore,
     synthesisPromptGuidance,
     monomythSynthesisMatrix,
+    ritualAction,
+    reflectionFocus,
     interpretiveBoundary,
   };
 }

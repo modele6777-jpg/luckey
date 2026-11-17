@@ -2856,9 +2856,11 @@ test('Hero Myth Monomyth Engine: 조셉 캠벨 영웅의 여정 12단계 & 운�
   assert(res.calculatedAtKst.endsWith('KST'));
   assert(Boolean(res.monomythSynthesisMatrix?.integratedAction));
   assert(res.interpretiveBoundary.length > 0);
+  assert(res.ritualAction.length > 0 && res.reflectionFocus.length > 0);
   const prompt = formatHeroMythMonomythPrompt(res);
   assert(prompt.includes('LUCKEY 조셉 캠벨 영웅의 여정 12단계 모노미스'));
   assert(prompt.includes(res.heroicArchetype));
+  assert(prompt.includes(res.ritualAction));
   assert(prompt.includes('교차 매트릭스') && prompt.includes('해석 경계'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
@@ -4027,9 +4029,11 @@ test('Hindu Nadi Agastya Palm Leaf Engine: calculates 14 Kandams and Shanti Pari
   assert(rep.dharmaFulfillmentIndex >= 0 && rep.dharmaFulfillmentIndex <= 100);
   assert(rep.calculatedAtKst.endsWith('KST'));
   assert(Boolean(rep.nadiSynthesisMatrix?.integratedAction));
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatHinduNadiAgastyaPalmLeafPrompt(rep);
   assert(prompt.includes('남인도 나디 점성술(Nadi Astrology) & 아가스티야 야자잎 14 칸담 상징 성찰 자료'));
   assert(prompt.includes(rep.kandamName));
+  assert(prompt.includes(rep.ritualAction));
   assert(prompt.includes('교차 매트릭스'));
   assert(prompt.includes('실제 야자잎 신탁'));
   assert(prompt.includes('건강 문제의 원인이나 책임을 카르마로 단정하지 말고'));
@@ -4858,9 +4862,11 @@ test('Hermetic Poimandres Ascension Engine: calculates seven spheres passions pu
   assert(rep.temporalOgdoadRhythm.ascensionWindow.length > 0);
   assert(rep.poimandresSynthesisMatrix.synthesizedVerdict.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatHermeticPoimandresPrompt(rep);
   assert(prompt.includes('고대 헤르메스주의 포이만드레스 7대 천계 탈각 & 옥도아드 각성 실측 데이터'));
   assert(prompt.includes(rep.dominantSphere.nameKo));
+  assert(prompt.includes(rep.ritualAction));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });

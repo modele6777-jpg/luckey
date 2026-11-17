@@ -1,10 +1,10 @@
 {
-  "version": "1.7.816",
-  "builtAt": "2026-11-18T08:50:00+09:00",
-  "summary": "하락이수, 헬레니즘 랏, 헤르메스 카이발리온 3대 엔진 실천 의례 및 성찰 질문 표준 연동(v1.7.816)",
+  "version": "1.7.817",
+  "builtAt": "2026-11-18T09:00:00+09:00",
+  "summary": "포이만드레스, 영웅의 여정, 나디 아가스티야 야자잎 3대 엔진 실천 의례 및 성찰 질문 표준 연동(v1.7.817)",
   "items": [
-    "하락이수(河洛理數) 사주·주역 융합 엔진(v2.3.0): ritualAction·reflectionFocus 표준 필드 연동",
-    "헬레니즘 아라빅 랏 & 조디악 릴리싱 엔진(v2.3.0): ritualAction·reflectionFocus 표준 필드 연동",
-    "헤르메스 카이발리온 7대 법칙 엔진(v2.4.0): ritualAction·reflectionFocus 표준 필드 연동"
+    "헤르메스 포이만드레스 7대 천계 탈각 엔진(v2.4.0): ritualAction·reflectionFocus 표준 필드 연동",
+    "조셉 캠벨 영웅의 여정 12단계 모노미스 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동",
+    "남인도 나디 아가스티야 야자잎 14칸담 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동"
   ]
 }
