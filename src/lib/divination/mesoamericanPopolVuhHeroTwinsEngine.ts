@@ -6,7 +6,7 @@
  * 질문 맥락에 반응하는 정성적 성찰과 유연한 위기 전환 지침으로 연결합니다.
  */
 
-export const MESOAMERICAN_POPOL_VUH_ENGINE_VERSION = 'LUCKEY-POPOL-VUH-HERO-TWINS-v2.0.0';
+export const MESOAMERICAN_POPOL_VUH_ENGINE_VERSION = 'LUCKEY-POPOL-VUH-HERO-TWINS-v2.1.0';
 
 export type PopolVuhQuestionTheme = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -47,6 +47,7 @@ export interface PopolVuhReport {
     alignmentState: string;
     integratedAction: string;
   };
+  interpretiveBoundary: string;
 }
 
 function formatPopolVuhKstTimestamp(now: Date = new Date()): string {
@@ -239,6 +240,7 @@ export function calculatePopolVuhHeroTwins(params: {
     counselNote: qualitative.counsel,
     boundaryNotice: '마야 포폴 부 쌍둥이 영웅 상징은 우열을 가르는 점수가 아니라 위기를 유연하게 전환하기 위한 정성적 성찰 프레임입니다.',
     popolVuhSynthesisMatrix,
+    interpretiveBoundary: '마야 포폴 부 쌍둥이 영웅 상징은 우열을 가르는 점수가 아니라 위기를 유연하게 전환하기 위한 정성적 성찰 프레임입니다.',
   };
 }
 
