@@ -13,7 +13,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const SUNTZU_STRATEGY_VERSION = 'LUCKEY-SUNTZU-STRATEGY-v2.1.0';
+export const SUNTZU_STRATEGY_VERSION = 'LUCKEY-SUNTZU-STRATEGY-v2.2.0';
 
 export type SunTzuQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -71,6 +71,7 @@ export interface SunTzuArtOfWarStrategyResult {
   practiceGuidance: string;
   ritualAction: string;
   reflectionFocus: string;
+  reflectiveQuestion: string;
   counselNote: string;
   boundaryNotice: string;
   interpretiveBoundary: string;
@@ -338,6 +339,10 @@ export function calculateSunTzuArtOfWarStrategy(
 
   const counselNote = `5사의 '${focalFiveFactor.factorHanja}' 정비와 '${activeStrategicTactic.tacticNameHanja}' 전술이 결합되어, 지금 국면을 '${topicGuide.posture}'로 안내합니다.`;
   const boundaryNotice = '이 관점은 《손자병법》의 형세 판단과 자원 배분 철학을 빌린 상징적 전략 성찰이며, 확정적 승패 예측이나 법률·투자 자문이 아닙니다.';
+  const cleanQuestion = (question ?? '').trim();
+  const reflectiveQuestion = cleanQuestion
+    ? `'${cleanQuestion}'의 국면에서 정면 충돌 대신 '${focalFiveFactor.factorHanja}'를 정비하고 '${activeStrategicTactic.tacticNameHanja}'로 우회한다면, 가장 먼저 내려놓아야 할 소모전은 무엇인가요?`
+    : topicGuide.reflection;
 
   return {
     engineVersion: SUNTZU_STRATEGY_VERSION,
@@ -354,6 +359,7 @@ export function calculateSunTzuArtOfWarStrategy(
     practiceGuidance: topicGuide.practice,
     ritualAction: topicGuide.ritual,
     reflectionFocus: topicGuide.reflection,
+    reflectiveQuestion,
     counselNote,
     boundaryNotice,
     interpretiveBoundary: boundaryNotice,
@@ -385,7 +391,7 @@ export function formatSunTzuArtOfWarStrategyPrompt(res: SunTzuArtOfWarStrategyRe
     `- 손자병법 교차 매트릭스: ${res.sunTzuSynthesisMatrix.synthesizedVerdict}`,
     `- 맥락별 실행 조언: ${res.practiceGuidance}`,
     `- 오늘의 작은 의례: ${res.ritualAction}`,
-    `- 성찰 질문: ${res.reflectionFocus}`,
+    `- 성찰 질문: ${res.reflectiveQuestion}`,
     `- 핵심 조언 요약: ${res.counselNote}`,
     `- 해석 경계: ${res.boundaryNotice}`,
     `- 병법적 결단 지침: ${res.sunTzuPhilosophicalCounsel.philosophicalGuidance}`,

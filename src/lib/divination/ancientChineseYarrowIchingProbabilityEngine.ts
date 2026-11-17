@@ -6,7 +6,7 @@
  * 동효·정효의 시중(時中) 태도를 정성적 행동 성찰에 연결합니다.
  */
 
-export const ANCIENT_YARROW_PROBABILITY_ENGINE_VERSION = 'LUCKEY-YARROW-PROBABILITY-v2.1.0';
+export const ANCIENT_YARROW_PROBABILITY_ENGINE_VERSION = 'LUCKEY-YARROW-PROBABILITY-v2.2.0';
 
 export type YarrowQuestionTheme = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -39,6 +39,7 @@ export interface YarrowProbabilityReport {
   practiceGuidance: string; // getSymbolicPerspective 호환 정성적 조언
   ritualAction: string;
   reflectionFocus: string;
+  reflectiveQuestion: string;
   counselNote: string;
   boundaryNotice: string;
   interpretiveBoundary: string;
@@ -277,6 +278,10 @@ export function calculateAncientYarrowProbability(params: {
     cautionNotice: themeContent.counselNote,
   };
   const boundaryNotice = '대연지수 시초점 관점은 고대 주역의 상징 수리를 빌린 정성적 처세 참고용이며, 개인 점수나 확률 예언이 아닙니다.';
+  const cleanQuestion = question.trim();
+  const reflectiveQuestion = cleanQuestion
+    ? `'${cleanQuestion}'에 대하여 [${yaoNameKo}]가 비추는 '${timelinessPosture}'의 자리에서, 지금 당장 서두르지 않고 지켜야 할 시중(時中)의 기준은 무엇인가요?`
+    : themeContent.reflectionFocus;
 
   return {
     engineVersion: ANCIENT_YARROW_PROBABILITY_ENGINE_VERSION,
@@ -298,6 +303,7 @@ export function calculateAncientYarrowProbability(params: {
     practiceGuidance: themeContent.practiceGuidance,
     ritualAction: themeContent.ritualAction,
     reflectionFocus: themeContent.reflectionFocus,
+    reflectiveQuestion,
     counselNote: themeContent.counselNote,
     boundaryNotice,
     interpretiveBoundary: boundaryNotice,
@@ -326,6 +332,6 @@ export function formatAncientYarrowProbabilityPrompt(report: YarrowProbabilityRe
 - **대연 교차 매트릭스**: 핵심(${report.yarrowSynthesisMatrix.coreInsight}) | 실행(${report.yarrowSynthesisMatrix.recommendedAction}) | 주의(${report.yarrowSynthesisMatrix.cautionNotice})
 - **실천 조언**: ${report.practiceGuidance}
 - **일상 의례**: ${report.ritualAction}
-- **성찰 질문**: ${report.reflectionFocus}
+- **성찰 질문**: ${report.reflectiveQuestion}
 - **해석 경계**: ${report.boundaryNotice}`;
 }
