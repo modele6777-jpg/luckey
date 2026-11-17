@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.7.763",
+    "builtAt": "2026-11-18T04:50:00+09:00",
+    "summary": "손자병법 피실격허·주역 대연수 시초점·멤피스 프타 신학 3대 엔진 질문 반응형 성찰 질문 연동(v1.7.763)",
+    "items": [
+      "손자병법 오사칠계 부전승 피실격허 전략(ancientChineseSunTzuArtOfWarStrategyEngine v2.2.0): 질문 반응형 reflectiveQuestion 추가 및 프롬프트 출력 연동",
+      "주역 대연지수 49책 시초점 확률 수리(ancientChineseYarrowIchingProbabilityEngine v2.2.0): 질문 반응형 reflectiveQuestion 추가 및 프롬프트 출력 연동",
+      "이집트 멤피스 프타 창조신학(ancientEgyptianPtahMemphiteTheologyEngine v2.3.0): 질문 반응형 reflectiveQuestion 추가 및 의례·성찰 질문 프롬프트 출력 연동"
+    ]
+  },
+  {
     "version": "1.7.762",
     "builtAt": "2026-11-18T04:44:00+09:00",
     "summary": "불교 유식학 8식 전식득지, 켈트 아웬 탈리에신, 브레혼 법전 3대 엔진 실천 의례 및 성찰 질문 표준 연동(v1.7.762)",

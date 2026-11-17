@@ -10662,3 +10662,29 @@ test('Ancestral · Baopuzi · Mozi v2.3: KST, reflectiveQuestion, and interpreti
   const mzPrompt = formatMoziGyeomAePrompt(mz);
   assert.ok(mzPrompt.includes('KST') && mzPrompt.includes('성찰 질문') && mzPrompt.includes('해석 경계'));
 });
+
+test('SunTzu v2.2 · Yarrow v2.2 · PtahMemphite v2.3: reflectiveQuestion & prompt output', () => {
+  const now = new Date('2026-11-18T04:50:00+09:00');
+  const query = '복잡한 선택 앞에서 불필요한 소모전을 줄이고 중심을 세우고 싶어요';
+
+  const st = calculateSunTzuArtOfWarStrategy(profile, now, query);
+  assert.equal(st.engineVersion, SUNTZU_STRATEGY_VERSION);
+  assert.match(st.calculatedAtKst, /\+09:00/);
+  assert.ok(st.reflectiveQuestion.includes(query));
+  const stPrompt = formatSunTzuArtOfWarStrategyPrompt(st);
+  assert.ok(stPrompt.includes('KST') && stPrompt.includes('성찰 질문') && stPrompt.includes('해석 경계'));
+
+  const yr = calculateAncientYarrowProbability({ profile, question: query, now });
+  assert.equal(yr.engineVersion, ANCIENT_YARROW_PROBABILITY_ENGINE_VERSION);
+  assert.match(yr.calculatedAtKst, /KST/);
+  assert.ok(yr.reflectiveQuestion.includes(query));
+  const yrPrompt = formatAncientYarrowProbabilityPrompt(yr);
+  assert.ok(yrPrompt.includes('KST') && yrPrompt.includes('성찰 질문') && yrPrompt.includes('해석 경계'));
+
+  const pt = calculatePtahMemphite(profile, query, now);
+  assert.equal(pt.engineVersion, PTAH_MEMPHITE_VERSION);
+  assert.match(pt.calculatedAtKst, /KST/);
+  assert.ok(pt.reflectiveQuestion.includes(query));
+  const ptPrompt = formatPtahMemphitePrompt(pt);
+  assert.ok(ptPrompt.includes('KST') && ptPrompt.includes('성찰 질문') && ptPrompt.includes('해석 경계'));
+});
