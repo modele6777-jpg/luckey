@@ -10779,3 +10779,29 @@ test('IlmAlRaml v2.3 · Adler v2.2 · Kafka v2.2: reflectiveQuestion & KST promp
   const kfPrompt = formatAustrianFranzKafkaExistentialTruthPrompt(kf);
   assert.ok(kfPrompt.includes('KST') && kfPrompt.includes('성찰 질문') && kfPrompt.includes('해석 경계'));
 });
+
+test('Buber v2.2 · Rilke v2.2 · Frankl v2.4: reflectiveQuestion & KST prompt output', () => {
+  const now = new Date('2026-11-18T05:30:00+09:00');
+  const query = '불확실한 시련 앞에서도 흔들리지 않는 내면의 의미를 찾고 싶어요';
+
+  const bb = calculateAustrianMartinBuberIAndThou(profile, query, now);
+  assert.equal(bb.engineVersion, AUSTRIAN_MARTIN_BUBER_VERSION);
+  assert.match(bb.calculatedAtKst, /KST/);
+  assert.ok(bb.reflectiveQuestion.includes(query));
+  const bbPrompt = formatAustrianMartinBuberIAndThouPrompt(bb);
+  assert.ok(bbPrompt.includes('KST') && bbPrompt.includes('성찰 질문') && bbPrompt.includes('해석 경계'));
+
+  const rk = calculateAustrianRainerMariaRilkeLetters(profile, query, now);
+  assert.equal(rk.engineVersion, AUSTRIAN_RAINER_MARIA_RILKE_LETTERS_VERSION);
+  assert.match(rk.calculatedAtKst, /KST/);
+  assert.ok(rk.reflectiveQuestion.includes(query));
+  const rkPrompt = formatAustrianRainerMariaRilkeLettersPrompt(rk);
+  assert.ok(rkPrompt.includes('KST') && rkPrompt.includes('성찰 질문') && rkPrompt.includes('해석 경계'));
+
+  const fr = calculateViktorFranklLogotherapy(profile, query, now);
+  assert.equal(fr.engineVersion, AUSTRIAN_VIKTOR_FRANKL_VERSION);
+  assert.match(fr.calculatedAtKst, /\+09:00/);
+  assert.ok(fr.reflectiveQuestion.includes(query));
+  const frPrompt = formatViktorFranklLogotherapyPrompt(fr);
+  assert.ok(frPrompt.includes('+09:00') && frPrompt.includes('성찰 질문') && frPrompt.includes('해석 경계'));
+});

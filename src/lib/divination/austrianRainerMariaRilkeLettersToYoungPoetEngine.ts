@@ -13,7 +13,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const AUSTRIAN_RAINER_MARIA_RILKE_LETTERS_VERSION = 'LUCKEY-RILKE-LETTERS-TO-YOUNG-POET-v2.1.0';
+export const AUSTRIAN_RAINER_MARIA_RILKE_LETTERS_VERSION = 'LUCKEY-RILKE-LETTERS-TO-YOUNG-POET-v2.2.0';
 
 export type RilkeQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -67,6 +67,7 @@ export interface AustrianRainerMariaRilkeLettersResult {
   questionTopic: RilkeQuestionTopic;
   situationalRilkeAudit: RilkeSituationalAudit;
   temporalRilkeRhythm: RilkeTemporalRhythm;
+  reflectiveQuestion: string;
   interpretiveBoundary: string;
   rilkeSynthesisMatrix?: {
     coreInsight: string;
@@ -296,6 +297,11 @@ export function calculateAustrianRainerMariaRilkeLetters(
     `${situationalRilkeAudit.practiceGuidance} 릴케의 원전 테제 "${focalRilkeAphorism.aphorismKo}"을 마음에 품고, ` +
     `${temporalRilkeRhythm.dailyWatchword}`;
 
+  const trimmedQuery = (query ?? '').trim();
+  const reflectiveQuestion = trimmedQuery
+    ? `지금 마음속에 맴도는 "${trimmedQuery}"라는 질문을 당장 해결하려 서두르기보다, 하나의 방처럼 고요히 품고 살아낸다면 내면에서 어떤 변화가 자라날까요?`
+    : situationalRilkeAudit.reflectionFocus;
+
   return {
     engineVersion: AUSTRIAN_RAINER_MARIA_RILKE_LETTERS_VERSION,
     calculatedAtKst: `${kstDayKey} ${String(new Date(now.getTime() + 9 * 60 * 60 * 1000).getUTCHours()).padStart(2, '0')}:${String(new Date(now.getTime() + 9 * 60 * 60 * 1000).getUTCMinutes()).padStart(2, '0')} KST`,
@@ -309,6 +315,7 @@ export function calculateAustrianRainerMariaRilkeLetters(
     questionTopic,
     situationalRilkeAudit,
     temporalRilkeRhythm,
+    reflectiveQuestion,
     interpretiveBoundary: situationalRilkeAudit.boundaryNotice,
     rilkeSynthesisMatrix: {
       coreInsight: activeRilkeTheme.themeTitleKo,
@@ -335,7 +342,7 @@ export function formatAustrianRainerMariaRilkeLettersPrompt(
     `- 문학적 사색: ${res.activeRilkeTheme.literaryInsight}`,
     `- 질문 맞춤 조언: ${res.situationalRilkeAudit.practiceGuidance}`,
     `- 일상 의례 제안: ${res.situationalRilkeAudit.ritualAction}`,
-    `- 성찰 질문: ${res.situationalRilkeAudit.reflectionFocus}`,
+    `- 성찰 질문: ${res.reflectiveQuestion}`,
     `- 교차 매트릭스: 핵심(${res.rilkeSynthesisMatrix?.coreInsight ?? res.activeRilkeTheme.themeTitleKo}) | 실행(${res.rilkeSynthesisMatrix?.recommendedAction ?? res.situationalRilkeAudit.practiceGuidance}) | 주의(${res.rilkeSynthesisMatrix?.cautionNotice ?? '조급한 해답 경계'})`,
     `- 조언 요약: ${res.situationalRilkeAudit.counselNote}`,
     `- 릴케 원전 테제: "${res.focalRilkeAphorism.aphorismKo}"`,

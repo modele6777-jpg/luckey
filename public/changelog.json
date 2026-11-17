@@ -1,12 +1,22 @@
 [
   {
-    "version": "1.7.771",
-    "builtAt": "2026-11-18T05:30:00+09:00",
-    "summary": "키르케고르 실존 3단계, 딥워크 몰입, 델포이 잠언 신탁 3대 엔진 실천 의례 및 성찰 질문 표준 연동(v1.7.771)",
+    "version": "1.7.772",
+    "builtAt": "2026-11-18T05:33:00+09:00",
+    "summary": "키르케고르 실존 3단계, 딥워크 몰입, 델포이 잠언 신탁 3대 엔진 실천 의례 및 성찰 질문 표준 연동(v1.7.772)",
     "items": [
       "덴마크 쇠렌 키르케고르 단독자 3단계 실존 도약 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동",
       "창작 아우라 & 딥워크 몰입 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동",
       "고대 그리스 델포이 아폴론 신탁 & 147 잠언 엔진(v2.3.0): ritualAction·reflectionFocus 표준 필드 연동"
+    ]
+  },
+  {
+    "version": "1.7.771",
+    "builtAt": "2026-11-18T05:30:00+09:00",
+    "summary": "마틴 부버·릴케·빅터 프랭클 3대 엔진 질문 반응형 성찰 질문 보강(v1.7.771)",
+    "items": [
+      "마틴 부버 나와 너(austrianMartinBuberIAndThouEngine v2.2.0): 질문 반응형 reflectiveQuestion 추가 및 프롬프트 출력 연동",
+      "라이너 마리아 릴케 젊은 시인에게 주는 편지(austrianRainerMariaRilkeLettersToYoungPoetEngine v2.2.0): 질문 반응형 reflectiveQuestion 추가 및 프롬프트 출력 연동",
+      "빅터 프랭클 로고테라피(austrianViktorFranklLogotherapyEngine v2.4.0): 질문 반응형 reflectiveQuestion 추가 및 프롬프트 출력 연동"
     ]
   },
   {
