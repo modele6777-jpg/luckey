@@ -13,7 +13,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const BRITISH_VIRGINIA_WOOLF_ROOM_OF_ONES_OWN_VERSION = 'LUCKEY-VIRGINIA-WOOLF-ROOM-OF-ONES-OWN-v2.1.0';
+export const BRITISH_VIRGINIA_WOOLF_ROOM_OF_ONES_OWN_VERSION = 'LUCKEY-VIRGINIA-WOOLF-ROOM-OF-ONES-OWN-v2.2.0';
 
 export type WoolfQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -57,6 +57,7 @@ export interface BritishVirginiaWoolfRoomOfOnesOwnResult {
   practiceGuidance: string;
   ritualAction: string;
   reflectionFocus: string;
+  reflectiveQuestion: string;
   boundaryNotice: string;
   interpretiveBoundary: string;
   woolfSynthesisMatrix: {
@@ -262,7 +263,11 @@ export function calculateBritishVirginiaWoolfRoomOfOnesOwn(
   const boundaryNotice = '버지니아 울프 문학·철학 해석은 사유의 독립과 내면 성찰을 돕는 상징 관점이며, 현실의 확정 예언이나 의학적 진단이 아닙니다.';
   const baseDate = now ?? new Date();
   const kst = new Date(baseDate.getTime() + 9 * 60 * 60 * 1000);
-  const kstTimeLabel = `${temporalWoolfRhythm.kstDateLabel} ${String(kst.getUTCHours()).padStart(2, '0')}:${String(kst.getUTCMinutes()).padStart(2, '0')} KST`;
+  const kstTimeLabel = `${temporalWoolfRhythm.kstDateLabel} ${String(kst.getUTCHours()).padStart(2, '0')}:${String(kst.getUTCMinutes()).padStart(2, '0')} +09:00 (KST)`;
+  const trimmedQuery = (query ?? '').trim();
+  const reflectiveQuestion = trimmedQuery
+    ? `"${trimmedQuery}"라는 질문 앞에서, 외부의 소음을 닫고 나만의 '자기만의 방'에서 고요히 꺼내 들 수 있는 진실한 목소리는 무엇인가요?`
+    : topicGuidance.reflectionFocus;
   const woolfSynthesisMatrix = {
     coreInsight: activeWoolfTheme.themeTitleKo,
     recommendedAction: topicGuidance.practiceGuidance,
@@ -284,6 +289,7 @@ export function calculateBritishVirginiaWoolfRoomOfOnesOwn(
     practiceGuidance: topicGuidance.practiceGuidance,
     ritualAction: topicGuidance.ritualAction,
     reflectionFocus: topicGuidance.reflectionFocus,
+    reflectiveQuestion,
     boundaryNotice,
     interpretiveBoundary: boundaryNotice,
     woolfSynthesisMatrix,
@@ -308,6 +314,7 @@ export function formatBritishVirginiaWoolfRoomOfOnesOwnPrompt(
     `- 질문 맞춤 실천 가이드: ${res.practiceGuidance}`,
     `- 일상 실천 의례: ${res.ritualAction}`,
     `- 핵심 성찰 질문: ${res.reflectionFocus}`,
+    `- 질문 맞춤 성찰 질문: ${res.reflectiveQuestion}`,
     `- 교차 매트릭스: 핵심(${res.woolfSynthesisMatrix.coreInsight}) | 실행(${res.woolfSynthesisMatrix.recommendedAction}) | 주의(${res.woolfSynthesisMatrix.cautionNotice})`,
     `- 울프 원전 테제: "${res.focalWoolfAphorism.aphorismKo}" (${res.focalWoolfAphorism.aphorismEnglish})`,
     `- 원전 출처: [${res.focalWoolfAphorism.sourceContext}]`,
