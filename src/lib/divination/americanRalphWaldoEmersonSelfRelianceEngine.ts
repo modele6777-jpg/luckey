@@ -13,7 +13,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const AMERICAN_RALPH_WALDO_EMERSON_VERSION = 'LUCKEY-RALPH-WALDO-EMERSON-v2.1.0';
+export const AMERICAN_RALPH_WALDO_EMERSON_VERSION = 'LUCKEY-RALPH-WALDO-EMERSON-v2.2.0';
 
 export type EmersonQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -50,6 +50,7 @@ export interface RalphWaldoEmersonSelfRelianceResult {
   practiceGuidance: string;
   ritualAction: string;
   reflectionFocus: string;
+  reflectiveQuestion: string;
   counselNote: string;
   boundaryNotice: string;
   interpretiveBoundary: string;
@@ -301,6 +302,11 @@ export function calculateRalphWaldoEmersonSelfReliance(
     cautionNotice: '남의 밭을 부러워하는 모방과 어제의 말에 매이는 어리석은 일관성을 경계하십시오.',
   };
 
+  const trimmedQ = (question ?? '').trim();
+  const reflectiveQuestion = trimmedQ
+    ? `‘${trimmedQ}’라는 물음 앞에서 외부의 평판과 어제의 일관성을 내려놓는다면, 내면의 철의 현이 진실하다고 울리는 답은 무엇인가요?`
+    : topicGuide.reflection;
+
   return {
     engineVersion: AMERICAN_RALPH_WALDO_EMERSON_VERSION,
     calculatedAtKst: temporalEmersonRhythm.kstTimeLabel,
@@ -316,6 +322,7 @@ export function calculateRalphWaldoEmersonSelfReliance(
     practiceGuidance: topicGuide.practice,
     ritualAction: topicGuide.ritual,
     reflectionFocus: topicGuide.reflection,
+    reflectiveQuestion,
     counselNote,
     boundaryNotice,
     interpretiveBoundary: boundaryNotice,
@@ -343,7 +350,7 @@ export function formatRalphWaldoEmersonSelfReliancePrompt(res: RalphWaldoEmerson
     `- 구체적 실천 지침: ${res.focalEmersonAphorism.actionGuidance}`,
     `- 맥락별 실행 조언: ${res.practiceGuidance}`,
     `- 오늘의 작은 의례: ${res.ritualAction}`,
-    `- 성찰 질문: ${res.reflectionFocus}`,
+    `- 성찰 질문: ${res.reflectiveQuestion}`,
     `- 교차 매트릭스: 핵심(${res.emersonSynthesisMatrix.coreInsight}) | 실행(${res.emersonSynthesisMatrix.recommendedAction}) | 주의(${res.emersonSynthesisMatrix.cautionNotice})`,
     `- 핵심 조언 요약: ${res.counselNote}`,
     `- 해석 경계: ${res.boundaryNotice}`,

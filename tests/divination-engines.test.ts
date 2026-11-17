@@ -10607,3 +10607,29 @@ test('Alexandrian Decan · Arendt · Thoreau v2.2: KST, reflectiveQuestion, and 
   const thPrompt = formatHenryDavidThoreauWaldenPrompt(th);
   assert.ok(thPrompt.includes('+09:00') && thPrompt.includes('성찰 질문') && thPrompt.includes('해석 경계'));
 });
+
+test('Dewey · Emerson · Whitman v2.2: KST, reflectiveQuestion, and interpretiveBoundary', () => {
+  const now = new Date('2026-11-17T19:30:00Z');
+  const query = '나만의 기준으로 새로운 길을 가고 싶어요';
+
+  const dw = calculateAmericanJohnDeweyPragmaticInquiryGrowth(profile, query, now);
+  assert.equal(dw.engineVersion, AMERICAN_JOHN_DEWEY_PRAGMATIC_INQUIRY_GROWTH_VERSION);
+  assert.match(dw.calculatedAtKst, /KST/);
+  assert.ok(dw.reflectiveQuestion.includes(query));
+  const dwPrompt = formatAmericanJohnDeweyPragmaticInquiryGrowthPrompt(dw);
+  assert.ok(dwPrompt.includes('KST') && dwPrompt.includes('성찰 질문') && dwPrompt.includes('해석 경계'));
+
+  const em = calculateRalphWaldoEmersonSelfReliance(profile, now, query);
+  assert.equal(em.engineVersion, AMERICAN_RALPH_WALDO_EMERSON_VERSION);
+  assert.match(em.calculatedAtKst, /KST/);
+  assert.ok(em.reflectiveQuestion.includes(query));
+  const emPrompt = formatRalphWaldoEmersonSelfReliancePrompt(em);
+  assert.ok(emPrompt.includes('KST') && emPrompt.includes('성찰 질문') && emPrompt.includes('해석 경계'));
+
+  const wh = calculateAmericanWaltWhitmanLeavesOfGrass(profile, query, now);
+  assert.equal(wh.engineVersion, AMERICAN_WALT_WHITMAN_VERSION);
+  assert.match(wh.calculatedAtKst, /KST/);
+  assert.ok(wh.reflectiveQuestion.includes(query));
+  const whPrompt = formatAmericanWaltWhitmanLeavesOfGrassPrompt(wh);
+  assert.ok(whPrompt.includes('KST') && whPrompt.includes('성찰 질문') && whPrompt.includes('해석 경계'));
+});
