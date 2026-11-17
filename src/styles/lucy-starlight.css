@@ -739,7 +739,7 @@ html[data-lucy-theme='starlight'] .lucy-night .lucy-suggestion-toolbar button { 
 html[data-lucy-theme='starlight'] .lucy-night .lucy-voice-status { background: #8793a010; border: 0; padding: 7px 9px; border-radius: 10px; box-shadow: none; }
 .lucy-voice-status > button { background: #73869b30; color: inherit; box-shadow: none; min-height: 26px; padding: 4px 8px; }
 
-.lucy-mode-transition { position: fixed; inset: 0; z-index: 10050; display: grid; place-items: center; background: #fff; color: #20344f; }
+.lucy-mode-transition { pointer-events: none; position: fixed; inset: 0; z-index: 10050; display: grid; place-items: center; background: #fff; color: #20344f; }
 .lucy-transition-wordmark { position: relative; display: inline-block; font-size: clamp(36px, 5vw, 52px); font-weight: 800; line-height: 1.15; letter-spacing: -.055em; }
 .lucy-transition-markers { position: absolute; left: calc(100% + .16em); top: 0; display: flex; align-items: baseline; gap: .18em; white-space: nowrap; letter-spacing: -.04em; }
 .lucy-transition-marker { display: inline-block; opacity: var(--lucy-marker-to); }

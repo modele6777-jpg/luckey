@@ -1,3 +1,4 @@
+import { isIosStandaloneWindow, readViewportSnapshot, resolveLayoutViewportSize } from './visualViewportBox';
 import type { OverlayPane } from './overlayPane';
 export interface MainOverlayViewport { left: number; top: number; width: number; height: number }
 
@@ -30,8 +31,11 @@ function paneElement(pane: Exclude<OverlayPane, 'main'>): HTMLElement | null {
 /** The visible main canvas, with any overlapping navigation edge removed. */
 export function measureMainOverlayViewport(pane: OverlayPane = 'main'): MainOverlayViewport {
   if (typeof window === 'undefined' || typeof document === 'undefined') return { left: 0, top: 0, width: 0, height: 0 };
-  const layoutWidth = window.innerWidth;
-  const layoutHeight = window.innerHeight;
+  const rendered = window.navigator && isIosStandaloneWindow(window)
+    ? resolveLayoutViewportSize(readViewportSnapshot(window))
+    : { width: window.innerWidth, height: window.innerHeight };
+  const layoutWidth = rendered.width;
+  const layoutHeight = rendered.height;
   const viewport = window.visualViewport;
   const visual = viewport ? {
     width: viewport.width,

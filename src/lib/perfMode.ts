@@ -1,4 +1,4 @@
-import { bindVisualViewportLifecycle, prepareViewportAfterUpdate, scheduleVisualViewportSync, syncVisualViewportBox } from './visualViewportBox';
+import { bindVisualViewportLifecycle, prepareViewportAfterUpdate, scheduleVisualViewportSync, syncVisualViewportBox, readViewportSnapshot, resolveLayoutViewportSize, getLayoutViewportProbe, isIosStandaloneWindow } from './visualViewportBox';
 
 export type PerfProfile = 'full' | 'galaxy' | 'duo' | 'iphonexs' | 'pwa' | 'reduced' | 'legacy';
 
@@ -242,8 +242,11 @@ function unoccludedHeight(win: Window, width: number, rawHeight: number): number
  */
 export function isDuoUnfoldedState(): DuoUnfoldedState {
   if (typeof window === 'undefined') return { unfolded: false, orientation: 'portrait' };
-  const width = window.innerWidth;
-  const rawHeight = window.innerHeight;
+  const rendered = window.navigator && isIosStandaloneWindow(window)
+    ? resolveLayoutViewportSize(readViewportSnapshot(window))
+    : { width: window.innerWidth, height: window.innerHeight };
+  const width = rendered.width;
+  const rawHeight = rendered.height;
   if (isViewportSpanned(window)) return resolveDuoViewport(width, rawHeight, true);
 
   const fullHeight = unoccludedHeight(window, width, rawHeight);
@@ -276,6 +279,9 @@ export function subscribeDuoLayout(onChange: () => void): () => void {
     frame = window.requestAnimationFrame(() => { frame = 0; onChange(); });
     timers = [120, 350].map(delay => setTimeout(onChange, delay));
   };
+  const renderedResize = typeof ResizeObserver !== 'undefined' && window.navigator && isIosStandaloneWindow(window)
+    ? new ResizeObserver(handler) : null;
+  if (renderedResize) renderedResize.observe(getLayoutViewportProbe(document));
   queries.forEach(query => query.addEventListener?.('change', handler));
   for (const event of ['resize', 'orientationchange', 'pageshow', 'focus']) window.addEventListener(event, handler, { passive: true });
   window.visualViewport?.addEventListener('resize', handler, { passive: true });
@@ -283,6 +289,7 @@ export function subscribeDuoLayout(onChange: () => void): () => void {
   document.addEventListener('visibilitychange', handler);
   return () => {
     cancelPending();
+    renderedResize?.disconnect();
     queries.forEach(query => query.removeEventListener?.('change', handler));
     for (const event of ['resize', 'orientationchange', 'pageshow', 'focus']) window.removeEventListener(event, handler);
     window.visualViewport?.removeEventListener('resize', handler);
