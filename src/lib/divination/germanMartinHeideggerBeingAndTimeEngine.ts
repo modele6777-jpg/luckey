@@ -17,7 +17,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const GERMAN_MARTIN_HEIDEGGER_VERSION = 'LUCKEY-MARTIN-HEIDEGGER-BEING-AND-TIME-v2.1.0';
+export const GERMAN_MARTIN_HEIDEGGER_VERSION = 'LUCKEY-MARTIN-HEIDEGGER-BEING-AND-TIME-v2.2.0';
 
 export type HeideggerQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -80,6 +80,8 @@ export interface MartinHeideggerBeingAndTimeResult {
   daseinSynthesisMatrix: HeideggerDaseinSynthesisMatrix;
   dailyPracticeRitual: string;
   reflectiveQuestion: string;
+  ritualAction: string;
+  reflectionFocus: string;
   interpretiveBoundary: string;
   heideggerComprehensiveGuidance: {
     guidanceTitle: string;
@@ -370,6 +372,8 @@ export function calculateMartinHeideggerBeingAndTime(
     daseinSynthesisMatrix,
     dailyPracticeRitual: topicExtras.dailyPracticeRitual,
     reflectiveQuestion: topicExtras.reflectiveQuestion,
+    ritualAction: topicExtras.dailyPracticeRitual,
+    reflectionFocus: topicExtras.reflectiveQuestion,
     interpretiveBoundary,
     heideggerComprehensiveGuidance: {
       guidanceTitle,
@@ -395,6 +399,8 @@ export function formatMartinHeideggerBeingAndTimePrompt(res: MartinHeideggerBein
     `- 핵심 실존 테마: ${res.activeHeideggerTheme.themeTitleKo} [${res.activeHeideggerTheme.themeTitleGerman}]`,
     `- 핵심 원전 경구: "${res.focalHeideggerAphorism.aphorismKo}"`,
     `- 일상 실천 의례: ${res.dailyPracticeRitual}`,
+    `- 실천 의례: ${res.ritualAction}`,
+    `- 성찰 초점: ${res.reflectionFocus}`,
     `- 종합 실존철학 권면: ${res.heideggerComprehensiveGuidance.philosophicalCounsel}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
   ].join('\n');
