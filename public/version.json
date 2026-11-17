@@ -1,10 +1,10 @@
 {
-  "version": "1.7.797",
-  "builtAt": "2026-11-18T07:38:00+09:00",
-  "summary": "바이오리듬 피크·차크라 진동 정렬·오행 공명 3대 엔진 성찰 질문 보강 및 카탈로그 뜻 등록(v1.7.797)",
+  "version": "1.7.798",
+  "builtAt": "2026-11-18T07:40:00+09:00",
+  "summary": "에드문트 후설, 에리히 프롬, 프리드리히 실러 3대 엔진 실천 의례 및 성찰 질문 표준 연동(v1.7.798)",
   "items": [
-    "바이오리듬 피크(biorhythmPeakFlowEngine v2.3.0): +09:00 KST 표기·질문 반응형 reflectiveQuestion 추가·카탈로그 summary 등록",
-    "차크라 진동 정렬(chakraVibrationAlignmentEngine v2.3.0): +09:00 KST 표기·질문 반응형 reflectiveQuestion 추가·카탈로그 summary 등록",
-    "오행 생극 공명(elementalResonanceEngine v2.3.0): +09:00 KST 표기·질문 반응형 reflectiveQuestion 프롬프트 연동"
+    "에드문트 후설 《순수현상학의 이념들》 엔진(v2.3.0): ritualAction·reflectionFocus 표준 필드 연동",
+    "에리히 프롬 《사랑의 기술》 & 《소유냐 존재냐》 엔진(v2.3.0): ritualAction·reflectionFocus 표준 필드 연동",
+    "프리드리히 실러 《인간의 미적 교육에 관한 편지》 엔진(v2.3.0): ritualAction·reflectionFocus 표준 필드 연동"
   ]
 }
