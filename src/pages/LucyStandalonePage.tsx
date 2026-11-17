@@ -60,7 +60,7 @@ import { processDailyChatArchival } from '@/lib/chatMemoryArchive';
 import { drawLucyTarotCards, formatTarotMarker } from '@/utils/tarotDetector';
 import { isLucyScrollPinned, lucyScrollPinHeld, noteLucyScrollPin, overlayCoversElement, releaseLucyScrollPin } from '@/lib/lucyScrollPin';
 import { captureLucySearchAnchor, resolveLucySearchOpenGuardedTop, resolveLucySearchRestoreTop, type LucySearchScrollAnchor } from '@/lib/lucySearchScroll';
-import { isDualPaneLayout, isDuoUnfoldedState } from '@/lib/perfMode';
+import { isDualPaneLayout, isDuoUnfoldedState, subscribeDuoLayout } from '@/lib/perfMode';
 import { buildLucyTarotReadingPrompt } from '@/lib/lucyTarotReading';
 import { getLucyChatDay as getTodayDateKey } from '@/lib/lucyChatDay';
 import { joinKakaoBubblesForTTS } from '@/lib/lucyChatUtils';
@@ -1114,14 +1114,33 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
         return isDual;
       });
     };
-    handleLayoutChange();
-    window.addEventListener('resize', handleLayoutChange, { passive: true });
-    window.addEventListener('orientationchange', handleLayoutChange, { passive: true });
-    window.visualViewport?.addEventListener('resize', handleLayoutChange, { passive: true });
+    let frameId = 0;
+    const scheduleLayoutCheck = () => {
+      handleLayoutChange();
+      if (frameId) window.cancelAnimationFrame(frameId);
+      frameId = window.requestAnimationFrame(() => {
+        frameId = 0;
+        handleLayoutChange();
+      });
+    };
+    scheduleLayoutCheck();
+    window.addEventListener('resize', scheduleLayoutCheck, { passive: true });
+    window.addEventListener('orientationchange', scheduleLayoutCheck, { passive: true });
+    window.visualViewport?.addEventListener('resize', scheduleLayoutCheck, { passive: true });
+    const unsubscribeDuo = subscribeDuoLayout(scheduleLayoutCheck);
+    const classObserver = typeof MutationObserver !== 'undefined'
+      ? new MutationObserver(scheduleLayoutCheck)
+      : null;
+    if (classObserver && typeof document !== 'undefined') {
+      classObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+    }
     return () => {
-      window.removeEventListener('resize', handleLayoutChange);
-      window.removeEventListener('orientationchange', handleLayoutChange);
-      window.visualViewport?.removeEventListener('resize', handleLayoutChange);
+      if (frameId) window.cancelAnimationFrame(frameId);
+      window.removeEventListener('resize', scheduleLayoutCheck);
+      window.removeEventListener('orientationchange', scheduleLayoutCheck);
+      window.visualViewport?.removeEventListener('resize', scheduleLayoutCheck);
+      unsubscribeDuo();
+      classObserver?.disconnect();
     };
   }, []);
 

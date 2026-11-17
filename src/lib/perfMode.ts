@@ -242,15 +242,32 @@ function unoccludedHeight(win: Window, width: number, rawHeight: number): number
  */
 export function isDuoUnfoldedState(): DuoUnfoldedState {
   if (typeof window === 'undefined') return { unfolded: false, orientation: 'portrait' };
-  const width = window.innerWidth;
+  const rawWidth = window.innerWidth;
   const rawHeight = window.innerHeight;
-  if (isViewportSpanned(window)) return resolveDuoViewport(width, rawHeight, true);
+  const clientWidth = window.document?.documentElement?.clientWidth || 0;
+  const clientHeight = window.document?.documentElement?.clientHeight || 0;
+  const visual = window.visualViewport;
+  const visualUnzoomed = Boolean(visual && (visual.scale == null || visual.scale <= 1.05));
+  const visualWidth = visualUnzoomed && visual && visual.width > 0 ? visual.width : 0;
+  const visualHeight = visualUnzoomed && visual && visual.height > 0 ? visual.height : 0;
 
-  const fullHeight = unoccludedHeight(window, width, rawHeight);
+  // On iOS Safari/PWA, window.innerWidth can lag behind visualViewport/clientWidth for a few frames when unfolding.
+  const width =
+    rawWidth < DUO_COVER_MAX_SHORT_SIDE && Math.max(clientWidth, visualWidth) >= DUO_INNER_MIN_SHORT_SIDE
+      ? Math.max(rawWidth, clientWidth, visualWidth)
+      : rawWidth;
+  const effectiveRawHeight =
+    rawHeight < DUO_COVER_MAX_SHORT_SIDE && Math.max(clientHeight, visualHeight) >= DUO_INNER_MIN_SHORT_SIDE
+      ? Math.max(rawHeight, clientHeight, visualHeight)
+      : rawHeight;
+
+  if (isViewportSpanned(window)) return resolveDuoViewport(width, effectiveRawHeight, true);
+
+  const fullHeight = unoccludedHeight(window, width, effectiveRawHeight);
   const keyboard = keyboardOccludesLayout(window);
-  const collapsed = fullHeight > rawHeight * 1.12;
-  const height = keyboard || collapsed ? fullHeight : rawHeight;
-  if (!keyboard && !collapsed) lastDuoLayoutViewport = { width, height: rawHeight };
+  const collapsed = fullHeight > effectiveRawHeight * 1.12;
+  const height = keyboard || collapsed ? fullHeight : effectiveRawHeight;
+  if (!keyboard && !collapsed) lastDuoLayoutViewport = { width, height: effectiveRawHeight };
   return resolveDuoViewport(width, height, false);
 }
 
@@ -260,14 +277,46 @@ export function subscribeDuoLayout(onChange: () => void): () => void {
   const queries = DUO_SEGMENT_QUERIES.map(query => {
     try { return window.matchMedia(query); } catch { return null; }
   }).filter((query): query is MediaQueryList => Boolean(query));
+  let timers: number[] = [];
+  let frame = 0;
   const handler = () => onChange();
-  queries.forEach(query => query.addEventListener?.('change', handler));
-  window.addEventListener('pageshow', handler);
-  document.addEventListener('visibilitychange', handler);
+  const scheduleBurst = () => {
+    onChange();
+    if (frame) window.cancelAnimationFrame(frame);
+    frame = window.requestAnimationFrame(() => {
+      frame = 0;
+      onChange();
+    });
+    for (const t of timers) window.clearTimeout(t);
+    timers = [80, 250, 600, 1200].map((ms) => window.setTimeout(onChange, ms));
+  };
+  queries.forEach(query => query.addEventListener?.('change', scheduleBurst));
+  window.addEventListener('pageshow', scheduleBurst);
+  window.addEventListener('focus', scheduleBurst);
+  window.addEventListener('orientationchange', scheduleBurst, { passive: true });
+  window.screen?.orientation?.addEventListener?.('change', scheduleBurst);
+  if (typeof document !== 'undefined') {
+    document.addEventListener('visibilitychange', scheduleBurst);
+  }
+  const resizeObserver = typeof ResizeObserver !== 'undefined' && typeof document !== 'undefined' && document.documentElement
+    ? new ResizeObserver(handler)
+    : null;
+  if (resizeObserver && document.documentElement) {
+    resizeObserver.observe(document.documentElement);
+  }
   return () => {
-    queries.forEach(query => query.removeEventListener?.('change', handler));
-    window.removeEventListener('pageshow', handler);
-    document.removeEventListener('visibilitychange', handler);
+    if (frame) window.cancelAnimationFrame(frame);
+    for (const t of timers) window.clearTimeout(t);
+    timers = [];
+    queries.forEach(query => query.removeEventListener?.('change', scheduleBurst));
+    window.removeEventListener('pageshow', scheduleBurst);
+    window.removeEventListener('focus', scheduleBurst);
+    window.removeEventListener('orientationchange', scheduleBurst);
+    window.screen?.orientation?.removeEventListener?.('change', scheduleBurst);
+    if (typeof document !== 'undefined') {
+      document.removeEventListener('visibilitychange', scheduleBurst);
+    }
+    resizeObserver?.disconnect();
   };
 }
 

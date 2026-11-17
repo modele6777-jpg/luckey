@@ -116,6 +116,7 @@ export function preloadAllChannelChunks(): void {
 }
 
 import { resetAppScroll } from "./utils/scrollToTop";
+import { syncVisualViewportBox, scheduleVisualViewportSync } from "./lib/visualViewportBox";
 import { useAutoPrismSync } from "./hooks/useAutoPrismSync";
 import { useUpdateNotice } from "./hooks/useUpdateNotice";
 import { UpdateNoticeModal } from "./components/UpdateNoticeModal";
@@ -310,6 +311,13 @@ function AppContent() {
       document.body.classList.toggle('duo-unfolded-portrait', state.unfolded && state.orientation === 'portrait');
       document.documentElement.classList.toggle('duo-unfolded-landscape', state.unfolded && state.orientation === 'landscape');
       document.body.classList.toggle('duo-unfolded-landscape', state.unfolded && state.orientation === 'landscape');
+
+      // 펼침 ↔ 접힘 전환 시: 뷰포트 박스 재동기화 및 잔여 탭 상태 초기화(먹통 방지)
+      if (wasUnfolded !== isNowUnfolded) {
+        duoDividerTapRef.current = null;
+        syncVisualViewportBox(window);
+        scheduleVisualViewportSync(window);
+      }
 
       // 펼침 → 접힘: 좌우 순서를 초기화해 다음 재펼침 때 Lucy를 오른쪽에 둔다.
       // 진행 중이던 경계 더블탭도 취소한다.
@@ -700,6 +708,13 @@ function AppContent() {
       }
     };
 
+    const resetTouchGestureState = () => {
+      touchActive = false;
+      touchMoved = false;
+      maxTouchMove = 0;
+      suppressTouchClickUntil = 0;
+    };
+
     window.addEventListener('touchstart', handleEdgeTouchStart, { passive: true, capture: true });
     window.addEventListener('touchmove', handleEdgeTouchMove, { passive: false, capture: true });
     window.addEventListener('touchend', handleTouchEnd, true);
@@ -707,6 +722,8 @@ function AppContent() {
     window.addEventListener('wheel', handleHorizontalWheel, { passive: false, capture: true });
     window.addEventListener('click', handleExplicitClickCapture, true);
     window.addEventListener('popstate', handlePopStateCapture, true);
+    window.addEventListener('resize', resetTouchGestureState, { passive: true });
+    window.addEventListener('orientationchange', resetTouchGestureState, { passive: true });
     const navigationEvents = ['prism-navigate', 'nav-click-active', 'prism:bigbang_commit', 'prism:cycle_nav'];
     navigationEvents.forEach(name => window.addEventListener(name, clearGestureLock));
     return () => {
@@ -717,6 +734,8 @@ function AppContent() {
       window.removeEventListener('wheel', handleHorizontalWheel, true);
       window.removeEventListener('click', handleExplicitClickCapture, true);
       window.removeEventListener('popstate', handlePopStateCapture, true);
+      window.removeEventListener('resize', resetTouchGestureState);
+      window.removeEventListener('orientationchange', resetTouchGestureState);
       navigationEvents.forEach(name => window.removeEventListener(name, clearGestureLock));
     };
   }, [navigate]);

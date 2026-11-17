@@ -1,10 +1,9 @@
 {
-  "version": "1.7.794",
-  "builtAt": "2026-11-18T07:23:00+09:00",
-  "summary": "시몬 드 보부아르, 빅토르 위고, 볼테르 3대 엔진 실천 의례 및 성찰 질문 표준 연동(v1.7.794)",
+  "version": "1.7.795",
+  "builtAt": "2026-11-18T07:33:00+09:00",
+  "summary": "아이폰 듀오 펼침 시 단일 화면 고정 및 터치 먹통 오류 수복(v1.7.795)",
   "items": [
-    "시몬 드 보부아르 《애매성의 윤리학》 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동",
-    "빅토르 위고 《레 미제라블》 자비·양심 엔진(v2.3.0): ritualAction·reflectionFocus 표준 필드 연동",
-    "볼테르 《캉디드·관용론》 일상 실천·관용 엔진(v2.1.0): ritualAction·reflectionFocus 표준 필드 연동"
+    "perfMode.ts: 펼침 직후 innerWidth 지연 시 visualViewport·clientWidth 반영 및 ResizeObserver·지연 재측정 보강",
+    "App.tsx·LeftSidebarNav.tsx·LucyStandalonePage.tsx: 펼침 전환 시 뷰포트 박스 재동기화, DOM ID 경합 해소, 잔여 터치 잠금 상태 초기화"
   ]
 }
