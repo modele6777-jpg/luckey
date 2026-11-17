@@ -2459,6 +2459,7 @@ test('Deep Work Flow Engine: 딥워크 몰입 아키타입 및 최적 환경 매
   assert(res.temporalFlowRhythm.focusWatchWindow.length > 0);
   assert(res.flowSynthesisMatrix.coreInsight.length > 0);
   assert(res.interpretiveBoundary.length > 0);
+  assert(res.ritualAction.length > 0 && res.reflectionFocus.length > 0);
   const prompt = formatDeepWorkFlowPrompt(res);
   assert(prompt.includes(DEEP_WORK_FLOW_VERSION));
   assert(prompt.includes('1순위 몰입 아키타입'));
@@ -3506,6 +3507,7 @@ test('Delphic Maxims Oracle Engine: calculates soul maxim, situational oracle an
   assert(rep.temporalDelphicRhythm.calculatedAtKst.includes('KST'));
   assert(rep.situationalDelphicAudit.questionFocus.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatDelphicMaximsOraclePrompt(rep);
   assert(prompt.includes('고대 그리스 델포이 아폴론 신탁'));
   assert(prompt.includes(rep.coreSoulMaxim.greekText));
@@ -6369,6 +6371,7 @@ test('Søren Kierkegaard Stages of Life Engine: calculates Den Enkelte authentic
   assert(rep.situationalStageAudit.focusAxisKo.length > 0);
   assert(rep.temporalSolitudeRhythm.leapReadinessIndex >= 0 && rep.temporalSolitudeRhythm.leapReadinessIndex <= 100);
   assert(rep.kierkegaardSynthesisMatrix.overallExistentialGrade.length > 0);
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatKierkegaardStagesOfLifePrompt(rep);
   assert(prompt.includes('쇠렌 키르케고르 단독자(Den Enkelte) & 실존 3단계 지표'));
   assert(prompt.includes(rep.activeKierkegaardTheme.themeTitleKo));

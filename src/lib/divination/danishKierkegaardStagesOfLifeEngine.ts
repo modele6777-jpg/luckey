@@ -12,7 +12,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const KIERKEGAARD_STAGES_OF_LIFE_VERSION = 'LUCKEY-KIERKEGAARD-STAGES-OF-LIFE-v2.1.0';
+export const KIERKEGAARD_STAGES_OF_LIFE_VERSION = 'LUCKEY-KIERKEGAARD-STAGES-OF-LIFE-v2.2.0';
 
 function describeKierkegaardStage(score: number): string {
   if (score >= 88) return '단독자의 용기 있는 도약 단계';
@@ -80,6 +80,8 @@ export interface KierkegaardStagesOfLifeResult {
     philosophicalGuidance: string;
   };
   dailyPracticeRitual: string;
+  ritualAction: string;
+  reflectionFocus: string;
   interpretiveBoundary: string;
 }
 
@@ -322,6 +324,8 @@ export function calculateKierkegaardStagesOfLife(
       philosophicalGuidance,
     },
     dailyPracticeRitual: `${temporalSolitudeRhythm.dailySolitudePractice} · ${focalKierkegaardAphorism.practicalAction}`,
+    ritualAction: `${temporalSolitudeRhythm.dailySolitudePractice} · ${focalKierkegaardAphorism.practicalAction}`,
+    reflectionFocus: situationalStageAudit.reflectiveQuestion,
     interpretiveBoundary: '키르케고르 실존 단계 엔진은 미래의 길흉을 고정된 점수로 예단하지 않고, 선택과 불안 앞에서 단독자로서 책임을 짊어지는 성찰의 렌즈를 제공합니다.',
   };
 }
