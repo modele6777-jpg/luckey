@@ -6717,6 +6717,7 @@ test('Jean-Jacques Rousseau Nature Authenticity Engine: calculates Inherent Good
   assert(rep.amourDeSoiSelfLoveScore >= 0 && rep.amourDeSoiSelfLoveScore <= 100);
   assert(rep.emileAutonomyEducationScore >= 0 && rep.emileAutonomyEducationScore <= 100);
   assert(rep.activeRousseauTheme.themeTitleKo.length > 0);
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatJeanJacquesRousseauNatureAuthenticityPrompt(rep);
   assert(prompt.includes('장 자크 루소 《에밀·사회계약론》 인간 본성 자연 회복 & 진정성 지표'));
   assert(prompt.includes(rep.activeRousseauTheme.themeTitleKo));
@@ -6895,6 +6896,7 @@ test('Jean-Paul Sartre Existentialism Engine: calculates Existence Precedes Esse
   assert(rep.existentialAnguishLucidityScore >= 0 && rep.existentialAnguishLucidityScore <= 100);
   assert(rep.engagementSolidarityActionIndex >= 0 && rep.engagementSolidarityActionIndex <= 100);
   assert(rep.activeSartreTheme.themeTitleKo.length > 0);
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatJeanPaulSartreExistentialismPrompt(rep);
   assert(prompt.includes('장 폴 사르트르 《존재와 무》 실존적 자유 & 앙가주망 관점'));
   assert(prompt.includes(rep.activeSartreTheme.themeTitleKo));
@@ -8062,6 +8064,7 @@ test('Jacques Derrida Deconstruction and Differance Engine: calculates Differanc
   assert(rep.unconditionalHospitalityEmpathyIndex >= 0 && rep.unconditionalHospitalityEmpathyIndex <= 100);
   assert(rep.pharmakonTransformativeHealingScore >= 0 && rep.pharmakonTransformativeHealingScore <= 100);
   assert(rep.activeDerridaTheme.themeTitleKo.length > 0);
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatFrenchJacquesDerridaDeconstructionDifferancePrompt(rep);
   assert(prompt.includes('자크 데리다 《그라마톨로지》 해체(Deconstruction)·차연(Différance) 지표'));
   assert(prompt.includes(rep.activeDerridaTheme.themeTitleKo));

@@ -13,7 +13,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const FRENCH_JACQUES_DERRIDA_DECONSTRUCTION_DIFFERANCE_VERSION = 'LUCKEY-JACQUES-DERRIDA-DECONSTRUCTION-DIFFERANCE-v2.1.0';
+export const FRENCH_JACQUES_DERRIDA_DECONSTRUCTION_DIFFERANCE_VERSION = 'LUCKEY-JACQUES-DERRIDA-DECONSTRUCTION-DIFFERANCE-v2.2.0';
 
 export interface DerridaTheme {
   themeKey: string;
@@ -45,6 +45,8 @@ export interface FrenchJacquesDerridaDeconstructionDifferanceResult {
   focalDerridaAphorism: DerridaAphorism;
   dailyPracticeRitual: string;
   reflectiveQuestion: string;
+  ritualAction: string;
+  reflectionFocus: string;
   interpretiveBoundary: string;
   derridaSynthesisMatrix: {
     coreInsight: string;
@@ -198,6 +200,8 @@ export function calculateFrenchJacquesDerridaDeconstructionDifferance(
     focalDerridaAphorism,
     dailyPracticeRitual,
     reflectiveQuestion,
+    ritualAction: dailyPracticeRitual,
+    reflectionFocus: reflectiveQuestion,
     interpretiveBoundary,
     derridaSynthesisMatrix,
     derridaComprehensiveGuidance: {

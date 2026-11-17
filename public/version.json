@@ -1,10 +1,10 @@
 {
-  "version": "1.7.784",
-  "builtAt": "2026-11-18T06:33:00+09:00",
-  "summary": "알베르 카뮈, 질 들뢰즈, 앙리 베르그송 3대 엔진 실천 의례 및 성찰 질문 표준 연동(v1.7.784)",
+  "version": "1.7.785",
+  "builtAt": "2026-11-18T06:40:00+09:00",
+  "summary": "자크 데리다, 장 자크 루소, 장 폴 사르트르 3대 엔진 실천 의례 및 성찰 질문 표준 연동(v1.7.785)",
   "items": [
-    "알베르 카뮈 《시지프 신화》 부조리·반항 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동",
-    "질 들뢰즈 《천 개의 고원》 리좀·탈영토화·생성 엔진(v2.1.0): ritualAction·reflectionFocus 표준 필드 연동",
-    "앙리 베르그송 《창조적 진화》 순수 지속·생명의 도약 엔진(v2.1.0): ritualAction·reflectionFocus 표준 필드 연동"
+    "자크 데리다 《그라마톨로지》 해체·차연 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동",
+    "장 자크 루소 《에밀·사회계약론》 자연·진정성 엔진(v2.1.0): ritualAction·reflectionFocus 표준 필드 연동",
+    "장 폴 사르트르 《존재와 무》 실존·앙가주망 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동"
   ]
 }
