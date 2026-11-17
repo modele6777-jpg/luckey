@@ -73,9 +73,6 @@ export interface EpicureanTetrapharmakosResult {
   reflectionFocus: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
-  ritualAction: string;
-  reflectionFocus: string;
-  interpretiveBoundary: string;
 }
 
 export type EpicureanTetrapharmakosReport = EpicureanTetrapharmakosResult;
