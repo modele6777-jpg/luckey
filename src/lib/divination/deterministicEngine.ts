@@ -1596,7 +1596,7 @@ try {
   const quantumLeapResult = calculateSupplement('quantumLeapResult', () => (birthdateStr && profile
     ? (() => {
         try {
-          return calculateQuantumLeapTiming({ profile, targetDate: now });
+          return calculateQuantumLeapTiming({ profile, targetDate: now, question });
         } catch (_) {
           return null;
         }
@@ -1640,7 +1640,7 @@ try {
   const soulJourneyTarotResult = calculateSupplement('soulJourneyTarotResult', () => (birthdateStr && profile
     ? (() => {
         try {
-          return calculateSoulJourneyTarot({ profile, targetDate: now });
+          return calculateSoulJourneyTarot({ profile, targetDate: now, question });
         } catch (_) {
           return null;
         }
@@ -1662,7 +1662,7 @@ try {
   const strategicLeverageResult = calculateSupplement('strategicLeverageResult', () => (birthdateStr && profile
     ? (() => {
         try {
-          return calculateStrategicLeverage({ profile, targetDate: now });
+          return calculateStrategicLeverage({ profile, targetDate: now, question });
         } catch (_) {
           return null;
         }
@@ -4753,10 +4753,10 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'contractShield', nameKo: '계약·협상 실드', icon: '📑', category: 'deep_master', summary: '사주 칠살·삼형살과 주역 천수송(訟) 지혜로 계약·동업 전 독소조항과 서면 방어벽을 점검하는 관점' },
   { key: 'deepWorkFlow', nameKo: '딥워크 몰입 리듬', icon: '🌊', category: 'deep_master', summary: '문창·학당·화개 길신과 창작 5하우스 성향으로 자신만의 스프린트 리듬과 점화 리추얼을 비추는 관점' },
   { key: 'sleepSubconscious', nameKo: '수면 무의식 뇌파', icon: '💤', category: 'deep_master', summary: '사주 12운성 이완 궤적과 달 위상 상징으로 야간 뇌신경 리셋과 꿈 직관 단서를 비추는 관점' },
-  { key: 'quantumLeap', nameKo: '퀀텀 점프 가능성', icon: '🚀', category: 'deep_master' },
-  { key: 'soulJourneyTarot', nameKo: '영혼 여정 타로', icon: '🎴', category: 'deep_master' },
+  { key: 'quantumLeap', nameKo: '퀀텀 점프 가능성', icon: '🚀', category: 'deep_master', summary: '사주 대운 교운기와 외행성 모멘텀 상징으로 에너지 축적·점화·돌파 국면과 승부수 타이밍을 비추는 관점' },
+  { key: 'soulJourneyTarot', nameKo: '영혼 여정 타로', icon: '🎴', category: 'deep_master', summary: '타로 22대 메이저 아르카나 원형과 4원소 슈트 균형으로 오늘의 통과 의례와 내적 조율을 비추는 관점' },
   { key: 'transcendentalMeditation', nameKo: '초월 명상 가이드', icon: '🧘', category: 'deep_master', summary: '사주 오행과 주역 젠 만트라 상징으로 현재에 맞는 호흡·자세·명상 리듬을 살피는 관점' },
-  { key: 'strategicLeverage', nameKo: '전략적 레버리지', icon: '🎯', category: 'deep_master' },
+  { key: 'strategicLeverage', nameKo: '전략적 레버리지', icon: '🎯', category: 'deep_master', summary: '손자병법 허실 전술과 기문둔갑 8문 상징으로 협상 주도권과 심리적 프레임 균형을 비추는 관점' },
   { key: 'shadowArchetype', nameKo: '융 그림자 원형', icon: '🌑', category: 'deep_master' },
   { key: 'biorhythmPeakFlow', nameKo: '바이오리듬 피크', icon: '📈', category: 'deep_master' },
   { key: 'destinySynastryEcho', nameKo: '운명 공명 에코', icon: '🔔', category: 'deep_master' },

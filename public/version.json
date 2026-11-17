@@ -1,10 +1,10 @@
 {
-  "version": "1.7.713",
-  "builtAt": "2026-11-17T09:14:00+09:00",
-  "summary": "스피노자 에티카·바이오리듬 피크·버트런드 러셀 행복의 정복 3대 엔진 해석 경계 표준 연동(v1.7.713)",
+  "version": "1.7.714",
+  "builtAt": "2026-11-17T09:20:00+09:00",
+  "summary": "퀀텀 점프·영혼 여정 타로·전략적 레버리지 3대 엔진 성찰 질문 및 카탈로그 뜻 등록(v1.7.714)",
   "items": [
-    "바루흐 스피노자 에티카 코나투스 엔진(v2.2.0): interpretiveBoundary 표준 필드 연동",
-    "3대 생체 바이오리듬 & 크로노타입 황금 피크 엔진(v2.1.0): interpretiveBoundary 표준 필드 연동",
-    "영국 버트런드 러셀 행복의 정복 엔진(v2.1.0): interpretiveBoundary 표준 필드 연동"
+    "퀀텀 점프 가능성(quantumLeapTimingEngine v2.1.0): +09:00 (KST) 표기·질문 반응형 성찰 질문(reflectiveQuestion)·question 인자 연동 및 summary 등록",
+    "영혼 여정 타로(soulJourneyTarotEngine v2.1.0): +09:00 (KST) 표기·질문 반응형 성찰 질문(reflectiveQuestion)·question 인자 연동 및 summary 등록",
+    "전략적 레버리지(strategicLeverageEngine v2.1.0): +09:00 (KST) 표기·질문 반응형 성찰 질문(reflectiveQuestion)·question 인자 연동 및 summary 등록"
   ]
 }

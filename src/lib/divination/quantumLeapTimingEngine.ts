@@ -25,7 +25,7 @@ function formatQuantumLeapKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
 }
 
 export type LeapPhase = 'accumulation' | 'ignition' | 'quantum_breakthrough' | 'consolidation';
@@ -157,6 +157,9 @@ export function calculateQuantumLeapTiming(params?: {
     alignmentState: `${readinessTitle} · ${goldenWindow.targetDomain}`,
     integratedAction: `${goldenWindow.boldAction}${q ? ` [질문 맥락: ${q}]` : ''}`,
   };
+  const reflectiveQuestion = q
+    ? `"${q}"에서 ${currentPhase.warningTrap}을 피해 ${currentPhase.strategicMandate} 쪽으로 지금 당장 옮길 수 있는 가장 작은 승부수 한 수는 무엇인가요?`
+    : `오늘 ${currentPhase.titleKo} 국면에서 ${currentPhase.warningTrap}을 내려놓고 바로 실행에 옮길 단 하나의 행동은 무엇일까요?`;
 
   return {
     engineVersion: QUANTUM_LEAP_VERSION,
@@ -167,6 +170,7 @@ export function calculateQuantumLeapTiming(params?: {
     currentPhase,
     goldenWindow,
     summary,
+    reflectiveQuestion,
     quantumLeapSynthesisMatrix,
     interpretiveBoundary: '본 퀀텀 점프 타이밍 리포트는 사주 구조와 모멘텀 국면 비유에 기반한 정성적 전략 참고 안내이며, 투자·사업의 확정적 수익을 보장하지 않습니다.',
   };
@@ -193,6 +197,9 @@ export function formatQuantumLeapPrompt(res: QuantumLeapResult): string {
       `- 교차 매트릭스: [핵심 긴장: ${res.quantumLeapSynthesisMatrix.dominantTension} | 조율 상태: ${res.quantumLeapSynthesisMatrix.alignmentState}]`,
       `  • 통합 실천: ${res.quantumLeapSynthesisMatrix.integratedAction}`,
     );
+  }
+  if (res.reflectiveQuestion) {
+    lines.push(`- 성찰 질문: ${res.reflectiveQuestion}`);
   }
   lines.push(`- 해석 경계: ${res.interpretiveBoundary}`);
   lines.push(`※ 루시 지침: 평범한 개선이 아니라 퀀텀 점프는 운의 거대한 물결이 들어올 때 담대하게 돛을 올리는 자만이 누리는 특권입니다. 사용자가 자신의 폭발적인 잠재력과 현재의 모멘텀 국면을 선명하게 자각하고, 타이밍을 놓치지 않고 과감한 승부수를 던질 수 있도록 뜨겁고 웅장한 확신을 불어넣어 주세요.`);
