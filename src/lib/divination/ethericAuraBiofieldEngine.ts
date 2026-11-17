@@ -14,7 +14,7 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const ETHERIC_AURA_VERSION = 'LUCKEY-ETHERIC-AURA-v2.1.0';
+export const ETHERIC_AURA_VERSION = 'LUCKEY-ETHERIC-AURA-v2.2.0';
 
 export interface AuraLayerSpectrum {
   primaryLayerName: string;
@@ -63,6 +63,8 @@ export interface EthericAuraBiofieldReport {
   auraSynthesisMatrix: AuraSynthesisMatrix;
   dailyAuraCareGuidance: string;
   interpretiveBoundary: string;
+  ritualAction: string;
+  reflectionFocus: string;
   synthesisPromptGuidance: string;
 }
 
@@ -241,6 +243,11 @@ export function runEthericAuraBiofieldEngine(
 - 오라 보호 확언: "${shieldingAffirmation}"
 - 해석 경계: ${interpretiveBoundary}`;
 
+  const ritualAction = `${visualizationShieldRitual} · ${situationalAuraAudit.groundingPrescription}`;
+  const reflectionFocus = question.trim()
+    ? `‘${question.trim()}’ 상황에서 ${vulnerableZone}의 에너지 누수를 막기 위해 오늘 내가 세울 가장 분명한 경계는 무엇입니까?`
+    : `[${primaryColor}] 오라 결계의 ${integrityGrade} 상태에서 오늘 가장 먼저 보호해야 할 나의 감각과 공간은 어디입니까?`;
+
   return {
     engineVersion: ETHERIC_AURA_VERSION,
     calculatedAt: targetDate.toISOString(),
@@ -263,6 +270,8 @@ export function runEthericAuraBiofieldEngine(
     auraSynthesisMatrix,
     dailyAuraCareGuidance,
     interpretiveBoundary,
+    ritualAction,
+    reflectionFocus,
     synthesisPromptGuidance
   };
 }

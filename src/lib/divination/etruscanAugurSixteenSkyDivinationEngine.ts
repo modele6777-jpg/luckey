@@ -8,7 +8,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const ETRUSCAN_AUGUR_ENGINE_VERSION = 'LUCKEY-ETRUSCAN-AUGUR-v2.2.0';
+export const ETRUSCAN_AUGUR_ENGINE_VERSION = 'LUCKEY-ETRUSCAN-AUGUR-v2.3.0';
 
 export interface CelestialTemplumRegion {
   regionNumber: number; // 1 ~ 16
@@ -62,6 +62,8 @@ export interface EtruscanAugurSixteenSkyReport {
   augurOracleGuidance: string;
   auspiceActionPrescription: string;
   interpretiveBoundary: string;
+  ritualAction: string;
+  reflectionFocus: string;
 }
 
 const SIXTEEN_TEMPLUM_REGIONS: CelestialTemplumRegion[] = [
@@ -276,6 +278,11 @@ export function calculateEtruscanAugurSixteenSky(params: {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
   const calculatedAtKst = kst.toISOString().replace('T', ' ').substring(0, 19) + ' +09:00 KST';
 
+  const ritualAction = `${augurSynthesisMatrix.nextAuspiceAction} · ${situationalAugurAudit.disciplinaPrescription}`;
+  const reflectionFocus = question.trim()
+    ? `‘${question.trim()}’ 앞에서 [${activeRegion.quadrantKo} · ${admissioApprovalLevel}]의 조짐을 따라 지금 확정하거나 보류해야 할 한 가지는 무엇입니까?`
+    : `오늘 제${activeRegion.regionNumber}구역 [${activeRegion.presidingDeity}]의 하늘 구역 아래서 가장 신중하게 살필 징표는 무엇입니까?`;
+
   return {
     engineVersion: ETRUSCAN_AUGUR_ENGINE_VERSION,
     calculatedAtKst,
@@ -291,6 +298,8 @@ export function calculateEtruscanAugurSixteenSky(params: {
     augurOracleGuidance,
     auspiceActionPrescription,
     interpretiveBoundary: '디스치플리나 에트루스카 16천궁 조점 상징을 빌린 정성적 결단 참고 관점이며, 개인 점수나 확정 예언이 아닙니다.',
+    ritualAction,
+    reflectionFocus,
   };
 }
 
