@@ -4761,6 +4761,7 @@ test('Korean Pungryudo Hwarang Five Precepts Engine: calculates xuanmiao harmony
   assert(rep.calculatedAtKst.includes('KST'));
   assert(rep.temporalPungryuRhythm.hwarangWatchWindow.length > 0);
   assert(rep.pungryuSynthesisMatrix.coreInsight.length > 0);
+  assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatKoreanPungryudoHwarangPrompt(rep);
   assert(prompt.includes('풍류도'));
   assert(prompt.includes(rep.dominantPrecept.nameKo));
@@ -5265,6 +5266,7 @@ test('Korean Gyeogam Yurok Prophecy Engine: calculates Gunggung Euleul, Haein th
   assert(rep.calculatedAtKst.includes('KST'));
   assert(rep.temporalGyeogamRhythm.sipseungWatchWindow.length > 0);
   assert(rep.gyeogamSynthesisMatrix.coreInsight.length > 0);
+  assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatGyeogamYurokProphecyPrompt(rep);
   assert(prompt.includes('조선 명종 격암 남사고 《격암유록(格菴遺錄)》 45편 비결 & 궁궁을을·해인 사중구생'));
   assert(prompt.includes(rep.primaryGyeogamChapter.titleKo));
@@ -8368,6 +8370,7 @@ test('Han Yong-un engine uses a verified literary theme, query matching, and no 
   assert.equal(Object.hasOwn(rep, 'paradoxicalLoveTranscendenceScore'), false);
   assert.equal(Object.hasOwn(rep, 'calculatedAtKst'), false);
   assert(Boolean(rep.hanYongUnSynthesisMatrix?.integratedAction));
+  assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatKoreanHanYongUnSilenceOfNimPrompt(rep);
   assert.match(prompt, /문학적 참고/);
   assert(prompt.includes('교차 매트릭스'));

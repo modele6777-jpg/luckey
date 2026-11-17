@@ -20,7 +20,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const KOREAN_PUNGRYUDO_HWARANG_ENGINE_VERSION = '2.0.0';
+export const KOREAN_PUNGRYUDO_HWARANG_ENGINE_VERSION = '2.1.0';
 
 export interface HwarangPrecept {
   id: string;
@@ -60,6 +60,7 @@ export interface KoreanPungryudoHwarangReport {
   pungryudoLifeCultivation: string; // 풍류도 도의상마 심신수련 처방
   hwarangCourageGuidance: string; // 화랑도 기개 및 결단 지침
   boundaryNotice: string;
+  interpretiveBoundary: string;
 }
 
 const HWARANG_PRECEPTS_BASE: Omit<HwarangPrecept, 'preceptScore'>[] = [
@@ -250,6 +251,7 @@ export function calculateKoreanPungryudoHwarang(
     pungryudoLifeCultivation,
     hwarangCourageGuidance,
     boundaryNotice: '본 결과는 최치원 《난랑비서》 풍류도와 원광법사 《세속오계》의 인문·정신 철학에 기반한 정성적 성찰 안내이며, 확정적 길흉 판정이 아닙니다.',
+    interpretiveBoundary: '본 결과는 최치원 《난랑비서》 풍류도와 원광법사 《세속오계》의 인문·정신 철학에 기반한 정성적 성찰 안내이며, 확정적 길흉 판정이 아닙니다.',
   };
 }
 

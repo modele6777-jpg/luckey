@@ -21,7 +21,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const GYEOGAM_YUROK_VERSION = '2.0.0';
+export const GYEOGAM_YUROK_VERSION = '2.1.0';
 
 export interface GyeogamYurokReport {
   engineVersion: string;
@@ -64,6 +64,7 @@ export interface GyeogamYurokReport {
   };
   namSagoMasterAdvice: string;
   boundaryNotice: string;
+  interpretiveBoundary: string;
 }
 
 function djb2Hash(str: string): number {
@@ -247,6 +248,7 @@ export function calculateGyeogamYurokProphecy(
     gyeogamSynthesisMatrix,
     namSagoMasterAdvice,
     boundaryNotice: '본 결과는 《격암유록》의 비유적·철학적 상징 체계에 기반한 정성적 성찰 안내이며, 확정적 예언이나 길흉 판정이 아닙니다.',
+    interpretiveBoundary: '본 결과는 《격암유록》의 비유적·철학적 상징 체계에 기반한 정성적 성찰 안내이며, 확정적 예언이나 길흉 판정이 아닙니다.',
   };
 }
 
