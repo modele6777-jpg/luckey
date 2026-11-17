@@ -28,7 +28,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const HAWAIIAN_HUNA_VERSION = 'LUCKEY-HAWAIIAN-HUNA-v2.1.0';
+export const HAWAIIAN_HUNA_VERSION = 'LUCKEY-HAWAIIAN-HUNA-v2.2.0';
 
 export interface HunaPrincipleGuidance {
   code: 'IKE' | 'KALA' | 'MAKIA' | 'MANAWA' | 'ALOHA' | 'MANA' | 'PONO';
@@ -81,6 +81,8 @@ export interface HawaiianHunaReport {
     sacredBoundary: string;
     reflectiveQuestion: string;
   };
+  ritualAction: string;
+  reflectionFocus: string;
 }
 
 const HUNA_PRINCIPLES: Array<{
@@ -268,6 +270,9 @@ export function calculateHawaiianHunaHooponopono(
       : `지금 내 마음속 불편함은 어떤 오래된 기억이 다시 재생되고 있다는 신호일까요? (${activePrinciple.hawaiianName})`,
   };
 
+  const ritualAction = `[${activePrinciple.hawaiianName}] 오늘 조용한 시간에 호오포노포노 4대 진언(미안합니다·용서해주세요·감사합니다·사랑합니다)을 3회 천천히 읊조리며 ${cleansingFocusTheme}을 내려놓으세요.`;
+  const reflectionFocus = hunaSynthesisMatrix.reflectiveQuestion;
+
   return {
     engineVersion: HAWAIIAN_HUNA_VERSION,
     calculatedAt: now.toISOString(),
@@ -297,6 +302,8 @@ export function calculateHawaiianHunaHooponopono(
       ritualTimingNote,
     },
     hunaSynthesisMatrix,
+    ritualAction,
+    reflectionFocus,
   };
 }
 
@@ -316,6 +323,7 @@ export function formatHawaiianHunaHooponoponoPrompt(report: HawaiianHunaReport):
   - 마나(Mana) 생명력 충전: ${report.hooponopono.manaReplenishmentAdvice}
 - **시공간 리듬**: ${report.temporalHunaRhythm.alohaManaWindow} · ${report.temporalHunaRhythm.pacificTidePhase}
 - **치유 통합 나침반**: ${report.synthesisMessage}
-- **교차 매트릭스**: ${report.hunaSynthesisMatrix.coreMandate} | 경계: ${report.hunaSynthesisMatrix.sacredBoundary} | 성찰 질문: "${report.hunaSynthesisMatrix.reflectiveQuestion}"
+- **실천 의례(Ritual Action)**: ${report.ritualAction}
+- **교차 매트릭스**: ${report.hunaSynthesisMatrix.coreMandate} | 경계: ${report.hunaSynthesisMatrix.sacredBoundary} | 성찰 질문: "${report.reflectionFocus}"
 - **해석 경계**: ${report.interpretiveBoundary}`;
 }

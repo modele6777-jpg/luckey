@@ -3552,9 +3552,11 @@ test('Hawaiian Huna & Ho\'oponopono Engine: calculates active principle, three s
   assert(rep.hooponopono.cleansingFocusTheme.length > 0);
   assert(rep.temporalHunaRhythm.calculatedAtKst.includes('KST'));
   assert(rep.situationalHunaAudit.questionFocus.length > 0);
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatHawaiianHunaHooponoponoPrompt(rep);
   assert(prompt.includes('고대 하와이 호오포노포노 & 후나 7대 원리'));
   assert(prompt.includes(rep.activePrinciple.hawaiianName));
+  assert(prompt.includes(rep.ritualAction));
   assert(!prompt.includes('/ 100점'));
   assert(!prompt.includes('점'));
 });
@@ -3623,9 +3625,11 @@ test('Guiguzi Liangtouqian Decision Matrix Engine: calculates two heads gua, des
   assert(rep.temporalGuiguziRhythm.zonghengWatchWindow.length > 0);
   assert(rep.guiguziSynthesisMatrix.coreInsight.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatGuiguziLiangtouqianPrompt(rep);
   assert(prompt.includes('고대 중국 귀곡자(鬼谷子) 양구령 72변화 명리 결단 엔진'));
   assert(prompt.includes(rep.guaStructure.patternName));
+  assert(prompt.includes(rep.ritualAction));
   assert(prompt.includes('KST'));
   assert(!prompt.includes('/100') && !prompt.includes('%') && !prompt.includes('점수'));
 });
@@ -4238,9 +4242,11 @@ test('Hawaiian Kahuna Three Selves Engine: calculates 3 selves harmony and mana 
   assert(rep.aumakua.currentVitality > 0);
   assert(rep.temporalKahunaRhythm.calculatedAtKst.includes('KST'));
   assert(rep.situationalKahunaAudit.questionFocus.length > 0);
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatHawaiianKahunaThreeSelvesPrompt(rep);
   assert(prompt.includes('고대 하와이 카후나 3대 자아 & 마나 공명 실측 데이터'));
   assert(prompt.includes(rep.unihipili.dominantNeedOrBlock));
+  assert(prompt.includes(rep.ritualAction));
   assert(!prompt.includes('/ 100점'));
   assert(!prompt.includes('점 '));
 });

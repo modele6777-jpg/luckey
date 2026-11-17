@@ -26,7 +26,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const GUIGUZI_VERSION = 'LUCKEY-GUIGUZI-LIANGTOUQIAN-v2.2.0';
+export const GUIGUZI_VERSION = 'LUCKEY-GUIGUZI-LIANGTOUQIAN-v2.3.0';
 
 export interface GuiguziGuaStructure {
   yearStem: string;      // 년간 (선천 천명)
@@ -93,6 +93,8 @@ export interface GuiguziLiangtouqianReport {
   strategicClarityScore: number; // 0 ~ 100 결단 명료도 (내부 호환용, 프롬프트 비노출)
   synthesisMessage: string;
   reflectiveQuestion: string;
+  ritualAction: string;
+  reflectionFocus: string;
   boundaryNotice: string;
   interpretiveBoundary: string;
 }
@@ -328,6 +330,13 @@ export function calculateGuiguziLiangtouqian(params: {
 
   const synthesisMessage = `귀곡자 양두겸 분석 결과, 당신의 선천 천명과 후천 귀결은 [${guaStructure.yearStem}年 ${guaStructure.hourStem}時 / ${guaStructure.patternName}]에 해당합니다. 수호성 [${destinyStar.starName}]의 기운을 받아 지금은 [${strategy.tacticalLabel}]의 전술을 펼칠 때이며, "${strategy.crisisAversionKey}"를 명심할 때 필승의 활로가 열립니다.`;
 
+  const reflectiveQuestion = context
+    ? `"${context}"의 국면에서 ${guaStructure.destinyStar.starName}의 기운을 살려 지금 먼저 굳히거나 양보할 한 수는 무엇입니까?`
+    : `${strategy.tacticalLabel}의 흐름 속에서 오늘 조용히 내실을 지키고 결단을 집중할 승부처는 어디입니까?`;
+
+  const ritualAction = `[${guaStructure.patternName} · ${strategy.tacticalLabel}] 오늘 15분 동안 ${situationalGuiguziAudit.focusTheme}을 기준으로 지금 먼저 굳힐 조건과 양보할 선을 한 줄씩 적어 두세요.`;
+  const reflectionFocus = reflectiveQuestion;
+
   return {
     engineVersion: GUIGUZI_VERSION,
     calculatedAt: now.toISOString(),
@@ -340,9 +349,9 @@ export function calculateGuiguziLiangtouqian(params: {
     guiguziSynthesisMatrix,
     strategicClarityScore,
     synthesisMessage,
-    reflectiveQuestion: context
-      ? `"${context}"의 국면에서 ${guaStructure.destinyStar.starName}의 기운을 살려 지금 먼저 굳히거나 양보할 한 수는 무엇입니까?`
-      : `${strategy.tacticalLabel}의 흐름 속에서 오늘 조용히 내실을 지키고 결단을 집중할 승부처는 어디입니까?`,
+    reflectiveQuestion,
+    ritualAction,
+    reflectionFocus,
     boundaryNotice: '본 결과는 《귀곡선생양두겸》의 고전 명리·전략 상징 체계에 기반한 정성적 성찰 안내이며, 확정적 승패 판정이 아닙니다.',
     interpretiveBoundary: '본 결과는 《귀곡선생양두겸》의 고전 명리·전략 상징 체계에 기반한 정성적 성찰 안내이며, 확정적 승패 판정이 아닙니다.',
   };
@@ -375,6 +384,7 @@ export function formatGuiguziLiangtouqianPrompt(report: GuiguziLiangtouqianRepor
   - 시공간 지침: ${report.temporalGuiguziRhythm.temporalGuidance}
 - **귀곡자 교차 매트릭스**: 핵심(${report.guiguziSynthesisMatrix.coreInsight}) | 실행(${report.guiguziSynthesisMatrix.recommendedAction}) | 주의(${report.guiguziSynthesisMatrix.cautionNotice})
 - **귀곡자 통합 나침반**: ${report.synthesisMessage}
-- **질문 맞춤 성찰 질문**: ${report.reflectiveQuestion}
+- **실천 의례(Ritual Action)**: ${report.ritualAction}
+- **질문 맞춤 성찰 질문**: ${report.reflectionFocus}
 - **해석 경계**: ${report.boundaryNotice}`;
 }
