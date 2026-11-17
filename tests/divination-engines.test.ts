@@ -3352,6 +3352,7 @@ test('Celtic Tree Ogham Engine: derives birth guardian tree and seasonal oracle'
   assert(rep.birthGuardianTree.nameTreeKo.length > 0);
   assert(rep.druidWisdomScore >= 0 && rep.druidWisdomScore <= 100);
   assert(rep.treeMedicinePrescription.length > 0);
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatCelticTreeOghamPrompt(rep);
   assert(prompt.includes('켈트 오검'));
   assert(prompt.includes(rep.birthGuardianTree.nameTreeKo));
@@ -4459,6 +4460,7 @@ test('Celtic Tuatha Four Treasures Engine: calculates heroic destiny and dominan
   assert.equal(rep.engineVersion, CELTIC_TUATHA_FOUR_TREASURES_ENGINE_VERSION);
   assert(rep.tuathaHeroResonance >= 0 && rep.tuathaHeroResonance <= 100);
   assert(rep.treasures.dominantTreasure.nameKo.length > 0);
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatCelticTuathaFourTreasuresPrompt(rep);
   assert(prompt.includes('고대 아일랜드 켈트 투아하 데 다난(Tuatha Dé Danann) 4대 보물 영웅 운명 실측 데이터'));
   assert(prompt.includes(rep.treasures.dominantTreasure.nameKo));
@@ -5636,6 +5638,7 @@ test('Celtic Tuatha Dé Danann Lugh Samildánach Engine: calculates polymath int
   assert(rep.eightArtsHarmoniousMastery >= 0 && rep.eightArtsHarmoniousMastery <= 100);
   assert(rep.activeCraftRank.rankNameOldIrish.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatLughSamildanachPrompt(rep);
   assert(prompt.includes('켈트 투아하 데 다난 《루 라바다(Lugh Samildánach)》'));
   assert(prompt.includes(rep.activeCraftRank.rankNameKo));

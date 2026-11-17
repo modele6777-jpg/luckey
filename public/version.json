@@ -1,10 +1,10 @@
 {
-  "version": "1.7.762",
-  "builtAt": "2026-11-18T04:44:00+09:00",
-  "summary": "불교 유식학 8식 전식득지, 켈트 아웬 탈리에신, 브레혼 법전 3대 엔진 실천 의례 및 성찰 질문 표준 연동(v1.7.762)",
+  "version": "1.7.763",
+  "builtAt": "2026-11-18T04:50:00+09:00",
+  "summary": "고대 켈트 오검 수목, 루 라바다 8대 기예, 투아하 데 다난 4대 보물 3대 엔진 실천 의례 및 성찰 질문 표준 연동(v1.7.763)",
   "items": [
-    "불교 유식학 8식 정화 & 전식득지 엔진(v2.3.0): ritualAction·reflectionFocus 표준 필드 연동",
-    "고대 켈트 바드 탈리에신 아웬 영감 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동",
-    "고대 켈트 드루이드 브레혼 법전 정의 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동"
+    "고대 켈트 오검 수목 지혜 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동",
+    "켈트 투아하 데 다난 루 라바다 8대 만능 기예 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동",
+    "고대 아일랜드 투아하 데 다난 4대 보물 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동"
   ]
 }

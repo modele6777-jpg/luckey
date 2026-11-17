@@ -8,7 +8,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const CELTIC_TUATHA_FOUR_TREASURES_ENGINE_VERSION = 'LUCKEY-CELTIC-TUATHA-v2.1.0';
+export const CELTIC_TUATHA_FOUR_TREASURES_ENGINE_VERSION = 'LUCKEY-CELTIC-TUATHA-v2.2.0';
 
 export interface TuathaTreasure {
   id: 'lia_fail' | 'spear_of_lugh' | 'sword_of_nuada' | 'cauldron_of_dagda';
@@ -59,6 +59,8 @@ export interface CelticTuathaFourTreasuresReport {
   tuathaSynthesisMatrix: CelticTuathaSynthesisMatrix;
   danaGoddessBlessing: string;
   heroicActionPrescription: string;
+  ritualAction: string;
+  reflectionFocus: string;
   interpretiveBoundary: string;
 }
 
@@ -279,6 +281,8 @@ export function calculateCelticTuathaFourTreasures(options?: {
     tuathaSynthesisMatrix,
     danaGoddessBlessing,
     heroicActionPrescription,
+    ritualAction: heroicActionPrescription,
+    reflectionFocus: `${dominantTreasure.nameKo}이 비추는 ${situationalTuathaAudit.battlefieldTheme} 앞에서 내가 끝까지 지켜야 할 소명은 무엇인가요?`,
     interpretiveBoundary,
   };
 }
