@@ -13,7 +13,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const FRENCH_VICTOR_HUGO_LES_MISERABLES_VERSION = 'LUCKEY-VICTOR-HUGO-LES-MISERABLES-v2.1.0';
+export const FRENCH_VICTOR_HUGO_LES_MISERABLES_VERSION = 'LUCKEY-VICTOR-HUGO-LES-MISERABLES-v2.2.0';
 
 export interface HugoTheme {
   themeKey: string;
@@ -52,6 +52,7 @@ export interface FrenchVictorHugoLesMiserablesResult {
     alignmentState: string;
     integratedAction: string;
   };
+  interpretiveBoundary: string;
 }
 
 export const HUGO_THEMES: HugoTheme[] = [
@@ -200,6 +201,7 @@ export function calculateFrenchVictorHugoLesMiserables(
       philosophicalCounsel,
     },
     hugoSynthesisMatrix,
+    interpretiveBoundary: '빅토르 위고의 자비·도덕적 양심·연대 상징을 빌린 정성적 성찰 관점이며, 개인 점수나 미래 단정이 아닙니다.',
   };
 }
 

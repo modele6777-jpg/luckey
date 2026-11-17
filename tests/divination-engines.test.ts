@@ -4980,6 +4980,7 @@ test('Gaelic Wheel Four Fire Festivals Engine: calculates fire festival stations
   assert(rep.tuathaDeDanannBlessing >= 0 && rep.tuathaDeDanannBlessing <= 100);
   assert(rep.anamCaraSoulDepth >= 0 && rep.anamCaraSoulDepth <= 100);
   assert(rep.activeStation.nameKo.length > 0);
+  assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatGaelicWheelFireFestivalsPrompt(rep);
   assert(prompt.includes('휠 오브 더 이어 켈트 4대 화제 축제 실측 데이터'));
   assert(prompt.includes(rep.activeStation.nameKo));
@@ -8044,6 +8045,7 @@ test('Paul Ricoeur Narrative Identity and Healing Engine: calculates Emplotment,
   assert(rep.metaphoricalInnovationHopeScore >= 0 && rep.metaphoricalInnovationHopeScore <= 100);
   assert(rep.reconciliationForgivenessResilience >= 0 && rep.reconciliationForgivenessResilience <= 100);
   assert(rep.activeRicoeurTheme.themeTitleKo.length > 0);
+  assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatFrenchPaulRicoeurNarrativeIdentityHealingPrompt(rep);
   assert(prompt.includes('폴 리쾨르 《시간과 이야기·자기 자신으로서의 타자》 서사적 정체성·치유 지표'));
   assert(prompt.includes(rep.activeRicoeurTheme.themeTitleKo));
@@ -8124,6 +8126,7 @@ test('Victor Hugo Les Miserables Engine: calculates Mercy, Conscience, and Human
   assert(rep.activeHugoTheme.themeTitleKo.length > 0);
   assert(rep.calculatedAtKst.endsWith('KST'));
   assert(Boolean(rep.hugoSynthesisMatrix?.integratedAction));
+  assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatFrenchVictorHugoLesMiserablesPrompt(rep);
   assert(prompt.includes('빅토르 위고 《레 미제라블》 자비와 도덕적 양심·인도주의 지표'));
   assert(prompt.includes(rep.activeHugoTheme.themeTitleKo));
