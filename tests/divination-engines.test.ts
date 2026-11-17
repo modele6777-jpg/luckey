@@ -1770,6 +1770,7 @@ test('Hongguk Qimen: 4-pillar numeral casting, 9-palace flight, key points, dete
   const r2 = calculateHonggukQimen({ profile, targetYear: 2026, now: fixedNow, question: '이 계약 진행해도 될까' });
   assert.deepEqual(r1, r2);
   assert(r1.calculatedAtKst?.includes('KST'));
+  assert((r1.interpretiveBoundary || '').length > 0);
 
   // 프롬프트 포맷터
   const prompt = formatHonggukQimenPrompt(r1);
@@ -3579,6 +3580,7 @@ test('Hindu Tantric Kundalini & Nadi Awakening Engine: calculates nadis, chakras
   assert(rep.kundaliniVitalityLevel >= 0 && rep.kundaliniVitalityLevel <= 100);
   assert(rep.granthis.length === 3);
   assert(rep.pranayama.primaryBreathwork.length > 0);
+  assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatHinduTantricKundaliniPrompt(rep);
   assert(prompt.includes('힌두 탄트라 쿤달리니 7대 차크라 나디 각성 엔진'));
   assert(prompt.includes(rep.primaryNadi.sanskritName));
@@ -4792,6 +4794,7 @@ test('Hermetic Poimandres Ascension Engine: calculates seven spheres passions pu
   assert(rep.situationalPoimandresAudit.corpusHermeticumVerse.length > 0);
   assert(rep.temporalOgdoadRhythm.ascensionWindow.length > 0);
   assert(rep.poimandresSynthesisMatrix.synthesizedVerdict.length > 0);
+  assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatHermeticPoimandresPrompt(rep);
   assert(prompt.includes('고대 헤르메스주의 포이만드레스 7대 천계 탈각 & 옥도아드 각성 실측 데이터'));
   assert(prompt.includes(rep.dominantSphere.nameKo));

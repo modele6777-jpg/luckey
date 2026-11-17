@@ -9,7 +9,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const HERMETIC_POIMANDRES_ENGINE_VERSION = '2.1.0';
+export const HERMETIC_POIMANDRES_ENGINE_VERSION = '2.2.0';
 
 export type PoimandresQuestionFocus = 'career' | 'relationship' | 'anxiety' | 'decision' | 'spiritual';
 
@@ -62,6 +62,7 @@ export interface HermeticPoimandresAscensionReport {
   poimandresSynthesisMatrix: PoimandresSynthesisMatrix;
   poimandresHermeticGuidance: string;
   nousLightAscensionRitual: string;
+  interpretiveBoundary: string;
 }
 
 const HERMETIC_SPHERES_BASE: Omit<HermeticPlanetarySphere, 'resonanceScore'>[] = [
@@ -318,6 +319,7 @@ export function calculateHermeticPoimandres(
     poimandresSynthesisMatrix,
     poimandresHermeticGuidance,
     nousLightAscensionRitual,
+    interpretiveBoundary: '본 리포트는 《코르푸스 헤르메티쿰》 포이만드레스 상징에 기반한 정성적 성찰 안내이며, 확정적 예언이 아닙니다.',
   };
 }
 
