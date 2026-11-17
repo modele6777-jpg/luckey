@@ -232,3 +232,22 @@ test('a keyboard on the inner display does not fold it', () => {
     Object.assign(globalThis, { window: previousWindow, document: previousDocument });
   }
 });
+
+test('unfolding detects expanded visualViewport or clientWidth even while innerWidth lags', () => {
+  const previousWindow = globalThis.window;
+  const viewport = {
+    innerWidth: 450,
+    innerHeight: 640,
+    visualViewport: { width: 626, height: 890, scale: 1 },
+    document: { documentElement: { clientWidth: 450, clientHeight: 640 } },
+    matchMedia: () => ({ matches: false }),
+  };
+  Object.assign(globalThis, { window: viewport });
+  try {
+    const state = isDuoUnfoldedState();
+    assert.equal(state.unfolded, true);
+    assert.equal(state.orientation, 'portrait');
+  } finally {
+    Object.assign(globalThis, { window: previousWindow });
+  }
+});
