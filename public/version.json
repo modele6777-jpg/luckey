@@ -1,10 +1,10 @@
 {
-  "version": "1.7.774",
-  "builtAt": "2026-11-18T05:43:00+09:00",
-  "summary": "운명 공명 에코, 켈트 드루이드 13달나무, 실시간 삼형·육충 트리거 3대 엔진 실천 의례 및 성찰 질문 표준 연동(v1.7.774)",
+  "version": "1.7.775",
+  "builtAt": "2026-11-18T05:50:00+09:00",
+  "summary": "이집트 암두아트 12시간, 스핑크스 꿈신탁, 36 데칸 천구 항해 3대 엔진 실천 의례 및 성찰 질문 표준 연동(v1.7.775)",
   "items": [
-    "다차원 운명 공명 에코 & 카르마적 인연 중력 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동",
-    "켈트 드루이드 13대 달나무 & 오검 주술 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동",
-    "실시간 삼형·육충·파해 동적 트리거 엔진(v2.3.0): ritualAction·reflectionFocus 표준 필드 연동"
+    "고대 이집트 《암두아트의 서》 12시간 태양신 라 & 케프리 부활 엔진(v2.3.0): ritualAction·reflectionFocus 표준 필드 연동",
+    "고대 이집트 투트모세 4세 스핑크스 영혼 꿈신탁 엔진(v2.3.0): ritualAction·reflectionFocus 표준 필드 연동",
+    "고대 이집트 36 데칸 별자리 수호신 & 누트 천구 항해 엔진(v2.3.0): ritualAction·reflectionFocus 표준 필드 연동"
   ]
 }

@@ -3432,6 +3432,7 @@ test('Egyptian 36 Decans Engine: calculates birth decan and stellar resonance', 
   assert(rep.stellarResonanceScore >= 0 && rep.stellarResonanceScore <= 100);
   assert(rep.spiritualNavigationGuidance.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatEgyptianThirtySixDecansPrompt(rep);
   assert(prompt.includes('고대 이집트 36 데칸'));
   assert(prompt.includes(rep.birthDecan.guardianDeity));
@@ -4559,6 +4560,7 @@ test('Egyptian Sphinx Dream Oracle Engine: calculates tetramorph virtues and san
   assert(rep.sandCleansingIndex >= 0 && rep.sandCleansingIndex <= 100);
   assert(rep.dominantVirtue.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatEgyptianSphinxDreamOraclePrompt(rep);
   assert(prompt.includes('고대 이집트 투트모세 4세 스핑크스 영혼 꿈신탁'));
   assert(prompt.includes(rep.dominantVirtue));
@@ -5400,6 +5402,7 @@ test('Egyptian Amduat Twelve Hours Ra Engine: calculates 12 hours of underworld,
   assert(rep.currentAmduatHour.hourNumber >= 1 && rep.currentAmduatHour.hourNumber <= 12);
   assert(rep.solarDeityGuardian.nameAncient.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatEgyptianAmduatPrompt(rep);
   assert(prompt.includes('고대 이집트 《암두아트의 서》 12시간 태양신 라의 밤의 저승 항해 & 케프리 부활'));
   assert(prompt.includes(rep.currentAmduatHour.hourNameAncient));

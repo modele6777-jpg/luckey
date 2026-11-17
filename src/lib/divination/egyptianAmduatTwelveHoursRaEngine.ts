@@ -24,7 +24,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const EGYPTIAN_AMDUAT_VERSION = '2.2.0';
+export const EGYPTIAN_AMDUAT_VERSION = '2.3.0';
 
 export interface AmduatSituationalAudit {
   duatGateFocus: string;
@@ -73,6 +73,8 @@ export interface EgyptianAmduatReport {
   temporalAmduatRhythm: AmduatTemporalRhythm;
   amduatSynthesisMatrix: AmduatSynthesisMatrix;
   amduatHieroglyphicWisdom: string;
+  ritualAction: string;
+  reflectionFocus: string;
   interpretiveBoundary: string;
   calculatedAtKst: string;
 }
@@ -282,6 +284,10 @@ export function calculateEgyptianAmduat(
 
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
   const calculatedAtKst = kst.toISOString().replace('T', ' ').substring(0, 19) + ' +09:00 KST';
+  const ritualAction = `${situationalAmduatAudit.barqueAction} · ${temporalAmduatRhythm.voyageGuidance}`;
+  const reflectionFocus = question.trim()
+    ? `‘${question.trim()}’ 어둠의 관문을 건널 때 [${currentAmduatHour.hourNameAncient}]과 수호신 ${solarDeityGuardian.nameAncient}이 비추는 새벽의 빛은 무엇입니까?`
+    : `오늘 밤의 심연 속에서 아포피스의 불안을 잠재우고 케프리처럼 다시 밀어 올릴 나의 한 걸음은 무엇입니까?`;
 
   return {
     engineVersion: EGYPTIAN_AMDUAT_VERSION,
@@ -298,6 +304,8 @@ export function calculateEgyptianAmduat(
     temporalAmduatRhythm,
     amduatSynthesisMatrix,
     amduatHieroglyphicWisdom,
+    ritualAction,
+    reflectionFocus,
     interpretiveBoundary: '암두아트의 서 밤의 항해와 케프리 부활 상징을 빌린 정성적 순환 성찰 관점이며, 수치 등급이나 미래 단정이 아닙니다.',
   };
 }
