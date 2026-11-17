@@ -5862,6 +5862,7 @@ test('Ancient Indian Bhagavad Gita Karma Yoga Engine: calculates Nishkama Karma,
   assert(rep.yogasthaSteadfastness >= 0 && rep.yogasthaSteadfastness <= 100);
   assert(rep.karmaphalaRenunciation >= 0 && rep.karmaphalaRenunciation <= 100);
   assert(rep.activeGitaStage.sanskritStage.length > 0);
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatBhagavadGitaKarmaYogaPrompt(rep);
   assert(prompt.includes('고대 인도 바가바드 기타(Bhagavad Gita) 카르마 요가'));
   assert(prompt.includes(rep.activeGitaStage.stageNameKo));
@@ -5890,6 +5891,7 @@ test('Ancient Greek Socratic Maieutic Daimon Engine: calculates dialogue, daimon
   assert(rep.elenchusRefutationClarity >= 0 && rep.elenchusRefutationClarity <= 100);
   assert(rep.epimeleiaSoulCareIntegrity >= 0 && rep.epimeleiaSoulCareIntegrity <= 100);
   assert(rep.activeSocraticStage.stageNameGreek.length > 0);
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatSocraticMaieuticDaimonPrompt(rep);
   assert(prompt.includes('고대 그리스 소크라테스 산파술 & 다이몬 영혼성찰 지표'));
   assert(prompt.includes(rep.activeSocraticStage.stageNameKo));
@@ -6138,6 +6140,7 @@ test('Early Buddhist Four Noble Truths Engine: calculates Four Noble Truths, Eig
   assert(rep.satiMindfulnessPresenceScore >= 0 && rep.satiMindfulnessPresenceScore <= 100);
   assert(rep.middleWayMajjhimaScore >= 0 && rep.middleWayMajjhimaScore <= 100);
   assert(rep.activeNobleTruth.truthHanja.length > 0);
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatAncientIndianFourNobleTruthsPrompt(rep);
   assert(prompt.includes('초기불교 사성제 & 팔정도 고집멸도 지표'));
   assert(prompt.includes(rep.activeNobleTruth.truthHanja));

@@ -3,12 +3,12 @@
  *
  * 《초전법륜경(Dhammacakkappavattana Sutta)》, 《대념처경(Mahāsatipaṭṭhāna Sutta)》, 《법구경(Dhammapada)》 원전 기반.
  *
- * @version LUCKEY-FOUR-NOBLE-TRUTHS-v2.1.0
+ * @version LUCKEY-FOUR-NOBLE-TRUTHS-v2.3.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const FOUR_NOBLE_TRUTHS_VERSION = 'LUCKEY-FOUR-NOBLE-TRUTHS-v2.2.0';
+export const FOUR_NOBLE_TRUTHS_VERSION = 'LUCKEY-FOUR-NOBLE-TRUTHS-v2.3.0';
 
 function getBuddhaKstString(now?: Date): string {
   const base = now ?? new Date();
@@ -75,6 +75,8 @@ export interface AncientIndianFourNobleTruthsResult {
   };
   dailyPracticeRitual: string;
   reflectiveQuestion: string;
+  ritualAction: string;
+  reflectionFocus: string;
   interpretiveBoundary: string;
   buddhistSynthesisMatrix?: {
     dominantTension: string;
@@ -348,6 +350,8 @@ export function calculateAncientIndianFourNobleTruths(
     },
     dailyPracticeRitual,
     reflectiveQuestion,
+    ritualAction: dailyPracticeRitual,
+    reflectionFocus: reflectiveQuestion,
     interpretiveBoundary,
     buddhistSynthesisMatrix,
   };
