@@ -2089,6 +2089,7 @@ test('HeLuoLiShu Engine: 사주·주역 융합 선천괘·후천괘·원당효 �
   assert(res.reflectiveQuestion.includes('직장과 진로의 도약'));
   assert(res.temporalHeLuoRhythm.hetuWatchWindow.length > 0);
   assert(res.heLuoSynthesisMatrix.coreInsight.length > 0);
+  assert(res.interpretiveBoundary.length > 0);
   const prompt = formatHeLuoLiShuPrompt(res);
   assert(prompt.includes(HELUOLISHU_ENGINE_VERSION));
   assert(prompt.includes('선천본괘'));
@@ -3584,6 +3585,7 @@ test('Guiguzi Liangtouqian Decision Matrix Engine: calculates two heads gua, des
   assert(rep.calculatedAtKst.includes('KST'));
   assert(rep.temporalGuiguziRhythm.zonghengWatchWindow.length > 0);
   assert(rep.guiguziSynthesisMatrix.coreInsight.length > 0);
+  assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatGuiguziLiangtouqianPrompt(rep);
   assert(prompt.includes('고대 중국 귀곡자(鬼谷子) 양구령 72변화 명리 결단 엔진'));
   assert(prompt.includes(rep.guaStructure.patternName));
@@ -4578,6 +4580,7 @@ test('Gnostic Pistis Sophia Pleroma Engine: calculates twelve aeons resonance an
   assert(rep.situationalGnosticAudit.pistisSophiaVerse.length > 0);
   assert(rep.temporalPleromaRhythm.pleromaHourWindow.length > 0);
   assert(rep.pleromaSynthesisMatrix.synthesizedVerdict.length > 0);
+  assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatGnosticPistisSophiaPleromaPrompt(rep);
   assert(prompt.includes('고대 영지주의(Gnosticism) 피스티스 소피아 12에온 & 플레로마 실측 데이터'));
   assert(prompt.includes(rep.primaryAeon.nameKo));

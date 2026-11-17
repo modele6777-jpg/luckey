@@ -26,7 +26,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const GUIGUZI_VERSION = 'LUCKEY-GUIGUZI-LIANGTOUQIAN-v2.0.0';
+export const GUIGUZI_VERSION = 'LUCKEY-GUIGUZI-LIANGTOUQIAN-v2.1.0';
 
 export interface GuiguziGuaStructure {
   yearStem: string;      // 년간 (선천 천명)
@@ -93,6 +93,7 @@ export interface GuiguziLiangtouqianReport {
   strategicClarityScore: number; // 0 ~ 100 결단 명료도 (내부 호환용, 프롬프트 비노출)
   synthesisMessage: string;
   boundaryNotice: string;
+  interpretiveBoundary: string;
 }
 
 const HEAVENLY_STEMS = ['甲', '乙', '丙', '丁', '戊', '己', '庚', '辛', '壬', '癸'];
@@ -339,6 +340,7 @@ export function calculateGuiguziLiangtouqian(params: {
     strategicClarityScore,
     synthesisMessage,
     boundaryNotice: '본 결과는 《귀곡선생양두겸》의 고전 명리·전략 상징 체계에 기반한 정성적 성찰 안내이며, 확정적 승패 판정이 아닙니다.',
+    interpretiveBoundary: '본 결과는 《귀곡선생양두겸》의 고전 명리·전략 상징 체계에 기반한 정성적 성찰 안내이며, 확정적 승패 판정이 아닙니다.',
   };
 }
 

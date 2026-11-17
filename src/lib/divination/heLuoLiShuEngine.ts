@@ -32,7 +32,7 @@ import type { UserProfile } from '../sharedState';
 import { calculateDetailedSaju, SajuAnalysisResult } from '../sajuAnalysis';
 import { hexagram } from './iching';
 
-export const HELUOLISHU_ENGINE_VERSION = 'LUCKEY-HL-v2.1.0';
+export const HELUOLISHU_ENGINE_VERSION = 'LUCKEY-HL-v2.2.0';
 
 export const HELUOLISHU_METHOD =
   '하락이수(河洛理數) 정통 상수역학 산법: 사주 8자 하도낙서 천수(25)·지수(30) 치환, 선천본괘(先天本卦)·원당효(元堂爻)·후천변괘(後天變卦) 결정론적 산출, 음양 밸런스·원당효 당위성·10년 대운 주역 궤적 및 청년/장년 2대 인생 주기 지수 산출';
@@ -106,6 +106,7 @@ export interface HeLuoLiShuResult {
   lifeTransitionKey: string;
   reflectiveQuestion: string;
   boundaryNotice: string;
+  interpretiveBoundary: string;
 }
 
 // 천간 상수 (갑기9 을경8 병신7 정임6 무계5)
@@ -385,6 +386,7 @@ export function calculateHeLuoLiShu(params?: {
       ? `‘${question}’ 앞에서 선천본괘 ${innateGua.name}의 바탕과 후천변괘 ${acquiredGua.name}의 방향을 연결할 원당 제${yuanTangYao}효의 첫 실천은 무엇입니까?`
       : `선천 ${innateGua.name}과 후천 ${acquiredGua.name}을 잇는 원당 제${yuanTangYao}효의 소명 중 지금 가장 먼저 깨워야 할 태도는 무엇입니까?`,
     boundaryNotice: '본 결과는 하락이수 상수역학의 사주·주역 상징 치환 모델에 기반한 정성적 성찰 안내이며, 확정적 길흉 판정이 아닙니다.',
+    interpretiveBoundary: '본 결과는 하락이수 상수역학의 사주·주역 상징 치환 모델에 기반한 정성적 성찰 안내이며, 확정적 길흉 판정이 아닙니다.',
   };
 }
 
