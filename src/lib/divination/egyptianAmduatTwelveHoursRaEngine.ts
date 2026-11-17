@@ -24,7 +24,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const EGYPTIAN_AMDUAT_VERSION = '2.3.0';
+export const EGYPTIAN_AMDUAT_VERSION = '2.4.0';
 
 export interface AmduatSituationalAudit {
   duatGateFocus: string;
@@ -75,6 +75,7 @@ export interface EgyptianAmduatReport {
   amduatHieroglyphicWisdom: string;
   ritualAction: string;
   reflectionFocus: string;
+  reflectiveQuestion: string;
   interpretiveBoundary: string;
   calculatedAtKst: string;
 }
@@ -306,6 +307,7 @@ export function calculateEgyptianAmduat(
     amduatHieroglyphicWisdom,
     ritualAction,
     reflectionFocus,
+    reflectiveQuestion: reflectionFocus,
     interpretiveBoundary: '암두아트의 서 밤의 항해와 케프리 부활 상징을 빌린 정성적 순환 성찰 관점이며, 수치 등급이나 미래 단정이 아닙니다.',
   };
 }
@@ -329,5 +331,6 @@ export function formatEgyptianAmduatPrompt(report: EgyptianAmduatReport): string
 - **교차 매트릭스**: ${report.amduatSynthesisMatrix.hourGuardianLink}
 - **암두아트 상형문자 지혜 잠언**:
   - "${report.amduatHieroglyphicWisdom}"
+- **질문 맞춤 성찰 질문**: ${report.reflectiveQuestion}
 - **해석 경계**: 암두아트의 서 밤의 항해와 케프리 부활 상징을 빌린 정성적 순환 성찰 관점이며, 수치 등급이나 미래 단정이 아닙니다.`;
 }

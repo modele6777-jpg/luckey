@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.7.791",
+    "builtAt": "2026-11-18T07:10:00+09:00",
+    "summary": "이집트 암두아트·스핑크스 꿈신탁·36데칸 3대 엔진 질문 반응형 성찰 질문 보강(v1.7.791)",
+    "items": [
+      "이집트 암두아트 12시간(egyptianAmduatTwelveHoursRaEngine v2.4.0): 질문 반응형 reflectiveQuestion 추가 및 프롬프트 연동",
+      "이집트 스핑크스 꿈신탁(egyptianSphinxDreamOracleEngine v2.4.0): 질문 반응형 reflectiveQuestion 추가 및 프롬프트 연동",
+      "이집트 36데칸(egyptianThirtySixDecansEngine v2.4.0): 질문 반응형 reflectiveQuestion 추가 및 프롬프트 연동"
+    ]
+  },
+  {
     "version": "1.7.790",
     "builtAt": "2026-11-18T07:03:00+09:00",
     "summary": "미셸 푸코, 미셸 드 몽테뉴(수상록), 샤를 드 몽테스키외 3대 엔진 실천 의례 및 성찰 질문 표준 연동(v1.7.790)",
