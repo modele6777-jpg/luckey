@@ -5375,6 +5375,7 @@ test('Chinese Mayi Mianxiang Twelve Palaces Engine: calculates 12 palaces, Qi au
   assert(rep.temporalMayiRhythm.yintangWatchWindow.length > 0);
   assert(rep.mayiSynthesisMatrix.coreInsight.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatMayiMianxiangPrompt(rep);
   assert(prompt.includes('동양 비전 마의도사 《마의상법》 12궁 관상 & 심상합일 기색'));
   assert(prompt.includes(rep.primaryPalace.nameKo));
@@ -5893,6 +5894,7 @@ test('Chinese Wang Yangming Liangzhi Xinxue Engine: calculates Liangzhi intuitio
   assert(rep.shiShangMoLianResilience >= 0 && rep.shiShangMoLianResilience <= 100);
   assert(rep.baBenSaiYuanSelflessPurity >= 0 && rep.baBenSaiYuanSelflessPurity <= 100);
   assert(rep.activeXinxueStage.stageNameHanja.length > 0);
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatWangYangmingXinxuePrompt(rep);
   assert(prompt.includes('명나라 양명학 왕양명(王陽明) 치양지(致良知)'));
   assert(prompt.includes(rep.activeXinxueStage.stageNameKo));
@@ -5922,6 +5924,7 @@ test('Chinese Mencius Four Sprouts Hoyeon Jigi Engine: calculates four sprouts, 
   assert(rep.jiYiMoralAccumulation >= 0 && rep.jiYiMoralAccumulation <= 100);
   assert(rep.daejangbuNobility >= 0 && rep.daejangbuNobility <= 100);
   assert(rep.activeMenciusStage.stageNameHanja.length > 0);
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatMenciusFourSproutsHoyeonPrompt(rep);
   assert(prompt.includes('고대 중국 맹자 사단사덕(四端四德) & 호연지기(浩然之氣) 성찰'));
   assert(prompt.includes(rep.activeMenciusStage.stageNameKo));

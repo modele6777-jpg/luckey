@@ -8,7 +8,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const WANG_YANGMING_LIANGZHI_VERSION = 'LUCKEY-WANG-YANGMING-LIANGZHI-v2.1.0';
+export const WANG_YANGMING_LIANGZHI_VERSION = 'LUCKEY-WANG-YANGMING-LIANGZHI-v2.2.0';
 
 export interface XinxueStage {
   stageLevel: number;
@@ -68,6 +68,8 @@ export interface WangYangmingXinxueResult {
   };
   dailyPracticeRitual: string;
   reflectiveQuestion: string;
+  ritualAction: string;
+  reflectionFocus: string;
   interpretiveBoundary: string;
 }
 
@@ -305,6 +307,8 @@ export function calculateWangYangmingXinxue(
     },
     dailyPracticeRitual,
     reflectiveQuestion,
+    ritualAction: dailyPracticeRitual,
+    reflectionFocus: reflectiveQuestion,
     interpretiveBoundary,
   };
 }

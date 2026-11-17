@@ -8,7 +8,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const MENCIUS_FOUR_SPROUTS_HOYEON_VERSION = 'LUCKEY-MENCIUS-FOUR-SPROUTS-HOYEON-v2.1.0';
+export const MENCIUS_FOUR_SPROUTS_HOYEON_VERSION = 'LUCKEY-MENCIUS-FOUR-SPROUTS-HOYEON-v2.2.0';
 
 export interface MenciusSproutStage {
   stageLevel: number;
@@ -68,6 +68,8 @@ export interface MenciusFourSproutsHoyeonResult {
   };
   dailyPracticeRitual: string;
   reflectiveQuestion: string;
+  ritualAction: string;
+  reflectionFocus: string;
   interpretiveBoundary: string;
 }
 
@@ -298,6 +300,8 @@ export function calculateMenciusFourSproutsHoyeon(
     },
     dailyPracticeRitual,
     reflectiveQuestion,
+    ritualAction: dailyPracticeRitual,
+    reflectionFocus: reflectiveQuestion,
     interpretiveBoundary,
   };
 }
