@@ -1968,6 +1968,7 @@ test('Liuren Master Engine: 사과·삼전·12천장 정통 결단 산출 및 �
   assert(res.transmissionDynamics.breakthroughStrategy.length > 0);
   assert(res.temporalLiurenRhythm.hourWatchWindow.length > 0);
   assert(res.liurenSynthesisMatrix.coreInsight.length > 0);
+  assert(res.interpretiveBoundary.length > 0);
   const prompt = formatLiurenMasterPrompt(res);
   assert(prompt.includes(LIUREN_MASTER_ENGINE_VERSION));
   assert(prompt.includes('KST'));
@@ -4309,6 +4310,7 @@ test('Popol Vuh Hero Twins Engine: calculates active trial house and qualitative
   assert(rep.boundaryNotice.length > 0);
   assert(rep.calculatedAtKst.endsWith('KST'));
   assert(Boolean(rep.popolVuhSynthesisMatrix?.integratedAction));
+  assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatPopolVuhHeroTwinsPrompt(rep);
   assert(prompt.includes('고대 마야 포폴 부(Popol Vuh) 쌍둥이 영웅 & 시발바 시련 돌파 실측 데이터'));
   assert(prompt.includes(rep.activeTrialHouse.houseNameKo));
@@ -5331,6 +5333,7 @@ test('Korean Wonhyo Hwajaeng One Mind Engine: calculates One Mind Two Gates, Hwa
   assert(rep.wonYungWheTongHarmonization >= 0 && rep.wonYungWheTongHarmonization <= 100);
   assert(rep.innerJinYeoPurityIndex >= 0 && rep.innerJinYeoPurityIndex <= 100);
   assert(rep.activeHwajaengGate.gateNameKo.length > 0);
+  assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatWonhyoHwajaengPrompt(rep);
   assert(prompt.includes('신라 원효대사 《십문화쟁론》 일심이문 & 화쟁 원융회통'));
   assert(prompt.includes(rep.activeHwajaengGate.gateNameKo));

@@ -10,7 +10,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const WONHYO_HWAJAENG_VERSION = '2.2.0';
+export const WONHYO_HWAJAENG_VERSION = '2.3.0';
 
 export interface WonhyoSituationalHwajaeng {
   themeKey: 'existence_emptiness' | 'truth_delusion' | 'assertion_refutation' | 'source_return' | 'fearless_freedom';
@@ -62,6 +62,7 @@ export interface WonhyoHwajaengReport {
     alignmentState: string;
     integratedAction: string;
   };
+  interpretiveBoundary: string;
 }
 
 function djb2Hash(str: string): number {
@@ -319,6 +320,7 @@ export function calculateWonhyoHwajaeng(
     },
     wonhyoMasterDharmaWord,
     wonhyoSynthesisMatrix,
+    interpretiveBoundary: '본 리포트는 원효대사의 일심이문·화쟁 사상에 기반한 정성적 성찰 안내이며, 절대적 시비 판정이 아닙니다.',
   };
 }
 
