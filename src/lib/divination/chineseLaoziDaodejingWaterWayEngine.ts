@@ -14,7 +14,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const LAOZI_DAODEJING_VERSION = 'LUCKEY-LAOZI-DAODEJING-v2.3.0';
+export const LAOZI_DAODEJING_VERSION = 'LUCKEY-LAOZI-DAODEJING-v2.4.0';
 
 export interface DaodejingStage {
   stageLevel: number;
@@ -86,6 +86,8 @@ export interface LaoziDaodejingResult {
     alignmentState: string;
     integratedAction: string;
   };
+  ritualAction: string;
+  reflectionFocus: string;
   interpretiveBoundary: string;
 }
 
@@ -322,6 +324,8 @@ export function calculateLaoziDaodejing(
     seasonalWaterFlow,
     softStrengthMatrix,
     laoziSynthesisMatrix,
+    ritualAction: chapterResonance.wuweiUnburdeningTip,
+    reflectionFocus: chapterResonance.reflectionQuestion,
     interpretiveBoundary: '본 리포트는 노자 《도덕경》의 무위·상선약수 철학에 기반한 정성적 성찰 안내이며, 확정적 길흉 예단이 아닙니다.',
   };
 }

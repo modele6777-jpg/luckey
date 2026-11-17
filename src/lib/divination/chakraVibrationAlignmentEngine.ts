@@ -22,7 +22,7 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const CHAKRA_ALIGNMENT_VERSION = 'LUCKEY-CHAKRA-v2.1.0';
+export const CHAKRA_ALIGNMENT_VERSION = 'LUCKEY-CHAKRA-v2.2.0';
 
 export interface SingleChakraInfo {
   id: string;
@@ -70,6 +70,8 @@ export interface ChakraVibrationAlignmentReport {
     cautionNotice: string;
   };
   boundaryNotice: string;
+  ritualAction: string;
+  reflectionFocus: string;
   interpretiveBoundary: string;
   synthesisPromptGuidance: string;
 }
@@ -304,6 +306,8 @@ ${chakrasSummary}
     temporalChakraRhythm,
     chakraSynthesisMatrix,
     boundaryNotice,
+    ritualAction: situationalChakraAudit.groundingStep,
+    reflectionFocus: `[${primaryFocusChakra.name}]의 막힘을 풀기 위해 오늘 내가 몸과 마음에서 가장 먼저 내려놓을 긴장은 무엇인가요?`,
     interpretiveBoundary: boundaryNotice,
     synthesisPromptGuidance
   };
