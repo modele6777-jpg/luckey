@@ -3488,6 +3488,7 @@ test('Ayurvedic Tridosha & Prana Engine: calculates prakriti, vikriti and subtle
   assert(rep.situationalAyurvedaAudit.charakaSutra.length > 0);
   assert(rep.temporalDinacharyaRhythm.doshaClockWindow.length > 0);
   assert(rep.tridoshaSynthesisMatrix.synthesizedVerdict.length > 0);
+  assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatAyurvedicTridoshaPranaPrompt(rep);
   assert(prompt.includes('인도 정통 아유르베다 3대 도샤'));
   assert(prompt.includes(rep.prakritiConstitution.dominantDosha));
@@ -7541,6 +7542,7 @@ test('Wittgenstein Language Game and Silence Engine: calculates Logical Clarity,
   assert(rep.meaningAsUsePragmaticActionScore >= 0 && rep.meaningAsUsePragmaticActionScore <= 100);
   assert(rep.therapeuticDissolutionClarityScore >= 0 && rep.therapeuticDissolutionClarityScore <= 100);
   assert(rep.activeWittgensteinTheme.themeTitleKo.length > 0);
+  assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatAustrianWittgensteinLanguageGameSilencePrompt(rep);
   assert(prompt.includes('비트겐슈타인 《논리철학논고·철학적 탐구》 언어게임·침묵 지혜 지표'));
   assert(prompt.includes(rep.activeWittgensteinTheme.themeTitleKo));
@@ -8480,6 +8482,7 @@ test('Dreamtime Songlines, Eleusinian Mysteries, and Babylonian Enuma Elish prov
   assert.ok(babylon.ritualAction.length > 10);
   assert.ok(babylon.reflectionFocus.length > 10);
   assert.ok(babylon.boundaryNotice.length > 10);
+  assert.ok(babylon.interpretiveBoundary.length > 10);
   const babylonPrompt = formatBabylonianEnumaElishPrompt(babylon);
   assert(!babylonPrompt.includes('점)'));
   assert(!babylonPrompt.includes('/100'));

@@ -14,7 +14,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const AUSTRIAN_WITTGENSTEIN_LANGUAGE_GAME_SILENCE_VERSION = 'LUCKEY-WITTGENSTEIN-LANGUAGE-GAME-SILENCE-v2.0.0';
+export const AUSTRIAN_WITTGENSTEIN_LANGUAGE_GAME_SILENCE_VERSION = 'LUCKEY-WITTGENSTEIN-LANGUAGE-GAME-SILENCE-v2.1.0';
 
 export type WittgensteinQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -59,6 +59,7 @@ export interface AustrianWittgensteinLanguageGameSilenceResult {
   ritualAction: string;
   reflectionFocus: string;
   boundaryNotice: string;
+  interpretiveBoundary: string;
   wittgensteinSynthesisMatrix: {
     coreInsight: string;
     recommendedAction: string;
@@ -293,6 +294,7 @@ export function calculateAustrianWittgensteinLanguageGameSilence(
     ritualAction: topicGuidance.ritualAction,
     reflectionFocus: topicGuidance.reflectionFocus,
     boundaryNotice,
+    interpretiveBoundary: boundaryNotice,
     wittgensteinSynthesisMatrix,
     wittgensteinComprehensiveGuidance: {
       guidanceTitle,

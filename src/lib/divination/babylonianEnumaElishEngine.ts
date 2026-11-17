@@ -19,7 +19,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const BABYLONIAN_ENUMA_ELISH_VERSION = 'LUCKEY-BABYLONIAN-ENUMA-ELISH-v2.1.0';
+export const BABYLONIAN_ENUMA_ELISH_VERSION = 'LUCKEY-BABYLONIAN-ENUMA-ELISH-v2.2.0';
 
 function toKstIso(now: Date): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -82,6 +82,7 @@ export interface BabylonianEnumaElishReport {
   reflectionFocus: string;
   counselNote: string;
   boundaryNotice: string;
+  interpretiveBoundary: string;
   situationalBabylonAudit: BabylonianSituationalAudit;
   temporalBabylonRhythm: BabylonianTemporalRhythm;
   babylonSynthesisMatrix: BabylonianSynthesisMatrix;
@@ -312,6 +313,8 @@ export function calculateBabylonianEnumaElish(
 
   const synthesisMessage = `에누마 엘리쉬 창조 서사시의 원전에 따라, [${patronDeity.koreanName}]의 상징 아래 ${sovereigntyPosture}에 놓여 있습니다. "${patronDeity.sacredCommandment}"`;
 
+  const boundaryNotice = '고대 바빌로니아 에누마 엘리쉬 서사시의 질서·창조 상징을 활용한 성찰적 관점이며, 확정적 예언이나 의학적·재정적 판단을 대신하지 않습니다.';
+
   return {
     engineVersion: BABYLONIAN_ENUMA_ELISH_VERSION,
     calculatedAt: now.toISOString(),
@@ -327,7 +330,8 @@ export function calculateBabylonianEnumaElish(
     ritualAction: themed.ritual,
     reflectionFocus: themed.reflection,
     counselNote: `[에누마 엘리쉬 성찰] ${patronDeity.koreanName} · ${chosenEdict.title} — ${themed.practice}`,
-    boundaryNotice: '고대 바빌로니아 에누마 엘리쉬 서사시의 질서·창조 상징을 활용한 성찰적 관점이며, 확정적 예언이나 의학적·재정적 판단을 대신하지 않습니다.',
+    boundaryNotice,
+    interpretiveBoundary: boundaryNotice,
     situationalBabylonAudit,
     temporalBabylonRhythm,
     babylonSynthesisMatrix,
