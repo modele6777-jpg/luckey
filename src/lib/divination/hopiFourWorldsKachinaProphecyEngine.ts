@@ -15,7 +15,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const HOPI_FOUR_WORLDS_ENGINE_VERSION = '2.0.0';
+export const HOPI_FOUR_WORLDS_ENGINE_VERSION = '2.1.0';
 
 export interface HopiKachinaSpirit {
   id: string;
@@ -56,6 +56,7 @@ export interface HopiFourWorldsReport {
   hopiProphecyGuidance: string; // 호피 평화 예언 처방
   pikiBreadSacredOffering: string; // 대지와 연결되는 소박한 평화 리추얼
   boundaryNotice: string;
+  interpretiveBoundary: string;
 }
 
 const HOPI_KACHINAS_BASE: Omit<HopiKachinaSpirit, 'spiritResonanceScore'>[] = [
@@ -232,6 +233,7 @@ export function calculateHopiFourWorldsKachina(
     hopiProphecyGuidance,
     pikiBreadSacredOffering,
     boundaryNotice: '아메리카 호피족 구전 지혜와 카치나 상징을 빌려 온 정성적 성찰 관점이며, 확정적 예언이나 의학적·재정적 처방이 아닙니다.',
+    interpretiveBoundary: '아메리카 호피족 구전 지혜와 카치나 상징을 빌려 온 정성적 성찰 관점이며, 확정적 예언이나 의학적·재정적 처방이 아닙니다.',
   };
 }
 

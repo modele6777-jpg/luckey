@@ -2746,6 +2746,7 @@ test('Human Design BodyGraph Engine: 휴먼 디자인 9대 에너지 센터 및 
   assert(res.calculatedAtKst.includes('KST'));
   assert(res.temporalHdRhythm.auraWatchWindow.length > 0);
   assert(res.hdSynthesisMatrix.coreInsight.length > 0);
+  assert(res.interpretiveBoundary.length > 0);
   const prompt = formatHumanDesignBodyGraphPrompt(res);
   assert(prompt.includes('LUCKEY 휴먼 디자인 9대 에너지 센터 & 바디그래프 오라'));
   assert(prompt.includes(res.designType.koreanLabel));
@@ -3650,6 +3651,7 @@ test('Huangdi Five Movements & Six Qi Engine: calculates movements, heaven/earth
   assert(rep.calculatedAtKst.includes('KST'));
   assert(rep.temporalYunqiRhythm.organWatchWindow.length > 0);
   assert(rep.yunqiSynthesisMatrix.coreInsight.length > 0);
+  assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatHuangdiFiveMovementsSixQiPrompt(rep);
   assert(prompt.includes('황제명리(黃帝命理) & 오운육기(五運六氣) 천기 기상의학 엔진'));
   assert(prompt.includes(rep.birthYearGanZhi));
@@ -5097,6 +5099,7 @@ test('Hopi Four Worlds Kachina Prophecy Engine: calculates four worlds evolution
   assert(rep.kivaSacredCenterAlignment >= 0 && rep.kivaSacredCenterAlignment <= 100);
   assert(rep.spiderGrandmotherWisdom >= 0 && rep.spiderGrandmotherWisdom <= 100);
   assert(rep.dominantKachina.nameKo.length > 0);
+  assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatHopiFourWorldsPrompt(rep);
   assert(prompt.includes('아메리카 호피족 4대 우주 시대 & 카치나 정령 지혜 실측 데이터'));
   assert(prompt.includes(rep.dominantKachina.nameKo));

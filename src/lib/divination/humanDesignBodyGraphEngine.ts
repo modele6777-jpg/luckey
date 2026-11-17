@@ -20,7 +20,7 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const HUMAN_DESIGN_BODYGRAPH_VERSION = 'LUCKEY-HUMANDESIGN-v2.1.0';
+export const HUMAN_DESIGN_BODYGRAPH_VERSION = 'LUCKEY-HUMANDESIGN-v2.2.0';
 
 export type HumanDesignType = 'Generator' | 'Manifesting Generator' | 'Projector' | 'Manifestor' | 'Reflector';
 
@@ -64,6 +64,7 @@ export interface HumanDesignBodyGraphReport {
     cautionNotice: string;
   };
   boundaryNotice: string;
+  interpretiveBoundary: string;
   reflectiveQuestion?: string;
   synthesisPromptGuidance: string;
 }
@@ -344,6 +345,7 @@ export function runHumanDesignBodyGraphEngine(
     temporalHdRhythm,
     hdSynthesisMatrix,
     boundaryNotice,
+    interpretiveBoundary: boundaryNotice,
     reflectiveQuestion,
     synthesisPromptGuidance
   };

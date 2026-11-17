@@ -29,7 +29,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const HUANGDI_YUNQI_VERSION = 'LUCKEY-HUANGDI-YUNQI-v2.0.0';
+export const HUANGDI_YUNQI_VERSION = 'LUCKEY-HUANGDI-YUNQI-v2.1.0';
 
 export interface FiveMovementYear {
   element: '목(木)' | '화(火)' | '토(土)' | '금(金)' | '수(水)';
@@ -77,6 +77,7 @@ export interface HuangdiFiveMovementsSixQiReport {
     cautionNotice: string;
   };
   boundaryNotice: string;
+  interpretiveBoundary: string;
   synthesisMessage: string;
 }
 
@@ -287,6 +288,7 @@ export function calculateHuangdiFiveMovementsSixQi(
     temporalYunqiRhythm,
     yunqiSynthesisMatrix,
     boundaryNotice: '본 결과는 황제내경 운기칠편(오운육기)의 전통 섭생 철학에 기반한 정성적 건강 리듬 안내이며, 의학적 진단이 아닙니다.',
+    interpretiveBoundary: '본 결과는 황제내경 운기칠편(오운육기)의 전통 섭생 철학에 기반한 정성적 건강 리듬 안내이며, 의학적 진단이 아닙니다.',
     synthesisMessage,
   };
 }
