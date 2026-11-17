@@ -2665,6 +2665,7 @@ test('Biorhythm Peak Flow Engine: 3대 생체 바이오리듬 & 크로노타입 
   assert(res.calculatedAtKst.includes('KST'));
   assert(res.temporalBioRhythm.currentPhaseWindow.length > 0);
   assert(res.bioSynthesisMatrix.coreInsight.length > 0);
+  assert(res.ritualAction.length > 0 && res.reflectionFocus.length > 0);
   assert(res.interpretiveBoundary.length > 0);
   const prompt = formatBiorhythmPeakFlowPrompt(res);
   assert(prompt.includes('LUCKEY 3대 생체 바이오리듬 & 크로노타입 황금 피크'));
@@ -4995,6 +4996,7 @@ test('Aztec Tonalamatl Sacred Calendar Engine: calculates twenty day signs, tona
   assert(rep.ihiyotlBreathPowerScore >= 0 && rep.ihiyotlBreathPowerScore <= 100);
   assert(rep.ollinCosmicMovementHarmony >= 0 && rep.ollinCosmicMovementHarmony <= 100);
   assert(rep.dominantDaySign.nameKo.length > 0);
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatAztecTonalamatlPrompt(rep);
   assert(prompt.includes('고대 아즈텍 토날포왈리 20대 일진 & 토날라마틀 성력 실측 데이터'));
   assert(prompt.includes(rep.dominantDaySign.nameKo));
@@ -5109,6 +5111,7 @@ test('Balinese Tri Hita Karana Engine: calculates cosmic trinity harmony, tri ka
   assert(rep.palemahanEcologyBalance >= 0 && rep.palemahanEcologyBalance <= 100);
   assert(rep.triKayaPurificationIndex >= 0 && rep.triKayaPurificationIndex <= 100);
   assert(rep.activeSanctuary.nameKo.length > 0);
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatBalineseTriHitaKaranaPrompt(rep);
   assert(prompt.includes('발리 힌두교 트리 히타 카라나 3대 우주 조화 & 3업 정화 실측 데이터'));
   assert(prompt.includes(rep.activeSanctuary.nameKo));

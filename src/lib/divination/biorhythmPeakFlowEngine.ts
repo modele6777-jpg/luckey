@@ -16,7 +16,7 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const BIORHYTHM_PEAK_FLOW_VERSION = 'LUCKEY-BIOFLOW-v2.1.0';
+export const BIORHYTHM_PEAK_FLOW_VERSION = 'LUCKEY-BIOFLOW-v2.2.0';
 
 export type ChronotypeType = 
   | '사자형 (Lion · 새벽형 몰입 개척자)'
@@ -67,6 +67,8 @@ export interface BiorhythmPeakFlowReport {
     recommendedAction: string;
     cautionNotice: string;
   };
+  ritualAction: string;
+  reflectionFocus: string;
   boundaryNotice: string;
   interpretiveBoundary: string;
   synthesisPromptGuidance: string;
@@ -276,6 +278,8 @@ export function runBiorhythmPeakFlowEngine(
     situationalBioAudit,
     temporalBioRhythm,
     bioSynthesisMatrix,
+    ritualAction: biohackingPrescription.circadianLightAction,
+    reflectionFocus: `${situationalBioAudit.focusTheme} 흐름 속에서 오늘 가장 소모적인 일정 하나를 비운다면 무엇을 남기겠습니까?`,
     boundaryNotice,
     interpretiveBoundary: boundaryNotice,
     synthesisPromptGuidance

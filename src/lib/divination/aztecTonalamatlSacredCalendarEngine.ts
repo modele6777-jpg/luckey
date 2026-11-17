@@ -9,7 +9,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const AZTEC_TONALAMATL_ENGINE_VERSION = 'LUCKEY-AZTEC-TONALAMATL-v2.1.0';
+export const AZTEC_TONALAMATL_ENGINE_VERSION = 'LUCKEY-AZTEC-TONALAMATL-v2.2.0';
 
 export interface AztecDaySign {
   signNumber: number;
@@ -57,6 +57,8 @@ export interface AztecTonalamatlReport {
   tonalamatlSynthesisMatrix: AztecSynthesisMatrix;
   aztecTonalamatlGuidance: string;
   tonalliSunSalutationRitual: string;
+  ritualAction: string;
+  reflectionFocus: string;
   interpretiveBoundary: string;
 }
 
@@ -419,6 +421,8 @@ export function calculateAztecTonalamatl(
     tonalamatlSynthesisMatrix,
     aztecTonalamatlGuidance,
     tonalliSunSalutationRitual,
+    ritualAction: tonalliSunSalutationRitual,
+    reflectionFocus: `${situationalTonalamatlAudit.focusAxis}에 비추어 오늘 나의 토날리 불꽃을 흐리는 습관 하나는 무엇인가요?`,
     interpretiveBoundary,
   };
 }
