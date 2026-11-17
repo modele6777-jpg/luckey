@@ -7,7 +7,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const CHALDEAN_MUL_APIN_ASTROLOGY_ENGINE_VERSION = 'LUCKEY-CHALDEAN-MULAPIN-v2.2.0';
+export const CHALDEAN_MUL_APIN_ASTROLOGY_ENGINE_VERSION = 'LUCKEY-CHALDEAN-MULAPIN-v2.3.0';
 
 export type CelestialPath =
   | '엔릴의 길(Way of Enlil - 북천/절대원칙과 법도)'
@@ -58,6 +58,7 @@ export interface ChaldeanMulApinAstrologyReport {
   astronomicalActionAdvice: string;
   ritualAction: string;
   reflectionFocus: string;
+  reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
 
@@ -247,6 +248,9 @@ export function calculateChaldeanMulApinAstrology(options?: {
 
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
   const calculatedAtKst = `${kst.toISOString().slice(0, 19)}+09:00`;
+  const reflectiveQuestion = question
+    ? `질문 "${question}"을 비추는 [${rulingPlanet.nameKo}]과 ${cMeta.name}의 천상로 앞에서, 지금 내가 타협 없이 지켜야 할 원칙은 무엇인가요?`
+    : `[${rulingPlanet.nameKo}]과 ${cMeta.name}의 궤도 아래, 지금 내가 지키고자 하는 중심 질서는 무엇인가요?`;
   const interpretiveBoundary = '본 칼데아 물핀 천문 신탁 리포트는 고대 메소포타미아 천상로 상징에 기반한 정성적 지혜 안내이며, 확정적 점성 예언이 아닙니다.';
 
   return {
@@ -263,7 +267,8 @@ export function calculateChaldeanMulApinAstrology(options?: {
     noeticFireGuidance,
     astronomicalActionAdvice,
     ritualAction: situationalMulApinAudit.tabletPrescription,
-    reflectionFocus: `[${rulingPlanet.nameKo}]과 ${cMeta.name}의 궤도 아래, 지금 내가 지키고자 하는 중심 질서는 무엇인가요?`,
+    reflectionFocus: reflectiveQuestion,
+    reflectiveQuestion,
     interpretiveBoundary,
   };
 }
@@ -283,5 +288,6 @@ export function formatChaldeanMulApinAstrologyPrompt(rep: ChaldeanMulApinAstrolo
   - 다음 행동: ${rep.mulApinSynthesisMatrix.nextAstronomicalStep}
 · 칼데아 지성 불꽃(Noetic Fire): ${rep.noeticFireGuidance}
 · 천문학적 행동 처방: ${rep.astronomicalActionAdvice}
+· 질문 맞춤 성찰 질문: ${rep.reflectiveQuestion}
 · 해석 경계: ${rep.interpretiveBoundary}`;
 }

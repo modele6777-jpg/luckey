@@ -10979,3 +10979,29 @@ test('Celtic Brehon Law v2.3 · Lugh Samildanach v2.3 · Tuatha Four Treasures v
   const treasuresPrompt = formatCelticTuathaFourTreasuresPrompt(treasures);
   assert.ok(treasuresPrompt.includes('+09:00') && treasuresPrompt.includes('질문 맞춤 성찰 질문') && treasuresPrompt.includes('해석 경계'));
 });
+
+test('Chaldean Mul-Apin v2.3 · Laozi Daodejing v2.5 · Mayi Mianxiang v2.3: reflectiveQuestion & +09:00 KST prompt output', () => {
+  const now = new Date('2026-11-18T06:40:00+09:00');
+  const query = '복잡한 대인 관계와 일의 압박 속에서 중심과 여유를 잃지 않고 싶어요';
+
+  const chaldean = calculateChaldeanMulApinAstrology({ profile, question: query, now });
+  assert.equal(chaldean.engineVersion, CHALDEAN_MUL_APIN_ASTROLOGY_ENGINE_VERSION);
+  assert.match(chaldean.calculatedAtKst, /\+09:00/);
+  assert.ok(chaldean.reflectiveQuestion.includes(query));
+  const chaldeanPrompt = formatChaldeanMulApinAstrologyPrompt(chaldean);
+  assert.ok(chaldeanPrompt.includes('+09:00') && chaldeanPrompt.includes('질문 맞춤 성찰 질문') && chaldeanPrompt.includes('해석 경계'));
+
+  const laozi = calculateLaoziDaodejing(profile, query, now);
+  assert.equal(laozi.engineVersion, LAOZI_DAODEJING_VERSION);
+  assert.match(laozi.calculatedAtKst, /\+09:00/);
+  assert.ok(laozi.reflectiveQuestion.includes(query));
+  const laoziPrompt = formatLaoziDaodejingPrompt(laozi);
+  assert.ok(laoziPrompt.includes('+09:00') && laoziPrompt.includes('질문 맞춤 성찰 질문') && laoziPrompt.includes('해석 경계'));
+
+  const mayi = calculateMayiMianxiang(profile, now, query);
+  assert.equal(mayi.engineVersion, MAYI_MIANXIANG_VERSION);
+  assert.match(mayi.calculatedAtKst, /\+09:00/);
+  assert.ok(mayi.reflectiveQuestion.includes(query));
+  const mayiPrompt = formatMayiMianxiangPrompt(mayi);
+  assert.ok(mayiPrompt.includes('+09:00') && mayiPrompt.includes('질문 맞춤 성찰 질문') && mayiPrompt.includes('해석 경계'));
+});
