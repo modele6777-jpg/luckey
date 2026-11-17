@@ -1619,6 +1619,7 @@ test('Kabbalah engine fixtures: life path / personality / soul path and pillar b
   const r = calculateKabbalah({ profile });
   assert.equal(r.status, 'calculated');
   assert.equal(r.engineVersion, KABBALAH_ENGINE_VERSION);
+  assert(Boolean(r.interpretiveBoundary && r.interpretiveBoundary.length > 0));
   const n = r.numerology!;
   assert.equal(n.rawDigitSum, 34);
   assert.equal(n.lifePathNumber, 7);
@@ -4701,6 +4702,7 @@ test('Kabbalistic Zohar Five Soul Levels Engine: calculates five soul levels and
   assert(rep.shekhinahDivinePresenceIndex >= 0 && rep.shekhinahDivinePresenceIndex <= 100);
   assert(rep.qlippothShellPurificationRate >= 0 && rep.qlippothShellPurificationRate <= 100);
   assert(rep.dominantSoulLevel.nameKo.length > 0);
+  assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatKabbalisticZoharSoulPrompt(rep);
   assert(prompt.includes('카발라 조하르(Zohar) 5대 영혼 층위 & 에인 소프 신성 상승 실측 데이터'));
   assert(prompt.includes(rep.dominantSoulLevel.nameKo));
@@ -4814,6 +4816,7 @@ test('Kashmir Shaivism Spanda Engine: calculates cosmic pulsation, Pratyabhijna 
   assert(rep.prakashaVimarshaUnityScore >= 0 && rep.prakashaVimarshaUnityScore <= 100);
   assert(rep.threeMalasPurificationRate >= 0 && rep.threeMalasPurificationRate <= 100);
   assert(rep.dominantTattva.nameKo.length > 0);
+  assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatKashmirShaivismSpandaPrompt(rep);
   assert(prompt.includes('카슈미르 시바파 스판다 우주 맥동 & 프라티야비즈냐 재인식 실측 데이터'));
   assert(prompt.includes(rep.dominantTattva.nameKo));

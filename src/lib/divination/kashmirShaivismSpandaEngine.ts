@@ -18,7 +18,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const KASHMIR_SHAIVISM_SPANDA_ENGINE_VERSION = '2.0.0';
+export const KASHMIR_SHAIVISM_SPANDA_ENGINE_VERSION = '2.1.0';
 
 export interface KashmirShaivismTattva {
   id: string;
@@ -59,6 +59,7 @@ export interface KashmirShaivismSpandaReport {
   kashmirShaivismGuidance: string; // 카슈미르 시바파 지혜 지침
   spandaPulsationMeditationRitual: string; // 스판다 맥동 명상 리추얼
   boundaryNotice: string;
+  interpretiveBoundary: string;
 }
 
 const KASHMIR_TATTVAS_BASE: Omit<KashmirShaivismTattva, 'resonanceScore'>[] = [
@@ -228,6 +229,7 @@ export function calculateKashmirShaivismSpanda(
     kashmirShaivismGuidance,
     spandaPulsationMeditationRitual,
     boundaryNotice: '카슈미르 시바파 트리카 철학의 스판다·프라티야비즈냐 상징을 빌려 온 정성적 성찰 관점이며, 확정적 예언이나 의학적·재정적 처방이 아닙니다.',
+    interpretiveBoundary: '카슈미르 시바파 트리카 철학의 스판다·프라티야비즈냐 상징을 빌려 온 정성적 성찰 관점이며, 확정적 예언이나 의학적·재정적 처방이 아닙니다.',
   };
 }
 

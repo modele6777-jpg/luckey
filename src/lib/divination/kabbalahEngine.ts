@@ -51,7 +51,7 @@
 import type { UserProfile } from '../sharedState';
 import { resolveEffectiveSolarDate } from '../lunarCalendar';
 
-export const KABBALAH_ENGINE_VERSION = 'LUCKEY-KB-v2.0.0';
+export const KABBALAH_ENGINE_VERSION = 'LUCKEY-KB-v2.1.0';
 
 export const KABBALAH_METHOD =
   '정통 카발라 생명나무 결정론 산법: 헤브라이 전통 10 세피로트(케테르~말쿠트, 다트는 숨겨진 세피라 별도 보존)·3대 기둥(자비·엄격·균형)·4개 세계(아칠루트·베리아·예치라·아시야)·22 경로(알레프~타브 22문자, 황금여명(Golden Dawn) 통용 원소·행성·별자리 속성 및 타로 메이저 0~21 배속) 전수 데이터와 생년월일 게마트리아 수리(라이프 패스 세피라 1~10 축약 및 11·22·33 마스터 넘버 케테르·다트 특별 해석, 퍼스널리티 세피라, 소울 패스 활성 경로, 3기둥 밸런스 백분율) 산출';
@@ -355,6 +355,7 @@ export interface KabbalahResult {
     cautionNotice: string;
   };
   boundaryNotice?: string;
+  interpretiveBoundary?: string;
   note?: string;
 }
 
@@ -651,6 +652,7 @@ export function calculateKabbalah(params: {
       temporalKabbalahRhythm,
       kabbalahSynthesisMatrix,
       boundaryNotice: '본 결과는 헤브라이 카발라 생명나무와 생년월일 게마트리아 수리에 기반한 정성적 성찰 안내이며, 확정적 예언이 아닙니다.',
+      interpretiveBoundary: '본 결과는 헤브라이 카발라 생명나무와 생년월일 게마트리아 수리에 기반한 정성적 성찰 안내이며, 확정적 예언이 아닙니다.',
     };
   } catch (err: any) {
     return {
