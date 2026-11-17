@@ -11,7 +11,7 @@ import { isDuoUnfoldedState, isDualPaneLayout, resolveDuoViewport } from '../src
  *   shorter innerHeight 450×562 before CSS viewport fill.
  * - Comment geometry for the 5.4" outer panel: 1398×2034 physical ≈ 466×678 at 3x.
  * - Ordinary phones: 390×844, 430×932. Landscape is wide but the short side
- *   stays 390–466, under the 540 cover guard.
+ *   stays 390–466, under the 512 cover guard.
  *
  * Inner / unfolded. Both orientations stay dual.
  * - 7.6" inner panel: 1878×2670 physical ≈ 626×890 CSS px (ratio ≈ 0.70).
@@ -22,8 +22,8 @@ import { isDuoUnfoldedState, isDualPaneLayout, resolveDuoViewport } from '../src
  * - iPad / spanned Surface Duo stay on the same long-side rule: 768×1024,
  *   1024×768, 1114×720.
  *
- * 540 is the cover ceiling because it is the existing portrait guard: above
- * the cover (~450–466) and below the inner short side (~626). A landscape
+ * 512 separates the observed cover (~450–466) from the shorter 537px
+ * inner Safari canvas. A landscape
  * viewport whose height is still that cover width must not become dual just
  * because its width crosses 600 or its long side crosses 768.
  */
@@ -230,5 +230,26 @@ test('a keyboard on the inner display does not fold it', () => {
     assert.equal(state.orientation, 'portrait');
   } finally {
     Object.assign(globalThis, { window: previousWindow, document: previousDocument });
+  }
+});
+
+
+test('reported 951x537 inner canvas is unfolded while 461x678 cover stays folded', () => {
+  assert.deepEqual(resolveDuoViewport(951, 537), { unfolded: true, orientation: 'landscape' });
+  assert.deepEqual(resolveDuoViewport(537, 951), { unfolded: true, orientation: 'portrait' });
+  assert.equal(resolveDuoViewport(461, 678).unfolded, false);
+  assert.equal(resolveDuoViewport(678, 461).unfolded, false);
+  assert.equal(resolveDuoViewport(932, 430).unfolded, false);
+  const previous = Object.getOwnPropertyDescriptor(globalThis, 'window');
+  const windowLike = { innerWidth: 951, innerHeight: 537, screen: { width: 461, height: 678 }, matchMedia: () => ({ matches: false }) };
+  try {
+    Object.defineProperty(globalThis, 'window', { value: windowLike, configurable: true });
+    assert.equal(isDuoUnfoldedState().unfolded, true, 'old cover screen dimensions must not override the reported window');
+    windowLike.innerWidth = 461; windowLike.innerHeight = 678;
+    assert.equal(isDuoUnfoldedState().unfolded, false);
+    windowLike.innerWidth = 951; windowLike.innerHeight = 537;
+    assert.equal(isDuoUnfoldedState().unfolded, true);
+  } finally {
+    if (previous) Object.defineProperty(globalThis, 'window', previous); else delete (globalThis as any).window;
   }
 });
