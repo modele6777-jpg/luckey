@@ -901,6 +901,7 @@ test('Geokguk engine: Zipyeong Jinjeon 10-geok judgment, seong/pa/gueung, determ
   const rFixed2 = calculateGeokguk({ profile, now: fixedNow, question: '내 격국과 적성 알려줘' });
   assert.deepEqual(rFixed1, rFixed2);
   assert(rFixed1.calculatedAtKst?.includes('KST'));
+  assert((rFixed1.ritualAction || '').length > 0 && (rFixed1.reflectionFocus || '').length > 0);
   assert((rFixed1.interpretiveBoundary || '').length > 0);
 
   // 프롬프트 포맷터에 엔진 버전 및 시공간 리듬 포함
@@ -5058,6 +5059,7 @@ test('Gaelic Wheel Four Fire Festivals Engine: calculates fire festival stations
   assert(rep.tuathaDeDanannBlessing >= 0 && rep.tuathaDeDanannBlessing <= 100);
   assert(rep.anamCaraSoulDepth >= 0 && rep.anamCaraSoulDepth <= 100);
   assert(rep.activeStation.nameKo.length > 0);
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatGaelicWheelFireFestivalsPrompt(rep);
   assert(prompt.includes('휠 오브 더 이어 켈트 4대 화제 축제 상징 관점'));
@@ -7520,6 +7522,7 @@ test('Albert Schweitzer Reverence for Life Engine: calculates Reverence for Life
   assert(rep.activeSchweitzerTheme.themeTitleKo.length > 0);
   assert(rep.calculatedAtKst.endsWith('KST'));
   assert(Boolean(rep.schweitzerSynthesisMatrix?.integratedAction));
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatGermanAlbertSchweitzerReverenceForLifePrompt(rep);
   assert(prompt.includes('알베르트 슈바이처 《생명에 대한 경외》 & 《문화와 윤리》 생명외경 지표'));
