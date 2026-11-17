@@ -31,7 +31,7 @@
 
 import { hexagram, Yao, calculateIching } from './iching';
 
-export const ICHING_MASTER_ENGINE_VERSION = 'LUCKEY-ICHING-v2.0.0';
+export const ICHING_MASTER_ENGINE_VERSION = 'LUCKEY-ICHING-v2.1.0';
 
 export const ICHING_MASTER_METHOD =
   '주역(周易) 64괘 정통 이진 비트 수리 산법: 본괘·지괘·호괘·착괘·종괘 4대 대칭 괘상 도출, 체용(體用) 오행 생극제화, 효위(爻位) 6단계 역학, 경방 8궁 세응(世應) 상응도 및 기운 변환 모멘텀 산출';
@@ -127,6 +127,7 @@ export interface IchingMasterResult {
     cautionNotice: string;
   };
   boundaryNotice: string;
+  interpretiveBoundary: string;
   guidance: {
     situationNow: string; // 본괘 조언
     hiddenDynamic: string; // 호괘 조언
@@ -563,6 +564,7 @@ export function calculateIchingMaster(
     temporalIchingRhythm,
     ichingSynthesisMatrix,
     boundaryNotice,
+    interpretiveBoundary: boundaryNotice,
     guidance: {
       situationNow: `본괘는 ${primary.name}으로, 현재 상황의 본질적 기운을 나타냅니다.`,
       hiddenDynamic: `호괘는 ${nuclear.name}으로, 내면에 숨은 잠재력과 중간 전개 과정을 암시합니다.`,

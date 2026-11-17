@@ -25,7 +25,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const INCA_ANDEAN_PACHA_VERSION = '2.0.0';
+export const INCA_ANDEAN_PACHA_VERSION = '2.1.0';
 
 export interface IncaAndeanPachaReport {
   engineVersion: string;
@@ -69,6 +69,7 @@ export interface IncaAndeanPachaReport {
   };
   ayniSpiritualPrescription: string;
   boundaryNotice: string;
+  interpretiveBoundary: string;
 }
 
 function djb2Hash(str: string): number {
@@ -246,6 +247,7 @@ export function calculateIncaAndeanThreePachaAyni(
     pachaSynthesisMatrix,
     ayniSpiritualPrescription,
     boundaryNotice: '본 결과는 안데스 케추아 3계 파차와 아이니 호혜 원리에 따른 정성적 성찰 지표이며, 우열을 가르는 점수나 절대적 예언이 아닙니다.',
+    interpretiveBoundary: '본 결과는 안데스 케추아 3계 파차와 아이니 호혜 원리에 따른 정성적 성찰 지표이며, 우열을 가르는 점수나 절대적 예언이 아닙니다.',
   };
 }
 
