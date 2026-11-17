@@ -8,7 +8,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const BALINESE_TRI_HITA_KARANA_ENGINE_VERSION = 'LUCKEY-BALINESE-TRI-HITA-v2.1.0';
+export const BALINESE_TRI_HITA_KARANA_ENGINE_VERSION = 'LUCKEY-BALINESE-TRI-HITA-v2.2.0';
 
 export interface BalineseSacredSanctuary {
   id: string;
@@ -56,6 +56,8 @@ export interface BalineseTriHitaKaranaReport {
   triHitaSynthesisMatrix: BalineseSynthesisMatrix;
   balineseCosmicGuidance: string;
   tirtaHolyWaterBlessing: string;
+  ritualAction: string;
+  reflectionFocus: string;
   interpretiveBoundary: string;
 }
 
@@ -299,6 +301,8 @@ export function calculateBalineseTriHitaKarana(
     triHitaSynthesisMatrix,
     balineseCosmicGuidance,
     tirtaHolyWaterBlessing,
+    ritualAction: tirtaHolyWaterBlessing,
+    reflectionFocus: `${situationalTriHitaAudit.harmonyAxis}의 관점에서 오늘 생각·말·행동(3업) 중 가장 먼저 맑게 정화할 한 가지는 무엇인가요?`,
     interpretiveBoundary,
   };
 }
