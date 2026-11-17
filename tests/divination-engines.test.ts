@@ -7587,6 +7587,7 @@ test('Voltaire Candide and Tolerance Engine: calculates Cultivate Our Garden Dev
   assert(rep.justiceAdvocacyConscienceScore >= 0 && rep.justiceAdvocacyConscienceScore <= 100);
   assert(rep.realisticDisillusionmentClarityIndex >= 0 && rep.realisticDisillusionmentClarityIndex <= 100);
   assert(rep.activeVoltaireTheme.themeTitleKo.length > 0);
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(rep.calculatedAtKst.endsWith('KST'));
   assert(Boolean(rep.voltaireSynthesisMatrix?.integratedAction));
   const prompt = formatFrenchVoltaireCandideTolerancePrompt(rep);
@@ -7881,6 +7882,7 @@ test('Simone de Beauvoir Ambiguity & Freedom Engine: calculates Self-Creation, E
   assert(rep.situationalAgencyIndex >= 0 && rep.situationalAgencyIndex <= 100);
   assert(rep.existentialCourageResilienceScore >= 0 && rep.existentialCourageResilienceScore <= 100);
   assert(rep.activeBeauvoirTheme.themeTitleKo.length > 0);
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatFrenchSimoneDeBeauvoirAmbiguityFreedomPrompt(rep);
   assert(prompt.includes('시몬 드 보부아르 《애매성의 윤리학》 실존적 자기창조 및 상호자유 관점'));
   assert(prompt.includes(rep.activeBeauvoirTheme.themeTitleKo));
@@ -8264,6 +8266,7 @@ test('Victor Hugo Les Miserables Engine: calculates Mercy, Conscience, and Human
   assert(rep.cosmicJusticeIdealIndex >= 0 && rep.cosmicJusticeIdealIndex <= 100);
   assert(rep.indomitableHeroicResilience >= 0 && rep.indomitableHeroicResilience <= 100);
   assert(rep.activeHugoTheme.themeTitleKo.length > 0);
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(rep.calculatedAtKst.endsWith('KST'));
   assert(Boolean(rep.hugoSynthesisMatrix?.integratedAction));
   assert(rep.interpretiveBoundary.length > 0);

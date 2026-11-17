@@ -8,7 +8,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const FRENCH_SIMONE_DE_BEAUVOIR_AMBIGUITY_FREEDOM_VERSION = 'LUCKEY-BEAUVOIR-AMBIGUITY-FREEDOM-v2.1.0';
+export const FRENCH_SIMONE_DE_BEAUVOIR_AMBIGUITY_FREEDOM_VERSION = 'LUCKEY-BEAUVOIR-AMBIGUITY-FREEDOM-v2.2.0';
 
 export type BeauvoirQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -70,6 +70,8 @@ export interface FrenchSimoneDeBeauvoirAmbiguityFreedomResult {
   questionTopic: BeauvoirQuestionTopic;
   dailyPracticeRitual: string;
   reflectiveQuestion: string;
+  ritualAction: string;
+  reflectionFocus: string;
   interpretiveBoundary: string;
   beauvoirComprehensiveGuidance: {
     guidanceTitle: string;
@@ -363,6 +365,8 @@ export function calculateFrenchSimoneDeBeauvoirAmbiguityFreedom(
     questionTopic,
     dailyPracticeRitual: qualitativePractice.dailyPracticeRitual,
     reflectiveQuestion: qualitativePractice.reflectiveQuestion,
+    ritualAction: qualitativePractice.dailyPracticeRitual,
+    reflectionFocus: qualitativePractice.reflectiveQuestion,
     interpretiveBoundary: qualitativePractice.interpretiveBoundary,
     beauvoirComprehensiveGuidance: {
       guidanceTitle,
