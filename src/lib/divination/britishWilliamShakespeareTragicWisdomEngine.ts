@@ -13,7 +13,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const BRITISH_WILLIAM_SHAKESPEARE_TRAGIC_WISDOM_VERSION = 'LUCKEY-SHAKESPEARE-TRAGIC-WISDOM-v2.0.0';
+export const BRITISH_WILLIAM_SHAKESPEARE_TRAGIC_WISDOM_VERSION = 'LUCKEY-SHAKESPEARE-TRAGIC-WISDOM-v2.1.0';
 
 export type ShakespeareQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -58,6 +58,7 @@ export interface BritishWilliamShakespeareTragicWisdomResult {
   ritualAction: string;
   reflectionFocus: string;
   boundaryNotice: string;
+  interpretiveBoundary: string;
   shakespeareSynthesisMatrix: {
     coreInsight: string;
     recommendedAction: string;
@@ -292,6 +293,7 @@ export function calculateBritishWilliamShakespeareTragicWisdom(
     ritualAction: topicGuidance.ritualAction,
     reflectionFocus: topicGuidance.reflectionFocus,
     boundaryNotice,
+    interpretiveBoundary: boundaryNotice,
     shakespeareSynthesisMatrix,
     shakespeareComprehensiveGuidance: {
       guidanceTitle,

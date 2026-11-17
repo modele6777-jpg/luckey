@@ -7623,7 +7623,7 @@ test('Thomas More Utopia Engine: calculates Communal Conscience, Labor-Leisure B
   assert(rep.visionarySocialReformIndex >= 0 && rep.visionarySocialReformIndex <= 100);
   assert(rep.steadfastMoralCourageResilienceScore >= 0 && rep.steadfastMoralCourageResilienceScore <= 100);
   assert(rep.activeMoreTheme.themeTitleKo.length > 0);
-  assert(rep.practiceGuidance.length > 0 && rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.boundaryNotice.length > 0);
+  assert(rep.practiceGuidance.length > 0 && rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.boundaryNotice.length > 0 && rep.interpretiveBoundary.length > 0);
   const prompt = formatBritishThomasMoreUtopiaPrompt(rep);
   assert(prompt.includes('토머스 모어 《유토피아》 공동체 양심·삶의 균형 및 도덕적 용기 지표'));
   assert(prompt.includes(rep.activeMoreTheme.themeTitleKo));
@@ -8082,6 +8082,7 @@ test('Virginia Woolf Room of One\'s Own Engine: calculates Autonomy, Moments of 
   assert(rep.streamOfConsciousnessFlowIndex >= 0 && rep.streamOfConsciousnessFlowIndex <= 100);
   assert(rep.lighthouseResilienceScore >= 0 && rep.lighthouseResilienceScore <= 100);
   assert(rep.activeWoolfTheme.themeTitleKo.length > 0);
+  assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatBritishVirginiaWoolfRoomOfOnesOwnPrompt(rep);
   assert(prompt.includes('버지니아 울프 《자기만의 방·등대로》 사유의 독립·존재의 순간들 지표'));
   assert(prompt.includes(rep.activeWoolfTheme.themeTitleKo));
@@ -8187,6 +8188,7 @@ test('William Shakespeare Tragic Wisdom Engine: calculates Tragic Depth, Existen
   assert(rep.poeticImmortalityAestheticsIndex >= 0 && rep.poeticImmortalityAestheticsIndex <= 100);
   assert(rep.sereneFortitudeResilienceScore >= 0 && rep.sereneFortitudeResilienceScore <= 100);
   assert(rep.activeShakespeareTheme.themeTitleKo.length > 0);
+  assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatBritishWilliamShakespeareTragicWisdomPrompt(rep);
   assert(prompt.includes('윌리엄 셰익스피어 《햄릿·템페스트》 비극적 통찰·실존적 결단 지표'));
   assert(prompt.includes(rep.activeShakespeareTheme.themeTitleKo));
