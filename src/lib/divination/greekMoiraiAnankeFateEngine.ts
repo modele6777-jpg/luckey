@@ -12,7 +12,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const GREEK_MOIRAI_ANANKE_FATE_ENGINE_VERSION = '2.1.0';
+export const GREEK_MOIRAI_ANANKE_FATE_ENGINE_VERSION = '2.2.0';
 
 export interface MoiraiGoddessAspect {
   name: string;
@@ -36,6 +36,8 @@ export interface GreekMoiraiAnankeFateReport {
   spindleAlignment: string; // 물레 회전 방향 및 영혼의 공명
   kairosTimingGuidance: string; // 카이로스(결정적 시점) 돌파 지침
   mythOfErSoulChoice: string; // 에르의 신화에 따른 영혼의 지혜 처방
+  ritualAction: string;
+  reflectionFocus: string;
   interpretiveBoundary: string;
   situationalMoiraiAudit: {
     questionFocus: string;
@@ -221,6 +223,8 @@ export function calculateGreekMoiraiAnankeFate(options?: {
     spindleAlignment,
     kairosTimingGuidance,
     mythOfErSoulChoice,
+    ritualAction: kairosActionNote,
+    reflectionFocus: moiraiSynthesisMatrix.reflectiveQuestion,
     interpretiveBoundary,
     situationalMoiraiAudit: {
       questionFocus,
@@ -254,5 +258,7 @@ export function formatGreekMoiraiAnankeFatePrompt(rep: GreekMoiraiAnankeFateRepo
 · 에르의 신화 영혼 처방: ${rep.mythOfErSoulChoice}
 · 교차 매트릭스 핵심 지침: ${rep.moiraiSynthesisMatrix.coreMandate}
 · 신성 경계 및 성찰 질문: ${rep.moiraiSynthesisMatrix.sacredBoundary} | "${rep.moiraiSynthesisMatrix.reflectiveQuestion}"
+· 실천 의례: ${rep.ritualAction}
+· 성찰 초점: ${rep.reflectionFocus}
 · 해석 경계: ${rep.interpretiveBoundary}`;
 }
