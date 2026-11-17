@@ -29,7 +29,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const FENG_SHUI_EIGHT_MANSIONS_VERSION = 'LUCKEY-FENG-SHUI-EIGHT-MANSIONS-v2.1.0';
+export const FENG_SHUI_EIGHT_MANSIONS_VERSION = 'LUCKEY-FENG-SHUI-EIGHT-MANSIONS-v2.2.0';
 
 export type TrigramName = '감(坎, 1궁)' | '곤(坤, 2궁)' | '진(震, 3궁)' | '손(巽, 4궁)' | '건(乾, 6궁)' | '태(兌, 7궁)' | '간(艮, 8궁)' | '이(離, 9궁)';
 
@@ -84,6 +84,8 @@ export interface FengShuiEightMansionsReport {
   spatialHarmonyGuidance: string;
   boundaryNotice: string;
   interpretiveBoundary: string;
+  ritualAction: string;
+  reflectionFocus: string;
 }
 
 interface TrigramDirectionTable {
@@ -328,6 +330,11 @@ export function calculateFengShuiEightMansions(
     cautionNotice: `장시간 정면 응시나 침대 머리 방향이 [${inauspiciousDirections.chuehMing}]에 고정되지 않도록만 가볍게 피하십시오.`,
   };
 
+  const ritualAction = fengShuiSynthesisMatrix.recommendedAction;
+  const reflectionFocus = q
+    ? `‘${q}’의 공간 흐름을 열기 위해 오늘 [${auspiciousDirections.shengChi} · ${bedHeadDirection}] 중 가장 먼저 정돈할 자리는 어디입니까?`
+    : `오늘 [${trigramName} · ${mansionGroup}]의 기운 속에서 내 시선과 동선이 [${auspiciousDirections.shengChi}]을 향하도록 바꿀 작은 배치는 무엇입니까?`;
+
   return {
     engineVersion: FENG_SHUI_EIGHT_MANSIONS_VERSION,
     calculatedAt: now.toISOString(),
@@ -345,6 +352,8 @@ export function calculateFengShuiEightMansions(
     spatialHarmonyGuidance,
     boundaryNotice: '본 결과는 동양 팔택명괘(八宅命卦) 방위 원리를 활용한 정성적 공간 배치 참고용이며, 확정적 길흉 판정이 아닙니다.',
     interpretiveBoundary: '본 결과는 동양 팔택명괘(八宅命卦) 방위 원리를 활용한 정성적 공간 배치 참고용이며, 확정적 길흉 판정이 아닙니다.',
+    ritualAction,
+    reflectionFocus,
   };
 }
 

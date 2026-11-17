@@ -22,7 +22,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const FINNISH_KALEVALA_SAMPO_ENGINE_VERSION = '2.2.0';
+export const FINNISH_KALEVALA_SAMPO_ENGINE_VERSION = '2.3.0';
 
 export interface SampoSituationalAudit {
   sampoAxis: string;
@@ -74,6 +74,8 @@ export interface FinnishKalevalaSampoReport {
   forestHealingPractice: string; // 숲의 힐링 처방
   kalevalaWisdom: string;
   interpretiveBoundary: string;
+  ritualAction: string;
+  reflectionFocus: string;
 }
 
 const KALEVALA_RUNOS: KalevalaRuno[] = [
@@ -304,6 +306,12 @@ export function calculateFinnishKalevalaSampo(options?: {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
   const calculatedAtKst = kst.toISOString().replace('T', ' ').substring(0, 19) + ' +09:00 KST';
 
+  const trimmedQuestion = (options?.question || '').trim();
+  const ritualAction = `${forestHealingPractice} · ${situationalSampoAudit.artisanAction}`;
+  const reflectionFocus = trimmedQuestion
+    ? `‘${trimmedQuestion}’을 끝까지 밀고 가는 과정에서 내 안의 [${dominantWing.name}]과 시수(Sisu)가 지치지 않기 위해 지금 내려놓을 부담은 무엇입니까?`
+    : `오늘 삼포의 [${dominantWing.name}]이 빛나는 자리에서, 장인의 손길처럼 묵묵히 한 걸음 더 다듬을 일은 무엇입니까?`;
+
   return {
     engineVersion: FINNISH_KALEVALA_SAMPO_ENGINE_VERSION,
     calculatedAt: now.toISOString(),
@@ -318,6 +326,8 @@ export function calculateFinnishKalevalaSampo(options?: {
     forestHealingPractice,
     kalevalaWisdom,
     interpretiveBoundary: '칼레발라 삼포 3대 날개와 시수(Sisu) 상징을 빌린 정성적 회복탄력 참고 관점이며, 수치 평가나 미래 단정이 아닙니다.',
+    ritualAction,
+    reflectionFocus,
   };
 }
 

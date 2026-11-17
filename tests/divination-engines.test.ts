@@ -3282,6 +3282,7 @@ test('Five Emotions Pulse Engine: calculates five elements emotional harmony and
   assert(rep.temporalPulseRhythm.organMeridianWindow.length > 0);
   assert(rep.pulseSynthesisMatrix.coreInsight.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatFiveEmotionsPulsePrompt(rep);
   assert(prompt.includes('오행 칠정'));
   assert(prompt.includes(rep.dominantEmotion));
@@ -3568,6 +3569,7 @@ test('Feng Shui Eight Mansions Engine: calculates kua number, east/west mansion 
   assert(rep.temporalFengShuiRhythm.sunDirectionWindow.length > 0);
   assert(rep.fengShuiSynthesisMatrix.coreInsight.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatFengShuiEightMansionsPrompt(rep);
   assert(prompt.includes('동양 정통 풍수 8택(八宅) 공간 에너지'));
   assert(prompt.includes(rep.kuaTrigram));
@@ -4063,6 +4065,7 @@ test('Finnish Kalevala Sampo Engine: calculates 3 Sampo wings and Sisu resilienc
   assert(rep.sisuResilienceIndex >= 0 && rep.sisuResilienceIndex <= 100);
   assert(rep.sampoBalance.dominantWing.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatFinnishKalevalaSampoPrompt(rep);
   assert(prompt.includes('고대 핀란드 칼레발라(Kalevala) 삼포(Sampo) & 9대 룬가 실측 데이터'));
   assert(prompt.includes(rep.sampoBalance.dominantWing));

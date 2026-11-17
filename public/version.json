@@ -1,10 +1,10 @@
 {
-  "version": "1.7.780",
-  "builtAt": "2026-11-18T06:13:00+09:00",
-  "summary": "에세네파 14대 천사 교감, 에테르 오라 생체장, 에트루리아 16천궁 아우구르 3대 엔진 실천 의례 및 성찰 질문 표준 연동(v1.7.780)",
+  "version": "1.7.781",
+  "builtAt": "2026-11-18T06:20:00+09:00",
+  "summary": "풍수 8택, 핀란드 칼레발라 삼포, 오행 칠정 맥파 3대 엔진 실천 의례 및 성찰 질문 표준 연동(v1.7.781)",
   "items": [
-    "에세네파 14대 천사 교감 & 영혼 생명나무 조화 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동",
-    "에테르 오라 생체장 & 전자기장 쉴딩 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동",
-    "고대 에트루리아 16천궁 분할 & 아우구르 조점 엔진(v2.3.0): ritualAction·reflectionFocus 표준 필드 연동"
+    "동양 정통 풍수 8택 공간 에너지 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동",
+    "핀란드 칼레발라 삼포 9대 룬가 엔진(v2.3.0): ritualAction·reflectionFocus 표준 필드 연동",
+    "오행 칠정 심신 맥파 & 기혈 조화 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동"
   ]
 }

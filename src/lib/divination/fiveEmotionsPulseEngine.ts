@@ -16,7 +16,7 @@
 import type { UserProfile } from '../sharedState';
 import { calculateDetailedSaju, type SajuAnalysisResult } from '../sajuAnalysis';
 
-export const FIVE_EMOTIONS_PULSE_VERSION = 'LUCKEY-FIVE-EMOTIONS-v2.1.0';
+export const FIVE_EMOTIONS_PULSE_VERSION = 'LUCKEY-FIVE-EMOTIONS-v2.2.0';
 
 export type TraditionalEmotion = '노(怒-분노/추진)' | '희(喜-환희/산만)' | '사(思-사색/번민)' | '비우(悲憂-슬픔/위축)' | '공경(恐驚-공포/불안)';
 
@@ -65,6 +65,8 @@ export interface FiveEmotionsPulseReport {
   };
   boundaryNotice: string;
   interpretiveBoundary: string;
+  ritualAction: string;
+  reflectionFocus: string;
 }
 
 function getTemporalPulseRhythm(now: Date) {
@@ -272,6 +274,11 @@ export function calculateFiveEmotionsPulse(
     cautionNotice: '특정 장부나 감정의 태과·불급을 질병으로 단정하지 말고 일상 리듬을 돌보는 신호로 참고하십시오.',
   };
 
+  const ritualAction = pulseSynthesisMatrix.recommendedAction;
+  const reflectionFocus = q
+    ? `‘${q}’ 속에서 올라오는 [${dominant.emotion}] 기운을 가라앉히고 부족한 [${deficient.element}]을 채우기 위해 지금 바로 쉴 호흡 한 번은 어떤 느낌입니까?`
+    : `오늘 [${dominant.organ}]과 [${deficient.element}]의 균형을 위해 내 몸이 가장 먼저 보내는 작은 신호는 무엇입니까?`;
+
   return {
     engineVersion: FIVE_EMOTIONS_PULSE_VERSION,
     calculatedAt: targetDate.toISOString(),
@@ -294,6 +301,8 @@ export function calculateFiveEmotionsPulse(
     pulseSynthesisMatrix,
     boundaryNotice: '본 결과는 한의학 황제내경의 오행·칠정 상징 이론을 활용한 정성적 심신 성찰 안내이며, 의학적 진단이 아닙니다.',
     interpretiveBoundary: '본 결과는 한의학 황제내경의 오행·칠정 상징 이론을 활용한 정성적 심신 성찰 안내이며, 의학적 진단이 아닙니다.',
+    ritualAction,
+    reflectionFocus,
   };
 }
 
