@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.7.793",
+    "builtAt": "2026-11-18T07:20:00+09:00",
+    "summary": "엘레우시스 비의·에테르 오라·풍수 8택 3대 엔진 성찰 질문 보강 및 카탈로그 뜻 등록(v1.7.793)",
+    "items": [
+      "그리스 엘레우시스 비의(eleusinianMysteriesEngine v2.2.0): +09:00 KST 표기·질문 반응형 reflectiveQuestion 추가·카탈로그 summary 등록",
+      "에테르 오라 바이오필드(ethericAuraBiofieldEngine v2.3.0): 질문 반응형 reflectiveQuestion 추가·프롬프트 연동·카탈로그 summary 등록",
+      "풍수 8택 방위에너지(fengShuiEightMansionsEngine v2.3.0): +09:00 KST 표기·질문 반응형 reflectiveQuestion 추가·카탈로그 summary 등록"
+    ]
+  },
+  {
     "version": "1.7.792",
     "builtAt": "2026-11-18T07:13:00+09:00",
     "summary": "블레즈 파스칼, 폴 리쾨르, 롤랑 바르트 3대 엔진 실천 의례 및 성찰 질문 표준 연동(v1.7.792)",

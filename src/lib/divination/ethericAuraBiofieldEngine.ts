@@ -14,7 +14,7 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const ETHERIC_AURA_VERSION = 'LUCKEY-ETHERIC-AURA-v2.2.0';
+export const ETHERIC_AURA_VERSION = 'LUCKEY-ETHERIC-AURA-v2.3.0';
 
 export interface AuraLayerSpectrum {
   primaryLayerName: string;
@@ -65,6 +65,7 @@ export interface EthericAuraBiofieldReport {
   interpretiveBoundary: string;
   ritualAction: string;
   reflectionFocus: string;
+  reflectiveQuestion: string;
   synthesisPromptGuidance: string;
 }
 
@@ -223,7 +224,12 @@ export function runEthericAuraBiofieldEngine(
   const calculatedAtKst = `${kst.toISOString().slice(0, 19)}+09:00`;
   const interpretiveBoundary = '본 에테르 오라 생체장 리포트는 오행·명상 원형에 기반한 정성적 자기 돌봄 안내이며, 의학적 진단이나 전자기장 측정을 대신하지 않습니다.';
 
-  const synthesisPromptGuidance = `[LUCKEY 에테르 오라 생체장 & 쉴딩 v2.1.0]
+  const ritualAction = `${visualizationShieldRitual} · ${situationalAuraAudit.groundingPrescription}`;
+  const reflectionFocus = question.trim()
+    ? `‘${question.trim()}’ 상황에서 ${vulnerableZone}의 에너지 누수를 막기 위해 오늘 내가 세울 가장 분명한 경계는 무엇입니까?`
+    : `[${primaryColor}] 오라 결계의 ${integrityGrade} 상태에서 오늘 가장 먼저 보호해야 할 나의 감각과 공간은 어디입니까?`;
+
+  const synthesisPromptGuidance = `[LUCKEY 에테르 오라 생체장 & 쉴딩 v2.3.0]
 - 기준 시각(KST): ${calculatedAtKst}
 - 오라 생체장 스펙트럼: [${auraBiofieldTitle}]
   * 주 활성 층위: ${primaryLayerName}
@@ -241,12 +247,8 @@ export function runEthericAuraBiofieldEngine(
   * 시간대 지침: ${temporalAuraRhythm.careDirective}
 - 오라 교차 매트릭스: ${spectrumShieldLink}
 - 오라 보호 확언: "${shieldingAffirmation}"
+- 질문 맞춤 성찰 질문: ${reflectionFocus}
 - 해석 경계: ${interpretiveBoundary}`;
-
-  const ritualAction = `${visualizationShieldRitual} · ${situationalAuraAudit.groundingPrescription}`;
-  const reflectionFocus = question.trim()
-    ? `‘${question.trim()}’ 상황에서 ${vulnerableZone}의 에너지 누수를 막기 위해 오늘 내가 세울 가장 분명한 경계는 무엇입니까?`
-    : `[${primaryColor}] 오라 결계의 ${integrityGrade} 상태에서 오늘 가장 먼저 보호해야 할 나의 감각과 공간은 어디입니까?`;
 
   return {
     engineVersion: ETHERIC_AURA_VERSION,
@@ -272,6 +274,7 @@ export function runEthericAuraBiofieldEngine(
     interpretiveBoundary,
     ritualAction,
     reflectionFocus,
+    reflectiveQuestion: reflectionFocus,
     synthesisPromptGuidance
   };
 }

@@ -29,7 +29,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const FENG_SHUI_EIGHT_MANSIONS_VERSION = 'LUCKEY-FENG-SHUI-EIGHT-MANSIONS-v2.2.0';
+export const FENG_SHUI_EIGHT_MANSIONS_VERSION = 'LUCKEY-FENG-SHUI-EIGHT-MANSIONS-v2.3.0';
 
 export type TrigramName = '감(坎, 1궁)' | '곤(坤, 2궁)' | '진(震, 3궁)' | '손(巽, 4궁)' | '건(乾, 6궁)' | '태(兌, 7궁)' | '간(艮, 8궁)' | '이(離, 9궁)';
 
@@ -86,6 +86,7 @@ export interface FengShuiEightMansionsReport {
   interpretiveBoundary: string;
   ritualAction: string;
   reflectionFocus: string;
+  reflectiveQuestion: string;
 }
 
 interface TrigramDirectionTable {
@@ -222,7 +223,7 @@ function getTemporalFengShuiRhythm(now: Date) {
           : '겨울 · 북방 온기 비축기 (따뜻한 조명과 포근한 배치로 내실을 지키는 시기)';
 
   return {
-    kstTimeLabel: `${y}-${m}-${d} ${hh}:${mm} KST`,
+    kstTimeLabel: `${y}-${m}-${d}T${hh}:${mm}:00+09:00 (KST)`,
     sunDirectionWindow,
     seasonalSpatialTone,
     temporalGuidance: `${sunDirectionWindow} · ${seasonalSpatialTone}의 흐름에 맞추어 머무는 자리의 방향을 가볍게 살피십시오.`,
@@ -354,6 +355,7 @@ export function calculateFengShuiEightMansions(
     interpretiveBoundary: '본 결과는 동양 팔택명괘(八宅命卦) 방위 원리를 활용한 정성적 공간 배치 참고용이며, 확정적 길흉 판정이 아닙니다.',
     ritualAction,
     reflectionFocus,
+    reflectiveQuestion: reflectionFocus,
   };
 }
 
@@ -379,5 +381,6 @@ export function formatFengShuiEightMansionsPrompt(report: FengShuiEightMansionsR
   - 비즈니스 협상 좌석 가이드: ${report.prescription.meetingSeatAdvice}
   - 공간 보완 인테리어: ${report.prescription.remedyColorAndElement}
 - **풍수 공간 조화 나침반**: ${report.spatialHarmonyGuidance}
+- **질문 맞춤 성찰 질문**: ${report.reflectiveQuestion}
 - **해석 경계**: ${report.boundaryNotice}`;
 }

@@ -11095,3 +11095,29 @@ test('Egyptian Amduat v2.4 · Egyptian Sphinx v2.4 · Egyptian 36 Decans v2.4: r
   const decansPrompt = formatEgyptianThirtySixDecansPrompt(decans);
   assert.ok(decansPrompt.includes('+09:00') && decansPrompt.includes('질문 맞춤 성찰 질문') && decansPrompt.includes('해석 경계'));
 });
+
+test('Eleusinian Mysteries v2.2 · Etheric Aura v2.3 · Feng Shui Eight Mansions v2.3: reflectiveQuestion & +09:00 KST prompt output', () => {
+  const now = new Date('2026-11-18T07:20:00+09:00');
+  const query = '지친 기운을 회복하고 일과 휴식의 공간 경계를 새로 세우고 싶어요';
+
+  const eleusis = calculateEleusinianMysteries(profile, { now, question: query });
+  assert.equal(eleusis.engineVersion, ELEUSINIAN_MYSTERIES_VERSION);
+  assert.match(eleusis.temporalEleusinianRhythm.calculatedAtKst, /\+09:00/);
+  assert.ok(eleusis.reflectiveQuestion.includes(query));
+  const eleusisPrompt = formatEleusinianMysteriesPrompt(eleusis);
+  assert.ok(eleusisPrompt.includes('+09:00') && eleusisPrompt.includes('질문 맞춤 성찰 질문') && eleusisPrompt.includes('해석 경계'));
+
+  const aura = calculateEthericAuraBiofield({ profile, targetDate: now, question: query });
+  assert.equal(aura.engineVersion, ETHERIC_AURA_VERSION);
+  assert.match(aura.calculatedAtKst, /\+09:00/);
+  assert.ok(aura.reflectiveQuestion.includes(query));
+  const auraPrompt = formatEthericAuraBiofieldPrompt(aura);
+  assert.ok(auraPrompt.includes('+09:00') && auraPrompt.includes('질문 맞춤 성찰 질문') && auraPrompt.includes('해석 경계'));
+
+  const fengshui = calculateFengShuiEightMansions({ profile, contextText: query, now });
+  assert.equal(fengshui.engineVersion, FENG_SHUI_EIGHT_MANSIONS_VERSION);
+  assert.match(fengshui.calculatedAtKst, /\+09:00/);
+  assert.ok(fengshui.reflectiveQuestion.includes(query));
+  const fengshuiPrompt = formatFengShuiEightMansionsPrompt(fengshui);
+  assert.ok(fengshuiPrompt.includes('+09:00') && fengshuiPrompt.includes('질문 맞춤 성찰 질문') && fengshuiPrompt.includes('해석 경계'));
+});
