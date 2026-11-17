@@ -14,7 +14,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const GERMAN_ALBERT_SCHWEITZER_VERSION = 'LUCKEY-ALBERT-SCHWEITZER-REVERENCE-v2.1.0';
+export const GERMAN_ALBERT_SCHWEITZER_VERSION = 'LUCKEY-ALBERT-SCHWEITZER-REVERENCE-v2.2.0';
 
 export interface SchweitzerTheme {
   themeKey: string;
@@ -53,6 +53,7 @@ export interface GermanAlbertSchweitzerReverenceForLifeResult {
     alignmentState: string;
     integratedAction: string;
   };
+  interpretiveBoundary: string;
 }
 
 export const SCHWEITZER_THEMES: SchweitzerTheme[] = [
@@ -209,6 +210,7 @@ export function calculateGermanAlbertSchweitzerReverenceForLife(
       philosophicalCounsel,
     },
     schweitzerSynthesisMatrix,
+    interpretiveBoundary: '슈바이처의 생명 경외·이타적 봉사 상징을 빌린 정성적 윤리 성찰 관점이며, 수치 평가나 미래 단정이 아닙니다.',
   };
 }
 

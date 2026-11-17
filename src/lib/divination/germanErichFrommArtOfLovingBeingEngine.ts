@@ -14,7 +14,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const GERMAN_ERICH_FROMM_VERSION = 'LUCKEY-ERICH-FROMM-LOVE-BEING-v2.1.0';
+export const GERMAN_ERICH_FROMM_VERSION = 'LUCKEY-ERICH-FROMM-LOVE-BEING-v2.2.0';
 
 export interface FrommTheme {
   themeKey: string;
@@ -53,6 +53,7 @@ export interface GermanErichFrommArtOfLovingBeingResult {
     alignmentState: string;
     integratedAction: string;
   };
+  interpretiveBoundary: string;
 }
 
 export const FROMM_THEMES: FrommTheme[] = [
@@ -209,6 +210,7 @@ export function calculateGermanErichFrommArtOfLovingBeing(
       philosophicalCounsel,
     },
     frommSynthesisMatrix,
+    interpretiveBoundary: '에리히 프롬의 능동적 사랑·존재 양식(Being) 상징을 빌린 정성적 관계 성찰 관점이며, 심리 진단이나 미래 단정이 아닙니다.',
   };
 }
 

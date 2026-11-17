@@ -7282,6 +7282,7 @@ test('Erich Fromm Art of Loving Being Engine: calculates Active Care, Respect & 
   assert(rep.activeFrommTheme.themeTitleKo.length > 0);
   assert(rep.calculatedAtKst.endsWith('KST'));
   assert(Boolean(rep.frommSynthesisMatrix?.integratedAction));
+  assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatGermanErichFrommArtOfLovingBeingPrompt(rep);
   assert(prompt.includes('에리히 프롬 《사랑의 기술》 & 《소유냐 존재냐》 능동적 사랑과 존재 지표'));
   assert(prompt.includes(rep.activeFrommTheme.themeTitleKo));
@@ -7393,6 +7394,7 @@ test('Albert Schweitzer Reverence for Life Engine: calculates Reverence for Life
   assert(rep.activeSchweitzerTheme.themeTitleKo.length > 0);
   assert(rep.calculatedAtKst.endsWith('KST'));
   assert(Boolean(rep.schweitzerSynthesisMatrix?.integratedAction));
+  assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatGermanAlbertSchweitzerReverenceForLifePrompt(rep);
   assert(prompt.includes('알베르트 슈바이처 《생명에 대한 경외》 & 《문화와 윤리》 생명외경 지표'));
   assert(prompt.includes(rep.activeSchweitzerTheme.themeTitleKo));
@@ -7835,6 +7837,7 @@ test('Edmund Husserl Phenomenological Reduction Engine: calculates Epoché Suspe
   assert(rep.activeHusserlTheme.themeTitleKo.length > 0);
   assert(rep.calculatedAtKst.endsWith('KST'));
   assert(Boolean(rep.husserlSynthesisMatrix?.integratedAction));
+  assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatGermanEdmundHusserlPhenomenologicalReductionPrompt(rep);
   assert(prompt.includes('에드문트 후설 《순수현상학의 이념들》 현상학적 환원 및 본질직관 지표'));
   assert(prompt.includes(rep.activeHusserlTheme.themeTitleKo));
