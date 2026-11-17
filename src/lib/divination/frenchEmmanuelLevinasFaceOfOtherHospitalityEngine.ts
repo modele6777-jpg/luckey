@@ -13,7 +13,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const FRENCH_EMMANUEL_LEVINAS_ETHICS_VERSION = 'LUCKEY-EMMANUEL-LEVINAS-ETHICS-v2.1.0';
+export const FRENCH_EMMANUEL_LEVINAS_ETHICS_VERSION = 'LUCKEY-EMMANUEL-LEVINAS-ETHICS-v2.2.0';
 
 export type LevinasQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -57,6 +57,7 @@ export interface FrenchEmmanuelLevinasFaceOfOtherHospitalityResult {
   practiceGuidance: string;
   ritualAction: string;
   reflectionFocus: string;
+  reflectiveQuestion: string;
   boundaryNotice: string;
   interpretiveBoundary: string;
   levinasSynthesisMatrix: {
@@ -270,7 +271,11 @@ export function calculateFrenchEmmanuelLevinasFaceOfOtherHospitality(
   const boundaryNotice = '에마뉘엘 레비나스 윤리 해석은 타자와의 관계·환대·책임의 태도를 돌아보는 상징·성찰 관점이며, 법률·의학 진단이나 확정 예언이 아닙니다.';
   const baseDate = now ?? new Date();
   const kst = new Date(baseDate.getTime() + 9 * 60 * 60 * 1000);
-  const kstTimeLabel = `${temporalLevinasRhythm.kstDateLabel} ${String(kst.getUTCHours()).padStart(2, '0')}:${String(kst.getUTCMinutes()).padStart(2, '0')} KST`;
+  const kstTimeLabel = `${temporalLevinasRhythm.kstDateLabel}T${String(kst.getUTCHours()).padStart(2, '0')}:${String(kst.getUTCMinutes()).padStart(2, '0')}:00+09:00 (KST)`;
+  const qText = (query ?? '').trim();
+  const reflectiveQuestion = qText
+    ? `‘${qText}’ 앞에서 내 계산과 잣대를 내려놓고 상대의 고유한 얼굴(Visage)에 건넬 첫 환대는 무엇입니까?`
+    : topicGuidance.reflectionFocus;
   const levinasSynthesisMatrix = {
     coreInsight: activeLevinasTheme.themeTitleKo,
     recommendedAction: topicGuidance.practiceGuidance,
@@ -291,7 +296,8 @@ export function calculateFrenchEmmanuelLevinasFaceOfOtherHospitality(
     focalLevinasAphorism,
     practiceGuidance: topicGuidance.practiceGuidance,
     ritualAction: topicGuidance.ritualAction,
-    reflectionFocus: topicGuidance.reflectionFocus,
+    reflectionFocus: reflectiveQuestion,
+    reflectiveQuestion,
     boundaryNotice,
     interpretiveBoundary: boundaryNotice,
     levinasSynthesisMatrix,
@@ -315,7 +321,7 @@ export function formatFrenchEmmanuelLevinasFaceOfOtherHospitalityPrompt(
     `- 행동 조언: ${res.activeLevinasTheme.practicalCounsel}`,
     `- 질문 맞춤 실천 가이드: ${res.practiceGuidance}`,
     `- 일상 실천 의례: ${res.ritualAction}`,
-    `- 핵심 성찰 질문: ${res.reflectionFocus}`,
+    `- 질문 맞춤 성찰 질문: ${res.reflectiveQuestion}`,
     `- 교차 매트릭스: 핵심(${res.levinasSynthesisMatrix.coreInsight}) | 실행(${res.levinasSynthesisMatrix.recommendedAction}) | 주의(${res.levinasSynthesisMatrix.cautionNotice})`,
     `- 레비나스 원전 격언: "${res.focalLevinasAphorism.aphorismKo}" (${res.focalLevinasAphorism.aphorismFrench})`,
     `- 원전 출처: [${res.focalLevinasAphorism.sourceContext}]`,

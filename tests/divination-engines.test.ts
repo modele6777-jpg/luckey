@@ -11197,3 +11197,29 @@ test('Destiny Synastry v2.3 · Five Emotions v2.3 · Descartes v2.2: reflectiveQ
   const descartesPrompt = formatFrenchDescartesCogitoPrompt(descartes);
   assert.ok(descartesPrompt.includes('+09:00') && descartesPrompt.includes('질문 맞춤 성찰 질문') && descartesPrompt.includes('해석 경계'));
 });
+
+test('Levinas v2.2 · Bachelard v2.2 · Proust v2.4: reflectiveQuestion & +09:00 KST prompt output', () => {
+  const now = new Date('2026-11-18T08:00:00+09:00');
+  const query = '지친 일상 속에서 내면의 평온과 관계의 온기를 되찾고 싶어요';
+
+  const levinas = calculateFrenchEmmanuelLevinasFaceOfOtherHospitality(profile, query, now);
+  assert.equal(levinas.engineVersion, FRENCH_EMMANUEL_LEVINAS_ETHICS_VERSION);
+  assert.match(levinas.calculatedAtKst, /\+09:00/);
+  assert.ok(levinas.reflectiveQuestion.includes(query));
+  const levinasPrompt = formatFrenchEmmanuelLevinasFaceOfOtherHospitalityPrompt(levinas);
+  assert.ok(levinasPrompt.includes('+09:00') && levinasPrompt.includes('질문 맞춤 성찰 질문') && levinasPrompt.includes('해석 경계'));
+
+  const bachelard = calculateFrenchGastonBachelardPoeticsOfSpace(profile, query, now);
+  assert.equal(bachelard.engineVersion, FRENCH_GASTON_BACHELARD_POETICS_VERSION);
+  assert.match(bachelard.calculatedAtKst, /\+09:00/);
+  assert.ok(bachelard.reflectiveQuestion.includes(query));
+  const bachelardPrompt = formatFrenchGastonBachelardPoeticsOfSpacePrompt(bachelard);
+  assert.ok(bachelardPrompt.includes('+09:00') && bachelardPrompt.includes('질문 맞춤 성찰 질문') && bachelardPrompt.includes('해석 경계'));
+
+  const proust = calculateFrenchMarcelProustLostTimeRegained(profile, query, now);
+  assert.equal(proust.engineVersion, FRENCH_MARCEL_PROUST_LOST_TIME_VERSION);
+  assert.match(proust.calculatedAtKst, /\+09:00/);
+  assert.ok(proust.reflectiveQuestion.includes(query));
+  const proustPrompt = formatFrenchMarcelProustLostTimeRegainedPrompt(proust);
+  assert.ok(proustPrompt.includes('+09:00') && proustPrompt.includes('질문 맞춤 성찰 질문') && proustPrompt.includes('해석 경계'));
+});
