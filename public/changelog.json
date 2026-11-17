@@ -1,12 +1,22 @@
 [
   {
-    "version": "1.7.773",
-    "builtAt": "2026-11-18T05:40:00+09:00",
-    "summary": "운명 공명 에코, 켈트 드루이드 13달나무, 실시간 삼형·육충 트리거 3대 엔진 실천 의례 및 성찰 질문 표준 연동(v1.7.773)",
+    "version": "1.7.774",
+    "builtAt": "2026-11-18T05:43:00+09:00",
+    "summary": "운명 공명 에코, 켈트 드루이드 13달나무, 실시간 삼형·육충 트리거 3대 엔진 실천 의례 및 성찰 질문 표준 연동(v1.7.774)",
     "items": [
       "다차원 운명 공명 에코 & 카르마적 인연 중력 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동",
       "켈트 드루이드 13대 달나무 & 오검 주술 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동",
       "실시간 삼형·육충·파해 동적 트리거 엔진(v2.3.0): ritualAction·reflectionFocus 표준 필드 연동"
+    ]
+  },
+  {
+    "version": "1.7.773",
+    "builtAt": "2026-11-18T05:40:00+09:00",
+    "summary": "비트겐슈타인·아유르베다·아즈텍 토날라마틀 3대 엔진 성찰 질문 및 카탈로그 보강(v1.7.773)",
+    "items": [
+      "비트겐슈타인 언어게임·침묵(austrianWittgensteinLanguageGameSilenceEngine v2.2.0): 질문 반응형 reflectiveQuestion 추가 및 프롬프트 출력 연동",
+      "인도 정통 아유르베다 트리도샤(ayurvedicTridoshaPranaEngine v2.4.0): 질문 반응형 reflectiveQuestion 추가 및 프롬프트 출력 연동",
+      "아즈텍 토날라마틀 성력(aztecTonalamatlSacredCalendarEngine v2.3.0): 질문 반응형 reflectiveQuestion 추가·프롬프트 출력 연동 및 ALL_DCE_ENGINES summary 등록"
     ]
   },
   {

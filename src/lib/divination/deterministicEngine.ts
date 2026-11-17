@@ -4873,7 +4873,7 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'neoConfucianFourSevenLiQi', nameKo: '성리학 사칠이기 거경궁리', icon: '📜', category: 'deep_master', summary: '성리학의 이기지묘(理氣之妙)와 사단칠정론(四端七情論), 거경궁리·주일무적 수양 원리로 감정의 중절과 본연지성의 중심을 비춥니다.' },
   { key: 'etruscanAugurSixteenSky', nameKo: '에트루리아 16천궁 아우구르', icon: '🦅', category: 'deep_master', summary: '에트루리아 16천궁 템플룸과 아우구르 조점(비행조·음성조) 상징으로 결단 시의를 비추는 관점' },
   { key: 'rosicrucianChymicalWedding', nameKo: '로젠크로이츠 화학적 결혼 7일 연금술', icon: '🌹', category: 'deep_master' },
-  { key: 'aztecTonalamatl', nameKo: '아즈텍 토날포왈리 20대 일진 성력', icon: '☀️', category: 'deep_master' },
+  { key: 'aztecTonalamatl', nameKo: '아즈텍 토날포왈리 20대 일진 성력', icon: '☀️', category: 'deep_master', summary: '아즈텍 260일 신성 역법 토날포왈리 20대 일진과 13대 주천신 상징으로 토날리 생명력과 올린(변화)의 방향을 비추는 관점' },
   { key: 'mongolianTengriHiimori', nameKo: '몽골 텡그리즘 풍마 히모리 영혼', icon: '🐎', category: 'deep_master', summary: '몽골 텡그리즘의 영원한 푸른 하늘·에투겐 대지모신과 히모리(바람의 말)·쉴드 영혼의 기백으로 장애를 돌파하는 내면의 힘을 비춥니다.' },
   { key: 'gaelicWheelFireFestivals', nameKo: '게일 4대 화제 축제 휠 오브 더 이어', icon: '🔥', category: 'deep_master', summary: '삼하인·임볼크·벨테인·루나사 4대 화제 축제와 콜리니 역법으로 계절 순환·정화·결실을 비추는 관점' },
   { key: 'norseHavamalEighteenGaldr', nameKo: '하바말 오딘 18대 게알드르 룬 비전', icon: 'ᚱ', category: 'deep_master', summary: '《고에다》 〈하바말〉 오딘의 18대 게알드르 룬 주문으로 치유·수호·결박 해제의 내적 의지를 비추는 관점' },
