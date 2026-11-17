@@ -4,12 +4,12 @@
  * 서기전 3세기 헬레니즘 철학자 에피쿠로스(Epicurus)의 정원(The Garden) 철학 원전 기반.
  * 질문 맥락별 테트라파르마코스 4대 치유약 동적 매칭, KST 정원 리듬, 욕망 3분류 자족 매트릭스를 통합합니다.
  *
- * @version LUCKEY-EPICUREAN-TETRAPHARMAKOS-v2.0.0
+ * @version LUCKEY-EPICUREAN-TETRAPHARMAKOS-v2.3.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const EPICUREAN_TETRAPHARMAKOS_VERSION = 'LUCKEY-EPICUREAN-TETRAPHARMAKOS-v2.2.0';
+export const EPICUREAN_TETRAPHARMAKOS_VERSION = 'LUCKEY-EPICUREAN-TETRAPHARMAKOS-v2.3.0';
 
 export interface EpicureanStage {
   stageLevel: number;
@@ -69,6 +69,8 @@ export interface EpicureanTetrapharmakosResult {
     alignmentState: string;
     integratedAction: string;
   };
+  ritualAction: string;
+  reflectionFocus: string;
   interpretiveBoundary: string;
 }
 
@@ -275,6 +277,8 @@ export function calculateEpicureanTetrapharmakos(
   };
 
   const interpretiveBoundary = '본 리포트는 에피쿠로스 정원 철학의 치유 상징에 기반한 정성적 성찰 안내이며, 의학적·심리적 진단이 아닙니다.';
+  const ritualAction = primaryTetrapharmakosPrinciple.actionableDirective;
+  const reflectionFocus = remedy.reflectionPrompt;
 
   return {
     engineVersion: EPICUREAN_TETRAPHARMAKOS_VERSION,
@@ -296,6 +300,8 @@ export function calculateEpicureanTetrapharmakos(
       autarkeiaDirective,
     },
     epicureanSynthesisMatrix,
+    ritualAction,
+    reflectionFocus,
     interpretiveBoundary,
   };
 }

@@ -8,12 +8,12 @@
  * 4. 우주적 이성 로고스(Logos, DK B1, B2, B101): 끊임없이 변하는 세상 속 변치 않는 지혜의 척도
  * 5. 질문 맥락 기반 변증법적 성찰 + KST 시공간 리듬 연동 다차원 교차 검증
  *
- * @version LUCKEY-HERACLITUS-PANTA-RHEI-v2.0.0
+ * @version LUCKEY-HERACLITUS-PANTA-RHEI-v2.3.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const HERACLITUS_PANTA_RHEI_VERSION = 'LUCKEY-HERACLITUS-PANTA-RHEI-v2.2.0';
+export const HERACLITUS_PANTA_RHEI_VERSION = 'LUCKEY-HERACLITUS-PANTA-RHEI-v2.3.0';
 
 export interface HeraclitusStage {
   stageLevel: number;
@@ -85,6 +85,8 @@ export interface HeraclitusPantaRheiResult {
     alignmentState: string;
     integratedAction: string;
   };
+  ritualAction: string;
+  reflectionFocus: string;
   interpretiveBoundary: string;
 }
 
@@ -304,6 +306,8 @@ export function calculateHeraclitusPantaRhei(
   };
 
   const interpretiveBoundary = '본 리포트는 헤라클레이토스 단편 철학에 기반한 정성적 변화 성찰 안내이며, 확정적 미래 예단이 아닙니다.';
+  const ritualAction = situationalReflection.dialecticShift;
+  const reflectionFocus = situationalReflection.reflectionPrompt;
 
   return {
     engineVersion: HERACLITUS_PANTA_RHEI_VERSION,
@@ -320,6 +324,8 @@ export function calculateHeraclitusPantaRhei(
     temporalFluxContext,
     dialecticPolarityMatrix,
     heraclitusSynthesisMatrix,
+    ritualAction,
+    reflectionFocus,
     interpretiveBoundary,
   };
 }
