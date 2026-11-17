@@ -24,7 +24,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const EGYPTIAN_AMDUAT_VERSION = '2.1.0';
+export const EGYPTIAN_AMDUAT_VERSION = '2.2.0';
 
 export interface AmduatSituationalAudit {
   duatGateFocus: string;
@@ -73,6 +73,7 @@ export interface EgyptianAmduatReport {
   temporalAmduatRhythm: AmduatTemporalRhythm;
   amduatSynthesisMatrix: AmduatSynthesisMatrix;
   amduatHieroglyphicWisdom: string;
+  interpretiveBoundary: string;
   calculatedAtKst: string;
 }
 
@@ -296,7 +297,8 @@ export function calculateEgyptianAmduat(
     situationalAmduatAudit,
     temporalAmduatRhythm,
     amduatSynthesisMatrix,
-    amduatHieroglyphicWisdom
+    amduatHieroglyphicWisdom,
+    interpretiveBoundary: '암두아트의 서 밤의 항해와 케프리 부활 상징을 빌린 정성적 순환 성찰 관점이며, 수치 등급이나 미래 단정이 아닙니다.',
   };
 }
 

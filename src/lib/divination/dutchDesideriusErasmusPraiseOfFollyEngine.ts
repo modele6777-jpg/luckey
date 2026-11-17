@@ -13,7 +13,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const DUTCH_DESIDERIUS_ERASMUS_PRAISE_OF_FOLLY_VERSION = 'LUCKEY-ERASMUS-PRAISE-OF-FOLLY-v2.0.0';
+export const DUTCH_DESIDERIUS_ERASMUS_PRAISE_OF_FOLLY_VERSION = 'LUCKEY-ERASMUS-PRAISE-OF-FOLLY-v2.1.0';
 
 export type ErasmusQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -58,6 +58,7 @@ export interface DutchDesideriusErasmusPraiseOfFollyResult {
   ritualAction: string;
   reflectionFocus: string;
   boundaryNotice: string;
+  interpretiveBoundary: string;
   erasmusSynthesisMatrix: {
     coreInsight: string;
     recommendedAction: string;
@@ -290,6 +291,7 @@ export function calculateDutchDesideriusErasmusPraiseOfFolly(
     ritualAction: topicGuidance.ritualAction,
     reflectionFocus: topicGuidance.reflectionFocus,
     boundaryNotice,
+    interpretiveBoundary: boundaryNotice,
     erasmusSynthesisMatrix,
     erasmusComprehensiveGuidance: {
       guidanceTitle,
