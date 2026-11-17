@@ -18,7 +18,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const DELPHIC_CHILON_VERSION = 'LUCKEY-DELPHIC-CHILON-v2.2.0';
+export const DELPHIC_CHILON_VERSION = 'LUCKEY-DELPHIC-CHILON-v2.3.0';
 
 export interface DelphicSageStage {
   stageLevel: number;
@@ -76,6 +76,7 @@ export interface DelphicChilonResult {
   chilonSynthesisMatrix: ChilonSynthesisMatrix;
   ritualAction: string;
   reflectionFocus: string;
+  reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
 
@@ -239,6 +240,10 @@ export function calculateDelphicChilon(
   const interpretiveBoundary = '스파르타 현인 킬론의 자기성찰(Gnothi Seauton)·중용(Meden Agan) 상징을 빌린 정성적 절제 참고 관점이며, 수치 평가나 확정 예언이 아닙니다.';
   const ritualAction = situationalChilonAudit.laconicPrescription;
   const reflectionFocus = `오늘 내가 넘치지 않게 멈춰야 할 한 가지(Meden Agan)와, 가볍게 장담하지 않고 지킬 약속(Engua)은 무엇일까요?`;
+  const cleanQuestion = question.trim();
+  const reflectiveQuestion = cleanQuestion
+    ? `'${cleanQuestion}' 앞에서 킬론의 '${primaryDelphicMaxim.maximTitleKo}'을 기준 삼는다면, 오늘 지나침을 멈추고 지켜낼 한 가지 절제는 무엇인가요?`
+    : reflectionFocus;
 
   return {
     engineVersion: DELPHIC_CHILON_VERSION,
@@ -256,6 +261,7 @@ export function calculateDelphicChilon(
     chilonSynthesisMatrix,
     ritualAction,
     reflectionFocus,
+    reflectiveQuestion,
     interpretiveBoundary,
   };
 }
@@ -277,5 +283,7 @@ export function formatDelphicChilonPrompt(result: DelphicChilonResult): string {
 - 킬론 교차 매트릭스: ${result.chilonSynthesisMatrix.synthesizedVerdict}
 - 델포이 신전의 불멸의 신탁: 《${result.delphiTempleEpiphany.sanctuarySceneTitle}》
   → 철학적 불멸 지혜: "${result.delphiTempleEpiphany.philosophicWisdom}"
+- 오늘의 작은 의례: ${result.ritualAction}
+- 성찰 질문: ${result.reflectiveQuestion}
 - 해석 경계: ${result.interpretiveBoundary}`;
 }

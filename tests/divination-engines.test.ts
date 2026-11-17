@@ -10694,3 +10694,29 @@ test('SunTzu v2.2 · Yarrow v2.2 · PtahMemphite v2.3: reflectiveQuestion & prom
   const ptPrompt = formatPtahMemphitePrompt(pt);
   assert.ok(ptPrompt.includes('KST') && ptPrompt.includes('성찰 질문') && ptPrompt.includes('해석 경계'));
 });
+
+test('DelphicChilon v2.3 · EleusinianTriptolemos v2.3 · Epicurean v2.4: reflectiveQuestion & prompt output', () => {
+  const now = new Date('2026-11-18T05:00:00+09:00');
+  const query = '조급한 마음을 내려놓고 내실 있는 선택을 하고 싶어요';
+
+  const ch = calculateDelphicChilon(profile, query, now);
+  assert.equal(ch.engineVersion, DELPHIC_CHILON_VERSION);
+  assert.match(ch.calculatedAtKst, /KST/);
+  assert.ok(ch.reflectiveQuestion.includes(query));
+  const chPrompt = formatDelphicChilonPrompt(ch);
+  assert.ok(chPrompt.includes('KST') && chPrompt.includes('성찰 질문') && chPrompt.includes('해석 경계'));
+
+  const tr = calculateEleusinianTriptolemos(profile, query, now);
+  assert.equal(tr.engineVersion, ELEUSINIAN_TRIPTOLEMOS_VERSION);
+  assert.match(tr.calculatedAtKst, /KST/);
+  assert.ok(tr.reflectiveQuestion.includes(query));
+  const trPrompt = formatEleusinianTriptolemosPrompt(tr);
+  assert.ok(trPrompt.includes('KST') && trPrompt.includes('성찰 질문') && trPrompt.includes('해석 경계'));
+
+  const ep = calculateEpicureanTetrapharmakos(profile, query, now);
+  assert.equal(ep.engineVersion, EPICUREAN_TETRAPHARMAKOS_VERSION);
+  assert.match(ep.calculatedAtKst, /KST/);
+  assert.ok(ep.reflectiveQuestion.includes(query));
+  const epPrompt = formatEpicureanTetrapharmakosPrompt(ep);
+  assert.ok(epPrompt.includes('KST') && epPrompt.includes('성찰 질문') && epPrompt.includes('해석 경계'));
+});
