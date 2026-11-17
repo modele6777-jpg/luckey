@@ -13,7 +13,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const BRITISH_THOMAS_MORE_UTOPIA_VERSION = 'LUCKEY-THOMAS-MORE-UTOPIA-v2.1.0';
+export const BRITISH_THOMAS_MORE_UTOPIA_VERSION = 'LUCKEY-THOMAS-MORE-UTOPIA-v2.2.0';
 
 export type MoreQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -57,6 +57,7 @@ export interface BritishThomasMoreUtopiaResult {
   practiceGuidance: string;
   ritualAction: string;
   reflectionFocus: string;
+  reflectiveQuestion: string;
   boundaryNotice: string;
   interpretiveBoundary: string;
   moreSynthesisMatrix: {
@@ -268,7 +269,11 @@ export function calculateBritishThomasMoreUtopia(
   const boundaryNotice = '토머스 모어 유토피아 해석은 노동·여가의 균형과 양심적 성찰을 돕는 상징 관점이며, 미래 예측이나 확정적 판단이 아닙니다.';
   const baseDate = now ?? new Date();
   const kst = new Date(baseDate.getTime() + 9 * 60 * 60 * 1000);
-  const kstTimeLabel = `${temporalMoreRhythm.kstDateLabel} ${String(kst.getUTCHours()).padStart(2, '0')}:${String(kst.getUTCMinutes()).padStart(2, '0')} KST`;
+  const kstTimeLabel = `${temporalMoreRhythm.kstDateLabel} ${String(kst.getUTCHours()).padStart(2, '0')}:${String(kst.getUTCMinutes()).padStart(2, '0')} +09:00 (KST)`;
+  const trimmedQuery = (query ?? '').trim();
+  const reflectiveQuestion = trimmedQuery
+    ? `"${trimmedQuery}"라는 고민 속에서, 일과 여가(Otium)의 균형을 잃지 않고 내면의 양심에 부끄럽지 않게 지킬 수 있는 선택은 무엇인가요?`
+    : topicGuidance.reflectionFocus;
   const moreSynthesisMatrix = {
     coreInsight: activeMoreTheme.themeTitleKo,
     recommendedAction: topicGuidance.practiceGuidance,
@@ -290,6 +295,7 @@ export function calculateBritishThomasMoreUtopia(
     practiceGuidance: topicGuidance.practiceGuidance,
     ritualAction: topicGuidance.ritualAction,
     reflectionFocus: topicGuidance.reflectionFocus,
+    reflectiveQuestion,
     boundaryNotice,
     interpretiveBoundary: boundaryNotice,
     moreSynthesisMatrix,
@@ -314,6 +320,7 @@ export function formatBritishThomasMoreUtopiaPrompt(
     `- 질문 맞춤 실천 가이드: ${res.practiceGuidance}`,
     `- 일상 실천 의례: ${res.ritualAction}`,
     `- 핵심 성찰 질문: ${res.reflectionFocus}`,
+    `- 질문 맞춤 성찰 질문: ${res.reflectiveQuestion}`,
     `- 교차 매트릭스: 핵심(${res.moreSynthesisMatrix.coreInsight}) | 실행(${res.moreSynthesisMatrix.recommendedAction}) | 주의(${res.moreSynthesisMatrix.cautionNotice})`,
     `- 토머스 모어 원전 명언: "${res.focalMoreAphorism.aphorismKo}" (${res.focalMoreAphorism.aphorismLatin})`,
     `- 원전 출처: [${res.focalMoreAphorism.sourceContext}]`,

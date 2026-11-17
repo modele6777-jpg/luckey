@@ -10892,3 +10892,29 @@ test('Bertrand Russell v2.2 · Francis Bacon v2.2 · John Locke v2.2: reflective
   const jlPrompt = formatJohnLockeHumanUnderstandingPrompt(jl);
   assert.ok(jlPrompt.includes('+09:00') && jlPrompt.includes('질문 맞춤 성찰 질문') && jlPrompt.includes('해석 경계'));
 });
+
+test('John Stuart Mill v2.2 · Thomas More v2.2 · Virginia Woolf v2.2: reflectiveQuestion & +09:00 KST prompt output', () => {
+  const now = new Date('2026-11-18T06:10:00+09:00');
+  const query = '타인의 시선을 넘어 나만의 중심과 균형을 지키고 싶어요';
+
+  const mill = calculateJohnStuartMillOnLibertyIndividuality(profile, query, now);
+  assert.equal(mill.engineVersion, BRITISH_JS_MILL_VERSION);
+  assert.match(mill.calculatedAtKst, /\+09:00/);
+  assert.ok(mill.reflectiveQuestion.includes(query));
+  const millPrompt = formatJohnStuartMillOnLibertyIndividualityPrompt(mill);
+  assert.ok(millPrompt.includes('+09:00') && millPrompt.includes('질문 맞춤 성찰 질문') && millPrompt.includes('해석 경계'));
+
+  const more = calculateBritishThomasMoreUtopia(profile, query, now);
+  assert.equal(more.engineVersion, BRITISH_THOMAS_MORE_UTOPIA_VERSION);
+  assert.match(more.calculatedAtKst, /\+09:00/);
+  assert.ok(more.reflectiveQuestion.includes(query));
+  const morePrompt = formatBritishThomasMoreUtopiaPrompt(more);
+  assert.ok(morePrompt.includes('+09:00') && morePrompt.includes('질문 맞춤 성찰 질문') && morePrompt.includes('해석 경계'));
+
+  const woolf = calculateBritishVirginiaWoolfRoomOfOnesOwn(profile, query, now);
+  assert.equal(woolf.engineVersion, BRITISH_VIRGINIA_WOOLF_ROOM_OF_ONES_OWN_VERSION);
+  assert.match(woolf.calculatedAtKst, /\+09:00/);
+  assert.ok(woolf.reflectiveQuestion.includes(query));
+  const woolfPrompt = formatBritishVirginiaWoolfRoomOfOnesOwnPrompt(woolf);
+  assert.ok(woolfPrompt.includes('+09:00') && woolfPrompt.includes('질문 맞춤 성찰 질문') && woolfPrompt.includes('해석 경계'));
+});
