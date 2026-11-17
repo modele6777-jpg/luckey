@@ -11241,3 +11241,30 @@ test('Levinas v2.2 · Bachelard v2.2 · Proust v2.4: reflectiveQuestion & +09:00
   const proustPrompt = formatFrenchMarcelProustLostTimeRegainedPrompt(proust);
   assert.ok(proustPrompt.includes('+09:00') && proustPrompt.includes('질문 맞춤 성찰 질문') && proustPrompt.includes('해석 경계'));
 });
+
+test('게일 4대 화제 축제·영지주의 피스티스 소피아·귀곡자 양두겸 v1.7.808 질문 반응형 성찰 질문·+09:00 KST 회귀 검증', () => {
+  const profile = { basic: { name: '제제', birthdate: '1994-01-24', birthtime: '12:00', gender: 'male' } } as any;
+  const now = new Date('2026-11-18T08:20:00+09:00');
+  const query = '새로운 도전 앞에서 흔들리지 않는 중심과 전략을 세우고 싶어요';
+
+  const gaelic = calculateGaelicWheelFireFestivals(profile, now, query);
+  assert.equal(gaelic.engineVersion, GAELIC_FIRE_FESTIVALS_ENGINE_VERSION);
+  assert.match(gaelic.calculatedAtKst, /\+09:00/);
+  assert.ok(gaelic.reflectiveQuestion.includes(query));
+  const gaelicPrompt = formatGaelicWheelFireFestivalsPrompt(gaelic);
+  assert.ok(gaelicPrompt.includes('+09:00') && gaelicPrompt.includes('질문 맞춤 성찰 질문') && gaelicPrompt.includes('해석 경계'));
+
+  const gnostic = calculateGnosticPistisSophiaPleroma({ profile, question: query, now });
+  assert.equal(gnostic.engineVersion, GNOSTIC_PISTIS_SOPHIA_PLEROMA_ENGINE_VERSION);
+  assert.match(gnostic.calculatedAtKst, /\+09:00/);
+  assert.ok(gnostic.reflectiveQuestion.includes(query));
+  const gnosticPrompt = formatGnosticPistisSophiaPleromaPrompt(gnostic);
+  assert.ok(gnosticPrompt.includes('+09:00') && gnosticPrompt.includes('질문 맞춤 성찰 질문') && gnosticPrompt.includes('해석 경계'));
+
+  const guiguzi = calculateGuiguziLiangtouqian({ profile, contextText: query, referenceDate: now });
+  assert.equal(guiguzi.engineVersion, GUIGUZI_VERSION);
+  assert.match(guiguzi.calculatedAtKst, /\+09:00/);
+  assert.ok(guiguzi.reflectiveQuestion.includes(query));
+  const guiguziPrompt = formatGuiguziLiangtouqianPrompt(guiguzi);
+  assert.ok(guiguziPrompt.includes('+09:00') && guiguziPrompt.includes('질문 맞춤 성찰 질문') && guiguziPrompt.includes('해석 경계'));
+});

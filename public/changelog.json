@@ -1,12 +1,22 @@
 [
   {
-    "version": "1.7.808",
-    "builtAt": "2026-11-18T08:20:00+09:00",
-    "summary": "쇼펜하우어, 헤세 데미안·싯다르타, 아도르노 3대 엔진 실천 의례 및 성찰 질문 표준 연동(v1.7.808)",
+    "version": "1.7.809",
+    "builtAt": "2026-11-18T08:23:00+09:00",
+    "summary": "쇼펜하우어, 헤세 데미안·싯다르타, 아도르노 3대 엔진 실천 의례 및 성찰 질문 표준 연동(v1.7.809)",
     "items": [
       "아서 쇼펜하우어 《의지와 표상》 엔진(v2.3.0): ritualAction·reflectionFocus 표준 필드 연동",
       "헤르만 헤세 《데미안·싯다르타》 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동",
       "테오도어 아도르노 《부정변증법》 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동"
+    ]
+  },
+  {
+    "version": "1.7.808",
+    "builtAt": "2026-11-18T08:22:00+09:00",
+    "summary": "게일 4대 화제·피스티스 소피아·귀곡자 3대 엔진 성찰 질문·+09:00 KST·카탈로그 뜻 보강(v1.7.808)",
+    "items": [
+      "게일 4대 화제 축제(v2.4.0)·영지주의 피스티스 소피아(v2.3.0)·귀곡자 양두겸(v2.2.0): 질문 반응형 reflectiveQuestion 및 프롬프트 연동",
+      "피스티스 소피아·귀곡자: calculatedAtKst +09:00 KST 표준 표기 통일",
+      "deterministicEngine.ts: guiguziLiangtouqian 카탈로그 한 줄 summary 등록"
     ]
   },
   {
