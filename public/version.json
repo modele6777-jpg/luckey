@@ -1,10 +1,10 @@
 {
-  "version": "1.7.747",
-  "builtAt": "2026-11-17T14:20:00+09:00",
-  "summary": "델포이 킬론·엘레우시스 트리프톨레모스·에픽테토스 통제이분법 3대 엔진 실천 의례 및 성찰 질문 표준 연동(v1.7.747)",
+  "version": "1.7.748",
+  "builtAt": "2026-11-17T14:30:00+09:00",
+  "summary": "에피쿠로스 테트라파르마코스·헤라클레이토스 만물유전·플라톤 동굴의 비유 3대 엔진 실천 의례 및 성찰 질문 표준 연동(v1.7.748)",
   "items": [
-    "델포이 킬론 자기성찰·절제 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동",
-    "엘레우시스 트리프톨레모스 3대 율법 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동",
-    "에픽테토스 통제이분법·프로하이레시스 엔진(v2.3.0): ritualAction·reflectionFocus 표준 필드 연동"
+    "에피쿠로스 테트라파르마코스 정원 엔진(v2.3.0): ritualAction·reflectionFocus 표준 필드 연동",
+    "헤라클레이토스 만물유전·로고스 엔진(v2.3.0): ritualAction·reflectionFocus 표준 필드 연동",
+    "플라톤 동굴의 비유·이데아 엔진(v2.3.0): ritualAction·reflectionFocus 표준 필드 연동"
   ]
 }

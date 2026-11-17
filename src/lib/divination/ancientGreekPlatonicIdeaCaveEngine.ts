@@ -8,12 +8,12 @@
  * 4. 4대 추덕(Cardinal Virtues): 지혜(Sophia)·용기(Andreia)·절제(Sophrosyne)·정의(Dikaiosyne)의 조화.
  * 5. 카타바시스(Katabasis): 진리를 본 철인이 다시 동굴로 내려와 공동체를 이끌고 밝히는 실천적 의무.
  *
- * @version LUCKEY-PLATONIC-IDEA-CAVE-v2.0.0
+ * @version LUCKEY-PLATONIC-IDEA-CAVE-v2.3.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const PLATONIC_IDEA_CAVE_VERSION = 'LUCKEY-PLATONIC-IDEA-CAVE-v2.2.0';
+export const PLATONIC_IDEA_CAVE_VERSION = 'LUCKEY-PLATONIC-IDEA-CAVE-v2.3.0';
 
 function getPlatoKstString(now?: Date): string {
   const base = now ?? new Date();
@@ -82,6 +82,8 @@ export interface PlatonicIdeaCaveResult {
   // v2.1.0 순수 정성 실천·성찰·경계
   dailyPracticeRitual: string;
   reflectiveQuestion: string;
+  ritualAction: string;
+  reflectionFocus: string;
   interpretiveBoundary: string;
   platoSynthesisMatrix?: {
     dominantTension: string;
@@ -342,6 +344,8 @@ export function calculatePlatonicIdeaCave(
     },
     dailyPracticeRitual,
     reflectiveQuestion,
+    ritualAction: dailyPracticeRitual,
+    reflectionFocus: reflectiveQuestion,
     interpretiveBoundary,
     platoSynthesisMatrix,
   };

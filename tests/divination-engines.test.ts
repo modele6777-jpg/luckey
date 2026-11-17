@@ -5732,6 +5732,7 @@ test('Ancient Greek Heraclitus Panta Rhei Engine: calculates flux index, Logos h
   assert(rep.situationalReflection.reflectionPrompt.length > 0);
   assert(rep.temporalFluxContext.dayPhaseKo.length > 0);
   assert(rep.dialecticPolarityMatrix.tensionHarmonyRatio >= 0 && rep.dialecticPolarityMatrix.tensionHarmonyRatio <= 100);
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatHeraclitusPantaRheiPrompt(rep);
   assert(prompt.includes('에페소스 헤라클레이토스 만물유전(Panta Rhei)'));
@@ -5803,6 +5804,7 @@ test('Ancient Greek Epicurean Tetrapharmakos Engine: calculates ataraxia tranqui
   assert(rep.philiaGardenFriendshipForce >= 0 && rep.philiaGardenFriendshipForce <= 100);
   assert(rep.katastematicPleasureClarity >= 0 && rep.katastematicPleasureClarity <= 100);
   assert(rep.activeEpicureanStage.stageNameGreek.length > 0);
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatEpicureanTetrapharmakosPrompt(rep);
   assert(prompt.includes('고대 그리스 에피쿠로스 《테트라파르마코스》'));
@@ -5930,6 +5932,7 @@ test('Ancient Greek Platonic Idea Cave Engine: calculates Idea of Good, Cave lib
   assert(rep.cardinalVirtuesHarmonyScore >= 0 && rep.cardinalVirtuesHarmonyScore <= 100);
   assert(rep.dialecticAscentPowerScore >= 0 && rep.dialecticAscentPowerScore <= 100);
   assert(rep.activeAscentStage.stageNameGreek.length > 0);
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatPlatonicIdeaCavePrompt(rep);
   assert(prompt.includes('고대 그리스 플라톤 동굴의 비유 & 이데아 4대 추덕 지표'));
   assert(prompt.includes(rep.activeAscentStage.stageNameKo));
