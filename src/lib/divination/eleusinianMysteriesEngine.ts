@@ -23,7 +23,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const ELEUSINIAN_MYSTERIES_VERSION = 'LUCKEY-ELEUSINIAN-MYSTERIES-v2.1.0';
+export const ELEUSINIAN_MYSTERIES_VERSION = 'LUCKEY-ELEUSINIAN-MYSTERIES-v2.2.0';
 
 export type EleusinianQuestionTheme = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -66,6 +66,7 @@ export interface EleusinianReport {
   practiceGuidance: string;
   ritualAction: string;
   reflectionFocus: string;
+  reflectiveQuestion: string;
   counselNote: string;
   boundaryNotice: string;
   interpretiveBoundary: string;
@@ -229,7 +230,7 @@ export function calculateEleusinianMysteries(
   const kstDate = new Date(now.getTime() + 9 * 60 * 60 * 1000);
   const kstHour = kstDate.getUTCHours();
   const kstMonth = kstDate.getUTCMonth() + 1;
-  const calculatedAtKst = kstDate.toISOString().replace('T', ' ').slice(0, 16) + ' KST';
+  const calculatedAtKst = `${kstDate.toISOString().slice(0, 19)}+09:00 (KST)`;
 
   const telesterionWindow = kstHour >= 5 && kstHour < 10
     ? '일리소스 새벽 정화창 (카타르시스와 맑은 입문)'
@@ -262,6 +263,10 @@ export function calculateEleusinianMysteries(
     initiationDirective: `${activeStation.practicalVirtue} (${sacredSymbol})`,
   };
 
+  const reflectiveQuestion = question
+    ? `‘${question}’ 앞에서 ${themed.reflection}`
+    : themed.reflection;
+
   return {
     engineVersion: ELEUSINIAN_MYSTERIES_VERSION,
     calculatedAt: now.toISOString(),
@@ -277,6 +282,7 @@ export function calculateEleusinianMysteries(
     practiceGuidance: themed.practice,
     ritualAction: themed.ritual,
     reflectionFocus: themed.reflection,
+    reflectiveQuestion,
     counselNote: `[엘레우시스 입사의례 성찰] ${currentGrade.gradeTitle} · ${activeStation.stationName} — ${themed.practice}`,
     boundaryNotice: '고대 엘레우시스 신비전의 순환·재생 상징을 빌려 온 정성적 성찰 관점이며, 확정적 예언이나 의학적·재정적 처방이 아닙니다.',
     interpretiveBoundary: '고대 엘레우시스 신비전의 순환·재생 상징을 빌려 온 정성적 성찰 관점이며, 확정적 예언이나 의학적·재정적 처방이 아닙니다.',
@@ -302,6 +308,7 @@ export function formatEleusinianMysteriesPrompt(report: EleusinianReport): strin
 - 맥락별 실천 조언: ${report.practiceGuidance}
 - 일상 의례: ${report.ritualAction}
 - 성찰 질문: ${report.reflectionFocus}
+- 질문 맞춤 성찰 질문: ${report.reflectiveQuestion}
 - 엘레우시스 성소 신탁: "${report.oracleMessage}"
 - 해석 경계: ${report.boundaryNotice}`;
 }
