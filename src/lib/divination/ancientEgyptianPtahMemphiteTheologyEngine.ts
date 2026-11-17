@@ -15,7 +15,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const PTAH_MEMPHITE_VERSION = 'LUCKEY-PTAH-MEMPHITE-v2.2.0';
+export const PTAH_MEMPHITE_VERSION = 'LUCKEY-PTAH-MEMPHITE-v2.3.0';
 
 export interface PtahCreationStage {
   stageLevel: number;
@@ -73,6 +73,7 @@ export interface PtahMemphiteResult {
   ptahSynthesisMatrix: PtahSynthesisMatrix;
   ritualAction: string;
   reflectionFocus: string;
+  reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
 
@@ -235,6 +236,10 @@ export function calculatePtahMemphite(
   const interpretiveBoundary = '샤바카 석비의 심장 구상(Ib)과 말씀 선포(Hu) 상징을 빌린 정성적 창조 성찰 관점이며, 개인 능력 점수나 미래 단정이 아닙니다.';
   const ritualAction = situationalPtahAudit.craftsmanPrescription;
   const reflectionFocus = `지금 심장(Ib)에 품은 핵심 의도를 오늘 혀(Hu)의 한 문장 약속으로 선포하고 현실로 옮긴다면 무엇부터 시작할까요?`;
+  const cleanQuestion = question.trim();
+  const reflectiveQuestion = cleanQuestion
+    ? `'${cleanQuestion}'에 대해 '${activeCreationStage.stageNameKo}'의 자리에서 '${primaryMemphiteVirtue.virtueNameKo}'을 실천한다면, 오늘 심장(Ib)에서 혀(Hu)로 옮겨 선포할 단 하나의 약속은 무엇인가요?`
+    : reflectionFocus;
 
   return {
     engineVersion: PTAH_MEMPHITE_VERSION,
@@ -252,6 +257,7 @@ export function calculatePtahMemphite(
     ptahSynthesisMatrix,
     ritualAction,
     reflectionFocus,
+    reflectiveQuestion,
     interpretiveBoundary,
   };
 }
@@ -273,5 +279,7 @@ export function formatPtahMemphitePrompt(result: PtahMemphiteResult): string {
 - 프타 교차 매트릭스: ${result.ptahSynthesisMatrix.synthesizedVerdict}
 - 샤바카 석비의 불멸의 비전: 《${result.memphiteEpiphany.stoneSceneTitle}》
   → 영원한 지혜: "${result.memphiteEpiphany.eternalWisdom}"
+- 오늘의 작은 의례: ${result.ritualAction}
+- 성찰 질문: ${result.reflectiveQuestion}
 - 해석 경계: ${result.interpretiveBoundary}`;
 }
