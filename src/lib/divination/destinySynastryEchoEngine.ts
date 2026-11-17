@@ -16,7 +16,7 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const DESTINY_SYNASTRY_ECHO_VERSION = 'LUCKEY-ECHO-v2.2.0';
+export const DESTINY_SYNASTRY_ECHO_VERSION = 'LUCKEY-ECHO-v2.3.0';
 
 export type KarmicGravityType = 
   | '카르마 거울형 (Karmic Mirror · 자아 투사와 결핍 치유)'
@@ -61,6 +61,7 @@ export interface DestinySynastryEchoReport {
   interpretiveBoundary: string;
   ritualAction: string;
   reflectionFocus: string;
+  reflectiveQuestion: string;
   synthesisPromptGuidance: string;
 }
 
@@ -93,7 +94,7 @@ function getTemporalEchoRhythm(now: Date) {
           : '겨울 · 영혼 심화절 (조용한 신뢰와 내면의 성숙을 다지는 시기)';
 
   return {
-    kstTimeLabel: `${y}-${m}-${d} ${hh}:${mm} KST`,
+    kstTimeLabel: `${y}-${m}-${d}T${hh}:${mm}:00+09:00 (KST)`,
     resonanceWindow,
     seasonalEchoTone,
     temporalGuidance: `${resonanceWindow} · ${seasonalEchoTone}의 결에 맞추어 관계를 조율하십시오.`,
@@ -187,7 +188,7 @@ export function runDestinySynastryEchoEngine(
     ? `‘${q}’ 관계 국면에서 내가 먼저 내려놓을 무의식적 투사(${blindspotVulnerability})와 건넬 말(${deescalationPhrase})은 무엇입니까?`
     : `[${gravityType}] 인연의 흐름 속에서 오늘 나의 경계와 진심을 조율할 첫 실천은 무엇입니까?`;
 
-  const synthesisPromptGuidance = `[LUCKEY 다차원 운명 공명 에코 & 카르마적 인연 중력 v2.0.0]
+  const synthesisPromptGuidance = `[LUCKEY 다차원 운명 공명 에코 & 카르마적 인연 중력 ${DESTINY_SYNASTRY_ECHO_VERSION}]
 - 연산 시각: ${temporalEchoRhythm.kstTimeLabel}
 - 인연 중력 아키타입: [${gravityType}]
 - 공명 기조: ${echoTone} / 연결 깊이 기조: ${depthTone}
@@ -201,6 +202,7 @@ export function runDestinySynastryEchoEngine(
 - 질문 맥락 감사 (${situationalEchoAudit.focusTheme}): ${situationalEchoAudit.tacticalStep}
 - KST 시공간 리듬: ${temporalEchoRhythm.resonanceWindow} / ${temporalEchoRhythm.seasonalEchoTone}
 - 교차 매트릭스: 핵심(${echoSynthesisMatrix.coreInsight}) | 실행(${echoSynthesisMatrix.recommendedAction}) | 주의(${echoSynthesisMatrix.cautionNotice})
+- 질문 맞춤 성찰 질문: ${reflectionFocus}
 - 해석 경계: ${boundaryNotice}`;
 
   return {
@@ -227,6 +229,7 @@ export function runDestinySynastryEchoEngine(
     interpretiveBoundary: boundaryNotice,
     ritualAction,
     reflectionFocus,
+    reflectiveQuestion: reflectionFocus,
     synthesisPromptGuidance
   };
 }
