@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.7.811",
+    "builtAt": "2026-11-18T08:32:00+09:00",
+    "summary": "헬레니즘 랏·카이발리온·포이만드레스 3대 엔진 성찰 질문·+09:00 KST·카탈로그 뜻 보강(v1.7.811)",
+    "items": [
+      "헬레니즘 아라빅 랏(v2.2.0)·헤르메스 카이발리온(v2.3.0)·포이만드레스(v2.3.0): 질문 반응형 reflectiveQuestion 및 프롬프트 연동",
+      "3대 엔진 모두 calculatedAtKst +09:00 KST 표준 표기 통일",
+      "deterministicEngine.ts: hellenisticLots 카탈로그 한 줄 summary 등록"
+    ]
+  },
+  {
     "version": "1.7.810",
     "builtAt": "2026-11-17T23:29:08.375075+00:00",
     "summary": "펼침→접힘 상태 갱신 통합 및 열린 팝업 소유 화면 유지",

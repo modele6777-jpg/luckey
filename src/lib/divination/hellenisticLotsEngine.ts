@@ -21,7 +21,7 @@ import type { UserProfile } from '../sharedState';
 import { parseBirthTime } from '../birthDateTime';
 import { resolveEffectiveSolarDate } from '../lunarCalendar';
 
-export const HELLENISTIC_LOTS_ENGINE_VERSION = 'LUCKEY-HELLENISTIC-LOTS-v2.1.0';
+export const HELLENISTIC_LOTS_ENGINE_VERSION = 'LUCKEY-HELLENISTIC-LOTS-v2.2.0';
 
 export interface ArabicLotInfo {
   nameKo: string;
@@ -67,6 +67,7 @@ export interface HellenisticLotsReport {
     cautionNotice: string;
   };
   cosmicAdvice: string;
+  reflectiveQuestion: string;
   boundaryNotice: string;
   interpretiveBoundary: string;
 }
@@ -110,7 +111,7 @@ function formatLotsKst(date: Date): { label: string; hour: number; day: number }
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
   return {
-    label: `${y}-${m}-${d} ${hh}:${mm} KST`,
+    label: `${y}-${m}-${d} ${hh}:${mm}:00 +09:00 KST`,
     hour: kst.getUTCHours(),
     day: kst.getUTCDate(),
   };
@@ -312,6 +313,9 @@ export function calculateHellenisticLots(params: {
     temporalLotsRhythm,
     lotsSynthesisMatrix,
     cosmicAdvice,
+    reflectiveQuestion: params.question?.trim()
+      ? `"${params.question.trim()}"의 국면에서 ${situationalLotsAudit.activeLotKey}의 시선을 따라 오늘 가장 먼저 실행하거나 내려놓을 한 가지는 무엇입니까?`
+      : `${dominantLot}의 흐름 위에서 오늘 현실의 그릇(포르투나)과 의지(스피릿)를 맞물릴 한 걸음은 무엇입니까?`,
     boundaryNotice: '본 결과는 헬레니즘 점성술 4대 아라빅 랏과 섹트 원리에 따른 정성적 상징 해석이며, 확정적 길흉 판정이 아닙니다.',
     interpretiveBoundary: '본 결과는 헬레니즘 점성술 4대 아라빅 랏과 섹트 원리에 따른 정성적 상징 해석이며, 확정적 길흉 판정이 아닙니다.',
   };
@@ -356,6 +360,7 @@ export function formatHellenisticLotsPrompt(report: HellenisticLotsReport): stri
 
 ★ 조디악 릴리싱 핵심 전언:
 "${report.cosmicAdvice}"
+- 질문 맞춤 성찰 질문: ${report.reflectiveQuestion}
 - 해석 경계: ${report.boundaryNotice}
 ======================================================================`;
 }
