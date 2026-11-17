@@ -16,7 +16,7 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const DESTINY_SYNASTRY_ECHO_VERSION = 'LUCKEY-ECHO-v2.1.0';
+export const DESTINY_SYNASTRY_ECHO_VERSION = 'LUCKEY-ECHO-v2.2.0';
 
 export type KarmicGravityType = 
   | '카르마 거울형 (Karmic Mirror · 자아 투사와 결핍 치유)'
@@ -59,6 +59,8 @@ export interface DestinySynastryEchoReport {
   };
   boundaryNotice: string;
   interpretiveBoundary: string;
+  ritualAction: string;
+  reflectionFocus: string;
   synthesisPromptGuidance: string;
 }
 
@@ -180,6 +182,10 @@ export function runDestinySynastryEchoEngine(
     cautionNotice: blindspotVulnerability,
   };
   const boundaryNotice = '본 결과는 사주·시나스트리 상징에 기반한 정성적 관계 성찰 가이드이며, 상대방의 감정이나 미래를 단정하지 않습니다.';
+  const ritualAction = `${situationalEchoAudit.tacticalStep} · ${optimalEngagementPace}`;
+  const reflectionFocus = q
+    ? `‘${q}’ 관계 국면에서 내가 먼저 내려놓을 무의식적 투사(${blindspotVulnerability})와 건넬 말(${deescalationPhrase})은 무엇입니까?`
+    : `[${gravityType}] 인연의 흐름 속에서 오늘 나의 경계와 진심을 조율할 첫 실천은 무엇입니까?`;
 
   const synthesisPromptGuidance = `[LUCKEY 다차원 운명 공명 에코 & 카르마적 인연 중력 v2.0.0]
 - 연산 시각: ${temporalEchoRhythm.kstTimeLabel}
@@ -219,6 +225,8 @@ export function runDestinySynastryEchoEngine(
     echoSynthesisMatrix,
     boundaryNotice,
     interpretiveBoundary: boundaryNotice,
+    ritualAction,
+    reflectionFocus,
     synthesisPromptGuidance
   };
 }
