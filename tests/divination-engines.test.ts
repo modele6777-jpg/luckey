@@ -10723,3 +10723,29 @@ test('DelphicChilon v2.3 · EleusinianTriptolemos v2.3 · Epicurean v2.4: reflec
   const epPrompt = formatEpicureanTetrapharmakosPrompt(ep);
   assert.ok(epPrompt.includes('KST') && epPrompt.includes('성찰 질문') && epPrompt.includes('해석 경계'));
 });
+
+test('Heraclitus v2.4 · Plotinus v2.2 · AmeshaSpentas v2.3: reflectiveQuestion & KST prompt output', () => {
+  const now = new Date('2026-11-18T05:10:00+09:00');
+  const query = '변화의 갈림길에서 흔들리지 않는 중심을 세우고 싶어요';
+
+  const he = calculateHeraclitusPantaRhei(profile, query, now);
+  assert.equal(he.engineVersion, HERACLITUS_PANTA_RHEI_VERSION);
+  assert.match(he.calculatedAtKst, /\+09:00 \(KST\)/);
+  assert.ok(he.reflectiveQuestion.includes(query));
+  const hePrompt = formatHeraclitusPantaRheiPrompt(he);
+  assert.ok(hePrompt.includes('KST') && hePrompt.includes('성찰 질문') && hePrompt.includes('해석 경계'));
+
+  const pl = calculateAncientGreekPlotinusEnneadsHenosis(profile, now, query);
+  assert.equal(pl.engineVersion, ANCIENT_GREEK_PLOTINUS_VERSION);
+  assert.match(pl.calculatedAtKst, /\+09:00 \(KST\)/);
+  assert.ok(pl.reflectiveQuestion.includes(query));
+  const plPrompt = formatAncientGreekPlotinusEnneadsHenosisPrompt(pl);
+  assert.ok(plPrompt.includes('KST') && plPrompt.includes('성찰 질문') && plPrompt.includes('해석 경계'));
+
+  const am = calculateZoroastrianAmeshaSpentas(profile, query, now);
+  assert.equal(am.engineVersion, ZOROASTRIAN_AMESHA_SPENTAS_VERSION);
+  assert.match(am.calculatedAtKst, /\+09:00 KST/);
+  assert.ok(am.reflectiveQuestion.includes(query));
+  const amPrompt = formatZoroastrianAmeshaSpentasPrompt(am);
+  assert.ok(amPrompt.includes('KST') && amPrompt.includes('성찰 질문') && amPrompt.includes('해석 경계'));
+});

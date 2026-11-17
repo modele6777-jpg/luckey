@@ -1,12 +1,22 @@
 [
   {
-    "version": "1.7.767",
-    "builtAt": "2026-11-18T05:10:00+09:00",
-    "summary": "마의상법 12궁 관상, 맹자 사단사덕·호연지기, 왕양명 치양지·지행합일 3대 엔진 실천 의례 및 성찰 질문 표준 연동(v1.7.767)",
+    "version": "1.7.768",
+    "builtAt": "2026-11-18T05:13:00+09:00",
+    "summary": "마의상법 12궁 관상, 맹자 사단사덕·호연지기, 왕양명 치양지·지행합일 3대 엔진 실천 의례 및 성찰 질문 표준 연동(v1.7.768)",
     "items": [
       "마의상법 12궁 관상 & 심상합일 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동",
       "맹자 사단사덕 & 호연지기 양기 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동",
       "왕양명 전습록 치양지 & 지행합일 심학 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동"
+    ]
+  },
+  {
+    "version": "1.7.767",
+    "builtAt": "2026-11-18T05:10:00+09:00",
+    "summary": "헤라클레이토스·플로티노스·아메샤 스펜타 3대 엔진 성찰 질문 및 KST 표준화(v1.7.767)",
+    "items": [
+      "헤라클레이토스 만물유전 & 로고스(ancientGreekHeraclitusPantaRheiLogosEngine v2.4.0): 질문 반응형 reflectiveQuestion 추가 및 KST 표기 통일",
+      "플로티노스 엔네아데스 & 헤노시스(ancientGreekPlotinusEnneadsHenosisEngine v2.2.0): 질문 반응형 reflectiveQuestion 추가 및 KST 기준 시각 표준화",
+      "조로아스터교 아메샤 스펜타(ancientPersianZoroastrianAmeshaSpentasEngine v2.3.0): 질문 반응형 reflectiveQuestion 추가 및 프롬프트 출력 연동"
     ]
   },
   {

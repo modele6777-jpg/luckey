@@ -8,12 +8,12 @@
  * 4. 우주적 이성 로고스(Logos, DK B1, B2, B101): 끊임없이 변하는 세상 속 변치 않는 지혜의 척도
  * 5. 질문 맥락 기반 변증법적 성찰 + KST 시공간 리듬 연동 다차원 교차 검증
  *
- * @version LUCKEY-HERACLITUS-PANTA-RHEI-v2.3.0
+ * @version LUCKEY-HERACLITUS-PANTA-RHEI-v2.4.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const HERACLITUS_PANTA_RHEI_VERSION = 'LUCKEY-HERACLITUS-PANTA-RHEI-v2.3.0';
+export const HERACLITUS_PANTA_RHEI_VERSION = 'LUCKEY-HERACLITUS-PANTA-RHEI-v2.4.0';
 
 export interface HeraclitusStage {
   stageLevel: number;
@@ -87,6 +87,7 @@ export interface HeraclitusPantaRheiResult {
   };
   ritualAction: string;
   reflectionFocus: string;
+  reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
 
@@ -171,7 +172,7 @@ function getKstDate(now?: Date): Date {
 }
 
 function getKstDateString(now?: Date): string {
-  return `${getKstDate(now).toISOString().slice(0, 19)}+09:00`;
+  return `${getKstDate(now).toISOString().slice(0, 19)}+09:00 (KST)`;
 }
 
 function describeLogosHarmonyStage(ratio: number): string {
@@ -308,6 +309,9 @@ export function calculateHeraclitusPantaRhei(
   const interpretiveBoundary = '본 리포트는 헤라클레이토스 단편 철학에 기반한 정성적 변화 성찰 안내이며, 확정적 미래 예단이 아닙니다.';
   const ritualAction = situationalReflection.dialecticShift;
   const reflectionFocus = situationalReflection.reflectionPrompt;
+  const reflectiveQuestion = trimmedQ
+    ? `지금 "${trimmedQ}"의 흐름 앞에서, ${situationalReflection.reflectionPrompt}`
+    : situationalReflection.reflectionPrompt;
 
   return {
     engineVersion: HERACLITUS_PANTA_RHEI_VERSION,
@@ -326,6 +330,7 @@ export function calculateHeraclitusPantaRhei(
     heraclitusSynthesisMatrix,
     ritualAction,
     reflectionFocus,
+    reflectiveQuestion,
     interpretiveBoundary,
   };
 }
@@ -352,5 +357,6 @@ export function formatHeraclitusPantaRheiPrompt(result: HeraclitusPantaRheiResul
   → 실천 지침: ${result.primaryDialecticWisdom.actionableDirective}
 - 로고스의 우주적 계시: 《${result.logosCosmicInsight.insightTitle}》
   → 철학적 조언: "${result.logosCosmicInsight.philosophicalCounsel}"
+- 성찰 질문: ${result.reflectiveQuestion}
 - 해석 경계: ${result.interpretiveBoundary}${matrixLine}`;
 }
