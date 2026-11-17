@@ -10,7 +10,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const SUMERIAN_INANNA_UNDERWORLD_DESCENT_ENGINE_VERSION = '2.0.0';
+export const SUMERIAN_INANNA_UNDERWORLD_DESCENT_ENGINE_VERSION = '2.1.0';
 
 export type InannaQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 export type InannaDescentPhase = 'THRESHOLD_DESCENT' | 'ZERO_POINT_SUSPENSION' | 'ENKI_REVIVAL';
@@ -48,6 +48,7 @@ export interface SumerianInannaUnderworldDescentReport {
     alignmentState: string;
     integratedAction: string;
   };
+  interpretiveBoundary: string;
 }
 
 function formatInannaKstTimestamp(now: Date = new Date()): string {
@@ -242,6 +243,7 @@ export function calculateSumerianInannaUnderworldDescent(
     inannaResurrectionGuidance,
     enkiLifeRestorationRitual,
     inannaSynthesisMatrix,
+    interpretiveBoundary: boundaryNotice,
   };
 }
 

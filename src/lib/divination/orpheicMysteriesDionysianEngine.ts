@@ -6,7 +6,7 @@
  * 상징적 균형을 통해 현대인의 자기 인식과 정서적 회복을 비추는 정성적 성찰 도구입니다.
  */
 
-export const ORPHEIC_MYSTERIES_ENGINE_VERSION = 'LUCKEY-ORPHEIC-MYSTERIES-v2.0.0';
+export const ORPHEIC_MYSTERIES_ENGINE_VERSION = 'LUCKEY-ORPHEIC-MYSTERIES-v2.1.0';
 
 export type OrphicQuestionTheme = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -36,6 +36,7 @@ export interface OrphicMysteriesReport {
     alignmentState: string;
     integratedAction: string;
   };
+  interpretiveBoundary: string;
 }
 
 function formatOrphicKstTimestamp(now: Date = new Date()): string {
@@ -179,6 +180,7 @@ export function calculateOrpheicMysteries(params: {
     counselNote: themeContent.counselNote,
     boundaryNotice,
     orphicSynthesisMatrix,
+    interpretiveBoundary: boundaryNotice,
   };
 }
 

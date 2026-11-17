@@ -9,12 +9,12 @@
  * 5. 아모르 파티(Amor Fati, Book IV.23, V.20): 장애물이 곧 길이 되며 모든 운명을 덕(Arete)으로 전환함
  * 6. 질문 기반 통제 이분법(Dichotomy of Control) + 로마 황제 일과(아침 예행연습·저녁 성찰) 연동
  *
- * @version LUCKEY-AURELIUS-INNER-CITADEL-v2.0.0
+ * @version LUCKEY-AURELIUS-INNER-CITADEL-v2.3.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const AURELIUS_INNER_CITADEL_VERSION = 'LUCKEY-AURELIUS-INNER-CITADEL-v2.2.0';
+export const AURELIUS_INNER_CITADEL_VERSION = 'LUCKEY-AURELIUS-INNER-CITADEL-v2.3.0';
 
 export interface AureliusStage {
   stageLevel: number;
@@ -84,6 +84,7 @@ export interface AureliusInnerCitadelResult {
     alignmentState: string;
     integratedAction: string;
   };
+  interpretiveBoundary: string;
 }
 
 export type AureliusInnerCitadelReport = AureliusInnerCitadelResult;
@@ -297,6 +298,7 @@ export function calculateAureliusInnerCitadel(
     dailyStoicPractice,
     citadelResilienceMatrix,
     aureliusSynthesisMatrix,
+    interpretiveBoundary: '본 리포트는 마르쿠스 아우렐리우스 《명상록》의 스토아 자기 성찰 원리에 기반한 정성적 안내이며, 확정적 예단이 아닙니다.',
   };
 }
 
