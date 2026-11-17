@@ -1,3 +1,4 @@
+import { nativeImpact } from '../native/runtime';
 /**
  * =========================================================================
  * 타로 카드 드로우 & 뒤집힘 전용 화면 미세 진동 및 햅틱 효과 유틸리티
@@ -15,6 +16,8 @@ export interface TarotVibrationOptions {
 
 export function triggerTarotScreenVibration(options?: TarotVibrationOptions): void {
   if (typeof window === 'undefined') return;
+
+  if (nativeImpact(options?.intensity)) return;
 
   // 1. 디바이스 물리 진동 햅틱 (Web Vibration API - 경량 단일 펄스)
   try {

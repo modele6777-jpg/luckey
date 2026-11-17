@@ -135,5 +135,10 @@
       "source": "/((?!api(?:/|$)|robots\\.txt$|sitemap\\.xml$|favicon\\.ico$|favicon\\.png$|health$).*)",
       "destination": "/index.html"
     }
-  ]
+  ],
+  "git": {
+    "deploymentEnabled": {
+      "feat/capacitor-ios-codemagic": false
+    }
+  }
 }

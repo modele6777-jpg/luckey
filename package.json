@@ -1,7 +1,7 @@
 {
   "name": "luckey",
   "private": true,
-  "version": "1.7.749",
+  "version": "1.7.750",
   "engines": {
     "node": ">=20.0.0"
   },
@@ -24,10 +24,20 @@
     "test:sync-vault": "tsx --test tests/server-vault-sync.test.ts",
     "test:tarot-energy-summary": "tsx --test tests/tarot-energy-summary.test.ts",
     "test:tts-highlight": "tsx --test tests/tts-highlight-match.test.ts",
-    "test:cloudflare": "tsx --test tests/cloudflare-worker.test.ts"
+    "test:cloudflare": "tsx --test tests/cloudflare-worker.test.ts",
+    "build:native": "vite build --mode native",
+    "ios:sync": "npm run build:native && cap sync ios",
+    "ios:open": "cap open ios",
+    "ios:assets": "capacitor-assets generate --ios --assetPath resources --iconBackgroundColor \"#ffffff\" --iconBackgroundColorDark \"#ffffff\" --splashBackgroundColor \"#ffffff\" --splashBackgroundColorDark \"#ffffff\"",
+    "test:native": "tsx --test tests/native-runtime.test.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.91.1",
+    "@capacitor/core": "^8.6.2",
+    "@capacitor/haptics": "^8.0.2",
+    "@capacitor/ios": "^8.6.2",
+    "@capacitor/splash-screen": "^8.0.2",
+    "@capacitor/status-bar": "^8.0.4",
     "@google/genai": "^1.29.0",
     "@google/generative-ai": "^0.24.1",
     "@modelcontextprotocol/sdk": "^1.32.2",
@@ -81,6 +91,8 @@
     "zod": "^4.6.7"
   },
   "devDependencies": {
+    "@capacitor/assets": "^4.0.0",
+    "@capacitor/cli": "^8.6.2",
     "@firebase/eslint-plugin-security-rules": "^0.0.2",
     "@playwright/test": "^1.65.0",
     "@types/express": "^4.17.21",

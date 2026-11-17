@@ -1,3 +1,4 @@
+import { nativeServerUrl } from '../native/runtime';
 import { extractOriginalLanguage } from "@/utils/artSearchQuery";
 
 export type ArtworkImageSource =
@@ -235,6 +236,7 @@ export function getSafeArtworkUrl(url?: string | null): string {
   if (!url) return "";
   const trimmed = url.trim();
   if (!trimmed || trimmed === "null" || trimmed === "undefined") return "";
+  if (trimmed.startsWith("/api/")) return nativeServerUrl(trimmed);
   if (trimmed.startsWith("/") || trimmed.startsWith("data:") || trimmed.startsWith("blob:")) return trimmed;
   // 원본 미술관/위키미디어 CDN 직링을 그대로 사용합니다.
   // (서버리스 프록시 경로는 런타임 크래시와 첫 로드 실패의 원인이었으므로 더 이상 거치지 않습니다.)
@@ -270,5 +272,5 @@ export async function resolveArtworkImage(
   const url = data?.url || '';
   const displayUrl = data?.displayUrl || url;
   if (!response.ok || !displayUrl) return fallback;
-  return { url, displayUrl, source: resolveArtworkSource(data?.source, displayUrl) };
+  return { url: nativeServerUrl(url), displayUrl: nativeServerUrl(displayUrl), source: resolveArtworkSource(data?.source, displayUrl) };
 }

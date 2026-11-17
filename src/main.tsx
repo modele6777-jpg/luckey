@@ -1,3 +1,6 @@
+import './native/bootstrap';
+import { isNativeApp } from './native/runtime';
+import './native/native.css';
 import { installAudioMixingPolicy } from './lib/audioMixingPolicy';
 import {StrictMode} from 'react';
 import {createRoot} from 'react-dom/client';
@@ -43,7 +46,7 @@ initHorizontalWheelScroll();
 
 const SW_UPDATE_INTERVAL_MS = getSwUpdateIntervalMs();
 
-if (import.meta.env.PROD) {
+if (import.meta.env.PROD && !isNativeApp()) {
   const updateSW = registerSW({
     immediate: true,
     onNeedRefresh() {

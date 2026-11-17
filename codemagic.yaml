@@ -1,0 +1,73 @@
+workflows:
+  ios-simulator:
+    name: LucKey iOS Simulator
+    instance_type: mac_mini_m2
+    max_build_duration: 60
+    environment:
+      node: "22"
+      xcode: latest
+      vars:
+        VITE_NATIVE_API_ORIGIN: https://luckey-six.vercel.app
+    triggering:
+      events: [push, pull_request]
+      branch_patterns:
+        - pattern: feat/capacitor-ios-codemagic
+          include: true
+          source: true
+      cancel_previous_builds: true
+    scripts:
+      - name: Install dependencies
+        script: npm ci
+      - name: Check TypeScript and native contracts
+        script: |
+          npm run lint
+          npm run test:native
+      - name: Build and sync bundled web app
+        script: npm run ios:sync
+      - name: Build unsigned simulator app
+        script: |
+          xcodebuild -resolvePackageDependencies -project ios/App/App.xcodeproj -scheme App
+          xcodebuild -project ios/App/App.xcodeproj -scheme App -configuration Debug -sdk iphonesimulator -derivedDataPath build/ios-simulator CODE_SIGNING_ALLOWED=NO build
+          ditto -c -k --sequesterRsrc --keepParent build/ios-simulator/Build/Products/Debug-iphonesimulator/App.app build/LucKey-simulator.zip
+    artifacts:
+      - build/LucKey-simulator.zip
+      - /tmp/xcodebuild_logs/*.log
+
+  ios-testflight:
+    name: LucKey iOS TestFlight
+    instance_type: mac_mini_m2
+    max_build_duration: 90
+    # Add this named App Store Connect integration in Codemagic before running.
+    integrations:
+      app_store_connect: LucKey App Store Connect
+    environment:
+      node: "22"
+      xcode: latest
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: com.modele6777.luckey
+      vars:
+        VITE_NATIVE_API_ORIGIN: https://luckey-six.vercel.app
+    # Manual workflow: no production publishing on every push.
+    scripts:
+      - name: Install and validate
+        script: |
+          npm ci
+          npm run lint
+          npm run test:native
+      - name: Build and sync bundled web app
+        script: npm run ios:sync
+      - name: Apply profiles and archive
+        script: |
+          xcode-project use-profiles
+          cd ios/App
+          agvtool new-version -all "$((BUILD_NUMBER + 1))"
+          cd ../..
+          xcode-project build-ipa --project ios/App/App.xcodeproj --scheme App
+    artifacts:
+      - build/ios/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log
+    publishing:
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: true

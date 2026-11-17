@@ -1,3 +1,4 @@
+import { nativeImpact } from '../native/runtime';
 /**
  * Audio Haptic Feedback Engine
  * Procedural Web Audio synthesis providing subtle, high-grade tactile acoustic feedback
@@ -340,6 +341,8 @@ export function getHapticCategory(type: AudioHapticType): HapticCategory {
 }
 
 function triggerVibrationForType(type: AudioHapticType): void {
+  const category = getHapticCategory(type);
+  if (nativeImpact(category === 'success' ? 'medium' : 'subtle')) return;
   if (typeof window === 'undefined' || typeof navigator === 'undefined' || !('vibrate' in navigator)) {
     return;
   }

@@ -97,17 +97,26 @@ function prismVersionPlugin(version: string): Plugin {
 
 export default defineConfig(({mode}) => {
   const env = loadEnv(mode, process.cwd(), '');
-  if (mode === 'sites') {
+  if (mode === 'sites' || mode === 'native') {
     for (const key of ['GEMINI_API_KEY', 'AI_API_KEY', 'XAI_API_KEY', 'GOOGLE_GENAI_API_KEY', 'VITE_GEMINI_API_KEY', 'VITE_AI_API_KEY']) delete env[key];
   }
   const releaseEntry = readChangelogEntry(packageJson.version);
   return {
     plugins: [
+      {
+        name: 'native-server-only-credentials',
+        configResolved(config) {
+          if (mode !== 'native') return;
+          // Also remove Vite's serialized env object (optional env access uses it).
+          for (const key of ['VITE_GEMINI_API_KEY', 'VITE_AI_API_KEY', 'VITE_GOOGLE_GENAI_API_KEY', 'VITE_XAI_API_KEY', 'VITE_OPENAI_API_KEY']) delete config.env[key];
+        },
+      },
       prismVersionPlugin(packageJson.version),
       react(), 
       tailwindcss(),
       precacheChunkBudgetPlugin(),
       VitePWA({
+        disable: mode === 'native',
         registerType: 'autoUpdate',
         devOptions: {
           enabled: false
