@@ -16,12 +16,12 @@
  *    - 아샤의 거룩한 불길로 거짓(Druj)을 물리치고 빛의 세계를 회복함.
  * 3. 질문 맥락 감사·KST 아타르(성화) 시공간 리듬·교차 매트릭스 산출
  *
- * @version LUCKEY-ZOROASTRIAN-AMESHA-SPENTAS-v2.2.0
+ * @version LUCKEY-ZOROASTRIAN-AMESHA-SPENTAS-v2.3.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const ZOROASTRIAN_AMESHA_SPENTAS_VERSION = 'LUCKEY-ZOROASTRIAN-AMESHA-SPENTAS-v2.2.0';
+export const ZOROASTRIAN_AMESHA_SPENTAS_VERSION = 'LUCKEY-ZOROASTRIAN-AMESHA-SPENTAS-v2.3.0';
 
 export interface AmeshaSpentaStage {
   stageLevel: number;
@@ -79,6 +79,7 @@ export interface ZoroastrianAmeshaSpentasResult {
   ameshaSynthesisMatrix: AmeshaSynthesisMatrix;
   ritualAction: string;
   reflectionFocus: string;
+  reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
 
@@ -241,6 +242,10 @@ export function calculateZoroastrianAmeshaSpentas(
   const ameshaSynthesisMatrix = buildSynthesisMatrix(activeSpentaStage, primaryZoroastrianTriad, situationalAvestaAudit, temporalAtarRhythm);
   const ritualAction = primaryZoroastrianTriad.actionableDirective;
   const reflectionFocus = situationalAvestaAudit.ashaVsDrujDiagnosis;
+  const trimmedQ = question.trim();
+  const reflectiveQuestion = trimmedQ
+    ? `지금 "${trimmedQ}"의 선택 앞에서, 내 생각(후마타)·말(후크타)·행동(흐바르시타) 중 가장 먼저 진리(Asha)의 빛으로 바로잡을 부분은 무엇인가요?`
+    : '내 생각(후마타)·말(후크타)·행동(흐바르시타) 중 오늘 가장 먼저 진리(Asha)의 빛으로 비추어 바로잡고 싶은 한 가지는 무엇인가요?';
   const interpretiveBoundary = '아베스타 아메샤 스펜타와 아샤(Asha) 진리 상징을 빌린 정성적 빛의 조화 참고 관점이며, 수치 점수나 확정 예언이 아닙니다.';
 
   return {
@@ -259,6 +264,7 @@ export function calculateZoroastrianAmeshaSpentas(
     ameshaSynthesisMatrix,
     ritualAction,
     reflectionFocus,
+    reflectiveQuestion,
     interpretiveBoundary,
   };
 }
@@ -280,5 +286,6 @@ export function formatZoroastrianAmeshaSpentasPrompt(result: ZoroastrianAmeshaSp
 - 아메샤 스펜타 교차 매트릭스: ${result.ameshaSynthesisMatrix.synthesizedVerdict}
 - 아베스타 신성 불꽃의 계시: 《${result.avestaSacredFireEpiphany.fireSceneTitle}》
   → 빛의 불멸 지혜: "${result.avestaSacredFireEpiphany.luminousWisdom}"
+- 성찰 질문: ${result.reflectiveQuestion}
 - 해석 경계: ${result.interpretiveBoundary}`;
 }
