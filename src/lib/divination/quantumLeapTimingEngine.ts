@@ -94,6 +94,7 @@ export interface QuantumLeapResult {
   };
 
   summary: string;
+  reflectiveQuestion?: string;
   quantumLeapSynthesisMatrix?: {
     dominantTension: string;
     alignmentState: string;
