@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.7.769",
+    "builtAt": "2026-11-18T05:20:00+09:00",
+    "summary": "아랍 일무 알-람말·아들러·카프카 3대 엔진 성찰 질문 및 카탈로그 보강(v1.7.769)",
+    "items": [
+      "아랍 일무 알-람말 지오맨시(arabicIlmAlRamlEngine v2.3.0): 질문 반응형 reflectiveQuestion 추가 및 ALL_DCE_ENGINES summary 등록",
+      "알프레트 아들러 개인심리학(austrianAlfredAdlerIndividualPsychologyEngine v2.2.0): 질문 반응형 reflectiveQuestion 추가 및 프롬프트 출력 연동",
+      "프란츠 카프카 실존 진실(austrianFranzKafkaExistentialTruthEngine v2.2.0): 질문 반응형 reflectiveQuestion 추가 및 프롬프트 출력 연동"
+    ]
+  },
+  {
     "version": "1.7.768",
     "builtAt": "2026-11-18T05:13:00+09:00",
     "summary": "마의상법 12궁 관상, 맹자 사단사덕·호연지기, 왕양명 치양지·지행합일 3대 엔진 실천 의례 및 성찰 질문 표준 연동(v1.7.768)",
