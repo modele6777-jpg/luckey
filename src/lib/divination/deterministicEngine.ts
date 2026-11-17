@@ -4820,7 +4820,7 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'egyptianHermeticCartouche', nameKo: '이집트 헤르메스 카르투슈', icon: '𓋹', category: 'deep_master', summary: '고대 이집트 헤르메스주의 카르투슈 원형과 영혼 삼위일체(카·바·아크)를 통해 실천·개성·통찰의 조화를 비춥니다.' },
   { key: 'taoistGongGuoGeKarma', nameKo: '도교 공과격 적선개운', icon: '☯️', category: 'deep_master' },
   { key: 'yorubaIfaOdu', nameKo: '요루바 이파 16오두 신탁', icon: '📿', category: 'deep_master', summary: '서아프리카 요루바 이파 16 메지 오두와 에보(Ebó) 실천으로 막힌 흐름을 여는 지혜를 전합니다.' },
-  { key: 'arabicIlmAlRaml', nameKo: '아랍 일무람말 지오맨시', icon: '🏜️', category: 'deep_master' },
+  { key: 'arabicIlmAlRaml', nameKo: '아랍 일무람말 지오맨시', icon: '🏜️', category: 'deep_master', summary: '고대 아라비아 16개 사점(砂占) 형상과 카디 판결로 현재 국면의 흐름과 행동 방향을 비추는 지오맨시 관점' },
   { key: 'hinduNadiAgastyaPalmLeaf', nameKo: '인도 나디 아가스티야 야자잎', icon: '📜', category: 'deep_master', summary: '남인도 아가스티야 성자의 14대 칸담과 엄지 지문 문양을 통해 카르마의 맥락과 샨티 실천 처방을 비춥니다.' },
   { key: 'shintoKotodamaFourSouls', nameKo: '신도 4혼1생 고토다마', icon: '⛩️', category: 'deep_master', summary: '일영사혼(아라·니기·쿠시·사키미타마) 균형과 50음령 고토다마 언령 진동으로 내면을 정화·조율하는 관점' },
   { key: 'aboriginalDreamtimeSonglines', nameKo: '호주 드림타임 송라인', icon: '🪃', category: 'deep_master', summary: '호주 원주민 드림타임 송라인과 8대 토템·다디리 고요의 경청으로 현재 걸어야 할 영적 방향을 비춰 줍니다.' },
