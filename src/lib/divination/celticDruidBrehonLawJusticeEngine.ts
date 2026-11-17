@@ -14,7 +14,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const CELTIC_BREHON_LAW_VERSION = 'LUCKEY-CELTIC-BREHON-LAW-v2.1.0';
+export const CELTIC_BREHON_LAW_VERSION = 'LUCKEY-CELTIC-BREHON-LAW-v2.2.0';
 
 export interface BrehonJusticeRank {
   rankLevel: number;
@@ -60,6 +60,8 @@ export interface CelticBrehonLawResult {
     recommendedAction: string;
     cautionNotice: string;
   };
+  ritualAction: string;
+  reflectionFocus: string;
   boundaryNotice: string;
   interpretiveBoundary: string;
 }
@@ -200,6 +202,8 @@ export function calculateCelticBrehonLaw(
     situationalBrehonAudit,
     temporalBrehonRhythm,
     brehonSynthesisMatrix,
+    ritualAction: primaryBrehonVirtue.actionableDirective,
+    reflectionFocus: `${situationalBrehonAudit.focusTheme}의 자리에서 상호 존중(Cairde)과 등가 회복(Éric)을 이루기 위해 오늘 내가 먼저 내놓을 진실은 무엇인가요?`,
     boundaryNotice: '본 결과는 고대 켈트 브레혼 법전의 정의와 회복 철학에 기반한 정성적 관계·합의 가이드이며, 법률 자문이나 확정적 예측이 아닙니다.',
     interpretiveBoundary: '본 결과는 고대 켈트 브레혼 법전의 정의와 회복 철학에 기반한 정성적 관계·합의 가이드이며, 법률 자문이나 확정적 예측이 아닙니다.',
   };

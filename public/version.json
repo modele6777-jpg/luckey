@@ -1,10 +1,10 @@
 {
-  "version": "1.7.760",
-  "builtAt": "2026-11-18T04:34:00+09:00",
-  "summary": "아즈텍 토날라마틀, 발리 트리 히타 카라나, 생체 바이오리듬 피크 3대 엔진 실천 의례 및 성찰 질문 표준 연동(v1.7.760)",
+  "version": "1.7.761",
+  "builtAt": "2026-11-18T04:40:00+09:00",
+  "summary": "불교 유식학 8식 전식득지, 켈트 아웬 탈리에신, 브레혼 법전 3대 엔진 실천 의례 및 성찰 질문 표준 연동(v1.7.761)",
   "items": [
-    "아즈텍 토날포왈리 20대 일진 성력 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동",
-    "발리 힌두 트리 히타 카라나 3업 정화 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동",
-    "3대 생체 바이오리듬 & 크로노타입 피크 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동"
+    "불교 유식학 8식 정화 & 전식득지 엔진(v2.3.0): ritualAction·reflectionFocus 표준 필드 연동",
+    "고대 켈트 바드 탈리에신 아웬 영감 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동",
+    "고대 켈트 드루이드 브레혼 법전 정의 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동"
   ]
 }

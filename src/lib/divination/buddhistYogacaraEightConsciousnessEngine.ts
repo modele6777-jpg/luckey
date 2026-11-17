@@ -13,7 +13,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const BUDDHIST_YOGACARA_CONSCIOUSNESS_ENGINE_VERSION = '2.2.0';
+export const BUDDHIST_YOGACARA_CONSCIOUSNESS_ENGINE_VERSION = '2.3.0';
 
 function toKstIso(now: Date): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -70,6 +70,8 @@ export interface BuddhistYogacaraConsciousnessReport {
   situationalYogacaraAudit: YogacaraSituationalAudit;
   temporalAlayaRhythm: YogacaraTemporalRhythm;
   yogacaraSynthesisMatrix: YogacaraSynthesisMatrix;
+  ritualAction: string;
+  reflectionFocus: string;
   boundaryNotice: string;
   interpretiveBoundary: string;
 }
@@ -296,6 +298,8 @@ export function calculateBuddhistYogacaraConsciousness(
     situationalYogacaraAudit,
     temporalAlayaRhythm,
     yogacaraSynthesisMatrix,
+    ritualAction: mirrorMeditationRitual,
+    reflectionFocus: `${situationalYogacaraAudit.kleshaRootPattern} 앞에서 내가 붙들고 있는 분별은 무엇이며, ${dominantWisdom.nameKo}의 관점으로 어떻게 놓아줄 수 있나요?`,
     boundaryNotice,
     interpretiveBoundary: boundaryNotice,
   };

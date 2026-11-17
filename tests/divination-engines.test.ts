@@ -3987,6 +3987,7 @@ test('Arabic Ilm al-Raml Engine: calculates 16 geomantic figures and Qadi verdic
   assert.equal(brehon.engineVersion, CELTIC_BREHON_LAW_VERSION);
   assert(brehon.calculatedAtKst.includes('KST'));
   assert(brehon.temporalBrehonRhythm.groveCourtWindow.length > 0);
+  assert(brehon.ritualAction.length > 0 && brehon.reflectionFocus.length > 0);
   const brehonPrompt = formatCelticBrehonLawPrompt(brehon);
   assert(brehonPrompt.includes('KST'));
   assert(!brehonPrompt.includes('/100') && !brehonPrompt.includes('%') && !brehonPrompt.includes('점수'));
@@ -4098,6 +4099,7 @@ test('Celtic Awen Taliesin Engine: calculates Awen 3 rays and metamorphosis phas
   assert(rep.interpretiveBoundary.length > 0);
   assert(rep.awenFlowIndex >= 0 && rep.awenFlowIndex <= 100);
   assert(rep.awenRays.dominantRay.length > 0);
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatCelticAwenTaliesinPrompt(rep);
   assert(prompt.includes('고대 켈트 바드 탈리에신(Taliesin) 가마솥 & 아웬(Awen) 영감 실측 데이터'));
   assert(prompt.includes(rep.activeMetamorphosis.animalTotem));
@@ -9162,6 +9164,7 @@ test('Plotinus Enneads, Mozi Gyeom-Ae, and Buddhist Yogacara v2.0.0 engines prov
     now: testDate,
   });
   assert.equal(yogacara.engineVersion, BUDDHIST_YOGACARA_CONSCIOUSNESS_ENGINE_VERSION);
+  assert.ok(yogacara.ritualAction.length > 0 && yogacara.reflectionFocus.length > 0);
   assert.equal(yogacara.questionTopic, 'healing');
   assert.ok(yogacara.situationalYogacaraAudit.scriptureRef.length > 0);
   assert.ok(yogacara.temporalAlayaRhythm.kstWindowLabel.length > 0);
