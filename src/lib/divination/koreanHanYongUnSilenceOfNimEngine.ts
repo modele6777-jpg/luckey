@@ -5,7 +5,7 @@
  * @version LUCKEY-HAN-YONG-UN-SILENCE-OF-NIM-v2.0.0
  */
 
-export const KOREAN_HAN_YONG_UN_SILENCE_OF_NIM_VERSION = 'LUCKEY-HAN-YONG-UN-SILENCE-OF-NIM-v2.1.0';
+export const KOREAN_HAN_YONG_UN_SILENCE_OF_NIM_VERSION = 'LUCKEY-HAN-YONG-UN-SILENCE-OF-NIM-v2.2.0';
 
 export interface HanYongUnTheme {
   themeKey: string;
@@ -28,6 +28,7 @@ export interface KoreanHanYongUnSilenceOfNimResult {
     alignmentState: string;
     integratedAction: string;
   };
+  interpretiveBoundary: string;
 }
 
 export const HAN_YONG_UN_THEMES: HanYongUnTheme[] = [
@@ -91,6 +92,7 @@ export function calculateKoreanHanYongUnSilenceOfNim(query?: string, now: Date =
       philosophicalCounsel: `${activeHanYongUnTheme.poeticInsight} ${activeHanYongUnTheme.practicalCounsel} 이 내용은 문학적 참고이며, 개인의 감정·관계·미래를 측정하거나 예측한 결과가 아닙니다.`,
     },
     hanYongUnSynthesisMatrix,
+    interpretiveBoundary: '이는 문학적 해석을 위한 참고일 뿐, 개인 점수·진단·관계 결과·미래 예측이 아닙니다.',
   };
 }
 
