@@ -1,10 +1,9 @@
 {
-  "version": "1.7.750",
-  "builtAt": "2026-11-17T11:12:54.486371+00:00",
-  "summary": "별도 브랜치에 Capacitor iOS 및 Codemagic 빌드 지원 추가",
+  "version": "1.7.751",
+  "builtAt": "2026-11-17T13:06:45.644623+00:00",
+  "summary": "Windows AltStore 설치용 iPhone IPA 빌드 추가",
   "items": [
-    "웹·PWA 및 사주/타로 엔진을 유지하는 iOS 번들 프로젝트 추가",
-    "네이티브 햅틱·안전 영역·회전·앱 아이콘·스플래시 적용",
-    "기존 HTTPS 서버 API 연결과 시뮬레이터/TestFlight 클라우드 빌드 설정 추가"
+    "유료 Apple 서명 없이 실물 iPhone용 미서명 IPA를 만드는 Codemagic 워크플로 추가",
+    "Windows AltServer와 무료 Apple 계정으로 설치·갱신하는 안내 추가"
   ]
 }

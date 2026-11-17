@@ -41,3 +41,16 @@ npm run ios:open
 ## 검증 범위
 
 Linux에서는 TypeScript, 웹/PWA 빌드, 네이티브 웹 빌드, API URL·헤더·스트리밍 계약과 `cap sync ios`를 확인할 수 있습니다. Xcode 컴파일, 서명 IPA, 실제 햅틱, 안전 영역/키보드/회전, Apple Music과 TTS의 동시·백그라운드 재생, 로그인은 macOS/Codemagic와 iPhone에서 확인해야 합니다. 이 저장소 설정만으로 Codemagic 계정 연결이나 Apple 서명을 완료한 것은 아닙니다.
+
+## Windows + 무료 Apple 계정: AltStore Classic
+
+Mac과 유료 Apple Developer 계정 없이 본인 iPhone에 설치할 때는 이 경로를 사용합니다.
+
+1. Codemagic에서 브랜치 `feat/capacitor-ios-codemagic`과 **`ios-altstore`** 워크플로를 선택해 실행합니다. Apple 서명 통합은 필요 없습니다.
+2. Artifacts에서 **`LucKey-AltStore.ipa`**를 받습니다. 이 파일은 실물 iPhone용 미서명 앱입니다. 기존 `LucKey-simulator.zip`은 사용할 수 없습니다.
+3. Windows에서 [AltStore 공식 사이트](https://altstore.io/)의 **AltStore Classic / AltServer Windows** 설치 안내를 따릅니다. 필요한 iTunes·iCloud 버전도 해당 공식 안내를 확인합니다.
+4. USB로 iPhone을 연결하고 기기에서 컴퓨터를 신뢰합니다. AltServer의 **Install AltStore**에서 본인 iPhone을 선택하고 무료 Apple 계정으로 AltStore를 설치합니다.
+5. iPhone 설정에서 개발자 앱 신뢰와 개발자 모드가 요구되면 활성화합니다. 다운로드한 IPA를 iPhone으로 전달한 뒤 AltStore의 **My Apps → +**에서 선택합니다. AltStore가 기기용으로 다시 서명해 설치합니다.
+6. 무료 계정은 일반적으로 7일마다 갱신해야 합니다. AltServer를 실행한 Windows와 iPhone을 연결하거나 공식 안내에 따라 같은 네트워크에서 갱신합니다. 무료 계정의 앱 수·App ID 제한도 적용됩니다.
+
+이 워크플로는 TestFlight나 App Store에 업로드하지 않습니다. Codemagic 빌드 성공과 실제 AltStore 설치·햅틱 동작 확인은 별개이며, 후자는 사용자의 Windows/iPhone에서 진행해야 합니다. 기존 Vercel API의 HTTP 402 문제도 IPA 서명과 별개입니다.

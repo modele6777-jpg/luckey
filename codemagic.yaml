@@ -33,6 +33,44 @@ workflows:
       - build/LucKey-simulator.zip
       - /tmp/xcodebuild_logs/*.log
 
+  ios-altstore:
+    name: LucKey iPhone IPA for AltStore
+    instance_type: mac_mini_m2
+    max_build_duration: 60
+    environment:
+      node: "22"
+      xcode: latest
+      vars:
+        VITE_NATIVE_API_ORIGIN: https://luckey-six.vercel.app
+    # No Apple Developer integration: AltStore signs the IPA on Windows.
+    scripts:
+      - name: Install and validate
+        script: |
+          npm ci
+          npm run lint
+          npm run test:native
+      - name: Build and sync bundled web app
+        script: npm run ios:sync
+      - name: Build unsigned iPhone app
+        script: |
+          set -euo pipefail
+          xcodebuild -resolvePackageDependencies -project ios/App/App.xcodeproj -scheme App
+          xcodebuild -project ios/App/App.xcodeproj -scheme App -configuration Release -sdk iphoneos -destination 'generic/platform=iOS' -derivedDataPath build/ios-altstore CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" build
+      - name: Package device IPA for AltStore re-signing
+        script: |
+          set -euo pipefail
+          app_path="build/ios-altstore/Build/Products/Release-iphoneos/App.app"
+          test -d "$app_path"
+          test -f "$app_path/Info.plist"
+          mkdir -p build/altstore/Payload
+          ditto "$app_path" build/altstore/Payload/LucKey.app
+          cd build/altstore
+          ditto -c -k --keepParent Payload LucKey-AltStore.ipa
+          unzip -t LucKey-AltStore.ipa
+    artifacts:
+      - build/altstore/LucKey-AltStore.ipa
+      - /tmp/xcodebuild_logs/*.log
+
   ios-testflight:
     name: LucKey iOS TestFlight
     instance_type: mac_mini_m2
