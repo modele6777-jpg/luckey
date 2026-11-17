@@ -1,10 +1,10 @@
 {
-  "version": "1.7.786",
-  "builtAt": "2026-11-18T06:43:00+09:00",
-  "summary": "자크 데리다, 장 자크 루소, 장 폴 사르트르 3대 엔진 실천 의례 및 성찰 질문 표준 연동(v1.7.786)",
+  "version": "1.7.787",
+  "builtAt": "2026-11-18T06:50:00+09:00",
+  "summary": "에라스무스·마아트 깃털·유식학 8식 3대 엔진 성찰 질문 및 KST 표기 보강(v1.7.787)",
   "items": [
-    "자크 데리다 《그라마톨로지》 해체·차연 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동",
-    "장 자크 루소 《에밀·사회계약론》 자연·진정성 엔진(v2.1.0): ritualAction·reflectionFocus 표준 필드 연동",
-    "장 폴 사르트르 《존재와 무》 실존·앙가주망 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동"
+    "데시데리우스 에라스무스 《우신예찬》(dutchDesideriusErasmusPraiseOfFollyEngine v2.2.0): 질문 반응형 reflectiveQuestion 추가 및 +09:00 KST 표기 통일",
+    "이집트 마아트 진리의 깃털·심장 저울(egyptianMaatFeatherHeartEngine v2.3.0): 질문 반응형 reflectiveQuestion 추가 및 프롬프트 연동",
+    "불교 유식학 8식 전식득지(buddhistYogacaraEightConsciousnessEngine v2.4.0): 질문 반응형 reflectiveQuestion 추가 및 프롬프트 연동"
   ]
 }

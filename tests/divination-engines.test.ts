@@ -11008,3 +11008,29 @@ test('Chaldean Mul-Apin v2.3 · Laozi Daodejing v2.5 · Mayi Mianxiang v2.3: ref
   const mayiPrompt = formatMayiMianxiangPrompt(mayi);
   assert.ok(mayiPrompt.includes('+09:00') && mayiPrompt.includes('질문 맞춤 성찰 질문') && mayiPrompt.includes('해석 경계'));
 });
+
+test('Erasmus Praise of Folly v2.2 · Egyptian Ma\'at v2.3 · Buddhist Yogacara v2.4: reflectiveQuestion & +09:00 KST prompt output', () => {
+  const now = new Date('2026-11-18T06:50:00+09:00');
+  const query = '복잡한 책임과 마음의 집착을 내려놓고 가벼운 중심을 세우고 싶어요';
+
+  const erasmus = calculateDutchDesideriusErasmusPraiseOfFolly(profile, query, now);
+  assert.equal(erasmus.engineVersion, DUTCH_DESIDERIUS_ERASMUS_PRAISE_OF_FOLLY_VERSION);
+  assert.match(erasmus.calculatedAtKst, /\+09:00/);
+  assert.ok(erasmus.reflectiveQuestion.includes(query));
+  const erasmusPrompt = formatDutchDesideriusErasmusPraiseOfFollyPrompt(erasmus);
+  assert.ok(erasmusPrompt.includes('+09:00') && erasmusPrompt.includes('질문 맞춤 성찰 질문') && erasmusPrompt.includes('해석 경계'));
+
+  const maat = calculateEgyptianMaatFeatherHeart({ profile, question: query, now });
+  assert.equal(maat.engineVersion, EGYPTIAN_MAAT_FEATHER_ENGINE_VERSION);
+  assert.match(maat.calculatedAtKst, /\+09:00/);
+  assert.ok(maat.reflectiveQuestion.includes(query));
+  const maatPrompt = formatEgyptianMaatFeatherHeartPrompt(maat);
+  assert.ok(maatPrompt.includes('+09:00') && maatPrompt.includes('질문 맞춤 성찰 질문') && maatPrompt.includes('해석 경계'));
+
+  const yogacara = calculateBuddhistYogacaraConsciousness({ profile, question: query, now });
+  assert.equal(yogacara.engineVersion, BUDDHIST_YOGACARA_CONSCIOUSNESS_ENGINE_VERSION);
+  assert.match(yogacara.calculatedAtKst, /\+09:00/);
+  assert.ok(yogacara.reflectiveQuestion.includes(query));
+  const yogacaraPrompt = formatBuddhistYogacaraConsciousnessPrompt(yogacara);
+  assert.ok(yogacaraPrompt.includes('+09:00') && yogacaraPrompt.includes('질문 맞춤 성찰 질문') && yogacaraPrompt.includes('해석 경계'));
+});
