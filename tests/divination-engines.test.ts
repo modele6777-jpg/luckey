@@ -10400,3 +10400,29 @@ test('Ilyeon, Jang Bogo, and Jeon Bongjun v2.1.0 include +09:00 KST, dual cross-
   const jbjPrompt = formatJeonBongjunNokduPrompt(jbj);
   assert.ok(jbjPrompt.includes('+09:00') && jbjPrompt.includes('보조 교차 강령') && jbjPrompt.includes('성찰 질문') && jbjPrompt.includes('해석 경계'));
 });
+
+test('Shadow Archetype · Human Design · Enneagram v2.1.0: KST, reflectiveQuestion, and summary', () => {
+  const now = new Date('2026-11-17T00:35:00Z');
+  const query = '내가 피하고 있는 진심이 무엇인가요';
+
+  const sh = calculateShadowArchetype({ profile, targetDate: now, question: query });
+  assert.equal(sh.engineVersion, SHADOW_ARCHETYPE_VERSION);
+  assert.match(sh.calculatedAtKst, /\+09:00/);
+  assert.ok(sh.reflectiveQuestion?.includes(query));
+  const shPrompt = formatShadowArchetypePrompt(sh);
+  assert.ok(shPrompt.includes('+09:00') && shPrompt.includes('성찰 질문') && shPrompt.includes('해석 경계'));
+
+  const hd = calculateHumanDesignBodyGraph({ profile, targetDate: now, question: query });
+  assert.equal(hd.engineVersion, HUMAN_DESIGN_BODYGRAPH_VERSION);
+  assert.match(hd.calculatedAtKst, /\+09:00/);
+  assert.ok(hd.reflectiveQuestion?.includes(query));
+  const hdPrompt = formatHumanDesignBodyGraphPrompt(hd);
+  assert.ok(hdPrompt.includes('+09:00') && hdPrompt.includes('성찰 질문') && hdPrompt.includes('해석 경계'));
+
+  const en = calculateEnneagramSoulIntegration({ profile, targetDate: now, question: query });
+  assert.equal(en.engineVersion, ENNEAGRAM_INTEGRATION_VERSION);
+  assert.match(en.calculatedAtKst, /\+09:00/);
+  assert.ok(en.reflectiveQuestion?.includes(query));
+  const enPrompt = formatEnneagramSoulIntegrationPrompt(en);
+  assert.ok(enPrompt.includes('+09:00') && enPrompt.includes('성찰 질문') && enPrompt.includes('해석 경계'));
+});

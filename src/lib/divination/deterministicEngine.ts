@@ -1673,7 +1673,7 @@ try {
   const shadowArchetypeResult = calculateSupplement('shadowArchetypeResult', () => (birthdateStr && profile
     ? (() => {
         try {
-          return calculateShadowArchetype({ profile, targetDate: now });
+          return calculateShadowArchetype({ profile, targetDate: now, question });
         } catch (_) {
           return null;
         }
@@ -4757,15 +4757,15 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'soulJourneyTarot', nameKo: '영혼 여정 타로', icon: '🎴', category: 'deep_master', summary: '타로 22대 메이저 아르카나 원형과 4원소 슈트 균형으로 오늘의 통과 의례와 내적 조율을 비추는 관점' },
   { key: 'transcendentalMeditation', nameKo: '초월 명상 가이드', icon: '🧘', category: 'deep_master', summary: '사주 오행과 주역 젠 만트라 상징으로 현재에 맞는 호흡·자세·명상 리듬을 살피는 관점' },
   { key: 'strategicLeverage', nameKo: '전략적 레버리지', icon: '🎯', category: 'deep_master', summary: '손자병법 허실 전술과 기문둔갑 8문 상징으로 협상 주도권과 심리적 프레임 균형을 비추는 관점' },
-  { key: 'shadowArchetype', nameKo: '융 그림자 원형', icon: '🌑', category: 'deep_master' },
+  { key: 'shadowArchetype', nameKo: '융 그림자 원형', icon: '🌑', category: 'deep_master', summary: '칼 융 분석심리학과 사주 4대 흉신 상징으로 억압된 그림자 트리거와 골든 섀도우 잠재력을 비추는 관점' },
   { key: 'biorhythmPeakFlow', nameKo: '바이오리듬 피크', icon: '📈', category: 'deep_master' },
   { key: 'destinySynastryEcho', nameKo: '운명 공명 에코', icon: '🔔', category: 'deep_master' },
   { key: 'microHabitKarma', nameKo: '마이크로 해빗', icon: '🌱', category: 'deep_master' },
   { key: 'ikigaiDestinyCompass', nameKo: '이키가이 나침반', icon: '🧭', category: 'deep_master', summary: '열정·전문성·사명·수익성의 4대 교집합을 사주 오행과 연결해 나만의 천직 소명과 3단계 실현 로드맵을 안내합니다.' },
   { key: 'serendipitySynchronicity', nameKo: '세렌디피티 레이더', icon: '🍀', category: 'deep_master' },
-  { key: 'humanDesignBodyGraph', nameKo: '휴먼디자인 바디그래프', icon: '🧬', category: 'deep_master' },
+  { key: 'humanDesignBodyGraph', nameKo: '휴먼디자인 바디그래프', icon: '🧬', category: 'deep_master', summary: '휴먼 디자인 에너지 타입·내적 결정 권위·9대 센터 상징으로 자기다운 선택 리듬과 탈조건화를 살피는 관점' },
   { key: 'chakraVibrationAlignment', nameKo: '차크라 진동 정렬', icon: '🌈', category: 'deep_master' },
-  { key: 'enneagramSoulIntegration', nameKo: '에니어그램 영혼통합', icon: '⭐', category: 'deep_master' },
+  { key: 'enneagramSoulIntegration', nameKo: '에니어그램 영혼통합', icon: '⭐', category: 'deep_master', summary: '에니어그램 9유형 에고 고착과 분열·통합 방향을 사주 오행과 엮어 내면의 미덕 회복을 비추는 관점' },
   { key: 'ancestralEpigeneticKarma', nameKo: '후성유전 카르마', icon: '🌳', category: 'deep_master' },
   { key: 'heroMythMonomyth', nameKo: '영웅의 여정 모노미스', icon: '⚔️', category: 'deep_master' },
   { key: 'akashicRecordsOracle', nameKo: '아카식 레코드', icon: '📖', category: 'deep_master', summary: '영혼의 기원과 카르믹 배움 과제를 비춰 현실에서 실행할 그라운딩 실천을 짚어 줍니다.' },

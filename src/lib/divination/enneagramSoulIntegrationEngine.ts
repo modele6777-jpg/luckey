@@ -22,7 +22,7 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const ENNEAGRAM_INTEGRATION_VERSION = 'LUCKEY-ENNEAGRAM-v2.0.0';
+export const ENNEAGRAM_INTEGRATION_VERSION = 'LUCKEY-ENNEAGRAM-v2.1.0';
 
 export interface EnneagramTypeDetails {
   coreNumber: number; // 1 ~ 9
@@ -67,6 +67,7 @@ export interface EnneagramSoulIntegrationReport {
     cautionNotice: string;
   };
   boundaryNotice: string;
+  reflectiveQuestion?: string;
   synthesisPromptGuidance: string;
 }
 
@@ -99,7 +100,7 @@ function getTemporalEnneagramRhythm(now: Date) {
           : '겨울 · 고요 관조기 (두려움의 뿌리를 잠잠히 비추어 평정을 기르는 시기)';
 
   return {
-    kstTimeLabel: `${y}-${m}-${d} ${hh}:${mm} KST`,
+    kstTimeLabel: `${y}-${m}-${d} ${hh}:${mm}:00+09:00 (KST)`,
     centerWatchWindow,
     seasonalIntegrationTone,
     temporalGuidance: `${centerWatchWindow} · ${seasonalIntegrationTone}의 결에 맞추어 의식적 통합 방향을 선택하십시오.`,
@@ -285,6 +286,10 @@ export function runEnneagramSoulIntegrationEngine(
   };
 
   const boundaryNotice = '본 결과는 사주 오행 상징과 에니어그램 성격 역동 모델을 결합한 정성적 자기 이해 안내이며, 임상 심리 진단이 아닙니다.';
+  const qHint = (question || '').trim();
+  const reflectiveQuestion = qHint
+    ? `지금 "${qHint.slice(0, 36)}" 앞에서 반복되는 자동 반응(${egoFixation})을 잠시 멈추고, ${growthTarget}번 통합 방향의 미덕(${virtueAscension})으로 한 걸음 옮긴다면 어떤 선택이 보일까요?`
+    : `오늘 내가 가장 지키고 싶었던 '${coreFear}'의 반대편에서, 본연의 미덕(${virtueAscension})을 선택할 수 있는 작은 장면은 무엇인가요?`;
 
   const synthesisPromptGuidance = `[LUCKEY 에니어그램 영혼 성격 통합 & 의식 진화 ${ENNEAGRAM_INTEGRATION_VERSION}]
 - 연산 시각: ${temporalEnneagramRhythm.kstTimeLabel}
@@ -300,6 +305,7 @@ export function runEnneagramSoulIntegrationEngine(
   * 시공간 지침: ${temporalEnneagramRhythm.temporalGuidance}
 - 에니어그램 교차 매트릭스: 핵심(${enneagramSynthesisMatrix.coreInsight}) | 실행(${enneagramSynthesisMatrix.recommendedAction}) | 주의(${enneagramSynthesisMatrix.cautionNotice})
 - 영혼 해방 실천 과제: ${soulLiberationTask}
+- 성찰 질문: ${reflectiveQuestion}
 - 해석 경계: ${boundaryNotice}`;
 
   return {
@@ -315,6 +321,7 @@ export function runEnneagramSoulIntegrationEngine(
     temporalEnneagramRhythm,
     enneagramSynthesisMatrix,
     boundaryNotice,
+    reflectiveQuestion,
     synthesisPromptGuidance
   };
 }
