@@ -24,7 +24,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const HINDU_KUNDALINI_VERSION = 'LUCKEY-HINDU-KUNDALINI-v2.0.0';
+export const HINDU_KUNDALINI_VERSION = 'LUCKEY-HINDU-KUNDALINI-v2.1.0';
 
 export interface PrimaryNadiState {
   code: 'IDA' | 'PINGALA' | 'SUSHUMNA';
@@ -93,6 +93,7 @@ export interface HinduTantricKundaliniReport {
   };
   synthesisMessage: string;
   boundaryNotice: string;
+  interpretiveBoundary: string;
 }
 
 const CHAKRA_NODES: ChakraAwakeningNode[] = [
@@ -322,6 +323,7 @@ export function calculateHinduTantricKundalini(params: {
     kundaliniSynthesisMatrix,
     synthesisMessage,
     boundaryNotice: '인도 탄트라 요가 및 프라나야마 상징 체계에 기반한 정성적 심신 성찰 관점이며, 의학적 진단이나 치료를 대신하지 않습니다.',
+    interpretiveBoundary: '인도 탄트라 요가 및 프라나야마 상징 체계에 기반한 정성적 심신 성찰 관점이며, 의학적 진단이나 치료를 대신하지 않습니다.',
   };
 }
 
