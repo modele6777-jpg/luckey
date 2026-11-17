@@ -11066,3 +11066,29 @@ test('Druid Moon Trees v2.3 · Finnish Kalevala Sampo v2.4 · Etruscan Augur v2.
   const etruscanPrompt = formatEtruscanAugurSixteenSkyPrompt(etruscan);
   assert.ok(etruscanPrompt.includes('+09:00') && etruscanPrompt.includes('질문 맞춤 성찰 질문') && etruscanPrompt.includes('해석 경계'));
 });
+
+test('Egyptian Amduat v2.4 · Egyptian Sphinx v2.4 · Egyptian 36 Decans v2.4: reflectiveQuestion & +09:00 KST prompt output', () => {
+  const now = new Date('2026-11-18T07:10:00+09:00');
+  const query = '막막한 어둠과 불안을 걷어내고 새로운 항해를 시작하고 싶어요';
+
+  const amduat = calculateEgyptianAmduat(profile, now, query);
+  assert.equal(amduat.engineVersion, EGYPTIAN_AMDUAT_VERSION);
+  assert.match(amduat.calculatedAtKst, /\+09:00/);
+  assert.ok(amduat.reflectiveQuestion.includes(query));
+  const amduatPrompt = formatEgyptianAmduatPrompt(amduat);
+  assert.ok(amduatPrompt.includes('+09:00') && amduatPrompt.includes('질문 맞춤 성찰 질문') && amduatPrompt.includes('해석 경계'));
+
+  const sphinx = calculateEgyptianSphinxDreamOracle({ profile, question: query, now });
+  assert.equal(sphinx.engineVersion, EGYPTIAN_SPHINX_DREAM_ORACLE_ENGINE_VERSION);
+  assert.match(sphinx.calculatedAtKst, /\+09:00/);
+  assert.ok(sphinx.reflectiveQuestion.includes(query));
+  const sphinxPrompt = formatEgyptianSphinxDreamOraclePrompt(sphinx);
+  assert.ok(sphinxPrompt.includes('+09:00') && sphinxPrompt.includes('질문 맞춤 성찰 질문') && sphinxPrompt.includes('해석 경계'));
+
+  const decans = calculateEgyptianThirtySixDecans({ profile, targetDate: now, question: query });
+  assert.equal(decans.engineVersion, EGYPTIAN_DECANS_VERSION);
+  assert.match(decans.calculatedAtKst, /\+09:00/);
+  assert.ok(decans.reflectiveQuestion.includes(query));
+  const decansPrompt = formatEgyptianThirtySixDecansPrompt(decans);
+  assert.ok(decansPrompt.includes('+09:00') && decansPrompt.includes('질문 맞춤 성찰 질문') && decansPrompt.includes('해석 경계'));
+});
