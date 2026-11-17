@@ -1,12 +1,12 @@
 /**
  * 고대 인도 대승불교 용수(Nāgārjuna, 龍樹) 보살 《중론(Mūlamadhyamakakārikā)》 팔불중도 & 공성(Śūnyatā) 통찰 엔진
  *
- * @version LUCKEY-NAGARJUNA-MADHYAMAKA-v2.1.0
+ * @version LUCKEY-NAGARJUNA-MADHYAMAKA-v2.3.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const NAGARJUNA_MADHYAMAKA_VERSION = 'LUCKEY-NAGARJUNA-MADHYAMAKA-v2.2.0';
+export const NAGARJUNA_MADHYAMAKA_VERSION = 'LUCKEY-NAGARJUNA-MADHYAMAKA-v2.3.0';
 
 function getNagarjunaKstString(now?: Date): string {
   const base = now ?? new Date();
@@ -75,6 +75,8 @@ export interface NagarjunaMadhyamakaSunyataResult {
   };
   dailyPracticeRitual: string;
   reflectiveQuestion: string;
+  ritualAction: string;
+  reflectionFocus: string;
   interpretiveBoundary: string;
   nagarjunaSynthesisMatrix?: {
     dominantTension: string;
@@ -333,6 +335,8 @@ export function calculateNagarjunaMadhyamakaSunyata(
     },
     dailyPracticeRitual,
     reflectiveQuestion,
+    ritualAction: dailyPracticeRitual,
+    reflectionFocus: reflectiveQuestion,
     interpretiveBoundary,
     nagarjunaSynthesisMatrix,
   };

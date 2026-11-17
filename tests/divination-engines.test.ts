@@ -3969,6 +3969,7 @@ test('Arabic Ilm al-Raml Engine: calculates 16 geomantic figures and Qadi verdic
   assert(rep.calculatedAtKst.includes('KST'));
   assert(rep.temporalRamlRhythm.geomanticWatchWindow.length > 0);
   assert(rep.ramlSynthesisMatrix.coreInsight.length > 0);
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatArabicIlmAlRamlPrompt(rep);
   assert(prompt.includes('고대 아랍 일무 알-람말(‘Ilm al-Raml) 16 형상 & 지오맨시(Geomancy) 상징 성찰 참고'));
@@ -5663,6 +5664,7 @@ test('Ancient Persian Zoroastrian Amesha Spentas Engine: calculates Vohu Manah, 
   assert(rep.situationalAvestaAudit.gathasCitation.length > 0);
   assert(rep.temporalAtarRhythm.gahWatchWindow.length > 0);
   assert(rep.ameshaSynthesisMatrix.synthesizedVerdict.length > 0);
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatZoroastrianAmeshaSpentasPrompt(rep);
   assert(prompt.includes('고대 페르시아 조로아스터교 《아베스타(Avesta)》'));
@@ -6216,6 +6218,7 @@ test('Nagarjuna Madhyamaka Sunyata Engine: calculates Sunyata wisdom, Eightfold 
   assert(rep.twoTruthsHarmonyScore >= 0 && rep.twoTruthsHarmonyScore <= 100);
   assert(rep.clingingDeconstructionScore >= 0 && rep.clingingDeconstructionScore <= 100);
   assert(rep.activeNegationAspect.aspectHanja.length > 0);
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatNagarjunaMadhyamakaSunyataPrompt(rep);
   assert(prompt.includes('용수 중론 & 팔불중도 공성(Śūnyatā) 지표'));
   assert(prompt.includes(rep.activeNegationAspect.aspectHanja));
