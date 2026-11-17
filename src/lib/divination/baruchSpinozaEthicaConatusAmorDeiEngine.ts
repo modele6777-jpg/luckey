@@ -8,7 +8,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const SPINOZA_CONATUS_AMORDEI_VERSION = 'LUCKEY-SPINOZA-CONATUS-AMORDEI-v2.1.0';
+export const SPINOZA_CONATUS_AMORDEI_VERSION = 'LUCKEY-SPINOZA-CONATUS-AMORDEI-v2.2.0';
 
 function describeSpinozaStage(score: number): string {
   if (score >= 88) return '지적 사랑(Amor Dei)의 고요한 충만 단계';
@@ -67,6 +67,7 @@ export interface BaruchSpinozaEthicaConatusResult {
   ritualAction: string;
   reflectionFocus: string;
   boundaryNotice: string;
+  interpretiveBoundary: string;
   spinozaPhilosophicalCounsel: {
     counselTitle: string;
     philosophicalGuidance: string;
@@ -284,6 +285,7 @@ export function calculateBaruchSpinozaEthicaConatus(
     ritualAction,
     reflectionFocus,
     boundaryNotice,
+    interpretiveBoundary: boundaryNotice,
     spinozaPhilosophicalCounsel: {
       counselTitle,
       philosophicalGuidance,

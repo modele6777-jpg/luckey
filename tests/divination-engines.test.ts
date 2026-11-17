@@ -2647,6 +2647,7 @@ test('Biorhythm Peak Flow Engine: 3대 생체 바이오리듬 & 크로노타입 
   assert(res.calculatedAtKst.includes('KST'));
   assert(res.temporalBioRhythm.currentPhaseWindow.length > 0);
   assert(res.bioSynthesisMatrix.coreInsight.length > 0);
+  assert(res.interpretiveBoundary.length > 0);
   const prompt = formatBiorhythmPeakFlowPrompt(res);
   assert(prompt.includes('LUCKEY 3대 생체 바이오리듬 & 크로노타입 황금 피크'));
   assert(prompt.includes(res.chronotype));
@@ -5925,6 +5926,7 @@ test('Spinoza Ethica Conatus Engine: calculates Conatus vitality, Sub Specie Aet
   assert(rep.adequateIdeaIntellectScore >= 0 && rep.adequateIdeaIntellectScore <= 100);
   assert(rep.amorDeiIntellectualisScore >= 0 && rep.amorDeiIntellectualisScore <= 100);
   assert(rep.activeAffectState.affectNameLatin.length > 0);
+  assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatBaruchSpinozaEthicaConatusPrompt(rep);
   assert(prompt.includes('스피노자 에티카 코나투스 & 신즉자연 관조 지표'));
   assert(prompt.includes(rep.activeAffectState.affectNameKo));
@@ -7177,6 +7179,7 @@ test('Bertrand Russell Conquest of Happiness Engine: calculates Zest for Life, O
   assert(rep.impersonalInterestsVitalityIndex >= 0 && rep.impersonalInterestsVitalityIndex <= 100);
   assert(rep.rationalEquanimityResilienceScore >= 0 && rep.rationalEquanimityResilienceScore <= 100);
   assert(rep.activeRussellTheme.themeTitleKo.length > 0);
+  assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatBritishBertrandRussellConquestOfHappinessPrompt(rep);
   assert(prompt.includes('버트런드 러셀 《행복의 정복》 열정적 관심 & 합리적 낙관 지표'));
   assert(prompt.includes(rep.activeRussellTheme.themeTitleKo));

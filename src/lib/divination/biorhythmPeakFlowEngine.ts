@@ -16,7 +16,7 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const BIORHYTHM_PEAK_FLOW_VERSION = 'LUCKEY-BIOFLOW-v2.0.0';
+export const BIORHYTHM_PEAK_FLOW_VERSION = 'LUCKEY-BIOFLOW-v2.1.0';
 
 export type ChronotypeType = 
   | '사자형 (Lion · 새벽형 몰입 개척자)'
@@ -68,6 +68,7 @@ export interface BiorhythmPeakFlowReport {
     cautionNotice: string;
   };
   boundaryNotice: string;
+  interpretiveBoundary: string;
   synthesisPromptGuidance: string;
 }
 
@@ -276,6 +277,7 @@ export function runBiorhythmPeakFlowEngine(
     temporalBioRhythm,
     bioSynthesisMatrix,
     boundaryNotice,
+    interpretiveBoundary: boundaryNotice,
     synthesisPromptGuidance
   };
 }
