@@ -11268,3 +11268,30 @@ test('게일 4대 화제 축제·영지주의 피스티스 소피아·귀곡자 
   const guiguziPrompt = formatGuiguziLiangtouqianPrompt(guiguzi);
   assert.ok(guiguziPrompt.includes('+09:00') && guiguziPrompt.includes('질문 맞춤 성찰 질문') && guiguziPrompt.includes('해석 경계'));
 });
+
+test('헬레니즘 랏·카이발리온 7대 법칙·포이만드레스 v1.7.810 질문 반응형 성찰 질문·+09:00 KST 회귀 검증', () => {
+  const profile = { basic: { name: '제제', birthdate: '1994-01-24', birthtime: '12:00', gender: 'male' } } as any;
+  const now = new Date('2026-11-18T08:30:00+09:00');
+  const query = '흔들리는 리듬 속에서 내면의 중심과 주도권을 되찾고 싶어요';
+
+  const lots = calculateHellenisticLots({ profile, targetDate: now, question: query });
+  assert.equal(lots.engineVersion, HELLENISTIC_LOTS_ENGINE_VERSION);
+  assert.match(lots.calculatedAtKst, /\+09:00/);
+  assert.ok(lots.reflectiveQuestion.includes(query));
+  const lotsPrompt = formatHellenisticLotsPrompt(lots);
+  assert.ok(lotsPrompt.includes('+09:00') && lotsPrompt.includes('질문 맞춤 성찰 질문') && lotsPrompt.includes('해석 경계'));
+
+  const kybalion = calculateHermeticKybalion(profile, now, query);
+  assert.equal(kybalion.engineVersion, HERMETIC_KYBALION_VERSION);
+  assert.match(kybalion.calculatedAtKst, /\+09:00/);
+  assert.ok(kybalion.reflectiveQuestion.includes(query));
+  const kybalionPrompt = formatHermeticKybalionPrompt(kybalion);
+  assert.ok(kybalionPrompt.includes('+09:00') && kybalionPrompt.includes('질문 맞춤 성찰 질문') && kybalionPrompt.includes('해석 경계'));
+
+  const poimandres = calculateHermeticPoimandres({ profile, question: query, now });
+  assert.equal(poimandres.engineVersion, HERMETIC_POIMANDRES_ENGINE_VERSION);
+  assert.match(poimandres.calculatedAtKst, /\+09:00/);
+  assert.ok(poimandres.reflectiveQuestion.includes(query));
+  const poimandresPrompt = formatHermeticPoimandresPrompt(poimandres);
+  assert.ok(poimandresPrompt.includes('+09:00') && poimandresPrompt.includes('질문 맞춤 성찰 질문') && poimandresPrompt.includes('해석 경계'));
+});

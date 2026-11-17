@@ -9,7 +9,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const HERMETIC_POIMANDRES_ENGINE_VERSION = '2.2.0';
+export const HERMETIC_POIMANDRES_ENGINE_VERSION = '2.3.0';
 
 export type PoimandresQuestionFocus = 'career' | 'relationship' | 'anxiety' | 'decision' | 'spiritual';
 
@@ -62,6 +62,7 @@ export interface HermeticPoimandresAscensionReport {
   poimandresSynthesisMatrix: PoimandresSynthesisMatrix;
   poimandresHermeticGuidance: string;
   nousLightAscensionRitual: string;
+  reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
 
@@ -301,7 +302,7 @@ export function calculateHermeticPoimandres(
   const nousLightAscensionRitual = `머리 위에서 찬란하게 빛나는 신성한 불꽃을 상상하며 심호흡하십시오: "거룩하신 누스여, 거짓된 유혹의 굴레를 벗고 순수한 영적 지성의 빛으로 충만하노니, 내 영혼이 만유의 거룩한 생명과 합일된다."`;
 
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
-  const calculatedAtKst = `${kst.toISOString().slice(0, 19)}+09:00`;
+  const calculatedAtKst = `${kst.toISOString().slice(0, 19).replace('T', ' ')} +09:00 KST`;
 
   return {
     engineVersion: HERMETIC_POIMANDRES_ENGINE_VERSION,
@@ -319,6 +320,9 @@ export function calculateHermeticPoimandres(
     poimandresSynthesisMatrix,
     poimandresHermeticGuidance,
     nousLightAscensionRitual,
+    reflectiveQuestion: question.trim()
+      ? `"${question.trim()}"의 고민에서 [${dominantSphere.nameKo}]의 껍질(${dominantSphere.purifiedPassion})을 한 꺼풀 벗고 나면 끝까지 남는 순수한 본질은 무엇입니까?`
+      : `[${dominantSphere.nameKo}]의 정화 문턱에서 오늘 내 안의 누스(Nous)가 조용히 내려놓고 싶어 하는 집착은 무엇입니까?`,
     interpretiveBoundary: '본 리포트는 《코르푸스 헤르메티쿰》 포이만드레스 상징에 기반한 정성적 성찰 안내이며, 확정적 예언이 아닙니다.',
   };
 }
@@ -345,5 +349,6 @@ export function formatHermeticPoimandresPrompt(rep: HermeticPoimandresAscensionR
 · 포이만드레스 교차 종합: ${rep.poimandresSynthesisMatrix.synthesizedVerdict}
 · 포이만드레스 신성 지혜 지침: ${rep.poimandresHermeticGuidance}
 · 누스 빛의 상승 리추얼: ${rep.nousLightAscensionRitual}
+· 질문 맞춤 성찰 질문: ${rep.reflectiveQuestion}
 · 해석 경계: 본 리포트는 《코르푸스 헤르메티쿰》 포이만드레스 상징에 기반한 정성적 성찰 안내이며, 확정적 예언이 아닙니다.`;
 }
