@@ -10,7 +10,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const ALEXANDRIAN_DECAN_ENGINE_VERSION = '2.1.0';
+export const ALEXANDRIAN_DECAN_ENGINE_VERSION = '2.2.0';
 
 export type DecanQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -51,6 +51,7 @@ export interface AlexandrianDecanThirtySixGodsReport {
   practiceGuidance: string;
   ritualAction: string;
   reflectionFocus: string;
+  reflectiveQuestion: string;
   counselNote: string;
   boundaryNotice: string;
   interpretiveBoundary: string;
@@ -247,6 +248,10 @@ export function calculateAlexandrianDecanThirtySixGods(
   const practiceGuidance = `${dominantDecan.soulVirtue} ${topicGuide.practice}`;
   const ritualAction = topicGuide.ritual;
   const reflectionFocus = topicGuide.reflection;
+  const trimmedQ = question.trim();
+  const reflectiveQuestion = trimmedQ
+    ? `‘${trimmedQ}’라는 물음을 안고 있는 지금, ${dominantDecan.nameGreek}의 카이로스 앞에서 내가 조급히 당기려던 속도를 멈추고 기다려야 할 리듬은 무엇인가요?`
+    : reflectionFocus;
   const counselNote = topicGuide.counsel;
   const boundaryNotice = '알렉산드리아 36대 데칸 관점은 천상 시간의 상징을 빌려 삶의 리듬과 태도를 성찰하는 참고 도구이며, 미래 사건이나 길흉을 단정하지 않습니다.';
 
@@ -276,6 +281,7 @@ export function calculateAlexandrianDecanThirtySixGods(
     practiceGuidance,
     ritualAction,
     reflectionFocus,
+    reflectiveQuestion,
     counselNote,
     boundaryNotice,
     interpretiveBoundary: boundaryNotice,
@@ -302,7 +308,7 @@ export function formatAlexandrianDecanThirtySixGodsPrompt(rep: AlexandrianDecanT
   - 주의 경계: ${rep.decanSynthesisMatrix.cautionNotice}
 · 실천 조언: ${rep.practiceGuidance}
 · 일상 의례: ${rep.ritualAction}
-· 성찰 질문: ${rep.reflectionFocus}
+· 성찰 질문: ${rep.reflectiveQuestion}
 · 조언 요약: ${rep.counselNote}
 · 해석 경계: ${rep.boundaryNotice}`;
 }

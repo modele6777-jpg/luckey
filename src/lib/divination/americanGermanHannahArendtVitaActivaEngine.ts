@@ -8,7 +8,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const AMERICAN_GERMAN_HANNAH_ARENDT_VERSION = 'LUCKEY-HANNAH-ARENDT-VITA-ACTIVA-v2.1.0';
+export const AMERICAN_GERMAN_HANNAH_ARENDT_VERSION = 'LUCKEY-HANNAH-ARENDT-VITA-ACTIVA-v2.2.0';
 
 export type ArendtQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -61,6 +61,7 @@ export interface HannahArendtVitaActivaResult {
   practiceGuidance: string;
   ritualAction: string;
   reflectionFocus: string;
+  reflectiveQuestion: string;
   counselNote: string;
   boundaryNotice: string;
   interpretiveBoundary: string;
@@ -150,6 +151,16 @@ function classifyArendtTopic(question: string): ArendtQuestionTopic {
 function getKstDateKey(now: Date): string {
   const kstMs = now.getTime() + 9 * 60 * 60 * 1000;
   return new Date(kstMs).toISOString().slice(0, 10);
+}
+
+function formatKstTimestamp(now: Date): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} (+09:00)`;
 }
 
 const ARENDT_TOPIC_GUIDANCE: Record<
@@ -283,6 +294,10 @@ export function calculateHannahArendtVitaActiva(
   const practiceGuidance = `${activeArendtTheme.practicalCounsel} ${topicGuide.practice}`;
   const ritualAction = topicGuide.ritual;
   const reflectionFocus = topicGuide.reflection;
+  const trimmedQ = question.trim();
+  const reflectiveQuestion = trimmedQ
+    ? `‘${trimmedQ}’라는 물음 앞에서 관성의 대답을 내려놓고, 내가 지금 여기서 새롭게 시작(탄생성)하고 싶은 첫 행위는 무엇인가요?`
+    : reflectionFocus;
   const counselNote = topicGuide.counsel;
   const boundaryNotice = '한나 아렌트의 사유 체계는 인간 실존과 공적 행위의 태도를 성찰하기 위한 철학적 렌즈이며, 현실의 사실 판단이나 미래 예측을 대신하지 않습니다.';
 
@@ -293,7 +308,7 @@ export function calculateHannahArendtVitaActiva(
 
   return {
     engineVersion: AMERICAN_GERMAN_HANNAH_ARENDT_VERSION,
-    calculatedAtKst: now.toISOString(),
+    calculatedAtKst: formatKstTimestamp(now),
     questionTopic,
     natalityRenewalCapacityScore,
     vitaActivaBalanceScore,
@@ -307,6 +322,7 @@ export function calculateHannahArendtVitaActiva(
     practiceGuidance,
     ritualAction,
     reflectionFocus,
+    reflectiveQuestion,
     counselNote,
     boundaryNotice,
     interpretiveBoundary: boundaryNotice,
@@ -326,12 +342,12 @@ function describeArendtStage(score: number): string {
 export function formatHannahArendtVitaActivaPrompt(res: HannahArendtVitaActivaResult): string {
   return [
     `【한나 아렌트 《인간의 조건》 활동적 삶 & 탄생성 지표】`,
-    `- 질문 맥락: ${res.questionTopic}`,
+    `- 기준 시각: ${res.calculatedAtKst} | 질문 맥락: ${res.questionTopic}`,
     `- 핵심 실존 테마: ${res.activeArendtTheme.themeTitleKo} [${res.activeArendtTheme.themeTitleEn}]`,
     `- 실존적 통찰: ${res.activeArendtTheme.existentialInsight}`,
     `- 실천 조언: ${res.practiceGuidance}`,
     `- 일상 의례: ${res.ritualAction}`,
-    `- 성찰 질문: ${res.reflectionFocus}`,
+    `- 성찰 질문: ${res.reflectiveQuestion}`,
     `- 핵심 원전 경구: "${res.focalArendtAphorism.aphorismKo}"`,
     `- 원전 출처: "${res.focalArendtAphorism.aphorismEn}" [${res.focalArendtAphorism.sourceContext}]`,
     `- KST 활동적 삶 리듬: ${res.temporalVitaActivaRhythm.kstWindow} (${res.temporalVitaActivaRhythm.vitaActivaFocus}, 흐름 ${describeArendtStage(res.temporalVitaActivaRhythm.natalityClarityIndex)}) — ${res.temporalVitaActivaRhythm.rhythmDirective}`,
