@@ -32,7 +32,7 @@ import type { UserProfile } from '../sharedState';
 import { calculateDetailedSaju, SajuAnalysisResult } from '../sajuAnalysis';
 import { hexagram } from './iching';
 
-export const HELUOLISHU_ENGINE_VERSION = 'LUCKEY-HL-v2.2.0';
+export const HELUOLISHU_ENGINE_VERSION = 'LUCKEY-HL-v2.3.0';
 
 export const HELUOLISHU_METHOD =
   '하락이수(河洛理數) 정통 상수역학 산법: 사주 8자 하도낙서 천수(25)·지수(30) 치환, 선천본괘(先天本卦)·원당효(元堂爻)·후천변괘(後天變卦) 결정론적 산출, 음양 밸런스·원당효 당위성·10년 대운 주역 궤적 및 청년/장년 2대 인생 주기 지수 산출';
@@ -105,6 +105,8 @@ export interface HeLuoLiShuResult {
   };
   lifeTransitionKey: string;
   reflectiveQuestion: string;
+  ritualAction: string;
+  reflectionFocus: string;
   boundaryNotice: string;
   interpretiveBoundary: string;
 }
@@ -344,6 +346,13 @@ export function calculateHeLuoLiShu(params?: {
     cautionNotice: '기수(천수)와 우수(지수) 중 한쪽으로만 치우쳐 조급하거나 지나치게 수동적이 되지 않도록 균형을 살피십시오.',
   };
 
+  const reflectiveQuestion = question
+    ? `‘${question}’ 앞에서 선천본괘 ${innateGua.name}의 바탕과 후천변괘 ${acquiredGua.name}의 방향을 연결할 원당 제${yuanTangYao}효의 첫 실천은 무엇입니까?`
+    : `선천 ${innateGua.name}과 후천 ${acquiredGua.name}을 잇는 원당 제${yuanTangYao}효의 소명 중 지금 가장 먼저 깨워야 할 태도는 무엇입니까?`;
+
+  const ritualAction = `[선천 ${innateGua.name} → 원당 제${yuanTangYao}효 → 후천 ${acquiredGua.name}] 오늘 15분 동안 원당효(${yuanTangDetail.alignment})의 소명을 기준으로 ${situationalHeLuoAudit.focusTheme}에 맞춘 첫 행동을 한 가지 실행하세요.`;
+  const reflectionFocus = reflectiveQuestion;
+
   return {
     engineVersion: HELUOLISHU_ENGINE_VERSION,
     method: HELUOLISHU_METHOD,
@@ -382,9 +391,9 @@ export function calculateHeLuoLiShu(params?: {
     temporalHeLuoRhythm,
     heLuoSynthesisMatrix,
     lifeTransitionKey,
-    reflectiveQuestion: question
-      ? `‘${question}’ 앞에서 선천본괘 ${innateGua.name}의 바탕과 후천변괘 ${acquiredGua.name}의 방향을 연결할 원당 제${yuanTangYao}효의 첫 실천은 무엇입니까?`
-      : `선천 ${innateGua.name}과 후천 ${acquiredGua.name}을 잇는 원당 제${yuanTangYao}효의 소명 중 지금 가장 먼저 깨워야 할 태도는 무엇입니까?`,
+    reflectiveQuestion,
+    ritualAction,
+    reflectionFocus,
     boundaryNotice: '본 결과는 하락이수 상수역학의 사주·주역 상징 치환 모델에 기반한 정성적 성찰 안내이며, 확정적 길흉 판정이 아닙니다.',
     interpretiveBoundary: '본 결과는 하락이수 상수역학의 사주·주역 상징 치환 모델에 기반한 정성적 성찰 안내이며, 확정적 길흉 판정이 아닙니다.',
   };
@@ -418,7 +427,8 @@ export function formatHeLuoLiShuPrompt(res: HeLuoLiShuResult): string {
 ${dtStr}
 - 대전환 핵심 비결: ${res.lifeTransitionKey}
 - 마스터 거시 전략: "${res.masterStrategicGuidance}"
-- 성찰 질문: ${res.reflectiveQuestion}
+- 실천 의례(Ritual Action): ${res.ritualAction}
+- 성찰 질문: ${res.reflectionFocus}
 - 해석 경계: ${res.boundaryNotice}
 ※ 루시 지침: 하락이수는 사주 8자가 주역 64괘의 대하드라마로 치환되는 동양 최고봉 수리 명학입니다. 청년기(선천)의 기본 바탕과 30세 이후(후천)의 대성공 괘상, 그리고 평생의 소명이 담긴 원당효를 입체적으로 해설해 주세요.`;
 }

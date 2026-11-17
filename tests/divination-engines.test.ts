@@ -2103,8 +2103,10 @@ test('HeLuoLiShu Engine: 사주·주역 융합 선천괘·후천괘·원당효 �
   assert(res.temporalHeLuoRhythm.hetuWatchWindow.length > 0);
   assert(res.heLuoSynthesisMatrix.coreInsight.length > 0);
   assert(res.interpretiveBoundary.length > 0);
+  assert(res.ritualAction.length > 0 && res.reflectionFocus.length > 0);
   const prompt = formatHeLuoLiShuPrompt(res);
   assert(prompt.includes(HELUOLISHU_ENGINE_VERSION));
+  assert(prompt.includes(res.ritualAction));
   assert(prompt.includes('선천본괘'));
   assert(prompt.includes('원당효'));
   assert(prompt.includes('후천변괘'));
@@ -3127,8 +3129,10 @@ test('Hellenistic Lots Engine: calculates Fortune, Spirit, Eros, Nemesis lots de
   assert(rep.temporalLotsRhythm.hellenisticSectWindow.length > 0);
   assert(rep.lotsSynthesisMatrix.coreInsight.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatHellenisticLotsPrompt(rep);
   assert(prompt.includes(HELLENISTIC_LOTS_ENGINE_VERSION));
+  assert(prompt.includes(rep.ritualAction));
   assert(prompt.includes('포르투나의 랏'));
   assert(prompt.includes('스피릿의 랏'));
   assert(prompt.includes('KST'));
@@ -3301,9 +3305,11 @@ test('Hermetic Kybalion Engine: maps 7 cosmic principles and alchemical shift', 
   assert(rep.temporalPendulumRhythm.pendulumWindow.length > 0);
   assert(rep.kybalionSynthesisMatrix.synthesizedVerdict.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatHermeticKybalionPrompt(rep);
   assert(prompt.includes('헤르메스 카이발리온'));
   assert(prompt.includes(rep.masterPrinciple.nameKo));
+  assert(prompt.includes(rep.ritualAction));
   assert.doesNotMatch(prompt, /\bHz\b|주파수|frequency/i);
   assert(!prompt.includes('%'));
 });
