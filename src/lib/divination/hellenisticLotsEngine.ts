@@ -21,7 +21,7 @@ import type { UserProfile } from '../sharedState';
 import { parseBirthTime } from '../birthDateTime';
 import { resolveEffectiveSolarDate } from '../lunarCalendar';
 
-export const HELLENISTIC_LOTS_ENGINE_VERSION = 'LUCKEY-HELLENISTIC-LOTS-v2.2.0';
+export const HELLENISTIC_LOTS_ENGINE_VERSION = 'LUCKEY-HELLENISTIC-LOTS-v2.3.0';
 
 export interface ArabicLotInfo {
   nameKo: string;
@@ -68,6 +68,8 @@ export interface HellenisticLotsReport {
   };
   cosmicAdvice: string;
   reflectiveQuestion: string;
+  ritualAction: string;
+  reflectionFocus: string;
   boundaryNotice: string;
   interpretiveBoundary: string;
 }
@@ -298,6 +300,13 @@ export function calculateHellenisticLots(params: {
     cautionNotice: `네메시스의 랏(${nemesisSign.ko} ${nemesisHouse}하우스)이 가리키는 완벽주의와 회피 심리를 경계하십시오.`,
   };
 
+  const reflectiveQuestion = params.question?.trim()
+    ? `"${params.question.trim()}"의 국면에서 ${situationalLotsAudit.activeLotKey}의 시선을 따라 오늘 가장 먼저 실행하거나 내려놓을 한 가지는 무엇입니까?`
+    : `${dominantLot}의 흐름 위에서 오늘 현실의 그릇(포르투나)과 의지(스피릿)를 맞물릴 한 걸음은 무엇입니까?`;
+
+  const ritualAction = `[${situationalLotsAudit.activeLotKey} · ${dominantLot}] 오늘 ${situationalLotsAudit.focusTheme}에 맞춰 스피릿(${spiritSign.ko})의 의지적 행동 1가지를 선택해 실행하세요.`;
+  const reflectionFocus = reflectiveQuestion;
+
   return {
     engineVersion: HELLENISTIC_LOTS_ENGINE_VERSION,
     calculatedAtKst: temporalLotsRhythm.kstTimeLabel,
@@ -313,9 +322,9 @@ export function calculateHellenisticLots(params: {
     temporalLotsRhythm,
     lotsSynthesisMatrix,
     cosmicAdvice,
-    reflectiveQuestion: params.question?.trim()
-      ? `"${params.question.trim()}"의 국면에서 ${situationalLotsAudit.activeLotKey}의 시선을 따라 오늘 가장 먼저 실행하거나 내려놓을 한 가지는 무엇입니까?`
-      : `${dominantLot}의 흐름 위에서 오늘 현실의 그릇(포르투나)과 의지(스피릿)를 맞물릴 한 걸음은 무엇입니까?`,
+    reflectiveQuestion,
+    ritualAction,
+    reflectionFocus,
     boundaryNotice: '본 결과는 헬레니즘 점성술 4대 아라빅 랏과 섹트 원리에 따른 정성적 상징 해석이며, 확정적 길흉 판정이 아닙니다.',
     interpretiveBoundary: '본 결과는 헬레니즘 점성술 4대 아라빅 랏과 섹트 원리에 따른 정성적 상징 해석이며, 확정적 길흉 판정이 아닙니다.',
   };
@@ -360,7 +369,8 @@ export function formatHellenisticLotsPrompt(report: HellenisticLotsReport): stri
 
 ★ 조디악 릴리싱 핵심 전언:
 "${report.cosmicAdvice}"
-- 질문 맞춤 성찰 질문: ${report.reflectiveQuestion}
+- 실천 의례(Ritual Action): ${report.ritualAction}
+- 질문 맞춤 성찰 질문: ${report.reflectionFocus}
 - 해석 경계: ${report.boundaryNotice}
 ======================================================================`;
 }

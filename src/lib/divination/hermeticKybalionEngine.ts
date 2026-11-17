@@ -11,7 +11,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const HERMETIC_KYBALION_VERSION = 'LUCKEY-HERMETIC-KYBALION-v2.3.0';
+export const HERMETIC_KYBALION_VERSION = 'LUCKEY-HERMETIC-KYBALION-v2.4.0';
 
 export type KybalionQuestionFocus = 'career' | 'relationship' | 'anxiety' | 'decision' | 'spiritual';
 
@@ -69,6 +69,8 @@ export interface HermeticKybalionReport {
   kybalionSynthesisMatrix: KybalionSynthesisMatrix;
   hermeticWisdomDirective: string;
   reflectiveQuestion: string;
+  ritualAction: string;
+  reflectionFocus: string;
   interpretiveBoundary: string;
 }
 
@@ -285,6 +287,13 @@ export function calculateHermeticKybalion(
   const kst = new Date(targetDate.getTime() + 9 * 60 * 60 * 1000);
   const calculatedAtKst = `${kst.toISOString().slice(0, 19).replace('T', ' ')} +09:00 KST`;
 
+  const reflectiveQuestion = question.trim()
+    ? `"${question.trim()}"의 흔들림 속에서 ${master.nameKo}의 렌즈로 볼 때 내가 지금 원인(Cause)으로 바꿀 수 있는 한 가지는 무엇입니까?`
+    : `[${chosenDuality.pair}]의 진자 사이에서 오늘 내 의식의 눈금을 한 칸 옮겨 붙들고 싶은 극성은 무엇입니까?`;
+
+  const ritualAction = `[${master.nameKo} · ${rhythmPhase}] ${situationalKybalionAudit.transmutationAction}`;
+  const reflectionFocus = reflectiveQuestion;
+
   return {
     engineVersion: HERMETIC_KYBALION_VERSION,
     calculatedAt: targetDate.toISOString(),
@@ -307,9 +316,9 @@ export function calculateHermeticKybalion(
     temporalPendulumRhythm,
     kybalionSynthesisMatrix,
     hermeticWisdomDirective: `현재 당신의 에너지는 '${master.nameKo}'의 법칙 아래 움직이고 있습니다. 리듬은 '${rhythmPhase}' 국면이므로, ${rhythmPhase === '밀물(진전/확장기)' ? '주저하지 말고 의도를 선포하고 적극적으로 실행' : '무리한 확장 대신 내면의 배터리를 충전하고 다음 주기를 준비'}하십시오.`,
-    reflectiveQuestion: question.trim()
-      ? `"${question.trim()}"의 흔들림 속에서 ${master.nameKo}의 렌즈로 볼 때 내가 지금 원인(Cause)으로 바꿀 수 있는 한 가지는 무엇입니까?`
-      : `[${chosenDuality.pair}]의 진자 사이에서 오늘 내 의식의 눈금을 한 칸 옮겨 붙들고 싶은 극성은 무엇입니까?`,
+    reflectiveQuestion,
+    ritualAction,
+    reflectionFocus,
     interpretiveBoundary: '본 리포트는 《카이발리온》 7대 우주 원리 상징에 기반한 정성적 성찰 안내이며, 확정적 예언이 아닙니다.',
   };
 }
@@ -340,7 +349,8 @@ export function formatHermeticKybalionPrompt(rep: HermeticKybalionReport): strin
 ${principlesStr}
 - 카이발리온 교차 종합: ${rep.kybalionSynthesisMatrix.synthesizedVerdict}
 - 행동 지침: ${rep.hermeticWisdomDirective}
-- 질문 맞춤 성찰 질문: ${rep.reflectiveQuestion}
+- 실천 의례(Ritual Action): ${rep.ritualAction}
+- 질문 맞춤 성찰 질문: ${rep.reflectionFocus}
 - 해석 경계: 본 리포트는 《카이발리온》 7대 우주 원리 상징에 기반한 정성적 성찰 안내이며, 확정적 예언이 아닙니다.
 ※ 상담 시 수치 점수를 언급하지 말고, 내담자가 겪는 외적 고민을 '원인과 결과', '극성', '리듬' 등 우주 법칙의 상호작용 관점에서 조망해 주어 스스로 삶의 통제권을 회복하도록 이끌어주세요.`;
 }
