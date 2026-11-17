@@ -13,7 +13,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const GERMAN_THEODOR_ADORNO_NEGATIVE_DIALECTICS_VERSION = 'LUCKEY-THEODOR-ADORNO-NEGATIVE-DIALECTICS-v2.1.0';
+export const GERMAN_THEODOR_ADORNO_NEGATIVE_DIALECTICS_VERSION = 'LUCKEY-THEODOR-ADORNO-NEGATIVE-DIALECTICS-v2.2.0';
 
 export interface AdornoTheme {
   themeKey: string;
@@ -45,6 +45,8 @@ export interface GermanTheodorAdornoNegativeDialecticsMinimaMoraliaResult {
   focalAdornoAphorism: AdornoAphorism;
   secondaryAdornoAphorism: AdornoAphorism;
   reflectiveQuestion: string;
+  ritualAction: string;
+  reflectionFocus: string;
   interpretiveBoundary: string;
   adornoComprehensiveGuidance: {
     guidanceTitle: string;
@@ -220,6 +222,8 @@ export function calculateGermanTheodorAdornoNegativeDialecticsMinimaMoralia(
     focalAdornoAphorism,
     secondaryAdornoAphorism,
     reflectiveQuestion,
+    ritualAction: focalAdornoAphorism.actionGuidance,
+    reflectionFocus: reflectiveQuestion,
     interpretiveBoundary,
     adornoComprehensiveGuidance: {
       guidanceTitle,
@@ -250,6 +254,8 @@ export function formatGermanTheodorAdornoNegativeDialecticsMinimaMoraliaPrompt(
     `- 보조 원전 출처: [${res.secondaryAdornoAphorism.sourceContext}]`,
     `- 보조 실천 지침: ${res.secondaryAdornoAphorism.actionGuidance}`,
     `- 성찰 질문: ${res.reflectiveQuestion}`,
+    `- 실천 의례: ${res.ritualAction}`,
+    `- 성찰 초점: ${res.reflectionFocus}`,
     `- 종합 아도르노 권면: ${res.adornoComprehensiveGuidance.philosophicalCounsel}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
   ];

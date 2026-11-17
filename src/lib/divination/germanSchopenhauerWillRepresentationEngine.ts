@@ -12,7 +12,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const SCHOPENHAUER_WILL_REPRESENTATION_VERSION = 'LUCKEY-SCHOPENHAUER-WILL-REPRESENTATION-v2.2.0';
+export const SCHOPENHAUER_WILL_REPRESENTATION_VERSION = 'LUCKEY-SCHOPENHAUER-WILL-REPRESENTATION-v2.3.0';
 
 export interface SchopenhauerTheme {
   themeKey: string;
@@ -72,6 +72,8 @@ export interface SchopenhauerWillRepresentationResult {
     counselTitle: string;
     philosophicalGuidance: string;
   };
+  ritualAction: string;
+  reflectionFocus: string;
   interpretiveBoundary: string;
 }
 
@@ -314,6 +316,8 @@ export function calculateSchopenhauerWillRepresentation(
       counselTitle,
       philosophicalGuidance,
     },
+    ritualAction: temporalContemplationRhythm.dailyContemplationPractice,
+    reflectionFocus: situationalWillAudit.reflectiveQuestion,
     interpretiveBoundary: '이 관조는 확정 예언이 아니라 욕망의 소란을 한 걸음 비켜서서 바라보기 위한 철학적 상징 프레임입니다.',
   };
 }
@@ -341,6 +345,8 @@ export function formatSchopenhauerWillRepresentationPrompt(res: SchopenhauerWill
     `- 핵심 관조 테마: ${res.activeSchopenhauerTheme.themeTitleKo} [${res.activeSchopenhauerTheme.themeTitleGerman}]`,
     `- 핵심 아포리즘: "${res.focalPhilosophicalAphorism.aphorismKo}" ("${res.focalPhilosophicalAphorism.aphorismGerman}")`,
     `- 통합 실존 처방: ${res.schopenhauerPersonalCounsel.philosophicalGuidance}`,
+    `- 실천 의례: ${res.ritualAction}`,
+    `- 성찰 초점: ${res.reflectionFocus}`,
     `- 해석 경계: 이 관조는 확정 예언이 아니라 욕망의 소란을 한 걸음 비켜서서 바라보기 위한 철학적 상징 프레임입니다.`,
   ].join('\n');
 }

@@ -6355,11 +6355,13 @@ test('Arthur Schopenhauer Will Representation Engine: calculates Will transcende
   assert(rep.situationalWillAudit.focusAxisKo.length > 0);
   assert(rep.temporalContemplationRhythm.heiterkeitSerenityIndex >= 0 && rep.temporalContemplationRhythm.heiterkeitSerenityIndex <= 100);
   assert(rep.schopenhauerSynthesisMatrix.overallSchopenhauerGrade.length > 0);
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatSchopenhauerWillRepresentationPrompt(rep);
   assert(prompt.includes('쇼펜하우어 의지와 표상(Wille und Vorstellung) & 자비(Mitleid) 정성 관조'));
   assert(prompt.includes(rep.activeSchopenhauerTheme.themeTitleKo));
   assert(prompt.includes('질문 맥락 관조 렌즈'));
+  assert(prompt.includes('실천 의례:') && prompt.includes('성찰 초점:'));
   assert(!prompt.includes('/100') && !prompt.includes('%'));
 });
 
@@ -7289,11 +7291,13 @@ test('Hermann Hesse Demian Siddhartha Engine: calculates Abraxas Self-Actualizat
   assert(rep.activeHesseTheme.themeTitleKo.length > 0);
   assert(rep.calculatedAtKst.endsWith('KST'));
   assert(Boolean(rep.hesseSynthesisMatrix?.integratedAction));
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatGermanSwissHermannHesseDemianSiddharthaPrompt(rep);
   assert(prompt.includes('헤르만 헤세 《데미안·싯다르타》 아브락사스 자아실현 & 내면의 길 지표'));
   assert(prompt.includes(rep.activeHesseTheme.themeTitleKo));
   assert(prompt.includes('교차 매트릭스') && prompt.includes('해석 경계'));
+  assert(prompt.includes('실천 의례:') && prompt.includes('성찰 초점:'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });
@@ -8083,10 +8087,12 @@ test('Theodor Adorno Negative Dialectics and Minima Moralia Engine: calculates N
   assert(rep.activeAdornoTheme.themeTitleKo.length > 0);
   assert(rep.calculatedAtKst.endsWith('KST'));
   assert(Boolean(rep.adornoSynthesisMatrix?.integratedAction));
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatGermanTheodorAdornoNegativeDialecticsMinimaMoraliaPrompt(rep);
   assert(prompt.includes('테오도어 아도르노 《부정변증법》 비동일자 수호·미니마 모랄리아 지표'));
   assert(prompt.includes(rep.activeAdornoTheme.themeTitleKo));
   assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('실천 의례:') && prompt.includes('성찰 초점:'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });
