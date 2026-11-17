@@ -6233,6 +6233,7 @@ test('Montaigne Essais Wisdom Engine: calculates Que sais-je inquiry, Self-intro
   assert(rep.humanToleranceEmpathyScore >= 0 && rep.humanToleranceEmpathyScore <= 100);
   assert(rep.equanimityMortalityScore >= 0 && rep.equanimityMortalityScore <= 100);
   assert(rep.activeThematicEssay.essayTitleFrench.length > 0);
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(rep.calculatedAtKst.endsWith('KST'));
   assert(Boolean(rep.montaigneEssaisSynthesisMatrix?.integratedAction));
   assert(rep.interpretiveBoundary.length > 0);
@@ -7442,6 +7443,7 @@ test('Charles de Montesquieu Spirit of Laws Engine: calculates Checks and Balanc
   assert(rep.civicVirtuePublicSpiritScore >= 0 && rep.civicVirtuePublicSpiritScore <= 100);
   assert(rep.enlightenedPluralismToleranceIndex >= 0 && rep.enlightenedPluralismToleranceIndex <= 100);
   assert(rep.activeMontesquieuTheme.themeTitleKo.length > 0);
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(rep.calculatedAtKst.endsWith('KST'));
   assert(Boolean(rep.montesquieuSynthesisMatrix?.integratedAction));
   assert(rep.interpretiveBoundary.length > 0);
@@ -7985,6 +7987,7 @@ test('Michel Foucault Care of Self Aesthetics Engine: calculates Care of Self, D
   assert(rep.parrhesiaTruthCourageIndex >= 0 && rep.parrhesiaTruthCourageIndex <= 100);
   assert(rep.selfMasteryGovernanceScore >= 0 && rep.selfMasteryGovernanceScore <= 100);
   assert(rep.activeFoucaultTheme.themeTitleKo.length > 0);
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatFrenchMichelFoucaultCareOfSelfAestheticsPrompt(rep);
   assert(prompt.includes('미셸 푸코 《주체의 해석학·자기 배려》 규율권력 탈피 및 존재의 미학 지표'));
   assert(prompt.includes(rep.activeFoucaultTheme.themeTitleKo));

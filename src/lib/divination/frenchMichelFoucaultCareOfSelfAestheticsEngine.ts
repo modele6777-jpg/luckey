@@ -13,7 +13,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const FRENCH_MICHEL_FOUCAULT_CARE_OF_SELF_VERSION = 'LUCKEY-MICHEL-FOUCAULT-CARE-OF-SELF-v2.1.0';
+export const FRENCH_MICHEL_FOUCAULT_CARE_OF_SELF_VERSION = 'LUCKEY-MICHEL-FOUCAULT-CARE-OF-SELF-v2.2.0';
 
 export interface FoucaultTheme {
   themeKey: string;
@@ -45,6 +45,8 @@ export interface FrenchMichelFoucaultCareOfSelfAestheticsResult {
   focalFoucaultAphorism: FoucaultAphorism;
   dailyPracticeRitual: string;
   reflectiveQuestion: string;
+  ritualAction: string;
+  reflectionFocus: string;
   interpretiveBoundary: string;
   foucaultSynthesisMatrix: {
     coreInsight: string;
@@ -205,6 +207,8 @@ export function calculateFrenchMichelFoucaultCareOfSelfAesthetics(
     focalFoucaultAphorism,
     dailyPracticeRitual,
     reflectiveQuestion,
+    ritualAction: dailyPracticeRitual,
+    reflectionFocus: reflectiveQuestion,
     interpretiveBoundary,
     foucaultSynthesisMatrix,
     foucaultComprehensiveGuidance: {
