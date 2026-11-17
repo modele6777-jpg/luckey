@@ -14,7 +14,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const GERMAN_KARL_JASPERS_VERSION = 'LUCKEY-KARL-JASPERS-EXISTENZ-v2.1.0';
+export const GERMAN_KARL_JASPERS_VERSION = 'LUCKEY-KARL-JASPERS-EXISTENZ-v2.2.0';
 
 export interface JaspersTheme {
   themeKey: string;
@@ -46,6 +46,8 @@ export interface GermanKarlJaspersExistenzGrenzsituationenResult {
   focalJaspersAphorism: JaspersAphorism;
   secondaryJaspersAphorism: JaspersAphorism;
   reflectiveQuestion: string;
+  ritualAction: string;
+  reflectionFocus: string;
   interpretiveBoundary: string;
   jaspersComprehensiveGuidance: {
     guidanceTitle: string;
@@ -200,6 +202,8 @@ export function calculateGermanKarlJaspersExistenzGrenzsituationen(
   const focalJaspersAphorism = JASPERS_APHORISMS[aphorismIndex];
   const secondaryJaspersAphorism = JASPERS_APHORISMS[secondaryAphorismIndex];
   const reflectiveQuestion = buildJaspersReflectiveQuestion(activeJaspersTheme, query);
+  const ritualAction = focalJaspersAphorism.actionGuidance;
+  const reflectionFocus = reflectiveQuestion;
   const interpretiveBoundary = '카를 야스퍼스 실존철학 관점은 심리 진단이나 미래 운명 단정이 아니라, 한계상황 속에서 실존적 결단과 소통을 비추는 철학적 성찰 렌즈입니다.';
 
   const guidanceTitle = `카를 야스퍼스 실존과 한계상황 지혜: ${activeJaspersTheme.themeTitleKo}`;
@@ -229,6 +233,8 @@ export function calculateGermanKarlJaspersExistenzGrenzsituationen(
     focalJaspersAphorism,
     secondaryJaspersAphorism,
     reflectiveQuestion,
+    ritualAction,
+    reflectionFocus,
     interpretiveBoundary,
     jaspersComprehensiveGuidance: {
       guidanceTitle,
@@ -260,6 +266,8 @@ export function formatGermanKarlJaspersExistenzGrenzsituationenPrompt(
     `- 보조 원전 출처: [${res.secondaryJaspersAphorism.sourceContext}]`,
     `- 보조 실천 지침: ${res.secondaryJaspersAphorism.actionGuidance}`,
     `- 성찰 질문: ${res.reflectiveQuestion}`,
+    `- 실천 의례: ${res.ritualAction}`,
+    `- 성찰 초점: ${res.reflectionFocus}`,
     `- 종합 야스퍼스 실존 권면: ${res.jaspersComprehensiveGuidance.philosophicalCounsel}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
   ];

@@ -6413,10 +6413,14 @@ test('Friedrich Nietzsche Zarathustra Amor Fati Engine: calculates Amor Fati rad
   assert(rep.situationalMetamorphosis.focusAxisKo.length > 0);
   assert(rep.temporalZarathustraRhythm.dionysianPulseIndex >= 0 && rep.temporalZarathustraRhythm.dionysianPulseIndex <= 100);
   assert(rep.uebermenschSynthesisMatrix.overallZarathustraGrade.length > 0);
+  assert(rep.ritualAction.length > 0);
+  assert(rep.reflectionFocus.length > 0);
   const prompt = formatNietzscheZarathustraAmorFatiPrompt(rep);
   assert(prompt.includes('프리드리히 니체 차라투스트라 초인 & 아모르 파티(Amor Fati) 지표'));
   assert(prompt.includes(rep.activeNietzscheTheme.themeTitleKo));
   assert(prompt.includes('질문 맥락 변신 단계'));
+  assert(prompt.includes('실천 의례:'));
+  assert(prompt.includes('성찰 초점:'));
 });
 
 test('Seosan Daesa Hyujeong Seonga Gwigam Engine: calculates Ilmul yeongmyeong, Hwalku chamseon, and Seon-Gyo integration', () => {
@@ -6962,10 +6966,14 @@ test('Martin Heidegger Being and Time Engine: calculates In-der-Welt-sein, Eigen
   assert(rep.situationalDaseinAudit.focusAxisKo.length > 0);
   assert(rep.temporalAugenblickRhythm.authenticityClarityIndex >= 0 && rep.temporalAugenblickRhythm.authenticityClarityIndex <= 100);
   assert(rep.daseinSynthesisMatrix.overallDaseinGrade.length > 0);
+  assert(rep.ritualAction.length > 0);
+  assert(rep.reflectionFocus.length > 0);
   const prompt = formatMartinHeideggerBeingAndTimePrompt(rep);
   assert(prompt.includes('마틴 하이데거 《존재와 시간》 현존재 & 본래성 지표'));
   assert(prompt.includes(rep.activeHeideggerTheme.themeTitleKo));
   assert(prompt.includes('질문 맥락 현존재 국면'));
+  assert(prompt.includes('실천 의례:'));
+  assert(prompt.includes('성찰 초점:'));
 });
 
 test('Hannah Arendt Vita Activa Engine: provides qualitative Natality guidance, question context and hides raw scores', () => {
@@ -7358,10 +7366,14 @@ test('Karl Jaspers Existenz Grenzsituationen Engine: calculates Grenzsituationen
   assert(rep.activeJaspersTheme.themeTitleKo.length > 0);
   assert(rep.calculatedAtKst.endsWith('KST'));
   assert(Boolean(rep.jaspersSynthesisMatrix?.integratedAction));
+  assert(rep.ritualAction.length > 0);
+  assert(rep.reflectionFocus.length > 0);
   const prompt = formatGermanKarlJaspersExistenzGrenzsituationenPrompt(rep);
   assert(prompt.includes('카를 야스퍼스 《철학》 한계상황 직시 & 초월자 암호·실존적 소통 지표'));
   assert(prompt.includes(rep.activeJaspersTheme.themeTitleKo));
   assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('실천 의례:'));
+  assert(prompt.includes('성찰 초점:'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });

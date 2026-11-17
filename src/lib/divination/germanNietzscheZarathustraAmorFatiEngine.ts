@@ -13,7 +13,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const NIETZSCHE_ZARATHUSTRA_AMOR_FATI_VERSION = 'LUCKEY-NIETZSCHE-ZARATHUSTRA-AMOR-FATI-v2.1.0';
+export const NIETZSCHE_ZARATHUSTRA_AMOR_FATI_VERSION = 'LUCKEY-NIETZSCHE-ZARATHUSTRA-AMOR-FATI-v2.2.0';
 
 export interface NietzscheTheme {
   themeKey: string;
@@ -70,6 +70,8 @@ export interface NietzscheZarathustraAmorFatiResult {
   temporalZarathustraRhythm: NietzscheTemporalZarathustraRhythm;
   uebermenschSynthesisMatrix: NietzscheUebermenschMatrix;
   dailyPracticeRitual: string;
+  ritualAction: string;
+  reflectionFocus: string;
   interpretiveBoundary: string;
   nietzschePersonalCounsel: {
     counselTitle: string;
@@ -296,6 +298,8 @@ export function calculateNietzscheZarathustraAmorFati(
     `${temporalZarathustraRhythm.dailyAffirmationPractice}`;
 
   const dailyPracticeRitual = `오늘의 아모르 파티 실천 의례: ${temporalZarathustraRhythm.dailyAffirmationPractice} 피하고 싶은 조건 하나를 '그럼에도 내가 창조로 바꿀 재료'로 다시 명명해 보십시오.`;
+  const ritualAction = dailyPracticeRitual;
+  const reflectionFocus = situationalMetamorphosis.reflectiveQuestion;
   const interpretiveBoundary = '이 관점은 니체의 실존 철학과 운명애(Amor Fati)의 상징적 통찰일 뿐, 현실의 심리·의료적 진단이나 결정을 대신하지 않습니다.';
 
   return {
@@ -312,6 +316,8 @@ export function calculateNietzscheZarathustraAmorFati(
     temporalZarathustraRhythm,
     uebermenschSynthesisMatrix,
     dailyPracticeRitual,
+    ritualAction,
+    reflectionFocus,
     interpretiveBoundary,
     nietzschePersonalCounsel: {
       counselTitle,
@@ -379,6 +385,8 @@ export function formatNietzscheZarathustraAmorFatiPrompt(res: NietzscheZarathust
     `- 핵심 초인 테마: ${res.activeNietzscheTheme.themeTitleKo} [${res.activeNietzscheTheme.themeTitleGerman}]`,
     `- 핵심 아포리즘: "${res.focalNietzscheAphorism.aphorismKo}" ("${res.focalNietzscheAphorism.aphorismGerman}")`,
     `- 일상 실천 의례: ${res.dailyPracticeRitual}`,
+    `- 실천 의례: ${res.ritualAction}`,
+    `- 성찰 초점: ${res.reflectionFocus}`,
     `- 통합 실존 처방: ${res.nietzschePersonalCounsel.philosophicalGuidance}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
   ].join('\n');
