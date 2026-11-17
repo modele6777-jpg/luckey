@@ -9,12 +9,12 @@
  * 3. 3대 수양 영역(Topoi): 욕망과 기피의 훈련(운명 순응), 충동과 행동의 훈련(적절한 의무), 동의와 판단의 훈련(이성적 명징).
  * 4. 아디아포라(Adiaphora)와 아파테이아(Apatheia): 외부 사물에 대한 초연함과 영혼의 흔들림 없는 평정.
  *
- * @version LUCKEY-EPICTETUS-CONTROL-v2.0.0
+ * @version LUCKEY-EPICTETUS-CONTROL-v2.3.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const EPICTETUS_CONTROL_VERSION = 'LUCKEY-EPICTETUS-CONTROL-v2.2.0';
+export const EPICTETUS_CONTROL_VERSION = 'LUCKEY-EPICTETUS-CONTROL-v2.3.0';
 
 function formatEpictetusKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -88,6 +88,8 @@ export interface EpictetusDichotomyOfControlResult {
   // v2.1.0 순수 정성 실천·성찰·경계
   dailyPracticeRitual: string;
   reflectiveQuestion: string;
+  ritualAction: string;
+  reflectionFocus: string;
   interpretiveBoundary: string;
   epictetusSynthesisMatrix?: {
     dominantTension: string;
@@ -324,6 +326,8 @@ export function calculateEpictetusDichotomyOfControl(
     },
     dailyPracticeRitual,
     reflectiveQuestion,
+    ritualAction: dailyPracticeRitual,
+    reflectionFocus: reflectiveQuestion,
     interpretiveBoundary,
     epictetusSynthesisMatrix,
   };

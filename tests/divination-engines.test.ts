@@ -5467,6 +5467,7 @@ test('Ancient Greek Eleusinian Triptolemos Engine: calculates dragon chariot, sa
   assert(rep.situationalEleusisAudit.homericHymnCitation.length > 0);
   assert(rep.temporalEleusisRhythm.eleusisFlightWindow.length > 0);
   assert(rep.triptolemosSynthesisMatrix.synthesizedVerdict.length > 0);
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatEleusinianTriptolemosPrompt(rep);
   assert(prompt.includes('고대 그리스 엘레우시스 밀의 《트리프톨레모스(Triptolemos)》'));
@@ -5682,6 +5683,7 @@ test('Ancient Greek Delphic Chilon Know Thyself Engine: calculates Gnothi Seauto
   assert(rep.situationalChilonAudit.delphicInscription.length > 0);
   assert(rep.temporalDelphicRhythm.sanctuaryWindow.length > 0);
   assert(rep.chilonSynthesisMatrix.synthesizedVerdict.length > 0);
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatDelphicChilonPrompt(rep);
   assert(prompt.includes('델포이 아폴론 신전 7현인 《스파르타의 킬론(Chilon)》'));
@@ -5983,6 +5985,7 @@ test('Epictetus Dichotomy of Control Engine: calculates Ta Eph hemin clarity, Pr
   assert(rep.threeTopoiDisciplineScore >= 0 && rep.threeTopoiDisciplineScore <= 100);
   assert(rep.apatheiaEquanimityScore >= 0 && rep.apatheiaEquanimityScore <= 100);
   assert(rep.activeControlDomain.domainNameGreek.length > 0);
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatEpictetusDichotomyOfControlPrompt(rep);
   assert(prompt.includes('스토아학파 에픽테토스 통제이분법 & 프로하이레시스 지표'));
   assert(prompt.includes(rep.activeControlDomain.domainNameKo));

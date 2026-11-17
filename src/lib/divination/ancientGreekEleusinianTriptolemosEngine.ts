@@ -9,12 +9,12 @@
  *    - 살아있는 짐승을 해치지 말라 (Hurt not animals)
  * 3. 질문 맥락 감사·KST 데메테르 계절 리듬·교차 매트릭스 산출
  *
- * @version LUCKEY-ELEUSINIAN-TRIPTOLEMOS-v2.0.0
+ * @version LUCKEY-ELEUSINIAN-TRIPTOLEMOS-v2.2.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const ELEUSINIAN_TRIPTOLEMOS_VERSION = 'LUCKEY-ELEUSINIAN-TRIPTOLEMOS-v2.1.0';
+export const ELEUSINIAN_TRIPTOLEMOS_VERSION = 'LUCKEY-ELEUSINIAN-TRIPTOLEMOS-v2.2.0';
 
 export interface TriptolemosChariotStage {
   stageLevel: number;
@@ -70,6 +70,8 @@ export interface EleusinianTriptolemosResult {
   situationalEleusisAudit: EleusinianSituationalAudit;
   temporalEleusisRhythm: EleusinianTemporalRhythm;
   triptolemosSynthesisMatrix: TriptolemosSynthesisMatrix;
+  ritualAction: string;
+  reflectionFocus: string;
   interpretiveBoundary: string;
 }
 
@@ -231,6 +233,8 @@ export function calculateEleusinianTriptolemos(
   const temporalEleusisRhythm = buildTemporalRhythm(now, seed);
   const triptolemosSynthesisMatrix = buildSynthesisMatrix(activeChariotStage, primaryTriadicLaw, situationalEleusisAudit, temporalEleusisRhythm);
   const interpretiveBoundary = '엘레우시스 밀의 트리프톨레모스 3대 율법 상징을 빌린 정성적 성찰 관점이며, 개인 평가나 미래 단정이 아닙니다.';
+  const ritualAction = situationalEleusisAudit.chariotPrescription;
+  const reflectionFocus = `오늘 내가 정직하게 뿌릴 작은 씨앗(${primaryTriadicLaw.lawTitleKo})과, 그 첫 결실을 나눌 대상은 누구인가요?`;
 
   return {
     engineVersion: ELEUSINIAN_TRIPTOLEMOS_VERSION,
@@ -246,6 +250,8 @@ export function calculateEleusinianTriptolemos(
     situationalEleusisAudit,
     temporalEleusisRhythm,
     triptolemosSynthesisMatrix,
+    ritualAction,
+    reflectionFocus,
     interpretiveBoundary,
   };
 }
