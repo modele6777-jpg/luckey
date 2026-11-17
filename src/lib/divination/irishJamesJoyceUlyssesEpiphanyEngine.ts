@@ -3,10 +3,10 @@
  * Epiphany is located in Stephen Hero; see https://www.joyceproject.com/notes/Wk-bJZUBeQi-aLQfd7Cb.
  * Ulysses episode 4 presents Bloom's household cat, not a lost cat.
  * This engine intentionally emits no personal scores, diagnosis, prediction, or attributed quotation.
- * @version LUCKEY-JOYCE-ULYSSES-EPIPHANY-v2.1.0
+ * @version LUCKEY-JOYCE-ULYSSES-EPIPHANY-v2.2.0
  */
 
-export const IRISH_JAMES_JOYCE_ULYSSES_EPIPHANY_VERSION = 'LUCKEY-JOYCE-ULYSSES-EPIPHANY-v2.1.0';
+export const IRISH_JAMES_JOYCE_ULYSSES_EPIPHANY_VERSION = 'LUCKEY-JOYCE-ULYSSES-EPIPHANY-v2.2.0';
 
 function toKstIso(now: Date): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -35,6 +35,7 @@ export interface IrishJamesJoyceUlyssesEpiphanyResult {
     integratedAction: string;
   };
   boundaryNotice: string;
+  interpretiveBoundary: string;
 }
 
 export const JOYCE_THEMES: JoyceTheme[] = [
@@ -100,6 +101,7 @@ export function calculateIrishJamesJoyceUlyssesEpiphany(query?: string, nowArg?:
     },
     joyceSynthesisMatrix,
     boundaryNotice,
+    interpretiveBoundary: boundaryNotice,
   };
 }
 

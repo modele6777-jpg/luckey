@@ -4070,6 +4070,7 @@ test('Jain Gunasthana Karma Engine: calculates 14 Gunasthanas and Ratnatraya bal
   assert(rep.calculatedAtKst.includes('KST'));
   assert(rep.temporalJainRhythm.samayikaWindow.length > 0);
   assert(rep.jainSynthesisMatrix.coreInsight.length > 0);
+  assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatJainGunasthanaKarmaPrompt(rep);
   assert(prompt.includes('고대 인도 자이나교 14 군아스타나 & 삼보(Ratnatraya) 카르마 성찰 안내'));
   assert(prompt.includes(rep.activeStage.stageNameKo));
@@ -5278,6 +5279,7 @@ test('Japanese Heian Onmyodo Seimei Engine: calculates 12 heavenly generals, Shi
   assert(rep.calculatedAtKst.includes('KST'));
   assert(rep.temporalOnmyoRhythm.twelveBranchWindow.length > 0);
   assert(rep.onmyoSynthesisMatrix.coreInsight.length > 0);
+  assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatHeianOnmyodoSeimeiPrompt(rep);
   assert(prompt.includes('일본 헤이안 음양도 아베노 세이메이 《점사략》 12천장 & 식신 사역'));
   assert(prompt.includes(rep.primaryGuardianGeneral.nameKo));
@@ -8324,6 +8326,7 @@ test('James Joyce engine selects a qualitative literary perspective from the que
   assert.equal(Object.hasOwn(rep, 'epiphanyEverydayRevelationScore'), false);
   assert.equal(Object.hasOwn(rep, 'calculatedAtKst'), false);
   assert(Boolean(rep.joyceSynthesisMatrix?.integratedAction));
+  assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatIrishJamesJoyceUlyssesEpiphanyPrompt(rep);
   assert.match(prompt, /문학적 참고/);
   assert(prompt.includes('교차 매트릭스'));

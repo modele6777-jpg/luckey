@@ -30,7 +30,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const HEIAN_ONMYODO_SEIMEI_VERSION = '2.0.0';
+export const HEIAN_ONMYODO_SEIMEI_VERSION = '2.1.0';
 
 export interface HeianOnmyodoSeimeiReport {
   engineVersion: string;
@@ -73,6 +73,7 @@ export interface HeianOnmyodoSeimeiReport {
   };
   onmyoPurificationGuidance: string;
   boundaryNotice: string;
+  interpretiveBoundary: string;
 }
 
 function djb2Hash(str: string): number {
@@ -301,6 +302,7 @@ export function calculateHeianOnmyodoSeimei(
     onmyoSynthesisMatrix,
     onmyoPurificationGuidance,
     boundaryNotice: '본 결과는 헤이안 음양도 《점사략》 12천장 및 오망성 5행 순환에 따른 정성적 상징 해석이며, 점수나 확정적 길흉 판정이 아닙니다.',
+    interpretiveBoundary: '본 결과는 헤이안 음양도 《점사략》 12천장 및 오망성 5행 순환에 따른 정성적 상징 해석이며, 점수나 확정적 길흉 판정이 아닙니다.',
   };
 }
 
