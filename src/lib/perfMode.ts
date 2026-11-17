@@ -241,7 +241,7 @@ function unoccludedHeight(win: Window, width: number, rawHeight: number): number
  * A real fold changes the window width to the cover. A shorter height at the same
  * unfolded width stays dual.
  */
-function readDuoUnfoldedState(): DuoUnfoldedState {
+export function isDuoUnfoldedState(): DuoUnfoldedState {
   if (typeof window === 'undefined') return { unfolded: false, orientation: 'portrait' };
   const rendered = window.navigator && isIosStandaloneWindow(window)
     ? resolveLayoutViewportSize(readViewportSnapshot(window))
@@ -258,80 +258,46 @@ function readDuoUnfoldedState(): DuoUnfoldedState {
   return resolveDuoViewport(width, height, false);
 }
 
-let committedDuoLayout: DuoUnfoldedState | null = null;
-let subscribedDuoWindow: Window | null = null;
-const duoLayoutListeners = new Set<() => void>();
-let stopDuoLayout: (() => void) | null = null;
-
-/** All consumers read the same committed decision during a WebKit resize burst. */
-export function isDuoUnfoldedState(): DuoUnfoldedState {
-  if (typeof window !== 'undefined' && subscribedDuoWindow === window && committedDuoLayout) return committedDuoLayout;
-  return readDuoUnfoldedState();
-}
-
-/** One subscription owns fold detection; React never updates inside a resize callback. */
+/** Re-evaluate when the hinge, keyboard, or page visibility changes without a resize. */
 export function subscribeDuoLayout(onChange: () => void): () => void {
   if (typeof window === 'undefined') return () => {};
-  duoLayoutListeners.add(onChange);
-  if (!stopDuoLayout) {
-    subscribedDuoWindow = window;
-    committedDuoLayout = readDuoUnfoldedState();
-    let frame = 0;
-    let settleTimer: ReturnType<typeof setTimeout> | null = null;
-    let lateTimer: ReturnType<typeof setTimeout> | null = null;
-    let disposed = false;
-    const commit = () => {
-      frame = 0;
-      if (disposed || document.visibilityState === 'hidden') return;
-      const next = readDuoUnfoldedState();
-      if (committedDuoLayout?.unfolded === next.unfolded && committedDuoLayout.orientation === next.orientation) return;
-      committedDuoLayout = next;
-      // A subscriber can unsubscribe while notifying. Use a finite snapshot.
-      for (const listener of [...duoLayoutListeners]) if (duoLayoutListeners.has(listener)) listener();
-    };
-    const schedule = () => {
-      if (disposed) return;
-      if (settleTimer) clearTimeout(settleTimer);
-      if (lateTimer) clearTimeout(lateTimer);
-      if (frame) window.cancelAnimationFrame(frame);
-      frame = 0;
-      // Fold animations publish intermediate widths. Keep mounted pane state
-      // stable until the event burst pauses, then commit once before paint.
-      settleTimer = setTimeout(() => { settleTimer = null; frame = window.requestAnimationFrame(commit); }, 80);
-      lateTimer = setTimeout(() => { lateTimer = null; if (!frame) frame = window.requestAnimationFrame(commit); }, 350);
-    };
-    const queries = DUO_SEGMENT_QUERIES.map(query => {
-      try { return window.matchMedia(query); } catch { return null; }
-    }).filter((query): query is MediaQueryList => Boolean(query));
-    const renderedResize = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(schedule) : null;
-    if (renderedResize) {
-      renderedResize.observe(document.documentElement);
-      renderedResize.observe(getLayoutViewportProbe(document));
-    }
-    queries.forEach(query => query.addEventListener?.('change', schedule));
-    for (const event of ['resize', 'orientationchange', 'pageshow', 'focus']) window.addEventListener(event, schedule, { passive: true });
-    window.visualViewport?.addEventListener('resize', schedule, { passive: true });
-    window.screen?.orientation?.addEventListener?.('change', schedule);
-    document.addEventListener('visibilitychange', schedule);
-    stopDuoLayout = () => {
-      disposed = true;
-      if (frame) window.cancelAnimationFrame(frame);
-      if (settleTimer) clearTimeout(settleTimer);
-      if (lateTimer) clearTimeout(lateTimer);
-      renderedResize?.disconnect();
-      queries.forEach(query => query.removeEventListener?.('change', schedule));
-      for (const event of ['resize', 'orientationchange', 'pageshow', 'focus']) window.removeEventListener(event, schedule);
-      window.visualViewport?.removeEventListener('resize', schedule);
-      window.screen?.orientation?.removeEventListener?.('change', schedule);
-      document.removeEventListener('visibilitychange', schedule);
-    };
+  const queries = DUO_SEGMENT_QUERIES.map(query => {
+    try { return window.matchMedia(query); } catch { return null; }
+  }).filter((query): query is MediaQueryList => Boolean(query));
+  let frame = 0;
+  let timers: ReturnType<typeof setTimeout>[] = [];
+  const cancelPending = () => {
+    if (frame) window.cancelAnimationFrame(frame);
+    frame = 0;
+    timers.forEach(clearTimeout);
+    timers = [];
+  };
+  const handler = () => {
+    cancelPending();
+    onChange();
+    // WebKit may publish orientation/visibility before the new viewport size.
+    // Reconcile again after layout and after the fold animation has settled.
+    frame = window.requestAnimationFrame(() => { frame = 0; onChange(); });
+    timers = [120, 350].map(delay => setTimeout(onChange, delay));
+  };
+  const renderedResize = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(handler) : null;
+  if (renderedResize) {
+    renderedResize.observe(document.documentElement);
+    renderedResize.observe(getLayoutViewportProbe(document));
   }
+  queries.forEach(query => query.addEventListener?.('change', handler));
+  for (const event of ['resize', 'orientationchange', 'pageshow', 'focus']) window.addEventListener(event, handler, { passive: true });
+  window.visualViewport?.addEventListener('resize', handler, { passive: true });
+  window.screen?.orientation?.addEventListener?.('change', handler);
+  document.addEventListener('visibilitychange', handler);
   return () => {
-    duoLayoutListeners.delete(onChange);
-    if (!duoLayoutListeners.size) {
-      stopDuoLayout?.(); stopDuoLayout = null;
-      committedDuoLayout = null; subscribedDuoWindow = null;
-    }
+    cancelPending();
+    renderedResize?.disconnect();
+    queries.forEach(query => query.removeEventListener?.('change', handler));
+    for (const event of ['resize', 'orientationchange', 'pageshow', 'focus']) window.removeEventListener(event, handler);
+    window.visualViewport?.removeEventListener('resize', handler);
+    window.screen?.orientation?.removeEventListener?.('change', handler);
+    document.removeEventListener('visibilitychange', handler);
   };
 }
 
@@ -709,7 +675,6 @@ export function initNarrowPhoneClass(): void {
       // orientationchange and toolbar show/hide report a stale height for a few frames.
       scheduleVisualViewportSync(window);
     };
-    subscribeDuoLayout(applySoon);
     window.addEventListener('resize', applySoon, { passive: true });
     window.addEventListener('orientationchange', applySoon, { passive: true });
     window.addEventListener('pageshow', applySoon);
