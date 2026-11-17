@@ -23,7 +23,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const ELEUSINIAN_MYSTERIES_VERSION = 'LUCKEY-ELEUSINIAN-MYSTERIES-v2.0.0';
+export const ELEUSINIAN_MYSTERIES_VERSION = 'LUCKEY-ELEUSINIAN-MYSTERIES-v2.1.0';
 
 export type EleusinianQuestionTheme = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -68,6 +68,7 @@ export interface EleusinianReport {
   reflectionFocus: string;
   counselNote: string;
   boundaryNotice: string;
+  interpretiveBoundary: string;
 }
 
 const INITIATION_GRADES: EleusinianGrade[] = [
@@ -278,6 +279,7 @@ export function calculateEleusinianMysteries(
     reflectionFocus: themed.reflection,
     counselNote: `[엘레우시스 입사의례 성찰] ${currentGrade.gradeTitle} · ${activeStation.stationName} — ${themed.practice}`,
     boundaryNotice: '고대 엘레우시스 신비전의 순환·재생 상징을 빌려 온 정성적 성찰 관점이며, 확정적 예언이나 의학적·재정적 처방이 아닙니다.',
+    interpretiveBoundary: '고대 엘레우시스 신비전의 순환·재생 상징을 빌려 온 정성적 성찰 관점이며, 확정적 예언이나 의학적·재정적 처방이 아닙니다.',
   };
 }
 

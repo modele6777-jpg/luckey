@@ -2498,6 +2498,7 @@ test('Elemental Resonance Engine: 오행 생극제화 및 상생 순환 루프 �
   assert(res.calculatedAtKst.includes('KST'));
   assert(res.temporalElementalRhythm.cycleWatchWindow.length > 0);
   assert(res.elementalSynthesisMatrix.coreInsight.length > 0);
+  assert(res.interpretiveBoundary.length > 0);
   const prompt = formatElementalResonancePrompt(res);
   assert(prompt.includes(ELEMENTAL_RESONANCE_VERSION));
   assert(prompt.includes('오행 생극제화'));
@@ -2774,6 +2775,7 @@ test('Enneagram Soul Integration Engine: 에니어그램 영혼 성격 통합 �
   assert(res.calculatedAtKst.includes('KST'));
   assert(res.temporalEnneagramRhythm.centerWatchWindow.length > 0);
   assert(res.enneagramSynthesisMatrix.coreInsight.length > 0);
+  assert(res.interpretiveBoundary.length > 0);
   const prompt = formatEnneagramSoulIntegrationPrompt(res);
   assert(prompt.includes('LUCKEY 에니어그램 영혼 성격 통합 & 의식 진화'));
   assert(prompt.includes(res.soulType.koreanTitle));
@@ -3832,6 +3834,7 @@ test('Eleusinian Mysteries Initiation & Rebirth Engine: calculates grade, statio
   assert(rep.currentGrade.gradeTitle.length > 0);
   assert(rep.activeStation.stationName.length > 0);
   assert(rep.epoptiaRebirthScore >= 0 && rep.epoptiaRebirthScore <= 100);
+  assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatEleusinianMysteriesPrompt(rep);
   assert(prompt.includes('고대 그리스 엘레우시스 신비주의(Eleusinian Mysteries) 영혼 입사의례 & 페르세포네 환원 엔진'));
   assert(prompt.includes(rep.currentGrade.gradeTitle));
