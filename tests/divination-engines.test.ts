@@ -3253,6 +3253,7 @@ test('Five Emotions Pulse Engine: calculates five elements emotional harmony and
   assert(rep.calculatedAtKst.includes('KST'));
   assert(rep.temporalPulseRhythm.organMeridianWindow.length > 0);
   assert(rep.pulseSynthesisMatrix.coreInsight.length > 0);
+  assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatFiveEmotionsPulsePrompt(rep);
   assert(prompt.includes('오행 칠정'));
   assert(prompt.includes(rep.dominantEmotion));
@@ -6040,6 +6041,7 @@ test('Descartes Cogito Clara Distincta Engine: calculates Cogito certainty, Clar
   assert(rep.ritualAction.length > 0);
   assert(rep.reflectionFocus.length > 0);
   assert(rep.boundaryNotice.length > 0);
+  assert(rep.interpretiveBoundary.length > 0);
   assert(rep.cogitoPresenceCertaintyScore >= 0 && rep.cogitoPresenceCertaintyScore <= 100);
   assert(rep.claraDistinctaClarityScore >= 0 && rep.claraDistinctaClarityScore <= 100);
   assert(rep.methodicDoubtPurificationScore >= 0 && rep.methodicDoubtPurificationScore <= 100);
@@ -7883,6 +7885,7 @@ test('Emmanuel Levinas Face of the Other and Hospitality Engine: calculates Face
   assert(rep.ritualAction.length > 0);
   assert(rep.reflectionFocus.length > 0);
   assert(rep.boundaryNotice.length > 0);
+  assert(rep.interpretiveBoundary.length > 0);
   assert(rep.faceOfOtherEncounterScore >= 0 && rep.faceOfOtherEncounterScore <= 100);
   assert(rep.infiniteResponsibilityIndex >= 0 && rep.infiniteResponsibilityIndex <= 100);
   assert(rep.unconditionalHospitalityScore >= 0 && rep.unconditionalHospitalityScore <= 100);
