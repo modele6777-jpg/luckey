@@ -10485,8 +10485,9 @@ test('Machiavelli Virtu Fortuna, Pico Dignity, and Thomas Aquinas Summa v2.1.0 i
   assert.notEqual(mv.secondaryMachiavelliAphorism.aphorismKey, mv.focalMachiavelliAphorism.aphorismKey);
   assert.ok(mv.reflectiveQuestion.includes(query));
   assert.ok(mv.interpretiveBoundary.includes('성찰'));
+  assert.ok(mv.ritualAction.length > 0 && mv.reflectionFocus.length > 0);
   const mvPrompt = formatMachiavelliVirtuFortunaPrompt(mv);
-  assert.ok(mvPrompt.includes('+09:00') && mvPrompt.includes('보조 교차 경구') && mvPrompt.includes('성찰 질문') && mvPrompt.includes('해석 경계'));
+  assert.ok(mvPrompt.includes('+09:00') && mvPrompt.includes('보조 교차 경구') && mvPrompt.includes('성찰 질문') && mvPrompt.includes('해석 경계') && mvPrompt.includes(mv.ritualAction));
 
   const pc = calculateItalianPicoDellaMirandolaDignity(profile, query, now);
   assert.equal(pc.engineVersion, ITALIAN_PICO_DELLA_MIRANDOLA_DIGNITY_VERSION);
@@ -10494,8 +10495,9 @@ test('Machiavelli Virtu Fortuna, Pico Dignity, and Thomas Aquinas Summa v2.1.0 i
   assert.notEqual(pc.secondaryPicoAphorism.aphorismKey, pc.focalPicoAphorism.aphorismKey);
   assert.ok(pc.reflectiveQuestion.includes(query));
   assert.ok(pc.interpretiveBoundary.includes('성찰'));
+  assert.ok(pc.ritualAction.length > 0 && pc.reflectionFocus.length > 0);
   const pcPrompt = formatItalianPicoDellaMirandolaDignityPrompt(pc);
-  assert.ok(pcPrompt.includes('+09:00') && pcPrompt.includes('보조 교차 명언') && pcPrompt.includes('성찰 질문') && pcPrompt.includes('해석 경계'));
+  assert.ok(pcPrompt.includes('+09:00') && pcPrompt.includes('보조 교차 명언') && pcPrompt.includes('성찰 질문') && pcPrompt.includes('해석 경계') && pcPrompt.includes(pc.ritualAction));
 
   const aq = calculateThomasAquinasSummaTheologiae(profile, query, now);
   assert.equal(aq.engineVersion, ITALIAN_THOMAS_AQUINAS_VERSION);
@@ -10503,8 +10505,9 @@ test('Machiavelli Virtu Fortuna, Pico Dignity, and Thomas Aquinas Summa v2.1.0 i
   assert.notEqual(aq.secondaryAquinasAphorism.aphorismKey, aq.focalAquinasAphorism.aphorismKey);
   assert.ok(aq.reflectiveQuestion.includes(query));
   assert.ok(aq.interpretiveBoundary.includes('성찰'));
+  assert.ok(aq.ritualAction.length > 0 && aq.reflectionFocus.length > 0);
   const aqPrompt = formatThomasAquinasSummaTheologiaePrompt(aq);
-  assert.ok(aqPrompt.includes('+09:00') && aqPrompt.includes('보조 교차 경구') && aqPrompt.includes('성찰 질문') && aqPrompt.includes('해석 경계'));
+  assert.ok(aqPrompt.includes('+09:00') && aqPrompt.includes('보조 교차 경구') && aqPrompt.includes('성찰 질문') && aqPrompt.includes('해석 경계') && aqPrompt.includes(aq.ritualAction));
 });
 
 test('Ahn Jung-geun, Baek Seok, and Baekbeom Kim Gu v2.1.0 include +09:00 KST, dual cross-check, reflective question, and interpretive boundary', () => {
