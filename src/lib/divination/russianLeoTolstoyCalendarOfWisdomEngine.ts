@@ -14,7 +14,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const RUSSIAN_LEO_TOLSTOY_VERSION = 'LUCKEY-LEO-TOLSTOY-WISDOM-v2.2.0';
+export const RUSSIAN_LEO_TOLSTOY_VERSION = 'LUCKEY-LEO-TOLSTOY-WISDOM-v2.3.0';
 
 export interface TolstoyTheme {
   themeKey: string;
@@ -55,6 +55,8 @@ export interface RussianLeoTolstoyCalendarOfWisdomResult {
   };
   // v2.1.0 심층 보강: 이중 원전 교차·성찰 질문·해석 경계
   secondaryTolstoyAphorism?: TolstoyAphorism;
+  ritualAction: string;
+  reflectionFocus: string;
   reflectiveTolstoyQuestion: string;
   reflectiveQuestion?: string;
   interpretiveBoundary: string;
@@ -223,6 +225,8 @@ export function calculateRussianLeoTolstoyCalendarOfWisdom(
     },
     tolstoySynthesisMatrix,
     secondaryTolstoyAphorism,
+    ritualAction: `[${activeTolstoyTheme.themeKey}] ${focalTolstoyAphorism.actionGuidance}`,
+    reflectionFocus: `톨스토이(${activeTolstoyTheme.themeTitleKo}) — ${focalTolstoyAphorism.sourceContext}`,
     reflectiveTolstoyQuestion,
     reflectiveQuestion: reflectiveTolstoyQuestion,
     interpretiveBoundary,
@@ -259,6 +263,8 @@ export function formatRussianLeoTolstoyCalendarOfWisdomPrompt(res: RussianLeoTol
     );
   }
   lines.push(
+    `- 실천 의례: ${res.ritualAction}`,
+    `- 성찰 초점: ${res.reflectionFocus}`,
     `- 성찰 질문: ${res.reflectiveTolstoyQuestion}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
   );
