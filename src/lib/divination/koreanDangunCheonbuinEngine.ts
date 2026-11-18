@@ -13,7 +13,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const KOREAN_DANGUN_CHEONBUIN_ENGINE_VERSION = '2.1.0';
+export const KOREAN_DANGUN_CHEONBUIN_ENGINE_VERSION = '2.2.0';
 
 export interface CheonbuTreasure {
   id: 'mirror' | 'sword' | 'bell';
@@ -66,6 +66,8 @@ export interface KoreanDangunCheonbuinReport {
   ihwaSegyeRemedy: string; // 이화세계 개운 처방
   boundaryNotice: string;
   interpretiveBoundary: string;
+  ritualAction: string;
+  reflectionFocus: string;
 }
 
 const TREASURES_DEF: Record<'mirror' | 'sword' | 'bell', Omit<CheonbuTreasure, 'activationPower'>> = {
@@ -226,6 +228,11 @@ export function calculateKoreanDangunCheonbuin(options?: {
     cautionNotice: '거울의 성찰 없는 칼의 결단이나, 칼의 경계 없는 방울의 타협에 빠지지 않도록 삼인의 균형을 살피십시오.',
   };
 
+  const ritualAction = `[${dominant.nameKo} · ${activeMinister.nameKo}] ${ihwaSegyeRemedy}`;
+  const reflectionFocus = question
+    ? `'${question}'의 자리에서 거울의 자각, 칼의 결단, 방울의 화합 가운데 지금 가장 보탤 기운은 무엇인가요?`
+    : `오늘 ${dominant.nameKo}의 뜻과 ${activeMinister.nameKo}의 기류 속에서 내가 먼저 정리하거나 이어 줄 인연은 무엇인가요?`;
+
   return {
     engineVersion: KOREAN_DANGUN_CHEONBUIN_ENGINE_VERSION,
     timestamp: now.toISOString(),
@@ -245,6 +252,8 @@ export function calculateKoreanDangunCheonbuin(options?: {
     ihwaSegyeRemedy,
     boundaryNotice: '본 결과는 《삼국유사》 단군 천부삼인과 홍익인간 상징 체계에 따른 정성적 성찰 안내이며, 확정적 길흉 판정이 아닙니다.',
     interpretiveBoundary: '본 결과는 《삼국유사》 단군 천부삼인과 홍익인간 상징 체계에 따른 정성적 성찰 안내이며, 확정적 길흉 판정이 아닙니다.',
+    ritualAction,
+    reflectionFocus,
   };
 }
 
@@ -264,5 +273,7 @@ export function formatKoreanDangunCheonbuinPrompt(rep: KoreanDangunCheonbuinRepo
   - 권고 실행: ${rep.cheonbuinSynthesisMatrix.recommendedAction}
   - 주의 경계: ${rep.cheonbuinSynthesisMatrix.cautionNotice}
 · 이화세계(理化世界) 현실 개운 처방: ${rep.ihwaSegyeRemedy}
+· 실천 의례(Ritual Action): ${rep.ritualAction}
+· 성찰 초점(Reflection Focus): ${rep.reflectionFocus}
 · 해석 경계: ${rep.boundaryNotice}`;
 }
