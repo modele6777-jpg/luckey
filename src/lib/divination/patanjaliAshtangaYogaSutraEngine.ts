@@ -22,7 +22,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const PATANJALI_ASHTANGA_YOGA_ENGINE_VERSION = '2.2.0';
+export const PATANJALI_ASHTANGA_YOGA_ENGINE_VERSION = '2.3.0';
 
 export interface YogaLimb {
   id: string;
@@ -54,6 +54,7 @@ export interface PatanjaliAshtangaYogaReport {
     alignmentState: string;
     integratedAction: string;
   };
+  reflectiveQuestion?: string;
   interpretiveBoundary: string;
 }
 
@@ -64,7 +65,7 @@ function formatPatanjaliKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
 }
 
 function describePatanjaliStage(score: number): string {
@@ -228,11 +229,15 @@ export function calculatePatanjaliAshtangaYoga(
   const composite = Math.round(
     (cittaVrittiNirodhaScore + kleshaPurificationRate + purushaConsciousnessAwakening + pranayamaVitalityBalance) / 4
   );
+  const q = contextText.trim();
   const yogaSynthesisMatrix = {
     dominantTension: `${dominantYogaLimb.nameKo} ↔ ${secondaryYogaLimb.nameKo}`,
     alignmentState: describePatanjaliStage(composite),
-    integratedAction: `${dharanaFocusPrescription}${contextText.trim() ? ` [질문 맥락: ${contextText.trim()}]` : ''}`,
+    integratedAction: `${dharanaFocusPrescription}${q ? ` [질문 맥락: ${q}]` : ''}`,
   };
+  const reflectiveQuestion = q
+    ? `지금 "${q}" 앞에서 제${dominantYogaLimb.level}지칙 '${dominantYogaLimb.nameKo}'의 치타 브리티 니로다(마음의 동요 소멸)를 비추어 볼 때, 내가 내려놓아야 할 번뇌의 파동 한 가지는 무엇인가요?`
+    : `오늘 제${dominantYogaLimb.level}지칙 '${dominantYogaLimb.nameKo}'의 자리에서 순수 관조자 푸루샤(Puruṣa)의 고요함을 지키기 위해 내가 먼저 다스릴 호흡은 무엇인가요?`;
 
   return {
     engineVersion: PATANJALI_ASHTANGA_YOGA_ENGINE_VERSION,
@@ -249,6 +254,7 @@ export function calculatePatanjaliAshtangaYoga(
     ritualAction,
     reflectionFocus,
     yogaSynthesisMatrix,
+    reflectiveQuestion,
     interpretiveBoundary: '본 파탄잘리 요가 수트라 8지칙 리포트는 고전 요가 철학에 기반한 정성적 마음 수련 안내이며, 의학·심리 진단을 대신하지 않습니다.',
   };
 }
@@ -276,6 +282,9 @@ export function formatPatanjaliAshtangaYogaPrompt(
       `- 교차 매트릭스 [핵심 긴장: ${report.yogaSynthesisMatrix.dominantTension} | 조율 상태: ${report.yogaSynthesisMatrix.alignmentState}]`,
       `- 통합 실천: ${report.yogaSynthesisMatrix.integratedAction}`,
     );
+  }
+  if (report.reflectiveQuestion) {
+    lines.push(`- 질문 맞춤 성찰 질문: ${report.reflectiveQuestion}`);
   }
   lines.push(`- 해석 경계: ${report.interpretiveBoundary}`);
   return lines.join('\n');

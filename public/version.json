@@ -1,10 +1,6 @@
 {
-  "version": "1.7.878",
-  "builtAt": "2026-11-19T06:12:00+09:00",
-  "summary": "파탄잘리 요가 수트라·10년 대운 교운기·4대 귀인 네트워크 3대 엔진 실천 의례 및 성찰 초점 표준 연동(v1.7.878)",
-  "items": [
-    "고대 인도 파탄잘리 요가 수트라 8지칙 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동",
-    "10년 대운 & 세운·교운기 타이밍 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동",
-    "4대 귀인 & 인연 네트워크 시너지 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동"
-  ]
+  "version": "1.7.879",
+  "builtAt": "2026-11-19T06:20:00+09:00",
+  "commit": "feat/deepen-patanjali-orpheic-aurelius-v1.7.879",
+  "notes": "파탄잘리 요가 수트라·오르페우스 므네모시네·아우렐리우스 명상록 내면의 성채 3대 엔진 성찰 질문·+09:00 KST·카탈로그 뜻 보강 (v1.7.879)"
 }

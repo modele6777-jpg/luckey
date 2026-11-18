@@ -6,7 +6,7 @@
  * 상징적 균형을 통해 현대인의 자기 인식과 정서적 회복을 비추는 정성적 성찰 도구입니다.
  */
 
-export const ORPHEIC_MYSTERIES_ENGINE_VERSION = 'LUCKEY-ORPHEIC-MYSTERIES-v2.1.0';
+export const ORPHEIC_MYSTERIES_ENGINE_VERSION = 'LUCKEY-ORPHEIC-MYSTERIES-v2.2.0';
 
 export type OrphicQuestionTheme = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -36,6 +36,7 @@ export interface OrphicMysteriesReport {
     alignmentState: string;
     integratedAction: string;
   };
+  reflectiveQuestion?: string;
   interpretiveBoundary: string;
 }
 
@@ -46,7 +47,7 @@ function formatOrphicKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
 }
 
 function classifyOrphicTheme(question: string): OrphicQuestionTheme {
@@ -156,11 +157,15 @@ export function calculateOrpheicMysteries(params: {
   const themeContent = guidanceByTheme[questionTheme];
   const boundaryNotice = '오르페우스 신비주의 관점은 고대 그리스 상징 철학을 빌린 정성적 성찰 참고용이며, 개인 점수나 심리 진단·미래 예언이 아닙니다.';
   const calculatedAtKst = formatOrphicKstTimestamp(now);
+  const q = question.trim();
   const orphicSynthesisMatrix = {
     dominantTension: `${polarityArchetype.nameKo} ↔ ${thresholdState}`,
     alignmentState: `${polarityArchetype.apollonianAspect} · ${polarityArchetype.dionysianAspect}`,
-    integratedAction: `${themeContent.ritualAction}${question.trim() ? ` [질문 맥락: ${question.trim()}]` : ''}`,
+    integratedAction: `${themeContent.ritualAction}${q ? ` [질문 맥락: ${q}]` : ''}`,
   };
+  const reflectiveQuestion = q
+    ? `지금 "${q}" 앞에서 '${polarityArchetype.nameKo}'(${thresholdState})의 므네모시네 기억의 샘을 마주할 때, 내가 망각의 관성에 휩쓸리지 않고 지켜야 할 진심은 무엇인가요?`
+    : themeContent.reflectionFocus;
 
   return {
     engineVersion: ORPHEIC_MYSTERIES_ENGINE_VERSION,
@@ -180,6 +185,7 @@ export function calculateOrpheicMysteries(params: {
     counselNote: themeContent.counselNote,
     boundaryNotice,
     orphicSynthesisMatrix,
+    reflectiveQuestion,
     interpretiveBoundary: boundaryNotice,
   };
 }
@@ -202,6 +208,9 @@ export function formatOrpheicMysteriesPrompt(report: OrphicMysteriesReport): str
       `- **교차 매트릭스**: [핵심 긴장: ${report.orphicSynthesisMatrix.dominantTension} | 조율 상태: ${report.orphicSynthesisMatrix.alignmentState}]`,
       `- **통합 실천**: ${report.orphicSynthesisMatrix.integratedAction}`,
     );
+  }
+  if (report.reflectiveQuestion) {
+    lines.push(`- **질문 맞춤 성찰 질문**: ${report.reflectiveQuestion}`);
   }
   return lines.join('\n');
 }

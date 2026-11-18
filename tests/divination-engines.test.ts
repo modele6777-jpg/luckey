@@ -11974,3 +11974,30 @@ test('아우구스티누스·위그드라실·매화역수 v1.7.877 질문 반�
   const mhPrompt = formatPlumBlossomMeihuaOraclePrompt(mh);
   assert.ok(mhPrompt.includes('+09:00') && mhPrompt.includes('질문 맞춤 성찰 질문') && mhPrompt.includes('해석 경계'));
 });
+
+test('파탄잘리·오르페우스·아우렐리우스 내면의 성채 v1.7.879 질문 반응형 성찰 질문·+09:00 KST 회귀 검증', () => {
+  const profile = { basic: { name: '제제', birthdate: '1994-01-24', birthtime: '12:00', gender: 'male' } } as any;
+  const now = new Date('2026-11-19T06:20:00+09:00');
+  const query = '외부 소음에 흔들리지 않고 내면의 고요한 중심을 지키고 싶어요';
+
+  const ptj = calculatePatanjaliAshtangaYoga({ profile, question: query, now });
+  assert.equal(ptj.engineVersion, PATANJALI_ASHTANGA_YOGA_ENGINE_VERSION);
+  assert.match(ptj.calculatedAtKst, /\+09:00/);
+  assert.ok(ptj.reflectiveQuestion?.includes(query));
+  const ptjPrompt = formatPatanjaliAshtangaYogaPrompt(ptj);
+  assert.ok(ptjPrompt.includes('+09:00') && ptjPrompt.includes('질문 맞춤 성찰 질문') && ptjPrompt.includes('해석 경계'));
+
+  const orp = calculateOrpheicMysteries({ profile, question: query, now });
+  assert.equal(orp.engineVersion, ORPHEIC_MYSTERIES_ENGINE_VERSION);
+  assert.match(orp.calculatedAtKst, /\+09:00/);
+  assert.ok(orp.reflectiveQuestion?.includes(query));
+  const orpPrompt = formatOrpheicMysteriesPrompt(orp);
+  assert.ok(orpPrompt.includes('+09:00') && orpPrompt.includes('질문 맞춤 성찰 질문') && orpPrompt.includes('참고 경계'));
+
+  const aur = calculateAureliusInnerCitadel(profile, query, now);
+  assert.equal(aur.engineVersion, AURELIUS_INNER_CITADEL_VERSION);
+  assert.match(aur.calculatedAtKst, /\+09:00/);
+  assert.ok(aur.reflectiveQuestion?.includes(query));
+  const aurPrompt = formatAureliusInnerCitadelPrompt(aur);
+  assert.ok(aurPrompt.includes('+09:00') && aurPrompt.includes('질문 맞춤 성찰 질문') && aurPrompt.includes('해석 경계'));
+});
