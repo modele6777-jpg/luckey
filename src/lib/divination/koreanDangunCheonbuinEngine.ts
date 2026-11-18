@@ -13,7 +13,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const KOREAN_DANGUN_CHEONBUIN_ENGINE_VERSION = '2.2.0';
+export const KOREAN_DANGUN_CHEONBUIN_ENGINE_VERSION = '2.3.0';
 
 export interface CheonbuTreasure {
   id: 'mirror' | 'sword' | 'bell';
@@ -68,6 +68,7 @@ export interface KoreanDangunCheonbuinReport {
   interpretiveBoundary: string;
   ritualAction: string;
   reflectionFocus: string;
+  reflectiveQuestion: string;
 }
 
 const TREASURES_DEF: Record<'mirror' | 'sword' | 'bell', Omit<CheonbuTreasure, 'activationPower'>> = {
@@ -153,7 +154,7 @@ function getTemporalCheonbuinRhythm(now: Date) {
           : '동정(冬靜 · 신단수) — 뿌리를 깊게 내리며 내실과 지혜를 축적하는 시기';
 
   return {
-    kstTimeLabel: `${y}-${m}-${d} ${hh}:${mm} KST`,
+    kstTimeLabel: `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`,
     shinsiSkyWindow,
     seasonalNatureTone,
     temporalGuidance: `${shinsiSkyWindow} · ${seasonalNatureTone}의 흐름에 맞추어 천부삼인의 균형을 살피십시오.`,
@@ -232,6 +233,9 @@ export function calculateKoreanDangunCheonbuin(options?: {
   const reflectionFocus = question
     ? `'${question}'의 자리에서 거울의 자각, 칼의 결단, 방울의 화합 가운데 지금 가장 보탤 기운은 무엇인가요?`
     : `오늘 ${dominant.nameKo}의 뜻과 ${activeMinister.nameKo}의 기류 속에서 내가 먼저 정리하거나 이어 줄 인연은 무엇인가요?`;
+  const reflectiveQuestion = question
+    ? `지금 "${question}" 앞에서 ${dominant.nameKo}와 ${activeMinister.nameKo}의 기운을 살려 내가 먼저 실행할 한 가지는 무엇인가요?`
+    : reflectionFocus;
 
   return {
     engineVersion: KOREAN_DANGUN_CHEONBUIN_ENGINE_VERSION,
@@ -254,6 +258,7 @@ export function calculateKoreanDangunCheonbuin(options?: {
     interpretiveBoundary: '본 결과는 《삼국유사》 단군 천부삼인과 홍익인간 상징 체계에 따른 정성적 성찰 안내이며, 확정적 길흉 판정이 아닙니다.',
     ritualAction,
     reflectionFocus,
+    reflectiveQuestion,
   };
 }
 
@@ -275,5 +280,6 @@ export function formatKoreanDangunCheonbuinPrompt(rep: KoreanDangunCheonbuinRepo
 · 이화세계(理化世界) 현실 개운 처방: ${rep.ihwaSegyeRemedy}
 · 실천 의례(Ritual Action): ${rep.ritualAction}
 · 성찰 초점(Reflection Focus): ${rep.reflectionFocus}
+· 질문 맞춤 성찰 질문: ${rep.reflectiveQuestion}
 · 해석 경계: ${rep.boundaryNotice}`;
 }

@@ -22,7 +22,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const DONGHAK_CHEONDOISM_VERSION = '2.2.0';
+export const DONGHAK_CHEONDOISM_VERSION = '2.3.0';
 
 export interface DonghakCheonjuReport {
   engineVersion: string;
@@ -68,6 +68,7 @@ export interface DonghakCheonjuReport {
   interpretiveBoundary: string;
   ritualAction: string;
   reflectionFocus: string;
+  reflectiveQuestion: string;
 }
 
 function djb2Hash(str: string): number {
@@ -154,7 +155,7 @@ function getTemporalDonghakRhythm(now: Date) {
           : '겨울 · 수심정기(守心正氣) 응축기 (마음을 지키고 기운을 바르게 기르는 시기)';
 
   return {
-    kstTimeLabel: `${y}-${m}-${d} ${hh}:${mm} KST`,
+    kstTimeLabel: `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`,
     yongdamWatchWindow,
     seasonalGaebyeokTone,
     temporalGuidance: `${yongdamWatchWindow} · ${seasonalGaebyeokTone}의 결에 맞추어 수심정기(守心正氣)의 태도를 유지하십시오.`,
@@ -223,6 +224,9 @@ export function calculateDonghakCheondoismCheonju(
   const reflectionFocus = question
     ? `'${question}' 앞에서 내면의 한울님 자성(내유신령)을 지키며 오늘 사람을 대할 사인여천의 태도는 무엇인가요?`
     : `지금 내 마음을 맑히고 수심정기(守心正氣)로 흔들림 없이 지켜야 할 중심은 무엇인가요?`;
+  const reflectiveQuestion = question
+    ? `지금 "${question}" 앞에서 ${primaryVirtue.titleKo}과 '${twentyOneWordsMantraFocus.phraseKo}'의 중심을 지키기 위해 내가 먼저 실천할 한 가지는 무엇인가요?`
+    : reflectionFocus;
 
   return {
     engineVersion: DONGHAK_CHEONDOISM_VERSION,
@@ -244,6 +248,7 @@ export function calculateDonghakCheondoismCheonju(
     interpretiveBoundary: '본 결과는 《동경대전》 시천주·인내천 철학에 기반한 정성적 성찰 안내이며, 확정적 길흉 판정이 아닙니다.',
     ritualAction,
     reflectionFocus,
+    reflectiveQuestion,
   };
 }
 
@@ -260,6 +265,7 @@ export function formatDonghakCheondoismCheonjuPrompt(report: DonghakCheonjuRepor
     `- 사인여천(事人如天) 실천 지침: ${report.sainyeocheonGuidance}`,
     `- 실천 의례(Ritual Action): ${report.ritualAction}`,
     `- 성찰 초점(Reflection Focus): ${report.reflectionFocus}`,
+    `- 질문 맞춤 성찰 질문: ${report.reflectiveQuestion}`,
     `- 해석 경계: ${report.boundaryNotice}`,
   ].join('\n');
 }

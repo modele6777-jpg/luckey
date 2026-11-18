@@ -11740,3 +11740,30 @@ test('카발라·카르믹 시나스트리·천부경 81자 v1.7.865 질문 반�
   const cbPrompt = formatKoreanCheonbugyeongEightyOnePrompt(cb);
   assert.ok(cbPrompt.includes('+09:00') && cbPrompt.includes('질문 맞춤 성찰 질문') && cbPrompt.includes('해석 경계'));
 });
+
+test('단군 천부인·동학 시천주·격암유록 v1.7.867 질문 반응형 성찰 질문·+09:00 KST 회귀 검증', () => {
+  const profile = { basic: { name: '제제', birthdate: '1994-01-24', birthtime: '12:00', gender: 'male' } } as any;
+  const now = new Date('2026-11-19T05:20:00+09:00');
+  const query = '복잡한 선택 앞에서 흔들리지 않는 기준을 세우고 싶어요';
+
+  const dg = calculateKoreanDangunCheonbuin({ profile, question: query, now });
+  assert.equal(dg.engineVersion, KOREAN_DANGUN_CHEONBUIN_ENGINE_VERSION);
+  assert.match(dg.calculatedAtKst, /\+09:00/);
+  assert.ok(dg.reflectiveQuestion.includes(query));
+  const dgPrompt = formatKoreanDangunCheonbuinPrompt(dg);
+  assert.ok(dgPrompt.includes('+09:00') && dgPrompt.includes('질문 맞춤 성찰 질문') && dgPrompt.includes('해석 경계'));
+
+  const dh = calculateDonghakCheondoismCheonju(profile, now, query);
+  assert.equal(dh.engineVersion, DONGHAK_CHEONDOISM_VERSION);
+  assert.match(dh.calculatedAtKst, /\+09:00/);
+  assert.ok(dh.reflectiveQuestion.includes(query));
+  const dhPrompt = formatDonghakCheondoismCheonjuPrompt(dh);
+  assert.ok(dhPrompt.includes('+09:00') && dhPrompt.includes('질문 맞춤 성찰 질문') && dhPrompt.includes('해석 경계'));
+
+  const gg = calculateGyeogamYurokProphecy(profile, now, query);
+  assert.equal(gg.engineVersion, GYEOGAM_YUROK_VERSION);
+  assert.match(gg.calculatedAtKst, /\+09:00/);
+  assert.ok(gg.reflectiveQuestion.includes(query));
+  const ggPrompt = formatGyeogamYurokProphecyPrompt(gg);
+  assert.ok(ggPrompt.includes('+09:00') && ggPrompt.includes('질문 맞춤 성찰 질문') && ggPrompt.includes('해석 경계'));
+});

@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.7.867",
+    "builtAt": "2026-11-19T05:20:00+09:00",
+    "summary": "단군 천부인·동학 시천주·격암유록 3대 엔진 성찰 질문·+09:00 KST·카탈로그 뜻 보강(v1.7.867)",
+    "items": [
+      "단군 천부인 3보(v2.3.0)·동학 시천주(v2.3.0)·격암유록(v2.3.0): 질문 반응형 reflectiveQuestion·+09:00 (KST) 표준 표기·프롬프트 연동",
+      "ALL_DCE_ENGINES 카탈로그: koreanDangunCheonbuin·donghakCheondoismCheonju·gyeogamYurok 한 줄 summary 등록",
+      "divination-engines.test.ts: 3대 엔진 v1.7.867 회귀 테스트 추가"
+    ]
+  },
+  {
     "version": "1.7.866",
     "builtAt": "2026-11-19T05:12:00+09:00",
     "summary": "한국 윷점·라코타 메디슨 휠·마오리 마우리 하우오라 3대 엔진 실천 의례 및 성찰 질문 표준 연동(v1.7.866)",
