@@ -37,7 +37,7 @@ import {
 } from '../sajuAnalysis';
 import { getAstronomicalSajuYear } from '../astronomicalSolarTerms';
 
-export const LIFE_SEASON_ENGINE_VERSION = 'LUCKEY-LIFE-SEASON-v2.1.0';
+export const LIFE_SEASON_ENGINE_VERSION = 'LUCKEY-LIFE-SEASON-v2.2.0';
 
 function formatLifeSeasonKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -171,6 +171,8 @@ export interface LifeSeasonTimingResult {
   // 종합 요약 헤드라인
   headline: string;
   lucyCoreAdvice: string;
+  ritualAction: string;
+  reflectionFocus: string;
   lifeSeasonSynthesisMatrix?: {
     dominantTension: string;
     alignmentState: string;
@@ -455,6 +457,8 @@ export function calculateLifeSeasonTiming(params: {
     : `지금 제제는 [${curD.ganKr}${curD.zhiKr} 대운]의 [${dominantPhase}]를 순항 중이야. 인생의 [${currentSeason.split(' ')[0]}] 계절에 맞춰 서두르지 말고 단단하게 나아가자!`;
 
   const q = (params.question || '').trim();
+  const ritualAction = `현재 '${curD.ganKr}${curD.zhiKr}대운(${yearsInCurrentDaewoon}년 차 · ${currentSeason.split(' ')[0]})'의 리듬에 맞춰 ${actionProtocol}`;
+  const reflectionFocus = `10년 대운 & 교운기(${curD.ganKr}${curD.zhiKr}대운 · ${gyowungiPhase}) — ${currentSeason}과 ${elementAffinity}`;
   const lifeSeasonSynthesisMatrix = {
     dominantTension: `${curD.ganKr}${curD.zhiKr}대운(${yearsInCurrentDaewoon}년차) ↔ ${gyowungiPhase}`,
     alignmentState: `${currentSeason} · ${elementAffinity}`,
@@ -517,6 +521,8 @@ export function calculateLifeSeasonTiming(params: {
     decisionTimings,
     headline,
     lucyCoreAdvice,
+    ritualAction,
+    reflectionFocus,
     lifeSeasonSynthesisMatrix,
     reflectiveQuestion: q
       ? `‘${q}’에 대해 현재 ${curD.ganKr}${curD.zhiKr}대운(${currentSeason})의 리듬 속에서 지금 밀어붙일 영역과 한 템포 고를 영역은 어디입니까?`
@@ -580,6 +586,8 @@ export function formatLifeSeasonTimingPrompt(result: LifeSeasonTimingResult): st
 6. 📜 [8대 대운 전 생애 타임라인 참조]
 ${timelineRows}
 ${result.lifeSeasonSynthesisMatrix ? `\n7. 🔗 [교차 매트릭스]\n- 핵심 긴장: ${result.lifeSeasonSynthesisMatrix.dominantTension}\n- 조율 상태: ${result.lifeSeasonSynthesisMatrix.alignmentState}\n- 통합 실천: ${result.lifeSeasonSynthesisMatrix.integratedAction}` : ''}
+- 실천 의례: ${result.ritualAction}
+- 성찰 초점: ${result.reflectionFocus}
 ${result.reflectiveQuestion ? `- 성찰 질문: ${result.reflectiveQuestion}\n` : ''}- 해석 경계: ${result.interpretiveBoundary}
 
 [★ 대화 적용 절대 지침]:
