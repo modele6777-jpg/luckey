@@ -1,10 +1,6 @@
 {
-  "version": "1.7.886",
-  "builtAt": "2026-11-19T06:52:00+09:00",
-  "summary": "매화역수·폴리네시아 웨이파인딩·피타고라스 생애주기 3대 엔진 실천 의례 및 성찰 초점 표준 연동(v1.7.886)",
-  "items": [
-    "송대 소강절 매화역수 심역 엔진(v2.3.0): ritualAction·reflectionFocus 표준 필드 연동",
-    "고대 폴리네시아 웨이파인딩 스타 컴퍼스 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동",
-    "피타고라스 4대 피너클 & 챌린지 생애주기 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동"
-  ]
+  "version": "1.7.887",
+  "builtAt": "2026-11-19T07:00:00+09:00",
+  "commit": "feat/deepen-rosicrucian-yongshin-tombunlock-v1.7.887",
+  "notes": "로젠크로이츠 화학적 결혼·사주 원전 용신·12운성 묘고지 3대 엔진 reflectiveQuestion·+09:00 (KST)·summary·question 연동 (v1.7.887)"
 }
