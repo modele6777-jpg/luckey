@@ -35,3 +35,17 @@ test('a keyboard shrinking height at the same width never folds the screen', () 
   assert.equal(measureFoldState(fakeWindow({ cw: 700, ch: 420, iw: 700, ih: 420 }, 'TEXTAREA')).unfolded, true, 'keyboard open in unfolded portrait');
   assert.equal(measureFoldState(fakeWindow({ cw: 461, ch: 678, iw: 461, ih: 678 })).unfolded, false, 'a real fold changes width');
 });
+
+test('rotating the inner display with the keyboard open stays unfolded', () => {
+  resetFoldStateForTests();
+  const win = (cw: number, ch: number, active: string | null) => ({
+    innerWidth: cw, innerHeight: ch, screen: { width: 626, height: 890 }, matchMedia: () => ({ matches: false }),
+    document: { documentElement: { clientWidth: cw, clientHeight: ch }, activeElement: active ? { tagName: active, isContentEditable: false } : null },
+  } as unknown as Window);
+  assert.equal(measureFoldState(win(626, 890, null)).unfolded, true);
+  assert.equal(measureFoldState(win(626, 500, 'TEXTAREA')).unfolded, true, 'keyboard opens in portrait');
+  const rotated = measureFoldState(win(890, 326, 'TEXTAREA'));
+  assert.equal(rotated.unfolded, true, 'resizes-content rotation keeps the inner display dual');
+  assert.equal(rotated.orientation, 'landscape');
+  assert.equal(measureFoldState(win(461, 678, null)).unfolded, false, 'a real fold still folds');
+});

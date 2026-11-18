@@ -55,21 +55,45 @@ export function readCanvasSize(win: Window = window): { width: number; height: n
 
 const serverState: FoldState = { unfolded: false, orientation: 'portrait' };
 let snapshot: FoldState = { unfolded: false, orientation: 'portrait' };
-let lastSize: { width: number; height: number } | null = null;
+/** The last full (unoccluded) canvas size, so a height-only shrink keeps it. */
+let lastFull: { width: number; height: number } | null = null;
 let started = false;
 const listeners = new Set<(next: FoldState, previous: FoldState) => void>();
 
+/** A focused text field or the app's keyboard markers: the height is keyboard-reduced. */
+function isKeyboardActive(doc: Document | undefined): boolean {
+  if (!doc || typeof doc !== 'object') return false;
+  const active = doc.activeElement as HTMLElement | null;
+  if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA' || active.isContentEditable)) return true;
+  const has = (node: Element | null | undefined, name: string) => Boolean(node?.classList?.contains?.(name));
+  return ['keyboard-open', 'lucy-input-focused'].some(name => has(doc.documentElement, name) || has(doc.body, name));
+}
+
+/** Full-screen height for this canvas width from the device screen, in either orientation. */
+function screenHeightForWidth(win: Window, width: number): number {
+  const screen = win.screen;
+  if (!screen?.width || !screen?.height) return 0;
+  const near = (a: number, b: number) => Math.abs(a - b) <= 96;
+  if (near(width, screen.width)) return screen.height;
+  if (near(width, screen.height)) return screen.width;
+  return 0;
+}
+
 /**
- * Measure now. A real fold or rotation always changes the canvas width; a
- * keyboard or browser chrome only shortens the height at the same width, so a
- * height-only change keeps the full height seen at that width.
+ * Measure now. A real fold or rotation changes the canvas width; a keyboard or
+ * browser chrome only shortens the height. So the last full height at the
+ * same width is kept, and while a keyboard is open (even across a rotation,
+ * with interactive-widget=resizes-content) the unoccluded height is recovered
+ * from the device screen instead of trusting the keyboard-reduced one.
  */
 export function measureFoldState(win: Window = window): FoldState {
   const size = readCanvasSize(win);
   if (isSpanned(win)) return classifyFold(size.width, size.height, true);
-  const sameWidth = lastSize !== null && Math.abs(size.width - lastSize.width) <= 2;
-  const height = sameWidth ? Math.max(size.height, lastSize!.height) : size.height;
-  lastSize = { width: size.width, height };
+  const remembered = lastFull && Math.abs(lastFull.width - size.width) <= 2 ? lastFull.height : 0;
+  const keyboard = isKeyboardActive(typeof win.document === 'object' ? win.document : undefined);
+  const recovered = keyboard ? screenHeightForWidth(win, size.width) : 0;
+  const height = Math.max(size.height, remembered, recovered);
+  if (!keyboard) lastFull = { width: size.width, height };
   return classifyFold(size.width, height, false);
 }
 
@@ -157,6 +181,6 @@ export function useFoldState(): FoldState {
 /** Test-only reset so unit tests can start from a clean store. */
 export function resetFoldStateForTests(): void {
   snapshot = { unfolded: false, orientation: 'portrait' };
-  lastSize = null;
+  lastFull = null;
   listeners.clear();
 }
