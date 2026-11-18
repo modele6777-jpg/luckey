@@ -1,6 +1,10 @@
 {
-  "version": "1.7.881",
-  "builtAt": "2026-11-19T06:30:00+09:00",
-  "commit": "feat/deepen-chekhov-dostoevsky-tolstoy-v1.7.881",
-  "notes": "안톤 체호프·도스토옙스키·톨스토이 3대 엔진 표준 reflectiveQuestion·+09:00 (KST)·question 전달 연동 (v1.7.881)"
+  "version": "1.7.882",
+  "builtAt": "2026-11-19T06:32:00+09:00",
+  "summary": "즉시 결단 매화역수·라이프 12궁 밸런스 휠·멘탈 리질리언스 3대 엔진 실천 의례 및 성찰 초점 표준 연동(v1.7.882)",
+  "items": [
+    "즉시 결단 매화역수 & 기문둔갑 시가팔문 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동",
+    "라이프 12궁 밸런스 휠 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동",
+    "위기 돌파 & 멘탈 리질리언스 지수 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동"
+  ]
 }
