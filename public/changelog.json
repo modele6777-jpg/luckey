@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.7.891",
+    "builtAt": "2026-11-19T07:18:00+09:00",
+    "summary": "소매틱 아머링·3대 지혜 삼위일체·칼 융 동시성 오멘 3대 엔진 reflectiveQuestion·+09:00 (KST)·summary·question 연동(v1.7.891)",
+    "items": [
+      "빌헬름 라이히 소매틱 아머링(v2.2.0)·영적 3대 지혜 삼위일체(v2.2.0)·칼 융 동시성 오멘(v2.2.0): 질문 반응형 reflectiveQuestion·+09:00 (KST) 표기·프롬프트 출력 추가",
+      "deterministicEngine.ts: 3대 엔진 ALL_DCE_ENGINES summary 등록 및 호출부 question 전달 연동",
+      "divination-engines.test.ts: 3대 엔진 v1.7.891 회귀 테스트 추가"
+    ]
+  },
+  {
     "version": "1.7.890",
     "builtAt": "2026-11-19T07:12:00+09:00",
     "summary": "브루노 무한우주론·아우렐리우스 명상록 내면 성채·키케로 의무론 3대 엔진 실천 의례 및 성찰 초점 표준 연동(v1.7.890)",

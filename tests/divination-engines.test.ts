@@ -12166,3 +12166,30 @@ test('황금비 영혼 수비학·샤머니즘 토템·수피 7대 라타이프 
   assert.ok(sl.reflectiveQuestion.includes(query));
   assert.ok(formatSufiLataifSoulAscensionPrompt(sl).includes('질문 맞춤 성찰 질문'));
 });
+
+test('소매틱 아머링·3대 지혜 삼위일체·칼 융 동시성 오멘 엔진 v1.7.891 질문 반응형 성찰 질문·KST(+09:00) 검증', () => {
+  const profile: any = {
+    name: '테스트',
+    basic: { birthdate: '1994-01-24', birthtime: '10:30', gender: 'male', calendarType: 'solar' },
+  };
+  const now = new Date('2026-11-19T07:18:00+09:00');
+  const query = '어깨가 굳고 우연이 겹치는 오늘의 신호';
+
+  const sb = calculateSomaticBodyArmoring({ profile, targetDate: now, question: query });
+  assert.equal(sb.engineVersion, SOMATIC_ARMORING_VERSION);
+  assert.match(sb.calculatedAtKst, /\+09:00/);
+  assert.ok(sb.reflectiveQuestion.includes(query));
+  assert.ok(formatSomaticBodyArmoringPrompt(sb).includes('질문 맞춤 성찰 질문'));
+
+  const sw = calculateSupremeWisdomTrinity({ profile, targetDate: now, question: query });
+  assert.equal(sw.engineVersion, SUPREME_WISDOM_TRINITY_VERSION);
+  assert.match(sw.calculatedAtKst, /\+09:00/);
+  assert.ok(sw.reflectiveQuestion.includes(query));
+  assert.ok(formatSupremeWisdomTrinityPrompt(sw).includes('질문 맞춤 성찰 질문'));
+
+  const so = calculateSynchronicityOmen({ profile, targetDate: now, question: query });
+  assert.equal(so.engineVersion, SYNCHRONICITY_OMEN_VERSION);
+  assert.match(so.calculatedAtKst, /\+09:00/);
+  assert.ok(so.reflectiveQuestion.includes(query));
+  assert.ok(formatSynchronicityOmenPrompt(so).includes('질문 맞춤 성찰 질문'));
+});
