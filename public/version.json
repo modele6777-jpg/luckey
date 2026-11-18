@@ -1,10 +1,10 @@
 {
-  "version": "1.7.817",
-  "builtAt": "2026-11-18T09:00:00+09:00",
-  "summary": "포이만드레스, 영웅의 여정, 나디 아가스티야 야자잎 3대 엔진 실천 의례 및 성찰 질문 표준 연동(v1.7.817)",
+  "version": "1.7.818",
+  "builtAt": "2026-11-18T09:10:00+09:00",
+  "summary": "스리 얀트라, 쿤달리니 나디, 호피족 4대 세계 3대 엔진 실천 의례 및 성찰 질문 표준 연동(v1.7.818)",
   "items": [
-    "헤르메스 포이만드레스 7대 천계 탈각 엔진(v2.4.0): ritualAction·reflectionFocus 표준 필드 연동",
-    "조셉 캠벨 영웅의 여정 12단계 모노미스 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동",
-    "남인도 나디 아가스티야 야자잎 14칸담 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동"
+    "힌두 탄트라 스리 얀트라 신성기하학 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동",
+    "힌두 탄트라 쿤달리니 나디 각성 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동",
+    "아메리카 호피족 4대 세계 카치나 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동"
   ]
 }

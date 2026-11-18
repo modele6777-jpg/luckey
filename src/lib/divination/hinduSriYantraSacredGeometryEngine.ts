@@ -26,7 +26,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const SRI_YANTRA_ENGINE_VERSION = '2.1.0';
+export const SRI_YANTRA_ENGINE_VERSION = '2.2.0';
 
 export interface SriYantraSacredGeometryReport {
   engineVersion: string;
@@ -74,6 +74,8 @@ export interface SriYantraSacredGeometryReport {
     sacredBoundary: string;
     reflectiveQuestion: string;
   };
+  ritualAction: string;
+  reflectionFocus: string;
 }
 
 function djb2Hash(str: string): number {
@@ -243,6 +245,9 @@ export function calculateHinduSriYantraSacredGeometry(
       : `지금 내 삶의 소용돌이 한가운데서 흔들리지 않는 고요한 중심점(바인두)은 어디에 있나요?`,
   };
 
+  const ritualAction = `[제${primaryAvaranaChakra.level}층 ${primaryAvaranaChakra.sanskritName} · 바인두 응시] ${primaryAvaranaChakra.blessingAdvice}`;
+  const reflectionFocus = sriYantraSynthesisMatrix.reflectiveQuestion;
+
   return {
     engineVersion: SRI_YANTRA_ENGINE_VERSION,
     calculatedAt: now.toISOString(),
@@ -270,6 +275,8 @@ export function calculateHinduSriYantraSacredGeometry(
       yantraFocusNote,
     },
     sriYantraSynthesisMatrix,
+    ritualAction,
+    reflectionFocus,
   };
 }
 
@@ -285,6 +292,8 @@ export function formatHinduSriYantraSacredGeometryPrompt(report: SriYantraSacred
     `- 시공간 리듬: ${report.temporalSriYantraRhythm.brahmaMuhurtaWindow} · ${report.temporalSriYantraRhythm.seasonalShaktiPhase}`,
     `- 신성 기하학 명상 지침: ${report.sacredGeometryMeditationGuidance}`,
     `- 교차 매트릭스: ${report.sriYantraSynthesisMatrix.coreMandate} | 경계: ${report.sriYantraSynthesisMatrix.sacredBoundary} | 성찰 질문: "${report.sriYantraSynthesisMatrix.reflectiveQuestion}"`,
+    `- 실천 의례(Ritual Action): ${report.ritualAction}`,
+    `- 성찰 초점(Reflection Focus): ${report.reflectionFocus}`,
     `- 해석 경계: ${report.interpretiveBoundary}`,
   ].join('\n');
 }

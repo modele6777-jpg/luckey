@@ -15,7 +15,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const HOPI_FOUR_WORLDS_ENGINE_VERSION = '2.1.0';
+export const HOPI_FOUR_WORLDS_ENGINE_VERSION = '2.2.0';
 
 export interface HopiKachinaSpirit {
   id: string;
@@ -55,6 +55,8 @@ export interface HopiFourWorldsReport {
   };
   hopiProphecyGuidance: string; // 호피 평화 예언 처방
   pikiBreadSacredOffering: string; // 대지와 연결되는 소박한 평화 리추얼
+  ritualAction: string;
+  reflectionFocus: string;
   boundaryNotice: string;
   interpretiveBoundary: string;
 }
@@ -219,6 +221,9 @@ export function calculateHopiFourWorldsKachina(
 
   const pikiBreadSacredOffering = `신발을 벗고 잠시 조용히 서서 발바닥 아래 흙과 대지모신의 호흡을 느껴보십시오. 심장에서부터 어머니 대지의 심장까지 굵고 따뜻한 붉은 뿌리가 뻗어나가 당신을 든든하게 받쳐주고 있음을 자각하십시오.`;
 
+  const ritualAction = `[${dominantKachina.nameKo} · ${activeWorldStage.split(' — ')[0]}] ${pikiBreadSacredOffering}`;
+  const reflectionFocus = `오늘 '${situationalHopiAudit.koyaanisqatsiAlert}'의 신호 앞에서 대지 중심(Kiva)의 균형을 되찾기 위해 내가 단순하게 정리할 한 가지는 무엇입니까?`;
+
   return {
     engineVersion: HOPI_FOUR_WORLDS_ENGINE_VERSION,
     timestamp: now.toISOString(),
@@ -232,6 +237,8 @@ export function calculateHopiFourWorldsKachina(
     hopiSynthesisMatrix,
     hopiProphecyGuidance,
     pikiBreadSacredOffering,
+    ritualAction,
+    reflectionFocus,
     boundaryNotice: '아메리카 호피족 구전 지혜와 카치나 상징을 빌려 온 정성적 성찰 관점이며, 확정적 예언이나 의학적·재정적 처방이 아닙니다.',
     interpretiveBoundary: '아메리카 호피족 구전 지혜와 카치나 상징을 빌려 온 정성적 성찰 관점이며, 확정적 예언이나 의학적·재정적 처방이 아닙니다.',
   };
@@ -252,5 +259,7 @@ export function formatHopiFourWorldsPrompt(report: HopiFourWorldsReport): string
 - 카치나 교차 매트릭스: ${report.hopiSynthesisMatrix.kachinaWorldNexus} — ${report.hopiSynthesisMatrix.groundingPosture}
 - 호피 평화 예언 지혜 지침: ${report.hopiProphecyGuidance}
 - 대지모신 연결 평화 리추얼: ${report.pikiBreadSacredOffering}
+- 실천 의례(Ritual Action): ${report.ritualAction}
+- 성찰 초점(Reflection Focus): ${report.reflectionFocus}
 - 해석 경계: ${report.boundaryNotice}`;
 }
