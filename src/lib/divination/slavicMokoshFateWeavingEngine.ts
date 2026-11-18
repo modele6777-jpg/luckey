@@ -13,7 +13,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const SLAVIC_MOKOSH_FATE_WEAVING_ENGINE_VERSION = '2.1.0';
+export const SLAVIC_MOKOSH_FATE_WEAVING_ENGINE_VERSION = '2.2.0';
 
 export interface ThreadOfFate {
   id: 'dolya' | 'nedolya' | 'spindle';
@@ -39,6 +39,8 @@ export interface SlavicMokoshFateWeavingReport {
   seasonalPhase: string; // 계절적 직조 국면 (파종·개화·수확·안식)
   secondaryPhase: string; // 보조 교차 직조 국면
   reweavingPrescription: string; // 운명 재직조 개운 처방
+  ritualAction: string;
+  reflectionFocus: string;
   reflectiveQuestion: string; // 내담자 성찰 질문
   interpretiveBoundary: string; // 상징 해석 경계 고지
   mokoshSynthesisMatrix?: {
@@ -127,6 +129,8 @@ export function calculateSlavicMokoshFateWeaving(options?: {
   }
 
   const calculatedAtKst = formatMokoshKstTimestamp(now);
+  const ritualAction = `[모코시 물레] ${reweavingPrescription}`;
+  const reflectionFocus = `슬라브 모코시 운명의 실타래(${seasonalPhase}) — ${secondaryPhase}`;
   const reflectiveQuestion = question
     ? `"${question}"의 매듭 앞에서 돌랴(황금실)의 기회를 키우기 위해, 네돌랴(회색실)에서 지금 가장 먼저 풀어내야 할 집착은 무엇입니까?`
     : `오늘 모코시의 물레를 돌릴 때, ${seasonalPhase}의 흐름 속에서 ${secondaryPhase}로 건너가기 위해 먼저 정리할 일 한 가지는 무엇입니까?`;
@@ -153,6 +157,8 @@ export function calculateSlavicMokoshFateWeaving(options?: {
     seasonalPhase,
     secondaryPhase,
     reweavingPrescription,
+    ritualAction,
+    reflectionFocus,
     reflectiveQuestion,
     interpretiveBoundary,
     mokoshSynthesisMatrix,
@@ -169,6 +175,8 @@ export function formatSlavicMokoshFateWeavingPrompt(rep: SlavicMokoshFateWeaving
     `  2) ${rep.threads.nedolya.nameKo}: ${rep.threads.nedolya.weavingMessage}`,
     `  3) ${rep.threads.spindle.nameKo}: ${rep.threads.spindle.weavingMessage}`,
     `· 모코시의 운명 재직조(Re-weaving) 개운 처방: ${rep.reweavingPrescription}`,
+    `· 실천 의례: ${rep.ritualAction}`,
+    `· 성찰 초점: ${rep.reflectionFocus}`,
     `· 성찰 질문: ${rep.reflectiveQuestion}`,
     `· 해석 경계: ${rep.interpretiveBoundary}`,
   ];

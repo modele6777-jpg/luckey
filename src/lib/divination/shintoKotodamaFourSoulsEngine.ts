@@ -23,7 +23,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const SHINTO_KOTODAMA_FOUR_SOULS_ENGINE_VERSION = '2.1.0';
+export const SHINTO_KOTODAMA_FOUR_SOULS_ENGINE_VERSION = '2.2.0';
 
 export interface FourSoulsBalance {
   aramitamaScore: number; // 荒魂 (용기, 돌파) 0~100
@@ -52,6 +52,8 @@ export interface ShintoKotodamaReport {
   blessingKami: string; // 수호 신격 원형
   misogiAction: string; // 미소기(禊) 정화 실천
   spiritualAdvice: string;
+  ritualAction: string;
+  reflectionFocus: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
   shintoSynthesisMatrix?: {
@@ -211,6 +213,8 @@ export function calculateShintoKotodama(options?: {
     alignmentState: `${blessingKami}`,
     integratedAction: `${misogiAction}${q ? ` [질문 맥락: ${q}]` : ''}`,
   };
+  const ritualAction = `[${kotodama.coreSound}] ${misogiAction}`;
+  const reflectionFocus = `신도 고토다마 일영사혼(${dominant.name}) — ${kotodama.coreSound}`;
   const reflectiveQuestion = q
     ? `지금 고민하시는 '${q}' 앞에서, '${dominant.name}'의 기운을 맑은 나오히(直霊)의 중심으로 조율해 내뱉을 첫 번째 언령은 무엇입니까?`
     : `오늘 하루 내 말과 호흡 속에 깃든 고토다마(言霊)가 '${dominant.name}'의 덕목을 어떻게 부드럽게 현실에 빚어낼 수 있겠습니까?`;
@@ -226,6 +230,8 @@ export function calculateShintoKotodama(options?: {
     blessingKami,
     misogiAction,
     spiritualAdvice: advice,
+    ritualAction,
+    reflectionFocus,
     reflectiveQuestion,
     interpretiveBoundary,
     shintoSynthesisMatrix,
@@ -257,6 +263,8 @@ export function formatShintoKotodamaPrompt(report: ShintoKotodamaReport): string
 3. [미소기(禊) 정화 처방 & 교차 매트릭스]:
    - 추천 정화 실천: ${report.misogiAction}
    - 종합 카르마 조언: ${report.spiritualAdvice}${report.shintoSynthesisMatrix ? `\n   - 교차 매트릭스 [핵심 긴장: ${report.shintoSynthesisMatrix.dominantTension} | 조율 상태: ${report.shintoSynthesisMatrix.alignmentState}]\n   - 통합 실천: ${report.shintoSynthesisMatrix.integratedAction}` : ''}
+   - 실천 의례: ${report.ritualAction}
+   - 성찰 초점: ${report.reflectionFocus}
    - 성찰 질문: ${report.reflectiveQuestion}
    - 해석 경계: ${report.interpretiveBoundary}
 ======================================================================`;
