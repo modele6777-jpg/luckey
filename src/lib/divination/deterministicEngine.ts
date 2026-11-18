@@ -1016,7 +1016,7 @@ mahaboteEnvelope = {toolId:'mahabote', toolKoName:'마하보테', status:'symbol
 mahaboteEnvelope = {toolId:'mahabote', toolKoName:'마하보테', status:'skipped', note:'이번 질문에서 선택하지 않은 도구'};
 } else {
 try {
-    mahaboteResult = calculateMahabote({ profile, targetYear: now.getFullYear() });
+    mahaboteResult = calculateMahabote({ profile, targetYear: now.getFullYear(), question });
     if (mahaboteResult.status === 'calculated') {
       mahaboteEnvelope = {
         toolId: 'mahabote',
@@ -1052,7 +1052,7 @@ try {
     if (!profile || !birthdateStr) {
       kyuseiEnvelope = { toolId: 'kyusei', toolKoName: '구성학', status: 'skipped', note: '생년월일 미입력' };
     } else {
-      const kyuseiRes = calculateKyusei({ profile, targetDate: now });
+      const kyuseiRes = calculateKyusei({ profile, targetDate: now, question });
       if (kyuseiRes.status === 'calculated') {
         kyuseiEnvelope = {
           toolId: 'kyusei',
@@ -1361,7 +1361,7 @@ try {
   const kyuseiResult = calculateSupplement('kyuseiResult', () => (birthdateStr && profile
     ? (() => {
         try {
-          const res = calculateKyusei({ profile, targetDate: now });
+          const res = calculateKyusei({ profile, targetDate: now, question });
           return res.status === 'calculated' ? res : null;
         } catch (_) {
           return null;
@@ -4712,15 +4712,15 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'ziwei', nameKo: '자미두수', icon: '🌌', category: 'foundational' },
   { key: 'tarot', nameKo: '타로', icon: '🎴', category: 'foundational' },
   { key: 'sukuyo', nameKo: '숙요경(27숙)', icon: '🌙', category: 'foundational' },
-  { key: 'mahabote', nameKo: '마하보테(8요일)', icon: '🇲🇲', category: 'foundational' },
+  { key: 'mahabote', nameKo: '마하보테(8요일)', icon: '🇲🇲', category: 'foundational', summary: '미얀마 소수력 7궁과 8요일 행성·영수 배치로 타고난 본명궁과 현재 나이 다샤 흐름을 비추는 관점' },
   { key: 'vedic', nameKo: '베딕 점성술', icon: '🕉️', category: 'foundational' },
-  { key: 'liuren', nameKo: '대육임', icon: '📜', category: 'foundational' },
+  { key: 'liuren', nameKo: '대육임', icon: '📜', category: 'foundational', summary: '월장가시 천지반과 사과·삼전·12천장 생극으로 당면한 결단과 대인 역학의 추이를 비추는 관점' },
   { key: 'qimen', nameKo: '기문둔갑', icon: '🛡️', category: 'foundational' },
   { key: 'kabbalah', nameKo: '카발라', icon: '🌳', category: 'foundational' },
   { key: 'iching', nameKo: '주역(64괘)', icon: '☯️', category: 'foundational' },
   { key: 'thai_astrology', nameKo: '태국점성술', icon: '🪷', category: 'foundational' },
   { key: 'tojeong', nameKo: '토정비결', icon: '🍂', category: 'foundational' },
-  { key: 'kyusei', nameKo: '구성학', icon: '🧭', category: 'foundational' },
+  { key: 'kyusei', nameKo: '구성학', icon: '🧭', category: 'foundational', summary: '입춘·절월 기준 연반·월반·일반 9궁 비성과 본명성 조화로 길방위와 움직임 타이밍을 비추는 관점' },
   { key: 'taiyi', nameKo: '태을신수', icon: '🏛️', category: 'foundational' },
 
   // 심층 마스터 백그라운드 엔진
