@@ -14,7 +14,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const KOREAN_KIM_SI_SEUP_VERSION = 'LUCKEY-KIM-SI-SEUP-GEUMO-v2.1.0';
+export const KOREAN_KIM_SI_SEUP_VERSION = 'LUCKEY-KIM-SI-SEUP-GEUMO-v2.2.0';
 
 export interface MaewoldangTheme {
   themeKey: string;
@@ -57,6 +57,8 @@ export interface KoreanMaewoldangKimSiSeupGeumoSinhwaResult {
     alignmentState: string;
     integratedAction: string;
   };
+  ritualAction: string;
+  reflectionFocus: string;
 }
 
 function formatMaewoldangKstTimestamp(now: Date = new Date()): string {
@@ -221,6 +223,9 @@ export function calculateKoreanMaewoldangKimSiSeupGeumoSinhwa(
     integratedAction: `${focalMaewoldangAphorism.actionGuidance}${query?.trim() ? ` [질문 맥락: ${query.trim()}]` : ''}`,
   };
 
+  const ritualAction = `[${activeMaewoldangTheme.themeTitleKo.split(' — ')[0]}] ${focalMaewoldangAphorism.actionGuidance}`;
+  const reflectionFocus = reflectiveQuestion;
+
   return {
     engineVersion: KOREAN_KIM_SI_SEUP_VERSION,
     calculatedAtKst,
@@ -240,6 +245,8 @@ export function calculateKoreanMaewoldangKimSiSeupGeumoSinhwa(
       philosophicalCounsel,
     },
     maewoldangSynthesisMatrix,
+    ritualAction,
+    reflectionFocus,
   };
 }
 
@@ -276,5 +283,9 @@ export function formatKoreanMaewoldangKimSiSeupGeumoSinhwaPrompt(
       `- 통합 실천: ${res.maewoldangSynthesisMatrix.integratedAction}`,
     );
   }
+  lines.push(
+    `- 실천 의례(Ritual Action): ${res.ritualAction}`,
+    `- 성찰 초점(Reflection Focus): ${res.reflectionFocus}`,
+  );
   return lines.join('\n');
 }
