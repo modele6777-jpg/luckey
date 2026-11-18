@@ -5290,9 +5290,11 @@ test('Korean Cheonbugyeong Eighty One Cosmic Engine: calculates heaven earth hum
   assert(rep.temporalCheonbuRhythm.samgeukWatchWindow.length > 0);
   assert(rep.cheonbuSynthesisMatrix.coreInsight.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatKoreanCheonbugyeongEightyOnePrompt(rep);
   assert(prompt.includes('단군 단학 천부경(天符經) 81자 우주 매트릭스 & 삼일신고 3진3망 성통광명'));
   assert(prompt.includes(rep.primaryHexagramGua.verseHanja));
+  assert(prompt.includes(rep.ritualAction));
   assert(prompt.includes('KST'));
   assert(!prompt.includes('/100') && !prompt.includes('%') && !prompt.includes('점수'));
 });
@@ -6613,10 +6615,12 @@ test('Choe Chiwon Pungryudo and Three Teachings Harmony Engine: calculates Mysti
   assert(rep.activeChoeChiwonTheme.themeTitleHanja.length > 0);
   assert(rep.calculatedAtKst.endsWith('KST'));
   assert(Boolean(rep.pungryudoSynthesisMatrix?.integratedAction));
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatChoeChiwonPungryudoPrompt(rep);
   assert(prompt.includes('고운 최치원 풍류도(風流道) & 접화군생(接化群生) 지표'));
   assert(prompt.includes(rep.activeChoeChiwonTheme.themeTitleKo));
   assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes(rep.ritualAction));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });
@@ -7009,10 +7013,12 @@ test('Baekbeom Kim Gu My Desire Culture Engine: calculates High Power of Culture
   assert(rep.activeKimGuTheme.themeTitleKo.length > 0);
   assert(rep.calculatedAtKst.endsWith('KST'));
   assert(Boolean(rep.kimGuSynthesisMatrix?.integratedAction));
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatBaekbeomKimGuMyDesireCulturePrompt(rep);
   assert(prompt.includes('백범 김구 《백범일지》 높은 문화의 힘 & 자주독립 실천 지표'));
   assert(prompt.includes(rep.activeKimGuTheme.themeTitleKo));
   assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes(rep.ritualAction));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });

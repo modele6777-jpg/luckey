@@ -15,7 +15,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const KOREAN_CHOE_CHIWON_VERSION = 'LUCKEY-KOREAN-CHOE-CHIWON-PUNGRYUDO-v2.1.0';
+export const KOREAN_CHOE_CHIWON_VERSION = 'LUCKEY-KOREAN-CHOE-CHIWON-PUNGRYUDO-v2.2.0';
 
 export interface ChoeChiwonTheme {
   themeKey: string;
@@ -57,6 +57,8 @@ export interface ChoeChiwonPungryudoResult {
     alignmentState: string;
     integratedAction: string;
   };
+  ritualAction: string;
+  reflectionFocus: string;
 }
 
 function formatChoeChiwonKstTimestamp(now: Date = new Date()): string {
@@ -218,6 +220,9 @@ export function calculateChoeChiwonPungryudo(
     integratedAction: `${focalChoeChiwonAphorism.practicalAction}${query?.trim() ? ` [질문 맥락: ${query.trim()}]` : ''}`,
   };
 
+  const ritualAction = `[${activeChoeChiwonTheme.themeTitleHanja}] ${focalChoeChiwonAphorism.practicalAction}`;
+  const reflectionFocus = reflectiveQuestion;
+
   return {
     engineVersion: KOREAN_CHOE_CHIWON_VERSION,
     calculatedAtKst,
@@ -236,6 +241,8 @@ export function calculateChoeChiwonPungryudo(
       philosophicalGuidance,
     },
     pungryudoSynthesisMatrix,
+    ritualAction,
+    reflectionFocus,
   };
 }
 
@@ -269,5 +276,9 @@ export function formatChoeChiwonPungryudoPrompt(res: ChoeChiwonPungryudoResult):
       `- 통합 실천: ${res.pungryudoSynthesisMatrix.integratedAction}`,
     );
   }
+  lines.push(
+    `- 실천 의례(Ritual Action): ${res.ritualAction}`,
+    `- 성찰 초점(Reflection Focus): ${res.reflectionFocus}`,
+  );
   return lines.join('\n');
 }

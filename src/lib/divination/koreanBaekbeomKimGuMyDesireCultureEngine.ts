@@ -13,7 +13,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const KOREAN_BAEKBEOM_KIM_GU_VERSION = 'LUCKEY-BAEKBEOM-KIM-GU-MY-DESIRE-CULTURE-v2.1.0';
+export const KOREAN_BAEKBEOM_KIM_GU_VERSION = 'LUCKEY-BAEKBEOM-KIM-GU-MY-DESIRE-CULTURE-v2.2.0';
 
 export interface KimGuTheme {
   themeKey: string;
@@ -55,6 +55,8 @@ export interface BaekbeomKimGuMyDesireCultureResult {
     alignmentState: string;
     integratedAction: string;
   };
+  ritualAction: string;
+  reflectionFocus: string;
 }
 
 function formatKimGuKstTimestamp(now: Date = new Date()): string {
@@ -202,6 +204,9 @@ export function calculateBaekbeomKimGuMyDesireCulture(
     integratedAction: `${focalKimGuAphorism.actionGuidance}${query?.trim() ? ` [질문 맥락: ${query.trim()}]` : ''}`,
   };
 
+  const ritualAction = `[${focalKimGuAphorism.sourceContext}] ${focalKimGuAphorism.actionGuidance}`;
+  const reflectionFocus = reflectiveQuestion;
+
   return {
     engineVersion: KOREAN_BAEKBEOM_KIM_GU_VERSION,
     calculatedAtKst,
@@ -220,6 +225,8 @@ export function calculateBaekbeomKimGuMyDesireCulture(
       philosophicalCounsel,
     },
     kimGuSynthesisMatrix,
+    ritualAction,
+    reflectionFocus,
   };
 }
 
@@ -253,5 +260,9 @@ export function formatBaekbeomKimGuMyDesireCulturePrompt(res: BaekbeomKimGuMyDes
       `- 통합 실천: ${res.kimGuSynthesisMatrix.integratedAction}`,
     );
   }
+  lines.push(
+    `- 실천 의례(Ritual Action): ${res.ritualAction}`,
+    `- 성찰 초점(Reflection Focus): ${res.reflectionFocus}`,
+  );
   return lines.join('\n');
 }
