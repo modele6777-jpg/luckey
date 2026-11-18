@@ -23,7 +23,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const NEO_CONFUCIAN_LIQI_ENGINE_VERSION = 'LUCKEY-NEO-CONFUCIAN-LIQI-v2.1.0';
+export const NEO_CONFUCIAN_LIQI_ENGINE_VERSION = 'LUCKEY-NEO-CONFUCIAN-LIQI-v2.2.0';
 
 export interface SadanVirtueInfo {
   nameKo: string;
@@ -55,6 +55,8 @@ export interface NeoConfucianFourSevenLiQiReport {
   geogyeongConcentrationIndex: number; // 0 ~ 100 거경(居敬) 주일무적 집중도
   neoConfucianMasterGuidance: string;
   mindCultivationPrescription: string;
+  ritualAction: string;
+  reflectionFocus: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
   liQiSynthesisMatrix?: {
@@ -186,6 +188,9 @@ export function calculateNeoConfucianFourSevenLiQi(params: {
   const geogyeongConcentrationIndex = Math.min(100, Math.max(55, Math.round(62 + ((seed * 23 + hour * 7) % 37))));
 
   const calculatedAtKst = formatNeoConfucianKstTimestamp(now);
+  const ritualAction = `${dominantSadan.moralAction}. 오늘 하루를 시작하거나 마무리할 때 3분간 바른 자세로 호흡을 가다듬고, '${dominantChiljeong.nameKo}' 감정이 흔들리는 순간 '${dominantChiljeong.harmonizationKey}'를 마음속으로 되뇌며 주일무적의 중심을 세우세요.`;
+  const reflectionFocus = `성리학 사칠이기(${dominantSadan.nameKo}) · ${dominantChiljeong.nameKo} — 거경궁리(居敬窮理)와 중절(中節)의 조화`;
+
   const trimmedQuery = question?.trim();
   const reflectiveQuestion = trimmedQuery
     ? `사단 '${dominantSadan.nameKo}'과 보조 덕목 '${secondarySadan.nameKo}'를 비추어 볼 때, "${trimmedQuery}"에서 칠정 '${dominantChiljeong.nameKo}'의 치우침을 중절(中節)로 되돌리는 첫걸음은 무엇인가요?`
@@ -219,6 +224,8 @@ export function calculateNeoConfucianFourSevenLiQi(params: {
     geogyeongConcentrationIndex,
     neoConfucianMasterGuidance,
     mindCultivationPrescription,
+    ritualAction,
+    reflectionFocus,
     reflectiveQuestion,
     interpretiveBoundary,
     liQiSynthesisMatrix,
@@ -242,6 +249,8 @@ export function formatNeoConfucianFourSevenLiQiPrompt(rep: NeoConfucianFourSeven
     `  - 감정 조율 요체: ${rep.dominantChiljeong.harmonizationKey}`,
     `· 성리학 거경 지침: ${rep.neoConfucianMasterGuidance}`,
     `· 주일무적 마음 수양 처방: ${rep.mindCultivationPrescription}`,
+    `· 실천 의례: ${rep.ritualAction}`,
+    `· 성찰 초점: ${rep.reflectionFocus}`,
     `· 성찰 질문: ${rep.reflectiveQuestion}`,
     `· 해석 경계: ${rep.interpretiveBoundary}`,
   ];

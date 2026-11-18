@@ -19,7 +19,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const NORDIC_RUNES_VERSION = 'LUCKEY-NORDIC-RUNES-v2.1.0';
+export const NORDIC_RUNES_VERSION = 'LUCKEY-NORDIC-RUNES-v2.2.0';
 
 export interface RuneInfo {
   runeNumber: number;          // 1 ~ 24
@@ -54,6 +54,8 @@ export interface NordicElderFutharkRunesReport {
   bindruneTalisman: BindruneTalisman;
   cosmicWyrdResonanceScore: number; // 0 ~ 100 위르드 운명 공명도
   yggdrasilNavigationGuidance: string;
+  ritualAction: string;
+  reflectionFocus: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
   runesSynthesisMatrix?: {
@@ -438,6 +440,9 @@ export function calculateNordicElderFutharkRunes(params: {
 
   const yggdrasilNavigationGuidance = `운명의 세 여신 노른이 짜놓은 그물(Wyrd)에서 과거의 뿌리는 [${urdPast.koreanName}], 지금 작동하는 파동은 [${verdandiPresent.koreanName}], 향후 열릴 가능성은 [${skuldFuture.koreanName}]입니다. ${verdandiPresent.uprightInterpretation} 다만 ${verdandiPresent.reversedWarning}`;
 
+  const ritualAction = `오늘 노른의 세 여신이 직조한 '${verdandiPresent.runeSymbol} ${verdandiPresent.koreanName}'의 파동 앞에서, '${bindruneTalisman.talismanName}'의 기운을 떠올리며 "${bindruneTalisman.activationMantra}"를 조용히 읊조리고 '${verdandiPresent.wyrdWeavingKeyword}'에 어울리는 한 가지 행동을 실천하세요.`;
+  const reflectionFocus = `엘더 푸사르크(${birthRune.koreanName} ⇄ ${verdandiPresent.koreanName}) — ${verdandiPresent.wyrdWeavingKeyword}과 위르드 직조`;
+
   const calculatedAtKst = formatRunesKstTimestamp(now);
   const trimmedQ = params.question?.trim() || '';
   let qHash = 0;
@@ -471,6 +476,8 @@ export function calculateNordicElderFutharkRunes(params: {
     bindruneTalisman,
     cosmicWyrdResonanceScore,
     yggdrasilNavigationGuidance,
+    ritualAction,
+    reflectionFocus,
     reflectiveQuestion,
     interpretiveBoundary,
     runesSynthesisMatrix,
@@ -498,6 +505,8 @@ export function formatNordicElderFutharkRunesPrompt(report: NordicElderFutharkRu
     );
   }
   lines.push(
+    `- **실천 의례**: ${report.ritualAction}`,
+    `- **성찰 초점**: ${report.reflectionFocus}`,
     `- **성찰 질문**: ${report.reflectiveQuestion}`,
     `- **해석 경계**: ${report.interpretiveBoundary}`,
   );
