@@ -35,11 +35,14 @@ function reloadOnce(win: Window): boolean {
   return true;
 }
 
+/**
+ * Only a collapsed layout viewport (innerHeight) kills taps. A device test page
+ * kept working with visualViewport.height === 0 while innerHeight stayed full,
+ * so a visual-only collapse is left alone (no nudge, no reload).
+ */
 export function isViewportCollapsed(win: Window): boolean {
   if (win.document.hidden) return false;
-  const visualHeight = win.visualViewport?.height ?? win.innerHeight;
-  const visualWidth = win.visualViewport?.width ?? win.innerWidth;
-  return win.innerHeight <= 1 || visualHeight <= 1 || visualWidth <= 1;
+  return win.innerHeight <= 1 || win.innerWidth <= 1;
 }
 
 function isAppleTouchDevice(win: Window): boolean {
