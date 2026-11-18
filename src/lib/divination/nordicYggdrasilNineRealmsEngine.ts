@@ -5,7 +5,7 @@
  * 비프로스트(Bifrost) 의식의 다리를 현대인의 라이프스타일 에너지 축 및 결단 체계에 연동합니다.
  */
 
-export const NORDIC_YGGDRASIL_NINE_REALMS_ENGINE_VERSION = 'LUCKEY-YGGDRASIL-NINE-REALMS-v2.1.0';
+export const NORDIC_YGGDRASIL_NINE_REALMS_ENGINE_VERSION = 'LUCKEY-YGGDRASIL-NINE-REALMS-v2.2.0';
 
 export interface NordicRealm {
   realmId: number;
@@ -30,6 +30,8 @@ export interface YggdrasilRealmsReport {
   bifrostBridgeClearance: number; // 0 ~ 100 (의식과 무의식을 잇는 무지개 다리 통과력)
   runeAttunementKey: string;
   masterCosmicPrescription: string;
+  ritualAction: string;
+  reflectionFocus: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
   yggdrasilSynthesisMatrix?: {
@@ -190,6 +192,9 @@ export function calculateNordicYggdrasilRealms(params: {
   const runeAttunementKey = `${dominantRealm.rulingRune} ⇄ ${shadowTensionRealm.rulingRune}`;
   const masterCosmicPrescription = `현재 당신의 에너지는 [${dominantRealm.nameKo}]에 강하게 닻을 내리고 있습니다. '${dominantRealm.archetypalGift}'의 재능을 마음껏 발휘하되, 대척점 영역인 [${shadowTensionRealm.nameKo}]의 '${shadowTensionRealm.shadowChallenge}'을 경계하고 비프로스트 다리를 열어 균형을 회복하세요.`;
 
+  const ritualAction = `오늘 세계수의 중심축 '${dominantRealm.nameKo}'의 주관 룬(${dominantRealm.rulingRune})을 떠올리며, '${dominantRealm.realmActionRule}'를 일상의 한 가지 구체적 행동으로 옮겨 비프로스트의 다리를 여세요.`;
+  const reflectionFocus = `위그드라실(${dominantRealm.nameEn} ↔ ${shadowTensionRealm.nameEn}) — ${dominantRealm.archetypalGift}과 그림자 균형`;
+
   const calculatedAtKst = formatYggdrasilKstTimestamp(now);
   const composite = Math.round((yggdrasilAxisAlignmentScore + bifrostBridgeClearance) / 2);
   const trimmedQ = question.trim();
@@ -216,6 +221,8 @@ export function calculateNordicYggdrasilRealms(params: {
     bifrostBridgeClearance,
     runeAttunementKey,
     masterCosmicPrescription,
+    ritualAction,
+    reflectionFocus,
     reflectiveQuestion,
     interpretiveBoundary,
     yggdrasilSynthesisMatrix,
@@ -248,6 +255,8 @@ export function formatNordicYggdrasilRealmsPrompt(report: YggdrasilRealmsReport)
     );
   }
   lines.push(
+    `- **실천 의례**: ${report.ritualAction}`,
+    `- **성찰 초점**: ${report.reflectionFocus}`,
     `- **성찰 질문**: ${report.reflectiveQuestion}`,
     `- **해석 경계**: ${report.interpretiveBoundary}`,
   );

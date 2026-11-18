@@ -3533,6 +3533,8 @@ test('Nordic Elder Futhark Runes Engine: calculates birth rune, norns trio and b
   assert(rep.cosmicWyrdResonanceScore >= 0 && rep.cosmicWyrdResonanceScore <= 100);
   assert(rep.bindruneTalisman.combinedRunes.length >= 2);
   assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert(rep.ritualAction.length > 0);
+  assert(rep.reflectionFocus.length > 0);
   assert(Boolean(rep.runesSynthesisMatrix?.secondaryRuneSummary));
   assert(Boolean(rep.runesSynthesisMatrix?.integratedAction));
   assert(rep.reflectiveQuestion.includes('새 프로젝트'));
@@ -3540,6 +3542,8 @@ test('Nordic Elder Futhark Runes Engine: calculates birth rune, norns trio and b
   const prompt = formatNordicElderFutharkRunesPrompt(rep);
   assert(prompt.includes('북유럽 24 엘더 푸사르크 룬'));
   assert(prompt.includes(rep.birthRune.koreanName));
+  assert(prompt.includes('실천 의례'));
+  assert(prompt.includes('성찰 초점'));
   assert(prompt.includes('교차 매트릭스'));
   assert(prompt.includes('성찰 질문'));
   assert(prompt.includes('해석 경계'));
@@ -4314,6 +4318,8 @@ test('Nordic Yggdrasil Nine Realms Engine: calculates dominant realm and Bifrost
   assert(rep.dominantRealm.nameKo.length > 0);
   assert(rep.secondaryRealm.nameKo.length > 0);
   assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert(rep.ritualAction.length > 0);
+  assert(rep.reflectionFocus.length > 0);
   assert(Boolean(rep.yggdrasilSynthesisMatrix?.integratedAction));
   assert(rep.reflectiveQuestion.includes('고민'));
   assert(rep.interpretiveBoundary.includes('참고용 비유'));
@@ -4321,6 +4327,8 @@ test('Nordic Yggdrasil Nine Realms Engine: calculates dominant realm and Bifrost
   assert(prompt.includes('고대 북유럽 세계수 위그드라실(Yggdrasil) 9대 영역 실측 데이터'));
   assert(prompt.includes(rep.dominantRealm.nameKo));
   assert(prompt.includes('보조 교차 영역'));
+  assert(prompt.includes('실천 의례'));
+  assert(prompt.includes('성찰 초점'));
   assert(prompt.includes('교차 매트릭스'));
   assert(prompt.includes('성찰 질문'));
   assert(prompt.includes('해석 경계'));
@@ -5035,6 +5043,8 @@ test('Neo-Confucian Four-Seven Li-Qi Engine: calculates Sadan alignment, Chiljeo
   assert(rep.dominantSadan.nameKo.length > 0);
   assert(rep.secondarySadan.nameKo !== rep.dominantSadan.nameKo);
   assert(rep.secondaryChiljeong.nameKo !== rep.dominantChiljeong.nameKo);
+  assert(rep.ritualAction.length > 0);
+  assert(rep.reflectionFocus.length > 0);
   assert(rep.reflectiveQuestion.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
   assert(rep.calculatedAtKst.endsWith('+09:00 KST'));
@@ -5045,6 +5055,8 @@ test('Neo-Confucian Four-Seven Li-Qi Engine: calculates Sadan alignment, Chiljeo
   assert(prompt.includes('성리학 사칠이기(四七理氣) & 거경궁리 주일무적 수양 실측 리포트'));
   assert(prompt.includes(repQ.dominantSadan.nameKo));
   assert(prompt.includes(repQ.secondarySadan.nameKo));
+  assert(prompt.includes('실천 의례'));
+  assert(prompt.includes('성찰 초점'));
   assert(prompt.includes('해석 경계'));
   assert(prompt.includes('교차 매트릭스'));
   assert(!prompt.includes('/100'));
