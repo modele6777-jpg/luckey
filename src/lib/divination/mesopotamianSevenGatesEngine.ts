@@ -24,7 +24,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const MESOPOTAMIAN_GATES_VERSION = 'LUCKEY-MESO-GATES-v2.2.0';
+export const MESOPOTAMIAN_GATES_VERSION = 'LUCKEY-MESO-GATES-v2.3.0';
 
 export interface PlanetaryGateInfo {
   gateNumber: number;
@@ -45,6 +45,8 @@ export interface MesopotamianSevenGatesReport {
   liberationTask: string;
   sevenGatesOracleGuidance: string;
   ancientSumerianBlessing: string;
+  ritualAction: string;
+  reflectionFocus: string;
   reflectiveQuestion: string;
   sevenGatesSynthesisMatrix?: {
     dominantTension: string;
@@ -184,6 +186,9 @@ export function calculateMesopotamianSevenGates(
     integratedAction: `${activeGate.resurrectionGift} 회복을 위해 ${activeGate.surrenderedRegalia} 집착 내려놓기${query?.trim() ? ` [질문 맥락: ${query.trim()}]` : ''}`,
   };
 
+  const ritualAction = `오늘 제${activeGate.gateNumber}관문(${activeGate.gateNameAkkadian})의 상징 앞에서 '${activeGate.surrenderedRegalia}'로 상징되는 '${activeGate.spiritualEgoArmor}'의 힘을 잠깐 내려놓고, 깊은 호흡 3번으로 '${activeGate.resurrectionGift}'의 고요한 중심을 되찾으세요.`;
+  const reflectionFocus = `인안나 제${activeGate.gateNumber}관문(${activeGate.planetaryDeity}) — ${activeGate.surrenderedRegalia} 반납과 ${activeGate.resurrectionGift} 회복`;
+
   const trimmedQ = query?.trim();
   const reflectiveQuestion = trimmedQ
     ? `지금 "${trimmedQ}" 앞에서 ${activeGate.gateNameAkkadian}의 ${activeGate.surrenderedRegalia} 집착을 내려놓고 내가 되찾을 내적 주권은 무엇인가요?`
@@ -199,6 +204,8 @@ export function calculateMesopotamianSevenGates(
     liberationTask,
     sevenGatesOracleGuidance,
     ancientSumerianBlessing,
+    ritualAction,
+    reflectionFocus,
     reflectiveQuestion,
     sevenGatesSynthesisMatrix,
     interpretiveBoundary: '본 메소포타미아 7대 행성 관문 리포트는 인안나 신화 상징에 기반한 정성적 내면 성찰 안내이며, 현실 사건의 확정적 예언이 아닙니다.',
@@ -218,6 +225,8 @@ export function formatMesopotamianSevenGatesPrompt(report: MesopotamianSevenGate
     `- **관문 통과 해방 과제**: ${report.liberationTask}`,
     `- **7대 관문 신탁 지침**: ${report.sevenGatesOracleGuidance}`,
     `- **고대 수메르의 영적 축복**: "${report.ancientSumerianBlessing}"`,
+    `- **실천 의례**: ${report.ritualAction}`,
+    `- **성찰 초점**: ${report.reflectionFocus}`,
     `- **질문 맞춤 성찰 질문**: ${report.reflectiveQuestion}`,
   ];
   if (report.sevenGatesSynthesisMatrix) {

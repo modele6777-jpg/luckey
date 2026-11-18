@@ -21,7 +21,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const MONGOLIAN_TENGRI_HIIMORI_ENGINE_VERSION = '2.1.0';
+export const MONGOLIAN_TENGRI_HIIMORI_ENGINE_VERSION = '2.2.0';
 
 export interface TengriSpiritualAspect {
   id: string;
@@ -46,6 +46,8 @@ export interface MongolianTengriHiimoriReport {
   guardianTngriDomain: string; // 99 텡그리 수호 진영
   tengriGuidance: string; // 텡그리즘 지혜 지침
   hiimoriFlagRaisingRitual: string; // 히모리 풍마 깃발 게양 리추얼
+  ritualAction: string;
+  reflectionFocus: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
   tengriSynthesisMatrix?: {
@@ -169,6 +171,8 @@ export function calculateMongolianTengriHiimori(
 
   const tengriGuidance = `대초원의 텡그리즘은 선언합니다: "푸른 하늘(Tengri) 아래 두려워할 것은 아무것도 없다. 너의 바람의 말(Hiimori)이 높이 날아오를 때, 온 우주가 너의 길을 연다." 현재 당신을 이끄는 천상의 양상은 [${dominantAspect.nameKo}]입니다. ${dominantAspect.spiritualBlessing}. 쉴드(Süld)의 기개를 바로 세우고 가슴을 활짝 펴십시오.`;
   const hiimoriFlagRaisingRitual = `높은 언덕이나 창밖 푸른 하늘을 우러르며 양팔을 가볍게 들고 호흡하십시오: "믕케 텡그리인 후츤 도르(Möngke Tengri-yin Küchün-dür - 영원한 하늘의 힘 아래)! 내 안의 풍마 히모리가 세찬 바람을 타고 승리의 깃발을 휘날린다."`;
+  const ritualAction = hiimoriFlagRaisingRitual;
+  const reflectionFocus = `몽골 텡그리즘(${dominantAspect.nameKo}) · ${guardianTngriDomain} — 쉴드(Süld)의 기개와 히모리 풍마 상승`;
 
   const calculatedAtKst = formatTengriKstTimestamp(now);
   const trimmedQuery = question?.trim();
@@ -198,6 +202,8 @@ export function calculateMongolianTengriHiimori(
     guardianTngriDomain,
     tengriGuidance,
     hiimoriFlagRaisingRitual,
+    ritualAction,
+    reflectionFocus,
     reflectiveQuestion,
     interpretiveBoundary,
     tengriSynthesisMatrix,
@@ -219,6 +225,8 @@ export function formatMongolianTengriHiimoriPrompt(report: MongolianTengriHiimor
     `- **99 텡그리 수호 진영**: ${report.guardianTngriDomain}`,
     `- **텡그리즘 지혜 지침**: ${report.tengriGuidance}`,
     `- **히모리 풍마 게양 리추얼**: ${report.hiimoriFlagRaisingRitual}`,
+    `- **실천 의례**: ${report.ritualAction}`,
+    `- **성찰 초점**: ${report.reflectionFocus}`,
     `- **성찰 질문**: ${report.reflectiveQuestion}`,
     `- **해석 경계**: ${report.interpretiveBoundary}`,
   ];

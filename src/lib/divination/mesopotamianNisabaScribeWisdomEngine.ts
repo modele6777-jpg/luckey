@@ -15,7 +15,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const MESOPOTAMIAN_NISABA_VERSION = 'LUCKEY-MESOPOTAMIAN-NISABA-v2.1.0';
+export const MESOPOTAMIAN_NISABA_VERSION = 'LUCKEY-MESOPOTAMIAN-NISABA-v2.2.0';
 
 export interface NisabaScribeRank {
   rankLevel: number;
@@ -51,6 +51,8 @@ export interface MesopotamianNisabaResult {
     tabletSection: string;
     wisdomVerse: string;
   };
+  ritualAction: string;
+  reflectionFocus: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
   nisabaSynthesisMatrix?: {
@@ -140,6 +142,9 @@ export function calculateMesopotamianNisaba(
   const decreeIdx = (seed >> 6) % LAPISLAZULI_DECREES.length;
   const lapislazuliDecree = LAPISLAZULI_DECREES[decreeIdx];
 
+  const ritualAction = `${primaryCuneiformVerdict.sacredGuidance} 오늘 책상 위 메모나 장부를 펼쳐 갈대첨필로 새기듯 지금 가장 먼저 바로잡아야 할 한 줄의 기준을 또박또박 적어보세요.`;
+  const reflectionFocus = `니사바(${activeScribeRank.rankNameKo}) · ${primaryCuneiformVerdict.sumerianWord} — 기록의 정밀함과 공정한 도량형`;
+
   const trimmedQuery = query?.trim();
   const reflectiveQuestion = trimmedQuery
     ? `니사바의 '${activeScribeRank.rankNameKo}'와 보조 역할 '${secondaryScribeRank.rankNameKo}'의 시선으로 볼 때, "${trimmedQuery}"에서 청금석 서판에 가장 분명히 바로잡아 적어야 할 기준은 무엇인가요?`
@@ -168,6 +173,8 @@ export function calculateMesopotamianNisaba(
     primaryCuneiformVerdict,
     secondaryCuneiformVerdict,
     lapislazuliDecree,
+    ritualAction,
+    reflectionFocus,
     reflectiveQuestion,
     interpretiveBoundary,
     nisabaSynthesisMatrix,
@@ -190,6 +197,8 @@ export function formatMesopotamianNisabaPrompt(result: MesopotamianNisabaResult)
     `  → 서기의 지침: ${result.primaryCuneiformVerdict.sacredGuidance}`,
     `- 청금석 서판 신탁: 《${result.lapislazuliDecree.tabletSection}》`,
     `  → 고대 찬가: "${result.lapislazuliDecree.wisdomVerse}"`,
+    `- 실천 의례: ${result.ritualAction}`,
+    `- 성찰 초점: ${result.reflectionFocus}`,
     `- 성찰 질문: ${result.reflectiveQuestion}`,
     `- 해석 경계: ${result.interpretiveBoundary}`,
   ];
