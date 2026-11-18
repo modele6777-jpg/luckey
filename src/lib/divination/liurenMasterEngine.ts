@@ -28,7 +28,7 @@
 
 import { calculateLiuren } from './eventCharts';
 
-export const LIUREN_MASTER_ENGINE_VERSION = 'LUCKEY-LR-v2.2.0';
+export const LIUREN_MASTER_ENGINE_VERSION = 'LUCKEY-LR-v2.3.0';
 
 export const LIUREN_MASTER_METHOD =
   '대육임(大六壬) 정통 월장가시 천지반 12궁 포국, 사과(간상·간음·지상·지음) 오행 생극제화 수리 판정, 삼전(초전·중전·말전 발용) 구종과격 및 전개 템포, 12천장 승차 길흉 판정 및 0~100점 결단·행동 모멘텀 스코어 결정론적 산출';
@@ -118,6 +118,7 @@ export interface LiurenMasterResult {
   };
   ritualAction: string;
   reflectionFocus: string;
+  reflectiveQuestion: string;
   boundaryNotice: string;
   interpretiveBoundary: string;
 }
@@ -151,7 +152,7 @@ function getTemporalLiurenRhythm(now: Date) {
           : '겨울 · 해자(水) 지혜절 (조용한 기획과 물밑 준비가 힘을 발휘하는 시기)';
 
   return {
-    kstTimeLabel: `${y}-${m}-${d} ${hh}:${mm} KST`,
+    kstTimeLabel: `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`,
     hourWatchWindow,
     seasonalLiurenTone,
     temporalGuidance: `${hourWatchWindow} · ${seasonalLiurenTone}의 결에 맞추어 인사의 흐름을 살피십시오.`,
@@ -415,6 +416,9 @@ export function calculateLiurenMaster(instant: Date = new Date(), question?: str
   };
   const ritualAction = `${breakthroughStrategy} 오늘 '${threeTransmissions[0]?.general}'의 초전 기운을 염두에 두고, 중요한 연락이나 결정 전 한 문장으로 핵심 의도를 적어 확인하세요.`;
   const reflectionFocus = `대육임 ${patternHanja} · 사과 ${elemEval.relationType} — 초전(${threeTransmissions[0]?.branch})의 첫 단추에서 말전(${threeTransmissions[2]?.branch})의 귀결까지`;
+  const reflectiveQuestion = q
+    ? `지금 "${q}" 앞에서 ${patternHanja}의 ${threeTransmissions[0]?.general} 발용 기운을 살려 내가 먼저 움직일 초전의 한 수는 무엇인가요?`
+    : reflectionFocus;
 
   return {
     engineVersion: LIUREN_MASTER_ENGINE_VERSION,
@@ -445,6 +449,7 @@ export function calculateLiurenMaster(instant: Date = new Date(), question?: str
     liurenSynthesisMatrix,
     ritualAction,
     reflectionFocus,
+    reflectiveQuestion,
     boundaryNotice: '본 결과는 대육임 월장가시·사과·삼전 수리에 기반한 정성적 인사 처신 가이드이며, 확정적 예언이 아닙니다.',
     interpretiveBoundary: '본 결과는 대육임 월장가시·사과·삼전 수리에 기반한 정성적 인사 처신 가이드이며, 확정적 예언이 아닙니다.',
   };
@@ -498,6 +503,7 @@ export function formatLiurenMasterPrompt(res: LiurenMasterResult): string {
   • 돌파 개운 전략: ${res.transmissionDynamics.breakthroughStrategy}
 - 실천 의례: ${res.ritualAction}
 - 성찰 초점: ${res.reflectionFocus}
+- 질문 맞춤 성찰 질문: ${res.reflectiveQuestion}
 - 해석 경계: ${res.boundaryNotice}
 ※ 루시 지침: 대육임은 인사처신의 거울입니다. 사용자가 질문한 일의 시작(초전), 진행(중전), 결말(말전)과 상대방과의 심리적 역학(사과)을 명쾌하고 든든하게 해설해 주세요.`;
 }

@@ -37,7 +37,7 @@
 import type { UserProfile } from '../sharedState';
 import { parseBirthTime } from '../birthDateTime';
 
-export const MAHABOTE_ENGINE_VERSION = 'LUCKEY-MB-v2.2.0';
+export const MAHABOTE_ENGINE_VERSION = 'LUCKEY-MB-v2.3.0';
 
 export const MAHABOTE_METHOD =
   '미얀마 정통 마하보테(Mahabote) 7궁 수리 산법: 소수력(ME=서기-638) 7제 잉여수 기반 7대 하우스(빙가·아타·야자·아디파디·마라나·띠케·푸티) 포국, 8요일 행성·영수(靈獸) 입궁, 본명궁(Root House) 3대 길흉 판정, 행성 친화도·4대 영역 가중치, 당해 연도 나이 다샤(Age Transit) 및 방위·색상 개운 처방 결정론 산출';
@@ -137,6 +137,7 @@ export interface MahaboteResult {
   };
   ritualAction?: string;
   reflectionFocus?: string;
+  reflectiveQuestion?: string;
   interpretiveBoundary?: string;
   note?: string;
 }
@@ -148,7 +149,7 @@ function formatMahaboteKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
 }
 
 // 7대 행성 기본 정보 (미얀마 전통 숫자: 일1, 월2, 화3, 수4, 목5, 금6, 토0)
@@ -199,6 +200,7 @@ const HOUSE_PLANET_ORDER = [1, 2, 3, 4, 5, 6, 0]; // 일, 월, 화, 수, 목, �
 export function calculateMahabote(params: {
   profile?: UserProfile | null;
   targetYear?: number;
+  question?: string;
 }): MahaboteResult {
   const birthdateStr = params.profile?.basic?.birthdate?.trim() || '';
   if (!birthdateStr) {
@@ -378,6 +380,10 @@ export function calculateMahabote(params: {
   };
   const ritualAction = `${remedies.spiritualPractice} 오늘 ${remedies.luckyDirection} 방향을 정돈하며 현재 나이 다샤(${transitHouse.name})의 과제를 한 가지 가볍게 실행하세요.`;
   const reflectionFocus = `마하보테 본명궁 ${rootPlacement.houseName} ↔ ${currentAge}세 다샤 ${transitHouse.name} — ${primaryLifeDomain}의 성장 리듬`;
+  const trimmedQ = params.question?.trim();
+  const reflectiveQuestion = trimmedQ
+    ? `지금 "${trimmedQ}" 앞에서 본명궁 ${rootPlacement.houseName}과 ${currentAge}세 다샤 ${transitHouse.name}의 흐름을 살려 내가 집중할 핵심 영역은 무엇인가요?`
+    : reflectionFocus;
 
   return {
     status: 'calculated',
@@ -407,6 +413,7 @@ export function calculateMahabote(params: {
     mahaboteSynthesisMatrix,
     ritualAction,
     reflectionFocus,
+    reflectiveQuestion,
     interpretiveBoundary: '본 마하보테 7궁 명반 리포트는 미얀마 소수력·8요일 행성 상징에 기반한 정성적 성찰 안내이며, 운명의 절대적 예단이 아닙니다.',
   };
 }
@@ -457,7 +464,7 @@ ${housesSummary}
   * 4분기 실행 포커스: 1분기(${ti?.quarterlyFocus.q1}) -> 2분기(${ti?.quarterlyFocus.q2}) -> 3분기(${ti?.quarterlyFocus.q3}) -> 4분기(${ti?.quarterlyFocus.q4})
 - 개운 처방:
   * 길방위: ${rem?.luckyDirection} · 행운 색상: ${rem?.luckyColors.join(', ')} · 수호 보석: ${rem?.luckyGemstone}
-  * 실천법: ${rem?.spiritualPractice}${sm ? `\n- 교차 매트릭스 [핵심 긴장: ${sm.dominantTension} | 조율 상태: ${sm.alignmentState}]\n  * 통합 실천: ${sm.integratedAction}` : ''}${result.ritualAction ? `\n- 실천 의례: ${result.ritualAction}` : ''}${result.reflectionFocus ? `\n- 성찰 초점: ${result.reflectionFocus}` : ''}${result.interpretiveBoundary ? `\n- 해석 경계: ${result.interpretiveBoundary}` : ''}
+  * 실천법: ${rem?.spiritualPractice}${sm ? `\n- 교차 매트릭스 [핵심 긴장: ${sm.dominantTension} | 조율 상태: ${sm.alignmentState}]\n  * 통합 실천: ${sm.integratedAction}` : ''}${result.ritualAction ? `\n- 실천 의례: ${result.ritualAction}` : ''}${result.reflectionFocus ? `\n- 성찰 초점: ${result.reflectionFocus}` : ''}${result.reflectiveQuestion ? `\n- 질문 맞춤 성찰 질문: ${result.reflectiveQuestion}` : ''}${result.interpretiveBoundary ? `\n- 해석 경계: ${result.interpretiveBoundary}` : ''}
 - [AI 해석 절대 지침]: 본 데이터는 미얀마 7궁 마하보테 정통 수리로 계산된 불변의 팩트입니다. 본명궁 및 현재 나이 다샤 하우스의 길흉을 왜곡하지 말고 상담에 정확히 반영하십시오.
 `.trim();
 }

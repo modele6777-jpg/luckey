@@ -11857,3 +11857,30 @@ test('마야 포폴부·메소포타미아 7관문·북유럽 볼바 세이드 v
   const vsPrompt = formatNorseVolvaSeidrNineRealmsPrompt(vs);
   assert.ok(vsPrompt.includes('+09:00') && vsPrompt.includes('질문 맞춤 성찰 질문') && vsPrompt.includes('해석 경계'));
 });
+
+test('구성학·대육임·마하보테 v1.7.873 질문 반응형 성찰 질문·+09:00 KST 회귀 검증', () => {
+  const profile = { basic: { name: '제제', birthdate: '1994-01-24', birthtime: '12:00', gender: 'male' } } as any;
+  const now = new Date('2026-11-19T05:50:00+09:00');
+  const query = '올해 중요한 이동과 결단을 앞두고 어느 방향에 집중할까요';
+
+  const ks = calculateKyusei({ profile, targetDate: now, question: query });
+  assert.equal(ks.engineVersion, KYUSEI_ENGINE_VERSION);
+  assert.match(ks.calculatedAtKst, /\+09:00/);
+  assert.ok(ks.reflectiveQuestion?.includes(query));
+  const ksPrompt = formatKyuseiPrompt(ks);
+  assert.ok(ksPrompt.includes('+09:00') && ksPrompt.includes('질문 맞춤 성찰 질문') && ksPrompt.includes('해석 경계'));
+
+  const lr = calculateLiurenMaster(now, query);
+  assert.equal(lr.engineVersion, LIUREN_MASTER_ENGINE_VERSION);
+  assert.match(lr.calculatedAtKst, /\+09:00/);
+  assert.ok(lr.reflectiveQuestion.includes(query));
+  const lrPrompt = formatLiurenMasterPrompt(lr);
+  assert.ok(lrPrompt.includes('+09:00') && lrPrompt.includes('질문 맞춤 성찰 질문') && lrPrompt.includes('해석 경계'));
+
+  const mb = calculateMahabote({ profile, targetYear: 2026, question: query });
+  assert.equal(mb.engineVersion, MAHABOTE_ENGINE_VERSION);
+  assert.match(mb.calculatedAtKst ?? '', /\+09:00/);
+  assert.ok(mb.reflectiveQuestion?.includes(query));
+  const mbPrompt = formatMahabotePrompt(mb);
+  assert.ok(mbPrompt.includes('+09:00') && mbPrompt.includes('질문 맞춤 성찰 질문') && mbPrompt.includes('해석 경계'));
+});

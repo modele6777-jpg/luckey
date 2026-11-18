@@ -35,7 +35,7 @@ import {
   getYearSolarTerms,
 } from '../astronomicalSolarTerms';
 
-export const KYUSEI_ENGINE_VERSION = 'LUCKEY-KS-v2.2.0';
+export const KYUSEI_ENGINE_VERSION = 'LUCKEY-KS-v2.3.0';
 
 export const KYUSEI_METHOD =
   '구성학 정통 9궁 명반 산법: 입춘 절입 연성 수리 본명성, 절월 월성 월명성, 동지·하지 근접 갑자일 일성 순행 비성(중궁→건→태→간→리→감→곤→진→손)으로 연·월·일 3반 포국 및 오황살·암검살·세파살·월파살·본명살·본명적살 결정론 산출';
@@ -134,6 +134,7 @@ export interface KyuseiResult {
   };
   ritualAction?: string;
   reflectionFocus?: string;
+  reflectiveQuestion?: string;
   interpretiveBoundary?: string;
 }
 
@@ -408,6 +409,7 @@ function skippedResult(note: string): KyuseiResult {
 export function calculateKyusei(params: {
   profile?: UserProfile | null;
   targetDate?: Date;
+  question?: string;
 }): KyuseiResult {
   const now = params.targetDate ?? new Date();
   const profile = params.profile ?? null;
@@ -611,6 +613,10 @@ export function calculateKyusei(params: {
     ? `오늘 잠시 서서 최길방위인 ${topFortuneDirection.direction}(${PALACES[topFortuneDirection.direction].trigram}) 쪽을 바라보며 호흡을 고른 뒤, 그 방향의 맑은 기운(${topFortuneDirection.starName})을 담아 첫 약속이나 이동을 시작하세요.`
     : `오늘 흉살 방위를 피하고 본명성 ${STARS[honStar].name}의 자리를 지키는 고요한 정리 정돈으로 하루의 중심을 세우세요.`;
   const reflectionFocus = `구성학 본명성 ${STARS[honStar].name} ↔ ${annualChart.centerStarName} (${honmyoseiSynergy.annualStarRelation}) — 내가 오늘 기운을 열 방위와 비울 방위`;
+  const trimmedQ = params.question?.trim();
+  const reflectiveQuestion = trimmedQ
+    ? `지금 "${trimmedQ}" 앞에서 ${STARS[honStar].name} 본명성의 ${honmyoseiSynergy.annualStarRelation} 흐름을 타고 내가 먼저 열어 둘 길방위(${topFortuneDirection?.direction ?? '중심'})의 한 걸음은 무엇인가요?`
+    : reflectionFocus;
 
   return {
     status: 'calculated',
@@ -651,6 +657,7 @@ export function calculateKyusei(params: {
     kyuseiSynthesisMatrix,
     ritualAction,
     reflectionFocus,
+    reflectiveQuestion,
     interpretiveBoundary: '본 구성학 9궁 명반·길흉방위 리포트는 동양 역법과 구궁 비성 수리에 기반한 정성적 방위 참고 안내이며, 절대적 길흉 예단이 아닙니다.',
   };
 }
@@ -825,7 +832,7 @@ ${usageLines}${result.directionalScores ? `\n===================================
 [8대 방위별 목적 적합도 매트릭스 및 본명성-연성 동회 심층 수리 평가]
 ${result.directionalScores.map(d => `   • [${d.direction}] (${d.level}) → 권장: ${d.recommendedActivities.join(', ')}`).join('\n')}
    * 본명성-연성 조화도: ${result.honmyoseiSynergy?.annualStarRelation}
-   * 연간 테마 가이드: ${result.honmyoseiSynergy?.annualThemeGuidance}` : ''}${result.kyuseiSynthesisMatrix ? `\n   * 교차 매트릭스 [핵심 긴장: ${result.kyuseiSynthesisMatrix.dominantTension} | 조율 상태: ${result.kyuseiSynthesisMatrix.alignmentState}]\n   * 통합 실천: ${result.kyuseiSynthesisMatrix.integratedAction}` : ''}${result.ritualAction ? `\n   * 실천 의례: ${result.ritualAction}` : ''}${result.reflectionFocus ? `\n   * 성찰 초점: ${result.reflectionFocus}` : ''}${result.interpretiveBoundary ? `\n   * 해석 경계: ${result.interpretiveBoundary}` : ''}
+   * 연간 테마 가이드: ${result.honmyoseiSynergy?.annualThemeGuidance}` : ''}${result.kyuseiSynthesisMatrix ? `\n   * 교차 매트릭스 [핵심 긴장: ${result.kyuseiSynthesisMatrix.dominantTension} | 조율 상태: ${result.kyuseiSynthesisMatrix.alignmentState}]\n   * 통합 실천: ${result.kyuseiSynthesisMatrix.integratedAction}` : ''}${result.ritualAction ? `\n   * 실천 의례: ${result.ritualAction}` : ''}${result.reflectionFocus ? `\n   * 성찰 초점: ${result.reflectionFocus}` : ''}${result.reflectiveQuestion ? `\n   * 질문 맞춤 성찰 질문: ${result.reflectiveQuestion}` : ''}${result.interpretiveBoundary ? `\n   * 해석 경계: ${result.interpretiveBoundary}` : ''}
 ======================================================================
 [★ 루시 구성학 상담 지침]:
 - 위 3반(연반·월반·일반) 포국과 흉살 방위는 순수 수리로 직접 비성한 확정 데이터다. 다른 포국을 지어내지 마십시오.
