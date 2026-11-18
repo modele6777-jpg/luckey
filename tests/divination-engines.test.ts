@@ -4134,6 +4134,7 @@ test('Shinto Kotodama Four Souls Engine: calculates Ichirei Shikon balance and K
   const rep = calculateShintoKotodama({ profile, question: '말과 마음의 조화', now: new Date('2026-11-17T05:45:00+09:00') });
   assert.equal(rep.engineVersion, SHINTO_KOTODAMA_FOUR_SOULS_ENGINE_VERSION);
   assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(Boolean(rep.shintoSynthesisMatrix?.integratedAction));
   assert(rep.naohiPurityIndex >= 0 && rep.naohiPurityIndex <= 100);
   assert(rep.fourSouls.dominantSoul.length > 0);
@@ -4145,6 +4146,7 @@ test('Shinto Kotodama Four Souls Engine: calculates Ichirei Shikon balance and K
   assert(prompt.includes(rep.fourSouls.dominantSoul));
   assert(prompt.includes('보조 교차 혼'));
   assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
   assert(prompt.includes('성찰 질문'));
   assert(prompt.includes('해석 경계'));
   assert(!prompt.includes('/100') && !prompt.includes('100점'));
@@ -4304,6 +4306,7 @@ test('Slavic Mokosh Fate Weaving Engine: calculates Dolya/Nedolya fate threads a
   const rep = calculateSlavicMokoshFateWeaving({ profile, question: '지금 얽힌 매듭을 어떻게 풀까요?' });
   assert.equal(rep.engineVersion, SLAVIC_MOKOSH_FATE_WEAVING_ENGINE_VERSION);
   assert(rep.calculatedAtKst.includes('+09:00 (KST)'));
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(Boolean(rep.mokoshSynthesisMatrix?.integratedAction));
   assert(rep.earthFertilityIndex >= 0 && rep.earthFertilityIndex <= 100);
   assert(rep.fateTensionScore >= 0 && rep.fateTensionScore <= 100);
@@ -4315,6 +4318,7 @@ test('Slavic Mokosh Fate Weaving Engine: calculates Dolya/Nedolya fate threads a
   assert(prompt.includes('고대 슬라브 모코시(Mokosh) 운명의 실타래 & 대지 모성 실측 데이터'));
   assert(prompt.includes(rep.threads.dolya.nameKo));
   assert(prompt.includes('보조 교차'));
+  assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
   assert(prompt.includes('성찰 질문'));
   assert(prompt.includes('해석 경계'));
   assert(prompt.includes('교차 매트릭스'));
@@ -4743,6 +4747,7 @@ test('Shugendo Yamabushi Ten Realms Engine: calculates ten realms purification a
   const rep = calculateShugendoYamabushiTenRealms({ profile, question: '마음이 흔들릴 때 중심을 잡으려면 어떻게 할까요?' });
   assert.equal(rep.engineVersion, SHUGENDO_YAMABUSHI_TEN_REALMS_ENGINE_VERSION);
   assert(rep.calculatedAtKst.includes('+09:00 (KST)'));
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(Boolean(rep.shugendoSynthesisMatrix?.integratedAction));
   assert(rep.symbolicRebirthScore >= 0 && rep.symbolicRebirthScore <= 100);
   assert(rep.sixRootsPurificationScore >= 0 && rep.sixRootsPurificationScore <= 100);
@@ -4756,6 +4761,7 @@ test('Shugendo Yamabushi Ten Realms Engine: calculates ten realms purification a
   assert(prompt.includes('고대 일본 슈겐도(修驗道) 야마부시 10계수행 & 6근청정 실측 데이터'));
   assert(prompt.includes(rep.currentInitiationRealm.nameKo));
   assert(prompt.includes('보조 교차 계위'));
+  assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
   assert(prompt.includes('성찰 질문'));
   assert(prompt.includes('해석 경계'));
   assert(prompt.includes('교차 매트릭스'));

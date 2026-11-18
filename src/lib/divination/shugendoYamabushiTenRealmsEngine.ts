@@ -21,7 +21,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const SHUGENDO_YAMABUSHI_TEN_REALMS_ENGINE_VERSION = '2.1.0';
+export const SHUGENDO_YAMABUSHI_TEN_REALMS_ENGINE_VERSION = '2.2.0';
 
 export interface TenRealmStage {
   id: string;
@@ -44,6 +44,8 @@ export interface ShugendoYamabushiTenRealmsReport {
   highestAwakenedRealm: TenRealmStage; // 가장 높이 개화된 영적 계위
   yamabushiAsceticPointers: string; // 야마부시 산악 지혜 요결
   waterfallTakiGyoRitual: string; // 타키교(폭포 수마) 심신 정화 처방
+  ritualAction: string;
+  reflectionFocus: string;
   reflectiveQuestion: string; // 내담자 성찰 질문
   interpretiveBoundary: string; // 상징 해석 경계 고지
   shugendoSynthesisMatrix?: {
@@ -192,6 +194,8 @@ export function calculateShugendoYamabushiTenRealms(
   const waterfallTakiGyoRitual = `찬 물로 세수를 하거나 샤워 시 30초간 냉수를 쐬며 "육근청정(六根淸淨), 구지신인 임·병·투·자·개·진·열·재·전(臨兵鬪者皆陣烈在前)"을 마음속으로 외쳐 사기(邪氣)를 물리치고 중심을 세우십시오.`;
 
   const calculatedAtKst = formatShugendoKstTimestamp(now);
+  const ritualAction = `[${currentInitiationRealm.nameKo}] ${waterfallTakiGyoRitual}`;
+  const reflectionFocus = `슈겐도 10계수행(${currentInitiationRealm.nameKo}) — ${highestAwakenedRealm.nameKo}`;
   const reflectiveQuestion = question
     ? `"${question}" 앞에서 ${currentInitiationRealm.nameKo}(${currentInitiationRealm.kanji})의 과제를 넘어, ${secondaryRealm.nameKo}와 ${highestAwakenedRealm.nameKo}의 힘을 끌어올리기 위해 오늘 실천할 한 가지는 무엇입니까?`
     : `${currentInitiationRealm.nameKo}(${currentInitiationRealm.kanji})의 전환 과제("${currentInitiationRealm.transmutationTask}")를 일상에서 가장 먼저 적용할 순간은 언제입니까?`;
@@ -215,6 +219,8 @@ export function calculateShugendoYamabushiTenRealms(
     highestAwakenedRealm,
     yamabushiAsceticPointers,
     waterfallTakiGyoRitual,
+    ritualAction,
+    reflectionFocus,
     reflectiveQuestion,
     interpretiveBoundary,
     shugendoSynthesisMatrix,
@@ -232,6 +238,8 @@ export function formatShugendoYamabushiTenRealmsPrompt(rep: ShugendoYamabushiTen
     `· 최고 개화 영적 계위: [${rep.highestAwakenedRealm.nameKo} (${rep.highestAwakenedRealm.kanji})]`,
     `· 야마부시 산악 지혜 요결: ${rep.yamabushiAsceticPointers}`,
     `· 폭포 수마(타키교) 심신 정화 리추얼: ${rep.waterfallTakiGyoRitual}`,
+    `· 실천 의례: ${rep.ritualAction}`,
+    `· 성찰 초점: ${rep.reflectionFocus}`,
     `· 성찰 질문: ${rep.reflectiveQuestion}`,
     `· 해석 경계: ${rep.interpretiveBoundary}`,
   ];
