@@ -23,7 +23,7 @@ import { ACIM_SACRED_QUOTES, ACIM_CORE_CANON } from '../acimWisdom';
 import { NIKAYA_SACRED_QUOTES, EARLY_BUDDHISM_CORE_CANON } from '../earlyBuddhismWisdom';
 import { GNOSTIC_SACRED_QUOTES, GNOSTIC_CORE_CANON } from '../gnosticWisdom';
 
-export const SUPREME_WISDOM_TRINITY_VERSION = 'LUCKEY-TRINITY-WISDOM-v2.1.0';
+export const SUPREME_WISDOM_TRINITY_VERSION = 'LUCKEY-TRINITY-WISDOM-v2.2.0';
 
 function formatTrinityKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -32,7 +32,7 @@ function formatTrinityKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
 }
 
 export interface AcimResonance {
@@ -76,6 +76,7 @@ export interface SupremeWisdomTrinityReport {
     alignmentState: string;
     integratedAction: string;
   };
+  reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
 
@@ -171,6 +172,9 @@ export function runSupremeWisdomTrinityEngine(
   };
 
   const interpretiveBoundary = '본 영적 3위1체 마스터 지혜 리포트는 기적수업·초기불교·영지주의 문헌과 사주 오행 상징을 결합한 내면 성찰 안내이며, 종교적 교리 강요나 의학적 치료를 대체하지 않습니다.';
+  const reflectiveQuestion = q
+    ? `'${q}'로 괴로워지는 순간에 내가 스스로 쏘고 있는 두 번째 화살은 무엇이며, 그 자리에 평화와 자비를 선택한다면 무엇이 남나요?`
+    : `지금 내 안에서 진실인 척하며 나를 몰아세우는 에고의 목소리를 내려놓고, 고요한 호흡과 함께 회복하고 싶은 본래의 평화는 무엇인가요?`;
 
   const synthesisPromptGuidance = `[🕊️ LUCKEY 궁극의 영적 3위1체 마스터 지혜 (기적수업 × 초기불교 × 영지주의) ${SUPREME_WISDOM_TRINITY_VERSION} | ${calculatedAtKst}]
 ======================================================================
@@ -200,6 +204,7 @@ export function runSupremeWisdomTrinityEngine(
   * 핵심 긴장: ${trinitySynthesisMatrix.dominantTension}
   * 조율 상태: ${trinitySynthesisMatrix.alignmentState}
   * 통합 실천: ${trinitySynthesisMatrix.integratedAction}
+  * 질문 맞춤 성찰 질문: ${reflectiveQuestion}
 
 ■ 5. 해석 경계: ${interpretiveBoundary}
 
@@ -238,6 +243,7 @@ ${lucyWisdomGuidance}
     lucyWisdomGuidance,
     synthesisPromptGuidance,
     trinitySynthesisMatrix,
+    reflectiveQuestion,
     interpretiveBoundary,
   };
 }

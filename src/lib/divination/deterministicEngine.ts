@@ -1827,7 +1827,7 @@ try {
   const somaticBodyArmoringResult = calculateSupplement('somaticBodyArmoringResult', () => (birthdateStr && profile
     ? (() => {
         try {
-          return calculateSomaticBodyArmoring({ profile, targetDate: now });
+          return calculateSomaticBodyArmoring({ profile, targetDate: now, question });
         } catch (_) {
           return null;
         }
@@ -1838,7 +1838,7 @@ try {
   const supremeWisdomTrinityResult = calculateSupplement('supremeWisdomTrinityResult', () => (birthdateStr && profile
     ? (() => {
         try {
-          return calculateSupremeWisdomTrinity({ profile, targetDate: now });
+          return calculateSupremeWisdomTrinity({ profile, targetDate: now, question });
         } catch (_) {
           return null;
         }
@@ -1871,7 +1871,7 @@ try {
   const synchronicityOmenResult = calculateSupplement('synchronicityOmenResult', () => (birthdateStr && profile
     ? (() => {
         try {
-          return calculateSynchronicityOmen({ profile, targetDate: now });
+          return calculateSynchronicityOmen({ profile, targetDate: now, question });
         } catch (_) {
           return null;
         }
@@ -4770,11 +4770,11 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'heroMythMonomyth', nameKo: '영웅의 여정 모노미스', icon: '⚔️', category: 'deep_master', summary: '조셉 캠벨의 영웅의 여정 12단계와 사주 오행 원형을 엮어 현재 넘어설 문턱과 돌파 결단을 비추는 서사 관점' },
   { key: 'akashicRecordsOracle', nameKo: '아카식 레코드', icon: '📖', category: 'deep_master', summary: '영혼의 기원과 카르믹 배움 과제를 비춰 현실에서 실행할 그라운딩 실천을 짚어 줍니다.' },
   { key: 'quantumProbabilisticTimeline', nameKo: '양자 확률 타임라인', icon: '🔮', category: 'deep_master', summary: '주역 변효와 다중세계 해석을 결합해 관성 타임라인과 최적 성장 타임라인의 분기점과 붕괴 촉매를 비추는 관점' },
-  { key: 'somaticBodyArmoring', nameKo: '소매틱 아머링', icon: '🧘', category: 'deep_master' },
-  { key: 'supremeWisdomTrinity', nameKo: '3대 지혜 삼위일체', icon: '👑', category: 'deep_master' },
+  { key: 'somaticBodyArmoring', nameKo: '소매틱 아머링', icon: '🧘', category: 'deep_master', summary: '빌헬름 라이히 7대 신체 분절 갑옷과 오행 기체 상징으로 억압된 긴장 부위와 미주신경 이완 호흡을 비추는 관점' },
+  { key: 'supremeWisdomTrinity', nameKo: '3대 지혜 삼위일체', icon: '👑', category: 'deep_master', summary: '기적수업의 용서·초기불교의 사티·영지주의의 내면 불꽃을 엮어 괴로움의 두 번째 화살을 멈추는 통찰 관점' },
   { key: 'sacredVortexGeometry', nameKo: '황금비 영혼 수비학', icon: '🌀', category: 'deep_master', summary: '플라톤 5대 다면체와 테슬라 3-6-9 보텍스·피보나치 황금 나선으로 에너지 질서와 집중 방향을 정렬하는 관점' },
   { key: 'taoistNeidanMeridian', nameKo: '도교 내단 경락시계', icon: '☯️', category: 'deep_master', summary: '도교 내단 삼보(정·기·신)와 자오유주 12경락 시계 상징으로 현재 시진의 기혈 순환과 단전 호흡을 짚어 주는 관점' },
-  { key: 'synchronicityOmen', nameKo: '칼 융 동시성 오멘', icon: '🕊️', category: 'deep_master' },
+  { key: 'synchronicityOmen', nameKo: '칼 융 동시성 오멘', icon: '🕊️', category: 'deep_master', summary: '칼 융 동시성과 오행 공명장으로 반복되는 숫자·우연의 징조와 추진·관조·도약 신호를 해독하는 관점' },
   { key: 'ethericAuraBiofield', nameKo: '에테릭 오라 바이오필드', icon: '✨', category: 'deep_master', summary: '에테르·아스트랄 오라 스펙트럼과 생체장 쉴딩 결계로 에너지 누수를 막고 경계를 세우는 관점' },
   { key: 'sajuClassicYongshin', nameKo: '사주 원전 억부용신', icon: '📜', category: 'deep_master', summary: '자평진전 격국·궁통보감 조후·적천수 억부용신으로 사주 원국의 균형과 개운 실천을 처방하는 관점' },
   { key: 'tarotTreeOfLifeShadow', nameKo: '타로 세피로트 그림자', icon: '🌳', category: 'deep_master', summary: '카발라 생명나무 22경로와 타로 섀도우 미러를 통해 의식의 빛과 무의식 방어기제를 통합하는 관점' },

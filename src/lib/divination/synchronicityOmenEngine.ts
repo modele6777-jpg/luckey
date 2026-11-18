@@ -19,7 +19,7 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const SYNCHRONICITY_OMEN_VERSION = 'LUCKEY-SYNCHRONICITY-OMEN-v2.1.0';
+export const SYNCHRONICITY_OMEN_VERSION = 'LUCKEY-SYNCHRONICITY-OMEN-v2.2.0';
 
 function formatSynchronicityKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -28,7 +28,7 @@ function formatSynchronicityKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
 }
 
 export type ManifestationSignalType = 'GREEN_ACCELERATE' | 'AMBER_PAUSE_OBSERVE' | 'GOLDEN_QUANTUM_LEAP';
@@ -59,6 +59,7 @@ export interface SynchronicityOmenReport {
     alignmentState: string;
     integratedAction: string;
   };
+  reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
 
@@ -151,6 +152,9 @@ export function runSynchronicityOmenEngine(
   };
 
   const interpretiveBoundary = '본 칼 융 동시성 징조 해독 리포트는 비인과적 상징 공명과 사주 오행 데이터를 결합한 성찰 안내이며, 일상적 우연의 확정적 예언이나 의학적·법적 판단을 대체하지 않습니다.';
+  const reflectiveQuestion = q
+    ? `'${q}'와 관련해 최근 자꾸 눈길이나 발길이 멈추는 ${primaryChannelName}의 반복 신호가 내게 건네려는 메시지는 무엇인가요?`
+    : `오늘 하루 스쳐 지나가는 사소한 우연 속에서 내가 지금 가장 알아차려 주길 기다리는 내면의 신호는 무엇인가요?`;
 
   const synthesisPromptGuidance = `[LUCKEY 칼 융 동시성 징조 해독 & 오멘 매트릭스 ${SYNCHRONICITY_OMEN_VERSION} | ${calculatedAtKst}]
 - 동시성 오멘 테마: [${dominantOmenTheme}]
@@ -165,6 +169,7 @@ export function runSynchronicityOmenEngine(
 - 동시성 각성 실천 리추얼: [${ritualName}] - ${actionStep}
 - 교차 매트릭스: [핵심 긴장: ${synchronicitySynthesisMatrix.dominantTension} | 조율 상태: ${synchronicitySynthesisMatrix.alignmentState}]
   * 통합 실천: ${synchronicitySynthesisMatrix.integratedAction}
+- 질문 맞춤 성찰 질문: ${reflectiveQuestion}
 - 해석 경계: ${interpretiveBoundary}`;
 
   return {
@@ -187,6 +192,7 @@ export function runSynchronicityOmenEngine(
     },
     synthesisPromptGuidance,
     synchronicitySynthesisMatrix,
+    reflectiveQuestion,
     interpretiveBoundary,
   };
 }
