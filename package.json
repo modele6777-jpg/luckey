@@ -1,7 +1,7 @@
 {
   "name": "luckey",
   "private": true,
-  "version": "1.7.840",
+  "version": "1.7.842",
   "engines": {
     "node": ">=20.0.0"
   },
@@ -25,7 +25,7 @@
     "test:tarot-energy-summary": "tsx --test tests/tarot-energy-summary.test.ts",
     "test:tts-highlight": "tsx --test tests/tts-highlight-match.test.ts",
     "test:cloudflare": "tsx --test tests/cloudflare-worker.test.ts",
-    "test:fold-dialogs": "tsx --test tests/fold-cover-rotation.test.ts tests/fold-cosmic-cover.test.ts tests/duo-pane-swap.test.ts tests/screen-overlay-order.test.ts tests/visual-viewport.test.ts tests/fold-viewport-settle.test.ts tests/folded-overlay-pane.test.ts"
+    "test:fold-dialogs": "tsx --test tests/fold-cover-rotation.test.ts tests/fold-cosmic-cover.test.ts tests/duo-pane-swap.test.ts tests/screen-overlay-order.test.ts tests/visual-viewport.test.ts tests/fold-viewport-settle.test.ts tests/folded-overlay-pane.test.ts tests/pwa-fold-geometry.test.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.91.1",
