@@ -5167,10 +5167,12 @@ test('Chonggamnok Ten Sanctuaries Engine: calculates geomantic sanctuaries, gong
   assert(rep.interpretiveBoundary.length > 0);
   assert(rep.calculatedAtKst.endsWith('KST'));
   assert(Boolean(rep.chonggamnokSynthesisMatrix?.integratedAction));
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatChonggamnokPrompt(rep);
   assert(prompt.includes('조선 비전 정감록 10승지 영맥 & 보신 피난처 실측 데이터'));
   assert(prompt.includes(rep.dominantSanctuary.nameKo));
   assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes(rep.ritualAction));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });
@@ -5735,10 +5737,12 @@ test('Korean Choe Hyeon-bae Hangeul Geulbon Engine: calculates Korean soul prese
   assert(rep.activeGeulbonStage.stageNameHanja.length > 0);
   assert(rep.calculatedAtKst.endsWith('KST'));
   assert(Boolean(rep.geulbonSynthesisMatrix?.integratedAction));
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatChoeHyeonbaeGeulbonPrompt(rep);
   assert(prompt.includes('외솔 최현배 선생 《우리말본》'));
   assert(prompt.includes(rep.activeGeulbonStage.stageNameKo));
   assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes(rep.ritualAction));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });
@@ -6176,10 +6180,12 @@ test('Choe Han-gi Gihak Unwha Engine: calculates Unwhagi cosmic flow, Singitong 
   assert(rep.activeGihakPrinciple.sourceText.length > 0);
   assert(rep.calculatedAtKst.endsWith('KST'));
   assert(Boolean(rep.gihakSynthesisMatrix?.integratedAction));
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatChoeHangiGihakUnwhaPrompt(rep);
   assert(prompt.includes('혜강 최한기 기학(氣學) & 신기통(神氣通) 운화 지표'));
   assert(prompt.includes(rep.activeGihakPrinciple.principleNameKo));
   assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes(rep.ritualAction));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });

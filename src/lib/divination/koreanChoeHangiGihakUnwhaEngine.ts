@@ -15,7 +15,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const CHOE_HANGI_GIHAK_UNWHA_VERSION = 'LUCKEY-CHOE-HANGI-GIHAK-UNWHA-v2.1.0';
+export const CHOE_HANGI_GIHAK_UNWHA_VERSION = 'LUCKEY-CHOE-HANGI-GIHAK-UNWHA-v2.2.0';
 
 export interface ChoeHangiGihakPrinciple {
   principleKey: string;
@@ -56,6 +56,8 @@ export interface ChoeHangiGihakUnwhaResult {
     alignmentState: string;
     integratedAction: string;
   };
+  ritualAction: string;
+  reflectionFocus: string;
 }
 
 function formatChoeHangiKstTimestamp(now: Date = new Date()): string {
@@ -180,6 +182,9 @@ export function calculateChoeHangiGihakUnwha(
     integratedAction: `${focalUnwhaPractice.actionGuidance}${query?.trim() ? ` [질문 맥락: ${query.trim()}]` : ''}`,
   };
 
+  const ritualAction = `[${activeGihakPrinciple.sourceText}] ${focalUnwhaPractice.actionGuidance}`;
+  const reflectionFocus = reflectiveQuestion;
+
   return {
     engineVersion: CHOE_HANGI_GIHAK_UNWHA_VERSION,
     calculatedAtKst,
@@ -198,6 +203,8 @@ export function calculateChoeHangiGihakUnwha(
       practicalGuidance,
     },
     gihakSynthesisMatrix,
+    ritualAction,
+    reflectionFocus,
   };
 }
 
@@ -232,5 +239,9 @@ export function formatChoeHangiGihakUnwhaPrompt(res: ChoeHangiGihakUnwhaResult):
       `- 통합 실천: ${res.gihakSynthesisMatrix.integratedAction}`,
     );
   }
+  lines.push(
+    `- 실천 의례(Ritual Action): ${res.ritualAction}`,
+    `- 성찰 초점(Reflection Focus): ${res.reflectionFocus}`,
+  );
   return lines.join('\n');
 }

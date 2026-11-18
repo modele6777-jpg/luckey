@@ -20,7 +20,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const CHONGGAMNOK_SANCTUARIES_ENGINE_VERSION = '2.0.0';
+export const CHONGGAMNOK_SANCTUARIES_ENGINE_VERSION = '2.1.0';
 
 export type ChonggamnokQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -63,6 +63,8 @@ export interface ChonggamnokReport {
     alignmentState: string;
     integratedAction: string;
   };
+  ritualAction: string;
+  reflectionFocus: string;
 }
 
 function formatChonggamnokKstTimestamp(now: Date = new Date()): string {
@@ -306,6 +308,9 @@ export function calculateChonggamnokTenSanctuaries(
     integratedAction: `${ritualByTopic[questionTopic]}${question?.trim() ? ` [질문 맥락: ${question.trim()}]` : ''}`,
   };
 
+  const ritualAction = `[${dominantSanctuary.nameKo}] ${ritualByTopic[questionTopic]}`;
+  const reflectionFocus = questionByTopic[questionTopic];
+
   return {
     engineVersion: CHONGGAMNOK_SANCTUARIES_ENGINE_VERSION,
     calculatedAtKst,
@@ -323,6 +328,8 @@ export function calculateChonggamnokTenSanctuaries(
     koreanPropheticPrescription,
     innerRefugeMeditation,
     chonggamnokSynthesisMatrix,
+    ritualAction,
+    reflectionFocus,
   };
 }
 
@@ -355,5 +362,9 @@ export function formatChonggamnokPrompt(report: ChonggamnokReport): string {
       `- 통합 실천: ${report.chonggamnokSynthesisMatrix.integratedAction}`,
     );
   }
+  lines.push(
+    `- 실천 의례(Ritual Action): ${report.ritualAction}`,
+    `- 성찰 초점(Reflection Focus): ${report.reflectionFocus}`,
+  );
   return lines.join('\n');
 }
