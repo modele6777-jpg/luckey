@@ -16,7 +16,7 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const QUANTUM_LEAP_VERSION = 'LUCKEY-LEAP-v2.1.0';
+export const QUANTUM_LEAP_VERSION = 'LUCKEY-LEAP-v2.2.0';
 
 function formatQuantumLeapKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -94,6 +94,8 @@ export interface QuantumLeapResult {
   };
 
   summary: string;
+  ritualAction: string;
+  reflectionFocus: string;
   reflectiveQuestion?: string;
   quantumLeapSynthesisMatrix?: {
     dominantTension: string;
@@ -171,6 +173,8 @@ export function calculateQuantumLeapTiming(params?: {
     currentPhase,
     goldenWindow,
     summary,
+    ritualAction: `[${currentPhase.titleKo}] 국면에 맞추어 '${goldenWindow.boldAction}'의 첫 실행 항목을 오늘 바로 착수하세요.`,
+    reflectionFocus: `퀀텀 점프(${currentPhase.titleKo} · ${readinessTitle}) — ${goldenWindow.targetDomain}`,
     reflectiveQuestion,
     quantumLeapSynthesisMatrix,
     interpretiveBoundary: '본 퀀텀 점프 타이밍 리포트는 사주 구조와 모멘텀 국면 비유에 기반한 정성적 전략 참고 안내이며, 투자·사업의 확정적 수익을 보장하지 않습니다.',
@@ -202,7 +206,11 @@ export function formatQuantumLeapPrompt(res: QuantumLeapResult): string {
   if (res.reflectiveQuestion) {
     lines.push(`- 성찰 질문: ${res.reflectiveQuestion}`);
   }
-  lines.push(`- 해석 경계: ${res.interpretiveBoundary}`);
+  lines.push(
+    `- 실천 의례: ${res.ritualAction}`,
+    `- 성찰 초점: ${res.reflectionFocus}`,
+    `- 해석 경계: ${res.interpretiveBoundary}`,
+  );
   lines.push(`※ 루시 지침: 평범한 개선이 아니라 퀀텀 점프는 운의 거대한 물결이 들어올 때 담대하게 돛을 올리는 자만이 누리는 특권입니다. 사용자가 자신의 폭발적인 잠재력과 현재의 모멘텀 국면을 선명하게 자각하고, 타이밍을 놓치지 않고 과감한 승부수를 던질 수 있도록 뜨겁고 웅장한 확신을 불어넣어 주세요.`);
   return lines.join('\n');
 }

@@ -2538,6 +2538,7 @@ test('Quantum Leap Timing Engine: 퀀텀 점프 준비도 및 골든 모멘텀 �
   const res = calculateQuantumLeapTiming({ profile, targetDate: new Date('2026-11-03T08:00:00+09:00'), question: '승부수 타이밍' });
   assert.equal(res.engineVersion, QUANTUM_LEAP_VERSION);
   assert(res.calculatedAtKst.endsWith('KST'));
+  assert(res.ritualAction.length > 0 && res.reflectionFocus.length > 0);
   assert(Boolean(res.quantumLeapSynthesisMatrix?.integratedAction));
   assert(res.interpretiveBoundary.length > 0);
   assert(res.leapReadinessScore >= 0 && res.leapReadinessScore <= 100);
@@ -2547,6 +2548,7 @@ test('Quantum Leap Timing Engine: 퀀텀 점프 준비도 및 골든 모멘텀 �
   assert(prompt.includes(QUANTUM_LEAP_VERSION));
   assert(prompt.includes('퀀텀 점프 준비 상태'));
   assert(prompt.includes('골든 모멘텀'));
+  assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
   assert(prompt.includes('교차 매트릭스') && prompt.includes('해석 경계'));
   assert(!prompt.includes('/100'));
 });
@@ -2933,6 +2935,7 @@ test('Quantum Probabilistic Timeline Engine: 양자 다중우주 타임라인 �
   const res = calculateQuantumProbabilisticTimeline({ profile, targetDate: new Date('2026-11-03T10:00:00+09:00'), question: '미래 분기' });
   assert.equal(res.engineVersion, QUANTUM_TIMELINE_VERSION);
   assert(res.calculatedAtKst.endsWith('KST'));
+  assert(res.ritualAction.length > 0 && res.reflectionFocus.length > 0);
   assert(Boolean(res.quantumTimelineSynthesisMatrix?.integratedAction));
   assert(res.interpretiveBoundary.length > 0);
   assert(res.baselineTimeline.probabilityPercent + res.optimalQuantumTimeline.probabilityPercent === 100);
@@ -2941,6 +2944,7 @@ test('Quantum Probabilistic Timeline Engine: 양자 다중우주 타임라인 �
   const prompt = formatQuantumProbabilisticTimelinePrompt(res);
   assert(prompt.includes('LUCKEY 양자 다중우주 타임라인 분기 & 퀀텀 점프'));
   assert(prompt.includes(res.optimalQuantumTimeline.projectedOutcome6Months));
+  assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
   assert(prompt.includes('교차 매트릭스') && prompt.includes('해석 경계'));
   assert(!prompt.includes('%'));
 });
@@ -3768,6 +3772,7 @@ test('Pythagorean Tetraktys & Gematria Harmonics Engine: calculates root, 4 tier
   assert(rep.tetraktysDistribution.dominantTier.length > 0);
   assert(rep.tetraktysDistribution.secondaryTier.length > 0);
   assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(Boolean(rep.tetraktysSynthesisMatrix?.integratedAction));
   assert(rep.reflectiveQuestion.includes('아이디어'));
   assert(rep.interpretiveBoundary.includes('상징 비유'));
@@ -3775,6 +3780,7 @@ test('Pythagorean Tetraktys & Gematria Harmonics Engine: calculates root, 4 tier
   assert(prompt.includes('피타고라스 테트락티스 10대 신성기하 & 게마트리아 엔진'));
   assert(prompt.includes(rep.harmonicSignature.sacredRatioName));
   assert(prompt.includes('보조 교차 층위'));
+  assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
   assert(prompt.includes('교차 매트릭스'));
   assert(prompt.includes('성찰 질문'));
   assert(prompt.includes('해석 경계'));
