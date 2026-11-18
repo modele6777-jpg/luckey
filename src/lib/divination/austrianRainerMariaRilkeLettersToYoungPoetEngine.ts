@@ -13,7 +13,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const AUSTRIAN_RAINER_MARIA_RILKE_LETTERS_VERSION = 'LUCKEY-RILKE-LETTERS-TO-YOUNG-POET-v2.2.0';
+export const AUSTRIAN_RAINER_MARIA_RILKE_LETTERS_VERSION = 'LUCKEY-RILKE-LETTERS-TO-YOUNG-POET-v2.3.0';
 
 export type RilkeQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -304,7 +304,7 @@ export function calculateAustrianRainerMariaRilkeLetters(
 
   return {
     engineVersion: AUSTRIAN_RAINER_MARIA_RILKE_LETTERS_VERSION,
-    calculatedAtKst: `${kstDayKey} ${String(new Date(now.getTime() + 9 * 60 * 60 * 1000).getUTCHours()).padStart(2, '0')}:${String(new Date(now.getTime() + 9 * 60 * 60 * 1000).getUTCMinutes()).padStart(2, '0')} KST`,
+    calculatedAtKst: `${kstDayKey} ${String(new Date(now.getTime() + 9 * 60 * 60 * 1000).getUTCHours()).padStart(2, '0')}:${String(new Date(now.getTime() + 9 * 60 * 60 * 1000).getUTCMinutes()).padStart(2, '0')} +09:00 (KST)`,
     lovingSolitudeInwardScore,
     livingTheQuestionsIndex,
     contemplativeGazingIndex,

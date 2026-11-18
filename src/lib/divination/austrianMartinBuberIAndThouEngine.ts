@@ -14,7 +14,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const AUSTRIAN_MARTIN_BUBER_VERSION = 'LUCKEY-MARTIN-BUBER-DIALOGUE-v2.2.0';
+export const AUSTRIAN_MARTIN_BUBER_VERSION = 'LUCKEY-MARTIN-BUBER-DIALOGUE-v2.3.0';
 
 export type BuberQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -320,7 +320,7 @@ export function calculateAustrianMartinBuberIAndThou(
 
   return {
     engineVersion: AUSTRIAN_MARTIN_BUBER_VERSION,
-    calculatedAtKst: `${kstDayKey} ${String(new Date(now.getTime() + 9 * 60 * 60 * 1000).getUTCHours()).padStart(2, '0')}:${String(new Date(now.getTime() + 9 * 60 * 60 * 1000).getUTCMinutes()).padStart(2, '0')} KST`,
+    calculatedAtKst: `${kstDayKey} ${String(new Date(now.getTime() + 9 * 60 * 60 * 1000).getUTCHours()).padStart(2, '0')}:${String(new Date(now.getTime() + 9 * 60 * 60 * 1000).getUTCMinutes()).padStart(2, '0')} +09:00 (KST)`,
     iThouRelationalResonanceScore,
     authenticDialoguePresenceIndex,
     overcomingInstrumentalizationScore,

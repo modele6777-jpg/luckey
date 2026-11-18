@@ -12421,3 +12421,27 @@ test('일무 알 람말·데칸 사비안·아들러 개인심리학 엔진 v1.7
   assert.match(ad.calculatedAtKst, /\+09:00/);
   assert.ok(formatAustrianAlfredAdlerIndividualPsychologyPrompt(ad).includes('+09:00'));
 });
+
+test('카프카·부버·릴케 3대 엔진 v1.7.907 KST(+09:00) 표준 표기 검증', () => {
+  const profile: any = {
+    name: '테스트',
+    basic: { birthdate: '1994-01-24', birthtime: '10:30', gender: 'male', calendarType: 'solar' },
+  };
+  const now = new Date('2026-11-19T08:38:00+09:00');
+  const query = '불안과 고독 속에서 내면의 진실을 마주하고 싶을 때';
+
+  const kf = calculateAustrianFranzKafkaExistentialTruth(profile, query, now);
+  assert.equal(kf.engineVersion, AUSTRIAN_FRANZ_KAFKA_EXISTENTIAL_TRUTH_VERSION);
+  assert.match(kf.calculatedAtKst, /\+09:00/);
+  assert.ok(formatAustrianFranzKafkaExistentialTruthPrompt(kf).includes('+09:00'));
+
+  const bb = calculateAustrianMartinBuberIAndThou(profile, query, now);
+  assert.equal(bb.engineVersion, AUSTRIAN_MARTIN_BUBER_VERSION);
+  assert.match(bb.calculatedAtKst, /\+09:00/);
+  assert.ok(formatAustrianMartinBuberIAndThouPrompt(bb).includes('+09:00'));
+
+  const rk = calculateAustrianRainerMariaRilkeLetters(profile, query, now);
+  assert.equal(rk.engineVersion, AUSTRIAN_RAINER_MARIA_RILKE_LETTERS_VERSION);
+  assert.match(rk.calculatedAtKst, /\+09:00/);
+  assert.ok(formatAustrianRainerMariaRilkeLettersPrompt(rk).includes('+09:00'));
+});
