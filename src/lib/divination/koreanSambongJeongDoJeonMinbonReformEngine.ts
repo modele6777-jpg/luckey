@@ -9,12 +9,12 @@
  * 4. 백년대계 건국 설계력(Architectural Foresight Index): 눈앞의 이익에 매몰되지 않고 백 년, 천 년을 내다보며 한양 도성과 제도의 기틀을 닦는 거시적 비전.
  * 5. 불굴의 실천 지조 지수(Indomitable Reform Tenacity Score): 유배와 시련 속에서도 백성의 땀방울을 가슴에 품고 마침내 새로운 시대를 열어젖힌 불굴의 기개.
  *
- * @version LUCKEY-JEONG-DO-JEON-MINBON-v2.1.0
+ * @version LUCKEY-JEONG-DO-JEON-MINBON-v2.2.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const KOREAN_JEONG_DO_JEON_VERSION = 'LUCKEY-JEONG-DO-JEON-MINBON-v2.1.0';
+export const KOREAN_JEONG_DO_JEON_VERSION = 'LUCKEY-JEONG-DO-JEON-MINBON-v2.2.0';
 
 export interface SambongTheme {
   themeKey: string;
@@ -46,6 +46,8 @@ export interface KoreanSambongJeongDoJeonMinbonReformResult {
   secondarySambongTheme: SambongTheme;
   focalSambongAphorism: SambongAphorism;
   secondarySambongAphorism: SambongAphorism;
+  ritualAction: string;
+  reflectionFocus: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
   sambongComprehensiveGuidance: {
@@ -195,9 +197,11 @@ export function calculateKoreanSambongJeongDoJeonMinbonReform(
   const secondarySambongAphorism = SAMBONG_APHORISMS[secondaryAphorismIndex];
 
   const cleanQuery = query?.trim();
+  const ritualAction = `[${activeSambongTheme.themeTitleHanja}] ${focalSambongAphorism.actionGuidance}`;
   const reflectiveQuestion = cleanQuery
     ? `"${cleanQuery}"을(를) 설계할 때, 낡은 관행을 넘어 사람에게 실질적 이로움을 주는 정도(正道)는 무엇인가?`
     : `지금 내가 세우려는 기준과 질서는 사사로운 편의를 넘어 함께하는 이들에게 실질적 유익을 주고 있는가?`;
+  const reflectionFocus = reflectiveQuestion;
   const interpretiveBoundary =
     '이 삼봉 정도전 《조선경국전·경제문감》 해석은 민본·제도 혁신·공정 설계의 상징적 철학 프레임이며, 현실의 법률·행정적 판단이나 확정적 미래 예측을 대신하지 않습니다.';
 
@@ -234,6 +238,8 @@ export function calculateKoreanSambongJeongDoJeonMinbonReform(
     secondarySambongTheme,
     focalSambongAphorism,
     secondarySambongAphorism,
+    ritualAction,
+    reflectionFocus,
     reflectiveQuestion,
     interpretiveBoundary,
     sambongComprehensiveGuidance: {
@@ -267,7 +273,9 @@ export function formatKoreanSambongJeongDoJeonMinbonReformPrompt(
     `- 보조 교차 명언: "${res.secondarySambongAphorism.aphorismKo}" [${res.secondarySambongAphorism.aphorismHanja}]`,
     `- 원전 출처: [${res.focalSambongAphorism.sourceContext}]`,
     `- 구체적 실천 지침: ${res.focalSambongAphorism.actionGuidance}`,
+    `- 실천 의례: ${res.ritualAction}`,
     `- 성찰 질문: ${res.reflectiveQuestion}`,
+    `- 성찰 초점: ${res.reflectionFocus}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
     `- 종합 삼봉 민본 권면: ${res.sambongComprehensiveGuidance.philosophicalCounsel}`,
   ];

@@ -8,12 +8,12 @@
  * 4. 경세구민(經世救民) 실천적 보살행 지표 (Pragmatic Bodhisattva Action Index): 추상적 명분이나 형식에 얽매이지 않고 고통받는 현실의 백성을 구원하기 위해 분연히 행동하는 실천력.
  * 5. 출세간적 무소유 청빈 및 초연한 회복탄력성 (Renunciation & Magnanimous Resilience Score): 지극한 공을 세운 뒤에도 권력과 영화에 연연하지 않고 산사로 돌아가 평정을 지키는 초연한 무소유.
  *
- * @version LUCKEY-SAMYEONGDAESA-SONGUN-YUJEONG-v2.1.0
+ * @version LUCKEY-SAMYEONGDAESA-SONGUN-YUJEONG-v2.2.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const KOREAN_SAMYEONGDAESA_SONGUN_YUJEONG_VERSION = 'LUCKEY-SAMYEONGDAESA-SONGUN-YUJEONG-v2.1.0';
+export const KOREAN_SAMYEONGDAESA_SONGUN_YUJEONG_VERSION = 'LUCKEY-SAMYEONGDAESA-SONGUN-YUJEONG-v2.2.0';
 
 export interface SamyeongTheme {
   themeKey: string;
@@ -45,6 +45,8 @@ export interface KoreanSamyeongdaesaSongunYujeongResult {
   secondarySamyeongTheme: SamyeongTheme;
   focalSamyeongAphorism: SamyeongAphorism;
   secondarySamyeongAphorism: SamyeongAphorism;
+  ritualAction: string;
+  reflectionFocus: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
   samyeongComprehensiveGuidance: {
@@ -184,9 +186,11 @@ export function calculateKoreanSamyeongdaesaSongunYujeong(
   const secondarySamyeongAphorism = SAMYEONG_APHORISMS[secondaryAphorismIndex];
 
   const trimmedQuery = query?.trim();
+  const ritualAction = `[${activeSamyeongTheme.themeTitleKo.split(' — ')[0]}] ${focalSamyeongAphorism.actionGuidance}`;
   const reflectiveQuestion = trimmedQuery
     ? `사명대사의 '${activeSamyeongTheme.themeTitleKo}'와 '${secondarySamyeongTheme.themeTitleKo}'를 비추어 볼 때, "${trimmedQuery}"에서 사적인 안위를 넘어 끝까지 지켜야 할 대의와 자비의 결단은 무엇인가요?`
     : `지금 당신이 마주한 갈등이나 위기 속에서, '${activeSamyeongTheme.themeTitleKo}'의 담대한 기개와 '${secondarySamyeongTheme.themeTitleKo}'의 초연함을 함께 세우려면 무엇을 내려놓고 무엇을 지켜야 할까요?`;
+  const reflectionFocus = reflectiveQuestion;
 
   const interpretiveBoundary = '이 지표는 사명대사 송운 유정의 《분충서난록》과 《사명당대사집》의 호국 대의·담판 지략·자비구제·무소유 철학을 오늘의 선택을 비추는 정성적 성찰 틀로 해석한 결과이며, 실제 협상·법적 판단·구체적 위기 대응을 대신하는 확정 예측이 아닙니다.';
 
@@ -224,6 +228,8 @@ export function calculateKoreanSamyeongdaesaSongunYujeong(
     secondarySamyeongTheme,
     focalSamyeongAphorism,
     secondarySamyeongAphorism,
+    ritualAction,
+    reflectionFocus,
     reflectiveQuestion,
     interpretiveBoundary,
     samyeongComprehensiveGuidance: {
@@ -257,7 +263,9 @@ export function formatKoreanSamyeongdaesaSongunYujeongPrompt(
     `- 보조 교차 명언: "${res.secondarySamyeongAphorism.aphorismKo}" (${res.secondarySamyeongAphorism.aphorismHanja})`,
     `- 원전 출처: [${res.focalSamyeongAphorism.sourceContext}]`,
     `- 구체적 실천 지침: ${res.focalSamyeongAphorism.actionGuidance}`,
+    `- 실천 의례: ${res.ritualAction}`,
     `- 성찰 질문: ${res.reflectiveQuestion}`,
+    `- 성찰 초점: ${res.reflectionFocus}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
     `- 종합 사명대사 권면: ${res.samyeongComprehensiveGuidance.philosophicalCounsel}`,
   ];
