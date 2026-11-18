@@ -8,7 +8,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const FRENCH_ALBERT_CAMUS_VERSION = 'LUCKEY-ALBERT-CAMUS-ABSURD-REVOLT-v2.2.0';
+export const FRENCH_ALBERT_CAMUS_VERSION = 'LUCKEY-ALBERT-CAMUS-ABSURD-REVOLT-v2.3.0';
 
 export type CamusQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -351,9 +351,12 @@ export function calculateAlbertCamusAbsurdRevolt(
     `${activeCamusTheme.practicalCounsel} 아울러 《시지프 신화》의 불멸의 선언 "${focalCamusAphorism.aphorismKo}"(${focalCamusAphorism.aphorismFrench})을 가슴에 품고, ` +
     `${focalCamusAphorism.actionGuidance}`;
 
+  const kstBase = new Date((now ?? new Date()).getTime() + 9 * 60 * 60 * 1000);
+  const calculatedAtKst = `${kstBase.toISOString().slice(0, 10)} ${String(kstBase.getUTCHours()).padStart(2, '0')}:${String(kstBase.getUTCMinutes()).padStart(2, '0')} +09:00 (KST)`;
+
   return {
     engineVersion: FRENCH_ALBERT_CAMUS_VERSION,
-    calculatedAtKst: (now ?? new Date()).toISOString(),
+    calculatedAtKst,
     absurdLucidityAwakeningScore,
     unceasingRevoltDignityScore,
     passionateVitalityIndex,
@@ -379,7 +382,8 @@ export function calculateAlbertCamusAbsurdRevolt(
 
 export function formatAlbertCamusAbsurdRevoltPrompt(res: AlbertCamusAbsurdRevoltResult): string {
   return [
-    `【알베르 카뮈 《시지프 신화》 부조리의 자각 & 실존적 반항 관점】`,
+    `【알베르 카뮈 《시지프 신화》 부조리의 자각 & 실존적 반항 관점 (${res.engineVersion})】`,
+    `- 연산 시각: ${res.calculatedAtKst}`,
     `- 부조리 자각·반항·열정 결: 자각(${describeCamusLevel(res.absurdLucidityAwakeningScore)}) / 반항(${describeCamusLevel(res.unceasingRevoltDignityScore)}) / 열정(${describeCamusLevel(res.passionateVitalityIndex)})`,
     `- 실존적 자유·회복 결: 자유(${describeCamusLevel(res.lucidFreedomAutonomyScore)}) / 시지프의 행복(${describeCamusLevel(res.sisyphusHappinessResilienceScore)})`,
     `- 핵심 실존 테마: ${res.activeCamusTheme.themeTitleKo} [${res.activeCamusTheme.themeTitleFrench}]`,

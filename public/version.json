@@ -1,10 +1,9 @@
 {
-  "version": "1.7.910",
-  "builtAt": "2026-11-19T08:52:00+09:00",
-  "summary": "영혼 타로·세르반테스 돈키호테·공간 길방위 3대 엔진 실천 의례 및 성찰 초점 표준 연동(v1.7.910)",
+  "version": "1.7.911",
+  "builtAt": "2026-11-19T08:57:00+09:00",
+  "summary": "계약 실드·딥워크 플로우·알베르 카뮈 3대 엔진 +09:00 (KST) 표준 시각 통일(v1.7.911)",
   "items": [
-    "영혼의 타로 여정 & 4원소 연금술 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동",
-    "미겔 데 세르반테스 《돈키호테》 지혜 엔진(v2.3.0): ritualAction·reflectionFocus 표준 필드 연동",
-    "동양 풍수 & 서양 점성술 공간 길방위 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동"
+    "계약 실드(v2.3.0)·딥워크 플로우(v2.3.0)·알베르 카뮈 부조리 반항(v2.3.0): calculatedAtKst +09:00 (KST) 표준 표기 통일",
+    "divination-engines.test.ts: 3대 엔진 v1.7.911 +09:00 (KST) 회귀 테스트 추가"
   ]
 }

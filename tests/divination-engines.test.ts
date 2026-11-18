@@ -12481,3 +12481,27 @@ test('비트겐슈타인·맹자·왕양명 3대 엔진 v1.7.909 KST(+09:00) 표
   assert.match(wy.calculatedAtKst, /\+09:00/);
   assert.ok(formatWangYangmingXinxuePrompt(wy).includes('+09:00'));
 });
+
+test('계약 실드·딥워크 플로우·알베르 카뮈 3대 엔진 v1.7.911 KST(+09:00) 표준 표기 검증', () => {
+  const profile: any = {
+    name: '테스트',
+    basic: { birthdate: '1994-01-24', birthtime: '10:30', gender: 'male', calendarType: 'solar' },
+  };
+  const now = new Date('2026-11-19T08:57:00+09:00');
+  const query = '중요한 계약과 깊은 집중, 일상의 반항을 함께 지키고 싶을 때';
+
+  const cs = calculateContractShield({ profile, targetDate: now, question: query });
+  assert.equal(cs.engineVersion, CONTRACT_SHIELD_VERSION);
+  assert.match(cs.calculatedAtKst, /\+09:00/);
+  assert.ok(formatContractShieldPrompt(cs).includes('+09:00'));
+
+  const dw = calculateDeepWorkFlow({ profile, targetDate: now, question: query });
+  assert.equal(dw.engineVersion, DEEP_WORK_FLOW_VERSION);
+  assert.match(dw.calculatedAtKst, /\+09:00/);
+  assert.ok(formatDeepWorkFlowPrompt(dw).includes('+09:00'));
+
+  const ac = calculateAlbertCamusAbsurdRevolt(profile, query, now);
+  assert.equal(ac.engineVersion, FRENCH_ALBERT_CAMUS_VERSION);
+  assert.match(ac.calculatedAtKst, /\+09:00/);
+  assert.ok(formatAlbertCamusAbsurdRevoltPrompt(ac).includes('+09:00'));
+});

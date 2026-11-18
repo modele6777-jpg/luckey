@@ -17,7 +17,7 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const DEEP_WORK_FLOW_VERSION = 'LUCKEY-FLOW-v2.2.0';
+export const DEEP_WORK_FLOW_VERSION = 'LUCKEY-FLOW-v2.3.0';
 
 export type FlowArchetype = 'deep_architect' | 'furious_sprinter' | 'craftsman_polisher' | 'intuitive_explorer';
 
@@ -152,7 +152,7 @@ function getTemporalFlowRhythm(now: Date) {
           : '겨울 · 심층 사유기 (근원 아키텍처와 깊은 학습에 몰두하기 좋은 시기)';
 
   return {
-    kstTimeLabel: `${y}-${m}-${d} ${hh}:${mm} KST`,
+    kstTimeLabel: `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`,
     focusWatchWindow,
     seasonalFlowTone,
     temporalGuidance: `${focusWatchWindow} · ${seasonalFlowTone}의 결에 맞추어 몰입 블록을 설계하십시오.`,
