@@ -25,7 +25,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const INCA_ANDEAN_PACHA_VERSION = '2.1.0';
+export const INCA_ANDEAN_PACHA_VERSION = '2.2.0';
 
 export interface IncaAndeanPachaReport {
   engineVersion: string;
@@ -70,6 +70,8 @@ export interface IncaAndeanPachaReport {
   ayniSpiritualPrescription: string;
   boundaryNotice: string;
   interpretiveBoundary: string;
+  ritualAction: string;
+  reflectionFocus: string;
 }
 
 function djb2Hash(str: string): number {
@@ -228,6 +230,9 @@ export function calculateIncaAndeanThreePachaAyni(
     cautionNotice: '주고받음의 균형(아이니)이 무너지면 사미가 흐려집니다. 무리한 희생이나 일방적 기대를 경계하십시오.',
   };
 
+  const ritualAction = `[${sacredAnimalTotem.animalKo} · ${situationalPachaAudit.focusTheme}] ${pachaSynthesisMatrix.recommendedAction}`;
+  const reflectionFocus = `오늘 '${dominantPillar}'의 기운으로 후차(무거운 집착)를 덜어내고 내가 먼저 건넬 아이니(상호호혜)의 한 가지는 무엇입니까?`;
+
   return {
     engineVersion: INCA_ANDEAN_PACHA_VERSION,
     calculatedAt: now.toISOString(),
@@ -246,6 +251,8 @@ export function calculateIncaAndeanThreePachaAyni(
     temporalPachaRhythm,
     pachaSynthesisMatrix,
     ayniSpiritualPrescription,
+    ritualAction,
+    reflectionFocus,
     boundaryNotice: '본 결과는 안데스 케추아 3계 파차와 아이니 호혜 원리에 따른 정성적 성찰 지표이며, 우열을 가르는 점수나 절대적 예언이 아닙니다.',
     interpretiveBoundary: '본 결과는 안데스 케추아 3계 파차와 아이니 호혜 원리에 따른 정성적 성찰 지표이며, 우열을 가르는 점수나 절대적 예언이 아닙니다.',
   };
@@ -277,6 +284,8 @@ export function formatIncaAndeanThreePachaAyniPrompt(report: IncaAndeanPachaRepo
     `  * 권고 실행: ${report.pachaSynthesisMatrix.recommendedAction}`,
     `  * 주의 경계: ${report.pachaSynthesisMatrix.cautionNotice}`,
     `- 파차마마 아이니 처방: ${report.ayniSpiritualPrescription}`,
+    `- 실천 의례(Ritual Action): ${report.ritualAction}`,
+    `- 성찰 초점(Reflection Focus): ${report.reflectionFocus}`,
     `- 해석 경계: ${report.boundaryNotice}`,
   ].join('\n');
 }

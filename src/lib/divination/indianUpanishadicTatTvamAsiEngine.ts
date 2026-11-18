@@ -16,7 +16,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const UPANISHADIC_TAT_TVAM_ASI_VERSION = 'LUCKEY-UPANISHADIC-TAT-TVAM-ASI-v2.1.0';
+export const UPANISHADIC_TAT_TVAM_ASI_VERSION = 'LUCKEY-UPANISHADIC-TAT-TVAM-ASI-v2.2.0';
 
 export interface UpanishadicMahavakya {
   vakyaKey: string;
@@ -49,6 +49,8 @@ export interface UpanishadicTatTvamAsiResult {
   focalUpanishadicTeaching: UpanishadicTeaching;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
+  ritualAction: string;
+  reflectionFocus: string;
   upanishadicCounsel: {
     counselTitle: string;
     spiritualGuidance: string;
@@ -179,6 +181,9 @@ export function calculateUpanishadicTatTvamAsi(
     integratedAction: `${activeMahavakya.meditativeFocus} (${focalUpanishadicTeaching.contemplativeInsight})`,
   };
 
+  const ritualAction = `[${activeMahavakya.vakyaNameKo}] ${activeMahavakya.meditativeFocus}`;
+  const reflectionFocus = reflectiveQuestion;
+
   return {
     engineVersion: UPANISHADIC_TAT_TVAM_ASI_VERSION,
     calculatedAtKst: formatUpanishadicKstTimestamp(now),
@@ -192,6 +197,8 @@ export function calculateUpanishadicTatTvamAsi(
     focalUpanishadicTeaching,
     reflectiveQuestion,
     interpretiveBoundary,
+    ritualAction,
+    reflectionFocus,
     upanishadicCounsel: {
       counselTitle,
       spiritualGuidance,
@@ -218,6 +225,8 @@ export function formatUpanishadicTatTvamAsiPrompt(res: UpanishadicTatTvamAsiResu
     `- 철학적 깊이: ${res.focalUpanishadicTeaching.philosophicalDepth}`,
     `- 관조적 통찰: ${res.focalUpanishadicTeaching.contemplativeInsight}`,
     `- 영적 수양 지침: ${res.upanishadicCounsel.spiritualGuidance}`,
+    `- 실천 의례(Ritual Action): ${res.ritualAction}`,
+    `- 성찰 초점(Reflection Focus): ${res.reflectionFocus}`,
     `- 성찰 질문: ${res.reflectiveQuestion}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
   ];

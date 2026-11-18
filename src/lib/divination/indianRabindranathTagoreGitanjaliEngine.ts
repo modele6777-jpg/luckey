@@ -14,7 +14,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const INDIAN_TAGORE_GITANJALI_VERSION = 'LUCKEY-TAGORE-GITANJALI-v2.1.0';
+export const INDIAN_TAGORE_GITANJALI_VERSION = 'LUCKEY-TAGORE-GITANJALI-v2.2.0';
 
 export interface TagoreTheme {
   themeKey: string;
@@ -47,6 +47,8 @@ export interface IndianRabindranathTagoreGitanjaliResult {
   secondaryTagoreAphorism: TagoreAphorism;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
+  ritualAction: string;
+  reflectionFocus: string;
   tagoreComprehensiveGuidance: {
     guidanceTitle: string;
     philosophicalCounsel: string;
@@ -197,6 +199,9 @@ export function calculateIndianRabindranathTagoreGitanjali(
     integratedAction: `${activeTagoreTheme.practicalCounsel} (${focalTagoreAphorism.actionGuidance})`,
   };
 
+  const ritualAction = `[${activeTagoreTheme.themeTitleKo}] ${focalTagoreAphorism.actionGuidance}`;
+  const reflectionFocus = reflectiveQuestion;
+
   return {
     engineVersion: INDIAN_TAGORE_GITANJALI_VERSION,
     calculatedAtKst: formatTagoreKstTimestamp(now),
@@ -210,6 +215,8 @@ export function calculateIndianRabindranathTagoreGitanjali(
     secondaryTagoreAphorism,
     reflectiveQuestion,
     interpretiveBoundary,
+    ritualAction,
+    reflectionFocus,
     tagoreComprehensiveGuidance: {
       guidanceTitle,
       philosophicalCounsel,
@@ -235,6 +242,8 @@ export function formatIndianRabindranathTagoreGitanjaliPrompt(res: IndianRabindr
     `- 원전 출처: [${res.focalTagoreAphorism.sourceContext}]`,
     `- 구체적 실천 지침: ${res.focalTagoreAphorism.actionGuidance}`,
     `- 종합 타고르 영성 권면: ${res.tagoreComprehensiveGuidance.philosophicalCounsel}`,
+    `- 실천 의례(Ritual Action): ${res.ritualAction}`,
+    `- 성찰 초점(Reflection Focus): ${res.reflectionFocus}`,
     `- 성찰 질문: ${res.reflectiveQuestion}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
   ];
