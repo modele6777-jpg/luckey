@@ -5371,10 +5371,12 @@ test('Korean Gyeogam Yurok Prophecy Engine: calculates Gunggung Euleul, Haein th
   assert(rep.temporalGyeogamRhythm.sipseungWatchWindow.length > 0);
   assert(rep.gyeogamSynthesisMatrix.coreInsight.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatGyeogamYurokProphecyPrompt(rep);
   assert(prompt.includes('조선 명종 격암 남사고 《격암유록(格菴遺錄)》 45편 비결 & 궁궁을을·해인 사중구생'));
   assert(prompt.includes(rep.primaryGyeogamChapter.titleKo));
   assert(prompt.includes('KST'));
+  assert(prompt.includes(rep.ritualAction));
   assert(!prompt.includes('/100') && !prompt.includes('%') && !prompt.includes('점수'));
 });
 
@@ -7087,10 +7089,12 @@ test('Dosan Ahn Chang-ho Musil Yeokhaeng Engine: calculates Musil, Yeokhaeng, an
   assert(rep.activeDosanTheme.themeTitleKo.length > 0);
   assert(rep.calculatedAtKst.endsWith('KST'));
   assert(Boolean(rep.dosanSynthesisMatrix?.integratedAction));
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatDosanAhnChanghoMusilYeokhaengPrompt(rep);
   assert(prompt.includes('도산 안창호 《무실역행》 인격혁명 & 주인정신 지표'));
   assert(prompt.includes(rep.activeDosanTheme.themeTitleKo));
   assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes(rep.ritualAction));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });
@@ -7924,10 +7928,12 @@ test('Gosan Yoon Seon-do Five Friends Engine: calculates Five Friends Integrity,
   assert(rep.activeYoonTheme.themeTitleKo.length > 0);
   assert(rep.calculatedAtKst.endsWith('KST'));
   assert(Boolean(rep.yoonSynthesisMatrix?.integratedAction));
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatKoreanGosanYoonSeonDoFiveFriendsPrompt(rep);
   assert(prompt.includes('고산 윤선도 《오우가》 수석송죽월 5우 지조 및 《어부사시사》 심미적 안빈낙도 지표'));
   assert(prompt.includes(rep.activeYoonTheme.themeTitleKo));
   assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes(rep.ritualAction));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });
