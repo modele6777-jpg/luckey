@@ -13,7 +13,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const KOREAN_HEO_GYUN_HONG_GILDONG_YULDOGUK_VERSION = 'LUCKEY-HEO-GYUN-HONG-GILDONG-YULDOGUK-v2.1.0';
+export const KOREAN_HEO_GYUN_HONG_GILDONG_YULDOGUK_VERSION = 'LUCKEY-HEO-GYUN-HONG-GILDONG-YULDOGUK-v2.2.0';
 
 export interface HeoGyunTheme {
   themeKey: string;
@@ -55,6 +55,8 @@ export interface KoreanHeoGyunHongGildongYuldogukResult {
     alignmentState: string;
     integratedAction: string;
   };
+  ritualAction: string;
+  reflectionFocus: string;
 }
 
 function formatHeoGyunKstTimestamp(now: Date = new Date()): string {
@@ -201,6 +203,9 @@ export function calculateKoreanHeoGyunHongGildongYuldoguk(
     integratedAction: `${focalHeoGyunAphorism.actionGuidance}${query?.trim() ? ` [질문 맥락: ${query.trim()}]` : ''}`,
   };
 
+  const ritualAction = `[${activeHeoGyunTheme.themeTitleKo}] ${focalHeoGyunAphorism.actionGuidance}`;
+  const reflectionFocus = reflectiveQuestion;
+
   return {
     engineVersion: KOREAN_HEO_GYUN_HONG_GILDONG_YULDOGUK_VERSION,
     calculatedAtKst,
@@ -219,6 +224,8 @@ export function calculateKoreanHeoGyunHongGildongYuldoguk(
       philosophicalCounsel,
     },
     heoGyunSynthesisMatrix,
+    ritualAction,
+    reflectionFocus,
   };
 }
 
@@ -254,5 +261,9 @@ export function formatKoreanHeoGyunHongGildongYuldogukPrompt(
       `- 통합 실천: ${res.heoGyunSynthesisMatrix.integratedAction}`,
     );
   }
+  lines.push(
+    `- 실천 의례(Ritual Action): ${res.ritualAction}`,
+    `- 성찰 초점(Reflection Focus): ${res.reflectionFocus}`,
+  );
   return lines.join('\n');
 }

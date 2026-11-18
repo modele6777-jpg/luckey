@@ -7863,10 +7863,12 @@ test('Heo Jun Dongui Bogam Yangsaeng Engine: calculates Tong-Jeuk-Bul-Tong, Cheo
   assert(rep.activeHeoJunTheme.themeTitleKo.length > 0);
   assert(rep.calculatedAtKst.endsWith('KST'));
   assert(Boolean(rep.heoJunSynthesisMatrix?.integratedAction));
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatKoreanHeoJunDonguiBogamYangsaengPrompt(rep);
   assert(prompt.includes('구암 허준 《동의보감》 신형장부도·통즉불통 및 치미병 양생 지혜 지표'));
   assert(prompt.includes(rep.activeHeoJunTheme.themeTitleKo));
   assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes(rep.ritualAction));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });
@@ -8426,10 +8428,12 @@ test('Heo Gyun Hong Gildong & Yuldoguk Engine: calculates Talent Liberation, Hom
   assert(rep.activeHeoGyunTheme.themeTitleKo.length > 0);
   assert(rep.calculatedAtKst.endsWith('KST'));
   assert(Boolean(rep.heoGyunSynthesisMatrix?.integratedAction));
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatKoreanHeoGyunHongGildongYuldogukPrompt(rep);
   assert(prompt.includes('교산 허균 《홍길동전·유재론·호민론》 인재 등용·호민 기개·율도국 지표'));
   assert(prompt.includes(rep.activeHeoGyunTheme.themeTitleKo));
   assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes(rep.ritualAction));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });
@@ -8595,9 +8599,11 @@ test('Han Yong-un engine uses a verified literary theme, query matching, and no 
   assert.equal(Object.hasOwn(rep, 'calculatedAtKst'), false);
   assert(Boolean(rep.hanYongUnSynthesisMatrix?.integratedAction));
   assert(rep.interpretiveBoundary.length > 0);
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatKoreanHanYongUnSilenceOfNimPrompt(rep);
   assert.match(prompt, /문학적 참고/);
   assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes(rep.ritualAction));
   assert.doesNotMatch(prompt, /\/100|마음은 본래 자유로운|님은 갔으나 반드시 다시 온다|원전 명구/);
 
   const integrity = calculateKoreanHanYongUnSilenceOfNim('자유와 양심, 자주와 존엄');
