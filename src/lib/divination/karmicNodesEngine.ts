@@ -21,7 +21,7 @@ import {
   type NatalChartResult
 } from '../astrologyAnalysis';
 
-export const KARMIC_NODES_ENGINE_VERSION = 'LUCKEY-NODE-v2.1.0';
+export const KARMIC_NODES_ENGINE_VERSION = 'LUCKEY-NODE-v2.2.0';
 
 export interface NodeAxisDetail {
   northSign: string;
@@ -71,6 +71,8 @@ export interface KarmicNodesResult {
     integratedAction: string;
   };
   interpretiveBoundary: string;
+  ritualAction: string;
+  reflectionFocus: string;
 }
 
 function formatKarmicNodesKstTimestamp(now: Date = new Date()): string {
@@ -245,6 +247,9 @@ export function calculateKarmicNodes(params?: {
     ? `"${q}" 앞에서 익숙한 남쪽 노드(${nodeAxis.southSign})의 습관 대신 북쪽 노드(${nodeAxis.northSign})의 진화 과제 쪽으로 내딛어 볼 수 있는 작은 선택은 무엇인가요?`
     : `오늘 ${nodeAxis.northSign} 진화 과제와 키론 치유 역량(${chiron.sign})을 연결해 보고 싶은 내 안의 익숙한 틀 하나는 무엇인가요?`;
 
+  const ritualAction = `[${nodeAxis.northSign}] ${nodeAxis.evolutionStrategy}`;
+  const reflectionFocus = reflectiveQuestion;
+
   return {
     engineVersion: KARMIC_NODES_ENGINE_VERSION,
     calculatedAtIso: now.toISOString(),
@@ -259,6 +264,8 @@ export function calculateKarmicNodes(params?: {
     reflectiveQuestion,
     karmicNodesSynthesisMatrix,
     interpretiveBoundary: '본 카르믹 노드·영혼 진화 궤적 리포트는 점성학 노드·키론·릴리스 상징에 기반한 정성적 자기 성찰 안내이며, 확정적 운명 예단이 아닙니다.',
+    ritualAction,
+    reflectionFocus,
   };
 }
 
@@ -290,6 +297,8 @@ export function formatKarmicNodesPrompt(res: KarmicNodesResult): string {
   if (res.reflectiveQuestion) {
     lines.push(`- 성찰 질문: ${res.reflectiveQuestion}`);
   }
+  lines.push(`- 실천 의례(Ritual Action): ${res.ritualAction}`);
+  lines.push(`- 성찰 초점(Reflection Focus): ${res.reflectionFocus}`);
   lines.push(`- 해석 경계: ${res.interpretiveBoundary}`);
   return lines.join('\n');
 }

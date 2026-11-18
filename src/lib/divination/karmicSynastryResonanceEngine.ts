@@ -18,7 +18,7 @@ import {
   BRANCH_ELEMENT,
 } from '../sajuAnalysis';
 
-export const KARMIC_SYNASTRY_VERSION = 'LUCKEY-SYNASTRY-RESONANCE-v2.1.0';
+export const KARMIC_SYNASTRY_VERSION = 'LUCKEY-SYNASTRY-RESONANCE-v2.2.0';
 
 export interface SajuInterpersonalHarmony {
   hasHeavenlyStemCombination: boolean;
@@ -54,6 +54,8 @@ export interface KarmicSynastryReport {
     integratedAction: string;
   };
   interpretiveBoundary: string;
+  ritualAction: string;
+  reflectionFocus: string;
 }
 
 function formatSynastryKstTimestamp(now: Date = new Date()): string {
@@ -207,6 +209,8 @@ export function calculateKarmicSynastry(
   };
 
   const interpretiveBoundary = '본 카르믹 시나스트리 리포트는 사주 합충과 점성학 어스펙트 상징에 기반한 정성적 관계 성찰 안내이며, 인연의 성패를 단정하는 예언이 아닙니다.';
+  const ritualAction = `[${relationshipArchetype}] ${communicationGoldenRule}`;
+  const reflectionFocus = `지금 '${contextNote}' 관계에서 상대의 침묵이나 표정을 추측하기 전에 솔직히 건네고 싶은 나의 마음 한 문장은 무엇인가요?`;
 
   const synthesisPromptGuidance = `
 [카르믹 시나스트리 & 인연 성간 공명 마스터 지능]:
@@ -218,6 +222,8 @@ export function calculateKarmicSynastry(
 - 관계 번영의 골든 룰: "${communicationGoldenRule}"
 - 교차 매트릭스 [핵심 긴장: ${synastrySynthesisMatrix.dominantTension} | 조율 상태: ${synastrySynthesisMatrix.alignmentState}]
 - 통합 실천: ${synastrySynthesisMatrix.integratedAction}
+- 실천 의례(Ritual Action): ${ritualAction}
+- 성찰 초점(Reflection Focus): ${reflectionFocus}
 - 해석 경계: ${interpretiveBoundary}
 인연이나 관계에 대해 물어올 때, 뜬구름 잡는 점괘 대신 두 사람 사이의 에너지 역동성과 소통의 결정적 열쇠를 직관적으로 꿰뚫어 전할 것.
 `.trim();
@@ -235,6 +241,8 @@ export function calculateKarmicSynastry(
     synthesisPromptGuidance,
     synastrySynthesisMatrix,
     interpretiveBoundary,
+    ritualAction,
+    reflectionFocus,
   };
 }
 

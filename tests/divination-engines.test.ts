@@ -2274,10 +2274,12 @@ test('Karmic Nodes Engine: 카르믹 노드 축 및 영혼 진화 궤적 검증'
   assert(res.calculatedAtKst.endsWith('KST'));
   assert(Boolean(res.karmicNodesSynthesisMatrix?.integratedAction));
   assert(res.interpretiveBoundary.length > 0);
+  assert(res.ritualAction.length > 0 && res.reflectionFocus.length > 0);
   const prompt = formatKarmicNodesPrompt(res);
   assert(prompt.includes(KARMIC_NODES_ENGINE_VERSION));
   assert(prompt.includes('카르믹 노드 축'));
   assert(prompt.includes('키론'));
+  assert(prompt.includes(res.ritualAction));
   assert(prompt.includes('교차 매트릭스') && prompt.includes('해석 경계'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
@@ -2289,8 +2291,10 @@ test('Karmic Synastry Resonance Engine: 카르믹 시나스트리 및 인연 공
   assert(res.calculatedAtKst.endsWith('KST'));
   assert(Boolean(res.synastrySynthesisMatrix?.integratedAction));
   assert(res.interpretiveBoundary.length > 0);
+  assert(res.ritualAction.length > 0 && res.reflectionFocus.length > 0);
   const prompt = formatKarmicSynastryPrompt(res);
   assert(prompt.includes('카르믹 시나스트리'));
+  assert(prompt.includes(res.ritualAction));
   assert(prompt.includes('교차 매트릭스') && prompt.includes('해석 경계'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
@@ -4778,9 +4782,11 @@ test('Kabbalistic Zohar Five Soul Levels Engine: calculates five soul levels and
   assert(rep.qlippothShellPurificationRate >= 0 && rep.qlippothShellPurificationRate <= 100);
   assert(rep.dominantSoulLevel.nameKo.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatKabbalisticZoharSoulPrompt(rep);
   assert(prompt.includes('카발라 조하르(Zohar) 5대 영혼 층위 & 에인 소프 신성 상승 실측 데이터'));
   assert(prompt.includes(rep.dominantSoulLevel.nameKo));
+  assert(prompt.includes(rep.ritualAction));
 });
 
 test('Roman Stoic Prohairesis Dichotomy Engine: calculates internal control focus and amor fati', () => {
