@@ -11,12 +11,12 @@
  *    - 경물(敬物): 미물과 자연 만물까지도 함부로 대하지 않는 지극한 생명 공경
  * 3. 4대 심기 수련(지기금지원위대강) 및 운기 대반전 성화력 산출
  *
- * @version LUCKEY-SUUN-GASI-HEON-v2.1.0
+ * @version LUCKEY-SUUN-GASI-HEON-v2.2.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const SUUN_GASI_HEON_VERSION = 'LUCKEY-SUUN-GASI-HEON-v2.1.0';
+export const SUUN_GASI_HEON_VERSION = 'LUCKEY-SUUN-GASI-HEON-v2.2.0';
 
 export interface SuunCultivationStage {
   stageLevel: number;
@@ -55,6 +55,8 @@ export interface SuunGasiHeonResult {
     hangeulText: string;
     spiritualMeaning: string;
   };
+  ritualAction: string;
+  reflectionFocus: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
   suunGasiSynthesisMatrix?: {
@@ -151,9 +153,11 @@ export function calculateSuunGasiHeon(
   const geomgyeolVerse = GEOMGYEOL_VERSES[verseIdx];
 
   const trimmedQuery = query?.trim();
+  const ritualAction = `[${primarySamgyeongVirtue.virtueNameKo}] ${primarySamgyeongVirtue.actionablePractice}`;
   const reflectiveQuestion = trimmedQuery
     ? `수운 최제우의 《용담유사》 검결 '${primarySamgyeongVirtue.virtueNameKo}'와 '${secondarySamgyeongVirtue.virtueNameKo}'를 비추어 볼 때, "${trimmedQuery}"에서 용천검처럼 단호히 베어내야 할 미혹은 무엇인가요?`
     : `지금 부재래지 시호(不再來之 時乎)의 문턱에서, '${activeCultivationStage.stageNameKo}'의 심검과 '${secondaryCultivationStage.stageNameKo}'의 수양을 함께 세우려면 무엇을 먼저 결단해야 할까요?`;
+  const reflectionFocus = reflectiveQuestion;
 
   const interpretiveBoundary = '이 지표는 동학 수운 최제우 대신사의 《용담유사》 검결·삼경사상(경천·경인·경물)·수덕문 수양 원리를 내면 결단과 공경 태도 성찰의 거울로 해석한 것이며, 구체적 사건의 성패를 단정하는 예언이 아닙니다.';
 
@@ -185,6 +189,8 @@ export function calculateSuunGasiHeon(
     primarySamgyeongVirtue,
     secondarySamgyeongVirtue,
     geomgyeolVerse,
+    ritualAction,
+    reflectionFocus,
     reflectiveQuestion,
     interpretiveBoundary,
     suunGasiSynthesisMatrix,
@@ -215,7 +221,9 @@ export function formatSuunGasiHeonPrompt(result: SuunGasiHeonResult): string {
     `- 용담유사 비전 가사: 《${result.geomgyeolVerse.verseTitle}》`,
     `  → 원문: "${result.geomgyeolVerse.hangeulText}"`,
     `  → 영적 해석: ${result.geomgyeolVerse.spiritualMeaning}`,
+    `- 실천 의례: ${result.ritualAction}`,
     `- 성찰 질문: ${result.reflectiveQuestion}`,
+    `- 성찰 초점: ${result.reflectionFocus}`,
     `- 해석 경계: ${result.interpretiveBoundary}`,
   ];
   if (result.suunGasiSynthesisMatrix) {

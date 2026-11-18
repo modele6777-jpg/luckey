@@ -8,12 +8,12 @@
  * 4. 거경궁리(居敬窮理): 안으로는 마음을 경건히 보존하고(居敬), 밖으로는 사물의 이치를 끝까지 탐구함(窮理).
  * 5. 심통성정(心統性情): 마음은 타고난 본성(性)과 밖으로 드러나는 감정(情)을 통솔하는 주재자.
  *
- * @version LUCKEY-TOEGYE-SEONGHAK-SIPDO-v2.1.0
+ * @version LUCKEY-TOEGYE-SEONGHAK-SIPDO-v2.2.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const TOEGYE_SEONGHAK_SIPDO_VERSION = 'LUCKEY-TOEGYE-SEONGHAK-SIPDO-v2.1.0';
+export const TOEGYE_SEONGHAK_SIPDO_VERSION = 'LUCKEY-TOEGYE-SEONGHAK-SIPDO-v2.2.0';
 
 export interface SeonghakDiagram {
   diagramNumber: number;
@@ -44,6 +44,8 @@ export interface ToegyeSeonghakSipdoResult {
   secondarySeonghakDiagram: SeonghakDiagram;
   focalGyeongPractice: GyeongPractice;
   secondaryGyeongPractice: GyeongPractice;
+  ritualAction: string;
+  reflectionFocus: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
   toegyePhilosophicalCounsel: {
@@ -196,9 +198,11 @@ export function calculateToegyeSeonghakSipdo(
   const secondaryGyeongPractice = GYEONG_PRACTICES[secondaryPracticeIndex];
 
   const trimmedQuery = query?.trim();
+  const ritualAction = `[${focalGyeongPractice.practiceHanja.split(' ')[0]}] ${focalGyeongPractice.dailyApplication}`;
   const reflectiveQuestion = trimmedQuery
     ? `퇴계 이황의 《${activeSeonghakDiagram.diagramTitleHanja}》와 《${secondarySeonghakDiagram.diagramTitleHanja}》를 비추어 볼 때, "${trimmedQuery}"에서 흩어진 마음을 하나로 모으는 경(敬)의 태도는 무엇인가요?`
     : `지금 마음을 쓰는 일 앞에서, '${activeSeonghakDiagram.diagramTitleHanja}'의 근원과 '${secondarySeonghakDiagram.diagramTitleHanja}'의 실천을 함께 살리려면 무엇을 단정히 해야 할까요?`;
+  const reflectionFocus = reflectiveQuestion;
 
   const interpretiveBoundary = '이 지표는 퇴계 이황 선생의 《성학십도》와 《자성록》에 담긴 경(敬)·거경궁리·상성성·심통성정 수양 철학을 내면 집중과 태도 성찰의 거울로 해석한 것이며, 구체적 사건의 성패를 단정하는 예언이 아닙니다.';
 
@@ -234,6 +238,8 @@ export function calculateToegyeSeonghakSipdo(
     secondarySeonghakDiagram,
     focalGyeongPractice,
     secondaryGyeongPractice,
+    ritualAction,
+    reflectionFocus,
     reflectiveQuestion,
     interpretiveBoundary,
     toegyePhilosophicalCounsel: {
@@ -264,7 +270,9 @@ export function formatToegyeSeonghakSipdoPrompt(res: ToegyeSeonghakSipdoResult):
     `- 핵심 경(敬) 심법: ${res.focalGyeongPractice.practiceHanja} - ${res.focalGyeongPractice.practiceKo}`,
     `- 보조 교차 심법: ${res.secondaryGyeongPractice.practiceHanja} - ${res.secondaryGyeongPractice.practiceKo}`,
     `- 심법 실천 요결: ${res.focalGyeongPractice.dailyApplication}`,
+    `- 실천 의례: ${res.ritualAction}`,
     `- 성찰 질문: ${res.reflectiveQuestion}`,
+    `- 성찰 초점: ${res.reflectionFocus}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
     `- 철학적 처방: ${res.toegyePhilosophicalCounsel.philosophicalGuidance}`,
   ];
