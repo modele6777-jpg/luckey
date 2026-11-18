@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.7.890",
+    "builtAt": "2026-11-19T07:12:00+09:00",
+    "summary": "브루노 무한우주론·아우렐리우스 명상록 내면 성채·키케로 의무론 3대 엔진 실천 의례 및 성찰 초점 표준 연동(v1.7.890)",
+    "items": [
+      "르네상스 조르다노 브루노 무한우주론 & 영웅적 열정 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동",
+      "고대 로마 아우렐리우스 《명상록》 내면의 성채 엔진(v2.5.0): ritualAction·reflectionFocus 표준 필드 연동",
+      "고대 로마 키케로 《의무론》 도덕적 선 & 유용성 조화 엔진(v2.3.0): ritualAction·reflectionFocus 표준 필드 연동"
+    ]
+  },
+  {
     "version": "1.7.889",
     "builtAt": "2026-11-19T07:08:00+09:00",
     "summary": "황금비 영혼 수비학·샤머니즘 토템·수피 7대 라타이프 3대 엔진 reflectiveQuestion·+09:00 (KST)·summary·question 연동(v1.7.889)",

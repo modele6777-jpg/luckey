@@ -14,7 +14,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const AURELIUS_INNER_CITADEL_VERSION = 'LUCKEY-AURELIUS-INNER-CITADEL-v2.4.0';
+export const AURELIUS_INNER_CITADEL_VERSION = 'LUCKEY-AURELIUS-INNER-CITADEL-v2.5.0';
 
 export interface AureliusStage {
   stageLevel: number;
@@ -84,6 +84,8 @@ export interface AureliusInnerCitadelResult {
     alignmentState: string;
     integratedAction: string;
   };
+  ritualAction: string;
+  reflectionFocus: string;
   reflectiveQuestion?: string;
   interpretiveBoundary: string;
 }
@@ -302,6 +304,8 @@ export function calculateAureliusInnerCitadel(
     dailyStoicPractice,
     citadelResilienceMatrix,
     aureliusSynthesisMatrix,
+    ritualAction: `[${dailyStoicPractice.practiceMode}] '${controlDichotomy.sovereignActionKo}'에 집중하여 ${dailyStoicPractice.protocolDirective}`,
+    reflectionFocus: `아우렐리우스 명상록(${activeAureliusStage.stageNameLatin}) — ${controlDichotomy.bookReference}`,
     reflectiveQuestion,
     interpretiveBoundary: '본 리포트는 마르쿠스 아우렐리우스 《명상록》의 스토아 자기 성찰 원리에 기반한 정성적 안내이며, 확정적 예단이 아닙니다.',
   };
@@ -333,5 +337,7 @@ export function formatAureliusInnerCitadelPrompt(result: AureliusInnerCitadelRes
   → 실천 지침: ${result.primaryMeditationsPrecept.actionableDirective}
 - 철학 황제의 내면 독백: 《${result.citadelEmperorSoliloquy.soliloquyTitle}》
   → 고결한 명상 조언: "${result.citadelEmperorSoliloquy.meditativeCounsel}"
+- 실천 의례: ${result.ritualAction}
+- 성찰 초점: ${result.reflectionFocus}
 - 해석 경계: 본 리포트는 마르쿠스 아우렐리우스 《명상록》의 스토아 자기 성찰 원리에 기반한 정성적 안내이며, 확정적 예단이 아닙니다.${matrixLine}${questionLine}`;
 }

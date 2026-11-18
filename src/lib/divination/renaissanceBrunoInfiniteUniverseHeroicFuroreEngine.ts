@@ -20,7 +20,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const BRUNO_INFINITE_UNIVERSE_VERSION = 'LUCKEY-BRUNO-INFINITE-UNIVERSE-v2.1.0';
+export const BRUNO_INFINITE_UNIVERSE_VERSION = 'LUCKEY-BRUNO-INFINITE-UNIVERSE-v2.2.0';
 
 export interface BrunoCosmicAspect {
   aspectKey: string;
@@ -55,6 +55,8 @@ export interface RenaissanceBrunoInfiniteUniverseResult {
     counselTitle: string;
     heroicFlightGuidance: string;
   };
+  ritualAction: string;
+  reflectionFocus: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
   brunoSynthesisMatrix?: {
@@ -214,6 +216,8 @@ export function calculateRenaissanceBrunoInfiniteUniverse(
       counselTitle,
       heroicFlightGuidance,
     },
+    ritualAction: `[${activeCosmicAspect.aspectNameKo}]의 지평을 넓히기 위해 '${focalFuroreMetaphor.sovereignAction}'의 첫 행동을 오늘 바로 실행하세요.`,
+    reflectionFocus: `브루노 무한우주론(${activeCosmicAspect.aspectNameKo} ↔ ${secondaryCosmicAspect.aspectNameKo}) — ${focalFuroreMetaphor.metaphorTitleKo}`,
     reflectiveQuestion,
     interpretiveBoundary,
     brunoSynthesisMatrix,
@@ -236,6 +240,8 @@ export function formatRenaissanceBrunoInfiniteUniversePrompt(res: RenaissanceBru
     `- 원전 명제 요약: "${res.focalFuroreMetaphor.italianVerseSummary}"`,
     `- 상징적 통찰: ${res.focalFuroreMetaphor.philosophicalInsight}`,
     `- 정신 주권 실천 지침: ${res.brunoHeroicCounsel.heroicFlightGuidance}`,
+    `- 실천 의례: ${res.ritualAction}`,
+    `- 성찰 초점: ${res.reflectionFocus}`,
     `- 성찰 질문: ${res.reflectiveQuestion}`,
   ];
   if (res.brunoSynthesisMatrix) {
