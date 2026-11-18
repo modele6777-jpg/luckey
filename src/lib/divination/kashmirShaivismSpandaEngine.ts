@@ -18,7 +18,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const KASHMIR_SHAIVISM_SPANDA_ENGINE_VERSION = '2.2.0';
+export const KASHMIR_SHAIVISM_SPANDA_ENGINE_VERSION = '2.3.0';
 
 export interface KashmirShaivismTattva {
   id: string;
@@ -62,6 +62,7 @@ export interface KashmirShaivismSpandaReport {
   interpretiveBoundary: string;
   ritualAction: string;
   reflectionFocus: string;
+  reflectiveQuestion: string;
 }
 
 const KASHMIR_TATTVAS_BASE: Omit<KashmirShaivismTattva, 'resonanceScore'>[] = [
@@ -180,7 +181,7 @@ export function calculateKashmirShaivismSpanda(
   const kstDate = new Date(now.getTime() + 9 * 60 * 60 * 1000);
   const kstHour = kstDate.getUTCHours();
   const kstMonth = kstDate.getUTCMonth() + 1;
-  const calculatedAtKst = kstDate.toISOString().replace('T', ' ').slice(0, 16) + ' KST';
+  const calculatedAtKst = kstDate.toISOString().replace('T', ' ').slice(0, 16) + ' +09:00 (KST)';
 
   const spandaPulseWindow = kstHour >= 4 && kstHour < 9
     ? '우샤스 새벽 맥동창 (들숨과 날숨 사이 순수 자각이 열리는 시간)'
@@ -218,6 +219,10 @@ export function calculateKashmirShaivismSpanda(
 
   const ritualAction = `[${dominantTattva.nameKo}] ${spandaPulsationMeditationRitual}`;
   const reflectionFocus = `오늘 '${situationalSpandaAudit.questionTheme}' 상황에서 들숨과 날숨 사이의 고요한 맥동(Spanda)으로 돌아가기 위해 내려놓을 분별 하나는 무엇인가요?`;
+  const qClean = question.trim();
+  const reflectiveQuestion = qClean
+    ? `지금 "${qClean}" 앞에서 ${dominantTattva.nameKo}의 고요한 맥동(Spanda)으로 돌아가기 위해 오늘 내려놓을 분별 하나는 무엇인가요?`
+    : reflectionFocus;
 
   return {
     engineVersion: KASHMIR_SHAIVISM_SPANDA_ENGINE_VERSION,
@@ -237,6 +242,7 @@ export function calculateKashmirShaivismSpanda(
     interpretiveBoundary: '카슈미르 시바파 트리카 철학의 스판다·프라티야비즈냐 상징을 빌려 온 정성적 성찰 관점이며, 확정적 예언이나 의학적·재정적 처방이 아닙니다.',
     ritualAction,
     reflectionFocus,
+    reflectiveQuestion,
   };
 }
 
@@ -257,5 +263,6 @@ export function formatKashmirShaivismSpandaPrompt(rep: KashmirShaivismSpandaRepo
 · 스판다 맥동 명상 리추얼: ${rep.spandaPulsationMeditationRitual}
 · 실천 의례(Ritual Action): ${rep.ritualAction}
 · 성찰 초점(Reflection Focus): ${rep.reflectionFocus}
+· 질문 맞춤 성찰 질문: ${rep.reflectiveQuestion}
 · 해석 경계: ${rep.boundaryNotice}`;
 }
