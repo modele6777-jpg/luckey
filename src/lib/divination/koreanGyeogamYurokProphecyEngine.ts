@@ -21,7 +21,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const GYEOGAM_YUROK_VERSION = '2.1.0';
+export const GYEOGAM_YUROK_VERSION = '2.2.0';
 
 export interface GyeogamYurokReport {
   engineVersion: string;
@@ -65,6 +65,8 @@ export interface GyeogamYurokReport {
   namSagoMasterAdvice: string;
   boundaryNotice: string;
   interpretiveBoundary: string;
+  ritualAction: string;
+  reflectionFocus: string;
 }
 
 function djb2Hash(str: string): number {
@@ -231,6 +233,11 @@ export function calculateGyeogamYurokProphecy(
     cautionNotice: '외적 요행이나 세속의 소문에 기대어 내면의 덕과 원칙을 소홀히 하지 않도록 경계하십시오.',
   };
 
+  const ritualAction = `[${primaryGyeogamChapter.titleKo} · ${haeinTalismanType.nameKo}] ${situationalGyeogamAudit.sanctuaryPractice}`;
+  const reflectionFocus = question
+    ? `'${question}'의 혼란 앞에서 바깥의 길지 대신 내면의 인의예지·십승길지로 먼저 세워야 할 중심은 무엇인가요?`
+    : `세론의 소음을 내려놓고 지금 내 마음속 궁궁을을의 평온으로 지켜 낼 한 가지는 무엇인가요?`;
+
   return {
     engineVersion: GYEOGAM_YUROK_VERSION,
     calculatedAt: now.toISOString(),
@@ -249,6 +256,8 @@ export function calculateGyeogamYurokProphecy(
     namSagoMasterAdvice,
     boundaryNotice: '본 결과는 《격암유록》의 비유적·철학적 상징 체계에 기반한 정성적 성찰 안내이며, 확정적 예언이나 길흉 판정이 아닙니다.',
     interpretiveBoundary: '본 결과는 《격암유록》의 비유적·철학적 상징 체계에 기반한 정성적 성찰 안내이며, 확정적 예언이나 길흉 판정이 아닙니다.',
+    ritualAction,
+    reflectionFocus,
   };
 }
 
@@ -265,5 +274,7 @@ export function formatGyeogamYurokProphecyPrompt(report: GyeogamYurokReport): st
 - **격암 교차 매트릭스**: 핵심(${report.gyeogamSynthesisMatrix.coreInsight}) | 실행(${report.gyeogamSynthesisMatrix.recommendedAction}) | 주의(${report.gyeogamSynthesisMatrix.cautionNotice})
 - **격암 남사고 선생 심법 처방**:
   - "${report.namSagoMasterAdvice}"
+- **실천 의례(Ritual Action)**: ${report.ritualAction}
+- **성찰 초점(Reflection Focus)**: ${report.reflectionFocus}
 - **해석 경계**: ${report.boundaryNotice}`;
 }

@@ -1,10 +1,10 @@
 {
-  "version": "1.7.830",
-  "builtAt": "2026-11-18T11:10:00+09:00",
-  "summary": "단재 신채호 조선상고사, 다산 정약용 목민심서, 동학 시천주 3대 엔진 실천 의례 및 성찰 질문 표준 연동(v1.7.830)",
+  "version": "1.7.831",
+  "builtAt": "2026-11-18T11:20:00+09:00",
+  "summary": "도산 안창호 무실역행, 고산 윤선도 오우가, 격암유록 3대 엔진 실천 의례 및 성찰 질문 표준 연동(v1.7.831)",
   "items": [
-    "단재 신채호 《조선상고사》 아(我)의 주체자각 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동",
-    "다산 정약용 《목민심서》 여유당·실사구시 실학 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동",
-    "동학 수운 최제우 시천주 & 인내천 천지조화 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동"
+    "도산 안창호 《무실역행》 인격혁명·주인정신 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동",
+    "고산 윤선도 《오우가》·《어부사시사》 5우 지조 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동",
+    "격암 남사고 《격암유록》 궁궁을을·삼풍해인 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동"
   ]
 }
