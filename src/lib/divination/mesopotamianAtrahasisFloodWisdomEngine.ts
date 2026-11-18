@@ -15,7 +15,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const ATRAHASIS_FLOOD_VERSION = 'LUCKEY-ATRAHASIS-FLOOD-v2.1.0';
+export const ATRAHASIS_FLOOD_VERSION = 'LUCKEY-ATRAHASIS-FLOOD-v2.2.0';
 
 export interface AtrahasisWisdomRank {
   rankLevel: number;
@@ -53,6 +53,8 @@ export interface AtrahasisFloodResult {
     tabletSceneTitle: string;
     primordialWisdom: string;
   };
+  ritualAction: string;
+  reflectionFocus: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
   atrahasisSynthesisMatrix?: {
@@ -142,6 +144,9 @@ export function calculateAtrahasisFlood(
   const epiphanyIdx = (seed >> 6) % ATRAHASIS_EPIPHANIES.length;
   const floodEpicEpiphany = ATRAHASIS_EPIPHANIES[epiphanyIdx];
 
+  const ritualAction = `${primaryArkVirtue.actionableDirective} 오늘 5분간 바깥의 알림과 소음을 끄고 갈대벽 너머 엔키의 밀담을 듣듯 지금 꼭 지켜야 할 본질 한 가지를 노트에 적어보세요.`;
+  const reflectionFocus = `아트라하시스(${activeWisdomRank.rankNameKo}) · ${primaryArkVirtue.virtueNameKo} — 소란을 가라앉히고 생명의 씨앗을 보전하는 절제`;
+
   const trimmedQuery = query?.trim();
   const reflectiveQuestion = trimmedQuery
     ? `아트라하시스의 '${activeWisdomRank.rankNameKo}'와 보조 위상 '${secondaryWisdomRank.rankNameKo}'를 비추어 볼 때, "${trimmedQuery}"에서 갈대벽 너머의 고요한 직관으로 지켜내야 할 본질은 무엇인가요?`
@@ -170,6 +175,8 @@ export function calculateAtrahasisFlood(
     primaryArkVirtue,
     secondaryArkVirtue,
     floodEpicEpiphany,
+    ritualAction,
+    reflectionFocus,
     reflectiveQuestion,
     interpretiveBoundary,
     atrahasisSynthesisMatrix,
@@ -194,6 +201,8 @@ export function formatAtrahasisFloodPrompt(result: AtrahasisFloodResult): string
     `  → 실천 지침: ${result.primaryArkVirtue.actionableDirective}`,
     `- 점토판 신성 서판 전승: 《${result.floodEpicEpiphany.tabletSceneTitle}》`,
     `  → 원초적 지혜: "${result.floodEpicEpiphany.primordialWisdom}"`,
+    `- 실천 의례: ${result.ritualAction}`,
+    `- 성찰 초점: ${result.reflectionFocus}`,
     `- 성찰 질문: ${result.reflectiveQuestion}`,
     `- 해석 경계: ${result.interpretiveBoundary}`,
   ];
