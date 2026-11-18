@@ -53,7 +53,7 @@
 import type { UserProfile } from '../sharedState';
 import { calculateDetailedSaju, STEM_ELEMENT, BRANCH_ELEMENT } from '../sajuAnalysis';
 
-export const HONGGUK_QIMEN_ENGINE_VERSION = 'LUCKEY-HQ-v2.1.0';
+export const HONGGUK_QIMEN_ENGINE_VERSION = 'LUCKEY-HQ-v2.2.0';
 
 export const HONGGUK_QIMEN_METHOD =
   '조선 정통 홍국기문(洪局奇門) 결정론 산법: 사주 연·월·일·시 4주 천간·지지의 하도 생성수(甲1~癸10)·후천 12진수(子1~亥12) 낙서 구성환원으로 지반수(地盤數) 중궁과 천반수(天盤數) 중궁을 산출하고, 중궁 기점 건→태→간→리→감→곤→진→손 낙서 비행 경로 역행 배열로 9궁(1백 감궁~9자 리궁) 천지반 비성 포국, 세효(世爻·본신)·응효(應爻·상대)·중궁(中宮·핵심) 3대 거점 수리 식별과 3궁 오행 상생·상극·비화 대조, 인사신·축술미 삼형(三刑) 성립 및 육충 반영 파극 위험도(0~100), 수생목→목생화→화생토→토생금→금생수 상생 통기 순환 완성도(0~100), 8문(개휴생 3길문·상두경(景) 사경(驚) 평흉문) 정궁 배속과 세효 득문(得門) 판정, 길흉 격국 및 개운 처방';
@@ -231,6 +231,8 @@ export interface HonggukQimenResult {
   };
   boundaryNotice?: string;
   interpretiveBoundary?: string;
+  ritualAction?: string;
+  reflectionFocus?: string;
   note?: string;
 }
 
@@ -684,6 +686,9 @@ export function calculateHonggukQimen(params: {
         : '길문 방위라도 통기 순환이 끊긴 오행을 보완해야 길함이 온전해집니다.',
     };
 
+    const ritualAction = `[${seYao.palaceName} · ${seYao.gate || '중궁 기궁'}] ${honggukSynthesisMatrix.recommendedAction}`;
+    const reflectionFocus = `세효(${seYao.palaceName})와 응효(${eungYao.palaceName})의 대치 속에서 ${situationalHonggukAudit.focusTheme}을(를) 열기 위해 내가 먼저 정돈할 한 가지는 무엇입니까?`;
+
     return {
       status: 'calculated',
       engineVersion: HONGGUK_QIMEN_ENGINE_VERSION,
@@ -731,6 +736,8 @@ export function calculateHonggukQimen(params: {
       situationalHonggukAudit,
       temporalHonggukRhythm,
       honggukSynthesisMatrix,
+      ritualAction,
+      reflectionFocus,
       boundaryNotice: '본 결과는 조선 정통 홍국기문 9궁 수리 포국과 8문 법칙에 기반한 정성적 전략 가이드이며, 확정적 예언이 아닙니다.',
       interpretiveBoundary: '본 결과는 조선 정통 홍국기문 9궁 수리 포국과 8문 법칙에 기반한 정성적 전략 가이드이며, 확정적 예언이 아닙니다.',
       note: timeNote || undefined,
@@ -809,6 +816,8 @@ ${result.tacticalSeasonWindows ? `[4계절 거시 결단 윈도우]\n- 최적 �
 ${result.situationalHonggukAudit ? `[질문 맥락 감사]\n- ${result.situationalHonggukAudit.focusTheme}: ${result.situationalHonggukAudit.tacticalStep}` : ''}
 ${result.temporalHonggukRhythm ? `[KST 시공간 기문 리듬]\n- ${result.temporalHonggukRhythm.palaceWatchWindow} / ${result.temporalHonggukRhythm.seasonalQimenTone}\n  * 시공간 지침: ${result.temporalHonggukRhythm.temporalGuidance}` : ''}
 ${result.honggukSynthesisMatrix ? `[홍국기문 교차 매트릭스]\n- 핵심(${result.honggukSynthesisMatrix.coreInsight}) | 실행(${result.honggukSynthesisMatrix.recommendedAction}) | 주의(${result.honggukSynthesisMatrix.cautionNotice})` : ''}
+${result.ritualAction ? `- 실천 의례(Ritual Action): ${result.ritualAction}` : ''}
+${result.reflectionFocus ? `- 성찰 초점(Reflection Focus): ${result.reflectionFocus}` : ''}
 ${result.boundaryNotice ? `- 해석 경계: ${result.boundaryNotice}` : ''}
 
 위 포국은 사주 4주 간지의 하도·낙서 수리로 직접 계산한 고정 결과다. 궁위·문·삼형·통기를 임의로 바꾸어 말하지 말고, 세효(사용자)를 주체로 응효(상대·환경)와 대비해 해석하라. 상대 프로필이 별도로 있어도 이 포국의 응효는 사용자 원국의 상대 자리임을 유지하라.`;
