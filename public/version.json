@@ -1,10 +1,6 @@
 {
-  "version": "1.7.880",
-  "builtAt": "2026-11-19T06:22:00+09:00",
-  "summary": "페르시아 아메샤 스펜타·아타르 7대 계곡·미트라 7대 천계 사다리 3대 엔진 실천 의례 및 성찰 초점 표준 연동(v1.7.880)",
-  "items": [
-    "고대 페르시아 바르숨 & 6대 아메샤 스펜타 조화 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동",
-    "페르시아 수피즘 아타르 '새들의 회의' 7대 계곡 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동",
-    "고대 페르시아 미트라 7대 행성 입문 천계 사다리 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동"
-  ]
+  "version": "1.7.881",
+  "builtAt": "2026-11-19T06:30:00+09:00",
+  "commit": "feat/deepen-chekhov-dostoevsky-tolstoy-v1.7.881",
+  "notes": "안톤 체호프·도스토옙스키·톨스토이 3대 엔진 표준 reflectiveQuestion·+09:00 (KST)·question 전달 연동 (v1.7.881)"
 }

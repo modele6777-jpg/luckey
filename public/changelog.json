@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.7.881",
+    "builtAt": "2026-11-19T06:30:00+09:00",
+    "summary": "안톤 체호프·도스토옙스키·톨스토이 3대 엔진 표준 reflectiveQuestion·+09:00 (KST)·question 전달 연동(v1.7.881)",
+    "items": [
+      "안톤 체호프(v2.2.0)·표도르 도스토옙스키(v2.2.0)·레프 톨스토이(v2.2.0): 표준 reflectiveQuestion 필드·+09:00 (KST) 표기 통일",
+      "deterministicEngine.ts: 3대 엔진 호출부에 question·now 전달 연동",
+      "divination-engines.test.ts: 3대 엔진 v1.7.881 회귀 테스트 추가"
+    ]
+  },
+  {
     "version": "1.7.880",
     "builtAt": "2026-11-19T06:22:00+09:00",
     "summary": "페르시아 아메샤 스펜타·아타르 7대 계곡·미트라 7대 천계 사다리 3대 엔진 실천 의례 및 성찰 초점 표준 연동(v1.7.880)",

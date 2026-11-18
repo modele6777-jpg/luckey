@@ -13,7 +13,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const RUSSIAN_FYODOR_DOSTOEVSKY_KARAMAZOV_SOUL_COMPASSION_VERSION = 'LUCKEY-FYODOR-DOSTOEVSKY-KARAMAZOV-SOUL-COMPASSION-v2.1.0';
+export const RUSSIAN_FYODOR_DOSTOEVSKY_KARAMAZOV_SOUL_COMPASSION_VERSION = 'LUCKEY-FYODOR-DOSTOEVSKY-KARAMAZOV-SOUL-COMPASSION-v2.2.0';
 
 export interface DostoevskyTheme {
   themeKey: string;
@@ -55,6 +55,7 @@ export interface RussianFyodorDostoevskyKaramazovSoulCompassionResult {
   // v2.1.0 심층 보강: 이중 원전 교차·성찰 질문·해석 경계
   secondaryDostoevskyAphorism?: DostoevskyAphorism;
   reflectiveDostoevskyQuestion: string;
+  reflectiveQuestion?: string;
   interpretiveBoundary: string;
 }
 
@@ -65,7 +66,7 @@ function formatDostoevskyKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} +09:00 KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
 }
 
 function describeDostoevskyStage(score: number): string {
@@ -221,6 +222,7 @@ export function calculateRussianFyodorDostoevskyKaramazovSoulCompassion(
     dostoevskySynthesisMatrix,
     secondaryDostoevskyAphorism,
     reflectiveDostoevskyQuestion,
+    reflectiveQuestion: reflectiveDostoevskyQuestion,
     interpretiveBoundary,
   };
 }

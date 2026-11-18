@@ -12013,3 +12013,27 @@ test('파탄잘리·오르페우스·아우렐리우스 내면의 성채 v1.7.87
   const aurPrompt = formatAureliusInnerCitadelPrompt(aur);
   assert.ok(aurPrompt.includes('+09:00') && aurPrompt.includes('질문 맞춤 성찰 질문') && aurPrompt.includes('해석 경계'));
 });
+
+test('체호프·도스토옙스키·톨스토이 v1.7.881 표준 reflectiveQuestion·+09:00 KST 회귀 검증', () => {
+  const profile = { basic: { name: '제제', birthdate: '1994-01-24', birthtime: '12:00', gender: 'male' } } as any;
+  const now = new Date('2026-11-19T06:30:00+09:00');
+  const query = '지친 일상 속에서도 진실하고 따뜻한 태도를 잃지 않고 싶어요';
+
+  const ck = calculateRussianAntonChekhovQuietEnduranceCompassion(profile, query, now);
+  assert.equal(ck.engineVersion, RUSSIAN_ANTON_CHEKHOV_QUIET_ENDURANCE_COMPASSION_VERSION);
+  assert.match(ck.calculatedAtKst, /\+09:00/);
+  assert.equal(ck.reflectiveQuestion, ck.reflectiveChekhovQuestion);
+  assert.ok(ck.reflectiveQuestion?.includes(query));
+
+  const ds = calculateRussianFyodorDostoevskyKaramazovSoulCompassion(profile, query, now);
+  assert.equal(ds.engineVersion, RUSSIAN_FYODOR_DOSTOEVSKY_KARAMAZOV_SOUL_COMPASSION_VERSION);
+  assert.match(ds.calculatedAtKst, /\+09:00/);
+  assert.equal(ds.reflectiveQuestion, ds.reflectiveDostoevskyQuestion);
+  assert.ok(ds.reflectiveQuestion?.includes(query));
+
+  const tl = calculateRussianLeoTolstoyCalendarOfWisdom(profile, query, now);
+  assert.equal(tl.engineVersion, RUSSIAN_LEO_TOLSTOY_VERSION);
+  assert.match(tl.calculatedAtKst, /\+09:00/);
+  assert.equal(tl.reflectiveQuestion, tl.reflectiveTolstoyQuestion);
+  assert.ok(tl.reflectiveQuestion?.includes(query));
+});

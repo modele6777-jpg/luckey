@@ -14,7 +14,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const RUSSIAN_LEO_TOLSTOY_VERSION = 'LUCKEY-LEO-TOLSTOY-WISDOM-v2.1.0';
+export const RUSSIAN_LEO_TOLSTOY_VERSION = 'LUCKEY-LEO-TOLSTOY-WISDOM-v2.2.0';
 
 export interface TolstoyTheme {
   themeKey: string;
@@ -56,6 +56,7 @@ export interface RussianLeoTolstoyCalendarOfWisdomResult {
   // v2.1.0 심층 보강: 이중 원전 교차·성찰 질문·해석 경계
   secondaryTolstoyAphorism?: TolstoyAphorism;
   reflectiveTolstoyQuestion: string;
+  reflectiveQuestion?: string;
   interpretiveBoundary: string;
 }
 
@@ -66,7 +67,7 @@ function formatTolstoyKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} +09:00 KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
 }
 
 function describeTolstoyStage(score: number): string {
@@ -223,6 +224,7 @@ export function calculateRussianLeoTolstoyCalendarOfWisdom(
     tolstoySynthesisMatrix,
     secondaryTolstoyAphorism,
     reflectiveTolstoyQuestion,
+    reflectiveQuestion: reflectiveTolstoyQuestion,
     interpretiveBoundary,
   };
 }
