@@ -2186,6 +2186,7 @@ test('Pythagorean Lifecycle Engine: 피타고라스 4대 피너클 & 챌린지 �
   assert(res.currentPersonalYear.yearNumber >= 1 && res.currentPersonalYear.yearNumber <= 9);
   assert(res.currentPinnacle.number >= 1 && res.currentPinnacle.number <= 9);
   assert(res.currentChallenge.number >= 0 && res.currentChallenge.number <= 8);
+  assert(res.ritualAction.length > 0 && res.reflectionFocus.length > 0);
   assert(res.reflectiveQuestion.includes('인생 전환기'));
   assert(res.interpretiveBoundary.includes('성찰 비유'));
   const prompt = formatPythagoreanLifecyclePrompt(res);
@@ -2194,6 +2195,7 @@ test('Pythagorean Lifecycle Engine: 피타고라스 4대 피너클 & 챌린지 �
   assert(prompt.includes('4대 챌린지'));
   assert(prompt.includes('개인년도'));
   assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
   assert(prompt.includes('성찰 질문'));
   assert(prompt.includes('해석 경계'));
 });
@@ -4627,6 +4629,7 @@ test('Plum Blossom Meihua Oracle Engine: calculates ben/hu/bian gua and ti-yong 
   const rep = calculatePlumBlossomMeihuaOracle({ profile });
   assert.equal(rep.engineVersion, PLUM_BLOSSOM_MEIHUA_ORACLE_ENGINE_VERSION);
   assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(Boolean(rep.meihuaSynthesisMatrix?.integratedAction));
   assert(rep.interpretiveBoundary.length > 0);
   assert(rep.movingLine >= 1 && rep.movingLine <= 6);
@@ -4636,6 +4639,7 @@ test('Plum Blossom Meihua Oracle Engine: calculates ben/hu/bian gua and ti-yong 
   const prompt = formatPlumBlossomMeihuaOraclePrompt(rep);
   assert(prompt.includes('송대 소강절 선생 매화역수(梅花易數) 체용생극 선천 작괘 실측 데이터'));
   assert(prompt.includes(rep.tiYongRelation));
+  assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
   assert(prompt.includes('교차 매트릭스') && prompt.includes('해석 경계'));
   assert(!prompt.includes('/100'));
 });
@@ -5506,6 +5510,7 @@ test('Polynesian Wayfinding Star Compass Engine: calculates Star Compass houses,
   assert(rep.secondaryStarHouse.hawaiianName.length > 0);
   assert(rep.guidingZenithStar.hawaiianName.length > 0);
   assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(Boolean(rep.wayfindingSynthesisMatrix?.integratedAction));
   assert(rep.reflectiveQuestion.includes('새 프로젝트'));
   assert(rep.interpretiveBoundary.includes('성찰 비유'));
@@ -5513,6 +5518,7 @@ test('Polynesian Wayfinding Star Compass Engine: calculates Star Compass houses,
   assert(prompt.includes('고대 폴리네시아 마우이 《웨이파인딩 32방위 스타 컴퍼스》 항해'));
   assert(prompt.includes(rep.primaryStarHouse.hawaiianName));
   assert(prompt.includes('보조 교차 하우스'));
+  assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
   assert(prompt.includes('교차 매트릭스'));
   assert(prompt.includes('성찰 질문'));
   assert(prompt.includes('해석 경계'));
