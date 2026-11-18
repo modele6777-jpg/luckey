@@ -10,7 +10,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const WONHYO_HWAJAENG_VERSION = '2.4.0';
+export const WONHYO_HWAJAENG_VERSION = '2.5.0';
 
 export interface WonhyoSituationalHwajaeng {
   themeKey: 'existence_emptiness' | 'truth_delusion' | 'assertion_refutation' | 'source_return' | 'fearless_freedom';
@@ -59,6 +59,7 @@ export interface WonhyoHwajaengReport {
   wonhyoMasterDharmaWord: string;
   ritualAction: string;
   reflectionFocus: string;
+  reflectiveQuestion: string;
   wonhyoSynthesisMatrix?: {
     dominantTension: string;
     alignmentState: string;
@@ -298,6 +299,9 @@ export function calculateWonhyoHwajaeng(
   const trimmedQ = (question || '').trim();
   const ritualAction = `[${activeHwajaengGate.gateNameKo.split(' ')[0]}] ${muAePracticeDirective}`;
   const reflectionFocus = situational.reflectionPrompt;
+  const reflectiveQuestion = trimmedQ
+    ? `지금 "${trimmedQ}" 앞에서 ${activeHwajaengGate.gateNameKo}의 화쟁 시선으로 대립을 회통하기 위해 내가 먼저 내려놓거나 이어 줄 한 가지는 무엇인가요?`
+    : reflectionFocus;
   const wonhyoSynthesisMatrix = {
     dominantTension: `${situational.themeLabelKo} ↔ ${activeHwajaengGate.gateNameKo}`,
     alignmentState: `${temporalOneMindRhythm.timeWindowKo} · ${temporalOneMindRhythm.seasonKo}`,
@@ -325,6 +329,7 @@ export function calculateWonhyoHwajaeng(
     wonhyoMasterDharmaWord,
     ritualAction,
     reflectionFocus,
+    reflectiveQuestion,
     wonhyoSynthesisMatrix,
     interpretiveBoundary: '본 리포트는 원효대사의 일심이문·화쟁 사상에 기반한 정성적 성찰 안내이며, 절대적 시비 판정이 아닙니다.',
   };
@@ -356,6 +361,7 @@ export function formatWonhyoHwajaengPrompt(report: WonhyoHwajaengReport): string
 - **원융회통 무애행 지침**: ${report.dialecticHarmonizationMatrix.muAePracticeDirective}
 - **실천 의례**: ${report.ritualAction}
 - **성찰 초점**: ${report.reflectionFocus}
+- **질문 맞춤 성찰 질문**: ${report.reflectiveQuestion}
 - **원효 성사 법문 처방**:
   - "${report.wonhyoMasterDharmaWord}"
 - **해석 경계**: 본 리포트는 원효대사의 일심이문·화쟁 사상에 기반한 정성적 성찰 안내이며, 절대적 시비 판정이 아닙니다.${matrixLine}`;

@@ -20,7 +20,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const KOREAN_PUNGRYUDO_HWARANG_ENGINE_VERSION = '2.2.0';
+export const KOREAN_PUNGRYUDO_HWARANG_ENGINE_VERSION = '2.3.0';
 
 export interface HwarangPrecept {
   id: string;
@@ -63,6 +63,7 @@ export interface KoreanPungryudoHwarangReport {
   interpretiveBoundary: string;
   ritualAction: string;
   reflectionFocus: string;
+  reflectiveQuestion: string;
 }
 
 const HWARANG_PRECEPTS_BASE: Omit<HwarangPrecept, 'preceptScore'>[] = [
@@ -140,7 +141,7 @@ function getTemporalPungryuRhythm(now: Date) {
           : '겨울 · 선도 응축기 (내면의 기백을 조용히 갈고닦는 시기)';
 
   return {
-    kstTimeLabel: `${y}-${m}-${d} ${hh}:${mm} KST`,
+    kstTimeLabel: `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`,
     hwarangWatchWindow,
     seasonalMountainTone,
     temporalGuidance: `${hwarangWatchWindow} · ${seasonalMountainTone}의 호흡에 맞추어 풍류의 여유와 오계의 중심을 함께 지키십시오.`,
@@ -241,6 +242,9 @@ export function calculateKoreanPungryudoHwarang(
   const reflectionFocus = contextText.trim()
     ? `"${contextText.trim()}" 앞에서 나는 ${dominantPrecept.nameKo}의 중심을 어떻게 지킬 수 있는가?`
     : `오늘 마주한 선택에서 풍류도의 유연함과 ${dominantPrecept.nameKo}의 기개는 어떻게 만나는가?`;
+  const reflectiveQuestion = contextText.trim()
+    ? `지금 "${contextText.trim()}" 앞에서 ${dominantPrecept.nameKo}(${dominantPrecept.hanja})의 기개와 풍류도의 유연함을 살려 내가 먼저 실행할 한 가지는 무엇인가요?`
+    : reflectionFocus;
 
   return {
     engineVersion: KOREAN_PUNGRYUDO_HWARANG_ENGINE_VERSION,
@@ -261,6 +265,7 @@ export function calculateKoreanPungryudoHwarang(
     interpretiveBoundary: '본 결과는 최치원 《난랑비서》 풍류도와 원광법사 《세속오계》의 인문·정신 철학에 기반한 정성적 성찰 안내이며, 확정적 길흉 판정이 아닙니다.',
     ritualAction,
     reflectionFocus,
+    reflectiveQuestion,
   };
 }
 
@@ -280,6 +285,7 @@ export function formatKoreanPungryudoHwarangPrompt(
     `- 화랑도 기개·결단 지침: ${report.hwarangCourageGuidance}`,
     `- 실천 의례(Ritual Action): ${report.ritualAction}`,
     `- 성찰 초점(Reflection Focus): ${report.reflectionFocus}`,
+    `- 질문 맞춤 성찰 질문: ${report.reflectiveQuestion}`,
     `- 해석 경계: ${report.boundaryNotice}`,
   ].join('\n');
 }

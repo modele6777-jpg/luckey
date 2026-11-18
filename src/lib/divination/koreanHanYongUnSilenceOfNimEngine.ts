@@ -5,7 +5,7 @@
  * @version LUCKEY-HAN-YONG-UN-SILENCE-OF-NIM-v2.0.0
  */
 
-export const KOREAN_HAN_YONG_UN_SILENCE_OF_NIM_VERSION = 'LUCKEY-HAN-YONG-UN-SILENCE-OF-NIM-v2.3.0';
+export const KOREAN_HAN_YONG_UN_SILENCE_OF_NIM_VERSION = 'LUCKEY-HAN-YONG-UN-SILENCE-OF-NIM-v2.4.0';
 
 export interface HanYongUnTheme {
   themeKey: string;
@@ -31,6 +31,7 @@ export interface KoreanHanYongUnSilenceOfNimResult {
   interpretiveBoundary: string;
   ritualAction: string;
   reflectionFocus: string;
+  reflectiveQuestion: string;
 }
 
 export const HAN_YONG_UN_THEMES: HanYongUnTheme[] = [
@@ -89,6 +90,9 @@ export function calculateKoreanHanYongUnSilenceOfNim(query?: string, now: Date =
   const reflectionFocus = query?.trim()
     ? `'${query.trim()}' 앞에서 나의 가치와 안전, 책임을 함께 살피며 오늘 스스로 선택할 작은 돌봄은 무엇인가요?`
     : `지금 내 마음의 감정을 서두르지 않고, 오늘 나 자신과 곁의 사람에게 건넬 수 있는 정직한 배려는 무엇인가요?`;
+  const reflectiveQuestion = query?.trim()
+    ? `지금 "${query.trim()}" 앞에서 《${activeHanYongUnTheme.themeTitleKo}》의 시선으로 나의 가치·안전·배려를 함께 지키기 위해 먼저 선택할 한 가지는 무엇인가요?`
+    : reflectionFocus;
 
   return {
     engineVersion: KOREAN_HAN_YONG_UN_SILENCE_OF_NIM_VERSION,
@@ -102,6 +106,7 @@ export function calculateKoreanHanYongUnSilenceOfNim(query?: string, now: Date =
     interpretiveBoundary: '이는 문학적 해석을 위한 참고일 뿐, 개인 점수·진단·관계 결과·미래 예측이 아닙니다.',
     ritualAction,
     reflectionFocus,
+    reflectiveQuestion,
   };
 }
 
@@ -124,6 +129,7 @@ export function formatKoreanHanYongUnSilenceOfNimPrompt(res: KoreanHanYongUnSile
   lines.push(
     `- 실천 의례(Ritual Action): ${res.ritualAction}`,
     `- 성찰 초점(Reflection Focus): ${res.reflectionFocus}`,
+    `- 질문 맞춤 성찰 질문: ${res.reflectiveQuestion}`,
   );
   return lines.join('\n');
 }

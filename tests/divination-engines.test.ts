@@ -11779,3 +11779,30 @@ test('단군 천부인·동학 시천주·격암유록 v1.7.867 질문 반응형
   const ggPrompt = formatGyeogamYurokProphecyPrompt(gg);
   assert.ok(ggPrompt.includes('+09:00') && ggPrompt.includes('질문 맞춤 성찰 질문') && ggPrompt.includes('해석 경계'));
 });
+
+test('만해 한용운·풍류도 화랑오계·원효 화쟁 v1.7.869 질문 반응형 성찰 질문·+09:00 KST 회귀 검증', () => {
+  const profile = { basic: { name: '제제', birthdate: '1994-01-24', birthtime: '12:00', gender: 'male' } } as any;
+  const now = new Date('2026-11-19T05:30:00+09:00');
+  const query = '갈등과 부담 속에서도 중심을 잃지 않고 나아가고 싶어요';
+
+  const hy = calculateKoreanHanYongUnSilenceOfNim(query, now);
+  assert.equal(hy.engineVersion, KOREAN_HAN_YONG_UN_SILENCE_OF_NIM_VERSION);
+  assert.match(hy.calculatedAtKst, /\+09:00/);
+  assert.ok(hy.reflectiveQuestion.includes(query));
+  const hyPrompt = formatKoreanHanYongUnSilenceOfNimPrompt(hy);
+  assert.ok(hyPrompt.includes('질문 맞춤 성찰 질문') && hyPrompt.includes('해석 경계'));
+
+  const pr = calculateKoreanPungryudoHwarang({ profile, question: query, now });
+  assert.equal(pr.engineVersion, KOREAN_PUNGRYUDO_HWARANG_ENGINE_VERSION);
+  assert.match(pr.calculatedAtKst, /\+09:00/);
+  assert.ok(pr.reflectiveQuestion.includes(query));
+  const prPrompt = formatKoreanPungryudoHwarangPrompt(pr);
+  assert.ok(prPrompt.includes('+09:00') && prPrompt.includes('질문 맞춤 성찰 질문') && prPrompt.includes('해석 경계'));
+
+  const wh = calculateWonhyoHwajaeng(profile, query, now);
+  assert.equal(wh.engineVersion, WONHYO_HWAJAENG_VERSION);
+  assert.match(wh.calculatedAtKst, /\+09:00/);
+  assert.ok(wh.reflectiveQuestion.includes(query));
+  const whPrompt = formatWonhyoHwajaengPrompt(wh);
+  assert.ok(whPrompt.includes('+09:00') && whPrompt.includes('질문 맞춤 성찰 질문') && whPrompt.includes('해석 경계'));
+});

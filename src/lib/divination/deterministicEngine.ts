@@ -4862,7 +4862,7 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'kabbalisticZoharSoul', nameKo: '카발라 조하르 5대 영혼 층위', icon: '🕎', category: 'deep_master', summary: '카발라 《조하르》 5대 영혼 층위(네페쉬~예히다)와 티쿤(회복)·클리포트(껍질) 정화 원리로 마음의 그릇을 비우는 관점' },
   { key: 'romanStoicProhairesis', nameKo: '로마 스토아 통제이분법', icon: '🏛️', category: 'deep_master', summary: '스토아 철학의 통제 이분법과 프로하이레시스로 내 소관 밖의 불안을 비우고 지금 선택할 태도를 세우는 관점' },
   { key: 'patanjaliAshtangaYoga', nameKo: '파탄잘리 요가 8지칙', icon: '🧘', category: 'deep_master' },
-  { key: 'koreanPungryudoHwarang', nameKo: '신라 풍류도 화랑오계', icon: '🌸', category: 'deep_master' },
+  { key: 'koreanPungryudoHwarang', nameKo: '신라 풍류도 화랑오계', icon: '🌸', category: 'deep_master', summary: '최치원 《난랑비서》 풍류도와 원광법사 세속오계(사군이충·교우이신·임전무퇴 등)로 기개와 상생의 균형을 비추는 관점' },
   { key: 'persianAttarSevenValleys', nameKo: '페르시아 아타르 새들의 회의 7대 계곡', icon: '🕊️', category: 'deep_master', summary: '아타르 《새들의 회의》 7대 영혼의 계곡과 시무르그 거울 상징으로 집착을 비우고 본래 자아를 돌아보는 관점' },
   { key: 'hermeticPoimandres', nameKo: '헤르메스주의 포이만드레스 8대 천계', icon: '🌟', category: 'deep_master', summary: '7대 행성 구체의 세속 정념을 벗고 제8천 옥도아드의 누스(신성 지성)로 깨어나는 상승 과정을 비춥니다.' },
   { key: 'kashmirShaivismSpanda', nameKo: '카슈미르 시바파 스판다 우주 맥동', icon: '🔱', category: 'deep_master', summary: '카슈미르 시바파 트리카 5대 신성 행위와 스판다(순수 의식 맥동)·프라티야비즈냐(본성 재인식)로 내면 중심을 비추는 관점' },
