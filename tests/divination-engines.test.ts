@@ -2450,9 +2450,11 @@ test('Iching 384 Yao Engine: 주역 384효 동효 & 착종복잡 4대 변괘 및
   assert(res.calculatedAtKst.endsWith('KST'));
   assert(Boolean(res.ichingSynthesisMatrix?.integratedAction));
   assert(res.interpretiveBoundary.length > 0);
+  assert(res.ritualAction.length > 0 && res.reflectionFocus.length > 0);
   const prompt = formatIching384YaoPrompt(res);
   assert(prompt.includes(ICHING_384YAO_ENGINE_VERSION));
   assert(prompt.includes('교차 매트릭스') && prompt.includes('해석 경계'));
+  assert(prompt.includes(res.ritualAction));
 });
 
 test('Deep Work Flow Engine: 딥워크 몰입 아키타입 및 최적 환경 매트릭스 검증', () => {
@@ -2727,10 +2729,12 @@ test('Ikigai Destiny Compass Engine: 이키가이 천직 4대 교집합 & 소명
   assert(res.monetizationPath.phase1Validation.length > 0);
   assert(res.calculatedAtKst.endsWith('KST'));
   assert(Boolean(res.ikigaiSynthesisMatrix?.integratedAction));
+  assert(res.ritualAction.length > 0 && res.reflectionFocus.length > 0);
   const prompt = formatIkigaiDestinyCompassPrompt(res);
   assert(prompt.includes('LUCKEY 이키가이 천직 4대 교집합 & 소명 나침반'));
   assert(prompt.includes(res.soulCallingTitle));
   assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes(res.ritualAction));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });
@@ -5130,9 +5134,11 @@ test('Ibn Arabi Wahdat al-Wujud Heart Wisdom Engine: calculates prophetic heart 
   assert(rep.heartPurityBarakah >= 0 && rep.heartPurityBarakah <= 100);
   assert(rep.dominantWisdom.prophetName.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatIbnArabiWahdatAlWujudPrompt(rep);
   assert(prompt.includes('이븐 아라비 존재의 단일성(Wahdat al-Wujud) 심장 영지 실측 데이터'));
   assert(prompt.includes(rep.dominantWisdom.prophetName));
+  assert(prompt.includes(rep.ritualAction));
 });
 
 test('Chonggamnok Ten Sanctuaries Engine: calculates geomantic sanctuaries, gonggong-euleul virtue and sanctuary shield', () => {

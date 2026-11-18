@@ -1,10 +1,10 @@
 {
-  "version": "1.7.819",
-  "builtAt": "2026-11-18T09:20:00+09:00",
-  "summary": "홍국기문, 황제명리 오운육기, 휴먼 디자인 3대 엔진 실천 의례 및 성찰 질문 표준 연동(v1.7.819)",
+  "version": "1.7.820",
+  "builtAt": "2026-11-18T09:30:00+09:00",
+  "summary": "이븐 아라비, 주역 384효, 이키가이 3대 엔진 실천 의례 및 성찰 질문 표준 연동(v1.7.820)",
   "items": [
-    "조선 정통 홍국기문 9궁 포국 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동",
-    "황제명리 오운육기 천기 기상의학 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동",
-    "휴먼 디자인 9대 에너지 센터 바디그래프 엔진(v2.3.0): ritualAction·reflectionFocus 표준 필드 연동"
+    "안달루시아 수피즘 이븐 아라비 심장 영지 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동",
+    "주역 384효 동효·착종복잡 4대 변괘 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동",
+    "이키가이 천직 4대 교집합 소명 나침반 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동"
   ]
 }
