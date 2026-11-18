@@ -1,10 +1,10 @@
 {
-  "version": "1.7.832",
-  "builtAt": "2026-11-18T11:30:00+09:00",
-  "summary": "만해 한용운 님의 침묵, 교산 허균 홍길동전, 구암 허준 동의보감 3대 엔진 실천 의례 및 성찰 질문 표준 연동(v1.7.832)",
+  "version": "1.7.833",
+  "builtAt": "2026-11-18T11:40:00+09:00",
+  "summary": "혜초 왕오천축국전, 일연 삼국유사, 장보고 청해진 3대 엔진 실천 의례 및 성찰 질문 표준 연동(v1.7.833)",
   "items": [
-    "만해 한용운 《님의 침묵》 문학 성찰 엔진(v2.3.0): ritualAction·reflectionFocus 표준 필드 연동",
-    "교산 허균 《홍길동전·유재론·호민론》 개혁 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동",
-    "구암 허준 《동의보감》 통즉불통·치미병 양생 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동"
+    "신라 혜초 《왕오천축국전》 순례 개척 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동",
+    "보각국사 일연 《삼국유사》 서정·관용 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동",
+    "해상왕 장보고 《청해진》 신의 개척 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동"
   ]
 }

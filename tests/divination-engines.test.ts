@@ -6763,10 +6763,12 @@ test('Jang Bogo Cheonghaejin Maritime Pioneer Engine: calculates Maritime Vision
   assert(rep.activeCheonghaeTheme.themeTitleHanja.length > 0);
   assert(rep.calculatedAtKst.endsWith('KST'));
   assert(Boolean(rep.cheonghaeSynthesisMatrix?.integratedAction));
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatJangBogoCheonghaejinMaritimePioneerPrompt(rep);
   assert(prompt.includes('해상왕 장보고 《청해진》 글로벌 해상무역 & 신의 개척 지표'));
   assert(prompt.includes(rep.activeCheonghaeTheme.themeTitleKo));
   assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes(rep.ritualAction));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });
@@ -7225,10 +7227,12 @@ test('Hyecho Wang Ocheonchukgukjeon Engine: calculates Pilgrimage Pioneer Spirit
   assert(rep.activeHyechoTheme.themeTitleKo.length > 0);
   assert(rep.calculatedAtKst.endsWith('KST'));
   assert(Boolean(rep.hyechoSynthesisMatrix?.integratedAction));
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatHyechoWangOcheonchukgukjeonPrompt(rep);
   assert(prompt.includes('혜초 《왕오천축국전》 구도 순례 & 역경 극복 지표'));
   assert(prompt.includes(rep.activeHyechoTheme.themeTitleKo));
   assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes(rep.ritualAction));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });
@@ -8483,10 +8487,12 @@ test('Ilyeon Samguk Yusa Engine: calculates Hongik Ingan Pride, Hyangga Healing,
   assert(rep.activeIlyeonTheme.themeTitleKo.length > 0);
   assert(rep.calculatedAtKst.endsWith('KST'));
   assert(Boolean(rep.ilyeonSynthesisMatrix?.integratedAction));
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatKoreanIlyeonSamgukYusaPrompt(rep);
   assert(prompt.includes('보각국사 일연 《삼국유사》 홍익인간 자주 자긍심·향가 치유·처용 관용 지표'));
   assert(prompt.includes(rep.activeIlyeonTheme.themeTitleKo));
   assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes(rep.ritualAction));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });
