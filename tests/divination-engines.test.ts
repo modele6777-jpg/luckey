@@ -11935,3 +11935,30 @@ test('태을신수·태국 호라삿·토정비결 v1.7.875 질문 반응형 성
   const tjPrompt = formatTojeongPrompt(tj);
   assert.ok(tjPrompt.includes('+09:00') && tjPrompt.includes('질문 맞춤 성찰 질문') && tjPrompt.includes('해석 경계'));
 });
+
+test('아우구스티누스·위그드라실·매화역수 v1.7.877 질문 반응형 성찰 질문·+09:00 KST 회귀 검증', () => {
+  const profile = { basic: { name: '제제', birthdate: '1994-01-24', birthtime: '12:00', gender: 'male' } } as any;
+  const now = new Date('2026-11-19T06:10:00+09:00');
+  const query = '마음이 흔들릴 때 중심을 잡고 나아갈 기준을 세우고 싶어요';
+
+  const aug = calculateAugustineConfessionesIlluminatio(profile, query, now);
+  assert.equal(aug.engineVersion, NORTH_AFRICAN_AUGUSTINE_VERSION);
+  assert.match(aug.calculatedAtKst, /\+09:00/);
+  assert.ok(aug.reflectiveQuestion?.includes(query));
+  const augPrompt = formatAugustineConfessionesIlluminatioPrompt(aug);
+  assert.ok(augPrompt.includes('+09:00') && augPrompt.includes('질문 맞춤 성찰 질문') && augPrompt.includes('해석 경계'));
+
+  const ygg = calculateEddicYggdrasil(profile, query, now);
+  assert.equal(ygg.engineVersion, EDDIC_YGGDRASIL_VERSION);
+  assert.match(ygg.calculatedAtKst, /\+09:00/);
+  assert.ok(ygg.reflectiveQuestion?.includes(query));
+  const yggPrompt = formatEddicYggdrasilPrompt(ygg);
+  assert.ok(yggPrompt.includes('+09:00') && yggPrompt.includes('질문 맞춤 성찰 질문') && yggPrompt.includes('해석 경계'));
+
+  const mh = calculatePlumBlossomMeihuaOracle({ profile, question: query, now });
+  assert.equal(mh.engineVersion, PLUM_BLOSSOM_MEIHUA_ORACLE_ENGINE_VERSION);
+  assert.match(mh.calculatedAtKst, /\+09:00/);
+  assert.ok(mh.reflectiveQuestion?.includes(query));
+  const mhPrompt = formatPlumBlossomMeihuaOraclePrompt(mh);
+  assert.ok(mhPrompt.includes('+09:00') && mhPrompt.includes('질문 맞춤 성찰 질문') && mhPrompt.includes('해석 경계'));
+});

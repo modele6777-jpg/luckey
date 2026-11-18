@@ -14,7 +14,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const EDDIC_YGGDRASIL_VERSION = 'LUCKEY-EDDIC-YGGDRASIL-v2.1.0';
+export const EDDIC_YGGDRASIL_VERSION = 'LUCKEY-EDDIC-YGGDRASIL-v2.2.0';
 
 export interface YggdrasilRealmStage {
   stageLevel: number;
@@ -50,6 +50,7 @@ export interface EddicYggdrasilResult {
     alignmentState: string;
     integratedAction: string;
   };
+  reflectiveQuestion?: string;
   interpretiveBoundary: string;
 }
 
@@ -92,7 +93,7 @@ function getKstDateString(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
 }
 
 function hashSeed(seedStr: string): number {
@@ -132,11 +133,15 @@ export function calculateEddicYggdrasil(
   const composite = Math.round(
     (yggdrasilCosmicAxisStability + urdarbrunnrFateWeavingForce + mimirSpringWisdomDepth + nineRealmsResonanceEquilibrium + gimleGoldenRenewalPower) / 5
   );
+  const q = query?.trim();
   const eddicSynthesisMatrix = {
     dominantTension: `${activeRealmStage.stageNameOldNorse} ↔ ${primaryNorseVirtue.norseMotto}`,
     alignmentState: describeEddicStage(composite),
-    integratedAction: `${primaryNorseVirtue.actionableDirective}${query?.trim() ? ` [질문 맥락: ${query.trim()}]` : ''}`,
+    integratedAction: `${primaryNorseVirtue.actionableDirective}${q ? ` [질문 맥락: ${q}]` : ''}`,
   };
+  const reflectiveQuestion = q
+    ? `지금 "${q}" 앞에서 세계수 위그드라실의 '${activeRealmStage.stageNameKo}(${activeRealmStage.stageNameOldNorse})' 품계와 '${primaryNorseVirtue.virtueNameKo}'의 덕목을 품고 내가 지켜야 할 뿌리는 무엇인가요?`
+    : `'${activeRealmStage.stageNameKo}'의 자리에서 우르드의 샘과 미미르의 샘이 비추는 오늘 내 몫의 실천 한 가지는 무엇인가요?`;
 
   return {
     engineVersion: EDDIC_YGGDRASIL_VERSION,
@@ -150,6 +155,7 @@ export function calculateEddicYggdrasil(
     primaryNorseVirtue,
     voluspaEpiphany,
     eddicSynthesisMatrix,
+    reflectiveQuestion,
     interpretiveBoundary: '본 고대 북유럽 고에다 위그드라실 리포트는 노르드 신화·철학 상징 체계에 기반한 정성적 성찰 안내이며, 확정적 미래 예언이 아닙니다.',
   };
 }
@@ -176,6 +182,9 @@ export function formatEddicYggdrasilPrompt(result: EddicYggdrasilResult): string
       `- 교차 매트릭스 [핵심 긴장: ${result.eddicSynthesisMatrix.dominantTension} | 조율 상태: ${result.eddicSynthesisMatrix.alignmentState}]`,
       `- 통합 실천: ${result.eddicSynthesisMatrix.integratedAction}`,
     );
+  }
+  if (result.reflectiveQuestion) {
+    lines.push(`- 질문 맞춤 성찰 질문: ${result.reflectiveQuestion}`);
   }
   lines.push(`- 해석 경계: ${result.interpretiveBoundary}`);
   return lines.join('\n');
