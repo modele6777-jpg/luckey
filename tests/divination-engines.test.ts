@@ -11462,3 +11462,30 @@ test('몽테뉴 수상록·몽테스키외 법의 정신·빅토르 위고 레 �
   const hugoPrompt = formatFrenchVictorHugoLesMiserablesPrompt(hugo);
   assert.ok(hugoPrompt.includes('+09:00') && hugoPrompt.includes('질문 맞춤 성찰 질문') && hugoPrompt.includes('해석 경계'));
 });
+
+test('폴 리쾨르·알베르트 슈바이처·에드문트 후설 v1.7.853 질문 반응형 성찰 질문·+09:00 KST 회귀 검증', () => {
+  const profile = { basic: { name: '제제', birthdate: '1994-01-24', birthtime: '12:00', gender: 'male' } } as any;
+  const now = new Date('2026-11-18T23:30:00+09:00');
+  const query = '선입견을 내려놓고 타인과 내 삶의 본질을 따뜻하게 마주하고 싶어요';
+
+  const ricoeur = calculateFrenchPaulRicoeurNarrativeIdentityHealing(profile, query, now);
+  assert.equal(ricoeur.engineVersion, FRENCH_PAUL_RICOEUR_NARRATIVE_IDENTITY_HEALING_VERSION);
+  assert.match(ricoeur.calculatedAtKst, /\+09:00/);
+  assert.ok(ricoeur.reflectiveQuestion.includes(query));
+  const ricoeurPrompt = formatFrenchPaulRicoeurNarrativeIdentityHealingPrompt(ricoeur);
+  assert.ok(ricoeurPrompt.includes('+09:00') && ricoeurPrompt.includes('질문 맞춤 성찰 질문') && ricoeurPrompt.includes('해석 경계'));
+
+  const schweitzer = calculateGermanAlbertSchweitzerReverenceForLife(profile, query, now);
+  assert.equal(schweitzer.engineVersion, GERMAN_ALBERT_SCHWEITZER_VERSION);
+  assert.match(schweitzer.calculatedAtKst, /\+09:00/);
+  assert.ok(schweitzer.reflectiveQuestion.includes(query));
+  const schweitzerPrompt = formatGermanAlbertSchweitzerReverenceForLifePrompt(schweitzer);
+  assert.ok(schweitzerPrompt.includes('+09:00') && schweitzerPrompt.includes('질문 맞춤 성찰 질문') && schweitzerPrompt.includes('해석 경계'));
+
+  const husserl = calculateGermanEdmundHusserlPhenomenologicalReduction(profile, query, now);
+  assert.equal(husserl.engineVersion, GERMAN_EDMUND_HUSSERL_PHENOMENOLOGY_VERSION);
+  assert.match(husserl.calculatedAtKst, /\+09:00/);
+  assert.ok(husserl.reflectiveQuestion.includes(query));
+  const husserlPrompt = formatGermanEdmundHusserlPhenomenologicalReductionPrompt(husserl);
+  assert.ok(husserlPrompt.includes('+09:00') && husserlPrompt.includes('질문 맞춤 성찰 질문') && husserlPrompt.includes('해석 경계'));
+});

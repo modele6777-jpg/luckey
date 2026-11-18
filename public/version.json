@@ -1,10 +1,10 @@
 {
-  "version": "1.7.852",
-  "builtAt": "2026-11-18T23:20:00+09:00",
-  "summary": "몽테뉴 수상록·몽테스키외 법의 정신·빅토르 위고 레 미제라블 3대 엔진 성찰 질문·+09:00 KST·카탈로그 뜻 보강(v1.7.852)",
+  "version": "1.7.853",
+  "builtAt": "2026-11-18T23:30:00+09:00",
+  "summary": "폴 리쾨르·알베르트 슈바이처·에드문트 후설 3대 엔진 질문 반응형 성찰 질문 보강(v1.7.853)",
   "items": [
-    "몽테뉴 수상록(v2.3.0)·몽테스키외 법의 정신(v2.4.0)·빅토르 위고 레 미제라블(v2.4.0): 질문 반응형 reflectiveQuestion 및 프롬프트 연동",
-    "몽테뉴 수상록 엔진 calculatedAtKst +09:00 KST 표준 표기 통일",
-    "deterministicEngine.ts: frenchMontaigneEssaisWisdom 카탈로그 한 줄 summary 등록"
+    "폴 리쾨르 서사적 정체성(v2.4.0)·알베르트 슈바이처 생명에 대한 경외(v2.4.0)·에드문트 후설 현상학적 환원(v2.4.0): 질문 반응형 reflectiveQuestion 및 프롬프트 연동",
+    "세 엔진 모두 ALL_DCE_ENGINES 카탈로그 summary 기존 완비 및 +09:00 KST 표준 표기 검증",
+    "divination-engines.test.ts: 폴 리쾨르·슈바이처·후설 성찰 질문 회귀 테스트 추가"
   ]
 }

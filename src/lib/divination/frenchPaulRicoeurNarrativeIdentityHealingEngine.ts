@@ -13,7 +13,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const FRENCH_PAUL_RICOEUR_NARRATIVE_IDENTITY_HEALING_VERSION = 'LUCKEY-PAUL-RICOEUR-NARRATIVE-IDENTITY-HEALING-v2.3.0';
+export const FRENCH_PAUL_RICOEUR_NARRATIVE_IDENTITY_HEALING_VERSION = 'LUCKEY-PAUL-RICOEUR-NARRATIVE-IDENTITY-HEALING-v2.4.0';
 
 export interface RicoeurTheme {
   themeKey: string;
@@ -54,6 +54,7 @@ export interface FrenchPaulRicoeurNarrativeIdentityHealingResult {
   };
   ritualAction: string;
   reflectionFocus: string;
+  reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
 
@@ -177,6 +178,11 @@ export function calculateFrenchPaulRicoeurNarrativeIdentityHealing(
     cautionNotice: '과거의 상처나 한 시점의 좌절을 인생 전체의 고정된 결론으로 단정 짓지 마십시오.',
   };
 
+  const trimmedQuery = query?.trim();
+  const reflectiveQuestion = trimmedQuery
+    ? `"${trimmedQuery}"라는 이야기를 새로 엮어가는 길목에서 '${activeRicoeurTheme.themeTitleKo}'의 시선으로 본다면, 과거의 매듭 대신 오늘 새로 쓰고 싶은 한 문장은 무엇인가요?`
+    : `'${activeRicoeurTheme.themeTitleKo}'의 관점에서 지금 내 삶의 이야기에 따뜻한 화음을 더하기 위해 오늘 건네고 싶은 한 걸음은 무엇인가요?`;
+
   return {
     engineVersion: FRENCH_PAUL_RICOEUR_NARRATIVE_IDENTITY_HEALING_VERSION,
     calculatedAtKst: kstTimeLabel,
@@ -194,6 +200,7 @@ export function calculateFrenchPaulRicoeurNarrativeIdentityHealing(
     },
     ritualAction: focalRicoeurAphorism.actionGuidance,
     reflectionFocus: activeRicoeurTheme.practicalCounsel,
+    reflectiveQuestion,
     interpretiveBoundary: '폴 리쾨르의 서사적 정체성과 화해·용서 해석학 상징을 빌린 정성적 치유 성찰 관점이며, 심리 진단이나 미래 단정이 아닙니다.',
   };
 }
@@ -217,6 +224,7 @@ export function formatFrenchPaulRicoeurNarrativeIdentityHealingPrompt(
     `- 원전 출처: [${res.focalRicoeurAphorism.sourceContext}]`,
     `- 구체적 실천 지침: ${res.focalRicoeurAphorism.actionGuidance}`,
     `- 종합 리쾨르 권면: ${res.ricoeurComprehensiveGuidance.philosophicalCounsel}`,
+    `- 질문 맞춤 성찰 질문: ${res.reflectiveQuestion}`,
     `- 해석 경계: 폴 리쾨르의 서사적 정체성과 화해·용서 해석학 상징을 빌린 정성적 치유 성찰 관점이며, 심리 진단이나 미래 단정이 아닙니다.`,
   ].join('\n');
 }
