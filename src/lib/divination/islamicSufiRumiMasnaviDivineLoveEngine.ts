@@ -20,7 +20,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const RUMI_MASNAVI_SUFI_VERSION = 'LUCKEY-RUMI-MASNAVI-SUFI-v2.2.0';
+export const RUMI_MASNAVI_SUFI_VERSION = 'LUCKEY-RUMI-MASNAVI-SUFI-v2.3.0';
 
 export type RumiQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -65,6 +65,8 @@ export interface RumiMasnaviDivineLoveResult {
   dailyPracticeRitual: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
+  ritualAction: string;
+  reflectionFocus: string;
   rumiMysticCounsel: {
     counselTitle: string;
     mysticGuidance: string;
@@ -294,6 +296,8 @@ export function calculateRumiMasnaviDivineLove(
     dailyPracticeRitual: topicExtras.dailyPracticeRitual,
     reflectiveQuestion: topicExtras.reflectiveQuestion,
     interpretiveBoundary,
+    ritualAction: `[${activeSpiritualStation.stationNameKo}] ${topicExtras.dailyPracticeRitual}`,
+    reflectionFocus: topicExtras.reflectiveQuestion,
     rumiMysticCounsel: {
       counselTitle,
       mysticGuidance,
@@ -321,6 +325,8 @@ export function formatRumiMasnaviDivineLovePrompt(res: RumiMasnaviDivineLoveResu
     `- 영적 통찰: ${res.focalPoeticWisdom.wisdomInsight}`,
     `- KST 시공간 리듬: ${res.temporalSamaRhythm.kstWindow} (${res.temporalSamaRhythm.seasonTone}, ${res.temporalSamaRhythm.samaFocus}, ${res.temporalSamaRhythm.rhythmStageKo}) — ${res.temporalSamaRhythm.rhythmGuidance}`,
     `- 오늘의 실천 의례: ${res.dailyPracticeRitual}`,
+    `- 실천 의례(Ritual Action): ${res.ritualAction}`,
+    `- 성찰 초점(Reflection Focus): ${res.reflectionFocus}`,
     `- 성찰 질문: ${res.reflectiveQuestion}`,
     `- 신비주의 수양 지침: ${res.rumiMysticCounsel.mysticGuidance}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,

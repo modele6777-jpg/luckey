@@ -6,7 +6,7 @@
  * @version LUCKEY-JOYCE-ULYSSES-EPIPHANY-v2.2.0
  */
 
-export const IRISH_JAMES_JOYCE_ULYSSES_EPIPHANY_VERSION = 'LUCKEY-JOYCE-ULYSSES-EPIPHANY-v2.2.0';
+export const IRISH_JAMES_JOYCE_ULYSSES_EPIPHANY_VERSION = 'LUCKEY-JOYCE-ULYSSES-EPIPHANY-v2.3.0';
 
 function toKstIso(now: Date): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -36,6 +36,8 @@ export interface IrishJamesJoyceUlyssesEpiphanyResult {
   };
   boundaryNotice: string;
   interpretiveBoundary: string;
+  ritualAction: string;
+  reflectionFocus: string;
 }
 
 export const JOYCE_THEMES: JoyceTheme[] = [
@@ -91,6 +93,8 @@ export function calculateIrishJamesJoyceUlyssesEpiphany(query?: string, nowArg?:
     integratedAction: activeJoyceTheme.practicalCounsel,
   };
   const boundaryNotice = '이는 제임스 조이스의 문학 작품을 통한 성찰적 참고일 뿐, 개인 점수·심리 진단·확정적 미래 예측이 아닙니다.';
+  const ritualAction = `[${activeJoyceTheme.themeTitleKo}] ${activeJoyceTheme.practicalCounsel}`;
+  const reflectionFocus = `오늘 일상에서 '${activeJoyceTheme.themeTitleKo}'의 시선으로 다시 살펴볼 수 있는 작은 장면 하나는 무엇인가요?`;
   return {
     engineVersion: IRISH_JAMES_JOYCE_ULYSSES_EPIPHANY_VERSION,
     calculatedAtKst,
@@ -102,6 +106,8 @@ export function calculateIrishJamesJoyceUlyssesEpiphany(query?: string, nowArg?:
     joyceSynthesisMatrix,
     boundaryNotice,
     interpretiveBoundary: boundaryNotice,
+    ritualAction,
+    reflectionFocus,
   };
 }
 
@@ -113,6 +119,8 @@ export function formatIrishJamesJoyceUlyssesEpiphanyPrompt(res: IrishJamesJoyceU
     `- 질문과 관련해 살펴볼 주제: ${res.activeJoyceTheme.themeTitleKo}`,
     `- 작품 맥락: ${res.activeJoyceTheme.literaryInsight}`,
     `- 조심스럽게 적용할 제안: ${res.activeJoyceTheme.practicalCounsel}`,
+    `- 실천 의례(Ritual Action): ${res.ritualAction}`,
+    `- 성찰 초점(Reflection Focus): ${res.reflectionFocus}`,
     `- 해석 경계: ${res.boundaryNotice}`,
   ];
   if (res.joyceSynthesisMatrix) {

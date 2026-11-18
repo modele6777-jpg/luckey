@@ -6242,9 +6242,11 @@ test('Rumi Masnavi Divine Love Engine: calculates Ishq divine love, Qalb purific
   assert(rep.samaWhirlingTranquilityScore >= 0 && rep.samaWhirlingTranquilityScore <= 100);
   assert(rep.woundLightWisdomScore >= 0 && rep.woundLightWisdomScore <= 100);
   assert(rep.activeSpiritualStation.stationNameArabic.length > 0);
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatRumiMasnaviDivineLovePrompt(rep);
   assert(prompt.includes('루미 마스나비 & 수피즘 신성한 사랑 지표'));
   assert(prompt.includes(rep.activeSpiritualStation.stationNameKo));
+  assert(prompt.includes(rep.ritualAction));
 });
 
 test('Uisang Hwaeom Ilseung Beopgyedo Engine: calculates Beopseong Wonnyung, Sangjeuk Sangip, Micro-Macro Cosmos, and First Mind Awakening', () => {
@@ -6820,10 +6822,12 @@ test('Dante Alighieri Divine Comedy Ascent Engine: calculates Wayfinding, Infern
   assert(rep.activeDanteTheme.themeTitleKo.length > 0);
   assert(rep.calculatedAtKst.endsWith('KST'));
   assert(Boolean(rep.danteSynthesisMatrix?.integratedAction));
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatDanteAlighieriDivineComedyAscentPrompt(rep);
   assert(prompt.includes('단테 알리기에리 《신곡》 영혼의 상승 & 지옥·연옥·천국 지혜 지표'));
   assert(prompt.includes(rep.activeDanteTheme.themeTitleKo));
   assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes(rep.ritualAction));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });
@@ -8505,9 +8509,11 @@ test('James Joyce engine selects a qualitative literary perspective from the que
   assert.equal(Object.hasOwn(rep, 'calculatedAtKst'), false);
   assert(Boolean(rep.joyceSynthesisMatrix?.integratedAction));
   assert(rep.interpretiveBoundary.length > 0);
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatIrishJamesJoyceUlyssesEpiphanyPrompt(rep);
   assert.match(prompt, /문학적 참고/);
   assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes(rep.ritualAction));
   assert.doesNotMatch(prompt, /\/100|원전 명대사|길 잃은 고양이|A man of genius/);
 
   const epiphany = calculateIrishJamesJoyceUlyssesEpiphany('일상의 에피파니와 관찰');
