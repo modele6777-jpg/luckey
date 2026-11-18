@@ -1,5 +1,16 @@
 [
   {
+    "version": "1.7.826",
+    "builtAt": "2026-11-18T02:49:36.616Z",
+    "summary": "Render 무료 플랜 배포 설정 추가 및 Render 주소 전용 AI 경로 보호(v1.7.826)",
+    "items": [
+      "render.yaml Blueprint 추가: npm ci --include=dev && npm run build, node dist/server.cjs, /api/health 상태 확인",
+      "Render 실행 시에만 Vercel과 같은 출처 확인을 AI 경로에 적용해 다른 사이트의 API 키 사용 차단",
+      "Render 자체 주소(RENDER_EXTERNAL_HOSTNAME)를 허용 출처로, RENDER_EXTERNAL_URL을 리딩 API 주소로 인식",
+      "README에 Render 배포 방법 추가 및 출처 허용 회귀 테스트 추가"
+    ]
+  },
+  {
     "version": "1.7.825",
     "builtAt": "2026-11-18T01:21:57.352Z",
     "summary": "접기·펼치기 때 팝업이 숨겨진 화면에 붙어 사라지거나 먹통처럼 보이던 문제 수정(v1.7.825)",
