@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.7.865",
+    "builtAt": "2026-11-19T05:10:00+09:00",
+    "summary": "카발라·카르믹 시나스트리·천부경 81자 3대 엔진 성찰 질문·+09:00 KST·카탈로그 뜻 보강(v1.7.865)",
+    "items": [
+      "정통 카발라 생명나무(v2.3.0)·카르믹 시나스트리(v2.3.0)·천부경 81자(v2.3.0): 질문 반응형 reflectiveQuestion·+09:00 (KST) 표준 표기·프롬프트 연동",
+      "ALL_DCE_ENGINES 카탈로그: karmicSynastry·cheonbugyeongEightyOne 한 줄 summary 등록",
+      "divination-engines.test.ts: 3대 엔진 v1.7.865 회귀 테스트 추가"
+    ]
+  },
+  {
     "version": "1.7.864",
     "builtAt": "2026-11-19T05:02:00+09:00",
     "summary": "이순신 난중일기·율곡 이이 격몽요결·윤동주 하늘과 바람과 별과 시 3대 엔진 실천 의례 및 성찰 질문 표준 연동(v1.7.864)",

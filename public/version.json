@@ -1,10 +1,6 @@
 {
-  "version": "1.7.864",
-  "builtAt": "2026-11-19T05:02:00+09:00",
-  "summary": "이순신 난중일기·율곡 이이 격몽요결·윤동주 하늘과 바람과 별과 시 3대 엔진 실천 의례 및 성찰 질문 표준 연동(v1.7.864)",
-  "items": [
-    "충무공 이순신 《난중일기》 필사즉생 전략 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동",
-    "율곡 이이 《격몽요결》 입지·구용구사 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동",
-    "윤동주 《하늘과 바람과 별과 시》 순결한 양심 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동"
-  ]
+  "version": "1.7.865",
+  "builtAt": "2026-11-19T05:10:00+09:00",
+  "commit": "feat/deepen-kabbalah-karmic-cheonbugyeong-v1.7.865",
+  "notes": "카발라·카르믹 시나스트리·천부경 81자 3대 엔진 성찰 질문·+09:00 KST·카탈로그 뜻 보강 (v1.7.865)"
 }

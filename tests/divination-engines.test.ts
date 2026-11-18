@@ -11700,3 +11700,31 @@ test('홍국기문·주역 384효·주역 마스터 v1.7.863 질문 반응형 �
   const masterPrompt = formatIchingMasterPrompt(master);
   assert.ok(masterPrompt.includes('+09:00') && masterPrompt.includes('질문 맞춤 성찰 질문') && masterPrompt.includes('해석 경계'));
 });
+
+test('카발라·카르믹 시나스트리·천부경 81자 v1.7.865 질문 반응형 성찰 질문·+09:00 KST 회귀 검증', () => {
+  const profile = { basic: { name: '제제', birthdate: '1994-01-24', birthtime: '12:00', gender: 'male' } } as any;
+  const now = new Date('2026-11-19T05:10:00+09:00');
+  const query = '새로운 인연과 일의 균형을 어떻게 잡아야 할까요';
+
+  const kb = calculateKabbalah({ profile, now, question: query });
+  assert.equal(kb.status, 'calculated');
+  assert.equal(kb.engineVersion, KABBALAH_ENGINE_VERSION);
+  assert.match(kb.calculatedAtKst || '', /\+09:00/);
+  assert.ok((kb.reflectiveQuestion || '').includes(query));
+  const kbPrompt = formatKabbalahPrompt(kb);
+  assert.ok(kbPrompt.includes('+09:00') && kbPrompt.includes('질문 맞춤 성찰 질문') && kbPrompt.includes('해석 경계'));
+
+  const ks = calculateKarmicSynastry(profile, null, query, now);
+  assert.equal(ks.engineVersion, KARMIC_SYNASTRY_VERSION);
+  assert.match(ks.calculatedAtKst, /\+09:00/);
+  assert.ok(ks.reflectiveQuestion.includes(query));
+  const ksPrompt = formatKarmicSynastryPrompt(ks);
+  assert.ok(ksPrompt.includes('+09:00') && ksPrompt.includes('질문 맞춤 성찰 질문') && ksPrompt.includes('해석 경계'));
+
+  const cb = calculateKoreanCheonbugyeongEightyOne(profile, now, query);
+  assert.equal(cb.engineVersion, CHEONBUGYEONG_ENGINE_VERSION);
+  assert.match(cb.calculatedAtKst, /\+09:00/);
+  assert.ok(cb.reflectiveQuestion.includes(query));
+  const cbPrompt = formatKoreanCheonbugyeongEightyOnePrompt(cb);
+  assert.ok(cbPrompt.includes('+09:00') && cbPrompt.includes('질문 맞춤 성찰 질문') && cbPrompt.includes('해석 경계'));
+});

@@ -23,7 +23,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const CHEONBUGYEONG_ENGINE_VERSION = '2.2.0';
+export const CHEONBUGYEONG_ENGINE_VERSION = '2.3.0';
 
 export interface CheonbugyeongEightyOneReport {
   engineVersion: string;
@@ -68,6 +68,7 @@ export interface CheonbugyeongEightyOneReport {
   interpretiveBoundary: string;
   ritualAction: string;
   reflectionFocus: string;
+  reflectiveQuestion: string;
 }
 
 function djb2Hash(str: string): number {
@@ -141,7 +142,7 @@ function getTemporalCheonbuRhythm(now: Date) {
           : '겨울 · 인중천지일 응축기 (내면의 정기를 고요히 비축하는 시기)';
 
   return {
-    kstTimeLabel: `${y}-${m}-${d} ${hh}:${mm} KST`,
+    kstTimeLabel: `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`,
     samgeukWatchWindow,
     seasonalSolarTone,
     temporalGuidance: `${samgeukWatchWindow} · ${seasonalSolarTone}의 결에 맞추어 삼일신고 3법(지감·조식·금촉)을 일상에 가볍게 적용하십시오.`,
@@ -214,6 +215,9 @@ export function calculateKoreanCheonbugyeongEightyOne(
 
   const ritualAction = `[${primaryHexagramGua.verseHanja}] ${cheonbuSynthesisMatrix.recommendedAction}`;
   const reflectionFocus = `오늘 '${situationalCheonbuAudit.focusTheme}'의 자리에서 삼망(심·기·신)의 흔들림을 멈추고 본심본태양(本心本太陽)의 중심으로 돌아가기 위해 비울 집착 하나는 무엇인가요?`;
+  const reflectiveQuestion = question
+    ? `지금 "${question}" 앞에서 ${primaryHexagramGua.verseKo}(${primaryHexagramGua.verseHanja})의 중심을 세우기 위해 내가 먼저 내려놓을 집착 하나는 무엇인가요?`
+    : reflectionFocus;
 
   return {
     engineVersion: CHEONBUGYEONG_ENGINE_VERSION,
@@ -236,6 +240,7 @@ export function calculateKoreanCheonbugyeongEightyOne(
     interpretiveBoundary: '본 결과는 《천부경》 81자와 《삼일신고》 3진3망 철학에 기반한 정성적 성찰 안내이며, 확정적 길흉 판정이 아닙니다.',
     ritualAction,
     reflectionFocus,
+    reflectiveQuestion,
   };
 }
 
@@ -252,6 +257,7 @@ export function formatKoreanCheonbugyeongEightyOnePrompt(report: CheonbugyeongEi
     `- 심신 수련 처방: ${report.spiritualCultivationGuidance}`,
     `- 실천 의례(Ritual Action): ${report.ritualAction}`,
     `- 성찰 초점(Reflection Focus): ${report.reflectionFocus}`,
+    `- 질문 맞춤 성찰 질문: ${report.reflectiveQuestion}`,
     `- 해석 경계: ${report.boundaryNotice}`,
   ].join('\n');
 }
