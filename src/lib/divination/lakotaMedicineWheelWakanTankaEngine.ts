@@ -29,7 +29,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const LAKOTA_MEDICINE_WHEEL_ENGINE_VERSION = '2.1.0';
+export const LAKOTA_MEDICINE_WHEEL_ENGINE_VERSION = '2.2.0';
 
 export interface LakotaMedicineWheelReport {
   engineVersion: string;
@@ -72,6 +72,8 @@ export interface LakotaMedicineWheelReport {
     practicalAction: string;
   };
   reflectiveQuestion: string;
+  ritualAction: string;
+  reflectionFocus: string;
   interpretiveBoundary: string;
   wakanTankaSacredGuidance: string;
   lakotaSynthesisMatrix?: {
@@ -200,6 +202,9 @@ export function calculateLakotaMedicineWheel(
     ? `라코타 메디슨 휠의 '${primarySacredDirection.lakotaTerm}'와 '${secondarySacredDirection.lakotaTerm}'를 비추어 볼 때, "${trimmedQuery}"에서 미타쿠예 오야신(모든 친족과의 연결)을 회복하기 위해 필요한 미덕은 무엇인가요?`
     : `지금 성스러운 원(Cangleska Wakan) 안에서, '${primarySacredDirection.totemGuide}'의 시선과 '${secondarySacredDirection.totemGuide}'의 지혜를 함께 살리려면 어느 방향을 먼저 돌봐야 할까요?`;
 
+  const ritualAction = `${activeCardinalVirtue.practicalAction} 오늘 잠시 멈춰 동·남·서·북 네 방향을 마음으로 둘러보며, '${primarySacredDirection.totemGuide}'의 기운으로 연결할 한 사람을 떠올리세요.`;
+  const reflectionFocus = `라코타 메디슨 휠 '${primarySacredDirection.directionKo}'와 '${activeCardinalVirtue.virtueKo}' — 미타쿠예 오야신(모든 친족)과의 연결 회복`;
+
   const interpretiveBoundary = '이 지표는 라코타 수(Lakota Sioux)족의 《와칸 탕카》·성스러운 의약 휠(Medicine Wheel)·미타쿠예 오야신 사상을 방향성과 관계 균형 성찰의 거울로 해석한 것이며, 구체적 사건의 성패를 단정하는 예언이 아닙니다.';
 
   const mitakuyeOyasinInterconnectedness = 65 + ((seed >> 8) % 34);
@@ -237,6 +242,8 @@ export function calculateLakotaMedicineWheel(
     activeCardinalVirtue,
     secondaryCardinalVirtue,
     reflectiveQuestion,
+    ritualAction,
+    reflectionFocus,
     interpretiveBoundary,
     wakanTankaSacredGuidance,
     lakotaSynthesisMatrix,
@@ -256,6 +263,8 @@ export function formatLakotaMedicineWheelPrompt(report: LakotaMedicineWheelRepor
     `- 보조 교차 미덕: ${report.secondaryCardinalVirtue.virtueKo} (${report.secondaryCardinalVirtue.lakotaName})`,
     `  * 실천 지침: ${report.activeCardinalVirtue.practicalAction}`,
     `- 성찰 질문: ${report.reflectiveQuestion}`,
+    `- 실천 의례: ${report.ritualAction}`,
+    `- 성찰 초점: ${report.reflectionFocus}`,
     `- 해석 경계: ${report.interpretiveBoundary}`,
     `- 와칸 탕카(Wakan Tanka) 신성 조언: ${report.wakanTankaSacredGuidance}`,
   ];

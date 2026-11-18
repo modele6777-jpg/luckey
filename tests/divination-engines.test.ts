@@ -4208,6 +4208,8 @@ test('Maori Mauri Hauora Engine: calculates 4 Hauora pillars and Mauri vitality 
   assert(rep.manaSovereigntyScore >= 0 && rep.manaSovereigntyScore <= 100);
   assert(rep.pillars.dominantPillar.nameMaori.length > 0);
   assert(rep.reflectiveQuestion.length > 0);
+  assert(rep.ritualAction.length > 0);
+  assert(rep.reflectionFocus.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
   assert(rep.calculatedAtKst.endsWith('+09:00 KST'));
   assert(Boolean(rep.maoriSynthesisMatrix?.integratedAction));
@@ -4216,6 +4218,8 @@ test('Maori Mauri Hauora Engine: calculates 4 Hauora pillars and Mauri vitality 
   const prompt = formatMaoriMauriHauoraPrompt(repQ);
   assert(prompt.includes('고대 마오리 하우오라 4대 기둥 & 마우리(Mauri) 생명력 실측 데이터'));
   assert(prompt.includes(repQ.pillars.dominantPillar.nameMaori));
+  assert(prompt.includes('실천 의례'));
+  assert(prompt.includes('성찰 초점'));
   assert(prompt.includes('해석 경계'));
   assert(prompt.includes('교차 매트릭스'));
   assert(!prompt.includes('/100'));
@@ -5343,6 +5347,8 @@ test('Lakota Medicine Wheel Wakan Tanka Engine: calculates 4 sacred directions, 
   assert(rep.activeCardinalVirtue.lakotaName.length > 0);
   assert(rep.secondaryCardinalVirtue.lakotaName !== rep.activeCardinalVirtue.lakotaName);
   assert(rep.reflectiveQuestion.length > 0);
+  assert(rep.ritualAction.length > 0);
+  assert(rep.reflectionFocus.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
   assert(rep.calculatedAtKst.endsWith('+09:00 KST'));
   assert(Boolean(rep.lakotaSynthesisMatrix?.integratedAction));
@@ -5352,6 +5358,8 @@ test('Lakota Medicine Wheel Wakan Tanka Engine: calculates 4 sacred directions, 
   assert(prompt.includes('라코타 수(Lakota Sioux)족 와칸 탕카 & 4대 방향 성스러운 의약 휠(Medicine Wheel)'));
   assert(prompt.includes(repQ.primarySacredDirection.lakotaTerm));
   assert(prompt.includes(repQ.secondarySacredDirection.lakotaTerm));
+  assert(prompt.includes('실천 의례'));
+  assert(prompt.includes('성찰 초점'));
   assert(prompt.includes('해석 경계'));
   assert(prompt.includes('교차 매트릭스'));
   assert(!prompt.includes('/100'));
@@ -9836,11 +9844,15 @@ test('Korean Yutjeom engine: five qualitative stances without raw scores or a cl
   assert.equal(rep.questionTopic, 'decision');
   assert.ok(rep.activeStanceTheme.stanceNameKo.length > 0);
   assert.ok(rep.dailyPracticeRitual.length > 0);
+  assert.ok(rep.ritualAction.length > 0);
+  assert.ok(rep.reflectionFocus.length > 0);
   assert.ok(rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('실제 윷 던지기를 대신하지 않으며'));
   const prompt = formatKoreanYutjeomFourStickPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%') && !prompt.includes('점수'));
   assert.ok(prompt.includes('오늘의 실천 의례'));
+  assert.ok(prompt.includes('실천 의례'));
+  assert.ok(prompt.includes('성찰 초점'));
   assert.ok(prompt.includes('성찰 질문'));
   assert.ok(prompt.includes('해석 경계'));
   assert.ok(prompt.includes('KST 시공간 리듬'));

@@ -1,6 +1,10 @@
 {
-  "version": "1.7.865",
-  "builtAt": "2026-11-19T05:10:00+09:00",
-  "commit": "feat/deepen-kabbalah-karmic-cheonbugyeong-v1.7.865",
-  "notes": "카발라·카르믹 시나스트리·천부경 81자 3대 엔진 성찰 질문·+09:00 KST·카탈로그 뜻 보강 (v1.7.865)"
+  "version": "1.7.866",
+  "builtAt": "2026-11-19T05:12:00+09:00",
+  "summary": "한국 윷점·라코타 메디슨 휠·마오리 마우리 하우오라 3대 엔진 실천 의례 및 성찰 질문 표준 연동(v1.7.866)",
+  "items": [
+    "한국 전통 윷점 다섯 결 엔진(v2.3.0): ritualAction·reflectionFocus 표준 필드 연동",
+    "라코타 수(Lakota Sioux) 메디슨 휠·와칸 탕카 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동",
+    "마오리 마우리·테 화레 타파 화 하우오라 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동"
+  ]
 }

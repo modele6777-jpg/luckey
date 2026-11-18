@@ -9,12 +9,12 @@
  * 2. 전승마다 해석이 다르므로 특정 판본의 문구를 그대로 인용하지 않고, 전승의 주제만 요약해 상징으로 씁니다.
  * 3. 개인의 길흉·점수·확률·미래 예측을 산출하지 않습니다.
  *
- * @version LUCKEY-KOREAN-YUTJEOM-FOUR-STICKS-v2.1.0
+ * @version LUCKEY-KOREAN-YUTJEOM-FOUR-STICKS-v2.3.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const KOREAN_YUTJEOM_FOUR_STICK_VERSION = 'LUCKEY-KOREAN-YUTJEOM-FOUR-STICKS-v2.2.0';
+export const KOREAN_YUTJEOM_FOUR_STICK_VERSION = 'LUCKEY-KOREAN-YUTJEOM-FOUR-STICKS-v2.3.0';
 
 function getYutKstString(now?: Date): string {
   const base = now ?? new Date();
@@ -58,6 +58,8 @@ export interface KoreanYutjeomFourStickResult {
   situationalStanceAudit: YutStanceAudit;
   temporalYutRhythm: YutTemporalRhythm;
   dailyPracticeRitual: string;
+  ritualAction: string;
+  reflectionFocus: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
   yutjeomComprehensiveGuidance: {
@@ -273,6 +275,8 @@ export function calculateKoreanYutjeomFourStickOracle(
     '한국 윷점의 상징은 전승마다 해석이 갈리는 민속 자료이므로 미래를 단정하거나 길흉·확률을 계산하는 근거로 쓰지 않습니다. 이 관점은 실제 윷 던지기를 대신하지 않으며, 앱이 기록한 실제 추첨 없이 던졌다고 말하지 않습니다.';
 
   const trimmedQ = (question ?? '').trim();
+  const ritualAction = `${extras.dailyPracticeRitual} 오늘 '${activeStanceTheme.stanceNameKo}'의 자리에서 ${situationalStanceAudit.firstStepAdvice}`;
+  const reflectionFocus = `한국 윷점 '${activeStanceTheme.stanceNameKo}'과 ${temporalYutRhythm.yutFocus} — 다섯 결 가운데 오늘 내가 먼저 내딛을 한 걸음`;
   const yutjeomSynthesisMatrix = {
     dominantTension: `${activeStanceTheme.stanceNameKo} ↔ ${situationalStanceAudit.stanceNameKo}`,
     alignmentState: `${temporalYutRhythm.yutFocus} · ${temporalYutRhythm.stanceClarityStage}`,
@@ -288,6 +292,8 @@ export function calculateKoreanYutjeomFourStickOracle(
     situationalStanceAudit,
     temporalYutRhythm,
     dailyPracticeRitual: extras.dailyPracticeRitual,
+    ritualAction,
+    reflectionFocus,
     reflectiveQuestion: extras.reflectiveQuestion,
     interpretiveBoundary,
     yutjeomComprehensiveGuidance: {
@@ -318,6 +324,8 @@ export function formatKoreanYutjeomFourStickPrompt(res: KoreanYutjeomFourStickRe
     `- 첫걸음: ${res.situationalStanceAudit.firstStepAdvice}`,
     `- KST 시공간 리듬: ${res.temporalYutRhythm.kstWindow} (${res.temporalYutRhythm.seasonTone}, ${res.temporalYutRhythm.stanceClarityStage}) — ${res.temporalYutRhythm.rhythmGuidance}`,
     `- 오늘의 실천 의례: ${res.dailyPracticeRitual}`,
+    `- 실천 의례: ${res.ritualAction}`,
+    `- 성찰 초점: ${res.reflectionFocus}`,
     `- 성찰 질문: ${res.reflectiveQuestion}`,
     `- 종합 권면: ${res.yutjeomComprehensiveGuidance.folkCounsel}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
