@@ -16,7 +16,7 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const RUNE_MATRIX_VERSION = 'LUCKEY-RUNE-v2.2.0';
+export const RUNE_MATRIX_VERSION = 'LUCKEY-RUNE-v2.3.0';
 
 export interface RuneDetail {
   id: number;                  // 1~24
@@ -199,6 +199,8 @@ export interface RuneMatrixResult {
   oracleStateTitle: string;
 
   summary: string;
+  ritualAction: string;
+  reflectionFocus: string;
   reflectiveQuestion: string;
   runeSynthesisMatrix?: {
     dominantTension: string;
@@ -290,6 +292,8 @@ export function calculateRuneMatrix(params?: {
     runePowerScore,
     oracleStateTitle,
     summary,
+    ritualAction: `[${challengeRune.name}(${challengeRune.symbol})] ${challengeRune.prescribedAction}`,
+    reflectionFocus: `엘더 푸타르크 룬(${originRune.name} → ${horizonRune.name}) — ${oracleStateTitle}`,
     reflectiveQuestion,
     runeSynthesisMatrix,
     interpretiveBoundary: '본 엘더 푸타르크 룬 동시성 리포트는 북유럽 룬 상징 체계에 기반한 정성적 성찰 안내이며, 확정적 미래 예언이 아닙니다.',
@@ -322,6 +326,8 @@ export function formatRuneMatrixPrompt(res: RuneMatrixResult): string {
       `  • 통합 실천: ${res.runeSynthesisMatrix.integratedAction}`,
     );
   }
+  lines.push(`- 실천 의례: ${res.ritualAction}`);
+  lines.push(`- 성찰 초점: ${res.reflectionFocus}`);
   lines.push(`- 질문 맞춤 성찰 질문: ${res.reflectiveQuestion}`);
   lines.push(`- 해석 경계: ${res.interpretiveBoundary}`);
   lines.push(

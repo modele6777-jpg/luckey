@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.7.896",
+    "builtAt": "2026-11-19T07:42:00+09:00",
+    "summary": "로젠크로이츠 화학적 결혼·고대 노르딕 룬 매트릭스·신성 기하학 보텍스 3대 엔진 실천 의례 및 성찰 초점 표준 연동(v1.7.896)",
+    "items": [
+      "로젠크로이츠 《화학적 결혼》 7일 연금술 승화 엔진(v2.3.0): ritualAction·reflectionFocus 표준 필드 연동",
+      "고대 노르딕 룬 동시성 매트릭스 엔진(v2.3.0): ritualAction·reflectionFocus 표준 필드 연동",
+      "황금비 영혼 수비학 & 보텍스 기하학 엔진(v2.3.0): ritualAction·reflectionFocus 표준 필드 연동"
+    ]
+  },
+  {
     "version": "1.7.895",
     "builtAt": "2026-11-19T07:38:00+09:00",
     "summary": "세르반테스 돈키호테·에누마 엘리시 50대 이름·수메르 이난나 명계하강 3대 엔진 reflectiveQuestion·+09:00 (KST)·summary·question 연동(v1.7.895)",

@@ -18,7 +18,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const ROSICRUCIAN_CHYMICAL_WEDDING_ENGINE_VERSION = '2.2.0';
+export const ROSICRUCIAN_CHYMICAL_WEDDING_ENGINE_VERSION = '2.3.0';
 
 export interface RosicrucianAlchemicalStage {
   dayNumber: number;
@@ -42,6 +42,8 @@ export interface RosicrucianChymicalWeddingReport {
   activeAlchemicalPhase: string; // 현재 주재하는 4원 연금술 국면
   rosicrucianGuidance: string; // 장미십자회 지혜 지침
   alchemicalTransmutationRitual: string; // 연금술 영혼 정화 리추얼
+  ritualAction: string;
+  reflectionFocus: string;
   reflectiveQuestion: string;
   rosicrucianSynthesisMatrix?: {
     dominantTension: string;
@@ -205,6 +207,8 @@ export function calculateRosicrucianChymicalWedding(
     activeAlchemicalPhase,
     rosicrucianGuidance,
     alchemicalTransmutationRitual,
+    ritualAction: `[${dominantStage.dayName}] ${alchemicalTransmutationRitual}`,
+    reflectionFocus: `장미십자회 화학적 결혼(${activeAlchemicalPhase}) — ${dominantStage.spiritualTransmutation}`,
     reflectiveQuestion,
     rosicrucianSynthesisMatrix,
     interpretiveBoundary: '본 장미십자회 화학적 결혼 리포트는 17세기 연금술 상징 체계에 기반한 정성적 내면 성찰 안내이며, 의학·심리 치료를 대신하지 않습니다.',
@@ -232,6 +236,8 @@ export function formatRosicrucianChymicalWeddingPrompt(report: RosicrucianChymic
       `- **통합 실천**: ${report.rosicrucianSynthesisMatrix.integratedAction}`,
     );
   }
+  lines.push(`- **실천 의례**: ${report.ritualAction}`);
+  lines.push(`- **성찰 초점**: ${report.reflectionFocus}`);
   lines.push(`- **질문 맞춤 성찰 질문**: ${report.reflectiveQuestion}`);
   lines.push(`- **해석 경계**: ${report.interpretiveBoundary}`);
   return lines.join('\n');
