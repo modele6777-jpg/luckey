@@ -16,7 +16,7 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const CONTRACT_SHIELD_VERSION = 'LUCKEY-SHIELD-v2.2.0';
+export const CONTRACT_SHIELD_VERSION = 'LUCKEY-SHIELD-v2.3.0';
 
 export interface ContractChecklistItem {
   category: string;
@@ -103,7 +103,7 @@ function getTemporalShieldRhythm(now: Date) {
           : '겨울 · 재계약·보존절 (책임 상한과 비밀유지 조항을 재점검할 시기)';
 
   return {
-    kstTimeLabel: `${y}-${m}-${d} ${hh}:${mm} KST`,
+    kstTimeLabel: `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`,
     negotiationWindow,
     seasonalContractTone,
     temporalGuidance: `${negotiationWindow} · ${seasonalContractTone}의 원칙을 적용하십시오.`,
