@@ -139,26 +139,43 @@ export function subscribeMainOverlayViewport(listener: () => void): () => void {
       for (const notify of [...listeners]) if (listeners.has(notify)) notify();
     };
     const schedule = () => { if (!frame) frame = requestAnimationFrame(refresh); };
+    // Inner scrollers (chat, marquees, lists) never move the main/pane boxes.
+    // Re-measuring the whole layout on each of their scroll events keeps the
+    // main thread busy on iOS, where taps then wait while native scroll goes on.
+    const scheduleDocumentScroll = (event: Event) => {
+      const target = event.target;
+      if (target === document || target === document.documentElement || target === document.body || target === window) schedule();
+    };
+    // Content changes anywhere (streamed chat text, marquees) only matter when
+    // they replace main/nav/pane elements, so they re-measure at most every 250ms.
+    // Root class/style changes (fold, viewport variables) still re-measure at once.
+    let treeTimer: ReturnType<typeof setTimeout> | null = null;
+    const scheduleTreeChange = () => {
+      if (treeTimer) return;
+      treeTimer = setTimeout(() => { treeTimer = null; schedule(); }, 250);
+    };
     const mutation = new MutationObserver(schedule);
+    const treeMutation = new MutationObserver(scheduleTreeChange);
     const bodyMutation = new MutationObserver(schedule);
     mutation.observe(document.documentElement, { attributes: true, attributeFilter: ['class', 'style'] });
     if (document.body) {
-      mutation.observe(document.body, { childList: true, subtree: true });
+      treeMutation.observe(document.body, { childList: true, subtree: true });
       bodyMutation.observe(document.body, { attributes: true, attributeFilter: ['class', 'style'] });
     }
     const viewport = window.visualViewport;
     window.addEventListener('resize', schedule);
     window.addEventListener('orientationchange', schedule);
     window.addEventListener('pageshow', schedule);
-    window.addEventListener('scroll', schedule, true);
+    window.addEventListener('scroll', scheduleDocumentScroll, true);
     viewport?.addEventListener('resize', schedule);
     viewport?.addEventListener('scroll', schedule);
     stopObserving = () => {
-      cancelAnimationFrame(frame); resize.disconnect(); mutation.disconnect(); bodyMutation.disconnect();
+      cancelAnimationFrame(frame); resize.disconnect(); mutation.disconnect(); treeMutation.disconnect(); bodyMutation.disconnect();
+      if (treeTimer) clearTimeout(treeTimer);
       window.removeEventListener('resize', schedule);
       window.removeEventListener('orientationchange', schedule);
       window.removeEventListener('pageshow', schedule);
-      window.removeEventListener('scroll', schedule, true);
+      window.removeEventListener('scroll', scheduleDocumentScroll, true);
       viewport?.removeEventListener('resize', schedule);
       viewport?.removeEventListener('scroll', schedule);
     };

@@ -37,6 +37,8 @@ export function installFoldRuntimeTrace(win: Window): void {
   let frame = 0;
   let lastFrameAt = 0;
   const startedAt = new Date().toISOString();
+  let lag = 0;
+  let maxLag = 0;
   // Element identity only (tag, id, a few classes, pane): never text content.
   const describe = (el: Element | null) => {
     if (!el) return null;
@@ -79,7 +81,7 @@ export function installFoldRuntimeTrace(win: Window): void {
       classes: win.document.documentElement.className,
       hidden: win.document.hidden,
       standalone: (win.navigator as Navigator & { standalone?: boolean }).standalone === true,
-      frameCount, lastFrameAt, counts: { ...counts }, hit, extra });
+      frameCount, lastFrameAt, lagMs: lag, maxLagMs: maxLag, counts: { ...counts }, hit, extra });
     if (rows.length > 100) rows.shift();
     lastWrite = now;
     try { win.localStorage.setItem(RECORD, JSON.stringify({ version: APP_VERSION, startedAt, rows })); } catch { /* optional storage */ }
@@ -103,6 +105,12 @@ export function installFoldRuntimeTrace(win: Window): void {
       if (Date.now() - lastWrite >= 250 || name === 'pagehide' || name === 'orientationchange') save(name);
     });
   }
+  // Event storms (scroll lock bouncing, viewport writes, popup re-measuring) are counted.
+  listen(win, 'scroll', () => { counts.windowScroll = (counts.windowScroll || 0) + 1; });
+  if (win.visualViewport) listen(win.visualViewport, 'scroll', () => { counts.visualScroll = (counts.visualScroll || 0) + 1; });
+  const domWrites = new MutationObserver(records => { counts.rootStyleWrites = (counts.rootStyleWrites || 0) + records.length; });
+  domWrites.observe(win.document.documentElement, { attributes: true, attributeFilter: ['style', 'class'] });
+  cleanup.push(() => domWrites.disconnect());
   if (win.visualViewport) listen(win.visualViewport, 'resize', () => {
     counts.visualResize = (counts.visualResize || 0) + 1;
     if (Date.now() - lastWrite >= 250) save('visual-resize');
@@ -113,7 +121,14 @@ export function installFoldRuntimeTrace(win: Window): void {
     save('error', { name: e.error?.name, file: e.filename?.split('/').at(-1)?.split('?')[0], line: e.lineno, column: e.colno });
   });
   listen(win, 'unhandledrejection', raw => save('rejection', { name: (raw as PromiseRejectionEvent).reason?.name || 'unknown' }));
+  // Main-thread lag: how late each 500ms heartbeat fired. Native iOS scrolling
+  // keeps working while JavaScript is busy, so taps can die while scroll lives.
+  let lastBeat = Date.now();
   const timer = win.setInterval(() => {
+    const now = Date.now();
+    lag = Math.max(0, now - lastBeat - 500);
+    maxLag = Math.max(maxLag, lag);
+    lastBeat = now;
     save('heartbeat');
     if (!frame && !win.document.hidden) frame = win.requestAnimationFrame(() => {
       frame = 0; frameCount++; lastFrameAt = Date.now();
