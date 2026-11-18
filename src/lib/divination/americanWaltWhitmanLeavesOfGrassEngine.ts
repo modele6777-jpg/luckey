@@ -14,7 +14,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const AMERICAN_WALT_WHITMAN_VERSION = 'LUCKEY-WHITMAN-LEAVES-OF-GRASS-v2.2.0';
+export const AMERICAN_WALT_WHITMAN_VERSION = 'LUCKEY-WHITMAN-LEAVES-OF-GRASS-v2.3.0';
 
 export type WhitmanQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -267,7 +267,7 @@ export function calculateAmericanWaltWhitmanLeavesOfGrass(
   const boundaryNotice = '월트 휘트먼 풀잎 해석은 자아 긍정과 열린 시선을 돕는 상징·성찰 관점이며, 미래 예측이나 확정적 판단이 아닙니다.';
   const baseDate = now ?? new Date();
   const kst = new Date(baseDate.getTime() + 9 * 60 * 60 * 1000);
-  const kstLabel = `${temporalWhitmanRhythm.kstDateLabel} ${String(kst.getUTCHours()).padStart(2, '0')}:${String(kst.getUTCMinutes()).padStart(2, '0')} KST`;
+  const kstLabel = `${temporalWhitmanRhythm.kstDateLabel} ${String(kst.getUTCHours()).padStart(2, '0')}:${String(kst.getUTCMinutes()).padStart(2, '0')} +09:00 (KST)`;
   const situationalWhitmanAudit = {
     focusTheme: `${questionTopic} · 풀잎 생명 찬가`,
     vitalityCue: temporalWhitmanRhythm.vitalityTone,

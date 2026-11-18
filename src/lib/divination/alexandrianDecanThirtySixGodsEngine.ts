@@ -10,7 +10,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const ALEXANDRIAN_DECAN_ENGINE_VERSION = '2.2.0';
+export const ALEXANDRIAN_DECAN_ENGINE_VERSION = '2.3.0';
 
 export type DecanQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -156,7 +156,7 @@ function getTemporalDecanRhythm(now: Date) {
         : '제3 데칸(하순 · 수렴의 10일) — 마무리를 짓고 다음 주기를 위해 여백을 비우는 주기';
 
   return {
-    kstTimeLabel: `${y}-${m}-${d} ${hh}:${mm} KST`,
+    kstTimeLabel: `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`,
     hermeticWatchWindow,
     tenDaySolarCycle,
     temporalGuidance: `${hermeticWatchWindow} · ${tenDaySolarCycle}의 흐름에 맞추어 오늘의 속도보다 리듬의 정확도를 살피십시오.`,

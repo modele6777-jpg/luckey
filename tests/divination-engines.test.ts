@@ -12331,3 +12331,27 @@ test('베다 5대 코샤·보이스 페르소나·음양 극성 엔진 v1.7.899 
   assert.ok(yy.reflectiveQuestion.includes(query));
   assert.ok(formatYinYangPolarityPrompt(yy).includes('질문 맞춤 성찰 질문'));
 });
+
+test('알렉산드리아 36데칸·월트 휘트먼·윌리엄 제임스 엔진 v1.7.901 KST(+09:00) 표준 표기 검증', () => {
+  const profile: any = {
+    name: '테스트',
+    basic: { birthdate: '1994-01-24', birthtime: '10:30', gender: 'male', calendarType: 'solar' },
+  };
+  const now = new Date('2026-11-19T08:08:00+09:00');
+  const query = '새로운 도전 앞에서 확신을 세우고 싶을 때';
+
+  const dec = calculateAlexandrianDecanThirtySixGods({ profile, question: query, now });
+  assert.equal(dec.engineVersion, ALEXANDRIAN_DECAN_ENGINE_VERSION);
+  assert.match(dec.calculatedAtKst, /\+09:00/);
+  assert.ok(formatAlexandrianDecanThirtySixGodsPrompt(dec).includes('+09:00'));
+
+  const wh = calculateAmericanWaltWhitmanLeavesOfGrass(profile, query, now);
+  assert.equal(wh.engineVersion, AMERICAN_WALT_WHITMAN_VERSION);
+  assert.match(wh.calculatedAtKst, /\+09:00/);
+  assert.ok(formatAmericanWaltWhitmanLeavesOfGrassPrompt(wh).includes('+09:00'));
+
+  const jm = calculateAmericanWilliamJamesPragmatism(profile, query, now);
+  assert.equal(jm.engineVersion, AMERICAN_WILLIAM_JAMES_VERSION);
+  assert.match(jm.calculatedAtKst, /\+09:00/);
+  assert.ok(formatAmericanWilliamJamesPragmatismPrompt(jm).includes('+09:00'));
+});
