@@ -2617,6 +2617,7 @@ test('Soul Journey Tarot Engine: 영혼 연금술 3단계 및 4원소 균형 검
   const res = calculateSoulJourneyTarot({ profile, targetDate: new Date('2026-11-03T10:00:00+09:00'), question: '영혼 여정' });
   assert.equal(res.engineVersion, SOUL_JOURNEY_TAROT_VERSION);
   assert(res.calculatedAtKst.endsWith('KST'));
+  assert(res.ritualAction.length > 0 && res.reflectionFocus.length > 0);
   assert(Boolean(res.soulJourneySynthesisMatrix?.integratedAction));
   assert(res.interpretiveBoundary.length > 0);
   assert(res.currentArchetype.number >= 0 && res.currentArchetype.number <= 21);
@@ -2625,6 +2626,7 @@ test('Soul Journey Tarot Engine: 영혼 연금술 3단계 및 4원소 균형 검
   const prompt = formatSoulJourneyTarotPrompt(res);
   assert(prompt.includes('LUCKEY 영혼 타로 여정 지능'));
   assert(prompt.includes(res.currentArchetype.nameKo));
+  assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
   assert(prompt.includes('교차 매트릭스') && prompt.includes('해석 경계'));
   assert(!prompt.includes('%'));
 });
@@ -2669,12 +2671,14 @@ test('Spatial Fengshui Engine: 동양 풍수·점성술 공간 길방위 v2.1.0 
   const res = calculateSpatialFengshui({ profile, targetDate: new Date('2026-11-03T10:00:00+09:00'), question: '작업실 방향' });
   assert.equal(res.engineVersion, SPATIAL_FENGSHUI_VERSION);
   assert(res.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert(res.ritualAction.length > 0 && res.reflectionFocus.length > 0);
   assert(res.reflectiveQuestion?.includes('작업실 방향'));
   assert(Boolean(res.spatialSynthesisMatrix?.integratedAction));
   assert(res.interpretiveBoundary.length > 0);
   assert(res.allDirections.length === 8);
   const prompt = formatSpatialFengshuiPrompt(res);
   assert(prompt.includes('+09:00 (KST)'));
+  assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
   assert(prompt.includes('성찰 질문'));
   assert(prompt.includes('공간 교차 매트릭스') && prompt.includes('해석 경계'));
   assert(!prompt.includes('/100'));
@@ -8707,6 +8711,7 @@ test('Miguel de Cervantes Don Quixote Engine: calculates Noble Idealism, Courage
   const rep = calculateSpanishMiguelDeCervantesDonQuixote(profile);
   assert.equal(rep.engineVersion, SPANISH_MIGUEL_DE_CERVANTES_DON_QUIXOTE_VERSION);
   assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(Boolean(rep.cervantesSynthesisMatrix?.integratedAction));
   assert(rep.interpretiveBoundary.length > 0);
   assert(rep.nobleIdealismScore >= 0 && rep.nobleIdealismScore <= 100);
@@ -8718,6 +8723,7 @@ test('Miguel de Cervantes Don Quixote Engine: calculates Noble Idealism, Courage
   const prompt = formatSpanishMiguelDeCervantesDonQuixotePrompt(rep);
   assert(prompt.includes('미겔 데 세르반테스 《돈키호테》 고결한 이상주의·풍차 앞 불굴의 용기 지표'));
   assert(prompt.includes(rep.activeCervantesTheme.themeTitleKo));
+  assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
   assert(prompt.includes('교차 매트릭스') && prompt.includes('해석 경계'));
   assert(!prompt.includes('/100'));
 });
