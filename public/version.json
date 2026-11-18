@@ -1,10 +1,10 @@
 {
-  "version": "1.7.860",
-  "builtAt": "2026-11-19T04:32:00+09:00",
-  "summary": "동학 시천주·용담유사 검결·퇴계 이황 성학십도 3대 엔진 실천 의례 및 성찰 질문 표준 연동(v1.7.860)",
+  "version": "1.7.861",
+  "builtAt": "2026-11-19T04:40:00+09:00",
+  "summary": "제임스 조이스 율리시스·카발라 조하르·카슈미르 시바파 스판다 3대 엔진 성찰 질문·+09:00 KST·카탈로그 뜻 보강(v1.7.861)",
   "items": [
-    "수운 최제우 《동경대전》 시천주·후천개벽 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동",
-    "동학 수운 최제우 《용담유사》 검결·삼경사상 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동",
-    "퇴계 이황 《성학십도》 경(敬)·거경궁리 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동"
+    "제임스 조이스 율리시스 에피파니(v2.3.0)·카발라 조하르 5대 영혼 층위(v2.3.0)·카슈미르 시바파 스판다(v2.3.0): 질문 반응형 reflectiveQuestion·+09:00 (KST) 표준 표기·프롬프트 연동",
+    "ALL_DCE_ENGINES 카탈로그: kabbalisticZoharSoul·kashmirShaivismSpanda 한 줄 summary 2건 등록",
+    "divination-engines.test.ts: 3대 엔진 v1.7.861 회귀 테스트 추가"
   ]
 }
