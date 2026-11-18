@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.7.857",
+    "builtAt": "2026-11-19T04:20:00+09:00",
+    "summary": "호피 4대 세계 카치나·황제내경 오운육기·이븐 아라비 존재일원론 3대 엔진 성찰 질문·+09:00 KST·카탈로그 뜻 보강(v1.7.857)",
+    "items": [
+      "호피 4대 세계 카치나(v2.3.0)·황제내경 오운육기(v2.3.0)·이븐 아라비 존재일원론(v2.3.0): 질문 반응형 reflectiveQuestion·+09:00 (KST) 표준 표기·프롬프트 연동",
+      "ALL_DCE_ENGINES 카탈로그: hopiFourWorldsKachina·huangdiFiveMovementsSixQi·ibnArabiWahdatAlWujud 한 줄 summary 3건 등록",
+      "divination-engines.test.ts: 호피 4대 세계 카치나·황제내경 오운육기·이븐 아라비 존재일원론 회귀 테스트 추가"
+    ]
+  },
+  {
     "version": "1.7.856",
     "builtAt": "2026-11-19T04:15:00+09:00",
     "summary": "서애 류성룡 징비록, 삼봉 정도전 민본개혁, 사명대사 호국자비 3대 엔진 실천 의례 및 성찰 질문 표준 연동(v1.7.856)",

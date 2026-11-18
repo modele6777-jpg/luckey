@@ -11552,3 +11552,30 @@ test('헤르만 헤세 데미안·싯다르타·영웅의 여정 모노미스·�
   const kundaliniPrompt = formatHinduTantricKundaliniPrompt(kundalini);
   assert.ok(kundaliniPrompt.includes('+09:00') && kundaliniPrompt.includes('질문 맞춤 성찰 질문') && kundaliniPrompt.includes('해석 경계'));
 });
+
+test('호피 4대 세계 카치나·황제내경 오운육기·이븐 아라비 존재일원론 v1.7.857 질문 반응형 성찰 질문·+09:00 KST 회귀 검증', () => {
+  const profile = { basic: { name: '제제', birthdate: '1994-01-24', birthtime: '12:00', gender: 'male' } } as any;
+  const now = new Date('2026-11-19T04:20:00+09:00');
+  const query = '조급한 마음을 가라앉히고 몸과 마음의 균형을 회복하고 싶어요';
+
+  const hopi = calculateHopiFourWorldsKachina(profile, query, now);
+  assert.equal(hopi.engineVersion, HOPI_FOUR_WORLDS_ENGINE_VERSION);
+  assert.match(hopi.temporalHopiRhythm.calculatedAtKst, /\+09:00/);
+  assert.ok(hopi.reflectiveQuestion.includes(query));
+  const hopiPrompt = formatHopiFourWorldsPrompt(hopi);
+  assert.ok(hopiPrompt.includes('+09:00') && hopiPrompt.includes('질문 맞춤 성찰 질문') && hopiPrompt.includes('해석 경계'));
+
+  const huangdi = calculateHuangdiFiveMovementsSixQi(profile, now, query);
+  assert.equal(huangdi.engineVersion, HUANGDI_YUNQI_VERSION);
+  assert.match(huangdi.calculatedAtKst, /\+09:00/);
+  assert.ok(huangdi.reflectiveQuestion.includes(query));
+  const huangdiPrompt = formatHuangdiFiveMovementsSixQiPrompt(huangdi);
+  assert.ok(huangdiPrompt.includes('+09:00') && huangdiPrompt.includes('질문 맞춤 성찰 질문') && huangdiPrompt.includes('해석 경계'));
+
+  const ibnArabi = calculateIbnArabiWahdatAlWujud(profile, now, query);
+  assert.equal(ibnArabi.engineVersion, IBN_ARABI_WAHDAT_ENGINE_VERSION);
+  assert.match(ibnArabi.temporalWahdatRhythm.calculatedAtKst, /\+09:00/);
+  assert.ok(ibnArabi.reflectiveQuestion.includes(query));
+  const ibnArabiPrompt = formatIbnArabiWahdatAlWujudPrompt(ibnArabi);
+  assert.ok(ibnArabiPrompt.includes('+09:00') && ibnArabiPrompt.includes('질문 맞춤 성찰 질문') && ibnArabiPrompt.includes('해석 경계'));
+});

@@ -15,7 +15,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const HOPI_FOUR_WORLDS_ENGINE_VERSION = '2.2.0';
+export const HOPI_FOUR_WORLDS_ENGINE_VERSION = '2.3.0';
 
 export interface HopiKachinaSpirit {
   id: string;
@@ -57,6 +57,7 @@ export interface HopiFourWorldsReport {
   pikiBreadSacredOffering: string; // 대지와 연결되는 소박한 평화 리추얼
   ritualAction: string;
   reflectionFocus: string;
+  reflectiveQuestion: string;
   boundaryNotice: string;
   interpretiveBoundary: string;
 }
@@ -184,7 +185,7 @@ export function calculateHopiFourWorldsKachina(
   const kstDate = new Date(now.getTime() + 9 * 60 * 60 * 1000);
   const kstHour = kstDate.getUTCHours();
   const kstMonth = kstDate.getUTCMonth() + 1;
-  const calculatedAtKst = kstDate.toISOString().replace('T', ' ').slice(0, 16) + ' KST';
+  const calculatedAtKst = kstDate.toISOString().replace('T', ' ').slice(0, 16) + ' +09:00 (KST)';
 
   const kivaSolarWindow = kstHour >= 5 && kstHour < 10
     ? '동쪽 지평선 태양 맞이창 (새 날의 감사와 옥수수가루 봉헌)'
@@ -223,6 +224,9 @@ export function calculateHopiFourWorldsKachina(
 
   const ritualAction = `[${dominantKachina.nameKo} · ${activeWorldStage.split(' — ')[0]}] ${pikiBreadSacredOffering}`;
   const reflectionFocus = `오늘 '${situationalHopiAudit.koyaanisqatsiAlert}'의 신호 앞에서 대지 중심(Kiva)의 균형을 되찾기 위해 내가 단순하게 정리할 한 가지는 무엇입니까?`;
+  const reflectiveQuestion = question
+    ? `지금 "${question}" 앞에서 ${dominantKachina.nameKo}의 균형 지혜로 오늘 바로 단순하게 덜어낼 한 가지는 무엇인가요?`
+    : `지금 ${activeWorldStage.split(' — ')[0]} 흐름 속에서 대지 중심(Kiva)의 평화를 되찾기 위해 멈출 한 가지는 무엇인가요?`;
 
   return {
     engineVersion: HOPI_FOUR_WORLDS_ENGINE_VERSION,
@@ -239,6 +243,7 @@ export function calculateHopiFourWorldsKachina(
     pikiBreadSacredOffering,
     ritualAction,
     reflectionFocus,
+    reflectiveQuestion,
     boundaryNotice: '아메리카 호피족 구전 지혜와 카치나 상징을 빌려 온 정성적 성찰 관점이며, 확정적 예언이나 의학적·재정적 처방이 아닙니다.',
     interpretiveBoundary: '아메리카 호피족 구전 지혜와 카치나 상징을 빌려 온 정성적 성찰 관점이며, 확정적 예언이나 의학적·재정적 처방이 아닙니다.',
   };
@@ -261,5 +266,6 @@ export function formatHopiFourWorldsPrompt(report: HopiFourWorldsReport): string
 - 대지모신 연결 평화 리추얼: ${report.pikiBreadSacredOffering}
 - 실천 의례(Ritual Action): ${report.ritualAction}
 - 성찰 초점(Reflection Focus): ${report.reflectionFocus}
+- 질문 맞춤 성찰 질문: ${report.reflectiveQuestion}
 - 해석 경계: ${report.boundaryNotice}`;
 }
