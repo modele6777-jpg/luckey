@@ -16,7 +16,7 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const SLEEP_SUBCONSCIOUS_VERSION = 'LUCKEY-SLEEP-v2.1.0';
+export const SLEEP_SUBCONSCIOUS_VERSION = 'LUCKEY-SLEEP-v2.2.0';
 
 function formatSleepKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -62,6 +62,8 @@ export interface SleepSubconsciousResult {
   dreamDecoding: DreamDecodingClue;
 
   summary: string;
+  ritualAction: string;
+  reflectionFocus: string;
   reflectiveQuestion?: string;
   sleepSynthesisMatrix?: {
     dominantTension: string;
@@ -129,6 +131,8 @@ export function calculateSleepSubconscious(params?: {
   };
 
   const interpretiveBoundary = '본 수면 회복 & 무의식 직관 리포트는 사주 12운성과 상징 수리에 기반한 정성적 야간 이완 안내이며, 수면의학적·정신의학적 진단을 대신하지 않습니다.';
+  const ritualAction = `[나이트 리셋] ${nightRitual.step2ThermalRelease}`;
+  const reflectionFocus = `수면 회복(${sleepQualityTitle}) — ${dreamDecoding.dreamSymbolCategory}`;
   const reflectiveQuestion = q
     ? `"${q}"에 대한 생각을 오늘 밤 무의식 인큐베이션에 맡긴다면, 잠들기 전 내려놓고 싶은 가장 무거운 문장 하나는 무엇인가요?`
     : `오늘 밤 잠들기 전 뇌신경 전압을 낮추기 위해 머리맡에 한 줄로 비워 두고 싶은 생각은 무엇인가요?`;
@@ -143,6 +147,8 @@ export function calculateSleepSubconscious(params?: {
     nightRitual,
     dreamDecoding,
     summary,
+    ritualAction,
+    reflectionFocus,
     reflectiveQuestion,
     sleepSynthesisMatrix,
     interpretiveBoundary,
@@ -175,6 +181,8 @@ export function formatSleepSubconsciousPrompt(res: SleepSubconsciousResult): str
     );
   }
   if (res.reflectiveQuestion) {
+    lines.push(`- 실천 의례: ${res.ritualAction}`);
+    lines.push(`- 성찰 초점: ${res.reflectionFocus}`);
     lines.push(`- 성찰 질문: ${res.reflectiveQuestion}`);
   }
   lines.push(`- 해석 경계: ${res.interpretiveBoundary}`);

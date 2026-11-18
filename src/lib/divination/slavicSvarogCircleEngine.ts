@@ -27,7 +27,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const SLAVIC_SVAROG_VERSION = 'LUCKEY-SLAVIC-SVAROG-v2.1.0';
+export const SLAVIC_SVAROG_VERSION = 'LUCKEY-SLAVIC-SVAROG-v2.2.0';
 
 export interface SvarogHallCherteg {
   code: string;
@@ -69,6 +69,8 @@ export interface SlavicSvarogCircleReport {
   };
   totalSvarogHarmonics: number; // 0 ~ 100
   synthesisMessage: string;
+  ritualAction: string;
+  reflectionFocus: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
   svarogSynthesisMatrix?: {
@@ -191,6 +193,8 @@ export function calculateSlavicSvarogCircle(params: {
 
   const synthesisMessage = `당신은 슬라브 16궁 중 [${svarogHall.koreanName}]의 가호를 받으며, 수호신 [${svarogHall.patronDeity}]과 성목 [${svarogHall.sacredTree}]의 정기가 깃들어 있습니다. 조상신 로드의 가호 아래 "${ancestralKarma.generationalKnotResolution}"`;
   const calculatedAtKst = formatSvarogKstTimestamp(now);
+  const ritualAction = `[${svarogHall.koreanName}] ${ancestralKarma.generationalKnotResolution}`;
+  const reflectionFocus = `슬라브 스바로그(${svarogHall.koreanName}) — ${sacredRuneSymbol.symbolName}`;
   const reflectiveQuestion = context
     ? `"${context}" 앞에서 ${svarogHall.koreanName}의 과제("${svarogHall.karmicChallenge}")를 넘기 위해, 보조 궁 ${secondaryHall.koreanName}의 미덕 중 오늘 빌려올 태도는 무엇입니까?`
     : `${svarogHall.patronDeity}의 가호 아래 "${svarogHall.karmicChallenge}"를 실천할 때, 가족이나 관계에서 먼저 내려놓을 오래된 부담은 무엇입니까?`;
@@ -213,6 +217,8 @@ export function calculateSlavicSvarogCircle(params: {
     sacredRuneSymbol,
     totalSvarogHarmonics,
     synthesisMessage,
+    ritualAction,
+    reflectionFocus,
     reflectiveQuestion,
     interpretiveBoundary,
     svarogSynthesisMatrix,
@@ -235,6 +241,8 @@ export function formatSlavicSvarogCirclePrompt(report: SlavicSvarogCircleReport)
     `- **슬라브 신성 수호 룬**: ${report.sacredRuneSymbol.symbolName} [${report.sacredRuneSymbol.koreanTitle}]`,
     `  - 영혼 방어 지침: ${report.sacredRuneSymbol.protectiveMeaning}`,
     `- **스바로그 통합 나침반**: ${report.synthesisMessage}`,
+    `- **실천 의례**: ${report.ritualAction}`,
+    `- **성찰 초점**: ${report.reflectionFocus}`,
     `- **성찰 질문**: ${report.reflectiveQuestion}`,
     `- **해석 경계**: ${report.interpretiveBoundary}`,
   ];

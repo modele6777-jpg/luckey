@@ -2521,6 +2521,7 @@ test('Sleep Subconscious Engine: 수면 사운드 안내 및 3단계 나이트 �
   const res = calculateSleepSubconscious({ profile, targetDate: new Date('2026-11-03T08:00:00+09:00'), question: '숙면과 꿈 해몽' });
   assert.equal(res.engineVersion, SLEEP_SUBCONSCIOUS_VERSION);
   assert(res.calculatedAtKst.endsWith('KST'));
+  assert(res.ritualAction.length > 0 && res.reflectionFocus.length > 0);
   assert(Boolean(res.sleepSynthesisMatrix?.integratedAction));
   assert(res.interpretiveBoundary.length > 0);
   assert(res.sleepRecoveryScore >= 0 && res.sleepRecoveryScore <= 100);
@@ -2531,6 +2532,7 @@ test('Sleep Subconscious Engine: 수면 사운드 안내 및 3단계 나이트 �
   assert(prompt.includes(SLEEP_SUBCONSCIOUS_VERSION));
   assert(prompt.includes('수면 회복 잠재력'));
   assert(prompt.includes('나이트 리셋 리추얼'));
+  assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
   assert(prompt.includes('교차 매트릭스') && prompt.includes('해석 경계'));
   assert(!prompt.includes('/100'));
   assert.doesNotMatch(prompt, /\bHz\b|Solfeggio|솔페지오|델타파|세타파|뇌파|주파수/i);
@@ -2963,6 +2965,7 @@ test('Somatic Body Armoring Engine: 빌헬름 라이히 7대 신체 갑옷 해�
   const res = calculateSomaticBodyArmoring({ profile, targetDate: new Date('2026-11-03T10:00:00+09:00'), question: '신체 긴장 해소' });
   assert.equal(res.engineVersion, SOMATIC_ARMORING_VERSION);
   assert(res.calculatedAtKst.endsWith('KST'));
+  assert(res.ritualAction.length > 0 && res.reflectionFocus.length > 0);
   assert(Boolean(res.somaticSynthesisMatrix?.integratedAction));
   assert(res.interpretiveBoundary.length > 0);
   assert(res.primaryArmorSegment.segmentName.length > 0);
@@ -2972,6 +2975,7 @@ test('Somatic Body Armoring Engine: 빌헬름 라이히 7대 신체 갑옷 해�
   const prompt = formatSomaticBodyArmoringPrompt(res);
   assert(prompt.includes('LUCKEY 빌헬름 라이히 7대 신체 갑옷 해제 & 체성 감각'));
   assert(prompt.includes(res.primaryArmorSegment.segmentName));
+  assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
   assert(prompt.includes('교차 매트릭스') && prompt.includes('해석 경계'));
   assert(!prompt.includes('/100'));
 });
@@ -3727,6 +3731,7 @@ test('Slavic Svarog Circle & Rod Ancestral Karma Engine: calculates svarog hall,
   const rep = calculateSlavicSvarogCircle({ profile, contextText: '가계와 일의 균형을 어떻게 잡을까요?' });
   assert.equal(rep.engineVersion, SLAVIC_SVAROG_VERSION);
   assert(rep.calculatedAtKst.includes('+09:00 (KST)'));
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(Boolean(rep.svarogSynthesisMatrix?.integratedAction));
   assert(rep.svarogHall.koreanName.length > 0);
   assert(rep.secondaryHall.koreanName.length > 0);
@@ -3739,6 +3744,7 @@ test('Slavic Svarog Circle & Rod Ancestral Karma Engine: calculates svarog hall,
   assert(prompt.includes('고대 슬라브 16 스바로그 체계 & 로드(Rod) 가계 카르마 엔진'));
   assert(prompt.includes(rep.svarogHall.koreanName));
   assert(prompt.includes('보조 교차 궁'));
+  assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
   assert(prompt.includes('성찰 질문'));
   assert(prompt.includes('해석 경계'));
   assert(prompt.includes('교차 매트릭스'));
