@@ -14,7 +14,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const AUSTRIAN_ALFRED_ADLER_INDIVIDUAL_PSYCHOLOGY_VERSION = 'LUCKEY-ADLER-INDIVIDUAL-PSYCHOLOGY-v2.2.0';
+export const AUSTRIAN_ALFRED_ADLER_INDIVIDUAL_PSYCHOLOGY_VERSION = 'LUCKEY-ADLER-INDIVIDUAL-PSYCHOLOGY-v2.3.0';
 
 export type AdlerQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -276,7 +276,7 @@ export function calculateAustrianAlfredAdlerIndividualPsychology(
   const boundaryNotice = '아들러 개인심리학 해석은 심리적 성찰과 과제 분리를 돕는 상징·철학 관점이며, 의학적·임상적 심리 진단을 대체하지 않습니다.';
   const baseDate = now ?? new Date();
   const kst = new Date(baseDate.getTime() + 9 * 60 * 60 * 1000);
-  const kstTimeLabel = `${temporalAdlerRhythm.kstDateLabel.replace(' KST', '')} ${String(kst.getUTCHours()).padStart(2, '0')}:${String(kst.getUTCMinutes()).padStart(2, '0')} KST`;
+  const kstTimeLabel = `${temporalAdlerRhythm.kstDateLabel.replace(' KST', '')} ${String(kst.getUTCHours()).padStart(2, '0')}:${String(kst.getUTCMinutes()).padStart(2, '0')} +09:00 (KST)`;
   const situationalAdlerAudit = {
     focusTheme: `${questionTopic} · 과제 분리와 용기`,
     taskSeparationCue: temporalAdlerRhythm.courageTone,

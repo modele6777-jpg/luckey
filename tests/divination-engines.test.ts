@@ -12391,3 +12391,27 @@ test('조상 혈통 업력·묵자 겸애·에픽테토스 통제이분법 엔�
   assert.match(ep.calculatedAtKst, /\+09:00/);
   assert.ok(formatEpictetusDichotomyOfControlPrompt(ep).includes('+09:00'));
 });
+
+test('일무 알 람말·데칸 사비안·아들러 개인심리학 엔진 v1.7.905 KST(+09:00) 표준 표기 검증', () => {
+  const profile: any = {
+    name: '테스트',
+    basic: { birthdate: '1994-01-24', birthtime: '10:30', gender: 'male', calendarType: 'solar' },
+  };
+  const now = new Date('2026-11-19T08:28:00+09:00');
+  const query = '새로운 방향을 선택하고 용기를 내고 싶을 때';
+
+  const rm = calculateArabicIlmAlRaml({ profile, targetDate: now, question: query });
+  assert.equal(rm.engineVersion, ARABIC_ILM_AL_RAML_ENGINE_VERSION);
+  assert.match(rm.calculatedAtKst, /\+09:00/);
+  assert.ok(formatArabicIlmAlRamlPrompt(rm).includes('+09:00'));
+
+  const ds = calculateAstrologicalDecanSabian({ profile, targetDate: now, question: query });
+  assert.equal(ds.engineVersion, ASTRO_DECAN_SABIAN_VERSION);
+  assert.match(ds.calculatedAtKst, /\+09:00/);
+  assert.ok(formatAstrologicalDecanSabianPrompt(ds).includes('+09:00'));
+
+  const ad = calculateAustrianAlfredAdlerIndividualPsychology(profile, query, now);
+  assert.equal(ad.engineVersion, AUSTRIAN_ALFRED_ADLER_INDIVIDUAL_PSYCHOLOGY_VERSION);
+  assert.match(ad.calculatedAtKst, /\+09:00/);
+  assert.ok(formatAustrianAlfredAdlerIndividualPsychologyPrompt(ad).includes('+09:00'));
+});
