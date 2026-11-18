@@ -12,12 +12,12 @@
  *    - 장졸들과의 동고동락(Soldier-General Solidarity): 땀과 눈물을 함께 흘리며 쌓아 올린 절대적 신뢰.
  * 3. 7대 전술적 품계 및 난중일기 친필 성찰 조언 산출
  *
- * @version LUCKEY-YISUNSIN-NANJUNG-ILGI-v2.1.0
+ * @version LUCKEY-YISUNSIN-NANJUNG-ILGI-v2.2.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const YISUNSIN_NANJUNG_ILGI_VERSION = 'LUCKEY-YISUNSIN-NANJUNG-ILGI-v2.1.0';
+export const YISUNSIN_NANJUNG_ILGI_VERSION = 'LUCKEY-YISUNSIN-NANJUNG-ILGI-v2.2.0';
 
 export interface YiSunSinStrategicStage {
   stageLevel: number;
@@ -56,6 +56,8 @@ export interface YiSunSinNanjungIlgiResult {
     immortalWisdom: string;
   };
   reflectiveQuestion: string;
+  ritualAction: string;
+  reflectionFocus: string;
   interpretiveBoundary: string;
   yiSunSinSynthesisMatrix?: {
     dominantTension: string;
@@ -149,6 +151,9 @@ export function calculateYiSunSinNanjungIlgi(
     ? `충무공의 《난중일기》 '${primaryChungmuVirtue.hanjaMotto}'와 '${secondaryChungmuVirtue.hanjaMotto}'를 비추어 볼 때, "${trimmedQuery}"에서 힘을 분산시키지 않고 반드시 먼저 지켜야 할 좁은 길목은 어디인가요?`
     : `지금 맞선 국면에서, '${activeStrategicStage.stageNameKo}'의 침착함과 '${secondaryStrategicStage.stageNameKo}'의 돌파력을 함께 살리려면 무엇을 먼저 정찰하고 대비해야 할까요?`;
 
+  const ritualAction = `${primaryChungmuVirtue.actionableDirective} 오늘 가장 중요한 길목 하나를 종이에 적고, 흔들리지 않는 단 한 가지 대비책을 먼저 실행하세요.`;
+  const reflectionFocus = `《난중일기》 '${activeStrategicStage.stageNameKo}'와 '${primaryChungmuVirtue.hanjaMotto}' — 흩어지려는 마음을 하나로 모아 지켜낼 핵심 길목`;
+
   const interpretiveBoundary = '이 지표는 충무공 이순신 장군의 친필 《난중일기》에 담긴 필사즉생·일부당경·유비무환·정중여산의 전략 정신을 결단과 대비 태도를 성찰하는 정성적 거울로 해석한 것이며, 현실의 구체적 승패를 단정하는 예언이 아닙니다.';
 
   const avgScore = Math.round(
@@ -179,6 +184,8 @@ export function calculateYiSunSinNanjungIlgi(
     secondaryChungmuVirtue,
     nanjungIlgiReflection,
     reflectiveQuestion,
+    ritualAction,
+    reflectionFocus,
     interpretiveBoundary,
     yiSunSinSynthesisMatrix,
   };
@@ -208,6 +215,8 @@ export function formatYiSunSinNanjungIlgiPrompt(result: YiSunSinNanjungIlgiResul
     `- 난중일기 친필 성찰의 불멸성: 《${result.nanjungIlgiReflection.diaryEntryTitle}》`,
     `  → 불멸의 지혜: "${result.nanjungIlgiReflection.immortalWisdom}"`,
     `- 성찰 질문: ${result.reflectiveQuestion}`,
+    `- 실천 의례: ${result.ritualAction}`,
+    `- 성찰 초점: ${result.reflectionFocus}`,
     `- 해석 경계: ${result.interpretiveBoundary}`,
   ];
   if (result.yiSunSinSynthesisMatrix) {

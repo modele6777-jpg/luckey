@@ -10,12 +10,12 @@
  * 4. 독서(讀書): 이치를 궁구하여 일상에서 실천하는 실학적 성찰.
  * 5. 사친(事親)·접인(接人)·처세(處世): 가족을 공경하고 사람을 대함에 정성을 다하는 실천궁행.
  *
- * @version LUCKEY-YULGOK-GYEOKMONG-v2.1.0
+ * @version LUCKEY-YULGOK-GYEOKMONG-v2.2.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const YULGOK_GYEOKMONG_VERSION = 'LUCKEY-YULGOK-GYEOKMONG-v2.1.0';
+export const YULGOK_GYEOKMONG_VERSION = 'LUCKEY-YULGOK-GYEOKMONG-v2.2.0';
 
 export interface YulgokStage {
   stageLevel: number;
@@ -54,6 +54,8 @@ export interface YulgokGyeokmongResult {
     virtuousWisdom: string;
   };
   reflectiveQuestion: string;
+  ritualAction: string;
+  reflectionFocus: string;
   interpretiveBoundary: string;
   yulgokSynthesisMatrix?: {
     dominantTension: string;
@@ -147,6 +149,9 @@ export function calculateYulgokGyeokmong(
     ? `율곡 이이의 《격몽요결》 '${primaryYulgokPrecept.preceptTitleKo}'와 '${secondaryYulgokPrecept.preceptTitleKo}'를 비추어 볼 때, "${trimmedQuery}"에서 미루던 옛 습관을 끊고 바로 세워야 할 뜻은 무엇인가요?`
     : `지금 삶의 방향을 다잡는 자리에서, '${activeScholarStage.stageNameKo}'의 중심과 '${secondaryScholarStage.stageNameKo}'의 실천을 함께 열기 위해 오늘 끊어낼 습관은 무엇일까요?`;
 
+  const ritualAction = `${primaryYulgokPrecept.actionableDirective} 오늘 자리에 앉아 호흡을 고르고, 혁구습(革舊習)으로 끊어낼 작은 습관 하나와 입지(立志)의 한 문장을 적으세요.`;
+  const reflectionFocus = `《격몽요결》 '${activeScholarStage.stageNameKo}'와 '${primaryYulgokPrecept.preceptTitleKo}' — 묵은 습관을 단칼에 끊고 뜻을 세우는 정성`;
+
   const interpretiveBoundary = '이 지표는 율곡 이이 선생의 《격몽요결》 입지·혁구습·구용구사·독서궁리 수양 원칙을 일상 습관과 태도를 점검하는 정성적 거울로 해석한 결과이며, 미래의 구체적 성패를 단정하는 예언이 아닙니다.';
 
   const avgScore = Math.round(
@@ -177,6 +182,8 @@ export function calculateYulgokGyeokmong(
     secondaryYulgokPrecept,
     gyeokmongMasteryEpiphany,
     reflectiveQuestion,
+    ritualAction,
+    reflectionFocus,
     interpretiveBoundary,
     yulgokSynthesisMatrix,
   };
@@ -206,6 +213,8 @@ export function formatYulgokGyeokmongPrompt(result: YulgokGyeokmongResult): stri
     `- 격몽요결 불멸의 가르침: 《${result.gyeokmongMasteryEpiphany.studySceneTitle}》`,
     `  → 율곡 선생의 지혜: "${result.gyeokmongMasteryEpiphany.virtuousWisdom}"`,
     `- 성찰 질문: ${result.reflectiveQuestion}`,
+    `- 실천 의례: ${result.ritualAction}`,
+    `- 성찰 초점: ${result.reflectionFocus}`,
     `- 해석 경계: ${result.interpretiveBoundary}`,
   ];
   if (result.yulgokSynthesisMatrix) {
