@@ -31,7 +31,7 @@
 
 import { hexagram, Yao, calculateIching } from './iching';
 
-export const ICHING_MASTER_ENGINE_VERSION = 'LUCKEY-ICHING-v2.1.0';
+export const ICHING_MASTER_ENGINE_VERSION = 'LUCKEY-ICHING-v2.2.0';
 
 export const ICHING_MASTER_METHOD =
   '주역(周易) 64괘 정통 이진 비트 수리 산법: 본괘·지괘·호괘·착괘·종괘 4대 대칭 괘상 도출, 체용(體用) 오행 생극제화, 효위(爻位) 6단계 역학, 경방 8궁 세응(世應) 상응도 및 기운 변환 모멘텀 산출';
@@ -128,6 +128,9 @@ export interface IchingMasterResult {
   };
   boundaryNotice: string;
   interpretiveBoundary: string;
+  ritualAction: string;
+  reflectionFocus: string;
+  reflectiveQuestion: string;
   guidance: {
     situationNow: string; // 본괘 조언
     hiddenDynamic: string; // 호괘 조언
@@ -166,7 +169,7 @@ function getTemporalIchingRhythm(now: Date) {
           : '겨울 · 중지곤(重地坤) 함장절 (포용과 인내로 다음 주기를 준비하는 시기)';
 
   return {
-    kstTimeLabel: `${y}-${m}-${d} ${hh}:${mm} KST`,
+    kstTimeLabel: `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`,
     divinationWatchWindow,
     seasonalIchingTone,
     temporalGuidance: `${divinationWatchWindow} · ${seasonalIchingTone}의 결에 맞추어 괘의 변화를 읽으십시오.`,
@@ -533,6 +536,11 @@ export function calculateIchingMaster(
   };
 
   const boundaryNotice = '본 결과는 주역 64괘·체용·경방 8궁 수리에 기반한 정성적 변화 통찰이며, 확정적 예언이 아닙니다.';
+  const ritualAction = `[${primary.name} · ${dominantStage.yaoName}] ${dominantStage.actionGuidance}`;
+  const reflectionFocus = `본괘 ${primary.name}에서 지괘 ${changed.name}(으)로 이어지는 흐름에서 ${palGongSeYing.seYao}효(나)와 ${palGongSeYing.yingYao}효(상대)의 균형을 잡기 위해 오늘 먼저 살필 한 가지는 무엇입니까?`;
+  const reflectiveQuestion = q
+    ? `지금 "${q}" 앞에서 본괘 ${primary.name}·${dominantStage.yaoName}의 흐름을 ${decisionGrade} 기조로 풀어가기 위해 오늘 먼저 점검할 한 가지는 무엇입니까?`
+    : reflectionFocus;
 
   return {
     engineVersion: ICHING_MASTER_ENGINE_VERSION,
@@ -565,6 +573,9 @@ export function calculateIchingMaster(
     ichingSynthesisMatrix,
     boundaryNotice,
     interpretiveBoundary: boundaryNotice,
+    ritualAction,
+    reflectionFocus,
+    reflectiveQuestion,
     guidance: {
       situationNow: `본괘는 ${primary.name}으로, 현재 상황의 본질적 기운을 나타냅니다.`,
       hiddenDynamic: `호괘는 ${nuclear.name}으로, 내면에 숨은 잠재력과 중간 전개 과정을 암시합니다.`,
@@ -615,6 +626,9 @@ export function formatIchingMasterPrompt(res: IchingMasterResult): string {
   • 시공간 지침: ${res.temporalIchingRhythm.temporalGuidance}
 - 주역 교차 매트릭스: 핵심(${res.ichingSynthesisMatrix.coreInsight}) | 실행(${res.ichingSynthesisMatrix.recommendedAction}) | 주의(${res.ichingSynthesisMatrix.cautionNotice})
 - 종합 결단 기조: ${res.decisionGrade}
+- 실천 의례(Ritual Action): ${res.ritualAction}
+- 성찰 초점(Reflection Focus): ${res.reflectionFocus}
+- 질문 맞춤 성찰 질문: ${res.reflectiveQuestion}
 - 해석 경계: ${res.boundaryNotice}
 ※ 루시 지침: 주역은 우주의 변화 법칙입니다. 본괘(현재)에서 동효의 움직임을 거쳐 지괘(미래)로 나아가는 흐름과 호괘·착괘·종괘가 주는 다각도 통찰, 세효와 응효의 상응 역학을 자연어 조언에 자연스럽게 녹여내 주세요.`;
 }

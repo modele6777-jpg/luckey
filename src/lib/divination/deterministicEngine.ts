@@ -4779,7 +4779,7 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'sajuClassicYongshin', nameKo: '사주 원전 억부용신', icon: '📜', category: 'deep_master' },
   { key: 'tarotTreeOfLifeShadow', nameKo: '타로 세피로트 그림자', icon: '🌳', category: 'deep_master', summary: '카발라 생명나무 22경로와 타로 섀도우 미러를 통해 의식의 빛과 무의식 방어기제를 통합하는 관점' },
   { key: 'hellenisticLots', nameKo: '헬레니즘 포르투나 롯', icon: '🏛️', category: 'deep_master', summary: '주간·야간 섹트와 포르투나·스피릿·에로스·네메시스 4대 아라빅 랏으로 환경적 복록과 의지적 돌파구를 비추는 관점' },
-  { key: 'iching384Yao', nameKo: '주역 384효 동효변괘', icon: '☯️', category: 'deep_master' },
+  { key: 'iching384Yao', nameKo: '주역 384효 동효변괘', icon: '☯️', category: 'deep_master', summary: '본괘·지괘·호괘·착괘·종괘 착종복잡 4대 변괘와 동효 효사로 변화의 분기점과 시중 결단을 비추는 관점' },
   { key: 'sajuTwelveStagesTomb', nameKo: '12운성 묘고지 개고', icon: '🗝️', category: 'deep_master' },
   { key: 'tarotElementalCourt', nameKo: '타로 16 코트 페르소나', icon: '🎭', category: 'deep_master', summary: '타로 16대 궁정 카드와 4대 원소 상징으로 현재의 외적 태도와 내면의 그림자 맹점을 비추는 관점' },
   { key: 'karmicSynastry', nameKo: '카르믹 시나스트리', icon: '💫', category: 'deep_master' },

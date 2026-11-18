@@ -15,7 +15,7 @@
 import type { UserProfile } from '../sharedState';
 import { parseBirthTime } from '../birthDateTime';
 
-export const ICHING_384YAO_ENGINE_VERSION = 'LUCKEY-ICHING-384YAO-v2.2.0';
+export const ICHING_384YAO_ENGINE_VERSION = 'LUCKEY-ICHING-384YAO-v2.3.0';
 
 export interface HexagramSimple {
   number: number;
@@ -53,6 +53,7 @@ export interface Iching384YaoReport {
   interpretiveBoundary: string;
   ritualAction: string;
   reflectionFocus: string;
+  reflectiveQuestion: string;
 }
 
 function formatIchingKstTimestamp(now: Date = new Date()): string {
@@ -62,7 +63,7 @@ function formatIchingKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
 }
 
 const HEXAGRAM_CATALOG: Record<number, { nameKo: string; hanja: string; upper: string; lower: string; desc: string }> = {
@@ -163,6 +164,10 @@ export function calculateIching384Yao(params: {
 
   const ritualAction = `[${original.nameKo} · ${YAO_TITLES[changingYaoPos - 1]}] ${yaoInfo.advice}`;
   const reflectionFocus = `본괘 ${original.nameKo}에서 지괘 ${transformed.nameKo}(으)로 건너가는 분기점에서 '${timeTimingDecision}'의 태도로 오늘 지킬 한 가지 원칙은 무엇입니까?`;
+  const qClean = (params.question ?? '').trim();
+  const reflectiveQuestion = qClean
+    ? `지금 "${qClean}" 앞에서 본괘 ${original.nameKo}·${YAO_TITLES[changingYaoPos - 1]}의 흐름을 '${timeTimingDecision}'의 태도로 풀어내기 위해 오늘 지킬 한 가지 원칙은 무엇입니까?`
+    : reflectionFocus;
 
   return {
     engineVersion: ICHING_384YAO_ENGINE_VERSION,
@@ -184,6 +189,7 @@ export function calculateIching384Yao(params: {
     ichingSynthesisMatrix,
     ritualAction,
     reflectionFocus,
+    reflectiveQuestion,
     interpretiveBoundary: '본 주역 384효 동효·착종복잡 리포트는 선천수 작괘와 역학 원전에 기반한 정성적 시중(時中) 성찰 안내이며, 확정적 미래 예언이 아닙니다.',
   };
 }
@@ -215,6 +221,7 @@ ${matrixBlock}
 "${report.hexagramQuadStrategy}"
 - 실천 의례(Ritual Action): ${report.ritualAction}
 - 성찰 초점(Reflection Focus): ${report.reflectionFocus}
+- 질문 맞춤 성찰 질문: ${report.reflectiveQuestion}
 - 해석 경계: ${report.interpretiveBoundary}
 ======================================================================`;
 }
