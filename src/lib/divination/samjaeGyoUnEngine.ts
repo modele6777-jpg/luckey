@@ -47,7 +47,7 @@ import {
   getYearSolarTerms,
 } from '../astronomicalSolarTerms';
 
-export const SAMJAE_GYOUN_ENGINE_VERSION = 'LUCKEY-SG-v2.1.0';
+export const SAMJAE_GYOUN_ENGINE_VERSION = 'LUCKEY-SG-v2.2.0';
 
 export const SAMJAE_GYOUN_METHOD =
   '삼합(三合) 묘지 앵커 삼재 산법: 입춘 원국 년지 띠의 삼합군 기준 들·눌·날 3개년 판정, 원국 4주 충형파해·육합과 용신·희신·기신 오행 조화의 복·평·악 등급화, 대운수 8대 타임라인 교체 나이 전후 1~2년 교운기 감지 및 십성·계절(접목운) 전환 완충 처방 결정론 산출';
@@ -171,6 +171,8 @@ export interface SamjaeGyoUnResult {
     alignmentState: string;
     integratedAction: string;
   };
+  ritualAction?: string;
+  reflectionFocus?: string;
   reflectiveQuestion?: string;
   interpretiveBoundary?: string;
 }
@@ -879,6 +881,8 @@ export function calculateSamjaeGyoUn(params: {
 
   const interpretiveBoundary =
     '본 삼재·교운기 리포트는 삼합 지지와 대운 교체 시점에 기반한 정성적 리듬 안내이며, 공포 조장이나 확정적 흉사 예언을 뜻하지 않습니다.';
+  const ritualAction = `[${samjae.isSamjaeYear ? samjae.phase : '비삼재'}·${gyoUn.isGyoUnPeriod ? gyoUn.windowType : '대운 순항'}] ${samjaeGyoUnSynthesisMatrix.integratedAction}`;
+  const reflectionFocus = `삼재·교운기 환절기(${targetYear}년 ${samjae.targetYearGanZhi}) — ${samjaeHeadline}`;
 
   return {
     status: 'calculated',
@@ -894,6 +898,8 @@ export function calculateSamjaeGyoUn(params: {
     samjae,
     gyoUn,
     samjaeGyoUnSynthesisMatrix,
+    ritualAction,
+    reflectionFocus,
     reflectiveQuestion,
     interpretiveBoundary,
   };
@@ -961,7 +967,7 @@ ${gyoUnLines}
 
 5. [리스크 완충 & 기회 타이밍]:
    - 리스크 완충 처방: ${gyoUn.riskBufferAdvice || samjae.gradeReason}
-   - 기회 타이밍: ${gyoUn.opportunityTiming || '삼재 기간의 소극적 기회는 평삼재 관리로 충분합니다.'}${result.samjaeGyoUnSynthesisMatrix ? `\n   - 교차 매트릭스 [핵심 긴장: ${result.samjaeGyoUnSynthesisMatrix.dominantTension} | 조율 상태: ${result.samjaeGyoUnSynthesisMatrix.alignmentState}]\n   - 통합 실천: ${result.samjaeGyoUnSynthesisMatrix.integratedAction}` : ''}${result.reflectiveQuestion ? `\n   - 성찰 질문: ${result.reflectiveQuestion}` : ''}${result.interpretiveBoundary ? `\n   - 해석 경계: ${result.interpretiveBoundary}` : ''}
+   - 기회 타이밍: ${gyoUn.opportunityTiming || '삼재 기간의 소극적 기회는 평삼재 관리로 충분합니다.'}${result.samjaeGyoUnSynthesisMatrix ? `\n   - 교차 매트릭스 [핵심 긴장: ${result.samjaeGyoUnSynthesisMatrix.dominantTension} | 조율 상태: ${result.samjaeGyoUnSynthesisMatrix.alignmentState}]\n   - 통합 실천: ${result.samjaeGyoUnSynthesisMatrix.integratedAction}` : ''}${result.ritualAction ? `\n   - 실천 의례: ${result.ritualAction}` : ''}${result.reflectionFocus ? `\n   - 성찰 초점: ${result.reflectionFocus}` : ''}${result.reflectiveQuestion ? `\n   - 성찰 질문: ${result.reflectiveQuestion}` : ''}${result.interpretiveBoundary ? `\n   - 해석 경계: ${result.interpretiveBoundary}` : ''}
 ======================================================================
 [★ 루시 삼재·교운기 상담 지침]:
 - 위 삼재 판정(들·눌·날)과 교운기 감지(D-2~+1), 남은 햇수·월수는 순수 수리로 직접 계산한 확정 데이터다. 다른 해를 삼재로 지어내지 마십시오.

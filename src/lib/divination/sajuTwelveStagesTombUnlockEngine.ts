@@ -18,7 +18,7 @@ import {
   STEM_ELEMENT,
 } from '../sajuAnalysis';
 
-export const SAJU_12STAGES_TOMB_VERSION = 'LUCKEY-SAJU-12STAGES-TOMB-v2.2.0';
+export const SAJU_12STAGES_TOMB_VERSION = 'LUCKEY-SAJU-12STAGES-TOMB-v2.3.0';
 
 export interface TwelveStagePillarVitality {
   pillarName: '년주 (근본)' | '월주 (사회)' | '일주 (본원)' | '시주 (결실)';
@@ -50,6 +50,8 @@ export interface SajuTwelveStagesTombReport {
   hasTombStorage: boolean;
   tombKeyActionGuidance: string; // 묘고지 잠재력을 깨우는 1순위 행동
   annual2026TombInteraction: string; // 2026 병오년과의 개고/자극 반응
+  ritualAction: string;
+  reflectionFocus: string;
   synthesisPromptGuidance: string;
   reflectiveQuestion: string;
   tombSynthesisMatrix?: {
@@ -257,6 +259,8 @@ export function calculateSajuTwelveStagesTomb(
   };
 
   const interpretiveBoundary = '본 사주 12운성 포태법 & 묘고지 개고 리포트는 명리 원국 구조의 상징적 해석이며, 확정적 미래 예언이나 재무·투자 자문이 아닙니다.';
+  const ritualAction = `[${peakVitalityStage}] ${tombKeyActionGuidance}`;
+  const reflectionFocus = `12운성·묘고지 개고(${hasTombStorage ? tombStorages[0].storageType : '건록·제왕 순수 추구'}) — ${annual2026TombInteraction}`;
 
   const synthesisPromptGuidance = `
 [사주 12운성 & 4대 묘고지(진·술·축·미) 개고 마스터 지능 | 연산 시각: ${calculatedAtKst}]:
@@ -266,6 +270,8 @@ export function calculateSajuTwelveStagesTomb(
 - 2026 병오년 상호작용: "${annual2026TombInteraction}"
 - 교차 매트릭스 [핵심 긴장: ${tombSynthesisMatrix.dominantTension} | 조율 상태: ${tombSynthesisMatrix.alignmentState}]
   * 통합 실천: ${tombSynthesisMatrix.integratedAction}
+- 실천 의례: ${ritualAction}
+- 성찰 초점: ${reflectionFocus}
 - 질문 맞춤 성찰 질문: ${reflectiveQuestion}
 - 해석 경계: ${interpretiveBoundary}
 내담자에게 "사주를 보니~"라는 진부한 서론 없이, 내면에 잠든 보물 창고(묘고지)와 지금 발휘해야 할 운성 에너지("${peakVitalityStage}")의 힘을 현실적 비유로 짚어줄 것.
@@ -282,6 +288,8 @@ export function calculateSajuTwelveStagesTomb(
     hasTombStorage,
     tombKeyActionGuidance,
     annual2026TombInteraction,
+    ritualAction,
+    reflectionFocus,
     synthesisPromptGuidance,
     reflectiveQuestion,
     tombSynthesisMatrix,
