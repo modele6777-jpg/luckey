@@ -25,7 +25,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const JAIN_GUNASTHANA_KARMA_ENGINE_VERSION = '2.2.0';
+export const JAIN_GUNASTHANA_KARMA_ENGINE_VERSION = '2.3.0';
 
 export interface RatnatrayaBalance {
   darshanaScore: number; // 정견 (올바른 믿음/직관) 0~100
@@ -73,6 +73,7 @@ export interface JainGunasthanaReport {
   boundaryNotice: string;
   ritualAction: string;
   reflectionFocus: string;
+  reflectiveQuestion: string;
 }
 
 const GUNASTHANA_STAGES: GunasthanaStage[] = [
@@ -135,7 +136,7 @@ function formatJainKst(date: Date): { label: string; hour: number; month: number
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
   return {
-    label: `${y}-${m}-${d} ${hh}:${mm} KST`,
+    label: `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`,
     hour: kst.getUTCHours(),
     month: kst.getUTCMonth() + 1,
   };
@@ -278,6 +279,10 @@ export function calculateJainGunasthanaKarma(options?: {
 
   const ritualAction = `[제${activeStage.stageNumber}단계 ${activeStage.stageNameKo}] ${nirjaraPurification}`;
   const reflectionFocus = `오늘 내가 '${situationalJainAudit.focusTheme}'에서 내려놓을 수 있는 작은 집착 하나는 무엇인가요?`;
+  const qClean = (options?.question || '').trim();
+  const reflectiveQuestion = qClean
+    ? `지금 "${qClean}" 앞에서 아힘사(비폭력)와 아파리그라하(무소유)의 시선으로 내려놓을 집착 하나는 무엇인가요?`
+    : `오늘 제${activeStage.stageNumber}단계 ${activeStage.stageNameKo} 흐름에서 내려놓을 수 있는 작은 집착 하나는 무엇인가요?`;
 
   return {
     engineVersion: JAIN_GUNASTHANA_KARMA_ENGINE_VERSION,
@@ -295,6 +300,7 @@ export function calculateJainGunasthanaKarma(options?: {
     interpretiveBoundary: '본 결과는 자이나교 《타트바르타 수트라》 14 군아스타나와 삼보 원리에 따른 정성적 성찰이며, 우열을 가르는 점수나 운명적 판정이 아닙니다.',
     ritualAction,
     reflectionFocus,
+    reflectiveQuestion,
   };
 }
 
@@ -331,6 +337,7 @@ export function formatJainGunasthanaKarmaPrompt(report: JainGunasthanaReport): s
    - 카르마 소진 실천: ${report.nirjaraPurification}
    - 실천 의례(Ritual Action): ${report.ritualAction}
    - 성찰 초점(Reflection Focus): ${report.reflectionFocus}
+   - 질문 맞춤 성찰 질문: ${report.reflectiveQuestion}
    - 핵심 통찰: ${report.jainSynthesisMatrix.coreInsight}
    - 권고 실행: ${report.jainSynthesisMatrix.recommendedAction}
    - 주의 경계: ${report.jainSynthesisMatrix.cautionNotice}

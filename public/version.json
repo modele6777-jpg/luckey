@@ -1,10 +1,10 @@
 {
-  "version": "1.7.858",
-  "builtAt": "2026-11-19T04:22:00+09:00",
-  "summary": "서포 김만중 구운몽, 서산대사 선가귀감, 신사임당 초충도 3대 엔진 실천 의례 및 성찰 질문 표준 연동(v1.7.858)",
+  "version": "1.7.859",
+  "builtAt": "2026-11-19T04:30:00+09:00",
+  "summary": "잉카 안데스 3대 파차·자이나 14군아스타나·헤이안 음양도 세이메이 3대 엔진 성찰 질문·+09:00 KST·카탈로그 뜻 보강(v1.7.859)",
   "items": [
-    "서포 김만중 《구운몽·사씨남정기》 일장춘몽 각성 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동",
-    "서산대사 휴정 《선가귀감》 일물영명·활구참선 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동",
-    "신사임당 《초충도》 자연관조·현철자아실현 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동"
+    "잉카 안데스 3대 파차(v2.3.0)·자이나 14군아스타나(v2.3.0)·헤이안 음양도 세이메이(v2.3.0): 질문 반응형 reflectiveQuestion·+09:00 (KST) 표준 표기·프롬프트 연동",
+    "ALL_DCE_ENGINES 카탈로그: incaAndeanThreePachaAyni·jainGunasthanaKarma·heianOnmyodoSeimei 한 줄 summary 3건 등록",
+    "divination-engines.test.ts: 잉카 안데스·자이나·헤이안 음양도 세이메이 회귀 테스트 추가"
   ]
 }

@@ -30,7 +30,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const HEIAN_ONMYODO_SEIMEI_VERSION = '2.2.0';
+export const HEIAN_ONMYODO_SEIMEI_VERSION = '2.3.0';
 
 export interface HeianOnmyodoSeimeiReport {
   engineVersion: string;
@@ -76,6 +76,7 @@ export interface HeianOnmyodoSeimeiReport {
   interpretiveBoundary: string;
   ritualAction: string;
   reflectionFocus: string;
+  reflectiveQuestion: string;
 }
 
 function djb2Hash(str: string): number {
@@ -182,7 +183,7 @@ function formatOnmyoKst(date: Date): { label: string; hour: number; month: numbe
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
   return {
-    label: `${y}-${m}-${d} ${hh}:${mm} KST`,
+    label: `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`,
     hour: kst.getUTCHours(),
     month: kst.getUTCMonth() + 1,
   };
@@ -290,6 +291,10 @@ export function calculateHeianOnmyodoSeimei(
 
   const ritualAction = `[${primaryGuardianGeneral.nameKo}] ${situationalOnmyoAudit.shikigamiStance}`;
   const reflectionFocus = `지금 '${situationalOnmyoAudit.focusTheme}'에서 오망성 5행의 균형을 회복하기 위해 한 걸음 물러나 살필 지점은 무엇인가요?`;
+  const qClean = (questionArg || '').trim();
+  const reflectiveQuestion = qClean
+    ? `지금 "${qClean}" 앞에서 주 수호 신장 ${primaryGuardianGeneral.nameKo}의 결계로 지킬 경계선과 내려놓을 조급함은 무엇인가요?`
+    : `지금 '${situationalOnmyoAudit.focusTheme}' 흐름에서 오망성 5행의 균형을 회복하기 위해 한 걸음 물러나 살필 지점은 무엇인가요?`;
 
   return {
     engineVersion: HEIAN_ONMYODO_SEIMEI_VERSION,
@@ -310,6 +315,7 @@ export function calculateHeianOnmyodoSeimei(
     interpretiveBoundary: '본 결과는 헤이안 음양도 《점사략》 12천장 및 오망성 5행 순환에 따른 정성적 상징 해석이며, 점수나 확정적 길흉 판정이 아닙니다.',
     ritualAction,
     reflectionFocus,
+    reflectiveQuestion,
   };
 }
 
@@ -332,5 +338,6 @@ export function formatHeianOnmyodoSeimeiPrompt(report: HeianOnmyodoSeimeiReport)
   - "${report.onmyoPurificationGuidance}"
 - **실천 의례(Ritual Action)**: ${report.ritualAction}
 - **성찰 초점(Reflection Focus)**: ${report.reflectionFocus}
+- **질문 맞춤 성찰 질문**: ${report.reflectiveQuestion}
 - **해석 경계**: ${report.boundaryNotice}`;
 }
