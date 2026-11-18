@@ -29,7 +29,7 @@
 import type { UserProfile } from '../sharedState';
 import { resolveEffectiveSolarDate } from '../lunarCalendar';
 
-export const TAROT_MASTER_ENGINE_VERSION = 'LUCKEY-TAROT-v2.1.0';
+export const TAROT_MASTER_ENGINE_VERSION = 'LUCKEY-TAROT-v2.2.0';
 
 function formatTarotMasterKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -38,7 +38,7 @@ function formatTarotMasterKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
 }
 
 export const TAROT_MASTER_METHOD =
@@ -135,6 +135,7 @@ export interface TarotMasterResult {
     personalitySephira: SephiraMapping;
   };
   suitManifestation: MinorSuitManifestation;
+  reflectiveQuestion: string;
   tarotSynthesisMatrix?: {
     dominantTension: string;
     alignmentState: string;
@@ -383,6 +384,9 @@ export function calculateTarotMaster(params?: {
 
   const calculatedAtKst = formatTarotMasterKstTimestamp(now);
   const q = (params?.question || '').trim();
+  const reflectiveQuestion = q
+    ? `'${q}'라는 질문 앞에서, 내 영혼의 본질(${soulCard.name})과 현재의 과제(${presentCard.name})를 잇기 위해 '${suitManifestation.suitName}'의 힘으로 오늘 당장 실행할 한 가지는 무엇인가요?`
+    : `지금 '${presentCard.name}'의 국면에서 내 소울 카드(${soulCard.name})의 진실에 가장 가깝게 응답하기 위해 오늘 선택할 행동은 무엇인가요?`;
   const tarotSynthesisMatrix = {
     dominantTension: `${soulCard.name} ↔ ${presentCard.name}`,
     alignmentState: `주도 원소(${dominantElement}) · 세피라(${soulSephira.sephiraName})`,
@@ -416,6 +420,7 @@ export function calculateTarotMaster(params?: {
       personalitySephira,
     },
     suitManifestation,
+    reflectiveQuestion,
     tarotSynthesisMatrix,
     interpretiveBoundary,
   };
@@ -449,6 +454,7 @@ export function formatTarotMasterPrompt(res: TarotMasterResult): string {
   • 행동 프로토콜: ${res.suitManifestation.actionProtocol}
   • 일상 데일리 루틴: ${res.suitManifestation.dailyPractice}
 - 마스터 확언: "${res.masterAffirmation}"${matrixLine}
+- 질문 맞춤 성찰 질문: ${res.reflectiveQuestion}
 - 해석 경계: ${res.interpretiveBoundary}
 ※ 루시 지침: 타로는 우주적 동시성의 언어입니다. 단순 카드 한 장의 해석을 넘어, 사용자의 영혼 소명(소울 카드), 사회적 무기(퍼스널리티), 세피라 영적 계단, 정·역방향 그림자 극복 방안, 4원소 마이너 수트 실천 가이드를 깊고 신비로우면서도 명료하게 연결해 주세요.`;
 }
