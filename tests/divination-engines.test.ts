@@ -12133,3 +12133,30 @@ test('로젠크로이츠 화학적 결혼·사주 원전 용신·12운성 묘고
   assert.ok(st.reflectiveQuestion.includes(query));
   assert.ok(formatSajuTwelveStagesTombPrompt(st).includes('질문 맞춤 성찰 질문'));
 });
+
+test('황금비 영혼 수비학·샤머니즘 토템·수피 7대 라타이프 엔진 v1.7.889 질문 반응형 성찰 질문·KST(+09:00) 검증', () => {
+  const profile: any = {
+    name: '테스트',
+    basic: { birthdate: '1994-01-24', birthtime: '10:30', gender: 'male', calendarType: 'solar' },
+  };
+  const now = new Date('2026-11-19T07:08:00+09:00');
+  const query = '복잡한 마음을 비우고 중심을 세울 때';
+
+  const sv = calculateSacredVortexGeometry({ profile, targetDate: now, question: query });
+  assert.equal(sv.engineVersion, SACRED_VORTEX_VERSION);
+  assert.match(sv.calculatedAtKst, /\+09:00/);
+  assert.ok(sv.reflectiveQuestion.includes(query));
+  assert.ok(formatSacredVortexGeometryPrompt(sv).includes('질문 맞춤 성찰 질문'));
+
+  const sat = calculateShamanicAnimalTotem({ profile, targetDate: now, question: query });
+  assert.equal(sat.engineVersion, SHAMANIC_ANIMAL_TOTEM_VERSION);
+  assert.match(sat.calculatedAtKst, /\+09:00/);
+  assert.ok(sat.reflectiveQuestion.includes(query));
+  assert.ok(formatShamanicAnimalTotemPrompt(sat).includes('질문 맞춤 성찰 질문'));
+
+  const sl = calculateSufiLataifSoulAscension({ profile, targetDate: now, question: query });
+  assert.equal(sl.engineVersion, SUFI_LATAIF_VERSION);
+  assert.match(sl.calculatedAtKst, /\+09:00/);
+  assert.ok(sl.reflectiveQuestion.includes(query));
+  assert.ok(formatSufiLataifSoulAscensionPrompt(sl).includes('질문 맞춤 성찰 질문'));
+});

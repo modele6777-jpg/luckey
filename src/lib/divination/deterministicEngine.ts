@@ -1783,7 +1783,7 @@ try {
   const shamanicAnimalTotemResult = calculateSupplement('shamanicAnimalTotemResult', () => (birthdateStr && profile
     ? (() => {
         try {
-          return calculateShamanicAnimalTotem({ profile, targetDate: now });
+          return calculateShamanicAnimalTotem({ profile, targetDate: now, question });
         } catch (_) {
           return null;
         }
@@ -1849,7 +1849,7 @@ try {
   const sacredVortexGeometryResult = calculateSupplement('sacredVortexGeometryResult', () => (birthdateStr && profile
     ? (() => {
         try {
-          return calculateSacredVortexGeometry({ profile, targetDate: now });
+          return calculateSacredVortexGeometry({ profile, targetDate: now, question });
         } catch (_) {
           return null;
         }
@@ -2051,7 +2051,7 @@ try {
   // 79. 정통 수피즘 심장의 7대 라타이프 영혼 정화 & 미크라즈 상승 엔진
   const sufiLataifResult = calculateSupplement('sufiLataifResult', () => ((() => {
     try {
-      return calculateSufiLataifSoulAscension({ profile, targetDate: now });
+      return calculateSufiLataifSoulAscension({ profile, targetDate: now, question });
     } catch (_) {
       return null;
     }
@@ -4772,7 +4772,7 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'quantumProbabilisticTimeline', nameKo: '양자 확률 타임라인', icon: '🔮', category: 'deep_master', summary: '주역 변효와 다중세계 해석을 결합해 관성 타임라인과 최적 성장 타임라인의 분기점과 붕괴 촉매를 비추는 관점' },
   { key: 'somaticBodyArmoring', nameKo: '소매틱 아머링', icon: '🧘', category: 'deep_master' },
   { key: 'supremeWisdomTrinity', nameKo: '3대 지혜 삼위일체', icon: '👑', category: 'deep_master' },
-  { key: 'sacredVortexGeometry', nameKo: '황금비 영혼 수비학', icon: '🌀', category: 'deep_master' },
+  { key: 'sacredVortexGeometry', nameKo: '황금비 영혼 수비학', icon: '🌀', category: 'deep_master', summary: '플라톤 5대 다면체와 테슬라 3-6-9 보텍스·피보나치 황금 나선으로 에너지 질서와 집중 방향을 정렬하는 관점' },
   { key: 'taoistNeidanMeridian', nameKo: '도교 내단 경락시계', icon: '☯️', category: 'deep_master', summary: '도교 내단 삼보(정·기·신)와 자오유주 12경락 시계 상징으로 현재 시진의 기혈 순환과 단전 호흡을 짚어 주는 관점' },
   { key: 'synchronicityOmen', nameKo: '칼 융 동시성 오멘', icon: '🕊️', category: 'deep_master' },
   { key: 'ethericAuraBiofield', nameKo: '에테릭 오라 바이오필드', icon: '✨', category: 'deep_master', summary: '에테르·아스트랄 오라 스펙트럼과 생체장 쉴딩 결계로 에너지 누수를 막고 경계를 세우는 관점' },
@@ -4793,7 +4793,7 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'tibetanBardo', nameKo: '티베트 바르도 6환생', icon: '☸️', category: 'deep_master', summary: '티베트 사자의 서 6대 바르도 중음 상징으로 인생 전환기의 혼란과 자각의 틈을 비추는 관점' },
   { key: 'mesopotamianSevenGates', nameKo: '메소포타미아 7관문', icon: '🏛️', category: 'deep_master', summary: '수메르 인안나의 명계 7대 행성 관문 여정으로 불필요한 에고의 갑옷을 벗고 내적 주권을 회복하는 관점' },
   { key: 'egyptianDecans', nameKo: '이집트 36데칸', icon: '🏺', category: 'deep_master', summary: '덴데라 36데칸 항성 수호신과 원소·부적 상징으로 영혼의 항해 방향을 비추는 관점' },
-  { key: 'sufiLataif', nameKo: '수피 7라타이프', icon: '🕌', category: 'deep_master' },
+  { key: 'sufiLataif', nameKo: '수피 7라타이프', icon: '🕌', category: 'deep_master', summary: '이슬람 수피즘 7대 라타이프 영적 중심과 마캄 성숙 단계로 심장의 정화와 평온의 지크르를 비추는 관점' },
   { key: 'mayanTzolkin', nameKo: '마야 촐킨 260일', icon: '☀️', category: 'deep_master', summary: '고대 마야 촐킨(Tzolk’in) 260일 신성력의 20 나왈(태양 문양)과 13 은하 톤으로 본명 킨과 오늘의 킨이 만나는 파동적 사명을 비춥니다.' },
   { key: 'nordicRunes', nameKo: '북유럽 24룬 노른직조', icon: 'ᚱ', category: 'deep_master', summary: '24 엘더 푸사르크 룬과 노른 세 여신(우르드·베르단디·스쿨드)의 위르드 직조 및 바인드룬 수호 상징으로 흐름을 비추는 관점' },
   { key: 'delphicMaxims', nameKo: '그리스 델포이 147잠언', icon: '🏛️', category: 'deep_master', summary: '아폴론 신전 147대 잠언으로 자아성찰(Gnothi Seauton)·중용(Meden Agan)·신의(Engua)의 균형을 비추는 관점' },

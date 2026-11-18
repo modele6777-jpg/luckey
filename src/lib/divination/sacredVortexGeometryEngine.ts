@@ -19,7 +19,7 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const SACRED_VORTEX_VERSION = 'LUCKEY-SACRED-VORTEX-v2.1.0';
+export const SACRED_VORTEX_VERSION = 'LUCKEY-SACRED-VORTEX-v2.2.0';
 
 function formatSacredVortexKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -28,7 +28,7 @@ function formatSacredVortexKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
 }
 
 export interface PlatonicSolidArchetype {
@@ -59,6 +59,7 @@ export interface SacredVortexGeometryReport {
     alignmentState: string;
     integratedAction: string;
   };
+  reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
 
@@ -151,6 +152,9 @@ export function runSacredVortexGeometryEngine(
   };
 
   const interpretiveBoundary = '본 신성 기하학 보텍스 리포트는 플라톤 다면체와 수리 상징 비유에 기반한 정성적 균형 안내이며, 의학적·물리적 처방이 아닙니다.';
+  const reflectiveQuestion = q
+    ? `'${q}' 앞에서 지금 내 삶을 흔들지 않고 지탱해 줄 ${solidName}의 중심축과 ${activeVortexNode}번 보텍스 노드의 리듬은 무엇인가요?`
+    : `지금 내 일상의 에너지 흐름을 1:1.618 황금비의 질서로 다시 정렬하기 위해 가장 먼저 단순화해야 할 것은 무엇인가요?`;
 
   const synthesisPromptGuidance = `[LUCKEY 황금비 영혼 수비학 & 보텍스 기하학 ${SACRED_VORTEX_VERSION} | ${calculatedAtKst}]
 - 영혼 기하학 원형: [${soulGeometryTitle}]
@@ -163,6 +167,7 @@ export function runSacredVortexGeometryEngine(
 - 신성 기하학 조율 만트라: "${sacredGeometryMantra}"
 - 교차 매트릭스: [핵심 긴장: ${vortexSynthesisMatrix.dominantTension} | 조율 상태: ${vortexSynthesisMatrix.alignmentState}]
   * 통합 실천: ${vortexSynthesisMatrix.integratedAction}
+- 질문 맞춤 성찰 질문: ${reflectiveQuestion}
 - 해석 경계: ${interpretiveBoundary}`;
 
   return {
@@ -185,6 +190,7 @@ export function runSacredVortexGeometryEngine(
     goldenRatioActionGuidance,
     synthesisPromptGuidance,
     vortexSynthesisMatrix,
+    reflectiveQuestion,
     interpretiveBoundary,
   };
 }
