@@ -26,7 +26,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const PYTHAGOREAN_TETRAKTYS_VERSION = 'LUCKEY-PYTHAGOREAN-TETRAKTYS-v2.1.0';
+export const PYTHAGOREAN_TETRAKTYS_VERSION = 'LUCKEY-PYTHAGOREAN-TETRAKTYS-v2.2.0';
 
 export interface TetraktysLevelDistribution {
   monadIdeaWeight: number;         // 0 ~ 100% 모나드(영감/의도)
@@ -53,6 +53,8 @@ export interface PythagoreanTetraktysReport {
   manifestationObstacleBreakthrough: string;
   sacredGeometryAffirmation: string;
   synthesisMessage: string;
+  ritualAction: string;
+  reflectionFocus: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
   tetraktysSynthesisMatrix?: {
@@ -188,6 +190,8 @@ export function calculatePythagoreanTetraktys(
     manifestationObstacleBreakthrough,
     sacredGeometryAffirmation,
     synthesisMessage,
+    ritualAction: `영혼 루트수 ${soulRootNumber}(${sacredRatio.name})와 [${dominantTier}]의 기운을 현실에 고정하기 위해, '${manifestationObstacleBreakthrough}'의 첫 단계를 오늘 10분 안에 실행하세요.`,
+    reflectionFocus: `테트락티스(${dominantTier} ↔ ${secondaryTier}) — 루트수 ${soulRootNumber}`,
     reflectiveQuestion,
     interpretiveBoundary,
     tetraktysSynthesisMatrix,
@@ -214,6 +218,8 @@ export function formatPythagoreanTetraktysPrompt(report: PythagoreanTetraktysRep
     );
   }
   lines.push(
+    `- **실천 의례**: ${report.ritualAction}`,
+    `- **성찰 초점**: ${report.reflectionFocus}`,
     `- **성찰 질문**: ${report.reflectiveQuestion}`,
     `- **해석 경계**: ${report.interpretiveBoundary}`,
   );

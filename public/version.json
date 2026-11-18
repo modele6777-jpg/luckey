@@ -1,6 +1,10 @@
 {
-  "version": "1.7.887",
-  "builtAt": "2026-11-19T07:00:00+09:00",
-  "commit": "feat/deepen-rosicrucian-yongshin-tombunlock-v1.7.887",
-  "notes": "로젠크로이츠 화학적 결혼·사주 원전 용신·12운성 묘고지 3대 엔진 reflectiveQuestion·+09:00 (KST)·summary·question 연동 (v1.7.887)"
+  "version": "1.7.888",
+  "builtAt": "2026-11-19T07:02:00+09:00",
+  "summary": "피타고라스 테트락티스·퀀텀 점프 타이밍·양자 타임라인 분기 3대 엔진 실천 의례 및 성찰 초점 표준 연동(v1.7.888)",
+  "items": [
+    "피타고라스 테트락티스 10대 신성기하 & 게마트리아 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동",
+    "퀀텀 점프 & 승부수 모멘텀 타이밍 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동",
+    "양자 다중우주 타임라인 분기 & 퀀텀 점프 엔진(v2.3.0): ritualAction·reflectionFocus 표준 필드 연동"
+  ]
 }
