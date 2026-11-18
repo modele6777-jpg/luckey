@@ -17,7 +17,7 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const IKIGAI_DESTINY_COMPASS_VERSION = 'LUCKEY-IKIGAI-v2.1.0';
+export const IKIGAI_DESTINY_COMPASS_VERSION = 'LUCKEY-IKIGAI-v2.2.0';
 
 export interface IkigaiQuadrants {
   passion: {
@@ -57,6 +57,8 @@ export interface IkigaiDestinyCompassReport {
   nextCareerMilestone: string;     // 6개월~1년 내 달성해야 할 1순위 돌파 마일스톤
   reflectiveQuestion: string;
   interpretiveBoundary: string;
+  ritualAction: string;
+  reflectionFocus: string;
   synthesisPromptGuidance: string;
   ikigaiSynthesisMatrix?: {
     dominantTension: string;
@@ -190,7 +192,10 @@ export function runIkigaiDestinyCompassEngine(
     integratedAction: `${monetizationPath.phase1Validation} | ${nextCareerMilestone}${trimmedQuestion ? ` [질문 맥락: ${trimmedQuestion}]` : ''}`,
   };
 
-  const synthesisPromptGuidance = `[LUCKEY 이키가이 천직 4대 교집합 & 소명 나침반 v2.1.0]
+  const ritualAction = `[${soulCallingTitle.split('(')[0].trim()}] ${monetizationPath.phase1Validation}`;
+  const reflectionFocus = reflectiveQuestion;
+
+  const synthesisPromptGuidance = `[LUCKEY 이키가이 천직 4대 교집합 & 소명 나침반 v2.2.0]
 - 연산 시각: ${calculatedAtKst}
 - 궁극의 천직 소명 타이틀: [${soulCallingTitle}]
 - 이키가이 정렬 완성도: ${describeIkigaiStage(ikigaiAlignmentScore)}
@@ -203,6 +208,8 @@ export function runIkigaiDestinyCompassEngine(
 - 1순위 커리어 마일스톤: ${nextCareerMilestone}
 - 교차 매트릭스 [핵심 긴장: ${ikigaiSynthesisMatrix.dominantTension} | 조율 상태: ${ikigaiSynthesisMatrix.alignmentState}]
 - 통합 실천: ${ikigaiSynthesisMatrix.integratedAction}
+- 실천 의례(Ritual Action): ${ritualAction}
+- 성찰 초점(Reflection Focus): ${reflectionFocus}
 - 성찰 질문: ${reflectiveQuestion}
 - 해석 경계: ${interpretiveBoundary}`;
 
@@ -217,6 +224,8 @@ export function runIkigaiDestinyCompassEngine(
     nextCareerMilestone,
     reflectiveQuestion,
     interpretiveBoundary,
+    ritualAction,
+    reflectionFocus,
     synthesisPromptGuidance,
     ikigaiSynthesisMatrix,
   };

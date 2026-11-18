@@ -15,7 +15,7 @@
 import type { UserProfile } from '../sharedState';
 import { parseBirthTime } from '../birthDateTime';
 
-export const ICHING_384YAO_ENGINE_VERSION = 'LUCKEY-ICHING-384YAO-v2.1.0';
+export const ICHING_384YAO_ENGINE_VERSION = 'LUCKEY-ICHING-384YAO-v2.2.0';
 
 export interface HexagramSimple {
   number: number;
@@ -51,6 +51,8 @@ export interface Iching384YaoReport {
     integratedAction: string;
   };
   interpretiveBoundary: string;
+  ritualAction: string;
+  reflectionFocus: string;
 }
 
 function formatIchingKstTimestamp(now: Date = new Date()): string {
@@ -159,6 +161,9 @@ export function calculateIching384Yao(params: {
     integratedAction: `${yaoInfo.advice}${params.question?.trim() ? ` [질문 맥락: ${params.question.trim()}]` : ''}`,
   };
 
+  const ritualAction = `[${original.nameKo} · ${YAO_TITLES[changingYaoPos - 1]}] ${yaoInfo.advice}`;
+  const reflectionFocus = `본괘 ${original.nameKo}에서 지괘 ${transformed.nameKo}(으)로 건너가는 분기점에서 '${timeTimingDecision}'의 태도로 오늘 지킬 한 가지 원칙은 무엇입니까?`;
+
   return {
     engineVersion: ICHING_384YAO_ENGINE_VERSION,
     calculatedAtKst,
@@ -177,6 +182,8 @@ export function calculateIching384Yao(params: {
     timeTimingDecision,
     hexagramQuadStrategy,
     ichingSynthesisMatrix,
+    ritualAction,
+    reflectionFocus,
     interpretiveBoundary: '본 주역 384효 동효·착종복잡 리포트는 선천수 작괘와 역학 원전에 기반한 정성적 시중(時中) 성찰 안내이며, 확정적 미래 예언이 아닙니다.',
   };
 }
@@ -206,6 +213,8 @@ export function formatIching384YaoPrompt(report: Iching384YaoReport): string {
 ${matrixBlock}
 ★ 주역 입체 통합 전략:
 "${report.hexagramQuadStrategy}"
+- 실천 의례(Ritual Action): ${report.ritualAction}
+- 성찰 초점(Reflection Focus): ${report.reflectionFocus}
 - 해석 경계: ${report.interpretiveBoundary}
 ======================================================================`;
 }
