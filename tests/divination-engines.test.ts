@@ -5229,10 +5229,12 @@ test('Inca Andean Three Pacha Ayni Engine: calculates three pachas, sacred recip
   assert(rep.temporalPachaRhythm.intiSolarWindow.length > 0);
   assert(rep.pachaSynthesisMatrix.coreInsight.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatIncaAndeanThreePachaAyniPrompt(rep);
   assert(prompt.includes('고대 잉카 안데스 코스몰로지 3대 파차 & 파차마마 아이니(Ayni) 호혜 조화'));
   assert(prompt.includes(rep.sacredAnimalTotem.animalKo));
   assert(prompt.includes('KST'));
+  assert(prompt.includes(rep.ritualAction));
   assert(!prompt.includes('/100') && !prompt.includes('%'));
   assert(!/\d+\s*점(?:\s*\/\s*100)?/.test(prompt));
 });
@@ -6138,10 +6140,12 @@ test('Upanishadic Tat Tvam Asi Engine: calculates Brahman-Atman unity, Maya pier
   assert(rep.activeMahavakya.vakyaSanskrit.length > 0);
   assert(rep.calculatedAtKst.endsWith('KST'));
   assert(Boolean(rep.upanishadicSynthesisMatrix?.integratedAction));
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatUpanishadicTatTvamAsiPrompt(rep);
   assert(prompt.includes('우파니샤드 타트 트밤 아시 & 범아일여 순수의식 지표'));
   assert(prompt.includes(rep.activeMahavakya.vakyaNameKo));
   assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes(rep.ritualAction));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });
@@ -7285,10 +7289,12 @@ test('Rabindranath Tagore Gitanjali Engine: calculates Cosmic Soul Communion, Bh
   assert(rep.activeTagoreTheme.themeTitleKo.length > 0);
   assert(rep.calculatedAtKst.endsWith('KST'));
   assert(Boolean(rep.tagoreSynthesisMatrix?.integratedAction));
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatIndianRabindranathTagoreGitanjaliPrompt(rep);
   assert(prompt.includes('타고르 《기탄잘리·동방의 등불》 우주적 영혼합일 & 두려움 없는 자유 지표'));
   assert(prompt.includes(rep.activeTagoreTheme.themeTitleKo));
   assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes(rep.ritualAction));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });
