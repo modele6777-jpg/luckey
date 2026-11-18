@@ -3,7 +3,7 @@ import { OverlayPaneContext } from '@/components/layout/OverlayPaneContext';
 import { getLastOverlayPane } from '@/lib/overlayPane';
 
 /** Empty persistent portals capture their source again on each opening. */
-export function useOverlayPane(ref: RefObject<HTMLDivElement | null>) {
+export function useOverlayPane(ref: RefObject<HTMLDivElement | null>, host: Element | null = null) {
   const inherited = useContext(OverlayPaneContext);
   const [owner, setOwner] = useState(() => inherited ?? getLastOverlayPane());
   useLayoutEffect(() => {
@@ -19,6 +19,7 @@ export function useOverlayPane(ref: RefObject<HTMLDivElement | null>) {
     const observer = new MutationObserver(sync);
     observer.observe(element, { childList: true });
     return () => observer.disconnect();
-  }, [ref, inherited]);
+  // host: the layer element is re-created when it moves into its pane.
+  }, [ref, inherited, host]);
   return inherited ?? owner;
 }

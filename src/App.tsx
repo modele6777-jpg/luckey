@@ -1,4 +1,4 @@
-import { hasOpenScreenOverlay } from './components/layout/ScreenPortal';
+import { hasOpenScreenOverlay, getOpenScreenOverlayPane } from './components/layout/ScreenPortal';
 import { markFoldRuntime } from './lib/foldRuntimeTrace';
 import { RetainedPane } from './components/layout/RetainedPane';
 import { OverlayPaneContext } from './components/layout/OverlayPaneContext';
@@ -293,6 +293,9 @@ function AppContent() {
   const lastLeftChannelPathRef = React.useRef<string>('/key');
   const previousUnfoldedRef = React.useRef(duoState.unfolded);
   const [foldedCosmicRoom, setFoldedCosmicRoom] = React.useState(false);
+  // Popups live inside their pane; folding must keep that pane on screen.
+  const [foldedPopupPane, setFoldedPopupPane] = React.useState<'content' | 'lucy' | null>(null);
+  React.useEffect(() => { setFoldedPopupPane(null); }, [location]);
 
   React.useEffect(() => {
     // Root classes are written by the fold store; here only the fold transition is handled.
@@ -314,7 +317,12 @@ function AppContent() {
           currentPath: window.location.pathname || '/',
           lastLeftChannelPath: lastLeftChannelPathRef.current,
         });
-        if (cover.kind === 'cosmic') {
+        const popupPane = getOpenScreenOverlayPane();
+        setFoldedPopupPane(popupPane);
+        if (popupPane) {
+          // Keep the pane that owns the open popup; never navigate it away.
+          setFoldedCosmicRoom(popupPane === 'content' && cover.kind === 'cosmic');
+        } else if (cover.kind === 'cosmic') {
           setFoldedCosmicRoom(true);
         } else {
           setFoldedCosmicRoom(false);
@@ -379,6 +387,7 @@ function AppContent() {
       if (targetPath && typeof targetPath === 'string') {
         markIntentionalNav();
         setFoldedCosmicRoom(false);
+        setFoldedPopupPane(null);
         const safePath = resolveCanonicalPath(targetPath);
         navigate(safePath);
       }
@@ -733,7 +742,7 @@ function AppContent() {
   }, [isUnlocked, sharedState?.themeColor, resolvedTheme]);
 
   const isLucyRoute = location === '/' || location === '/chat' || location === '/lucy' || location === '/chat/pro';
-  const showLucyPane = isDuoUnfolded || (isLucyRoute && !foldedCosmicRoom);
+  const showLucyPane = isDuoUnfolded || (foldedPopupPane ? foldedPopupPane === 'lucy' : isLucyRoute && !foldedCosmicRoom);
   const showContentPane = isDuoUnfolded || !showLucyPane;
 
   React.useEffect(() => {
@@ -774,7 +783,7 @@ function AppContent() {
 
     const handleNavClick = (e: any) => {
       const p = e?.detail?.path;
-      if (p) setFoldedCosmicRoom(false);
+      if (p) { setFoldedCosmicRoom(false); setFoldedPopupPane(null); }
       if (p === '/' || p === '/chat' || p === '/lucy') {
         lastTouchedDuoPaneRef.current = mapDuoPaneSide('right', isDuoPanesSwapped);
       } else if (p) {
