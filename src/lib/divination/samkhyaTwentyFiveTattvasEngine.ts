@@ -23,7 +23,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const SAMKHYA_TATTVAS_ENGINE_VERSION = 'LUCKEY-SAMKHYA-TATTVAS-v2.1.0';
+export const SAMKHYA_TATTVAS_ENGINE_VERSION = 'LUCKEY-SAMKHYA-TATTVAS-v2.2.0';
 
 export interface SamkhyaTattvaInfo {
   index: number;
@@ -54,6 +54,8 @@ export interface SamkhyaTwentyFiveTattvasReport {
   prakritiEntanglementRisk: number;  // 0 ~ 100 물질계 동일시/속박 위험도
   samkhyaPhilosophicalGuidance: string;
   mindPurificationPrescription: string;
+  ritualAction: string;
+  reflectionFocus: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
   samkhyaSynthesisMatrix?: {
@@ -394,6 +396,9 @@ export function calculateSamkhyaTwentyFiveTattvas(params: {
     integratedAction: `${mindPurificationPrescription}${question.trim() ? ` [질문 맥락: ${question.trim()}]` : ''}`,
   };
 
+  const ritualAction = `[${dominantTattva.nameKo}] 호흡을 고르며 '${dominantGuna}'의 흐름을 순수 관조자(Purusha)의 시선으로 1분간 바라보기`;
+  const reflectionFocus = `상키야 25타트바 분별지(${dominantTattva.nameSanskrit}) — ${secondaryTattva.nameKo} 조율`;
+
   const trimmedQ = question.trim();
   const reflectiveQuestion = trimmedQ
     ? `지금 품으신 '${trimmedQ}'의 자리에서, 찰나의 감정이나 물질적 동일시(Prakriti)를 넘어 고요한 순수 관조자(Purusha)의 눈으로 바라보면 무엇이 본질로 남습니까?`
@@ -412,6 +417,8 @@ export function calculateSamkhyaTwentyFiveTattvas(params: {
     prakritiEntanglementRisk,
     samkhyaPhilosophicalGuidance,
     mindPurificationPrescription,
+    ritualAction,
+    reflectionFocus,
     reflectiveQuestion,
     interpretiveBoundary,
     samkhyaSynthesisMatrix,
@@ -441,6 +448,8 @@ export function formatSamkhyaTwentyFiveTattvasPrompt(rep: SamkhyaTwentyFiveTattv
     );
   }
   lines.push(
+    `· 실천 의례: ${rep.ritualAction}`,
+    `· 성찰 초점: ${rep.reflectionFocus}`,
     `· 성찰 질문: ${rep.reflectiveQuestion}`,
     `· 해석 경계: ${rep.interpretiveBoundary}`,
   );

@@ -13,7 +13,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const SCOTTISH_ADAM_SMITH_VERSION = 'LUCKEY-ADAM-SMITH-MORAL-SENTIMENTS-v2.1.0';
+export const SCOTTISH_ADAM_SMITH_VERSION = 'LUCKEY-ADAM-SMITH-MORAL-SENTIMENTS-v2.2.0';
 
 export interface AdamSmithTheme {
   themeKey: string;
@@ -48,6 +48,8 @@ export interface ScottishAdamSmithMoralSentimentsResult {
     guidanceTitle: string;
     philosophicalCounsel: string;
   };
+  ritualAction: string;
+  reflectionFocus: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
   adamSmithSynthesisMatrix?: {
@@ -197,6 +199,9 @@ export function calculateScottishAdamSmithMoralSentiments(
     : `오늘 마주한 선택에서 세속의 평판(Praise)보다 내면의 양심이 스스로 칭찬받을 만하다고 여기는(Praiseworthiness) 기준은 무엇입니까?`;
   const interpretiveBoundary = '이 리포트는 아담 스미스 《도덕감정론》의 공정한 관찰자와 공감 철학을 바탕으로 한 성찰 비유이며, 윤리적 단정이나 미래 예측이 아닙니다.';
 
+  const ritualAction = `[${activeAdamSmithTheme.themeTitleKo}] ${focalAdamSmithAphorism.actionGuidance}`;
+  const reflectionFocus = `아담 스미스 도덕감정론(${activeAdamSmithTheme.themeKey}) — ${secondaryAdamSmithTheme.themeTitleKo}`;
+
   return {
     engineVersion: SCOTTISH_ADAM_SMITH_VERSION,
     calculatedAtKst,
@@ -212,6 +217,8 @@ export function calculateScottishAdamSmithMoralSentiments(
       guidanceTitle,
       philosophicalCounsel,
     },
+    ritualAction,
+    reflectionFocus,
     reflectiveQuestion,
     interpretiveBoundary,
     adamSmithSynthesisMatrix,
@@ -242,6 +249,8 @@ export function formatScottishAdamSmithMoralSentimentsPrompt(res: ScottishAdamSm
     );
   }
   lines.push(
+    `- 실천 의례: ${res.ritualAction}`,
+    `- 성찰 초점: ${res.reflectionFocus}`,
     `- 성찰 질문: ${res.reflectiveQuestion}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
   );

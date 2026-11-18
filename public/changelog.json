@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.7.900",
+    "builtAt": "2026-11-19T08:02:00+09:00",
+    "summary": "상키야 25타트바·고에다 위그드라실·아담 스미스 도덕감정론 3대 엔진 실천 의례 및 성찰 초점 표준 연동(v1.7.900)",
+    "items": [
+      "고대 인도 상키야 25타트바 분별지 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동",
+      "고대 북유럽 고에다 위그드라실 9대 우주계 엔진(v2.3.0): ritualAction·reflectionFocus 표준 필드 연동",
+      "아담 스미스 《도덕감정론》 공정한 관찰자 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동"
+    ]
+  },
+  {
     "version": "1.7.899",
     "builtAt": "2026-11-19T07:58:00+09:00",
     "summary": "베다 5대 코샤·보이스 페르소나·음양 극성 3대 엔진 reflectiveQuestion·+09:00 (KST)·question 연동 및 전체 엔진 reflectiveQuestion 100% 완비(v1.7.899)",
