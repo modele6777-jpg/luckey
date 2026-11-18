@@ -29,7 +29,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const HUANGDI_YUNQI_VERSION = 'LUCKEY-HUANGDI-YUNQI-v2.2.0';
+export const HUANGDI_YUNQI_VERSION = 'LUCKEY-HUANGDI-YUNQI-v2.3.0';
 
 export interface FiveMovementYear {
   element: '목(木)' | '화(火)' | '토(土)' | '금(金)' | '수(水)';
@@ -80,6 +80,7 @@ export interface HuangdiFiveMovementsSixQiReport {
   interpretiveBoundary: string;
   ritualAction: string;
   reflectionFocus: string;
+  reflectiveQuestion: string;
   synthesisMessage: string;
 }
 
@@ -112,7 +113,7 @@ function getTemporalYunqiRhythm(now: Date) {
           : '겨울 · 태양한수 절기 (신장의 정기를 보온하고 무리한 발한을 삼가는 시기)';
 
   return {
-    kstTimeLabel: `${y}-${m}-${d} ${hh}:${mm} KST`,
+    kstTimeLabel: `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`,
     organWatchWindow,
     seasonalYunqiTone,
     temporalGuidance: `${organWatchWindow} · ${seasonalYunqiTone}의 천기에 맞추어 몸의 균형을 돌보십시오.`,
@@ -265,6 +266,9 @@ export function calculateHuangdiFiveMovementsSixQi(
 
   const ritualAction = `[${birthYearGanZhi} · ${element}] ${dietaryPrescription} · ${breathMindHarmonization}`;
   const reflectionFocus = `지금 나의 '${susceptibleOrgans}' 리듬을 지키기 위해 오늘 천기(${heavenRulerSiTian})에 맞추어 덜어낼 과로는 무엇입니까?`;
+  const reflectiveQuestion = q
+    ? `지금 "${q}" 앞에서 ${movementName}·${susceptibleOrgans}의 균형을 지키기 위해 오늘 실천할 작은 섭생 한 가지는 무엇인가요?`
+    : `지금 ${birthYearGanZhi} 선천 천기와 ${heavenRulerSiTian} 기상 속에서 몸과 마음의 리듬을 지키기 위해 덜어낼 과로는 무엇인가요?`;
 
   return {
     engineVersion: HUANGDI_YUNQI_VERSION,
@@ -294,6 +298,7 @@ export function calculateHuangdiFiveMovementsSixQi(
     yunqiSynthesisMatrix,
     ritualAction,
     reflectionFocus,
+    reflectiveQuestion,
     boundaryNotice: '본 결과는 황제내경 운기칠편(오운육기)의 전통 섭생 철학에 기반한 정성적 건강 리듬 안내이며, 의학적 진단이 아닙니다.',
     interpretiveBoundary: '본 결과는 황제내경 운기칠편(오운육기)의 전통 섭생 철학에 기반한 정성적 건강 리듬 안내이며, 의학적 진단이 아닙니다.',
     synthesisMessage,
@@ -324,5 +329,6 @@ export function formatHuangdiFiveMovementsSixQiPrompt(report: HuangdiFiveMovemen
 - **오운육기 통합 총평**: ${report.synthesisMessage}
 - **실천 의례(Ritual Action)**: ${report.ritualAction}
 - **성찰 초점(Reflection Focus)**: ${report.reflectionFocus}
+- **질문 맞춤 성찰 질문**: ${report.reflectiveQuestion}
 - **해석 경계**: ${report.boundaryNotice}`;
 }

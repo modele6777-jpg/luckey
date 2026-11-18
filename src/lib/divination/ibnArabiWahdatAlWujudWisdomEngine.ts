@@ -13,7 +13,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const IBN_ARABI_WAHDAT_ENGINE_VERSION = '2.2.0';
+export const IBN_ARABI_WAHDAT_ENGINE_VERSION = '2.3.0';
 
 export interface PropheticHeartWisdom {
   prophetName: string;
@@ -56,6 +56,7 @@ export interface IbnArabiWahdatAlWujudReport {
   interpretiveBoundary: string;
   ritualAction: string;
   reflectionFocus: string;
+  reflectiveQuestion: string;
 }
 
 const PROPHETIC_WISDOMS_BASE: Omit<PropheticHeartWisdom, 'innerAlignmentScore'>[] = [
@@ -156,7 +157,7 @@ export function calculateIbnArabiWahdatAlWujud(
   const kstDate = new Date(referenceDate.getTime() + 9 * 60 * 60 * 1000);
   const kstHour = kstDate.getUTCHours();
   const kstMonth = kstDate.getUTCMonth() + 1;
-  const calculatedAtKst = kstDate.toISOString().replace('T', ' ').slice(0, 16) + ' KST';
+  const calculatedAtKst = kstDate.toISOString().replace('T', ' ').slice(0, 16) + ' +09:00 (KST)';
 
   const tajalliHourWindow = kstHour >= 4 && kstHour < 9
     ? '사하르 새벽 현현창 (타잘리의 첫 숨결이 심장에 스며드는 시간)'
@@ -191,6 +192,9 @@ export function calculateIbnArabiWahdatAlWujud(
   const heartMirrorContemplation = `[심장 거울 관조]: ${dominantWisdom.contemplativePrescription} (${dominantWisdom.heartMirrorQuality})`;
   const ritualAction = `[${dominantWisdom.prophetName} · ${dominantWisdom.spiritualVirtue}] ${dominantWisdom.contemplativePrescription}`;
   const reflectionFocus = `고정된 판단 하나를 내려놓고 '${dominantWisdom.spiritualVirtue}'의 시선으로 오늘 마주한 상황을 비추어 본다면 무엇이 달라집니까?`;
+  const reflectiveQuestion = question
+    ? `지금 "${question}" 앞에서 ${dominantWisdom.prophetName}의 '${dominantWisdom.spiritualVirtue}' 거울로 비춰 볼 때 내려놓을 고정관념 하나는 무엇인가요?`
+    : `지금 ${dominantWisdom.prophetName}의 심장 거울 앞에서 오늘 마주한 상황을 자비(Jamal)로 품기 위해 비울 판단 하나는 무엇인가요?`;
 
   return {
     engineVersion: IBN_ARABI_WAHDAT_ENGINE_VERSION,
@@ -207,6 +211,7 @@ export function calculateIbnArabiWahdatAlWujud(
     heartMirrorContemplation,
     ritualAction,
     reflectionFocus,
+    reflectiveQuestion,
     boundaryNotice: '안달루시아 수피즘 이븐 아라비의 영지주의 상징을 빌려 온 정성적 성찰 관점이며, 종교적 단정이나 의학적·재정적 처방이 아닙니다.',
     interpretiveBoundary: '안달루시아 수피즘 이븐 아라비의 영지주의 상징을 빌려 온 정성적 성찰 관점이며, 종교적 단정이나 의학적·재정적 처방이 아닙니다.',
   };
@@ -226,6 +231,7 @@ export function formatIbnArabiWahdatAlWujudPrompt(report: IbnArabiWahdatAlWujudR
 - **심장 거울 관조 리추얼**: ${report.heartMirrorContemplation}
 - **실천 의례(Ritual Action)**: ${report.ritualAction}
 - **성찰 초점(Reflection Focus)**: ${report.reflectionFocus}
+- **질문 맞춤 성찰 질문**: ${report.reflectiveQuestion}
 - **해석 경계**: ${report.boundaryNotice}`;
 }
 
