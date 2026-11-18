@@ -285,8 +285,8 @@ export function calculateKoreanOhseongHaneumFriendshipGovernance(
     integratedAction: `${ritualByTopic[questionTopic]}${query?.trim() ? ` [질문 맥락: ${query.trim()}]` : ''}`,
   };
 
-  const ritualAction = `[${activeOhseongHaneumTheme.themeTitleKo.split(' — ')[0]}] ${dailyPracticeRitual}`;
-  const reflectionFocus = reflectiveQuestion;
+  const ritualAction = `[${activeOhseongHaneumTheme.themeTitleKo.split(' — ')[0]}] ${ritualByTopic[questionTopic]}`;
+  const reflectionFocus = questionByTopic[questionTopic];
 
   return {
     engineVersion: KOREAN_OHSEONG_HANEUM_VERSION,
@@ -300,8 +300,8 @@ export function calculateKoreanOhseongHaneumFriendshipGovernance(
     unyieldingFidelityGraceIndex,
     activeOhseongHaneumTheme,
     focalOhseongHaneumAphorism,
-    dailyPracticeRitual,
-    reflectiveQuestion,
+    dailyPracticeRitual: ritualByTopic[questionTopic],
+    reflectiveQuestion: questionByTopic[questionTopic],
     interpretiveBoundary: '오성과 한음의 일화와 경륜은 인물의 우열을 점수화하지 않으며, 관계의 신의와 위기 대처의 품격을 비추는 인문적 성찰 틀로만 활용합니다.',
     ohseongHaneumComprehensiveGuidance: {
       guidanceTitle,
