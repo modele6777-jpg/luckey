@@ -89,7 +89,7 @@ export function installFoldRuntimeTrace(win: Window): void {
   marker = next => {
     stage = next;
     counts[next] = (counts[next] || 0) + 1;
-    if (Date.now() - lastWrite >= 250 || next === 'fold-commit' || next === 'unfold-commit') save('stage');
+    if (Date.now() - lastWrite >= 250 || next === 'fold-commit' || next === 'unfold-commit' || next.startsWith('viewport-')) save('stage');
   };
   const listen = (target: EventTarget, name: string, action: EventListener) => {
     target.addEventListener(name, action, { capture: true, passive: true });
