@@ -12073,3 +12073,27 @@ test('라이프 12궁·마이크로 해빗·양자 타임라인 v1.7.883 reflect
   assert.ok(qt.reflectiveQuestion.includes(query));
   assert.ok(formatQuantumProbabilisticTimelinePrompt(qt).includes('질문 맞춤 성찰 질문'));
 });
+
+test('타로 마스터·룬 매트릭스·철판신수 v1.7.885 reflectiveQuestion·+09:00 KST 회귀 검증', () => {
+  const profile = { basic: { name: '제제', birthdate: '1994-01-24', birthtime: '12:00', gender: 'male' } } as any;
+  const now = new Date('2026-11-19T06:50:00+09:00');
+  const query = '새로운 전환점 앞에서 무엇을 붙잡고 무엇을 내려놓아야 할까요?';
+
+  const tm = calculateTarotMaster({ profile, now, question: query });
+  assert.equal(tm.engineVersion, TAROT_MASTER_ENGINE_VERSION);
+  assert.match(tm.calculatedAtKst, /\+09:00/);
+  assert.ok(tm.reflectiveQuestion.includes(query));
+  assert.ok(formatTarotMasterPrompt(tm).includes('질문 맞춤 성찰 질문'));
+
+  const rm = calculateRuneMatrix({ profile, targetDate: now, question: query });
+  assert.equal(rm.engineVersion, RUNE_MATRIX_VERSION);
+  assert.match(rm.calculatedAtKst, /\+09:00/);
+  assert.ok(rm.reflectiveQuestion.includes(query));
+  assert.ok(formatRuneMatrixPrompt(rm).includes('질문 맞춤 성찰 질문'));
+
+  const tb = calculateTiebanShenshu(profile, { question: query });
+  assert.equal(tb.engineVersion, TIEBAN_SHENSHU_VERSION);
+  assert.match(tb.calculatedAtKst, /\+09:00/);
+  assert.ok(tb.reflectiveQuestion.includes(query));
+  assert.ok(formatTiebanShenshuPrompt(tb).includes('질문 맞춤 성찰 질문'));
+});

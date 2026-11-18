@@ -1204,7 +1204,7 @@ try {
 tarotEnvelope = {toolId:'tarot', toolKoName:'타로', status:'skipped', note:'이번 질문에서 선택하지 않은 도구'};
 } else {
 try {
-    tarotMasterResult = calculateTarotMaster({ profile, now });
+    tarotMasterResult = calculateTarotMaster({ profile, now, question });
     tarotEnvelope = {
       toolId: 'tarot',
       toolKoName: '타로',
@@ -1629,7 +1629,7 @@ try {
   const runeMatrixResult = calculateSupplement('runeMatrixResult', () => (birthdateStr && profile
     ? (() => {
         try {
-          return calculateRuneMatrix({ profile, targetDate: now });
+          return calculateRuneMatrix({ profile, targetDate: now, question });
         } catch (_) {
           return null;
         }
@@ -2231,7 +2231,7 @@ try {
   // 99. 고대 중국 철판신수(鐵板神數) 천기운명 조식 & 태현수비학 엔진
   const tiebanShenshuResult = calculateSupplement('tiebanShenshuResult', () => ((() => {
     try {
-      return calculateTiebanShenshu(profile);
+      return calculateTiebanShenshu(profile, { question });
     } catch (_) {
       return null;
     }
@@ -4710,7 +4710,7 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'saju', nameKo: '사주명리', icon: '🔮', category: 'foundational' },
   { key: 'astrology', nameKo: '서양 점성술', icon: '♈', category: 'foundational' },
   { key: 'ziwei', nameKo: '자미두수', icon: '🌌', category: 'foundational' },
-  { key: 'tarot', nameKo: '타로', icon: '🎴', category: 'foundational' },
+  { key: 'tarot', nameKo: '타로', icon: '🎴', category: 'foundational', summary: '생년월일 수비학 소울·퍼스널리티 카드와 4원소·세피라·정역방향 그림자로 현재 국면을 비추는 관점' },
   { key: 'sukuyo', nameKo: '숙요경(27숙)', icon: '🌙', category: 'foundational' },
   { key: 'mahabote', nameKo: '마하보테(8요일)', icon: '🇲🇲', category: 'foundational', summary: '미얀마 소수력 7궁과 8요일 행성·영수 배치로 타고난 본명궁과 현재 나이 다샤 흐름을 비추는 관점' },
   { key: 'vedic', nameKo: '베딕 점성술', icon: '🕉️', category: 'foundational' },
@@ -4813,7 +4813,7 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'sumerianFiftyMes', nameKo: '수메르 50대메 신성문명', icon: '🏺', category: 'deep_master', summary: '수메르 에리두 50대 메(Me) 문명 규범과 주권·소통·치유의 원형으로 오늘의 실천 기준을 비추는 관점' },
   { key: 'zhongLuAlchemy', nameKo: '종여내단 3품선도 환원', icon: '☯️', category: 'deep_master' },
   { key: 'druidMoonTrees', nameKo: '켈트 드루이드 13달나무', icon: '🌲', category: 'deep_master', summary: '켈트 드루이드 13달나무 역법과 오검 문자의 자연 주기로 내면의 리듬을 비추는 관점' },
-  { key: 'tiebanShenshu', nameKo: '철판신수 12000조식', icon: '📜', category: 'deep_master' },
+  { key: 'tiebanShenshu', nameKo: '철판신수 12000조식', icon: '📜', category: 'deep_master', summary: '태현수비학과 황극경세서 원회운세·12,000조식 고전 시경으로 선천 명식과 결단 시기를 비추는 관점' },
   { key: 'tibetanBonNineWays', nameKo: '티베트 본교 9승 융드룽', icon: '卐', category: 'deep_master', summary: '티베트 본교 9승과 5대 영혼 활력소 상징으로 일상 정화와 내면의 중심을 살피는 관점' },
   { key: 'eleusinianMysteries', nameKo: '엘레우시스 영혼입사의례', icon: '🌾', category: 'deep_master', summary: '고대 엘레우시스 밀의의 하강과 귀환 상징으로 시련을 내면 성숙의 문턱으로 비추는 관점' },
   { key: 'vedicNakshatra108Pada', nameKo: '베다 108파다 카르마성좌', icon: '🕉️', category: 'deep_master', summary: '베다 27나크샤트라와 108파다·나밤샤(D9) 귀속궁으로 영혼의 소명과 실천 만트라를 비추는 관점' },

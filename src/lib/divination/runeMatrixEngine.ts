@@ -16,7 +16,7 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const RUNE_MATRIX_VERSION = 'LUCKEY-RUNE-v2.1.0';
+export const RUNE_MATRIX_VERSION = 'LUCKEY-RUNE-v2.2.0';
 
 export interface RuneDetail {
   id: number;                  // 1~24
@@ -199,6 +199,7 @@ export interface RuneMatrixResult {
   oracleStateTitle: string;
 
   summary: string;
+  reflectiveQuestion: string;
   runeSynthesisMatrix?: {
     dominantTension: string;
     alignmentState: string;
@@ -214,7 +215,7 @@ function formatRuneKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
 }
 
 /**
@@ -268,6 +269,9 @@ export function calculateRuneMatrix(params?: {
     `상태: [${oracleStateTitle}].`;
 
   const calculatedAtKst = formatRuneKstTimestamp(now);
+  const reflectiveQuestion = q
+    ? `'${q}'라는 도전 앞에서, 기원의 룬 ${originRune.name}(${originRune.symbol})과 도전의 룬 ${challengeRune.name}(${challengeRune.symbol})을 넘어 성취의 룬 ${horizonRune.name}(${horizonRune.symbol})으로 건너가기 위해 오늘 내릴 단호한 결단은 무엇인가요?`
+    : `지금 '${challengeRune.name}(${challengeRune.symbol})'의 관문을 넘어 '${horizonRune.name}(${horizonRune.symbol})'의 지평으로 나아가기 위해 오늘 내가 세울 기준은 무엇인가요?`;
   const runeSynthesisMatrix = {
     dominantTension: `${originRune.name}(${originRune.symbol}) ↔ ${challengeRune.name}(${challengeRune.symbol})`,
     alignmentState: `${oracleStateTitle} · ${horizonRune.name}(${horizonRune.symbol})`,
@@ -286,6 +290,7 @@ export function calculateRuneMatrix(params?: {
     runePowerScore,
     oracleStateTitle,
     summary,
+    reflectiveQuestion,
     runeSynthesisMatrix,
     interpretiveBoundary: '본 엘더 푸타르크 룬 동시성 리포트는 북유럽 룬 상징 체계에 기반한 정성적 성찰 안내이며, 확정적 미래 예언이 아닙니다.',
   };
@@ -317,6 +322,7 @@ export function formatRuneMatrixPrompt(res: RuneMatrixResult): string {
       `  • 통합 실천: ${res.runeSynthesisMatrix.integratedAction}`,
     );
   }
+  lines.push(`- 질문 맞춤 성찰 질문: ${res.reflectiveQuestion}`);
   lines.push(`- 해석 경계: ${res.interpretiveBoundary}`);
   lines.push(
     `※ 루시 지침: 룬 문자는 거친 북해를 건너던 바이킹들이 자연의 법칙과 운명의 신비를 새겨 넣은 강력한 수호 상징입니다. 오늘 사용자의 무의식을 관통하는 3개의 룬 상징을 통해, 지금 마주한 도전 과제를 돌파하고 찬란한 성취(Sowilo/Dagaz)로 나아갈 수 있도록 북유럽 신화의 용기와 지혜를 담아 대화에 융합해 주세요.`,

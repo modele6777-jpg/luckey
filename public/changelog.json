@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.7.885",
+    "builtAt": "2026-11-19T06:50:00+09:00",
+    "summary": "타로 마스터·룬 매트릭스·철판신수 3대 엔진 reflectiveQuestion·+09:00 (KST)·summary·question 연동(v1.7.885)",
+    "items": [
+      "타로 78 아르카나 마스터(v2.2.0)·룬 동시성 매트릭스(v2.2.0)·철판신수 12000조식(v2.2.0): 질문 반응형 reflectiveQuestion·+09:00 (KST) 표기·프롬프트 출력 추가",
+      "deterministicEngine.ts: tarot·tiebanShenshu summary 등록 및 3대 엔진 호출부 question 연동",
+      "divination-engines.test.ts: 3대 엔진 v1.7.885 회귀 테스트 추가"
+    ]
+  },
+  {
     "version": "1.7.884",
     "builtAt": "2026-11-19T06:42:00+09:00",
     "summary": "메디컬 바이오 매트릭스·마이크로 해빗 카르마·12개월 월운 흐름 3대 엔진 실천 의례 및 성찰 초점 표준 연동(v1.7.884)",

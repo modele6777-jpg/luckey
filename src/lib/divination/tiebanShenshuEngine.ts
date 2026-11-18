@@ -23,7 +23,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const TIEBAN_SHENSHU_VERSION = 'LUCKEY-TIEBAN-SHENSHU-v2.1.0';
+export const TIEBAN_SHENSHU_VERSION = 'LUCKEY-TIEBAN-SHENSHU-v2.2.0';
 
 function formatTiebanKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -32,7 +32,7 @@ function formatTiebanKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
 }
 
 export interface TiebanClause {
@@ -77,6 +77,7 @@ export interface TiebanReport {
   yuanHuiYunShi?: YuanHuiYunShiCycle;
   naYinRhythmHarmony?: NaYinRhythmHarmony;
   tacticalWindows?: TiebanTacticalWindows;
+  reflectiveQuestion: string;
   tiebanSynthesisMatrix?: {
     dominantTension: string;
     alignmentState: string;
@@ -349,6 +350,9 @@ export function calculateTiebanShenshu(
   const now = new Date();
   const calculatedAtKst = formatTiebanKstTimestamp(now);
   const q = (options?.question || options?.contextText || '').trim();
+  const reflectiveQuestion = q
+    ? `'${q}'라는 기로에서, 주재 괘상 '${kuaName}'과 '${timingClause.title}'의 결단 조식이 가리키는 방향을 따르기 위해 오늘 덜어낼 미련은 무엇인가요?`
+    : `주재 괘상 '${kuaName}'의 흐름 속에서 '${wisdomClause.title}'의 경책을 삶에 새기기 위해 오늘 내가 지킬 원칙은 무엇인가요?`;
   const tiebanSynthesisMatrix = {
     dominantTension: `${kuaName} ↔ ${timingClause.title}`,
     alignmentState: `${cyclicalPhase} · 주재음(${dominantTone})`,
@@ -370,6 +374,7 @@ export function calculateTiebanShenshu(
     yuanHuiYunShi,
     naYinRhythmHarmony,
     tacticalWindows,
+    reflectiveQuestion,
     tiebanSynthesisMatrix,
     interpretiveBoundary,
   };
@@ -408,5 +413,6 @@ export function formatTiebanShenshuPrompt(report: TiebanReport): string {
    * 경책명: ${report.wisdomClause.title}
    * 잠언 원전: "${report.wisdomClause.classicalPoem}"
    * 수양 지혜: ${report.wisdomClause.actionableGuidance}${tacticalBlock}${matrixBlock}
+- 질문 맞춤 성찰 질문: ${report.reflectiveQuestion}
 - 해석 경계: ${report.interpretiveBoundary}`;
 }
