@@ -1,10 +1,10 @@
 {
-  "version": "1.7.859",
-  "builtAt": "2026-11-19T04:30:00+09:00",
-  "summary": "잉카 안데스 3대 파차·자이나 14군아스타나·헤이안 음양도 세이메이 3대 엔진 성찰 질문·+09:00 KST·카탈로그 뜻 보강(v1.7.859)",
+  "version": "1.7.860",
+  "builtAt": "2026-11-19T04:32:00+09:00",
+  "summary": "동학 시천주·용담유사 검결·퇴계 이황 성학십도 3대 엔진 실천 의례 및 성찰 질문 표준 연동(v1.7.860)",
   "items": [
-    "잉카 안데스 3대 파차(v2.3.0)·자이나 14군아스타나(v2.3.0)·헤이안 음양도 세이메이(v2.3.0): 질문 반응형 reflectiveQuestion·+09:00 (KST) 표준 표기·프롬프트 연동",
-    "ALL_DCE_ENGINES 카탈로그: incaAndeanThreePachaAyni·jainGunasthanaKarma·heianOnmyodoSeimei 한 줄 summary 3건 등록",
-    "divination-engines.test.ts: 잉카 안데스·자이나·헤이안 음양도 세이메이 회귀 테스트 추가"
+    "수운 최제우 《동경대전》 시천주·후천개벽 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동",
+    "동학 수운 최제우 《용담유사》 검결·삼경사상 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동",
+    "퇴계 이황 《성학십도》 경(敬)·거경궁리 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동"
   ]
 }

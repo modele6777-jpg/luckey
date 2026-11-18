@@ -5540,6 +5540,7 @@ test('Korean Suun Gasi Heon Engine: calculates Yongcheon sword severance, Samgye
   assert(rep.activeCultivationStage.stageNameKo.length > 0);
   assert(rep.secondaryCultivationStage.stageLevel !== rep.activeCultivationStage.stageLevel);
   assert(rep.secondarySamgyeongVirtue.virtueNameKo !== rep.primarySamgyeongVirtue.virtueNameKo);
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(rep.reflectiveQuestion.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
   assert(rep.calculatedAtKst.endsWith('+09:00 KST'));
@@ -5551,6 +5552,8 @@ test('Korean Suun Gasi Heon Engine: calculates Yongcheon sword severance, Samgye
   assert(prompt.includes(repQ.activeCultivationStage.stageNameKo));
   assert(prompt.includes(repQ.secondaryCultivationStage.stageNameKo));
   assert(prompt.includes('해석 경계'));
+  assert(prompt.includes('실천 의례'));
+  assert(prompt.includes('성찰 초점'));
   assert(prompt.includes('교차 매트릭스'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
@@ -6063,6 +6066,7 @@ test('Korean Joseon Toegye Seonghak Sipdo Engine: calculates Gyeong mindfulness,
   assert(rep.activeSeonghakDiagram.diagramTitleHanja.length > 0);
   assert(rep.secondarySeonghakDiagram.diagramNumber !== rep.activeSeonghakDiagram.diagramNumber);
   assert(rep.secondaryGyeongPractice.practiceHanja !== rep.focalGyeongPractice.practiceHanja);
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(rep.reflectiveQuestion.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
   assert(rep.calculatedAtKst.endsWith('+09:00 KST'));
@@ -6074,6 +6078,8 @@ test('Korean Joseon Toegye Seonghak Sipdo Engine: calculates Gyeong mindfulness,
   assert(prompt.includes(repQ.activeSeonghakDiagram.diagramTitleKo));
   assert(prompt.includes(repQ.secondarySeonghakDiagram.diagramTitleKo));
   assert(prompt.includes('해석 경계'));
+  assert(prompt.includes('실천 의례'));
+  assert(prompt.includes('성찰 초점'));
   assert(prompt.includes('교차 매트릭스'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
@@ -6908,6 +6914,7 @@ test('Suun Choe Je-u Donghak Sicheonju Engine: calculates Sicheonju Dignity, Sai
   assert(rep.activeDonghakTheme.themeTitleKo.length > 0);
   assert(rep.secondaryDonghakTheme.themeKey !== rep.activeDonghakTheme.themeKey);
   assert(rep.secondaryDonghakAphorism.aphorismKey !== rep.focalDonghakAphorism.aphorismKey);
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(rep.reflectiveQuestion.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
   assert(rep.calculatedAtKst.endsWith('+09:00 KST'));
@@ -6919,6 +6926,8 @@ test('Suun Choe Je-u Donghak Sicheonju Engine: calculates Sicheonju Dignity, Sai
   assert(prompt.includes(repQ.activeDonghakTheme.themeTitleKo));
   assert(prompt.includes(repQ.secondaryDonghakTheme.themeTitleKo));
   assert(prompt.includes('해석 경계'));
+  assert(prompt.includes('실천 의례'));
+  assert(prompt.includes('성찰 초점'));
   assert(prompt.includes('교차 매트릭스'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
