@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.7.875",
+    "builtAt": "2026-11-19T06:00:00+09:00",
+    "summary": "태을신수·태국 호라삿·토정비결 3대 엔진 성찰 질문·+09:00 KST·카탈로그 뜻 보강(v1.7.875)",
+    "items": [
+      "태을신수 16궁(v2.2.0)·태국 호라삿 8요일(v2.2.0)·토정비결 144괘문(v2.2.0): 질문 반응형 reflectiveQuestion·+09:00 (KST) 표준 표기·프롬프트 연동",
+      "ALL_DCE_ENGINES 카탈로그: thai_astrology·tojeong·taiyi 한 줄 summary 등록 및 question 전달 연동",
+      "divination-engines.test.ts: 3대 엔진 v1.7.875 회귀 테스트 추가"
+    ]
+  },
+  {
     "version": "1.7.874",
     "builtAt": "2026-11-19T05:52:00+09:00",
     "summary": "성리학 사칠이기·엘더 푸사르크 룬·위그드라실 9대 영역 3대 엔진 실천 의례 및 성찰 초점 표준 연동(v1.7.874)",

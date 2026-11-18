@@ -11896,3 +11896,30 @@ test('구성학·대육임·마하보테 v1.7.873 질문 반응형 성찰 질문
   const mbPrompt = formatMahabotePrompt(mb);
   assert.ok(mbPrompt.includes('+09:00') && mbPrompt.includes('질문 맞춤 성찰 질문') && mbPrompt.includes('해석 경계'));
 });
+
+test('태을신수·태국 호라삿·토정비결 v1.7.875 질문 반응형 성찰 질문·+09:00 KST 회귀 검증', () => {
+  const profile = { basic: { name: '제제', birthdate: '1994-01-24', birthtime: '12:00', gender: 'male' } } as any;
+  const now = new Date('2026-11-19T06:00:00+09:00');
+  const query = '올해 큰 흐름과 타이밍을 보고 어느 방향으로 나아갈지 정하고 싶어요';
+
+  const ty = calculateTaiyi({ profile, targetYear: 2026, targetDate: now, question: query });
+  assert.equal(ty.engineVersion, TAIYI_ENGINE_VERSION);
+  assert.match(ty.calculatedAtKst ?? '', /\+09:00/);
+  assert.ok(ty.reflectiveQuestion?.includes(query));
+  const tyPrompt = formatTaiyiPrompt(ty);
+  assert.ok(tyPrompt.includes('+09:00') && tyPrompt.includes('질문 맞춤 성찰 질문') && tyPrompt.includes('해석 경계'));
+
+  const th = calculateThaiHorasat({ profile, targetYear: 2026, targetDate: now, question: query });
+  assert.equal(th.engineVersion, THAI_HORASAT_ENGINE_VERSION);
+  assert.match(th.calculatedAtKst ?? '', /\+09:00/);
+  assert.ok(th.reflectiveQuestion?.includes(query));
+  const thPrompt = formatThaiHorasatPrompt(th);
+  assert.ok(thPrompt.includes('+09:00') && thPrompt.includes('질문 맞춤 성찰 질문') && thPrompt.includes('해석 경계'));
+
+  const tj = calculateTojeong({ profile, targetYear: 2026, question: query });
+  assert.equal(tj.engineVersion, 'LUCKEY-TJ-v2.2.0');
+  assert.match(tj.calculatedAtKst, /\+09:00/);
+  assert.ok(tj.reflectiveQuestion?.includes(query));
+  const tjPrompt = formatTojeongPrompt(tj);
+  assert.ok(tjPrompt.includes('+09:00') && tjPrompt.includes('질문 맞춤 성찰 질문') && tjPrompt.includes('해석 경계'));
+});

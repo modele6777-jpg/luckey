@@ -43,7 +43,7 @@ import type { UserProfile } from '../sharedState';
 import { resolveEffectiveSolarDate } from '../lunarCalendar';
 import { parseBirthTime } from '../birthDateTime';
 
-export const THAI_HORASAT_ENGINE_VERSION = 'LUCKEY-TH-v2.1.0';
+export const THAI_HORASAT_ENGINE_VERSION = 'LUCKEY-TH-v2.2.0';
 
 function formatThaiHorasatKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -52,7 +52,7 @@ function formatThaiHorasatKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
 }
 
 export const THAI_HORASAT_METHOD =
@@ -372,6 +372,7 @@ export interface ThaiHorasatResult {
     alignmentState: string;
     integratedAction: string;
   };
+  reflectiveQuestion?: string;
   interpretiveBoundary?: string;
   note?: string;
 }
@@ -660,6 +661,9 @@ export function calculateThaiHorasat(params: {
       alignmentState: `${attribute.korean}(${attribute.verdictClass}) · 본명 원소(${birthThaat.korean}) · ${planetaryFriendEnemyDynamic.relationshipType}`,
       integratedAction: `${mahaThaksaAntardasha.actionAdvice}${q ? ` [질문 맥락: ${q}]` : ''}`,
     };
+    const reflectiveQuestion = q
+      ? `지금 "${q}" 앞에서 ${birthPlanet.thaiName}(${birthPlanet.planet})과 현재 대운 ${currentSegment.planet.thaiName}(${attribute.korean})의 결을 살려 내가 조절할 원소(${birthThaat.korean})의 리듬은 무엇인가요?`
+      : `본명 수호신 ${birthPlanet.thaiName}과 현재 대운 ${currentSegment.planet.thaiName}(${attribute.korean}) 사이에서 오늘 내 몸의 ${birthThaat.korean} 원소가 요청하는 균형은 무엇인가요?`;
     const interpretiveBoundary = '본 태국 호라삿(Horasat) 8요일·마하탁사·4원소 리포트는 전통 역법·행성 주기 기반의 자기 성찰 안내이며, 의학적 진단이나 확정적 미래 단정이 아닙니다.';
 
     return {
@@ -708,6 +712,7 @@ export function calculateThaiHorasat(params: {
         practice: `${birthPlanet.direction} 방위의 ${birthPlanet.animal} 상징을 가까이하고 ${birthPlanet.colors.join('·')} 색을 몸에 두르며, ${birthThaat.herbs} — 출생 수호신 ${birthPlanet.thaiName}께 ${birthPlanet.planet}의 결에 맞춘 공양을 드리면 길운이 증폭됩니다.`,
       },
       horasatSynthesisMatrix,
+      reflectiveQuestion,
       interpretiveBoundary,
       note: timeNote || undefined,
     };
@@ -757,6 +762,7 @@ export function formatThaiHorasatPrompt(result: ThaiHorasatResult): string {
     result.horasatSynthesisMatrix
       ? `- 호라삿 교차 매트릭스: 핵심 긴장(${result.horasatSynthesisMatrix.dominantTension}) · 조율 상태(${result.horasatSynthesisMatrix.alignmentState}) · 통합 실천(${result.horasatSynthesisMatrix.integratedAction})`
       : '',
+    result.reflectiveQuestion ? `- 질문 맞춤 성찰 질문: ${result.reflectiveQuestion}` : '',
     result.interpretiveBoundary ? `- 해석 경계: ${result.interpretiveBoundary}` : '',
     `- [AI 해석 지침]: 본 리포트는 입력과 구현된 태국 호라삿 규칙에 따른 계산 참고값이며, 실측 정확도나 운명의 확정을 뜻하지 않습니다. 수호신·대운 구간·속성 등급·원소 해석은 제공된 산출값을 바꾸지 않고 성찰을 돕는 전통적 관점으로 안내하십시오.`,
   ];
