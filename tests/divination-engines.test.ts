@@ -62,7 +62,6 @@ import { calculateSacredVortexGeometry, formatSacredVortexGeometryPrompt, SACRED
 import { calculateTaoistNeidanMeridian, formatTaoistNeidanMeridianPrompt, TAOIST_NEIDAN_VERSION } from '../src/lib/divination/taoistNeidanMeridianEngine';
 import { calculateSynchronicityOmen, formatSynchronicityOmenPrompt, SYNCHRONICITY_OMEN_VERSION } from '../src/lib/divination/synchronicityOmenEngine';
 import { calculateEthericAuraBiofield, formatEthericAuraBiofieldPrompt, ETHERIC_AURA_VERSION } from '../src/lib/divination/ethericAuraBiofieldEngine';
-import { calculateSajuTwelveStagesTomb, formatSajuTwelveStagesTombPrompt, SAJU_12STAGES_TOMB_VERSION } from '../src/lib/divination/sajuTwelveStagesTombUnlockEngine';
 import { calculateSajuClassicYongshin, formatSajuClassicYongshinPrompt, SAJU_CLASSIC_YONGSHIN_VERSION } from '../src/lib/divination/sajuClassicYongshinPrescriptionEngine';
 import { calculateTarotTreeOfLifeShadow, formatTarotTreeOfLifeShadowPrompt, TAROT_KABBALAH_SHADOW_VERSION } from '../src/lib/divination/tarotTreeOfLifeShadowEngine';
 import { calculateHellenisticLots, formatHellenisticLotsPrompt, HELLENISTIC_LOTS_ENGINE_VERSION } from '../src/lib/divination/hellenisticLotsEngine';
