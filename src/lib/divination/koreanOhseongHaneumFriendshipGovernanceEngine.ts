@@ -14,7 +14,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const KOREAN_OHSEONG_HANEUM_VERSION = 'LUCKEY-OHSEONG-HANEUM-FRIENDSHIP-v2.0.0';
+export const KOREAN_OHSEONG_HANEUM_VERSION = 'LUCKEY-OHSEONG-HANEUM-FRIENDSHIP-v2.1.0';
 
 export type OhseongHaneumQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -66,6 +66,8 @@ export interface KoreanOhseongHaneumFriendshipGovernanceResult {
     alignmentState: string;
     integratedAction: string;
   };
+  ritualAction: string;
+  reflectionFocus: string;
 }
 
 function formatOhseongHaneumKstTimestamp(now: Date = new Date()): string {
@@ -283,6 +285,9 @@ export function calculateKoreanOhseongHaneumFriendshipGovernance(
     integratedAction: `${ritualByTopic[questionTopic]}${query?.trim() ? ` [질문 맥락: ${query.trim()}]` : ''}`,
   };
 
+  const ritualAction = `[${activeOhseongHaneumTheme.themeTitleKo.split(' — ')[0]}] ${dailyPracticeRitual}`;
+  const reflectionFocus = reflectiveQuestion;
+
   return {
     engineVersion: KOREAN_OHSEONG_HANEUM_VERSION,
     calculatedAtKst,
@@ -295,14 +300,16 @@ export function calculateKoreanOhseongHaneumFriendshipGovernance(
     unyieldingFidelityGraceIndex,
     activeOhseongHaneumTheme,
     focalOhseongHaneumAphorism,
-    dailyPracticeRitual: ritualByTopic[questionTopic],
-    reflectiveQuestion: questionByTopic[questionTopic],
+    dailyPracticeRitual,
+    reflectiveQuestion,
     interpretiveBoundary: '오성과 한음의 일화와 경륜은 인물의 우열을 점수화하지 않으며, 관계의 신의와 위기 대처의 품격을 비추는 인문적 성찰 틀로만 활용합니다.',
     ohseongHaneumComprehensiveGuidance: {
       guidanceTitle,
       philosophicalCounsel,
     },
     ohseongHaneumSynthesisMatrix,
+    ritualAction,
+    reflectionFocus,
   };
 }
 
@@ -337,5 +344,9 @@ export function formatKoreanOhseongHaneumFriendshipGovernancePrompt(
       `- 통합 실천: ${res.ohseongHaneumSynthesisMatrix.integratedAction}`,
     );
   }
+  lines.push(
+    `- 실천 의례(Ritual Action): ${res.ritualAction}`,
+    `- 성찰 초점(Reflection Focus): ${res.reflectionFocus}`,
+  );
   return lines.join('\n');
 }

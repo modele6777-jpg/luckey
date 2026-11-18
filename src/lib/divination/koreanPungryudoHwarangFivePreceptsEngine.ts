@@ -20,7 +20,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const KOREAN_PUNGRYUDO_HWARANG_ENGINE_VERSION = '2.1.0';
+export const KOREAN_PUNGRYUDO_HWARANG_ENGINE_VERSION = '2.2.0';
 
 export interface HwarangPrecept {
   id: string;
@@ -61,6 +61,8 @@ export interface KoreanPungryudoHwarangReport {
   hwarangCourageGuidance: string; // 화랑도 기개 및 결단 지침
   boundaryNotice: string;
   interpretiveBoundary: string;
+  ritualAction: string;
+  reflectionFocus: string;
 }
 
 const HWARANG_PRECEPTS_BASE: Omit<HwarangPrecept, 'preceptScore'>[] = [
@@ -235,6 +237,11 @@ export function calculateKoreanPungryudoHwarang(
     cautionNotice: '기개만 앞서 살생유택의 절제를 잃거나, 풍류에 치우쳐 임전무퇴의 결단을 미루지 않도록 경계하십시오.',
   };
 
+  const ritualAction = `[${dominantPrecept.nameKo.split(' ')[0]}] ${dominantPrecept.guidanceAction}`;
+  const reflectionFocus = contextText.trim()
+    ? `"${contextText.trim()}" 앞에서 나는 ${dominantPrecept.nameKo}의 중심을 어떻게 지킬 수 있는가?`
+    : `오늘 마주한 선택에서 풍류도의 유연함과 ${dominantPrecept.nameKo}의 기개는 어떻게 만나는가?`;
+
   return {
     engineVersion: KOREAN_PUNGRYUDO_HWARANG_ENGINE_VERSION,
     timestamp: now.toISOString(),
@@ -252,6 +259,8 @@ export function calculateKoreanPungryudoHwarang(
     hwarangCourageGuidance,
     boundaryNotice: '본 결과는 최치원 《난랑비서》 풍류도와 원광법사 《세속오계》의 인문·정신 철학에 기반한 정성적 성찰 안내이며, 확정적 길흉 판정이 아닙니다.',
     interpretiveBoundary: '본 결과는 최치원 《난랑비서》 풍류도와 원광법사 《세속오계》의 인문·정신 철학에 기반한 정성적 성찰 안내이며, 확정적 길흉 판정이 아닙니다.',
+    ritualAction,
+    reflectionFocus,
   };
 }
 
@@ -269,6 +278,8 @@ export function formatKoreanPungryudoHwarangPrompt(
     `- 풍류 교차 매트릭스: 핵심(${report.pungryuSynthesisMatrix.coreInsight}) | 실행(${report.pungryuSynthesisMatrix.recommendedAction}) | 주의(${report.pungryuSynthesisMatrix.cautionNotice})`,
     `- 풍류도 심신수련 처방: ${report.pungryudoLifeCultivation}`,
     `- 화랑도 기개·결단 지침: ${report.hwarangCourageGuidance}`,
+    `- 실천 의례(Ritual Action): ${report.ritualAction}`,
+    `- 성찰 초점(Reflection Focus): ${report.reflectionFocus}`,
     `- 해석 경계: ${report.boundaryNotice}`,
   ].join('\n');
 }
