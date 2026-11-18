@@ -15,6 +15,7 @@ import { markFoldRuntime } from './foldRuntimeTrace';
 const CHECK_DELAYS_MS = [0, 120, 300, 600, 1000, 1600, 2500, 4000] as const;
 const NUDGE_GAP_MS = 250;
 const MAX_NUDGES_PER_EPISODE = 8;
+<<<<<<< HEAD
 /**
  * Device traces show the collapse always clears on a fresh page load. If the
  * nudges have not restored the viewport within this time, reload once
@@ -34,6 +35,8 @@ function reloadOnce(win: Window): boolean {
   win.location.reload();
   return true;
 }
+=======
+>>>>>>> origin/main
 
 export function isViewportCollapsed(win: Window): boolean {
   if (win.document.hidden) return false;
@@ -72,8 +75,11 @@ export function installIosViewportRecovery(win: Window = window): () => void {
   let nudges = 0;
   let lastNudgeAt = 0;
   let collapsed = false;
+<<<<<<< HEAD
   let collapsedSince = 0;
   let reloaded = false;
+=======
+>>>>>>> origin/main
 
   const check = () => {
     if (!isViewportCollapsed(win)) {
@@ -82,10 +88,16 @@ export function installIosViewportRecovery(win: Window = window): () => void {
       nudges = 0;
       return;
     }
+<<<<<<< HEAD
     const now = Date.now();
     if (!collapsed) { markFoldRuntime('viewport-zero'); collapsedSince = now; }
     collapsed = true;
     if (!reloaded && now - collapsedSince >= RELOAD_AFTER_MS) { reloaded = reloadOnce(win); return; }
+=======
+    if (!collapsed) markFoldRuntime('viewport-zero');
+    collapsed = true;
+    const now = Date.now();
+>>>>>>> origin/main
     if (nudges >= MAX_NUDGES_PER_EPISODE || now - lastNudgeAt < NUDGE_GAP_MS) return;
     nudges += 1;
     lastNudgeAt = now;
