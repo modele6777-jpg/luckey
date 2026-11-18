@@ -1,4 +1,4 @@
-import { bindVisualViewportLifecycle, prepareViewportAfterUpdate, scheduleVisualViewportSync, syncVisualViewportBox } from './visualViewportBox';
+import { bindVisualViewportLifecycle, prepareViewportAfterUpdate, scheduleVisualViewportSync, syncVisualViewportBox, readViewportSnapshot, resolveLayoutViewportSize, getLayoutViewportProbe, isIosStandaloneWindow } from './visualViewportBox';
 
 export type PerfProfile = 'full' | 'galaxy' | 'duo' | 'iphonexs' | 'pwa' | 'reduced' | 'legacy';
 
@@ -149,10 +149,11 @@ export interface DuoUnfoldedState {
  *
  * iPhone Duo cover is about 450×640 CSS px (installed standalone readings;
  * the 5.4" panel is 1398×2034 physical, about 466×678 at 3x). Ordinary phones
- * are about 390–440 CSS px wide. 540 is the existing portrait cover guard and
- * still sits below the inner display.
+ * are about 390–440 CSS px wide. The reported inner Safari canvas is
+ * 951×537, while the reported cover is 461×678. A 512px guard separates
+ * these without mistaking an ordinary phone rotation for an unfold.
  */
-export const DUO_COVER_MAX_SHORT_SIDE = 540;
+export const DUO_COVER_MAX_SHORT_SIDE = 512;
 
 /**
  * Inner display once the shorter side has cleared the cover.
@@ -242,8 +243,13 @@ function unoccludedHeight(win: Window, width: number, rawHeight: number): number
  */
 export function isDuoUnfoldedState(): DuoUnfoldedState {
   if (typeof window === 'undefined') return { unfolded: false, orientation: 'portrait' };
-  const width = window.innerWidth;
-  const rawHeight = window.innerHeight;
+  // Installed (home screen) WebKit can keep innerWidth at the folded width
+  // after unfolding; the rendered CSS/document width is the real canvas.
+  const rendered = window.navigator && isIosStandaloneWindow(window)
+    ? resolveLayoutViewportSize(readViewportSnapshot(window))
+    : { width: window.innerWidth, height: window.innerHeight };
+  const width = rendered.width;
+  const rawHeight = rendered.height;
   if (isViewportSpanned(window)) return resolveDuoViewport(width, rawHeight, true);
 
   const fullHeight = unoccludedHeight(window, width, rawHeight);
@@ -292,6 +298,7 @@ export function subscribeDuoLayout(onChange: () => void): () => void {
   // further window resize event is published.
   const rootResize = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(handler) : null;
   rootResize?.observe(document.documentElement);
+  rootResize?.observe(getLayoutViewportProbe(document));
   queries.forEach(query => query.addEventListener?.('change', handler));
   for (const event of ['resize', 'orientationchange', 'pageshow']) window.addEventListener(event, handler, { passive: true });
   window.visualViewport?.addEventListener('resize', handler, { passive: true });
