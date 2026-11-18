@@ -14,7 +14,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const KOREAN_AHN_JUNG_GEUN_VERSION = 'LUCKEY-AHN-JUNG-GEUN-PEACE-RIGHTEOUSNESS-v2.1.0';
+export const KOREAN_AHN_JUNG_GEUN_VERSION = 'LUCKEY-AHN-JUNG-GEUN-PEACE-RIGHTEOUSNESS-v2.2.0';
 
 export interface AhnJungGeunTheme {
   themeKey: string;
@@ -56,6 +56,8 @@ export interface KoreanAhnJungGeunPeaceRighteousnessResult {
     alignmentState: string;
     integratedAction: string;
   };
+  ritualAction: string;
+  reflectionFocus: string;
 }
 
 function formatAhnJungGeunKstTimestamp(now: Date = new Date()): string {
@@ -200,6 +202,9 @@ export function calculateKoreanAhnJungGeunPeaceRighteousness(
     integratedAction: `${focalAhnJungGeunAphorism.actionGuidance}${query?.trim() ? ` [질문 맥락: ${query.trim()}]` : ''}`,
   };
 
+  const ritualAction = `[${focalAhnJungGeunAphorism.aphorismHanja}] ${focalAhnJungGeunAphorism.actionGuidance}`;
+  const reflectionFocus = reflectiveQuestion;
+
   return {
     engineVersion: KOREAN_AHN_JUNG_GEUN_VERSION,
     calculatedAtKst,
@@ -218,6 +223,8 @@ export function calculateKoreanAhnJungGeunPeaceRighteousness(
       philosophicalCounsel,
     },
     ahnJungGeunSynthesisMatrix,
+    ritualAction,
+    reflectionFocus,
   };
 }
 
@@ -253,5 +260,9 @@ export function formatKoreanAhnJungGeunPeaceRighteousnessPrompt(
       `- 통합 실천: ${res.ahnJungGeunSynthesisMatrix.integratedAction}`,
     );
   }
+  lines.push(
+    `- 실천 의례(Ritual Action): ${res.ritualAction}`,
+    `- 성찰 초점(Reflection Focus): ${res.reflectionFocus}`,
+  );
   return lines.join('\n');
 }

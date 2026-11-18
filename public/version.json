@@ -1,10 +1,10 @@
 {
-  "version": "1.7.825",
-  "builtAt": "2026-11-18T10:20:00+09:00",
-  "summary": "카발라 조하르 5대 영혼, 카르믹 노드, 카르믹 시나스트리 3대 엔진 실천 의례 및 성찰 질문 표준 연동(v1.7.825)",
+  "version": "1.7.826",
+  "builtAt": "2026-11-18T10:30:00+09:00",
+  "summary": "카슈미르 시바파 스판다, 안중근 동양평화론, 백석 시인 순수 고결성 3대 엔진 실천 의례 및 성찰 질문 표준 연동(v1.7.826)",
   "items": [
-    "카발라 조하르 5대 영혼 층위 & 에인 소프 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동",
-    "카르믹 노드 & 영혼 진화 궤적 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동",
-    "카르믹 시나스트리 & 인연 공명 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동"
+    "카슈미르 시바파 스판다 우주 맥동 & 프라티야비즈냐 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동",
+    "안중근 의사 《동양평화론》 & 견리사의 대의·평화 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동",
+    "백석 《사슴·흰 바람벽이 있어》 순수 고결성 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동"
   ]
 }
