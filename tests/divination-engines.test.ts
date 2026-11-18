@@ -11818,3 +11818,30 @@ test('만해 한용운·풍류도 화랑오계·원효 화쟁 v1.7.869 질문 �
   const whPrompt = formatWonhyoHwajaengPrompt(wh);
   assert.ok(whPrompt.includes('+09:00') && whPrompt.includes('질문 맞춤 성찰 질문') && whPrompt.includes('해석 경계'));
 });
+
+test('마야 포폴부·메소포타미아 7관문·북유럽 볼바 세이드 v1.7.871 질문 반응형 성찰 질문·+09:00 KST 회귀 검증', () => {
+  const profile = { basic: { name: '제제', birthdate: '1994-01-24', birthtime: '12:00', gender: 'male' } } as any;
+  const now = new Date('2026-11-19T05:40:00+09:00');
+  const query = '막힌 상황을 유연하게 풀어내고 새로운 흐름을 열고 싶어요';
+
+  const pv = calculatePopolVuhHeroTwins({ profile, question: query, now });
+  assert.equal(pv.engineVersion, MESOAMERICAN_POPOL_VUH_ENGINE_VERSION);
+  assert.match(pv.calculatedAtKst, /\+09:00/);
+  assert.ok(pv.reflectiveQuestion.includes(query));
+  const pvPrompt = formatPopolVuhHeroTwinsPrompt(pv);
+  assert.ok(pvPrompt.includes('+09:00') && pvPrompt.includes('질문 맞춤 성찰 질문') && pvPrompt.includes('해석 경계'));
+
+  const sg = calculateMesopotamianSevenGates(profile, now, query);
+  assert.equal(sg.engineVersion, MESOPOTAMIAN_GATES_VERSION);
+  assert.match(sg.calculatedAtKst, /\+09:00/);
+  assert.ok(sg.reflectiveQuestion.includes(query));
+  const sgPrompt = formatMesopotamianSevenGatesPrompt(sg);
+  assert.ok(sgPrompt.includes('+09:00') && sgPrompt.includes('질문 맞춤 성찰 질문') && sgPrompt.includes('해석 경계'));
+
+  const vs = calculateNorseVolvaSeidrNineRealms({ profile, question: query, now });
+  assert.equal(vs.engineVersion, NORSE_VOLVA_SEIDR_NINE_REALMS_ENGINE_VERSION);
+  assert.match(vs.calculatedAtKst, /\+09:00/);
+  assert.ok(vs.reflectiveQuestion.includes(query));
+  const vsPrompt = formatNorseVolvaSeidrNineRealmsPrompt(vs);
+  assert.ok(vsPrompt.includes('+09:00') && vsPrompt.includes('질문 맞춤 성찰 질문') && vsPrompt.includes('해석 경계'));
+});

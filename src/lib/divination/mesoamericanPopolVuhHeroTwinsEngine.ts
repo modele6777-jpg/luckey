@@ -6,7 +6,7 @@
  * 질문 맥락에 반응하는 정성적 성찰과 유연한 위기 전환 지침으로 연결합니다.
  */
 
-export const MESOAMERICAN_POPOL_VUH_ENGINE_VERSION = 'LUCKEY-POPOL-VUH-HERO-TWINS-v2.1.0';
+export const MESOAMERICAN_POPOL_VUH_ENGINE_VERSION = 'LUCKEY-POPOL-VUH-HERO-TWINS-v2.2.0';
 
 export type PopolVuhQuestionTheme = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -40,6 +40,7 @@ export interface PopolVuhReport {
   practiceGuidance: string;
   ritualAction: string;
   reflectionFocus: string;
+  reflectiveQuestion: string;
   counselNote: string;
   boundaryNotice: string;
   popolVuhSynthesisMatrix?: {
@@ -57,7 +58,7 @@ function formatPopolVuhKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
 }
 
 function describePopolVuhStage(phase: PopolVuhTransformationPhase): string {
@@ -223,6 +224,10 @@ export function calculatePopolVuhHeroTwins(params: {
     integratedAction: `${qualitative.practice}${question ? ` [질문 맥락: ${question}]` : ''}`,
   };
 
+  const reflectiveQuestion = question
+    ? `지금 "${question}" 앞에서 ${activeTrialHouse.houseNameKo}의 시련을 ${twinArchetype.twinName}의 기지로 전환하기 위해 내가 먼저 시도할 우회로는 무엇인가요?`
+    : qualitative.reflection;
+
   return {
     engineVersion: MESOAMERICAN_POPOL_VUH_ENGINE_VERSION,
     calculatedAt: now.toISOString(),
@@ -237,6 +242,7 @@ export function calculatePopolVuhHeroTwins(params: {
     practiceGuidance: qualitative.practice,
     ritualAction: qualitative.ritual,
     reflectionFocus: qualitative.reflection,
+    reflectiveQuestion,
     counselNote: qualitative.counsel,
     boundaryNotice: '마야 포폴 부 쌍둥이 영웅 상징은 우열을 가르는 점수가 아니라 위기를 유연하게 전환하기 위한 정성적 성찰 프레임입니다.',
     popolVuhSynthesisMatrix,
@@ -257,6 +263,7 @@ export function formatPopolVuhHeroTwinsPrompt(report: PopolVuhReport): string {
     `- **실천 조언**: ${report.practiceGuidance}`,
     `- **일상 의례**: ${report.ritualAction}`,
     `- **성찰 질문**: ${report.reflectionFocus}`,
+    `- **질문 맞춤 성찰 질문**: ${report.reflectiveQuestion}`,
     `- **조언 요약**: ${report.counselNote}`,
     `- **해석 경계**: ${report.boundaryNotice}`,
   ];

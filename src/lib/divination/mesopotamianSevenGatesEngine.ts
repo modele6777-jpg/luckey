@@ -24,7 +24,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const MESOPOTAMIAN_GATES_VERSION = 'LUCKEY-MESO-GATES-v2.1.0';
+export const MESOPOTAMIAN_GATES_VERSION = 'LUCKEY-MESO-GATES-v2.2.0';
 
 export interface PlanetaryGateInfo {
   gateNumber: number;
@@ -45,6 +45,7 @@ export interface MesopotamianSevenGatesReport {
   liberationTask: string;
   sevenGatesOracleGuidance: string;
   ancientSumerianBlessing: string;
+  reflectiveQuestion: string;
   sevenGatesSynthesisMatrix?: {
     dominantTension: string;
     alignmentState: string;
@@ -60,7 +61,7 @@ function formatSevenGatesKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
 }
 
 function describeSevenGatesStage(score: number): string {
@@ -183,6 +184,11 @@ export function calculateMesopotamianSevenGates(
     integratedAction: `${activeGate.resurrectionGift} 회복을 위해 ${activeGate.surrenderedRegalia} 집착 내려놓기${query?.trim() ? ` [질문 맥락: ${query.trim()}]` : ''}`,
   };
 
+  const trimmedQ = query?.trim();
+  const reflectiveQuestion = trimmedQ
+    ? `지금 "${trimmedQ}" 앞에서 ${activeGate.gateNameAkkadian}의 ${activeGate.surrenderedRegalia} 집착을 내려놓고 내가 되찾을 내적 주권은 무엇인가요?`
+    : `${activeGate.gateNameAkkadian}에서 ${activeGate.spiritualEgoArmor}을 내려놓는다면, 지금 내 안에 가장 먼저 살아날 힘은 무엇인가요?`;
+
   return {
     engineVersion: MESOPOTAMIAN_GATES_VERSION,
     calculatedAt: targetDate.toISOString(),
@@ -193,6 +199,7 @@ export function calculateMesopotamianSevenGates(
     liberationTask,
     sevenGatesOracleGuidance,
     ancientSumerianBlessing,
+    reflectiveQuestion,
     sevenGatesSynthesisMatrix,
     interpretiveBoundary: '본 메소포타미아 7대 행성 관문 리포트는 인안나 신화 상징에 기반한 정성적 내면 성찰 안내이며, 현실 사건의 확정적 예언이 아닙니다.',
   };
@@ -211,6 +218,7 @@ export function formatMesopotamianSevenGatesPrompt(report: MesopotamianSevenGate
     `- **관문 통과 해방 과제**: ${report.liberationTask}`,
     `- **7대 관문 신탁 지침**: ${report.sevenGatesOracleGuidance}`,
     `- **고대 수메르의 영적 축복**: "${report.ancientSumerianBlessing}"`,
+    `- **질문 맞춤 성찰 질문**: ${report.reflectiveQuestion}`,
   ];
   if (report.sevenGatesSynthesisMatrix) {
     lines.push(

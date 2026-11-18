@@ -21,7 +21,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const NORSE_VOLVA_SEIDR_NINE_REALMS_ENGINE_VERSION = '2.1.0';
+export const NORSE_VOLVA_SEIDR_NINE_REALMS_ENGINE_VERSION = '2.2.0';
 
 export interface YggdrasilRealm {
   id: string;
@@ -45,6 +45,7 @@ export interface NorseVolvaSeidrNineRealmsReport {
   secondaryRealm: YggdrasilRealm; // 보조 가이드 영역
   volvaPropheticVision: string; // 볼바의 예언적 통찰
   seidrSpindleGroundingRitual: string; // 세이드 물레 접지 리추얼
+  reflectiveQuestion: string;
   volvaSynthesisMatrix?: {
     dominantTension: string;
     alignmentState: string;
@@ -60,7 +61,7 @@ function formatVolvaKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
 }
 
 function describeVolvaStage(score: number): string {
@@ -198,6 +199,11 @@ export function calculateNorseVolvaSeidrNineRealms(
     integratedAction: `${dominantRealm.propheticGift}${question.trim() ? ` [질문 맥락: ${question.trim()}]` : ''}`,
   };
 
+  const trimmedQ = question.trim();
+  const reflectiveQuestion = trimmedQ
+    ? `지금 "${trimmedQ}" 앞에서 위그드라실 ${dominantRealm.nameKo}(${dominantRealm.norseName})의 ${dominantRealm.propheticGift}을 살려 내가 먼저 엮어 갈 한 수는 무엇인가요?`
+    : `오늘 ${dominantRealm.nameKo}과 ${secondaryRealm.nameKo}의 기운 속에서 내 운명실(Wyrd)을 가장 맑게 펴기 위해 정리할 생각은 무엇인가요?`;
+
   return {
     engineVersion: NORSE_VOLVA_SEIDR_NINE_REALMS_ENGINE_VERSION,
     timestamp: now.toISOString(),
@@ -211,6 +217,7 @@ export function calculateNorseVolvaSeidrNineRealms(
     secondaryRealm,
     volvaPropheticVision,
     seidrSpindleGroundingRitual,
+    reflectiveQuestion,
     volvaSynthesisMatrix,
     interpretiveBoundary: '본 북유럽 볼바 세이드 & 위그드라실 9대 세계 리포트는 에다 신화 상징에 기반한 정성적 직관 성찰 안내이며, 확정적 미래 예언이 아닙니다.',
   };
@@ -230,6 +237,7 @@ export function formatNorseVolvaSeidrNineRealmsPrompt(rep: NorseVolvaSeidrNineRe
     `· 보조 영역: [${rep.secondaryRealm.nameKo} (${rep.secondaryRealm.norseName})] — ${rep.secondaryRealm.domain}`,
     `· 볼바의 예언적 통찰: ${rep.volvaPropheticVision}`,
     `· 세이드 물레 접지 리추얼: ${rep.seidrSpindleGroundingRitual}`,
+    `· 질문 맞춤 성찰 질문: ${rep.reflectiveQuestion}`,
   ];
   if (rep.volvaSynthesisMatrix) {
     lines.push(

@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.7.871",
+    "builtAt": "2026-11-19T05:40:00+09:00",
+    "summary": "마야 포폴부·메소포타미아 7관문·북유럽 볼바 세이드 3대 엔진 성찰 질문·+09:00 KST·카탈로그 뜻 보강(v1.7.871)",
+    "items": [
+      "마야 포폴부 쌍둥이영웅(v2.2.0)·메소포타미아 7관문(v2.2.0)·북유럽 볼바 세이드(v2.2.0): 질문 반응형 reflectiveQuestion·+09:00 (KST) 표준 표기·프롬프트 연동",
+      "ALL_DCE_ENGINES 카탈로그: mesopotamianSevenGates·popolVuhHeroTwins·norseVolvaSeidrNineRealms 한 줄 summary 등록",
+      "divination-engines.test.ts: 3대 엔진 v1.7.871 회귀 테스트 추가"
+    ]
+  },
+  {
     "version": "1.7.870",
     "builtAt": "2026-11-19T05:32:00+09:00",
     "summary": "마야 촐킨·믹스테크 8-사슴·아트라하시스 방주 3대 엔진 실천 의례 및 성찰 초점 표준 연동(v1.7.870)",
