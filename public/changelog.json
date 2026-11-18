@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.7.893",
+    "builtAt": "2026-11-19T07:28:00+09:00",
+    "summary": "세렌디피티 레이더·차크라 솔 퀘스트·종여내단 3대 엔진 reflectiveQuestion·+09:00 (KST)·summary·question 연동(v1.7.893)",
+    "items": [
+      "세렌디피티 행운 가속(v2.2.0)·차크라 솔 퀘스트(v2.2.0)·종여내단 3품 선도(v2.2.0): 질문 반응형 reflectiveQuestion·+09:00 (KST) 표기·프롬프트 출력 추가",
+      "deterministicEngine.ts: serendipitySynchronicity·vibrationalSoulQuest ALL_DCE_ENGINES summary 등록 및 호출부 question 전달 연동",
+      "divination-engines.test.ts: 3대 엔진 v1.7.893 회귀 테스트 추가"
+    ]
+  },
+  {
     "version": "1.7.892",
     "builtAt": "2026-11-19T07:22:00+09:00",
     "summary": "로마 마르쿠스 아우렐리우스 명상록·세네카 시간 주권·스토아 프로하이레시스 3대 엔진 실천 의례 및 성찰 초점 표준 연동(v1.7.892)",
