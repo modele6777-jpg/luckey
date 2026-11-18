@@ -1,4 +1,4 @@
-import { bindVisualViewportLifecycle, prepareViewportAfterUpdate, scheduleVisualViewportSync, readViewportSnapshot, resolveLayoutViewportSize, getLayoutViewportProbe, isIosStandaloneWindow } from './visualViewportBox';
+import { bindVisualViewportLifecycle, prepareViewportAfterUpdate, scheduleVisualViewportSync, syncVisualViewportBox } from './visualViewportBox';
 
 export type PerfProfile = 'full' | 'galaxy' | 'duo' | 'iphonexs' | 'pwa' | 'reduced' | 'legacy';
 
@@ -149,11 +149,10 @@ export interface DuoUnfoldedState {
  *
  * iPhone Duo cover is about 450×640 CSS px (installed standalone readings;
  * the 5.4" panel is 1398×2034 physical, about 466×678 at 3x). Ordinary phones
- * are about 390–440 CSS px wide. The reported inner Safari canvas is
- * 951×537, while the reported cover is 461×678. A 512px guard separates
- * these without mistaking an ordinary phone rotation for an unfold.
+ * are about 390–440 CSS px wide. 540 is the existing portrait cover guard and
+ * still sits below the inner display.
  */
-export const DUO_COVER_MAX_SHORT_SIDE = 512;
+export const DUO_COVER_MAX_SHORT_SIDE = 540;
 
 /**
  * Inner display once the shorter side has cleared the cover.
@@ -243,11 +242,8 @@ function unoccludedHeight(win: Window, width: number, rawHeight: number): number
  */
 export function isDuoUnfoldedState(): DuoUnfoldedState {
   if (typeof window === 'undefined') return { unfolded: false, orientation: 'portrait' };
-  const rendered = window.navigator && isIosStandaloneWindow(window)
-    ? resolveLayoutViewportSize(readViewportSnapshot(window))
-    : { width: window.innerWidth, height: window.innerHeight };
-  const width = rendered.width;
-  const rawHeight = rendered.height;
+  const width = window.innerWidth;
+  const rawHeight = window.innerHeight;
   if (isViewportSpanned(window)) return resolveDuoViewport(width, rawHeight, true);
 
   const fullHeight = unoccludedHeight(window, width, rawHeight);
@@ -264,39 +260,13 @@ export function subscribeDuoLayout(onChange: () => void): () => void {
   const queries = DUO_SEGMENT_QUERIES.map(query => {
     try { return window.matchMedia(query); } catch { return null; }
   }).filter((query): query is MediaQueryList => Boolean(query));
-  let frame = 0;
-  let timers: ReturnType<typeof setTimeout>[] = [];
-  const cancelPending = () => {
-    if (frame) window.cancelAnimationFrame(frame);
-    frame = 0;
-    timers.forEach(clearTimeout);
-    timers = [];
-  };
-  const handler = () => {
-    cancelPending();
-    onChange();
-    // WebKit may publish orientation/visibility before the new viewport size.
-    // Reconcile again after layout and after the fold animation has settled.
-    frame = window.requestAnimationFrame(() => { frame = 0; onChange(); });
-    timers = [120, 350].map(delay => setTimeout(onChange, delay));
-  };
-  const renderedResize = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(handler) : null;
-  if (renderedResize) {
-    renderedResize.observe(document.documentElement);
-    renderedResize.observe(getLayoutViewportProbe(document));
-  }
+  const handler = () => onChange();
   queries.forEach(query => query.addEventListener?.('change', handler));
-  for (const event of ['resize', 'orientationchange', 'pageshow', 'focus']) window.addEventListener(event, handler, { passive: true });
-  window.visualViewport?.addEventListener('resize', handler, { passive: true });
-  window.screen?.orientation?.addEventListener?.('change', handler);
+  window.addEventListener('pageshow', handler);
   document.addEventListener('visibilitychange', handler);
   return () => {
-    cancelPending();
-    renderedResize?.disconnect();
     queries.forEach(query => query.removeEventListener?.('change', handler));
-    for (const event of ['resize', 'orientationchange', 'pageshow', 'focus']) window.removeEventListener(event, handler);
-    window.visualViewport?.removeEventListener('resize', handler);
-    window.screen?.orientation?.removeEventListener?.('change', handler);
+    window.removeEventListener('pageshow', handler);
     document.removeEventListener('visibilitychange', handler);
   };
 }
@@ -456,7 +426,7 @@ function applyDuoAndViewportFlags(): void {
     }
   }
 
-  scheduleVisualViewportSync(window);
+  syncVisualViewportBox(window);
 }
 
 export function initPerfMode(): PerfProfile {
@@ -680,7 +650,7 @@ export function initNarrowPhoneClass(): void {
     window.addEventListener('pageshow', applySoon);
     window.visualViewport?.addEventListener('resize', applySoon, { passive: true });
     window.visualViewport?.addEventListener('scroll', () => {
-      scheduleVisualViewportSync(window);
+      syncVisualViewportBox(window);
     }, { passive: true });
     bindVisualViewportLifecycle(window);
     scheduleVisualViewportSync(window);

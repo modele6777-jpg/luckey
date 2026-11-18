@@ -8,12 +8,6 @@ const serverViewports = { main: serverMainOverlayViewport, content: serverMainOv
 export function useMainOverlayViewport(pane: OverlayPane = 'main'): CSSProperties {
   const viewports = useSyncExternalStore(subscribeMainOverlayViewport, getMainOverlayViewport, () => serverViewports);
   const viewport = viewports[pane];
-  if (viewport.hidden) {
-    return {
-      display: 'none',
-      pointerEvents: 'none',
-    } as CSSProperties;
-  }
   return {
     left: viewport.left, top: viewport.top, width: viewport.width, height: viewport.height,
     right: 'auto', bottom: 'auto',

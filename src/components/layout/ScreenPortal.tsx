@@ -6,42 +6,23 @@ import { createPortal } from 'react-dom';
 
 export const ScreenOverlayContext = createContext<readonly RefObject<HTMLDivElement | null>[]>([]);
 
-/** Mounted popup content remains open even while fold geometry temporarily becomes zero. */
+/** Folding must not navigate away from the page that owns a live popup. */
 export function hasOpenScreenOverlay(): boolean {
   if (Array.from(document.querySelectorAll<HTMLElement>('[data-screen-overlay-layer]'))
-    .some(layer => layer.childElementCount > 0)) return true;
+    .some(layer => layer.childElementCount > 0 && layer.getBoundingClientRect().width > 0)) return true;
   const visibleDialog = (doc: Document) => Array.from(doc.querySelectorAll<HTMLElement>('[role="dialog"], dialog[open]'))
     .some(dialog => {
-      if (dialog.hidden || dialog.getAttribute('aria-hidden') === 'true') return false;
+      const rect = dialog.getBoundingClientRect();
       const style = doc.defaultView?.getComputedStyle(dialog);
-      return style?.visibility !== 'hidden' && style?.display !== 'none';
+      return rect.width > 0 && rect.height > 0 && style?.visibility !== 'hidden' && style?.display !== 'none';
     });
   if (visibleDialog(document)) return true;
   // Key's practice dialogs live in its same-origin frame, outside React portals.
   return Array.from(document.querySelectorAll('iframe')).some(frame => {
     try {
-      return Boolean(frame.contentDocument && visibleDialog(frame.contentDocument));
+      return frame.getBoundingClientRect().width > 0 && Boolean(frame.contentDocument && visibleDialog(frame.contentDocument));
     } catch { return false; }
   });
-}
-
-/** Choose the popup owner before a fold can hide either pane. Geometry may be zero mid-fold. */
-export function getOpenScreenOverlayPane(): 'content' | 'lucy' | null {
-  const layers = Array.from(document.querySelectorAll<HTMLElement>('[data-screen-overlay-layer][data-overlay-pane]'))
-    .filter(layer => layer.childElementCount > 0 && Boolean(layer.querySelector('[role="dialog"], dialog[open], .fixed.inset-0')))
-    .sort((a, b) => (Number(b.style.zIndex) || 10000) - (Number(a.style.zIndex) || 10000));
-  for (const layer of layers) {
-    const owner = layer.dataset.overlayPane;
-    if (owner === 'content' || owner === 'lucy') return owner;
-  }
-  for (const frame of Array.from(document.querySelectorAll('iframe'))) {
-    try {
-      if (!frame.contentDocument?.querySelector('[role="dialog"], dialog[open]')) continue;
-      const owner = frame.closest<HTMLElement>('[data-workspace-pane]')?.dataset.workspacePane;
-      if (owner === 'content' || owner === 'lucy') return owner;
-    } catch { /* Cross-origin frames own their own state. */ }
-  }
-  return null;
 }
 
 /** Only occupied overlays participate; opening order wins over JSX declaration order. */
@@ -49,7 +30,6 @@ export function isTopScreenOverlay(element: HTMLElement | null): boolean {
   const layers = Array.from(document.querySelectorAll<HTMLElement>('[data-screen-overlay-layer]'))
     .filter(layer => {
       if (!layer.childElementCount || !element) return false;
-      if (getComputedStyle(layer).display === 'none') return false;
       const a = layer.getBoundingClientRect();
       const b = element.getBoundingClientRect();
       // Independent pane dialogs must not disable each other's controls.

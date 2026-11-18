@@ -42,7 +42,6 @@ export type ViewportSnapshot = {
   /** CSS large viewport is independent of stale JS height on installed WebKit. */
   cssViewportHeight?: number;
   cssViewportWidth?: number;
-  layoutViewportWidth?: number;
   orientation?: string;
   safeAreaTop?: number;
   screenWidth?: number;
@@ -82,27 +81,14 @@ function roundPx(value: number): number {
  * rotation frames. A portrait height must never become a keyboard baseline
  * for a landscape viewport merely because an input retained focus.
  */
-/** CSS and the document must independently agree before overriding stale PWA JS width. */
-export function resolveLayoutViewportSize(snapshot: ViewportSnapshot): { width: number; height: number } {
-  const cssWidth = positive(snapshot.cssViewportWidth);
-  const cssHeight = positive(snapshot.cssViewportHeight);
-  const documentWidth = positive(snapshot.layoutViewportWidth);
-  const paired = snapshot.iosStandalone && cssWidth != null && cssHeight != null && documentWidth != null
-    && Math.abs(cssWidth - documentWidth) <= 2;
-  if (paired && Math.abs(cssWidth! - snapshot.innerWidth) >= VIEWPORT_KEYBOARD_MAX_WIDTH_DELTA_PX) {
-    return { width: cssWidth!, height: cssHeight! };
-  }
-  return { width: snapshot.innerWidth, height: snapshot.innerHeight };
-}
-
 function currentStandaloneCssHeight(snapshot: ViewportSnapshot): number | null {
   if (!snapshot.iosStandalone) return null;
   const height = positive(snapshot.cssViewportHeight);
   if (height == null) return null;
   const width = positive(snapshot.cssViewportWidth);
-  if (width != null && Math.abs(width - resolveLayoutViewportSize(snapshot).width) >= VIEWPORT_KEYBOARD_MAX_WIDTH_DELTA_PX) return null;
-  if (snapshot.orientation?.startsWith('landscape') && height >= resolveLayoutViewportSize(snapshot).width - 1) return null;
-  if (snapshot.orientation?.startsWith('portrait') && height <= resolveLayoutViewportSize(snapshot).width + 1) return null;
+  if (width != null && Math.abs(width - snapshot.innerWidth) >= VIEWPORT_KEYBOARD_MAX_WIDTH_DELTA_PX) return null;
+  if (snapshot.orientation?.startsWith('landscape') && height >= snapshot.innerWidth - 1) return null;
+  if (snapshot.orientation?.startsWith('portrait') && height <= snapshot.innerWidth + 1) return null;
   return height;
 }
 
@@ -113,7 +99,7 @@ function currentStandaloneCssHeight(snapshot: ViewportSnapshot): number | null {
  */
 function installedLayoutBox(snapshot: ViewportSnapshot): ViewportBox | null {
   const clientHeight = positive(snapshot.layoutViewportHeight);
-  const width = positive(resolveLayoutViewportSize(snapshot).width);
+  const width = positive(snapshot.innerWidth);
   if (!snapshot.iosStandalone || clientHeight == null || width == null) return null;
   const fullHeight = currentStandaloneCssHeight(snapshot);
   const inset = positive(snapshot.safeAreaTop);
@@ -365,46 +351,31 @@ export function isIosStandaloneWindow(win: Window): boolean {
     || win.matchMedia('(display-mode: fullscreen)').matches;
 }
 
-const viewportProbes = new WeakMap<Document, HTMLDivElement>();
-const insetProbes = new WeakMap<Document, HTMLDivElement>();
-
-/** Persistent noninteractive probes live outside body to avoid subtree observer storms. */
-export function getLayoutViewportProbe(doc: Document): HTMLDivElement {
-  let probe = viewportProbes.get(doc);
-  if (!probe || !probe.isConnected) {
-    probe = doc.createElement('div');
-    probe.setAttribute('aria-hidden', 'true');
-    probe.style.cssText = 'position:fixed;top:0;left:0;width:100lvw;height:100lvh;visibility:hidden;pointer-events:none;contain:strict';
-    doc.documentElement.appendChild(probe);
-    viewportProbes.set(doc, probe);
-  }
-  return probe;
-}
-
 export function readSafeAreaInsets(doc: Document): { top: number; right: number; bottom: number; left: number } {
-  let probe = insetProbes.get(doc);
-  if (!probe || !probe.isConnected) {
-    probe = doc.createElement('div');
-    probe.setAttribute('aria-hidden', 'true');
-    probe.style.cssText = 'position:fixed;visibility:hidden;pointer-events:none;padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px)';
-    doc.documentElement.appendChild(probe);
-    insetProbes.set(doc, probe);
-  }
+  const probe = doc.createElement('div');
+  probe.style.cssText = 'position:fixed;visibility:hidden;pointer-events:none;padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px)';
+  (doc.body ?? doc.documentElement).appendChild(probe);
   const style = doc.defaultView?.getComputedStyle(probe);
   const read = (value: string | undefined) => {
     const parsed = parseFloat(value || '0');
     return Number.isFinite(parsed) && parsed > 0 ? parsed : 0;
   };
-  return { top: read(style?.paddingTop), right: read(style?.paddingRight), bottom: read(style?.paddingBottom), left: read(style?.paddingLeft) };
+  const insets = {
+    top: read(style?.paddingTop),
+    right: read(style?.paddingRight),
+    bottom: read(style?.paddingBottom),
+    left: read(style?.paddingLeft),
+  };
+  probe.remove();
+  return insets;
 }
 
 function applySafeAreaVars(doc: Document): void {
   const insets = readSafeAreaInsets(doc);
   const root = doc.documentElement;
   const set = (name: string, value: number) => {
-    const next = value > 0 ? `${roundPx(value)}px` : '';
-    if (root.style.getPropertyValue(name) === next) return;
-    if (next) root.style.setProperty(name, next); else root.style.removeProperty(name);
+    if (value > 0) root.style.setProperty(name, `${roundPx(value)}px`);
+    else root.style.removeProperty(name);
   };
   set('--sat', insets.top);
   set('--sab', insets.bottom);
@@ -418,15 +389,18 @@ export function readViewportSnapshot(win: Window): ViewportSnapshot {
   let cssViewportHeight: number | undefined;
   let cssViewportWidth: number | undefined;
   if (iosStandalone && (win as Window & { CSS?: typeof CSS }).CSS?.supports('height', '100lvh')) {
-    const cssRect = getLayoutViewportProbe(win.document).getBoundingClientRect();
+    const probe = win.document.createElement('div');
+    probe.style.cssText = 'position:fixed;top:0;left:0;width:100lvw;height:100lvh;visibility:hidden;pointer-events:none;contain:strict';
+    (win.document.body ?? win.document.documentElement).appendChild(probe);
+    const cssRect = probe.getBoundingClientRect();
     cssViewportHeight = cssRect.height;
     cssViewportWidth = cssRect.width;
+    probe.remove();
   }
   return {
     innerWidth: win.innerWidth,
     innerHeight: win.innerHeight,
     layoutViewportHeight: win.document.documentElement.clientHeight,
-    layoutViewportWidth: win.document.documentElement.clientWidth,
     iosStandalone,
     cssViewportHeight,
     cssViewportWidth,

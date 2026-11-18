@@ -23,7 +23,7 @@ import {
   getBgmPublicState,
   type BgmPublicState,
 } from '@/components/trinity/BgMusicPlayer';
-import { isDualPaneLayout, subscribeDuoLayout } from '@/lib/perfMode';
+import { isDualPaneLayout } from '@/lib/perfMode';
 import { forceAppUpgradeAndReload } from '@/lib/prismSync';
 import { useApp } from '@/contexts/AppContext';
 import { resetAppScreen } from '@/lib/visualViewportBox';
@@ -175,18 +175,24 @@ export default function LeftSidebarNav() {
     const handleLayoutChange = () => {
       if (typeof window === 'undefined') return;
       const unfolded = isDualPaneLayout();
-      setIsUnfolded(unfolded);
+      setIsUnfolded((prev) => {
+        if (prev !== unfolded) {
+          // 화면 전환 시: 펼치면 기본적으로 펼쳐지고, 접으면 기본적으로 네잎클로버 버튼도 접힘
+          setIsChannelsOpen(unfolded);
+        }
+        return unfolded;
+      });
     };
     handleLayoutChange();
-    return subscribeDuoLayout(handleLayoutChange);
+    window.addEventListener('resize', handleLayoutChange, { passive: true });
+    window.addEventListener('orientationchange', handleLayoutChange, { passive: true });
+    window.visualViewport?.addEventListener('resize', handleLayoutChange, { passive: true });
+    return () => {
+      window.removeEventListener('resize', handleLayoutChange);
+      window.removeEventListener('orientationchange', handleLayoutChange);
+      window.visualViewport?.removeEventListener('resize', handleLayoutChange);
+    };
   }, []);
-  const previousUnfolded = useRef(isUnfolded);
-  useEffect(() => {
-    if (previousUnfolded.current !== isUnfolded) {
-      previousUnfolded.current = isUnfolded;
-      setIsChannelsOpen(isUnfolded);
-    }
-  }, [isUnfolded]);
   const [location, navigate] = useLocation();
   const cleanPath = location ? location.split('?')[0].split('#')[0] : '/';
   const { resolvedTheme } = useTheme();

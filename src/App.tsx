@@ -1,5 +1,4 @@
-import { getOpenScreenOverlayPane } from './components/layout/ScreenPortal';
-import { markFoldRuntime } from './lib/foldRuntimeTrace';
+import { hasOpenScreenOverlay } from './components/layout/ScreenPortal';
 import { RetainedPane } from './components/layout/RetainedPane';
 import { OverlayPaneContext } from './components/layout/OverlayPaneContext';
 import { rememberOverlayPane } from './lib/overlayPane';
@@ -295,18 +294,14 @@ function AppContent() {
   const lastLeftChannelPathRef = React.useRef<string>('/key');
   const previousUnfoldedRef = React.useRef(duoState.unfolded);
   const [foldedCosmicRoom, setFoldedCosmicRoom] = React.useState(false);
-  const [foldedPane, setFoldedPane] = React.useState<'content' | 'lucy' | null>(null);
-  React.useEffect(() => { setFoldedPane(null); }, [location]);
 
   React.useEffect(() => {
     const handleLayoutChange = () => {
       if (typeof window === 'undefined') return;
-      markFoldRuntime('layout-start');
       const state = isDuoUnfoldedState();
       const wasUnfolded = previousUnfoldedRef.current;
       const isNowUnfolded = state.unfolded;
       previousUnfoldedRef.current = isNowUnfolded;
-      if (wasUnfolded !== isNowUnfolded) markFoldRuntime('fold-commit');
 
       setDuoState(previous => previous.unfolded === state.unfolded && previous.orientation === state.orientation ? previous : state);
       document.documentElement.classList.toggle('duo-unfolded-mode', state.unfolded);
@@ -328,23 +323,27 @@ function AppContent() {
           currentPath: window.location.pathname || '/',
           lastLeftChannelPath: lastLeftChannelPathRef.current,
         });
-        const popupPane = getOpenScreenOverlayPane();
-        if (popupPane) {
-          setFoldedCosmicRoom(popupPane === 'content' && cover.kind === 'cosmic');
-          setFoldedPane(popupPane);
-        } else if (cover.kind === 'cosmic') {
+        if (cover.kind === 'cosmic') {
           setFoldedCosmicRoom(true);
-          setFoldedPane('content');
         } else {
           setFoldedCosmicRoom(false);
-          // Folding changes visibility only. Never replace the source route or
-          // page tree, even when the last interaction was in a portal.
-          setFoldedPane(cover.kind === 'lucy' ? 'lucy' : 'content');
+          // A fold-driven route change would destroy the channel's live dialogs.
+          // Retain both page trees until the user explicitly navigates instead.
+          if (cover.navigateTo && !hasOpenScreenOverlay()) navigate(cover.navigateTo);
         }
       }
     };
     handleLayoutChange();
-    return subscribeDuoLayout(handleLayoutChange);
+    window.addEventListener('resize', handleLayoutChange, { passive: true });
+    window.addEventListener('orientationchange', handleLayoutChange, { passive: true });
+    window.visualViewport?.addEventListener('resize', handleLayoutChange, { passive: true });
+    const unsubscribeDuo = subscribeDuoLayout(handleLayoutChange);
+    return () => {
+      window.removeEventListener('resize', handleLayoutChange);
+      window.removeEventListener('orientationchange', handleLayoutChange);
+      window.visualViewport?.removeEventListener('resize', handleLayoutChange);
+      unsubscribeDuo();
+    };
   }, [navigate]);
 
   const isFirstMount = React.useRef(true);
@@ -399,7 +398,6 @@ function AppContent() {
       const targetPath = e?.detail?.path;
       if (targetPath && typeof targetPath === 'string') {
         markIntentionalNav();
-        setFoldedPane(null);
         setFoldedCosmicRoom(false);
         const safePath = resolveCanonicalPath(targetPath);
         navigate(safePath);
@@ -570,14 +568,6 @@ function AppContent() {
     let suppressTouchClickUntil = 0;
     let gestureLockedUrl = '';
     const clearGestureLock = () => { gestureLockedUrl = ''; };
-    const resetTouchGestureState = () => {
-      touchActive = false;
-      touchMoved = false;
-      maxTouchMove = 0;
-      startedOnControl = false;
-      suppressTouchClickUntil = 0;
-      gestureLockedUrl = '';
-    };
 
     const getSafeInsets = () => {
       try {
@@ -719,9 +709,6 @@ function AppContent() {
     window.addEventListener('popstate', handlePopStateCapture, true);
     const navigationEvents = ['prism-navigate', 'nav-click-active', 'prism:bigbang_commit', 'prism:cycle_nav'];
     navigationEvents.forEach(name => window.addEventListener(name, clearGestureLock));
-    window.addEventListener('resize', resetTouchGestureState, { passive: true });
-    window.addEventListener('orientationchange', resetTouchGestureState, { passive: true });
-    document.addEventListener('visibilitychange', resetTouchGestureState);
     return () => {
       window.removeEventListener('touchstart', handleEdgeTouchStart, true);
       window.removeEventListener('touchmove', handleEdgeTouchMove, true);
@@ -731,9 +718,6 @@ function AppContent() {
       window.removeEventListener('click', handleExplicitClickCapture, true);
       window.removeEventListener('popstate', handlePopStateCapture, true);
       navigationEvents.forEach(name => window.removeEventListener(name, clearGestureLock));
-      window.removeEventListener('resize', resetTouchGestureState);
-      window.removeEventListener('orientationchange', resetTouchGestureState);
-      document.removeEventListener('visibilitychange', resetTouchGestureState);
     };
   }, [navigate]);
 
@@ -753,7 +737,7 @@ function AppContent() {
   }, [isUnlocked, sharedState?.themeColor, resolvedTheme]);
 
   const isLucyRoute = location === '/' || location === '/chat' || location === '/lucy' || location === '/chat/pro';
-  const showLucyPane = isDuoUnfolded || (foldedPane ? foldedPane === 'lucy' : isLucyRoute && !foldedCosmicRoom);
+  const showLucyPane = isDuoUnfolded || (isLucyRoute && !foldedCosmicRoom);
   const showContentPane = isDuoUnfolded || !showLucyPane;
 
   React.useEffect(() => {
@@ -778,12 +762,6 @@ function AppContent() {
       const target = e.target as HTMLElement | null;
       if (!target) return;
 
-      const popupOwner = target.closest<HTMLElement>('[data-overlay-pane]')?.dataset.overlayPane;
-      if (popupOwner === 'content' || popupOwner === 'lucy') {
-        lastTouchedDuoPaneRef.current = popupOwner === 'lucy' ? 'right' : 'left';
-        return;
-      }
-
       if (target.closest('#duo-lucy-viewport')) {
         lastTouchedDuoPaneRef.current = mapDuoPaneSide('right', isDuoPanesSwapped);
         return;
@@ -800,7 +778,7 @@ function AppContent() {
 
     const handleNavClick = (e: any) => {
       const p = e?.detail?.path;
-      if (p) { setFoldedCosmicRoom(false); setFoldedPane(null); }
+      if (p) setFoldedCosmicRoom(false);
       if (p === '/' || p === '/chat' || p === '/lucy') {
         lastTouchedDuoPaneRef.current = mapDuoPaneSide('right', isDuoPanesSwapped);
       } else if (p) {
