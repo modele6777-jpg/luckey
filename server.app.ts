@@ -23,6 +23,7 @@ import { GoogleGenAI } from "@google/genai";
 import { createProxyMiddleware, fixRequestBody } from "http-proxy-middleware";
 import { buildSpecificSedonaDailyOracle } from "./src/lib/dailyTarotOracle";
 import { installAsyncRouteGuard } from "./server/api-lib/routeGuard";
+import { guardRestrictedRoute } from "./server/api-lib/publicAccess";
 
 const _filename = typeof __filename !== "undefined" ? __filename : "";
 const _dirname = typeof __dirname !== "undefined" ? __dirname : process.cwd();
@@ -391,6 +392,12 @@ async function startServer() {
     }
     next();
   });
+
+  // Render exposes this Express server publicly. Apply the same origin guard as the
+  // Vercel functions so other sites cannot spend the app's AI keys. Other hosts are unchanged.
+  if (process.env.RENDER) {
+    app.use(guardRestrictedRoute(5_000_000));
+  }
 
   // AI Handler
   app.post("/api/ai", async (req, res) => {

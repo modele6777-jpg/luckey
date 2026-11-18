@@ -29,6 +29,18 @@ View your app in AI Studio: https://ai.studio/apps/74fc4969-44a5-40f7-b5bd-e3b32
 3. Run the app:
    `npm run dev`
 
+## Render 배포 (무료 플랜)
+
+`render.yaml`이 Render Blueprint 설정입니다.
+
+1. [Render](https://render.com)에 GitHub로 가입합니다.
+2. New → Blueprint → 이 저장소를 선택합니다.
+3. 대시보드에서 `GEMINI_API_KEY`, `XAI_API_KEY`, `AI_TYPE` 값을 입력합니다(사용하는 AI만).
+4. 배포가 끝나면 `https://<서비스 이름>.onrender.com` 주소가 생깁니다.
+
+무료 플랜은 15분 동안 접속이 없으면 잠들고, 다시 열 때 30초~1분 정도 걸립니다.
+Render에서 실행될 때(`RENDER` 환경 변수)는 AI 경로가 자기 주소(`RENDER_EXTERNAL_HOSTNAME`)에서 온 요청만 받습니다.
+
 ## 원격 MCP
 
 타로·사주 Streamable HTTP 엔드포인트는 `POST /api/mcp`입니다. 원카드 타로와 사주는 `LUCKEY_API_ORIGIN`이 있으면 그 리딩 API를, 없으면 운영 주소의 리딩 API를 호출합니다. Bearer 헤더 또는 `?key=` 쿼리로 16자 이상의 `LUCKEY_MCP_TOKEN`을 확인합니다. Grok은 [grok.com/connectors](https://grok.com/connectors)에서 New Connector, Custom을 고른 뒤 `https://luckey-six.vercel.app/api/mcp?key=<LUCKEY_MCP_TOKEN>`을 붙입니다. 주소, 인증, 도구별 흐름은 [docs/mcp-remote.md](docs/mcp-remote.md)에 있습니다.

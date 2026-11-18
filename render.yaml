@@ -1,0 +1,24 @@
+# Render Blueprint: https://render.com/docs/blueprint-spec
+# Render 대시보드 → New → Blueprint → 이 저장소 선택으로 배포합니다.
+services:
+  - type: web
+    name: luckey
+    runtime: node
+    plan: free
+    # 빌드 도구(vite, esbuild)는 devDependencies에 있으므로 함께 설치합니다.
+    buildCommand: npm ci --include=dev && npm run build
+    startCommand: node dist/server.cjs
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NODE_VERSION
+        value: "22"
+      # 아래 값은 Render 대시보드에서 직접 입력합니다(저장소에 비밀 값을 넣지 않습니다).
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: XAI_API_KEY
+        sync: false
+      - key: AI_TYPE
+        sync: false

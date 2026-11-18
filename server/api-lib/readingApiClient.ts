@@ -37,7 +37,7 @@ function originFromHost(host: string | undefined): string | null {
   return parseAllowedOrigin(/^https?:\/\//i.test(raw) ? raw : `https://${raw}`);
 }
 
-/** LUCKEY_API_ORIGIN overrides Vercel production, the current deployment, then the public app. */
+/** LUCKEY_API_ORIGIN overrides Vercel production, the current Vercel/Render deployment, then the public app. */
 export function readingApiOrigin(): string {
   const override = (process.env.LUCKEY_API_ORIGIN || '').trim();
   if (override) {
@@ -55,6 +55,7 @@ export function readingApiOrigin(): string {
   }
   return originFromHost(process.env.VERCEL_PROJECT_PRODUCTION_URL)
     || originFromHost(process.env.VERCEL_URL)
+    || originFromHost(process.env.RENDER_EXTERNAL_URL)
     || parseAllowedOrigin(DEFAULT_READING_ORIGIN)
     || DEFAULT_READING_ORIGIN;
 }
