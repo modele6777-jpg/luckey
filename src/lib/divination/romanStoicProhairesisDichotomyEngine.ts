@@ -18,7 +18,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const ROMAN_STOIC_PROHAIRESIS_ENGINE_VERSION = '2.1.0';
+export const ROMAN_STOIC_PROHAIRESIS_ENGINE_VERSION = '2.2.0';
 
 export interface StoicVirtue {
   id: string;
@@ -41,6 +41,8 @@ export interface RomanStoicProhairesisReport {
   secondaryVirtue: StoicVirtue; // 보조 스토아 덕목
   mementoMoriPerspective: string; // 메멘토 모리 본질 통찰
   prohairesisActionGuidance: string; // 프로하이레시스 결단 실천 지침
+  ritualAction: string;
+  reflectionFocus: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
   stoicSynthesisMatrix?: {
@@ -202,6 +204,8 @@ export function calculateRomanStoicProhairesis(
     secondaryVirtue,
     mementoMoriPerspective,
     prohairesisActionGuidance,
+    ritualAction: `[${dominantVirtue.greek}] ${dominantVirtue.prescription}`,
+    reflectionFocus: `로마 스토아 프로하이레시스(${dominantVirtue.nameKo} ↔ ${secondaryVirtue.nameKo})`,
     reflectiveQuestion,
     interpretiveBoundary,
     stoicSynthesisMatrix,
@@ -231,6 +235,8 @@ export function formatRomanStoicProhairesisPrompt(
     );
   }
   lines.push(
+    `- 실천 의례: ${report.ritualAction}`,
+    `- 성찰 초점: ${report.reflectionFocus}`,
     `- 성찰 질문: ${report.reflectiveQuestion}`,
     `- 해석 경계: ${report.interpretiveBoundary}`,
   );

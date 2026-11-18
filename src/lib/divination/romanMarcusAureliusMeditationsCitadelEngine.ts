@@ -13,7 +13,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const ROMAN_MARCUS_AURELIUS_VERSION = 'LUCKEY-MARCUS-AURELIUS-CITADEL-v2.2.0';
+export const ROMAN_MARCUS_AURELIUS_VERSION = 'LUCKEY-MARCUS-AURELIUS-CITADEL-v2.3.0';
 
 export interface MeditationsTheme {
   themeKey: string;
@@ -61,6 +61,8 @@ export interface MarcusAureliusMeditationsCitadelResult {
     recommendedPractice: string;
   };
   dailyPracticeRitual: string;
+  ritualAction: string;
+  reflectionFocus: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
   marcusSynthesisMatrix?: {
@@ -304,6 +306,8 @@ export function calculateMarcusAureliusMeditationsCitadel(
     situationalCitadelFocus,
     temporalAureliusRhythm,
     dailyPracticeRitual: `${temporalAureliusRhythm.recommendedPractice} · ${situationalCitadelFocus.citadelDirective}`,
+    ritualAction: `[${activeMeditationsTheme.themeKey}] ${situationalCitadelFocus.citadelDirective}`,
+    reflectionFocus: `마르쿠스 아우렐리우스 명상록(${situationalCitadelFocus.detectedTheme}) — ${focalMeditationsAphorism.sourceContext}`,
     reflectiveQuestion: situationalCitadelFocus.reflectiveQuestion,
     interpretiveBoundary: '마르쿠스 아우렐리우스 명상록 성찰은 미래의 길흉을 점치는 도구가 아니라, 통제할 수 있는 내면의 판단과 평정(아파테이아)을 지키기 위한 스토아 철학 관점입니다.',
     marcusSynthesisMatrix,
@@ -322,6 +326,8 @@ export function formatMarcusAureliusMeditationsCitadelPrompt(res: MarcusAurelius
     `- 질문 맥락 진단(${res.situationalCitadelFocus.classicReference}): ${res.situationalCitadelFocus.detectedTheme} — ${res.situationalCitadelFocus.judgmentDistortionDiagnostic}`,
     `- KST 시공간 리듬 (${res.calculatedAtKst}): ${res.temporalAureliusRhythm.kstPhaseLabel} · ${res.temporalAureliusRhythm.seasonContext} (${res.temporalAureliusRhythm.citadelStageKo})`,
     `- 오늘의 실천 의례: ${res.dailyPracticeRitual}`,
+    `- 실천 의례: ${res.ritualAction}`,
+    `- 성찰 초점: ${res.reflectionFocus}`,
     `- 성찰 질문: "${res.reflectiveQuestion}"`,
     `- 핵심 경구: "${res.focalMeditationsAphorism.aphorismKo}" [${res.focalMeditationsAphorism.sourceContext}]`,
     `- 종합 철학 권면: ${res.aureliusComprehensiveGuidance.philosophicalCounsel}`,
