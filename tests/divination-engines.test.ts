@@ -11588,3 +11588,30 @@ test('호피 4대 세계 카치나·황제내경 오운육기·이븐 아라비 
   const ibnArabiPrompt = formatIbnArabiWahdatAlWujudPrompt(ibnArabi);
   assert.ok(ibnArabiPrompt.includes('+09:00') && ibnArabiPrompt.includes('질문 맞춤 성찰 질문') && ibnArabiPrompt.includes('해석 경계'));
 });
+
+test('잉카 안데스 3대 파차·자이나 14군아스타나·헤이안 음양도 세이메이 v1.7.859 질문 반응형 성찰 질문·+09:00 KST 회귀 검증', () => {
+  const profile = { basic: { name: '제제', birthdate: '1994-01-24', birthtime: '12:00', gender: 'male' } } as any;
+  const now = new Date('2026-11-19T04:30:00+09:00');
+  const query = '복잡한 집착을 비우고 오늘의 관계와 일의 균형을 지키고 싶어요';
+
+  const inca = calculateIncaAndeanThreePachaAyni(profile, now, query);
+  assert.equal(inca.engineVersion, INCA_ANDEAN_PACHA_VERSION);
+  assert.match(inca.calculatedAtKst, /\+09:00/);
+  assert.ok(inca.reflectiveQuestion.includes(query));
+  const incaPrompt = formatIncaAndeanThreePachaAyniPrompt(inca);
+  assert.ok(incaPrompt.includes('+09:00') && incaPrompt.includes('질문 맞춤 성찰 질문') && incaPrompt.includes('해석 경계'));
+
+  const jain = calculateJainGunasthanaKarma({ profile, targetInstantTime: now.toISOString(), question: query });
+  assert.equal(jain.engineVersion, JAIN_GUNASTHANA_KARMA_ENGINE_VERSION);
+  assert.match(jain.calculatedAtKst, /\+09:00/);
+  assert.ok(jain.reflectiveQuestion.includes(query));
+  const jainPrompt = formatJainGunasthanaKarmaPrompt(jain);
+  assert.ok(jainPrompt.includes('+09:00') && jainPrompt.includes('질문 맞춤 성찰 질문') && jainPrompt.includes('해석 경계'));
+
+  const onmyodo = calculateHeianOnmyodoSeimei(profile, now, query);
+  assert.equal(onmyodo.engineVersion, HEIAN_ONMYODO_SEIMEI_VERSION);
+  assert.match(onmyodo.calculatedAtKst, /\+09:00/);
+  assert.ok(onmyodo.reflectiveQuestion.includes(query));
+  const onmyodoPrompt = formatHeianOnmyodoSeimeiPrompt(onmyodo);
+  assert.ok(onmyodoPrompt.includes('+09:00') && onmyodoPrompt.includes('질문 맞춤 성찰 질문') && onmyodoPrompt.includes('해석 경계'));
+});
