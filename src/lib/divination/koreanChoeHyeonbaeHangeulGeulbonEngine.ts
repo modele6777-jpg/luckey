@@ -15,7 +15,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const CHOE_HYEONBAE_GEULBON_VERSION = 'LUCKEY-CHOE-HYEONBAE-GEULBON-v2.1.0';
+export const CHOE_HYEONBAE_GEULBON_VERSION = 'LUCKEY-CHOE-HYEONBAE-GEULBON-v2.2.0';
 
 export interface HangeulGeulbonStage {
   stageLevel: number;
@@ -59,6 +59,8 @@ export interface ChoeHyeonbaeGeulbonResult {
     alignmentState: string;
     integratedAction: string;
   };
+  ritualAction: string;
+  reflectionFocus: string;
 }
 
 function formatGeulbonKstTimestamp(now: Date = new Date()): string {
@@ -165,6 +167,9 @@ export function calculateChoeHyeonbaeGeulbon(
     integratedAction: `${primaryOesolVirtue.actionableDirective}${query?.trim() ? ` [질문 맥락: ${query.trim()}]` : ''}`,
   };
 
+  const ritualAction = `[${activeGeulbonStage.stageNameKo}] ${primaryOesolVirtue.actionableDirective}`;
+  const reflectionFocus = reflectiveQuestion;
+
   return {
     engineVersion: CHOE_HYEONBAE_GEULBON_VERSION,
     calculatedAtKst,
@@ -180,6 +185,8 @@ export function calculateChoeHyeonbaeGeulbon(
     interpretiveBoundary,
     oesolLegacyReflection,
     geulbonSynthesisMatrix,
+    ritualAction,
+    reflectionFocus,
   };
 }
 
@@ -214,5 +221,9 @@ export function formatChoeHyeonbaeGeulbonPrompt(result: ChoeHyeonbaeGeulbonResul
       `- 통합 실천: ${result.geulbonSynthesisMatrix.integratedAction}`,
     );
   }
+  lines.push(
+    `- 실천 의례(Ritual Action): ${result.ritualAction}`,
+    `- 성찰 초점(Reflection Focus): ${result.reflectionFocus}`,
+  );
   return lines.join('\n');
 }
