@@ -18,7 +18,7 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const HERO_MONOMYTH_VERSION = 'LUCKEY-MONOMYTH-v2.2.0';
+export const HERO_MONOMYTH_VERSION = 'LUCKEY-MONOMYTH-v2.3.0';
 
 export interface HeroJourneyStage {
   stepNumber: number;          // 1 ~ 12
@@ -46,6 +46,7 @@ export interface HeroMythMonomythReport {
   };
   ritualAction: string;
   reflectionFocus: string;
+  reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
 
@@ -56,7 +57,7 @@ function formatMonomythKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
 }
 
 function describeMonomythStage(score: number): string {
@@ -67,7 +68,8 @@ function describeMonomythStage(score: number): string {
 
 export function runHeroMythMonomythEngine(
   profile?: UserProfile,
-  targetDate: Date = new Date()
+  targetDate: Date = new Date(),
+  question?: string
 ): HeroMythMonomythReport {
   const sajuRes = calculateDetailedSaju(profile || null);
 
@@ -147,9 +149,13 @@ export function runHeroMythMonomythEngine(
 
   const ritualAction = `[${currentStage.stageName} · ${currentStage.archetypalRole}] ${heroicBreakthroughAction}`;
   const reflectionFocus = `지금 내가 마주한 '${theUltimateOrdeal}' 앞에서 ${currentStage.hiddenBlessing}을(를) 현실로 여는 오늘의 한 걸음은 무엇입니까?`;
+  const cleanedQuestion = (question ?? '').trim();
+  const reflectiveQuestion = cleanedQuestion
+    ? `"${cleanedQuestion}"라는 여정의 물음 앞에서 지금 내가 넘어야 할 문턱은 무엇이며, ${currentStage.archetypalRole}로서 선택할 가장 용기 있는 한 걸음은 무엇인가요?`
+    : `${currentStage.stageName}의 관문에서 '${theUltimateOrdeal}'을(를) 통과해 얻고자 하는 나만의 영약은 무엇인가요?`;
   const interpretiveBoundary = '본 조셉 캠벨 영웅의 여정 모노미스 리포트는 신화학 원형과 명리 흐름에 기반한 정성적 서사 성찰 안내이며, 확정적 미래 예언이 아닙니다.';
 
-  const synthesisPromptGuidance = `[LUCKEY 조셉 캠벨 영웅의 여정 12단계 모노미스 v2.2.0]
+  const synthesisPromptGuidance = `[LUCKEY 조셉 캠벨 영웅의 여정 12단계 모노미스 v2.3.0]
 - 연산 시각: ${calculatedAtKst}
 - 영웅의 신화적 정체성: [${heroicArchetype}]
 - 현재 위치한 여정의 관문: ${currentStage.stageName}
@@ -164,6 +170,7 @@ export function runHeroMythMonomythEngine(
 - 통합 실천: ${monomythSynthesisMatrix.integratedAction}
 - 실천 의례(Ritual Action): ${ritualAction}
 - 성찰 초점(Reflection Focus): ${reflectionFocus}
+- 질문 맞춤 성찰 질문: ${reflectiveQuestion}
 - 해석 경계: ${interpretiveBoundary}`;
 
   return {
@@ -180,6 +187,7 @@ export function runHeroMythMonomythEngine(
     monomythSynthesisMatrix,
     ritualAction,
     reflectionFocus,
+    reflectiveQuestion,
     interpretiveBoundary,
   };
 }
@@ -190,10 +198,11 @@ export function calculateHeroMythMonomyth(params?: {
   profile?: UserProfile | null;
   saju?: SajuAnalysisResult | null;
   targetDate?: Date;
+  question?: string;
 }): HeroMythMonomythResult {
   const profile = params?.profile || undefined;
   const targetDate = params?.targetDate || new Date();
-  return runHeroMythMonomythEngine(profile, targetDate);
+  return runHeroMythMonomythEngine(profile, targetDate, params?.question);
 }
 
 export function formatHeroMythMonomythPrompt(res: HeroMythMonomythResult): string {

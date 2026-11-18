@@ -14,7 +14,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const GERMAN_HERMANN_HESSE_VERSION = 'LUCKEY-HERMANN-HESSE-WISDOM-v2.2.0';
+export const GERMAN_HERMANN_HESSE_VERSION = 'LUCKEY-HERMANN-HESSE-WISDOM-v2.3.0';
 
 export interface HesseTheme {
   themeKey: string;
@@ -55,6 +55,7 @@ export interface GermanSwissHermannHesseDemianSiddharthaResult {
   };
   ritualAction: string;
   reflectionFocus: string;
+  reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
 
@@ -148,7 +149,7 @@ function formatHesseKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
 }
 
 function describeHesseStage(score: number): string {
@@ -204,6 +205,11 @@ export function calculateGermanSwissHermannHesseDemianSiddhartha(
     integratedAction: `${activeHesseTheme.practicalCounsel} (${focalHesseAphorism.actionGuidance})`,
   };
 
+  const cleanedQuery = (query ?? '').trim();
+  const reflectiveQuestion = cleanedQuery
+    ? `"${cleanedQuery}"라는 물음 앞에서 지금 내가 깨고 나와야 할 익숙한 알(고정관념)은 무엇이며, 내면의 진실한 부름은 어느 쪽을 향하고 있나요?`
+    : `${activeHesseTheme.themeTitleKo}의 흐름 속에서 오늘 내가 스스로의 삶으로 증명하고 싶은 진실한 한 걸음은 무엇인가요?`;
+
   return {
     engineVersion: GERMAN_HERMANN_HESSE_VERSION,
     calculatedAtKst: formatHesseKstTimestamp(now),
@@ -221,6 +227,7 @@ export function calculateGermanSwissHermannHesseDemianSiddhartha(
     hesseSynthesisMatrix,
     ritualAction: focalHesseAphorism.actionGuidance,
     reflectionFocus: `${activeHesseTheme.themeTitleKo}의 부름 앞에서 내가 깨고 나와야 할 익숙한 껍질은 무엇인가?`,
+    reflectiveQuestion,
     interpretiveBoundary: '본 헤르만 헤세 자아실현 지혜 리포트는 문학·실존 철학 원형에 기반한 정성적 내면 성찰 안내이며, 확정적 길흉 예단이나 심리 치료를 대신하지 않습니다.',
   };
 }
@@ -244,6 +251,7 @@ export function formatGermanSwissHermannHesseDemianSiddharthaPrompt(
     `- 구체적 실천 지침: ${res.focalHesseAphorism.actionGuidance}`,
     `- 실천 의례: ${res.ritualAction}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
+    `- 질문 맞춤 성찰 질문: ${res.reflectiveQuestion}`,
     `- 종합 헤세 지혜 권면: ${res.hesseComprehensiveGuidance.philosophicalCounsel}`,
   ];
   if (res.hesseSynthesisMatrix) {
