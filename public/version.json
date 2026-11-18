@@ -1,10 +1,10 @@
 {
-  "version": "1.7.898",
-  "builtAt": "2026-11-19T07:52:00+09:00",
-  "summary": "정통 사주 3대 원전 용신·12운성 묘고지 개고·삼재 교운기 3대 엔진 실천 의례 및 성찰 초점 표준 연동(v1.7.898)",
+  "version": "1.7.899",
+  "builtAt": "2026-11-19T07:58:00+09:00",
+  "summary": "베다 5대 코샤·보이스 페르소나·음양 극성 3대 엔진 reflectiveQuestion·+09:00 (KST)·question 연동 및 전체 엔진 reflectiveQuestion 100% 완비(v1.7.899)",
   "items": [
-    "정통 사주 3대 원전(자평진전·궁통보감·적천수) 용신 처방 엔진(v2.3.0): ritualAction·reflectionFocus 표준 필드 연동",
-    "사주 12운성 포태법 & 4대 묘고지 개고 엔진(v2.3.0): ritualAction·reflectionFocus 표준 필드 연동",
-    "삼재·대운 교운기 인생 환절기 감지 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동"
+    "베다 5대 코샤(v2.4.0)·보이스 페르소나(v2.2.0)·음양 극성(v2.2.0): 질문 반응형 reflectiveQuestion·+09:00 (KST) 표기·프롬프트 출력 추가",
+    "deterministicEngine.ts: voicePersona·yinYangPolarity 호출부 question 전달 연동",
+    "divination-engines.test.ts: 3대 엔진 v1.7.899 회귀 테스트 추가 (전체 *Engine.ts reflectiveQuestion 미구비 0건 달성)"
   ]
 }

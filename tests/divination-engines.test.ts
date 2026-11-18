@@ -12298,3 +12298,30 @@ test('카를 융 개성화·도교 공과격·베다 마하바키야 엔진 v1.7
   assert.ok(vm.reflectiveQuestion.includes(query));
   assert.ok(formatVedicMahavakyaPrompt(vm).includes('질문 맞춤 성찰 질문'));
 });
+
+test('베다 5대 코샤·보이스 페르소나·음양 극성 엔진 v1.7.899 질문 반응형 성찰 질문·KST(+09:00) 검증', () => {
+  const profile: any = {
+    name: '테스트',
+    basic: { birthdate: '1994-01-24', birthtime: '10:30', gender: 'male', calendarType: 'solar' },
+  };
+  const now = new Date('2026-11-19T07:58:00+09:00');
+  const query = '발표 전 호흡을 가다듬고 에너지 균형을 맞출 때';
+
+  const pk = calculateVedicPanchaKosha({ profile, question: query, now });
+  assert.equal(pk.engineVersion, VEDIC_PANCHA_KOSHA_ENGINE_VERSION);
+  assert.match(pk.calculatedAtKst, /\+09:00/);
+  assert.ok(pk.reflectiveQuestion.includes(query));
+  assert.ok(formatVedicPanchaKoshaPrompt(pk).includes('질문 맞춤 성찰 질문'));
+
+  const vp = calculateVoicePersona({ profile, targetDate: now, question: query });
+  assert.equal(vp.engineVersion, VOICE_PERSONA_VERSION);
+  assert.match(vp.calculatedAtKst, /\+09:00/);
+  assert.ok(vp.reflectiveQuestion.includes(query));
+  assert.ok(formatVoicePersonaPrompt(vp).includes('질문 맞춤 성찰 질문'));
+
+  const yy = calculateYinYangPolarity({ profile, targetDate: now, question: query });
+  assert.equal(yy.engineVersion, YIN_YANG_POLARITY_VERSION);
+  assert.match(yy.calculatedAtKst, /\+09:00/);
+  assert.ok(yy.reflectiveQuestion.includes(query));
+  assert.ok(formatYinYangPolarityPrompt(yy).includes('질문 맞춤 성찰 질문'));
+});
