@@ -10,7 +10,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const AMERICAN_WILLIAM_JAMES_VERSION = 'LUCKEY-WILLIAM-JAMES-PRAGMATISM-v2.2.0';
+export const AMERICAN_WILLIAM_JAMES_VERSION = 'LUCKEY-WILLIAM-JAMES-PRAGMATISM-v2.3.0';
 
 export type JamesQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -347,10 +347,13 @@ export function calculateAmericanWilliamJamesPragmatism(
 
   const topicExtras = buildJamesTopicExtras(questionTopic);
   const interpretiveBoundary = '윌리엄 제임스의 실용주의와 심리학 관점은 행동과 태도의 전환을 비추는 상징적 성찰 렌즈이며, 확정적 예측이나 전문 자문을 대신하지 않습니다.';
+  const baseDate = now ?? new Date();
+  const kst = new Date(baseDate.getTime() + 9 * 60 * 60 * 1000);
+  const calculatedAtKst = `${kst.getUTCFullYear()}-${String(kst.getUTCMonth() + 1).padStart(2, '0')}-${String(kst.getUTCDate()).padStart(2, '0')} ${String(kst.getUTCHours()).padStart(2, '0')}:${String(kst.getUTCMinutes()).padStart(2, '0')} +09:00 (KST)`;
 
   return {
     engineVersion: AMERICAN_WILLIAM_JAMES_VERSION,
-    calculatedAtKst: (now ?? new Date()).toISOString(),
+    calculatedAtKst,
     questionTopic,
     practicalCashValueIndex,
     willToBelieveConfidenceScore,
@@ -378,7 +381,8 @@ export function formatAmericanWilliamJamesPragmatismPrompt(
   res: AmericanWilliamJamesPragmatismResult,
 ): string {
   return [
-    `【윌리엄 제임스 《실용주의》 & 《신념의 의지》 실천적 현금가치 지표】`,
+    `【윌리엄 제임스 《실용주의》 & 《신념의 의지》 실천적 현금가치 지표 (${res.engineVersion})】`,
+    `- 연산 시각: ${res.calculatedAtKst}`,
     `- 질문 맥락 초점: ${res.questionTopic}`,
     `- 실천적 현금가치 결: ${describeJamesStage(res.practicalCashValueIndex)} · 신념의 의지(${describeJamesStage(res.willToBelieveConfidenceScore)}) · 의식의 흐름(${describeJamesStage(res.streamOfConsciousnessVitalityIndex)})`,
     `- 다원적 수용·회복 결: 다원적 개방성(${describeJamesStage(res.pluralisticOpennessScore)}) · 건강한 정서 전환(${describeJamesStage(res.healthyMindedResilienceIndex)})`,
