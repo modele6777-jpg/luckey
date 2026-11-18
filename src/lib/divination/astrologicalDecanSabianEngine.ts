@@ -16,7 +16,7 @@
 import type { UserProfile } from '../sharedState';
 import { calculateNatalChart, type NatalChartResult, type NatalPlacement, type ZodiacSignInfo } from '../astrologyAnalysis';
 
-export const ASTRO_DECAN_SABIAN_VERSION = 'LUCKEY-ASTRO-DS-v2.2.0';
+export const ASTRO_DECAN_SABIAN_VERSION = 'LUCKEY-ASTRO-DS-v2.3.0';
 
 export interface DecanInfo {
   signId: string;
@@ -196,7 +196,7 @@ function formatSabianKst(date: Date): { label: string; hour: number; month: numb
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
   return {
-    label: `${y}-${m}-${d} ${hh}:${mm} KST`,
+    label: `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`,
     hour: kst.getUTCHours(),
     month: kst.getUTCMonth() + 1,
   };

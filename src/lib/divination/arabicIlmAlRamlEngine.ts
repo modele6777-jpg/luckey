@@ -1,6 +1,6 @@
 import { UserProfile } from '../sharedState';
 
-export const ARABIC_ILM_AL_RAML_ENGINE_VERSION = '2.3.0';
+export const ARABIC_ILM_AL_RAML_ENGINE_VERSION = '2.4.0';
 
 export interface ArabicIlmAlRamlReport {
   engineVersion: string;
@@ -67,7 +67,7 @@ function getTemporalRamlRhythm(kst: Date) {
           : '겨울 · 물·심연절 (내면의 지혜와 침착한 통찰이 힘을 발휘하는 시기)';
 
   return {
-    kstTimeLabel: `${y}-${m}-${d} ${hh}:${mm} KST`,
+    kstTimeLabel: `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`,
     geomanticWatchWindow,
     seasonalEarthTone,
     temporalGuidance: `${geomanticWatchWindow} · ${seasonalEarthTone}의 흐름에 맞추어 사점의 징표를 읽으십시오.`,
