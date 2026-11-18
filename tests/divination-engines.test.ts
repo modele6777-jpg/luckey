@@ -7166,6 +7166,7 @@ test('Manhae Han Yong-un Nimui Chimmuk Engine: calculates Transcendent Love, Gon
   assert(rep.interpretiveBoundary.length > 0);
   assert(rep.calculatedAtKst.endsWith('+09:00 KST'));
   assert(Boolean(rep.manhaeSynthesisMatrix?.integratedAction));
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const repQ = calculateManhaeHanYongunNimuiChimmuk(profile, '침묵 속에 지키며 승화해야 할 신념');
   assert(repQ.reflectiveQuestion.includes('승화해야 할 신념'));
   const prompt = formatManhaeHanYongunNimuiChimmukPrompt(repQ);
@@ -7174,6 +7175,7 @@ test('Manhae Han Yong-un Nimui Chimmuk Engine: calculates Transcendent Love, Gon
   assert(prompt.includes(repQ.secondaryHanYongunTheme.themeTitleKo));
   assert(prompt.includes('해석 경계'));
   assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes(repQ.ritualAction));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });
@@ -7498,6 +7500,7 @@ test('Maewoldang Kim Si-seup Geumo Sinhwa Engine: calculates Fangwairen Freedom,
   assert(rep.interpretiveBoundary.length > 0);
   assert(rep.calculatedAtKst.endsWith('+09:00 KST'));
   assert(Boolean(rep.maewoldangSynthesisMatrix?.integratedAction));
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const repQ = calculateKoreanMaewoldangKimSiSeupGeumoSinhwa(profile, '남의 시선에 흔들리지 않고 내 길을 지키는 법');
   assert(repQ.reflectiveQuestion.includes('남의 시선'));
   const prompt = formatKoreanMaewoldangKimSiSeupGeumoSinhwaPrompt(repQ);
@@ -7506,6 +7509,7 @@ test('Maewoldang Kim Si-seup Geumo Sinhwa Engine: calculates Fangwairen Freedom,
   assert(prompt.includes(repQ.secondaryMaewoldangTheme.themeTitleKo));
   assert(prompt.includes('해석 경계'));
   assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes(repQ.ritualAction));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });
@@ -7629,6 +7633,7 @@ test('Nammyeong Jo Sik Gyeong-Ui Engine: calculates Inner Clarity Gyeong, Outer 
   assert(rep.interpretiveBoundary.length > 0);
   assert(rep.calculatedAtKst.endsWith('+09:00 KST'));
   assert(Boolean(rep.nammyeongSynthesisMatrix?.integratedAction));
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const repQ = calculateKoreanNammyeongJoSikGyeongUi(profile, '망설임을 끊고 옳은 결단을 내리는 기준');
   assert(repQ.reflectiveQuestion.includes('옳은 결단'));
   const prompt = formatKoreanNammyeongJoSikGyeongUiPrompt(repQ);
@@ -7637,6 +7642,7 @@ test('Nammyeong Jo Sik Gyeong-Ui Engine: calculates Inner Clarity Gyeong, Outer 
   assert(prompt.includes(repQ.secondaryNammyeongTheme.themeTitleKo));
   assert(prompt.includes('해석 경계'));
   assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes(repQ.ritualAction));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });
