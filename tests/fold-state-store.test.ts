@@ -39,7 +39,7 @@ test('a keyboard shrinking height at the same width never folds the screen', () 
 test('rotating the inner display with the keyboard open stays unfolded', () => {
   resetFoldStateForTests();
   const win = (cw: number, ch: number, active: string | null) => ({
-    innerWidth: cw, innerHeight: ch, screen: { width: 626, height: 890 }, matchMedia: () => ({ matches: false }),
+    innerWidth: cw, innerHeight: ch, screen: { width: 626, height: 890 }, navigator: { maxTouchPoints: 5 }, matchMedia: () => ({ matches: false }),
     document: { documentElement: { clientWidth: cw, clientHeight: ch }, activeElement: active ? { tagName: active, isContentEditable: false } : null },
   } as unknown as Window);
   assert.equal(measureFoldState(win(626, 890, null)).unfolded, true);
@@ -48,4 +48,39 @@ test('rotating the inner display with the keyboard open stays unfolded', () => {
   assert.equal(rotated.unfolded, true, 'resizes-content rotation keeps the inner display dual');
   assert.equal(rotated.orientation, 'landscape');
   assert.equal(measureFoldState(win(461, 678, null)).unfolded, false, 'a real fold still folds');
+});
+
+test('a field focused before the keyboard opens still keeps the full height (split window)', () => {
+  resetFoldStateForTests();
+  const win = (cw: number, ch: number) => ({
+    innerWidth: cw, innerHeight: ch, screen: { width: 1024, height: 1366 }, navigator: { maxTouchPoints: 5 }, matchMedia: () => ({ matches: false }),
+    document: { documentElement: { clientWidth: cw, clientHeight: ch }, activeElement: { tagName: 'TEXTAREA', isContentEditable: false } },
+  } as unknown as Window);
+  const first = measureFoldState(win(700, 860));
+  assert.equal(first.unfolded, true);
+  const typing = measureFoldState(win(700, 420));
+  assert.equal(typing.unfolded, true, 'keyboard-reduced height keeps the dual layout');
+  assert.equal(typing.orientation, 'portrait');
+});
+
+test('a short desktop window with a focused field is not treated as keyboard-occluded', () => {
+  resetFoldStateForTests();
+  const win = {
+    innerWidth: 1024, innerHeight: 450, screen: { width: 1024, height: 768 }, navigator: { maxTouchPoints: 0 }, matchMedia: () => ({ matches: false }),
+    document: { documentElement: { clientWidth: 1024, clientHeight: 450 }, activeElement: { tagName: 'TEXTAREA', isContentEditable: false } },
+  } as unknown as Window;
+  const before = classifyFold(1024, 450);
+  assert.deepEqual(measureFoldState(win), before, 'no screen-height substitution without a software keyboard');
+});
+
+test('a split window keeps its own remembered height, not the physical screen height', () => {
+  resetFoldStateForTests();
+  const win = (cw: number, ch: number, focused: boolean) => ({
+    innerWidth: cw, innerHeight: ch, screen: { width: 1024, height: 1366 }, navigator: { maxTouchPoints: 5 }, matchMedia: () => ({ matches: false }),
+    document: { documentElement: { clientWidth: cw, clientHeight: ch }, activeElement: focused ? { tagName: 'TEXTAREA', isContentEditable: false } : null },
+  } as unknown as Window);
+  const first = measureFoldState(win(1024, 700, false));
+  assert.equal(first.orientation, 'landscape');
+  const typing = measureFoldState(win(1024, 400, true));
+  assert.deepEqual(typing, first, 'keyboard in a 1024x700 window stays unfolded landscape');
 });

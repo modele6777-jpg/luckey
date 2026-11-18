@@ -6,15 +6,24 @@ let marker: ((stage: string) => void) | null = null;
 /** No-op unless the user explicitly enabled diagnostics in this tab. */
 export function markFoldRuntime(stage: string): void { marker?.(stage); }
 
+/**
+ * Turn the trace on from inside the app (a home-screen web app has no address
+ * bar for ?foldDebug=1). It stays on across app restarts until "진단 종료".
+ */
+export function startFoldRuntimeTrace(win: Window): void {
+  try { win.localStorage.setItem(ACTIVE, '1'); } catch { /* optional storage */ }
+  installFoldRuntimeTrace(win);
+}
+
 /** Opt-in, local-only trace. No messages, profile, URLs or credentials are recorded. */
 export function installFoldRuntimeTrace(win: Window): void {
   if (marker) return;
   let enabled = false;
   try {
     const mode = new URLSearchParams(win.location.search).get('foldDebug');
-    if (mode === '0') win.sessionStorage.removeItem(ACTIVE);
+    if (mode === '0') { win.sessionStorage.removeItem(ACTIVE); win.localStorage.removeItem(ACTIVE); }
     else if (mode === '1') win.sessionStorage.setItem(ACTIVE, '1');
-    enabled = win.sessionStorage.getItem(ACTIVE) === '1';
+    enabled = win.sessionStorage.getItem(ACTIVE) === '1' || win.localStorage.getItem(ACTIVE) === '1';
   } catch { return; }
   if (!enabled) return;
   let previous: unknown = null;
@@ -28,6 +37,8 @@ export function installFoldRuntimeTrace(win: Window): void {
   let frame = 0;
   let lastFrameAt = 0;
   const startedAt = new Date().toISOString();
+  let lag = 0;
+  let maxLag = 0;
   // Element identity only (tag, id, a few classes, pane): never text content.
   const describe = (el: Element | null) => {
     if (!el) return null;
@@ -54,6 +65,10 @@ export function installFoldRuntimeTrace(win: Window): void {
         .filter(layer => layer.childElementCount > 0)
         .map(layer => `${layer.dataset.overlayPane || '?'}:${win.getComputedStyle(layer).display}:${Math.round(layer.getBoundingClientRect().width)}`),
       bodyOverflow: doc.body?.style.overflow || '', bodyPointer: doc.body ? win.getComputedStyle(doc.body).pointerEvents : '',
+      canvas: { w: doc.documentElement.clientWidth, h: doc.documentElement.clientHeight },
+      appHeight: doc.documentElement.style.getPropertyValue('--app-height'),
+      root: (() => { const r = doc.getElementById('root')?.getBoundingClientRect(); return r ? { y: Math.round(r.top), w: Math.round(r.width), h: Math.round(r.height) } : null; })(),
+      nav: (() => { const r = doc.querySelector('.sites-pinned-sidebar')?.getBoundingClientRect(); return r ? { x: Math.round(r.left), y: Math.round(r.top), w: Math.round(r.width), h: Math.round(r.height) } : null; })(),
     };
   };
   const save = (reason: string, extra?: unknown) => {
@@ -66,7 +81,7 @@ export function installFoldRuntimeTrace(win: Window): void {
       classes: win.document.documentElement.className,
       hidden: win.document.hidden,
       standalone: (win.navigator as Navigator & { standalone?: boolean }).standalone === true,
-      frameCount, lastFrameAt, counts: { ...counts }, hit, extra });
+      frameCount, lastFrameAt, lagMs: lag, maxLagMs: maxLag, counts: { ...counts }, hit, extra });
     if (rows.length > 100) rows.shift();
     lastWrite = now;
     try { win.localStorage.setItem(RECORD, JSON.stringify({ version: APP_VERSION, startedAt, rows })); } catch { /* optional storage */ }
@@ -90,6 +105,12 @@ export function installFoldRuntimeTrace(win: Window): void {
       if (Date.now() - lastWrite >= 250 || name === 'pagehide' || name === 'orientationchange') save(name);
     });
   }
+  // Event storms (scroll lock bouncing, viewport writes, popup re-measuring) are counted.
+  listen(win, 'scroll', () => { counts.windowScroll = (counts.windowScroll || 0) + 1; });
+  if (win.visualViewport) listen(win.visualViewport, 'scroll', () => { counts.visualScroll = (counts.visualScroll || 0) + 1; });
+  const domWrites = new MutationObserver(records => { counts.rootStyleWrites = (counts.rootStyleWrites || 0) + records.length; });
+  domWrites.observe(win.document.documentElement, { attributes: true, attributeFilter: ['style', 'class'] });
+  cleanup.push(() => domWrites.disconnect());
   if (win.visualViewport) listen(win.visualViewport, 'resize', () => {
     counts.visualResize = (counts.visualResize || 0) + 1;
     if (Date.now() - lastWrite >= 250) save('visual-resize');
@@ -100,7 +121,14 @@ export function installFoldRuntimeTrace(win: Window): void {
     save('error', { name: e.error?.name, file: e.filename?.split('/').at(-1)?.split('?')[0], line: e.lineno, column: e.colno });
   });
   listen(win, 'unhandledrejection', raw => save('rejection', { name: (raw as PromiseRejectionEvent).reason?.name || 'unknown' }));
+  // Main-thread lag: how late each 500ms heartbeat fired. Native iOS scrolling
+  // keeps working while JavaScript is busy, so taps can die while scroll lives.
+  let lastBeat = Date.now();
   const timer = win.setInterval(() => {
+    const now = Date.now();
+    lag = Math.max(0, now - lastBeat - 500);
+    maxLag = Math.max(maxLag, lag);
+    lastBeat = now;
     save('heartbeat');
     if (!frame && !win.document.hidden) frame = win.requestAnimationFrame(() => {
       frame = 0; frameCount++; lastFrameAt = Date.now();
@@ -125,7 +153,7 @@ export function installFoldRuntimeTrace(win: Window): void {
   };
   close.onclick = () => {
     marker = null; cleanup.forEach(stop => stop()); win.clearInterval(timer); win.cancelAnimationFrame(frame); box.remove();
-    try { win.sessionStorage.removeItem(ACTIVE); } catch { /* optional storage */ }
+    try { win.sessionStorage.removeItem(ACTIVE); win.localStorage.removeItem(ACTIVE); } catch { /* optional storage */ }
   };
   save('bootstrap');
 }

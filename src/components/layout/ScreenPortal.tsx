@@ -1,7 +1,8 @@
 import { OverlayPaneContext } from './OverlayPaneContext';
 import { useOverlayPane } from '@/hooks/useOverlayPane';
 import { useMainOverlayViewport } from '@/hooks/useMainOverlayViewport';
-import React, { createContext, useContext, useLayoutEffect, useMemo, useRef, type ReactNode, type RefObject } from 'react';
+import React, { createContext, useContext, useLayoutEffect, useMemo, useRef, useState, type ReactNode, type RefObject } from 'react';
+import { paneLayerStyle, usePaneOverlayHost } from './paneOverlayHost';
 import { createPortal } from 'react-dom';
 
 export const ScreenOverlayContext = createContext<readonly RefObject<HTMLDivElement | null>[]>([]);
@@ -31,6 +32,18 @@ export function hasOpenScreenOverlay(): boolean {
   });
 }
 
+/** The pane owning the top open popup, decided before a fold hides either pane. */
+export function getOpenScreenOverlayPane(): 'content' | 'lucy' | null {
+  const layers = Array.from(document.querySelectorAll<HTMLElement>('[data-screen-overlay-layer][data-overlay-pane]'))
+    .filter(layer => layer.childElementCount > 0)
+    .sort((a, b) => (Number(b.style.zIndex) || 10000) - (Number(a.style.zIndex) || 10000));
+  for (const layer of layers) {
+    const owner = layer.dataset.overlayPane;
+    if (owner === 'content' || owner === 'lucy') return owner;
+  }
+  return null;
+}
+
 /** Only occupied overlays participate; opening order wins over JSX declaration order. */
 export function isTopScreenOverlay(element: HTMLElement | null): boolean {
   const layers = Array.from(document.querySelectorAll<HTMLElement>('[data-screen-overlay-layer]'))
@@ -45,7 +58,7 @@ export function isTopScreenOverlay(element: HTMLElement | null): boolean {
   return layers.at(-1) === element;
 }
 
-export function useScreenOverlayLayer(ref: RefObject<HTMLDivElement | null>) {
+export function useScreenOverlayLayer(ref: RefObject<HTMLDivElement | null>, host: Element | null = null) {
   const parents = useContext(ScreenOverlayContext);
   const chain = useMemo(() => [...parents, ref], [parents, ref]);
   useLayoutEffect(() => {
@@ -85,23 +98,27 @@ export function useScreenOverlayLayer(ref: RefObject<HTMLDivElement | null>) {
     const observer = new MutationObserver(sync);
     observer.observe(element, { childList: true });
     return () => observer.disconnect();
-  }, [ref, parents]);
+  // host: the layer element is re-created when it moves into its pane.
+  }, [ref, parents, host]);
   return chain;
 }
 
 /** Escape app transforms and clipping without changing a dialog's existing controls. */
 export function ScreenPortal({ children }: { children: ReactNode }) {
   const ref = useRef<HTMLDivElement>(null);
-  const layers = useScreenOverlayLayer(ref);
-  const pane = useOverlayPane(ref);
+  const [host, setHostKey] = useState<HTMLElement | null>(null);
+  const layers = useScreenOverlayLayer(ref, host);
+  const pane = useOverlayPane(ref, host);
+  const paneHost = usePaneOverlayHost(pane);
+  useLayoutEffect(() => { setHostKey(paneHost); }, [paneHost]);
   const viewportStyle = useMainOverlayViewport(pane);
   if (typeof document === 'undefined') return null;
   return createPortal(
     <OverlayPaneContext.Provider value={pane}>
       <ScreenOverlayContext.Provider value={layers}>
-        <div ref={ref} className="screen-portal" data-responsive-canvas="true" style={viewportStyle} data-overlay-pane={pane} data-screen-overlay-layer="">{children}</div>
+        <div ref={ref} className="screen-portal" data-responsive-canvas="true" style={paneHost ? paneLayerStyle(viewportStyle) : viewportStyle} data-overlay-pane={pane} data-screen-overlay-layer="">{children}</div>
       </ScreenOverlayContext.Provider>
     </OverlayPaneContext.Provider>,
-    document.body,
+    paneHost ?? document.body,
   );
 }

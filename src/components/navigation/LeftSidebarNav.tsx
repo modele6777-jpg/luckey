@@ -30,6 +30,7 @@ import { useApp } from '@/contexts/AppContext';
 import { resetAppScreen } from '@/lib/visualViewportBox';
 import { markAppScreenReset } from '@/lib/appUpdateReload';
 import { showViewportDiagnostics } from '@/lib/viewportDiagnostics';
+import { startFoldRuntimeTrace } from '@/lib/foldRuntimeTrace';
 import { markPendingUpdateNotice } from '@/lib/updateNotice';
 
 export interface NavItemConfig {
@@ -351,6 +352,7 @@ export default function LeftSidebarNav() {
   const { syncPrismDevices } = useApp();
   const restartStartedRef = useRef(false);
   useEffect(() => { showViewportDiagnostics(true); }, []);
+  const profileHoldRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const handleSyncClick = useCallback(async () => {
     if (restartStartedRef.current) return;
     restartStartedRef.current = true;
@@ -500,6 +502,15 @@ export default function LeftSidebarNav() {
                   aria-current={cleanPath === '/profile' ? 'page' : undefined}
                   aria-label="내 프로필"
                   title="내 프로필"
+                  // Hold for 2s: turn on the fold diagnostics (home-screen apps have no address bar).
+                  onPointerDown={() => {
+                    if (profileHoldRef.current) clearTimeout(profileHoldRef.current);
+                    profileHoldRef.current = setTimeout(() => { profileHoldRef.current = null; startFoldRuntimeTrace(window); }, 2000);
+                  }}
+                  onPointerUp={() => { if (profileHoldRef.current) { clearTimeout(profileHoldRef.current); profileHoldRef.current = null; } }}
+                  onPointerCancel={() => { if (profileHoldRef.current) { clearTimeout(profileHoldRef.current); profileHoldRef.current = null; } }}
+                  onPointerLeave={() => { if (profileHoldRef.current) { clearTimeout(profileHoldRef.current); profileHoldRef.current = null; } }}
+                  onContextMenu={event => event.preventDefault()}
                   onClick={() => {
                     flashProfile();
                     try {

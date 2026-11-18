@@ -3,7 +3,8 @@ import { useOverlayPane } from '@/hooks/useOverlayPane';
 import { useMainOverlayViewport } from '@/hooks/useMainOverlayViewport';
 import { holdLucyScrollPin, noteLucyScrollPin, rectsOverlap } from '@/lib/lucyScrollPin';
 import { ScreenOverlayContext, isTopScreenOverlay, useScreenOverlayLayer } from './ScreenPortal';
-import React, { forwardRef, useEffect, useRef, type HTMLAttributes, type ReactNode } from 'react';
+import React, { forwardRef, useEffect, useLayoutEffect, useRef, useState, type HTMLAttributes, type ReactNode } from 'react';
+import { paneLayerStyle, usePaneOverlayHost } from './paneOverlayHost';
 import { createPortal } from 'react-dom';
 
 export const DuoWorkspace = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
@@ -18,8 +19,11 @@ export const DuoWorkspace = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivEle
 
 export function WorkspacePortal({ children, onClose }: { children: ReactNode; onClose?: () => void }) {
   const portalRef = useRef<HTMLDivElement>(null);
-  const layers = useScreenOverlayLayer(portalRef);
-  const pane = useOverlayPane(portalRef);
+  const [host, setHostKey] = useState<HTMLElement | null>(null);
+  const layers = useScreenOverlayLayer(portalRef, host);
+  const pane = useOverlayPane(portalRef, host);
+  const paneHost = usePaneOverlayHost(pane);
+  useLayoutEffect(() => { setHostKey(paneHost); }, [paneHost]);
   const viewportStyle = useMainOverlayViewport(pane);
   const closeRef = useRef(onClose);
   closeRef.current = onClose;
@@ -82,13 +86,14 @@ export function WorkspacePortal({ children, onClose }: { children: ReactNode; on
         requestAnimationFrame(restoreChatScroll);
       });
     };
-  }, []);
+  // host: initial focus and key handling follow the layer once it moves into its pane.
+  }, [host]);
   if (typeof document === 'undefined') return null;
   return createPortal(
     <OverlayPaneContext.Provider value={pane}>
       <ScreenOverlayContext.Provider value={layers}>
-        <div ref={portalRef} className="duo-portal" data-responsive-canvas="true" style={viewportStyle} data-overlay-pane={pane} data-screen-overlay-layer="">{children}</div>
+        <div ref={portalRef} className="duo-portal" data-responsive-canvas="true" style={paneHost ? paneLayerStyle(viewportStyle) : viewportStyle} data-overlay-pane={pane} data-screen-overlay-layer="">{children}</div>
       </ScreenOverlayContext.Provider>
-    </OverlayPaneContext.Provider>, document.body
+    </OverlayPaneContext.Provider>, paneHost ?? document.body
   );
 }
