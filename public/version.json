@@ -1,9 +1,10 @@
 {
-  "version": "1.7.903",
-  "builtAt": "2026-11-19T08:18:00+09:00",
-  "summary": "조상 혈통 업력·묵자 겸애·에픽테토스 통제이분법 3대 엔진 +09:00 (KST) 표준 시각 통일(v1.7.903)",
+  "version": "1.7.904",
+  "builtAt": "2026-11-19T08:22:00+09:00",
+  "summary": "샤머니즘 토템·은나라 갑골문·산해경 영수 3대 엔진 실천 의례 및 성찰 초점 표준 연동(v1.7.904)",
   "items": [
-    "조상 혈통 업력(v2.4.0)·묵자 겸애(v2.4.0)·에픽테토스 통제이분법(v2.4.0): calculatedAtKst +09:00 (KST) 표준 표기 통일",
-    "divination-engines.test.ts: 3대 엔진 v1.7.903 +09:00 (KST) 회귀 테스트 추가"
+    "샤머니즘 파워 애니멀 & 12지지 토템 엔진(v2.3.0): ritualAction·reflectionFocus 표준 필드 연동",
+    "은나라 갑골문 신탁 복사 & 정인 균열 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동",
+    "산해경 8방위 신성 영수 & 오행 방호 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동"
   ]
 }

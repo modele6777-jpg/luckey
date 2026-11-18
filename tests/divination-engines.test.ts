@@ -2890,6 +2890,7 @@ test('Shamanic Animal Totem Engine: 샤머니즘 파워 애니멀 & 12지지 스
   const res = calculateShamanicAnimalTotem({ profile, targetDate: new Date('2026-11-03T10:00:00+09:00'), question: '내 수호 동물' });
   assert.equal(res.engineVersion, SHAMANIC_ANIMAL_TOTEM_VERSION);
   assert(res.calculatedAtKst.endsWith('KST'));
+  assert(res.ritualAction.length > 0 && res.reflectionFocus.length > 0);
   assert(Boolean(res.totemSynthesisMatrix?.integratedAction));
   assert(res.interpretiveBoundary.length > 0);
   assert(res.primaryTotem.animalName.length > 0);
@@ -2900,6 +2901,7 @@ test('Shamanic Animal Totem Engine: 샤머니즘 파워 애니멀 & 12지지 스
   assert(prompt.includes('LUCKEY 샤머니즘 파워 애니멀 & 12지지 스피릿 토템'));
   assert(prompt.includes(res.primaryTotem.animalName));
   assert(prompt.includes('교차 매트릭스') && prompt.includes('해석 경계'));
+  assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
   assert(!prompt.includes('/100'));
 });
 
@@ -4178,6 +4180,7 @@ test('Shanhaijing Sacred Beasts Engine: calculates directional beast and shieldi
   const rep = calculateShanhaijingSacredBeasts({ profile, question: '새로운 환경의 경계와 수호', now: new Date('2026-11-17T05:45:00+09:00') });
   assert.equal(rep.engineVersion, SHANHAIJING_SACRED_BEASTS_ENGINE_VERSION);
   assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(Boolean(rep.shanhaijingSynthesisMatrix?.integratedAction));
   assert(rep.spiritualShieldingIndex >= 0 && rep.spiritualShieldingIndex <= 100);
   assert(rep.activeBeast.name.length > 0);
@@ -4189,6 +4192,7 @@ test('Shanhaijing Sacred Beasts Engine: calculates directional beast and shieldi
   assert(prompt.includes(rep.activeBeast.name));
   assert(prompt.includes('보조 교차 영수'));
   assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
   assert(prompt.includes('성찰 질문'));
   assert(prompt.includes('해석 경계'));
   assert(!prompt.includes('/100') && !prompt.includes('/ 100'));
@@ -5376,6 +5380,7 @@ test('Shang Oracle Bone Divination Engine: calculates oracle bone medium, divine
   const rep = calculateShangOracleBoneDivination(profile, new Date('2026-11-17T05:45:00+09:00'), '중요한 결단의 방향');
   assert.equal(rep.engineVersion, SHANG_ORACLE_BONE_VERSION);
   assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(Boolean(rep.shangOracleSynthesisMatrix?.integratedAction));
   assert(rep.divinationMedium.length > 0);
   assert(rep.divinerName.length > 0);
@@ -5391,6 +5396,7 @@ test('Shang Oracle Bone Divination Engine: calculates oracle bone medium, divine
   assert(prompt.includes(rep.divinerName));
   assert(prompt.includes('보조 정인'));
   assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
   assert(prompt.includes('성찰 질문'));
   assert(prompt.includes('해석 경계'));
   assert(!prompt.includes('/100') && !prompt.includes('%'));
