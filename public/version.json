@@ -1,10 +1,6 @@
 {
-  "version": "1.7.868",
-  "builtAt": "2026-11-19T05:22:00+09:00",
-  "summary": "구성학 9궁·대육임 사과삼전·마하보테 7궁 3대 엔진 실천 의례 및 성찰 초점 표준 연동(v1.7.868)",
-  "items": [
-    "구성학(九星氣學) 9궁 명반·길흉방위 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동",
-    "대육임(大六壬) 정통 사과·삼전·12천장 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동",
-    "미얀마 마하보테(Mahabote) 7궁 명반 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동"
-  ]
+  "version": "1.7.869",
+  "builtAt": "2026-11-19T05:30:00+09:00",
+  "commit": "feat/deepen-hanyongun-pungryudo-wonhyo-v1.7.869",
+  "notes": "한용운 님의 침묵·풍류도 화랑오계·원효 화쟁 3대 엔진 성찰 질문·+09:00 KST·카탈로그 뜻 보강 (v1.7.869)"
 }
