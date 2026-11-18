@@ -13,7 +13,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const AUSTRIAN_FRANZ_KAFKA_EXISTENTIAL_TRUTH_VERSION = 'LUCKEY-FRANZ-KAFKA-EXISTENTIAL-TRUTH-v2.2.0';
+export const AUSTRIAN_FRANZ_KAFKA_EXISTENTIAL_TRUTH_VERSION = 'LUCKEY-FRANZ-KAFKA-EXISTENTIAL-TRUTH-v2.3.0';
 
 export type KafkaQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -304,7 +304,7 @@ export function calculateAustrianFranzKafkaExistentialTruth(
     `${temporalKafkaRhythm.dailyWatchword}`;
 
   const kstDateObj = new Date(now.getTime() + 9 * 60 * 60 * 1000);
-  const kstLabel = `${kstDateObj.toISOString().slice(0, 10)} ${String(kstDateObj.getUTCHours()).padStart(2, '0')}:${String(kstDateObj.getUTCMinutes()).padStart(2, '0')} KST`;
+  const kstLabel = `${kstDateObj.toISOString().slice(0, 10)} ${String(kstDateObj.getUTCHours()).padStart(2, '0')}:${String(kstDateObj.getUTCMinutes()).padStart(2, '0')} +09:00 (KST)`;
   const kafkaSynthesisMatrix = {
     coreInsight: activeKafkaTheme.themeTitleKo,
     recommendedAction: situationalKafkaAudit.practiceGuidance,
