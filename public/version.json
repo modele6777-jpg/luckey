@@ -1,11 +1,10 @@
 {
-  "version": "1.7.851",
-  "builtAt": "2026-11-18T13:44:57.198Z",
-  "summary": "iOS 27 접기 먹통 원인 수정: 아이폰에서 interactive-widget 설정 제거(v1.7.851)",
+  "version": "1.7.852",
+  "builtAt": "2026-11-18T23:20:00+09:00",
+  "summary": "몽테뉴 수상록·몽테스키외 법의 정신·빅토르 위고 레 미제라블 3대 엔진 성찰 질문·+09:00 KST·카탈로그 뜻 보강(v1.7.852)",
   "items": [
-    "시험 페이지 기기 기록으로 iOS 27 버그 확정: 접은 뒤 visualViewport 높이가 0이 됨(앱 코드 없는 페이지에서도 발생)",
-    "앱에서는 viewport의 interactive-widget=resizes-content 때문에 창 높이(innerHeight)까지 0이 되어 모든 터치가 html로 감. 새 iOS가 이 설정을 지키기 시작한 것이 \"예전엔 됐다\"의 이유로 보임",
-    "아이폰·아이패드에서만 interactive-widget를 제거(안드로이드는 유지)",
-    "표시 높이가 0인 값은 화면 계산에 쓰지 않고, 창 높이가 0일 때만 복구·새로고침 동작"
+    "몽테뉴 수상록(v2.3.0)·몽테스키외 법의 정신(v2.4.0)·빅토르 위고 레 미제라블(v2.4.0): 질문 반응형 reflectiveQuestion 및 프롬프트 연동",
+    "몽테뉴 수상록 엔진 calculatedAtKst +09:00 KST 표준 표기 통일",
+    "deterministicEngine.ts: frenchMontaigneEssaisWisdom 카탈로그 한 줄 summary 등록"
   ]
 }

@@ -14,7 +14,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const FRENCH_MONTESQUIEU_SPIRIT_OF_LAWS_VERSION = 'LUCKEY-MONTESQUIEU-SPIRIT-OF-LAWS-v2.3.0';
+export const FRENCH_MONTESQUIEU_SPIRIT_OF_LAWS_VERSION = 'LUCKEY-MONTESQUIEU-SPIRIT-OF-LAWS-v2.4.0';
 
 export interface MontesquieuTheme {
   themeKey: string;
@@ -55,6 +55,7 @@ export interface FrenchMontesquieuSpiritOfLawsResult {
   };
   ritualAction: string;
   reflectionFocus: string;
+  reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
 
@@ -197,6 +198,11 @@ export function calculateFrenchMontesquieuSpiritOfLaws(
     integratedAction: `${activeMontesquieuTheme.practicalCounsel} (${focalMontesquieuAphorism.actionGuidance})`,
   };
 
+  const trimmedQuery = query?.trim();
+  const reflectiveQuestion = trimmedQuery
+    ? `"${trimmedQuery}"라는 상황 속에서 '${activeMontesquieuTheme.themeTitleKo}'의 균형과 중용을 적용한다면, 어느 한쪽으로 치우친 힘을 덜고 서로 보완하도록 세울 기준은 무엇인가요?`
+    : `'${activeMontesquieuTheme.themeTitleKo}'의 관점에서 지금 내 삶의 결정과 관계 속에 견제와 균형을 더할 작은 원칙 한 가지는 무엇인가요?`;
+
   return {
     engineVersion: FRENCH_MONTESQUIEU_SPIRIT_OF_LAWS_VERSION,
     calculatedAtKst: formatMontesquieuKstTimestamp(now),
@@ -214,6 +220,7 @@ export function calculateFrenchMontesquieuSpiritOfLaws(
     montesquieuSynthesisMatrix,
     ritualAction: focalMontesquieuAphorism.actionGuidance,
     reflectionFocus: activeMontesquieuTheme.practicalCounsel,
+    reflectiveQuestion,
     interpretiveBoundary: '몽테스키외의 견제와 균형·중용 철학 상징을 빌린 정성적 의사결정 참고 관점이며, 수치 평가나 확정 예언이 아닙니다.',
   };
 }
@@ -244,6 +251,7 @@ export function formatFrenchMontesquieuSpiritOfLawsPrompt(
       `- 통합 실천: ${res.montesquieuSynthesisMatrix.integratedAction}`,
     );
   }
+  lines.push(`- 질문 맞춤 성찰 질문: ${res.reflectiveQuestion}`);
   lines.push(`- 해석 경계: 몽테스키외의 견제와 균형·중용 철학 상징을 빌린 정성적 의사결정 참고 관점이며, 수치 평가나 확정 예언이 아닙니다.`);
   return lines.join('\n');
 }

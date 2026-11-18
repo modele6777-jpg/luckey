@@ -13,7 +13,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const MONTAIGNE_ESSAIS_WISDOM_VERSION = 'LUCKEY-MONTAIGNE-ESSAIS-WISDOM-v2.2.0';
+export const MONTAIGNE_ESSAIS_WISDOM_VERSION = 'LUCKEY-MONTAIGNE-ESSAIS-WISDOM-v2.3.0';
 
 export interface MontaigneThematicEssay {
   essayKey: string;
@@ -53,6 +53,7 @@ export interface MontaigneEssaisWisdomResult {
   };
   ritualAction: string;
   reflectionFocus: string;
+  reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
 
@@ -123,7 +124,7 @@ function formatMontaigneEssaisKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 KST`;
 }
 
 function describeMontaigneEssaisStage(score: number): string {
@@ -178,6 +179,11 @@ export function calculateMontaigneEssaisWisdom(
     integratedAction: `${activeThematicEssay.practicalReflection} (${focalHumanistMaxim.guidance})`,
   };
 
+  const trimmedQuery = query?.trim();
+  const reflectiveQuestion = trimmedQuery
+    ? `"${trimmedQuery}"라는 물음 앞에서 섣부른 확신을 내려놓고 '${activeThematicEssay.essayTitleKo}'의 겸허한 시선으로 바라본다면, 오늘 가장 솔직하게 인정하고 가볍게 내려놓을 생각은 무엇인가요?`
+    : `'${activeThematicEssay.essayTitleKo}'의 관점에서 "내가 무엇을 아는가?"를 스스로에게 물을 때, 오늘 가장 부드럽게 내려놓을 고집은 무엇인가요?`;
+
   return {
     engineVersion: MONTAIGNE_ESSAIS_WISDOM_VERSION,
     calculatedAtKst: formatMontaigneEssaisKstTimestamp(now),
@@ -195,6 +201,7 @@ export function calculateMontaigneEssaisWisdom(
     montaigneEssaisSynthesisMatrix,
     ritualAction: focalHumanistMaxim.guidance,
     reflectionFocus: activeThematicEssay.practicalReflection,
+    reflectiveQuestion,
     interpretiveBoundary: '본 몽테뉴 수상록 지혜 리포트는 인문주의 철학 원전에 기반한 정성적 자기성찰 안내이며, 확정적 예언이나 심리·의학적 진단을 대신하지 않습니다.',
   };
 }
@@ -221,6 +228,7 @@ export function formatMontaigneEssaisWisdomPrompt(res: MontaigneEssaisWisdomResu
       `- 통합 실천: ${res.montaigneEssaisSynthesisMatrix.integratedAction}`,
     );
   }
+  lines.push(`- 질문 맞춤 성찰 질문: ${res.reflectiveQuestion}`);
   lines.push(`- 해석 경계: ${res.interpretiveBoundary}`);
   return lines.join('\n');
 }
