@@ -15,7 +15,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const ITALIAN_MACHIAVELLI_VERSION = 'LUCKEY-MACHIAVELLI-VIRTU-FORTUNA-v2.1.0';
+export const ITALIAN_MACHIAVELLI_VERSION = 'LUCKEY-MACHIAVELLI-VIRTU-FORTUNA-v2.2.0';
 
 export interface MachiavelliTheme {
   themeKey: string;
@@ -48,6 +48,8 @@ export interface MachiavelliVirtuFortunaResult {
   secondaryMachiavelliAphorism: MachiavelliAphorism;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
+  ritualAction: string;
+  reflectionFocus: string;
   machiavelliPersonalCounsel: {
     counselTitle: string;
     philosophicalGuidance: string;
@@ -212,6 +214,9 @@ export function calculateMachiavelliVirtuFortuna(
     integratedAction: `${activeMachiavelliTheme.strategicCounsel} (${focalMachiavelliAphorism.practicalAction})`,
   };
 
+  const ritualAction = `[${activeMachiavelliTheme.themeTitleKo}] ${focalMachiavelliAphorism.practicalAction}`;
+  const reflectionFocus = reflectiveQuestion;
+
   return {
     engineVersion: ITALIAN_MACHIAVELLI_VERSION,
     calculatedAtKst: formatMachiavelliKstTimestamp(now),
@@ -225,6 +230,8 @@ export function calculateMachiavelliVirtuFortuna(
     secondaryMachiavelliAphorism,
     reflectiveQuestion,
     interpretiveBoundary,
+    ritualAction,
+    reflectionFocus,
     machiavelliPersonalCounsel: {
       counselTitle,
       philosophicalGuidance,
@@ -250,6 +257,8 @@ export function formatMachiavelliVirtuFortunaPrompt(res: MachiavelliVirtuFortuna
     `- 이탈리아어 원문: "${res.focalMachiavelliAphorism.aphorismItalian}" [${res.focalMachiavelliAphorism.textualContext}]`,
     `- 실천적 행동 지침: ${res.focalMachiavelliAphorism.practicalAction}`,
     `- 통합 전략 권면: ${res.machiavelliPersonalCounsel.philosophicalGuidance}`,
+    `- 실천 의례(Ritual Action): ${res.ritualAction}`,
+    `- 성찰 초점(Reflection Focus): ${res.reflectionFocus}`,
     `- 성찰 질문: ${res.reflectiveQuestion}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
   ];

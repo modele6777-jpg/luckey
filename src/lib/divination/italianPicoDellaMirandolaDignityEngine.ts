@@ -13,7 +13,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const ITALIAN_PICO_DELLA_MIRANDOLA_DIGNITY_VERSION = 'LUCKEY-PICO-DELLA-MIRANDOLA-DIGNITY-v2.1.0';
+export const ITALIAN_PICO_DELLA_MIRANDOLA_DIGNITY_VERSION = 'LUCKEY-PICO-DELLA-MIRANDOLA-DIGNITY-v2.2.0';
 
 export interface PicoTheme {
   themeKey: string;
@@ -46,6 +46,8 @@ export interface ItalianPicoDellaMirandolaDignityResult {
   secondaryPicoAphorism: PicoAphorism;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
+  ritualAction: string;
+  reflectionFocus: string;
   picoComprehensiveGuidance: {
     guidanceTitle: string;
     philosophicalCounsel: string;
@@ -201,6 +203,9 @@ export function calculateItalianPicoDellaMirandolaDignity(
     integratedAction: `${activePicoTheme.practicalCounsel} (${focalPicoAphorism.actionGuidance})`,
   };
 
+  const ritualAction = `[${activePicoTheme.themeTitleKo}] ${focalPicoAphorism.actionGuidance}`;
+  const reflectionFocus = reflectiveQuestion;
+
   return {
     engineVersion: ITALIAN_PICO_DELLA_MIRANDOLA_DIGNITY_VERSION,
     calculatedAtKst: formatPicoKstTimestamp(now),
@@ -214,6 +219,8 @@ export function calculateItalianPicoDellaMirandolaDignity(
     secondaryPicoAphorism,
     reflectiveQuestion,
     interpretiveBoundary,
+    ritualAction,
+    reflectionFocus,
     picoComprehensiveGuidance: {
       guidanceTitle,
       philosophicalCounsel,
@@ -241,6 +248,8 @@ export function formatItalianPicoDellaMirandolaDignityPrompt(
     `- 원전 출처: [${res.focalPicoAphorism.sourceContext}]`,
     `- 구체적 실천 지침: ${res.focalPicoAphorism.actionGuidance}`,
     `- 종합 피코 권면: ${res.picoComprehensiveGuidance.philosophicalCounsel}`,
+    `- 실천 의례(Ritual Action): ${res.ritualAction}`,
+    `- 성찰 초점(Reflection Focus): ${res.reflectionFocus}`,
     `- 성찰 질문: ${res.reflectiveQuestion}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
   ];

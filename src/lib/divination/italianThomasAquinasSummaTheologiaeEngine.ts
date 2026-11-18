@@ -15,7 +15,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const ITALIAN_THOMAS_AQUINAS_VERSION = 'LUCKEY-THOMAS-AQUINAS-SUMMA-THEOLOGIAE-v2.1.0';
+export const ITALIAN_THOMAS_AQUINAS_VERSION = 'LUCKEY-THOMAS-AQUINAS-SUMMA-THEOLOGIAE-v2.2.0';
 
 export interface AquinasTheme {
   themeKey: string;
@@ -48,6 +48,8 @@ export interface ThomasAquinasSummaTheologiaeResult {
   secondaryAquinasAphorism: AquinasAphorism;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
+  ritualAction: string;
+  reflectionFocus: string;
   aquinasComprehensiveGuidance: {
     guidanceTitle: string;
     philosophicalCounsel: string;
@@ -205,6 +207,9 @@ export function calculateThomasAquinasSummaTheologiae(
     integratedAction: `${activeAquinasTheme.practicalCounsel} (${focalAquinasAphorism.actionGuidance})`,
   };
 
+  const ritualAction = `[${activeAquinasTheme.themeTitleKo}] ${focalAquinasAphorism.actionGuidance}`;
+  const reflectionFocus = reflectiveQuestion;
+
   return {
     engineVersion: ITALIAN_THOMAS_AQUINAS_VERSION,
     calculatedAtKst: formatAquinasKstTimestamp(now),
@@ -218,6 +223,8 @@ export function calculateThomasAquinasSummaTheologiae(
     secondaryAquinasAphorism,
     reflectiveQuestion,
     interpretiveBoundary,
+    ritualAction,
+    reflectionFocus,
     aquinasComprehensiveGuidance: {
       guidanceTitle,
       philosophicalCounsel,
@@ -243,6 +250,8 @@ export function formatThomasAquinasSummaTheologiaePrompt(res: ThomasAquinasSumma
     `- 라틴어 원문: "${res.focalAquinasAphorism.aphorismLatin}" [${res.focalAquinasAphorism.summaReference}]`,
     `- 구체적 실천 지침: ${res.focalAquinasAphorism.actionGuidance}`,
     `- 종합 통찰 권면: ${res.aquinasComprehensiveGuidance.philosophicalCounsel}`,
+    `- 실천 의례(Ritual Action): ${res.ritualAction}`,
+    `- 성찰 초점(Reflection Focus): ${res.reflectionFocus}`,
     `- 성찰 질문: ${res.reflectiveQuestion}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
   ];

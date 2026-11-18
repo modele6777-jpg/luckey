@@ -1,10 +1,10 @@
 {
-  "version": "1.7.822",
-  "builtAt": "2026-11-18T09:50:00+09:00",
-  "summary": "제임스 조이스 에피파니, 루미 마스나비, 단테 신곡 3대 엔진 실천 의례 및 성찰 질문 표준 연동(v1.7.822)",
+  "version": "1.7.823",
+  "builtAt": "2026-11-18T10:00:00+09:00",
+  "summary": "마키아벨리 비르투·포르투나, 피코 델라 미란돌라 인간 존엄성, 토마스 아퀴나스 신학대전 3대 엔진 실천 의례 및 성찰 질문 표준 연동(v1.7.823)",
   "items": [
-    "제임스 조이스 《율리시스·에피파니》 문학 성찰 엔진(v2.3.0): ritualAction·reflectionFocus 표준 필드 연동",
-    "루미 《마스나비》 수피즘 신성한 사랑 엔진(v2.3.0): ritualAction·reflectionFocus 표준 필드 연동",
-    "단테 《신곡》 영혼 상승 순례 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동"
+    "니콜로 마키아벨리 《군주론》 비르투 & 포르투나 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동",
+    "피코 델라 미란돌라 《인간의 존엄성》 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동",
+    "토마스 아퀴나스 《신학대전》 이성·신앙 조화 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동"
   ]
 }
