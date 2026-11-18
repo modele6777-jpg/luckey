@@ -4,7 +4,7 @@
  * @version LUCKEY-HESSE-DEMIAN-STEPPENWOLF-v2.0.0
  */
 
-export const GERMAN_HERMANN_HESSE_DEMIAN_STEPPENWOLF_VERSION = 'LUCKEY-HESSE-DEMIAN-STEPPENWOLF-v2.3.0';
+export const GERMAN_HERMANN_HESSE_DEMIAN_STEPPENWOLF_VERSION = 'LUCKEY-HESSE-DEMIAN-STEPPENWOLF-v2.4.0';
 
 export interface HesseTheme {
   themeKey: string;
@@ -29,6 +29,7 @@ export interface GermanHermannHesseDemianSteppenwolfResult {
   };
   ritualAction: string;
   reflectionFocus: string;
+  reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
 
@@ -84,6 +85,11 @@ export function calculateGermanHermannHesseDemianSteppenwolf(query?: string, now
     alignmentState: '문학적 성찰을 통한 자기 이해와 조율 국면',
     integratedAction: activeHesseTheme.practicalCounsel,
   };
+  const trimmedQuery = query?.trim();
+  const reflectiveQuestion = trimmedQuery
+    ? `"${trimmedQuery}"라는 고민을 '${activeHesseTheme.themeTitleKo}'의 문학적 시선으로 비춰본다면, 지금 스스로에게 허락해 줄 수 있는 가장 안전하고 솔직한 작은 시도는 무엇인가요?`
+    : `'${activeHesseTheme.themeTitleKo}'의 장면처럼 지금 내면의 여러 목소리를 차분히 들을 수 있다면, 오늘 가장 다정하게 다독여 주고 싶은 마음은 무엇인가요?`;
+
   return {
     engineVersion: GERMAN_HERMANN_HESSE_DEMIAN_STEPPENWOLF_VERSION,
     calculatedAtKst,
@@ -95,6 +101,7 @@ export function calculateGermanHermannHesseDemianSteppenwolf(query?: string, now
     hesseSteppenwolfSynthesisMatrix,
     ritualAction: activeHesseTheme.practicalCounsel,
     reflectionFocus: activeHesseTheme.spiritualInsight,
+    reflectiveQuestion,
     interpretiveBoundary: '이는 문학적 해석을 위한 참고일 뿐, 개인 점수·심리 진단·치료·미래 예측이 아닙니다.',
   };
 }
@@ -115,5 +122,6 @@ export function formatGermanHermannHesseDemianSteppenwolfPrompt(res: GermanHerma
       `- 통합 실천: ${res.hesseSteppenwolfSynthesisMatrix.integratedAction}`,
     );
   }
+  lines.push(`- 질문 맞춤 성찰 질문: ${res.reflectiveQuestion}`);
   return lines.join('\n');
 }

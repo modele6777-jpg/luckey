@@ -15,7 +15,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const GERMAN_FRIEDRICH_SCHILLER_AESTHETIC_EDUCATION_VERSION = 'LUCKEY-SCHILLER-AESTHETIC-EDUCATION-v2.3.0';
+export const GERMAN_FRIEDRICH_SCHILLER_AESTHETIC_EDUCATION_VERSION = 'LUCKEY-SCHILLER-AESTHETIC-EDUCATION-v2.4.0';
 
 export interface SchillerTheme {
   themeKey: string;
@@ -56,6 +56,7 @@ export interface GermanFriedrichSchillerAestheticEducationResult {
   };
   ritualAction: string;
   reflectionFocus: string;
+  reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
 
@@ -195,6 +196,11 @@ export function calculateGermanFriedrichSchillerAestheticEducation(
     integratedAction: `${activeSchillerTheme.practicalCounsel} (${focalSchillerAphorism.actionGuidance})`,
   };
 
+  const trimmedQuery = query?.trim();
+  const reflectiveQuestion = trimmedQuery
+    ? `"${trimmedQuery}"라는 과제 앞에서 '${activeSchillerTheme.themeTitleKo}'의 균형을 살린다면, 지나친 경직을 풀고 즐거움과 품격을 함께 담아낼 방법은 무엇인가요?`
+    : `'${activeSchillerTheme.themeTitleKo}'의 미적 감각으로 오늘 하루를 바라본다면, 의무의 무게를 잠시 내려놓고 숨을 고를 수 있는 여유는 어디에 있나요?`;
+
   return {
     engineVersion: GERMAN_FRIEDRICH_SCHILLER_AESTHETIC_EDUCATION_VERSION,
     calculatedAtKst: formatSchillerKstTimestamp(now),
@@ -212,6 +218,7 @@ export function calculateGermanFriedrichSchillerAestheticEducation(
     schillerSynthesisMatrix,
     ritualAction: focalSchillerAphorism.actionGuidance,
     reflectionFocus: activeSchillerTheme.practicalCounsel,
+    reflectiveQuestion,
     interpretiveBoundary: '실러의 놀이 충동(Spieltrieb)·우아함과 존엄 상징을 빌린 정성적 조화 성찰 관점이며, 수치 평가나 확정 예언이 아닙니다.',
   };
 }
@@ -242,6 +249,7 @@ export function formatGermanFriedrichSchillerAestheticEducationPrompt(
       `- 통합 실천: ${res.schillerSynthesisMatrix.integratedAction}`,
     );
   }
+  lines.push(`- 질문 맞춤 성찰 질문: ${res.reflectiveQuestion}`);
   lines.push(`- 해석 경계: 실러의 놀이 충동(Spieltrieb)·우아함과 존엄 상징을 빌린 정성적 조화 성찰 관점이며, 수치 평가나 확정 예언이 아닙니다.`);
   return lines.join('\n');
 }
