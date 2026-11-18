@@ -16,7 +16,7 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const SHADOW_ARCHETYPE_VERSION = 'LUCKEY-SHADOW-v2.1.0';
+export const SHADOW_ARCHETYPE_VERSION = 'LUCKEY-SHADOW-v2.2.0';
 
 export type ShadowArchetypeName = 
   | '파괴적 검투사 (The Fierce Gladiator · 편관형)'
@@ -52,6 +52,8 @@ export interface ShadowArchetypeReport {
     integrationAction: string;     // 행동으로 그림자를 승화시키는 액션
   };
   synthesisPromptGuidance: string;
+  ritualAction: string;
+  reflectionFocus: string;
   reflectiveQuestion?: string;
   shadowSynthesisMatrix?: {
     dominantTension: string;
@@ -163,12 +165,14 @@ export function runShadowArchetypeEngine(
   };
 
   const interpretiveBoundary = '본 그림자 자아 & 골든 섀도우 리포트는 분석심리학 원형과 십신 상징에 기반한 정성적 자기 성찰 안내이며, 임상 심리·정신의학적 진단을 대신하지 않습니다.';
+  const ritualAction = `[${primaryShadow.dominantTenGod}] ${transmutationRitual.mindsetShield}`;
+  const reflectionFocus = `골든 섀도우 연금술(${primaryShadow.archetype}) — ${goldenShadow.goldenGift}`;
   const qHint = (question || '').trim();
   const reflectiveQuestion = qHint
     ? `지금 "${qHint.slice(0, 36)}" 앞에서 올라오는 불편함이나 방어심 이면에, 내가 아직 인정하지 않은 [${goldenShadow.goldenGift}]의 어떤 힘이 숨어 있을까요?`
     : transmutationRitual.dailyPrompt;
 
-  const synthesisPromptGuidance = `[LUCKEY 융 심리학 그림자 자아 & 골든 섀도우 연금술 v2.1.0 | 연산 시각: ${calculatedAtKst}]
+  const synthesisPromptGuidance = `[LUCKEY 융 심리학 그림자 자아 & 골든 섀도우 연금술 v2.2.0 | 연산 시각: ${calculatedAtKst}]
 - 그림자 원형: [${primaryShadow.archetype}] (지배 십신: ${primaryShadow.dominantTenGod})
 - 내면 근원 상처: ${primaryShadow.coreWound}
 - 무의식 폭발 트리거: ${primaryShadow.shadowTrigger}
@@ -178,6 +182,8 @@ export function runShadowArchetypeEngine(
 - 교차 매트릭스 [핵심 긴장: ${shadowSynthesisMatrix.dominantTension} | 조율 상태: ${shadowSynthesisMatrix.alignmentState}]
   * 통합 실천: ${shadowSynthesisMatrix.integratedAction}
 - 실전 연금술 리추얼: ${transmutationRitual.integrationAction}
+- 실천 의례: ${ritualAction}
+- 성찰 초점: ${reflectionFocus}
 - 성찰 질문: ${reflectiveQuestion}
 - 해석 경계: ${interpretiveBoundary}`;
 
@@ -191,6 +197,8 @@ export function runShadowArchetypeEngine(
     subconsciousDepth,
     transmutationRitual,
     synthesisPromptGuidance,
+    ritualAction,
+    reflectionFocus,
     reflectiveQuestion,
     shadowSynthesisMatrix,
     interpretiveBoundary,
