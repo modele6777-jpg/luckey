@@ -14,7 +14,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const EPICTETUS_CONTROL_VERSION = 'LUCKEY-EPICTETUS-CONTROL-v2.3.0';
+export const EPICTETUS_CONTROL_VERSION = 'LUCKEY-EPICTETUS-CONTROL-v2.4.0';
 
 function formatEpictetusKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -23,7 +23,7 @@ function formatEpictetusKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
 }
 
 export interface EpictetusControlDomain {
