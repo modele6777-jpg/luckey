@@ -14,7 +14,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const AURELIUS_INNER_CITADEL_VERSION = 'LUCKEY-AURELIUS-INNER-CITADEL-v2.3.0';
+export const AURELIUS_INNER_CITADEL_VERSION = 'LUCKEY-AURELIUS-INNER-CITADEL-v2.4.0';
 
 export interface AureliusStage {
   stageLevel: number;
@@ -84,6 +84,7 @@ export interface AureliusInnerCitadelResult {
     alignmentState: string;
     integratedAction: string;
   };
+  reflectiveQuestion?: string;
   interpretiveBoundary: string;
 }
 
@@ -282,6 +283,9 @@ export function calculateAureliusInnerCitadel(
     alignmentState: `${activeAureliusStage.stageNameLatin} · ${dailyStoicPractice.practiceMode}`,
     integratedAction: `${dailyStoicPractice.protocolDirective}${trimmedQ ? ` [질문 맥락: ${trimmedQ}]` : ''}`,
   };
+  const reflectiveQuestion = trimmedQ
+    ? `지금 "${trimmedQ}" 앞에서 《명상록》(${controlDichotomy.bookReference})의 '${activeAureliusStage.stageNameLatin}'을 세울 때, 내가 통제할 수 없는 외부 소음을 떼어 내고 지켜야 할 주권 선택은 무엇인가요?`
+    : controlDichotomy.reflectionQuestion;
 
   return {
     engineVersion: AURELIUS_INNER_CITADEL_VERSION,
@@ -298,6 +302,7 @@ export function calculateAureliusInnerCitadel(
     dailyStoicPractice,
     citadelResilienceMatrix,
     aureliusSynthesisMatrix,
+    reflectiveQuestion,
     interpretiveBoundary: '본 리포트는 마르쿠스 아우렐리우스 《명상록》의 스토아 자기 성찰 원리에 기반한 정성적 안내이며, 확정적 예단이 아닙니다.',
   };
 }
@@ -306,6 +311,9 @@ export function formatAureliusInnerCitadelPrompt(result: AureliusInnerCitadelRes
   const avgCore = Math.round((result.innerCitadelFortressScore + result.hegemonikonSovereignSoul + result.amorFatiCosmicAcceptance) / 3);
   const matrixLine = result.aureliusSynthesisMatrix
     ? `\n- 아우렐리우스 교차 매트릭스: 핵심 긴장(${result.aureliusSynthesisMatrix.dominantTension}) · 조율 상태(${result.aureliusSynthesisMatrix.alignmentState}) · 통합 실천(${result.aureliusSynthesisMatrix.integratedAction})`
+    : '';
+  const questionLine = result.reflectiveQuestion
+    ? `\n- 질문 맞춤 성찰 질문: ${result.reflectiveQuestion}`
     : '';
   return `[🏛️ 고대 로마 마르쿠스 아우렐리우스 《명상록(Meditations)》 내면의 성채 & 스토아 평정 리포트]
 - 엔진 버전: ${result.engineVersion} | 연산 시각: ${result.calculatedAtKst}
@@ -325,5 +333,5 @@ export function formatAureliusInnerCitadelPrompt(result: AureliusInnerCitadelRes
   → 실천 지침: ${result.primaryMeditationsPrecept.actionableDirective}
 - 철학 황제의 내면 독백: 《${result.citadelEmperorSoliloquy.soliloquyTitle}》
   → 고결한 명상 조언: "${result.citadelEmperorSoliloquy.meditativeCounsel}"
-- 해석 경계: 본 리포트는 마르쿠스 아우렐리우스 《명상록》의 스토아 자기 성찰 원리에 기반한 정성적 안내이며, 확정적 예단이 아닙니다.${matrixLine}`;
+- 해석 경계: 본 리포트는 마르쿠스 아우렐리우스 《명상록》의 스토아 자기 성찰 원리에 기반한 정성적 안내이며, 확정적 예단이 아닙니다.${matrixLine}${questionLine}`;
 }
