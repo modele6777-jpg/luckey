@@ -6,21 +6,27 @@ import { createPortal } from 'react-dom';
 
 export const ScreenOverlayContext = createContext<readonly RefObject<HTMLDivElement | null>[]>([]);
 
-/** Folding must not navigate away from the page that owns a live popup. */
+/**
+ * Folding must not navigate away from the page that owns a live popup.
+ * WebKit can report zero sizes for a few frames mid-fold, so "rendered"
+ * (has layout boxes) is checked instead of "wider than zero".
+ */
+const isRendered = (element: Element) => element.getClientRects().length > 0;
+
 export function hasOpenScreenOverlay(): boolean {
   if (Array.from(document.querySelectorAll<HTMLElement>('[data-screen-overlay-layer]'))
-    .some(layer => layer.childElementCount > 0 && layer.getBoundingClientRect().width > 0)) return true;
+    .some(layer => layer.childElementCount > 0 && isRendered(layer))) return true;
   const visibleDialog = (doc: Document) => Array.from(doc.querySelectorAll<HTMLElement>('[role="dialog"], dialog[open]'))
     .some(dialog => {
-      const rect = dialog.getBoundingClientRect();
+      if (dialog.hidden || dialog.getAttribute('aria-hidden') === 'true' || !isRendered(dialog)) return false;
       const style = doc.defaultView?.getComputedStyle(dialog);
-      return rect.width > 0 && rect.height > 0 && style?.visibility !== 'hidden' && style?.display !== 'none';
+      return style?.visibility !== 'hidden' && style?.display !== 'none';
     });
   if (visibleDialog(document)) return true;
   // Key's practice dialogs live in its same-origin frame, outside React portals.
   return Array.from(document.querySelectorAll('iframe')).some(frame => {
     try {
-      return frame.getBoundingClientRect().width > 0 && Boolean(frame.contentDocument && visibleDialog(frame.contentDocument));
+      return isRendered(frame) && Boolean(frame.contentDocument && visibleDialog(frame.contentDocument));
     } catch { return false; }
   });
 }

@@ -334,16 +334,9 @@ function AppContent() {
       }
     };
     handleLayoutChange();
-    window.addEventListener('resize', handleLayoutChange, { passive: true });
-    window.addEventListener('orientationchange', handleLayoutChange, { passive: true });
-    window.visualViewport?.addEventListener('resize', handleLayoutChange, { passive: true });
-    const unsubscribeDuo = subscribeDuoLayout(handleLayoutChange);
-    return () => {
-      window.removeEventListener('resize', handleLayoutChange);
-      window.removeEventListener('orientationchange', handleLayoutChange);
-      window.visualViewport?.removeEventListener('resize', handleLayoutChange);
-      unsubscribeDuo();
-    };
+    // subscribeDuoLayout listens to resize/orientation/visual viewport and
+    // re-checks after the fold settles, so a stale WebKit size cannot stick.
+    return subscribeDuoLayout(handleLayoutChange);
   }, [navigate]);
 
   const isFirstMount = React.useRef(true);

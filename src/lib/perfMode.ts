@@ -254,19 +254,54 @@ export function isDuoUnfoldedState(): DuoUnfoldedState {
   return resolveDuoViewport(width, height, false);
 }
 
-/** Re-evaluate when the hinge, keyboard, or page visibility changes without a resize. */
+/**
+ * WebKit can publish resize/orientation/visibility while innerWidth/innerHeight
+ * still report the previous fold state, then update them without another event.
+ * Re-run now, after layout, and after the fold animation settles so the layout
+ * never stays one fold step behind.
+ */
+export const VIEWPORT_SETTLE_DELAYS_MS = [120, 350, 800] as const;
+
+export function createViewportSettler(run: () => void): { trigger: () => void; cancel: () => void } {
+  let frame = 0;
+  let timers: ReturnType<typeof setTimeout>[] = [];
+  const cancel = () => {
+    if (frame && typeof cancelAnimationFrame === 'function') cancelAnimationFrame(frame);
+    frame = 0;
+    timers.forEach(clearTimeout);
+    timers = [];
+  };
+  const trigger = () => {
+    cancel();
+    run();
+    if (typeof requestAnimationFrame === 'function') frame = requestAnimationFrame(() => { frame = 0; run(); });
+    timers = VIEWPORT_SETTLE_DELAYS_MS.map(delay => setTimeout(run, delay));
+  };
+  return { trigger, cancel };
+}
+
+/** Re-evaluate when the hinge, keyboard, rotation, or page visibility changes. */
 export function subscribeDuoLayout(onChange: () => void): () => void {
   if (typeof window === 'undefined') return () => {};
   const queries = DUO_SEGMENT_QUERIES.map(query => {
     try { return window.matchMedia(query); } catch { return null; }
   }).filter((query): query is MediaQueryList => Boolean(query));
-  const handler = () => onChange();
+  const settler = createViewportSettler(onChange);
+  const handler = settler.trigger;
+  // The rendered root resizes when the real fold geometry lands, even if no
+  // further window resize event is published.
+  const rootResize = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(handler) : null;
+  rootResize?.observe(document.documentElement);
   queries.forEach(query => query.addEventListener?.('change', handler));
-  window.addEventListener('pageshow', handler);
+  for (const event of ['resize', 'orientationchange', 'pageshow']) window.addEventListener(event, handler, { passive: true });
+  window.visualViewport?.addEventListener('resize', handler, { passive: true });
   document.addEventListener('visibilitychange', handler);
   return () => {
+    settler.cancel();
+    rootResize?.disconnect();
     queries.forEach(query => query.removeEventListener?.('change', handler));
-    window.removeEventListener('pageshow', handler);
+    for (const event of ['resize', 'orientationchange', 'pageshow']) window.removeEventListener(event, handler);
+    window.visualViewport?.removeEventListener('resize', handler);
     document.removeEventListener('visibilitychange', handler);
   };
 }
@@ -640,8 +675,10 @@ export function initNarrowPhoneClass(): void {
 
   if (!narrowPhoneListenerAttached) {
     narrowPhoneListenerAttached = true;
+    // Fold/rotation can report the previous size for a few frames; settle again later.
+    const settler = createViewportSettler(apply);
     const applySoon = () => {
-      apply();
+      settler.trigger();
       // orientationchange and toolbar show/hide report a stale height for a few frames.
       scheduleVisualViewportSync(window);
     };
