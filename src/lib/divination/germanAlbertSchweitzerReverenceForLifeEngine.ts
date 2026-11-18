@@ -14,7 +14,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const GERMAN_ALBERT_SCHWEITZER_VERSION = 'LUCKEY-ALBERT-SCHWEITZER-REVERENCE-v2.3.0';
+export const GERMAN_ALBERT_SCHWEITZER_VERSION = 'LUCKEY-ALBERT-SCHWEITZER-REVERENCE-v2.4.0';
 
 export interface SchweitzerTheme {
   themeKey: string;
@@ -55,6 +55,7 @@ export interface GermanAlbertSchweitzerReverenceForLifeResult {
   };
   ritualAction: string;
   reflectionFocus: string;
+  reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
 
@@ -197,6 +198,11 @@ export function calculateGermanAlbertSchweitzerReverenceForLife(
     integratedAction: `${activeSchweitzerTheme.practicalCounsel} (${focalSchweitzerAphorism.actionGuidance})`,
   };
 
+  const trimmedQuery = query?.trim();
+  const reflectiveQuestion = trimmedQuery
+    ? `"${trimmedQuery}"라는 상황 앞에서 '${activeSchweitzerTheme.themeTitleKo}'의 마음으로 응답한다면, 나와 곁의 생명을 함께 살리기 위해 오늘 실천할 작은 친절은 무엇인가요?`
+    : `'${activeSchweitzerTheme.themeTitleKo}'의 기준에 비추어 볼 때, 오늘 내 곁의 살아있는 존재들에게 조용히 건네고 싶은 배려는 무엇인가요?`;
+
   return {
     engineVersion: GERMAN_ALBERT_SCHWEITZER_VERSION,
     calculatedAtKst: formatSchweitzerKstTimestamp(now),
@@ -214,6 +220,7 @@ export function calculateGermanAlbertSchweitzerReverenceForLife(
     schweitzerSynthesisMatrix,
     ritualAction: focalSchweitzerAphorism.actionGuidance,
     reflectionFocus: activeSchweitzerTheme.practicalCounsel,
+    reflectiveQuestion,
     interpretiveBoundary: '슈바이처의 생명 경외·이타적 봉사 상징을 빌린 정성적 윤리 성찰 관점이며, 수치 평가나 미래 단정이 아닙니다.',
   };
 }
@@ -244,6 +251,7 @@ export function formatGermanAlbertSchweitzerReverenceForLifePrompt(
       `- 통합 실천: ${res.schweitzerSynthesisMatrix.integratedAction}`,
     );
   }
+  lines.push(`- 질문 맞춤 성찰 질문: ${res.reflectiveQuestion}`);
   lines.push(`- 해석 경계: 슈바이처의 생명 경외·이타적 봉사 상징을 빌린 정성적 윤리 성찰 관점이며, 수치 평가나 미래 단정이 아닙니다.`);
   return lines.join('\n');
 }
