@@ -14,7 +14,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const MAORI_MAURI_HAUORA_ENGINE_VERSION = '2.1.0';
+export const MAORI_MAURI_HAUORA_ENGINE_VERSION = '2.2.0';
 
 export interface HauoraPillar {
   id: 'taha_tinana' | 'taha_hinengaro' | 'taha_whanau' | 'taha_wairua';
@@ -41,6 +41,8 @@ export interface MaoriMauriHauoraReport {
     vulnerablePillar: HauoraPillar;
   };
   kaitiakitangaPrescription: string; // 대지 수호 및 관계 회복 실천 처방
+  ritualAction: string;
+  reflectionFocus: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
   maoriSynthesisMatrix?: {
@@ -157,6 +159,8 @@ export function calculateMaoriMauriHauora(options?: {
     : `삶이라는 집(Whare)의 네 벽 가운데 '${dominantPillar.nameKo}'의 힘을 빌려 '${vulnerablePillar.nameKo}'를 부드럽게 받쳐 줄 작은 실천은 무엇일까요?`;
 
   const interpretiveBoundary = '이 지표는 뉴질랜드 마오리(Māori) 웰빙 철학 〈테 화레 타파 화〉와 마우리(Mauri)·마나(Mana) 개념을 전인적 균형 성찰의 거울로 해석한 것이며, 의학적 진단이나 미래의 구체적 성패를 단정하는 예언이 아닙니다.';
+  const ritualAction = `${kaitiakitangaPrescription} 오늘 '${dominantPillar.nameKo}'의 여유를 빌려 '${vulnerablePillar.nameKo}'을 10분간 먼저 돌보세요.`;
+  const reflectionFocus = `테 화레 타파 화 '${dominantPillar.nameMaori}' ↔ '${vulnerablePillar.nameMaori}' — 네 벽이 고르게 서는 마우리(생명력)의 균형`;
   const maoriSynthesisMatrix = {
     dominantTension: `${dominantPillar.nameKo} ↔ ${vulnerablePillar.nameKo}`,
     alignmentState: describeMaoriStage(mauriVitalityIndex),
@@ -178,6 +182,8 @@ export function calculateMaoriMauriHauora(options?: {
       vulnerablePillar,
     },
     kaitiakitangaPrescription,
+    ritualAction,
+    reflectionFocus,
     reflectiveQuestion,
     interpretiveBoundary,
     maoriSynthesisMatrix,
@@ -197,6 +203,8 @@ export function formatMaoriMauriHauoraPrompt(rep: MaoriMauriHauoraReport): strin
     `· 핵심 강점 기둥: ${rep.pillars.dominantPillar.nameKo} (${rep.pillars.dominantPillar.nameMaori})`,
     `· 우선 보살핌 기둥: ${rep.pillars.vulnerablePillar.nameKo} (${rep.pillars.vulnerablePillar.nameMaori})`,
     `· 카이티아키탕가(Kaitiakitanga) 전인적 회복 처방: ${rep.kaitiakitangaPrescription}`,
+    `· 실천 의례: ${rep.ritualAction}`,
+    `· 성찰 초점: ${rep.reflectionFocus}`,
     `· 성찰 질문: ${rep.reflectiveQuestion}`,
     `· 해석 경계: ${rep.interpretiveBoundary}`,
   ];
