@@ -16,7 +16,7 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const SERENDIPITY_SYNCHRONICITY_VERSION = 'LUCKEY-SERENDIPITY-v2.1.0';
+export const SERENDIPITY_SYNCHRONICITY_VERSION = 'LUCKEY-SERENDIPITY-v2.2.0';
 
 function formatSerendipityKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -25,7 +25,7 @@ function formatSerendipityKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
 }
 
 export type LuckyPortalType = 
@@ -56,6 +56,7 @@ export interface SerendipitySynchronicityReport {
     alignmentState: string;
     integratedAction: string;
   };
+  reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
 
@@ -134,6 +135,9 @@ export function runSerendipitySynchronicityEngine(
   };
 
   const interpretiveBoundary = '본 양자 동시성 & 세렌디피티 리포트는 융 동시성 상징과 일진 수리에 기반한 정성적 행동 안내이며, 확률·수익을 보장하지 않습니다.';
+  const reflectiveQuestion = q
+    ? `'${q}'와 맞물려 ${optimalHourWindow} 사이에 내가 기존 동선에서 딱 한 걸음만 비틀어 시도해 볼 수 있는 작은 촉매 행동은 무엇인가요?`
+    : `오늘 익숙한 경로를 한 칸만 벗어나 우연이 말을 걸 수 있는 빈자리를 내어준다면 어디를 먼저 열어 보고 싶나요?`;
 
   const synthesisPromptGuidance = `[LUCKEY 양자 동시성 & 세렌디피티 행운 가속 ${SERENDIPITY_SYNCHRONICITY_VERSION} | ${calculatedAtKst}]
 - 활성 행운 포털: [${activeLuckyPortal}]
@@ -143,6 +147,7 @@ export function runSerendipitySynchronicityEngine(
 - 행운 증폭 바이브: ${luckyVibeTrigger}
 - 교차 매트릭스: [핵심 긴장: ${serendipitySynthesisMatrix.dominantTension} | 조율 상태: ${serendipitySynthesisMatrix.alignmentState}]
   * 통합 실천: ${serendipitySynthesisMatrix.integratedAction}
+- 질문 맞춤 성찰 질문: ${reflectiveQuestion}
 - 해석 경계: ${interpretiveBoundary}`;
 
   return {
@@ -163,6 +168,7 @@ export function runSerendipitySynchronicityEngine(
     },
     synthesisPromptGuidance,
     serendipitySynthesisMatrix,
+    reflectiveQuestion,
     interpretiveBoundary,
   };
 }

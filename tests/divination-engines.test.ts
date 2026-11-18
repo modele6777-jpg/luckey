@@ -12199,3 +12199,30 @@ test('소매틱 아머링·3대 지혜 삼위일체·칼 융 동시성 오멘 �
   assert.ok(so.reflectiveQuestion.includes(query));
   assert.ok(formatSynchronicityOmenPrompt(so).includes('질문 맞춤 성찰 질문'));
 });
+
+test('세렌디피티·차크라 솔 퀘스트·종여내단 엔진 v1.7.893 질문 반응형 성찰 질문·KST(+09:00) 검증', () => {
+  const profile: any = {
+    name: '테스트',
+    basic: { birthdate: '1994-01-24', birthtime: '10:30', gender: 'male', calendarType: 'solar' },
+  };
+  const now = new Date('2026-11-19T07:28:00+09:00');
+  const query = '새로운 흐름을 열기 전 마음의 열기를 가라앉힐 때';
+
+  const ss = calculateSerendipitySynchronicity({ profile, targetDate: now, question: query });
+  assert.equal(ss.engineVersion, SERENDIPITY_SYNCHRONICITY_VERSION);
+  assert.match(ss.calculatedAtKst, /\+09:00/);
+  assert.ok(ss.reflectiveQuestion.includes(query));
+  assert.ok(formatSerendipitySynchronicityPrompt(ss).includes('질문 맞춤 성찰 질문'));
+
+  const vsq = calculateVibrationalSoulQuest(profile, now, query);
+  assert.equal(vsq.engineVersion, VIBRATIONAL_SOUL_QUEST_VERSION);
+  assert.match(vsq.calculatedAtKst, /\+09:00/);
+  assert.ok(vsq.reflectiveQuestion.includes(query));
+  assert.ok(formatVibrationalSoulQuestPrompt(vsq).includes('질문 맞춤 성찰 질문'));
+
+  const zl = calculateZhongLuInnerAlchemy(profile, query);
+  assert.equal(zl.engineVersion, ZHONG_LU_INNER_ALCHEMY_VERSION);
+  assert.match(zl.calculatedAtKst, /\+09:00/);
+  assert.ok(zl.reflectiveQuestion.includes(query));
+  assert.ok(formatZhongLuInnerAlchemyPrompt(zl).includes('질문 맞춤 성찰 질문'));
+});

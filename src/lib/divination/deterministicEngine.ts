@@ -1728,7 +1728,7 @@ try {
   const serendipitySynchronicityResult = calculateSupplement('serendipitySynchronicityResult', () => (birthdateStr && profile
     ? (() => {
         try {
-          return calculateSerendipitySynchronicity({ profile, targetDate: now });
+          return calculateSerendipitySynchronicity({ profile, targetDate: now, question });
         } catch (_) {
           return null;
         }
@@ -1979,7 +1979,7 @@ try {
   // 71. 고대 수비학 차크라 솔 울림 & 퍼스널 라이프 퀘스트 나침반 엔진
   const vibrationalSoulQuestResult = calculateSupplement('vibrationalSoulQuestResult', () => ((() => {
     try {
-      return calculateVibrationalSoulQuest(profile, now);
+      return calculateVibrationalSoulQuest(profile, now, question);
     } catch (_) {
       return null;
     }
@@ -4762,7 +4762,7 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'destinySynastryEcho', nameKo: '운명 공명 에코', icon: '🔔', category: 'deep_master', summary: '인연 사이의 끌림과 무의식적 갈등 취약점, 영혼의 성장 과제를 비추는 관계 공명 관점' },
   { key: 'microHabitKarma', nameKo: '마이크로 해빗', icon: '🌱', category: 'deep_master', summary: '사주 오행 체질과 뇌 신경가소성 21일 주기를 결합해 저항 없는 2분 마이크로 액션과 도파민 루프를 설계하는 관점' },
   { key: 'ikigaiDestinyCompass', nameKo: '이키가이 나침반', icon: '🧭', category: 'deep_master', summary: '열정·전문성·사명·수익성의 4대 교집합을 사주 오행과 연결해 나만의 천직 소명과 3단계 실현 로드맵을 안내합니다.' },
-  { key: 'serendipitySynchronicity', nameKo: '세렌디피티 레이더', icon: '🍀', category: 'deep_master' },
+  { key: 'serendipitySynchronicity', nameKo: '세렌디피티 레이더', icon: '🍀', category: 'deep_master', summary: '칼 융 동시성과 천을귀인 수리로 오늘의 행운 포털·엔젤 넘버·미세 궤도 전환 촉매 행동을 비추는 관점' },
   { key: 'humanDesignBodyGraph', nameKo: '휴먼디자인 바디그래프', icon: '🧬', category: 'deep_master', summary: '휴먼 디자인 에너지 타입·내적 결정 권위·9대 센터 상징으로 자기다운 선택 리듬과 탈조건화를 살피는 관점' },
   { key: 'chakraVibrationAlignment', nameKo: '차크라 진동 정렬', icon: '🌈', category: 'deep_master', summary: '7대 차크라 에너지 흐름과 사주 오행을 대조해 몸과 마음의 막힌 긴장을 푸는 관점' },
   { key: 'enneagramSoulIntegration', nameKo: '에니어그램 영혼통합', icon: '⭐', category: 'deep_master', summary: '에니어그램 9유형 에고 고착과 분열·통합 방향을 사주 오행과 엮어 내면의 미덕 회복을 비추는 관점' },
@@ -4785,7 +4785,7 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'karmicSynastry', nameKo: '카르믹 시나스트리', icon: '💫', category: 'deep_master', summary: '사주 천간·지지 합충과 점성학 달·금성·노드 시나스트리로 두 사람의 카르마 계약과 소통의 열쇠를 비추는 관점' },
   { key: 'fiveEmotionsPulse', nameKo: '오행 칠정 심신맥파', icon: '💓', category: 'deep_master', summary: '황제내경 오행과 칠정(희·노·우·사·비·공·경)을 결합해 심신 기혈의 열냉과 균형을 살피는 관점' },
   { key: 'hermeticKybalion', nameKo: '카이발리온 7대 우주법칙', icon: '📜', category: 'deep_master', summary: '정신성·상응·극성·리듬의 7대 우주 원리로 지금의 흔들림을 원인 주도권으로 전환합니다.' },
-  { key: 'vibrationalSoulQuest', nameKo: '차크라 솔 퀘스트', icon: '🧭', category: 'deep_master' },
+  { key: 'vibrationalSoulQuest', nameKo: '차크라 솔 퀘스트', icon: '🧭', category: 'deep_master', summary: '피타고라스·칼데아 수비학 4대 영혼 진동수와 9년 개인년 주기로 현재의 카르마 과제와 집중 차크라를 비추는 관점' },
   { key: 'alchemicalTransmutation', nameKo: '서양 연금술 7단계', icon: '⚗️', category: 'deep_master', summary: '흑화·백화·황화·적화의 연금술 7단계로 지금 겪는 시련이 어떤 내면 변환 과정인지 읽어 줍니다.' },
   { key: 'ziweiHuaJi', nameKo: '자미두수 화기 전화위복', icon: '🌌', category: 'deep_master', summary: '자미두수 생년 화기(化忌)가 깃든 결핍의 궁위를 독보적 장인정신과 전화위복의 돌파구로 승화합니다.' },
   { key: 'celticTreeOgham', nameKo: '켈트 오검 수목지혜', icon: '🌲', category: 'deep_master', summary: '고대 켈트 드루이드의 13태음월 오검 수목 달력으로 본명 수호목과 계절 공명목을 짚어 삶의 뿌리와 치유 방향을 비춥니다.' },

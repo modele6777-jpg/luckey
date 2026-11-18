@@ -11,7 +11,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const ZHONG_LU_INNER_ALCHEMY_VERSION = 'LUCKEY-ZHONG-LU-ALCHEMY-v2.1.0';
+export const ZHONG_LU_INNER_ALCHEMY_VERSION = 'LUCKEY-ZHONG-LU-ALCHEMY-v2.2.0';
 
 function formatZhongLuKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -20,7 +20,7 @@ function formatZhongLuKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
 }
 
 export type ZhongLuQuestionTheme = 'relationship' | 'decision' | 'healing' | 'reflection';
@@ -67,6 +67,7 @@ export interface ZhongLuAlchemyReport {
     alignmentState: string;
     integratedAction: string;
   };
+  reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
 
@@ -199,6 +200,10 @@ export function calculateZhongLuInnerAlchemy(
     integratedAction: `${qualitative.ritual}${trimmedQ ? ` [질문 맥락: ${trimmedQ}]` : ''}`,
   };
 
+  const reflectiveQuestion = trimmedQ
+    ? `'${trimmedQ}'의 열기를 가라앉히고 ${immortalityTier.koreanTitle}의 리듬으로 돌아오기 위해 오늘 가장 먼저 내려놓을 조급함은 무엇인가요?`
+    : qualitative.reflection;
+
   return {
     engineVersion: ZHONG_LU_INNER_ALCHEMY_VERSION,
     calculatedAt: now.toISOString(),
@@ -222,6 +227,7 @@ export function calculateZhongLuInnerAlchemy(
     counselNote: qualitative.counsel,
     boundaryNotice: '종여내단 3품 선도와 수화기제 상징은 우열 점수가 아니라 심신 균형과 일상의 리듬을 살피기 위한 정성적 양생 프레임입니다.',
     zhongLuSynthesisMatrix,
+    reflectiveQuestion,
     interpretiveBoundary: '종여내단 3품 선도와 수화기제 상징은 우열 점수가 아니라 심신 균형과 일상의 리듬을 살피기 위한 정성적 양생 프레임입니다.',
   };
 }
@@ -241,6 +247,7 @@ export function formatZhongLuInnerAlchemyPrompt(report: ZhongLuAlchemyReport): s
 - **실천 조언**: ${report.practiceGuidance}
 - **일상 의례**: ${report.ritualAction}
 - **성찰 질문**: ${report.reflectionFocus}
+- **질문 맞춤 성찰 질문**: ${report.reflectiveQuestion}
 - **조언 요약**: ${report.counselNote}
 - **해석 경계**: ${report.boundaryNotice}${matrixLine}`;
 }
