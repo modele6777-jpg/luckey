@@ -1077,7 +1077,7 @@ try {
 thaiEnvelope = {toolId:'thai_astrology', toolKoName:'태국점성술', status:'skipped', note:'이번 질문에서 선택하지 않은 도구'};
 } else {
 try {
-    thaiHorasatResult = calculateThaiHorasat({ profile, targetYear: now.getFullYear(), targetDate: now });
+    thaiHorasatResult = calculateThaiHorasat({ profile, targetYear: now.getFullYear(), targetDate: now, question });
     if (thaiHorasatResult.status === 'calculated') {
       thaiEnvelope = {
         toolId: 'thai_astrology',
@@ -1263,7 +1263,7 @@ try {
     if (!profile || !birthdateStr) {
       tojeongEnvelope = { toolId: 'tojeong', toolKoName: '토정비결', status: 'skipped', note: '생년월일 미입력으로 계산 생략' };
     } else {
-      const tojeongRes = calculateTojeong({ profile, targetYear: now.getFullYear() });
+      const tojeongRes = calculateTojeong({ profile, targetYear: now.getFullYear(), question });
       if (tojeongRes.status === 'calculated') {
         tojeongEnvelope = {
           toolId: 'tojeong',
@@ -1288,7 +1288,7 @@ try {
 taiyiEnvelope = {toolId:'taiyi', toolKoName:'태을신수', status:'skipped', note:'이번 질문에서 선택하지 않은 도구'};
 } else {
 try {
-    taiyiResult = calculateTaiyi({ profile, targetYear: now.getFullYear(), targetDate: now });
+    taiyiResult = calculateTaiyi({ profile, targetYear: now.getFullYear(), targetDate: now, question });
     if (taiyiResult.status === 'calculated') {
       taiyiEnvelope = {
         toolId: 'taiyi',
@@ -1351,7 +1351,7 @@ try {
   const tojeongResult = calculateSupplement('tojeongResult', () => (birthdateStr && profile
     ? (() => {
         try {
-          const res = calculateTojeong({ profile, targetYear: now.getFullYear() });
+          const res = calculateTojeong({ profile, targetYear: now.getFullYear(), question });
           return res.status === 'calculated' ? res : null;
         } catch (_) {
           return null;
@@ -4718,10 +4718,10 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'qimen', nameKo: '기문둔갑', icon: '🛡️', category: 'foundational' },
   { key: 'kabbalah', nameKo: '카발라', icon: '🌳', category: 'foundational' },
   { key: 'iching', nameKo: '주역(64괘)', icon: '☯️', category: 'foundational' },
-  { key: 'thai_astrology', nameKo: '태국점성술', icon: '🪷', category: 'foundational' },
-  { key: 'tojeong', nameKo: '토정비결', icon: '🍂', category: 'foundational' },
+  { key: 'thai_astrology', nameKo: '태국점성술', icon: '🪷', category: 'foundational', summary: '태국 호라삿 8요일 수호신과 마하탁사 108년 대운·4대 원소(Thaat)로 생애 주기와 신체 활력을 비추는 관점' },
+  { key: 'tojeong', nameKo: '토정비결', icon: '🍂', category: 'foundational', summary: '태세·월건·일진 삼수 작괘 144괘문과 12개월 세시 흐름으로 한 해의 운세와 처신 도리를 비추는 관점' },
   { key: 'kyusei', nameKo: '구성학', icon: '🧭', category: 'foundational', summary: '입춘·절월 기준 연반·월반·일반 9궁 비성과 본명성 조화로 길방위와 움직임 타이밍을 비추는 관점' },
-  { key: 'taiyi', nameKo: '태을신수', icon: '🏛️', category: 'foundational' },
+  { key: 'taiyi', nameKo: '태을신수', icon: '🏛️', category: 'foundational', summary: '연국 적년 16궁과 태을성·문창·시격·주산객산 수리로 거시 대세 흐름과 주객 승부 타이밍을 비추는 관점' },
 
   // 심층 마스터 백그라운드 엔진
   { key: 'chronoTransit', nameKo: '실시간 행성 트랜짓', icon: '🌌', category: 'deep_master', summary: '실시간 사주 일진·시진과 천문 10대 행성 트랜짓 아스펙트를 결합해 오늘의 시간 맞춤 전략을 비추는 관점' },
