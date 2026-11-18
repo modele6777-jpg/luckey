@@ -25,7 +25,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const JAIN_GUNASTHANA_KARMA_ENGINE_VERSION = '2.1.0';
+export const JAIN_GUNASTHANA_KARMA_ENGINE_VERSION = '2.2.0';
 
 export interface RatnatrayaBalance {
   darshanaScore: number; // 정견 (올바른 믿음/직관) 0~100
@@ -71,6 +71,8 @@ export interface JainGunasthanaReport {
   interpretiveBoundary: string;
   jainWisdom: string;
   boundaryNotice: string;
+  ritualAction: string;
+  reflectionFocus: string;
 }
 
 const GUNASTHANA_STAGES: GunasthanaStage[] = [
@@ -274,6 +276,9 @@ export function calculateJainGunasthanaKarma(options?: {
     cautionNotice: `일방적 단정(에칸타)과 과도한 집착을 피하고, ${situationalJainAudit.anekantaPerspective}`,
   };
 
+  const ritualAction = `[제${activeStage.stageNumber}단계 ${activeStage.stageNameKo}] ${nirjaraPurification}`;
+  const reflectionFocus = `오늘 내가 '${situationalJainAudit.focusTheme}'에서 내려놓을 수 있는 작은 집착 하나는 무엇인가요?`;
+
   return {
     engineVersion: JAIN_GUNASTHANA_KARMA_ENGINE_VERSION,
     calculatedAt: now.toISOString(),
@@ -288,6 +293,8 @@ export function calculateJainGunasthanaKarma(options?: {
     jainWisdom,
     boundaryNotice: '본 결과는 자이나교 《타트바르타 수트라》 14 군아스타나와 삼보 원리에 따른 정성적 성찰이며, 우열을 가르는 점수나 운명적 판정이 아닙니다.',
     interpretiveBoundary: '본 결과는 자이나교 《타트바르타 수트라》 14 군아스타나와 삼보 원리에 따른 정성적 성찰이며, 우열을 가르는 점수나 운명적 판정이 아닙니다.',
+    ritualAction,
+    reflectionFocus,
   };
 }
 
@@ -322,6 +329,8 @@ export function formatJainGunasthanaKarmaPrompt(report: JainGunasthanaReport): s
 
 5. [니르자라(Nirjara) 카르마 정화 & 교차 매트릭스]:
    - 카르마 소진 실천: ${report.nirjaraPurification}
+   - 실천 의례(Ritual Action): ${report.ritualAction}
+   - 성찰 초점(Reflection Focus): ${report.reflectionFocus}
    - 핵심 통찰: ${report.jainSynthesisMatrix.coreInsight}
    - 권고 실행: ${report.jainSynthesisMatrix.recommendedAction}
    - 주의 경계: ${report.jainSynthesisMatrix.cautionNotice}

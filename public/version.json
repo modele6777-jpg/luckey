@@ -1,10 +1,10 @@
 {
-  "version": "1.7.823",
-  "builtAt": "2026-11-18T10:00:00+09:00",
-  "summary": "마키아벨리 비르투·포르투나, 피코 델라 미란돌라 인간 존엄성, 토마스 아퀴나스 신학대전 3대 엔진 실천 의례 및 성찰 질문 표준 연동(v1.7.823)",
+  "version": "1.7.824",
+  "builtAt": "2026-11-18T10:10:00+09:00",
+  "summary": "자이나교 14 군아스타나, 헤이안 음양도 세이메이, 카발라 생명나무 3대 엔진 실천 의례 및 성찰 질문 표준 연동(v1.7.824)",
   "items": [
-    "니콜로 마키아벨리 《군주론》 비르투 & 포르투나 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동",
-    "피코 델라 미란돌라 《인간의 존엄성》 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동",
-    "토마스 아퀴나스 《신학대전》 이성·신앙 조화 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동"
+    "고대 인도 자이나교 14 군아스타나 & 삼보 카르마 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동",
+    "일본 헤이안 음양도 아베노 세이메이 12천장 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동",
+    "정통 카발라 생명나무 10 세피로트 & 22 경로 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동"
   ]
 }

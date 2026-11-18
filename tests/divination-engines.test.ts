@@ -1622,6 +1622,7 @@ test('Kabbalah engine fixtures: life path / personality / soul path and pillar b
   assert.equal(r.status, 'calculated');
   assert.equal(r.engineVersion, KABBALAH_ENGINE_VERSION);
   assert(Boolean(r.interpretiveBoundary && r.interpretiveBoundary.length > 0));
+  assert(Boolean(r.ritualAction && r.ritualAction.length > 0 && r.reflectionFocus && r.reflectionFocus.length > 0));
   const n = r.numerology!;
   assert.equal(n.rawDigitSum, 34);
   assert.equal(n.lifePathNumber, 7);
@@ -4128,9 +4129,11 @@ test('Jain Gunasthana Karma Engine: calculates 14 Gunasthanas and Ratnatraya bal
   assert(rep.temporalJainRhythm.samayikaWindow.length > 0);
   assert(rep.jainSynthesisMatrix.coreInsight.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatJainGunasthanaKarmaPrompt(rep);
   assert(prompt.includes('고대 인도 자이나교 14 군아스타나 & 삼보(Ratnatraya) 카르마 성찰 안내'));
   assert(prompt.includes(rep.activeStage.stageNameKo));
+  assert(prompt.includes(rep.ritualAction));
   assert(prompt.includes('KST'));
   assert(!prompt.includes('/100') && !prompt.includes('/ 100'));
   assert(!/\d+\s*점(?:\s*\/\s*100)?/.test(prompt));
@@ -5373,9 +5376,11 @@ test('Japanese Heian Onmyodo Seimei Engine: calculates 12 heavenly generals, Shi
   assert(rep.temporalOnmyoRhythm.twelveBranchWindow.length > 0);
   assert(rep.onmyoSynthesisMatrix.coreInsight.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatHeianOnmyodoSeimeiPrompt(rep);
   assert(prompt.includes('일본 헤이안 음양도 아베노 세이메이 《점사략》 12천장 & 식신 사역'));
   assert(prompt.includes(rep.primaryGuardianGeneral.nameKo));
+  assert(prompt.includes(rep.ritualAction));
   assert(prompt.includes('KST'));
   assert(!prompt.includes('/100') && !prompt.includes('/ 100'));
   assert(!/\d+\s*점(?:\s*\/\s*100)?/.test(prompt));
