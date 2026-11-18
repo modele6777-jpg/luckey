@@ -72,3 +72,15 @@ test('a short desktop window with a focused field is not treated as keyboard-occ
   const before = classifyFold(1024, 450);
   assert.deepEqual(measureFoldState(win), before, 'no screen-height substitution without a software keyboard');
 });
+
+test('a split window keeps its own remembered height, not the physical screen height', () => {
+  resetFoldStateForTests();
+  const win = (cw: number, ch: number, focused: boolean) => ({
+    innerWidth: cw, innerHeight: ch, screen: { width: 1024, height: 1366 }, navigator: { maxTouchPoints: 5 }, matchMedia: () => ({ matches: false }),
+    document: { documentElement: { clientWidth: cw, clientHeight: ch }, activeElement: focused ? { tagName: 'TEXTAREA', isContentEditable: false } : null },
+  } as unknown as Window);
+  const first = measureFoldState(win(1024, 700, false));
+  assert.equal(first.orientation, 'landscape');
+  const typing = measureFoldState(win(1024, 400, true));
+  assert.deepEqual(typing, first, 'keyboard in a 1024x700 window stays unfolded landscape');
+});

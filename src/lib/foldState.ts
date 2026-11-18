@@ -100,7 +100,9 @@ export function measureFoldState(win: Window = window): FoldState {
   // Screen recovery only where a software keyboard exists (touch devices); a short
   // desktop window with a focused field is not keyboard-occluded.
   const keyboard = isTouchDevice(win) && isKeyboardActive(typeof win.document === 'object' ? win.document : undefined);
-  const recovered = keyboard ? screenHeightForWidth(win, size.width) : 0;
+  // The known unoccluded height at this width wins; the physical screen is only a
+  // fallback when this width has not been seen without the keyboard yet.
+  const recovered = keyboard && !remembered ? screenHeightForWidth(win, size.width) : 0;
   const height = Math.max(size.height, remembered, recovered);
   // Always keep the tallest observation at this width, even while a field is
   // focused, so a keyboard animating in cannot collapse the inner layout.
