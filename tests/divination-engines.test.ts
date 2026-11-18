@@ -1774,9 +1774,11 @@ test('Hongguk Qimen: 4-pillar numeral casting, 9-palace flight, key points, dete
   assert.deepEqual(r1, r2);
   assert(r1.calculatedAtKst?.includes('KST'));
   assert((r1.interpretiveBoundary || '').length > 0);
+  assert((r1.ritualAction || '').length > 0 && (r1.reflectionFocus || '').length > 0);
 
   // 프롬프트 포맷터
   const prompt = formatHonggukQimenPrompt(r1);
+  assert(prompt.includes(r1.ritualAction!));
   assert(prompt.includes(HONGGUK_QIMEN_ENGINE_VERSION));
   assert(prompt.includes('세효(世爻'));
   assert(prompt.includes('응효(應爻'));
@@ -2762,9 +2764,11 @@ test('Human Design BodyGraph Engine: 휴먼 디자인 9대 에너지 센터 및 
   assert(res.temporalHdRhythm.auraWatchWindow.length > 0);
   assert(res.hdSynthesisMatrix.coreInsight.length > 0);
   assert(res.interpretiveBoundary.length > 0);
+  assert(res.ritualAction.length > 0 && res.reflectionFocus.length > 0);
   const prompt = formatHumanDesignBodyGraphPrompt(res);
   assert(prompt.includes('LUCKEY 휴먼 디자인 9대 에너지 센터 & 바디그래프 오라'));
   assert(prompt.includes(res.designType.koreanLabel));
+  assert(prompt.includes(res.ritualAction));
   assert(prompt.includes('KST'));
   assert(!prompt.includes('/100') && !prompt.includes('%') && !prompt.includes('점수'));
 });
@@ -3692,9 +3696,11 @@ test('Huangdi Five Movements & Six Qi Engine: calculates movements, heaven/earth
   assert(rep.temporalYunqiRhythm.organWatchWindow.length > 0);
   assert(rep.yunqiSynthesisMatrix.coreInsight.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatHuangdiFiveMovementsSixQiPrompt(rep);
   assert(prompt.includes('황제명리(黃帝命理) & 오운육기(五運六氣) 천기 기상의학 엔진'));
   assert(prompt.includes(rep.birthYearGanZhi));
+  assert(prompt.includes(rep.ritualAction));
   assert(prompt.includes('KST'));
   assert(!prompt.includes('/100') && !prompt.includes('%') && !prompt.includes('점수'));
 });

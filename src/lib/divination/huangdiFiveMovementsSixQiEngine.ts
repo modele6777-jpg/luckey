@@ -29,7 +29,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const HUANGDI_YUNQI_VERSION = 'LUCKEY-HUANGDI-YUNQI-v2.1.0';
+export const HUANGDI_YUNQI_VERSION = 'LUCKEY-HUANGDI-YUNQI-v2.2.0';
 
 export interface FiveMovementYear {
   element: '목(木)' | '화(火)' | '토(土)' | '금(金)' | '수(水)';
@@ -78,6 +78,8 @@ export interface HuangdiFiveMovementsSixQiReport {
   };
   boundaryNotice: string;
   interpretiveBoundary: string;
+  ritualAction: string;
+  reflectionFocus: string;
   synthesisMessage: string;
 }
 
@@ -261,6 +263,9 @@ export function calculateHuangdiFiveMovementsSixQi(
     cautionNotice: `태과·불급으로 인한 취약 경향(${pathologicalTendency})을 미리 살피어 무리하지 마십시오.`,
   };
 
+  const ritualAction = `[${birthYearGanZhi} · ${fiveMovement.element}] ${dietaryPrescription} · ${breathMindHarmonization}`;
+  const reflectionFocus = `지금 나의 '${susceptibleOrgans}' 리듬을 지키기 위해 오늘 천기(${sixQi.heavenRulerSiTian})에 맞추어 덜어낼 과로는 무엇입니까?`;
+
   return {
     engineVersion: HUANGDI_YUNQI_VERSION,
     calculatedAt: now.toISOString(),
@@ -287,6 +292,8 @@ export function calculateHuangdiFiveMovementsSixQi(
     situationalYunqiAudit,
     temporalYunqiRhythm,
     yunqiSynthesisMatrix,
+    ritualAction,
+    reflectionFocus,
     boundaryNotice: '본 결과는 황제내경 운기칠편(오운육기)의 전통 섭생 철학에 기반한 정성적 건강 리듬 안내이며, 의학적 진단이 아닙니다.',
     interpretiveBoundary: '본 결과는 황제내경 운기칠편(오운육기)의 전통 섭생 철학에 기반한 정성적 건강 리듬 안내이며, 의학적 진단이 아닙니다.',
     synthesisMessage,
@@ -315,5 +322,7 @@ export function formatHuangdiFiveMovementsSixQiPrompt(report: HuangdiFiveMovemen
   - 오미(五味) 약선 식이: ${report.medicineRx.dietaryPrescription}
   - 기공 호흡/심신 조화: ${report.medicineRx.breathMindHarmonization}
 - **오운육기 통합 총평**: ${report.synthesisMessage}
+- **실천 의례(Ritual Action)**: ${report.ritualAction}
+- **성찰 초점(Reflection Focus)**: ${report.reflectionFocus}
 - **해석 경계**: ${report.boundaryNotice}`;
 }
