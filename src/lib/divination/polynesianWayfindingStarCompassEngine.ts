@@ -27,7 +27,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const POLYNESIAN_WAYFINDING_VERSION = '2.1.0';
+export const POLYNESIAN_WAYFINDING_VERSION = '2.2.0';
 
 export interface PolynesianWayfindingReport {
   engineVersion: string;
@@ -58,6 +58,8 @@ export interface PolynesianWayfindingReport {
     destinySignificance: string;
   };
   wayfinderSeaChantWisdom: string;
+  ritualAction: string;
+  reflectionFocus: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
   wayfindingSynthesisMatrix?: {
@@ -213,6 +215,8 @@ export function calculatePolynesianWayfinding(
     secondaryStarHouse,
     guidingZenithStar,
     wayfinderSeaChantWisdom,
+    ritualAction: `${primaryStarHouse.hawaiianName}의 방향을 기준점으로 삼아, 오늘 항로(${guidingZenithStar.hawaiianName})에서 흔들리지 않을 한 가지 행동을 지금 바로 정박하세요.`,
+    reflectionFocus: `웨이파인딩(${primaryStarHouse.hawaiianName} ↔ ${secondaryStarHouse.hawaiianName}) — ${guidingZenithStar.hawaiianName}`,
     reflectiveQuestion,
     interpretiveBoundary,
     wayfindingSynthesisMatrix,
@@ -233,6 +237,8 @@ export function formatPolynesianWayfindingPrompt(report: PolynesianWayfindingRep
     `- **인도별 (Zenith Star)**: ${report.guidingZenithStar.hawaiianName} (${report.guidingZenithStar.westernConstellation})`,
     `  - *운명적 계시*: ${report.guidingZenithStar.destinySignificance}`,
     `- **웨이파인더 대양 지혜 잠언**: "${report.wayfinderSeaChantWisdom}"`,
+    `- **실천 의례**: ${report.ritualAction}`,
+    `- **성찰 초점**: ${report.reflectionFocus}`,
     `- **성찰 질문**: ${report.reflectiveQuestion}`,
   ];
   if (report.wayfindingSynthesisMatrix) {

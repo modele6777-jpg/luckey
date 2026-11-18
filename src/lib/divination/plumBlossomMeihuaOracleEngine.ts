@@ -14,7 +14,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const PLUM_BLOSSOM_MEIHUA_ORACLE_ENGINE_VERSION = '2.2.0';
+export const PLUM_BLOSSOM_MEIHUA_ORACLE_ENGINE_VERSION = '2.3.0';
 
 export type MeihuaTrigram = {
   num: number;
@@ -64,6 +64,8 @@ export interface PlumBlossomMeihuaReport {
     alignmentState: string;
     integratedAction: string;
   };
+  ritualAction: string;
+  reflectionFocus: string;
   reflectiveQuestion?: string;
   interpretiveBoundary: string;
 }
@@ -227,6 +229,8 @@ export function calculatePlumBlossomMeihuaOracle(options?: {
     shaoYongJudgment,
     temporalTimingGuidance,
     meihuaSynthesisMatrix,
+    ritualAction: `본괘 ${benGua.fullName}·${movingLine}효 동(${tiYongRelation})의 조짐에 맞추어, 주체(${tiGua.name}·${tiGua.element})가 흔들리지 않도록 오늘의 실행 순서를 한 줄로 정리하세요.`,
+    reflectionFocus: `매화역수(${benGua.fullName} → ${bianGua.fullName}) — ${tiYongRelation}`,
     reflectiveQuestion,
     interpretiveBoundary: '본 매화역수 체용생극 리포트는 선천 8괘 수리 상징에 기반한 정성적 흐름 참고 안내이며, 확정적 미래 예언이 아닙니다.',
   };
@@ -252,6 +256,10 @@ export function formatPlumBlossomMeihuaOraclePrompt(rep: PlumBlossomMeihuaReport
   if (rep.reflectiveQuestion) {
     lines.push(`· 질문 맞춤 성찰 질문: ${rep.reflectiveQuestion}`);
   }
-  lines.push(`· 해석 경계: ${rep.interpretiveBoundary}`);
+  lines.push(
+    `· 실천 의례: ${rep.ritualAction}`,
+    `· 성찰 초점: ${rep.reflectionFocus}`,
+    `· 해석 경계: ${rep.interpretiveBoundary}`,
+  );
   return lines.join('\n');
 }

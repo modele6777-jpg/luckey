@@ -16,7 +16,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const PYTHAGOREAN_LIFECYCLE_VERSION = 'LUCKEY-PYTH-v2.1.0';
+export const PYTHAGOREAN_LIFECYCLE_VERSION = 'LUCKEY-PYTH-v2.2.0';
 
 function formatPythagoreanKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -85,6 +85,8 @@ export interface PythagoreanLifecycleResult {
   };
 
   summary: string;
+  ritualAction: string;
+  reflectionFocus: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
   pythagoreanSynthesisMatrix?: {
@@ -409,6 +411,8 @@ export function calculatePythagoreanLifecycle(params?: {
     currentPersonalYear,
     lifecycleStrategy,
     summary,
+    ritualAction: `[${currentPinnacle.name}]과 개인년도 제${personalYearNum}년(${currentPersonalYear.cyclePhase})에 맞추어, '${currentChallenge.sublimationKey}'을(를) 오늘의 행동 원칙으로 한 줄 실행하세요.`,
+    reflectionFocus: `피타고라스 생애주기(${currentPinnacle.name} ↔ ${currentChallenge.name}) — 개인년도 ${personalYearNum}년`,
     reflectiveQuestion,
     interpretiveBoundary,
     pythagoreanSynthesisMatrix,
@@ -435,6 +439,8 @@ export function formatPythagoreanLifecyclePrompt(res: PythagoreanLifecycleResult
     `  • 개인년 테마: ${res.currentPersonalYear.theme}`,
     `  • 개인년 행동 조언: ${res.currentPersonalYear.actionGuidance}`,
     `- 인생 종합 전략: ${res.lifecycleStrategy.goldenOpportunity}`,
+    `- 실천 의례: ${res.ritualAction}`,
+    `- 성찰 초점: ${res.reflectionFocus}`,
     `- 성찰 질문: ${res.reflectiveQuestion}`,
   ];
   if (res.pythagoreanSynthesisMatrix) {
