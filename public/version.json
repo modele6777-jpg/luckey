@@ -1,10 +1,6 @@
 {
-  "version": "1.7.876",
-  "builtAt": "2026-11-19T06:02:00+09:00",
-  "summary": "하바말 18 게알드르·볼바 세이드·아우구스티누스 고백록 3대 엔진 실천 의례 및 성찰 초점 표준 연동(v1.7.876)",
-  "items": [
-    "고에다 하바말 오딘의 18대 게알드르 룬 비전 주문 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동",
-    "고대 북유럽 볼바 세이드 & 위그드라실 9대 세계 엔진(v2.3.0): ritualAction·reflectionFocus 표준 필드 연동",
-    "아우구스티누스 《고백록》 내적 조명 & 안식 평정심 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동"
-  ]
+  "version": "1.7.877",
+  "builtAt": "2026-11-19T06:10:00+09:00",
+  "commit": "feat/deepen-augustine-yggdrasil-meihua-v1.7.877",
+  "notes": "아우구스티누스 고백록·위그드라실 9대우주계·소강절 매화역수 3대 엔진 성찰 질문·+09:00 KST·카탈로그 뜻 보강 (v1.7.877)"
 }

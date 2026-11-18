@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.7.877",
+    "builtAt": "2026-11-19T06:10:00+09:00",
+    "summary": "아우구스티누스 고백록·위그드라실 9대우주계·소강절 매화역수 3대 엔진 성찰 질문·+09:00 KST·카탈로그 뜻 보강(v1.7.877)",
+    "items": [
+      "아우구스티누스 고백록(v2.3.0)·고에다 위그드라실 9대우주계(v2.2.0)·소강절 매화역수(v2.2.0): 질문 반응형 reflectiveQuestion·+09:00 (KST) 표준 표기·프롬프트 연동",
+      "ALL_DCE_ENGINES 카탈로그: northAfricanAugustineConfessionesIlluminatio·eddicYggdrasilNineRealms·plumBlossomMeihuaOracle 한 줄 summary 등록 및 question 전달 연동",
+      "divination-engines.test.ts: 3대 엔진 v1.7.877 회귀 테스트 추가"
+    ]
+  },
+  {
     "version": "1.7.876",
     "builtAt": "2026-11-19T06:02:00+09:00",
     "summary": "하바말 18 게알드르·볼바 세이드·아우구스티누스 고백록 3대 엔진 실천 의례 및 성찰 초점 표준 연동(v1.7.876)",

@@ -14,7 +14,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const PLUM_BLOSSOM_MEIHUA_ORACLE_ENGINE_VERSION = '2.1.0';
+export const PLUM_BLOSSOM_MEIHUA_ORACLE_ENGINE_VERSION = '2.2.0';
 
 export type MeihuaTrigram = {
   num: number;
@@ -64,6 +64,7 @@ export interface PlumBlossomMeihuaReport {
     alignmentState: string;
     integratedAction: string;
   };
+  reflectiveQuestion?: string;
   interpretiveBoundary: string;
 }
 
@@ -74,7 +75,7 @@ function formatMeihuaKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
 }
 
 // 오행 생극 판정
@@ -207,6 +208,9 @@ export function calculatePlumBlossomMeihuaOracle(options?: {
     alignmentState: `${tiYongRelation} — 본괘 ${benGua.fullName} → 변괘 ${bianGua.fullName}`,
     integratedAction: `${shaoYongJudgment}${question ? ` [질문 맥락: ${question}]` : ''}`,
   };
+  const reflectiveQuestion = question
+    ? `지금 "${question}" 앞에서 본괘 ${benGua.fullName}·${movingLine}효 동(${tiYongRelation})의 조짐을 살필 때, 내가 주체(${tiGua.name}·${tiGua.element})로서 지켜야 할 시중(時中)의 처신은 무엇인가요?`
+    : `본괘 ${benGua.fullName}에서 변괘 ${bianGua.fullName}로 흐르는 ${tiYongRelation}의 형세 속에서, 오늘 내가 움직일 일과 기다릴 일의 경계는 어디인가요?`;
 
   return {
     engineVersion: PLUM_BLOSSOM_MEIHUA_ORACLE_ENGINE_VERSION,
@@ -223,6 +227,7 @@ export function calculatePlumBlossomMeihuaOracle(options?: {
     shaoYongJudgment,
     temporalTimingGuidance,
     meihuaSynthesisMatrix,
+    reflectiveQuestion,
     interpretiveBoundary: '본 매화역수 체용생극 리포트는 선천 8괘 수리 상징에 기반한 정성적 흐름 참고 안내이며, 확정적 미래 예언이 아닙니다.',
   };
 }
@@ -243,6 +248,9 @@ export function formatPlumBlossomMeihuaOraclePrompt(rep: PlumBlossomMeihuaReport
       `· 교차 매트릭스 [핵심 긴장: ${rep.meihuaSynthesisMatrix.dominantTension} | 조율 상태: ${rep.meihuaSynthesisMatrix.alignmentState}]`,
       `· 통합 실천: ${rep.meihuaSynthesisMatrix.integratedAction}`,
     );
+  }
+  if (rep.reflectiveQuestion) {
+    lines.push(`· 질문 맞춤 성찰 질문: ${rep.reflectiveQuestion}`);
   }
   lines.push(`· 해석 경계: ${rep.interpretiveBoundary}`);
   return lines.join('\n');

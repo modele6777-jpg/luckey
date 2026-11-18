@@ -15,7 +15,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const NORTH_AFRICAN_AUGUSTINE_VERSION = 'LUCKEY-AUGUSTINE-CONFESSIONES-ILLUMINATIO-v2.2.0';
+export const NORTH_AFRICAN_AUGUSTINE_VERSION = 'LUCKEY-AUGUSTINE-CONFESSIONES-ILLUMINATIO-v2.3.0';
 
 export interface AugustineTheme {
   themeKey: string;
@@ -56,6 +56,7 @@ export interface AugustineConfessionesIlluminatioResult {
     alignmentState: string;
     integratedAction: string;
   };
+  reflectiveQuestion?: string;
   interpretiveBoundary: string;
 }
 
@@ -66,7 +67,7 @@ function formatAugustineKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
 }
 
 function describeAugustineStage(score: number): string {
@@ -203,11 +204,15 @@ export function calculateAugustineConfessionesIlluminatio(
   const ritualAction = `오늘 잠깐 외부의 소음을 끄고 고요한 내면의 방으로 들어가 "${focalAugustineAphorism.aphorismKo}"(${focalAugustineAphorism.aphorismLatin})를 되새기며, ${focalAugustineAphorism.practicalAction}`;
   const reflectionFocus = `아우구스티누스 고백록(${activeAugustineTheme.themeTitleKo}) — 내적 조명과 사랑의 질서(Ordo Amoris)`;
 
+  const q = query?.trim();
   const augustineSynthesisMatrix = {
     dominantTension: `${activeAugustineTheme.themeTitleKo} ↔ ${focalAugustineAphorism.scripturalContext}`,
     alignmentState: describeAugustineStage(composite),
-    integratedAction: `${focalAugustineAphorism.practicalAction}${query?.trim() ? ` [질문 맥락: ${query.trim()}]` : ''}`,
+    integratedAction: `${focalAugustineAphorism.practicalAction}${q ? ` [질문 맥락: ${q}]` : ''}`,
   };
+  const reflectiveQuestion = q
+    ? `지금 "${q}" 앞에서 아우구스티누스 《고백록》의 '${activeAugustineTheme.themeTitleKo}'을 비추어 볼 때, 내가 외부 소음을 끄고 가장 깊은 내면에서 확인해야 할 본질은 무엇인가요?`
+    : `오늘 '${activeAugustineTheme.themeTitleKo}'의 빛 아래서 내가 헛된 교만(Superbia)을 내려놓고 참된 안식(Requies)을 누릴 자리는 어디인가요?`;
 
   return {
     engineVersion: NORTH_AFRICAN_AUGUSTINE_VERSION,
@@ -226,6 +231,7 @@ export function calculateAugustineConfessionesIlluminatio(
     ritualAction,
     reflectionFocus,
     augustineSynthesisMatrix,
+    reflectiveQuestion,
     interpretiveBoundary: '본 아우구스티누스 고백록 리포트는 교부철학의 내면 조명 사유에 기반한 정성적 성찰 안내이며, 의학·심리 치료를 대신하지 않습니다.',
   };
 }
@@ -253,6 +259,9 @@ export function formatAugustineConfessionesIlluminatioPrompt(res: AugustineConfe
       `- 교차 매트릭스 [핵심 긴장: ${res.augustineSynthesisMatrix.dominantTension} | 조율 상태: ${res.augustineSynthesisMatrix.alignmentState}]`,
       `- 통합 실천: ${res.augustineSynthesisMatrix.integratedAction}`,
     );
+  }
+  if (res.reflectiveQuestion) {
+    lines.push(`- 질문 맞춤 성찰 질문: ${res.reflectiveQuestion}`);
   }
   lines.push(`- 해석 경계: ${res.interpretiveBoundary}`);
   return lines.join('\n');

@@ -3014,7 +3014,7 @@ try {
   // 187. 고대 북유럽 고에다 《위그드라실》 9대 우주계 & 3대 영천 소생 엔진
   const eddicYggdrasilResult = calculateSupplement('eddicYggdrasilResult', () => ((() => {
     try {
-      return calculateEddicYggdrasil(profile);
+      return calculateEddicYggdrasil(profile, question, now);
     } catch (_) {
       return null;
     }
@@ -3455,7 +3455,7 @@ try {
   // 234. 북아프리카 아우구스티누스 고백록 시간의 3중현존 & 내적조명 안식 평정심 엔진
   const augustineConfessionesIlluminatioResult = calculateSupplement('augustineConfessionesIlluminatioResult', () => ((() => {
     try {
-      return calculateAugustineConfessionesIlluminatio(profile);
+      return calculateAugustineConfessionesIlluminatio(profile, question, now);
     } catch (_) {
       return null;
     }
@@ -4847,7 +4847,7 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'celticTuathaFourTreasures', nameKo: '켈트 투아하 4대 신성보물', icon: '🗡️', category: 'deep_master', summary: '운명의 돌·루의 창·누아다의 검·다그다의 솥 4대 신성 보물로 소명과 돌파의 균형을 비추는 켈트 영웅 상징 도구' },
   { key: 'taoistShangqingTwentyFourSpirits', nameKo: '도교 진고 상청 24성도', icon: '✨', category: 'deep_master', summary: '도홍경 《진고》 상청파 삼단전과 24진신 존사(存思) 상징으로 내면의 평정과 집중을 돕는 관점' },
   { key: 'tibetanPhowaRainbowBody', nameKo: '티베트 족첸 릭파 무지개체', icon: '🌈', category: 'deep_master', summary: '티베트 족첸 릭파와 5대 붓다 지혜 상징으로 번뇌를 맑은 자각으로 승화하는 관점' },
-  { key: 'plumBlossomMeihuaOracle', nameKo: '소강절 매화역수 체용생극', icon: '🌸', category: 'deep_master' },
+  { key: 'plumBlossomMeihuaOracle', nameKo: '소강절 매화역수 체용생극', icon: '🌸', category: 'deep_master', summary: '선천 8괘 수리와 본괘·호괘·변괘 및 체용생극 오행 동태로 시중의 조짐과 길흉 처신을 비추는 관점' },
   { key: 'greekMoiraiAnankeFate', nameKo: '그리스 모이라이 운명실타래', icon: '🧶', category: 'deep_master', summary: '그리스 신화의 클로토·라케시스·아트로포스 삼여신과 아낭케 물레를 통해 시작·조율·매듭의 카이로스 국면을 분별합니다.' },
   { key: 'egyptianSphinxDreamOracle', nameKo: '이집트 스핑크스 꿈신탁', icon: '🦁', category: 'deep_master', summary: '투트모세 4세 꿈의 비석과 스핑크스 4대 테트라모르프(지혜·용기·인내·조망)로 장애물 돌파를 비추는 관점' },
   { key: 'chaldeanMulApinAstrology', nameKo: '칼데아 물핀 12조디악', icon: '✨', category: 'deep_master', summary: '바빌로니아 물핀 천문 점토판의 엔릴·아누·에아 3대로와 7대 행성으로 지성 불꽃의 중심 질서를 비춥니다.' },
@@ -4900,7 +4900,7 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'mixtecEightDeerJaguarClaw', nameKo: '믹스테크 8-사슴 재규어발톱 동맹결성 통일', icon: '🐆', category: 'deep_master', summary: '메소아메리카 믹스테크 《코덱스 조체 누탈》의 8-사슴 재규어 발톱 서사로 용기 있는 결단과 신의 동맹의 길을 비춥니다.' },
   { key: 'koreanJeonBongjunNokduGeneral', nameKo: '동학농민혁명 녹두장군 전봉준 사발통문 백산창의', icon: '📜', category: 'deep_master', summary: '녹두장군 전봉준의 사발통문 수평 연대와 백산 창의 4대 강령으로 불의에 굴하지 않는 공동체 정의와 회복력을 세웁니다.' },
   { key: 'atrahasisFloodWisdom', nameKo: '메소포타미아 아트라하시스 지혜의방주 대홍수정화 절제', icon: '🌊', category: 'deep_master', summary: '고대 바빌로니아 《아트라하시스》 서사시의 갈대벽 직관과 생명의 방주·절제 서약 사상으로 위기 속 본질 보전을 비춥니다.' },
-  { key: 'eddicYggdrasilNineRealms', nameKo: '북유럽 고에다 위그드라실 9대우주계 3대영천 소생', icon: '🌳', category: 'deep_master' },
+  { key: 'eddicYggdrasilNineRealms', nameKo: '북유럽 고에다 위그드라실 9대우주계 3대영천 소생', icon: '🌳', category: 'deep_master', summary: '볼루스파 세계수 위그드라실 9대 우주계와 우르드·미미르·흐베르겔미르 3대 영천으로 소생의 뿌리를 비추는 관점' },
   { key: 'yiSunSinNanjungIlgiStrategic', nameKo: '충무공 이순신 난중일기 필사즉생 명량대역전', icon: '⚔️', category: 'deep_master', summary: '충무공 이순신 장군의 친필 《난중일기》에 담긴 필사즉생·일부당경·유비무환의 전략 정신으로 불리한 국면에서 핵심 길목을 선점하는 결단과 대비를 비춥니다.' },
   { key: 'ptahMemphiteHeartTongueCreation', nameKo: '이집트 멤피스신학 프타 심장구상 말씀선포 창조', icon: '🏛️', category: 'deep_master', summary: '샤바카 석비의 심장 구상(Ib)과 말씀 선포(Hu) 원리로 생각과 실행의 일치를 비추는 관점' },
   { key: 'celticLughSamildanachAllArts', nameKo: '켈트 투아하데다난 루 라바다 8대만능기예 마그투이레드', icon: '⚡', category: 'deep_master', summary: '모든 기예를 통섭하는 빛의 신 루의 8대 역량과 타라 입성 원형으로 다재다능한 돌파력을 비추는 켈트 상징 도구' },
@@ -4947,7 +4947,7 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'swissJungIndividuationArchetype', nameKo: '카를 융 개성화 원형통합 그림자 아니마아니무스 동시성', icon: '🎭', category: 'deep_master' },
   { key: 'germanHegelDialecticalAufheben', nameKo: '헤겔 정신현상학 변증법적지양 정반합 인륜성 미네르바올빼미', icon: '🏛️', category: 'deep_master', summary: '헤겔의 변증법적 지양(Aufheben)과 상호 인정을 통해 모순과 대립을 더 높은 차원의 통합으로 승화합니다.' },
   { key: 'koreanDasanJeongYagyongMokminSimseo', nameKo: '다산 정약용 목민심서 여유당신독 율기청렴 애민 실사구시', icon: '📜', category: 'deep_master', summary: '다산 정약용의 여유당 신독과 실사구시 정신으로 신중한 절제와 사실 기반의 실질적 해법을 안내합니다.' },
-  { key: 'northAfricanAugustineConfessionesIlluminatio', nameKo: '아우구스티누스 고백록 시간의3중현존 내적조명 은총안식 평정심', icon: '🕯️', category: 'deep_master' },
+  { key: 'northAfricanAugustineConfessionesIlluminatio', nameKo: '아우구스티누스 고백록 시간의3중현존 내적조명 은총안식 평정심', icon: '🕯️', category: 'deep_master', summary: '아우구스티누스 고백록의 시간 3중 현존과 내적 조명(Illuminatio)·사랑의 질서로 내면의 안식을 비추는 관점' },
   { key: 'italianMachiavelliVirtuFortuna', nameKo: '마키아벨리 군주론 비르투역량 포르투나극복 시대조화 여우와사자', icon: '🦁', category: 'deep_master', summary: '마키아벨리의 비르투와 포르투나 통찰로 현실 역학을 직시하고 주도권을 쥐는 전략적 결단을 비춥니다.' },
   { key: 'koreanChoeChiwonPungryudo', nameKo: '최치원 난랑비서 국유현묘지도 풍류도 포함삼교 접화군생 계원필경', icon: '🪶', category: 'deep_master', summary: '고운 최치원의 풍류도와 삼교회통 사상으로 대립을 유연하게 아우르는 상생과 내면의 여유를 비춥니다.' },
   { key: 'italianThomasAquinasSummaTheologiae', nameKo: '토마스 아퀴나스 신학대전 이성신앙조화 5대길 7대덕목 지복직관', icon: '⛪', category: 'deep_master', summary: '토마스 아퀴나스 신학대전의 이성과 신앙 조화·7대 덕론으로 합리적 분별과 궁극적 선의 기준을 세웁니다.' },
