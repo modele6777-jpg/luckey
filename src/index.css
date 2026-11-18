@@ -1032,13 +1032,8 @@ html.perf-mobile [data-app-scroll-root] {
   overscroll-behavior-y: contain;
 }
 
-html.perf-galaxy .fixed,
-html.perf-galaxy .prism-bottom-nav,
-html.perf-mobile .fixed,
-html.perf-mobile .prism-bottom-nav {
-  transform: translateZ(0);
-  backface-visibility: hidden;
-}
+/* Fixed chrome stays untransformed on phones: a composited fixed layer keeps
+   its iOS touch area at the size it had before a fold, rotation or toolbar change. */
 
 html.perf-galaxy .prism-aura-bg,
 html.perf-mobile .prism-aura-bg {
@@ -2894,9 +2889,10 @@ html[data-device="iphone-duo"] [role="button"] {
   touch-action: manipulation;
 }
 
-html.perf-duo-ultra .tarot-flick-card,
-html.perf-duo-ultra .duo-dapp-workspace > div,
-html[data-device="iphone-duo"] .duo-dapp-workspace > div {
+/* Only the animated tarot card gets its own GPU layer. Workspace columns stay
+   untransformed: a transformed ancestor captures position:fixed popups and
+   iOS keeps its touch area at the pre-unfold position. */
+html.perf-duo-ultra .tarot-flick-card {
   transform: translate3d(0, 0, 0);
   -webkit-transform: translate3d(0, 0, 0);
 }
@@ -2964,15 +2960,11 @@ html[data-device="iphone-duo"] .duo-dapp-workspace > div {
 html.perf-duo [data-app-scroll-root] {
   -webkit-overflow-scrolling: touch;
   overscroll-behavior-y: contain;
-  transform: translateZ(0);
 }
 
-html.perf-duo .fixed,
-html.perf-duo .prism-bottom-nav,
-html.perf-duo .prism-xs-subnav {
-  transform: translateZ(0);
-  backface-visibility: hidden;
-}
+/* No translateZ/will-change on fixed chrome or scroll roots: iOS WebKit keeps
+   such composited fixed layers, and their touch areas, at the pre-fold/unfold
+   position, so taps land nowhere after the screen changes. */
 
 html.perf-duo .glass {
   backdrop-filter: blur(12px) !important;
@@ -2994,26 +2986,12 @@ html.perf-duo-ultra {
 html.perf-duo-ultra [data-app-scroll-root] {
   -webkit-overflow-scrolling: touch;
   overscroll-behavior-y: contain;
-  transform: translate3d(0, 0, 0);
-  will-change: scroll-position;
-}
-
-html.perf-duo-ultra .fixed,
-html.perf-duo-ultra .prism-bottom-nav,
-html.perf-duo-ultra .prism-xs-subnav,
-html.perf-duo-ultra .prism-hub-header,
-html.perf-duo-ultra .bottom-safe-fab-center {
-  transform: translate3d(0, 0, 0);
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
-  will-change: transform;
 }
 
 /* Maintain full crystal glass vibrancy with GPU backing on Duo Ultra */
 html.perf-duo-ultra .glass {
   backdrop-filter: blur(16px) saturate(180%) !important;
   -webkit-backdrop-filter: blur(16px) saturate(180%) !important;
-  transform: translateZ(0);
 }
 
 /* Ultra-smooth 120fps Aura Background with composite layer isolation */
@@ -3575,8 +3553,10 @@ html.duo-unfolded-portrait #duo-lucy-viewport {
 
 /* Keep the folded channel chrome and cards; only adapt to the pane's canvas. */
 html.duo-unfolded-mode #duo-content-viewport {
-  /* Fixed page headers and controls belong to this pane, not the whole device. */
-  transform: translateZ(0);
+  /* Fixed page headers and controls belong to this pane, not the whole device.
+     contain: layout gives fixed descendants this containing block without a
+     composited transform, which iOS would pin to the pre-unfold viewport. */
+  contain: layout;
   --page-header-inset: clamp(14px, 4cqw, 32px);
   --page-header-top: max(14px, env(safe-area-inset-top, 0px));
 }
