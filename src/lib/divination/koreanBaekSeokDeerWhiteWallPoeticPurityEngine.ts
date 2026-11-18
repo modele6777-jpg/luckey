@@ -13,7 +13,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const KOREAN_BAEK_SEOK_DEER_WHITE_WALL_POETIC_PURITY_VERSION = 'LUCKEY-BAEK-SEOK-DEER-WHITE-WALL-POETIC-PURITY-v2.1.0';
+export const KOREAN_BAEK_SEOK_DEER_WHITE_WALL_POETIC_PURITY_VERSION = 'LUCKEY-BAEK-SEOK-DEER-WHITE-WALL-POETIC-PURITY-v2.2.0';
 
 export interface BaekSeokTheme {
   themeKey: string;
@@ -54,6 +54,8 @@ export interface KoreanBaekSeokDeerWhiteWallPoeticPurityResult {
     alignmentState: string;
     integratedAction: string;
   };
+  ritualAction: string;
+  reflectionFocus: string;
 }
 
 function formatBaekSeokKstTimestamp(now: Date = new Date()): string {
@@ -196,6 +198,9 @@ export function calculateKoreanBaekSeokDeerWhiteWallPoeticPurity(
     integratedAction: `${focalBaekSeokAphorism.actionGuidance}${query?.trim() ? ` [질문 맥락: ${query.trim()}]` : ''}`,
   };
 
+  const ritualAction = `[${focalBaekSeokAphorism.sourceContext}] ${focalBaekSeokAphorism.actionGuidance}`;
+  const reflectionFocus = reflectiveQuestion;
+
   return {
     engineVersion: KOREAN_BAEK_SEOK_DEER_WHITE_WALL_POETIC_PURITY_VERSION,
     calculatedAtKst,
@@ -214,6 +219,8 @@ export function calculateKoreanBaekSeokDeerWhiteWallPoeticPurity(
       philosophicalCounsel,
     },
     baekSeokSynthesisMatrix,
+    ritualAction,
+    reflectionFocus,
   };
 }
 
@@ -249,5 +256,9 @@ export function formatKoreanBaekSeokDeerWhiteWallPoeticPurityPrompt(
       `- 통합 실천: ${res.baekSeokSynthesisMatrix.integratedAction}`,
     );
   }
+  lines.push(
+    `- 실천 의례(Ritual Action): ${res.ritualAction}`,
+    `- 성찰 초점(Reflection Focus): ${res.reflectionFocus}`,
+  );
   return lines.join('\n');
 }

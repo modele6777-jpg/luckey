@@ -18,7 +18,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const KASHMIR_SHAIVISM_SPANDA_ENGINE_VERSION = '2.1.0';
+export const KASHMIR_SHAIVISM_SPANDA_ENGINE_VERSION = '2.2.0';
 
 export interface KashmirShaivismTattva {
   id: string;
@@ -60,6 +60,8 @@ export interface KashmirShaivismSpandaReport {
   spandaPulsationMeditationRitual: string; // 스판다 맥동 명상 리추얼
   boundaryNotice: string;
   interpretiveBoundary: string;
+  ritualAction: string;
+  reflectionFocus: string;
 }
 
 const KASHMIR_TATTVAS_BASE: Omit<KashmirShaivismTattva, 'resonanceScore'>[] = [
@@ -214,6 +216,9 @@ export function calculateKashmirShaivismSpanda(
   const kashmirShaivismGuidance = `카슈미르 시바파의 스판다 카리카는 말합니다: "그대 안에서 뛰고 있는 심장박동과 숨결이 곧 우주를 창조하고 거두어들이는 신성한 맥동이다." 현재 진동하는 신성한 양상은 [${dominantTattva.nameKo}]입니다. 당신은 무언가를 새로 쟁취할 필요가 없습니다. 이미 본래 완벽한 신성 자아임을 '재인식(프라티야비즈냐)'하십시오. ${dominantTattva.transcendencePower}의 권능이 지금 발현되고 있습니다.`;
   const spandaPulsationMeditationRitual = `가슴의 고동과 호흡의 들숨·날숨 사이 미세한 정적을 감지하십시오: "쉬보함(Shivoham - 내가 곧 시바요 순수 자각이다). 내 안의 신성한 맥동 스판다가 만유와 함께 춤춘다."`;
 
+  const ritualAction = `[${dominantTattva.nameKo}] ${spandaPulsationMeditationRitual}`;
+  const reflectionFocus = `오늘 '${situationalSpandaAudit.questionTheme}' 상황에서 들숨과 날숨 사이의 고요한 맥동(Spanda)으로 돌아가기 위해 내려놓을 분별 하나는 무엇인가요?`;
+
   return {
     engineVersion: KASHMIR_SHAIVISM_SPANDA_ENGINE_VERSION,
     timestamp: now.toISOString(),
@@ -230,6 +235,8 @@ export function calculateKashmirShaivismSpanda(
     spandaPulsationMeditationRitual,
     boundaryNotice: '카슈미르 시바파 트리카 철학의 스판다·프라티야비즈냐 상징을 빌려 온 정성적 성찰 관점이며, 확정적 예언이나 의학적·재정적 처방이 아닙니다.',
     interpretiveBoundary: '카슈미르 시바파 트리카 철학의 스판다·프라티야비즈냐 상징을 빌려 온 정성적 성찰 관점이며, 확정적 예언이나 의학적·재정적 처방이 아닙니다.',
+    ritualAction,
+    reflectionFocus,
   };
 }
 
@@ -248,5 +255,7 @@ export function formatKashmirShaivismSpandaPrompt(rep: KashmirShaivismSpandaRepo
 · 스판다 교차 매트릭스: ${rep.spandaSynthesisMatrix.primarySecondaryNexus} — ${rep.spandaSynthesisMatrix.recognitionState}
 · 카슈미르 시바파 지혜 지침: ${rep.kashmirShaivismGuidance}
 · 스판다 맥동 명상 리추얼: ${rep.spandaPulsationMeditationRitual}
+· 실천 의례(Ritual Action): ${rep.ritualAction}
+· 성찰 초점(Reflection Focus): ${rep.reflectionFocus}
 · 해석 경계: ${rep.boundaryNotice}`;
 }

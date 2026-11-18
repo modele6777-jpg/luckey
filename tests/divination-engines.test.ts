@@ -4901,9 +4901,11 @@ test('Kashmir Shaivism Spanda Engine: calculates cosmic pulsation, Pratyabhijna 
   assert(rep.threeMalasPurificationRate >= 0 && rep.threeMalasPurificationRate <= 100);
   assert(rep.dominantTattva.nameKo.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatKashmirShaivismSpandaPrompt(rep);
   assert(prompt.includes('카슈미르 시바파 스판다 우주 맥동 & 프라티야비즈냐 재인식 실측 데이터'));
   assert(prompt.includes(rep.dominantTattva.nameKo));
+  assert(prompt.includes(rep.ritualAction));
 });
 
 test('Sumerian Enuma Elish Fifty Names Engine: calculates Tiamat subjugation, four winds balance and Marduk sacred names', () => {
@@ -7724,10 +7726,12 @@ test('Ahn Jung-geun Peace and Righteousness Engine: calculates Moral Righteousne
   assert(rep.activeAhnJungGeunTheme.themeTitleKo.length > 0);
   assert(rep.calculatedAtKst.endsWith('KST'));
   assert(Boolean(rep.ahnJungGeunSynthesisMatrix?.integratedAction));
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatKoreanAhnJungGeunPeaceRighteousnessPrompt(rep);
   assert(prompt.includes('안중근 의사 《동양평화론》 및 〈견리사의 견위수명〉 대의·평화 지표'));
   assert(prompt.includes(rep.activeAhnJungGeunTheme.themeTitleKo));
   assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes(rep.ritualAction));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });
@@ -8270,10 +8274,12 @@ test('Baek Seok Deer and White Wall Poetic Purity Engine: calculates Noble Solit
   assert(rep.activeBaekSeokTheme.themeTitleKo.length > 0);
   assert(rep.calculatedAtKst.endsWith('KST'));
   assert(Boolean(rep.baekSeokSynthesisMatrix?.integratedAction));
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatKoreanBaekSeokDeerWhiteWallPoeticPurityPrompt(rep);
   assert(prompt.includes('백석 《사슴·흰 바람벽이 있어》 순수 고결성·맑은 존엄(Poetic Purity) 지표'));
   assert(prompt.includes(rep.activeBaekSeokTheme.themeTitleKo));
   assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes(rep.ritualAction));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });
