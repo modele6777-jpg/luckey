@@ -4844,10 +4844,12 @@ test('Korean Pungryudo Hwarang Five Precepts Engine: calculates xuanmiao harmony
   assert(rep.temporalPungryuRhythm.hwarangWatchWindow.length > 0);
   assert(rep.pungryuSynthesisMatrix.coreInsight.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatKoreanPungryudoHwarangPrompt(rep);
   assert(prompt.includes('풍류도'));
   assert(prompt.includes(rep.dominantPrecept.nameKo));
   assert(prompt.includes('KST'));
+  assert(prompt.includes(rep.ritualAction));
   assert(!prompt.includes('/100') && !prompt.includes('%') && !prompt.includes('점수'));
 });
 
@@ -7704,10 +7706,12 @@ test('Ohseong and Haneum Friendship Governance Engine: calculates Lifelong Moral
   assert(rep.interpretiveBoundary.length > 0);
   assert(rep.calculatedAtKst.endsWith('KST'));
   assert(Boolean(rep.ohseongHaneumSynthesisMatrix?.integratedAction));
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatKoreanOhseongHaneumFriendshipGovernancePrompt(rep);
   assert(prompt.includes('오성과 한음(이항복·이덕형) 지기지우 & 경세제민 지혜 지표'));
   assert(prompt.includes(rep.activeOhseongHaneumTheme.themeTitleKo));
   assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes(rep.ritualAction));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });
@@ -8009,6 +8013,7 @@ test('Poeun Jeong Mong-ju Dansimga Engine: calculates Dansimga Moral Fidelity, D
   assert(rep.interpretiveBoundary.length > 0);
   assert(rep.calculatedAtKst.endsWith('+09:00 KST'));
   assert(Boolean(rep.poeunSynthesisMatrix?.integratedAction));
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const repQ = calculateKoreanPoeunJeongMongJuDansimga(profile, '흔들리는 상황 속에서 끝까지 지켜야 할 신의');
   assert(repQ.reflectiveQuestion.includes('지켜야 할 신의'));
   const prompt = formatKoreanPoeunJeongMongJuDansimgaPrompt(repQ);
@@ -8017,6 +8022,7 @@ test('Poeun Jeong Mong-ju Dansimga Engine: calculates Dansimga Moral Fidelity, D
   assert(prompt.includes(repQ.secondaryPoeunTheme.themeTitleKo));
   assert(prompt.includes('해석 경계'));
   assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes(repQ.ritualAction));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });
