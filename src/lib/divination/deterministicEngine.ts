@@ -2033,7 +2033,7 @@ try {
   // 77. 고대 메소포타미아 7대 행성 관문 & 이슈타르 지하세계 하강·부활 엔진
   const mesopotamianSevenGatesResult = calculateSupplement('mesopotamianSevenGatesResult', () => ((() => {
     try {
-      return calculateMesopotamianSevenGates(profile, now);
+      return calculateMesopotamianSevenGates(profile, now, question);
     } catch (_) {
       return null;
     }
@@ -4791,7 +4791,7 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'celticTreeOgham', nameKo: '켈트 오검 수목지혜', icon: '🌲', category: 'deep_master', summary: '고대 켈트 드루이드의 13태음월 오검 수목 달력으로 본명 수호목과 계절 공명목을 짚어 삶의 뿌리와 치유 방향을 비춥니다.' },
   { key: 'taoistSanbao', nameKo: '도교 삼보 내단에너지', icon: '☯️', category: 'deep_master', summary: '도교 내단학 삼보(정·기·신)의 균형과 연정화기·연기화신 상징으로 몸과 마음의 소모와 회복을 살피는 관점' },
   { key: 'tibetanBardo', nameKo: '티베트 바르도 6환생', icon: '☸️', category: 'deep_master', summary: '티베트 사자의 서 6대 바르도 중음 상징으로 인생 전환기의 혼란과 자각의 틈을 비추는 관점' },
-  { key: 'mesopotamianSevenGates', nameKo: '메소포타미아 7관문', icon: '🏛️', category: 'deep_master' },
+  { key: 'mesopotamianSevenGates', nameKo: '메소포타미아 7관문', icon: '🏛️', category: 'deep_master', summary: '수메르 인안나의 명계 7대 행성 관문 여정으로 불필요한 에고의 갑옷을 벗고 내적 주권을 회복하는 관점' },
   { key: 'egyptianDecans', nameKo: '이집트 36데칸', icon: '🏺', category: 'deep_master', summary: '덴데라 36데칸 항성 수호신과 원소·부적 상징으로 영혼의 항해 방향을 비추는 관점' },
   { key: 'sufiLataif', nameKo: '수피 7라타이프', icon: '🕌', category: 'deep_master' },
   { key: 'mayanTzolkin', nameKo: '마야 촐킨 260일', icon: '☀️', category: 'deep_master', summary: '고대 마야 촐킨(Tzolk’in) 260일 신성력의 20 나왈(태양 문양)과 13 은하 톤으로 본명 킨과 오늘의 킨이 만나는 파동적 사명을 비춥니다.' },
@@ -4837,7 +4837,7 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'egyptianMaatFeatherHeart', nameKo: '이집트 마아트 심장무게', icon: '🪶', category: 'deep_master', summary: '마아트 진리의 깃털과 심장(Ib) 저울질 상징으로 양심의 명료함과 마음의 짐 덜기를 비추는 관점' },
   { key: 'persianMithraicSpheres', nameKo: '페르시아 미트라 7천구', icon: '☀️', category: 'deep_master', summary: '미트라교 7대 행성 천계 사다리와 불패의 태양(솔 인빅투스) 상징으로 현재의 입문 과제와 돌파 태도를 비추는 관점' },
   { key: 'orpheicMysteries', nameKo: '그리스 오르페우스 므네모시네', icon: '🎶', category: 'deep_master' },
-  { key: 'popolVuhHeroTwins', nameKo: '마야 포폴부 쌍둥이영웅', icon: '🌽', category: 'deep_master' },
+  { key: 'popolVuhHeroTwins', nameKo: '마야 포폴부 쌍둥이영웅', icon: '🌽', category: 'deep_master', summary: '마야 《포폴 부》 쌍둥이 영웅이 시발바 시련의 방을 기지와 유연함으로 돌파한 위기 전환 서사 관점' },
   { key: 'ancientYarrowProbability', nameKo: '주역 대연지수 49책 시초점', icon: '🌿', category: 'deep_master', summary: '주역 계사전 49책 시초점의 삼변 수리 구조로 동효·정효의 시중(時中) 처세 흐름을 읽는 관점' },
   { key: 'vedicPanchaKosha', nameKo: '인도 베단타 5대 코샤', icon: '🧘', category: 'deep_master', summary: '타이티리야 우파니샤드의 5대 코샤(육체·호흡·감정·지성·지복) 중 지금 돌봄이 필요한 층위를 짚어 줍니다.' },
   { key: 'romanJanus', nameKo: '로마 야누스 문턱전이', icon: '🚪', category: 'deep_master', summary: '과거와 미래를 함께 보는 로마 야누스 4대 문턱 상징으로 지금 닫을 경계와 새로 열 발걸음을 가르는 관점' },
@@ -4855,7 +4855,7 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'shugendoYamabushiTenRealms', nameKo: '슈겐도 야마부시 10계수행', icon: '🏔️', category: 'deep_master', summary: '일본 슈겐도 야마부시 10계 수행과 6근청정 상징으로 지금 통과할 내면 관문과 정화 리추얼을 짚어 주는 관점' },
   { key: 'gnosticPistisSophiaPleroma', nameKo: '영지주의 소피아 플레로마', icon: '🕊️', category: 'deep_master', summary: '12에온과 소피아의 회개 여정을 비춰 외부 통제망 너머 내면의 프뉴마 불꽃을 일깨웁니다.' },
   { key: 'sumerianInannaUnderworldDescent', nameKo: '수메르 이난나 명계하강 7대관문', icon: '👑', category: 'deep_master', summary: '수메르 이난나 신화의 7대 관문 탈각 상징으로 외적 가면과 방어기제를 내려놓고 내면의 회복을 성찰합니다.' },
-  { key: 'norseVolvaSeidrNineRealms', nameKo: '북유럽 볼바 세이드 9대세계', icon: '🌲', category: 'deep_master' },
+  { key: 'norseVolvaSeidrNineRealms', nameKo: '북유럽 볼바 세이드 9대세계', icon: '🌲', category: 'deep_master', summary: '노르드 볼바의 세이드 물레와 위그드라실 9대 세계 공명으로 후긴·무닌 직관과 운명실을 조율하는 관점' },
   { key: 'zhuangziXiaoyaoyouButterfly', nameKo: '도가 장자 소요유 호접몽', icon: '🦋', category: 'deep_master', summary: '장자 《소요유》·《제물론》의 비유로 시비와 득실의 좁은 틀을 벗어나 대붕과 호접몽의 자유로운 시야를 엽니다.' },
   { key: 'buddhistYogacaraConsciousness', nameKo: '불교 유식학 8식 전식득지', icon: '☸️', category: 'deep_master', summary: '유식학의 8식과 아뢰야식 종자 이론을 바탕으로 분별·집착의 뿌리를 살피고 사지(四智)의 청정한 실천으로 전환하는 관점' },
   { key: 'vedicMandukyaTuriya', nameKo: '만두키야 우파니샤드 투리야 순수의식', icon: '🕉️', category: 'deep_master', summary: '만두키야 우파니샤드의 각성·꿈·숙면 너머 제4의 순수의식(투리야) 자리에서 감정의 파도를 관조합니다.' },
