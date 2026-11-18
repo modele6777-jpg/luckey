@@ -8,12 +8,12 @@
  * 4. 남해 유배의 풍파 속 지극한 효심과 문학적 승화도 (Filial Devotion & Literary Sublimation Score): 귀양지의 처절한 고난 속에서도 홀어머니의 근심을 덜고자 명작을 써 내려간 지극한 효성과 승화력.
  * 5. 세속의 성패를 초월한 초연한 심신 회복탄력성 (Transcendent Equanimity & Serene Resilience Score): 득실과 영화, 궁달의 기복에 일희일비하지 않고 허공처럼 맑은 평정을 유지하는 회복탄력성.
  *
- * @version LUCKEY-SEOPO-KIM-MAN-JUNG-GUUNMONG-AWAKENING-v2.1.0
+ * @version LUCKEY-SEOPO-KIM-MAN-JUNG-GUUNMONG-AWAKENING-v2.2.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const KOREAN_SEOPO_KIM_MAN_JUNG_GUUNMONG_AWAKENING_VERSION = 'LUCKEY-SEOPO-KIM-MAN-JUNG-GUUNMONG-AWAKENING-v2.1.0';
+export const KOREAN_SEOPO_KIM_MAN_JUNG_GUUNMONG_AWAKENING_VERSION = 'LUCKEY-SEOPO-KIM-MAN-JUNG-GUUNMONG-AWAKENING-v2.2.0';
 
 export interface GuunmongTheme {
   themeKey: string;
@@ -45,6 +45,8 @@ export interface KoreanSeopoKimManJungGuunmongAwakeningResult {
   secondaryGuunmongTheme: GuunmongTheme;
   focalGuunmongAphorism: GuunmongAphorism;
   secondaryGuunmongAphorism: GuunmongAphorism;
+  ritualAction: string;
+  reflectionFocus: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
   guunmongComprehensiveGuidance: {
@@ -177,9 +179,11 @@ export function calculateKoreanSeopoKimManJungGuunmongAwakening(
   const secondaryGuunmongAphorism = GUUNMONG_APHORISMS[secondaryAphorismIndex];
 
   const trimmedQuery = query?.trim();
+  const ritualAction = `[${activeGuunmongTheme.themeTitleKo.split(' — ')[0]}] ${focalGuunmongAphorism.actionGuidance}`;
   const reflectiveQuestion = trimmedQuery
     ? `서포의 '${activeGuunmongTheme.themeTitleKo}'와 '${secondaryGuunmongTheme.themeTitleKo}'를 비추어 볼 때, "${trimmedQuery}"에서 꿈처럼 덧없는 집착과 끝까지 지켜야 할 참된 본심은 어떻게 갈리나요?`
     : `지금 마음이 흔들리는 문제 앞에서, '${activeGuunmongTheme.themeTitleKo}'의 각성과 '${secondaryGuunmongTheme.themeTitleKo}'의 평정을 함께 지키려면 어떤 헛된 근심을 먼저 내려놓아야 할까요?`;
+  const reflectionFocus = reflectiveQuestion;
 
   const interpretiveBoundary = '이 지표는 서포 김만중의 《구운몽》·《사씨남정기》·《서포만필》에 담긴 반야공관·일장춘몽 각성·효심 승화의 상징 언어로 현재의 번뇌와 선택을 성찰하는 참고 틀이며, 세속적 성패나 미래 사건을 단정하는 확정 예언이 아닙니다.';
 
@@ -218,6 +222,8 @@ export function calculateKoreanSeopoKimManJungGuunmongAwakening(
     secondaryGuunmongTheme,
     focalGuunmongAphorism,
     secondaryGuunmongAphorism,
+    ritualAction,
+    reflectionFocus,
     reflectiveQuestion,
     interpretiveBoundary,
     guunmongComprehensiveGuidance: {
@@ -251,7 +257,9 @@ export function formatKoreanSeopoKimManJungGuunmongAwakeningPrompt(
     `- 보조 교차 테제: "${res.secondaryGuunmongAphorism.aphorismKo}" [${res.secondaryGuunmongAphorism.aphorismHanja}]`,
     `- 원전 출처: [${res.focalGuunmongAphorism.sourceContext}]`,
     `- 구체적 실천 지침: ${res.focalGuunmongAphorism.actionGuidance}`,
+    `- 실천 의례: ${res.ritualAction}`,
     `- 성찰 질문: ${res.reflectiveQuestion}`,
+    `- 성찰 초점: ${res.reflectionFocus}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
     `- 종합 서포 권면: ${res.guunmongComprehensiveGuidance.philosophicalCounsel}`,
   ];

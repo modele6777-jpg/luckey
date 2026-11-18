@@ -8,12 +8,12 @@
  * 4. 소박함 속의 고결한 품격 지표 (Modest Elegance & Quiet Rectitude Index): 화려함을 좇지 않고 단아하고 청초한 인품으로 삶의 균형과 단단한 중심을 지키는 품격.
  * 5. 현명한 감화 및 동반성장 지혜 지표 (Nurturing Wisdom & Co-Evolution Score): 강요와 억압 없이 온화한 모범과 덕성으로 주변 인연을 올바르게 성장시키는 지혜.
  *
- * @version LUCKEY-SHIN-SAIMDANG-CHOCHUNGDO-ART-VIRTUE-v2.1.0
+ * @version LUCKEY-SHIN-SAIMDANG-CHOCHUNGDO-ART-VIRTUE-v2.2.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const KOREAN_SHIN_SAIMDANG_CHOCHUNGDO_ART_VIRTUE_VERSION = 'LUCKEY-SHIN-SAIMDANG-CHOCHUNGDO-ART-VIRTUE-v2.1.0';
+export const KOREAN_SHIN_SAIMDANG_CHOCHUNGDO_ART_VIRTUE_VERSION = 'LUCKEY-SHIN-SAIMDANG-CHOCHUNGDO-ART-VIRTUE-v2.2.0';
 
 export interface SaimdangTheme {
   themeKey: string;
@@ -45,6 +45,8 @@ export interface KoreanShinSaimdangChochungdoArtVirtueResult {
   secondarySaimdangTheme: SaimdangTheme;
   focalSaimdangAphorism: SaimdangAphorism;
   secondarySaimdangAphorism: SaimdangAphorism;
+  ritualAction: string;
+  reflectionFocus: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
   saimdangComprehensiveGuidance: {
@@ -184,9 +186,11 @@ export function calculateKoreanShinSaimdangChochungdoArtVirtue(
   const secondarySaimdangAphorism = SAIMDANG_APHORISMS[secondaryAphorismIndex];
 
   const trimmedQuery = query?.trim();
+  const ritualAction = `[${activeSaimdangTheme.themeTitleKo.split(' — ')[0]}] ${focalSaimdangAphorism.actionGuidance}`;
   const reflectiveQuestion = trimmedQuery
     ? `신사임당의 '${activeSaimdangTheme.themeTitleKo}'와 '${secondarySaimdangTheme.themeTitleKo}'를 비추어 볼 때, "${trimmedQuery}"에서 지나치기 쉬운 작은 디테일과 끝까지 지켜야 할 소박한 진심은 무엇인가요?`
     : `지금 마음을 쓰는 일 앞에서, '${activeSaimdangTheme.themeTitleKo}'의 세심한 관조와 '${secondarySaimdangTheme.themeTitleKo}'의 단아한 기품을 함께 살리려면 무엇을 덜어내야 할까요?`;
+  const reflectionFocus = reflectiveQuestion;
 
   const interpretiveBoundary = '이 지표는 신사임당 선생의 《초충도》·《사친》·《유대관령망친정》과 가훈 잠언에 담긴 생명 관조·효애성심·주체적 예술 정신을 오늘의 선택과 태도를 성찰하는 참고 틀로 해석한 것이며, 구체적 사건이나 성패를 단정하는 예언이 아닙니다.';
 
@@ -225,6 +229,8 @@ export function calculateKoreanShinSaimdangChochungdoArtVirtue(
     secondarySaimdangTheme,
     focalSaimdangAphorism,
     secondarySaimdangAphorism,
+    ritualAction,
+    reflectionFocus,
     reflectiveQuestion,
     interpretiveBoundary,
     saimdangComprehensiveGuidance: {
@@ -258,7 +264,9 @@ export function formatKoreanShinSaimdangChochungdoArtVirtuePrompt(
     `- 보조 교차 명언: "${res.secondarySaimdangAphorism.aphorismKo}" (${res.secondarySaimdangAphorism.aphorismHanja})`,
     `- 원전 출처: [${res.focalSaimdangAphorism.sourceContext}]`,
     `- 구체적 실천 지침: ${res.focalSaimdangAphorism.actionGuidance}`,
+    `- 실천 의례: ${res.ritualAction}`,
     `- 성찰 질문: ${res.reflectiveQuestion}`,
+    `- 성찰 초점: ${res.reflectionFocus}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
     `- 종합 신사임당 권면: ${res.saimdangComprehensiveGuidance.philosophicalCounsel}`,
   ];

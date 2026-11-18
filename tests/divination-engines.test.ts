@@ -6519,6 +6519,7 @@ test('Seosan Daesa Hyujeong Seonga Gwigam Engine: calculates Ilmul yeongmyeong, 
   assert(rep.activeSeosanTheme.themeTitleHanja.length > 0);
   assert(rep.secondarySeosanTheme.themeKey !== rep.activeSeosanTheme.themeKey);
   assert(rep.secondarySeosanMaxim.maximKey !== rep.focalSeosanMaxim.maximKey);
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(rep.reflectiveQuestion.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
   assert(rep.calculatedAtKst.endsWith('+09:00 KST'));
@@ -6530,6 +6531,8 @@ test('Seosan Daesa Hyujeong Seonga Gwigam Engine: calculates Ilmul yeongmyeong, 
   assert(prompt.includes(repQ.activeSeosanTheme.themeTitleKo));
   assert(prompt.includes(repQ.secondarySeosanTheme.themeTitleKo));
   assert(prompt.includes('해석 경계'));
+  assert(prompt.includes('실천 의례'));
+  assert(prompt.includes('성찰 초점'));
   assert(prompt.includes('교차 매트릭스'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
@@ -8108,6 +8111,7 @@ test('Shin Saimdang Chochungdo Art Virtue Engine: calculates Nature Vitality, Fi
   assert(rep.activeSaimdangTheme.themeTitleKo.length > 0);
   assert(rep.secondarySaimdangTheme.themeKey !== rep.activeSaimdangTheme.themeKey);
   assert(rep.secondarySaimdangAphorism.aphorismKey !== rep.focalSaimdangAphorism.aphorismKey);
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(rep.reflectiveQuestion.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
   assert(rep.calculatedAtKst.endsWith('+09:00 KST'));
@@ -8119,6 +8123,8 @@ test('Shin Saimdang Chochungdo Art Virtue Engine: calculates Nature Vitality, Fi
   assert(prompt.includes(repQ.activeSaimdangTheme.themeTitleKo));
   assert(prompt.includes(repQ.secondarySaimdangTheme.themeTitleKo));
   assert(prompt.includes('해석 경계'));
+  assert(prompt.includes('실천 의례'));
+  assert(prompt.includes('성찰 초점'));
   assert(prompt.includes('교차 매트릭스'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
@@ -8400,6 +8406,7 @@ test('Seopo Kim Man-jung Guunmong Illusory Awakening Engine: calculates Fame Pen
   assert(rep.activeGuunmongTheme.themeTitleKo.length > 0);
   assert(rep.secondaryGuunmongTheme.themeKey !== rep.activeGuunmongTheme.themeKey);
   assert(rep.secondaryGuunmongAphorism.aphorismKey !== rep.focalGuunmongAphorism.aphorismKey);
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(rep.reflectiveQuestion.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
   assert(rep.calculatedAtKst.endsWith('+09:00 KST'));
@@ -8411,6 +8418,8 @@ test('Seopo Kim Man-jung Guunmong Illusory Awakening Engine: calculates Fame Pen
   assert(prompt.includes(repQ.activeGuunmongTheme.themeTitleKo));
   assert(prompt.includes(repQ.secondaryGuunmongTheme.themeTitleKo));
   assert(prompt.includes('해석 경계'));
+  assert(prompt.includes('실천 의례'));
+  assert(prompt.includes('성찰 초점'));
   assert(prompt.includes('교차 매트릭스'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));

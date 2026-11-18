@@ -8,12 +8,12 @@
  * 4. 삼가회통(三家會通): 유교의 인(仁)과 예(禮), 도교의 무위청정(無爲淸淨), 불교의 자비와 해탈이 궁극적으로 한마음(一心)의 다른 표현임을 밝히는 포용적 통찰.
  * 5. 살신구세(殺身救世)의 보살행: 산중의 적막한 선정에만 안주하지 않고, 임진왜란 국난 속에서 팔도 의승군을 이끌어 백성을 지켜낸 자비와 대의(大義)의 거룩한 실천.
  *
- * @version LUCKEY-SEOSAN-SEONGA-GWIGAM-v2.1.0
+ * @version LUCKEY-SEOSAN-SEONGA-GWIGAM-v2.2.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const SEOSAN_SEONGA_GWIGAM_VERSION = 'LUCKEY-SEOSAN-SEONGA-GWIGAM-v2.1.0';
+export const SEOSAN_SEONGA_GWIGAM_VERSION = 'LUCKEY-SEOSAN-SEONGA-GWIGAM-v2.2.0';
 
 export interface SeosanTheme {
   themeKey: string;
@@ -45,6 +45,8 @@ export interface SeosanHyujeongSeongaGwigamResult {
   secondarySeosanTheme: SeosanTheme;
   focalSeosanMaxim: SeosanMaxim;
   secondarySeosanMaxim: SeosanMaxim;
+  ritualAction: string;
+  reflectionFocus: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
   seosanPersonalCounsel: {
@@ -181,9 +183,11 @@ export function calculateSeosanHyujeongSeongaGwigam(
   const secondarySeosanMaxim = SEOSAN_MAXIMS[secondaryMaximIndex];
 
   const trimmedQuery = query?.trim();
+  const ritualAction = `[${activeSeosanTheme.themeTitleHanja}] ${focalSeosanMaxim.mindDirective}`;
   const reflectiveQuestion = trimmedQuery
     ? `서산대사의 '${activeSeosanTheme.themeTitleKo}'와 '${secondarySeosanTheme.themeTitleKo}'를 비추어 볼 때, "${trimmedQuery}"에서 죽은 글귀(사구)의 분별을 끊고 본질로 바로 들어갈 활구(活句)는 무엇인가요?`
     : `지금 머릿속을 맴도는 번민 앞에서, '${activeSeosanTheme.themeTitleKo}'의 밝음과 '${secondarySeosanTheme.themeTitleKo}'의 조화를 함께 살리려면 어떤 껍질 같은 생각을 내려놓아야 할까요?`;
+  const reflectionFocus = reflectiveQuestion;
 
   const interpretiveBoundary = '이 지표는 서산대사 휴정의 《선가귀감》·《삼가귀감》에 담긴 일물영명·활구참선·선교원융·자비구제 사상을 마음과 선택을 비추는 정성적 수행 거울로 해석한 것이며, 현실의 구체적 사건이나 인과를 단정하는 점술적 예언이 아닙니다.';
 
@@ -220,6 +224,8 @@ export function calculateSeosanHyujeongSeongaGwigam(
     secondarySeosanTheme,
     focalSeosanMaxim,
     secondarySeosanMaxim,
+    ritualAction,
+    reflectionFocus,
     reflectiveQuestion,
     interpretiveBoundary,
     seosanPersonalCounsel: {
@@ -251,7 +257,9 @@ export function formatSeosanHyujeongSeongaGwigamPrompt(res: SeosanHyujeongSeonga
     `- 보조 교차 명구: "${res.secondarySeosanMaxim.maximKo}"`,
     `- 한문 원문: "${res.focalSeosanMaxim.maximHanja}" [${res.focalSeosanMaxim.dharmaDimension}]`,
     `- 마음가짐 실천 지침: ${res.focalSeosanMaxim.mindDirective}`,
+    `- 실천 의례: ${res.ritualAction}`,
     `- 성찰 질문: ${res.reflectiveQuestion}`,
+    `- 성찰 초점: ${res.reflectionFocus}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
     `- 통합 선지 처방: ${res.seosanPersonalCounsel.philosophicalGuidance}`,
   ];
