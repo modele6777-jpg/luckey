@@ -1,10 +1,10 @@
 {
-  "version": "1.7.831",
-  "builtAt": "2026-11-18T11:20:00+09:00",
-  "summary": "도산 안창호 무실역행, 고산 윤선도 오우가, 격암유록 3대 엔진 실천 의례 및 성찰 질문 표준 연동(v1.7.831)",
+  "version": "1.7.832",
+  "builtAt": "2026-11-18T11:30:00+09:00",
+  "summary": "만해 한용운 님의 침묵, 교산 허균 홍길동전, 구암 허준 동의보감 3대 엔진 실천 의례 및 성찰 질문 표준 연동(v1.7.832)",
   "items": [
-    "도산 안창호 《무실역행》 인격혁명·주인정신 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동",
-    "고산 윤선도 《오우가》·《어부사시사》 5우 지조 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동",
-    "격암 남사고 《격암유록》 궁궁을을·삼풍해인 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동"
+    "만해 한용운 《님의 침묵》 문학 성찰 엔진(v2.3.0): ritualAction·reflectionFocus 표준 필드 연동",
+    "교산 허균 《홍길동전·유재론·호민론》 개혁 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동",
+    "구암 허준 《동의보감》 통즉불통·치미병 양생 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동"
   ]
 }

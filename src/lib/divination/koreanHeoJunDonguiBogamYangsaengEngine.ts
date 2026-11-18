@@ -14,7 +14,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const KOREAN_HEO_JUN_DONGUI_BOGAM_YANGSAENG_VERSION = 'LUCKEY-HEO-JUN-DONGUI-BOGAM-YANGSAENG-v2.1.0';
+export const KOREAN_HEO_JUN_DONGUI_BOGAM_YANGSAENG_VERSION = 'LUCKEY-HEO-JUN-DONGUI-BOGAM-YANGSAENG-v2.2.0';
 
 export interface HeoJunTheme {
   themeKey: string;
@@ -56,6 +56,8 @@ export interface KoreanHeoJunDonguiBogamYangsaengResult {
     alignmentState: string;
     integratedAction: string;
   };
+  ritualAction: string;
+  reflectionFocus: string;
 }
 
 function formatHeoJunKstTimestamp(now: Date = new Date()): string {
@@ -207,6 +209,9 @@ export function calculateKoreanHeoJunDonguiBogamYangsaeng(
     integratedAction: `${focalHeoJunAphorism.actionGuidance}${query?.trim() ? ` [질문 맥락: ${query.trim()}]` : ''}`,
   };
 
+  const ritualAction = `[${activeHeoJunTheme.themeTitleKo}] ${focalHeoJunAphorism.actionGuidance}`;
+  const reflectionFocus = reflectiveQuestion;
+
   return {
     engineVersion: KOREAN_HEO_JUN_DONGUI_BOGAM_YANGSAENG_VERSION,
     calculatedAtKst,
@@ -225,6 +230,8 @@ export function calculateKoreanHeoJunDonguiBogamYangsaeng(
       philosophicalCounsel,
     },
     heoJunSynthesisMatrix,
+    ritualAction,
+    reflectionFocus,
   };
 }
 
@@ -260,5 +267,9 @@ export function formatKoreanHeoJunDonguiBogamYangsaengPrompt(
       `- 통합 실천: ${res.heoJunSynthesisMatrix.integratedAction}`,
     );
   }
+  lines.push(
+    `- 실천 의례(Ritual Action): ${res.ritualAction}`,
+    `- 성찰 초점(Reflection Focus): ${res.reflectionFocus}`,
+  );
   return lines.join('\n');
 }
