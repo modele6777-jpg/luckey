@@ -18,7 +18,7 @@ import {
   STEM_ELEMENT,
 } from '../sajuAnalysis';
 
-export const SAJU_12STAGES_TOMB_VERSION = 'LUCKEY-SAJU-12STAGES-TOMB-v2.1.0';
+export const SAJU_12STAGES_TOMB_VERSION = 'LUCKEY-SAJU-12STAGES-TOMB-v2.2.0';
 
 export interface TwelveStagePillarVitality {
   pillarName: '년주 (근본)' | '월주 (사회)' | '일주 (본원)' | '시주 (결실)';
@@ -51,6 +51,7 @@ export interface SajuTwelveStagesTombReport {
   tombKeyActionGuidance: string; // 묘고지 잠재력을 깨우는 1순위 행동
   annual2026TombInteraction: string; // 2026 병오년과의 개고/자극 반응
   synthesisPromptGuidance: string;
+  reflectiveQuestion: string;
   tombSynthesisMatrix?: {
     dominantTension: string;
     alignmentState: string;
@@ -66,7 +67,7 @@ function formatTombKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
 }
 
 // 12운성 기본 에너지 점수 및 라이프사이클 정의
@@ -87,7 +88,8 @@ const STAGE_ENERGY_MAP: Record<string, { score: number; phase: string; meaning: 
 
 export function calculateSajuTwelveStagesTomb(
   profile?: UserProfile,
-  targetDate: Date = new Date()
+  targetDate: Date = new Date(),
+  question = ''
 ): SajuTwelveStagesTombReport {
   const sajuRes = calculateDetailedSaju(profile || null);
 
@@ -244,6 +246,10 @@ export function calculateSajuTwelveStagesTomb(
   }
 
   const calculatedAtKst = formatTombKstTimestamp(targetDate);
+  const q = question.trim();
+  const reflectiveQuestion = q
+    ? `'${q}'라는 질문 앞에서, 최고 전성기 운성 '${peakVitalityStage}'의 힘과 ${hasTombStorage ? tombStorages[0].storageType : '꾸준한 건록의 실력'}을 현실의 문으로 열기 위해 오늘 실행할 한 가지는 무엇인가요?`
+    : `지금 내 원국의 핵심 활력 '${peakVitalityStage}'과 내면의 잠재 창고(${hasTombStorage ? tombStorages[0].storageType : '건록·제왕의 실력'})를 깨우기 위해 오늘 내가 다질 루틴은 무엇인가요?`;
   const tombSynthesisMatrix = {
     dominantTension: `최고 활력 ${peakVitalityStage} ↔ ${hasTombStorage ? tombStorages[0].storageType : '건록·제왕 순수 추구'}`,
     alignmentState: `${annual2026TombInteraction}`,
@@ -260,6 +266,7 @@ export function calculateSajuTwelveStagesTomb(
 - 2026 병오년 상호작용: "${annual2026TombInteraction}"
 - 교차 매트릭스 [핵심 긴장: ${tombSynthesisMatrix.dominantTension} | 조율 상태: ${tombSynthesisMatrix.alignmentState}]
   * 통합 실천: ${tombSynthesisMatrix.integratedAction}
+- 질문 맞춤 성찰 질문: ${reflectiveQuestion}
 - 해석 경계: ${interpretiveBoundary}
 내담자에게 "사주를 보니~"라는 진부한 서론 없이, 내면에 잠든 보물 창고(묘고지)와 지금 발휘해야 할 운성 에너지("${peakVitalityStage}")의 힘을 현실적 비유로 짚어줄 것.
 `.trim();
@@ -276,6 +283,7 @@ export function calculateSajuTwelveStagesTomb(
     tombKeyActionGuidance,
     annual2026TombInteraction,
     synthesisPromptGuidance,
+    reflectiveQuestion,
     tombSynthesisMatrix,
     interpretiveBoundary,
   };

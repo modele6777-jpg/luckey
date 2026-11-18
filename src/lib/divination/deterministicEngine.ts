@@ -1893,7 +1893,7 @@ try {
   const sajuClassicYongshinResult = calculateSupplement('sajuClassicYongshinResult', () => (birthdateStr && profile
     ? (() => {
         try {
-          return calculateSajuClassicYongshin({ profile, targetDate: now });
+          return calculateSajuClassicYongshin({ profile, targetDate: now, question });
         } catch (_) {
           return null;
         }
@@ -1934,7 +1934,7 @@ try {
   // 66. 사주 12운성 포태법 & 4대 묘고지 개고 엔진
   const sajuTwelveStagesTombResult = calculateSupplement('sajuTwelveStagesTombResult', () => ((() => {
     try {
-      return calculateSajuTwelveStagesTomb(profile, now);
+      return calculateSajuTwelveStagesTomb(profile, now, question);
     } catch (_) {
       return null;
     }
@@ -4776,11 +4776,11 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'taoistNeidanMeridian', nameKo: '도교 내단 경락시계', icon: '☯️', category: 'deep_master', summary: '도교 내단 삼보(정·기·신)와 자오유주 12경락 시계 상징으로 현재 시진의 기혈 순환과 단전 호흡을 짚어 주는 관점' },
   { key: 'synchronicityOmen', nameKo: '칼 융 동시성 오멘', icon: '🕊️', category: 'deep_master' },
   { key: 'ethericAuraBiofield', nameKo: '에테릭 오라 바이오필드', icon: '✨', category: 'deep_master', summary: '에테르·아스트랄 오라 스펙트럼과 생체장 쉴딩 결계로 에너지 누수를 막고 경계를 세우는 관점' },
-  { key: 'sajuClassicYongshin', nameKo: '사주 원전 억부용신', icon: '📜', category: 'deep_master' },
+  { key: 'sajuClassicYongshin', nameKo: '사주 원전 억부용신', icon: '📜', category: 'deep_master', summary: '자평진전 격국·궁통보감 조후·적천수 억부용신으로 사주 원국의 균형과 개운 실천을 처방하는 관점' },
   { key: 'tarotTreeOfLifeShadow', nameKo: '타로 세피로트 그림자', icon: '🌳', category: 'deep_master', summary: '카발라 생명나무 22경로와 타로 섀도우 미러를 통해 의식의 빛과 무의식 방어기제를 통합하는 관점' },
   { key: 'hellenisticLots', nameKo: '헬레니즘 포르투나 롯', icon: '🏛️', category: 'deep_master', summary: '주간·야간 섹트와 포르투나·스피릿·에로스·네메시스 4대 아라빅 랏으로 환경적 복록과 의지적 돌파구를 비추는 관점' },
   { key: 'iching384Yao', nameKo: '주역 384효 동효변괘', icon: '☯️', category: 'deep_master', summary: '본괘·지괘·호괘·착괘·종괘 착종복잡 4대 변괘와 동효 효사로 변화의 분기점과 시중 결단을 비추는 관점' },
-  { key: 'sajuTwelveStagesTomb', nameKo: '12운성 묘고지 개고', icon: '🗝️', category: 'deep_master' },
+  { key: 'sajuTwelveStagesTomb', nameKo: '12운성 묘고지 개고', icon: '🗝️', category: 'deep_master', summary: '12운성 포태법 활력과 진·술·축·미 4대 묘고지의 개고(開庫) 잠재력을 비추는 관점' },
   { key: 'tarotElementalCourt', nameKo: '타로 16 코트 페르소나', icon: '🎭', category: 'deep_master', summary: '타로 16대 궁정 카드와 4대 원소 상징으로 현재의 외적 태도와 내면의 그림자 맹점을 비추는 관점' },
   { key: 'karmicSynastry', nameKo: '카르믹 시나스트리', icon: '💫', category: 'deep_master', summary: '사주 천간·지지 합충과 점성학 달·금성·노드 시나스트리로 두 사람의 카르마 계약과 소통의 열쇠를 비추는 관점' },
   { key: 'fiveEmotionsPulse', nameKo: '오행 칠정 심신맥파', icon: '💓', category: 'deep_master', summary: '황제내경 오행과 칠정(희·노·우·사·비·공·경)을 결합해 심신 기혈의 열냉과 균형을 살피는 관점' },
@@ -4872,7 +4872,7 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'samkhyaTwentyFiveTattvas', nameKo: '상키야 25타트바 분별지', icon: '🧘', category: 'deep_master', summary: '순수 관조자 푸루샤와 물질 자연 프라크리티의 25타트바 및 3구나 균형을 살피어 분별지(비베카)를 세우는 관점' },
   { key: 'neoConfucianFourSevenLiQi', nameKo: '성리학 사칠이기 거경궁리', icon: '📜', category: 'deep_master', summary: '성리학의 이기지묘(理氣之妙)와 사단칠정론(四端七情論), 거경궁리·주일무적 수양 원리로 감정의 중절과 본연지성의 중심을 비춥니다.' },
   { key: 'etruscanAugurSixteenSky', nameKo: '에트루리아 16천궁 아우구르', icon: '🦅', category: 'deep_master', summary: '에트루리아 16천궁 템플룸과 아우구르 조점(비행조·음성조) 상징으로 결단 시의를 비추는 관점' },
-  { key: 'rosicrucianChymicalWedding', nameKo: '로젠크로이츠 화학적 결혼 7일 연금술', icon: '🌹', category: 'deep_master' },
+  { key: 'rosicrucianChymicalWedding', nameKo: '로젠크로이츠 화학적 결혼 7일 연금술', icon: '🌹', category: 'deep_master', summary: '17세기 장미십자회 7일 연금술 순례로 내면의 대극 통합과 영적 변성을 비추는 관점' },
   { key: 'aztecTonalamatl', nameKo: '아즈텍 토날포왈리 20대 일진 성력', icon: '☀️', category: 'deep_master', summary: '아즈텍 260일 신성 역법 토날포왈리 20대 일진과 13대 주천신 상징으로 토날리 생명력과 올린(변화)의 방향을 비추는 관점' },
   { key: 'mongolianTengriHiimori', nameKo: '몽골 텡그리즘 풍마 히모리 영혼', icon: '🐎', category: 'deep_master', summary: '몽골 텡그리즘의 영원한 푸른 하늘·에투겐 대지모신과 히모리(바람의 말)·쉴드 영혼의 기백으로 장애를 돌파하는 내면의 힘을 비춥니다.' },
   { key: 'gaelicWheelFireFestivals', nameKo: '게일 4대 화제 축제 휠 오브 더 이어', icon: '🔥', category: 'deep_master', summary: '삼하인·임볼크·벨테인·루나사 4대 화제 축제와 콜리니 역법으로 계절 순환·정화·결실을 비추는 관점' },

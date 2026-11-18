@@ -12103,3 +12103,27 @@ test('타로 마스터·룬 매트릭스·철판신수 v1.7.885 reflectiveQuesti
   assert.ok(tb.reflectiveQuestion.includes(query));
   assert.ok(formatTiebanShenshuPrompt(tb).includes('질문 맞춤 성찰 질문'));
 });
+
+test('로젠크로이츠 화학적 결혼·사주 원전 용신·12운성 묘고지 v1.7.887 reflectiveQuestion·+09:00 KST 회귀 검증', () => {
+  const profile = { basic: { name: '제제', birthdate: '1994-01-24', birthtime: '12:00', gender: 'male' } } as any;
+  const now = new Date('2026-11-19T07:00:00+09:00');
+  const query = '지금 내 안에서 가장 먼저 통합해야 할 균형은 무엇인가요?';
+
+  const rc = calculateRosicrucianChymicalWedding({ profile, question: query, now });
+  assert.equal(rc.engineVersion, ROSICRUCIAN_CHYMICAL_WEDDING_ENGINE_VERSION);
+  assert.match(rc.calculatedAtKst, /\+09:00/);
+  assert.ok(rc.reflectiveQuestion.includes(query));
+  assert.ok(formatRosicrucianChymicalWeddingPrompt(rc).includes('질문 맞춤 성찰 질문'));
+
+  const sy = calculateSajuClassicYongshin({ profile, targetDate: now, question: query });
+  assert.equal(sy.engineVersion, SAJU_CLASSIC_YONGSHIN_VERSION);
+  assert.match(sy.calculatedAtKst, /\+09:00/);
+  assert.ok(sy.reflectiveQuestion.includes(query));
+  assert.ok(formatSajuClassicYongshinPrompt(sy).includes('질문 맞춤 성찰 질문'));
+
+  const st = calculateSajuTwelveStagesTomb(profile, now, query);
+  assert.equal(st.engineVersion, SAJU_12STAGES_TOMB_VERSION);
+  assert.match(st.calculatedAtKst, /\+09:00/);
+  assert.ok(st.reflectiveQuestion.includes(query));
+  assert.ok(formatSajuTwelveStagesTombPrompt(st).includes('질문 맞춤 성찰 질문'));
+});

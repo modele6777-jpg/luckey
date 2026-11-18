@@ -18,7 +18,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const ROSICRUCIAN_CHYMICAL_WEDDING_ENGINE_VERSION = '2.1.0';
+export const ROSICRUCIAN_CHYMICAL_WEDDING_ENGINE_VERSION = '2.2.0';
 
 export interface RosicrucianAlchemicalStage {
   dayNumber: number;
@@ -42,6 +42,7 @@ export interface RosicrucianChymicalWeddingReport {
   activeAlchemicalPhase: string; // 현재 주재하는 4원 연금술 국면
   rosicrucianGuidance: string; // 장미십자회 지혜 지침
   alchemicalTransmutationRitual: string; // 연금술 영혼 정화 리추얼
+  reflectiveQuestion: string;
   rosicrucianSynthesisMatrix?: {
     dominantTension: string;
     alignmentState: string;
@@ -57,7 +58,7 @@ function formatRosicrucianKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
 }
 
 function describeRosicrucianStage(score: number, phase: string): string {
@@ -179,6 +180,10 @@ export function calculateRosicrucianChymicalWedding(
   const alchemicalTransmutationRitual = `가슴 중심에 십자가와 붉은 장미, 그리고 날아오르는 불사조의 빛을 시각화하십시오: "나의 낡은 번뇌는 순수한 불꽃 속에 용해되고, 신성한 지혜의 황금석이 내 안에서 온전히 빛난다."`;
 
   const calculatedAtKst = formatRosicrucianKstTimestamp(now);
+  const q = question.trim();
+  const reflectiveQuestion = q
+    ? `'${q}'라는 연금술의 질문 앞에서, [${dominantStage.dayName}]의 [${activeAlchemicalPhase}] 국면을 통과해 내 안의 현자의 돌을 정제하기 위해 오늘 비워낼 아집은 무엇인가요?`
+    : `지금 [${dominantStage.dayName}]의 순례를 거치며 [${activeAlchemicalPhase}]의 도가니 속에서 황금빛 통합으로 승화시킬 내면의 대극은 무엇인가요?`;
   const composite = Math.round(
     (chymicalUnionScore + philosophersStoneIndex + sevenDaysTransmutationRate + phoenixRebirthVibration) / 4
   );
@@ -200,6 +205,7 @@ export function calculateRosicrucianChymicalWedding(
     activeAlchemicalPhase,
     rosicrucianGuidance,
     alchemicalTransmutationRitual,
+    reflectiveQuestion,
     rosicrucianSynthesisMatrix,
     interpretiveBoundary: '본 장미십자회 화학적 결혼 리포트는 17세기 연금술 상징 체계에 기반한 정성적 내면 성찰 안내이며, 의학·심리 치료를 대신하지 않습니다.',
   };
@@ -226,6 +232,7 @@ export function formatRosicrucianChymicalWeddingPrompt(report: RosicrucianChymic
       `- **통합 실천**: ${report.rosicrucianSynthesisMatrix.integratedAction}`,
     );
   }
+  lines.push(`- **질문 맞춤 성찰 질문**: ${report.reflectiveQuestion}`);
   lines.push(`- **해석 경계**: ${report.interpretiveBoundary}`);
   return lines.join('\n');
 }

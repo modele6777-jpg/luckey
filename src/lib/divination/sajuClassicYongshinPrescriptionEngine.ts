@@ -20,7 +20,7 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const SAJU_CLASSIC_YONGSHIN_VERSION = 'LUCKEY-SAJU-CLASSIC-v2.1.0';
+export const SAJU_CLASSIC_YONGSHIN_VERSION = 'LUCKEY-SAJU-CLASSIC-v2.2.0';
 
 export interface ClassicGeokgukAnalysis {
   geokgukName: string;          // 격국 명칭 (정관격, 식신격, 편재격 등)
@@ -56,6 +56,7 @@ export interface SajuClassicYongshinReport {
   prescription: TripleYongshinPrescription;
   deepClassicalMantra: string;
   synthesisPromptGuidance: string;
+  reflectiveQuestion: string;
   yongshinSynthesisMatrix?: {
     dominantTension: string;
     alignmentState: string;
@@ -71,12 +72,13 @@ function formatYongshinKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
 }
 
 export function runSajuClassicYongshinEngine(
   profile?: UserProfile,
-  targetDate: Date = new Date()
+  targetDate: Date = new Date(),
+  question = ''
 ): SajuClassicYongshinReport {
   const sajuRes = calculateDetailedSaju(profile || null);
 
@@ -205,6 +207,10 @@ export function runSajuClassicYongshinEngine(
   };
 
   const calculatedAtKst = formatYongshinKstTimestamp(targetDate);
+  const q = question.trim();
+  const reflectiveQuestion = q
+    ? `'${q}'라는 선택 앞에서, '${geokgukName}'의 품격과 '${primaryYongshinType}[${primaryYongshinElement}]'의 균형을 삶에 구현하기 위해 오늘 당장 취할 행동은 무엇인가요?`
+    : `'${geokgukName}'(${formationStatus})의 흐름 속에서 '${primaryYongshinType}[${primaryYongshinElement}]'의 기운을 살리기 위해 오늘 내가 조절할 일상의 습관은 무엇인가요?`;
   const yongshinMasterTitle = `${geokgukName} × ${primaryYongshinType}[${primaryYongshinElement}(${secondaryHuishenElement})]`;
   const deepClassicalMantra = `자평의 맑은 격국을 세우고, 궁통의 따스한 조후로 생기를 불어넣으며, 적천수의 용신으로 삶의 균형을 완성한다.`;
   const yongshinSynthesisMatrix = {
@@ -215,7 +221,7 @@ export function runSajuClassicYongshinEngine(
 
   const interpretiveBoundary = '본 정통 3대 원전 용신 리포트는 자평진전·궁통보감·적천수 명리 체계에 기반한 정성적 조율 안내이며, 의학·재무 전문 자문을 대신하지 않습니다.';
 
-  const synthesisPromptGuidance = `[LUCKEY 정통 사주 3대 원전 용신·격국·조후 심층 v2.1.0 | 연산 시각: ${calculatedAtKst}]
+  const synthesisPromptGuidance = `[LUCKEY 정통 사주 3대 원전 용신·격국·조후 심층 v2.2.0 | 연산 시각: ${calculatedAtKst}]
 - 격국 성패 (자평진전): [${geokgukName}] - ${formationStatus}
   * 구응신: ${savingGraceGod}
   * 사회적 재능: ${socioeconomicTalent}
@@ -231,6 +237,7 @@ export function runSajuClassicYongshinEngine(
 - 교차 매트릭스 [핵심 긴장: ${yongshinSynthesisMatrix.dominantTension} | 조율 상태: ${yongshinSynthesisMatrix.alignmentState}]
   * 통합 실천: ${yongshinSynthesisMatrix.integratedAction}
 - 고전 명리 지침: "${deepClassicalMantra}"
+- 질문 맞춤 성찰 질문: ${reflectiveQuestion}
 - 해석 경계: ${interpretiveBoundary}`;
 
   return {
@@ -261,6 +268,7 @@ export function runSajuClassicYongshinEngine(
     },
     deepClassicalMantra,
     synthesisPromptGuidance,
+    reflectiveQuestion,
     yongshinSynthesisMatrix,
     interpretiveBoundary,
   };
@@ -272,10 +280,12 @@ export function calculateSajuClassicYongshin(params?: {
   profile?: UserProfile | null;
   saju?: SajuAnalysisResult | null;
   targetDate?: Date;
+  question?: string;
 }): SajuClassicYongshinResult {
   const profile = params?.profile || undefined;
   const targetDate = params?.targetDate || new Date();
-  return runSajuClassicYongshinEngine(profile, targetDate);
+  const question = params?.question || '';
+  return runSajuClassicYongshinEngine(profile, targetDate, question);
 }
 
 export function formatSajuClassicYongshinPrompt(res: SajuClassicYongshinResult): string {
