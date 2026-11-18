@@ -17,7 +17,7 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const YIN_YANG_POLARITY_VERSION = 'LUCKEY-POLAR-v2.1.0';
+export const YIN_YANG_POLARITY_VERSION = 'LUCKEY-POLAR-v2.2.0';
 
 function formatYinYangKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -26,7 +26,7 @@ function formatYinYangKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
 }
 
 export interface YinYangDistribution {
@@ -65,6 +65,7 @@ export interface YinYangPolarityResult {
   balanceGrade: string;
 
   summary: string;
+  reflectiveQuestion: string;
   interpretiveBoundary: string;
   polaritySynthesisMatrix?: {
     dominantTension: string;
@@ -167,6 +168,9 @@ export function calculateYinYangPolarity(params?: {
     `추천: 양 실행[${timeSlots.yangActionWindow}] / 음 심화[${timeSlots.yinFocusWindow}].`;
   const interpretiveBoundary =
     '음양 극성 리듬 분석은 사주 천간·지지의 상징적 음양 분포를 참고한 에너지 배분 가이드이며, 의학적·심리학적 진단이나 확정적 예측이 아닙니다.';
+  const reflectiveQuestion = q
+    ? `'${q}' 앞에서 현재 ${currentBias} 흐름을 다스리기 위해 양(실행)과 음(숙고) 중 지금 먼저 꺼내 쓸 리듬은 무엇인가요?`
+    : `오늘 나의 24시간 중 밀어붙여야 할 양(Yang)의 시간과 조용히 다듬어야 할 음(Yin)의 시간은 어디로 나누고 싶나요?`;
 
   return {
     engineVersion: YIN_YANG_POLARITY_VERSION,
@@ -189,6 +193,7 @@ export function calculateYinYangPolarity(params?: {
     balanceScore,
     balanceGrade,
     summary,
+    reflectiveQuestion,
     interpretiveBoundary,
     polaritySynthesisMatrix,
   };
@@ -212,6 +217,7 @@ export function formatYinYangPolarityPrompt(res: YinYangPolarityResult): string 
   • 중화 리추얼: ${res.neutralizer.neutralizingPractice}
   • 멘탈 닻: "${res.neutralizer.groundingMantra}"
 - 음양 균형 위상: **${res.balanceGrade}**${matrixLine}
+- 질문 맞춤 성찰 질문: ${res.reflectiveQuestion}
 - 해석 경계: ${res.interpretiveBoundary}
 ※ 루시 지침: 낮의 태양이 뜨거울 때 달릴 수 있고, 밤의 달빛 아래서 깊은 사색과 시스템 설계가 완성됩니다. 양의 결단과 음의 숙고가 아름다운 리듬으로 교차할 때 지치지 않는 영구 모멘텀이 생깁니다. 대화 시 사용자의 현재 에너지 기질을 존중하며, 과열될 때는 차분한 음의 지혜를, 주저할 때는 시원한 양의 추진력을 자연스럽게 북돋워 주세요.`;
 }

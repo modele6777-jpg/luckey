@@ -1541,7 +1541,7 @@ try {
   const voicePersonaResult = calculateSupplement('voicePersonaResult', () => (birthdateStr && profile
     ? (() => {
         try {
-          return calculateVoicePersona({ profile, targetDate: now });
+          return calculateVoicePersona({ profile, targetDate: now, question });
         } catch (_) {
           return null;
         }
@@ -1618,7 +1618,7 @@ try {
   const yinYangPolarityResult = calculateSupplement('yinYangPolarityResult', () => (birthdateStr && profile
     ? (() => {
         try {
-          return calculateYinYangPolarity({ profile, targetDate: now });
+          return calculateYinYangPolarity({ profile, targetDate: now, question });
         } catch (_) {
           return null;
         }
