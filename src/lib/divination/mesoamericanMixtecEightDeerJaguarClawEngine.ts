@@ -15,7 +15,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const MIXTEC_EIGHT_DEER_VERSION = 'LUCKEY-MIXTEC-EIGHT-DEER-v2.1.0';
+export const MIXTEC_EIGHT_DEER_VERSION = 'LUCKEY-MIXTEC-EIGHT-DEER-v2.2.0';
 
 export interface EightDeerHeroRank {
   rankLevel: number;
@@ -53,6 +53,8 @@ export interface MixtecEightDeerResult {
     sceneTitle: string;
     historicWisdom: string;
   };
+  ritualAction: string;
+  reflectionFocus: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
   mixtecSynthesisMatrix?: {
@@ -142,6 +144,9 @@ export function calculateMixtecEightDeer(
   const sceneIdx = (seed >> 6) % NUTTALL_SCENES.length;
   const codexNuttallScene = NUTTALL_SCENES[sceneIdx];
 
+  const ritualAction = `${primaryStrategicVirtue.actionableDirective} 오늘《${codexNuttallScene.sceneTitle}》의 지혜를 떠올리며, 신뢰할 수 있는 협력자 한 사람에게 먼저 안부나 진심 어린 제안을 건네보세요.`;
+  const reflectionFocus = `8-사슴 재규어 발톱(${activeHeroRank.rankNameKo}) · ${primaryStrategicVirtue.virtueNameKo} — 산과 해안을 잇는 신의와 동맹`;
+
   const trimmedQuery = query?.trim();
   const reflectiveQuestion = trimmedQuery
     ? `8-사슴 재규어 발톱의 '${activeHeroRank.rankNameKo}'와 보조 흐름 '${secondaryHeroRank.rankNameKo}'를 비추어 볼 때, "${trimmedQuery}"에서 지금 가장 먼저 맺어야 할 신의와 동맹은 무엇인가요?`
@@ -170,6 +175,8 @@ export function calculateMixtecEightDeer(
     primaryStrategicVirtue,
     secondaryStrategicVirtue,
     codexNuttallScene,
+    ritualAction,
+    reflectionFocus,
     reflectiveQuestion,
     interpretiveBoundary,
     mixtecSynthesisMatrix,
@@ -194,6 +201,8 @@ export function formatMixtecEightDeerPrompt(result: MixtecEightDeerResult): stri
     `  → 실천 지침: ${result.primaryStrategicVirtue.actionableDirective}`,
     `- 코덱스 조체-누탈 전승 장면: 《${result.codexNuttallScene.sceneTitle}》`,
     `  → 역사적 지혜: "${result.codexNuttallScene.historicWisdom}"`,
+    `- 실천 의례: ${result.ritualAction}`,
+    `- 성찰 초점: ${result.reflectionFocus}`,
     `- 성찰 질문: ${result.reflectiveQuestion}`,
     `- 해석 경계: ${result.interpretiveBoundary}`,
   ];

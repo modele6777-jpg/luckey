@@ -1,6 +1,10 @@
 {
-  "version": "1.7.869",
-  "builtAt": "2026-11-19T05:30:00+09:00",
-  "commit": "feat/deepen-hanyongun-pungryudo-wonhyo-v1.7.869",
-  "notes": "한용운 님의 침묵·풍류도 화랑오계·원효 화쟁 3대 엔진 성찰 질문·+09:00 KST·카탈로그 뜻 보강 (v1.7.869)"
+  "version": "1.7.870",
+  "builtAt": "2026-11-19T05:32:00+09:00",
+  "summary": "마야 촐킨·믹스테크 8-사슴·아트라하시스 방주 3대 엔진 실천 의례 및 성찰 초점 표준 연동(v1.7.870)",
+  "items": [
+    "고대 마야 촐킨(Tzolk'in) 260일 신성력 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동",
+    "메소아메리카 믹스테크 8-사슴 재규어 발톱 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동",
+    "고대 메소포타미아 아트라하시스 방주·절제 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동"
+  ]
 }

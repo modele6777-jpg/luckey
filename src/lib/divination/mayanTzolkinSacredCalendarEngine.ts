@@ -20,7 +20,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const MAYAN_TZOLKIN_VERSION = 'LUCKEY-MAYAN-TZOLKIN-v2.1.0';
+export const MAYAN_TZOLKIN_VERSION = 'LUCKEY-MAYAN-TZOLKIN-v2.2.0';
 
 export interface SolarSealInfo {
   index: number;            // 0 ~ 19
@@ -58,6 +58,8 @@ export interface MayanTzolkinReport {
   galacticHarmonicResonanceScore: number; // 0 ~ 100 은하 공명 지수
   dailyTzolkinMission: string;            // 오늘의 촐킨 신성 미션
   sacredAltarAction: string;              // 마야 4방위 정렬 행동
+  ritualAction: string;
+  reflectionFocus: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
   tzolkinSynthesisMatrix?: {
@@ -193,6 +195,8 @@ export function calculateMayanTzolkinSacredCalendar(params: {
   const dailyTzolkinMission = `오늘은 [${todayKin.kinFullName}]의 날입니다. ${todayKin.seal.directionColor}의 기운이 지배하며, [${todayKin.tone.actionPrinciple}]을 마음에 새길 때 우주의 동시성이 당신을 지지합니다.`;
 
   const sacredAltarAction = `오늘 창가나 책상에서 ${todayKin.seal.directionColor.split(' ')[0]} 방향을 3초간 바라보며, 호흡을 가다듬고 ${todayKin.seal.sacredKeywords}를 조용히 읊조리십시오.`;
+  const ritualAction = sacredAltarAction;
+  const reflectionFocus = `마야 촐킨 본명 킨(${birthKin.seal.koreanName}) ↔ 오늘의 킨(${todayKin.seal.koreanName}) · ${todayKin.tone.toneNameKo}`;
 
   const calculatedAtKst = formatTzolkinKstTimestamp(now);
   const trimmedQuery = params.query?.trim();
@@ -215,6 +219,8 @@ export function calculateMayanTzolkinSacredCalendar(params: {
     galacticHarmonicResonanceScore,
     dailyTzolkinMission,
     sacredAltarAction,
+    ritualAction,
+    reflectionFocus,
     reflectiveQuestion,
     interpretiveBoundary,
     tzolkinSynthesisMatrix,
@@ -233,6 +239,8 @@ export function formatMayanTzolkinSacredCalendarPrompt(report: MayanTzolkinRepor
     `  - 오늘의 창조 파워: ${report.todayKin.tone.creativePower}`,
     `- **오늘의 촐킨 신성 미션**: ${report.dailyTzolkinMission}`,
     `- **마야 4방위 정렬 행동**: ${report.sacredAltarAction}`,
+    `- **실천 의례**: ${report.ritualAction}`,
+    `- **성찰 초점**: ${report.reflectionFocus}`,
     `- **성찰 질문**: ${report.reflectiveQuestion}`,
     `- **해석 경계**: ${report.interpretiveBoundary}`,
   ];

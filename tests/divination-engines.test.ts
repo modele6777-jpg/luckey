@@ -3501,6 +3501,8 @@ test('Mayan Tzolkin Sacred Calendar Engine: calculates 260 Kin and galactic reso
   assert(rep.todayKin.kinNumber >= 1 && rep.todayKin.kinNumber <= 260);
   assert(rep.galacticHarmonicResonanceScore >= 0 && rep.galacticHarmonicResonanceScore <= 100);
   assert(rep.calculatedAtKst.endsWith('+09:00 KST'));
+  assert(rep.ritualAction.length > 0);
+  assert(rep.reflectionFocus.length > 0);
   assert(rep.reflectiveQuestion.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
   assert(Boolean(rep.tzolkinSynthesisMatrix?.integratedAction));
@@ -3509,6 +3511,8 @@ test('Mayan Tzolkin Sacred Calendar Engine: calculates 260 Kin and galactic reso
   const prompt = formatMayanTzolkinSacredCalendarPrompt(repQ);
   assert(prompt.includes('고대 마야 촐킨'));
   assert(prompt.includes(repQ.todayKin.kinFullName));
+  assert(prompt.includes('실천 의례'));
+  assert(prompt.includes('성찰 초점'));
   assert(prompt.includes('해석 경계'));
   assert(prompt.includes('교차 매트릭스'));
   assert(!prompt.includes('/100'));
@@ -5614,6 +5618,8 @@ test('Mesoamerican Mixtec Eight Deer Jaguar Claw Engine: calculates courage, sac
   assert(rep.activeHeroRank.rankNameMixtec.length > 0);
   assert(rep.secondaryHeroRank.rankLevel !== rep.activeHeroRank.rankLevel);
   assert(rep.secondaryStrategicVirtue.virtueNameKo !== rep.primaryStrategicVirtue.virtueNameKo);
+  assert(rep.ritualAction.length > 0);
+  assert(rep.reflectionFocus.length > 0);
   assert(rep.reflectiveQuestion.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
   assert(rep.calculatedAtKst.endsWith('+09:00 KST'));
@@ -5624,6 +5630,8 @@ test('Mesoamerican Mixtec Eight Deer Jaguar Claw Engine: calculates courage, sac
   assert(prompt.includes('메소아메리카 믹스테크 《8-사슴 재규어 발톱(Eight Deer)》'));
   assert(prompt.includes(repQ.activeHeroRank.rankNameKo));
   assert(prompt.includes(repQ.secondaryHeroRank.rankNameKo));
+  assert(prompt.includes('실천 의례'));
+  assert(prompt.includes('성찰 초점'));
   assert(prompt.includes('해석 경계'));
   assert(prompt.includes('교차 매트릭스'));
   assert(!prompt.includes('/100'));
@@ -5662,6 +5670,8 @@ test('Mesopotamian Atrahasis Flood Wisdom Engine: calculates reed wall intuition
   assert(rep.activeWisdomRank.rankNameAkkadian.length > 0);
   assert(rep.secondaryWisdomRank.rankLevel !== rep.activeWisdomRank.rankLevel);
   assert(rep.secondaryArkVirtue.virtueNameKo !== rep.primaryArkVirtue.virtueNameKo);
+  assert(rep.ritualAction.length > 0);
+  assert(rep.reflectionFocus.length > 0);
   assert(rep.reflectiveQuestion.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
   assert(rep.calculatedAtKst.endsWith('+09:00 KST'));
@@ -5672,6 +5682,8 @@ test('Mesopotamian Atrahasis Flood Wisdom Engine: calculates reed wall intuition
   assert(prompt.includes('고대 메소포타미아 서사시 《아트라하시스(Atrahasis)》'));
   assert(prompt.includes(repQ.activeWisdomRank.rankNameKo));
   assert(prompt.includes(repQ.secondaryWisdomRank.rankNameKo));
+  assert(prompt.includes('실천 의례'));
+  assert(prompt.includes('성찰 초점'));
   assert(prompt.includes('해석 경계'));
   assert(prompt.includes('교차 매트릭스'));
   assert(!prompt.includes('/100'));
