@@ -21,7 +21,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const GYEOGAM_YUROK_VERSION = '2.2.0';
+export const GYEOGAM_YUROK_VERSION = '2.3.0';
 
 export interface GyeogamYurokReport {
   engineVersion: string;
@@ -67,6 +67,7 @@ export interface GyeogamYurokReport {
   interpretiveBoundary: string;
   ritualAction: string;
   reflectionFocus: string;
+  reflectiveQuestion: string;
 }
 
 function djb2Hash(str: string): number {
@@ -169,7 +170,7 @@ function getTemporalGyeogamRhythm(now: Date) {
           : '겨울 · 해인(海印) 침잠기 (고요한 거울처럼 만물의 이치를 비추어 살피는 시기)';
 
   return {
-    kstTimeLabel: `${y}-${m}-${d} ${hh}:${mm} KST`,
+    kstTimeLabel: `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`,
     sipseungWatchWindow,
     seasonalSampungTone,
     temporalGuidance: `${sipseungWatchWindow} · ${seasonalSampungTone}의 흐름에 맞추어 외부가 아닌 내면의 길지를 먼저 세우십시오.`,
@@ -237,6 +238,9 @@ export function calculateGyeogamYurokProphecy(
   const reflectionFocus = question
     ? `'${question}'의 혼란 앞에서 바깥의 길지 대신 내면의 인의예지·십승길지로 먼저 세워야 할 중심은 무엇인가요?`
     : `세론의 소음을 내려놓고 지금 내 마음속 궁궁을을의 평온으로 지켜 낼 한 가지는 무엇인가요?`;
+  const reflectiveQuestion = question
+    ? `지금 "${question}" 앞에서 ${primaryGyeogamChapter.titleKo}와 ${haeinTalismanType.nameKo}의 뜻으로 내 안에 먼저 세울 십승길지는 무엇인가요?`
+    : reflectionFocus;
 
   return {
     engineVersion: GYEOGAM_YUROK_VERSION,
@@ -258,6 +262,7 @@ export function calculateGyeogamYurokProphecy(
     interpretiveBoundary: '본 결과는 《격암유록》의 비유적·철학적 상징 체계에 기반한 정성적 성찰 안내이며, 확정적 예언이나 길흉 판정이 아닙니다.',
     ritualAction,
     reflectionFocus,
+    reflectiveQuestion,
   };
 }
 
@@ -276,5 +281,6 @@ export function formatGyeogamYurokProphecyPrompt(report: GyeogamYurokReport): st
   - "${report.namSagoMasterAdvice}"
 - **실천 의례(Ritual Action)**: ${report.ritualAction}
 - **성찰 초점(Reflection Focus)**: ${report.reflectionFocus}
+- **질문 맞춤 성찰 질문**: ${report.reflectiveQuestion}
 - **해석 경계**: ${report.boundaryNotice}`;
 }
