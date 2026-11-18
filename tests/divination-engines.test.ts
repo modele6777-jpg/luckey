@@ -5690,6 +5690,8 @@ test('Korean Yi Sun-sin Nanjung Ilgi Strategic Engine: calculates Pilsa Jeuksaen
   assert(rep.secondaryStrategicStage.stageLevel !== rep.activeStrategicStage.stageLevel);
   assert(rep.secondaryChungmuVirtue.hanjaMotto !== rep.primaryChungmuVirtue.hanjaMotto);
   assert(rep.reflectiveQuestion.length > 0);
+  assert(rep.ritualAction.length > 0);
+  assert(rep.reflectionFocus.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
   assert(rep.calculatedAtKst.endsWith('+09:00 KST'));
   assert(Boolean(rep.yiSunSinSynthesisMatrix?.integratedAction));
@@ -5699,6 +5701,8 @@ test('Korean Yi Sun-sin Nanjung Ilgi Strategic Engine: calculates Pilsa Jeuksaen
   assert(prompt.includes('충무공 이순신 장군 친필 《난중일기(亂中日記)》'));
   assert(prompt.includes(repQ.activeStrategicStage.stageNameKo));
   assert(prompt.includes(repQ.secondaryStrategicStage.stageNameKo));
+  assert(prompt.includes('실천 의례'));
+  assert(prompt.includes('성찰 초점'));
   assert(prompt.includes('해석 경계'));
   assert(prompt.includes('교차 매트릭스'));
   assert(!prompt.includes('/100'));
@@ -5939,6 +5943,8 @@ test('Korean Yulgok Yi I Gyeokmong Yogyeol Engine: calculates noble aspiration i
   assert(rep.secondaryScholarStage.stageLevel !== rep.activeScholarStage.stageLevel);
   assert(rep.secondaryYulgokPrecept.hanjaMotto !== rep.primaryYulgokPrecept.hanjaMotto);
   assert(rep.reflectiveQuestion.length > 0);
+  assert(rep.ritualAction.length > 0);
+  assert(rep.reflectionFocus.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
   assert(rep.calculatedAtKst.endsWith('+09:00 KST'));
   assert(Boolean(rep.yulgokSynthesisMatrix?.integratedAction));
@@ -5948,6 +5954,8 @@ test('Korean Yulgok Yi I Gyeokmong Yogyeol Engine: calculates noble aspiration i
   assert(prompt.includes('조선 율곡 이이(栗谷 李珥) 《격몽요결(擊蒙要訣)》'));
   assert(prompt.includes(repQ.activeScholarStage.stageNameKo));
   assert(prompt.includes(repQ.secondaryScholarStage.stageNameKo));
+  assert(prompt.includes('실천 의례'));
+  assert(prompt.includes('성찰 초점'));
   assert(prompt.includes('해석 경계'));
   assert(prompt.includes('교차 매트릭스'));
   assert(!prompt.includes('%'));
@@ -7325,6 +7333,8 @@ test('Yun Dong-ju Sky Wind Stars Poetry Engine: calculates Pure Conscience, Well
   assert(rep.secondaryYunDongJuTheme.themeKey !== rep.activeYunDongJuTheme.themeKey);
   assert(rep.secondaryYunDongJuAphorism.aphorismKey !== rep.focalYunDongJuAphorism.aphorismKey);
   assert(rep.reflectiveQuestion.length > 0);
+  assert(rep.ritualAction.length > 0);
+  assert(rep.reflectionFocus.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
   assert(rep.calculatedAtKst.endsWith('+09:00 KST'));
   assert(Boolean(rep.yunDongJuSynthesisMatrix?.integratedAction));
@@ -7334,6 +7344,8 @@ test('Yun Dong-ju Sky Wind Stars Poetry Engine: calculates Pure Conscience, Well
   assert(prompt.includes('윤동주 《하늘과 바람과 별과 시》 순결한 양심 & 실존성찰 지표'));
   assert(prompt.includes(repQ.activeYunDongJuTheme.themeTitleKo));
   assert(prompt.includes(repQ.secondaryYunDongJuTheme.themeTitleKo));
+  assert(prompt.includes('실천 의례'));
+  assert(prompt.includes('성찰 초점'));
   assert(prompt.includes('해석 경계'));
   assert(prompt.includes('교차 매트릭스'));
   assert(!prompt.includes('/100'));
