@@ -21,7 +21,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const JINUL_JEONGHYE_SSANGSU_VERSION = 'LUCKEY-JINUL-JEONGHYE-SSANGSU-v2.1.0';
+export const JINUL_JEONGHYE_SSANGSU_VERSION = 'LUCKEY-JINUL-JEONGHYE-SSANGSU-v2.2.0';
 
 export interface SusimgyeolCorePrinciple {
   principleKey: string;
@@ -64,6 +64,8 @@ export interface JinulJeonghyeSsangsuResult {
     alignmentState: string;
     integratedAction: string;
   };
+  ritualAction: string;
+  reflectionFocus: string;
 }
 
 function formatJinulKstTimestamp(now: Date = new Date()): string {
@@ -208,6 +210,9 @@ export function calculateJinulJeonghyeSsangsu(
     integratedAction: `${focalZenMetaphor.practicalAction}${query?.trim() ? ` [질문 맥락: ${query.trim()}]` : ''}`,
   };
 
+  const ritualAction = `[${activeCorePrinciple.principleNameKo}] ${focalZenMetaphor.practicalAction}`;
+  const reflectionFocus = reflectiveQuestion;
+
   return {
     engineVersion: JINUL_JEONGHYE_SSANGSU_VERSION,
     calculatedAtKst,
@@ -227,6 +232,8 @@ export function calculateJinulJeonghyeSsangsu(
       mindPurificationGuidance,
     },
     jinulSynthesisMatrix,
+    ritualAction,
+    reflectionFocus,
   };
 }
 
@@ -261,5 +268,9 @@ export function formatJinulJeonghyeSsangsuPrompt(res: JinulJeonghyeSsangsuResult
       `- 통합 실천: ${res.jinulSynthesisMatrix.integratedAction}`,
     );
   }
+  lines.push(
+    `- 실천 의례(Ritual Action): ${res.ritualAction}`,
+    `- 성찰 초점(Reflection Focus): ${res.reflectionFocus}`,
+  );
   return lines.join('\n');
 }

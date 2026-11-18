@@ -15,7 +15,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const JEON_BONGJUN_NOKDU_VERSION = 'LUCKEY-JEON-BONGJUN-NOKDU-v2.1.0';
+export const JEON_BONGJUN_NOKDU_VERSION = 'LUCKEY-JEON-BONGJUN-NOKDU-v2.2.0';
 
 export interface NokduGeneralStage {
   stageLevel: number;
@@ -59,6 +59,8 @@ export interface JeonBongjunNokduResult {
     alignmentState: string;
     integratedAction: string;
   };
+  ritualAction: string;
+  reflectionFocus: string;
 }
 
 function formatNokduKstTimestamp(now: Date = new Date()): string {
@@ -165,6 +167,9 @@ export function calculateJeonBongjunNokdu(
     integratedAction: `${primaryRighteousManifesto.actionableDirective}${query?.trim() ? ` [질문 맥락: ${query.trim()}]` : ''}`,
   };
 
+  const ritualAction = `[${activeNokduStage.stageNameKo}] ${primaryRighteousManifesto.actionableDirective}`;
+  const reflectionFocus = reflectiveQuestion;
+
   return {
     engineVersion: JEON_BONGJUN_NOKDU_VERSION,
     calculatedAtKst,
@@ -180,6 +185,8 @@ export function calculateJeonBongjunNokdu(
     interpretiveBoundary,
     donghakPeasantLegacy,
     nokduSynthesisMatrix,
+    ritualAction,
+    reflectionFocus,
   };
 }
 
@@ -214,5 +221,9 @@ export function formatJeonBongjunNokduPrompt(result: JeonBongjunNokduResult): st
       `- 통합 실천: ${result.nokduSynthesisMatrix.integratedAction}`,
     );
   }
+  lines.push(
+    `- 실천 의례(Ritual Action): ${result.ritualAction}`,
+    `- 성찰 초점(Reflection Focus): ${result.reflectionFocus}`,
+  );
   return lines.join('\n');
 }
