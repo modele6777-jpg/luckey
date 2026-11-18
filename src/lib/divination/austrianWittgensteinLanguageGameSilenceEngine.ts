@@ -14,7 +14,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const AUSTRIAN_WITTGENSTEIN_LANGUAGE_GAME_SILENCE_VERSION = 'LUCKEY-WITTGENSTEIN-LANGUAGE-GAME-SILENCE-v2.2.0';
+export const AUSTRIAN_WITTGENSTEIN_LANGUAGE_GAME_SILENCE_VERSION = 'LUCKEY-WITTGENSTEIN-LANGUAGE-GAME-SILENCE-v2.3.0';
 
 export type WittgensteinQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -272,7 +272,7 @@ export function calculateAustrianWittgensteinLanguageGameSilence(
   const boundaryNotice = '비트겐슈타인 언어게임·침묵 관점은 사고의 혼란을 덜고 맥락을 살피기 위한 철학적 성찰 도구이며, 실증적 사실 검증이나 전문 상담을 대신하지 않습니다.';
   const baseDate = now ?? new Date();
   const kst = new Date(baseDate.getTime() + 9 * 60 * 60 * 1000);
-  const kstTimeLabel = `${temporalWittgensteinRhythm.kstDateLabel.replace(' KST', '')} ${String(kst.getUTCHours()).padStart(2, '0')}:${String(kst.getUTCMinutes()).padStart(2, '0')} KST`;
+  const kstTimeLabel = `${temporalWittgensteinRhythm.kstDateLabel.replace(' KST', '')} ${String(kst.getUTCHours()).padStart(2, '0')}:${String(kst.getUTCMinutes()).padStart(2, '0')} +09:00 (KST)`;
   const wittgensteinSynthesisMatrix = {
     coreInsight: activeWittgensteinTheme.themeTitleKo,
     recommendedAction: topicGuidance.practiceGuidance,
