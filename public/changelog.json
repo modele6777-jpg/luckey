@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.7.895",
+    "builtAt": "2026-11-19T07:38:00+09:00",
+    "summary": "세르반테스 돈키호테·에누마 엘리시 50대 이름·수메르 이난나 명계하강 3대 엔진 reflectiveQuestion·+09:00 (KST)·summary·question 연동(v1.7.895)",
+    "items": [
+      "세르반테스 돈키호테(v2.2.0)·에누마 엘리시 50대 이름(v2.2.0)·수메르 이난나 명계하강(v2.2.0): 질문 반응형 reflectiveQuestion·+09:00 (KST) 표기·프롬프트 출력 추가",
+      "deterministicEngine.ts: sumerianEnumaElishFiftyNames ALL_DCE_ENGINES summary 등록 및 돈키호테 호출부 question·now 전달 연동",
+      "divination-engines.test.ts: 3대 엔진 v1.7.895 회귀 테스트 추가"
+    ]
+  },
+  {
     "version": "1.7.894",
     "builtAt": "2026-11-19T07:32:00+09:00",
     "summary": "러시아 체호프·도스토옙스키·톨스토이 3대 엔진 실천 의례 및 성찰 초점 표준 연동(v1.7.894)",

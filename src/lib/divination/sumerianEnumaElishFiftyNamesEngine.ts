@@ -20,7 +20,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const ENUMA_ELISH_ENGINE_VERSION = '2.1.0';
+export const ENUMA_ELISH_ENGINE_VERSION = '2.2.0';
 
 export interface MardukSacredName {
   id: string;
@@ -56,6 +56,7 @@ export interface SumerianEnumaElishFiftyNamesReport {
     alignmentState: string;
     integratedAction: string;
   };
+  reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
 
@@ -66,7 +67,7 @@ function formatEnumaElishKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
 }
 
 const MARDUK_SACRED_NAMES_BASE: Omit<MardukSacredName, 'resonanceScore'>[] = [
@@ -199,6 +200,10 @@ export function calculateSumerianEnumaElishFiftyNames(
   };
 
   const interpretiveBoundary = '본 에누마 엘리시 마르두크 50대 이름 리포트는 고대 메소포타미아 서사시 원전과 수리 시드에 기반한 상징적 결단 안내이며, 절대적 예언이 아닙니다.';
+  const trimmedQ = question.trim();
+  const reflectiveQuestion = trimmedQ
+    ? `'${trimmedQ}'의 혼돈을 잠재우고 ${dominantSacredName.nameKo}의 주권을 세우기 위해 오늘 가장 먼저 끊어낼 모호함은 무엇인가요?`
+    : `지금 내 삶의 4대 바람(절제·열정·창의·정화) 중 가장 먼저 균형을 되찾아야 할 방향은 어디인가요?`;
 
   return {
     engineVersion: ENUMA_ELISH_ENGINE_VERSION,
@@ -213,6 +218,7 @@ export function calculateSumerianEnumaElishFiftyNames(
     enumaElishVictoryDecree,
     tabletOfDestinyGuidance,
     enumaElishSynthesisMatrix,
+    reflectiveQuestion,
     interpretiveBoundary,
   };
 }
@@ -235,6 +241,7 @@ export function formatSumerianEnumaElishFiftyNamesPrompt(rep: SumerianEnumaElish
       `  - 통합 실천: ${rep.enumaElishSynthesisMatrix.integratedAction}`,
     );
   }
+  lines.push(`· 질문 맞춤 성찰 질문: ${rep.reflectiveQuestion}`);
   lines.push(`· 해석 경계: ${rep.interpretiveBoundary}`);
   return lines.join('\n');
 }
