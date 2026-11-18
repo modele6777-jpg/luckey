@@ -2320,6 +2320,7 @@ test('Mental Resilience Engine: 위기 돌파 슈퍼파워 및 주역 난괘 탈
   const res = calculateMentalResilience({ profile, targetDate: new Date('2026-11-03T08:00:00+09:00'), question: '돌파 전략' });
   assert.equal(res.engineVersion, MENTAL_RESILIENCE_VERSION);
   assert(res.calculatedAtKst.endsWith('KST'));
+  assert(res.ritualAction.length > 0 && res.reflectionFocus.length > 0);
   assert(Boolean(res.resilienceSynthesisMatrix?.integratedAction));
   assert(res.interpretiveBoundary.length > 0);
   assert(res.resilienceScore >= 0 && res.resilienceScore <= 100);
@@ -2330,6 +2331,7 @@ test('Mental Resilience Engine: 위기 돌파 슈퍼파워 및 주역 난괘 탈
   assert(prompt.includes(MENTAL_RESILIENCE_VERSION));
   assert(prompt.includes('위기 돌파 슈퍼파워'));
   assert(prompt.includes('멘탈 쉴드'));
+  assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
   assert(prompt.includes('교차 매트릭스') && prompt.includes('해석 경계'));
   assert(!prompt.includes('/100'));
 });
@@ -2422,6 +2424,7 @@ test('Life Domain Wheel Engine: 6대 핵심 라이프 도메인 밸런스 휠 �
   const res = calculateLifeDomainWheel({ profile, targetDate: new Date('2026-11-03T08:00:00+09:00'), question: '삶의 균형' });
   assert.equal(res.engineVersion, LIFE_DOMAIN_WHEEL_VERSION);
   assert(res.calculatedAtKst.endsWith('KST'));
+  assert(res.ritualAction.length > 0 && res.reflectionFocus.length > 0);
   assert(Boolean(res.wheelSynthesisMatrix?.integratedAction));
   assert(res.interpretiveBoundary.length > 0);
   assert(res.wheelBalanceScore >= 0 && res.wheelBalanceScore <= 100);
@@ -2432,6 +2435,7 @@ test('Life Domain Wheel Engine: 6대 핵심 라이프 도메인 밸런스 휠 �
   assert(prompt.includes(LIFE_DOMAIN_WHEEL_VERSION));
   assert(prompt.includes('라이프 휠 균형도'));
   assert(prompt.includes('1순위 돌파 도메인'));
+  assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
   assert(prompt.includes('교차 매트릭스') && prompt.includes('해석 경계'));
   assert(!prompt.includes('/100'));
 });
@@ -2458,6 +2462,7 @@ test('Instant Decision Engine: 매화역수·기문둔갑 즉시 결단 검증',
   assert.equal(res.engineVersion, INSTANT_DECISION_ENGINE_VERSION);
   assert(res.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(res.reflectiveQuestion?.includes('지금 추진할까요'));
+  assert(res.ritualAction.length > 0 && res.reflectionFocus.length > 0);
   assert(Boolean(res.instantDecisionSynthesisMatrix?.integratedAction));
   assert(res.interpretiveBoundary.length > 0);
   assert(res.verdict.finalScore >= 0 && res.verdict.finalScore <= 100);
@@ -2465,6 +2470,7 @@ test('Instant Decision Engine: 매화역수·기문둔갑 즉시 결단 검증',
   assert(prompt.includes(INSTANT_DECISION_ENGINE_VERSION));
   assert(prompt.includes('+09:00 (KST)'));
   assert(prompt.includes('성찰 질문'));
+  assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
   assert(prompt.includes('교차 매트릭스') && prompt.includes('해석 경계'));
   assert(!prompt.includes('/100'));
 });

@@ -34,7 +34,7 @@
 import { hexagram, type Yao } from './iching';
 import { calculateQimen } from './eventCharts';
 
-export const INSTANT_DECISION_ENGINE_VERSION = 'LUCKEY-IDE-v2.1.0';
+export const INSTANT_DECISION_ENGINE_VERSION = 'LUCKEY-IDE-v2.2.0';
 
 function formatInstantDecisionKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -147,6 +147,8 @@ export interface InstantDecisionResult {
     alignmentState: string;
     integratedAction: string;
   };
+  ritualAction: string;
+  reflectionFocus: string;
   reflectiveQuestion?: string;
   interpretiveBoundary: string;
 }
@@ -507,6 +509,8 @@ export function calculateInstantDecision(options?: {
       },
     },
     instantDecisionSynthesisMatrix,
+    ritualAction: `본괘 ${primaryHex.name}과 ${dominantGate}(${gateNature}) 흐름에 맞추어 지금 당장 '${doNow}'를 실행하고, '${avoidNow}'는 보류하세요.`,
+    reflectionFocus: `즉시 결단(${primaryHex.name} → ${changedHex.name}) — ${cheYongPrimary.relationType} · ${dominantGate}(${grade})`,
     reflectiveQuestion: options?.questionText
       ? `‘${options.questionText.slice(0, 40)}’ 앞에서 본괘 ${primaryHex.name}과 ${dominantGate}(${gateNature})의 신호를 바탕으로 지금 당장 취할 현실적 한 걸음은 무엇입니까?`
       : `본괘 ${primaryHex.name}에서 변괘 ${changedHex.name}로 흐르는 지금, ${doNow}를 실행하기 위해 먼저 점검할 조건은 무엇입니까?`,
@@ -552,7 +556,9 @@ ${res.instantDecisionSynthesisMatrix ? `4. [교차 매트릭스]:
    - 핵심 긴장: ${res.instantDecisionSynthesisMatrix.dominantTension}
    - 조율 상태: ${res.instantDecisionSynthesisMatrix.alignmentState}
    - 통합 실천: ${res.instantDecisionSynthesisMatrix.integratedAction}` : ''}
-${res.reflectiveQuestion ? `- 성찰 질문: ${res.reflectiveQuestion}\n` : ''}- 해석 경계: ${res.interpretiveBoundary}
+${res.reflectiveQuestion ? `- 성찰 질문: ${res.reflectiveQuestion}\n` : ''}- 실천 의례: ${res.ritualAction}
+- 성찰 초점: ${res.reflectionFocus}
+- 해석 경계: ${res.interpretiveBoundary}
 ======================================================================
 [★ 루시 즉시 결단 답변 지침]:
 - 사용자가 '지금 할까 말까?', 'A vs B', '연락할까?', '계약할까?'를 물었을 때 위 실측 괘와 기문 8문을 명쾌한 승부수 언어로 풀어줘.
