@@ -13,7 +13,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const SCOTTISH_DAVID_HUME_VERSION = 'LUCKEY-DAVID-HUME-TREATISE-HUMAN-NATURE-v2.1.0';
+export const SCOTTISH_DAVID_HUME_VERSION = 'LUCKEY-DAVID-HUME-TREATISE-HUMAN-NATURE-v2.2.0';
 
 export interface HumeTheme {
   themeKey: string;
@@ -48,6 +48,8 @@ export interface DavidHumeTreatiseHumanNatureResult {
     guidanceTitle: string;
     philosophicalCounsel: string;
   };
+  ritualAction: string;
+  reflectionFocus: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
   humeSynthesisMatrix?: {
@@ -197,6 +199,9 @@ export function calculateDavidHumeTreatiseHumanNature(
     : `오늘 붙잡고 있는 확신 가운데, 온건한 회의주의의 여백과 타인을 향한 따뜻한 공감을 함께 열어 둘 부분은 어디입니까?`;
   const interpretiveBoundary = '이 리포트는 데이비드 흄의 경험론과 인간 본성론 철학을 바탕으로 한 성찰 비유이며, 사실적 인과 단정이나 미래 예측이 아닙니다.';
 
+  const ritualAction = `[${activeHumeTheme.themeTitleKo}] ${focalHumeAphorism.actionGuidance}`;
+  const reflectionFocus = `데이비드 흄 인간 본성론(${activeHumeTheme.themeKey}) — ${secondaryHumeTheme.themeTitleKo}`;
+
   return {
     engineVersion: SCOTTISH_DAVID_HUME_VERSION,
     calculatedAtKst,
@@ -212,6 +217,8 @@ export function calculateDavidHumeTreatiseHumanNature(
       guidanceTitle,
       philosophicalCounsel,
     },
+    ritualAction,
+    reflectionFocus,
     reflectiveQuestion,
     interpretiveBoundary,
     humeSynthesisMatrix,
@@ -242,6 +249,8 @@ export function formatDavidHumeTreatiseHumanNaturePrompt(res: DavidHumeTreatiseH
     );
   }
   lines.push(
+    `- 실천 의례: ${res.ritualAction}`,
+    `- 성찰 초점: ${res.reflectionFocus}`,
     `- 성찰 질문: ${res.reflectiveQuestion}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
   );

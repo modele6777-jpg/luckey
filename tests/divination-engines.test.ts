@@ -2696,6 +2696,7 @@ test('Shadow Archetype Engine: 융 심리학 그림자 자아 & 골든 섀도우
   const res = calculateShadowArchetype({ profile, targetDate: new Date('2026-11-03T10:00:00+09:00') });
   assert.equal(res.engineVersion, SHADOW_ARCHETYPE_VERSION);
   assert(res.calculatedAtKst.endsWith('KST'));
+  assert(res.ritualAction.length > 0 && res.reflectionFocus.length > 0);
   assert(Boolean(res.shadowSynthesisMatrix?.integratedAction));
   assert(res.interpretiveBoundary.length > 0);
   assert(res.shadowIntegrationScore >= 0 && res.shadowIntegrationScore <= 100);
@@ -2706,6 +2707,7 @@ test('Shadow Archetype Engine: 융 심리학 그림자 자아 & 골든 섀도우
   assert(prompt.includes('LUCKEY 융 심리학 그림자 자아 & 골든 섀도우 연금술'));
   assert(prompt.includes(res.primaryShadow.archetype));
   assert(prompt.includes('교차 매트릭스') && prompt.includes('해석 경계'));
+  assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
   assert(!prompt.includes('/100'));
 });
 
@@ -2788,6 +2790,7 @@ test('Serendipity Synchronicity Engine: 양자 동시성 & 세렌디피티 행�
   const res = calculateSerendipitySynchronicity({ profile, targetDate: new Date('2026-11-03T10:00:00+09:00'), question: '오늘의 행운 신호' });
   assert.equal(res.engineVersion, SERENDIPITY_SYNCHRONICITY_VERSION);
   assert(res.calculatedAtKst.endsWith('KST'));
+  assert(res.ritualAction.length > 0 && res.reflectionFocus.length > 0);
   assert(Boolean(res.serendipitySynthesisMatrix?.integratedAction));
   assert(res.interpretiveBoundary.length > 0);
   assert(res.synchronicityScore >= 0 && res.synchronicityScore <= 100);
@@ -2798,6 +2801,7 @@ test('Serendipity Synchronicity Engine: 양자 동시성 & 세렌디피티 행�
   assert(prompt.includes('LUCKEY 양자 동시성 & 세렌디피티 행운 가속'));
   assert(prompt.includes(res.activeLuckyPortal));
   assert(prompt.includes('교차 매트릭스') && prompt.includes('해석 경계'));
+  assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
   assert(!prompt.includes('/100'));
 });
 
@@ -7315,6 +7319,7 @@ test('David Hume Treatise of Human Nature Engine: calculates Mitigated Skepticis
   assert(rep.activeHumeTheme.themeTitleKo.length > 0);
   assert(rep.secondaryHumeTheme.themeTitleKo.length > 0);
   assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(Boolean(rep.humeSynthesisMatrix?.integratedAction));
   assert(rep.reflectiveQuestion.includes('확신과 공감의 균형'));
   assert(rep.interpretiveBoundary.includes('성찰 비유'));
@@ -7323,6 +7328,7 @@ test('David Hume Treatise of Human Nature Engine: calculates Mitigated Skepticis
   assert(prompt.includes(rep.activeHumeTheme.themeTitleKo));
   assert(prompt.includes('보조 교차 테마'));
   assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
   assert(prompt.includes('성찰 질문'));
   assert(prompt.includes('해석 경계'));
   assert(!prompt.includes('/100'));
