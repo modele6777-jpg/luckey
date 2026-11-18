@@ -17,7 +17,7 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const SOUL_JOURNEY_TAROT_VERSION = 'LUCKEY-JOURNEY-v2.1.0';
+export const SOUL_JOURNEY_TAROT_VERSION = 'LUCKEY-JOURNEY-v2.2.0';
 
 function formatSoulJourneyKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -64,6 +64,8 @@ export interface SoulJourneyTarotReport {
     alchemyScore: number; // 0~100
   };
   synthesisPromptGuidance: string;
+  ritualAction: string;
+  reflectionFocus: string;
   reflectiveQuestion?: string;
   soulJourneySynthesisMatrix?: {
     dominantTension: string;
@@ -354,6 +356,8 @@ export function runSoulJourneyTarotEngine(
   };
 
   const interpretiveBoundary = '본 영혼의 타로 여정 & 4원소 연금술 리포트는 타로 메이저 아르카나 원형과 생년월일 수비학에 기반한 정성적 성찰 안내이며, 확정적 미래 예언이 아닙니다.';
+  const ritualAction = `[${currentArchetype.nameKo}] ${currentArchetype.transcendenceKey}`;
+  const reflectionFocus = `영혼의 타로(${currentArchetype.nameKo}) — 보완 원소 ${lackingSuit}`;
   const reflectiveQuestion = q
     ? `"${q}"의 자리에서 ${currentArchetype.nameKo}의 그림자 함정(${currentArchetype.shadowTrap})을 넘어 보완 원소(${lackingSuit})를 한 스푼 더한다면 어떤 선택이 열릴까요?`
     : `오늘 ${currentArchetype.nameKo} 원형과 부족한 ${lackingSuit} 원소의 균형을 맞추기 위해 삶에 초대해 보고 싶은 태도는 무엇인가요?`;
@@ -364,6 +368,8 @@ export function runSoulJourneyTarotEngine(
 - 핵심 레슨 & 통과 의례: ${currentArchetype.coreLesson} (주의 함정: ${currentArchetype.shadowTrap})
 - 초월 열쇠 리추얼: ${currentArchetype.transcendenceKey}
 - 4원소 마이너 슈트 균형: 우세=${dominantSuit} / 보완필요=${lackingSuit}
+- 실천 의례: ${ritualAction}
+- 성찰 초점: ${reflectionFocus}
 - 교차 매트릭스: [핵심 긴장: ${soulJourneySynthesisMatrix.dominantTension} | 조율 상태: ${soulJourneySynthesisMatrix.alignmentState}]
   * 통합 실천: ${soulJourneySynthesisMatrix.integratedAction}
 - 성찰 질문: ${reflectiveQuestion}
@@ -377,6 +383,8 @@ export function runSoulJourneyTarotEngine(
     elementalBalance,
     riteOfPassage,
     synthesisPromptGuidance,
+    ritualAction,
+    reflectionFocus,
     reflectiveQuestion,
     soulJourneySynthesisMatrix,
     interpretiveBoundary,

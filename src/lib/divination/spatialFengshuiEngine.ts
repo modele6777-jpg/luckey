@@ -23,7 +23,7 @@
 import type { UserProfile } from '../sharedState';
 import { calculateDetailedSaju, type SajuAnalysisResult } from '../sajuAnalysis';
 
-export const SPATIAL_FENGSHUI_VERSION = 'LUCKEY-SFSE-v2.1.0';
+export const SPATIAL_FENGSHUI_VERSION = 'LUCKEY-SFSE-v2.2.0';
 
 function formatSpatialKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -93,6 +93,8 @@ export interface SpatialFengshuiResult {
     alignmentState: string;
     integratedAction: string;
   };
+  ritualAction: string;
+  reflectionFocus: string;
   reflectiveQuestion?: string;
   interpretiveBoundary: string;
 }
@@ -320,6 +322,8 @@ export function calculateSpatialFengshui(options?: {
   };
 
   const interpretiveBoundary = '본 동양 풍수·점성술 공간 길방위 리포트는 기문둔갑 팔문과 사주 오행 상징에 기반한 정성적 공간 배치 참고용이며, 부동산·투자·건축의 절대적 기준이 아닙니다.';
+  const ritualAction = `[${topGolden.direction} · ${topGolden.qimenGate}] ${todayTopGoldenDirection.summary}`;
+  const reflectionFocus = `공간 길방위(${topGolden.direction}) — 결핍 오행 ${lackingElement} 보완`;
 
   return {
     engineVersion: SPATIAL_FENGSHUI_VERSION,
@@ -339,6 +343,8 @@ export function calculateSpatialFengshui(options?: {
     hazardousDirections,
     todayTopGoldenDirection,
     spatialSynthesisMatrix,
+    ritualAction,
+    reflectionFocus,
     reflectiveQuestion: q
       ? `‘${q}’을(를) 실행할 때 오늘의 최고 길방위 ${topGolden.direction}(${topGolden.qimenGate})과 피해야 할 방위를 고려해 어디에 자리를 잡으시겠습니까?`
       : `결핍된 ${lackingElement} 기운을 채우고 ${topGolden.direction}(${topGolden.qimenGate})의 생기를 받기 위해 오늘 공간이나 책상 배치를 어떻게 다듬어 보시겠습니까?`,
@@ -368,7 +374,7 @@ export function formatSpatialFengshuiPrompt(res: SpatialFengshuiResult): string 
   ).join('\n');
 
   const matrixLine = res.spatialSynthesisMatrix
-    ? `\n4. [공간 교차 매트릭스]:\n   - 핵심 긴장: ${res.spatialSynthesisMatrix.dominantTension}\n   - 조율 상태: ${res.spatialSynthesisMatrix.alignmentState}\n   - 통합 실천: ${res.spatialSynthesisMatrix.integratedAction}${res.reflectiveQuestion ? `\n   - 성찰 질문: ${res.reflectiveQuestion}` : ''}\n   - 해석 경계: ${res.interpretiveBoundary}\n`
+    ? `\n4. [공간 교차 매트릭스]:\n   - 실천 의례: ${res.ritualAction}\n   - 성찰 초점: ${res.reflectionFocus}\n   - 핵심 긴장: ${res.spatialSynthesisMatrix.dominantTension}\n   - 조율 상태: ${res.spatialSynthesisMatrix.alignmentState}\n   - 통합 실천: ${res.spatialSynthesisMatrix.integratedAction}${res.reflectiveQuestion ? `\n   - 성찰 질문: ${res.reflectiveQuestion}` : ''}\n   - 해석 경계: ${res.interpretiveBoundary}\n`
     : `\n4. [해석 경계]: ${res.interpretiveBoundary}\n`;
 
   return `[🧭 동양 풍수 & 서양 점성술 공간 길방위 실측 데이터 (Astro-FengShui Spatial Core)]
