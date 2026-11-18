@@ -23,7 +23,7 @@ import {
   type NatalChartResult
 } from '../astrologyAnalysis';
 
-export const MEDICAL_BIO_MATRIX_VERSION = 'LUCKEY-BIO-v2.1.0';
+export const MEDICAL_BIO_MATRIX_VERSION = 'LUCKEY-BIO-v2.2.0';
 
 function formatBioMatrixKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -93,6 +93,8 @@ export interface MedicalBioMatrixResult {
   };
 
   summary: string;
+  ritualAction: string;
+  reflectionFocus: string;
   reflectiveQuestion?: string;
   bioMatrixSynthesisMatrix?: {
     dominantTension: string;
@@ -354,6 +356,8 @@ export function calculateMedicalBioMatrix(params?: {
     fatigueRiskLevel,
     prescriptions,
     summary,
+    ritualAction: `${primaryWeakness.organs}(${primaryWeakness.status})과 ${moonFocus.governedBodyPart}의 균형을 위해 ${prescriptions.sleepAndRecoveryRitual}을(를) 오늘 밤 실천하세요.`,
+    reflectionFocus: `바이오 매트릭스(${primaryConstitution} ↔ ${primaryWeakness.organs}) — ${sunFocus.zodiacSign}·${moonFocus.zodiacSign}`,
     reflectiveQuestion,
     bioMatrixSynthesisMatrix,
     interpretiveBoundary: '본 바이오 매트릭스 리포트는 오행 한난조습과 메디컬 점성술 상징에 기반한 정성적 웰니스 참고 안내이며, 의학적 진단이나 처방을 대체하지 않습니다.',
@@ -388,7 +392,11 @@ export function formatMedicalBioMatrixPrompt(res: MedicalBioMatrixResult): strin
   if (res.reflectiveQuestion) {
     lines.push(`- 성찰 질문: ${res.reflectiveQuestion}`);
   }
-  lines.push(`- 해석 경계: ${res.interpretiveBoundary}`);
+  lines.push(
+    `- 실천 의례: ${res.ritualAction}`,
+    `- 성찰 초점: ${res.reflectionFocus}`,
+    `- 해석 경계: ${res.interpretiveBoundary}`,
+  );
   lines.push(`※ 루시 지침: 질병을 의학적으로 진단하지 마십시오. 사주 한난조습과 메디컬 점성술의 오랜 지혜를 바탕으로 사용자의 오늘의 컨디션과 생체 피로도를 따뜻하게 위로하고, 실천 가능한 영양·수면 웰니스 가이드를 다정하게 조언해 주세요.`);
   return lines.join('\n');
 }
