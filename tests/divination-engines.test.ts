@@ -11489,3 +11489,30 @@ test('폴 리쾨르·알베르트 슈바이처·에드문트 후설 v1.7.853 질
   const husserlPrompt = formatGermanEdmundHusserlPhenomenologicalReductionPrompt(husserl);
   assert.ok(husserlPrompt.includes('+09:00') && husserlPrompt.includes('질문 맞춤 성찰 질문') && husserlPrompt.includes('해석 경계'));
 });
+
+test('에리히 프롬·프리드리히 실러·헤르만 헤세 데미안/황야의 이리 v1.7.854 질문 반응형 성찰 질문·+09:00 KST 회귀 검증', () => {
+  const profile = { basic: { name: '제제', birthdate: '1994-01-24', birthtime: '12:00', gender: 'male' } } as any;
+  const now = new Date('2026-11-18T23:40:00+09:00');
+  const query = '집착과 경직을 내려놓고 나다운 변화와 배려를 실천하고 싶어요';
+
+  const fromm = calculateGermanErichFrommArtOfLovingBeing(profile, query, now);
+  assert.equal(fromm.engineVersion, GERMAN_ERICH_FROMM_VERSION);
+  assert.match(fromm.calculatedAtKst, /\+09:00/);
+  assert.ok(fromm.reflectiveQuestion.includes(query));
+  const frommPrompt = formatGermanErichFrommArtOfLovingBeingPrompt(fromm);
+  assert.ok(frommPrompt.includes('+09:00') && frommPrompt.includes('질문 맞춤 성찰 질문') && frommPrompt.includes('해석 경계'));
+
+  const schiller = calculateGermanFriedrichSchillerAestheticEducation(profile, query, now);
+  assert.equal(schiller.engineVersion, GERMAN_FRIEDRICH_SCHILLER_AESTHETIC_EDUCATION_VERSION);
+  assert.match(schiller.calculatedAtKst, /\+09:00/);
+  assert.ok(schiller.reflectiveQuestion.includes(query));
+  const schillerPrompt = formatGermanFriedrichSchillerAestheticEducationPrompt(schiller);
+  assert.ok(schillerPrompt.includes('+09:00') && schillerPrompt.includes('질문 맞춤 성찰 질문') && schillerPrompt.includes('해석 경계'));
+
+  const hesse = calculateGermanHermannHesseDemianSteppenwolf(query, now);
+  assert.equal(hesse.engineVersion, GERMAN_HERMANN_HESSE_DEMIAN_STEPPENWOLF_VERSION);
+  assert.match(hesse.calculatedAtKst, /\+09:00/);
+  assert.ok(hesse.reflectiveQuestion.includes(query));
+  const hessePrompt = formatGermanHermannHesseDemianSteppenwolfPrompt(hesse);
+  assert.ok(hessePrompt.includes('+09:00') && hessePrompt.includes('질문 맞춤 성찰 질문') && hessePrompt.includes('해석 경계'));
+});
