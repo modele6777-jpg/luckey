@@ -5081,6 +5081,7 @@ test('Samkhya Twenty-Five Tattvas Engine: calculates Viveka discernment, Guna ba
   assert.equal(rep.gunaBalance.sattva + rep.gunaBalance.rajas + rep.gunaBalance.tamas, 100);
   assert(rep.dominantTattva.nameKo.length > 0);
   assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(Boolean(rep.samkhyaSynthesisMatrix?.integratedAction));
   assert(rep.reflectiveQuestion.includes('상키야 25타트바 분별지'));
   assert(rep.interpretiveBoundary.includes('성찰 비유'));
@@ -5088,6 +5089,7 @@ test('Samkhya Twenty-Five Tattvas Engine: calculates Viveka discernment, Guna ba
   assert(prompt.includes('고대 인도 상키야(Samkhya) 25타트바 & 푸루샤-프라크리티 분별지 실측 리포트'));
   assert(prompt.includes(rep.dominantTattva.nameKo));
   assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
   assert(prompt.includes('성찰 질문'));
   assert(prompt.includes('해석 경계'));
   assert(!prompt.includes('/100'));
@@ -5794,12 +5796,14 @@ test('Scandinavian Eddic Yggdrasil Nine Realms Engine: calculates cosmic axis, U
   assert(rep.gimleGoldenRenewalPower >= 0 && rep.gimleGoldenRenewalPower <= 100);
   assert(rep.activeRealmStage.stageNameOldNorse.length > 0);
   assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(Boolean(rep.eddicSynthesisMatrix?.integratedAction));
   assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatEddicYggdrasilPrompt(rep);
   assert(prompt.includes('고대 북유럽 고에다 《위그드라실(Yggdrasil)》'));
   assert(prompt.includes(rep.activeRealmStage.stageNameKo));
   assert(prompt.includes('교차 매트릭스') && prompt.includes('해석 경계'));
+  assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });
@@ -7447,6 +7451,7 @@ test('Adam Smith Moral Sentiments Engine: calculates Impartial Spectator, Sympat
   assert(rep.activeAdamSmithTheme.themeTitleKo.length > 0);
   assert(rep.secondaryAdamSmithTheme.themeTitleKo.length > 0);
   assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(Boolean(rep.adamSmithSynthesisMatrix?.integratedAction));
   assert(rep.reflectiveQuestion.includes('원칙과 온정의 조화'));
   assert(rep.interpretiveBoundary.includes('성찰 비유'));
@@ -7455,6 +7460,7 @@ test('Adam Smith Moral Sentiments Engine: calculates Impartial Spectator, Sympat
   assert(prompt.includes(rep.activeAdamSmithTheme.themeTitleKo));
   assert(prompt.includes('보조 교차 테마'));
   assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
   assert(prompt.includes('성찰 질문'));
   assert(prompt.includes('해석 경계'));
   assert(!prompt.includes('/100'));

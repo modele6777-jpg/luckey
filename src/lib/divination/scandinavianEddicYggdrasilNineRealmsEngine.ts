@@ -14,7 +14,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const EDDIC_YGGDRASIL_VERSION = 'LUCKEY-EDDIC-YGGDRASIL-v2.2.0';
+export const EDDIC_YGGDRASIL_VERSION = 'LUCKEY-EDDIC-YGGDRASIL-v2.3.0';
 
 export interface YggdrasilRealmStage {
   stageLevel: number;
@@ -50,6 +50,8 @@ export interface EddicYggdrasilResult {
     alignmentState: string;
     integratedAction: string;
   };
+  ritualAction: string;
+  reflectionFocus: string;
   reflectiveQuestion?: string;
   interpretiveBoundary: string;
 }
@@ -143,6 +145,9 @@ export function calculateEddicYggdrasil(
     ? `지금 "${q}" 앞에서 세계수 위그드라실의 '${activeRealmStage.stageNameKo}(${activeRealmStage.stageNameOldNorse})' 품계와 '${primaryNorseVirtue.virtueNameKo}'의 덕목을 품고 내가 지켜야 할 뿌리는 무엇인가요?`
     : `'${activeRealmStage.stageNameKo}'의 자리에서 우르드의 샘과 미미르의 샘이 비추는 오늘 내 몫의 실천 한 가지는 무엇인가요?`;
 
+  const ritualAction = `[${activeRealmStage.stageNameOldNorse}] ${primaryNorseVirtue.actionableDirective}`;
+  const reflectionFocus = `고에다 위그드라실(${activeRealmStage.stageNameKo}) — ${primaryNorseVirtue.virtueNameKo}`;
+
   return {
     engineVersion: EDDIC_YGGDRASIL_VERSION,
     calculatedAtKst: getKstDateString(now),
@@ -155,6 +160,8 @@ export function calculateEddicYggdrasil(
     primaryNorseVirtue,
     voluspaEpiphany,
     eddicSynthesisMatrix,
+    ritualAction,
+    reflectionFocus,
     reflectiveQuestion,
     interpretiveBoundary: '본 고대 북유럽 고에다 위그드라실 리포트는 노르드 신화·철학 상징 체계에 기반한 정성적 성찰 안내이며, 확정적 미래 예언이 아닙니다.',
   };
@@ -186,6 +193,8 @@ export function formatEddicYggdrasilPrompt(result: EddicYggdrasilResult): string
   if (result.reflectiveQuestion) {
     lines.push(`- 질문 맞춤 성찰 질문: ${result.reflectiveQuestion}`);
   }
+  lines.push(`- 실천 의례: ${result.ritualAction}`);
+  lines.push(`- 성찰 초점: ${result.reflectionFocus}`);
   lines.push(`- 해석 경계: ${result.interpretiveBoundary}`);
   return lines.join('\n');
 }
