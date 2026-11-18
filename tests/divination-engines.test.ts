@@ -2594,6 +2594,7 @@ test('Rune Matrix Engine: 고대 노르딕 룬 동시성 3대 스프레드 검�
   const res = calculateRuneMatrix({ profile, targetDate: new Date('2026-11-03T08:00:00+09:00') });
   assert.equal(res.engineVersion, RUNE_MATRIX_VERSION);
   assert(res.calculatedAtKst.endsWith('KST'));
+  assert(res.ritualAction.length > 0 && res.reflectionFocus.length > 0);
   assert(Boolean(res.runeSynthesisMatrix?.integratedAction));
   assert(res.interpretiveBoundary.length > 0);
   assert(res.runePowerScore >= 0 && res.runePowerScore <= 100);
@@ -2604,6 +2605,7 @@ test('Rune Matrix Engine: 고대 노르딕 룬 동시성 3대 스프레드 검�
   assert(prompt.includes(RUNE_MATRIX_VERSION));
   assert(prompt.includes('고대 노르딕 룬 동시성 매트릭스'));
   assert(prompt.includes('교차 매트릭스') && prompt.includes('해석 경계'));
+  assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
   assert(!prompt.includes('/100'));
 });
 
@@ -2990,6 +2992,7 @@ test('Sacred Vortex Geometry Engine: 황금비 영혼 수비학 & 보텍스 기�
   const res = calculateSacredVortexGeometry({ profile, targetDate: new Date('2026-11-04T10:00:00+09:00'), question: '영혼 기하학' });
   assert.equal(res.engineVersion, SACRED_VORTEX_VERSION);
   assert(res.calculatedAtKst.endsWith('KST'));
+  assert(res.ritualAction.length > 0 && res.reflectionFocus.length > 0);
   assert(Boolean(res.vortexSynthesisMatrix?.integratedAction));
   assert(res.interpretiveBoundary.length > 0);
   assert(res.soulGeometryTitle.length > 0);
@@ -3000,6 +3003,7 @@ test('Sacred Vortex Geometry Engine: 황금비 영혼 수비학 & 보텍스 기�
   assert(prompt.includes('LUCKEY 황금비 영혼 수비학 & 보텍스 기하학'));
   assert(prompt.includes(res.platonicSolid.solidName));
   assert(prompt.includes('교차 매트릭스') && prompt.includes('해석 경계'));
+  assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
   assert(!prompt.includes('/100'));
   assert.doesNotMatch(prompt, /\bHz\b|Solfeggio|솔페지오|주파수/i);
 });
@@ -5139,12 +5143,14 @@ test('Rosicrucian Chymical Wedding Engine: calculates seven days transmutation, 
   assert(rep.phoenixRebirthVibration >= 0 && rep.phoenixRebirthVibration <= 100);
   assert(rep.dominantStage.dayName.length > 0);
   assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(Boolean(rep.rosicrucianSynthesisMatrix?.integratedAction));
   assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatRosicrucianChymicalWeddingPrompt(rep);
   assert(prompt.includes('장미십자회 《화학적 결혼》 7일 연금술 영혼 승화 실측 데이터'));
   assert(prompt.includes(rep.dominantStage.dayName));
   assert(prompt.includes('교차 매트릭스') && prompt.includes('해석 경계'));
+  assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });
