@@ -263,8 +263,8 @@ export function calculateHuangdiFiveMovementsSixQi(
     cautionNotice: `태과·불급으로 인한 취약 경향(${pathologicalTendency})을 미리 살피어 무리하지 마십시오.`,
   };
 
-  const ritualAction = `[${birthYearGanZhi} · ${fiveMovement.element}] ${dietaryPrescription} · ${breathMindHarmonization}`;
-  const reflectionFocus = `지금 나의 '${susceptibleOrgans}' 리듬을 지키기 위해 오늘 천기(${sixQi.heavenRulerSiTian})에 맞추어 덜어낼 과로는 무엇입니까?`;
+  const ritualAction = `[${birthYearGanZhi} · ${element}] ${dietaryPrescription} · ${breathMindHarmonization}`;
+  const reflectionFocus = `지금 나의 '${susceptibleOrgans}' 리듬을 지키기 위해 오늘 천기(${heavenRulerSiTian})에 맞추어 덜어낼 과로는 무엇입니까?`;
 
   return {
     engineVersion: HUANGDI_YUNQI_VERSION,
