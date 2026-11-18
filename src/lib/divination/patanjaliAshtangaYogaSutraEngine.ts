@@ -22,7 +22,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const PATANJALI_ASHTANGA_YOGA_ENGINE_VERSION = '2.1.0';
+export const PATANJALI_ASHTANGA_YOGA_ENGINE_VERSION = '2.2.0';
 
 export interface YogaLimb {
   id: string;
@@ -47,6 +47,8 @@ export interface PatanjaliAshtangaYogaReport {
   secondaryYogaLimb: YogaLimb; // 보조 지원 지칙
   dharanaFocusPrescription: string; // 다라나(집중) 개운 처방
   samadhiClarityGuidance: string; // 사마디(삼매) 명징성 지침
+  ritualAction: string;
+  reflectionFocus: string;
   yogaSynthesisMatrix?: {
     dominantTension: string;
     alignmentState: string;
@@ -221,6 +223,8 @@ export function calculatePatanjaliAshtangaYoga(
   }
 
   const calculatedAtKst = formatPatanjaliKstTimestamp(now);
+  const ritualAction = `오늘 제${dominantYogaLimb.level}지칙 '${dominantYogaLimb.nameKo}(${dominantYogaLimb.sanskrit})'을 실천하기 위해, ${dharanaFocusPrescription}`;
+  const reflectionFocus = `파탄잘리 요가 수트라(${dominantYogaLimb.nameKo} ↔ ${secondaryYogaLimb.nameKo}) — ${dominantYogaLimb.focusRealm}과 치타 브리티 니로다`;
   const composite = Math.round(
     (cittaVrittiNirodhaScore + kleshaPurificationRate + purushaConsciousnessAwakening + pranayamaVitalityBalance) / 4
   );
@@ -242,6 +246,8 @@ export function calculatePatanjaliAshtangaYoga(
     secondaryYogaLimb,
     dharanaFocusPrescription,
     samadhiClarityGuidance,
+    ritualAction,
+    reflectionFocus,
     yogaSynthesisMatrix,
     interpretiveBoundary: '본 파탄잘리 요가 수트라 8지칙 리포트는 고전 요가 철학에 기반한 정성적 마음 수련 안내이며, 의학·심리 진단을 대신하지 않습니다.',
   };
@@ -261,6 +267,8 @@ export function formatPatanjaliAshtangaYogaPrompt(
     `- 보조 수행 요가지칙: 제${report.secondaryYogaLimb.level}지칙 ${report.secondaryYogaLimb.nameKo} [${report.secondaryYogaLimb.focusRealm}] — ${report.secondaryYogaLimb.practicePrinciple}`,
     `- 다라나(단일점 집중) 처방: ${report.dharanaFocusPrescription}`,
     `- 사마디(삼매 명징성) 지침: ${report.samadhiClarityGuidance}`,
+    `- 실천 의례: ${report.ritualAction}`,
+    `- 성찰 초점: ${report.reflectionFocus}`,
     `- [AI 해석 지침]: 파탄잘리 《요가 수트라》의 '치타 브리티 니로다(마음의 작용을 고요히 함)' 원리를 적용하여, 질문자가 산만한 잡념과 번뇌의 소용돌이를 멈추고 고요한 순수의식(Puruṣa)의 중심을 잡아 흔들림 없는 집중력과 삼매의 명징성을 회복하도록 지혜롭게 안내하십시오.`,
   ];
   if (report.yogaSynthesisMatrix) {
