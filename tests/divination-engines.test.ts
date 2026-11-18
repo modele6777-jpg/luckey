@@ -11435,3 +11435,30 @@ test('헬레니즘 랏·카이발리온 7대 법칙·포이만드레스 v1.7.810
   const poimandresPrompt = formatHermeticPoimandresPrompt(poimandres);
   assert.ok(poimandresPrompt.includes('+09:00') && poimandresPrompt.includes('질문 맞춤 성찰 질문') && poimandresPrompt.includes('해석 경계'));
 });
+
+test('몽테뉴 수상록·몽테스키외 법의 정신·빅토르 위고 레 미제라블 v1.7.852 질문 반응형 성찰 질문·+09:00 KST 회귀 검증', () => {
+  const profile = { basic: { name: '제제', birthdate: '1994-01-24', birthtime: '12:00', gender: 'male' } } as any;
+  const now = new Date('2026-11-18T23:20:00+09:00');
+  const query = '복잡한 선택 앞에서 균형과 양심을 잃지 않고 싶어요';
+
+  const montaigne = calculateMontaigneEssaisWisdom(profile, query, now);
+  assert.equal(montaigne.engineVersion, MONTAIGNE_ESSAIS_WISDOM_VERSION);
+  assert.match(montaigne.calculatedAtKst, /\+09:00/);
+  assert.ok(montaigne.reflectiveQuestion.includes(query));
+  const montaignePrompt = formatMontaigneEssaisWisdomPrompt(montaigne);
+  assert.ok(montaignePrompt.includes('+09:00') && montaignePrompt.includes('질문 맞춤 성찰 질문') && montaignePrompt.includes('해석 경계'));
+
+  const montesquieu = calculateFrenchMontesquieuSpiritOfLaws(profile, query, now);
+  assert.equal(montesquieu.engineVersion, FRENCH_MONTESQUIEU_SPIRIT_OF_LAWS_VERSION);
+  assert.match(montesquieu.calculatedAtKst, /\+09:00/);
+  assert.ok(montesquieu.reflectiveQuestion.includes(query));
+  const montesquieuPrompt = formatFrenchMontesquieuSpiritOfLawsPrompt(montesquieu);
+  assert.ok(montesquieuPrompt.includes('+09:00') && montesquieuPrompt.includes('질문 맞춤 성찰 질문') && montesquieuPrompt.includes('해석 경계'));
+
+  const hugo = calculateFrenchVictorHugoLesMiserables(profile, query, now);
+  assert.equal(hugo.engineVersion, FRENCH_VICTOR_HUGO_LES_MISERABLES_VERSION);
+  assert.match(hugo.calculatedAtKst, /\+09:00/);
+  assert.ok(hugo.reflectiveQuestion.includes(query));
+  const hugoPrompt = formatFrenchVictorHugoLesMiserablesPrompt(hugo);
+  assert.ok(hugoPrompt.includes('+09:00') && hugoPrompt.includes('질문 맞춤 성찰 질문') && hugoPrompt.includes('해석 경계'));
+});

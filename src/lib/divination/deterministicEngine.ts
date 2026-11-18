@@ -4934,7 +4934,7 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'ancientIndianEarlyBuddhistFourNobleTruths', nameKo: '초기불교 사성제 팔정도 고집멸도 중도해탈', icon: '☸️', category: 'deep_master', summary: '고집멸도 사성제와 팔정도의 삼학(계·정·혜)으로 갈애의 매듭을 풀고 지금-여기 중도의 평정을 엽니다.' },
   { key: 'islamicSufiRumiMasnaviDivineLove', nameKo: '루미 마스나비 수피즘 신성한사랑 영혼갈망', icon: '🕊️', category: 'deep_master' },
   { key: 'koreanUisangHwaeomIlseungBeopgye', nameKo: '신라 의상대사 화엄일승법계도 법성게 원융무애', icon: '☸️', category: 'deep_master', summary: '신라 의상대사의 《화엄일승법계도》와 《법성게》에 담긴 원융무애·일중일체다중일의 상즉상입 지혜로 분리와 대립을 넘어 조화로운 연결을 비춥니다.' },
-  { key: 'frenchMontaigneEssaisWisdom', nameKo: '몽테뉴 수상록 자기성찰 독단탈피 회의주의 중용', icon: '📖', category: 'deep_master' },
+  { key: 'frenchMontaigneEssaisWisdom', nameKo: '몽테뉴 수상록 자기성찰 독단탈피 회의주의 중용', icon: '📖', category: 'deep_master', summary: '미셸 드 몽테뉴의 《수상록》 철학으로 "내가 무엇을 아는가?"라는 지적 겸양과 솔직한 자기성찰, 일상 중용과 관용의 지혜를 비춥니다.' },
   { key: 'ancientIndianNagarjunaMadhyamakaSunyata', nameKo: '용수 중론 팔불중도 연기즉공 이제설 공성지혜', icon: '☸️', category: 'deep_master', summary: '용수 《중론》의 팔불중도와 연기즉공 사유로 고정관념의 양극단을 해체하고 걸림 없는 변화의 길을 봅니다.' },
   { key: 'koreanJinulJeonghyeSsangsuDonohJeomsu', nameKo: '보조국사 지눌 수심결 정혜쌍수 돈오점수 성적등지', icon: '📜', category: 'deep_master', summary: '보조국사 지눌 《수심결》의 돈오점수와 정혜쌍수 원리로 단박의 자각을 일상의 고요와 지혜로 차분히 닦아 나갑니다.' },
   { key: 'renaissanceBrunoInfiniteUniverseHeroicFurore', nameKo: '조르다노 브루노 무한우주론 영웅적열정 정신주권', icon: '🌌', category: 'deep_master', summary: '폐쇄된 수정 구체를 깨는 브루노의 무한우주론과 영웅적 열정(Eroico Furore)으로 사고의 한계를 돌파하는 관점' },

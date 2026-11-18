@@ -13,7 +13,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const FRENCH_VICTOR_HUGO_LES_MISERABLES_VERSION = 'LUCKEY-VICTOR-HUGO-LES-MISERABLES-v2.3.0';
+export const FRENCH_VICTOR_HUGO_LES_MISERABLES_VERSION = 'LUCKEY-VICTOR-HUGO-LES-MISERABLES-v2.4.0';
 
 export interface HugoTheme {
   themeKey: string;
@@ -54,6 +54,7 @@ export interface FrenchVictorHugoLesMiserablesResult {
   };
   ritualAction: string;
   reflectionFocus: string;
+  reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
 
@@ -188,6 +189,11 @@ export function calculateFrenchVictorHugoLesMiserables(
     integratedAction: `${activeHugoTheme.practicalCounsel} (${focalHugoAphorism.actionGuidance})`,
   };
 
+  const trimmedQuery = query?.trim();
+  const reflectiveQuestion = trimmedQuery
+    ? `"${trimmedQuery}"라는 갈림길에서 '${activeHugoTheme.themeTitleKo}'의 자비와 양심으로 응답한다면, 편리한 침묵 대신 오늘 내가 기꺼이 붙들고 건넬 한 걸음은 무엇인가요?`
+    : `'${activeHugoTheme.themeTitleKo}'의 마음으로 돌아볼 때, 오늘 자비와 양심의 편에 서서 건네고 싶은 가장 따뜻한 용기는 무엇인가요?`;
+
   return {
     engineVersion: FRENCH_VICTOR_HUGO_LES_MISERABLES_VERSION,
     calculatedAtKst: formatHugoKstTimestamp(now),
@@ -205,6 +211,7 @@ export function calculateFrenchVictorHugoLesMiserables(
     hugoSynthesisMatrix,
     ritualAction: focalHugoAphorism.actionGuidance,
     reflectionFocus: activeHugoTheme.practicalCounsel,
+    reflectiveQuestion,
     interpretiveBoundary: '빅토르 위고의 자비·도덕적 양심·연대 상징을 빌린 정성적 성찰 관점이며, 개인 점수나 미래 단정이 아닙니다.',
   };
 }
@@ -234,6 +241,7 @@ export function formatFrenchVictorHugoLesMiserablesPrompt(
       `- 통합 실천: ${res.hugoSynthesisMatrix.integratedAction}`,
     );
   }
+  lines.push(`- 질문 맞춤 성찰 질문: ${res.reflectiveQuestion}`);
   lines.push(`- 해석 경계: 빅토르 위고의 자비·도덕적 양심·연대 상징을 빌린 정성적 성찰 관점이며, 개인 점수나 미래 단정이 아닙니다.`);
   return lines.join('\n');
 }
