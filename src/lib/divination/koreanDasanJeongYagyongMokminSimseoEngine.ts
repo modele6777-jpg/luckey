@@ -16,7 +16,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const KOREAN_DASAN_MOKMIN_SIMSEO_VERSION = 'LUCKEY-KOREAN-DASAN-MOKMIN-SIMSEO-v2.1.0';
+export const KOREAN_DASAN_MOKMIN_SIMSEO_VERSION = 'LUCKEY-KOREAN-DASAN-MOKMIN-SIMSEO-v2.2.0';
 
 export interface DasanTheme {
   themeKey: string;
@@ -58,6 +58,8 @@ export interface DasanMokminSimseoResult {
     alignmentState: string;
     integratedAction: string;
   };
+  ritualAction: string;
+  reflectionFocus: string;
 }
 
 function formatDasanKstTimestamp(now: Date = new Date()): string {
@@ -212,6 +214,9 @@ export function calculateDasanMokminSimseo(
     integratedAction: `${focalDasanAphorism.practicalAction}${query?.trim() ? ` [질문 맥락: ${query.trim()}]` : ''}`,
   };
 
+  const ritualAction = `[${activeDasanTheme.themeTitleKo}] ${focalDasanAphorism.practicalAction}`;
+  const reflectionFocus = reflectiveQuestion;
+
   return {
     engineVersion: KOREAN_DASAN_MOKMIN_SIMSEO_VERSION,
     calculatedAtKst,
@@ -230,6 +235,8 @@ export function calculateDasanMokminSimseo(
       philosophicalGuidance,
     },
     dasanSynthesisMatrix,
+    ritualAction,
+    reflectionFocus,
   };
 }
 
@@ -263,5 +270,9 @@ export function formatDasanMokminSimseoPrompt(res: DasanMokminSimseoResult): str
       `- 통합 실천: ${res.dasanSynthesisMatrix.integratedAction}`,
     );
   }
+  lines.push(
+    `- 실천 의례(Ritual Action): ${res.ritualAction}`,
+    `- 성찰 초점(Reflection Focus): ${res.reflectionFocus}`,
+  );
   return lines.join('\n');
 }

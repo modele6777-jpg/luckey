@@ -14,7 +14,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const KOREAN_DANJAE_SHIN_CHAE_HO_VERSION = 'LUCKEY-DANJAE-SHIN-CHAE-HO-v2.1.0';
+export const KOREAN_DANJAE_SHIN_CHAE_HO_VERSION = 'LUCKEY-DANJAE-SHIN-CHAE-HO-v2.2.0';
 
 export interface DanjaeTheme {
   themeKey: string;
@@ -55,6 +55,8 @@ export interface KoreanDanjaeShinChaeHoJoseonSanggosaResult {
     alignmentState: string;
     integratedAction: string;
   };
+  ritualAction: string;
+  reflectionFocus: string;
 }
 
 function formatDanjaeKstTimestamp(now: Date = new Date()): string {
@@ -204,6 +206,9 @@ export function calculateKoreanDanjaeShinChaeHoJoseonSanggosa(
     integratedAction: `${focalDanjaeAphorism.actionGuidance}${query?.trim() ? ` [질문 맥락: ${query.trim()}]` : ''}`,
   };
 
+  const ritualAction = `[${focalDanjaeAphorism.sourceContext}] ${focalDanjaeAphorism.actionGuidance}`;
+  const reflectionFocus = reflectiveQuestion;
+
   return {
     engineVersion: KOREAN_DANJAE_SHIN_CHAE_HO_VERSION,
     calculatedAtKst,
@@ -222,6 +227,8 @@ export function calculateKoreanDanjaeShinChaeHoJoseonSanggosa(
       philosophicalCounsel,
     },
     danjaeSynthesisMatrix,
+    ritualAction,
+    reflectionFocus,
   };
 }
 
@@ -257,5 +264,9 @@ export function formatKoreanDanjaeShinChaeHoJoseonSanggosaPrompt(
       `- 통합 실천: ${res.danjaeSynthesisMatrix.integratedAction}`,
     );
   }
+  lines.push(
+    `- 실천 의례(Ritual Action): ${res.ritualAction}`,
+    `- 성찰 초점(Reflection Focus): ${res.reflectionFocus}`,
+  );
   return lines.join('\n');
 }
