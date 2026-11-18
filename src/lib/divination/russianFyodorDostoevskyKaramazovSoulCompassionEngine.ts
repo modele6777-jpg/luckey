@@ -13,7 +13,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const RUSSIAN_FYODOR_DOSTOEVSKY_KARAMAZOV_SOUL_COMPASSION_VERSION = 'LUCKEY-FYODOR-DOSTOEVSKY-KARAMAZOV-SOUL-COMPASSION-v2.2.0';
+export const RUSSIAN_FYODOR_DOSTOEVSKY_KARAMAZOV_SOUL_COMPASSION_VERSION = 'LUCKEY-FYODOR-DOSTOEVSKY-KARAMAZOV-SOUL-COMPASSION-v2.3.0';
 
 export interface DostoevskyTheme {
   themeKey: string;
@@ -54,6 +54,8 @@ export interface RussianFyodorDostoevskyKaramazovSoulCompassionResult {
   };
   // v2.1.0 심층 보강: 이중 원전 교차·성찰 질문·해석 경계
   secondaryDostoevskyAphorism?: DostoevskyAphorism;
+  ritualAction: string;
+  reflectionFocus: string;
   reflectiveDostoevskyQuestion: string;
   reflectiveQuestion?: string;
   interpretiveBoundary: string;
@@ -221,6 +223,8 @@ export function calculateRussianFyodorDostoevskyKaramazovSoulCompassion(
     },
     dostoevskySynthesisMatrix,
     secondaryDostoevskyAphorism,
+    ritualAction: `[${activeDostoevskyTheme.themeKey}] ${focalDostoevskyAphorism.actionGuidance}`,
+    reflectionFocus: `도스토옙스키(${activeDostoevskyTheme.themeTitleKo}) — ${focalDostoevskyAphorism.sourceContext}`,
     reflectiveDostoevskyQuestion,
     reflectiveQuestion: reflectiveDostoevskyQuestion,
     interpretiveBoundary,
@@ -259,6 +263,8 @@ export function formatRussianFyodorDostoevskyKaramazovSoulCompassionPrompt(
     );
   }
   lines.push(
+    `- 실천 의례: ${res.ritualAction}`,
+    `- 성찰 초점: ${res.reflectionFocus}`,
     `- 성찰 질문: ${res.reflectiveDostoevskyQuestion}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
   );

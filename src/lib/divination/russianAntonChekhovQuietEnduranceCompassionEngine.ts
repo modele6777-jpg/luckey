@@ -13,7 +13,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const RUSSIAN_ANTON_CHEKHOV_QUIET_ENDURANCE_COMPASSION_VERSION = 'LUCKEY-ANTON-CHEKHOV-QUIET-ENDURANCE-COMPASSION-v2.2.0';
+export const RUSSIAN_ANTON_CHEKHOV_QUIET_ENDURANCE_COMPASSION_VERSION = 'LUCKEY-ANTON-CHEKHOV-QUIET-ENDURANCE-COMPASSION-v2.3.0';
 
 export interface ChekhovTheme {
   themeKey: string;
@@ -54,6 +54,8 @@ export interface RussianAntonChekhovQuietEnduranceCompassionResult {
   };
   // v2.1.0 심층 보강: 이중 원전 교차·성찰 질문·해석 경계
   secondaryChekhovAphorism?: ChekhovAphorism;
+  ritualAction: string;
+  reflectionFocus: string;
   reflectiveChekhovQuestion: string;
   reflectiveQuestion?: string;
   interpretiveBoundary: string;
@@ -221,6 +223,8 @@ export function calculateRussianAntonChekhovQuietEnduranceCompassion(
     },
     chekhovSynthesisMatrix,
     secondaryChekhovAphorism,
+    ritualAction: `[${activeChekhovTheme.themeKey}] ${focalChekhovAphorism.actionGuidance}`,
+    reflectionFocus: `안톤 체호프(${activeChekhovTheme.themeTitleKo}) — ${focalChekhovAphorism.sourceContext}`,
     reflectiveChekhovQuestion,
     reflectiveQuestion: reflectiveChekhovQuestion,
     interpretiveBoundary,
@@ -259,6 +263,8 @@ export function formatRussianAntonChekhovQuietEnduranceCompassionPrompt(
     );
   }
   lines.push(
+    `- 실천 의례: ${res.ritualAction}`,
+    `- 성찰 초점: ${res.reflectionFocus}`,
     `- 성찰 질문: ${res.reflectiveChekhovQuestion}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
   );
