@@ -5441,10 +5441,13 @@ test('Korean Wonhyo Hwajaeng One Mind Engine: calculates One Mind Two Gates, Hwa
   assert(rep.wonYungWheTongHarmonization >= 0 && rep.wonYungWheTongHarmonization <= 100);
   assert(rep.innerJinYeoPurityIndex >= 0 && rep.innerJinYeoPurityIndex <= 100);
   assert(rep.activeHwajaengGate.gateNameKo.length > 0);
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatWonhyoHwajaengPrompt(rep);
   assert(prompt.includes('신라 원효대사 《십문화쟁론》 일심이문 & 화쟁 원융회통'));
   assert(prompt.includes(rep.activeHwajaengGate.gateNameKo));
+  assert(prompt.includes('실천 의례'));
+  assert(prompt.includes('성찰 초점'));
 });
 
 test('Chinese Mayi Mianxiang Twelve Palaces Engine: calculates 12 palaces, Qi aura luminosity and inner heart morphology', () => {
@@ -6299,6 +6302,7 @@ test('Uisang Hwaeom Ilseung Beopgyedo Engine: calculates Beopseong Wonnyung, San
   assert(rep.activeBeopgyeVerse.hanjaVerse.length > 0);
   assert(rep.secondaryBeopgyeVerse.verseKey !== rep.activeBeopgyeVerse.verseKey);
   assert(rep.secondarySpiritualGate.gateKey !== rep.focalSpiritualGate.gateKey);
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(rep.reflectiveQuestion.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
   assert(rep.calculatedAtKst.endsWith('+09:00 KST'));
@@ -6310,6 +6314,8 @@ test('Uisang Hwaeom Ilseung Beopgyedo Engine: calculates Beopseong Wonnyung, San
   assert(prompt.includes(repQ.activeBeopgyeVerse.hanjaVerse));
   assert(prompt.includes(repQ.secondaryBeopgyeVerse.hanjaVerse));
   assert(prompt.includes('해석 경계'));
+  assert(prompt.includes('실천 의례'));
+  assert(prompt.includes('성찰 초점'));
   assert(prompt.includes('교차 매트릭스'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
@@ -7004,11 +7010,14 @@ test('Yeonam Park Jiwon Yeolha Ilgi Engine: calculates One-Night Nine Crossings,
   assert(rep.calculatedAtKst.endsWith('KST'));
   assert(Boolean(rep.yeonamSynthesisMatrix?.integratedAction));
   assert(rep.dailyPracticeRitual.length > 0);
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(rep.reflectiveQuestion.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatYeonamParkJiwonYeolhaIlgiPrompt(rep);
   assert(prompt.includes('연암 박지원 《열하일기》 일야구도 & 이용후생·법고창신 실학 지표'));
   assert(prompt.includes(rep.activeYeonamTheme.themeTitleKo));
+  assert(prompt.includes('실천 의례'));
+  assert(prompt.includes('성찰 초점'));
   assert(prompt.includes('교차 매트릭스'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));

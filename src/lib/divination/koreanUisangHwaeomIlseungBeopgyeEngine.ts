@@ -12,12 +12,12 @@
  *    - 초발심시변정각(初發心時便正覺) 생사열반상공화(生死涅槃常共和): 처음 깨달음을 향해 발심한 바로 그 자리가 온전한 정각이며, 생사와 열반이 언제나 함께 어우러진다.
  *    - 구래부동명위불(舊來不動名爲佛): 예로부터 본래 움직임 없는 그 참성품을 일러 부처라 한다.
  *
- * @version LUCKEY-UISANG-HWAEOM-BEOPGYE-v2.1.0
+ * @version LUCKEY-UISANG-HWAEOM-BEOPGYE-v2.2.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const UISANG_HWAEOM_BEOPGYE_VERSION = 'LUCKEY-UISANG-HWAEOM-BEOPGYE-v2.1.0';
+export const UISANG_HWAEOM_BEOPGYE_VERSION = 'LUCKEY-UISANG-HWAEOM-BEOPGYE-v2.2.0';
 
 export interface BeopgyeSealVerse {
   verseKey: string;
@@ -48,6 +48,8 @@ export interface UisangHwaeomIlseungBeopgyeResult {
   secondaryBeopgyeVerse: BeopgyeSealVerse;
   focalSpiritualGate: HwaeomSpiritualGate;
   secondarySpiritualGate: HwaeomSpiritualGate;
+  ritualAction: string;
+  reflectionFocus: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
   uisangHwaeomCounsel: {
@@ -173,9 +175,11 @@ export function calculateUisangHwaeomIlseungBeopgye(
   const secondarySpiritualGate = HWAEOM_GATES[secondaryGateIndex];
 
   const trimmedQuery = query?.trim();
+  const ritualAction = `[${focalSpiritualGate.gateNameKo.split('(')[0].trim()}] ${focalSpiritualGate.dailyMeditation}`;
   const reflectiveQuestion = trimmedQuery
     ? `의상대사의 《법성게》 '${activeBeopgyeVerse.koreanPronunciation}'와 '${secondaryBeopgyeVerse.koreanPronunciation}'를 비추어 볼 때, "${trimmedQuery}"에서 둘로 나누던 분별을 내려놓고 하나로 꿰어야 할 지점은 어디인가요?`
     : `지금 삶의 인다라망 속에서, '${activeBeopgyeVerse.koreanPronunciation}'의 원융함과 '${secondaryBeopgyeVerse.koreanPronunciation}'의 통찰을 함께 여는 작은 한 걸음은 무엇일까요?`;
+  const reflectionFocus = reflectiveQuestion;
 
   const interpretiveBoundary = '이 지표는 신라 의상대사의 《화엄일승법계도》와 《법성게》에 담긴 원융무애·상즉상입·초발심시변정각 철학을 관계와 태도 성찰의 거울로 해석한 것이며, 구체적 사건의 성패를 단정하는 예언이 아닙니다.';
 
@@ -212,6 +216,8 @@ export function calculateUisangHwaeomIlseungBeopgye(
     secondaryBeopgyeVerse,
     focalSpiritualGate,
     secondarySpiritualGate,
+    ritualAction,
+    reflectionFocus,
     reflectiveQuestion,
     interpretiveBoundary,
     uisangHwaeomCounsel: {
@@ -242,7 +248,9 @@ export function formatUisangHwaeomIlseungBeopgyePrompt(res: UisangHwaeomIlseungB
     `- 화엄 영성 관문: ${res.focalSpiritualGate.gateNameKo}`,
     `- 보조 교차 관문: ${res.secondarySpiritualGate.gateNameKo}`,
     `- 인다라망 통찰: ${res.focalSpiritualGate.indranetWisdom}`,
+    `- 실천 의례: ${res.ritualAction}`,
     `- 성찰 질문: ${res.reflectiveQuestion}`,
+    `- 성찰 초점: ${res.reflectionFocus}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
     `- 일상 참구 지침: ${res.uisangHwaeomCounsel.beopgyeGuidance}`,
   ];

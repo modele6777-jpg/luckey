@@ -10,7 +10,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const WONHYO_HWAJAENG_VERSION = '2.3.0';
+export const WONHYO_HWAJAENG_VERSION = '2.4.0';
 
 export interface WonhyoSituationalHwajaeng {
   themeKey: 'existence_emptiness' | 'truth_delusion' | 'assertion_refutation' | 'source_return' | 'fearless_freedom';
@@ -57,6 +57,8 @@ export interface WonhyoHwajaengReport {
   temporalOneMindRhythm: WonhyoTemporalOneMindRhythm;
   dialecticHarmonizationMatrix: WonhyoDialecticHarmonization;
   wonhyoMasterDharmaWord: string;
+  ritualAction: string;
+  reflectionFocus: string;
   wonhyoSynthesisMatrix?: {
     dominantTension: string;
     alignmentState: string;
@@ -294,6 +296,8 @@ export function calculateWonhyoHwajaeng(
   const kst = new Date(now.getTime() + 9 * 3600 * 1000);
   const calculatedAtKst = `${kst.toISOString().slice(0, 19)}+09:00`;
   const trimmedQ = (question || '').trim();
+  const ritualAction = `[${activeHwajaengGate.gateNameKo.split(' ')[0]}] ${muAePracticeDirective}`;
+  const reflectionFocus = situational.reflectionPrompt;
   const wonhyoSynthesisMatrix = {
     dominantTension: `${situational.themeLabelKo} ↔ ${activeHwajaengGate.gateNameKo}`,
     alignmentState: `${temporalOneMindRhythm.timeWindowKo} · ${temporalOneMindRhythm.seasonKo}`,
@@ -319,6 +323,8 @@ export function calculateWonhyoHwajaeng(
       muAePracticeDirective,
     },
     wonhyoMasterDharmaWord,
+    ritualAction,
+    reflectionFocus,
     wonhyoSynthesisMatrix,
     interpretiveBoundary: '본 리포트는 원효대사의 일심이문·화쟁 사상에 기반한 정성적 성찰 안내이며, 절대적 시비 판정이 아닙니다.',
   };
@@ -348,6 +354,8 @@ export function formatWonhyoHwajaengPrompt(report: WonhyoHwajaengReport): string
   - 현재 주도 문(門): ${jinYeoDominant ? '심진여문(고요한 본성 성찰 우위)' : '심생멸문(역동적 현실 실천 우위)'}
   - 리듬 조언: ${report.temporalOneMindRhythm.rhythmGuidance}
 - **원융회통 무애행 지침**: ${report.dialecticHarmonizationMatrix.muAePracticeDirective}
+- **실천 의례**: ${report.ritualAction}
+- **성찰 초점**: ${report.reflectionFocus}
 - **원효 성사 법문 처방**:
   - "${report.wonhyoMasterDharmaWord}"
 - **해석 경계**: 본 리포트는 원효대사의 일심이문·화쟁 사상에 기반한 정성적 성찰 안내이며, 절대적 시비 판정이 아닙니다.${matrixLine}`;

@@ -8,12 +8,12 @@
  * 4. 북학개방 문물 수용 혜안(北學開放 視野 慧眼): 좁은 소중화 명분론의 우물 안 개구리를 벗어나, 천하의 뛰어난 문물과 제도를 편견 없이 관찰하고 배움으로써 시대를 혁신하는 광활한 안목.
  * 5. 위선 타파 해학·풍자 여유도(諧謔的 餘裕度): <호질(虎叱)>, <허생전(許生傳)> 등에서 번뜩이는 사대부의 가식과 허위의식을 단칼에 무너뜨리는 호탕한 유머와 통쾌한 해학적 여유.
  *
- * @version LUCKEY-YEONAM-PARK-JIWON-YEOLHA-ILGI-v2.0.0
+ * @version LUCKEY-YEONAM-PARK-JIWON-YEOLHA-ILGI-v2.1.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const KOREAN_YEONAM_PARK_JIWON_VERSION = 'LUCKEY-YEONAM-PARK-JIWON-YEOLHA-ILGI-v2.0.0';
+export const KOREAN_YEONAM_PARK_JIWON_VERSION = 'LUCKEY-YEONAM-PARK-JIWON-YEOLHA-ILGI-v2.1.0';
 
 export type YeonamQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -54,6 +54,8 @@ export interface YeonamParkJiwonYeolhaIlgiResult {
   activeYeonamTheme: YeonamTheme;
   focalYeonamAphorism: YeonamAphorism;
   dailyPracticeRitual: string;
+  ritualAction: string;
+  reflectionFocus: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
   yeonamComprehensiveGuidance: {
@@ -293,6 +295,8 @@ export function calculateYeonamParkJiwonYeolhaIlgi(
     activeYeonamTheme,
     focalYeonamAphorism,
     dailyPracticeRitual: ritualByTopic[questionTopic],
+    ritualAction: ritualByTopic[questionTopic],
+    reflectionFocus: questionByTopic[questionTopic],
     reflectiveQuestion: questionByTopic[questionTopic],
     interpretiveBoundary: '열하일기의 사유는 우열을 수치로 재단하지 않으며, 질문자의 시선과 일상의 실용을 비추는 문학적·실학적 은유로만 활용합니다.',
     yeonamComprehensiveGuidance: {
@@ -321,7 +325,9 @@ export function formatYeonamParkJiwonYeolhaIlgiPrompt(res: YeonamParkJiwonYeolha
     `- 원전 출처: "${res.focalYeonamAphorism.aphorismHanja}" [${res.focalYeonamAphorism.sourceContext}]`,
     `- 구체적 실천 지침: ${res.focalYeonamAphorism.actionGuidance}`,
     `- 오늘의 실천 의례: ${res.dailyPracticeRitual}`,
+    `- 실천 의례: ${res.ritualAction}`,
     `- 핵심 성찰 질문: ${res.reflectiveQuestion}`,
+    `- 성찰 초점: ${res.reflectionFocus}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
     `- 종합 실학사상 권면: ${res.yeonamComprehensiveGuidance.philosophicalCounsel}`,
   ];
