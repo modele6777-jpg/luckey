@@ -61,6 +61,7 @@ import { drawLucyTarotCards, formatTarotMarker } from '@/utils/tarotDetector';
 import { isLucyScrollPinned, lucyScrollPinHeld, noteLucyScrollPin, overlayCoversElement, releaseLucyScrollPin } from '@/lib/lucyScrollPin';
 import { captureLucySearchAnchor, resolveLucySearchOpenGuardedTop, resolveLucySearchRestoreTop, type LucySearchScrollAnchor } from '@/lib/lucySearchScroll';
 import { isDualPaneLayout, isDuoUnfoldedState } from '@/lib/perfMode';
+import { subscribeFoldState } from '@/lib/foldState';
 import { buildLucyTarotReadingPrompt } from '@/lib/lucyTarotReading';
 import { getLucyChatDay as getTodayDateKey } from '@/lib/lucyChatDay';
 import { joinKakaoBubblesForTTS } from '@/lib/lucyChatUtils';
@@ -1115,13 +1116,16 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
       });
     };
     handleLayoutChange();
-    window.addEventListener('resize', handleLayoutChange, { passive: true });
-    window.addEventListener('orientationchange', handleLayoutChange, { passive: true });
-    window.visualViewport?.addEventListener('resize', handleLayoutChange, { passive: true });
+    // Follow the shared fold store. The pane ids change in the App frame's next
+    // commit, so read them on the following frame instead of mid-event.
+    let frame = 0;
+    const unsubscribe = subscribeFoldState(() => {
+      if (frame) cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => { frame = 0; handleLayoutChange(); });
+    });
     return () => {
-      window.removeEventListener('resize', handleLayoutChange);
-      window.removeEventListener('orientationchange', handleLayoutChange);
-      window.visualViewport?.removeEventListener('resize', handleLayoutChange);
+      if (frame) cancelAnimationFrame(frame);
+      unsubscribe();
     };
   }, []);
 

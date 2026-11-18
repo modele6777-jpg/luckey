@@ -1,4 +1,5 @@
-import { bindVisualViewportLifecycle, prepareViewportAfterUpdate, scheduleVisualViewportSync, syncVisualViewportBox, readViewportSnapshot, resolveLayoutViewportSize, getLayoutViewportProbe, isIosStandaloneWindow } from './visualViewportBox';
+import { classifyFold, readFoldStateNow, subscribeFoldState, FOLD_COVER_MAX_SHORT_SIDE, FOLD_SEGMENT_QUERIES } from './foldState';
+import { bindVisualViewportLifecycle, prepareViewportAfterUpdate, scheduleVisualViewportSync, syncVisualViewportBox } from './visualViewportBox';
 
 export type PerfProfile = 'full' | 'galaxy' | 'duo' | 'iphonexs' | 'pwa' | 'reduced' | 'legacy';
 
@@ -153,7 +154,7 @@ export interface DuoUnfoldedState {
  * 951×537, while the reported cover is 461×678. A 512px guard separates
  * these without mistaking an ordinary phone rotation for an unfold.
  */
-export const DUO_COVER_MAX_SHORT_SIDE = 512;
+export const DUO_COVER_MAX_SHORT_SIDE = FOLD_COVER_MAX_SHORT_SIDE;
 
 /**
  * Inner display once the shorter side has cleared the cover.
@@ -168,96 +169,19 @@ const DUO_LARGE_SCREEN_LONG_SIDE = 768;
 
 /** Rotation-invariant geometry: a folded phone stays one page in either direction. */
 export function resolveDuoViewport(width: number, height: number, spanned = false): DuoUnfoldedState {
-  const orientation: DuoUnfoldedState['orientation'] = width > height ? 'landscape' : 'portrait';
-
-  // Hardware hinge. A spanned screen is the unfolded inner display even if a
-  // segment reports a narrow size.
-  if (spanned) {
-    return { unfolded: true, orientation };
-  }
-
-  const shortSide = Math.min(width, height);
-  const longSide = Math.max(width, height);
-  const ratio = shortSide / Math.max(longSide, 1);
-
-  if (shortSide < DUO_COVER_MAX_SHORT_SIDE) {
-    return { unfolded: false, orientation };
-  }
-
-  const isUnfolded =
-    (shortSide >= DUO_INNER_MIN_SHORT_SIDE && ratio >= DUO_INNER_MIN_RATIO) ||
-    longSide >= DUO_LARGE_SCREEN_LONG_SIDE;
-
-  return { unfolded: isUnfolded, orientation };
+  return classifyFold(width, height, spanned);
 }
 
-let lastDuoLayoutViewport: { width: number; height: number } | null = null;
-
-export const DUO_SEGMENT_QUERIES = [
-  '(horizontal-viewport-segments: 2)',
-  '(vertical-viewport-segments: 2)',
-  '(spanning: single-fold-vertical)',
-  '(spanning: single-fold-horizontal)',
-] as const;
-
-export function isViewportSpanned(win: Window = window): boolean {
-  return DUO_SEGMENT_QUERIES.some(query => {
-    try { return win.matchMedia(query).matches; } catch { return false; }
-  });
-}
-
-function keyboardOccludesLayout(win: Window): boolean {
-  const activeEl = win.document?.activeElement;
-  const isInputActive = Boolean(
-    activeEl &&
-    (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA' || (activeEl as HTMLElement).isContentEditable)
-  );
-  const doc = win.document;
-  return isInputActive || Boolean(
-    doc?.documentElement.classList.contains('keyboard-open') ||
-    doc?.body?.classList.contains('keyboard-open') ||
-    doc?.documentElement.classList.contains('lucy-input-focused') ||
-    doc?.body?.classList.contains('lucy-input-focused')
-  );
-}
-
-/** Full screen height for this window width, ignoring a keyboard or browser chrome shrink. */
-function unoccludedHeight(win: Window, width: number, rawHeight: number): number {
-  const screen = win.screen;
-  let screenHeight = 0;
-  if (screen?.width && screen?.height) {
-    const near = (a: number, b: number) => Math.abs(a - b) <= 96;
-    if (near(width, screen.width)) screenHeight = screen.height;
-    else if (near(width, screen.height)) screenHeight = screen.width;
-  }
-  const remembered = lastDuoLayoutViewport && Math.abs(lastDuoLayoutViewport.width - width) <= 2
-    ? lastDuoLayoutViewport.height
-    : 0;
-  return Math.max(rawHeight, screenHeight, remembered);
-}
+export const DUO_SEGMENT_QUERIES = FOLD_SEGMENT_QUERIES;
 
 /**
- * Fold state from the device's layout size, not from a keyboard or URL-bar shrink.
- * A real fold changes the window width to the cover. A shorter height at the same
- * unfolded width stays dual.
+ * Fold state from the shared frame store (src/lib/foldState.ts). Every caller
+ * gets the same snapshot, measured from the rendered canvas, so App panes,
+ * navigation, Lucy and Big Bang never disagree mid-fold.
  */
 export function isDuoUnfoldedState(): DuoUnfoldedState {
   if (typeof window === 'undefined') return { unfolded: false, orientation: 'portrait' };
-  // Installed (home screen) WebKit can keep innerWidth at the folded width
-  // after unfolding; the rendered CSS/document width is the real canvas.
-  const rendered = window.navigator && isIosStandaloneWindow(window)
-    ? resolveLayoutViewportSize(readViewportSnapshot(window))
-    : { width: window.innerWidth, height: window.innerHeight };
-  const width = rendered.width;
-  const rawHeight = rendered.height;
-  if (isViewportSpanned(window)) return resolveDuoViewport(width, rawHeight, true);
-
-  const fullHeight = unoccludedHeight(window, width, rawHeight);
-  const keyboard = keyboardOccludesLayout(window);
-  const collapsed = fullHeight > rawHeight * 1.12;
-  const height = keyboard || collapsed ? fullHeight : rawHeight;
-  if (!keyboard && !collapsed) lastDuoLayoutViewport = { width, height: rawHeight };
-  return resolveDuoViewport(width, height, false);
+  return readFoldStateNow();
 }
 
 /**
@@ -286,31 +210,10 @@ export function createViewportSettler(run: () => void): { trigger: () => void; c
   return { trigger, cancel };
 }
 
-/** Re-evaluate when the hinge, keyboard, rotation, or page visibility changes. */
+/** Notified only when the shared fold/orientation state actually changes. */
 export function subscribeDuoLayout(onChange: () => void): () => void {
   if (typeof window === 'undefined') return () => {};
-  const queries = DUO_SEGMENT_QUERIES.map(query => {
-    try { return window.matchMedia(query); } catch { return null; }
-  }).filter((query): query is MediaQueryList => Boolean(query));
-  const settler = createViewportSettler(onChange);
-  const handler = settler.trigger;
-  // The rendered root resizes when the real fold geometry lands, even if no
-  // further window resize event is published.
-  const rootResize = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(handler) : null;
-  rootResize?.observe(document.documentElement);
-  rootResize?.observe(getLayoutViewportProbe(document));
-  queries.forEach(query => query.addEventListener?.('change', handler));
-  for (const event of ['resize', 'orientationchange', 'pageshow']) window.addEventListener(event, handler, { passive: true });
-  window.visualViewport?.addEventListener('resize', handler, { passive: true });
-  document.addEventListener('visibilitychange', handler);
-  return () => {
-    settler.cancel();
-    rootResize?.disconnect();
-    queries.forEach(query => query.removeEventListener?.('change', handler));
-    for (const event of ['resize', 'orientationchange', 'pageshow']) window.removeEventListener(event, handler);
-    window.visualViewport?.removeEventListener('resize', handler);
-    document.removeEventListener('visibilitychange', handler);
-  };
+  return subscribeFoldState(() => onChange());
 }
 
 function isFoldableInnerScreen(): boolean {

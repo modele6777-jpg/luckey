@@ -34,7 +34,8 @@ import { GlobalScrollToTopOnHeaderTap } from "./components/navigation/GlobalScro
 import { BgMusicPlayer } from "./components/trinity/BgMusicPlayer";
 import { initTTSAudioLifecycle } from "./lib/audio";
 import { installGlobalButtonTapSound } from "./lib/globalButtonTapSound";
-import { shouldUsePageTransitions, shouldMountBgMusicPlayer, isDualPaneLayout, isDuoUnfoldedState, subscribeDuoLayout } from "./lib/perfMode";
+import { shouldUsePageTransitions, shouldMountBgMusicPlayer } from "./lib/perfMode";
+import { useFoldState, subscribeFoldState } from "./lib/foldState";
 import { isDuoDividerDoubleTap, mapDuoPaneSide, shouldResetDuoPaneSwapOnFold, type DuoDividerTap } from "./lib/duoPaneSwap";
 import { DuoCosmicAmbientRoom } from "./components/duo/DuoCosmicAmbientRoom";
 import AuroraBackground from "./components/AuroraBackground";
@@ -247,11 +248,8 @@ function AppContent() {
   const [location, navigate] = useLocation();
   const locationSearch = useSearch();
 
-  // 📱 iPhone Duo 7.6" 펼침 / 접힘 및 세로(상하)/가로(좌우) 레이아웃 실시간 감지
-  const [duoState, setDuoState] = React.useState(() => {
-    if (typeof window === 'undefined') return { unfolded: false, orientation: 'portrait' as const };
-    return isDuoUnfoldedState();
-  });
+  // 📱 접힘/펼침·세로/가로는 공유 화면 틀 상태 하나만 따른다 (src/lib/foldState.ts).
+  const duoState = useFoldState();
   const isDuoUnfolded = duoState.unfolded;
   const isDuoPortrait = isDuoUnfolded && duoState.orientation === 'portrait';
   const isDuoLandscape = isDuoUnfolded && duoState.orientation === 'landscape';
@@ -297,21 +295,12 @@ function AppContent() {
   const [foldedCosmicRoom, setFoldedCosmicRoom] = React.useState(false);
 
   React.useEffect(() => {
-    const handleLayoutChange = () => {
-      if (typeof window === 'undefined') return;
-      const state = isDuoUnfoldedState();
-      const wasUnfolded = previousUnfoldedRef.current;
-      const isNowUnfolded = state.unfolded;
+    // Root classes are written by the fold store; here only the fold transition is handled.
+    return subscribeFoldState((next, previous) => {
+      const wasUnfolded = previous.unfolded;
+      const isNowUnfolded = next.unfolded;
       previousUnfoldedRef.current = isNowUnfolded;
       if (wasUnfolded !== isNowUnfolded) markFoldRuntime(isNowUnfolded ? 'unfold-commit' : 'fold-commit');
-
-      setDuoState(previous => previous.unfolded === state.unfolded && previous.orientation === state.orientation ? previous : state);
-      document.documentElement.classList.toggle('duo-unfolded-mode', state.unfolded);
-      document.body.classList.toggle('duo-unfolded-mode', state.unfolded);
-      document.documentElement.classList.toggle('duo-unfolded-portrait', state.unfolded && state.orientation === 'portrait');
-      document.body.classList.toggle('duo-unfolded-portrait', state.unfolded && state.orientation === 'portrait');
-      document.documentElement.classList.toggle('duo-unfolded-landscape', state.unfolded && state.orientation === 'landscape');
-      document.body.classList.toggle('duo-unfolded-landscape', state.unfolded && state.orientation === 'landscape');
 
       // 펼침 → 접힘: 좌우 순서를 초기화해 다음 재펼침 때 Lucy를 오른쪽에 둔다.
       // 진행 중이던 경계 더블탭도 취소한다.
@@ -334,11 +323,7 @@ function AppContent() {
           if (cover.navigateTo && !hasOpenScreenOverlay()) navigate(cover.navigateTo);
         }
       }
-    };
-    handleLayoutChange();
-    // subscribeDuoLayout listens to resize/orientation/visual viewport and
-    // re-checks after the fold settles, so a stale WebKit size cannot stick.
-    return subscribeDuoLayout(handleLayoutChange);
+    });
   }, [navigate]);
 
   const isFirstMount = React.useRef(true);
@@ -563,6 +548,16 @@ function AppContent() {
     let suppressTouchClickUntil = 0;
     let gestureLockedUrl = '';
     const clearGestureLock = () => { gestureLockedUrl = ''; };
+    // Folding/rotating can swallow touchend. A stale gesture must not
+    // suppress the next tap or keep blocking clicks after the layout changes.
+    const resetTouchGestureState = () => {
+      touchActive = false;
+      touchMoved = false;
+      maxTouchMove = 0;
+      startedOnControl = false;
+      suppressTouchClickUntil = 0;
+      gestureLockedUrl = '';
+    };
 
     const getSafeInsets = () => {
       try {
@@ -704,7 +699,13 @@ function AppContent() {
     window.addEventListener('popstate', handlePopStateCapture, true);
     const navigationEvents = ['prism-navigate', 'nav-click-active', 'prism:bigbang_commit', 'prism:cycle_nav'];
     navigationEvents.forEach(name => window.addEventListener(name, clearGestureLock));
+    window.addEventListener('resize', resetTouchGestureState, { passive: true });
+    window.addEventListener('orientationchange', resetTouchGestureState, { passive: true });
+    document.addEventListener('visibilitychange', resetTouchGestureState);
     return () => {
+      window.removeEventListener('resize', resetTouchGestureState);
+      window.removeEventListener('orientationchange', resetTouchGestureState);
+      document.removeEventListener('visibilitychange', resetTouchGestureState);
       window.removeEventListener('touchstart', handleEdgeTouchStart, true);
       window.removeEventListener('touchmove', handleEdgeTouchMove, true);
       window.removeEventListener('touchend', handleTouchEnd, true);

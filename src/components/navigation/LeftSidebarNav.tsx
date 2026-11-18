@@ -24,6 +24,7 @@ import {
   type BgmPublicState,
 } from '@/components/trinity/BgMusicPlayer';
 import { isDualPaneLayout } from '@/lib/perfMode';
+import { subscribeFoldState } from '@/lib/foldState';
 import { forceAppUpgradeAndReload } from '@/lib/prismSync';
 import { useApp } from '@/contexts/AppContext';
 import { resetAppScreen } from '@/lib/visualViewportBox';
@@ -184,14 +185,8 @@ export default function LeftSidebarNav() {
       });
     };
     handleLayoutChange();
-    window.addEventListener('resize', handleLayoutChange, { passive: true });
-    window.addEventListener('orientationchange', handleLayoutChange, { passive: true });
-    window.visualViewport?.addEventListener('resize', handleLayoutChange, { passive: true });
-    return () => {
-      window.removeEventListener('resize', handleLayoutChange);
-      window.removeEventListener('orientationchange', handleLayoutChange);
-      window.visualViewport?.removeEventListener('resize', handleLayoutChange);
-    };
+    // Same fold snapshot as the App frame, including late WebKit size updates.
+    return subscribeFoldState(handleLayoutChange);
   }, []);
   const [location, navigate] = useLocation();
   const cleanPath = location ? location.split('?')[0].split('#')[0] : '/';
