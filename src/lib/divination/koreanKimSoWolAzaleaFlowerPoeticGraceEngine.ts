@@ -13,7 +13,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const KOREAN_KIM_SO_WOL_AZALEA_VERSION = 'LUCKEY-KIM-SO-WOL-AZALEA-POETIC-GRACE-v2.1.0';
+export const KOREAN_KIM_SO_WOL_AZALEA_VERSION = 'LUCKEY-KIM-SO-WOL-AZALEA-POETIC-GRACE-v2.2.0';
 
 export interface KimSoWolTheme {
   themeKey: string;
@@ -55,6 +55,8 @@ export interface KoreanKimSoWolAzaleaResult {
     alignmentState: string;
     integratedAction: string;
   };
+  ritualAction: string;
+  reflectionFocus: string;
 }
 
 function formatKimSoWolKstTimestamp(now: Date = new Date()): string {
@@ -201,6 +203,9 @@ export function calculateKoreanKimSoWolAzaleaFlowerPoeticGrace(
     integratedAction: `${focalKimSoWolAphorism.actionGuidance}${query?.trim() ? ` [질문 맥락: ${query.trim()}]` : ''}`,
   };
 
+  const ritualAction = `[${activeKimSoWolTheme.themeTitleKo.split(' — ')[0]}] ${focalKimSoWolAphorism.actionGuidance}`;
+  const reflectionFocus = reflectiveQuestion;
+
   return {
     engineVersion: KOREAN_KIM_SO_WOL_AZALEA_VERSION,
     calculatedAtKst,
@@ -220,6 +225,8 @@ export function calculateKoreanKimSoWolAzaleaFlowerPoeticGrace(
       philosophicalCounsel,
     },
     kimSoWolSynthesisMatrix,
+    ritualAction,
+    reflectionFocus,
   };
 }
 
@@ -256,5 +263,9 @@ export function formatKoreanKimSoWolAzaleaFlowerPoeticGracePrompt(
       `- 통합 실천: ${res.kimSoWolSynthesisMatrix.integratedAction}`,
     );
   }
+  lines.push(
+    `- 실천 의례(Ritual Action): ${res.ritualAction}`,
+    `- 성찰 초점(Reflection Focus): ${res.reflectionFocus}`,
+  );
   return lines.join('\n');
 }

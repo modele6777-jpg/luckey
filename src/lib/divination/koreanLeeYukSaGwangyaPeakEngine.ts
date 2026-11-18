@@ -14,7 +14,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const KOREAN_LEE_YUK_SA_VERSION = 'LUCKEY-LEE-YUK-SA-GWANGYA-v2.1.0';
+export const KOREAN_LEE_YUK_SA_VERSION = 'LUCKEY-LEE-YUK-SA-GWANGYA-v2.2.0';
 
 export interface LeeYukSaTheme {
   themeKey: string;
@@ -57,6 +57,8 @@ export interface KoreanLeeYukSaGwangyaPeakResult {
     alignmentState: string;
     integratedAction: string;
   };
+  ritualAction: string;
+  reflectionFocus: string;
 }
 
 function formatLeeYukSaKstTimestamp(now: Date = new Date()): string {
@@ -221,6 +223,9 @@ export function calculateKoreanLeeYukSaGwangyaPeak(
     integratedAction: `${focalLeeYukSaAphorism.actionGuidance}${query?.trim() ? ` [질문 맥락: ${query.trim()}]` : ''}`,
   };
 
+  const ritualAction = `[${activeLeeYukSaTheme.themeTitleKo.split(':')[0]}] ${focalLeeYukSaAphorism.actionGuidance}`;
+  const reflectionFocus = reflectiveQuestion;
+
   return {
     engineVersion: KOREAN_LEE_YUK_SA_VERSION,
     calculatedAtKst,
@@ -240,6 +245,8 @@ export function calculateKoreanLeeYukSaGwangyaPeak(
       philosophicalCounsel,
     },
     leeYukSaSynthesisMatrix,
+    ritualAction,
+    reflectionFocus,
   };
 }
 
@@ -274,5 +281,9 @@ export function formatKoreanLeeYukSaGwangyaPeakPrompt(res: KoreanLeeYukSaGwangya
       `- 통합 실천: ${res.leeYukSaSynthesisMatrix.integratedAction}`,
     );
   }
+  lines.push(
+    `- 실천 의례(Ritual Action): ${res.ritualAction}`,
+    `- 성찰 초점(Reflection Focus): ${res.reflectionFocus}`,
+  );
   return lines.join('\n');
 }
