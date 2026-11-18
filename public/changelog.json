@@ -1,5 +1,16 @@
 [
   {
+    "version": "1.7.851",
+    "builtAt": "2026-11-18T13:44:57.198Z",
+    "summary": "iOS 27 접기 먹통 원인 수정: 아이폰에서 interactive-widget 설정 제거(v1.7.851)",
+    "items": [
+      "시험 페이지 기기 기록으로 iOS 27 버그 확정: 접은 뒤 visualViewport 높이가 0이 됨(앱 코드 없는 페이지에서도 발생)",
+      "앱에서는 viewport의 interactive-widget=resizes-content 때문에 창 높이(innerHeight)까지 0이 되어 모든 터치가 html로 감. 새 iOS가 이 설정을 지키기 시작한 것이 \"예전엔 됐다\"의 이유로 보임",
+      "아이폰·아이패드에서만 interactive-widget를 제거(안드로이드는 유지)",
+      "표시 높이가 0인 값은 화면 계산에 쓰지 않고, 창 높이가 0일 때만 복구·새로고침 동작"
+    ]
+  },
+  {
     "version": "1.7.850",
     "builtAt": "2026-11-18T13:27:53.076Z",
     "summary": "접기 먹통 원인 판별용 시험 페이지(/fold-test.html) 추가(v1.7.850)",

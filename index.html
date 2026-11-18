@@ -254,6 +254,21 @@
     </script>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content" />
+    <script>
+      // iOS 27 honours interactive-widget=resizes-content. After a fold its visual
+      // viewport can report 0px; resizes-content then shrinks the layout viewport
+      // (innerHeight) to 0 too and every tap lands on <html>. iOS never needed this
+      // value (the app has its own keyboard handling), so drop it on Apple devices.
+      (function () {
+        try {
+          var nav = navigator;
+          var ios = /iPhone|iPad|iPod/.test(nav.userAgent) || (nav.platform === 'MacIntel' && nav.maxTouchPoints > 1);
+          if (!ios) return;
+          var meta = document.querySelector('meta[name="viewport"]');
+          if (meta) meta.setAttribute('content', meta.getAttribute('content').replace(/,\s*interactive-widget=[^,]*/, ''));
+        } catch (e) {}
+      })();
+    </script>
     <title>LucKey</title>
     <meta name="description" content="하나로 연결된 AI 페르소나 유니버스 'LucKey'와 지혜의 경전 'ReBible'" />
     <meta property="og:title" content="LucKey" />

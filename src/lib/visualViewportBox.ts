@@ -434,7 +434,9 @@ export function readViewportSnapshot(win: Window): ViewportSnapshot {
     safeAreaTop: iosStandalone ? readSafeAreaInsets(win.document).top : undefined,
     screenWidth: win.screen?.width,
     screenHeight: win.screen?.height,
-    visual: visual
+    // iOS 27 can report a 0px visual viewport after a fold while the page is
+    // fully usable; a collapsed reading is treated as unavailable, never as size.
+    visual: visual && visual.width > 1 && visual.height > 1
       ? {
           width: visual.width,
           height: visual.height,
