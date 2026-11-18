@@ -3428,7 +3428,7 @@ try {
   // 231. 스위스 카를 융 개성화 & 그림자·아니마/아니무스 원형 통합 엔진
   const jungIndividuationArchetypeResult = calculateSupplement('jungIndividuationArchetypeResult', () => ((() => {
     try {
-      return calculateJungIndividuationArchetype(profile);
+      return calculateJungIndividuationArchetype(profile, question, now);
     } catch (_) {
       return null;
     }
@@ -4818,7 +4818,7 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'eleusinianMysteries', nameKo: '엘레우시스 영혼입사의례', icon: '🌾', category: 'deep_master', summary: '고대 엘레우시스 밀의의 하강과 귀환 상징으로 시련을 내면 성숙의 문턱으로 비추는 관점' },
   { key: 'vedicNakshatra108Pada', nameKo: '베다 108파다 카르마성좌', icon: '🕉️', category: 'deep_master', summary: '베다 27나크샤트라와 108파다·나밤샤(D9) 귀속궁으로 영혼의 소명과 실천 만트라를 비추는 관점' },
   { key: 'egyptianHermeticCartouche', nameKo: '이집트 헤르메스 카르투슈', icon: '𓋹', category: 'deep_master', summary: '고대 이집트 헤르메스주의 카르투슈 원형과 영혼 삼위일체(카·바·아크)를 통해 실천·개성·통찰의 조화를 비춥니다.' },
-  { key: 'taoistGongGuoGeKarma', nameKo: '도교 공과격 적선개운', icon: '☯️', category: 'deep_master' },
+  { key: 'taoistGongGuoGeKarma', nameKo: '도교 공과격 적선개운', icon: '☯️', category: 'deep_master', summary: '《태상감응편》과 공과격의 음덕·언덕·절제 상징으로 오늘의 마음씀과 떳떳한 선택 기준을 비추는 관점' },
   { key: 'yorubaIfaOdu', nameKo: '요루바 이파 16오두 신탁', icon: '📿', category: 'deep_master', summary: '서아프리카 요루바 이파 16 메지 오두와 에보(Ebó) 실천으로 막힌 흐름을 여는 지혜를 전합니다.' },
   { key: 'arabicIlmAlRaml', nameKo: '아랍 일무람말 지오맨시', icon: '🏜️', category: 'deep_master', summary: '고대 아라비아 16개 사점(砂占) 형상과 카디 판결로 현재 국면의 흐름과 행동 방향을 비추는 지오맨시 관점' },
   { key: 'hinduNadiAgastyaPalmLeaf', nameKo: '인도 나디 아가스티야 야자잎', icon: '📜', category: 'deep_master', summary: '남인도 아가스티야 성자의 14대 칸담과 엄지 지문 문양을 통해 카르마의 맥락과 샨티 실천 처방을 비춥니다.' },
@@ -4944,7 +4944,7 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'danishKierkegaardStagesOfLife', nameKo: '쇠렌 키르케고르 단독자 실존3단계 이것이냐저것이냐 신앙도약', icon: '⚖️', category: 'deep_master', summary: '키르케고르의 미적·윤리적·종교적 실존 단계에서 불안을 딛고 단독자의 결단으로 도약합니다.' },
   { key: 'germanNietzscheZarathustraAmorFati', nameKo: '프리드리히 니체 차라투스트라 초인 아모르파티 영원회귀', icon: '🦅', category: 'deep_master', summary: '니체의 아모르 파티(운명애)와 3단계 정신 변신으로 주어진 필연을 창조적 자기 극복의 힘으로 바꿉니다.' },
   { key: 'koreanSeosanHyujeongSeongaGwigam', nameKo: '서산대사 휴정 선가귀감 일물영명 활구참선 선교원융', icon: '📿', category: 'deep_master', summary: '청허당 서산대사 휴정의 《선가귀감》으로 사량분별의 죽은 글귀를 깨고 본래 밝은 한 물건(일물영명)을 자각해 선교원융과 자비구제의 길을 비춥니다.' },
-  { key: 'swissJungIndividuationArchetype', nameKo: '카를 융 개성화 원형통합 그림자 아니마아니무스 동시성', icon: '🎭', category: 'deep_master' },
+  { key: 'swissJungIndividuationArchetype', nameKo: '카를 융 개성화 원형통합 그림자 아니마아니무스 동시성', icon: '🎭', category: 'deep_master', summary: '카를 융의 개성화·그림자·페르소나·아니마/아니무스 원형으로 무의식을 의식화해 온전한 자기를 비추는 관점' },
   { key: 'germanHegelDialecticalAufheben', nameKo: '헤겔 정신현상학 변증법적지양 정반합 인륜성 미네르바올빼미', icon: '🏛️', category: 'deep_master', summary: '헤겔의 변증법적 지양(Aufheben)과 상호 인정을 통해 모순과 대립을 더 높은 차원의 통합으로 승화합니다.' },
   { key: 'koreanDasanJeongYagyongMokminSimseo', nameKo: '다산 정약용 목민심서 여유당신독 율기청렴 애민 실사구시', icon: '📜', category: 'deep_master', summary: '다산 정약용의 여유당 신독과 실사구시 정신으로 신중한 절제와 사실 기반의 실질적 해법을 안내합니다.' },
   { key: 'northAfricanAugustineConfessionesIlluminatio', nameKo: '아우구스티누스 고백록 시간의3중현존 내적조명 은총안식 평정심', icon: '🕯️', category: 'deep_master', summary: '아우구스티누스 고백록의 시간 3중 현존과 내적 조명(Illuminatio)·사랑의 질서로 내면의 안식을 비추는 관점' },
