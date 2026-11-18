@@ -2223,6 +2223,7 @@ test('Medical Bio-Matrix Engine: 오행 한난조습 및 메디컬 점성술 장
   const res = calculateMedicalBioMatrix({ profile, targetDate: new Date('2026-11-02T19:00:00+09:00'), question: '체질 관리' });
   assert.equal(res.engineVersion, MEDICAL_BIO_MATRIX_VERSION);
   assert(res.calculatedAtKst.endsWith('KST'));
+  assert(res.ritualAction.length > 0 && res.reflectionFocus.length > 0);
   assert(Boolean(res.bioMatrixSynthesisMatrix?.integratedAction));
   assert(res.interpretiveBoundary.length > 0);
   assert(res.temperament.coldScore >= 0 && res.temperament.coldScore <= 100);
@@ -2234,6 +2235,7 @@ test('Medical Bio-Matrix Engine: 오행 한난조습 및 메디컬 점성술 장
   assert(prompt.includes(MEDICAL_BIO_MATRIX_VERSION));
   assert(prompt.includes('체질 기후 진단'));
   assert(prompt.includes('취약 장부'));
+  assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
   assert(prompt.includes('교차 매트릭스') && prompt.includes('해석 경계'));
   assert(!prompt.includes('/100'));
 });
@@ -2364,6 +2366,7 @@ test('Monthly Flow Engine: 12개월 월운 및 분기 타이밍 검증', () => {
   assert.equal(res.engineVersion, MONTHLY_FLOW_ENGINE_VERSION);
   assert(res.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(res.reflectiveQuestion?.includes('이직 적기'));
+  assert(res.ritualAction.length > 0 && res.reflectionFocus.length > 0);
   assert(Boolean(res.monthlyFlowSynthesisMatrix?.integratedAction));
   assert(res.interpretiveBoundary.length > 0);
   assert.equal(res.monthlyTimeline.length, 12);
@@ -2371,6 +2374,7 @@ test('Monthly Flow Engine: 12개월 월운 및 분기 타이밍 검증', () => {
   assert(prompt.includes(MONTHLY_FLOW_ENGINE_VERSION));
   assert(prompt.includes('+09:00 (KST)'));
   assert(prompt.includes('성찰 질문'));
+  assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
   assert(prompt.includes('교차 매트릭스') && prompt.includes('해석 경계'));
   assert(!prompt.includes('/100'));
 });
@@ -2738,6 +2742,7 @@ test('Micro-Habit Karma Engine: 21일 카르마 리셋 & 오행 마이크로 해
   const res = calculateMicroHabitKarma({ profile, targetDate: new Date('2026-11-03T10:00:00+09:00'), question: '루틴 안착' });
   assert.equal(res.engineVersion, MICRO_HABIT_KARMA_VERSION);
   assert(res.calculatedAtKst.endsWith('KST'));
+  assert(res.ritualAction.length > 0 && res.reflectionFocus.length > 0);
   assert(Boolean(res.microHabitSynthesisMatrix?.integratedAction));
   assert(res.interpretiveBoundary.length > 0);
   assert(res.neuroplasticityScore >= 0 && res.neuroplasticityScore <= 100);
@@ -2747,6 +2752,7 @@ test('Micro-Habit Karma Engine: 21일 카르마 리셋 & 오행 마이크로 해
   const prompt = formatMicroHabitKarmaPrompt(res);
   assert(prompt.includes('LUCKEY 21일 카르마 리셋 & 오행 마이크로 해빗'));
   assert(prompt.includes(res.archetype));
+  assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
   assert(prompt.includes('교차 매트릭스') && prompt.includes('해석 경계'));
   assert(!prompt.includes('/100'));
 });

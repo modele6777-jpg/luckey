@@ -1,6 +1,10 @@
 {
-  "version": "1.7.883",
-  "builtAt": "2026-11-19T06:40:00+09:00",
-  "commit": "feat/deepen-lifewheel-microhabit-quantum-v1.7.883",
-  "notes": "라이프 12궁 밸런스 휠·마이크로 해빗·양자 타임라인 3대 엔진 reflectiveQuestion·+09:00 (KST)·summary·question 연동 (v1.7.883)"
+  "version": "1.7.884",
+  "builtAt": "2026-11-19T06:42:00+09:00",
+  "summary": "메디컬 바이오 매트릭스·마이크로 해빗 카르마·12개월 월운 흐름 3대 엔진 실천 의례 및 성찰 초점 표준 연동(v1.7.884)",
+  "items": [
+    "오행 한난조습 & 메디컬 점성술 바이오 매트릭스 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동",
+    "21일 카르마 리셋 & 오행 마이크로 해빗 엔진(v2.3.0): ritualAction·reflectionFocus 표준 필드 연동",
+    "12개월 월운 & 사계절 분기 타이밍 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동"
+  ]
 }
