@@ -15,7 +15,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const JEONG_YAKYONG_MONGMIN_VERSION = 'LUCKEY-JEONG-YAKYONG-MONGMIN-v2.1.0';
+export const JEONG_YAKYONG_MONGMIN_VERSION = 'LUCKEY-JEONG-YAKYONG-MONGMIN-v2.2.0';
 
 export interface MongminOfficialStage {
   stageLevel: number;
@@ -60,6 +60,8 @@ export interface JeongYakyongMongminResult {
     alignmentState: string;
     integratedAction: string;
   };
+  ritualAction: string;
+  reflectionFocus: string;
 }
 
 function describeMongminStage(score: number): string {
@@ -164,6 +166,9 @@ export function calculateJeongYakyongMongmin(
     integratedAction: `${primaryMongminVirtue.actionableDirective}${query?.trim() ? ` [질문 맥락: ${query.trim()}]` : ''}`,
   };
 
+  const ritualAction = `[${activeOfficialStage.stageNameKo}] ${primaryMongminVirtue.actionableDirective}`;
+  const reflectionFocus = reflectiveQuestion;
+
   return {
     engineVersion: JEONG_YAKYONG_MONGMIN_VERSION,
     calculatedAtKst,
@@ -180,6 +185,8 @@ export function calculateJeongYakyongMongmin(
     reflectiveQuestion,
     interpretiveBoundary,
     mongminSynthesisMatrix,
+    ritualAction,
+    reflectionFocus,
   };
 }
 
@@ -215,5 +222,9 @@ export function formatJeongYakyongMongminPrompt(result: JeongYakyongMongminResul
       `- 통합 실천: ${result.mongminSynthesisMatrix.integratedAction}`,
     );
   }
+  lines.push(
+    `- 실천 의례(Ritual Action): ${result.ritualAction}`,
+    `- 성찰 초점(Reflection Focus): ${result.reflectionFocus}`,
+  );
   return lines.join('\n');
 }

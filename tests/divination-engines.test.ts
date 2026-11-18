@@ -5613,10 +5613,12 @@ test('Korean Jeon Bongjun Nokdu General Engine: calculates Sabal Tongmun solidar
   assert(rep.activeNokduStage.stageNameHanja.length > 0);
   assert(rep.calculatedAtKst.endsWith('KST'));
   assert(Boolean(rep.nokduSynthesisMatrix?.integratedAction));
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatJeonBongjunNokduPrompt(rep);
   assert(prompt.includes('한국 근대 동학농민혁명 《녹두장군 전봉준》'));
   assert(prompt.includes(rep.activeNokduStage.stageNameKo));
   assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes(rep.ritualAction));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });
@@ -5810,6 +5812,7 @@ test('Korean Jeong Yak-yong Mongmin Simseo Engine: calculates Cheongnyeom integr
   assert(rep.interpretiveBoundary.length > 0);
   assert(rep.calculatedAtKst.endsWith('+09:00 KST'));
   assert(Boolean(rep.mongminSynthesisMatrix?.integratedAction));
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const repQ = calculateJeongYakyongMongmin(profile, '사사로운 편의를 끊고 지켜야 할 원칙');
   assert(repQ.reflectiveQuestion.includes('지켜야 할 원칙'));
   const prompt = formatJeongYakyongMongminPrompt(repQ);
@@ -5818,6 +5821,7 @@ test('Korean Jeong Yak-yong Mongmin Simseo Engine: calculates Cheongnyeom integr
   assert(prompt.includes(repQ.secondaryOfficialStage.stageNameKo));
   assert(prompt.includes('해석 경계'));
   assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes(repQ.ritualAction));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });
@@ -6354,6 +6358,7 @@ test('Jinul Jeonghye Ssangsu Engine: calculates Donoh insight, Jeomsu cultivatio
   assert(rep.interpretiveBoundary.length > 0);
   assert(rep.calculatedAtKst.endsWith('+09:00 KST'));
   assert(Boolean(rep.jinulSynthesisMatrix?.integratedAction));
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const repQ = calculateJinulJeonghyeSsangsu(profile, '마음의 평정을 지키며 꾸준히 정진하는 법');
   assert(repQ.reflectiveQuestion.includes('마음의 평정'));
   const prompt = formatJinulJeonghyeSsangsuPrompt(repQ);
@@ -6362,6 +6367,7 @@ test('Jinul Jeonghye Ssangsu Engine: calculates Donoh insight, Jeomsu cultivatio
   assert(prompt.includes(repQ.secondaryCorePrinciple.principleHanja));
   assert(prompt.includes('해석 경계'));
   assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes(repQ.ritualAction));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });
