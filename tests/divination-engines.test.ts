@@ -476,6 +476,10 @@ test('Kyusei reference example: 1990-05-17 solar birth is 一白水星 with 五�
   assert.equal(JSON.stringify(again.annualChart),JSON.stringify(r.annualChart));
   const prompt=formatKyuseiPrompt(r);
   assert(prompt.includes(KYUSEI_ENGINE_VERSION)&&prompt.includes('오황살')&&prompt.includes('일백수성'));
+  assert(r.ritualAction && r.ritualAction.length > 0);
+  assert(r.reflectionFocus && r.reflectionFocus.length > 0);
+  assert(prompt.includes('실천 의례'));
+  assert(prompt.includes('성찰 초점'));
   assert(prompt.includes('교차 매트릭스'));
   assert(!prompt.includes('/100'));
   assert.equal(formatKyuseiPrompt(calculateKyusei({profile:null})),'');
@@ -1073,6 +1077,10 @@ test('Burmese Mahabote: 7-house chart calculation, root house, age transit, Rahu
   assert(prompt.includes('행성 조화도 및 친화수리'));
   assert(prompt.includes('4대 인생 영역 친화도'));
   assert(prompt.includes('교차 매트릭스'));
+  assert(r1.ritualAction && r1.ritualAction.length > 0);
+  assert(r1.reflectionFocus && r1.reflectionFocus.length > 0);
+  assert(prompt.includes('실천 의례'));
+  assert(prompt.includes('성찰 초점'));
   assert(r1.interpretiveBoundary && r1.interpretiveBoundary.length > 0);
   assert(prompt.includes('해석 경계'));
   assert(!prompt.includes('/100'));
@@ -1973,6 +1981,8 @@ test('Liuren Master Engine: 사과·삼전·12천장 정통 결단 산출 및 �
   assert(res.transmissionDynamics.breakthroughStrategy.length > 0);
   assert(res.temporalLiurenRhythm.hourWatchWindow.length > 0);
   assert(res.liurenSynthesisMatrix.coreInsight.length > 0);
+  assert(res.ritualAction.length > 0);
+  assert(res.reflectionFocus.length > 0);
   assert(res.interpretiveBoundary.length > 0);
   const prompt = formatLiurenMasterPrompt(res);
   assert(prompt.includes(LIUREN_MASTER_ENGINE_VERSION));
@@ -1982,6 +1992,8 @@ test('Liuren Master Engine: 사과·삼전·12천장 정통 결단 산출 및 �
   assert(prompt.includes('결단 기조'));
   assert(prompt.includes('사과 생극 역학'));
   assert(prompt.includes('삼전(三傳) 타임라인 & 추진 역학'));
+  assert(prompt.includes('실천 의례'));
+  assert(prompt.includes('성찰 초점'));
   assert(!prompt.includes('/100') && !prompt.includes('%') && !prompt.includes('점수'));
 });
 
