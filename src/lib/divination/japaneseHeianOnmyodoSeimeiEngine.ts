@@ -30,7 +30,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const HEIAN_ONMYODO_SEIMEI_VERSION = '2.1.0';
+export const HEIAN_ONMYODO_SEIMEI_VERSION = '2.2.0';
 
 export interface HeianOnmyodoSeimeiReport {
   engineVersion: string;
@@ -74,6 +74,8 @@ export interface HeianOnmyodoSeimeiReport {
   onmyoPurificationGuidance: string;
   boundaryNotice: string;
   interpretiveBoundary: string;
+  ritualAction: string;
+  reflectionFocus: string;
 }
 
 function djb2Hash(str: string): number {
@@ -286,6 +288,9 @@ export function calculateHeianOnmyodoSeimei(
     cautionNotice: '음양의 기운이 한쪽으로 치우치면 결계에 틈이 생깁니다. 과신이나 지나친 위축을 모두 경계하십시오.',
   };
 
+  const ritualAction = `[${primaryGuardianGeneral.nameKo}] ${situationalOnmyoAudit.shikigamiStance}`;
+  const reflectionFocus = `지금 '${situationalOnmyoAudit.focusTheme}'에서 오망성 5행의 균형을 회복하기 위해 한 걸음 물러나 살필 지점은 무엇인가요?`;
+
   return {
     engineVersion: HEIAN_ONMYODO_SEIMEI_VERSION,
     calculatedAt: now.toISOString(),
@@ -303,6 +308,8 @@ export function calculateHeianOnmyodoSeimei(
     onmyoPurificationGuidance,
     boundaryNotice: '본 결과는 헤이안 음양도 《점사략》 12천장 및 오망성 5행 순환에 따른 정성적 상징 해석이며, 점수나 확정적 길흉 판정이 아닙니다.',
     interpretiveBoundary: '본 결과는 헤이안 음양도 《점사략》 12천장 및 오망성 5행 순환에 따른 정성적 상징 해석이며, 점수나 확정적 길흉 판정이 아닙니다.',
+    ritualAction,
+    reflectionFocus,
   };
 }
 
@@ -323,5 +330,7 @@ export function formatHeianOnmyodoSeimeiPrompt(report: HeianOnmyodoSeimeiReport)
   - *주의 경계*: ${report.onmyoSynthesisMatrix.cautionNotice}
 - **아베노 세이메이 액막이 비방**:
   - "${report.onmyoPurificationGuidance}"
+- **실천 의례(Ritual Action)**: ${report.ritualAction}
+- **성찰 초점(Reflection Focus)**: ${report.reflectionFocus}
 - **해석 경계**: ${report.boundaryNotice}`;
 }
