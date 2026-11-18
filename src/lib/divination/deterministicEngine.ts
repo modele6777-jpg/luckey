@@ -3752,7 +3752,7 @@ try {
   // 267. 러시아 레프 톨스토이 인생독본 & 사람은 무엇으로 사는가 영적 각성·아가페 사랑 지혜 엔진
   const russianLeoTolstoyCalendarOfWisdomResult = calculateSupplement('russianLeoTolstoyCalendarOfWisdomResult', () => ((() => {
     try {
-      return calculateRussianLeoTolstoyCalendarOfWisdom(profile);
+      return calculateRussianLeoTolstoyCalendarOfWisdom(profile, question, now);
     } catch (_) {
       return null;
     }
@@ -4166,7 +4166,7 @@ try {
   // 313. 러시아 표도르 도스토옙스키 《카라마조프 가의 형제들·죄와 벌》 심연 직시와 영혼의 대자비·고통의 정화와 생명 긍정 지혜 엔진
   const russianFyodorDostoevskyKaramazovSoulCompassionResult = calculateSupplement('russianFyodorDostoevskyKaramazovSoulCompassionResult', () => ((() => {
     try {
-      return calculateRussianFyodorDostoevskyKaramazovSoulCompassion(profile);
+      return calculateRussianFyodorDostoevskyKaramazovSoulCompassion(profile, question, now);
     } catch (_) {
       return null;
     }
@@ -4193,7 +4193,7 @@ try {
   // 316. 러시아 안톤 체호프 《바냐 아저씨·갈매기》 일상의 진실 직시 & 묵묵한 인내·담담한 자비와 위로 지혜 엔진
   const russianAntonChekhovQuietEnduranceCompassionResult = calculateSupplement('russianAntonChekhovQuietEnduranceCompassionResult', () => ((() => {
     try {
-      return calculateRussianAntonChekhovQuietEnduranceCompassion(profile);
+      return calculateRussianAntonChekhovQuietEnduranceCompassion(profile, question, now);
     } catch (_) {
       return null;
     }
