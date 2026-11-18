@@ -8,7 +8,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const WANG_YANGMING_LIANGZHI_VERSION = 'LUCKEY-WANG-YANGMING-LIANGZHI-v2.2.0';
+export const WANG_YANGMING_LIANGZHI_VERSION = 'LUCKEY-WANG-YANGMING-LIANGZHI-v2.3.0';
 
 export interface XinxueStage {
   stageLevel: number;
@@ -288,9 +288,12 @@ export function calculateWangYangmingXinxue(
   const interpretiveBoundary =
     '이 관점은 점수가 아니라 왕양명 《전습록》의 치양지·지행합일·사전마련 틀로 현재 질문의 실천 결을 비추는 상징적 성찰입니다.';
 
+  const kstBase = new Date((now ?? new Date()).getTime() + 9 * 60 * 60 * 1000);
+  const calculatedAtKst = `${kstBase.toISOString().slice(0, 10)} ${String(kstBase.getUTCHours()).padStart(2, '0')}:${String(kstBase.getUTCMinutes()).padStart(2, '0')} +09:00 (KST)`;
+
   return {
     engineVersion: WANG_YANGMING_LIANGZHI_VERSION,
-    calculatedAtKst: (now ?? new Date()).toISOString(),
+    calculatedAtKst,
     liangzhiIntuitionScore,
     zhiXingUnityPower,
     xinZhiLiMindCoreIntegrity,
@@ -322,6 +325,7 @@ function describeYangmingStage(score: number): string {
 export function formatWangYangmingXinxuePrompt(res: WangYangmingXinxueResult): string {
   return [
     `【명나라 양명학 왕양명(王陽明) 치양지(致良知) & 지행합일(知行合一) 심학 성찰 (${res.engineVersion})】`,
+    `- 연산 시각: ${res.calculatedAtKst}`,
     `- 치양지(致良知) 본래직관: ${describeYangmingStage(res.liangzhiIntuitionScore)}`,
     `- 지행합일(知行合一) 실천 결: ${describeYangmingStage(res.zhiXingUnityPower)}`,
     `- 심즉리(心卽理) 내면자성: ${describeYangmingStage(res.xinZhiLiMindCoreIntegrity)}`,

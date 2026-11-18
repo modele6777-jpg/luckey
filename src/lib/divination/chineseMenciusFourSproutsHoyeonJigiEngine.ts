@@ -8,7 +8,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const MENCIUS_FOUR_SPROUTS_HOYEON_VERSION = 'LUCKEY-MENCIUS-FOUR-SPROUTS-HOYEON-v2.2.0';
+export const MENCIUS_FOUR_SPROUTS_HOYEON_VERSION = 'LUCKEY-MENCIUS-FOUR-SPROUTS-HOYEON-v2.3.0';
 
 export interface MenciusSproutStage {
   stageLevel: number;
@@ -281,9 +281,12 @@ export function calculateMenciusFourSproutsHoyeon(
   const interpretiveBoundary =
     '이 관점은 점수가 아니라 맹자의 사단(四端)과 호연지기·집의(集義)의 틀로 오늘의 마음 결을 비추는 상징적 성찰입니다.';
 
+  const kstBase = new Date((now ?? new Date()).getTime() + 9 * 60 * 60 * 1000);
+  const calculatedAtKst = `${kstBase.toISOString().slice(0, 10)} ${String(kstBase.getUTCHours()).padStart(2, '0')}:${String(kstBase.getUTCMinutes()).padStart(2, '0')} +09:00 (KST)`;
+
   return {
     engineVersion: MENCIUS_FOUR_SPROUTS_HOYEON_VERSION,
-    calculatedAtKst: (now ?? new Date()).toISOString(),
+    calculatedAtKst,
     hoyeonJigiGreatVitalityScore,
     fourSproutsCultivationLevel,
     buDongXinSteadfastness,
@@ -315,6 +318,7 @@ function describeMenciusStage(score: number): string {
 export function formatMenciusFourSproutsHoyeonPrompt(res: MenciusFourSproutsHoyeonResult): string {
   return [
     `【고대 중국 맹자 사단사덕(四端四德) & 호연지기(浩然之氣) 성찰 (${res.engineVersion})】`,
+    `- 연산 시각: ${res.calculatedAtKst}`,
     `- 호연지기 대기운 결: ${describeMenciusStage(res.hoyeonJigiGreatVitalityScore)}`,
     `- 사단사덕 확충 흐름: ${describeMenciusStage(res.fourSproutsCultivationLevel)}`,
     `- 부동심 내면 평정: ${describeMenciusStage(res.buDongXinSteadfastness)}`,

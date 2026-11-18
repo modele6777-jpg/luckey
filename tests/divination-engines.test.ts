@@ -12451,3 +12451,27 @@ test('카프카·부버·릴케 3대 엔진 v1.7.907 KST(+09:00) 표준 표기 �
   assert.match(rk.calculatedAtKst, /\+09:00/);
   assert.ok(formatAustrianRainerMariaRilkeLettersPrompt(rk).includes('+09:00'));
 });
+
+test('비트겐슈타인·맹자·왕양명 3대 엔진 v1.7.909 KST(+09:00) 표준 표기 검증', () => {
+  const profile: any = {
+    name: '테스트',
+    basic: { birthdate: '1994-01-24', birthtime: '10:30', gender: 'male', calendarType: 'solar' },
+  };
+  const now = new Date('2026-11-19T08:49:00+09:00');
+  const query = '말과 생각의 경계를 정리하고 실행으로 옮기고 싶을 때';
+
+  const wt = calculateAustrianWittgensteinLanguageGameSilence(profile, query, now);
+  assert.equal(wt.engineVersion, AUSTRIAN_WITTGENSTEIN_LANGUAGE_GAME_SILENCE_VERSION);
+  assert.match(wt.calculatedAtKst, /\+09:00/);
+  assert.ok(formatAustrianWittgensteinLanguageGameSilencePrompt(wt).includes('+09:00'));
+
+  const mc = calculateMenciusFourSproutsHoyeon(profile, query, now);
+  assert.equal(mc.engineVersion, MENCIUS_FOUR_SPROUTS_HOYEON_VERSION);
+  assert.match(mc.calculatedAtKst, /\+09:00/);
+  assert.ok(formatMenciusFourSproutsHoyeonPrompt(mc).includes('+09:00'));
+
+  const wy = calculateWangYangmingXinxue(profile, query, now);
+  assert.equal(wy.engineVersion, WANG_YANGMING_LIANGZHI_VERSION);
+  assert.match(wy.calculatedAtKst, /\+09:00/);
+  assert.ok(formatWangYangmingXinxuePrompt(wy).includes('+09:00'));
+});
