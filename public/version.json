@@ -1,10 +1,10 @@
 {
-  "version": "1.7.834",
-  "builtAt": "2026-11-18T11:50:00+09:00",
-  "summary": "전봉준 사발통문, 정약용 목민심서, 지눌 수심결 3대 엔진 실천 의례 및 성찰 질문 표준 연동(v1.7.834)",
+  "version": "1.7.835",
+  "builtAt": "2026-11-18T12:00:00+09:00",
+  "summary": "김소월 진달래꽃, 세종대왕 훈민정음, 이육사 광야·절정 3대 엔진 실천 의례 및 성찰 질문 표준 연동(v1.7.835)",
   "items": [
-    "녹두장군 전봉준 《사발통문》 백산 창의 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동",
-    "다산 정약용 《목민심서》 율기수신 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동",
-    "보조국사 지눌 《수심결》 정혜쌍수 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동"
+    "소월 김소월 《진달래꽃·산유화·초혼》 서정 승화 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동",
+    "세종대왕 《훈민정음》 어제서문 애민창조 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동",
+    "이육사 《광야·절정》 강철 무지개 실존의지 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동"
   ]
 }

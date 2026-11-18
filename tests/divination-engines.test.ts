@@ -6734,6 +6734,7 @@ test('King Sejong Hunminjeongeum Aemin Engine: calculates Aemin Creativity, Barr
   assert(rep.interpretiveBoundary.length > 0);
   assert(rep.calculatedAtKst.endsWith('+09:00 KST'));
   assert(Boolean(rep.sejongSynthesisMatrix?.integratedAction));
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const repQ = calculateKingSejongHunminjeongeumAemin(profile, '누구나 쉽게 쓰는 구조로 단순화하는 방법');
   assert(repQ.reflectiveQuestion.includes('단순화'));
   const prompt = formatKingSejongHunminjeongeumAeminPrompt(repQ);
@@ -6742,6 +6743,7 @@ test('King Sejong Hunminjeongeum Aemin Engine: calculates Aemin Creativity, Barr
   assert(prompt.includes(repQ.secondaryHunminTheme.themeTitleKo));
   assert(prompt.includes('해석 경계'));
   assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes(repQ.ritualAction));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });
@@ -7365,6 +7367,7 @@ test('Lee Yuk-sa Gwangya Peak Engine: calculates Peak Resilience, Steel Rainbow,
   assert(rep.interpretiveBoundary.length > 0);
   assert(rep.calculatedAtKst.endsWith('+09:00 KST'));
   assert(Boolean(rep.leeYukSaSynthesisMatrix?.integratedAction));
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const repQ = calculateKoreanLeeYukSaGwangyaPeak(profile, '거친 환경 속에서도 꺾이지 않고 나아가는 법');
   assert(repQ.reflectiveQuestion.includes('거친 환경'));
   const prompt = formatKoreanLeeYukSaGwangyaPeakPrompt(repQ);
@@ -7373,6 +7376,7 @@ test('Lee Yuk-sa Gwangya Peak Engine: calculates Peak Resilience, Steel Rainbow,
   assert(prompt.includes(repQ.secondaryLeeYukSaTheme.themeTitleKo));
   assert(prompt.includes('해석 경계'));
   assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes(repQ.ritualAction));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });
@@ -8552,6 +8556,7 @@ test('Kim So-wol Azalea Flower Poetic Grace Engine: calculates Devoted Love, Gri
   assert(rep.interpretiveBoundary.length > 0);
   assert(rep.calculatedAtKst.endsWith('+09:00 KST'));
   assert(Boolean(rep.kimSoWolSynthesisMatrix?.integratedAction));
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const repQ = calculateKoreanKimSoWolAzaleaFlowerPoeticGrace(profile, '이별의 마음을 차분히 정리하는 길');
   assert(repQ.reflectiveQuestion.includes('이별의 마음'));
   const prompt = formatKoreanKimSoWolAzaleaFlowerPoeticGracePrompt(repQ);
@@ -8560,6 +8565,7 @@ test('Kim So-wol Azalea Flower Poetic Grace Engine: calculates Devoted Love, Gri
   assert(prompt.includes(repQ.secondaryKimSoWolTheme.themeTitleKo));
   assert(prompt.includes('해석 경계'));
   assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes(repQ.ritualAction));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });
