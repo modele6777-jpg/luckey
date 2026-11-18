@@ -4192,10 +4192,12 @@ test('Korean Dangun Cheonbuin Engine: calculates 3 Sacred Treasures and Hongik p
   assert(rep.temporalCheonbuinRhythm.shinsiSkyWindow.length > 0);
   assert(rep.cheonbuinSynthesisMatrix.coreInsight.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatKoreanDangunCheonbuinPrompt(rep);
   assert(prompt.includes('고대 한국 삼국유사 단군 천부인(天符印) 3보 & 홍익인간 광명 실측 데이터'));
   assert(prompt.includes(rep.treasures.dominantTreasure.nameKo));
   assert(prompt.includes('KST'));
+  assert(prompt.includes(rep.ritualAction));
   assert(!prompt.includes('/100') && !prompt.includes('%') && !prompt.includes('점수'));
 });
 
@@ -6443,10 +6445,12 @@ test('Chusa Kim Jeong-hui Sehando Engine: calculates Songbaek hudjo integrity, E
   assert(rep.activeSehandoTheme.themeTitleHanja.length > 0);
   assert(rep.calculatedAtKst.endsWith('KST'));
   assert(Boolean(rep.sehandoSynthesisMatrix?.integratedAction));
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatChusaKimJeonghuiSehandoPrompt(rep);
   assert(prompt.includes('추사 김정희 세한도(歲寒圖) 송백후조 & 문자향 서권기 지표'));
   assert(prompt.includes(rep.activeSehandoTheme.themeTitleKo));
   assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes(rep.ritualAction));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });
@@ -7795,10 +7799,12 @@ test('Hong Dae-yong Uisan Mundap Engine: calculates Infinite Universe, Earth Rot
   assert(rep.activeHongDaeYongTheme.themeTitleKo.length > 0);
   assert(rep.calculatedAtKst.endsWith('KST'));
   assert(Boolean(rep.hongDaeYongSynthesisMatrix?.integratedAction));
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatKoreanDamheonHongDaeYongUisanMundapPrompt(rep);
   assert(prompt.includes('담헌 홍대용 《의산문답》 지전설·무한우주론 및 인물균 지혜 지표'));
   assert(prompt.includes(rep.activeHongDaeYongTheme.themeTitleKo));
   assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes(rep.ritualAction));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });

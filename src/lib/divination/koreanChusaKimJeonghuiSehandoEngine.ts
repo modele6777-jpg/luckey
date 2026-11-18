@@ -13,7 +13,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const CHUSA_SEHANDO_WISDOM_VERSION = 'LUCKEY-CHUSA-SEHANDO-WISDOM-v2.1.0';
+export const CHUSA_SEHANDO_WISDOM_VERSION = 'LUCKEY-CHUSA-SEHANDO-WISDOM-v2.2.0';
 
 export interface SehandoTheme {
   themeKey: string;
@@ -55,6 +55,8 @@ export interface ChusaKimJeonghuiSehandoResult {
     alignmentState: string;
     integratedAction: string;
   };
+  ritualAction: string;
+  reflectionFocus: string;
 }
 
 function formatChusaKstTimestamp(now: Date = new Date()): string {
@@ -202,6 +204,9 @@ export function calculateChusaKimJeonghuiSehando(
     integratedAction: `${focalChusaMaxim.actionGuidance}${query?.trim() ? ` [질문 맥락: ${query.trim()}]` : ''}`,
   };
 
+  const ritualAction = `[${activeSehandoTheme.themeTitleKo}] ${focalChusaMaxim.actionGuidance}`;
+  const reflectionFocus = reflectiveQuestion;
+
   return {
     engineVersion: CHUSA_SEHANDO_WISDOM_VERSION,
     calculatedAtKst,
@@ -220,6 +225,8 @@ export function calculateChusaKimJeonghuiSehando(
       practicalGuidance,
     },
     sehandoSynthesisMatrix,
+    ritualAction,
+    reflectionFocus,
   };
 }
 
@@ -253,5 +260,9 @@ export function formatChusaKimJeonghuiSehandoPrompt(res: ChusaKimJeonghuiSehando
       `- 통합 실천: ${res.sehandoSynthesisMatrix.integratedAction}`,
     );
   }
+  lines.push(
+    `- 실천 의례(Ritual Action): ${res.ritualAction}`,
+    `- 성찰 초점(Reflection Focus): ${res.reflectionFocus}`,
+  );
   return lines.join('\n');
 }

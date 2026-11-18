@@ -1,10 +1,10 @@
 {
-  "version": "1.7.828",
-  "builtAt": "2026-11-18T10:50:00+09:00",
-  "summary": "혜강 최한기 기학, 외솔 최현배 우리말본, 정감록 10승지 3대 엔진 실천 의례 및 성찰 질문 표준 연동(v1.7.828)",
+  "version": "1.7.829",
+  "builtAt": "2026-11-18T11:00:00+09:00",
+  "summary": "추사 김정희 세한도, 담헌 홍대용 의산문답, 단군 천부인 3대 엔진 실천 의례 및 성찰 질문 표준 연동(v1.7.829)",
   "items": [
-    "혜강 최한기 기학 & 신기통 운화 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동",
-    "외솔 최현배 《우리말본》 & 한글 글본 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동",
-    "조선 비전 정감록 10승지 영맥 & 보신 피난처 엔진(v2.1.0): ritualAction·reflectionFocus 표준 필드 연동"
+    "추사 김정희 세한도 송백후조 & 문자향 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동",
+    "담헌 홍대용 《의산문답》 무한우주론·인물균 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동",
+    "삼국유사 단군 천부인(天符印) 3보 & 홍익인간 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동"
   ]
 }

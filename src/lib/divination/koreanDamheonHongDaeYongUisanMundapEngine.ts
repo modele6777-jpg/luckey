@@ -14,7 +14,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const KOREAN_DAMHEON_HONG_DAE_YONG_UISAN_MUNDAP_VERSION = 'LUCKEY-HONG-DAE-YONG-UISAN-MUNDAP-v2.1.0';
+export const KOREAN_DAMHEON_HONG_DAE_YONG_UISAN_MUNDAP_VERSION = 'LUCKEY-HONG-DAE-YONG-UISAN-MUNDAP-v2.2.0';
 
 export interface HongDaeYongTheme {
   themeKey: string;
@@ -56,6 +56,8 @@ export interface KoreanDamheonHongDaeYongUisanMundapResult {
     alignmentState: string;
     integratedAction: string;
   };
+  ritualAction: string;
+  reflectionFocus: string;
 }
 
 function formatHongDaeYongKstTimestamp(now: Date = new Date()): string {
@@ -207,6 +209,9 @@ export function calculateKoreanDamheonHongDaeYongUisanMundap(
     integratedAction: `${focalHongDaeYongAphorism.actionGuidance}${query?.trim() ? ` [질문 맥락: ${query.trim()}]` : ''}`,
   };
 
+  const ritualAction = `[${focalHongDaeYongAphorism.sourceContext}] ${focalHongDaeYongAphorism.actionGuidance}`;
+  const reflectionFocus = reflectiveQuestion;
+
   return {
     engineVersion: KOREAN_DAMHEON_HONG_DAE_YONG_UISAN_MUNDAP_VERSION,
     calculatedAtKst,
@@ -225,6 +230,8 @@ export function calculateKoreanDamheonHongDaeYongUisanMundap(
       philosophicalCounsel,
     },
     hongDaeYongSynthesisMatrix,
+    ritualAction,
+    reflectionFocus,
   };
 }
 
@@ -260,5 +267,9 @@ export function formatKoreanDamheonHongDaeYongUisanMundapPrompt(
       `- 통합 실천: ${res.hongDaeYongSynthesisMatrix.integratedAction}`,
     );
   }
+  lines.push(
+    `- 실천 의례(Ritual Action): ${res.ritualAction}`,
+    `- 성찰 초점(Reflection Focus): ${res.reflectionFocus}`,
+  );
   return lines.join('\n');
 }
