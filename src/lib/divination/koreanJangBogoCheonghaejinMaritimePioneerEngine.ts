@@ -14,7 +14,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const KOREAN_JANG_BOGO_VERSION = 'LUCKEY-JANG-BOGO-MARITIME-v2.1.0';
+export const KOREAN_JANG_BOGO_VERSION = 'LUCKEY-JANG-BOGO-MARITIME-v2.2.0';
 
 export interface CheonghaejinTheme {
   themeKey: string;
@@ -56,6 +56,8 @@ export interface JangBogoCheonghaejinMaritimePioneerResult {
     alignmentState: string;
     integratedAction: string;
   };
+  ritualAction: string;
+  reflectionFocus: string;
 }
 
 function formatJangBogoKstTimestamp(now: Date = new Date()): string {
@@ -210,6 +212,9 @@ export function calculateJangBogoCheonghaejinMaritimePioneer(
     integratedAction: `${focalCheonghaeAphorism.actionGuidance}${query?.trim() ? ` [질문 맥락: ${query.trim()}]` : ''}`,
   };
 
+  const ritualAction = `[${activeCheonghaeTheme.themeTitleKo}] ${focalCheonghaeAphorism.actionGuidance}`;
+  const reflectionFocus = reflectiveQuestion;
+
   return {
     engineVersion: KOREAN_JANG_BOGO_VERSION,
     calculatedAtKst,
@@ -228,6 +233,8 @@ export function calculateJangBogoCheonghaejinMaritimePioneer(
       philosophicalCounsel,
     },
     cheonghaeSynthesisMatrix,
+    ritualAction,
+    reflectionFocus,
   };
 }
 
@@ -261,5 +268,9 @@ export function formatJangBogoCheonghaejinMaritimePioneerPrompt(res: JangBogoChe
       `- 통합 실천: ${res.cheonghaeSynthesisMatrix.integratedAction}`,
     );
   }
+  lines.push(
+    `- 실천 의례(Ritual Action): ${res.ritualAction}`,
+    `- 성찰 초점(Reflection Focus): ${res.reflectionFocus}`,
+  );
   return lines.join('\n');
 }

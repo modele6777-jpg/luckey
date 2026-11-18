@@ -13,7 +13,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const KOREAN_HYECHO_VERSION = 'LUCKEY-HYECHO-WANGOCHEON-v2.1.0';
+export const KOREAN_HYECHO_VERSION = 'LUCKEY-HYECHO-WANGOCHEON-v2.2.0';
 
 export interface HyechoTheme {
   themeKey: string;
@@ -55,6 +55,8 @@ export interface HyechoWangOcheonchukgukjeonResult {
     alignmentState: string;
     integratedAction: string;
   };
+  ritualAction: string;
+  reflectionFocus: string;
 }
 
 function formatHyechoKstTimestamp(now: Date = new Date()): string {
@@ -202,6 +204,9 @@ export function calculateHyechoWangOcheonchukgukjeon(
     integratedAction: `${focalHyechoAphorism.actionGuidance}${query?.trim() ? ` [질문 맥락: ${query.trim()}]` : ''}`,
   };
 
+  const ritualAction = `[${activeHyechoTheme.themeTitleKo}] ${focalHyechoAphorism.actionGuidance}`;
+  const reflectionFocus = reflectiveQuestion;
+
   return {
     engineVersion: KOREAN_HYECHO_VERSION,
     calculatedAtKst,
@@ -220,6 +225,8 @@ export function calculateHyechoWangOcheonchukgukjeon(
       philosophicalCounsel,
     },
     hyechoSynthesisMatrix,
+    ritualAction,
+    reflectionFocus,
   };
 }
 
@@ -253,5 +260,9 @@ export function formatHyechoWangOcheonchukgukjeonPrompt(res: HyechoWangOcheonchu
       `- 통합 실천: ${res.hyechoSynthesisMatrix.integratedAction}`,
     );
   }
+  lines.push(
+    `- 실천 의례(Ritual Action): ${res.ritualAction}`,
+    `- 성찰 초점(Reflection Focus): ${res.reflectionFocus}`,
+  );
   return lines.join('\n');
 }
