@@ -9,7 +9,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const NORSE_HAVAMAL_GALDR_ENGINE_VERSION = '2.1.0';
+export const NORSE_HAVAMAL_GALDR_ENGINE_VERSION = '2.2.0';
 
 export interface HavamalGaldrCharm {
   orderNumber: number;
@@ -35,6 +35,8 @@ export interface NorseHavamalEighteenGaldrReport {
   secondaryGaldrCharm: HavamalGaldrCharm; // 보조 교차 공명 게알드르
   havamalElderGuidance: string; // 하바말 고대 지혜 잠언
   norseRunicGaldrChant: string; // 게알드르 수호 창팅
+  ritualAction: string;
+  reflectionFocus: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
   havamalSynthesisMatrix?: {
@@ -157,6 +159,9 @@ export function calculateNorseHavamalEighteenGaldr(
   const havamalElderGuidance = `《하바말》 고대의 잠언: "상처를 두려워하는 자는 결코 지혜의 룬을 얻지 못한다." 현재 당신을 수호하는 룬은 [${dominantGaldrCharm.runeName}]이며, [${dominantGaldrCharm.charmName}]의 힘이 당신의 여정을 호위합니다.`;
   const norseRunicGaldrChant = `[게알드르 룬 창팅]: "${dominantGaldrCharm.activationMantra}" ${dominantGaldrCharm.spiritualMastery}.`;
 
+  const ritualAction = `오늘 '${dominantGaldrCharm.charmName}'의 수호 룬(${dominantGaldrCharm.primaryRune} ${dominantGaldrCharm.runeName})을 떠올리며 "${dominantGaldrCharm.activationMantra}"를 조용히 읊조리고, '${dominantGaldrCharm.magicalDomain}'의 태도로 오늘 마주한 첫 결정을 차분히 세우세요.`;
+  const reflectionFocus = `하바말 게알드르(${dominantGaldrCharm.norseTitle} ↔ ${secondaryGaldrCharm.norseTitle}) — ${dominantGaldrCharm.magicalDomain}과 내적 수호`;
+
   const calculatedAtKst = formatHavamalKstTimestamp(referenceDate);
   const composite = Math.round(
     (yggdrasilWisdomDepth + odinRuneMasteryIndex + valkyrieShieldIntegrity + fateWyrdResilience) / 4
@@ -186,6 +191,8 @@ export function calculateNorseHavamalEighteenGaldr(
     secondaryGaldrCharm,
     havamalElderGuidance,
     norseRunicGaldrChant,
+    ritualAction,
+    reflectionFocus,
     reflectiveQuestion,
     interpretiveBoundary,
     havamalSynthesisMatrix,
@@ -214,6 +221,8 @@ export function formatNorseHavamalEighteenGaldrPrompt(report: NorseHavamalEighte
     );
   }
   lines.push(
+    `- **실천 의례**: ${report.ritualAction}`,
+    `- **성찰 초점**: ${report.reflectionFocus}`,
     `- **성찰 질문**: ${report.reflectiveQuestion}`,
     `- **해석 경계**: ${report.interpretiveBoundary}`,
   );
