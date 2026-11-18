@@ -11516,3 +11516,30 @@ test('에리히 프롬·프리드리히 실러·헤르만 헤세 데미안/황�
   const hessePrompt = formatGermanHermannHesseDemianSteppenwolfPrompt(hesse);
   assert.ok(hessePrompt.includes('+09:00') && hessePrompt.includes('질문 맞춤 성찰 질문') && hessePrompt.includes('해석 경계'));
 });
+
+test('헤르만 헤세 데미안·싯다르타·영웅의 여정 모노미스·힌두 쿤달리니 v1.7.855 질문 반응형 성찰 질문·+09:00 KST 회귀 검증', () => {
+  const profile = { basic: { name: '제제', birthdate: '1994-01-24', birthtime: '12:00', gender: 'male' } } as any;
+  const now = new Date('2026-11-19T04:10:00+09:00');
+  const query = '익숙한 틀을 깨고 다음 단계로 나아갈 내면의 용기를 얻고 싶어요';
+
+  const hesseDs = calculateGermanSwissHermannHesseDemianSiddhartha(profile, query, now);
+  assert.equal(hesseDs.engineVersion, GERMAN_HERMANN_HESSE_VERSION);
+  assert.match(hesseDs.calculatedAtKst, /\+09:00/);
+  assert.ok(hesseDs.reflectiveQuestion.includes(query));
+  const hesseDsPrompt = formatGermanSwissHermannHesseDemianSiddharthaPrompt(hesseDs);
+  assert.ok(hesseDsPrompt.includes('+09:00') && hesseDsPrompt.includes('질문 맞춤 성찰 질문') && hesseDsPrompt.includes('해석 경계'));
+
+  const monomyth = calculateHeroMythMonomyth({ profile, targetDate: now, question: query });
+  assert.equal(monomyth.engineVersion, HERO_MONOMYTH_VERSION);
+  assert.match(monomyth.calculatedAtKst, /\+09:00/);
+  assert.ok(monomyth.reflectiveQuestion.includes(query));
+  const monomythPrompt = formatHeroMythMonomythPrompt(monomyth);
+  assert.ok(monomythPrompt.includes('+09:00') && monomythPrompt.includes('질문 맞춤 성찰 질문') && monomythPrompt.includes('해석 경계'));
+
+  const kundalini = calculateHinduTantricKundalini({ profile, contextText: query, referenceDate: now });
+  assert.equal(kundalini.engineVersion, HINDU_KUNDALINI_VERSION);
+  assert.match(kundalini.temporalKundaliniRhythm.calculatedAtKst, /\+09:00/);
+  assert.ok(kundalini.reflectiveQuestion.includes(query));
+  const kundaliniPrompt = formatHinduTantricKundaliniPrompt(kundalini);
+  assert.ok(kundaliniPrompt.includes('+09:00') && kundaliniPrompt.includes('질문 맞춤 성찰 질문') && kundaliniPrompt.includes('해석 경계'));
+});

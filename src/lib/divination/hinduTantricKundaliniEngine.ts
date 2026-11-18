@@ -24,7 +24,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const HINDU_KUNDALINI_VERSION = 'LUCKEY-HINDU-KUNDALINI-v2.2.0';
+export const HINDU_KUNDALINI_VERSION = 'LUCKEY-HINDU-KUNDALINI-v2.3.0';
 
 export interface PrimaryNadiState {
   code: 'IDA' | 'PINGALA' | 'SUSHUMNA';
@@ -94,6 +94,7 @@ export interface HinduTantricKundaliniReport {
   synthesisMessage: string;
   ritualAction: string;
   reflectionFocus: string;
+  reflectiveQuestion: string;
   boundaryNotice: string;
   interpretiveBoundary: string;
 }
@@ -278,7 +279,7 @@ export function calculateHinduTantricKundalini(params: {
   const kstDate = new Date(now.getTime() + 9 * 60 * 60 * 1000);
   const kstHour = kstDate.getUTCHours();
   const kstMonth = kstDate.getUTCMonth() + 1;
-  const calculatedAtKst = kstDate.toISOString().replace('T', ' ').slice(0, 16) + ' KST';
+  const calculatedAtKst = kstDate.toISOString().replace('T', ' ').slice(0, 16) + ' +09:00 (KST)';
 
   const pranaWindow = kstHour >= 4 && kstHour < 7
     ? '브라흐마 무후르타 (새벽 영적 각성 및 수슘나 개방 황금창)'
@@ -313,6 +314,10 @@ export function calculateHinduTantricKundalini(params: {
 
   const ritualAction = `[${primaryNadi.sanskritName} · ${dominantChakraNode.koreanName}] ${pranayama.dailySadhanaAdvice} (호흡: ${pranayama.primaryBreathwork})`;
   const reflectionFocus = `지금 나의 '${situationalKundaliniAudit.granthiFocus}' 앞에서 ${dominantChakraNode.focusChallenge}을(를) 열기 위해 오늘 내려놓을 긴장은 무엇입니까?`;
+  const cleanedContext = context.trim();
+  const reflectiveQuestion = cleanedContext
+    ? `"${cleanedContext}"라는 마음의 물음 앞에서 지금 내 숨을 막고 있는 매듭(${situationalKundaliniAudit.granthiFocus})은 무엇이며, ${dominantChakraNode.koreanName}의 균형을 위해 오늘 내려놓을 집착은 무엇인가요?`
+    : `${primaryNadi.sanskritName} 흐름 속에서 오늘 ${dominantChakraNode.focusChallenge}을(를) 깨우기 위해 가다듬을 호흡은 무엇인가요?`;
 
   return {
     engineVersion: HINDU_KUNDALINI_VERSION,
@@ -329,6 +334,7 @@ export function calculateHinduTantricKundalini(params: {
     synthesisMessage,
     ritualAction,
     reflectionFocus,
+    reflectiveQuestion,
     boundaryNotice: '인도 탄트라 요가 및 프라나야마 상징 체계에 기반한 정성적 심신 성찰 관점이며, 의학적 진단이나 치료를 대신하지 않습니다.',
     interpretiveBoundary: '인도 탄트라 요가 및 프라나야마 상징 체계에 기반한 정성적 심신 성찰 관점이며, 의학적 진단이나 치료를 대신하지 않습니다.',
   };
@@ -364,5 +370,6 @@ export function formatHinduTantricKundaliniPrompt(report: HinduTantricKundaliniR
 - **쿤달리니 통합 나침반**: ${report.synthesisMessage}
 - **실천 의례(Ritual Action)**: ${report.ritualAction}
 - **성찰 초점(Reflection Focus)**: ${report.reflectionFocus}
+- **질문 맞춤 성찰 질문**: ${report.reflectiveQuestion}
 - **해석 경계**: ${report.boundaryNotice}`;
 }

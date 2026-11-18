@@ -1794,7 +1794,7 @@ try {
   const heroMythMonomythResult = calculateSupplement('heroMythMonomythResult', () => (birthdateStr && profile
     ? (() => {
         try {
-          return calculateHeroMythMonomyth({ profile, targetDate: now });
+          return calculateHeroMythMonomyth({ profile, targetDate: now, question });
         } catch (_) {
           return null;
         }
@@ -4767,7 +4767,7 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'chakraVibrationAlignment', nameKo: '차크라 진동 정렬', icon: '🌈', category: 'deep_master', summary: '7대 차크라 에너지 흐름과 사주 오행을 대조해 몸과 마음의 막힌 긴장을 푸는 관점' },
   { key: 'enneagramSoulIntegration', nameKo: '에니어그램 영혼통합', icon: '⭐', category: 'deep_master', summary: '에니어그램 9유형 에고 고착과 분열·통합 방향을 사주 오행과 엮어 내면의 미덕 회복을 비추는 관점' },
   { key: 'ancestralEpigeneticKarma', nameKo: '후성유전 카르마', icon: '🌳', category: 'deep_master' },
-  { key: 'heroMythMonomyth', nameKo: '영웅의 여정 모노미스', icon: '⚔️', category: 'deep_master' },
+  { key: 'heroMythMonomyth', nameKo: '영웅의 여정 모노미스', icon: '⚔️', category: 'deep_master', summary: '조셉 캠벨의 영웅의 여정 12단계와 사주 오행 원형을 엮어 현재 넘어설 문턱과 돌파 결단을 비추는 서사 관점' },
   { key: 'akashicRecordsOracle', nameKo: '아카식 레코드', icon: '📖', category: 'deep_master', summary: '영혼의 기원과 카르믹 배움 과제를 비춰 현실에서 실행할 그라운딩 실천을 짚어 줍니다.' },
   { key: 'quantumProbabilisticTimeline', nameKo: '양자 확률 타임라인', icon: '🔮', category: 'deep_master' },
   { key: 'somaticBodyArmoring', nameKo: '소매틱 아머링', icon: '🧘', category: 'deep_master' },
@@ -4801,7 +4801,7 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'hawaiianHuna', nameKo: '호오포노포노 7원리', icon: '🌺', category: 'deep_master', summary: '고대 하와이 후나(Huna) 7대 원리와 호오포노포노 4대 정화 진언으로 내면의 기억과 감정의 매듭을 씻어내고 포노(Pono) 균형을 회복합니다.' },
   { key: 'fengShuiEightMansions', nameKo: '풍수 8택 방위에너지', icon: '🧭', category: 'deep_master', summary: '팔택명괘 4길방(생기·천의·연년·복위)과 시공간 리듬으로 일상 공간과 동선을 조율하는 관점' },
   { key: 'zoroastrianAsha', nameKo: '조로아스터 아샤 진실', icon: '🔥', category: 'deep_master', summary: '고대 페르시아 아베스타의 아샤(진리)와 선한 생각·말·행동 3대 축으로 모호한 타협을 가려냅니다.' },
-  { key: 'hinduKundalini', nameKo: '힌두 쿤달리니 나디각성', icon: '🕉️', category: 'deep_master' },
+  { key: 'hinduKundalini', nameKo: '힌두 쿤달리니 나디각성', icon: '🕉️', category: 'deep_master', summary: '이다·핑갈라·수슘나 3대 나디와 7대 차크라·3대 그란티 상징으로 에너지 긴장과 호흡 균형을 살피는 관점' },
   { key: 'guiguziLiangtouqian', nameKo: '귀곡자 양구령 72변화', icon: '📜', category: 'deep_master', summary: '년간과 시간의 양두 간지 배합과 선천 성수로 인생 3국면과 종횡가 결단 나침반을 비추는 전략 관점' },
   { key: 'slavicSvarog', nameKo: '슬라브 16스바로그 로드카르마', icon: '🌌', category: 'deep_master', summary: '슬라브 16 스바로그 궁과 로드(Rod) 가계 카르마·성목 상징으로 타고난 기질과 관계 매듭 해원을 비추는 관점' },
   { key: 'esseneCommunion', nameKo: '에세네 14대 천사교감', icon: '🕊️', category: 'deep_master', summary: '고대 에세네 평화의 복음에 따라 대지 어머니와 천상 아버지의 14대 천사 교감으로 생각·감정·행동 삼위일체의 정화와 안식을 안내합니다.' },
