@@ -23,7 +23,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const CHEONBUGYEONG_ENGINE_VERSION = '2.1.0';
+export const CHEONBUGYEONG_ENGINE_VERSION = '2.2.0';
 
 export interface CheonbugyeongEightyOneReport {
   engineVersion: string;
@@ -66,6 +66,8 @@ export interface CheonbugyeongEightyOneReport {
   spiritualCultivationGuidance: string;
   boundaryNotice: string;
   interpretiveBoundary: string;
+  ritualAction: string;
+  reflectionFocus: string;
 }
 
 function djb2Hash(str: string): number {
@@ -210,6 +212,9 @@ export function calculateKoreanCheonbugyeongEightyOne(
     cautionNotice: '삼망(심·기·신)의 조급함에 휩쓸려 근본을 놓치지 않도록 한 걸음 물러나 호흡을 점검하십시오.',
   };
 
+  const ritualAction = `[${primaryHexagramGua.verseHanja}] ${cheonbuSynthesisMatrix.recommendedAction}`;
+  const reflectionFocus = `오늘 '${situationalCheonbuAudit.focusTheme}'의 자리에서 삼망(심·기·신)의 흔들림을 멈추고 본심본태양(本心本太陽)의 중심으로 돌아가기 위해 비울 집착 하나는 무엇인가요?`;
+
   return {
     engineVersion: CHEONBUGYEONG_ENGINE_VERSION,
     calculatedAt: now.toISOString(),
@@ -229,6 +234,8 @@ export function calculateKoreanCheonbugyeongEightyOne(
     spiritualCultivationGuidance,
     boundaryNotice: '본 결과는 《천부경》 81자와 《삼일신고》 3진3망 철학에 기반한 정성적 성찰 안내이며, 확정적 길흉 판정이 아닙니다.',
     interpretiveBoundary: '본 결과는 《천부경》 81자와 《삼일신고》 3진3망 철학에 기반한 정성적 성찰 안내이며, 확정적 길흉 판정이 아닙니다.',
+    ritualAction,
+    reflectionFocus,
   };
 }
 
@@ -243,6 +250,8 @@ export function formatKoreanCheonbugyeongEightyOnePrompt(report: CheonbugyeongEi
     `  • 시공간 지침: ${report.temporalCheonbuRhythm.temporalGuidance}`,
     `- 천부 교차 매트릭스: 핵심(${report.cheonbuSynthesisMatrix.coreInsight}) | 실행(${report.cheonbuSynthesisMatrix.recommendedAction}) | 주의(${report.cheonbuSynthesisMatrix.cautionNotice})`,
     `- 심신 수련 처방: ${report.spiritualCultivationGuidance}`,
+    `- 실천 의례(Ritual Action): ${report.ritualAction}`,
+    `- 성찰 초점(Reflection Focus): ${report.reflectionFocus}`,
     `- 해석 경계: ${report.boundaryNotice}`,
   ].join('\n');
 }

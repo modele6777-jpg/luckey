@@ -1,10 +1,10 @@
 {
-  "version": "1.7.826",
-  "builtAt": "2026-11-18T10:30:00+09:00",
-  "summary": "카슈미르 시바파 스판다, 안중근 동양평화론, 백석 시인 순수 고결성 3대 엔진 실천 의례 및 성찰 질문 표준 연동(v1.7.826)",
+  "version": "1.7.827",
+  "builtAt": "2026-11-18T10:40:00+09:00",
+  "summary": "백범 김구 나의 소원, 단군 천부경 81자, 고운 최치원 풍류도 3대 엔진 실천 의례 및 성찰 질문 표준 연동(v1.7.827)",
   "items": [
-    "카슈미르 시바파 스판다 우주 맥동 & 프라티야비즈냐 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동",
-    "안중근 의사 《동양평화론》 & 견리사의 대의·평화 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동",
-    "백석 《사슴·흰 바람벽이 있어》 순수 고결성 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동"
+    "백범 김구 《백범일지》 높은 문화의 힘 & 자주독립 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동",
+    "단군 단학 《천부경》 81자 & 삼일신고 성통광명 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동",
+    "고운 최치원 풍류도 & 삼교회통 접화군생 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동"
   ]
 }
