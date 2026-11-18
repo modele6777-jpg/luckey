@@ -1,4 +1,5 @@
 import { installFoldRuntimeTrace } from './lib/foldRuntimeTrace';
+import { installIosViewportRecovery } from './lib/iosViewportRecovery';
 import { installAudioMixingPolicy } from './lib/audioMixingPolicy';
 import {StrictMode} from 'react';
 import {createRoot} from 'react-dom/client';
@@ -37,6 +38,8 @@ if (typeof window !== 'undefined') {
 }
 
 installFoldRuntimeTrace(window);
+// iOS can leave a zero-height viewport after a fold, routing every tap to <html>.
+if (typeof window !== 'undefined') installIosViewportRecovery(window);
 installAudioMixingPolicy();
 if (typeof window !== 'undefined') installSingleAppReload(window);
 initPerfMode();
