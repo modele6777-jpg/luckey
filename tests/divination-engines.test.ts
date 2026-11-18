@@ -4874,6 +4874,7 @@ test('Roman Stoic Prohairesis Dichotomy Engine: calculates internal control focu
   assert(rep.apatheiaInnerPeaceScore >= 0 && rep.apatheiaInnerPeaceScore <= 100);
   assert(rep.dominantVirtue.nameKo.length > 0);
   assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(Boolean(rep.stoicSynthesisMatrix?.integratedAction));
   assert(rep.reflectiveQuestion.includes('통제할 수 있는 것'));
   assert(rep.interpretiveBoundary.includes('성찰 비유'));
@@ -4881,6 +4882,7 @@ test('Roman Stoic Prohairesis Dichotomy Engine: calculates internal control focu
   assert(prompt.includes('스토아학파'));
   assert(prompt.includes(rep.dominantVirtue.nameKo));
   assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
   assert(prompt.includes('성찰 질문'));
   assert(prompt.includes('해석 경계'));
   assert(!prompt.includes('/100'));
@@ -6160,9 +6162,11 @@ test('Roman Seneca Time Sovereignty Tranquility Engine: calculates time sovereig
   assert(rep.stoicAutarkeiaResilience >= 0 && rep.stoicAutarkeiaResilience <= 100);
   assert(rep.animiFluctuatioRelief >= 0 && rep.animiFluctuatioRelief <= 100);
   assert(rep.activeSenecaStage.stageNameLatin.length > 0);
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatSenecaTimeSovereigntyPrompt(rep);
   assert(prompt.includes('고대 로마 세네카 인생의 짧음에 대하여 & 시간 주권 평정 지표'));
   assert(prompt.includes(rep.activeSenecaStage.stageNameKo));
+  assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
 });
 
 test('Ancient Greek Platonic Idea Cave Engine: calculates Idea of Good, Cave liberation, Anamnesis and Cardinal Virtues', () => {
@@ -7034,9 +7038,11 @@ test('Marcus Aurelius Meditations Citadel Engine: calculates Inner Citadel, Logo
   assert(rep.koinoniaCosmopolitanDutyScore >= 0 && rep.koinoniaCosmopolitanDutyScore <= 100);
   assert(rep.apatheiaSerenityIndex >= 0 && rep.apatheiaSerenityIndex <= 100);
   assert(rep.activeMeditationsTheme.themeTitleKo.length > 0);
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatMarcusAureliusMeditationsCitadelPrompt(rep);
   assert(prompt.includes('마르쿠스 아우렐리우스 《명상록》 내면의 성채 & 스토아 실존 평정 지표'));
   assert(prompt.includes(rep.activeMeditationsTheme.themeTitleKo));
+  assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
 });
 
 test('Suun Choe Je-u Donghak Sicheonju Engine: calculates Sicheonju Dignity, Sainyeocheon Reverence, and Hucheon Gaebyeok', () => {

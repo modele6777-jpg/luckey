@@ -1,10 +1,10 @@
 {
-  "version": "1.7.891",
-  "builtAt": "2026-11-19T07:18:00+09:00",
-  "summary": "소매틱 아머링·3대 지혜 삼위일체·칼 융 동시성 오멘 3대 엔진 reflectiveQuestion·+09:00 (KST)·summary·question 연동(v1.7.891)",
+  "version": "1.7.892",
+  "builtAt": "2026-11-19T07:22:00+09:00",
+  "summary": "로마 마르쿠스 아우렐리우스 명상록·세네카 시간 주권·스토아 프로하이레시스 3대 엔진 실천 의례 및 성찰 초점 표준 연동(v1.7.892)",
   "items": [
-    "빌헬름 라이히 소매틱 아머링(v2.2.0)·영적 3대 지혜 삼위일체(v2.2.0)·칼 융 동시성 오멘(v2.2.0): 질문 반응형 reflectiveQuestion·+09:00 (KST) 표기·프롬프트 출력 추가",
-    "deterministicEngine.ts: 3대 엔진 ALL_DCE_ENGINES summary 등록 및 호출부 question 전달 연동",
-    "divination-engines.test.ts: 3대 엔진 v1.7.891 회귀 테스트 추가"
+    "고대 로마 마르쿠스 아우렐리우스 《명상록》 내면의 성채 엔진(v2.3.0): ritualAction·reflectionFocus 표준 필드 연동",
+    "고대 로마 세네카 인생의 짧음에 대하여 & 시간 주권 평정 엔진(v2.3.0): ritualAction·reflectionFocus 표준 필드 연동",
+    "고대 로마 스토아 프로하이레시스 통제 이분법 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동"
   ]
 }

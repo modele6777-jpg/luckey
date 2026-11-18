@@ -13,7 +13,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const SENECA_TIME_SOVEREIGNTY_VERSION = 'LUCKEY-SENECA-TIME-SOVEREIGNTY-v2.2.0';
+export const SENECA_TIME_SOVEREIGNTY_VERSION = 'LUCKEY-SENECA-TIME-SOVEREIGNTY-v2.3.0';
 
 export interface SenecaStage {
   stageLevel: number;
@@ -58,6 +58,8 @@ export interface SenecaTimeSovereigntyResult {
     recommendedPractice: string;
   };
   dailyPracticeRitual: string;
+  ritualAction: string;
+  reflectionFocus: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
   senecaSynthesisMatrix?: {
@@ -291,6 +293,8 @@ export function calculateSenecaTimeSovereignty(
     situationalTimeFocus,
     temporalSenecaRhythm,
     dailyPracticeRitual: `${temporalSenecaRhythm.recommendedPractice} · ${situationalTimeFocus.reclaimDirective}`,
+    ritualAction: `[${activeSenecaStage.stageNameLatin}] ${situationalTimeFocus.reclaimDirective}`,
+    reflectionFocus: `세네카 시간 주권(${situationalTimeFocus.detectedTheme}) — ${situationalTimeFocus.classicReference}`,
     reflectiveQuestion: situationalTimeFocus.reflectiveQuestion,
     interpretiveBoundary: '세네카의 시간 주권과 평정 지혜는 길흉을 예단하는 점술이 아니라, 유예와 불안에 빼앗긴 오늘의 시간을 자신에게 되돌려놓도록 돕는 스토아 철학 성찰 프레임입니다.',
     senecaSynthesisMatrix,
@@ -309,6 +313,8 @@ export function formatSenecaTimeSovereigntyPrompt(res: SenecaTimeSovereigntyResu
     `- 질문 맥락 진단(${res.situationalTimeFocus.classicReference}): ${res.situationalTimeFocus.detectedTheme} — ${res.situationalTimeFocus.timeLeakDiagnostic}`,
     `- KST 시공간 리듬 (${res.calculatedAtKst}): ${res.temporalSenecaRhythm.kstPhaseLabel} · ${res.temporalSenecaRhythm.seasonContext} (${res.temporalSenecaRhythm.tranquilityStageKo})`,
     `- 오늘의 실천 의례: ${res.dailyPracticeRitual}`,
+    `- 실천 의례: ${res.ritualAction}`,
+    `- 성찰 초점: ${res.reflectionFocus}`,
     `- 성찰 질문: "${res.reflectiveQuestion}"`,
     `- 세네카 명언: "${res.primarySenecaAphorism.themeKo}" [${res.primarySenecaAphorism.latinClassic}]`,
     `- 철학적 처방: ${res.senecaPhilosophicalCounsel.philosophicalGuidance}`,
