@@ -22,7 +22,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const DONGHAK_CHEONDOISM_VERSION = '2.1.0';
+export const DONGHAK_CHEONDOISM_VERSION = '2.2.0';
 
 export interface DonghakCheonjuReport {
   engineVersion: string;
@@ -66,6 +66,8 @@ export interface DonghakCheonjuReport {
   sainyeocheonGuidance: string;
   boundaryNotice: string;
   interpretiveBoundary: string;
+  ritualAction: string;
+  reflectionFocus: string;
 }
 
 function djb2Hash(str: string): number {
@@ -217,6 +219,11 @@ export function calculateDonghakCheondoismCheonju(
     cautionNotice: '조급함으로 외유기화의 흐름을 거스르거나 스스로의 내적 존엄을 가볍게 여기지 않도록 경계하십시오.',
   };
 
+  const ritualAction = `[${primaryVirtue.titleKo} · ${twentyOneWordsMantraFocus.phraseKo}] ${situationalDonghakAudit.practiceFocus}`;
+  const reflectionFocus = question
+    ? `'${question}' 앞에서 내면의 한울님 자성(내유신령)을 지키며 오늘 사람을 대할 사인여천의 태도는 무엇인가요?`
+    : `지금 내 마음을 맑히고 수심정기(守心正氣)로 흔들림 없이 지켜야 할 중심은 무엇인가요?`;
+
   return {
     engineVersion: DONGHAK_CHEONDOISM_VERSION,
     calculatedAt: now.toISOString(),
@@ -235,6 +242,8 @@ export function calculateDonghakCheondoismCheonju(
     sainyeocheonGuidance,
     boundaryNotice: '본 결과는 《동경대전》 시천주·인내천 철학에 기반한 정성적 성찰 안내이며, 확정적 길흉 판정이 아닙니다.',
     interpretiveBoundary: '본 결과는 《동경대전》 시천주·인내천 철학에 기반한 정성적 성찰 안내이며, 확정적 길흉 판정이 아닙니다.',
+    ritualAction,
+    reflectionFocus,
   };
 }
 
@@ -249,6 +258,8 @@ export function formatDonghakCheondoismCheonjuPrompt(report: DonghakCheonjuRepor
     `  • 시공간 지침: ${report.temporalDonghakRhythm.temporalGuidance}`,
     `- 동학 교차 매트릭스: 핵심(${report.donghakSynthesisMatrix.coreInsight}) | 실행(${report.donghakSynthesisMatrix.recommendedAction}) | 주의(${report.donghakSynthesisMatrix.cautionNotice})`,
     `- 사인여천(事人如天) 실천 지침: ${report.sainyeocheonGuidance}`,
+    `- 실천 의례(Ritual Action): ${report.ritualAction}`,
+    `- 성찰 초점(Reflection Focus): ${report.reflectionFocus}`,
     `- 해석 경계: ${report.boundaryNotice}`,
   ].join('\n');
 }

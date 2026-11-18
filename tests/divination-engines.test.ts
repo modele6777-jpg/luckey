@@ -5223,10 +5223,12 @@ test('Donghak Cheondoism Cheonju Engine: calculates inner spirituality, cosmic r
   assert(rep.temporalDonghakRhythm.yongdamWatchWindow.length > 0);
   assert(rep.donghakSynthesisMatrix.coreInsight.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatDonghakCheondoismCheonjuPrompt(rep);
   assert(prompt.includes('동학 수운 최제우 시천주(侍天主) & 지기금지 인내천 천지조화'));
   assert(prompt.includes(rep.primaryVirtue.titleKo));
   assert(prompt.includes('KST'));
+  assert(prompt.includes(rep.ritualAction));
   assert(!prompt.includes('/100') && !prompt.includes('%') && !prompt.includes('점수'));
 });
 
@@ -6570,9 +6572,11 @@ test('Dasan Jeong Yagyong Mokmin Simseo Silhak Engine: calculates Yeoyudang Sind
   assert(rep.silsagusiPragmaticWisdomScore >= 0 && rep.silsagusiPragmaticWisdomScore <= 100);
   assert(rep.heumheumMeticulousTruthseekingScore >= 0 && rep.heumheumMeticulousTruthseekingScore <= 100);
   assert(rep.activeDasanTheme.themeTitleHanja.length > 0);
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatDasanMokminSimseoPrompt(rep);
   assert(prompt.includes('다산 정약용 목민심서(牧民心書) & 실사구시 실학 지표'));
   assert(prompt.includes(rep.activeDasanTheme.themeTitleKo));
+  assert(prompt.includes(rep.ritualAction));
 });
 
 test('Aurelius Augustine Confessiones Illuminatio Engine: calculates Interior Illuminatio, Distentio Animi, and Restful Peace', () => {
@@ -7535,10 +7539,12 @@ test('Danjae Shin Chae-ho Joseon Sanggosa Engine: calculates Ah vs Non-Ah Subjec
   assert(rep.activeDanjaeTheme.themeTitleKo.length > 0);
   assert(rep.calculatedAtKst.endsWith('KST'));
   assert(Boolean(rep.danjaeSynthesisMatrix?.integratedAction));
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatKoreanDanjaeShinChaeHoJoseonSanggosaPrompt(rep);
   assert(prompt.includes('단재 신채호 《조선상고사》 & 〈조선혁명선언〉 아(我)의 주체자각 & 자주독립 지표'));
   assert(prompt.includes(rep.activeDanjaeTheme.themeTitleKo));
   assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes(rep.ritualAction));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });
