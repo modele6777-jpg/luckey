@@ -12232,3 +12232,30 @@ test('세렌디피티·차크라 솔 퀘스트·종여내단 엔진 v1.7.893 질
   assert.ok(zl.reflectiveQuestion.includes(query));
   assert.ok(formatZhongLuInnerAlchemyPrompt(zl).includes('질문 맞춤 성찰 질문'));
 });
+
+test('세르반테스 돈키호테·에누마 엘리시 50대 이름·수메르 이난나 명계하강 엔진 v1.7.895 질문 반응형 성찰 질문·KST(+09:00) 검증', () => {
+  const profile: any = {
+    name: '테스트',
+    basic: { birthdate: '1994-01-24', birthtime: '10:30', gender: 'male', calendarType: 'solar' },
+  };
+  const now = new Date('2026-11-19T07:38:00+09:00');
+  const query = '두려움의 갑옷을 벗고 내 길을 지키고 싶을 때';
+
+  const dq = calculateSpanishMiguelDeCervantesDonQuixote(profile, query, now);
+  assert.equal(dq.engineVersion, SPANISH_MIGUEL_DE_CERVANTES_DON_QUIXOTE_VERSION);
+  assert.match(dq.calculatedAtKst, /\+09:00/);
+  assert.ok(dq.reflectiveQuestion.includes(query));
+  assert.ok(formatSpanishMiguelDeCervantesDonQuixotePrompt(dq).includes('질문 맞춤 성찰 질문'));
+
+  const ee = calculateSumerianEnumaElishFiftyNames({ profile, question: query, now });
+  assert.equal(ee.engineVersion, ENUMA_ELISH_ENGINE_VERSION);
+  assert.match(ee.calculatedAtKst, /\+09:00/);
+  assert.ok(ee.reflectiveQuestion.includes(query));
+  assert.ok(formatSumerianEnumaElishFiftyNamesPrompt(ee).includes('질문 맞춤 성찰 질문'));
+
+  const inanna = calculateSumerianInannaUnderworldDescent({ profile, question: query, now });
+  assert.equal(inanna.engineVersion, SUMERIAN_INANNA_UNDERWORLD_DESCENT_ENGINE_VERSION);
+  assert.match(inanna.calculatedAtKst, /\+09:00/);
+  assert.ok(inanna.reflectiveQuestion.includes(query));
+  assert.ok(formatSumerianInannaUnderworldDescentPrompt(inanna).includes('질문 맞춤 성찰 질문'));
+});

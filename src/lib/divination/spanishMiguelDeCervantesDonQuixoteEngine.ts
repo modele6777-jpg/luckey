@@ -13,7 +13,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const SPANISH_MIGUEL_DE_CERVANTES_DON_QUIXOTE_VERSION = 'LUCKEY-CERVANTES-DON-QUIXOTE-v2.1.0';
+export const SPANISH_MIGUEL_DE_CERVANTES_DON_QUIXOTE_VERSION = 'LUCKEY-CERVANTES-DON-QUIXOTE-v2.2.0';
 
 export interface CervantesTheme {
   themeKey: string;
@@ -52,6 +52,7 @@ export interface SpanishMiguelDeCervantesDonQuixoteResult {
     alignmentState: string;
     integratedAction: string;
   };
+  reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
 
@@ -62,7 +63,7 @@ function formatCervantesKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
 }
 
 export const CERVANTES_THEMES: CervantesTheme[] = [
@@ -181,6 +182,10 @@ export function calculateSpanishMiguelDeCervantesDonQuixote(
   };
 
   const interpretiveBoundary = '본 세르반테스 《돈키호테》 지혜 리포트는 고전 문학 원전과 수리 시드에 기반한 정성적 성찰 안내이며, 미래 사건의 단정적 예언이 아닙니다.';
+  const trimmedQ = query?.trim() || '';
+  const reflectiveQuestion = trimmedQ
+    ? `'${trimmedQ}' 앞에서 세속의 계산이 무모하다고 말릴 때에도 내가 기사처럼 끝까지 지키고 싶은 고결한 신념은 무엇인가요?`
+    : `지금 내 앞을 가로막는 거대한 풍차 앞에서 한 걸음 물러서기보다 유쾌한 용기로 정면 돌파해 보고 싶은 일은 무엇인가요?`;
 
   return {
     engineVersion: SPANISH_MIGUEL_DE_CERVANTES_DON_QUIXOTE_VERSION,
@@ -197,6 +202,7 @@ export function calculateSpanishMiguelDeCervantesDonQuixote(
       philosophicalCounsel,
     },
     cervantesSynthesisMatrix,
+    reflectiveQuestion,
     interpretiveBoundary,
   };
 }
@@ -222,6 +228,7 @@ export function formatSpanishMiguelDeCervantesDonQuixotePrompt(
       `- 통합 실천: ${res.cervantesSynthesisMatrix.integratedAction}`,
     );
   }
+  lines.push(`- 질문 맞춤 성찰 질문: ${res.reflectiveQuestion}`);
   lines.push(`- 해석 경계: ${res.interpretiveBoundary}`);
   return lines.join('\n');
 }

@@ -10,7 +10,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const SUMERIAN_INANNA_UNDERWORLD_DESCENT_ENGINE_VERSION = '2.1.0';
+export const SUMERIAN_INANNA_UNDERWORLD_DESCENT_ENGINE_VERSION = '2.2.0';
 
 export type InannaQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 export type InannaDescentPhase = 'THRESHOLD_DESCENT' | 'ZERO_POINT_SUSPENSION' | 'ENKI_REVIVAL';
@@ -48,6 +48,7 @@ export interface SumerianInannaUnderworldDescentReport {
     alignmentState: string;
     integratedAction: string;
   };
+  reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
 
@@ -58,7 +59,7 @@ function formatInannaKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
 }
 
 const UNDERWORLD_GATES_BASE: Omit<UnderworldGate, 'passageScore'>[] = [
@@ -223,6 +224,11 @@ export function calculateSumerianInannaUnderworldDescent(
     integratedAction: `${ritualAction}${question ? ` [질문 맥락: ${question}]` : ''}`,
   };
 
+  const trimmedQ = question.trim();
+  const reflectiveQuestion = trimmedQ
+    ? `'${trimmedQ}' 앞에서 ${currentCrucialGate.gateName}을 지나며 내가 가장 먼저 벗어 놓을 수 있는 ${currentCrucialGate.shadowPersona}는 무엇인가요?`
+    : reflectionFocus;
+
   return {
     engineVersion: SUMERIAN_INANNA_UNDERWORLD_DESCENT_ENGINE_VERSION,
     timestamp: now.toISOString(),
@@ -243,6 +249,7 @@ export function calculateSumerianInannaUnderworldDescent(
     inannaResurrectionGuidance,
     enkiLifeRestorationRitual,
     inannaSynthesisMatrix,
+    reflectiveQuestion,
     interpretiveBoundary: boundaryNotice,
   };
 }
@@ -265,5 +272,6 @@ export function formatSumerianInannaUnderworldDescentPrompt(rep: SumerianInannaU
       `  - 통합 실천: ${rep.inannaSynthesisMatrix.integratedAction}`,
     );
   }
+  lines.push(`· 질문 맞춤 성찰 질문: ${rep.reflectiveQuestion}`);
   return lines.join('\n');
 }

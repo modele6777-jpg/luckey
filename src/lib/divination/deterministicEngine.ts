@@ -4247,7 +4247,7 @@ try {
   // 322. 스페인 미겔 데 세르반테스 《돈키호테》 불가능한 꿈을 향한 고결한 이상주의·풍차 앞 불굴의 용기·해학적 회복탄력성 지혜 엔진
   const spanishMiguelDeCervantesDonQuixoteResult = calculateSupplement('spanishMiguelDeCervantesDonQuixoteResult', () => ((() => {
     try {
-      return calculateSpanishMiguelDeCervantesDonQuixote(profile);
+      return calculateSpanishMiguelDeCervantesDonQuixote(profile, question, now);
     } catch (_) {
       return null;
     }
@@ -4866,7 +4866,7 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'persianAttarSevenValleys', nameKo: '페르시아 아타르 새들의 회의 7대 계곡', icon: '🕊️', category: 'deep_master', summary: '아타르 《새들의 회의》 7대 영혼의 계곡과 시무르그 거울 상징으로 집착을 비우고 본래 자아를 돌아보는 관점' },
   { key: 'hermeticPoimandres', nameKo: '헤르메스주의 포이만드레스 8대 천계', icon: '🌟', category: 'deep_master', summary: '7대 행성 구체의 세속 정념을 벗고 제8천 옥도아드의 누스(신성 지성)로 깨어나는 상승 과정을 비춥니다.' },
   { key: 'kashmirShaivismSpanda', nameKo: '카슈미르 시바파 스판다 우주 맥동', icon: '🔱', category: 'deep_master', summary: '카슈미르 시바파 트리카 5대 신성 행위와 스판다(순수 의식 맥동)·프라티야비즈냐(본성 재인식)로 내면 중심을 비추는 관점' },
-  { key: 'sumerianEnumaElishFiftyNames', nameKo: '에누마 엘리시 50대 이름', icon: '⚔️', category: 'deep_master' },
+  { key: 'sumerianEnumaElishFiftyNames', nameKo: '에누마 엘리시 50대 이름', icon: '⚔️', category: 'deep_master', summary: '바빌로니아 창세 서사시 마르두크 50대 신성 칭호와 4대 바람 상징으로 혼돈 속 주권과 결단을 비추는 관점' },
   { key: 'alexandrianDecanThirtySixGods', nameKo: '알렉산드리아 36대 데칸', icon: '⌛', category: 'deep_master', summary: '헤르메스주의 36대 데칸 시간 성령의 상징으로 조급한 시계 시간 너머의 결정적 타이밍(카이로스)과 삶의 리듬을 성찰합니다.' },
   { key: 'taoistLieziWindRiding', nameKo: '열자 어풍동행 무하유지향', icon: '🍃', category: 'deep_master', summary: '열자의 망시비·망아집·어풍비상 상징으로 집착을 덜고 순풍에 몸을 맡기는 무위자연의 태도를 살피는 관점' },
   { key: 'samkhyaTwentyFiveTattvas', nameKo: '상키야 25타트바 분별지', icon: '🧘', category: 'deep_master', summary: '순수 관조자 푸루샤와 물질 자연 프라크리티의 25타트바 및 3구나 균형을 살피어 분별지(비베카)를 세우는 관점' },
