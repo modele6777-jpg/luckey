@@ -6705,6 +6705,7 @@ test('Ryu Seong-ryong Jingbirok Engine: calculates Jingjeon Bihu past reflection
   assert(rep.activeJingbirokTheme.themeTitleHanja.length > 0);
   assert(rep.secondaryJingbirokTheme.themeKey !== rep.activeJingbirokTheme.themeKey);
   assert(rep.secondaryJingbirokAphorism.aphorismKey !== rep.focalJingbirokAphorism.aphorismKey);
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(rep.reflectiveQuestion.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
   assert(rep.calculatedAtKst.endsWith('+09:00 KST'));
@@ -6716,6 +6717,8 @@ test('Ryu Seong-ryong Jingbirok Engine: calculates Jingjeon Bihu past reflection
   assert(prompt.includes(repQ.activeJingbirokTheme.themeTitleKo));
   assert(prompt.includes(repQ.secondaryJingbirokTheme.themeTitleKo));
   assert(prompt.includes('해석 경계'));
+  assert(prompt.includes('실천 의례'));
+  assert(prompt.includes('성찰 초점'));
   assert(prompt.includes('교차 매트릭스'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
@@ -7433,6 +7436,7 @@ test('Sambong Jeong Do-jeon Minbon Reform Engine: calculates Minbon Serving, Ins
   assert(rep.activeSambongTheme.themeTitleKo.length > 0);
   assert(rep.secondarySambongTheme.themeKey !== rep.activeSambongTheme.themeKey);
   assert(rep.secondarySambongAphorism.aphorismKey !== rep.focalSambongAphorism.aphorismKey);
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(rep.reflectiveQuestion.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
   assert(rep.calculatedAtKst.endsWith('+09:00 KST'));
@@ -7444,6 +7448,8 @@ test('Sambong Jeong Do-jeon Minbon Reform Engine: calculates Minbon Serving, Ins
   assert(prompt.includes(repQ.activeSambongTheme.themeTitleKo));
   assert(prompt.includes(repQ.secondarySambongTheme.themeTitleKo));
   assert(prompt.includes('해석 경계'));
+  assert(prompt.includes('실천 의례'));
+  assert(prompt.includes('성찰 초점'));
   assert(prompt.includes('교차 매트릭스'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
@@ -8072,6 +8078,7 @@ test('Samyeongdaesa Songun Yujeong Engine: calculates Righteous Devotion, Diplom
   assert(rep.activeSamyeongTheme.themeTitleKo.length > 0);
   assert(rep.secondarySamyeongTheme.themeKey !== rep.activeSamyeongTheme.themeKey);
   assert(rep.secondarySamyeongAphorism.aphorismKey !== rep.focalSamyeongAphorism.aphorismKey);
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(rep.reflectiveQuestion.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
   assert(rep.calculatedAtKst.endsWith('+09:00 KST'));
@@ -8083,6 +8090,8 @@ test('Samyeongdaesa Songun Yujeong Engine: calculates Righteous Devotion, Diplom
   assert(prompt.includes(repQ.activeSamyeongTheme.themeTitleKo));
   assert(prompt.includes(repQ.secondarySamyeongTheme.themeTitleKo));
   assert(prompt.includes('해석 경계'));
+  assert(prompt.includes('실천 의례'));
+  assert(prompt.includes('성찰 초점'));
   assert(prompt.includes('교차 매트릭스'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
