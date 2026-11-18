@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <!-- Same viewport and home-screen settings as the app, with no app code at all. -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="접기 시험" />
+  <meta name="theme-color" content="#06070a" />
+  <link rel="manifest" href="/manifest-fold-test.json" />
+  <title>접기 시험</title>
+  <style>
+    :root { color-scheme: dark; }
+    html, body { margin: 0; height: 100%; background: #06070a; color: #f3f4f6; font: 16px/1.5 -apple-system, system-ui, sans-serif; }
+    main { box-sizing: border-box; min-height: 100%; padding: max(16px, env(safe-area-inset-top)) 16px max(16px, env(safe-area-inset-bottom)); display: flex; flex-direction: column; gap: 12px; }
+    h1 { font-size: 20px; margin: 0; }
+    #state { font: 15px/1.6 ui-monospace, monospace; background: #111827; border: 1px solid #374151; border-radius: 12px; padding: 12px; white-space: pre-wrap; }
+    #state.bad { border-color: #ef4444; background: #3f1515; }
+    button { font: inherit; padding: 16px; border-radius: 12px; border: 1px solid #6b7280; background: #1f2937; color: inherit; }
+    #taps { font-size: 28px; font-weight: 700; }
+    #log { font: 12px/1.5 ui-monospace, monospace; color: #9ca3af; white-space: pre-wrap; max-height: 40vh; overflow: auto; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>접기 시험 (앱 코드 없음)</h1>
+    <div id="state">측정 중…</div>
+    <button id="tap" type="button">여기를 눌러 보세요</button>
+    <div>누른 횟수: <span id="taps">0</span></div>
+    <button id="copy" type="button">기록 복사</button>
+    <div id="log"></div>
+  </main>
+  <script>
+    (function () {
+      var state = document.getElementById('state');
+      var log = document.getElementById('log');
+      var taps = 0;
+      var rows = [];
+      function snap(reason) {
+        var vv = window.visualViewport;
+        var row = {
+          t: new Date().toISOString().slice(11, 23), reason: reason,
+          innerW: window.innerWidth, innerH: window.innerHeight,
+          visualW: vv ? Math.round(vv.width) : null, visualH: vv ? Math.round(vv.height) : null,
+          docW: document.documentElement.clientWidth, docH: document.documentElement.clientHeight,
+          standalone: navigator.standalone === true, taps: taps
+        };
+        rows.push(row); if (rows.length > 200) rows.shift();
+        var bad = row.innerH <= 1 || (row.visualH !== null && row.visualH <= 1);
+        state.className = bad ? 'bad' : '';
+        state.textContent = (bad ? '⚠️ 화면 높이 0 (먹통 상태)\n' : '✅ 정상\n') +
+          '홈 화면 앱: ' + (row.standalone ? '예' : '아니오') + '\n' +
+          '창: ' + row.innerW + ' × ' + row.innerH + '\n' +
+          '표시: ' + row.visualW + ' × ' + row.visualH + '\n' +
+          '문서: ' + row.docW + ' × ' + row.docH;
+        log.textContent = rows.slice(-12).map(function (r) { return r.t + ' ' + r.reason + ' ' + r.innerW + 'x' + r.innerH + ' v' + r.visualW + 'x' + r.visualH + ' taps' + r.taps; }).join('\n');
+      }
+      document.getElementById('tap').addEventListener('click', function () { taps++; document.getElementById('taps').textContent = String(taps); snap('tap'); });
+      document.getElementById('copy').addEventListener('click', function () {
+        var text = JSON.stringify({ page: 'fold-test', ua: navigator.userAgent, rows: rows }, null, 1);
+        if (navigator.clipboard) navigator.clipboard.writeText(text).then(function () { snap('copied'); }, function () {});
+      });
+      ['resize', 'orientationchange', 'pageshow', 'focus'].forEach(function (name) { window.addEventListener(name, function () { snap(name); }); });
+      if (window.visualViewport) window.visualViewport.addEventListener('resize', function () { snap('visual-resize'); });
+      document.addEventListener('visibilitychange', function () { snap(document.hidden ? 'hidden' : 'visible'); });
+      window.addEventListener('touchstart', function (e) {
+        var t = e.target && e.target.tagName ? e.target.tagName.toLowerCase() : '?';
+        snap('touch→' + t);
+      }, { passive: true, capture: true });
+      setInterval(function () { snap('tick'); }, 1000);
+      snap('start');
+    })();
+  </script>
+</body>
+</html>

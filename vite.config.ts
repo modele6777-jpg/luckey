@@ -147,7 +147,7 @@ export default defineConfig(({mode}) => {
         workbox: {
           globPatterns: ['**/*.{js,mjs,css,html,ico,png,svg}'],
           navigateFallback: 'index.html',
-          navigateFallbackDenylist: [/^\/chat/, /^\/lucy/, /^\/handbook/, /^\/rebible/, /^\/calm/, /^\/robots\.txt$/, /^\/sitemap\.xml$/, /^\/favicon\.ico$/, /^\/health$/],
+          navigateFallbackDenylist: [/^\/fold-test/, /^\/chat/, /^\/lucy/, /^\/handbook/, /^\/rebible/, /^\/calm/, /^\/robots\.txt$/, /^\/sitemap\.xml$/, /^\/favicon\.ico$/, /^\/health$/],
           cleanupOutdatedCaches: true,
           clientsClaim: true,
           skipWaiting: true,
