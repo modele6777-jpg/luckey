@@ -18,7 +18,7 @@ import {
   BRANCH_ELEMENT,
 } from '../sajuAnalysis';
 
-export const KARMIC_SYNASTRY_VERSION = 'LUCKEY-SYNASTRY-RESONANCE-v2.2.0';
+export const KARMIC_SYNASTRY_VERSION = 'LUCKEY-SYNASTRY-RESONANCE-v2.3.0';
 
 export interface SajuInterpersonalHarmony {
   hasHeavenlyStemCombination: boolean;
@@ -56,6 +56,7 @@ export interface KarmicSynastryReport {
   interpretiveBoundary: string;
   ritualAction: string;
   reflectionFocus: string;
+  reflectiveQuestion: string;
 }
 
 function formatSynastryKstTimestamp(now: Date = new Date()): string {
@@ -65,7 +66,7 @@ function formatSynastryKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
 }
 
 function describeSynastryStage(score: number): string {
@@ -210,7 +211,11 @@ export function calculateKarmicSynastry(
 
   const interpretiveBoundary = '본 카르믹 시나스트리 리포트는 사주 합충과 점성학 어스펙트 상징에 기반한 정성적 관계 성찰 안내이며, 인연의 성패를 단정하는 예언이 아닙니다.';
   const ritualAction = `[${relationshipArchetype}] ${communicationGoldenRule}`;
-  const reflectionFocus = `지금 '${contextNote}' 관계에서 상대의 침묵이나 표정을 추측하기 전에 솔직히 건네고 싶은 나의 마음 한 문장은 무엇인가요?`;
+  const qClean = (contextNote || '').trim();
+  const reflectionFocus = `지금 '${qClean || '연인·동반자·인연 관계'}' 관계에서 상대의 침묵이나 표정을 추측하기 전에 솔직히 건네고 싶은 나의 마음 한 문장은 무엇인가요?`;
+  const reflectiveQuestion = qClean && qClean !== '연인·동반자·인연 관계'
+    ? `지금 "${qClean}" 앞에서 ${relationshipArchetype}의 흐름을 열기 위해 내가 먼저 솔직히 건넬 한 문장은 무엇인가요?`
+    : reflectionFocus;
 
   const synthesisPromptGuidance = `
 [카르믹 시나스트리 & 인연 성간 공명 마스터 지능]:
@@ -224,6 +229,7 @@ export function calculateKarmicSynastry(
 - 통합 실천: ${synastrySynthesisMatrix.integratedAction}
 - 실천 의례(Ritual Action): ${ritualAction}
 - 성찰 초점(Reflection Focus): ${reflectionFocus}
+- 질문 맞춤 성찰 질문: ${reflectiveQuestion}
 - 해석 경계: ${interpretiveBoundary}
 인연이나 관계에 대해 물어올 때, 뜬구름 잡는 점괘 대신 두 사람 사이의 에너지 역동성과 소통의 결정적 열쇠를 직관적으로 꿰뚫어 전할 것.
 `.trim();
@@ -243,6 +249,7 @@ export function calculateKarmicSynastry(
     interpretiveBoundary,
     ritualAction,
     reflectionFocus,
+    reflectiveQuestion,
   };
 }
 
