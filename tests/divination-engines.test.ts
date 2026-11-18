@@ -12043,3 +12043,27 @@ test('체호프·도스토옙스키·톨스토이 v1.7.881 표준 reflectiveQues
   assert.equal(tl.reflectiveQuestion, tl.reflectiveTolstoyQuestion);
   assert.ok(tl.reflectiveQuestion?.includes(query));
 });
+
+test('라이프 12궁·마이크로 해빗·양자 타임라인 v1.7.883 reflectiveQuestion·+09:00 KST 회귀 검증', () => {
+  const profile = { basic: { name: '제제', birthdate: '1994-01-24', birthtime: '12:00', gender: 'male' } } as any;
+  const now = new Date('2026-11-19T06:40:00+09:00');
+  const query = '일과 삶의 균형을 유지하면서도 새로운 도약을 준비하고 싶어요';
+
+  const lw = calculateLifeDomainWheel({ profile, targetDate: now, question: query });
+  assert.equal(lw.engineVersion, LIFE_DOMAIN_WHEEL_VERSION);
+  assert.match(lw.calculatedAtKst, /\+09:00/);
+  assert.ok(lw.reflectiveQuestion.includes(query));
+  assert.ok(formatLifeDomainWheelPrompt(lw).includes('질문 맞춤 성찰 질문'));
+
+  const mh = calculateMicroHabitKarma({ profile, targetDate: now, question: query });
+  assert.equal(mh.engineVersion, MICRO_HABIT_KARMA_VERSION);
+  assert.match(mh.calculatedAtKst, /\+09:00/);
+  assert.ok(mh.reflectiveQuestion.includes(query));
+  assert.ok(formatMicroHabitKarmaPrompt(mh).includes('질문 맞춤 성찰 질문'));
+
+  const qt = calculateQuantumProbabilisticTimeline({ profile, targetDate: now, question: query });
+  assert.equal(qt.engineVersion, QUANTUM_TIMELINE_VERSION);
+  assert.match(qt.calculatedAtKst, /\+09:00/);
+  assert.ok(qt.reflectiveQuestion.includes(query));
+  assert.ok(formatQuantumProbabilisticTimelinePrompt(qt).includes('질문 맞춤 성찰 질문'));
+});

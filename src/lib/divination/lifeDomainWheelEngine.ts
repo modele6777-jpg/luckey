@@ -16,7 +16,7 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const LIFE_DOMAIN_WHEEL_VERSION = 'LUCKEY-WHEEL-v2.2.0';
+export const LIFE_DOMAIN_WHEEL_VERSION = 'LUCKEY-WHEEL-v2.3.0';
 
 function formatWheelKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -25,7 +25,7 @@ function formatWheelKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
 }
 
 export type LifeDomainKey =
@@ -67,6 +67,7 @@ export interface LifeDomainWheelResult {
   summary: string;
   ritualAction: string;
   reflectionFocus: string;
+  reflectiveQuestion: string;
   wheelSynthesisMatrix?: {
     dominantTension: string;
     alignmentState: string;
@@ -212,6 +213,9 @@ export function calculateLifeDomainWheel(params?: {
 
   const calculatedAtKst = formatWheelKstTimestamp(now);
   const q = (params?.question || '').trim();
+  const reflectiveQuestion = q
+    ? `'${q}'라는 물음 앞에서, 지금 '${primaryBreakthroughDomain.titleKo}'의 에너지를 밀어 올리는 동시에 '${rechargeDomain.titleKo}'의 빈틈을 채우기 위해 오늘 당장 조정할 한 가지는 무엇인가요?`
+    : `지금 가장 앞서 나가는 '${primaryBreakthroughDomain.titleKo}'의 추진력이 '${rechargeDomain.titleKo}'의 회복을 해치지 않도록 오늘 세울 균형 기준은 무엇인가요?`;
   const wheelSynthesisMatrix = {
     dominantTension: `${primaryBreakthroughDomain.titleKo}(${primaryBreakthroughDomain.statusTitle}) ↔ ${rechargeDomain.titleKo}(${rechargeDomain.statusTitle})`,
     alignmentState: `${balanceLevelTitle}`,
@@ -230,6 +234,7 @@ export function calculateLifeDomainWheel(params?: {
     summary,
     ritualAction: `오늘 1순위 돌파 영역인 '${primaryBreakthroughDomain.titleKo}'(${primaryBreakthroughDomain.strategicAction})에 집중한 뒤, '${rechargeDomain.titleKo}'(${rechargeDomain.strategicAction})으로 에너지를 채우세요.`,
     reflectionFocus: `라이프 12궁 밸런스(${primaryBreakthroughDomain.titleKo} ↔ ${rechargeDomain.titleKo}) — ${balanceLevelTitle}`,
+    reflectiveQuestion,
     wheelSynthesisMatrix,
     interpretiveBoundary: '본 라이프 12궁 밸런스 휠 리포트는 명리·자미·점성 12궁 상징에 기반한 정성적 삶의 균형 성찰 안내이며, 의학·재무적 확정 진단을 대신하지 않습니다.',
   };
@@ -262,6 +267,7 @@ export function formatLifeDomainWheelPrompt(res: LifeDomainWheelResult): string 
   lines.push(
     `- 실천 의례: ${res.ritualAction}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
+    `- 질문 맞춤 성찰 질문: ${res.reflectiveQuestion}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
   );
   lines.push(`※ 루시 지침: 인생은 한쪽 바퀴만 거대해서는 멀리 굴러갈 수 없습니다. 사용자의 독보적인 창작·커리어 강점을 최고조로 끌어올리면서도, 신체 활력과 내면 평온이라는 기초 바퀴가 펑크 나지 않도록 전체 라이프 밸런스를 균형 있고 조화롭게 조망해 주세요.`);

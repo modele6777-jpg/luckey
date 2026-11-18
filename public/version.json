@@ -1,10 +1,6 @@
 {
-  "version": "1.7.882",
-  "builtAt": "2026-11-19T06:32:00+09:00",
-  "summary": "즉시 결단 매화역수·라이프 12궁 밸런스 휠·멘탈 리질리언스 3대 엔진 실천 의례 및 성찰 초점 표준 연동(v1.7.882)",
-  "items": [
-    "즉시 결단 매화역수 & 기문둔갑 시가팔문 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동",
-    "라이프 12궁 밸런스 휠 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동",
-    "위기 돌파 & 멘탈 리질리언스 지수 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동"
-  ]
+  "version": "1.7.883",
+  "builtAt": "2026-11-19T06:40:00+09:00",
+  "commit": "feat/deepen-lifewheel-microhabit-quantum-v1.7.883",
+  "notes": "라이프 12궁 밸런스 휠·마이크로 해빗·양자 타임라인 3대 엔진 reflectiveQuestion·+09:00 (KST)·summary·question 연동 (v1.7.883)"
 }

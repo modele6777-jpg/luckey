@@ -1563,7 +1563,7 @@ try {
   const lifeDomainWheelResult = calculateSupplement('lifeDomainWheelResult', () => (birthdateStr && profile
     ? (() => {
         try {
-          return calculateLifeDomainWheel({ profile, targetDate: now });
+          return calculateLifeDomainWheel({ profile, targetDate: now, question });
         } catch (_) {
           return null;
         }
@@ -1706,7 +1706,7 @@ try {
   const microHabitKarmaResult = calculateSupplement('microHabitKarmaResult', () => (birthdateStr && profile
     ? (() => {
         try {
-          return calculateMicroHabitKarma({ profile, targetDate: now });
+          return calculateMicroHabitKarma({ profile, targetDate: now, question });
         } catch (_) {
           return null;
         }
@@ -1816,7 +1816,7 @@ try {
   const quantumProbabilisticTimelineResult = calculateSupplement('quantumProbabilisticTimelineResult', () => (birthdateStr && profile
     ? (() => {
         try {
-          return calculateQuantumProbabilisticTimeline({ profile, targetDate: now });
+          return calculateQuantumProbabilisticTimeline({ profile, targetDate: now, question });
         } catch (_) {
           return null;
         }
@@ -4760,7 +4760,7 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'shadowArchetype', nameKo: '융 그림자 원형', icon: '🌑', category: 'deep_master', summary: '칼 융 분석심리학과 사주 4대 흉신 상징으로 억압된 그림자 트리거와 골든 섀도우 잠재력을 비추는 관점' },
   { key: 'biorhythmPeakFlow', nameKo: '바이오리듬 피크', icon: '📈', category: 'deep_master', summary: '신체·감성·지성 3대 생체 리듬과 크로노타입을 결합해 하루의 몰입과 회복 시간대를 조율하는 관점' },
   { key: 'destinySynastryEcho', nameKo: '운명 공명 에코', icon: '🔔', category: 'deep_master', summary: '인연 사이의 끌림과 무의식적 갈등 취약점, 영혼의 성장 과제를 비추는 관계 공명 관점' },
-  { key: 'microHabitKarma', nameKo: '마이크로 해빗', icon: '🌱', category: 'deep_master' },
+  { key: 'microHabitKarma', nameKo: '마이크로 해빗', icon: '🌱', category: 'deep_master', summary: '사주 오행 체질과 뇌 신경가소성 21일 주기를 결합해 저항 없는 2분 마이크로 액션과 도파민 루프를 설계하는 관점' },
   { key: 'ikigaiDestinyCompass', nameKo: '이키가이 나침반', icon: '🧭', category: 'deep_master', summary: '열정·전문성·사명·수익성의 4대 교집합을 사주 오행과 연결해 나만의 천직 소명과 3단계 실현 로드맵을 안내합니다.' },
   { key: 'serendipitySynchronicity', nameKo: '세렌디피티 레이더', icon: '🍀', category: 'deep_master' },
   { key: 'humanDesignBodyGraph', nameKo: '휴먼디자인 바디그래프', icon: '🧬', category: 'deep_master', summary: '휴먼 디자인 에너지 타입·내적 결정 권위·9대 센터 상징으로 자기다운 선택 리듬과 탈조건화를 살피는 관점' },
@@ -4769,7 +4769,7 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'ancestralEpigeneticKarma', nameKo: '후성유전 카르마', icon: '🌳', category: 'deep_master' },
   { key: 'heroMythMonomyth', nameKo: '영웅의 여정 모노미스', icon: '⚔️', category: 'deep_master', summary: '조셉 캠벨의 영웅의 여정 12단계와 사주 오행 원형을 엮어 현재 넘어설 문턱과 돌파 결단을 비추는 서사 관점' },
   { key: 'akashicRecordsOracle', nameKo: '아카식 레코드', icon: '📖', category: 'deep_master', summary: '영혼의 기원과 카르믹 배움 과제를 비춰 현실에서 실행할 그라운딩 실천을 짚어 줍니다.' },
-  { key: 'quantumProbabilisticTimeline', nameKo: '양자 확률 타임라인', icon: '🔮', category: 'deep_master' },
+  { key: 'quantumProbabilisticTimeline', nameKo: '양자 확률 타임라인', icon: '🔮', category: 'deep_master', summary: '주역 변효와 다중세계 해석을 결합해 관성 타임라인과 최적 성장 타임라인의 분기점과 붕괴 촉매를 비추는 관점' },
   { key: 'somaticBodyArmoring', nameKo: '소매틱 아머링', icon: '🧘', category: 'deep_master' },
   { key: 'supremeWisdomTrinity', nameKo: '3대 지혜 삼위일체', icon: '👑', category: 'deep_master' },
   { key: 'sacredVortexGeometry', nameKo: '황금비 영혼 수비학', icon: '🌀', category: 'deep_master' },

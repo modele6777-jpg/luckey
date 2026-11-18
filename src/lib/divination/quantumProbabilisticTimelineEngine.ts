@@ -19,7 +19,7 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const QUANTUM_TIMELINE_VERSION = 'LUCKEY-TIMELINE-v2.1.0';
+export const QUANTUM_TIMELINE_VERSION = 'LUCKEY-TIMELINE-v2.2.0';
 
 function formatQuantumTimelineKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -28,7 +28,7 @@ function formatQuantumTimelineKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
 }
 
 export interface TimelineTrack {
@@ -56,6 +56,7 @@ export interface QuantumProbabilisticTimelineReport {
   };
   quantumJumpFeasibilityScore: number; // 퀀텀 점프 실현 가능성 지수 (0 ~ 100)
   synthesisPromptGuidance: string;
+  reflectiveQuestion: string;
   quantumTimelineSynthesisMatrix?: {
     dominantTension: string;
     alignmentState: string;
@@ -148,6 +149,9 @@ export function runQuantumProbabilisticTimelineEngine(
 
   const calculatedAtKst = formatQuantumTimelineKstTimestamp(targetDate);
   const q = (question || '').trim();
+  const reflectiveQuestion = q
+    ? `'${q}'의 분기점(${criticalDateRange}) 앞에서, 익숙한 관성(Timeline Alpha)을 끊고 '${physicalAnchorAction}'을 실행하기 위해 오늘 내려놓을 두려움은 무엇인가요?`
+    : `'${coreDecisionChoice}'의 기로에서 Timeline Prime을 현실로 당겨오기 위해 오늘 바로 옮길 물리적 첫 걸음은 무엇인가요?`;
   const quantumTimelineSynthesisMatrix = {
     dominantTension: `${baselineTimeline.trackName} ↔ ${optimalQuantumTimeline.trackName}`,
     alignmentState: `분기점: ${criticalDateRange} · ${coreDecisionChoice}`,
@@ -167,6 +171,7 @@ export function runQuantumProbabilisticTimelineEngine(
   * 주의할 습관: ${limitingPattern}
 - 교차 매트릭스: [핵심 긴장: ${quantumTimelineSynthesisMatrix.dominantTension} | 조율 상태: ${quantumTimelineSynthesisMatrix.alignmentState}]
   * 통합 실천: ${quantumTimelineSynthesisMatrix.integratedAction}
+- 질문 맞춤 성찰 질문: ${reflectiveQuestion}
 - 해석 경계: ${interpretiveBoundary}`;
 
   return {
@@ -186,6 +191,7 @@ export function runQuantumProbabilisticTimelineEngine(
     },
     quantumJumpFeasibilityScore,
     synthesisPromptGuidance,
+    reflectiveQuestion,
     quantumTimelineSynthesisMatrix,
     interpretiveBoundary,
   };
