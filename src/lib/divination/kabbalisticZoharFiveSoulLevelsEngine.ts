@@ -17,7 +17,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const KABBALISTIC_ZOHAR_SOUL_ENGINE_VERSION = '2.2.0';
+export const KABBALISTIC_ZOHAR_SOUL_ENGINE_VERSION = '2.3.0';
 
 export interface KabbalisticSoulLevel {
   id: string;
@@ -61,6 +61,7 @@ export interface KabbalisticZoharSoulReport {
   interpretiveBoundary: string;
   ritualAction: string;
   reflectionFocus: string;
+  reflectiveQuestion: string;
 }
 
 const ZOHAR_SOUL_LEVELS_BASE: Omit<KabbalisticSoulLevel, 'resonanceScore'>[] = [
@@ -177,7 +178,7 @@ export function calculateKabbalisticZoharSoul(
   const kstDate = new Date(now.getTime() + 9 * 60 * 60 * 1000);
   const kstHour = kstDate.getUTCHours();
   const kstDay = kstDate.getUTCDay();
-  const calculatedAtKst = kstDate.toISOString().replace('T', ' ').slice(0, 16) + ' KST';
+  const calculatedAtKst = kstDate.toISOString().replace('T', ' ').slice(0, 16) + ' +09:00 (KST)';
 
   const sephirothWatchWindow = kstHour >= 5 && kstHour < 11
     ? '헤세드(자비) 아침 파수창 (네샤마의 맑은 통찰과 선한 의도 점화)'
@@ -211,6 +212,10 @@ export function calculateKabbalisticZoharSoul(
 
   const ritualAction = `[${dominantSoulLevel.nameKo}] ${einSofLightAscensionRitual}`;
   const reflectionFocus = `오늘 '${situationalZoharAudit.questionTheme}' 영역에서 마음의 그릇(Kelim)을 맑게 비우기 위해 내려놓을 껍질(클리포트)은 무엇인가요?`;
+  const qClean = question.trim();
+  const reflectiveQuestion = qClean
+    ? `지금 "${qClean}" 앞에서 ${dominantSoulLevel.nameKo}의 빛이 머물 수 있도록 오늘 비워 낼 마음의 껍질(클리포트) 하나는 무엇인가요?`
+    : reflectionFocus;
 
   return {
     engineVersion: KABBALISTIC_ZOHAR_SOUL_ENGINE_VERSION,
@@ -230,6 +235,7 @@ export function calculateKabbalisticZoharSoul(
     interpretiveBoundary: '카발라 《조하르》의 5대 영혼 층위 상징을 빌려 온 정성적 성찰 관점이며, 확정적 예언이나 의학적·재정적 처방이 아닙니다.',
     ritualAction,
     reflectionFocus,
+    reflectiveQuestion,
   };
 }
 
@@ -250,5 +256,6 @@ export function formatKabbalisticZoharSoulPrompt(rep: KabbalisticZoharSoulReport
 · 에인 소프 빛의 상승 리추얼: ${rep.einSofLightAscensionRitual}
 · 실천 의례(Ritual Action): ${rep.ritualAction}
 · 성찰 초점(Reflection Focus): ${rep.reflectionFocus}
+· 질문 맞춤 성찰 질문: ${rep.reflectiveQuestion}
 · 해석 경계: ${rep.boundaryNotice}`;
 }

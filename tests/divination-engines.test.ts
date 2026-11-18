@@ -11633,3 +11633,30 @@ test('잉카 안데스 3대 파차·자이나 14군아스타나·헤이안 음�
   const onmyodoPrompt = formatHeianOnmyodoSeimeiPrompt(onmyodo);
   assert.ok(onmyodoPrompt.includes('+09:00') && onmyodoPrompt.includes('질문 맞춤 성찰 질문') && onmyodoPrompt.includes('해석 경계'));
 });
+
+test('제임스 조이스 율리시스·카발라 조하르·카슈미르 시바파 스판다 v1.7.861 질문 반응형 성찰 질문·+09:00 KST 회귀 검증', () => {
+  const profile = { basic: { name: '제제', birthdate: '1994-01-24', birthtime: '12:00', gender: 'male' } } as any;
+  const now = new Date('2026-11-19T04:40:00+09:00');
+  const query = '복잡한 마음의 소음을 가라앉히고 오늘의 본질에 집중하고 싶어요';
+
+  const joyce = calculateIrishJamesJoyceUlyssesEpiphany(query, now);
+  assert.equal(joyce.engineVersion, IRISH_JAMES_JOYCE_ULYSSES_EPIPHANY_VERSION);
+  assert.match(joyce.calculatedAtKst, /\+09:00/);
+  assert.ok(joyce.reflectiveQuestion.includes(query));
+  const joycePrompt = formatIrishJamesJoyceUlyssesEpiphanyPrompt(joyce);
+  assert.ok(joycePrompt.includes('+09:00') && joycePrompt.includes('질문 맞춤 성찰 질문') && joycePrompt.includes('해석 경계'));
+
+  const zohar = calculateKabbalisticZoharSoul({ profile, question: query, now });
+  assert.equal(zohar.engineVersion, KABBALISTIC_ZOHAR_SOUL_ENGINE_VERSION);
+  assert.match(zohar.temporalZoharRhythm.calculatedAtKst, /\+09:00/);
+  assert.ok(zohar.reflectiveQuestion.includes(query));
+  const zoharPrompt = formatKabbalisticZoharSoulPrompt(zohar);
+  assert.ok(zoharPrompt.includes('+09:00') && zoharPrompt.includes('질문 맞춤 성찰 질문') && zoharPrompt.includes('해석 경계'));
+
+  const spanda = calculateKashmirShaivismSpanda({ profile, question: query, now });
+  assert.equal(spanda.engineVersion, KASHMIR_SHAIVISM_SPANDA_ENGINE_VERSION);
+  assert.match(spanda.temporalSpandaRhythm.calculatedAtKst, /\+09:00/);
+  assert.ok(spanda.reflectiveQuestion.includes(query));
+  const spandaPrompt = formatKashmirShaivismSpandaPrompt(spanda);
+  assert.ok(spandaPrompt.includes('+09:00') && spandaPrompt.includes('질문 맞춤 성찰 질문') && spandaPrompt.includes('해석 경계'));
+});
