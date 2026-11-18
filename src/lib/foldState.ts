@@ -69,6 +69,12 @@ function isKeyboardActive(doc: Document | undefined): boolean {
   return ['keyboard-open', 'lucy-input-focused'].some(name => has(doc.documentElement, name) || has(doc.body, name));
 }
 
+function isTouchDevice(win: Window): boolean {
+  const nav = win.navigator as Navigator | undefined;
+  if ((nav?.maxTouchPoints ?? 0) > 0) return true;
+  try { return Boolean(win.matchMedia?.('(pointer: coarse)').matches); } catch { return false; }
+}
+
 /** Full-screen height for this canvas width from the device screen, in either orientation. */
 function screenHeightForWidth(win: Window, width: number): number {
   const screen = win.screen;
@@ -89,11 +95,16 @@ function screenHeightForWidth(win: Window, width: number): number {
 export function measureFoldState(win: Window = window): FoldState {
   const size = readCanvasSize(win);
   if (isSpanned(win)) return classifyFold(size.width, size.height, true);
-  const remembered = lastFull && Math.abs(lastFull.width - size.width) <= 2 ? lastFull.height : 0;
-  const keyboard = isKeyboardActive(typeof win.document === 'object' ? win.document : undefined);
+  const sameWidth = lastFull !== null && Math.abs(lastFull.width - size.width) <= 2;
+  const remembered = sameWidth ? lastFull!.height : 0;
+  // Screen recovery only where a software keyboard exists (touch devices); a short
+  // desktop window with a focused field is not keyboard-occluded.
+  const keyboard = isTouchDevice(win) && isKeyboardActive(typeof win.document === 'object' ? win.document : undefined);
   const recovered = keyboard ? screenHeightForWidth(win, size.width) : 0;
   const height = Math.max(size.height, remembered, recovered);
-  if (!keyboard) lastFull = { width: size.width, height };
+  // Always keep the tallest observation at this width, even while a field is
+  // focused, so a keyboard animating in cannot collapse the inner layout.
+  lastFull = { width: size.width, height: Math.max(size.height, remembered) };
   return classifyFold(size.width, height, false);
 }
 
