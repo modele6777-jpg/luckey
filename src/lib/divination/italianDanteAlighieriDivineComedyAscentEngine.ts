@@ -15,7 +15,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const ITALIAN_DANTE_COMEDY_VERSION = 'LUCKEY-DANTE-DIVINE-COMEDY-v2.1.0';
+export const ITALIAN_DANTE_COMEDY_VERSION = 'LUCKEY-DANTE-DIVINE-COMEDY-v2.2.0';
 
 export interface DanteTheme {
   themeKey: string;
@@ -48,6 +48,8 @@ export interface DanteAlighieriDivineComedyAscentResult {
   secondaryDanteAphorism: DanteAphorism;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
+  ritualAction: string;
+  reflectionFocus: string;
   danteComprehensiveGuidance: {
     guidanceTitle: string;
     philosophicalCounsel: string;
@@ -191,6 +193,9 @@ export function calculateItalianDanteAlighieriDivineComedyAscent(
     integratedAction: `${activeDanteTheme.practicalCounsel} (${focalDanteAphorism.actionGuidance})`,
   };
 
+  const ritualAction = `[${activeDanteTheme.themeTitleKo}] ${focalDanteAphorism.actionGuidance}`;
+  const reflectionFocus = reflectiveQuestion;
+
   return {
     engineVersion: ITALIAN_DANTE_COMEDY_VERSION,
     calculatedAtKst: formatDanteKstTimestamp(now),
@@ -204,6 +209,8 @@ export function calculateItalianDanteAlighieriDivineComedyAscent(
     secondaryDanteAphorism,
     reflectiveQuestion,
     interpretiveBoundary,
+    ritualAction,
+    reflectionFocus,
     danteComprehensiveGuidance: {
       guidanceTitle,
       philosophicalCounsel,
@@ -229,6 +236,8 @@ export function formatDanteAlighieriDivineComedyAscentPrompt(res: DanteAlighieri
     `- 원문: "${res.focalDanteAphorism.aphorismEn}" [${res.focalDanteAphorism.sourceContext}]`,
     `- 구체적 실천 지침: ${res.focalDanteAphorism.actionGuidance}`,
     `- 종합 통찰 권면: ${res.danteComprehensiveGuidance.philosophicalCounsel}`,
+    `- 실천 의례(Ritual Action): ${res.ritualAction}`,
+    `- 성찰 초점(Reflection Focus): ${res.reflectionFocus}`,
     `- 성찰 질문: ${res.reflectiveQuestion}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
   ];

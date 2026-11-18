@@ -1,10 +1,10 @@
 {
-  "version": "1.7.821",
-  "builtAt": "2026-11-18T09:40:00+09:00",
-  "summary": "잉카 안데스 3대 파차, 타고르 기탄잘리, 우파니샤드 타트 트밤 아시 3대 엔진 실천 의례 및 성찰 질문 표준 연동(v1.7.821)",
+  "version": "1.7.822",
+  "builtAt": "2026-11-18T09:50:00+09:00",
+  "summary": "제임스 조이스 에피파니, 루미 마스나비, 단테 신곡 3대 엔진 실천 의례 및 성찰 질문 표준 연동(v1.7.822)",
   "items": [
-    "고대 잉카 안데스 3대 파차 & 파차마마 아이니 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동",
-    "타고르 《기탄잘리·동방의 등불》 우주적 영혼합일 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동",
-    "우파니샤드 타트 트밤 아시 범아일여 순수의식 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동"
+    "제임스 조이스 《율리시스·에피파니》 문학 성찰 엔진(v2.3.0): ritualAction·reflectionFocus 표준 필드 연동",
+    "루미 《마스나비》 수피즘 신성한 사랑 엔진(v2.3.0): ritualAction·reflectionFocus 표준 필드 연동",
+    "단테 《신곡》 영혼 상승 순례 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동"
   ]
 }
