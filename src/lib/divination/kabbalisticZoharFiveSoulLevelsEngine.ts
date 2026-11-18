@@ -17,7 +17,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const KABBALISTIC_ZOHAR_SOUL_ENGINE_VERSION = '2.1.0';
+export const KABBALISTIC_ZOHAR_SOUL_ENGINE_VERSION = '2.2.0';
 
 export interface KabbalisticSoulLevel {
   id: string;
@@ -59,6 +59,8 @@ export interface KabbalisticZoharSoulReport {
   einSofLightAscensionRitual: string; // 에인 소프 무한의 빛 상승 리추얼
   boundaryNotice: string;
   interpretiveBoundary: string;
+  ritualAction: string;
+  reflectionFocus: string;
 }
 
 const ZOHAR_SOUL_LEVELS_BASE: Omit<KabbalisticSoulLevel, 'resonanceScore'>[] = [
@@ -207,6 +209,9 @@ export function calculateKabbalisticZoharSoul(
   const zoharKabbalahGuidance = `당신의 영혼은 단순한 육체적 한계를 넘어 거룩한 신성의 빛줄기로 연결되어 있습니다. 현재 강력히 진동하는 층위는 [${dominantSoulLevel.nameKo}]입니다. ${dominantSoulLevel.divineIllumination}의 은총을 자각하십시오. 껍질(클리포트)의 두려움을 벗어던질 때 영혼의 참된 그릇(Kelim)이 완성됩니다.`;
   const einSofLightAscensionRitual = `정수리 위로 찬란한 무한의 백색광이 쏟아져 온몸의 차크라를 정화하는 모습을 그리십시오: "에인 소프 오르(Ein Sof Or), 무한한 신성의 빛이 내 영혼을 회복시키며 거룩한 셰키나의 평화가 깃든다."`;
 
+  const ritualAction = `[${dominantSoulLevel.nameKo}] ${einSofLightAscensionRitual}`;
+  const reflectionFocus = `오늘 '${situationalZoharAudit.questionTheme}' 영역에서 마음의 그릇(Kelim)을 맑게 비우기 위해 내려놓을 껍질(클리포트)은 무엇인가요?`;
+
   return {
     engineVersion: KABBALISTIC_ZOHAR_SOUL_ENGINE_VERSION,
     timestamp: now.toISOString(),
@@ -223,6 +228,8 @@ export function calculateKabbalisticZoharSoul(
     einSofLightAscensionRitual,
     boundaryNotice: '카발라 《조하르》의 5대 영혼 층위 상징을 빌려 온 정성적 성찰 관점이며, 확정적 예언이나 의학적·재정적 처방이 아닙니다.',
     interpretiveBoundary: '카발라 《조하르》의 5대 영혼 층위 상징을 빌려 온 정성적 성찰 관점이며, 확정적 예언이나 의학적·재정적 처방이 아닙니다.',
+    ritualAction,
+    reflectionFocus,
   };
 }
 
@@ -241,5 +248,7 @@ export function formatKabbalisticZoharSoulPrompt(rep: KabbalisticZoharSoulReport
 · 영혼 교차 매트릭스: ${rep.zoharSynthesisMatrix.primarySecondaryNexus} — ${rep.zoharSynthesisMatrix.ascensionPosture}
 · 조하르 카발라 지혜 지침: ${rep.zoharKabbalahGuidance}
 · 에인 소프 빛의 상승 리추얼: ${rep.einSofLightAscensionRitual}
+· 실천 의례(Ritual Action): ${rep.ritualAction}
+· 성찰 초점(Reflection Focus): ${rep.reflectionFocus}
 · 해석 경계: ${rep.boundaryNotice}`;
 }
