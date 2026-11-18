@@ -9,7 +9,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const HERMETIC_POIMANDRES_ENGINE_VERSION = '2.3.0';
+export const HERMETIC_POIMANDRES_ENGINE_VERSION = '2.4.0';
 
 export type PoimandresQuestionFocus = 'career' | 'relationship' | 'anxiety' | 'decision' | 'spiritual';
 
@@ -63,6 +63,8 @@ export interface HermeticPoimandresAscensionReport {
   poimandresHermeticGuidance: string;
   nousLightAscensionRitual: string;
   reflectiveQuestion: string;
+  ritualAction: string;
+  reflectionFocus: string;
   interpretiveBoundary: string;
 }
 
@@ -304,6 +306,13 @@ export function calculateHermeticPoimandres(
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
   const calculatedAtKst = `${kst.toISOString().slice(0, 19).replace('T', ' ')} +09:00 KST`;
 
+  const reflectiveQuestion = question.trim()
+    ? `"${question.trim()}"의 고민에서 [${dominantSphere.nameKo}]의 껍질(${dominantSphere.purifiedPassion})을 한 꺼풀 벗고 나면 끝까지 남는 순수한 본질은 무엇입니까?`
+    : `[${dominantSphere.nameKo}]의 정화 문턱에서 오늘 내 안의 누스(Nous)가 조용히 내려놓고 싶어 하는 집착은 무엇입니까?`;
+
+  const ritualAction = `[${dominantSphere.nameKo} · ${temporalOgdoadRhythm.ascensionWindow}] ${situationalPoimandresAudit.nousAwakeningPractice}`;
+  const reflectionFocus = reflectiveQuestion;
+
   return {
     engineVersion: HERMETIC_POIMANDRES_ENGINE_VERSION,
     timestamp: now.toISOString(),
@@ -320,9 +329,9 @@ export function calculateHermeticPoimandres(
     poimandresSynthesisMatrix,
     poimandresHermeticGuidance,
     nousLightAscensionRitual,
-    reflectiveQuestion: question.trim()
-      ? `"${question.trim()}"의 고민에서 [${dominantSphere.nameKo}]의 껍질(${dominantSphere.purifiedPassion})을 한 꺼풀 벗고 나면 끝까지 남는 순수한 본질은 무엇입니까?`
-      : `[${dominantSphere.nameKo}]의 정화 문턱에서 오늘 내 안의 누스(Nous)가 조용히 내려놓고 싶어 하는 집착은 무엇입니까?`,
+    reflectiveQuestion,
+    ritualAction,
+    reflectionFocus,
     interpretiveBoundary: '본 리포트는 《코르푸스 헤르메티쿰》 포이만드레스 상징에 기반한 정성적 성찰 안내이며, 확정적 예언이 아닙니다.',
   };
 }
@@ -349,6 +358,7 @@ export function formatHermeticPoimandresPrompt(rep: HermeticPoimandresAscensionR
 · 포이만드레스 교차 종합: ${rep.poimandresSynthesisMatrix.synthesizedVerdict}
 · 포이만드레스 신성 지혜 지침: ${rep.poimandresHermeticGuidance}
 · 누스 빛의 상승 리추얼: ${rep.nousLightAscensionRitual}
-· 질문 맞춤 성찰 질문: ${rep.reflectiveQuestion}
+· 실천 의례(Ritual Action): ${rep.ritualAction}
+· 질문 맞춤 성찰 질문: ${rep.reflectionFocus}
 · 해석 경계: 본 리포트는 《코르푸스 헤르메티쿰》 포이만드레스 상징에 기반한 정성적 성찰 안내이며, 확정적 예언이 아닙니다.`;
 }
