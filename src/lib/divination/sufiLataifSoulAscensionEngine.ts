@@ -23,7 +23,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const SUFI_LATAIF_VERSION = 'LUCKEY-SUFI-LATAIF-v2.1.0';
+export const SUFI_LATAIF_VERSION = 'LUCKEY-SUFI-LATAIF-v2.2.0';
 
 export interface LataifCenter {
   name: string;             // 아랍어 명칭 (Qalb, Ruh, Sirr 등)
@@ -56,6 +56,7 @@ export interface SufiLataifReport {
     alignmentState: string;
     integratedAction: string;
   };
+  reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
 
@@ -66,7 +67,7 @@ function formatLataifKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
 }
 
 const LATAIF_DEFINITIONS = [
@@ -193,6 +194,9 @@ export function calculateSufiLataifSoulAscension(params: {
   };
 
   const interpretiveBoundary = '본 수피즘 7대 라타이프 리포트는 고전 영성 전통과 수리 시드에 기반한 내면 성찰 안내이며, 의학적·심리학적 진단을 대체하지 않습니다.';
+  const reflectiveQuestion = q
+    ? `'${q}'의 흔들림 속에서 지금 가장 정화가 필요한 ${mostNeedingPurification.koreanName} 자리에 1초의 침묵(Waqfa)을 허락한다면 무엇이 가라앉나요?`
+    : `지금 내 심장의 눈(Qalb)이 세속의 소음 대신 고요히 비추고 있는 진짜 평화의 방향은 어디인가요?`;
 
   return {
     engineVersion: SUFI_LATAIF_VERSION,
@@ -206,6 +210,7 @@ export function calculateSufiLataifSoulAscension(params: {
     sufiDhikrPrescription,
     rumiWisdomQuote,
     lataifSynthesisMatrix,
+    reflectiveQuestion,
     interpretiveBoundary,
   };
 }
@@ -228,6 +233,7 @@ export function formatSufiLataifSoulAscensionPrompt(report: SufiLataifReport): s
       `  - 통합 실천: ${report.lataifSynthesisMatrix.integratedAction}`,
     );
   }
+  lines.push(`- **질문 맞춤 성찰 질문**: ${report.reflectiveQuestion}`);
   lines.push(`- **해석 경계**: ${report.interpretiveBoundary}`);
   return lines.join('\n');
 }

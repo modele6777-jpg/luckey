@@ -19,7 +19,7 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const SHAMANIC_ANIMAL_TOTEM_VERSION = 'LUCKEY-TOTEM-v2.1.0';
+export const SHAMANIC_ANIMAL_TOTEM_VERSION = 'LUCKEY-TOTEM-v2.2.0';
 
 function formatShamanicTotemKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -28,7 +28,7 @@ function formatShamanicTotemKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
 }
 
 export interface TotemAnimalInfo {
@@ -55,6 +55,7 @@ export interface ShamanicAnimalTotemReport {
     alignmentState: string;
     integratedAction: string;
   };
+  reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
 
@@ -135,6 +136,9 @@ export function runShamanicAnimalTotemEngine(
   };
 
   const interpretiveBoundary = '본 샤머니즘 파워 애니멀 & 12지지 토템 리포트는 전통 동물 영성과 오행 상징에 기반한 정성적 성찰 안내이며, 확정적 미래 예언이 아닙니다.';
+  const reflectiveQuestion = q
+    ? `'${q}' 상황에서 눈치 보며 억누르고 있던 ${shadowAnimal.animalName}의 본능을 ${primaryTotem.animalName}의 당당한 힘으로 어떻게 세울 수 있을까요?`
+    : `지금 내 안에서 착한 가면 뒤에 숨어 있던 야생의 생명력과 직관을 깨워 한 걸음 내디뎌야 할 자리는 어디인가요?`;
 
   const synthesisPromptGuidance = `[LUCKEY 샤머니즘 파워 애니멀 & 12지지 스피릿 토템 ${SHAMANIC_ANIMAL_TOTEM_VERSION} | ${calculatedAtKst}]
 - 주 수호 토템: [${primaryTotem.animalName}]
@@ -146,6 +150,7 @@ export function runShamanicAnimalTotemEngine(
 - 절대적 금기: ${tabooWarning}
 - 교차 매트릭스: [핵심 긴장: ${totemSynthesisMatrix.dominantTension} | 조율 상태: ${totemSynthesisMatrix.alignmentState}]
   * 통합 실천: ${totemSynthesisMatrix.integratedAction}
+- 질문 맞춤 성찰 질문: ${reflectiveQuestion}
 - 해석 경계: ${interpretiveBoundary}`;
 
   return {
@@ -160,6 +165,7 @@ export function runShamanicAnimalTotemEngine(
     tabooWarning,
     synthesisPromptGuidance,
     totemSynthesisMatrix,
+    reflectiveQuestion,
     interpretiveBoundary,
   };
 }
