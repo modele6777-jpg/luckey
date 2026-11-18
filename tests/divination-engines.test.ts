@@ -11660,3 +11660,31 @@ test('제임스 조이스 율리시스·카발라 조하르·카슈미르 시바
   const spandaPrompt = formatKashmirShaivismSpandaPrompt(spanda);
   assert.ok(spandaPrompt.includes('+09:00') && spandaPrompt.includes('질문 맞춤 성찰 질문') && spandaPrompt.includes('해석 경계'));
 });
+
+test('홍국기문·주역 384효·주역 마스터 v1.7.863 질문 반응형 성찰 질문·+09:00 KST 회귀 검증', () => {
+  const profile = { basic: { name: '제제', birthdate: '1994-01-24', birthtime: '12:00', gender: 'male' } } as any;
+  const now = new Date('2026-11-19T05:00:00+09:00');
+  const query = '새 프로젝트를 시작하기 전에 지금의 흐름을 점검하고 싶어요';
+
+  const hq = calculateHonggukQimen({ profile, targetYear: 2026, now, question: query });
+  assert.equal(hq.status, 'calculated');
+  assert.equal(hq.engineVersion, HONGGUK_QIMEN_ENGINE_VERSION);
+  assert.match(hq.calculatedAtKst || '', /\+09:00/);
+  assert.ok((hq.reflectiveQuestion || '').includes(query));
+  const hqPrompt = formatHonggukQimenPrompt(hq);
+  assert.ok(hqPrompt.includes('+09:00') && hqPrompt.includes('질문 맞춤 성찰 질문') && hqPrompt.includes('해석 경계'));
+
+  const yao = calculateIching384Yao({ profile, question: query, targetDate: now });
+  assert.equal(yao.engineVersion, ICHING_384YAO_ENGINE_VERSION);
+  assert.match(yao.calculatedAtKst, /\+09:00/);
+  assert.ok(yao.reflectiveQuestion.includes(query));
+  const yaoPrompt = formatIching384YaoPrompt(yao);
+  assert.ok(yaoPrompt.includes('+09:00') && yaoPrompt.includes('질문 맞춤 성찰 질문') && yaoPrompt.includes('해석 경계'));
+
+  const master = calculateIchingMaster(now, query, now);
+  assert.equal(master.engineVersion, ICHING_MASTER_ENGINE_VERSION);
+  assert.match(master.calculatedAtKst, /\+09:00/);
+  assert.ok(master.reflectiveQuestion.includes(query));
+  const masterPrompt = formatIchingMasterPrompt(master);
+  assert.ok(masterPrompt.includes('+09:00') && masterPrompt.includes('질문 맞춤 성찰 질문') && masterPrompt.includes('해석 경계'));
+});
