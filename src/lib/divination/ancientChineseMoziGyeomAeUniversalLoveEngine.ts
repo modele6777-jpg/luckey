@@ -12,7 +12,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const MOZI_GYEOM_AE_VERSION = 'LUCKEY-MOZI-GYEOM-AE-v2.3.0';
+export const MOZI_GYEOM_AE_VERSION = 'LUCKEY-MOZI-GYEOM-AE-v2.4.0';
 
 export type MoziQuestionTopic = 'relationship' | 'decision' | 'simplicity' | 'reflection';
 
@@ -102,7 +102,7 @@ const FORTRESS_WISDOMS = [
 
 function getKstDateString(now: Date): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
-  return kst.toISOString().replace('T', ' ').substring(0, 19) + ' KST';
+  return kst.toISOString().replace('T', ' ').substring(0, 19) + ' +09:00 (KST)';
 }
 
 function hashSeed(seedStr: string): number {

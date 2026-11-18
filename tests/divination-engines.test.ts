@@ -12361,3 +12361,27 @@ test('알렉산드리아 36데칸·월트 휘트먼·윌리엄 제임스 엔진 
   assert.match(jm.calculatedAtKst, /\+09:00/);
   assert.ok(formatAmericanWilliamJamesPragmatismPrompt(jm).includes('+09:00'));
 });
+
+test('조상 혈통 업력·묵자 겸애·에픽테토스 통제이분법 엔진 v1.7.903 KST(+09:00) 표준 표기 검증', () => {
+  const profile: any = {
+    name: '테스트',
+    basic: { birthdate: '1994-01-24', birthtime: '10:30', gender: 'male', calendarType: 'solar' },
+  };
+  const now = new Date('2026-11-19T08:18:00+09:00');
+  const query = '관계의 중심을 잡고 내면의 기준을 세우고 싶을 때';
+
+  const an = calculateAncestralEpigeneticKarma({ profile, targetDate: now, question: query });
+  assert.equal(an.engineVersion, ANCESTRAL_KARMA_VERSION);
+  assert.match(an.calculatedAtKst, /\+09:00/);
+  assert.ok(formatAncestralEpigeneticKarmaPrompt(an).includes('+09:00'));
+
+  const mz = calculateMoziGyeomAe(profile, query, now);
+  assert.equal(mz.engineVersion, MOZI_GYEOM_AE_VERSION);
+  assert.match(mz.calculatedAtKst, /\+09:00/);
+  assert.ok(formatMoziGyeomAePrompt(mz).includes('+09:00'));
+
+  const ep = calculateEpictetusDichotomyOfControl(profile, query, now);
+  assert.equal(ep.engineVersion, EPICTETUS_CONTROL_VERSION);
+  assert.match(ep.calculatedAtKst, /\+09:00/);
+  assert.ok(formatEpictetusDichotomyOfControlPrompt(ep).includes('+09:00'));
+});

@@ -18,7 +18,7 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const ANCESTRAL_KARMA_VERSION = 'LUCKEY-ANCESTRAL-v2.3.0';
+export const ANCESTRAL_KARMA_VERSION = 'LUCKEY-ANCESTRAL-v2.4.0';
 
 export interface AncestralLineageImprint {
   generationTheme: string;        // 혈통을 관통하는 핵심 테마
@@ -92,7 +92,7 @@ function getTemporalAncestralRhythm(now: Date) {
           : '겨울 · 심연 정화기 (조용히 내면의 뿌리를 돌보며 평온을 회복하는 시기)';
 
   return {
-    kstTimeLabel: `${y}-${m}-${d} ${hh}:${mm} KST`,
+    kstTimeLabel: `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`,
     lineageWatchWindow,
     seasonalRootsTone,
     temporalGuidance: `${lineageWatchWindow} · ${seasonalRootsTone}의 결에 맞추어 나의 오늘을 자유롭게 선택하십시오.`,
