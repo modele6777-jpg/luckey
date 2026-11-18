@@ -3617,9 +3617,11 @@ test('Hindu Tantric Kundalini & Nadi Awakening Engine: calculates nadis, chakras
   assert(rep.granthis.length === 3);
   assert(rep.pranayama.primaryBreathwork.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatHinduTantricKundaliniPrompt(rep);
   assert(prompt.includes('힌두 탄트라 쿤달리니 7대 차크라 나디 각성 엔진'));
   assert(prompt.includes(rep.primaryNadi.sanskritName));
+  assert(prompt.includes(rep.ritualAction));
 });
 
 test('Guiguzi Liangtouqian Decision Matrix Engine: calculates two heads gua, destiny star and strategic matrix', () => {
@@ -5173,9 +5175,11 @@ test('Hopi Four Worlds Kachina Prophecy Engine: calculates four worlds evolution
   assert(rep.spiderGrandmotherWisdom >= 0 && rep.spiderGrandmotherWisdom <= 100);
   assert(rep.dominantKachina.nameKo.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatHopiFourWorldsPrompt(rep);
   assert(prompt.includes('아메리카 호피족 4대 우주 시대 & 카치나 정령 지혜 실측 데이터'));
   assert(prompt.includes(rep.dominantKachina.nameKo));
+  assert(prompt.includes(rep.ritualAction));
 });
 
 test('Donghak Cheondoism Cheonju Engine: calculates inner spirituality, cosmic resonance and gaebyeok index', () => {
@@ -5281,9 +5285,11 @@ test('Hindu Sri Yantra Sacred Geometry Engine: calculates Shiva-Shakti polaritie
   assert(rep.primaryAvaranaChakra.level >= 1 && rep.primaryAvaranaChakra.level <= 9);
   assert(rep.temporalSriYantraRhythm.calculatedAtKst.includes('KST'));
   assert(rep.situationalSriYantraAudit.questionFocus.length > 0);
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatHinduSriYantraSacredGeometryPrompt(rep);
   assert(prompt.includes('힌두 탄트라 스리 얀트라(Sri Yantra) 9대 나바요니 & 바인두 신성기하학'));
   assert(prompt.includes(rep.primaryAvaranaChakra.sanskritName));
+  assert(prompt.includes(rep.ritualAction));
   assert(!prompt.includes('%'));
   assert(!/\d+\s*점(?:\s*\/\s*100)?/.test(prompt));
 });

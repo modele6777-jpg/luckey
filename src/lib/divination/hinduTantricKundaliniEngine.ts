@@ -24,7 +24,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const HINDU_KUNDALINI_VERSION = 'LUCKEY-HINDU-KUNDALINI-v2.1.0';
+export const HINDU_KUNDALINI_VERSION = 'LUCKEY-HINDU-KUNDALINI-v2.2.0';
 
 export interface PrimaryNadiState {
   code: 'IDA' | 'PINGALA' | 'SUSHUMNA';
@@ -92,6 +92,8 @@ export interface HinduTantricKundaliniReport {
     coreDirective: string;
   };
   synthesisMessage: string;
+  ritualAction: string;
+  reflectionFocus: string;
   boundaryNotice: string;
   interpretiveBoundary: string;
 }
@@ -309,6 +311,9 @@ export function calculateHinduTantricKundalini(params: {
     coreDirective: `${dominantChakraNode.focusChallenge}에 의식을 두고 "${dominantChakraNode.seedMantra}" 진동을 가볍게 호흡에 실어 보세요.`,
   };
 
+  const ritualAction = `[${primaryNadi.sanskritName} · ${dominantChakraNode.koreanName}] ${pranayama.dailySadhanaAdvice} (호흡: ${pranayama.primaryBreathwork})`;
+  const reflectionFocus = `지금 나의 '${situationalKundaliniAudit.granthiFocus}' 앞에서 ${dominantChakraNode.focusChallenge}을(를) 열기 위해 오늘 내려놓을 긴장은 무엇입니까?`;
+
   return {
     engineVersion: HINDU_KUNDALINI_VERSION,
     calculatedAt: now.toISOString(),
@@ -322,6 +327,8 @@ export function calculateHinduTantricKundalini(params: {
     temporalKundaliniRhythm,
     kundaliniSynthesisMatrix,
     synthesisMessage,
+    ritualAction,
+    reflectionFocus,
     boundaryNotice: '인도 탄트라 요가 및 프라나야마 상징 체계에 기반한 정성적 심신 성찰 관점이며, 의학적 진단이나 치료를 대신하지 않습니다.',
     interpretiveBoundary: '인도 탄트라 요가 및 프라나야마 상징 체계에 기반한 정성적 심신 성찰 관점이며, 의학적 진단이나 치료를 대신하지 않습니다.',
   };
@@ -355,5 +362,7 @@ export function formatHinduTantricKundaliniPrompt(report: HinduTantricKundaliniR
   - 일상 지침: ${report.pranayama.dailySadhanaAdvice}
 - **나디-차크라 교차 매트릭스**: ${report.kundaliniSynthesisMatrix.nadiChakraNexus} — ${report.kundaliniSynthesisMatrix.awakeningPosture} (${report.kundaliniSynthesisMatrix.coreDirective})
 - **쿤달리니 통합 나침반**: ${report.synthesisMessage}
+- **실천 의례(Ritual Action)**: ${report.ritualAction}
+- **성찰 초점(Reflection Focus)**: ${report.reflectionFocus}
 - **해석 경계**: ${report.boundaryNotice}`;
 }
