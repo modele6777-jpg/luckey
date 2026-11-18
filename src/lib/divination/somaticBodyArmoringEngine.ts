@@ -25,7 +25,7 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const SOMATIC_ARMORING_VERSION = 'LUCKEY-SOMATIC-v2.2.0';
+export const SOMATIC_ARMORING_VERSION = 'LUCKEY-SOMATIC-v2.3.0';
 
 function formatSomaticKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -60,6 +60,8 @@ export interface SomaticBodyArmoringReport {
     guide: string;
   };
   synthesisPromptGuidance: string;
+  ritualAction: string;
+  reflectionFocus: string;
   somaticSynthesisMatrix?: {
     dominantTension: string;
     alignmentState: string;
@@ -203,6 +205,8 @@ export function runSomaticBodyArmoringEngine(
   };
 
   const interpretiveBoundary = '본 빌헬름 라이히 7대 신체 갑옷 & 체성 감각 리포트는 사주 오행과 신체심리학 상징에 기반한 정성적 이완 안내이며, 의학적·물리치료적 진단을 대신하지 않습니다.';
+  const ritualAction = `[${primarySegment.segmentName}] ${primarySegment.somaticReleaseExercise}`;
+  const reflectionFocus = `소매틱 신체 갑옷(${primarySegment.segmentName}) — ${vagusNerveResetPrescription.technique}`;
   const reflectiveQuestion = q
     ? `'${q}' 앞에서 내 몸의 ${primarySegment.bodyLocation} 부위가 꽉 움켜쥐고 내려놓지 못하는 것은 무엇이며, 날숨과 함께 지금 10%만 풀어 줄 수 있는 감각은 무엇인가요?`
     : `지금 내 몸에서 가장 단단히 힘을 주고 버티고 있는 부위는 어디이며, 그 긴장이 대신 말해주고 싶은 감정은 무엇인가요?`;
@@ -215,6 +219,8 @@ export function runSomaticBodyArmoringEngine(
   * 소매틱 해소 운동법: ${primarySegment.somaticReleaseExercise}
 - 2순위 신체 갑옷: [${secondarySegment.segmentName}] (${secondarySegment.bodyLocation})
 - 미주신경 리셋 처방: [${vagusNerveResetPrescription.technique} ${vagusNerveResetPrescription.durationSeconds}초] ${vagusNerveResetPrescription.guide}
+- 실천 의례: ${ritualAction}
+- 성찰 초점: ${reflectionFocus}
 - 교차 매트릭스: [핵심 긴장: ${somaticSynthesisMatrix.dominantTension} | 조율 상태: ${somaticSynthesisMatrix.alignmentState}]
   * 통합 실천: ${somaticSynthesisMatrix.integratedAction}
 - 질문 맞춤 성찰 질문: ${reflectiveQuestion}
@@ -230,6 +236,8 @@ export function runSomaticBodyArmoringEngine(
     groundingSomaticChecklist,
     vagusNerveResetPrescription,
     synthesisPromptGuidance,
+    ritualAction,
+    reflectionFocus,
     somaticSynthesisMatrix,
     reflectiveQuestion,
     interpretiveBoundary,
