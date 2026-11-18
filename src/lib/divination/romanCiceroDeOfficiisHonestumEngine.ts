@@ -13,7 +13,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const CICERO_DE_OFFICIIS_VERSION = 'LUCKEY-CICERO-DE-OFFICIIS-v2.2.0';
+export const CICERO_DE_OFFICIIS_VERSION = 'LUCKEY-CICERO-DE-OFFICIIS-v2.3.0';
 
 export interface CiceroVirtueFoundation {
   foundationLatin: string;
@@ -59,6 +59,8 @@ export interface CiceroDeOfficiisResult {
     recommendedPractice: string;
   };
   dailyPracticeRitual: string;
+  ritualAction: string;
+  reflectionFocus: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
   ciceroSynthesisMatrix?: {
@@ -280,6 +282,8 @@ export function calculateCiceroDeOfficiis(
     situationalDutyFocus,
     temporalCiceroRhythm,
     dailyPracticeRitual: `${temporalCiceroRhythm.recommendedPractice} · ${situationalDutyFocus.honestumDirective}`,
+    ritualAction: `[${activeVirtueFoundation.foundationLatin}] ${situationalDutyFocus.honestumDirective}`,
+    reflectionFocus: `키케로 의무론(${situationalDutyFocus.detectedTheme}) — ${activeHarmonyCriterion.criterionTitleLatin}`,
     reflectiveQuestion: situationalDutyFocus.reflectiveQuestion,
     interpretiveBoundary: '키케로 의무론 성찰은 이해득실을 대신 계산해 주는 점술이 아니라, 도덕적 선(Honestum)과 신의(Fides), 시민적 품격(Decorum)의 관점에서 선택을 비추어 보는 윤리적 관점입니다.',
     ciceroSynthesisMatrix,
@@ -299,6 +303,8 @@ export function formatCiceroDeOfficiisPrompt(res: CiceroDeOfficiisResult): strin
     `- 질문 맥락 진단(${res.situationalDutyFocus.classicReference}): ${res.situationalDutyFocus.detectedTheme} — ${res.situationalDutyFocus.ethicalTensionDiagnostic}`,
     `- KST 시공간 리듬 (${res.calculatedAtKst}): ${res.temporalCiceroRhythm.kstPhaseLabel} · ${res.temporalCiceroRhythm.seasonContext} (${res.temporalCiceroRhythm.decorumStageKo})`,
     `- 오늘의 실천 의례: ${res.dailyPracticeRitual}`,
+    `- 실천 의례: ${res.ritualAction}`,
+    `- 성찰 초점: ${res.reflectionFocus}`,
     `- 성찰 질문: "${res.reflectiveQuestion}"`,
     `- 철학적 처방: ${res.ciceroPhilosophicalCounsel.philosophicalGuidance}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,

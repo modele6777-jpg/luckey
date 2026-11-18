@@ -6000,11 +6000,13 @@ test('Roman Marcus Aurelius Inner Citadel Meditations Engine: calculates Inner C
   assert(rep.controlDichotomy.internalSovereigntyRatio >= 0 && rep.controlDichotomy.internalSovereigntyRatio <= 100);
   assert(rep.dailyStoicPractice.protocolDirective.length > 0);
   assert(rep.citadelResilienceMatrix.amorFatiConversionIndex >= 0 && rep.citadelResilienceMatrix.amorFatiConversionIndex <= 100);
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatAureliusInnerCitadelPrompt(rep);
   assert(prompt.includes('고대 로마 마르쿠스 아우렐리우스 《명상록(Meditations)》'));
   assert(prompt.includes(rep.activeAureliusStage.stageNameKo));
   assert(prompt.includes(rep.controlDichotomy.bookReference));
+  assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
 });
 
 test('Chinese Laozi Daodejing Water Way Engine: calculates water yielding adaptability, wuwei action and contentment', () => {
@@ -6217,9 +6219,11 @@ test('Roman Cicero De Officiis Engine: calculates Honestum moral duty, Utile har
   assert(rep.decorumCivicEleganceScore >= 0 && rep.decorumCivicEleganceScore <= 100);
   assert(rep.bonumCommuneActionScore >= 0 && rep.bonumCommuneActionScore <= 100);
   assert(rep.activeVirtueFoundation.foundationLatin.length > 0);
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatCiceroDeOfficiisPrompt(rep);
   assert(prompt.includes('고대 로마 키케로 의무론 도덕적 선 & 유용성 조화 지표'));
   assert(prompt.includes(rep.activeVirtueFoundation.foundationKo));
+  assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
 });
 
 test('Epictetus Dichotomy of Control Engine: calculates Ta Eph hemin clarity, Prohairesis autonomy and Topoi balance', () => {
@@ -6517,6 +6521,7 @@ test('Giordano Bruno Infinite Universe Engine: calculates Infinite cosmos vision
   assert(rep.activeCosmicAspect.aspectLatinOrItalian.length > 0);
   assert(rep.secondaryCosmicAspect.aspectLatinOrItalian.length > 0);
   assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(Boolean(rep.brunoSynthesisMatrix?.integratedAction));
   assert(rep.reflectiveQuestion.includes('기존 틀을 깨고'));
   assert(rep.interpretiveBoundary.includes('성찰 비유'));
@@ -6524,6 +6529,7 @@ test('Giordano Bruno Infinite Universe Engine: calculates Infinite cosmos vision
   assert(prompt.includes('브루노 무한우주론 & 영웅적 열정(Eroico Furore) 지표'));
   assert(prompt.includes(rep.activeCosmicAspect.aspectLatinOrItalian));
   assert(prompt.includes('보조 교차 관점'));
+  assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
   assert(prompt.includes('교차 매트릭스'));
   assert(prompt.includes('성찰 질문'));
   assert(prompt.includes('해석 경계'));
