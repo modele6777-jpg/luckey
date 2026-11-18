@@ -587,6 +587,8 @@ test('Samjae/GyoUn skips without birthdate, degrades without gender, and renders
   const prompt=formatSamjaeGyoUnPrompt(r);
   assert(prompt.includes(SAMJAE_GYOUN_ENGINE_VERSION)&&prompt.includes('삼재')&&prompt.includes('교운기')&&prompt.includes('바이오웰니스'));
   assert(prompt.includes('교차 매트릭스')&&prompt.includes('해석 경계'));
+  assert(prompt.includes('실천 의례')&&prompt.includes('성찰 초점'));
+  assert(Boolean(r.ritualAction?.length)&&Boolean(r.reflectionFocus?.length));
   assert(Boolean(r.samjaeGyoUnSynthesisMatrix?.integratedAction));
   assert(Boolean(r.interpretiveBoundary?.length));
   assert.equal(formatSamjaeGyoUnPrompt(skipped),'');
@@ -3071,6 +3073,7 @@ test('Saju Classic Yongshin Prescription Engine: 사주 정통 3대 원전 용�
   const res = calculateSajuClassicYongshin({ profile, targetDate: new Date('2026-11-04T14:00:00+09:00') });
   assert.equal(res.engineVersion, SAJU_CLASSIC_YONGSHIN_VERSION);
   assert(res.calculatedAtKst.endsWith('KST'));
+  assert(res.ritualAction.length > 0 && res.reflectionFocus.length > 0);
   assert(Boolean(res.yongshinSynthesisMatrix?.integratedAction));
   assert(res.interpretiveBoundary.length > 0);
   assert(res.yongshinMasterTitle.length > 0);
@@ -3082,6 +3085,7 @@ test('Saju Classic Yongshin Prescription Engine: 사주 정통 3대 원전 용�
   assert(prompt.includes('LUCKEY 정통 사주 3대 원전 용신·격국·조후 심층'));
   assert(prompt.includes(res.geokguk.geokgukName));
   assert(prompt.includes('교차 매트릭스') && prompt.includes('해석 경계'));
+  assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
   assert(!prompt.includes('/100'));
 });
 
@@ -3293,6 +3297,7 @@ test('Saju Twelve Stages & Tomb Unlock Engine: calculates lifecycle vitality and
   const rep = calculateSajuTwelveStagesTomb(profile);
   assert.equal(rep.engineVersion, SAJU_12STAGES_TOMB_VERSION);
   assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(Boolean(rep.tombSynthesisMatrix?.integratedAction));
   assert(rep.interpretiveBoundary.length > 0);
   assert(rep.pillarsVitality.length === 4);
@@ -3301,6 +3306,7 @@ test('Saju Twelve Stages & Tomb Unlock Engine: calculates lifecycle vitality and
   assert(prompt.includes(rep.peakVitalityStage) || prompt.includes('사주 12운성'));
   assert(prompt.includes('2026 병오년'));
   assert(prompt.includes('교차 매트릭스') && prompt.includes('해석 경계'));
+  assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
 });
 
 test('Tarot Elemental Court Persona Engine: maps 16 court cards and 4 elemental balance', () => {

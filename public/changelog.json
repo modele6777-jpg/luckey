@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.7.898",
+    "builtAt": "2026-11-19T07:52:00+09:00",
+    "summary": "정통 사주 3대 원전 용신·12운성 묘고지 개고·삼재 교운기 3대 엔진 실천 의례 및 성찰 초점 표준 연동(v1.7.898)",
+    "items": [
+      "정통 사주 3대 원전(자평진전·궁통보감·적천수) 용신 처방 엔진(v2.3.0): ritualAction·reflectionFocus 표준 필드 연동",
+      "사주 12운성 포태법 & 4대 묘고지 개고 엔진(v2.3.0): ritualAction·reflectionFocus 표준 필드 연동",
+      "삼재·대운 교운기 인생 환절기 감지 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동"
+    ]
+  },
+  {
     "version": "1.7.897",
     "builtAt": "2026-11-19T07:48:00+09:00",
     "summary": "카를 융 개성화·도교 공과격·베다 4대 마하바키야 3대 엔진 reflectiveQuestion·+09:00 (KST)·summary·question 연동(v1.7.897)",

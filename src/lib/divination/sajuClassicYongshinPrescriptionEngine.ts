@@ -20,7 +20,7 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const SAJU_CLASSIC_YONGSHIN_VERSION = 'LUCKEY-SAJU-CLASSIC-v2.2.0';
+export const SAJU_CLASSIC_YONGSHIN_VERSION = 'LUCKEY-SAJU-CLASSIC-v2.3.0';
 
 export interface ClassicGeokgukAnalysis {
   geokgukName: string;          // 격국 명칭 (정관격, 식신격, 편재격 등)
@@ -55,6 +55,8 @@ export interface SajuClassicYongshinReport {
   johuClimate: JohuClimateAnalysis;
   prescription: TripleYongshinPrescription;
   deepClassicalMantra: string;
+  ritualAction: string;
+  reflectionFocus: string;
   synthesisPromptGuidance: string;
   reflectiveQuestion: string;
   yongshinSynthesisMatrix?: {
@@ -220,8 +222,10 @@ export function runSajuClassicYongshinEngine(
   };
 
   const interpretiveBoundary = '본 정통 3대 원전 용신 리포트는 자평진전·궁통보감·적천수 명리 체계에 기반한 정성적 조율 안내이며, 의학·재무 전문 자문을 대신하지 않습니다.';
+  const ritualAction = `[${primaryYongshinType}(${primaryYongshinElement})] ${actionMap[primaryYongshinElement]}`;
+  const reflectionFocus = `정통 사주 3대 원전(${geokgukName}) — ${birthSeasonClimate}`;
 
-  const synthesisPromptGuidance = `[LUCKEY 정통 사주 3대 원전 용신·격국·조후 심층 v2.2.0 | 연산 시각: ${calculatedAtKst}]
+  const synthesisPromptGuidance = `[LUCKEY 정통 사주 3대 원전 용신·격국·조후 심층 v2.3.0 | 연산 시각: ${calculatedAtKst}]
 - 격국 성패 (자평진전): [${geokgukName}] - ${formationStatus}
   * 구응신: ${savingGraceGod}
   * 사회적 재능: ${socioeconomicTalent}
@@ -237,6 +241,8 @@ export function runSajuClassicYongshinEngine(
 - 교차 매트릭스 [핵심 긴장: ${yongshinSynthesisMatrix.dominantTension} | 조율 상태: ${yongshinSynthesisMatrix.alignmentState}]
   * 통합 실천: ${yongshinSynthesisMatrix.integratedAction}
 - 고전 명리 지침: "${deepClassicalMantra}"
+- 실천 의례: ${ritualAction}
+- 성찰 초점: ${reflectionFocus}
 - 질문 맞춤 성찰 질문: ${reflectiveQuestion}
 - 해석 경계: ${interpretiveBoundary}`;
 
@@ -267,6 +273,8 @@ export function runSajuClassicYongshinEngine(
       breakthroughAction: actionMap[primaryYongshinElement]
     },
     deepClassicalMantra,
+    ritualAction,
+    reflectionFocus,
     synthesisPromptGuidance,
     reflectiveQuestion,
     yongshinSynthesisMatrix,
