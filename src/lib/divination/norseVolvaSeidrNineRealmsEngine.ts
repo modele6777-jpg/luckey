@@ -21,7 +21,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const NORSE_VOLVA_SEIDR_NINE_REALMS_ENGINE_VERSION = '2.2.0';
+export const NORSE_VOLVA_SEIDR_NINE_REALMS_ENGINE_VERSION = '2.3.0';
 
 export interface YggdrasilRealm {
   id: string;
@@ -45,6 +45,8 @@ export interface NorseVolvaSeidrNineRealmsReport {
   secondaryRealm: YggdrasilRealm; // 보조 가이드 영역
   volvaPropheticVision: string; // 볼바의 예언적 통찰
   seidrSpindleGroundingRitual: string; // 세이드 물레 접지 리추얼
+  ritualAction: string;
+  reflectionFocus: string;
   reflectiveQuestion: string;
   volvaSynthesisMatrix?: {
     dominantTension: string;
@@ -199,6 +201,9 @@ export function calculateNorseVolvaSeidrNineRealms(
     integratedAction: `${dominantRealm.propheticGift}${question.trim() ? ` [질문 맥락: ${question.trim()}]` : ''}`,
   };
 
+  const ritualAction = `${seidrSpindleGroundingRitual} 이어 '${dominantRealm.nameKo}(${dominantRealm.norseName})'의 은사(${dominantRealm.propheticGift})를 오늘 한 가지 구체적인 선택에 적용하세요.`;
+  const reflectionFocus = `볼바 세이드(${dominantRealm.nameKo} ↔ ${secondaryRealm.nameKo}) — ${dominantRealm.domain}과 위르드 직조`;
+
   const trimmedQ = question.trim();
   const reflectiveQuestion = trimmedQ
     ? `지금 "${trimmedQ}" 앞에서 위그드라실 ${dominantRealm.nameKo}(${dominantRealm.norseName})의 ${dominantRealm.propheticGift}을 살려 내가 먼저 엮어 갈 한 수는 무엇인가요?`
@@ -217,6 +222,8 @@ export function calculateNorseVolvaSeidrNineRealms(
     secondaryRealm,
     volvaPropheticVision,
     seidrSpindleGroundingRitual,
+    ritualAction,
+    reflectionFocus,
     reflectiveQuestion,
     volvaSynthesisMatrix,
     interpretiveBoundary: '본 북유럽 볼바 세이드 & 위그드라실 9대 세계 리포트는 에다 신화 상징에 기반한 정성적 직관 성찰 안내이며, 확정적 미래 예언이 아닙니다.',
@@ -237,6 +244,8 @@ export function formatNorseVolvaSeidrNineRealmsPrompt(rep: NorseVolvaSeidrNineRe
     `· 보조 영역: [${rep.secondaryRealm.nameKo} (${rep.secondaryRealm.norseName})] — ${rep.secondaryRealm.domain}`,
     `· 볼바의 예언적 통찰: ${rep.volvaPropheticVision}`,
     `· 세이드 물레 접지 리추얼: ${rep.seidrSpindleGroundingRitual}`,
+    `· 실천 의례: ${rep.ritualAction}`,
+    `· 성찰 초점: ${rep.reflectionFocus}`,
     `· 질문 맞춤 성찰 질문: ${rep.reflectiveQuestion}`,
   ];
   if (rep.volvaSynthesisMatrix) {

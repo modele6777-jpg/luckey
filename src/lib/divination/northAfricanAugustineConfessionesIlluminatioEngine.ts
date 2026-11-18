@@ -15,7 +15,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const NORTH_AFRICAN_AUGUSTINE_VERSION = 'LUCKEY-AUGUSTINE-CONFESSIONES-ILLUMINATIO-v2.1.0';
+export const NORTH_AFRICAN_AUGUSTINE_VERSION = 'LUCKEY-AUGUSTINE-CONFESSIONES-ILLUMINATIO-v2.2.0';
 
 export interface AugustineTheme {
   themeKey: string;
@@ -49,6 +49,8 @@ export interface AugustineConfessionesIlluminatioResult {
     counselTitle: string;
     philosophicalGuidance: string;
   };
+  ritualAction: string;
+  reflectionFocus: string;
   augustineSynthesisMatrix?: {
     dominantTension: string;
     alignmentState: string;
@@ -198,6 +200,9 @@ export function calculateAugustineConfessionesIlluminatio(
   const composite = Math.round(
     (interiorIlluminationInsightScore + temporalPresenceHarmonizationScore + graceOvercomingPrideScore + restfulPeaceOfHeartScore + transcendentLoveOrientationScore) / 5
   );
+  const ritualAction = `오늘 잠깐 외부의 소음을 끄고 고요한 내면의 방으로 들어가 "${focalAugustineAphorism.aphorismKo}"(${focalAugustineAphorism.aphorismLatin})를 되새기며, ${focalAugustineAphorism.practicalAction}`;
+  const reflectionFocus = `아우구스티누스 고백록(${activeAugustineTheme.themeTitleKo}) — 내적 조명과 사랑의 질서(Ordo Amoris)`;
+
   const augustineSynthesisMatrix = {
     dominantTension: `${activeAugustineTheme.themeTitleKo} ↔ ${focalAugustineAphorism.scripturalContext}`,
     alignmentState: describeAugustineStage(composite),
@@ -218,6 +223,8 @@ export function calculateAugustineConfessionesIlluminatio(
       counselTitle,
       philosophicalGuidance,
     },
+    ritualAction,
+    reflectionFocus,
     augustineSynthesisMatrix,
     interpretiveBoundary: '본 아우구스티누스 고백록 리포트는 교부철학의 내면 조명 사유에 기반한 정성적 성찰 안내이며, 의학·심리 치료를 대신하지 않습니다.',
   };
@@ -238,6 +245,8 @@ export function formatAugustineConfessionesIlluminatioPrompt(res: AugustineConfe
     `- 라틴어 원문: "${res.focalAugustineAphorism.aphorismLatin}" [${res.focalAugustineAphorism.scripturalContext}]`,
     `- 실천적 행동 지침: ${res.focalAugustineAphorism.practicalAction}`,
     `- 통합 영성 권면: ${res.augustinePersonalCounsel.philosophicalGuidance}`,
+    `- 실천 의례: ${res.ritualAction}`,
+    `- 성찰 초점: ${res.reflectionFocus}`,
   ];
   if (res.augustineSynthesisMatrix) {
     lines.push(
