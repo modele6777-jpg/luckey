@@ -22,7 +22,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const SHANG_ORACLE_BONE_VERSION = '2.1.0';
+export const SHANG_ORACLE_BONE_VERSION = '2.2.0';
 
 export interface ShangOracleBoneReport {
   engineVersion: string;
@@ -43,6 +43,8 @@ export interface ShangOracleBoneReport {
   manifestationEfficacyScore: number; // 현실 검증 응험력 지수 (0~100)
   // 정인의 조언
   oracleBonePrescription: string;
+  ritualAction: string;
+  reflectionFocus: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
   shangOracleSynthesisMatrix?: {
@@ -146,6 +148,8 @@ export function calculateShangOracleBoneDivination(
     alignmentState: `${judgment.omen}`,
     integratedAction: `${oracleBonePrescription}${q ? ` [질문 맥락: ${q}]` : ''}`,
   };
+  const ritualAction = `[정인 ${diviner.name}] ${oracleBonePrescription}`;
+  const reflectionFocus = `은나라 갑골문 신탁(${judgment.gradeKo}) — ${divinationMedium}`;
   const reflectiveQuestion = q
     ? `지금 물으신 '${q}'의 사안 앞에서, 불꽃에 갈라진 조문(兆紋)처럼 숨기지 못할 마음속 진짜 결단은 무엇입니까?`
     : `오늘 마주한 갈림길에서, '${judgment.gradeKo}'의 맑은 기준에 비추어 더 정직하게 바로 세워야 할 초심은 어디에 있습니까?`;
@@ -167,6 +171,8 @@ export function calculateShangOracleBoneDivination(
     crackAuspiciousnessIndex,
     manifestationEfficacyScore,
     oracleBonePrescription,
+    ritualAction,
+    reflectionFocus,
     reflectiveQuestion,
     interpretiveBoundary,
     shangOracleSynthesisMatrix,
@@ -191,6 +197,8 @@ export function formatShangOracleBoneDivinationPrompt(report: ShangOracleBoneRep
     );
   }
   lines.push(
+    `- 실천 의례: ${report.ritualAction}`,
+    `- 성찰 초점: ${report.reflectionFocus}`,
     `- 성찰 질문: ${report.reflectiveQuestion}`,
     `- 해석 경계: ${report.interpretiveBoundary}`,
   );

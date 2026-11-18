@@ -23,7 +23,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const SHANHAIJING_SACRED_BEASTS_ENGINE_VERSION = '2.1.0';
+export const SHANHAIJING_SACRED_BEASTS_ENGINE_VERSION = '2.2.0';
 
 export interface SacredBeast {
   name: string;
@@ -45,6 +45,8 @@ export interface ShanhaijingReport {
   elementHarmony: string;
   repellingAction: string; // 벽사 개운 실천
   shanhaijingWisdom: string;
+  ritualAction: string;
+  reflectionFocus: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
   shanhaijingSynthesisMatrix?: {
@@ -205,6 +207,8 @@ export function calculateShanhaijingSacredBeasts(options?: {
     alignmentState: `${activeBeast.spiritualProtection}`,
     integratedAction: `${repellingAction}${q ? ` [질문 맥락: ${q}]` : ''}`,
   };
+  const ritualAction = `[${activeBeast.name} · ${activeBeast.direction}] ${repellingAction}`;
+  const reflectionFocus = `산해경 8방위 영수(${activeBeast.name}) — ${elementHarmony}`;
   const reflectiveQuestion = q
     ? `지금 마주하신 '${q}'의 자리에서, '${activeBeast.name}'의 수호 기운을 빌려 과감히 지켜내거나 돌파해야 할 경계는 무엇입니까?`
     : `오늘 내 마음이 흔들리는 틈으로 들어오는 불필요한 소음을 막고 '${activeBeast.name}'의 덕목을 세울 한 가지는 무엇입니까?`;
@@ -220,6 +224,8 @@ export function calculateShanhaijingSacredBeasts(options?: {
     elementHarmony,
     repellingAction,
     shanhaijingWisdom,
+    ritualAction,
+    reflectionFocus,
     reflectiveQuestion,
     interpretiveBoundary,
     shanhaijingSynthesisMatrix,
@@ -247,6 +253,8 @@ export function formatShanhaijingSacredBeastsPrompt(report: ShanhaijingReport): 
 2. [벽사(辟邪) 개운 실천 & 교차 매트릭스]:
    - 벽사 행동 처방: ${report.repellingAction}
    - 종합 수호 조언: ${report.shanhaijingWisdom}${report.shanhaijingSynthesisMatrix ? `\n   - 교차 매트릭스 [핵심 긴장: ${report.shanhaijingSynthesisMatrix.dominantTension} | 조율 상태: ${report.shanhaijingSynthesisMatrix.alignmentState}]\n   - 통합 실천: ${report.shanhaijingSynthesisMatrix.integratedAction}` : ''}
+   - 실천 의례: ${report.ritualAction}
+   - 성찰 초점: ${report.reflectionFocus}
    - 성찰 질문: ${report.reflectiveQuestion}
    - 해석 경계: ${report.interpretiveBoundary}
 ======================================================================`;

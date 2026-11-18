@@ -19,7 +19,7 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const SHAMANIC_ANIMAL_TOTEM_VERSION = 'LUCKEY-TOTEM-v2.2.0';
+export const SHAMANIC_ANIMAL_TOTEM_VERSION = 'LUCKEY-TOTEM-v2.3.0';
 
 function formatShamanicTotemKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -50,6 +50,8 @@ export interface ShamanicAnimalTotemReport {
   callOfTheWildRitual: string;    // 파워 애니멀 소환 및 접속 리추얼
   tabooWarning: string;           // 토템의 힘을 약화시키는 금기 사항
   synthesisPromptGuidance: string;
+  ritualAction: string;
+  reflectionFocus: string;
   totemSynthesisMatrix?: {
     dominantTension: string;
     alignmentState: string;
@@ -135,6 +137,8 @@ export function runShamanicAnimalTotemEngine(
     integratedAction: `${callOfTheWildRitual}${q ? ` [질문 맥락: ${q}]` : ''}`,
   };
 
+  const ritualAction = `[${primaryTotem.animalName}] ${callOfTheWildRitual}`;
+  const reflectionFocus = `샤머니즘 파워 애니멀(${primaryTotem.animalName}) — ${shadowAnimal.animalName}`;
   const interpretiveBoundary = '본 샤머니즘 파워 애니멀 & 12지지 토템 리포트는 전통 동물 영성과 오행 상징에 기반한 정성적 성찰 안내이며, 확정적 미래 예언이 아닙니다.';
   const reflectiveQuestion = q
     ? `'${q}' 상황에서 눈치 보며 억누르고 있던 ${shadowAnimal.animalName}의 본능을 ${primaryTotem.animalName}의 당당한 힘으로 어떻게 세울 수 있을까요?`
@@ -150,6 +154,8 @@ export function runShamanicAnimalTotemEngine(
 - 절대적 금기: ${tabooWarning}
 - 교차 매트릭스: [핵심 긴장: ${totemSynthesisMatrix.dominantTension} | 조율 상태: ${totemSynthesisMatrix.alignmentState}]
   * 통합 실천: ${totemSynthesisMatrix.integratedAction}
+- 실천 의례: ${ritualAction}
+- 성찰 초점: ${reflectionFocus}
 - 질문 맞춤 성찰 질문: ${reflectiveQuestion}
 - 해석 경계: ${interpretiveBoundary}`;
 
@@ -164,6 +170,8 @@ export function runShamanicAnimalTotemEngine(
     callOfTheWildRitual,
     tabooWarning,
     synthesisPromptGuidance,
+    ritualAction,
+    reflectionFocus,
     totemSynthesisMatrix,
     reflectiveQuestion,
     interpretiveBoundary,
