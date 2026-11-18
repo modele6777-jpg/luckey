@@ -16,7 +16,7 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const MICRO_HABIT_KARMA_VERSION = 'LUCKEY-HABIT-v2.1.0';
+export const MICRO_HABIT_KARMA_VERSION = 'LUCKEY-HABIT-v2.2.0';
 
 function formatMicroHabitKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -25,7 +25,7 @@ function formatMicroHabitKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
 }
 
 export type HabitKarmaArchetype = 
@@ -56,6 +56,7 @@ export interface MicroHabitKarmaReport {
     days15to21: string;          // 15~21일차: 카르마 잠금 (무의식적 본능화)
   };
   synthesisPromptGuidance: string;
+  reflectiveQuestion: string;
   microHabitSynthesisMatrix?: {
     dominantTension: string;
     alignmentState: string;
@@ -150,6 +151,9 @@ export function runMicroHabitKarmaEngine(
 
   const calculatedAtKst = formatMicroHabitKstTimestamp(targetDate);
   const q = (question || '').trim();
+  const reflectiveQuestion = q
+    ? `'${q}'라는 흐름 속에서, 완벽하게 해내려는 부담을 내려놓고 '${microHabit.cueTrigger}' 직후 딱 2분만 실행할 수 있는 가장 가벼운 첫 행동은 무엇인가요?`
+    : `'${archetype}' 성향을 지닌 내가 '${microHabit.cueTrigger}' 순간에 저항 없이 2분만 실행할 수 있는 나만의 작은 보상은 무엇인가요?`;
   const microHabitSynthesisMatrix = {
     dominantTension: `${archetype} ↔ ${microHabit.elementTheme}`,
     alignmentState: `점화 트리거: ${microHabit.cueTrigger}`,
@@ -167,6 +171,7 @@ export function runMicroHabitKarmaEngine(
 - 21일 안착 로드맵: [1~7일] ${twentyOneDayMilestone.days1to7} | [8~14일] ${twentyOneDayMilestone.days8to14} | [15~21일] ${twentyOneDayMilestone.days15to21}
 - 교차 매트릭스: [핵심 긴장: ${microHabitSynthesisMatrix.dominantTension} | 조율 상태: ${microHabitSynthesisMatrix.alignmentState}]
   • 통합 실천: ${microHabitSynthesisMatrix.integratedAction}
+- 질문 맞춤 성찰 질문: ${reflectiveQuestion}
 - 해석 경계: ${interpretiveBoundary}`;
 
   return {
@@ -179,6 +184,7 @@ export function runMicroHabitKarmaEngine(
     microHabit,
     twentyOneDayMilestone,
     synthesisPromptGuidance,
+    reflectiveQuestion,
     microHabitSynthesisMatrix,
     interpretiveBoundary,
   };

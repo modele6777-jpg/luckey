@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.7.883",
+    "builtAt": "2026-11-19T06:40:00+09:00",
+    "summary": "라이프 12궁 밸런스 휠·마이크로 해빗·양자 타임라인 3대 엔진 reflectiveQuestion·+09:00 (KST)·summary·question 연동(v1.7.883)",
+    "items": [
+      "라이프 12궁 밸런스 휠(v2.3.0)·마이크로 해빗(v2.2.0)·양자 확률 타임라인(v2.2.0): 질문 반응형 reflectiveQuestion·+09:00 (KST) 표기·프롬프트 출력 추가",
+      "deterministicEngine.ts: microHabitKarma·quantumProbabilisticTimeline summary 등록 및 3대 엔진 호출부 question 연동",
+      "divination-engines.test.ts: 3대 엔진 v1.7.883 회귀 테스트 추가"
+    ]
+  },
+  {
     "version": "1.7.882",
     "builtAt": "2026-11-19T06:32:00+09:00",
     "summary": "즉시 결단 매화역수·라이프 12궁 밸런스 휠·멘탈 리질리언스 3대 엔진 실천 의례 및 성찰 초점 표준 연동(v1.7.882)",
