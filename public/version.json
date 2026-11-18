@@ -1,10 +1,10 @@
 {
-  "version": "1.7.896",
-  "builtAt": "2026-11-19T07:42:00+09:00",
-  "summary": "로젠크로이츠 화학적 결혼·고대 노르딕 룬 매트릭스·신성 기하학 보텍스 3대 엔진 실천 의례 및 성찰 초점 표준 연동(v1.7.896)",
+  "version": "1.7.897",
+  "builtAt": "2026-11-19T07:48:00+09:00",
+  "summary": "카를 융 개성화·도교 공과격·베다 4대 마하바키야 3대 엔진 reflectiveQuestion·+09:00 (KST)·summary·question 연동(v1.7.897)",
   "items": [
-    "로젠크로이츠 《화학적 결혼》 7일 연금술 승화 엔진(v2.3.0): ritualAction·reflectionFocus 표준 필드 연동",
-    "고대 노르딕 룬 동시성 매트릭스 엔진(v2.3.0): ritualAction·reflectionFocus 표준 필드 연동",
-    "황금비 영혼 수비학 & 보텍스 기하학 엔진(v2.3.0): ritualAction·reflectionFocus 표준 필드 연동"
+    "카를 융 개성화(v2.2.0)·도교 공과격(v2.2.0)·베다 마하바키야(v2.2.0): 질문 반응형 reflectiveQuestion·+09:00 (KST) 표기·프롬프트 출력 추가",
+    "deterministicEngine.ts: swissJungIndividuationArchetype·taoistGongGuoGeKarma ALL_DCE_ENGINES summary 등록 및 카를 융 호출부 question·now 전달 연동",
+    "divination-engines.test.ts: 3대 엔진 v1.7.897 회귀 테스트 추가"
   ]
 }

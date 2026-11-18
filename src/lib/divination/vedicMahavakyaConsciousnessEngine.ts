@@ -7,7 +7,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const VEDIC_MAHAVAKYA_ENGINE_VERSION = 'LUCKEY-VEDIC-MAHAVAKYA-v2.1.0';
+export const VEDIC_MAHAVAKYA_ENGINE_VERSION = 'LUCKEY-VEDIC-MAHAVAKYA-v2.2.0';
 
 function formatMahavakyaKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -54,6 +54,7 @@ export interface VedicMahavakyaReport {
   reflectionFocus: string;
   counselNote: string;
   boundaryNotice: string;
+  reflectiveQuestion: string;
   interpretiveBoundary: string;
   mahavakyaSynthesisMatrix?: {
     dominantTension: string;
@@ -294,6 +295,9 @@ export function calculateVedicMahavakya(params?: VedicMahavakyaParams): VedicMah
   };
   const interpretiveBoundary =
     '이는 베다 우파니샤드 4대 마하바키야 철학에 기반한 상징적 자기 성찰 참고일 뿐, 개인 점수·심리 진단·단정적 미래 예측이 아닙니다.';
+  const reflectiveQuestion = q
+    ? `'${q}'의 파동 앞에서 ${activeVakya.sanskritPhrase}의 시선으로 바라볼 때 변하지 않는 내면의 중심은 어디에 있나요?`
+    : guidance.reflectionFocus;
 
   return {
     engineVersion: VEDIC_MAHAVAKYA_ENGINE_VERSION,
@@ -322,6 +326,7 @@ export function calculateVedicMahavakya(params?: VedicMahavakyaParams): VedicMah
     reflectionFocus: guidance.reflectionFocus,
     counselNote: guidance.counselNote,
     boundaryNotice: interpretiveBoundary,
+    reflectiveQuestion,
     interpretiveBoundary,
     mahavakyaSynthesisMatrix,
   };
@@ -344,6 +349,7 @@ export function formatVedicMahavakyaPrompt(report: VedicMahavakyaReport): string
 - 실천 조언: ${report.practiceGuidance}
 - 일상 의례: ${report.ritualAction}
 - 성찰 질문: ${report.reflectionFocus}
+- 질문 맞춤 성찰 질문: ${report.reflectiveQuestion}
 - 조언 요약: ${report.counselNote}
 - 해석 경계: ${report.interpretiveBoundary}${matrixLine}`;
 }

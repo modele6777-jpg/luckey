@@ -1,6 +1,6 @@
 import { UserProfile } from '../sharedState';
 
-export const TAOIST_GONG_GUO_GE_KARMA_ENGINE_VERSION = '2.1.0';
+export const TAOIST_GONG_GUO_GE_KARMA_ENGINE_VERSION = '2.2.0';
 
 function formatGongGuoGeKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -9,7 +9,7 @@ function formatGongGuoGeKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
 }
 
 export type GongGuoGeQuestionTheme = 'relationship' | 'decision' | 'healing' | 'reflection';
@@ -42,6 +42,7 @@ export interface TaoistGongGuoGeKarmaReport {
     alignmentState: string;
     integratedAction: string;
   };
+  reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
 
@@ -187,6 +188,10 @@ export function calculateTaoistGongGuoGeKarma(
     integratedAction: `${qualitative.ritual}${trimmedQ ? ` [질문 맥락: ${trimmedQ}]` : ''}`,
   };
 
+  const reflectiveQuestion = trimmedQ
+    ? `'${trimmedQ}' 앞에서 남이 보지 않는 자리에서도 ${merit.domain.split('(')[0].trim()}의 기준으로 지키고 싶은 한 가지는 무엇인가요?`
+    : qualitative.reflection;
+
   const synthesisPrompt = `
 [도교 태상감응편(太上感應篇) & 공과격(功過格) 적선개운 성찰 리포트 (${TAOIST_GONG_GUO_GE_KARMA_ENGINE_VERSION} | ${calculatedAtKst})]
 - **질문 맥락 & 수양 방향**: ${questionTheme} · ${merit.mode}
@@ -196,6 +201,7 @@ export function calculateTaoistGongGuoGeKarma(
 - **실천 조언**: ${qualitative.practice}
 - **일상 의례**: ${qualitative.ritual}
 - **성찰 질문**: ${qualitative.reflection}
+- **질문 맞춤 성찰 질문**: ${reflectiveQuestion}
 - **조언 요약**: ${qualitative.counsel}
 - **공과격 교차 매트릭스**: 핵심 긴장(${gongGuoGeSynthesisMatrix.dominantTension}) · 조율 상태(${gongGuoGeSynthesisMatrix.alignmentState}) · 통합 실천(${gongGuoGeSynthesisMatrix.integratedAction})
 - **해석 경계**: ${'태상감응편과 공과격 상징은 점수나 인과 심판이 아니라 오늘의 마음씀과 일상 행동을 성찰하기 위한 정성적 안내입니다.'}
@@ -219,6 +225,7 @@ export function calculateTaoistGongGuoGeKarma(
     boundaryNotice: '태상감응편과 공과격 상징은 점수나 인과 심판이 아니라 오늘의 마음씀과 일상 행동을 성찰하기 위한 정성적 안내입니다.',
     synthesisPrompt,
     gongGuoGeSynthesisMatrix,
+    reflectiveQuestion,
     interpretiveBoundary: '태상감응편과 공과격 상징은 점수나 인과 심판이 아니라 오늘의 마음씀과 일상 행동을 성찰하기 위한 정성적 안내입니다.',
   };
 }

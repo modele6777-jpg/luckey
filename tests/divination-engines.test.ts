@@ -12265,3 +12265,30 @@ test('세르반테스 돈키호테·에누마 엘리시 50대 이름·수메르 
   assert.ok(inanna.reflectiveQuestion.includes(query));
   assert.ok(formatSumerianInannaUnderworldDescentPrompt(inanna).includes('질문 맞춤 성찰 질문'));
 });
+
+test('카를 융 개성화·도교 공과격·베다 마하바키야 엔진 v1.7.897 질문 반응형 성찰 질문·KST(+09:00) 검증', () => {
+  const profile: any = {
+    name: '테스트',
+    basic: { birthdate: '1994-01-24', birthtime: '10:30', gender: 'male', calendarType: 'solar' },
+  };
+  const now = new Date('2026-11-19T07:48:00+09:00');
+  const query = '흔들림 속에서도 내면의 중심과 품격을 지킬 때';
+
+  const jung = calculateJungIndividuationArchetype(profile, query, now);
+  assert.equal(jung.engineVersion, SWISS_JUNG_INDIVIDUATION_VERSION);
+  assert.match(jung.calculatedAtKst, /\+09:00/);
+  assert.ok(jung.reflectiveQuestion.includes(query));
+  assert.ok(formatJungIndividuationArchetypePrompt(jung).includes('질문 맞춤 성찰 질문'));
+
+  const ggg = calculateTaoistGongGuoGeKarma(profile, now, query);
+  assert.equal(ggg.engineVersion, TAOIST_GONG_GUO_GE_KARMA_ENGINE_VERSION);
+  assert.match(ggg.calculatedAtKst, /\+09:00/);
+  assert.ok(ggg.reflectiveQuestion.includes(query));
+  assert.ok(formatTaoistGongGuoGeKarmaPrompt(ggg).includes('질문 맞춤 성찰 질문'));
+
+  const vm = calculateVedicMahavakya({ profile, question: query, now });
+  assert.equal(vm.engineVersion, VEDIC_MAHAVAKYA_ENGINE_VERSION);
+  assert.match(vm.calculatedAtKst, /\+09:00/);
+  assert.ok(vm.reflectiveQuestion.includes(query));
+  assert.ok(formatVedicMahavakyaPrompt(vm).includes('질문 맞춤 성찰 질문'));
+});
