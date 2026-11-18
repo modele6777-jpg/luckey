@@ -19,7 +19,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const ATTAR_SEVEN_VALLEYS_ENGINE_VERSION = '2.1.0';
+export const ATTAR_SEVEN_VALLEYS_ENGINE_VERSION = '2.2.0';
 
 export interface AttarValley {
   id: string;
@@ -43,6 +43,8 @@ export interface PersianAttarSevenValleysReport {
   secondaryValley: AttarValley; // 보조 계곡
   attarSufiWisdomGuidance: string; // 아타르 수피 지혜 지침
   simurghMirrorMeditationRitual: string; // 시무르그 신성 거울 명상 리추얼
+  ritualAction: string;
+  reflectionFocus: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
   attarSynthesisMatrix?: {
@@ -188,6 +190,8 @@ export function calculatePersianAttarSevenValleys(
   const simurghMirrorMeditationRitual = `가슴 한가운데 잔잔한 거울 같은 호수를 떠올리십시오. 그 호수 위로 찬란한 무지개 깃털을 가진 영조(靈鳥) 시무르그가 비칩니다: "내가 찾는 진리가 곧 나 자신이며, 내 안의 에고가 고요히 녹아내릴 때 영원한 신성의 숨결이 피어난다."`;
 
   const calculatedAtKst = formatAttarKstTimestamp(now);
+  const ritualAction = `${simurghMirrorMeditationRitual} 이어 '${dominantValley.nameKo}'의 덕목을 품고 "${dominantValley.transcendenceGuidance}"를 오늘 한 걸음으로 옮기세요.`;
+  const reflectionFocus = `아타르 7대 계곡(${dominantValley.nameKo} ↔ ${secondaryValley.nameKo}) — ${dominantValley.valleyTheme}과 시무르그 거울 각성`;
   const reflectiveQuestion = buildAttarReflectiveQuestion(dominantValley, question);
   const interpretiveBoundary = '아타르 《새들의 회의》 7대 계곡과 시무르그 상징은 내면 성찰을 돕는 수피 문학적 비유로만 활용하며, 확정적 미래 예언이나 현실적 의사결정의 단독 근거로 쓰지 않습니다.';
   const composite = Math.round(
@@ -211,6 +215,8 @@ export function calculatePersianAttarSevenValleys(
     secondaryValley,
     attarSufiWisdomGuidance,
     simurghMirrorMeditationRitual,
+    ritualAction,
+    reflectionFocus,
     reflectiveQuestion,
     interpretiveBoundary,
     attarSynthesisMatrix,
@@ -240,6 +246,8 @@ export function formatPersianAttarSevenValleysPrompt(rep: PersianAttarSevenValle
     );
   }
   lines.push(
+    `· 실천 의례: ${rep.ritualAction}`,
+    `· 성찰 초점: ${rep.reflectionFocus}`,
     `· 성찰 질문: ${rep.reflectiveQuestion}`,
     `· 해석 경계: ${rep.interpretiveBoundary}`,
   );

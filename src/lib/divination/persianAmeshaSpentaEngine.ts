@@ -25,7 +25,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const PERSIAN_AMESHA_SPENTA_VERSION = 'LUCKEY-PERSIAN-AMESHA-SPENTA-v2.1.0';
+export const PERSIAN_AMESHA_SPENTA_VERSION = 'LUCKEY-PERSIAN-AMESHA-SPENTA-v2.2.0';
 
 export interface AmeshaSpentaImmortal {
   avestanName: string;
@@ -52,6 +52,8 @@ export interface PersianAmeshaSpentaReport {
   totalRadianceScore: number;
   avestanGuidance: string;
   synthesisMessage: string;
+  ritualAction: string;
+  reflectionFocus: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
   ameshaSynthesisMatrix?: {
@@ -167,6 +169,8 @@ export function calculatePersianAmeshaSpenta(
   const synthesisMessage = `아베스타 가타 원전에 따라, 당신의 영혼은 6대 아메샤 스펜타 중 [${patronImmortal.koreanName}]의 신성한 가호를 받습니다.`;
 
   const calculatedAtKst = formatAmeshaKstTimestamp(now);
+  const ritualAction = `오늘 '${patronImmortal.koreanName}'(${patronImmortal.avestanName})의 미덕을 떠올리며 바르숨 가지를 가지런히 모으듯 마음을 정돈하고 "${patronImmortal.contemplativeMantra}"를 실천하세요.`;
+  const reflectionFocus = `아메샤 스펜타(${patronImmortal.avestanName} ↔ ${secondaryImmortal.avestanName}) — ${patronImmortal.guardianDominion}과 아샤(진리의 질서)`;
   const reflectiveQuestion = buildAmeshaReflectiveQuestion(patronImmortal, query);
   const interpretiveBoundary = '조로아스터교 아베스타의 6대 아메샤 스펜타는 신화적·윤리적 상징 비유로만 활용하며, 미래의 확정적 사건 예측이나 의학적·재무적 판단의 근거로 단정하지 않습니다.';
   const ameshaSynthesisMatrix = {
@@ -190,6 +194,8 @@ export function calculatePersianAmeshaSpenta(
     totalRadianceScore,
     avestanGuidance,
     synthesisMessage,
+    ritualAction,
+    reflectionFocus,
     reflectiveQuestion,
     interpretiveBoundary,
     ameshaSynthesisMatrix,
@@ -216,6 +222,8 @@ export function formatPersianAmeshaSpentaPrompt(report: PersianAmeshaSpentaRepor
     );
   }
   lines.push(
+    `- **실천 의례**: ${report.ritualAction}`,
+    `- **성찰 초점**: ${report.reflectionFocus}`,
     `- **성찰 질문**: ${report.reflectiveQuestion}`,
     `- **해석 경계**: ${report.interpretiveBoundary}`,
   );

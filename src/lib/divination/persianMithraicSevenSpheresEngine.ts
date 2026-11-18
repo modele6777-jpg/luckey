@@ -6,7 +6,7 @@
  * 현대인의 역경 돌파, 결단력, 영혼의 성숙도에 연동합니다.
  */
 
-export const PERSIAN_MITHRAIC_SPHERES_ENGINE_VERSION = 'LUCKEY-MITHRAIC-SPHERES-v2.1.0';
+export const PERSIAN_MITHRAIC_SPHERES_ENGINE_VERSION = 'LUCKEY-MITHRAIC-SPHERES-v2.2.0';
 
 export interface MithraicGrade {
   gradeLevel: number;
@@ -29,6 +29,8 @@ export interface MithraicSpheresReport {
   astralLadderAscensionRate: number; // 0 ~ 100
   mithraicOathOfLight: string;
   masterBreakthroughPrescription: string;
+  ritualAction: string;
+  reflectionFocus: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
   mithraicSynthesisMatrix?: {
@@ -166,6 +168,8 @@ export function calculatePersianMithraicSpheres(params: {
   const masterBreakthroughPrescription = `당신의 영혼은 지금 미트라 7대 천계 사다리의 제${activeGrade.gradeLevel}계단 [${activeGrade.gradeTitleKo}]을 통과하고 있습니다. '${activeGrade.initiationTrial}'을 두려워하지 말고, '${activeGrade.gradeActionRule}'을 실천하여 영혼의 주권을 완성하세요.`;
 
   const calculatedAtKst = formatMithraicKstTimestamp(now);
+  const ritualAction = `제${activeGrade.gradeLevel}계단 '${activeGrade.gradeTitleKo}'의 맹세 아래, "${activeGrade.gradeActionRule}"를 오늘 가장 먼저 마주하는 선택에 적용하세요.`;
+  const reflectionFocus = `미트라 7대 천계(${activeGrade.gradeTitleKo} ↔ ${secondaryGrade.gradeTitleKo}) — ${activeGrade.planetaryRuler}·${activeGrade.elementSymbol}과 솔 인빅투스`;
   const reflectiveQuestion = buildMithraicReflectiveQuestion(activeGrade, question);
   const interpretiveBoundary = '미트라 7대 천계 사다리 상징은 역경 돌파와 자기 규율을 비추는 고대 입문 비유로만 활용하며, 미래의 확정적 길흉 예측이나 법률·재무·의학 판단의 근거로 단정하지 않습니다.';
   const composite = Math.round((solInvictusScore + astralLadderAscensionRate) / 2);
@@ -185,6 +189,8 @@ export function calculatePersianMithraicSpheres(params: {
     astralLadderAscensionRate,
     mithraicOathOfLight,
     masterBreakthroughPrescription,
+    ritualAction,
+    reflectionFocus,
     reflectiveQuestion,
     interpretiveBoundary,
     mithraicSynthesisMatrix,
@@ -212,6 +218,8 @@ export function formatPersianMithraicSpheresPrompt(report: MithraicSpheresReport
     );
   }
   lines.push(
+    `- **실천 의례**: ${report.ritualAction}`,
+    `- **성찰 초점**: ${report.reflectionFocus}`,
     `- **성찰 질문**: ${report.reflectiveQuestion}`,
     `- **해석 경계**: ${report.interpretiveBoundary}`,
   );
