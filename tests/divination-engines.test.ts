@@ -3454,11 +3454,15 @@ test('Mesopotamian Seven Gates Engine: calculates planetary gate and resurrectio
   assert(rep.sovereigntyResurrectionPower >= 0 && rep.sovereigntyResurrectionPower <= 100);
   assert(rep.liberationTask.length > 0);
   assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(rep.ritualAction.length > 0);
+  assert(rep.reflectionFocus.length > 0);
   assert(Boolean(rep.sevenGatesSynthesisMatrix?.integratedAction));
   assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatMesopotamianSevenGatesPrompt(rep);
   assert(prompt.includes('고대 메소포타미아 7대 행성 관문'));
   assert(prompt.includes(rep.activeGate.gateNameAkkadian));
+  assert(prompt.includes('실천 의례'));
+  assert(prompt.includes('성찰 초점'));
   assert(prompt.includes('교차 매트릭스') && prompt.includes('해석 경계'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
@@ -5104,6 +5108,8 @@ test('Mongolian Tengrism Hiimori Soul Engine: calculates wind horse vitality, bl
   assert(rep.etugenMotherEarthRooting >= 0 && rep.etugenMotherEarthRooting <= 100);
   assert(rep.dominantAspect.nameKo.length > 0);
   assert(rep.secondaryAspect.id !== rep.dominantAspect.id);
+  assert(rep.ritualAction.length > 0);
+  assert(rep.reflectionFocus.length > 0);
   assert(rep.reflectiveQuestion.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
   assert(rep.calculatedAtKst.endsWith('+09:00 KST'));
@@ -5114,6 +5120,8 @@ test('Mongolian Tengrism Hiimori Soul Engine: calculates wind horse vitality, bl
   assert(prompt.includes('몽골 텡그리즘 99 텡그리 & 히모리 풍마 영혼 공명 실측 데이터'));
   assert(prompt.includes(repQ.dominantAspect.nameKo));
   assert(prompt.includes(repQ.secondaryAspect.nameKo));
+  assert(prompt.includes('실천 의례'));
+  assert(prompt.includes('성찰 초점'));
   assert(prompt.includes('해석 경계'));
   assert(prompt.includes('교차 매트릭스'));
   assert(!prompt.includes('/100'));
@@ -5540,6 +5548,8 @@ test('Mesopotamian Nisaba Scribe Wisdom Engine: calculates reed stylus precision
   assert(rep.activeScribeRank.rankSumerian.length > 0);
   assert(rep.secondaryScribeRank.rankLevel !== rep.activeScribeRank.rankLevel);
   assert(rep.secondaryCuneiformVerdict.sumerianWord !== rep.primaryCuneiformVerdict.sumerianWord);
+  assert(rep.ritualAction.length > 0);
+  assert(rep.reflectionFocus.length > 0);
   assert(rep.reflectiveQuestion.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
   assert(rep.calculatedAtKst.endsWith('+09:00 KST'));
@@ -5550,6 +5560,8 @@ test('Mesopotamian Nisaba Scribe Wisdom Engine: calculates reed stylus precision
   assert(prompt.includes('수메르 서기의 수호신 《니사바(Nisaba)》'));
   assert(prompt.includes(repQ.activeScribeRank.rankNameKo));
   assert(prompt.includes(repQ.secondaryScribeRank.rankNameKo));
+  assert(prompt.includes('실천 의례'));
+  assert(prompt.includes('성찰 초점'));
   assert(prompt.includes('해석 경계'));
   assert(prompt.includes('교차 매트릭스'));
   assert(!prompt.includes('/100'));

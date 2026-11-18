@@ -1,6 +1,10 @@
 {
-  "version": "1.7.871",
-  "builtAt": "2026-11-19T05:40:00+09:00",
-  "commit": "feat/deepen-popolvuh-sevengates-volva-v1.7.871",
-  "notes": "마야 포폴부·메소포타미아 7관문·북유럽 볼바 세이드 3대 엔진 성찰 질문·+09:00 KST·카탈로그 뜻 보강 (v1.7.871)"
+  "version": "1.7.872",
+  "builtAt": "2026-11-19T05:42:00+09:00",
+  "summary": "니사바 서판·메소포타미아 7관문·몽골 텡그리즘 히모리 3대 엔진 실천 의례 및 성찰 초점 표준 연동(v1.7.872)",
+  "items": [
+    "고대 수메르 니사바 청금석 서판 천문수리 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동",
+    "고대 메소포타미아 7대 행성 관문·인안나 부활 엔진(v2.3.0): ritualAction·reflectionFocus 표준 필드 연동",
+    "몽골 텡그리즘 99 텡그리 & 히모리 풍마 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동"
+  ]
 }
