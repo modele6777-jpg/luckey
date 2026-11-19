@@ -537,7 +537,7 @@ test('Big Bang left and right controls stay disabled in the Key channel', async 
   }
 });
 
-test('Big Bang center double tap jumps to the recommended app without firing a single-tap action', async ({ page }) => {
+test('Big Bang center double tap opens the Key channel without firing a single-tap action', async ({ page }) => {
   await openLucy(page);
   const button = page.locator('#bigbang-omnibutton');
   await expect(button).toBeVisible();
@@ -583,7 +583,7 @@ test('Big Bang center double tap jumps to the recommended app without firing a s
   const commit = await page.evaluate(() => (window as any).__bigBangTestCommit);
   expect(commit.isDoubleTapSuction).toBe(false);
   const destination = commit.target.destinationPath as string;
-  expect(destination).not.toBe('/chat');
+  expect(destination).toBe('/key');
   const expected = new URL(destination, page.url());
   await expect.poll(() => {
     const current = new URL(page.url());
