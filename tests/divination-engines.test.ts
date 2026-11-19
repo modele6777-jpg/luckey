@@ -6252,6 +6252,7 @@ test('Ancient Greek Aristotle Mesotes Eudaimonia Engine: calculates Golden Mean,
 test('Ancient Indian Bhagavad Gita Karma Yoga Engine: calculates Nishkama Karma, Swadharma, Samatvam and Yogastha', () => {
   const rep = calculateBhagavadGitaKarmaYoga(profile);
   assert.equal(rep.engineVersion, BHAGAVAD_GITA_KARMA_YOGA_VERSION);
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(rep.nishkamaKarmaDetachmentScore >= 0 && rep.nishkamaKarmaDetachmentScore <= 100);
   assert(rep.swadharmaCallingAlignment >= 0 && rep.swadharmaCallingAlignment <= 100);
   assert(rep.samatvamEquanimityIndex >= 0 && rep.samatvamEquanimityIndex <= 100);
@@ -6262,6 +6263,7 @@ test('Ancient Indian Bhagavad Gita Karma Yoga Engine: calculates Nishkama Karma,
   const prompt = formatBhagavadGitaKarmaYogaPrompt(rep);
   assert(prompt.includes('고대 인도 바가바드 기타(Bhagavad Gita) 카르마 요가'));
   assert(prompt.includes(rep.activeGitaStage.stageNameKo));
+  assert(prompt.includes('성찰 초점'));
 });
 
 test('Chinese Wang Yangming Liangzhi Xinxue Engine: calculates Liangzhi intuition, Zhi-Xing unity and mind integrity', () => {
@@ -6555,6 +6557,7 @@ test('Descartes Cogito Clara Distincta Engine: calculates Cogito certainty, Clar
 test('Early Buddhist Four Noble Truths Engine: calculates Four Noble Truths, Eightfold Path, Nirodha, and Sati presence', () => {
   const rep = calculateAncientIndianFourNobleTruths(profile);
   assert.equal(rep.engineVersion, FOUR_NOBLE_TRUTHS_VERSION);
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(rep.fourNobleTruthsClarityScore >= 0 && rep.fourNobleTruthsClarityScore <= 100);
   assert(rep.eightfoldPathBalanceScore >= 0 && rep.eightfoldPathBalanceScore <= 100);
   assert(rep.cravingExtinctionNirodhaScore >= 0 && rep.cravingExtinctionNirodhaScore <= 100);
@@ -6565,6 +6568,7 @@ test('Early Buddhist Four Noble Truths Engine: calculates Four Noble Truths, Eig
   const prompt = formatAncientIndianFourNobleTruthsPrompt(rep);
   assert(prompt.includes('초기불교 사성제 & 팔정도 고집멸도 지표'));
   assert(prompt.includes(rep.activeNobleTruth.truthHanja));
+  assert(prompt.includes('성찰 초점'));
 });
 
 test('Rumi Masnavi Divine Love Engine: calculates Ishq divine love, Qalb purification, Fana ego dissolution, and Sama tranquility', () => {
@@ -6637,6 +6641,7 @@ test('Montaigne Essais Wisdom Engine: calculates Que sais-je inquiry, Self-intro
 test('Nagarjuna Madhyamaka Sunyata Engine: calculates Sunyata wisdom, Eightfold negation, and Dependent origination', () => {
   const rep = calculateNagarjunaMadhyamakaSunyata(profile);
   assert.equal(rep.engineVersion, NAGARJUNA_MADHYAMAKA_VERSION);
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(rep.sunyataWisdomScore >= 0 && rep.sunyataWisdomScore <= 100);
   assert(rep.eightfoldNegationMiddleWayScore >= 0 && rep.eightfoldNegationMiddleWayScore <= 100);
   assert(rep.pratityasamutpadaGraspScore >= 0 && rep.pratityasamutpadaGraspScore <= 100);
@@ -6647,6 +6652,7 @@ test('Nagarjuna Madhyamaka Sunyata Engine: calculates Sunyata wisdom, Eightfold 
   const prompt = formatNagarjunaMadhyamakaSunyataPrompt(rep);
   assert(prompt.includes('용수 중론 & 팔불중도 공성(Śūnyatā) 지표'));
   assert(prompt.includes(rep.activeNegationAspect.aspectHanja));
+  assert(prompt.includes('성찰 초점'));
 });
 
 test('Jinul Jeonghye Ssangsu Engine: calculates Donoh insight, Jeomsu cultivation, and Seongjeok equanimity', () => {

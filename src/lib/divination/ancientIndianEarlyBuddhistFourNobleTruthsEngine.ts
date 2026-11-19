@@ -8,12 +8,12 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const FOUR_NOBLE_TRUTHS_VERSION = 'LUCKEY-FOUR-NOBLE-TRUTHS-v2.3.0';
+export const FOUR_NOBLE_TRUTHS_VERSION = 'LUCKEY-FOUR-NOBLE-TRUTHS-v2.4.0';
 
 function getBuddhaKstString(now?: Date): string {
   const base = now ?? new Date();
   const kst = new Date(base.getTime() + 9 * 3600 * 1000);
-  return `${kst.toISOString().slice(0, 19)}+09:00`;
+  return `${kst.toISOString().slice(0, 19)}+09:00 (KST)`;
 }
 
 export interface BuddhistNobleTruth {
@@ -384,6 +384,7 @@ export function formatAncientIndianFourNobleTruthsPrompt(res: AncientIndianFourN
     `- 사성제·팔정도 매트릭스: 고제 수용(${describeBuddhistStage(res.nobleEightfoldMatrix.dukkhaAcceptance)}) · 갈애 해탈(${describeBuddhistStage(res.nobleEightfoldMatrix.tanhaRelease)}) · 사띠 현존(${describeBuddhistStage(res.nobleEightfoldMatrix.satiPresence)}) · 종합(${describeBuddhistStage(res.nobleEightfoldMatrix.overallSynthesis)})`,
     `- 붓다의 중도 지침: ${res.buddhistMiddleWayCounsel.philosophicalGuidance}`,
     `- 오늘의 실천 의례: ${res.dailyPracticeRitual}`,
+    `- 성찰 초점: ${res.reflectionFocus}`,
     `- 성찰 질문: ${res.reflectiveQuestion}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
     matrixLine,

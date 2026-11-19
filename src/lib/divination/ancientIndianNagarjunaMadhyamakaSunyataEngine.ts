@@ -6,12 +6,12 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const NAGARJUNA_MADHYAMAKA_VERSION = 'LUCKEY-NAGARJUNA-MADHYAMAKA-v2.3.0';
+export const NAGARJUNA_MADHYAMAKA_VERSION = 'LUCKEY-NAGARJUNA-MADHYAMAKA-v2.4.0';
 
 function getNagarjunaKstString(now?: Date): string {
   const base = now ?? new Date();
   const kst = new Date(base.getTime() + 9 * 3600 * 1000);
-  return `${kst.toISOString().slice(0, 19)}+09:00`;
+  return `${kst.toISOString().slice(0, 19)}+09:00 (KST)`;
 }
 
 export interface EightfoldNegationAspect {
@@ -368,6 +368,7 @@ export function formatNagarjunaMadhyamakaSunyataPrompt(res: NagarjunaMadhyamakaS
     `- 중관 매트릭스: 자성 해체(${describeNagarjunaStage(res.madhyamakaMatrix.svabhavaDeconstruction)}) · 연기 흐름(${describeNagarjunaStage(res.madhyamakaMatrix.dependentOriginationFlow)}) · 이제 균형(${describeNagarjunaStage(res.madhyamakaMatrix.twoTruthsEquilibrium)}) · 종합(${describeNagarjunaStage(res.madhyamakaMatrix.overallSynthesis)})`,
     `- 일상 실천 지침: ${res.nagarjunaMiddleCounsel.middleWayGuidance}`,
     `- 오늘의 실천 의례: ${res.dailyPracticeRitual}`,
+    `- 성찰 초점: ${res.reflectionFocus}`,
     `- 성찰 질문: ${res.reflectiveQuestion}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
     matrixLine,

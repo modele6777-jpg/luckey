@@ -12,12 +12,12 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const BHAGAVAD_GITA_KARMA_YOGA_VERSION = 'LUCKEY-BHAGAVAD-GITA-KARMA-YOGA-v2.3.0';
+export const BHAGAVAD_GITA_KARMA_YOGA_VERSION = 'LUCKEY-BHAGAVAD-GITA-KARMA-YOGA-v2.4.0';
 
 function getGitaKstString(now?: Date): string {
   const base = now ?? new Date();
   const kst = new Date(base.getTime() + 9 * 3600 * 1000);
-  return `${kst.toISOString().slice(0, 19)}+09:00`;
+  return `${kst.toISOString().slice(0, 19)}+09:00 (KST)`;
 }
 
 export interface GitaStage {
@@ -374,6 +374,7 @@ export function formatBhagavadGitaKarmaYogaPrompt(res: BhagavadGitaKarmaYogaResu
     `- 카르마 요가 매트릭스: 무집착 숙련(${describeGitaStage(res.karmaYogaMatrix.detachmentMastery)}) · 본분 명료도(${describeGitaStage(res.karmaYogaMatrix.swadharmaClarity)}) · 평정 회복력(${describeGitaStage(res.karmaYogaMatrix.samatvamResilience)}) · 종합(${describeGitaStage(res.karmaYogaMatrix.overallSynthesis)})`,
     `- 철학적 처방: ${res.karmaYogaPhilosophicalCounsel.philosophicalGuidance}`,
     `- 오늘의 실천 의례: ${res.dailyPracticeRitual}`,
+    `- 성찰 초점: ${res.reflectionFocus}`,
     `- 성찰 질문: ${res.reflectiveQuestion}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
     matrixLine,
