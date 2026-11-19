@@ -13,7 +13,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const NIETZSCHE_ZARATHUSTRA_AMOR_FATI_VERSION = 'LUCKEY-NIETZSCHE-ZARATHUSTRA-AMOR-FATI-v2.2.0';
+export const NIETZSCHE_ZARATHUSTRA_AMOR_FATI_VERSION = 'LUCKEY-NIETZSCHE-ZARATHUSTRA-AMOR-FATI-v2.3.0';
 
 export interface NietzscheTheme {
   themeKey: string;
@@ -304,7 +304,7 @@ export function calculateNietzscheZarathustraAmorFati(
 
   return {
     engineVersion: NIETZSCHE_ZARATHUSTRA_AMOR_FATI_VERSION,
-    calculatedAtKst: new Date(now.getTime() + 9 * 60 * 60 * 1000).toISOString().replace('Z', '+09:00'),
+    calculatedAtKst: `${new Date(now.getTime() + 9 * 60 * 60 * 1000).toISOString().slice(0, 19)}+09:00 (KST)`,
     amorFatiRadicalAffirmationScore,
     threeMetamorphosesCreativeScore,
     uebermenschSelfOvercomingScore,
@@ -372,6 +372,7 @@ export function formatNietzscheZarathustraAmorFatiPrompt(res: NietzscheZarathust
 
   return [
     `【프리드리히 니체 차라투스트라 초인 & 아모르 파티(Amor Fati) 지표 v2.1 (순수 정성 성찰)】`,
+    `- 엔진 버전: ${res.engineVersion} | 연산 시각: ${res.calculatedAtKst}`,
     `- 아모르 파티(Amor Fati) 운명 긍정: ${amorFatiStage}`,
     `- 3단계 변신(낙타·사자·아이) 자유: ${metamorphosesStage}`,
     `- 초인(Übermensch) 자기 극복: ${uebermenschStage}`,
