@@ -20,7 +20,7 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const TAOIST_NEIDAN_VERSION = 'LUCKEY-TAOIST-NEIDAN-v2.1.0';
+export const TAOIST_NEIDAN_VERSION = 'LUCKEY-TAOIST-NEIDAN-v2.2.0';
 
 function formatNeidanKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -67,6 +67,8 @@ export interface TaoistNeidanMeridianReport {
   };
   taoistAlchemyWisdom: string;
   synthesisPromptGuidance: string;
+  ritualAction: string;
+  reflectionFocus: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
   neidanSynthesisMatrix?: {
@@ -181,6 +183,8 @@ export function runTaoistNeidanMeridianEngine(
   const meridianVitalityIndex = 80 + (seed % 18);
   const calculatedAtKst = formatNeidanKstTimestamp(targetDate);
   const q = (question || '').trim();
+  const ritualAction = `[${methodName} · ${targetDantian}] ${practiceSteps}`;
+  const reflectionFocus = `도교 내단 경락(${currentMeridian.name}) — ${predominantTreasureState}`;
   const reflectiveQuestion = q
     ? `"${q}" 앞에서 ${currentMeridian.name}의 흐름을 다스리며 다음 시진 ${nextMeridian.name}으로 넘어가기 위해, 지금 호흡으로 가라앉힐 긴장은 무엇입니까?`
     : `${dantianArchetype}의 중심을 세우면서 ${methodName}을 3분 실천할 때, 오늘 가장 먼저 쉬게 해 줄 몸과 마음의 부위는 어디입니까?`;
@@ -205,6 +209,8 @@ export function runTaoistNeidanMeridianEngine(
   * 실천법: ${practiceSteps}
 - 도가 양생 지혜: "${taoistAlchemyWisdom}"
 - 내단 교차 매트릭스: 핵심 긴장(${neidanSynthesisMatrix.dominantTension}) · 조율 상태(${neidanSynthesisMatrix.alignmentState}) · 통합 실천(${neidanSynthesisMatrix.integratedAction})
+- 실천 의례: ${ritualAction}
+- 성찰 초점: ${reflectionFocus}
 - 성찰 질문: ${reflectiveQuestion}
 - 해석 경계: ${interpretiveBoundary}`;
 
@@ -235,6 +241,8 @@ export function runTaoistNeidanMeridianEngine(
     },
     taoistAlchemyWisdom,
     synthesisPromptGuidance,
+    ritualAction,
+    reflectionFocus,
     reflectiveQuestion,
     interpretiveBoundary,
     neidanSynthesisMatrix,
