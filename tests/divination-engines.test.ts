@@ -4572,6 +4572,7 @@ test('Popol Vuh Hero Twins Engine: calculates active trial house and qualitative
 test('Ancient Yarrow I Ching Probability Engine: calculates dominant yao and Dayan alignment score', () => {
   const rep = calculateAncientYarrowProbability({ profile, question: '요즘 너무 지치고 불안해서 쉬고 싶어요', now: new Date('2026-11-15T07:15:00+09:00') });
   assert.equal(rep.engineVersion, ANCIENT_YARROW_PROBABILITY_ENGINE_VERSION);
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert.equal(rep.questionTheme, 'healing');
   assert([6, 7, 8, 9].includes(rep.dominantYaoValue));
   assert.equal(rep.remainingStalks, rep.dominantYaoValue * 4);
@@ -4588,6 +4589,7 @@ test('Ancient Yarrow I Ching Probability Engine: calculates dominant yao and Day
   assert(prompt.includes('고대 중국 주역 대연지수 49책 시초점 상징 수리 관점'));
   assert(prompt.includes(rep.yaoNameKo));
   assert(prompt.includes(rep.practiceGuidance));
+  assert(prompt.includes('성찰 초점'));
   assert(prompt.includes('KST'));
   assert(!prompt.includes('/100') && !prompt.includes('%'));
   assert(!/\d+\s*점(?:\s*\/\s*100)?/.test(prompt));
@@ -5970,6 +5972,7 @@ test('Korean Yi Sun-sin Nanjung Ilgi Strategic Engine: calculates Pilsa Jeuksaen
 test('Ancient Egyptian Ptah Memphite Theology Engine: calculates heart thought conceptualization, tongue utterance and Maat alignment', () => {
   const rep = calculatePtahMemphite(profile, '새 프로젝트를 구상하고 현실로 구현하고 싶습니다', new Date('2026-11-15T05:00:00Z'));
   assert.equal(rep.engineVersion, PTAH_MEMPHITE_VERSION);
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(rep.heartThoughtConceptualizationIndex >= 0 && rep.heartThoughtConceptualizationIndex <= 100);
   assert(rep.tongueUtteranceManifestationForce >= 0 && rep.tongueUtteranceManifestationForce <= 100);
   assert(rep.divineKaVitalityInfusionScore >= 0 && rep.divineKaVitalityInfusionScore <= 100);
@@ -5984,6 +5987,7 @@ test('Ancient Egyptian Ptah Memphite Theology Engine: calculates heart thought c
   const prompt = formatPtahMemphitePrompt(rep);
   assert(prompt.includes('고대 이집트 멤피스 신학 《프타(Ptah)》'));
   assert(prompt.includes(rep.activeCreationStage.stageNameKo));
+  assert(prompt.includes('성찰 초점'));
   assert(!prompt.includes('%'));
   assert(!prompt.includes('/100'));
 });
@@ -6488,6 +6492,7 @@ test('Choe Han-gi Gihak Unwha Engine: calculates Unwhagi cosmic flow, Singitong 
 test('Sun Tzu Art of War Strategy Engine: calculates Five Factors, unfought victory, and qualitative strategy', () => {
   const rep = calculateSunTzuArtOfWarStrategy(profile, new Date('2026-11-14T18:45:00+09:00'), '너무 지치고 소모적인 일을 멈춰야 할까요?');
   assert.equal(rep.engineVersion, SUNTZU_STRATEGY_VERSION);
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert.equal(rep.questionTopic, 'healing');
   assert(rep.strategicPosture.length > 0);
   assert(rep.practiceGuidance.length > 0);
@@ -6503,6 +6508,7 @@ test('Sun Tzu Art of War Strategy Engine: calculates Five Factors, unfought vict
   const prompt = formatSunTzuArtOfWarStrategyPrompt(rep);
   assert(prompt.includes('손자병법 오사칠계 & 부전승 피실격허 전략 지표'));
   assert(prompt.includes(rep.focalFiveFactor.factorHanja));
+  assert(prompt.includes('성찰 초점'));
   assert(prompt.includes('해석 경계'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));

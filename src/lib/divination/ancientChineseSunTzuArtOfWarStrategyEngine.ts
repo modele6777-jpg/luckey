@@ -13,7 +13,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const SUNTZU_STRATEGY_VERSION = 'LUCKEY-SUNTZU-STRATEGY-v2.2.0';
+export const SUNTZU_STRATEGY_VERSION = 'LUCKEY-SUNTZU-STRATEGY-v2.3.0';
 
 export type SunTzuQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -290,7 +290,7 @@ function getKstDateString(now: Date): string {
 
 function formatKstIso(now: Date): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
-  return kst.toISOString().replace('Z', '+09:00');
+  return `${kst.toISOString().slice(0, 19)}+09:00 (KST)`;
 }
 
 export function calculateSunTzuArtOfWarStrategy(
@@ -391,6 +391,7 @@ export function formatSunTzuArtOfWarStrategyPrompt(res: SunTzuArtOfWarStrategyRe
     `- 손자병법 교차 매트릭스: ${res.sunTzuSynthesisMatrix.synthesizedVerdict}`,
     `- 맥락별 실행 조언: ${res.practiceGuidance}`,
     `- 오늘의 작은 의례: ${res.ritualAction}`,
+    `- 성찰 초점: ${res.reflectionFocus}`,
     `- 성찰 질문: ${res.reflectiveQuestion}`,
     `- 핵심 조언 요약: ${res.counselNote}`,
     `- 해석 경계: ${res.boundaryNotice}`,

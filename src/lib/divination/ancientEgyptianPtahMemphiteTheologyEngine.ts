@@ -15,7 +15,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const PTAH_MEMPHITE_VERSION = 'LUCKEY-PTAH-MEMPHITE-v2.3.0';
+export const PTAH_MEMPHITE_VERSION = 'LUCKEY-PTAH-MEMPHITE-v2.4.0';
 
 export interface PtahCreationStage {
   stageLevel: number;
@@ -192,7 +192,7 @@ function buildSynthesisMatrix(
 
 function getKstDateString(now: Date): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
-  return kst.toISOString().replace('T', ' ').substring(0, 19) + ' +09:00 KST';
+  return kst.toISOString().slice(0, 19) + '+09:00 (KST)';
 }
 
 function hashSeed(seedStr: string): number {
@@ -280,6 +280,7 @@ export function formatPtahMemphitePrompt(result: PtahMemphiteResult): string {
 - 샤바카 석비의 불멸의 비전: 《${result.memphiteEpiphany.stoneSceneTitle}》
   → 영원한 지혜: "${result.memphiteEpiphany.eternalWisdom}"
 - 오늘의 작은 의례: ${result.ritualAction}
+- 성찰 초점: ${result.reflectionFocus}
 - 성찰 질문: ${result.reflectiveQuestion}
 - 해석 경계: ${result.interpretiveBoundary}`;
 }
