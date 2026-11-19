@@ -39,6 +39,8 @@ import { shouldUsePageTransitions, shouldMountBgMusicPlayer } from "./lib/perfMo
 import { useFoldState, subscribeFoldState } from "./lib/foldState";
 import { isDuoDividerDoubleTap, mapDuoPaneSide, shouldResetDuoPaneSwapOnFold, type DuoDividerTap } from "./lib/duoPaneSwap";
 import { DuoCosmicAmbientRoom } from "./components/duo/DuoCosmicAmbientRoom";
+import { DuoDivinationTarotPane } from "./components/duo/DuoDivinationTarotPane";
+import { useLucyMasterMode } from "./lib/lucyMasterMode";
 import AuroraBackground from "./components/AuroraBackground";
 import EpilogueApp from "./pages/EpilogueApp";
 
@@ -252,6 +254,7 @@ function AppContent() {
   // 📱 접힘/펼침·세로/가로는 공유 화면 틀 상태 하나만 따른다 (src/lib/foldState.ts).
   const duoState = useFoldState();
   const isDuoUnfolded = duoState.unfolded;
+  const isDivinationMode = useLucyMasterMode();
   const isDuoPortrait = isDuoUnfolded && duoState.orientation === 'portrait';
   const isDuoLandscape = isDuoUnfolded && duoState.orientation === 'landscape';
   const [duoPanesSwapped, setDuoPanesSwapped] = React.useState(false);
@@ -926,7 +929,10 @@ function AppContent() {
                   {isLucyRoute ? (
                     /* 최우측/최하단 메뉴에서 루시 선택 시 ➔ 코스믹 룸 표출 */
                     <div className="w-full h-full overflow-hidden flex flex-col">
-                      <DuoCosmicAmbientRoom isLight={isLight} />
+                      {/* 🔮 점술모드: 펼치면 왼쪽은 타로 테이블 */}
+                      {isDivinationMode && isDuoUnfolded
+                        ? <DuoDivinationTarotPane isLight={isLight} />
+                        : <DuoCosmicAmbientRoom isLight={isLight} />}
                     </div>
                   ) : (
                     /* 최우측/최하단 메뉴에서 KEY 또는 럭키 채널 선택 시 ➔ 해당 페이지 표출 */

@@ -30,6 +30,8 @@ import { isDuoUnfoldedState } from '@/lib/perfMode';
 import { isLucyChatScreen } from '@/lib/duoPaneFocus';
 import { isSinglePaneLucyScreen } from '@/lib/workspacePaneDom';
 import { BigBangCircularMeter } from './BigBangCircularMeter';
+import { isLucyMasterModeOn, setLucyMasterMode, toggleLucyMasterMode } from '@/lib/lucyMasterMode';
+import { isLucyMasterBgmPreferred, startLucyMasterBgm } from '@/lib/lucyMasterBgm';
 // 🎯 미세 드래그 판정 임계값 (터치스크린 미세 떨림/지문 면적 20px 노이즈 면역 + 확실한 드래그 제스처 감지)
 const DRAG_ACTIVATION_THRESHOLD = 26;
 const DOUBLE_TAP_WINDOW_MS = 300;
@@ -714,20 +716,20 @@ export function BigBangButton() {
 
     let currentHole: 'whitehole' | 'blackhole' = 'whitehole';
 
-    // A stationary center hold previews the same Key destination used on release.
+    // A stationary center hold previews the divination-mode toggle used on release.
     if (!touchStartSelectionRef.current && elapsed >= 500 && start.direction === 'none') {
       currentHole = 'whitehole';
       target = {
-        id: 'key',
-        icon: '🔑',
+        id: 'lucy',
+        icon: '🔮',
         phase: 'whitehole',
         gauge: metrics.virtualForce,
         aiTemperature: temp,
-        title: 'Key · 개운 리추얼',
+        title: isLucyMasterModeOn() ? '점술모드 OFF' : '점술모드 ON',
         actionType: 'navigate',
-        previewLabel: '[홀드] Key 채널로 이동',
-        previewDescription: '빅뱅 버튼을 길게 누르면 Key 개운 리추얼로 이동합니다.',
-        destinationPath: '/key',
+        previewLabel: isLucyMasterModeOn() ? '[홀드] 점술모드 끄기' : '[홀드] 루시 점술모드 켜기',
+        previewDescription: '빅뱅 버튼을 길게 누르면 루시 점술모드(Lucy Master)를 켜고 끕니다.',
+        destinationPath: '/chat',
         themeColor: '#38bdf8',
         accentGlow: 'rgba(56, 189, 248, 0.85)',
       };
@@ -1043,6 +1045,37 @@ export function BigBangButton() {
     window.dispatchEvent(new CustomEvent('prism-navigate', { detail: { path: '/key' } }));
     window.dispatchEvent(new CustomEvent('nav-click-active', { detail: { path: '/key' } }));
   }, [dispatchBigBangRouteTransition, isKeyChannel, navigate]);
+
+  // 🔮 가운데 홀드: 루시 점술모드(Lucy Master) 켜기/끄기 (접힘·펼침 공통)
+  const toggleDivinationMode = useCallback((metrics?: WarpForceMetrics) => {
+    window.dispatchEvent(new CustomEvent('prism:abort_lucy_voice_ptt'));
+    setIsQuickChatOpen(false);
+    setQuickChatVoiceActive(false);
+    setActivePhase('idle');
+    setGauge(0);
+    setDurationMs(0);
+    // 루시 채팅이 화면에 보이면(단독 화면 또는 펼친 듀오의 루시 패널) 그 자리에서 전환한다.
+    const lucyVisible = checkIsInLucyChat() || Boolean(
+      document.getElementById('duo-lucy-viewport') && isDuoUnfoldedState().unfolded
+    );
+    // 홀드(사용자 제스처) 안에서 바로 배경음을 시작해야 모바일 브라우저가 소리를 허용한다.
+    const startBgmIfWanted = () => { if (isLucyMasterBgmPreferred()) void startLucyMasterBgm(); };
+    if (lucyVisible) {
+      if (toggleLucyMasterMode()) startBgmIfWanted();
+      return;
+    }
+    startBgmIfWanted();
+    // 다른 화면에서는 점술모드를 켠 채로 루시 채팅으로 이동한다.
+    setLucyMasterMode(true);
+    const tier = isDuoUnfoldedState().unfolded ? 'plus' : 'ai';
+    safeSessionStorage.setItem('lucy_tier_mode', tier);
+    safeLocalStorage.setItem('lucy_tier_mode', tier);
+    const path = tier === 'plus' ? '/' : `/chat?mode=${tier}`;
+    dispatchBigBangRouteTransition(path, 'Lucy 점술모드', metrics);
+    (window as any).__prismAllowRouteChangeUntil = Date.now() + 1500;
+    navigate(path);
+    window.dispatchEvent(new CustomEvent('prism-navigate', { detail: { path } }));
+  }, [checkIsInLucyChat, dispatchBigBangRouteTransition, navigate]);
 
   // ⚡ 추천 1순위 즉시 도약 헬퍼 (더블탭 또는 추천 카드에서 실행 - 룬 문자 사이 우주 흡입 워프 연출)
   const goToNextRecommended = useCallback((customContext?: any, customMetrics?: any, immediate = false, luckyDrag = false) => {
@@ -1375,7 +1408,7 @@ export function BigBangButton() {
       return;
     }
 
-    // A stationary center hold navigates to Key; directional holds retain their direction action.
+    // A stationary center hold toggles Lucy divination mode; directional holds retain their direction action.
     const isHoldGesture = !isDragGesture && duration >= 500 && dist < DRAG_ACTIVATION_THRESHOLD && targetDir === 'none';
     if (isHoldGesture) {
       showGestureFeedback('hold');
@@ -1391,7 +1424,7 @@ export function BigBangButton() {
       clearPendingSelection();
       setHasSelectionToss(false);
       setSelectionPreviewText('');
-      goToKeyChannel(metrics);
+      toggleDivinationMode(metrics);
       setActivePhase('idle');
       setGauge(0);
       setDurationMs(0);

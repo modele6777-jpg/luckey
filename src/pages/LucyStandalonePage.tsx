@@ -27,8 +27,12 @@ import ReactMarkdown from 'react-markdown';
 import { LucyProTypewriter } from '@/components/LucyProTypewriter';
 import { ChatInsightsBoardModal } from '@/components/ChatInsightsBoardModal';
 import { LucyAuraLoader } from '@/components/LucyAuraLoader';
+import { LucyMasterTarotRoom } from '@/components/chat/LucyMasterTarotRoom';
+import { LucyMasterBgmToggle } from '@/components/chat/LucyMasterBgmToggle';
+import { isLucyMasterBgmPreferred, startLucyMasterBgm, stopLucyMasterBgm } from '@/lib/lucyMasterBgm';
 import remarkGfm from 'remark-gfm';
 import { safeSessionStorage, safeLocalStorage } from '@/utils/safeStorage';
+import { isLucyMasterModeOn, setLucyMasterMode, LUCY_MASTER_MODE_EVENT, publishLucyTarotDraw, isAcceptingTarotDrawOffer, buildTarotHouseGuide, createTarotHouseGreeting, consumeTarotHouseGreetingPending, parseAnswerChoices, isAskingForDeepEngines, createTarotOfferOnUnfold, setLucyMasterLink, getLucyMasterLink, resolveLucyMasterLinkChoice, buildLinkedLucyContext, isTarotHouseGreetingPending } from '@/lib/lucyMasterMode';
 import { cleanAssistantMessageDisplay, cleanUserMessageDisplay } from '@/utils/cleanMessage';
 import { detectLucyChannelsFromText, formatChannelsModeTitle, getSeptagramBadgeStyle, shouldShowAutoDetectionBadge } from '@/lib/lucyAutoModeDetector';
 import { selectOptimalDivinationTools, THEME_PRIMARY_DIVINATION_TOOLS, type SelectedDivinationToolsResult } from '@/lib/fifteenDivinationTools';
@@ -725,7 +729,40 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
     return 'ai';
   });
 
-  const isMasterMode = false;
+  // 🔮 점술모드(Lucy Master): 빅뱅 버튼 홀드로 켜고 끈다. 접힘·펼침 모두 같은 값을 쓴다.
+  const [isMasterMode, setIsMasterMode] = useState<boolean>(() => isLucyMasterModeOn());
+  // 홀드로 루시 마스터에 들어올 때 잠깐 보여주는 로딩 화면
+  const [isMasterEntering, setIsMasterEntering] = useState<boolean>(() => isLucyMasterModeOn() && isTarotHouseGreetingPending());
+  // 🎵 점술모드 배경음: 켜져 있으면 재생(선호 기억), 모드를 끄거나 화면을 떠나면 멈춤
+  useEffect(() => {
+    if (!isMasterMode) { stopLucyMasterBgm(); return; }
+    if (isLucyMasterBgmPreferred()) void startLucyMasterBgm();
+    const onVisibility = () => {
+      if (document.hidden) stopLucyMasterBgm();
+      else if (isLucyMasterBgmPreferred()) void startLucyMasterBgm();
+    };
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => {
+      document.removeEventListener('visibilitychange', onVisibility);
+      stopLucyMasterBgm();
+    };
+  }, [isMasterMode]);
+
+  useEffect(() => {
+    if (!isMasterEntering) return;
+    const t = setTimeout(() => setIsMasterEntering(false), 1400);
+    return () => clearTimeout(t);
+  }, [isMasterEntering]);
+  useEffect(() => {
+    const handleMasterMode = (e: Event) => {
+      const on = Boolean((e as CustomEvent)?.detail?.on);
+      setIsMasterMode(on);
+      if (on) setIsMasterEntering(true);
+      triggerHaptic('whitehole');
+    };
+    window.addEventListener(LUCY_MASTER_MODE_EVENT, handleMasterMode);
+    return () => window.removeEventListener(LUCY_MASTER_MODE_EVENT, handleMasterMode);
+  }, []);
   const requireBasicAndDeep = true;
 
   // The visible plus marker remains independent from the shared answer policy.
@@ -767,7 +804,8 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
   const chatScope = 'lucy';
   const { resolvedTheme, lucyDayPeriod } = useTheme();
   // 📱 시간대별 루시 고유 테마(아침·낮·밤) 100% 반영: 아침(06:00~) 및 낮(11:00~)은 화사한 햇살/하늘 테마, 밤(18:00~)은 코스믹 나이트 테마
-  const isLight = lucyDayPeriod !== 'night';
+  // 루시 마스터는 집중을 위해 언제나 어두운 보라빛 타로 테이블 테마
+  const isLight = !isMasterMode && lucyDayPeriod !== 'night';
   const useWhiteTheme = false;
 
   useEffect(() => {
@@ -797,6 +835,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
 
     // ✨ 빅뱅 버튼 탭: 접혀있거나 일반 채널이면 'Lucy', 펼치고 코스믹 룸일 때만 'Lucy +'!
     const handleRevertNormal = (e?: any) => {
+      if (isLucyMasterModeOn()) setLucyMasterMode(false);
       const isDual = typeof document !== 'undefined' && Boolean(
         document.getElementById('duo-lucy-viewport') && document.getElementById('duo-content-viewport')
       ) && isDuoUnfoldedState().unfolded;
@@ -861,6 +900,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
     lucyProMessages,
     isLucyProGenerating,
     abortLucyProGenerating,
+    setLucyProMessages,
     sharedState,
     updateSharedState
   } = useApp();
@@ -872,10 +912,11 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
 
   const handleAbortGeneration = useCallback(() => {
     try {
-      abortGenerating('lucy');
+      if (isMasterMode) abortLucyProGenerating();
+      else abortGenerating('lucy');
       triggerHaptic('abort');
     } catch (_) {}
-  }, [abortGenerating]);
+  }, [abortGenerating, abortLucyProGenerating, isMasterMode]);
 
   // 🔒 모드 선택: Lucy Ultra 상태일 때는 7대 채널 마스터 상시 가동, 일반 모드일 때는 자동 감지 모드
   const selectedMode = (isMasterMode ? 'master' : 'auto') as LucyChatMode;
@@ -901,7 +942,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
   useEffect(() => {
     if (isMasterMode) {
       setActiveChannelsState(ALL_CHANNELS);
-      setAutoDetectedTitleState('올인원프로 모드');
+      setAutoDetectedTitleState('🔮 점술모드');
     } else if (!pro) {
       setActiveChannelsState([]);
       setAutoDetectedTitleState(null);
@@ -920,7 +961,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
   const isAutoDetect = selectedMode === 'auto';
   const [autoDetectedTitle, setAutoDetectedTitleState] = useState<string | null>(() => {
     if (selectedMode === 'casual') return '💬 수다 모드';
-    if (selectedMode === 'master') return isMasterMode ? '올인원프로 모드' : null;
+    if (selectedMode === 'master') return isMasterMode ? '🔮 점술모드' : null;
     if (selectedMode !== 'auto') {
       const cfg = SPECIAL_CHANNELS[selectedMode as SpecialChannel];
       return cfg ? cfg.name : selectedMode;
@@ -932,12 +973,12 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
   const setAutoDetectedTitle = useCallback((value: React.SetStateAction<string | null>) => {
     setAutoDetectedTitleState(previous => {
       const next = typeof value === 'function' ? value(previous) : value;
-      return isMasterMode ? '올인원프로 모드' : next?.includes('마스터') ? 'AI 자동 상담' : next;
+      return isMasterMode ? '🔮 점술모드' : next?.includes('마스터') ? 'AI 자동 상담' : next;
     });
   }, [isMasterMode]);
 
   const currentActiveModeConfig = useMemo(() => {
-    if (isMasterMode) return { ...LUCY_MODE_CONFIGS[0], label: '올인원프로', subLabel: '올인원프로 모드', tagline: '올인원프로 지능 상시 가동' };
+    if (isMasterMode) return { ...LUCY_MODE_CONFIGS[0], label: '점술모드', subLabel: '🔮 점술모드', tagline: '사주 상담 · 펼치면 타로' };
     if (activeChannels.length >= 2) {
       return {
         id: 'auto' as const,
@@ -1526,8 +1567,27 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
   // Detailed Saju Info for Soul Profile View (상담 대상자 기준으로 자동 동기화)
   const sajuInfo = useMemo(() => calculateDetailedSaju(counselingUserProfile), [counselingUserProfile]);
 
-  const lucyMessages = personaMessages?.lucy || [];
-  const isLucyGenerating = Boolean(isGenerating?.lucy);
+  // 🔮 루시 마스터(점술모드)는 일반 루시·루시+와 대화 내역을 따로 쓴다 (lucy-pro 저장소).
+  const lucyMessages = isMasterMode ? (lucyProMessages || []) : (personaMessages?.lucy || []);
+  const isLucyGenerating = isMasterMode ? Boolean(isLucyProGenerating) : Boolean(isGenerating?.lucy);
+
+  // 🔮 점술모드가 켜지면 타로집에 들어선 것처럼 루시가 먼저 인사한다 (다른 화면에서 홀드해 들어와도 1회).
+  useEffect(() => {
+    if (!isMasterMode || !consumeTarotHouseGreetingPending()) return;
+    const hasRegularHistory = (personaMessages?.lucy || []).some(m => m.role === 'user');
+    const greeting = createTarotHouseGreeting(userDisplayName, isDuoUnfoldedState().unfolded ? 'unfolded' : 'folded', hasRegularHistory);
+    setLucyMasterLink(hasRegularHistory ? 'undecided' : 'fresh');
+    setLucyProMessages(prev => [...prev.filter(m => !isGreetingMessage(m)), greeting]);
+  }, [isMasterMode, setLucyProMessages, userDisplayName]);
+
+  // 🔮 점술모드 대화 중 폰을 펼치면: 루시가 타로 상담을 더하자고 제안 (왼쪽엔 타로 테이블)
+  useEffect(() => {
+    if (!isMasterMode) return;
+    return subscribeFoldState((next, previous) => {
+      if (previous.unfolded || !next.unfolded) return;
+      setLucyProMessages(prev => [...prev, createTarotOfferOnUnfold()]);
+    });
+  }, [isMasterMode, setLucyProMessages]);
 
   // 🎙️ 루시 1:1 전용 실시간 음성 대화 모드 (STT 마이크 + TTS 자동 루프)
   const [isVoiceMode, setIsVoiceMode] = useState<boolean>(() => {
@@ -2277,7 +2337,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
   const currentModeTitle = useMemo(() => {
     if (isCasualChat) return '가벼운 일상 수다';
     if (requireBasicAndDeep && channelCount === 0) return 'AI 심층 자동 상담';
-    if (isFullProMaster) return '올인원프로 모드';
+    if (isFullProMaster) return '🔮 점술모드';
     if (isSingleSpecial) {
       const ch = activeChannels[0];
       return (ch && SPECIAL_CHANNELS[ch]?.name) || '특화 채널';
@@ -3121,7 +3181,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
       // 👑 Lucy Pro 마스터 모드: 7대 테마를 사용하고, 실제 계산·참고 상태는 질문별 기록을 따름
       channels = ALL_CHANNELS;
       setActiveChannels(ALL_CHANNELS);
-      setAutoDetectedTitle('올인원프로 모드');
+      setAutoDetectedTitle('🔮 점술모드');
     } else if (effectiveForcedChannels !== undefined) {
       channels = effectiveForcedChannels;
       setActiveChannels(effectiveForcedChannels);
@@ -3193,24 +3253,57 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
       targetPersona = 'lucy';
     }
 
+    // 🔮 점술모드(타로집): 접힘 = 사주 베이스, 펼침 = 왼쪽 타로 테이블 + 사주 베이스
+    const divinationLayout: 'folded' | 'unfolded' | undefined = isMasterMode
+      ? (isDuoUnfoldedState().unfolded ? 'unfolded' : 'folded')
+      : undefined;
+    // 타로는 대화 흐름에서 뽑는다: 사용자가 직접 요청하거나, 루시의 "카드 뽑아볼까?" 제안에 응했을 때만.
+    const lastLucyText = (() => {
+      for (let i = lucyMessages.length - 1; i >= 0; i--) {
+        const m = lucyMessages[i];
+        if (m.role === 'model' || m.role === 'assistant') return typeof m.content === 'string' ? m.content : '';
+      }
+      return '';
+    })();
+    const isTarotIntent = isLucyTarotDrawRequest(combinedContextText)
+      || Boolean(divinationLayout && isAcceptingTarotDrawOffer(userCleanText, lastLucyText));
+    const wantsDeepEngines = Boolean(divinationLayout) && isAskingForDeepEngines(userCleanText, lastLucyText);
+    const divinationMode = divinationLayout
+      ? { base: (divinationLayout === 'unfolded' && isTarotIntent ? 'tarot_saju' : 'saju') as 'saju' | 'tarot_saju', deep: wantsDeepEngines }
+      : undefined;
+
     // 🔮 질문 의도와 활성 테마에 맞춰 도구 지침을 주입하고, 계산 근거와 상징 참고를 구분
     const divinationSelection: SelectedDivinationToolsResult = isCasual
       ? { isCasualMessage: true, selectedTools: [], promptInjection: '', selectionReason: '가벼운 일상 인사', firedEngineBadges: [] }
-      : selectOptimalDivinationTools(combinedContextText, isMaster ? ALL_CHANNELS : channels, counselingUserProfile, isMaster, { allowMaster: isMasterMode || requireBasicAndDeep, requireBasicAndDeep });
+      : (divinationMode
+        // 점술모드: 사주 메인. 7대 채널 보강·올인원 총동원 없이, 원할 때만 관련 엔진 추가
+        ? selectOptimalDivinationTools(combinedContextText, [], counselingUserProfile, false, { allowMaster: false, requireBasicAndDeep, divinationMode })
+        : selectOptimalDivinationTools(combinedContextText, isMaster ? ALL_CHANNELS : channels, counselingUserProfile, isMaster, { allowMaster: isMasterMode || requireBasicAndDeep, requireBasicAndDeep }));
     if (!divinationSelection.isCasualMessage && divinationSelection.promptInjection) {
       extraSystemContext = extraSystemContext
         ? `${extraSystemContext}\n\n${divinationSelection.promptInjection}`
         : divinationSelection.promptInjection;
     }
+    if (divinationLayout) {
+      // 인사에서 물어본 "일반 루시 대화 이어갈까?"에 대한 선택 반영
+      const link = resolveLucyMasterLinkChoice(userCleanText);
+      if (link === 'linked') {
+        const linked = buildLinkedLucyContext(personaMessages?.lucy || []);
+        if (linked) extraSystemContext = extraSystemContext ? `${extraSystemContext}\n\n${linked}` : linked;
+      }
+      const houseGuide = buildTarotHouseGuide(divinationLayout, isTarotIntent, wantsDeepEngines);
+      extraSystemContext = extraSystemContext ? `${extraSystemContext}\n\n${houseGuide}` : houseGuide;
+    }
 
     // 🔮 타로 질문 의도 감지 시 실제 운명의 타로 카드를 즉시 드로우하여 루시 프롬프트에 주입 (이미지 비주얼 연동)
-    const isTarotIntent = isLucyTarotDrawRequest(combinedContextText);
     let tarotCardMarkers: string | undefined;
     if (isTarotIntent) {
       const isThreeCards = /3장|세\s*장|쓰리카드|과거\s*현재\s*미래/i.test(combinedContextText);
       const drawnCards = drawLucyTarotCards(isThreeCards ? 3 : 1);
       const cardMarkers = drawnCards.map((c) => formatTarotMarker(c)).join(' ');
       tarotCardMarkers = cardMarkers;
+      // 펼친 점술모드: 뽑힌 카드를 왼쪽 타로 테이블에 바로 펼친다.
+      if (divinationLayout === 'unfolded') publishLucyTarotDraw(drawnCards);
       const tarotInstruction = buildLucyTarotReadingPrompt(drawnCards, userCleanText);
       extraSystemContext = extraSystemContext ? `${extraSystemContext}\n\n${tarotInstruction}` : tarotInstruction;
     }
@@ -3239,7 +3332,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
     // 🌟 사용자 요청: 프로필이 바뀌면 내 기준이 아니라 그 사람 기준으로 상담 (counselingUserProfile 전달)
     await sendUnifiedMessage(userCleanText, targetPersona, imgToSend, {
       tarotCardMarkers,
-      conversationId: 'lucy',
+      conversationId: isMasterMode ? 'lucy-pro' : 'lucy',
       isLucyPlus: isPlusMode,
       isLucyPro: isMasterMode,
       isPro: isMasterMode,
@@ -3257,7 +3350,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
         }
       }
     });
-  }, [input, attachedImage, isLucyGenerating, lucyMessages, activeChannels, isAutoDetect, sendUnifiedMessage, activeProfiles, activeProfileId, counselingUserProfile, triggerAutoTts, activeGhostPrompt, dynamicGhostPrompts, stopRecognition, pro, isPlusMode]);
+  }, [input, attachedImage, isLucyGenerating, lucyMessages, activeChannels, isAutoDetect, sendUnifiedMessage, activeProfiles, activeProfileId, counselingUserProfile, triggerAutoTts, activeGhostPrompt, dynamicGhostPrompts, stopRecognition, pro, isPlusMode, isMasterMode, personaMessages]);
 
   useEffect(() => {
     handleSendRef.current = handleSend;
@@ -3297,7 +3390,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
     setTimeout(() => {
       textareaRef.current?.focus();
     }, 60);
-  }, []);
+  }, [isMasterMode]);
 
   // 🎯 가로 스크롤 추천 질문 칩 클릭 시 해당 질문에 맞는 7대 채널 모드로 전환하고 채팅 입력란에만 입력 (즉시 전송 X)
   const handleSelectRecommendationChip = useCallback((promptText: string) => {
@@ -3368,7 +3461,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
       title: modeTitle,
     };
     focusInputBox(promptText);
-  }, []);
+  }, [isMasterMode]);
 
   // Handle pending channel and draft / auto-send input from other sub-apps (ReBible, Prism, etc.)
   useEffect(() => {
@@ -3527,7 +3620,23 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
       }}
     >
       {/* 🌌 Shared AI/Plus sky background; clover accents belong to Pro modes only */}
-      <LucyCosmicBackground isProMode={isMasterMode} period={lucyDayPeriod} />
+      {isMasterMode
+        ? <LucyMasterTarotRoom />
+        : <LucyCosmicBackground isProMode={isMasterMode} period={lucyDayPeriod} />}
+      {isMasterMode && (
+        <div className="absolute right-3 z-30" style={{ top: 'calc(env(safe-area-inset-top, 0px) + 64px)' }}>
+          <LucyMasterBgmToggle />
+        </div>
+      )}
+      {isMasterEntering && (
+        <LucyAuraLoader
+          fullScreen
+          tier="pro"
+          message="🔮 루시 마스터 채널로 들어가는 중..."
+          subMessage="촛불을 켜고 사주 차트를 펼치는 중"
+          isUnfolded={showPlusMarker}
+        />
+      )}
       {/* Lucy and Lucy Plus have their own entry screens; other mode changes keep the short transition. */}
       <LucyModeTransition active={modeTransitioningTier !== null && modeTransitioningTier !== 'plus' && modeTransitioningTier !== 'ai'} isPlusMode={showPlusMarker} isProMode={isMasterMode} />
       <LucyEntryScreen trigger={lucyEntry.run} variant={lucyEntry.variant} period={lucyDayPeriod} />
@@ -3747,9 +3856,11 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
             const hasImage = Array.isArray(msg.content) && msg.content.some((item: any) => item.type === 'image_url');
             const imageUrl = hasImage ? (msg.content as any[]).find((item: any) => item.type === 'image_url')?.image_url?.url : null;
             const rawTextContent = Array.isArray(msg.content) ? (msg.content as any[]).find((item: any) => item.type === 'text')?.text || '' : rawContent;
-            const textContent = isUser
-              ? cleanUserMessageDisplay(rawTextContent)
-              : cleanAssistantMessageDisplay(rawTextContent, true);
+            const parsedAssistant = isUser
+              ? { text: cleanUserMessageDisplay(rawTextContent), choices: [] as string[] }
+              : parseAnswerChoices(cleanAssistantMessageDisplay(rawTextContent, true));
+            const textContent = parsedAssistant.text;
+            const answerChoices = parsedAssistant.choices;
             if (!isUser && !textContent.trim() && !imageUrl) {
               return null;
             }
@@ -3825,7 +3936,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
                     </span>
                   )}
 
-                  {!isUser && actuallyUsedEngines.length > 0 && (
+                  {!isUser && !isMasterMode && actuallyUsedEngines.length > 0 && (
                     <button
                       type="button"
                       data-message-mode-badge="true"
@@ -3859,7 +3970,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
 
                   <span className={`text-[10px] ${isLight ? 'text-slate-400' : 'text-white/70'}`}>{timeStr}</span>
                 </div>
-                {!isUser && actuallyUsedEngines.length > 0 && isUsageDetailsOpen && (
+                {!isUser && !isMasterMode && actuallyUsedEngines.length > 0 && isUsageDetailsOpen && (
                   <section
                     role="dialog"
                     aria-label="이번 답변에서 실제 사용한 엔진"
@@ -3997,7 +4108,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
                       msgId={msgId}
                       verifiedTarotMarkers={msg.tarotDraw?.source === 'app-random' ? msg.tarotDraw.markers : undefined}
                       revealedTarotCardIds={msg.tarotDraw?.revealedCardIds}
-                      onRevealTarotCard={cardId => revealLucyTarotCard(msgId, cardId, pro ? 'lucy-pro' : 'lucy')}
+                      onRevealTarotCard={cardId => revealLucyTarotCard(msgId, cardId, isMasterMode ? 'lucy-pro' : 'lucy')}
                       textContent={textContent}
                       isLatest={index === filteredMessages.length - 1}
                       isGenerating={isLucyGenerating && index === filteredMessages.length - 1}
@@ -4016,7 +4127,34 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
                       onVoicePlay={handleVoicePlay}
                       renderRecommendationFooter={() => {
                         if (isLucyGenerating && index === filteredMessages.length - 1) return null;
+                        // 🔮 루시가 질문하며 건넨 보기: 가장 최근 답변에서만 탭해서 바로 대답
+                        if (answerChoices.length > 0) {
+                          if (index !== filteredMessages.length - 1) return null;
+                          return (
+                            <div className="mt-2.5 flex flex-wrap gap-1.5" data-lucy-answer-choices="true">
+                              {answerChoices.map(choice => (
+                                <button
+                                  key={choice}
+                                  type="button"
+                                  onClick={() => {
+                                    triggerHaptic('whitehole');
+                                    void handleSend(choice);
+                                  }}
+                                  className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-all active:scale-95 ${
+                                    isLight
+                                      ? 'bg-amber-50 border-amber-300 text-amber-900 hover:bg-amber-100'
+                                      : 'bg-amber-500/10 border-amber-400/40 text-amber-200 hover:bg-amber-500/20'
+                                  }`}
+                                >
+                                  {choice}
+                                </button>
+                              ))}
+                            </div>
+                          );
+                        }
                         if (!textContent || textContent.trim().length <= 10) return null;
+                        // 루시 마스터: 대화마다 붙는 모드·엔진 안내 없이 대화에만 집중 (TTS 버튼은 그대로)
+                        if (isMasterMode) return null;
                         if (msgModeInfo.isCasual) return null;
                         if (isGreeting) return null;
 
