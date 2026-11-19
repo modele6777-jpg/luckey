@@ -4707,12 +4707,14 @@ test('Sumerian Apkallu Wisdom Engine: calculates 7 sages resonance and Apsu clar
 test('Celtic Tuatha Four Treasures Engine: calculates heroic destiny and dominant sacred treasure', () => {
   const rep = calculateCelticTuathaFourTreasures({ profile });
   assert.equal(rep.engineVersion, CELTIC_TUATHA_FOUR_TREASURES_ENGINE_VERSION);
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(rep.tuathaHeroResonance >= 0 && rep.tuathaHeroResonance <= 100);
   assert(rep.treasures.dominantTreasure.nameKo.length > 0);
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatCelticTuathaFourTreasuresPrompt(rep);
   assert(prompt.includes('고대 아일랜드 켈트 투아하 데 다난(Tuatha Dé Danann) 4대 보물 영웅 운명 실측 데이터'));
   assert(prompt.includes(rep.treasures.dominantTreasure.nameKo));
+  assert(prompt.includes('성찰 초점'));
 });
 
 test('Taoist Shangqing 24 Spirits Engine: calculates three dantians and active true spirit', () => {
@@ -4818,6 +4820,7 @@ test('Egyptian Sphinx Dream Oracle Engine: calculates tetramorph virtues and san
 test('Chaldean Mul Apin Astrology Engine: calculates celestial paths, ruling planet and constellation', () => {
   const rep = calculateChaldeanMulApinAstrology({ profile, question: '천문학적 타이밍' });
   assert.equal(rep.engineVersion, CHALDEAN_MUL_APIN_ASTROLOGY_ENGINE_VERSION);
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(rep.pathAlignmentScore >= 0 && rep.pathAlignmentScore <= 100);
   assert(rep.rulingPlanet.resonanceScore >= 0 && rep.rulingPlanet.resonanceScore <= 100);
   assert(rep.celestialPath.length > 0);
@@ -4826,6 +4829,7 @@ test('Chaldean Mul Apin Astrology Engine: calculates celestial paths, ruling pla
   const prompt = formatChaldeanMulApinAstrologyPrompt(rep);
   assert(prompt.includes('고대 메소포타미아 칼데아 12조디악 원형 & 바빌로니아 물핀(MUL.APIN)'));
   assert(prompt.includes(rep.rulingPlanet.nameKo));
+  assert(prompt.includes('성찰 초점'));
 });
 
 test('Toltec Nagual Dreaming Engine: calculates four agreements and second attention', () => {
@@ -6179,6 +6183,7 @@ test('Roman Marcus Aurelius Inner Citadel Meditations Engine: calculates Inner C
 test('Chinese Laozi Daodejing Water Way Engine: calculates water yielding adaptability, wuwei action and contentment', () => {
   const rep = calculateLaoziDaodejing(profile, '치열한 경쟁 속에서 다툼 없이 현명하게 대처하고 싶어요', new Date('2026-11-14T06:00:00Z'));
   assert.equal(rep.engineVersion, LAOZI_DAODEJING_VERSION);
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(rep.waterYieldingAdaptabilityScore >= 0 && rep.waterYieldingAdaptabilityScore <= 100);
   assert(rep.wuweiEffortlessActionForce >= 0 && rep.wuweiEffortlessActionForce <= 100);
   assert(rep.harmoniousLightSofteningIndex >= 0 && rep.harmoniousLightSofteningIndex <= 100);
@@ -6194,6 +6199,7 @@ test('Chinese Laozi Daodejing Water Way Engine: calculates water yielding adapta
   assert(prompt.includes('고대 중국 노자(老子) 《도덕경(道德經)》'));
   assert(prompt.includes(rep.activeDaodejingStage.stageNameKo));
   assert(prompt.includes(rep.chapterResonance.chapterTitle));
+  assert(prompt.includes('성찰 초점'));
 });
 
 test('Ancient Greek Epicurean Tetrapharmakos Engine: calculates ataraxia tranquility, aponia ease and friendship', () => {

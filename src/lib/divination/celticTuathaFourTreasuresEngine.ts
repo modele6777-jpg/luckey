@@ -8,7 +8,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const CELTIC_TUATHA_FOUR_TREASURES_ENGINE_VERSION = 'LUCKEY-CELTIC-TUATHA-v2.3.0';
+export const CELTIC_TUATHA_FOUR_TREASURES_ENGINE_VERSION = 'LUCKEY-CELTIC-TUATHA-v2.4.0';
 
 export interface TuathaTreasure {
   id: 'lia_fail' | 'spear_of_lugh' | 'sword_of_nuada' | 'cauldron_of_dagda';
@@ -262,7 +262,7 @@ export function calculateCelticTuathaFourTreasures(options?: {
   }
 
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
-  const calculatedAtKst = `${kst.toISOString().slice(0, 19)}+09:00`;
+  const calculatedAtKst = `${kst.toISOString().slice(0, 19)}+09:00 (KST)`;
   const interpretiveBoundary = '본 켈트 투아하 데 다난 4대 보물 리포트는 에린 신화 원형에 기반한 정성적 영웅 성찰 안내이며, 확정적 승패 예단이 아닙니다.';
 
   const reflectionFocus = `${dominantTreasure.nameKo}이 비추는 ${situationalTuathaAudit.battlefieldTheme} 앞에서 내가 끝까지 지켜야 할 소명은 무엇인가요?`;
@@ -310,6 +310,7 @@ export function formatCelticTuathaFourTreasuresPrompt(rep: CelticTuathaFourTreas
   - 다음 영웅적 발걸음: ${rep.tuathaSynthesisMatrix.nextHeroicStep}
 · 모신 다누의 신성 축복: ${rep.danaGoddessBlessing}
 · 현실 돌파 영웅 행동 처방: ${rep.heroicActionPrescription}
+· 성찰 초점: ${rep.reflectionFocus}
 · 질문 맞춤 성찰 질문: ${rep.reflectiveQuestion}
 · 해석 경계: ${rep.interpretiveBoundary}`;
 }

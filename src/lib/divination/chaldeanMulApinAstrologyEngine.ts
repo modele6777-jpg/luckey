@@ -7,7 +7,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const CHALDEAN_MUL_APIN_ASTROLOGY_ENGINE_VERSION = 'LUCKEY-CHALDEAN-MULAPIN-v2.3.0';
+export const CHALDEAN_MUL_APIN_ASTROLOGY_ENGINE_VERSION = 'LUCKEY-CHALDEAN-MULAPIN-v2.4.0';
 
 export type CelestialPath =
   | '엔릴의 길(Way of Enlil - 북천/절대원칙과 법도)'
@@ -247,7 +247,7 @@ export function calculateChaldeanMulApinAstrology(options?: {
     `원초 별자리 [${cMeta.name}]의 수호를 받아, 잔재주보다는 원칙을 지키고 약속된 질서를 확고히 이행할 때 하늘이 길을 열어줍니다.`;
 
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
-  const calculatedAtKst = `${kst.toISOString().slice(0, 19)}+09:00`;
+  const calculatedAtKst = `${kst.toISOString().slice(0, 19)}+09:00 (KST)`;
   const reflectiveQuestion = question
     ? `질문 "${question}"을 비추는 [${rulingPlanet.nameKo}]과 ${cMeta.name}의 천상로 앞에서, 지금 내가 타협 없이 지켜야 할 원칙은 무엇인가요?`
     : `[${rulingPlanet.nameKo}]과 ${cMeta.name}의 궤도 아래, 지금 내가 지키고자 하는 중심 질서는 무엇인가요?`;
@@ -288,6 +288,7 @@ export function formatChaldeanMulApinAstrologyPrompt(rep: ChaldeanMulApinAstrolo
   - 다음 행동: ${rep.mulApinSynthesisMatrix.nextAstronomicalStep}
 · 칼데아 지성 불꽃(Noetic Fire): ${rep.noeticFireGuidance}
 · 천문학적 행동 처방: ${rep.astronomicalActionAdvice}
+· 성찰 초점: ${rep.reflectionFocus}
 · 질문 맞춤 성찰 질문: ${rep.reflectiveQuestion}
 · 해석 경계: ${rep.interpretiveBoundary}`;
 }
