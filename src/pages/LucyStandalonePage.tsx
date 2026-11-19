@@ -694,6 +694,21 @@ const detectPageChannels = (text: string, options: { allowMaster?: boolean } = {
 /** The first Lucy mount in this page load uses the initial aura loader instead of the entry screen. */
 let lucyMountedBefore = false;
 
+/** Lucy Master answers take longer; show the elapsed time so the wait never looks frozen. */
+function LucyThinkingElapsed({ isLight }: { isLight: boolean }) {
+  const [seconds, setSeconds] = useState(0);
+  useEffect(() => {
+    const startedAt = Date.now();
+    const timer = window.setInterval(() => setSeconds(Math.floor((Date.now() - startedAt) / 1000)), 1000);
+    return () => window.clearInterval(timer);
+  }, []);
+  return (
+    <span data-lucy-thinking-elapsed className={`text-[11px] font-semibold tabular-nums ml-1 ${isLight ? 'text-emerald-800/80' : 'text-white/70'}`}>
+      {seconds}초 · 보통 1분 안팎
+    </span>
+  );
+}
+
 function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
   // Lucy and Lucy+ share one required basic-tool + deep-perspective answer policy.
   // 🌟 실제 펼친 듀얼스크린 감지:
@@ -4185,6 +4200,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
               >
                 기본 도구와 심층 관점을 함께 살펴보고 있어요...
               </span>
+              {isMasterMode && <LucyThinkingElapsed isLight={isLight} />}
             </div>
           )}
           

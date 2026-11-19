@@ -1996,7 +1996,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     let lastActivityTime = Date.now();
     const generationStartTime = Date.now();
     const isMobileChat = isMobileDevice();
-    const activityIdleTimeoutMs = (options?.isLucyPlus || options?.mode === 'master') ? 300000 : isMobileChat ? 180000 : 60000;
+    // Master turns: a draft plus a review usually take 40–90s; never leave the loader up for many minutes.
+    const activityIdleTimeoutMs = options?.mode === 'master' ? 150000 : options?.isLucyPlus ? 300000 : isMobileChat ? 180000 : 60000;
     let watchdogTimer: NodeJS.Timeout | null = null;
     let isWatchdogTimeout = false;
     let isReviewingReply = false;
@@ -2008,7 +2009,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       watchdogTimer = setTimeout(() => {
         const now = Date.now();
         const isIdleTooLong = now - lastActivityTime >= phaseIdleTimeout;
-        const isMaxDurationReached = now - generationStartTime >= ((options?.isLucyPlus || options?.mode === 'master') ? 300000 : isMobileChat ? 180000 : 120000) + (isReviewingReply ? 120000 : 0);
+        const isMaxDurationReached = now - generationStartTime >= (options?.mode === 'master' ? 150000 : options?.isLucyPlus ? 300000 : isMobileChat ? 180000 : 120000) + (isReviewingReply ? (options?.mode === 'master' ? 75000 : 120000) : 0);
 
         if (isGeneratingRef.current[sourcePersona] && (isIdleTooLong || isMaxDurationReached)) {
           console.warn(`[AppContext] Activity watchdog auto-released (${isIdleTooLong ? 'idle' : 'max cap'}) for ${sourcePersona}`);
@@ -2399,7 +2400,7 @@ ${responseProfile.rule}`;
           request: messages => invokeLLM({ messages, preferServer: true, reviewMode: isMasterCall ? 'master' : 'general',
             model: isMasterCall ? LUCY_MASTER_MODEL : LUCY_REVIEW_MODEL,
             fallbackModels: isMasterCall ? LUCY_MASTER_FALLBACK_MODELS : LUCY_REVIEW_FALLBACK_MODELS,
-            maxOutputTokens: isMasterCall ? 8192 : 4096, timeoutMs: 120000, signal: currentAbortController.signal }),
+            maxOutputTokens: isMasterCall ? 8192 : 4096, timeoutMs: isMasterCall ? 75000 : 120000, signal: currentAbortController.signal }),
         });
         return verifyLucyTarotReply(cleanChatDisplayText(reviewed), tarotDraw, effectiveUserText);
       } finally { isReviewingReply = false; }
@@ -2409,11 +2410,12 @@ ${responseProfile.rule}`;
       await invokeLLMStream({
         messages: conversationForAPI,
         signal: currentAbortController.signal,
-        timeoutMs: isMasterCall ? 300000 : isMobileChat ? 180000 : 120000,
+        timeoutMs: isMasterCall ? 150000 : isMobileChat ? 180000 : 120000,
         model: isMasterCall ? LUCY_MASTER_MODEL : LUCY_CHAT_MODEL,
         fallbackModels: isMasterCall ? LUCY_MASTER_FALLBACK_MODELS : undefined,
         maxOutputTokens: isMasterCall ? 8192 : responseProfile.maxOutputTokens,
-        thinkingLevel: isMasterCall ? 'HIGH' : responseProfile.thinkingLevel,
+        // MEDIUM keeps the reasoning tier but answers ~15s sooner than HIGH on the master prompt.
+        thinkingLevel: isMasterCall ? 'MEDIUM' : responseProfile.thinkingLevel,
         preferBuffered: false,
         onChunk: () => {
           resetWatchdog();
@@ -2575,7 +2577,7 @@ ${responseProfile.rule}`;
         ];
         const recoveredRaw = await invokeLLM({
           messages: compactMessages,
-          timeoutMs: isMasterCall ? 180000 : 30000,
+          timeoutMs: isMasterCall ? 90000 : 30000,
           model: isMasterCall ? LUCY_MASTER_MODEL : LUCY_CHAT_MODEL,
           fallbackModels: isMasterCall ? LUCY_MASTER_FALLBACK_MODELS : undefined,
           signal: currentAbortController.signal,
