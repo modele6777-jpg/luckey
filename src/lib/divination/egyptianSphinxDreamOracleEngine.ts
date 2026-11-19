@@ -8,7 +8,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const EGYPTIAN_SPHINX_DREAM_ORACLE_ENGINE_VERSION = 'LUCKEY-EGYPTIAN-SPHINX-v2.4.0';
+export const EGYPTIAN_SPHINX_DREAM_ORACLE_ENGINE_VERSION = 'LUCKEY-EGYPTIAN-SPHINX-v2.5.0';
 
 export interface SphinxVirtue {
   nameKo: string;
@@ -250,7 +250,7 @@ export function calculateEgyptianSphinxDreamOracle(options?: {
     `어둠과 나태를 떨치고 오늘 가장 먼저 매듭지어야 할 핵심 과업을 향해 한 치의 망설임 없이 전진하십시오.`;
 
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
-  const calculatedAtKst = kst.toISOString().replace('T', ' ').substring(0, 19) + ' +09:00 KST';
+  const calculatedAtKst = `${kst.toISOString().slice(0, 19)}+09:00 (KST)`;
   const ritualAction = `${situationalSphinxAudit.dreamStelePrescription} · ${sphinxSynthesisMatrix.sovereignStep}`;
   const reflectionFocus = question
     ? `‘${question}’ 앞에서 내 본질을 덮고 있던 모래(${situationalSphinxAudit.sandObstacleType})를 걷어내고 세울 [${dominantVirtue}]의 왕권은 무엇입니까?`
@@ -294,6 +294,8 @@ export function formatEgyptianSphinxDreamOraclePrompt(rep: EgyptianSphinxDreamOr
 · 꿈의 비석 신성 약조: ${rep.thutmosePromise}
 · 스핑크스 수수께끼 해법: ${rep.sphinxRiddleInsight}
 · 레-호라크티 여명 행동 명령: ${rep.reHorakhtyDawnCommand}
+· 일상 의례: ${rep.ritualAction}
+· 성찰 초점: ${rep.reflectionFocus}
 · 질문 맞춤 성찰 질문: ${rep.reflectiveQuestion}
 · 해석 경계: 투트모세 4세 꿈의 비석과 스핑크스 4대 테트라모르프 상징을 빌린 정성적 조망 참고 관점이며, 개인 점수나 확정 예언이 아닙니다.`;
 }
