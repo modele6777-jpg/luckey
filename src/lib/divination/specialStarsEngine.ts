@@ -24,7 +24,7 @@ import {
   type SajuAnalysisResult,
 } from '../sajuAnalysis';
 
-export const SPECIAL_STARS_VERSION = 'LUCKEY-SSME-v2.1.0';
+export const SPECIAL_STARS_VERSION = 'LUCKEY-SSME-v2.2.0';
 
 function formatSpecialStarsKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -90,6 +90,8 @@ export interface SpecialStarsResult {
     alignmentState: string;
     integratedAction: string;
   };
+  ritualAction: string;
+  reflectionFocus: string;
   reflectiveQuestion?: string;
   interpretiveBoundary: string;
 }
@@ -486,6 +488,12 @@ export function calculateSpecialStarsMatrix(options?: {
   };
 
   const interpretiveBoundary = '본 15대 신살 위치별 슈퍼파워 리포트는 고전 명리 신살의 현대적 강점 은유에 기반한 자기 이해 안내이며, 길흉을 단정짓지 않습니다.';
+  const ritualAction = leadStar
+    ? `[${leadStar.starName} · ${leadStar.pillar}] ${leadStar.actionableAdvice}`
+    : '[균형 명식] 일상의 꾸준한 루틴과 강점 기록으로 잠재 역량을 안정적으로 발현하세요.';
+  const reflectionFocus = leadStar
+    ? `15대 신살(${leadStar.starName}) — ${leadStar.title}`
+    : `15대 신살(${saju.dayMaster.korean}) — 균형 명식 역량 발현`;
 
   return {
     engineVersion: SPECIAL_STARS_VERSION,
@@ -505,6 +513,8 @@ export function calculateSpecialStarsMatrix(options?: {
     topSuperpowers,
     overallSynthesis,
     specialStarsSynthesisMatrix,
+    ritualAction,
+    reflectionFocus,
     reflectiveQuestion: q
       ? `‘${q}’ 앞에서 ${leadStar ? `${leadStar.starName}(${leadStar.pillar})의 강점인 ‘${leadStar.title}’` : '안정적인 명식의 균형'}을 어떤 실행 무대로 연결하시겠습니까?`
       : `감지된 ${detectedStars.length}개 신살 중 ${leadStar ? `${leadStar.starName}(${leadStar.pillar})` : '고유한 균형 감각'}을 오늘의 일과 관계에서 가장 건강하게 발현할 한 걸음은 무엇입니까?`,
@@ -528,7 +538,7 @@ export function formatSpecialStarsPrompt(res: SpecialStarsResult): string {
   ).join('\n');
 
   const matrixLine = res.specialStarsSynthesisMatrix
-    ? `\n4. [신살 교차 매트릭스]:\n   - 핵심 긴장: ${res.specialStarsSynthesisMatrix.dominantTension}\n   - 조율 상태: ${res.specialStarsSynthesisMatrix.alignmentState}\n   - 통합 실천: ${res.specialStarsSynthesisMatrix.integratedAction}${res.reflectiveQuestion ? `\n   - 성찰 질문: ${res.reflectiveQuestion}` : ''}\n   - 해석 경계: ${res.interpretiveBoundary}\n`
+    ? `\n4. [신살 교차 매트릭스]:\n   - 실천 의례: ${res.ritualAction}\n   - 성찰 초점: ${res.reflectionFocus}\n   - 핵심 긴장: ${res.specialStarsSynthesisMatrix.dominantTension}\n   - 조율 상태: ${res.specialStarsSynthesisMatrix.alignmentState}\n   - 통합 실천: ${res.specialStarsSynthesisMatrix.integratedAction}${res.reflectiveQuestion ? `\n   - 성찰 질문: ${res.reflectiveQuestion}` : ''}\n   - 해석 경계: ${res.interpretiveBoundary}\n`
     : `\n4. [해석 경계]: ${res.interpretiveBoundary}\n`;
 
   return `[⭐ 15대 신살 위치별 슈퍼파워 치환 실측 데이터 (Special Stars Matrix Core)]
