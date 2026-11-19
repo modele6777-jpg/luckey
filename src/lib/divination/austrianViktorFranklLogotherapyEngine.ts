@@ -6,12 +6,12 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const AUSTRIAN_VIKTOR_FRANKL_VERSION = 'LUCKEY-VIKTOR-FRANKL-LOGOTHERAPY-v2.4.0';
+export const AUSTRIAN_VIKTOR_FRANKL_VERSION = 'LUCKEY-VIKTOR-FRANKL-LOGOTHERAPY-v2.5.0';
 
 function getFranklKstString(now?: Date): string {
   const base = now ?? new Date();
   const kst = new Date(base.getTime() + 9 * 3600 * 1000);
-  return `${kst.toISOString().slice(0, 19)}+09:00`;
+  return `${kst.toISOString().slice(0, 19)}+09:00 (KST)`;
 }
 
 export type FranklQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
@@ -400,6 +400,7 @@ export function formatViktorFranklLogotherapyPrompt(res: ViktorFranklLogotherapy
     `- KST 의미 리듬: ${res.temporalMeaningRhythm.kstWindow} (${res.temporalMeaningRhythm.seasonalTone} · ${res.temporalMeaningRhythm.valuePathFocus}) — ${res.temporalMeaningRhythm.rhythmDirective}`,
     `- 로고테라피 매트릭스: 최후의 자유 태도 선택 · 의미를 향한 의지 정렬 · 자기초월 헌신 정성 균형`,
     `- 일상 실천 의례: ${res.ritualAction}`,
+    `- 성찰 초점: ${res.reflectionFocus}`,
     `- 핵심 성찰 질문: ${res.reflectiveQuestion}`,
     `- 종합 의미치료 권면: ${res.franklComprehensiveGuidance.philosophicalCounsel}`,
     `- 해석 경계: ${res.boundaryNotice}`,

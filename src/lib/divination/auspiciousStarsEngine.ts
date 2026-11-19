@@ -39,7 +39,7 @@ import type { UserProfile } from '../sharedState';
 import { calculateDetailedSaju, BRANCH_KOREAN, type SajuAnalysisResult } from '../sajuAnalysis';
 import { getAstronomicalSajuYear } from '../astronomicalSolarTerms';
 
-export const AUSPICIOUS_STARS_ENGINE_VERSION = 'LUCKEY-AS-v2.2.0';
+export const AUSPICIOUS_STARS_ENGINE_VERSION = 'LUCKEY-AS-v2.3.0';
 
 export const AUSPICIOUS_STARS_METHOD =
   '천을(갑무경축미·을기자신·병정해유·임계사묘·신인오, 일간+년간 4주 대조, 일지/년월시지 분해)·문창(전통 가요)·학당(장생지)·문곡(상관 록지)·천덕·월덕(월지 기준) 6대 길신 매트릭스, 일지 순 공망과 충형 간섭 길력 보정, 세운·대운 지지 귀인 도래 타임라인 및 상호 귀인 인연 매칭 결정론 산출';
@@ -619,7 +619,7 @@ export function calculateAuspiciousStars(params: {
 }): AuspiciousStarsResult {
   const now = params.now ?? new Date();
   const nowUtcIso = now.toISOString();
-  const nowKstIso = new Date(now.getTime() + 9 * 3600000).toISOString().replace('Z', '+09:00');
+  const nowKstIso = `${new Date(now.getTime() + 9 * 3600000).toISOString().slice(0, 19)}+09:00 (KST)`;
   const targetYear = params.targetYear ?? now.getFullYear();
 
   const base: AuspiciousStarsResult = {
@@ -844,7 +844,7 @@ ${resonanceTxt}
 ${res.actionGuide.map((a, i) => `   ${i + 1}. ${a}`).join('\n')}${auditTxt}${temporalTxt}${matrixSynthTxt}
 
 종합: ${res.summary}
-${res.reflectiveQuestion ? `성찰 질문: ${res.reflectiveQuestion}\n` : ''}해석 경계: ${res.interpretiveBoundary}
+${res.reflectionFocus ? `성찰 초점: ${res.reflectionFocus}\n` : ''}${res.reflectiveQuestion ? `성찰 질문: ${res.reflectiveQuestion}\n` : ''}해석 경계: ${res.interpretiveBoundary}
 ======================================================================
 [★ 루시 길신 상담 지침]:
 - 위 결과는 전통 명리 규칙을 적용한 결정론 계산 참고 자료이며, 현대 실측이나 검증된 예측 확률을 뜻하지 않습니다. 길신의 위치(일지 천을 = 내 몸과 배우자궁, 년/월/시지 천을 = 사회·직업·말년)는 제공된 계산 결과에 맞춰 설명하세요.
