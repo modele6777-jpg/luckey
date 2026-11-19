@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { safeSessionStorage } from '@/utils/safeStorage';
 import type { DetectedTarotCard } from '@/utils/tarotDetector';
+import { getTarotCardImageUrl, type TarotCard } from '@/data/tarotData';
 import type { UnifiedMessage } from '@/lib/chatHistorySync';
 
 /**
@@ -259,4 +260,29 @@ export function createTarotHouseConcernQuestion(linked: boolean): UnifiedMessage
     mode: 'master',
     content: `${lead}\n${CONCERN_QUESTION}\n${CONCERN_CHOICES}`,
   };
+}
+
+/* ───────────── 🃏 루시 마스터 타로: 손님이 직접 섞고 고르기 ───────────── */
+export const LUCY_TAROT_PICK_REQUEST_EVENT = 'prism:lucy_tarot_pick_request';
+export const LUCY_TAROT_PICKED_EVENT = 'prism:lucy_tarot_picked';
+export const LUCY_TAROT_PICK_CANCEL_EVENT = 'prism:lucy_tarot_pick_cancel';
+
+export interface TarotPickRequest { count: number; concern?: string }
+
+export function tarotPickPositions(count: number): string[] {
+  return count >= 3 ? ['과거', '현재', '미래'] : ['지금 나에게 온 메시지'];
+}
+
+/** 스프레드에서 고른 카드를 루시 채팅이 쓰는 카드 형식으로 바꾼다. */
+export function toDetectedTarotCards(cards: readonly (TarotCard & { reversed?: boolean })[]): DetectedTarotCard[] {
+  return cards.map(card => {
+    const reversed = Boolean(card.reversed);
+    return {
+      ...card,
+      reversed,
+      orientationKo: reversed ? '역방향' : '정방향',
+      imageUrl: getTarotCardImageUrl(card),
+      displayTitle: `${card.nameKo} (${card.name})`,
+    };
+  });
 }

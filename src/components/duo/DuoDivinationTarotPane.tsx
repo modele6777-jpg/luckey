@@ -1,18 +1,29 @@
 import React, { useEffect, useState } from 'react';
 import { DuoTarotBookSpread } from './DuoTarotBookSpread';
+import { TarotSpread } from '@/components/trinity/TarotSpread';
 import type { DetectedTarotCard } from '@/utils/tarotDetector';
-import { LUCY_TAROT_DRAWN_EVENT, LUCY_MASTER_MODE_EVENT } from '@/lib/lucyMasterMode';
+import {
+  LUCY_TAROT_DRAWN_EVENT,
+  LUCY_MASTER_MODE_EVENT,
+  LUCY_TAROT_PICK_REQUEST_EVENT,
+  LUCY_TAROT_PICKED_EVENT,
+  LUCY_TAROT_PICK_CANCEL_EVENT,
+  tarotPickPositions,
+  toDetectedTarotCards,
+  type TarotPickRequest,
+} from '@/lib/lucyMasterMode';
 import { requestLucyAction } from '@/lib/duoLucyActionRouting';
 import { triggerHaptic } from '@/lib/omniWarp/omniWarpHaptics';
 
 /**
  * 🔮 펼친 화면 점술모드의 왼쪽 타로 테이블.
- * 루시 채팅에서 실제로 뽑힌 카드를 받아 바로 펼치고, 손님이 한 장씩 뒤집어 본다.
- * 카드가 없을 때의 빠른 뽑기 버튼은 오른쪽 루시에게 그대로 말을 건다.
+ * 루시가 카드를 뽑자고 하면 이곳에 78장 스프레드가 열리고, 손님이 직접 섞고(셔플) 골라서 루시에게 건넨다.
+ * 고른 카드는 그대로 테이블에 펼쳐져 한 장씩 뒤집어 볼 수 있다.
  */
 export function DuoDivinationTarotPane({ isLight = false }: { isLight?: boolean }) {
   const [cards, setCards] = useState<DetectedTarotCard[]>([]);
   const [revealed, setRevealed] = useState<string[]>([]);
+  const [pick, setPick] = useState<TarotPickRequest | null>(null);
 
   useEffect(() => {
     const handleDrawn = (e: Event) => {
@@ -22,12 +33,18 @@ export function DuoDivinationTarotPane({ isLight = false }: { isLight?: boolean 
       setRevealed([]);
       triggerHaptic('whitehole');
     };
+    const handlePickRequest = (e: Event) => {
+      const detail = (e as CustomEvent)?.detail as TarotPickRequest | undefined;
+      if (detail?.count) setPick(detail);
+    };
     // 루시 마스터를 나갔다 들어오면 테이블도 비운다
-    const handleMode = () => { setCards([]); setRevealed([]); };
+    const handleMode = () => { setCards([]); setRevealed([]); setPick(null); };
     window.addEventListener(LUCY_TAROT_DRAWN_EVENT, handleDrawn);
+    window.addEventListener(LUCY_TAROT_PICK_REQUEST_EVENT, handlePickRequest);
     window.addEventListener(LUCY_MASTER_MODE_EVENT, handleMode);
     return () => {
       window.removeEventListener(LUCY_TAROT_DRAWN_EVENT, handleDrawn);
+      window.removeEventListener(LUCY_TAROT_PICK_REQUEST_EVENT, handlePickRequest);
       window.removeEventListener(LUCY_MASTER_MODE_EVENT, handleMode);
     };
   }, []);
@@ -42,6 +59,24 @@ export function DuoDivinationTarotPane({ isLight = false }: { isLight?: boolean 
         onQuickDraw={(prompt) => requestLucyAction({ prompt })}
         isLight={isLight}
       />
+      {pick && (
+        <TarotSpread
+          maxCards={pick.count}
+          positions={tarotPickPositions(pick.count)}
+          concern={pick.concern || ''}
+          spreadName="루시의 타로 테이블"
+          spreadReason="카드를 섞고, 마음이 가는 카드를 직접 골라줘"
+          allowReversed
+          onCancel={() => {
+            setPick(null);
+            window.dispatchEvent(new CustomEvent(LUCY_TAROT_PICK_CANCEL_EVENT));
+          }}
+          onComplete={(picked) => {
+            setPick(null);
+            window.dispatchEvent(new CustomEvent(LUCY_TAROT_PICKED_EVENT, { detail: { cards: toDetectedTarotCards(picked) } }));
+          }}
+        />
+      )}
     </div>
   );
 }

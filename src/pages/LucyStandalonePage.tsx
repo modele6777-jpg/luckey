@@ -32,7 +32,7 @@ import { LucyMasterBgmToggle } from '@/components/chat/LucyMasterBgmToggle';
 import { isLucyMasterBgmPreferred, startLucyMasterBgm, stopLucyMasterBgm } from '@/lib/lucyMasterBgm';
 import remarkGfm from 'remark-gfm';
 import { safeSessionStorage, safeLocalStorage } from '@/utils/safeStorage';
-import { isLucyMasterModeOn, setLucyMasterMode, LUCY_MASTER_MODE_EVENT, publishLucyTarotDraw, isAcceptingTarotDrawOffer, buildTarotHouseGuide, createTarotHouseGreeting, consumeTarotHouseGreetingPending, parseAnswerChoices, isAskingForDeepEngines, createTarotOfferOnUnfold, setLucyMasterLink, getLucyMasterLink, resolveLucyMasterLinkChoice, buildLinkedLucyContext, isTarotHouseGreetingPending, findConcernAnchor, createTarotHouseConcernQuestion } from '@/lib/lucyMasterMode';
+import { isLucyMasterModeOn, setLucyMasterMode, LUCY_MASTER_MODE_EVENT, publishLucyTarotDraw, isAcceptingTarotDrawOffer, buildTarotHouseGuide, createTarotHouseGreeting, consumeTarotHouseGreetingPending, parseAnswerChoices, isAskingForDeepEngines, createTarotOfferOnUnfold, setLucyMasterLink, getLucyMasterLink, resolveLucyMasterLinkChoice, buildLinkedLucyContext, isTarotHouseGreetingPending, findConcernAnchor, createTarotHouseConcernQuestion, LUCY_TAROT_PICK_REQUEST_EVENT, LUCY_TAROT_PICKED_EVENT, LUCY_TAROT_PICK_CANCEL_EVENT, tarotPickPositions, toDetectedTarotCards } from '@/lib/lucyMasterMode';
 import { cleanAssistantMessageDisplay, cleanUserMessageDisplay } from '@/utils/cleanMessage';
 import { detectLucyChannelsFromText, formatChannelsModeTitle, getSeptagramBadgeStyle, shouldShowAutoDetectionBadge } from '@/lib/lucyAutoModeDetector';
 import { selectOptimalDivinationTools, THEME_PRIMARY_DIVINATION_TOOLS, type SelectedDivinationToolsResult } from '@/lib/fifteenDivinationTools';
@@ -62,7 +62,8 @@ import {
   restoreLatestConversation,
 } from '@/lib/chatHistorySync';
 import { processDailyChatArchival } from '@/lib/chatMemoryArchive';
-import { drawLucyTarotCards, formatTarotMarker } from '@/utils/tarotDetector';
+import { drawLucyTarotCards, formatTarotMarker, type DetectedTarotCard } from '@/utils/tarotDetector';
+import { TarotSpread } from '@/components/trinity/TarotSpread';
 import { isLucyScrollPinned, lucyScrollPinHeld, noteLucyScrollPin, overlayCoversElement, releaseLucyScrollPin } from '@/lib/lucyScrollPin';
 import { captureLucySearchAnchor, resolveLucySearchOpenGuardedTop, resolveLucySearchRestoreTop, type LucySearchScrollAnchor } from '@/lib/lucySearchScroll';
 import { isDualPaneLayout, isDuoUnfoldedState } from '@/lib/perfMode';
@@ -1646,7 +1647,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
   }, [stopRecognition]);
 
   // handleSend forward ref
-  const handleSendRef = useRef<(textToSend?: string, forcedChannels?: SpecialChannel[]) => Promise<void>>(async () => {});
+  const handleSendRef = useRef<(textToSend?: string, forcedChannels?: SpecialChannel[], pickedTarotCards?: DetectedTarotCard[]) => Promise<void>>(async () => {});
 
   // 🎙️ 음성 인식 시작 (STT)
   const startListening = useCallback(() => {
@@ -3119,7 +3120,41 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
   };
 
   // Send message with multi-channel context routing (루시가 답변 준비 중일 때도 추가 연속 입력 허용 및 통합 맥락 반영)
-  const handleSend = useCallback(async (textToSend?: string, forcedChannels?: SpecialChannel[]) => {
+  // 🃏 루시 마스터 타로: 손님이 직접 섞고 고를 때까지 보낼 말을 잠시 맡아둔다.
+  // 펼친 화면이면 왼쪽 타로 테이블에서, 접힌 화면이면 채팅 위에 스프레드를 띄운다.
+  const [pendingTarotPick, setPendingTarotPick] = useState<{ text: string; count: number; concern: string; inChat: boolean } | null>(null);
+  const pendingTarotPickRef = useRef(pendingTarotPick);
+  pendingTarotPickRef.current = pendingTarotPick;
+  const requestMasterTarotPick = useCallback((req: { text: string; count: number; concern: string }) => {
+    const leftTable = isDuoUnfoldedState().unfolded && Boolean(document.querySelector('[data-duo-divination-tarot="true"]'));
+    setPendingTarotPick({ ...req, inChat: !leftTable });
+    triggerHaptic('whitehole');
+    if (leftTable) {
+      window.dispatchEvent(new CustomEvent(LUCY_TAROT_PICK_REQUEST_EVENT, { detail: { count: req.count, concern: req.concern } }));
+    }
+  }, []);
+  const finishMasterTarotPick = useCallback((cards: DetectedTarotCard[] | null) => {
+    const pending = pendingTarotPickRef.current;
+    setPendingTarotPick(null);
+    if (!pending) return;
+    if (!cards || cards.length === 0) {
+      setInput(pending.text); // 취소하면 하려던 말을 입력창에 돌려준다
+      return;
+    }
+    void handleSendRef.current?.(pending.text, undefined, cards);
+  }, [setInput]);
+  useEffect(() => {
+    const onPicked = (e: Event) => finishMasterTarotPick(((e as CustomEvent)?.detail?.cards as DetectedTarotCard[]) || null);
+    const onCancel = () => finishMasterTarotPick(null);
+    window.addEventListener(LUCY_TAROT_PICKED_EVENT, onPicked);
+    window.addEventListener(LUCY_TAROT_PICK_CANCEL_EVENT, onCancel);
+    return () => {
+      window.removeEventListener(LUCY_TAROT_PICKED_EVENT, onPicked);
+      window.removeEventListener(LUCY_TAROT_PICK_CANCEL_EVENT, onCancel);
+    };
+  }, [finishMasterTarotPick]);
+
+  const handleSend = useCallback(async (textToSend?: string, forcedChannels?: SpecialChannel[], pickedTarotCards?: DetectedTarotCard[]) => {
     const hasExplicitUserInput = Boolean(textToSend || input.trim() || attachedImage);
     // 💡 사용자가 직접 입력한 텍스트가 없고 첨부 이미지가 없는 경우(생성 중이 아닐 때만), 현재 화면에 표시/타이핑 중인 완성형 예시 질문 채택
     const candidateGhost = (!hasExplicitUserInput && !isLucyGenerating)
@@ -3278,11 +3313,23 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
       }
       return '';
     })();
-    const isTarotIntent = isLucyTarotDrawRequest(combinedContextText)
+    const isTarotIntent = Boolean(pickedTarotCards?.length)
+      || isLucyTarotDrawRequest(combinedContextText)
       || Boolean(divinationLayout && isAcceptingTarotDrawOffer(userCleanText, lastLucyText));
+    const isThreeCardRequest = /3장|세\s*장|쓰리카드|과거\s*현재\s*미래/i.test(combinedContextText);
+    // 🃏 루시 마스터: 카드는 자동으로 뽑지 않고, 손님이 직접 섞고(셔플) 스프레드에서 고르게 한다.
+    if (divinationLayout && isTarotIntent && !pickedTarotCards?.length) {
+      setInput('');
+      requestMasterTarotPick({
+        text: userCleanText,
+        count: isThreeCardRequest ? 3 : 1,
+        concern: findConcernAnchor([...lucyMessages, { role: 'user', content: userCleanText }]),
+      });
+      return;
+    }
     const wantsDeepEngines = Boolean(divinationLayout) && isAskingForDeepEngines(userCleanText, lastLucyText);
     const divinationMode = divinationLayout
-      ? { base: (divinationLayout === 'unfolded' && isTarotIntent ? 'tarot_saju' : 'saju') as 'saju' | 'tarot_saju', deep: wantsDeepEngines }
+      ? { base: (isTarotIntent ? 'tarot_saju' : 'saju') as 'saju' | 'tarot_saju', deep: wantsDeepEngines }
       : undefined;
 
     // 🔮 질문 의도와 활성 테마에 맞춰 도구 지침을 주입하고, 계산 근거와 상징 참고를 구분
@@ -3313,8 +3360,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
     // 🔮 타로 질문 의도 감지 시 실제 운명의 타로 카드를 즉시 드로우하여 루시 프롬프트에 주입 (이미지 비주얼 연동)
     let tarotCardMarkers: string | undefined;
     if (isTarotIntent) {
-      const isThreeCards = /3장|세\s*장|쓰리카드|과거\s*현재\s*미래/i.test(combinedContextText);
-      const drawnCards = drawLucyTarotCards(isThreeCards ? 3 : 1);
+      const drawnCards = pickedTarotCards?.length ? pickedTarotCards : drawLucyTarotCards(isThreeCardRequest ? 3 : 1);
       const cardMarkers = drawnCards.map((c) => formatTarotMarker(c)).join(' ');
       tarotCardMarkers = cardMarkers;
       // 펼친 점술모드: 뽑힌 카드를 왼쪽 타로 테이블에 바로 펼친다.
@@ -3656,6 +3702,18 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
         <div className="absolute right-3 z-30" style={{ top: 'calc(env(safe-area-inset-top, 0px) + 64px)' }}>
           <LucyMasterBgmToggle />
         </div>
+      )}
+      {isMasterMode && pendingTarotPick?.inChat && (
+        <TarotSpread
+          maxCards={pendingTarotPick.count}
+          positions={tarotPickPositions(pendingTarotPick.count)}
+          concern={pendingTarotPick.concern}
+          spreadName="루시의 타로 테이블"
+          spreadReason="카드를 섞고, 마음이 가는 카드를 직접 골라줘"
+          allowReversed
+          onCancel={() => finishMasterTarotPick(null)}
+          onComplete={(cards) => finishMasterTarotPick(toDetectedTarotCards(cards))}
+        />
       )}
       {isMasterEntering && (
         <LucyAuraLoader
