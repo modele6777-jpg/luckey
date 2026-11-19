@@ -14,7 +14,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const SWISS_JUNG_INDIVIDUATION_VERSION = 'LUCKEY-SWISS-JUNG-INDIVIDUATION-v2.2.0';
+export const SWISS_JUNG_INDIVIDUATION_VERSION = 'LUCKEY-SWISS-JUNG-INDIVIDUATION-v2.3.0';
 
 export interface JungArchetypeTheme {
   themeKey: string;
@@ -53,6 +53,8 @@ export interface JungIndividuationArchetypeResult {
     alignmentState: string;
     integratedAction: string;
   };
+  ritualAction: string;
+  reflectionFocus: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
@@ -191,6 +193,8 @@ export function calculateJungIndividuationArchetype(
   };
 
   const interpretiveBoundary = '본 카를 융 개성화·원형 통합 리포트는 분석심리학 원전과 수리 시드에 기반한 자기 성찰 안내이며, 임상 심리 진단이나 치료를 대신하지 않습니다.';
+  const ritualAction = `[${activeJungTheme.themeTitleKo}] ${focalJungAphorism.practicalAction}`;
+  const reflectionFocus = `카를 융 개성화(${activeJungTheme.themeTitleKo}) — ${focalJungAphorism.archetypeDimension}`;
   const reflectiveQuestion = q
     ? `'${q}' 앞에서 내가 페르소나의 가면 뒤에 감추고 있던 그림자(Shadow)의 진실은 무엇이며, 온전한 자기(Self)라면 지금 어떤 선택을 할까요?`
     : `지금 내 안에서 완벽해지려는 압박을 내려놓고 온전한 전체성(Wholeness)으로 끌어안아야 할 내면의 그림자는 무엇인가요?`;
@@ -210,6 +214,8 @@ export function calculateJungIndividuationArchetype(
       philosophicalGuidance,
     },
     jungSynthesisMatrix,
+    ritualAction,
+    reflectionFocus,
     reflectiveQuestion,
     interpretiveBoundary,
   };
@@ -232,6 +238,8 @@ export function formatJungIndividuationArchetypePrompt(res: JungIndividuationArc
       `  · 통합 실천: ${res.jungSynthesisMatrix.integratedAction}`,
     );
   }
+  lines.push(`- 실천 의례: ${res.ritualAction}`);
+  lines.push(`- 성찰 초점: ${res.reflectionFocus}`);
   lines.push(`- 질문 맞춤 성찰 질문: ${res.reflectiveQuestion}`);
   lines.push(`- 해석 경계: ${res.interpretiveBoundary}`);
   return lines.join('\n');

@@ -653,6 +653,8 @@ test('Taiyi Shenshu: 16-palace calculation, 72 Ju, Jusan/Gaeksan and prompt form
   assert(r1.palaces.length === 16);
   assert(r1.threeGi !== null);
   assert(r1.fiveBlessings !== null);
+  assert(Boolean(r1.ritualAction && r1.ritualAction.length > 0));
+  assert(Boolean(r1.reflectionFocus && r1.reflectionFocus.length > 0));
   assert((r1.interpretiveBoundary ?? '').length > 0);
 
   // Determinism check
@@ -665,6 +667,7 @@ test('Taiyi Shenshu: 16-palace calculation, 72 Ju, Jusan/Gaeksan and prompt form
   assert(prompt.includes('태을신수'));
   assert(prompt.includes('주산'));
   assert(prompt.includes('객산'));
+  assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
   assert(prompt.includes('교차 매트릭스') && prompt.includes('해석 경계'));
   assert(!prompt.includes('/100'));
 
@@ -3061,6 +3064,7 @@ test('Synchronicity Omen Engine: 칼 융 동시성 징조 해독 & 오멘 매트
   const res = calculateSynchronicityOmen({ profile, targetDate: new Date('2026-11-04T10:00:00+09:00'), question: '우주의 징조' });
   assert.equal(res.engineVersion, SYNCHRONICITY_OMEN_VERSION);
   assert(res.calculatedAtKst.endsWith('KST'));
+  assert(res.ritualAction.length > 0 && res.reflectionFocus.length > 0);
   assert(Boolean(res.synchronicitySynthesisMatrix?.integratedAction));
   assert(res.interpretiveBoundary.length > 0);
   assert(res.dominantOmenTheme.length > 0);
@@ -3071,6 +3075,7 @@ test('Synchronicity Omen Engine: 칼 융 동시성 징조 해독 & 오멘 매트
   const prompt = formatSynchronicityOmenPrompt(res);
   assert(prompt.includes('LUCKEY 칼 융 동시성 징조 해독 & 오멘 매트릭스'));
   assert(prompt.includes(res.dominantOmenTheme));
+  assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
   assert(prompt.includes('교차 매트릭스') && prompt.includes('해석 경계'));
   assert(!prompt.includes('/100'));
 });
@@ -6745,6 +6750,7 @@ test('Carl Gustav Jung Individuation Archetype Engine: calculates Self realizati
   const rep = calculateJungIndividuationArchetype(profile);
   assert.equal(rep.engineVersion, SWISS_JUNG_INDIVIDUATION_VERSION);
   assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(Boolean(rep.jungSynthesisMatrix?.integratedAction));
   assert(rep.interpretiveBoundary.length > 0);
   assert(rep.individuationSelfRealizationScore >= 0 && rep.individuationSelfRealizationScore <= 100);
@@ -6756,6 +6762,7 @@ test('Carl Gustav Jung Individuation Archetype Engine: calculates Self realizati
   const prompt = formatJungIndividuationArchetypePrompt(rep);
   assert(prompt.includes('카를 융 개성화(Individuation) & 원형 통합 지표'));
   assert(prompt.includes(rep.activeJungTheme.themeTitleKo));
+  assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
   assert(prompt.includes('교차 매트릭스') && prompt.includes('해석 경계'));
   assert(!prompt.includes('/100'));
 });

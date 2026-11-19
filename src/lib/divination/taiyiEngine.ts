@@ -39,7 +39,7 @@ import type { UserProfile } from '../sharedState';
 import { resolveEffectiveSolarDate } from '../lunarCalendar';
 import { parseBirthTime } from '../birthDateTime';
 
-export const TAIYI_ENGINE_VERSION = 'LUCKEY-TY-v2.2.0';
+export const TAIYI_ENGINE_VERSION = 'LUCKEY-TY-v2.3.0';
 
 function formatTaiyiKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -126,6 +126,8 @@ export interface TaiyiResult {
     alignmentState: string;
     integratedAction: string;
   };
+  ritualAction?: string;
+  reflectionFocus?: string;
   reflectiveQuestion?: string;
   interpretiveBoundary?: string;
   note?: string;
@@ -374,6 +376,8 @@ export function calculateTaiyi(params: {
     : `태을 제${juNumber}국(${PALACES_16[taiyiPalace - 1].name}궁)과 ${macroStrategicMatrix.macroPhase} 국면에서 내가 선제할 일과 기다릴 일의 경계는 어디인가요?`;
 
   const interpretiveBoundary = '본 태을신수 16궁 연국 리포트는 정통 적년 수리와 주객 산법에 기반한 거시 흐름 참고 지표이며, 확정적 승패 예언이나 투자·법률 자문이 아닙니다.';
+  const ritualAction = `[${cycleName} 제${juNumber}국 · 태을 ${PALACES_16[taiyiPalace - 1].name}궁] ${macroStrategicMatrix.tacticalWindowAdvice}`;
+  const reflectionFocus = `태을신수 16궁(제${juNumber}국 · ${outcome.split('(')[0].trim()}) — ${macroStrategicMatrix.macroPhase}`;
 
   return {
     status: 'calculated',
@@ -409,6 +413,8 @@ export function calculateTaiyi(params: {
     macroActionStrategy,
     macroStrategicMatrix,
     taiyiSynthesisMatrix,
+    ritualAction,
+    reflectionFocus,
     reflectiveQuestion,
     interpretiveBoundary,
   };
@@ -511,7 +517,7 @@ export function formatTaiyiPrompt(result: TaiyiResult): string {
   * 결단 실행 윈도우: ${result.macroStrategicMatrix.tacticalWindowAdvice}` : ''}${result.taiyiSynthesisMatrix ? `\n- 교차 매트릭스:
   * 핵심 긴장: ${result.taiyiSynthesisMatrix.dominantTension}
   * 조율 상태: ${result.taiyiSynthesisMatrix.alignmentState}
-  * 통합 실천: ${result.taiyiSynthesisMatrix.integratedAction}` : ''}${result.reflectiveQuestion ? `\n- 질문 맞춤 성찰 질문: ${result.reflectiveQuestion}` : ''}${result.interpretiveBoundary ? `\n- 해석 경계: ${result.interpretiveBoundary}` : ''}
+  * 통합 실천: ${result.taiyiSynthesisMatrix.integratedAction}` : ''}${result.ritualAction ? `\n- 실천 의례: ${result.ritualAction}` : ''}${result.reflectionFocus ? `\n- 성찰 초점: ${result.reflectionFocus}` : ''}${result.reflectiveQuestion ? `\n- 질문 맞춤 성찰 질문: ${result.reflectiveQuestion}` : ''}${result.interpretiveBoundary ? `\n- 해석 경계: ${result.interpretiveBoundary}` : ''}
 - [AI 해석 절대 지침]: 본 리포트는 100% 전통 역법 수리로 계산된 실측 데이터입니다. 주산/객산 수리 및 승부 판정을 임의 변경하지 말고, 거시적 타이밍과 시대 흐름 조언에 충실히 반영하십시오.
 `.trim();
 }
