@@ -12,16 +12,11 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const ARISTOTLE_MESOTES_VERSION = 'LUCKEY-ARISTOTLE-MESOTES-EUDAIMONIA-v2.3.0';
+export const ARISTOTLE_MESOTES_VERSION = 'LUCKEY-ARISTOTLE-MESOTES-EUDAIMONIA-v2.4.0';
 
 function formatAristotleKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
-  const y = kst.getUTCFullYear();
-  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
-  const d = String(kst.getUTCDate()).padStart(2, '0');
-  const hh = String(kst.getUTCHours()).padStart(2, '0');
-  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${kst.toISOString().slice(0, 19)}+09:00 (KST)`;
 }
 
 export interface AristotleVirtueStage {
@@ -386,6 +381,7 @@ export function formatAristotleMesotesPrompt(res: AristotleMesotesResult): strin
     `- 윤리학 핵심 지침: "${res.primaryMesotesWisdom.themeKo}" [${res.primaryMesotesWisdom.greekClassic}]`,
     `- 철학적 처방: ${res.eudaimoniaPhilosophicalCounsel.philosophicalGuidance}`,
     `- 오늘의 실천 의례: ${res.dailyPracticeRitual}`,
+    `- 성찰 초점: ${res.reflectionFocus}`,
     `- 핵심 성찰 질문: ${res.reflectiveQuestion}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
     matrixLine,

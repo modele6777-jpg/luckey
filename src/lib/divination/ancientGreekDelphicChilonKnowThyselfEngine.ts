@@ -18,7 +18,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const DELPHIC_CHILON_VERSION = 'LUCKEY-DELPHIC-CHILON-v2.3.0';
+export const DELPHIC_CHILON_VERSION = 'LUCKEY-DELPHIC-CHILON-v2.4.0';
 
 export interface DelphicSageStage {
   stageLevel: number;
@@ -196,7 +196,7 @@ function buildSynthesisMatrix(
 
 function getKstDateString(now: Date): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
-  return kst.toISOString().replace('T', ' ').substring(0, 19) + ' +09:00 KST';
+  return kst.toISOString().slice(0, 19) + '+09:00 (KST)';
 }
 
 function hashSeed(seedStr: string): number {
@@ -284,6 +284,7 @@ export function formatDelphicChilonPrompt(result: DelphicChilonResult): string {
 - 델포이 신전의 불멸의 신탁: 《${result.delphiTempleEpiphany.sanctuarySceneTitle}》
   → 철학적 불멸 지혜: "${result.delphiTempleEpiphany.philosophicWisdom}"
 - 오늘의 작은 의례: ${result.ritualAction}
+- 성찰 초점: ${result.reflectionFocus}
 - 성찰 질문: ${result.reflectiveQuestion}
 - 해석 경계: ${result.interpretiveBoundary}`;
 }
