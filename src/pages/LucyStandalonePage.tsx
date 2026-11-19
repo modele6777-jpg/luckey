@@ -68,7 +68,7 @@ import { TarotSpread } from '@/components/trinity/TarotSpread';
 import { isLucyScrollPinned, lucyScrollPinHeld, noteLucyScrollPin, overlayCoversElement, releaseLucyScrollPin } from '@/lib/lucyScrollPin';
 import { captureLucySearchAnchor, resolveLucySearchOpenGuardedTop, resolveLucySearchRestoreTop, type LucySearchScrollAnchor } from '@/lib/lucySearchScroll';
 import { isDualPaneLayout, isDuoUnfoldedState } from '@/lib/perfMode';
-import { subscribeFoldState } from '@/lib/foldState';
+import { readFoldStateNow, subscribeFoldState } from '@/lib/foldState';
 import { buildLucyTarotReadingPrompt } from '@/lib/lucyTarotReading';
 import { getLucyChatDay as getTodayDateKey } from '@/lib/lucyChatDay';
 import { joinKakaoBubblesForTTS } from '@/lib/lucyChatUtils';
@@ -1593,19 +1593,37 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
   useEffect(() => {
     if (!isMasterMode || !consumeTarotHouseGreetingPending()) return;
     clearLucyProMessages();
-    const hasRegularHistory = (personaMessages?.lucy || []).some(m => m.role === 'user');
-    const greeting = createTarotHouseGreeting(userDisplayName, isDuoUnfoldedState().unfolded ? 'unfolded' : 'folded', hasRegularHistory);
-    setLucyMasterLink(hasRegularHistory ? 'undecided' : 'fresh');
+    // Always offer "이어서 / 새로" on entry: regular Lucy history may still be loading,
+    // or today's thread may be empty after the KST midnight rollover.
+    const greeting = createTarotHouseGreeting(userDisplayName, isDuoUnfoldedState().unfolded ? 'unfolded' : 'folded', true);
+    setLucyMasterLink('undecided');
     setLucyProMessages([greeting]);
   }, [isMasterMode, setLucyProMessages, clearLucyProMessages, userDisplayName]);
 
   // 🔮 점술모드 대화 중 폰을 펼치면: 루시가 타로 상담을 더하자고 제안 (왼쪽엔 타로 테이블)
   useEffect(() => {
     if (!isMasterMode) return;
-    return subscribeFoldState((next, previous) => {
+    // iOS can report a brief unfolded size while the keyboard closes or the viewport
+    // settles on the cover screen. Offer only after a real unfold that is still there
+    // a moment later, with both panes laid out, and never twice in a row.
+    let timer: ReturnType<typeof setTimeout> | null = null;
+    const unsubscribe = subscribeFoldState((next, previous) => {
+      if (timer) { clearTimeout(timer); timer = null; }
       if (previous.unfolded || !next.unfolded) return;
-      setLucyProMessages(prev => [...prev, createTarotOfferOnUnfold()]);
+      timer = setTimeout(() => {
+        timer = null;
+        const stillUnfolded = readFoldStateNow().unfolded && isDuoUnfoldedState().unfolded
+          && Boolean(document.getElementById('duo-lucy-viewport') && document.getElementById('duo-content-viewport'));
+        if (!stillUnfolded) return;
+        setLucyProMessages(prev => {
+          const last = prev[prev.length - 1];
+          const offer = createTarotOfferOnUnfold();
+          if (last?.role === 'model' && last.content === offer.content) return prev;
+          return [...prev, offer];
+        });
+      }, 1200);
     });
+    return () => { if (timer) clearTimeout(timer); unsubscribe(); };
   }, [isMasterMode, setLucyProMessages]);
 
   // 🎙️ 루시 1:1 전용 실시간 음성 대화 모드 (STT 마이크 + TTS 자동 루프)
