@@ -2,6 +2,7 @@ import { LucyLibraryDialogs, LucyLibraryTrigger } from '@/components/chat/LucyLi
 import { LucyModeName } from '@/components/chat/LucyModeName';
 import { ScreenPortal } from '@/components/layout/ScreenPortal';
 import { LucyModeTransition } from '@/components/chat/LucyModeTransition';
+import { LucyPlusEntryScreen } from '@/components/chat/LucyPlusEntryScreen';
 import { isLucyTarotDrawRequest, isLucyTarotDrawOpen } from '@/lib/lucyTarotIntegrity';
 import { useSyncedChatDraft } from '@/hooks/useSyncedChatDraft';
 import { LUCY_PRO_PATH, resolveLucyPageChannels } from '@/lib/lucyChatPageMode';
@@ -703,11 +704,8 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
   });
   const isDuoPortrait = isDuoUnfolded && isDuoUnfoldedState().orientation === 'portrait';
 
-  // Lucy+ is shown only when the expanded dual-screen has the Lucy room on the left.
-  const locationPath = location.split('?')[0].split('#')[0];
-  const isCosmicRoomActive = isActuallyUnfoldedDual && (
-    locationPath === '/' || locationPath === '/chat' || locationPath === '/lucy' || locationPath === '/chat/pro'
-  );
+  // Every Lucy chat in the unfolded dual screen is Lucy Plus, whatever the content pane shows.
+  const isCosmicRoomActive = isActuallyUnfoldedDual;
 
   const [lucyTier, setLucyTier] = useState<LucyTier>(() => {
     try {
@@ -774,7 +772,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
         document.getElementById('duo-lucy-viewport') && document.getElementById('duo-content-viewport')
       ) && isDuoUnfoldedState().unfolded;
       const path = typeof window !== 'undefined' ? window.location.pathname : '/';
-      const isCosmic = isDual && (path === '/' || path === '/chat' || path === '/lucy' || path === '/chat/pro');
+      const isCosmic = isDual;
       const validTarget: LucyTier = isCosmic ? 'plus' : 'ai';
       safeLocalStorage.setItem('lucy_tier_mode', validTarget);
       safeSessionStorage.setItem('lucy_tier_mode', validTarget);
@@ -784,7 +782,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
       setModeTransitioningTier(validTarget);
       setTimeout(() => setModeTransitioningTier(null), 550);
       triggerHaptic('whitehole');
-      setModeSwitchToast(validTarget === 'plus' ? '🌿 Lucy' : '✨ Lucy');
+      setModeSwitchToast(validTarget === 'plus' ? '🌿 Lucy Plus' : '✨ Lucy');
       setTimeout(() => setModeSwitchToast(null), 2000);
     };
 
@@ -1069,7 +1067,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
       document.getElementById('duo-lucy-viewport') && document.getElementById('duo-content-viewport')
     ) && isDuoUnfoldedState().unfolded;
     const clean = location ? location.split('?')[0].split('#')[0] : '/';
-    const isCosmic = isDual && (clean === '/' || clean === '/chat' || clean === '/lucy');
+    const isCosmic = isDual;
     const expected: LucyTier = isCosmic ? 'plus' : 'ai';
     if (lucyTier !== expected) {
       setLucyTier(expected);
@@ -1078,7 +1076,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
       setModeTransitioningTier(expected);
       setTimeout(() => setModeTransitioningTier(null), 550);
       try { triggerHaptic('whitehole'); } catch (_) {}
-      setModeSwitchToast(expected === 'plus' ? '🌿 Lucy' : '✨ Lucy');
+      setModeSwitchToast(expected === 'plus' ? '🌿 Lucy Plus' : '✨ Lucy');
       setTimeout(() => setModeSwitchToast(null), 2000);
     }
   }, [location, isDuoUnfolded, pro, lucyTier]);
@@ -1092,7 +1090,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
       ) && isDuoUnfoldedState().unfolded;
       setIsDuoUnfolded((prev) => {
         const clean = window.location.pathname || '/';
-        const isCosmic = isDual && (clean === '/' || clean === '/chat' || clean === '/lucy');
+        const isCosmic = isDual;
         const targetTier: LucyTier = isCosmic ? 'plus' : 'ai';
 
         if (initialRun) {
@@ -2484,7 +2482,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
       document.getElementById('duo-lucy-viewport') && document.getElementById('duo-content-viewport')
     ) && isDuoUnfoldedState().unfolded;
     const clean = location ? location.split('?')[0].split('#')[0] : '/';
-    const isCosmic = isDual && (clean === '/' || clean === '/chat' || clean === '/lucy' || clean === '/chat/pro');
+    const isCosmic = isDual;
     const activeTitle = 'Lucy';
     document.title = activeTitle;
 
@@ -3501,7 +3499,9 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
     >
       {/* 🌌 Shared AI/Plus sky background; clover accents belong to Pro modes only */}
       <LucyCosmicBackground isProMode={isMasterMode} period={lucyDayPeriod} />
-      <LucyModeTransition active={modeTransitioningTier !== null} isPlusMode={showPlusMarker} isProMode={isMasterMode} />
+      {/* Entering Lucy Plus has its own entry screen; other mode changes keep the short transition. */}
+      <LucyModeTransition active={modeTransitioningTier !== null && modeTransitioningTier !== 'plus'} isPlusMode={showPlusMarker} isProMode={isMasterMode} />
+      <LucyPlusEntryScreen active={showPlusMarker && !isMasterMode} period={lucyDayPeriod} />
 
       {/* PRO Top Header Bar */}
       <header 
