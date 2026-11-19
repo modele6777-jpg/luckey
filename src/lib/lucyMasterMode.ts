@@ -267,10 +267,56 @@ export const LUCY_TAROT_PICK_REQUEST_EVENT = 'prism:lucy_tarot_pick_request';
 export const LUCY_TAROT_PICKED_EVENT = 'prism:lucy_tarot_picked';
 export const LUCY_TAROT_PICK_CANCEL_EVENT = 'prism:lucy_tarot_pick_cancel';
 
-export interface TarotPickRequest { count: number; concern?: string }
+export interface TarotPickRequest { count: number; concern?: string; positions?: string[]; spreadName?: string; spreadReason?: string }
 
 export function tarotPickPositions(count: number): string[] {
   return count >= 3 ? ['과거', '현재', '미래'] : ['지금 나에게 온 메시지'];
+}
+
+/** 타로 테이블의 추천 예시와 각 질문에 맞춘 배열법. */
+export interface MasterTarotSpread {
+  id: string;
+  emoji: string;
+  label: string;
+  spreadName: string;
+  reason: string;
+  positions: string[];
+  prompt: string;
+}
+
+export const MASTER_TAROT_SPREADS: readonly MasterTarotSpread[] = [
+  { id: 'one-message', emoji: '🌙', label: '오늘 나에게 온 한 장의 메시지', spreadName: '원 카드', reason: '지금 가장 필요한 메시지 하나에 집중해요',
+    positions: ['오늘 나에게 온 메시지'], prompt: '타로 카드 한 장을 뽑아서 오늘 나에게 온 메시지를 봐줘.' },
+  { id: 'daily-three', emoji: '🔮', label: '오늘의 3카드 운세', spreadName: '오늘의 3카드', reason: '오늘의 기운·조심할 점·행동 조언을 나눠 봐요',
+    positions: ['오늘의 기운', '조심할 점', '행동 조언'], prompt: '타로 카드 세 장을 뽑아서 오늘의 기운, 조심할 점, 행동 조언을 봐줘.' },
+  { id: 'their-heart', emoji: '💞', label: '그 사람의 마음이 궁금해', spreadName: '마음 잇기 3카드', reason: '나와 그 사람의 마음, 둘 사이의 흐름을 함께 봐요',
+    positions: ['나의 마음', '그 사람의 마음', '관계의 흐름'], prompt: '타로 카드 세 장을 뽑아서 나의 마음, 그 사람의 마음, 우리 관계의 흐름을 봐줘.' },
+  { id: 'two-paths', emoji: '⚖️', label: '두 갈래 중 무엇을 고를까', spreadName: '두 갈래 선택 5카드', reason: '지금 상황과 A·B 각각의 과정과 결과를 비교해요',
+    positions: ['지금 나의 상황', 'A를 고르면 겪을 과정', 'A의 결과', 'B를 고르면 겪을 과정', 'B의 결과'], prompt: '타로 카드 다섯 장을 뽑아서 두 가지 선택지 A와 B의 과정과 결과를 비교해줘.' },
+  { id: 'career-path', emoji: '🧭', label: '일·진로, 어디로 가야 할까', spreadName: '진로 나침반 4카드', reason: '현재 위치·강점·걸림돌·나아갈 방향을 차례로 봐요',
+    positions: ['현재 위치', '나의 강점', '걸림돌', '나아갈 방향'], prompt: '타로 카드 네 장을 뽑아서 일과 진로의 현재 위치, 강점, 걸림돌, 나아갈 방향을 봐줘.' },
+  { id: 'money-flow', emoji: '💰', label: '돈의 흐름과 새는 곳', spreadName: '재물 흐름 3카드', reason: '지금의 재물 흐름·새는 곳·늘리는 열쇠를 봐요',
+    positions: ['지금의 재물 흐름', '새는 곳', '늘리는 열쇠'], prompt: '타로 카드 세 장을 뽑아서 지금 재물의 흐름, 새는 곳, 늘리는 열쇠를 봐줘.' },
+  { id: 'conflict', emoji: '🕊️', label: '관계 갈등을 풀고 싶어', spreadName: '화해의 다리 4카드', reason: '나와 상대의 입장, 갈등의 뿌리, 화해의 열쇠를 봐요',
+    positions: ['나의 입장', '상대의 입장', '갈등의 뿌리', '화해의 열쇠'], prompt: '타로 카드 네 장을 뽑아서 나와 상대의 입장, 갈등의 뿌리, 화해의 열쇠를 봐줘.' },
+  { id: 'horseshoe', emoji: '🌀', label: '마음이 복잡해, 전체 흐름을 보고 싶어', spreadName: '말굽 7카드', reason: '지나온 일부터 결과까지 고민의 전체 흐름을 펼쳐요',
+    positions: ['지나온 일', '지금', '다가올 일', '나의 태도', '주변의 영향', '걸림돌', '흐름의 결과'], prompt: '타로 카드 일곱 장을 뽑아서 말굽 배열로 지금 고민의 전체 흐름을 봐줘.' },
+];
+
+let queuedSpread: { spread: MasterTarotSpread; at: number } | null = null;
+/** 테이블의 예시를 눌렀을 때, 이어지는 카드 고르기가 이 배열법을 쓰도록 잠시 맡겨 둔다. */
+export function queueMasterTarotSpread(spread: MasterTarotSpread): void { queuedSpread = { spread, at: Date.now() }; }
+export function takeQueuedMasterTarotSpread(maxAgeMs = 60000): MasterTarotSpread | null {
+  const entry = queuedSpread;
+  queuedSpread = null;
+  return entry && Date.now() - entry.at <= maxAgeMs ? entry.spread : null;
+}
+
+/** 고른 카드와 배열 자리를 짝지어 루시가 자리별로 읽게 한다. */
+export function buildSpreadLayoutContext(spreadName: string, positions: readonly string[], cards: readonly { nameKo?: string; reversed?: boolean }[]): string {
+  if (!positions.length || !cards.length) return '';
+  const lines = cards.map((card, i) => `${i + 1}. ${positions[i] || `${i + 1}번째 자리`} — ${card.nameKo || '카드'}${card.reversed ? ' (역방향)' : ''}`);
+  return [`[이번 배열법: ${spreadName}]`, '- 각 카드는 아래 자리의 의미로 읽고, 자리 이름을 밝히며 차례대로 풀어줘. 마지막에 자리들을 엮어 한 흐름으로 정리해.', ...lines].join('\n');
 }
 
 /** 스프레드에서 고른 카드를 루시 채팅이 쓰는 카드 형식으로 바꾼다. */

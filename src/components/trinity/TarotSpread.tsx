@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { LucyMasterTarotRoom } from '@/components/chat/LucyMasterTarotRoom';
 import { ScreenPortal } from '@/components/layout/ScreenPortal';
 import { motion, useReducedMotion } from 'framer-motion';
 import {
@@ -208,6 +209,8 @@ interface TarotSpreadProps {
   cardBackVariant?: 'classic' | 'oracle';
   allowReversed?: boolean;
   cardBackId?: string;
+  /** `master`: Lucy Master's purple velvet + candle room behind the deck. */
+  ambience?: 'default' | 'master';
 }
 
 export const TarotSpread: React.FC<TarotSpreadProps> = ({
@@ -222,6 +225,7 @@ export const TarotSpread: React.FC<TarotSpreadProps> = ({
   cardBackVariant = 'oracle',
   allowReversed = true,
   cardBackId,
+  ambience = 'default',
 }) => {
   const concernText = concern.trim();
   const hasConcern = concernText.length > 0;
@@ -908,7 +912,8 @@ export const TarotSpread: React.FC<TarotSpreadProps> = ({
     <div
       ref={rootRef}
       id="tarot-stage-container"
-      className="fixed inset-0 z-[300] bg-zinc-950 overflow-hidden flex flex-col items-center justify-between font-sans select-none touch-none overscroll-none tarot-spread-stage-root"
+      className={`fixed inset-0 z-[300] ${ambience === 'master' ? 'bg-[#120a1f]' : 'bg-zinc-950'} overflow-hidden flex flex-col items-center justify-between font-sans select-none touch-none overscroll-none tarot-spread-stage-root`}
+      data-tarot-ambience={ambience}
       style={{
         touchAction: 'none',
         overscrollBehavior: 'none',
@@ -919,6 +924,7 @@ export const TarotSpread: React.FC<TarotSpreadProps> = ({
         paddingRight: 0,
       }}
     >
+      {ambience === 'master' && <LucyMasterTarotRoom variant="table" />}
       {/* Unified Top Header Layer: Action Buttons & Perfectly Centered Info Banner */}
       <div
         className="relative z-[320] w-full shrink-0 pointer-events-none flex flex-col items-center tarot-draw-header"
