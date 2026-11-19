@@ -2286,6 +2286,7 @@ test('Wealth Pipeline Engine: 재물 창출 아키타입 및 골든 윈도우 �
   assert.equal(res.engineVersion, WEALTH_PIPELINE_VERSION);
   assert(res.calculatedAtKst.endsWith('KST'));
   assert(Boolean(res.wealthSynthesisMatrix?.integratedAction));
+  assert(Boolean(res.ritualAction) && Boolean(res.reflectionFocus));
   assert(res.interpretiveBoundary.length > 0);
   assert(['builder', 'scaler', 'investor', 'optimizer'].includes(res.archetype.type));
   assert(res.timing.annualWealthScore >= 0 && res.timing.annualWealthScore <= 100);
@@ -2296,6 +2297,7 @@ test('Wealth Pipeline Engine: 재물 창출 아키타입 및 골든 윈도우 �
   assert(prompt.includes('재물 아키타입'));
   assert(prompt.includes('골든 윈도우'));
   assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
   assert(prompt.includes('해석 경계'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
@@ -2596,6 +2598,7 @@ test('Yin-Yang Polarity Engine: 음양 수리 분포 및 24시간 바이폴라 �
   assert.equal(res.engineVersion, YIN_YANG_POLARITY_VERSION);
   assert(res.calculatedAtKst.endsWith('KST'));
   assert(Boolean(res.polaritySynthesisMatrix?.integratedAction));
+  assert(res.ritualAction.length > 0 && res.reflectionFocus.length > 0);
   assert(res.interpretiveBoundary.length > 0);
   assert.equal(res.distribution.yangCount + res.distribution.yinCount, 8);
   assert(res.balanceScore >= 0 && res.balanceScore <= 100);
@@ -2605,6 +2608,7 @@ test('Yin-Yang Polarity Engine: 음양 수리 분포 및 24시간 바이폴라 �
   assert(prompt.includes(YIN_YANG_POLARITY_VERSION));
   assert(prompt.includes('음양 극성 밸런스'));
   assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
   assert(prompt.includes('해석 경계'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
@@ -4080,11 +4084,13 @@ test('Vitality Curve Engine: calculates 12-stage biorhythm curve and synthesis m
   assert.equal(rep.engineVersion, VITALITY_CURVE_ENGINE_VERSION);
   assert(rep.calculatedAtKst.endsWith('KST'));
   assert(Boolean(rep.vitalitySynthesisMatrix?.integratedAction));
+  assert(Boolean(rep.ritualAction) && Boolean(rep.reflectionFocus));
   assert(rep.interpretiveBoundary.length > 0);
   assert.equal(rep.hourlyTideCurve.length, 12);
   const prompt = formatVitalityCurvePrompt(rep);
   assert(prompt.includes('12운성 바이오리듬 에너지 곡선'));
   assert(prompt.includes('교차 매트릭스') && prompt.includes('해석 경계'));
+  assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });

@@ -25,7 +25,7 @@ import {
   type SajuAnalysisResult,
 } from '../sajuAnalysis';
 
-export const VITALITY_CURVE_ENGINE_VERSION = 'LUCKEY-VCE-v2.2.0';
+export const VITALITY_CURVE_ENGINE_VERSION = 'LUCKEY-VCE-v2.3.0';
 
 function formatVitalityKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -99,6 +99,8 @@ export interface VitalityCurveResult {
   };
   reflectiveQuestion?: string;
   interpretiveBoundary: string;
+  ritualAction?: string;
+  reflectionFocus?: string;
 }
 
 // 12운성 기본 에너지 스코어
@@ -244,6 +246,8 @@ export function calculateVitalityCurve(options?: {
     ? `"${q}"의 흐름을 오늘 가장 에너지가 높은 시진(${deepWorkSlots || '오전 09:30~13:30'})과 휴식 구간(${rechargeSlots || '밤 21:30~01:30'}) 중 어디에 배치할 때 몸과 마음이 가장 덜 지칠까요?`
     : `오늘 12시진 조위 곡선(${vitalityStateName}) 중 가장 높은 딥워크 구간(${deepWorkSlots || '오전 09:30~13:30'})에 미뤄 둔 핵심 과제 하나만 올려두면 어떨까요?`;
   const interpretiveBoundary = '본 12운성 바이오리듬 에너지 곡선 리포트는 사주 포태법 수리 기반의 컨디셔닝 참고 지표이며, 의학적 진단이나 임상 처방이 아닙니다.';
+  const ritualAction = `${deepWorkSlots || '오전 09:30~13:30'} 딥워크 구간에 가장 중요한 과제 1건을 배치하고, ${actionTip}`;
+  const reflectionFocus = `${vitalityStateName} 위상에서 일지(${pStage})·월지(${mStage})·시진(${iStage})의 에너지 균형`;
 
   return {
     engineVersion: VITALITY_CURVE_ENGINE_VERSION,
@@ -289,6 +293,8 @@ export function calculateVitalityCurve(options?: {
     vitalitySynthesisMatrix,
     reflectiveQuestion,
     interpretiveBoundary,
+    ritualAction,
+    reflectionFocus,
   };
 }
 
@@ -322,7 +328,7 @@ export function formatVitalityCurvePrompt(res: VitalityCurveResult): string {
 
 3. [24시간 12시진 에너지 조위(Tide Curve) 도감]:
 ${curveSample}${matrixLine}
-${res.reflectiveQuestion ? `- 성찰 질문: ${res.reflectiveQuestion}\n` : ''}- 해석 경계: ${res.interpretiveBoundary}
+${res.reflectiveQuestion ? `- 성찰 질문: ${res.reflectiveQuestion}\n` : ''}${res.ritualAction ? `- 실천 의례: ${res.ritualAction}\n` : ''}${res.reflectionFocus ? `- 성찰 초점: ${res.reflectionFocus}\n` : ''}- 해석 경계: ${res.interpretiveBoundary}
 ======================================================================
 [★ 루시 바이오리듬 상담 지침]:
 - 사용자가 '오늘 피곤해', '언제 집중 잘 될까?', '컨디션 어때?', '새벽 작업 할까?' 등을 물을 때 위 12시진 12운성 조위 실측 데이터를 근거로 구체적인 골든 타임라인을 명쾌하게 제시해줘.

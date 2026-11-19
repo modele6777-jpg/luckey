@@ -18,7 +18,7 @@ import {
   STEM_KOREAN
 } from '../sajuAnalysis';
 
-export const WEALTH_PIPELINE_VERSION = 'LUCKEY-WEALTH-v2.2.0';
+export const WEALTH_PIPELINE_VERSION = 'LUCKEY-WEALTH-v2.3.0';
 
 function formatWealthKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -126,6 +126,8 @@ export interface WealthPipelineResult {
   summary: string;
   reflectiveQuestion?: string;
   interpretiveBoundary: string;
+  ritualAction?: string;
+  reflectionFocus?: string;
   wealthSynthesisMatrix?: {
     dominantTension: string;
     alignmentState: string;
@@ -250,6 +252,8 @@ export function calculateWealthPipeline(params?: {
     : `현재 [${goldenWindowStatus}] 국면에서 내 ${archetype.name} 파이프라인을 가장 안정적으로 키울 수 있는 1순위 실행 레버는 무엇인가요?`;
   const interpretiveBoundary =
     '재물·비즈니스 파이프라인 분석은 사주 십신·길성의 상징적 경향을 바탕으로 한 전략적 자기 점검 참고이며, 특정 투자 수익이나 사업 성패를 보장하지 않습니다.';
+  const ritualAction = `${actionGuide.immediatePriority}에 집중해 오늘 바로 실행할 수익 레버 1건을 확정하고, "${actionGuide.spendingWarning}" 함정을 피하십시오.`;
+  const reflectionFocus = `${archetype.name} 아키타입의 핵심 강점과 [${goldenWindowStatus}] 국면의 현금흐름 조율`;
 
   return {
     engineVersion: WEALTH_PIPELINE_VERSION,
@@ -278,6 +282,8 @@ export function calculateWealthPipeline(params?: {
     summary,
     reflectiveQuestion,
     interpretiveBoundary,
+    ritualAction,
+    reflectionFocus,
     wealthSynthesisMatrix,
   };
 }
@@ -307,6 +313,6 @@ export function formatWealthPipelinePrompt(res: WealthPipelineResult): string {
   • 1순위 추진 과제: ${res.actionGuide.immediatePriority}
   • 스케일업 전략: ${res.actionGuide.revenueStrategy}
   • 자금 리스크 방어: ${res.actionGuide.spendingWarning}${matrixLine}
-${res.reflectiveQuestion ? `- 성찰 질문: ${res.reflectiveQuestion}\n` : ''}- 해석 경계: ${res.interpretiveBoundary}
+${res.reflectiveQuestion ? `- 성찰 질문: ${res.reflectiveQuestion}\n` : ''}${res.ritualAction ? `- 실천 의례: ${res.ritualAction}\n` : ''}${res.reflectionFocus ? `- 성찰 초점: ${res.reflectionFocus}\n` : ''}- 해석 경계: ${res.interpretiveBoundary}
 ※ 루시 지침: 재물운은 단순한 '횡재'가 아니라 시스템과 타이밍의 결합입니다. 사용자가 타고난 재물 창출 아키타입(식신생재 메이커형인지, 재생관 플랫폼형인지 등)을 명쾌하게 짚어주고, 오늘과 올해의 자금 흐름 골든 윈도우를 실질적인 비즈니스 전략으로 조언해 주세요.`;
 }

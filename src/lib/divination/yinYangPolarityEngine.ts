@@ -17,7 +17,7 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const YIN_YANG_POLARITY_VERSION = 'LUCKEY-POLAR-v2.2.0';
+export const YIN_YANG_POLARITY_VERSION = 'LUCKEY-POLAR-v2.3.0';
 
 function formatYinYangKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -67,6 +67,8 @@ export interface YinYangPolarityResult {
   summary: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
+  ritualAction: string;
+  reflectionFocus: string;
   polaritySynthesisMatrix?: {
     dominantTension: string;
     alignmentState: string;
@@ -171,6 +173,8 @@ export function calculateYinYangPolarity(params?: {
   const reflectiveQuestion = q
     ? `'${q}' 앞에서 현재 ${currentBias} 흐름을 다스리기 위해 양(실행)과 음(숙고) 중 지금 먼저 꺼내 쓸 리듬은 무엇인가요?`
     : `오늘 나의 24시간 중 밀어붙여야 할 양(Yang)의 시간과 조용히 다듬어야 할 음(Yin)의 시간은 어디로 나누고 싶나요?`;
+  const ritualAction = `${neutralizingPractice} 이후 양 윈도우(${timeSlots.yangActionWindow})와 음 윈도우(${timeSlots.yinFocusWindow})를 구분해 일정을 배치하십시오.`;
+  const reflectionFocus = `陽 ${yangCount}글자 · 陰 ${yinCount}글자(${currentBias}) 사이에서 지치지 않는 실행·사색 균형`;
 
   return {
     engineVersion: YIN_YANG_POLARITY_VERSION,
@@ -195,6 +199,8 @@ export function calculateYinYangPolarity(params?: {
     summary,
     reflectiveQuestion,
     interpretiveBoundary,
+    ritualAction,
+    reflectionFocus,
     polaritySynthesisMatrix,
   };
 }
@@ -218,6 +224,8 @@ export function formatYinYangPolarityPrompt(res: YinYangPolarityResult): string 
   • 멘탈 닻: "${res.neutralizer.groundingMantra}"
 - 음양 균형 위상: **${res.balanceGrade}**${matrixLine}
 - 질문 맞춤 성찰 질문: ${res.reflectiveQuestion}
+- 실천 의례: ${res.ritualAction}
+- 성찰 초점: ${res.reflectionFocus}
 - 해석 경계: ${res.interpretiveBoundary}
 ※ 루시 지침: 낮의 태양이 뜨거울 때 달릴 수 있고, 밤의 달빛 아래서 깊은 사색과 시스템 설계가 완성됩니다. 양의 결단과 음의 숙고가 아름다운 리듬으로 교차할 때 지치지 않는 영구 모멘텀이 생깁니다. 대화 시 사용자의 현재 에너지 기질을 존중하며, 과열될 때는 차분한 음의 지혜를, 주저할 때는 시원한 양의 추진력을 자연스럽게 북돋워 주세요.`;
 }
