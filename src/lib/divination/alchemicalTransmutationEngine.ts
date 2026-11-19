@@ -14,7 +14,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const ALCHEMICAL_TRANSMUTATION_VERSION = 'LUCKEY-ALCHEM-TRANSMUTE-v2.3.0';
+export const ALCHEMICAL_TRANSMUTATION_VERSION = 'LUCKEY-ALCHEM-TRANSMUTE-v2.4.0';
 
 export type AlchemicalQuestionFocus = 'career' | 'relationship' | 'anxiety' | 'change' | 'spiritual';
 
@@ -344,7 +344,7 @@ export function calculateAlchemicalTransmutation(
   const reflectiveQuestion = `${qLabel}${reflectionFocus}`;
 
   const kst = new Date(targetDate.getTime() + 9 * 3600 * 1000);
-  const calculatedAtKst = `${kst.toISOString().slice(0, 19)}+09:00`;
+  const calculatedAtKst = `${kst.toISOString().slice(0, 19)}+09:00 (KST)`;
 
   return {
     engineVersion: ALCHEMICAL_TRANSMUTATION_VERSION,
@@ -387,6 +387,8 @@ export function formatAlchemicalTransmutationPrompt(report: AlchemicalTransmutat
 - **연금술 교차 매트릭스**: ${report.opusSynthesisMatrix.synthesizedVerdict} (${report.opusSynthesisMatrix.coagulatioReadiness})
 - **대업(Opus Magnum) 완수 지침**: ${report.opusMagnumGuidance}
 - **일일 연금술 정화 리추얼**: ${report.dailyAlchemicalRitual}
+- **실천 의례**: ${report.ritualAction}
+- **성찰 초점**: ${report.reflectionFocus}
 - **성찰 질문**: ${report.reflectiveQuestion}
 - **해석 경계**: 본 리포트는 서양 연금술 7단계와 융 심층심리학 상징에 기반한 정성적 성찰 안내이며, 의학적·재정적 처방이 아닙니다.`;
 }

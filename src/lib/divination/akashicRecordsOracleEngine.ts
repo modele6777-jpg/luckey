@@ -14,7 +14,7 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const AKASHIC_RECORDS_VERSION = 'LUCKEY-AKASHIC-v2.3.0';
+export const AKASHIC_RECORDS_VERSION = 'LUCKEY-AKASHIC-v2.4.0';
 
 export interface SoulOriginDetails {
   originSystem: string;          // 영혼 기원 항성계 / 아키타입
@@ -242,7 +242,7 @@ export function runAkashicRecordsOracleEngine(
   };
 
   const kst = new Date(targetDate.getTime() + 9 * 3600 * 1000);
-  const calculatedAtKst = `${kst.toISOString().slice(0, 19)}+09:00`;
+  const calculatedAtKst = `${kst.toISOString().slice(0, 19)}+09:00 (KST)`;
 
   const interpretiveBoundary = '본 리포트는 아카식 레코드 상징 아키타입에 기반한 정성적 성찰 안내이며, 확정적 예언이 아닙니다.';
   const ritualAction = situationalAkashicAudit.groundingPractice;
@@ -250,7 +250,7 @@ export function runAkashicRecordsOracleEngine(
   const qLabel = question.trim() ? `"${question.trim()}"에 대해 ` : '';
   const reflectiveQuestion = `${qLabel}${reflectionFocus}`;
 
-  const synthesisPromptGuidance = `[LUCKEY 아카식 레코드 영혼 서약 & 카르믹 청사진 v2.3.0]
+  const synthesisPromptGuidance = `[LUCKEY 아카식 레코드 영혼 서약 & 카르믹 청사진 (${AKASHIC_RECORDS_VERSION})]
 - 연산 시각: ${calculatedAtKst}
 - 영혼의 기원: [${originSystem}]
   * 본질적 파동: ${soulEssenceQuality}
@@ -266,6 +266,8 @@ export function runAkashicRecordsOracleEngine(
   * 시간대 지침: ${temporalAkashicRhythm.timingGuidance}
 - 아카식 교차 매트릭스: ${akashicSynthesisMatrix.originContractLink}
 - 아카식 접속 만트라: "${akashicAccessMantra}"
+- 실천 의례: ${ritualAction}
+- 성찰 초점: ${reflectionFocus}
 - 성찰 질문: ${reflectiveQuestion}
 - 해석 경계: 본 리포트는 아카식 레코드 상징 아키타입에 기반한 정성적 성찰 안내이며, 확정적 예언이 아닙니다.`;
 

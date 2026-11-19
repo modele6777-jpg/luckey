@@ -2964,6 +2964,7 @@ test('Hero Myth Monomyth Engine: 조셉 캠벨 영웅의 여정 12단계 & 운�
 test('Akashic Records Oracle Engine: 아카식 레코드 영혼 서약 & 카르믹 청사진 검증', () => {
   const res = calculateAkashicRecordsOracle({ profile, targetDate: new Date('2026-11-03T10:00:00+09:00') });
   assert.equal(res.engineVersion, AKASHIC_RECORDS_VERSION);
+  assert(res.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(res.soulOrigin.originSystem.length > 0);
   assert(res.soulContract.primaryLesson.length > 0);
   assert(res.akashicAccessMantra.length > 0);
@@ -2974,6 +2975,7 @@ test('Akashic Records Oracle Engine: 아카식 레코드 영혼 서약 & 카르�
   assert(prompt.includes('LUCKEY 아카식 레코드 영혼 서약 & 카르믹 청사진'));
   assert(prompt.includes(res.soulOrigin.originSystem));
   assert(prompt.includes('해석 경계'));
+  assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
   assert(!prompt.includes('/100') && !prompt.includes('자각도:'));
 });
 
@@ -3453,6 +3455,7 @@ test('Vibrational Soul Quest Engine: derives 4 core soul numbers and personal ye
 test('Alchemical Transmutation Engine: calculates 7 stages and 4 opus phases', () => {
   const rep = calculateAlchemicalTransmutation(profile, new Date('2026-11-15T05:00:00Z'), '직장 이직 결정이 불안합니다');
   assert.equal(rep.engineVersion, ALCHEMICAL_TRANSMUTATION_VERSION);
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(rep.currentStage.stageNumber >= 1 && rep.currentStage.stageNumber <= 7);
   assert(rep.transmutationPower >= 0 && rep.transmutationPower <= 100);
   assert(rep.primaMateria.length > 0);
@@ -3466,6 +3469,7 @@ test('Alchemical Transmutation Engine: calculates 7 stages and 4 opus phases', (
   assert(prompt.includes('연금술 7단계 영혼 변환'));
   assert(prompt.includes(rep.currentStage.nameKo));
   assert(prompt.includes('해석 경계'));
+  assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
   assert(!prompt.includes('% / 100%'));
 });
 
@@ -4231,8 +4235,10 @@ test('Shinto Kotodama Four Souls Engine: calculates Ichirei Shikon balance and K
 test('Aboriginal Dreamtime Songlines Engine: calculates ancestral totem and Kurunpa index', () => {
   const rep = calculateAboriginalDreamtimeSonglines({ profile });
   assert.equal(rep.engineVersion, ABORIGINAL_DREAMTIME_SONGLINES_ENGINE_VERSION);
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(rep.kurunpaLifeForceIndex >= 0 && rep.kurunpaLifeForceIndex <= 100);
   assert(rep.activeTotem.name.length > 0);
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatAboriginalDreamtimeSonglinesPrompt(rep);
   assert(prompt.includes('호주 원주민 드림타임(Dreamtime) 송라인 & 8대 토템 영혼 나침반'));
