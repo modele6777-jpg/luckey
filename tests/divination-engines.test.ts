@@ -2656,6 +2656,7 @@ test('Strategic Leverage Engine: 전략 협상 및 손자병법 기문 레버리
   const res = calculateStrategicLeverage({ profile, targetDate: new Date('2026-11-03T10:00:00+09:00'), question: '중요 협상' });
   assert.equal(res.engineVersion, STRATEGIC_LEVERAGE_VERSION);
   assert(res.calculatedAtKst.endsWith('KST'));
+  assert(res.ritualAction.length > 0 && res.reflectionFocus.length > 0);
   assert(Boolean(res.leverageSynthesisMatrix?.integratedAction));
   assert(res.interpretiveBoundary.length > 0);
   assert(res.leverageScore >= 0 && res.leverageScore <= 100);
@@ -2663,6 +2664,7 @@ test('Strategic Leverage Engine: 전략 협상 및 손자병법 기문 레버리
   assert(res.strategicActionPlan.openingMove.length > 0);
   const prompt = formatStrategicLeveragePrompt(res);
   assert(prompt.includes('LUCKEY 전략 협상 & 손자병법 기문 레버리지'));
+  assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
   assert(prompt.includes('교차 매트릭스') && prompt.includes('해석 경계'));
   assert(!prompt.includes('/100'));
 });
@@ -2688,11 +2690,13 @@ test('Special Stars Matrix Engine: 15대 신살 슈퍼파워 치환 v2.1.0 교�
   const res = calculateSpecialStarsMatrix({ profile, targetDate: new Date('2026-11-03T10:00:00+09:00'), question: '타고난 무기' });
   assert.equal(res.engineVersion, SPECIAL_STARS_VERSION);
   assert(res.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert(res.ritualAction.length > 0 && res.reflectionFocus.length > 0);
   assert(res.reflectiveQuestion?.includes('타고난 무기'));
   assert(Boolean(res.specialStarsSynthesisMatrix?.integratedAction));
   assert(res.interpretiveBoundary.length > 0);
   const prompt = formatSpecialStarsPrompt(res);
   assert(prompt.includes('+09:00 (KST)'));
+  assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
   assert(prompt.includes('성찰 질문'));
   assert(prompt.includes('신살 교차 매트릭스') && prompt.includes('해석 경계'));
   assert(!prompt.includes('/100'));
@@ -3536,6 +3540,7 @@ test('Sufi Seven Lataif Soul Ascension Engine: calculates spiritual station and 
   const rep = calculateSufiLataifSoulAscension({ profile });
   assert.equal(rep.engineVersion, SUFI_LATAIF_VERSION);
   assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(Boolean(rep.lataifSynthesisMatrix?.integratedAction));
   assert(rep.interpretiveBoundary.length > 0);
   assert.equal(rep.lataifCenters.length, 7);
@@ -3544,6 +3549,7 @@ test('Sufi Seven Lataif Soul Ascension Engine: calculates spiritual station and 
   const prompt = formatSufiLataifSoulAscensionPrompt(rep);
   assert(prompt.includes('정통 수피즘 심장의 7대 라타이프'));
   assert(prompt.includes(rep.dominantActiveCenter.koreanName));
+  assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
   assert(prompt.includes('교차 매트릭스') && prompt.includes('해석 경계'));
   assert(!prompt.includes('/100'));
 });

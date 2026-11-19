@@ -1,9 +1,10 @@
 {
-  "version": "1.7.911",
-  "builtAt": "2026-11-19T08:57:00+09:00",
-  "summary": "계약 실드·딥워크 플로우·알베르 카뮈 3대 엔진 +09:00 (KST) 표준 시각 통일(v1.7.911)",
+  "version": "1.7.912",
+  "builtAt": "2026-11-19T09:02:00+09:00",
+  "summary": "15대 신살·전략 협상·수피 7대 라타이프 3대 엔진 실천 의례 및 성찰 초점 표준 연동(v1.7.912)",
   "items": [
-    "계약 실드(v2.3.0)·딥워크 플로우(v2.3.0)·알베르 카뮈 부조리 반항(v2.3.0): calculatedAtKst +09:00 (KST) 표준 표기 통일",
-    "divination-engines.test.ts: 3대 엔진 v1.7.911 +09:00 (KST) 회귀 테스트 추가"
+    "15대 신살 위치별 슈퍼파워 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동",
+    "전략 협상 & 손자병법 기문 레버리지 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동",
+    "정통 수피즘 심장의 7대 라타이프 엔진(v2.3.0): ritualAction·reflectionFocus 표준 필드 연동"
   ]
 }

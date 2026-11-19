@@ -16,7 +16,7 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const STRATEGIC_LEVERAGE_VERSION = 'LUCKEY-LEVERAGE-v2.1.0';
+export const STRATEGIC_LEVERAGE_VERSION = 'LUCKEY-LEVERAGE-v2.2.0';
 
 function formatLeverageKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -58,6 +58,8 @@ export interface StrategicLeverageReport {
     criticalTaboo: string;          // 오늘 절대 피해야 할 악수(惡手)
   };
   synthesisPromptGuidance: string;
+  ritualAction: string;
+  reflectionFocus: string;
   reflectiveQuestion?: string;
   leverageSynthesisMatrix?: {
     dominantTension: string;
@@ -157,6 +159,8 @@ export function runStrategicLeverageEngine(
   }
 
   const interpretiveBoundary = '본 전략 협상 & 손자병법 기문 레버리지 리포트는 고전 병법과 기문둔갑 상징에 기반한 정성적 협상 프레임워크 안내이며, 실제 계약·법적 의사결정을 대신하지 않습니다.';
+  const ritualAction = `[${powerDynamicRole}] ${strategicActionPlan.openingMove}`;
+  const reflectionFocus = `전략 협상(${sunTzuTactic.chapter}) — ${activeQimenDoor}`;
   const reflectiveQuestion = q
     ? `"${q}" 협상 테이블에서 성급한 양보(${strategicActionPlan.criticalTaboo})를 피하고, 상대의 진짜 기준을 끌어낼 첫 질문은 무엇으로 잡을까요?`
     : `오늘 마주한 대화나 조율에서 ${powerDynamicRole}의 시선으로 먼저 던져 보고 싶은 기준 질문 하나는 무엇인가요?`;
@@ -168,6 +172,8 @@ export function runStrategicLeverageEngine(
   * 실전 지침: ${sunTzuTactic.negotiationTactic}
   * 심리 레버리지: ${sunTzuTactic.psychologicalLeverage}
 - 실전 액션 플랜: [초반] ${strategicActionPlan.openingMove} | [카운터] ${strategicActionPlan.counterStrategy} | [금기사항] ${strategicActionPlan.criticalTaboo}
+- 실천 의례: ${ritualAction}
+- 성찰 초점: ${reflectionFocus}
 - 교차 매트릭스: [핵심 긴장: ${leverageSynthesisMatrix.dominantTension} | 조율 상태: ${leverageSynthesisMatrix.alignmentState}]
   * 통합 실천: ${leverageSynthesisMatrix.integratedAction}
 - 성찰 질문: ${reflectiveQuestion}
@@ -184,6 +190,8 @@ export function runStrategicLeverageEngine(
     powerDynamicRole,
     strategicActionPlan,
     synthesisPromptGuidance,
+    ritualAction,
+    reflectionFocus,
     reflectiveQuestion,
     leverageSynthesisMatrix,
     interpretiveBoundary,
