@@ -8,7 +8,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const FRENCH_JEAN_PAUL_SARTRE_VERSION = 'LUCKEY-JEAN-PAUL-SARTRE-EXISTENTIALISM-v2.2.0';
+export const FRENCH_JEAN_PAUL_SARTRE_VERSION = 'LUCKEY-JEAN-PAUL-SARTRE-EXISTENTIALISM-v2.3.0';
 
 export type SartreQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -344,9 +344,13 @@ export function calculateJeanPaulSartreExistentialism(
     `${activeSartreTheme.practicalCounsel} 아울러 원전의 결연한 경구 "${focalSartreAphorism.aphorismKo}"(${focalSartreAphorism.aphorismFrench})을 마음에 새기고, ` +
     `${focalSartreAphorism.actionGuidance}`;
 
+  const baseNow = now ?? new Date();
+  const kst = new Date(baseNow.getTime() + 9 * 60 * 60 * 1000);
+  const kstTimeLabel = `${kst.toISOString().slice(0, 10)} ${String(kst.getUTCHours()).padStart(2, '0')}:${String(kst.getUTCMinutes()).padStart(2, '0')} +09:00 (KST)`;
+
   return {
     engineVersion: FRENCH_JEAN_PAUL_SARTRE_VERSION,
-    calculatedAtKst: (now ?? new Date()).toISOString(),
+    calculatedAtKst: kstTimeLabel,
     existencePrecedesEssenceScore,
     condemnedToBeFreeScore,
     badFaithOvercomingAuthenticityScore,
@@ -373,6 +377,7 @@ export function calculateJeanPaulSartreExistentialism(
 export function formatJeanPaulSartreExistentialismPrompt(res: JeanPaulSartreExistentialismResult): string {
   return [
     `【장 폴 사르트르 《존재와 무》 실존적 자유 & 앙가주망 관점】`,
+    `- 연산 시각: ${res.calculatedAtKst}`,
     `- 실존 기획·자유·진정성 결: 기획(${describeSartreLevel(res.existencePrecedesEssenceScore)}) / 자유(${describeSartreLevel(res.condemnedToBeFreeScore)}) / 진정성(${describeSartreLevel(res.badFaithOvercomingAuthenticityScore)})`,
     `- 불안 직시·앙가주망 결: 불안 명찰(${describeSartreLevel(res.existentialAnguishLucidityScore)}) / 연대 실천(${describeSartreLevel(res.engagementSolidarityActionIndex)})`,
     `- 핵심 실존 테마: ${res.activeSartreTheme.themeTitleKo} [${res.activeSartreTheme.themeTitleFrench}]`,

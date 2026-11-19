@@ -12542,3 +12542,27 @@ test('들뢰즈·베르그송·데리다 3대 엔진 v1.7.913 KST(+09:00) 표준
   assert.match(jd.calculatedAtKst, /\+09:00/);
   assert.ok(formatFrenchJacquesDerridaDeconstructionDifferancePrompt(jd).includes('+09:00'));
 });
+
+test('루소·사르트르·메를로-퐁티 3대 엔진 v1.7.915 KST(+09:00) 표준 표기 검증', () => {
+  const profile: any = {
+    name: '테스트',
+    basic: { birthdate: '1994-01-24', birthtime: '10:30', gender: 'male', calendarType: 'solar' },
+  };
+  const now = new Date('2026-11-19T09:17:00+09:00');
+  const query = '주체적인 자유와 몸의 감각, 본래의 진정성을 되찾고 싶을 때';
+
+  const jr = calculateFrenchJeanJacquesRousseauNatureAuthenticity(profile, query, now);
+  assert.equal(jr.engineVersion, FRENCH_JJ_ROUSSEAU_VERSION);
+  assert.match(jr.calculatedAtKst, /\+09:00/);
+  assert.ok(formatJeanJacquesRousseauNatureAuthenticityPrompt(jr).includes('+09:00'));
+
+  const js = calculateJeanPaulSartreExistentialism(profile, query, now);
+  assert.equal(js.engineVersion, FRENCH_JEAN_PAUL_SARTRE_VERSION);
+  assert.match(js.calculatedAtKst, /\+09:00/);
+  assert.ok(formatJeanPaulSartreExistentialismPrompt(js).includes('+09:00'));
+
+  const mp = calculateFrenchMauriceMerleauPontyEmbodiedPhenomenology(profile, query, now);
+  assert.equal(mp.engineVersion, FRENCH_MAURICE_MERLEAU_PONTY_EMBODIED_PHENOMENOLOGY_VERSION);
+  assert.match(mp.calculatedAtKst, /\+09:00/);
+  assert.ok(formatFrenchMauriceMerleauPontyEmbodiedPhenomenologyPrompt(mp).includes('+09:00'));
+});

@@ -15,7 +15,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const FRENCH_JJ_ROUSSEAU_VERSION = 'LUCKEY-JJ-ROUSSEAU-NATURE-v2.1.0';
+export const FRENCH_JJ_ROUSSEAU_VERSION = 'LUCKEY-JJ-ROUSSEAU-NATURE-v2.2.0';
 
 export type RousseauQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -253,7 +253,7 @@ export function calculateFrenchJeanJacquesRousseauNatureAuthenticity(
     `${focalRousseauAphorism.actionGuidance}`;
 
   const kst = new Date(targetDate.getTime() + 9 * 60 * 60 * 1000);
-  const kstTimeLabel = `${kst.toISOString().slice(0, 10)} ${String(kst.getUTCHours()).padStart(2, '0')}:${String(kst.getUTCMinutes()).padStart(2, '0')} KST`;
+  const kstTimeLabel = `${kst.toISOString().slice(0, 10)} ${String(kst.getUTCHours()).padStart(2, '0')}:${String(kst.getUTCMinutes()).padStart(2, '0')} +09:00 (KST)`;
   const rousseauSynthesisMatrix = {
     coreInsight: activeRousseauTheme.themeTitleKo,
     recommendedAction: topicPack.guide,
