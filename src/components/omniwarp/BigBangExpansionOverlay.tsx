@@ -3,7 +3,7 @@ import { BigBangEffectPortal } from './BigBangEffectPortal';
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { BigBangCommitEventDetail } from '@/lib/omniWarp/types';
-import { isIPhoneXSClass, isPerfReduced } from '@/lib/perfMode';
+import { isDuoUnfoldedState, isIPhoneXSClass, isPerfReduced } from '@/lib/perfMode';
 
 interface Particle {
   x: number;
@@ -32,6 +32,8 @@ export function BigBangExpansionOverlay() {
       const detail = e.detail as BigBangCommitEventDetail;
       // Entering Key has its own entry screen (KeyChannelTransition).
       if (detail?.target?.id === 'key' && detail.target.destinationPath?.startsWith('/key')) return;
+      // A folded screen entering Lucy shows the Lucy entry screen instead.
+      if (detail?.target?.id === 'lucy' && !isDuoUnfoldedState().unfolded) return;
       if (detail) {
         const generation = ++clearOverlayGenerationRef.current;
         if (clearOverlayTimerRef.current !== null) window.clearTimeout(clearOverlayTimerRef.current);

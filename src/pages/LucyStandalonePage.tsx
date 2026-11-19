@@ -2,7 +2,8 @@ import { LucyLibraryDialogs, LucyLibraryTrigger } from '@/components/chat/LucyLi
 import { LucyModeName } from '@/components/chat/LucyModeName';
 import { ScreenPortal } from '@/components/layout/ScreenPortal';
 import { LucyModeTransition } from '@/components/chat/LucyModeTransition';
-import { LucyPlusEntryScreen } from '@/components/chat/LucyPlusEntryScreen';
+import { LucyEntryScreen, type LucyEntryVariant } from '@/components/chat/LucyEntryScreen';
+import { isLucyChatPath } from '@/lib/duoPaneFocus';
 import { isLucyTarotDrawRequest, isLucyTarotDrawOpen } from '@/lib/lucyTarotIntegrity';
 import { useSyncedChatDraft } from '@/hooks/useSyncedChatDraft';
 import { LUCY_PRO_PATH, resolveLucyPageChannels } from '@/lib/lucyChatPageMode';
@@ -687,6 +688,9 @@ const PROMPTS_MARQUEE_RESUME_DELAY_MS = 1200;
 const detectPageChannels = (text: string, options: { allowMaster?: boolean } = {}) =>
   detectLucyChannelsFromText(text, { allowMaster: Boolean(options.allowMaster) });
 
+/** The first Lucy mount in this page load uses the initial aura loader instead of the entry screen. */
+let lucyMountedBefore = false;
+
 function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
   // Lucy and Lucy+ share one required basic-tool + deep-perspective answer policy.
   // 🌟 실제 펼친 듀얼스크린 감지:
@@ -728,6 +732,31 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
   const showPlusMarker = isCosmicRoomActive;
   const isPlusMode = showPlusMarker;
   const [modeTransitioningTier, setModeTransitioningTier] = useState<LucyTier | null>(null);
+
+  // Entry screens: Lucy Plus when the screen unfolds; Lucy when it folds back or
+  // when a folded screen enters the Lucy chat from another channel.
+  // A remount (folded screen coming back to Lucy from another channel) shows the Lucy entry screen.
+  const [lucyEntry, setLucyEntry] = useState<{ run: number; variant: LucyEntryVariant }>(() => ({
+    run: lucyMountedBefore && !pro ? 1 : 0,
+    variant: showPlusMarker ? 'plus' : 'lucy',
+  }));
+  useEffect(() => { lucyMountedBefore = true; }, []);
+  const entryPlusRef = useRef(showPlusMarker);
+  const entryLocationRef = useRef(location);
+  useEffect(() => {
+    const wasPlus = entryPlusRef.current;
+    const previousLocation = entryLocationRef.current;
+    entryPlusRef.current = showPlusMarker;
+    entryLocationRef.current = location;
+    if (pro) return;
+    if (wasPlus !== showPlusMarker) {
+      setLucyEntry(entry => ({ run: entry.run + 1, variant: showPlusMarker ? 'plus' : 'lucy' }));
+      return;
+    }
+    if (!showPlusMarker && isLucyChatPath(location) && !isLucyChatPath(previousLocation)) {
+      setLucyEntry(entry => ({ run: entry.run + 1, variant: 'lucy' }));
+    }
+  }, [showPlusMarker, location, pro]);
 
   const previousPlusMode = useRef(isPlusMode);
   useEffect(() => {
@@ -3499,9 +3528,9 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
     >
       {/* 🌌 Shared AI/Plus sky background; clover accents belong to Pro modes only */}
       <LucyCosmicBackground isProMode={isMasterMode} period={lucyDayPeriod} />
-      {/* Entering Lucy Plus has its own entry screen; other mode changes keep the short transition. */}
-      <LucyModeTransition active={modeTransitioningTier !== null && modeTransitioningTier !== 'plus'} isPlusMode={showPlusMarker} isProMode={isMasterMode} />
-      <LucyPlusEntryScreen active={showPlusMarker && !isMasterMode} period={lucyDayPeriod} />
+      {/* Lucy and Lucy Plus have their own entry screens; other mode changes keep the short transition. */}
+      <LucyModeTransition active={modeTransitioningTier !== null && modeTransitioningTier !== 'plus' && modeTransitioningTier !== 'ai'} isPlusMode={showPlusMarker} isProMode={isMasterMode} />
+      <LucyEntryScreen trigger={lucyEntry.run} variant={lucyEntry.variant} period={lucyDayPeriod} />
 
       {/* PRO Top Header Bar */}
       <header 
