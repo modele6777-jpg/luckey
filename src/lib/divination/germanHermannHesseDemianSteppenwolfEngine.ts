@@ -4,7 +4,7 @@
  * @version LUCKEY-HESSE-DEMIAN-STEPPENWOLF-v2.0.0
  */
 
-export const GERMAN_HERMANN_HESSE_DEMIAN_STEPPENWOLF_VERSION = 'LUCKEY-HESSE-DEMIAN-STEPPENWOLF-v2.4.0';
+export const GERMAN_HERMANN_HESSE_DEMIAN_STEPPENWOLF_VERSION = 'LUCKEY-HESSE-DEMIAN-STEPPENWOLF-v2.5.0';
 
 export interface HesseTheme {
   themeKey: string;
@@ -79,7 +79,7 @@ function selectHesseTheme(query?: string): HesseTheme {
 export function calculateGermanHermannHesseDemianSteppenwolf(query?: string, now: Date = new Date()): GermanHermannHesseDemianSteppenwolfResult {
   const activeHesseTheme = selectHesseTheme(query);
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
-  const calculatedAtKst = `${kst.toISOString().slice(0, 19)}+09:00`;
+  const calculatedAtKst = `${kst.toISOString().slice(0, 19)}+09:00 (KST)`;
   const hesseSteppenwolfSynthesisMatrix = {
     dominantTension: `${activeHesseTheme.themeTitleKo} ↔ 현실의 작은 시도`,
     alignmentState: '문학적 성찰을 통한 자기 이해와 조율 국면',
@@ -122,6 +122,7 @@ export function formatGermanHermannHesseDemianSteppenwolfPrompt(res: GermanHerma
       `- 통합 실천: ${res.hesseSteppenwolfSynthesisMatrix.integratedAction}`,
     );
   }
+  lines.push(`- 성찰 초점: ${res.reflectionFocus}`);
   lines.push(`- 질문 맞춤 성찰 질문: ${res.reflectiveQuestion}`);
   return lines.join('\n');
 }

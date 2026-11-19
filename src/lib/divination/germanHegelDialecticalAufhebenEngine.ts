@@ -13,7 +13,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const GERMAN_HEGEL_DIALECTICAL_VERSION = 'LUCKEY-GERMAN-HEGEL-DIALECTICAL-v2.2.0';
+export const GERMAN_HEGEL_DIALECTICAL_VERSION = 'LUCKEY-GERMAN-HEGEL-DIALECTICAL-v2.3.0';
 
 export interface HegelTheme {
   themeKey: string;
@@ -313,7 +313,7 @@ export function calculateHegelDialecticalAufheben(
 
   return {
     engineVersion: GERMAN_HEGEL_DIALECTICAL_VERSION,
-    calculatedAtKst: new Date(now.getTime() + 9 * 60 * 60 * 1000).toISOString().replace('Z', '+09:00'),
+    calculatedAtKst: `${new Date(now.getTime() + 9 * 60 * 60 * 1000).toISOString().slice(0, 19)}+09:00 (KST)`,
     dialecticalAufhebenSynthesisScore,
     mutualAnerkennungMaturityScore,
     sittlichkeitEthicalLifeHarmonyScore,
@@ -381,6 +381,7 @@ export function formatHegelDialecticalAufhebenPrompt(res: HegelDialecticalAufheb
 
   return [
     `【G.W.F. 헤겔 변증법적 지양(Aufheben) & 인륜성 지표 v2.1 (순수 정성 성찰)】`,
+    `- 엔진 버전: ${res.engineVersion} | 연산 시각: ${res.calculatedAtKst}`,
     `- 대립 갈등 지양(Aufheben): ${aufhebenStage}`,
     `- 상호 인정(Anerkennung): ${recognitionStage}`,
     `- 인륜성 공동체 신뢰(Sittlichkeit): ${sittlichkeitStage}`,
@@ -389,6 +390,7 @@ export function formatHegelDialecticalAufhebenPrompt(res: HegelDialecticalAufheb
     `- 질문 맥락 변증법 계기: [${res.situationalDialecticalAudit.dialecticalMoment}] ${res.situationalDialecticalAudit.focusAxisKo}`,
     `- 원전 처방: ${res.situationalDialecticalAudit.classicalCitation} → ${res.situationalDialecticalAudit.synthesisDirective}`,
     `- 성찰 질문: ${res.situationalDialecticalAudit.reflectiveQuestion}`,
+    `- 성찰 초점: ${res.reflectionFocus}`,
     `- KST 시공간 리듬: ${res.temporalMinervaRhythm.timeWindowKo} (${res.temporalMinervaRhythm.seasonKo}, ${temporalRhythmStage}) — ${res.temporalMinervaRhythm.dailySynthesisPractice}`,
     `- 종합 위상: ${res.hegelSynthesisMatrix.overallHegelGrade}`,
     `- 핵심 변증법 테마: ${res.activeHegelTheme.themeTitleKo} [${res.activeHegelTheme.themeTitleGerman}]`,

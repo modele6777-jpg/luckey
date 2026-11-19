@@ -13,7 +13,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const GERMAN_GOTTFRIED_LEIBNIZ_VERSION = 'LUCKEY-GOTTFRIED-LEIBNIZ-MONADOLOGY-v2.2.0';
+export const GERMAN_GOTTFRIED_LEIBNIZ_VERSION = 'LUCKEY-GOTTFRIED-LEIBNIZ-MONADOLOGY-v2.3.0';
 
 export interface LeibnizTheme {
   themeKey: string;
@@ -130,12 +130,7 @@ export const LEIBNIZ_APHORISMS: LeibnizAphorism[] = [
 
 function formatLeibnizKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
-  const y = kst.getUTCFullYear();
-  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
-  const d = String(kst.getUTCDate()).padStart(2, '0');
-  const hh = String(kst.getUTCHours()).padStart(2, '0');
-  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} +09:00 KST`;
+  return `${kst.toISOString().slice(0, 19)}+09:00 (KST)`;
 }
 
 function buildLeibnizReflectiveQuestion(theme: LeibnizTheme, query?: string): string {
@@ -246,6 +241,7 @@ export function formatGottfriedLeibnizMonadologyHarmonyPrompt(res: GottfriedLeib
     `- 보조 원전 출처: "${res.secondaryLeibnizAphorism.aphorismEn}" [${res.secondaryLeibnizAphorism.sourceContext}]`,
     `- 보조 실천 지침: ${res.secondaryLeibnizAphorism.actionGuidance}`,
     `- 성찰 질문: ${res.reflectiveQuestion}`,
+    `- 성찰 초점: ${res.reflectionFocus}`,
     `- 종합 합리주의 철학 권면: ${res.leibnizComprehensiveGuidance.philosophicalCounsel}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
   ];

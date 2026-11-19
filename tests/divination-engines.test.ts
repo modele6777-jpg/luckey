@@ -6930,10 +6930,12 @@ test('G.W.F. Hegel Dialectical Aufheben Engine: calculates Dialectical synthesis
   assert(rep.situationalDialecticalAudit.focusAxisKo.length > 0);
   assert(rep.temporalMinervaRhythm.dialecticalMaturityIndex >= 0 && rep.temporalMinervaRhythm.dialecticalMaturityIndex <= 100);
   assert(rep.hegelSynthesisMatrix.overallHegelGrade.length > 0);
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatHegelDialecticalAufhebenPrompt(rep);
   assert(prompt.includes('G.W.F. 헤겔 변증법적 지양(Aufheben) & 인륜성 지표'));
   assert(prompt.includes(rep.activeHegelTheme.themeTitleKo));
+  assert(prompt.includes('성찰 초점'));
   assert(prompt.includes('질문 맥락 변증법 계기'));
 });
 
@@ -7579,12 +7581,13 @@ test('Gottfried Leibniz Monadology Engine: calculates Pre-established Harmony, M
   assert(rep.bestPossibleWorldOptimismIndex >= 0 && rep.bestPossibleWorldOptimismIndex <= 100);
   assert(rep.sufficientReasonInsightScore >= 0 && rep.sufficientReasonInsightScore <= 100);
   assert(rep.activeLeibnizTheme.themeTitleKo.length > 0);
-  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(Boolean(rep.leibnizSynthesisMatrix?.integratedAction));
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatGottfriedLeibnizMonadologyHarmonyPrompt(rep);
   assert(prompt.includes('라이프니츠 《단자론》 예정조화 & 최선의 세계 지표'));
   assert(prompt.includes(rep.activeLeibnizTheme.themeTitleKo));
+  assert(prompt.includes('성찰 초점'));
   assert(prompt.includes('교차 매트릭스'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
@@ -9037,11 +9040,13 @@ test('Hermann Hesse engine matches the question to a literary theme and omits mi
   assert.equal(rep.activeHesseTheme.themeKey, 'siddharthaRiverOneness');
   assert.equal(Object.hasOwn(rep, 'siddharthaRiverEquanimityScore'), false);
   assertKstTimestamp(rep.calculatedAtKst);
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(Boolean(rep.hesseSteppenwolfSynthesisMatrix?.integratedAction));
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatGermanHermannHesseDemianSteppenwolfPrompt(rep);
   assert.match(prompt, /문학적 참고/);
+  assert(prompt.includes('성찰 초점'));
   assert(prompt.includes('교차 매트릭스'));
   assert.doesNotMatch(prompt, /\/100|원문|원전|Das Wasser lief|Die Welt zu lieben|양극성 치유/);
 });
