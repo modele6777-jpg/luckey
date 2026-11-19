@@ -189,7 +189,7 @@ export function calculateVibrationalSoulQuest(
   const reflectiveQuestion = q
     ? `'${q}' 앞에서 개인년 제${personalYear}년차(${currentTheme.theme})가 지금 나에게 요구하는 가장 정직한 퀘스트 한 걸음은 무엇인가요?`
     : `9년 주기 중 제${personalYear}년차의 문턱에서 내가 지금 가장 먼저 손잡아야 할 ${selectedArchetype.name}의 힘은 무엇인가요?`;
-  const ritualAction = `${selectedArchetype.chakra}(${selectedArchetype.activationPoint})에 의식을 모으고, "${currentTheme.directive}"에 맞춘 오늘의 퀘스트 한 가지를 완료하십시오.`;
+  const ritualAction = `${selectedArchetype.chakra}(${selectedArchetype.point})에 의식을 모으고, "${currentTheme.directive}"에 맞춘 오늘의 퀘스트 한 가지를 완료하십시오.`;
   const reflectionFocus = `생애 여정수 ${lifePathNumber}번(${selectedArchetype.name})과 개인년 제${personalYear}년차의 카르마적 접점`;
 
   return {
