@@ -24,7 +24,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const EGYPTIAN_AMDUAT_VERSION = '2.4.0';
+export const EGYPTIAN_AMDUAT_VERSION = '2.5.0';
 
 export interface AmduatSituationalAudit {
   duatGateFocus: string;
@@ -284,7 +284,7 @@ export function calculateEgyptianAmduat(
   };
 
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
-  const calculatedAtKst = kst.toISOString().replace('T', ' ').substring(0, 19) + ' +09:00 KST';
+  const calculatedAtKst = `${kst.toISOString().slice(0, 19)}+09:00 (KST)`;
   const ritualAction = `${situationalAmduatAudit.barqueAction} · ${temporalAmduatRhythm.voyageGuidance}`;
   const reflectionFocus = question.trim()
     ? `‘${question.trim()}’ 어둠의 관문을 건널 때 [${currentAmduatHour.hourNameAncient}]과 수호신 ${solarDeityGuardian.nameAncient}이 비추는 새벽의 빛은 무엇입니까?`
@@ -332,5 +332,6 @@ export function formatEgyptianAmduatPrompt(report: EgyptianAmduatReport): string
 - **암두아트 상형문자 지혜 잠언**:
   - "${report.amduatHieroglyphicWisdom}"
 - **질문 맞춤 성찰 질문**: ${report.reflectiveQuestion}
+- **성찰 초점**: ${report.reflectionFocus}
 - **해석 경계**: 암두아트의 서 밤의 항해와 케프리 부활 상징을 빌린 정성적 순환 성찰 관점이며, 수치 등급이나 미래 단정이 아닙니다.`;
 }
