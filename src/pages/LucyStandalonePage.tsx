@@ -37,7 +37,6 @@ import { cleanAssistantMessageDisplay, cleanUserMessageDisplay } from '@/utils/c
 import { detectLucyChannelsFromText, formatChannelsModeTitle, getSeptagramBadgeStyle, shouldShowAutoDetectionBadge } from '@/lib/lucyAutoModeDetector';
 import { selectOptimalDivinationTools, THEME_PRIMARY_DIVINATION_TOOLS, type SelectedDivinationToolsResult } from '@/lib/fifteenDivinationTools';
 import { triggerHaptic } from '@/lib/omniWarp/omniWarpHaptics';
-import { LucyResponseRecommendation } from '@/components/LucyResponseRecommendation';
 import { DynamicGhostInputPlaceholder } from '@/components/chat/DynamicGhostInputPlaceholder';
 import { ChatProfileDock } from '@/components/chat/ChatProfileDock';
 import { useSmartScroll } from '@/hooks/useSmartScroll';
@@ -75,8 +74,6 @@ import { LucyKakaoBubbleGroup } from '@/components/chat/LucyKakaoBubbleGroup';
 import { LucyCosmicBackground } from '@/components/chat/LucyCosmicBackground';
 import { ALL_DCE_ENGINES } from '@/lib/divination/deterministicEngine';
 import { LUCY_PRO_CATALOG_ENGINES } from '@/lib/divination/engineCatalog';
-import { groupActuallyUsedCalculationAudit } from '@/lib/divination/calculationAudit';
-import { getEngineBadgeTheme, getUsedEngineThemeBadges, groupEnginesByTheme } from '@/lib/divination/engineBadgeTheme';
 import '@/styles/lucy-starlight.css';
 
 // Helper: Compress uploaded images to prevent UI stutter and huge payload overhead
@@ -1965,7 +1962,6 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
 
   // 프로필 모달 상태
   const [isChatProfileModalOpen, setIsChatProfileModalOpen] = useState(false);
-  const [openUsageMessageId, setOpenUsageMessageId] = useState<string | null>(null);
   const [editingChatProfile, setEditingChatProfile] = useState<ChatTargetProfile | null>(null);
 
   const handleOpenAddChatProfile = useCallback(() => {
@@ -2315,18 +2311,6 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
   const handlePromptsMarqueeTouchEnd = () => holdPromptsMarquee('touched', false);
 
   // 말풍선 배지 / 추천 카드 클릭 시: AI 모드를 유지한 채 해당 채널 조합(단일·융합·마스터)을 즉시 반영
-  const handleActivateMessageMode = (targetChannels: SpecialChannel[], targetIsMaster: boolean, label?: string) => {
-    const nextChannels = resolveLucyPageChannels(targetChannels, isMasterMode);
-    const modeLabel = !isMasterMode && (targetIsMaster || label?.includes('마스터')) ? formatChannelsModeTitle(nextChannels, isMasterMode) : label || formatChannelsModeTitle(nextChannels, isMasterMode);
-    setActiveChannels(nextChannels);
-    setAutoDetectedTitle(modeLabel);
-    setCurrentPrompts(getCuratedPrompts(activeProfiles, 'auto', nextChannels));
-    if (label) {
-      setModeSwitchToast(`⚡ AI 모드 · [${modeLabel}] 가동`);
-      setTimeout(() => setModeSwitchToast(null), 2500);
-    }
-  };
-
   // Dynamic Current Mode Info
   const channelCount = activeChannels.length;
   const isCasualChat = channelCount === 0 && !requireBasicAndDeep;
@@ -3890,10 +3874,6 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
               return null;
             }
             const msgModeInfo = resolveMessageModeAndChannels(msg, filteredMessages, index);
-            const actuallyUsedEngineGroups = groupActuallyUsedCalculationAudit((msg as any).calculationAudit);
-            const actuallyUsedEngines = actuallyUsedEngineGroups.flatMap(group => group.engines);
-            const actuallyUsedEngineThemes = getUsedEngineThemeBadges(actuallyUsedEngines.map(engine => engine.toolId));
-            const isUsageDetailsOpen = openUsageMessageId === msgId;
 
             // 루시의 인사말인지 여부 정밀 판별
             const isGreeting = (() => {
@@ -3961,92 +3941,9 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
                     </span>
                   )}
 
-                  {!isUser && !isMasterMode && actuallyUsedEngines.length > 0 && (
-                    <button
-                      type="button"
-                      data-message-mode-badge="true"
-                      data-message-id={msgId}
-                      aria-label={`${actuallyUsedEngineThemes.length > 0 ? `${actuallyUsedEngineThemes.map(theme => theme.label).join(' + ')} 테마 · ` : ''}실제 사용 엔진 보기`}
-                      aria-haspopup="dialog"
-                      aria-expanded={isUsageDetailsOpen}
-                      onClick={(event) => {
-                        event.stopPropagation();
-                        setOpenUsageMessageId(current => current === msgId ? null : msgId);
-                      }}
-                      className="inline-flex items-center gap-1 px-1 py-0.5 rounded-full text-[10px] font-medium cursor-pointer transition-opacity hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400">
-                      {actuallyUsedEngineThemes.length > 0 ? actuallyUsedEngineThemes.map(theme => (
-                        <span
-                          key={theme.theme}
-                          data-message-theme-badge="true"
-                          data-message-theme={theme.theme}
-                          className="inline-flex items-center rounded-full border px-2 py-0.5"
-                          style={{ backgroundColor: theme.backgroundColor, color: theme.color, borderColor: theme.borderColor }}
-                        >
-                          <span aria-hidden="true" className="mr-1">{theme.emoji}</span>
-                          {theme.label}
-                        </span>
-                      )) : (
-                        <span className={`inline-flex items-center rounded-full border px-2 py-0.5 ${isLight ? 'border-slate-200 bg-slate-100 text-slate-700' : 'border-white/20 bg-white/10 text-slate-100'}`}>
-                          실제 사용 엔진
-                        </span>
-                      )}
-                    </button>
-                  )}
 
                   <span className={`text-[10px] ${isLight ? 'text-slate-400' : 'text-white/70'}`}>{timeStr}</span>
                 </div>
-                {!isUser && !isMasterMode && actuallyUsedEngines.length > 0 && isUsageDetailsOpen && (
-                  <section
-                    role="dialog"
-                    aria-label="이번 답변에서 실제 사용한 엔진"
-                    className={`mb-2 ml-1 w-[calc(100%-0.5rem)] max-w-[26rem] min-w-0 max-h-64 overflow-y-auto overflow-x-hidden rounded-xl border p-3 text-xs shadow-lg ${isLight ? 'border-slate-200 bg-white text-slate-800' : 'border-white/15 bg-slate-900 text-slate-100'}`}
-                  >
-                    <div className="mb-2 font-semibold">이번 답변에 실제 사용된 엔진 ({actuallyUsedEngines.length})</div>
-                    {actuallyUsedEngines.length > 0 ? (
-                      <div className="space-y-2">
-                        {actuallyUsedEngineGroups.map(group => (
-                          <div
-                            key={group.status}
-                            data-testid="used-engine-category-group"
-                            data-engine-category={group.status}
-                            className="flex min-w-0 flex-col gap-2"
-                          >
-                            <span data-testid="used-engine-category-label" className="shrink-0 font-semibold">{group.label}:</span>
-                            {groupEnginesByTheme(group.engines).map(themeGroup => (
-                            <div key={themeGroup.key} data-engine-theme-group={themeGroup.key} className="min-w-0 rounded-lg border border-current/10 p-2">
-                              <div className="mb-1.5 text-[10px] font-semibold opacity-70">{themeGroup.label}</div>
-                              <ul className="grid min-w-0 grid-cols-1 gap-1.5 sm:grid-cols-2">
-                              {themeGroup.engines.map((engine, engineIndex) => {
-                                const engineBadgeTheme = getEngineBadgeTheme(engine.toolId);
-                                return (
-                                  <li key={`${engine.toolId}-${engineIndex}`} className="min-w-0 max-w-full">
-                                    <span
-                                      data-testid="used-engine-badge"
-                                      data-engine-key={engine.toolId}
-                                      data-engine-theme={engineBadgeTheme?.theme}
-                                      className={`inline-flex w-full max-w-full items-center rounded-lg border px-2.5 py-1.5 text-[10px] font-medium leading-relaxed ${engineBadgeTheme ? '' : isLight ? 'border-slate-200 bg-slate-100 text-slate-800' : 'border-white/20 bg-white/10 text-slate-100'}`}
-                                      style={engineBadgeTheme ? {
-                                        backgroundColor: engineBadgeTheme.backgroundColor,
-                                        color: engineBadgeTheme.color,
-                                        borderColor: engineBadgeTheme.borderColor,
-                                      } : undefined}
-                                    >
-                                      <span className="min-w-0 break-words">{engine.name}</span>
-                                    </span>
-                                  </li>
-                                );
-                              })}
-                              </ul>
-                            </div>
-                            ))}
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <p>이번 답변에 모델로 전달된 계산·상징 엔진 기록이 없습니다.</p>
-                    )}
-                  </section>
-                )}
                 <div className="relative group max-w-[92%] sm:max-w-[85%] lg:max-w-[80%] min-w-0">
                   {/* Attached Image Preview (in User Message or Lucy's Card Deep Insight Reply) */}
                   {(() => {
@@ -4177,34 +4074,8 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
                             </div>
                           );
                         }
-                        if (!textContent || textContent.trim().length <= 10) return null;
-                        // 루시 마스터: 대화마다 붙는 모드·엔진 안내 없이 대화에만 집중 (TTS 버튼은 그대로)
-                        if (isMasterMode) return null;
-                        if (msgModeInfo.isCasual) return null;
-                        if (isGreeting) return null;
-
-                        const prevUser = filteredMessages.slice(0, index).reverse().find((m: any) => m.role === 'user');
-                        const prevUserQuery = prevUser
-                          ? typeof prevUser.content === 'string'
-                            ? prevUser.content
-                            : Array.isArray(prevUser.content)
-                            ? prevUser.content.find((item: any) => item.type === 'text')?.text || ''
-                            : ''
-                          : '';
-
-                        return (
-                          <div className="mt-2.5">
-                            <LucyResponseRecommendation
-                              userQuery={prevUserQuery}
-                              lucyAnswer={textContent}
-                              currentChannels={activeChannels}
-                              isCasual={msgModeInfo.isCasual}
-                              isGreeting={isGreeting}
-                              onSwitchChannel={(channels, isMaster, label) => handleActivateMessageMode(channels, isMaster, label)}
-                              onNavigate={(path) => navigate(path)}
-                            />
-                          </div>
-                        );
+                        // 루시·루시+·루시 마스터 모두: 대화마다 붙던 모드·엔진 안내는 표시하지 않음 (TTS 버튼은 그대로)
+                        return null;
                       }}
                     />
                     </>

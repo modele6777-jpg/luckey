@@ -262,7 +262,7 @@ test('Lucy does not show an engine-evidence badge when no engines were recorded'
   await expect(page.getByText('AI 심층 자동 상담', { exact: true })).toHaveCount(0);
 });
 
-test('Lucy answer themes show emojis for used engines while user messages have no mode badge', async ({ page, baseURL }) => {
+test('Lucy chat shows no per-message mode or engine badges', async ({ page, baseURL }) => {
   const appOrigin = new URL(baseURL || 'http://127.0.0.1:4173').origin;
   await page.route('**/*', async route => {
     const url = new URL(route.request().url());
@@ -302,54 +302,11 @@ test('Lucy answer themes show emojis for used engines while user messages have n
   }, Date.now());
   await openLucy(page);
 
-  const questionBadge = page.locator('[data-message-mode-badge="true"][data-message-id="synthetic-engine-badge-question"]');
   await expect(page.getByText('사용자 질문에는 모드 배지를 표시하지 않습니다.', { exact: true })).toBeVisible();
-  await expect(questionBadge).toHaveCount(0);
-  const modeBadge = page.locator('button[data-message-mode-badge="true"][data-message-id="synthetic-engine-badge-check"]');
-  await expect(modeBadge).toBeVisible();
-  await expect(modeBadge).not.toContainText('오렌지');
-  const answerThemeBadges = modeBadge.locator('[data-message-theme-badge="true"]');
-  await expect(answerThemeBadges).toHaveCount(3);
-  await expect(answerThemeBadges.nth(0)).toHaveAttribute('data-message-theme', 'trinity');
-  await expect(answerThemeBadges.nth(0)).toContainText('✨');
-  await expect(answerThemeBadges.nth(0)).toContainText('트리니티');
-  await expect(answerThemeBadges.nth(1)).toHaveAttribute('data-message-theme', 'aura');
-  await expect(answerThemeBadges.nth(1)).toContainText('⚡');
-  await expect(answerThemeBadges.nth(1)).toContainText('아우라');
-  await expect(answerThemeBadges.nth(2)).toHaveAttribute('data-message-theme', 'bluebird');
-  await expect(answerThemeBadges.nth(2)).toContainText('🕊️');
-  await expect(answerThemeBadges.nth(2)).toContainText('블루버드');
-  await modeBadge.click();
-  const evidence = page.getByRole('dialog', { name: '이번 답변에서 실제 사용한 엔진' });
-  const engineBadges = evidence.getByTestId('used-engine-badge');
-  await expect(engineBadges).toHaveCount(4);
-  await expect(evidence.locator('[data-engine-key="qimen"]')).toHaveCount(0);
-  await expect(evidence.locator('[data-engine-key="tojeong"]')).toHaveCount(0);
-
-  const calculatedGroup = evidence.locator('[data-engine-category="calculated"]');
-  await expect(calculatedGroup.getByTestId('used-engine-category-label')).toHaveText('계산 결과:');
-  await expect(calculatedGroup.locator('[data-engine-key="saju"]')).toContainText('사주명리');
-  await expect(calculatedGroup.locator('[data-engine-key="astrology"]')).toContainText('서양 점성술');
-  await expect(calculatedGroup.getByTestId('used-engine-badge')).toHaveCount(2);
-  await expect(evidence.locator('[data-engine-category="partial"]')).toContainText('부분 계산:');
-  await expect(evidence.locator('[data-engine-category="symbolic"]')).toContainText('상징 참고:');
-
-  const sajuBadge = evidence.locator('[data-engine-key="saju"]');
-  await expect(sajuBadge).toHaveAttribute('data-engine-theme', 'trinity');
-  await expect(sajuBadge).toContainText('사주명리');
-  await expect(sajuBadge).toHaveCSS('background-color', 'rgb(254, 249, 195)');
-  await expect(sajuBadge).toHaveCSS('color', 'rgb(133, 77, 14)');
-  await expect(sajuBadge).toHaveCSS('border-top-color', 'rgb(253, 224, 71)');
-
-  const sleepBadge = evidence.locator('[data-engine-key="sleepSubconscious"]');
-  await expect(sleepBadge).toHaveAttribute('data-engine-theme', 'aura');
-  await expect(sleepBadge).toHaveCSS('background-color', 'rgb(220, 252, 231)');
-  await expect(sleepBadge).toHaveCSS('color', 'rgb(22, 101, 52)');
-
-  const ikigaiBadge = evidence.locator('[data-engine-key="ikigaiDestinyCompass"]');
-  await expect(ikigaiBadge).toHaveAttribute('data-engine-theme', 'bluebird');
-  await expect(ikigaiBadge).toHaveCSS('background-color', 'rgb(219, 234, 254)');
-  await expect(ikigaiBadge).toHaveCSS('color', 'rgb(30, 64, 175)');
+  // 대화마다 붙던 모드·엔진 안내는 루시·루시+·루시 마스터 모두에서 제거됨
+  await expect(page.locator('[data-message-mode-badge="true"]')).toHaveCount(0);
+  await expect(page.locator('[data-message-theme-badge="true"]')).toHaveCount(0);
+  await expect(page.getByRole('dialog', { name: '이번 답변에서 실제 사용한 엔진' })).toHaveCount(0);
 });
 
 test('Lucy engine count opens the visible 333-entry catalog and meanings', async ({ page }) => {
@@ -628,7 +585,7 @@ test('Big Bang center single tap enters Lucy with the shared transition, without
   expect(commits[0].isDoubleTapSuction).toBe(false);
 });
 
-test('Big Bang center long press navigates directly to Key', async ({ page }) => {
+test('Big Bang center long press toggles the hidden Lucy Master divination mode', async ({ page }) => {
   await openLucy(page);
   const button = page.locator('#bigbang-omnibutton');
   await expect(button).toBeVisible();
@@ -637,22 +594,21 @@ test('Big Bang center long press navigates directly to Key', async ({ page }) =>
   if (!box) throw new Error('Big Bang button is missing for hold test');
   const x = box.x + box.width / 2;
   const y = box.y + box.height / 2;
+  const hold = async () => {
+    await page.mouse.move(x, y);
+    await page.mouse.down();
+    await page.waitForTimeout(650);
+    await page.mouse.up();
+  };
 
-  await page.evaluate(() => {
-    (window as any).__bigBangHoldCommit = null;
-    window.addEventListener('prism:bigbang_commit', (event) => {
-      (window as any).__bigBangHoldCommit = (event as CustomEvent).detail;
-    }, { once: true });
-  });
-  await page.mouse.move(x, y);
-  await page.mouse.down();
-  await page.waitForTimeout(650);
-  await page.mouse.up();
-  await expect(page).toHaveURL(/\/key$/);
-  await expect.poll(() => page.evaluate(() => (window as any).__bigBangHoldCommit?.target?.destinationPath)).toBe('/key');
-  await expect(page.getByTestId('key-channel-transition')).toBeVisible();
-  await expect(page.locator('iframe[title="Key"]')).toBeVisible();
-  expect(await page.evaluate(() => localStorage.getItem('lucy_tier_mode'))).not.toBe('pro');
+  await hold();
+  await expect.poll(() => page.evaluate(() => sessionStorage.getItem('lucy_master_mode'))).toBe('on');
+  await expect(page).not.toHaveURL(/\/key$/);
+  await expect(page.locator('.lucy-master-room')).toBeVisible();
+
+  await hold();
+  await expect.poll(() => page.evaluate(() => sessionStorage.getItem('lucy_master_mode'))).toBeNull();
+  await expect(page.locator('.lucy-master-room')).toHaveCount(0);
 });
 
 test('Big Bang overlay remains visible for the newest overlapping transition', async ({ page }) => {
@@ -1150,7 +1106,7 @@ test('Lucy keeps the Trinity theme and answer but hides calculation status chips
   await openLucy(page);
 
   await expect(page.getByText('타로 결과 보존 확인: 실제 카드 해석 내용.')).toBeVisible();
-  await expect(page.locator('[data-message-mode-badge="true"]').filter({ hasText: '트리니티' }).first()).toBeVisible();
+  await expect(page.locator('[data-message-mode-badge="true"]')).toHaveCount(0);
   await expect(page.locator('[data-calculation-audit="true"]')).toHaveCount(0);
   await expect(page.getByText('실행 기록', { exact: true })).toHaveCount(0);
   await expect(page.getByText('계산 완료 · 타로', { exact: true })).toHaveCount(0);
