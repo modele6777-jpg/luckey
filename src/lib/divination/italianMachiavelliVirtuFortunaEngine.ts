@@ -15,7 +15,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const ITALIAN_MACHIAVELLI_VERSION = 'LUCKEY-MACHIAVELLI-VIRTU-FORTUNA-v2.2.0';
+export const ITALIAN_MACHIAVELLI_VERSION = 'LUCKEY-MACHIAVELLI-VIRTU-FORTUNA-v2.3.0';
 
 export interface MachiavelliTheme {
   themeKey: string;
@@ -151,7 +151,7 @@ function formatMachiavelliKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} +09:00 KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
 }
 
 function describeMachiavelliStage(score: number): string {
