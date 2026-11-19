@@ -1016,10 +1016,12 @@ test('28 Mansions six-domain scoring: bounds, consistency, 28-day date selection
   assert(Boolean(r.reflectiveQuestion));
   assert(r.interpretiveBoundary?.includes('해석 경계'));
   assert(Boolean(r.mansionsSynthesisMatrix?.integratedAction));
+  assert(Boolean(r.ritualAction) && Boolean(r.reflectionFocus));
   assert(prompt.includes('천상열차분야지도') && prompt.includes('28수 직성'));
   assert(prompt.includes('필월오(畢月烏)') && prompt.includes('계약·협상') && prompt.includes('휴식·치유·내실'));
   assert(prompt.includes('대칭 보조 별자리'));
   assert(prompt.includes('성찰 질문'));
+  assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
   assert(prompt.includes('해석 경계'));
   assert(prompt.includes('교차 매트릭스'));
   assert(!prompt.includes('/100'));
@@ -1224,10 +1226,12 @@ test('Vedic current dasha: 1995-03-25 birth at 2026-11-02 falls in Rahu-Sukra an
   assert(r.reflectiveQuestion?.includes('다샤 흐름'));
   assert(r.interpretiveBoundary?.includes('해석 경계'));
   assert(Boolean(r.vedicSynthesisMatrix?.integratedAction));
+  assert(Boolean(r.ritualAction) && Boolean(r.reflectionFocus));
   const vPrompt = formatVedicPrompt(r);
   assert(vPrompt.includes('교차 매트릭스'));
   assert(vPrompt.includes('보조 교차 축'));
   assert(vPrompt.includes('성찰 질문'));
+  assert(vPrompt.includes('실천 의례') && vPrompt.includes('성찰 초점'));
   assert(vPrompt.includes('해석 경계'));
   assert(!vPrompt.includes('/100'));
   assert(!vPrompt.includes('%'));
@@ -4929,10 +4933,12 @@ test('Vedic Mandukya Turiya Engine: calculates four consciousness states, AUM re
   assert(rep.sakshiWitnessPresenceScore >= 0 && rep.sakshiWitnessPresenceScore <= 100);
   assert(rep.mayaIllusionDissolutionRate >= 0 && rep.mayaIllusionDissolutionRate <= 100);
   assert(rep.dominantState.nameKo.length > 0);
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatVedicMandukyaTuriyaPrompt(rep);
   assert(prompt.includes('고대 인도 만두키야 우파니샤드 4대 의식 & 투리야(Turiya) 순수의식 정성 관조'));
   assert(!prompt.includes('실측 데이터'));
   assert(prompt.includes(rep.dominantState.nameKo));
+  assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
 });
 
 test('Kabbalistic Zohar Five Soul Levels Engine: calculates five soul levels and Ein Sof spark', () => {

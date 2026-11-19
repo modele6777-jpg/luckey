@@ -46,7 +46,7 @@ import { resolveEffectiveSolarDate } from '../lunarCalendar';
 import { parseBirthTime } from '../birthDateTime';
 import { calculateNatalChart, ZODIAC_SIGNS } from '../astrologyAnalysis';
 
-export const VEDIC_ENGINE_VERSION = 'LUCKEY-VD-v2.1.0';
+export const VEDIC_ENGINE_VERSION = 'LUCKEY-VD-v2.2.0';
 
 function formatVedicKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -165,6 +165,8 @@ export interface VedicResult {
   secondaryAxis?: string;
   reflectiveQuestion?: string;
   interpretiveBoundary?: string;
+  ritualAction?: string;
+  reflectionFocus?: string;
   vedicSynthesisMatrix?: {
     dominantTension: string;
     alignmentState: string;
@@ -634,6 +636,10 @@ export function calculateVedicAdvanced(params: {
     : `${nakshatra.name} 나크샤트라의 기질과 ${purusharthaAlignment.primarySpiritualAim} 사이에서 지금 가장 먼저 다듬을 삶의 중심축은 무엇입니까?`;
   const interpretiveBoundary =
     '해석 경계: 본 베딕 조티시 리포트는 라히리 근방 선형 아얀암사 근사식에 기반한 천문·상징 프레임이며, 경계일 전후의 나크샤트라·다샤 판정이나 현실적 중대 결정은 실제 정황과 함께 신중히 판단해야 합니다.';
+  const ritualAction = currentDasha
+    ? `현재 ${currentDasha.mahadasha.lord}-${currentDasha.antardasha.lord} 다샤 흐름에 맞추어 ${purusharthaAlignment.primarySpiritualAim}을 뒷받침하는 핵심 과제를 하루 15분 차분히 점검하십시오.`
+    : `${nakshatra.name} 나크샤트라의 상징(${nakshatra.symbol})을 떠올리며 ${purusharthaAlignment.primarySpiritualAim}에 닿는 작은 실천을 시작하십시오.`;
+  const reflectionFocus = `찬드라 ${chandra.name}와 수리야 ${surya.name} 사이에서 ${purusharthaAlignment.primarySpiritualAim}을 지키는 삶의 중심축`;
   const vedicSynthesisMatrix = {
     dominantTension: currentDasha
       ? `${currentDasha.mahadasha.lord} 마하다샤 ↔ ${currentDasha.antardasha.lord} 안타르다샤`
@@ -666,6 +672,8 @@ export function calculateVedicAdvanced(params: {
     secondaryAxis,
     reflectiveQuestion,
     interpretiveBoundary,
+    ritualAction,
+    reflectionFocus,
     vedicSynthesisMatrix,
   };
 }
@@ -730,6 +738,12 @@ export function formatVedicPrompt(result: VedicResult): string {
   const reflectionLine = result.reflectiveQuestion
     ? `\n- 성찰 질문: ${result.reflectiveQuestion}`
     : '';
+  const ritualLine = result.ritualAction
+    ? `\n- 실천 의례: ${result.ritualAction}`
+    : '';
+  const focusLine = result.reflectionFocus
+    ? `\n- 성찰 초점: ${result.reflectionFocus}`
+    : '';
   const boundaryLine = result.interpretiveBoundary
     ? `\n- ${result.interpretiveBoundary}`
     : '';
@@ -758,7 +772,7 @@ ${nakshatraLines}
 ${rashiLines}
 ${currentLines}
 ${synergyLine ? synergyLine + '\n' : ''}${kendraLine ? kendraLine + '\n' : ''}${purusharthaLine ? purusharthaLine + '\n' : ''}- 120년 빔쇼타리 다샤 전수 타임라인 (9 마하다샤 × 9 안타르다샤 = ${result.antardashaCount}구간, 태양년 365.25일 환산):
-${timelineLines}${matrixLine}${secondaryLine}${reflectionLine}${boundaryLine}
+${timelineLines}${matrixLine}${secondaryLine}${reflectionLine}${ritualLine}${focusLine}${boundaryLine}
 - [AI 해석 지침]: 아래 내용은 입력된 출생 정보와 구현된 항성황도 산법을 적용한 계산 참고값이며, 정확성이나 미래 예측을 보장하지 않습니다. 나크샤트라·파다·다샤 주인과 기간은 제공된 계산 결과에 맞춰 설명하십시오. 아얀암사는 평균 세차율 근사이므로 나크샤트라·파다·다샤 경계일 전후 1일 이내의 결과는 단정하지 마십시오.
 `.trim();
 }
