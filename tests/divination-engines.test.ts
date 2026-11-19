@@ -3850,6 +3850,7 @@ test('Taoist Huangting Jing Internal Palaces Engine: calculates palaces, guardia
   const rep = calculateTaoistHuangtingJing(profile, { question: '내면 양생' });
   assert.equal(rep.engineVersion, TAOIST_HUANGTING_VERSION);
   assert(rep.calculatedAtKst.includes('+09:00 (KST)'));
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(Boolean(rep.huangtingSynthesisMatrix?.integratedAction));
   assert(rep.palaces.dominantPalace.length > 0);
   assert(rep.guardianSpirit.spiritName.length > 0);
@@ -3861,6 +3862,7 @@ test('Taoist Huangting Jing Internal Palaces Engine: calculates palaces, guardia
   assert(prompt.includes('도교 상청파 황정경(黃庭經) 신체 오장 신성좌 & 존사 엔진'));
   assert(prompt.includes(rep.guardianSpirit.spiritName));
   assert(prompt.includes('보조 교차 진신'));
+  assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
   assert(prompt.includes('성찰 질문'));
   assert(prompt.includes('해석 경계'));
   assert(prompt.includes('교차 매트릭스'));
@@ -5099,6 +5101,7 @@ test('Taoist Liezi Wind Riding Engine: calculates wind riding unity, Muhayu rest
   const rep = calculateTaoistLieziWindRiding({ profile, question: '열자 어풍동행 무하유지향' });
   assert.equal(rep.engineVersion, TAOIST_LIEZI_ENGINE_VERSION);
   assert(rep.calculatedAtKst.includes('+09:00 (KST)'));
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(Boolean(rep.lieziSynthesisMatrix?.integratedAction));
   assert(rep.windRidingUnityScore >= 0 && rep.windRidingUnityScore <= 100);
   assert(rep.muhayuRestIndex >= 0 && rep.muhayuRestIndex <= 100);
@@ -5112,6 +5115,7 @@ test('Taoist Liezi Wind Riding Engine: calculates wind riding unity, Muhayu rest
   assert(prompt.includes('도가 열자 어풍동행 & 무하유지향 진인 유유자적 실측 데이터'));
   assert(prompt.includes(rep.dominantStage.nameKo));
   assert(prompt.includes('보조 교차 심법'));
+  assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
   assert(prompt.includes('성찰 질문'));
   assert(prompt.includes('해석 경계'));
   assert(prompt.includes('교차 매트릭스'));
@@ -10069,6 +10073,7 @@ test('Tamil Thirukkural engine: Aram, Porul and Kamam guidance stay qualitative 
   assert.equal(rep.engineVersion, TAMIL_THIRUKKURAL_ARAM_PORUL_KAMAM_VERSION);
   assert.equal(rep.questionTopic, 'relationship');
   assert.ok(rep.calculatedAtKst.endsWith('+09:00'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert.ok(Boolean(rep.thirukkuralSynthesisMatrix?.integratedAction));
   assert.ok(rep.activeThirukkuralTheme.chapterReference.length > 0);
   assert.ok(rep.situationalThirukkuralAudit.questionMapping.length > 0);
@@ -10077,6 +10082,7 @@ test('Tamil Thirukkural engine: Aram, Porul and Kamam guidance stay qualitative 
   assert.ok(!prompt.includes('/100') && !prompt.includes('%') && !prompt.includes('점수'));
   assert.ok(prompt.includes('아람·포룰·카맘'));
   assert.ok(prompt.includes('오늘의 실천 의례'));
+  assert.ok(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
   assert.ok(prompt.includes('성찰 질문'));
   assert.ok(prompt.includes('해석 경계'));
   assert.ok(prompt.includes('+09:00') && prompt.includes('교차 매트릭스'));

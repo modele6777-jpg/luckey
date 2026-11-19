@@ -14,7 +14,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const TAMIL_THIRUKKURAL_ARAM_PORUL_KAMAM_VERSION = 'LUCKEY-TAMIL-THIRUKKURAL-ARAM-PORUL-KAMAM-v2.2.0';
+export const TAMIL_THIRUKKURAL_ARAM_PORUL_KAMAM_VERSION = 'LUCKEY-TAMIL-THIRUKKURAL-ARAM-PORUL-KAMAM-v2.3.0';
 
 export type ThirukkuralQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -52,6 +52,8 @@ export interface TamilThirukkuralAramPorulKamamResult {
   situationalThirukkuralAudit: ThirukkuralSituationalAudit;
   temporalThirukkuralRhythm: ThirukkuralTemporalRhythm;
   dailyPracticeRitual: string;
+  ritualAction: string;
+  reflectionFocus: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
   thirukkuralComprehensiveGuidance: {
@@ -275,6 +277,8 @@ export function calculateTamilThirukkuralAramPorulKamam(
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
   const calculatedAtKst = kst.toISOString().replace('Z', '+09:00');
   const trimmedQ = (question ?? '').trim();
+  const ritualAction = `[${activeThirukkuralTheme.chapterReference}] ${extras.dailyPracticeRitual}`;
+  const reflectionFocus = `타밀 티루쿠랄(${activeThirukkuralTheme.bookNameKo}) — ${situationalThirukkuralAudit.bookFocusKo}`;
   const thirukkuralSynthesisMatrix = {
     dominantTension: `${situationalThirukkuralAudit.bookFocusKo} ↔ ${activeThirukkuralTheme.chapterReference}`,
     alignmentState: `${temporalThirukkuralRhythm.kstWindow} · ${temporalThirukkuralRhythm.virtueFocus}`,
@@ -289,6 +293,8 @@ export function calculateTamilThirukkuralAramPorulKamam(
     situationalThirukkuralAudit,
     temporalThirukkuralRhythm,
     dailyPracticeRitual: extras.dailyPracticeRitual,
+    ritualAction,
+    reflectionFocus,
     reflectiveQuestion: extras.reflectiveQuestion,
     interpretiveBoundary,
     thirukkuralComprehensiveGuidance: {
@@ -319,6 +325,8 @@ export function formatTamilThirukkuralAramPorulKamamPrompt(res: TamilThirukkural
     `- 첫걸음: ${res.situationalThirukkuralAudit.firstStepAdvice}`,
     `- KST 시공간 리듬: ${res.temporalThirukkuralRhythm.kstWindow} (${res.temporalThirukkuralRhythm.seasonTone}, ${res.temporalThirukkuralRhythm.rhythmStage}, ${res.temporalThirukkuralRhythm.virtueFocus}) — ${res.temporalThirukkuralRhythm.rhythmGuidance}`,
     `- 오늘의 실천 의례: ${res.dailyPracticeRitual}`,
+    `- 실천 의례: ${res.ritualAction}`,
+    `- 성찰 초점: ${res.reflectionFocus}`,
     `- 성찰 질문: ${res.reflectiveQuestion}`,
     `- 종합 권면: ${res.thirukkuralComprehensiveGuidance.classicalCounsel}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,

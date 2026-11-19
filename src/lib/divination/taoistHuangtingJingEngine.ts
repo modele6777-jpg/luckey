@@ -28,7 +28,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const TAOIST_HUANGTING_VERSION = 'LUCKEY-TAOIST-HUANGTING-v2.1.0';
+export const TAOIST_HUANGTING_VERSION = 'LUCKEY-TAOIST-HUANGTING-v2.2.0';
 
 function formatHuangtingKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -65,6 +65,8 @@ export interface TaoistHuangtingJingReport {
   illuminationScore: number;       // 0 ~ 100 회광반조 내적 조화도
   huangtingPrescription: string;   // 황정경 실천 양생법
   synthesisMessage: string;
+  ritualAction: string;
+  reflectionFocus: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
   huangtingSynthesisMatrix?: {
@@ -144,6 +146,8 @@ export function calculateTaoistHuangtingJing(
   const huangtingPrescription = `황정경 존사법: 숨을 들이쉴 때 [${guardianSpirit.robedColor}]의 신성한 빛이 [${guardianSpirit.organ}]을 가득 채우는 것을 마음의 눈으로 바라보며(존사), "${guardianSpirit.innerPreservationMantra}"를 가만히 묵상하세요.`;
 
   const synthesisMessage = `황정내경경 원전에 따라, 당신의 삼단전 중 [${dominantPalace}]이 중심을 잡고 있으며 오늘 주재하는 내장신은 [${guardianSpirit.spiritName}]입니다.`;
+  const ritualAction = `[${guardianSpirit.organ} · ${guardianSpirit.spiritName}] ${guardianSpirit.innerPreservationMantra}`;
+  const reflectionFocus = `상청파 황정경(${dominantPalace}) — ${guardianSpirit.spiritName}`;
 
   const reflectiveQuestion = q
     ? `"${q}"의 고비를 넘길 때, ${guardianSpirit.organ}의 진신 ${guardianSpirit.spiritName}과 보조 ${secondarySpirit.organ}의 ${secondarySpirit.spiritName} 가운데 지금 내 몸이 먼저 요청하는 휴식은 무엇입니까?`
@@ -173,6 +177,8 @@ export function calculateTaoistHuangtingJing(
     illuminationScore,
     huangtingPrescription,
     synthesisMessage,
+    ritualAction,
+    reflectionFocus,
     reflectiveQuestion,
     interpretiveBoundary,
     huangtingSynthesisMatrix,
@@ -192,6 +198,8 @@ export function formatTaoistHuangtingJingPrompt(report: TaoistHuangtingJingRepor
 - **보조 교차 진신**: **${report.secondarySpirit.organ} - ${report.secondarySpirit.spiritName}** (${report.secondarySpirit.robedColor})
 - **황정경 내관 양생 처방**: ${report.huangtingPrescription}
 - **황정 통합 나침반**: ${report.synthesisMessage}${matrixLine}
+- **실천 의례**: ${report.ritualAction}
+- **성찰 초점**: ${report.reflectionFocus}
 - **성찰 질문**: ${report.reflectiveQuestion}
 - **해석 경계**: ${report.interpretiveBoundary}`;
 }
