@@ -1,10 +1,10 @@
 {
-  "version": "1.7.927",
-  "builtAt": "2026-11-19T10:41:00+09:00",
-  "summary": "티베트 포와 무지개체·철판신수·토정비결 3대 엔진 실천 의례 및 성찰 초점 표준 연동(v1.7.927)",
+  "version": "1.7.928",
+  "builtAt": "2026-11-19T10:51:00+09:00",
+  "summary": "톨텍 나구알·초월 명상·사주 12신살 3대 엔진 실천 의례 및 성찰 초점 표준 연동(v1.7.928)",
   "items": [
-    "티베트 밀교 족첸 릭파 본각 & 포와 무지개체(Jalü) 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동",
-    "고대 중국 철판신수 천기운명 조식 & 태현수비학 엔진(v2.3.0): ritualAction·reflectionFocus 표준 필드 연동",
-    "조선 정통 이지함 토정비결 144괘문 수리 엔진(v2.3.0): ritualAction·reflectionFocus 표준 필드 연동"
+    "고대 멕시코 톨텍 나구알리즘 4대 약속 & 꿈의 제2주의 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동",
+    "초월 명상 & 마음 안정 지능 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동",
+    "사주 12신살 완전 순환 궤도 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동"
   ]
 }

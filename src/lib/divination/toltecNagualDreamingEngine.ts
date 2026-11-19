@@ -15,7 +15,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const TOLTEC_NAGUAL_DREAMING_ENGINE_VERSION = '2.1.0';
+export const TOLTEC_NAGUAL_DREAMING_ENGINE_VERSION = '2.2.0';
 
 function formatToltecKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -53,6 +53,8 @@ export interface ToltecNagualDreamingReport {
   warriorStalkingRitual: string; // 톨텍 전사의 자기 정화 리추얼
   reflectiveQuestion: string;
   interpretiveBoundary: string;
+  ritualAction: string;
+  reflectionFocus: string;
   toltecSynthesisMatrix?: {
     dominantTension: string;
     alignmentState: string;
@@ -157,6 +159,8 @@ export function calculateToltecNagualDreaming(
     : `[${primaryAgreement.nameKo}]의 약속을 오늘 하루 실천할 때, 내 안의 미토테(소음)가 가장 쉽게 파고드는 순간은 언제입니까?`;
   const interpretiveBoundary =
     '톨텍 나구알리즘 4대 약속과 토날·나구알 상징은 언어 습관과 내면의 자각을 점검하기 위한 철학적 관조 은유이며, 단정적 미래 예측이나 의학적·심리적 진단을 대체하지 않습니다.';
+  const ritualAction = `${primaryAgreement.impeccableAction} 잠들기 전 오늘의 말과 반응을 2분간 조용히 돌아보십시오.`;
+  const reflectionFocus = `[${primaryAgreement.nameKo}] 실천과 [${secondaryAgreement.nameKo}]의 조화를 가로막는 미토테(마음의 소음)`;
   const toltecSynthesisMatrix = {
     dominantTension: `${primaryAgreement.nameKo} ↔ ${primaryAgreement.shadowTrap}`,
     alignmentState: `${nagualRatio >= tonalRatio ? '나구알(지각자) 우위' : '토날(현실) 우위'} · 보조 교차(${secondaryAgreement.nameKo})`,
@@ -179,6 +183,8 @@ export function calculateToltecNagualDreaming(
     warriorStalkingRitual,
     reflectiveQuestion,
     interpretiveBoundary,
+    ritualAction,
+    reflectionFocus,
     toltecSynthesisMatrix,
   };
 }
@@ -198,5 +204,7 @@ ${rep.agreements.map((a) => `  - ${a.nameKo}: [위반 덫: ${a.shadowTrap}]`).jo
 · 꿈꾸는 자의 현실 조율 지침: ${rep.dreamerGuidance}
 · 톨텍 전사 스토킹 리추얼: ${rep.warriorStalkingRitual}${matrixLine}
 · 성찰 질문: ${rep.reflectiveQuestion}
+· 실천 의례: ${rep.ritualAction}
+· 성찰 초점: ${rep.reflectionFocus}
 · 해석 경계: ${rep.interpretiveBoundary}`;
 }

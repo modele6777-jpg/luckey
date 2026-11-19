@@ -2172,6 +2172,7 @@ test('Twelve Spirits Cycle Engine: 사주 12신살 완전 순환 궤도 및 일�
   assert(res.reflectiveQuestion.includes('오늘의 행동 전략'));
   assert(res.interpretiveBoundary.includes('해석 경계'));
   assert(Boolean(res.twelveSpiritsSynthesisMatrix?.integratedAction));
+  assert(res.ritualAction.length > 0 && res.reflectionFocus.length > 0);
   assert(res.todayDaySpirit.dayBase.name.length > 0);
   assert(res.todayDaySpirit.yearBase.name.length > 0);
   assert(res.todayStrategy.recommendedPersona.length > 0);
@@ -2183,6 +2184,7 @@ test('Twelve Spirits Cycle Engine: 사주 12신살 완전 순환 궤도 및 일�
   assert(prompt.includes('추천 페르소나'));
   assert(prompt.includes('교차 매트릭스'));
   assert(prompt.includes('성찰 질문'));
+  assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
   assert(prompt.includes('해석 경계'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
@@ -2646,6 +2648,7 @@ test('Transcendental Meditation Engine: 초월 명상 및 마음 안정 안내 �
   assert.equal(res.engineVersion, TRANSCENDENTAL_MEDITATION_VERSION);
   assert(res.calculatedAtKst.includes('+09:00 (KST)'));
   assert(Boolean(res.zenSynthesisMatrix?.integratedAction));
+  assert(res.ritualAction.length > 0 && res.reflectionFocus.length > 0);
   assert(res.equanimityScore >= 0 && res.equanimityScore <= 100);
   assert(res.prescription.intendedMindState.length > 0);
   assert(res.ichingZenState.mantraText.length > 0);
@@ -2657,6 +2660,7 @@ test('Transcendental Meditation Engine: 초월 명상 및 마음 안정 안내 �
   assert(prompt.includes('성찰 질문'));
   assert(prompt.includes('해석 경계'));
   assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
   assert.doesNotMatch(prompt, /\bHz\b|Solfeggio|솔페지오|뇌파|주파수/i);
@@ -4780,6 +4784,7 @@ test('Toltec Nagual Dreaming Engine: calculates four agreements and second atten
   assert.equal(rep.engineVersion, TOLTEC_NAGUAL_DREAMING_ENGINE_VERSION);
   assert(rep.calculatedAtKst.includes('+09:00 (KST)'));
   assert(Boolean(rep.toltecSynthesisMatrix?.integratedAction));
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert.equal(rep.agreements.length, 4);
   assert(rep.secondAttentionIndex >= 0 && rep.secondAttentionIndex <= 100);
   assert(rep.mitoteClarityScore >= 0 && rep.mitoteClarityScore <= 100);
@@ -4795,6 +4800,7 @@ test('Toltec Nagual Dreaming Engine: calculates four agreements and second atten
   assert(prompt.includes('성찰 질문'));
   assert(prompt.includes('해석 경계'));
   assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });
