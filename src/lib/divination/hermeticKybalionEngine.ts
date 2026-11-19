@@ -11,7 +11,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const HERMETIC_KYBALION_VERSION = 'LUCKEY-HERMETIC-KYBALION-v2.4.0';
+export const HERMETIC_KYBALION_VERSION = 'LUCKEY-HERMETIC-KYBALION-v2.5.0';
 
 export type KybalionQuestionFocus = 'career' | 'relationship' | 'anxiety' | 'decision' | 'spiritual';
 
@@ -285,7 +285,7 @@ export function calculateHermeticKybalion(
   };
 
   const kst = new Date(targetDate.getTime() + 9 * 60 * 60 * 1000);
-  const calculatedAtKst = `${kst.toISOString().slice(0, 19).replace('T', ' ')} +09:00 KST`;
+  const calculatedAtKst = `${kst.toISOString().slice(0, 19).replace('T', ' ')} +09:00 (KST)`;
 
   const reflectiveQuestion = question.trim()
     ? `"${question.trim()}"의 흔들림 속에서 ${master.nameKo}의 렌즈로 볼 때 내가 지금 원인(Cause)으로 바꿀 수 있는 한 가지는 무엇입니까?`

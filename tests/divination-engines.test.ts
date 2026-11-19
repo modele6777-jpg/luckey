@@ -3428,6 +3428,7 @@ test('Five Emotions Pulse Engine: calculates five elements emotional harmony and
 test('Hermetic Kybalion Engine: maps 7 cosmic principles and alchemical shift', () => {
   const rep = calculateHermeticKybalion(profile, new Date('2026-11-15T05:00:00Z'), '직장 결정을 앞두고 불안합니다');
   assert.equal(rep.engineVersion, HERMETIC_KYBALION_VERSION);
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(rep.cosmicPrinciples.length === 7);
   assert(rep.principleAlignmentScore >= 0 && rep.principleAlignmentScore <= 100);
   assert(rep.masterPrinciple.nameKo.length > 0);
@@ -3440,6 +3441,7 @@ test('Hermetic Kybalion Engine: maps 7 cosmic principles and alchemical shift', 
   assert(prompt.includes('헤르메스 카이발리온'));
   assert(prompt.includes(rep.masterPrinciple.nameKo));
   assert(prompt.includes(rep.ritualAction));
+  assert(prompt.includes(rep.reflectionFocus));
   assert.doesNotMatch(prompt, /\bHz\b|주파수|frequency/i);
   assert(!prompt.includes('%'));
 });
@@ -4221,13 +4223,14 @@ test('Hindu Nadi Agastya Palm Leaf Engine: calculates 14 Kandams and Shanti Pari
   assert.equal(rep.engineVersion, HINDU_NADI_AGASTYA_PALM_LEAF_ENGINE_VERSION);
   assert(rep.activeKandamNumber >= 1 && rep.activeKandamNumber <= 14);
   assert(rep.dharmaFulfillmentIndex >= 0 && rep.dharmaFulfillmentIndex <= 100);
-  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(Boolean(rep.nadiSynthesisMatrix?.integratedAction));
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatHinduNadiAgastyaPalmLeafPrompt(rep);
   assert(prompt.includes('남인도 나디 점성술(Nadi Astrology) & 아가스티야 야자잎 14 칸담 상징 성찰 자료'));
   assert(prompt.includes(rep.kandamName));
   assert(prompt.includes(rep.ritualAction));
+  assert(prompt.includes(rep.reflectionFocus));
   assert(prompt.includes('교차 매트릭스'));
   assert(prompt.includes('실제 야자잎 신탁'));
   assert(prompt.includes('건강 문제의 원인이나 책임을 카르마로 단정하지 말고'));
@@ -5129,6 +5132,7 @@ test('Persian Attar Seven Valleys Engine: calculates seven valleys passage, Simu
 test('Hermetic Poimandres Ascension Engine: calculates seven spheres passions purification and Ogdoad Nous', () => {
   const rep = calculateHermeticPoimandres({ profile, question: '포이만드레스와 누스', now: new Date('2026-11-15T05:00:00Z') });
   assert.equal(rep.engineVersion, HERMETIC_POIMANDRES_ENGINE_VERSION);
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(rep.nousDivineIntellectResonanceScore >= 0 && rep.nousDivineIntellectResonanceScore <= 100);
   assert(rep.planetaryPassionsPurificationRate >= 0 && rep.planetaryPassionsPurificationRate <= 100);
   assert(rep.ogdoadAscensionReadinessIndex >= 0 && rep.ogdoadAscensionReadinessIndex <= 100);
@@ -5143,6 +5147,7 @@ test('Hermetic Poimandres Ascension Engine: calculates seven spheres passions pu
   assert(prompt.includes('고대 헤르메스주의 포이만드레스 7대 천계 탈각 & 옥도아드 각성 실측 데이터'));
   assert(prompt.includes(rep.dominantSphere.nameKo));
   assert(prompt.includes(rep.ritualAction));
+  assert(prompt.includes(rep.reflectionFocus));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });
