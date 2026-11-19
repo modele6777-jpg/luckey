@@ -3684,7 +3684,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
                     className={`text-base sm:text-xl font-black tracking-tight flex items-center gap-1.5 shrink-0 ${isLight ? 'text-slate-900' : 'text-white'}`}
                   >
                     <span data-no-scroll-top="true" className="flex items-center gap-1.5 select-none">
-                      <LucyModeName plus={showPlusMarker} pro={false} isLight={isLight} />
+                      <LucyModeName plus={showPlusMarker} pro={false} master={isMasterMode} isLight={isLight} />
                     </span>
                   </h1>
                   <LucyLibraryTrigger
