@@ -5,6 +5,7 @@ import { DetectedTarotCard } from '@/utils/tarotDetector';
 import { TarotCardBackFace } from '@/components/trinity/TarotCardBackFace';
 import { useTarotCardBack } from '@/hooks/useTarotCardBack';
 import { triggerHaptic } from '@/lib/omniWarp/omniWarpHaptics';
+import { MASTER_TAROT_SPREADS, type MasterTarotSpread } from '@/lib/lucyMasterMode';
 
 interface DuoTarotBookSpreadProps {
   cards: DetectedTarotCard[];
@@ -12,7 +13,7 @@ interface DuoTarotBookSpreadProps {
   revealedCardIds?: string[];
   onRevealCard?: (cardId: string) => void;
   onScrollToReading?: (cardId: string) => void;
-  onQuickDraw?: (promptText: string) => void;
+  onQuickDraw?: (promptText: string, spread?: MasterTarotSpread) => void;
   isLight?: boolean;
   /** Lucy Master table: transparent so the shared velvet/candle room shows through. */
   masterRoom?: boolean;
@@ -93,35 +94,34 @@ export const DuoTarotBookSpread: React.FC<DuoTarotBookSpreadProps> = ({
             오른쪽 루시 채팅에서 타로를 질문하시면, 이곳에 고화질 3D 북스프레드가 즉시 펼쳐집니다.
           </p>
 
-          <div className="flex flex-col gap-2 w-full max-w-xs">
-            <button
-              type="button"
-              onClick={() => {
-                triggerHaptic('whitehole');
-                onQuickDraw?.('오늘 나의 하루를 이끌어줄 3장의 타로 카드를 뽑아서 운세와 행동 조언을 해줘.');
-              }}
-              className="flex items-center justify-between px-3.5 py-2.5 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 border border-amber-400/30 text-amber-200 text-xs font-bold transition-all group cursor-pointer shadow-xs active:scale-98"
-            >
-              <span className="flex items-center gap-2">
-                <span>🔮</span>
-                <span>오늘의 3카드 운세 뽑기</span>
-              </span>
-              <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                triggerHaptic('whitehole');
-                onQuickDraw?.('지금 내가 마주한 고민에 대한 과거-현재-미래 타로 스프레드를 봐줘.');
-              }}
-              className="flex items-center justify-between px-3.5 py-2.5 rounded-xl bg-slate-800/60 hover:bg-slate-800 border border-white/10 text-slate-300 text-xs font-medium transition-all group cursor-pointer shadow-xs active:scale-98"
-            >
-              <span className="flex items-center gap-2">
-                <span>⏳</span>
-                <span>과거·현재·미래 심층 스프레드</span>
-              </span>
-              <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
-            </button>
+          {/* 추천 예시: 질문마다 맞춤 배열법(자리 이름)이 붙어 있다 */}
+          <div className="flex flex-col gap-2 w-full max-w-sm text-left" data-tarot-spread-examples>
+            <p className="text-[11px] font-bold tracking-wide text-amber-300/90 mb-0.5">추천 질문 · 맞춤 배열법</p>
+            {MASTER_TAROT_SPREADS.map(spread => (
+              <button
+                key={spread.id}
+                type="button"
+                data-tarot-spread-example={spread.id}
+                onClick={() => {
+                  triggerHaptic('whitehole');
+                  onQuickDraw?.(spread.prompt, spread);
+                }}
+                className="group w-full px-3.5 py-2.5 rounded-xl bg-[#1a0f2e]/85 hover:bg-[#2a1745]/90 border border-amber-400/25 text-left backdrop-blur-sm transition-all cursor-pointer active:scale-98"
+              >
+                <span className="flex items-center justify-between gap-2">
+                  <span className="flex items-center gap-2 min-w-0">
+                    <span aria-hidden="true">{spread.emoji}</span>
+                    <span className="text-xs font-bold text-amber-100 truncate">{spread.label}</span>
+                  </span>
+                  <span className="shrink-0 text-[10px] font-semibold text-amber-300/90 bg-amber-500/15 border border-amber-400/25 rounded-full px-2 py-0.5">
+                    {spread.spreadName}
+                  </span>
+                </span>
+                <span className="mt-1 block text-[10.5px] leading-relaxed text-slate-300/90 break-keep">
+                  {spread.positions.map((position, i) => `${i + 1}. ${position}`).join(' · ')}
+                </span>
+              </button>
+            ))}
           </div>
         </div>
       ) : (
