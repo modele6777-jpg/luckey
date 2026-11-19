@@ -29,7 +29,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const ABORIGINAL_DREAMTIME_SONGLINES_ENGINE_VERSION = '2.2.0';
+export const ABORIGINAL_DREAMTIME_SONGLINES_ENGINE_VERSION = '2.3.0';
 
 export type DreamtimeQuestionTheme = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -340,12 +340,12 @@ export function calculateAboriginalDreamtimeSonglines(options?: {
     kurunpaLifeForceIndex >= 85 ? '충만' : kurunpaLifeForceIndex >= 70 ? '균형' : '회복필요';
   const dreamtimeSynthesisMatrix: DreamtimeSynthesisMatrix = {
     kurunpaState,
-    totemSonglineLink: `${activeTotem.name}의 파동이 ${temporalDreamtimeRhythm.countryWatchWindow} (${temporalDreamtimeRhythm.dreamingTempo}) 리듬과 공명합니다.`,
-    nextWalkaboutStep: situationalDreamtimeAudit.walkaboutPrescription,
+    totemSonglineLink: `${activeTotem.name}의 파동이 ${temporalDreamtimeRhythm.countryWatchWindow} (${temporalDreamtimeRhythm.dreamingTempo} · ${temporalDreamtimeRhythm.seasonalCountryPhase}) 리듬과 공명합니다.`,
+    nextWalkaboutStep: `${situationalDreamtimeAudit.songlineFocus} — ${situationalDreamtimeAudit.walkaboutPrescription}`,
   };
 
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
-  const calculatedAtKst = `${kst.toISOString().slice(0, 19)}+09:00`;
+  const calculatedAtKst = `${kst.toISOString().slice(0, 19)}+09:00 (KST)`;
   const qLabel = question.trim() ? `"${question.trim()}"에 대해 ` : '';
   const reflectiveQuestion = `${qLabel}${themed.reflection}`;
 
