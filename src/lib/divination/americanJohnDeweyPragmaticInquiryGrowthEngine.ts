@@ -12,7 +12,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const AMERICAN_JOHN_DEWEY_PRAGMATIC_INQUIRY_GROWTH_VERSION = 'LUCKEY-JOHN-DEWEY-PRAGMATIC-INQUIRY-GROWTH-v2.2.0';
+export const AMERICAN_JOHN_DEWEY_PRAGMATIC_INQUIRY_GROWTH_VERSION = 'LUCKEY-JOHN-DEWEY-PRAGMATIC-INQUIRY-GROWTH-v2.3.0';
 
 export type DeweyQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -82,6 +82,7 @@ function getTemporalDeweyRhythm(now: Date) {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  const ss = String(kst.getUTCSeconds()).padStart(2, '0');
   const hour = kst.getUTCHours();
   const month = kst.getUTCMonth() + 1;
 
@@ -104,7 +105,7 @@ function getTemporalDeweyRhythm(now: Date) {
           : '겨울 · 재구성절 (묵은 습관을 점검하고 다음 성장을 준비하는 시기)';
 
   return {
-    kstTimeLabel: `${y}-${m}-${d} ${hh}:${mm} KST`,
+    kstTimeLabel: `${y}-${m}-${d}T${hh}:${mm}:${ss}+09:00 (KST)`,
     inquiryWindow,
     seasonalGrowthTone,
     temporalGuidance: `${inquiryWindow} · ${seasonalGrowthTone}의 리듬으로 탐구를 이어가십시오.`,
@@ -340,6 +341,7 @@ export function formatAmericanJohnDeweyPragmaticInquiryGrowthPrompt(
     `- 구체적 실천 지침: ${res.focalDeweyAphorism.actionGuidance}`,
     `- 맥락별 실행 조언: ${res.practiceGuidance}`,
     `- 오늘의 작은 의례: ${res.ritualAction}`,
+    `- 성찰 초점: ${res.reflectionFocus}`,
     `- 성찰 질문: ${res.reflectiveQuestion}`,
     `- 교차 매트릭스: 핵심(${res.deweySynthesisMatrix.coreInsight}) | 실행(${res.deweySynthesisMatrix.recommendedAction}) | 주의(${res.deweySynthesisMatrix.cautionNotice})`,
     `- 핵심 조언 요약: ${res.counselNote}`,

@@ -8,7 +8,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const AMERICAN_HENRY_DAVID_THOREAU_VERSION = 'LUCKEY-HENRY-DAVID-THOREAU-WALDEN-v2.2.0';
+export const AMERICAN_HENRY_DAVID_THOREAU_VERSION = 'LUCKEY-HENRY-DAVID-THOREAU-WALDEN-v2.3.0';
 
 export type ThoreauQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -160,7 +160,8 @@ function formatKstTimestamp(now: Date): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} (+09:00)`;
+  const ss = String(kst.getUTCSeconds()).padStart(2, '0');
+  return `${y}-${m}-${d}T${hh}:${mm}:${ss}+09:00 (KST)`;
 }
 
 const THOREAU_TOPIC_GUIDANCE: Record<
@@ -341,12 +342,13 @@ function describeThoreauStage(score: number): string {
 
 export function formatHenryDavidThoreauWaldenPrompt(res: HenryDavidThoreauWaldenResult): string {
   return [
-    `【헨리 데이비드 소로 《월든》 단순함 & 양심 지표】`,
+    `【헨리 데이비드 소로 《월든》 단순함 & 양심 지표 (${res.engineVersion})】`,
     `- 기준 시각: ${res.calculatedAtKst} | 질문 맥락: ${res.questionTopic}`,
     `- 핵심 초월주의 테마: ${res.activeThoreauTheme.themeTitleKo} [${res.activeThoreauTheme.themeTitleEn}]`,
     `- 실존적 통찰: ${res.activeThoreauTheme.existentialInsight}`,
     `- 실천 조언: ${res.practiceGuidance}`,
     `- 일상 의례: ${res.ritualAction}`,
+    `- 성찰 초점: ${res.reflectionFocus}`,
     `- 성찰 질문: ${res.reflectiveQuestion}`,
     `- 핵심 원전 경구: "${res.focalThoreauAphorism.aphorismKo}"`,
     `- 원전 출처: "${res.focalThoreauAphorism.aphorismEn}" [${res.focalThoreauAphorism.sourceContext}]`,

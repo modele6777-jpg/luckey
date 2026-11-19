@@ -7380,6 +7380,7 @@ test('Martin Heidegger Being and Time Engine: calculates In-der-Welt-sein, Eigen
 test('Hannah Arendt Vita Activa Engine: provides qualitative Natality guidance, question context and hides raw scores', () => {
   const rep = calculateHannahArendtVitaActiva(profile, '인간관계 갈등을 어떻게 풀어야 할까요?');
   assert.equal(rep.engineVersion, AMERICAN_GERMAN_HANNAH_ARENDT_VERSION);
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert.equal(rep.questionTopic, 'relationship');
   assert(rep.practiceGuidance.length > 0);
   assert(rep.ritualAction.length > 0);
@@ -7390,6 +7391,7 @@ test('Hannah Arendt Vita Activa Engine: provides qualitative Natality guidance, 
   const prompt = formatHannahArendtVitaActivaPrompt(rep);
   assert(prompt.includes('한나 아렌트 《인간의 조건》 활동적 삶 & 탄생성 지표'));
   assert(prompt.includes(rep.activeArendtTheme.themeTitleKo));
+  assert(prompt.includes('성찰 초점'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });
@@ -7418,6 +7420,7 @@ test('Dosan Ahn Chang-ho Musil Yeokhaeng Engine: calculates Musil, Yeokhaeng, an
 test('Henry David Thoreau Walden Engine: provides qualitative Simplicity guidance, question context and hides raw scores', () => {
   const rep = calculateHenryDavidThoreauWalden(profile, '마음이 지치고 휴식이 필요해요');
   assert.equal(rep.engineVersion, AMERICAN_HENRY_DAVID_THOREAU_VERSION);
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert.equal(rep.questionTopic, 'healing');
   assert(rep.practiceGuidance.length > 0);
   assert(rep.ritualAction.length > 0);
@@ -7428,6 +7431,7 @@ test('Henry David Thoreau Walden Engine: provides qualitative Simplicity guidanc
   const prompt = formatHenryDavidThoreauWaldenPrompt(rep);
   assert(prompt.includes('헨리 데이비드 소로 《월든》 단순함 & 양심 지표'));
   assert(prompt.includes(rep.activeThoreauTheme.themeTitleKo));
+  assert(prompt.includes('성찰 초점'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });
@@ -8615,12 +8619,13 @@ test('John Dewey Pragmatic Inquiry and Growth Engine: calculates qualitative Ref
   assert(rep.counselNote.length > 0);
   assert(rep.boundaryNotice.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
-  assert(rep.calculatedAtKst.includes('KST'));
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(rep.deweySynthesisMatrix.coreInsight.length > 0);
   assert(rep.activeDeweyTheme.themeTitleKo.length > 0);
   const prompt = formatAmericanJohnDeweyPragmaticInquiryGrowthPrompt(rep);
   assert(prompt.includes('존 듀이 《경험과 자연·민주주의와 교육》 반성적 사고(Reflective Inquiry)·성장 지표'));
   assert(prompt.includes(rep.activeDeweyTheme.themeTitleKo));
+  assert(prompt.includes('성찰 초점'));
   assert(prompt.includes('KST'));
   assert(!prompt.includes('/100'));
 });
