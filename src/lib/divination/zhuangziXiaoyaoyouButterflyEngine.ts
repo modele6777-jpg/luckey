@@ -17,7 +17,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const ZHUANGZI_XIAOYAOYOU_BUTTERFLY_ENGINE_VERSION = '2.1.0';
+export const ZHUANGZI_XIAOYAOYOU_BUTTERFLY_ENGINE_VERSION = '2.2.0';
 
 export interface ZhuangziArchetype {
   id: string;
@@ -44,6 +44,8 @@ export interface ZhuangziXiaoyaoyouButterflyReport {
   dailyPracticeRitual: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
+  ritualAction: string;
+  reflectionFocus: string;
   zhuangziSynthesisMatrix?: {
     dominantTension: string;
     alignmentState: string;
@@ -181,6 +183,8 @@ export function calculateZhuangziXiaoyaoyouButterfly(
   const calculatedAtKst = new Date(now.getTime() + 9 * 60 * 60 * 1000).toISOString().replace('Z', '+09:00');
   const { situationalZhuangziFocus, dailyPracticeRitual, reflectiveQuestion } = buildSituationalZhuangziFocus(question);
   const interpretiveBoundary = '이 관점은 《장자》의 소요유·제물론 비유를 통해 시야를 넓히는 상징적 프레임이며, 확정 예언이 아닙니다.';
+  const ritualAction = dailyPracticeRitual;
+  const reflectionFocus = `${dominantArchetype.nameKo}(${dominantArchetype.hanja}) · ${situationalZhuangziFocus}`;
 
   const zhuangziFreedomGuidance = `뱁새와 매미의 좁은 가지 다툼에 얽매이지 마십시오. 현재 당신에게 깃든 기운은 [${dominantArchetype.nameKo}(${dominantArchetype.hanja})]의 기상입니다. ${dominantArchetype.spiritualLiberationGift}의 태도를 지닐 때, 사소한 시비는 사라지고 구만 리 장공의 자유로운 바람이 펼쳐집니다. (${situationalZhuangziFocus})`;
   const wuSangWoEmptyRoomRitual = `어깨의 긴장을 풀고 가슴 속 모든 분별과 계산을 허공으로 내쉬며 속삭이십시오: "허실생백(虛室生白), 방을 비우면 저절로 신령한 빛이 차오르듯 나를 비우고 천지의 큰 흐름에 몸을 맡긴다."`;
@@ -208,6 +212,8 @@ export function calculateZhuangziXiaoyaoyouButterfly(
     dailyPracticeRitual,
     reflectiveQuestion,
     interpretiveBoundary,
+    ritualAction,
+    reflectionFocus,
     zhuangziSynthesisMatrix,
   };
 }
@@ -227,6 +233,8 @@ export function formatZhuangziXiaoyaoyouButterflyPrompt(rep: ZhuangziXiaoyaoyouB
 · 질문 맥락 초점: ${rep.situationalZhuangziFocus}
 · 장자의 대자유 지침: ${rep.zhuangziFreedomGuidance}
 · 일상 관조 실천: ${rep.dailyPracticeRitual}
+· 실천 의례: ${rep.ritualAction}
+· 성찰 초점: ${rep.reflectionFocus}
 · 성찰 질문: ${rep.reflectiveQuestion}
 · 허실생백(虛室生白) 마음비움 리추얼: ${rep.wuSangWoEmptyRoomRitual}
 · 해석 경계: ${rep.interpretiveBoundary}${matrixLine}`;

@@ -28,7 +28,7 @@ import { calculateZiwei } from './birthCharts';
 import { resolveEffectiveSolarDate } from '../lunarCalendar';
 import { parseBirthTime } from '../birthDateTime';
 
-export const ZIWEI_FLYING_STARS_ENGINE_VERSION = 'LUCKEY-ZFSE-v2.1.0';
+export const ZIWEI_FLYING_STARS_ENGINE_VERSION = 'LUCKEY-ZFSE-v2.2.0';
 
 function formatZiweiFlyingKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -123,6 +123,8 @@ export interface ZiweiFlyingStarsResult {
   secondaryMutagenAxis: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
+  ritualAction: string;
+  reflectionFocus: string;
   ziweiFlyingSynthesisMatrix?: {
     dominantTension: string;
     alignmentState: string;
@@ -434,6 +436,8 @@ export function calculateZiweiFlyingStars(options?: {
     : `올해 ${luPlacement.targetPalaceName}(화록)과 ${quanPlacement.targetPalaceName}(화권)의 추진력을 키우면서 ${jiPlacement.targetPalaceName}(화기) 영역에서 한 박자 늦출 지점은 어디인가요?`;
   const interpretiveBoundary =
     '해석 경계: 본 리포트는 자미두수 십간사화(록·권·과·기) 비성과 삼방사정 구조를 바탕으로 한 해의 기회와 리스크 축을 비추는 명리적 참고이며, 구체적인 투자·법률·진로의 확정적 예측을 대신하지 않습니다.';
+  const ritualAction = `${luPlacement.targetPalaceName}(화록 ${luPlacement.starName})의 기회를 1개 실행 과제로 고정하고, ${jiPlacement.targetPalaceName}(화기 ${jiPlacement.starName}) 영역의 과잉 집착은 의도적으로 한 박자 늦추십시오.`;
+  const reflectionFocus = `${luPlacement.targetPalaceName}(화록) ↔ ${jiPlacement.targetPalaceName}(화기) · ${relationType}`;
   const ziweiFlyingSynthesisMatrix = {
     dominantTension: `${luPlacement.targetPalaceName}(화록) ↔ ${jiPlacement.targetPalaceName}(화기) [${relationType}]`,
     alignmentState: `${yearGanZhiKr} · ${patternGrade} · 보조축(${secondaryMutagenAxis})`,
@@ -480,6 +484,8 @@ export function calculateZiweiFlyingStars(options?: {
     secondaryMutagenAxis,
     reflectiveQuestion,
     interpretiveBoundary,
+    ritualAction,
+    reflectionFocus,
     ziweiFlyingSynthesisMatrix,
   };
 }
@@ -494,8 +500,8 @@ export function formatZiweiFlyingStarsPrompt(res: ZiweiFlyingStarsResult): strin
   const sf = res.sanFangSiZhengBalance;
   const lj = res.luJiConflictDynamics;
   const matrixLine = res.ziweiFlyingSynthesisMatrix
-    ? `\n6. [자미두수 비성 교차 매트릭스]:\n   - 핵심 긴장: ${res.ziweiFlyingSynthesisMatrix.dominantTension}\n   - 보조 권과 축: ${res.secondaryMutagenAxis}\n   - 조율 상태: ${res.ziweiFlyingSynthesisMatrix.alignmentState}\n   - 통합 실천: ${res.ziweiFlyingSynthesisMatrix.integratedAction}\n7. [성찰 질문 & 해석 경계]:\n   - 성찰 질문: ${res.reflectiveQuestion}\n   - ${res.interpretiveBoundary}`
-    : `\n6. [성찰 질문 & 해석 경계]:\n   - 성찰 질문: ${res.reflectiveQuestion}\n   - ${res.interpretiveBoundary}`;
+    ? `\n6. [자미두수 비성 교차 매트릭스]:\n   - 핵심 긴장: ${res.ziweiFlyingSynthesisMatrix.dominantTension}\n   - 보조 권과 축: ${res.secondaryMutagenAxis}\n   - 조율 상태: ${res.ziweiFlyingSynthesisMatrix.alignmentState}\n   - 통합 실천: ${res.ziweiFlyingSynthesisMatrix.integratedAction}\n7. [성찰 질문 & 해석 경계]:\n   - 실천 의례: ${res.ritualAction}\n   - 성찰 초점: ${res.reflectionFocus}\n   - 성찰 질문: ${res.reflectiveQuestion}\n   - ${res.interpretiveBoundary}`
+    : `\n6. [성찰 질문 & 해석 경계]:\n   - 실천 의례: ${res.ritualAction}\n   - 성찰 초점: ${res.reflectionFocus}\n   - 성찰 질문: ${res.reflectiveQuestion}\n   - ${res.interpretiveBoundary}`;
 
   return `[🌌 자미두수 유년 사화(四化) 동적 비성 실측 데이터 (Ziwei Flying Stars Core)]
 ======================================================================

@@ -1,10 +1,10 @@
 {
-  "version": "1.7.931",
-  "builtAt": "2026-11-19T11:20:00+09:00",
-  "summary": "12운성 바이오리듬·재물 파이프라인·음양 극성 3대 엔진 실천 의례 및 성찰 초점 표준 연동(v1.7.931)",
+  "version": "1.7.932",
+  "builtAt": "2026-11-19T11:30:00+09:00",
+  "summary": "요루바 이파 오두·장자 소요유·자미두수 비성 3대 엔진 실천 의례 및 성찰 초점 표준 연동(v1.7.932)",
   "items": [
-    "12운성 바이오리듬 에너지 곡선 엔진(v2.3.0): ritualAction·reflectionFocus 표준 필드 연동",
-    "재물·비즈니스 포춘 파이프라인 엔진(v2.3.0): ritualAction·reflectionFocus 표준 필드 연동",
-    "음양 극성 밸런스 & 바이폴라 리듬 엔진(v2.3.0): ritualAction·reflectionFocus 표준 필드 연동"
+    "서아프리카 요루바 이파 16 오두 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동",
+    "고대 도가 장자 소요유 호접몽 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동",
+    "자미두수 유년 사화 동적 비성 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동"
   ]
 }
