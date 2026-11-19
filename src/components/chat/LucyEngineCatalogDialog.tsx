@@ -4,7 +4,8 @@ import { DialogBackdrop } from '@/components/layout/DialogBackdrop';
 import './chat-library-layout.css';
 import React, { useMemo } from 'react';
 import { Check, Plus, Search, Sparkles, X } from 'lucide-react';
-import { LUCY_ENGINE_PRESETS, isPresetActive, setSelectedEngineKeys, toggleSelectedEngine, useSelectedEngines } from '@/lib/lucyEngineSelection';
+import { LUCY_ENGINE_PRESETS, isPresetActive, setSelectedEngineKeys, toggleSelectedEngine, useSelectedEngines, recommendPromptsForEngines } from '@/lib/lucyEngineSelection';
+import { HORI_PROMPT_LIBRARY, type HoriPromptItem } from '@/data/horiPromptLibrary';
 import { triggerHaptic } from '@/lib/omniWarp/omniWarpHaptics';
 import { WorkspacePortal } from '@/components/layout/DuoWorkspace';
 import {
@@ -19,6 +20,8 @@ import {
 } from '@/lib/divination/engineCatalog';
 
 interface LucyEngineCatalogDialogProps {
+  /** 🔗 추천질문 라이브러리 연동: 담은 엔진에 맞는 질문을 바로 입력창에 넣는다 */
+  onSelectPrompt?: (text: string, sendImmediately: boolean, toolIds?: string[], title?: string) => void;
   isOpen: boolean;
   sessionKey?: string;
   onClose: () => void;
@@ -34,7 +37,7 @@ const FILTERS: { id: CatalogFilter; label: string }[] = [
   { id: 'deep_master', label: '심층 관점' },
 ];
 
-export function LucyEngineCatalogDialog({ isOpen, onClose, isLight, sessionKey = defaultLibrarySessionKey('engine-library') }: LucyEngineCatalogDialogProps) {
+export function LucyEngineCatalogDialog({ isOpen, onClose, isLight, onSelectPrompt, sessionKey = defaultLibrarySessionKey('engine-library') }: LucyEngineCatalogDialogProps) {
   const [filter, setFilter] = useLibrarySessionState<CatalogFilter>(`${sessionKey}:filter`, 'all');
   const [themeFilter, setThemeFilter] = useLibrarySessionState<CatalogThemeFilter>(`${sessionKey}:theme`, 'all');
   const [query, setQuery] = useLibrarySessionState<string>(`${sessionKey}:query`, '');
@@ -47,6 +50,7 @@ export function LucyEngineCatalogDialog({ isOpen, onClose, isLight, sessionKey =
   const filteredEngines = catalog.engines;
   const selectedKeys = useSelectedEngines();
   const [showSelectedOnly, setShowSelectedOnly] = React.useState(false);
+  const recommendedPrompts = useMemo<HoriPromptItem[]>(() => recommendPromptsForEngines(HORI_PROMPT_LIBRARY, selectedKeys, 3), [selectedKeys]);
 
   const groupedEngines = useMemo(() => LUCY_PRO_CHANNEL_THEMES
     .map(theme => ({
@@ -158,6 +162,30 @@ export function LucyEngineCatalogDialog({ isOpen, onClose, isLight, sessionKey =
                   })}
                 </div>
               </div>
+              {onSelectPrompt && recommendedPrompts.length > 0 && (
+                <div className={`rounded-2xl border p-3 ${subtleSurface}`} data-testid="lucy-engine-recommended-prompts">
+                  <h3 className="text-xs font-black sm:text-sm">🧭 담은 엔진에 맞는 추천 질문</h3>
+                  <ul className="mt-2 space-y-1.5">
+                    {recommendedPrompts.map(prompt => (
+                      <li key={prompt.id}>
+                        <button
+                          type="button"
+                          data-recommended-prompt={prompt.id}
+                          onClick={() => {
+                            triggerHaptic('whitehole');
+                            onSelectPrompt(prompt.body, false, prompt.tool_ids, prompt.title);
+                            onClose();
+                          }}
+                          className={`w-full rounded-xl border px-3 py-2 text-left transition-colors ${isLight ? 'border-amber-200 bg-white hover:bg-amber-50' : 'border-white/10 bg-white/[0.04] hover:bg-white/10'}`}
+                        >
+                          <span className="block text-xs font-bold">{prompt.title}</span>
+                          <span className={`mt-0.5 block text-[10px] leading-snug line-clamp-2 ${muted}`}>{prompt.body}</span>
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
               <div className={`flex flex-wrap items-center gap-2 rounded-xl border px-3 py-2 text-xs ${subtleSurface}`} role="status" aria-live="polite">
                 <span className="font-bold">
                   {selectedKeys.length ? `담은 엔진 ${selectedKeys.length}개 · 매 답변에 함께 봐요` : '아직 담은 엔진이 없어요 · 루시가 질문에 맞춰 골라요'}

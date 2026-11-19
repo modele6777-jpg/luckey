@@ -110,3 +110,57 @@ export function useSelectedEngines(): string[] {
   }, []);
   return keys;
 }
+
+/* ───────────── 🔗 추천질문 라이브러리 ↔ 엔진함 연동 ───────────── */
+export interface PromptLike {
+  id?: string;
+  category?: string;
+  title: string;
+  body: string;
+}
+
+const KEYWORD_ENGINES: [RegExp, string[]][] = [
+  [/타로|카드/, ['tarot']],
+  [/사주|명리|일주|대운|오행/, ['saju']],
+  [/점성술|트랜짓|행성|출생\s*차트|별자리/, ['astrology', 'chronoTransit']],
+  [/자미두수/, ['ziwei']],
+  [/주역|괘/, ['iching']],
+  [/기문/, ['qimen']],
+  [/숙요|27숙/, ['sukuyo']],
+  [/베딕|인도\s*점성/, ['vedic']],
+  [/카발라|생명의\s*나무/, ['kabbalah']],
+  [/토정/, ['tojeong']],
+  [/구성학/, ['kyusei']],
+];
+
+/** 질문에 가장 잘 맞는 맞춤 세팅 */
+export function recommendPresetForPrompt(prompt: PromptLike): EnginePreset {
+  const text = `${prompt.title} ${prompt.body}`;
+  const byId = (id: string) => LUCY_ENGINE_PRESETS.find(p => p.id === id)!;
+  if (/재회|연애|궁합|인연|짝사랑|결혼|애인|그\s*사람/.test(text) || prompt.category === 'relationship') return byId('love');
+  if (/돈|재물|투자|금전|수입|부자|재테크|월급/.test(text)) return byId('wealth');
+  if (/이직|취업|커리어|직장|사업|승진|진로|적성|합격|시험/.test(text) || prompt.category === 'success') return byId('career');
+  if (/언제|시기|타이밍|택일|올해|이번\s*달|흐름/.test(text) || prompt.category === 'fortune') return byId('timing');
+  return byId('healing');
+}
+
+/** 질문 하나에 추천하는 엔진: 맞춤 세팅 + 질문에 직접 언급된 도구 */
+export function recommendedEnginesForPrompt(prompt: PromptLike): string[] {
+  const text = `${prompt.title} ${prompt.body}`;
+  const extra = KEYWORD_ENGINES.filter(([re]) => re.test(text)).flatMap(([, keys]) => keys);
+  return [...new Set([...recommendPresetForPrompt(prompt).keys, ...extra])].filter(k => ENGINE_BY_KEY.has(k));
+}
+
+/** 지금 담긴 엔진과 잘 맞는 추천 질문 (활성 세팅 우선, 아니면 겹치는 엔진 수) */
+export function recommendPromptsForEngines<T extends PromptLike>(prompts: readonly T[], selected: readonly string[], limit = 3): T[] {
+  if (!selected.length) return [];
+  const activePreset = LUCY_ENGINE_PRESETS.find(p => isPresetActive(p, selected));
+  const scored = prompts.map((prompt, index) => {
+    const recommended = recommendedEnginesForPrompt(prompt);
+    const overlap = recommended.filter(k => selected.includes(k)).length;
+    const presetMatch = activePreset && recommendPresetForPrompt(prompt).id === activePreset.id ? 100 : 0;
+    return { prompt, index, score: presetMatch + overlap };
+  }).filter(item => item.score > 0)
+    .sort((a, b) => b.score - a.score || a.index - b.index);
+  return scored.slice(0, limit).map(item => item.prompt);
+}

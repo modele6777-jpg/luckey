@@ -101,3 +101,18 @@ test('engines picked in the engine box are always used', () => {
   const m = routeAndExecute({ text: '이직 고민', profile, requireBasicAndDeep: true, divinationMode: { base: 'saju' }, pinnedDeepKeys: ['shadowArchetype', 'mentalResilience'] });
   assert.ok((m.routePlan.deepEngineKeys ?? []).includes('mentalResilience'));
 });
+
+test('prompt library and engine box recommend each other', async () => {
+  const { recommendPresetForPrompt, recommendedEnginesForPrompt, recommendPromptsForEngines, LUCY_ENGINE_PRESETS } = await import('../src/lib/lucyEngineSelection');
+  const { HORI_PROMPT_LIBRARY } = await import('../src/data/horiPromptLibrary');
+  const reunion = HORI_PROMPT_LIBRARY.find(p => p.id === 'hori-5c-030')!;
+  assert.equal(recommendPresetForPrompt(reunion).id, 'love');
+  const engines = recommendedEnginesForPrompt(reunion);
+  assert.ok(engines.includes('tarot') && engines.includes('astrology'));
+  for (const preset of LUCY_ENGINE_PRESETS) {
+    const picks = recommendPromptsForEngines(HORI_PROMPT_LIBRARY, preset.keys, 3);
+    assert.equal(picks.length, 3, preset.id);
+    assert.ok(picks.every(p => recommendPresetForPrompt(p).id === preset.id), preset.id);
+  }
+  assert.deepEqual(recommendPromptsForEngines(HORI_PROMPT_LIBRARY, [], 3), []);
+});
