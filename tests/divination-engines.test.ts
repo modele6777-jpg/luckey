@@ -3790,7 +3790,7 @@ test('Guiguzi Liangtouqian Decision Matrix Engine: calculates two heads gua, des
   assert(rep.guaStructure.patternName.length > 0);
   assert(rep.strategy.tacticalLabel.length > 0);
   assert(rep.strategicClarityScore >= 0 && rep.strategicClarityScore <= 100);
-  assert(rep.calculatedAtKst.includes('KST'));
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(rep.temporalGuiguziRhythm.zonghengWatchWindow.length > 0);
   assert(rep.guiguziSynthesisMatrix.coreInsight.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
@@ -4804,7 +4804,8 @@ test('Greek Moirai Ananke Fate Engine: calculates Clotho, Lachesis, Atropos powe
   assert(rep.atropos.powerScore >= 0 && rep.atropos.powerScore <= 100);
   assert(rep.necessityRatio >= 0 && rep.necessityRatio <= 100);
   assert(rep.dominantGoddess.length > 0);
-  assert(rep.temporalMoiraiRhythm.calculatedAtKst.includes('KST'));
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert(rep.temporalMoiraiRhythm.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(rep.situationalMoiraiAudit.questionFocus.length > 0);
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatGreekMoiraiAnankeFatePrompt(rep);
@@ -4908,6 +4909,7 @@ test('Gnostic Pistis Sophia Pleroma Engine: calculates twelve aeons resonance an
   assert(rep.archonMatrixDissolutionRate >= 0 && rep.archonMatrixDissolutionRate <= 100);
   assert(rep.pleromaLightFullnessScore >= 0 && rep.pleromaLightFullnessScore <= 100);
   assert(rep.primaryAeon.nameKo.length > 0);
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(rep.situationalGnosticAudit.pistisSophiaVerse.length > 0);
   assert(rep.temporalPleromaRhythm.pleromaHourWindow.length > 0);
   assert(rep.pleromaSynthesisMatrix.synthesizedVerdict.length > 0);
