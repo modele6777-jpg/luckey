@@ -60,6 +60,14 @@
   ],
   "rewrites": [
     {
+      "source": "/__/auth/:path*",
+      "destination": "https://lucyuniverse-fc423.firebaseapp.com/__/auth/:path*"
+    },
+    {
+      "source": "/__/firebase/:path*",
+      "destination": "https://lucyuniverse-fc423.firebaseapp.com/__/firebase/:path*"
+    },
+    {
       "source": "/api/ai/tts",
       "destination": "/api/ai/tts"
     },

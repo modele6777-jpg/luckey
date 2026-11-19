@@ -46,7 +46,23 @@ try {
   firestoreSetLogLevel('silent');
 } catch (_) {}
 
-const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
+/**
+ * iOS home-screen web apps block storage between the app and a different-origin
+ * sign-in page, so a popup on <project>.firebaseapp.com fails with "The requested
+ * action is invalid". Deployed hosts proxy /__/auth/* to Firebase (Sites worker,
+ * Express server, Vercel rewrites), so sign-in runs on the app's own origin.
+ * Local development keeps the default firebaseapp.com handler.
+ */
+function resolveAuthDomain(defaultDomain: string): string {
+  if (typeof window === 'undefined') return defaultDomain;
+  const { protocol, hostname, host } = window.location;
+  const local = hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '[::1]';
+  return protocol === 'https:' && !local ? host : defaultDomain;
+}
+
+const app = getApps().length === 0
+  ? initializeApp({ ...firebaseConfig, authDomain: resolveAuthDomain(firebaseConfig.authDomain) })
+  : getApps()[0];
 
 export const auth = getAuth(app);
 // Use the databaseId from config

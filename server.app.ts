@@ -1,3 +1,4 @@
+import firebaseAppletConfig from "./firebase-applet-config.json";
 import { isMasterTierModel, modelCandidates, LUCY_MASTER_FALLBACK_MODELS, getLucyRequestFallbacks } from './src/lib/lucyModelPolicy';
 import { isRevokedGeminiKey } from './server/geminiKey.ts';
 import dotenv from "dotenv";
@@ -1597,6 +1598,31 @@ ${content}
   app.use("/api/trpc", trpcExpress.createExpressMiddleware({ router: appRouter, createContext: () => ({}) }));
 
   app.get("/api/health", (req, res) => res.json({ status: "ok" }));
+
+  // Firebase sign-in on this origin: iOS home-screen apps block the cross-site
+  // <project>.firebaseapp.com handler, so /__/auth and /__/firebase are forwarded.
+  app.all(["/__/auth/*", "/__/firebase/*"], async (req, res) => {
+    try {
+      const authOrigin = `https://${firebaseAppletConfig.authDomain}`;
+      const upstream = new URL(req.originalUrl, authOrigin);
+      const headers: Record<string, string> = {};
+      for (const name of ["accept", "accept-language", "content-type", "user-agent"]) {
+        const value = req.headers[name];
+        if (typeof value === "string") headers[name] = value;
+      }
+      const body = ["GET", "HEAD"].includes(req.method) ? undefined
+        : typeof req.body === "string" ? req.body : JSON.stringify(req.body ?? {});
+      const response = await fetch(upstream, { method: req.method, headers, body, redirect: "manual" });
+      res.status(response.status);
+      for (const [name, value] of response.headers) {
+        if (!["content-encoding", "content-length", "transfer-encoding", "connection"].includes(name.toLowerCase())) res.setHeader(name, value);
+      }
+      res.send(Buffer.from(await response.arrayBuffer()));
+    } catch (error) {
+      console.error("[auth-proxy] Firebase auth handler unavailable", error);
+      res.status(502).send("Sign-in service unavailable");
+    }
+  });
 
   const distPath = path.join(process.cwd(), 'dist');
 
