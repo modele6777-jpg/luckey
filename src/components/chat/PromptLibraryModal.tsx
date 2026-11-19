@@ -8,7 +8,7 @@ import './prompt-library.css';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   X, Search, Sparkles, MessageSquare, ChevronLeft, ChevronRight,
-  ChevronsLeft, ChevronsRight, Send, Edit3, Flame, Check, Tag, Compass
+  ChevronsLeft, ChevronsRight, Send, Flame, Check, Tag, Compass
 } from 'lucide-react';
 import {
   HORI_PROMPT_LIBRARY,
@@ -341,15 +341,6 @@ export const PromptLibraryModal: React.FC<PromptLibraryModalProps> = ({
 
                         {/* Action Buttons */}
                         <div className="flex items-center gap-2 pt-3 mt-1 border-t border-slate-100 dark:border-slate-800">
-                          <button
-                            type="button"
-                            onClick={() => handlePromptAction(prompt, false)}
-                            className="prompt-library-action w-full py-2.5 px-3 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-slate-950 text-xs font-bold transition-all cursor-pointer shadow-sm hover:shadow flex items-center justify-center gap-1.5 active:scale-95"
-                            title="대화 입력창에 질문을 입력하고 필요 시 내용을 수정하여 보냅니다."
-                          >
-                            <Edit3 size={13} />
-                            <span>채팅란에 입력하기</span>
-                          </button>
                           <button
                             type="button"
                             data-prompt-engine-apply={prompt.id}
