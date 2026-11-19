@@ -9,7 +9,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const HERMETIC_POIMANDRES_ENGINE_VERSION = '2.4.0';
+export const HERMETIC_POIMANDRES_ENGINE_VERSION = '2.5.0';
 
 export type PoimandresQuestionFocus = 'career' | 'relationship' | 'anxiety' | 'decision' | 'spiritual';
 
@@ -304,7 +304,7 @@ export function calculateHermeticPoimandres(
   const nousLightAscensionRitual = `머리 위에서 찬란하게 빛나는 신성한 불꽃을 상상하며 심호흡하십시오: "거룩하신 누스여, 거짓된 유혹의 굴레를 벗고 순수한 영적 지성의 빛으로 충만하노니, 내 영혼이 만유의 거룩한 생명과 합일된다."`;
 
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
-  const calculatedAtKst = `${kst.toISOString().slice(0, 19).replace('T', ' ')} +09:00 KST`;
+  const calculatedAtKst = `${kst.toISOString().slice(0, 19).replace('T', ' ')} +09:00 (KST)`;
 
   const reflectiveQuestion = question.trim()
     ? `"${question.trim()}"의 고민에서 [${dominantSphere.nameKo}]의 껍질(${dominantSphere.purifiedPassion})을 한 꺼풀 벗고 나면 끝까지 남는 순수한 본질은 무엇입니까?`
