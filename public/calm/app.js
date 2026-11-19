@@ -919,6 +919,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (data.recommendedExercises && data.recommendedExercises.length > 0) {
       const ex = data.recommendedExercises[0];
       const globalIdx = getGlobalExerciseIndex(ex.chapter, ex.index);
+      const launchButton = globalIdx === null ? '' : `<button class="btn-copper" style="padding: 4px 12px; font-size: 0.8rem;" onclick="window.startPractice(${globalIdx})">🎯 직접 실천하기</button>`;
       cardsHtml += `
         <div style="margin-top: 18px; margin-bottom: 6px; font-weight: 700; color: var(--text-title); font-size: 0.92rem;">
           🔑 Key 개운 성전 맞춤 추천 리추얼:
@@ -926,11 +927,9 @@ document.addEventListener('DOMContentLoaded', () => {
         <div class="chat-rec-box">
           <div class="chat-rec-header">
             <span class="chat-rec-tag">${ex.chapter}장 · ${ex.tag || '마음 연습'}</span>
-            <button class="btn-copper" style="padding: 4px 12px; font-size: 0.8rem;" onclick="window.startPractice(${globalIdx})">
-              🎯 직접 실천하기
-            </button>
+            ${launchButton}
           </div>
-          <div class="chat-rec-title">연습 ${ex.index}. ${ex.title} (${ex.page}쪽)</div>
+          <div class="chat-rec-title">연습 ${globalIdx ?? ex.index}. ${ex.title} (${ex.page}쪽)</div>
           <div class="chat-rec-desc">${ex.subtitle ? `${ex.subtitle} - ` : ''}${ex.description || ex.purpose || ''}</div>
         </div>
       `;
@@ -958,6 +957,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (recommendedExercises && recommendedExercises.length > 0) {
       const ex = recommendedExercises[0];
       const globalIdx = getGlobalExerciseIndex(ex.chapter, ex.index);
+      const launchButton = globalIdx === null ? '' : `<button class="btn-copper" style="padding: 4px 12px; font-size: 0.8rem;" onclick="window.startPractice(${globalIdx})">🎯 직접 실천하기</button>`;
       contentHtml += `
         <div style="margin-top: 18px; margin-bottom: 6px; font-weight: 700; color: var(--text-title); font-size: 0.92rem;">
           🔑 Key 개운 성전 맞춤 추천 리추얼:
@@ -965,11 +965,9 @@ document.addEventListener('DOMContentLoaded', () => {
         <div class="chat-rec-box">
           <div class="chat-rec-header">
             <span class="chat-rec-tag">${ex.chapter}장 · ${ex.tag || '마음 연습'}</span>
-            <button class="btn-copper" style="padding: 4px 12px; font-size: 0.8rem;" onclick="window.startPractice(${globalIdx})">
-              🎯 직접 실천하기
-            </button>
+            ${launchButton}
           </div>
-          <div class="chat-rec-title">연습 ${ex.index}. ${ex.title} (${ex.page}쪽)</div>
+          <div class="chat-rec-title">연습 ${globalIdx ?? ex.index}. ${ex.title} (${ex.page}쪽)</div>
           <div class="chat-rec-desc">${ex.subtitle ? `${ex.subtitle} - ` : ''}${ex.description || ex.purpose || ''}</div>
         </div>
       `;
@@ -989,8 +987,10 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function getGlobalExerciseIndex(chapter, index) {
-    const chapterOffsets = { 1: 0, 2: 10, 3: 20, 4: 30, 5: 40 };
-    return (chapterOffsets[chapter] || 0) + parseInt(index, 10);
+    const exercise = window.PRACTICE_EXERCISES?.find(item =>
+      Number(item.chapter) === Number(chapter) && Number(item.index) === Number(index)
+    );
+    return exercise?.globalIndex ?? null;
   }
 
   // 7. 90 Exercises Studio Grid 렌더링 및 필터링
@@ -1060,7 +1060,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const clinicalTipText = ex.clinicalTip ? `\n• 개운 비결: ${ex.clinicalTip}` : '';
     const affirmationText = ex.affirmation ? `\n• 소원 확언: "${ex.affirmation}"` : '';
 
-    const text = `루시야, Key 개운 성전 ${ex.chapter}장의 '${ex.icon || '🎯'} 개운법 ${ex.index}. ${ex.title}' 실천법에 대해 질문하고 싶어.${purposeText}${clinicalTipText}${affirmationText}\n\n지금 막힌 기운을 풀고 좋은 운을 불러들이기 위해 이 개운 리추얼을 일상에서 어떻게 실천하면 좋을지 핵심 비결과 따뜻한 조언을 해줘.`;
+    const text = `루시야, Key ${ex.chapter}장의 '${ex.icon || '🎯'} 연습 ${ex.globalIndex}. ${ex.title}' 실천법에 대해 질문하고 싶어.${purposeText}${clinicalTipText}${affirmationText}\n\n이 실천 연습을 일상에서 어떻게 적용하면 좋을지 핵심 비결과 따뜻한 조언을 해줘.`;
 
     try {
       sessionStorage.setItem('lucy_injected_auto_send', text);
@@ -1483,7 +1483,7 @@ document.addEventListener('DOMContentLoaded', () => {
     studioIcon.textContent = ex.icon || '🎯';
     const randomBadge = isRandom ? '🎲 오늘의 개운 비법 · ' : '';
     studioChapter.textContent = `${randomBadge}${ex.chapter || 1}장 · ${ex.tag || '개운 리추얼'} (비전 ${ex.page || 18}P)`;
-    studioTitle.textContent = `개운법 ${ex.index || 1}. ${ex.title || ''}`;
+    studioTitle.textContent = `연습 ${ex.globalIndex ?? 1}. ${ex.title || ''}`;
 
     renderStepDots();
     renderCurrentStep();
