@@ -21,7 +21,7 @@ import type { UserProfile } from '../sharedState';
 import { parseBirthTime } from '../birthDateTime';
 import { resolveEffectiveSolarDate } from '../lunarCalendar';
 
-export const HELLENISTIC_LOTS_ENGINE_VERSION = 'LUCKEY-HELLENISTIC-LOTS-v2.3.0';
+export const HELLENISTIC_LOTS_ENGINE_VERSION = 'LUCKEY-HELLENISTIC-LOTS-v2.4.0';
 
 export interface ArabicLotInfo {
   nameKo: string;
@@ -107,13 +107,8 @@ function getHouseFromAscendant(ascDeg: number, targetDeg: number): number {
 
 function formatLotsKst(date: Date): { label: string; hour: number; day: number } {
   const kst = new Date(date.getTime() + 9 * 60 * 60 * 1000);
-  const y = kst.getUTCFullYear();
-  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
-  const d = String(kst.getUTCDate()).padStart(2, '0');
-  const hh = String(kst.getUTCHours()).padStart(2, '0');
-  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
   return {
-    label: `${y}-${m}-${d} ${hh}:${mm}:00 +09:00 KST`,
+    label: `${kst.toISOString().slice(0, 19)}+09:00 (KST)`,
     hour: kst.getUTCHours(),
     day: kst.getUTCDate(),
   };
@@ -370,7 +365,7 @@ export function formatHellenisticLotsPrompt(report: HellenisticLotsReport): stri
 ★ 조디악 릴리싱 핵심 전언:
 "${report.cosmicAdvice}"
 - 실천 의례(Ritual Action): ${report.ritualAction}
-- 질문 맞춤 성찰 질문: ${report.reflectionFocus}
+- 성찰 초점: ${report.reflectionFocus}
 - 해석 경계: ${report.boundaryNotice}
 ======================================================================`;
 }

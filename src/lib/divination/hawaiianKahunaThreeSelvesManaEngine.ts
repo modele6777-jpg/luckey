@@ -5,7 +5,7 @@
  * 3대 자아(우니히필리·우하네·아우마쿠아)의 삼위일체 정렬과 신성한 생명 에너지 마나(Mana) 순환을 연동합니다.
  */
 
-export const HAWAIIAN_KAHUNA_THREE_SELVES_ENGINE_VERSION = 'LUCKEY-HAWAIIAN-KAHUNA-v2.2.0';
+export const HAWAIIAN_KAHUNA_THREE_SELVES_ENGINE_VERSION = 'LUCKEY-HAWAIIAN-KAHUNA-v2.3.0';
 
 export interface KahunaSelfState {
   selfType: '우니히필리 (Unihipili - 잠재의식/내면아이)' | '우하네 (Uhane - 의식/이성적 자아)' | '아우마쿠아 (Aumakua - 초의식/신성한 고차원 자아)';
@@ -160,7 +160,7 @@ export function calculateHawaiianKahunaThreeSelves(params: {
   const kstDate = new Date(kstMs);
   const kstHour = kstDate.getUTCHours();
   const kstMonth = kstDate.getUTCMonth() + 1;
-  const calculatedAtKst = `${kstDate.getUTCFullYear()}-${String(kstMonth).padStart(2, '0')}-${String(kstDate.getUTCDate()).padStart(2, '0')} ${String(kstHour).padStart(2, '0')}:${String(kstDate.getUTCMinutes()).padStart(2, '0')} +09:00 KST`;
+  const calculatedAtKst = `${kstDate.toISOString().slice(0, 19)}+09:00 (KST)`;
 
   const qLower = question.toLowerCase();
   const questionFocus = /연애|사랑|관계|결혼|재회|이별/.test(qLower)
@@ -247,6 +247,6 @@ export function formatHawaiianKahunaThreeSelvesPrompt(report: KahunaManaReport):
 - **카라(Kala) 해방 리추얼**: ${report.kalaCleansingRitual}
 - **마나 충전 하(Ha) 호흡법**: ${report.haBreathingPrescription}
 - **실천 의례(Ritual Action)**: ${report.ritualAction}
-- **교차 매트릭스**: ${report.kahunaSynthesisMatrix.coreMandate} | 경계: ${report.kahunaSynthesisMatrix.sacredBoundary} | 성찰 질문: "${report.reflectionFocus}"
+- **교차 매트릭스**: ${report.kahunaSynthesisMatrix.coreMandate} | 경계: ${report.kahunaSynthesisMatrix.sacredBoundary} | 성찰 초점: "${report.reflectionFocus}"
 - **해석 경계**: ${report.interpretiveBoundary}`;
 }

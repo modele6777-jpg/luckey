@@ -28,7 +28,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const HAWAIIAN_HUNA_VERSION = 'LUCKEY-HAWAIIAN-HUNA-v2.2.0';
+export const HAWAIIAN_HUNA_VERSION = 'LUCKEY-HAWAIIAN-HUNA-v2.3.0';
 
 export interface HunaPrincipleGuidance {
   code: 'IKE' | 'KALA' | 'MAKIA' | 'MANAWA' | 'ALOHA' | 'MANA' | 'PONO';
@@ -225,7 +225,7 @@ export function calculateHawaiianHunaHooponopono(
   const kstDate = new Date(kstMs);
   const kstHour = kstDate.getUTCHours();
   const kstMonth = kstDate.getUTCMonth() + 1;
-  const calculatedAtKst = `${kstDate.getUTCFullYear()}-${String(kstMonth).padStart(2, '0')}-${String(kstDate.getUTCDate()).padStart(2, '0')} ${String(kstHour).padStart(2, '0')}:${String(kstDate.getUTCMinutes()).padStart(2, '0')} +09:00 KST`;
+  const calculatedAtKst = `${kstDate.toISOString().slice(0, 19)}+09:00 (KST)`;
 
   const qLower = (effectiveContextText || '').toLowerCase();
   const questionFocus = /연애|사랑|관계|결혼|재회|이별|가족/.test(qLower)
@@ -324,6 +324,6 @@ export function formatHawaiianHunaHooponoponoPrompt(report: HawaiianHunaReport):
 - **시공간 리듬**: ${report.temporalHunaRhythm.alohaManaWindow} · ${report.temporalHunaRhythm.pacificTidePhase}
 - **치유 통합 나침반**: ${report.synthesisMessage}
 - **실천 의례(Ritual Action)**: ${report.ritualAction}
-- **교차 매트릭스**: ${report.hunaSynthesisMatrix.coreMandate} | 경계: ${report.hunaSynthesisMatrix.sacredBoundary} | 성찰 질문: "${report.reflectionFocus}"
+- **교차 매트릭스**: ${report.hunaSynthesisMatrix.coreMandate} | 경계: ${report.hunaSynthesisMatrix.sacredBoundary} | 성찰 초점: "${report.reflectionFocus}"
 - **해석 경계**: ${report.interpretiveBoundary}`;
 }
