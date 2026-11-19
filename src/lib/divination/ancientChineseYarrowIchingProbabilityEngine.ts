@@ -6,7 +6,7 @@
  * 동효·정효의 시중(時中) 태도를 정성적 행동 성찰에 연결합니다.
  */
 
-export const ANCIENT_YARROW_PROBABILITY_ENGINE_VERSION = 'LUCKEY-YARROW-PROBABILITY-v2.2.0';
+export const ANCIENT_YARROW_PROBABILITY_ENGINE_VERSION = 'LUCKEY-YARROW-PROBABILITY-v2.3.0';
 
 export type YarrowQuestionTheme = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -59,6 +59,7 @@ function getTemporalYarrowRhythm(now: Date) {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  const ss = String(kst.getUTCSeconds()).padStart(2, '0');
   const hour = kst.getUTCHours();
   const month = kst.getUTCMonth() + 1;
 
@@ -81,7 +82,7 @@ function getTemporalYarrowRhythm(now: Date) {
           : '겨울 · 복(復)·곤(坤) 비축기 (조용히 힘을 기르며 시중의 때를 기다리는 시기)';
 
   return {
-    kstTimeLabel: `${y}-${m}-${d} ${hh}:${mm} +09:00 KST`,
+    kstTimeLabel: `${y}-${m}-${d}T${hh}:${mm}:${ss}+09:00 (KST)`,
     dayanWatchWindow,
     seasonalChangeTone,
     temporalGuidance: `${dayanWatchWindow} · ${seasonalChangeTone}의 결에 맞추어 시중(時中)의 처세 태도를 유지하십시오.`,
@@ -332,6 +333,7 @@ export function formatAncientYarrowProbabilityPrompt(report: YarrowProbabilityRe
 - **대연 교차 매트릭스**: 핵심(${report.yarrowSynthesisMatrix.coreInsight}) | 실행(${report.yarrowSynthesisMatrix.recommendedAction}) | 주의(${report.yarrowSynthesisMatrix.cautionNotice})
 - **실천 조언**: ${report.practiceGuidance}
 - **일상 의례**: ${report.ritualAction}
+- **성찰 초점**: ${report.reflectionFocus}
 - **성찰 질문**: ${report.reflectiveQuestion}
 - **해석 경계**: ${report.boundaryNotice}`;
 }
