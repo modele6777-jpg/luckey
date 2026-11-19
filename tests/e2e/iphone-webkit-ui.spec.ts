@@ -619,7 +619,8 @@ test('Big Bang center single tap enters Lucy with the shared transition, without
   }, { x, y });
 
   await expect.poll(() => page.evaluate(() => `${window.location.pathname}${window.location.search}`)).toBe('/?mode=ai');
-  await expect(page.getByTestId('bigbang-transition-overlay')).toBeVisible();
+  // Folded Lucy entry uses Lucy's own entry screen, not the generic wormhole overlay.
+  await expect(page.getByTestId('bigbang-transition-overlay')).toHaveCount(0);
   const commits = await page.evaluate(() => (window as any).__bigBangSingleTapCommits);
   expect(commits).toHaveLength(1);
   expect(commits[0].target.destinationPath).toBe('/chat?mode=ai');

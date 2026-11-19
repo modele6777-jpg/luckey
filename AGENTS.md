@@ -37,7 +37,7 @@ Every time a user request is completed or changes are made to the codebase:
 
 ### 6. Lucy / Lucy Plus Name
 - User update 2026-11-19: folded layouts use Lucy; every Lucy chat in the unfolded dual screen is Lucy Plus (Plus marker in the header), regardless of the content pane route, in landscape and portrait.
-- Entering Lucy Plus (unfolding) shows the Lucy Plus entry screen inside the Lucy pane only; it is visual-only and follows Lucy's day/night palette.
+- Entering Lucy Plus (unfolding) shows the Lucy Plus entry screen; folding back, or a folded screen entering Lucy from another channel, shows the Lucy entry screen. Both stay inside the Lucy pane, are visual-only and follow Lucy's day/night palette.
 - Preserve Pro markers and mode transition popups; do not add Plus when Pro is active.
 
 ### 7. Popup Bounds Exclude Navigation
