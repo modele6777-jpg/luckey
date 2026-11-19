@@ -5815,6 +5815,7 @@ test('Korean Suun Gasi Heon Engine: calculates Yongcheon sword severance, Samgye
 test('Ancient Greek Eleusinian Triptolemos Engine: calculates dragon chariot, sacred wheat and 3 laws of Demeter', () => {
   const rep = calculateEleusinianTriptolemos(profile, '새로운 일을 시작하며 좋은 씨앗을 뿌리고 싶습니다', new Date('2026-11-15T05:00:00Z'));
   assert.equal(rep.engineVersion, ELEUSINIAN_TRIPTOLEMOS_VERSION);
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(rep.goldenChariotFlightIndex >= 0 && rep.goldenChariotFlightIndex <= 100);
   assert(rep.sacredWheatCivilizationForce >= 0 && rep.sacredWheatCivilizationForce <= 100);
   assert(rep.demeterBlessingPurityScore >= 0 && rep.demeterBlessingPurityScore <= 100);
@@ -5829,6 +5830,7 @@ test('Ancient Greek Eleusinian Triptolemos Engine: calculates dragon chariot, sa
   const prompt = formatEleusinianTriptolemosPrompt(rep);
   assert(prompt.includes('고대 그리스 엘레우시스 밀의 《트리프톨레모스(Triptolemos)》'));
   assert(prompt.includes(rep.activeChariotStage.stageNameKo));
+  assert(prompt.includes('성찰 초점'));
   assert(!prompt.includes('%'));
   assert(!prompt.includes('/100'));
 });
@@ -6053,6 +6055,7 @@ test('Ancient Persian Zoroastrian Amesha Spentas Engine: calculates Vohu Manah, 
 test('Ancient Greek Delphic Chilon Know Thyself Engine: calculates Gnothi Seauton self-knowledge, Meden Agan moderation and Spartan brevity', () => {
   const rep = calculateDelphicChilon(profile, '중요한 약속과 결정을 앞두고 조심스럽습니다', new Date('2026-11-15T05:00:00Z'));
   assert.equal(rep.engineVersion, DELPHIC_CHILON_VERSION);
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(rep.gnothiSeautonSelfKnowledgeIndex >= 0 && rep.gnothiSeautonSelfKnowledgeIndex <= 100);
   assert(rep.medenAganModerationEquilibrium >= 0 && rep.medenAganModerationEquilibrium <= 100);
   assert(rep.enguaPrudenceDiscretionForce >= 0 && rep.enguaPrudenceDiscretionForce <= 100);
@@ -6067,6 +6070,7 @@ test('Ancient Greek Delphic Chilon Know Thyself Engine: calculates Gnothi Seauto
   const prompt = formatDelphicChilonPrompt(rep);
   assert(prompt.includes('델포이 아폴론 신전 7현인 《스파르타의 킬론(Chilon)》'));
   assert(prompt.includes(rep.activeSageStage.stageNameKo));
+  assert(prompt.includes('성찰 초점'));
   assert(!prompt.includes('%'));
   assert(!prompt.includes('/100'));
 });
@@ -6229,6 +6233,7 @@ test('Korean Yulgok Yi I Gyeokmong Yogyeol Engine: calculates noble aspiration i
 test('Ancient Greek Aristotle Mesotes Eudaimonia Engine: calculates Golden Mean, Eudaimonia, Phronesis and Telos', () => {
   const rep = calculateAristotleMesotes(profile);
   assert.equal(rep.engineVersion, ARISTOTLE_MESOTES_VERSION);
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(rep.mesotesGoldenMeanScore >= 0 && rep.mesotesGoldenMeanScore <= 100);
   assert(rep.eudaimoniaFlourishingIndex >= 0 && rep.eudaimoniaFlourishingIndex <= 100);
   assert(rep.phronesisPracticalWisdom >= 0 && rep.phronesisPracticalWisdom <= 100);
@@ -6239,6 +6244,7 @@ test('Ancient Greek Aristotle Mesotes Eudaimonia Engine: calculates Golden Mean,
   const prompt = formatAristotleMesotesPrompt(rep);
   assert(prompt.includes('고대 그리스 아리스토텔레스 니코마코스 윤리학 중용(Mesotes)'));
   assert(prompt.includes(rep.activeVirtueStage.virtueNameKo));
+  assert(prompt.includes('성찰 초점'));
 });
 
 test('Ancient Indian Bhagavad Gita Karma Yoga Engine: calculates Nishkama Karma, Swadharma, Samatvam and Yogastha', () => {

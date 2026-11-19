@@ -14,7 +14,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const ELEUSINIAN_TRIPTOLEMOS_VERSION = 'LUCKEY-ELEUSINIAN-TRIPTOLEMOS-v2.3.0';
+export const ELEUSINIAN_TRIPTOLEMOS_VERSION = 'LUCKEY-ELEUSINIAN-TRIPTOLEMOS-v2.4.0';
 
 export interface TriptolemosChariotStage {
   stageLevel: number;
@@ -192,7 +192,7 @@ function buildSynthesisMatrix(
 
 function getKstDateString(now: Date): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
-  return kst.toISOString().replace('T', ' ').substring(0, 19) + ' +09:00 KST';
+  return kst.toISOString().slice(0, 19) + '+09:00 (KST)';
 }
 
 function hashSeed(seedStr: string): number {
@@ -280,6 +280,7 @@ export function formatEleusinianTriptolemosPrompt(result: EleusinianTriptolemosR
 - 엘레우시스 신비 비전: 《${result.eleusinianEpiphany.visionTitle}》
   → 영적 지혜: "${result.eleusinianEpiphany.spiritualWisdom}"
 - 오늘의 작은 의례: ${result.ritualAction}
+- 성찰 초점: ${result.reflectionFocus}
 - 성찰 질문: ${result.reflectiveQuestion}
 - 해석 경계: ${result.interpretiveBoundary}`;
 }
