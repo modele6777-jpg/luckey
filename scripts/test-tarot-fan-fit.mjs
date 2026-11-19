@@ -120,6 +120,7 @@ try {
       const fanRight = cards.reduce((max, card) => Math.max(max, card.right), 0);
       return {
         stage: stageBox,
+        main: rect(document.querySelector('.sites-pinned-main')),
         rail: rect(railEl),
         wheel: rect(wheelBox),
         buttons,
@@ -159,9 +160,9 @@ try {
   assert(fitted.yOffset >= fitted.wheel.height / 2, 'portrait hub remains below the viewport');
   await page.screenshot({ path: `${artifactDir}/tarot-fan-690.png` });
 
-  const gutter = await check('690x1024 gutter before rail', { rail: 120, gutter: true });
-  assert(Math.abs(gutter.stage.right - gutter.rail.left) <= 2, 'gutter is closed up to the rail');
-  assert(gutter.stage.width > 540, `gutter fix uses the full column, got ${gutter.stage.width}`);
+  const gutter = await check('690x1024 intentionally narrowed host', { rail: 120, gutter: true, sideRail: false });
+  assert(Math.abs(gutter.stage.right - gutter.main.right) <= 2, 'portal stage follows the actual content host boundary');
+  assert(Math.abs(gutter.stage.width - gutter.main.width) <= 2, `stage width matches the intentionally narrowed host, got ${gutter.stage.width}`);
   await page.screenshot({ path: `${artifactDir}/tarot-fan-690-gutter.png` });
 
   await page.setViewportSize({ width: 393, height: 852 });

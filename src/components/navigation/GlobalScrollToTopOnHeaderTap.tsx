@@ -48,6 +48,9 @@ export function GlobalScrollToTopOnHeaderTap(): null {
     ): HTMLElement | null | false => {
       if (isInteractiveElement(target)) return false;
 
+      const lucyHeader = target?.closest('[data-lucy-header-tap-scroll="true"]') as HTMLElement | null;
+      if (lucyHeader) return getWorkspacePaneElement('lucy') ?? lucyHeader;
+
       const pane = resolvePaneHeaderTap(clientX, clientY, measureWorkspacePanes(), readSafeAreaTop());
       if (!pane) return false;
 

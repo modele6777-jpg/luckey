@@ -337,6 +337,12 @@ import { calculateZuluUbuntuRelationalSelf, formatZuluUbuntuRelationalSelfPrompt
 
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
+function assertKstTimestamp(value: unknown): asserts value is string {
+  if (typeof value !== 'string' || !/(?:\+09:00(?:\s*(?:\(KST\)|KST))?|KST)$/.test(value)) {
+    assert.fail(`Expected a timestamp ending in +09:00 or KST, got: ${String(value)}`);
+  }
+}
+
 test('King Wen enumeration covers each of 64 hexagrams exactly once',()=>{
   const numbers=Array.from({length:64},(_,n)=>hexagram(Array.from({length:6},(_,i)=>(n>>i)&1)).number);
   assert.equal(new Set(numbers).size,64);assert.equal(Math.min(...numbers),1);assert.equal(Math.max(...numbers),64);
@@ -802,7 +808,7 @@ test('Sukuyo partner matrix: 양방향 궁합, 27숙 전수 매트릭스, 결정
   // 프롬프트 포맷터: 엔진 버전·핵심 수어 포함
   const prompt = formatSukuyoPrompt(r1);
   assert(prompt.includes(SUKUYO_ENGINE_VERSION));
-  assert(r1.calculatedAtKst?.endsWith('KST'));
+  assertKstTimestamp(r1.calculatedAtKst);
   assert(Boolean(r1.ritualAction && r1.ritualAction.length > 0));
   assert(Boolean(r1.reflectionFocus && r1.reflectionFocus.length > 0));
   assert(Boolean(r1.sukuyoSynthesisMatrix?.integratedAction));
@@ -1096,7 +1102,7 @@ test('Burmese Mahabote: 7-house chart calculation, root house, age transit, Rahu
   assert(r1.interpretiveBoundary && r1.interpretiveBoundary.length > 0);
   assert(prompt.includes('해석 경계'));
   assert(!prompt.includes('/100'));
-  assert(r1.calculatedAtKst?.endsWith('KST'));
+  assertKstTimestamp(r1.calculatedAtKst);
 
   // Skipped without birthdate
   const skipped = calculateMahabote({ profile: null });
@@ -1510,7 +1516,7 @@ test('Thai Horasat engine binds into the deterministic engine report and prompt'
   assert.equal(report.thaiHorasatResult!.status, 'calculated');
   assert.equal(report.thaiHorasatResult!.mahaThaksa!.totalYears, 108);
   assert.equal(report.thaiHorasatResult!.mahaThaksa!.birthPlanetId, 'venus');
-  assert(report.thaiHorasatResult!.calculatedAtKst?.endsWith('KST'));
+  assertKstTimestamp(report.thaiHorasatResult!.calculatedAtKst);
   assert(Boolean(report.thaiHorasatResult!.horasatSynthesisMatrix?.integratedAction));
   assert.equal(report.tools.thai_astrology.status, 'calculated'); // partial → calculated 승격
   const prompt = formatDeterministicEnginePrompt(report);
@@ -2053,7 +2059,7 @@ test('Tarot Master Engine: 78 아르카나 수비학 소울·퍼스널리티·�
   const res = calculateTarotMaster({ profile, targetYear: 2026, question: '올해의 방향' });
   assert.equal(res.status, 'calculated');
   assert.equal(res.engineVersion, TAROT_MASTER_ENGINE_VERSION);
-  assert(res.calculatedAtKst.endsWith('KST'));
+  assertKstTimestamp(res.calculatedAtKst);
   assert(Boolean(res.tarotSynthesisMatrix?.integratedAction));
   assert(res.ritualAction.length > 0 && res.reflectionFocus.length > 0);
   assert(res.interpretiveBoundary.length > 0);
@@ -2246,7 +2252,7 @@ test('Astrological Decan & Sabian Engine: 점성술 36 데칸 & 사비안 심볼
 test('Medical Bio-Matrix Engine: 오행 한난조습 및 메디컬 점성술 장부 취약도 검증', () => {
   const res = calculateMedicalBioMatrix({ profile, targetDate: new Date('2026-11-02T19:00:00+09:00'), question: '체질 관리' });
   assert.equal(res.engineVersion, MEDICAL_BIO_MATRIX_VERSION);
-  assert(res.calculatedAtKst.endsWith('KST'));
+  assertKstTimestamp(res.calculatedAtKst);
   assert(res.ritualAction.length > 0 && res.reflectionFocus.length > 0);
   assert(Boolean(res.bioMatrixSynthesisMatrix?.integratedAction));
   assert(res.interpretiveBoundary.length > 0);
@@ -2288,7 +2294,7 @@ test('Life Season Timing Engine: 10년 대운 및 교운기 타이밍 검증', (
 test('Wealth Pipeline Engine: 재물 창출 아키타입 및 골든 윈도우 타이밍 검증', () => {
   const res = calculateWealthPipeline({ profile, targetDate: new Date('2026-11-02T19:00:00+09:00'), question: '재물 파이프라인 확장' });
   assert.equal(res.engineVersion, WEALTH_PIPELINE_VERSION);
-  assert(res.calculatedAtKst.endsWith('KST'));
+  assertKstTimestamp(res.calculatedAtKst);
   assert(Boolean(res.wealthSynthesisMatrix?.integratedAction));
   assert(Boolean(res.ritualAction) && Boolean(res.reflectionFocus));
   assert(res.interpretiveBoundary.length > 0);
@@ -2315,7 +2321,7 @@ test('Karmic Nodes Engine: 카르믹 노드 축 및 영혼 진화 궤적 검증'
   assert(res.evolutionReadinessScore >= 0 && res.evolutionReadinessScore <= 100);
   assert(res.chiron.healerGift.length > 0);
   assert(res.lilith.rawPower.length > 0);
-  assert(res.calculatedAtKst.endsWith('KST'));
+  assertKstTimestamp(res.calculatedAtKst);
   assert(Boolean(res.karmicNodesSynthesisMatrix?.integratedAction));
   assert(res.interpretiveBoundary.length > 0);
   assert(res.ritualAction.length > 0 && res.reflectionFocus.length > 0);
@@ -2332,7 +2338,7 @@ test('Karmic Nodes Engine: 카르믹 노드 축 및 영혼 진화 궤적 검증'
 test('Karmic Synastry Resonance Engine: 카르믹 시나스트리 및 인연 공명 검증', () => {
   const res = calculateKarmicSynastry(profile, null, '동반자 인연', new Date('2026-11-03T08:00:00+09:00'));
   assert.equal(res.engineVersion, KARMIC_SYNASTRY_VERSION);
-  assert(res.calculatedAtKst.endsWith('KST'));
+  assertKstTimestamp(res.calculatedAtKst);
   assert(Boolean(res.synastrySynthesisMatrix?.integratedAction));
   assert(res.interpretiveBoundary.length > 0);
   assert(res.ritualAction.length > 0 && res.reflectionFocus.length > 0);
@@ -2347,7 +2353,7 @@ test('Karmic Synastry Resonance Engine: 카르믹 시나스트리 및 인연 공
 test('Mental Resilience Engine: 위기 돌파 슈퍼파워 및 주역 난괘 탈출 검증', () => {
   const res = calculateMentalResilience({ profile, targetDate: new Date('2026-11-03T08:00:00+09:00'), question: '돌파 전략' });
   assert.equal(res.engineVersion, MENTAL_RESILIENCE_VERSION);
-  assert(res.calculatedAtKst.endsWith('KST'));
+  assertKstTimestamp(res.calculatedAtKst);
   assert(res.ritualAction.length > 0 && res.reflectionFocus.length > 0);
   assert(Boolean(res.resilienceSynthesisMatrix?.integratedAction));
   assert(res.interpretiveBoundary.length > 0);
@@ -2367,7 +2373,7 @@ test('Mental Resilience Engine: 위기 돌파 슈퍼파워 및 주역 난괘 탈
 test('Noble Network Engine: 4대 귀인 및 인연 네트워크 시너지 검증', () => {
   const res = calculateNobleNetwork({ profile, targetDate: new Date('2026-11-03T08:00:00+09:00'), question: '귀인 인연' });
   assert.equal(res.engineVersion, NOBLE_NETWORK_VERSION);
-  assert(res.calculatedAtKst.endsWith('KST'));
+  assertKstTimestamp(res.calculatedAtKst);
   assert(res.ritualAction.length > 0);
   assert(res.reflectionFocus.length > 0);
   assert(Boolean(res.nobleNetworkSynthesisMatrix?.integratedAction));
@@ -2408,7 +2414,7 @@ test('Monthly Flow Engine: 12개월 월운 및 분기 타이밍 검증', () => {
 test('Voice Persona Engine: 스피치 페르소나 및 설득력 치트키 검증', () => {
   const res = calculateVoicePersona({ profile, targetDate: new Date('2026-11-03T08:00:00+09:00'), question: '발표 화법' });
   assert.equal(res.engineVersion, VOICE_PERSONA_VERSION);
-  assert(res.calculatedAtKst.endsWith('KST'));
+  assertKstTimestamp(res.calculatedAtKst);
   assert(Boolean(res.voiceSynthesisMatrix?.integratedAction));
   assert(res.ritualAction.length > 0 && res.reflectionFocus.length > 0);
   assert(res.interpretiveBoundary.length > 0);
@@ -2455,7 +2461,7 @@ test('Contract Shield Engine: 계약 분쟁 리스크 및 5대 쉴드 체크리�
 test('Life Domain Wheel Engine: 6대 핵심 라이프 도메인 밸런스 휠 검증', () => {
   const res = calculateLifeDomainWheel({ profile, targetDate: new Date('2026-11-03T08:00:00+09:00'), question: '삶의 균형' });
   assert.equal(res.engineVersion, LIFE_DOMAIN_WHEEL_VERSION);
-  assert(res.calculatedAtKst.endsWith('KST'));
+  assertKstTimestamp(res.calculatedAtKst);
   assert(res.ritualAction.length > 0 && res.reflectionFocus.length > 0);
   assert(Boolean(res.wheelSynthesisMatrix?.integratedAction));
   assert(res.interpretiveBoundary.length > 0);
@@ -2510,7 +2516,7 @@ test('Instant Decision Engine: 매화역수·기문둔갑 즉시 결단 검증',
 test('Iching 384 Yao Engine: 주역 384효 동효 & 착종복잡 4대 변괘 및 해석 경계 검증', () => {
   const res = calculateIching384Yao({ profile, question: '변화의 시점', targetDate: new Date('2026-11-17T04:30:00+09:00') });
   assert.equal(res.engineVersion, ICHING_384YAO_ENGINE_VERSION);
-  assert(res.calculatedAtKst.endsWith('KST'));
+  assertKstTimestamp(res.calculatedAtKst);
   assert(Boolean(res.ichingSynthesisMatrix?.integratedAction));
   assert(res.interpretiveBoundary.length > 0);
   assert(res.ritualAction.length > 0 && res.reflectionFocus.length > 0);
@@ -2544,7 +2550,7 @@ test('Deep Work Flow Engine: 딥워크 몰입 아키타입 및 최적 환경 매
 test('Sleep Subconscious Engine: 수면 사운드 안내 및 3단계 나이트 리셋 검증', () => {
   const res = calculateSleepSubconscious({ profile, targetDate: new Date('2026-11-03T08:00:00+09:00'), question: '숙면과 꿈 해몽' });
   assert.equal(res.engineVersion, SLEEP_SUBCONSCIOUS_VERSION);
-  assert(res.calculatedAtKst.endsWith('KST'));
+  assertKstTimestamp(res.calculatedAtKst);
   assert(res.ritualAction.length > 0 && res.reflectionFocus.length > 0);
   assert(Boolean(res.sleepSynthesisMatrix?.integratedAction));
   assert(res.interpretiveBoundary.length > 0);
@@ -2565,7 +2571,7 @@ test('Sleep Subconscious Engine: 수면 사운드 안내 및 3단계 나이트 �
 test('Quantum Leap Timing Engine: 퀀텀 점프 준비도 및 골든 모멘텀 검증', () => {
   const res = calculateQuantumLeapTiming({ profile, targetDate: new Date('2026-11-03T08:00:00+09:00'), question: '승부수 타이밍' });
   assert.equal(res.engineVersion, QUANTUM_LEAP_VERSION);
-  assert(res.calculatedAtKst.endsWith('KST'));
+  assertKstTimestamp(res.calculatedAtKst);
   assert(res.ritualAction.length > 0 && res.reflectionFocus.length > 0);
   assert(Boolean(res.quantumLeapSynthesisMatrix?.integratedAction));
   assert(res.interpretiveBoundary.length > 0);
@@ -2602,7 +2608,7 @@ test('Elemental Resonance Engine: 오행 생극제화 및 상생 순환 루프 �
 test('Yin-Yang Polarity Engine: 음양 수리 분포 및 24시간 바이폴라 윈도우 검증', () => {
   const res = calculateYinYangPolarity({ profile, targetDate: new Date('2026-11-03T08:00:00+09:00'), question: '오늘의 에너지 리듬' });
   assert.equal(res.engineVersion, YIN_YANG_POLARITY_VERSION);
-  assert(res.calculatedAtKst.endsWith('KST'));
+  assertKstTimestamp(res.calculatedAtKst);
   assert(Boolean(res.polaritySynthesisMatrix?.integratedAction));
   assert(res.ritualAction.length > 0 && res.reflectionFocus.length > 0);
   assert(res.interpretiveBoundary.length > 0);
@@ -2623,7 +2629,7 @@ test('Yin-Yang Polarity Engine: 음양 수리 분포 및 24시간 바이폴라 �
 test('Rune Matrix Engine: 고대 노르딕 룬 동시성 3대 스프레드 검증', () => {
   const res = calculateRuneMatrix({ profile, targetDate: new Date('2026-11-03T08:00:00+09:00') });
   assert.equal(res.engineVersion, RUNE_MATRIX_VERSION);
-  assert(res.calculatedAtKst.endsWith('KST'));
+  assertKstTimestamp(res.calculatedAtKst);
   assert(res.ritualAction.length > 0 && res.reflectionFocus.length > 0);
   assert(Boolean(res.runeSynthesisMatrix?.integratedAction));
   assert(res.interpretiveBoundary.length > 0);
@@ -2642,7 +2648,7 @@ test('Rune Matrix Engine: 고대 노르딕 룬 동시성 3대 스프레드 검�
 test('Soul Journey Tarot Engine: 영혼 연금술 3단계 및 4원소 균형 검증', () => {
   const res = calculateSoulJourneyTarot({ profile, targetDate: new Date('2026-11-03T10:00:00+09:00'), question: '영혼 여정' });
   assert.equal(res.engineVersion, SOUL_JOURNEY_TAROT_VERSION);
-  assert(res.calculatedAtKst.endsWith('KST'));
+  assertKstTimestamp(res.calculatedAtKst);
   assert(res.ritualAction.length > 0 && res.reflectionFocus.length > 0);
   assert(Boolean(res.soulJourneySynthesisMatrix?.integratedAction));
   assert(res.interpretiveBoundary.length > 0);
@@ -2683,7 +2689,7 @@ test('Transcendental Meditation Engine: 초월 명상 및 마음 안정 안내 �
 test('Strategic Leverage Engine: 전략 협상 및 손자병법 기문 레버리지 검증', () => {
   const res = calculateStrategicLeverage({ profile, targetDate: new Date('2026-11-03T10:00:00+09:00'), question: '중요 협상' });
   assert.equal(res.engineVersion, STRATEGIC_LEVERAGE_VERSION);
-  assert(res.calculatedAtKst.endsWith('KST'));
+  assertKstTimestamp(res.calculatedAtKst);
   assert(res.ritualAction.length > 0 && res.reflectionFocus.length > 0);
   assert(Boolean(res.leverageSynthesisMatrix?.integratedAction));
   assert(res.interpretiveBoundary.length > 0);
@@ -2733,7 +2739,7 @@ test('Special Stars Matrix Engine: 15대 신살 슈퍼파워 치환 v2.1.0 교�
 test('Shadow Archetype Engine: 융 심리학 그림자 자아 & 골든 섀도우 연금술 검증', () => {
   const res = calculateShadowArchetype({ profile, targetDate: new Date('2026-11-03T10:00:00+09:00') });
   assert.equal(res.engineVersion, SHADOW_ARCHETYPE_VERSION);
-  assert(res.calculatedAtKst.endsWith('KST'));
+  assertKstTimestamp(res.calculatedAtKst);
   assert(res.ritualAction.length > 0 && res.reflectionFocus.length > 0);
   assert(Boolean(res.shadowSynthesisMatrix?.integratedAction));
   assert(res.interpretiveBoundary.length > 0);
@@ -2789,7 +2795,7 @@ test('Destiny Synastry Echo Engine: 다차원 운명 공명 에코 & 카르마�
 test('Micro-Habit Karma Engine: 21일 카르마 리셋 & 오행 마이크로 해빗 검증', () => {
   const res = calculateMicroHabitKarma({ profile, targetDate: new Date('2026-11-03T10:00:00+09:00'), question: '루틴 안착' });
   assert.equal(res.engineVersion, MICRO_HABIT_KARMA_VERSION);
-  assert(res.calculatedAtKst.endsWith('KST'));
+  assertKstTimestamp(res.calculatedAtKst);
   assert(res.ritualAction.length > 0 && res.reflectionFocus.length > 0);
   assert(Boolean(res.microHabitSynthesisMatrix?.integratedAction));
   assert(res.interpretiveBoundary.length > 0);
@@ -2827,7 +2833,7 @@ test('Ikigai Destiny Compass Engine: 이키가이 천직 4대 교집합 & 소명
 test('Serendipity Synchronicity Engine: 양자 동시성 & 세렌디피티 행운 가속 검증', () => {
   const res = calculateSerendipitySynchronicity({ profile, targetDate: new Date('2026-11-03T10:00:00+09:00'), question: '오늘의 행운 신호' });
   assert.equal(res.engineVersion, SERENDIPITY_SYNCHRONICITY_VERSION);
-  assert(res.calculatedAtKst.endsWith('KST'));
+  assertKstTimestamp(res.calculatedAtKst);
   assert(res.ritualAction.length > 0 && res.reflectionFocus.length > 0);
   assert(Boolean(res.serendipitySynthesisMatrix?.integratedAction));
   assert(res.interpretiveBoundary.length > 0);
@@ -2927,7 +2933,7 @@ test('Ancestral Epigenetic Karma Engine: 조상 혈통 업력 & 후성유전학�
 test('Shamanic Animal Totem Engine: 샤머니즘 파워 애니멀 & 12지지 스피릿 토템 검증', () => {
   const res = calculateShamanicAnimalTotem({ profile, targetDate: new Date('2026-11-03T10:00:00+09:00'), question: '내 수호 동물' });
   assert.equal(res.engineVersion, SHAMANIC_ANIMAL_TOTEM_VERSION);
-  assert(res.calculatedAtKst.endsWith('KST'));
+  assertKstTimestamp(res.calculatedAtKst);
   assert(res.ritualAction.length > 0 && res.reflectionFocus.length > 0);
   assert(Boolean(res.totemSynthesisMatrix?.integratedAction));
   assert(res.interpretiveBoundary.length > 0);
@@ -2950,7 +2956,7 @@ test('Hero Myth Monomyth Engine: 조셉 캠벨 영웅의 여정 12단계 & 운�
   assert(res.theUltimateOrdeal.length > 0);
   assert(res.theSacredElixir.length > 0);
   assert(res.heroicBreakthroughAction.length > 0);
-  assert(res.calculatedAtKst.endsWith('KST'));
+  assertKstTimestamp(res.calculatedAtKst);
   assert(Boolean(res.monomythSynthesisMatrix?.integratedAction));
   assert(res.interpretiveBoundary.length > 0);
   assert(res.ritualAction.length > 0 && res.reflectionFocus.length > 0);
@@ -2984,7 +2990,7 @@ test('Akashic Records Oracle Engine: 아카식 레코드 영혼 서약 & 카르�
 test('Quantum Probabilistic Timeline Engine: 양자 다중우주 타임라인 분기 & 퀀텀 점프 검증', () => {
   const res = calculateQuantumProbabilisticTimeline({ profile, targetDate: new Date('2026-11-03T10:00:00+09:00'), question: '미래 분기' });
   assert.equal(res.engineVersion, QUANTUM_TIMELINE_VERSION);
-  assert(res.calculatedAtKst.endsWith('KST'));
+  assertKstTimestamp(res.calculatedAtKst);
   assert(res.ritualAction.length > 0 && res.reflectionFocus.length > 0);
   assert(Boolean(res.quantumTimelineSynthesisMatrix?.integratedAction));
   assert(res.interpretiveBoundary.length > 0);
@@ -3002,7 +3008,7 @@ test('Quantum Probabilistic Timeline Engine: 양자 다중우주 타임라인 �
 test('Somatic Body Armoring Engine: 빌헬름 라이히 7대 신체 갑옷 해제 & 체성 감각 검증', () => {
   const res = calculateSomaticBodyArmoring({ profile, targetDate: new Date('2026-11-03T10:00:00+09:00'), question: '신체 긴장 해소' });
   assert.equal(res.engineVersion, SOMATIC_ARMORING_VERSION);
-  assert(res.calculatedAtKst.endsWith('KST'));
+  assertKstTimestamp(res.calculatedAtKst);
   assert(res.ritualAction.length > 0 && res.reflectionFocus.length > 0);
   assert(Boolean(res.somaticSynthesisMatrix?.integratedAction));
   assert(res.interpretiveBoundary.length > 0);
@@ -3021,7 +3027,7 @@ test('Somatic Body Armoring Engine: 빌헬름 라이히 7대 신체 갑옷 해�
 test('Supreme Wisdom Trinity Engine: 기적수업 × 초기불교 × 영지주의 3대 지혜 융합 검증', () => {
   const res = calculateSupremeWisdomTrinity({ profile, targetDate: new Date('2026-11-03T10:00:00+09:00'), question: '마음 평화' });
   assert.equal(res.engineVersion, SUPREME_WISDOM_TRINITY_VERSION);
-  assert(res.calculatedAtKst.endsWith('KST'));
+  assertKstTimestamp(res.calculatedAtKst);
   assert(res.ritualAction.length > 0 && res.reflectionFocus.length > 0);
   assert(Boolean(res.trinitySynthesisMatrix?.integratedAction));
   assert(res.interpretiveBoundary.length > 0);
@@ -3043,7 +3049,7 @@ test('Supreme Wisdom Trinity Engine: 기적수업 × 초기불교 × 영지주�
 test('Sacred Vortex Geometry Engine: 황금비 영혼 수비학 & 보텍스 기하학 검증', () => {
   const res = calculateSacredVortexGeometry({ profile, targetDate: new Date('2026-11-04T10:00:00+09:00'), question: '영혼 기하학' });
   assert.equal(res.engineVersion, SACRED_VORTEX_VERSION);
-  assert(res.calculatedAtKst.endsWith('KST'));
+  assertKstTimestamp(res.calculatedAtKst);
   assert(res.ritualAction.length > 0 && res.reflectionFocus.length > 0);
   assert(Boolean(res.vortexSynthesisMatrix?.integratedAction));
   assert(res.interpretiveBoundary.length > 0);
@@ -3089,7 +3095,7 @@ test('Taoist Neidan Meridian Engine: 도교 내단 양생 & 진기 순환 경락
 test('Synchronicity Omen Engine: 칼 융 동시성 징조 해독 & 오멘 매트릭스 검증', () => {
   const res = calculateSynchronicityOmen({ profile, targetDate: new Date('2026-11-04T10:00:00+09:00'), question: '우주의 징조' });
   assert.equal(res.engineVersion, SYNCHRONICITY_OMEN_VERSION);
-  assert(res.calculatedAtKst.endsWith('KST'));
+  assertKstTimestamp(res.calculatedAtKst);
   assert(res.ritualAction.length > 0 && res.reflectionFocus.length > 0);
   assert(Boolean(res.synchronicitySynthesisMatrix?.integratedAction));
   assert(res.interpretiveBoundary.length > 0);
@@ -3126,7 +3132,7 @@ test('Etheric Aura Biofield Engine: 에테르 오라 생체장 & 쉴딩 결계 �
 test('Saju Classic Yongshin Prescription Engine: 사주 정통 3대 원전 용신·격국·조후 검증', () => {
   const res = calculateSajuClassicYongshin({ profile, targetDate: new Date('2026-11-04T14:00:00+09:00') });
   assert.equal(res.engineVersion, SAJU_CLASSIC_YONGSHIN_VERSION);
-  assert(res.calculatedAtKst.endsWith('KST'));
+  assertKstTimestamp(res.calculatedAtKst);
   assert(res.ritualAction.length > 0 && res.reflectionFocus.length > 0);
   assert(Boolean(res.yongshinSynthesisMatrix?.integratedAction));
   assert(res.interpretiveBoundary.length > 0);
@@ -3259,7 +3265,7 @@ test('Hellenistic Lots Engine: calculates Fortune, Spirit, Eros, Nemesis lots de
 test('I Ching 384 Yao Engine: calculates changing yao and quad-transformation hexagrams', () => {
   const rep = calculateIching384Yao({ question: '새로운 프로젝트 이직 타이밍 어떨까' });
   assert.equal(rep.engineVersion, ICHING_384YAO_ENGINE_VERSION);
-  assert(rep.calculatedAtKst.endsWith('KST'));
+  assertKstTimestamp(rep.calculatedAtKst);
   assert(Boolean(rep.ichingSynthesisMatrix?.integratedAction));
   assert(rep.changingYao.yaoPosition >= 1 && rep.changingYao.yaoPosition <= 6);
   assert(rep.originalHexagram.nameKo.length > 0);
@@ -3352,7 +3358,7 @@ test('Saju Destiny Exporter: formats 9:16 Instagram Story viral caption correctl
 test('Saju Twelve Stages & Tomb Unlock Engine: calculates lifecycle vitality and tomb storages', () => {
   const rep = calculateSajuTwelveStagesTomb(profile);
   assert.equal(rep.engineVersion, SAJU_12STAGES_TOMB_VERSION);
-  assert(rep.calculatedAtKst.endsWith('KST'));
+  assertKstTimestamp(rep.calculatedAtKst);
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(Boolean(rep.tombSynthesisMatrix?.integratedAction));
   assert(rep.interpretiveBoundary.length > 0);
@@ -3438,7 +3444,7 @@ test('Hermetic Kybalion Engine: maps 7 cosmic principles and alchemical shift', 
 test('Vibrational Soul Quest Engine: derives 4 core soul numbers and personal year quest', () => {
   const rep = calculateVibrationalSoulQuest(profile, new Date(), '올해의 영혼 방향');
   assert.equal(rep.engineVersion, VIBRATIONAL_SOUL_QUEST_VERSION);
-  assert(rep.calculatedAtKst.endsWith('KST'));
+  assertKstTimestamp(rep.calculatedAtKst);
   assert(Boolean(rep.soulQuestSynthesisMatrix?.integratedAction));
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
@@ -3491,7 +3497,7 @@ test('Ziwei HuaJi Transformation Engine: maps stem hua-ji and breakthrough gift'
 test('Celtic Tree Ogham Engine: derives birth guardian tree and seasonal oracle', () => {
   const rep = calculateCelticTreeOgham(profile);
   assert.equal(rep.engineVersion, CELTIC_OGHAM_VERSION);
-  assert(rep.calculatedAtKst.endsWith('+09:00'));
+  assertKstTimestamp(rep.calculatedAtKst);
   assert(rep.interpretiveBoundary.length > 0);
   assert(rep.birthGuardianTree.nameTreeKo.length > 0);
   assert(rep.druidWisdomScore >= 0 && rep.druidWisdomScore <= 100);
@@ -3557,7 +3563,7 @@ test('Mesopotamian Seven Gates Engine: calculates planetary gate and resurrectio
   assert(rep.activeGate.gateNumber >= 1 && rep.activeGate.gateNumber <= 7);
   assert(rep.sovereigntyResurrectionPower >= 0 && rep.sovereigntyResurrectionPower <= 100);
   assert(rep.liberationTask.length > 0);
-  assert(rep.calculatedAtKst.endsWith('KST'));
+  assertKstTimestamp(rep.calculatedAtKst);
   assert(rep.ritualAction.length > 0);
   assert(rep.reflectionFocus.length > 0);
   assert(Boolean(rep.sevenGatesSynthesisMatrix?.integratedAction));
@@ -3583,13 +3589,13 @@ test('Egyptian 36 Decans Engine: calculates birth decan and stellar resonance', 
   const prompt = formatEgyptianThirtySixDecansPrompt(rep);
   assert(prompt.includes('고대 이집트 36 데칸'));
   assert(prompt.includes(rep.birthDecan.guardianDeity));
-  assert(!prompt.includes('/100') && !prompt.includes('점수'));
+  assert.doesNotMatch(prompt, /(?:\d+\s*(?:\/\s*100|점|%)|점수\s*[:：]?\s*\d+)/);
 });
 
 test('Sufi Seven Lataif Soul Ascension Engine: calculates spiritual station and heart purity', () => {
   const rep = calculateSufiLataifSoulAscension({ profile });
   assert.equal(rep.engineVersion, SUFI_LATAIF_VERSION);
-  assert(rep.calculatedAtKst.endsWith('KST'));
+  assertKstTimestamp(rep.calculatedAtKst);
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(Boolean(rep.lataifSynthesisMatrix?.integratedAction));
   assert(rep.interpretiveBoundary.length > 0);
@@ -3709,7 +3715,7 @@ test('Hawaiian Huna & Ho\'oponopono Engine: calculates active principle, three s
   assert(prompt.includes(rep.activePrinciple.hawaiianName));
   assert(prompt.includes(rep.ritualAction));
   assert(!prompt.includes('/ 100점'));
-  assert(!prompt.includes('점'));
+  assert.doesNotMatch(prompt, /(?:\d+\s*(?:\/\s*100|점|%)|점수\s*[:：]?\s*\d+)/);
 });
 
 test('Feng Shui Eight Mansions Engine: calculates kua number, east/west mansion and spatial directions', () => {
@@ -3962,7 +3968,7 @@ test('Sumerian Fifty Mes & Civilization Engine: calculates primary me, creation 
 test('Zhong-Lu Inner Alchemy & Three Immortals Engine: calculates stages, tier and kan-li qualitative posture', () => {
   const rep = calculateZhongLuInnerAlchemy(profile, '요즘 너무 지쳐서 회복하고 싶어요');
   assert.equal(rep.engineVersion, ZHONG_LU_INNER_ALCHEMY_VERSION);
-  assert(rep.calculatedAtKst.endsWith('KST'));
+  assertKstTimestamp(rep.calculatedAtKst);
   assert(Boolean(rep.zhongLuSynthesisMatrix?.integratedAction));
   assert.equal(rep.questionTheme, 'healing');
   assert(rep.immortalityTier.koreanTitle.length > 0);
@@ -3999,7 +4005,7 @@ test('Druid Thirteen Moon Trees & Ogham Engine: calculates birth tree, active tr
 test('Tieban Shenshu & Tai Xuan Numerology Engine: calculates inherent clause, affinity clause and accord', () => {
   const rep = calculateTiebanShenshu(profile, { question: '선천 운명과 시기' });
   assert.equal(rep.engineVersion, TIEBAN_SHENSHU_VERSION);
-  assert(rep.calculatedAtKst.endsWith('KST'));
+  assertKstTimestamp(rep.calculatedAtKst);
   assert(Boolean(rep.tiebanSynthesisMatrix?.integratedAction));
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
@@ -4096,7 +4102,7 @@ test('Vedic Nakshatra 108 Pada Engine: calculates nakshatra, pada and dharma pat
 test('Vitality Curve Engine: calculates 12-stage biorhythm curve and synthesis matrix', () => {
   const rep = calculateVitalityCurve({ profile, question: '오늘 집중 시간대' });
   assert.equal(rep.engineVersion, VITALITY_CURVE_ENGINE_VERSION);
-  assert(rep.calculatedAtKst.endsWith('KST'));
+  assertKstTimestamp(rep.calculatedAtKst);
   assert(Boolean(rep.vitalitySynthesisMatrix?.integratedAction));
   assert(Boolean(rep.ritualAction) && Boolean(rep.reflectionFocus));
   assert(rep.interpretiveBoundary.length > 0);
@@ -4134,7 +4140,7 @@ test('Egyptian Hermetic Cartouche Engine: calculates divine cartouche and qualit
 test('Taoist Gong Guo Ge Karma Engine: calculates merit domain and qualitative guidance', () => {
   const rep = calculateTaoistGongGuoGeKarma(profile, new Date(), '이직 결정을 어떻게 해야 할까요?');
   assert.equal(rep.engineVersion, TAOIST_GONG_GUO_GE_KARMA_ENGINE_VERSION);
-  assert(rep.calculatedAtKst.endsWith('KST'));
+  assertKstTimestamp(rep.calculatedAtKst);
   assert(Boolean(rep.gongGuoGeSynthesisMatrix?.integratedAction));
   assert.equal(rep.questionTheme, 'decision');
   assert(rep.meritDomain.length > 0);
@@ -4222,7 +4228,7 @@ test('Shinto Kotodama Four Souls Engine: calculates Ichirei Shikon balance and K
   assert(rep.fourSouls.dominantSoul.length > 0);
   assert(rep.fourSouls.secondarySoul.length > 0);
   assert(rep.reflectiveQuestion.includes('말과 마음의 조화'));
-  assert(rep.interpretiveBoundary.includes('성찰 비유'));
+  assert(rep.interpretiveBoundary.includes('내면 조율 비유'));
   const prompt = formatShintoKotodamaPrompt(rep);
   assert(prompt.includes('고대 일본 신도 고토다마(言霊) 50음령 & 4혼1생(四魂一志) 영혼 조화 실측 데이터'));
   assert(prompt.includes(rep.fourSouls.dominantSoul));
@@ -4257,7 +4263,7 @@ test('Finnish Kalevala Sampo Engine: calculates 3 Sampo wings and Sisu resilienc
   assert(rep.interpretiveBoundary.length > 0);
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatFinnishKalevalaSampoPrompt(rep);
-  assert(prompt.includes('고대 핀란드 칼레발라(Kalevala) 삼포(Sampo) & 9대 룬가 실측 데이터'));
+  assert(prompt.includes('고대 핀란드 칼레발라(Kalevala) 삼포(Sampo) & 9대 룬가 상징 관점'));
   assert(prompt.includes(rep.sampoBalance.dominantWing));
   assert(!prompt.includes('/ 100') && !prompt.includes('점수'));
 });
@@ -4306,7 +4312,7 @@ test('Jain Gunasthana Karma Engine: calculates 14 Gunasthanas and Ratnatraya bal
 test('Celtic Awen Taliesin Engine: calculates Awen 3 rays and metamorphosis phase', () => {
   const rep = calculateCelticAwenTaliesin({ profile });
   assert.equal(rep.engineVersion, CELTIC_AWEN_TALIESIN_ENGINE_VERSION);
-  assert(rep.calculatedAtKst.endsWith('+09:00'));
+  assertKstTimestamp(rep.calculatedAtKst);
   assert(rep.interpretiveBoundary.length > 0);
   assert(rep.awenFlowIndex >= 0 && rep.awenFlowIndex <= 100);
   assert(rep.awenRays.dominantRay.length > 0);
@@ -4487,7 +4493,7 @@ test('Egyptian Maat Feather Heart Engine: calculates heart lightness and Maat ve
   assert(rep.symbolicGuard.anubisRole.length > 0 && rep.symbolicGuard.thothRole.length > 0);
   assert(rep.practiceGuidance.length > 0 && rep.ritualAction.length > 0 && rep.boundaryNotice.length > 0 && rep.interpretiveBoundary.length > 0);
   const prompt = formatEgyptianMaatFeatherHeartPrompt(rep);
-  assert(prompt.includes('고대 이집트 마아트(Ma\'at) 진리의 깃털 & 심장 무게 측정 실측 데이터'));
+  assert(prompt.includes('고대 이집트 마아트(Ma\'at) 진리의 깃털 & 심장 무게 측정 상징 관점'));
   assert(prompt.includes(rep.activeNegativeConfessionVirtue));
   assert(prompt.includes(rep.practiceGuidance));
   assert(!prompt.includes('/100') && !prompt.includes('점수'));
@@ -4529,7 +4535,7 @@ test('Orpheic Mysteries Engine: calculates memory well awakening and Dionysian e
   assert(rep.polarityArchetype.nameKo.length > 0);
   assert(rep.divineLineageDeclaration.length > 0);
   assert(rep.practiceGuidance.length > 0 && rep.ritualAction.length > 0 && rep.boundaryNotice.length > 0);
-  assert(rep.calculatedAtKst.endsWith('KST'));
+  assertKstTimestamp(rep.calculatedAtKst);
   assert(Boolean(rep.orphicSynthesisMatrix?.integratedAction));
   assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatOrpheicMysteriesPrompt(rep);
@@ -4552,7 +4558,7 @@ test('Popol Vuh Hero Twins Engine: calculates active trial house and qualitative
   assert(rep.ritualAction.length > 0);
   assert(rep.reflectionFocus.length > 0);
   assert(rep.boundaryNotice.length > 0);
-  assert(rep.calculatedAtKst.endsWith('KST'));
+  assertKstTimestamp(rep.calculatedAtKst);
   assert(Boolean(rep.popolVuhSynthesisMatrix?.integratedAction));
   assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatPopolVuhHeroTwinsPrompt(rep);
@@ -4639,7 +4645,7 @@ test('Baopuzi Ge Hong Nine Turn Elixir Engine: calculates alchemy rank and vital
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatBaopuziElixirsPrompt(rep);
-  assert(prompt.includes('고대 도교 포박자(抱朴子) 갈홍 구전환단(九轉還丹) 무병장수 실측 데이터'));
+  assert(prompt.includes('고대 도교 포박자(抱朴子) 갈홍 구전환단(九轉還丹) 무병장수 정성 리포트'));
   assert(prompt.includes(rep.activeElixirPhase.elixirNameKo));
   assert(!prompt.includes('/100'));
 });
@@ -4750,7 +4756,7 @@ test('Tibetan Phowa Rainbow Body Engine: calculates Rigpa clarity and 5 Buddha w
 test('Plum Blossom Meihua Oracle Engine: calculates ben/hu/bian gua and ti-yong relations', () => {
   const rep = calculatePlumBlossomMeihuaOracle({ profile });
   assert.equal(rep.engineVersion, PLUM_BLOSSOM_MEIHUA_ORACLE_ENGINE_VERSION);
-  assert(rep.calculatedAtKst.endsWith('KST'));
+  assertKstTimestamp(rep.calculatedAtKst);
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(Boolean(rep.meihuaSynthesisMatrix?.integratedAction));
   assert(rep.interpretiveBoundary.length > 0);
@@ -4890,7 +4896,7 @@ test('Gnostic Pistis Sophia Pleroma Engine: calculates twelve aeons resonance an
 test('Sumerian Inanna Underworld Descent Engine: calculates seven gates stripping and resurrection vitality', () => {
   const rep = calculateSumerianInannaUnderworldDescent({ profile, question: '그림자와 영혼의 부활' });
   assert.equal(rep.engineVersion, SUMERIAN_INANNA_UNDERWORLD_DESCENT_ENGINE_VERSION);
-  assert(rep.calculatedAtKst.endsWith('KST'));
+  assertKstTimestamp(rep.calculatedAtKst);
   assert(Boolean(rep.inannaSynthesisMatrix?.integratedAction));
   assert(rep.interpretiveBoundary.length > 0);
   assert.equal(rep.gates.length, 7);
@@ -4913,7 +4919,7 @@ test('Norse Volva Seidr Nine Realms Engine: calculates nine realms resonance and
   assert(rep.muninMemoryScore >= 0 && rep.muninMemoryScore <= 100);
   assert(rep.yggdrasilSapShieldPower >= 0 && rep.yggdrasilSapShieldPower <= 100);
   assert(rep.dominantRealm.nameKo.length > 0);
-  assert(rep.calculatedAtKst.endsWith('KST'));
+  assertKstTimestamp(rep.calculatedAtKst);
   assert(rep.ritualAction.length > 0);
   assert(rep.reflectionFocus.length > 0);
   assert(Boolean(rep.volvaSynthesisMatrix?.integratedAction));
@@ -5021,7 +5027,7 @@ test('Patanjali Ashtanga Yoga Sutra Engine: calculates citta vritti nirodha and 
   assert(rep.purushaConsciousnessAwakening >= 0 && rep.purushaConsciousnessAwakening <= 100);
   assert(rep.pranayamaVitalityBalance >= 0 && rep.pranayamaVitalityBalance <= 100);
   assert(rep.dominantYogaLimb.nameKo.length > 0);
-  assert(rep.calculatedAtKst.endsWith('KST'));
+  assertKstTimestamp(rep.calculatedAtKst);
   assert(rep.ritualAction.length > 0);
   assert(rep.reflectionFocus.length > 0);
   assert(Boolean(rep.yogaSynthesisMatrix?.integratedAction));
@@ -5123,7 +5129,7 @@ test('Kashmir Shaivism Spanda Engine: calculates cosmic pulsation, Pratyabhijna 
 test('Sumerian Enuma Elish Fifty Names Engine: calculates Tiamat subjugation, four winds balance and Marduk sacred names', () => {
   const rep = calculateSumerianEnumaElishFiftyNames({ profile, question: '에누마 엘리시 마르두크 50대 이름' });
   assert.equal(rep.engineVersion, ENUMA_ELISH_ENGINE_VERSION);
-  assert(rep.calculatedAtKst.endsWith('KST'));
+  assertKstTimestamp(rep.calculatedAtKst);
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(Boolean(rep.enumaElishSynthesisMatrix?.integratedAction));
   assert(rep.interpretiveBoundary.length > 0);
@@ -5256,7 +5262,7 @@ test('Etruscan Augur Sixteen Sky Divination Engine: calculates Faustus auspice s
   assert(rep.interpretiveBoundary.length > 0);
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatEtruscanAugurSixteenSkyPrompt(rep);
-  assert(prompt.includes('고대 에트루리아 16천궁 분할 & 아우구르 조점(Auspicium) 실측 리포트'));
+  assert(prompt.includes('고대 에트루리아 16천궁 분할 & 아우구르 조점(Auspicium) 상징 관점'));
   assert(prompt.includes(rep.activeRegion.quadrantKo));
 });
 
@@ -5268,7 +5274,7 @@ test('Rosicrucian Chymical Wedding Engine: calculates seven days transmutation, 
   assert(rep.sevenDaysTransmutationRate >= 0 && rep.sevenDaysTransmutationRate <= 100);
   assert(rep.phoenixRebirthVibration >= 0 && rep.phoenixRebirthVibration <= 100);
   assert(rep.dominantStage.dayName.length > 0);
-  assert(rep.calculatedAtKst.endsWith('KST'));
+  assertKstTimestamp(rep.calculatedAtKst);
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(Boolean(rep.rosicrucianSynthesisMatrix?.integratedAction));
   assert(rep.interpretiveBoundary.length > 0);
@@ -5397,7 +5403,7 @@ test('Chonggamnok Ten Sanctuaries Engine: calculates geomantic sanctuaries, gong
   assert(rep.dailyPracticeRitual.length > 0);
   assert(rep.reflectiveQuestion.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
-  assert(rep.calculatedAtKst.endsWith('KST'));
+  assertKstTimestamp(rep.calculatedAtKst);
   assert(Boolean(rep.chonggamnokSynthesisMatrix?.integratedAction));
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatChonggamnokPrompt(rep);
@@ -5696,7 +5702,7 @@ test('Chinese Mayi Mianxiang Twelve Palaces Engine: calculates 12 palaces, Qi au
   assert(rep.yintangManifestationPower >= 0 && rep.yintangManifestationPower <= 100);
   assert(rep.primaryPalace.nameKo.length > 0);
   assert(rep.secondaryPalace.nameKo.length > 0);
-  assert(rep.calculatedAtKst.includes('KST'));
+  assertKstTimestamp(rep.calculatedAtKst);
   assert(rep.temporalMayiRhythm.yintangWatchWindow.length > 0);
   assert(rep.mayiSynthesisMatrix.coreInsight.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
@@ -5915,7 +5921,7 @@ test('Scandinavian Eddic Yggdrasil Nine Realms Engine: calculates cosmic axis, U
   assert(rep.nineRealmsResonanceEquilibrium >= 0 && rep.nineRealmsResonanceEquilibrium <= 100);
   assert(rep.gimleGoldenRenewalPower >= 0 && rep.gimleGoldenRenewalPower <= 100);
   assert(rep.activeRealmStage.stageNameOldNorse.length > 0);
-  assert(rep.calculatedAtKst.endsWith('KST'));
+  assertKstTimestamp(rep.calculatedAtKst);
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(Boolean(rep.eddicSynthesisMatrix?.integratedAction));
   assert(rep.interpretiveBoundary.length > 0);
@@ -6692,7 +6698,7 @@ test('Blaise Pascal Pensees Engine: calculates Thinking reed dignity, Heart intu
   assert(rep.divertissementTranquilityScore >= 0 && rep.divertissementTranquilityScore <= 100);
   assert(rep.activeThematicThought.thoughtTitleFrench.length > 0);
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
-  assert(rep.calculatedAtKst.endsWith('KST'));
+  assertKstTimestamp(rep.calculatedAtKst);
   assert(Boolean(rep.pascalSynthesisMatrix?.integratedAction));
   const prompt = formatPascalPenseesHeartReasonPrompt(rep);
   assert(prompt.includes('블레즈 파스칼 팡세(Pensées) 사유하는 갈대 & 심장의 논리 지표'));
@@ -6819,7 +6825,7 @@ test('Seosan Daesa Hyujeong Seonga Gwigam Engine: calculates Ilmul yeongmyeong, 
 test('Carl Gustav Jung Individuation Archetype Engine: calculates Self realization, Shadow integration, and Anima/Animus syzygy', () => {
   const rep = calculateJungIndividuationArchetype(profile);
   assert.equal(rep.engineVersion, SWISS_JUNG_INDIVIDUATION_VERSION);
-  assert(rep.calculatedAtKst.endsWith('KST'));
+  assertKstTimestamp(rep.calculatedAtKst);
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(Boolean(rep.jungSynthesisMatrix?.integratedAction));
   assert(rep.interpretiveBoundary.length > 0);
@@ -6881,7 +6887,7 @@ test('Aurelius Augustine Confessiones Illuminatio Engine: calculates Interior Il
   assert(rep.restfulPeaceOfHeartScore >= 0 && rep.restfulPeaceOfHeartScore <= 100);
   assert(rep.transcendentLoveOrientationScore >= 0 && rep.transcendentLoveOrientationScore <= 100);
   assert(rep.activeAugustineTheme.themeTitleLatin.length > 0);
-  assert(rep.calculatedAtKst.endsWith('KST'));
+  assertKstTimestamp(rep.calculatedAtKst);
   assert(rep.ritualAction.length > 0);
   assert(rep.reflectionFocus.length > 0);
   assert(Boolean(rep.augustineSynthesisMatrix?.integratedAction));
@@ -7281,7 +7287,7 @@ test('Yeonam Park Jiwon Yeolha Ilgi Engine: calculates One-Night Nine Crossings,
   assert(rep.bukhakOpenMindedInsightScore >= 0 && rep.bukhakOpenMindedInsightScore <= 100);
   assert(rep.haehakSatiricalGenerosityQuotient >= 0 && rep.haehakSatiricalGenerosityQuotient <= 100);
   assert(rep.activeYeonamTheme.themeTitleKo.length > 0);
-  assert(rep.calculatedAtKst.endsWith('KST'));
+  assertKstTimestamp(rep.calculatedAtKst);
   assert(Boolean(rep.yeonamSynthesisMatrix?.integratedAction));
   assert(rep.dailyPracticeRitual.length > 0);
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
@@ -7631,7 +7637,7 @@ test('Leo Tolstoy Calendar of Wisdom Engine: calculates Spiritual Awakening, Aga
   assert(rep.nonViolencePeaceEquanimityIndex >= 0 && rep.nonViolencePeaceEquanimityIndex <= 100);
   assert(rep.existentialConscienceIntegrityScore >= 0 && rep.existentialConscienceIntegrityScore <= 100);
   assert(rep.activeTolstoyTheme.themeTitleKo.length > 0);
-  assert(rep.calculatedAtKst.endsWith('KST'));
+  assertKstTimestamp(rep.calculatedAtKst);
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(Boolean(rep.tolstoySynthesisMatrix?.integratedAction));
   const prompt = formatRussianLeoTolstoyCalendarOfWisdomPrompt(rep);
@@ -7702,7 +7708,7 @@ test('Hermann Hesse Demian Siddhartha Engine: calculates Abraxas Self-Actualizat
   assert(rep.riverWisdomUnityIndex >= 0 && rep.riverWisdomUnityIndex <= 100);
   assert(rep.innerCallingFidelityScore >= 0 && rep.innerCallingFidelityScore <= 100);
   assert(rep.activeHesseTheme.themeTitleKo.length > 0);
-  assert(rep.calculatedAtKst.endsWith('KST'));
+  assertKstTimestamp(rep.calculatedAtKst);
   assert(Boolean(rep.hesseSynthesisMatrix?.integratedAction));
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
@@ -8015,7 +8021,7 @@ test('Ohseong and Haneum Friendship Governance Engine: calculates Lifelong Moral
   assert(rep.dailyPracticeRitual.length > 0);
   assert(rep.reflectiveQuestion.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
-  assert(rep.calculatedAtKst.endsWith('KST'));
+  assertKstTimestamp(rep.calculatedAtKst);
   assert(Boolean(rep.ohseongHaneumSynthesisMatrix?.integratedAction));
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatKoreanOhseongHaneumFriendshipGovernancePrompt(rep);
@@ -8042,7 +8048,7 @@ test('Voltaire Candide and Tolerance Engine: calculates Cultivate Our Garden Dev
   assert(rep.realisticDisillusionmentClarityIndex >= 0 && rep.realisticDisillusionmentClarityIndex <= 100);
   assert(rep.activeVoltaireTheme.themeTitleKo.length > 0);
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
-  assert(rep.calculatedAtKst.endsWith('KST'));
+  assertKstTimestamp(rep.calculatedAtKst);
   assert(Boolean(rep.voltaireSynthesisMatrix?.integratedAction));
   const prompt = formatFrenchVoltaireCandideTolerancePrompt(rep);
   assert(prompt.includes('볼테르 《캉디드》 & 《관용론》 일상 실천 및 관용 지혜 지표'));
@@ -8224,7 +8230,7 @@ test('Desiderius Erasmus Praise of Folly Engine: calculates Humorous Wisdom, Dog
   assert(prompt.includes('데시데리우스 에라스무스 《우신예찬》 르네상스 휴머니즘 및 해학·관용 지혜 지표'));
   assert(prompt.includes(rep.activeErasmusTheme.themeTitleKo));
   assert(prompt.includes('2026-11-14'));
-  assert.ok(rep.calculatedAtKst.includes('KST'));
+  assertKstTimestamp(rep.calculatedAtKst);
   assert.ok(prompt.includes('교차 매트릭스'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
@@ -8590,7 +8596,7 @@ test('Roland Barthes Semiotics and Punctum Engine: calculates Punctum Intuition,
   assert(rep.polyphonicSignifierFluidityScore >= 0 && rep.polyphonicSignifierFluidityScore <= 100);
   assert(rep.activeBarthesTheme.themeTitleKo.length > 0);
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
-  assert(rep.calculatedAtKst.endsWith('KST'));
+  assertKstTimestamp(rep.calculatedAtKst);
   assert(Boolean(rep.barthesSynthesisMatrix?.integratedAction));
   const prompt = formatFrenchRolandBarthesSemioticsPunctumPrompt(rep);
   assert(prompt.includes('롤랑 바르트 《신화론》·《밝은 방》 푼크툼(Punctum)·기호학 지표'));
@@ -8628,7 +8634,7 @@ test('Fyodor Dostoevsky Karamazov Soul Compassion Engine: calculates Soul Abyss 
   assert(rep.kissingTheEarthLivingVitalityIndex >= 0 && rep.kissingTheEarthLivingVitalityIndex <= 100);
   assert(rep.universalBrotherhoodSolidarityScore >= 0 && rep.universalBrotherhoodSolidarityScore <= 100);
   assert(rep.activeDostoevskyTheme.themeTitleKo.length > 0);
-  assert(rep.calculatedAtKst.endsWith('KST'));
+  assertKstTimestamp(rep.calculatedAtKst);
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(Boolean(rep.dostoevskySynthesisMatrix?.integratedAction));
   const prompt = formatRussianFyodorDostoevskyKaramazovSoulCompassionPrompt(rep);
@@ -8689,7 +8695,7 @@ test('Anton Chekhov Quiet Endurance and Compassion Engine: calculates Unpretenti
   assert(rep.innerDecencyIntegrityScore >= 0 && rep.innerDecencyIntegrityScore <= 100);
   assert(rep.gentleFortitudeHopeResilience >= 0 && rep.gentleFortitudeHopeResilience <= 100);
   assert(rep.activeChekhovTheme.themeTitleKo.length > 0);
-  assert(rep.calculatedAtKst.endsWith('KST'));
+  assertKstTimestamp(rep.calculatedAtKst);
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(Boolean(rep.chekhovSynthesisMatrix?.integratedAction));
   const prompt = formatRussianAntonChekhovQuietEnduranceCompassionPrompt(rep);
@@ -8806,7 +8812,7 @@ test('Rainer Maria Rilke Letters to a Young Poet Engine: calculates Loving Solit
 test('Miguel de Cervantes Don Quixote Engine: calculates Noble Idealism, Courage Against Windmills, and Humor Resilience', () => {
   const rep = calculateSpanishMiguelDeCervantesDonQuixote(profile);
   assert.equal(rep.engineVersion, SPANISH_MIGUEL_DE_CERVANTES_DON_QUIXOTE_VERSION);
-  assert(rep.calculatedAtKst.endsWith('KST'));
+  assertKstTimestamp(rep.calculatedAtKst);
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(Boolean(rep.cervantesSynthesisMatrix?.integratedAction));
   assert(rep.interpretiveBoundary.length > 0);
@@ -8913,7 +8919,7 @@ test('James Joyce engine selects a qualitative literary perspective from the que
   assert.equal(rep.engineVersion, IRISH_JAMES_JOYCE_ULYSSES_EPIPHANY_VERSION);
   assert.equal(rep.activeJoyceTheme.themeKey, 'forgeInSoulSmithy');
   assert.equal(Object.hasOwn(rep, 'epiphanyEverydayRevelationScore'), false);
-  assert.equal(Object.hasOwn(rep, 'calculatedAtKst'), false);
+  assertKstTimestamp(rep.calculatedAtKst);
   assert(Boolean(rep.joyceSynthesisMatrix?.integratedAction));
   assert(rep.interpretiveBoundary.length > 0);
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
@@ -8937,7 +8943,7 @@ test('Hermann Hesse engine matches the question to a literary theme and omits mi
   assert.equal(rep.engineVersion, GERMAN_HERMANN_HESSE_DEMIAN_STEPPENWOLF_VERSION);
   assert.equal(rep.activeHesseTheme.themeKey, 'siddharthaRiverOneness');
   assert.equal(Object.hasOwn(rep, 'siddharthaRiverEquanimityScore'), false);
-  assert.equal(Object.hasOwn(rep, 'calculatedAtKst'), false);
+  assertKstTimestamp(rep.calculatedAtKst);
   assert(Boolean(rep.hesseSteppenwolfSynthesisMatrix?.integratedAction));
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
@@ -8952,7 +8958,7 @@ test('Han Yong-un engine uses a verified literary theme, query matching, and no 
   assert.equal(rep.engineVersion, KOREAN_HAN_YONG_UN_SILENCE_OF_NIM_VERSION);
   assert.equal(rep.activeHanYongUnTheme.themeKey, 'silenceOfNimSublimation');
   assert.equal(Object.hasOwn(rep, 'paradoxicalLoveTranscendenceScore'), false);
-  assert.equal(Object.hasOwn(rep, 'calculatedAtKst'), false);
+  assertKstTimestamp(rep.calculatedAtKst);
   assert(Boolean(rep.hanYongUnSynthesisMatrix?.integratedAction));
   assert(rep.interpretiveBoundary.length > 0);
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
@@ -8969,7 +8975,7 @@ test('Han Yong-un engine uses a verified literary theme, query matching, and no 
 test('Tojeong engine: enhanced trigram analysis, five-element relation, and seasonal flow weighting', () => {
   const r = calculateTojeong({ profile: { basic: { birthdate: '1990-05-20', lunarSolar: 'lunar' as const } }, targetYear: 2026, question: '올해의 신수' });
   assert.equal(r.status, 'calculated');
-  assert(r.calculatedAtKst.endsWith('KST'));
+  assertKstTimestamp(r.calculatedAtKst);
   assert(Boolean(r.tojeongSynthesisMatrix?.integratedAction));
   assert((r.ritualAction ?? '').length > 0 && (r.reflectionFocus ?? '').length > 0);
   assert((r.interpretiveBoundary ?? '').length > 0);
@@ -9144,7 +9150,7 @@ test('Dreamtime Songlines, Eleusinian Mysteries, and Babylonian Enuma Elish prov
 
   const dreamtime = calculateAboriginalDreamtimeSonglines({ profile: testProfile, targetInstantTime: testDate.toISOString(), question: '이직 결정을 앞두고 방향이 고민돼요' });
   assert.equal(dreamtime.questionTheme, 'decision');
-  assert.ok(dreamtime.calculatedAtKst.endsWith('+09:00'));
+  assertKstTimestamp(dreamtime.calculatedAtKst);
   assert.ok(dreamtime.practiceGuidance.length > 10);
   assert.ok(dreamtime.ritualAction.length > 10);
   assert.ok(dreamtime.reflectionFocus.length > 10);
@@ -9295,7 +9301,7 @@ test('v2.0.0 qualitative/temporal/matrix deepening: Plato Cave, Epictetus Dichot
 
   const epictetus = calculateEpictetusDichotomyOfControl(testProfile, '남의 시선과 평판 때문에 자꾸 위축돼요', now);
   assert.equal(epictetus.engineVersion, EPICTETUS_CONTROL_VERSION);
-  assert(epictetus.calculatedAtKst.endsWith('KST'));
+  assertKstTimestamp(epictetus.calculatedAtKst);
   assert(Boolean(epictetus.epictetusSynthesisMatrix?.integratedAction));
   assert.ok(epictetus.situationalControlAudit.sourceCitation.includes('엥케이리디온'));
   assert.ok(epictetus.temporalProhairesisRhythm.prohairesisClarityIndex >= 50 && epictetus.temporalProhairesisRhythm.prohairesisClarityIndex <= 99);
@@ -9737,7 +9743,7 @@ test('v2.1.0 pure qualitative deepening: Aristotle Mesotes, Plato Cave, and Epic
   const now = new Date('2026-11-15T04:40:00.000+09:00');
 
   const aristotle = calculateAristotleMesotes(testProfile, '조급함과 불안 사이에서 일의 균형을 잡고 싶어요', now);
-  assert.equal(aristotle.engineVersion, 'LUCKEY-ARISTOTLE-MESOTES-EUDAIMONIA-v2.1.0');
+  assert.equal(aristotle.engineVersion, 'LUCKEY-ARISTOTLE-MESOTES-EUDAIMONIA-v2.3.0');
   assert.ok(aristotle.dailyPracticeRitual.includes('헥시스'));
   assert.ok(aristotle.reflectiveQuestion.length > 10);
   assert.ok(aristotle.interpretiveBoundary.length > 10);
@@ -9748,7 +9754,7 @@ test('v2.1.0 pure qualitative deepening: Aristotle Mesotes, Plato Cave, and Epic
   assert.ok(aristotlePrompt.includes('해석 경계'));
 
   const plato = calculatePlatonicIdeaCave(testProfile, '타인의 시선과 본질 사이에서 진로를 고민 중입니다', now);
-  assert.equal(plato.engineVersion, 'LUCKEY-PLATONIC-IDEA-CAVE-v2.1.0');
+  assert.equal(plato.engineVersion, 'LUCKEY-PLATONIC-IDEA-CAVE-v2.3.0');
   assert.ok(plato.dailyPracticeRitual.includes('카타바시스'));
   assert.ok(plato.reflectiveQuestion.length > 10);
   assert.ok(plato.interpretiveBoundary.length > 10);
@@ -9759,7 +9765,7 @@ test('v2.1.0 pure qualitative deepening: Aristotle Mesotes, Plato Cave, and Epic
   assert.ok(platoPrompt.includes('해석 경계'));
 
   const epictetus = calculateEpictetusDichotomyOfControl(testProfile, '내가 바꿀 수 없는 결과 때문에 마음이 흔들립니다', now);
-  assert.equal(epictetus.engineVersion, 'LUCKEY-EPICTETUS-CONTROL-v2.1.0');
+  assert.equal(epictetus.engineVersion, 'LUCKEY-EPICTETUS-CONTROL-v2.4.0');
   assert.ok(epictetus.dailyPracticeRitual.includes('프로하이레시스'));
   assert.ok(epictetus.reflectiveQuestion.length > 10);
   assert.ok(epictetus.interpretiveBoundary.length > 10);
@@ -9822,7 +9828,7 @@ test('Chaldean Mul Apin, Egyptian Sphinx Dream, and Etruscan Augur v2.0.0: quali
   assert.ok(chaldeanPrompt.includes('+09:00') && chaldeanPrompt.includes('해석 경계'));
 
   const sphinx = calculateEgyptianSphinxDreamOracle({ profile, question: '사소한 잡무와 불안을 걷어내고 싶습니다', now });
-  assert.equal(sphinx.engineVersion, 'LUCKEY-EGYPTIAN-SPHINX-v2.0.0');
+  assert.equal(sphinx.engineVersion, 'LUCKEY-EGYPTIAN-SPHINX-v2.4.0');
   assert.ok(sphinx.situationalSphinxAudit.sandObstacleType.length > 0);
   assert.ok(sphinx.temporalSphinxRhythm.solarBarqueStage.length > 0);
   assert.ok(sphinx.sphinxSynthesisMatrix.sovereignStep.length > 0);
@@ -9830,12 +9836,12 @@ test('Chaldean Mul Apin, Egyptian Sphinx Dream, and Etruscan Augur v2.0.0: quali
   assert.ok(!sphinxPrompt.includes('/100') && !sphinxPrompt.includes('%'));
 
   const etruscan = calculateEtruscanAugurSixteenSky({ profile, question: '중요한 결정의 타이밍을 살피고 싶습니다', now });
-  assert.equal(etruscan.engineVersion, 'LUCKEY-ETRUSCAN-AUGUR-v2.0.0');
+  assert.equal(etruscan.engineVersion, 'LUCKEY-ETRUSCAN-AUGUR-v2.4.0');
   assert.ok(etruscan.situationalAugurAudit.templumInquiryAxis.length > 0);
   assert.ok(etruscan.temporalAugurRhythm.auguryWatchWindow.length > 0);
   assert.ok(etruscan.augurSynthesisMatrix.nextAuspiceAction.length > 0);
   const etruscanPrompt = formatEtruscanAugurSixteenSkyPrompt(etruscan);
-  assert.ok(!etruscanPrompt.includes('/100') && !etruscanPrompt.includes('%') && !etruscanPrompt.includes('점수'));
+  assert.doesNotMatch(etruscanPrompt, /(?:\d+\s*(?:\/\s*100|점|%)|점수\s*[:：]?\s*\d+)/);
 });
 
 test('Eleusinian Mysteries, Hindu Kundalini, and Hopi Four Worlds v2.0.0 include KST temporal rhythm and qualitative matrix without score exposure', () => {
@@ -9845,7 +9851,7 @@ test('Eleusinian Mysteries, Hindu Kundalini, and Hopi Four Worlds v2.0.0 include
     now: testDate,
     question: '새로운 전환 앞에서 마음이 복잡해요',
   });
-  assert.equal(eleusis.engineVersion, 'LUCKEY-ELEUSINIAN-MYSTERIES-v2.0.0');
+  assert.equal(eleusis.engineVersion, 'LUCKEY-ELEUSINIAN-MYSTERIES-v2.2.0');
   assert.ok(eleusis.temporalEleusinianRhythm.calculatedAtKst.includes('KST'));
   assert.ok(eleusis.eleusinianSynthesisMatrix.gradeStationNexus.length > 0);
   const eleusisPrompt = formatEleusinianMysteriesPrompt(eleusis);
@@ -9856,14 +9862,14 @@ test('Eleusinian Mysteries, Hindu Kundalini, and Hopi Four Worlds v2.0.0 include
     contextText: '일과 마음의 균형을 잡고 싶습니다',
     referenceDate: testDate,
   });
-  assert.equal(kundalini.engineVersion, 'LUCKEY-HINDU-KUNDALINI-v2.0.0');
+  assert.equal(kundalini.engineVersion, 'LUCKEY-HINDU-KUNDALINI-v2.3.0');
   assert.ok(kundalini.temporalKundaliniRhythm.calculatedAtKst.includes('KST'));
   assert.ok(kundalini.kundaliniSynthesisMatrix.nadiChakraNexus.length > 0);
   const kundaliniPrompt = formatHinduTantricKundaliniPrompt(kundalini);
   assert.ok(!kundaliniPrompt.includes('/ 100') && !kundaliniPrompt.includes('/100') && !kundaliniPrompt.includes('%') && !kundaliniPrompt.includes('점수'));
 
   const hopi = calculateHopiFourWorldsKachina(profile, '흔들리는 일상을 바로잡고 싶어요', testDate);
-  assert.equal(hopi.engineVersion, '2.0.0');
+  assert.equal(hopi.engineVersion, '2.3.0');
   assert.ok(hopi.temporalHopiRhythm.calculatedAtKst.includes('KST'));
   assert.ok(hopi.hopiSynthesisMatrix.kachinaWorldNexus.length > 0);
   const hopiPrompt = formatHopiFourWorldsPrompt(hopi);
@@ -9874,7 +9880,7 @@ test('Ibn Arabi Wahdat, Kabbalistic Zohar, and Kashmir Shaivism Spanda v2.0.0 in
   const testDate = new Date('2026-11-15T06:25:00Z');
 
   const arabi = calculateIbnArabiWahdatAlWujud(profile, testDate, '마음의 평화와 자비가 필요해요');
-  assert.equal(arabi.engineVersion, '2.0.0');
+  assert.equal(arabi.engineVersion, '2.3.0');
   assert.ok(arabi.temporalWahdatRhythm.calculatedAtKst.includes('KST'));
   assert.ok(arabi.wahdatSynthesisMatrix.prophetVirtueNexus.length > 0);
   const arabiPrompt = formatIbnArabiWahdatAlWujudPrompt(arabi);
@@ -9885,7 +9891,7 @@ test('Ibn Arabi Wahdat, Kabbalistic Zohar, and Kashmir Shaivism Spanda v2.0.0 in
     question: '영혼의 회복과 내면의 중심을 찾고 싶습니다',
     now: testDate,
   });
-  assert.equal(zohar.engineVersion, '2.0.0');
+  assert.equal(zohar.engineVersion, '2.3.0');
   assert.ok(zohar.temporalZoharRhythm.calculatedAtKst.includes('KST'));
   assert.ok(zohar.zoharSynthesisMatrix.primarySecondaryNexus.length > 0);
   const zoharPrompt = formatKabbalisticZoharSoulPrompt(zohar);
@@ -9896,7 +9902,7 @@ test('Ibn Arabi Wahdat, Kabbalistic Zohar, and Kashmir Shaivism Spanda v2.0.0 in
     question: '새로운 창조적 영감을 실행하고 싶어요',
     now: testDate,
   });
-  assert.equal(spanda.engineVersion, '2.0.0');
+  assert.equal(spanda.engineVersion, '2.3.0');
   assert.ok(spanda.temporalSpandaRhythm.calculatedAtKst.includes('KST'));
   assert.ok(spanda.spandaSynthesisMatrix.primarySecondaryNexus.length > 0);
   const spandaPrompt = formatKashmirShaivismSpandaPrompt(spanda);
@@ -9916,19 +9922,19 @@ test('v2.1.0 qualitative prompt reform: Hannah Arendt, Henry David Thoreau, and 
   const now = new Date('2026-11-15T06:40:00+09:00');
 
   const arendt = calculateHannahArendtVitaActiva(profile, '새로운 시작을 앞두고 결정을 망설이고 있어요', now);
-  assert.equal(arendt.engineVersion, 'LUCKEY-HANNAH-ARENDT-VITA-ACTIVA-v2.1.0');
+  assert.equal(arendt.engineVersion, 'LUCKEY-HANNAH-ARENDT-VITA-ACTIVA-v2.2.0');
   const arendtPrompt = formatHannahArendtVitaActivaPrompt(arendt);
   assert.ok(!arendtPrompt.includes('/100') && !arendtPrompt.includes('%'));
   assert.ok(arendtPrompt.includes('아렌트 매트릭스'));
 
   const thoreau = calculateHenryDavidThoreauWalden(profile, '지치고 복잡해서 마음을 단순하게 비우고 싶어요', now);
-  assert.equal(thoreau.engineVersion, 'LUCKEY-HENRY-DAVID-THOREAU-WALDEN-v2.1.0');
+  assert.equal(thoreau.engineVersion, 'LUCKEY-HENRY-DAVID-THOREAU-WALDEN-v2.2.0');
   const thoreauPrompt = formatHenryDavidThoreauWaldenPrompt(thoreau);
   assert.ok(!thoreauPrompt.includes('/100') && !thoreauPrompt.includes('%'));
   assert.ok(thoreauPrompt.includes('월든 매트릭스'));
 
   const james = calculateAmericanWilliamJamesPragmatism(profile, '불안하고 잡념이 많아 마음을 다잡고 싶어요', now);
-  assert.equal(james.engineVersion, 'LUCKEY-WILLIAM-JAMES-PRAGMATISM-v2.1.0');
+  assert.equal(james.engineVersion, 'LUCKEY-WILLIAM-JAMES-PRAGMATISM-v2.3.0');
   assert.equal(james.questionTopic, 'healing');
   assert.ok(james.dailyPracticeRitual.length > 0);
   assert.ok(james.reflectiveQuestion.length > 0);
@@ -10061,7 +10067,7 @@ test('v2.1.0 qualitative prompt reform: Jacques Derrida, Michel Foucault, and Ro
   const now = new Date('2026-11-15T11:40:00+09:00');
 
   const derrida = calculateFrenchJacquesDerridaDeconstructionDifferance(profile, '이분법적 선택 앞에서 막막해요', now);
-  assert.equal(derrida.engineVersion, 'LUCKEY-JACQUES-DERRIDA-DECONSTRUCTION-DIFFERANCE-v2.1.0');
+  assert.equal(derrida.engineVersion, 'LUCKEY-JACQUES-DERRIDA-DECONSTRUCTION-DIFFERANCE-v2.3.0');
   assert.ok(derrida.dailyPracticeRitual.length > 0);
   assert.ok(derrida.reflectiveQuestion.length > 0);
   assert.ok(derrida.interpretiveBoundary.length > 0);
@@ -10072,7 +10078,7 @@ test('v2.1.0 qualitative prompt reform: Jacques Derrida, Michel Foucault, and Ro
   assert.ok(derridaPrompt.includes('해석 경계'));
 
   const foucault = calculateFrenchMichelFoucaultCareOfSelfAesthetics(profile, '남들 기준 말고 내 방식대로 살고 싶어요', now);
-  assert.equal(foucault.engineVersion, 'LUCKEY-MICHEL-FOUCAULT-CARE-OF-SELF-v2.1.0');
+  assert.equal(foucault.engineVersion, 'LUCKEY-MICHEL-FOUCAULT-CARE-OF-SELF-v2.3.0');
   assert.ok(foucault.dailyPracticeRitual.length > 0);
   assert.ok(foucault.reflectiveQuestion.length > 0);
   assert.ok(foucault.interpretiveBoundary.length > 0);
@@ -10083,7 +10089,7 @@ test('v2.1.0 qualitative prompt reform: Jacques Derrida, Michel Foucault, and Ro
   assert.ok(foucaultPrompt.includes('해석 경계'));
 
   const barthes = calculateFrenchRolandBarthesSemioticsPunctum(profile, '익숙한 일상에 새로운 의미를 찾고 싶어요', now);
-  assert.equal(barthes.engineVersion, 'LUCKEY-ROLAND-BARTHES-SEMIOTICS-PUNCTUM-v2.1.0');
+  assert.equal(barthes.engineVersion, 'LUCKEY-ROLAND-BARTHES-SEMIOTICS-PUNCTUM-v2.3.0');
   assert.ok(barthes.dailyPracticeRitual.length > 0);
   assert.ok(barthes.reflectiveQuestion.length > 0);
   assert.ok(barthes.interpretiveBoundary.length > 0);
@@ -10193,21 +10199,21 @@ test('reworked Rumi engine takes the question and KST rhythm without exposing ra
 test('Socratic, Spinoza, and Kierkegaard v2.1.0 engines expose qualitative stages and KST without /100 or %', () => {
   const now = new Date('2026-11-15T12:40:00Z');
   const socrates = calculateSocraticMaieuticDaimon(profile, '이직과 선택 앞에서 무엇을 물어야 할까요?', now);
-  assert.equal(socrates.engineVersion, 'LUCKEY-SOCRATIC-MAIEUTIC-DAIMON-v2.1.0');
+  assert.equal(socrates.engineVersion, 'LUCKEY-SOCRATIC-MAIEUTIC-DAIMON-v2.2.0');
   assert.ok(socrates.dailyPracticeRitual.length > 0 && socrates.reflectiveQuestion.length > 0 && socrates.interpretiveBoundary.length > 0);
   const socratesPrompt = formatSocraticMaieuticDaimonPrompt(socrates);
   assert.ok(!socratesPrompt.includes('/100') && !socratesPrompt.includes('%'));
   assert.ok(socratesPrompt.includes('해석 경계') && socratesPrompt.includes('+09:00'));
 
   const spinoza = calculateBaruchSpinozaEthicaConatus(profile, now, '상대방과의 갈등으로 마음이 무거워요');
-  assert.equal(spinoza.engineVersion, 'LUCKEY-SPINOZA-CONATUS-AMORDEI-v2.1.0');
+  assert.equal(spinoza.engineVersion, 'LUCKEY-SPINOZA-CONATUS-AMORDEI-v2.3.0');
   assert.ok(spinoza.calculatedAtKst.endsWith('+09:00'));
   const spinozaPrompt = formatBaruchSpinozaEthicaConatusPrompt(spinoza);
   assert.ok(!spinozaPrompt.includes('/100') && !spinozaPrompt.includes('%'));
   assert.ok(spinozaPrompt.includes('에티카 매트릭스') && spinozaPrompt.includes('+09:00'));
 
   const kierkegaard = calculateKierkegaardStagesOfLife(profile, '불안 앞에서 단독자로서 어떻게 결단할까요?', now);
-  assert.equal(kierkegaard.engineVersion, 'LUCKEY-KIERKEGAARD-STAGES-OF-LIFE-v2.1.0');
+  assert.equal(kierkegaard.engineVersion, 'LUCKEY-KIERKEGAARD-STAGES-OF-LIFE-v2.2.0');
   assert.ok(kierkegaard.dailyPracticeRitual.length > 0 && kierkegaard.interpretiveBoundary.length > 0);
   const kierkegaardPrompt = formatKierkegaardStagesOfLifePrompt(kierkegaard);
   assert.ok(!kierkegaardPrompt.includes('/100') && !kierkegaardPrompt.includes('%'));
@@ -10247,7 +10253,7 @@ test('Seneca, Cicero, and Marcus Aurelius v2.1.0 engines expose qualitative stag
 test('Schopenhauer v2.1.0, Mandukya Turiya v2.0.0, and Zhuangzi v2.0.0 engines output qualitative stages and KST without /100 or %', () => {
   const now = new Date('2026-11-15T23:35:00Z');
   const schopenhauer = calculateSchopenhauerWillRepresentation(profile, '관계에서 자꾸 상처받고 집착하게 돼요', now);
-  assert.equal(schopenhauer.engineVersion, 'LUCKEY-SCHOPENHAUER-WILL-REPRESENTATION-v2.1.0');
+  assert.equal(schopenhauer.engineVersion, 'LUCKEY-SCHOPENHAUER-WILL-REPRESENTATION-v2.3.0');
   assert.ok(schopenhauer.calculatedAtKst.endsWith('+09:00'));
   const schopenhauerPrompt = formatSchopenhauerWillRepresentationPrompt(schopenhauer);
   assert.ok(!schopenhauerPrompt.includes('/100') && !schopenhauerPrompt.includes('%'));
@@ -10311,7 +10317,7 @@ test('Epicurus, Heraclitus, and Laozi v2.1.0 output qualitative stages and KST w
 
   const he = calculateHeraclitusPantaRhei(profile, '변화의 갈림길에서 중심을 잡고 싶어요', now);
   assert.equal(he.engineVersion, HERACLITUS_PANTA_RHEI_VERSION);
-  assert.ok(he.calculatedAtKst.endsWith('+09:00'));
+  assertKstTimestamp(he.calculatedAtKst);
   assert.ok(Boolean(he.heraclitusSynthesisMatrix?.integratedAction));
   const hePrompt = formatHeraclitusPantaRheiPrompt(he);
   assert.ok(!hePrompt.includes('/100') && !hePrompt.includes('%'));
@@ -10357,13 +10363,13 @@ test('Akashic Records, Alchemical Transmutation, and Baopuzi Elixirs v2.1.0 incl
   const now = new Date('2026-11-16T00:25:00Z');
   const ak = calculateAkashicRecordsOracle({ profile, targetDate: now, question: '이직과 소명 사이에서 고민돼요' });
   assert.equal(ak.engineVersion, AKASHIC_RECORDS_VERSION);
-  assert.ok(ak.calculatedAtKst.endsWith('+09:00'));
+  assertKstTimestamp(ak.calculatedAtKst);
   const akPrompt = formatAkashicRecordsOraclePrompt(ak);
   assert.ok(akPrompt.includes('해석 경계') && akPrompt.includes('+09:00'));
 
   const al = calculateAlchemicalTransmutation(profile, now, '반복되는 시련의 의미를 알고 싶어요');
   assert.equal(al.engineVersion, ALCHEMICAL_TRANSMUTATION_VERSION);
-  assert.ok(al.calculatedAtKst.endsWith('+09:00'));
+  assertKstTimestamp(al.calculatedAtKst);
   const alPrompt = formatAlchemicalTransmutationPrompt(al);
   assert.ok(alPrompt.includes('해석 경계') && alPrompt.includes('+09:00'));
 
@@ -10384,13 +10390,13 @@ test('Ayurveda, Gnostic Pistis Sophia, and Hermetic Kybalion v2.1.0 include KST 
 
   const gn = calculateGnosticPistisSophiaPleroma({ profile, question: '혼란 속에서 중심을 잡고 싶어요', now });
   assert.equal(gn.engineVersion, GNOSTIC_PISTIS_SOPHIA_PLEROMA_ENGINE_VERSION);
-  assert.ok(gn.calculatedAtKst.endsWith('+09:00'));
+  assertKstTimestamp(gn.calculatedAtKst);
   const gnPrompt = formatGnosticPistisSophiaPleromaPrompt(gn);
   assert.ok(gnPrompt.includes('해석 경계') && gnPrompt.includes('+09:00'));
 
   const ky = calculateHermeticKybalion(profile, now, '중요한 결정을 앞두고 마음이 흔들려요');
   assert.equal(ky.engineVersion, HERMETIC_KYBALION_VERSION);
-  assert.ok(ky.calculatedAtKst.endsWith('+09:00'));
+  assertKstTimestamp(ky.calculatedAtKst);
   const kyPrompt = formatHermeticKybalionPrompt(ky);
   assert.ok(kyPrompt.includes('해석 경계') && kyPrompt.includes('+09:00'));
 });
@@ -10399,7 +10405,7 @@ test('Hermetic Poimandres, Hermann Hesse, and Han Yong-un v2.1.0 include KST and
   const now = new Date('2026-11-16T00:45:00Z');
   const po = calculateHermeticPoimandres({ profile, question: '일곱 천계의 정념을 내려놓고 싶어요', now });
   assert.equal(po.engineVersion, HERMETIC_POIMANDRES_ENGINE_VERSION);
-  assert.ok(po.calculatedAtKst.endsWith('+09:00'));
+  assertKstTimestamp(po.calculatedAtKst);
   const poPrompt = formatHermeticPoimandresPrompt(po);
   assert.ok(poPrompt.includes('해석 경계') && poPrompt.includes('+09:00'));
 
@@ -10594,7 +10600,7 @@ test('Dostoevsky, Tolstoy, and Chekhov v2.1.0 deepen with dual-source thesis, re
 
   const ds = calculateRussianFyodorDostoevskyKaramazovSoulCompassion(profile, question, now);
   assert.equal(ds.engineVersion, RUSSIAN_FYODOR_DOSTOEVSKY_KARAMAZOV_SOUL_COMPASSION_VERSION);
-  assert.match(ds.engineVersion, /v2\.1\.0$/);
+  assert.match(ds.engineVersion, /v2\.3\.0$/);
   assert.ok(ds.calculatedAtKst.includes('+09:00'));
   assert.ok(ds.secondaryDostoevskyAphorism);
   assert.notEqual(ds.secondaryDostoevskyAphorism?.aphorismKey, ds.focalDostoevskyAphorism.aphorismKey);
@@ -10608,7 +10614,7 @@ test('Dostoevsky, Tolstoy, and Chekhov v2.1.0 deepen with dual-source thesis, re
 
   const tl = calculateRussianLeoTolstoyCalendarOfWisdom(profile, question, now);
   assert.equal(tl.engineVersion, RUSSIAN_LEO_TOLSTOY_VERSION);
-  assert.match(tl.engineVersion, /v2\.1\.0$/);
+  assert.match(tl.engineVersion, /v2\.3\.0$/);
   assert.ok(tl.calculatedAtKst.includes('+09:00'));
   assert.ok(tl.secondaryTolstoyAphorism);
   assert.notEqual(tl.secondaryTolstoyAphorism?.aphorismKey, tl.focalTolstoyAphorism.aphorismKey);
@@ -10622,7 +10628,7 @@ test('Dostoevsky, Tolstoy, and Chekhov v2.1.0 deepen with dual-source thesis, re
 
   const ck = calculateRussianAntonChekhovQuietEnduranceCompassion(profile, question, now);
   assert.equal(ck.engineVersion, RUSSIAN_ANTON_CHEKHOV_QUIET_ENDURANCE_COMPASSION_VERSION);
-  assert.match(ck.engineVersion, /v2\.1\.0$/);
+  assert.match(ck.engineVersion, /v2\.3\.0$/);
   assert.ok(ck.calculatedAtKst.includes('+09:00'));
   assert.ok(ck.secondaryChekhovAphorism);
   assert.notEqual(ck.secondaryChekhovAphorism?.aphorismKey, ck.focalChekhovAphorism.aphorismKey);
@@ -10812,7 +10818,7 @@ test('Hindu Nadi Agastya, Sri Yantra, and Ikigai v2.1.0 include +09:00 KST, dual
   assert.match(sy.calculatedAtKst, /\+09:00/);
   assert.notEqual(sy.secondaryAvaranaChakra.level, sy.primaryAvaranaChakra.level);
   assert.ok(sy.sriYantraSynthesisMatrix.reflectiveQuestion.includes(query));
-  assert.ok(sy.interpretiveBoundary.includes('성찰'));
+  assert.ok(sy.interpretiveBoundary.includes('명상 렌즈'));
   const syPrompt = formatHinduSriYantraSacredGeometryPrompt(sy);
   assert.ok(syPrompt.includes('+09:00') && syPrompt.includes('보조 교차 회랑') && syPrompt.includes('성찰 질문') && syPrompt.includes('해석 경계'));
 
@@ -11268,7 +11274,7 @@ test('DelphicChilon v2.3 · EleusinianTriptolemos v2.3 · Epicurean v2.4: reflec
 
   const ep = calculateEpicureanTetrapharmakos(profile, query, now);
   assert.equal(ep.engineVersion, EPICUREAN_TETRAPHARMAKOS_VERSION);
-  assert.match(ep.calculatedAtKst, /KST/);
+  assertKstTimestamp(ep.calculatedAtKst);
   assert.ok(ep.reflectiveQuestion.includes(query));
   const epPrompt = formatEpicureanTetrapharmakosPrompt(ep);
   assert.ok(epPrompt.includes('KST') && epPrompt.includes('성찰 질문') && epPrompt.includes('해석 경계'));
@@ -12143,7 +12149,7 @@ test('태을신수·태국 호라삿·토정비결 v1.7.875 질문 반응형 성
   assert.ok(thPrompt.includes('+09:00') && thPrompt.includes('질문 맞춤 성찰 질문') && thPrompt.includes('해석 경계'));
 
   const tj = calculateTojeong({ profile, targetYear: 2026, question: query });
-  assert.equal(tj.engineVersion, 'LUCKEY-TJ-v2.2.0');
+  assert.equal(tj.engineVersion, 'LUCKEY-TJ-v2.3.0');
   assert.match(tj.calculatedAtKst, /\+09:00/);
   assert.ok(tj.reflectiveQuestion?.includes(query));
   const tjPrompt = formatTojeongPrompt(tj);

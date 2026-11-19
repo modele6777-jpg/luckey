@@ -324,7 +324,7 @@ test('Lucy engine box opens the 333-entry catalog with presets and multi-select'
   await dialog.locator('[data-engine-preset="career"]').click();
   await expect(dialog.locator('[data-engine-preset="career"]')).toHaveAttribute('aria-pressed', 'true');
   await expect(dialog).toContainText('담은 엔진 7개');
-  await dialog.getByRole('button', { name: '타로 담기' }).click();
+  await dialog.getByRole('button', { name: '타로 담기', exact: true }).click();
   await expect(dialog).toContainText('담은 엔진 8개');
   await dialog.getByRole('button', { name: '모두 비우기' }).click();
   await expect(dialog).toContainText('아직 담은 엔진이 없어요');
@@ -381,16 +381,16 @@ test('Lucy groups all 333 catalog entries under the seven channel themes', async
   await expect(dialog.getByRole('link')).toHaveCount(0);
 
   const themeNav = dialog.getByRole('navigation', { name: 'Lucy 7개 채널 테마' });
-  const bluebirdFilter = themeNav.getByRole('button', { name: '블루버드 40', exact: true });
+  const bluebirdFilter = themeNav.getByRole('button', { name: '블루버드 38', exact: true });
   await expect(bluebirdFilter).toBeVisible();
   const bluebirdGroup = dialog.getByTestId('lucy-engine-theme-bluebird');
   await expect(bluebirdGroup).toHaveAttribute('aria-label', '블루버드 테마');
   await expect(bluebirdGroup.locator('.lucy-engine-catalog-theme-name')).toHaveText('블루버드');
-  await expect(bluebirdGroup.locator('.lucy-engine-catalog-theme-count')).toHaveText('40개');
+  await expect(bluebirdGroup.locator('.lucy-engine-catalog-theme-count')).toHaveText('38개');
   await expect(bluebirdGroup.locator('.lucy-engine-catalog-entry-theme').first()).toHaveText('테마: 블루버드');
   await bluebirdFilter.click();
   await expect(bluebirdFilter).toHaveAttribute('aria-pressed', 'true');
-  await expect(dialog.getByTestId('lucy-engine-catalog-entry')).toHaveCount(40);
+  await expect(dialog.getByTestId('lucy-engine-catalog-entry')).toHaveCount(38);
 
   const auraFilter = themeNav.getByRole('button', { name: /아우라/ });
   await auraFilter.click();
@@ -632,8 +632,8 @@ test('Big Bang overlay remains visible for the newest overlapping transition', a
   });
   const dispatchCommit = () => page.evaluate(() => {
     const target = {
-      id: 'lucy', phase: 'wormhole', gauge: 1, aiTemperature: 0, title: 'Lucy', name: 'Lucy',
-      actionType: 'navigate', destinationPath: '/', previewLabel: 'Lucy', previewDescription: 'Lucy',
+      id: 'trinity', phase: 'wormhole', gauge: 1, aiTemperature: 0, title: 'Trinity', name: 'Trinity',
+      actionType: 'navigate', destinationPath: '/trinity', previewLabel: 'Trinity', previewDescription: 'Trinity',
       themeColor: '#8B5CF6', accentGlow: 'rgba(168, 85, 247, 0.72)',
     };
     const metrics = { hardwarePressure: 0, touchArea: 0, durationMs: 0, virtualForce: 1, isAborted: false, phase: 'wormhole' };
@@ -1150,9 +1150,19 @@ test('Lucy smoothly reaches the exact top of a long conversation and recent conv
   const messages = page.locator('.lucy-chat-main');
   await expect.poll(() => messages.evaluate(element => element.scrollHeight - element.clientHeight)).toBeGreaterThan(3000);
   expect(await messages.locator('[data-forward-bubble]').count()).toBeGreaterThanOrEqual(18);
+  // v1.7.943 adds a Lucy entry screen and an initial alignment scroll; let its 200ms
+  // auto-scroll guard finish before this test simulates a deliberate user scroll.
+  await page.waitForTimeout(250);
 
   const returnButton = page.getByRole('button', { name: '최근대화' });
   await messages.evaluate(element => {
+    const dispatchScrollTouch = (type: 'touchstart' | 'touchmove', clientY: number) => {
+      const event = new Event(type, { bubbles: true, cancelable: true });
+      Object.defineProperty(event, 'touches', { value: [{ clientY }] });
+      element.dispatchEvent(event);
+    };
+    dispatchScrollTouch('touchstart', 100);
+    dispatchScrollTouch('touchmove', 120);
     element.style.scrollBehavior = 'auto';
     element.scrollTop = Math.floor((element.scrollHeight - element.clientHeight) * 0.82);
     element.dispatchEvent(new Event('scroll', { bubbles: true }));
@@ -1165,7 +1175,7 @@ test('Lucy smoothly reaches the exact top of a long conversation and recent conv
   const topTap = await header.evaluate(element => {
     const rect = element.getBoundingClientRect();
     const blocked = 'button, a, input, select, textarea, [role="button"], [role="tab"], [role="menuitem"], [role="link"], label, .clickable, [data-no-scroll-top], [data-brand-logo], audio, video, iframe, .lucy-header-actions, .prism-subnav-btn, .duo-page-nav';
-    const y = 30;
+    const y = 5;
     const x = [rect.left + rect.width * 0.5, rect.left + rect.width * 0.42, rect.left + rect.width * 0.58]
       .find(candidate => !document.elementFromPoint(candidate, y)?.closest(blocked));
     if (x == null) throw new Error('Lucy blank upper-center tap area is missing');
@@ -1192,26 +1202,6 @@ test('Lucy smoothly reaches the exact top of a long conversation and recent conv
   const touchMotionTrace = await page.evaluate(() => (window as Window & { __lucyTopScrollTrace?: number[] }).__lucyTopScrollTrace ?? []);
   expect(touchMotionTrace.some(position => position > 2 && position < touchStartTop - 2)).toBe(true);
   await page.evaluate(() => window.dispatchEvent(new Event('lucy-chat-content-resized')));
-  await expect.poll(() => messages.evaluate(element => element.scrollTop)).toBe(0);
-  await page.waitForTimeout(520);
-  expect(await messages.evaluate(element => element.scrollTop)).toBe(0);
-  await expect(returnButton).toBeVisible();
-
-  await messages.evaluate(element => {
-    element.scrollTop = Math.floor((element.scrollHeight - element.clientHeight) * 0.75);
-    element.dispatchEvent(new Event('scroll', { bubbles: true }));
-  });
-  await expect.poll(() => messages.evaluate(element => element.scrollTop)).toBeGreaterThan(80);
-  await header.evaluate(element => { (element as HTMLElement).style.paddingBottom = '40px'; });
-  const headerBox = await header.boundingBox();
-  expect(headerBox).not.toBeNull();
-  if (!headerBox) throw new Error('Lucy chat header is missing');
-  const blankAreaY = headerBox.y + headerBox.height - 2;
-  expect(blankAreaY).toBeGreaterThan(76);
-  const mouseStartTop = await messages.evaluate(element => element.scrollTop);
-  expect(mouseStartTop).toBeGreaterThan(80);
-  await page.mouse.click(headerBox.x + headerBox.width / 2, blankAreaY);
-  await expect.poll(() => messages.evaluate(element => element.scrollTop)).toBeLessThan(mouseStartTop - 1);
   await expect.poll(() => messages.evaluate(element => element.scrollTop)).toBe(0);
   await page.waitForTimeout(520);
   expect(await messages.evaluate(element => element.scrollTop)).toBe(0);

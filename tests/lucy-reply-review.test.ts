@@ -14,6 +14,18 @@ test('approves unchanged grounded reply after receiving evidence',async()=>{
  const result=await reviewLucyReply(draft,{...base,request:async messages=>{assert.ok(messages[1].content.includes('사주 계산 결과'));assert.match(messages[0].content,/동의·안전·법적 경계/);return JSON.stringify({valid:true,issues:[],revisedReply:''});}});
  assert.equal(result,draft);
 });
+test('includes relevant user-memory excerpts but not assistant paraphrases in the review payload',async()=>{
+ const memoryRecall={entries:[
+  {id:'memory-user',account:'account-1',scope:'lucy' as const,role:'user' as const,timestamp:1,text:'가온회사 이직 준비를 이야기했어.'},
+  {id:'memory-assistant',account:'account-1',scope:'lucy' as const,role:'assistant' as const,timestamp:2,text:'assistant guess forbidden'},
+ ],followUp:true,ambiguous:false};
+ let payload:any;
+ const draft='그 회사 면접 이야기 이어서 정리해보자.';
+ const result=await reviewLucyReply(draft,{...base,question:'그 회사 면접 봤어',memoryRecall,request:async messages=>{payload=JSON.parse(messages[1].content);return JSON.stringify({valid:true,issues:[],revisedReply:''});}});
+ assert.equal(result,draft);
+ assert.deepEqual(payload.userMemoryExcerpts,['가온회사 이직 준비를 이야기했어.']);
+ assert.doesNotMatch(JSON.stringify(payload.userMemoryExcerpts),/assistant guess forbidden/);
+});
 test('replaces unsupported draft with the reviewed correction',async()=>{
  const result=await reviewLucyReply('186개 도구 정밀 계산 완료',{...base,request:async()=>JSON.stringify({valid:false,issues:['개수 과장'],revisedReply:'계산 근거는 사주이고 신화는 상징적인 참고야.'})});
  assert.equal(result,'계산 근거는 사주이고 신화는 상징적인 참고야.');

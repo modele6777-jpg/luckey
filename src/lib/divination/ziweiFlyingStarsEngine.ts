@@ -382,7 +382,7 @@ export function calculateZiweiFlyingStars(options?: {
       ? `${luPalace.name}의 성과가 ${jiPalace.name}의 부담으로 이어질 수 있으나, ${kePlacement.targetPalaceName}(화과)의 귀인 조력으로 우회 돌파가 가능합니다.`
       : `${luPalace.name}의 기회와 ${jiPalace.name}의 과제가 분리되어 작동하므로, 화록의 혜택을 온전히 누리며 화기의 병목만 차분히 관리하면 충분합니다.`;
 
-  const wealthPreservationAdvice = `${luPalace.name}에서 얻은 수익과 성과의 30% 이상을 즉시 안전 자산으로 이전하거나 ${jiPalace.name}의 취약점 보완에 재투자하여 리스크를 원천 봉쇄하십시오.`;
+  const wealthPreservationAdvice = `${luPalace.name}에서 얻은 수익과 성과의 일부를 안전 자산으로 옮기거나, ${jiPalace.name}의 취약점을 보완할 재투자 여지를 먼저 점검해 리스크를 줄이십시오.`;
 
   const luJiConflictDynamics: LuJiConflictDynamics = {
     luPalaceName: luPalace.name,

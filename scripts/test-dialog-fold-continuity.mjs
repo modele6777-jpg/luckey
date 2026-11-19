@@ -13,7 +13,7 @@ try {
  await page.goto(base+'/chat');
  await page.locator('.lucy-chat-footer textarea').first().waitFor({state:'visible',timeout:30000});
  for(const kind of ['prompt','engine']) {
-  const trigger=kind==='engine'?page.getByRole('button',{name:/Lucy 엔진과 관점 목록/}):page.getByRole('button',{name:'추천질문 라이브러리 열기'});
+  const trigger=kind==='engine'?page.getByRole('button',{name:/^엔진함 열기/}):page.getByRole('button',{name:'추천질문 라이브러리 열기'});
   await trigger.first().tap();
   const selector=kind==='engine'?'#lucy-engine-catalog-dialog':'#hori-prompt-library-dialog';
   const dialog=page.locator(selector);await dialog.waitFor({state:'visible'});
@@ -26,6 +26,11 @@ try {
    window.savedScroll.scrollTop=100;
    window.savedScrollTop=window.savedScroll.scrollTop;
   });
+  const scrollSuffix=kind==='engine'?':engine:scroll':':prompt:scroll';
+  await page.waitForFunction(suffix=>{
+   const key=Array.from({length:sessionStorage.length},(_,index)=>sessionStorage.key(index)).find(name=>name?.endsWith(suffix));
+   return key&&Number(JSON.parse(sessionStorage.getItem(key)||'0'))>0;
+  },scrollSuffix,{timeout:5000});
   for(const size of [{width:393,height:852},{width:800,height:1200},{width:1200,height:900},{width:393,height:852},{width:1200,height:900}]) {
    await page.setViewportSize(size);
    await page.waitForFunction(folded=>Boolean(document.querySelector('#duo-lucy-viewport'))!==folded,size.width<540);
@@ -51,7 +56,7 @@ try {
  // A Lucy popup also survives folding while the channel pane is the folded page.
  await page.goto(base+'/key');
  await page.locator('iframe[title="Key"]').waitFor({state:'visible',timeout:30000});
- await page.getByRole('button',{name:/Lucy 엔진과 관점 목록/}).tap();
+ await page.getByRole('button',{name:/^엔진함 열기/}).tap();
  const engine=page.locator('#lucy-engine-catalog-dialog');await engine.waitFor({state:'visible'});
  await page.locator('iframe[title="Key"]').evaluate(frame=>{window.savedKeyFrame=frame;});
  await page.setViewportSize({width:393,height:852});

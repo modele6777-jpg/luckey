@@ -29,7 +29,7 @@ const { outputFiles } = await build({
       const started = new Promise(resolve => onPlaying = resolve);
       const first = playTTSAudio(encoded, 'pcm', 24000, undefined, true, undefined, () => onPlaying());
       await started;
-      if (fakeSession.type !== 'playback') throw Error('Active speech did not acquire background playback priority');
+      if (fakeSession.type !== 'ambient') throw Error('Active speech must remain nonexclusive to preserve external audio');
       if (!audio.isConnected) throw Error('Native player must stay attached to the document');
       const liveContext = getSharedAudioContext();
       await liveContext.suspend();
@@ -46,7 +46,7 @@ const { outputFiles } = await build({
       if (!audio.paused || Math.abs(audio.currentTime - pausedAt) > 0.02) throw Error('Visibility change overrode manual pause');
       resumeTTSAudio();
       await wait(250);
-      if (audio.currentTime < pausedAt + 0.1 || fakeSession.type !== 'playback') throw Error('Resume lost native speech position or background playback session');
+      if (audio.currentTime < pausedAt + 0.1 || fakeSession.type !== 'ambient') throw Error('Resume lost native speech position or nonexclusive audio policy');
       await first;
       let secondPlaying;
       const secondStarted = new Promise(resolve => secondPlaying = resolve);

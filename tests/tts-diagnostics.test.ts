@@ -8,6 +8,7 @@ test('TTS failures distinguish invalid key, permission denial, quota, rate limit
   assert.equal(classifyTtsError({ status: 404, code: 'GEMINI_TTS_MODEL_UNAVAILABLE' }, 'gemini').errorType, 'model_unavailable');
   assert.equal(classifyTtsError({ status: 429, code: 'MEDIA_QUOTA_EXHAUSTED' }, 'gemini').errorType, 'quota_exhausted');
   assert.equal(classifyTtsError({ status: 429, code: 'MEDIA_RATE_LIMIT' }, 'gemini').errorType, 'rate_limited');
+  assert.equal(classifyTtsError(Object.assign(new Error('Gemini API 키가 설정되지 않았습니다.'), { status: 503 }), 'gemini').errorType, 'configuration_missing');
 
   const chunkFailure = classifyTtsError({
     status: 502,

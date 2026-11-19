@@ -6,13 +6,13 @@ import postcss from 'postcss';
 import { parse } from 'parse5';
 
 const read = file => readFile(new URL('../' + file, import.meta.url), 'utf8');
-const css = postcss.parse(await read('src/index.css'));
+const css = postcss.parse(await read('src/styles/duo-workspace.css'));
 const columnsAt = width => {
   let columns;
   css.walkRules('.duo-split-workspace', rule => {
     let active = true;
     for (let parent = rule.parent; parent; parent = parent.parent) {
-      if (parent.type === 'atrule' && parent.name === 'media') {
+      if (parent.type === 'atrule' && parent.name === 'container') {
         const minimum = /min-width:\s*(\d+)px/.exec(parent.params);
         if (minimum && width < Number(minimum[1])) active = false;
       }
@@ -21,8 +21,8 @@ const columnsAt = width => {
   });
   return columns;
 };
-for (const width of [375, 768, 1023]) assert.equal(columnsAt(width), 'minmax(0, 1fr)');
-for (const width of [1024, 1280, 1920]) assert.equal(columnsAt(width), 'repeat(2, minmax(0, 1fr))');
+for (const width of [375, 599]) assert.equal(columnsAt(width), 'minmax(0, 1fr)');
+for (const width of [600, 768, 1024, 1280, 1920]) assert.equal(columnsAt(width), 'repeat(2, minmax(0, 1fr))');
 
 // Exercise the actual media subscription, including cleanup and SSR fallback.
 const code = ts.transpileModule(await read('src/hooks/useWideWorkspace.ts'), {
@@ -33,8 +33,8 @@ let listener;
 let subscriptions;
 const context = vm.createContext({
   exports: {},
-  require: () => ({ useSyncExternalStore: (...args) => { subscriptions = args; return args[1](); } }),
-  window: { matchMedia: () => ({ get matches() { return wide; }, addEventListener: (_, fn) => { listener = fn; }, removeEventListener: (_, fn) => { if (listener === fn) listener = null; } }) },
+  require: () => ({ useMemo: factory => factory(), useSyncExternalStore: (...args) => { subscriptions = args; return args[1](); } }),
+  window: { addEventListener() {}, removeEventListener() {}, matchMedia: () => ({ get matches() { return wide; }, addEventListener: (_, fn) => { listener = fn; }, removeEventListener: (_, fn) => { if (listener === fn) listener = null; } }) },
 });
 vm.runInContext(code, context);
 assert.equal(context.exports.useWideWorkspace(), false);
@@ -69,4 +69,4 @@ const key = await read('src/pages/CalmApp.tsx');
 assert.doesNotMatch(key, /fixed inset-0 w-full h-\[100dvh\]/);
 assert.match(key, /relative w-full min-w-0 h-app-full/);
 
-console.log('Passed: 375–1920px column breakpoints, media subscription cleanup, SSR fallback, Key input/output boundaries and sidebar-safe iframe sizing.');
+console.log('Passed: Duo workspace container breakpoints, media subscription cleanup, SSR fallback, Key input/output boundaries and sidebar-safe iframe sizing.');
