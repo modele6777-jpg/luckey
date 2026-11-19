@@ -23,7 +23,7 @@ import {
   EARTHLY_BRANCHES
 } from '../sajuAnalysis';
 
-export const TWELVE_SPIRITS_ENGINE_VERSION = 'LUCKEY-SPIRIT-v2.1.0';
+export const TWELVE_SPIRITS_ENGINE_VERSION = 'LUCKEY-SPIRIT-v2.2.0';
 
 function formatSpiritsKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -267,6 +267,8 @@ export interface TwelveSpiritsResult {
   secondarySpirit?: SpiritMetadata;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
+  ritualAction: string;
+  reflectionFocus: string;
   twelveSpiritsSynthesisMatrix?: {
     dominantTension: string;
     alignmentState: string;
@@ -367,6 +369,8 @@ export function calculateTwelveSpiritsCycle(params?: {
     : `오늘 ${primarySpirit.name}(${primarySpirit.hanja})이 열어 주는 힘과 ${secondarySpirit.name}(${secondarySpirit.hanja})이 비추는 무대 사이에서 가장 먼저 선택할 행동은 무엇입니까?`;
   const interpretiveBoundary =
     '해석 경계: 12신살은 삼합 궤도와 일진·세운의 지지 순환을 통해 오늘의 태도와 행동 역할을 비추는 명리적·상징적 나침반이며, 개인의 자유 의지나 구체적 성패를 단정하지 않습니다.';
+  const ritualAction = `${primarySpirit.actionGuidance} 단, '${primarySpirit.trapToAvoid}' 신호가 올라오면 잠시 멈추고 호흡을 고르십시오.`;
+  const reflectionFocus = `내면 궤도 ${primarySpirit.name}(${primarySpirit.hanja})과 대외 궤도 ${secondarySpirit.name}(${secondarySpirit.hanja})의 균형 잡힌 역할 선택`;
   const twelveSpiritsSynthesisMatrix = {
     dominantTension: `${primarySpirit.name}(${primarySpirit.hanja}) ↔ ${secondarySpirit.name}(${secondarySpirit.hanja})`,
     alignmentState: `${primarySpirit.nature} · ${todayDaySpirit.branchKo} 일진`,
@@ -387,6 +391,8 @@ export function calculateTwelveSpiritsCycle(params?: {
     secondarySpirit,
     reflectiveQuestion,
     interpretiveBoundary,
+    ritualAction,
+    reflectionFocus,
     twelveSpiritsSynthesisMatrix,
   };
 }
@@ -410,6 +416,8 @@ export function formatTwelveSpiritsPrompt(res: TwelveSpiritsResult): string {
 - 피해야 할 함정: ${res.todayStrategy.trapToAvoid}
 - 하루 실천 지침: ${res.todayStrategy.coreAdvice}${matrixLine}
 - 성찰 질문: ${res.reflectiveQuestion}
+- 실천 의례: ${res.ritualAction}
+- 성찰 초점: ${res.reflectionFocus}
 - ${res.interpretiveBoundary}
 ※ 루시 지침: 12신살은 하루하루 운의 파도 속에서 내가 어떤 역할을 맡아야 가장 자연스럽고 강력한지를 알려주는 행동 나침반입니다. 오늘 사용자가 발휘해야 할 '슈퍼파워'와 조심할 '함정'을 자연스러운 조언으로 녹여내세요.`;
 }
