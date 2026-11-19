@@ -537,7 +537,7 @@ test('Big Bang left and right controls stay disabled in the Key channel', async 
   }
 });
 
-test('Big Bang center double tap jumps to the recommended app without firing a single-tap action', async ({ page }) => {
+test('Big Bang center double tap opens the Key channel without firing a single-tap action', async ({ page }) => {
   await openLucy(page);
   const button = page.locator('#bigbang-omnibutton');
   await expect(button).toBeVisible();
@@ -583,13 +583,13 @@ test('Big Bang center double tap jumps to the recommended app without firing a s
   const commit = await page.evaluate(() => (window as any).__bigBangTestCommit);
   expect(commit.isDoubleTapSuction).toBe(false);
   const destination = commit.target.destinationPath as string;
-  expect(destination).not.toBe('/chat');
+  expect(destination).toBe('/key');
   const expected = new URL(destination, page.url());
   await expect.poll(() => {
     const current = new URL(page.url());
     return `${current.pathname}${current.search}`;
   }).toBe(`${expected.pathname}${expected.search}`);
-  await expect(page.getByTestId('bigbang-transition-overlay')).toBeVisible();
+  await expect(page.getByTestId('key-channel-transition')).toBeVisible();
   await page.waitForTimeout(350);
   expect(await page.evaluate(() => (window as any).__bigBangNormalTapCount)).toBe(0);
 });
@@ -649,7 +649,7 @@ test('Big Bang center long press navigates directly to Key', async ({ page }) =>
   await page.mouse.up();
   await expect(page).toHaveURL(/\/key$/);
   await expect.poll(() => page.evaluate(() => (window as any).__bigBangHoldCommit?.target?.destinationPath)).toBe('/key');
-  await expect(page.getByTestId('bigbang-transition-overlay')).toBeVisible();
+  await expect(page.getByTestId('key-channel-transition')).toBeVisible();
   await expect(page.locator('iframe[title="Key"]')).toBeVisible();
   expect(await page.evaluate(() => localStorage.getItem('lucy_tier_mode'))).not.toBe('pro');
 });
@@ -668,8 +668,8 @@ test('Big Bang overlay remains visible for the newest overlapping transition', a
   });
   const dispatchCommit = () => page.evaluate(() => {
     const target = {
-      id: 'key', phase: 'wormhole', gauge: 1, aiTemperature: 0, title: 'KEY', name: 'KEY',
-      actionType: 'navigate', destinationPath: '/key', previewLabel: 'KEY', previewDescription: 'KEY',
+      id: 'lucy', phase: 'wormhole', gauge: 1, aiTemperature: 0, title: 'Lucy', name: 'Lucy',
+      actionType: 'navigate', destinationPath: '/', previewLabel: 'Lucy', previewDescription: 'Lucy',
       themeColor: '#8B5CF6', accentGlow: 'rgba(168, 85, 247, 0.72)',
     };
     const metrics = { hardwarePressure: 0, touchArea: 0, durationMs: 0, virtualForce: 1, isAborted: false, phase: 'wormhole' };

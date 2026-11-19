@@ -30,6 +30,8 @@ export function BigBangExpansionOverlay() {
   useEffect(() => {
     const handleCommit = (e: any) => {
       const detail = e.detail as BigBangCommitEventDetail;
+      // Entering Key has its own entry screen (KeyChannelTransition).
+      if (detail?.target?.id === 'key' && detail.target.destinationPath?.startsWith('/key')) return;
       if (detail) {
         const generation = ++clearOverlayGenerationRef.current;
         if (clearOverlayTimerRef.current !== null) window.clearTimeout(clearOverlayTimerRef.current);

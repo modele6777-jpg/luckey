@@ -17,6 +17,7 @@ import { useSmartScroll } from "./hooks/useSmartScroll";
 import LeftSidebarNav from "./components/navigation/LeftSidebarNav";
 import { BigBangButton } from "./components/omniwarp/BigBangButton";
 import { BigBangExpansionOverlay } from "./components/omniwarp/BigBangExpansionOverlay";
+import { KeyChannelTransition } from "./components/omniwarp/KeyChannelTransition";
 import ErrorBoundary from "./components/ErrorBoundary";
 import ReloadPrompt from "./components/ReloadPrompt";
 import InstallPrompt from "./components/InstallPrompt";
@@ -991,6 +992,7 @@ function AppContent() {
       <LeftSidebarNav />
       <BigBangButton />
       <BigBangExpansionOverlay />
+      <KeyChannelTransition />
 
       <ReloadPrompt />
       <InstallPrompt />
