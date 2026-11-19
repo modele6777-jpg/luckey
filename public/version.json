@@ -1,10 +1,9 @@
 {
-  "version": "1.7.916",
-  "builtAt": "2026-11-19T09:22:00+09:00",
-  "summary": "수메르 50대 메·길가메시 12관문·영적 3위1체 3대 엔진 실천 의례 및 성찰 초점 표준 연동(v1.7.916)",
+  "version": "1.7.917",
+  "builtAt": "2026-11-19T09:27:00+09:00",
+  "summary": "푸코·파스칼·바르트 3대 엔진 +09:00 (KST) 표준 시각 통일(v1.7.917)",
   "items": [
-    "고대 수메르 에리두 50대 메(Me) 신성 문명 규범 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동",
-    "길가메시 서사시 12관문 불멸 여정 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동",
-    "영적 3위1체 마스터 지혜 엔진(v2.3.0): ritualAction·reflectionFocus 표준 필드 연동"
+    "미셸 푸코 자기배려 미학(v2.3.0)·블레즈 파스칼 팡세(v2.2.0)·롤랑 바르트 기호학 푼크툼(v2.3.0): calculatedAtKst +09:00 (KST) 표준 표기 통일",
+    "divination-engines.test.ts: 3대 엔진 v1.7.917 +09:00 (KST) 회귀 테스트 추가"
   ]
 }

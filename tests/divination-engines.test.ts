@@ -12572,3 +12572,27 @@ test('루소·사르트르·메를로-퐁티 3대 엔진 v1.7.915 KST(+09:00) �
   assert.match(mp.calculatedAtKst, /\+09:00/);
   assert.ok(formatFrenchMauriceMerleauPontyEmbodiedPhenomenologyPrompt(mp).includes('+09:00'));
 });
+
+test('푸코·파스칼·바르트 3대 엔진 v1.7.917 KST(+09:00) 표준 표기 검증', () => {
+  const profile: any = {
+    name: '테스트',
+    basic: { birthdate: '1994-01-24', birthtime: '10:30', gender: 'male', calendarType: 'solar' },
+  };
+  const now = new Date('2026-11-19T09:27:00+09:00');
+  const query = '자기 배려의 미학과 마음의 직관, 일상의 기호를 함께 읽고 싶을 때';
+
+  const mf = calculateFrenchMichelFoucaultCareOfSelfAesthetics(profile, query, now);
+  assert.equal(mf.engineVersion, FRENCH_MICHEL_FOUCAULT_CARE_OF_SELF_VERSION);
+  assert.match(mf.calculatedAtKst, /\+09:00/);
+  assert.ok(formatFrenchMichelFoucaultCareOfSelfAestheticsPrompt(mf).includes('+09:00'));
+
+  const bp = calculatePascalPenseesHeartReason(profile, query, now);
+  assert.equal(bp.engineVersion, PASCAL_PENSEES_HEART_REASON_VERSION);
+  assert.match(bp.calculatedAtKst, /\+09:00/);
+  assert.ok(formatPascalPenseesHeartReasonPrompt(bp).includes('+09:00'));
+
+  const rb = calculateFrenchRolandBarthesSemioticsPunctum(profile, query, now);
+  assert.equal(rb.engineVersion, FRENCH_ROLAND_BARTHES_SEMIOTICS_PUNCTUM_VERSION);
+  assert.match(rb.calculatedAtKst, /\+09:00/);
+  assert.ok(formatFrenchRolandBarthesSemioticsPunctumPrompt(rb).includes('+09:00'));
+});
