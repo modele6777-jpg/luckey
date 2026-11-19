@@ -13,7 +13,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const FRENCH_MICHEL_FOUCAULT_CARE_OF_SELF_VERSION = 'LUCKEY-MICHEL-FOUCAULT-CARE-OF-SELF-v2.2.0';
+export const FRENCH_MICHEL_FOUCAULT_CARE_OF_SELF_VERSION = 'LUCKEY-MICHEL-FOUCAULT-CARE-OF-SELF-v2.3.0';
 
 export interface FoucaultTheme {
   themeKey: string;
@@ -188,7 +188,7 @@ export function calculateFrenchMichelFoucaultCareOfSelfAesthetics(
     '미셸 푸코의 자기 배려·존재의 미학 관점은 미래를 예측하거나 점수를 매기는 계산이 아니라, 타율적 시선에서 벗어나 자기 주권을 성찰하는 상징적 렌즈입니다.';
 
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
-  const kstTimeLabel = `${kst.toISOString().slice(0, 10)} ${String(kst.getUTCHours()).padStart(2, '0')}:${String(kst.getUTCMinutes()).padStart(2, '0')} KST`;
+  const kstTimeLabel = `${kst.toISOString().slice(0, 10)} ${String(kst.getUTCHours()).padStart(2, '0')}:${String(kst.getUTCMinutes()).padStart(2, '0')} +09:00 (KST)`;
   const foucaultSynthesisMatrix = {
     coreInsight: activeFoucaultTheme.themeTitleKo,
     recommendedAction: dailyPracticeRitual,

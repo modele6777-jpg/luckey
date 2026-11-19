@@ -13,7 +13,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const FRENCH_ROLAND_BARTHES_SEMIOTICS_PUNCTUM_VERSION = 'LUCKEY-ROLAND-BARTHES-SEMIOTICS-PUNCTUM-v2.2.0';
+export const FRENCH_ROLAND_BARTHES_SEMIOTICS_PUNCTUM_VERSION = 'LUCKEY-ROLAND-BARTHES-SEMIOTICS-PUNCTUM-v2.3.0';
 
 export interface BarthesTheme {
   themeKey: string;
@@ -143,7 +143,7 @@ function formatBarthesKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
 }
 
 export function calculateFrenchRolandBarthesSemioticsPunctum(
