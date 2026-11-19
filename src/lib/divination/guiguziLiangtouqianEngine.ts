@@ -26,7 +26,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const GUIGUZI_VERSION = 'LUCKEY-GUIGUZI-LIANGTOUQIAN-v2.3.0';
+export const GUIGUZI_VERSION = 'LUCKEY-GUIGUZI-LIANGTOUQIAN-v2.4.0';
 
 export interface GuiguziGuaStructure {
   yearStem: string;      // 년간 (선천 천명)
@@ -122,11 +122,6 @@ function stringHash(str: string): number {
 
 function getTemporalGuiguziRhythm(now: Date) {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
-  const y = kst.getUTCFullYear();
-  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
-  const d = String(kst.getUTCDate()).padStart(2, '0');
-  const hh = String(kst.getUTCHours()).padStart(2, '0');
-  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
   const hour = kst.getUTCHours();
   const month = kst.getUTCMonth() + 1;
 
@@ -149,7 +144,7 @@ function getTemporalGuiguziRhythm(now: Date) {
           : '겨울 · 축력(蓄力) 수비기 (내실을 다지며 결정적 호기를 기다리는 시기)';
 
   return {
-    kstTimeLabel: `${y}-${m}-${d} ${hh}:${mm}:00 +09:00 KST`,
+    kstTimeLabel: `${kst.toISOString().slice(0, 19)}+09:00 (KST)`,
     zonghengWatchWindow,
     seasonalCampaignTone,
     temporalGuidance: `${zonghengWatchWindow} · ${seasonalCampaignTone}의 흐름에 맞추어 진격과 수비의 균형을 조율하십시오.`,

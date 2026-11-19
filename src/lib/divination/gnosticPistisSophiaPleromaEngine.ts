@@ -9,7 +9,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const GNOSTIC_PISTIS_SOPHIA_PLEROMA_ENGINE_VERSION = '2.4.0';
+export const GNOSTIC_PISTIS_SOPHIA_PLEROMA_ENGINE_VERSION = '2.5.0';
 
 export type GnosticQuestionFocus = 'career' | 'relationship' | 'anxiety' | 'decision' | 'spiritual';
 
@@ -335,7 +335,7 @@ export function calculateGnosticPistisSophiaPleroma(
   const pneumaIgnitionRitual = `가슴 한가운데 꺼지지 않는 황금빛 백색 불꽃을 관조하며 선언하십시오: "나는 이 세상에 속해 있으나 이 세상의 물질적 조건에 갇히지 않는다. 내 안의 프뉴마는 플레로마의 영원한 빛과 하나이다."`;
 
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
-  const calculatedAtKst = `${kst.toISOString().slice(0, 19).replace('T', ' ')} +09:00 KST`;
+  const calculatedAtKst = `${kst.toISOString().slice(0, 19)}+09:00 (KST)`;
 
   const reflectiveQuestion = question.trim()
     ? `"${question.trim()}"의 막연한 두려움 너머, 내 안의 [${primaryAeon.nameKo}] 불꽃이 이미 알고 있는 순수한 진실은 무엇입니까?`
