@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { DuoTarotBookSpread } from './DuoTarotBookSpread';
 import type { DetectedTarotCard } from '@/utils/tarotDetector';
-import { LUCY_TAROT_DRAWN_EVENT } from '@/lib/lucyMasterMode';
+import { LUCY_TAROT_DRAWN_EVENT, LUCY_MASTER_MODE_EVENT } from '@/lib/lucyMasterMode';
 import { requestLucyAction } from '@/lib/duoLucyActionRouting';
 import { triggerHaptic } from '@/lib/omniWarp/omniWarpHaptics';
 
@@ -22,8 +22,14 @@ export function DuoDivinationTarotPane({ isLight = false }: { isLight?: boolean 
       setRevealed([]);
       triggerHaptic('whitehole');
     };
+    // 루시 마스터를 나갔다 들어오면 테이블도 비운다
+    const handleMode = () => { setCards([]); setRevealed([]); };
     window.addEventListener(LUCY_TAROT_DRAWN_EVENT, handleDrawn);
-    return () => window.removeEventListener(LUCY_TAROT_DRAWN_EVENT, handleDrawn);
+    window.addEventListener(LUCY_MASTER_MODE_EVENT, handleMode);
+    return () => {
+      window.removeEventListener(LUCY_TAROT_DRAWN_EVENT, handleDrawn);
+      window.removeEventListener(LUCY_MASTER_MODE_EVENT, handleMode);
+    };
   }, []);
 
   return (
