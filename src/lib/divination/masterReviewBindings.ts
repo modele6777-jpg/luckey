@@ -1351,5 +1351,13 @@ export const MASTER_REVIEW_BINDINGS: Record<string, { field: string; traceKey: s
   "tamilThirukkuralAramPorulKamam": {
     "field": "tamilThirukkuralAramPorulKamamResult",
     "traceKey": "tamilThirukkuralAramPorulKamamResult"
+  },
+  "inuitSilaBreathWeather": {
+    "field": "inuitSilaBreathWeatherResult",
+    "traceKey": "inuitSilaBreathWeatherResult"
+  },
+  "zuluUbuntuRelationalSelf": {
+    "field": "zuluUbuntuRelationalSelfResult",
+    "traceKey": "zuluUbuntuRelationalSelfResult"
   }
 };

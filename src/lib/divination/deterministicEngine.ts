@@ -363,6 +363,8 @@ import { calculateKoreanKimSoWolAzaleaFlowerPoeticGrace, formatKoreanKimSoWolAza
 import { calculateIrishJamesJoyceUlyssesEpiphany, type IrishJamesJoyceUlyssesEpiphanyResult, IRISH_JAMES_JOYCE_ULYSSES_EPIPHANY_VERSION } from './irishJamesJoyceUlyssesEpiphanyEngine';
 import { calculateGermanHermannHesseDemianSteppenwolf, type GermanHermannHesseDemianSteppenwolfResult, GERMAN_HERMANN_HESSE_DEMIAN_STEPPENWOLF_VERSION } from './germanHermannHesseDemianSteppenwolfEngine';
 import { calculateKoreanHanYongUnSilenceOfNim, type KoreanHanYongUnSilenceOfNimResult, KOREAN_HAN_YONG_UN_SILENCE_OF_NIM_VERSION } from './koreanHanYongUnSilenceOfNimEngine';
+import { calculateInuitSilaBreathWeather, formatInuitSilaBreathWeatherPrompt, type InuitSilaBreathWeatherResult, INUIT_SILA_BREATH_WEATHER_VERSION } from './inuitSilaBreathWeatherEngine';
+import { calculateZuluUbuntuRelationalSelf, formatZuluUbuntuRelationalSelfPrompt, type ZuluUbuntuRelationalSelfResult, ZULU_UBUNTU_RELATIONAL_SELF_VERSION } from './zuluUbuntuRelationalSelfEngine';
 
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
@@ -744,6 +746,8 @@ export interface DeterministicEngineReport {
   koreanHanYongUnSilenceOfNimResult?: KoreanHanYongUnSilenceOfNimResult | null;
   koreanYutjeomFourStickResult?: KoreanYutjeomFourStickResult | null;
   tamilThirukkuralAramPorulKamamResult?: TamilThirukkuralAramPorulKamamResult | null;
+  inuitSilaBreathWeatherResult?: InuitSilaBreathWeatherResult | null;
+  zuluUbuntuRelationalSelfResult?: ZuluUbuntuRelationalSelfResult | null;
 
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
@@ -3326,6 +3330,24 @@ try {
     }
   })()));
 
+  // 340. 이누이트 시라 숨·날씨·빛의 리듬 지혜 엔진
+  const inuitSilaBreathWeatherResult = calculateSupplement('inuitSilaBreathWeatherResult', () => ((() => {
+    try {
+      return calculateInuitSilaBreathWeather(profile, question, now);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 341. 줄루 우부투 관계적 자아 & 상호존중 엔진
+  const zuluUbuntuRelationalSelfResult = calculateSupplement('zuluUbuntuRelationalSelfResult', () => ((() => {
+    try {
+      return calculateZuluUbuntuRelationalSelf(profile, question, now);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
   // 220. 한국 신라 의상대사 화엄일승법계도 & 법성게 원융무애 엔진
   const uisangHwaeomIlseungBeopgyeResult = calculateSupplement('uisangHwaeomIlseungBeopgyeResult', () => ((() => {
     try {
@@ -4683,6 +4705,8 @@ try {
     koreanHanYongUnSilenceOfNimResult,
     koreanYutjeomFourStickResult,
     tamilThirukkuralAramPorulKamamResult,
+    inuitSilaBreathWeatherResult,
+    zuluUbuntuRelationalSelfResult,
     tools: toolsMap,
   };
 }
@@ -5045,6 +5069,8 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'koreanHanYongUnSilenceOfNim', nameKo: '만해 한용운 님의침묵 조선불교유신론 역설적사랑 이별을사랑의새원천으로 서릿발자주지조 불굴의독립기개 대자비회복탄력성', icon: '🕯️', category: 'deep_master', summary: "《님의 침묵》 등 한용운의 작품을 통해 이별·희망·양심·배려를 살피는 문학적 관점입니다. 확인되지 않은 인용이나 개인 점수·관계 예측을 제공하지 않으며, 헌신은 동의와 안전의 경계를 존중합니다." },
   { key: 'koreanYutjeomFourStickOracle', nameKo: '한국 윷점 사비 도개걸윷모 정월 윷놀이 민속 점복 다섯결 성찰', icon: '🪵', category: 'deep_master', summary: '한국 정월 윷점의 도·개·걸·윷·모 다섯 결을 질문에 비추어 지금의 걸음을 살피는 민속 상징 관점입니다. 실제 윷 던지기나 길흉 예측을 대신하지 않습니다.', primaryTheme: 'trinity' },
   { key: 'tamilThirukkuralAramPorulKamam', nameKo: '타밀 티루쿠랄 아람 포룰 카맘 삼편 덕 재물 사랑 발라르 고전 지혜', icon: '🌺', category: 'deep_master', summary: '남인도 타밀 고전 《티루쿠랄》의 덕·재물·사랑 세 축으로 지금 삶에서 비어 있는 곳을 살피는 고전 지혜 관점입니다. 역본마다 다른 원문 문장을 인용하지 않고 길흉·점수를 산출하지 않습니다.', primaryTheme: 'bluebird' },
+  { key: 'inuitSilaBreathWeather', nameKo: '이누이트 시라 숨·날씨·빛의 리듬', icon: '🌬️', category: 'deep_master', summary: '북극 이누이트의 시라(Sila) 숨·날씨·빛의 상징으로 오늘의 호흡 결과 기다림과 움직임의 균형을 돌아보는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'aura' },
+  { key: 'zuluUbuntuRelationalSelf', nameKo: '줄루 우부투 관계적 자아', icon: '🌍', category: 'deep_master', summary: '남아프리카 줄루 우부투(Ubuntu)의 인정·나눔·화평 세 축으로 관계 속 나의 자리와 상호 존중의 균형을 돌아보는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'bluebird' },
 ] as DceEngineMeta[]).filter(engine => !LUCY_PRO_CATALOG_DUPLICATE_KEYS.has(engine.key));
 
 export function getFiredEngineBadges(
@@ -5363,6 +5389,7 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'hawaiianHuna',
     'slavicSvarog',
     'tamilThirukkuralAramPorulKamam',
+    'zuluUbuntuRelationalSelf',
   ],
   immediate_decision: [
     'frenchAlbertCamusAbsurdRevolt',
@@ -5543,6 +5570,7 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'hawaiianHuna',
     'fengShuiEightMansions',
     'hinduKundalini',
+    'inuitSilaBreathWeather',
   ],
   creative_mind: [
     'irishJamesJoyceUlyssesEpiphany',
@@ -5808,6 +5836,8 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'slavicSvarog',
     'koreanYutjeomFourStickOracle',
     'tamilThirukkuralAramPorulKamam',
+    'inuitSilaBreathWeather',
+    'zuluUbuntuRelationalSelf',
   ],
 };
 

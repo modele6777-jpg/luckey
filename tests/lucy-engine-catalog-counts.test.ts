@@ -16,31 +16,31 @@ const THEMES: EngineCatalogThemeFilter[] = ['all', ...LUCY_PRO_CHANNEL_THEMES.ma
 
 test('a catalog with no filter keeps the registered totals on both chip rows', () => {
   const { engines, counts } = selectCatalogEngines();
-  assert.equal(engines.length, 331);
-  assert.deepEqual(counts.categories, { all: 331, foundational: 15, deep_master: 316 });
-  assert.equal(counts.themes.all, 331);
+  assert.equal(engines.length, 333);
+  assert.deepEqual(counts.categories, { all: 333, foundational: 15, deep_master: 318 });
+  assert.equal(counts.themes.all, 333);
   for (const theme of LUCY_PRO_CHANNEL_THEMES) {
     assert.equal(counts.themes[theme.id], ENGINE_CATALOG_THEME_COUNTS[theme.id], `theme chip drifted: ${theme.id}`);
   }
 });
 
-test('선택한 심층 관점에서 테마 칩이 전체 수치(331·프롤로그 6)가 아니라 표시 목록(316·프롤로그 4)을 가리킨다', () => {
+test('선택한 심층 관점에서 테마 칩이 전체 수치(333·프롤로그 5)가 아니라 표시 목록(318·프롤로그 3)을 가리킨다', () => {
   const { engines, counts } = selectCatalogEngines({ category: 'deep_master' });
-  assert.equal(engines.length, 316);
-  assert.equal(counts.categories.all, 331);
-  assert.equal(counts.categories.deep_master, 316);
-  assert.equal(counts.themes.all, 316);
-  assert.equal(counts.themes.prologue, 4);
-  // 칩 숫자 === 그 칩을 눌렀을 때 보이는 개수(섹션 헤더 '4개').
+  assert.equal(engines.length, 318);
+  assert.equal(counts.categories.all, 333);
+  assert.equal(counts.categories.deep_master, 318);
+  assert.equal(counts.themes.all, 318);
+  assert.equal(counts.themes.prologue, 3);
+  // 칩 숫자 === 그 칩을 눌렀을 때 보이는 개수(섹션 헤더 '3개').
   assert.equal(selectCatalogEngines({ category: 'deep_master', theme: 'prologue' }).engines.length, counts.themes.prologue);
 });
 
-test('선택한 프롤로그 테마에서 분류 칩이 필터된 6개(기초 2·심층 4)를 가리킨다', () => {
+test('선택한 프롤로그 테마에서 분류 칩이 필터된 5개(기초 2·심층 3)를 가리킨다', () => {
   const { engines, counts } = selectCatalogEngines({ theme: 'prologue' });
-  assert.equal(engines.length, 6);
-  assert.equal(counts.categories.all, 6);
+  assert.equal(engines.length, 5);
+  assert.equal(counts.categories.all, 5);
   assert.equal(counts.categories.foundational, 2);
-  assert.equal(counts.categories.deep_master, 4);
+  assert.equal(counts.categories.deep_master, 3);
   assert.equal(counts.categories.foundational + counts.categories.deep_master, counts.categories.all);
   assert.equal(selectCatalogEngines({ theme: 'prologue', category: 'deep_master' }).engines.length, counts.categories.deep_master);
 });

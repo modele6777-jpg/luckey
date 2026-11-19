@@ -332,6 +332,8 @@ import { calculateGermanHermannHesseDemianSteppenwolf, formatGermanHermannHesseD
 import { calculateKoreanHanYongUnSilenceOfNim, formatKoreanHanYongUnSilenceOfNimPrompt, KOREAN_HAN_YONG_UN_SILENCE_OF_NIM_VERSION } from '../src/lib/divination/koreanHanYongUnSilenceOfNimEngine';
 import { calculateKoreanYutjeomFourStickOracle, formatKoreanYutjeomFourStickPrompt, KOREAN_YUTJEOM_FOUR_STICK_VERSION } from '../src/lib/divination/koreanYutjeomFourStickOracleEngine';
 import { calculateTamilThirukkuralAramPorulKamam, formatTamilThirukkuralAramPorulKamamPrompt, TAMIL_THIRUKKURAL_ARAM_PORUL_KAMAM_VERSION } from '../src/lib/divination/tamilThirukkuralAramPorulKamamEngine';
+import { calculateInuitSilaBreathWeather, formatInuitSilaBreathWeatherPrompt, INUIT_SILA_BREATH_WEATHER_VERSION } from '../src/lib/divination/inuitSilaBreathWeatherEngine';
+import { calculateZuluUbuntuRelationalSelf, formatZuluUbuntuRelationalSelfPrompt, ZULU_UBUNTU_RELATIONAL_SELF_VERSION } from '../src/lib/divination/zuluUbuntuRelationalSelfEngine';
 
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
@@ -12770,4 +12772,54 @@ test('귀인 네트워크·바이탈리티 커브·재물 파이프라인 3대 �
   assert.equal(wp.engineVersion, WEALTH_PIPELINE_VERSION);
   assert.match(wp.calculatedAtKst, /\+09:00/);
   assert.ok(formatWealthPipelinePrompt(wp).includes('+09:00'));
+});
+
+test('Inuit Sila Breath Weather engine: qualitative breath and rhythm guidance without scores or predictions', () => {
+  const rep = calculateInuitSilaBreathWeather(profile, '이직을 앞두고 마음이 조급해요', new Date('2026-11-15T03:00:00Z'));
+  assert.equal(rep.engineVersion, INUIT_SILA_BREATH_WEATHER_VERSION);
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.equal(rep.questionTopic, 'decision');
+  assert.ok(rep.elementWeatherKey.length > 0);
+  assert.ok(rep.situationalSilaAudit.weatherMirror.length > 0);
+  assert.ok(rep.situationalSilaAudit.breathPractice.length > 0);
+  assert.ok(rep.temporalBreathPulse.kstHourWindow.length > 0);
+  assert.ok(rep.silaSynthesisMatrix.integratedAction.length > 0);
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('개인 점수·심리 진단·미래 예측이 아닙니다'));
+  const prompt = formatInuitSilaBreathWeatherPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%') && !prompt.includes('방패율') && !prompt.includes('진단율'));
+  assert.ok(prompt.includes('이누이트 시라(Sila)'));
+  assert.ok(prompt.includes('실천 의례') && prompt.includes('성찰 초점') && prompt.includes('성찰 질문'));
+  assert.ok(prompt.includes('KST 빛·숨 창') && prompt.includes('교차 매트릭스'));
+  assert.ok(prompt.includes('해석 경계') && prompt.includes('+09:00 (KST)'));
+
+  const healing = calculateInuitSilaBreathWeather(profile, '요즘 너무 지쳐서 회복이 필요해요');
+  assert.equal(healing.questionTopic, 'healing');
+  assert.ok(!formatInuitSilaBreathWeatherPrompt(healing).includes('/100'));
+});
+
+test('Zulu Ubuntu Relational Self engine: relationship mirroring stays qualitative, reciprocal and bounded', () => {
+  const rep = calculateZuluUbuntuRelationalSelf(profile, '동료와 자꾸 갈등이 생겨요', new Date('2026-11-15T12:00:00Z'));
+  assert.equal(rep.engineVersion, ZULU_UBUNTU_RELATIONAL_SELF_VERSION);
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.equal(rep.questionTopic, 'relationship');
+  assert.ok(rep.activePillar.pillarNameKo.length > 0);
+  assert.ok(rep.activePillar.todayPractice.length > 0);
+  assert.ok(rep.situationalUbuntuAudit.acknowledgmentStep.length > 0);
+  assert.ok(rep.situationalUbuntuAudit.boundaryNote.includes('경계'));
+  assert.ok(rep.ubuntuSynthesisMatrix.integratedAction.length > 0);
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('개인 점수·심리 진단·미래 예측이 아닙니다'));
+  assert.ok(rep.interpretiveBoundary.includes('동의·안전·법적 경계'));
+  const prompt = formatZuluUbuntuRelationalSelfPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%') && !prompt.includes('방패율') && !prompt.includes('진단율'));
+  assert.ok(prompt.includes('우부투(Ubuntu)'));
+  assert.ok(prompt.includes('실천 의례') && prompt.includes('성찰 초점') && prompt.includes('성찰 질문'));
+  assert.ok(prompt.includes('KST 공동체 리듬') && prompt.includes('교차 매트릭스'));
+  assert.ok(prompt.includes('해석 경계') && prompt.includes('+09:00 (KST)'));
+  assert.doesNotMatch(prompt, /"[^"]{10,}"/);
+
+  const decision = calculateZuluUbuntuRelationalSelf(profile, '동업을 시작해도 될까요');
+  assert.equal(decision.questionTopic, 'decision');
+  assert.ok(!formatZuluUbuntuRelationalSelfPrompt(decision).includes('/100'));
 });
