@@ -3116,7 +3116,7 @@ test('Synchronicity Omen Engine: 칼 융 동시성 징조 해독 & 오멘 매트
 test('Etheric Aura Biofield Engine: 에테르 오라 생체장 & 쉴딩 결계 검증', () => {
   const res = calculateEthericAuraBiofield({ profile, targetDate: new Date('2026-11-04T14:00:00+09:00') });
   assert.equal(res.engineVersion, ETHERIC_AURA_VERSION);
-  assert(res.calculatedAtKst.endsWith('+09:00'));
+  assert(res.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(res.interpretiveBoundary.length > 0);
   assert(res.auraBiofieldTitle.length > 0);
   assert(res.spectrum.primaryColor.length > 0);
@@ -3127,6 +3127,7 @@ test('Etheric Aura Biofield Engine: 에테르 오라 생체장 & 쉴딩 결계 �
   assert(prompt.includes('LUCKEY 에테르 오라 생체장 & 쉴딩'));
   assert(prompt.includes('+09:00') && prompt.includes('해석 경계'));
   assert(prompt.includes(res.spectrum.primaryColor));
+  assert(prompt.includes('성찰 초점'));
   assert(!prompt.includes('/100') && !prompt.includes('%'));
 });
 
@@ -3582,6 +3583,7 @@ test('Mesopotamian Seven Gates Engine: calculates planetary gate and resurrectio
 test('Egyptian 36 Decans Engine: calculates birth decan and stellar resonance', () => {
   const rep = calculateEgyptianThirtySixDecans({ profile });
   assert.equal(rep.engineVersion, EGYPTIAN_DECANS_VERSION);
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(rep.birthDecan.decanNumber >= 1 && rep.birthDecan.decanNumber <= 36);
   assert(rep.stellarResonanceScore >= 0 && rep.stellarResonanceScore <= 100);
   assert(rep.spiritualNavigationGuidance.length > 0);
@@ -3590,6 +3592,7 @@ test('Egyptian 36 Decans Engine: calculates birth decan and stellar resonance', 
   const prompt = formatEgyptianThirtySixDecansPrompt(rep);
   assert(prompt.includes('고대 이집트 36 데칸'));
   assert(prompt.includes(rep.birthDecan.guardianDeity));
+  assert(prompt.includes('성찰 초점'));
   assert.doesNotMatch(prompt, /(?:\d+\s*(?:\/\s*100|점|%)|점수\s*[:：]?\s*\d+)/);
 });
 
@@ -3830,12 +3833,13 @@ test('Essene Communion Tree Engine: calculates morning/evening angels, tree trin
   assert(rep.morningEarthlyAngel.koreanName.length > 0);
   assert(rep.eveningHeavenlyAngel.koreanName.length > 0);
   assert(rep.communionVibrationalScore >= 0 && rep.communionVibrationalScore <= 100);
-  assert(rep.temporalEsseneRhythm.calculatedAtKst.includes('KST'));
+  assert(rep.temporalEsseneRhythm.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(rep.situationalEsseneAudit.questionFocus.length > 0);
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatEsseneCommunionPrompt(rep);
   assert(prompt.includes('에세네파 14대 천사 교감 & 영혼 생명나무 조화 엔진'));
   assert(prompt.includes(rep.morningEarthlyAngel.koreanName));
+  assert(prompt.includes('성찰 초점'));
   assert(!prompt.includes('/100') && !prompt.includes('%'));
   assert(!/미토콘드리아|면역력|소화기관|폐와 뇌|혈관과 신경|자연 치유/.test(prompt));
 });
