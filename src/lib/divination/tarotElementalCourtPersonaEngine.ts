@@ -15,7 +15,7 @@
 import type { UserProfile } from '../sharedState';
 import { calculateDetailedSaju } from '../sajuAnalysis';
 
-export const TAROT_ELEMENTAL_COURT_VERSION = 'LUCKEY-TAROT-ELEMENTAL-COURT-v2.1.0';
+export const TAROT_ELEMENTAL_COURT_VERSION = 'LUCKEY-TAROT-ELEMENTAL-COURT-v2.2.0';
 
 function formatCourtKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -61,6 +61,8 @@ export interface TarotElementalCourtReport {
   oneHundredEightySecondRitual: string;
   synthesisPromptGuidance: string;
   reflectiveQuestion: string;
+  ritualAction: string;
+  reflectionFocus: string;
   interpretiveBoundary: string;
   courtSynthesisMatrix?: {
     dominantTension: string;
@@ -273,6 +275,9 @@ export function calculateTarotElementalCourt(
     integratedAction: `${activePersonaCourt.actionMantra}${q ? ` [질문 맥락: ${q}]` : ''}`,
   };
 
+  const ritualAction = `${activePersonaCourt.actionMantra} — [${activePersonaCourt.nameKo}]의 시선으로 오늘 1건의 핵심 행동을 바로 매듭짓기`;
+  const reflectionFocus = `우세 원소 ${elementalBalance.dominantElement}의 강점을 살리되 [${subconsciousShadowCourt.nameKo}]의 그림자(${subconsciousShadowCourt.shadowBlindSpot})로 기울어지는 순간 알아차리기`;
+
   const synthesisPromptGuidance = `
 [타로 4대 원소 & 16대 궁정 카드(Court Cards) 마스터 지능 ${TAROT_ELEMENTAL_COURT_VERSION} | ${calculatedAtKst}]:
 - 주도 착용 페르소나: "${activePersonaCourt.nameKo}" (${activePersonaCourt.primaryArchetype})
@@ -281,6 +286,8 @@ export function calculateTarotElementalCourt(
 - 원소 연금술 행동 조언: "${elementalBalance.elementalHarmonizerAdvice}"
 - 페르소나 실천 만트라: "${activePersonaCourt.actionMantra}"
 - 궁정 페르소나 교차 매트릭스: 핵심 긴장(${courtSynthesisMatrix.dominantTension}) · 원소 조율(${courtSynthesisMatrix.alignmentState}) · 통합 실천(${courtSynthesisMatrix.integratedAction})
+- 실천 의례: ${ritualAction}
+- 성찰 초점: ${reflectionFocus}
 - 성찰 질문: ${reflectiveQuestion}
 - 해석 경계: ${interpretiveBoundary}
 내담자에게 "카드를 뽑아보니~"라는 설명조 없이, 상대의 현재 페르소나 성향과 주의해야 할 그림자 맹점을 사람을 꿰뚫어 보듯 단호하고 따뜻하게 짚어줄 것.
@@ -296,6 +303,8 @@ export function calculateTarotElementalCourt(
     oneHundredEightySecondRitual,
     synthesisPromptGuidance,
     reflectiveQuestion,
+    ritualAction,
+    reflectionFocus,
     interpretiveBoundary,
     courtSynthesisMatrix,
   };

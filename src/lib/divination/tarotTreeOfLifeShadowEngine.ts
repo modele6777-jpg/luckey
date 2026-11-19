@@ -21,7 +21,7 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const TAROT_KABBALAH_SHADOW_VERSION = 'LUCKEY-TAROT-KABBALAH-SHADOW-v2.1.0';
+export const TAROT_KABBALAH_SHADOW_VERSION = 'LUCKEY-TAROT-KABBALAH-SHADOW-v2.2.0';
 
 function formatKabbalahShadowKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -60,6 +60,8 @@ export interface TarotTreeOfLifeShadowReport {
   shadowMirror: TarotShadowMirrorAnalysis;
   soulHermeticAffirmation: string;
   reflectiveQuestion: string;
+  ritualAction: string;
+  reflectionFocus: string;
   interpretiveBoundary: string;
   synthesisPromptGuidance: string;
   kabbalahShadowSynthesisMatrix?: {
@@ -129,6 +131,9 @@ export function runTarotTreeOfLifeShadowEngine(
     integratedAction: `${shadowData.ritual}${q ? ` [질문 맥락: ${q}]` : ''}`,
   };
 
+  const ritualAction = `제${selectedPathNum}경로(${pathInfo.cardName}) 섀도우 통합 의례 — ${shadowData.ritual}`;
+  const reflectionFocus = `의식의 [${pathInfo.cardName}]와 무의식 그림자 [${shadowData.name}] 사이의 방어기제(${shadowData.defenseMechanism})를 비추고 제${secondaryPathNum}경로(${secondaryPathInfo.cardName})로 균형 이동`;
+
   const tarotEsotericTitle = `Path ${selectedPathNum} [${pathInfo.cardName}] × Shadow [${shadowData.name}]`;
   const soulHermeticAffirmation = `나는 생명나무의 신성한 경로를 따라 영혼을 상승시키며, 빛과 그림자를 모두 통합하여 온전한 존재로 거듭난다.`;
 
@@ -146,6 +151,8 @@ export function runTarotTreeOfLifeShadowEngine(
   * 180초 섀도우 통합 리추얼: ${shadowData.ritual}
 - 에소테릭 타로 확언: "${soulHermeticAffirmation}"
 - 카발라 섀도우 교차 매트릭스: 핵심 긴장(${kabbalahShadowSynthesisMatrix.dominantTension}) · 조율 상태(${kabbalahShadowSynthesisMatrix.alignmentState}) · 통합 실천(${kabbalahShadowSynthesisMatrix.integratedAction})
+- 실천 의례: ${ritualAction}
+- 성찰 초점: ${reflectionFocus}
 - 성찰 질문: ${reflectiveQuestion}
 - ${interpretiveBoundary}`;
 
@@ -179,6 +186,8 @@ export function runTarotTreeOfLifeShadowEngine(
     },
     soulHermeticAffirmation,
     reflectiveQuestion,
+    ritualAction,
+    reflectionFocus,
     interpretiveBoundary,
     synthesisPromptGuidance,
     kabbalahShadowSynthesisMatrix,

@@ -2047,6 +2047,7 @@ test('Tarot Master Engine: 78 아르카나 수비학 소울·퍼스널리티·�
   assert.equal(res.engineVersion, TAROT_MASTER_ENGINE_VERSION);
   assert(res.calculatedAtKst.endsWith('KST'));
   assert(Boolean(res.tarotSynthesisMatrix?.integratedAction));
+  assert(res.ritualAction.length > 0 && res.reflectionFocus.length > 0);
   assert(res.interpretiveBoundary.length > 0);
   assert(res.soulCard.number >= 1 && res.soulCard.number <= 9);
   assert(res.personalityCard.number >= 1 && res.personalityCard.number <= 21);
@@ -2067,6 +2068,7 @@ test('Tarot Master Engine: 78 아르카나 수비학 소울·퍼스널리티·�
   assert(prompt.includes('카발라 생명나무 세피라 조응'));
   assert(prompt.includes('마이너 아르카나 수트 실천 지침'));
   assert(prompt.includes('교차 매트릭스') && prompt.includes('해석 경계'));
+  assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });
@@ -3127,6 +3129,7 @@ test('Tarot Tree of Life Shadow Engine: 타로 카발라 생명나무 22경로 &
   assert(res.reflectiveQuestion.includes('그림자 통합'));
   assert(res.interpretiveBoundary.includes('해석 경계'));
   assert(Boolean(res.kabbalahShadowSynthesisMatrix?.integratedAction));
+  assert(res.ritualAction.length > 0 && res.reflectionFocus.length > 0);
   assert(res.tarotEsotericTitle.length > 0);
   assert(res.ascensionPath.pathNumber >= 11 && res.ascensionPath.pathNumber <= 32);
   assert(res.shadowMirror.consciousLightCard.length > 0);
@@ -3140,6 +3143,7 @@ test('Tarot Tree of Life Shadow Engine: 타로 카발라 생명나무 22경로 &
   assert(prompt.includes('해석 경계'));
   assert(prompt.includes(res.shadowMirror.consciousLightCard));
   assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });
@@ -3344,6 +3348,7 @@ test('Tarot Elemental Court Persona Engine: maps 16 court cards and 4 elemental 
   assert.equal(rep.engineVersion, TAROT_ELEMENTAL_COURT_VERSION);
   assert(rep.calculatedAtKst.includes('+09:00 (KST)'));
   assert(Boolean(rep.courtSynthesisMatrix?.integratedAction));
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(rep.activePersonaCourt.nameKo.length > 0);
   assert(rep.subconsciousShadowCourt.nameKo.length > 0);
   assert(rep.elementalBalance.firePercentage >= 0);
@@ -3355,6 +3360,7 @@ test('Tarot Elemental Court Persona Engine: maps 16 court cards and 4 elemental 
   assert(prompt.includes('성찰 질문'));
   assert(prompt.includes('해석 경계'));
   assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });
