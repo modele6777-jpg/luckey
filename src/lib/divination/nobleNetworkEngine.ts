@@ -18,7 +18,7 @@ import {
   STEM_KOREAN
 } from '../sajuAnalysis';
 
-export const NOBLE_NETWORK_VERSION = 'LUCKEY-NOBLE-v2.2.0';
+export const NOBLE_NETWORK_VERSION = 'LUCKEY-NOBLE-v2.3.0';
 
 function formatNobleNetworkKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -27,7 +27,8 @@ function formatNobleNetworkKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  const ss = String(kst.getUTCSeconds()).padStart(2, '0');
+  return `${y}-${m}-${d}T${hh}:${mm}:${ss}+09:00 (KST)`;
 }
 
 export type NobleArchetype = 'catalyst' | 'anchor' | 'amplifier';
