@@ -611,6 +611,7 @@ const asProfile={basic:{birthdate:'2000-01-01',birthtime:'12:00',gender:'female'
 test('Auspicious stars: 천을귀인 via year stem, kongwang/chung/hyeong interference, noble timing',()=>{
   const r=calculateAuspiciousStars({profile:asProfile,targetYear:2026});
   assert.equal(r.status,'calculated');assert.equal(r.engineVersion,AUSPICIOUS_STARS_ENGINE_VERSION);
+  assert(r.calculatedAtKst.endsWith('+09:00 (KST)'));
   const eul=r.nobleMatrix.cheonEul!;
   assert.equal(eul.foundChar,'子');assert.equal(eul.foundPillars[0].pillar,'월주');
   const types=eul.interference.map(i=>i.type);
@@ -624,7 +625,7 @@ test('Auspicious stars: 천을귀인 via year stem, kongwang/chung/hyeong interf
   assert.equal(t.upcomingYears[0].year,2027);assert.equal(t.upcomingYears[0].ganZhi,'丁未');
   assert(t.upcomingYears[0].arrivedNobles.includes('천을귀인'));
   const prompt=formatAuspiciousStarsPrompt(r);
-  assert(prompt.includes(AUSPICIOUS_STARS_ENGINE_VERSION)&&prompt.includes('천을귀인')&&prompt.includes('공망')&&prompt.includes('해석 경계'));
+  assert(prompt.includes(AUSPICIOUS_STARS_ENGINE_VERSION)&&prompt.includes('천을귀인')&&prompt.includes('공망')&&prompt.includes('성찰 초점')&&prompt.includes('해석 경계'));
   assert(Boolean(r.ritualAction&&r.ritualAction.length>0&&r.reflectionFocus&&r.reflectionFocus.length>0));
   assert(r.interpretiveBoundary.length>0);
   assert(!prompt.includes('/100')&&!prompt.includes('%')&&!prompt.includes('실측 데이터'));
@@ -6034,6 +6035,7 @@ test('Korean Choe Hyeon-bae Hangeul Geulbon Engine: calculates Korean soul prese
 test('Ancient Persian Zoroastrian Amesha Spentas Engine: calculates Vohu Manah, Asha Vahishta truth, Spenta Armaiti and Garothman light', () => {
   const rep = calculateZoroastrianAmeshaSpentas(profile, '갈등 상황에서 올바른 선택을 하고 싶습니다', new Date('2026-11-15T05:00:00Z'));
   assert.equal(rep.engineVersion, ZOROASTRIAN_AMESHA_SPENTAS_VERSION);
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(rep.vohuManahGoodMindIndex >= 0 && rep.vohuManahGoodMindIndex <= 100);
   assert(rep.ashaVahishtaCosmicTruthForce >= 0 && rep.ashaVahishtaCosmicTruthForce <= 100);
   assert(rep.spentaArmaitiHolyDevotionScore >= 0 && rep.spentaArmaitiHolyDevotionScore <= 100);
@@ -6048,6 +6050,7 @@ test('Ancient Persian Zoroastrian Amesha Spentas Engine: calculates Vohu Manah, 
   const prompt = formatZoroastrianAmeshaSpentasPrompt(rep);
   assert(prompt.includes('고대 페르시아 조로아스터교 《아베스타(Avesta)》'));
   assert(prompt.includes(rep.activeSpentaStage.stageNameKo));
+  assert(prompt.includes('성찰 초점'));
   assert(!prompt.includes('%'));
   assert(!prompt.includes('/100'));
 });
@@ -7351,6 +7354,7 @@ test('Jean-Paul Sartre Existentialism Engine: calculates Existence Precedes Esse
 test('Viktor Frankl Logotherapy Engine: calculates The Last Human Freedom, Will to Meaning, and Tragic Optimism', () => {
   const rep = calculateViktorFranklLogotherapy(profile);
   assert.equal(rep.engineVersion, AUSTRIAN_VIKTOR_FRANKL_VERSION);
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(rep.lastHumanFreedomAttitudeScore >= 0 && rep.lastHumanFreedomAttitudeScore <= 100);
   assert(rep.willToMeaningDriveScore >= 0 && rep.willToMeaningDriveScore <= 100);
   assert(rep.tragicOptimismResilienceScore >= 0 && rep.tragicOptimismResilienceScore <= 100);
@@ -7361,6 +7365,7 @@ test('Viktor Frankl Logotherapy Engine: calculates The Last Human Freedom, Will 
   const prompt = formatViktorFranklLogotherapyPrompt(rep);
   assert(prompt.includes('빅터 프랭클 《죽음의 수용소에서》 시련 속 최후의 자유 & 의미치료 지표'));
   assert(prompt.includes(rep.activeFranklTheme.themeTitleKo));
+  assert(prompt.includes('성찰 초점'));
 });
 
 test('Baekbeom Kim Gu My Desire Culture Engine: calculates High Power of Culture, Hongik Ingan, and Snow Field Guidance', () => {

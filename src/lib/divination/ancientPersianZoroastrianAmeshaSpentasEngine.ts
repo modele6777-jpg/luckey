@@ -21,7 +21,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const ZOROASTRIAN_AMESHA_SPENTAS_VERSION = 'LUCKEY-ZOROASTRIAN-AMESHA-SPENTAS-v2.3.0';
+export const ZOROASTRIAN_AMESHA_SPENTAS_VERSION = 'LUCKEY-ZOROASTRIAN-AMESHA-SPENTAS-v2.4.0';
 
 export interface AmeshaSpentaStage {
   stageLevel: number;
@@ -199,7 +199,7 @@ function buildSynthesisMatrix(
 
 function getKstDateString(now: Date): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
-  return kst.toISOString().replace('T', ' ').substring(0, 19) + ' +09:00 KST';
+  return `${kst.toISOString().slice(0, 19)}+09:00 (KST)`;
 }
 
 function hashSeed(seedStr: string): number {
@@ -286,6 +286,7 @@ export function formatZoroastrianAmeshaSpentasPrompt(result: ZoroastrianAmeshaSp
 - 아메샤 스펜타 교차 매트릭스: ${result.ameshaSynthesisMatrix.synthesizedVerdict}
 - 아베스타 신성 불꽃의 계시: 《${result.avestaSacredFireEpiphany.fireSceneTitle}》
   → 빛의 불멸 지혜: "${result.avestaSacredFireEpiphany.luminousWisdom}"
+- 성찰 초점: ${result.reflectionFocus}
 - 성찰 질문: ${result.reflectiveQuestion}
 - 해석 경계: ${result.interpretiveBoundary}`;
 }
