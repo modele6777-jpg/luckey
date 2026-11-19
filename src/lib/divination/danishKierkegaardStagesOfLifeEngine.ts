@@ -12,7 +12,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const KIERKEGAARD_STAGES_OF_LIFE_VERSION = 'LUCKEY-KIERKEGAARD-STAGES-OF-LIFE-v2.2.0';
+export const KIERKEGAARD_STAGES_OF_LIFE_VERSION = 'LUCKEY-KIERKEGAARD-STAGES-OF-LIFE-v2.3.0';
 
 function describeKierkegaardStage(score: number): string {
   if (score >= 88) return '단독자의 용기 있는 도약 단계';
@@ -308,7 +308,7 @@ export function calculateKierkegaardStagesOfLife(
 
   return {
     engineVersion: KIERKEGAARD_STAGES_OF_LIFE_VERSION,
-    calculatedAtKst: new Date(now.getTime() + 9 * 60 * 60 * 1000).toISOString().replace('Z', '+09:00'),
+    calculatedAtKst: `${new Date(now.getTime() + 9 * 60 * 60 * 1000).toISOString().slice(0, 19)}+09:00 (KST)`,
     existentialLeapCourageScore,
     denEnkelteAuthenticityScore,
     angstPossibilityMasteryScore,
@@ -337,6 +337,7 @@ export function formatKierkegaardStagesOfLifePrompt(res: KierkegaardStagesOfLife
     `- 불안의 승화(Angst): ${describeKierkegaardStage(res.angstPossibilityMasteryScore)} | 자기 선택 성실도: ${describeKierkegaardStage(res.ethicalSelfChoiceCommitmentScore)} | 영적 평정: ${describeKierkegaardStage(res.spiritSynthesisWholenessScore)}`,
     `- 질문 맥락 실존 단계: [${res.situationalStageAudit.stageNameKo}] ${res.situationalStageAudit.focusAxisKo}`,
     `- 원전 처방: ${res.situationalStageAudit.classicalCitation} → ${res.situationalStageAudit.leapDirective}`,
+    `- 성찰 초점: ${res.reflectionFocus}`,
     `- 성찰 질문: ${res.situationalStageAudit.reflectiveQuestion}`,
     `- 일상 실천 의례: ${res.dailyPracticeRitual}`,
     `- KST 시공간 리듬 (${res.calculatedAtKst}): ${res.temporalSolitudeRhythm.timeWindowKo} (${res.temporalSolitudeRhythm.seasonKo}, ${describeKierkegaardStage(res.temporalSolitudeRhythm.leapReadinessIndex)}) — ${res.temporalSolitudeRhythm.dailySolitudePractice}`,

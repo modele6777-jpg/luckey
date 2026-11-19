@@ -3667,6 +3667,7 @@ test('Nordic Elder Futhark Runes Engine: calculates birth rune, norns trio and b
 test('Delphic Maxims Oracle Engine: calculates soul maxim, situational oracle and clarity', () => {
   const rep = calculateDelphicMaximsOracle({ profile, question: '결정과 약속의 기준' });
   assert.equal(rep.engineVersion, DELPHIC_MAXIMS_VERSION);
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(rep.coreSoulMaxim.maximIndex >= 1);
   assert(rep.situationalOracleMaxim.maximIndex >= 1);
   assert(rep.apollonianClarityScore >= 0 && rep.apollonianClarityScore <= 100);
@@ -3678,6 +3679,7 @@ test('Delphic Maxims Oracle Engine: calculates soul maxim, situational oracle an
   const prompt = formatDelphicMaximsOraclePrompt(rep);
   assert(prompt.includes('고대 그리스 델포이 아폴론 신탁'));
   assert(prompt.includes(rep.coreSoulMaxim.greekText));
+  assert(prompt.includes('성찰 초점'));
   assert(!prompt.includes('/ 100점'));
 });
 
@@ -5722,6 +5724,7 @@ test('Chinese Mayi Mianxiang Twelve Palaces Engine: calculates 12 palaces, Qi au
   assert(rep.primaryPalace.nameKo.length > 0);
   assert(rep.secondaryPalace.nameKo.length > 0);
   assertKstTimestamp(rep.calculatedAtKst);
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(rep.temporalMayiRhythm.yintangWatchWindow.length > 0);
   assert(rep.mayiSynthesisMatrix.coreInsight.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
@@ -5730,6 +5733,7 @@ test('Chinese Mayi Mianxiang Twelve Palaces Engine: calculates 12 palaces, Qi au
   assert(prompt.includes('동양 비전 마의도사 《마의상법》 12궁 관상 & 심상합일 기색'));
   assert(prompt.includes(rep.primaryPalace.nameKo));
   assert(prompt.includes('KST'));
+  assert(prompt.includes('성찰 초점'));
   assert(!prompt.includes('/100') && !prompt.includes('%') && !prompt.includes('점수'));
 });
 
@@ -6803,6 +6807,7 @@ test('Chusa Kim Jeong-hui Sehando Engine: calculates Songbaek hudjo integrity, E
 test('Søren Kierkegaard Stages of Life Engine: calculates Den Enkelte authenticity, Leap of faith, and Anxiety possibility mastery', () => {
   const rep = calculateKierkegaardStagesOfLife(profile, '이직 선택과 불안 앞에서 어떻게 결단해야 할까요?', new Date('2026-11-14T06:00:00Z'));
   assert.equal(rep.engineVersion, KIERKEGAARD_STAGES_OF_LIFE_VERSION);
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(rep.existentialLeapCourageScore >= 0 && rep.existentialLeapCourageScore <= 100);
   assert(rep.denEnkelteAuthenticityScore >= 0 && rep.denEnkelteAuthenticityScore <= 100);
   assert(rep.angstPossibilityMasteryScore >= 0 && rep.angstPossibilityMasteryScore <= 100);
@@ -6817,6 +6822,7 @@ test('Søren Kierkegaard Stages of Life Engine: calculates Den Enkelte authentic
   assert(prompt.includes('쇠렌 키르케고르 단독자(Den Enkelte) & 실존 3단계 지표'));
   assert(prompt.includes(rep.activeKierkegaardTheme.themeTitleKo));
   assert(prompt.includes('질문 맥락 실존 단계'));
+  assert(prompt.includes('성찰 초점'));
 });
 
 test('Friedrich Nietzsche Zarathustra Amor Fati Engine: calculates Amor Fati radical affirmation, Three metamorphoses, and Übermensch overcoming', () => {
