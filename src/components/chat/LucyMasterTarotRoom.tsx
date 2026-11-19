@@ -58,16 +58,17 @@ function DreamCatcher() {
   );
 }
 
-export function LucyMasterTarotRoom() {
+/** `table`: the unfolded left tarot table continues the same velvet and candles, without a second dream catcher. */
+export function LucyMasterTarotRoom({ variant = 'chat' }: { variant?: 'chat' | 'table' } = {}) {
   return (
-    <div className="lucy-master-room" aria-hidden="true">
+    <div className="lucy-master-room" data-lmr-variant={variant} aria-hidden="true">
       <div className="lmr-velvet" />
       <div className="lmr-cloth">
         <div className="lmr-cloth-sigil" />
         <div className="lmr-cloth-trim" />
       </div>
       <div className="lmr-cloth-fringe" />
-      <DreamCatcher />
+      {variant === 'chat' && <DreamCatcher />}
       <div className="lmr-candle-glow" />
       {MOTES.map((m, i) => (
         <span key={i} className="lmr-mote" style={{ left: m.left, animationDelay: m.delay, animationDuration: m.duration }} />

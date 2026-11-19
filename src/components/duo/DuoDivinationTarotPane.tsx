@@ -14,13 +14,15 @@ import {
 } from '@/lib/lucyMasterMode';
 import { requestLucyAction } from '@/lib/duoLucyActionRouting';
 import { triggerHaptic } from '@/lib/omniWarp/omniWarpHaptics';
+import { LucyMasterTarotRoom } from '@/components/chat/LucyMasterTarotRoom';
 
 /**
  * 🔮 펼친 화면 점술모드의 왼쪽 타로 테이블.
  * 루시가 카드를 뽑자고 하면 이곳에 78장 스프레드가 열리고, 손님이 직접 섞고(셔플) 골라서 루시에게 건넨다.
  * 고른 카드는 그대로 테이블에 펼쳐져 한 장씩 뒤집어 볼 수 있다.
  */
-export function DuoDivinationTarotPane({ isLight = false }: { isLight?: boolean }) {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export function DuoDivinationTarotPane(_props: { isLight?: boolean }) {
   const [cards, setCards] = useState<DetectedTarotCard[]>([]);
   const [revealed, setRevealed] = useState<string[]>([]);
   const [pick, setPick] = useState<TarotPickRequest | null>(null);
@@ -50,15 +52,20 @@ export function DuoDivinationTarotPane({ isLight = false }: { isLight?: boolean 
   }, []);
 
   return (
-    <div className="w-full h-full overflow-hidden flex flex-col" data-duo-divination-tarot="true">
+    <div className="relative w-full h-full overflow-hidden flex flex-col" data-duo-divination-tarot="true" data-theme-dark-island="true" style={{ colorScheme: 'dark' }}>
+      {/* Same purple velvet and candles as the Lucy Master chat, so both panes read as one room. */}
+      <LucyMasterTarotRoom variant="table" />
+      <div className="relative z-[1] flex-1 min-h-0 flex flex-col">
       <DuoTarotBookSpread
+        masterRoom
         cards={cards}
         verifiedDraw
         revealedCardIds={revealed}
         onRevealCard={(cardId) => setRevealed(prev => (prev.includes(cardId) ? prev : [...prev, cardId]))}
         onQuickDraw={(prompt) => requestLucyAction({ prompt })}
-        isLight={isLight}
+        isLight={false}
       />
+      </div>
       {pick && (
         <TarotSpread
           maxCards={pick.count}
