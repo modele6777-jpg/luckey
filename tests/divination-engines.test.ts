@@ -3973,6 +3973,7 @@ test('Tieban Shenshu & Tai Xuan Numerology Engine: calculates inherent clause, a
   assert.equal(rep.engineVersion, TIEBAN_SHENSHU_VERSION);
   assert(rep.calculatedAtKst.endsWith('KST'));
   assert(Boolean(rep.tiebanSynthesisMatrix?.integratedAction));
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
   assert(rep.inherentPrimeNumber > 0);
   assert(rep.kuaName.length > 0);
@@ -3993,6 +3994,7 @@ test('Tieban Shenshu & Tai Xuan Numerology Engine: calculates inherent clause, a
   assert(prompt.includes('12율려'));
   assert(prompt.includes('결단 윈도우'));
   assert(prompt.includes('교차 매트릭스') && prompt.includes('해석 경계'));
+  assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });
@@ -4689,6 +4691,7 @@ test('Tibetan Phowa Rainbow Body Engine: calculates Rigpa clarity and 5 Buddha w
   assert.equal(rep.engineVersion, TIBETAN_PHOWA_RAINBOW_BODY_ENGINE_VERSION);
   assert(rep.calculatedAtKst.includes('+09:00 (KST)'));
   assert(Boolean(rep.phowaSynthesisMatrix?.integratedAction));
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(rep.rigpaClarityScore >= 0 && rep.rigpaClarityScore <= 100);
   assert(rep.phowaReadinessIndex >= 0 && rep.phowaReadinessIndex <= 100);
   assert(rep.rainbowBodyAlignmentScore >= 0 && rep.rainbowBodyAlignmentScore <= 100);
@@ -4701,6 +4704,7 @@ test('Tibetan Phowa Rainbow Body Engine: calculates Rigpa clarity and 5 Buddha w
   assert(prompt.includes('성찰 질문'));
   assert(prompt.includes('해석 경계'));
   assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });
@@ -8923,6 +8927,7 @@ test('Tojeong engine: enhanced trigram analysis, five-element relation, and seas
   assert.equal(r.status, 'calculated');
   assert(r.calculatedAtKst.endsWith('KST'));
   assert(Boolean(r.tojeongSynthesisMatrix?.integratedAction));
+  assert((r.ritualAction ?? '').length > 0 && (r.reflectionFocus ?? '').length > 0);
   assert((r.interpretiveBoundary ?? '').length > 0);
   assert.ok(r.trigramAnalysis);
   assert.equal(r.trigramAnalysis.upperElement, '목(木)');
@@ -8939,6 +8944,7 @@ test('Tojeong engine: enhanced trigram analysis, five-element relation, and seas
   assert(prompt.includes('오행 생극제화 및 사계절 순환 심층 분석'));
   assert(prompt.includes('비화(比和)'));
   assert(prompt.includes('교차 매트릭스') && prompt.includes('해석 경계'));
+  assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });

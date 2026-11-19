@@ -1,10 +1,10 @@
 {
-  "version": "1.7.926",
-  "builtAt": "2026-11-19T10:33:00+09:00",
-  "summary": "태국 호라삿·티베트 바르도·본교 9승 3대 엔진 실천 의례 및 성찰 초점 표준 연동(v1.7.926)",
+  "version": "1.7.927",
+  "builtAt": "2026-11-19T10:41:00+09:00",
+  "summary": "티베트 포와 무지개체·철판신수·토정비결 3대 엔진 실천 의례 및 성찰 초점 표준 연동(v1.7.927)",
   "items": [
-    "태국 정통 호라삿 8요일·마하탁사 대운·4원소 엔진(v2.3.0): ritualAction·reflectionFocus 표준 필드 연동",
-    "티베트 불교 바르도 6대 환생 상태·의식 항해 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동",
-    "티베트 정통 본교 카르마 9승·5대 영혼 수호 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동"
+    "티베트 밀교 족첸 릭파 본각 & 포와 무지개체(Jalü) 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동",
+    "고대 중국 철판신수 천기운명 조식 & 태현수비학 엔진(v2.3.0): ritualAction·reflectionFocus 표준 필드 연동",
+    "조선 정통 이지함 토정비결 144괘문 수리 엔진(v2.3.0): ritualAction·reflectionFocus 표준 필드 연동"
   ]
 }

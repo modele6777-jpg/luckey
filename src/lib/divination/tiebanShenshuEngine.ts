@@ -23,7 +23,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const TIEBAN_SHENSHU_VERSION = 'LUCKEY-TIEBAN-SHENSHU-v2.2.0';
+export const TIEBAN_SHENSHU_VERSION = 'LUCKEY-TIEBAN-SHENSHU-v2.3.0';
 
 function formatTiebanKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -83,6 +83,8 @@ export interface TiebanReport {
     alignmentState: string;
     integratedAction: string;
   };
+  ritualAction: string;
+  reflectionFocus: string;
   interpretiveBoundary: string;
 }
 
@@ -359,6 +361,8 @@ export function calculateTiebanShenshu(
     integratedAction: `${wisdomClause.actionableGuidance}${q ? ` [질문 맥락: ${q}]` : ''}`,
   };
   const interpretiveBoundary = '본 철판신수(鐵板神數) 조식 리포트는 태현수·괘기·원회운세 수리에 기반한 성찰 참고 지표이며, 확정적 숙명 예언이나 법률·투자 자문이 아닙니다.';
+  const ritualAction = `${wisdomClause.actionableGuidance} 오늘 하루 "${wisdomClause.classicalPoem}" 구절을 마음속 나침반으로 삼으십시오.`;
+  const reflectionFocus = `선천 태현수 ${inherentPrimeNumber}·${kuaName} 괘기와 제${timingClause.clauseNumber}조(${timingClause.title}) 결단 시기의 균형`;
 
   return {
     engineVersion: TIEBAN_SHENSHU_VERSION,
@@ -376,6 +380,8 @@ export function calculateTiebanShenshu(
     tacticalWindows,
     reflectiveQuestion,
     tiebanSynthesisMatrix,
+    ritualAction,
+    reflectionFocus,
     interpretiveBoundary,
   };
 }
@@ -414,5 +420,7 @@ export function formatTiebanShenshuPrompt(report: TiebanReport): string {
    * 잠언 원전: "${report.wisdomClause.classicalPoem}"
    * 수양 지혜: ${report.wisdomClause.actionableGuidance}${tacticalBlock}${matrixBlock}
 - 질문 맞춤 성찰 질문: ${report.reflectiveQuestion}
+- 실천 의례: ${report.ritualAction}
+- 성찰 초점: ${report.reflectionFocus}
 - 해석 경계: ${report.interpretiveBoundary}`;
 }
