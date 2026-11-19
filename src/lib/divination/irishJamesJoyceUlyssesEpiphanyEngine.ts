@@ -6,11 +6,16 @@
  * @version LUCKEY-JOYCE-ULYSSES-EPIPHANY-v2.2.0
  */
 
-export const IRISH_JAMES_JOYCE_ULYSSES_EPIPHANY_VERSION = 'LUCKEY-JOYCE-ULYSSES-EPIPHANY-v2.3.0';
+export const IRISH_JAMES_JOYCE_ULYSSES_EPIPHANY_VERSION = 'LUCKEY-JOYCE-ULYSSES-EPIPHANY-v2.4.0';
 
 function toKstIso(now: Date): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
-  return kst.toISOString().replace('Z', '+09:00');
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
 }
 
 export interface JoyceTheme {

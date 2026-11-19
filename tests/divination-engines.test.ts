@@ -6530,7 +6530,7 @@ test('Upanishadic Tat Tvam Asi Engine: calculates Brahman-Atman unity, Maya pier
   assert(rep.satChitAnandaPureConsciousnessScore >= 0 && rep.satChitAnandaPureConsciousnessScore <= 100);
   assert(rep.prajnaSpiritualWisdomScore >= 0 && rep.prajnaSpiritualWisdomScore <= 100);
   assert(rep.activeMahavakya.vakyaSanskrit.length > 0);
-  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(Boolean(rep.upanishadicSynthesisMatrix?.integratedAction));
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatUpanishadicTatTvamAsiPrompt(rep);
@@ -6538,6 +6538,7 @@ test('Upanishadic Tat Tvam Asi Engine: calculates Brahman-Atman unity, Maya pier
   assert(prompt.includes(rep.activeMahavakya.vakyaNameKo));
   assert(prompt.includes('교차 매트릭스'));
   assert(prompt.includes(rep.ritualAction));
+  assert(prompt.includes(rep.reflectionFocus));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });
@@ -6640,11 +6641,13 @@ test('Rumi Masnavi Divine Love Engine: calculates Ishq divine love, Qalb purific
   assert(rep.samaWhirlingTranquilityScore >= 0 && rep.samaWhirlingTranquilityScore <= 100);
   assert(rep.woundLightWisdomScore >= 0 && rep.woundLightWisdomScore <= 100);
   assert(rep.activeSpiritualStation.stationNameArabic.length > 0);
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatRumiMasnaviDivineLovePrompt(rep);
   assert(prompt.includes('루미 마스나비 & 수피즘 신성한 사랑 지표'));
   assert(prompt.includes(rep.activeSpiritualStation.stationNameKo));
   assert(prompt.includes(rep.ritualAction));
+  assert(prompt.includes(rep.reflectionFocus));
 });
 
 test('Uisang Hwaeom Ilseung Beopgyedo Engine: calculates Beopseong Wonnyung, Sangjeuk Sangip, Micro-Macro Cosmos, and First Mind Awakening', () => {
@@ -9035,6 +9038,7 @@ test('James Joyce engine selects a qualitative literary perspective from the que
   assert.equal(rep.engineVersion, IRISH_JAMES_JOYCE_ULYSSES_EPIPHANY_VERSION);
   assert.equal(rep.activeJoyceTheme.themeKey, 'forgeInSoulSmithy');
   assert.equal(Object.hasOwn(rep, 'epiphanyEverydayRevelationScore'), false);
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assertKstTimestamp(rep.calculatedAtKst);
   assert(Boolean(rep.joyceSynthesisMatrix?.integratedAction));
   assert(rep.interpretiveBoundary.length > 0);
@@ -9043,6 +9047,7 @@ test('James Joyce engine selects a qualitative literary perspective from the que
   assert.match(prompt, /문학적 참고/);
   assert(prompt.includes('교차 매트릭스'));
   assert(prompt.includes(rep.ritualAction));
+  assert(prompt.includes(rep.reflectionFocus));
   assert.doesNotMatch(prompt, /\/100|원전 명대사|길 잃은 고양이|A man of genius/);
 
   const epiphany = calculateIrishJamesJoyceUlyssesEpiphany('일상의 에피파니와 관찰');
