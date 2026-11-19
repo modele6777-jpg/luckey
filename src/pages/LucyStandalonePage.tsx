@@ -1593,9 +1593,10 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
   useEffect(() => {
     if (!isMasterMode || !consumeTarotHouseGreetingPending()) return;
     clearLucyProMessages();
-    const hasRegularHistory = (personaMessages?.lucy || []).some(m => m.role === 'user');
-    const greeting = createTarotHouseGreeting(userDisplayName, isDuoUnfoldedState().unfolded ? 'unfolded' : 'folded', hasRegularHistory);
-    setLucyMasterLink(hasRegularHistory ? 'undecided' : 'fresh');
+    // Always offer "이어서 / 새로" on entry: regular Lucy history may still be loading,
+    // or today's thread may be empty after the KST midnight rollover.
+    const greeting = createTarotHouseGreeting(userDisplayName, isDuoUnfoldedState().unfolded ? 'unfolded' : 'folded', true);
+    setLucyMasterLink('undecided');
     setLucyProMessages([greeting]);
   }, [isMasterMode, setLucyProMessages, clearLucyProMessages, userDisplayName]);
 
