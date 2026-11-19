@@ -1,6 +1,6 @@
 import { UserProfile } from '../sharedState';
 
-export const EGYPTIAN_HERMETIC_CARTOUCHE_ENGINE_VERSION = '2.1.0';
+export const EGYPTIAN_HERMETIC_CARTOUCHE_ENGINE_VERSION = '2.2.0';
 
 export type HermeticQuestionFocus = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -72,7 +72,7 @@ function getTemporalHermeticRhythm(kst: Date) {
           : '겨울 · 페레트(재생기) — 내면의 빛을 응축하며 다음 도약을 준비하는 시기';
 
   return {
-    kstTimeLabel: `${y}-${m}-${d} ${hh}:${mm} +09:00 KST`,
+    kstTimeLabel: `${y}-${m}-${d}T${hh}:${mm}:00+09:00 (KST)`,
     nileWatchWindow,
     seasonalSolarTone,
     temporalGuidance: `${nileWatchWindow} · ${seasonalSolarTone}의 리듬에 맞추어 카르투슈의 뜻을 실천하십시오.`,
@@ -304,6 +304,7 @@ export function calculateEgyptianHermeticCartouche(
    - 보조 교차 카르투슈: **${secondaryCartouche.name}** — "${secondaryCartouche.decree}" (${secondaryCartouche.domain})
    - 실천 조언: ${guidance.practiceGuidance}
    - 일상 의례: ${guidance.ritualAction}
+   - 성찰 초점: ${guidance.reflectionFocus}
    - 성찰 질문: ${hermeticSynthesisMatrix.reflectiveQuestion}
    - 조언 요약: ${guidance.counselNote}
    - KST 시공간 리듬: ${temporalHermeticRhythm.nileWatchWindow} / ${temporalHermeticRhythm.seasonalSolarTone}

@@ -4126,6 +4126,7 @@ test('Vitality Curve Engine: calculates 12-stage biorhythm curve and synthesis m
 test('Egyptian Hermetic Cartouche Engine: calculates divine cartouche and qualitative soul triad', () => {
   const rep = calculateEgyptianHermeticCartouche(profile, new Date('2026-11-14T01:00:00Z'), '이직 결정이 고민됩니다');
   assert.equal(rep.engineVersion, EGYPTIAN_HERMETIC_CARTOUCHE_ENGINE_VERSION);
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert.equal(rep.questionFocus, 'decision');
   assert(rep.primaryCartoucheName.length > 0);
   assert(rep.triadHarmonyState.length > 0);
@@ -4140,6 +4141,7 @@ test('Egyptian Hermetic Cartouche Engine: calculates divine cartouche and qualit
   assert(rep.hermeticSynthesisMatrix.coreInsight.length > 0);
   const prompt = formatEgyptianHermeticCartouchePrompt(rep);
   assert(prompt.includes('고대 이집트 헤르메스 카르투슈 & 영혼 3위일체 상징 성찰 안내'));
+  assert(prompt.includes('성찰 초점'));
   assert(prompt.includes(rep.primaryCartoucheName));
   assert(prompt.includes('KST'));
   assert(!prompt.includes('/100') && !prompt.includes('%'));
@@ -4493,6 +4495,7 @@ test('Nordic Yggdrasil Nine Realms Engine: calculates dominant realm and Bifrost
 test('Egyptian Maat Feather Heart Engine: calculates heart lightness and Maat verdict', () => {
   const rep = calculateEgyptianMaatFeatherHeart({ profile, question: '이직 결정을 앞두고 마음이 무거워요' });
   assert.equal(rep.engineVersion, EGYPTIAN_MAAT_FEATHER_ENGINE_VERSION);
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert.equal(rep.questionTheme, 'decision');
   assert(rep.heartLightnessScore >= 0 && rep.heartLightnessScore <= 100);
   assert(rep.balanceState.length > 0);
@@ -4504,6 +4507,7 @@ test('Egyptian Maat Feather Heart Engine: calculates heart lightness and Maat ve
   assert(prompt.includes('고대 이집트 마아트(Ma\'at) 진리의 깃털 & 심장 무게 측정 상징 관점'));
   assert(prompt.includes(rep.activeNegativeConfessionVirtue));
   assert(prompt.includes(rep.practiceGuidance));
+  assert(prompt.includes('성찰 초점'));
   assert(!prompt.includes('/100') && !prompt.includes('점수'));
 });
 
@@ -4807,6 +4811,7 @@ test('Greek Moirai Ananke Fate Engine: calculates Clotho, Lachesis, Atropos powe
 test('Egyptian Sphinx Dream Oracle Engine: calculates tetramorph virtues and sand cleansing index', () => {
   const rep = calculateEgyptianSphinxDreamOracle({ profile, question: '미래의 왕권과 비전' });
   assert.equal(rep.engineVersion, EGYPTIAN_SPHINX_DREAM_ORACLE_ENGINE_VERSION);
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(rep.tetramorph.humanHead.score >= 0 && rep.tetramorph.humanHead.score <= 100);
   assert(rep.tetramorph.lionHeart.score >= 0 && rep.tetramorph.lionHeart.score <= 100);
   assert(rep.tetramorph.bullStrength.score >= 0 && rep.tetramorph.bullStrength.score <= 100);
@@ -4818,6 +4823,7 @@ test('Egyptian Sphinx Dream Oracle Engine: calculates tetramorph virtues and san
   const prompt = formatEgyptianSphinxDreamOraclePrompt(rep);
   assert(prompt.includes('고대 이집트 투트모세 4세 스핑크스 영혼 꿈신탁'));
   assert(prompt.includes(rep.dominantVirtue));
+  assert(prompt.includes('성찰 초점'));
 });
 
 test('Chaldean Mul Apin Astrology Engine: calculates celestial paths, ruling planet and constellation', () => {
