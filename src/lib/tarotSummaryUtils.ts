@@ -204,7 +204,7 @@ function isThinEnergyFragment(sentence: string): boolean {
   const core = String(sentence || '').replace(/\s+/g, ' ').replace(/[.!?。…\s]+$/g, '').trim();
   if (core.length >= ENERGY_MIN_LENGTH) return false;
   // 짧아도 질문자의 심리·상황을 직접 말하는 문장은 남긴다.
-  return !/당신|질문자|[가-힣]{2,5}님|마음|심리|기분|감정|지금|현재|오늘|에너지|상태|관계|상황|고민/.test(core);
+  return !/당신|질문자|[가-힣]{2,5}님|마음|심리|기분|감정|지금|현재|오늘|에너지|상태|관계|상황|고민|상대|연락|투자|자금|생활비|직장|업무|이직|계약|비용|수입|지출/.test(core);
 }
 
 function isPictureOnly(sentence: string): boolean {
@@ -954,4 +954,3 @@ export function formatKoreanToTarget(name: string): string {
   if (!name) return '';
   return hasKoreanJongseong(name) ? `${name}이에게` : `${name}에게`;
 }
-

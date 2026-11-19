@@ -1,4 +1,4 @@
-import { useCallback, useLayoutEffect, useRef, useSyncExternalStore, type Dispatch, type SetStateAction, type UIEvent } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore, type Dispatch, type SetStateAction, type UIEvent } from 'react';
 import { safeSessionStorage } from '@/utils/safeStorage';
 
 type Value = string | number | boolean;
@@ -23,7 +23,12 @@ function write(key: string, value: Value) {
   } catch {
     // iOS can reject sessionStorage. The open flag still has to reach the dialog.
   }
-  listeners.get(key)?.forEach(notify => notify());
+  const group = listeners.get(key);
+  if (!group) return;
+  // Iterate a snapshot because React may unsubscribe/resubscribe during notification.
+  for (const notify of [...group]) {
+    if (group.has(notify)) notify();
+  }
 }
 
 export function defaultLibrarySessionKey(library: string): string {
@@ -47,12 +52,16 @@ export function useLibrarySessionState<T extends Value>(key: string, initial: T)
 }
 
 export function useLibrarySessionScroll(key: string, open: boolean, ready = true) {
-  const ref = useRef<HTMLDivElement>(null);
+  const [element, setElement] = useState<HTMLDivElement | null>(null);
+  const ref = useCallback((node: HTMLDivElement | null) => {
+    setElement(current => current === node ? current : node);
+  }, []);
   const restoring = useRef(false);
+  const lastPosition = useRef(0);
   useLayoutEffect(() => {
-    const element = ref.current;
     if (!open || !element || !ready) return;
     const top = read(key, 0);
+    lastPosition.current = top;
     restoring.current = true;
     element.scrollTop = top;
     // Reapply after pane geometry/fonts settle; do not reset on ordinary resizing.
@@ -62,13 +71,45 @@ export function useLibrarySessionScroll(key: string, open: boolean, ready = true
       second = requestAnimationFrame(() => { restoring.current = false; });
     });
     return () => { cancelAnimationFrame(first); cancelAnimationFrame(second); restoring.current = false; };
-  }, [key, open, ready]);
+  }, [element, key, open, ready]);
+  useEffect(() => {
+    if (!open || !element) return;
+    let first = 0;
+    let second = 0;
+    const restoreAfterResize = () => {
+      const top = lastPosition.current;
+      restoring.current = true;
+      cancelAnimationFrame(first);
+      cancelAnimationFrame(second);
+      first = requestAnimationFrame(() => {
+        if (!element.isConnected) {
+          restoring.current = false;
+          return;
+        }
+        element.scrollTop = top;
+        second = requestAnimationFrame(() => { restoring.current = false; });
+      });
+    };
+    window.addEventListener('resize', restoreAfterResize);
+    window.visualViewport?.addEventListener('resize', restoreAfterResize);
+    return () => {
+      window.removeEventListener('resize', restoreAfterResize);
+      window.visualViewport?.removeEventListener('resize', restoreAfterResize);
+      cancelAnimationFrame(first);
+      cancelAnimationFrame(second);
+      restoring.current = false;
+    };
+  }, [element, open]);
   const onScroll = useCallback((event: UIEvent<HTMLDivElement>) => {
-    if (ready && !restoring.current) write(key, event.currentTarget.scrollTop);
+    if (ready && !restoring.current) {
+      lastPosition.current = event.currentTarget.scrollTop;
+      write(key, lastPosition.current);
+    }
   }, [key, ready]);
   const reset = useCallback(() => {
+    lastPosition.current = 0;
     write(key, 0);
-    if (ref.current) ref.current.scrollTop = 0;
-  }, [key]);
+    if (element) element.scrollTop = 0;
+  }, [element, key]);
   return { ref, onScroll, reset };
 }

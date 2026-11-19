@@ -52,6 +52,8 @@ export function DialogTriggerButton({
       onPointerDown?.(event);
       if (event.button !== 0 || !event.isPrimary || event.defaultPrevented) return;
       rememberPress(event.pointerId, event.clientX, event.clientY);
+      // Keep the tap bound to its original control if keyboard dismissal shifts layout before pointerup.
+      try { event.currentTarget.setPointerCapture(event.pointerId); } catch {}
     }}
     onPointerMove={(event: PointerEvent<HTMLButtonElement>) => {
       onPointerMove?.(event);
