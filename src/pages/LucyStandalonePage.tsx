@@ -32,7 +32,7 @@ import { LucyMasterBgmToggle } from '@/components/chat/LucyMasterBgmToggle';
 import { isLucyMasterBgmPreferred, startLucyMasterBgm, stopLucyMasterBgm } from '@/lib/lucyMasterBgm';
 import remarkGfm from 'remark-gfm';
 import { safeSessionStorage, safeLocalStorage } from '@/utils/safeStorage';
-import { isLucyMasterModeOn, setLucyMasterMode, LUCY_MASTER_MODE_EVENT, publishLucyTarotDraw, isAcceptingTarotDrawOffer, buildTarotHouseGuide, createTarotHouseGreeting, consumeTarotHouseGreetingPending, parseAnswerChoices, isAskingForDeepEngines, createTarotOfferOnUnfold, setLucyMasterLink, getLucyMasterLink, resolveLucyMasterLinkChoice, buildLinkedLucyContext, isTarotHouseGreetingPending, findConcernAnchor } from '@/lib/lucyMasterMode';
+import { isLucyMasterModeOn, setLucyMasterMode, LUCY_MASTER_MODE_EVENT, publishLucyTarotDraw, isAcceptingTarotDrawOffer, buildTarotHouseGuide, createTarotHouseGreeting, consumeTarotHouseGreetingPending, parseAnswerChoices, isAskingForDeepEngines, createTarotOfferOnUnfold, setLucyMasterLink, getLucyMasterLink, resolveLucyMasterLinkChoice, buildLinkedLucyContext, isTarotHouseGreetingPending, findConcernAnchor, createTarotHouseConcernQuestion } from '@/lib/lucyMasterMode';
 import { cleanAssistantMessageDisplay, cleanUserMessageDisplay } from '@/utils/cleanMessage';
 import { detectLucyChannelsFromText, formatChannelsModeTitle, getSeptagramBadgeStyle, shouldShowAutoDetectionBadge } from '@/lib/lucyAutoModeDetector';
 import { selectOptimalDivinationTools, THEME_PRIMARY_DIVINATION_TOOLS, type SelectedDivinationToolsResult } from '@/lib/fifteenDivinationTools';
@@ -3129,6 +3129,23 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
     if (!rawMsg.trim() && !attachedImage) return;
 
     const userCleanText = rawMsg.trim();
+
+    // 🔮 루시 마스터 인사의 "이어서/새로" 선택에는 바로 답하고, 이어서 오늘의 고민·질문을 물어본다
+    if (isMasterMode && !attachedImage && getLucyMasterLink() === 'undecided') {
+      const link = resolveLucyMasterLinkChoice(userCleanText);
+      if (link !== 'undecided') {
+        setInput('');
+        const now = Date.now();
+        setLucyProMessages(prev => [
+          ...prev,
+          { id: `master-user-${now}`, role: 'user', persona: 'lucy', timestamp: now, mode: 'master', content: userCleanText },
+          createTarotHouseConcernQuestion(link === 'linked'),
+        ]);
+        return;
+      }
+      // 선택 없이 바로 고민을 꺼냈다면 새로 시작한 것으로 보고 그대로 상담을 이어간다
+      setLucyMasterLink('fresh');
+    }
 
     // 직전 완성된 루시 답변 이후 연속으로 쌓인 사용자 메시지가 있다면 함께 합쳐서 채널·운명학 도구를 판별
     const priorUnansweredTexts: string[] = [];

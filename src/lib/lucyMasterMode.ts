@@ -14,6 +14,8 @@ export const LUCY_MASTER_MODE_EVENT = 'prism:lucy_master_mode';
 export const LUCY_TAROT_DRAWN_EVENT = 'prism:lucy_tarot_drawn';
 const GREETING_PENDING_KEY = 'lucy_master_greet_pending';
 const LINK_KEY = 'lucy_master_link';
+const CONCERN_QUESTION = '오늘은 어떤 고민이나 궁금한 게 있어? 주제를 골라도 되고, 그냥 편하게 적어줘도 돼.';
+const CONCERN_CHOICES = '[답변선택: 연애·관계 | 일·진로 | 돈·재물 | 마음이 복잡해]';
 
 export function isLucyMasterModeOn(): boolean {
   try {
@@ -80,11 +82,11 @@ export function consumeTarotHouseGreetingPending(): boolean {
 export function createTarotHouseGreeting(userName: string | undefined, layout: 'folded' | 'unfolded', askToLink = false): UnifiedMessage {
   const name = userName ? `${userName}, ` : '';
   const content = layout === 'unfolded'
-    ? `어서 와, ${name}루시의 타로 하우스에 온 걸 환영해 🕯️🔮\n촛불 켜두고 카드도 테이블에 올려뒀어. 차 한 잔 마신다 생각하고 요즘 마음에 걸리는 이야기부터 편하게 들려줘. 이야기 듣다가 때가 되면 같이 카드 뽑아보자 — 뽑은 카드는 왼쪽 테이블에 바로 펼쳐줄게.`
-    : `어서 와, ${name}루시의 타로 하우스에 온 걸 환영해 🕯️🔮\n오늘은 네 사주를 바탕에 깔고 천천히 이야기 나눠보자. 요즘 마음에 걸리는 게 뭐야? 듣다가 필요하면 카드도 한 장 뽑아볼게.`;
+    ? `어서 와, ${name}루시의 타로 하우스에 온 걸 환영해 🕯️🔮\n촛불 켜두고 카드도 테이블에 올려뒀어. 차 한 잔 마신다 생각하고 편하게 얘기해줘. 이야기 듣다가 때가 되면 같이 카드 뽑아보자 — 뽑은 카드는 왼쪽 테이블에 바로 펼쳐줄게.`
+    : `어서 와, ${name}루시의 타로 하우스에 온 걸 환영해 🕯️🔮\n오늘은 네 사주를 바탕에 깔고 천천히 이야기 나눠보자. 듣다가 필요하면 카드도 한 장 뽑아볼게.`;
   const choices = askToLink
     ? '\n\n아, 그리고 하나만 먼저 물어볼게. 일반 루시랑 나눴던 이야기를 여기로 이어서 가져올까, 아니면 오늘은 새로 시작할까?\n[답변선택: 루시랑 하던 얘기 이어서 | 새로 시작할래]'
-    : '\n[답변선택: 연애·관계 | 일·진로 | 돈·재물 | 그냥 마음이 복잡해]';
+    : `\n\n${CONCERN_QUESTION}\n${CONCERN_CHOICES}`;
   return {
     id: `tarot-house-${Date.now()}`,
     role: 'model',
@@ -116,6 +118,7 @@ export function buildTarotHouseGuide(layout: 'folded' | 'unfolded', cardsDrawnNo
     '- 사주 계산 결과를 대화의 기본 베이스로 삼아 성향과 지금의 흐름을 자연스럽게 녹여 말해.',
     '- 사람과 마주 앉아 이야기하듯 자연스럽게 말해. 한 번에 2~4문장 정도로 짧게, 보고서·목록·제목 없이 대화체로.',
     '- 궁금한 점은 적극적으로 물어보되 한 번에 질문은 하나만 해.',
+    '- 사용자가 주제(예: 일·진로)만 골랐다면, 그 주제에서 지금 무엇이 가장 고민인지 구체적으로 묻는 질문 하나로 시작해.',
     '- [흐름 유지] 점집 상담처럼 자연스럽게 흐르되 산으로 가지 마. 오늘 상담의 중심 고민을 하나 잡고, 모든 답변을 그 고민과 연결해.',
     '- 질문은 고민을 더 정확히 보기 위한 것만 해(언제부터, 누구와, 무엇이 제일 걸리는지 등). 고민과 상관없는 잡담·지식 설명·다른 주제로 새지 마.',
     '- 사용자가 다른 이야기로 새면 한 문장으로 받아준 뒤 "그럼 아까 그 고민으로 돌아가 보면…" 처럼 부드럽게 중심 고민으로 돌아와.',
@@ -233,7 +236,7 @@ export function buildLinkedLucyContext(regularMessages: readonly UnifiedMessage[
  * (연동/주제 보기 버튼만 누른 짧은 답은 건너뛰고, 그 다음 실제 이야기를 잡는다.)
  */
 export function findConcernAnchor(masterMessages: readonly UnifiedMessage[]): string {
-  const skip = /^(루시랑 하던 얘기 이어서|새로 시작할래|연애·관계|일·진로|돈·재물|그냥 마음이 복잡해)$/;
+  const skip = /^(루시랑 하던 얘기 이어서|새로 시작할래|연애·관계|일·진로|돈·재물|그냥 마음이 복잡해|마음이 복잡해)$/;
   for (const m of masterMessages) {
     if (m.role !== 'user' || typeof m.content !== 'string') continue;
     const text = m.content.replace(/\s+/g, ' ').trim();
@@ -241,4 +244,19 @@ export function findConcernAnchor(masterMessages: readonly UnifiedMessage[]): st
     return text.length > 120 ? `${text.slice(0, 120)}…` : text;
   }
   return '';
+}
+
+/** 인사의 "이어서/새로" 선택 직후, 루시가 오늘의 고민·질문을 물어보는 메시지. */
+export function createTarotHouseConcernQuestion(linked: boolean): UnifiedMessage {
+  const lead = linked
+    ? '좋아, 루시랑 나눴던 이야기도 같이 기억하면서 볼게 🕯️'
+    : '좋아, 오늘은 새 마음으로 시작하자 🕯️';
+  return {
+    id: `tarot-house-ask-${Date.now()}`,
+    role: 'model',
+    persona: 'lucy',
+    timestamp: Date.now(),
+    mode: 'master',
+    content: `${lead}\n${CONCERN_QUESTION}\n${CONCERN_CHOICES}`,
+  };
 }
