@@ -12,7 +12,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const GREEK_MOIRAI_ANANKE_FATE_ENGINE_VERSION = '2.2.0';
+export const GREEK_MOIRAI_ANANKE_FATE_ENGINE_VERSION = '2.3.0';
 
 export interface MoiraiGoddessAspect {
   name: string;
@@ -156,7 +156,7 @@ export function calculateGreekMoiraiAnankeFate(options?: {
   const kstDate = new Date(kstMs);
   const kstHour = kstDate.getUTCHours();
   const kstMonth = kstDate.getUTCMonth() + 1;
-  const calculatedAtKst = `${kstDate.getUTCFullYear()}-${String(kstMonth).padStart(2, '0')}-${String(kstDate.getUTCDate()).padStart(2, '0')} ${String(kstHour).padStart(2, '0')}:${String(kstDate.getUTCMinutes()).padStart(2, '0')} +09:00 KST`;
+  const calculatedAtKst = `${kstDate.toISOString().slice(0, 19)}+09:00 (KST)`;
 
   const qLower = question.toLowerCase();
   const questionFocus = /연애|사랑|결혼|재회|관계|이별|짝|배우자/.test(qLower)
