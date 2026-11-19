@@ -10,7 +10,7 @@
  * 질문 맥락 병목 진단, KST 프라나 시공간 리듬, 상하층 코샤 브리지 매트릭스를 통합합니다.
  */
 
-export const VEDIC_PANCHA_KOSHA_ENGINE_VERSION = 'LUCKEY-PANCHA-KOSHA-v2.4.0';
+export const VEDIC_PANCHA_KOSHA_ENGINE_VERSION = 'LUCKEY-PANCHA-KOSHA-v2.5.0';
 
 export interface KoshaLayer {
   layerIndex: number;
@@ -61,6 +61,8 @@ export interface PanchaKoshaReport {
   };
   reflectiveQuestion: string;
   interpretiveBoundary: string;
+  ritualAction: string;
+  reflectionFocus: string;
 }
 
 function classifyQuestionKosha(question: string, fallbackLayerIdx: number): QuestionKoshaResonance {
@@ -283,6 +285,8 @@ export function calculateVedicPanchaKosha(params: {
   const reflectiveQuestion = trimmedQ
     ? `'${trimmedQ}' 앞에서 지금 가장 돌봄이 필요한 ${lowestAlignedLayer.koshaNameKo} 층위를 위해 오늘 3분만 내어 줄 수 있는 호흡은 무엇인가요?`
     : questionKoshaResonance.reflectionQuestion;
+  const ritualAction = `${temporalPranaRhythm.recommendedPranayama}으로 호흡을 고른 뒤, ${lowestAlignedLayer.clearingAction}`;
+  const reflectionFocus = `${lowestAlignedLayer.koshaNameKo} 정화와 ${questionKoshaResonance.focusKoshaKo} 사이의 에너지 정렬`;
 
   return {
     engineVersion: VEDIC_PANCHA_KOSHA_ENGINE_VERSION,
@@ -298,6 +302,8 @@ export function calculateVedicPanchaKosha(params: {
     panchaKoshaSynthesisMatrix,
     reflectiveQuestion,
     interpretiveBoundary: '베단타 5대 코샤 정렬 결과는 타이티리야 우파니샤드 철학에 기반한 자기 성찰·호흡 안내이며, 의학적 진단이나 확정적 예단이 아닙니다.',
+    ritualAction,
+    reflectionFocus,
   };
 }
 
@@ -327,5 +333,7 @@ export function formatVedicPanchaKoshaPrompt(report: PanchaKoshaReport): string 
 ${report.layers.map(l => `  * ${l.koshaNameKo}: ${l.dimension}`).join('\n')}
 - **지복 회복 행동 처방**: ${report.blissPrescription}
 - **질문 맞춤 성찰 질문**: ${report.reflectiveQuestion}
+- **실천 의례**: ${report.ritualAction}
+- **성찰 초점**: ${report.reflectionFocus}
 - **해석 경계**: 본 리포트는 타이티리야 우파니샤드의 5대 코샤 상징에 기반한 정성적 심신 성찰 안내이며, 의학적 진단이 아닙니다.${matrixLine}`;
 }

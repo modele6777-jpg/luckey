@@ -3428,6 +3428,7 @@ test('Vibrational Soul Quest Engine: derives 4 core soul numbers and personal ye
   assert.equal(rep.engineVersion, VIBRATIONAL_SOUL_QUEST_VERSION);
   assert(rep.calculatedAtKst.endsWith('KST'));
   assert(Boolean(rep.soulQuestSynthesisMatrix?.integratedAction));
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
   assert(rep.soulNumbers.lifePathNumber >= 1);
   assert(rep.soulNumbers.personalYear >= 1 && rep.soulNumbers.personalYear <= 9);
@@ -3437,6 +3438,7 @@ test('Vibrational Soul Quest Engine: derives 4 core soul numbers and personal ye
   assert(prompt.includes('고대 수비학 차크라 솔 울림'));
   assert(prompt.includes(rep.questArchetype));
   assert(prompt.includes('교차 매트릭스') && prompt.includes('해석 경계'));
+  assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
   assert.doesNotMatch(prompt, /\bHz\b|Solfeggio|솔페지오|주파수/i);
 });
 
@@ -4051,6 +4053,7 @@ test('Vedic Nakshatra 108 Pada Engine: calculates nakshatra, pada and dharma pat
   assert(rep.reflectiveQuestion.includes('카르마 소명'));
   assert(rep.interpretiveBoundary.includes('해석 경계'));
   assert(Boolean(rep.nakshatra108SynthesisMatrix?.integratedAction));
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(rep.nakshatraIndex >= 1 && rep.nakshatraIndex <= 27);
   assert(rep.pada >= 1 && rep.pada <= 4);
   assert(rep.totalPadaIndex >= 1 && rep.totalPadaIndex <= 108);
@@ -4064,6 +4067,7 @@ test('Vedic Nakshatra 108 Pada Engine: calculates nakshatra, pada and dharma pat
   assert(prompt.includes('+09:00 (KST)'));
   assert(prompt.includes('대칭 보조 나크샤트라(상징)'));
   assert(prompt.includes('성찰 질문'));
+  assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
   assert(prompt.includes('해석 경계'));
   assert(prompt.includes(rep.nakshatraNameKo));
   assert(prompt.includes('교차 매트릭스'));
@@ -4565,10 +4569,12 @@ test('Vedic Pancha Kosha Engine: calculates 5 layers alignment and Atman realiza
   assert.equal(rep.layers.length, 5);
   assert(rep.atmanRealizationIndex >= 0 && rep.atmanRealizationIndex <= 100);
   assert(rep.lowestAlignedLayer.layerIndex >= 1 && rep.lowestAlignedLayer.layerIndex <= 5);
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatVedicPanchaKoshaPrompt(rep);
-  assert(prompt.includes('고대 인도 베단타 5대 코샤(Pancha Kosha) 층위별 정렬 실측 데이터'));
+  assert(prompt.includes('고대 인도 베단타 5대 코샤(Pancha Kosha) 층위별 정렬'));
   assert(prompt.includes(rep.lowestAlignedLayer.koshaNameKo));
+  assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
 });
 
 test('Roman Janus Engine: calculates qualitative threshold balance and active gateway', () => {
