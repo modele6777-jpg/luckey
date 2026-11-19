@@ -2,10 +2,15 @@ import { readFileSync } from 'node:fs';
 import path from 'node:path';
 
 function readPackageVersion(): string {
-  const candidates = [
-    new URL('../../package.json', import.meta.url),
-    new URL('../../../package.json', import.meta.url),
-  ];
+  // The production CJS bundle has no import.meta.url. Keep the working-directory
+  // fallback reachable instead of throwing before the per-file read guards.
+  let candidates: URL[] = [];
+  try {
+    candidates = [
+      new URL('../../package.json', import.meta.url),
+      new URL('../../../package.json', import.meta.url),
+    ];
+  } catch { /* bundled CommonJS: try the working-directory package below */ }
   for (const url of candidates) {
     try {
       const pkg = JSON.parse(readFileSync(url, 'utf8')) as { version?: string };
