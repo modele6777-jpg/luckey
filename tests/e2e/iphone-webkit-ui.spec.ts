@@ -324,7 +324,7 @@ test('Lucy engine box opens the 333-entry catalog with presets and multi-select'
   await dialog.locator('[data-engine-preset="career"]').click();
   await expect(dialog.locator('[data-engine-preset="career"]')).toHaveAttribute('aria-pressed', 'true');
   await expect(dialog).toContainText('담은 엔진 7개');
-  await dialog.getByRole('button', { name: '타로 담기' }).click();
+  await dialog.getByRole('button', { name: '타로 담기', exact: true }).click();
   await expect(dialog).toContainText('담은 엔진 8개');
   await dialog.getByRole('button', { name: '모두 비우기' }).click();
   await expect(dialog).toContainText('아직 담은 엔진이 없어요');

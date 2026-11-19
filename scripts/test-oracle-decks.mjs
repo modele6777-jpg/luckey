@@ -54,6 +54,6 @@ try {
     const text = m.moneyRuleReading({ ...card, reversed }, 0); assert(!text.includes('undefined')); assert(text.includes(card.readingHint));
   }
   assert(m.oracleDeckPrompt('miracle', [m.TAROT_DECK[0]]).includes('기존 웨이트'));
-  assert(!m.getTarotCardImageUrl(m.TAROT_DECK[0]).includes('/oracle-decks/'), 'ordinary/legacy tarot unchanged');
+  assert.equal(m.getTarotCardImageUrl(m.TAROT_DECK[0]), '/oracle-decks/healing/major_0.webp', 'standard Tarot uses its configured default local artwork');
   console.log('Four complete 78-card decks: all images, licenses, suit counts, numbering, legacy restore and Money Rule readings passed.');
 } finally { await rm(dir, { recursive: true, force: true }); }

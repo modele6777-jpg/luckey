@@ -96,7 +96,7 @@ function categorize(code: string, providerCode: string, status: number | undefin
   ) return 'quota_exhausted';
 
   if (code === 'MEDIA_RATE_LIMIT' || code === 'TTS_RATE_LIMITED' || status === 429 || /RATE[_ -]LIMIT/.test(evidence)) return 'rate_limited';
-  if (code === 'TTS_NOT_CONFIGURED' || /MISSING[_ -]CONFIGURATION/.test(evidence)) return 'configuration_missing';
+  if (code === 'TTS_NOT_CONFIGURED' || /MISSING[_ -]CONFIGURATION|API KEY.{0,32}(?:NOT CONFIGURED|MISSING)|API 키가 설정되지/.test(evidence)) return 'configuration_missing';
   if (status === 504 || /TIMEOUT|TIMED OUT|DEADLINE_EXCEEDED/.test(evidence)) return 'timeout';
   if (/EMPTY[_ -](AUDIO|RESPONSE)|NO_AUDIO_RESPONSE/.test(evidence)) return 'empty_response';
   if (status !== undefined && status >= 500 || /PROVIDER[_ -]UNAVAILABLE|TEMPORARY/.test(evidence)) return 'provider_unavailable';

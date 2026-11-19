@@ -10,7 +10,7 @@ try{
  await page.addInitScript(()=>{const d=new Date();localStorage.setItem('lu_unlocked_date',`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`);sessionStorage.setItem('pwa_prompt_dismissed','true');sessionStorage.setItem('profileModalDismissed','1');});
  await page.goto(base+'/chat');await page.locator('.lucy-chat-footer').waitFor({state:'visible',timeout:30000});
  for(const kind of ['engine','prompt']){
-  const trigger=kind==='engine'?page.getByRole('button',{name:/Lucy 엔진과 관점 목록/}):page.getByRole('button',{name:'추천질문 라이브러리 열기'});
+  const trigger=kind==='engine'?page.getByRole('button',{name:/^엔진함 열기/}):page.getByRole('button',{name:'추천질문 라이브러리 열기'});
   await trigger.first().tap();
   const selector=kind==='engine'?'#lucy-engine-catalog-dialog':'#hori-prompt-library-dialog';
   const dialog=page.locator(selector);await dialog.waitFor({state:'visible'});

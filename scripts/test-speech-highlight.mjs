@@ -42,9 +42,9 @@ console.log('Speech highlight timing: latency, measured duration, pause, resume,
 const source = fs.readFileSync('src/lib/audio.ts', 'utf8');
 const reader = source.slice(source.indexOf('export function getTTSPlaybackProgress'), source.indexOf('export function pauseTTSAudio'));
 const js = await transform(reader.replace('export function', 'function'), {loader: 'ts'});
-const readAudio = new Function('ttsActiveBuffer', 'ttsActiveSource', 'ttsUserExplicitlyPaused', 'ttsPausedOffsetSec', 'ttsStartedAtCtxTime', 'ttsActiveRate', 'getSharedAudioContext', js.code + '; return getTTSPlaybackProgress();');
-assert.equal(readAudio(null, null, false, 0, 0, 1, () => ({currentTime: 100, state: 'running'})), null);
-const sample = (active, paused, offset, start, rate, time, state = 'running') => readAudio({duration: 20}, active, paused, offset, start, rate, () => ({currentTime: time, state}));
+const readAudio = new Function('speechMediaProgress', 'ttsActiveBuffer', 'ttsActiveSource', 'ttsUserExplicitlyPaused', 'ttsPausedOffsetSec', 'ttsStartedAtCtxTime', 'ttsActiveRate', 'getSharedAudioContext', js.code + '; return getTTSPlaybackProgress();');
+assert.equal(readAudio(() => null, null, null, false, 0, 0, 1, () => ({currentTime: 100, state: 'running'})), null);
+const sample = (active, paused, offset, start, rate, time, state = 'running') => readAudio(() => null, {duration: 20}, active, paused, offset, start, rate, () => ({currentTime: time, state}));
 assert.deepEqual(sample({}, false, 5, 100, 1, 103), {elapsed: 8, duration: 20, paused: false});
 assert.deepEqual(sample(null, true, 8, 100, 1, 999), {elapsed: 8, duration: 20, paused: true});
 assert.deepEqual(sample({}, false, 8, 1000, 2, 1002), {elapsed: 12, duration: 20, paused: false});

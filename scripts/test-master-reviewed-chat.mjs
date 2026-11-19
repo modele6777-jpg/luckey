@@ -46,6 +46,7 @@ try {
   const { sessionId } = await call('Target.attachToTarget', { targetId, flatten: true });
   await call('Page.enable', {}, sessionId);
   await call('Network.enable', {}, sessionId);
+  await call('Network.setBypassServiceWorker', { bypass: true }, sessionId);
 
   await call('Emulation.setDeviceMetricsOverride', {width:390,height:844,deviceScaleFactor:1,mobile:true}, sessionId);
   if (memory) {
@@ -53,7 +54,7 @@ try {
     const archive=[{date:'2026-10-01',timestamp:Date.now()-3600000,dialogueCount:1,summary:'금지회사 이야기',userTopics:['금지회사와 비밀 계약했어.']}];
     await call('Page.addScriptToEvaluateOnNewDocument',{source:`sessionStorage.setItem('prism_auth_uid','memory-test');localStorage.setItem('lucy_long_term_memory_v1:master_modele6777',${JSON.stringify(JSON.stringify(records))});localStorage.setItem('lucy_soul_memories_archive',${JSON.stringify(JSON.stringify(archive))});`},sessionId);
   }
-  await call('Page.addScriptToEvaluateOnNewDocument', {source:`localStorage.setItem('developer_bypass','true');localStorage.setItem('lucy_plus_active',${JSON.stringify(normal ? 'false' : 'true')});localStorage.setItem('lu_unlocked_date',new Intl.DateTimeFormat('sv-SE',{timeZone:'Asia/Seoul'}).format(new Date()));`},sessionId);
+  await call('Page.addScriptToEvaluateOnNewDocument', {source:`localStorage.setItem('developer_bypass','true');localStorage.setItem('lucy_plus_active',${JSON.stringify(normal ? 'false' : 'true')});sessionStorage.setItem('lucy_master_mode',${JSON.stringify(normal ? 'off' : 'on')});localStorage.setItem('lu_unlocked_date',new Intl.DateTimeFormat('sv-SE',{timeZone:'Asia/Seoul'}).format(new Date()));`},sessionId);
   const draft=memory?'미검증초안 어느 회사 면접이야? 처음 듣는 얘기야.':'미검증초안 186개 정밀 계산 완료. 무조건 성공해.';
   const corrected=memory?'가온회사 이직을 준비한다고 알려줬지. 그 면접을 보고 왔구나. 어떤 점이 가장 기억에 남아?':'성공을 확정할 자료는 없어. 생년월일을 알려주면 계산 가능한 범위를 확인하고, 지금은 실행 계획부터 함께 정리해 보자.';
   let generations=0,reviews=0,draftVisible=false,reviewModeMatched=false,cancelled=false,generationMemoryReady=false,reviewMemoryReady=false,memoryConflictDetected=false;
@@ -77,8 +78,10 @@ try {
       reviews++;
       reviewModeMatched ||= JSON.parse(body).review_mode === (normal ? 'general' : 'master');
       if (cancel) {
-        const stopped=await call('Runtime.evaluate',{expression:`(()=>{const button=document.querySelector('button[aria-label="생성 중단"]');if(!button)return false;button.click();return true;})()`,returnByValue:true},sessionId);
-        if(!stopped.result.value)throw Error('Stop button missing during review');
+        const stopPoint=await call('Runtime.evaluate',{expression:`(()=>{const b=document.querySelector('button[aria-label="생성 중단"]');if(!b)return null;const r=b.getBoundingClientRect();return{x:r.left+r.width/2,y:r.top+r.height/2}})()`,returnByValue:true},sessionId);
+        if(!stopPoint.result.value)throw Error('Stop button missing during review');
+        await call('Input.dispatchMouseEvent',{type:'mousePressed',x:stopPoint.result.value.x,y:stopPoint.result.value.y,button:'left',clickCount:1},sessionId);
+        await call('Input.dispatchMouseEvent',{type:'mouseReleased',x:stopPoint.result.value.x,y:stopPoint.result.value.y,button:'left',clickCount:1},sessionId);
         cancelled=true;
       }
       const state=await call('Runtime.evaluate',{expression:`document.body.innerText.includes(${JSON.stringify(draft)})`,returnByValue:true},sessionId);
@@ -97,7 +100,9 @@ try {
   await call('Runtime.evaluate',{expression:`document.querySelector('textarea').focus()`},sessionId);
   await call('Input.insertText',{text:memory?'그 회사 면접 봤어':'내 프로젝트가 성공할지 알려줘'},sessionId);
   await new Promise(r=>setTimeout(r,200));
-  await call('Runtime.evaluate',{expression:`document.querySelector('button[aria-label="메시지 전송"]').click()`},sessionId);
+  const sendPoint=await call('Runtime.evaluate',{expression:`(()=>{const r=document.querySelector('button[aria-label="메시지 전송"]').getBoundingClientRect();return{x:r.left+r.width/2,y:r.top+r.height/2}})()`,returnByValue:true},sessionId);
+  await call('Input.dispatchMouseEvent',{type:'mousePressed',x:sendPoint.result.value.x,y:sendPoint.result.value.y,button:'left',clickCount:1},sessionId);
+  await call('Input.dispatchMouseEvent',{type:'mouseReleased',x:sendPoint.result.value.x,y:sendPoint.result.value.y,button:'left',clickCount:1},sessionId);
   let final;
   for(let i=0;i<80;i++){
     await new Promise(r=>setTimeout(r,200));

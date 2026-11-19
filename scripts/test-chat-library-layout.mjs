@@ -10,7 +10,7 @@ try{
  for(const size of [{width:1200,height:900},{width:626,height:890},{width:890,height:626},{width:800,height:800},{width:800,height:1200},{width:393,height:852}]) {
   await page.setViewportSize(size);await page.waitForTimeout(250);
   for(const kind of ['engine','prompt']) {
-   const trigger=(kind==='engine'?page.getByRole('button',{name:/Lucy 엔진과 관점 목록/}):page.getByRole('button',{name:'추천질문 라이브러리 열기'})).first();
+   const trigger=(kind==='engine'?page.getByRole('button',{name:/^엔진함 열기/}):page.getByRole('button',{name:'추천질문 라이브러리 열기'})).first();
    await (safari?trigger.tap():trigger.click());
    const dialog=page.locator(kind==='engine'?'#lucy-engine-catalog-dialog':'#hori-prompt-library-dialog');
    await dialog.waitFor({state:'visible'});

@@ -23,7 +23,7 @@ assert.equal(h.resolved, 0); assert.equal(h.nodes.length, 2); assert.equal(h.nod
 stale(); assert.equal(h.nodes.length, 2); assert.equal(h.ttsActiveBuffer.duration, 10);
 h.clock.currentTime = 10; h.nodes[1].onended(); assert.equal(h.resolved, 1); assert.equal(h.rejected, 0);
 h = harness(); h.ttsUserExplicitlyPaused = true; h.nodes[0].onended(); assert.equal(h.resolved, 0); assert.equal(h.nodes.length, 1);
-h = harness(); for(let i=0;i<3;i++) h.nodes[i].onended(); assert.equal(h.resolved, 0); assert.equal(h.rejected, 1); assert.equal(h.ttsActiveBuffer, null);
+h = harness(); h.nodes[0].onended(); h.nodes[1].onended(); assert.equal(h.resolved, 0); assert.equal(h.rejected, 1); assert.equal(h.ttsActiveBuffer, null);
 console.log('Audio lifecycle: recover remaining audio, ignore stale/paused events, bound repeated interruptions.');
 const entry = audio.slice(audio.indexOf('export async function playTTSAudio'), audio.indexOf('let ttsLifecycleInitialized'));
 const entryJS = await transform(entry.replace('export async function','async function'), {loader: 'ts'});
@@ -51,12 +51,15 @@ globalThis.window = {dispatchEvent: e => {events.push(e); return true;}};
 const stubAudio = `export const getSharedAudioContext=()=>({state:'running'}); export const playTTSAudio=async(text)=>globalThis.__ttsTest.audio(text); export const getTTSPlaybackProgress=()=>null; export const isTTSAudioPlaying=()=>false;\n` + ['unlockAudioPlayback','playCompressedAudio','playRawPCM','primeTTSAudioElement','pauseTTSAudio','resumeTTSAudio','stopTTSPlayback','initTTSAudioLifecycle','analyzeTextEmotion','duckAmbientAudio','configureSpeechAudioSession','configureAmbientAudioSession'].map(n=>`export const ${n}=()=>{};`).join('\n');
 const bundle = await build({entryPoints:['src/utils/tts.ts'],bundle:true,write:false,platform:'node',format:'esm',plugins:[{name:'stubs',setup(b){b.onResolve({filter:/^(react|.*\/(audio|audioHaptics|ttsMediaSession|wakeLock|perfMode))$/},a=>({path:a.path,namespace:'stub'}));b.onLoad({filter:/.*/,namespace:'stub'},a=>({contents:a.path.endsWith('/audio')?stubAudio:a.path==='react'?'export const useState=()=>{};export const useEffect=()=>{};':a.path.endsWith('/ttsMediaSession')?['setTTSSessionActive','clearTTSSession','initTTSSessionHandlers','pauseTTSSession','resumeTTSSession'].map(n=>`export const ${n}=()=>{};`).join('\n'):a.path.endsWith('/wakeLock')?'export const acquireScreenWakeLock=async()=>{};export const releaseScreenWakeLock=async()=>{};':a.path.endsWith('/perfMode')?'export const isIOSDevice=()=>false;':'export const playAiResultNotification=()=>{globalThis.__ttsTest.chimes=(globalThis.__ttsTest.chimes||0)+1;};'}));}}]});
 const tts = await import('data:text/javascript;base64,' + Buffer.from(bundle.outputFiles[0].text).toString('base64'));
-globalThis.fetch = async (_url, options) => {const text = JSON.parse(options.body).text;calls.push(text);if(failures-->0)return new Response('{}',{status:503});return Response.json({audioContent:text,encoding:'mp3'});};
+const fakeAudio = Buffer.from([73,68,51,0]).toString('base64');
+globalThis.fetch = async (_url, options) => {const text = JSON.parse(options.body).text;calls.push(text);if(failures-->0)return new Response('{}',{status:503});return Response.json({audioContent:fakeAudio,encoding:'mp3'});};
 const long = '긴 문장을 빠짐없이 끝까지 읽습니다 '.repeat(45).trim();
 await tts.playConversation([{role:'assistant',content:long}]);
-assert(calls.length>1);assert(calls.every(t=>t.length<=240));assert.equal(spoken.join(' ').replace(/[^가-힣a-zA-Z0-9]/g,''), tts.normalizeTextForSpeech(long).replace(/[^가-힣a-zA-Z0-9]/g,''));
+const expectedParts=tts.splitSpeechIntoChunks(long,240);
+assert(calls.length>1);assert(calls.every(t=>t.length<=240));assert(expectedParts.every(part=>calls.some(call=>tts.normalizeTextForSpeech(call)===tts.normalizeTextForSpeech(part))));
+assert.equal(plays,expectedParts.length);assert.deepEqual(spoken,Array(plays).fill(fakeAudio));
 const before = plays;failures=1;await tts.playTTS('일시 연결 실패 재시도 확인 문장입니다', 'Aoede', true);assert.equal(plays,before+1);
-failures=2;const count=plays;await tts.playQAndATTS({text:''},{text:'실패를 조용히 넘기지 않습니다. 다음 문장은 읽지 않아야 합니다.'});assert.equal(plays,count);assert(events.some(e=>e.type==='prism:tts-error'));
+failures=3;const count=plays;await tts.playQAndATTS({text:'이 질문의 음성 요청이 실패하면 답변도 시작하지 않습니다.'},{text:'실패를 조용히 넘기지 않습니다. 다음 문장은 읽지 않아야 합니다.'});assert.equal(plays,count);assert(events.some(e=>e.type==='prism:tts-error'));
 failures=0;cancelOnPlay=true;const start=plays;await tts.playConversation([{role:'assistant',content:long}]);assert.equal(plays,start+1);
 console.log('Readers: complete long text, bounded chunks, transient retry, visible failure, explicit stop.');
 
@@ -71,7 +74,7 @@ globalThis.fetch = async (_url, options) => {
       headers: { 'Retry-After': '0.05', 'Content-Type': 'application/json' },
     });
   }
-  return Response.json({ audioContent: body, encoding: 'mp3' });
+  return Response.json({ audioContent: fakeAudio, encoding: 'mp3' });
 };
 events.length = 0;
 const beforeRate = plays;
@@ -115,7 +118,7 @@ await new Promise((resolve, reject) => {
   tick();
 });
 tts.pauseTTS();
-completeRequest(Response.json({audioContent:'paused response',encoding:'mp3'}));
+completeRequest(Response.json({audioContent:fakeAudio,encoding:'mp3'}));
 await new Promise(resolve=>setTimeout(resolve,0));
 assert.equal(plays,beforePause);assert.equal(tts.getCurrentTTSState().isPaused,true);
 tts.resumeTTS();await loading;assert.equal(plays,beforePause+1);
@@ -162,9 +165,9 @@ assert.equal(calls.length,corruptStart+2);globalThis.__ttsTest.audio=audioBefore
 let segments=0;const normalAudio=globalThis.__ttsTest.audio;
 globalThis.__ttsTest.audio=async text=>{await normalAudio(text);if(++segments===2)tts.stopTTS();};
 await tts.playTTSInChunks(long,'Aoede',240);
-globalThis.__ttsTest.audio=normalAudio;const replayStart=spoken.length;
+globalThis.__ttsTest.audio=normalAudio;const replayStart=calls.length;
 await tts.playTTSInChunks(long,'Charon',480);
-assert.equal(spoken.slice(replayStart).join(' ').replace(/[^가-힣a-zA-Z0-9]/g,''),tts.normalizeTextForSpeech(long).replace(/[^가-힣a-zA-Z0-9]/g,''));
+const replayParts=tts.splitSpeechIntoChunks(long,120);assert(replayParts.every(part=>calls.slice(replayStart).some(call=>tts.normalizeTextForSpeech(call)===tts.normalizeTextForSpeech(part))));
 console.log('Cache eviction and chunk/voice-specific resume bookmarks passed.');
 
 // One completion bowl per successful non-chat reading; never on chat, stop or error.
