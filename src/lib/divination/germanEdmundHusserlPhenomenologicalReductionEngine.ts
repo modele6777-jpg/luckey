@@ -13,7 +13,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const GERMAN_EDMUND_HUSSERL_PHENOMENOLOGY_VERSION = 'LUCKEY-EDMUND-HUSSERL-PHENOMENOLOGY-v2.4.0';
+export const GERMAN_EDMUND_HUSSERL_PHENOMENOLOGY_VERSION = 'LUCKEY-EDMUND-HUSSERL-PHENOMENOLOGY-v2.5.0';
 
 export interface HusserlTheme {
   themeKey: string;
@@ -138,12 +138,7 @@ function hashString(str: string): number {
 
 function formatHusserlKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
-  const y = kst.getUTCFullYear();
-  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
-  const d = String(kst.getUTCDate()).padStart(2, '0');
-  const hh = String(kst.getUTCHours()).padStart(2, '0');
-  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} +09:00 KST`;
+  return `${kst.toISOString().slice(0, 19)}+09:00 (KST)`;
 }
 
 function describeHusserlStage(score: number): string {
@@ -248,6 +243,7 @@ export function formatGermanEdmundHusserlPhenomenologicalReductionPrompt(
       `- 통합 실천: ${res.husserlSynthesisMatrix.integratedAction}`,
     );
   }
+  lines.push(`- 성찰 초점: ${res.reflectionFocus}`);
   lines.push(`- 질문 맞춤 성찰 질문: ${res.reflectiveQuestion}`);
   lines.push(`- 해석 경계: 후설의 판단중지(에포케)·본질직관·생활세계 상징을 빌린 정성적 성찰 관점이며, 개인 평가나 미래 단정이 아닙니다.`);
   return lines.join('\n');
