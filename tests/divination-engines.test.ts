@@ -5367,6 +5367,7 @@ test('Mongolian Tengrism Hiimori Soul Engine: calculates wind horse vitality, bl
 test('Gaelic Wheel Four Fire Festivals Engine: calculates fire festival stations, celtic hearthfire vibration and anam cara depth', () => {
   const rep = calculateGaelicWheelFireFestivals(profile);
   assert.equal(rep.engineVersion, GAELIC_FIRE_FESTIVALS_ENGINE_VERSION);
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(rep.wheelCycleHarmonyScore >= 0 && rep.wheelCycleHarmonyScore <= 100);
   assert(rep.celticFireVibration >= 0 && rep.celticFireVibration <= 100);
   assert(rep.tuathaDeDanannBlessing >= 0 && rep.tuathaDeDanannBlessing <= 100);
@@ -5377,6 +5378,7 @@ test('Gaelic Wheel Four Fire Festivals Engine: calculates fire festival stations
   const prompt = formatGaelicWheelFireFestivalsPrompt(rep);
   assert(prompt.includes('휠 오브 더 이어 켈트 4대 화제 축제 상징 관점'));
   assert(prompt.includes(rep.activeStation.nameKo));
+  assert(prompt.includes('성찰 초점'));
   assert(!prompt.includes('/100') && !prompt.includes('%'));
 });
 
@@ -8056,13 +8058,14 @@ test('Albert Schweitzer Reverence for Life Engine: calculates Reverence for Life
   assert(rep.infiniteResponsibilityConscienceIndex >= 0 && rep.infiniteResponsibilityConscienceIndex <= 100);
   assert(rep.spiritualEquanimityHarmonyIndex >= 0 && rep.spiritualEquanimityHarmonyIndex <= 100);
   assert(rep.activeSchweitzerTheme.themeTitleKo.length > 0);
-  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(Boolean(rep.schweitzerSynthesisMatrix?.integratedAction));
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatGermanAlbertSchweitzerReverenceForLifePrompt(rep);
   assert(prompt.includes('알베르트 슈바이처 《생명에 대한 경외》 & 《문화와 윤리》 생명외경 지표'));
   assert(prompt.includes(rep.activeSchweitzerTheme.themeTitleKo));
+  assert(prompt.includes('성찰 초점'));
   assert(prompt.includes('교차 매트릭스'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
@@ -8848,12 +8851,13 @@ test('Victor Hugo Les Miserables Engine: calculates Mercy, Conscience, and Human
   assert(rep.indomitableHeroicResilience >= 0 && rep.indomitableHeroicResilience <= 100);
   assert(rep.activeHugoTheme.themeTitleKo.length > 0);
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
-  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(Boolean(rep.hugoSynthesisMatrix?.integratedAction));
   assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatFrenchVictorHugoLesMiserablesPrompt(rep);
   assert(prompt.includes('빅토르 위고 《레 미제라블》 자비와 도덕적 양심·인도주의 지표'));
   assert(prompt.includes(rep.activeHugoTheme.themeTitleKo));
+  assert(prompt.includes('성찰 초점'));
   assert(prompt.includes('교차 매트릭스'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
