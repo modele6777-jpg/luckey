@@ -1,4 +1,5 @@
 import { defaultLibrarySessionKey, useLibrarySessionState, useLibrarySessionScroll } from '@/hooks/useLibrarySessionState';
+import { recommendPresetForPrompt, recommendedEnginesForPrompt, setSelectedEngineKeys } from '@/lib/lucyEngineSelection';
 import { DialogBackdrop } from '@/components/layout/DialogBackdrop';
 import './chat-library-layout.css';
 import React, { useState, useMemo, useCallback } from 'react';
@@ -322,6 +323,11 @@ export const PromptLibraryModal: React.FC<PromptLibraryModalProps> = ({
                             </span>
                           </div>
 
+                          {/* 🧰 엔진함 연동: 이 질문에 맞는 맞춤 세팅 */}
+                          <span data-prompt-engine-preset={recommendPresetForPrompt(prompt).id} className="self-start rounded-md border border-amber-400/40 bg-amber-400/10 px-2 py-0.5 text-[10px] font-bold text-amber-700 dark:text-amber-300">
+                            🧰 추천 엔진 · {recommendPresetForPrompt(prompt).label}
+                          </span>
+
                           {/* Title */}
                           <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-slate-100 group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors leading-snug">
                             {prompt.title}
@@ -343,6 +349,19 @@ export const PromptLibraryModal: React.FC<PromptLibraryModalProps> = ({
                           >
                             <Edit3 size={13} />
                             <span>채팅란에 입력하기</span>
+                          </button>
+                          <button
+                            type="button"
+                            data-prompt-engine-apply={prompt.id}
+                            onClick={() => {
+                              setSelectedEngineKeys(recommendedEnginesForPrompt(prompt));
+                              handlePromptAction(prompt, false);
+                            }}
+                            className="prompt-library-action w-full py-2.5 px-3 rounded-xl border border-amber-400/60 bg-amber-400/10 hover:bg-amber-400/20 text-amber-800 dark:text-amber-200 text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 active:scale-95"
+                            title="이 질문에 맞는 추천 엔진을 엔진함에 담고, 질문을 입력창에 넣습니다."
+                          >
+                            <span aria-hidden="true">🧰</span>
+                            <span>엔진 담고 입력</span>
                           </button>
                         </div>
                       </div>

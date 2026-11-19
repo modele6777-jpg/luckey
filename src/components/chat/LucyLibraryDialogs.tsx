@@ -22,6 +22,6 @@ export const LucyLibraryDialogs = memo(function LucyLibraryDialogs({ sessionKey,
   const [engineOpen, setEngineOpen] = useLibrarySessionState<boolean>(`${sessionKey}:engine:open`, false);
   return <>
     <PromptLibraryModal sessionKey={`${sessionKey}:prompt`} isOpen={promptOpen} onClose={() => setPromptOpen(false)} onSelectPrompt={onSelectPrompt} />
-    <LucyEngineCatalogDialog sessionKey={`${sessionKey}:engine`} isOpen={engineOpen} onClose={() => setEngineOpen(false)} isLight={isLight} />
+    <LucyEngineCatalogDialog sessionKey={`${sessionKey}:engine`} isOpen={engineOpen} onClose={() => setEngineOpen(false)} isLight={isLight} onSelectPrompt={onSelectPrompt} />
   </>;
 });
