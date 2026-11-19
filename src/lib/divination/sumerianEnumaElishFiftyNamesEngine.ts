@@ -20,7 +20,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const ENUMA_ELISH_ENGINE_VERSION = '2.2.0';
+export const ENUMA_ELISH_ENGINE_VERSION = '2.3.0';
 
 export interface MardukSacredName {
   id: string;
@@ -56,6 +56,8 @@ export interface SumerianEnumaElishFiftyNamesReport {
     alignmentState: string;
     integratedAction: string;
   };
+  ritualAction: string;
+  reflectionFocus: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
@@ -200,6 +202,8 @@ export function calculateSumerianEnumaElishFiftyNames(
   };
 
   const interpretiveBoundary = '본 에누마 엘리시 마르두크 50대 이름 리포트는 고대 메소포타미아 서사시 원전과 수리 시드에 기반한 상징적 결단 안내이며, 절대적 예언이 아닙니다.';
+  const ritualAction = `[${dominantSacredName.nameAkkadian}] ${dominantSacredName.actionVirtue}`;
+  const reflectionFocus = `에누마 엘리시(${dominantSacredName.nameKo}) — 4대 바람 주권 조율`;
   const trimmedQ = question.trim();
   const reflectiveQuestion = trimmedQ
     ? `'${trimmedQ}'의 혼돈을 잠재우고 ${dominantSacredName.nameKo}의 주권을 세우기 위해 오늘 가장 먼저 끊어낼 모호함은 무엇인가요?`
@@ -218,6 +222,8 @@ export function calculateSumerianEnumaElishFiftyNames(
     enumaElishVictoryDecree,
     tabletOfDestinyGuidance,
     enumaElishSynthesisMatrix,
+    ritualAction,
+    reflectionFocus,
     reflectiveQuestion,
     interpretiveBoundary,
   };
@@ -241,6 +247,8 @@ export function formatSumerianEnumaElishFiftyNamesPrompt(rep: SumerianEnumaElish
       `  - 통합 실천: ${rep.enumaElishSynthesisMatrix.integratedAction}`,
     );
   }
+  lines.push(`· 실천 의례: ${rep.ritualAction}`);
+  lines.push(`· 성찰 초점: ${rep.reflectionFocus}`);
   lines.push(`· 질문 맞춤 성찰 질문: ${rep.reflectiveQuestion}`);
   lines.push(`· 해석 경계: ${rep.interpretiveBoundary}`);
   return lines.join('\n');

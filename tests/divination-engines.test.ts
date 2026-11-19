@@ -798,10 +798,13 @@ test('Sukuyo partner matrix: 양방향 궁합, 27숙 전수 매트릭스, 결정
   const prompt = formatSukuyoPrompt(r1);
   assert(prompt.includes(SUKUYO_ENGINE_VERSION));
   assert(r1.calculatedAtKst?.endsWith('KST'));
+  assert(Boolean(r1.ritualAction && r1.ritualAction.length > 0));
+  assert(Boolean(r1.reflectionFocus && r1.reflectionFocus.length > 0));
   assert(Boolean(r1.sukuyoSynthesisMatrix?.integratedAction));
   assert(prompt.includes('본명숙') && prompt.includes('숙격') && prompt.includes('6대 관계성') && prompt.includes('3거리'));
   assert(prompt.includes('규목랑(奎木狼)'));
   assert(prompt.includes('27숙 전수 양방향 매트릭스'));
+  assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
   assert(prompt.includes('교차 매트릭스'));
   assert(Boolean(r1.interpretiveBoundary && r1.interpretiveBoundary.length > 0));
   assert(prompt.includes('해석 경계'));
@@ -4599,6 +4602,7 @@ test('Sumerian Apkallu Wisdom Engine: calculates 7 sages resonance and Apsu clar
   const rep = calculateSumerianApkalluWisdom({ profile, question: '지금 가장 먼저 세워야 할 원칙은 무엇인가요?' });
   assert.equal(rep.engineVersion, SUMERIAN_APKALLU_WISDOM_ENGINE_VERSION);
   assert(rep.calculatedAtKst.includes('+09:00 (KST)'));
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(Boolean(rep.apkalluSynthesisMatrix?.integratedAction));
   assert(rep.apkalluResonanceScore >= 0 && rep.apkalluResonanceScore <= 100);
   assert(rep.apsuClarityIndex >= 0 && rep.apsuClarityIndex <= 100);
@@ -4609,6 +4613,7 @@ test('Sumerian Apkallu Wisdom Engine: calculates 7 sages resonance and Apsu clar
   const prompt = formatSumerianApkalluWisdomPrompt(rep);
   assert(prompt.includes('고대 수메르 에리두 엔키(Enki) 7대 압갈루(Apkallu) 현자 신성 지혜 실측 데이터'));
   assert(prompt.includes(rep.activeSage.nameKo));
+  assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
   assert(prompt.includes('성찰 질문'));
   assert(prompt.includes('해석 경계'));
   assert(prompt.includes('교차 매트릭스'));
@@ -5040,6 +5045,7 @@ test('Sumerian Enuma Elish Fifty Names Engine: calculates Tiamat subjugation, fo
   const rep = calculateSumerianEnumaElishFiftyNames({ profile, question: '에누마 엘리시 마르두크 50대 이름' });
   assert.equal(rep.engineVersion, ENUMA_ELISH_ENGINE_VERSION);
   assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(Boolean(rep.enumaElishSynthesisMatrix?.integratedAction));
   assert(rep.interpretiveBoundary.length > 0);
   assert(rep.tiamatSubjugationOrderScore >= 0 && rep.tiamatSubjugationOrderScore <= 100);
@@ -5051,6 +5057,7 @@ test('Sumerian Enuma Elish Fifty Names Engine: calculates Tiamat subjugation, fo
   const prompt = formatSumerianEnumaElishFiftyNamesPrompt(rep);
   assert(prompt.includes('바빌로니아 에누마 엘리시 마르두크 50대 이름 & 4대 바람 정복 실측 데이터'));
   assert(prompt.includes(rep.dominantSacredName.nameKo));
+  assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
   assert(prompt.includes('교차 매트릭스') && prompt.includes('해석 경계'));
   assert(!prompt.includes('/100'));
 });

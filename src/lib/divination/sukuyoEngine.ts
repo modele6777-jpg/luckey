@@ -41,7 +41,7 @@
 import type { UserProfile } from '../sharedState';
 import { resolveEffectiveSolarDate, convertSolarToLunar } from '../lunarCalendar';
 
-export const SUKUYO_ENGINE_VERSION = 'LUCKEY-SY-v2.1.0';
+export const SUKUYO_ENGINE_VERSION = 'LUCKEY-SY-v2.2.0';
 
 export const SUKUYO_METHOD =
   '정통 밀교 숙요경(宿曜經) 27숙 결정론 산법: 월별 기숙표에 한국 음력 생일을 적용한 본명숙(本命宿) 환산, 7대 숙격(安重·和善·急猛·惡害·毒賢·輕疾·剛柔) 분류, 4방신(東方靑龍·北方玄武·西方白虎·南方朱雀) 소속 및 칠요 배속, 6대 관계성(命·業胎·榮衰·安危·成壞·友親) 방향별 판정과 3거리(근거리 1~4숙·중거리 5~13숙·원거리 14~26숙) 역학, 양방향 27숙 궁합 매트릭스 결정론 산출 (윤달은 계산 보류 · 일본 구력과 경계일 차이 가능)';
@@ -157,6 +157,8 @@ export interface SukuyoResult {
     alignmentState: string;
     integratedAction: string;
   };
+  ritualAction?: string;
+  reflectionFocus?: string;
   reflectiveQuestion?: string;
   interpretiveBoundary?: string;
   note?: string;
@@ -630,6 +632,8 @@ function calculateSanKyuCycle(mansion: SukuyoMansionInfo): SukuyoSanKyuCycle {
     : `본명숙 ${mansion.fullName}(${shukgukMeta.hanja})이 비추는 성향과 ${celestialQuadrant.quadrant}의 계절 리듬 사이에서 지금 가장 먼저 다듬을 관계나 과제는 무엇입니까?`;
 
   const interpretiveBoundary = '본 밀교 숙요경 27숙 리포트는 태음력 기반 전통 27숙 상징과 관계 역학에 따른 정성적 이해 안내이며, 인연의 성패를 단정짓지 않습니다.';
+  const ritualAction = `[${mansion.fullName} · ${sanKyuCycle.nineMansionPhase}] ${sanKyuCycle.actionCompass}`;
+  const reflectionFocus = `숙요경 27숙(${mansion.fullName}) — ${shukgukMeta.hanja} · ${planetaryGuard.dominantLuminary}`;
 
   return {
     status: 'calculated',
@@ -652,6 +656,8 @@ function calculateSanKyuCycle(mansion: SukuyoMansionInfo): SukuyoSanKyuCycle {
     sanKyuCycle,
     partnerMatrix,
     sukuyoSynthesisMatrix,
+    ritualAction,
+    reflectionFocus,
     reflectiveQuestion,
     interpretiveBoundary,
   };
@@ -695,6 +701,12 @@ export function formatSukuyoPrompt(result: SukuyoResult): string {
     deepLines.push(
       `- 교차 매트릭스: [핵심 긴장: ${result.sukuyoSynthesisMatrix.dominantTension} | 조율 상태: ${result.sukuyoSynthesisMatrix.alignmentState}]\n  * 통합 실천: ${result.sukuyoSynthesisMatrix.integratedAction}`,
     );
+  }
+  if (result.ritualAction) {
+    deepLines.push(`- 실천 의례: ${result.ritualAction}`);
+  }
+  if (result.reflectionFocus) {
+    deepLines.push(`- 성찰 초점: ${result.reflectionFocus}`);
   }
   const deepBlock = deepLines.join('\n');
 
