@@ -13,7 +13,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const TAOIST_SHANGQING_TWENTY_FOUR_SPIRITS_ENGINE_VERSION = '2.1.0';
+export const TAOIST_SHANGQING_TWENTY_FOUR_SPIRITS_ENGINE_VERSION = '2.2.0';
 
 function formatShangqingKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -57,6 +57,8 @@ export interface TaoistShangqingTwentyFourSpiritsReport {
   activeTrueSpirit: ShangqingTrueSpirit;
   secondaryTrueSpirit: ShangqingTrueSpirit;
   zunsiPrescription: string; // 도홍경 진고 존사 개운 처방
+  ritualAction: string;
+  reflectionFocus: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
   shangqingSynthesisMatrix?: {
@@ -174,6 +176,8 @@ export function calculateTaoistShangqingTwentyFourSpirits(options?: {
 
   const zunsiPrescription = `도홍경 《진고》의 가르침에 따라, 하루 일과 중 5분간 눈을 감고 ${activeTrueSpirit.nameKo}의 존사 비결("${activeTrueSpirit.contemplationMantra}")을 실행하십시오. ${activeTrueSpirit.dantianAffinity}에 빛이 모여 사기가 침범하지 못할 것입니다.`;
   const calculatedAtKst = formatShangqingKstTimestamp(now);
+  const ritualAction = `[${activeTrueSpirit.nameKo} · ${activeTrueSpirit.dantianAffinity}] ${activeTrueSpirit.contemplationMantra}`;
+  const reflectionFocus = `상청파 24진신(${activeTrueSpirit.nameKo}) — ${activeTrueSpirit.functionDesc}`;
   const reflectiveQuestion = question
     ? `"${question}"의 자리에서 ${activeTrueSpirit.nameKo}의 고요한 중심과 보조 ${secondaryTrueSpirit.nameKo}의 조력을 함께 세우려면, 지금 어떤 잡념부터 비워내겠습니까?`
     : `${activeTrueSpirit.dantianAffinity}의 기운을 밝히며 5분간 존사(存思)를 실천할 때, 오늘 마음속에서 가장 먼저 가라앉히고 싶은 소음은 무엇입니까?`;
@@ -199,6 +203,8 @@ export function calculateTaoistShangqingTwentyFourSpirits(options?: {
     activeTrueSpirit,
     secondaryTrueSpirit,
     zunsiPrescription,
+    ritualAction,
+    reflectionFocus,
     reflectiveQuestion,
     interpretiveBoundary,
     shangqingSynthesisMatrix,
@@ -221,6 +227,8 @@ export function formatTaoistShangqingTwentyFourSpiritsPrompt(rep: TaoistShangqin
   - 존사(存思) 관조 비결: "${rep.activeTrueSpirit.contemplationMantra}"
 · 보조 교차 진신: ${rep.secondaryTrueSpirit.nameKo} (${rep.secondaryTrueSpirit.dantianAffinity})
 · 도홍경 진고 현실 통령 처방: ${rep.zunsiPrescription}${matrixLine}
+· 실천 의례: ${rep.ritualAction}
+· 성찰 초점: ${rep.reflectionFocus}
 · 성찰 질문: ${rep.reflectiveQuestion}
 · 해석 경계: ${rep.interpretiveBoundary}`;
 }

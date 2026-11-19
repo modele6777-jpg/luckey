@@ -18,7 +18,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const TAOIST_SANBAO_VERSION = 'LUCKEY-TAOIST-SANBAO-v2.1.0';
+export const TAOIST_SANBAO_VERSION = 'LUCKEY-TAOIST-SANBAO-v2.2.0';
 
 function formatSanbaoKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -51,6 +51,8 @@ export interface TaoistSanbaoReport {
   overallHarmonyScore: number;  // 0 ~ 100 삼보 조화도
   dantianPrescription: string;  // 단전 집중 처방
   taoistBreathingPractice: string; // 일일 조식(調息) 실천법
+  ritualAction: string;
+  reflectionFocus: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
   sanbaoSynthesisMatrix?: {
@@ -150,6 +152,8 @@ export function calculateTaoistSanbaoInnerAlchemy(
   const taoistBreathingPractice = `도교 복식 조식법: 숨을 들이쉴 때 아랫배를 부드럽게 부풀리고(4초), 2초간 멈춘 뒤, 천천히 입으로 숨을 내쉬며(6초) 몸속의 탁기(濁氣)를 배출하세요. 3회 반복으로 정·기·신이 즉각 정렬됩니다.`;
   const calculatedAtKst = formatSanbaoKstTimestamp(targetDate);
   const q = (question || '').trim();
+  const ritualAction = `[${alchemyPhase.phaseName}] ${alchemyPhase.transformationTask}`;
+  const reflectionFocus = `도교 삼보 내단(${dominantTreasure}) — ${alchemyPhase.meaning}`;
   const reflectiveQuestion = q
     ? `"${q}" 앞에서 ${dominantTreasure}의 기운을 낭비하지 않고 ${depletedTreasure}을 채우기 위해, 오늘 가장 먼저 줄여야 할 소모는 무엇입니까?`
     : `${alchemyPhase.phaseName} 국면에서 ${alchemyPhase.transformationTask}을 시작하기 위해, 지금 당장 내려놓을 수 있는 긴장은 무엇입니까?`;
@@ -172,6 +176,8 @@ export function calculateTaoistSanbaoInnerAlchemy(
     overallHarmonyScore: Math.max(30, Math.min(99, overallHarmonyScore)),
     dantianPrescription,
     taoistBreathingPractice,
+    ritualAction,
+    reflectionFocus,
     reflectiveQuestion,
     interpretiveBoundary,
     sanbaoSynthesisMatrix,
@@ -189,6 +195,8 @@ export function formatTaoistSanbaoInnerAlchemyPrompt(report: TaoistSanbaoReport)
 - **내단 승화 핵심 과제**: ${report.alchemyPhase.transformationTask}
 - **단전(丹田) 집중 가이드**: ${report.dantianPrescription}
 - **일일 도교 조식법 (Breathing)**: ${report.taoistBreathingPractice}${matrixLine}
+- **실천 의례**: ${report.ritualAction}
+- **성찰 초점**: ${report.reflectionFocus}
 - **성찰 질문**: ${report.reflectiveQuestion}
 - **해석 경계**: ${report.interpretiveBoundary}`;
 }

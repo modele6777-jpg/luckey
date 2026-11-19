@@ -3040,6 +3040,7 @@ test('Taoist Neidan Meridian Engine: 도교 내단 양생 & 진기 순환 경락
   const res = calculateTaoistNeidanMeridian({ profile, targetDate: new Date('2026-11-04T10:00:00+09:00'), question: '기혈 순환' });
   assert.equal(res.engineVersion, TAOIST_NEIDAN_VERSION);
   assert(res.calculatedAtKst.includes('+09:00 (KST)'));
+  assert(res.ritualAction.length > 0 && res.reflectionFocus.length > 0);
   assert(Boolean(res.neidanSynthesisMatrix?.integratedAction));
   assert(res.dantianArchetype.length > 0);
   assert(res.secondaryMeridian.activeMeridianName.length > 0);
@@ -3054,6 +3055,7 @@ test('Taoist Neidan Meridian Engine: 도교 내단 양생 & 진기 순환 경락
   assert(prompt.includes('LUCKEY 도교 내단 양생 & 진기 순환 경락 시계'));
   assert(prompt.includes(res.dantianArchetype));
   assert(prompt.includes('보조 교차 경락'));
+  assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
   assert(prompt.includes('성찰 질문'));
   assert(prompt.includes('해석 경계'));
   assert(prompt.includes('교차 매트릭스'));
@@ -3472,6 +3474,7 @@ test('Taoist Sanbao Inner Alchemy Engine: calculates Jing-Qi-Shen and alchemy ph
   const rep = calculateTaoistSanbaoInnerAlchemy(profile, new Date(), '삼보 균형');
   assert.equal(rep.engineVersion, TAOIST_SANBAO_VERSION);
   assert(rep.calculatedAtKst.includes('+09:00 (KST)'));
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(Boolean(rep.sanbaoSynthesisMatrix?.integratedAction));
   assert(rep.energyLevels.jing >= 0 && rep.energyLevels.jing <= 100);
   assert(rep.energyLevels.qi >= 0 && rep.energyLevels.qi <= 100);
@@ -3482,6 +3485,7 @@ test('Taoist Sanbao Inner Alchemy Engine: calculates Jing-Qi-Shen and alchemy ph
   const prompt = formatTaoistSanbaoInnerAlchemyPrompt(rep);
   assert(prompt.includes('도교 내단학'));
   assert(prompt.includes(rep.dominantTreasure));
+  assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
   assert(prompt.includes('성찰 질문'));
   assert(prompt.includes('해석 경계'));
   assert(prompt.includes('교차 매트릭스'));
@@ -4648,6 +4652,7 @@ test('Taoist Shangqing 24 Spirits Engine: calculates three dantians and active t
   const rep = calculateTaoistShangqingTwentyFourSpirits({ profile, question: '상청 존사' });
   assert.equal(rep.engineVersion, TAOIST_SHANGQING_TWENTY_FOUR_SPIRITS_ENGINE_VERSION);
   assert(rep.calculatedAtKst.includes('+09:00 (KST)'));
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(Boolean(rep.shangqingSynthesisMatrix?.integratedAction));
   assert(rep.shangqingAttunementScore >= 0 && rep.shangqingAttunementScore <= 100);
   assert(rep.spiritualShieldRate >= 0 && rep.spiritualShieldRate <= 100);
@@ -4659,6 +4664,7 @@ test('Taoist Shangqing 24 Spirits Engine: calculates three dantians and active t
   assert(prompt.includes('고대 중국 도홍경(陶弘景) 진고(眞誥) 상청파(上淸派) 24성도 존사(存思) 통령 실측 데이터'));
   assert(prompt.includes(rep.activeTrueSpirit.nameKo));
   assert(prompt.includes('보조 교차 진신'));
+  assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
   assert(prompt.includes('성찰 질문'));
   assert(prompt.includes('해석 경계'));
   assert(prompt.includes('교차 매트릭스'));
