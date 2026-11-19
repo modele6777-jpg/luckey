@@ -7,6 +7,8 @@ import {
   isAskingForDeepEngines,
   buildTarotHouseGuide,
   findConcernAnchor,
+  createTarotHouseGreeting,
+  createTarotHouseConcernQuestion,
 } from '../src/lib/lucyMasterMode';
 
 const profile = {
@@ -65,4 +67,14 @@ test('concern anchor skips choice taps and keeps the first real worry', () => {
   ] as any);
   assert.equal(anchor, '회사를 옮길지 계속 고민 중이야');
   assert.match(buildTarotHouseGuide('folded', false, false, anchor), /중심 고민/);
+});
+
+test('greeting and post-link message both end by asking for a concern with choices', () => {
+  for (const msg of [createTarotHouseGreeting('쭈', 'folded'), createTarotHouseGreeting('쭈', 'unfolded'), createTarotHouseConcernQuestion(true), createTarotHouseConcernQuestion(false)]) {
+    const parsed = parseAnswerChoices(String(msg.content));
+    assert.match(parsed.text, /고민이나 궁금한 게 있어\?/);
+    assert.deepEqual(parsed.choices, ['연애·관계', '일·진로', '돈·재물', '마음이 복잡해']);
+  }
+  const linkAsk = parseAnswerChoices(String(createTarotHouseGreeting('쭈', 'folded', true).content));
+  assert.deepEqual(linkAsk.choices, ['루시랑 하던 얘기 이어서', '새로 시작할래']);
 });
