@@ -13,12 +13,12 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const PLATONIC_IDEA_CAVE_VERSION = 'LUCKEY-PLATONIC-IDEA-CAVE-v2.3.0';
+export const PLATONIC_IDEA_CAVE_VERSION = 'LUCKEY-PLATONIC-IDEA-CAVE-v2.4.0';
 
 function getPlatoKstString(now?: Date): string {
   const base = now ?? new Date();
   const kst = new Date(base.getTime() + 9 * 3600 * 1000);
-  return `${kst.toISOString().slice(0, 19)}+09:00`;
+  return `${kst.toISOString().slice(0, 19)}+09:00 (KST)`;
 }
 
 export interface PlatonicAscentStage {
@@ -375,6 +375,7 @@ export function formatPlatonicIdeaCavePrompt(res: PlatonicIdeaCaveResult): strin
     `- 이데아 상승 매트릭스: 그림자 탈피(${describePlatonicStage(res.ideaAscentMatrix.shadowDetachment)}) · 상기 공명(${describePlatonicStage(res.ideaAscentMatrix.anamnesisResonance)}) · 카타바시스 준비(${describePlatonicStage(res.ideaAscentMatrix.katabasisReadiness)}) · 종합 흐름(${describePlatonicStage(res.ideaAscentMatrix.overallSynthesis)})`,
     `- 철학적 처방: ${res.platonicPhilosophicalCounsel.philosophicalGuidance}`,
     `- 오늘의 실천 의례: ${res.dailyPracticeRitual}`,
+    `- 성찰 초점: ${res.reflectionFocus}`,
     `- 핵심 성찰 질문: ${res.reflectiveQuestion}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
     matrixLine,

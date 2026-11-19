@@ -6186,6 +6186,7 @@ test('Chinese Laozi Daodejing Water Way Engine: calculates water yielding adapta
 test('Ancient Greek Epicurean Tetrapharmakos Engine: calculates ataraxia tranquility, aponia ease and friendship', () => {
   const rep = calculateEpicureanTetrapharmakos(profile);
   assert.equal(rep.engineVersion, EPICUREAN_TETRAPHARMAKOS_VERSION);
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(rep.ataraxiaSoulTranquilityScore >= 0 && rep.ataraxiaSoulTranquilityScore <= 100);
   assert(rep.aponiaPhysicalEaseBalance >= 0 && rep.aponiaPhysicalEaseBalance <= 100);
   assert(rep.tetrapharmakosRemedyMastery >= 0 && rep.tetrapharmakosRemedyMastery <= 100);
@@ -6197,6 +6198,7 @@ test('Ancient Greek Epicurean Tetrapharmakos Engine: calculates ataraxia tranqui
   const prompt = formatEpicureanTetrapharmakosPrompt(rep);
   assert(prompt.includes('고대 그리스 에피쿠로스 《테트라파르마코스》'));
   assert(prompt.includes(rep.activeEpicureanStage.stageNameKo));
+  assert(prompt.includes('성찰 초점'));
 });
 
 test('Korean Yulgok Yi I Gyeokmong Yogyeol Engine: calculates noble aspiration ipji, habit reform and nine mindfulness manners', () => {
@@ -6280,6 +6282,7 @@ test('Chinese Wang Yangming Liangzhi Xinxue Engine: calculates Liangzhi intuitio
 test('Ancient Greek Socratic Maieutic Daimon Engine: calculates dialogue, daimonion, docta ignorantia and soul care', () => {
   const rep = calculateSocraticMaieuticDaimon(profile);
   assert.equal(rep.engineVersion, SOCRATIC_MAIEUTIC_DAIMON_VERSION);
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(rep.maieuticDialogueScore >= 0 && rep.maieuticDialogueScore <= 100);
   assert(rep.daimonionWarningSensitivity >= 0 && rep.daimonionWarningSensitivity <= 100);
   assert(rep.doctaIgnorantiaHumility >= 0 && rep.doctaIgnorantiaHumility <= 100);
@@ -6290,6 +6293,7 @@ test('Ancient Greek Socratic Maieutic Daimon Engine: calculates dialogue, daimon
   const prompt = formatSocraticMaieuticDaimonPrompt(rep);
   assert(prompt.includes('고대 그리스 소크라테스 산파술 & 다이몬 영혼성찰 지표'));
   assert(prompt.includes(rep.activeSocraticStage.stageNameKo));
+  assert(prompt.includes('성찰 초점'));
 });
 
 test('Chinese Mencius Four Sprouts Hoyeon Jigi Engine: calculates four sprouts, Hoyeon-jigi, Bu-dong-xin and moral accumulation', () => {
@@ -6326,6 +6330,7 @@ test('Roman Seneca Time Sovereignty Tranquility Engine: calculates time sovereig
 test('Ancient Greek Platonic Idea Cave Engine: calculates Idea of Good, Cave liberation, Anamnesis and Cardinal Virtues', () => {
   const rep = calculatePlatonicIdeaCave(profile);
   assert.equal(rep.engineVersion, PLATONIC_IDEA_CAVE_VERSION);
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(rep.ideaTruthOrientationScore >= 0 && rep.ideaTruthOrientationScore <= 100);
   assert(rep.shadowIllusionLiberationScore >= 0 && rep.shadowIllusionLiberationScore <= 100);
   assert(rep.anamnesisSoulIntuitionScore >= 0 && rep.anamnesisSoulIntuitionScore <= 100);
@@ -6336,6 +6341,7 @@ test('Ancient Greek Platonic Idea Cave Engine: calculates Idea of Good, Cave lib
   const prompt = formatPlatonicIdeaCavePrompt(rep);
   assert(prompt.includes('고대 그리스 플라톤 동굴의 비유 & 이데아 4대 추덕 지표'));
   assert(prompt.includes(rep.activeAscentStage.stageNameKo));
+  assert(prompt.includes('성찰 초점'));
 });
 
 test('Korean Joseon Toegye Seonghak Sipdo Engine: calculates Gyeong mindfulness, Geogyeong Gungri, Sangseongseong and Dignity', () => {

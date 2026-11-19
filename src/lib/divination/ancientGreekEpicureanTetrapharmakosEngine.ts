@@ -9,7 +9,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const EPICUREAN_TETRAPHARMAKOS_VERSION = 'LUCKEY-EPICUREAN-TETRAPHARMAKOS-v2.4.0';
+export const EPICUREAN_TETRAPHARMAKOS_VERSION = 'LUCKEY-EPICUREAN-TETRAPHARMAKOS-v2.5.0';
 
 export interface EpicureanStage {
   stageLevel: number;
@@ -103,7 +103,7 @@ const GARDEN_EPIPHANIES = [
 
 function getKstDateString(now: Date): string {
   const kst = new Date(now.getTime() + 9 * 3600 * 1000);
-  return `${kst.toISOString().slice(0, 19)}+09:00`;
+  return `${kst.toISOString().slice(0, 19)}+09:00 (KST)`;
 }
 
 function describeEpicureanStage(score: number): string {
@@ -333,5 +333,7 @@ export function formatEpicureanTetrapharmakosPrompt(result: EpicureanTetrapharma
   → 자족 지침: ${result.desireTaxonomyMatrix.autarkeiaDirective}
 - 에피쿠로스 정원의 불멸 계시: 《${result.epicureanGardenEpiphany.gardenSceneTitle}》
   → 아타락시아 지혜: "${result.epicureanGardenEpiphany.peacefulWisdom}"
+- 오늘의 작은 의례: ${result.ritualAction}
+- 성찰 초점: ${result.reflectionFocus}
 - 해석 경계: ${result.interpretiveBoundary}${matrixLine}`;
 }

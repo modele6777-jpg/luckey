@@ -13,7 +13,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const SOCRATIC_MAIEUTIC_DAIMON_VERSION = 'LUCKEY-SOCRATIC-MAIEUTIC-DAIMON-v2.2.0';
+export const SOCRATIC_MAIEUTIC_DAIMON_VERSION = 'LUCKEY-SOCRATIC-MAIEUTIC-DAIMON-v2.3.0';
 
 function describeSocraticStage(score: number): string {
   if (score >= 88) return '명료한 각성 단계';
@@ -151,7 +151,7 @@ function getKstComponents(now: Date): { hour: number; month: number; isoKst: str
   return {
     hour: kstDate.getUTCHours(),
     month: kstDate.getUTCMonth() + 1,
-    isoKst: kstDate.toISOString().replace('Z', '+09:00'),
+    isoKst: `${kstDate.toISOString().slice(0, 19)}+09:00 (KST)`,
   };
 }
 
@@ -347,6 +347,7 @@ export function formatSocraticMaieuticDaimonPrompt(res: SocraticMaieuticDaimonRe
     `- 현재 문답 단계: ${res.activeSocraticStage.stageNameGreek} (${res.activeSocraticStage.stageNameKo})`,
     `- 질문 맥락 진단(${res.situationalElenchus.dialogueSource}): ${res.situationalElenchus.detectedTheme} — ${res.situationalElenchus.blindSpotDiagnostic}`,
     `- 핵심 엘렌코스 질문: "${res.situationalElenchus.elenchusQuestion}"`,
+    `- 성찰 초점: ${res.reflectionFocus}`,
     `- 산파술 실천: ${res.dailyPracticeRitual}`,
     `- KST 시공간 리듬 (${res.calculatedAtKst}): ${res.temporalDaimonionRhythm.kstPhaseLabel} · ${res.temporalDaimonionRhythm.seasonContext} (다이몬 감응: ${describeSocraticStage(res.temporalDaimonionRhythm.daimonClarityIndex)})`,
     `- 변증 통합 매트릭스: 아포리아 용기(${describeSocraticStage(res.dialecticSynthesisMatrix.aporiaCourage)}) / 다이몬 조율(${describeSocraticStage(res.dialecticSynthesisMatrix.daimonAttunement)}) / 산파 명료도(${describeSocraticStage(res.dialecticSynthesisMatrix.maieuticClarity)}) → [${res.dialecticSynthesisMatrix.primaryBottleneck}] ${res.dialecticSynthesisMatrix.synthesisDirective}`,
