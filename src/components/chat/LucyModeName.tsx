@@ -4,14 +4,30 @@ import { motion } from 'framer-motion';
 interface LucyModeNameProps { plus: boolean; pro: boolean; isLight: boolean; master?: boolean }
 const proStyle = 'bg-gradient-to-r from-amber-300 via-emerald-300 to-yellow-200 bg-clip-text text-transparent font-black tracking-wide drop-shadow-[0_0_16px_rgba(245,158,11,0.6)]';
 
-const masterStyle = 'font-black tracking-wide';
-const masterGradient: React.CSSProperties = {
-  backgroundImage: 'linear-gradient(90deg, #f5d0fe 0%, #e9d5ff 40%, #fde68a 100%)',
+// Lucy Master 로고: 텍스트만, 선명하게.
+// iOS는 그라데이션 글자에 CSS filter(drop-shadow)를 걸면 비트맵으로 그려 픽셀이 보이므로,
+// 빛번짐은 글자 뒤에 겹친 별도 레이어(text-shadow)로만 준다.
+const MASTER_GRADIENT = 'linear-gradient(100deg, #f3e8ff 0%, #e9d5ff 35%, #f5d0fe 60%, #fde68a 100%)';
+const masterText: React.CSSProperties = {
+  backgroundImage: MASTER_GRADIENT,
   WebkitBackgroundClip: 'text',
   backgroundClip: 'text',
   color: 'transparent',
-  filter: 'drop-shadow(0 0 10px rgba(216, 180, 254, 0.75))',
+  WebkitFontSmoothing: 'antialiased',
 };
+const masterGlow: React.CSSProperties = {
+  color: 'transparent',
+  textShadow: '0 0 14px rgba(192, 132, 252, 0.45), 0 0 2px rgba(253, 230, 138, 0.25)',
+};
+
+function MasterWords({ style }: { style: React.CSSProperties }) {
+  return (
+    <>
+      <span className="font-black tracking-tight" style={style}>Lucy</span>
+      <span className="font-serif italic font-semibold tracking-normal" style={style}>Master</span>
+    </>
+  );
+}
 
 /** Folded: Lucy. Unfolded: Lucy Plus. Pro stays an independent marker and never adds Plus. Master: hidden divination mode. */
 export function LucyModeName({ plus, pro, isLight, master = false }: LucyModeNameProps) {
@@ -19,15 +35,19 @@ export function LucyModeName({ plus, pro, isLight, master = false }: LucyModeNam
     return (
       <motion.span
         key="master"
-        className="inline-flex items-center gap-1.5 whitespace-nowrap"
+        className="relative inline-flex items-baseline whitespace-nowrap"
         data-lucy-name
         data-lucy-name-marker="master"
         aria-label="Lucy Master"
-        initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }}
+        initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.35 }}
       >
-        <span aria-hidden="true" className="text-[0.85em] drop-shadow-[0_0_8px_rgba(251,191,36,0.7)]">🔮</span>
-        <span className={masterStyle} style={masterGradient}>Lucy</span>
-        <span className={`${masterStyle} font-serif italic`} style={masterGradient}>Master</span>
+        {/* 빛번짐 레이어 (장식) */}
+        <span aria-hidden="true" className="absolute inset-0 inline-flex items-baseline gap-[0.3em] pointer-events-none select-none">
+          <MasterWords style={masterGlow} />
+        </span>
+        <span className="relative inline-flex items-baseline gap-[0.3em]">
+          <MasterWords style={masterText} />
+        </span>
       </motion.span>
     );
   }
