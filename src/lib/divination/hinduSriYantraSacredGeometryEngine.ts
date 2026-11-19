@@ -26,7 +26,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const SRI_YANTRA_ENGINE_VERSION = '2.2.0';
+export const SRI_YANTRA_ENGINE_VERSION = '2.3.0';
 
 export interface SriYantraSacredGeometryReport {
   engineVersion: string;
@@ -199,7 +199,7 @@ export function calculateHinduSriYantraSacredGeometry(
   const kstDate = new Date(kstMs);
   const kstHour = kstDate.getUTCHours();
   const kstMonth = kstDate.getUTCMonth() + 1;
-  const calculatedAtKst = `${kstDate.getUTCFullYear()}-${String(kstMonth).padStart(2, '0')}-${String(kstDate.getUTCDate()).padStart(2, '0')} ${String(kstHour).padStart(2, '0')}:${String(kstDate.getUTCMinutes()).padStart(2, '0')} +09:00 KST`;
+  const calculatedAtKst = `${kstDate.getUTCFullYear()}-${String(kstMonth).padStart(2, '0')}-${String(kstDate.getUTCDate()).padStart(2, '0')} ${String(kstHour).padStart(2, '0')}:${String(kstDate.getUTCMinutes()).padStart(2, '0')} +09:00 (KST)`;
 
   const qLower = question.toLowerCase();
   const questionFocus = /연애|사랑|관계|결혼|재회|감정/.test(qLower)

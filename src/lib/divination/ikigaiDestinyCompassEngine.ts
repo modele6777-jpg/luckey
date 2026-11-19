@@ -17,7 +17,7 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const IKIGAI_DESTINY_COMPASS_VERSION = 'LUCKEY-IKIGAI-v2.2.0';
+export const IKIGAI_DESTINY_COMPASS_VERSION = 'LUCKEY-IKIGAI-v2.3.0';
 
 export interface IkigaiQuadrants {
   passion: {
@@ -74,7 +74,7 @@ function formatIkigaiKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} +09:00 KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
 }
 
 function describeIkigaiStage(score: number): string {
@@ -195,7 +195,7 @@ export function runIkigaiDestinyCompassEngine(
   const ritualAction = `[${soulCallingTitle.split('(')[0].trim()}] ${monetizationPath.phase1Validation}`;
   const reflectionFocus = reflectiveQuestion;
 
-  const synthesisPromptGuidance = `[LUCKEY 이키가이 천직 4대 교집합 & 소명 나침반 v2.2.0]
+  const synthesisPromptGuidance = `[LUCKEY 이키가이 천직 4대 교집합 & 소명 나침반 v2.3.0]
 - 연산 시각: ${calculatedAtKst}
 - 궁극의 천직 소명 타이틀: [${soulCallingTitle}]
 - 이키가이 정렬 완성도: ${describeIkigaiStage(ikigaiAlignmentScore)}

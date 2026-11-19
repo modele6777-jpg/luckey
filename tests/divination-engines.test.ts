@@ -2819,7 +2819,7 @@ test('Ikigai Destiny Compass Engine: 이키가이 천직 4대 교집합 & 소명
   assert(res.quadrants.passion.score >= 0 && res.quadrants.passion.score <= 100);
   assert(res.soulCallingTitle.length > 0);
   assert(res.monetizationPath.phase1Validation.length > 0);
-  assert(res.calculatedAtKst.endsWith('KST'));
+  assert(res.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(Boolean(res.ikigaiSynthesisMatrix?.integratedAction));
   assert(res.ritualAction.length > 0 && res.reflectionFocus.length > 0);
   const prompt = formatIkigaiDestinyCompassPrompt(res);
@@ -2827,6 +2827,7 @@ test('Ikigai Destiny Compass Engine: 이키가이 천직 4대 교집합 & 소명
   assert(prompt.includes(res.soulCallingTitle));
   assert(prompt.includes('교차 매트릭스'));
   assert(prompt.includes(res.ritualAction));
+  assert(prompt.includes(res.reflectionFocus));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });
@@ -5604,13 +5605,15 @@ test('Hindu Sri Yantra Sacred Geometry Engine: calculates Shiva-Shakti polaritie
   assert(rep.sarvaRogaharaHealingPower >= 0 && rep.sarvaRogaharaHealingPower <= 100);
   assert(rep.sarvaAnandamayaBlissAlignment >= 0 && rep.sarvaAnandamayaBlissAlignment <= 100);
   assert(rep.primaryAvaranaChakra.level >= 1 && rep.primaryAvaranaChakra.level <= 9);
-  assert(rep.temporalSriYantraRhythm.calculatedAtKst.includes('KST'));
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert(rep.temporalSriYantraRhythm.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(rep.situationalSriYantraAudit.questionFocus.length > 0);
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatHinduSriYantraSacredGeometryPrompt(rep);
   assert(prompt.includes('힌두 탄트라 스리 얀트라(Sri Yantra) 9대 나바요니 & 바인두 신성기하학'));
   assert(prompt.includes(rep.primaryAvaranaChakra.sanskritName));
   assert(prompt.includes(rep.ritualAction));
+  assert(prompt.includes(rep.reflectionFocus));
   assert(!prompt.includes('%'));
   assert(!/\d+\s*점(?:\s*\/\s*100)?/.test(prompt));
 });
@@ -7759,7 +7762,7 @@ test('Rabindranath Tagore Gitanjali Engine: calculates Cosmic Soul Communion, Bh
   assert(rep.lyricNatureHarmonizationIndex >= 0 && rep.lyricNatureHarmonizationIndex <= 100);
   assert(rep.lampOfTheEastResilienceScore >= 0 && rep.lampOfTheEastResilienceScore <= 100);
   assert(rep.activeTagoreTheme.themeTitleKo.length > 0);
-  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(Boolean(rep.tagoreSynthesisMatrix?.integratedAction));
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatIndianRabindranathTagoreGitanjaliPrompt(rep);
@@ -7767,6 +7770,7 @@ test('Rabindranath Tagore Gitanjali Engine: calculates Cosmic Soul Communion, Bh
   assert(prompt.includes(rep.activeTagoreTheme.themeTitleKo));
   assert(prompt.includes('교차 매트릭스'));
   assert(prompt.includes(rep.ritualAction));
+  assert(prompt.includes(rep.reflectionFocus));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });
