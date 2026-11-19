@@ -15,7 +15,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const ITALIAN_DANTE_COMEDY_VERSION = 'LUCKEY-DANTE-DIVINE-COMEDY-v2.2.0';
+export const ITALIAN_DANTE_COMEDY_VERSION = 'LUCKEY-DANTE-DIVINE-COMEDY-v2.3.0';
 
 export interface DanteTheme {
   themeKey: string;
@@ -130,7 +130,7 @@ function formatDanteKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} +09:00 KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
 }
 
 function describeDanteStage(score: number): string {
