@@ -242,7 +242,7 @@ test('legacy Pro URL normalizes to Lucy and keeps the shared catalog available',
   await openLucy(page, '/chat?mode=pro');
   await expect(page).toHaveURL(/\/chat\?mode=ai$/);
   await expect(page.getByText('Lucy Pro', { exact: true })).toHaveCount(0);
-  await expect(page.getByRole('button', { name: /Lucy 엔진과 관점 목록 333개/ })).toBeVisible();
+  await expect(page.getByRole('button', { name: /^엔진함 열기/ })).toBeVisible();
   expect(await page.evaluate(() => localStorage.getItem('lucy_tier_mode'))).toBe('ai');
 });
 
@@ -309,18 +309,25 @@ test('Lucy chat shows no per-message mode or engine badges', async ({ page, base
   await expect(page.getByRole('dialog', { name: '이번 답변에서 실제 사용한 엔진' })).toHaveCount(0);
 });
 
-test('Lucy engine count opens the visible 333-entry catalog and meanings', async ({ page }) => {
+test('Lucy engine box opens the 333-entry catalog with presets and multi-select', async ({ page }) => {
   await openLucy(page);
-  const trigger = page.getByRole('button', { name: /Lucy 엔진과 관점 목록/ });
+  const trigger = page.getByRole('button', { name: /^엔진함 열기/ });
   await expect(trigger).toBeVisible();
   await trigger.click();
 
-  const dialog = page.getByRole('dialog', { name: 'Lucy 엔진·관점 안내' });
+  const dialog = page.getByRole('dialog', { name: 'Lucy 엔진함' });
   await expect(dialog).toBeVisible();
-  await expect(dialog).toContainText('등록 목록 333개');
   await expect(dialog).toContainText('15개 기초 도구');
   await expect(dialog).toContainText('318개 심층 관점');
   await expect(dialog).toContainText('각각 독립 계산기가 아닙니다');
+  // 맞춤 세팅을 누르면 묶음이 담기고, 개별 엔진도 여러 개 더 담을 수 있다
+  await dialog.locator('[data-engine-preset="career"]').click();
+  await expect(dialog.locator('[data-engine-preset="career"]')).toHaveAttribute('aria-pressed', 'true');
+  await expect(dialog).toContainText('담은 엔진 7개');
+  await dialog.getByRole('button', { name: '타로 담기' }).click();
+  await expect(dialog).toContainText('담은 엔진 8개');
+  await dialog.getByRole('button', { name: '모두 비우기' }).click();
+  await expect(dialog).toContainText('아직 담은 엔진이 없어요');
   const nameStyle = await dialog.locator('.lucy-engine-catalog-entry-name').first().evaluate(element => {
     const dialogElement = element.closest('[role="dialog"]');
     const theme = dialogElement?.getAttribute('data-catalog-theme');
@@ -348,9 +355,9 @@ test('Lucy engine count opens the visible 333-entry catalog and meanings', async
 
 test('Lucy groups all 333 catalog entries under the seven channel themes', async ({ page }) => {
   await openLucy(page);
-  await page.getByRole('button', { name: /Lucy 엔진과 관점 목록/ }).click();
+  await page.getByRole('button', { name: /^엔진함 열기/ }).click();
 
-  const dialog = page.getByRole('dialog', { name: 'Lucy 엔진·관점 안내' });
+  const dialog = page.getByRole('dialog', { name: 'Lucy 엔진함' });
   await expect(dialog).toBeVisible();
   const entries = dialog.getByTestId('lucy-engine-catalog-entry');
   await expect(entries).toHaveCount(333);
@@ -397,9 +404,9 @@ test('Lucy groups all 333 catalog entries under the seven channel themes', async
 
 test('Lucy engine catalog fills its mobile pane and its list scrolls without auto-opening the keyboard', async ({ page }) => {
   await openLucy(page);
-  await page.getByRole('button', { name: /Lucy 엔진과 관점 목록/ }).click();
+  await page.getByRole('button', { name: /^엔진함 열기/ }).click();
 
-  const dialog = page.getByRole('dialog', { name: 'Lucy 엔진·관점 안내' });
+  const dialog = page.getByRole('dialog', { name: 'Lucy 엔진함' });
   const search = dialog.getByRole('searchbox', { name: '엔진과 관점 검색' });
   await expect(dialog).toBeVisible();
   const closeButton = dialog.getByRole('button', { name: '엔진 목록 닫기' });

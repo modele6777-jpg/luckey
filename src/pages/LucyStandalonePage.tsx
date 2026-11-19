@@ -29,6 +29,7 @@ import { ChatInsightsBoardModal } from '@/components/ChatInsightsBoardModal';
 import { LucyAuraLoader } from '@/components/LucyAuraLoader';
 import { LucyMasterTarotRoom } from '@/components/chat/LucyMasterTarotRoom';
 import { LucyMasterBgmToggle } from '@/components/chat/LucyMasterBgmToggle';
+import { useSelectedEngines, splitSelectedEngines } from '@/lib/lucyEngineSelection';
 import { isLucyMasterBgmPreferred, startLucyMasterBgm, stopLucyMasterBgm } from '@/lib/lucyMasterBgm';
 import remarkGfm from 'remark-gfm';
 import { safeSessionStorage, safeLocalStorage } from '@/utils/safeStorage';
@@ -1569,6 +1570,8 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
   // 🔮 루시 마스터(점술모드)는 일반 루시·루시+와 대화 내역을 따로 쓴다 (lucy-pro 저장소).
   const lucyMessages = isMasterMode ? (lucyProMessages || []) : (personaMessages?.lucy || []);
   const isLucyGenerating = isMasterMode ? Boolean(isLucyProGenerating) : Boolean(isGenerating?.lucy);
+  // 🧰 엔진함에서 담아 둔 엔진 (매 답변에 함께 사용)
+  const selectedEngineKeys = useSelectedEngines();
 
   // 🔮 점술모드가 켜지면 타로집에 들어선 것처럼 루시가 먼저 인사한다 (다른 화면에서 홀드해 들어와도 1회).
   // 루시 마스터는 나갔다 다시 들어오면 항상 처음부터: 이전 마스터 대화를 비우고 새 인사로 시작한다.
@@ -3337,8 +3340,8 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
       ? { isCasualMessage: true, selectedTools: [], promptInjection: '', selectionReason: '가벼운 일상 인사', firedEngineBadges: [] }
       : (divinationMode
         // 점술모드: 사주 메인. 7대 채널 보강·올인원 총동원 없이, 원할 때만 관련 엔진 추가
-        ? selectOptimalDivinationTools(combinedContextText, [], counselingUserProfile, false, { allowMaster: false, requireBasicAndDeep, divinationMode })
-        : selectOptimalDivinationTools(combinedContextText, isMaster ? ALL_CHANNELS : channels, counselingUserProfile, isMaster, { allowMaster: isMasterMode || requireBasicAndDeep, requireBasicAndDeep }));
+        ? selectOptimalDivinationTools(combinedContextText, [], counselingUserProfile, false, { allowMaster: false, requireBasicAndDeep, divinationMode, ...splitSelectedEngines() })
+        : selectOptimalDivinationTools(combinedContextText, isMaster ? ALL_CHANNELS : channels, counselingUserProfile, isMaster, { allowMaster: isMasterMode || requireBasicAndDeep, requireBasicAndDeep, ...splitSelectedEngines() }));
     if (!divinationSelection.isCasualMessage && divinationSelection.promptInjection) {
       extraSystemContext = extraSystemContext
         ? `${extraSystemContext}\n\n${divinationSelection.promptInjection}`
@@ -3775,14 +3778,14 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
                         ? 'bg-amber-100 text-amber-950 border-amber-500/50'
                         : 'bg-amber-500/15 text-amber-100 border-amber-400/40'
                     }`}
-                    title={`등록된 엔진·관점 ${LUCY_PRO_CATALOG_ENGINES.length}개 목록 보기`}
-                    aria-label={`Lucy 엔진과 관점 목록 ${LUCY_PRO_CATALOG_ENGINES.length}개 보기`}
+                    title={selectedEngineKeys.length ? '엔진함 열기 · 담은 엔진 사용 중' : '엔진함 열기 · 쓰고 싶은 엔진 고르기'}
+                    aria-label={selectedEngineKeys.length ? '엔진함 열기, 담은 엔진 사용 중' : '엔진함 열기'}
                     aria-haspopup="dialog"
                     stateKey={`${librarySessionKey}:engine`}
                     aria-controls="lucy-engine-catalog-dialog"
                   >
-                    <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
-                    엔진·관점 {LUCY_PRO_CATALOG_ENGINES.length}개
+                    <span className={`w-1.5 h-1.5 rounded-full ${selectedEngineKeys.length ? 'bg-amber-400 animate-pulse' : 'bg-amber-400/40'}`} />
+                    엔진함
                   </LucyLibraryTrigger>
                 </div>
               </div>
