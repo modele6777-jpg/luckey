@@ -1,10 +1,9 @@
 {
-  "version": "1.7.912",
-  "builtAt": "2026-11-19T09:02:00+09:00",
-  "summary": "15대 신살·전략 협상·수피 7대 라타이프 3대 엔진 실천 의례 및 성찰 초점 표준 연동(v1.7.912)",
+  "version": "1.7.913",
+  "builtAt": "2026-11-19T09:07:00+09:00",
+  "summary": "들뢰즈·베르그송·데리다 3대 엔진 +09:00 (KST) 표준 시각 통일(v1.7.913)",
   "items": [
-    "15대 신살 위치별 슈퍼파워 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동",
-    "전략 협상 & 손자병법 기문 레버리지 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동",
-    "정통 수피즘 심장의 7대 라타이프 엔진(v2.3.0): ritualAction·reflectionFocus 표준 필드 연동"
+    "질 들뢰즈 리좀·되기(v2.2.0)·앙리 베르그송 엘랑 비탈(v2.2.0)·자크 데리다 해체·차연(v2.3.0): calculatedAtKst +09:00 (KST) 표준 표기 통일",
+    "divination-engines.test.ts: 3대 엔진 v1.7.913 +09:00 (KST) 회귀 테스트 추가"
   ]
 }

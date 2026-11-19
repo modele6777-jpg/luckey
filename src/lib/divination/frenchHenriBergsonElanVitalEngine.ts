@@ -13,7 +13,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const FRENCH_HENRI_BERGSON_VERSION = 'LUCKEY-HENRI-BERGSON-ELAN-VITAL-v2.1.0';
+export const FRENCH_HENRI_BERGSON_VERSION = 'LUCKEY-HENRI-BERGSON-ELAN-VITAL-v2.2.0';
 
 export type BergsonQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -304,7 +304,7 @@ export function calculateHenriBergsonElanVital(
     `${focalBergsonAphorism.actionGuidance}`;
 
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
-  const kstTimeLabel = `${temporalBergsonRhythm.kstDateLabel} ${String(kst.getUTCHours()).padStart(2, '0')}:${String(kst.getUTCMinutes()).padStart(2, '0')} KST`;
+  const kstTimeLabel = `${temporalBergsonRhythm.kstDateLabel} ${String(kst.getUTCHours()).padStart(2, '0')}:${String(kst.getUTCMinutes()).padStart(2, '0')} +09:00 (KST)`;
   const bergsonSynthesisMatrix = {
     coreInsight: activeBergsonTheme.themeTitleKo,
     recommendedAction: practiceGuidance,
