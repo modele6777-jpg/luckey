@@ -19,11 +19,11 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const BABYLONIAN_ENUMA_ELISH_VERSION = 'LUCKEY-BABYLONIAN-ENUMA-ELISH-v2.3.0';
+export const BABYLONIAN_ENUMA_ELISH_VERSION = 'LUCKEY-BABYLONIAN-ENUMA-ELISH-v2.4.0';
 
 function toKstIso(now: Date): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
-  return kst.toISOString().replace('Z', '+09:00');
+  return `${kst.toISOString().slice(0, 19)}+09:00 (KST)`;
 }
 
 export type BabylonianQuestionTheme = 'relationship' | 'decision' | 'healing' | 'reflection';
@@ -362,6 +362,7 @@ export function formatBabylonianEnumaElishPrompt(report: BabylonianEnumaElishRep
 - **에누마 엘리쉬 교차 매트릭스**: ${report.babylonSynthesisMatrix.synthesizedVerdict}
 - **맥락별 실천 조언**: ${report.practiceGuidance}
 - **일상 의례**: ${report.ritualAction}
+- **성찰 초점**: ${report.reflectionFocus}
 - **성찰 질문**: ${report.reflectiveQuestion}
 - **에누마 엘리쉬 통합 나침반**: ${report.synthesisMessage}
 - **해석 경계**: ${report.boundaryNotice}`;
