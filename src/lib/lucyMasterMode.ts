@@ -107,7 +107,7 @@ export function isAcceptingTarotDrawOffer(userText: string, lastLucyText: string
 }
 
 /** 점술모드 동안 루시에게 주는 타로집 상담 가이드. */
-export function buildTarotHouseGuide(layout: 'folded' | 'unfolded', cardsDrawnNow: boolean, deepEngines = false): string {
+export function buildTarotHouseGuide(layout: 'folded' | 'unfolded', cardsDrawnNow: boolean, deepEngines = false, concernAnchor = ''): string {
   const lines = [
     '[🔮 점술모드 · 루시의 타로 하우스]',
     '- 이 상담의 메인은 사주야. 타로는 화면을 펼쳤을 때 더해지는 보조 상담이야.',
@@ -116,9 +116,17 @@ export function buildTarotHouseGuide(layout: 'folded' | 'unfolded', cardsDrawnNo
     '- 사주 계산 결과를 대화의 기본 베이스로 삼아 성향과 지금의 흐름을 자연스럽게 녹여 말해.',
     '- 사람과 마주 앉아 이야기하듯 자연스럽게 말해. 한 번에 2~4문장 정도로 짧게, 보고서·목록·제목 없이 대화체로.',
     '- 궁금한 점은 적극적으로 물어보되 한 번에 질문은 하나만 해.',
+    '- [흐름 유지] 점집 상담처럼 자연스럽게 흐르되 산으로 가지 마. 오늘 상담의 중심 고민을 하나 잡고, 모든 답변을 그 고민과 연결해.',
+    '- 질문은 고민을 더 정확히 보기 위한 것만 해(언제부터, 누구와, 무엇이 제일 걸리는지 등). 고민과 상관없는 잡담·지식 설명·다른 주제로 새지 마.',
+    '- 사용자가 다른 이야기로 새면 한 문장으로 받아준 뒤 "그럼 아까 그 고민으로 돌아가 보면…" 처럼 부드럽게 중심 고민으로 돌아와.',
+    '- 상담은 들어보기 → 사주로 흐름 짚기 → (펼쳤다면) 카드로 확인 → 지금 할 수 있는 한 가지 조언 순서로 차근차근 나아가. 같은 말을 반복하지 마.',
+    '- 대화가 길어지면 가끔 한 문장으로 "지금까지 보면 ~ 이런 흐름이야" 하고 짚어서 방향을 잃지 않게 해.',
     '- 질문을 했다면 답변 맨 마지막 줄에 사용자가 고를 수 있는 보기 2~4개를 정확히 이 형식으로 붙여: [답변선택: 보기1 | 보기2 | 보기3]',
     '- 보기는 각각 15자 이내의 사용자 말투(예: "응, 좀 지쳤어")로 쓰고, 질문이 없으면 이 줄을 붙이지 마.',
   ];
+  if (concernAnchor) {
+    lines.push(`- [오늘의 중심 고민] 사용자가 처음 꺼낸 고민: "${concernAnchor}" — 새로운 큰 고민을 직접 꺼내기 전까지 이 고민을 중심으로 이어가.`);
+  }
   if (cardsDrawnNow) {
     lines.push(layout === 'unfolded'
       ? '- 방금 카드를 뽑았어. 카드는 왼쪽 테이블에 펼쳐져 있으니 "왼쪽에 펼쳐진 카드를 봐" 처럼 안내하고, 카드 한 장씩 사주 흐름과 엮어서 읽어줘.'
@@ -218,4 +226,19 @@ export function buildLinkedLucyContext(regularMessages: readonly UnifiedMessage[
     });
   if (lines.length === 0) return '';
   return ['[일반 루시와의 최근 대화 · 사용자가 이어가기를 선택함]', '- 아래는 참고 맥락이야. 그대로 반복하지 말고, 자연스럽게 "아까 얘기했던 ~" 처럼 이어서 상담해.', ...lines].join('\n');
+}
+
+/**
+ * 오늘 루시 마스터 상담의 중심 고민: 인사 이후 사용자가 처음 꺼낸, 의미 있는 길이의 말.
+ * (연동/주제 보기 버튼만 누른 짧은 답은 건너뛰고, 그 다음 실제 이야기를 잡는다.)
+ */
+export function findConcernAnchor(masterMessages: readonly UnifiedMessage[]): string {
+  const skip = /^(루시랑 하던 얘기 이어서|새로 시작할래|연애·관계|일·진로|돈·재물|그냥 마음이 복잡해)$/;
+  for (const m of masterMessages) {
+    if (m.role !== 'user' || typeof m.content !== 'string') continue;
+    const text = m.content.replace(/\s+/g, ' ').trim();
+    if (!text || skip.test(text) || text.length < 8) continue;
+    return text.length > 120 ? `${text.slice(0, 120)}…` : text;
+  }
+  return '';
 }

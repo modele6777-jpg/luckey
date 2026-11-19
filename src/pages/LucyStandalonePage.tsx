@@ -32,7 +32,7 @@ import { LucyMasterBgmToggle } from '@/components/chat/LucyMasterBgmToggle';
 import { isLucyMasterBgmPreferred, startLucyMasterBgm, stopLucyMasterBgm } from '@/lib/lucyMasterBgm';
 import remarkGfm from 'remark-gfm';
 import { safeSessionStorage, safeLocalStorage } from '@/utils/safeStorage';
-import { isLucyMasterModeOn, setLucyMasterMode, LUCY_MASTER_MODE_EVENT, publishLucyTarotDraw, isAcceptingTarotDrawOffer, buildTarotHouseGuide, createTarotHouseGreeting, consumeTarotHouseGreetingPending, parseAnswerChoices, isAskingForDeepEngines, createTarotOfferOnUnfold, setLucyMasterLink, getLucyMasterLink, resolveLucyMasterLinkChoice, buildLinkedLucyContext, isTarotHouseGreetingPending } from '@/lib/lucyMasterMode';
+import { isLucyMasterModeOn, setLucyMasterMode, LUCY_MASTER_MODE_EVENT, publishLucyTarotDraw, isAcceptingTarotDrawOffer, buildTarotHouseGuide, createTarotHouseGreeting, consumeTarotHouseGreetingPending, parseAnswerChoices, isAskingForDeepEngines, createTarotOfferOnUnfold, setLucyMasterLink, getLucyMasterLink, resolveLucyMasterLinkChoice, buildLinkedLucyContext, isTarotHouseGreetingPending, findConcernAnchor } from '@/lib/lucyMasterMode';
 import { cleanAssistantMessageDisplay, cleanUserMessageDisplay } from '@/utils/cleanMessage';
 import { detectLucyChannelsFromText, formatChannelsModeTitle, getSeptagramBadgeStyle, shouldShowAutoDetectionBadge } from '@/lib/lucyAutoModeDetector';
 import { selectOptimalDivinationTools, THEME_PRIMARY_DIVINATION_TOOLS, type SelectedDivinationToolsResult } from '@/lib/fifteenDivinationTools';
@@ -3300,7 +3300,9 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
         const linked = buildLinkedLucyContext(personaMessages?.lucy || []);
         if (linked) extraSystemContext = extraSystemContext ? `${extraSystemContext}\n\n${linked}` : linked;
       }
-      const houseGuide = buildTarotHouseGuide(divinationLayout, isTarotIntent, wantsDeepEngines);
+      // 처음 꺼낸 고민을 중심에 고정해 대화가 산으로 가지 않게 한다 (아직 없으면 이번 말이 중심 고민)
+      const concernAnchor = findConcernAnchor([...lucyMessages, { role: 'user', content: userCleanText }]);
+      const houseGuide = buildTarotHouseGuide(divinationLayout, isTarotIntent, wantsDeepEngines, concernAnchor);
       extraSystemContext = extraSystemContext ? `${extraSystemContext}\n\n${houseGuide}` : houseGuide;
     }
 

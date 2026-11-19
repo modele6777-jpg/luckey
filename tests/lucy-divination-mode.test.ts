@@ -6,6 +6,7 @@ import {
   isAcceptingTarotDrawOffer,
   isAskingForDeepEngines,
   buildTarotHouseGuide,
+  findConcernAnchor,
 } from '../src/lib/lucyMasterMode';
 
 const profile = {
@@ -52,4 +53,16 @@ test('house guide asks one question at a time with choices', () => {
   const g = buildTarotHouseGuide('unfolded', false);
   assert.match(g, /\[답변선택:/);
   assert.match(g, /메인은 사주/);
+});
+
+test('concern anchor skips choice taps and keeps the first real worry', () => {
+  const anchor = findConcernAnchor([
+    { role: 'model', content: '어서 와' },
+    { role: 'user', content: '새로 시작할래' },
+    { role: 'user', content: '일·진로' },
+    { role: 'user', content: '회사를 옮길지 계속 고민 중이야' },
+    { role: 'user', content: '근데 오늘 점심 뭐 먹지' },
+  ] as any);
+  assert.equal(anchor, '회사를 옮길지 계속 고민 중이야');
+  assert.match(buildTarotHouseGuide('folded', false, false, anchor), /중심 고민/);
 });
