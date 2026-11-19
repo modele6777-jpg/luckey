@@ -6,6 +6,7 @@ import React, { useEffect, useRef, useState, useCallback } from "react";
 import { useLocation } from "wouter";
 import { AnimatePresence, motion } from "motion/react";
 import { KeyCosmicLoader } from "@/components/KeyCosmicLoader";
+import { isKeyChannelTransitionActive } from "@/components/omniwarp/KeyChannelTransition";
 import { getPendingPrismToss, clearPrismToss } from "@/lib/prismToss";
 import { playAudioHaptic } from "@/lib/audioHaptics";
 import { useTheme } from "@/contexts/ThemeContext";
@@ -74,7 +75,8 @@ const CALM_DARK_THEME_CSS = `
 export default function CalmApp() {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [, navigate] = useLocation();
-  const [isLoading, setIsLoading] = useState(true);
+  // The Key entry screen already covers the switch; don't stack a second loader.
+  const [isLoading, setIsLoading] = useState(() => !isKeyChannelTransitionActive());
   const [iframeLoaded, setIframeLoaded] = useState(false);
   const { resolvedTheme } = useTheme();
 
@@ -122,6 +124,14 @@ export default function CalmApp() {
 
   const dismissLoader = useCallback(() => {
     setIsLoading(false);
+  }, []);
+
+  useEffect(() => {
+    // The entry screen may start in the same frame this page mounts.
+    const frame = window.requestAnimationFrame(() => {
+      if (isKeyChannelTransitionActive()) setIsLoading(false);
+    });
+    return () => window.cancelAnimationFrame(frame);
   }, []);
 
   useEffect(() => {
