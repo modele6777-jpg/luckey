@@ -12,7 +12,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const SCHOPENHAUER_WILL_REPRESENTATION_VERSION = 'LUCKEY-SCHOPENHAUER-WILL-REPRESENTATION-v2.3.0';
+export const SCHOPENHAUER_WILL_REPRESENTATION_VERSION = 'LUCKEY-SCHOPENHAUER-WILL-REPRESENTATION-v2.4.0';
 
 export interface SchopenhauerTheme {
   themeKey: string;
@@ -301,7 +301,7 @@ export function calculateSchopenhauerWillRepresentation(
 
   return {
     engineVersion: SCHOPENHAUER_WILL_REPRESENTATION_VERSION,
-    calculatedAtKst: new Date(now.getTime() + 9 * 60 * 60 * 1000).toISOString().replace('Z', '+09:00'),
+    calculatedAtKst: `${new Date(now.getTime() + 9 * 60 * 60 * 1000).toISOString().slice(0, 19)}+09:00 (KST)`,
     willTranscendenceClarityScore,
     aestheticContemplationDepthScore,
     mitleidUniversalCompassionScore,
@@ -331,7 +331,7 @@ function describeSchopenhauerStage(score: number): string {
 export function formatSchopenhauerWillRepresentationPrompt(res: SchopenhauerWillRepresentationResult): string {
   return [
     `【쇼펜하우어 의지와 표상(Wille und Vorstellung) & 자비(Mitleid) 정성 관조 v2.1】`,
-    `- 기준 시각(KST): ${res.calculatedAtKst}`,
+    `- 엔진 버전: ${res.engineVersion} | 연산 시각: ${res.calculatedAtKst}`,
     `- 맹목적 의지 초월 및 환상 직시: ${describeSchopenhauerStage(res.willTranscendenceClarityScore)}`,
     `- 심미적 관조(예술·음악) 몰입: ${describeSchopenhauerStage(res.aestheticContemplationDepthScore)}`,
     `- 동포애적 자비심(Mitleid) 공감: ${describeSchopenhauerStage(res.mitleidUniversalCompassionScore)}`,
