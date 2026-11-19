@@ -48,7 +48,7 @@
  *    향후 28일(4주기 1순환) 내 최적 택일 후보일을 함께 제시한다.
  */
 
-export const TWENTY_EIGHT_MANSIONS_ENGINE_VERSION = 'LUCKEY-TM-v2.1.0';
+export const TWENTY_EIGHT_MANSIONS_ENGINE_VERSION = 'LUCKEY-TM-v2.2.0';
 
 function formatMansionsKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -146,6 +146,8 @@ export interface TwentyEightMansionsResult {
   oppositeMansion?: TwentyEightMansionsStar;
   reflectiveQuestion?: string;
   interpretiveBoundary?: string;
+  ritualAction?: string;
+  reflectionFocus?: string;
   mansionsSynthesisMatrix?: {
     dominantTension: string;
     alignmentState: string;
@@ -532,6 +534,8 @@ export function calculateTwentyEightMansions(params: { targetDate?: Date; questi
     : `오늘 직성 ${mansion.fullName}(${mansion.grade})이 열어 주는 ${bestDomain.domainKo}의 창을 어떻게 활용하고, 대칭 별자리 ${oppositeMansion.fullName}의 절제를 어디에 적용하시겠습니까?`;
   const interpretiveBoundary =
     '해석 경계: 28수 일진 택일은 천상열차분야지도의 7원 4주기 순환을 일진 판단의 참고 프레임으로 적용한 것이며, 실제 의사결정과 실행 시기 확정은 사용자의 현실 여건과 판단에 따릅니다.';
+  const ritualAction = `${bestDomain.actionGuide} 단, ${worstDomain.domainKo} 관련 큰 결정은 ${worstDomain.bestDates[0].date}(${worstDomain.bestDates[0].mansionName}수)로 미루어 리스크를 줄이십시오.`;
+  const reflectionFocus = `오늘 직성 ${mansion.fullName}(${mansion.grade})의 순환 에너지와 대칭 별자리 ${oppositeMansion.fullName}이 비추는 절제의 균형`;
   const mansionsSynthesisMatrix = {
     dominantTension: `${mansion.fullName}(${mansion.grade}) ↔ ${oppositeMansion.fullName}(대칭)`,
     alignmentState: `${celestialCourt} · ${celestialBeastAlignment.directionMatch} · ${phaseName}`,
@@ -559,6 +563,8 @@ export function calculateTwentyEightMansions(params: { targetDate?: Date; questi
     oppositeMansion,
     reflectiveQuestion,
     interpretiveBoundary,
+    ritualAction,
+    reflectionFocus,
     mansionsSynthesisMatrix,
   };
 }
@@ -596,6 +602,12 @@ export function formatTwentyEightMansionsPrompt(result: TwentyEightMansionsResul
   const reflectionBlock = result.reflectiveQuestion
     ? `\n- 성찰 질문: ${result.reflectiveQuestion}`
     : '';
+  const ritualBlock = result.ritualAction
+    ? `\n- 실천 의례: ${result.ritualAction}`
+    : '';
+  const focusBlock = result.reflectionFocus
+    ? `\n- 성찰 초점: ${result.reflectionFocus}`
+    : '';
   const boundaryBlock = result.interpretiveBoundary
     ? `\n- ${result.interpretiveBoundary}`
     : '';
@@ -611,7 +623,7 @@ export function formatTwentyEightMansionsPrompt(result: TwentyEightMansionsResul
 - 6대 영역 택일(擇日) 등급:
 ${domainLines}
 - 종합 판정: ${result.overallVerdict}
-- 종합 개운 가이드: ${result.overallGuide}${matrixBlock}${reflectionBlock}${boundaryBlock}
+- 종합 개운 가이드: ${result.overallGuide}${matrixBlock}${reflectionBlock}${ritualBlock}${focusBlock}${boundaryBlock}
 - [AI 해석 지침]: 본 리포트는 율리우스 적일 기준 28수 순환 규칙을 적용한 결정론 계산 참고 자료입니다. 영역별 등급은 규칙 기반 참고값이며 통계적 확률이나 길흉의 보장을 뜻하지 않습니다. 직성 등급과 택일 권고일, 행동 가이드는 확정 예언이 아닌 선택을 돕는 성찰 정보로 안내하십시오.
 `.trim();
 }

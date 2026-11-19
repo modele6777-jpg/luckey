@@ -16,7 +16,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const VEDIC_MANDUKYA_TURIYA_ENGINE_VERSION = '2.1.0';
+export const VEDIC_MANDUKYA_TURIYA_ENGINE_VERSION = '2.2.0';
 
 export interface MandukyaConsciousnessState {
   id: string;
@@ -45,6 +45,8 @@ export interface VedicMandukyaTuriyaReport {
   dailyPracticeRitual: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
+  ritualAction: string;
+  reflectionFocus: string;
   mandukyaSynthesisMatrix?: {
     dominantTension: string;
     alignmentState: string;
@@ -183,6 +185,8 @@ export function calculateVedicMandukyaTuriya(
   const calculatedAtKst = new Date(now.getTime() + 9 * 60 * 60 * 1000).toISOString().replace('Z', '+09:00');
   const { situationalTuriyaFocus, dailyPracticeRitual, reflectiveQuestion } = buildSituationalTuriyaFocus(question);
   const interpretBoundary = '이 관점은 만두키야 우파니샤드의 4대 의식 비유를 빌린 상징적 성찰 프레임이며, 확정 예언이 아닙니다.';
+  const ritualAction = `${dailyPracticeRitual} 호흡의 끝자락 침묵에 30초간 머물며 샥시(목격자) 자리를 확인하십시오.`;
+  const reflectionFocus = `[${dominantState.nameKo}]와 [${secondaryState.nameKo}]의 파동을 지켜보는 투리야 순수의식의 고요한 중심`;
 
   const mandukyaUpanishadGuidance = `당신은 몸도, 스쳐가는 감정도, 불안한 생각도 아닙니다. 그 모든 것을 바라보는 초연한 목격자(Sakshi)입니다. 지금 조명되는 상태는 [${dominantState.nameKo}]입니다. ${dominantState.spiritualGift}의 힘을 신뢰하십시오. (${situationalTuriyaFocus})`;
   const omPranavaMeditationRitual = `숨을 들이마시고 내쉬며 마음속으로 길게 'A-U-M...'을 울린 뒤, 음률이 멎은 고요한 침묵에 머무르십시오: "사르밤 칼비담 브라만(Sarvam Khalvidam Brahman) — 모든 것은 신성한 의식이며, 나는 영원한 순수 지각자이다."`;
@@ -210,6 +214,8 @@ export function calculateVedicMandukyaTuriya(
     dailyPracticeRitual,
     reflectiveQuestion,
     interpretiveBoundary: interpretBoundary,
+    ritualAction,
+    reflectionFocus,
     mandukyaSynthesisMatrix,
   };
 }
@@ -231,6 +237,8 @@ export function formatVedicMandukyaTuriyaPrompt(rep: VedicMandukyaTuriyaReport):
 · 만두키야 우파니샤드 지혜 지침: ${rep.mandukyaUpanishadGuidance}
 · 일상 관조 실천: ${rep.dailyPracticeRitual}
 · 성찰 질문: ${rep.reflectiveQuestion}
+· 실천 의례: ${rep.ritualAction}
+· 성찰 초점: ${rep.reflectionFocus}
 · 옴 프라나바 침묵 명상 리추얼: ${rep.omPranavaMeditationRitual}
 · 해석 경계: ${rep.interpretiveBoundary}${matrixLine ? `\n${matrixLine}` : ''}`;
 }
