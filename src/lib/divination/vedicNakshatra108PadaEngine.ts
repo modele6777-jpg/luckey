@@ -1,6 +1,6 @@
 import { UserProfile } from '../sharedState';
 
-export const VEDIC_NAKSHATRA_108_PADA_ENGINE_VERSION = '2.1.0';
+export const VEDIC_NAKSHATRA_108_PADA_ENGINE_VERSION = '2.2.0';
 
 function formatNakshatra108KstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -39,6 +39,8 @@ export interface VedicNakshatra108PadaReport {
   };
   reflectiveQuestion: string;
   interpretiveBoundary: string;
+  ritualAction: string;
+  reflectionFocus: string;
   synthesisPrompt: string;
   nakshatra108SynthesisMatrix?: {
     dominantTension: string;
@@ -170,6 +172,8 @@ export function calculateVedicNakshatra108Pada(
     : `오늘 ${nakshatra.nameKo} 제${pada}파다의 힘과 맞은편 ${secondaryNakshatra.nameKo} 성좌의 균형을 맞추기 위해 어떤 작은 선택을 해 볼 수 있을까요?`;
   const interpretiveBoundary =
     '해석 경계: 본 리포트는 베다 27나크샤트라와 108파다 상징 체계를 통해 내면의 소명과 행동 방향을 비추는 철학적·상징적 참고이며, 실제 천문 관측이나 운명의 단정을 대신하지 않습니다.';
+  const ritualAction = `${sanskritMantra}를 세 번 고요히 읊은 뒤, ${nakshatra.mission}에 닿는 오늘의 작은 실천 한 가지를 적어 바로 실행하십시오.`;
+  const reflectionFocus = `${nakshatra.nameKo} 제${pada}파다(${nakshatra.deity})의 소명과 대칭 성좌 ${secondaryNakshatra.nameKo}의 조화`;
   const nakshatra108SynthesisMatrix = {
     dominantTension: `${nakshatra.nameKo} 제${pada}파다 ↔ ${navamsha.name} · 보조 성좌 ${secondaryNakshatra.nameKo}`,
     alignmentState: `${nakshatra.gana} · ${nakshatra.tattva} · ${nakshatra.deity}`,
@@ -199,6 +203,8 @@ export function calculateVedicNakshatra108Pada(
    - 통합 실천: ${nakshatra108SynthesisMatrix.integratedAction}
 5. 🪞 [성찰 질문 & 해석 경계]:
    - 성찰 질문: ${reflectiveQuestion}
+   - 실천 의례: ${ritualAction}
+   - 성찰 초점: ${reflectionFocus}
    - ${interpretiveBoundary}
 ======================================================================
 [AI 해석 지침]: 이 인덱스는 생년월일·출생 시각·이름에서 만든 결정론적 상징값일 뿐, 천문력·항성황도·달의 경도·출생 장소를 계산하지 않습니다. 실제 출생 나크샤트라, 파다, 나밤샤를 나타내거나 검증하지 않으며, 점수도 측정값이 아닙니다. 위 항목을 실제 천문 배치, 객관적 성격 진단, 확정된 카르마 사실처럼 말하지 마십시오. 전통 상징을 활용한 참고용 성찰로만 설명하고, 사용자의 현실 판단을 대신하지 마십시오.
@@ -225,6 +231,8 @@ export function calculateVedicNakshatra108Pada(
     secondaryNakshatra,
     reflectiveQuestion,
     interpretiveBoundary,
+    ritualAction,
+    reflectionFocus,
     synthesisPrompt,
     nakshatra108SynthesisMatrix,
   };

@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.7.930",
+    "builtAt": "2026-11-19T11:10:00+09:00",
+    "summary": "베다 108파다·판차코샤·진동 소울 퀘스트 3대 엔진 실천 의례 및 성찰 초점 표준 연동(v1.7.930)",
+    "items": [
+      "베다 27나크샤트라 & 108파다 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동",
+      "고대 인도 베단타 5대 코샤(Pancha Kosha) 정렬 엔진(v2.5.0): ritualAction·reflectionFocus 표준 필드 연동",
+      "고대 수비학 차크라 솔 울림 & 퍼스널 라이프 퀘스트 엔진(v2.3.0): ritualAction·reflectionFocus 표준 필드 연동"
+    ]
+  },
+  {
     "version": "1.7.929",
     "builtAt": "2026-11-19T11:00:00+09:00",
     "summary": "28수 택일·베딕 조티시·만두키야 투리야 3대 엔진 실천 의례 및 성찰 초점 표준 연동(v1.7.929)",
