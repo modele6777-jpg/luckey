@@ -12,7 +12,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const KANT_CATEGORICAL_IMPERATIVE_VERSION = 'LUCKEY-KANT-CATEGORICAL-IMPERATIVE-v2.2.0';
+export const KANT_CATEGORICAL_IMPERATIVE_VERSION = 'LUCKEY-KANT-CATEGORICAL-IMPERATIVE-v2.3.0';
 
 export interface KantImperativeFormula {
   formulaKey: string;
@@ -278,7 +278,7 @@ export function calculateKantCategoricalImperative(
 
   return {
     engineVersion: KANT_CATEGORICAL_IMPERATIVE_VERSION,
-    calculatedAtKst: new Date(now.getTime() + 9 * 60 * 60 * 1000).toISOString().replace('Z', '+09:00'),
+    calculatedAtKst: `${new Date(now.getTime() + 9 * 60 * 60 * 1000).toISOString().slice(0, 19)}+09:00 (KST)`,
     universalLawMaximsScore,
     humanDignityEndsScore,
     autonomousWillSovereigntyScore,
@@ -346,6 +346,7 @@ export function formatKantCategoricalImperativePrompt(res: KantCategoricalImpera
 
   return [
     `【칸트 정언명령 & 목적의 왕국 자율성 지표 v2.1 (순수 정성 성찰)】`,
+    `- 엔진 버전: ${res.engineVersion} | 연산 시각: ${res.calculatedAtKst}`,
     `- 준칙 보편화 흐름: ${universalLawStage}`,
     `- 인간존엄성 목적 대우: ${dignityStage}`,
     `- 도덕적 자율성(Autonomy): ${autonomyStage}`,

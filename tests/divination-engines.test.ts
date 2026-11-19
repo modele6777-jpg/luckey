@@ -6495,6 +6495,7 @@ test('Kant Categorical Imperative Engine: calculates universal law maxims, human
   assert(rep.situationalImperativeAudit.focusAxisKo.length > 0);
   assert(rep.temporalReasonRhythm.practicalReasonIndex >= 0 && rep.temporalReasonRhythm.practicalReasonIndex <= 100);
   assert(rep.kantSynthesisMatrix.overallKantGrade.length > 0);
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(rep.ritualAction.length > 0);
   assert(rep.reflectionFocus.length > 0);
   const prompt = formatKantCategoricalImperativePrompt(rep);
@@ -7215,7 +7216,7 @@ test('Johann Wolfgang von Goethe Faust Striving Engine: calculates Striving Salv
   assert(rep.mephistoNegationOvercomeScore >= 0 && rep.mephistoNegationOvercomeScore <= 100);
   assert(rep.eternalFeminineUpliftScore >= 0 && rep.eternalFeminineUpliftScore <= 100);
   assert(rep.activeGoetheTheme.themeTitleKo.length > 0);
-  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(Boolean(rep.goetheSynthesisMatrix?.integratedAction));
   assert(rep.ritualAction.length > 0);
   assert(rep.reflectionFocus.length > 0);
@@ -8665,7 +8666,7 @@ test('Jurgen Habermas Communicative Action and Public Sphere Engine: calculates 
   assert(rep.lifeworldColonizationDefenseIndex >= 0 && rep.lifeworldColonizationDefenseIndex <= 100);
   assert(rep.deliberativeDemocraticConsensusScore >= 0 && rep.deliberativeDemocraticConsensusScore <= 100);
   assert(rep.activeHabermasTheme.themeTitleKo.length > 0);
-  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(Boolean(rep.habermasSynthesisMatrix?.integratedAction));
   assert(rep.ritualAction.length > 0);
   assert(rep.reflectionFocus.length > 0);
