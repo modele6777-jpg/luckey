@@ -12693,3 +12693,27 @@ test('연암 열하일기·메디컬 바이오·멘탈 리질리언스 3대 엔�
   assert.match(mr.calculatedAtKst, /\+09:00/);
   assert.ok(formatMentalResiliencePrompt(mr).includes('+09:00'));
 });
+
+test('귀인 네트워크·바이탈리티 커브·재물 파이프라인 3대 엔진 v1.7.925 KST(+09:00) 표준 표기 검증', () => {
+  const profile: any = {
+    name: '테스트',
+    basic: { birthdate: '1994-01-24', birthtime: '10:30', gender: 'male', calendarType: 'solar' },
+  };
+  const now = new Date('2026-11-19T10:27:00+09:00');
+  const query = '귀인 인연 시너지와 오늘 시간대별 생체 활력 곡선, 재물 파이프라인 흐름을 보고 싶을 때';
+
+  const nn = calculateNobleNetwork({ profile, targetDate: now, question: query });
+  assert.equal(nn.engineVersion, NOBLE_NETWORK_VERSION);
+  assert.match(nn.calculatedAtKst, /\+09:00/);
+  assert.ok(formatNobleNetworkPrompt(nn).includes('+09:00'));
+
+  const vc = calculateVitalityCurve({ profile, question: query });
+  assert.equal(vc.engineVersion, VITALITY_CURVE_ENGINE_VERSION);
+  assert.match(vc.calculatedAtKst, /\+09:00/);
+  assert.ok(formatVitalityCurvePrompt(vc).includes('+09:00'));
+
+  const wp = calculateWealthPipeline({ profile, targetDate: now, question: query });
+  assert.equal(wp.engineVersion, WEALTH_PIPELINE_VERSION);
+  assert.match(wp.calculatedAtKst, /\+09:00/);
+  assert.ok(formatWealthPipelinePrompt(wp).includes('+09:00'));
+});
