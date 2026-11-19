@@ -880,3 +880,14 @@ html[data-lucy-theme='starlight'] .lucy-night .lucy-voice-status { background: #
   gap: 0.375rem;
   width: max-content;
 }
+
+/* Lucy Master keeps a dark, candle-lit header in every time of day, so its
+   pale Master wordmark, engine chip and header buttons stay readable. */
+.lucy-chat-shell[data-lucy-master='true'] .lucy-chat-header {
+  --lucy-chrome: rgba(18, 12, 38, 0.94);
+  --lucy-border: rgba(196, 167, 255, 0.28);
+  background: var(--lucy-chrome) !important;
+  border-color: var(--lucy-border) !important;
+  color: #f5f3ff !important;
+  color-scheme: dark;
+}

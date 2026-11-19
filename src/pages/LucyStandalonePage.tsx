@@ -3689,6 +3689,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
     <div
       data-lucy-period={lucyDayPeriod}
       data-lucy-light={isLight ? 'true' : 'false'}
+      data-lucy-master={isMasterMode ? 'true' : undefined}
       data-lucy-search-active={isSearchOpen ? 'true' : 'false'}
       data-lucy-input-focused={isInputFocused ? 'true' : 'false'}
       className={`lucy-chat-shell ${isLight ? 'light' : 'dark'} ${isSearchOpen ? 'lucy-search-active' : ''} ${isInputFocused ? 'lucy-input-focused' : ''} ${isMasterMode ? 'is-pro-theme' : ''} ${lucyDayPeriod === 'night' ? 'lucy-night' : 'lucy-daylight'} h-full min-h-0 flex-1 w-full max-w-full overflow-hidden overflow-x-clip overscroll-x-none flex flex-col font-sans select-text relative transition-colors duration-500`}
