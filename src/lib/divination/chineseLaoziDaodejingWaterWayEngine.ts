@@ -14,7 +14,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const LAOZI_DAODEJING_VERSION = 'LUCKEY-LAOZI-DAODEJING-v2.5.0';
+export const LAOZI_DAODEJING_VERSION = 'LUCKEY-LAOZI-DAODEJING-v2.6.0';
 
 export interface DaodejingStage {
   stageLevel: number;
@@ -181,7 +181,7 @@ function getKstDate(now?: Date): Date {
 }
 
 function getKstDateString(now?: Date): string {
-  return `${getKstDate(now).toISOString().slice(0, 19)}+09:00`;
+  return `${getKstDate(now).toISOString().slice(0, 19)}+09:00 (KST)`;
 }
 
 function describeDaodejingWaterStage(harmonyScore: number): string {
@@ -357,6 +357,7 @@ export function formatLaoziDaodejingPrompt(result: LaoziDaodejingResult): string
   → 실천 지침: ${result.primaryDaoPrinciple.actionableDirective}
 - 도덕경 불멸의 계시: 《${result.daodejingCosmicEpiphany.chapterSceneTitle}》
   → 무위의 지혜: "${result.daodejingCosmicEpiphany.timelessWisdom}"
+- 성찰 초점: ${result.reflectionFocus}
 - 질문 맞춤 성찰 질문: ${result.reflectiveQuestion}
 - 해석 경계: 본 리포트는 노자 《도덕경》의 무위·상선약수 철학에 기반한 정성적 성찰 안내이며, 확정적 길흉 예단이 아닙니다.${matrixLine}`;
 }
