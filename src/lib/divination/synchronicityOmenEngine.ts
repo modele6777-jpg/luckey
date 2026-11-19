@@ -19,7 +19,7 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const SYNCHRONICITY_OMEN_VERSION = 'LUCKEY-SYNCHRONICITY-OMEN-v2.2.0';
+export const SYNCHRONICITY_OMEN_VERSION = 'LUCKEY-SYNCHRONICITY-OMEN-v2.3.0';
 
 function formatSynchronicityKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -59,6 +59,8 @@ export interface SynchronicityOmenReport {
     alignmentState: string;
     integratedAction: string;
   };
+  ritualAction: string;
+  reflectionFocus: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
@@ -152,6 +154,8 @@ export function runSynchronicityOmenEngine(
   };
 
   const interpretiveBoundary = '본 칼 융 동시성 징조 해독 리포트는 비인과적 상징 공명과 사주 오행 데이터를 결합한 성찰 안내이며, 일상적 우연의 확정적 예언이나 의학적·법적 판단을 대체하지 않습니다.';
+  const ritualAction = `[${ritualName}] ${actionStep}`;
+  const reflectionFocus = `동시성 오멘(${dominantOmenTheme}) — ${manifestationSignal}`;
   const reflectiveQuestion = q
     ? `'${q}'와 관련해 최근 자꾸 눈길이나 발길이 멈추는 ${primaryChannelName}의 반복 신호가 내게 건네려는 메시지는 무엇인가요?`
     : `오늘 하루 스쳐 지나가는 사소한 우연 속에서 내가 지금 가장 알아차려 주길 기다리는 내면의 신호는 무엇인가요?`;
@@ -167,6 +171,8 @@ export function runSynchronicityOmenEngine(
   3. ${twentyFourHourWatchSymbols[2]}
 - 현실 틈새(Matrix Glitch) 해독 가이드: ${matrixGlitchDecodingGuidance}
 - 동시성 각성 실천 리추얼: [${ritualName}] - ${actionStep}
+- 실천 의례: ${ritualAction}
+- 성찰 초점: ${reflectionFocus}
 - 교차 매트릭스: [핵심 긴장: ${synchronicitySynthesisMatrix.dominantTension} | 조율 상태: ${synchronicitySynthesisMatrix.alignmentState}]
   * 통합 실천: ${synchronicitySynthesisMatrix.integratedAction}
 - 질문 맞춤 성찰 질문: ${reflectiveQuestion}
@@ -192,6 +198,8 @@ export function runSynchronicityOmenEngine(
     },
     synthesisPromptGuidance,
     synchronicitySynthesisMatrix,
+    ritualAction,
+    reflectionFocus,
     reflectiveQuestion,
     interpretiveBoundary,
   };
