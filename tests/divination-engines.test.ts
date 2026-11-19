@@ -2086,6 +2086,7 @@ test('Ziwei Flying Stars Engine: 유년 사화 동적 비성 및 삼방사정 �
   assert(Boolean(res.secondaryMutagenAxis));
   assert(res.reflectiveQuestion.includes('올해 재물과 커리어 방향'));
   assert(res.interpretiveBoundary.includes('해석 경계'));
+  assert(res.ritualAction.length > 0 && res.reflectionFocus.length > 0);
   assert(Boolean(res.ziweiFlyingSynthesisMatrix?.integratedAction));
   assert.equal(res.targetYear, 2026);
   assert(res.mutagens.lu.starName.length > 0);
@@ -2107,6 +2108,7 @@ test('Ziwei Flying Stars Engine: 유년 사화 동적 비성 및 삼방사정 �
   assert(prompt.includes('유년 4분기 완급 조절 타임라인'));
   assert(prompt.includes('교차 매트릭스'));
   assert(prompt.includes('보조 권과 축'));
+  assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
   assert(prompt.includes('성찰 질문'));
   assert(prompt.includes('해석 경계'));
   assert(!prompt.includes('/100'));
@@ -4141,12 +4143,14 @@ test('Yoruba Ifa Odu Engine: calculates 16 Meji Odu and Ebo guidance', () => {
   const rep = calculateYorubaIfaOdu({ profile });
   assert.equal(rep.engineVersion, YORUBA_IFA_ODU_ENGINE_VERSION);
   assert(rep.oduName.length > 0);
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(rep.destinyAlignmentScore >= 0 && rep.destinyAlignmentScore <= 100);
   const prompt = formatYorubaIfaOduPrompt(rep);
   assert(prompt.includes('서아프리카 요루바 이파(Ifá) 16 오두 & 오룬밀라 운명의 지혜 정성 리포트'));
   assert(prompt.includes(rep.oduName));
   assert(prompt.includes('전통 의례를 통한 실제 신탁'));
   assert(prompt.includes('확정적 예언이 아닙니다'));
+  assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
 });
 
 test('Arabic Ilm al-Raml Engine: calculates 16 geomantic figures and Qadi verdict', () => {
@@ -4918,9 +4922,11 @@ test('Zhuangzi Xiaoyaoyou Butterfly Engine: calculates absolute freedom, rocs fl
   assert(rep.qiwulunTranscendenceIndex >= 0 && rep.qiwulunTranscendenceIndex <= 100);
   assert(rep.butterflyDreamFluidityScore >= 0 && rep.butterflyDreamFluidityScore <= 100);
   assert(rep.dominantArchetype.nameKo.length > 0);
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatZhuangziXiaoyaoyouButterflyPrompt(rep);
   assert(prompt.includes('장자'));
   assert(prompt.includes(rep.dominantArchetype.nameKo));
+  assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
 });
 
 test('Buddhist Yogacara Consciousness Engine: calculates eight consciousnesses purification and transformed wisdom', () => {

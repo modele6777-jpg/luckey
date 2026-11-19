@@ -1,6 +1,6 @@
 import { UserProfile } from '../sharedState';
 
-export const YORUBA_IFA_ODU_ENGINE_VERSION = '2.1.0';
+export const YORUBA_IFA_ODU_ENGINE_VERSION = '2.2.0';
 
 export interface YorubaIfaOduReport {
   engineVersion: string;
@@ -22,6 +22,8 @@ export interface YorubaIfaOduReport {
   dailyPracticeRitual: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
+  ritualAction: string;
+  reflectionFocus: string;
   synthesisPrompt: string;
   ifaSynthesisMatrix?: {
     dominantTension: string;
@@ -254,6 +256,8 @@ export function calculateYorubaIfaOdu(options?: {
   const dailyPracticeRitual = `${odu.ebo} — 오늘 하루 부담 없는 한 가지 정화 행동으로 오두의 흐름을 현실에 고정하십시오.`;
   const reflectiveQuestion = `${odu.name}의 시선으로 볼 때, 지금 내가 억지로 붙잡거나 미루고 있는 선택 한 가지는 무엇인가요?`;
   const interpretiveBoundary = '본 이파(Ifá) 오두 결과는 서아프리카 구전 신탁 상징에 기반한 정성적 성찰 안내이며, 확정적 길흉 예단이 아닙니다.';
+  const ritualAction = dailyPracticeRitual;
+  const reflectionFocus = `${odu.name} (${odu.orisha}) · ${situationalIfaFocus.focusTheme}`;
 
   const trimmedQ = (options?.question || '').trim();
   const ifaSynthesisMatrix = {
@@ -279,6 +283,8 @@ export function calculateYorubaIfaOdu(options?: {
 3. 🕊️ [에보(Ebó) 현실 행동 처방 & 공명 단계]:
    - 영혼 소명 정렬 단계: **${alignmentStage}**
    - 오늘의 에보 실천: **${dailyPracticeRitual}**
+   - 실천 의례: ${ritualAction}
+   - 성찰 초점: ${reflectionFocus}
    - 성찰 질문: ${reflectiveQuestion}
    - 해석 경계: ${interpretiveBoundary}
 4. 🧭 [이파 교차 매트릭스]:
@@ -306,6 +312,8 @@ export function calculateYorubaIfaOdu(options?: {
     dailyPracticeRitual,
     reflectiveQuestion,
     interpretiveBoundary,
+    ritualAction,
+    reflectionFocus,
     synthesisPrompt,
     ifaSynthesisMatrix,
   };
