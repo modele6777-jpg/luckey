@@ -120,6 +120,7 @@ interface AppContextValue {
   isLucyProGenerating: boolean;
   abortLucyProGenerating: () => void;
   clearLucyProMessages: () => void;
+  setLucyProMessages: React.Dispatch<React.SetStateAction<UnifiedMessage[]>>;
   personaMessages: Record<PersonaType, UnifiedMessage[]>;
   setPersonaMessages: React.Dispatch<React.SetStateAction<Record<PersonaType, UnifiedMessage[]>>>;
   isGenerating: Record<PersonaType, boolean>;
@@ -2715,7 +2716,7 @@ ${responseProfile.rule}`;
       sharedState, updateSharedState, syncPrismDevices, isSyncing,
       isChatOpen, setIsChatOpen,
       activePersona, setActivePersona,
-      lucyProMessages: proChat.messages, isLucyProGenerating: proChat.generating, abortLucyProGenerating: proChat.abort, clearLucyProMessages: proChat.reset,
+      lucyProMessages: proChat.messages, isLucyProGenerating: proChat.generating, abortLucyProGenerating: proChat.abort, clearLucyProMessages: proChat.reset, setLucyProMessages: proChat.runtime.setMessages,
       personaMessages, setPersonaMessages,
       isGenerating, abortGenerating, sendUnifiedMessage, revealLucyTarotCard, chatSuggestions, openLucyChat,
       openHandbook, clearPersonaMessages,

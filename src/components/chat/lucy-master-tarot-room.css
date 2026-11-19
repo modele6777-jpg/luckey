@@ -1,0 +1,119 @@
+/* 🔮 Lucy Master tarot room — purple velvet table with flickering candles */
+.lucy-master-room { position: absolute; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; user-select: none; background: #120a1f; }
+
+.lmr-velvet {
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse 120% 70% at 50% 110%, #3b1d5e 0%, transparent 60%),
+    radial-gradient(ellipse 90% 60% at 50% -10%, #241338 0%, transparent 70%),
+    linear-gradient(180deg, #160c26 0%, #1d1030 55%, #2a1645 100%);
+}
+
+/* The table cloth: a soft trapezoid at the bottom, embroidered circle in the middle */
+.lmr-cloth {
+  position: absolute; left: -10%; right: -10%; bottom: -6%; height: 42%;
+  background: radial-gradient(ellipse 70% 90% at 50% 100%, #4a2475 0%, #351a57 45%, transparent 75%);
+  clip-path: polygon(14% 0, 86% 0, 100% 100%, 0 100%);
+  opacity: .9;
+}
+.lmr-cloth-sigil {
+  position: absolute; left: 50%; top: 38%; width: 46vmin; height: 46vmin; transform: translate(-50%, -50%) scaleY(.38);
+  border-radius: 50%;
+  border: 1px solid #d9b8ff26;
+  box-shadow: 0 0 0 10px #d9b8ff0a, 0 0 0 22px #d9b8ff08, inset 0 0 40px #b07cff14;
+}
+
+/* Gold embroidered edge + tassel fringe along the front of the tarot cloth */
+.lmr-cloth-trim { position: absolute; left: 14%; right: 14%; top: 0; height: 3px; background: linear-gradient(90deg, transparent, #c9a46a 15%, #f0d48f 50%, #c9a46a 85%, transparent); opacity: .7; }
+.lmr-cloth-fringe {
+  position: absolute; left: 4%; right: 4%; bottom: 0; height: 14px; opacity: .55;
+  background: repeating-linear-gradient(90deg, #c9a46a 0 2px, transparent 2px 9px);
+  -webkit-mask-image: linear-gradient(180deg, #000 0%, #0000 100%); mask-image: linear-gradient(180deg, #000 0%, #0000 100%);
+}
+
+/* Dream catcher hanging from the top corner, feathers swaying */
+.lmr-dreamcatcher {
+  position: absolute; top: 9%; right: 6%; width: clamp(72px, 19vmin, 124px); height: auto; opacity: .7;
+  filter: drop-shadow(0 0 8px #b98cff55);
+  transform-origin: 50% 0; animation: lmr-sway 7s ease-in-out infinite;
+}
+.lmr-feather { animation: lmr-feather 3.6s ease-in-out infinite; }
+@keyframes lmr-sway { 0%, 100% { transform: rotate(-2.5deg); } 50% { transform: rotate(2.5deg); } }
+@keyframes lmr-feather { 0%, 100% { transform: rotate(-6deg); } 50% { transform: rotate(7deg); } }
+
+/* Warm light spilling from the candles onto the cloth */
+.lmr-candle-glow {
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(circle at 8% 78%, #ffb85c22, transparent 28%),
+    radial-gradient(circle at 90% 76%, #ffb85c22, transparent 28%);
+  animation: lmr-room-breathe 4.8s ease-in-out infinite;
+}
+
+.lmr-vignette { position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 45%, transparent 45%, #07030dcc 100%); }
+
+/* Candles */
+.lmr-candle { position: absolute; bottom: 15%; display: flex; flex-direction: column; align-items: center; transform-origin: 50% 100%; }
+.lmr-wax {
+  width: 16px; border-radius: 3px 3px 2px 2px; position: relative;
+  background: linear-gradient(90deg, #d8c9b4 0%, #f6ecdc 35%, #fff8ea 50%, #e7d8c2 70%, #bfae96 100%);
+  box-shadow: inset 0 6px 8px -4px #ffcf8a99;
+}
+.lmr-drip { position: absolute; top: 0; left: 3px; width: 5px; height: 14px; border-radius: 0 0 4px 4px; background: #fbf2e3; }
+.lmr-holder { width: 30px; height: 6px; border-radius: 50%; background: linear-gradient(180deg, #c9a46a, #6e5230); box-shadow: 0 2px 6px #00000080; }
+.lmr-wick { width: 2px; height: 6px; background: #2b1d12; border-radius: 1px; }
+
+.lmr-flame {
+  width: 12px; height: 26px; margin-bottom: -2px;
+  border-radius: 50% 50% 45% 45% / 62% 62% 38% 38%;
+  background: radial-gradient(ellipse at 50% 80%, #fff6d6 0%, #ffd27a 35%, #ff9a3c 65%, #ff6b2c00 100%);
+  filter: blur(.3px);
+  transform-origin: 50% 90%;
+  animation: lmr-flicker 2.6s ease-in-out infinite;
+  box-shadow: 0 0 10px #ffb24d, 0 0 22px #ff8a3d80;
+  position: relative;
+}
+.lmr-flame-core {
+  position: absolute; left: 50%; bottom: 3px; width: 4px; height: 8px; transform: translateX(-50%);
+  border-radius: 50%; background: #8fb4ff99; filter: blur(1px);
+}
+.lmr-halo {
+  position: absolute; top: -34px; width: 90px; height: 90px; border-radius: 50%;
+  background: radial-gradient(circle, #ffc36b40 0%, #ff9d4a14 40%, transparent 70%);
+  animation: lmr-halo 2.6s ease-in-out infinite;
+}
+
+/* Floating dust in the candle light */
+.lmr-mote {
+  position: absolute; bottom: -10px; width: 3px; height: 3px; border-radius: 50%;
+  background: #e8c9ff; opacity: 0; box-shadow: 0 0 6px #d9a8ff;
+  animation-name: lmr-rise; animation-timing-function: linear; animation-iteration-count: infinite;
+}
+
+@keyframes lmr-flicker {
+  0%, 100% { transform: rotate(-1deg) scaleY(1) scaleX(1); opacity: 1; }
+  12% { transform: rotate(2.5deg) scaleY(1.06) scaleX(.94); }
+  25% { transform: rotate(-2deg) scaleY(.95) scaleX(1.04); opacity: .92; }
+  38% { transform: rotate(1.5deg) scaleY(1.09) scaleX(.92); }
+  52% { transform: rotate(-3deg) scaleY(.98) scaleX(1.02); opacity: .97; }
+  67% { transform: rotate(2deg) scaleY(1.04) scaleX(.96); }
+  81% { transform: rotate(-1.5deg) scaleY(.93) scaleX(1.05); opacity: .9; }
+}
+@keyframes lmr-halo {
+  0%, 100% { opacity: .85; transform: scale(1); }
+  30% { opacity: .65; transform: scale(.94); }
+  55% { opacity: 1; transform: scale(1.06); }
+  80% { opacity: .72; transform: scale(.97); }
+}
+@keyframes lmr-room-breathe { 0%, 100% { opacity: .9; } 50% { opacity: .65; } }
+@keyframes lmr-rise {
+  0% { transform: translateY(0) translateX(0); opacity: 0; }
+  15% { opacity: .55; }
+  60% { transform: translateY(-55vh) translateX(18px); opacity: .3; }
+  100% { transform: translateY(-95vh) translateX(-12px); opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lmr-flame, .lmr-halo, .lmr-candle-glow, .lmr-mote, .lmr-dreamcatcher, .lmr-feather { animation: none; }
+  .lmr-mote { display: none; }
+}

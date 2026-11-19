@@ -97,6 +97,7 @@ function selectRelevantDeepPerspectiveKeys(
   question: string,
   intent: QuestionIntentCategory,
   preferredKeys: readonly string[] = [],
+  limit: number = MAX_RELEVANT_DEEP_PERSPECTIVES,
 ): string[] {
   const engines = ALL_DCE_ENGINES.filter(engine => engine.category === 'deep_master');
   const engineByKey = new Map(engines.map(engine => [engine.key, engine] as const));
@@ -119,10 +120,10 @@ function selectRelevantDeepPerspectiveKeys(
 
   const selected = [...preferred];
   for (const item of ranked) {
-    if (selected.length >= MAX_RELEVANT_DEEP_PERSPECTIVES) break;
+    if (selected.length >= limit) break;
     if (!selected.includes(item.key)) selected.push(item.key);
   }
-  return selected.slice(0, MAX_RELEVANT_DEEP_PERSPECTIVES);
+  return selected.slice(0, limit);
 }
 
 /**
@@ -517,11 +518,28 @@ export function routeAndExecute(params: {
   requireBasicAndDeep?: boolean;
   allowMaster?: boolean;
   targetTools?: DivinationToolId[];
+  /**
+   * 🔮 점술모드(빅뱅 홀드): 사주 상담이 메인.
+   * - base 'saju': 사주 베이스 / 'tarot_saju': 펼친 화면에서 뽑은 타로 + 사주
+   * - deep: 사용자가 원할 때만 고민과 관련된 엔진(도구·심층 관점)을 추가로 본다.
+   */
+  divinationMode?: { base: 'saju' | 'tarot_saju'; deep?: boolean };
 }): RoutedExecutionResult {
   const isMaster = Boolean(params.isMasterRequested);
   const requireBasicAndDeep = isMaster || Boolean(params.requireBasicAndDeep);
   const routePlan = analyzeQuestionIntent(params.text, isMaster, params.allowMaster);
-  if (!routePlan.isMasterMobilization && params.targetTools?.length) {
+  const divination = params.divinationMode;
+  if (divination) {
+    const baseTools: DivinationToolId[] = divination.base === 'tarot_saju' ? ['saju', 'tarot'] : ['saju'];
+    // 기본은 사주(+타로)만. 사용자가 더 보길 원할 때만 고민 의도에 맞는 도구를 더한다.
+    const extraTools = divination.deep ? (routePlan.targetTools ?? []) : [];
+    routePlan.isCasual = false;
+    routePlan.isMasterMobilization = false;
+    routePlan.targetTools = [...new Set<DivinationToolId>([...baseTools, ...(params.targetTools ?? []), ...extraTools])];
+    routePlan.intentKoName = `🔮 점술모드 · ${routePlan.intentKoName}`;
+    routePlan.routingReason = divination.base === 'tarot_saju' ? '점술모드: 사주 메인 + 타로' : '점술모드: 사주 메인';
+  }
+  if (!divination && !routePlan.isMasterMobilization && params.targetTools?.length) {
     routePlan.targetTools = [...new Set(params.targetTools)];
     routePlan.isCasual = false;
     routePlan.intentKoName = '지정한 도구로 상담';
@@ -562,6 +580,21 @@ export function routeAndExecute(params: {
       .map(engine => [engine.key, engine.nameKo] as const));
     routePlan.deepEngineKeys = selectedDeepKeys;
     routePlan.deepEnginesKo = selectedDeepKeys.map(key => engineNames.get(key) ?? key);
+  }
+
+  if (divination) {
+    if (divination.deep) {
+      // 사용자가 원함: 고민과 관련된 심층 관점을 넉넉히(최대 24개) 추가
+      const deepKeys = selectRelevantDeepPerspectiveKeys(params.text, routePlan.intent, routePlan.deepEngineKeys ?? [], 24);
+      const engineNames = new Map(ALL_DCE_ENGINES.filter(e => e.category === 'deep_master').map(e => [e.key, e.nameKo] as const));
+      routePlan.deepEngineKeys = deepKeys;
+      routePlan.deepEnginesKo = deepKeys.map(key => engineNames.get(key) ?? key);
+      routePlan.deepEngineGuidance = '사용자가 고민과 관련된 엔진을 더 보길 원했다. 사주를 중심에 두고, 함께 전달된 관련 도구 계산 결과와 심층 관점을 하나씩 짚어 연결해줘. 심층 관점은 상징 참고일 뿐 별도 계산이 아니며, 미실행·오류·미기록 항목을 사용했다고 주장하지 마.';
+    } else {
+      // 평소 대화: 사주 중심으로 가볍게. 심층 관점은 1개만 은은하게.
+      routePlan.deepEngineKeys = (routePlan.deepEngineKeys ?? []).slice(0, 1);
+      routePlan.deepEnginesKo = (routePlan.deepEnginesKo ?? []).slice(0, 1);
+    }
   }
 
   if (routePlan.isCasual) {
