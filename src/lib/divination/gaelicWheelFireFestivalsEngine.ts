@@ -8,7 +8,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const GAELIC_FIRE_FESTIVALS_ENGINE_VERSION = '2.4.0';
+export const GAELIC_FIRE_FESTIVALS_ENGINE_VERSION = '2.5.0';
 
 export interface GaelicFestivalStation {
   id: 'samhain' | 'imbolc' | 'bealtaine' | 'lughnasadh';
@@ -244,7 +244,7 @@ export function calculateGaelicWheelFireFestivals(
   const sacredHearthfireRitual = `[게일 난로불 리추얼]: ${activeStation.ritualPrescription} 성스러운 수호신 [${activeStation.presidingDeity}]의 기운이 당신의 안식을 지켜줍니다.`;
 
   const kst = new Date(referenceDate.getTime() + 9 * 60 * 60 * 1000);
-  const calculatedAtKst = kst.toISOString().replace('T', ' ').substring(0, 19) + ' +09:00 KST';
+  const calculatedAtKst = `${kst.toISOString().slice(0, 19)}+09:00 (KST)`;
 
   return {
     engineVersion: GAELIC_FIRE_FESTIVALS_ENGINE_VERSION,
@@ -284,6 +284,7 @@ export function formatGaelicWheelFireFestivalsPrompt(report: GaelicWheelFireFest
 - **순환 교차 매트릭스**: ${report.gaelicSynthesisMatrix.stationElementLink}
 - **켈트 드루이드 지혜 지침**: ${report.gaelicOmenGuidance}
 - **성스러운 난로불 리추얼**: ${report.sacredHearthfireRitual}
+- **성찰 초점**: ${report.reflectionFocus}
 - **질문 맞춤 성찰 질문**: ${report.reflectiveQuestion}
 - **해석 경계**: 게일 4대 화제 축제와 콜리니 역법 상징을 빌린 정성적 계절 순환 참고 관점이며, 개인 점수나 확정 예언이 아닙니다.`;
 }
