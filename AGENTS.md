@@ -35,8 +35,9 @@ Every time a user request is completed or changes are made to the codebase:
 - Use `isDuoUnfoldedState`/`resolveDuoViewport` consistently. Rotation and keyboard height changes must not turn an inner display into a folded cover.
 - The portrait menu owns its safe-area inset; split only the space above it into equal canvases. Remove vertical-rail padding and footer minimum heights in portrait.
 
-### 6. Unified Lucy Name
-- All folded/unfolded layouts use Lucy, without a Plus label or marker. Legacy plus tier values remain compatible with existing layout behavior.
+### 6. Lucy / Lucy Plus Name
+- User update 2026-11-19: folded layouts use Lucy; every Lucy chat in the unfolded dual screen is Lucy Plus (Plus marker in the header), regardless of the content pane route, in landscape and portrait.
+- Entering Lucy Plus (unfolding) shows the Lucy Plus entry screen inside the Lucy pane only; it is visual-only and follows Lucy's day/night palette.
 - Preserve Pro markers and mode transition popups; do not add Plus when Pro is active.
 
 ### 7. Popup Bounds Exclude Navigation
