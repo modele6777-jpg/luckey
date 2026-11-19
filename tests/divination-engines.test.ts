@@ -2408,6 +2408,7 @@ test('Voice Persona Engine: 스피치 페르소나 및 설득력 치트키 검�
   assert.equal(res.engineVersion, VOICE_PERSONA_VERSION);
   assert(res.calculatedAtKst.endsWith('KST'));
   assert(Boolean(res.voiceSynthesisMatrix?.integratedAction));
+  assert(res.ritualAction.length > 0 && res.reflectionFocus.length > 0);
   assert(res.interpretiveBoundary.length > 0);
   assert(res.persona.title.length > 0);
   assert(res.persuasionScore >= 0 && res.persuasionScore <= 100);
@@ -2418,6 +2419,7 @@ test('Voice Persona Engine: 스피치 페르소나 및 설득력 치트키 검�
   assert(prompt.includes('1순위 화법 페르소나'));
   assert(prompt.includes('실전 스피치 치트키'));
   assert(prompt.includes('교차 매트릭스') && prompt.includes('해석 경계'));
+  assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });
@@ -3471,11 +3473,13 @@ test('Ziwei HuaJi Transformation Engine: maps stem hua-ji and breakthrough gift'
   const rep = calculateZiweiHuaJiTransformation(profile);
   assert.equal(rep.engineVersion, ZIWEI_HUAJI_VERSION);
   assert(rep.huaJiStar.starNameKo.length > 0);
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(rep.resilienceIndex >= 0 && rep.resilienceIndex <= 100);
   assert(rep.transmutationStrategy.length > 0);
   const prompt = formatZiweiHuaJiTransformationPrompt(rep);
   assert(prompt.includes('자미두수 화기'));
   assert(prompt.includes(rep.huaJiStar.starNameKo));
+  assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
 });
 
 test('Celtic Tree Ogham Engine: derives birth guardian tree and seasonal oracle', () => {
@@ -3728,9 +3732,11 @@ test('Zoroastrian Asha Truth Engine: calculates threefold path, sacred atar fire
   assert(rep.threefoldPillars.humataScore >= 0 && rep.threefoldPillars.hukhtaScore >= 0 && rep.threefoldPillars.hvarshtaScore >= 0);
   assert(rep.sacredAtar.firePurityScore >= 0 && rep.sacredAtar.firePurityScore <= 100);
   assert(rep.discernment.truthAshaPath.length > 0);
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatZoroastrianAshaTruthPrompt(rep);
   assert(prompt.includes('고대 조로아스터교 아샤(Asha) 신성 우주 질서'));
   assert(prompt.includes(rep.discernment.currentTrialTheme));
+  assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
 });
 
 test('DCE catalogue size is never substituted for successful calculation evidence', () => {

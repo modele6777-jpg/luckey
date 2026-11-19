@@ -16,7 +16,7 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const VOICE_PERSONA_VERSION = 'LUCKEY-VOICE-v2.2.0';
+export const VOICE_PERSONA_VERSION = 'LUCKEY-VOICE-v2.3.0';
 
 function formatVoicePersonaKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -112,6 +112,8 @@ export interface VoicePersonaResult {
   };
   reflectiveQuestion: string;
   interpretiveBoundary: string;
+  ritualAction: string;
+  reflectionFocus: string;
 }
 
 /**
@@ -184,6 +186,8 @@ export function calculateVoicePersona(params?: {
     integratedAction: `${persona.speakingFormula}${q ? ` [질문 맥락: ${q}]` : ''}`,
   };
   const interpretiveBoundary = '본 스피치·커뮤니케이션 페르소나 리포트는 명리 식상 및 기질 수리에 기반한 화법 성찰 가이드이며, 심리·임상 평가나 절대적 성과 보증이 아닙니다.';
+  const ritualAction = `${persona.speakingFormula}을(를) 오늘 첫 대화에 적용하고, "${conversationalBalanceTip}" 조언을 한 문장 덧붙이십시오.`;
+  const reflectionFocus = `${persona.title}의 설득 강점과 "${persona.pitfallToAvoid.slice(0, 28)}" 사이의 말하기 균형`;
   const reflectiveQuestion = q
     ? `'${q}'를 전할 때 ${persona.title}의 명쾌함을 살리면서도 상대의 마음을 열기 위해 덧붙일 따뜻한 한 문장은 무엇인가요?`
     : `오늘 중요한 대화에서 내 말의 논리적 힘과 상대의 마음을 여는 온기 중 어느 쪽을 먼저 건네고 싶나요?`;
@@ -205,6 +209,8 @@ export function calculateVoicePersona(params?: {
     voiceSynthesisMatrix,
     reflectiveQuestion,
     interpretiveBoundary,
+    ritualAction,
+    reflectionFocus,
   };
 }
 
@@ -228,6 +234,8 @@ export function formatVoicePersonaPrompt(res: VoicePersonaResult): string {
   • 갈등 중재: ${res.cheatsheet.conflictMediation}
   • 1:1 대화: ${res.cheatsheet.oneOnOne}
 - 에너지 보완 팁: ${res.conversationalBalanceTip}${matrixLine}
+- 실천 의례: ${res.ritualAction}
+- 성찰 초점: ${res.reflectionFocus}
 - 질문 맞춤 성찰 질문: ${res.reflectiveQuestion}
 - 해석 경계: ${res.interpretiveBoundary}
 ※ 루시 지침: 말은 단순한 의사전달이 아니라 현실을 빚어내는 강력한 창조의 도구입니다. 사용자가 자신의 독보적인 화법 강점(본질 관통, 명쾌한 논리)을 십분 발휘하면서도, 상대방의 마음을 부드럽게 무장해제시키는 실전 대화 기술을 자신감 있게 발휘할 수 있도록 북돋워 주세요.`;

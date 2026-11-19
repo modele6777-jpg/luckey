@@ -17,7 +17,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const ZIWEI_HUAJI_VERSION = 'LUCKEY-ZW-HUAJI-v2.1.0';
+export const ZIWEI_HUAJI_VERSION = 'LUCKEY-ZW-HUAJI-v2.2.0';
 
 export interface HuaJiStarInfo {
   starNameKo: string;
@@ -48,6 +48,8 @@ export interface ZiweiHuaJiReport {
   dailyBreakthroughAction: string; // 오늘 당장 실행할 반전 행동
   reflectiveQuestion: string;
   interpretiveBoundary: string;
+  ritualAction: string;
+  reflectionFocus: string;
   huajiSynthesisMatrix?: {
     dominantTension: string;
     alignmentState: string;
@@ -215,6 +217,8 @@ export function calculateZiweiHuaJiTransformation(
   const transmutationStrategy = `내담자의 명반에서 [${huaJiStar.starNameKo}]가 [${karmicPalace.palaceNameKo}]에 임하고 있습니다. 이는 [${karmicPalace.lifeDomain}] 영역에서 겪는 결핍과 스트레스가 단순한 액운이 아니라, 당신을 해당 분야의 최고 권위자로 단련시키기 위한 우주의 담금질임을 뜻합니다. [${huaJiStar.transmutationPath}].`;
 
   const dailyBreakthroughAction = `[화기전화 실천]: 오늘 하루, [${karmicPalace.lifeDomain}]에서 나를 불안하게 만드는 문제를 회피하지 말고, ${huaJiStar.breakthroughGift}의 관점에서 딱 1가지의 실행 가능한 돌파 조치를 취하세요.`;
+  const ritualAction = dailyBreakthroughAction;
+  const reflectionFocus = `${huaJiStar.starNameKo}(${huaJiStar.starNameHanja}) · ${karmicPalace.palaceNameKo}의 전화위복 승화`;
 
   const huajiSynthesisMatrix = {
     dominantTension: `${huaJiStar.starNameKo}(${huaJiStar.starNameHanja}) ↔ ${karmicPalace.palaceNameKo}(${karmicPalace.lifeDomain})`,
@@ -236,6 +240,8 @@ export function calculateZiweiHuaJiTransformation(
     dailyBreakthroughAction,
     reflectiveQuestion,
     interpretiveBoundary,
+    ritualAction,
+    reflectionFocus,
     huajiSynthesisMatrix
   };
 }
@@ -256,6 +262,8 @@ export function formatZiweiHuaJiTransformationPrompt(report: ZiweiHuaJiReport): 
 - **질문 맥락 승화 초점**: ${report.situationalTransmutationFocus}
 - **화기 승화 마스터 전략**: ${report.transmutationStrategy}
 - **일일 전화위복 실천 과제**: ${report.dailyBreakthroughAction}
+- **실천 의례**: ${report.ritualAction}
+- **성찰 초점**: ${report.reflectionFocus}
 - **성찰 질문**: ${report.reflectiveQuestion}
 - **해석 경계**: ${report.interpretiveBoundary}${matrixLine}`;
 }
