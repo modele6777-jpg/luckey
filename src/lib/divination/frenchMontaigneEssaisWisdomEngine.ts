@@ -13,7 +13,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const MONTAIGNE_ESSAIS_WISDOM_VERSION = 'LUCKEY-MONTAIGNE-ESSAIS-WISDOM-v2.3.0';
+export const MONTAIGNE_ESSAIS_WISDOM_VERSION = 'LUCKEY-MONTAIGNE-ESSAIS-WISDOM-v2.4.0';
 
 export interface MontaigneThematicEssay {
   essayKey: string;
@@ -119,12 +119,7 @@ const HUMANIST_MAXIMS: MontaigneHumanistMaxim[] = [
 
 function formatMontaigneEssaisKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
-  const y = kst.getUTCFullYear();
-  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
-  const d = String(kst.getUTCDate()).padStart(2, '0');
-  const hh = String(kst.getUTCHours()).padStart(2, '0');
-  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} +09:00 KST`;
+  return `${kst.toISOString().slice(0, 19)}+09:00 (KST)`;
 }
 
 function describeMontaigneEssaisStage(score: number): string {
@@ -228,6 +223,7 @@ export function formatMontaigneEssaisWisdomPrompt(res: MontaigneEssaisWisdomResu
       `- 통합 실천: ${res.montaigneEssaisSynthesisMatrix.integratedAction}`,
     );
   }
+  lines.push(`- 성찰 초점: ${res.reflectionFocus}`);
   lines.push(`- 질문 맞춤 성찰 질문: ${res.reflectiveQuestion}`);
   lines.push(`- 해석 경계: ${res.interpretiveBoundary}`);
   return lines.join('\n');
