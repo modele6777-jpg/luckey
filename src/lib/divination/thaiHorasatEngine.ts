@@ -43,7 +43,7 @@ import type { UserProfile } from '../sharedState';
 import { resolveEffectiveSolarDate } from '../lunarCalendar';
 import { parseBirthTime } from '../birthDateTime';
 
-export const THAI_HORASAT_ENGINE_VERSION = 'LUCKEY-TH-v2.2.0';
+export const THAI_HORASAT_ENGINE_VERSION = 'LUCKEY-TH-v2.3.0';
 
 function formatThaiHorasatKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -374,6 +374,8 @@ export interface ThaiHorasatResult {
   };
   reflectiveQuestion?: string;
   interpretiveBoundary?: string;
+  ritualAction?: string;
+  reflectionFocus?: string;
   note?: string;
 }
 
@@ -665,6 +667,8 @@ export function calculateThaiHorasat(params: {
       ? `지금 "${q}" 앞에서 ${birthPlanet.thaiName}(${birthPlanet.planet})과 현재 대운 ${currentSegment.planet.thaiName}(${attribute.korean})의 결을 살려 내가 조절할 원소(${birthThaat.korean})의 리듬은 무엇인가요?`
       : `본명 수호신 ${birthPlanet.thaiName}과 현재 대운 ${currentSegment.planet.thaiName}(${attribute.korean}) 사이에서 오늘 내 몸의 ${birthThaat.korean} 원소가 요청하는 균형은 무엇인가요?`;
     const interpretiveBoundary = '본 태국 호라삿(Horasat) 8요일·마하탁사·4원소 리포트는 전통 역법·행성 주기 기반의 자기 성찰 안내이며, 의학적 진단이나 확정적 미래 단정이 아닙니다.';
+    const ritualAction = `${birthPlanet.direction} 방위의 ${birthPlanet.colors.join('·')} 계열 소품을 곁에 두고 ${birthThaat.korean} 원소 균형 루틴을 오늘 15분간 실천하십시오.`;
+    const reflectionFocus = `${birthPlanet.thaiName}(${birthPlanet.planet}) 수호 기질과 ${currentSegment.planet.thaiName}(${attribute.korean}) 대운의 교차점에서 가장 고르게 조율할 신체·생활 리듬`;
 
     return {
       status: 'calculated',
@@ -714,6 +718,8 @@ export function calculateThaiHorasat(params: {
       horasatSynthesisMatrix,
       reflectiveQuestion,
       interpretiveBoundary,
+      ritualAction,
+      reflectionFocus,
       note: timeNote || undefined,
     };
   } catch (err: any) {
@@ -763,6 +769,8 @@ export function formatThaiHorasatPrompt(result: ThaiHorasatResult): string {
       ? `- 호라삿 교차 매트릭스: 핵심 긴장(${result.horasatSynthesisMatrix.dominantTension}) · 조율 상태(${result.horasatSynthesisMatrix.alignmentState}) · 통합 실천(${result.horasatSynthesisMatrix.integratedAction})`
       : '',
     result.reflectiveQuestion ? `- 질문 맞춤 성찰 질문: ${result.reflectiveQuestion}` : '',
+    result.ritualAction ? `- 실천 의례: ${result.ritualAction}` : '',
+    result.reflectionFocus ? `- 성찰 초점: ${result.reflectionFocus}` : '',
     result.interpretiveBoundary ? `- 해석 경계: ${result.interpretiveBoundary}` : '',
     `- [AI 해석 지침]: 본 리포트는 입력과 구현된 태국 호라삿 규칙에 따른 계산 참고값이며, 실측 정확도나 운명의 확정을 뜻하지 않습니다. 수호신·대운 구간·속성 등급·원소 해석은 제공된 산출값을 바꾸지 않고 성찰을 돕는 전통적 관점으로 안내하십시오.`,
   ];

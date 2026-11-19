@@ -1480,6 +1480,8 @@ test('Thai Horasat engine: determinism, safe fallback, Wednesday-night note and 
   assert(prompt.includes(THAI_HORASAT_ENGINE_VERSION));
   assert(prompt.includes('KST'));
   assert(prompt.includes('호라삿 교차 매트릭스') && prompt.includes('해석 경계'));
+  assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
+  assert((r1.ritualAction ?? '').length > 0 && (r1.reflectionFocus ?? '').length > 0);
   assert((r1.interpretiveBoundary ?? '').length > 0);
   assert(prompt.includes('호라삿') && prompt.includes('마하탁사') && prompt.includes('4대 원소'));
   assert(prompt.includes('프라 숙'));
@@ -3504,6 +3506,7 @@ test('Tibetan Bardo Navigation Engine: maps 6 bardo states and clear light insig
   assert.equal(rep.engineVersion, TIBETAN_BARDO_VERSION);
   assert(rep.calculatedAtKst.includes('+09:00 (KST)'));
   assert(Boolean(rep.bardoSynthesisMatrix?.integratedAction));
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(rep.currentBardoState.stateNo >= 1 && rep.currentBardoState.stateNo <= 6);
   assert(rep.secondaryBardoState.stateNo >= 1 && rep.secondaryBardoState.stateNo <= 6);
   assert(rep.awarenessClarityScore >= 0 && rep.awarenessClarityScore <= 100);
@@ -3517,6 +3520,7 @@ test('Tibetan Bardo Navigation Engine: maps 6 bardo states and clear light insig
   assert(prompt.includes('성찰 질문'));
   assert(prompt.includes('해석 경계'));
   assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });
@@ -3998,6 +4002,7 @@ test('Tibetan Bon Nine Ways & Five Soul Vitalities Engine: calculates active way
   assert.equal(rep.engineVersion, TIBETAN_BON_NINE_WAYS_VERSION);
   assert(rep.calculatedAtKst.includes('+09:00 (KST)'));
   assert(Boolean(rep.bonSynthesisMatrix?.integratedAction));
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(rep.activeWay.tibetanName.length > 0);
   assert(rep.secondaryWay.tibetanName.length > 0);
   assert.equal(rep.vitalities.length, 5);
@@ -4011,6 +4016,7 @@ test('Tibetan Bon Nine Ways & Five Soul Vitalities Engine: calculates active way
   assert(prompt.includes('성찰 질문'));
   assert(prompt.includes('해석 경계'));
   assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });
