@@ -17,7 +17,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const EGYPTIAN_DECANS_VERSION = 'LUCKEY-EGYPTIAN-DECANS-v2.4.0';
+export const EGYPTIAN_DECANS_VERSION = 'LUCKEY-EGYPTIAN-DECANS-v2.5.0';
 
 export interface DecanSituationalAudit {
   navigationAxis: string;
@@ -285,7 +285,7 @@ export function calculateEgyptianThirtySixDecans(params: {
   };
 
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
-  const calculatedAtKst = kst.toISOString().replace('T', ' ').substring(0, 19) + ' +09:00 KST';
+  const calculatedAtKst = `${kst.toISOString().slice(0, 19)}+09:00 (KST)`;
   const ritualAction = `${situationalDecanAudit.altarAction} · ${decanAltarPrescription}`;
   const reflectionFocus = params.question?.trim()
     ? `‘${params.question.trim()}’ 항해에서 본명 수호신 [${birthDecan.guardianDeity}]과 현재 데칸 [${currentTransitDecan.guardianDeity}]이 가리키는 균형은 무엇입니까?`
@@ -326,6 +326,7 @@ export function formatEgyptianThirtySixDecansPrompt(report: EgyptianThirtySixDec
 - **천구 교차 매트릭스**: ${report.decanSynthesisMatrix.birthTransitLink}
 - **누트(Nut) 천구 항해 지침**: ${report.spiritualNavigationGuidance}
 - **데칸 제단 일상 개운 행동**: ${report.decanAltarPrescription}
+- **성찰 초점**: ${report.reflectionFocus}
 - **질문 맞춤 성찰 질문**: ${report.reflectiveQuestion}
 - **해석 경계**: 덴데라 36데칸 천문 상징을 빌린 정성적 성찰 참고 관점이며, 개인 점수나 확정 예언이 아닙니다.`;
 }

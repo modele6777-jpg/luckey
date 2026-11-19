@@ -36,7 +36,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const ESSENE_COMMUNION_VERSION = 'LUCKEY-ESSENE-COMMUNION-v2.2.0';
+export const ESSENE_COMMUNION_VERSION = 'LUCKEY-ESSENE-COMMUNION-v2.3.0';
 
 export interface EsseneAngel {
   realm: 'earthly' | 'heavenly';
@@ -254,7 +254,7 @@ export function calculateEsseneCommunion(
   const kstDate = new Date(kstMs);
   const kstHour = kstDate.getUTCHours();
   const kstMonth = kstDate.getUTCMonth() + 1;
-  const calculatedAtKst = `${kstDate.getUTCFullYear()}-${String(kstMonth).padStart(2, '0')}-${String(kstDate.getUTCDate()).padStart(2, '0')} ${String(kstHour).padStart(2, '0')}:${String(kstDate.getUTCMinutes()).padStart(2, '0')} +09:00 KST`;
+  const calculatedAtKst = `${kstDate.toISOString().slice(0, 19)}+09:00 (KST)`;
 
   const qLower = question.toLowerCase();
   const questionFocus = /연애|사랑|관계|결혼|가족|화해|인연/.test(qLower)
@@ -356,5 +356,7 @@ export function formatEsseneCommunionPrompt(report: EsseneCommunionReport): stri
   - 실천 지침: ${report.dailyEsseneGuidance}
   - 통합 조언: ${report.synthesisMessage}
 - **교차 매트릭스**: ${report.esseneSynthesisMatrix.coreMandate} | 경계: ${report.esseneSynthesisMatrix.sacredBoundary} | 성찰 질문: "${report.esseneSynthesisMatrix.reflectiveQuestion}"
+- **일상 의례**: ${report.ritualAction}
+- **성찰 초점**: ${report.reflectionFocus}
 - **해석 경계**: ${report.interpretiveBoundary}`;
 }
