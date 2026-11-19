@@ -28,7 +28,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const MAYI_MIANXIANG_VERSION = '2.3.0';
+export const MAYI_MIANXIANG_VERSION = '2.4.0';
 
 export interface MayiMianxiangReport {
   engineVersion: string;
@@ -202,7 +202,7 @@ function getTemporalMayiRhythm(now: Date) {
           : '겨울 · 자황응축(紫黃凝縮) 기색 (내면의 고요한 품격이 깊어지는 시기)';
 
   return {
-    kstTimeLabel: `${y}-${m}-${d}T${hh}:${mm}:00+09:00`,
+    kstTimeLabel: `${y}-${m}-${d}T${hh}:${mm}:00+09:00 (KST)`,
     yintangWatchWindow,
     seasonalQiColorTone,
     temporalGuidance: `${yintangWatchWindow} · ${seasonalQiColorTone}의 흐름에 맞추어 상유심생(相由心生)의 여유를 지키십시오.`,
@@ -315,6 +315,7 @@ export function formatMayiMianxiangPrompt(report: MayiMianxiangReport): string {
 - **마의상법 교차 매트릭스**: 핵심(${report.mayiSynthesisMatrix.coreInsight}) | 실행(${report.mayiSynthesisMatrix.recommendedAction}) | 주의(${report.mayiSynthesisMatrix.cautionNotice})
 - **마의도사 심상 처방**:
   - "${report.mayiDaoistMorphologicalAdvice}"
+- **성찰 초점**: ${report.reflectionFocus}
 - **질문 맞춤 성찰 질문**: ${report.reflectiveQuestion}
 - **해석 경계**: ${report.boundaryNotice}`;
 }
