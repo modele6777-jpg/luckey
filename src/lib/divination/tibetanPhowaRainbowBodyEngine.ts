@@ -15,7 +15,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const TIBETAN_PHOWA_RAINBOW_BODY_ENGINE_VERSION = '2.1.0';
+export const TIBETAN_PHOWA_RAINBOW_BODY_ENGINE_VERSION = '2.2.0';
 
 function formatPhowaKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -53,6 +53,8 @@ export interface TibetanPhowaRainbowBodyReport {
   dailyPhowaRitual: string; // 일상 의식 집중 및 정화 처방
   reflectiveQuestion: string;
   interpretiveBoundary: string;
+  ritualAction: string;
+  reflectionFocus: string;
   phowaSynthesisMatrix?: {
     dominantTension: string;
     alignmentState: string;
@@ -153,6 +155,8 @@ export function calculateTibetanPhowaRainbowBody(options?: {
     : `${primaryWisdom.colorRay}의 자각으로 호흡을 가다듬을 때, 오늘 마음속에서 가장 먼저 맑히고 싶은 감정의 흔들림은 무엇입니까?`;
   const interpretiveBoundary =
     '티베트 족첸(Dzogchen) 릭파와 포와·5대 붓다 지혜 상징은 내면의 명징함과 감정 승화를 돕기 위한 관조적 은유이며, 단정적 미래 예측이나 의학적 처방을 대체하지 않습니다.';
+  const ritualAction = `${dailyPhowaRitual} 이어 ${primaryWisdom.element} 원소의 고요함에 3분간 머무르십시오.`;
+  const reflectionFocus = `${primaryWisdom.nameKo}의 ${primaryWisdom.colorRay}으로 맑히는 번뇌와 ${secondaryWisdom.nameKo}의 균형`;
   const phowaSynthesisMatrix = {
     dominantTension: `${primaryWisdom.nameKo} ↔ ${secondaryWisdom.nameKo}`,
     alignmentState: `${primaryWisdom.colorRay} · 원소(${primaryWisdom.element})`,
@@ -173,6 +177,8 @@ export function calculateTibetanPhowaRainbowBody(options?: {
     dailyPhowaRitual,
     reflectiveQuestion,
     interpretiveBoundary,
+    ritualAction,
+    reflectionFocus,
     phowaSynthesisMatrix,
   };
 }
@@ -190,5 +196,7 @@ export function formatTibetanPhowaRainbowBodyPrompt(rep: TibetanPhowaRainbowBody
 · 족첸 본각 직관 요결: ${rep.dzogchenDirectPointers}
 · 일상 포와 정화 리추얼: ${rep.dailyPhowaRitual}${matrixLine}
 · 성찰 질문: ${rep.reflectiveQuestion}
+· 실천 의례: ${rep.ritualAction}
+· 성찰 초점: ${rep.reflectionFocus}
 · 해석 경계: ${rep.interpretiveBoundary}`;
 }

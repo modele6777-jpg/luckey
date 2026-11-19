@@ -24,7 +24,7 @@
 import type { UserProfile } from '../sharedState';
 import { convertLunarToSolar, convertSolarToLunar, resolveEffectiveSolarDate } from '../lunarCalendar';
 
-export const TOJEONG_ENGINE_VERSION = 'LUCKEY-TJ-v2.2.0';
+export const TOJEONG_ENGINE_VERSION = 'LUCKEY-TJ-v2.3.0';
 
 export const TOJEONG_METHOD =
   '조선 정통 이지함 토정비결 수리 산법(태세수·월건수·일진수 작괘) 기반 144괘문 결정론적 계산';
@@ -93,6 +93,8 @@ export interface TojeongResult {
     integratedAction: string;
   };
   reflectiveQuestion?: string;
+  ritualAction?: string;
+  reflectionFocus?: string;
   interpretiveBoundary?: string;
 }
 
@@ -599,6 +601,8 @@ export function calculateTojeong(params: { profile?: UserProfile | null; targetY
     ? `지금 "${q}" 앞에서 ${targetYear}년 토정 ${hexagramName}(${hexagramCode}괘 · ${moving.label})의 뜻을 헤아려 내가 지키고 나아갈 자리는 어디인가요?`
     : `${targetYear}년 토정 ${hexagramName}(${hexagramCode}괘 · ${trigramAnalysis.seasonalFlow.peakSeason})의 흐름 속에서 내가 먼저 다스릴 마음가짐은 무엇인가요?`;
   const interpretiveBoundary = '본 토정비결 144괘문 리포트는 태세·월건·일진 작괘 수리에 기반한 전통 세시 운세 안내이며, 확정적 길흉 예언이 아닙니다.';
+  const ritualAction = `${trigramAnalysis.hexagramEssenceAdvice} 오늘 하루 ${trigramAnalysis.upperElement}과 ${trigramAnalysis.lowerElement}의 ${trigramAnalysis.elementRelation} 흐름에 맞추어 한 가지 핵심 과업을 차분히 정돈하십시오.`;
+  const reflectionFocus = `${targetYear}년 토정 ${hexagramName}(${hexagramCode}괘)의 ${moving.label}과 ${trigramAnalysis.seasonalFlow.peakSeason} 성운기 대비`;
 
   return {
     status: 'calculated',
@@ -631,6 +635,8 @@ export function calculateTojeong(params: { profile?: UserProfile | null; targetY
     trigramAnalysis,
     tojeongSynthesisMatrix,
     reflectiveQuestion,
+    ritualAction,
+    reflectionFocus,
     interpretiveBoundary,
   };
 }
@@ -778,7 +784,7 @@ ${monthLines}${result.trigramAnalysis ? `\n=====================================
 [상·중괘 오행 생극제화 및 사계절 순환 심층 분석]
 - 상괘 오행: ${result.trigramAnalysis.upperElement} vs 중괘 오행: ${result.trigramAnalysis.lowerElement} → [${result.trigramAnalysis.elementRelation}] (${result.trigramAnalysis.elementRelationDesc})
 - 최고 성운기: ${result.trigramAnalysis.seasonalFlow.peakSeason}
-- 핵심 개운 지침: ${result.trigramAnalysis.hexagramEssenceAdvice}` : ''}${matrixBlock}${result.reflectiveQuestion ? `\n- 질문 맞춤 성찰 질문: ${result.reflectiveQuestion}` : ''}${result.interpretiveBoundary ? `\n- 해석 경계: ${result.interpretiveBoundary}` : ''}
+- 핵심 개운 지침: ${result.trigramAnalysis.hexagramEssenceAdvice}` : ''}${matrixBlock}${result.reflectiveQuestion ? `\n- 질문 맞춤 성찰 질문: ${result.reflectiveQuestion}` : ''}${result.ritualAction ? `\n- 실천 의례: ${result.ritualAction}` : ''}${result.reflectionFocus ? `\n- 성찰 초점: ${result.reflectionFocus}` : ''}${result.interpretiveBoundary ? `\n- 해석 경계: ${result.interpretiveBoundary}` : ''}
 ======================================================================
 [★ 루시 토정비결 상담 지침]:
 - 위 괘문은 태세수·월건수·일진수 수리로 직접 작괘한 확정 데이터다. 괘 코드(${result.hexagramCode})와 다른 괘를 지어내지 마십시오.
