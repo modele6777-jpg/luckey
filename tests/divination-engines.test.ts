@@ -12603,3 +12603,27 @@ test('푸코·파스칼·바르트 3대 엔진 v1.7.917 KST(+09:00) 표준 표�
   assert.match(rb.calculatedAtKst, /\+09:00/);
   assert.ok(formatFrenchRolandBarthesSemioticsPunctumPrompt(rb).includes('+09:00'));
 });
+
+test('보부아르·볼테르·격국 3대 엔진 v1.7.919 KST(+09:00) 표준 표기 검증', () => {
+  const profile: any = {
+    name: '테스트',
+    basic: { birthdate: '1994-01-24', birthtime: '10:30', gender: 'male', calendarType: 'solar' },
+  };
+  const now = new Date('2026-11-19T09:37:00+09:00');
+  const query = '애매한 상황에서의 자유와 관용의 실천, 내 사주의 중심 격국을 보고 싶을 때';
+
+  const sb = calculateFrenchSimoneDeBeauvoirAmbiguityFreedom(profile, query, now);
+  assert.equal(sb.engineVersion, FRENCH_SIMONE_DE_BEAUVOIR_AMBIGUITY_FREEDOM_VERSION);
+  assert.match(sb.calculatedAtKst, /\+09:00/);
+  assert.ok(formatFrenchSimoneDeBeauvoirAmbiguityFreedomPrompt(sb).includes('+09:00'));
+
+  const vt = calculateFrenchVoltaireCandideTolerance(profile, query, now);
+  assert.equal(vt.engineVersion, FRENCH_VOLTAIRE_CANDIDE_TOLERANCE_VERSION);
+  assert.match(vt.calculatedAtKst, /\+09:00/);
+  assert.ok(formatFrenchVoltaireCandideTolerancePrompt(vt).includes('+09:00'));
+
+  const gg = calculateGeokguk({ profile, now, question: query });
+  assert.equal(gg.engineVersion, GEOKGUK_ENGINE_VERSION);
+  assert.match(gg.calculatedAtKst ?? '', /\+09:00/);
+  assert.ok(formatGeokgukPrompt(gg).includes('+09:00'));
+});

@@ -45,7 +45,7 @@ import {
   BRANCH_KOREAN,
 } from '../sajuAnalysis';
 
-export const GEOKGUK_ENGINE_VERSION = 'LUCKEY-GG-v2.3.0';
+export const GEOKGUK_ENGINE_VERSION = 'LUCKEY-GG-v2.4.0';
 
 export const GEOKGUK_METHOD =
   '자평진전(子平眞詮) 정통 격국 수리 산법: 월령 본기·중기·초기 사령 및 투간 대조(본기>중기>초기 우선), 월지 건록·양인 직취 판정, 4길신 순용(정관·재성·정인·식신의 재성/인성 보좌·식신생재·관인상생)과 4흉신 역용(칠살·상관·편인·양인의 식신제살·살인상생·상관패인·상관생재·재성제인·양인가살) 성격(成格) 점검, 상관견관·군겁쟁재·도식·신약살왕 등 파격(破格) 원인 및 구응(救應) 검출, 상신(相神) 식별 및 격국 기반 직업·사회적 재능 리포트 결정론적 산출';
@@ -168,7 +168,7 @@ function getTemporalGeokgukRhythm(now: Date) {
           : '겨울 · 해자축(亥子丑) 함장절 (실력을 갈고닦아 다음 국면을 준비하는 시기)';
 
   return {
-    kstTimeLabel: `${y}-${m}-${d} ${hh}:${mm} KST`,
+    kstTimeLabel: `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`,
     commandWatchWindow,
     seasonalGeokgukTone,
     temporalGuidance: `${commandWatchWindow} · ${seasonalGeokgukTone}의 결에 맞추어 격국의 장점을 발휘하십시오.`,

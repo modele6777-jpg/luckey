@@ -8,7 +8,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const FRENCH_SIMONE_DE_BEAUVOIR_AMBIGUITY_FREEDOM_VERSION = 'LUCKEY-BEAUVOIR-AMBIGUITY-FREEDOM-v2.2.0';
+export const FRENCH_SIMONE_DE_BEAUVOIR_AMBIGUITY_FREEDOM_VERSION = 'LUCKEY-BEAUVOIR-AMBIGUITY-FREEDOM-v2.3.0';
 
 export type BeauvoirQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -349,9 +349,12 @@ export function calculateFrenchSimoneDeBeauvoirAmbiguityFreedom(
     `${activeBeauvoirTheme.practicalCounsel} 보부아르의 불후의 명언 "${focalBeauvoirAphorism.aphorismKo}" (${focalBeauvoirAphorism.aphorismFrench})을 마음에 품고, ` +
     `${focalBeauvoirAphorism.actionGuidance}`;
 
+  const kstDate = new Date((now ?? new Date()).getTime() + 9 * 60 * 60 * 1000);
+  const calculatedAtKst = `${kstDate.toISOString().slice(0, 10)} ${String(kstDate.getUTCHours()).padStart(2, '0')}:${String(kstDate.getUTCMinutes()).padStart(2, '0')} +09:00 (KST)`;
+
   return {
     engineVersion: FRENCH_SIMONE_DE_BEAUVOIR_AMBIGUITY_FREEDOM_VERSION,
-    calculatedAtKst: (now ?? new Date()).toISOString(),
+    calculatedAtKst,
     authenticSelfCreationScore,
     ethicsOfAmbiguityIndex,
     mutualFreedomSolidarityScore,
@@ -380,6 +383,7 @@ export function formatFrenchSimoneDeBeauvoirAmbiguityFreedomPrompt(
 ): string {
   return [
     `【시몬 드 보부아르 《애매성의 윤리학》 실존적 자기창조 및 상호자유 관점】`,
+    `- 엔진 버전: ${res.engineVersion} | 연산 시각: ${res.calculatedAtKst}`,
     `- 자기창조·애매성·연대 결: 자기창조(${describeBeauvoirLevel(res.authenticSelfCreationScore)}) / 애매성 정직(${describeBeauvoirLevel(res.ethicsOfAmbiguityIndex)}) / 상호 연대(${describeBeauvoirLevel(res.mutualFreedomSolidarityScore)})`,
     `- 상황 돌파·용기 결: 상황 돌파(${describeBeauvoirLevel(res.situationalAgencyIndex)}) / 실존적 용기(${describeBeauvoirLevel(res.existentialCourageResilienceScore)})`,
     `- 핵심 보부아르 테마: ${res.activeBeauvoirTheme.themeTitleKo} [${res.activeBeauvoirTheme.themeTitleEn}]`,
