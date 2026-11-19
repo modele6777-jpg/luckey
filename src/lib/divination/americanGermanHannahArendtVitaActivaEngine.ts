@@ -8,7 +8,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const AMERICAN_GERMAN_HANNAH_ARENDT_VERSION = 'LUCKEY-HANNAH-ARENDT-VITA-ACTIVA-v2.2.0';
+export const AMERICAN_GERMAN_HANNAH_ARENDT_VERSION = 'LUCKEY-HANNAH-ARENDT-VITA-ACTIVA-v2.3.0';
 
 export type ArendtQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -160,7 +160,8 @@ function formatKstTimestamp(now: Date): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} (+09:00)`;
+  const ss = String(kst.getUTCSeconds()).padStart(2, '0');
+  return `${y}-${m}-${d}T${hh}:${mm}:${ss}+09:00 (KST)`;
 }
 
 const ARENDT_TOPIC_GUIDANCE: Record<
@@ -341,12 +342,13 @@ function describeArendtStage(score: number): string {
 
 export function formatHannahArendtVitaActivaPrompt(res: HannahArendtVitaActivaResult): string {
   return [
-    `【한나 아렌트 《인간의 조건》 활동적 삶 & 탄생성 지표】`,
+    `【한나 아렌트 《인간의 조건》 활동적 삶 & 탄생성 지표 (${res.engineVersion})】`,
     `- 기준 시각: ${res.calculatedAtKst} | 질문 맥락: ${res.questionTopic}`,
     `- 핵심 실존 테마: ${res.activeArendtTheme.themeTitleKo} [${res.activeArendtTheme.themeTitleEn}]`,
     `- 실존적 통찰: ${res.activeArendtTheme.existentialInsight}`,
     `- 실천 조언: ${res.practiceGuidance}`,
     `- 일상 의례: ${res.ritualAction}`,
+    `- 성찰 초점: ${res.reflectionFocus}`,
     `- 성찰 질문: ${res.reflectiveQuestion}`,
     `- 핵심 원전 경구: "${res.focalArendtAphorism.aphorismKo}"`,
     `- 원전 출처: "${res.focalArendtAphorism.aphorismEn}" [${res.focalArendtAphorism.sourceContext}]`,
