@@ -76,9 +76,24 @@ googleProvider.addScope('profile');
 googleProvider.setCustomParameters({ prompt: 'select_account' });
 
 /**
+ * iOS home-screen apps open popups in a separate browser sheet that loses the
+ * sign-in state across the Google hop ("The requested action is invalid").
+ * There, sign in by redirect: the app itself goes to /__/auth/handler on its own
+ * origin and comes back, keeping storage. Browsers keep the popup flow.
+ */
+export function shouldUseRedirectSignIn(): boolean {
+  if (typeof window === 'undefined') return false;
+  const nav = window.navigator as Navigator & { standalone?: boolean };
+  let standalone = nav.standalone === true;
+  try { standalone = standalone || window.matchMedia('(display-mode: standalone)').matches || window.matchMedia('(display-mode: fullscreen)').matches; } catch { /* unsupported query */ }
+  return standalone && auth.config.authDomain === window.location.host;
+}
+
+/**
  * Universal Google Sign-In with automatic popup and mobile redirect fallback.
  */
 export const signInWithGoogle = async (): Promise<any> => {
+  if (shouldUseRedirectSignIn()) return await signInWithRedirect(auth, googleProvider);
   try {
     return await signInWithPopup(auth, googleProvider);
   } catch (error: any) {

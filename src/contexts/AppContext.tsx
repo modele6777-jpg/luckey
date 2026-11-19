@@ -23,7 +23,7 @@ import {
 import { useLucyProConversation } from '@/hooks/useLucyProConversation';
 import { resolveLucyPageChannels } from '@/lib/lucyChatPageMode';
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef, useMemo } from 'react';
-import { auth, db, googleProvider, signInWithPopup, signInWithRedirect, getRedirectResult, signOut, onAuthStateChanged, doc, getDoc, getDocFromServer, setDoc, onSnapshot, serverTimestamp, type User, addDoc, collection } from '../lib/firebase';
+import { auth, db, googleProvider, shouldUseRedirectSignIn, signInWithPopup, signInWithRedirect, getRedirectResult, signOut, onAuthStateChanged, doc, getDoc, getDocFromServer, setDoc, onSnapshot, serverTimestamp, type User, addDoc, collection } from '../lib/firebase';
 import { handleFirestoreError, OperationType } from '../lib/firestoreUtils';
 import { mergeUserProfiles, type SharedState, type UserProfile } from '../lib/sharedState';
 import { loadProfileFromAllVaults, saveProfileToAllVaults } from '../lib/profileVault';
@@ -1320,6 +1320,15 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   const handleSignIn = useCallback(async () => {
     safeLocalStorage.removeItem('developer_bypass');
+    // 홈 화면 앱: 팝업은 별도 창이라 로그인 상태가 끊기므로 같은 주소로 이동해 로그인합니다.
+    if (shouldUseRedirectSignIn()) {
+      try {
+        await signInWithRedirect(auth, googleProvider);
+        return;
+      } catch (redirectError) {
+        console.warn('[Auth] Google redirect sign-in failed:', redirectError);
+      }
+    }
     try {
       // 1. 구글 팝업 로그인 시도 (PC 및 팝업 허용 환경)
       const result = await signInWithPopup(auth, googleProvider);
