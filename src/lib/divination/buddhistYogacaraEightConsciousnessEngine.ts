@@ -13,11 +13,11 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const BUDDHIST_YOGACARA_CONSCIOUSNESS_ENGINE_VERSION = '2.4.0';
+export const BUDDHIST_YOGACARA_CONSCIOUSNESS_ENGINE_VERSION = '2.5.0';
 
 function toKstIso(now: Date): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
-  return kst.toISOString().replace('Z', '+09:00');
+  return `${kst.toISOString().slice(0, 19)}+09:00 (KST)`;
 }
 
 export type YogacaraQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
@@ -325,6 +325,7 @@ export function formatBuddhistYogacaraConsciousnessPrompt(rep: BuddhistYogacaraC
 · 유식 교차 매트릭스: 대원경지(${rep.yogacaraSynthesisMatrix.alayaMirrorClarity}) | 평등성지(${rep.yogacaraSynthesisMatrix.manasEgoRelease}) | 성소작지(${rep.yogacaraSynthesisMatrix.actionCompletionReadiness})
 · 유식유심 실천 지침: ${rep.yogacaraMindOnlyGuidance}
 · 대원경지 거울 명상 리추얼: ${rep.mirrorMeditationRitual}
+· 성찰 초점: ${rep.reflectionFocus}
 · 질문 맞춤 성찰 질문: ${rep.reflectiveQuestion}
 · 해석 경계: ${rep.boundaryNotice}`;
 }
