@@ -2995,6 +2995,7 @@ test('Supreme Wisdom Trinity Engine: 기적수업 × 초기불교 × 영지주�
   const res = calculateSupremeWisdomTrinity({ profile, targetDate: new Date('2026-11-03T10:00:00+09:00'), question: '마음 평화' });
   assert.equal(res.engineVersion, SUPREME_WISDOM_TRINITY_VERSION);
   assert(res.calculatedAtKst.endsWith('KST'));
+  assert(res.ritualAction.length > 0 && res.reflectionFocus.length > 0);
   assert(Boolean(res.trinitySynthesisMatrix?.integratedAction));
   assert(res.interpretiveBoundary.length > 0);
   assert(res.trinitySynthesisCore.length > 0);
@@ -3007,6 +3008,7 @@ test('Supreme Wisdom Trinity Engine: 기적수업 × 초기불교 × 영지주�
   const prompt = formatSupremeWisdomTrinityPrompt(res);
   assert(prompt.includes('LUCKEY 궁극의 영적 3위1체 마스터 지혜'));
   assert(prompt.includes(res.trinitySynthesisCore));
+  assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
   assert(prompt.includes('교차 매트릭스') && prompt.includes('해석 경계'));
   assert(!prompt.includes('/100'));
 });
@@ -3890,6 +3892,7 @@ test('Sumerian Fifty Mes & Civilization Engine: calculates primary me, creation 
   const rep = calculateSumerianFiftyMes(profile, '새 프로젝트의 기준을 어떻게 세울까요?');
   assert.equal(rep.engineVersion, SUMERIAN_FIFTY_MES_VERSION);
   assert(rep.calculatedAtKst.includes('+09:00 (KST)'));
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(Boolean(rep.fiftyMesSynthesisMatrix?.integratedAction));
   assert(rep.primaryMe.koreanName.length > 0);
   assert(rep.secondaryMe.koreanName.length > 0);
@@ -3900,6 +3903,7 @@ test('Sumerian Fifty Mes & Civilization Engine: calculates primary me, creation 
   assert(prompt.includes('고대 수메르 에리두 50대 메(Me) 신성 문명 규범 엔진'));
   assert(prompt.includes(rep.primaryMe.koreanName));
   assert(prompt.includes('보조 교차 메(Me)'));
+  assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
   assert(prompt.includes('성찰 질문'));
   assert(prompt.includes('해석 경계'));
   assert(prompt.includes('교차 매트릭스'));
@@ -4348,6 +4352,7 @@ test('Sumerian Gilgamesh Trials Engine: calculates 12 trials and heroic resilien
   const rep = calculateSumerianGilgameshTrials({ profile, question: '이 전환기를 어떻게 통과할까요?' });
   assert.equal(rep.engineVersion, SUMERIAN_GILGAMESH_TRIALS_ENGINE_VERSION);
   assert(rep.calculatedAtKst.includes('+09:00 (KST)'));
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(Boolean(rep.gilgameshSynthesisMatrix?.integratedAction));
   assert(rep.heroicResilienceScore >= 0 && rep.heroicResilienceScore <= 100);
   assert(rep.immortalityWisdomIndex >= 0 && rep.immortalityWisdomIndex <= 100);
@@ -4359,6 +4364,7 @@ test('Sumerian Gilgamesh Trials Engine: calculates 12 trials and heroic resilien
   assert(prompt.includes('고대 메소포타미아 길가메시 서사시 12관문 불멸 여정 실측 데이터'));
   assert(prompt.includes(rep.activeTrial.nameKo));
   assert(prompt.includes('보조 교차 관문'));
+  assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
   assert(prompt.includes('성찰 질문'));
   assert(prompt.includes('해석 경계'));
   assert(prompt.includes('교차 매트릭스'));

@@ -23,7 +23,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const SUMERIAN_FIFTY_MES_VERSION = 'LUCKEY-SUMERIAN-FIFTY-MES-v2.1.0';
+export const SUMERIAN_FIFTY_MES_VERSION = 'LUCKEY-SUMERIAN-FIFTY-MES-v2.2.0';
 
 export interface SumerianMeArchetype {
   cuneiformCode: string;
@@ -45,6 +45,8 @@ export interface SumerianMeReport {
   synthesisMessage: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
+  ritualAction: string;
+  reflectionFocus: string;
   fiftyMesSynthesisMatrix?: {
     dominantTension: string;
     alignmentState: string;
@@ -142,6 +144,8 @@ export function calculateSumerianFiftyMes(
     : `오늘 ${primaryMe.koreanName}(${primaryMe.cuneiformCode})의 미덕을 지켜내면서도 ${secondaryMe.koreanName}의 유연함을 함께 살릴 수 있는 구체적 선택은 무엇입니까?`;
   const interpretiveBoundary =
     '수메르 에리두 50대 메(Me) 원형은 개인의 태도와 문명적 질서를 비추는 상징적 성찰 도구이며, 객관적 미래 예측이나 의학·법률·투자 자문을 대체하지 않습니다.';
+  const ritualAction = `[${primaryMe.cuneiformCode}] ${primaryMe.eriduOracleDecree}`;
+  const reflectionFocus = `수메르 50대 메(${primaryMe.koreanName}) — ${primaryMe.civilizationDomain}`;
   const fiftyMesSynthesisMatrix = {
     dominantTension: `${primaryMe.cuneiformCode} ↔ ${secondaryMe.cuneiformCode}`,
     alignmentState: `${primaryMe.koreanName} · ${primaryMe.civilizationDomain}`,
@@ -160,6 +164,8 @@ export function calculateSumerianFiftyMes(
     synthesisMessage,
     reflectiveQuestion,
     interpretiveBoundary,
+    ritualAction,
+    reflectionFocus,
     fiftyMesSynthesisMatrix,
   };
 }
@@ -176,6 +182,8 @@ export function formatSumerianFiftyMesPrompt(report: SumerianMeReport): string {
     `- **수메르 문명 창조력 공명 상태**: ${report.civilizationResonance}`,
     `- **에리두 일일 나침반**: ${report.sumerianWisdomOmen}`,
     `- **수메르 신성 규범 통합 결론**: ${report.synthesisMessage}`,
+    `- **실천 의례**: ${report.ritualAction}`,
+    `- **성찰 초점**: ${report.reflectionFocus}`,
     `- **성찰 질문**: ${report.reflectiveQuestion}`,
     `- **해석 경계**: ${report.interpretiveBoundary}`,
   ];
