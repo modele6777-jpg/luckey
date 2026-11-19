@@ -14,7 +14,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const FRENCH_GILLES_DELEUZE_RHIZOME_BECOMING_VERSION = 'LUCKEY-DELEUZE-RHIZOME-BECOMING-v2.1.0';
+export const FRENCH_GILLES_DELEUZE_RHIZOME_BECOMING_VERSION = 'LUCKEY-DELEUZE-RHIZOME-BECOMING-v2.2.0';
 
 export type DeleuzeQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -302,7 +302,7 @@ export function calculateFrenchGillesDeleuzeRhizomeBecoming(
     `${focalDeleuzeAphorism.actionGuidance}`;
 
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
-  const kstTimeLabel = `${temporalDeleuzeRhythm.kstDateLabel} ${String(kst.getUTCHours()).padStart(2, '0')}:${String(kst.getUTCMinutes()).padStart(2, '0')} KST`;
+  const kstTimeLabel = `${temporalDeleuzeRhythm.kstDateLabel} ${String(kst.getUTCHours()).padStart(2, '0')}:${String(kst.getUTCMinutes()).padStart(2, '0')} +09:00 (KST)`;
   const deleuzeSynthesisMatrix = {
     coreInsight: activeDeleuzeTheme.themeTitleKo,
     recommendedAction: practiceGuidance,

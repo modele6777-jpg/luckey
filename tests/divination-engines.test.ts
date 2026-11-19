@@ -12511,3 +12511,27 @@ test('계약 실드·딥워크 플로우·알베르 카뮈 3대 엔진 v1.7.911 
   assert.match(ac.calculatedAtKst, /\+09:00/);
   assert.ok(formatAlbertCamusAbsurdRevoltPrompt(ac).includes('+09:00'));
 });
+
+test('들뢰즈·베르그송·데리다 3대 엔진 v1.7.913 KST(+09:00) 표준 표기 검증', () => {
+  const profile: any = {
+    name: '테스트',
+    basic: { birthdate: '1994-01-24', birthtime: '10:30', gender: 'male', calendarType: 'solar' },
+  };
+  const now = new Date('2026-11-19T09:07:00+09:00');
+  const query = '고정된 틀을 넘어 창조적 흐름과 새로운 차이를 열고 싶을 때';
+
+  const dz = calculateFrenchGillesDeleuzeRhizomeBecoming(profile, query, now);
+  assert.equal(dz.engineVersion, FRENCH_GILLES_DELEUZE_RHIZOME_BECOMING_VERSION);
+  assert.match(dz.calculatedAtKst, /\+09:00/);
+  assert.ok(formatFrenchGillesDeleuzeRhizomeBecomingPrompt(dz).includes('+09:00'));
+
+  const hb = calculateHenriBergsonElanVital(profile, query, now);
+  assert.equal(hb.engineVersion, FRENCH_HENRI_BERGSON_VERSION);
+  assert.match(hb.calculatedAtKst, /\+09:00/);
+  assert.ok(formatHenriBergsonElanVitalPrompt(hb).includes('+09:00'));
+
+  const jd = calculateFrenchJacquesDerridaDeconstructionDifferance(profile, query, now);
+  assert.equal(jd.engineVersion, FRENCH_JACQUES_DERRIDA_DECONSTRUCTION_DIFFERANCE_VERSION);
+  assert.match(jd.calculatedAtKst, /\+09:00/);
+  assert.ok(formatFrenchJacquesDerridaDeconstructionDifferancePrompt(jd).includes('+09:00'));
+});
