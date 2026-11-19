@@ -24,7 +24,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const ZOROASTRIAN_ASHA_VERSION = 'LUCKEY-ZOROASTRIAN-ASHA-v2.1.0';
+export const ZOROASTRIAN_ASHA_VERSION = 'LUCKEY-ZOROASTRIAN-ASHA-v2.2.0';
 
 export interface ThreefoldPillars {
   humataScore: number;     // 선한 생각 (0 ~ 100)
@@ -60,6 +60,8 @@ export interface ZoroastrianAshaReport {
   dailyPracticeRitual: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
+  ritualAction: string;
+  reflectionFocus: string;
   synthesisTruthMaxim: string;
   ashaSynthesisMatrix?: {
     dominantTension: string;
@@ -163,6 +165,8 @@ export function calculateZoroastrianAshaTruth(
   const dailyPracticeRitual = '오늘 한 번은 모호하게 미루던 답을 사실에 근거해 분명하고 다정하게 전해 보십시오.';
   const reflectiveQuestion = '지금 내가 편의를 위해 스스로에게 둘러대고 있는 합리화 한 가지는 무엇인가요?';
   const interpretiveBoundary = '본 아샤(Asha) 리포트는 고대 아베스타의 윤리·성찰 상징에 기반한 정성적 안내이며, 절대적 도덕 심판이 아닙니다.';
+  const ritualAction = dailyPracticeRitual;
+  const reflectionFocus = `${sacredAtar.flameRadianceState} · ${discernment.currentTrialTheme}`;
 
   const synthesisTruthMaxim = '아베스타 원전의 가르침: "오직 하나의 길만이 존재하니, 그것은 진리(Asha)의 길이며, 다른 모든 길은 신기루에 불과하다." 당당한 진실의 선택이 내면의 평안과 신뢰를 부릅니다.';
 
@@ -192,6 +196,8 @@ export function calculateZoroastrianAshaTruth(
     dailyPracticeRitual,
     reflectiveQuestion,
     interpretiveBoundary,
+    ritualAction,
+    reflectionFocus,
     synthesisTruthMaxim,
     ashaSynthesisMatrix,
   };
@@ -216,6 +222,8 @@ export function formatZoroastrianAshaTruthPrompt(report: ZoroastrianAshaReport):
   - 배제할 환상: ${report.discernment.illusionToDiscard}
   - 창조적 실천 권고: ${report.discernment.creativeSpentaAdvice}
 - **오늘의 실천 의례**: ${report.dailyPracticeRitual}
+- **실천 의례**: ${report.ritualAction}
+- **성찰 초점**: ${report.reflectionFocus}
 - **성찰 질문**: ${report.reflectiveQuestion}
 - **우주적 진리 잠언**: ${report.synthesisTruthMaxim}
 - **해석 경계**: ${report.interpretiveBoundary}${matrixLine}`;
