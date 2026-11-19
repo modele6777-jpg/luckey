@@ -3996,7 +3996,7 @@ test('Zhong-Lu Inner Alchemy & Three Immortals Engine: calculates stages, tier a
 test('Druid Thirteen Moon Trees & Ogham Engine: calculates birth tree, active tree and resonance', () => {
   const rep = calculateDruidMoonTrees(profile);
   assert.equal(rep.engineVersion, DRUID_MOON_TREES_VERSION);
-  assert(rep.calculatedAtKst.endsWith('+09:00'));
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(rep.interpretiveBoundary.length > 0);
   assert(rep.birthTree.koreanName.length > 0);
   assert(rep.activeCycleTree.koreanName.length > 0);
@@ -4006,6 +4006,7 @@ test('Druid Thirteen Moon Trees & Ogham Engine: calculates birth tree, active tr
   assert(prompt.includes('켈트 드루이드 13대 달나무(Moon Trees) & 오검 주술 엔진'));
   assert(prompt.includes(rep.birthTree.koreanName));
   assert(prompt.includes('+09:00') && prompt.includes('해석 경계'));
+  assert(prompt.includes('성찰 초점'));
   assert(!prompt.includes('/100') && !prompt.includes('점수'));
 });
 
@@ -5740,6 +5741,7 @@ test('Chinese Mayi Mianxiang Twelve Palaces Engine: calculates 12 palaces, Qi au
 test('Egyptian Amduat Twelve Hours Ra Engine: calculates 12 hours of underworld, Apophis dispelling and Khepri rebirth', () => {
   const rep = calculateEgyptianAmduat(profile);
   assert.equal(rep.engineVersion, EGYPTIAN_AMDUAT_VERSION);
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(rep.khepriRebirthLuminosityScore >= 0 && rep.khepriRebirthLuminosityScore <= 100);
   assert(rep.apophisChaosDispellingForce >= 0 && rep.apophisChaosDispellingForce <= 100);
   assert(rep.midnightRaOsirisUnionPower >= 0 && rep.midnightRaOsirisUnionPower <= 100);
@@ -5752,6 +5754,7 @@ test('Egyptian Amduat Twelve Hours Ra Engine: calculates 12 hours of underworld,
   const prompt = formatEgyptianAmduatPrompt(rep);
   assert(prompt.includes('고대 이집트 《암두아트의 서》 12시간 태양신 라의 밤의 저승 항해 & 케프리 부활'));
   assert(prompt.includes(rep.currentAmduatHour.hourNameAncient));
+  assert(prompt.includes('성찰 초점'));
   assert(!prompt.includes('/ 100') && !prompt.includes('점수'));
 });
 
@@ -8293,7 +8296,9 @@ test('Desiderius Erasmus Praise of Folly Engine: calculates Humorous Wisdom, Dog
   assert(prompt.includes(rep.activeErasmusTheme.themeTitleKo));
   assert(prompt.includes('2026-11-14'));
   assertKstTimestamp(rep.calculatedAtKst);
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert.ok(prompt.includes('교차 매트릭스'));
+  assert.ok(prompt.includes('성찰 초점'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });

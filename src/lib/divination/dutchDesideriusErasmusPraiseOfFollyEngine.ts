@@ -13,7 +13,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const DUTCH_DESIDERIUS_ERASMUS_PRAISE_OF_FOLLY_VERSION = 'LUCKEY-ERASMUS-PRAISE-OF-FOLLY-v2.2.0';
+export const DUTCH_DESIDERIUS_ERASMUS_PRAISE_OF_FOLLY_VERSION = 'LUCKEY-ERASMUS-PRAISE-OF-FOLLY-v2.3.0';
 
 export type ErasmusQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -269,7 +269,7 @@ export function calculateDutchDesideriusErasmusPraiseOfFolly(
   const boundaryNotice = '에라스무스 우신예찬 해석은 경직된 편견을 풀고 관용과 유머를 회복하도록 돕는 상징·성찰 관점이며, 미래 예측이나 확정적 판단이 아닙니다.';
   const baseDate = now ?? new Date();
   const kst = new Date(baseDate.getTime() + 9 * 60 * 60 * 1000);
-  const kstTimeLabel = `${temporalErasmusRhythm.kstDateLabel}T${String(kst.getUTCHours()).padStart(2, '0')}:${String(kst.getUTCMinutes()).padStart(2, '0')}:00+09:00`;
+  const kstTimeLabel = `${temporalErasmusRhythm.kstDateLabel}T${String(kst.getUTCHours()).padStart(2, '0')}:${String(kst.getUTCMinutes()).padStart(2, '0')}:00+09:00 (KST)`;
   const reflectiveQuestion = query && query.trim()
     ? `질문 "${query.trim()}"을 마주한 지금, [${activeErasmusTheme.themeTitleKo}]의 시선으로 가장 먼저 웃어넘기며 내려놓을 엄숙함은 무엇인가요? (${topicGuidance.reflectionFocus})`
     : topicGuidance.reflectionFocus;
@@ -318,6 +318,7 @@ export function formatDutchDesideriusErasmusPraiseOfFollyPrompt(
     `- 행동 조언: ${res.activeErasmusTheme.practicalCounsel}`,
     `- 질문 맞춤 실천 가이드: ${res.practiceGuidance}`,
     `- 일상 실천 의례: ${res.ritualAction}`,
+    `- 성찰 초점: ${res.reflectionFocus}`,
     `- 핵심 성찰 질문: ${res.reflectionFocus}`,
     `- 질문 맞춤 성찰 질문: ${res.reflectiveQuestion}`,
     `- 교차 매트릭스: 핵심(${res.erasmusSynthesisMatrix.coreInsight}) | 실행(${res.erasmusSynthesisMatrix.recommendedAction}) | 주의(${res.erasmusSynthesisMatrix.cautionNotice})`,

@@ -29,7 +29,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const DRUID_MOON_TREES_VERSION = 'LUCKEY-DRUID-MOON-TREES-v2.3.0';
+export const DRUID_MOON_TREES_VERSION = 'LUCKEY-DRUID-MOON-TREES-v2.4.0';
 
 export interface DruidTreeSituationalAudit {
   groveFocus: string;
@@ -308,7 +308,7 @@ export function calculateDruidMoonTrees(
   };
 
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
-  const calculatedAtKst = `${kst.toISOString().slice(0, 19)}+09:00`;
+  const calculatedAtKst = `${kst.toISOString().slice(0, 19)}+09:00 (KST)`;
   const interpretiveBoundary = '본 켈트 드루이드 13달나무 리포트는 수목 역법의 자연 상징에 기반한 정성적 성찰 안내이며, 확정적 길흉 예단이 아닙니다.';
   const ritualAction = `${situationalTreeAudit.forestAction} · ${temporalTreeRhythm.groveTimingDirective}`;
   const reflectionFocus = question.trim()
@@ -349,6 +349,7 @@ export function formatDruidMoonTreesPrompt(report: DruidMoonTreesReport): string
 - **교차 매트릭스**: ${report.treeSynthesisMatrix.birthCycleLink}
 - **숲의 지혜 처방**: ${report.forestGuidance}
 - **드루이드 통합 나침반**: ${report.synthesisMessage}
+- **성찰 초점**: ${report.reflectionFocus}
 - **질문 맞춤 성찰 질문**: ${report.reflectiveQuestion}
 - **해석 경계**: ${report.interpretiveBoundary}`;
 }
