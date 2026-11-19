@@ -14,7 +14,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const FRENCH_VOLTAIRE_CANDIDE_TOLERANCE_VERSION = 'LUCKEY-VOLTAIRE-CANDIDE-TOLERANCE-v2.1.0';
+export const FRENCH_VOLTAIRE_CANDIDE_TOLERANCE_VERSION = 'LUCKEY-VOLTAIRE-CANDIDE-TOLERANCE-v2.2.0';
 
 export type VoltaireQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -200,7 +200,7 @@ function formatVoltaireKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
 }
 
 export function calculateFrenchVoltaireCandideTolerance(

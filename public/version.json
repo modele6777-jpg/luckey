@@ -1,10 +1,9 @@
 {
-  "version": "1.7.918",
-  "builtAt": "2026-11-19T09:32:00+09:00",
-  "summary": "카를 융 개성화·동시성 오멘·태을신수 16궁 3대 엔진 실천 의례 및 성찰 초점 표준 연동(v1.7.918)",
+  "version": "1.7.919",
+  "builtAt": "2026-11-19T09:37:00+09:00",
+  "summary": "보부아르·볼테르·격국 3대 엔진 +09:00 (KST) 표준 시각 통일(v1.7.919)",
   "items": [
-    "스위스 카를 융 개성화 원형 통합 엔진(v2.3.0): ritualAction·reflectionFocus 표준 필드 연동",
-    "칼 융 동시성 징조 해독 & 오멘 매트릭스 엔진(v2.3.0): ritualAction·reflectionFocus 표준 필드 연동",
-    "태을신수(太乙神數) 16궁 국수 거시 대세 엔진(v2.3.0): ritualAction·reflectionFocus 표준 필드 연동"
+    "시몬 드 보부아르 애매성의 윤리학(v2.3.0)·볼테르 캉디드 관용(v2.2.0)·정통 사주 10대 격국(v2.4.0): calculatedAtKst +09:00 (KST) 표준 표기 통일",
+    "divination-engines.test.ts: 3대 엔진 v1.7.919 +09:00 (KST) 회귀 테스트 추가"
   ]
 }
