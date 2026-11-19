@@ -89,14 +89,14 @@
     overscroll-behavior-y: none !important;
   }
 
-  html.light:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),
-  html.light body:not(:where(.lucy-chat-shell, .lucy-chat-shell *)) {
+  html.light:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),
+  html.light body:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)) {
     background: #fdfaf5;
     color: #1e293b;
   }
 
-  html.dark:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),
-  html.dark body:not(:where(.lucy-chat-shell, .lucy-chat-shell *)) {
+  html.dark:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),
+  html.dark body:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)) {
     background: oklch(0.035 0.03 275);
     color: #f8fafc;
   }
@@ -161,12 +161,12 @@
     background-color: rgba(255, 255, 255, 0.05);
     border: 1px solid rgba(255, 255, 255, 0.1);
   }
-  html.light .glass:not(:where(.lucy-chat-shell, .lucy-chat-shell *)) {
+  html.light .glass:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)) {
     background-color: rgba(255, 255, 255, 0.85);
     border: 1px solid rgba(210, 190, 160, 0.35);
     box-shadow: 0 4px 24px rgba(180, 140, 90, 0.08);
   }
-  html.dark .glass:not(:where(.lucy-chat-shell, .lucy-chat-shell *)) {
+  html.dark .glass:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)) {
     background-color: rgba(255, 255, 255, 0.05);
     border: 1px solid rgba(255, 255, 255, 0.1);
   }
@@ -669,18 +669,18 @@
 
 
   /* 🤍 루시 채팅 모드: 라이트/다크 테마별 배경 고정 (노치/홈바 및 바디 회색 투과 원천 방지) */
-  html.light.in-lucy-chat:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),
-  html.light body.in-lucy-chat:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),
-  html.light.in-lucy-chat #root:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),
-  html.light.in-lucy-chat .prism-app-shell:not(:where(.lucy-chat-shell, .lucy-chat-shell *)) {
+  html.light.in-lucy-chat:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),
+  html.light body.in-lucy-chat:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),
+  html.light.in-lucy-chat #root:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),
+  html.light.in-lucy-chat .prism-app-shell:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)) {
     background: var(--lucy-page-background, #faf6f0) !important;
     background-color: var(--lucy-page-background, #faf6f0) !important;
   }
 
-  html.dark.in-lucy-chat:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),
-  html.dark body.in-lucy-chat:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),
-  html.dark.in-lucy-chat #root:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),
-  html.dark.in-lucy-chat .prism-app-shell:not(:where(.lucy-chat-shell, .lucy-chat-shell *)) {
+  html.dark.in-lucy-chat:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),
+  html.dark body.in-lucy-chat:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),
+  html.dark.in-lucy-chat #root:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),
+  html.dark.in-lucy-chat .prism-app-shell:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)) {
     background: #050508 !important;
     background-color: #050508 !important;
   }
@@ -938,18 +938,18 @@ html:not(.light).perf-reduced .glass {
   background-color: rgba(18, 16, 30, 0.88) !important;
 }
 
-html.light.prism-iphone-xs [class*="backdrop-blur"]:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),
-html.light.perf-iphone-xs [class*="backdrop-blur"]:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),
-html.light.perf-legacy [class*="backdrop-blur"]:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),
-html.light.perf-reduced [class*="backdrop-blur"]:not(:where(.lucy-chat-shell, .lucy-chat-shell *)) {
+html.light.prism-iphone-xs [class*="backdrop-blur"]:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),
+html.light.perf-iphone-xs [class*="backdrop-blur"]:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),
+html.light.perf-legacy [class*="backdrop-blur"]:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),
+html.light.perf-reduced [class*="backdrop-blur"]:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)) {
   -webkit-backdrop-filter: none !important;
   backdrop-filter: none !important;
 }
 
-html.light.prism-iphone-xs .glass:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),
-html.light.perf-iphone-xs .glass:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),
-html.light.perf-legacy .glass:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),
-html.light.perf-reduced .glass:not(:where(.lucy-chat-shell, .lucy-chat-shell *)) {
+html.light.prism-iphone-xs .glass:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),
+html.light.perf-iphone-xs .glass:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),
+html.light.perf-legacy .glass:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),
+html.light.perf-reduced .glass:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)) {
   -webkit-backdrop-filter: none !important;
   backdrop-filter: none !important;
   background-color: rgba(255, 253, 249, 0.94) !important;
@@ -1109,12 +1109,12 @@ html:not(.light).pwa-standalone .prism-bottom-nav {
   background-color: rgba(18, 16, 30, 0.94) !important;
 }
 
-html.light.perf-mobile .glass:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),
-html.light.perf-reduced .glass:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),
-html.light.pwa-standalone .glass:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),
-html.light.perf-mobile .prism-bottom-nav:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),
-html.light.perf-reduced .prism-bottom-nav:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),
-html.light.pwa-standalone .prism-bottom-nav:not(:where(.lucy-chat-shell, .lucy-chat-shell *)) {
+html.light.perf-mobile .glass:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),
+html.light.perf-reduced .glass:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),
+html.light.pwa-standalone .glass:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),
+html.light.perf-mobile .prism-bottom-nav:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),
+html.light.perf-reduced .prism-bottom-nav:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),
+html.light.pwa-standalone .prism-bottom-nav:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)) {
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
   background-color: rgba(255, 253, 249, 0.95) !important;
@@ -2270,15 +2270,15 @@ h1, h2, h3, h4, h5, h6, p, span, label, blockquote {
    a cohesive Warm Ivory White & Pastel Glassmorphism sanctuary.
    ========================================================================= */
 
-html.light .glass:not(:where(.lucy-chat-shell, .lucy-chat-shell *)) {
+html.light .glass:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)) {
   background-color: rgba(255, 253, 249, 0.88) !important;
   border-color: rgba(180, 145, 105, 0.22) !important;
   box-shadow: 0 8px 30px rgba(140, 110, 80, 0.07);
 }
 
-html.light .top-nav:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),
-html.light .prism-bottom-nav:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),
-html.light .prism-xs-subnav:not(:where(.lucy-chat-shell, .lucy-chat-shell *)) {
+html.light .top-nav:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),
+html.light .prism-bottom-nav:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),
+html.light .prism-xs-subnav:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)) {
   background: rgba(255, 253, 249, 0.95) !important;
   background-color: rgba(255, 253, 249, 0.95) !important;
   border-color: rgba(180, 145, 105, 0.22) !important;
@@ -2286,53 +2286,53 @@ html.light .prism-xs-subnav:not(:where(.lucy-chat-shell, .lucy-chat-shell *)) {
   box-shadow: 0 4px 20px rgba(140, 110, 80, 0.08) !important;
 }
 
-html.light .lucy-chat-shell:not(:where(.lucy-chat-shell, .lucy-chat-shell *)) {
+html.light .lucy-chat-shell:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)) {
   background-color: #faf7f2 !important;
   color: #1e293b !important;
 }
 
-html.light .lucy-chat-header:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),
-html.light .lucy-chat-footer:not(:where(.lucy-chat-shell, .lucy-chat-shell *)) {
+html.light .lucy-chat-header:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),
+html.light .lucy-chat-footer:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)) {
   background-color: rgba(255, 255, 255, 0.96) !important;
   border-color: rgba(180, 145, 105, 0.2) !important;
   color: #1e293b !important;
 }
 
-html.light .lucy-assistant-bubble:not(:where(.lucy-chat-shell, .lucy-chat-shell *)) {
+html.light .lucy-assistant-bubble:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)) {
   background-color: #ffffff !important;
   border-color: rgba(217, 119, 6, 0.25) !important;
   color: #1e293b !important;
 }
 
-html.light .lucy-user-bubble:not(:where(.lucy-chat-shell, .lucy-chat-shell *)) {
+html.light .lucy-user-bubble:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)) {
   background-color: #fef3c7 !important;
   border-color: rgba(245, 158, 11, 0.45) !important;
   color: #0f172a !important;
 }
 
 /* 1. Global Container & Text Inheritance Default */
-html.light:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),
-html.light body:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),
-html.light #root:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),
-html.light .prism-app-shell:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),
-html.light [data-app-scroll-root]:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),
-html.light main:not(:where(.lucy-chat-shell, .lucy-chat-shell *)) {
+html.light:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),
+html.light body:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),
+html.light #root:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),
+html.light .prism-app-shell:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),
+html.light [data-app-scroll-root]:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),
+html.light main:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)) {
   color: #1e293b !important;
 }
 
 /* 2. Convert opaque dark page wrappers to Warm Ivory so Pastel Aurora shines through */
-html.light [class*="bg-[#0"]:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),
-html.light [class*="bg-[#1"]:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),
-html.light .bg-slate-950:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),
-html.light .bg-neutral-950:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),
-html.light .bg-zinc-950:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),
-html.light .bg-black:not(.keep-dark):not(:where(.lucy-chat-shell, .lucy-chat-shell *)),
-html.light header.bg-slate-950:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),
-html.light header[class*="bg-slate-950/"]:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),
-html.light header[class*="bg-black/"]:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),
-html.light footer.bg-slate-950:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),
-html.light footer[class*="bg-slate-950/"]:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),
-html.light footer[class*="bg-black/"]:not(:where(.lucy-chat-shell, .lucy-chat-shell *)) {
+html.light [class*="bg-[#0"]:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),
+html.light [class*="bg-[#1"]:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),
+html.light .bg-slate-950:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),
+html.light .bg-neutral-950:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),
+html.light .bg-zinc-950:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),
+html.light .bg-black:not(.keep-dark):not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),
+html.light header.bg-slate-950:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),
+html.light header[class*="bg-slate-950/"]:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),
+html.light header[class*="bg-black/"]:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),
+html.light footer.bg-slate-950:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),
+html.light footer[class*="bg-slate-950/"]:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),
+html.light footer[class*="bg-black/"]:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)) {
   background-color: rgba(255, 253, 249, 0.94) !important;
   color: #1e293b !important;
 }
@@ -2347,7 +2347,7 @@ html.light :is(
   .bg-black\/60, .bg-black\/50, .bg-black\/40, .bg-black\/30, .bg-black\/20,
   .bg-white\/5, .bg-white\/10,
   [class*="bg-white/[0.0"], [class*="bg-white/[0.04]"], [class*="bg-white/[0.06]"]
-):not(:where(.lucy-chat-shell, .lucy-chat-shell *)) {
+):not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)) {
   background-color: rgba(255, 253, 249, 0.86) !important;
   border-color: rgba(180, 145, 105, 0.22) !important;
   box-shadow: 0 4px 20px rgba(135, 105, 75, 0.06);
@@ -2358,7 +2358,7 @@ html.light :is(
   .border-white\/5, .border-white\/10, .border-white\/15, .border-white\/20,
   .border-white\/25, .border-white\/30,
   .border-slate-800, .border-neutral-800, .border-zinc-800
-):not(:where(.lucy-chat-shell, .lucy-chat-shell *)) {
+):not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)) {
   border-color: rgba(180, 145, 105, 0.22) !important;
 }
 
@@ -2373,170 +2373,170 @@ html.light :is(
    ============================================================================ */
 
 /* 1. Global Light Base */
-html.light:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),
-html.light body:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),
-html.light #root:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),
-html.light .prism-app-shell:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),
-html.light [data-app-scroll-root]:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),
-html.light main:not(:where(.lucy-chat-shell, .lucy-chat-shell *)) {
+html.light:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),
+html.light body:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),
+html.light #root:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),
+html.light .prism-app-shell:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),
+html.light [data-app-scroll-root]:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),
+html.light main:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)) {
   color: #0f172a;
 }
 
 /* ── STEP 1: UNCONDITIONAL REMAP ──────────────────────────────────────────── */
 
 /* 2. Pure white & all text-white/* opacity variants */
-html.light .text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),
-html.light [class*="text-white/"]:not(:where(.lucy-chat-shell, .lucy-chat-shell *)) {
+html.light .text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),
+html.light [class*="text-white/"]:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)) {
   color: #0f172a !important;
 }
 
 /* 3. Grayscale bright tones */
-html.light .text-slate-50:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),   html.light .text-slate-100:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),   html.light .text-slate-200:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),   html.light .text-neutral-50:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),   html.light .text-neutral-100:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),   html.light .text-neutral-200:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),   html.light .text-zinc-50:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),   html.light .text-zinc-100:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),   html.light .text-zinc-200:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),   html.light .text-gray-50:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),   html.light .text-gray-100:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),   html.light .text-gray-200:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),   html.light .text-stone-50:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),   html.light .text-stone-100:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),   html.light .text-stone-200:not(:where(.lucy-chat-shell, .lucy-chat-shell *)) {
+html.light .text-slate-50:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),   html.light .text-slate-100:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),   html.light .text-slate-200:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),   html.light .text-neutral-50:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),   html.light .text-neutral-100:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),   html.light .text-neutral-200:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),   html.light .text-zinc-50:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),   html.light .text-zinc-100:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),   html.light .text-zinc-200:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),   html.light .text-gray-50:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),   html.light .text-gray-100:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),   html.light .text-gray-200:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),   html.light .text-stone-50:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),   html.light .text-stone-100:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),   html.light .text-stone-200:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)) {
   color: #0f172a !important;
 }
-html.light .text-slate-300:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),   html.light .text-slate-400:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),   html.light .text-neutral-300:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),   html.light .text-neutral-400:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),   html.light .text-zinc-300:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),   html.light .text-zinc-400:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),   html.light .text-gray-300:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),   html.light .text-gray-400:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),   html.light .text-stone-300:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),   html.light .text-stone-400:not(:where(.lucy-chat-shell, .lucy-chat-shell *)) {
+html.light .text-slate-300:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),   html.light .text-slate-400:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),   html.light .text-neutral-300:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),   html.light .text-neutral-400:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),   html.light .text-zinc-300:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),   html.light .text-zinc-400:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),   html.light .text-gray-300:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),   html.light .text-gray-400:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),   html.light .text-stone-300:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),   html.light .text-stone-400:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)) {
   color: #334155 !important;
 }
 
 /* 4. Full 15-color spectrum: bright (100~400) → deep (800~900) */
-html.light .text-purple-100:not(:where(.lucy-chat-shell, .lucy-chat-shell *)), html.light .text-purple-200:not(:where(.lucy-chat-shell, .lucy-chat-shell *)), html.light .text-purple-300:not(:where(.lucy-chat-shell, .lucy-chat-shell *)), html.light .text-purple-400:not(:where(.lucy-chat-shell, .lucy-chat-shell *))  { color: #581c87 !important; }
-html.light .text-indigo-100:not(:where(.lucy-chat-shell, .lucy-chat-shell *)), html.light .text-indigo-200:not(:where(.lucy-chat-shell, .lucy-chat-shell *)), html.light .text-indigo-300:not(:where(.lucy-chat-shell, .lucy-chat-shell *)), html.light .text-indigo-400:not(:where(.lucy-chat-shell, .lucy-chat-shell *))  { color: #312e81 !important; }
-html.light .text-pink-100:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),   html.light .text-pink-200:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),   html.light .text-pink-300:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),   html.light .text-pink-400:not(:where(.lucy-chat-shell, .lucy-chat-shell *))    { color: #831843 !important; }
-html.light .text-rose-100:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),   html.light .text-rose-200:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),   html.light .text-rose-300:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),   html.light .text-rose-400:not(:where(.lucy-chat-shell, .lucy-chat-shell *))    { color: #881337 !important; }
-html.light .text-amber-100:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),  html.light .text-amber-200:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),  html.light .text-amber-300:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),  html.light .text-amber-400:not(:where(.lucy-chat-shell, .lucy-chat-shell *))   { color: #78350f !important; }
-html.light .text-yellow-100:not(:where(.lucy-chat-shell, .lucy-chat-shell *)), html.light .text-yellow-200:not(:where(.lucy-chat-shell, .lucy-chat-shell *)), html.light .text-yellow-300:not(:where(.lucy-chat-shell, .lucy-chat-shell *)), html.light .text-yellow-400:not(:where(.lucy-chat-shell, .lucy-chat-shell *))  { color: #713f12 !important; }
-html.light .text-cyan-100:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),   html.light .text-cyan-200:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),   html.light .text-cyan-300:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),   html.light .text-cyan-400:not(:where(.lucy-chat-shell, .lucy-chat-shell *))    { color: #164e63 !important; }
-html.light .text-sky-100:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),    html.light .text-sky-200:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),    html.light .text-sky-300:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),    html.light .text-sky-400:not(:where(.lucy-chat-shell, .lucy-chat-shell *))     { color: #0c4a6e !important; }
-html.light .text-blue-100:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),   html.light .text-blue-200:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),   html.light .text-blue-300:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),   html.light .text-blue-400:not(:where(.lucy-chat-shell, .lucy-chat-shell *))    { color: #1e3a8a !important; }
-html.light .text-emerald-100:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),html.light .text-emerald-200:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),html.light .text-emerald-300:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),html.light .text-emerald-400:not(:where(.lucy-chat-shell, .lucy-chat-shell *)) { color: #064e3b !important; }
-html.light .text-teal-100:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),   html.light .text-teal-200:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),   html.light .text-teal-300:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),   html.light .text-teal-400:not(:where(.lucy-chat-shell, .lucy-chat-shell *))    { color: #134e4a !important; }
-html.light .text-green-100:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),  html.light .text-green-200:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),  html.light .text-green-300:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),  html.light .text-green-400:not(:where(.lucy-chat-shell, .lucy-chat-shell *))   { color: #14532d !important; }
-html.light .text-orange-100:not(:where(.lucy-chat-shell, .lucy-chat-shell *)), html.light .text-orange-200:not(:where(.lucy-chat-shell, .lucy-chat-shell *)), html.light .text-orange-300:not(:where(.lucy-chat-shell, .lucy-chat-shell *)), html.light .text-orange-400:not(:where(.lucy-chat-shell, .lucy-chat-shell *))  { color: #7c2d12 !important; }
-html.light .text-violet-100:not(:where(.lucy-chat-shell, .lucy-chat-shell *)), html.light .text-violet-200:not(:where(.lucy-chat-shell, .lucy-chat-shell *)), html.light .text-violet-300:not(:where(.lucy-chat-shell, .lucy-chat-shell *)), html.light .text-violet-400:not(:where(.lucy-chat-shell, .lucy-chat-shell *))  { color: #4c1d95 !important; }
-html.light .text-fuchsia-100:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),html.light .text-fuchsia-200:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),html.light .text-fuchsia-300:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),html.light .text-fuchsia-400:not(:where(.lucy-chat-shell, .lucy-chat-shell *)) { color: #701a75 !important; }
+html.light .text-purple-100:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)), html.light .text-purple-200:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)), html.light .text-purple-300:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)), html.light .text-purple-400:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *))  { color: #581c87 !important; }
+html.light .text-indigo-100:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)), html.light .text-indigo-200:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)), html.light .text-indigo-300:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)), html.light .text-indigo-400:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *))  { color: #312e81 !important; }
+html.light .text-pink-100:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),   html.light .text-pink-200:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),   html.light .text-pink-300:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),   html.light .text-pink-400:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *))    { color: #831843 !important; }
+html.light .text-rose-100:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),   html.light .text-rose-200:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),   html.light .text-rose-300:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),   html.light .text-rose-400:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *))    { color: #881337 !important; }
+html.light .text-amber-100:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),  html.light .text-amber-200:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),  html.light .text-amber-300:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),  html.light .text-amber-400:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *))   { color: #78350f !important; }
+html.light .text-yellow-100:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)), html.light .text-yellow-200:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)), html.light .text-yellow-300:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)), html.light .text-yellow-400:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *))  { color: #713f12 !important; }
+html.light .text-cyan-100:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),   html.light .text-cyan-200:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),   html.light .text-cyan-300:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),   html.light .text-cyan-400:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *))    { color: #164e63 !important; }
+html.light .text-sky-100:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),    html.light .text-sky-200:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),    html.light .text-sky-300:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),    html.light .text-sky-400:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *))     { color: #0c4a6e !important; }
+html.light .text-blue-100:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),   html.light .text-blue-200:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),   html.light .text-blue-300:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),   html.light .text-blue-400:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *))    { color: #1e3a8a !important; }
+html.light .text-emerald-100:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),html.light .text-emerald-200:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),html.light .text-emerald-300:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),html.light .text-emerald-400:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)) { color: #064e3b !important; }
+html.light .text-teal-100:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),   html.light .text-teal-200:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),   html.light .text-teal-300:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),   html.light .text-teal-400:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *))    { color: #134e4a !important; }
+html.light .text-green-100:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),  html.light .text-green-200:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),  html.light .text-green-300:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),  html.light .text-green-400:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *))   { color: #14532d !important; }
+html.light .text-orange-100:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)), html.light .text-orange-200:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)), html.light .text-orange-300:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)), html.light .text-orange-400:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *))  { color: #7c2d12 !important; }
+html.light .text-violet-100:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)), html.light .text-violet-200:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)), html.light .text-violet-300:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)), html.light .text-violet-400:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *))  { color: #4c1d95 !important; }
+html.light .text-fuchsia-100:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),html.light .text-fuchsia-200:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),html.light .text-fuchsia-300:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),html.light .text-fuchsia-400:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)) { color: #701a75 !important; }
 
 /* 5. Inline white styles */
-html.light [style*="color: rgb(255, 255, 255)"]:not(:where(.lucy-chat-shell, .lucy-chat-shell *)), html.light [style*="color: rgba(255, 255, 255"]:not(:where(.lucy-chat-shell, .lucy-chat-shell *)), html.light [style*="color: #fff"]:not(:where(.lucy-chat-shell, .lucy-chat-shell *)), html.light [style*="color: #ffffff"]:not(:where(.lucy-chat-shell, .lucy-chat-shell *)), html.light [style*="color: white"]:not(:where(.lucy-chat-shell, .lucy-chat-shell *)) {
+html.light [style*="color: rgb(255, 255, 255)"]:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)), html.light [style*="color: rgba(255, 255, 255"]:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)), html.light [style*="color: #fff"]:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)), html.light [style*="color: #ffffff"]:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)), html.light [style*="color: white"]:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)) {
   color: #0f172a !important;
 }
 
 /* 6. Form inputs */
-html.light input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]):not(:where(.lucy-chat-shell, .lucy-chat-shell *)),
-html.light textarea:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),
-html.light select:not(:where(.lucy-chat-shell, .lucy-chat-shell *)) {
+html.light input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]):not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),
+html.light textarea:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),
+html.light select:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)) {
   color: #0f172a !important;
 }
-html.light :not(:where(.lucy-chat-shell, .lucy-chat-shell *))::placeholder,
-html.light [class*="placeholder-white"]:not(:where(.lucy-chat-shell, .lucy-chat-shell *)) {
+html.light :not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *))::placeholder,
+html.light [class*="placeholder-white"]:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)) {
   color: #64748b !important;
 }
 
 /* ── STEP 2: RESTORE white text inside dark containers ───────────────────── */
 
 /* Dark solid background containers */
-html.light .bg-black .text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),
-html.light .bg-black [class*="text-white/"]:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),
-html.light .bg-slate-950 .text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),
-html.light .bg-slate-950 [class*="text-white/"]:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),
-html.light .bg-slate-900 .text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),
-html.light .bg-slate-900 [class*="text-white/"]:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),
-html.light .bg-slate-800 .text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),
-html.light .bg-slate-800 [class*="text-white/"]:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),
-html.light .bg-neutral-900 .text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),
-html.light .bg-neutral-900 [class*="text-white/"]:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),
-html.light .bg-neutral-800 .text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),
-html.light .bg-neutral-800 [class*="text-white/"]:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),
-html.light .bg-zinc-900 .text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),
-html.light .bg-zinc-900 [class*="text-white/"]:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),
-html.light .bg-zinc-800 .text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),
-html.light .bg-zinc-800 [class*="text-white/"]:not(:where(.lucy-chat-shell, .lucy-chat-shell *)) {
+html.light .bg-black .text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),
+html.light .bg-black [class*="text-white/"]:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),
+html.light .bg-slate-950 .text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),
+html.light .bg-slate-950 [class*="text-white/"]:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),
+html.light .bg-slate-900 .text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),
+html.light .bg-slate-900 [class*="text-white/"]:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),
+html.light .bg-slate-800 .text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),
+html.light .bg-slate-800 [class*="text-white/"]:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),
+html.light .bg-neutral-900 .text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),
+html.light .bg-neutral-900 [class*="text-white/"]:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),
+html.light .bg-neutral-800 .text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),
+html.light .bg-neutral-800 [class*="text-white/"]:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),
+html.light .bg-zinc-900 .text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),
+html.light .bg-zinc-900 [class*="text-white/"]:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),
+html.light .bg-zinc-800 .text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),
+html.light .bg-zinc-800 [class*="text-white/"]:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)) {
   color: #ffffff !important;
 }
 
 /* Dark transparent background containers */
-html.light [class*="bg-black/"] .text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),
-html.light [class*="bg-black/"] [class*="text-white/"]:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),
-html.light [class*="bg-slate-950/"] .text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),
-html.light [class*="bg-slate-950/"] [class*="text-white/"]:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),
-html.light [class*="bg-slate-900/"] .text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),
-html.light [class*="bg-slate-900/"] [class*="text-white/"]:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),
-html.light [class*="bg-slate-800/"] .text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),
-html.light [class*="bg-slate-800/"] [class*="text-white/"]:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),
-html.light [class*="bg-neutral-900/"] .text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),
-html.light [class*="bg-neutral-900/"] [class*="text-white/"]:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),
-html.light [class*="bg-zinc-900/"] .text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),
-html.light [class*="bg-zinc-900/"] [class*="text-white/"]:not(:where(.lucy-chat-shell, .lucy-chat-shell *)) {
+html.light [class*="bg-black/"] .text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),
+html.light [class*="bg-black/"] [class*="text-white/"]:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),
+html.light [class*="bg-slate-950/"] .text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),
+html.light [class*="bg-slate-950/"] [class*="text-white/"]:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),
+html.light [class*="bg-slate-900/"] .text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),
+html.light [class*="bg-slate-900/"] [class*="text-white/"]:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),
+html.light [class*="bg-slate-800/"] .text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),
+html.light [class*="bg-slate-800/"] [class*="text-white/"]:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),
+html.light [class*="bg-neutral-900/"] .text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),
+html.light [class*="bg-neutral-900/"] [class*="text-white/"]:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),
+html.light [class*="bg-zinc-900/"] .text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),
+html.light [class*="bg-zinc-900/"] [class*="text-white/"]:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)) {
   color: #ffffff !important;
 }
 
 /* Saturated color buttons/containers (children) */
-html.light .bg-indigo-500 .text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),  html.light .bg-indigo-600 .text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),  html.light .bg-indigo-700 .text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),  html.light .bg-blue-500 .text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),  html.light .bg-blue-600 .text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),  html.light .bg-blue-700 .text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),  html.light .bg-rose-500 .text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),  html.light .bg-rose-600 .text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),  html.light .bg-rose-700 .text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),  html.light .bg-red-500 .text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),  html.light .bg-red-600 .text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),  html.light .bg-red-700 .text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),  html.light .bg-emerald-500 .text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),  html.light .bg-emerald-600 .text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),  html.light .bg-emerald-700 .text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),  html.light .bg-amber-600 .text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),  html.light .bg-amber-700 .text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),  html.light .bg-yellow-600 .text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),  html.light .bg-yellow-700 .text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),  html.light .bg-purple-500 .text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),  html.light .bg-purple-600 .text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),  html.light .bg-purple-700 .text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),  html.light .bg-violet-500 .text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),  html.light .bg-violet-600 .text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),  html.light .bg-violet-700 .text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *)) {
+html.light .bg-indigo-500 .text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),  html.light .bg-indigo-600 .text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),  html.light .bg-indigo-700 .text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),  html.light .bg-blue-500 .text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),  html.light .bg-blue-600 .text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),  html.light .bg-blue-700 .text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),  html.light .bg-rose-500 .text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),  html.light .bg-rose-600 .text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),  html.light .bg-rose-700 .text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),  html.light .bg-red-500 .text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),  html.light .bg-red-600 .text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),  html.light .bg-red-700 .text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),  html.light .bg-emerald-500 .text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),  html.light .bg-emerald-600 .text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),  html.light .bg-emerald-700 .text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),  html.light .bg-amber-600 .text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),  html.light .bg-amber-700 .text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),  html.light .bg-yellow-600 .text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),  html.light .bg-yellow-700 .text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),  html.light .bg-purple-500 .text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),  html.light .bg-purple-600 .text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),  html.light .bg-purple-700 .text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),  html.light .bg-violet-500 .text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),  html.light .bg-violet-600 .text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),  html.light .bg-violet-700 .text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)) {
   color: #ffffff !important;
 }
 
 /* Self-colored elements that have both bg-* AND text-white */
-html.light .bg-indigo-500.text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),  html.light .bg-indigo-600.text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),  html.light .bg-indigo-700.text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),  html.light .bg-blue-500.text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),  html.light .bg-blue-600.text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),  html.light .bg-blue-700.text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),  html.light .bg-rose-500.text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),  html.light .bg-rose-600.text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),  html.light .bg-rose-700.text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),  html.light .bg-red-500.text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),  html.light .bg-red-600.text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),  html.light .bg-red-700.text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),  html.light .bg-emerald-500.text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),  html.light .bg-emerald-600.text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),  html.light .bg-emerald-700.text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),  html.light .bg-amber-600.text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),  html.light .bg-amber-700.text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),  html.light .bg-yellow-600.text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),  html.light .bg-yellow-700.text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),  html.light .bg-purple-500.text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),  html.light .bg-purple-600.text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),  html.light .bg-purple-700.text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),  html.light .bg-violet-500.text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),  html.light .bg-violet-600.text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),  html.light .bg-violet-700.text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),  html.light .bg-black.text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),  html.light .bg-slate-950.text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),  html.light .bg-slate-900.text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),  html.light .bg-slate-800.text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *)) {
+html.light .bg-indigo-500.text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),  html.light .bg-indigo-600.text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),  html.light .bg-indigo-700.text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),  html.light .bg-blue-500.text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),  html.light .bg-blue-600.text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),  html.light .bg-blue-700.text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),  html.light .bg-rose-500.text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),  html.light .bg-rose-600.text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),  html.light .bg-rose-700.text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),  html.light .bg-red-500.text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),  html.light .bg-red-600.text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),  html.light .bg-red-700.text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),  html.light .bg-emerald-500.text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),  html.light .bg-emerald-600.text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),  html.light .bg-emerald-700.text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),  html.light .bg-amber-600.text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),  html.light .bg-amber-700.text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),  html.light .bg-yellow-600.text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),  html.light .bg-yellow-700.text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),  html.light .bg-purple-500.text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),  html.light .bg-purple-600.text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),  html.light .bg-purple-700.text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),  html.light .bg-violet-500.text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),  html.light .bg-violet-600.text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),  html.light .bg-violet-700.text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),  html.light .bg-black.text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),  html.light .bg-slate-950.text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),  html.light .bg-slate-900.text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),  html.light .bg-slate-800.text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)) {
   color: #ffffff !important;
 }
 
 /* Gradient dark containers (children) */
-html.light [class*="from-indigo-"] .text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),  html.light [class*="from-indigo-"] [class*="text-white/"]:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),  html.light [class*="from-purple-"] .text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),  html.light [class*="from-purple-"] [class*="text-white/"]:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),  html.light [class*="from-violet-"] .text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),  html.light [class*="from-violet-"] [class*="text-white/"]:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),  html.light [class*="from-rose-"] .text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),  html.light [class*="from-rose-"] [class*="text-white/"]:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),  html.light [class*="from-red-"] .text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),  html.light [class*="from-red-"] [class*="text-white/"]:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),  html.light [class*="from-blue-"] .text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),  html.light [class*="from-blue-"] [class*="text-white/"]:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),  html.light [class*="from-emerald-"] .text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),  html.light [class*="from-emerald-"] [class*="text-white/"]:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),  html.light [class*="from-amber-"] .text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),  html.light [class*="from-amber-"] [class*="text-white/"]:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),  html.light [class*="from-orange-"] .text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),  html.light [class*="from-orange-"] [class*="text-white/"]:not(:where(.lucy-chat-shell, .lucy-chat-shell *)) {
+html.light [class*="from-indigo-"] .text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),  html.light [class*="from-indigo-"] [class*="text-white/"]:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),  html.light [class*="from-purple-"] .text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),  html.light [class*="from-purple-"] [class*="text-white/"]:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),  html.light [class*="from-violet-"] .text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),  html.light [class*="from-violet-"] [class*="text-white/"]:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),  html.light [class*="from-rose-"] .text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),  html.light [class*="from-rose-"] [class*="text-white/"]:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),  html.light [class*="from-red-"] .text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),  html.light [class*="from-red-"] [class*="text-white/"]:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),  html.light [class*="from-blue-"] .text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),  html.light [class*="from-blue-"] [class*="text-white/"]:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),  html.light [class*="from-emerald-"] .text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),  html.light [class*="from-emerald-"] [class*="text-white/"]:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),  html.light [class*="from-amber-"] .text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),  html.light [class*="from-amber-"] [class*="text-white/"]:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),  html.light [class*="from-orange-"] .text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),  html.light [class*="from-orange-"] [class*="text-white/"]:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)) {
   color: #ffffff !important;
 }
 
 /* Special classes */
-html.light .keep-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),
-html.light [data-keep-white="true"]:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),
-html.light .force-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),
-html.light .keep-white.text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),
-html.light [data-keep-white="true"].text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),
-html.light .prism-rainbow-btn:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),
-html.light .celestial-tarot-btn:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),
-html.light .prism-fab-3d:not(:where(.lucy-chat-shell, .lucy-chat-shell *)) {
+html.light .keep-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),
+html.light [data-keep-white="true"]:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),
+html.light .force-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),
+html.light .keep-white.text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),
+html.light [data-keep-white="true"].text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),
+html.light .prism-rainbow-btn:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),
+html.light .celestial-tarot-btn:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),
+html.light .prism-fab-3d:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)) {
   color: #ffffff !important;
 }
-html.light .keep-white .text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),
-html.light .keep-white [class*="text-white/"]:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),
-html.light [data-keep-white="true"] .text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),
-html.light [data-keep-white="true"] [class*="text-white/"]:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),
-html.light .prism-rainbow-btn .text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),
-html.light .celestial-tarot-btn .text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),
-html.light .prism-fab-3d .text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *)) {
+html.light .keep-white .text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),
+html.light .keep-white [class*="text-white/"]:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),
+html.light [data-keep-white="true"] .text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),
+html.light [data-keep-white="true"] [class*="text-white/"]:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),
+html.light .prism-rainbow-btn .text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),
+html.light .celestial-tarot-btn .text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),
+html.light .prism-fab-3d .text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)) {
   color: #ffffff !important;
 }
 
 /* Code blocks */
-html.light pre:not(:where(.lucy-chat-shell, .lucy-chat-shell *)) {
+html.light pre:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)) {
   background-color: #0f172a !important;
   color: #f8fafc !important;
 }
-html.light pre .text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),
-html.light pre [class*="text-white/"]:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),
-html.light pre code:not(:where(.lucy-chat-shell, .lucy-chat-shell *)) {
+html.light pre .text-white:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),
+html.light pre [class*="text-white/"]:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),
+html.light pre code:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)) {
   color: #f8fafc !important;
 }
 
 /* Restore bright grayscale inside dark containers */
-html.light .bg-black .text-slate-100:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),
-html.light .bg-black .text-slate-200:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),
-html.light .bg-slate-900 .text-slate-100:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),
-html.light .bg-slate-900 .text-slate-200:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),
-html.light .bg-slate-800 .text-slate-100:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),
-html.light .bg-slate-800 .text-slate-200:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),
-html.light [class*="bg-black/"] .text-slate-100:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),
-html.light [class*="bg-black/"] .text-slate-200:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),
-html.light [class*="bg-slate-900/"] .text-slate-100:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),
-html.light [class*="bg-slate-900/"] .text-slate-200:not(:where(.lucy-chat-shell, .lucy-chat-shell *)) {
+html.light .bg-black .text-slate-100:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),
+html.light .bg-black .text-slate-200:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),
+html.light .bg-slate-900 .text-slate-100:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),
+html.light .bg-slate-900 .text-slate-200:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),
+html.light .bg-slate-800 .text-slate-100:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),
+html.light .bg-slate-800 .text-slate-200:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),
+html.light [class*="bg-black/"] .text-slate-100:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),
+html.light [class*="bg-black/"] .text-slate-200:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),
+html.light [class*="bg-slate-900/"] .text-slate-100:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),
+html.light [class*="bg-slate-900/"] .text-slate-200:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)) {
   color: #f1f5f9 !important;
 }
-html.light .bg-black .text-slate-300:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),
-html.light .bg-black .text-slate-400:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),
-html.light .bg-slate-900 .text-slate-300:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),
-html.light .bg-slate-900 .text-slate-400:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),
-html.light [class*="bg-black/"] .text-slate-300:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),
-html.light [class*="bg-black/"] .text-slate-400:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),
-html.light [class*="bg-slate-900/"] .text-slate-300:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),
-html.light [class*="bg-slate-900/"] .text-slate-400:not(:where(.lucy-chat-shell, .lucy-chat-shell *)) {
+html.light .bg-black .text-slate-300:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),
+html.light .bg-black .text-slate-400:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),
+html.light .bg-slate-900 .text-slate-300:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),
+html.light .bg-slate-900 .text-slate-400:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),
+html.light [class*="bg-black/"] .text-slate-300:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),
+html.light [class*="bg-black/"] .text-slate-400:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),
+html.light [class*="bg-slate-900/"] .text-slate-300:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),
+html.light [class*="bg-slate-900/"] .text-slate-400:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)) {
   color: #94a3b8 !important;
 }
 /* ============================================================================
@@ -2545,12 +2545,12 @@ html.light [class*="bg-slate-900/"] .text-slate-400:not(:where(.lucy-chat-shell,
    Maps dark colors (500~950) to high-contrast luminous bright tones (200~300, #ffffff).
    Protects dark/black text inside light containers/buttons (white, gold, yellow).
    ============================================================================ */
-html.dark:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),
-html.dark body:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),
-html.dark #root:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),
-html.dark .prism-app-shell:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),
-html.dark [data-app-scroll-root]:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),
-html.dark main:not(:where(.lucy-chat-shell, .lucy-chat-shell *)) {
+html.dark:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),
+html.dark body:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),
+html.dark #root:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),
+html.dark .prism-app-shell:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),
+html.dark [data-app-scroll-root]:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),
+html.dark main:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)) {
   color: #f8fafc;
 }
 
@@ -2583,7 +2583,7 @@ html.dark :is(h1, h2, h3, h4, h5, h6, strong, b, [class*="font-black"], [class*=
   .bg-yellow-300 *, .bg-yellow-400 *, .bg-yellow-500 *,
   [class*="from-amber-"] *, [class*="from-yellow-"] *,
   .keep-dark *, [data-keep-dark="true"] *, .force-dark *
-):not(:where(.lucy-chat-shell, .lucy-chat-shell *)) {
+):not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)) {
   color: #ffffff !important;
 }
 
@@ -2607,7 +2607,7 @@ html.dark :is(p, span, div, li, label, a, button, [role="button"]):is(
   .bg-yellow-300 *, .bg-yellow-400 *, .bg-yellow-500 *,
   [class*="from-amber-"] *, [class*="from-yellow-"] *,
   .keep-dark *, [data-keep-dark="true"] *, .force-dark *
-):not(:where(.lucy-chat-shell, .lucy-chat-shell *)) {
+):not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)) {
   color: #f8fafc !important;
 }
 
@@ -2623,55 +2623,55 @@ html.dark :is(p, span, div, li, label):is(
   .bg-amber-300 *, .bg-amber-400 *, .bg-amber-500 *,
   .bg-yellow-300 *, .bg-yellow-400 *,
   .keep-dark *, [data-keep-dark="true"] *, .force-dark *
-):not(:where(.lucy-chat-shell, .lucy-chat-shell *)) {
+):not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)) {
   color: #cbd5e1 !important;
 }
 
 /* 4. Full 15-Color Spectrum Luminance Calibration for Dark Mode */
 /* Maps dark colored text (500~950) to vibrant luminous bright tones (300) */
-html.dark :is(.text-purple-500, .text-purple-600, .text-purple-700, .text-purple-800, .text-purple-900, .text-purple-950):not(.bg-white *):not([class*="bg-white/"] *):not(.bg-amber-300 *):not(.keep-dark *):not([data-keep-dark="true"] *):not(:where(.lucy-chat-shell, .lucy-chat-shell *)) {
+html.dark :is(.text-purple-500, .text-purple-600, .text-purple-700, .text-purple-800, .text-purple-900, .text-purple-950):not(.bg-white *):not([class*="bg-white/"] *):not(.bg-amber-300 *):not(.keep-dark *):not([data-keep-dark="true"] *):not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)) {
   color: #d8b4fe !important; /* purple-300 */
 }
-html.dark :is(.text-indigo-500, .text-indigo-600, .text-indigo-700, .text-indigo-800, .text-indigo-900, .text-indigo-950):not(.bg-white *):not([class*="bg-white/"] *):not(.bg-amber-300 *):not(.keep-dark *):not([data-keep-dark="true"] *):not(:where(.lucy-chat-shell, .lucy-chat-shell *)) {
+html.dark :is(.text-indigo-500, .text-indigo-600, .text-indigo-700, .text-indigo-800, .text-indigo-900, .text-indigo-950):not(.bg-white *):not([class*="bg-white/"] *):not(.bg-amber-300 *):not(.keep-dark *):not([data-keep-dark="true"] *):not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)) {
   color: #a5b4fc !important; /* indigo-300 */
 }
-html.dark :is(.text-pink-500, .text-pink-600, .text-pink-700, .text-pink-800, .text-pink-900, .text-pink-950):not(.bg-white *):not([class*="bg-white/"] *):not(.bg-amber-300 *):not(.keep-dark *):not([data-keep-dark="true"] *):not(:where(.lucy-chat-shell, .lucy-chat-shell *)) {
+html.dark :is(.text-pink-500, .text-pink-600, .text-pink-700, .text-pink-800, .text-pink-900, .text-pink-950):not(.bg-white *):not([class*="bg-white/"] *):not(.bg-amber-300 *):not(.keep-dark *):not([data-keep-dark="true"] *):not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)) {
   color: #f9a8d4 !important; /* pink-300 */
 }
-html.dark :is(.text-rose-500, .text-rose-600, .text-rose-700, .text-rose-800, .text-rose-900, .text-rose-950):not(.bg-white *):not([class*="bg-white/"] *):not(.bg-amber-300 *):not(.keep-dark *):not([data-keep-dark="true"] *):not(:where(.lucy-chat-shell, .lucy-chat-shell *)) {
+html.dark :is(.text-rose-500, .text-rose-600, .text-rose-700, .text-rose-800, .text-rose-900, .text-rose-950):not(.bg-white *):not([class*="bg-white/"] *):not(.bg-amber-300 *):not(.keep-dark *):not([data-keep-dark="true"] *):not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)) {
   color: #fda4af !important; /* rose-300 */
 }
-html.dark :is(.text-amber-500, .text-amber-600, .text-amber-700, .text-amber-800, .text-amber-900, .text-amber-950):not(.bg-white *):not([class*="bg-white/"] *):not(.bg-amber-300 *):not(.keep-dark *):not([data-keep-dark="true"] *):not(:where(.lucy-chat-shell, .lucy-chat-shell *)) {
+html.dark :is(.text-amber-500, .text-amber-600, .text-amber-700, .text-amber-800, .text-amber-900, .text-amber-950):not(.bg-white *):not([class*="bg-white/"] *):not(.bg-amber-300 *):not(.keep-dark *):not([data-keep-dark="true"] *):not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)) {
   color: #fcd34d !important; /* amber-300 */
 }
-html.dark :is(.text-yellow-500, .text-yellow-600, .text-yellow-700, .text-yellow-800, .text-yellow-900, .text-yellow-950):not(.bg-white *):not([class*="bg-white/"] *):not(.bg-amber-300 *):not(.keep-dark *):not([data-keep-dark="true"] *):not(:where(.lucy-chat-shell, .lucy-chat-shell *)) {
+html.dark :is(.text-yellow-500, .text-yellow-600, .text-yellow-700, .text-yellow-800, .text-yellow-900, .text-yellow-950):not(.bg-white *):not([class*="bg-white/"] *):not(.bg-amber-300 *):not(.keep-dark *):not([data-keep-dark="true"] *):not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)) {
   color: #fde047 !important; /* yellow-300 */
 }
-html.dark :is(.text-cyan-500, .text-cyan-600, .text-cyan-700, .text-cyan-800, .text-cyan-900, .text-cyan-950):not(.bg-white *):not([class*="bg-white/"] *):not(.bg-amber-300 *):not(.keep-dark *):not([data-keep-dark="true"] *):not(:where(.lucy-chat-shell, .lucy-chat-shell *)) {
+html.dark :is(.text-cyan-500, .text-cyan-600, .text-cyan-700, .text-cyan-800, .text-cyan-900, .text-cyan-950):not(.bg-white *):not([class*="bg-white/"] *):not(.bg-amber-300 *):not(.keep-dark *):not([data-keep-dark="true"] *):not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)) {
   color: #67e8f9 !important; /* cyan-300 */
 }
-html.dark :is(.text-sky-500, .text-sky-600, .text-sky-700, .text-sky-800, .text-sky-900, .text-sky-950):not(.bg-white *):not([class*="bg-white/"] *):not(.bg-amber-300 *):not(.keep-dark *):not([data-keep-dark="true"] *):not(:where(.lucy-chat-shell, .lucy-chat-shell *)) {
+html.dark :is(.text-sky-500, .text-sky-600, .text-sky-700, .text-sky-800, .text-sky-900, .text-sky-950):not(.bg-white *):not([class*="bg-white/"] *):not(.bg-amber-300 *):not(.keep-dark *):not([data-keep-dark="true"] *):not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)) {
   color: #7dd3fc !important; /* sky-300 */
 }
-html.dark :is(.text-blue-500, .text-blue-600, .text-blue-700, .text-blue-800, .text-blue-900, .text-blue-950):not(.bg-white *):not([class*="bg-white/"] *):not(.bg-amber-300 *):not(.keep-dark *):not([data-keep-dark="true"] *):not(:where(.lucy-chat-shell, .lucy-chat-shell *)) {
+html.dark :is(.text-blue-500, .text-blue-600, .text-blue-700, .text-blue-800, .text-blue-900, .text-blue-950):not(.bg-white *):not([class*="bg-white/"] *):not(.bg-amber-300 *):not(.keep-dark *):not([data-keep-dark="true"] *):not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)) {
   color: #93c5fd !important; /* blue-300 */
 }
-html.dark :is(.text-emerald-500, .text-emerald-600, .text-emerald-700, .text-emerald-800, .text-emerald-900, .text-emerald-950):not(.bg-white *):not([class*="bg-white/"] *):not(.bg-amber-300 *):not(.keep-dark *):not([data-keep-dark="true"] *):not(:where(.lucy-chat-shell, .lucy-chat-shell *)) {
+html.dark :is(.text-emerald-500, .text-emerald-600, .text-emerald-700, .text-emerald-800, .text-emerald-900, .text-emerald-950):not(.bg-white *):not([class*="bg-white/"] *):not(.bg-amber-300 *):not(.keep-dark *):not([data-keep-dark="true"] *):not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)) {
   color: #6ee7b7 !important; /* emerald-300 */
 }
-html.dark :is(.text-teal-500, .text-teal-600, .text-teal-700, .text-teal-800, .text-teal-900, .text-teal-950):not(.bg-white *):not([class*="bg-white/"] *):not(.bg-amber-300 *):not(.keep-dark *):not([data-keep-dark="true"] *):not(:where(.lucy-chat-shell, .lucy-chat-shell *)) {
+html.dark :is(.text-teal-500, .text-teal-600, .text-teal-700, .text-teal-800, .text-teal-900, .text-teal-950):not(.bg-white *):not([class*="bg-white/"] *):not(.bg-amber-300 *):not(.keep-dark *):not([data-keep-dark="true"] *):not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)) {
   color: #5eead4 !important; /* teal-300 */
 }
-html.dark :is(.text-green-500, .text-green-600, .text-green-700, .text-green-800, .text-green-900, .text-green-950):not(.bg-white *):not([class*="bg-white/"] *):not(.bg-amber-300 *):not(.keep-dark *):not([data-keep-dark="true"] *):not(:where(.lucy-chat-shell, .lucy-chat-shell *)) {
+html.dark :is(.text-green-500, .text-green-600, .text-green-700, .text-green-800, .text-green-900, .text-green-950):not(.bg-white *):not([class*="bg-white/"] *):not(.bg-amber-300 *):not(.keep-dark *):not([data-keep-dark="true"] *):not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)) {
   color: #86efac !important; /* green-300 */
 }
-html.dark :is(.text-orange-500, .text-orange-600, .text-orange-700, .text-orange-800, .text-orange-900, .text-orange-950):not(.bg-white *):not([class*="bg-white/"] *):not(.bg-amber-300 *):not(.keep-dark *):not([data-keep-dark="true"] *):not(:where(.lucy-chat-shell, .lucy-chat-shell *)) {
+html.dark :is(.text-orange-500, .text-orange-600, .text-orange-700, .text-orange-800, .text-orange-900, .text-orange-950):not(.bg-white *):not([class*="bg-white/"] *):not(.bg-amber-300 *):not(.keep-dark *):not([data-keep-dark="true"] *):not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)) {
   color: #fdba74 !important; /* orange-300 */
 }
-html.dark :is(.text-violet-500, .text-violet-600, .text-violet-700, .text-violet-800, .text-violet-900, .text-violet-950):not(.bg-white *):not([class*="bg-white/"] *):not(.bg-amber-300 *):not(.keep-dark *):not([data-keep-dark="true"] *):not(:where(.lucy-chat-shell, .lucy-chat-shell *)) {
+html.dark :is(.text-violet-500, .text-violet-600, .text-violet-700, .text-violet-800, .text-violet-900, .text-violet-950):not(.bg-white *):not([class*="bg-white/"] *):not(.bg-amber-300 *):not(.keep-dark *):not([data-keep-dark="true"] *):not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)) {
   color: #c4b5fd !important; /* violet-300 */
 }
-html.dark :is(.text-fuchsia-500, .text-fuchsia-600, .text-fuchsia-700, .text-fuchsia-800, .text-fuchsia-900, .text-fuchsia-950):not(.bg-white *):not([class*="bg-white/"] *):not(.bg-amber-300 *):not(.keep-dark *):not([data-keep-dark="true"] *):not(:where(.lucy-chat-shell, .lucy-chat-shell *)) {
+html.dark :is(.text-fuchsia-500, .text-fuchsia-600, .text-fuchsia-700, .text-fuchsia-800, .text-fuchsia-900, .text-fuchsia-950):not(.bg-white *):not([class*="bg-white/"] *):not(.bg-amber-300 *):not(.keep-dark *):not([data-keep-dark="true"] *):not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)) {
   color: #f0abfc !important; /* fuchsia-300 */
 }
 
@@ -2688,19 +2688,19 @@ html.dark :not(
   [style*="color: #000"],
   [style*="color: #000000"],
   [style*="color: black"]
-):not(:where(.lucy-chat-shell, .lucy-chat-shell *)) {
+):not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)) {
   color: #f8fafc !important;
 }
 
 /* 6. Form Inputs & Textareas in Dark Mode */
-html.dark input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]):not(:where(.lucy-chat-shell, .lucy-chat-shell *)),
-html.dark textarea:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),
-html.dark select:not(:where(.lucy-chat-shell, .lucy-chat-shell *)) {
+html.dark input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]):not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),
+html.dark textarea:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),
+html.dark select:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)) {
   color: #f8fafc !important;
 }
-html.dark :not(:where(.lucy-chat-shell, .lucy-chat-shell *))::placeholder,
-html.dark [class*="placeholder-slate-500"]:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),
-html.dark [class*="placeholder-slate-600"]:not(:where(.lucy-chat-shell, .lucy-chat-shell *)) {
+html.dark :not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *))::placeholder,
+html.dark [class*="placeholder-slate-500"]:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),
+html.dark [class*="placeholder-slate-600"]:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)) {
   color: #94a3b8 !important;
 }
 
@@ -2710,7 +2710,7 @@ html.dark :is(
   .bg-amber-300, .bg-amber-400,
   .bg-yellow-300, .bg-yellow-400,
   .keep-dark, [data-keep-dark="true"], .force-dark
-) :is(.text-black, [class*="text-black"], .text-slate-900, .text-zinc-900):not(:where(.lucy-chat-shell, .lucy-chat-shell *)) {
+) :is(.text-black, [class*="text-black"], .text-slate-900, .text-zinc-900):not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)) {
   color: #090d16 !important;
 }
 
@@ -2721,22 +2721,22 @@ html.dark :is(
   .bg-amber-300, .bg-amber-400,
   .bg-yellow-300, .bg-yellow-400,
   .keep-dark, [data-keep-dark="true"], .force-dark
-):not(:where(.lucy-chat-shell, .lucy-chat-shell *)) {
+):not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)) {
   color: #090d16 !important;
 }
 
 /* 8. Subnav Bar & Inactive Button Contrast Enforcements */
-html.light .prism-xs-subnav:not(:where(.lucy-chat-shell, .lucy-chat-shell *)) {
+html.light .prism-xs-subnav:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)) {
   background: rgba(255, 255, 255, 0.88) !important;
   border-color: rgba(180, 140, 90, 0.25) !important;
   box-shadow: 0 4px 20px rgba(160, 120, 70, 0.12) !important;
 }
 
-html.light .prism-subnav-btn:not([class*="bg-"]):not(:where(.lucy-chat-shell, .lucy-chat-shell *)) {
+html.light .prism-subnav-btn:not([class*="bg-"]):not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)) {
   color: #475569 !important;
 }
 
-html.light .prism-subnav-btn:not([class*="bg-"]):hover:not(:where(.lucy-chat-shell, .lucy-chat-shell *)) {
+html.light .prism-subnav-btn:not([class*="bg-"]):hover:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)) {
   color: #0f172a !important;
   background-color: rgba(0, 0, 0, 0.05) !important;
 }
@@ -2746,7 +2746,7 @@ html.dark :is(.text-white\/10, .text-white\/15, .text-white\/20, .text-white\/25
   .bg-white *, [class*="bg-white/"] *,
   .bg-amber-300 *, .bg-amber-400 *,
   .keep-dark *, [data-keep-dark="true"] *
-):not(:where(.lucy-chat-shell, .lucy-chat-shell *)) {
+):not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)) {
   color: rgba(255, 255, 255, 0.55) !important;
 }
 
@@ -2754,7 +2754,7 @@ html.dark :is(.text-white\/30, .text-white\/35, .text-white\/40):not(
   .bg-white *, [class*="bg-white/"] *,
   .bg-amber-300 *, .bg-amber-400 *,
   .keep-dark *, [data-keep-dark="true"] *
-):not(:where(.lucy-chat-shell, .lucy-chat-shell *)) {
+):not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)) {
   color: rgba(255, 255, 255, 0.72) !important;
 }
 
@@ -3016,48 +3016,48 @@ html.perf-duo-ultra .aura-orb-3 {
    ============================================================================ */
 
 /* Protect Crisp Luminous Text & Inputs inside Lucy Cosmic Bubble across Dark & Light themes */
-html.dark .lucy-cosmic-bubble:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),
-html.light .lucy-cosmic-bubble:not(:where(.lucy-chat-shell, .lucy-chat-shell *)) {
+html.dark .lucy-cosmic-bubble:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),
+html.light .lucy-cosmic-bubble:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)) {
   color: #f8fafc !important;
 }
 
-html.dark .lucy-cosmic-bubble textarea:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),
-html.light .lucy-cosmic-bubble textarea:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),
-html.dark .lucy-cosmic-bubble input:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),
-html.light .lucy-cosmic-bubble input:not(:where(.lucy-chat-shell, .lucy-chat-shell *)) {
+html.dark .lucy-cosmic-bubble textarea:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),
+html.light .lucy-cosmic-bubble textarea:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),
+html.dark .lucy-cosmic-bubble input:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),
+html.light .lucy-cosmic-bubble input:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)) {
   color: #f8fafc !important;
   caret-color: #00f0ff !important;
 }
 
-html.dark .lucy-cosmic-bubble .lucy-cosmic-title:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),
-html.light .lucy-cosmic-bubble .lucy-cosmic-title:not(:where(.lucy-chat-shell, .lucy-chat-shell *)) {
+html.dark .lucy-cosmic-bubble .lucy-cosmic-title:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),
+html.light .lucy-cosmic-bubble .lucy-cosmic-title:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)) {
   color: #ffffff !important;
 }
 
-html.dark .lucy-cosmic-bubble .lucy-cosmic-body:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),
-html.light .lucy-cosmic-bubble .lucy-cosmic-body:not(:where(.lucy-chat-shell, .lucy-chat-shell *)) {
+html.dark .lucy-cosmic-bubble .lucy-cosmic-body:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),
+html.light .lucy-cosmic-bubble .lucy-cosmic-body:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)) {
   color: #f8fafc !important;
 }
 
-html.dark .lucy-cosmic-bubble .lucy-cosmic-sub:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),
-html.light .lucy-cosmic-bubble .lucy-cosmic-sub:not(:where(.lucy-chat-shell, .lucy-chat-shell *)) {
+html.dark .lucy-cosmic-bubble .lucy-cosmic-sub:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),
+html.light .lucy-cosmic-bubble .lucy-cosmic-sub:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)) {
   color: #cbd5e1 !important;
 }
 
-html.dark .lucy-cosmic-bubble .lucy-cosmic-muted:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),
-html.light .lucy-cosmic-bubble .lucy-cosmic-muted:not(:where(.lucy-chat-shell, .lucy-chat-shell *)) {
+html.dark .lucy-cosmic-bubble .lucy-cosmic-muted:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),
+html.light .lucy-cosmic-bubble .lucy-cosmic-muted:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)) {
   color: #94a3b8 !important;
 }
 
-html.dark .lucy-cosmic-bubble .lucy-cosmic-cyan:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),
-html.light .lucy-cosmic-bubble .lucy-cosmic-cyan:not(:where(.lucy-chat-shell, .lucy-chat-shell *)) {
+html.dark .lucy-cosmic-bubble .lucy-cosmic-cyan:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),
+html.light .lucy-cosmic-bubble .lucy-cosmic-cyan:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)) {
   color: #38bdf8 !important;
 }
 
-html.dark .lucy-cosmic-bubble .lucy-user-cosmic-msg:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),
-html.light .lucy-cosmic-bubble .lucy-user-cosmic-msg:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),
-html.dark .lucy-cosmic-bubble .lucy-user-cosmic-msg *:not(:where(.lucy-chat-shell, .lucy-chat-shell *)),
-html.light .lucy-cosmic-bubble .lucy-user-cosmic-msg *:not(:where(.lucy-chat-shell, .lucy-chat-shell *)) {
+html.dark .lucy-cosmic-bubble .lucy-user-cosmic-msg:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),
+html.light .lucy-cosmic-bubble .lucy-user-cosmic-msg:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),
+html.dark .lucy-cosmic-bubble .lucy-user-cosmic-msg *:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)),
+html.light .lucy-cosmic-bubble .lucy-user-cosmic-msg *:not(:where(.lucy-chat-shell, .lucy-chat-shell *, [data-theme-dark-island], [data-theme-dark-island] *)) {
   color: #ffffff !important;
 }
 

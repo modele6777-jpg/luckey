@@ -14,6 +14,8 @@ interface DuoTarotBookSpreadProps {
   onScrollToReading?: (cardId: string) => void;
   onQuickDraw?: (promptText: string) => void;
   isLight?: boolean;
+  /** Lucy Master table: transparent so the shared velvet/candle room shows through. */
+  masterRoom?: boolean;
 }
 
 export const DuoTarotBookSpread: React.FC<DuoTarotBookSpreadProps> = ({
@@ -24,6 +26,7 @@ export const DuoTarotBookSpread: React.FC<DuoTarotBookSpreadProps> = ({
   onScrollToReading,
   onQuickDraw,
   isLight = false,
+  masterRoom = false,
 }) => {
   const { cardBackId } = useTarotCardBack();
   const [selectedCardIdx, setSelectedCardIdx] = useState<number>(0);
@@ -43,7 +46,9 @@ export const DuoTarotBookSpread: React.FC<DuoTarotBookSpreadProps> = ({
 
   return (
     <div className={`h-full w-full flex flex-col overflow-y-auto no-scrollbar select-none p-3.5 sm:p-5 transition-colors duration-500 ${
-      isLight 
+      masterRoom
+        ? 'bg-transparent text-white'
+        : isLight 
         ? 'bg-gradient-to-br from-[#faf6ee] via-[#f5ede0] to-[#ece3d2] text-slate-800' 
         : 'bg-gradient-to-br from-slate-950 via-[#101424] to-[#0a0d18] text-white'
     }`}>
