@@ -3684,6 +3684,7 @@ test('Delphic Maxims Oracle Engine: calculates soul maxim, situational oracle an
 test('Ayurvedic Tridosha & Prana Engine: calculates prakriti, vikriti and subtle energies', () => {
   const rep = calculateAyurvedicTridoshaPrana({ profile, targetDate: new Date('2026-11-15T05:00:00Z'), question: '요즘 피로하고 잠이 잘 안 와요' });
   assert.equal(rep.engineVersion, AYURVEDIC_TRIDOSHA_VERSION);
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert.equal(rep.questionFocus, 'health');
   assert(rep.prakritiConstitution.vata >= 0 && rep.prakritiConstitution.pitta >= 0 && rep.prakritiConstitution.kapha >= 0);
   assert.equal(rep.prakritiConstitution.vata + rep.prakritiConstitution.pitta + rep.prakritiConstitution.kapha, 100);
@@ -3697,6 +3698,7 @@ test('Ayurvedic Tridosha & Prana Engine: calculates prakriti, vikriti and subtle
   const prompt = formatAyurvedicTridoshaPranaPrompt(rep);
   assert(prompt.includes('인도 정통 아유르베다 3대 도샤'));
   assert(prompt.includes(rep.prakritiConstitution.dominantDosha));
+  assert(prompt.includes('성찰 초점'));
   assert(!prompt.includes('점 / 100점'));
   assert(!prompt.includes('%'));
 });
@@ -3882,6 +3884,7 @@ test('Pythagorean Tetraktys & Gematria Harmonics Engine: calculates root, 4 tier
 test('Babylonian Enuma Elish & Tablets of Destiny Engine: calculates patron deity, edict and ordering index', () => {
   const rep = calculateBabylonianEnumaElish(profile, new Date('2026-11-15T05:00:00Z'), '중요한 결정을 앞두고 질서를 잡고 싶습니다');
   assert.equal(rep.engineVersion, BABYLONIAN_ENUMA_ELISH_VERSION);
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(rep.patronDeity.koreanName.length > 0);
   assert(rep.destinyEdict.soulSovereigntyScore >= 0 && rep.destinyEdict.soulSovereigntyScore <= 100);
   assert(rep.orderingIndex >= 0 && rep.orderingIndex <= 100);
@@ -3891,6 +3894,7 @@ test('Babylonian Enuma Elish & Tablets of Destiny Engine: calculates patron deit
   const prompt = formatBabylonianEnumaElishPrompt(rep);
   assert(prompt.includes('고대 바빌로니아 에누마 엘리쉬 & 운명의 서판'));
   assert(prompt.includes(rep.patronDeity.koreanName));
+  assert(prompt.includes('성찰 초점'));
   assert(!prompt.includes('%'));
   assert(!prompt.includes('/100'));
 });
@@ -5295,6 +5299,7 @@ test('Rosicrucian Chymical Wedding Engine: calculates seven days transmutation, 
 test('Aztec Tonalamatl Sacred Calendar Engine: calculates twenty day signs, tonalli solar vitality and ollin harmony', () => {
   const rep = calculateAztecTonalamatl({ profile, question: '아즈텍 토날포왈리 성력' });
   assert.equal(rep.engineVersion, AZTEC_TONALAMATL_ENGINE_VERSION);
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(rep.tonalliSolarVitalityScore >= 0 && rep.tonalliSolarVitalityScore <= 100);
   assert(rep.teyoliaHeartPurityIndex >= 0 && rep.teyoliaHeartPurityIndex <= 100);
   assert(rep.ihiyotlBreathPowerScore >= 0 && rep.ihiyotlBreathPowerScore <= 100);
@@ -5304,6 +5309,7 @@ test('Aztec Tonalamatl Sacred Calendar Engine: calculates twenty day signs, tona
   const prompt = formatAztecTonalamatlPrompt(rep);
   assert(prompt.includes('고대 아즈텍 토날포왈리 20대 일진 & 토날라마틀 성력 실측 데이터'));
   assert(prompt.includes(rep.dominantDaySign.nameKo));
+  assert(prompt.includes('성찰 초점'));
 });
 
 test('Mongolian Tengrism Hiimori Soul Engine: calculates wind horse vitality, blue sky resonance and suld spirit power', () => {

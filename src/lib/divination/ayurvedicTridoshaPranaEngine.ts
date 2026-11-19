@@ -13,7 +13,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const AYURVEDIC_TRIDOSHA_VERSION = 'LUCKEY-AYURVEDIC-TRIDOSHA-v2.4.0';
+export const AYURVEDIC_TRIDOSHA_VERSION = 'LUCKEY-AYURVEDIC-TRIDOSHA-v2.5.0';
 
 export type AyurvedicQuestionFocus = 'stress' | 'relationship' | 'career' | 'health' | 'spiritual';
 
@@ -346,7 +346,7 @@ export function calculateAyurvedicTridoshaPrana(params: {
   const interpretiveBoundary = '본 리포트는 아유르베다 《차라카 삼히타》 체질·생체시계 상징에 기반한 정성적 양생 안내이며, 의학적 진단이나 처방이 아닙니다.';
 
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
-  const calculatedAtKst = `${kst.toISOString().slice(0, 19)}+09:00`;
+  const calculatedAtKst = `${kst.toISOString().slice(0, 19)}+09:00 (KST)`;
 
   const reflectionFocus = `${situationalAyurvedaAudit.gunaMentalState} 지금 내 몸의 도샤 균형을 위해 가장 먼저 덜어낼 자극은 무엇인가요?`;
   const reflectiveQuestion = question.trim()
@@ -400,6 +400,8 @@ export function formatAyurvedicTridoshaPranaPrompt(report: AyurvedicTridoshaRepo
   - 저녁 이완: ${report.dinacharya.eveningRestoration}
 - **교차 매트릭스 종합**: ${report.tridoshaSynthesisMatrix.synthesizedVerdict}
 - **심신 조화 지침**: ${report.tridoshaHarmonizationGuidance}
+- **일상 실천 의례**: ${report.ritualAction}
+- **성찰 초점**: ${report.reflectionFocus}
 - **성찰 질문**: ${report.reflectiveQuestion}
 - **해석 경계**: ${report.interpretiveBoundary}`;
 }

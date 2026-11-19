@@ -9,7 +9,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const AZTEC_TONALAMATL_ENGINE_VERSION = 'LUCKEY-AZTEC-TONALAMATL-v2.3.0';
+export const AZTEC_TONALAMATL_ENGINE_VERSION = 'LUCKEY-AZTEC-TONALAMATL-v2.4.0';
 
 export interface AztecDaySign {
   signNumber: number;
@@ -404,7 +404,7 @@ export function calculateAztecTonalamatl(
   const tonalliSunSalutationRitual = `아침 태양을 마주하고 정수리를 곧게 펴며 심호흡하십시오: "제5의 태양 토나티우의 광명이 나의 토날리를 가득 채우니, 두려움 없이 올린(Ollin)의 거룩한 우주적 변화를 향해 나아간다."`;
 
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
-  const calculatedAtKst = `${kst.toISOString().slice(0, 19)}+09:00`;
+  const calculatedAtKst = `${kst.toISOString().slice(0, 19)}+09:00 (KST)`;
   const interpretiveBoundary = '본 아즈텍 토날라마틀 성력 리포트는 고대 메소아메리카 260일 신성 역법 상징에 기반한 정성적 성찰 안내이며, 확정적 길흉 예단이 아닙니다.';
 
   const reflectionFocus = `${situationalTonalamatlAudit.focusAxis}에 비추어 오늘 나의 토날리 불꽃을 흐리는 습관 하나는 무엇인가요?`;
@@ -451,6 +451,7 @@ export function formatAztecTonalamatlPrompt(report: AztecTonalamatlReport): stri
   * 통합 행동 지침: ${report.tonalamatlSynthesisMatrix.ollinActionDirective}
 - **토날라마틀 지혜 지침**: ${report.aztecTonalamatlGuidance}
 - **토날리 태양 경배 리추얼**: ${report.tonalliSunSalutationRitual}
+- **성찰 초점**: ${report.reflectionFocus}
 - **성찰 질문**: ${report.reflectiveQuestion}
 - **해석 경계**: ${report.interpretiveBoundary}`;
 }
