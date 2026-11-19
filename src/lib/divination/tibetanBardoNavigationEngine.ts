@@ -22,7 +22,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const TIBETAN_BARDO_VERSION = 'LUCKEY-TIBETAN-BARDO-v2.1.0';
+export const TIBETAN_BARDO_VERSION = 'LUCKEY-TIBETAN-BARDO-v2.2.0';
 
 function formatBardoKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -55,6 +55,8 @@ export interface TibetanBardoReport {
   dailyZenAnchor: string;         // 일상에서 마음의 중심을 잡는 닻
   reflectiveQuestion: string;
   interpretiveBoundary: string;
+  ritualAction: string;
+  reflectionFocus: string;
   bardoSynthesisMatrix?: {
     dominantTension: string;
     alignmentState: string;
@@ -167,6 +169,8 @@ export function calculateTibetanBardoNavigation(
     : `[${currentBardoState.nameKo}]의 자리에서 환영의 함정을 알아차릴 때, 오늘 가장 고요하게 비추어 보고 싶은 마음의 그림자는 무엇입니까?`;
   const interpretiveBoundary =
     '티베트 불교 바르도(Bardo) 6대 중음 상징은 인생의 전환기에서 마음의 흔들림을 자각하기 위한 관조적 은유이며, 단정적 미래 예측이나 의학적·심리적 진단을 대체하지 않습니다.';
+  const ritualAction = `${dailyZenAnchor} 이어 호흡 세 번 동안 [${currentBardoState.nameKo}]의 감정을 이름 붙여 흘려보내십시오.`;
+  const reflectionFocus = `[${currentBardoState.nameKo}]에서 [${secondaryBardoState.nameKo}]로 건너가는 문턱의 맑은 자각(Rigpa)`;
   const bardoSynthesisMatrix = {
     dominantTension: `${currentBardoState.nameKo} ↔ 환영의 함정`,
     alignmentState: `영적 기회(${currentBardoState.spiritualOpportunity}) · 다음 전환(${secondaryBardoState.nameKo})`,
@@ -185,6 +189,8 @@ export function calculateTibetanBardoNavigation(
     dailyZenAnchor,
     reflectiveQuestion,
     interpretiveBoundary,
+    ritualAction,
+    reflectionFocus,
     bardoSynthesisMatrix,
   };
 }
@@ -203,5 +209,7 @@ export function formatTibetanBardoNavigationPrompt(report: TibetanBardoReport): 
 - **바르도 항해 나침반 지침**: ${report.bardoNavigationGuidance}
 - **일일 릭파(자각) 닻 내리기**: ${report.dailyZenAnchor}${matrixLine}
 - **성찰 질문**: ${report.reflectiveQuestion}
+- **실천 의례**: ${report.ritualAction}
+- **성찰 초점**: ${report.reflectionFocus}
 - **해석 경계**: ${report.interpretiveBoundary}`;
 }

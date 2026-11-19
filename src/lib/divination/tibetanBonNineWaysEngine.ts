@@ -32,7 +32,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const TIBETAN_BON_NINE_WAYS_VERSION = 'LUCKEY-TIBETAN-BON-NINE-WAYS-v2.1.0';
+export const TIBETAN_BON_NINE_WAYS_VERSION = 'LUCKEY-TIBETAN-BON-NINE-WAYS-v2.2.0';
 
 function formatBonKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -72,6 +72,8 @@ export interface TibetanBonReport {
   yungdrungMantraDecree: string; // 불멸의 진언 칙령
   reflectiveQuestion: string;
   interpretiveBoundary: string;
+  ritualAction: string;
+  reflectionFocus: string;
   bonSynthesisMatrix?: {
     dominantTension: string;
     alignmentState: string;
@@ -256,6 +258,8 @@ export function calculateTibetanBonNineWays(
     : `${activeWay.koreanName}의 가르침 속에서 ${primaryVitality.koreanMeaning}을 지키기 위해, 지금 내 삶의 공간과 마음에서 비워내고 싶은 잡음은 무엇입니까?`;
   const interpretiveBoundary =
     '티베트 본교(Bon) 9승과 5대 영혼 활력소 상징은 내면의 정화와 일상 리듬을 성찰하기 위한 전통 관조 은유이며, 단정적 미래 예측이나 의학적 진단을 대체하지 않습니다.';
+  const ritualAction = `조용한 자리에서 "${yungdrungMantraDecree.split('(')[0].trim()}" 진언을 세 번 암송하며 ${primaryVitality.name} 에너지를 가다듬으십시오.`;
+  const reflectionFocus = `[${activeWay.koreanName}]의 수행과 부족해진 ${primaryVitality.koreanMeaning}의 균형 회복`;
   const bonSynthesisMatrix = {
     dominantTension: `${activeWay.koreanName} ↔ ${primaryVitality.name}`,
     alignmentState: `${activeWay.category} · 보조 교차(${secondaryWay.koreanName}) · 보강(${primaryVitality.koreanMeaning})`,
@@ -274,6 +278,8 @@ export function calculateTibetanBonNineWays(
     yungdrungMantraDecree,
     reflectiveQuestion,
     interpretiveBoundary,
+    ritualAction,
+    reflectionFocus,
     bonSynthesisMatrix,
   };
 }
@@ -296,5 +302,7 @@ export function formatTibetanBonNineWaysPrompt(report: TibetanBonReport): string
 ${vitLines}
 - 융드룽 불멸의 진언 칙령: "${report.yungdrungMantraDecree}"${matrixLine}
 - 성찰 질문: ${report.reflectiveQuestion}
+- 실천 의례: ${report.ritualAction}
+- 성찰 초점: ${report.reflectionFocus}
 - 해석 경계: ${report.interpretiveBoundary}`;
 }
