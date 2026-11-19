@@ -14,7 +14,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const FRENCH_MICHEL_DE_MONTAIGNE_VERSION = 'LUCKEY-MONTAIGNE-ESSAYS-QUE-SAIS-JE-v2.2.0';
+export const FRENCH_MICHEL_DE_MONTAIGNE_VERSION = 'LUCKEY-MONTAIGNE-ESSAYS-QUE-SAIS-JE-v2.3.0';
 
 export interface MontaigneTheme {
   themeKey: string;
@@ -138,12 +138,7 @@ export const MONTAIGNE_APHORISMS: MontaigneAphorism[] = [
 
 function formatMontaigneKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
-  const y = kst.getUTCFullYear();
-  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
-  const d = String(kst.getUTCDate()).padStart(2, '0');
-  const hh = String(kst.getUTCHours()).padStart(2, '0');
-  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} +09:00 KST`;
+  return `${kst.toISOString().slice(0, 19)}+09:00 (KST)`;
 }
 
 function buildMontaigneReflectiveQuestion(theme: MontaigneTheme, query?: string): string {
@@ -256,6 +251,7 @@ export function formatFrenchMichelDeMontaigneEssaysPrompt(
     `- 보조 원전 테제: "${res.secondaryMontaigneAphorism.aphorismKo}"`,
     `- 보조 원전 출처: [${res.secondaryMontaigneAphorism.sourceContext}]`,
     `- 보조 실천 지침: ${res.secondaryMontaigneAphorism.actionGuidance}`,
+    `- 성찰 초점: ${res.reflectionFocus}`,
     `- 성찰 질문: ${res.reflectiveQuestion}`,
     `- 종합 몽테뉴 인문주의 권면: ${res.montaigneComprehensiveGuidance.philosophicalCounsel}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,

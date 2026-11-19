@@ -4272,6 +4272,7 @@ test('Aboriginal Dreamtime Songlines Engine: calculates ancestral totem and Kuru
 test('Finnish Kalevala Sampo Engine: calculates 3 Sampo wings and Sisu resilience index', () => {
   const rep = calculateFinnishKalevalaSampo({ profile });
   assert.equal(rep.engineVersion, FINNISH_KALEVALA_SAMPO_ENGINE_VERSION);
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(rep.sisuResilienceIndex >= 0 && rep.sisuResilienceIndex <= 100);
   assert(rep.sampoBalance.dominantWing.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
@@ -4279,6 +4280,7 @@ test('Finnish Kalevala Sampo Engine: calculates 3 Sampo wings and Sisu resilienc
   const prompt = formatFinnishKalevalaSampoPrompt(rep);
   assert(prompt.includes('고대 핀란드 칼레발라(Kalevala) 삼포(Sampo) & 9대 룬가 상징 관점'));
   assert(prompt.includes(rep.sampoBalance.dominantWing));
+  assert(prompt.includes('성찰 초점'));
   assert(!prompt.includes('/ 100') && !prompt.includes('점수'));
 });
 
@@ -5282,6 +5284,7 @@ test('Neo-Confucian Four-Seven Li-Qi Engine: calculates Sadan alignment, Chiljeo
 test('Etruscan Augur Sixteen Sky Divination Engine: calculates Faustus auspice score, 16 Templum region and Admissio approval', () => {
   const rep = calculateEtruscanAugurSixteenSky({ profile, question: '에트루리아 16천궁 아우구르 조점' });
   assert.equal(rep.engineVersion, ETRUSCAN_AUGUR_ENGINE_VERSION);
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(rep.faustusScore >= 0 && rep.faustusScore <= 100);
   assert(rep.lituusClarityIndex >= 0 && rep.lituusClarityIndex <= 100);
   assert(rep.cosmicSanctionStrength >= 0 && rep.cosmicSanctionStrength <= 100);
@@ -5292,6 +5295,7 @@ test('Etruscan Augur Sixteen Sky Divination Engine: calculates Faustus auspice s
   const prompt = formatEtruscanAugurSixteenSkyPrompt(rep);
   assert(prompt.includes('고대 에트루리아 16천궁 분할 & 아우구르 조점(Auspicium) 상징 관점'));
   assert(prompt.includes(rep.activeRegion.quadrantKo));
+  assert(prompt.includes('성찰 초점'));
 });
 
 test('Rosicrucian Chymical Wedding Engine: calculates seven days transmutation, chymical union and phoenix rebirth', () => {
@@ -8072,11 +8076,12 @@ test('Michel de Montaigne Essays Engine: calculates Epistemic Humility, Candid S
   assert(rep.innerFreedomSanctuaryIndex >= 0 && rep.innerFreedomSanctuaryIndex <= 100);
   assert(rep.activeMontaigneTheme.themeTitleKo.length > 0);
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
-  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(Boolean(rep.montaigneSynthesisMatrix?.integratedAction));
   const prompt = formatFrenchMichelDeMontaigneEssaysPrompt(rep);
   assert(prompt.includes('미셸 드 몽테뉴 《수상록(Les Essais)》 "내가 무엇을 아는가" 지혜 지표'));
   assert(prompt.includes(rep.activeMontaigneTheme.themeTitleKo));
+  assert(prompt.includes('성찰 초점'));
   assert(prompt.includes('교차 매트릭스'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));

@@ -22,7 +22,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const FINNISH_KALEVALA_SAMPO_ENGINE_VERSION = '2.4.0';
+export const FINNISH_KALEVALA_SAMPO_ENGINE_VERSION = '2.5.0';
 
 export interface SampoSituationalAudit {
   sampoAxis: string;
@@ -305,7 +305,7 @@ export function calculateFinnishKalevalaSampo(options?: {
   };
 
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
-  const calculatedAtKst = kst.toISOString().replace('T', ' ').substring(0, 19) + ' +09:00 KST';
+  const calculatedAtKst = `${kst.toISOString().slice(0, 19)}+09:00 (KST)`;
 
   const trimmedQuestion = (options?.question || '').trim();
   const ritualAction = `${forestHealingPractice} · ${situationalSampoAudit.artisanAction}`;
@@ -365,6 +365,7 @@ export function formatFinnishKalevalaSampoPrompt(report: FinnishKalevalaSampoRep
    - 교차 매트릭스: ${report.sampoSynthesisMatrix.wingRunoLink}
    - 실천 처방: ${report.forestHealingPractice}
    - 칼레발라 총평: ${report.kalevalaWisdom}
+   - 성찰 초점: ${report.reflectionFocus}
    - 질문 맞춤 성찰 질문: ${report.reflectiveQuestion}
    - 해석 경계: 칼레발라 삼포 3대 날개와 시수(Sisu) 상징을 빌린 정성적 회복탄력 참고 관점이며, 수치 평가나 미래 단정이 아닙니다.`;
 }
