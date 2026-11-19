@@ -15,7 +15,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const TAOIST_LIEZI_ENGINE_VERSION = '2.1.0';
+export const TAOIST_LIEZI_ENGINE_VERSION = '2.2.0';
 
 function formatLieziKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -49,6 +49,8 @@ export interface TaoistLieziWindRidingReport {
   secondaryStage: LieziWindStage;
   lieziWindDecree: string; // 열자 어풍 지혜 선언
   wuweiActionMeditation: string; // 무위자연 행동 명상
+  ritualAction: string; // 표준 실천 의례
+  reflectionFocus: string; // 표준 성찰 초점
   reflectiveQuestion: string; // 내담자 성찰 질문
   interpretiveBoundary: string; // 상징 해석 경계 고지
   lieziSynthesisMatrix?: {
@@ -155,6 +157,8 @@ export function calculateTaoistLieziWindRiding(
 
   const calculatedAtKst = formatLieziKstTimestamp(now);
   const q = question.trim();
+  const ritualAction = `[${dominantStage.nameHanja}] ${dominantStage.transcendenceGuidance}`;
+  const reflectionFocus = `도가 열자 어풍(${dominantStage.nameKo}) — ${dominantStage.mindCultivationDomain}`;
   const reflectiveQuestion = q
     ? `"${q}" 앞에서 [${dominantStage.nameHanja}]의 바람을 타기 위해, 보조 심법 [${secondaryStage.nameHanja}]에서 오늘 먼저 내려놓을 집착은 무엇입니까?`
     : `${dominantStage.nameKo}의 흐름 속에서 힘을 빼고 순풍에 몸을 맡길 때, 지금 가장 먼저 멈출 수 있는 쓸데없는 애씀은 무엇입니까?`;
@@ -178,6 +182,8 @@ export function calculateTaoistLieziWindRiding(
     secondaryStage,
     lieziWindDecree,
     wuweiActionMeditation,
+    ritualAction,
+    reflectionFocus,
     reflectiveQuestion,
     interpretiveBoundary,
     lieziSynthesisMatrix,
@@ -197,6 +203,8 @@ export function formatTaoistLieziWindRidingPrompt(rep: TaoistLieziWindRidingRepo
 · 보조 교차 심법: [${rep.secondaryStage.nameHanja} (${rep.secondaryStage.nameKo})]
 · 열자 어풍 지혜 선언: ${rep.lieziWindDecree}
 · 무위자연 행동 명상: ${rep.wuweiActionMeditation}${matrixLine}
+· 실천 의례: ${rep.ritualAction}
+· 성찰 초점: ${rep.reflectionFocus}
 · 성찰 질문: ${rep.reflectiveQuestion}
 · 해석 경계: ${rep.interpretiveBoundary}`;
 }
