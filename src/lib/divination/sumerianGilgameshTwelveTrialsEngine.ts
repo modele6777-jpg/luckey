@@ -5,7 +5,7 @@
  * 12대 영웅적 통과의례 및 영혼 불멸 탐색 관문을 현대 심리 분석과 사주·운명학적 맥락에 연동합니다.
  */
 
-export const SUMERIAN_GILGAMESH_TRIALS_ENGINE_VERSION = 'LUCKEY-GILGAMESH-TRIALS-v2.1.0';
+export const SUMERIAN_GILGAMESH_TRIALS_ENGINE_VERSION = 'LUCKEY-GILGAMESH-TRIALS-v2.2.0';
 
 export interface GilgameshTrial {
   gateNumber: number;
@@ -29,6 +29,8 @@ export interface GilgameshTrialsReport {
   legacyBuildingPrescription: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
+  ritualAction: string;
+  reflectionFocus: string;
   gilgameshSynthesisMatrix?: {
     dominantTension: string;
     alignmentState: string;
@@ -199,6 +201,8 @@ export function calculateSumerianGilgameshTrials(params: {
     : `지금 마주한 과제에서 '${activeTrial.egoShadowTrap}'을 내려놓고 '${activeTrial.heroicBreakthroughAction}'을 실천한다면 어떤 변화가 열리겠습니까?`;
   const interpretiveBoundary =
     '길가메시 서사시 12관문 원형은 삶의 전환기와 내면의 성장을 비추는 서사적·상징적 관점이며, 단정적 미래 예언이나 의학·법률·재무 결정을 대체하지 않습니다.';
+  const ritualAction = `[제${activeTrial.gateNumber}관문 · ${activeTrial.cosmicElement}] ${activeTrial.heroicBreakthroughAction}`;
+  const reflectionFocus = `길가메시 12관문(${activeTrial.nameKo}) — ${activeTrial.nameAkkadian}`;
   const gilgameshSynthesisMatrix = {
     dominantTension: `제${activeTrial.gateNumber}관문(${activeTrial.nameKo}) ↔ ${activeTrial.egoShadowTrap}`,
     alignmentState: `${activeTrial.cosmicElement} 원형 · 보조 관문 제${secondaryTrial.gateNumber}관문(${secondaryTrial.nameKo}) · ${soulCompanionType}`,
@@ -217,6 +221,8 @@ export function calculateSumerianGilgameshTrials(params: {
     legacyBuildingPrescription,
     reflectiveQuestion,
     interpretiveBoundary,
+    ritualAction,
+    reflectionFocus,
     gilgameshSynthesisMatrix,
   };
 }
@@ -234,6 +240,8 @@ export function formatSumerianGilgameshTrialsPrompt(report: GilgameshTrialsRepor
     `- **영웅적 돌파 행동 처방**: ${t.heroicBreakthroughAction}`,
     `- **영혼의 거울 동반자 (엔키두 원형)**: ${report.soulCompanionType}`,
     `- **마스터 레거시 지침**: ${report.legacyBuildingPrescription}`,
+    `- **실천 의례**: ${report.ritualAction}`,
+    `- **성찰 초점**: ${report.reflectionFocus}`,
     `- **성찰 질문**: ${report.reflectiveQuestion}`,
     `- **해석 경계**: ${report.interpretiveBoundary}`,
   ];
