@@ -524,6 +524,10 @@ export function routeAndExecute(params: {
    * - deep: 사용자가 원할 때만 고민과 관련된 엔진(도구·심층 관점)을 추가로 본다.
    */
   divinationMode?: { base: 'saju' | 'tarot_saju'; deep?: boolean };
+  /** 🧰 엔진함에서 사용자가 직접 골라 둔 기초 도구 — 매 답변에 항상 포함 */
+  pinnedTools?: DivinationToolId[];
+  /** 🧰 엔진함에서 사용자가 직접 골라 둔 심층 관점 — 매 답변에 항상 포함 */
+  pinnedDeepKeys?: string[];
 }): RoutedExecutionResult {
   const isMaster = Boolean(params.isMasterRequested);
   const requireBasicAndDeep = isMaster || Boolean(params.requireBasicAndDeep);
@@ -594,6 +598,21 @@ export function routeAndExecute(params: {
       // 평소 대화: 사주 중심으로 가볍게. 심층 관점은 1개만 은은하게.
       routePlan.deepEngineKeys = (routePlan.deepEngineKeys ?? []).slice(0, 1);
       routePlan.deepEnginesKo = (routePlan.deepEnginesKo ?? []).slice(0, 1);
+    }
+  }
+
+  // 🧰 엔진함에서 고른 엔진은 질문과 상관없이 항상 함께 본다 (총동원 모드는 이미 전부 포함)
+  if (!routePlan.isCasual && !routePlan.isMasterMobilization) {
+    if (params.pinnedTools?.length) {
+      routePlan.targetTools = [...new Set<DivinationToolId>([...(routePlan.targetTools ?? []), ...params.pinnedTools])];
+    }
+    const deepNames = new Map(ALL_DCE_ENGINES.filter(e => e.category === 'deep_master').map(e => [e.key, e.nameKo] as const));
+    const pinnedDeep = (params.pinnedDeepKeys ?? []).filter(key => deepNames.has(key));
+    if (pinnedDeep.length) {
+      const keys = [...new Set([...pinnedDeep, ...(routePlan.deepEngineKeys ?? [])])];
+      routePlan.deepEngineKeys = keys;
+      routePlan.deepEnginesKo = keys.map(key => deepNames.get(key) ?? key);
+      routePlan.deepEngineGuidance = `${routePlan.deepEngineGuidance ? `${routePlan.deepEngineGuidance} ` : ''}사용자가 엔진함에서 직접 고른 관점(${pinnedDeep.map(k => deepNames.get(k)).join(', ')})은 이번 답변에 꼭 반영해. 상징 참고일 뿐 별도 계산이 아니라는 점은 지켜.`;
     }
   }
 

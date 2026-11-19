@@ -78,3 +78,26 @@ test('greeting and post-link message both end by asking for a concern with choic
   const linkAsk = parseAnswerChoices(String(createTarotHouseGreeting('쭈', 'folded', true).content));
   assert.deepEqual(linkAsk.choices, ['루시랑 하던 얘기 이어서', '새로 시작할래']);
 });
+
+test('engine presets only reference registered catalog engines', async () => {
+  const { LUCY_ENGINE_PRESETS, splitSelectedEngines } = await import('../src/lib/lucyEngineSelection');
+  const { LUCY_PRO_CATALOG_ENGINES } = await import('../src/lib/divination/engineCatalog');
+  const keys = new Set(LUCY_PRO_CATALOG_ENGINES.map(e => e.key));
+  for (const preset of LUCY_ENGINE_PRESETS) {
+    for (const key of preset.keys) assert.ok(keys.has(key), `${preset.id}: ${key}`);
+  }
+  const split = splitSelectedEngines(['saju', 'tarot', 'shadowArchetype', 'unknownKey']);
+  assert.deepEqual(split, { pinnedTools: ['saju', 'tarot'], pinnedDeepKeys: ['shadowArchetype'] });
+});
+
+test('engines picked in the engine box are always used', () => {
+  const r = routeAndExecute({
+    text: '요즘 기분이 어때', profile, requireBasicAndDeep: true,
+    pinnedTools: ['iching', 'ziwei'], pinnedDeepKeys: ['shadowArchetype', 'mentalResilience'],
+  });
+  assert.ok(r.routePlan.targetTools.includes('iching'));
+  assert.ok(r.routePlan.targetTools.includes('ziwei'));
+  assert.deepEqual((r.routePlan.deepEngineKeys ?? []).slice(0, 2), ['shadowArchetype', 'mentalResilience']);
+  const m = routeAndExecute({ text: '이직 고민', profile, requireBasicAndDeep: true, divinationMode: { base: 'saju' }, pinnedDeepKeys: ['shadowArchetype', 'mentalResilience'] });
+  assert.ok((m.routePlan.deepEngineKeys ?? []).includes('mentalResilience'));
+});

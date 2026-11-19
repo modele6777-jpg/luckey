@@ -1,9 +1,13 @@
 import { safeLocalStorage } from '@/utils/safeStorage';
+import { getSharedAudioContext, getAmbientAudioBus, setBgmPlaybackSessionActive } from '@/lib/audio';
 
 /**
  * 🔮 루시 마스터(점술모드) 전용 배경음.
  * 음원 파일 없이 Web Audio로 실시간 합성한다: 낮은 드론 + 바람 같은 숨결 + 가끔 울리는 맑은 차임.
  * 미스테리하지만 대화에 방해되지 않게 아주 작게, 천천히.
+ *
+ * 앱 오디오 규칙(AGENTS.md 2번)을 따른다: 공유 AudioContext의 ambient 버스로만 내보내고(TTS 중 자동 더킹),
+ * 외부 음악을 끊지 않는 비독점 세션을 쓰며, 사용자가 켠 적이 없으면 자동으로 재생하지 않는다.
  */
 const PREF_KEY = 'lucy_master_bgm';
 const MASTER_VOLUME = 0.16;
@@ -14,6 +18,7 @@ const CHIME_NOTES = [293.66, 329.63, 392.0, 440.0, 523.25, 587.33, 659.25, 783.9
 type Engine = {
   ctx: AudioContext;
   master: GainNode;
+  disconnect: AudioNode[];
   nodes: AudioScheduledSourceNode[];
   chimeTimer: ReturnType<typeof setTimeout> | null;
 };
@@ -21,8 +26,9 @@ type Engine = {
 let engine: Engine | null = null;
 const listeners = new Set<(playing: boolean) => void>();
 
+/** 사용자가 토글로 직접 켠 적이 있을 때만 true (기본은 꺼짐: 자동 BGM 금지) */
 export function isLucyMasterBgmPreferred(): boolean {
-  try { return safeLocalStorage.getItem(PREF_KEY) !== 'off'; } catch { return true; }
+  try { return safeLocalStorage.getItem(PREF_KEY) === 'on'; } catch { return false; }
 }
 
 function setPreferred(on: boolean) {
@@ -44,14 +50,18 @@ function notify() {
 }
 
 function buildEngine(): Engine | null {
-  const AC: typeof AudioContext | undefined = typeof window !== 'undefined'
-    ? (window.AudioContext || (window as any).webkitAudioContext)
-    : undefined;
-  if (!AC) return null;
-  const ctx = new AC();
+  if (typeof window === 'undefined') return null;
+  let ctx: AudioContext;
+  let bus: GainNode;
+  try {
+    ctx = getSharedAudioContext();
+    bus = getAmbientAudioBus();
+  } catch {
+    return null;
+  }
   const master = ctx.createGain();
   master.gain.value = 0;
-  master.connect(ctx.destination);
+  master.connect(bus);
 
   // Soft room "reverb": a feedback delay through a lowpass
   const delay = ctx.createDelay(2);
@@ -117,7 +127,7 @@ function buildEngine(): Engine | null {
   breath.start();
   nodes.push(noise, breath);
 
-  const e: Engine = { ctx, master, nodes, chimeTimer: null };
+  const e: Engine = { ctx, master, disconnect: [master, delay, feedback, damp, padFilter, padGain, noiseFilter, noiseGain], nodes, chimeTimer: null };
 
   // Occasional chimes, like a far-off bell in the room
   const chime = () => {
@@ -160,6 +170,7 @@ export async function startLucyMasterBgm(): Promise<boolean> {
   if (!engine) return false;
   try { await engine.ctx.resume(); } catch { /* blocked until a gesture */ }
   if (engine.ctx.state !== 'running') { notify(); return false; }
+  setBgmPlaybackSessionActive(true);
   fadeTo(engine, MASTER_VOLUME, 2.5);
   notify();
   return true;
@@ -173,8 +184,10 @@ export function stopLucyMasterBgm(): void {
   try { fadeTo(e, 0, 0.8); } catch { /* closed */ }
   setTimeout(() => {
     e.nodes.forEach(n => { try { n.stop(); } catch { /* already stopped */ } });
-    void e.ctx.close().catch(() => {});
+    // 공유 AudioContext는 닫지 않고 이 배경음의 노드만 떼어낸다
+    e.disconnect.forEach(n => { try { n.disconnect(); } catch { /* already disconnected */ } });
   }, 900);
+  setBgmPlaybackSessionActive(false);
   notify();
 }
 

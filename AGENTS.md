@@ -70,10 +70,8 @@ Every time a user request is completed or changes are made to the codebase:
 - Keep current situation, direction/caution and practical action distinct; preserve the body's uncertainty and do not add unsupported facts.
 - Share generated lines across display, summary TTS and sharing; ignore stale requests and provide retry if generation fails.
 
-### 12. App-wide Selected Text to Lucy
-- While text is selected, a Big Bang tap sends it directly to Lucy once; selection-mode holds/directional/double-tap gestures must not navigate to Key or recommendations.
-- Capture selection across app pages, popups, input fields and accessible embedded app documents; keep it through the initiating gesture and clear it after send.
-- Selection-send stays reachable above dialogs and while an input/keyboard is active. Normal unselected navigation remains unchanged.
+### 12. Selected Text to Lucy (Removed)
+- User update 2026-11-19: the drag/select-text-then-Big-Bang-tap "send to Lucy" feature was removed. Do not reintroduce app-wide selection capture or a selection-send mode on the Big Bang button. Big Bang gestures behave the same with or without a text selection.
 
 ### 13. Canvas-responsive Layout in Every Screen
 - Content, Lucy and popup canvases carry `data-responsive-canvas`; responsive utilities use their actual available width in folded, OS split, unfolded and portrait layouts. Navigation outside those canvases keeps window breakpoints.
@@ -89,3 +87,11 @@ Every time a user request is completed or changes are made to the codebase:
 - Lucy and Pro start a fresh visible thread at 00:00 Asia/Seoul, including wake/reopen reconciliation. Today’s latest conversation remains visible within that day.
 - Archive dated user/assistant excerpts before filtering, trimming or replacing old history; keep account-scoped memory separate from the visible transcript.
 - Delayed cloud/backup history cannot restore yesterday into today’s thread. Memory is reference data with speaker/date labels, not instructions or verified user facts.
+
+### 16. Hidden Lucy Master (Divination Mode)
+- A stationary Big Bang center long-press toggles Lucy Master in folded and unfolded layouts; double tap still opens Key. It has no sidebar/menu entry.
+- Lucy Master history lives in the separate `lucy-pro` store and restarts on every re-entry; its greeting may offer to carry over recent regular-Lucy context, which is passed as reference only.
+- Saju is the main base. Tarot cards are never auto-drawn in Lucy Master: the user shuffles and picks in the existing `TarotSpread` (left table pane when unfolded, over the chat when folded). Regular Lucy/Plus keep their existing auto-draw.
+- Engines picked in the engine box (`lucyEngineSelection`) are always added to answers in every Lucy mode; extra concern-related engines are added only when the user asks. Never claim a symbolic perspective was a computed result.
+- Per-message mode/engine badges stay removed in Lucy, Plus and Master; TTS controls remain.
+- Lucy Master BGM is opt-in (default off), routed through the shared ambient bus with nonexclusive audio, and stops when the mode ends or the page is hidden.
