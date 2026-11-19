@@ -1,10 +1,9 @@
 {
-  "version": "1.7.920",
-  "builtAt": "2026-11-19T09:42:00+09:00",
-  "summary": "타밀 티루쿠랄·도교 황정경·도가 열자 3대 엔진 실천 의례 및 성찰 초점 표준 연동(v1.7.920)",
+  "version": "1.7.921",
+  "builtAt": "2026-11-19T09:47:00+09:00",
+  "summary": "카르믹 노드·정감록 10승지·오성과 한음 3대 엔진 +09:00 (KST) 표준 시각 통일(v1.7.921)",
   "items": [
-    "타밀 티루쿠랄 아람·포룰·카맘 삼편 성찰 엔진(v2.3.0): ritualAction·reflectionFocus 표준 필드 연동",
-    "도교 상청파 황정경 신체 오장 신성좌 & 존사 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동",
-    "도가 열자 어풍동행 & 무하유지향 유유자적 엔진(v2.2.0): ritualAction·reflectionFocus 표준 필드 연동"
+    "카르믹 노드 & 영혼 진화 궤적(v2.3.0)·정감록 10승지(v2.2.0)·오성과 한음(v2.2.0): calculatedAtKst +09:00 (KST) 표준 표기 통일",
+    "divination-engines.test.ts: 3대 엔진 v1.7.921 +09:00 (KST) 회귀 테스트 추가"
   ]
 }

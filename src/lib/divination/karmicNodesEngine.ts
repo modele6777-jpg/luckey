@@ -21,7 +21,7 @@ import {
   type NatalChartResult
 } from '../astrologyAnalysis';
 
-export const KARMIC_NODES_ENGINE_VERSION = 'LUCKEY-NODE-v2.2.0';
+export const KARMIC_NODES_ENGINE_VERSION = 'LUCKEY-NODE-v2.3.0';
 
 export interface NodeAxisDetail {
   northSign: string;
@@ -82,7 +82,8 @@ function formatKarmicNodesKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  const ss = String(kst.getUTCSeconds()).padStart(2, '0');
+  return `${y}-${m}-${d}T${hh}:${mm}:${ss}+09:00 (KST)`;
 }
 
 // 12대 노드 축 정통 점성술 매핑
