@@ -4961,6 +4961,7 @@ test('Zhuangzi Xiaoyaoyou Butterfly Engine: calculates absolute freedom, rocs fl
 test('Buddhist Yogacara Consciousness Engine: calculates eight consciousnesses purification and transformed wisdom', () => {
   const rep = calculateBuddhistYogacaraConsciousness({ profile, question: '아뢰야식과 전식득지' });
   assert.equal(rep.engineVersion, BUDDHIST_YOGACARA_CONSCIOUSNESS_ENGINE_VERSION);
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(rep.alayaPurificationScore >= 0 && rep.alayaPurificationScore <= 100);
   assert(rep.manasEgoTranscendenceRate >= 0 && rep.manasEgoTranscendenceRate <= 100);
   assert(rep.fourWisdomsHarmonizationIndex >= 0 && rep.fourWisdomsHarmonizationIndex <= 100);
@@ -4970,6 +4971,7 @@ test('Buddhist Yogacara Consciousness Engine: calculates eight consciousnesses p
   const prompt = formatBuddhistYogacaraConsciousnessPrompt(rep);
   assert(prompt.includes('불교 유식학 8식 정화 & 아뢰야식 전식득지(轉識得智) 실측 데이터'));
   assert(prompt.includes(rep.dominantWisdom.nameKo));
+  assert(prompt.includes('성찰 초점'));
 });
 
 test('Vedic Mandukya Turiya Engine: calculates four consciousness states, AUM resonance and pure witness', () => {
@@ -5429,6 +5431,7 @@ test('Chonggamnok Ten Sanctuaries Engine: calculates geomantic sanctuaries, gong
 test('Balinese Tri Hita Karana Engine: calculates cosmic trinity harmony, tri kaya purification and sanctuary resonance', () => {
   const rep = calculateBalineseTriHitaKarana(profile);
   assert.equal(rep.engineVersion, BALINESE_TRI_HITA_KARANA_ENGINE_VERSION);
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(rep.parhyanganDivineHarmony >= 0 && rep.parhyanganDivineHarmony <= 100);
   assert(rep.pawonganHumanityEmpathy >= 0 && rep.pawonganHumanityEmpathy <= 100);
   assert(rep.palemahanEcologyBalance >= 0 && rep.palemahanEcologyBalance <= 100);
@@ -5438,6 +5441,7 @@ test('Balinese Tri Hita Karana Engine: calculates cosmic trinity harmony, tri ka
   const prompt = formatBalineseTriHitaKaranaPrompt(rep);
   assert(prompt.includes('발리 힌두교 트리 히타 카라나 3대 우주 조화 & 3업 정화 실측 데이터'));
   assert(prompt.includes(rep.activeSanctuary.nameKo));
+  assert(prompt.includes('성찰 초점'));
 });
 
 test('Hopi Four Worlds Kachina Prophecy Engine: calculates four worlds evolution, koyaanisqatsi healing and kiva center alignment', () => {
@@ -6436,6 +6440,7 @@ test('Confucius Analects Zhitianming Engine: calculates life stage wisdom, Ren, 
 test('Spinoza Ethica Conatus Engine: calculates Conatus vitality, Sub Specie Aeternitatis, and Amor Dei Intellectualis', () => {
   const rep = calculateBaruchSpinozaEthicaConatus(profile);
   assert.equal(rep.engineVersion, SPINOZA_CONATUS_AMORDEI_VERSION);
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(rep.conatusVitalityScore >= 0 && rep.conatusVitalityScore <= 100);
   assert(rep.subSpecieAeternitatisScore >= 0 && rep.subSpecieAeternitatisScore <= 100);
   assert(rep.affectJoyTransitionScore >= 0 && rep.affectJoyTransitionScore <= 100);
@@ -6446,6 +6451,7 @@ test('Spinoza Ethica Conatus Engine: calculates Conatus vitality, Sub Specie Aet
   const prompt = formatBaruchSpinozaEthicaConatusPrompt(rep);
   assert(prompt.includes('스피노자 에티카 코나투스 & 신즉자연 관조 지표'));
   assert(prompt.includes(rep.activeAffectState.affectNameKo));
+  assert(prompt.includes('성찰 초점'));
 });
 
 test('Kant Categorical Imperative Engine: calculates universal law maxims, human dignity ends, and moral autonomy', () => {

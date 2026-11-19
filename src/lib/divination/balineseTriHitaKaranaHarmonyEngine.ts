@@ -8,7 +8,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const BALINESE_TRI_HITA_KARANA_ENGINE_VERSION = 'LUCKEY-BALINESE-TRI-HITA-v2.3.0';
+export const BALINESE_TRI_HITA_KARANA_ENGINE_VERSION = 'LUCKEY-BALINESE-TRI-HITA-v2.4.0';
 
 export interface BalineseSacredSanctuary {
   id: string;
@@ -285,7 +285,7 @@ export function calculateBalineseTriHitaKarana(
   const tirtaHolyWaterBlessing = `손에 깨끗한 물을 담아 이마(마음의 정화), 입술(말의 정화), 가슴(행위의 정화)에 세 방울씩 가볍게 얹으며 '티르타(Tirta, 성스러운 생명수)'가 모든 해묵은 피로와 부정적 에너지를 말끔히 씻어냄을 명상하십시오.`;
 
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
-  const calculatedAtKst = `${kst.toISOString().slice(0, 19)}+09:00`;
+  const calculatedAtKst = `${kst.toISOString().slice(0, 19)}+09:00 (KST)`;
   const interpretiveBoundary = '본 발리 트리 히타 카라나 리포트는 신성·인간·자연의 조화를 비추는 정성적 성찰 안내이며, 확정적 길흉 예단이 아닙니다.';
   const reflectionFocus = `${situationalTriHitaAudit.harmonyAxis}의 관점에서 오늘 생각·말·행동(3업) 중 가장 먼저 맑게 정화할 한 가지는 무엇인가요?`;
   const cleanQuestion = (question || '').trim();
@@ -332,6 +332,7 @@ export function formatBalineseTriHitaKaranaPrompt(report: BalineseTriHitaKaranaR
 - 트리 히타 카라나 우주 지혜 지침: ${report.balineseCosmicGuidance}
 - 티르타(Tirta) 성수 정화 명상: ${report.tirtaHolyWaterBlessing}
 - 일상 의례: ${report.ritualAction}
+- 성찰 초점: ${report.reflectionFocus}
 - 성찰 질문: ${report.reflectiveQuestion}
 - 해석 경계: ${report.interpretiveBoundary}`;
 }
