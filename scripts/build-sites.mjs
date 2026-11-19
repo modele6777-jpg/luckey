@@ -23,10 +23,20 @@ collect('dist');
 mkdirSync('dist/server', { recursive: true });
 mkdirSync('dist/.openai', { recursive: true });
 writeFileSync('dist/.openai/hosting.json', readFileSync('.openai/hosting.json'));
+const firebaseAuthOrigin = `https://${JSON.parse(readFileSync('firebase-applet-config.json', 'utf8')).authDomain}`;
 const runtime = `
+const FIREBASE_AUTH_ORIGIN = ${JSON.stringify(firebaseAuthOrigin)};
 export default {
  async fetch(request, env) {
   const url = new URL(request.url);
+  // Firebase sign-in on the app's own origin (iOS home-screen apps block the
+  // cross-site handler). Forward /__/auth and /__/firebase to Firebase Hosting.
+  if (url.pathname.startsWith('/__/auth/') || url.pathname.startsWith('/__/firebase/')) {
+   const upstream = new URL(url.pathname + url.search, FIREBASE_AUTH_ORIGIN);
+   const headers = new Headers(request.headers);
+   for (const name of ['host','cookie','oai-sites-authorization','cf-access-jwt-assertion']) headers.delete(name);
+   return fetch(upstream, {method:request.method,headers,body:['GET','HEAD'].includes(request.method)?undefined:request.body,redirect:'manual'});
+  }
   const synced = await sitesSyncApi.handleSitesSync(request, env);
   if (synced) return synced;
   const chat = await sitesNativeApi.handleSitesGeminiChat(request, env);
