@@ -9,6 +9,7 @@ import {
   LUCY_TAROT_PICKED_EVENT,
   LUCY_TAROT_PICK_CANCEL_EVENT,
   tarotPickPositions,
+  queueMasterTarotSpread,
   toDetectedTarotCards,
   type TarotPickRequest,
 } from '@/lib/lucyMasterMode';
@@ -62,17 +63,18 @@ export function DuoDivinationTarotPane(_props: { isLight?: boolean }) {
         verifiedDraw
         revealedCardIds={revealed}
         onRevealCard={(cardId) => setRevealed(prev => (prev.includes(cardId) ? prev : [...prev, cardId]))}
-        onQuickDraw={(prompt) => requestLucyAction({ prompt })}
+        onQuickDraw={(prompt, spread) => { if (spread) queueMasterTarotSpread(spread); requestLucyAction({ prompt }); }}
         isLight={false}
       />
       </div>
       {pick && (
         <TarotSpread
           maxCards={pick.count}
-          positions={tarotPickPositions(pick.count)}
+          positions={pick.positions?.length ? pick.positions : tarotPickPositions(pick.count)}
           concern={pick.concern || ''}
-          spreadName="루시의 타로 테이블"
-          spreadReason="카드를 섞고, 마음이 가는 카드를 직접 골라줘"
+          spreadName={pick.spreadName || '루시의 타로 테이블'}
+          spreadReason={pick.spreadReason || '카드를 섞고, 마음이 가는 카드를 직접 골라줘'}
+          ambience="master"
           allowReversed
           onCancel={() => {
             setPick(null);
