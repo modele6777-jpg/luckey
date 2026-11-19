@@ -898,6 +898,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
     isLucyProGenerating,
     abortLucyProGenerating,
     setLucyProMessages,
+    clearLucyProMessages,
     sharedState,
     updateSharedState
   } = useApp();
@@ -1569,13 +1570,15 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
   const isLucyGenerating = isMasterMode ? Boolean(isLucyProGenerating) : Boolean(isGenerating?.lucy);
 
   // 🔮 점술모드가 켜지면 타로집에 들어선 것처럼 루시가 먼저 인사한다 (다른 화면에서 홀드해 들어와도 1회).
+  // 루시 마스터는 나갔다 다시 들어오면 항상 처음부터: 이전 마스터 대화를 비우고 새 인사로 시작한다.
   useEffect(() => {
     if (!isMasterMode || !consumeTarotHouseGreetingPending()) return;
+    clearLucyProMessages();
     const hasRegularHistory = (personaMessages?.lucy || []).some(m => m.role === 'user');
     const greeting = createTarotHouseGreeting(userDisplayName, isDuoUnfoldedState().unfolded ? 'unfolded' : 'folded', hasRegularHistory);
     setLucyMasterLink(hasRegularHistory ? 'undecided' : 'fresh');
-    setLucyProMessages(prev => [...prev.filter(m => !isGreetingMessage(m)), greeting]);
-  }, [isMasterMode, setLucyProMessages, userDisplayName]);
+    setLucyProMessages([greeting]);
+  }, [isMasterMode, setLucyProMessages, clearLucyProMessages, userDisplayName]);
 
   // 🔮 점술모드 대화 중 폰을 펼치면: 루시가 타로 상담을 더하자고 제안 (왼쪽엔 타로 테이블)
   useEffect(() => {
