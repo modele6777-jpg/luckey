@@ -12642,7 +12642,7 @@ test('카르믹 노드·정감록 10승지·오성과 한음 3대 엔진 v1.7.92
   const now = new Date('2026-11-19T09:47:00+09:00');
   const query = '내 삶의 진화 방향과 마음의 안식처, 그리고 믿음직한 동반자와의 신의를 보고 싶을 때';
 
-  const kn = calculateKarmicNodes({ profile, now, question: query });
+  const kn = calculateKarmicNodes({ profile, targetDate: now, question: query });
   assert.equal(kn.engineVersion, KARMIC_NODES_ENGINE_VERSION);
   assert.match(kn.calculatedAtKst, /\+09:00/);
   assert.ok(formatKarmicNodesPrompt(kn).includes('+09:00'));
