@@ -6858,6 +6858,7 @@ test('Friedrich Nietzsche Zarathustra Amor Fati Engine: calculates Amor Fati rad
   assert(rep.situationalMetamorphosis.focusAxisKo.length > 0);
   assert(rep.temporalZarathustraRhythm.dionysianPulseIndex >= 0 && rep.temporalZarathustraRhythm.dionysianPulseIndex <= 100);
   assert(rep.uebermenschSynthesisMatrix.overallZarathustraGrade.length > 0);
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(rep.ritualAction.length > 0);
   assert(rep.reflectionFocus.length > 0);
   const prompt = formatNietzscheZarathustraAmorFatiPrompt(rep);
@@ -7448,6 +7449,7 @@ test('Martin Heidegger Being and Time Engine: calculates In-der-Welt-sein, Eigen
   assert(rep.situationalDaseinAudit.focusAxisKo.length > 0);
   assert(rep.temporalAugenblickRhythm.authenticityClarityIndex >= 0 && rep.temporalAugenblickRhythm.authenticityClarityIndex <= 100);
   assert(rep.daseinSynthesisMatrix.overallDaseinGrade.length > 0);
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(rep.ritualAction.length > 0);
   assert(rep.reflectionFocus.length > 0);
   const prompt = formatMartinHeideggerBeingAndTimePrompt(rep);
@@ -7876,7 +7878,7 @@ test('Karl Jaspers Existenz Grenzsituationen Engine: calculates Grenzsituationen
   assert(rep.lovingStruggleCommunicationScore >= 0 && rep.lovingStruggleCommunicationScore <= 100);
   assert(rep.reasonExistenzHarmonizationIndex >= 0 && rep.reasonExistenzHarmonizationIndex <= 100);
   assert(rep.activeJaspersTheme.themeTitleKo.length > 0);
-  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(Boolean(rep.jaspersSynthesisMatrix?.integratedAction));
   assert(rep.ritualAction.length > 0);
   assert(rep.reflectionFocus.length > 0);

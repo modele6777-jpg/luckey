@@ -14,7 +14,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const GERMAN_KARL_JASPERS_VERSION = 'LUCKEY-KARL-JASPERS-EXISTENZ-v2.2.0';
+export const GERMAN_KARL_JASPERS_VERSION = 'LUCKEY-KARL-JASPERS-EXISTENZ-v2.3.0';
 
 export interface JaspersTheme {
   themeKey: string;
@@ -145,12 +145,7 @@ export const JASPERS_APHORISMS: JaspersAphorism[] = [
 
 function formatJaspersKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
-  const y = kst.getUTCFullYear();
-  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
-  const d = String(kst.getUTCDate()).padStart(2, '0');
-  const hh = String(kst.getUTCHours()).padStart(2, '0');
-  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} +09:00 KST`;
+  return `${kst.toISOString().slice(0, 19)}+09:00 (KST)`;
 }
 
 function buildJaspersReflectiveQuestion(theme: JaspersTheme, query?: string): string {

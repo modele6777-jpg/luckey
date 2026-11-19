@@ -17,7 +17,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const GERMAN_MARTIN_HEIDEGGER_VERSION = 'LUCKEY-MARTIN-HEIDEGGER-BEING-AND-TIME-v2.2.0';
+export const GERMAN_MARTIN_HEIDEGGER_VERSION = 'LUCKEY-MARTIN-HEIDEGGER-BEING-AND-TIME-v2.3.0';
 
 export type HeideggerQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -358,7 +358,7 @@ export function calculateMartinHeideggerBeingAndTime(
 
   return {
     engineVersion: GERMAN_MARTIN_HEIDEGGER_VERSION,
-    calculatedAtKst: new Date(now.getTime() + 9 * 60 * 60 * 1000).toISOString().replace('Z', '+09:00'),
+    calculatedAtKst: `${new Date(now.getTime() + 9 * 60 * 60 * 1000).toISOString().slice(0, 19)}+09:00 (KST)`,
     questionTopic,
     inDerWeltSeinRelationalScore,
     dasManOvercomingAuthenticityScore,
@@ -385,6 +385,7 @@ export function calculateMartinHeideggerBeingAndTime(
 export function formatMartinHeideggerBeingAndTimePrompt(res: MartinHeideggerBeingAndTimeResult): string {
   return [
     `【마틴 하이데거 《존재와 시간》 현존재 & 본래성 지표】`,
+    `- 엔진 버전: ${res.engineVersion} | 연산 시각: ${res.calculatedAtKst}`,
     `- 질문 맥락 초점: ${res.questionTopic}`,
     `- 세계-내-존재 존재연관 결(In-der-Welt-sein): ${describeHeideggerStage(res.inDerWeltSeinRelationalScore)}`,
     `- 세인 탈피 본래성 결(Eigentlichkeit): ${describeHeideggerStage(res.dasManOvercomingAuthenticityScore)}`,
