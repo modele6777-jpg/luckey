@@ -8,7 +8,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const BAOPUZI_ELIXIRS_ENGINE_VERSION = 'LUCKEY-BAOPUZI-ELIXIRS-v2.3.0';
+export const BAOPUZI_ELIXIRS_ENGINE_VERSION = 'LUCKEY-BAOPUZI-ELIXIRS-v2.4.0';
 
 export type BaopuziQuestionFocus = 'health' | 'career' | 'relationship' | 'decision' | 'spiritual';
 
@@ -269,7 +269,7 @@ export function calculateBaopuziElixirs(params?: BaopuziElixirsParams): BaopuziE
   ];
 
   const kst = new Date(now.getTime() + 9 * 3600 * 1000);
-  const calculatedAtKst = `${kst.toISOString().slice(0, 19)}+09:00`;
+  const calculatedAtKst = `${kst.toISOString().slice(0, 19)}+09:00 (KST)`;
   const interpretiveBoundary = '본 리포트는 갈홍 《포박자》의 도교 양생 상징에 기반한 정성적 건강 성찰 안내이며, 의학적 진단이 아닙니다.';
   const ritualAction = situationalBaopuziAudit.elixirNurturingStep;
   const reflectionFocus = `${rank}전 [${activeElixir.elixirNameKo}]의 결에 비추어, 오늘 내 정기신(精氣神)을 불필요하게 소모시키는 과화(過火) 한 가지를 줄인다면 무엇을 먼저 멈출까요?`;
@@ -314,6 +314,8 @@ export function formatBaopuziElixirsPrompt(report: BaopuziElixirsReport): string
   * 계절 장부 초점: ${report.temporalElixirRhythm.seasonalOrganFocus}
   * 시의성 지침: ${report.temporalElixirRhythm.cultivationTimingAdvice}
 - 포박자 갈홍의 훈계: ${report.geHongTaoistAdvice}
+- 일상 의례: ${report.ritualAction}
+- 성찰 초점: ${report.reflectionFocus}
 - 성찰 질문: ${report.reflectiveQuestion}
 - 해석 경계: ${report.interpretiveBoundary}
 - 루시 가이드: 수치 점수를 나열하지 말고, 피로나 스트레스로 지친 질문자에게 무리한 일정을 잠시 멈추고 내면의 정기(원기)를 충전하는 소박하고 실질적인 양생 처방을 따뜻하게 일러줘.`;

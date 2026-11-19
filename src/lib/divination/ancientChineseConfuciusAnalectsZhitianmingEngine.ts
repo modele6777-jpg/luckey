@@ -12,7 +12,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const CONFUCIUS_ZHITIANMING_VERSION = 'LUCKEY-CONFUCIUS-ZHITIANMING-v2.3.0';
+export const CONFUCIUS_ZHITIANMING_VERSION = 'LUCKEY-CONFUCIUS-ZHITIANMING-v2.4.0';
 
 function formatConfuciusKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -21,7 +21,8 @@ function formatConfuciusKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  const ss = String(kst.getUTCSeconds()).padStart(2, '0');
+  return `${y}-${m}-${d}T${hh}:${mm}:${ss}+09:00 (KST)`;
 }
 
 export interface ConfuciusLifeStage {
@@ -389,6 +390,7 @@ export function formatConfuciusAnalectsZhitianmingPrompt(res: ConfuciusAnalectsZ
     `- 조응하는 생애 마디: ${res.activeLifeStage.stageNameHanja} (${res.activeLifeStage.stageNameKo})`,
     `- 질문 맥락 논어 처방(${res.situationalAnalects.chapterCitation}): ${res.situationalAnalects.themeKo}`,
     `  · 원전 경구: "${res.situationalAnalects.classicalQuote}" — ${res.situationalAnalects.modernInsight}`,
+    `  · 성찰 초점: ${res.reflectionFocus}`,
     `  · 성찰 물음: ${res.reflectiveQuestion}`,
     `- KST 시공간 리듬: ${res.temporalJunziRhythm.kstPhaseLabel} · ${res.temporalJunziRhythm.seasonContext} (예절 조화: ${describeConfuciusStage(res.temporalJunziRhythm.liHarmonyIndex)})`,
     `- 일일 수양 의례: ${res.dailyPracticeRitual}`,

@@ -13,7 +13,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const AMERICAN_RALPH_WALDO_EMERSON_VERSION = 'LUCKEY-RALPH-WALDO-EMERSON-v2.2.0';
+export const AMERICAN_RALPH_WALDO_EMERSON_VERSION = 'LUCKEY-RALPH-WALDO-EMERSON-v2.3.0';
 
 export type EmersonQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -83,6 +83,7 @@ function getTemporalEmersonRhythm(now: Date) {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  const ss = String(kst.getUTCSeconds()).padStart(2, '0');
   const hour = kst.getUTCHours();
   const month = kst.getUTCMonth() + 1;
 
@@ -105,7 +106,7 @@ function getTemporalEmersonRhythm(now: Date) {
           : '겨울 · 고독 정진절 (조용한 자기신뢰의 뿌리를 깊게 내리는 시기)';
 
   return {
-    kstTimeLabel: `${y}-${m}-${d} ${hh}:${mm} KST`,
+    kstTimeLabel: `${y}-${m}-${d}T${hh}:${mm}:${ss}+09:00 (KST)`,
     solitudeWindow,
     seasonalNatureTone,
     temporalGuidance: `${solitudeWindow} · ${seasonalNatureTone}의 결을 따라 자립하십시오.`,
@@ -350,6 +351,7 @@ export function formatRalphWaldoEmersonSelfReliancePrompt(res: RalphWaldoEmerson
     `- 구체적 실천 지침: ${res.focalEmersonAphorism.actionGuidance}`,
     `- 맥락별 실행 조언: ${res.practiceGuidance}`,
     `- 오늘의 작은 의례: ${res.ritualAction}`,
+    `- 성찰 초점: ${res.reflectionFocus}`,
     `- 성찰 질문: ${res.reflectiveQuestion}`,
     `- 교차 매트릭스: 핵심(${res.emersonSynthesisMatrix.coreInsight}) | 실행(${res.emersonSynthesisMatrix.recommendedAction}) | 주의(${res.emersonSynthesisMatrix.cautionNotice})`,
     `- 핵심 조언 요약: ${res.counselNote}`,

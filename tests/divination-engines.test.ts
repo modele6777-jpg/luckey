@@ -4635,6 +4635,7 @@ test('Roman Janus Engine: calculates qualitative threshold balance and active ga
 test('Baopuzi Ge Hong Nine Turn Elixir Engine: calculates alchemy rank and vitality', () => {
   const rep = calculateBaopuziElixirs({ profile, question: '체력이 떨어지고 피곤해요', now: new Date('2026-11-15T05:00:00Z') });
   assert.equal(rep.engineVersion, BAOPUZI_ELIXIRS_ENGINE_VERSION);
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert.equal(rep.questionFocus, 'health');
   assert(rep.alchemicalRefinementLevel >= 1 && rep.alchemicalRefinementLevel <= 9);
   assert(rep.vitalityPreservationScore >= 0 && rep.vitalityPreservationScore <= 100);
@@ -4647,6 +4648,7 @@ test('Baopuzi Ge Hong Nine Turn Elixir Engine: calculates alchemy rank and vital
   const prompt = formatBaopuziElixirsPrompt(rep);
   assert(prompt.includes('고대 도교 포박자(抱朴子) 갈홍 구전환단(九轉還丹) 무병장수 정성 리포트'));
   assert(prompt.includes(rep.activeElixirPhase.elixirNameKo));
+  assert(prompt.includes('성찰 초점'));
   assert(!prompt.includes('/100'));
 });
 
@@ -6390,6 +6392,7 @@ test('Epictetus Dichotomy of Control Engine: calculates Ta Eph hemin clarity, Pr
 test('Confucius Analects Zhitianming Engine: calculates life stage wisdom, Ren, Li, and Junzi equanimity', () => {
   const rep = calculateConfuciusAnalectsZhitianming(profile);
   assert.equal(rep.engineVersion, CONFUCIUS_ZHITIANMING_VERSION);
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(rep.tianmingAttunementScore >= 0 && rep.tianmingAttunementScore <= 100);
   assert(rep.renBenevolenceCoreScore >= 0 && rep.renBenevolenceCoreScore <= 100);
   assert(rep.liDecorumHarmonyScore >= 0 && rep.liDecorumHarmonyScore <= 100);
@@ -6400,6 +6403,7 @@ test('Confucius Analects Zhitianming Engine: calculates life stage wisdom, Ren, 
   const prompt = formatConfuciusAnalectsZhitianmingPrompt(rep);
   assert(prompt.includes('공자 논어 지천명 & 극기복례 군자도 성찰'));
   assert(prompt.includes(rep.activeLifeStage.stageNameKo));
+  assert(prompt.includes('성찰 초점'));
 });
 
 test('Spinoza Ethica Conatus Engine: calculates Conatus vitality, Sub Specie Aeternitatis, and Amor Dei Intellectualis', () => {
@@ -7232,12 +7236,13 @@ test('Ralph Waldo Emerson Self-Reliance Engine: calculates qualitative Self-Reli
   assert(rep.counselNote.length > 0);
   assert(rep.boundaryNotice.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
-  assert(rep.calculatedAtKst.includes('KST'));
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(rep.emersonSynthesisMatrix.coreInsight.length > 0);
   assert(rep.activeEmersonTheme.themeTitleKo.length > 0);
   const prompt = formatRalphWaldoEmersonSelfReliancePrompt(rep);
   assert(prompt.includes('랠프 월도 에머슨 《자기신뢰》 & 《자연》 오버소울 비순응 자립 지표'));
   assert(prompt.includes(rep.activeEmersonTheme.themeTitleKo));
+  assert(prompt.includes('성찰 초점'));
   assert(prompt.includes('KST'));
   assert(!prompt.includes('/100'));
 });
