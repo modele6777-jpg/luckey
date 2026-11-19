@@ -13,7 +13,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const FRENCH_MAURICE_MERLEAU_PONTY_EMBODIED_PHENOMENOLOGY_VERSION = 'LUCKEY-MERLEAU-PONTY-EMBODIED-PHENOMENOLOGY-v2.1.0';
+export const FRENCH_MAURICE_MERLEAU_PONTY_EMBODIED_PHENOMENOLOGY_VERSION = 'LUCKEY-MERLEAU-PONTY-EMBODIED-PHENOMENOLOGY-v2.2.0';
 
 export type MerleauPontyQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -302,7 +302,7 @@ export function calculateFrenchMauriceMerleauPontyEmbodiedPhenomenology(
     `${focalPontyAphorism.actionGuidance}`;
 
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
-  const kstTimeLabel = `${kst.toISOString().slice(0, 10)} ${String(kst.getUTCHours()).padStart(2, '0')}:${String(kst.getUTCMinutes()).padStart(2, '0')} KST`;
+  const kstTimeLabel = `${kst.toISOString().slice(0, 10)} ${String(kst.getUTCHours()).padStart(2, '0')}:${String(kst.getUTCMinutes()).padStart(2, '0')} +09:00 (KST)`;
   const pontySynthesisMatrix = {
     coreInsight: activePontyTheme.themeTitleKo,
     recommendedAction: dailyPracticeRitual,
