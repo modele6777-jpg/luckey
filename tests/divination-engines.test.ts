@@ -12663,3 +12663,27 @@ test('카르믹 노드·정감록 10승지·오성과 한음 3대 엔진 v1.7.92
   assert.match(oh.calculatedAtKst, /\+09:00/);
   assert.ok(formatKoreanOhseongHaneumFriendshipGovernancePrompt(oh).includes('+09:00'));
 });
+
+test('연암 열하일기·메디컬 바이오·멘탈 리질리언스 3대 엔진 v1.7.923 KST(+09:00) 표준 표기 검증', () => {
+  const profile: any = {
+    name: '테스트',
+    basic: { birthdate: '1994-01-24', birthtime: '10:30', gender: 'male', calendarType: 'solar' },
+  };
+  const now = new Date('2026-11-19T10:07:00+09:00');
+  const query = '고정관념을 깨는 실사구시 통찰과 내 몸의 한난조습 균형, 위기 돌파 회복력을 보고 싶을 때';
+
+  const yn = calculateYeonamParkJiwonYeolhaIlgi(profile, query, now);
+  assert.equal(yn.engineVersion, KOREAN_YEONAM_PARK_JIWON_VERSION);
+  assert.match(yn.calculatedAtKst, /\+09:00/);
+  assert.ok(formatYeonamParkJiwonYeolhaIlgiPrompt(yn).includes('+09:00'));
+
+  const mb = calculateMedicalBioMatrix({ profile, targetDate: now, question: query });
+  assert.equal(mb.engineVersion, MEDICAL_BIO_MATRIX_VERSION);
+  assert.match(mb.calculatedAtKst, /\+09:00/);
+  assert.ok(formatMedicalBioMatrixPrompt(mb).includes('+09:00'));
+
+  const mr = calculateMentalResilience({ profile, targetDate: now, question: query });
+  assert.equal(mr.engineVersion, MENTAL_RESILIENCE_VERSION);
+  assert.match(mr.calculatedAtKst, /\+09:00/);
+  assert.ok(formatMentalResiliencePrompt(mr).includes('+09:00'));
+});
