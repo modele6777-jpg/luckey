@@ -2500,6 +2500,8 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
   const isAutoTtsBusyRef = useRef(false);
   const pageMountedAtRef = useRef<number>(Date.now());
 
+  // 🔮 루시 마스터 자동읽기: 사용자가 한 말도 남자 목소리(Charon)로 먼저 읽어준다
+  const masterUserSpeechRef = useRef<Promise<void> | null>(null);
   const triggerAutoTts = useCallback(async (textToSpeak: string, msgId?: string) => {
     if (manualTtsActiveRef.current) return;
     if (msgId && !isLucyTarotDrawOpen(lucyMessages.find(message => message.id === msgId)?.tarotDraw)) return;
@@ -2518,7 +2520,14 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
       primeTTSAudioElement();
 
       // 분할된 2~4개의 카톡 말풍선을 순서대로 이어 붙여 한 번에 연속 낭독
-      const joinedBubblesText = joinKakaoBubblesForTTS(cleanAssistantMessageDisplay(textToSpeak), 4) || textToSpeak;
+      // 루시 마스터: 내 말(남자 목소리)이 먼저 끝난 뒤 루시가 이어서 읽는다
+      if (masterUserSpeechRef.current) {
+        await masterUserSpeechRef.current;
+        masterUserSpeechRef.current = null;
+      }
+      // 답변 보기([답변선택: …]) 줄은 읽지 않는다
+      const spokenSource = parseAnswerChoices(cleanAssistantMessageDisplay(textToSpeak)).text;
+      const joinedBubblesText = joinKakaoBubblesForTTS(spokenSource, 4) || spokenSource;
       const cleanAnswer = normalizeTextForSpeech(joinedBubblesText);
       if (cleanAnswer) {
         await playTTSInChunks(cleanAnswer, 'Aoede', 110, undefined, undefined, {
@@ -3321,6 +3330,20 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
       setVoiceState('thinking');
       voiceStateRef.current = 'thinking';
       stopRecognition();
+    }
+
+    // 🔮 루시 마스터 + 자동읽기: 내가 한 말을 남자 목소리로 먼저 읽고, 루시 답변은 그 다음에 이어서 읽는다
+    if (isMasterMode && isAutoTtsRef.current && !isVoiceModeRef.current) {
+      const spokenUser = normalizeTextForSpeech(userCleanText);
+      if (spokenUser) {
+        unlockAudioPlayback();
+        primeTTSAudioElement();
+        masterUserSpeechRef.current = playTTSInChunks(spokenUser, 'Charon', 110, undefined, undefined, {
+          isChatMode: true,
+          skipCompletionChime: true,
+          isAutoPlay: true,
+        }).then(() => undefined, () => undefined);
+      }
     }
 
     // Text-only chat must not prime a silent player or wake an audio context.
