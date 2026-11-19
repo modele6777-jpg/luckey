@@ -6794,6 +6794,7 @@ test('Arthur Schopenhauer Will Representation Engine: calculates Will transcende
   assert(rep.situationalWillAudit.focusAxisKo.length > 0);
   assert(rep.temporalContemplationRhythm.heiterkeitSerenityIndex >= 0 && rep.temporalContemplationRhythm.heiterkeitSerenityIndex <= 100);
   assert(rep.schopenhauerSynthesisMatrix.overallSchopenhauerGrade.length > 0);
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatSchopenhauerWillRepresentationPrompt(rep);
@@ -8582,7 +8583,7 @@ test('Walter Benjamin Aura and Now-Time Engine: calculates Aura Authenticity, An
   assert(rep.flaneurDialecticalIlluminationIndex >= 0 && rep.flaneurDialecticalIlluminationIndex <= 100);
   assert(rep.allegoricalRedemptionScore >= 0 && rep.allegoricalRedemptionScore <= 100);
   assert(rep.activeBenjaminTheme.themeTitleKo.length > 0);
-  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(Boolean(rep.benjaminSynthesisMatrix?.integratedAction));
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatGermanWalterBenjaminAuraNowTimePrompt(rep);
@@ -8629,7 +8630,7 @@ test('Theodor Adorno Negative Dialectics and Minima Moralia Engine: calculates N
   assert(rep.dissonanceResilienceIndex >= 0 && rep.dissonanceResilienceIndex <= 100);
   assert(rep.constellationDialecticsScore >= 0 && rep.constellationDialecticsScore <= 100);
   assert(rep.activeAdornoTheme.themeTitleKo.length > 0);
-  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(Boolean(rep.adornoSynthesisMatrix?.integratedAction));
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatGermanTheodorAdornoNegativeDialecticsMinimaMoraliaPrompt(rep);
