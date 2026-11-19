@@ -14,7 +14,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const KOREAN_OHSEONG_HANEUM_VERSION = 'LUCKEY-OHSEONG-HANEUM-FRIENDSHIP-v2.1.0';
+export const KOREAN_OHSEONG_HANEUM_VERSION = 'LUCKEY-OHSEONG-HANEUM-FRIENDSHIP-v2.2.0';
 
 export type OhseongHaneumQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -77,7 +77,8 @@ function formatOhseongHaneumKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} KST`;
+  const ss = String(kst.getUTCSeconds()).padStart(2, '0');
+  return `${y}-${m}-${d}T${hh}:${mm}:${ss}+09:00 (KST)`;
 }
 
 export const OHSEONG_HANEUM_THEMES: OhseongHaneumTheme[] = [
