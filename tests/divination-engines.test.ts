@@ -1995,6 +1995,7 @@ test('Liuren Master Engine: 사과·삼전·12천장 정통 결단 산출 및 �
   assert.equal(res.status, 'calculated');
   assert.equal(res.engineVersion, LIUREN_MASTER_ENGINE_VERSION);
   assert(res.calculatedAtKst.includes('KST'));
+  assert(res.instantKstIso.endsWith('+09:00 (KST)'));
   assert.equal(res.fourLessons.length, 4);
   assert(res.fourLessons[0].upper.length > 0 && res.fourLessons[0].lower.length > 0);
   assert.equal(res.threeTransmissions.length, 3);
@@ -2021,6 +2022,7 @@ test('Liuren Master Engine: 사과·삼전·12천장 정통 결단 산출 및 �
   assert(prompt.includes('삼전(三傳) 타임라인 & 추진 역학'));
   assert(prompt.includes('실천 의례'));
   assert(prompt.includes('성찰 초점'));
+  assert(prompt.includes(res.reflectionFocus));
   assert(!prompt.includes('/100') && !prompt.includes('%') && !prompt.includes('점수'));
 });
 
@@ -3496,12 +3498,14 @@ test('Ziwei HuaJi Transformation Engine: maps stem hua-ji and breakthrough gift'
   assert.equal(rep.engineVersion, ZIWEI_HUAJI_VERSION);
   assert(rep.huaJiStar.starNameKo.length > 0);
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(rep.resilienceIndex >= 0 && rep.resilienceIndex <= 100);
   assert(rep.transmutationStrategy.length > 0);
   const prompt = formatZiweiHuaJiTransformationPrompt(rep);
   assert(prompt.includes('자미두수 화기'));
   assert(prompt.includes(rep.huaJiStar.starNameKo));
   assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
+  assert(prompt.includes(rep.reflectionFocus));
 });
 
 test('Celtic Tree Ogham Engine: derives birth guardian tree and seasonal oracle', () => {
@@ -3764,10 +3768,12 @@ test('Zoroastrian Asha Truth Engine: calculates threefold path, sacred atar fire
   assert(rep.sacredAtar.firePurityScore >= 0 && rep.sacredAtar.firePurityScore <= 100);
   assert(rep.discernment.truthAshaPath.length > 0);
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   const prompt = formatZoroastrianAshaTruthPrompt(rep);
   assert(prompt.includes('고대 조로아스터교 아샤(Asha) 신성 우주 질서'));
   assert(prompt.includes(rep.discernment.currentTrialTheme));
   assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
+  assert(prompt.includes(rep.reflectionFocus));
 });
 
 test('DCE catalogue size is never substituted for successful calculation evidence', () => {
@@ -10489,7 +10495,7 @@ test('Ziwei HuaJi v2.1.0, Zoroastrian Asha v2.0.0, and Yoruba Ifa Odu v2.1.0 out
   const now = new Date('2026-11-15T23:54:00Z');
   const huaji = calculateZiweiHuaJiTransformation(profile, now, '일과 커리어에서 자꾸 막히는 느낌이 들어요');
   assert.equal(huaji.engineVersion, ZIWEI_HUAJI_VERSION);
-  assert.ok(huaji.calculatedAtKst.endsWith('+09:00'));
+  assert.ok(huaji.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert.ok(Boolean(huaji.huajiSynthesisMatrix?.integratedAction));
   const huajiPrompt = formatZiweiHuaJiTransformationPrompt(huaji);
   assert.ok(!huajiPrompt.includes('/100') && !huajiPrompt.includes('%') && !huajiPrompt.includes('점 /'));
@@ -10497,7 +10503,7 @@ test('Ziwei HuaJi v2.1.0, Zoroastrian Asha v2.0.0, and Yoruba Ifa Odu v2.1.0 out
 
   const asha = calculateZoroastrianAshaTruth({ profile, contextText: '관계에서 솔직하게 말해야 할지 고민돼요', now });
   assert.equal(asha.engineVersion, ZOROASTRIAN_ASHA_VERSION);
-  assert.ok(asha.calculatedAtKst.endsWith('+09:00'));
+  assert.ok(asha.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert.ok(Boolean(asha.ashaSynthesisMatrix?.integratedAction));
   const ashaPrompt = formatZoroastrianAshaTruthPrompt(asha);
   assert.ok(!ashaPrompt.includes('/100') && !ashaPrompt.includes('%') && !ashaPrompt.includes('점 /'));

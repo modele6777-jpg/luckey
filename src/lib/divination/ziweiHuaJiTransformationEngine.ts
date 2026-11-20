@@ -17,7 +17,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const ZIWEI_HUAJI_VERSION = 'LUCKEY-ZW-HUAJI-v2.2.0';
+export const ZIWEI_HUAJI_VERSION = 'LUCKEY-ZW-HUAJI-v2.3.0';
 
 export interface HuaJiStarInfo {
   starNameKo: string;
@@ -172,7 +172,12 @@ export function calculateZiweiHuaJiTransformation(
 ): ZiweiHuaJiReport {
   const question = (questionArg || '').trim();
   const kst = new Date(targetDate.getTime() + 9 * 60 * 60 * 1000);
-  const calculatedAtKst = `${kst.toISOString().slice(0, 19)}+09:00`;
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  const calculatedAtKst = `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
   let birthYear = 1990;
   let birthMonth = 8;
   let birthDay = 15;

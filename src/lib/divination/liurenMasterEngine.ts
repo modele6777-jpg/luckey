@@ -28,7 +28,7 @@
 
 import { calculateLiuren } from './eventCharts';
 
-export const LIUREN_MASTER_ENGINE_VERSION = 'LUCKEY-LR-v2.3.0';
+export const LIUREN_MASTER_ENGINE_VERSION = 'LUCKEY-LR-v2.4.0';
 
 export const LIUREN_MASTER_METHOD =
   '대육임(大六壬) 정통 월장가시 천지반 12궁 포국, 사과(간상·간음·지상·지음) 오행 생극제화 수리 판정, 삼전(초전·중전·말전 발용) 구종과격 및 전개 템포, 12천장 승차 길흉 판정 및 0~100점 결단·행동 모멘텀 스코어 결정론적 산출';
@@ -257,7 +257,13 @@ function evaluateElementRelation(subjEl: string, envEl: string): {
  */
 export function calculateLiurenMaster(instant: Date = new Date(), question?: string): LiurenMasterResult {
   const raw = calculateLiuren(instant);
-  const nowKstIso = new Date(instant.getTime() + 9 * 3600000).toISOString().replace('Z', '+09:00');
+  const kstDate = new Date(instant.getTime() + 9 * 3600000);
+  const y = kstDate.getUTCFullYear();
+  const m = String(kstDate.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kstDate.getUTCDate()).padStart(2, '0');
+  const hh = String(kstDate.getUTCHours()).padStart(2, '0');
+  const mm = String(kstDate.getUTCMinutes()).padStart(2, '0');
+  const nowKstIso = `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
 
   // 사과 (四課) 추출
   const rawLessons = (raw.lessons as unknown as any[]) || [];
