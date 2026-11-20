@@ -1563,5 +1563,17 @@ export const MASTER_REVIEW_BINDINGS: Record<string, { field: string; traceKey: s
   "buryatBaikalTengriHarmony": {
     "field": "buryatBaikalTengriHarmonyResult",
     "traceKey": "buryatBaikalTengriHarmonyResult"
+  },
+  "cornishKernowSeaGranite": {
+    "field": "cornishKernowSeaGraniteResult",
+    "traceKey": "cornishKernowSeaGraniteResult"
+  },
+  "ossetianNartSagasForge": {
+    "field": "ossetianNartSagasForgeResult",
+    "traceKey": "ossetianNartSagasForgeResult"
+  },
+  "sardinianNuragheStoneCalm": {
+    "field": "sardinianNuragheStoneCalmResult",
+    "traceKey": "sardinianNuragheStoneCalmResult"
   }
 };
