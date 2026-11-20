@@ -519,9 +519,18 @@ export function applyAppLayoutViewport(box: ViewportBox, doc: Document, snapshot
  * so composers can lift themselves above the bar while the keyboard is open.
  */
 export function iosFloatingAccessoryMajor(userAgent: string): number {
-  const match = /\b(?:iPhone|iPad|iPod)\b.*?OS (\d+)_/.exec(userAgent || '')
-    || (/Macintosh/.test(userAgent || '') && /Version\/(\d+)/.exec(userAgent || ''));
-  return match ? Number(match[1]) || 0 : 0;
+  const ua = userAgent || '';
+  // iOS 26+ freezes the "iPhone OS" token (e.g. "iPhone OS 18_7") and reports the
+  // real release in "Version/27.3"; home-screen apps may omit Version entirely.
+  const os = /\b(?:iPhone|iPad|iPod)\b.*?OS (\d+)_(\d+)/.exec(ua);
+  const version = /Version\/(\d+)/.exec(ua);
+  const isApple = Boolean(os) || /Macintosh/.test(ua);
+  if (!isApple) return 0;
+  const osMajor = os ? Number(os[1]) || 0 : 0;
+  const osMinor = os ? Number(os[2]) || 0 : 0;
+  // Without a Version token, the frozen "18_6"/"18_7" token is how iOS 26+ reports itself.
+  const frozen = !version && osMajor === 18 && osMinor >= 6 ? 26 : 0;
+  return Math.max(osMajor, version ? Number(version[1]) || 0 : 0, frozen);
 }
 
 export function applyKeyboardLayoutViewport(box: ViewportBox, doc: Document): void {
