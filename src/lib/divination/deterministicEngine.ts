@@ -419,6 +419,9 @@ import { calculateBuryatBaikalTengriHarmony, formatBuryatBaikalPrompt, type Bury
 import { calculateCornishKernowSeaGranite, formatCornishKernowPrompt, type CornishKernowResult } from './cornishKernowSeaGraniteEngine';
 import { calculateOssetianNartSagasForge, formatOssetianNartPrompt, type OssetianNartResult } from './ossetianNartSagasForgeEngine';
 import { calculateSardinianNuragheStoneCalm, formatSardinianNuraghePrompt, type SardinianNuragheResult } from './sardinianNuragheStoneCalmEngine';
+import { calculateCatalanSenyRauxaBalance, formatCatalanSenyRauxaPrompt, type CatalanSenyRauxaResult } from './catalanSenyRauxaBalanceEngine';
+import { calculateKurdishNewrozZagrosRenewal, formatKurdishNewrozPrompt, type KurdishNewrozResult } from './kurdishNewrozZagrosRenewalEngine';
+import { calculateSindhiBhitaiIndusMelody, formatSindhiBhitaiPrompt, type SindhiBhitaiResult } from './sindhiBhitaiIndusMelodyEngine';
 
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
@@ -856,6 +859,9 @@ export interface DeterministicEngineReport {
   cornishKernowSeaGraniteResult?: CornishKernowResult | null;
   ossetianNartSagasForgeResult?: OssetianNartResult | null;
   sardinianNuragheStoneCalmResult?: SardinianNuragheResult | null;
+  catalanSenyRauxaBalanceResult?: CatalanSenyRauxaResult | null;
+  kurdishNewrozZagrosRenewalResult?: KurdishNewrozResult | null;
+  sindhiBhitaiIndusMelodyResult?: SindhiBhitaiResult | null;
 
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
@@ -3942,6 +3948,33 @@ try {
     }
   })()));
 
+  // 396. 카탈루냐 세니·라우샤 균형 엔진
+  const catalanSenyRauxaBalanceResult = calculateSupplement('catalanSenyRauxaBalanceResult', () => ((() => {
+    try {
+      return calculateCatalanSenyRauxaBalance({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 397. 쿠르드 네우로즈·자그로스 재생 엔진
+  const kurdishNewrozZagrosRenewalResult = calculateSupplement('kurdishNewrozZagrosRenewalResult', () => ((() => {
+    try {
+      return calculateKurdishNewrozZagrosRenewal({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 398. 신드 비타이·인더스 선율 엔진
+  const sindhiBhitaiIndusMelodyResult = calculateSupplement('sindhiBhitaiIndusMelodyResult', () => ((() => {
+    try {
+      return calculateSindhiBhitaiIndusMelody({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
   // 220. 한국 신라 의상대사 화엄일승법계도 & 법성게 원융무애 엔진
   const uisangHwaeomIlseungBeopgyeResult = calculateSupplement('uisangHwaeomIlseungBeopgyeResult', () => ((() => {
     try {
@@ -5355,6 +5388,9 @@ try {
     cornishKernowSeaGraniteResult,
     ossetianNartSagasForgeResult,
     sardinianNuragheStoneCalmResult,
+    catalanSenyRauxaBalanceResult,
+    kurdishNewrozZagrosRenewalResult,
+    sindhiBhitaiIndusMelodyResult,
     tools: toolsMap,
   };
 }
@@ -5773,6 +5809,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'cornishKernowSeaGranite', nameKo: '콘월 케르노우·화강암', icon: '🪨', category: 'deep_master', summary: '영국 콘월 케르노우 해안의 화강암처럼 바깥의 거친 바람을 견디며 내면의 내공이 여물어 가는 시간을 믿는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'bluebird' },
   { key: 'ossetianNartSagasForge', nameKo: '오세트 나르트 서사시', icon: '⚒️', category: 'deep_master', summary: '코카서스 오세트 나르트 서사시의 대장간·진실의 잔처럼 지금의 단련을 통해 더 맑고 단단한 힘을 벼리는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'trinity' },
   { key: 'sardinianNuragheStoneCalm', nameKo: '사르데냐 누라게 돌탑', icon: '🏛️', category: 'deep_master', summary: '지중해 사르데냐의 누라게처럼 억지스러운 꾸밈 없이도 서로의 무게가 맞물려 서는 고요한 균형을 찾는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'muse' },
+  { key: 'catalanSenyRauxaBalance', nameKo: '카탈루냐 세니·라우샤', icon: '⚖️', category: 'deep_master', summary: '카탈루냐의 차분한 분별(Seny)과 살아 있는 열정(Rauxa) 사이에서 오늘 내게 필요한 균형점을 맞추는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'trinity' },
+  { key: 'kurdishNewrozZagrosRenewal', nameKo: '쿠르드 네우로즈 새날', icon: '🔥', category: 'deep_master', summary: '쿠르드 네우로즈의 봄불처럼 어제의 피로를 털어내고 지금 이 순간을 새로운 첫날로 열어 내는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'aura' },
+  { key: 'sindhiBhitaiIndusMelody', nameKo: '신드 비타이·인더스 선율', icon: '🎶', category: 'deep_master', summary: '인더스 신드 시인 샤 압둘 라티프 비타이처럼 겉치레 대신 내 마음이 편안해지는 진실한 선율을 지키는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'bluebird' },
 ] as DceEngineMeta[]).filter(engine => !LUCY_PRO_CATALOG_DUPLICATE_KEYS.has(engine.key));
 
 export function getFiredEngineBadges(
@@ -6609,6 +6648,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'cornishKernowSeaGranite',
     'ossetianNartSagasForge',
     'sardinianNuragheStoneCalm',
+    'catalanSenyRauxaBalance',
+    'kurdishNewrozZagrosRenewal',
+    'sindhiBhitaiIndusMelody',
   ],
 };
 

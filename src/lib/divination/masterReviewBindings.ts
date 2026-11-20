@@ -1575,5 +1575,17 @@ export const MASTER_REVIEW_BINDINGS: Record<string, { field: string; traceKey: s
   "sardinianNuragheStoneCalm": {
     "field": "sardinianNuragheStoneCalmResult",
     "traceKey": "sardinianNuragheStoneCalmResult"
+  },
+  "catalanSenyRauxaBalance": {
+    "field": "catalanSenyRauxaBalanceResult",
+    "traceKey": "catalanSenyRauxaBalanceResult"
+  },
+  "kurdishNewrozZagrosRenewal": {
+    "field": "kurdishNewrozZagrosRenewalResult",
+    "traceKey": "kurdishNewrozZagrosRenewalResult"
+  },
+  "sindhiBhitaiIndusMelody": {
+    "field": "sindhiBhitaiIndusMelodyResult",
+    "traceKey": "sindhiBhitaiIndusMelodyResult"
   }
 };
