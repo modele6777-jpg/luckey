@@ -505,6 +505,9 @@ import { calculateChumashTomolCanoe, formatChumashTomolPrompt } from '../src/lib
 import { calculateSererBaobabCouncil, formatSererBaobabPrompt } from '../src/lib/divination/sererBaobabCouncilPoiseEngine';
 import { calculateMenomineeForestBalance, formatMenomineeForestPrompt } from '../src/lib/divination/menomineeForestStewardBalanceEngine';
 import { calculateSangamTinaiPoetics, formatSangamTinaiPrompt } from '../src/lib/divination/sangamTinaiLandscapesEngine';
+import { calculateBatammaribaTakienta, formatBatammaribaTakientaPrompt } from '../src/lib/divination/batammaribaTakientaMudTowerEngine';
+import { calculateKunaMolaStitch, formatKunaMolaPrompt } from '../src/lib/divination/kunaMolaLayeredStitchEngine';
+import { calculateVenetianLagoonForcola, formatVenetianLagoonPrompt } from '../src/lib/divination/venetianLagoonForcolaOarEngine';
 
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
@@ -15165,4 +15168,37 @@ test('Sangam Tinai Poetics engine: landscape, +09:00 KST, and interpretive bound
   const prompt = formatSangamTinaiPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
   assert.ok(prompt.includes('타밀 상감') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionLandscape));
+});
+
+test('Batammariba Takienta engine: tower, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateBatammaribaTakienta({ profile, now: new Date('2026-11-20T22:45:00Z'), question: '일과 쉼의 층위를 나누고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-BATAMMARIBA-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatBatammaribaTakientaPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('바타마리바') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Kuna Mola Stitch engine: layer, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateKunaMolaStitch({ profile, now: new Date('2026-11-20T22:45:00Z'), question: '불필요한 겹을 덜어내고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-KUNA-MOLA-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatKunaMolaPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('쿠나·몰라') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Venetian Lagoon Forcola engine: notch, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateVenetianLagoonForcola({ profile, now: new Date('2026-11-20T22:45:00Z'), question: '좁은 수로를 유연하게 지나고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-VENETIAN-FORCOLA-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatVenetianLagoonPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('베네치아') && prompt.includes('+09:00 (KST)'));
 });

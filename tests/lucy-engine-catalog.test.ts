@@ -17,15 +17,15 @@ import {
 } from '../src/lib/divination/engineCatalog';
 import { FIFTEEN_DIVINATION_TOOLS, type DivinationToolId } from '../src/lib/fifteenDivinationTools';
 
-test('Lucy Pro catalog contains the approved 504 entries: 15 foundational tools and 489 deep perspectives', () => {
-  assert.equal(ALL_DCE_ENGINES.length, 506);
-  assert.equal(LUCY_PRO_CATALOG_ENGINES.length, 504);
+test('Lucy Pro catalog contains the approved 507 entries: 15 foundational tools and 492 deep perspectives', () => {
+  assert.equal(ALL_DCE_ENGINES.length, 509);
+  assert.equal(LUCY_PRO_CATALOG_ENGINES.length, 507);
   assert.equal(LUCY_PRO_FOUNDATIONAL_COUNT, 15);
-  assert.equal(LUCY_PRO_CATALOG_TOTAL_COUNT, 504);
+  assert.equal(LUCY_PRO_CATALOG_TOTAL_COUNT, 507);
   assert.equal(LUCY_PRO_DEEP_PERSPECTIVE_COUNT, ENGINE_CATALOG_COUNTS.deep_master);
-  assert.equal(LUCY_PRO_DEEP_PERSPECTIVE_COUNT, 489);
-  assert.deepEqual(ENGINE_CATALOG_COUNTS, { foundational: 15, deep_master: 489 });
-  assert.equal(new Set(LUCY_PRO_CATALOG_ENGINES.map(engine => engine.key)).size, 504);
+  assert.equal(LUCY_PRO_DEEP_PERSPECTIVE_COUNT, 492);
+  assert.deepEqual(ENGINE_CATALOG_COUNTS, { foundational: 15, deep_master: 492 });
+  assert.equal(new Set(LUCY_PRO_CATALOG_ENGINES.map(engine => engine.key)).size, 507);
   assert.deepEqual([...LUCY_PRO_CATALOG_OMITTED_KEYS], [
     'irishJamesJoyceUlyssesEpiphany',
     'germanHermannHesseDemianSteppenwolf',
@@ -46,9 +46,9 @@ test('every listed engine has a readable meaning and one of the seven channel th
     prologue: 5,
     orange: 26,
     trinity: 106,
-    aura: 118,
-    bluebird: 81,
-    muse: 159,
+    aura: 119,
+    bluebird: 82,
+    muse: 160,
     epilogue: 9,
   });
 
