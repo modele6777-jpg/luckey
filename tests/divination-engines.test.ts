@@ -394,6 +394,9 @@ import { calculateSindhiBhitaiIndusMelody, formatSindhiBhitaiPrompt } from '../s
 import { calculateCorsicanPaghjellaMaquisHarmony, formatCorsicanPaghjellaPrompt } from '../src/lib/divination/corsicanPaghjellaMaquisHarmonyEngine';
 import { calculatePashtunRoshaniyaInnerLight, formatPashtunRoshaniyaPrompt } from '../src/lib/divination/pashtunRoshaniyaInnerLightEngine';
 import { calculateBengaliBaulMonerManush, formatBengaliBaulPrompt } from '../src/lib/divination/bengaliBaulMonerManushEngine';
+import { calculatePunjabiNanakLangarService, formatPunjabiNanakPrompt } from '../src/lib/divination/punjabiNanakLangarServiceEngine';
+import { calculateChuvashTuraWorldTreeBalance, formatChuvashTuraPrompt } from '../src/lib/divination/chuvashTuraWorldTreeBalanceEngine';
+import { calculateKalmykJangarBumbaSteppe, formatKalmykJangarPrompt } from '../src/lib/divination/kalmykJangarBumbaSteppeEngine';
 
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
@@ -13764,4 +13767,37 @@ test('Bengali Baul Moner Manush engine: string, +09:00 KST, and interpretive bou
   const prompt = formatBengaliBaulPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
   assert.ok(prompt.includes('벵골') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Punjabi Nanak Langar Service engine: pillar, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculatePunjabiNanakLangarService({ profile, now: new Date('2026-11-20T07:56:00Z'), question: '성실함과 넉넉한 나눔을 세우고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-PUNJABI-NANAK-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatPunjabiNanakPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('펀자브') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Chuvash Tura World Tree Balance engine: sign, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateChuvashTuraWorldTreeBalance({ profile, now: new Date('2026-11-20T07:56:00Z'), question: '한 땀씩 정갈하게 질서를 세우고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-CHUVASH-TURA-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatChuvashTuraPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('추바시') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Kalmyk Jangar Bumba Steppe engine: motif, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateKalmykJangarBumbaSteppe({ profile, now: new Date('2026-11-20T07:56:00Z'), question: '넓은 초원의 넉넉한 시야를 갖고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-KALMYK-JANGAR-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatKalmykJangarPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('칼미크') && prompt.includes('+09:00 (KST)'));
 });
