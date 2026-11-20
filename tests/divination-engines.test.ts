@@ -5849,7 +5849,7 @@ test('Korean Suun Gasi Heon Engine: calculates Yongcheon sword severance, Samgye
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(rep.reflectiveQuestion.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
-  assert(rep.calculatedAtKst.endsWith('+09:00 KST'));
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(Boolean(rep.suunGasiSynthesisMatrix?.integratedAction));
   const repQ = calculateSuunGasiHeon(profile, '단호히 베어내야 할 미혹');
   assert(repQ.reflectiveQuestion.includes('베어내야 할 미혹'));
@@ -5860,6 +5860,7 @@ test('Korean Suun Gasi Heon Engine: calculates Yongcheon sword severance, Samgye
   assert(prompt.includes('해석 경계'));
   assert(prompt.includes('실천 의례'));
   assert(prompt.includes('성찰 초점'));
+  assert(prompt.includes(repQ.reflectionFocus));
   assert(prompt.includes('교차 매트릭스'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
@@ -6420,7 +6421,7 @@ test('Korean Joseon Toegye Seonghak Sipdo Engine: calculates Gyeong mindfulness,
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(rep.reflectiveQuestion.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
-  assert(rep.calculatedAtKst.endsWith('+09:00 KST'));
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(Boolean(rep.toegyeSynthesisMatrix?.integratedAction));
   const repQ = calculateToegyeSeonghakSipdo(profile, '흩어진 마음을 하나로 모으는 경의 태도');
   assert(repQ.reflectiveQuestion.includes('경의 태도'));
@@ -6431,6 +6432,7 @@ test('Korean Joseon Toegye Seonghak Sipdo Engine: calculates Gyeong mindfulness,
   assert(prompt.includes('해석 경계'));
   assert(prompt.includes('실천 의례'));
   assert(prompt.includes('성찰 초점'));
+  assert(prompt.includes(repQ.reflectionFocus));
   assert(prompt.includes('교차 매트릭스'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
@@ -6668,7 +6670,7 @@ test('Uisang Hwaeom Ilseung Beopgyedo Engine: calculates Beopseong Wonnyung, San
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(rep.reflectiveQuestion.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
-  assert(rep.calculatedAtKst.endsWith('+09:00 KST'));
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(Boolean(rep.uisangSynthesisMatrix?.integratedAction));
   const repQ = calculateUisangHwaeomIlseungBeopgye(profile, '둘로 나누던 분별을 내려놓고 하나로 꿰어야 할 지점');
   assert(repQ.reflectiveQuestion.includes('하나로 꿰어야 할 지점'));
@@ -6679,6 +6681,7 @@ test('Uisang Hwaeom Ilseung Beopgyedo Engine: calculates Beopseong Wonnyung, San
   assert(prompt.includes('해석 경계'));
   assert(prompt.includes('실천 의례'));
   assert(prompt.includes('성찰 초점'));
+  assert(prompt.includes(repQ.reflectionFocus));
   assert(prompt.includes('교차 매트릭스'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
