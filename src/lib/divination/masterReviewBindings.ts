@@ -1635,5 +1635,17 @@ export const MASTER_REVIEW_BINDINGS: Record<string, { field: string; traceKey: s
   "karelianRunoKanteleResonance": {
     "field": "karelianRunoKanteleResonanceResult",
     "traceKey": "karelianRunoKanteleResonanceResult"
+  },
+  "malteseMegalithLuzzuHarbor": {
+    "field": "malteseMegalithLuzzuHarborResult",
+    "traceKey": "malteseMegalithLuzzuHarborResult"
+  },
+  "uzbekMahallaRishtanCraft": {
+    "field": "uzbekMahallaRishtanCraftResult",
+    "traceKey": "uzbekMahallaRishtanCraftResult"
+  },
+  "rapaNuiManaMoaiHorizon": {
+    "field": "rapaNuiManaMoaiHorizonResult",
+    "traceKey": "rapaNuiManaMoaiHorizonResult"
   }
 };
