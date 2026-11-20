@@ -13859,13 +13859,14 @@ test('Corsican Paghjella Maquis Harmony engine: voice, +09:00 KST, and interpret
 
 test('Pashtun Roshaniya Inner Light engine: lamp, +09:00 KST, and interpretive boundary', () => {
   const rep = calculatePashtunRoshaniyaInnerLight({ profile, now: new Date('2026-11-20T07:52:00Z'), question: '내 안의 맑은 등불을 밝히고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-PASHTUN-ROSHANIYA-v2.1.0');
-  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.equal(rep.engineVersion, 'LUCKEY-PASHTUN-ROSHANIYA-v2.2.0');
+  assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
+  assert.ok(rep.companionLamp !== rep.roshaniyaLamp);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatPashtunRoshaniyaPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('파슈툰') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('파슈툰') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionLamp));
 });
 
 test('Bengali Baul Moner Manush engine: string, +09:00 KST, and interpretive boundary', () => {
@@ -14063,13 +14064,14 @@ test('Manchu Mukun White Mountain engine: principle, +09:00 KST, and interpretiv
 
 test('Portuguese Saudade Sagres Compass engine: compass, +09:00 KST, and interpretive boundary', () => {
   const rep = calculatePortugueseSaudadeSagresCompass({ profile, now: new Date('2026-11-20T08:28:00Z'), question: '역풍 속에서 각도를 틀어 나아가고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-PORTUGUESE-SAGRES-v2.1.0');
-  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.equal(rep.engineVersion, 'LUCKEY-PORTUGUESE-SAGRES-v2.2.0');
+  assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
+  assert.ok(rep.companionCompass !== rep.atlanticCompass);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatPortugueseSagresPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('포르투갈') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('포르투갈') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionCompass));
 });
 
 test('Ladakhi Stupa Glacier Water engine: wisdom, +09:00 KST, and interpretive boundary', () => {
@@ -14406,13 +14408,14 @@ test('Parthian Nisa Archery Poise engine: motif, +09:00 KST, and interpretive bo
 
 test('Nahua Xochitl Cuicatl Flow engine: motif, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateNahuaXochitlCuicatlFlow({ profile, now: new Date('2026-11-20T19:25:00Z'), question: '일상 속 작은 아름다움과 진심을 찾고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-NAHUA-XOCHITL-v2.1.0');
-  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.equal(rep.engineVersion, 'LUCKEY-NAHUA-XOCHITL-v2.2.0');
+  assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
+  assert.ok(rep.companionMotif !== rep.xochitlMotif);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatNahuaXochitlPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('나우아틀') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('나우아틀') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionMotif));
 });
 
 test('Benin Bronze Oba Memory engine: motif, +09:00 KST, and interpretive boundary', () => {
