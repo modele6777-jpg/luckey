@@ -1611,5 +1611,17 @@ export const MASTER_REVIEW_BINDINGS: Record<string, { field: string; traceKey: s
   "kalmykJangarBumbaSteppe": {
     "field": "kalmykJangarBumbaSteppeResult",
     "traceKey": "kalmykJangarBumbaSteppeResult"
+  },
+  "bugisLontaraPasikWisdom": {
+    "field": "bugisLontaraPasikWisdomResult",
+    "traceKey": "bugisLontaraPasikWisdomResult"
+  },
+  "latvianDainasMaraHarmony": {
+    "field": "latvianDainasMaraHarmonyResult",
+    "traceKey": "latvianDainasMaraHarmonyResult"
+  },
+  "cherokeeGadugiHarmony": {
+    "field": "cherokeeGadugiHarmonyResult",
+    "traceKey": "cherokeeGadugiHarmonyResult"
   }
 };
