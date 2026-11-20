@@ -1,0 +1,71 @@
+import type { UserProfile } from '../sharedState';
+
+export interface LuangPrabangDawnResult {
+  engineVersion: string;
+  calculatedAtKst: string;
+  mekongMotif: string;
+  luangPrabangInsight: string;
+  dawnTone: string;
+  reflectionFocus: string;
+  ritualAction: string;
+  reflectiveQuestion: string;
+  interpretiveBoundary: string;
+}
+
+const MOTIFS = [
+  { motif: '메콩강 새벽 물안개(Mekong Mist · 해가 뜨기 전 강물과 산이 한 빛깔로 어우러짐)', insight: '아직 윤곽이 또렷하지 않은 일이라도 조급히 단정 짓지 않고 안개가 걷히기를 기다리면 선명해짐', tone: '라오스 루앙프라방 강변 위로 보랏빛 새벽 안개가 천천히 흩어지는 고요한 이른 아침' },
+  { motif: '침묵의 탁발 행렬(Silent Alms · 말없이 나누어 주고 말없이 받으며 하루를 시작함)', insight: '거창한 설명이나 생색 없이도 조용히 건네는 작은 친절이 하루 전체의 공기를 부드럽게 바꿈', tone: '주홍빛 가사와 찹쌀 바구니가 고요한 골목길에서 소리 없이 마음을 주고받는 새벽' },
+  { motif: '남칸 강과 메콩의 합류(Twin Rivers · 맑은 지류와 웅장한 본류가 부드럽게 섞여 흐름)', insight: '내 안의 잔잔한 일상과 큰 목표가 서로 다투지 않고 같은 강물로 흘러가도록 두어야 함', tone: '두 강물이 만나는 곶 위에서 야자수 잎이 아침 바람에 살랑이는 평온한 오전' },
+  { motif: '대나무 다리의 계절(Bamboo Bridge · 건기에는 다리를 놓고 우기에는 자연스럽게 거두어 들임)', insight: '영원히 붙들고 있어야 할 방식은 없으며, 계절과 상황이 바뀌면 가볍게 접어 둘 줄도 알아야 함', tone: '강물 수위에 맞춰 엮은 튼튼한 대나무 다리 위로 사람들이 천천히 걸음을 옮기는 낮' },
+  { motif: '푸시 언덕의 저녁 종소리(Phousi Bell · 하루의 분주함을 둥근 여운 속으로 내려놓음)', insight: '오늘 다 끝내지 못한 일이 있더라도 저녁에는 마음을 종소리처럼 둥글게 내려놓고 쉬어야 함', tone: '황금빛 석양이 강물 위에 번지는 동안 언덕 위에서 맑고 긴 종소리가 울려 퍼지는 저녁' },
+];
+
+function formatKstIso(date: Date): string {
+  const kst = new Date(date.getTime() + 9 * 60 * 60 * 1000);
+  return kst.toISOString().replace('Z', '+09:00 (KST)');
+}
+
+function stableHash(input: string): number {
+  let h = 2166136261;
+  for (let i = 0; i < input.length; i += 1) {
+    h ^= input.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return Math.abs(h);
+}
+
+export function calculateLuangPrabangMekongDawn(params: {
+  profile: UserProfile;
+  now?: Date;
+  question?: string;
+}): LuangPrabangDawnResult {
+  const now = params.now ?? new Date();
+  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${params.question ?? ''}|${now.toISOString().slice(0, 13)}`;
+  const idx = stableHash(seed) % MOTIFS.length;
+  const picked = MOTIFS[idx];
+
+  return {
+    engineVersion: 'LUCKEY-LAO-MEKONG-v2.1.0',
+    calculatedAtKst: formatKstIso(now),
+    mekongMotif: picked.motif,
+    luangPrabangInsight: picked.insight,
+    dawnTone: picked.tone,
+    reflectionFocus: `루앙프라방 메콩 새벽의 '${picked.motif}'처럼, 안개 속에서 서두르기보다 계절에 맞춰 놓거나 거두는 고요한 호흡을 지켜 보세요.`,
+    ritualAction: '오늘 하루 중 생색내지 않는 작은 배려 하나를 말없이 건네거나, 저녁에 미련 없이 할 일을 접어 두세요.',
+    reflectiveQuestion: '계절이 이미 바뀌었는데도 내가 여전히 건기의 대나무 다리처럼 억지로 붙들고 있는 방식은 무엇인가요?',
+    interpretiveBoundary: '라오스 루앙프라방의 메콩 새벽·탁발 나눔·대나무 다리 지혜 전통을 바탕으로 한 상징적 성찰 프레임입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.',
+  };
+}
+
+export function formatLuangPrabangDawnPrompt(res: LuangPrabangDawnResult): string {
+  return [
+    `[루앙프라방·메콩 새벽 성찰 · ${res.engineVersion}]`,
+    `- 기준 시각: ${res.calculatedAtKst}`,
+    `- 메콩 모티프: ${res.mekongMotif} (${res.dawnTone})`,
+    `- 중심 통찰: ${res.luangPrabangInsight}`,
+    `- 성찰 초점: ${res.reflectionFocus}`,
+    `- 오늘의 작은 실천: ${res.ritualAction}`,
+    `- 스스로에게 묻기: ${res.reflectiveQuestion}`,
+    `- 해석 경계: ${res.interpretiveBoundary}`,
+  ].join('\n');
+}
