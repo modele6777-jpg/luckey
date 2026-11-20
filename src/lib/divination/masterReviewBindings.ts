@@ -1491,5 +1491,17 @@ export const MASTER_REVIEW_BINDINGS: Record<string, { field: string; traceKey: s
   "tonganKavaCircleTauhiVa": {
     "field": "tonganKavaCircleTauhiVaResult",
     "traceKey": "tonganKavaCircleTauhiVaResult"
+  },
+  "dogonAmmaNommoHarmony": {
+    "field": "dogonAmmaNommoHarmonyResult",
+    "traceKey": "dogonAmmaNommoHarmonyResult"
+  },
+  "aymaraPachamamaAmautaWisdom": {
+    "field": "aymaraPachamamaAmautaWisdomResult",
+    "traceKey": "aymaraPachamamaAmautaWisdomResult"
+  },
+  "welshMabinogionAwenInspiration": {
+    "field": "welshMabinogionAwenInspirationResult",
+    "traceKey": "welshMabinogionAwenInspirationResult"
   }
 };

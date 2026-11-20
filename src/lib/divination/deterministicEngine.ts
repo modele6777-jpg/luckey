@@ -398,6 +398,9 @@ import { calculateHungarianTaltosTreeOfLife, formatHungarianTaltosPrompt, type H
 import { calculateKyrgyzManasOralEpicCourage, formatKyrgyzManasPrompt, type KyrgyzManasResult } from './kyrgyzManasOralEpicCourageEngine';
 import { calculateShonaMbiraAncestralResonance, formatShonaMbiraPrompt, type ShonaMbiraResult } from './shonaMbiraAncestralResonanceEngine';
 import { calculateTonganKavaCircleTauhiVa, formatTonganKavaPrompt, type TonganKavaResult } from './tonganKavaCircleTauhiVaEngine';
+import { calculateDogonAmmaNommoHarmony, formatDogonAmmaNommoPrompt, type DogonAmmaNommoResult } from './dogonAmmaNommoHarmonyEngine';
+import { calculateAymaraPachamamaAmautaWisdom, formatAymaraPachamamaPrompt, type AymaraPachamamaResult } from './aymaraPachamamaAmautaWisdomEngine';
+import { calculateWelshMabinogionAwenInspiration, formatWelshMabinogionAwenPrompt, type WelshMabinogionAwenResult } from './welshMabinogionAwenInspirationEngine';
 
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
@@ -814,6 +817,9 @@ export interface DeterministicEngineReport {
   kyrgyzManasOralEpicCourageResult?: KyrgyzManasResult | null;
   shonaMbiraAncestralResonanceResult?: ShonaMbiraResult | null;
   tonganKavaCircleTauhiVaResult?: TonganKavaResult | null;
+  dogonAmmaNommoHarmonyResult?: DogonAmmaNommoResult | null;
+  aymaraPachamamaAmautaWisdomResult?: AymaraPachamamaResult | null;
+  welshMabinogionAwenInspirationResult?: WelshMabinogionAwenResult | null;
 
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
@@ -3711,6 +3717,33 @@ try {
     }
   })()));
 
+  // 375. 서아프리카 도곤 암마·노모 우주 질서 엔진
+  const dogonAmmaNommoHarmonyResult = calculateSupplement('dogonAmmaNommoHarmonyResult', () => ((() => {
+    try {
+      return calculateDogonAmmaNommoHarmony({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 376. 안데스 아이마라 파차마마·아마우타 순환 지혜 엔진
+  const aymaraPachamamaAmautaWisdomResult = calculateSupplement('aymaraPachamamaAmautaWisdomResult', () => ((() => {
+    try {
+      return calculateAymaraPachamamaAmautaWisdom({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 377. 웨일스 마비노기온·아웬 영감 성찰 엔진
+  const welshMabinogionAwenInspirationResult = calculateSupplement('welshMabinogionAwenInspirationResult', () => ((() => {
+    try {
+      return calculateWelshMabinogionAwenInspiration({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
   // 220. 한국 신라 의상대사 화엄일승법계도 & 법성게 원융무애 엔진
   const uisangHwaeomIlseungBeopgyeResult = calculateSupplement('uisangHwaeomIlseungBeopgyeResult', () => ((() => {
     try {
@@ -5103,6 +5136,9 @@ try {
     kyrgyzManasOralEpicCourageResult,
     shonaMbiraAncestralResonanceResult,
     tonganKavaCircleTauhiVaResult,
+    dogonAmmaNommoHarmonyResult,
+    aymaraPachamamaAmautaWisdomResult,
+    welshMabinogionAwenInspirationResult,
     tools: toolsMap,
   };
 }
@@ -5500,6 +5536,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'kyrgyzManasOralEpicCourage', nameKo: '키르기스 마나스 서사시', icon: '🏔️', category: 'deep_master', summary: '중앙아시아 키르기스 《마나스》 서사시와 유목 지혜처럼 큰 산 앞에서도 오늘 몫의 첫 걸음을 당당히 내딛는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'trinity' },
   { key: 'shonaMbiraAncestralResonance', nameKo: '쇼나 음비라 공명', icon: '🎶', category: 'deep_master', summary: '짐바브웨 쇼나 음비라(Mbira)의 맑은 공명과 엇박자 전환처럼 흐트러진 마음의 호흡을 부드럽게 되찾는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'aura' },
   { key: 'tonganKavaCircleTauhiVa', nameKo: '통가 카바·타우히 바', icon: '🥥', category: 'deep_master', summary: '폴리네시아 통가의 카바 서클과 타우히 바(Tauhi vā) 철학처럼 사람 사이의 거리와 따뜻한 존중을 정성껏 가꾸는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'bluebird' },
+  { key: 'dogonAmmaNommoHarmony', nameKo: '도곤 암마·노모 질서', icon: '🌌', category: 'deep_master', summary: '서아프리카 말리 도곤의 시리우스 주기와 토구나 대화 지혜처럼 조급함 대신 차분한 호흡으로 말과 궤도를 다듬는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'trinity' },
+  { key: 'aymaraPachamamaAmautaWisdom', nameKo: '아이마라 나이라·파차마마', icon: '🌄', category: 'deep_master', summary: '안데스 아이마라의 나이라(Nayra) 시간관과 호혜 철학처럼 이미 걸어온 경험에서 오늘의 기준을 꺼내 보는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'aura' },
+  { key: 'welshMabinogionAwenInspiration', nameKo: '웨일스 마비노기온·아웬', icon: '🦢', category: 'deep_master', summary: '웨일스 《마비노기온》과 아웬(Awen) 세 줄기 영감처럼 의무감 너머 순수한 호기심이 가리키는 작은 시도를 살피는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'muse' },
 ] as DceEngineMeta[]).filter(engine => !LUCY_PRO_CATALOG_DUPLICATE_KEYS.has(engine.key));
 
 export function getFiredEngineBadges(
@@ -6315,6 +6354,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'kyrgyzManasOralEpicCourage',
     'shonaMbiraAncestralResonance',
     'tonganKavaCircleTauhiVa',
+    'dogonAmmaNommoHarmony',
+    'aymaraPachamamaAmautaWisdom',
+    'welshMabinogionAwenInspiration',
   ],
 };
 

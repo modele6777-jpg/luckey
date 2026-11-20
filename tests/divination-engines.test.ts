@@ -367,6 +367,9 @@ import { calculateHungarianTaltosTreeOfLife, formatHungarianTaltosPrompt } from 
 import { calculateKyrgyzManasOralEpicCourage, formatKyrgyzManasPrompt } from '../src/lib/divination/kyrgyzManasOralEpicCourageEngine';
 import { calculateShonaMbiraAncestralResonance, formatShonaMbiraPrompt } from '../src/lib/divination/shonaMbiraAncestralResonanceEngine';
 import { calculateTonganKavaCircleTauhiVa, formatTonganKavaPrompt } from '../src/lib/divination/tonganKavaCircleTauhiVaEngine';
+import { calculateDogonAmmaNommoHarmony, formatDogonAmmaNommoPrompt } from '../src/lib/divination/dogonAmmaNommoHarmonyEngine';
+import { calculateAymaraPachamamaAmautaWisdom, formatAymaraPachamamaPrompt } from '../src/lib/divination/aymaraPachamamaAmautaWisdomEngine';
+import { calculateWelshMabinogionAwenInspiration, formatWelshMabinogionAwenPrompt } from '../src/lib/divination/welshMabinogionAwenInspirationEngine';
 
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
@@ -13440,4 +13443,37 @@ test('Tongan Kava Circle Tauhi Va engine: practice, +09:00 KST, and interpretive
   const prompt = formatTonganKavaPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
   assert.ok(prompt.includes('통가') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Dogon Amma Nommo Harmony engine: star phase, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateDogonAmmaNommoHarmony({ profile, now: new Date('2026-11-20T06:55:00Z'), question: '기다림과 대화의 균형을 찾고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-DOGON-AMMA-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatDogonAmmaNommoPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('도곤') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Aymara Pachamama Amauta Wisdom engine: nayra lens, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateAymaraPachamamaAmautaWisdom({ profile, now: new Date('2026-11-20T06:55:00Z'), question: '지나온 경험에서 기준을 찾고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-AYMARA-AMAUTA-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatAymaraPachamamaPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('아이마라') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Welsh Mabinogion Awen Inspiration engine: ray, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateWelshMabinogionAwenInspiration({ profile, now: new Date('2026-11-20T06:55:00Z'), question: '새로운 시도의 영감을 얻고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-WELSH-AWEN-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatWelshMabinogionAwenPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('웨일스') && prompt.includes('+09:00 (KST)'));
 });
