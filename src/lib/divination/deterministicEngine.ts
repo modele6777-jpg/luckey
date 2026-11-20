@@ -524,6 +524,9 @@ import { calculateTurkanaJadeSeaWind, formatTurkanaWindPrompt, type TurkanaWindR
 import { calculateAsturianHorreoPoise, formatAsturianHorreoPrompt, type AsturianHorreoResult } from './asturianHorreoGranaryPoiseEngine';
 import { calculateOmoKaroBodyArt, formatOmoKaroPrompt, type OmoKaroResult } from './omoKaroClayBodyArtEngine';
 import { calculateSumbaIkatStory, formatSumbaIkatPrompt, type SumbaIkatResult } from './sumbaIkatWeaveStoryEngine';
+import { calculateBatakSopoRoof, formatBatakSopoPrompt, type BatakSopoResult } from './batakTobaSopoRoofEngine';
+import { calculateTarahumaraStride, formatTarahumaraStridePrompt, type TarahumaraStrideResult } from './tarahumaraRaramuriStrideEngine';
+import { calculateOrkneySkaraHearth, formatOrkneySkaraPrompt, type OrkneySkaraResult } from './orkneySkaraBraeStoneHearthEngine';
 
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
@@ -1066,6 +1069,9 @@ export interface DeterministicEngineReport {
   asturianHorreoPoiseResult?: AsturianHorreoResult | null;
   omoKaroBodyArtResult?: OmoKaroResult | null;
   sumbaIkatStoryResult?: SumbaIkatResult | null;
+  batakSopoRoofResult?: BatakSopoResult | null;
+  tarahumaraStrideResult?: TarahumaraStrideResult | null;
+  orkneySkaraHearthResult?: OrkneySkaraResult | null;
 
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
@@ -5097,6 +5103,33 @@ try {
     }
   })()));
 
+  // 501. 바타크 토바·소포 가옥 성찰 엔진
+  const batakSopoRoofResult = calculateSupplement('batakSopoRoofResult', () => ((() => {
+    try {
+      return calculateBatakSopoRoof({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 502. 타라후마라·라라무리 발걸음 성찰 엔진
+  const tarahumaraStrideResult = calculateSupplement('tarahumaraStrideResult', () => ((() => {
+    try {
+      return calculateTarahumaraStride({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 503. 오크니·스카라 브레 석실 성찰 엔진
+  const orkneySkaraHearthResult = calculateSupplement('orkneySkaraHearthResult', () => ((() => {
+    try {
+      return calculateOrkneySkaraHearth({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
   // 220. 한국 신라 의상대사 화엄일승법계도 & 법성게 원융무애 엔진
   const uisangHwaeomIlseungBeopgyeResult = calculateSupplement('uisangHwaeomIlseungBeopgyeResult', () => ((() => {
     try {
@@ -6615,6 +6648,9 @@ try {
     asturianHorreoPoiseResult,
     omoKaroBodyArtResult,
     sumbaIkatStoryResult,
+    batakSopoRoofResult,
+    tarahumaraStrideResult,
+    orkneySkaraHearthResult,
     tools: toolsMap,
   };
 }
@@ -7138,6 +7174,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'asturianHorreoPoise', nameKo: '아스투리아스·오레오 곡창', icon: '🪵', category: 'deep_master', summary: '스페인 아스투리아스의 공중 목조 곡창처럼 습기와 소란에서 한 뼘 띄워 바람을 통하게 하는 보존의 지혜를 살피는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'muse' },
   { key: 'omoKaroBodyArt', nameKo: '오모·카로 진흙 회화', icon: '🎨', category: 'deep_master', summary: '에티오피아 오모 계곡 카로 족의 천연 안료 회화처럼 오늘의 생기를 솔직한 색으로 찍고 저녁이면 가볍게 씻어 내는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'aura' },
   { key: 'sumbaIkatStory', nameKo: '숨바·이카트 염색 베틀', icon: '🧵', category: 'deep_master', summary: '인도네시아 숨바 섬의 이카트 직조처럼 비워 둘 여백을 먼저 묶어 두고 여러 번 담그며 깊은 서사를 엮는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'bluebird' },
+  { key: 'batakSopoRoof', nameKo: '바타크·토바 소포 가옥', icon: '🛖', category: 'deep_master', summary: '수마트라 토바 바타크 족의 소포 가옥처럼 쇠못 없이 나무를 짜맞추고 아래층을 열어 두어 바람을 통하게 하는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'trinity' },
+  { key: 'tarahumaraStride', nameKo: '타라후마라·라라무리 발걸음', icon: '🏃', category: 'deep_master', summary: '멕시코 구리 협곡을 가벼운 샌들로 달리는 라라무리 족처럼 속도보다 리듬과 지속 가능한 호흡을 지키는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'aura' },
+  { key: 'orkneySkaraHearth', nameKo: '오크니·스카라 브레 석실', icon: '🪨', category: 'deep_master', summary: '스코틀랜드 오크니의 신석기 석실처럼 거센 바닷바람을 막고 중앙 화덕의 온기와 정갈한 선반을 지키는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'bluebird' },
 ] as DceEngineMeta[]).filter(engine => !LUCY_PRO_CATALOG_DUPLICATE_KEYS.has(engine.key));
 
 export function getFiredEngineBadges(
@@ -8079,6 +8118,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'asturianHorreoPoise',
     'omoKaroBodyArt',
     'sumbaIkatStory',
+    'batakSopoRoof',
+    'tarahumaraStride',
+    'orkneySkaraHearth',
   ],
 };
 

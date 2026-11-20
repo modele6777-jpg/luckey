@@ -1995,5 +1995,17 @@ export const MASTER_REVIEW_BINDINGS: Record<string, { field: string; traceKey: s
   "sumbaIkatStory": {
     "field": "sumbaIkatStoryResult",
     "traceKey": "sumbaIkatStoryResult"
+  },
+  "batakSopoRoof": {
+    "field": "batakSopoRoofResult",
+    "traceKey": "batakSopoRoofResult"
+  },
+  "tarahumaraStride": {
+    "field": "tarahumaraStrideResult",
+    "traceKey": "tarahumaraStrideResult"
+  },
+  "orkneySkaraHearth": {
+    "field": "orkneySkaraHearthResult",
+    "traceKey": "orkneySkaraHearthResult"
   }
 };
