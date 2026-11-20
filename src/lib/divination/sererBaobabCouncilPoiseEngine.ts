@@ -10,6 +10,7 @@ export interface SererBaobabResult {
   engineVersion: string;
   calculatedAtKst: string;
   councilShade: string;
+  companionShade: string;
   baobabRoots: string;
   reflectionFocus: string;
   ritualAction: string;
@@ -47,7 +48,12 @@ const QUESTIONS = [
 
 function toKstIso(now: Date): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
-  return kst.toISOString().replace('Z', '+09:00 (KST)');
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
 }
 
 function hashSeed(text: string): number {
@@ -61,16 +67,22 @@ function hashSeed(text: string): number {
 
 export function calculateSererBaobabCouncil(input: SererBaobabInput): SererBaobabResult {
   const fate = input.profile.fate ?? {};
-  const seed = hashSeed(`${JSON.stringify(fate)}|${input.now.toISOString().slice(0, 13)}|${input.question ?? ''}`);
+  const seedText = `${JSON.stringify(fate)}|${input.now.toISOString().slice(0, 13)}|${input.question ?? ''}`;
+  const seed = hashSeed(seedText);
+  const shadeIdx = seed % SHADES.length;
+  const companionOffset = 1 + (hashSeed(`${seedText}|companion`) % (SHADES.length - 1));
+  const councilShade = SHADES[shadeIdx];
+  const companionShade = SHADES[(shadeIdx + companionOffset) % SHADES.length];
 
   return {
-    engineVersion: 'LUCKEY-SERER-BAOBAB-v2.1.0',
+    engineVersion: 'LUCKEY-SERER-BAOBAB-v2.2.0',
     calculatedAtKst: toKstIso(input.now),
-    councilShade: SHADES[seed % SHADES.length],
+    councilShade,
+    companionShade,
     baobabRoots: ROOTS[(seed >>> 3) % ROOTS.length],
-    reflectionFocus: '세네갈 세레르 족이 오래된 바오밥 나무 그늘 아래 모여 경청과 비축의 지혜를 나누던 평의회처럼, 내면의 여력과 깊은 대화를 살피는 상징적 관점입니다.',
-    ritualAction: ACTIONS[(seed >>> 6) % ACTIONS.length],
-    reflectiveQuestion: QUESTIONS[(seed >>> 9) % QUESTIONS.length],
+    reflectionFocus: `세네갈 세레르 족이 오래된 바오밥 나무 그늘 아래 모여 경청과 비축의 지혜를 나누던 평의회처럼, 주 그늘('${councilShade}')과 동반 그늘('${companionShade}')을 함께 짚어 내면의 여력과 깊은 대화를 살피는 상징적 관점입니다.`,
+    ritualAction: ACTIONS[shadeIdx],
+    reflectiveQuestion: QUESTIONS[shadeIdx],
     interpretiveBoundary: '개인 점수·심리 진단·미래 예측이 아닙니다. 자기 성찰을 돕기 위한 상징적 관점 안내입니다.',
   };
 }
@@ -80,6 +92,7 @@ export function formatSererBaobabPrompt(res: SererBaobabResult): string {
     `[세레르·바오밥 평의회 관점 · ${res.engineVersion}]`,
     `기준 시각: ${res.calculatedAtKst}`,
     `그늘 자리: ${res.councilShade}`,
+    `동반 자리: ${res.companionShade}`,
     `뿌리 지혜: ${res.baobabRoots}`,
     `성찰 초점: ${res.reflectionFocus}`,
     `권장 의식: ${res.ritualAction}`,

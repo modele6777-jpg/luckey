@@ -15133,33 +15133,36 @@ test('Chumash Tomol Canoe engine: signal, +09:00 KST, and interpretive boundary'
 
 test('Serer Baobab Council engine: shade, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateSererBaobabCouncil({ profile, now: new Date('2026-11-20T22:35:00Z'), question: '여력을 비축하고 깊이 듣고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-SERER-BAOBAB-v2.1.0');
-  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.equal(rep.engineVersion, 'LUCKEY-SERER-BAOBAB-v2.2.0');
+  assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
+  assert.ok(rep.companionShade !== rep.councilShade);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatSererBaobabPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('세레르') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('세레르') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionShade));
 });
 
 test('Menominee Forest Balance engine: cycle, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateMenomineeForestBalance({ profile, now: new Date('2026-11-20T22:35:00Z'), question: '오래 지속할 수 있는 균형을 찾고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-MENOMINEE-FOREST-v2.1.0');
-  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.equal(rep.engineVersion, 'LUCKEY-MENOMINEE-FOREST-v2.2.0');
+  assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
+  assert.ok(rep.companionCycle !== rep.canopyCycle);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatMenomineeForestPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('메노미니') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('메노미니') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionCycle));
 });
 
 test('Sangam Tinai Poetics engine: landscape, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateSangamTinaiPoetics({ profile, now: new Date('2026-11-20T22:35:00Z'), question: '내면과 바깥 일의 결을 맞추고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-SANGAM-TINAI-v2.1.0');
-  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.equal(rep.engineVersion, 'LUCKEY-SANGAM-TINAI-v2.2.0');
+  assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
+  assert.ok(rep.companionLandscape !== rep.tinaiLandscape);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatSangamTinaiPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('타밀 상감') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('타밀 상감') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionLandscape));
 });

@@ -10,6 +10,7 @@ export interface MenomineeForestResult {
   engineVersion: string;
   calculatedAtKst: string;
   canopyCycle: string;
+  companionCycle: string;
   stewardPrinciple: string;
   reflectionFocus: string;
   ritualAction: string;
@@ -47,7 +48,12 @@ const QUESTIONS = [
 
 function toKstIso(now: Date): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
-  return kst.toISOString().replace('Z', '+09:00 (KST)');
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
 }
 
 function hashSeed(text: string): number {
@@ -61,16 +67,22 @@ function hashSeed(text: string): number {
 
 export function calculateMenomineeForestBalance(input: MenomineeForestInput): MenomineeForestResult {
   const fate = input.profile.fate ?? {};
-  const seed = hashSeed(`${JSON.stringify(fate)}|${input.now.toISOString().slice(0, 13)}|${input.question ?? ''}`);
+  const seedText = `${JSON.stringify(fate)}|${input.now.toISOString().slice(0, 13)}|${input.question ?? ''}`;
+  const seed = hashSeed(seedText);
+  const cycleIdx = seed % CYCLES.length;
+  const companionOffset = 1 + (hashSeed(`${seedText}|companion`) % (CYCLES.length - 1));
+  const canopyCycle = CYCLES[cycleIdx];
+  const companionCycle = CYCLES[(cycleIdx + companionOffset) % CYCLES.length];
 
   return {
-    engineVersion: 'LUCKEY-MENOMINEE-FOREST-v2.1.0',
+    engineVersion: 'LUCKEY-MENOMINEE-FOREST-v2.2.0',
     calculatedAtKst: toKstIso(input.now),
-    canopyCycle: CYCLES[seed % CYCLES.length],
+    canopyCycle,
+    companionCycle,
     stewardPrinciple: PRINCIPLES[(seed >>> 3) % PRINCIPLES.length],
-    reflectionFocus: '위스콘신 메노미니 족이 백여 년 넘게 숲을 보전하며 필요한 만큼만 거두고 다음 세대의 나무를 남기는 지속 가능성에서 길어 올린 상징적 관점입니다.',
-    ritualAction: ACTIONS[(seed >>> 6) % ACTIONS.length],
-    reflectiveQuestion: QUESTIONS[(seed >>> 9) % QUESTIONS.length],
+    reflectionFocus: `위스콘신 메노미니 족이 백여 년 넘게 숲을 보전하며 필요한 만큼만 거두고 다음 세대의 나무를 남기는 지속 가능성처럼 주 순환('${canopyCycle}')과 동반 순환('${companionCycle}')을 함께 짚어 올린 상징적 관점입니다.`,
+    ritualAction: ACTIONS[cycleIdx],
+    reflectiveQuestion: QUESTIONS[cycleIdx],
     interpretiveBoundary: '개인 점수·심리 진단·미래 예측이 아닙니다. 자기 성찰을 돕기 위한 상징적 관점 안내입니다.',
   };
 }
@@ -80,6 +92,7 @@ export function formatMenomineeForestPrompt(res: MenomineeForestResult): string 
     `[메노미니·숲지속 목재 균형 관점 · ${res.engineVersion}]`,
     `기준 시각: ${res.calculatedAtKst}`,
     `숲의 순환: ${res.canopyCycle}`,
+    `동반 순환: ${res.companionCycle}`,
     `돌봄 원칙: ${res.stewardPrinciple}`,
     `성찰 초점: ${res.reflectionFocus}`,
     `권장 의식: ${res.ritualAction}`,
