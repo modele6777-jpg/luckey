@@ -530,6 +530,9 @@ import { calculateOrkneySkaraHearth, formatOrkneySkaraPrompt, type OrkneySkaraRe
 import { calculateMuiscaGuatavitaLake, formatMuiscaGuatavitaPrompt, type MuiscaGuatavitaResult } from './muiscaGuatavitaLakeOfferingEngine';
 import { calculateNaxiDongbaChime, formatNaxiDongbaPrompt, type NaxiDongbaResult } from './naxiDongbaScriptChimeEngine';
 import { calculateHmongStoryCloth, formatHmongStoryClothPrompt, type HmongStoryClothResult } from './hmongPajNtaubStoryClothEngine';
+import { calculateKarenBambooClock, formatKarenBambooPrompt, type KarenBambooClockResult } from './karenBambooWaterClockEngine';
+import { calculateShanInleRowing, formatShanInlePrompt, type ShanInleRowingResult } from './shanInleLegRowingEngine';
+import { calculateChumashTomolCanoe, formatChumashTomolPrompt, type ChumashTomolResult } from './chumashTomolCanoeVoyageEngine';
 
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
@@ -1078,6 +1081,9 @@ export interface DeterministicEngineReport {
   muiscaGuatavitaLakeResult?: MuiscaGuatavitaResult | null;
   naxiDongbaChimeResult?: NaxiDongbaResult | null;
   hmongStoryClothResult?: HmongStoryClothResult | null;
+  karenBambooClockResult?: KarenBambooClockResult | null;
+  shanInleRowingResult?: ShanInleRowingResult | null;
+  chumashTomolCanoeResult?: ChumashTomolResult | null;
 
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
@@ -5163,6 +5169,33 @@ try {
     }
   })()));
 
+  // 507. 카렌·대나무 물시계 조화 성찰 엔진
+  const karenBambooClockResult = calculateSupplement('karenBambooClockResult', () => ((() => {
+    try {
+      return calculateKarenBambooClock({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 508. 샨·인레 호수 외발 노 젓기 성찰 엔진
+  const shanInleRowingResult = calculateSupplement('shanInleRowingResult', () => ((() => {
+    try {
+      return calculateShanInleRowing({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 509. 추마시·토몰 카누 항해 성찰 엔진
+  const chumashTomolCanoeResult = calculateSupplement('chumashTomolCanoeResult', () => ((() => {
+    try {
+      return calculateChumashTomolCanoe({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
   // 220. 한국 신라 의상대사 화엄일승법계도 & 법성게 원융무애 엔진
   const uisangHwaeomIlseungBeopgyeResult = calculateSupplement('uisangHwaeomIlseungBeopgyeResult', () => ((() => {
     try {
@@ -6687,6 +6720,9 @@ try {
     muiscaGuatavitaLakeResult,
     naxiDongbaChimeResult,
     hmongStoryClothResult,
+    karenBambooClockResult,
+    shanInleRowingResult,
+    chumashTomolCanoeResult,
     tools: toolsMap,
   };
 }
@@ -7216,6 +7252,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'muiscaGuatavitaLake', nameKo: '무이스카·과타비타 황금 호수', icon: '🏞️', category: 'deep_master', summary: '안데스 고원 과타비타 호수에 감사의 뜻으로 금을 바치던 무이스카 의식처럼 소유보다 순환과 정성의 균형을 돌아보는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'muse' },
   { key: 'naxiDongbaChime', nameKo: '나시·동파 상형문자 바람종', icon: '🎐', category: 'deep_master', summary: '윈난 리장의 동파 상형문자처럼 복잡한 생각을 단순한 그림과 바람종 울림으로 정리해 자연과의 조화를 살피는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'trinity' },
   { key: 'hmongStoryCloth', nameKo: '몽족·자수 이야기 천', icon: '🪡', category: 'deep_master', summary: '몽족의 파즈 너우 자수 이야기 천처럼 지나온 시간과 오늘의 한 땀을 차분히 엮어 전체 서사를 바라보는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'aura' },
+  { key: 'karenBambooClock', nameKo: '카렌·대나무 물시계 조화', icon: '🎋', category: 'deep_master', summary: '산간 계곡의 대나무 물시계처럼 차고 기우는 자연스러운 박자로 조급함을 덜고 자기 페이스를 지키는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'bluebird' },
+  { key: 'shanInleRowing', nameKo: '샨·인레 호수 외발 노 젓기', icon: '🚣', category: 'deep_master', summary: '인레 호수에서 한 발로 노를 저으며 넓은 시야와 두 손의 자유를 지키는 샨 족 어부처럼 중심 잡기와 효율의 조화를 살피는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'trinity' },
+  { key: 'chumashTomolCanoe', nameKo: '추마시·토몰 카누 항해', icon: '🛶', category: 'deep_master', summary: '캘리포니아 해협을 건너던 추마시 족의 토몰 판자 카누처럼 작은 틈을 정성껏 메우고 해류를 읽으며 나아가는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'aura' },
 ] as DceEngineMeta[]).filter(engine => !LUCY_PRO_CATALOG_DUPLICATE_KEYS.has(engine.key));
 
 export function getFiredEngineBadges(
@@ -8163,6 +8202,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'muiscaGuatavitaLake',
     'naxiDongbaChime',
     'hmongStoryCloth',
+    'karenBambooClock',
+    'shanInleRowing',
+    'chumashTomolCanoe',
   ],
 };
 
