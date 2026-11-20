@@ -440,6 +440,9 @@ import { calculateRapaNuiManaMoaiHorizon, formatRapaNuiMoaiPrompt, type RapaNuiM
 import { calculateChechenVainakhKovakhHonor, formatChechenVainakhPrompt, type ChechenVainakhResult } from './chechenVainakhKovakhHonorEngine';
 import { calculateSherpaSagarmathaRidgeHarmony, formatSherpaSagarmathaPrompt, type SherpaSagarmathaResult } from './sherpaSagarmathaRidgeHarmonyEngine';
 import { calculateEvenkiBugaTaigaPath, formatEvenkiBugaPrompt, type EvenkiBugaResult } from './evenkiBugaTaigaPathEngine';
+import { calculateManchuMukunWhiteMountain, formatManchuMukunPrompt, type ManchuMukunResult } from './manchuMukunWhiteMountainEngine';
+import { calculatePortugueseSaudadeSagresCompass, formatPortugueseSagresPrompt, type PortugueseSagresResult } from './portugueseSaudadeSagresCompassEngine';
+import { calculateLadakhiStupaGlacierWater, formatLadakhiChortenPrompt, type LadakhiChortenResult } from './ladakhiStupaGlacierWaterEngine';
 
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
@@ -898,6 +901,9 @@ export interface DeterministicEngineReport {
   chechenVainakhKovakhHonorResult?: ChechenVainakhResult | null;
   sherpaSagarmathaRidgeHarmonyResult?: SherpaSagarmathaResult | null;
   evenkiBugaTaigaPathResult?: EvenkiBugaResult | null;
+  manchuMukunWhiteMountainResult?: ManchuMukunResult | null;
+  portugueseSaudadeSagresCompassResult?: PortugueseSagresResult | null;
+  ladakhiStupaGlacierWaterResult?: LadakhiChortenResult | null;
 
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
@@ -4173,6 +4179,33 @@ try {
     }
   })()));
 
+  // 417. 만주 무쿤·흰산 검은강 엔진
+  const manchuMukunWhiteMountainResult = calculateSupplement('manchuMukunWhiteMountainResult', () => ((() => {
+    try {
+      return calculateManchuMukunWhiteMountain({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 418. 포르투갈 사우다데·사그레스 나침반 엔진
+  const portugueseSaudadeSagresCompassResult = calculateSupplement('portugueseSaudadeSagresCompassResult', () => ((() => {
+    try {
+      return calculatePortugueseSaudadeSagresCompass({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 419. 라다크 스투파·고원 물길 조화 엔진
+  const ladakhiStupaGlacierWaterResult = calculateSupplement('ladakhiStupaGlacierWaterResult', () => ((() => {
+    try {
+      return calculateLadakhiStupaGlacierWater({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
   // 220. 한국 신라 의상대사 화엄일승법계도 & 법성게 원융무애 엔진
   const uisangHwaeomIlseungBeopgyeResult = calculateSupplement('uisangHwaeomIlseungBeopgyeResult', () => ((() => {
     try {
@@ -5607,6 +5640,9 @@ try {
     chechenVainakhKovakhHonorResult,
     sherpaSagarmathaRidgeHarmonyResult,
     evenkiBugaTaigaPathResult,
+    manchuMukunWhiteMountainResult,
+    portugueseSaudadeSagresCompassResult,
+    ladakhiStupaGlacierWaterResult,
     tools: toolsMap,
   };
 }
@@ -6046,6 +6082,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'chechenVainakhKovakhHonor', nameKo: '체첸 바이나흐·카바흐', icon: '🗼', category: 'deep_master', summary: '코카서스 바이나흐의 석탑과 노흐찰라(Nokhchalla)처럼 바깥의 소란에 휩쓸리지 않고 내 말의 무게와 내면의 절제를 지키는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'trinity' },
   { key: 'sherpaSagarmathaRidgeHarmony', nameKo: '셰르파 사거마타·능선', icon: '🏔️', category: 'deep_master', summary: '히말라야 셰르파의 비스타레이(Bistari) 지혜처럼 무리한 속도전 대신 내 호흡과 고도에 맞춘 꾸준한 발걸음을 선택하는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'aura' },
   { key: 'evenkiBugaTaigaPath', nameKo: '에벤키 부가·타이가', icon: '🦌', category: 'deep_master', summary: '시베리아 에벤키의 부가(Buga) 자연 공존처럼 무거운 집착을 덜어내고 눈앞의 작은 신호를 세심히 읽으며 유연하게 나아가는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'bluebird' },
+  { key: 'manchuMukunWhiteMountain', nameKo: '만주 무쿤·흰산 검은강', icon: '🌲', category: 'deep_master', summary: '만주 무쿤의 연대와 우라(Ula) 긴 호흡처럼 요란한 말 대신 오늘 내 몫의 작은 한 걸음을 곧고 묵직하게 깎아 가는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'trinity' },
+  { key: 'portugueseSaudadeSagresCompass', nameKo: '포르투갈 사우다데·사그레스', icon: '🧭', category: 'deep_master', summary: '포르투갈 사그레스 항해 나침반과 카라벨 삼각돛처럼 완벽한 지도가 없더라도 역풍 속에서 유연하게 각도를 틀어 나아가는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'bluebird' },
+  { key: 'ladakhiStupaGlacierWater', nameKo: '라다크 스투파·물길', icon: '❄️', category: 'deep_master', summary: '라다크의 아이스 스투파와 추르폰 물 나눔처럼 지금 내게 주어진 자원과 시간을 알뜰히 아껴 다음 계절을 위해 모아 두는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'muse' },
 ] as DceEngineMeta[]).filter(engine => !LUCY_PRO_CATALOG_DUPLICATE_KEYS.has(engine.key));
 
 export function getFiredEngineBadges(
@@ -6903,6 +6942,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'chechenVainakhKovakhHonor',
     'sherpaSagarmathaRidgeHarmony',
     'evenkiBugaTaigaPath',
+    'manchuMukunWhiteMountain',
+    'portugueseSaudadeSagresCompass',
+    'ladakhiStupaGlacierWater',
   ],
 };
 

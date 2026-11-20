@@ -1659,5 +1659,17 @@ export const MASTER_REVIEW_BINDINGS: Record<string, { field: string; traceKey: s
   "evenkiBugaTaigaPath": {
     "field": "evenkiBugaTaigaPathResult",
     "traceKey": "evenkiBugaTaigaPathResult"
+  },
+  "manchuMukunWhiteMountain": {
+    "field": "manchuMukunWhiteMountainResult",
+    "traceKey": "manchuMukunWhiteMountainResult"
+  },
+  "portugueseSaudadeSagresCompass": {
+    "field": "portugueseSaudadeSagresCompassResult",
+    "traceKey": "portugueseSaudadeSagresCompassResult"
+  },
+  "ladakhiStupaGlacierWater": {
+    "field": "ladakhiStupaGlacierWaterResult",
+    "traceKey": "ladakhiStupaGlacierWaterResult"
   }
 };
