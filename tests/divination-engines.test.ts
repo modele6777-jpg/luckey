@@ -13526,13 +13526,14 @@ test('Hungarian Taltos Tree of Life engine: realm, +09:00 KST, and interpretive 
 
 test('Kyrgyz Manas Oral Epic Courage engine: chapter, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateKyrgyzManasOralEpicCourage({ profile, now: new Date('2026-11-20T06:40:00Z'), question: '첫 걸음을 내딛고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-KYRGYZ-MANAS-v2.1.0');
-  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.equal(rep.engineVersion, 'LUCKEY-KYRGYZ-MANAS-v2.2.0');
+  assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
+  assert.ok(rep.companionChapter !== rep.epicChapter);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatKyrgyzManasPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('키르기스') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('키르기스') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionChapter));
 });
 
 test('Shona Mbira Ancestral Resonance engine: cycle, +09:00 KST, and interpretive boundary', () => {
@@ -14009,13 +14010,14 @@ test('Chechen Vainakh Kovakh Honor engine: code, +09:00 KST, and interpretive bo
 
 test('Sherpa Sagarmatha Ridge Harmony engine: principle, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateSherpaSagarmathaRidgeHarmony({ profile, now: new Date('2026-11-20T08:21:00Z'), question: '내 호흡에 맞는 꾸준한 발걸음을 찾고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-SHERPA-SAGARMATHA-v2.1.0');
-  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.equal(rep.engineVersion, 'LUCKEY-SHERPA-SAGARMATHA-v2.2.0');
+  assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
+  assert.ok(rep.companionPrinciple !== rep.ridgePrinciple);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatSherpaSagarmathaPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('셰르파') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('셰르파') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionPrinciple));
 });
 
 test('Evenki Buga Taiga Path engine: sign, +09:00 KST, and interpretive boundary', () => {
@@ -14616,13 +14618,14 @@ test('Zimbabwe Great Stone Wall engine: motif, +09:00 KST, and interpretive boun
 
 test('Bulgarian Rose Valley Dawn engine: motif, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateBulgarianRoseValleyDawn({ profile, now: new Date('2026-11-20T20:19:00Z'), question: '가장 맑은 시간대에 핵심을 모으고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-BULGARIAN-ROSE-v2.1.0');
-  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.equal(rep.engineVersion, 'LUCKEY-BULGARIAN-ROSE-v2.2.0');
+  assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
+  assert.ok(rep.companionMotif !== rep.roseMotif);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatBulgarianRosePrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('불가리아') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('불가리아') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionMotif));
 });
 
 test('Azeri Carpet Flame Poise engine: motif, +09:00 KST, and interpretive boundary', () => {
