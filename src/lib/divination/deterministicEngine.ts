@@ -467,6 +467,9 @@ import { calculateGoryeoCeladonInlayClarity, formatGoryeoCeladonPrompt, type Gor
 import { calculateLydianSardisElectrumBalance, formatLydianSardisPrompt, type LydianSardisResult } from './lydianSardisElectrumBalanceEngine';
 import { calculateCanaaniteUgaritCedarWisdom, formatCanaaniteUgaritPrompt, type CanaaniteUgaritResult } from './canaaniteUgaritCedarWisdomEngine';
 import { calculateGoguryeoSamjokoMuralSpirit, formatGoguryeoSamjokoPrompt, type GoguryeoSamjokoResult } from './goguryeoSamjokoMuralSpiritEngine';
+import { calculateSillaEmilleCheomseongdae, formatSillaEmillePrompt, type SillaEmilleResult } from './sillaEmilleCheomseongdaeEngine';
+import { calculateOmaniFrankincenseFalajWater, formatOmaniFrankincensePrompt, type OmaniFrankincenseResult } from './omaniFrankincenseFalajWaterEngine';
+import { calculateBaekjeGiltBronzeIncenseCalm, formatBaekjeIncensePrompt, type BaekjeIncenseResult } from './baekjeGiltBronzeIncenseCalmEngine';
 
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
@@ -952,6 +955,9 @@ export interface DeterministicEngineReport {
   lydianSardisElectrumBalanceResult?: LydianSardisResult | null;
   canaaniteUgaritCedarWisdomResult?: CanaaniteUgaritResult | null;
   goguryeoSamjokoMuralSpiritResult?: GoguryeoSamjokoResult | null;
+  sillaEmilleCheomseongdaeResult?: SillaEmilleResult | null;
+  omaniFrankincenseFalajWaterResult?: OmaniFrankincenseResult | null;
+  baekjeGiltBronzeIncenseCalmResult?: BaekjeIncenseResult | null;
 
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
@@ -4470,6 +4476,33 @@ try {
     }
   })()));
 
+  // 444. 신라 첨성대·에밀레 여명 엔진
+  const sillaEmilleCheomseongdaeResult = calculateSupplement('sillaEmilleCheomseongdaeResult', () => ((() => {
+    try {
+      return calculateSillaEmilleCheomseongdae({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 445. 오만 프랑킨센스·팔라즈 수로 엔진
+  const omaniFrankincenseFalajWaterResult = calculateSupplement('omaniFrankincenseFalajWaterResult', () => ((() => {
+    try {
+      return calculateOmaniFrankincenseFalajWater({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 446. 백제 금동대향로·미소의 여유 엔진
+  const baekjeGiltBronzeIncenseCalmResult = calculateSupplement('baekjeGiltBronzeIncenseCalmResult', () => ((() => {
+    try {
+      return calculateBaekjeGiltBronzeIncenseCalm({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
   // 220. 한국 신라 의상대사 화엄일승법계도 & 법성게 원융무애 엔진
   const uisangHwaeomIlseungBeopgyeResult = calculateSupplement('uisangHwaeomIlseungBeopgyeResult', () => ((() => {
     try {
@@ -5931,6 +5964,9 @@ try {
     lydianSardisElectrumBalanceResult,
     canaaniteUgaritCedarWisdomResult,
     goguryeoSamjokoMuralSpiritResult,
+    sillaEmilleCheomseongdaeResult,
+    omaniFrankincenseFalajWaterResult,
+    baekjeGiltBronzeIncenseCalmResult,
     tools: toolsMap,
   };
 }
@@ -6397,6 +6433,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'lydianSardisElectrumBalance', nameKo: '리디아 사르디스·호박금', icon: '🪙', category: 'deep_master', summary: '고대 리디아의 호박금 주화와 시금석처럼 한쪽 성질에 치우치지 않고 강함과 부드러움의 균형과 진짜 가치를 살피는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'bluebird' },
   { key: 'canaaniteUgaritCedarWisdom', nameKo: '가나안 우가리트·삼나무', icon: '🌲', category: 'deep_master', summary: '고대 우가리트 점토판과 레바논 삼나무처럼 거창한 결과보다 깊은 뿌리와 간결한 기록, 돌아올 일상의 좌표를 세우는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'trinity' },
   { key: 'goguryeoSamjokoMuralSpirit', nameKo: '고구려 삼족오·기상', icon: '🦅', category: 'deep_master', summary: '고구려 고분 벽화의 삼족오와 사신도처럼 좁은 걱정 속에 움츠러들지 말고 시야를 넓혀 당당하고 경쾌한 한 걸음을 내딛는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'muse' },
+  { key: 'sillaEmilleCheomseongdae', nameKo: '신라 첨성대·에밀레', icon: '🔔', category: 'deep_master', summary: '신라 첨성대의 천문 관찰과 에밀레종의 여운처럼 겉의 조급함을 내려놓고 고요한 관찰과 길고 맑은 호흡을 회복하는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'aura' },
+  { key: 'omaniFrankincenseFalajWater', nameKo: '오만 프랑킨센스·수로', icon: '🌊', category: 'deep_master', summary: '오만 도파르의 유향과 팔라즈 공유 수로처럼 메마른 순간에도 시간과 마음의 물길을 공정하게 나누며 내 안의 향기가 굳기를 기다리는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'trinity' },
+  { key: 'baekjeGiltBronzeIncenseCalm', nameKo: '백제 금동대향로·미소', icon: '🪷', category: 'deep_master', summary: '백제 금동대향로와 서산 마애불의 미소처럼 뾰족한 긴장과 불필요한 장식을 덜어 내고 둥글고 온화한 비례로 마음을 고르게 펴는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'bluebird' },
 ] as DceEngineMeta[]).filter(engine => !LUCY_PRO_CATALOG_DUPLICATE_KEYS.has(engine.key));
 
 export function getFiredEngineBadges(
@@ -7281,6 +7320,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'lydianSardisElectrumBalance',
     'canaaniteUgaritCedarWisdom',
     'goguryeoSamjokoMuralSpirit',
+    'sillaEmilleCheomseongdae',
+    'omaniFrankincenseFalajWater',
+    'baekjeGiltBronzeIncenseCalm',
   ],
 };
 

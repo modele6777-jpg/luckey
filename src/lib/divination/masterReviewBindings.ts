@@ -1767,5 +1767,17 @@ export const MASTER_REVIEW_BINDINGS: Record<string, { field: string; traceKey: s
   "goguryeoSamjokoMuralSpirit": {
     "field": "goguryeoSamjokoMuralSpiritResult",
     "traceKey": "goguryeoSamjokoMuralSpiritResult"
+  },
+  "sillaEmilleCheomseongdae": {
+    "field": "sillaEmilleCheomseongdaeResult",
+    "traceKey": "sillaEmilleCheomseongdaeResult"
+  },
+  "omaniFrankincenseFalajWater": {
+    "field": "omaniFrankincenseFalajWaterResult",
+    "traceKey": "omaniFrankincenseFalajWaterResult"
+  },
+  "baekjeGiltBronzeIncenseCalm": {
+    "field": "baekjeGiltBronzeIncenseCalmResult",
+    "traceKey": "baekjeGiltBronzeIncenseCalmResult"
   }
 };
