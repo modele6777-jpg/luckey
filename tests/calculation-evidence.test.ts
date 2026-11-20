@@ -79,8 +79,8 @@ test('master audit separates calculated results, symbolic references and skipped
   const audit = getCalculationAudit(report);
   const deep = audit.filter(item => ALL_DCE_ENGINES.find(engine => engine.key === item.toolId)?.category === 'deep_master');
 
-  assert.equal(audit.length, 404);
-  assert.equal(deep.length, 389);
+  assert.equal(audit.length, 407);
+  assert.equal(deep.length, 392);
   assert.ok(audit.some(item => item.status === 'calculated' && item.sentToModel));
   assert.ok(audit.some(item => item.status === 'symbolic' && item.sentToModel));
   assert.ok(audit.some(item => item.status === 'skipped' && !item.sentToModel));

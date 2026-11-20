@@ -434,6 +434,9 @@ import { calculateCherokeeGadugiHarmony, formatCherokeeGadugiPrompt, type Cherok
 import { calculateTlingitRavenClanBalance, formatTlingitRavenPrompt, type TlingitRavenResult } from './tlingitRavenClanBalanceEngine';
 import { calculateOromoGadaaSaffuuHarmony, formatOromoGadaaPrompt, type OromoGadaaResult } from './oromoGadaaSaffuuHarmonyEngine';
 import { calculateKarelianRunoKanteleResonance, formatKarelianRunoPrompt, type KarelianRunoResult } from './karelianRunoKanteleResonanceEngine';
+import { calculateMalteseMegalithLuzzuHarbor, formatMalteseLuzzuPrompt, type MalteseLuzzuResult } from './malteseMegalithLuzzuHarborEngine';
+import { calculateUzbekMahallaRishtanCraft, formatUzbekMahallaPrompt, type UzbekMahallaResult } from './uzbekMahallaRishtanCraftEngine';
+import { calculateRapaNuiManaMoaiHorizon, formatRapaNuiMoaiPrompt, type RapaNuiMoaiResult } from './rapaNuiManaMoaiHorizonEngine';
 
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
@@ -886,6 +889,9 @@ export interface DeterministicEngineReport {
   tlingitRavenClanBalanceResult?: TlingitRavenResult | null;
   oromoGadaaSaffuuHarmonyResult?: OromoGadaaResult | null;
   karelianRunoKanteleResonanceResult?: KarelianRunoResult | null;
+  malteseMegalithLuzzuHarborResult?: MalteseLuzzuResult | null;
+  uzbekMahallaRishtanCraftResult?: UzbekMahallaResult | null;
+  rapaNuiManaMoaiHorizonResult?: RapaNuiMoaiResult | null;
 
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
@@ -4107,6 +4113,33 @@ try {
     }
   })()));
 
+  // 411. 몰타 메갈리스·루조 항구 엔진
+  const malteseMegalithLuzzuHarborResult = calculateSupplement('malteseMegalithLuzzuHarborResult', () => ((() => {
+    try {
+      return calculateMalteseMegalithLuzzuHarbor({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 412. 우즈베크 마할라·리시탄 도기 엔진
+  const uzbekMahallaRishtanCraftResult = calculateSupplement('uzbekMahallaRishtanCraftResult', () => ((() => {
+    try {
+      return calculateUzbekMahallaRishtanCraft({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 413. 라파 누이 마나·모아이 수평선 엔진
+  const rapaNuiManaMoaiHorizonResult = calculateSupplement('rapaNuiManaMoaiHorizonResult', () => ((() => {
+    try {
+      return calculateRapaNuiManaMoaiHorizon({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
   // 220. 한국 신라 의상대사 화엄일승법계도 & 법성게 원융무애 엔진
   const uisangHwaeomIlseungBeopgyeResult = calculateSupplement('uisangHwaeomIlseungBeopgyeResult', () => ((() => {
     try {
@@ -5535,6 +5568,9 @@ try {
     tlingitRavenClanBalanceResult,
     oromoGadaaSaffuuHarmonyResult,
     karelianRunoKanteleResonanceResult,
+    malteseMegalithLuzzuHarborResult,
+    uzbekMahallaRishtanCraftResult,
+    rapaNuiManaMoaiHorizonResult,
     tools: toolsMap,
   };
 }
@@ -5968,6 +6004,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'tlingitRavenClanBalance', nameKo: '틀링깃 레이븐·클랜', icon: '🦅', category: 'deep_master', summary: '북서해안 틀링깃의 독수리·까마귀 반족 상보성처럼 나와 다른 관점을 대립이 아닌 균형의 나머지 절반으로 바라보는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'muse' },
   { key: 'oromoGadaaSaffuuHarmony', nameKo: '오로모 가다·사푸 윤리', icon: '🌳', category: 'deep_master', summary: '동아프리카 오로모의 가다(Gadaa) 순환과 사푸(Saffuu)처럼 지금 내 계절에 맞는 몫만 성실히 감당하며 평화를 지키는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'trinity' },
   { key: 'karelianRunoKanteleResonance', nameKo: '카렐리야 루노·칸텔레', icon: '🎶', category: 'deep_master', summary: '카렐리야 루노 시가와 다섯 줄 칸텔레처럼 복잡한 꾸밈을 덜어내고 내 마음에 남은 진실한 울림을 듣는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'aura' },
+  { key: 'malteseMegalithLuzzuHarbor', nameKo: '몰타 메갈리스·루조', icon: '⚓', category: 'deep_master', summary: '지중해 몰타의 루조(Luzzu) 어선과 메디나의 고요처럼 바깥의 파도에 휩쓸리기 전에 내 마음의 닻을 내리고 맑은 시야를 회복하는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'bluebird' },
+  { key: 'uzbekMahallaRishtanCraft', nameKo: '우즈베크 마할라·리시탄', icon: '🏺', category: 'deep_master', summary: '우즈베크 마할라의 온기와 리시탄 청자처럼 서두르지 않고 정성을 들이는 손길과 곁의 안부 속에서 마음의 넉넉함을 회복하는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'aura' },
+  { key: 'rapaNuiManaMoaiHorizon', nameKo: '라파 누이 마나·모아이', icon: '🗿', category: 'deep_master', summary: '남태평양 라파 누이의 아후(Ahu) 시선처럼 바깥의 비교를 쫓기보다 지금 내 자리와 소중한 이들을 지키는 묵직한 중심을 세우는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'muse' },
 ] as DceEngineMeta[]).filter(engine => !LUCY_PRO_CATALOG_DUPLICATE_KEYS.has(engine.key));
 
 export function getFiredEngineBadges(
@@ -6819,6 +6858,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'tlingitRavenClanBalance',
     'oromoGadaaSaffuuHarmony',
     'karelianRunoKanteleResonance',
+    'malteseMegalithLuzzuHarbor',
+    'uzbekMahallaRishtanCraft',
+    'rapaNuiManaMoaiHorizon',
   ],
 };
 

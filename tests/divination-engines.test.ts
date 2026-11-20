@@ -403,6 +403,9 @@ import { calculateCherokeeGadugiHarmony, formatCherokeeGadugiPrompt } from '../s
 import { calculateTlingitRavenClanBalance, formatTlingitRavenPrompt } from '../src/lib/divination/tlingitRavenClanBalanceEngine';
 import { calculateOromoGadaaSaffuuHarmony, formatOromoGadaaPrompt } from '../src/lib/divination/oromoGadaaSaffuuHarmonyEngine';
 import { calculateKarelianRunoKanteleResonance, formatKarelianRunoPrompt } from '../src/lib/divination/karelianRunoKanteleResonanceEngine';
+import { calculateMalteseMegalithLuzzuHarbor, formatMalteseLuzzuPrompt } from '../src/lib/divination/malteseMegalithLuzzuHarborEngine';
+import { calculateUzbekMahallaRishtanCraft, formatUzbekMahallaPrompt } from '../src/lib/divination/uzbekMahallaRishtanCraftEngine';
+import { calculateRapaNuiManaMoaiHorizon, formatRapaNuiMoaiPrompt } from '../src/lib/divination/rapaNuiManaMoaiHorizonEngine';
 
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
@@ -13872,4 +13875,37 @@ test('Karelian Runo Kantele Resonance engine: motif, +09:00 KST, and interpretiv
   const prompt = formatKarelianRunoPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
   assert.ok(prompt.includes('카렐리야') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Maltese Megalith Luzzu Harbor engine: symbol, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateMalteseMegalithLuzzuHarbor({ profile, now: new Date('2026-11-20T08:15:00Z'), question: '내 마음의 닻을 내리고 맑은 시야를 찾고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-MALTESE-LUZZU-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatMalteseLuzzuPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('몰타') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Uzbek Mahalla Rishtan Craft engine: virtue, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateUzbekMahallaRishtanCraft({ profile, now: new Date('2026-11-20T08:15:00Z'), question: '정성과 곁의 온기를 회복하고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-UZBEK-MAHALLA-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatUzbekMahallaPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('우즈베크') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Rapa Nui Mana Moai Horizon engine: focus, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateRapaNuiManaMoaiHorizon({ profile, now: new Date('2026-11-20T08:15:00Z'), question: '지금 내 자리를 지키는 중심을 세우고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-RAPANUI-MOAI-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatRapaNuiMoaiPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('라파 누이') && prompt.includes('+09:00 (KST)'));
 });
