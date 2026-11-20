@@ -422,6 +422,9 @@ import { calculateSardinianNuragheStoneCalm, formatSardinianNuraghePrompt, type 
 import { calculateCatalanSenyRauxaBalance, formatCatalanSenyRauxaPrompt, type CatalanSenyRauxaResult } from './catalanSenyRauxaBalanceEngine';
 import { calculateKurdishNewrozZagrosRenewal, formatKurdishNewrozPrompt, type KurdishNewrozResult } from './kurdishNewrozZagrosRenewalEngine';
 import { calculateSindhiBhitaiIndusMelody, formatSindhiBhitaiPrompt, type SindhiBhitaiResult } from './sindhiBhitaiIndusMelodyEngine';
+import { calculateCorsicanPaghjellaMaquisHarmony, formatCorsicanPaghjellaPrompt, type CorsicanPaghjellaResult } from './corsicanPaghjellaMaquisHarmonyEngine';
+import { calculatePashtunRoshaniyaInnerLight, formatPashtunRoshaniyaPrompt, type PashtunRoshaniyaResult } from './pashtunRoshaniyaInnerLightEngine';
+import { calculateBengaliBaulMonerManush, formatBengaliBaulPrompt, type BengaliBaulResult } from './bengaliBaulMonerManushEngine';
 
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
@@ -862,6 +865,9 @@ export interface DeterministicEngineReport {
   catalanSenyRauxaBalanceResult?: CatalanSenyRauxaResult | null;
   kurdishNewrozZagrosRenewalResult?: KurdishNewrozResult | null;
   sindhiBhitaiIndusMelodyResult?: SindhiBhitaiResult | null;
+  corsicanPaghjellaMaquisHarmonyResult?: CorsicanPaghjellaResult | null;
+  pashtunRoshaniyaInnerLightResult?: PashtunRoshaniyaResult | null;
+  bengaliBaulMonerManushResult?: BengaliBaulResult | null;
 
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
@@ -3975,6 +3981,33 @@ try {
     }
   })()));
 
+  // 399. 코르시카 파겔라·마키 화음 엔진
+  const corsicanPaghjellaMaquisHarmonyResult = calculateSupplement('corsicanPaghjellaMaquisHarmonyResult', () => ((() => {
+    try {
+      return calculateCorsicanPaghjellaMaquisHarmony({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 400. 파슈툰 로샤니야·내면의 빛 엔진
+  const pashtunRoshaniyaInnerLightResult = calculateSupplement('pashtunRoshaniyaInnerLightResult', () => ((() => {
+    try {
+      return calculatePashtunRoshaniyaInnerLight({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 401. 벵골 바울·모네르 마누쉬 엔진
+  const bengaliBaulMonerManushResult = calculateSupplement('bengaliBaulMonerManushResult', () => ((() => {
+    try {
+      return calculateBengaliBaulMonerManush({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
   // 220. 한국 신라 의상대사 화엄일승법계도 & 법성게 원융무애 엔진
   const uisangHwaeomIlseungBeopgyeResult = calculateSupplement('uisangHwaeomIlseungBeopgyeResult', () => ((() => {
     try {
@@ -5391,6 +5424,9 @@ try {
     catalanSenyRauxaBalanceResult,
     kurdishNewrozZagrosRenewalResult,
     sindhiBhitaiIndusMelodyResult,
+    corsicanPaghjellaMaquisHarmonyResult,
+    pashtunRoshaniyaInnerLightResult,
+    bengaliBaulMonerManushResult,
     tools: toolsMap,
   };
 }
@@ -5812,6 +5848,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'catalanSenyRauxaBalance', nameKo: '카탈루냐 세니·라우샤', icon: '⚖️', category: 'deep_master', summary: '카탈루냐의 차분한 분별(Seny)과 살아 있는 열정(Rauxa) 사이에서 오늘 내게 필요한 균형점을 맞추는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'trinity' },
   { key: 'kurdishNewrozZagrosRenewal', nameKo: '쿠르드 네우로즈 새날', icon: '🔥', category: 'deep_master', summary: '쿠르드 네우로즈의 봄불처럼 어제의 피로를 털어내고 지금 이 순간을 새로운 첫날로 열어 내는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'aura' },
   { key: 'sindhiBhitaiIndusMelody', nameKo: '신드 비타이·인더스 선율', icon: '🎶', category: 'deep_master', summary: '인더스 신드 시인 샤 압둘 라티프 비타이처럼 겉치레 대신 내 마음이 편안해지는 진실한 선율을 지키는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'bluebird' },
+  { key: 'corsicanPaghjellaMaquisHarmony', nameKo: '코르시카 파겔라 화음', icon: '⛰️', category: 'deep_master', summary: '지중해 코르시카의 파겔라 다성 합창처럼 혼자 다 짊어지지 않고 내 자리의 한 음을 맑게 내는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'muse' },
+  { key: 'pashtunRoshaniyaInnerLight', nameKo: '파슈툰 로샤니야 빛', icon: '🪔', category: 'deep_master', summary: '파슈툰 로샤니야의 내면의 등불과 호자라 환대처럼 바깥의 시선보다 내 안의 맑은 진심을 밝히는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'trinity' },
+  { key: 'bengaliBaulMonerManush', nameKo: '벵골 바울 모네르 마누쉬', icon: '🪕', category: 'deep_master', summary: '벵골 바울 유랑 시인의 에크타라처럼 복잡한 핑계를 덜어내고 내 마음속 소박한 울림을 듣는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'aura' },
 ] as DceEngineMeta[]).filter(engine => !LUCY_PRO_CATALOG_DUPLICATE_KEYS.has(engine.key));
 
 export function getFiredEngineBadges(
@@ -6651,6 +6690,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'catalanSenyRauxaBalance',
     'kurdishNewrozZagrosRenewal',
     'sindhiBhitaiIndusMelody',
+    'corsicanPaghjellaMaquisHarmony',
+    'pashtunRoshaniyaInnerLight',
+    'bengaliBaulMonerManush',
   ],
 };
 

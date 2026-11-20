@@ -1587,5 +1587,17 @@ export const MASTER_REVIEW_BINDINGS: Record<string, { field: string; traceKey: s
   "sindhiBhitaiIndusMelody": {
     "field": "sindhiBhitaiIndusMelodyResult",
     "traceKey": "sindhiBhitaiIndusMelodyResult"
+  },
+  "corsicanPaghjellaMaquisHarmony": {
+    "field": "corsicanPaghjellaMaquisHarmonyResult",
+    "traceKey": "corsicanPaghjellaMaquisHarmonyResult"
+  },
+  "pashtunRoshaniyaInnerLight": {
+    "field": "pashtunRoshaniyaInnerLightResult",
+    "traceKey": "pashtunRoshaniyaInnerLightResult"
+  },
+  "bengaliBaulMonerManush": {
+    "field": "bengaliBaulMonerManushResult",
+    "traceKey": "bengaliBaulMonerManushResult"
   }
 };
