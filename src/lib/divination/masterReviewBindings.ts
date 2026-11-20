@@ -1647,5 +1647,17 @@ export const MASTER_REVIEW_BINDINGS: Record<string, { field: string; traceKey: s
   "rapaNuiManaMoaiHorizon": {
     "field": "rapaNuiManaMoaiHorizonResult",
     "traceKey": "rapaNuiManaMoaiHorizonResult"
+  },
+  "chechenVainakhKovakhHonor": {
+    "field": "chechenVainakhKovakhHonorResult",
+    "traceKey": "chechenVainakhKovakhHonorResult"
+  },
+  "sherpaSagarmathaRidgeHarmony": {
+    "field": "sherpaSagarmathaRidgeHarmonyResult",
+    "traceKey": "sherpaSagarmathaRidgeHarmonyResult"
+  },
+  "evenkiBugaTaigaPath": {
+    "field": "evenkiBugaTaigaPathResult",
+    "traceKey": "evenkiBugaTaigaPathResult"
   }
 };
