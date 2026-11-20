@@ -10,6 +10,7 @@ export interface BamilekeBeadedResult {
   engineVersion: string;
   calculatedAtKst: string;
   beadPattern: string;
+  companionPattern: string;
   craftDignity: string;
   reflectionFocus: string;
   ritualAction: string;
@@ -47,7 +48,12 @@ const QUESTIONS = [
 
 function toKstIso(now: Date): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
-  return kst.toISOString().replace('Z', '+09:00 (KST)');
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
 }
 
 function hashSeed(text: string): number {
@@ -61,16 +67,22 @@ function hashSeed(text: string): number {
 
 export function calculateBamilekeBeadedThrone(input: BamilekeBeadedInput): BamilekeBeadedResult {
   const fate = input.profile.fate ?? {};
-  const seed = hashSeed(`${JSON.stringify(fate)}|${input.now.toISOString().slice(0, 13)}|${input.question ?? ''}`);
+  const seedText = `${JSON.stringify(fate)}|${input.now.toISOString().slice(0, 13)}|${input.question ?? ''}`;
+  const seed = hashSeed(seedText);
+  const patternIdx = seed % PATTERNS.length;
+  const companionOffset = 1 + (hashSeed(`${seedText}|companion`) % (PATTERNS.length - 1));
+  const beadPattern = PATTERNS[patternIdx];
+  const companionPattern = PATTERNS[(patternIdx + companionOffset) % PATTERNS.length];
 
   return {
-    engineVersion: 'LUCKEY-BAMILEKE-BEADS-v2.1.0',
+    engineVersion: 'LUCKEY-BAMILEKE-BEADS-v2.2.0',
     calculatedAtKst: toKstIso(input.now),
-    beadPattern: PATTERNS[seed % PATTERNS.length],
+    beadPattern,
+    companionPattern,
     craftDignity: DIGNITIES[(seed >>> 3) % DIGNITIES.length],
-    reflectionFocus: '카메룬 서부 초원의 바밀레케 왕국이 수만 알의 작은 구슬을 엮어 왕좌와 의례 조각을 완성하듯, 작은 일상의 축적과 질서를 살피는 상징적 관점입니다.',
-    ritualAction: ACTIONS[(seed >>> 6) % ACTIONS.length],
-    reflectiveQuestion: QUESTIONS[(seed >>> 9) % QUESTIONS.length],
+    reflectionFocus: `카메룬 서부 초원의 바밀레케 왕국이 수만 알의 작은 구슬을 엮어 왕좌와 의례 조각을 완성하듯, 주 문양('${beadPattern}')과 동반 문양('${companionPattern}')을 겹쳐 작은 일상의 축적과 질서를 살피는 상징적 관점입니다.`,
+    ritualAction: ACTIONS[patternIdx],
+    reflectiveQuestion: QUESTIONS[patternIdx],
     interpretiveBoundary: '개인 점수·심리 진단·미래 예측이 아닙니다. 자기 성찰을 돕기 위한 상징적 관점 안내입니다.',
   };
 }
@@ -80,6 +92,7 @@ export function formatBamilekeBeadedPrompt(res: BamilekeBeadedResult): string {
     `[바밀레케·구슬 왕좌 결속 관점 · ${res.engineVersion}]`,
     `기준 시각: ${res.calculatedAtKst}`,
     `구슬 문양: ${res.beadPattern}`,
+    `동반 문양: ${res.companionPattern}`,
     `공예 품격: ${res.craftDignity}`,
     `성찰 초점: ${res.reflectionFocus}`,
     `권장 의식: ${res.ritualAction}`,
