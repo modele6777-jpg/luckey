@@ -10,6 +10,7 @@ export interface ChumashTomolResult {
   engineVersion: string;
   calculatedAtKst: string;
   voyageSignal: string;
+  companionSignal: string;
   plankSealing: string;
   reflectionFocus: string;
   ritualAction: string;
@@ -47,7 +48,12 @@ const QUESTIONS = [
 
 function toKstIso(now: Date): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
-  return kst.toISOString().replace('Z', '+09:00 (KST)');
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
 }
 
 function hashSeed(text: string): number {
@@ -61,16 +67,22 @@ function hashSeed(text: string): number {
 
 export function calculateChumashTomolCanoe(input: ChumashTomolInput): ChumashTomolResult {
   const fate = input.profile.fate ?? {};
-  const seed = hashSeed(`${JSON.stringify(fate)}|${input.now.toISOString().slice(0, 13)}|${input.question ?? ''}`);
+  const seedText = `${JSON.stringify(fate)}|${input.now.toISOString().slice(0, 13)}|${input.question ?? ''}`;
+  const seed = hashSeed(seedText);
+  const signalIdx = seed % SIGNALS.length;
+  const companionOffset = 1 + (hashSeed(`${seedText}|companion`) % (SIGNALS.length - 1));
+  const voyageSignal = SIGNALS[signalIdx];
+  const companionSignal = SIGNALS[(signalIdx + companionOffset) % SIGNALS.length];
 
   return {
-    engineVersion: 'LUCKEY-CHUMASH-TOMOL-v2.1.0',
+    engineVersion: 'LUCKEY-CHUMASH-TOMOL-v2.2.0',
     calculatedAtKst: toKstIso(input.now),
-    voyageSignal: SIGNALS[seed % SIGNALS.length],
+    voyageSignal,
+    companionSignal,
     plankSealing: SEALINGS[(seed >>> 3) % SEALINGS.length],
-    reflectionFocus: '캘리포니아 해협을 건너던 추마시 족의 토몰(Tomol) 판자 카누처럼 작은 틈을 정성껏 메우고 해류를 읽으며 나아가는 상징적 관점입니다.',
-    ritualAction: ACTIONS[(seed >>> 6) % ACTIONS.length],
-    reflectiveQuestion: QUESTIONS[(seed >>> 9) % QUESTIONS.length],
+    reflectionFocus: `캘리포니아 해협을 건너던 추마시 족의 토몰(Tomol) 판자 카누처럼 주 신호('${voyageSignal}')와 동반 신호('${companionSignal}')를 함께 짚어 작은 틈을 정성껏 메우고 해류를 읽으며 나아가는 상징적 관점입니다.`,
+    ritualAction: ACTIONS[signalIdx],
+    reflectiveQuestion: QUESTIONS[signalIdx],
     interpretiveBoundary: '개인 점수·심리 진단·미래 예측이 아닙니다. 자기 성찰을 돕기 위한 상징적 관점 안내입니다.',
   };
 }
@@ -80,6 +92,7 @@ export function formatChumashTomolPrompt(res: ChumashTomolResult): string {
     `[추마시·토몰 카누 항해 관점 · ${res.engineVersion}]`,
     `기준 시각: ${res.calculatedAtKst}`,
     `항해 신호: ${res.voyageSignal}`,
+    `동반 신호: ${res.companionSignal}`,
     `선체 결합: ${res.plankSealing}`,
     `성찰 초점: ${res.reflectionFocus}`,
     `권장 의식: ${res.ritualAction}`,

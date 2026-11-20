@@ -10,6 +10,7 @@ export interface ShanInleRowingResult {
   engineVersion: string;
   calculatedAtKst: string;
   lakePosture: string;
+  companionPosture: string;
   oarBalance: string;
   reflectionFocus: string;
   ritualAction: string;
@@ -47,7 +48,12 @@ const QUESTIONS = [
 
 function toKstIso(now: Date): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
-  return kst.toISOString().replace('Z', '+09:00 (KST)');
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
 }
 
 function hashSeed(text: string): number {
@@ -61,16 +67,22 @@ function hashSeed(text: string): number {
 
 export function calculateShanInleRowing(input: ShanInleRowingInput): ShanInleRowingResult {
   const fate = input.profile.fate ?? {};
-  const seed = hashSeed(`${JSON.stringify(fate)}|${input.now.toISOString().slice(0, 13)}|${input.question ?? ''}`);
+  const seedText = `${JSON.stringify(fate)}|${input.now.toISOString().slice(0, 13)}|${input.question ?? ''}`;
+  const seed = hashSeed(seedText);
+  const postureIdx = seed % POSTURES.length;
+  const companionOffset = 1 + (hashSeed(`${seedText}|companion`) % (POSTURES.length - 1));
+  const lakePosture = POSTURES[postureIdx];
+  const companionPosture = POSTURES[(postureIdx + companionOffset) % POSTURES.length];
 
   return {
-    engineVersion: 'LUCKEY-SHAN-INLE-v2.1.0',
+    engineVersion: 'LUCKEY-SHAN-INLE-v2.2.0',
     calculatedAtKst: toKstIso(input.now),
-    lakePosture: POSTURES[seed % POSTURES.length],
+    lakePosture,
+    companionPosture,
     oarBalance: BALANCES[(seed >>> 3) % BALANCES.length],
-    reflectionFocus: '인레 호수에서 한 발로 노를 저으며 넓은 시야와 두 손의 자유를 지키는 샨 족 어부처럼 중심 잡기와 효율의 조화를 살피는 상징적 관점입니다.',
-    ritualAction: ACTIONS[(seed >>> 6) % ACTIONS.length],
-    reflectiveQuestion: QUESTIONS[(seed >>> 9) % QUESTIONS.length],
+    reflectionFocus: `인레 호수에서 한 발로 노를 저으며 넓은 시야와 두 손의 자유를 지키는 샨 족 어부처럼 주 자세('${lakePosture}')와 동반 자세('${companionPosture}')를 겹쳐 중심 잡기와 효율의 조화를 살피는 상징적 관점입니다.`,
+    ritualAction: ACTIONS[postureIdx],
+    reflectiveQuestion: QUESTIONS[postureIdx],
     interpretiveBoundary: '개인 점수·심리 진단·미래 예측이 아닙니다. 자기 성찰을 돕기 위한 상징적 관점 안내입니다.',
   };
 }
@@ -80,6 +92,7 @@ export function formatShanInlePrompt(res: ShanInleRowingResult): string {
     `[샨·인레 호수 외발 노 젓기 관점 · ${res.engineVersion}]`,
     `기준 시각: ${res.calculatedAtKst}`,
     `호수 자세: ${res.lakePosture}`,
+    `동반 자세: ${res.companionPosture}`,
     `균형: ${res.oarBalance}`,
     `성찰 초점: ${res.reflectionFocus}`,
     `권장 의식: ${res.ritualAction}`,
