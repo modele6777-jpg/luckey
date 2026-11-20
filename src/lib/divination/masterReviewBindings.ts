@@ -1455,5 +1455,17 @@ export const MASTER_REVIEW_BINDINGS: Record<string, { field: string; traceKey: s
   "nubianMeroeApedemakBalance": {
     "field": "nubianMeroeApedemakBalanceResult",
     "traceKey": "nubianMeroeApedemakBalanceResult"
+  },
+  "samarkandUlughBegObservatory": {
+    "field": "samarkandUlughBegObservatoryResult",
+    "traceKey": "samarkandUlughBegObservatoryResult"
+  },
+  "haudenosauneeSevenGenerations": {
+    "field": "haudenosauneeSevenGenerationsResult",
+    "traceKey": "haudenosauneeSevenGenerationsResult"
+  },
+  "swahiliUtuDhowMonsoon": {
+    "field": "swahiliUtuDhowMonsoonResult",
+    "traceKey": "swahiliUtuDhowMonsoonResult"
   }
 };

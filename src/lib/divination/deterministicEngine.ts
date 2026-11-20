@@ -389,6 +389,9 @@ import { calculateMinoanLabyrinthLabrys, formatMinoanLabyrinthPrompt, type Minoa
 import { calculateTorajaAlukTodoloTongkonan, formatTorajaAlukPrompt, type TorajaAlukResult } from './torajaAlukTodoloTongkonanEngine';
 import { calculateSinhalaBaliKohombaHarmony, formatSinhalaBaliPrompt, type SinhalaBaliKohombaResult } from './sinhalaBaliKohombaHarmonyEngine';
 import { calculateNubianMeroeApedemakBalance, formatNubianMeroePrompt, type NubianMeroeResult } from './nubianMeroeApedemakBalanceEngine';
+import { calculateSamarkandUlughBegObservatory, formatSamarkandUlughPrompt, type SamarkandUlughResult } from './samarkandUlughBegObservatoryEngine';
+import { calculateHaudenosauneeSevenGenerations, formatHaudenosauneePrompt, type HaudenosauneeResult } from './haudenosauneeSevenGenerationsEngine';
+import { calculateSwahiliUtuDhowMonsoon, formatSwahiliUtuDhowPrompt, type SwahiliUtuDhowResult } from './swahiliUtuDhowMonsoonEngine';
 
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
@@ -796,6 +799,9 @@ export interface DeterministicEngineReport {
   torajaAlukTodoloTongkonanResult?: TorajaAlukResult | null;
   sinhalaBaliKohombaHarmonyResult?: SinhalaBaliKohombaResult | null;
   nubianMeroeApedemakBalanceResult?: NubianMeroeResult | null;
+  samarkandUlughBegObservatoryResult?: SamarkandUlughResult | null;
+  haudenosauneeSevenGenerationsResult?: HaudenosauneeResult | null;
+  swahiliUtuDhowMonsoonResult?: SwahiliUtuDhowResult | null;
 
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
@@ -3612,6 +3618,33 @@ try {
     }
   })()));
 
+  // 366. 우즈베키스탄 사마르칸트 울루그 베그 천문대 성찰 엔진
+  const samarkandUlughBegObservatoryResult = calculateSupplement('samarkandUlughBegObservatoryResult', () => ((() => {
+    try {
+      return calculateSamarkandUlughBegObservatory({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 367. 호데노쇼니(이로쿼이) 7세대 대평화 법칙 엔진
+  const haudenosauneeSevenGenerationsResult = calculateSupplement('haudenosauneeSevenGenerationsResult', () => ((() => {
+    try {
+      return calculateHaudenosauneeSevenGenerations({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 368. 스와힐리 우투·다우 범선 계절풍 항해 엔진
+  const swahiliUtuDhowMonsoonResult = calculateSupplement('swahiliUtuDhowMonsoonResult', () => ((() => {
+    try {
+      return calculateSwahiliUtuDhowMonsoon({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
   // 220. 한국 신라 의상대사 화엄일승법계도 & 법성게 원융무애 엔진
   const uisangHwaeomIlseungBeopgyeResult = calculateSupplement('uisangHwaeomIlseungBeopgyeResult', () => ((() => {
     try {
@@ -4995,6 +5028,9 @@ try {
     torajaAlukTodoloTongkonanResult,
     sinhalaBaliKohombaHarmonyResult,
     nubianMeroeApedemakBalanceResult,
+    samarkandUlughBegObservatoryResult,
+    haudenosauneeSevenGenerationsResult,
+    swahiliUtuDhowMonsoonResult,
     tools: toolsMap,
   };
 }
@@ -5383,6 +5419,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'torajaAlukTodoloTongkonan', nameKo: '토라자 알룩 토돌로·통코난', icon: '🏡', category: 'deep_master', summary: '인도네시아 토라자 통코난의 중심 기둥과 감사의 예법(Aluk Todolo)처럼 삶의 방향과 관계의 매듭을 단단히 세우는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'bluebird' },
   { key: 'sinhalaBaliKohombaHarmony', nameKo: '싱할라 발리·코훔바 조화', icon: '🌺', category: 'deep_master', summary: '스리랑카 싱할라 전통의 코훔바 정화와 발리 평온 의례처럼 오래 묵은 피로를 털어내고 마음의 공기를 환기하는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'aura' },
   { key: 'nubianMeroeApedemakBalance', nameKo: '고대 누비아 메로에·아페데막', icon: '🦁', category: 'deep_master', summary: '고대 누비아 메로에의 수호와 칸다케의 주체적 지혜처럼 눈치 보기보다 나만의 원칙과 당당한 균형을 세우는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'trinity' },
+  { key: 'samarkandUlughBegObservatory', nameKo: '사마르칸트 울루그 베그 천문대', icon: '🔭', category: 'deep_master', summary: '우즈베키스탄 사마르칸트 울루그 베그 천문대의 자오선 관측처럼 막연한 짐작을 내려놓고 사실과 순서를 차분히 재어 보는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'muse' },
+  { key: 'haudenosauneeSevenGenerations', nameKo: '호데노쇼니 7세대 대평화', icon: '🌲', category: 'deep_master', summary: '호데노쇼니(이로쿼이) 7세대 대평화 법칙처럼 당장의 조급함보다 오래 남을 신뢰와 공생의 가치를 살피는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'trinity' },
+  { key: 'swahiliUtuDhowMonsoon', nameKo: '스와힐리 우투·다우 항해', icon: '⛵', category: 'deep_master', summary: '동아프리카 스와힐리의 우투(Utu) 정신과 다우 범선 계절풍 항해처럼 사람다움의 연대와 때를 기다리는 균형을 읽는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'bluebird' },
 ] as DceEngineMeta[]).filter(engine => !LUCY_PRO_CATALOG_DUPLICATE_KEYS.has(engine.key));
 
 export function getFiredEngineBadges(
@@ -5895,6 +5934,7 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'guaraniTekoPoraForestHarmony',
     'bhutanGnhTashiTagye',
     'torajaAlukTodoloTongkonan',
+    'swahiliUtuDhowMonsoon',
   ],
   creative_mind: [
     'irishJamesJoyceUlyssesEpiphany',
@@ -6186,6 +6226,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'torajaAlukTodoloTongkonan',
     'sinhalaBaliKohombaHarmony',
     'nubianMeroeApedemakBalance',
+    'samarkandUlughBegObservatory',
+    'haudenosauneeSevenGenerations',
+    'swahiliUtuDhowMonsoon',
   ],
 };
 
