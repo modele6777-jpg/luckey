@@ -10,12 +10,12 @@
  *    - 우주적 공존 서약(Sacred Equilibrium Pact): 탐욕을 버리고 세상과 조화를 이루는 절제.
  * 3. 7대 지혜의 품계 및 아트라하시스 신성 서판 조언 산출
  *
- * @version LUCKEY-ATRAHASIS-FLOOD-v1.0.0
+ * @version LUCKEY-ATRAHASIS-FLOOD-v2.3.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const ATRAHASIS_FLOOD_VERSION = 'LUCKEY-ATRAHASIS-FLOOD-v2.2.0';
+export const ATRAHASIS_FLOOD_VERSION = 'LUCKEY-ATRAHASIS-FLOOD-v2.3.0';
 
 export interface AtrahasisWisdomRank {
   rankLevel: number;
@@ -103,7 +103,7 @@ function getKstDateString(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} +09:00 KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
 }
 
 function hashSeed(seedStr: string): number {

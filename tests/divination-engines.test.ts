@@ -5826,7 +5826,7 @@ test('Mesopotamian Nisaba Scribe Wisdom Engine: calculates reed stylus precision
   assert(rep.reflectionFocus.length > 0);
   assert(rep.reflectiveQuestion.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
-  assert(rep.calculatedAtKst.endsWith('+09:00 KST'));
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(Boolean(rep.nisabaSynthesisMatrix?.integratedAction));
   const repQ = calculateMesopotamianNisaba(profile, '가장 분명히 바로잡아 적어야 할 기준');
   assert(repQ.reflectiveQuestion.includes('바로잡아 적어야 할 기준'));
@@ -5836,6 +5836,7 @@ test('Mesopotamian Nisaba Scribe Wisdom Engine: calculates reed stylus precision
   assert(prompt.includes(repQ.secondaryScribeRank.rankNameKo));
   assert(prompt.includes('실천 의례'));
   assert(prompt.includes('성찰 초점'));
+  assert(prompt.includes(repQ.reflectionFocus));
   assert(prompt.includes('해석 경계'));
   assert(prompt.includes('교차 매트릭스'));
   assert(!prompt.includes('/100'));
@@ -5911,7 +5912,7 @@ test('Mesoamerican Mixtec Eight Deer Jaguar Claw Engine: calculates courage, sac
   assert(rep.reflectionFocus.length > 0);
   assert(rep.reflectiveQuestion.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
-  assert(rep.calculatedAtKst.endsWith('+09:00 KST'));
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(Boolean(rep.mixtecSynthesisMatrix?.integratedAction));
   const repQ = calculateMixtecEightDeer(profile, '가장 먼저 맺어야 할 신의와 동맹');
   assert(repQ.reflectiveQuestion.includes('신의와 동맹'));
@@ -5921,6 +5922,7 @@ test('Mesoamerican Mixtec Eight Deer Jaguar Claw Engine: calculates courage, sac
   assert(prompt.includes(repQ.secondaryHeroRank.rankNameKo));
   assert(prompt.includes('실천 의례'));
   assert(prompt.includes('성찰 초점'));
+  assert(prompt.includes(repQ.reflectionFocus));
   assert(prompt.includes('해석 경계'));
   assert(prompt.includes('교차 매트릭스'));
   assert(!prompt.includes('/100'));
@@ -5964,7 +5966,7 @@ test('Mesopotamian Atrahasis Flood Wisdom Engine: calculates reed wall intuition
   assert(rep.reflectionFocus.length > 0);
   assert(rep.reflectiveQuestion.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
-  assert(rep.calculatedAtKst.endsWith('+09:00 KST'));
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(Boolean(rep.atrahasisSynthesisMatrix?.integratedAction));
   const repQ = calculateAtrahasisFlood(profile, '지켜내야 할 본질');
   assert(repQ.reflectiveQuestion.includes('지켜내야 할 본질'));
@@ -5974,6 +5976,7 @@ test('Mesopotamian Atrahasis Flood Wisdom Engine: calculates reed wall intuition
   assert(prompt.includes(repQ.secondaryWisdomRank.rankNameKo));
   assert(prompt.includes('실천 의례'));
   assert(prompt.includes('성찰 초점'));
+  assert(prompt.includes(repQ.reflectionFocus));
   assert(prompt.includes('해석 경계'));
   assert(prompt.includes('교차 매트릭스'));
   assert(!prompt.includes('/100'));
