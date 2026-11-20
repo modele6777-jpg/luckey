@@ -1671,5 +1671,17 @@ export const MASTER_REVIEW_BINDINGS: Record<string, { field: string; traceKey: s
   "ladakhiStupaGlacierWater": {
     "field": "ladakhiStupaGlacierWaterResult",
     "traceKey": "ladakhiStupaGlacierWaterResult"
+  },
+  "assyrianNinevehClayTablet": {
+    "field": "assyrianNinevehClayTabletResult",
+    "traceKey": "assyrianNinevehClayTabletResult"
+  },
+  "tuaregTagelmustSaharaStars": {
+    "field": "tuaregTagelmustSaharaStarsResult",
+    "traceKey": "tuaregTagelmustSaharaStarsResult"
+  },
+  "estonianRegilaulForestCalm": {
+    "field": "estonianRegilaulForestCalmResult",
+    "traceKey": "estonianRegilaulForestCalmResult"
   }
 };

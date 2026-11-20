@@ -443,6 +443,9 @@ import { calculateEvenkiBugaTaigaPath, formatEvenkiBugaPrompt, type EvenkiBugaRe
 import { calculateManchuMukunWhiteMountain, formatManchuMukunPrompt, type ManchuMukunResult } from './manchuMukunWhiteMountainEngine';
 import { calculatePortugueseSaudadeSagresCompass, formatPortugueseSagresPrompt, type PortugueseSagresResult } from './portugueseSaudadeSagresCompassEngine';
 import { calculateLadakhiStupaGlacierWater, formatLadakhiChortenPrompt, type LadakhiChortenResult } from './ladakhiStupaGlacierWaterEngine';
+import { calculateAssyrianNinevehClayTablet, formatAssyrianNinevehPrompt, type AssyrianNinevehResult } from './assyrianNinevehClayTabletEngine';
+import { calculateTuaregTagelmustSaharaStars, formatTuaregSaharaPrompt, type TuaregSaharaResult } from './tuaregTagelmustSaharaStarsEngine';
+import { calculateEstonianRegilaulForestCalm, formatEstonianRegilaulPrompt, type EstonianRegilaulResult } from './estonianRegilaulForestCalmEngine';
 
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
@@ -904,6 +907,9 @@ export interface DeterministicEngineReport {
   manchuMukunWhiteMountainResult?: ManchuMukunResult | null;
   portugueseSaudadeSagresCompassResult?: PortugueseSagresResult | null;
   ladakhiStupaGlacierWaterResult?: LadakhiChortenResult | null;
+  assyrianNinevehClayTabletResult?: AssyrianNinevehResult | null;
+  tuaregTagelmustSaharaStarsResult?: TuaregSaharaResult | null;
+  estonianRegilaulForestCalmResult?: EstonianRegilaulResult | null;
 
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
@@ -4206,6 +4212,33 @@ try {
     }
   })()));
 
+  // 420. 아시리아 니네베·점토 서판 엔진
+  const assyrianNinevehClayTabletResult = calculateSupplement('assyrianNinevehClayTabletResult', () => ((() => {
+    try {
+      return calculateAssyrianNinevehClayTablet({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 421. 투아레그 타길무스트·사하라 별자리 엔진
+  const tuaregTagelmustSaharaStarsResult = calculateSupplement('tuaregTagelmustSaharaStarsResult', () => ((() => {
+    try {
+      return calculateTuaregTagelmustSaharaStars({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 422. 에스토니아 레기라울·숲의 정적 엔진
+  const estonianRegilaulForestCalmResult = calculateSupplement('estonianRegilaulForestCalmResult', () => ((() => {
+    try {
+      return calculateEstonianRegilaulForestCalm({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
   // 220. 한국 신라 의상대사 화엄일승법계도 & 법성게 원융무애 엔진
   const uisangHwaeomIlseungBeopgyeResult = calculateSupplement('uisangHwaeomIlseungBeopgyeResult', () => ((() => {
     try {
@@ -5643,6 +5676,9 @@ try {
     manchuMukunWhiteMountainResult,
     portugueseSaudadeSagresCompassResult,
     ladakhiStupaGlacierWaterResult,
+    assyrianNinevehClayTabletResult,
+    tuaregTagelmustSaharaStarsResult,
+    estonianRegilaulForestCalmResult,
     tools: toolsMap,
   };
 }
@@ -6085,6 +6121,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'manchuMukunWhiteMountain', nameKo: '만주 무쿤·흰산 검은강', icon: '🌲', category: 'deep_master', summary: '만주 무쿤의 연대와 우라(Ula) 긴 호흡처럼 요란한 말 대신 오늘 내 몫의 작은 한 걸음을 곧고 묵직하게 깎아 가는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'trinity' },
   { key: 'portugueseSaudadeSagresCompass', nameKo: '포르투갈 사우다데·사그레스', icon: '🧭', category: 'deep_master', summary: '포르투갈 사그레스 항해 나침반과 카라벨 삼각돛처럼 완벽한 지도가 없더라도 역풍 속에서 유연하게 각도를 틀어 나아가는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'bluebird' },
   { key: 'ladakhiStupaGlacierWater', nameKo: '라다크 스투파·물길', icon: '❄️', category: 'deep_master', summary: '라다크의 아이스 스투파와 추르폰 물 나눔처럼 지금 내게 주어진 자원과 시간을 알뜰히 아껴 다음 계절을 위해 모아 두는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'muse' },
+  { key: 'assyrianNinevehClayTablet', nameKo: '아시리아 니네베·서판', icon: '📜', category: 'deep_master', summary: '니네베 서고의 점토 서판처럼 머릿속에만 맴도는 고민을 짧은 기록으로 붙들어 맑고 단단한 기준으로 세우는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'muse' },
+  { key: 'tuaregTagelmustSaharaStars', nameKo: '투아레그 사하라·별자리', icon: '🌌', category: 'deep_master', summary: '사하라 투아레그의 타길무스트 절제처럼 거친 모래바람 속에서도 내 호흡을 먼저 보호하며 변치 않는 별빛의 기준을 바라보는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'aura' },
+  { key: 'estonianRegilaulForestCalm', nameKo: '에스토니아 레기라울·숲', icon: '🌲', category: 'deep_master', summary: '에스토니아 레기라울과 히이스 숲의 정적처럼 복잡한 변주보다 오늘 내가 지킬 소박한 리듬과 쉼의 여백을 먼저 챙기는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'bluebird' },
 ] as DceEngineMeta[]).filter(engine => !LUCY_PRO_CATALOG_DUPLICATE_KEYS.has(engine.key));
 
 export function getFiredEngineBadges(
@@ -6945,6 +6984,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'manchuMukunWhiteMountain',
     'portugueseSaudadeSagresCompass',
     'ladakhiStupaGlacierWater',
+    'assyrianNinevehClayTablet',
+    'tuaregTagelmustSaharaStars',
+    'estonianRegilaulForestCalm',
   ],
 };
 
