@@ -430,6 +430,9 @@ import { calculatePalmyreneOasisColonnade, formatPalmyreneOasisPrompt } from '..
 import { calculateSicilianMajolicaEtnaBalance, formatSicilianMajolicaPrompt } from '../src/lib/divination/sicilianMajolicaEtnaBalanceEngine';
 import { calculateSomaliGabayDhowHorizon, formatSomaliGabayPrompt } from '../src/lib/divination/somaliGabayDhowHorizonEngine';
 import { calculateBohemianCrystalGlassLight, formatBohemianCrystalPrompt } from '../src/lib/divination/bohemianCrystalGlassLightEngine';
+import { calculateSanKalahariTrackingStars, formatSanKalahariPrompt } from '../src/lib/divination/sanKalahariTrackingStarsEngine';
+import { calculatePhrygianGordianKnotClarity, formatPhrygianGordianPrompt } from '../src/lib/divination/phrygianGordianKnotClarityEngine';
+import { calculateGoryeoCeladonInlayClarity, formatGoryeoCeladonPrompt } from '../src/lib/divination/goryeoCeladonInlayClarityEngine';
 
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
@@ -14196,4 +14199,37 @@ test('Bohemian Crystal Glass Light engine: facet, +09:00 KST, and interpretive b
   const prompt = formatBohemianCrystalPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
   assert.ok(prompt.includes('보헤미아') && prompt.includes('+09:00 (KST)'));
+});
+
+test('San Kalahari Tracking Stars engine: sign, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateSanKalahariTrackingStars({ profile, now: new Date('2026-11-20T09:20:00Z'), question: '작은 징후를 먼저 읽어 방향을 잡고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-SAN-KALAHARI-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatSanKalahariPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('칼라하리') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Phrygian Gordian Knot Clarity engine: symbol, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculatePhrygianGordianKnotClarity({ profile, now: new Date('2026-11-20T09:20:00Z'), question: '꼬인 매듭을 단순하게 풀어내고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-PHRYGIAN-GORDIAN-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatPhrygianGordianPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('프리지아') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Goryeo Celadon Inlay Clarity engine: craft, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateGoryeoCeladonInlayClarity({ profile, now: new Date('2026-11-20T09:20:00Z'), question: '마음의 여백과 숨구멍을 마련하고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-GORYEO-CELADON-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatGoryeoCeladonPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('고려 청자') && prompt.includes('+09:00 (KST)'));
 });

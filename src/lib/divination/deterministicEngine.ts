@@ -461,6 +461,9 @@ import { calculatePalmyreneOasisColonnade, formatPalmyreneOasisPrompt, type Palm
 import { calculateSicilianMajolicaEtnaBalance, formatSicilianMajolicaPrompt, type SicilianMajolicaResult } from './sicilianMajolicaEtnaBalanceEngine';
 import { calculateSomaliGabayDhowHorizon, formatSomaliGabayPrompt, type SomaliGabayResult } from './somaliGabayDhowHorizonEngine';
 import { calculateBohemianCrystalGlassLight, formatBohemianCrystalPrompt, type BohemianCrystalResult } from './bohemianCrystalGlassLightEngine';
+import { calculateSanKalahariTrackingStars, formatSanKalahariPrompt, type SanKalahariResult } from './sanKalahariTrackingStarsEngine';
+import { calculatePhrygianGordianKnotClarity, formatPhrygianGordianPrompt, type PhrygianGordianResult } from './phrygianGordianKnotClarityEngine';
+import { calculateGoryeoCeladonInlayClarity, formatGoryeoCeladonPrompt, type GoryeoCeladonResult } from './goryeoCeladonInlayClarityEngine';
 
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
@@ -940,6 +943,9 @@ export interface DeterministicEngineReport {
   sicilianMajolicaEtnaBalanceResult?: SicilianMajolicaResult | null;
   somaliGabayDhowHorizonResult?: SomaliGabayResult | null;
   bohemianCrystalGlassLightResult?: BohemianCrystalResult | null;
+  sanKalahariTrackingStarsResult?: SanKalahariResult | null;
+  phrygianGordianKnotClarityResult?: PhrygianGordianResult | null;
+  goryeoCeladonInlayClarityResult?: GoryeoCeladonResult | null;
 
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
@@ -4404,6 +4410,33 @@ try {
     }
   })()));
 
+  // 438. 칼라하리 산·별과 추적 엔진
+  const sanKalahariTrackingStarsResult = calculateSupplement('sanKalahariTrackingStarsResult', () => ((() => {
+    try {
+      return calculateSanKalahariTrackingStars({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 439. 프리지아 고르디온·명쾌한 결단 엔진
+  const phrygianGordianKnotClarityResult = calculateSupplement('phrygianGordianKnotClarityResult', () => ((() => {
+    try {
+      return calculatePhrygianGordianKnotClarity({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 440. 고려 청자·비색 상감 여백 엔진
+  const goryeoCeladonInlayClarityResult = calculateSupplement('goryeoCeladonInlayClarityResult', () => ((() => {
+    try {
+      return calculateGoryeoCeladonInlayClarity({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
   // 220. 한국 신라 의상대사 화엄일승법계도 & 법성게 원융무애 엔진
   const uisangHwaeomIlseungBeopgyeResult = calculateSupplement('uisangHwaeomIlseungBeopgyeResult', () => ((() => {
     try {
@@ -5859,6 +5892,9 @@ try {
     sicilianMajolicaEtnaBalanceResult,
     somaliGabayDhowHorizonResult,
     bohemianCrystalGlassLightResult,
+    sanKalahariTrackingStarsResult,
+    phrygianGordianKnotClarityResult,
+    goryeoCeladonInlayClarityResult,
     tools: toolsMap,
   };
 }
@@ -6319,6 +6355,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'sicilianMajolicaEtnaBalance', nameKo: '시칠리아 마졸리카·에트나', icon: '🍋', category: 'deep_master', summary: '시칠리아 마졸리카 유약과 에트나 화산 토양처럼 뜨거운 고비를 지난 자리 위에서도 새로운 싹과 쉼의 그늘을 함께 가꾸는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'aura' },
   { key: 'somaliGabayDhowHorizon', nameKo: '소말리 가바이·지평선', icon: '⛵', category: 'deep_master', summary: '소말리 가바이 시학과 다우 범선처럼 급한 순간일수록 정갈하게 고른 한 마디와 계절풍의 때를 기다리는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'trinity' },
   { key: 'bohemianCrystalGlassLight', nameKo: '보헤미아 크리스탈·빛', icon: '💎', category: 'deep_master', summary: '보헤미아 크리스탈 프리즘처럼 한데 뭉쳐 답답해 보이는 마음도 결을 나누어 맑게 비춰 보는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'muse' },
+  { key: 'sanKalahariTrackingStars', nameKo: '칼라하리 산·발자국', icon: '🌠', category: 'deep_master', summary: '칼라하리 산 부족의 발자국 추적과 은하수 길잡이처럼 큰 소음이 아니라 모래 위의 작은 징후를 먼저 읽어 내는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'bluebird' },
+  { key: 'phrygianGordianKnotClarity', nameKo: '프리지아 고르디온·결단', icon: '🪢', category: 'deep_master', summary: '고대 프리지아의 고르디온 매듭과 산가리우스 강처럼 자꾸 꼬이는 문제를 힘으로 당기기보다 기준을 단순화해 풀어내는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'trinity' },
+  { key: 'goryeoCeladonInlayClarity', nameKo: '고려 청자·비색 상감', icon: '🏺', category: 'deep_master', summary: '고려 청자의 비색 유약과 상감 기법처럼 억지로 더 채우기보다 마음의 홈을 비워 여백과 숨구멍을 먼저 마련하는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'aura' },
 ] as DceEngineMeta[]).filter(engine => !LUCY_PRO_CATALOG_DUPLICATE_KEYS.has(engine.key));
 
 export function getFiredEngineBadges(
@@ -7197,6 +7236,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'sicilianMajolicaEtnaBalance',
     'somaliGabayDhowHorizon',
     'bohemianCrystalGlassLight',
+    'sanKalahariTrackingStars',
+    'phrygianGordianKnotClarity',
+    'goryeoCeladonInlayClarity',
   ],
 };
 
