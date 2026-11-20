@@ -6400,10 +6400,12 @@ test('Roman Seneca Time Sovereignty Tranquility Engine: calculates time sovereig
   assert(rep.animiFluctuatioRelief >= 0 && rep.animiFluctuatioRelief <= 100);
   assert(rep.activeSenecaStage.stageNameLatin.length > 0);
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   const prompt = formatSenecaTimeSovereigntyPrompt(rep);
   assert(prompt.includes('고대 로마 세네카 인생의 짧음에 대하여 & 시간 주권 평정 지표'));
   assert(prompt.includes(rep.activeSenecaStage.stageNameKo));
   assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
+  assert(prompt.includes(rep.reflectionFocus));
 });
 
 test('Ancient Greek Platonic Idea Cave Engine: calculates Idea of Good, Cave liberation, Anamnesis and Cardinal Virtues', () => {
@@ -6464,10 +6466,12 @@ test('Roman Cicero De Officiis Engine: calculates Honestum moral duty, Utile har
   assert(rep.bonumCommuneActionScore >= 0 && rep.bonumCommuneActionScore <= 100);
   assert(rep.activeVirtueFoundation.foundationLatin.length > 0);
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   const prompt = formatCiceroDeOfficiisPrompt(rep);
   assert(prompt.includes('고대 로마 키케로 의무론 도덕적 선 & 유용성 조화 지표'));
   assert(prompt.includes(rep.activeVirtueFoundation.foundationKo));
   assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
+  assert(prompt.includes(rep.reflectionFocus));
 });
 
 test('Epictetus Dichotomy of Control Engine: calculates Ta Eph hemin clarity, Prohairesis autonomy and Topoi balance', () => {
@@ -7320,10 +7324,12 @@ test('Marcus Aurelius Meditations Citadel Engine: calculates Inner Citadel, Logo
   assert(rep.apatheiaSerenityIndex >= 0 && rep.apatheiaSerenityIndex <= 100);
   assert(rep.activeMeditationsTheme.themeTitleKo.length > 0);
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   const prompt = formatMarcusAureliusMeditationsCitadelPrompt(rep);
   assert(prompt.includes('마르쿠스 아우렐리우스 《명상록》 내면의 성채 & 스토아 실존 평정 지표'));
   assert(prompt.includes(rep.activeMeditationsTheme.themeTitleKo));
   assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
+  assert(prompt.includes(rep.reflectionFocus));
 });
 
 test('Suun Choe Je-u Donghak Sicheonju Engine: calculates Sicheonju Dignity, Sainyeocheon Reverence, and Hucheon Gaebyeok', () => {
@@ -10414,7 +10420,7 @@ test('Seneca, Cicero, and Marcus Aurelius v2.1.0 engines expose qualitative stag
   const now = new Date('2026-11-15T18:40:00Z');
   const seneca = calculateSenecaTimeSovereignty(profile, '이직 결정을 계속 미루고만 있어서 불안해요', now);
   assert.equal(seneca.engineVersion, SENECA_TIME_SOVEREIGNTY_VERSION);
-  assert.ok(seneca.calculatedAtKst.endsWith('+09:00'));
+  assert.ok(seneca.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert.ok(Boolean(seneca.senecaSynthesisMatrix?.integratedAction));
   assert.ok(seneca.dailyPracticeRitual.length > 0 && seneca.reflectiveQuestion.length > 0 && seneca.interpretiveBoundary.length > 0);
   const senecaPrompt = formatSenecaTimeSovereigntyPrompt(seneca);
@@ -10423,7 +10429,7 @@ test('Seneca, Cicero, and Marcus Aurelius v2.1.0 engines expose qualitative stag
 
   const cicero = calculateCiceroDeOfficiis(profile, '계약 조건과 신뢰 사이에서 어떤 선택이 옳을까요?', now);
   assert.equal(cicero.engineVersion, CICERO_DE_OFFICIIS_VERSION);
-  assert.ok(cicero.calculatedAtKst.endsWith('+09:00'));
+  assert.ok(cicero.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert.ok(Boolean(cicero.ciceroSynthesisMatrix?.integratedAction));
   assert.ok(cicero.dailyPracticeRitual.length > 0 && cicero.reflectiveQuestion.length > 0 && cicero.interpretiveBoundary.length > 0);
   const ciceroPrompt = formatCiceroDeOfficiisPrompt(cicero);
@@ -10432,7 +10438,7 @@ test('Seneca, Cicero, and Marcus Aurelius v2.1.0 engines expose qualitative stag
 
   const aurelius = calculateMarcusAureliusMeditationsCitadel(profile, '타인의 비난 때문에 마음이 흔들려요', now);
   assert.equal(aurelius.engineVersion, ROMAN_MARCUS_AURELIUS_VERSION);
-  assert.ok(aurelius.calculatedAtKst.endsWith('+09:00'));
+  assert.ok(aurelius.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert.ok(Boolean(aurelius.marcusSynthesisMatrix?.integratedAction));
   assert.ok(aurelius.dailyPracticeRitual.length > 0 && aurelius.reflectiveQuestion.length > 0 && aurelius.interpretiveBoundary.length > 0);
   const aureliusPrompt = formatMarcusAureliusMeditationsCitadelPrompt(aurelius);
