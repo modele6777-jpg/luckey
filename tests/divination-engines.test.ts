@@ -6552,7 +6552,7 @@ test('Choe Han-gi Gihak Unwha Engine: calculates Unwhagi cosmic flow, Singitong 
   assert(rep.tongminPublicConnectionScore >= 0 && rep.tongminPublicConnectionScore <= 100);
   assert(rep.daedongUniversalHarmonyScore >= 0 && rep.daedongUniversalHarmonyScore <= 100);
   assert(rep.activeGihakPrinciple.sourceText.length > 0);
-  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(Boolean(rep.gihakSynthesisMatrix?.integratedAction));
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatChoeHangiGihakUnwhaPrompt(rep);
@@ -6560,6 +6560,7 @@ test('Choe Han-gi Gihak Unwha Engine: calculates Unwhagi cosmic flow, Singitong 
   assert(prompt.includes(rep.activeGihakPrinciple.principleNameKo));
   assert(prompt.includes('교차 매트릭스'));
   assert(prompt.includes(rep.ritualAction));
+  assert(prompt.includes(rep.reflectionFocus));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });
@@ -7031,7 +7032,7 @@ test('Choe Chiwon Pungryudo and Three Teachings Harmony Engine: calculates Mysti
   assert(rep.literaryIntellectualInsightScore >= 0 && rep.literaryIntellectualInsightScore <= 100);
   assert(rep.detachedTranscendentalPeaceScore >= 0 && rep.detachedTranscendentalPeaceScore <= 100);
   assert(rep.activeChoeChiwonTheme.themeTitleHanja.length > 0);
-  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(Boolean(rep.pungryudoSynthesisMatrix?.integratedAction));
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatChoeChiwonPungryudoPrompt(rep);
@@ -7039,6 +7040,7 @@ test('Choe Chiwon Pungryudo and Three Teachings Harmony Engine: calculates Mysti
   assert(prompt.includes(rep.activeChoeChiwonTheme.themeTitleKo));
   assert(prompt.includes('교차 매트릭스'));
   assert(prompt.includes(rep.ritualAction));
+  assert(prompt.includes(rep.reflectionFocus));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });
@@ -7451,7 +7453,7 @@ test('Baekbeom Kim Gu My Desire Culture Engine: calculates High Power of Culture
   assert(rep.selfReliantIndependenceWillScore >= 0 && rep.selfReliantIndependenceWillScore <= 100);
   assert(rep.baekbeomHumilityPublicLoveIndex >= 0 && rep.baekbeomHumilityPublicLoveIndex <= 100);
   assert(rep.activeKimGuTheme.themeTitleKo.length > 0);
-  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(Boolean(rep.kimGuSynthesisMatrix?.integratedAction));
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatBaekbeomKimGuMyDesireCulturePrompt(rep);
@@ -7459,6 +7461,7 @@ test('Baekbeom Kim Gu My Desire Culture Engine: calculates High Power of Culture
   assert(prompt.includes(rep.activeKimGuTheme.themeTitleKo));
   assert(prompt.includes('교차 매트릭스'));
   assert(prompt.includes(rep.ritualAction));
+  assert(prompt.includes(rep.reflectionFocus));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });
