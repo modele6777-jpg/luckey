@@ -458,6 +458,9 @@ import { calculateChachapoyaCloudForestKuelap, formatChachapoyaKuelapPrompt, typ
 import { calculateYapeseRaiStoneTrust, formatYapeseRaiPrompt, type YapeseRaiResult } from './yapeseRaiStoneTrustEngine';
 import { calculateChukchiBeringTundraHearth, formatChukchiBeringPrompt, type ChukchiBeringResult } from './chukchiBeringTundraHearthEngine';
 import { calculatePalmyreneOasisColonnade, formatPalmyreneOasisPrompt, type PalmyreneOasisResult } from './palmyreneOasisColonnadeEngine';
+import { calculateSicilianMajolicaEtnaBalance, formatSicilianMajolicaPrompt, type SicilianMajolicaResult } from './sicilianMajolicaEtnaBalanceEngine';
+import { calculateSomaliGabayDhowHorizon, formatSomaliGabayPrompt, type SomaliGabayResult } from './somaliGabayDhowHorizonEngine';
+import { calculateBohemianCrystalGlassLight, formatBohemianCrystalPrompt, type BohemianCrystalResult } from './bohemianCrystalGlassLightEngine';
 
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
@@ -934,6 +937,9 @@ export interface DeterministicEngineReport {
   yapeseRaiStoneTrustResult?: YapeseRaiResult | null;
   chukchiBeringTundraHearthResult?: ChukchiBeringResult | null;
   palmyreneOasisColonnadeResult?: PalmyreneOasisResult | null;
+  sicilianMajolicaEtnaBalanceResult?: SicilianMajolicaResult | null;
+  somaliGabayDhowHorizonResult?: SomaliGabayResult | null;
+  bohemianCrystalGlassLightResult?: BohemianCrystalResult | null;
 
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
@@ -4371,6 +4377,33 @@ try {
     }
   })()));
 
+  // 435. 시칠리아 마졸리카·에트나 균형 엔진
+  const sicilianMajolicaEtnaBalanceResult = calculateSupplement('sicilianMajolicaEtnaBalanceResult', () => ((() => {
+    try {
+      return calculateSicilianMajolicaEtnaBalance({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 436. 소말리 가바이·바다 지평선 엔진
+  const somaliGabayDhowHorizonResult = calculateSupplement('somaliGabayDhowHorizonResult', () => ((() => {
+    try {
+      return calculateSomaliGabayDhowHorizon({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 437. 보헤미아 크리스탈·유리 빛 엔진
+  const bohemianCrystalGlassLightResult = calculateSupplement('bohemianCrystalGlassLightResult', () => ((() => {
+    try {
+      return calculateBohemianCrystalGlassLight({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
   // 220. 한국 신라 의상대사 화엄일승법계도 & 법성게 원융무애 엔진
   const uisangHwaeomIlseungBeopgyeResult = calculateSupplement('uisangHwaeomIlseungBeopgyeResult', () => ((() => {
     try {
@@ -5823,6 +5856,9 @@ try {
     yapeseRaiStoneTrustResult,
     chukchiBeringTundraHearthResult,
     palmyreneOasisColonnadeResult,
+    sicilianMajolicaEtnaBalanceResult,
+    somaliGabayDhowHorizonResult,
+    bohemianCrystalGlassLightResult,
     tools: toolsMap,
   };
 }
@@ -6280,6 +6316,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'yapeseRaiStoneTrust', nameKo: '야프 라이 돌·신뢰', icon: '🪨', category: 'deep_master', summary: '미크로네시아 야프의 라이 돌화폐처럼 매번 눈앞에 증명하지 않아도 성실함으로 쌓아 둔 신뢰는 제자리에 남아 있음을 비추는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'aura' },
   { key: 'chukchiBeringTundraHearth', nameKo: '축치 베링해·화덕', icon: '❄️', category: 'deep_master', summary: '베링해 축치의 야랑가 등불과 우미악 가죽배처럼 거친 바람 앞에서는 내 안의 온기와 유연한 틀을 먼저 지키는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'bluebird' },
   { key: 'palmyreneOasisColonnade', nameKo: '팔미라 오아시스·열주', icon: '🏛️', category: 'deep_master', summary: '고대 팔미라 대열주랑과 에프카 샘처럼 불확실한 사막 한가운데서도 나만의 단정한 질서와 낯선 시선을 함께 품는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'muse' },
+  { key: 'sicilianMajolicaEtnaBalance', nameKo: '시칠리아 마졸리카·에트나', icon: '🍋', category: 'deep_master', summary: '시칠리아 마졸리카 유약과 에트나 화산 토양처럼 뜨거운 고비를 지난 자리 위에서도 새로운 싹과 쉼의 그늘을 함께 가꾸는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'aura' },
+  { key: 'somaliGabayDhowHorizon', nameKo: '소말리 가바이·지평선', icon: '⛵', category: 'deep_master', summary: '소말리 가바이 시학과 다우 범선처럼 급한 순간일수록 정갈하게 고른 한 마디와 계절풍의 때를 기다리는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'trinity' },
+  { key: 'bohemianCrystalGlassLight', nameKo: '보헤미아 크리스탈·빛', icon: '💎', category: 'deep_master', summary: '보헤미아 크리스탈 프리즘처럼 한데 뭉쳐 답답해 보이는 마음도 결을 나누어 맑게 비춰 보는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'muse' },
 ] as DceEngineMeta[]).filter(engine => !LUCY_PRO_CATALOG_DUPLICATE_KEYS.has(engine.key));
 
 export function getFiredEngineBadges(
@@ -7155,6 +7194,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'yapeseRaiStoneTrust',
     'chukchiBeringTundraHearth',
     'palmyreneOasisColonnade',
+    'sicilianMajolicaEtnaBalance',
+    'somaliGabayDhowHorizon',
+    'bohemianCrystalGlassLight',
   ],
 };
 
