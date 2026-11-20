@@ -482,6 +482,9 @@ import { calculateCarthaginianTanitHarborCompass, formatCarthaginianTanitPrompt,
 import { calculateGayaIronCrownRiverHarmony, formatGayaIronCrownPrompt, type GayaIronCrownResult } from './gayaIronCrownRiverHarmonyEngine';
 import { calculateElamiteSusaWaterChoga, formatElamiteSusaPrompt, type ElamiteSusaResult } from './elamiteSusaWaterChogaEngine';
 import { calculateLycianCliffHorizonCalm, formatLycianCliffPrompt, type LycianCliffResult } from './lycianCliffHorizonCalmEngine';
+import { calculateByzantineHagiaLightDome, formatByzantineDomePrompt, type ByzantineDomeResult } from './byzantineHagiaLightDomeEngine';
+import { calculateHimbaOtjizeDesertPoise, formatHimbaOtjizePrompt, type HimbaOtjizeResult } from './himbaOtjizeDesertPoiseEngine';
+import { calculateHaidaGwaiiCedarCanoe, formatHaidaGwaiiPrompt, type HaidaGwaiiResult } from './haidaGwaiiCedarCanoeEngine';
 
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
@@ -982,6 +985,9 @@ export interface DeterministicEngineReport {
   gayaIronCrownRiverHarmonyResult?: GayaIronCrownResult | null;
   elamiteSusaWaterChogaResult?: ElamiteSusaResult | null;
   lycianCliffHorizonCalmResult?: LycianCliffResult | null;
+  byzantineHagiaLightDomeResult?: ByzantineDomeResult | null;
+  himbaOtjizeDesertPoiseResult?: HimbaOtjizeResult | null;
+  haidaGwaiiCedarCanoeResult?: HaidaGwaiiResult | null;
 
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
@@ -4635,6 +4641,33 @@ try {
     }
   })()));
 
+  // 459. 비잔틴·하기아 소피아 돔 빛 엔진
+  const byzantineHagiaLightDomeResult = calculateSupplement('byzantineHagiaLightDomeResult', () => ((() => {
+    try {
+      return calculateByzantineHagiaLightDome({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 460. 나미비아 힘바·오트지제 적토 엔진
+  const himbaOtjizeDesertPoiseResult = calculateSupplement('himbaOtjizeDesertPoiseResult', () => ((() => {
+    try {
+      return calculateHimbaOtjizeDesertPoise({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 461. 하이다 과이·삼나무 카누 엔진
+  const haidaGwaiiCedarCanoeResult = calculateSupplement('haidaGwaiiCedarCanoeResult', () => ((() => {
+    try {
+      return calculateHaidaGwaiiCedarCanoe({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
   // 220. 한국 신라 의상대사 화엄일승법계도 & 법성게 원융무애 엔진
   const uisangHwaeomIlseungBeopgyeResult = calculateSupplement('uisangHwaeomIlseungBeopgyeResult', () => ((() => {
     try {
@@ -6111,6 +6144,9 @@ try {
     gayaIronCrownRiverHarmonyResult,
     elamiteSusaWaterChogaResult,
     lycianCliffHorizonCalmResult,
+    byzantineHagiaLightDomeResult,
+    himbaOtjizeDesertPoiseResult,
+    haidaGwaiiCedarCanoeResult,
     tools: toolsMap,
   };
 }
@@ -6592,6 +6628,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'gayaIronCrownRiverHarmony', nameKo: '가야·금관 철기 조화', icon: '⚔️', category: 'deep_master', summary: '고대 가야의 철기 제련과 굽다리 토기·가야금 조화처럼 열정과 식힘의 절도를 맞추며 부드럽고 단정한 중심을 세우는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'trinity' },
   { key: 'elamiteSusaWaterChoga', nameKo: '엘람 수사·수로 정원', icon: '🧱', category: 'deep_master', summary: '고대 엘람 수사의 초가 잔빌과 관개 수로처럼 부드러운 속마음을 지켜 주는 단단한 일상 루틴을 차분히 다지는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'aura' },
   { key: 'lycianCliffHorizonCalm', nameKo: '리키아·암벽 지평선', icon: '⛰️', category: 'deep_master', summary: '고대 리키아의 암벽 회랑과 해안 능선길처럼 오르막의 숨이 가쁠수록 시선을 들어 능선 너머의 넓은 바다를 바라보는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'bluebird' },
+  { key: 'byzantineHagiaLightDome', nameKo: '비잔틴·하기아 돔 빛', icon: '🕌', category: 'deep_master', summary: '비잔틴 건축의 펜덴티브와 허공에 뜬 마흔 개의 창문처럼 무거운 일과 속에서도 마음이 숨 쉴 빛의 창을 여는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'aura' },
+  { key: 'himbaOtjizeDesertPoise', nameKo: '힘바·오트지제 돌봄', icon: '🏜️', category: 'deep_master', summary: '나미비아 힘바족의 오트지제 보호막과 모래 아래 숨은 물줄기처럼 성과가 덜 보이는 날에도 나를 지키는 돌봄을 믿는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'muse' },
+  { key: 'haidaGwaiiCedarCanoe', nameKo: '하이다 과이·삼나무 카누', icon: '🛶', category: 'deep_master', summary: '태평양 북서부 하이다 과이의 속을 비운 삼나무 카누처럼 억지로 더 채우기보다 마음을 가볍게 비워 파도를 넘는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'trinity' },
 ] as DceEngineMeta[]).filter(engine => !LUCY_PRO_CATALOG_DUPLICATE_KEYS.has(engine.key));
 
 export function getFiredEngineBadges(
@@ -7491,6 +7530,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'gayaIronCrownRiverHarmony',
     'elamiteSusaWaterChoga',
     'lycianCliffHorizonCalm',
+    'byzantineHagiaLightDome',
+    'himbaOtjizeDesertPoise',
+    'haidaGwaiiCedarCanoe',
   ],
 };
 
