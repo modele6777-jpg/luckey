@@ -1827,5 +1827,17 @@ export const MASTER_REVIEW_BINDINGS: Record<string, { field: string; traceKey: s
   "lycianCliffHorizonCalm": {
     "field": "lycianCliffHorizonCalmResult",
     "traceKey": "lycianCliffHorizonCalmResult"
+  },
+  "byzantineHagiaLightDome": {
+    "field": "byzantineHagiaLightDomeResult",
+    "traceKey": "byzantineHagiaLightDomeResult"
+  },
+  "himbaOtjizeDesertPoise": {
+    "field": "himbaOtjizeDesertPoiseResult",
+    "traceKey": "himbaOtjizeDesertPoiseResult"
+  },
+  "haidaGwaiiCedarCanoe": {
+    "field": "haidaGwaiiCedarCanoeResult",
+    "traceKey": "haidaGwaiiCedarCanoeResult"
   }
 };
