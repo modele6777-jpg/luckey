@@ -1911,5 +1911,17 @@ export const MASTER_REVIEW_BINDINGS: Record<string, { field: string; traceKey: s
   "pamirWakhanCorridorStars": {
     "field": "pamirWakhanCorridorStarsResult",
     "traceKey": "pamirWakhanCorridorStarsResult"
+  },
+  "hebrideanTartanLoomCalm": {
+    "field": "hebrideanTartanLoomCalmResult",
+    "traceKey": "hebrideanTartanLoomCalmResult"
+  },
+  "chiloePalafitoTidePoise": {
+    "field": "chiloePalafitoTidePoiseResult",
+    "traceKey": "chiloePalafitoTidePoiseResult"
+  },
+  "bununJadeMountainSong": {
+    "field": "bununJadeMountainSongResult",
+    "traceKey": "bununJadeMountainSongResult"
   }
 };

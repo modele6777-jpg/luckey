@@ -472,6 +472,9 @@ import { calculateOtavaloAndesLoomBalance, formatOtavaloLoomPrompt } from '../sr
 import { calculateAndalusianPatioFountainCalm, formatAndalusianPatioPrompt } from '../src/lib/divination/andalusianPatioFountainCalmEngine';
 import { calculateLoziKuombokaFloodPath, formatLoziKuombokaPrompt } from '../src/lib/divination/loziKuombokaFloodPathEngine';
 import { calculatePamirWakhanCorridorStars, formatPamirWakhanPrompt } from '../src/lib/divination/pamirWakhanCorridorStarsEngine';
+import { calculateHebrideanTartanLoomCalm, formatHebrideanTartanPrompt } from '../src/lib/divination/hebrideanTartanLoomCalmEngine';
+import { calculateChiloePalafitoTidePoise, formatChiloePalafitoPrompt } from '../src/lib/divination/chiloePalafitoTidePoiseEngine';
+import { calculateBununJadeMountainSong, formatBununMountainPrompt } from '../src/lib/divination/bununJadeMountainSongEngine';
 
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
@@ -14736,4 +14739,37 @@ test('Pamir Wakhan Corridor Stars engine: motif, +09:00 KST, and interpretive bo
   const prompt = formatPamirWakhanPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
   assert.ok(prompt.includes('파미르') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Hebridean Tartan Loom Calm engine: motif, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateHebrideanTartanLoomCalm({ profile, now: new Date('2026-11-20T20:59:00Z'), question: '내 발박자에 맞춰 고유한 격자를 짜고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-HEBRIDEAN-TARTAN-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatHebrideanTartanPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('헤브리디스') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Chiloe Palafito Tide Poise engine: motif, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateChiloePalafitoTidePoise({ profile, now: new Date('2026-11-20T20:59:00Z'), question: '밀물과 썰물을 다 품는 기둥을 지키고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-CHILOE-PALAFITO-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatChiloePalafitoPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('치로에') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Bunun Jade Mountain Song engine: motif, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateBununJadeMountainSong({ profile, now: new Date('2026-11-20T20:59:00Z'), question: '낮은 호흡부터 포개어 공명을 만들고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-BUNUN-MOUNTAIN-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatBununMountainPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('부눈') && prompt.includes('+09:00 (KST)'));
 });
