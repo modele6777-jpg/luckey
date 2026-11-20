@@ -8,12 +8,12 @@
  * 4. 데코룸(Decorum): 상황과 분수에 맞는 시민적 품격, 적절함, 그리고 온당한 행동 양식.
  * 5. 공공선(Bonum Commune): 개인의 사적 이해관계를 넘어 공동체의 번영과 정의에 기여하는 헌신.
  *
- * @version LUCKEY-CICERO-DE-OFFICIIS-v2.1.0
+ * @version LUCKEY-CICERO-DE-OFFICIIS-v2.4.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const CICERO_DE_OFFICIIS_VERSION = 'LUCKEY-CICERO-DE-OFFICIIS-v2.3.0';
+export const CICERO_DE_OFFICIIS_VERSION = 'LUCKEY-CICERO-DE-OFFICIIS-v2.4.0';
 
 export interface CiceroVirtueFoundation {
   foundationLatin: string;
@@ -129,10 +129,15 @@ const HARMONY_CRITERIA: CiceroHarmonyCriterion[] = [
 function getCiceroKstComponents(now: Date): { hour: number; month: number; isoKst: string } {
   const kstMs = now.getTime() + 9 * 60 * 60 * 1000;
   const kstDate = new Date(kstMs);
+  const y = kstDate.getUTCFullYear();
+  const m = String(kstDate.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kstDate.getUTCDate()).padStart(2, '0');
+  const hh = String(kstDate.getUTCHours()).padStart(2, '0');
+  const mm = String(kstDate.getUTCMinutes()).padStart(2, '0');
   return {
     hour: kstDate.getUTCHours(),
     month: kstDate.getUTCMonth() + 1,
-    isoKst: kstDate.toISOString().replace('Z', '+09:00'),
+    isoKst: `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`,
   };
 }
 

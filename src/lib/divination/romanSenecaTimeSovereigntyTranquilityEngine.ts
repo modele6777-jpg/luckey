@@ -8,12 +8,12 @@
  * 4. 영혼의 자족(Autarkeia): 외적인 소유와 인정에 휘둘리지 않고 스스로 온전한 내적 만족에 이름.
  * 5. 죽음의 직시와 현재의 존엄(Memento Mori & Dignitas): 유한성을 직시함으로써 모든 순간을 가장 숭고하게 벼려내는 힘.
  *
- * @version LUCKEY-SENECA-TIME-SOVEREIGNTY-v2.1.0
+ * @version LUCKEY-SENECA-TIME-SOVEREIGNTY-v2.4.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const SENECA_TIME_SOVEREIGNTY_VERSION = 'LUCKEY-SENECA-TIME-SOVEREIGNTY-v2.3.0';
+export const SENECA_TIME_SOVEREIGNTY_VERSION = 'LUCKEY-SENECA-TIME-SOVEREIGNTY-v2.4.0';
 
 export interface SenecaStage {
   stageLevel: number;
@@ -132,10 +132,15 @@ const SENECA_APHORISMS = [
 function getSenecaKstComponents(now: Date): { hour: number; month: number; isoKst: string } {
   const kstMs = now.getTime() + 9 * 60 * 60 * 1000;
   const kstDate = new Date(kstMs);
+  const y = kstDate.getUTCFullYear();
+  const m = String(kstDate.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kstDate.getUTCDate()).padStart(2, '0');
+  const hh = String(kstDate.getUTCHours()).padStart(2, '0');
+  const mm = String(kstDate.getUTCMinutes()).padStart(2, '0');
   return {
     hour: kstDate.getUTCHours(),
     month: kstDate.getUTCMonth() + 1,
-    isoKst: kstDate.toISOString().replace('Z', '+09:00'),
+    isoKst: `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`,
   };
 }
 
