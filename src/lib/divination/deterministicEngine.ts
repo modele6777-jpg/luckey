@@ -473,6 +473,9 @@ import { calculateBaekjeGiltBronzeIncenseCalm, formatBaekjeIncensePrompt, type B
 import { calculateParthianNisaArcheryPoise, formatParthianNisaPrompt, type ParthianNisaResult } from './parthianNisaArcheryPoiseEngine';
 import { calculateNahuaXochitlCuicatlFlow, formatNahuaXochitlPrompt, type NahuaXochitlResult } from './nahuaXochitlCuicatlFlowEngine';
 import { calculateBeninBronzeObaMemory, formatBeninBronzeObaPrompt, type BeninBronzeObaResult } from './beninBronzeObaMemoryEngine';
+import { calculateBamiyanSilkRoadValleyCalm, formatBamiyanValleyPrompt, type BamiyanValleyResult } from './bamiyanSilkRoadValleyCalmEngine';
+import { calculateSigiriyaLionRockWaterGarden, formatSigiriyaRockPrompt, type SigiriyaRockResult } from './sigiriyaLionRockWaterGardenEngine';
+import { calculateNumidianCirtaHorizonPoise, formatNumidianCirtaPrompt, type NumidianCirtaResult } from './numidianCirtaHorizonPoiseEngine';
 
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
@@ -964,6 +967,9 @@ export interface DeterministicEngineReport {
   parthianNisaArcheryPoiseResult?: ParthianNisaResult | null;
   nahuaXochitlCuicatlFlowResult?: NahuaXochitlResult | null;
   beninBronzeObaMemoryResult?: BeninBronzeObaResult | null;
+  bamiyanSilkRoadValleyCalmResult?: BamiyanValleyResult | null;
+  sigiriyaLionRockWaterGardenResult?: SigiriyaRockResult | null;
+  numidianCirtaHorizonPoiseResult?: NumidianCirtaResult | null;
 
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
@@ -4536,6 +4542,33 @@ try {
     }
   })()));
 
+  // 450. 바미얀·실크로드 계곡 조화 엔진
+  const bamiyanSilkRoadValleyCalmResult = calculateSupplement('bamiyanSilkRoadValleyCalmResult', () => ((() => {
+    try {
+      return calculateBamiyanSilkRoadValleyCalm({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 451. 시기리야 바위 성채·수로 정원 엔진
+  const sigiriyaLionRockWaterGardenResult = calculateSupplement('sigiriyaLionRockWaterGardenResult', () => ((() => {
+    try {
+      return calculateSigiriyaLionRockWaterGarden({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 452. 누미디아 키르타·천문 지평선 엔진
+  const numidianCirtaHorizonPoiseResult = calculateSupplement('numidianCirtaHorizonPoiseResult', () => ((() => {
+    try {
+      return calculateNumidianCirtaHorizonPoise({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
   // 220. 한국 신라 의상대사 화엄일승법계도 & 법성게 원융무애 엔진
   const uisangHwaeomIlseungBeopgyeResult = calculateSupplement('uisangHwaeomIlseungBeopgyeResult', () => ((() => {
     try {
@@ -6003,6 +6036,9 @@ try {
     parthianNisaArcheryPoiseResult,
     nahuaXochitlCuicatlFlowResult,
     beninBronzeObaMemoryResult,
+    bamiyanSilkRoadValleyCalmResult,
+    sigiriyaLionRockWaterGardenResult,
+    numidianCirtaHorizonPoiseResult,
     tools: toolsMap,
   };
 }
@@ -6475,6 +6511,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'parthianNisaArcheryPoise', nameKo: '파르티아 니사·기병 화살', icon: '🏹', category: 'deep_master', summary: '고대 파르티아 니사의 교차로 지혜와 파르티안 샷의 선회처럼 정면으로만 밀어붙이지 않고 한 걸음 물러서는 여유 속에서 진짜 목표를 조준하는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'trinity' },
   { key: 'nahuaXochitlCuicatlFlow', nameKo: '나우아틀 꽃과 노래', icon: '🌼', category: 'deep_master', summary: '멕시코 고원 나우아틀 철학의 꽃과 노래(In Xochitl In Cuicatl)처럼 쫓기는 일정 속에서도 마음을 살리는 진실한 언어와 작은 아름다움의 틈을 내어 보는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'aura' },
   { key: 'beninBronzeObaMemory', nameKo: '베냉 브론즈·기억의 부조', icon: '🗿', category: 'deep_master', summary: '서아프리카 에도 청동 주조 장인들의 부조처럼 그동안 쌓아 온 성실한 기록과 손끝의 숙련을 믿고 오늘의 한 매듭을 차분히 짓는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'muse' },
+  { key: 'bamiyanSilkRoadValleyCalm', nameKo: '바미얀·실크로드 계곡', icon: '🏔️', category: 'deep_master', summary: '힌두쿠시 바미얀 계곡의 쉼터와 푸른 호수처럼 거센 일정 속에서도 등을 기댈 조용한 틈을 먼저 마련하고 맑은 물빛을 지켜 내는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'bluebird' },
+  { key: 'sigiriyaLionRockWaterGarden', nameKo: '시기리야·수로 정원', icon: '🦁', category: 'deep_master', summary: '고대 스리랑카 시기리야의 공중 수로 정원과 거울벽처럼 겉의 속도를 재촉하기보다 보이지 않는 기본 수로와 정갈한 태도를 먼저 다듬는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'trinity' },
+  { key: 'numidianCirtaHorizonPoise', nameKo: '누미디아 키르타·지평선', icon: '🌅', category: 'deep_master', summary: '북아프리카 고원 키르타의 협곡 다리와 기병의 가벼운 고삐처럼 무거운 조건을 다 갖추려 애쓰기보다 균형 잡힌 시야로 한 걸음을 옮기는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'aura' },
 ] as DceEngineMeta[]).filter(engine => !LUCY_PRO_CATALOG_DUPLICATE_KEYS.has(engine.key));
 
 export function getFiredEngineBadges(
@@ -7365,6 +7404,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'parthianNisaArcheryPoise',
     'nahuaXochitlCuicatlFlow',
     'beninBronzeObaMemory',
+    'bamiyanSilkRoadValleyCalm',
+    'sigiriyaLionRockWaterGarden',
+    'numidianCirtaHorizonPoise',
   ],
 };
 

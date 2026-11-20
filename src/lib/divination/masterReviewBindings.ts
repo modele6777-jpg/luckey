@@ -1791,5 +1791,17 @@ export const MASTER_REVIEW_BINDINGS: Record<string, { field: string; traceKey: s
   "beninBronzeObaMemory": {
     "field": "beninBronzeObaMemoryResult",
     "traceKey": "beninBronzeObaMemoryResult"
+  },
+  "bamiyanSilkRoadValleyCalm": {
+    "field": "bamiyanSilkRoadValleyCalmResult",
+    "traceKey": "bamiyanSilkRoadValleyCalmResult"
+  },
+  "sigiriyaLionRockWaterGarden": {
+    "field": "sigiriyaLionRockWaterGardenResult",
+    "traceKey": "sigiriyaLionRockWaterGardenResult"
+  },
+  "numidianCirtaHorizonPoise": {
+    "field": "numidianCirtaHorizonPoiseResult",
+    "traceKey": "numidianCirtaHorizonPoiseResult"
   }
 };
