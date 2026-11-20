@@ -7882,7 +7882,7 @@ test('Sambong Jeong Do-jeon Minbon Reform Engine: calculates Minbon Serving, Ins
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(rep.reflectiveQuestion.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
-  assert(rep.calculatedAtKst.endsWith('+09:00 KST'));
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(Boolean(rep.sambongSynthesisMatrix?.integratedAction));
   const repQ = calculateKoreanSambongJeongDoJeonMinbonReform(profile, '사람들에게 실질적으로 도움이 되는 새로운 규칙 설계');
   assert(repQ.reflectiveQuestion.includes('새로운 규칙'));
@@ -7893,6 +7893,7 @@ test('Sambong Jeong Do-jeon Minbon Reform Engine: calculates Minbon Serving, Ins
   assert(prompt.includes('해석 경계'));
   assert(prompt.includes('실천 의례'));
   assert(prompt.includes('성찰 초점'));
+  assert(prompt.includes(repQ.reflectionFocus));
   assert(prompt.includes('교차 매트릭스'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
@@ -8542,7 +8543,7 @@ test('Samyeongdaesa Songun Yujeong Engine: calculates Righteous Devotion, Diplom
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(rep.reflectiveQuestion.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
-  assert(rep.calculatedAtKst.endsWith('+09:00 KST'));
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(Boolean(rep.samyeongSynthesisMatrix?.integratedAction));
   const repQ = calculateKoreanSamyeongdaesaSongunYujeong(profile, '사적인 안위를 넘어 지켜야 할 대의');
   assert(repQ.reflectiveQuestion.includes('지켜야 할 대의'));
@@ -8553,6 +8554,7 @@ test('Samyeongdaesa Songun Yujeong Engine: calculates Righteous Devotion, Diplom
   assert(prompt.includes('해석 경계'));
   assert(prompt.includes('실천 의례'));
   assert(prompt.includes('성찰 초점'));
+  assert(prompt.includes(repQ.reflectionFocus));
   assert(prompt.includes('교차 매트릭스'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
@@ -8875,7 +8877,7 @@ test('Seopo Kim Man-jung Guunmong Illusory Awakening Engine: calculates Fame Pen
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(rep.reflectiveQuestion.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
-  assert(rep.calculatedAtKst.endsWith('+09:00 KST'));
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(Boolean(rep.guunmongSynthesisMatrix?.integratedAction));
   const repQ = calculateKoreanSeopoKimManJungGuunmongAwakening(profile, '덧없는 집착과 지켜야 할 본심');
   assert(repQ.reflectiveQuestion.includes('본심'));
@@ -8886,6 +8888,7 @@ test('Seopo Kim Man-jung Guunmong Illusory Awakening Engine: calculates Fame Pen
   assert(prompt.includes('해석 경계'));
   assert(prompt.includes('실천 의례'));
   assert(prompt.includes('성찰 초점'));
+  assert(prompt.includes(repQ.reflectionFocus));
   assert(prompt.includes('교차 매트릭스'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
