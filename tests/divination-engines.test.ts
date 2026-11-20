@@ -412,6 +412,9 @@ import { calculateEvenkiBugaTaigaPath, formatEvenkiBugaPrompt } from '../src/lib
 import { calculateManchuMukunWhiteMountain, formatManchuMukunPrompt } from '../src/lib/divination/manchuMukunWhiteMountainEngine';
 import { calculatePortugueseSaudadeSagresCompass, formatPortugueseSagresPrompt } from '../src/lib/divination/portugueseSaudadeSagresCompassEngine';
 import { calculateLadakhiStupaGlacierWater, formatLadakhiChortenPrompt } from '../src/lib/divination/ladakhiStupaGlacierWaterEngine';
+import { calculateAssyrianNinevehClayTablet, formatAssyrianNinevehPrompt } from '../src/lib/divination/assyrianNinevehClayTabletEngine';
+import { calculateTuaregTagelmustSaharaStars, formatTuaregSaharaPrompt } from '../src/lib/divination/tuaregTagelmustSaharaStarsEngine';
+import { calculateEstonianRegilaulForestCalm, formatEstonianRegilaulPrompt } from '../src/lib/divination/estonianRegilaulForestCalmEngine';
 
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
@@ -13980,4 +13983,37 @@ test('Ladakhi Stupa Glacier Water engine: wisdom, +09:00 KST, and interpretive b
   const prompt = formatLadakhiChortenPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
   assert.ok(prompt.includes('라다크') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Assyrian Nineveh Clay Tablet engine: seal, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateAssyrianNinevehClayTablet({ profile, now: new Date('2026-11-20T08:40:00Z'), question: '머릿속 고민을 짧은 기록으로 세우고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-ASSYRIAN-NINEVEH-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatAssyrianNinevehPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('아시리아') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Tuareg Tagelmust Sahara Stars engine: compass, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateTuaregTagelmustSaharaStars({ profile, now: new Date('2026-11-20T08:40:00Z'), question: '내 호흡을 보호하며 별빛 기준을 보고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-TUAREG-SAHARA-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatTuaregSaharaPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('투아레그') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Estonian Regilaul Forest Calm engine: motif, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateEstonianRegilaulForestCalm({ profile, now: new Date('2026-11-20T08:40:00Z'), question: '오늘 지킬 소박한 리듬을 찾고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-ESTONIAN-REGILAUL-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatEstonianRegilaulPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('에스토니아') && prompt.includes('+09:00 (KST)'));
 });
