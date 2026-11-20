@@ -376,6 +376,9 @@ import { calculateSogdianSilkRoadCaravanTrust, formatSogdianSilkRoadPrompt } fro
 import { calculateTainoZemiAreitoHarmony, formatTainoZemiAreitoPrompt } from '../src/lib/divination/tainoZemiAreitoHarmonyEngine';
 import { calculateBasothoBothoMountainWisdom, formatBasothoBothoPrompt } from '../src/lib/divination/basothoBothoMountainWisdomEngine';
 import { calculateTuvanKhoomeiOvertonesResonance, formatTuvanKhoomeiPrompt } from '../src/lib/divination/tuvanKhoomeiOvertonesResonanceEngine';
+import { calculateBretonBarzazSeaPoetry, formatBretonBarzazPrompt } from '../src/lib/divination/bretonBarzazSeaPoetryEngine';
+import { calculateHausaKirariAladaWisdom, formatHausaKirariPrompt } from '../src/lib/divination/hausaKirariAladaWisdomEngine';
+import { calculateOccitanTroubadourParatge, formatOccitanParatgePrompt } from '../src/lib/divination/occitanTroubadourParatgeEngine';
 
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
@@ -13548,4 +13551,37 @@ test('Tuvan Khoomei Overtones Resonance engine: layer, +09:00 KST, and interpret
   const prompt = formatTuvanKhoomeiPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
   assert.ok(prompt.includes('투바') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Breton Barzaz Sea Poetry engine: motif, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateBretonBarzazSeaPoetry({ profile, now: new Date('2026-11-20T07:18:00Z'), question: '지금 밀물과 썰물의 때를 알고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-BRETON-BARZAZ-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatBretonBarzazPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('브르타뉴') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Hausa Kirari Alada Wisdom engine: proverb, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateHausaKirariAladaWisdom({ profile, now: new Date('2026-11-20T07:18:00Z'), question: '긴 호흡으로 신뢰를 지키고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-HAUSA-KIRARI-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatHausaKirariPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('하우사') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Occitan Troubadour Paratge engine: virtue, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateOccitanTroubadourParatge({ profile, now: new Date('2026-11-20T07:18:00Z'), question: '서로의 품위를 지키는 균형을 찾고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-OCCITAN-PARATGE-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatOccitanParatgePrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('옥시타니아') && prompt.includes('+09:00 (KST)'));
 });
