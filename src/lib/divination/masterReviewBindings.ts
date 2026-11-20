@@ -2067,5 +2067,17 @@ export const MASTER_REVIEW_BINDINGS: Record<string, { field: string; traceKey: s
   "badakhshanLapisVein": {
     "field": "badakhshanLapisVeinResult",
     "traceKey": "badakhshanLapisVeinResult"
+  },
+  "kogiAlunaThread": {
+    "field": "kogiAlunaThreadResult",
+    "traceKey": "kogiAlunaThreadResult"
+  },
+  "bamilekeBeadedThrone": {
+    "field": "bamilekeBeadedThroneResult",
+    "traceKey": "bamilekeBeadedThroneResult"
+  },
+  "fezCobaltPottery": {
+    "field": "fezCobaltPotteryResult",
+    "traceKey": "fezCobaltPotteryResult"
   }
 };

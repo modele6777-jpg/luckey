@@ -511,6 +511,9 @@ import { calculateVenetianLagoonForcola, formatVenetianLagoonPrompt } from '../s
 import { calculateBajauLautTide, formatBajauLautPrompt } from '../src/lib/divination/bajauLautHouseboatTideEngine';
 import { calculateWodaabeGerewol, formatWodaabeGerewolPrompt } from '../src/lib/divination/wodaabeGerewolDesertPoiseEngine';
 import { calculateBadakhshanLapisVein, formatBadakhshanLapisPrompt } from '../src/lib/divination/badakhshanLapisVeinPoiseEngine';
+import { calculateKogiAlunaThread, formatKogiAlunaPrompt } from '../src/lib/divination/kogiAlunaThoughtThreadEngine';
+import { calculateBamilekeBeadedThrone, formatBamilekeBeadedPrompt } from '../src/lib/divination/bamilekeBeadedThronePoiseEngine';
+import { calculateFezCobaltPottery, formatFezCobaltPrompt } from '../src/lib/divination/fezCobaltPotteryKilnEngine';
 
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
@@ -15243,4 +15246,37 @@ test('Badakhshan Lapis Vein engine: vein, +09:00 KST, and interpretive boundary'
   const prompt = formatBadakhshanLapisPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
   assert.ok(prompt.includes('바다흐샨') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionVein));
+});
+
+test('Kogi Aluna Thread engine: thread, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateKogiAlunaThread({ profile, now: new Date('2026-11-20T23:05:00Z'), question: '행동 이전의 마음을 맑히고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-KOGI-ALUNA-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatKogiAlunaPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('코기·알루나') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Bamileke Beaded Throne engine: pattern, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateBamilekeBeadedThrone({ profile, now: new Date('2026-11-20T23:05:00Z'), question: '작은 일상을 차곡차곡 엮고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-BAMILEKE-BEADS-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatBamilekeBeadedPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('바밀레케') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Fez Cobalt Pottery engine: glaze, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateFezCobaltPottery({ profile, now: new Date('2026-11-20T23:05:00Z'), question: '중심과 여백의 균형을 찾고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-FEZ-COBALT-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatFezCobaltPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('페즈·코발트') && prompt.includes('+09:00 (KST)'));
 });
