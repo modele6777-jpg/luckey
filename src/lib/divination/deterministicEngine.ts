@@ -383,6 +383,9 @@ import { calculateEtruscanTemplumSkyDivision, formatEtruscanTemplumPrompt, type 
 import { calculateAinuKamuyIomanteHarmony, formatAinuKamuyPrompt, type AinuKamuyResult } from './ainuKamuyIomanteHarmonyEngine';
 import { calculateGuaraniTekoPoraForestHarmony, formatGuaraniTekoPoraPrompt, type GuaraniTekoPoraResult } from './guaraniTekoPoraForestHarmonyEngine';
 import { calculateNavajoHozhoBeautyBalance, formatNavajoHozhoPrompt, type NavajoHozhoResult } from './navajoHozhoBeautyBalanceEngine';
+import { calculateBhutanGnhTashiTagye, formatBhutanGnhPrompt, type BhutanGnhResult } from './bhutanGnhTashiTagyeEngine';
+import { calculateBalticRomuvaDarnaHarmony, formatBalticRomuvaPrompt, type BalticRomuvaDarnaResult } from './balticRomuvaDarnaHarmonyEngine';
+import { calculateMinoanLabyrinthLabrys, formatMinoanLabyrinthPrompt, type MinoanLabyrinthResult } from './minoanLabyrinthLabrysEngine';
 
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
@@ -784,6 +787,9 @@ export interface DeterministicEngineReport {
   ainuKamuyIomanteHarmonyResult?: AinuKamuyResult | null;
   guaraniTekoPoraForestHarmonyResult?: GuaraniTekoPoraResult | null;
   navajoHozhoBeautyBalanceResult?: NavajoHozhoResult | null;
+  bhutanGnhTashiTagyeResult?: BhutanGnhResult | null;
+  balticRomuvaDarnaHarmonyResult?: BalticRomuvaDarnaResult | null;
+  minoanLabyrinthLabrysResult?: MinoanLabyrinthResult | null;
 
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
@@ -3546,6 +3552,33 @@ try {
     }
   })()));
 
+  // 360. 부탄 GNH·타시 타게이(팔길상) 조화 엔진
+  const bhutanGnhTashiTagyeResult = calculateSupplement('bhutanGnhTashiTagyeResult', () => ((() => {
+    try {
+      return calculateBhutanGnhTashiTagye({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 361. 발트 리투아니아 로무바·다르나 조화 엔진
+  const balticRomuvaDarnaHarmonyResult = calculateSupplement('balticRomuvaDarnaHarmonyResult', () => ((() => {
+    try {
+      return calculateBalticRomuvaDarnaHarmony({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 362. 고대 미노스 크노소스 미궁·라브리스 중심 엔진
+  const minoanLabyrinthLabrysResult = calculateSupplement('minoanLabyrinthLabrysResult', () => ((() => {
+    try {
+      return calculateMinoanLabyrinthLabrys({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
   // 220. 한국 신라 의상대사 화엄일승법계도 & 법성게 원융무애 엔진
   const uisangHwaeomIlseungBeopgyeResult = calculateSupplement('uisangHwaeomIlseungBeopgyeResult', () => ((() => {
     try {
@@ -4923,6 +4956,9 @@ try {
     ainuKamuyIomanteHarmonyResult,
     guaraniTekoPoraForestHarmonyResult,
     navajoHozhoBeautyBalanceResult,
+    bhutanGnhTashiTagyeResult,
+    balticRomuvaDarnaHarmonyResult,
+    minoanLabyrinthLabrysResult,
     tools: toolsMap,
   };
 }
@@ -5305,6 +5341,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'ainuKamuyIomanteHarmony', nameKo: '아이누 카무이 이오만테 순환', icon: '🦉', category: 'deep_master', summary: '북방 아이누의 카무이 공경과 이오만테 순환 지혜로 일상과 관계를 감사·존중의 리듬으로 다독이는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'aura' },
   { key: 'guaraniTekoPoraForestHarmony', nameKo: '구아라니 테코 포랑 숲의 조화', icon: '🌳', category: 'deep_master', summary: '남미 구아라니족의 좋은 삶(Teko Porã)과 숲의 상호의존 지혜로 나다움과 공존의 균형을 살피는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'bluebird' },
   { key: 'navajoHozhoBeautyBalance', nameKo: '나바호 호조 아름다움 균형', icon: '🪶', category: 'deep_master', summary: '나바호 디네 철학의 호조(Hózhó·조화와 균형 속 걷기)로 흔들린 생각과 걸음을 단정히 세우는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'trinity' },
+  { key: 'bhutanGnhTashiTagye', nameKo: '부탄 GNH·타시 타게이 조화', icon: '🪷', category: 'deep_master', summary: '부탄 국민총행복(GNH)과 팔길상 상징으로 성취의 속도를 조절하고 마음의 평온과 일상 의례를 세우는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'aura' },
+  { key: 'balticRomuvaDarnaHarmony', nameKo: '발트 로무바·다르나 조화', icon: '🌳', category: 'deep_master', summary: '발트·리투아니아 로무바 전통의 다르나(Darna) 질서로 억지스러움을 덜어내고 자연스러운 리듬을 회복하는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'trinity' },
+  { key: 'minoanLabyrinthLabrys', nameKo: '미노스 미궁·라브리스 중심', icon: '🧶', category: 'deep_master', summary: '고대 미노스 크노소스 미궁과 아리아드네의 실타래처럼 복잡한 고민 속에서 단 하나의 핵심 축을 지키는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'muse' },
 ] as DceEngineMeta[]).filter(engine => !LUCY_PRO_CATALOG_DUPLICATE_KEYS.has(engine.key));
 
 export function getFiredEngineBadges(
@@ -5815,6 +5854,7 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'mapucheKultrunCosmicBalance',
     'ainuKamuyIomanteHarmony',
     'guaraniTekoPoraForestHarmony',
+    'bhutanGnhTashiTagye',
   ],
   creative_mind: [
     'irishJamesJoyceUlyssesEpiphany',
@@ -6100,6 +6140,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'ainuKamuyIomanteHarmony',
     'guaraniTekoPoraForestHarmony',
     'navajoHozhoBeautyBalance',
+    'bhutanGnhTashiTagye',
+    'balticRomuvaDarnaHarmony',
+    'minoanLabyrinthLabrys',
   ],
 };
 
