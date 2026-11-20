@@ -10,6 +10,7 @@ export interface FezCobaltResult {
   engineVersion: string;
   calculatedAtKst: string;
   kilnGlaze: string;
+  companionGlaze: string;
   cobaltSymmetry: string;
   reflectionFocus: string;
   ritualAction: string;
@@ -47,7 +48,12 @@ const QUESTIONS = [
 
 function toKstIso(now: Date): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
-  return kst.toISOString().replace('Z', '+09:00 (KST)');
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
 }
 
 function hashSeed(text: string): number {
@@ -61,16 +67,22 @@ function hashSeed(text: string): number {
 
 export function calculateFezCobaltPottery(input: FezCobaltInput): FezCobaltResult {
   const fate = input.profile.fate ?? {};
-  const seed = hashSeed(`${JSON.stringify(fate)}|${input.now.toISOString().slice(0, 13)}|${input.question ?? ''}`);
+  const seedText = `${JSON.stringify(fate)}|${input.now.toISOString().slice(0, 13)}|${input.question ?? ''}`;
+  const seed = hashSeed(seedText);
+  const glazeIdx = seed % GLAZES.length;
+  const companionOffset = 1 + (hashSeed(`${seedText}|companion`) % (GLAZES.length - 1));
+  const kilnGlaze = GLAZES[glazeIdx];
+  const companionGlaze = GLAZES[(glazeIdx + companionOffset) % GLAZES.length];
 
   return {
-    engineVersion: 'LUCKEY-FEZ-COBALT-v2.1.0',
+    engineVersion: 'LUCKEY-FEZ-COBALT-v2.2.0',
     calculatedAtKst: toKstIso(input.now),
-    kilnGlaze: GLAZES[seed % GLAZES.length],
+    kilnGlaze,
+    companionGlaze,
     cobaltSymmetry: SYMMETRIES[(seed >>> 3) % SYMMETRIES.length],
-    reflectionFocus: '모로코 페즈의 장인들이 흰 흙 위에 코발트 블루 기하학 문양을 중심에서부터 그려 가마에 구워 내는 도자기 공예처럼, 중심과 여백의 균형을 살피는 상징적 관점입니다.',
-    ritualAction: ACTIONS[(seed >>> 6) % ACTIONS.length],
-    reflectiveQuestion: QUESTIONS[(seed >>> 9) % QUESTIONS.length],
+    reflectionFocus: `모로코 페즈의 장인들이 흰 흙 위에 코발트 블루 기하학 문양을 중심에서부터 그려 가마에 구워 내는 도자기 공예처럼, 주 유약('${kilnGlaze}')과 동반 유약('${companionGlaze}')을 겹쳐 중심과 여백의 균형을 살피는 상징적 관점입니다.`,
+    ritualAction: ACTIONS[glazeIdx],
+    reflectiveQuestion: QUESTIONS[glazeIdx],
     interpretiveBoundary: '개인 점수·심리 진단·미래 예측이 아닙니다. 자기 성찰을 돕기 위한 상징적 관점 안내입니다.',
   };
 }
@@ -80,6 +92,7 @@ export function formatFezCobaltPrompt(res: FezCobaltResult): string {
     `[페즈·코발트 도자기 가마 관점 · ${res.engineVersion}]`,
     `기준 시각: ${res.calculatedAtKst}`,
     `유약 빛깔: ${res.kilnGlaze}`,
+    `동반 빛깔: ${res.companionGlaze}`,
     `대칭 여백: ${res.cobaltSymmetry}`,
     `성찰 초점: ${res.reflectionFocus}`,
     `권장 의식: ${res.ritualAction}`,

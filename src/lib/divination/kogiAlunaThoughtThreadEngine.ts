@@ -10,6 +10,7 @@ export interface KogiAlunaResult {
   engineVersion: string;
   calculatedAtKst: string;
   alunaThread: string;
+  companionThread: string;
   mountainBalance: string;
   reflectionFocus: string;
   ritualAction: string;
@@ -47,7 +48,12 @@ const QUESTIONS = [
 
 function toKstIso(now: Date): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
-  return kst.toISOString().replace('Z', '+09:00 (KST)');
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
 }
 
 function hashSeed(text: string): number {
@@ -61,16 +67,22 @@ function hashSeed(text: string): number {
 
 export function calculateKogiAlunaThread(input: KogiAlunaInput): KogiAlunaResult {
   const fate = input.profile.fate ?? {};
-  const seed = hashSeed(`${JSON.stringify(fate)}|${input.now.toISOString().slice(0, 13)}|${input.question ?? ''}`);
+  const seedText = `${JSON.stringify(fate)}|${input.now.toISOString().slice(0, 13)}|${input.question ?? ''}`;
+  const seed = hashSeed(seedText);
+  const threadIdx = seed % THREADS.length;
+  const companionOffset = 1 + (hashSeed(`${seedText}|companion`) % (THREADS.length - 1));
+  const alunaThread = THREADS[threadIdx];
+  const companionThread = THREADS[(threadIdx + companionOffset) % THREADS.length];
 
   return {
-    engineVersion: 'LUCKEY-KOGI-ALUNA-v2.1.0',
+    engineVersion: 'LUCKEY-KOGI-ALUNA-v2.2.0',
     calculatedAtKst: toKstIso(input.now),
-    alunaThread: THREADS[seed % THREADS.length],
+    alunaThread,
+    companionThread,
     mountainBalance: BALANCES[(seed >>> 3) % BALANCES.length],
-    reflectionFocus: '콜롬비아 시에라 네바다 산맥의 코기 족이 물질 세계 너머의 의도와 연결을 엮는 사유의 실 알루나(Aluna)처럼, 행동 이전의 마음을 살피는 상징적 관점입니다.',
-    ritualAction: ACTIONS[(seed >>> 6) % ACTIONS.length],
-    reflectiveQuestion: QUESTIONS[(seed >>> 9) % QUESTIONS.length],
+    reflectionFocus: `콜롬비아 시에라 네바다 산맥의 코기 족이 물질 세계 너머의 의도와 연결을 엮는 사유의 실 알루나(Aluna)처럼, 주 실('${alunaThread}')과 동반 실('${companionThread}')을 겹쳐 행동 이전의 마음을 살피는 상징적 관점입니다.`,
+    ritualAction: ACTIONS[threadIdx],
+    reflectiveQuestion: QUESTIONS[threadIdx],
     interpretiveBoundary: '개인 점수·심리 진단·미래 예측이 아닙니다. 자기 성찰을 돕기 위한 상징적 관점 안내입니다.',
   };
 }
@@ -80,6 +92,7 @@ export function formatKogiAlunaPrompt(res: KogiAlunaResult): string {
     `[코기·알루나 사유 실 관점 · ${res.engineVersion}]`,
     `기준 시각: ${res.calculatedAtKst}`,
     `사유의 실: ${res.alunaThread}`,
+    `동반 실: ${res.companionThread}`,
     `산맥 균형: ${res.mountainBalance}`,
     `성찰 초점: ${res.reflectionFocus}`,
     `권장 의식: ${res.ritualAction}`,

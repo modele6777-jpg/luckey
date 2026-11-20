@@ -15250,33 +15250,36 @@ test('Badakhshan Lapis Vein engine: vein, +09:00 KST, and interpretive boundary'
 
 test('Kogi Aluna Thread engine: thread, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateKogiAlunaThread({ profile, now: new Date('2026-11-20T23:05:00Z'), question: '행동 이전의 마음을 맑히고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-KOGI-ALUNA-v2.1.0');
-  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.equal(rep.engineVersion, 'LUCKEY-KOGI-ALUNA-v2.2.0');
+  assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
+  assert.ok(rep.companionThread !== rep.alunaThread);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatKogiAlunaPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('코기·알루나') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('코기·알루나') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionThread));
 });
 
 test('Bamileke Beaded Throne engine: pattern, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateBamilekeBeadedThrone({ profile, now: new Date('2026-11-20T23:05:00Z'), question: '작은 일상을 차곡차곡 엮고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-BAMILEKE-BEADS-v2.1.0');
-  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.equal(rep.engineVersion, 'LUCKEY-BAMILEKE-BEADS-v2.2.0');
+  assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
+  assert.ok(rep.companionPattern !== rep.beadPattern);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatBamilekeBeadedPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('바밀레케') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('바밀레케') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionPattern));
 });
 
 test('Fez Cobalt Pottery engine: glaze, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateFezCobaltPottery({ profile, now: new Date('2026-11-20T23:05:00Z'), question: '중심과 여백의 균형을 찾고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-FEZ-COBALT-v2.1.0');
-  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.equal(rep.engineVersion, 'LUCKEY-FEZ-COBALT-v2.2.0');
+  assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
+  assert.ok(rep.companionGlaze !== rep.kilnGlaze);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatFezCobaltPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('페즈·코발트') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('페즈·코발트') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionGlaze));
 });
