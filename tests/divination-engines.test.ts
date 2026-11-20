@@ -4187,6 +4187,7 @@ test('Yoruba Ifa Odu Engine: calculates 16 Meji Odu and Ebo guidance', () => {
   assert.equal(rep.engineVersion, YORUBA_IFA_ODU_ENGINE_VERSION);
   assert(rep.oduName.length > 0);
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(rep.destinyAlignmentScore >= 0 && rep.destinyAlignmentScore <= 100);
   const prompt = formatYorubaIfaOduPrompt(rep);
   assert(prompt.includes('서아프리카 요루바 이파(Ifá) 16 오두 & 오룬밀라 운명의 지혜 정성 리포트'));
@@ -4194,6 +4195,7 @@ test('Yoruba Ifa Odu Engine: calculates 16 Meji Odu and Ebo guidance', () => {
   assert(prompt.includes('전통 의례를 통한 실제 신탁'));
   assert(prompt.includes('확정적 예언이 아닙니다'));
   assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
+  assert(prompt.includes(rep.reflectionFocus));
 });
 
 test('Arabic Ilm al-Raml Engine: calculates 16 geomantic figures and Qadi verdict', () => {
@@ -4635,11 +4637,13 @@ test('Vedic Pancha Kosha Engine: calculates 5 layers alignment and Atman realiza
   assert(rep.atmanRealizationIndex >= 0 && rep.atmanRealizationIndex <= 100);
   assert(rep.lowestAlignedLayer.layerIndex >= 1 && rep.lowestAlignedLayer.layerIndex <= 5);
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatVedicPanchaKoshaPrompt(rep);
   assert(prompt.includes('고대 인도 베단타 5대 코샤(Pancha Kosha) 층위별 정렬'));
   assert(prompt.includes(rep.lowestAlignedLayer.koshaNameKo));
   assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
+  assert(prompt.includes(rep.reflectionFocus));
 });
 
 test('Roman Janus Engine: calculates qualitative threshold balance and active gateway', () => {
@@ -4988,10 +4992,12 @@ test('Zhuangzi Xiaoyaoyou Butterfly Engine: calculates absolute freedom, rocs fl
   assert(rep.butterflyDreamFluidityScore >= 0 && rep.butterflyDreamFluidityScore <= 100);
   assert(rep.dominantArchetype.nameKo.length > 0);
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   const prompt = formatZhuangziXiaoyaoyouButterflyPrompt(rep);
   assert(prompt.includes('장자'));
   assert(prompt.includes(rep.dominantArchetype.nameKo));
   assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
+  assert(prompt.includes(rep.reflectionFocus));
 });
 
 test('Buddhist Yogacara Consciousness Engine: calculates eight consciousnesses purification and transformed wisdom', () => {
@@ -10471,7 +10477,7 @@ test('Schopenhauer v2.1.0, Mandukya Turiya v2.0.0, and Zhuangzi v2.0.0 engines o
 
   const zhuangzi = calculateZhuangziXiaoyaoyouButterfly({ profile, question: '진로 선택 앞에서 남들 시선이 자꾸 신경 쓰여요', now });
   assert.equal(zhuangzi.engineVersion, ZHUANGZI_XIAOYAOYOU_BUTTERFLY_ENGINE_VERSION);
-  assert.ok(zhuangzi.calculatedAtKst.endsWith('+09:00'));
+  assert.ok(zhuangzi.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert.ok(Boolean(zhuangzi.zhuangziSynthesisMatrix?.integratedAction));
   assert.ok(zhuangzi.dailyPracticeRitual.length > 0 && zhuangzi.reflectiveQuestion.length > 0 && zhuangzi.interpretiveBoundary.length > 0);
   const zhuangziPrompt = formatZhuangziXiaoyaoyouButterflyPrompt(zhuangzi);
@@ -10499,7 +10505,7 @@ test('Ziwei HuaJi v2.1.0, Zoroastrian Asha v2.0.0, and Yoruba Ifa Odu v2.1.0 out
 
   const ifa = calculateYorubaIfaOdu({ profile, targetDate: now, question: '새로운 선택 앞에서 어떤 태도를 가져야 할까요?' });
   assert.equal(ifa.engineVersion, YORUBA_IFA_ODU_ENGINE_VERSION);
-  assert.ok(ifa.calculatedAtKst.endsWith('+09:00'));
+  assert.ok(ifa.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert.ok(Boolean(ifa.ifaSynthesisMatrix?.integratedAction));
   const ifaPrompt = formatYorubaIfaOduPrompt(ifa);
   assert.ok(!ifaPrompt.includes('/100') && !ifaPrompt.includes('%'));
@@ -10553,7 +10559,7 @@ test('Wonhyo, Aurelius Inner Citadel, and Vedic Pancha Kosha v2.1.0 output quali
 
   const pk = calculateVedicPanchaKosha({ profile, question: '몸과 마음이 지쳐 호흡이 얕아진 느낌이에요', now });
   assert.equal(pk.engineVersion, VEDIC_PANCHA_KOSHA_ENGINE_VERSION);
-  assert.ok(pk.calculatedAtKst.endsWith('+09:00'));
+  assert.ok(pk.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert.ok(Boolean(pk.panchaKoshaSynthesisMatrix?.integratedAction));
   const pkPrompt = formatVedicPanchaKoshaPrompt(pk);
   assert.ok(!pkPrompt.includes('/100') && !pkPrompt.includes('%') && !pkPrompt.includes('점)'));
