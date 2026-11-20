@@ -892,9 +892,27 @@ html[data-lucy-theme='starlight'] .lucy-night .lucy-voice-status { background: #
   color-scheme: dark;
 }
 
-/* iOS 26+: the keyboard's floating accessory bar (^ v ✓) overlays the page
-   without shrinking visualViewport. Lift the Lucy composer above it. */
-html.keyboard-open[data-ios-accessory-overlay] .lucy-chat-footer {
-  padding-bottom: var(--ios-keyboard-accessory-gap, 92px) !important;
+/* Keyboard open: the Lucy pane shrinks to the visible area (e.g. 306px on the
+   cover screen). Pin the composer to the bottom of the pane so content above it
+   (header, chips, conversation) can never push it under the keyboard. A device
+   trace showed the composer starting at 278px of a 306px pane. */
+html.keyboard-open .lucy-chat-shell {
+  position: relative !important;
+}
+/* Make the shell the composer's containing block, even if inner wrappers overflow. */
+html.keyboard-open .lucy-chat-shell > div:not(.lucy-cosmic-bg-container):not(.lucy-master-room),
+html.keyboard-open .lucy-chat-shell > div:not(.lucy-cosmic-bg-container):not(.lucy-master-room) > div:has(> .lucy-chat-footer) {
+  position: static !important;
+}
+html.keyboard-open .lucy-chat-shell .lucy-chat-footer {
+  position: absolute !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  z-index: 60 !important;
   min-height: 0 !important;
+  padding-bottom: 4px !important;
+}
+html.keyboard-open .lucy-chat-shell .lucy-chat-main {
+  padding-bottom: calc(var(--lucy-keyboard-footer-h, 132px) + 8px) !important;
 }
