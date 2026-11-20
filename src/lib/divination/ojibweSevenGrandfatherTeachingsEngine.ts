@@ -123,9 +123,9 @@ export function calculateOjibweSevenGrandfatherTeachings(params: {
 
   const seed = stableHash(
     [
-      params.profile.name,
-      params.profile.birthdate,
-      params.profile.birthtime || 'unknown',
+      params.profile.basic?.name ?? '',
+      params.profile.fate?.birthDate ?? '',
+      params.profile.fate?.birthTime ?? 'unknown',
       query,
     ].join('|')
   );
