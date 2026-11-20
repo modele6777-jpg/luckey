@@ -496,6 +496,7 @@ export function applyAppLayoutViewport(box: ViewportBox, doc: Document, snapshot
   const html = doc.documentElement;
   html.classList.remove('keyboard-open');
   doc.body?.classList.remove('keyboard-open');
+  html.removeAttribute?.('data-ios-accessory-overlay');
   // Native CSS viewport units react during rotation before delayed JS callbacks.
   const nativeCanvas = snapshot?.iosStandalone && positive(snapshot.cssViewportHeight) != null
     && positive(snapshot.cssViewportWidth) != null;
@@ -512,9 +513,23 @@ export function applyAppLayoutViewport(box: ViewportBox, doc: Document, snapshot
   for (const property of ['height', 'min-height', 'max-height']) shell?.style.removeProperty(property);
 }
 
+/**
+ * iOS 26+ floats the keyboard's form accessory bar (^ v ✓) over the page without
+ * shrinking visualViewport, so a bottom composer sits underneath it. Mark that case
+ * so composers can lift themselves above the bar while the keyboard is open.
+ */
+export function iosFloatingAccessoryMajor(userAgent: string): number {
+  const match = /\b(?:iPhone|iPad|iPod)\b.*?OS (\d+)_/.exec(userAgent || '')
+    || (/Macintosh/.test(userAgent || '') && /Version\/(\d+)/.exec(userAgent || ''));
+  return match ? Number(match[1]) || 0 : 0;
+}
+
 export function applyKeyboardLayoutViewport(box: ViewportBox, doc: Document): void {
   doc.documentElement.classList.add('keyboard-open');
   if (doc.body) doc.body.classList.add('keyboard-open');
+  const nav = doc.defaultView?.navigator;
+  const touchApple = Boolean(nav && (/(iPhone|iPad|iPod)/.test(nav.userAgent) || (/Macintosh/.test(nav.userAgent) && (nav.maxTouchPoints || 0) > 1)));
+  doc.documentElement.toggleAttribute?.('data-ios-accessory-overlay', touchApple && iosFloatingAccessoryMajor(nav?.userAgent || '') >= 26);
 
   // iOS는 키보드가 열릴 때 visualViewport를 위로 패닝(offsetTop)한다.
   // 여기서 html/body 높이까지 줄이면 그 패닝과 겹쳐 화면이 키보드보다 더 위로 올라간다.
