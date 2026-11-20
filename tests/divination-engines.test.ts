@@ -14977,33 +14977,36 @@ test('Turkana Jade Sea Wind engine: motif, +09:00 KST, and interpretive boundary
 
 test('Asturian Horreo Granary engine: motif, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateAsturianHorreoPoise({ profile, now: new Date('2026-11-20T21:55:00Z'), question: '습기를 피해 보존하고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-ASTURIAN-HORREO-v2.1.0');
-  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.equal(rep.engineVersion, 'LUCKEY-ASTURIAN-HORREO-v2.2.0');
+  assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
+  assert.ok(rep.companionMotif !== rep.granaryMotif);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatAsturianHorreoPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('아스투리아스') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('아스투리아스') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionMotif));
 });
 
 test('Omo Karo Body Art engine: motif, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateOmoKaroBodyArt({ profile, now: new Date('2026-11-20T21:55:00Z'), question: '오늘의 생기를 표현하고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-OMO-KARO-v2.1.0');
-  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.equal(rep.engineVersion, 'LUCKEY-OMO-KARO-v2.2.0');
+  assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
+  assert.ok(rep.companionMotif !== rep.pigmentMotif);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatOmoKaroPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('오모') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('오모') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionMotif));
 });
 
 test('Sumba Ikat Story engine: motif, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateSumbaIkatStory({ profile, now: new Date('2026-11-20T21:55:00Z'), question: '여백을 지키며 서사를 짜고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-SUMBA-IKAT-v2.1.0');
-  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.equal(rep.engineVersion, 'LUCKEY-SUMBA-IKAT-v2.2.0');
+  assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
+  assert.ok(rep.companionMotif !== rep.ikatMotif);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatSumbaIkatPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('숨바') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('숨바') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionMotif));
 });

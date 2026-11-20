@@ -10,6 +10,7 @@ export interface SumbaIkatResult {
   engineVersion: string;
   calculatedAtKst: string;
   ikatMotif: string;
+  companionMotif: string;
   dyeThreadState: string;
   reflectionFocus: string;
   ritualAction: string;
@@ -41,13 +42,18 @@ const RITUALS = [
 const QUESTIONS = [
   '지금 내 삶에서 무늬를 또렷하게 만들기 위해 오히려 물들이지 않고 비워 두어야 할 부분은 어디인가요?',
   '단번에 결과를 내기보다 여러 번 담그고 말리는 시간이 필요한 일은 무엇일까요?',
-  '내 하루의 씨실과 날실이 엉키지 않고 고르게 엮이고 있는지 살펴볼까요?',
   '오래 남을 나만의 이야기에 오늘 어떤 색의 실 한 올을 더하고 싶나요?',
+  '내 하루의 씨실과 날실이 엉키지 않고 고르게 엮이고 있는지 살펴볼까요?',
 ] as const;
 
 function toKstIso(date: Date): string {
   const kst = new Date(date.getTime() + 9 * 60 * 60 * 1000);
-  return kst.toISOString().replace('Z', '+09:00 (KST)');
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
 }
 
 function stableHash(seed: string): number {
@@ -65,17 +71,21 @@ export function calculateSumbaIkatStory(input: SumbaIkatInput): SumbaIkatResult 
   const seedText = `${JSON.stringify(fate)}|${input.question ?? ''}|${now.toISOString().slice(0, 10)}|sumba-ikat`;
   const h = stableHash(seedText);
 
-  const ikatMotif = MOTIFS[h % MOTIFS.length];
+  const motifIdx = h % MOTIFS.length;
+  const companionOffset = 1 + (stableHash(`${seedText}|companion`) % (MOTIFS.length - 1));
+  const ikatMotif = MOTIFS[motifIdx];
+  const companionMotif = MOTIFS[(motifIdx + companionOffset) % MOTIFS.length];
   const dyeThreadState = THREAD_STATES[(h >>> 3) % THREAD_STATES.length];
-  const ritualAction = RITUALS[(h >>> 6) % RITUALS.length];
-  const reflectiveQuestion = QUESTIONS[(h >>> 9) % QUESTIONS.length];
+  const ritualAction = RITUALS[motifIdx];
+  const reflectiveQuestion = QUESTIONS[motifIdx];
 
   return {
-    engineVersion: 'LUCKEY-SUMBA-IKAT-v2.1.0',
+    engineVersion: 'LUCKEY-SUMBA-IKAT-v2.2.0',
     calculatedAtKst: toKstIso(now),
     ikatMotif,
+    companionMotif,
     dyeThreadState,
-    reflectionFocus: `실을 먼저 묶어 여백을 지키고 수차례 천연 염료에 담가 서사를 짜는 숨바 섬의 이카트 직조처럼, 지금은 '${dyeThreadState}'의 호흡이 빛나는 시점입니다.`,
+    reflectionFocus: `실을 먼저 묶어 여백을 지키고 수차례 천연 염료에 담가 서사를 짜는 숨바 섬의 이카트 직조처럼, 주 모티프와 동반 모티프('${companionMotif}')가 어우러져 지금은 '${dyeThreadState}'의 호흡이 빛나는 시점입니다.`,
     ritualAction,
     reflectiveQuestion,
     interpretiveBoundary: '인도네시아 숨바 섬의 전통 이카트 염색·직조 서사를 빌린 상징적 성찰 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.',
@@ -86,6 +96,7 @@ export function formatSumbaIkatPrompt(result: SumbaIkatResult): string {
   return [
     `[숨바 이카트 염색 베틀 (${result.engineVersion}) · ${result.calculatedAtKst}]`,
     `- 상징 모티프: ${result.ikatMotif}`,
+    `- 동반 모티프: ${result.companionMotif}`,
     `- 현재 결: ${result.dyeThreadState}`,
     `- 성찰 초점: ${result.reflectionFocus}`,
     `- 작은 실천: ${result.ritualAction}`,
