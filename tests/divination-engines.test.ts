@@ -337,6 +337,9 @@ import { calculateZuluUbuntuRelationalSelf, formatZuluUbuntuRelationalSelfPrompt
 import { calculateAkanAdinkraSymbolsWisdom, formatAkanAdinkraSymbolsWisdomPrompt, AKAN_ADINKRA_WISDOM_VERSION } from '../src/lib/divination/akanAdinkraSymbolsWisdomEngine';
 import { calculateEthiopianZeraYacobHatataReason, formatEthiopianZeraYacobHatataReasonPrompt, ETHIOPIAN_ZERA_YACOB_VERSION } from '../src/lib/divination/ethiopianZeraYacobHatataReasonEngine';
 import { calculateBasqueLauburuBasajaunHarmony, formatBasqueLauburuBasajaunHarmonyPrompt, BASQUE_LAUBURU_HARMONY_VERSION } from '../src/lib/divination/basqueLauburuBasajaunHarmonyEngine';
+import { calculateOjibweSevenGrandfatherTeachings, formatOjibweSevenGrandfatherPrompt } from '../src/lib/divination/ojibweSevenGrandfatherTeachingsEngine';
+import { calculateSamiNoaidiDrumJoik, formatSamiNoaidiDrumJoikPrompt } from '../src/lib/divination/samiNoaidiDrumJoikEngine';
+import { calculateGeorgianRustaveliKnightPanther, formatGeorgianRustaveliKnightPantherPrompt } from '../src/lib/divination/georgianRustaveliKnightPantherEngine';
 
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
@@ -13080,4 +13083,37 @@ test('Basque Lauburu & Basajaun Harmony engine: cycle balance, +09:00 KST, and i
   const prompt = formatBasqueLauburuBasajaunHarmonyPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
   assert.ok(prompt.includes('라부루(Lauburu)') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Ojibwe Seven Grandfather Teachings engine: virtues, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateOjibweSevenGrandfatherTeachings({ profile, now: new Date('2026-11-20T04:40:00Z'), question: '관계에서 중심을 지키고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-OJIBWE-SEVEN-GRANDFATHERS-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('수치적 운세 점수가 아닙니다'));
+  const prompt = formatOjibweSevenGrandfatherPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('오지브웨') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Sami Noaidi Drum & Joik engine: drum zone, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateSamiNoaidiDrumJoik({ profile, now: new Date('2026-11-20T04:40:00Z'), question: '지친 마음을 회복하고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-SAMI-NOAIDI-JOIK-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측 수치가 아닙니다'));
+  const prompt = formatSamiNoaidiDrumJoikPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('사미') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Georgian Rustaveli Knight in the Panther’s Skin engine: virtues, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateGeorgianRustaveliKnightPanther({ profile, now: new Date('2026-11-20T04:40:00Z'), question: '품격 있는 결정을 내리고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-GEORGIAN-RUSTAVELI-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('확정적 미래 예측이 아닙니다'));
+  const prompt = formatGeorgianRustaveliKnightPantherPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('루스타벨리') && prompt.includes('+09:00 (KST)'));
 });

@@ -1371,5 +1371,17 @@ export const MASTER_REVIEW_BINDINGS: Record<string, { field: string; traceKey: s
   "basqueLauburuBasajaunHarmony": {
     "field": "basqueLauburuBasajaunHarmonyResult",
     "traceKey": "basqueLauburuBasajaunHarmonyResult"
+  },
+  "ojibweSevenGrandfatherTeachings": {
+    "field": "ojibweSevenGrandfatherTeachingsResult",
+    "traceKey": "ojibweSevenGrandfatherTeachingsResult"
+  },
+  "samiNoaidiDrumJoik": {
+    "field": "samiNoaidiDrumJoikResult",
+    "traceKey": "samiNoaidiDrumJoikResult"
+  },
+  "georgianRustaveliKnightPanther": {
+    "field": "georgianRustaveliKnightPantherResult",
+    "traceKey": "georgianRustaveliKnightPantherResult"
   }
 };
