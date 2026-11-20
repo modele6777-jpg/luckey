@@ -1443,5 +1443,17 @@ export const MASTER_REVIEW_BINDINGS: Record<string, { field: string; traceKey: s
   "minoanLabyrinthLabrys": {
     "field": "minoanLabyrinthLabrysResult",
     "traceKey": "minoanLabyrinthLabrysResult"
+  },
+  "torajaAlukTodoloTongkonan": {
+    "field": "torajaAlukTodoloTongkonanResult",
+    "traceKey": "torajaAlukTodoloTongkonanResult"
+  },
+  "sinhalaBaliKohombaHarmony": {
+    "field": "sinhalaBaliKohombaHarmonyResult",
+    "traceKey": "sinhalaBaliKohombaHarmonyResult"
+  },
+  "nubianMeroeApedemakBalance": {
+    "field": "nubianMeroeApedemakBalanceResult",
+    "traceKey": "nubianMeroeApedemakBalanceResult"
   }
 };

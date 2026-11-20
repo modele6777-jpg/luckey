@@ -386,6 +386,9 @@ import { calculateNavajoHozhoBeautyBalance, formatNavajoHozhoPrompt, type Navajo
 import { calculateBhutanGnhTashiTagye, formatBhutanGnhPrompt, type BhutanGnhResult } from './bhutanGnhTashiTagyeEngine';
 import { calculateBalticRomuvaDarnaHarmony, formatBalticRomuvaPrompt, type BalticRomuvaDarnaResult } from './balticRomuvaDarnaHarmonyEngine';
 import { calculateMinoanLabyrinthLabrys, formatMinoanLabyrinthPrompt, type MinoanLabyrinthResult } from './minoanLabyrinthLabrysEngine';
+import { calculateTorajaAlukTodoloTongkonan, formatTorajaAlukPrompt, type TorajaAlukResult } from './torajaAlukTodoloTongkonanEngine';
+import { calculateSinhalaBaliKohombaHarmony, formatSinhalaBaliPrompt, type SinhalaBaliKohombaResult } from './sinhalaBaliKohombaHarmonyEngine';
+import { calculateNubianMeroeApedemakBalance, formatNubianMeroePrompt, type NubianMeroeResult } from './nubianMeroeApedemakBalanceEngine';
 
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
@@ -790,6 +793,9 @@ export interface DeterministicEngineReport {
   bhutanGnhTashiTagyeResult?: BhutanGnhResult | null;
   balticRomuvaDarnaHarmonyResult?: BalticRomuvaDarnaResult | null;
   minoanLabyrinthLabrysResult?: MinoanLabyrinthResult | null;
+  torajaAlukTodoloTongkonanResult?: TorajaAlukResult | null;
+  sinhalaBaliKohombaHarmonyResult?: SinhalaBaliKohombaResult | null;
+  nubianMeroeApedemakBalanceResult?: NubianMeroeResult | null;
 
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
@@ -3579,6 +3585,33 @@ try {
     }
   })()));
 
+  // 363. 인도네시아 토라자 알룩 토돌로·통코난 조상 지혜 엔진
+  const torajaAlukTodoloTongkonanResult = calculateSupplement('torajaAlukTodoloTongkonanResult', () => ((() => {
+    try {
+      return calculateTorajaAlukTodoloTongkonan({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 364. 스리랑카 싱할라 발리·코훔바 조화 의례 엔진
+  const sinhalaBaliKohombaHarmonyResult = calculateSupplement('sinhalaBaliKohombaHarmonyResult', () => ((() => {
+    try {
+      return calculateSinhalaBaliKohombaHarmony({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 365. 고대 누비아 메로에·아페데막 균형 엔진
+  const nubianMeroeApedemakBalanceResult = calculateSupplement('nubianMeroeApedemakBalanceResult', () => ((() => {
+    try {
+      return calculateNubianMeroeApedemakBalance({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
   // 220. 한국 신라 의상대사 화엄일승법계도 & 법성게 원융무애 엔진
   const uisangHwaeomIlseungBeopgyeResult = calculateSupplement('uisangHwaeomIlseungBeopgyeResult', () => ((() => {
     try {
@@ -4959,6 +4992,9 @@ try {
     bhutanGnhTashiTagyeResult,
     balticRomuvaDarnaHarmonyResult,
     minoanLabyrinthLabrysResult,
+    torajaAlukTodoloTongkonanResult,
+    sinhalaBaliKohombaHarmonyResult,
+    nubianMeroeApedemakBalanceResult,
     tools: toolsMap,
   };
 }
@@ -5344,6 +5380,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'bhutanGnhTashiTagye', nameKo: '부탄 GNH·타시 타게이 조화', icon: '🪷', category: 'deep_master', summary: '부탄 국민총행복(GNH)과 팔길상 상징으로 성취의 속도를 조절하고 마음의 평온과 일상 의례를 세우는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'aura' },
   { key: 'balticRomuvaDarnaHarmony', nameKo: '발트 로무바·다르나 조화', icon: '🌳', category: 'deep_master', summary: '발트·리투아니아 로무바 전통의 다르나(Darna) 질서로 억지스러움을 덜어내고 자연스러운 리듬을 회복하는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'trinity' },
   { key: 'minoanLabyrinthLabrys', nameKo: '미노스 미궁·라브리스 중심', icon: '🧶', category: 'deep_master', summary: '고대 미노스 크노소스 미궁과 아리아드네의 실타래처럼 복잡한 고민 속에서 단 하나의 핵심 축을 지키는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'muse' },
+  { key: 'torajaAlukTodoloTongkonan', nameKo: '토라자 알룩 토돌로·통코난', icon: '🏡', category: 'deep_master', summary: '인도네시아 토라자 통코난의 중심 기둥과 감사의 예법(Aluk Todolo)처럼 삶의 방향과 관계의 매듭을 단단히 세우는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'bluebird' },
+  { key: 'sinhalaBaliKohombaHarmony', nameKo: '싱할라 발리·코훔바 조화', icon: '🌺', category: 'deep_master', summary: '스리랑카 싱할라 전통의 코훔바 정화와 발리 평온 의례처럼 오래 묵은 피로를 털어내고 마음의 공기를 환기하는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'aura' },
+  { key: 'nubianMeroeApedemakBalance', nameKo: '고대 누비아 메로에·아페데막', icon: '🦁', category: 'deep_master', summary: '고대 누비아 메로에의 수호와 칸다케의 주체적 지혜처럼 눈치 보기보다 나만의 원칙과 당당한 균형을 세우는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'trinity' },
 ] as DceEngineMeta[]).filter(engine => !LUCY_PRO_CATALOG_DUPLICATE_KEYS.has(engine.key));
 
 export function getFiredEngineBadges(
@@ -5855,6 +5894,7 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'ainuKamuyIomanteHarmony',
     'guaraniTekoPoraForestHarmony',
     'bhutanGnhTashiTagye',
+    'torajaAlukTodoloTongkonan',
   ],
   creative_mind: [
     'irishJamesJoyceUlyssesEpiphany',
@@ -6143,6 +6183,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'bhutanGnhTashiTagye',
     'balticRomuvaDarnaHarmony',
     'minoanLabyrinthLabrys',
+    'torajaAlukTodoloTongkonan',
+    'sinhalaBaliKohombaHarmony',
+    'nubianMeroeApedemakBalance',
   ],
 };
 
