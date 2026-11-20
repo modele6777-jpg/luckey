@@ -13151,13 +13151,14 @@ test('Zulu Ubuntu Relational Self engine: relationship mirroring stays qualitati
 test('Akan Adinkra Symbols Wisdom engine: qualitative symbol balance, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateAkanAdinkraSymbolsWisdom(profile, '이직 결정을 앞두고 있어요', new Date('2026-11-20T04:00:00Z'));
   assert.equal(rep.engineVersion, AKAN_ADINKRA_WISDOM_VERSION);
-  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.equal(rep.questionTopic, 'decision');
+  assert.ok(rep.companionSymbol.length > 0 && rep.companionSymbol !== rep.symbolArchetype);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('개인 점수·심리 진단·미래 예측이 아닙니다'));
   const prompt = formatAkanAdinkraSymbolsWisdomPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('아딩크라(Adinkra)') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('아딩크라(Adinkra)') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionSymbol));
 });
 
 test('Ethiopian Zera Yacob Hatata Reason engine: conscience inquiry, +09:00 KST, and interpretive boundary', () => {
@@ -13263,13 +13264,14 @@ test('Kazakh Abai Book of Words engine: pillars, +09:00 KST, and interpretive bo
 
 test('Amazigh Desert Star Oasis engine: waypoints, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateAmazighDesertStarOasis({ profile, now: new Date('2026-11-20T05:30:00Z'), question: '지치지 않고 멀리 가고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-AMAZIGH-DESERT-v2.1.0');
-  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.equal(rep.engineVersion, 'LUCKEY-AMAZIGH-DESERT-v2.2.0');
+  assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
+  assert.ok(rep.supportWaypoint.id !== rep.primaryWaypoint.id);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatAmazighDesertPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('아마지그') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('아마지그') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.reflectionFocus));
 });
 
 test('Hittite Telepinu Harmony Renewal engine: phases, +09:00 KST, and interpretive boundary', () => {
@@ -13318,13 +13320,14 @@ test('Etruscan Templum Sky Division engine: sectors, +09:00 KST, and interpretiv
 
 test('Ainu Kamuy Iomante Harmony engine: aspects, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateAinuKamuyIomanteHarmony({ profile, now: new Date('2026-11-20T05:50:00Z'), question: '일상의 감사와 순환을 회복하고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-AINU-KAMUY-v2.1.0');
-  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.equal(rep.engineVersion, 'LUCKEY-AINU-KAMUY-v2.2.0');
+  assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
+  assert.ok(rep.companionAspect.name !== rep.primaryAspect.name);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatAinuKamuyPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('아이누') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('아이누') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.reflectionFocus));
 });
 
 test('Guarani Teko Pora Forest Harmony engine: principles, +09:00 KST, and interpretive boundary', () => {

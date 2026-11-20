@@ -18,12 +18,12 @@
  * 1. 개인 점수·심리 진단·미래 예측이 아닙니다. 모든 산출은 상징 성찰 문장입니다.
  * 2. 특정 구전 인용을 만들어 귀속하지 않고 상징의 보편적 의미만 정성적으로 씁니다.
  *
- * @version LUCKEY-AKAN-ADINKRA-v2.1.0
+ * @version LUCKEY-AKAN-ADINKRA-v2.2.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const AKAN_ADINKRA_WISDOM_VERSION = 'LUCKEY-AKAN-ADINKRA-v2.1.0';
+export const AKAN_ADINKRA_WISDOM_VERSION = 'LUCKEY-AKAN-ADINKRA-v2.2.0';
 
 export type AdinkraQuestionTopic = 'decision' | 'relationship' | 'healing' | 'reflection';
 
@@ -44,6 +44,7 @@ export interface SituationalAdinkraAudit {
 
 export interface AdinkraSynthesisMatrix {
   anchorSymbol: string;
+  companionSymbol: string;
   balanceAxis: string;
   integratedAction: string;
 }
@@ -54,6 +55,7 @@ export interface AkanAdinkraSymbolsWisdomResult {
   calculatedAtKst: string;
   questionTopic: AdinkraQuestionTopic;
   symbolArchetype: string;
+  companionSymbol: string;
   situationalAdinkraAudit: SituationalAdinkraAudit;
   temporalSymbolPulse: AdinkraSymbolPulse;
   adinkraSynthesisMatrix: AdinkraSynthesisMatrix;
@@ -179,14 +181,23 @@ export function calculateAkanAdinkraSymbolsWisdom(
     '은콘손콘손(Nconsonson) — 이어진 고리처럼 혼자보다 함께 단단해지는 연대',
     '파워호디에(Fawodhodie) — 책임과 함께 오는 자유와 자립의 결',
   ];
-  const symbolArchetype = symbols[Math.abs(hash) % symbols.length];
+  const primaryIdx = Math.abs(hash) % symbols.length;
+  let compHash = 0;
+  const compSeed = `${seed}|companion`;
+  for (let i = 0; i < compSeed.length; i++) {
+    compHash = (compHash << 5) - compHash + compSeed.charCodeAt(i);
+    compHash |= 0;
+  }
+  const companionOffset = 1 + (Math.abs(compHash) % (symbols.length - 1));
+  const symbolArchetype = symbols[primaryIdx];
+  const companionSymbol = symbols[(primaryIdx + companionOffset) % symbols.length];
 
   const situationalAdinkraAudit = buildSituationalAdinkraAudit(topic, symbolArchetype);
   const temporalSymbolPulse = buildTemporalSymbolPulse(now, symbolArchetype);
 
   const trimmedQ = (question ?? '').trim();
   const ritualAction = `${situationalAdinkraAudit.adinkraPractice} 이어서 ${situationalAdinkraAudit.humbleStrengthAdvice}`;
-  const reflectionFocus = `${symbolArchetype} · ${temporalSymbolPulse.kstTimeWindow} — 과거의 배움과 현재의 균형 점검`;
+  const reflectionFocus = `${symbolArchetype} · ${companionSymbol} · ${temporalSymbolPulse.kstTimeWindow} — 과거의 배움과 현재의 균형 점검`;
   const reflectiveQuestion = trimmedQ
     ? `'${trimmedQ}'라는 물음 앞에서, 지나온 경험에서 되찾아야 할 교훈 한 가지는 무엇이고 지금 내려놓아야 할 고집은 무엇인가요?`
     : `오늘 나에게 필요한 아딩크라의 태도는 과거를 돌아보는 지혜인가요, 아니면 힘을 낮추는 겸손인가요?`;
@@ -196,12 +207,18 @@ export function calculateAkanAdinkraSymbolsWisdom(
 
   const adinkraSynthesisMatrix: AdinkraSynthesisMatrix = {
     anchorSymbol: symbolArchetype,
+    companionSymbol,
     balanceAxis: `${situationalAdinkraAudit.retrospectiveLesson} ↔ ${temporalSymbolPulse.temporalGuidance}`,
     integratedAction: `${situationalAdinkraAudit.humbleStrengthAdvice}${trimmedQ ? ` [질문 맥락: ${trimmedQ}]` : ''}`,
   };
 
   const kst = new Date(now.getTime() + 9 * 3600 * 1000);
-  const calculatedAtKst = `${kst.toISOString().slice(0, 19)}+09:00 (KST)`;
+  const yyyy = kst.getUTCFullYear();
+  const mm = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const dd = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mi = String(kst.getUTCMinutes()).padStart(2, '0');
+  const calculatedAtKst = `${yyyy}-${mm}-${dd} ${hh}:${mi} +09:00 (KST)`;
 
   return {
     engineVersion: AKAN_ADINKRA_WISDOM_VERSION,
@@ -209,6 +226,7 @@ export function calculateAkanAdinkraSymbolsWisdom(
     calculatedAtKst,
     questionTopic: topic,
     symbolArchetype,
+    companionSymbol,
     situationalAdinkraAudit,
     temporalSymbolPulse,
     adinkraSynthesisMatrix,
@@ -224,6 +242,7 @@ export function formatAkanAdinkraSymbolsWisdomPrompt(res: AkanAdinkraSymbolsWisd
     `【아칸 아딩크라(Adinkra) 지혜 상징 (${res.engineVersion} | ${res.calculatedAtKst})】`,
     `- 질문 주제 분류: ${res.questionTopic}`,
     `- 중심 상징: ${res.symbolArchetype}`,
+    `- 보조 상징: ${res.companionSymbol}`,
     `- 질문 비춤: ${res.situationalAdinkraAudit.symbolMirror}`,
     `- 되돌아봄 교훈: ${res.situationalAdinkraAudit.retrospectiveLesson}`,
     `- 겸손과 힘의 조언: ${res.situationalAdinkraAudit.humbleStrengthAdvice}`,

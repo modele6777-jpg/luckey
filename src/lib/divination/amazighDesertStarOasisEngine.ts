@@ -12,6 +12,7 @@ export interface AmazighWaypoint {
   koreanLabel: string;
   coreInsight: string;
   desertPractice: string;
+  reflectiveQuestion: string;
 }
 
 export interface AmazighDesertResult {
@@ -35,6 +36,7 @@ const AMAZIGH_WAYPOINTS: readonly AmazighWaypoint[] = [
     koreanLabel: '모래폭풍 속 방향 감각',
     coreInsight: '낮의 열기와 모래바람에 길이 흐려져도 밤이 되면 떠오르는 별처럼 큰 방향은 변하지 않습니다.',
     desertPractice: '당장 눈앞의 작은 변수에 흔들리기보다 다음 달에도 변치 않을 목표 한 줄을 다시 확인하세요.',
+    reflectiveQuestion: '당장의 모래바람이 잦아든 뒤에도 변치 않을 나만의 북극성(Itri) 한 줄은 무엇인가요?',
   },
   {
     id: 'aman_oasis_reserve',
@@ -42,6 +44,7 @@ const AMAZIGH_WAYPOINTS: readonly AmazighWaypoint[] = [
     koreanLabel: '지치지 않게 아끼는 지혜',
     coreInsight: '사막을 건너는 힘은 속도가 아니라 물을 아끼고 제때 숨을 고르는 배분에서 나옵니다.',
     desertPractice: '오늘 일정 중 무리해서 넣은 약속이나 과한 몰입 하나를 덜어 내어 체력을 비축하세요.',
+    reflectiveQuestion: '사막을 끝까지 건너기 위해 지금 속도보다 먼저 아껴 두어야 할 오아시스 비축분은 무엇인가요?',
   },
   {
     id: 'taghelmust_boundary',
@@ -49,6 +52,7 @@ const AMAZIGH_WAYPOINTS: readonly AmazighWaypoint[] = [
     koreanLabel: '마음을 지키는 건강한 경계',
     coreInsight: '불필요한 외부 소음과 감정 소모를 막아 주어야 내 안의 집중력과 품위가 지켜집니다.',
     desertPractice: '오늘 나를 피곤하게 만드는 알림이나 불필요한 비교에서 1시간만 거리를 두어 보세요.',
+    reflectiveQuestion: '오늘 나를 지치게 하는 모래바람을 가리고 내 집중력을 지킬 건강한 경계(Taghelmust)는 어디인가요?',
   },
   {
     id: 'tada_caravan_trust',
@@ -56,12 +60,18 @@ const AMAZIGH_WAYPOINTS: readonly AmazighWaypoint[] = [
     koreanLabel: '신뢰로 건네는 동행',
     coreInsight: '넓은 사막에서는 혼자 버티는 것보다 믿을 수 있는 동료와 짐을 나누어 지는 편이 훨씬 멀리 갑니다.',
     desertPractice: '혼자 끙끙 앓던 일 중 믿을 만한 사람에게 조언이나 도움을 청할 수 있는 한 가지를 꺼내 보세요.',
+    reflectiveQuestion: '혼자 버티려 애쓰기보다 믿을 수 있는 동행(Tada)에게 짐 한 조각을 나누어 건넬 일은 무엇인가요?',
   },
 ] as const;
 
 function formatAmazighKstTimestamp(now: Date): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
-  return `${kst.toISOString().slice(0, 19)}+09:00 (KST)`;
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
 }
 
 function stableHash(input: string): number {
@@ -81,16 +91,17 @@ export function calculateAmazighDesertStarOasis(params: {
   const now = params.now ?? new Date();
   const query = (params.question ?? '').trim();
 
-  const seed = stableHash(
-    [
-      params.profile.basic?.name ?? '',
-      JSON.stringify(params.profile.fate ?? {}),
-      query,
-    ].join('|')
-  );
+  const seedRaw = [
+    params.profile.basic?.name ?? '',
+    JSON.stringify(params.profile.fate ?? {}),
+    query,
+  ].join('|');
+  const seed = stableHash(seedRaw);
+  const supportSeed = stableHash(`${seedRaw}|support`);
 
   const primaryIdx = seed % AMAZIGH_WAYPOINTS.length;
-  const supportIdx = (primaryIdx + 1) % AMAZIGH_WAYPOINTS.length;
+  const supportOffset = 1 + (supportSeed % (AMAZIGH_WAYPOINTS.length - 1));
+  const supportIdx = (primaryIdx + supportOffset) % AMAZIGH_WAYPOINTS.length;
 
   const primaryWaypoint = AMAZIGH_WAYPOINTS[primaryIdx];
   const supportWaypoint = AMAZIGH_WAYPOINTS[supportIdx];
@@ -107,12 +118,12 @@ export function calculateAmazighDesertStarOasis(params: {
   const ritualAction = primaryWaypoint.desertPractice;
 
   const reflectiveQuestion = query
-    ? `‘${query.slice(0, 36)}’이라는 사막 구간을 건너는 지금, 속도보다 먼저 챙겨야 할 나만의 ‘오아시스 비축’은 무엇인가요?`
-    : `오늘 나를 지치게 하는 모래바람을 잠시 가리고, 내 안의 중심을 지킬 수 있는 작은 경계 하나는 무엇일까요?`;
+    ? `‘${query.slice(0, 36)}’이라는 사막 구간을 건너는 지금, ${primaryWaypoint.reflectiveQuestion}`
+    : primaryWaypoint.reflectiveQuestion;
 
   return {
     engineName: '아마지그 사막 별·오아시스 길잡이 (Amazigh Desert Compass)',
-    engineVersion: 'LUCKEY-AMAZIGH-DESERT-v2.1.0',
+    engineVersion: 'LUCKEY-AMAZIGH-DESERT-v2.2.0',
     calculatedAtKst: formatAmazighKstTimestamp(now),
     primaryWaypoint,
     supportWaypoint,
