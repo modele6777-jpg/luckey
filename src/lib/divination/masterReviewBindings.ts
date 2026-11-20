@@ -1515,5 +1515,17 @@ export const MASTER_REVIEW_BINDINGS: Record<string, { field: string; traceKey: s
   "sogdianSilkRoadCaravanTrust": {
     "field": "sogdianSilkRoadCaravanTrustResult",
     "traceKey": "sogdianSilkRoadCaravanTrustResult"
+  },
+  "tainoZemiAreitoHarmony": {
+    "field": "tainoZemiAreitoHarmonyResult",
+    "traceKey": "tainoZemiAreitoHarmonyResult"
+  },
+  "basothoBothoMountainWisdom": {
+    "field": "basothoBothoMountainWisdomResult",
+    "traceKey": "basothoBothoMountainWisdomResult"
+  },
+  "tuvanKhoomeiOvertonesResonance": {
+    "field": "tuvanKhoomeiOvertonesResonanceResult",
+    "traceKey": "tuvanKhoomeiOvertonesResonanceResult"
   }
 };

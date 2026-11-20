@@ -404,6 +404,9 @@ import { calculateWelshMabinogionAwenInspiration, formatWelshMabinogionAwenPromp
 import { calculateIgboOfoOguTruthJustice, formatIgboOfoOguPrompt, type IgboOfoOguResult } from './igboOfoOguTruthJusticeEngine';
 import { calculateRyukyuIcharibaChodeHospitality, formatRyukyuIcharibaChodePrompt, type RyukyuIcharibaChodeResult } from './ryukyuIcharibaChodeHospitalityEngine';
 import { calculateSogdianSilkRoadCaravanTrust, formatSogdianSilkRoadPrompt, type SogdianSilkRoadResult } from './sogdianSilkRoadCaravanTrustEngine';
+import { calculateTainoZemiAreitoHarmony, formatTainoZemiAreitoPrompt, type TainoZemiAreitoResult } from './tainoZemiAreitoHarmonyEngine';
+import { calculateBasothoBothoMountainWisdom, formatBasothoBothoPrompt, type BasothoBothoResult } from './basothoBothoMountainWisdomEngine';
+import { calculateTuvanKhoomeiOvertonesResonance, formatTuvanKhoomeiPrompt, type TuvanKhoomeiResult } from './tuvanKhoomeiOvertonesResonanceEngine';
 
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
@@ -826,6 +829,9 @@ export interface DeterministicEngineReport {
   igboOfoOguTruthJusticeResult?: IgboOfoOguResult | null;
   ryukyuIcharibaChodeHospitalityResult?: RyukyuIcharibaChodeResult | null;
   sogdianSilkRoadCaravanTrustResult?: SogdianSilkRoadResult | null;
+  tainoZemiAreitoHarmonyResult?: TainoZemiAreitoResult | null;
+  basothoBothoMountainWisdomResult?: BasothoBothoResult | null;
+  tuvanKhoomeiOvertonesResonanceResult?: TuvanKhoomeiResult | null;
 
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
@@ -3777,6 +3783,33 @@ try {
     }
   })()));
 
+  // 381. 카리브 타이노 세미·아레이토 조화 엔진
+  const tainoZemiAreitoHarmonyResult = calculateSupplement('tainoZemiAreitoHarmonyResult', () => ((() => {
+    try {
+      return calculateTainoZemiAreitoHarmony({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 382. 남아프리카 바소토 보토·고원 지혜 엔진
+  const basothoBothoMountainWisdomResult = calculateSupplement('basothoBothoMountainWisdomResult', () => ((() => {
+    try {
+      return calculateBasothoBothoMountainWisdom({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 383. 시베리아 투바 후메이 배음 공명 엔진
+  const tuvanKhoomeiOvertonesResonanceResult = calculateSupplement('tuvanKhoomeiOvertonesResonanceResult', () => ((() => {
+    try {
+      return calculateTuvanKhoomeiOvertonesResonance({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
   // 220. 한국 신라 의상대사 화엄일승법계도 & 법성게 원융무애 엔진
   const uisangHwaeomIlseungBeopgyeResult = calculateSupplement('uisangHwaeomIlseungBeopgyeResult', () => ((() => {
     try {
@@ -5175,6 +5208,9 @@ try {
     igboOfoOguTruthJusticeResult,
     ryukyuIcharibaChodeHospitalityResult,
     sogdianSilkRoadCaravanTrustResult,
+    tainoZemiAreitoHarmonyResult,
+    basothoBothoMountainWisdomResult,
+    tuvanKhoomeiOvertonesResonanceResult,
     tools: toolsMap,
   };
 }
@@ -5578,6 +5614,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'igboOfoOguTruthJustice', nameKo: '이그보 오포·오구 진실', icon: '🪵', category: 'deep_master', summary: '서아프리카 이그보의 오포·오구(Ofo na Ogu) 진실과 실행 철학처럼 눈치보다 내 양심에 떳떳한 기준을 세우는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'trinity' },
   { key: 'ryukyuIcharibaChodeHospitality', nameKo: '류큐 이차리바 초데', icon: '🌺', category: 'deep_master', summary: '오키나와 류큐의 이차리바 초데·유이마루 정신처럼 작은 친절과 상부상조로 오늘의 공기를 따뜻하게 여는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'bluebird' },
   { key: 'sogdianSilkRoadCaravanTrust', nameKo: '소그드 실크로드 대상', icon: '🐪', category: 'deep_master', summary: '중앙아시아 소그드 대상들의 계약과 오아시스 지혜처럼 무리한 질주 대신 긴 여정을 완주할 균형을 챙기는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'muse' },
+  { key: 'tainoZemiAreitoHarmony', nameKo: '타이노 세미·아레이토', icon: '🐚', category: 'deep_master', summary: '카리브 타이노의 세미·아레이토(Areito) 원형 춤처럼 속도를 높이기 전 내 안의 호흡과 주변과의 리듬을 맞추는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'aura' },
+  { key: 'basothoBothoMountainWisdom', nameKo: '바소토 보토·고원 지혜', icon: '⛰️', category: 'deep_master', summary: '남아프리카 바소토의 보토(Botho)·코촐로 평화처럼 결과의 크기만큼 태도의 따뜻함과 품위를 챙기는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'bluebird' },
+  { key: 'tuvanKhoomeiOvertonesResonance', nameKo: '투바 후메이 배음 공명', icon: '🎵', category: 'deep_master', summary: '시베리아 투바의 후메이(Khoomei) 배음과 자연 공명처럼 잡음을 줄이고 내 안의 진짜 울림에 귀 기울이는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'muse' },
 ] as DceEngineMeta[]).filter(engine => !LUCY_PRO_CATALOG_DUPLICATE_KEYS.has(engine.key));
 
 export function getFiredEngineBadges(
@@ -6399,6 +6438,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'igboOfoOguTruthJustice',
     'ryukyuIcharibaChodeHospitality',
     'sogdianSilkRoadCaravanTrust',
+    'tainoZemiAreitoHarmony',
+    'basothoBothoMountainWisdom',
+    'tuvanKhoomeiOvertonesResonance',
   ],
 };
 

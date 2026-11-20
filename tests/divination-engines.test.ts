@@ -373,6 +373,9 @@ import { calculateWelshMabinogionAwenInspiration, formatWelshMabinogionAwenPromp
 import { calculateIgboOfoOguTruthJustice, formatIgboOfoOguPrompt } from '../src/lib/divination/igboOfoOguTruthJusticeEngine';
 import { calculateRyukyuIcharibaChodeHospitality, formatRyukyuIcharibaChodePrompt } from '../src/lib/divination/ryukyuIcharibaChodeHospitalityEngine';
 import { calculateSogdianSilkRoadCaravanTrust, formatSogdianSilkRoadPrompt } from '../src/lib/divination/sogdianSilkRoadCaravanTrustEngine';
+import { calculateTainoZemiAreitoHarmony, formatTainoZemiAreitoPrompt } from '../src/lib/divination/tainoZemiAreitoHarmonyEngine';
+import { calculateBasothoBothoMountainWisdom, formatBasothoBothoPrompt } from '../src/lib/divination/basothoBothoMountainWisdomEngine';
+import { calculateTuvanKhoomeiOvertonesResonance, formatTuvanKhoomeiPrompt } from '../src/lib/divination/tuvanKhoomeiOvertonesResonanceEngine';
 
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
@@ -13512,4 +13515,37 @@ test('Sogdian Silk Road Caravan Trust engine: stage, +09:00 KST, and interpretiv
   const prompt = formatSogdianSilkRoadPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
   assert.ok(prompt.includes('소그드') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Taino Zemi Areito Harmony engine: emblem, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateTainoZemiAreitoHarmony({ profile, now: new Date('2026-11-20T07:12:00Z'), question: '호흡과 리듬을 맞추고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-TAINO-ZEMI-AREITO-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatTainoZemiAreitoPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('타이노') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Basotho Botho Mountain Wisdom engine: sign, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateBasothoBothoMountainWisdom({ profile, now: new Date('2026-11-20T07:12:00Z'), question: '태도의 온도와 품위를 지키고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-BASOTHO-BOTHO-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatBasothoBothoPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('바소토') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Tuvan Khoomei Overtones Resonance engine: layer, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateTuvanKhoomeiOvertonesResonance({ profile, now: new Date('2026-11-20T07:12:00Z'), question: '내 안의 진짜 울림을 듣고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-TUVAN-KHOOMEI-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatTuvanKhoomeiPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('투바') && prompt.includes('+09:00 (KST)'));
 });
