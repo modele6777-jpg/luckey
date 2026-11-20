@@ -436,6 +436,9 @@ import { calculateGoryeoCeladonInlayClarity, formatGoryeoCeladonPrompt } from '.
 import { calculateLydianSardisElectrumBalance, formatLydianSardisPrompt } from '../src/lib/divination/lydianSardisElectrumBalanceEngine';
 import { calculateCanaaniteUgaritCedarWisdom, formatCanaaniteUgaritPrompt } from '../src/lib/divination/canaaniteUgaritCedarWisdomEngine';
 import { calculateGoguryeoSamjokoMuralSpirit, formatGoguryeoSamjokoPrompt } from '../src/lib/divination/goguryeoSamjokoMuralSpiritEngine';
+import { calculateSillaEmilleCheomseongdae, formatSillaEmillePrompt } from '../src/lib/divination/sillaEmilleCheomseongdaeEngine';
+import { calculateOmaniFrankincenseFalajWater, formatOmaniFrankincensePrompt } from '../src/lib/divination/omaniFrankincenseFalajWaterEngine';
+import { calculateBaekjeGiltBronzeIncenseCalm, formatBaekjeIncensePrompt } from '../src/lib/divination/baekjeGiltBronzeIncenseCalmEngine';
 
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
@@ -14274,4 +14277,37 @@ test('Goguryeo Samjoko Mural Spirit engine: motif, +09:00 KST, and interpretive 
   const prompt = formatGoguryeoSamjokoPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
   assert.ok(prompt.includes('고구려') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Silla Emille Cheomseongdae engine: motif, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateSillaEmilleCheomseongdae({ profile, now: new Date('2026-11-20T19:15:00Z'), question: '조급함을 내려놓고 고요히 관찰하고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-SILLA-EMILLE-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatSillaEmillePrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('신라') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Omani Frankincense Falaj Water engine: symbol, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateOmaniFrankincenseFalajWater({ profile, now: new Date('2026-11-20T19:15:00Z'), question: '시간과 마음의 물길을 공정하게 나누고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-OMANI-FALAJ-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatOmaniFrankincensePrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('오만') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Baekje Gilt-Bronze Incense Calm engine: motif, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateBaekjeGiltBronzeIncenseCalm({ profile, now: new Date('2026-11-20T19:15:00Z'), question: '둥글고 온화한 비례로 마음을 펴고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-BAEKJE-INCENSE-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatBaekjeIncensePrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('백제') && prompt.includes('+09:00 (KST)'));
 });
