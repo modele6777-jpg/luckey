@@ -1539,5 +1539,17 @@ export const MASTER_REVIEW_BINDINGS: Record<string, { field: string; traceKey: s
   "occitanTroubadourParatge": {
     "field": "occitanTroubadourParatgeResult",
     "traceKey": "occitanTroubadourParatgeResult"
+  },
+  "zapotecPiyeCloudWisdom": {
+    "field": "zapotecPiyeCloudWisdomResult",
+    "traceKey": "zapotecPiyeCloudWisdomResult"
+  },
+  "sakhaOlonkhoThreeWorlds": {
+    "field": "sakhaOlonkhoThreeWorldsResult",
+    "traceKey": "sakhaOlonkhoThreeWorldsResult"
+  },
+  "scythianGoldenStagSteppe": {
+    "field": "scythianGoldenStagSteppeResult",
+    "traceKey": "scythianGoldenStagSteppeResult"
   }
 };
