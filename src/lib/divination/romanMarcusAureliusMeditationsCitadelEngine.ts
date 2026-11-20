@@ -8,12 +8,12 @@
  * 4. 코이노니아 공공선 의무(Koinonia): 인류 공동체의 일원이자 꿀벌의 한 마리로서 공동의 유익을 위해 이기심을 내려놓고 의무를 다하는 도덕적 성실성.
  * 5. 아파테이아 평정심(Apatheia): 통제할 수 없는 외부 결과(타인의 평판, 부귀영화, 질병)에 대한 헛된 불안과 욕망을 걷어낸 절대적 내면의 고요.
  *
- * @version LUCKEY-MARCUS-AURELIUS-CITADEL-v2.1.0
+ * @version LUCKEY-MARCUS-AURELIUS-CITADEL-v2.4.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const ROMAN_MARCUS_AURELIUS_VERSION = 'LUCKEY-MARCUS-AURELIUS-CITADEL-v2.3.0';
+export const ROMAN_MARCUS_AURELIUS_VERSION = 'LUCKEY-MARCUS-AURELIUS-CITADEL-v2.4.0';
 
 export interface MeditationsTheme {
   themeKey: string;
@@ -151,10 +151,15 @@ export const MEDITATIONS_APHORISMS: MeditationsAphorism[] = [
 function getAureliusKstComponents(now: Date): { hour: number; month: number; isoKst: string } {
   const kstMs = now.getTime() + 9 * 60 * 60 * 1000;
   const kstDate = new Date(kstMs);
+  const y = kstDate.getUTCFullYear();
+  const m = String(kstDate.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kstDate.getUTCDate()).padStart(2, '0');
+  const hh = String(kstDate.getUTCHours()).padStart(2, '0');
+  const mm = String(kstDate.getUTCMinutes()).padStart(2, '0');
   return {
     hour: kstDate.getUTCHours(),
     month: kstDate.getUTCMonth() + 1,
-    isoKst: kstDate.toISOString().replace('Z', '+09:00'),
+    isoKst: `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`,
   };
 }
 
