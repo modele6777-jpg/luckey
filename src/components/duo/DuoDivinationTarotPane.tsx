@@ -16,6 +16,18 @@ import {
 import { requestLucyAction } from '@/lib/duoLucyActionRouting';
 import { triggerHaptic } from '@/lib/omniWarp/omniWarpHaptics';
 import { LucyMasterTarotRoom } from '@/components/chat/LucyMasterTarotRoom';
+import { MasterSajuBoard } from './MasterSajuBoard';
+import { MasterReadingStage } from './MasterReadingStage';
+import { MasterDailyCard } from './MasterDailyCard';
+import { getLucyTableState, LUCY_TABLE_EVENT, type LucyTableState } from '@/lib/lucyTableBus';
+import { useTTSState } from '@/utils/tts';
+
+type TableFace = 'tarot' | 'saju';
+const FACES: { id: TableFace | 'reading'; label: string }[] = [
+  { id: 'tarot', label: '🃏 타로' },
+  { id: 'saju', label: '☯ 사주 원국' },
+  { id: 'reading', label: '🔊 낭독' },
+];
 
 /**
  * 🔮 펼친 화면 점술모드의 왼쪽 타로 테이블.
@@ -27,6 +39,28 @@ export function DuoDivinationTarotPane(_props: { isLight?: boolean }) {
   const [cards, setCards] = useState<DetectedTarotCard[]>([]);
   const [revealed, setRevealed] = useState<string[]>([]);
   const [pick, setPick] = useState<TarotPickRequest | null>(null);
+  // 왼쪽 테이블의 면: 루시가 지금 하는 일을 따라 자동으로 바뀌고, 탭으로 직접 바꿀 수도 있다.
+  const [face, setFace] = useState<TableFace>('tarot');
+  const [table, setTable] = useState<LucyTableState>(() => getLucyTableState());
+  const tts = useTTSState();
+  const reading = Boolean(tts.isSpeaking || tts.isLoading);
+  const [readingDismissed, setReadingDismissed] = useState(false);
+  useEffect(() => { if (!reading) setReadingDismissed(false); }, [reading]);
+  const showReading = reading && !readingDismissed;
+
+  useEffect(() => {
+    const onTable = (e: Event) => {
+      const next = (e as CustomEvent<LucyTableState>).detail;
+      if (!next) return;
+      setTable(prev => {
+        // 새 답변이 오면: 카드가 있으면 타로, 사주만으로 답했으면 사주 원국판.
+        if (next.answerVersion !== prev.answerVersion) setFace(next.lastAnswerHasTarot ? 'tarot' : 'saju');
+        return next;
+      });
+    };
+    window.addEventListener(LUCY_TABLE_EVENT, onTable);
+    return () => window.removeEventListener(LUCY_TABLE_EVENT, onTable);
+  }, []);
 
   useEffect(() => {
     const handleDrawn = (e: Event) => {
@@ -34,11 +68,12 @@ export function DuoDivinationTarotPane(_props: { isLight?: boolean }) {
       if (!Array.isArray(next) || next.length === 0) return;
       setCards(next);
       setRevealed([]);
+      setFace('tarot');
       triggerHaptic('whitehole');
     };
     const handlePickRequest = (e: Event) => {
       const detail = (e as CustomEvent)?.detail as TarotPickRequest | undefined;
-      if (detail?.count) setPick(detail);
+      if (detail?.count) { setPick(detail); setFace('tarot'); }
     };
     // 루시 마스터를 나갔다 들어오면 테이블도 비운다
     const handleMode = () => { setCards([]); setRevealed([]); setPick(null); };
@@ -57,15 +92,48 @@ export function DuoDivinationTarotPane(_props: { isLight?: boolean }) {
       {/* Same purple velvet and candles as the Lucy Master chat, so both panes read as one room. */}
       <LucyMasterTarotRoom variant="table" />
       <div className="relative z-[1] flex-1 min-h-0 flex flex-col">
-      <DuoTarotBookSpread
-        masterRoom
-        cards={cards}
-        verifiedDraw
-        revealedCardIds={revealed}
-        onRevealCard={(cardId) => setRevealed(prev => (prev.includes(cardId) ? prev : [...prev, cardId]))}
-        onQuickDraw={(prompt, spread) => { if (spread) queueMasterTarotSpread(spread); requestLucyAction({ prompt }); }}
-        isLight={false}
-      />
+        {/* 테이블 면 바꾸기 탭 (낭독은 루시가 읽는 동안에만) */}
+        <div className="shrink-0 flex items-center gap-1.5 px-3.5 pt-3 pb-1" role="tablist" aria-label="타로 테이블 보기">
+          {FACES.filter(item => item.id !== 'reading' || reading).map(item => {
+            const active = item.id === 'reading' ? showReading : !showReading && face === item.id;
+            return (
+              <button
+                key={item.id}
+                type="button"
+                role="tab"
+                aria-selected={active}
+                data-table-face={item.id}
+                onClick={() => {
+                  triggerHaptic('whitehole');
+                  if (item.id === 'reading') { setReadingDismissed(false); return; }
+                  setReadingDismissed(reading);
+                  setFace(item.id);
+                }}
+                className={`rounded-full border px-3 py-1 text-[11px] font-bold transition-colors ${active ? 'border-amber-300/80 bg-amber-400/20 text-amber-100' : 'border-white/15 bg-white/[0.05] text-slate-200 hover:bg-white/10'}`}
+              >{item.label}</button>
+            );
+          })}
+        </div>
+        {showReading ? (
+          <MasterReadingStage />
+        ) : face === 'saju' ? (
+          <MasterSajuBoard saju={table.saju} lastAnswer={table.lastAnswer} />
+        ) : (
+          <>
+            {cards.length === 0 && <MasterDailyCard />}
+            <div className="flex-1 min-h-0 flex flex-col">
+              <DuoTarotBookSpread
+                masterRoom
+                cards={cards}
+                verifiedDraw
+                revealedCardIds={revealed}
+                onRevealCard={(cardId) => setRevealed(prev => (prev.includes(cardId) ? prev : [...prev, cardId]))}
+                onQuickDraw={(prompt, spread) => { if (spread) queueMasterTarotSpread(spread); requestLucyAction({ prompt }); }}
+                isLight={false}
+              />
+            </div>
+          </>
+        )}
       </div>
       {pick && (
         <TarotSpread
