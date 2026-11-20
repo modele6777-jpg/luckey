@@ -2007,5 +2007,17 @@ export const MASTER_REVIEW_BINDINGS: Record<string, { field: string; traceKey: s
   "orkneySkaraHearth": {
     "field": "orkneySkaraHearthResult",
     "traceKey": "orkneySkaraHearthResult"
+  },
+  "muiscaGuatavitaLake": {
+    "field": "muiscaGuatavitaLakeResult",
+    "traceKey": "muiscaGuatavitaLakeResult"
+  },
+  "naxiDongbaChime": {
+    "field": "naxiDongbaChimeResult",
+    "traceKey": "naxiDongbaChimeResult"
+  },
+  "hmongStoryCloth": {
+    "field": "hmongStoryClothResult",
+    "traceKey": "hmongStoryClothResult"
   }
 };

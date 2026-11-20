@@ -527,6 +527,9 @@ import { calculateSumbaIkatStory, formatSumbaIkatPrompt, type SumbaIkatResult } 
 import { calculateBatakSopoRoof, formatBatakSopoPrompt, type BatakSopoResult } from './batakTobaSopoRoofEngine';
 import { calculateTarahumaraStride, formatTarahumaraStridePrompt, type TarahumaraStrideResult } from './tarahumaraRaramuriStrideEngine';
 import { calculateOrkneySkaraHearth, formatOrkneySkaraPrompt, type OrkneySkaraResult } from './orkneySkaraBraeStoneHearthEngine';
+import { calculateMuiscaGuatavitaLake, formatMuiscaGuatavitaPrompt, type MuiscaGuatavitaResult } from './muiscaGuatavitaLakeOfferingEngine';
+import { calculateNaxiDongbaChime, formatNaxiDongbaPrompt, type NaxiDongbaResult } from './naxiDongbaScriptChimeEngine';
+import { calculateHmongStoryCloth, formatHmongStoryClothPrompt, type HmongStoryClothResult } from './hmongPajNtaubStoryClothEngine';
 
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
@@ -1072,6 +1075,9 @@ export interface DeterministicEngineReport {
   batakSopoRoofResult?: BatakSopoResult | null;
   tarahumaraStrideResult?: TarahumaraStrideResult | null;
   orkneySkaraHearthResult?: OrkneySkaraResult | null;
+  muiscaGuatavitaLakeResult?: MuiscaGuatavitaResult | null;
+  naxiDongbaChimeResult?: NaxiDongbaResult | null;
+  hmongStoryClothResult?: HmongStoryClothResult | null;
 
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
@@ -5130,6 +5136,33 @@ try {
     }
   })()));
 
+  // 504. 무이스카·과타비타 황금 호수 성찰 엔진
+  const muiscaGuatavitaLakeResult = calculateSupplement('muiscaGuatavitaLakeResult', () => ((() => {
+    try {
+      return calculateMuiscaGuatavitaLake({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 505. 나시·동파 상형문자 바람종 성찰 엔진
+  const naxiDongbaChimeResult = calculateSupplement('naxiDongbaChimeResult', () => ((() => {
+    try {
+      return calculateNaxiDongbaChime({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 506. 몽족·자수 이야기 천 성찰 엔진
+  const hmongStoryClothResult = calculateSupplement('hmongStoryClothResult', () => ((() => {
+    try {
+      return calculateHmongStoryCloth({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
   // 220. 한국 신라 의상대사 화엄일승법계도 & 법성게 원융무애 엔진
   const uisangHwaeomIlseungBeopgyeResult = calculateSupplement('uisangHwaeomIlseungBeopgyeResult', () => ((() => {
     try {
@@ -6651,6 +6684,9 @@ try {
     batakSopoRoofResult,
     tarahumaraStrideResult,
     orkneySkaraHearthResult,
+    muiscaGuatavitaLakeResult,
+    naxiDongbaChimeResult,
+    hmongStoryClothResult,
     tools: toolsMap,
   };
 }
@@ -7177,6 +7213,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'batakSopoRoof', nameKo: '바타크·토바 소포 가옥', icon: '🛖', category: 'deep_master', summary: '수마트라 토바 바타크 족의 소포 가옥처럼 쇠못 없이 나무를 짜맞추고 아래층을 열어 두어 바람을 통하게 하는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'trinity' },
   { key: 'tarahumaraStride', nameKo: '타라후마라·라라무리 발걸음', icon: '🏃', category: 'deep_master', summary: '멕시코 구리 협곡을 가벼운 샌들로 달리는 라라무리 족처럼 속도보다 리듬과 지속 가능한 호흡을 지키는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'aura' },
   { key: 'orkneySkaraHearth', nameKo: '오크니·스카라 브레 석실', icon: '🪨', category: 'deep_master', summary: '스코틀랜드 오크니의 신석기 석실처럼 거센 바닷바람을 막고 중앙 화덕의 온기와 정갈한 선반을 지키는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'bluebird' },
+  { key: 'muiscaGuatavitaLake', nameKo: '무이스카·과타비타 황금 호수', icon: '🏞️', category: 'deep_master', summary: '안데스 고원 과타비타 호수에 감사의 뜻으로 금을 바치던 무이스카 의식처럼 소유보다 순환과 정성의 균형을 돌아보는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'muse' },
+  { key: 'naxiDongbaChime', nameKo: '나시·동파 상형문자 바람종', icon: '🎐', category: 'deep_master', summary: '윈난 리장의 동파 상형문자처럼 복잡한 생각을 단순한 그림과 바람종 울림으로 정리해 자연과의 조화를 살피는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'trinity' },
+  { key: 'hmongStoryCloth', nameKo: '몽족·자수 이야기 천', icon: '🪡', category: 'deep_master', summary: '몽족의 파즈 너우 자수 이야기 천처럼 지나온 시간과 오늘의 한 땀을 차분히 엮어 전체 서사를 바라보는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'aura' },
 ] as DceEngineMeta[]).filter(engine => !LUCY_PRO_CATALOG_DUPLICATE_KEYS.has(engine.key));
 
 export function getFiredEngineBadges(
@@ -8121,6 +8160,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'batakSopoRoof',
     'tarahumaraStride',
     'orkneySkaraHearth',
+    'muiscaGuatavitaLake',
+    'naxiDongbaChime',
+    'hmongStoryCloth',
   ],
 };
 
