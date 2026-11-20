@@ -424,6 +424,9 @@ import { calculateUkrainianVyshyvankaSunflower, formatUkrainianVyshyvankaPrompt 
 import { calculateChampaMySonBrickSanctuary, formatChampaMySonPrompt } from '../src/lib/divination/champaMySonBrickSanctuaryEngine';
 import { calculateKetYeniseiTaigaStars, formatKetYeniseiPrompt } from '../src/lib/divination/ketYeniseiTaigaStarsEngine';
 import { calculateChachapoyaCloudForestKuelap, formatChachapoyaKuelapPrompt } from '../src/lib/divination/chachapoyaCloudForestKuelapEngine';
+import { calculateYapeseRaiStoneTrust, formatYapeseRaiPrompt } from '../src/lib/divination/yapeseRaiStoneTrustEngine';
+import { calculateChukchiBeringTundraHearth, formatChukchiBeringPrompt } from '../src/lib/divination/chukchiBeringTundraHearthEngine';
+import { calculatePalmyreneOasisColonnade, formatPalmyreneOasisPrompt } from '../src/lib/divination/palmyreneOasisColonnadeEngine';
 
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
@@ -14124,4 +14127,37 @@ test('Chachapoya Cloud Forest Kuelap engine: citadel, +09:00 KST, and interpreti
   const prompt = formatChachapoyaKuelapPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
   assert.ok(prompt.includes('차차포야스') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Yapese Rai Stone Trust engine: stone, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateYapeseRaiStoneTrust({ profile, now: new Date('2026-11-20T09:04:00Z'), question: '보이지 않아도 쌓아 둔 신뢰를 믿고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-YAPESE-RAI-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatYapeseRaiPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('야프') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Chukchi Bering Tundra Hearth engine: symbol, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateChukchiBeringTundraHearth({ profile, now: new Date('2026-11-20T09:04:00Z'), question: '거친 바람 속에서 내 안의 온기를 지키고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-CHUKCHI-BERING-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatChukchiBeringPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('축치') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Palmyrene Oasis Colonnade engine: pillar, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculatePalmyreneOasisColonnade({ profile, now: new Date('2026-11-20T09:04:00Z'), question: '사막 한가운데서도 단정한 질서를 세우고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-PALMYRENE-OASIS-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatPalmyreneOasisPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('팔미라') && prompt.includes('+09:00 (KST)'));
 });
