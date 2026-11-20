@@ -427,6 +427,9 @@ import { calculateChachapoyaCloudForestKuelap, formatChachapoyaKuelapPrompt } fr
 import { calculateYapeseRaiStoneTrust, formatYapeseRaiPrompt } from '../src/lib/divination/yapeseRaiStoneTrustEngine';
 import { calculateChukchiBeringTundraHearth, formatChukchiBeringPrompt } from '../src/lib/divination/chukchiBeringTundraHearthEngine';
 import { calculatePalmyreneOasisColonnade, formatPalmyreneOasisPrompt } from '../src/lib/divination/palmyreneOasisColonnadeEngine';
+import { calculateSicilianMajolicaEtnaBalance, formatSicilianMajolicaPrompt } from '../src/lib/divination/sicilianMajolicaEtnaBalanceEngine';
+import { calculateSomaliGabayDhowHorizon, formatSomaliGabayPrompt } from '../src/lib/divination/somaliGabayDhowHorizonEngine';
+import { calculateBohemianCrystalGlassLight, formatBohemianCrystalPrompt } from '../src/lib/divination/bohemianCrystalGlassLightEngine';
 
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
@@ -14160,4 +14163,37 @@ test('Palmyrene Oasis Colonnade engine: pillar, +09:00 KST, and interpretive bou
   const prompt = formatPalmyreneOasisPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
   assert.ok(prompt.includes('팔미라') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Sicilian Majolica Etna Balance engine: motif, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateSicilianMajolicaEtnaBalance({ profile, now: new Date('2026-11-20T09:14:00Z'), question: '흔들린 자리 위에서도 새로운 싹을 키우고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-SICILIAN-MAJOLICA-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatSicilianMajolicaPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('시칠리아') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Somali Gabay Dhow Horizon engine: principle, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateSomaliGabayDhowHorizon({ profile, now: new Date('2026-11-20T09:14:00Z'), question: '정갈한 한 마디와 계절풍의 때를 기다리고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-SOMALI-GABAY-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatSomaliGabayPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('소말리') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Bohemian Crystal Glass Light engine: facet, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateBohemianCrystalGlassLight({ profile, now: new Date('2026-11-20T09:14:00Z'), question: '뭉쳐 있던 마음을 맑게 나누어 보고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-BOHEMIAN-CRYSTAL-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatBohemianCrystalPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('보헤미아') && prompt.includes('+09:00 (KST)'));
 });

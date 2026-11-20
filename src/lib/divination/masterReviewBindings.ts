@@ -1731,5 +1731,17 @@ export const MASTER_REVIEW_BINDINGS: Record<string, { field: string; traceKey: s
   "palmyreneOasisColonnade": {
     "field": "palmyreneOasisColonnadeResult",
     "traceKey": "palmyreneOasisColonnadeResult"
+  },
+  "sicilianMajolicaEtnaBalance": {
+    "field": "sicilianMajolicaEtnaBalanceResult",
+    "traceKey": "sicilianMajolicaEtnaBalanceResult"
+  },
+  "somaliGabayDhowHorizon": {
+    "field": "somaliGabayDhowHorizonResult",
+    "traceKey": "somaliGabayDhowHorizonResult"
+  },
+  "bohemianCrystalGlassLight": {
+    "field": "bohemianCrystalGlassLightResult",
+    "traceKey": "bohemianCrystalGlassLightResult"
   }
 };
