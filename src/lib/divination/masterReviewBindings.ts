@@ -1719,5 +1719,17 @@ export const MASTER_REVIEW_BINDINGS: Record<string, { field: string; traceKey: s
   "chachapoyaCloudForestKuelap": {
     "field": "chachapoyaCloudForestKuelapResult",
     "traceKey": "chachapoyaCloudForestKuelapResult"
+  },
+  "yapeseRaiStoneTrust": {
+    "field": "yapeseRaiStoneTrustResult",
+    "traceKey": "yapeseRaiStoneTrustResult"
+  },
+  "chukchiBeringTundraHearth": {
+    "field": "chukchiBeringTundraHearthResult",
+    "traceKey": "chukchiBeringTundraHearthResult"
+  },
+  "palmyreneOasisColonnade": {
+    "field": "palmyreneOasisColonnadeResult",
+    "traceKey": "palmyreneOasisColonnadeResult"
   }
 };

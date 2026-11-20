@@ -455,6 +455,9 @@ import { calculateUkrainianVyshyvankaSunflower, formatUkrainianVyshyvankaPrompt,
 import { calculateChampaMySonBrickSanctuary, formatChampaMySonPrompt, type ChampaMySonResult } from './champaMySonBrickSanctuaryEngine';
 import { calculateKetYeniseiTaigaStars, formatKetYeniseiPrompt, type KetYeniseiResult } from './ketYeniseiTaigaStarsEngine';
 import { calculateChachapoyaCloudForestKuelap, formatChachapoyaKuelapPrompt, type ChachapoyaKuelapResult } from './chachapoyaCloudForestKuelapEngine';
+import { calculateYapeseRaiStoneTrust, formatYapeseRaiPrompt, type YapeseRaiResult } from './yapeseRaiStoneTrustEngine';
+import { calculateChukchiBeringTundraHearth, formatChukchiBeringPrompt, type ChukchiBeringResult } from './chukchiBeringTundraHearthEngine';
+import { calculatePalmyreneOasisColonnade, formatPalmyreneOasisPrompt, type PalmyreneOasisResult } from './palmyreneOasisColonnadeEngine';
 
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
@@ -928,6 +931,9 @@ export interface DeterministicEngineReport {
   champaMySonBrickSanctuaryResult?: ChampaMySonResult | null;
   ketYeniseiTaigaStarsResult?: KetYeniseiResult | null;
   chachapoyaCloudForestKuelapResult?: ChachapoyaKuelapResult | null;
+  yapeseRaiStoneTrustResult?: YapeseRaiResult | null;
+  chukchiBeringTundraHearthResult?: ChukchiBeringResult | null;
+  palmyreneOasisColonnadeResult?: PalmyreneOasisResult | null;
 
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
@@ -4338,6 +4344,33 @@ try {
     }
   })()));
 
+  // 432. 야프 라이 돌·공동체 신뢰 엔진
+  const yapeseRaiStoneTrustResult = calculateSupplement('yapeseRaiStoneTrustResult', () => ((() => {
+    try {
+      return calculateYapeseRaiStoneTrust({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 433. 축치 베링해·툰드라 화덕 엔진
+  const chukchiBeringTundraHearthResult = calculateSupplement('chukchiBeringTundraHearthResult', () => ((() => {
+    try {
+      return calculateChukchiBeringTundraHearth({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 434. 팔미라 오아시스·대열주랑 엔진
+  const palmyreneOasisColonnadeResult = calculateSupplement('palmyreneOasisColonnadeResult', () => ((() => {
+    try {
+      return calculatePalmyreneOasisColonnade({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
   // 220. 한국 신라 의상대사 화엄일승법계도 & 법성게 원융무애 엔진
   const uisangHwaeomIlseungBeopgyeResult = calculateSupplement('uisangHwaeomIlseungBeopgyeResult', () => ((() => {
     try {
@@ -5787,6 +5820,9 @@ try {
     champaMySonBrickSanctuaryResult,
     ketYeniseiTaigaStarsResult,
     chachapoyaCloudForestKuelapResult,
+    yapeseRaiStoneTrustResult,
+    chukchiBeringTundraHearthResult,
+    palmyreneOasisColonnadeResult,
     tools: toolsMap,
   };
 }
@@ -6241,6 +6277,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'champaMySonBrickSanctuary', nameKo: '참파 미선·벽돌 탑', icon: '🧱', category: 'deep_master', summary: '참파 미선 성소의 붉은 벽돌처럼 억지 접착제나 과장된 포장 없이 기본기 하나하나를 반듯하게 맞춰 오래 버티는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'bluebird' },
   { key: 'ketYeniseiTaigaStars', nameKo: '예니세이 케트·타이가', icon: '🌌', category: 'deep_master', summary: '시베리아 예니세이 강과 케트 타이가의 별빛처럼 오늘 당장 결판을 재촉하기보다 큰 물길의 방향과 지금 내 계절을 살피는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'muse' },
   { key: 'chachapoyaCloudForestKuelap', nameKo: '차차포야스 구름숲·쿠엘랍', icon: '☁️', category: 'deep_master', summary: '안데스 차차포야스 쿠엘랍의 둥근 돌집처럼 날카롭게 각을 세우기보다 바람을 흘려보내며 구름 너머 높은 시야를 되찾는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'trinity' },
+  { key: 'yapeseRaiStoneTrust', nameKo: '야프 라이 돌·신뢰', icon: '🪨', category: 'deep_master', summary: '미크로네시아 야프의 라이 돌화폐처럼 매번 눈앞에 증명하지 않아도 성실함으로 쌓아 둔 신뢰는 제자리에 남아 있음을 비추는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'aura' },
+  { key: 'chukchiBeringTundraHearth', nameKo: '축치 베링해·화덕', icon: '❄️', category: 'deep_master', summary: '베링해 축치의 야랑가 등불과 우미악 가죽배처럼 거친 바람 앞에서는 내 안의 온기와 유연한 틀을 먼저 지키는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'bluebird' },
+  { key: 'palmyreneOasisColonnade', nameKo: '팔미라 오아시스·열주', icon: '🏛️', category: 'deep_master', summary: '고대 팔미라 대열주랑과 에프카 샘처럼 불확실한 사막 한가운데서도 나만의 단정한 질서와 낯선 시선을 함께 품는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'muse' },
 ] as DceEngineMeta[]).filter(engine => !LUCY_PRO_CATALOG_DUPLICATE_KEYS.has(engine.key));
 
 export function getFiredEngineBadges(
@@ -7113,6 +7152,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'champaMySonBrickSanctuary',
     'ketYeniseiTaigaStars',
     'chachapoyaCloudForestKuelap',
+    'yapeseRaiStoneTrust',
+    'chukchiBeringTundraHearth',
+    'palmyreneOasisColonnade',
   ],
 };
 
