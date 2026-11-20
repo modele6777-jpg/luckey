@@ -521,6 +521,9 @@ import { calculateCostaRicaDiquisSpheres, formatDiquisSpheresPrompt, type Diquis
 import { calculateSiwaOasisSaltSpring, formatSiwaOasisPrompt, type SiwaOasisResult } from './siwaOasisSaltSpringEngine';
 import { calculateSikkimLepchaForest, formatSikkimLepchaPrompt, type SikkimLepchaResult } from './sikkimLepchaForestCanopyEngine';
 import { calculateTurkanaJadeSeaWind, formatTurkanaWindPrompt, type TurkanaWindResult } from './turkanaJadeSeaWindEngine';
+import { calculateAsturianHorreoPoise, formatAsturianHorreoPrompt, type AsturianHorreoResult } from './asturianHorreoGranaryPoiseEngine';
+import { calculateOmoKaroBodyArt, formatOmoKaroPrompt, type OmoKaroResult } from './omoKaroClayBodyArtEngine';
+import { calculateSumbaIkatStory, formatSumbaIkatPrompt, type SumbaIkatResult } from './sumbaIkatWeaveStoryEngine';
 
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
@@ -1060,6 +1063,9 @@ export interface DeterministicEngineReport {
   siwaOasisSaltSpringResult?: SiwaOasisResult | null;
   sikkimLepchaForestResult?: SikkimLepchaResult | null;
   turkanaJadeSeaWindResult?: TurkanaWindResult | null;
+  asturianHorreoPoiseResult?: AsturianHorreoResult | null;
+  omoKaroBodyArtResult?: OmoKaroResult | null;
+  sumbaIkatStoryResult?: SumbaIkatResult | null;
 
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
@@ -5064,6 +5070,33 @@ try {
     }
   })()));
 
+  // 498. 아스투리아스·오레오 공중 곡창 성찰 엔진
+  const asturianHorreoPoiseResult = calculateSupplement('asturianHorreoPoiseResult', () => ((() => {
+    try {
+      return calculateAsturianHorreoPoise({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 499. 오모·카로 진흙 회화 성찰 엔진
+  const omoKaroBodyArtResult = calculateSupplement('omoKaroBodyArtResult', () => ((() => {
+    try {
+      return calculateOmoKaroBodyArt({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 500. 숨바·이카트 염색 베틀 성찰 엔진
+  const sumbaIkatStoryResult = calculateSupplement('sumbaIkatStoryResult', () => ((() => {
+    try {
+      return calculateSumbaIkatStory({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
   // 220. 한국 신라 의상대사 화엄일승법계도 & 법성게 원융무애 엔진
   const uisangHwaeomIlseungBeopgyeResult = calculateSupplement('uisangHwaeomIlseungBeopgyeResult', () => ((() => {
     try {
@@ -6579,6 +6612,9 @@ try {
     siwaOasisSaltSpringResult,
     sikkimLepchaForestResult,
     turkanaJadeSeaWindResult,
+    asturianHorreoPoiseResult,
+    omoKaroBodyArtResult,
+    sumbaIkatStoryResult,
     tools: toolsMap,
   };
 }
@@ -7099,6 +7135,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'siwaOasisSaltSpring', nameKo: '시와·오아시스 소금샘', icon: '🌴', category: 'deep_master', summary: '이집트 시와 오아시스 소금 호수처럼 힘을 빼면 스스로 떠오르게 만드는 부력과 그늘의 휴식을 살피는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'bluebird' },
   { key: 'sikkimLepchaForest', nameKo: '시킴·레프차 숲', icon: '🎋', category: 'deep_master', summary: '히말라야 시킴의 레프차 대나무 다리처럼 조금 휘어지며 충격을 흘려보내는 유연한 탄성을 살피는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'muse' },
   { key: 'turkanaJadeSeaWind', nameKo: '투르카나·비취 바다 바람', icon: '🌊', category: 'deep_master', summary: '동아프리카 투르카나 호수처럼 거친 사막 바람을 옥빛 물결의 색으로 바꾸는 기동성과 끈기를 살피는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'trinity' },
+  { key: 'asturianHorreoPoise', nameKo: '아스투리아스·오레오 곡창', icon: '🪵', category: 'deep_master', summary: '스페인 아스투리아스의 공중 목조 곡창처럼 습기와 소란에서 한 뼘 띄워 바람을 통하게 하는 보존의 지혜를 살피는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'muse' },
+  { key: 'omoKaroBodyArt', nameKo: '오모·카로 진흙 회화', icon: '🎨', category: 'deep_master', summary: '에티오피아 오모 계곡 카로 족의 천연 안료 회화처럼 오늘의 생기를 솔직한 색으로 찍고 저녁이면 가볍게 씻어 내는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'aura' },
+  { key: 'sumbaIkatStory', nameKo: '숨바·이카트 염색 베틀', icon: '🧵', category: 'deep_master', summary: '인도네시아 숨바 섬의 이카트 직조처럼 비워 둘 여백을 먼저 묶어 두고 여러 번 담그며 깊은 서사를 엮는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'bluebird' },
 ] as DceEngineMeta[]).filter(engine => !LUCY_PRO_CATALOG_DUPLICATE_KEYS.has(engine.key));
 
 export function getFiredEngineBadges(
@@ -8037,6 +8076,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'siwaOasisSaltSpring',
     'sikkimLepchaForest',
     'turkanaJadeSeaWind',
+    'asturianHorreoPoise',
+    'omoKaroBodyArt',
+    'sumbaIkatStory',
   ],
 };
 
