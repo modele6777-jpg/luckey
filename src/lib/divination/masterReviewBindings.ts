@@ -1623,5 +1623,17 @@ export const MASTER_REVIEW_BINDINGS: Record<string, { field: string; traceKey: s
   "cherokeeGadugiHarmony": {
     "field": "cherokeeGadugiHarmonyResult",
     "traceKey": "cherokeeGadugiHarmonyResult"
+  },
+  "tlingitRavenClanBalance": {
+    "field": "tlingitRavenClanBalanceResult",
+    "traceKey": "tlingitRavenClanBalanceResult"
+  },
+  "oromoGadaaSaffuuHarmony": {
+    "field": "oromoGadaaSaffuuHarmonyResult",
+    "traceKey": "oromoGadaaSaffuuHarmonyResult"
+  },
+  "karelianRunoKanteleResonance": {
+    "field": "karelianRunoKanteleResonanceResult",
+    "traceKey": "karelianRunoKanteleResonanceResult"
   }
 };
