@@ -1467,5 +1467,17 @@ export const MASTER_REVIEW_BINDINGS: Record<string, { field: string; traceKey: s
   "swahiliUtuDhowMonsoon": {
     "field": "swahiliUtuDhowMonsoonResult",
     "traceKey": "swahiliUtuDhowMonsoonResult"
+  },
+  "khmerAngkorBarayWaterBalance": {
+    "field": "khmerAngkorBarayWaterBalanceResult",
+    "traceKey": "khmerAngkorBarayWaterBalanceResult"
+  },
+  "malagasyFihavananaKinship": {
+    "field": "malagasyFihavananaKinshipResult",
+    "traceKey": "malagasyFihavananaKinshipResult"
+  },
+  "hungarianTaltosTreeOfLife": {
+    "field": "hungarianTaltosTreeOfLifeResult",
+    "traceKey": "hungarianTaltosTreeOfLifeResult"
   }
 };
