@@ -515,6 +515,9 @@ import { calculateTatraShepherdRidge, formatTatraRidgePrompt, type TatraRidgeRes
 import { calculateYemeniShibamMudTower, formatYemeniShibamPrompt, type YemeniShibamResult } from './yemeniShibamMudTowerEngine';
 import { calculateIcelandicSagaHearth, formatIcelandicSagaPrompt, type IcelandicSagaResult } from './icelandicSagaHearthEngine';
 import { calculateSepikRiverCarving, formatSepikCarvingPrompt, type SepikCarvingResult } from './sepikRiverCarvingPoiseEngine';
+import { calculateMoldovanOrheiLimestone, formatMoldovanOrheiPrompt, type MoldovanOrheiResult } from './moldovanOrheiLimestoneEngine';
+import { calculateMinangkabauRumahGadang, formatMinangkabauGadangPrompt, type MinangkabauGadangResult } from './minangkabauRumahGadangEngine';
+import { calculateCostaRicaDiquisSpheres, formatDiquisSpheresPrompt, type DiquisSpheresResult } from './costaRicaDiquisSpheresEngine';
 
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
@@ -1048,6 +1051,9 @@ export interface DeterministicEngineReport {
   yemeniShibamMudTowerResult?: YemeniShibamResult | null;
   icelandicSagaHearthResult?: IcelandicSagaResult | null;
   sepikRiverCarvingResult?: SepikCarvingResult | null;
+  moldovanOrheiLimestoneResult?: MoldovanOrheiResult | null;
+  minangkabauRumahGadangResult?: MinangkabauGadangResult | null;
+  costaRicaDiquisSpheresResult?: DiquisSpheresResult | null;
 
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
@@ -4998,6 +5004,33 @@ try {
     }
   })()));
 
+  // 492. 몰도바·오르헤이 석회암 성찰 엔진
+  const moldovanOrheiLimestoneResult = calculateSupplement('moldovanOrheiLimestoneResult', () => ((() => {
+    try {
+      return calculateMoldovanOrheiLimestone({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 493. 미낭카바우·뿔지붕 조화 성찰 엔진
+  const minangkabauRumahGadangResult = calculateSupplement('minangkabauRumahGadangResult', () => ((() => {
+    try {
+      return calculateMinangkabauRumahGadang({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 494. 디퀴스·정글 돌공 성찰 엔진
+  const costaRicaDiquisSpheresResult = calculateSupplement('costaRicaDiquisSpheresResult', () => ((() => {
+    try {
+      return calculateCostaRicaDiquisSpheres({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
   // 220. 한국 신라 의상대사 화엄일승법계도 & 법성게 원융무애 엔진
   const uisangHwaeomIlseungBeopgyeResult = calculateSupplement('uisangHwaeomIlseungBeopgyeResult', () => ((() => {
     try {
@@ -6507,6 +6540,9 @@ try {
     yemeniShibamMudTowerResult,
     icelandicSagaHearthResult,
     sepikRiverCarvingResult,
+    moldovanOrheiLimestoneResult,
+    minangkabauRumahGadangResult,
+    costaRicaDiquisSpheresResult,
     tools: toolsMap,
   };
 }
@@ -7021,6 +7057,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'yemeniShibamMudTower', nameKo: '예멘·시밤 진흙탑', icon: '🏜️', category: 'deep_master', summary: '사막 고층 도시 시밤의 흙벽돌처럼 한 층이 충분히 마른 뒤에야 다음 층을 올리는 수직의 인내와 온도의 경계를 살피는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'muse' },
   { key: 'icelandicSagaHearth', nameKo: '아이슬란드·사가 화덕', icon: '🌋', category: 'deep_master', summary: '아이슬란드 사가의 화덕가처럼 과장을 덜어낸 담백한 말 한마디와 화산암 위 이끼 같은 내면의 온기를 지키는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'bluebird' },
   { key: 'sepikRiverCarving', nameKo: '세픽 강·영혼 조각', icon: '🪵', category: 'deep_master', summary: '파푸아뉴기니 세픽 강의 목조 조각처럼 나무의 옹이와 강물의 곡선을 억지로 지우지 않고 그대로 형상으로 살리는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'aura' },
+  { key: 'moldovanOrheiLimestone', nameKo: '몰도바·오르헤이 석회암', icon: '🪨', category: 'deep_master', summary: '몰도바 오르헤이 베키 석회암 동굴 수도원처럼 바깥 소음을 덜어내고 강물의 긴 곡선을 조용히 바라보는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'trinity' },
+  { key: 'minangkabauRumahGadang', nameKo: '미낭카바우·뿔지붕 조화', icon: '🏡', category: 'deep_master', summary: '수마트라 미낭카바우의 못 없이 맞물리는 루마 가당처럼 자연의 결을 스승 삼아 부드럽게 협력하는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'aura' },
+  { key: 'costaRicaDiquisSpheres', nameKo: '디퀴스·정글 돌공', icon: '⚪', category: 'deep_master', summary: '코스타리카 디퀴스 정글의 화강암 석구처럼 오랜 손길로 모난 구석을 둥글려 가며 중심을 지키는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'bluebird' },
 ] as DceEngineMeta[]).filter(engine => !LUCY_PRO_CATALOG_DUPLICATE_KEYS.has(engine.key));
 
 export function getFiredEngineBadges(
@@ -7953,6 +7992,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'yemeniShibamMudTower',
     'icelandicSagaHearth',
     'sepikRiverCarving',
+    'moldovanOrheiLimestone',
+    'minangkabauRumahGadang',
+    'costaRicaDiquisSpheres',
   ],
 };
 

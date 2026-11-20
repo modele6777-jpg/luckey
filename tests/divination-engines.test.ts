@@ -484,6 +484,9 @@ import { calculateTatraShepherdRidge, formatTatraRidgePrompt } from '../src/lib/
 import { calculateYemeniShibamMudTower, formatYemeniShibamPrompt } from '../src/lib/divination/yemeniShibamMudTowerEngine';
 import { calculateIcelandicSagaHearth, formatIcelandicSagaPrompt } from '../src/lib/divination/icelandicSagaHearthEngine';
 import { calculateSepikRiverCarving, formatSepikCarvingPrompt } from '../src/lib/divination/sepikRiverCarvingPoiseEngine';
+import { calculateMoldovanOrheiLimestone, formatMoldovanOrheiPrompt } from '../src/lib/divination/moldovanOrheiLimestoneEngine';
+import { calculateMinangkabauRumahGadang, formatMinangkabauGadangPrompt } from '../src/lib/divination/minangkabauRumahGadangEngine';
+import { calculateCostaRicaDiquisSpheres, formatDiquisSpheresPrompt } from '../src/lib/divination/costaRicaDiquisSpheresEngine';
 
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
@@ -14892,4 +14895,37 @@ test('Sepik River Carving engine: motif, +09:00 KST, and interpretive boundary',
   const prompt = formatSepikCarvingPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
   assert.ok(prompt.includes('세픽') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Moldovan Orhei Limestone engine: motif, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateMoldovanOrheiLimestone({ profile, now: new Date('2026-11-20T21:36:00Z'), question: '조용히 곡선을 따라가고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-MOLDOVAN-ORHEI-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatMoldovanOrheiPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('몰도바') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Minangkabau Rumah Gadang engine: motif, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateMinangkabauRumahGadang({ profile, now: new Date('2026-11-20T21:36:00Z'), question: '자연스럽게 홈을 맞추고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-MINANGKABAU-GADANG-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatMinangkabauGadangPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('미낭카바우') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Costa Rica Diquis Spheres engine: motif, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateCostaRicaDiquisSpheres({ profile, now: new Date('2026-11-20T21:36:00Z'), question: '모난 마음을 둥글리고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-DIQUIS-SPHERES-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatDiquisSpheresPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('디퀴스') && prompt.includes('+09:00 (KST)'));
 });
