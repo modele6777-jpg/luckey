@@ -503,6 +503,9 @@ import { calculateOtavaloAndesLoomBalance, formatOtavaloLoomPrompt, type Otavalo
 import { calculateAndalusianPatioFountainCalm, formatAndalusianPatioPrompt, type AndalusianPatioResult } from './andalusianPatioFountainCalmEngine';
 import { calculateLoziKuombokaFloodPath, formatLoziKuombokaPrompt, type LoziKuombokaResult } from './loziKuombokaFloodPathEngine';
 import { calculatePamirWakhanCorridorStars, formatPamirWakhanPrompt, type PamirWakhanResult } from './pamirWakhanCorridorStarsEngine';
+import { calculateHebrideanTartanLoomCalm, formatHebrideanTartanPrompt, type HebrideanTartanResult } from './hebrideanTartanLoomCalmEngine';
+import { calculateChiloePalafitoTidePoise, formatChiloePalafitoPrompt, type ChiloePalafitoResult } from './chiloePalafitoTidePoiseEngine';
+import { calculateBununJadeMountainSong, formatBununMountainPrompt, type BununMountainResult } from './bununJadeMountainSongEngine';
 
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
@@ -1024,6 +1027,9 @@ export interface DeterministicEngineReport {
   andalusianPatioFountainCalmResult?: AndalusianPatioResult | null;
   loziKuombokaFloodPathResult?: LoziKuombokaResult | null;
   pamirWakhanCorridorStarsResult?: PamirWakhanResult | null;
+  hebrideanTartanLoomCalmResult?: HebrideanTartanResult | null;
+  chiloePalafitoTidePoiseResult?: ChiloePalafitoResult | null;
+  bununJadeMountainSongResult?: BununMountainResult | null;
 
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
@@ -4866,6 +4872,33 @@ try {
     }
   })()));
 
+  // 480. 헤브리디스·타르탄 베틀 성찰 엔진
+  const hebrideanTartanLoomCalmResult = calculateSupplement('hebrideanTartanLoomCalmResult', () => ((() => {
+    try {
+      return calculateHebrideanTartanLoomCalm({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 481. 치로에·팔라피토 물때 성찰 엔진
+  const chiloePalafitoTidePoiseResult = calculateSupplement('chiloePalafitoTidePoiseResult', () => ((() => {
+    try {
+      return calculateChiloePalafitoTidePoise({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 482. 부눈·옥산 산맥 화음 성찰 엔진
+  const bununJadeMountainSongResult = calculateSupplement('bununJadeMountainSongResult', () => ((() => {
+    try {
+      return calculateBununJadeMountainSong({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
   // 220. 한국 신라 의상대사 화엄일승법계도 & 법성게 원융무애 엔진
   const uisangHwaeomIlseungBeopgyeResult = calculateSupplement('uisangHwaeomIlseungBeopgyeResult', () => ((() => {
     try {
@@ -6363,6 +6396,9 @@ try {
     andalusianPatioFountainCalmResult,
     loziKuombokaFloodPathResult,
     pamirWakhanCorridorStarsResult,
+    hebrideanTartanLoomCalmResult,
+    chiloePalafitoTidePoiseResult,
+    bununJadeMountainSongResult,
     tools: toolsMap,
   };
 }
@@ -6865,6 +6901,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'andalusianPatioFountainCalm', nameKo: '안달루시아·파티오 분수', icon: '⛲', category: 'deep_master', summary: '안달루시아 코르도바 파티오의 작은 분수와 격자 창살처럼 바깥의 열기를 걸러 내고 내 안뜰의 물소리를 지키는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'bluebird' },
   { key: 'loziKuombokaFloodPath', nameKo: '로지·쿠옴보카 물길', icon: '🛶', category: 'deep_master', summary: '잠비아 로지족의 쿠옴보카 축제처럼 물의 수위가 바뀔 때 옛 자리를 억지로 붙들지 않고 물길을 타고 새 터로 옮기는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'trinity' },
   { key: 'pamirWakhanCorridorStars', nameKo: '파미르·와칸 별빛', icon: '🏔️', category: 'deep_master', summary: '중앙아시아 파미르 고원 와칸 회랑의 차르호나 천창처럼 높은 고개일수록 숨을 고르며 하늘을 향한 작은 창을 열어 두는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'muse' },
+  { key: 'hebrideanTartanLoomCalm', nameKo: '헤브리디스·타르탄 베틀', icon: '🧶', category: 'deep_master', summary: '스코틀랜드 헤브리디스의 해리스 트위드 직조와 블랙하우스처럼 내가 딛고 선 자리의 재료로 내 발박자에 맞춰 고유한 격자를 짜는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'aura' },
+  { key: 'chiloePalafitoTidePoise', nameKo: '치로에·팔라피토 물때', icon: '🏠', category: 'deep_master', summary: '칠레 치로에 섬의 팔라피토 수상가옥처럼 밀물과 썰물을 다 품는 기둥 위에서 녹슬지 않는 이음새로 하루를 지키는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'bluebird' },
+  { key: 'bununJadeMountainSong', nameKo: '부눈·옥산 산맥 화음', icon: '🎶', category: 'deep_master', summary: '대만 중앙산맥 부눈족의 파시부트부트 다성 합창처럼 혼자 높은 음을 내려 애쓰기보다 낮은 호흡부터 포개어 공명을 만드는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'trinity' },
 ] as DceEngineMeta[]).filter(engine => !LUCY_PRO_CATALOG_DUPLICATE_KEYS.has(engine.key));
 
 export function getFiredEngineBadges(
@@ -7785,6 +7824,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'andalusianPatioFountainCalm',
     'loziKuombokaFloodPath',
     'pamirWakhanCorridorStars',
+    'hebrideanTartanLoomCalm',
+    'chiloePalafitoTidePoise',
+    'bununJadeMountainSong',
   ],
 };
 
