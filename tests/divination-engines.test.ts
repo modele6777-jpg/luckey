@@ -409,6 +409,9 @@ import { calculateRapaNuiManaMoaiHorizon, formatRapaNuiMoaiPrompt } from '../src
 import { calculateChechenVainakhKovakhHonor, formatChechenVainakhPrompt } from '../src/lib/divination/chechenVainakhKovakhHonorEngine';
 import { calculateSherpaSagarmathaRidgeHarmony, formatSherpaSagarmathaPrompt } from '../src/lib/divination/sherpaSagarmathaRidgeHarmonyEngine';
 import { calculateEvenkiBugaTaigaPath, formatEvenkiBugaPrompt } from '../src/lib/divination/evenkiBugaTaigaPathEngine';
+import { calculateManchuMukunWhiteMountain, formatManchuMukunPrompt } from '../src/lib/divination/manchuMukunWhiteMountainEngine';
+import { calculatePortugueseSaudadeSagresCompass, formatPortugueseSagresPrompt } from '../src/lib/divination/portugueseSaudadeSagresCompassEngine';
+import { calculateLadakhiStupaGlacierWater, formatLadakhiChortenPrompt } from '../src/lib/divination/ladakhiStupaGlacierWaterEngine';
 
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
@@ -13944,4 +13947,37 @@ test('Evenki Buga Taiga Path engine: sign, +09:00 KST, and interpretive boundary
   const prompt = formatEvenkiBugaPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
   assert.ok(prompt.includes('에벤키') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Manchu Mukun White Mountain engine: principle, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateManchuMukunWhiteMountain({ profile, now: new Date('2026-11-20T08:28:00Z'), question: '오늘 내 몫의 작은 한 걸음을 묵직하게 깎고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-MANCHU-MUKUN-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatManchuMukunPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('만주') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Portuguese Saudade Sagres Compass engine: compass, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculatePortugueseSaudadeSagresCompass({ profile, now: new Date('2026-11-20T08:28:00Z'), question: '역풍 속에서 각도를 틀어 나아가고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-PORTUGUESE-SAGRES-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatPortugueseSagresPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('포르투갈') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Ladakhi Stupa Glacier Water engine: wisdom, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateLadakhiStupaGlacierWater({ profile, now: new Date('2026-11-20T08:28:00Z'), question: '다음 계절을 위해 차분히 모아 두고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-LADAKHI-CHORTEN-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatLadakhiChortenPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('라다크') && prompt.includes('+09:00 (KST)'));
 });
