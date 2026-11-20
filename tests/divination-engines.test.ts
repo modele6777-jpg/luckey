@@ -5282,7 +5282,7 @@ test('Neo-Confucian Four-Seven Li-Qi Engine: calculates Sadan alignment, Chiljeo
   assert(rep.reflectionFocus.length > 0);
   assert(rep.reflectiveQuestion.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
-  assert(rep.calculatedAtKst.endsWith('+09:00 KST'));
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(Boolean(rep.liQiSynthesisMatrix?.integratedAction));
   const repQ = calculateNeoConfucianFourSevenLiQi({ profile, question: '감정의 치우침을 중절로 되돌리기' });
   assert(repQ.reflectiveQuestion.includes('중절로 되돌리기'));
@@ -5292,6 +5292,7 @@ test('Neo-Confucian Four-Seven Li-Qi Engine: calculates Sadan alignment, Chiljeo
   assert(prompt.includes(repQ.secondarySadan.nameKo));
   assert(prompt.includes('실천 의례'));
   assert(prompt.includes('성찰 초점'));
+  assert(prompt.includes(repQ.reflectionFocus));
   assert(prompt.includes('해석 경계'));
   assert(prompt.includes('교차 매트릭스'));
   assert(!prompt.includes('/100'));
@@ -5365,7 +5366,7 @@ test('Mongolian Tengrism Hiimori Soul Engine: calculates wind horse vitality, bl
   assert(rep.reflectionFocus.length > 0);
   assert(rep.reflectiveQuestion.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
-  assert(rep.calculatedAtKst.endsWith('+09:00 KST'));
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(Boolean(rep.tengriSynthesisMatrix?.integratedAction));
   const repQ = calculateMongolianTengriHiimori({ profile, question: '히모리를 다시 일으키기' });
   assert(repQ.reflectiveQuestion.includes('다시 일으키기'));
@@ -5375,6 +5376,7 @@ test('Mongolian Tengrism Hiimori Soul Engine: calculates wind horse vitality, bl
   assert(prompt.includes(repQ.secondaryAspect.nameKo));
   assert(prompt.includes('실천 의례'));
   assert(prompt.includes('성찰 초점'));
+  assert(prompt.includes(repQ.reflectionFocus));
   assert(prompt.includes('해석 경계'));
   assert(prompt.includes('교차 매트릭스'));
   assert(!prompt.includes('/100'));
@@ -6225,12 +6227,14 @@ test('Roman Marcus Aurelius Inner Citadel Meditations Engine: calculates Inner C
   assert(rep.dailyStoicPractice.protocolDirective.length > 0);
   assert(rep.citadelResilienceMatrix.amorFatiConversionIndex >= 0 && rep.citadelResilienceMatrix.amorFatiConversionIndex <= 100);
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatAureliusInnerCitadelPrompt(rep);
   assert(prompt.includes('고대 로마 마르쿠스 아우렐리우스 《명상록(Meditations)》'));
   assert(prompt.includes(rep.activeAureliusStage.stageNameKo));
   assert(prompt.includes(rep.controlDichotomy.bookReference));
   assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
+  assert(prompt.includes(rep.reflectionFocus));
 });
 
 test('Chinese Laozi Daodejing Water Way Engine: calculates water yielding adaptability, wuwei action and contentment', () => {
@@ -10530,7 +10534,7 @@ test('Wonhyo, Aurelius Inner Citadel, and Vedic Pancha Kosha v2.1.0 output quali
 
   const au = calculateAureliusInnerCitadel(profile, '외부 평가에 흔들리지 않고 중심을 지키고 싶어요', now);
   assert.equal(au.engineVersion, AURELIUS_INNER_CITADEL_VERSION);
-  assert.ok(au.calculatedAtKst.endsWith('+09:00'));
+  assert.ok(au.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert.ok(Boolean(au.aureliusSynthesisMatrix?.integratedAction));
   const auPrompt = formatAureliusInnerCitadelPrompt(au);
   assert.ok(!auPrompt.includes('/100') && !auPrompt.includes('%'));

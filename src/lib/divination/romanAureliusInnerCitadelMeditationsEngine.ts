@@ -9,12 +9,12 @@
  * 5. 아모르 파티(Amor Fati, Book IV.23, V.20): 장애물이 곧 길이 되며 모든 운명을 덕(Arete)으로 전환함
  * 6. 질문 기반 통제 이분법(Dichotomy of Control) + 로마 황제 일과(아침 예행연습·저녁 성찰) 연동
  *
- * @version LUCKEY-AURELIUS-INNER-CITADEL-v2.3.0
+ * @version LUCKEY-AURELIUS-INNER-CITADEL-v2.6.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const AURELIUS_INNER_CITADEL_VERSION = 'LUCKEY-AURELIUS-INNER-CITADEL-v2.5.0';
+export const AURELIUS_INNER_CITADEL_VERSION = 'LUCKEY-AURELIUS-INNER-CITADEL-v2.6.0';
 
 export interface AureliusStage {
   stageLevel: number;
@@ -165,7 +165,14 @@ function getKstDate(now?: Date): Date {
 }
 
 function getKstDateString(now?: Date): string {
-  return `${getKstDate(now).toISOString().slice(0, 19)}+09:00`;
+  const base = now ?? new Date();
+  const kst = new Date(base.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
 }
 
 function describeCitadelStage(score: number): string {

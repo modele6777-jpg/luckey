@@ -21,7 +21,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const MONGOLIAN_TENGRI_HIIMORI_ENGINE_VERSION = '2.2.0';
+export const MONGOLIAN_TENGRI_HIIMORI_ENGINE_VERSION = '2.3.0';
 
 export interface TengriSpiritualAspect {
   id: string;
@@ -64,7 +64,7 @@ function formatTengriKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} +09:00 KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
 }
 
 function describeTengriStage(score: number): string {
