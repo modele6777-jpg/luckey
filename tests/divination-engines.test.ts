@@ -7665,7 +7665,7 @@ test('Hyecho Wang Ocheonchukgukjeon Engine: calculates Pilgrimage Pioneer Spirit
   assert(rep.culturalOpennessCompassionIndex >= 0 && rep.culturalOpennessCompassionIndex <= 100);
   assert(rep.bodhisattvaFieldWisdomScore >= 0 && rep.bodhisattvaFieldWisdomScore <= 100);
   assert(rep.activeHyechoTheme.themeTitleKo.length > 0);
-  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(Boolean(rep.hyechoSynthesisMatrix?.integratedAction));
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatHyechoWangOcheonchukgukjeonPrompt(rep);
@@ -7673,6 +7673,7 @@ test('Hyecho Wang Ocheonchukgukjeon Engine: calculates Pilgrimage Pioneer Spirit
   assert(prompt.includes(rep.activeHyechoTheme.themeTitleKo));
   assert(prompt.includes('교차 매트릭스'));
   assert(prompt.includes(rep.ritualAction));
+  assert(prompt.includes(rep.reflectionFocus));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });
@@ -8333,7 +8334,7 @@ test('Heo Jun Dongui Bogam Yangsaeng Engine: calculates Tong-Jeuk-Bul-Tong, Cheo
   assert(rep.essenceQiSpiritPreservationScore >= 0 && rep.essenceQiSpiritPreservationScore <= 100);
   assert(rep.beneficentCompassionHealingResilienceScore >= 0 && rep.beneficentCompassionHealingResilienceScore <= 100);
   assert(rep.activeHeoJunTheme.themeTitleKo.length > 0);
-  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(Boolean(rep.heoJunSynthesisMatrix?.integratedAction));
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatKoreanHeoJunDonguiBogamYangsaengPrompt(rep);
@@ -8341,6 +8342,7 @@ test('Heo Jun Dongui Bogam Yangsaeng Engine: calculates Tong-Jeuk-Bul-Tong, Cheo
   assert(prompt.includes(rep.activeHeoJunTheme.themeTitleKo));
   assert(prompt.includes('교차 매트릭스'));
   assert(prompt.includes(rep.ritualAction));
+  assert(prompt.includes(rep.reflectionFocus));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });
@@ -8982,7 +8984,7 @@ test('Ilyeon Samguk Yusa Engine: calculates Hongik Ingan Pride, Hyangga Healing,
   assert(rep.grassrootsCompassionIndex >= 0 && rep.grassrootsCompassionIndex <= 100);
   assert(rep.culturalPreservationResilience >= 0 && rep.culturalPreservationResilience <= 100);
   assert(rep.activeIlyeonTheme.themeTitleKo.length > 0);
-  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(Boolean(rep.ilyeonSynthesisMatrix?.integratedAction));
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatKoreanIlyeonSamgukYusaPrompt(rep);
@@ -8990,6 +8992,7 @@ test('Ilyeon Samguk Yusa Engine: calculates Hongik Ingan Pride, Hyangga Healing,
   assert(prompt.includes(rep.activeIlyeonTheme.themeTitleKo));
   assert(prompt.includes('교차 매트릭스'));
   assert(prompt.includes(rep.ritualAction));
+  assert(prompt.includes(rep.reflectionFocus));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });
