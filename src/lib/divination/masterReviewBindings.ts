@@ -1839,5 +1839,17 @@ export const MASTER_REVIEW_BINDINGS: Record<string, { field: string; traceKey: s
   "haidaGwaiiCedarCanoe": {
     "field": "haidaGwaiiCedarCanoeResult",
     "traceKey": "haidaGwaiiCedarCanoeResult"
+  },
+  "chavinLanzonStoneBalance": {
+    "field": "chavinLanzonStoneBalanceResult",
+    "traceKey": "chavinLanzonStoneBalanceResult"
+  },
+  "maramuresWoodGateCalm": {
+    "field": "maramuresWoodGateCalmResult",
+    "traceKey": "maramuresWoodGateCalmResult"
+  },
+  "luangPrabangMekongDawn": {
+    "field": "luangPrabangMekongDawnResult",
+    "traceKey": "luangPrabangMekongDawnResult"
   }
 };

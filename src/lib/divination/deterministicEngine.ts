@@ -485,6 +485,9 @@ import { calculateLycianCliffHorizonCalm, formatLycianCliffPrompt, type LycianCl
 import { calculateByzantineHagiaLightDome, formatByzantineDomePrompt, type ByzantineDomeResult } from './byzantineHagiaLightDomeEngine';
 import { calculateHimbaOtjizeDesertPoise, formatHimbaOtjizePrompt, type HimbaOtjizeResult } from './himbaOtjizeDesertPoiseEngine';
 import { calculateHaidaGwaiiCedarCanoe, formatHaidaGwaiiPrompt, type HaidaGwaiiResult } from './haidaGwaiiCedarCanoeEngine';
+import { calculateChavinLanzonStoneBalance, formatChavinLanzonPrompt, type ChavinLanzonResult } from './chavinLanzonStoneBalanceEngine';
+import { calculateMaramuresWoodGateCalm, formatMaramuresGatePrompt, type MaramuresGateResult } from './maramuresWoodGateCalmEngine';
+import { calculateLuangPrabangMekongDawn, formatLuangPrabangDawnPrompt, type LuangPrabangDawnResult } from './luangPrabangMekongDawnEngine';
 
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
@@ -988,6 +991,9 @@ export interface DeterministicEngineReport {
   byzantineHagiaLightDomeResult?: ByzantineDomeResult | null;
   himbaOtjizeDesertPoiseResult?: HimbaOtjizeResult | null;
   haidaGwaiiCedarCanoeResult?: HaidaGwaiiResult | null;
+  chavinLanzonStoneBalanceResult?: ChavinLanzonResult | null;
+  maramuresWoodGateCalmResult?: MaramuresGateResult | null;
+  luangPrabangMekongDawnResult?: LuangPrabangDawnResult | null;
 
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
@@ -4668,6 +4674,33 @@ try {
     }
   })()));
 
+  // 462. 안데스 차빈·라손 돌기둥 균형 엔진
+  const chavinLanzonStoneBalanceResult = calculateSupplement('chavinLanzonStoneBalanceResult', () => ((() => {
+    try {
+      return calculateChavinLanzonStoneBalance({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 463. 마라무레슈·목조 문주 지혜 엔진
+  const maramuresWoodGateCalmResult = calculateSupplement('maramuresWoodGateCalmResult', () => ((() => {
+    try {
+      return calculateMaramuresWoodGateCalm({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 464. 루앙프라방·메콩 새벽 성찰 엔진
+  const luangPrabangMekongDawnResult = calculateSupplement('luangPrabangMekongDawnResult', () => ((() => {
+    try {
+      return calculateLuangPrabangMekongDawn({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
   // 220. 한국 신라 의상대사 화엄일승법계도 & 법성게 원융무애 엔진
   const uisangHwaeomIlseungBeopgyeResult = calculateSupplement('uisangHwaeomIlseungBeopgyeResult', () => ((() => {
     try {
@@ -6147,6 +6180,9 @@ try {
     byzantineHagiaLightDomeResult,
     himbaOtjizeDesertPoiseResult,
     haidaGwaiiCedarCanoeResult,
+    chavinLanzonStoneBalanceResult,
+    maramuresWoodGateCalmResult,
+    luangPrabangMekongDawnResult,
     tools: toolsMap,
   };
 }
@@ -6631,6 +6667,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'byzantineHagiaLightDome', nameKo: '비잔틴·하기아 돔 빛', icon: '🕌', category: 'deep_master', summary: '비잔틴 건축의 펜덴티브와 허공에 뜬 마흔 개의 창문처럼 무거운 일과 속에서도 마음이 숨 쉴 빛의 창을 여는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'aura' },
   { key: 'himbaOtjizeDesertPoise', nameKo: '힘바·오트지제 돌봄', icon: '🏜️', category: 'deep_master', summary: '나미비아 힘바족의 오트지제 보호막과 모래 아래 숨은 물줄기처럼 성과가 덜 보이는 날에도 나를 지키는 돌봄을 믿는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'muse' },
   { key: 'haidaGwaiiCedarCanoe', nameKo: '하이다 과이·삼나무 카누', icon: '🛶', category: 'deep_master', summary: '태평양 북서부 하이다 과이의 속을 비운 삼나무 카누처럼 억지로 더 채우기보다 마음을 가볍게 비워 파도를 넘는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'trinity' },
+  { key: 'chavinLanzonStoneBalance', nameKo: '차빈·라손 돌기둥 균형', icon: '🗿', category: 'deep_master', summary: '안데스 차빈 데 우안타르의 라손 석주와 지하 수로처럼 사방의 갈래가 복잡할수록 내 안의 중심축을 먼저 세우고 흐름을 타는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'trinity' },
+  { key: 'maramuresWoodGateCalm', nameKo: '마라무레슈·목조 문주', icon: '🪵', category: 'deep_master', summary: '루마니아 카르파티아 마라무레슈의 못 없이 맞춘 목조 대문처럼 관계와 일정 사이에 숨 쉴 유격을 두고 내 박자를 지키는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'bluebird' },
+  { key: 'luangPrabangMekongDawn', nameKo: '루앙프라방·메콩 새벽', icon: '🌅', category: 'deep_master', summary: '라오스 루앙프라방의 메콩 새벽 물안개와 계절 대나무 다리처럼 서두르지 않고 계절에 맞춰 놓거나 거두는 고요한 호흡의 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'muse' },
 ] as DceEngineMeta[]).filter(engine => !LUCY_PRO_CATALOG_DUPLICATE_KEYS.has(engine.key));
 
 export function getFiredEngineBadges(
@@ -7533,6 +7572,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'byzantineHagiaLightDome',
     'himbaOtjizeDesertPoise',
     'haidaGwaiiCedarCanoe',
+    'chavinLanzonStoneBalance',
+    'maramuresWoodGateCalm',
+    'luangPrabangMekongDawn',
   ],
 };
 
