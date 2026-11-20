@@ -13,7 +13,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const KOREAN_KIM_SO_WOL_AZALEA_VERSION = 'LUCKEY-KIM-SO-WOL-AZALEA-POETIC-GRACE-v2.2.0';
+export const KOREAN_KIM_SO_WOL_AZALEA_VERSION = 'LUCKEY-KIM-SO-WOL-AZALEA-POETIC-GRACE-v2.3.0';
 
 export interface KimSoWolTheme {
   themeKey: string;
@@ -66,7 +66,7 @@ function formatKimSoWolKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} +09:00 KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
 }
 
 function describeKimSoWolStage(score: number): string {
