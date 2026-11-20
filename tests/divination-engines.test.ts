@@ -469,6 +469,9 @@ import { calculateSamoanFaleTapaBreeze, formatSamoanFalePrompt } from '../src/li
 import { calculateCappadocianTuffCaveCalm, formatCappadocianCavePrompt } from '../src/lib/divination/cappadocianTuffCaveCalmEngine';
 import { calculateIfugaoBanaueRiceTerrace, formatIfugaoTerracePrompt } from '../src/lib/divination/ifugaoBanaueRiceTerraceEngine';
 import { calculateOtavaloAndesLoomBalance, formatOtavaloLoomPrompt } from '../src/lib/divination/otavaloAndesLoomBalanceEngine';
+import { calculateAndalusianPatioFountainCalm, formatAndalusianPatioPrompt } from '../src/lib/divination/andalusianPatioFountainCalmEngine';
+import { calculateLoziKuombokaFloodPath, formatLoziKuombokaPrompt } from '../src/lib/divination/loziKuombokaFloodPathEngine';
+import { calculatePamirWakhanCorridorStars, formatPamirWakhanPrompt } from '../src/lib/divination/pamirWakhanCorridorStarsEngine';
 
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
@@ -14697,4 +14700,37 @@ test('Otavalo Andes Loom Balance engine: motif, +09:00 KST, and interpretive bou
   const prompt = formatOtavaloLoomPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
   assert.ok(prompt.includes('오타발로') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Andalusian Patio Fountain Calm engine: motif, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateAndalusianPatioFountainCalm({ profile, now: new Date('2026-11-20T20:49:00Z'), question: '내 안뜰의 잔잔한 물소리를 지키고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-ANDALUSIAN-PATIO-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatAndalusianPatioPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('안달루시아') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Lozi Kuomboka Flood Path engine: motif, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateLoziKuombokaFloodPath({ profile, now: new Date('2026-11-20T20:49:00Z'), question: '물길에 맞추어 새 터로 옮기고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-LOZI-KUOMBOKA-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatLoziKuombokaPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('로지') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Pamir Wakhan Corridor Stars engine: motif, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculatePamirWakhanCorridorStars({ profile, now: new Date('2026-11-20T20:49:00Z'), question: '높은 고갯길에서 호흡을 고르고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-PAMIR-WAKHAN-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatPamirWakhanPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('파미르') && prompt.includes('+09:00 (KST)'));
 });
