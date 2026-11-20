@@ -1599,5 +1599,17 @@ export const MASTER_REVIEW_BINDINGS: Record<string, { field: string; traceKey: s
   "bengaliBaulMonerManush": {
     "field": "bengaliBaulMonerManushResult",
     "traceKey": "bengaliBaulMonerManushResult"
+  },
+  "punjabiNanakLangarService": {
+    "field": "punjabiNanakLangarServiceResult",
+    "traceKey": "punjabiNanakLangarServiceResult"
+  },
+  "chuvashTuraWorldTreeBalance": {
+    "field": "chuvashTuraWorldTreeBalanceResult",
+    "traceKey": "chuvashTuraWorldTreeBalanceResult"
+  },
+  "kalmykJangarBumbaSteppe": {
+    "field": "kalmykJangarBumbaSteppeResult",
+    "traceKey": "kalmykJangarBumbaSteppeResult"
   }
 };

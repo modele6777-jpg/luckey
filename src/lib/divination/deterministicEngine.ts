@@ -425,6 +425,9 @@ import { calculateSindhiBhitaiIndusMelody, formatSindhiBhitaiPrompt, type Sindhi
 import { calculateCorsicanPaghjellaMaquisHarmony, formatCorsicanPaghjellaPrompt, type CorsicanPaghjellaResult } from './corsicanPaghjellaMaquisHarmonyEngine';
 import { calculatePashtunRoshaniyaInnerLight, formatPashtunRoshaniyaPrompt, type PashtunRoshaniyaResult } from './pashtunRoshaniyaInnerLightEngine';
 import { calculateBengaliBaulMonerManush, formatBengaliBaulPrompt, type BengaliBaulResult } from './bengaliBaulMonerManushEngine';
+import { calculatePunjabiNanakLangarService, formatPunjabiNanakPrompt, type PunjabiNanakResult } from './punjabiNanakLangarServiceEngine';
+import { calculateChuvashTuraWorldTreeBalance, formatChuvashTuraPrompt, type ChuvashTuraResult } from './chuvashTuraWorldTreeBalanceEngine';
+import { calculateKalmykJangarBumbaSteppe, formatKalmykJangarPrompt, type KalmykJangarResult } from './kalmykJangarBumbaSteppeEngine';
 
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
@@ -868,6 +871,9 @@ export interface DeterministicEngineReport {
   corsicanPaghjellaMaquisHarmonyResult?: CorsicanPaghjellaResult | null;
   pashtunRoshaniyaInnerLightResult?: PashtunRoshaniyaResult | null;
   bengaliBaulMonerManushResult?: BengaliBaulResult | null;
+  punjabiNanakLangarServiceResult?: PunjabiNanakResult | null;
+  chuvashTuraWorldTreeBalanceResult?: ChuvashTuraResult | null;
+  kalmykJangarBumbaSteppeResult?: KalmykJangarResult | null;
 
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
@@ -4008,6 +4014,33 @@ try {
     }
   })()));
 
+  // 402. 펀자브 나낙·랑가르 나눔 엔진
+  const punjabiNanakLangarServiceResult = calculateSupplement('punjabiNanakLangarServiceResult', () => ((() => {
+    try {
+      return calculatePunjabiNanakLangarService({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 403. 추바시 투라·세계수 조화 엔진
+  const chuvashTuraWorldTreeBalanceResult = calculateSupplement('chuvashTuraWorldTreeBalanceResult', () => ((() => {
+    try {
+      return calculateChuvashTuraWorldTreeBalance({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 404. 칼미크 쟌가르·붐바 초원 엔진
+  const kalmykJangarBumbaSteppeResult = calculateSupplement('kalmykJangarBumbaSteppeResult', () => ((() => {
+    try {
+      return calculateKalmykJangarBumbaSteppe({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
   // 220. 한국 신라 의상대사 화엄일승법계도 & 법성게 원융무애 엔진
   const uisangHwaeomIlseungBeopgyeResult = calculateSupplement('uisangHwaeomIlseungBeopgyeResult', () => ((() => {
     try {
@@ -5427,6 +5460,9 @@ try {
     corsicanPaghjellaMaquisHarmonyResult,
     pashtunRoshaniyaInnerLightResult,
     bengaliBaulMonerManushResult,
+    punjabiNanakLangarServiceResult,
+    chuvashTuraWorldTreeBalanceResult,
+    kalmykJangarBumbaSteppeResult,
     tools: toolsMap,
   };
 }
@@ -5851,6 +5887,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'corsicanPaghjellaMaquisHarmony', nameKo: '코르시카 파겔라 화음', icon: '⛰️', category: 'deep_master', summary: '지중해 코르시카의 파겔라 다성 합창처럼 혼자 다 짊어지지 않고 내 자리의 한 음을 맑게 내는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'muse' },
   { key: 'pashtunRoshaniyaInnerLight', nameKo: '파슈툰 로샤니야 빛', icon: '🪔', category: 'deep_master', summary: '파슈툰 로샤니야의 내면의 등불과 호자라 환대처럼 바깥의 시선보다 내 안의 맑은 진심을 밝히는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'trinity' },
   { key: 'bengaliBaulMonerManush', nameKo: '벵골 바울 모네르 마누쉬', icon: '🪕', category: 'deep_master', summary: '벵골 바울 유랑 시인의 에크타라처럼 복잡한 핑계를 덜어내고 내 마음속 소박한 울림을 듣는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'aura' },
+  { key: 'punjabiNanakLangarService', nameKo: '펀자브 나낙·랑가르 나눔', icon: '🌾', category: 'deep_master', summary: '펀자브 나낙의 정직한 땀(Kirat Karo)과 나눔(Langar)처럼 성실함과 넉넉한 기상(Chardi Kala)을 세우는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'bluebird' },
+  { key: 'chuvashTuraWorldTreeBalance', nameKo: '추바시 투라·세계수', icon: '🪡', category: 'deep_master', summary: '볼가 추바시의 키레메트와 전통 자수처럼 한 땀씩 정갈하게 순서를 밟아 내면의 질서를 세우는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'trinity' },
+  { key: 'kalmykJangarBumbaSteppe', nameKo: '칼미크 쟌가르·붐바', icon: '🐎', category: 'deep_master', summary: '칼미크 《쟌가르》의 붐바 이상향처럼 조급한 경쟁심을 내려놓고 넓은 초원의 넉넉한 시야와 신의를 지키는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'muse' },
 ] as DceEngineMeta[]).filter(engine => !LUCY_PRO_CATALOG_DUPLICATE_KEYS.has(engine.key));
 
 export function getFiredEngineBadges(
@@ -6693,6 +6732,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'corsicanPaghjellaMaquisHarmony',
     'pashtunRoshaniyaInnerLight',
     'bengaliBaulMonerManush',
+    'punjabiNanakLangarService',
+    'chuvashTuraWorldTreeBalance',
+    'kalmykJangarBumbaSteppe',
   ],
 };
 

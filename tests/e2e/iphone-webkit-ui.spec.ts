@@ -309,7 +309,7 @@ test('Lucy chat shows no per-message mode or engine badges', async ({ page, base
   await expect(page.getByRole('dialog', { name: '이번 답변에서 실제 사용한 엔진' })).toHaveCount(0);
 });
 
-test('Lucy engine box opens the 393-entry catalog with multi-select and no preset bundles', async ({ page }) => {
+test('Lucy engine box opens the 396-entry catalog with multi-select and no preset bundles', async ({ page }) => {
   await openLucy(page);
   const trigger = page.getByRole('button', { name: /^엔진함 열기/ });
   await expect(trigger).toBeVisible();
@@ -318,7 +318,7 @@ test('Lucy engine box opens the 393-entry catalog with multi-select and no prese
   const dialog = page.getByRole('dialog', { name: 'Lucy 엔진함' });
   await expect(dialog).toBeVisible();
   await expect(dialog).toContainText('15개 기초 도구');
-  await expect(dialog).toContainText('378개 심층 관점');
+  await expect(dialog).toContainText('381개 심층 관점');
   await expect(dialog).toContainText('각각 독립 계산기가 아닙니다');
   // 맞춤 세팅 추천 묶음은 사용자 요청으로 제거됨: 엔진은 하나씩 직접 담는다
   await expect(dialog.locator('[data-engine-preset]')).toHaveCount(0);
@@ -352,16 +352,16 @@ test('Lucy engine box opens the 393-entry catalog with multi-select and no prese
   await expect(dialog.getByRole('link')).toHaveCount(0);
 });
 
-test('Lucy groups all 393 catalog entries under the seven channel themes', async ({ page }) => {
+test('Lucy groups all 396 catalog entries under the seven channel themes', async ({ page }) => {
   await openLucy(page);
   await page.getByRole('button', { name: /^엔진함 열기/ }).click();
 
   const dialog = page.getByRole('dialog', { name: 'Lucy 엔진함' });
   await expect(dialog).toBeVisible();
   const entries = dialog.getByTestId('lucy-engine-catalog-entry');
-  await expect(entries).toHaveCount(393);
+  await expect(entries).toHaveCount(396);
   const meaningTexts = await entries.locator('.lucy-engine-catalog-entry-meaning').allTextContents();
-  expect(meaningTexts).toHaveLength(393);
+  expect(meaningTexts).toHaveLength(396);
   for (const meaning of meaningTexts) {
     expect(meaning.trim()).not.toMatch(/^뜻\s*:/);
     expect(meaning.trim().length).toBeGreaterThan(0);
@@ -376,7 +376,7 @@ test('Lucy groups all 393 catalog entries under the seven channel themes', async
     expect(count).toBeGreaterThan(0);
     groupedCount += count;
   }
-  expect(groupedCount).toBe(393);
+  expect(groupedCount).toBe(396);
   await expect(dialog.getByRole('link')).toHaveCount(0);
 
   const themeNav = dialog.getByRole('navigation', { name: 'Lucy 7개 채널 테마' });
