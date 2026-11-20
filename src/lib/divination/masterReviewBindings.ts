@@ -1851,5 +1851,17 @@ export const MASTER_REVIEW_BINDINGS: Record<string, { field: string; traceKey: s
   "luangPrabangMekongDawn": {
     "field": "luangPrabangMekongDawnResult",
     "traceKey": "luangPrabangMekongDawnResult"
+  },
+  "mossiEarthMuralHarmony": {
+    "field": "mossiEarthMuralHarmonyResult",
+    "traceKey": "mossiEarthMuralHarmonyResult"
+  },
+  "wolofTerangaBaobabWarmth": {
+    "field": "wolofTerangaBaobabWarmthResult",
+    "traceKey": "wolofTerangaBaobabWarmthResult"
+  },
+  "palauanBaiRafterBalance": {
+    "field": "palauanBaiRafterBalanceResult",
+    "traceKey": "palauanBaiRafterBalanceResult"
   }
 };

@@ -457,6 +457,9 @@ import { calculateHaidaGwaiiCedarCanoe, formatHaidaGwaiiPrompt } from '../src/li
 import { calculateChavinLanzonStoneBalance, formatChavinLanzonPrompt } from '../src/lib/divination/chavinLanzonStoneBalanceEngine';
 import { calculateMaramuresWoodGateCalm, formatMaramuresGatePrompt } from '../src/lib/divination/maramuresWoodGateCalmEngine';
 import { calculateLuangPrabangMekongDawn, formatLuangPrabangDawnPrompt } from '../src/lib/divination/luangPrabangMekongDawnEngine';
+import { calculateMossiEarthMuralHarmony, formatMossiMuralPrompt } from '../src/lib/divination/mossiEarthMuralHarmonyEngine';
+import { calculateWolofTerangaBaobabWarmth, formatWolofTerangaPrompt } from '../src/lib/divination/wolofTerangaBaobabWarmthEngine';
+import { calculatePalauanBaiRafterBalance, formatPalauanBaiPrompt } from '../src/lib/divination/palauanBaiRafterBalanceEngine';
 
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
@@ -14544,4 +14547,37 @@ test('Luang Prabang Mekong Dawn engine: motif, +09:00 KST, and interpretive boun
   const prompt = formatLuangPrabangDawnPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
   assert.ok(prompt.includes('루앙프라방') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Mossi Earth Mural Harmony engine: motif, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateMossiEarthMuralHarmony({ profile, now: new Date('2026-11-20T20:13:00Z'), question: '소박한 일상에 질서를 세우고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-MOSSI-MURAL-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatMossiMuralPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('모시') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Wolof Teranga Baobab Warmth engine: motif, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateWolofTerangaBaobabWarmth({ profile, now: new Date('2026-11-20T20:13:00Z'), question: '여백을 남기고 좋은 인연을 맞고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-WOLOF-TERANGA-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatWolofTerangaPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('월로프') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Palauan Bai Rafter Balance engine: motif, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculatePalauanBaiRafterBalance({ profile, now: new Date('2026-11-20T20:13:00Z'), question: '내 안의 고요한 라군을 지키고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-PALAU-BAI-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatPalauanBaiPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('팔라우') && prompt.includes('+09:00 (KST)'));
 });

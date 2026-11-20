@@ -488,6 +488,9 @@ import { calculateHaidaGwaiiCedarCanoe, formatHaidaGwaiiPrompt, type HaidaGwaiiR
 import { calculateChavinLanzonStoneBalance, formatChavinLanzonPrompt, type ChavinLanzonResult } from './chavinLanzonStoneBalanceEngine';
 import { calculateMaramuresWoodGateCalm, formatMaramuresGatePrompt, type MaramuresGateResult } from './maramuresWoodGateCalmEngine';
 import { calculateLuangPrabangMekongDawn, formatLuangPrabangDawnPrompt, type LuangPrabangDawnResult } from './luangPrabangMekongDawnEngine';
+import { calculateMossiEarthMuralHarmony, formatMossiMuralPrompt, type MossiMuralResult } from './mossiEarthMuralHarmonyEngine';
+import { calculateWolofTerangaBaobabWarmth, formatWolofTerangaPrompt, type WolofTerangaResult } from './wolofTerangaBaobabWarmthEngine';
+import { calculatePalauanBaiRafterBalance, formatPalauanBaiPrompt, type PalauanBaiResult } from './palauanBaiRafterBalanceEngine';
 
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
@@ -994,6 +997,9 @@ export interface DeterministicEngineReport {
   chavinLanzonStoneBalanceResult?: ChavinLanzonResult | null;
   maramuresWoodGateCalmResult?: MaramuresGateResult | null;
   luangPrabangMekongDawnResult?: LuangPrabangDawnResult | null;
+  mossiEarthMuralHarmonyResult?: MossiMuralResult | null;
+  wolofTerangaBaobabWarmthResult?: WolofTerangaResult | null;
+  palauanBaiRafterBalanceResult?: PalauanBaiResult | null;
 
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
@@ -4701,6 +4707,33 @@ try {
     }
   })()));
 
+  // 465. 모시·황토 벽화 질서 엔진
+  const mossiEarthMuralHarmonyResult = calculateSupplement('mossiEarthMuralHarmonyResult', () => ((() => {
+    try {
+      return calculateMossiEarthMuralHarmony({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 466. 월로프·테랑가 환대 엔진
+  const wolofTerangaBaobabWarmthResult = calculateSupplement('wolofTerangaBaobabWarmthResult', () => ((() => {
+    try {
+      return calculateWolofTerangaBaobabWarmth({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 467. 팔라우·바이 공회당 서까래 엔진
+  const palauanBaiRafterBalanceResult = calculateSupplement('palauanBaiRafterBalanceResult', () => ((() => {
+    try {
+      return calculatePalauanBaiRafterBalance({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
   // 220. 한국 신라 의상대사 화엄일승법계도 & 법성게 원융무애 엔진
   const uisangHwaeomIlseungBeopgyeResult = calculateSupplement('uisangHwaeomIlseungBeopgyeResult', () => ((() => {
     try {
@@ -6183,6 +6216,9 @@ try {
     chavinLanzonStoneBalanceResult,
     maramuresWoodGateCalmResult,
     luangPrabangMekongDawnResult,
+    mossiEarthMuralHarmonyResult,
+    wolofTerangaBaobabWarmthResult,
+    palauanBaiRafterBalanceResult,
     tools: toolsMap,
   };
 }
@@ -6670,6 +6706,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'chavinLanzonStoneBalance', nameKo: '차빈·라손 돌기둥 균형', icon: '🗿', category: 'deep_master', summary: '안데스 차빈 데 우안타르의 라손 석주와 지하 수로처럼 사방의 갈래가 복잡할수록 내 안의 중심축을 먼저 세우고 흐름을 타는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'trinity' },
   { key: 'maramuresWoodGateCalm', nameKo: '마라무레슈·목조 문주', icon: '🪵', category: 'deep_master', summary: '루마니아 카르파티아 마라무레슈의 못 없이 맞춘 목조 대문처럼 관계와 일정 사이에 숨 쉴 유격을 두고 내 박자를 지키는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'bluebird' },
   { key: 'luangPrabangMekongDawn', nameKo: '루앙프라방·메콩 새벽', icon: '🌅', category: 'deep_master', summary: '라오스 루앙프라방의 메콩 새벽 물안개와 계절 대나무 다리처럼 서두르지 않고 계절에 맞춰 놓거나 거두는 고요한 호흡의 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'muse' },
+  { key: 'mossiEarthMuralHarmony', nameKo: '모시·황토 벽화 질서', icon: '🧱', category: 'deep_master', summary: '부르키나파소 티에벨레 모시족의 흙벽 기하학 벽화처럼 소박한 일상에 반복되는 리듬과 미리 챙기는 보호막을 더하는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'aura' },
+  { key: 'wolofTerangaBaobabWarmth', nameKo: '월로프·테랑가 환대', icon: '🌳', category: 'deep_master', summary: '세네갈 월로프의 아타야 세 잔 차와 바오밥 그늘처럼 첫 잔의 씁쓸함을 견디고 마음의 여백을 남겨 인연을 맞는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'bluebird' },
+  { key: 'palauanBaiRafterBalance', nameKo: '팔라우·바이 서까래', icon: '🏝️', category: 'deep_master', summary: '남태평양 팔라우 전통 바이 회당의 네 기둥과 산호초 안쪽 라군처럼 무게를 고르게 나누고 내 안의 고요를 지키는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'muse' },
 ] as DceEngineMeta[]).filter(engine => !LUCY_PRO_CATALOG_DUPLICATE_KEYS.has(engine.key));
 
 export function getFiredEngineBadges(
@@ -7575,6 +7614,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'chavinLanzonStoneBalance',
     'maramuresWoodGateCalm',
     'luangPrabangMekongDawn',
+    'mossiEarthMuralHarmony',
+    'wolofTerangaBaobabWarmth',
+    'palauanBaiRafterBalance',
   ],
 };
 
