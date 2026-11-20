@@ -1,5 +1,14 @@
 [
   {
+    "version": "1.7.1010",
+    "builtAt": "2026-11-20T14:20:00+09:00",
+    "summary": "자바 케자웬 엔진 타입 불일치 수복 및 전체 CI verify 통과 (v1.7.1010)",
+    "items": [
+      "javaneseKejawenRasaHarmonyEngine.ts의 KejawenRasaPrinciple 인터페이스 필드명(coreInsight) 일치 수복",
+      "PR #891 머지 시 미처 잡지 못했던 tsc --noEmit 타입 오류 해결"
+    ]
+  },
+  {
     "version": "1.7.1009",
     "builtAt": "2026-11-20T14:16:00+09:00",
     "summary": "아르메니아 나레카치·자바 케자웬·페니키아 항해 나침반 3대 신규 심층 엔진 구축 및 카탈로그 342개 확장 (v1.7.1009)",
