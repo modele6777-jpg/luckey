@@ -391,6 +391,9 @@ import { calculateSardinianNuragheStoneCalm, formatSardinianNuraghePrompt } from
 import { calculateCatalanSenyRauxaBalance, formatCatalanSenyRauxaPrompt } from '../src/lib/divination/catalanSenyRauxaBalanceEngine';
 import { calculateKurdishNewrozZagrosRenewal, formatKurdishNewrozPrompt } from '../src/lib/divination/kurdishNewrozZagrosRenewalEngine';
 import { calculateSindhiBhitaiIndusMelody, formatSindhiBhitaiPrompt } from '../src/lib/divination/sindhiBhitaiIndusMelodyEngine';
+import { calculateCorsicanPaghjellaMaquisHarmony, formatCorsicanPaghjellaPrompt } from '../src/lib/divination/corsicanPaghjellaMaquisHarmonyEngine';
+import { calculatePashtunRoshaniyaInnerLight, formatPashtunRoshaniyaPrompt } from '../src/lib/divination/pashtunRoshaniyaInnerLightEngine';
+import { calculateBengaliBaulMonerManush, formatBengaliBaulPrompt } from '../src/lib/divination/bengaliBaulMonerManushEngine';
 
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
@@ -13728,4 +13731,37 @@ test('Sindhi Bhitai Indus Melody engine: sur, +09:00 KST, and interpretive bound
   const prompt = formatSindhiBhitaiPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
   assert.ok(prompt.includes('신드') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Corsican Paghjella Maquis Harmony engine: voice, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateCorsicanPaghjellaMaquisHarmony({ profile, now: new Date('2026-11-20T07:52:00Z'), question: '내 자리의 한 음을 맑게 내고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-CORSICAN-PAGHJELLA-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatCorsicanPaghjellaPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('코르시카') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Pashtun Roshaniya Inner Light engine: lamp, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculatePashtunRoshaniyaInnerLight({ profile, now: new Date('2026-11-20T07:52:00Z'), question: '내 안의 맑은 등불을 밝히고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-PASHTUN-ROSHANIYA-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatPashtunRoshaniyaPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('파슈툰') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Bengali Baul Moner Manush engine: string, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateBengaliBaulMonerManush({ profile, now: new Date('2026-11-20T07:52:00Z'), question: '마음속 소박한 울림을 듣고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-BENGALI-BAUL-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatBengaliBaulPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('벵골') && prompt.includes('+09:00 (KST)'));
 });
