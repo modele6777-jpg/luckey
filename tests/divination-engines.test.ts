@@ -13182,13 +13182,14 @@ test('Ethiopian Zera Yacob Hatata Reason engine: conscience inquiry, +09:00 KST,
 test('Basque Lauburu & Basajaun Harmony engine: cycle balance, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateBasqueLauburuBasajaunHarmony(profile, '요즘 지쳐서 회복이 필요해요', new Date('2026-11-20T04:00:00Z'));
   assert.equal(rep.engineVersion, BASQUE_LAUBURU_HARMONY_VERSION);
-  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
+  assert.ok(rep.companionArmKey !== rep.lauburuArmKey);
   assert.equal(rep.questionTopic, 'healing');
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('개인 점수·심리 진단·미래 예측이 아닙니다'));
   const prompt = formatBasqueLauburuBasajaunHarmonyPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('라부루(Lauburu)') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('라부루(Lauburu)') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionArmKey));
 });
 
 test('Ojibwe Seven Grandfather Teachings engine: virtues, +09:00 KST, and interpretive boundary', () => {
@@ -14315,13 +14316,14 @@ test('Omani Frankincense Falaj Water engine: symbol, +09:00 KST, and interpretiv
 
 test('Baekje Gilt-Bronze Incense Calm engine: motif, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateBaekjeGiltBronzeIncenseCalm({ profile, now: new Date('2026-11-20T19:15:00Z'), question: '둥글고 온화한 비례로 마음을 펴고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-BAEKJE-INCENSE-v2.1.0');
-  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.equal(rep.engineVersion, 'LUCKEY-BAEKJE-INCENSE-v2.2.0');
+  assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
+  assert.ok(rep.companionMotif !== rep.buyeoMotif);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatBaekjeIncensePrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('백제') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('백제') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionMotif));
 });
 
 test('Parthian Nisa Archery Poise engine: motif, +09:00 KST, and interpretive boundary', () => {
@@ -14359,13 +14361,14 @@ test('Benin Bronze Oba Memory engine: motif, +09:00 KST, and interpretive bounda
 
 test('Bamiyan Silk Road Valley Calm engine: motif, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateBamiyanSilkRoadValleyCalm({ profile, now: new Date('2026-11-20T19:35:00Z'), question: '마음의 소음을 잠시 내려놓고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-BAMIYAN-VALLEY-v2.1.0');
-  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.equal(rep.engineVersion, 'LUCKEY-BAMIYAN-VALLEY-v2.2.0');
+  assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
+  assert.ok(rep.companionMotif !== rep.bamiyanMotif);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatBamiyanValleyPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('바미얀') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('바미얀') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionMotif));
 });
 
 test('Sigiriya Lion Rock Water Garden engine: motif, +09:00 KST, and interpretive boundary', () => {

@@ -14,12 +14,12 @@
  * 1. 개인 점수·심리 진단·미래 예측이 아닙니다. 모든 산출은 정성적 성찰 문장입니다.
  * 2. 바스크 전통의 보편적 상징만 빌려 쓰며 출처 없는 인용문을 만들지 않습니다.
  *
- * @version LUCKEY-BASQUE-LAUBURU-v2.1.0
+ * @version LUCKEY-BASQUE-LAUBURU-v2.2.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const BASQUE_LAUBURU_HARMONY_VERSION = 'LUCKEY-BASQUE-LAUBURU-v2.1.0';
+export const BASQUE_LAUBURU_HARMONY_VERSION = 'LUCKEY-BASQUE-LAUBURU-v2.2.0';
 
 export type LauburuQuestionTopic = 'decision' | 'relationship' | 'healing' | 'reflection';
 
@@ -39,6 +39,7 @@ export interface SituationalLauburuAudit {
 
 export interface LauburuSynthesisMatrix {
   activeArm: string;
+  companionArm: string;
   stewardshipTone: string;
   integratedAction: string;
 }
@@ -49,6 +50,7 @@ export interface BasqueLauburuBasajaunResult {
   calculatedAtKst: string;
   questionTopic: LauburuQuestionTopic;
   lauburuArmKey: string;
+  companionArmKey: string;
   situationalLauburuAudit: SituationalLauburuAudit;
   temporalCyclePulse: LauburuCyclePulse;
   lauburuSynthesisMatrix: LauburuSynthesisMatrix;
@@ -168,14 +170,23 @@ export function calculateBasqueLauburuBasajaunHarmony(
     '바람의 날개 — 시야를 트고 새로운 소식을 받아들이는 순환',
     '불과 쉼의 날개 — 내면의 온기를 지키며 다음 계절을 준비하는 순환',
   ];
-  const lauburuArmKey = arms[Math.abs(hash) % arms.length];
+  const primaryIdx = Math.abs(hash) % arms.length;
+  let companionHash = 0;
+  const companionSeed = `${seed}:companion`;
+  for (let i = 0; i < companionSeed.length; i++) {
+    companionHash = (companionHash << 5) - companionHash + companionSeed.charCodeAt(i);
+    companionHash |= 0;
+  }
+  const companionOffset = 1 + (Math.abs(companionHash) % (arms.length - 1));
+  const lauburuArmKey = arms[primaryIdx];
+  const companionArmKey = arms[(primaryIdx + companionOffset) % arms.length];
 
   const situationalLauburuAudit = buildSituationalLauburuAudit(topic, lauburuArmKey);
   const temporalCyclePulse = buildTemporalCyclePulse(now);
 
   const trimmedQ = (question ?? '').trim();
   const ritualAction = `${situationalLauburuAudit.forestPractice} 이어서 ${situationalLauburuAudit.renewalAdvice}`;
-  const reflectionFocus = `${lauburuArmKey} · ${temporalCyclePulse.kstTimeWindow} — 일과 쉼의 순환 균형 점검`;
+  const reflectionFocus = `${lauburuArmKey} ↔ ${companionArmKey} · ${temporalCyclePulse.kstTimeWindow} — 일과 쉼의 순환 균형 점검`;
   const reflectiveQuestion = trimmedQ
     ? `'${trimmedQ}'라는 문제 앞에서, 지금 내가 더 키워야 할 것은 추진력인가요, 아니면 숲을 지키듯 속도를 늦추는 돌봄인가요?`
     : `지금 내 하루의 순환(시작·성장·수렴·휴식) 가운데 가장 돌봄이 필요한 구간은 어디인가요?`;
@@ -185,12 +196,18 @@ export function calculateBasqueLauburuBasajaunHarmony(
 
   const lauburuSynthesisMatrix: LauburuSynthesisMatrix = {
     activeArm: lauburuArmKey,
+    companionArm: companionArmKey,
     stewardshipTone: temporalCyclePulse.stewardshipGuidance,
     integratedAction: `${situationalLauburuAudit.groundedAdvice}${trimmedQ ? ` [질문 맥락: ${trimmedQ}]` : ''}`,
   };
 
   const kst = new Date(now.getTime() + 9 * 3600 * 1000);
-  const calculatedAtKst = `${kst.toISOString().slice(0, 19)}+09:00 (KST)`;
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  const calculatedAtKst = `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
 
   return {
     engineVersion: BASQUE_LAUBURU_HARMONY_VERSION,
@@ -198,6 +215,7 @@ export function calculateBasqueLauburuBasajaunHarmony(
     calculatedAtKst,
     questionTopic: topic,
     lauburuArmKey,
+    companionArmKey,
     situationalLauburuAudit,
     temporalCyclePulse,
     lauburuSynthesisMatrix,
@@ -213,12 +231,13 @@ export function formatBasqueLauburuBasajaunHarmonyPrompt(res: BasqueLauburuBasaj
     `【바스크 라부루(Lauburu)·바사하운 숲과 원환의 균형 (${res.engineVersion} | ${res.calculatedAtKst})】`,
     `- 질문 주제 분류: ${res.questionTopic}`,
     `- 활성 순환 날개: ${res.lauburuArmKey}`,
+    `- 동반 순환 날개: ${res.companionArmKey}`,
     `- 질문 비춤: ${res.situationalLauburuAudit.cycleMirror}`,
     `- 토대 조언: ${res.situationalLauburuAudit.groundedAdvice}`,
     `- 순환 갱신 조언: ${res.situationalLauburuAudit.renewalAdvice}`,
     `- KST 시간대 창: ${res.temporalCyclePulse.kstTimeWindow}`,
     `- 돌봄 지침: ${res.temporalCyclePulse.stewardshipGuidance}`,
-    `- 라부루 교차 매트릭스: 날개(${res.lauburuSynthesisMatrix.activeArm}) · 돌봄(${res.lauburuSynthesisMatrix.stewardshipTone}) · 실천(${res.lauburuSynthesisMatrix.integratedAction})`,
+    `- 라부루 교차 매트릭스: 날개(${res.lauburuSynthesisMatrix.activeArm} ↔ ${res.lauburuSynthesisMatrix.companionArm}) · 돌봄(${res.lauburuSynthesisMatrix.stewardshipTone}) · 실천(${res.lauburuSynthesisMatrix.integratedAction})`,
     `- 실천 의례: ${res.ritualAction}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 성찰 질문: ${res.reflectiveQuestion}`,
