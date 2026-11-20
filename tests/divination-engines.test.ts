@@ -448,6 +448,9 @@ import { calculateNumidianCirtaHorizonPoise, formatNumidianCirtaPrompt } from '.
 import { calculateParacasWeaveTextileHarmony, formatParacasWeavePrompt } from '../src/lib/divination/paracasWeaveTextileHarmonyEngine';
 import { calculateDayakLonghouseHornbillPoise, formatDayakHornbillPrompt } from '../src/lib/divination/dayakLonghouseHornbillPoiseEngine';
 import { calculateCarthaginianTanitHarborCompass, formatCarthaginianTanitPrompt } from '../src/lib/divination/carthaginianTanitHarborCompassEngine';
+import { calculateGayaIronCrownRiverHarmony, formatGayaIronCrownPrompt } from '../src/lib/divination/gayaIronCrownRiverHarmonyEngine';
+import { calculateElamiteSusaWaterChoga, formatElamiteSusaPrompt } from '../src/lib/divination/elamiteSusaWaterChogaEngine';
+import { calculateLycianCliffHorizonCalm, formatLycianCliffPrompt } from '../src/lib/divination/lycianCliffHorizonCalmEngine';
 
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
@@ -14430,4 +14433,37 @@ test('Carthaginian Tanit Harbor Compass engine: motif, +09:00 KST, and interpret
   const prompt = formatCarthaginianTanitPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
   assert.ok(prompt.includes('카르타고') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Gaya Iron Crown River Harmony engine: motif, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateGayaIronCrownRiverHarmony({ profile, now: new Date('2026-11-20T19:55:00Z'), question: '열정과 식힘의 균형을 잡고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-GAYA-IRON-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatGayaIronCrownPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('가야') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Elamite Susa Water Choga engine: motif, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateElamiteSusaWaterChoga({ profile, now: new Date('2026-11-20T19:55:00Z'), question: '단단한 일상 루틴을 세우고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-ELAMITE-SUSA-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatElamiteSusaPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('수사') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Lycian Cliff Horizon Calm engine: motif, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateLycianCliffHorizonCalm({ profile, now: new Date('2026-11-20T19:55:00Z'), question: '넓은 수평선을 바라보고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-LYCIAN-CLIFF-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatLycianCliffPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('리키아') && prompt.includes('+09:00 (KST)'));
 });

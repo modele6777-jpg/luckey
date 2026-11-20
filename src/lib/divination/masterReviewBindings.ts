@@ -1815,5 +1815,17 @@ export const MASTER_REVIEW_BINDINGS: Record<string, { field: string; traceKey: s
   "carthaginianTanitHarborCompass": {
     "field": "carthaginianTanitHarborCompassResult",
     "traceKey": "carthaginianTanitHarborCompassResult"
+  },
+  "gayaIronCrownRiverHarmony": {
+    "field": "gayaIronCrownRiverHarmonyResult",
+    "traceKey": "gayaIronCrownRiverHarmonyResult"
+  },
+  "elamiteSusaWaterChoga": {
+    "field": "elamiteSusaWaterChogaResult",
+    "traceKey": "elamiteSusaWaterChogaResult"
+  },
+  "lycianCliffHorizonCalm": {
+    "field": "lycianCliffHorizonCalmResult",
+    "traceKey": "lycianCliffHorizonCalmResult"
   }
 };

@@ -479,6 +479,9 @@ import { calculateNumidianCirtaHorizonPoise, formatNumidianCirtaPrompt, type Num
 import { calculateParacasWeaveTextileHarmony, formatParacasWeavePrompt, type ParacasWeaveResult } from './paracasWeaveTextileHarmonyEngine';
 import { calculateDayakLonghouseHornbillPoise, formatDayakHornbillPrompt, type DayakHornbillResult } from './dayakLonghouseHornbillPoiseEngine';
 import { calculateCarthaginianTanitHarborCompass, formatCarthaginianTanitPrompt, type CarthaginianTanitResult } from './carthaginianTanitHarborCompassEngine';
+import { calculateGayaIronCrownRiverHarmony, formatGayaIronCrownPrompt, type GayaIronCrownResult } from './gayaIronCrownRiverHarmonyEngine';
+import { calculateElamiteSusaWaterChoga, formatElamiteSusaPrompt, type ElamiteSusaResult } from './elamiteSusaWaterChogaEngine';
+import { calculateLycianCliffHorizonCalm, formatLycianCliffPrompt, type LycianCliffResult } from './lycianCliffHorizonCalmEngine';
 
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
@@ -976,6 +979,9 @@ export interface DeterministicEngineReport {
   paracasWeaveTextileHarmonyResult?: ParacasWeaveResult | null;
   dayakLonghouseHornbillPoiseResult?: DayakHornbillResult | null;
   carthaginianTanitHarborCompassResult?: CarthaginianTanitResult | null;
+  gayaIronCrownRiverHarmonyResult?: GayaIronCrownResult | null;
+  elamiteSusaWaterChogaResult?: ElamiteSusaResult | null;
+  lycianCliffHorizonCalmResult?: LycianCliffResult | null;
 
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
@@ -4602,6 +4608,33 @@ try {
     }
   })()));
 
+  // 456. 가야·금관 철기 조화 엔진
+  const gayaIronCrownRiverHarmonyResult = calculateSupplement('gayaIronCrownRiverHarmonyResult', () => ((() => {
+    try {
+      return calculateGayaIronCrownRiverHarmony({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 457. 엘람 수사·수로 정원 엔진
+  const elamiteSusaWaterChogaResult = calculateSupplement('elamiteSusaWaterChogaResult', () => ((() => {
+    try {
+      return calculateElamiteSusaWaterChoga({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 458. 리키아·암벽 지평선 엔진
+  const lycianCliffHorizonCalmResult = calculateSupplement('lycianCliffHorizonCalmResult', () => ((() => {
+    try {
+      return calculateLycianCliffHorizonCalm({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
   // 220. 한국 신라 의상대사 화엄일승법계도 & 법성게 원융무애 엔진
   const uisangHwaeomIlseungBeopgyeResult = calculateSupplement('uisangHwaeomIlseungBeopgyeResult', () => ((() => {
     try {
@@ -6075,6 +6108,9 @@ try {
     paracasWeaveTextileHarmonyResult,
     dayakLonghouseHornbillPoiseResult,
     carthaginianTanitHarborCompassResult,
+    gayaIronCrownRiverHarmonyResult,
+    elamiteSusaWaterChogaResult,
+    lycianCliffHorizonCalmResult,
     tools: toolsMap,
   };
 }
@@ -6553,6 +6589,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'paracasWeaveTextileHarmony', nameKo: '파라카스·직조 매듭', icon: '🧶', category: 'deep_master', summary: '고대 페루 파라카스의 다채로운 직조 망토처럼 팽팽한 긴장과 느슨한 쉼의 균형을 맞추며 나만의 결을 한 줄씩 이어 가는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'muse' },
   { key: 'dayakLonghouseHornbillPoise', nameKo: '다약·롱하우스 코뿔새', icon: '🌿', category: 'deep_master', summary: '보르네오 다약족의 열린 롱하우스 마루와 등나무 탄력처럼 혼자 짊어지던 긴장을 내려놓고 유연하게 오늘을 건너가는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'aura' },
   { key: 'carthaginianTanitHarborCompass', nameKo: '카르타고 타닛·항구', icon: '⚓', category: 'deep_master', summary: '고대 카르타고 코톤의 원형 내항과 타닛의 조화 표식처럼 먼 파도만 걱정하기보다 내 안의 안전한 내항과 돛의 속도를 조절하는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'bluebird' },
+  { key: 'gayaIronCrownRiverHarmony', nameKo: '가야·금관 철기 조화', icon: '⚔️', category: 'deep_master', summary: '고대 가야의 철기 제련과 굽다리 토기·가야금 조화처럼 열정과 식힘의 절도를 맞추며 부드럽고 단정한 중심을 세우는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'trinity' },
+  { key: 'elamiteSusaWaterChoga', nameKo: '엘람 수사·수로 정원', icon: '🧱', category: 'deep_master', summary: '고대 엘람 수사의 초가 잔빌과 관개 수로처럼 부드러운 속마음을 지켜 주는 단단한 일상 루틴을 차분히 다지는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'aura' },
+  { key: 'lycianCliffHorizonCalm', nameKo: '리키아·암벽 지평선', icon: '⛰️', category: 'deep_master', summary: '고대 리키아의 암벽 회랑과 해안 능선길처럼 오르막의 숨이 가쁠수록 시선을 들어 능선 너머의 넓은 바다를 바라보는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'bluebird' },
 ] as DceEngineMeta[]).filter(engine => !LUCY_PRO_CATALOG_DUPLICATE_KEYS.has(engine.key));
 
 export function getFiredEngineBadges(
@@ -7449,6 +7488,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'paracasWeaveTextileHarmony',
     'dayakLonghouseHornbillPoise',
     'carthaginianTanitHarborCompass',
+    'gayaIronCrownRiverHarmony',
+    'elamiteSusaWaterChoga',
+    'lycianCliffHorizonCalm',
   ],
 };
 
