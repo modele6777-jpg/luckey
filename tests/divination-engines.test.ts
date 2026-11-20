@@ -13591,13 +13591,14 @@ test('Taino Zemi Areito Harmony engine: emblem, +09:00 KST, and interpretive bou
 
 test('Basotho Botho Mountain Wisdom engine: sign, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateBasothoBothoMountainWisdom({ profile, now: new Date('2026-11-20T07:12:00Z'), question: '태도의 온도와 품위를 지키고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-BASOTHO-BOTHO-v2.1.0');
-  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.equal(rep.engineVersion, 'LUCKEY-BASOTHO-BOTHO-v2.2.0');
+  assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
+  assert.ok(rep.companionSign.length > 0 && rep.companionSign !== rep.mountainSign);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatBasothoBothoPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('바소토') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('바소토') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.reflectionFocus));
 });
 
 test('Tuvan Khoomei Overtones Resonance engine: layer, +09:00 KST, and interpretive boundary', () => {
@@ -13800,13 +13801,14 @@ test('Pashtun Roshaniya Inner Light engine: lamp, +09:00 KST, and interpretive b
 
 test('Bengali Baul Moner Manush engine: string, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateBengaliBaulMonerManush({ profile, now: new Date('2026-11-20T07:52:00Z'), question: '마음속 소박한 울림을 듣고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-BENGALI-BAUL-v2.1.0');
-  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.equal(rep.engineVersion, 'LUCKEY-BENGALI-BAUL-v2.2.0');
+  assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
+  assert.ok(rep.companionString.length > 0 && rep.companionString !== rep.baulString);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatBengaliBaulPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('벵골') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('벵골') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.reflectionFocus));
 });
 
 test('Punjabi Nanak Langar Service engine: pillar, +09:00 KST, and interpretive boundary', () => {
@@ -14043,13 +14045,14 @@ test('Estonian Regilaul Forest Calm engine: motif, +09:00 KST, and interpretive 
 
 test('Balkan Ohrid Lake Reflection engine: symbol, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateBalkanOhridLakeReflection({ profile, now: new Date('2026-11-20T08:46:00Z'), question: '깊은 바닥에서부터 스스로를 맑게 돌보고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-BALKAN-OHRID-v2.1.0');
-  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.equal(rep.engineVersion, 'LUCKEY-BALKAN-OHRID-v2.2.0');
+  assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
+  assert.ok(rep.companionSymbol.length > 0 && rep.companionSymbol !== rep.ohridSymbol);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatBalkanOhridPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('오흐리드') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('오흐리드') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.reflectionFocus));
 });
 
 test('Garifuna Dugu Caribbean Rhythm engine: rhythm, +09:00 KST, and interpretive boundary', () => {
