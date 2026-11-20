@@ -486,7 +486,9 @@ test('Kyusei reference example: 1990-05-17 solar birth is 一白水星 with 五�
   assert(prompt.includes(KYUSEI_ENGINE_VERSION)&&prompt.includes('오황살')&&prompt.includes('일백수성'));
   assert(r.ritualAction && r.ritualAction.length > 0);
   assert(r.reflectionFocus && r.reflectionFocus.length > 0);
+  assert(r.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(prompt.includes('실천 의례'));
+  assert(prompt.includes(r.reflectionFocus));
   assert(prompt.includes('성찰 초점'));
   assert(prompt.includes('교차 매트릭스'));
   assert(!prompt.includes('/100'));
@@ -7751,7 +7753,7 @@ test('Yun Dong-ju Sky Wind Stars Poetry Engine: calculates Pure Conscience, Well
   assert(rep.ritualAction.length > 0);
   assert(rep.reflectionFocus.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
-  assert(rep.calculatedAtKst.endsWith('+09:00 KST'));
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(Boolean(rep.yunDongJuSynthesisMatrix?.integratedAction));
   const repQ = calculateKoreanYunDongJuSkyWindStarsPoetry(profile, '하늘 아래 부끄럼 없이 지켜내고 싶은 진심');
   assert(repQ.reflectiveQuestion.includes('지켜내고 싶은 진심'));
@@ -7761,6 +7763,7 @@ test('Yun Dong-ju Sky Wind Stars Poetry Engine: calculates Pure Conscience, Well
   assert(prompt.includes(repQ.secondaryYunDongJuTheme.themeTitleKo));
   assert(prompt.includes('실천 의례'));
   assert(prompt.includes('성찰 초점'));
+  assert(prompt.includes(repQ.reflectionFocus));
   assert(prompt.includes('해석 경계'));
   assert(prompt.includes('교차 매트릭스'));
   assert(!prompt.includes('/100'));
@@ -10293,7 +10296,7 @@ test('v2.1.0 qualitative prompt reform: Jacques Derrida, Michel Foucault, and Ro
 test('Korean Yutjeom engine: five qualitative stances without raw scores or a claimed cast', () => {
   const rep = calculateKoreanYutjeomFourStickOracle(profile, '이직을 해야 할지 고민이에요', new Date('2026-11-15T03:00:00Z'));
   assert.equal(rep.engineVersion, KOREAN_YUTJEOM_FOUR_STICK_VERSION);
-  assert.ok(rep.calculatedAtKst.endsWith('+09:00'));
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert.ok(Boolean(rep.yutjeomSynthesisMatrix?.integratedAction));
   assert.equal(rep.actualCastRecorded, false);
   assert.equal(rep.questionTopic, 'decision');
