@@ -388,6 +388,9 @@ import { calculateBuryatBaikalTengriHarmony, formatBuryatBaikalPrompt } from '..
 import { calculateCornishKernowSeaGranite, formatCornishKernowPrompt } from '../src/lib/divination/cornishKernowSeaGraniteEngine';
 import { calculateOssetianNartSagasForge, formatOssetianNartPrompt } from '../src/lib/divination/ossetianNartSagasForgeEngine';
 import { calculateSardinianNuragheStoneCalm, formatSardinianNuraghePrompt } from '../src/lib/divination/sardinianNuragheStoneCalmEngine';
+import { calculateCatalanSenyRauxaBalance, formatCatalanSenyRauxaPrompt } from '../src/lib/divination/catalanSenyRauxaBalanceEngine';
+import { calculateKurdishNewrozZagrosRenewal, formatKurdishNewrozPrompt } from '../src/lib/divination/kurdishNewrozZagrosRenewalEngine';
+import { calculateSindhiBhitaiIndusMelody, formatSindhiBhitaiPrompt } from '../src/lib/divination/sindhiBhitaiIndusMelodyEngine';
 
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
@@ -13692,4 +13695,37 @@ test('Sardinian Nuraghe Stone Calm engine: stone, +09:00 KST, and interpretive b
   const prompt = formatSardinianNuraghePrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
   assert.ok(prompt.includes('사르데냐') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Catalan Seny Rauxa Balance engine: principle, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateCatalanSenyRauxaBalance({ profile, now: new Date('2026-11-20T07:42:00Z'), question: '분별과 열정의 균형을 맞추고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-CATALAN-SENY-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatCatalanSenyRauxaPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('카탈루냐') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Kurdish Newroz Zagros Renewal engine: symbol, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateKurdishNewrozZagrosRenewal({ profile, now: new Date('2026-11-20T07:42:00Z'), question: '어제의 피로를 털고 새로 시작하고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-KURDISH-NEWROZ-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatKurdishNewrozPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('쿠르드') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Sindhi Bhitai Indus Melody engine: sur, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateSindhiBhitaiIndusMelody({ profile, now: new Date('2026-11-20T07:42:00Z'), question: '내 마음의 진실한 선율을 지키고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-SINDHI-BHITAI-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatSindhiBhitaiPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('신드') && prompt.includes('+09:00 (KST)'));
 });
