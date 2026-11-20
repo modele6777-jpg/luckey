@@ -2019,5 +2019,17 @@ export const MASTER_REVIEW_BINDINGS: Record<string, { field: string; traceKey: s
   "hmongStoryCloth": {
     "field": "hmongStoryClothResult",
     "traceKey": "hmongStoryClothResult"
+  },
+  "karenBambooClock": {
+    "field": "karenBambooClockResult",
+    "traceKey": "karenBambooClockResult"
+  },
+  "shanInleRowing": {
+    "field": "shanInleRowingResult",
+    "traceKey": "shanInleRowingResult"
+  },
+  "chumashTomolCanoe": {
+    "field": "chumashTomolCanoeResult",
+    "traceKey": "chumashTomolCanoeResult"
   }
 };
