@@ -10,6 +10,7 @@ export interface AsturianHorreoResult {
   engineVersion: string;
   calculatedAtKst: string;
   granaryMotif: string;
+  companionMotif: string;
   woodenBeamState: string;
   reflectionFocus: string;
   ritualAction: string;
@@ -47,7 +48,12 @@ const QUESTIONS = [
 
 function toKstIso(date: Date): string {
   const kst = new Date(date.getTime() + 9 * 60 * 60 * 1000);
-  return kst.toISOString().replace('Z', '+09:00 (KST)');
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
 }
 
 function stableHash(seed: string): number {
@@ -65,17 +71,21 @@ export function calculateAsturianHorreoPoise(input: AsturianHorreoInput): Asturi
   const seedText = `${JSON.stringify(fate)}|${input.question ?? ''}|${now.toISOString().slice(0, 10)}|asturian-horreo`;
   const h = stableHash(seedText);
 
-  const granaryMotif = MOTIFS[h % MOTIFS.length];
+  const motifIdx = h % MOTIFS.length;
+  const companionOffset = 1 + (stableHash(`${seedText}|companion`) % (MOTIFS.length - 1));
+  const granaryMotif = MOTIFS[motifIdx];
+  const companionMotif = MOTIFS[(motifIdx + companionOffset) % MOTIFS.length];
   const woodenBeamState = BEAM_STATES[(h >>> 3) % BEAM_STATES.length];
-  const ritualAction = RITUALS[(h >>> 6) % RITUALS.length];
-  const reflectiveQuestion = QUESTIONS[(h >>> 9) % QUESTIONS.length];
+  const ritualAction = RITUALS[motifIdx];
+  const reflectiveQuestion = QUESTIONS[motifIdx];
 
   return {
-    engineVersion: 'LUCKEY-ASTURIAN-HORREO-v2.1.0',
+    engineVersion: 'LUCKEY-ASTURIAN-HORREO-v2.2.0',
     calculatedAtKst: toKstIso(now),
     granaryMotif,
+    companionMotif,
     woodenBeamState,
-    reflectionFocus: `땅의 습기에서 한 뼘 띄워 바람을 통하게 하는 아스투리아스 오레오 곡창처럼, 지금은 '${woodenBeamState}'의 거리 두기가 필요한 때입니다.`,
+    reflectionFocus: `땅의 습기에서 한 뼘 띄워 바람을 통하게 하는 아스투리아스 오레오 곡창처럼, 주 모티프와 동반 모티프('${companionMotif}')가 어우러져 지금은 '${woodenBeamState}'의 거리 두기가 필요한 때입니다.`,
     ritualAction,
     reflectiveQuestion,
     interpretiveBoundary: '아스투리아스 오레오 공중 곡창의 저장·통풍 지혜를 빌린 상징적 성찰 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.',
@@ -86,6 +96,7 @@ export function formatAsturianHorreoPrompt(result: AsturianHorreoResult): string
   return [
     `[아스투리아스 오레오 곡창 (${result.engineVersion}) · ${result.calculatedAtKst}]`,
     `- 상징 모티프: ${result.granaryMotif}`,
+    `- 동반 모티프: ${result.companionMotif}`,
     `- 현재 결: ${result.woodenBeamState}`,
     `- 성찰 초점: ${result.reflectionFocus}`,
     `- 작은 실천: ${result.ritualAction}`,

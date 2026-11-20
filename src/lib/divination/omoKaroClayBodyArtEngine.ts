@@ -10,6 +10,7 @@ export interface OmoKaroResult {
   engineVersion: string;
   calculatedAtKst: string;
   pigmentMotif: string;
+  companionMotif: string;
   mineralTone: string;
   reflectionFocus: string;
   ritualAction: string;
@@ -33,21 +34,26 @@ const MINERAL_TONES = [
 
 const RITUALS = [
   '오늘의 기분이나 목표를 세 단어로만 줄여 메모장 맨 위에 크게 적어 보세요.',
-  '어제의 무거운 감정은 강물에 씻어 내듯 세수나 샤워를 하며 털어내 보세요.',
   '평소보다 조금 더 선명한 색의 옷이나 소품 하나를 골라 하루의 표정을 바꿔 보세요.',
   '남의 시선 대신 지금 내 몸과 표정이 가장 편해지는 자세를 먼저 찾아보세요.',
+  '어제의 무거운 감정은 강물에 씻어 내듯 세수나 샤워를 하며 털어내 보세요.',
 ] as const;
 
 const QUESTIONS = [
   '오늘 내 마음의 도화지 위에 가장 먼저 찍고 싶은 색깔은 무엇인가요?',
-  '영원히 남기려 애쓰기보다 오늘 하루만 아름답게 피우고 흘려보내도 좋은 일은 무엇일까요?',
-  '복잡한 설명을 덜어 내고 선명한 선 하나만 남긴다면 어떤 마음이 남을까요?',
   '나를 꾸미는 표현이 지금의 진짜 기분과 잘 맞닿아 있는지 돌아볼까요?',
+  '복잡한 설명을 덜어 내고 선명한 선 하나만 남긴다면 어떤 마음이 남을까요?',
+  '영원히 남기려 애쓰기보다 오늘 하루만 아름답게 피우고 흘려보내도 좋은 일은 무엇일까요?',
 ] as const;
 
 function toKstIso(date: Date): string {
   const kst = new Date(date.getTime() + 9 * 60 * 60 * 1000);
-  return kst.toISOString().replace('Z', '+09:00 (KST)');
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
 }
 
 function stableHash(seed: string): number {
@@ -65,17 +71,21 @@ export function calculateOmoKaroBodyArt(input: OmoKaroInput): OmoKaroResult {
   const seedText = `${JSON.stringify(fate)}|${input.question ?? ''}|${now.toISOString().slice(0, 10)}|omo-karo`;
   const h = stableHash(seedText);
 
-  const pigmentMotif = MOTIFS[h % MOTIFS.length];
+  const motifIdx = h % MOTIFS.length;
+  const companionOffset = 1 + (stableHash(`${seedText}|companion`) % (MOTIFS.length - 1));
+  const pigmentMotif = MOTIFS[motifIdx];
+  const companionMotif = MOTIFS[(motifIdx + companionOffset) % MOTIFS.length];
   const mineralTone = MINERAL_TONES[(h >>> 3) % MINERAL_TONES.length];
-  const ritualAction = RITUALS[(h >>> 6) % RITUALS.length];
-  const reflectiveQuestion = QUESTIONS[(h >>> 9) % QUESTIONS.length];
+  const ritualAction = RITUALS[motifIdx];
+  const reflectiveQuestion = QUESTIONS[motifIdx];
 
   return {
-    engineVersion: 'LUCKEY-OMO-KARO-v2.1.0',
+    engineVersion: 'LUCKEY-OMO-KARO-v2.2.0',
     calculatedAtKst: toKstIso(now),
     pigmentMotif,
+    companionMotif,
     mineralTone,
-    reflectionFocus: `강가의 흙과 재로 하루의 기운을 표현하고 저녁이면 씻어 내는 오모 계곡 카로 족의 회화처럼, 지금은 '${mineralTone}'의 솔직한 표현이 어울립니다.`,
+    reflectionFocus: `강가의 흙과 재로 하루의 기운을 표현하고 저녁이면 씻어 내는 오모 계곡 카로 족의 회화처럼, 주 모티프와 동반 모티프('${companionMotif}')가 어우러져 지금은 '${mineralTone}'의 솔직한 표현이 어울립니다.`,
     ritualAction,
     reflectiveQuestion,
     interpretiveBoundary: '에티오피아 오모 계곡 카로 족의 자연 안료 회화 문화를 빌린 상징적 성찰 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.',
@@ -86,6 +96,7 @@ export function formatOmoKaroPrompt(result: OmoKaroResult): string {
   return [
     `[오모 카로 진흙 회화 (${result.engineVersion}) · ${result.calculatedAtKst}]`,
     `- 상징 모티프: ${result.pigmentMotif}`,
+    `- 동반 모티프: ${result.companionMotif}`,
     `- 현재 결: ${result.mineralTone}`,
     `- 성찰 초점: ${result.reflectionFocus}`,
     `- 작은 실천: ${result.ritualAction}`,
