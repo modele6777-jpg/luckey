@@ -452,6 +452,9 @@ import { calculateAlpineSavoyColWisdom, formatAlpineSavoyPrompt, type AlpineSavo
 import { calculateNabataeanPetraCisternWater, formatNabataeanPetraPrompt, type NabataeanPetraResult } from './nabataeanPetraCisternWaterEngine';
 import { calculateFrisianPolderDikeBalance, formatFrisianPolderPrompt, type FrisianPolderResult } from './frisianPolderDikeBalanceEngine';
 import { calculateUkrainianVyshyvankaSunflower, formatUkrainianVyshyvankaPrompt, type UkrainianVyshyvankaResult } from './ukrainianVyshyvankaSunflowerEngine';
+import { calculateChampaMySonBrickSanctuary, formatChampaMySonPrompt, type ChampaMySonResult } from './champaMySonBrickSanctuaryEngine';
+import { calculateKetYeniseiTaigaStars, formatKetYeniseiPrompt, type KetYeniseiResult } from './ketYeniseiTaigaStarsEngine';
+import { calculateChachapoyaCloudForestKuelap, formatChachapoyaKuelapPrompt, type ChachapoyaKuelapResult } from './chachapoyaCloudForestKuelapEngine';
 
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
@@ -922,6 +925,9 @@ export interface DeterministicEngineReport {
   nabataeanPetraCisternWaterResult?: NabataeanPetraResult | null;
   frisianPolderDikeBalanceResult?: FrisianPolderResult | null;
   ukrainianVyshyvankaSunflowerResult?: UkrainianVyshyvankaResult | null;
+  champaMySonBrickSanctuaryResult?: ChampaMySonResult | null;
+  ketYeniseiTaigaStarsResult?: KetYeniseiResult | null;
+  chachapoyaCloudForestKuelapResult?: ChachapoyaKuelapResult | null;
 
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
@@ -4305,6 +4311,33 @@ try {
     }
   })()));
 
+  // 429. 참파 미선·붉은 벽돌 성소 엔진
+  const champaMySonBrickSanctuaryResult = calculateSupplement('champaMySonBrickSanctuaryResult', () => ((() => {
+    try {
+      return calculateChampaMySonBrickSanctuary({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 430. 예니세이 케트·타이가 별하늘 엔진
+  const ketYeniseiTaigaStarsResult = calculateSupplement('ketYeniseiTaigaStarsResult', () => ((() => {
+    try {
+      return calculateKetYeniseiTaigaStars({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 431. 차차포야스 구름숲·쿠엘랍 엔진
+  const chachapoyaCloudForestKuelapResult = calculateSupplement('chachapoyaCloudForestKuelapResult', () => ((() => {
+    try {
+      return calculateChachapoyaCloudForestKuelap({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
   // 220. 한국 신라 의상대사 화엄일승법계도 & 법성게 원융무애 엔진
   const uisangHwaeomIlseungBeopgyeResult = calculateSupplement('uisangHwaeomIlseungBeopgyeResult', () => ((() => {
     try {
@@ -5751,6 +5784,9 @@ try {
     nabataeanPetraCisternWaterResult,
     frisianPolderDikeBalanceResult,
     ukrainianVyshyvankaSunflowerResult,
+    champaMySonBrickSanctuaryResult,
+    ketYeniseiTaigaStarsResult,
+    chachapoyaCloudForestKuelapResult,
     tools: toolsMap,
   };
 }
@@ -6202,6 +6238,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'nabataeanPetraCisternWater', nameKo: '나바테아 페트라·수로', icon: '🏜️', category: 'deep_master', summary: '나바테아 페트라의 사막 빗물 수로와 저수조처럼 당장 눈에 띄는 성과가 아니더라도 작은 배움과 여유를 차곡차곡 모아 두는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'muse' },
   { key: 'frisianPolderDikeBalance', nameKo: '프리슬란트 폴데르·수문', icon: '🌬️', category: 'deep_master', summary: '프리슬란트 폴데르의 수문과 배수 풍차처럼 넘치는 걱정과 외부 요구를 한 번에 막으려 하기보다 천천히 수위를 조절하는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'trinity' },
   { key: 'ukrainianVyshyvankaSunflower', nameKo: '우크라이나 비시반카·해바라기', icon: '🌻', category: 'deep_master', summary: '우크라이나 비시반카 자수의 한 땀과 해바라기처럼 조건이 완벽히 맑지 않아도 오늘 내 손끝의 정성과 밝은 방향을 지키는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'aura' },
+  { key: 'champaMySonBrickSanctuary', nameKo: '참파 미선·벽돌 탑', icon: '🧱', category: 'deep_master', summary: '참파 미선 성소의 붉은 벽돌처럼 억지 접착제나 과장된 포장 없이 기본기 하나하나를 반듯하게 맞춰 오래 버티는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'bluebird' },
+  { key: 'ketYeniseiTaigaStars', nameKo: '예니세이 케트·타이가', icon: '🌌', category: 'deep_master', summary: '시베리아 예니세이 강과 케트 타이가의 별빛처럼 오늘 당장 결판을 재촉하기보다 큰 물길의 방향과 지금 내 계절을 살피는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'muse' },
+  { key: 'chachapoyaCloudForestKuelap', nameKo: '차차포야스 구름숲·쿠엘랍', icon: '☁️', category: 'deep_master', summary: '안데스 차차포야스 쿠엘랍의 둥근 돌집처럼 날카롭게 각을 세우기보다 바람을 흘려보내며 구름 너머 높은 시야를 되찾는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'trinity' },
 ] as DceEngineMeta[]).filter(engine => !LUCY_PRO_CATALOG_DUPLICATE_KEYS.has(engine.key));
 
 export function getFiredEngineBadges(
@@ -7071,6 +7110,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'nabataeanPetraCisternWater',
     'frisianPolderDikeBalance',
     'ukrainianVyshyvankaSunflower',
+    'champaMySonBrickSanctuary',
+    'ketYeniseiTaigaStars',
+    'chachapoyaCloudForestKuelap',
   ],
 };
 
