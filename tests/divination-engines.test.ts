@@ -13521,13 +13521,14 @@ test('Dogon Amma Nommo Harmony engine: star phase, +09:00 KST, and interpretive 
 
 test('Aymara Pachamama Amauta Wisdom engine: nayra lens, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateAymaraPachamamaAmautaWisdom({ profile, now: new Date('2026-11-20T06:55:00Z'), question: '지나온 경험에서 기준을 찾고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-AYMARA-AMAUTA-v2.1.0');
-  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.equal(rep.engineVersion, 'LUCKEY-AYMARA-AMAUTA-v2.2.0');
+  assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
+  assert.ok(rep.companionLens.length > 0 && rep.companionLens !== rep.nayraLens);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatAymaraPachamamaPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('아이마라') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('아이마라') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.reflectionFocus));
 });
 
 test('Welsh Mabinogion Awen Inspiration engine: ray, +09:00 KST, and interpretive boundary', () => {
@@ -14005,13 +14006,14 @@ test('Ladakhi Stupa Glacier Water engine: wisdom, +09:00 KST, and interpretive b
 
 test('Assyrian Nineveh Clay Tablet engine: seal, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateAssyrianNinevehClayTablet({ profile, now: new Date('2026-11-20T08:40:00Z'), question: '머릿속 고민을 짧은 기록으로 세우고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-ASSYRIAN-NINEVEH-v2.1.0');
-  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.equal(rep.engineVersion, 'LUCKEY-ASSYRIAN-NINEVEH-v2.2.0');
+  assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
+  assert.ok(rep.companionSeal.length > 0 && rep.companionSeal !== rep.tabletSeal);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatAssyrianNinevehPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('아시리아') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('아시리아') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.reflectionFocus));
 });
 
 test('Tuareg Tagelmust Sahara Stars engine: compass, +09:00 KST, and interpretive boundary', () => {
@@ -14060,13 +14062,14 @@ test('Garifuna Dugu Caribbean Rhythm engine: rhythm, +09:00 KST, and interpretiv
 
 test('Alpine Savoy Col Wisdom engine: principle, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateAlpineSavoyColWisdom({ profile, now: new Date('2026-11-20T08:46:00Z'), question: '더 부드럽게 건널 수 있는 고개를 찾고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-ALPINE-SAVOY-v2.1.0');
-  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.equal(rep.engineVersion, 'LUCKEY-ALPINE-SAVOY-v2.2.0');
+  assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
+  assert.ok(rep.companionPrinciple.length > 0 && rep.companionPrinciple !== rep.ridgePrinciple);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatAlpineSavoyPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('사보이') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('사보이') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.reflectionFocus));
 });
 
 test('Nabataean Petra Cistern Water engine: conduit, +09:00 KST, and interpretive boundary', () => {
