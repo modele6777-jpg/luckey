@@ -437,6 +437,9 @@ import { calculateKarelianRunoKanteleResonance, formatKarelianRunoPrompt, type K
 import { calculateMalteseMegalithLuzzuHarbor, formatMalteseLuzzuPrompt, type MalteseLuzzuResult } from './malteseMegalithLuzzuHarborEngine';
 import { calculateUzbekMahallaRishtanCraft, formatUzbekMahallaPrompt, type UzbekMahallaResult } from './uzbekMahallaRishtanCraftEngine';
 import { calculateRapaNuiManaMoaiHorizon, formatRapaNuiMoaiPrompt, type RapaNuiMoaiResult } from './rapaNuiManaMoaiHorizonEngine';
+import { calculateChechenVainakhKovakhHonor, formatChechenVainakhPrompt, type ChechenVainakhResult } from './chechenVainakhKovakhHonorEngine';
+import { calculateSherpaSagarmathaRidgeHarmony, formatSherpaSagarmathaPrompt, type SherpaSagarmathaResult } from './sherpaSagarmathaRidgeHarmonyEngine';
+import { calculateEvenkiBugaTaigaPath, formatEvenkiBugaPrompt, type EvenkiBugaResult } from './evenkiBugaTaigaPathEngine';
 
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
@@ -892,6 +895,9 @@ export interface DeterministicEngineReport {
   malteseMegalithLuzzuHarborResult?: MalteseLuzzuResult | null;
   uzbekMahallaRishtanCraftResult?: UzbekMahallaResult | null;
   rapaNuiManaMoaiHorizonResult?: RapaNuiMoaiResult | null;
+  chechenVainakhKovakhHonorResult?: ChechenVainakhResult | null;
+  sherpaSagarmathaRidgeHarmonyResult?: SherpaSagarmathaResult | null;
+  evenkiBugaTaigaPathResult?: EvenkiBugaResult | null;
 
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
@@ -4140,6 +4146,33 @@ try {
     }
   })()));
 
+  // 414. 체첸 바이나흐·카바흐 명예 엔진
+  const chechenVainakhKovakhHonorResult = calculateSupplement('chechenVainakhKovakhHonorResult', () => ((() => {
+    try {
+      return calculateChechenVainakhKovakhHonor({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 415. 셰르파 사거마타·능선 조화 엔진
+  const sherpaSagarmathaRidgeHarmonyResult = calculateSupplement('sherpaSagarmathaRidgeHarmonyResult', () => ((() => {
+    try {
+      return calculateSherpaSagarmathaRidgeHarmony({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 416. 에벤키 부가·타이가 길잡이 엔진
+  const evenkiBugaTaigaPathResult = calculateSupplement('evenkiBugaTaigaPathResult', () => ((() => {
+    try {
+      return calculateEvenkiBugaTaigaPath({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
   // 220. 한국 신라 의상대사 화엄일승법계도 & 법성게 원융무애 엔진
   const uisangHwaeomIlseungBeopgyeResult = calculateSupplement('uisangHwaeomIlseungBeopgyeResult', () => ((() => {
     try {
@@ -5571,6 +5604,9 @@ try {
     malteseMegalithLuzzuHarborResult,
     uzbekMahallaRishtanCraftResult,
     rapaNuiManaMoaiHorizonResult,
+    chechenVainakhKovakhHonorResult,
+    sherpaSagarmathaRidgeHarmonyResult,
+    evenkiBugaTaigaPathResult,
     tools: toolsMap,
   };
 }
@@ -6007,6 +6043,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'malteseMegalithLuzzuHarbor', nameKo: '몰타 메갈리스·루조', icon: '⚓', category: 'deep_master', summary: '지중해 몰타의 루조(Luzzu) 어선과 메디나의 고요처럼 바깥의 파도에 휩쓸리기 전에 내 마음의 닻을 내리고 맑은 시야를 회복하는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'bluebird' },
   { key: 'uzbekMahallaRishtanCraft', nameKo: '우즈베크 마할라·리시탄', icon: '🏺', category: 'deep_master', summary: '우즈베크 마할라의 온기와 리시탄 청자처럼 서두르지 않고 정성을 들이는 손길과 곁의 안부 속에서 마음의 넉넉함을 회복하는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'aura' },
   { key: 'rapaNuiManaMoaiHorizon', nameKo: '라파 누이 마나·모아이', icon: '🗿', category: 'deep_master', summary: '남태평양 라파 누이의 아후(Ahu) 시선처럼 바깥의 비교를 쫓기보다 지금 내 자리와 소중한 이들을 지키는 묵직한 중심을 세우는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'muse' },
+  { key: 'chechenVainakhKovakhHonor', nameKo: '체첸 바이나흐·카바흐', icon: '🗼', category: 'deep_master', summary: '코카서스 바이나흐의 석탑과 노흐찰라(Nokhchalla)처럼 바깥의 소란에 휩쓸리지 않고 내 말의 무게와 내면의 절제를 지키는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'trinity' },
+  { key: 'sherpaSagarmathaRidgeHarmony', nameKo: '셰르파 사거마타·능선', icon: '🏔️', category: 'deep_master', summary: '히말라야 셰르파의 비스타레이(Bistari) 지혜처럼 무리한 속도전 대신 내 호흡과 고도에 맞춘 꾸준한 발걸음을 선택하는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'aura' },
+  { key: 'evenkiBugaTaigaPath', nameKo: '에벤키 부가·타이가', icon: '🦌', category: 'deep_master', summary: '시베리아 에벤키의 부가(Buga) 자연 공존처럼 무거운 집착을 덜어내고 눈앞의 작은 신호를 세심히 읽으며 유연하게 나아가는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'bluebird' },
 ] as DceEngineMeta[]).filter(engine => !LUCY_PRO_CATALOG_DUPLICATE_KEYS.has(engine.key));
 
 export function getFiredEngineBadges(
@@ -6861,6 +6900,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'malteseMegalithLuzzuHarbor',
     'uzbekMahallaRishtanCraft',
     'rapaNuiManaMoaiHorizon',
+    'chechenVainakhKovakhHonor',
+    'sherpaSagarmathaRidgeHarmony',
+    'evenkiBugaTaigaPath',
   ],
 };
 
