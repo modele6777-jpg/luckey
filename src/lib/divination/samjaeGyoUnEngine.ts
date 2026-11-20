@@ -47,7 +47,7 @@ import {
   getYearSolarTerms,
 } from '../astronomicalSolarTerms';
 
-export const SAMJAE_GYOUN_ENGINE_VERSION = 'LUCKEY-SG-v2.2.0';
+export const SAMJAE_GYOUN_ENGINE_VERSION = 'LUCKEY-SG-v2.3.0';
 
 export const SAMJAE_GYOUN_METHOD =
   '삼합(三合) 묘지 앵커 삼재 산법: 입춘 원국 년지 띠의 삼합군 기준 들·눌·날 3개년 판정, 원국 4주 충형파해·육합과 용신·희신·기신 오행 조화의 복·평·악 등급화, 대운수 8대 타임라인 교체 나이 전후 1~2년 교운기 감지 및 십성·계절(접목운) 전환 완충 처방 결정론 산출';
@@ -738,7 +738,12 @@ function analyzeGyoUn(
 
 function kstTimestamps(now: Date) {
   const kst = new Date(now.getTime() + 9 * 3600000);
-  return { utc: now.toISOString(), kst: kst.toISOString().replace('Z', '+09:00') };
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return { utc: now.toISOString(), kst: `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)` };
 }
 
 function skippedResult(note: string, targetYear: number): SamjaeGyoUnResult {

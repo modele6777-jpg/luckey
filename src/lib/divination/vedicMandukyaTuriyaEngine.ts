@@ -16,7 +16,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const VEDIC_MANDUKYA_TURIYA_ENGINE_VERSION = '2.2.0';
+export const VEDIC_MANDUKYA_TURIYA_ENGINE_VERSION = '2.3.0';
 
 export interface MandukyaConsciousnessState {
   id: string;
@@ -182,7 +182,13 @@ export function calculateVedicMandukyaTuriya(
   const sakshiWitnessPresenceScore = Math.min(100, Math.max(42, 50 + ((seed * 31) % 48)));
   const mayaIllusionDissolutionRate = Math.min(100, Math.max(40, 48 + ((seed * 17) % 49)));
 
-  const calculatedAtKst = new Date(now.getTime() + 9 * 60 * 60 * 1000).toISOString().replace('Z', '+09:00');
+  const kstDate = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kstDate.getUTCFullYear();
+  const m = String(kstDate.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kstDate.getUTCDate()).padStart(2, '0');
+  const hh = String(kstDate.getUTCHours()).padStart(2, '0');
+  const mm = String(kstDate.getUTCMinutes()).padStart(2, '0');
+  const calculatedAtKst = `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
   const { situationalTuriyaFocus, dailyPracticeRitual, reflectiveQuestion } = buildSituationalTuriyaFocus(question);
   const interpretBoundary = '이 관점은 만두키야 우파니샤드의 4대 의식 비유를 빌린 상징적 성찰 프레임이며, 확정 예언이 아닙니다.';
   const ritualAction = `${dailyPracticeRitual} 호흡의 끝자락 침묵에 30초간 머물며 샥시(목격자) 자리를 확인하십시오.`;
