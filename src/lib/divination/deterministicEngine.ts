@@ -512,6 +512,9 @@ import { calculateFaroeseTurfRoofShelter, formatFaroeseTurfPrompt, type FaroeseT
 import { calculateMarshalleseStickChart, formatMarshalleseChartPrompt, type MarshalleseChartResult } from './marshalleseStickChartEngine';
 import { calculateMaldivianCoralAtoll, formatMaldivianAtollPrompt, type MaldivianAtollResult } from './maldivianCoralAtollEngine';
 import { calculateTatraShepherdRidge, formatTatraRidgePrompt, type TatraRidgeResult } from './tatraShepherdRidgeEngine';
+import { calculateYemeniShibamMudTower, formatYemeniShibamPrompt, type YemeniShibamResult } from './yemeniShibamMudTowerEngine';
+import { calculateIcelandicSagaHearth, formatIcelandicSagaPrompt, type IcelandicSagaResult } from './icelandicSagaHearthEngine';
+import { calculateSepikRiverCarving, formatSepikCarvingPrompt, type SepikCarvingResult } from './sepikRiverCarvingPoiseEngine';
 
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
@@ -1042,6 +1045,9 @@ export interface DeterministicEngineReport {
   marshalleseStickChartResult?: MarshalleseChartResult | null;
   maldivianCoralAtollResult?: MaldivianAtollResult | null;
   tatraShepherdRidgeResult?: TatraRidgeResult | null;
+  yemeniShibamMudTowerResult?: YemeniShibamResult | null;
+  icelandicSagaHearthResult?: IcelandicSagaResult | null;
+  sepikRiverCarvingResult?: SepikCarvingResult | null;
 
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
@@ -4965,6 +4971,33 @@ try {
     }
   })()));
 
+  // 489. 예멘·시밤 진흙탑 성찰 엔진
+  const yemeniShibamMudTowerResult = calculateSupplement('yemeniShibamMudTowerResult', () => ((() => {
+    try {
+      return calculateYemeniShibamMudTower({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 490. 아이슬란드·사가 화덕 성찰 엔진
+  const icelandicSagaHearthResult = calculateSupplement('icelandicSagaHearthResult', () => ((() => {
+    try {
+      return calculateIcelandicSagaHearth({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 491. 세픽 강·영혼 조각 성찰 엔진
+  const sepikRiverCarvingResult = calculateSupplement('sepikRiverCarvingResult', () => ((() => {
+    try {
+      return calculateSepikRiverCarving({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
   // 220. 한국 신라 의상대사 화엄일승법계도 & 법성게 원융무애 엔진
   const uisangHwaeomIlseungBeopgyeResult = calculateSupplement('uisangHwaeomIlseungBeopgyeResult', () => ((() => {
     try {
@@ -6471,6 +6504,9 @@ try {
     marshalleseStickChartResult,
     maldivianCoralAtollResult,
     tatraShepherdRidgeResult,
+    yemeniShibamMudTowerResult,
+    icelandicSagaHearthResult,
+    sepikRiverCarvingResult,
     tools: toolsMap,
   };
 }
@@ -6982,6 +7018,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'marshalleseStickChart', nameKo: '마셜 제도·막대 해도 항법', icon: '🌊', category: 'deep_master', summary: '마셜 제도의 마토 막대 해도처럼 먼 결론을 미리 그리기보다 지금 배 밑을 스치는 물결의 꺾임 하나를 손끝으로 읽는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'bluebird' },
   { key: 'maldivianCoralAtoll', nameKo: '몰디브·산호초 물길', icon: '🏝️', category: 'deep_master', summary: '인도양 몰디브의 산호초 환초가 바깥 파도를 걸러 안쪽 라군을 맑게 지키듯 내 마음의 평온을 지키는 경계와 순환을 살피는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'aura' },
   { key: 'tatraShepherdRidge', nameKo: '타트라·목동 산길', icon: '🏔️', category: 'deep_master', summary: '카르파티아 타트라 산맥의 목동처럼 짙은 안개 속에서도 발끝의 풀잎과 작은 화덕의 숯불을 차분히 지키는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'trinity' },
+  { key: 'yemeniShibamMudTower', nameKo: '예멘·시밤 진흙탑', icon: '🏜️', category: 'deep_master', summary: '사막 고층 도시 시밤의 흙벽돌처럼 한 층이 충분히 마른 뒤에야 다음 층을 올리는 수직의 인내와 온도의 경계를 살피는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'muse' },
+  { key: 'icelandicSagaHearth', nameKo: '아이슬란드·사가 화덕', icon: '🌋', category: 'deep_master', summary: '아이슬란드 사가의 화덕가처럼 과장을 덜어낸 담백한 말 한마디와 화산암 위 이끼 같은 내면의 온기를 지키는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'bluebird' },
+  { key: 'sepikRiverCarving', nameKo: '세픽 강·영혼 조각', icon: '🪵', category: 'deep_master', summary: '파푸아뉴기니 세픽 강의 목조 조각처럼 나무의 옹이와 강물의 곡선을 억지로 지우지 않고 그대로 형상으로 살리는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'aura' },
 ] as DceEngineMeta[]).filter(engine => !LUCY_PRO_CATALOG_DUPLICATE_KEYS.has(engine.key));
 
 export function getFiredEngineBadges(
@@ -7911,6 +7950,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'marshalleseStickChart',
     'maldivianCoralAtoll',
     'tatraShepherdRidge',
+    'yemeniShibamMudTower',
+    'icelandicSagaHearth',
+    'sepikRiverCarving',
   ],
 };
 

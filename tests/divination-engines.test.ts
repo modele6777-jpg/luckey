@@ -481,6 +481,9 @@ import { calculateFaroeseTurfRoofShelter, formatFaroeseTurfPrompt } from '../src
 import { calculateMarshalleseStickChart, formatMarshalleseChartPrompt } from '../src/lib/divination/marshalleseStickChartEngine';
 import { calculateMaldivianCoralAtoll, formatMaldivianAtollPrompt } from '../src/lib/divination/maldivianCoralAtollEngine';
 import { calculateTatraShepherdRidge, formatTatraRidgePrompt } from '../src/lib/divination/tatraShepherdRidgeEngine';
+import { calculateYemeniShibamMudTower, formatYemeniShibamPrompt } from '../src/lib/divination/yemeniShibamMudTowerEngine';
+import { calculateIcelandicSagaHearth, formatIcelandicSagaPrompt } from '../src/lib/divination/icelandicSagaHearthEngine';
+import { calculateSepikRiverCarving, formatSepikCarvingPrompt } from '../src/lib/divination/sepikRiverCarvingPoiseEngine';
 
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
@@ -14853,4 +14856,37 @@ test('Tatra Shepherd Ridge engine: motif, +09:00 KST, and interpretive boundary'
   const prompt = formatTatraRidgePrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
   assert.ok(prompt.includes('타트라') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Yemeni Shibam Mud Tower engine: motif, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateYemeniShibamMudTower({ profile, now: new Date('2026-11-20T21:28:00Z'), question: '한 층씩 천천히 굳혀 가고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-YEMENI-SHIBAM-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatYemeniShibamPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('예멘') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Icelandic Saga Hearth engine: motif, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateIcelandicSagaHearth({ profile, now: new Date('2026-11-20T21:28:00Z'), question: '과장을 덜어내고 온기를 지키고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-ICELANDIC-SAGA-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatIcelandicSagaPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('아이슬란드') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Sepik River Carving engine: motif, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateSepikRiverCarving({ profile, now: new Date('2026-11-20T21:28:00Z'), question: '거친 결을 살려 쓰고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-SEPIK-CARVING-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatSepikCarvingPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('세픽') && prompt.includes('+09:00 (KST)'));
 });
