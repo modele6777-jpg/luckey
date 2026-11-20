@@ -1419,5 +1419,17 @@ export const MASTER_REVIEW_BINDINGS: Record<string, { field: string; traceKey: s
   "etruscanTemplumSkyDivision": {
     "field": "etruscanTemplumSkyDivisionResult",
     "traceKey": "etruscanTemplumSkyDivisionResult"
+  },
+  "ainuKamuyIomanteHarmony": {
+    "field": "ainuKamuyIomanteHarmonyResult",
+    "traceKey": "ainuKamuyIomanteHarmonyResult"
+  },
+  "guaraniTekoPoraForestHarmony": {
+    "field": "guaraniTekoPoraForestHarmonyResult",
+    "traceKey": "guaraniTekoPoraForestHarmonyResult"
+  },
+  "navajoHozhoBeautyBalance": {
+    "field": "navajoHozhoBeautyBalanceResult",
+    "traceKey": "navajoHozhoBeautyBalanceResult"
   }
 };

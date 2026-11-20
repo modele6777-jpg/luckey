@@ -380,6 +380,9 @@ import { calculateHittiteTelepinuHarmonyRenewal, formatHittiteTelepinuPrompt, ty
 import { calculateMapucheKultrunCosmicBalance, formatMapucheKultrunPrompt, type MapucheKultrunResult } from './mapucheKultrunCosmicBalanceEngine';
 import { calculateMelanesianSandDrawingPattern, formatMelanesianSandPrompt, type MelanesianSandResult } from './melanesianSandDrawingPatternEngine';
 import { calculateEtruscanTemplumSkyDivision, formatEtruscanTemplumPrompt, type EtruscanTemplumResult } from './etruscanTemplumSkyDivisionEngine';
+import { calculateAinuKamuyIomanteHarmony, formatAinuKamuyPrompt, type AinuKamuyResult } from './ainuKamuyIomanteHarmonyEngine';
+import { calculateGuaraniTekoPoraForestHarmony, formatGuaraniTekoPoraPrompt, type GuaraniTekoPoraResult } from './guaraniTekoPoraForestHarmonyEngine';
+import { calculateNavajoHozhoBeautyBalance, formatNavajoHozhoPrompt, type NavajoHozhoResult } from './navajoHozhoBeautyBalanceEngine';
 
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
@@ -778,6 +781,9 @@ export interface DeterministicEngineReport {
   mapucheKultrunCosmicBalanceResult?: MapucheKultrunResult | null;
   melanesianSandDrawingPatternResult?: MelanesianSandResult | null;
   etruscanTemplumSkyDivisionResult?: EtruscanTemplumResult | null;
+  ainuKamuyIomanteHarmonyResult?: AinuKamuyResult | null;
+  guaraniTekoPoraForestHarmonyResult?: GuaraniTekoPoraResult | null;
+  navajoHozhoBeautyBalanceResult?: NavajoHozhoResult | null;
 
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
@@ -3513,6 +3519,33 @@ try {
     }
   })()));
 
+  // 357. 아이누 카무이·이오만테 존중과 순환 엔진
+  const ainuKamuyIomanteHarmonyResult = calculateSupplement('ainuKamuyIomanteHarmonyResult', () => ((() => {
+    try {
+      return calculateAinuKamuyIomanteHarmony({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 358. 구아라니 테코 포랑 숲과 공동체 조화 엔진
+  const guaraniTekoPoraForestHarmonyResult = calculateSupplement('guaraniTekoPoraForestHarmonyResult', () => ((() => {
+    try {
+      return calculateGuaraniTekoPoraForestHarmony({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 359. 나바호 호조(Hózhó) 아름다움·균형 걷기 엔진
+  const navajoHozhoBeautyBalanceResult = calculateSupplement('navajoHozhoBeautyBalanceResult', () => ((() => {
+    try {
+      return calculateNavajoHozhoBeautyBalance({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
   // 220. 한국 신라 의상대사 화엄일승법계도 & 법성게 원융무애 엔진
   const uisangHwaeomIlseungBeopgyeResult = calculateSupplement('uisangHwaeomIlseungBeopgyeResult', () => ((() => {
     try {
@@ -4887,6 +4920,9 @@ try {
     mapucheKultrunCosmicBalanceResult,
     melanesianSandDrawingPatternResult,
     etruscanTemplumSkyDivisionResult,
+    ainuKamuyIomanteHarmonyResult,
+    guaraniTekoPoraForestHarmonyResult,
+    navajoHozhoBeautyBalanceResult,
     tools: toolsMap,
   };
 }
@@ -5266,6 +5302,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'mapucheKultrunCosmicBalance', nameKo: '마푸체 쿨트룬 우주 원환 균형', icon: '🥁', category: 'deep_master', summary: '남미 마푸체 쿨트룬의 사방위와 계절 순환으로 오늘의 과부하와 여백의 균형을 살피는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'aura' },
   { key: 'melanesianSandDrawingPattern', nameKo: '바누아투 모래 그림 연결 궤적', icon: '〰️', category: 'deep_master', summary: '바누아투 모래 그림의 한 붓 잇기 원리로 흩어진 고민을 하나의 우선순위 맥락으로 잇는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'muse' },
   { key: 'etruscanTemplumSkyDivision', nameKo: '고대 에트루리아 템플룸 구획', icon: '🏛️', category: 'deep_master', summary: '고대 에트루리아 템플룸의 하늘 구획법처럼 시야를 나누어 지금 집중할 영역과 경계를 가늠하는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'trinity' },
+  { key: 'ainuKamuyIomanteHarmony', nameKo: '아이누 카무이 이오만테 순환', icon: '🦉', category: 'deep_master', summary: '북방 아이누의 카무이 공경과 이오만테 순환 지혜로 일상과 관계를 감사·존중의 리듬으로 다독이는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'aura' },
+  { key: 'guaraniTekoPoraForestHarmony', nameKo: '구아라니 테코 포랑 숲의 조화', icon: '🌳', category: 'deep_master', summary: '남미 구아라니족의 좋은 삶(Teko Porã)과 숲의 상호의존 지혜로 나다움과 공존의 균형을 살피는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'bluebird' },
+  { key: 'navajoHozhoBeautyBalance', nameKo: '나바호 호조 아름다움 균형', icon: '🪶', category: 'deep_master', summary: '나바호 디네 철학의 호조(Hózhó·조화와 균형 속 걷기)로 흔들린 생각과 걸음을 단정히 세우는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'trinity' },
 ] as DceEngineMeta[]).filter(engine => !LUCY_PRO_CATALOG_DUPLICATE_KEYS.has(engine.key));
 
 export function getFiredEngineBadges(
@@ -5774,6 +5813,8 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'amazighDesertStarOasis',
     'hittiteTelepinuHarmonyRenewal',
     'mapucheKultrunCosmicBalance',
+    'ainuKamuyIomanteHarmony',
+    'guaraniTekoPoraForestHarmony',
   ],
   creative_mind: [
     'irishJamesJoyceUlyssesEpiphany',
@@ -6056,6 +6097,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'mapucheKultrunCosmicBalance',
     'melanesianSandDrawingPattern',
     'etruscanTemplumSkyDivision',
+    'ainuKamuyIomanteHarmony',
+    'guaraniTekoPoraForestHarmony',
+    'navajoHozhoBeautyBalance',
   ],
 };
 
