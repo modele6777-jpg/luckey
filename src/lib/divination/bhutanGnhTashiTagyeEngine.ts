@@ -4,12 +4,15 @@ export interface BhutanGnhPillar {
   name: string;
   symbol: string;
   guidance: string;
+  ritual: string;
+  question: string;
 }
 
 export interface BhutanGnhResult {
   engineVersion: string;
   calculatedAtKst: string;
   activePillar: BhutanGnhPillar;
+  companionPillar: BhutanGnhPillar;
   auspiciousSymbol: string;
   interpretation: string;
   ritualAction: string;
@@ -23,21 +26,29 @@ const BHUTAN_GNH_PILLARS: BhutanGnhPillar[] = [
     name: '마음의 평온과 지속 가능한 돌봄',
     symbol: '백연꽃(Pema)',
     guidance: '바깥의 속도에 휩쓸리기보다 오늘 하루 내 몸과 마음을 지탱할 수 있는 적정한 호흡을 지키는 시기입니다.',
+    ritual: '오늘 하루 성취 목록을 하나 줄이고, 대신 나를 편안하게 숨 쉬게 하는 작은 일상 의례 한 가지를 정성껏 실행해 보세요.',
+    question: '오늘 더 많이 해내는 것 대신, 내 마음의 평온을 지키기 위해 기꺼이 내려놓을 수 있는 한 가지는 무엇인가요?',
   },
   {
     name: '살아 있는 문화와 일상의 의례',
     symbol: '법라(Dungkar)',
     guidance: '사소해 보이는 인사, 차 한 잔, 정리 정돈 같은 작은 의례가 흐트러진 일상의 결을 다시 세워 줍니다.',
+    ritual: '어지러워진 책상 한 귀퉁이를 3분만 정돈하고 따뜻한 차나 물을 한 잔 마시며 하루의 결을 세워 보세요.',
+    question: '흐트러진 일상의 리듬을 법라(Dungkar)의 울림처럼 다시 고르게 세워 줄 가장 작은 의례는 무엇인가요?',
   },
   {
     name: '자연과 공동체의 상호 존중',
     symbol: '무한 매듭(Palbeu)',
     guidance: '나 혼자 빠르게 앞서는 선택보다 함께 얽힌 이들의 리듬을 배려할 때 오히려 막혔던 흐름이 부드럽게 풀립니다.',
+    ritual: '오늘 연결된 사람 중 한 명에게 서두르지 않는 다정한 확인이나 배려의 한 마디를 먼저 건네 보세요.',
+    question: '나 혼자 속도를 내기보다 무한 매듭(Palbeu)처럼 함께 얽힌 이들의 호흡을 맞출 때 풀릴 일은 무엇인가요?',
   },
   {
     name: '맑고 공정한 판단의 균형',
     symbol: '황금 물고기(Sernya)',
     guidance: '두려움이나 조급함 없이 맑은 물속을 헤엄치듯 지금 내게 가장 정직한 기준 하나를 세울 때입니다.',
+    ritual: '망설이던 선택지 옆에 남의 시선이 아닌 나만의 정직한 기준 한 줄을 적어 가늠해 보세요.',
+    question: '두려움과 조급함을 걷어 낸 맑은 물속에서, 황금 물고기(Sernya)처럼 자유롭게 고를 나만의 기준은 무엇인가요?',
   },
 ];
 
@@ -56,8 +67,7 @@ function formatKstTimestamp(date: Date): string {
   const dd = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mi = String(kst.getUTCMinutes()).padStart(2, '0');
-  const ss = String(kst.getUTCSeconds()).padStart(2, '0');
-  return `${yyyy}-${mm}-${dd}T${hh}:${mi}:${ss}+09:00 (KST)`;
+  return `${yyyy}-${mm}-${dd} ${hh}:${mi} +09:00 (KST)`;
 }
 
 function stableHash(input: string): number {
@@ -77,19 +87,24 @@ export function calculateBhutanGnhTashiTagye(params: {
   const now = params.now ?? new Date();
   const seed = `${JSON.stringify(params.profile.fate ?? {})}|${params.question ?? ''}|${now.toISOString().slice(0, 10)}`;
   const hash = stableHash(seed);
+  const companionHash = stableHash(`${seed}|companion`);
 
-  const activePillar = BHUTAN_GNH_PILLARS[hash % BHUTAN_GNH_PILLARS.length];
+  const primaryIdx = hash % BHUTAN_GNH_PILLARS.length;
+  const companionOffset = 1 + (companionHash % (BHUTAN_GNH_PILLARS.length - 1));
+  const activePillar = BHUTAN_GNH_PILLARS[primaryIdx];
+  const companionPillar = BHUTAN_GNH_PILLARS[(primaryIdx + companionOffset) % BHUTAN_GNH_PILLARS.length];
   const auspiciousSymbol = AUSPICIOUS_SYMBOLS[(hash >>> 3) % AUSPICIOUS_SYMBOLS.length];
 
   return {
-    engineVersion: 'LUCKEY-BHUTAN-GNH-v2.1.0',
+    engineVersion: 'LUCKEY-BHUTAN-GNH-v2.2.0',
     calculatedAtKst: formatKstTimestamp(now),
     activePillar,
+    companionPillar,
     auspiciousSymbol,
-    interpretation: `부탄 국민총행복(GNH)과 타시 타게이(팔길상) 상징으로 보면 지금은 '${activePillar.name}'(${activePillar.symbol})의 결이 강조됩니다. ${activePillar.guidance}`,
-    ritualAction: '오늘 하루 성취 목록을 하나 줄이고, 대신 나를 편안하게 숨 쉬게 하는 작은 일상 의례 한 가지를 정성껏 실행해 보세요.',
-    reflectionFocus: `질문과 맞닿은 '${auspiciousSymbol}'의 의미를 떠올리며, 지금 내가 지키고 싶은 평온의 기준을 문장으로 적어 보세요.`,
-    reflectiveQuestion: '오늘 더 많이 해내는 것 대신, 내 마음의 평온을 지키기 위해 기꺼이 내려놓을 수 있는 한 가지는 무엇인가요?',
+    interpretation: `부탄 국민총행복(GNH)과 타시 타게이(팔길상) 상징으로 보면 지금은 '${activePillar.name}'(${activePillar.symbol})을 중심으로 '${companionPillar.name}'의 결이 함께 받쳐 줍니다. ${activePillar.guidance}`,
+    ritualAction: activePillar.ritual,
+    reflectionFocus: `질문과 맞닿은 '${auspiciousSymbol}' 및 '${companionPillar.name}'의 의미를 떠올리며, 지금 내가 지키고 싶은 평온의 기준을 문장으로 적어 보세요.`,
+    reflectiveQuestion: activePillar.question,
     interpretiveBoundary: '본 풀이는 부탄 국민총행복(GNH)과 타시 타게이 전통 상징을 바탕으로 한 성찰적 비유이며, 개인 점수·심리 진단·미래 예측이 아닙니다.',
   };
 }
@@ -99,6 +114,7 @@ export function formatBhutanGnhPrompt(result: BhutanGnhResult): string {
     `[부탄 GNH·타시 타게이 조화 (${result.engineVersion})]`,
     `- 연산 시각: ${result.calculatedAtKst}`,
     `- 중심 기둥: ${result.activePillar.name} (${result.activePillar.symbol})`,
+    `- 보조 기둥: ${result.companionPillar.name} (${result.companionPillar.symbol})`,
     `- 길상 상징: ${result.auspiciousSymbol}`,
     `- 해석 요지: ${result.interpretation}`,
     `- 실천 의례: ${result.ritualAction}`,
