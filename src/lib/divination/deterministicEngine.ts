@@ -410,6 +410,9 @@ import { calculateTuvanKhoomeiOvertonesResonance, formatTuvanKhoomeiPrompt, type
 import { calculateBretonBarzazSeaPoetry, formatBretonBarzazPrompt, type BretonBarzazResult } from './bretonBarzazSeaPoetryEngine';
 import { calculateHausaKirariAladaWisdom, formatHausaKirariPrompt, type HausaKirariAladaResult } from './hausaKirariAladaWisdomEngine';
 import { calculateOccitanTroubadourParatge, formatOccitanParatgePrompt, type OccitanParatgeResult } from './occitanTroubadourParatgeEngine';
+import { calculateZapotecPiyeCloudWisdom, formatZapotecPiyePrompt, type ZapotecPiyeResult } from './zapotecPiyeCloudWisdomEngine';
+import { calculateSakhaOlonkhoThreeWorlds, formatSakhaOlonkhoPrompt, type SakhaOlonkhoResult } from './sakhaOlonkhoThreeWorldsEngine';
+import { calculateScythianGoldenStagSteppe, formatScythianGoldenStagPrompt, type ScythianGoldenStagResult } from './scythianGoldenStagSteppeEngine';
 
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
@@ -838,6 +841,9 @@ export interface DeterministicEngineReport {
   bretonBarzazSeaPoetryResult?: BretonBarzazResult | null;
   hausaKirariAladaWisdomResult?: HausaKirariAladaResult | null;
   occitanTroubadourParatgeResult?: OccitanParatgeResult | null;
+  zapotecPiyeCloudWisdomResult?: ZapotecPiyeResult | null;
+  sakhaOlonkhoThreeWorldsResult?: SakhaOlonkhoResult | null;
+  scythianGoldenStagSteppeResult?: ScythianGoldenStagResult | null;
 
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
@@ -3843,6 +3849,33 @@ try {
     }
   })()));
 
+  // 387. 사포텍 피예·구름 지혜 엔진
+  const zapotecPiyeCloudWisdomResult = calculateSupplement('zapotecPiyeCloudWisdomResult', () => ((() => {
+    try {
+      return calculateZapotecPiyeCloudWisdom({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 388. 시베리아 사하 올론호 세 세계 균형 엔진
+  const sakhaOlonkhoThreeWorldsResult = calculateSupplement('sakhaOlonkhoThreeWorldsResult', () => ((() => {
+    try {
+      return calculateSakhaOlonkhoThreeWorlds({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 389. 고대 스키타이 황금 사슴·초원 도약 엔진
+  const scythianGoldenStagSteppeResult = calculateSupplement('scythianGoldenStagSteppeResult', () => ((() => {
+    try {
+      return calculateScythianGoldenStagSteppe({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
   // 220. 한국 신라 의상대사 화엄일승법계도 & 법성게 원융무애 엔진
   const uisangHwaeomIlseungBeopgyeResult = calculateSupplement('uisangHwaeomIlseungBeopgyeResult', () => ((() => {
     try {
@@ -5247,6 +5280,9 @@ try {
     bretonBarzazSeaPoetryResult,
     hausaKirariAladaWisdomResult,
     occitanTroubadourParatgeResult,
+    zapotecPiyeCloudWisdomResult,
+    sakhaOlonkhoThreeWorldsResult,
+    scythianGoldenStagSteppeResult,
     tools: toolsMap,
   };
 }
@@ -5656,6 +5692,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'bretonBarzazSeaPoetry', nameKo: '브르타뉴 바르작 시학', icon: '🌊', category: 'deep_master', summary: '브르타뉴 바르작 브레이즈의 해안 시학처럼 지금이 밀어붙일 밀물인지 숨을 고를 썰물인지 살피는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'muse' },
   { key: 'hausaKirariAladaWisdom', nameKo: '하우사 키라리·아마나', icon: '🌳', category: 'deep_master', summary: '서아프리카 하우사의 인내(Hakuri)와 신뢰(Amana)처럼 순간의 감정보다 긴 신뢰와 품격을 세우는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'trinity' },
   { key: 'occitanTroubadourParatge', nameKo: '옥시타니아 파라트제', icon: '🕊️', category: 'deep_master', summary: '남프랑스 옥시타니아의 파라트제(Paratge)·절제(Mesura)처럼 서로의 품위를 지키는 균형과 공존의 선을 찾는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'bluebird' },
+  { key: 'zapotecPiyeCloudWisdom', nameKo: '사포텍 피예·구름 지혜', icon: '☁️', category: 'deep_master', summary: '멕시코 사포텍의 피예(Piye) 주기·구름 시선처럼 발밑의 소음에서 물러나 전체 산맥의 흐름을 조망하는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'trinity' },
+  { key: 'sakhaOlonkhoThreeWorlds', nameKo: '사하 올론호 세 세계', icon: '🌲', category: 'deep_master', summary: '시베리아 사하(야쿠트) 올론호의 세계수처럼 과거의 뿌리와 미래의 가지 사이에서 오늘의 중심을 돌보는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'aura' },
+  { key: 'scythianGoldenStagSteppe', nameKo: '스키타이 황금 사슴', icon: '🦌', category: 'deep_master', summary: '유라시아 스키타이의 황금 사슴처럼 무거운 짐을 덜어내고 가볍고 기민하게 다음 국면으로 도약하는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'muse' },
 ] as DceEngineMeta[]).filter(engine => !LUCY_PRO_CATALOG_DUPLICATE_KEYS.has(engine.key));
 
 export function getFiredEngineBadges(
@@ -6483,6 +6522,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'bretonBarzazSeaPoetry',
     'hausaKirariAladaWisdom',
     'occitanTroubadourParatge',
+    'zapotecPiyeCloudWisdom',
+    'sakhaOlonkhoThreeWorlds',
+    'scythianGoldenStagSteppe',
   ],
 };
 

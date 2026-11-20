@@ -379,6 +379,9 @@ import { calculateTuvanKhoomeiOvertonesResonance, formatTuvanKhoomeiPrompt } fro
 import { calculateBretonBarzazSeaPoetry, formatBretonBarzazPrompt } from '../src/lib/divination/bretonBarzazSeaPoetryEngine';
 import { calculateHausaKirariAladaWisdom, formatHausaKirariPrompt } from '../src/lib/divination/hausaKirariAladaWisdomEngine';
 import { calculateOccitanTroubadourParatge, formatOccitanParatgePrompt } from '../src/lib/divination/occitanTroubadourParatgeEngine';
+import { calculateZapotecPiyeCloudWisdom, formatZapotecPiyePrompt } from '../src/lib/divination/zapotecPiyeCloudWisdomEngine';
+import { calculateSakhaOlonkhoThreeWorlds, formatSakhaOlonkhoPrompt } from '../src/lib/divination/sakhaOlonkhoThreeWorldsEngine';
+import { calculateScythianGoldenStagSteppe, formatScythianGoldenStagPrompt } from '../src/lib/divination/scythianGoldenStagSteppeEngine';
 
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
@@ -13584,4 +13587,37 @@ test('Occitan Troubadour Paratge engine: virtue, +09:00 KST, and interpretive bo
   const prompt = formatOccitanParatgePrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
   assert.ok(prompt.includes('옥시타니아') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Zapotec Piye Cloud Wisdom engine: glyph, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateZapotecPiyeCloudWisdom({ profile, now: new Date('2026-11-20T07:22:00Z'), question: '높은 곳에서 전체 흐름을 보고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-ZAPOTEC-PIYE-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatZapotecPiyePrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('사포텍') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Sakha Olonkho Three Worlds engine: pillar, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateSakhaOlonkhoThreeWorlds({ profile, now: new Date('2026-11-20T07:22:00Z'), question: '오늘의 단단한 뿌리를 돌보고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-SAKHA-OLONKHO-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatSakhaOlonkhoPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('사하') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Scythian Golden Stag Steppe engine: emblem, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateScythianGoldenStagSteppe({ profile, now: new Date('2026-11-20T07:22:00Z'), question: '가볍고 기민하게 도약하고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-SCYTHIAN-STAG-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatScythianGoldenStagPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('스키타이') && prompt.includes('+09:00 (KST)'));
 });
