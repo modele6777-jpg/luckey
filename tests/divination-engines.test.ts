@@ -6908,7 +6908,7 @@ test('Seosan Daesa Hyujeong Seonga Gwigam Engine: calculates Ilmul yeongmyeong, 
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(rep.reflectiveQuestion.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
-  assert(rep.calculatedAtKst.endsWith('+09:00 KST'));
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(Boolean(rep.seosanSynthesisMatrix?.integratedAction));
   const repQ = calculateSeosanHyujeongSeongaGwigam(profile, '죽은 분별을 끊고 본질로 바로 들어갈 화두');
   assert(repQ.reflectiveQuestion.includes('본질로 바로 들어갈 화두'));
@@ -6919,6 +6919,7 @@ test('Seosan Daesa Hyujeong Seonga Gwigam Engine: calculates Ilmul yeongmyeong, 
   assert(prompt.includes('해석 경계'));
   assert(prompt.includes('실천 의례'));
   assert(prompt.includes('성찰 초점'));
+  assert(prompt.includes(repQ.reflectionFocus));
   assert(prompt.includes('교차 매트릭스'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
@@ -7320,7 +7321,7 @@ test('Suun Choe Je-u Donghak Sicheonju Engine: calculates Sicheonju Dignity, Sai
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(rep.reflectiveQuestion.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
-  assert(rep.calculatedAtKst.endsWith('+09:00 KST'));
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(Boolean(rep.donghakSynthesisMatrix?.integratedAction));
   const repQ = calculateSuunChoeJeuDonghakSicheonju(profile, '스스로와 타인의 존엄을 세우는 선택');
   assert(repQ.reflectiveQuestion.includes('존엄을 세우는 선택'));
@@ -7331,6 +7332,7 @@ test('Suun Choe Je-u Donghak Sicheonju Engine: calculates Sicheonju Dignity, Sai
   assert(prompt.includes('해석 경계'));
   assert(prompt.includes('실천 의례'));
   assert(prompt.includes('성찰 초점'));
+  assert(prompt.includes(repQ.reflectionFocus));
   assert(prompt.includes('교차 매트릭스'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
@@ -8574,7 +8576,7 @@ test('Shin Saimdang Chochungdo Art Virtue Engine: calculates Nature Vitality, Fi
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(rep.reflectiveQuestion.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
-  assert(rep.calculatedAtKst.endsWith('+09:00 KST'));
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(Boolean(rep.saimdangSynthesisMatrix?.integratedAction));
   const repQ = calculateKoreanShinSaimdangChochungdoArtVirtue(profile, '지나치기 쉬운 작은 디테일과 진심');
   assert(repQ.reflectiveQuestion.includes('작은 디테일과 진심'));
@@ -8585,6 +8587,7 @@ test('Shin Saimdang Chochungdo Art Virtue Engine: calculates Nature Vitality, Fi
   assert(prompt.includes('해석 경계'));
   assert(prompt.includes('실천 의례'));
   assert(prompt.includes('성찰 초점'));
+  assert(prompt.includes(repQ.reflectionFocus));
   assert(prompt.includes('교차 매트릭스'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
