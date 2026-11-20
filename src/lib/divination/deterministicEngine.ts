@@ -539,6 +539,9 @@ import { calculateSangamTinaiPoetics, formatSangamTinaiPrompt, type SangamTinaiR
 import { calculateBatammaribaTakienta, formatBatammaribaTakientaPrompt, type BatammaribaTakientaResult } from './batammaribaTakientaMudTowerEngine';
 import { calculateKunaMolaStitch, formatKunaMolaPrompt, type KunaMolaResult } from './kunaMolaLayeredStitchEngine';
 import { calculateVenetianLagoonForcola, formatVenetianLagoonPrompt, type VenetianLagoonResult } from './venetianLagoonForcolaOarEngine';
+import { calculateBajauLautTide, formatBajauLautPrompt, type BajauLautResult } from './bajauLautHouseboatTideEngine';
+import { calculateWodaabeGerewol, formatWodaabeGerewolPrompt, type WodaabeGerewolResult } from './wodaabeGerewolDesertPoiseEngine';
+import { calculateBadakhshanLapisVein, formatBadakhshanLapisPrompt, type BadakhshanLapisResult } from './badakhshanLapisVeinPoiseEngine';
 
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
@@ -1096,6 +1099,9 @@ export interface DeterministicEngineReport {
   batammaribaTakientaResult?: BatammaribaTakientaResult | null;
   kunaMolaStitchResult?: KunaMolaResult | null;
   venetianLagoonForcolaResult?: VenetianLagoonResult | null;
+  bajauLautTideResult?: BajauLautResult | null;
+  wodaabeGerewolResult?: WodaabeGerewolResult | null;
+  badakhshanLapisVeinResult?: BadakhshanLapisResult | null;
 
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
@@ -5262,6 +5268,33 @@ try {
     }
   })()));
 
+  // 516. 바야우·라우트 바다 유목 물때 성찰 엔진
+  const bajauLautTideResult = calculateSupplement('bajauLautTideResult', () => ((() => {
+    try {
+      return calculateBajauLautTide({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 517. 우다베·게레월 사헬 품위 성찰 엔진
+  const wodaabeGerewolResult = calculateSupplement('wodaabeGerewolResult', () => ((() => {
+    try {
+      return calculateWodaabeGerewol({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 518. 바다흐샨·청금석 안료 성찰 엔진
+  const badakhshanLapisVeinResult = calculateSupplement('badakhshanLapisVeinResult', () => ((() => {
+    try {
+      return calculateBadakhshanLapisVein({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
   // 220. 한국 신라 의상대사 화엄일승법계도 & 법성게 원융무애 엔진
   const uisangHwaeomIlseungBeopgyeResult = calculateSupplement('uisangHwaeomIlseungBeopgyeResult', () => ((() => {
     try {
@@ -6795,6 +6828,9 @@ try {
     batammaribaTakientaResult,
     kunaMolaStitchResult,
     venetianLagoonForcolaResult,
+    bajauLautTideResult,
+    wodaabeGerewolResult,
+    badakhshanLapisVeinResult,
     tools: toolsMap,
   };
 }
@@ -7333,6 +7369,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'batammaribaTakienta', nameKo: '바타마리바·타키엔타 흙탑', icon: '🏰', category: 'deep_master', summary: '토고·베냉 바타마리바 족이 손으로 빚어 올린 타키엔타 2층 흙탑 가옥처럼 실무와 쉼의 층위를 나누고 공동체로 버티는 지혜의 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'aura' },
   { key: 'kunaMolaStitch', nameKo: '쿠나·몰라 겹 바느질', icon: '🧵', category: 'deep_master', summary: '여러 겹의 천을 오려 내며 아래의 밝은 색을 드러내는 쿠나 족의 몰라 직물처럼 불필요한 겹을 덜어내어 본질을 드러내는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'muse' },
   { key: 'venetianLagoonForcola', nameKo: '베네치아·라구나 포르콜라', icon: '🚣', category: 'deep_master', summary: '여덟 개 홈이 파인 호두나무 노받침(포르콜라)과 한쪽 노로 좁은 석호 수로를 지나는 베네치아 뱃사공처럼 각도와 멈춤을 읽는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'bluebird' },
+  { key: 'bajauLautTide', nameKo: '바야우·라우트 바다 유목 물때', icon: '⛵', category: 'deep_master', summary: '술루해를 집 삼아 물때와 호흡으로 살아가는 바야우 라우트 바다 유목민의 레파(Lepa) 항해처럼 가벼움과 호흡의 리듬을 읽는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'bluebird' },
+  { key: 'wodaabeGerewol', nameKo: '우다베·게레월 사헬 품위', icon: '🏜️', category: 'deep_master', summary: '긴 건기를 지나 우기에 모여 인내와 품위(무냐)를 나누는 사헬 유목민 우다베 족의 게레월 축제에서 길어 올린 태도와 회복의 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'aura' },
+  { key: 'badakhshanLapisVein', nameKo: '바다흐샨·청금석 안료', icon: '💎', category: 'deep_master', summary: '힌두쿠시 암벽에서 캐낸 청금석을 곱게 갈아 가장 순수한 푸른 안료를 얻던 공예처럼 정제와 고유의 결을 살피는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'trinity' },
 ] as DceEngineMeta[]).filter(engine => !LUCY_PRO_CATALOG_DUPLICATE_KEYS.has(engine.key));
 
 export function getFiredEngineBadges(
@@ -8289,6 +8328,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'batammaribaTakienta',
     'kunaMolaStitch',
     'venetianLagoonForcola',
+    'bajauLautTide',
+    'wodaabeGerewol',
+    'badakhshanLapisVein',
   ],
 };
 

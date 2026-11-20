@@ -2055,5 +2055,17 @@ export const MASTER_REVIEW_BINDINGS: Record<string, { field: string; traceKey: s
   "venetianLagoonForcola": {
     "field": "venetianLagoonForcolaResult",
     "traceKey": "venetianLagoonForcolaResult"
+  },
+  "bajauLautTide": {
+    "field": "bajauLautTideResult",
+    "traceKey": "bajauLautTideResult"
+  },
+  "wodaabeGerewol": {
+    "field": "wodaabeGerewolResult",
+    "traceKey": "wodaabeGerewolResult"
+  },
+  "badakhshanLapisVein": {
+    "field": "badakhshanLapisVeinResult",
+    "traceKey": "badakhshanLapisVeinResult"
   }
 };
