@@ -355,6 +355,9 @@ import { calculateNavajoHozhoBeautyBalance, formatNavajoHozhoPrompt } from '../s
 import { calculateBhutanGnhTashiTagye, formatBhutanGnhPrompt } from '../src/lib/divination/bhutanGnhTashiTagyeEngine';
 import { calculateBalticRomuvaDarnaHarmony, formatBalticRomuvaPrompt } from '../src/lib/divination/balticRomuvaDarnaHarmonyEngine';
 import { calculateMinoanLabyrinthLabrys, formatMinoanLabyrinthPrompt } from '../src/lib/divination/minoanLabyrinthLabrysEngine';
+import { calculateTorajaAlukTodoloTongkonan, formatTorajaAlukPrompt } from '../src/lib/divination/torajaAlukTodoloTongkonanEngine';
+import { calculateSinhalaBaliKohombaHarmony, formatSinhalaBaliPrompt } from '../src/lib/divination/sinhalaBaliKohombaHarmonyEngine';
+import { calculateNubianMeroeApedemakBalance, formatNubianMeroePrompt } from '../src/lib/divination/nubianMeroeApedemakBalanceEngine';
 
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
@@ -13296,4 +13299,37 @@ test('Minoan Labyrinth Labrys engine: stages, +09:00 KST, and interpretive bound
   const prompt = formatMinoanLabyrinthPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
   assert.ok(prompt.includes('미노스') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Toraja Aluk Todolo Tongkonan engine: pillars, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateTorajaAlukTodoloTongkonan({ profile, now: new Date('2026-11-20T06:10:00Z'), question: '삶의 방향과 감사를 세우고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-TORAJA-ALUK-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatTorajaAlukPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('토라자') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Sinhala Bali Kohomba Harmony engine: layers, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateSinhalaBaliKohombaHarmony({ profile, now: new Date('2026-11-20T06:10:00Z'), question: '묵은 피로를 털어내고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-SINHALA-BALI-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatSinhalaBaliPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('싱할라') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Nubian Meroe Apedemak Balance engine: principles, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateNubianMeroeApedemakBalance({ profile, now: new Date('2026-11-20T06:10:00Z'), question: '내 기준대로 당당히 서고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-NUBIAN-MEROE-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatNubianMeroePrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('누비아') && prompt.includes('+09:00 (KST)'));
 });
