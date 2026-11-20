@@ -1743,5 +1743,17 @@ export const MASTER_REVIEW_BINDINGS: Record<string, { field: string; traceKey: s
   "bohemianCrystalGlassLight": {
     "field": "bohemianCrystalGlassLightResult",
     "traceKey": "bohemianCrystalGlassLightResult"
+  },
+  "sanKalahariTrackingStars": {
+    "field": "sanKalahariTrackingStarsResult",
+    "traceKey": "sanKalahariTrackingStarsResult"
+  },
+  "phrygianGordianKnotClarity": {
+    "field": "phrygianGordianKnotClarityResult",
+    "traceKey": "phrygianGordianKnotClarityResult"
+  },
+  "goryeoCeladonInlayClarity": {
+    "field": "goryeoCeladonInlayClarityResult",
+    "traceKey": "goryeoCeladonInlayClarityResult"
   }
 };
