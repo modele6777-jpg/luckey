@@ -359,9 +359,9 @@ test('Lucy groups all 438 catalog entries under the seven channel themes', async
   const dialog = page.getByRole('dialog', { name: 'Lucy 엔진함' });
   await expect(dialog).toBeVisible();
   const entries = dialog.getByTestId('lucy-engine-catalog-entry');
-  await expect(entries).toHaveCount(438);
+  await expect(entries).toHaveCount(441);
   const meaningTexts = await entries.locator('.lucy-engine-catalog-entry-meaning').allTextContents();
-  expect(meaningTexts).toHaveLength(438);
+  expect(meaningTexts).toHaveLength(441);
   for (const meaning of meaningTexts) {
     expect(meaning.trim()).not.toMatch(/^뜻\s*:/);
     expect(meaning.trim().length).toBeGreaterThan(0);

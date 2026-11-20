@@ -1779,5 +1779,17 @@ export const MASTER_REVIEW_BINDINGS: Record<string, { field: string; traceKey: s
   "baekjeGiltBronzeIncenseCalm": {
     "field": "baekjeGiltBronzeIncenseCalmResult",
     "traceKey": "baekjeGiltBronzeIncenseCalmResult"
+  },
+  "parthianNisaArcheryPoise": {
+    "field": "parthianNisaArcheryPoiseResult",
+    "traceKey": "parthianNisaArcheryPoiseResult"
+  },
+  "nahuaXochitlCuicatlFlow": {
+    "field": "nahuaXochitlCuicatlFlowResult",
+    "traceKey": "nahuaXochitlCuicatlFlowResult"
+  },
+  "beninBronzeObaMemory": {
+    "field": "beninBronzeObaMemoryResult",
+    "traceKey": "beninBronzeObaMemoryResult"
   }
 };

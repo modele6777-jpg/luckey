@@ -470,6 +470,9 @@ import { calculateGoguryeoSamjokoMuralSpirit, formatGoguryeoSamjokoPrompt, type 
 import { calculateSillaEmilleCheomseongdae, formatSillaEmillePrompt, type SillaEmilleResult } from './sillaEmilleCheomseongdaeEngine';
 import { calculateOmaniFrankincenseFalajWater, formatOmaniFrankincensePrompt, type OmaniFrankincenseResult } from './omaniFrankincenseFalajWaterEngine';
 import { calculateBaekjeGiltBronzeIncenseCalm, formatBaekjeIncensePrompt, type BaekjeIncenseResult } from './baekjeGiltBronzeIncenseCalmEngine';
+import { calculateParthianNisaArcheryPoise, formatParthianNisaPrompt, type ParthianNisaResult } from './parthianNisaArcheryPoiseEngine';
+import { calculateNahuaXochitlCuicatlFlow, formatNahuaXochitlPrompt, type NahuaXochitlResult } from './nahuaXochitlCuicatlFlowEngine';
+import { calculateBeninBronzeObaMemory, formatBeninBronzeObaPrompt, type BeninBronzeObaResult } from './beninBronzeObaMemoryEngine';
 
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
@@ -958,6 +961,9 @@ export interface DeterministicEngineReport {
   sillaEmilleCheomseongdaeResult?: SillaEmilleResult | null;
   omaniFrankincenseFalajWaterResult?: OmaniFrankincenseResult | null;
   baekjeGiltBronzeIncenseCalmResult?: BaekjeIncenseResult | null;
+  parthianNisaArcheryPoiseResult?: ParthianNisaResult | null;
+  nahuaXochitlCuicatlFlowResult?: NahuaXochitlResult | null;
+  beninBronzeObaMemoryResult?: BeninBronzeObaResult | null;
 
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
@@ -4503,6 +4509,33 @@ try {
     }
   })()));
 
+  // 447. 파르티아 니사·기병 화살 조화 엔진
+  const parthianNisaArcheryPoiseResult = calculateSupplement('parthianNisaArcheryPoiseResult', () => ((() => {
+    try {
+      return calculateParthianNisaArcheryPoise({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 448. 나우아틀 꽃과 노래·테오틀 엔진
+  const nahuaXochitlCuicatlFlowResult = calculateSupplement('nahuaXochitlCuicatlFlowResult', () => ((() => {
+    try {
+      return calculateNahuaXochitlCuicatlFlow({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 449. 베냉 브론즈·오바 궁정 기억 엔진
+  const beninBronzeObaMemoryResult = calculateSupplement('beninBronzeObaMemoryResult', () => ((() => {
+    try {
+      return calculateBeninBronzeObaMemory({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
   // 220. 한국 신라 의상대사 화엄일승법계도 & 법성게 원융무애 엔진
   const uisangHwaeomIlseungBeopgyeResult = calculateSupplement('uisangHwaeomIlseungBeopgyeResult', () => ((() => {
     try {
@@ -5967,6 +6000,9 @@ try {
     sillaEmilleCheomseongdaeResult,
     omaniFrankincenseFalajWaterResult,
     baekjeGiltBronzeIncenseCalmResult,
+    parthianNisaArcheryPoiseResult,
+    nahuaXochitlCuicatlFlowResult,
+    beninBronzeObaMemoryResult,
     tools: toolsMap,
   };
 }
@@ -6436,6 +6472,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'sillaEmilleCheomseongdae', nameKo: '신라 첨성대·에밀레', icon: '🔔', category: 'deep_master', summary: '신라 첨성대의 천문 관찰과 에밀레종의 여운처럼 겉의 조급함을 내려놓고 고요한 관찰과 길고 맑은 호흡을 회복하는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'aura' },
   { key: 'omaniFrankincenseFalajWater', nameKo: '오만 프랑킨센스·수로', icon: '🌊', category: 'deep_master', summary: '오만 도파르의 유향과 팔라즈 공유 수로처럼 메마른 순간에도 시간과 마음의 물길을 공정하게 나누며 내 안의 향기가 굳기를 기다리는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'trinity' },
   { key: 'baekjeGiltBronzeIncenseCalm', nameKo: '백제 금동대향로·미소', icon: '🪷', category: 'deep_master', summary: '백제 금동대향로와 서산 마애불의 미소처럼 뾰족한 긴장과 불필요한 장식을 덜어 내고 둥글고 온화한 비례로 마음을 고르게 펴는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'bluebird' },
+  { key: 'parthianNisaArcheryPoise', nameKo: '파르티아 니사·기병 화살', icon: '🏹', category: 'deep_master', summary: '고대 파르티아 니사의 교차로 지혜와 파르티안 샷의 선회처럼 정면으로만 밀어붙이지 않고 한 걸음 물러서는 여유 속에서 진짜 목표를 조준하는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'trinity' },
+  { key: 'nahuaXochitlCuicatlFlow', nameKo: '나우아틀 꽃과 노래', icon: '🌼', category: 'deep_master', summary: '멕시코 고원 나우아틀 철학의 꽃과 노래(In Xochitl In Cuicatl)처럼 쫓기는 일정 속에서도 마음을 살리는 진실한 언어와 작은 아름다움의 틈을 내어 보는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'aura' },
+  { key: 'beninBronzeObaMemory', nameKo: '베냉 브론즈·기억의 부조', icon: '🗿', category: 'deep_master', summary: '서아프리카 에도 청동 주조 장인들의 부조처럼 그동안 쌓아 온 성실한 기록과 손끝의 숙련을 믿고 오늘의 한 매듭을 차분히 짓는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'muse' },
 ] as DceEngineMeta[]).filter(engine => !LUCY_PRO_CATALOG_DUPLICATE_KEYS.has(engine.key));
 
 export function getFiredEngineBadges(
@@ -7323,6 +7362,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'sillaEmilleCheomseongdae',
     'omaniFrankincenseFalajWater',
     'baekjeGiltBronzeIncenseCalm',
+    'parthianNisaArcheryPoise',
+    'nahuaXochitlCuicatlFlow',
+    'beninBronzeObaMemory',
   ],
 };
 
