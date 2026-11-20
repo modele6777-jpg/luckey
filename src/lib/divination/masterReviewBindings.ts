@@ -1959,5 +1959,17 @@ export const MASTER_REVIEW_BINDINGS: Record<string, { field: string; traceKey: s
   "sepikRiverCarving": {
     "field": "sepikRiverCarvingResult",
     "traceKey": "sepikRiverCarvingResult"
+  },
+  "moldovanOrheiLimestone": {
+    "field": "moldovanOrheiLimestoneResult",
+    "traceKey": "moldovanOrheiLimestoneResult"
+  },
+  "minangkabauRumahGadang": {
+    "field": "minangkabauRumahGadangResult",
+    "traceKey": "minangkabauRumahGadangResult"
+  },
+  "costaRicaDiquisSpheres": {
+    "field": "costaRicaDiquisSpheresResult",
+    "traceKey": "costaRicaDiquisSpheresResult"
   }
 };
