@@ -7598,7 +7598,7 @@ test('Manhae Han Yong-un Nimui Chimmuk Engine: calculates Transcendent Love, Gon
   assert(rep.secondaryHanYongunAphorism.aphorismKey !== rep.focalHanYongunAphorism.aphorismKey);
   assert(rep.reflectiveQuestion.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
-  assert(rep.calculatedAtKst.endsWith('+09:00 KST'));
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(Boolean(rep.manhaeSynthesisMatrix?.integratedAction));
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const repQ = calculateManhaeHanYongunNimuiChimmuk(profile, '침묵 속에 지키며 승화해야 할 신념');
@@ -7610,6 +7610,7 @@ test('Manhae Han Yong-un Nimui Chimmuk Engine: calculates Transcendent Love, Gon
   assert(prompt.includes('해석 경계'));
   assert(prompt.includes('교차 매트릭스'));
   assert(prompt.includes(repQ.ritualAction));
+  assert(prompt.includes(repQ.reflectionFocus));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });
@@ -7812,7 +7813,7 @@ test('Lee Yuk-sa Gwangya Peak Engine: calculates Peak Resilience, Steel Rainbow,
   assert(rep.secondaryLeeYukSaAphorism.aphorismKey !== rep.focalLeeYukSaAphorism.aphorismKey);
   assert(rep.reflectiveQuestion.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
-  assert(rep.calculatedAtKst.endsWith('+09:00 KST'));
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(Boolean(rep.leeYukSaSynthesisMatrix?.integratedAction));
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const repQ = calculateKoreanLeeYukSaGwangyaPeak(profile, '거친 환경 속에서도 꺾이지 않고 나아가는 법');
@@ -7824,6 +7825,7 @@ test('Lee Yuk-sa Gwangya Peak Engine: calculates Peak Resilience, Steel Rainbow,
   assert(prompt.includes('해석 경계'));
   assert(prompt.includes('교차 매트릭스'));
   assert(prompt.includes(repQ.ritualAction));
+  assert(prompt.includes(repQ.reflectionFocus));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });
@@ -7946,7 +7948,7 @@ test('Maewoldang Kim Si-seup Geumo Sinhwa Engine: calculates Fangwairen Freedom,
   assert(rep.secondaryMaewoldangAphorism.aphorismKey !== rep.focalMaewoldangAphorism.aphorismKey);
   assert(rep.reflectiveQuestion.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
-  assert(rep.calculatedAtKst.endsWith('+09:00 KST'));
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(Boolean(rep.maewoldangSynthesisMatrix?.integratedAction));
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const repQ = calculateKoreanMaewoldangKimSiSeupGeumoSinhwa(profile, '남의 시선에 흔들리지 않고 내 길을 지키는 법');
@@ -7958,6 +7960,7 @@ test('Maewoldang Kim Si-seup Geumo Sinhwa Engine: calculates Fangwairen Freedom,
   assert(prompt.includes('해석 경계'));
   assert(prompt.includes('교차 매트릭스'));
   assert(prompt.includes(repQ.ritualAction));
+  assert(prompt.includes(repQ.reflectionFocus));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });

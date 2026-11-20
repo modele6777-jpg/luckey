@@ -14,7 +14,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const KOREAN_LEE_YUK_SA_VERSION = 'LUCKEY-LEE-YUK-SA-GWANGYA-v2.2.0';
+export const KOREAN_LEE_YUK_SA_VERSION = 'LUCKEY-LEE-YUK-SA-GWANGYA-v2.3.0';
 
 export interface LeeYukSaTheme {
   themeKey: string;
@@ -68,7 +68,7 @@ function formatLeeYukSaKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} +09:00 KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
 }
 
 function describeLeeYukSaStage(score: number): string {
