@@ -413,6 +413,9 @@ import { calculateOccitanTroubadourParatge, formatOccitanParatgePrompt, type Occ
 import { calculateZapotecPiyeCloudWisdom, formatZapotecPiyePrompt, type ZapotecPiyeResult } from './zapotecPiyeCloudWisdomEngine';
 import { calculateSakhaOlonkhoThreeWorlds, formatSakhaOlonkhoPrompt, type SakhaOlonkhoResult } from './sakhaOlonkhoThreeWorldsEngine';
 import { calculateScythianGoldenStagSteppe, formatScythianGoldenStagPrompt, type ScythianGoldenStagResult } from './scythianGoldenStagSteppeEngine';
+import { calculateGalicianCaminoAtlanticReflection, formatGalicianCaminoPrompt, type GalicianCaminoResult } from './galicianCaminoAtlanticReflectionEngine';
+import { calculateUyghurKutadguBiligWisdom, formatUyghurKutadguPrompt, type UyghurKutadguResult } from './uyghurKutadguBiligWisdomEngine';
+import { calculateBuryatBaikalTengriHarmony, formatBuryatBaikalPrompt, type BuryatBaikalResult } from './buryatBaikalTengriHarmonyEngine';
 
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
@@ -844,6 +847,9 @@ export interface DeterministicEngineReport {
   zapotecPiyeCloudWisdomResult?: ZapotecPiyeResult | null;
   sakhaOlonkhoThreeWorldsResult?: SakhaOlonkhoResult | null;
   scythianGoldenStagSteppeResult?: ScythianGoldenStagResult | null;
+  galicianCaminoAtlanticReflectionResult?: GalicianCaminoResult | null;
+  uyghurKutadguBiligWisdomResult?: UyghurKutadguResult | null;
+  buryatBaikalTengriHarmonyResult?: BuryatBaikalResult | null;
 
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
@@ -3876,6 +3882,33 @@ try {
     }
   })()));
 
+  // 390. 갈리시아 카미노·대서양 성찰 엔진
+  const galicianCaminoAtlanticReflectionResult = calculateSupplement('galicianCaminoAtlanticReflectionResult', () => ((() => {
+    try {
+      return calculateGalicianCaminoAtlanticReflection({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 391. 위구르 쿠타드구 빌리그 지혜 엔진
+  const uyghurKutadguBiligWisdomResult = calculateSupplement('uyghurKutadguBiligWisdomResult', () => ((() => {
+    try {
+      return calculateUyghurKutadguBiligWisdom({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 392. 부랴트 바이칼·텐그리 조화 엔진
+  const buryatBaikalTengriHarmonyResult = calculateSupplement('buryatBaikalTengriHarmonyResult', () => ((() => {
+    try {
+      return calculateBuryatBaikalTengriHarmony({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
   // 220. 한국 신라 의상대사 화엄일승법계도 & 법성게 원융무애 엔진
   const uisangHwaeomIlseungBeopgyeResult = calculateSupplement('uisangHwaeomIlseungBeopgyeResult', () => ((() => {
     try {
@@ -5283,6 +5316,9 @@ try {
     zapotecPiyeCloudWisdomResult,
     sakhaOlonkhoThreeWorldsResult,
     scythianGoldenStagSteppeResult,
+    galicianCaminoAtlanticReflectionResult,
+    uyghurKutadguBiligWisdomResult,
+    buryatBaikalTengriHarmonyResult,
     tools: toolsMap,
   };
 }
@@ -5695,6 +5731,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'zapotecPiyeCloudWisdom', nameKo: '사포텍 피예·구름 지혜', icon: '☁️', category: 'deep_master', summary: '멕시코 사포텍의 피예(Piye) 주기·구름 시선처럼 발밑의 소음에서 물러나 전체 산맥의 흐름을 조망하는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'trinity' },
   { key: 'sakhaOlonkhoThreeWorlds', nameKo: '사하 올론호 세 세계', icon: '🌲', category: 'deep_master', summary: '시베리아 사하(야쿠트) 올론호의 세계수처럼 과거의 뿌리와 미래의 가지 사이에서 오늘의 중심을 돌보는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'aura' },
   { key: 'scythianGoldenStagSteppe', nameKo: '스키타이 황금 사슴', icon: '🦌', category: 'deep_master', summary: '유라시아 스키타이의 황금 사슴처럼 무거운 짐을 덜어내고 가볍고 기민하게 다음 국면으로 도약하는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'muse' },
+  { key: 'galicianCaminoAtlanticReflection', nameKo: '갈리시아 대서양 순례', icon: '🐚', category: 'deep_master', summary: '이베리아 갈리시아 카미노의 피니스테레처럼 남과의 속도 비교를 내려놓고 나만의 호흡을 되찾는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'bluebird' },
+  { key: 'uyghurKutadguBiligWisdom', nameKo: '위구르 쿠타드구 빌리그', icon: '📜', category: 'deep_master', summary: '위구르 고전 《쿠타드구 빌리그》처럼 공정한 원칙·순환·분별·절제의 네 기둥으로 오늘의 선택을 가다듬는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'trinity' },
+  { key: 'buryatBaikalTengriHarmony', nameKo: '부랴트 바이칼·텐그리', icon: '🩵', category: 'deep_master', summary: '시베리아 부랴트의 바이칼·텐그리처럼 먹구름 너머의 푸른 하늘을 신뢰하며 마음의 물결을 맑게 조율하는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'aura' },
 ] as DceEngineMeta[]).filter(engine => !LUCY_PRO_CATALOG_DUPLICATE_KEYS.has(engine.key));
 
 export function getFiredEngineBadges(
@@ -6525,6 +6564,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'zapotecPiyeCloudWisdom',
     'sakhaOlonkhoThreeWorlds',
     'scythianGoldenStagSteppe',
+    'galicianCaminoAtlanticReflection',
+    'uyghurKutadguBiligWisdom',
+    'buryatBaikalTengriHarmony',
   ],
 };
 
