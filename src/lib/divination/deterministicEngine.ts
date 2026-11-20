@@ -536,6 +536,9 @@ import { calculateChumashTomolCanoe, formatChumashTomolPrompt, type ChumashTomol
 import { calculateSererBaobabCouncil, formatSererBaobabPrompt, type SererBaobabResult } from './sererBaobabCouncilPoiseEngine';
 import { calculateMenomineeForestBalance, formatMenomineeForestPrompt, type MenomineeForestResult } from './menomineeForestStewardBalanceEngine';
 import { calculateSangamTinaiPoetics, formatSangamTinaiPrompt, type SangamTinaiResult } from './sangamTinaiLandscapesEngine';
+import { calculateBatammaribaTakienta, formatBatammaribaTakientaPrompt, type BatammaribaTakientaResult } from './batammaribaTakientaMudTowerEngine';
+import { calculateKunaMolaStitch, formatKunaMolaPrompt, type KunaMolaResult } from './kunaMolaLayeredStitchEngine';
+import { calculateVenetianLagoonForcola, formatVenetianLagoonPrompt, type VenetianLagoonResult } from './venetianLagoonForcolaOarEngine';
 
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
@@ -1090,6 +1093,9 @@ export interface DeterministicEngineReport {
   sererBaobabCouncilResult?: SererBaobabResult | null;
   menomineeForestBalanceResult?: MenomineeForestResult | null;
   sangamTinaiPoeticsResult?: SangamTinaiResult | null;
+  batammaribaTakientaResult?: BatammaribaTakientaResult | null;
+  kunaMolaStitchResult?: KunaMolaResult | null;
+  venetianLagoonForcolaResult?: VenetianLagoonResult | null;
 
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
@@ -5229,6 +5235,33 @@ try {
     }
   })()));
 
+  // 513. 바타마리바·타키엔타 흙탑 성찰 엔진
+  const batammaribaTakientaResult = calculateSupplement('batammaribaTakientaResult', () => ((() => {
+    try {
+      return calculateBatammaribaTakienta({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 514. 쿠나·몰라 겹 바느질 성찰 엔진
+  const kunaMolaStitchResult = calculateSupplement('kunaMolaStitchResult', () => ((() => {
+    try {
+      return calculateKunaMolaStitch({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 515. 베네치아·라구나 포르콜라 노 젓기 성찰 엔진
+  const venetianLagoonForcolaResult = calculateSupplement('venetianLagoonForcolaResult', () => ((() => {
+    try {
+      return calculateVenetianLagoonForcola({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
   // 220. 한국 신라 의상대사 화엄일승법계도 & 법성게 원융무애 엔진
   const uisangHwaeomIlseungBeopgyeResult = calculateSupplement('uisangHwaeomIlseungBeopgyeResult', () => ((() => {
     try {
@@ -6759,6 +6792,9 @@ try {
     sererBaobabCouncilResult,
     menomineeForestBalanceResult,
     sangamTinaiPoeticsResult,
+    batammaribaTakientaResult,
+    kunaMolaStitchResult,
+    venetianLagoonForcolaResult,
     tools: toolsMap,
   };
 }
@@ -7294,6 +7330,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'sererBaobabCouncil', nameKo: '세레르·바오밥 평의회', icon: '🌳', category: 'deep_master', summary: '세네갈 세레르 족이 바오밥 그늘 아래 모여 경청과 비축의 지혜를 나누던 평의회처럼 내면의 여력과 깊은 대화를 살피는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'muse' },
   { key: 'menomineeForestBalance', nameKo: '메노미니·숲지속 목재 균형', icon: '🌲', category: 'deep_master', summary: '필요한 만큼만 거두고 다음 세대의 그늘을 남기는 메노미니 숲 돌봄 원칙처럼 장기적인 여력과 균형을 살피는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'trinity' },
   { key: 'sangamTinaiPoetics', nameKo: '타밀 상감·티나이 다섯 경관', icon: '🪷', category: 'deep_master', summary: '고전 타밀 상감 시학의 산·숲·들·바다 경관처럼 자연의 흐름에 비추어 내면(아캄)과 외면(푸람)의 결을 읽는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'bluebird' },
+  { key: 'batammaribaTakienta', nameKo: '바타마리바·타키엔타 흙탑', icon: '🏰', category: 'deep_master', summary: '토고·베냉 바타마리바 족이 손으로 빚어 올린 타키엔타 2층 흙탑 가옥처럼 실무와 쉼의 층위를 나누고 공동체로 버티는 지혜의 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'aura' },
+  { key: 'kunaMolaStitch', nameKo: '쿠나·몰라 겹 바느질', icon: '🧵', category: 'deep_master', summary: '여러 겹의 천을 오려 내며 아래의 밝은 색을 드러내는 쿠나 족의 몰라 직물처럼 불필요한 겹을 덜어내어 본질을 드러내는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'muse' },
+  { key: 'venetianLagoonForcola', nameKo: '베네치아·라구나 포르콜라', icon: '🚣', category: 'deep_master', summary: '여덟 개 홈이 파인 호두나무 노받침(포르콜라)과 한쪽 노로 좁은 석호 수로를 지나는 베네치아 뱃사공처럼 각도와 멈춤을 읽는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'bluebird' },
 ] as DceEngineMeta[]).filter(engine => !LUCY_PRO_CATALOG_DUPLICATE_KEYS.has(engine.key));
 
 export function getFiredEngineBadges(
@@ -8247,6 +8286,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'sererBaobabCouncil',
     'menomineeForestBalance',
     'sangamTinaiPoetics',
+    'batammaribaTakienta',
+    'kunaMolaStitch',
+    'venetianLagoonForcola',
   ],
 };
 

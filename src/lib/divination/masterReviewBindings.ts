@@ -2043,5 +2043,17 @@ export const MASTER_REVIEW_BINDINGS: Record<string, { field: string; traceKey: s
   "sangamTinaiPoetics": {
     "field": "sangamTinaiPoeticsResult",
     "traceKey": "sangamTinaiPoeticsResult"
+  },
+  "batammaribaTakienta": {
+    "field": "batammaribaTakientaResult",
+    "traceKey": "batammaribaTakientaResult"
+  },
+  "kunaMolaStitch": {
+    "field": "kunaMolaStitchResult",
+    "traceKey": "kunaMolaStitchResult"
+  },
+  "venetianLagoonForcola": {
+    "field": "venetianLagoonForcolaResult",
+    "traceKey": "venetianLagoonForcolaResult"
   }
 };
