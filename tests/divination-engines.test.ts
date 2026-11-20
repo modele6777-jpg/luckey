@@ -400,6 +400,9 @@ import { calculateKalmykJangarBumbaSteppe, formatKalmykJangarPrompt } from '../s
 import { calculateBugisLontaraPasikWisdom, formatBugisLontaraPrompt } from '../src/lib/divination/bugisLontaraPasikWisdomEngine';
 import { calculateLatvianDainasMaraHarmony, formatLatvianDainasPrompt } from '../src/lib/divination/latvianDainasMaraHarmonyEngine';
 import { calculateCherokeeGadugiHarmony, formatCherokeeGadugiPrompt } from '../src/lib/divination/cherokeeGadugiHarmonyEngine';
+import { calculateTlingitRavenClanBalance, formatTlingitRavenPrompt } from '../src/lib/divination/tlingitRavenClanBalanceEngine';
+import { calculateOromoGadaaSaffuuHarmony, formatOromoGadaaPrompt } from '../src/lib/divination/oromoGadaaSaffuuHarmonyEngine';
+import { calculateKarelianRunoKanteleResonance, formatKarelianRunoPrompt } from '../src/lib/divination/karelianRunoKanteleResonanceEngine';
 
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
@@ -13836,4 +13839,37 @@ test('Cherokee Gadugi Harmony engine: principle, +09:00 KST, and interpretive bo
   const prompt = formatCherokeeGadugiPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
   assert.ok(prompt.includes('체로키') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Tlingit Raven Clan Balance engine: balance, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateTlingitRavenClanBalance({ profile, now: new Date('2026-11-20T08:11:00Z'), question: '나와 다른 시선을 균형으로 보고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-TLINGIT-RAVEN-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatTlingitRavenPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('틀링깃') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Oromo Gadaa Saffuu Harmony engine: cycle, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateOromoGadaaSaffuuHarmony({ profile, now: new Date('2026-11-20T08:11:00Z'), question: '지금 내 계절에 맞는 역할을 지키고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-OROMO-GADAA-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatOromoGadaaPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('오로모') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Karelian Runo Kantele Resonance engine: motif, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateKarelianRunoKanteleResonance({ profile, now: new Date('2026-11-20T08:11:00Z'), question: '내 마음에 남은 소박한 울림을 듣고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-KARELIAN-KANTELE-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatKarelianRunoPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('카렐리야') && prompt.includes('+09:00 (KST)'));
 });

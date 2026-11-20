@@ -431,6 +431,9 @@ import { calculateKalmykJangarBumbaSteppe, formatKalmykJangarPrompt, type Kalmyk
 import { calculateBugisLontaraPasikWisdom, formatBugisLontaraPrompt, type BugisLontaraResult } from './bugisLontaraPasikWisdomEngine';
 import { calculateLatvianDainasMaraHarmony, formatLatvianDainasPrompt, type LatvianDainasResult } from './latvianDainasMaraHarmonyEngine';
 import { calculateCherokeeGadugiHarmony, formatCherokeeGadugiPrompt, type CherokeeGadugiResult } from './cherokeeGadugiHarmonyEngine';
+import { calculateTlingitRavenClanBalance, formatTlingitRavenPrompt, type TlingitRavenResult } from './tlingitRavenClanBalanceEngine';
+import { calculateOromoGadaaSaffuuHarmony, formatOromoGadaaPrompt, type OromoGadaaResult } from './oromoGadaaSaffuuHarmonyEngine';
+import { calculateKarelianRunoKanteleResonance, formatKarelianRunoPrompt, type KarelianRunoResult } from './karelianRunoKanteleResonanceEngine';
 
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
@@ -880,6 +883,9 @@ export interface DeterministicEngineReport {
   bugisLontaraPasikWisdomResult?: BugisLontaraResult | null;
   latvianDainasMaraHarmonyResult?: LatvianDainasResult | null;
   cherokeeGadugiHarmonyResult?: CherokeeGadugiResult | null;
+  tlingitRavenClanBalanceResult?: TlingitRavenResult | null;
+  oromoGadaaSaffuuHarmonyResult?: OromoGadaaResult | null;
+  karelianRunoKanteleResonanceResult?: KarelianRunoResult | null;
 
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
@@ -4074,6 +4080,33 @@ try {
     }
   })()));
 
+  // 408. 틀링깃 레이븐·클랜 균형 엔진
+  const tlingitRavenClanBalanceResult = calculateSupplement('tlingitRavenClanBalanceResult', () => ((() => {
+    try {
+      return calculateTlingitRavenClanBalance({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 409. 오로모 가다·사푸 윤리 엔진
+  const oromoGadaaSaffuuHarmonyResult = calculateSupplement('oromoGadaaSaffuuHarmonyResult', () => ((() => {
+    try {
+      return calculateOromoGadaaSaffuuHarmony({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 410. 카렐리야 루노·칸텔레 공명 엔진
+  const karelianRunoKanteleResonanceResult = calculateSupplement('karelianRunoKanteleResonanceResult', () => ((() => {
+    try {
+      return calculateKarelianRunoKanteleResonance({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
   // 220. 한국 신라 의상대사 화엄일승법계도 & 법성게 원융무애 엔진
   const uisangHwaeomIlseungBeopgyeResult = calculateSupplement('uisangHwaeomIlseungBeopgyeResult', () => ((() => {
     try {
@@ -5499,6 +5532,9 @@ try {
     bugisLontaraPasikWisdomResult,
     latvianDainasMaraHarmonyResult,
     cherokeeGadugiHarmonyResult,
+    tlingitRavenClanBalanceResult,
+    oromoGadaaSaffuuHarmonyResult,
+    karelianRunoKanteleResonanceResult,
     tools: toolsMap,
   };
 }
@@ -5929,6 +5965,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'bugisLontaraPasikWisdom', nameKo: '부기스 론타라·파시크', icon: '⛵', category: 'deep_master', summary: '술라웨시 부기스 항해사의 시리 나 파체(Siri’ na Pacce)처럼 자신의 품위와 타인을 향한 연민의 균형으로 오늘의 항로를 정하는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'aura' },
   { key: 'latvianDainasMaraHarmony', nameKo: '라트비아 다이나스·마라', icon: '🌾', category: 'deep_master', summary: '라트비아 다이나스 구전 시가처럼 거창한 해답보다 오늘 내 일상의 작은 리듬과 몸의 감각을 정성껏 돌보는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'bluebird' },
   { key: 'cherokeeGadugiHarmony', nameKo: '체로키 가두기·두육트브', icon: '🐺', category: 'deep_master', summary: '북미 체로키의 가두기(Gadugi) 상호부조와 두육트브(Duyuktv)처럼 내 안의 두려움 대신 신뢰와 조화에 마음을 보태는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'trinity' },
+  { key: 'tlingitRavenClanBalance', nameKo: '틀링깃 레이븐·클랜', icon: '🦅', category: 'deep_master', summary: '북서해안 틀링깃의 독수리·까마귀 반족 상보성처럼 나와 다른 관점을 대립이 아닌 균형의 나머지 절반으로 바라보는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'muse' },
+  { key: 'oromoGadaaSaffuuHarmony', nameKo: '오로모 가다·사푸 윤리', icon: '🌳', category: 'deep_master', summary: '동아프리카 오로모의 가다(Gadaa) 순환과 사푸(Saffuu)처럼 지금 내 계절에 맞는 몫만 성실히 감당하며 평화를 지키는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'trinity' },
+  { key: 'karelianRunoKanteleResonance', nameKo: '카렐리야 루노·칸텔레', icon: '🎶', category: 'deep_master', summary: '카렐리야 루노 시가와 다섯 줄 칸텔레처럼 복잡한 꾸밈을 덜어내고 내 마음에 남은 진실한 울림을 듣는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'aura' },
 ] as DceEngineMeta[]).filter(engine => !LUCY_PRO_CATALOG_DUPLICATE_KEYS.has(engine.key));
 
 export function getFiredEngineBadges(
@@ -6777,6 +6816,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'bugisLontaraPasikWisdom',
     'latvianDainasMaraHarmony',
     'cherokeeGadugiHarmony',
+    'tlingitRavenClanBalance',
+    'oromoGadaaSaffuuHarmony',
+    'karelianRunoKanteleResonance',
   ],
 };
 
