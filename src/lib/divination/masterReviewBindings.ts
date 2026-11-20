@@ -1683,5 +1683,17 @@ export const MASTER_REVIEW_BINDINGS: Record<string, { field: string; traceKey: s
   "estonianRegilaulForestCalm": {
     "field": "estonianRegilaulForestCalmResult",
     "traceKey": "estonianRegilaulForestCalmResult"
+  },
+  "balkanOhridLakeReflection": {
+    "field": "balkanOhridLakeReflectionResult",
+    "traceKey": "balkanOhridLakeReflectionResult"
+  },
+  "garifunaDuguCaribbeanRhythm": {
+    "field": "garifunaDuguCaribbeanRhythmResult",
+    "traceKey": "garifunaDuguCaribbeanRhythmResult"
+  },
+  "alpineSavoyColWisdom": {
+    "field": "alpineSavoyColWisdomResult",
+    "traceKey": "alpineSavoyColWisdomResult"
   }
 };

@@ -415,6 +415,9 @@ import { calculateLadakhiStupaGlacierWater, formatLadakhiChortenPrompt } from '.
 import { calculateAssyrianNinevehClayTablet, formatAssyrianNinevehPrompt } from '../src/lib/divination/assyrianNinevehClayTabletEngine';
 import { calculateTuaregTagelmustSaharaStars, formatTuaregSaharaPrompt } from '../src/lib/divination/tuaregTagelmustSaharaStarsEngine';
 import { calculateEstonianRegilaulForestCalm, formatEstonianRegilaulPrompt } from '../src/lib/divination/estonianRegilaulForestCalmEngine';
+import { calculateBalkanOhridLakeReflection, formatBalkanOhridPrompt } from '../src/lib/divination/balkanOhridLakeReflectionEngine';
+import { calculateGarifunaDuguCaribbeanRhythm, formatGarifunaDuguPrompt } from '../src/lib/divination/garifunaDuguCaribbeanRhythmEngine';
+import { calculateAlpineSavoyColWisdom, formatAlpineSavoyPrompt } from '../src/lib/divination/alpineSavoyColWisdomEngine';
 
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
@@ -14016,4 +14019,37 @@ test('Estonian Regilaul Forest Calm engine: motif, +09:00 KST, and interpretive 
   const prompt = formatEstonianRegilaulPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
   assert.ok(prompt.includes('에스토니아') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Balkan Ohrid Lake Reflection engine: symbol, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateBalkanOhridLakeReflection({ profile, now: new Date('2026-11-20T08:46:00Z'), question: '깊은 바닥에서부터 스스로를 맑게 돌보고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-BALKAN-OHRID-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatBalkanOhridPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('오흐리드') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Garifuna Dugu Caribbean Rhythm engine: rhythm, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateGarifunaDuguCaribbeanRhythm({ profile, now: new Date('2026-11-20T08:46:00Z'), question: '무거운 생각을 가벼운 박자로 풀어내고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-GARIFUNA-DUGU-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatGarifunaDuguPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('가리푸나') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Alpine Savoy Col Wisdom engine: principle, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateAlpineSavoyColWisdom({ profile, now: new Date('2026-11-20T08:46:00Z'), question: '더 부드럽게 건널 수 있는 고개를 찾고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-ALPINE-SAVOY-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatAlpineSavoyPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('사보이') && prompt.includes('+09:00 (KST)'));
 });
