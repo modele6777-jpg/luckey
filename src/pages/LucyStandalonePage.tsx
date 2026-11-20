@@ -3982,7 +3982,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
 
       {/* 📱 메인 본문: 펼침 모드에서는 좌측 50% 화면을 온전히 채우며, 접힘 모드에서는 전체 단일 화면 채움 */}
       <div className="flex-1 min-h-0 flex flex-col w-full max-w-full overflow-hidden">
-        <div className="h-full flex flex-col min-w-0 overflow-hidden relative w-full flex-1">
+        <div className="h-full min-h-0 flex flex-col min-w-0 overflow-hidden relative w-full flex-1">
           {/* Chat Messages Stream */}
           <main
         ref={messagesContainerRef}

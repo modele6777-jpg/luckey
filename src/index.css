@@ -433,6 +433,31 @@
     overflow: hidden !important;
   }
 
+  /* 키보드가 열렸을 때 루시 채팅 내부 flex 체인이 visualViewport 높이에 맞춰 온전히 수축하도록 보장 */
+  html.keyboard-open .sites-pinned-main,
+  html.keyboard-open .sites-pinned-main > div,
+  html.keyboard-open [data-workspace-pane="lucy"],
+  html.keyboard-open .lucy-chat-shell,
+  html.keyboard-open .lucy-chat-shell > div {
+    min-height: 0 !important;
+    max-height: 100% !important;
+  }
+
+  html.keyboard-open .lucy-chat-shell {
+    height: 100% !important;
+    overflow: hidden !important;
+  }
+
+  html.keyboard-open .lucy-chat-main {
+    flex: 1 1 0% !important;
+    min-height: 0 !important;
+  }
+
+  html.keyboard-open .lucy-chat-header {
+    padding-top: max(6px, env(safe-area-inset-top, 0px)) !important;
+    padding-bottom: 6px !important;
+  }
+
   /* iOS Safari GPU-accelerated smooth scrolling for active scroll roots */
   [data-app-scroll-root],
   .overflow-y-auto {

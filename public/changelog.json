@@ -1,5 +1,14 @@
 [
   {
+    "version": "1.7.1019",
+    "builtAt": "2026-11-20T15:50:00+09:00",
+    "summary": "iOS 키보드 전개 시 루시 채팅 입력창(.lucy-chat-footer)이 가시 영역 밖으로 밀리는 레이아웃 수복 (v1.7.1019)",
+    "items": [
+      "LucyStandalonePage 내부 스크롤 래퍼에 min-h-0 누락 보강 및 App.tsx 래퍼 flex-1 정렬",
+      "keyboard-open 상태에서 .sites-pinned-main ~ .lucy-chat-main flex 수축(min-height: 0) 및 .lucy-chat-header 상하 여백 컴팩트화 적용"
+    ]
+  },
+  {
     "version": "1.7.1018",
     "builtAt": "2026-11-20T15:40:00+09:00",
     "summary": "키르기스 마나스·쇼나 음비라·통가 타우히 바 3대 신규 심층 엔진 구축 및 카탈로그 366개 확장 (v1.7.1018)",
