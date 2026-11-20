@@ -496,6 +496,9 @@ import { calculateSumbaIkatStory, formatSumbaIkatPrompt } from '../src/lib/divin
 import { calculateBatakSopoRoof, formatBatakSopoPrompt } from '../src/lib/divination/batakTobaSopoRoofEngine';
 import { calculateTarahumaraStride, formatTarahumaraStridePrompt } from '../src/lib/divination/tarahumaraRaramuriStrideEngine';
 import { calculateOrkneySkaraHearth, formatOrkneySkaraPrompt } from '../src/lib/divination/orkneySkaraBraeStoneHearthEngine';
+import { calculateMuiscaGuatavitaLake, formatMuiscaGuatavitaPrompt } from '../src/lib/divination/muiscaGuatavitaLakeOfferingEngine';
+import { calculateNaxiDongbaChime, formatNaxiDongbaPrompt } from '../src/lib/divination/naxiDongbaScriptChimeEngine';
+import { calculateHmongStoryCloth, formatHmongStoryClothPrompt } from '../src/lib/divination/hmongPajNtaubStoryClothEngine';
 
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
@@ -15048,4 +15051,37 @@ test('Orkney Skara Brae Hearth engine: motif, +09:00 KST, and interpretive bound
   const prompt = formatOrkneySkaraPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
   assert.ok(prompt.includes('오크니') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionMotif));
+});
+
+test('Muisca Guatavita Lake engine: phase, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateMuiscaGuatavitaLake({ profile, now: new Date('2026-11-20T22:15:00Z'), question: '마음의 균형을 비우고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-MUISCA-GUATAVITA-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatMuiscaGuatavitaPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('무이스카') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Naxi Dongba Chime engine: motif, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateNaxiDongbaChime({ profile, now: new Date('2026-11-20T22:15:00Z'), question: '복잡한 생각을 단순하게 정리하고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-NAXI-DONGBA-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatNaxiDongbaPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('나시') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Hmong Story Cloth engine: pattern, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateHmongStoryCloth({ profile, now: new Date('2026-11-20T22:15:00Z'), question: '지나온 일상을 차분히 엮고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-HMONG-CLOTH-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatHmongStoryClothPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('몽족') && prompt.includes('+09:00 (KST)'));
 });
