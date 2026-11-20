@@ -493,6 +493,9 @@ import { calculateTurkanaJadeSeaWind, formatTurkanaWindPrompt } from '../src/lib
 import { calculateAsturianHorreoPoise, formatAsturianHorreoPrompt } from '../src/lib/divination/asturianHorreoGranaryPoiseEngine';
 import { calculateOmoKaroBodyArt, formatOmoKaroPrompt } from '../src/lib/divination/omoKaroClayBodyArtEngine';
 import { calculateSumbaIkatStory, formatSumbaIkatPrompt } from '../src/lib/divination/sumbaIkatWeaveStoryEngine';
+import { calculateBatakSopoRoof, formatBatakSopoPrompt } from '../src/lib/divination/batakTobaSopoRoofEngine';
+import { calculateTarahumaraStride, formatTarahumaraStridePrompt } from '../src/lib/divination/tarahumaraRaramuriStrideEngine';
+import { calculateOrkneySkaraHearth, formatOrkneySkaraPrompt } from '../src/lib/divination/orkneySkaraBraeStoneHearthEngine';
 
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
@@ -15009,4 +15012,37 @@ test('Sumba Ikat Story engine: motif, +09:00 KST, and interpretive boundary', ()
   const prompt = formatSumbaIkatPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
   assert.ok(prompt.includes('숨바') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionMotif));
+});
+
+test('Batak Toba Sopo Roof engine: motif, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateBatakSopoRoof({ profile, now: new Date('2026-11-20T22:05:00Z'), question: '유연하게 짜맞추고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-BATAK-SOPO-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatBatakSopoPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('바타크') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Tarahumara Raramuri Stride engine: motif, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateTarahumaraStride({ profile, now: new Date('2026-11-20T22:05:00Z'), question: '멀리 갈 수 있는 호흡을 찾고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-TARAHUMARA-STRIDE-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatTarahumaraStridePrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('타라후마라') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Orkney Skara Brae Hearth engine: motif, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateOrkneySkaraHearth({ profile, now: new Date('2026-11-20T22:05:00Z'), question: '마음의 중앙 화덕을 지키고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-ORKNEY-SKARA-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatOrkneySkaraPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('오크니') && prompt.includes('+09:00 (KST)'));
 });

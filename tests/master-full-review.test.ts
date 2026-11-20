@@ -31,10 +31,10 @@ test('master reviews every registered tool and only exposes qualitative suppleme
 test('missing input is not replaced with a default birthday during master review', () => {
   const report = runDeterministicEngine({ coreOnly:true, reviewAll:true, forceAllTools:true });
   const review = getMasterSymbolicReview(report);
-  assert.equal(review.length, 479);
+  assert.equal(review.length, 482);
   assert.ok(review.every(item => !item.sentToModel));
   assert.equal(report.gyeogamYurokResult, null);
-  assert.equal(getCalculationAudit(report).length, 494);
+  assert.equal(getCalculationAudit(report).length, 497);
 });
 
 test('failed supplementary results are excluded instead of counted from the catalogue', () => {
