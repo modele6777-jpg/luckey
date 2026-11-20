@@ -10,12 +10,12 @@
  *    - MUL (성좌 관측 수리도: 하늘의 별자리 주기와 지상 운세의 조화)
  * 2. 7개 점토 서판 서기 품계 및 지혜의 쐐기문자 처방
  *
- * @version LUCKEY-MESOPOTAMIAN-NISABA-v1.0.0
+ * @version LUCKEY-MESOPOTAMIAN-NISABA-v2.3.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const MESOPOTAMIAN_NISABA_VERSION = 'LUCKEY-MESOPOTAMIAN-NISABA-v2.2.0';
+export const MESOPOTAMIAN_NISABA_VERSION = 'LUCKEY-MESOPOTAMIAN-NISABA-v2.3.0';
 
 export interface NisabaScribeRank {
   rankLevel: number;
@@ -101,7 +101,7 @@ function getKstDateString(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} +09:00 KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
 }
 
 function hashSeed(seedStr: string): number {

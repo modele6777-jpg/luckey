@@ -10,12 +10,12 @@
  *    - 틸란통고(Tilantongo)와 투투테펙(Tututepec)을 잇는 산과 해안의 대통합
  * 3. 7대 전술적 품계 및 믹스테크 신성 서판 조언 산출
  *
- * @version LUCKEY-MIXTEC-EIGHT-DEER-v1.0.0
+ * @version LUCKEY-MIXTEC-EIGHT-DEER-v2.3.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const MIXTEC_EIGHT_DEER_VERSION = 'LUCKEY-MIXTEC-EIGHT-DEER-v2.2.0';
+export const MIXTEC_EIGHT_DEER_VERSION = 'LUCKEY-MIXTEC-EIGHT-DEER-v2.3.0';
 
 export interface EightDeerHeroRank {
   rankLevel: number;
@@ -103,7 +103,7 @@ function getKstDateString(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} +09:00 KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
 }
 
 function hashSeed(seedStr: string): number {
