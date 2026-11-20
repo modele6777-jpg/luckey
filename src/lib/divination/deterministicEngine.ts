@@ -506,6 +506,9 @@ import { calculatePamirWakhanCorridorStars, formatPamirWakhanPrompt, type PamirW
 import { calculateHebrideanTartanLoomCalm, formatHebrideanTartanPrompt, type HebrideanTartanResult } from './hebrideanTartanLoomCalmEngine';
 import { calculateChiloePalafitoTidePoise, formatChiloePalafitoPrompt, type ChiloePalafitoResult } from './chiloePalafitoTidePoiseEngine';
 import { calculateBununJadeMountainSong, formatBununMountainPrompt, type BununMountainResult } from './bununJadeMountainSongEngine';
+import { calculateMalagasyBaobabRootPoise, formatMalagasyBaobabPrompt, type MalagasyBaobabResult } from './malagasyBaobabRootPoiseEngine';
+import { calculateBukharaTileMosaicCalm, formatBukharaTilePrompt, type BukharaTileResult } from './bukharaTileMosaicCalmEngine';
+import { calculateFaroeseTurfRoofShelter, formatFaroeseTurfPrompt, type FaroeseTurfResult } from './faroeseTurfRoofShelterEngine';
 
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
@@ -1030,6 +1033,9 @@ export interface DeterministicEngineReport {
   hebrideanTartanLoomCalmResult?: HebrideanTartanResult | null;
   chiloePalafitoTidePoiseResult?: ChiloePalafitoResult | null;
   bununJadeMountainSongResult?: BununMountainResult | null;
+  malagasyBaobabRootPoiseResult?: MalagasyBaobabResult | null;
+  bukharaTileMosaicCalmResult?: BukharaTileResult | null;
+  faroeseTurfRoofShelterResult?: FaroeseTurfResult | null;
 
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
@@ -4899,6 +4905,33 @@ try {
     }
   })()));
 
+  // 483. 말라가시·바오밥 뿌리 성찰 엔진
+  const malagasyBaobabRootPoiseResult = calculateSupplement('malagasyBaobabRootPoiseResult', () => ((() => {
+    try {
+      return calculateMalagasyBaobabRootPoise({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 484. 부하라·청록 타일 성찰 엔진
+  const bukharaTileMosaicCalmResult = calculateSupplement('bukharaTileMosaicCalmResult', () => ((() => {
+    try {
+      return calculateBukharaTileMosaicCalm({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 485. 페로·풀지붕 안식 성찰 엔진
+  const faroeseTurfRoofShelterResult = calculateSupplement('faroeseTurfRoofShelterResult', () => ((() => {
+    try {
+      return calculateFaroeseTurfRoofShelter({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
   // 220. 한국 신라 의상대사 화엄일승법계도 & 법성게 원융무애 엔진
   const uisangHwaeomIlseungBeopgyeResult = calculateSupplement('uisangHwaeomIlseungBeopgyeResult', () => ((() => {
     try {
@@ -6399,6 +6432,9 @@ try {
     hebrideanTartanLoomCalmResult,
     chiloePalafitoTidePoiseResult,
     bununJadeMountainSongResult,
+    malagasyBaobabRootPoiseResult,
+    bukharaTileMosaicCalmResult,
+    faroeseTurfRoofShelterResult,
     tools: toolsMap,
   };
 }
@@ -6904,6 +6940,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'hebrideanTartanLoomCalm', nameKo: '헤브리디스·타르탄 베틀', icon: '🧶', category: 'deep_master', summary: '스코틀랜드 헤브리디스의 해리스 트위드 직조와 블랙하우스처럼 내가 딛고 선 자리의 재료로 내 발박자에 맞춰 고유한 격자를 짜는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'aura' },
   { key: 'chiloePalafitoTidePoise', nameKo: '치로에·팔라피토 물때', icon: '🏠', category: 'deep_master', summary: '칠레 치로에 섬의 팔라피토 수상가옥처럼 밀물과 썰물을 다 품는 기둥 위에서 녹슬지 않는 이음새로 하루를 지키는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'bluebird' },
   { key: 'bununJadeMountainSong', nameKo: '부눈·옥산 산맥 화음', icon: '🎶', category: 'deep_master', summary: '대만 중앙산맥 부눈족의 파시부트부트 다성 합창처럼 혼자 높은 음을 내려 애쓰기보다 낮은 호흡부터 포개어 공명을 만드는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'trinity' },
+  { key: 'malagasyBaobabRootPoise', nameKo: '말라가시·바오밥 뿌리', icon: '🌳', category: 'deep_master', summary: '마다가스카르 말라가시 전통의 피하바나나와 바오밥나무처럼 겉의 잎이 뜸해 보이는 날에도 내 안의 중심 줄기에 고요한 물을 채워 두는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'muse' },
+  { key: 'bukharaTileMosaicCalm', nameKo: '부하라·청록 타일', icon: '🕌', category: 'deep_master', summary: '우즈베키스탄 부하라 오아시스의 모자이크처럼 손바닥만 한 작은 타일 한 조각을 제자리에 맞추는 정성으로 오늘의 균형을 세우는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'bluebird' },
+  { key: 'faroeseTurfRoofShelter', nameKo: '페로·풀지붕 안식', icon: '🏡', category: 'deep_master', summary: '북대서양 페로 제도의 잔디 지붕과 바르디 돌무더기처럼 짙은 안개 속에서도 당장 눈앞의 돌탑 하나만큼의 걸음만 믿고 나아가는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'aura' },
 ] as DceEngineMeta[]).filter(engine => !LUCY_PRO_CATALOG_DUPLICATE_KEYS.has(engine.key));
 
 export function getFiredEngineBadges(
@@ -7827,6 +7866,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'hebrideanTartanLoomCalm',
     'chiloePalafitoTidePoise',
     'bununJadeMountainSong',
+    'malagasyBaobabRootPoise',
+    'bukharaTileMosaicCalm',
+    'faroeseTurfRoofShelter',
   ],
 };
 

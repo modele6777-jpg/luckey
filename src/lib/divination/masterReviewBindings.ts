@@ -1923,5 +1923,17 @@ export const MASTER_REVIEW_BINDINGS: Record<string, { field: string; traceKey: s
   "bununJadeMountainSong": {
     "field": "bununJadeMountainSongResult",
     "traceKey": "bununJadeMountainSongResult"
+  },
+  "malagasyBaobabRootPoise": {
+    "field": "malagasyBaobabRootPoiseResult",
+    "traceKey": "malagasyBaobabRootPoiseResult"
+  },
+  "bukharaTileMosaicCalm": {
+    "field": "bukharaTileMosaicCalmResult",
+    "traceKey": "bukharaTileMosaicCalmResult"
+  },
+  "faroeseTurfRoofShelter": {
+    "field": "faroeseTurfRoofShelterResult",
+    "traceKey": "faroeseTurfRoofShelterResult"
   }
 };
