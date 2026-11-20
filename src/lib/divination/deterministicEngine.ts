@@ -533,6 +533,9 @@ import { calculateHmongStoryCloth, formatHmongStoryClothPrompt, type HmongStoryC
 import { calculateKarenBambooClock, formatKarenBambooPrompt, type KarenBambooClockResult } from './karenBambooWaterClockEngine';
 import { calculateShanInleRowing, formatShanInlePrompt, type ShanInleRowingResult } from './shanInleLegRowingEngine';
 import { calculateChumashTomolCanoe, formatChumashTomolPrompt, type ChumashTomolResult } from './chumashTomolCanoeVoyageEngine';
+import { calculateSererBaobabCouncil, formatSererBaobabPrompt, type SererBaobabResult } from './sererBaobabCouncilPoiseEngine';
+import { calculateMenomineeForestBalance, formatMenomineeForestPrompt, type MenomineeForestResult } from './menomineeForestStewardBalanceEngine';
+import { calculateSangamTinaiPoetics, formatSangamTinaiPrompt, type SangamTinaiResult } from './sangamTinaiLandscapesEngine';
 
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
@@ -1084,6 +1087,9 @@ export interface DeterministicEngineReport {
   karenBambooClockResult?: KarenBambooClockResult | null;
   shanInleRowingResult?: ShanInleRowingResult | null;
   chumashTomolCanoeResult?: ChumashTomolResult | null;
+  sererBaobabCouncilResult?: SererBaobabResult | null;
+  menomineeForestBalanceResult?: MenomineeForestResult | null;
+  sangamTinaiPoeticsResult?: SangamTinaiResult | null;
 
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
@@ -5196,6 +5202,33 @@ try {
     }
   })()));
 
+  // 510. 세레르·바오밥 평의회 성찰 엔진
+  const sererBaobabCouncilResult = calculateSupplement('sererBaobabCouncilResult', () => ((() => {
+    try {
+      return calculateSererBaobabCouncil({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 511. 메노미니·숲지속 목재 균형 성찰 엔진
+  const menomineeForestBalanceResult = calculateSupplement('menomineeForestBalanceResult', () => ((() => {
+    try {
+      return calculateMenomineeForestBalance({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 512. 타밀 상감·티나이 다섯 경관 성찰 엔진
+  const sangamTinaiPoeticsResult = calculateSupplement('sangamTinaiPoeticsResult', () => ((() => {
+    try {
+      return calculateSangamTinaiPoetics({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
   // 220. 한국 신라 의상대사 화엄일승법계도 & 법성게 원융무애 엔진
   const uisangHwaeomIlseungBeopgyeResult = calculateSupplement('uisangHwaeomIlseungBeopgyeResult', () => ((() => {
     try {
@@ -6723,6 +6756,9 @@ try {
     karenBambooClockResult,
     shanInleRowingResult,
     chumashTomolCanoeResult,
+    sererBaobabCouncilResult,
+    menomineeForestBalanceResult,
+    sangamTinaiPoeticsResult,
     tools: toolsMap,
   };
 }
@@ -7255,6 +7291,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'karenBambooClock', nameKo: '카렌·대나무 물시계 조화', icon: '🎋', category: 'deep_master', summary: '산간 계곡의 대나무 물시계처럼 차고 기우는 자연스러운 박자로 조급함을 덜고 자기 페이스를 지키는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'bluebird' },
   { key: 'shanInleRowing', nameKo: '샨·인레 호수 외발 노 젓기', icon: '🚣', category: 'deep_master', summary: '인레 호수에서 한 발로 노를 저으며 넓은 시야와 두 손의 자유를 지키는 샨 족 어부처럼 중심 잡기와 효율의 조화를 살피는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'trinity' },
   { key: 'chumashTomolCanoe', nameKo: '추마시·토몰 카누 항해', icon: '🛶', category: 'deep_master', summary: '캘리포니아 해협을 건너던 추마시 족의 토몰 판자 카누처럼 작은 틈을 정성껏 메우고 해류를 읽으며 나아가는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'aura' },
+  { key: 'sererBaobabCouncil', nameKo: '세레르·바오밥 평의회', icon: '🌳', category: 'deep_master', summary: '세네갈 세레르 족이 바오밥 그늘 아래 모여 경청과 비축의 지혜를 나누던 평의회처럼 내면의 여력과 깊은 대화를 살피는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'muse' },
+  { key: 'menomineeForestBalance', nameKo: '메노미니·숲지속 목재 균형', icon: '🌲', category: 'deep_master', summary: '필요한 만큼만 거두고 다음 세대의 그늘을 남기는 메노미니 숲 돌봄 원칙처럼 장기적인 여력과 균형을 살피는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'trinity' },
+  { key: 'sangamTinaiPoetics', nameKo: '타밀 상감·티나이 다섯 경관', icon: '🪷', category: 'deep_master', summary: '고전 타밀 상감 시학의 산·숲·들·바다 경관처럼 자연의 흐름에 비추어 내면(아캄)과 외면(푸람)의 결을 읽는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'bluebird' },
 ] as DceEngineMeta[]).filter(engine => !LUCY_PRO_CATALOG_DUPLICATE_KEYS.has(engine.key));
 
 export function getFiredEngineBadges(
@@ -8205,6 +8244,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'karenBambooClock',
     'shanInleRowing',
     'chumashTomolCanoe',
+    'sererBaobabCouncil',
+    'menomineeForestBalance',
+    'sangamTinaiPoetics',
   ],
 };
 

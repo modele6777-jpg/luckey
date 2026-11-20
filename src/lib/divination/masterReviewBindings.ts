@@ -2031,5 +2031,17 @@ export const MASTER_REVIEW_BINDINGS: Record<string, { field: string; traceKey: s
   "chumashTomolCanoe": {
     "field": "chumashTomolCanoeResult",
     "traceKey": "chumashTomolCanoeResult"
+  },
+  "sererBaobabCouncil": {
+    "field": "sererBaobabCouncilResult",
+    "traceKey": "sererBaobabCouncilResult"
+  },
+  "menomineeForestBalance": {
+    "field": "menomineeForestBalanceResult",
+    "traceKey": "menomineeForestBalanceResult"
+  },
+  "sangamTinaiPoetics": {
+    "field": "sangamTinaiPoeticsResult",
+    "traceKey": "sangamTinaiPoeticsResult"
   }
 };
