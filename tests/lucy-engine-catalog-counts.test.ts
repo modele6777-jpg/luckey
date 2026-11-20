@@ -16,20 +16,20 @@ const THEMES: EngineCatalogThemeFilter[] = ['all', ...LUCY_PRO_CHANNEL_THEMES.ma
 
 test('a catalog with no filter keeps the registered totals on both chip rows', () => {
   const { engines, counts } = selectCatalogEngines();
-  assert.equal(engines.length, 477);
-  assert.deepEqual(counts.categories, { all: 477, foundational: 15, deep_master: 462 });
-  assert.equal(counts.themes.all, 477);
+  assert.equal(engines.length, 480);
+  assert.deepEqual(counts.categories, { all: 480, foundational: 15, deep_master: 465 });
+  assert.equal(counts.themes.all, 480);
   for (const theme of LUCY_PRO_CHANNEL_THEMES) {
     assert.equal(counts.themes[theme.id], ENGINE_CATALOG_THEME_COUNTS[theme.id], `theme chip drifted: ${theme.id}`);
   }
 });
 
-test('선택한 심층 관점에서 테마 칩이 전체 수치(477·프롤로그 5)가 아니라 표시 목록(462·프롤로그 3)을 가리킨다', () => {
+test('선택한 심층 관점에서 테마 칩이 전체 수치(480·프롤로그 5)가 아니라 표시 목록(465·프롤로그 3)을 가리킨다', () => {
   const { engines, counts } = selectCatalogEngines({ category: 'deep_master' });
-  assert.equal(engines.length, 462);
-  assert.equal(counts.categories.all, 477);
-  assert.equal(counts.categories.deep_master, 462);
-  assert.equal(counts.themes.all, 462);
+  assert.equal(engines.length, 465);
+  assert.equal(counts.categories.all, 480);
+  assert.equal(counts.categories.deep_master, 465);
+  assert.equal(counts.themes.all, 465);
   assert.equal(counts.themes.prologue, 3);
   // 칩 숫자 === 그 칩을 눌렀을 때 보이는 개수(섹션 헤더 '3개').
   assert.equal(selectCatalogEngines({ category: 'deep_master', theme: 'prologue' }).engines.length, counts.themes.prologue);

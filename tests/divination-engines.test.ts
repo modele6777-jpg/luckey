@@ -478,6 +478,9 @@ import { calculateBununJadeMountainSong, formatBununMountainPrompt } from '../sr
 import { calculateMalagasyBaobabRootPoise, formatMalagasyBaobabPrompt } from '../src/lib/divination/malagasyBaobabRootPoiseEngine';
 import { calculateBukharaTileMosaicCalm, formatBukharaTilePrompt } from '../src/lib/divination/bukharaTileMosaicCalmEngine';
 import { calculateFaroeseTurfRoofShelter, formatFaroeseTurfPrompt } from '../src/lib/divination/faroeseTurfRoofShelterEngine';
+import { calculateMarshalleseStickChart, formatMarshalleseChartPrompt } from '../src/lib/divination/marshalleseStickChartEngine';
+import { calculateMaldivianCoralAtoll, formatMaldivianAtollPrompt } from '../src/lib/divination/maldivianCoralAtollEngine';
+import { calculateTatraShepherdRidge, formatTatraRidgePrompt } from '../src/lib/divination/tatraShepherdRidgeEngine';
 
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
@@ -14814,4 +14817,37 @@ test('Faroese Turf Roof Shelter engine: motif, +09:00 KST, and interpretive boun
   const prompt = formatFaroeseTurfPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
   assert.ok(prompt.includes('페로') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Marshallese Stick Chart engine: motif, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateMarshalleseStickChart({ profile, now: new Date('2026-11-20T21:16:00Z'), question: '보이지 않는 흐름의 결을 읽고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-MARSHALLESE-CHART-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatMarshalleseChartPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('마셜') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Maldivian Coral Atoll engine: motif, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateMaldivianCoralAtoll({ profile, now: new Date('2026-11-20T21:16:00Z'), question: '내 안의 고요한 라군을 지키고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-MALDIVIAN-ATOLL-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatMaldivianAtollPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('몰디브') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Tatra Shepherd Ridge engine: motif, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateTatraShepherdRidge({ profile, now: new Date('2026-11-20T21:16:00Z'), question: '발끝의 능선부터 차분히 짚고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-TATRA-RIDGE-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatTatraRidgePrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('타트라') && prompt.includes('+09:00 (KST)'));
 });

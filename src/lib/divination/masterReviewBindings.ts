@@ -1935,5 +1935,17 @@ export const MASTER_REVIEW_BINDINGS: Record<string, { field: string; traceKey: s
   "faroeseTurfRoofShelter": {
     "field": "faroeseTurfRoofShelterResult",
     "traceKey": "faroeseTurfRoofShelterResult"
+  },
+  "marshalleseStickChart": {
+    "field": "marshalleseStickChartResult",
+    "traceKey": "marshalleseStickChartResult"
+  },
+  "maldivianCoralAtoll": {
+    "field": "maldivianCoralAtollResult",
+    "traceKey": "maldivianCoralAtollResult"
+  },
+  "tatraShepherdRidge": {
+    "field": "tatraShepherdRidgeResult",
+    "traceKey": "tatraShepherdRidgeResult"
   }
 };
