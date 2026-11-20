@@ -8402,7 +8402,7 @@ test('Gosan Yoon Seon-do Five Friends Engine: calculates Five Friends Integrity,
   assert(rep.waterUnceasingPurityIndex >= 0 && rep.waterUnceasingPurityIndex <= 100);
   assert(rep.seyeonjeongSolitaryResilienceScore >= 0 && rep.seyeonjeongSolitaryResilienceScore <= 100);
   assert(rep.activeYoonTheme.themeTitleKo.length > 0);
-  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(Boolean(rep.yoonSynthesisMatrix?.integratedAction));
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatKoreanGosanYoonSeonDoFiveFriendsPrompt(rep);
@@ -8410,6 +8410,7 @@ test('Gosan Yoon Seon-do Five Friends Engine: calculates Five Friends Integrity,
   assert(prompt.includes(rep.activeYoonTheme.themeTitleKo));
   assert(prompt.includes('교차 매트릭스'));
   assert(prompt.includes(rep.ritualAction));
+  assert(prompt.includes(rep.reflectionFocus));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });
@@ -8923,7 +8924,7 @@ test('Heo Gyun Hong Gildong & Yuldoguk Engine: calculates Talent Liberation, Hom
   assert(rep.visionaryPioneerYuldogukIndex >= 0 && rep.visionaryPioneerYuldogukIndex <= 100);
   assert(rep.progressiveReformResilience >= 0 && rep.progressiveReformResilience <= 100);
   assert(rep.activeHeoGyunTheme.themeTitleKo.length > 0);
-  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(Boolean(rep.heoGyunSynthesisMatrix?.integratedAction));
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatKoreanHeoGyunHongGildongYuldogukPrompt(rep);
@@ -8931,6 +8932,7 @@ test('Heo Gyun Hong Gildong & Yuldoguk Engine: calculates Talent Liberation, Hom
   assert(prompt.includes(rep.activeHeoGyunTheme.themeTitleKo));
   assert(prompt.includes('교차 매트릭스'));
   assert(prompt.includes(rep.ritualAction));
+  assert(prompt.includes(rep.reflectionFocus));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });
@@ -9104,6 +9106,7 @@ test('Han Yong-un engine uses a verified literary theme, query matching, and no 
   assert.equal(rep.activeHanYongUnTheme.themeKey, 'silenceOfNimSublimation');
   assert.equal(Object.hasOwn(rep, 'paradoxicalLoveTranscendenceScore'), false);
   assertKstTimestamp(rep.calculatedAtKst);
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(Boolean(rep.hanYongUnSynthesisMatrix?.integratedAction));
   assert(rep.interpretiveBoundary.length > 0);
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
@@ -9111,6 +9114,7 @@ test('Han Yong-un engine uses a verified literary theme, query matching, and no 
   assert.match(prompt, /문학적 참고/);
   assert(prompt.includes('교차 매트릭스'));
   assert(prompt.includes(rep.ritualAction));
+  assert(prompt.includes(rep.reflectionFocus));
   assert.doesNotMatch(prompt, /\/100|마음은 본래 자유로운|님은 갔으나 반드시 다시 온다|원전 명구/);
 
   const integrity = calculateKoreanHanYongUnSilenceOfNim('자유와 양심, 자주와 존엄');
