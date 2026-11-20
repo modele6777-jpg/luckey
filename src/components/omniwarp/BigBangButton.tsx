@@ -8,6 +8,7 @@ import { ChevronUp, ChevronDown, Clover, KeyRound } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { WarpPhase, OmniWarpTarget, OmniWarpContext, WarpForceMetrics } from '@/lib/omniWarp/types';
 import { calculateWarpMetrics, forceToAiTemperature, WARP_ABORT_DISTANCE } from '@/lib/omniWarp/forceSensor';
+import { playLucyMasterSuction } from './BigBangMasterSuction';
 import { serializeCurrentView, synthesizeWarpTarget, isDisallowedWarpDestination } from '@/lib/omniWarp/omniWarpEngine';
 import {
   getWhiteholeRecommendedApp,
@@ -941,9 +942,13 @@ export function BigBangButton() {
     // 홀드(사용자 제스처) 안에서 바로 배경음을 시작해야 모바일 브라우저가 소리를 허용한다.
     const startBgmIfWanted = () => { if (isLucyMasterBgmPreferred()) void startLucyMasterBgm(); };
     if (lucyVisible) {
-      if (toggleLucyMasterMode()) startBgmIfWanted();
+      if (toggleLucyMasterMode()) {
+        playLucyMasterSuction(); // 들어갈 때만: 화면이 버튼 안으로 빨려 들어간다
+        startBgmIfWanted();
+      }
       return;
     }
+    playLucyMasterSuction();
     startBgmIfWanted();
     // 다른 화면에서는 점술모드를 켠 채로 루시 채팅으로 이동한다.
     setLucyMasterMode(true);
@@ -951,7 +956,8 @@ export function BigBangButton() {
     safeSessionStorage.setItem('lucy_tier_mode', tier);
     safeLocalStorage.setItem('lucy_tier_mode', tier);
     const path = tier === 'plus' ? '/' : `/chat?mode=${tier}`;
-    dispatchBigBangRouteTransition(path, 'Lucy 점술모드', metrics);
+    // 빨려 들어가는 효과가 전환 연출을 맡으므로 일반 웜홀 전환은 띄우지 않는다.
+    void metrics;
     (window as any).__prismAllowRouteChangeUntil = Date.now() + 1500;
     navigate(path);
     window.dispatchEvent(new CustomEvent('prism-navigate', { detail: { path } }));
@@ -1163,7 +1169,7 @@ export function BigBangButton() {
     } catch (_) {}
 
     activePointerIdRef.current = null;
-    // Check cancellation before the visual-drag branch; dragging must never navigate.
+    // A drag that left the warp range is cancelled as before (no navigation).
     if (maxDist > WARP_ABORT_DISTANCE) {
       cancelOutOfRangeDrag();
       return;
@@ -1180,6 +1186,8 @@ export function BigBangButton() {
       setDurationMs(0);
       setIsAborted(false);
       resetActiveWormholePeek();
+      // Released inside the range: warp to the recommended Lucky app (Lucy/Key excluded).
+      if (!metrics.isAborted) goToNextRecommended(undefined, metrics, false, true);
       return;
     }
 
@@ -1752,8 +1760,8 @@ export function BigBangButton() {
                   ? 'inset 0 0 24px rgba(0, 240, 255, 0.48), inset -4px -4px 16px rgba(168, 85, 247, 0.45), 0 0 34px rgba(0, 240, 255, 0.55)'
                   : 'inset 0 0 22px rgba(56, 189, 248, 0.25), inset -6px -6px 18px rgba(0, 0, 0, 0.9), 0 0 24px rgba(56, 189, 248, 0.3)',
               }}
-              title={`빅뱅 버튼 (탭: Lucy 채팅 / 더블탭: Key로 이동 / 위·아래: 스크롤 위치와 무관하게 메뉴 앱 순서대로 이동 / ${isCycleNavigationDisabled ? '현재 화면에서는 좌우 이동 비활성화' : '좌우: 현재 앱 내부 화면만 이동'} / 길게 누름: Key로 이동 / 드래그: 장식 효과만, 페이지 이동 없음)`}
-              aria-label={`빅뱅 버튼 · 탭: Lucy 채팅, 더블탭: Key로 이동 / 위·아래: 스크롤 위치와 무관하게 메뉴 앱 순서대로 이동 / ${isCycleNavigationDisabled ? '현재 화면에서는 좌우 이동 비활성화' : '좌우는 현재 앱 내부 화면만 이동'}, 길게 누름: 루시 마스터(점술모드) 켜기·끄기, 드래그는 화면 이동 없음`}
+              title={`빅뱅 버튼 (탭: Lucy 채팅 / 더블탭: Key로 이동 / 위·아래: 스크롤 위치와 무관하게 메뉴 앱 순서대로 이동 / ${isCycleNavigationDisabled ? '현재 화면에서는 좌우 이동 비활성화' : '좌우: 현재 앱 내부 화면만 이동'} / 길게 누름: Key로 이동 / 드래그 후 놓기: 럭키 추천 앱으로 워프 · 범위 밖에서 놓으면 취소)`}
+              aria-label={`빅뱅 버튼 · 탭: Lucy 채팅, 더블탭: Key로 이동 / 위·아래: 스크롤 위치와 무관하게 메뉴 앱 순서대로 이동 / ${isCycleNavigationDisabled ? '현재 화면에서는 좌우 이동 비활성화' : '좌우는 현재 앱 내부 화면만 이동'}, 길게 누름: 루시 마스터(점술모드) 켜기·끄기, 드래그 후 놓으면 럭키 추천 앱으로 워프, 범위 밖이면 취소`}
             >
               {/* 🌀 [웜홀] 빛비춤 + 어두운 심연 + 사건의 지평선 3원 동시 융합 전개 */}
               {isPressing && activePhase === 'wormhole' && (

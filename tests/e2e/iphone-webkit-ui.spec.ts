@@ -930,7 +930,7 @@ test('Big Bang left and right navigation stay inside Prologue and show its symbo
   await expect(page.locator('[data-bigbang-center-channel="prologue"][data-bigbang-center-direction="west"]')).toBeVisible();
 });
 
-test('Big Bang drag does not navigate to a page or app', async ({ page }) => {
+test('Big Bang drag released in range warps to a recommended Lucky app', async ({ page }) => {
   await openPrologue(page);
   const button = page.locator('#bigbang-omnibutton');
   await expect(button).toBeVisible();
@@ -945,7 +945,25 @@ test('Big Bang drag does not navigate to a page or app', async ({ page }) => {
   await page.mouse.down();
   await page.mouse.move(x + 34, y, { steps: 4 });
   await page.mouse.up();
-  await page.waitForTimeout(700);
+  await expect.poll(() => page.url(), { timeout: 4000 }).not.toBe(before);
+  const path = new URL(page.url()).pathname;
+  expect(['/', '/chat', '/key', '/lucy']).not.toContain(path);
+});
+
+test('Big Bang drag released out of range is cancelled', async ({ page }) => {
+  await openPrologue(page);
+  const button = page.locator('#bigbang-omnibutton');
+  await expect(button).toBeVisible();
+  const before = page.url();
+  const box = await button.boundingBox();
+  if (!box) throw new Error('Big Bang button is missing for drag test');
+  const x = box.x + box.width / 2;
+  const y = box.y + box.height / 2;
+  await page.mouse.move(x, y);
+  await page.mouse.down();
+  await page.mouse.move(x, y - 260, { steps: 8 });
+  await page.mouse.up();
+  await page.waitForTimeout(900);
   await expect(page).toHaveURL(before);
 });
 
