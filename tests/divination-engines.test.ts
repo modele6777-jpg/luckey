@@ -6972,11 +6972,13 @@ test('Dasan Jeong Yagyong Mokmin Simseo Silhak Engine: calculates Yeoyudang Sind
   assert(rep.silsagusiPragmaticWisdomScore >= 0 && rep.silsagusiPragmaticWisdomScore <= 100);
   assert(rep.heumheumMeticulousTruthseekingScore >= 0 && rep.heumheumMeticulousTruthseekingScore <= 100);
   assert(rep.activeDasanTheme.themeTitleHanja.length > 0);
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatDasanMokminSimseoPrompt(rep);
   assert(prompt.includes('다산 정약용 목민심서(牧民心書) & 실사구시 실학 지표'));
   assert(prompt.includes(rep.activeDasanTheme.themeTitleKo));
   assert(prompt.includes(rep.ritualAction));
+  assert(prompt.includes(rep.reflectionFocus));
 });
 
 test('Aurelius Augustine Confessiones Illuminatio Engine: calculates Interior Illuminatio, Distentio Animi, and Restful Peace', () => {
@@ -7157,7 +7159,7 @@ test('King Sejong Hunminjeongeum Aemin Engine: calculates Aemin Creativity, Barr
 test('Dasan Mokmin Simseo Engine: calculates Yeoyudang, Yulgi, and Silsagusi matrix', () => {
   const rep = calculateDasanMokminSimseo(profile);
   assert.equal(rep.engineVersion, KOREAN_DASAN_MOKMIN_SIMSEO_VERSION);
-  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(Boolean(rep.dasanSynthesisMatrix?.integratedAction));
   const prompt = formatDasanMokminSimseoPrompt(rep);
   assert(prompt.includes('다산 정약용 목민심서'));
@@ -7519,7 +7521,7 @@ test('Dosan Ahn Chang-ho Musil Yeokhaeng Engine: calculates Musil, Yeokhaeng, an
   assert(rep.aegiAetaCharacterIndex >= 0 && rep.aegiAetaCharacterIndex <= 100);
   assert(rep.masterMindOwnerResponsibilityScore >= 0 && rep.masterMindOwnerResponsibilityScore <= 100);
   assert(rep.activeDosanTheme.themeTitleKo.length > 0);
-  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(Boolean(rep.dosanSynthesisMatrix?.integratedAction));
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatDosanAhnChanghoMusilYeokhaengPrompt(rep);
@@ -7527,6 +7529,7 @@ test('Dosan Ahn Chang-ho Musil Yeokhaeng Engine: calculates Musil, Yeokhaeng, an
   assert(prompt.includes(rep.activeDosanTheme.themeTitleKo));
   assert(prompt.includes('교차 매트릭스'));
   assert(prompt.includes(rep.ritualAction));
+  assert(prompt.includes(rep.reflectionFocus));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });
@@ -7999,7 +8002,7 @@ test('Danjae Shin Chae-ho Joseon Sanggosa Engine: calculates Ah vs Non-Ah Subjec
   assert(rep.peoplesDirectRevolutionDynamic >= 0 && rep.peoplesDirectRevolutionDynamic <= 100);
   assert(rep.indomitableDanjaeResilienceIndex >= 0 && rep.indomitableDanjaeResilienceIndex <= 100);
   assert(rep.activeDanjaeTheme.themeTitleKo.length > 0);
-  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(Boolean(rep.danjaeSynthesisMatrix?.integratedAction));
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatKoreanDanjaeShinChaeHoJoseonSanggosaPrompt(rep);
@@ -8007,6 +8010,7 @@ test('Danjae Shin Chae-ho Joseon Sanggosa Engine: calculates Ah vs Non-Ah Subjec
   assert(prompt.includes(rep.activeDanjaeTheme.themeTitleKo));
   assert(prompt.includes('교차 매트릭스'));
   assert(prompt.includes(rep.ritualAction));
+  assert(prompt.includes(rep.reflectionFocus));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });
