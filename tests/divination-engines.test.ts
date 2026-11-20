@@ -358,6 +358,9 @@ import { calculateMinoanLabyrinthLabrys, formatMinoanLabyrinthPrompt } from '../
 import { calculateTorajaAlukTodoloTongkonan, formatTorajaAlukPrompt } from '../src/lib/divination/torajaAlukTodoloTongkonanEngine';
 import { calculateSinhalaBaliKohombaHarmony, formatSinhalaBaliPrompt } from '../src/lib/divination/sinhalaBaliKohombaHarmonyEngine';
 import { calculateNubianMeroeApedemakBalance, formatNubianMeroePrompt } from '../src/lib/divination/nubianMeroeApedemakBalanceEngine';
+import { calculateSamarkandUlughBegObservatory, formatSamarkandUlughPrompt } from '../src/lib/divination/samarkandUlughBegObservatoryEngine';
+import { calculateHaudenosauneeSevenGenerations, formatHaudenosauneePrompt } from '../src/lib/divination/haudenosauneeSevenGenerationsEngine';
+import { calculateSwahiliUtuDhowMonsoon, formatSwahiliUtuDhowPrompt } from '../src/lib/divination/swahiliUtuDhowMonsoonEngine';
 
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
@@ -13332,4 +13335,37 @@ test('Nubian Meroe Apedemak Balance engine: principles, +09:00 KST, and interpre
   const prompt = formatNubianMeroePrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
   assert.ok(prompt.includes('누비아') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Samarkand Ulugh Beg Observatory engine: meridian arc, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateSamarkandUlughBegObservatory({ profile, now: new Date('2026-11-20T06:20:00Z'), question: '사실과 기준을 차분히 정리하고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-SAMARKAND-ULUGH-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatSamarkandUlughPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('사마르칸트') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Haudenosaunee Seven Generations engine: council principle, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateHaudenosauneeSevenGenerations({ profile, now: new Date('2026-11-20T06:20:00Z'), question: '오래 남을 신뢰를 지키고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-HAUDENOSAUNEE-7GEN-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatHaudenosauneePrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('호데노쇼니') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Swahili Utu Dhow Monsoon engine: wind, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateSwahiliUtuDhowMonsoon({ profile, now: new Date('2026-11-20T06:20:00Z'), question: '언제 멈추고 언제 나아갈지 궁금해요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-SWAHILI-UTU-DHOW-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatSwahiliUtuDhowPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('스와힐리') && prompt.includes('+09:00 (KST)'));
 });
