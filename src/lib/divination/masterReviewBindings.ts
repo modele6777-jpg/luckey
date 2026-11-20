@@ -1431,5 +1431,17 @@ export const MASTER_REVIEW_BINDINGS: Record<string, { field: string; traceKey: s
   "navajoHozhoBeautyBalance": {
     "field": "navajoHozhoBeautyBalanceResult",
     "traceKey": "navajoHozhoBeautyBalanceResult"
+  },
+  "bhutanGnhTashiTagye": {
+    "field": "bhutanGnhTashiTagyeResult",
+    "traceKey": "bhutanGnhTashiTagyeResult"
+  },
+  "balticRomuvaDarnaHarmony": {
+    "field": "balticRomuvaDarnaHarmonyResult",
+    "traceKey": "balticRomuvaDarnaHarmonyResult"
+  },
+  "minoanLabyrinthLabrys": {
+    "field": "minoanLabyrinthLabrysResult",
+    "traceKey": "minoanLabyrinthLabrysResult"
   }
 };

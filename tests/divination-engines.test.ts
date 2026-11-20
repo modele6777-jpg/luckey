@@ -352,6 +352,9 @@ import { calculateEtruscanTemplumSkyDivision, formatEtruscanTemplumPrompt } from
 import { calculateAinuKamuyIomanteHarmony, formatAinuKamuyPrompt } from '../src/lib/divination/ainuKamuyIomanteHarmonyEngine';
 import { calculateGuaraniTekoPoraForestHarmony, formatGuaraniTekoPoraPrompt } from '../src/lib/divination/guaraniTekoPoraForestHarmonyEngine';
 import { calculateNavajoHozhoBeautyBalance, formatNavajoHozhoPrompt } from '../src/lib/divination/navajoHozhoBeautyBalanceEngine';
+import { calculateBhutanGnhTashiTagye, formatBhutanGnhPrompt } from '../src/lib/divination/bhutanGnhTashiTagyeEngine';
+import { calculateBalticRomuvaDarnaHarmony, formatBalticRomuvaPrompt } from '../src/lib/divination/balticRomuvaDarnaHarmonyEngine';
+import { calculateMinoanLabyrinthLabrys, formatMinoanLabyrinthPrompt } from '../src/lib/divination/minoanLabyrinthLabrysEngine';
 
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
@@ -13260,4 +13263,37 @@ test('Navajo Hozho Beauty Balance engine: pillars, +09:00 KST, and interpretive 
   const prompt = formatNavajoHozhoPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
   assert.ok(prompt.includes('호조') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Bhutan GNH Tashi Tagye engine: pillars, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateBhutanGnhTashiTagye({ profile, now: new Date('2026-11-20T06:00:00Z'), question: '마음의 평온을 지키고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-BHUTAN-GNH-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatBhutanGnhPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('부탄') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Baltic Romuva Darna Harmony engine: axes, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateBalticRomuvaDarnaHarmony({ profile, now: new Date('2026-11-20T06:00:00Z'), question: '자연스러운 리듬을 찾고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-BALTIC-ROMUVA-DARNA-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatBalticRomuvaPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('로무바') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Minoan Labyrinth Labrys engine: stages, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateMinoanLabyrinthLabrys({ profile, now: new Date('2026-11-20T06:00:00Z'), question: '복잡한 문제의 핵심을 잡고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-MINOAN-LABYRINTH-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatMinoanLabyrinthPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('미노스') && prompt.includes('+09:00 (KST)'));
 });
