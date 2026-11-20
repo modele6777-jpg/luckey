@@ -62,7 +62,7 @@ function stableHash(seed: string): number {
 export function calculateSumbaIkatStory(input: SumbaIkatInput): SumbaIkatResult {
   const now = input.now ?? new Date();
   const fate = input.profile?.fate ?? {};
-  const seedText = `${fate.birthdate ?? ''}|${fate.birthtime ?? ''}|${input.question ?? ''}|${now.toISOString().slice(0, 10)}|sumba-ikat`;
+  const seedText = `${JSON.stringify(fate)}|${input.question ?? ''}|${now.toISOString().slice(0, 10)}|sumba-ikat`;
   const h = stableHash(seedText);
 
   const ikatMotif = MOTIFS[h % MOTIFS.length];

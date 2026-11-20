@@ -62,7 +62,7 @@ function stableHash(seed: string): number {
 export function calculateAsturianHorreoPoise(input: AsturianHorreoInput): AsturianHorreoResult {
   const now = input.now ?? new Date();
   const fate = input.profile?.fate ?? {};
-  const seedText = `${fate.birthdate ?? ''}|${fate.birthtime ?? ''}|${input.question ?? ''}|${now.toISOString().slice(0, 10)}|asturian-horreo`;
+  const seedText = `${JSON.stringify(fate)}|${input.question ?? ''}|${now.toISOString().slice(0, 10)}|asturian-horreo`;
   const h = stableHash(seedText);
 
   const granaryMotif = MOTIFS[h % MOTIFS.length];

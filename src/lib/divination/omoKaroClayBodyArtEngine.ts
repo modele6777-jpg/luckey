@@ -62,7 +62,7 @@ function stableHash(seed: string): number {
 export function calculateOmoKaroBodyArt(input: OmoKaroInput): OmoKaroResult {
   const now = input.now ?? new Date();
   const fate = input.profile?.fate ?? {};
-  const seedText = `${fate.birthdate ?? ''}|${fate.birthtime ?? ''}|${input.question ?? ''}|${now.toISOString().slice(0, 10)}|omo-karo`;
+  const seedText = `${JSON.stringify(fate)}|${input.question ?? ''}|${now.toISOString().slice(0, 10)}|omo-karo`;
   const h = stableHash(seedText);
 
   const pigmentMotif = MOTIFS[h % MOTIFS.length];
