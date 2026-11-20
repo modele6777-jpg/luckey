@@ -7114,7 +7114,7 @@ test('Ryu Seong-ryong Jingbirok Engine: calculates Jingjeon Bihu past reflection
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(rep.reflectiveQuestion.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
-  assert(rep.calculatedAtKst.endsWith('+09:00 KST'));
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(Boolean(rep.jingbirokSynthesisMatrix?.integratedAction));
   const repQ = calculateRyuSeongryongJingbirok(profile, '평온할 때 미리 챙겨야 할 비상 계획');
   assert(repQ.reflectiveQuestion.includes('비상 계획'));
@@ -7125,6 +7125,7 @@ test('Ryu Seong-ryong Jingbirok Engine: calculates Jingjeon Bihu past reflection
   assert(prompt.includes('해석 경계'));
   assert(prompt.includes('실천 의례'));
   assert(prompt.includes('성찰 초점'));
+  assert(prompt.includes(repQ.reflectionFocus));
   assert(prompt.includes('교차 매트릭스'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
@@ -8085,7 +8086,7 @@ test('Nammyeong Jo Sik Gyeong-Ui Engine: calculates Inner Clarity Gyeong, Outer 
   assert(rep.secondaryNammyeongAphorism.aphorismKey !== rep.focalNammyeongAphorism.aphorismKey);
   assert(rep.reflectiveQuestion.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
-  assert(rep.calculatedAtKst.endsWith('+09:00 KST'));
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(Boolean(rep.nammyeongSynthesisMatrix?.integratedAction));
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const repQ = calculateKoreanNammyeongJoSikGyeongUi(profile, '망설임을 끊고 옳은 결단을 내리는 기준');
@@ -8097,6 +8098,7 @@ test('Nammyeong Jo Sik Gyeong-Ui Engine: calculates Inner Clarity Gyeong, Outer 
   assert(prompt.includes('해석 경계'));
   assert(prompt.includes('교차 매트릭스'));
   assert(prompt.includes(repQ.ritualAction));
+  assert(prompt.includes(repQ.reflectionFocus));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });
@@ -8475,7 +8477,7 @@ test('Poeun Jeong Mong-ju Dansimga Engine: calculates Dansimga Moral Fidelity, D
   assert(rep.secondaryPoeunAphorism.aphorismKey !== rep.focalPoeunAphorism.aphorismKey);
   assert(rep.reflectiveQuestion.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
-  assert(rep.calculatedAtKst.endsWith('+09:00 KST'));
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(Boolean(rep.poeunSynthesisMatrix?.integratedAction));
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const repQ = calculateKoreanPoeunJeongMongJuDansimga(profile, '흔들리는 상황 속에서 끝까지 지켜야 할 신의');
@@ -8487,6 +8489,7 @@ test('Poeun Jeong Mong-ju Dansimga Engine: calculates Dansimga Moral Fidelity, D
   assert(prompt.includes('해석 경계'));
   assert(prompt.includes('교차 매트릭스'));
   assert(prompt.includes(repQ.ritualAction));
+  assert(prompt.includes(repQ.reflectionFocus));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });
