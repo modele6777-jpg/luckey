@@ -3194,10 +3194,8 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
     const pending = pendingTarotPickRef.current;
     setPendingTarotPick(null);
     if (!pending) return;
-    if (!cards || cards.length === 0) {
-      setInput(pending.text); // 취소하면 하려던 말을 입력창에 돌려준다
-      return;
-    }
+    // 카드 고르기를 닫으면 그냥 닫는다. (예시 버튼이 만든 문장 등을 입력창에 되돌려 적지 않는다)
+    if (!cards || cards.length === 0) return;
     spreadLayoutRef.current = { spreadName: pending.spreadName || (cards.length >= 3 ? '과거·현재·미래' : '원 카드'), positions: pending.positions };
     void handleSendRef.current?.(pending.text, undefined, cards);
   }, [setInput]);
