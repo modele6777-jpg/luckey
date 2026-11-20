@@ -303,6 +303,37 @@ export const MASTER_TAROT_SPREADS: readonly MasterTarotSpread[] = [
     positions: ['지나온 일', '지금', '다가올 일', '나의 태도', '주변의 영향', '걸림돌', '흐름의 결과'], prompt: '타로 카드 일곱 장을 뽑아서 말굽 배열로 지금 고민의 전체 흐름을 봐줘.' },
 ];
 
+const SPREAD_RULES: readonly { id: string; pattern: RegExp }[] = [
+  { id: 'two-paths', pattern: /(할까\s*말까|어느\s*쪽|둘\s*중|두\s*(가지|개|갈래)|vs|아니면|선택|고를까|골라야|결정)/i },
+  { id: 'conflict', pattern: /(갈등|싸웠|싸움|다퉜|다툼|화해|서운|섭섭|오해|사과)/ },
+  { id: 'their-heart', pattern: /(그\s*사람|그\s*애|걔|속마음|연애|사랑|짝사랑|썸|재회|남친|여친|남자\s*친구|여자\s*친구|애인|이별|헤어|궁합|좋아하는|관계)/ },
+  { id: 'career-path', pattern: /(일·진로|진로|이직|퇴사|취업|취직|직장|회사|커리어|사업|창업|승진|면접|시험|합격|공부)/ },
+  { id: 'money-flow', pattern: /(돈|재물|투자|주식|코인|부업|월급|수입|빚|대출|지출|소비|부동산|저축)/ },
+  { id: 'daily-three', pattern: /(오늘|하루|내일|이번\s*주)/ },
+  { id: 'horseshoe', pattern: /(복잡|모르겠|막막|불안|답답|흐름|전체|힘들|지쳐|우울|걱정)/ },
+];
+
+/** 사용자가 적은 고민·질문에 맞는 배열법을 고른다. 주제가 안 잡히면 길이에 따라 원 카드/말굽. */
+export function matchMasterTarotSpread(text: string, fallbackText = ''): MasterTarotSpread {
+  const byId = (id: string) => MASTER_TAROT_SPREADS.find(spread => spread.id === id)!;
+  // 방금 적은 말을 먼저 보고, 주제가 안 잡힐 때만 오늘의 중심 고민을 참고한다.
+  for (const source of [(text || '').trim(), (fallbackText || '').trim()]) {
+    if (!source) continue;
+    for (const rule of SPREAD_RULES) if (rule.pattern.test(source)) return byId(rule.id);
+  }
+  return byId((text || '').trim().length >= 20 ? 'horseshoe' : 'one-message');
+}
+
+/** 펼친 타로 테이블에서 바로 카드를 펼칠 만한 말인지: 짧은 대답·카드 거절·연동 선택은 제외. */
+export function isAutoSpreadCandidate(text: string): boolean {
+  const clean = (text || '').replace(/\s+/g, ' ').trim();
+  if (clean.length < 2) return false;
+  if (/^(응|어|웅|네|예|아니|아니야|싫어|좋아|고마워|감사|ㅇㅇ|ㄴㄴ|ㅋ+|ㅎ+)[.!?~ ]*$/.test(clean)) return false;
+  if (/(사주로만|사주만|타로\s*말고|카드\s*말고|카드는\s*(됐|안)|뽑지\s*마)/.test(clean)) return false;
+  if (/^(루시랑 하던 얘기 이어서|새로 시작할래|사주로만 계속할래)$/.test(clean)) return false;
+  return true;
+}
+
 let queuedSpread: { spread: MasterTarotSpread; at: number } | null = null;
 /** 테이블의 예시를 눌렀을 때, 이어지는 카드 고르기가 이 배열법을 쓰도록 잠시 맡겨 둔다. */
 export function queueMasterTarotSpread(spread: MasterTarotSpread): void { queuedSpread = { spread, at: Date.now() }; }

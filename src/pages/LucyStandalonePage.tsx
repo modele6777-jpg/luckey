@@ -33,7 +33,7 @@ import { useSelectedEngines, splitSelectedEngines } from '@/lib/lucyEngineSelect
 import { isLucyMasterBgmPreferred, startLucyMasterBgm, stopLucyMasterBgm } from '@/lib/lucyMasterBgm';
 import remarkGfm from 'remark-gfm';
 import { safeSessionStorage, safeLocalStorage } from '@/utils/safeStorage';
-import { isLucyMasterModeOn, setLucyMasterMode, LUCY_MASTER_MODE_EVENT, publishLucyTarotDraw, isAcceptingTarotDrawOffer, buildTarotHouseGuide, createTarotHouseGreeting, consumeTarotHouseGreetingPending, parseAnswerChoices, isAskingForDeepEngines, createTarotOfferOnUnfold, setLucyMasterLink, getLucyMasterLink, resolveLucyMasterLinkChoice, buildLinkedLucyContext, isTarotHouseGreetingPending, findConcernAnchor, createTarotHouseConcernQuestion, LUCY_TAROT_PICK_REQUEST_EVENT, LUCY_TAROT_PICKED_EVENT, LUCY_TAROT_PICK_CANCEL_EVENT, tarotPickPositions, toDetectedTarotCards, takeQueuedMasterTarotSpread, buildSpreadLayoutContext } from '@/lib/lucyMasterMode';
+import { isLucyMasterModeOn, setLucyMasterMode, LUCY_MASTER_MODE_EVENT, publishLucyTarotDraw, isAcceptingTarotDrawOffer, buildTarotHouseGuide, createTarotHouseGreeting, consumeTarotHouseGreetingPending, parseAnswerChoices, isAskingForDeepEngines, createTarotOfferOnUnfold, setLucyMasterLink, getLucyMasterLink, resolveLucyMasterLinkChoice, buildLinkedLucyContext, isTarotHouseGreetingPending, findConcernAnchor, createTarotHouseConcernQuestion, LUCY_TAROT_PICK_REQUEST_EVENT, LUCY_TAROT_PICKED_EVENT, LUCY_TAROT_PICK_CANCEL_EVENT, tarotPickPositions, toDetectedTarotCards, takeQueuedMasterTarotSpread, buildSpreadLayoutContext, matchMasterTarotSpread, isAutoSpreadCandidate } from '@/lib/lucyMasterMode';
 import { cleanAssistantMessageDisplay, cleanUserMessageDisplay } from '@/utils/cleanMessage';
 import { detectLucyChannelsFromText, formatChannelsModeTitle, getSeptagramBadgeStyle, shouldShowAutoDetectionBadge } from '@/lib/lucyAutoModeDetector';
 import { selectOptimalDivinationTools, THEME_PRIMARY_DIVINATION_TOOLS, type SelectedDivinationToolsResult } from '@/lib/fifteenDivinationTools';
@@ -3359,10 +3359,22 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
       || Boolean(divinationLayout && isAcceptingTarotDrawOffer(userCleanText, lastLucyText));
     const isThreeCardRequest = /3장|세\s*장|쓰리카드|과거\s*현재\s*미래/i.test(combinedContextText);
     // 🃏 루시 마스터: 카드는 자동으로 뽑지 않고, 손님이 직접 섞고(셔플) 스프레드에서 고르게 한다.
-    if (divinationLayout && isTarotIntent && !pickedTarotCards?.length) {
+    // 펼친 타로 테이블: 고민·질문을 적으면 그에 맞는 배열법으로 바로 카드 스프레드를 연다.
+    const hasLeftTarotTable = divinationLayout === 'unfolded' && typeof document !== 'undefined'
+      && Boolean(document.querySelector('[data-duo-divination-tarot="true"]'));
+    // 방금 펼친 카드 풀이에 이어 묻는 말(그럼·이 카드·더 자세히 등)은 새 스프레드를 열지 않고 대화로 답한다.
+    const isFollowUpOnReading = /\[TAROT:/.test(lastLucyText)
+      && /(그럼|그러면|그래서|이\s*카드|그\s*카드|방금|아까|더\s*자세히|자세하게|왜|무슨\s*뜻|어떻게\s*해|뭘\s*해야)/.test(userCleanText);
+    const autoSpread = hasLeftTarotTable && !pickedTarotCards?.length && !attachedImage && !isFollowUpOnReading
+      && (isTarotIntent || isAutoSpreadCandidate(userCleanText));
+    if (divinationLayout && (isTarotIntent || autoSpread) && !pickedTarotCards?.length) {
       setInput('');
-      // 타로 테이블의 추천 예시를 눌렀다면 그 질문에 맞춘 배열법(장수·자리)을 쓴다
-      const queuedSpread = takeQueuedMasterTarotSpread();
+      // 타로 테이블의 추천 예시를 눌렀다면 그 질문에 맞춘 배열법(장수·자리)을 쓴다.
+      // 펼친 테이블에서 장수를 직접 말하지 않았다면 고민 내용에 맞는 배열법을 고른다.
+      const explicitCount = /한\s*장|1\s*장|세\s*장|3\s*장|쓰리카드|과거\s*현재\s*미래/i.test(combinedContextText);
+      const concernText = findConcernAnchor([...lucyMessages, { role: 'user', content: userCleanText }]) || userCleanText;
+      const queuedSpread = takeQueuedMasterTarotSpread()
+        ?? (hasLeftTarotTable && !explicitCount ? matchMasterTarotSpread(userCleanText, concernText) : null);
       requestMasterTarotPick({
         text: userCleanText,
         count: queuedSpread ? queuedSpread.positions.length : isThreeCardRequest ? 3 : 1,
