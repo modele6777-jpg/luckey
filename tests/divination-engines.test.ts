@@ -15055,33 +15055,36 @@ test('Orkney Skara Brae Hearth engine: motif, +09:00 KST, and interpretive bound
 
 test('Muisca Guatavita Lake engine: phase, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateMuiscaGuatavitaLake({ profile, now: new Date('2026-11-20T22:15:00Z'), question: '마음의 균형을 비우고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-MUISCA-GUATAVITA-v2.1.0');
-  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.equal(rep.engineVersion, 'LUCKEY-MUISCA-GUATAVITA-v2.2.0');
+  assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
+  assert.ok(rep.companionPhase !== rep.offeringPhase);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatMuiscaGuatavitaPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('무이스카') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('무이스카') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionPhase));
 });
 
 test('Naxi Dongba Chime engine: motif, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateNaxiDongbaChime({ profile, now: new Date('2026-11-20T22:15:00Z'), question: '복잡한 생각을 단순하게 정리하고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-NAXI-DONGBA-v2.1.0');
-  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.equal(rep.engineVersion, 'LUCKEY-NAXI-DONGBA-v2.2.0');
+  assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
+  assert.ok(rep.companionMotif !== rep.scriptMotif);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatNaxiDongbaPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('나시') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('나시') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionMotif));
 });
 
 test('Hmong Story Cloth engine: pattern, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateHmongStoryCloth({ profile, now: new Date('2026-11-20T22:15:00Z'), question: '지나온 일상을 차분히 엮고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-HMONG-CLOTH-v2.1.0');
-  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.equal(rep.engineVersion, 'LUCKEY-HMONG-CLOTH-v2.2.0');
+  assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
+  assert.ok(rep.companionPattern !== rep.stitchPattern);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatHmongStoryClothPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('몽족') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('몽족') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionPattern));
 });

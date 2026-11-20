@@ -10,6 +10,7 @@ export interface MuiscaGuatavitaResult {
   engineVersion: string;
   calculatedAtKst: string;
   offeringPhase: string;
+  companionPhase: string;
   lakeReflection: string;
   reflectionFocus: string;
   ritualAction: string;
@@ -25,17 +26,17 @@ const PHASES = [
 ] as const;
 
 const REFLECTIONS = [
-  '가진 것을 움켜쥐기보다 감사로 흘려보낼 때 마음의 수면이 넓어집니다.',
   '안개 속에서 서두르지 않고 호수 가장자리부터 살피면 길이 선명해집니다.',
+  '가진 것을 움켜쥐기보다 감사로 흘려보낼 때 마음의 수면이 넓어집니다.',
   '겉의 반짝임보다 그 안에 담긴 정성이 오늘의 균형을 세워 줍니다.',
   '비워 낸 자리마다 산 바람과 맑은 빛이 자연스럽게 스며듭니다.',
 ] as const;
 
 const ACTIONS = [
   '지금 붙잡고 있는 걱정 하나를 종이에 적어 내려놓고 숨을 고르기',
-  '가까운 사람에게 고마웠던 일 한 가지를 짧게 전하기',
-  '책상 위 불필요한 물건 하나를 치우고 여백을 만들기',
   '오늘 가장 소중한 일 하나에만 온전히 시간 배정하기',
+  '책상 위 불필요한 물건 하나를 치우고 여백을 만들기',
+  '가까운 사람에게 고마웠던 일 한 가지를 짧게 전하기',
 ] as const;
 
 const QUESTIONS = [
@@ -47,7 +48,12 @@ const QUESTIONS = [
 
 function toKstIso(now: Date): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
-  return kst.toISOString().replace('Z', '+09:00 (KST)');
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
 }
 
 function hashSeed(text: string): number {
@@ -61,16 +67,22 @@ function hashSeed(text: string): number {
 
 export function calculateMuiscaGuatavitaLake(input: MuiscaGuatavitaInput): MuiscaGuatavitaResult {
   const fate = input.profile.fate ?? {};
-  const seed = hashSeed(`${JSON.stringify(fate)}|${input.now.toISOString().slice(0, 13)}|${input.question ?? ''}`);
+  const seedText = `${JSON.stringify(fate)}|${input.now.toISOString().slice(0, 13)}|${input.question ?? ''}`;
+  const seed = hashSeed(seedText);
+  const phaseIdx = seed % PHASES.length;
+  const companionOffset = 1 + (hashSeed(`${seedText}|companion`) % (PHASES.length - 1));
+  const offeringPhase = PHASES[phaseIdx];
+  const companionPhase = PHASES[(phaseIdx + companionOffset) % PHASES.length];
 
   return {
-    engineVersion: 'LUCKEY-MUISCA-GUATAVITA-v2.1.0',
+    engineVersion: 'LUCKEY-MUISCA-GUATAVITA-v2.2.0',
     calculatedAtKst: toKstIso(input.now),
-    offeringPhase: PHASES[seed % PHASES.length],
+    offeringPhase,
+    companionPhase,
     lakeReflection: REFLECTIONS[(seed >>> 3) % REFLECTIONS.length],
-    reflectionFocus: '안데스 고원 무이스카 족이 과타비타 호수에 감사와 화해의 뜻으로 금을 바치던 의식처럼, 소유보다 순환과 정성의 균형을 돌아보는 상징적 관점입니다.',
-    ritualAction: ACTIONS[(seed >>> 6) % ACTIONS.length],
-    reflectiveQuestion: QUESTIONS[(seed >>> 9) % QUESTIONS.length],
+    reflectionFocus: `안데스 고원 무이스카 족이 과타비타 호수에 감사와 화해의 뜻으로 금을 바치던 의식처럼, 주 국면('${offeringPhase}')과 동반 국면('${companionPhase}')을 함께 비추어 소유보다 순환과 정성의 균형을 돌아보는 상징적 관점입니다.`,
+    ritualAction: ACTIONS[phaseIdx],
+    reflectiveQuestion: QUESTIONS[phaseIdx],
     interpretiveBoundary: '개인 점수·심리 진단·미래 예측이 아닙니다. 자기 성찰을 돕기 위한 상징적 관점 안내입니다.',
   };
 }
@@ -80,6 +92,7 @@ export function formatMuiscaGuatavitaPrompt(res: MuiscaGuatavitaResult): string 
     `[무이스카·과타비타 황금 호수 관점 · ${res.engineVersion}]`,
     `기준 시각: ${res.calculatedAtKst}`,
     `호수 국면: ${res.offeringPhase}`,
+    `동반 국면: ${res.companionPhase}`,
     `비춤: ${res.lakeReflection}`,
     `성찰 초점: ${res.reflectionFocus}`,
     `권장 의식: ${res.ritualAction}`,
