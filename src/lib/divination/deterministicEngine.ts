@@ -494,6 +494,9 @@ import { calculatePalauanBaiRafterBalance, formatPalauanBaiPrompt, type PalauanB
 import { calculateZimbabweGreatStoneWall, formatZimbabweStonePrompt, type ZimbabweStoneResult } from './zimbabweGreatStoneWallEngine';
 import { calculateBulgarianRoseValleyDawn, formatBulgarianRosePrompt, type BulgarianRoseResult } from './bulgarianRoseValleyDawnEngine';
 import { calculateAzeriCarpetFlamePoise, formatAzeriCarpetPrompt, type AzeriCarpetResult } from './azeriCarpetFlamePoiseEngine';
+import { calculateDalmatianStoneLavenderCalm, formatDalmatianStonePrompt, type DalmatianStoneResult } from './dalmatianStoneLavenderCalmEngine';
+import { calculateKubaRaffiaGeometryOrder, formatKubaRaffiaPrompt, type KubaRaffiaResult } from './kubaRaffiaGeometryOrderEngine';
+import { calculateSamoanFaleTapaBreeze, formatSamoanFalePrompt, type SamoanFaleResult } from './samoanFaleTapaBreezeEngine';
 
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
@@ -1006,6 +1009,9 @@ export interface DeterministicEngineReport {
   zimbabweGreatStoneWallResult?: ZimbabweStoneResult | null;
   bulgarianRoseValleyDawnResult?: BulgarianRoseResult | null;
   azeriCarpetFlamePoiseResult?: AzeriCarpetResult | null;
+  dalmatianStoneLavenderCalmResult?: DalmatianStoneResult | null;
+  kubaRaffiaGeometryOrderResult?: KubaRaffiaResult | null;
+  samoanFaleTapaBreezeResult?: SamoanFaleResult | null;
 
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
@@ -4767,6 +4773,33 @@ try {
     }
   })()));
 
+  // 471. 달마티아·라벤더 석축 성찰 엔진
+  const dalmatianStoneLavenderCalmResult = calculateSupplement('dalmatianStoneLavenderCalmResult', () => ((() => {
+    try {
+      return calculateDalmatianStoneLavenderCalm({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 472. 쿠바·라피아 기하학 질서 성찰 엔진
+  const kubaRaffiaGeometryOrderResult = calculateSupplement('kubaRaffiaGeometryOrderResult', () => ((() => {
+    try {
+      return calculateKubaRaffiaGeometryOrder({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 473. 사모아·팔레 바람 성찰 엔진
+  const samoanFaleTapaBreezeResult = calculateSupplement('samoanFaleTapaBreezeResult', () => ((() => {
+    try {
+      return calculateSamoanFaleTapaBreeze({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
   // 220. 한국 신라 의상대사 화엄일승법계도 & 법성게 원융무애 엔진
   const uisangHwaeomIlseungBeopgyeResult = calculateSupplement('uisangHwaeomIlseungBeopgyeResult', () => ((() => {
     try {
@@ -6255,6 +6288,9 @@ try {
     zimbabweGreatStoneWallResult,
     bulgarianRoseValleyDawnResult,
     azeriCarpetFlamePoiseResult,
+    dalmatianStoneLavenderCalmResult,
+    kubaRaffiaGeometryOrderResult,
+    samoanFaleTapaBreezeResult,
     tools: toolsMap,
   };
 }
@@ -6748,6 +6784,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'zimbabweGreatStoneWall', nameKo: '짐바브웨·돌담 지혜', icon: '🪨', category: 'deep_master', summary: '그레이트 짐바브웨의 모르타르 없는 화강암 돌담처럼 억지로 묶으려 하기보다 제 무게로 알맞게 맞물리는 자리를 찾는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'trinity' },
   { key: 'bulgarianRoseValleyDawn', nameKo: '불가리아·장미 계곡', icon: '🌹', category: 'deep_master', summary: '카잔러크 장미 계곡의 동트기 전 이슬 수확과 구리 증류기처럼 가장 맑은 시간대를 골라 정성껏 핵심 한 방울을 모으는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'aura' },
   { key: 'azeriCarpetFlamePoise', nameKo: '아제리·바쿠 카펫 불꽃', icon: '🪔', category: 'deep_master', summary: '아제르바이잔 바쿠의 부타 불꽃 문양과 메다글리온 중심 원처럼 바람 앞에서도 유연하게 흔들리며 중심을 지키는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'bluebird' },
+  { key: 'dalmatianStoneLavenderCalm', nameKo: '달마티아·라벤더 석축', icon: '🪻', category: 'deep_master', summary: '아드리아해 흐바르 섬의 석회암 계단 밭과 라벤더 바람처럼 거친 돌멩이를 내 밭을 지키는 울타리로 바꾸는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'aura' },
+  { key: 'kubaRaffiaGeometryOrder', nameKo: '쿠바·라피아 기하학', icon: '🧶', category: 'deep_master', summary: '중앙아프리카 쿠바 왕국의 라피아 벨벳 자수처럼 보이지 않는 안쪽 매듭을 단단히 하고 작은 비대칭의 생동감을 즐기는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'trinity' },
+  { key: 'samoanFaleTapaBreeze', nameKo: '사모아·팔레 바람', icon: '🌺', category: 'deep_master', summary: '남태평양 사모아의 벽 없는 둥근 팔레 지붕처럼 불필요한 방어벽을 세우기보다 시원한 바람이 통하도록 열어 두는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'bluebird' },
 ] as DceEngineMeta[]).filter(engine => !LUCY_PRO_CATALOG_DUPLICATE_KEYS.has(engine.key));
 
 export function getFiredEngineBadges(
@@ -7659,6 +7698,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'zimbabweGreatStoneWall',
     'bulgarianRoseValleyDawn',
     'azeriCarpetFlamePoise',
+    'dalmatianStoneLavenderCalm',
+    'kubaRaffiaGeometryOrder',
+    'samoanFaleTapaBreeze',
   ],
 };
 
