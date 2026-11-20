@@ -371,6 +371,9 @@ import { calculateBasqueLauburuBasajaunHarmony, formatBasqueLauburuBasajaunHarmo
 import { calculateOjibweSevenGrandfatherTeachings, formatOjibweSevenGrandfatherPrompt, type OjibweSevenGrandfatherResult } from './ojibweSevenGrandfatherTeachingsEngine';
 import { calculateSamiNoaidiDrumJoik, formatSamiNoaidiDrumJoikPrompt, type SamiNoaidiDrumJoikResult } from './samiNoaidiDrumJoikEngine';
 import { calculateGeorgianRustaveliKnightPanther, formatGeorgianRustaveliKnightPantherPrompt, type GeorgianRustaveliResult } from './georgianRustaveliKnightPantherEngine';
+import { calculateArmenianNarekatsiLamentationHealing, formatArmenianNarekatsiPrompt, type ArmenianNarekatsiResult } from './armenianNarekatsiLamentationHealingEngine';
+import { calculateJavaneseKejawenRasaHarmony, formatJavaneseKejawenPrompt, type JavaneseKejawenResult } from './javaneseKejawenRasaHarmonyEngine';
+import { calculatePhoenicianNavigatorStarCompass, formatPhoenicianNavigatorPrompt, type PhoenicianNavigatorResult } from './phoenicianNavigatorStarCompassEngine';
 
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
@@ -760,6 +763,9 @@ export interface DeterministicEngineReport {
   ojibweSevenGrandfatherTeachingsResult?: OjibweSevenGrandfatherResult | null;
   samiNoaidiDrumJoikResult?: SamiNoaidiDrumJoikResult | null;
   georgianRustaveliKnightPantherResult?: GeorgianRustaveliResult | null;
+  armenianNarekatsiLamentationHealingResult?: ArmenianNarekatsiResult | null;
+  javaneseKejawenRasaHarmonyResult?: JavaneseKejawenResult | null;
+  phoenicianNavigatorStarCompassResult?: PhoenicianNavigatorResult | null;
 
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
@@ -3414,6 +3420,33 @@ try {
     }
   })()));
 
+  // 348. 아르메니아 나레카치 《애가》 내면 정화·성찰 엔진
+  const armenianNarekatsiLamentationHealingResult = calculateSupplement('armenianNarekatsiLamentationHealingResult', () => ((() => {
+    try {
+      return calculateArmenianNarekatsiLamentationHealing({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 349. 자바 케자웬(Kejawen) 라사·내면 평정 엔진
+  const javaneseKejawenRasaHarmonyResult = calculateSupplement('javaneseKejawenRasaHarmonyResult', () => ((() => {
+    try {
+      return calculateJavaneseKejawenRasaHarmony({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 350. 고대 페니키아 항해 별자리 나침반 엔진
+  const phoenicianNavigatorStarCompassResult = calculateSupplement('phoenicianNavigatorStarCompassResult', () => ((() => {
+    try {
+      return calculatePhoenicianNavigatorStarCompass({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
   // 220. 한국 신라 의상대사 화엄일승법계도 & 법성게 원융무애 엔진
   const uisangHwaeomIlseungBeopgyeResult = calculateSupplement('uisangHwaeomIlseungBeopgyeResult', () => ((() => {
     try {
@@ -4779,6 +4812,9 @@ try {
     ojibweSevenGrandfatherTeachingsResult,
     samiNoaidiDrumJoikResult,
     georgianRustaveliKnightPantherResult,
+    armenianNarekatsiLamentationHealingResult,
+    javaneseKejawenRasaHarmonyResult,
+    phoenicianNavigatorStarCompassResult,
     tools: toolsMap,
   };
 }
@@ -5149,6 +5185,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'ojibweSevenGrandfatherTeachings', nameKo: '오지브웨 7대 할아버지 가르침', icon: '🦅', category: 'deep_master', summary: '아니시나베 일곱 덕목(지혜·사랑·존중·용기·정직·겸손·진실)과 토템으로 태도를 돌아보는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'trinity' },
   { key: 'samiNoaidiDrumJoik', nameKo: '사미 노아이디 드럼·요이쿠 리듬', icon: '🥁', category: 'deep_master', summary: '북유럽 사미 드럼의 태양 중심·계절 순환과 요이쿠 공명으로 내면의 호흡을 회복하는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'aura' },
   { key: 'georgianRustaveliKnightPanther', nameKo: '조지아 루스타벨리 표범 가죽을 두른 기사', icon: '🐆', category: 'deep_master', summary: '12세기 조지아 서사시의 우정·자기 극복·관용의 기품으로 선택의 품격을 살피는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'muse' },
+  { key: 'armenianNarekatsiLamentationHealing', nameKo: '아르메니아 나레카치 애가 내면 성찰', icon: '🕯️', category: 'deep_master', summary: '10세기 아르메니아 시인 나레카치 《애가》의 정직한 고백·자비·고요한 회복으로 마음을 보듬는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'bluebird' },
+  { key: 'javaneseKejawenRasaHarmony', nameKo: '자바 케자웬 라사 내면 평정', icon: '🪷', category: 'deep_master', summary: '인도네시아 자바 전통 케자웬의 깨어 있음(Eling)·수용(Narima)·역지사지(Tepa Slira)로 평정을 세우는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'aura' },
+  { key: 'phoenicianNavigatorStarCompass', nameKo: '고대 페니키아 항해 별자리 나침반', icon: '🧭', category: 'deep_master', summary: '고대 페니키아 항해사들이 북극성과 별자리로 망망대해의 기준점을 잡듯 흔들리지 않는 원칙을 세우는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'trinity' },
 ] as DceEngineMeta[]).filter(engine => !LUCY_PRO_CATALOG_DUPLICATE_KEYS.has(engine.key));
 
 export function getFiredEngineBadges(
@@ -5652,6 +5691,8 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'inuitSilaBreathWeather',
     'basqueLauburuBasajaunHarmony',
     'samiNoaidiDrumJoik',
+    'javaneseKejawenRasaHarmony',
+    'armenianNarekatsiLamentationHealing',
   ],
   creative_mind: [
     'irishJamesJoyceUlyssesEpiphany',
@@ -5925,6 +5966,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'ojibweSevenGrandfatherTeachings',
     'samiNoaidiDrumJoik',
     'georgianRustaveliKnightPanther',
+    'armenianNarekatsiLamentationHealing',
+    'javaneseKejawenRasaHarmony',
+    'phoenicianNavigatorStarCompass',
   ],
 };
 

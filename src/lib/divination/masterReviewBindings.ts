@@ -1383,5 +1383,17 @@ export const MASTER_REVIEW_BINDINGS: Record<string, { field: string; traceKey: s
   "georgianRustaveliKnightPanther": {
     "field": "georgianRustaveliKnightPantherResult",
     "traceKey": "georgianRustaveliKnightPantherResult"
+  },
+  "armenianNarekatsiLamentationHealing": {
+    "field": "armenianNarekatsiLamentationHealingResult",
+    "traceKey": "armenianNarekatsiLamentationHealingResult"
+  },
+  "javaneseKejawenRasaHarmony": {
+    "field": "javaneseKejawenRasaHarmonyResult",
+    "traceKey": "javaneseKejawenRasaHarmonyResult"
+  },
+  "phoenicianNavigatorStarCompass": {
+    "field": "phoenicianNavigatorStarCompassResult",
+    "traceKey": "phoenicianNavigatorStarCompassResult"
   }
 };

@@ -340,6 +340,9 @@ import { calculateBasqueLauburuBasajaunHarmony, formatBasqueLauburuBasajaunHarmo
 import { calculateOjibweSevenGrandfatherTeachings, formatOjibweSevenGrandfatherPrompt } from '../src/lib/divination/ojibweSevenGrandfatherTeachingsEngine';
 import { calculateSamiNoaidiDrumJoik, formatSamiNoaidiDrumJoikPrompt } from '../src/lib/divination/samiNoaidiDrumJoikEngine';
 import { calculateGeorgianRustaveliKnightPanther, formatGeorgianRustaveliKnightPantherPrompt } from '../src/lib/divination/georgianRustaveliKnightPantherEngine';
+import { calculateArmenianNarekatsiLamentationHealing, formatArmenianNarekatsiPrompt } from '../src/lib/divination/armenianNarekatsiLamentationHealingEngine';
+import { calculateJavaneseKejawenRasaHarmony, formatJavaneseKejawenPrompt } from '../src/lib/divination/javaneseKejawenRasaHarmonyEngine';
+import { calculatePhoenicianNavigatorStarCompass, formatPhoenicianNavigatorPrompt } from '../src/lib/divination/phoenicianNavigatorStarCompassEngine';
 
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
@@ -13116,4 +13119,37 @@ test('Georgian Rustaveli Knight in the Panther’s Skin engine: virtues, +09:00 
   const prompt = formatGeorgianRustaveliKnightPantherPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
   assert.ok(prompt.includes('루스타벨리') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Armenian Narekatsi Lamentation Healing engine: contemplations, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateArmenianNarekatsiLamentationHealing({ profile, now: new Date('2026-11-20T05:05:00Z'), question: '마음이 지쳐서 쉬고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-ARMENIAN-NAREKATSI-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('운세 점수가 아닙니다'));
+  const prompt = formatArmenianNarekatsiPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('나레카치') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Javanese Kejawen Rasa Harmony engine: principles, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateJavaneseKejawenRasaHarmony({ profile, now: new Date('2026-11-20T05:05:00Z'), question: '흔들리지 않는 평정이 필요해요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-JAVANESE-KEJAWEN-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('수치적 운세 점수가 아닙니다'));
+  const prompt = formatJavaneseKejawenPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('케자웬') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Phoenician Navigator Star Compass engine: beacons, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculatePhoenicianNavigatorStarCompass({ profile, now: new Date('2026-11-20T05:05:00Z'), question: '방향을 잃지 않고 결정하고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-PHOENICIAN-NAVIGATOR-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('수치적 운세 점수가 아닙니다'));
+  const prompt = formatPhoenicianNavigatorPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('페니키아') && prompt.includes('+09:00 (KST)'));
 });
