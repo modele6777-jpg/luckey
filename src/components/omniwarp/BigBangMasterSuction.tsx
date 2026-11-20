@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import { measureMainOverlayViewport } from '@/lib/mainOverlayViewport';
-import { BigBangEffectPortal } from './BigBangEffectPortal';
+import { createPortal } from 'react-dom';
 
 export const LUCY_MASTER_SUCTION_EVENT = 'prism:lucy_master_suction';
 
@@ -18,19 +18,29 @@ interface Particle { angle: number; radius: number; speed: number; spin: number;
 
 /**
  * Entering Lucy Master from a Big Bang hold: the screen spirals and collapses into
- * the button. Visual-only (never intercepts input) and drawn inside the Big Bang
- * effect bounds, so it never paints across Lucy or navigation when unfolded.
+ * the button. Visual-only (never intercepts input). It covers the pane that holds
+ * the button (Lucy or content when unfolded, main when folded) so the vortex is
+ * centred on the button itself; it never covers navigation.
  */
 export function BigBangMasterSuction() {
   const [run, setRun] = useState(0);
   const [origin, setOrigin] = useState({ x: 0, y: 0, reach: 600 });
+  // The layer covers the pane that holds the button, so the vortex centre sits exactly on it.
+  const [bounds, setBounds] = useState({ left: 0, top: 0, width: 0, height: 0 });
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const reduceMotion = useReducedMotion();
 
   useEffect(() => {
     const onSuction = () => {
-      const bounds = measureMainOverlayViewport('content');
       const btn = document.getElementById('bigbang-omnibutton')?.getBoundingClientRect();
+      const bx = btn ? btn.left + btn.width / 2 : 0;
+      const by = btn ? btn.top + btn.height / 2 : 0;
+      const inside = (b: { left: number; top: number; width: number; height: number }) =>
+        b.width > 48 && b.height > 48 && bx >= b.left && bx <= b.left + b.width && by >= b.top && by <= b.top + b.height;
+      const lucy = measureMainOverlayViewport('lucy');
+      const content = measureMainOverlayViewport('content');
+      const bounds = btn && inside(lucy) ? lucy : btn && inside(content) ? content : measureMainOverlayViewport('main');
+      setBounds({ left: bounds.left, top: bounds.top, width: bounds.width, height: bounds.height });
       const gx = btn ? btn.left + btn.width / 2 : bounds.left + bounds.width / 2;
       const gy = btn ? btn.top + btn.height / 2 : bounds.top + bounds.height * 0.85;
       // Clamp the vortex centre into the effect bounds (the button can sit on the pane edge).
@@ -103,7 +113,11 @@ export function BigBangMasterSuction() {
 
   const at = `${origin.x}px ${origin.y}px`;
   return (
-    <BigBangEffectPortal zIndex={10000}>
+    typeof document === 'undefined' ? null : createPortal(
+    <div
+      data-lucy-master-suction-viewport
+      style={{ position: 'fixed', left: bounds.left, top: bounds.top, width: bounds.width, height: bounds.height, zIndex: 10000, pointerEvents: 'none', overflow: 'clip', contain: 'layout paint' }}
+    >
       <AnimatePresence>
         {visible && (
           <motion.div
@@ -159,6 +173,6 @@ export function BigBangMasterSuction() {
           </motion.div>
         )}
       </AnimatePresence>
-    </BigBangEffectPortal>
+    </div>, document.body)
   );
 }
