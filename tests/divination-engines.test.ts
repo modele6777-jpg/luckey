@@ -418,6 +418,9 @@ import { calculateEstonianRegilaulForestCalm, formatEstonianRegilaulPrompt } fro
 import { calculateBalkanOhridLakeReflection, formatBalkanOhridPrompt } from '../src/lib/divination/balkanOhridLakeReflectionEngine';
 import { calculateGarifunaDuguCaribbeanRhythm, formatGarifunaDuguPrompt } from '../src/lib/divination/garifunaDuguCaribbeanRhythmEngine';
 import { calculateAlpineSavoyColWisdom, formatAlpineSavoyPrompt } from '../src/lib/divination/alpineSavoyColWisdomEngine';
+import { calculateNabataeanPetraCisternWater, formatNabataeanPetraPrompt } from '../src/lib/divination/nabataeanPetraCisternWaterEngine';
+import { calculateFrisianPolderDikeBalance, formatFrisianPolderPrompt } from '../src/lib/divination/frisianPolderDikeBalanceEngine';
+import { calculateUkrainianVyshyvankaSunflower, formatUkrainianVyshyvankaPrompt } from '../src/lib/divination/ukrainianVyshyvankaSunflowerEngine';
 
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
@@ -14052,4 +14055,37 @@ test('Alpine Savoy Col Wisdom engine: principle, +09:00 KST, and interpretive bo
   const prompt = formatAlpineSavoyPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
   assert.ok(prompt.includes('사보이') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Nabataean Petra Cistern Water engine: conduit, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateNabataeanPetraCisternWater({ profile, now: new Date('2026-11-20T08:52:00Z'), question: '작은 배움과 여유를 저수조에 모아 두고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-NABATAEAN-PETRA-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatNabataeanPetraPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('페트라') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Frisian Polder Dike Balance engine: principle, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateFrisianPolderDikeBalance({ profile, now: new Date('2026-11-20T08:52:00Z'), question: '마음속 수위를 천천히 조절하고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-FRISIAN-POLDER-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatFrisianPolderPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('폴데르') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Ukrainian Vyshyvanka Sunflower engine: motif, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateUkrainianVyshyvankaSunflower({ profile, now: new Date('2026-11-20T08:52:00Z'), question: '손끝의 정성과 밝은 방향을 지키고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-UKRAINIAN-VYSHYVANKA-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatUkrainianVyshyvankaPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('비시반카') && prompt.includes('+09:00 (KST)'));
 });

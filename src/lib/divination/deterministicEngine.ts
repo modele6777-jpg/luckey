@@ -449,6 +449,9 @@ import { calculateEstonianRegilaulForestCalm, formatEstonianRegilaulPrompt, type
 import { calculateBalkanOhridLakeReflection, formatBalkanOhridPrompt, type BalkanOhridResult } from './balkanOhridLakeReflectionEngine';
 import { calculateGarifunaDuguCaribbeanRhythm, formatGarifunaDuguPrompt, type GarifunaDuguResult } from './garifunaDuguCaribbeanRhythmEngine';
 import { calculateAlpineSavoyColWisdom, formatAlpineSavoyPrompt, type AlpineSavoyResult } from './alpineSavoyColWisdomEngine';
+import { calculateNabataeanPetraCisternWater, formatNabataeanPetraPrompt, type NabataeanPetraResult } from './nabataeanPetraCisternWaterEngine';
+import { calculateFrisianPolderDikeBalance, formatFrisianPolderPrompt, type FrisianPolderResult } from './frisianPolderDikeBalanceEngine';
+import { calculateUkrainianVyshyvankaSunflower, formatUkrainianVyshyvankaPrompt, type UkrainianVyshyvankaResult } from './ukrainianVyshyvankaSunflowerEngine';
 
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
@@ -916,6 +919,9 @@ export interface DeterministicEngineReport {
   balkanOhridLakeReflectionResult?: BalkanOhridResult | null;
   garifunaDuguCaribbeanRhythmResult?: GarifunaDuguResult | null;
   alpineSavoyColWisdomResult?: AlpineSavoyResult | null;
+  nabataeanPetraCisternWaterResult?: NabataeanPetraResult | null;
+  frisianPolderDikeBalanceResult?: FrisianPolderResult | null;
+  ukrainianVyshyvankaSunflowerResult?: UkrainianVyshyvankaResult | null;
 
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
@@ -4272,6 +4278,33 @@ try {
     }
   })()));
 
+  // 426. 나바테아 페트라·사막 수로 엔진
+  const nabataeanPetraCisternWaterResult = calculateSupplement('nabataeanPetraCisternWaterResult', () => ((() => {
+    try {
+      return calculateNabataeanPetraCisternWater({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 427. 프리슬란트 폴데르·방파제 균형 엔진
+  const frisianPolderDikeBalanceResult = calculateSupplement('frisianPolderDikeBalanceResult', () => ((() => {
+    try {
+      return calculateFrisianPolderDikeBalance({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 428. 우크라이나 비시반카·해바라기 엔진
+  const ukrainianVyshyvankaSunflowerResult = calculateSupplement('ukrainianVyshyvankaSunflowerResult', () => ((() => {
+    try {
+      return calculateUkrainianVyshyvankaSunflower({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
   // 220. 한국 신라 의상대사 화엄일승법계도 & 법성게 원융무애 엔진
   const uisangHwaeomIlseungBeopgyeResult = calculateSupplement('uisangHwaeomIlseungBeopgyeResult', () => ((() => {
     try {
@@ -5715,6 +5748,9 @@ try {
     balkanOhridLakeReflectionResult,
     garifunaDuguCaribbeanRhythmResult,
     alpineSavoyColWisdomResult,
+    nabataeanPetraCisternWaterResult,
+    frisianPolderDikeBalanceResult,
+    ukrainianVyshyvankaSunflowerResult,
     tools: toolsMap,
   };
 }
@@ -6163,6 +6199,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'balkanOhridLakeReflection', nameKo: '발칸 오흐리드·호수', icon: '🫧', category: 'deep_master', summary: '발칸 오흐리드 호수의 맑은 심연과 진주 겹처럼 서두르는 직선 대신 깊은 바닥에서부터 스스로를 맑게 돌보는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'trinity' },
   { key: 'garifunaDuguCaribbeanRhythm', nameKo: '가리푸나 둥구·리듬', icon: '🥁', category: 'deep_master', summary: '가리푸나 둥구 화해와 푼타 박자처럼 머릿속에만 맴도는 무거운 생각을 가벼운 움직임과 솔직한 리듬으로 풀어내는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'bluebird' },
   { key: 'alpineSavoyColWisdom', nameKo: '알프스 사보이·고개', icon: '🏔️', category: 'deep_master', summary: '알프스 사보이 산장과 고갯마루(Col)처럼 가장 험한 길로 정면 돌파하기보다 지형과 날씨에 맞는 현명한 통로를 택하는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'aura' },
+  { key: 'nabataeanPetraCisternWater', nameKo: '나바테아 페트라·수로', icon: '🏜️', category: 'deep_master', summary: '나바테아 페트라의 사막 빗물 수로와 저수조처럼 당장 눈에 띄는 성과가 아니더라도 작은 배움과 여유를 차곡차곡 모아 두는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'muse' },
+  { key: 'frisianPolderDikeBalance', nameKo: '프리슬란트 폴데르·수문', icon: '🌬️', category: 'deep_master', summary: '프리슬란트 폴데르의 수문과 배수 풍차처럼 넘치는 걱정과 외부 요구를 한 번에 막으려 하기보다 천천히 수위를 조절하는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'trinity' },
+  { key: 'ukrainianVyshyvankaSunflower', nameKo: '우크라이나 비시반카·해바라기', icon: '🌻', category: 'deep_master', summary: '우크라이나 비시반카 자수의 한 땀과 해바라기처럼 조건이 완벽히 맑지 않아도 오늘 내 손끝의 정성과 밝은 방향을 지키는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'aura' },
 ] as DceEngineMeta[]).filter(engine => !LUCY_PRO_CATALOG_DUPLICATE_KEYS.has(engine.key));
 
 export function getFiredEngineBadges(
@@ -7029,6 +7068,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'balkanOhridLakeReflection',
     'garifunaDuguCaribbeanRhythm',
     'alpineSavoyColWisdom',
+    'nabataeanPetraCisternWater',
+    'frisianPolderDikeBalance',
+    'ukrainianVyshyvankaSunflower',
   ],
 };
 

@@ -1695,5 +1695,17 @@ export const MASTER_REVIEW_BINDINGS: Record<string, { field: string; traceKey: s
   "alpineSavoyColWisdom": {
     "field": "alpineSavoyColWisdomResult",
     "traceKey": "alpineSavoyColWisdomResult"
+  },
+  "nabataeanPetraCisternWater": {
+    "field": "nabataeanPetraCisternWaterResult",
+    "traceKey": "nabataeanPetraCisternWaterResult"
+  },
+  "frisianPolderDikeBalance": {
+    "field": "frisianPolderDikeBalanceResult",
+    "traceKey": "frisianPolderDikeBalanceResult"
+  },
+  "ukrainianVyshyvankaSunflower": {
+    "field": "ukrainianVyshyvankaSunflowerResult",
+    "traceKey": "ukrainianVyshyvankaSunflowerResult"
   }
 };
