@@ -10,7 +10,7 @@
  * 질문 맥락 병목 진단, KST 프라나 시공간 리듬, 상하층 코샤 브리지 매트릭스를 통합합니다.
  */
 
-export const VEDIC_PANCHA_KOSHA_ENGINE_VERSION = 'LUCKEY-PANCHA-KOSHA-v2.5.0';
+export const VEDIC_PANCHA_KOSHA_ENGINE_VERSION = 'LUCKEY-PANCHA-KOSHA-v2.6.0';
 
 export interface KoshaLayer {
   layerIndex: number;
@@ -274,7 +274,12 @@ export function calculateVedicPanchaKosha(params: {
   const blissPrescription = `현재 5대 코샤 중 [${lowestAlignedLayer.koshaNameKo}]의 정렬이 가장 시급합니다. '${lowestAlignedLayer.clearingAction}'을 즉시 실행하여 거친 외피를 정화하고, 가장 깊은 곳의 참된 자아(Atman)의 환희를 해방하세요.`;
 
   const kst = new Date(now.getTime() + 9 * 3600 * 1000);
-  const calculatedAtKst = `${kst.toISOString().slice(0, 19)}+09:00`;
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  const calculatedAtKst = `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
   const trimmedQ = question.trim();
   const panchaKoshaSynthesisMatrix = {
     dominantTension: `${lowestAlignedLayer.koshaNameKo} ↔ ${questionKoshaResonance.focusKoshaKo}`,

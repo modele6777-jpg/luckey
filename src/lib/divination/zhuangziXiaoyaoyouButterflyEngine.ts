@@ -17,7 +17,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const ZHUANGZI_XIAOYAOYOU_BUTTERFLY_ENGINE_VERSION = '2.2.0';
+export const ZHUANGZI_XIAOYAOYOU_BUTTERFLY_ENGINE_VERSION = '2.3.0';
 
 export interface ZhuangziArchetype {
   id: string;
@@ -180,7 +180,13 @@ export function calculateZhuangziXiaoyaoyouButterfly(
   const qiwulunTranscendenceIndex = Math.min(100, Math.max(42, 50 + ((seed * 29) % 48)));
   const butterflyDreamFluidityScore = Math.min(100, Math.max(46, Math.floor((xiaoyaoyouAbsoluteFreedomScore * 0.5 + qiwulunTranscendenceIndex * 0.5))));
 
-  const calculatedAtKst = new Date(now.getTime() + 9 * 60 * 60 * 1000).toISOString().replace('Z', '+09:00');
+  const kstDate = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kstDate.getUTCFullYear();
+  const m = String(kstDate.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kstDate.getUTCDate()).padStart(2, '0');
+  const hh = String(kstDate.getUTCHours()).padStart(2, '0');
+  const mm = String(kstDate.getUTCMinutes()).padStart(2, '0');
+  const calculatedAtKst = `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
   const { situationalZhuangziFocus, dailyPracticeRitual, reflectiveQuestion } = buildSituationalZhuangziFocus(question);
   const interpretiveBoundary = '이 관점은 《장자》의 소요유·제물론 비유를 통해 시야를 넓히는 상징적 프레임이며, 확정 예언이 아닙니다.';
   const ritualAction = dailyPracticeRitual;

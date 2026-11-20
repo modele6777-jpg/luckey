@@ -1,6 +1,6 @@
 import { UserProfile } from '../sharedState';
 
-export const YORUBA_IFA_ODU_ENGINE_VERSION = '2.2.0';
+export const YORUBA_IFA_ODU_ENGINE_VERSION = '2.3.0';
 
 export interface YorubaIfaOduReport {
   engineVersion: string;
@@ -238,7 +238,12 @@ export function calculateYorubaIfaOdu(options?: {
 
   const destinyAlignmentScore = 80 + ((seed * 11 + kst.getUTCHours() * 3) % 19);
   const alignmentStage = describeIfaAlignmentStage(destinyAlignmentScore);
-  const kstIso = `${kst.toISOString().slice(0, 19)}+09:00`;
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  const kstIso = `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
   const situationalIfaFocus = /관계|연애|사람|가족|갈등/.test(qStr)
     ? {
         focusTheme: '관계 공명과 말의 신의(Iwa Pele)',
