@@ -4,7 +4,7 @@ import { DialogBackdrop } from '@/components/layout/DialogBackdrop';
 import './chat-library-layout.css';
 import React, { useMemo } from 'react';
 import { Check, Plus, Search, Sparkles, X } from 'lucide-react';
-import { LUCY_ENGINE_PRESETS, isPresetActive, setSelectedEngineKeys, toggleSelectedEngine, useSelectedEngines, recommendPromptsForEngines } from '@/lib/lucyEngineSelection';
+import { setSelectedEngineKeys, toggleSelectedEngine, useSelectedEngines, recommendPromptsForEngines } from '@/lib/lucyEngineSelection';
 import { HORI_PROMPT_LIBRARY, type HoriPromptItem } from '@/data/horiPromptLibrary';
 import { triggerHaptic } from '@/lib/omniWarp/omniWarpHaptics';
 import { WorkspacePortal } from '@/components/layout/DuoWorkspace';
@@ -133,35 +133,6 @@ export function LucyEngineCatalogDialog({ isOpen, onClose, isLight, onSelectProm
             </div>
 
             <div className="chat-library-toolbar shrink-0 space-y-2 px-4 pt-1 sm:px-6" data-testid="lucy-engine-selection">
-              <div className={`rounded-2xl border p-3 ${subtleSurface}`}>
-                <div className="flex items-center justify-between gap-2">
-                  <h3 className="text-xs font-black sm:text-sm">✨ 맞춤 세팅 추천</h3>
-                  <span className={`text-[10px] ${muted}`}>누르면 그 묶음으로 바로 담겨요</span>
-                </div>
-                <div className="mt-2 grid grid-cols-1 gap-1.5 min-[420px]:grid-cols-2">
-                  {LUCY_ENGINE_PRESETS.map(preset => {
-                    const active = isPresetActive(preset, selectedKeys);
-                    return (
-                      <button
-                        key={preset.id}
-                        type="button"
-                        data-engine-preset={preset.id}
-                        aria-pressed={active}
-                        onClick={() => { triggerHaptic('whitehole'); setSelectedEngineKeys(active ? [] : preset.keys); }}
-                        className={`rounded-xl border px-3 py-2 text-left transition-colors ${active
-                          ? 'border-amber-400 bg-amber-400/20'
-                          : isLight ? 'border-amber-200 bg-white hover:bg-amber-50' : 'border-white/10 bg-white/[0.04] hover:bg-white/10'}`}
-                      >
-                        <span className="flex items-center justify-between gap-2 text-xs font-bold">
-                          {preset.label}
-                          {active && <Check size={14} className="text-amber-500" />}
-                        </span>
-                        <span className={`mt-0.5 block text-[10px] leading-snug ${muted}`}>{preset.description}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
               {onSelectPrompt && recommendedPrompts.length > 0 && (
                 <div className={`rounded-2xl border p-3 ${subtleSurface}`} data-testid="lucy-engine-recommended-prompts">
                   <h3 className="text-xs font-black sm:text-sm">🧭 담은 엔진에 맞는 추천 질문</h3>
