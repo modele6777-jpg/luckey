@@ -14,7 +14,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const KOREAN_DANJAE_SHIN_CHAE_HO_VERSION = 'LUCKEY-DANJAE-SHIN-CHAE-HO-v2.2.0';
+export const KOREAN_DANJAE_SHIN_CHAE_HO_VERSION = 'LUCKEY-DANJAE-SHIN-CHAE-HO-v2.3.0';
 
 export interface DanjaeTheme {
   themeKey: string;
@@ -66,7 +66,7 @@ function formatDanjaeKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} +09:00 KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
 }
 
 function describeDanjaeStage(score: number): string {

@@ -13,7 +13,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const KOREAN_DOSAN_AHN_CHANGHO_VERSION = 'LUCKEY-DOSAN-AHN-CHANGHO-MUSIL-YEOKHAENG-v2.2.0';
+export const KOREAN_DOSAN_AHN_CHANGHO_VERSION = 'LUCKEY-DOSAN-AHN-CHANGHO-MUSIL-YEOKHAENG-v2.3.0';
 
 export interface DosanTheme {
   themeKey: string;
@@ -66,7 +66,7 @@ function formatDosanKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} +09:00 KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
 }
 
 function describeDosanStage(score: number): string {
