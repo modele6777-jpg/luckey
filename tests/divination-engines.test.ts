@@ -433,6 +433,9 @@ import { calculateBohemianCrystalGlassLight, formatBohemianCrystalPrompt } from 
 import { calculateSanKalahariTrackingStars, formatSanKalahariPrompt } from '../src/lib/divination/sanKalahariTrackingStarsEngine';
 import { calculatePhrygianGordianKnotClarity, formatPhrygianGordianPrompt } from '../src/lib/divination/phrygianGordianKnotClarityEngine';
 import { calculateGoryeoCeladonInlayClarity, formatGoryeoCeladonPrompt } from '../src/lib/divination/goryeoCeladonInlayClarityEngine';
+import { calculateLydianSardisElectrumBalance, formatLydianSardisPrompt } from '../src/lib/divination/lydianSardisElectrumBalanceEngine';
+import { calculateCanaaniteUgaritCedarWisdom, formatCanaaniteUgaritPrompt } from '../src/lib/divination/canaaniteUgaritCedarWisdomEngine';
+import { calculateGoguryeoSamjokoMuralSpirit, formatGoguryeoSamjokoPrompt } from '../src/lib/divination/goguryeoSamjokoMuralSpiritEngine';
 
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
@@ -14235,4 +14238,37 @@ test('Goryeo Celadon Inlay Clarity engine: craft, +09:00 KST, and interpretive b
   const prompt = formatGoryeoCeladonPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
   assert.ok(prompt.includes('고려 청자') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Lydian Sardis Electrum Balance engine: sign, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateLydianSardisElectrumBalance({ profile, now: new Date('2026-11-20T19:05:00Z'), question: '강함과 부드러움의 균형을 맞추고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-LYDIAN-SARDIS-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatLydianSardisPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('리디아') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Canaanite Ugarit Cedar Wisdom engine: symbol, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateCanaaniteUgaritCedarWisdom({ profile, now: new Date('2026-11-20T19:05:00Z'), question: '기본기를 다지고 일상의 좌표를 세우고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-CANAANITE-UGARIT-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatCanaaniteUgaritPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('가나안') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Goguryeo Samjoko Mural Spirit engine: motif, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateGoguryeoSamjokoMuralSpirit({ profile, now: new Date('2026-11-20T19:05:00Z'), question: '시야를 넓혀 당당하게 나아가고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-GOGURYEO-SAMJOKO-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatGoguryeoSamjokoPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('고구려') && prompt.includes('+09:00 (KST)'));
 });

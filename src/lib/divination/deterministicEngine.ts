@@ -464,6 +464,9 @@ import { calculateBohemianCrystalGlassLight, formatBohemianCrystalPrompt, type B
 import { calculateSanKalahariTrackingStars, formatSanKalahariPrompt, type SanKalahariResult } from './sanKalahariTrackingStarsEngine';
 import { calculatePhrygianGordianKnotClarity, formatPhrygianGordianPrompt, type PhrygianGordianResult } from './phrygianGordianKnotClarityEngine';
 import { calculateGoryeoCeladonInlayClarity, formatGoryeoCeladonPrompt, type GoryeoCeladonResult } from './goryeoCeladonInlayClarityEngine';
+import { calculateLydianSardisElectrumBalance, formatLydianSardisPrompt, type LydianSardisResult } from './lydianSardisElectrumBalanceEngine';
+import { calculateCanaaniteUgaritCedarWisdom, formatCanaaniteUgaritPrompt, type CanaaniteUgaritResult } from './canaaniteUgaritCedarWisdomEngine';
+import { calculateGoguryeoSamjokoMuralSpirit, formatGoguryeoSamjokoPrompt, type GoguryeoSamjokoResult } from './goguryeoSamjokoMuralSpiritEngine';
 
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
@@ -946,6 +949,9 @@ export interface DeterministicEngineReport {
   sanKalahariTrackingStarsResult?: SanKalahariResult | null;
   phrygianGordianKnotClarityResult?: PhrygianGordianResult | null;
   goryeoCeladonInlayClarityResult?: GoryeoCeladonResult | null;
+  lydianSardisElectrumBalanceResult?: LydianSardisResult | null;
+  canaaniteUgaritCedarWisdomResult?: CanaaniteUgaritResult | null;
+  goguryeoSamjokoMuralSpiritResult?: GoguryeoSamjokoResult | null;
 
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
@@ -4437,6 +4443,33 @@ try {
     }
   })()));
 
+  // 441. 리디아 사르디스·호박금 균형 엔진
+  const lydianSardisElectrumBalanceResult = calculateSupplement('lydianSardisElectrumBalanceResult', () => ((() => {
+    try {
+      return calculateLydianSardisElectrumBalance({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 442. 가나안 우가리트·삼나무 지혜 엔진
+  const canaaniteUgaritCedarWisdomResult = calculateSupplement('canaaniteUgaritCedarWisdomResult', () => ((() => {
+    try {
+      return calculateCanaaniteUgaritCedarWisdom({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 443. 고구려 삼족오·벽화 기상 엔진
+  const goguryeoSamjokoMuralSpiritResult = calculateSupplement('goguryeoSamjokoMuralSpiritResult', () => ((() => {
+    try {
+      return calculateGoguryeoSamjokoMuralSpirit({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
   // 220. 한국 신라 의상대사 화엄일승법계도 & 법성게 원융무애 엔진
   const uisangHwaeomIlseungBeopgyeResult = calculateSupplement('uisangHwaeomIlseungBeopgyeResult', () => ((() => {
     try {
@@ -5895,6 +5928,9 @@ try {
     sanKalahariTrackingStarsResult,
     phrygianGordianKnotClarityResult,
     goryeoCeladonInlayClarityResult,
+    lydianSardisElectrumBalanceResult,
+    canaaniteUgaritCedarWisdomResult,
+    goguryeoSamjokoMuralSpiritResult,
     tools: toolsMap,
   };
 }
@@ -6358,6 +6394,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'sanKalahariTrackingStars', nameKo: '칼라하리 산·발자국', icon: '🌠', category: 'deep_master', summary: '칼라하리 산 부족의 발자국 추적과 은하수 길잡이처럼 큰 소음이 아니라 모래 위의 작은 징후를 먼저 읽어 내는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'bluebird' },
   { key: 'phrygianGordianKnotClarity', nameKo: '프리지아 고르디온·결단', icon: '🪢', category: 'deep_master', summary: '고대 프리지아의 고르디온 매듭과 산가리우스 강처럼 자꾸 꼬이는 문제를 힘으로 당기기보다 기준을 단순화해 풀어내는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'trinity' },
   { key: 'goryeoCeladonInlayClarity', nameKo: '고려 청자·비색 상감', icon: '🏺', category: 'deep_master', summary: '고려 청자의 비색 유약과 상감 기법처럼 억지로 더 채우기보다 마음의 홈을 비워 여백과 숨구멍을 먼저 마련하는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'aura' },
+  { key: 'lydianSardisElectrumBalance', nameKo: '리디아 사르디스·호박금', icon: '🪙', category: 'deep_master', summary: '고대 리디아의 호박금 주화와 시금석처럼 한쪽 성질에 치우치지 않고 강함과 부드러움의 균형과 진짜 가치를 살피는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'bluebird' },
+  { key: 'canaaniteUgaritCedarWisdom', nameKo: '가나안 우가리트·삼나무', icon: '🌲', category: 'deep_master', summary: '고대 우가리트 점토판과 레바논 삼나무처럼 거창한 결과보다 깊은 뿌리와 간결한 기록, 돌아올 일상의 좌표를 세우는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'trinity' },
+  { key: 'goguryeoSamjokoMuralSpirit', nameKo: '고구려 삼족오·기상', icon: '🦅', category: 'deep_master', summary: '고구려 고분 벽화의 삼족오와 사신도처럼 좁은 걱정 속에 움츠러들지 말고 시야를 넓혀 당당하고 경쾌한 한 걸음을 내딛는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'muse' },
 ] as DceEngineMeta[]).filter(engine => !LUCY_PRO_CATALOG_DUPLICATE_KEYS.has(engine.key));
 
 export function getFiredEngineBadges(
@@ -7239,6 +7278,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'sanKalahariTrackingStars',
     'phrygianGordianKnotClarity',
     'goryeoCeladonInlayClarity',
+    'lydianSardisElectrumBalance',
+    'canaaniteUgaritCedarWisdom',
+    'goguryeoSamjokoMuralSpirit',
   ],
 };
 
