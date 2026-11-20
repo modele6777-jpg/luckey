@@ -466,6 +466,9 @@ import { calculateAzeriCarpetFlamePoise, formatAzeriCarpetPrompt } from '../src/
 import { calculateDalmatianStoneLavenderCalm, formatDalmatianStonePrompt } from '../src/lib/divination/dalmatianStoneLavenderCalmEngine';
 import { calculateKubaRaffiaGeometryOrder, formatKubaRaffiaPrompt } from '../src/lib/divination/kubaRaffiaGeometryOrderEngine';
 import { calculateSamoanFaleTapaBreeze, formatSamoanFalePrompt } from '../src/lib/divination/samoanFaleTapaBreezeEngine';
+import { calculateCappadocianTuffCaveCalm, formatCappadocianCavePrompt } from '../src/lib/divination/cappadocianTuffCaveCalmEngine';
+import { calculateIfugaoBanaueRiceTerrace, formatIfugaoTerracePrompt } from '../src/lib/divination/ifugaoBanaueRiceTerraceEngine';
+import { calculateOtavaloAndesLoomBalance, formatOtavaloLoomPrompt } from '../src/lib/divination/otavaloAndesLoomBalanceEngine';
 
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
@@ -14661,4 +14664,37 @@ test('Samoan Fale Tapa Breeze engine: motif, +09:00 KST, and interpretive bounda
   const prompt = formatSamoanFalePrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
   assert.ok(prompt.includes('사모아') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Cappadocian Tuff Cave Calm engine: motif, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateCappadocianTuffCaveCalm({ profile, now: new Date('2026-11-20T20:39:00Z'), question: '막막한 일의 숨통을 열고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-CAPPADOCIAN-CAVE-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatCappadocianCavePrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('카파도키아') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Ifugao Banaue Rice Terrace engine: motif, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateIfugaoBanaueRiceTerrace({ profile, now: new Date('2026-11-20T20:39:00Z'), question: '내 에너지의 근원인 숲을 돌보고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-IFUGAO-TERRACE-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatIfugaoTerracePrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('이푸가오') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Otavalo Andes Loom Balance engine: motif, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateOtavaloAndesLoomBalance({ profile, now: new Date('2026-11-20T20:39:00Z'), question: '일의 장력을 내 몸에 맞게 조절하고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-OTAVALO-LOOM-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatOtavaloLoomPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('오타발로') && prompt.includes('+09:00 (KST)'));
 });

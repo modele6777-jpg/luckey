@@ -1887,5 +1887,17 @@ export const MASTER_REVIEW_BINDINGS: Record<string, { field: string; traceKey: s
   "samoanFaleTapaBreeze": {
     "field": "samoanFaleTapaBreezeResult",
     "traceKey": "samoanFaleTapaBreezeResult"
+  },
+  "cappadocianTuffCaveCalm": {
+    "field": "cappadocianTuffCaveCalmResult",
+    "traceKey": "cappadocianTuffCaveCalmResult"
+  },
+  "ifugaoBanaueRiceTerrace": {
+    "field": "ifugaoBanaueRiceTerraceResult",
+    "traceKey": "ifugaoBanaueRiceTerraceResult"
+  },
+  "otavaloAndesLoomBalance": {
+    "field": "otavaloAndesLoomBalanceResult",
+    "traceKey": "otavaloAndesLoomBalanceResult"
   }
 };
