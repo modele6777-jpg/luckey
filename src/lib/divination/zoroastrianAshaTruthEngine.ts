@@ -24,7 +24,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const ZOROASTRIAN_ASHA_VERSION = 'LUCKEY-ZOROASTRIAN-ASHA-v2.2.0';
+export const ZOROASTRIAN_ASHA_VERSION = 'LUCKEY-ZOROASTRIAN-ASHA-v2.3.0';
 
 export interface ThreefoldPillars {
   humataScore: number;     // 선한 생각 (0 ~ 100)
@@ -90,7 +90,12 @@ export function calculateZoroastrianAshaTruth(
   const effectiveContextText = contextText || (profileOrParams && 'contextText' in profileOrParams ? profileOrParams.contextText : '');
   const now = (profileOrParams && 'now' in profileOrParams && profileOrParams.now) ? profileOrParams.now : new Date();
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
-  const calculatedAtKst = `${kst.toISOString().slice(0, 19)}+09:00`;
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  const calculatedAtKst = `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
   const birthYear = profile?.basic?.birthdate ? parseInt(profile.basic.birthdate.slice(0, 4), 10) || 1993 : 1993;
   const birthMonth = profile?.basic?.birthdate ? parseInt(profile.basic.birthdate.slice(5, 7), 10) || 8 : 8;
   const birthDay = profile?.basic?.birthdate ? parseInt(profile.basic.birthdate.slice(8, 10), 10) || 20 : 20;
