@@ -10,6 +10,7 @@ export interface VenetianLagoonResult {
   engineVersion: string;
   calculatedAtKst: string;
   forcolaNotch: string;
+  companionNotch: string;
   lagoonCurrent: string;
   reflectionFocus: string;
   ritualAction: string;
@@ -47,7 +48,12 @@ const QUESTIONS = [
 
 function toKstIso(now: Date): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
-  return kst.toISOString().replace('Z', '+09:00 (KST)');
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
 }
 
 function hashSeed(text: string): number {
@@ -61,16 +67,22 @@ function hashSeed(text: string): number {
 
 export function calculateVenetianLagoonForcola(input: VenetianLagoonInput): VenetianLagoonResult {
   const fate = input.profile.fate ?? {};
-  const seed = hashSeed(`${JSON.stringify(fate)}|${input.now.toISOString().slice(0, 13)}|${input.question ?? ''}`);
+  const seedText = `${JSON.stringify(fate)}|${input.now.toISOString().slice(0, 13)}|${input.question ?? ''}`;
+  const seed = hashSeed(seedText);
+  const notchIdx = seed % NOTCHES.length;
+  const companionOffset = 1 + (hashSeed(`${seedText}|companion`) % (NOTCHES.length - 1));
+  const forcolaNotch = NOTCHES[notchIdx];
+  const companionNotch = NOTCHES[(notchIdx + companionOffset) % NOTCHES.length];
 
   return {
-    engineVersion: 'LUCKEY-VENETIAN-FORCOLA-v2.1.0',
+    engineVersion: 'LUCKEY-VENETIAN-FORCOLA-v2.2.0',
     calculatedAtKst: toKstIso(input.now),
-    forcolaNotch: NOTCHES[seed % NOTCHES.length],
+    forcolaNotch,
+    companionNotch,
     lagoonCurrent: CURRENTS[(seed >>> 3) % CURRENTS.length],
-    reflectionFocus: '베네치아 석호의 좁은 수로를 한쪽 노와 여덟 개 홈이 파인 호두나무 노받침(포르콜라)으로 항해하듯, 상황에 맞는 각도와 멈춤을 읽는 상징적 관점입니다.',
-    ritualAction: ACTIONS[(seed >>> 6) % ACTIONS.length],
-    reflectiveQuestion: QUESTIONS[(seed >>> 9) % QUESTIONS.length],
+    reflectionFocus: `베네치아 석호의 좁은 수로를 한쪽 노와 여덟 개 홈이 파인 호두나무 노받침(포르콜라)으로 항해하듯, 주 홈('${forcolaNotch}')과 동반 홈('${companionNotch}')을 겹쳐 상황에 맞는 각도와 멈춤을 읽는 상징적 관점입니다.`,
+    ritualAction: ACTIONS[notchIdx],
+    reflectiveQuestion: QUESTIONS[notchIdx],
     interpretiveBoundary: '개인 점수·심리 진단·미래 예측이 아닙니다. 자기 성찰을 돕기 위한 상징적 관점 안내입니다.',
   };
 }
@@ -80,6 +92,7 @@ export function formatVenetianLagoonPrompt(res: VenetianLagoonResult): string {
     `[베네치아·라구나 포르콜라 노 젓기 관점 · ${res.engineVersion}]`,
     `기준 시각: ${res.calculatedAtKst}`,
     `노받침 홈: ${res.forcolaNotch}`,
+    `동반 홈: ${res.companionNotch}`,
     `석호 물길: ${res.lagoonCurrent}`,
     `성찰 초점: ${res.reflectionFocus}`,
     `권장 의식: ${res.ritualAction}`,
