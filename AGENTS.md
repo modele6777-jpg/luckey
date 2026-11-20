@@ -92,6 +92,7 @@ Every time a user request is completed or changes are made to the codebase:
 - A stationary Big Bang center long-press toggles Lucy Master in folded and unfolded layouts; double tap still opens Key. It has no sidebar/menu entry.
 - Lucy Master history lives in the separate `lucy-pro` store and restarts on every re-entry; its greeting may offer to carry over recent regular-Lucy context, which is passed as reference only.
 - Saju is the main base. Tarot cards are never auto-drawn in Lucy Master: the user shuffles and picks in the existing `TarotSpread` (left table pane when unfolded, over the chat when folded). Regular Lucy/Plus keep their existing auto-draw.
+- User update 2026-11-20: with the unfolded left tarot table, a concern/question typed in the composer immediately opens the user-pick spread using the matching layout (`matchMasterTarotSpread`); short replies, card refusals, link choices and follow-ups on the current reading stay in chat.
 - Engines picked in the engine box (`lucyEngineSelection`) are always added to answers in every Lucy mode; extra concern-related engines are added only when the user asks. Never claim a symbolic perspective was a computed result.
 - Per-message mode/engine badges stay removed in Lucy, Plus and Master; TTS controls remain.
 - Lucy Master BGM is opt-in (default off), routed through the shared ambient bus with nonexclusive audio, and stops when the mode ends or the page is hidden.
