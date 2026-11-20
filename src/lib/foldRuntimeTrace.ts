@@ -68,6 +68,12 @@ export function installFoldRuntimeTrace(win: Window): void {
       canvas: { w: doc.documentElement.clientWidth, h: doc.documentElement.clientHeight },
       appHeight: doc.documentElement.style.getPropertyValue('--app-height'),
       root: (() => { const r = doc.getElementById('root')?.getBoundingClientRect(); return r ? { y: Math.round(r.top), w: Math.round(r.width), h: Math.round(r.height) } : null; })(),
+      // Keyboard diagnostics: where the Lucy composer is versus the visible area.
+      footer: (() => { const r = doc.querySelector('.lucy-chat-footer')?.getBoundingClientRect(); return r ? { y: Math.round(r.top), bottom: Math.round(r.bottom), h: Math.round(r.height) } : null; })(),
+      focused: (doc.activeElement as HTMLElement | null)?.tagName || null,
+      visualTop: win.visualViewport ? Math.round(win.visualViewport.offsetTop) : null,
+      accessoryMark: doc.documentElement.hasAttribute('data-ios-accessory-overlay'),
+      screen: { w: win.screen?.width, h: win.screen?.height },
       nav: (() => { const r = doc.querySelector('.sites-pinned-sidebar')?.getBoundingClientRect(); return r ? { x: Math.round(r.left), y: Math.round(r.top), w: Math.round(r.width), h: Math.round(r.height) } : null; })(),
     };
   };
