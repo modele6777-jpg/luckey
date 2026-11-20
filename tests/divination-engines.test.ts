@@ -6072,7 +6072,7 @@ test('Korean Choe Hyeon-bae Hangeul Geulbon Engine: calculates Korean soul prese
   assert(rep.prisonResilienceUnbendingFaith >= 0 && rep.prisonResilienceUnbendingFaith <= 100);
   assert(rep.hangulRevivalCivilizationPower >= 0 && rep.hangulRevivalCivilizationPower <= 100);
   assert(rep.activeGeulbonStage.stageNameHanja.length > 0);
-  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(Boolean(rep.geulbonSynthesisMatrix?.integratedAction));
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatChoeHyeonbaeGeulbonPrompt(rep);
@@ -6080,6 +6080,7 @@ test('Korean Choe Hyeon-bae Hangeul Geulbon Engine: calculates Korean soul prese
   assert(prompt.includes(rep.activeGeulbonStage.stageNameKo));
   assert(prompt.includes('교차 매트릭스'));
   assert(prompt.includes(rep.ritualAction));
+  assert(prompt.includes(rep.reflectionFocus));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });
@@ -6833,7 +6834,7 @@ test('Chusa Kim Jeong-hui Sehando Engine: calculates Songbaek hudjo integrity, E
   assert(rep.chusaBoldHarmonyFlexibilityScore >= 0 && rep.chusaBoldHarmonyFlexibilityScore <= 100);
   assert(rep.dambaekSimgyeongPurityScore >= 0 && rep.dambaekSimgyeongPurityScore <= 100);
   assert(rep.activeSehandoTheme.themeTitleHanja.length > 0);
-  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(Boolean(rep.sehandoSynthesisMatrix?.integratedAction));
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatChusaKimJeonghuiSehandoPrompt(rep);
@@ -6841,6 +6842,7 @@ test('Chusa Kim Jeong-hui Sehando Engine: calculates Songbaek hudjo integrity, E
   assert(prompt.includes(rep.activeSehandoTheme.themeTitleKo));
   assert(prompt.includes('교차 매트릭스'));
   assert(prompt.includes(rep.ritualAction));
+  assert(prompt.includes(rep.reflectionFocus));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });
@@ -8272,7 +8274,7 @@ test('Hong Dae-yong Uisan Mundap Engine: calculates Infinite Universe, Earth Rot
   assert(rep.scientificEmpiricismDisillusionmentIndex >= 0 && rep.scientificEmpiricismDisillusionmentIndex <= 100);
   assert(rep.magnanimousGeomungoResilienceScore >= 0 && rep.magnanimousGeomungoResilienceScore <= 100);
   assert(rep.activeHongDaeYongTheme.themeTitleKo.length > 0);
-  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(Boolean(rep.hongDaeYongSynthesisMatrix?.integratedAction));
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatKoreanDamheonHongDaeYongUisanMundapPrompt(rep);
@@ -8280,6 +8282,7 @@ test('Hong Dae-yong Uisan Mundap Engine: calculates Infinite Universe, Earth Rot
   assert(prompt.includes(rep.activeHongDaeYongTheme.themeTitleKo));
   assert(prompt.includes('교차 매트릭스'));
   assert(prompt.includes(rep.ritualAction));
+  assert(prompt.includes(rep.reflectionFocus));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });
