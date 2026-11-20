@@ -1971,5 +1971,17 @@ export const MASTER_REVIEW_BINDINGS: Record<string, { field: string; traceKey: s
   "costaRicaDiquisSpheres": {
     "field": "costaRicaDiquisSpheresResult",
     "traceKey": "costaRicaDiquisSpheresResult"
+  },
+  "siwaOasisSaltSpring": {
+    "field": "siwaOasisSaltSpringResult",
+    "traceKey": "siwaOasisSaltSpringResult"
+  },
+  "sikkimLepchaForest": {
+    "field": "sikkimLepchaForestResult",
+    "traceKey": "sikkimLepchaForestResult"
+  },
+  "turkanaJadeSeaWind": {
+    "field": "turkanaJadeSeaWindResult",
+    "traceKey": "turkanaJadeSeaWindResult"
   }
 };
