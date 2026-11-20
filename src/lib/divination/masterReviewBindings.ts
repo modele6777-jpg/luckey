@@ -1899,5 +1899,17 @@ export const MASTER_REVIEW_BINDINGS: Record<string, { field: string; traceKey: s
   "otavaloAndesLoomBalance": {
     "field": "otavaloAndesLoomBalanceResult",
     "traceKey": "otavaloAndesLoomBalanceResult"
+  },
+  "andalusianPatioFountainCalm": {
+    "field": "andalusianPatioFountainCalmResult",
+    "traceKey": "andalusianPatioFountainCalmResult"
+  },
+  "loziKuombokaFloodPath": {
+    "field": "loziKuombokaFloodPathResult",
+    "traceKey": "loziKuombokaFloodPathResult"
+  },
+  "pamirWakhanCorridorStars": {
+    "field": "pamirWakhanCorridorStarsResult",
+    "traceKey": "pamirWakhanCorridorStarsResult"
   }
 };

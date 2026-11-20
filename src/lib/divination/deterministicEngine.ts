@@ -500,6 +500,9 @@ import { calculateSamoanFaleTapaBreeze, formatSamoanFalePrompt, type SamoanFaleR
 import { calculateCappadocianTuffCaveCalm, formatCappadocianCavePrompt, type CappadocianCaveResult } from './cappadocianTuffCaveCalmEngine';
 import { calculateIfugaoBanaueRiceTerrace, formatIfugaoTerracePrompt, type IfugaoTerraceResult } from './ifugaoBanaueRiceTerraceEngine';
 import { calculateOtavaloAndesLoomBalance, formatOtavaloLoomPrompt, type OtavaloLoomResult } from './otavaloAndesLoomBalanceEngine';
+import { calculateAndalusianPatioFountainCalm, formatAndalusianPatioPrompt, type AndalusianPatioResult } from './andalusianPatioFountainCalmEngine';
+import { calculateLoziKuombokaFloodPath, formatLoziKuombokaPrompt, type LoziKuombokaResult } from './loziKuombokaFloodPathEngine';
+import { calculatePamirWakhanCorridorStars, formatPamirWakhanPrompt, type PamirWakhanResult } from './pamirWakhanCorridorStarsEngine';
 
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
@@ -1018,6 +1021,9 @@ export interface DeterministicEngineReport {
   cappadocianTuffCaveCalmResult?: CappadocianCaveResult | null;
   ifugaoBanaueRiceTerraceResult?: IfugaoTerraceResult | null;
   otavaloAndesLoomBalanceResult?: OtavaloLoomResult | null;
+  andalusianPatioFountainCalmResult?: AndalusianPatioResult | null;
+  loziKuombokaFloodPathResult?: LoziKuombokaResult | null;
+  pamirWakhanCorridorStarsResult?: PamirWakhanResult | null;
 
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
@@ -4833,6 +4839,33 @@ try {
     }
   })()));
 
+  // 477. 안달루시아·파티오 분수 성찰 엔진
+  const andalusianPatioFountainCalmResult = calculateSupplement('andalusianPatioFountainCalmResult', () => ((() => {
+    try {
+      return calculateAndalusianPatioFountainCalm({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 478. 로지·쿠옴보카 물길 이동 성찰 엔진
+  const loziKuombokaFloodPathResult = calculateSupplement('loziKuombokaFloodPathResult', () => ((() => {
+    try {
+      return calculateLoziKuombokaFloodPath({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 479. 파미르·와칸 회랑 별빛 성찰 엔진
+  const pamirWakhanCorridorStarsResult = calculateSupplement('pamirWakhanCorridorStarsResult', () => ((() => {
+    try {
+      return calculatePamirWakhanCorridorStars({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
   // 220. 한국 신라 의상대사 화엄일승법계도 & 법성게 원융무애 엔진
   const uisangHwaeomIlseungBeopgyeResult = calculateSupplement('uisangHwaeomIlseungBeopgyeResult', () => ((() => {
     try {
@@ -6327,6 +6360,9 @@ try {
     cappadocianTuffCaveCalmResult,
     ifugaoBanaueRiceTerraceResult,
     otavaloAndesLoomBalanceResult,
+    andalusianPatioFountainCalmResult,
+    loziKuombokaFloodPathResult,
+    pamirWakhanCorridorStarsResult,
     tools: toolsMap,
   };
 }
@@ -6826,6 +6862,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'cappadocianTuffCaveCalm', nameKo: '카파도키아·응회암 동굴', icon: '🎈', category: 'deep_master', summary: '아나톨리아 카파도키아의 응회암 굴착 쉼터와 지하 환기구처럼 막막한 일도 한 겹 파고들며 숨통과 시야를 여는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'muse' },
   { key: 'ifugaoBanaueRiceTerrace', nameKo: '이푸가오·계단논 무용 숲', icon: '🌾', category: 'deep_master', summary: '필리핀 바나우에 계단논과 위쪽 원시림 무용 숲처럼 당장의 결과물뿐 아니라 물을 대어 주는 근원을 돌보는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'trinity' },
   { key: 'otavaloAndesLoomBalance', nameKo: '오타발로·안데스 베틀', icon: '🧣', category: 'deep_master', summary: '에콰도르 오타발로의 허리 베틀과 이카트 매듭처럼 내 몸의 거리로 장력을 조절하고 제약을 고유한 무늬로 엮는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'aura' },
+  { key: 'andalusianPatioFountainCalm', nameKo: '안달루시아·파티오 분수', icon: '⛲', category: 'deep_master', summary: '안달루시아 코르도바 파티오의 작은 분수와 격자 창살처럼 바깥의 열기를 걸러 내고 내 안뜰의 물소리를 지키는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'bluebird' },
+  { key: 'loziKuombokaFloodPath', nameKo: '로지·쿠옴보카 물길', icon: '🛶', category: 'deep_master', summary: '잠비아 로지족의 쿠옴보카 축제처럼 물의 수위가 바뀔 때 옛 자리를 억지로 붙들지 않고 물길을 타고 새 터로 옮기는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'trinity' },
+  { key: 'pamirWakhanCorridorStars', nameKo: '파미르·와칸 별빛', icon: '🏔️', category: 'deep_master', summary: '중앙아시아 파미르 고원 와칸 회랑의 차르호나 천창처럼 높은 고개일수록 숨을 고르며 하늘을 향한 작은 창을 열어 두는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'muse' },
 ] as DceEngineMeta[]).filter(engine => !LUCY_PRO_CATALOG_DUPLICATE_KEYS.has(engine.key));
 
 export function getFiredEngineBadges(
@@ -7743,6 +7782,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'cappadocianTuffCaveCalm',
     'ifugaoBanaueRiceTerrace',
     'otavaloAndesLoomBalance',
+    'andalusianPatioFountainCalm',
+    'loziKuombokaFloodPath',
+    'pamirWakhanCorridorStars',
   ],
 };
 
