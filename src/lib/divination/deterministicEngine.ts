@@ -542,6 +542,9 @@ import { calculateVenetianLagoonForcola, formatVenetianLagoonPrompt, type Veneti
 import { calculateBajauLautTide, formatBajauLautPrompt, type BajauLautResult } from './bajauLautHouseboatTideEngine';
 import { calculateWodaabeGerewol, formatWodaabeGerewolPrompt, type WodaabeGerewolResult } from './wodaabeGerewolDesertPoiseEngine';
 import { calculateBadakhshanLapisVein, formatBadakhshanLapisPrompt, type BadakhshanLapisResult } from './badakhshanLapisVeinPoiseEngine';
+import { calculateKogiAlunaThread, formatKogiAlunaPrompt, type KogiAlunaResult } from './kogiAlunaThoughtThreadEngine';
+import { calculateBamilekeBeadedThrone, formatBamilekeBeadedPrompt, type BamilekeBeadedResult } from './bamilekeBeadedThronePoiseEngine';
+import { calculateFezCobaltPottery, formatFezCobaltPrompt, type FezCobaltResult } from './fezCobaltPotteryKilnEngine';
 
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
@@ -1102,6 +1105,9 @@ export interface DeterministicEngineReport {
   bajauLautTideResult?: BajauLautResult | null;
   wodaabeGerewolResult?: WodaabeGerewolResult | null;
   badakhshanLapisVeinResult?: BadakhshanLapisResult | null;
+  kogiAlunaThreadResult?: KogiAlunaResult | null;
+  bamilekeBeadedThroneResult?: BamilekeBeadedResult | null;
+  fezCobaltPotteryResult?: FezCobaltResult | null;
 
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
@@ -5295,6 +5301,33 @@ try {
     }
   })()));
 
+  // 519. 코기·알루나 사유 실 성찰 엔진
+  const kogiAlunaThreadResult = calculateSupplement('kogiAlunaThreadResult', () => ((() => {
+    try {
+      return calculateKogiAlunaThread({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 520. 바밀레케·구슬 왕좌 결속 성찰 엔진
+  const bamilekeBeadedThroneResult = calculateSupplement('bamilekeBeadedThroneResult', () => ((() => {
+    try {
+      return calculateBamilekeBeadedThrone({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 521. 페즈·코발트 도자기 가마 성찰 엔진
+  const fezCobaltPotteryResult = calculateSupplement('fezCobaltPotteryResult', () => ((() => {
+    try {
+      return calculateFezCobaltPottery({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
   // 220. 한국 신라 의상대사 화엄일승법계도 & 법성게 원융무애 엔진
   const uisangHwaeomIlseungBeopgyeResult = calculateSupplement('uisangHwaeomIlseungBeopgyeResult', () => ((() => {
     try {
@@ -6831,6 +6864,9 @@ try {
     bajauLautTideResult,
     wodaabeGerewolResult,
     badakhshanLapisVeinResult,
+    kogiAlunaThreadResult,
+    bamilekeBeadedThroneResult,
+    fezCobaltPotteryResult,
     tools: toolsMap,
   };
 }
@@ -7372,6 +7408,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'bajauLautTide', nameKo: '바야우·라우트 바다 유목 물때', icon: '⛵', category: 'deep_master', summary: '술루해를 집 삼아 물때와 호흡으로 살아가는 바야우 라우트 바다 유목민의 레파(Lepa) 항해처럼 가벼움과 호흡의 리듬을 읽는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'bluebird' },
   { key: 'wodaabeGerewol', nameKo: '우다베·게레월 사헬 품위', icon: '🏜️', category: 'deep_master', summary: '긴 건기를 지나 우기에 모여 인내와 품위(무냐)를 나누는 사헬 유목민 우다베 족의 게레월 축제에서 길어 올린 태도와 회복의 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'aura' },
   { key: 'badakhshanLapisVein', nameKo: '바다흐샨·청금석 안료', icon: '💎', category: 'deep_master', summary: '힌두쿠시 암벽에서 캐낸 청금석을 곱게 갈아 가장 순수한 푸른 안료를 얻던 공예처럼 정제와 고유의 결을 살피는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'trinity' },
+  { key: 'kogiAlunaThread', nameKo: '코기·알루나 사유 실', icon: '🧶', category: 'deep_master', summary: '시에라 네바다 산맥의 코기 족이 물질 세계 너머의 의도와 연결을 엮는 사유의 실 알루나(Aluna)처럼 행동 이전의 마음을 살피는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'muse' },
+  { key: 'bamilekeBeadedThrone', nameKo: '바밀레케·구슬 왕좌 결속', icon: '📿', category: 'deep_master', summary: '수만 알의 작은 유리 구슬을 나무 틀 위에 정성껏 꿰어 기하학 문양을 세우는 바밀레케 공예처럼 작은 일상의 축적과 질서를 살피는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'aura' },
+  { key: 'fezCobaltPottery', nameKo: '페즈·코발트 도자기 가마', icon: '🏺', category: 'deep_master', summary: '흰 흙 위에 코발트 블루 문양을 중심에서부터 그려 가마에 구워 내는 모로코 페즈 도자기처럼 중심과 여백의 균형을 살피는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'trinity' },
 ] as DceEngineMeta[]).filter(engine => !LUCY_PRO_CATALOG_DUPLICATE_KEYS.has(engine.key));
 
 export function getFiredEngineBadges(
@@ -8331,6 +8370,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'bajauLautTide',
     'wodaabeGerewol',
     'badakhshanLapisVein',
+    'kogiAlunaThread',
+    'bamilekeBeadedThrone',
+    'fezCobaltPottery',
   ],
 };
 
