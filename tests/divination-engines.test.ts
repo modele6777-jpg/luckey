@@ -7052,12 +7052,15 @@ test('Thomas Aquinas Summa Theologiae Engine: calculates Reason and Faith Harmon
   assert(rep.naturalMoralLawPrudenceScore >= 0 && rep.naturalMoralLawPrudenceScore <= 100);
   assert(rep.beatificVisionSupremeGoodScore >= 0 && rep.beatificVisionSupremeGoodScore <= 100);
   assert(rep.activeAquinasTheme.themeTitleLatin.length > 0);
-  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(Boolean(rep.aquinasSynthesisMatrix?.integratedAction));
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatThomasAquinasSummaTheologiaePrompt(rep);
   assert(prompt.includes('토마스 아퀴나스 《신학대전》 이성·신앙 조화 & 덕론 종합 지표'));
   assert(prompt.includes(rep.activeAquinasTheme.themeTitleKo));
   assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes(rep.ritualAction));
+  assert(prompt.includes(rep.reflectionFocus));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });
@@ -8207,7 +8210,7 @@ test('Ahn Jung-geun Peace and Righteousness Engine: calculates Moral Righteousne
   assert(rep.intellectualCultivationReadingIndex >= 0 && rep.intellectualCultivationReadingIndex <= 100);
   assert(rep.sublimePatienceMagnanimousPeaceScore >= 0 && rep.sublimePatienceMagnanimousPeaceScore <= 100);
   assert(rep.activeAhnJungGeunTheme.themeTitleKo.length > 0);
-  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(Boolean(rep.ahnJungGeunSynthesisMatrix?.integratedAction));
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatKoreanAhnJungGeunPeaceRighteousnessPrompt(rep);
@@ -8215,6 +8218,7 @@ test('Ahn Jung-geun Peace and Righteousness Engine: calculates Moral Righteousne
   assert(prompt.includes(rep.activeAhnJungGeunTheme.themeTitleKo));
   assert(prompt.includes('교차 매트릭스'));
   assert(prompt.includes(rep.ritualAction));
+  assert(prompt.includes(rep.reflectionFocus));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });
@@ -8779,7 +8783,7 @@ test('Baek Seok Deer and White Wall Poetic Purity Engine: calculates Noble Solit
   assert(rep.transcendentWhiteWallReflectionIndex >= 0 && rep.transcendentWhiteWallReflectionIndex <= 100);
   assert(rep.sereneSteadfastResilienceScore >= 0 && rep.sereneSteadfastResilienceScore <= 100);
   assert(rep.activeBaekSeokTheme.themeTitleKo.length > 0);
-  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(Boolean(rep.baekSeokSynthesisMatrix?.integratedAction));
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatKoreanBaekSeokDeerWhiteWallPoeticPurityPrompt(rep);
@@ -8787,6 +8791,7 @@ test('Baek Seok Deer and White Wall Poetic Purity Engine: calculates Noble Solit
   assert(prompt.includes(rep.activeBaekSeokTheme.themeTitleKo));
   assert(prompt.includes('교차 매트릭스'));
   assert(prompt.includes(rep.ritualAction));
+  assert(prompt.includes(rep.reflectionFocus));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });
