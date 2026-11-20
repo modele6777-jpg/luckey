@@ -476,6 +476,9 @@ import { calculateBeninBronzeObaMemory, formatBeninBronzeObaPrompt, type BeninBr
 import { calculateBamiyanSilkRoadValleyCalm, formatBamiyanValleyPrompt, type BamiyanValleyResult } from './bamiyanSilkRoadValleyCalmEngine';
 import { calculateSigiriyaLionRockWaterGarden, formatSigiriyaRockPrompt, type SigiriyaRockResult } from './sigiriyaLionRockWaterGardenEngine';
 import { calculateNumidianCirtaHorizonPoise, formatNumidianCirtaPrompt, type NumidianCirtaResult } from './numidianCirtaHorizonPoiseEngine';
+import { calculateParacasWeaveTextileHarmony, formatParacasWeavePrompt, type ParacasWeaveResult } from './paracasWeaveTextileHarmonyEngine';
+import { calculateDayakLonghouseHornbillPoise, formatDayakHornbillPrompt, type DayakHornbillResult } from './dayakLonghouseHornbillPoiseEngine';
+import { calculateCarthaginianTanitHarborCompass, formatCarthaginianTanitPrompt, type CarthaginianTanitResult } from './carthaginianTanitHarborCompassEngine';
 
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
@@ -970,6 +973,9 @@ export interface DeterministicEngineReport {
   bamiyanSilkRoadValleyCalmResult?: BamiyanValleyResult | null;
   sigiriyaLionRockWaterGardenResult?: SigiriyaRockResult | null;
   numidianCirtaHorizonPoiseResult?: NumidianCirtaResult | null;
+  paracasWeaveTextileHarmonyResult?: ParacasWeaveResult | null;
+  dayakLonghouseHornbillPoiseResult?: DayakHornbillResult | null;
+  carthaginianTanitHarborCompassResult?: CarthaginianTanitResult | null;
 
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
@@ -4569,6 +4575,33 @@ try {
     }
   })()));
 
+  // 453. 파라카스·직조 매듭 조화 엔진
+  const paracasWeaveTextileHarmonyResult = calculateSupplement('paracasWeaveTextileHarmonyResult', () => ((() => {
+    try {
+      return calculateParacasWeaveTextileHarmony({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 454. 보르네오 다약·롱하우스 코뿔새 엔진
+  const dayakLonghouseHornbillPoiseResult = calculateSupplement('dayakLonghouseHornbillPoiseResult', () => ((() => {
+    try {
+      return calculateDayakLonghouseHornbillPoise({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 455. 카르타고 타닛·지중해 항해 엔진
+  const carthaginianTanitHarborCompassResult = calculateSupplement('carthaginianTanitHarborCompassResult', () => ((() => {
+    try {
+      return calculateCarthaginianTanitHarborCompass({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
   // 220. 한국 신라 의상대사 화엄일승법계도 & 법성게 원융무애 엔진
   const uisangHwaeomIlseungBeopgyeResult = calculateSupplement('uisangHwaeomIlseungBeopgyeResult', () => ((() => {
     try {
@@ -6039,6 +6072,9 @@ try {
     bamiyanSilkRoadValleyCalmResult,
     sigiriyaLionRockWaterGardenResult,
     numidianCirtaHorizonPoiseResult,
+    paracasWeaveTextileHarmonyResult,
+    dayakLonghouseHornbillPoiseResult,
+    carthaginianTanitHarborCompassResult,
     tools: toolsMap,
   };
 }
@@ -6514,6 +6550,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'bamiyanSilkRoadValleyCalm', nameKo: '바미얀·실크로드 계곡', icon: '🏔️', category: 'deep_master', summary: '힌두쿠시 바미얀 계곡의 쉼터와 푸른 호수처럼 거센 일정 속에서도 등을 기댈 조용한 틈을 먼저 마련하고 맑은 물빛을 지켜 내는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'bluebird' },
   { key: 'sigiriyaLionRockWaterGarden', nameKo: '시기리야·수로 정원', icon: '🦁', category: 'deep_master', summary: '고대 스리랑카 시기리야의 공중 수로 정원과 거울벽처럼 겉의 속도를 재촉하기보다 보이지 않는 기본 수로와 정갈한 태도를 먼저 다듬는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'trinity' },
   { key: 'numidianCirtaHorizonPoise', nameKo: '누미디아 키르타·지평선', icon: '🌅', category: 'deep_master', summary: '북아프리카 고원 키르타의 협곡 다리와 기병의 가벼운 고삐처럼 무거운 조건을 다 갖추려 애쓰기보다 균형 잡힌 시야로 한 걸음을 옮기는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'aura' },
+  { key: 'paracasWeaveTextileHarmony', nameKo: '파라카스·직조 매듭', icon: '🧶', category: 'deep_master', summary: '고대 페루 파라카스의 다채로운 직조 망토처럼 팽팽한 긴장과 느슨한 쉼의 균형을 맞추며 나만의 결을 한 줄씩 이어 가는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'muse' },
+  { key: 'dayakLonghouseHornbillPoise', nameKo: '다약·롱하우스 코뿔새', icon: '🌿', category: 'deep_master', summary: '보르네오 다약족의 열린 롱하우스 마루와 등나무 탄력처럼 혼자 짊어지던 긴장을 내려놓고 유연하게 오늘을 건너가는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'aura' },
+  { key: 'carthaginianTanitHarborCompass', nameKo: '카르타고 타닛·항구', icon: '⚓', category: 'deep_master', summary: '고대 카르타고 코톤의 원형 내항과 타닛의 조화 표식처럼 먼 파도만 걱정하기보다 내 안의 안전한 내항과 돛의 속도를 조절하는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'bluebird' },
 ] as DceEngineMeta[]).filter(engine => !LUCY_PRO_CATALOG_DUPLICATE_KEYS.has(engine.key));
 
 export function getFiredEngineBadges(
@@ -7407,6 +7446,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'bamiyanSilkRoadValleyCalm',
     'sigiriyaLionRockWaterGarden',
     'numidianCirtaHorizonPoise',
+    'paracasWeaveTextileHarmony',
+    'dayakLonghouseHornbillPoise',
+    'carthaginianTanitHarborCompass',
   ],
 };
 

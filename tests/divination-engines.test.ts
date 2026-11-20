@@ -445,6 +445,9 @@ import { calculateBeninBronzeObaMemory, formatBeninBronzeObaPrompt } from '../sr
 import { calculateBamiyanSilkRoadValleyCalm, formatBamiyanValleyPrompt } from '../src/lib/divination/bamiyanSilkRoadValleyCalmEngine';
 import { calculateSigiriyaLionRockWaterGarden, formatSigiriyaRockPrompt } from '../src/lib/divination/sigiriyaLionRockWaterGardenEngine';
 import { calculateNumidianCirtaHorizonPoise, formatNumidianCirtaPrompt } from '../src/lib/divination/numidianCirtaHorizonPoiseEngine';
+import { calculateParacasWeaveTextileHarmony, formatParacasWeavePrompt } from '../src/lib/divination/paracasWeaveTextileHarmonyEngine';
+import { calculateDayakLonghouseHornbillPoise, formatDayakHornbillPrompt } from '../src/lib/divination/dayakLonghouseHornbillPoiseEngine';
+import { calculateCarthaginianTanitHarborCompass, formatCarthaginianTanitPrompt } from '../src/lib/divination/carthaginianTanitHarborCompassEngine';
 
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
@@ -14391,4 +14394,37 @@ test('Numidian Cirta Horizon Poise engine: motif, +09:00 KST, and interpretive b
   const prompt = formatNumidianCirtaPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
   assert.ok(prompt.includes('누미디아') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Paracas Weave Textile Harmony engine: motif, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateParacasWeaveTextileHarmony({ profile, now: new Date('2026-11-20T19:45:00Z'), question: '긴장과 쉼의 균형을 찾고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-PARACAS-WEAVE-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatParacasWeavePrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('파라카스') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Dayak Longhouse Hornbill Poise engine: motif, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateDayakLonghouseHornbillPoise({ profile, now: new Date('2026-11-20T19:45:00Z'), question: '혼자 버티던 긴장을 풀고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-DAYAK-HORNBILL-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatDayakHornbillPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('다약') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Carthaginian Tanit Harbor Compass engine: motif, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateCarthaginianTanitHarborCompass({ profile, now: new Date('2026-11-20T19:45:00Z'), question: '방향과 속도를 차분히 점검하고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-CARTHAGINIAN-TANIT-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatCarthaginianTanitPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('카르타고') && prompt.includes('+09:00 (KST)'));
 });

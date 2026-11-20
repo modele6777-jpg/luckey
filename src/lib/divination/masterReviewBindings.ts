@@ -1803,5 +1803,17 @@ export const MASTER_REVIEW_BINDINGS: Record<string, { field: string; traceKey: s
   "numidianCirtaHorizonPoise": {
     "field": "numidianCirtaHorizonPoiseResult",
     "traceKey": "numidianCirtaHorizonPoiseResult"
+  },
+  "paracasWeaveTextileHarmony": {
+    "field": "paracasWeaveTextileHarmonyResult",
+    "traceKey": "paracasWeaveTextileHarmonyResult"
+  },
+  "dayakLonghouseHornbillPoise": {
+    "field": "dayakLonghouseHornbillPoiseResult",
+    "traceKey": "dayakLonghouseHornbillPoiseResult"
+  },
+  "carthaginianTanitHarborCompass": {
+    "field": "carthaginianTanitHarborCompassResult",
+    "traceKey": "carthaginianTanitHarborCompassResult"
   }
 };
