@@ -35,7 +35,7 @@ import {
   getYearSolarTerms,
 } from '../astronomicalSolarTerms';
 
-export const KYUSEI_ENGINE_VERSION = 'LUCKEY-KS-v2.3.0';
+export const KYUSEI_ENGINE_VERSION = 'LUCKEY-KS-v2.4.0';
 
 export const KYUSEI_METHOD =
   '구성학 정통 9궁 명반 산법: 입춘 절입 연성 수리 본명성, 절월 월성 월명성, 동지·하지 근접 갑자일 일성 순행 비성(중궁→건→태→간→리→감→곤→진→손)으로 연·월·일 3반 포국 및 오황살·암검살·세파살·월파살·본명살·본명적살 결정론 산출';
@@ -372,7 +372,12 @@ function dailyStarOf(targetWallKst: Date): { star: number; dayGanZhi: string } {
 
 function kstTimestamps(now: Date) {
   const kst = new Date(now.getTime() + 9 * 3600000);
-  return { utc: now.toISOString(), kst: kst.toISOString().replace('Z', '+09:00') };
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return { utc: now.toISOString(), kst: `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)` };
 }
 
 function skippedResult(note: string): KyuseiResult {

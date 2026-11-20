@@ -14,12 +14,17 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const KOREAN_YUTJEOM_FOUR_STICK_VERSION = 'LUCKEY-KOREAN-YUTJEOM-FOUR-STICKS-v2.3.0';
+export const KOREAN_YUTJEOM_FOUR_STICK_VERSION = 'LUCKEY-KOREAN-YUTJEOM-FOUR-STICKS-v2.4.0';
 
 function getYutKstString(now?: Date): string {
   const base = now ?? new Date();
   const kst = new Date(base.getTime() + 9 * 3600 * 1000);
-  return `${kst.toISOString().slice(0, 19)}+09:00`;
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
 }
 
 export type YutQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
