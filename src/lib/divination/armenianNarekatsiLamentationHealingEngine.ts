@@ -12,6 +12,7 @@ export interface NarekatsiContemplation {
   koreanLabel: string;
   coreInsight: string;
   healingPractice: string;
+  reflectiveQuestion: string;
 }
 
 export interface ArmenianNarekatsiResult {
@@ -35,6 +36,7 @@ const NAREKATSI_CONTEMPLATIONS: readonly NarekatsiContemplation[] = [
     koreanLabel: '자기 앞의 정직한 고백',
     coreInsight: '스스로 괜찮은 척 감추느라 무거워진 마음을 인정할 때, 비로소 억눌렸던 숨통이 트이고 회복이 시작됩니다.',
     healingPractice: '누구에게 보여줄 필요 없는 메모에 지금 가장 솔직한 감정 두 줄만 적어 보세요.',
+    reflectiveQuestion: '괜찮은 척 애쓰느라 숨겨 두었지만, 지금 내 앞에서 가장 정직하게 인정해 주어야 할 감정은 무엇인가요?',
   },
   {
     id: 'merciful_release',
@@ -42,6 +44,7 @@ const NAREKATSI_CONTEMPLATIONS: readonly NarekatsiContemplation[] = [
     koreanLabel: '자책에서 벗어나는 너그러움',
     coreInsight: '지나간 실수나 어쩔 수 없던 한계를 끝없이 되감기하기보다, 지금의 나를 다정히 용서하고 놓아주는 힘입니다.',
     healingPractice: '오래 붙들고 있던 자책 하나를 오늘 저녁에는 잠깐 내려놓고 따뜻한 물 한 잔을 마시세요.',
+    reflectiveQuestion: '이미 지나간 일인데도 스스로를 다그치며 놓아주지 못했던 자책 하나를 오늘 내려놓는다면 무엇일까요?',
   },
   {
     id: 'vigilant_hope',
@@ -49,6 +52,7 @@ const NAREKATSI_CONTEMPLATIONS: readonly NarekatsiContemplation[] = [
     koreanLabel: '흐림 너머를 보는 조용한 희망',
     coreInsight: '당장 모든 문제가 풀리지 않아도, 빛이 완전히 사라진 것이 아님을 믿고 작은 불씨를 지키는 인내입니다.',
     healingPractice: '오늘 하루 중 작더라도 분명히 잘 버텨낸 한 장면을 스스로에게 짚어 주세요.',
+    reflectiveQuestion: '모든 게 한꺼번에 풀리지는 않아도, 오늘 내가 작지만 분명히 잘 지켜 낸 불씨(Huys) 하나는 무엇인가요?',
   },
   {
     id: 'quiet_restoration',
@@ -56,12 +60,18 @@ const NAREKATSI_CONTEMPLATIONS: readonly NarekatsiContemplation[] = [
     koreanLabel: '말을 줄이고 마음을 데우는 회복',
     coreInsight: '바깥의 소란을 이기려 애쓰기보다, 깊은 고요 속에서 부서진 감정의 결을 다시 이어 붙이는 시간입니다.',
     healingPractice: '자기 전 10분간 화면을 멀리 두고 깊고 느린 호흡으로 하루를 마무리해 보세요.',
+    reflectiveQuestion: '바깥의 소란을 이기려 들기보다 조용히 말을 줄이고 마음을 데우며 회복하고 싶은 시간은 언제인가요?',
   },
 ] as const;
 
 function formatArmenianKstTimestamp(now: Date): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
-  return `${kst.toISOString().slice(0, 19)}+09:00 (KST)`;
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
 }
 
 function stableHash(input: string): number {
@@ -81,16 +91,17 @@ export function calculateArmenianNarekatsiLamentationHealing(params: {
   const now = params.now ?? new Date();
   const query = (params.question ?? '').trim();
 
-  const seed = stableHash(
-    [
-      params.profile.basic?.name ?? '',
-      JSON.stringify(params.profile.fate ?? {}),
-      query,
-    ].join('|')
-  );
+  const seedRaw = [
+    params.profile.basic?.name ?? '',
+    JSON.stringify(params.profile.fate ?? {}),
+    query,
+  ].join('|');
+  const seed = stableHash(seedRaw);
+  const balanceSeed = stableHash(`${seedRaw}|balance`);
 
   const primaryIdx = seed % NAREKATSI_CONTEMPLATIONS.length;
-  const balancingIdx = (primaryIdx + 2) % NAREKATSI_CONTEMPLATIONS.length;
+  const balancingOffset = 1 + (balanceSeed % (NAREKATSI_CONTEMPLATIONS.length - 1));
+  const balancingIdx = (primaryIdx + balancingOffset) % NAREKATSI_CONTEMPLATIONS.length;
 
   const primaryContemplation = NAREKATSI_CONTEMPLATIONS[primaryIdx];
   const balancingContemplation = NAREKATSI_CONTEMPLATIONS[balancingIdx];
@@ -107,12 +118,12 @@ export function calculateArmenianNarekatsiLamentationHealing(params: {
   const ritualAction = primaryContemplation.healingPractice;
 
   const reflectiveQuestion = query
-    ? `‘${query.slice(0, 36)}’을(를) 안고 있는 지금, 스스로에게 조금 더 너그러워진다면 가장 먼저 내려놓을 수 있는 부담은 무엇인가요?`
-    : `오늘 내 마음속에서 누구에게도 말하지 못한 채 혼자 견뎌 온 감정 하나를 다정히 알아준다면 무엇일까요?`;
+    ? `‘${query.slice(0, 36)}’을(를) 안고 있는 지금, ${primaryContemplation.reflectiveQuestion}`
+    : primaryContemplation.reflectiveQuestion;
 
   return {
     engineName: '아르메니아 나레카치 《애가》 내면 정화·성찰 (Narekatsi Lamentation Healing)',
-    engineVersion: 'LUCKEY-ARMENIAN-NAREKATSI-v2.1.0',
+    engineVersion: 'LUCKEY-ARMENIAN-NAREKATSI-v2.2.0',
     calculatedAtKst: formatArmenianKstTimestamp(now),
     primaryContemplation,
     balancingContemplation,
