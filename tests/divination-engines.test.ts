@@ -334,6 +334,9 @@ import { calculateKoreanYutjeomFourStickOracle, formatKoreanYutjeomFourStickProm
 import { calculateTamilThirukkuralAramPorulKamam, formatTamilThirukkuralAramPorulKamamPrompt, TAMIL_THIRUKKURAL_ARAM_PORUL_KAMAM_VERSION } from '../src/lib/divination/tamilThirukkuralAramPorulKamamEngine';
 import { calculateInuitSilaBreathWeather, formatInuitSilaBreathWeatherPrompt, INUIT_SILA_BREATH_WEATHER_VERSION } from '../src/lib/divination/inuitSilaBreathWeatherEngine';
 import { calculateZuluUbuntuRelationalSelf, formatZuluUbuntuRelationalSelfPrompt, ZULU_UBUNTU_RELATIONAL_SELF_VERSION } from '../src/lib/divination/zuluUbuntuRelationalSelfEngine';
+import { calculateAkanAdinkraSymbolsWisdom, formatAkanAdinkraSymbolsWisdomPrompt, AKAN_ADINKRA_WISDOM_VERSION } from '../src/lib/divination/akanAdinkraSymbolsWisdomEngine';
+import { calculateEthiopianZeraYacobHatataReason, formatEthiopianZeraYacobHatataReasonPrompt, ETHIOPIAN_ZERA_YACOB_VERSION } from '../src/lib/divination/ethiopianZeraYacobHatataReasonEngine';
+import { calculateBasqueLauburuBasajaunHarmony, formatBasqueLauburuBasajaunHarmonyPrompt, BASQUE_LAUBURU_HARMONY_VERSION } from '../src/lib/divination/basqueLauburuBasajaunHarmonyEngine';
 
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
@@ -13041,4 +13044,40 @@ test('Zulu Ubuntu Relational Self engine: relationship mirroring stays qualitati
   const decision = calculateZuluUbuntuRelationalSelf(profile, '동업을 시작해도 될까요');
   assert.equal(decision.questionTopic, 'decision');
   assert.ok(!formatZuluUbuntuRelationalSelfPrompt(decision).includes('/100'));
+});
+
+test('Akan Adinkra Symbols Wisdom engine: qualitative symbol balance, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateAkanAdinkraSymbolsWisdom(profile, '이직 결정을 앞두고 있어요', new Date('2026-11-20T04:00:00Z'));
+  assert.equal(rep.engineVersion, AKAN_ADINKRA_WISDOM_VERSION);
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.equal(rep.questionTopic, 'decision');
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('개인 점수·심리 진단·미래 예측이 아닙니다'));
+  const prompt = formatAkanAdinkraSymbolsWisdomPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('아딩크라(Adinkra)') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Ethiopian Zera Yacob Hatata Reason engine: conscience inquiry, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateEthiopianZeraYacobHatataReason(profile, '동료와 오해를 풀고 싶어요', new Date('2026-11-20T04:00:00Z'));
+  assert.equal(rep.engineVersion, ETHIOPIAN_ZERA_YACOB_VERSION);
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.equal(rep.questionTopic, 'relationship');
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('개인 점수·심리 진단·미래 예측이 아닙니다'));
+  const prompt = formatEthiopianZeraYacobHatataReasonPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('하타타') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Basque Lauburu & Basajaun Harmony engine: cycle balance, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateBasqueLauburuBasajaunHarmony(profile, '요즘 지쳐서 회복이 필요해요', new Date('2026-11-20T04:00:00Z'));
+  assert.equal(rep.engineVersion, BASQUE_LAUBURU_HARMONY_VERSION);
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.equal(rep.questionTopic, 'healing');
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('개인 점수·심리 진단·미래 예측이 아닙니다'));
+  const prompt = formatBasqueLauburuBasajaunHarmonyPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('라부루(Lauburu)') && prompt.includes('+09:00 (KST)'));
 });
