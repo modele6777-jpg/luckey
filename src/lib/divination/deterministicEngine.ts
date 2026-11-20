@@ -518,6 +518,9 @@ import { calculateSepikRiverCarving, formatSepikCarvingPrompt, type SepikCarving
 import { calculateMoldovanOrheiLimestone, formatMoldovanOrheiPrompt, type MoldovanOrheiResult } from './moldovanOrheiLimestoneEngine';
 import { calculateMinangkabauRumahGadang, formatMinangkabauGadangPrompt, type MinangkabauGadangResult } from './minangkabauRumahGadangEngine';
 import { calculateCostaRicaDiquisSpheres, formatDiquisSpheresPrompt, type DiquisSpheresResult } from './costaRicaDiquisSpheresEngine';
+import { calculateSiwaOasisSaltSpring, formatSiwaOasisPrompt, type SiwaOasisResult } from './siwaOasisSaltSpringEngine';
+import { calculateSikkimLepchaForest, formatSikkimLepchaPrompt, type SikkimLepchaResult } from './sikkimLepchaForestCanopyEngine';
+import { calculateTurkanaJadeSeaWind, formatTurkanaWindPrompt, type TurkanaWindResult } from './turkanaJadeSeaWindEngine';
 
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
@@ -1054,6 +1057,9 @@ export interface DeterministicEngineReport {
   moldovanOrheiLimestoneResult?: MoldovanOrheiResult | null;
   minangkabauRumahGadangResult?: MinangkabauGadangResult | null;
   costaRicaDiquisSpheresResult?: DiquisSpheresResult | null;
+  siwaOasisSaltSpringResult?: SiwaOasisResult | null;
+  sikkimLepchaForestResult?: SikkimLepchaResult | null;
+  turkanaJadeSeaWindResult?: TurkanaWindResult | null;
 
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
@@ -5031,6 +5037,33 @@ try {
     }
   })()));
 
+  // 495. 시와·오아시스 소금샘 성찰 엔진
+  const siwaOasisSaltSpringResult = calculateSupplement('siwaOasisSaltSpringResult', () => ((() => {
+    try {
+      return calculateSiwaOasisSaltSpring({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 496. 시킴·레프차 숲 성찰 엔진
+  const sikkimLepchaForestResult = calculateSupplement('sikkimLepchaForestResult', () => ((() => {
+    try {
+      return calculateSikkimLepchaForest({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 497. 투르카나·비취 바다 바람 성찰 엔진
+  const turkanaJadeSeaWindResult = calculateSupplement('turkanaJadeSeaWindResult', () => ((() => {
+    try {
+      return calculateTurkanaJadeSeaWind({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
   // 220. 한국 신라 의상대사 화엄일승법계도 & 법성게 원융무애 엔진
   const uisangHwaeomIlseungBeopgyeResult = calculateSupplement('uisangHwaeomIlseungBeopgyeResult', () => ((() => {
     try {
@@ -6543,6 +6576,9 @@ try {
     moldovanOrheiLimestoneResult,
     minangkabauRumahGadangResult,
     costaRicaDiquisSpheresResult,
+    siwaOasisSaltSpringResult,
+    sikkimLepchaForestResult,
+    turkanaJadeSeaWindResult,
     tools: toolsMap,
   };
 }
@@ -7060,6 +7096,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'moldovanOrheiLimestone', nameKo: '몰도바·오르헤이 석회암', icon: '🪨', category: 'deep_master', summary: '몰도바 오르헤이 베키 석회암 동굴 수도원처럼 바깥 소음을 덜어내고 강물의 긴 곡선을 조용히 바라보는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'trinity' },
   { key: 'minangkabauRumahGadang', nameKo: '미낭카바우·뿔지붕 조화', icon: '🏡', category: 'deep_master', summary: '수마트라 미낭카바우의 못 없이 맞물리는 루마 가당처럼 자연의 결을 스승 삼아 부드럽게 협력하는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'aura' },
   { key: 'costaRicaDiquisSpheres', nameKo: '디퀴스·정글 돌공', icon: '⚪', category: 'deep_master', summary: '코스타리카 디퀴스 정글의 화강암 석구처럼 오랜 손길로 모난 구석을 둥글려 가며 중심을 지키는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'bluebird' },
+  { key: 'siwaOasisSaltSpring', nameKo: '시와·오아시스 소금샘', icon: '🌴', category: 'deep_master', summary: '이집트 시와 오아시스 소금 호수처럼 힘을 빼면 스스로 떠오르게 만드는 부력과 그늘의 휴식을 살피는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'bluebird' },
+  { key: 'sikkimLepchaForest', nameKo: '시킴·레프차 숲', icon: '🎋', category: 'deep_master', summary: '히말라야 시킴의 레프차 대나무 다리처럼 조금 휘어지며 충격을 흘려보내는 유연한 탄성을 살피는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'muse' },
+  { key: 'turkanaJadeSeaWind', nameKo: '투르카나·비취 바다 바람', icon: '🌊', category: 'deep_master', summary: '동아프리카 투르카나 호수처럼 거친 사막 바람을 옥빛 물결의 색으로 바꾸는 기동성과 끈기를 살피는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'trinity' },
 ] as DceEngineMeta[]).filter(engine => !LUCY_PRO_CATALOG_DUPLICATE_KEYS.has(engine.key));
 
 export function getFiredEngineBadges(
@@ -7995,6 +8034,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'moldovanOrheiLimestone',
     'minangkabauRumahGadang',
     'costaRicaDiquisSpheres',
+    'siwaOasisSaltSpring',
+    'sikkimLepchaForest',
+    'turkanaJadeSeaWind',
   ],
 };
 
