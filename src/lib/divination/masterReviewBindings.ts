@@ -1479,5 +1479,17 @@ export const MASTER_REVIEW_BINDINGS: Record<string, { field: string; traceKey: s
   "hungarianTaltosTreeOfLife": {
     "field": "hungarianTaltosTreeOfLifeResult",
     "traceKey": "hungarianTaltosTreeOfLifeResult"
+  },
+  "kyrgyzManasOralEpicCourage": {
+    "field": "kyrgyzManasOralEpicCourageResult",
+    "traceKey": "kyrgyzManasOralEpicCourageResult"
+  },
+  "shonaMbiraAncestralResonance": {
+    "field": "shonaMbiraAncestralResonanceResult",
+    "traceKey": "shonaMbiraAncestralResonanceResult"
+  },
+  "tonganKavaCircleTauhiVa": {
+    "field": "tonganKavaCircleTauhiVaResult",
+    "traceKey": "tonganKavaCircleTauhiVaResult"
   }
 };

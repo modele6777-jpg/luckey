@@ -364,6 +364,9 @@ import { calculateSwahiliUtuDhowMonsoon, formatSwahiliUtuDhowPrompt } from '../s
 import { calculateKhmerAngkorBarayWaterBalance, formatKhmerAngkorBarayPrompt } from '../src/lib/divination/khmerAngkorBarayWaterBalanceEngine';
 import { calculateMalagasyFihavananaKinship, formatMalagasyFihavananaPrompt } from '../src/lib/divination/malagasyFihavananaKinshipHarmonyEngine';
 import { calculateHungarianTaltosTreeOfLife, formatHungarianTaltosPrompt } from '../src/lib/divination/hungarianTaltosTreeOfLifeEngine';
+import { calculateKyrgyzManasOralEpicCourage, formatKyrgyzManasPrompt } from '../src/lib/divination/kyrgyzManasOralEpicCourageEngine';
+import { calculateShonaMbiraAncestralResonance, formatShonaMbiraPrompt } from '../src/lib/divination/shonaMbiraAncestralResonanceEngine';
+import { calculateTonganKavaCircleTauhiVa, formatTonganKavaPrompt } from '../src/lib/divination/tonganKavaCircleTauhiVaEngine';
 
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
@@ -13404,4 +13407,37 @@ test('Hungarian Taltos Tree of Life engine: realm, +09:00 KST, and interpretive 
   const prompt = formatHungarianTaltosPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
   assert.ok(prompt.includes('헝가리') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Kyrgyz Manas Oral Epic Courage engine: chapter, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateKyrgyzManasOralEpicCourage({ profile, now: new Date('2026-11-20T06:40:00Z'), question: '첫 걸음을 내딛고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-KYRGYZ-MANAS-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatKyrgyzManasPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('키르기스') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Shona Mbira Ancestral Resonance engine: cycle, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateShonaMbiraAncestralResonance({ profile, now: new Date('2026-11-20T06:40:00Z'), question: '마음의 리듬을 되찾고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-SHONA-MBIRA-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatShonaMbiraPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('쇼나') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Tongan Kava Circle Tauhi Va engine: practice, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateTonganKavaCircleTauhiVa({ profile, now: new Date('2026-11-20T06:40:00Z'), question: '관계의 거리를 잘 지키고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-TONGAN-KAVA-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatTonganKavaPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('통가') && prompt.includes('+09:00 (KST)'));
 });
