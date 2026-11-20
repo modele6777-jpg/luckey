@@ -407,6 +407,9 @@ import { calculateSogdianSilkRoadCaravanTrust, formatSogdianSilkRoadPrompt, type
 import { calculateTainoZemiAreitoHarmony, formatTainoZemiAreitoPrompt, type TainoZemiAreitoResult } from './tainoZemiAreitoHarmonyEngine';
 import { calculateBasothoBothoMountainWisdom, formatBasothoBothoPrompt, type BasothoBothoResult } from './basothoBothoMountainWisdomEngine';
 import { calculateTuvanKhoomeiOvertonesResonance, formatTuvanKhoomeiPrompt, type TuvanKhoomeiResult } from './tuvanKhoomeiOvertonesResonanceEngine';
+import { calculateBretonBarzazSeaPoetry, formatBretonBarzazPrompt, type BretonBarzazResult } from './bretonBarzazSeaPoetryEngine';
+import { calculateHausaKirariAladaWisdom, formatHausaKirariPrompt, type HausaKirariAladaResult } from './hausaKirariAladaWisdomEngine';
+import { calculateOccitanTroubadourParatge, formatOccitanParatgePrompt, type OccitanParatgeResult } from './occitanTroubadourParatgeEngine';
 
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
@@ -832,6 +835,9 @@ export interface DeterministicEngineReport {
   tainoZemiAreitoHarmonyResult?: TainoZemiAreitoResult | null;
   basothoBothoMountainWisdomResult?: BasothoBothoResult | null;
   tuvanKhoomeiOvertonesResonanceResult?: TuvanKhoomeiResult | null;
+  bretonBarzazSeaPoetryResult?: BretonBarzazResult | null;
+  hausaKirariAladaWisdomResult?: HausaKirariAladaResult | null;
+  occitanTroubadourParatgeResult?: OccitanParatgeResult | null;
 
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
@@ -3810,6 +3816,33 @@ try {
     }
   })()));
 
+  // 384. 브르타뉴 바르작 해안 시학 엔진
+  const bretonBarzazSeaPoetryResult = calculateSupplement('bretonBarzazSeaPoetryResult', () => ((() => {
+    try {
+      return calculateBretonBarzazSeaPoetry({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 385. 서아프리카 하우사 키라리·알아다 지혜 엔진
+  const hausaKirariAladaWisdomResult = calculateSupplement('hausaKirariAladaWisdomResult', () => ((() => {
+    try {
+      return calculateHausaKirariAladaWisdom({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 386. 옥시타니아 트루바두르 파라트제 엔진
+  const occitanTroubadourParatgeResult = calculateSupplement('occitanTroubadourParatgeResult', () => ((() => {
+    try {
+      return calculateOccitanTroubadourParatge({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
   // 220. 한국 신라 의상대사 화엄일승법계도 & 법성게 원융무애 엔진
   const uisangHwaeomIlseungBeopgyeResult = calculateSupplement('uisangHwaeomIlseungBeopgyeResult', () => ((() => {
     try {
@@ -5211,6 +5244,9 @@ try {
     tainoZemiAreitoHarmonyResult,
     basothoBothoMountainWisdomResult,
     tuvanKhoomeiOvertonesResonanceResult,
+    bretonBarzazSeaPoetryResult,
+    hausaKirariAladaWisdomResult,
+    occitanTroubadourParatgeResult,
     tools: toolsMap,
   };
 }
@@ -5617,6 +5653,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'tainoZemiAreitoHarmony', nameKo: '타이노 세미·아레이토', icon: '🐚', category: 'deep_master', summary: '카리브 타이노의 세미·아레이토(Areito) 원형 춤처럼 속도를 높이기 전 내 안의 호흡과 주변과의 리듬을 맞추는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'aura' },
   { key: 'basothoBothoMountainWisdom', nameKo: '바소토 보토·고원 지혜', icon: '⛰️', category: 'deep_master', summary: '남아프리카 바소토의 보토(Botho)·코촐로 평화처럼 결과의 크기만큼 태도의 따뜻함과 품위를 챙기는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'bluebird' },
   { key: 'tuvanKhoomeiOvertonesResonance', nameKo: '투바 후메이 배음 공명', icon: '🎵', category: 'deep_master', summary: '시베리아 투바의 후메이(Khoomei) 배음과 자연 공명처럼 잡음을 줄이고 내 안의 진짜 울림에 귀 기울이는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'muse' },
+  { key: 'bretonBarzazSeaPoetry', nameKo: '브르타뉴 바르작 시학', icon: '🌊', category: 'deep_master', summary: '브르타뉴 바르작 브레이즈의 해안 시학처럼 지금이 밀어붙일 밀물인지 숨을 고를 썰물인지 살피는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'muse' },
+  { key: 'hausaKirariAladaWisdom', nameKo: '하우사 키라리·아마나', icon: '🌳', category: 'deep_master', summary: '서아프리카 하우사의 인내(Hakuri)와 신뢰(Amana)처럼 순간의 감정보다 긴 신뢰와 품격을 세우는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'trinity' },
+  { key: 'occitanTroubadourParatge', nameKo: '옥시타니아 파라트제', icon: '🕊️', category: 'deep_master', summary: '남프랑스 옥시타니아의 파라트제(Paratge)·절제(Mesura)처럼 서로의 품위를 지키는 균형과 공존의 선을 찾는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'bluebird' },
 ] as DceEngineMeta[]).filter(engine => !LUCY_PRO_CATALOG_DUPLICATE_KEYS.has(engine.key));
 
 export function getFiredEngineBadges(
@@ -6441,6 +6480,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'tainoZemiAreitoHarmony',
     'basothoBothoMountainWisdom',
     'tuvanKhoomeiOvertonesResonance',
+    'bretonBarzazSeaPoetry',
+    'hausaKirariAladaWisdom',
+    'occitanTroubadourParatge',
   ],
 };
 

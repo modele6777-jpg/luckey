@@ -1527,5 +1527,17 @@ export const MASTER_REVIEW_BINDINGS: Record<string, { field: string; traceKey: s
   "tuvanKhoomeiOvertonesResonance": {
     "field": "tuvanKhoomeiOvertonesResonanceResult",
     "traceKey": "tuvanKhoomeiOvertonesResonanceResult"
+  },
+  "bretonBarzazSeaPoetry": {
+    "field": "bretonBarzazSeaPoetryResult",
+    "traceKey": "bretonBarzazSeaPoetryResult"
+  },
+  "hausaKirariAladaWisdom": {
+    "field": "hausaKirariAladaWisdomResult",
+    "traceKey": "hausaKirariAladaWisdomResult"
+  },
+  "occitanTroubadourParatge": {
+    "field": "occitanTroubadourParatgeResult",
+    "traceKey": "occitanTroubadourParatgeResult"
   }
 };
