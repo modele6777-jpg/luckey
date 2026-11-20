@@ -97,7 +97,7 @@ export const DuoTarotBookSpread: React.FC<DuoTarotBookSpreadProps> = ({
           {/* 추천 예시: 질문마다 맞춤 배열법(자리 이름)이 붙어 있다 */}
           <div className="flex flex-col gap-2 w-full max-w-sm text-left" data-tarot-spread-examples>
             <p className="text-[11px] font-bold tracking-wide text-amber-300/90 mb-0.5">추천 질문 · 맞춤 배열법</p>
-            {MASTER_TAROT_SPREADS.map(spread => (
+            {MASTER_TAROT_SPREADS.filter(spread => spread.id !== 'one-message').map(spread => (
               <button
                 key={spread.id}
                 type="button"
