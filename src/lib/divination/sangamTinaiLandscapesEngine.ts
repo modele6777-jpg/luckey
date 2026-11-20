@@ -10,6 +10,7 @@ export interface SangamTinaiResult {
   engineVersion: string;
   calculatedAtKst: string;
   tinaiLandscape: string;
+  companionLandscape: string;
   akamPuramTone: string;
   reflectionFocus: string;
   ritualAction: string;
@@ -47,7 +48,12 @@ const QUESTIONS = [
 
 function toKstIso(now: Date): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
-  return kst.toISOString().replace('Z', '+09:00 (KST)');
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
 }
 
 function hashSeed(text: string): number {
@@ -61,16 +67,22 @@ function hashSeed(text: string): number {
 
 export function calculateSangamTinaiPoetics(input: SangamTinaiInput): SangamTinaiResult {
   const fate = input.profile.fate ?? {};
-  const seed = hashSeed(`${JSON.stringify(fate)}|${input.now.toISOString().slice(0, 13)}|${input.question ?? ''}`);
+  const seedText = `${JSON.stringify(fate)}|${input.now.toISOString().slice(0, 13)}|${input.question ?? ''}`;
+  const seed = hashSeed(seedText);
+  const landscapeIdx = seed % LANDSCAPES.length;
+  const companionOffset = 1 + (hashSeed(`${seedText}|companion`) % (LANDSCAPES.length - 1));
+  const tinaiLandscape = LANDSCAPES[landscapeIdx];
+  const companionLandscape = LANDSCAPES[(landscapeIdx + companionOffset) % LANDSCAPES.length];
 
   return {
-    engineVersion: 'LUCKEY-SANGAM-TINAI-v2.1.0',
+    engineVersion: 'LUCKEY-SANGAM-TINAI-v2.2.0',
     calculatedAtKst: toKstIso(input.now),
-    tinaiLandscape: LANDSCAPES[seed % LANDSCAPES.length],
+    tinaiLandscape,
+    companionLandscape,
     akamPuramTone: TONES[(seed >>> 3) % TONES.length],
-    reflectionFocus: '고전 타밀 상감 시학의 다섯 티나이(Tinai) 경관처럼 자연의 풍경과 계절에 비추어 내면(아캄)과 외면(푸람)의 결을 읽는 상징적 관점입니다.',
-    ritualAction: ACTIONS[(seed >>> 6) % ACTIONS.length],
-    reflectiveQuestion: QUESTIONS[(seed >>> 9) % QUESTIONS.length],
+    reflectionFocus: `고전 타밀 상감 시학의 다섯 티나이(Tinai) 경관처럼 주 경관('${tinaiLandscape}')과 동반 경관('${companionLandscape}')을 겹쳐 자연의 계절과 내면(아캄)·외면(푸람)의 결을 읽는 상징적 관점입니다.`,
+    ritualAction: ACTIONS[landscapeIdx],
+    reflectiveQuestion: QUESTIONS[landscapeIdx],
     interpretiveBoundary: '개인 점수·심리 진단·미래 예측이 아닙니다. 자기 성찰을 돕기 위한 상징적 관점 안내입니다.',
   };
 }
@@ -80,6 +92,7 @@ export function formatSangamTinaiPrompt(res: SangamTinaiResult): string {
     `[타밀 상감·티나이 다섯 경관 관점 · ${res.engineVersion}]`,
     `기준 시각: ${res.calculatedAtKst}`,
     `티나이 경관: ${res.tinaiLandscape}`,
+    `동반 경관: ${res.companionLandscape}`,
     `아캄·푸람 결: ${res.akamPuramTone}`,
     `성찰 초점: ${res.reflectionFocus}`,
     `권장 의식: ${res.ritualAction}`,
