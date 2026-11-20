@@ -309,7 +309,7 @@ test('Lucy chat shows no per-message mode or engine badges', async ({ page, base
   await expect(page.getByRole('dialog', { name: '이번 답변에서 실제 사용한 엔진' })).toHaveCount(0);
 });
 
-test('Lucy engine box opens the 333-entry catalog with presets and multi-select', async ({ page }) => {
+test('Lucy engine box opens the 333-entry catalog with multi-select and no preset bundles', async ({ page }) => {
   await openLucy(page);
   const trigger = page.getByRole('button', { name: /^엔진함 열기/ });
   await expect(trigger).toBeVisible();
@@ -320,12 +320,11 @@ test('Lucy engine box opens the 333-entry catalog with presets and multi-select'
   await expect(dialog).toContainText('15개 기초 도구');
   await expect(dialog).toContainText('318개 심층 관점');
   await expect(dialog).toContainText('각각 독립 계산기가 아닙니다');
-  // 맞춤 세팅을 누르면 묶음이 담기고, 개별 엔진도 여러 개 더 담을 수 있다
-  await dialog.locator('[data-engine-preset="career"]').click();
-  await expect(dialog.locator('[data-engine-preset="career"]')).toHaveAttribute('aria-pressed', 'true');
-  await expect(dialog).toContainText('담은 엔진 7개');
+  // 맞춤 세팅 추천 묶음은 사용자 요청으로 제거됨: 엔진은 하나씩 직접 담는다
+  await expect(dialog.locator('[data-engine-preset]')).toHaveCount(0);
+  await expect(dialog).not.toContainText('맞춤 세팅 추천');
   await dialog.getByRole('button', { name: '타로 담기', exact: true }).click();
-  await expect(dialog).toContainText('담은 엔진 8개');
+  await expect(dialog).toContainText('담은 엔진 1개');
   await dialog.getByRole('button', { name: '모두 비우기' }).click();
   await expect(dialog).toContainText('아직 담은 엔진이 없어요');
   const nameStyle = await dialog.locator('.lucy-engine-catalog-entry-name').first().evaluate(element => {
