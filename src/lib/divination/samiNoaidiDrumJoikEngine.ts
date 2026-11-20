@@ -1,6 +1,4 @@
-import { UserProfile } from '../../types';
-import { getKstNowParts } from '../sajuClock';
-import { calculateSaju } from './sajuEngine';
+import type { UserProfile } from '../sharedState';
 
 export type SamiDrumZoneId =
   | 'sun_center_beaivi'
@@ -90,9 +88,8 @@ const SAMI_EIGHT_SEASONS: readonly string[] = [
 ];
 
 function formatSamiKstTimestamp(now: Date): string {
-  const k = getKstNowParts(now);
-  const pad = (n: number) => String(n).padStart(2, '0');
-  return `${k.year}-${pad(k.month)}-${pad(k.day)}T${pad(k.hour)}:${pad(k.minute)}:${pad(k.second)}+09:00 (KST)`;
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  return `${kst.toISOString().slice(0, 19)}+09:00 (KST)`;
 }
 
 function stableHash(input: string): number {
@@ -110,7 +107,6 @@ export function calculateSamiNoaidiDrumJoik(params: {
   question?: string;
 }): SamiNoaidiDrumJoikResult {
   const now = params.now ?? new Date();
-  const saju = calculateSaju(params.profile);
   const query = (params.question ?? '').trim();
 
   const seed = stableHash(
@@ -118,8 +114,6 @@ export function calculateSamiNoaidiDrumJoik(params: {
       params.profile.name,
       params.profile.birthdate,
       params.profile.birthtime || 'unknown',
-      saju.dayMaster,
-      saju.dayPillar,
       query,
     ].join('|')
   );
