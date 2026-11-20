@@ -1,4 +1,4 @@
-import type { SajuBirthProfile } from './types';
+import type { UserProfile } from '../sharedState';
 
 export interface TatraRidgeResult {
   engineVersion: string;
@@ -45,12 +45,12 @@ const TATRA_ACTIONS = [
 ];
 
 export function calculateTatraShepherdRidge(params: {
-  profile: SajuBirthProfile;
+  profile: UserProfile;
   now?: Date;
   question?: string;
 }): TatraRidgeResult {
   const { profile, now = new Date(), question = '' } = params;
-  const seed = `${profile.birthDate ?? 'unknown'}|${profile.birthTime ?? 'unknown'}|${question.trim()}`;
+  const seed = `${JSON.stringify(profile.fate ?? {})}|${question.trim()}|${now.toISOString().slice(0, 13)}`;
   const hash = stableHash(seed);
 
   const motif = TATRA_MOTIFS[hash % TATRA_MOTIFS.length];

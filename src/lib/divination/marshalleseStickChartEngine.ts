@@ -1,4 +1,4 @@
-import type { SajuBirthProfile } from './types';
+import type { UserProfile } from '../sharedState';
 
 export interface MarshalleseChartResult {
   engineVersion: string;
@@ -45,12 +45,12 @@ const MARSHALLESE_ACTIONS = [
 ];
 
 export function calculateMarshalleseStickChart(params: {
-  profile: SajuBirthProfile;
+  profile: UserProfile;
   now?: Date;
   question?: string;
 }): MarshalleseChartResult {
   const { profile, now = new Date(), question = '' } = params;
-  const seed = `${profile.birthDate ?? 'unknown'}|${profile.birthTime ?? 'unknown'}|${question.trim()}`;
+  const seed = `${JSON.stringify(profile.fate ?? {})}|${question.trim()}|${now.toISOString().slice(0, 13)}`;
   const hash = stableHash(seed);
 
   const motif = MARSHALLESE_MOTIFS[hash % MARSHALLESE_MOTIFS.length];
