@@ -1,6 +1,6 @@
-import { UserProfile } from '../../types.js';
-import { getKstNowParts } from '../sajuClock.js';
-import { calculateSaju } from './sajuEngine.js';
+import { UserProfile } from '../../types';
+import { getKstNowParts } from '../sajuClock';
+import { calculateSaju } from './sajuEngine';
 
 export type RustaveliVirtueId =
   | 'megobroba_fellowship'
