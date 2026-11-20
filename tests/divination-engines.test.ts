@@ -13223,13 +13223,14 @@ test('Georgian Rustaveli Knight in the Panther’s Skin engine: virtues, +09:00 
 
 test('Armenian Narekatsi Lamentation Healing engine: contemplations, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateArmenianNarekatsiLamentationHealing({ profile, now: new Date('2026-11-20T05:05:00Z'), question: '마음이 지쳐서 쉬고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-ARMENIAN-NAREKATSI-v2.1.0');
-  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.equal(rep.engineVersion, 'LUCKEY-ARMENIAN-NAREKATSI-v2.2.0');
+  assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
+  assert.ok(rep.balancingContemplation.id !== rep.primaryContemplation.id);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('운세 점수가 아닙니다'));
   const prompt = formatArmenianNarekatsiPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('나레카치') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('나레카치') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.reflectionFocus));
 });
 
 test('Javanese Kejawen Rasa Harmony engine: principles, +09:00 KST, and interpretive boundary', () => {
@@ -13335,13 +13336,14 @@ test('Ainu Kamuy Iomante Harmony engine: aspects, +09:00 KST, and interpretive b
 
 test('Guarani Teko Pora Forest Harmony engine: principles, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateGuaraniTekoPoraForestHarmony({ profile, now: new Date('2026-11-20T05:50:00Z'), question: '나만의 속도로 공존하고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-GUARANI-TEKOPORA-v2.1.0');
-  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.equal(rep.engineVersion, 'LUCKEY-GUARANI-TEKOPORA-v2.2.0');
+  assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
+  assert.ok(rep.supportingPrinciple.name !== rep.primaryPrinciple.name);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatGuaraniTekoPoraPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('테코 포랑') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('테코 포랑') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.reflectionFocus));
 });
 
 test('Navajo Hozho Beauty Balance engine: pillars, +09:00 KST, and interpretive boundary', () => {
@@ -13368,13 +13370,14 @@ test('Bhutan GNH Tashi Tagye engine: pillars, +09:00 KST, and interpretive bound
 
 test('Baltic Romuva Darna Harmony engine: axes, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateBalticRomuvaDarnaHarmony({ profile, now: new Date('2026-11-20T06:00:00Z'), question: '자연스러운 리듬을 찾고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-BALTIC-ROMUVA-DARNA-v2.1.0');
-  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.equal(rep.engineVersion, 'LUCKEY-BALTIC-ROMUVA-DARNA-v2.2.0');
+  assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
+  assert.ok(rep.companionAxis.name !== rep.activeAxis.name);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatBalticRomuvaPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('로무바') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('로무바') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionAxis.name));
 });
 
 test('Minoan Labyrinth Labrys engine: stages, +09:00 KST, and interpretive boundary', () => {
