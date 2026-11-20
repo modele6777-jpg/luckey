@@ -343,6 +343,9 @@ import { calculateGeorgianRustaveliKnightPanther, formatGeorgianRustaveliKnightP
 import { calculateArmenianNarekatsiLamentationHealing, formatArmenianNarekatsiPrompt } from '../src/lib/divination/armenianNarekatsiLamentationHealingEngine';
 import { calculateJavaneseKejawenRasaHarmony, formatJavaneseKejawenPrompt } from '../src/lib/divination/javaneseKejawenRasaHarmonyEngine';
 import { calculatePhoenicianNavigatorStarCompass, formatPhoenicianNavigatorPrompt } from '../src/lib/divination/phoenicianNavigatorStarCompassEngine';
+import { calculateKazakhAbaiBookOfWords, formatKazakhAbaiPrompt } from '../src/lib/divination/kazakhAbaiBookOfWordsEngine';
+import { calculateAmazighDesertStarOasis, formatAmazighDesertPrompt } from '../src/lib/divination/amazighDesertStarOasisEngine';
+import { calculateHittiteTelepinuHarmonyRenewal, formatHittiteTelepinuPrompt } from '../src/lib/divination/hittiteTelepinuHarmonyRenewalEngine';
 
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
@@ -13152,4 +13155,37 @@ test('Phoenician Navigator Star Compass engine: beacons, +09:00 KST, and interpr
   const prompt = formatPhoenicianNavigatorPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
   assert.ok(prompt.includes('페니키아') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Kazakh Abai Book of Words engine: pillars, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateKazakhAbaiBookOfWords({ profile, now: new Date('2026-11-20T05:30:00Z'), question: '나만의 기준을 세우고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-KAZAKH-ABAI-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatKazakhAbaiPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('아바이') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Amazigh Desert Star Oasis engine: waypoints, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateAmazighDesertStarOasis({ profile, now: new Date('2026-11-20T05:30:00Z'), question: '지치지 않고 멀리 가고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-AMAZIGH-DESERT-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatAmazighDesertPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('아마지그') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Hittite Telepinu Harmony Renewal engine: phases, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateHittiteTelepinuHarmonyRenewal({ profile, now: new Date('2026-11-20T05:30:00Z'), question: '일상의 활력을 되찾고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-HITTITE-TELEPINU-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('운세 점수가 아닙니다'));
+  const prompt = formatHittiteTelepinuPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('테레피누') && prompt.includes('+09:00 (KST)'));
 });
