@@ -377,6 +377,9 @@ import { calculatePhoenicianNavigatorStarCompass, formatPhoenicianNavigatorPromp
 import { calculateKazakhAbaiBookOfWords, formatKazakhAbaiPrompt, type KazakhAbaiResult } from './kazakhAbaiBookOfWordsEngine';
 import { calculateAmazighDesertStarOasis, formatAmazighDesertPrompt, type AmazighDesertResult } from './amazighDesertStarOasisEngine';
 import { calculateHittiteTelepinuHarmonyRenewal, formatHittiteTelepinuPrompt, type HittiteTelepinuResult } from './hittiteTelepinuHarmonyRenewalEngine';
+import { calculateMapucheKultrunCosmicBalance, formatMapucheKultrunPrompt, type MapucheKultrunResult } from './mapucheKultrunCosmicBalanceEngine';
+import { calculateMelanesianSandDrawingPattern, formatMelanesianSandPrompt, type MelanesianSandResult } from './melanesianSandDrawingPatternEngine';
+import { calculateEtruscanTemplumSkyDivision, formatEtruscanTemplumPrompt, type EtruscanTemplumResult } from './etruscanTemplumSkyDivisionEngine';
 
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
@@ -772,6 +775,9 @@ export interface DeterministicEngineReport {
   kazakhAbaiBookOfWordsResult?: KazakhAbaiResult | null;
   amazighDesertStarOasisResult?: AmazighDesertResult | null;
   hittiteTelepinuHarmonyRenewalResult?: HittiteTelepinuResult | null;
+  mapucheKultrunCosmicBalanceResult?: MapucheKultrunResult | null;
+  melanesianSandDrawingPatternResult?: MelanesianSandResult | null;
+  etruscanTemplumSkyDivisionResult?: EtruscanTemplumResult | null;
 
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
@@ -3480,6 +3486,33 @@ try {
     }
   })()));
 
+  // 354. 마푸체 쿨트룬 우주 원환·땅의 균형 엔진
+  const mapucheKultrunCosmicBalanceResult = calculateSupplement('mapucheKultrunCosmicBalanceResult', () => ((() => {
+    try {
+      return calculateMapucheKultrunCosmicBalance({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 355. 바누아투·멜라네시아 모래 그림 연결·궤적 엔진
+  const melanesianSandDrawingPatternResult = calculateSupplement('melanesianSandDrawingPatternResult', () => ((() => {
+    try {
+      return calculateMelanesianSandDrawingPattern({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 356. 고대 에트루리아 템플룸 하늘 구획·징조 성찰 엔진
+  const etruscanTemplumSkyDivisionResult = calculateSupplement('etruscanTemplumSkyDivisionResult', () => ((() => {
+    try {
+      return calculateEtruscanTemplumSkyDivision({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
   // 220. 한국 신라 의상대사 화엄일승법계도 & 법성게 원융무애 엔진
   const uisangHwaeomIlseungBeopgyeResult = calculateSupplement('uisangHwaeomIlseungBeopgyeResult', () => ((() => {
     try {
@@ -4851,6 +4884,9 @@ try {
     kazakhAbaiBookOfWordsResult,
     amazighDesertStarOasisResult,
     hittiteTelepinuHarmonyRenewalResult,
+    mapucheKultrunCosmicBalanceResult,
+    melanesianSandDrawingPatternResult,
+    etruscanTemplumSkyDivisionResult,
     tools: toolsMap,
   };
 }
@@ -5227,6 +5263,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'kazakhAbaiBookOfWords', nameKo: '카자흐 아바이 교훈의 말씀', icon: '📜', category: 'deep_master', summary: '카자흐 사상가 아바이 《교훈의 말씀》의 이성(Aqyl)·의지(Qairat)·온기(Jurek)로 중심을 잡는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'muse' },
   { key: 'amazighDesertStarOasis', nameKo: '아마지그 사막 별 오아시스 길잡이', icon: '🏜️', category: 'deep_master', summary: '북아프리카 아마지그 유목민이 별자리와 오아시스로 사막을 건너듯 에너지 배분과 경계를 세우는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'aura' },
   { key: 'hittiteTelepinuHarmonyRenewal', nameKo: '고대 히타이트 테레피누 조화 회복', icon: '🌿', category: 'deep_master', summary: '고대 아나톨리아 테레피누 신화의 진정·질서 회복 모티프로 지친 일상의 리듬을 되살리는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'bluebird' },
+  { key: 'mapucheKultrunCosmicBalance', nameKo: '마푸체 쿨트룬 우주 원환 균형', icon: '🥁', category: 'deep_master', summary: '남미 마푸체 쿨트룬의 사방위와 계절 순환으로 오늘의 과부하와 여백의 균형을 살피는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'aura' },
+  { key: 'melanesianSandDrawingPattern', nameKo: '바누아투 모래 그림 연결 궤적', icon: '〰️', category: 'deep_master', summary: '바누아투 모래 그림의 한 붓 잇기 원리로 흩어진 고민을 하나의 우선순위 맥락으로 잇는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'muse' },
+  { key: 'etruscanTemplumSkyDivision', nameKo: '고대 에트루리아 템플룸 구획', icon: '🏛️', category: 'deep_master', summary: '고대 에트루리아 템플룸의 하늘 구획법처럼 시야를 나누어 지금 집중할 영역과 경계를 가늠하는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'trinity' },
 ] as DceEngineMeta[]).filter(engine => !LUCY_PRO_CATALOG_DUPLICATE_KEYS.has(engine.key));
 
 export function getFiredEngineBadges(
@@ -5734,6 +5773,7 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'armenianNarekatsiLamentationHealing',
     'amazighDesertStarOasis',
     'hittiteTelepinuHarmonyRenewal',
+    'mapucheKultrunCosmicBalance',
   ],
   creative_mind: [
     'irishJamesJoyceUlyssesEpiphany',
@@ -6013,6 +6053,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'kazakhAbaiBookOfWords',
     'amazighDesertStarOasis',
     'hittiteTelepinuHarmonyRenewal',
+    'mapucheKultrunCosmicBalance',
+    'melanesianSandDrawingPattern',
+    'etruscanTemplumSkyDivision',
   ],
 };
 

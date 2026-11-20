@@ -346,6 +346,9 @@ import { calculatePhoenicianNavigatorStarCompass, formatPhoenicianNavigatorPromp
 import { calculateKazakhAbaiBookOfWords, formatKazakhAbaiPrompt } from '../src/lib/divination/kazakhAbaiBookOfWordsEngine';
 import { calculateAmazighDesertStarOasis, formatAmazighDesertPrompt } from '../src/lib/divination/amazighDesertStarOasisEngine';
 import { calculateHittiteTelepinuHarmonyRenewal, formatHittiteTelepinuPrompt } from '../src/lib/divination/hittiteTelepinuHarmonyRenewalEngine';
+import { calculateMapucheKultrunCosmicBalance, formatMapucheKultrunPrompt } from '../src/lib/divination/mapucheKultrunCosmicBalanceEngine';
+import { calculateMelanesianSandDrawingPattern, formatMelanesianSandPrompt } from '../src/lib/divination/melanesianSandDrawingPatternEngine';
+import { calculateEtruscanTemplumSkyDivision, formatEtruscanTemplumPrompt } from '../src/lib/divination/etruscanTemplumSkyDivisionEngine';
 
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
@@ -13188,4 +13191,37 @@ test('Hittite Telepinu Harmony Renewal engine: phases, +09:00 KST, and interpret
   const prompt = formatHittiteTelepinuPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
   assert.ok(prompt.includes('테레피누') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Mapuche Kultrun Cosmic Balance engine: directions, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateMapucheKultrunCosmicBalance({ profile, now: new Date('2026-11-20T05:40:00Z'), question: '일과 휴식의 균형을 잡고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-MAPUCHE-KULTRUN-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatMapucheKultrunPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('쿨트룬') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Melanesian Sand Drawing Pattern engine: motifs, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateMelanesianSandDrawingPattern({ profile, now: new Date('2026-11-20T05:40:00Z'), question: '흩어진 고민을 하나로 잇고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-MELANESIAN-SAND-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatMelanesianSandPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('모래 그림') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Etruscan Templum Sky Division engine: sectors, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateEtruscanTemplumSkyDivision({ profile, now: new Date('2026-11-20T05:40:00Z'), question: '지금 집중할 영역과 경계를 정하고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-ETRUSCAN-TEMPLUM-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatEtruscanTemplumPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('템플룸') && prompt.includes('+09:00 (KST)'));
 });

@@ -1407,5 +1407,17 @@ export const MASTER_REVIEW_BINDINGS: Record<string, { field: string; traceKey: s
   "hittiteTelepinuHarmonyRenewal": {
     "field": "hittiteTelepinuHarmonyRenewalResult",
     "traceKey": "hittiteTelepinuHarmonyRenewalResult"
+  },
+  "mapucheKultrunCosmicBalance": {
+    "field": "mapucheKultrunCosmicBalanceResult",
+    "traceKey": "mapucheKultrunCosmicBalanceResult"
+  },
+  "melanesianSandDrawingPattern": {
+    "field": "melanesianSandDrawingPatternResult",
+    "traceKey": "melanesianSandDrawingPatternResult"
+  },
+  "etruscanTemplumSkyDivision": {
+    "field": "etruscanTemplumSkyDivisionResult",
+    "traceKey": "etruscanTemplumSkyDivisionResult"
   }
 };
