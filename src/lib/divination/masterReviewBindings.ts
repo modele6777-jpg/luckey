@@ -1551,5 +1551,17 @@ export const MASTER_REVIEW_BINDINGS: Record<string, { field: string; traceKey: s
   "scythianGoldenStagSteppe": {
     "field": "scythianGoldenStagSteppeResult",
     "traceKey": "scythianGoldenStagSteppeResult"
+  },
+  "galicianCaminoAtlanticReflection": {
+    "field": "galicianCaminoAtlanticReflectionResult",
+    "traceKey": "galicianCaminoAtlanticReflectionResult"
+  },
+  "uyghurKutadguBiligWisdom": {
+    "field": "uyghurKutadguBiligWisdomResult",
+    "traceKey": "uyghurKutadguBiligWisdomResult"
+  },
+  "buryatBaikalTengriHarmony": {
+    "field": "buryatBaikalTengriHarmonyResult",
+    "traceKey": "buryatBaikalTengriHarmonyResult"
   }
 };

@@ -382,6 +382,9 @@ import { calculateOccitanTroubadourParatge, formatOccitanParatgePrompt } from '.
 import { calculateZapotecPiyeCloudWisdom, formatZapotecPiyePrompt } from '../src/lib/divination/zapotecPiyeCloudWisdomEngine';
 import { calculateSakhaOlonkhoThreeWorlds, formatSakhaOlonkhoPrompt } from '../src/lib/divination/sakhaOlonkhoThreeWorldsEngine';
 import { calculateScythianGoldenStagSteppe, formatScythianGoldenStagPrompt } from '../src/lib/divination/scythianGoldenStagSteppeEngine';
+import { calculateGalicianCaminoAtlanticReflection, formatGalicianCaminoPrompt } from '../src/lib/divination/galicianCaminoAtlanticReflectionEngine';
+import { calculateUyghurKutadguBiligWisdom, formatUyghurKutadguPrompt } from '../src/lib/divination/uyghurKutadguBiligWisdomEngine';
+import { calculateBuryatBaikalTengriHarmony, formatBuryatBaikalPrompt } from '../src/lib/divination/buryatBaikalTengriHarmonyEngine';
 
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
@@ -13620,4 +13623,37 @@ test('Scythian Golden Stag Steppe engine: emblem, +09:00 KST, and interpretive b
   const prompt = formatScythianGoldenStagPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
   assert.ok(prompt.includes('스키타이') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Galician Camino Atlantic Reflection engine: sign, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateGalicianCaminoAtlanticReflection({ profile, now: new Date('2026-11-20T07:32:00Z'), question: '나만의 걸음 속도를 되찾고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-GALICIAN-CAMINO-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatGalicianCaminoPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('갈리시아') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Uyghur Kutadgu Bilig Wisdom engine: pillar, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateUyghurKutadguBiligWisdom({ profile, now: new Date('2026-11-20T07:32:00Z'), question: '오늘의 선택에서 절제와 분별을 세우고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-UYGHUR-KUTADGU-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatUyghurKutadguPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('위구르') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Buryat Baikal Tengri Harmony engine: spirit, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateBuryatBaikalTengriHarmony({ profile, now: new Date('2026-11-20T07:32:00Z'), question: '마음의 물결을 맑게 조율하고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-BURYAT-BAIKAL-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatBuryatBaikalPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('부랴트') && prompt.includes('+09:00 (KST)'));
 });
