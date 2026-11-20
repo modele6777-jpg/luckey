@@ -1863,5 +1863,17 @@ export const MASTER_REVIEW_BINDINGS: Record<string, { field: string; traceKey: s
   "palauanBaiRafterBalance": {
     "field": "palauanBaiRafterBalanceResult",
     "traceKey": "palauanBaiRafterBalanceResult"
+  },
+  "zimbabweGreatStoneWall": {
+    "field": "zimbabweGreatStoneWallResult",
+    "traceKey": "zimbabweGreatStoneWallResult"
+  },
+  "bulgarianRoseValleyDawn": {
+    "field": "bulgarianRoseValleyDawnResult",
+    "traceKey": "bulgarianRoseValleyDawnResult"
+  },
+  "azeriCarpetFlamePoise": {
+    "field": "azeriCarpetFlamePoiseResult",
+    "traceKey": "azeriCarpetFlamePoiseResult"
   }
 };
