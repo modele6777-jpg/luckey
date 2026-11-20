@@ -897,7 +897,7 @@ function AppContent() {
       </AnimatePresence>
 
       <main className={`sites-pinned-main flex-1 min-h-0 overflow-x-hidden relative w-full ${isDuoUnfolded ? `duo-dual-view flex ${isDuoPortrait ? 'flex-col' : isDuoPanesSwapped ? 'flex-row-reverse' : 'flex-row'}` : 'flex flex-col'}`}>
-          <div className={`w-full h-full min-h-0 overflow-hidden flex relative ${!isDuoUnfolded ? 'flex-col' : isDuoPortrait ? 'flex-col' : isDuoPanesSwapped ? 'flex-row-reverse' : 'flex-row'}`}>
+          <div className={`w-full h-full flex-1 min-h-0 overflow-hidden flex relative ${!isDuoUnfolded ? 'flex-col' : isDuoPortrait ? 'flex-col' : isDuoPanesSwapped ? 'flex-row-reverse' : 'flex-row'}`}>
             {/* 콘텐츠 뷰포트:
                 - 가로(Landscape): 물리 힌지 기준 기기 절반 (50vw)
                 - 세로(Portrait): 상단 50%
