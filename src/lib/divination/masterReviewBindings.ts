@@ -1875,5 +1875,17 @@ export const MASTER_REVIEW_BINDINGS: Record<string, { field: string; traceKey: s
   "azeriCarpetFlamePoise": {
     "field": "azeriCarpetFlamePoiseResult",
     "traceKey": "azeriCarpetFlamePoiseResult"
+  },
+  "dalmatianStoneLavenderCalm": {
+    "field": "dalmatianStoneLavenderCalmResult",
+    "traceKey": "dalmatianStoneLavenderCalmResult"
+  },
+  "kubaRaffiaGeometryOrder": {
+    "field": "kubaRaffiaGeometryOrderResult",
+    "traceKey": "kubaRaffiaGeometryOrderResult"
+  },
+  "samoanFaleTapaBreeze": {
+    "field": "samoanFaleTapaBreezeResult",
+    "traceKey": "samoanFaleTapaBreezeResult"
   }
 };
