@@ -10,6 +10,7 @@ export interface WodaabeGerewolResult {
   engineVersion: string;
   calculatedAtKst: string;
   desertGathering: string;
+  companionGathering: string;
   innerPoise: string;
   reflectionFocus: string;
   ritualAction: string;
@@ -47,7 +48,12 @@ const QUESTIONS = [
 
 function toKstIso(now: Date): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
-  return kst.toISOString().replace('Z', '+09:00 (KST)');
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
 }
 
 function hashSeed(text: string): number {
@@ -61,16 +67,22 @@ function hashSeed(text: string): number {
 
 export function calculateWodaabeGerewol(input: WodaabeGerewolInput): WodaabeGerewolResult {
   const fate = input.profile.fate ?? {};
-  const seed = hashSeed(`${JSON.stringify(fate)}|${input.now.toISOString().slice(0, 13)}|${input.question ?? ''}`);
+  const seedText = `${JSON.stringify(fate)}|${input.now.toISOString().slice(0, 13)}|${input.question ?? ''}`;
+  const seed = hashSeed(seedText);
+  const gatheringIdx = seed % GATHERINGS.length;
+  const companionOffset = 1 + (hashSeed(`${seedText}|companion`) % (GATHERINGS.length - 1));
+  const desertGathering = GATHERINGS[gatheringIdx];
+  const companionGathering = GATHERINGS[(gatheringIdx + companionOffset) % GATHERINGS.length];
 
   return {
-    engineVersion: 'LUCKEY-WODAABE-GEREWOL-v2.1.0',
+    engineVersion: 'LUCKEY-WODAABE-GEREWOL-v2.2.0',
     calculatedAtKst: toKstIso(input.now),
-    desertGathering: GATHERINGS[seed % GATHERINGS.length],
+    desertGathering,
+    companionGathering,
     innerPoise: POISES[(seed >>> 3) % POISES.length],
-    reflectionFocus: '사헬 유목민 우다베 족이 긴 건기를 지나 우기에 모여 인내와 품위(무냐)를 나누는 게레월 축제에서 길어 올린 태도와 회복의 상징적 관점입니다.',
-    ritualAction: ACTIONS[(seed >>> 6) % ACTIONS.length],
-    reflectiveQuestion: QUESTIONS[(seed >>> 9) % QUESTIONS.length],
+    reflectionFocus: `사헬 유목민 우다베 족이 긴 건기를 지나 우기에 모여 인내와 품위(무냐)를 나누는 게레월 축제에서 주 만남('${desertGathering}')과 동반 만남('${companionGathering}')을 겹쳐 태도와 회복을 읽는 상징적 관점입니다.`,
+    ritualAction: ACTIONS[gatheringIdx],
+    reflectiveQuestion: QUESTIONS[gatheringIdx],
     interpretiveBoundary: '개인 점수·심리 진단·미래 예측이 아닙니다. 자기 성찰을 돕기 위한 상징적 관점 안내입니다.',
   };
 }
@@ -80,6 +92,7 @@ export function formatWodaabeGerewolPrompt(res: WodaabeGerewolResult): string {
     `[우다베·게레월 사헬 품위 관점 · ${res.engineVersion}]`,
     `기준 시각: ${res.calculatedAtKst}`,
     `만남의 장: ${res.desertGathering}`,
+    `동반 장: ${res.companionGathering}`,
     `내면 품위: ${res.innerPoise}`,
     `성찰 초점: ${res.reflectionFocus}`,
     `권장 의식: ${res.ritualAction}`,

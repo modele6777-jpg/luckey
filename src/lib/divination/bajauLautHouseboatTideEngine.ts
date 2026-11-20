@@ -10,6 +10,7 @@ export interface BajauLautResult {
   engineVersion: string;
   calculatedAtKst: string;
   tidalAnchor: string;
+  companionAnchor: string;
   horizonDrift: string;
   reflectionFocus: string;
   ritualAction: string;
@@ -47,7 +48,12 @@ const QUESTIONS = [
 
 function toKstIso(now: Date): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
-  return kst.toISOString().replace('Z', '+09:00 (KST)');
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
 }
 
 function hashSeed(text: string): number {
@@ -61,16 +67,22 @@ function hashSeed(text: string): number {
 
 export function calculateBajauLautTide(input: BajauLautInput): BajauLautResult {
   const fate = input.profile.fate ?? {};
-  const seed = hashSeed(`${JSON.stringify(fate)}|${input.now.toISOString().slice(0, 13)}|${input.question ?? ''}`);
+  const seedText = `${JSON.stringify(fate)}|${input.now.toISOString().slice(0, 13)}|${input.question ?? ''}`;
+  const seed = hashSeed(seedText);
+  const anchorIdx = seed % ANCHORS.length;
+  const companionOffset = 1 + (hashSeed(`${seedText}|companion`) % (ANCHORS.length - 1));
+  const tidalAnchor = ANCHORS[anchorIdx];
+  const companionAnchor = ANCHORS[(anchorIdx + companionOffset) % ANCHORS.length];
 
   return {
-    engineVersion: 'LUCKEY-BAJAU-LAUT-v2.1.0',
+    engineVersion: 'LUCKEY-BAJAU-LAUT-v2.2.0',
     calculatedAtKst: toKstIso(input.now),
-    tidalAnchor: ANCHORS[seed % ANCHORS.length],
+    tidalAnchor,
+    companionAnchor,
     horizonDrift: DRIFTS[(seed >>> 3) % DRIFTS.length],
-    reflectionFocus: '동남아 술루해·셀레베스해를 집 삼아 물때와 호흡으로 살아가는 바야우 라우트 바다 유목민의 레파(Lepa) 항해처럼, 가벼움과 호흡의 리듬을 읽는 상징적 관점입니다.',
-    ritualAction: ACTIONS[(seed >>> 6) % ACTIONS.length],
-    reflectiveQuestion: QUESTIONS[(seed >>> 9) % QUESTIONS.length],
+    reflectionFocus: `동남아 술루해·셀레베스해를 집 삼아 물때와 호흡으로 살아가는 바야우 라우트 바다 유목민의 레파(Lepa) 항해처럼, 주 닻 자리('${tidalAnchor}')와 동반 자리('${companionAnchor}')를 겹쳐 가벼움과 호흡의 리듬을 읽는 상징적 관점입니다.`,
+    ritualAction: ACTIONS[anchorIdx],
+    reflectiveQuestion: QUESTIONS[anchorIdx],
     interpretiveBoundary: '개인 점수·심리 진단·미래 예측이 아닙니다. 자기 성찰을 돕기 위한 상징적 관점 안내입니다.',
   };
 }
@@ -80,6 +92,7 @@ export function formatBajauLautPrompt(res: BajauLautResult): string {
     `[바야우·라우트 바다 유목 물때 관점 · ${res.engineVersion}]`,
     `기준 시각: ${res.calculatedAtKst}`,
     `닻의 자리: ${res.tidalAnchor}`,
+    `동반 자리: ${res.companionAnchor}`,
     `항해 흐름: ${res.horizonDrift}`,
     `성찰 초점: ${res.reflectionFocus}`,
     `권장 의식: ${res.ritualAction}`,

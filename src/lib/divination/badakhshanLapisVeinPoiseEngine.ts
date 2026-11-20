@@ -10,6 +10,7 @@ export interface BadakhshanLapisResult {
   engineVersion: string;
   calculatedAtKst: string;
   azureVein: string;
+  companionVein: string;
   mineralCraft: string;
   reflectionFocus: string;
   ritualAction: string;
@@ -47,7 +48,12 @@ const QUESTIONS = [
 
 function toKstIso(now: Date): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
-  return kst.toISOString().replace('Z', '+09:00 (KST)');
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
 }
 
 function hashSeed(text: string): number {
@@ -61,16 +67,22 @@ function hashSeed(text: string): number {
 
 export function calculateBadakhshanLapisVein(input: BadakhshanLapisInput): BadakhshanLapisResult {
   const fate = input.profile.fate ?? {};
-  const seed = hashSeed(`${JSON.stringify(fate)}|${input.now.toISOString().slice(0, 13)}|${input.question ?? ''}`);
+  const seedText = `${JSON.stringify(fate)}|${input.now.toISOString().slice(0, 13)}|${input.question ?? ''}`;
+  const seed = hashSeed(seedText);
+  const veinIdx = seed % VEINS.length;
+  const companionOffset = 1 + (hashSeed(`${seedText}|companion`) % (VEINS.length - 1));
+  const azureVein = VEINS[veinIdx];
+  const companionVein = VEINS[(veinIdx + companionOffset) % VEINS.length];
 
   return {
-    engineVersion: 'LUCKEY-BADAKHSHAN-LAPIS-v2.1.0',
+    engineVersion: 'LUCKEY-BADAKHSHAN-LAPIS-v2.2.0',
     calculatedAtKst: toKstIso(input.now),
-    azureVein: VEINS[seed % VEINS.length],
+    azureVein,
+    companionVein,
     mineralCraft: CRAFTS[(seed >>> 3) % CRAFTS.length],
-    reflectionFocus: '힌두쿠시 바다흐샨의 험준한 암벽에서 캐낸 청금석(라피스 라줄리)을 곱게 갈아 가장 순수한 푸른 안료를 얻던 공예처럼, 정제와 고유의 결을 살피는 상징적 관점입니다.',
-    ritualAction: ACTIONS[(seed >>> 6) % ACTIONS.length],
-    reflectiveQuestion: QUESTIONS[(seed >>> 9) % QUESTIONS.length],
+    reflectionFocus: `힌두쿠시 바다흐샨의 험준한 암벽에서 캐낸 청금석(라피스 라줄리)을 곱게 갈아 가장 순수한 푸른 안료를 얻던 공예처럼, 주 맥('${azureVein}')과 동반 맥('${companionVein}')을 함께 살피며 정제와 고유의 결을 읽는 상징적 관점입니다.`,
+    ritualAction: ACTIONS[veinIdx],
+    reflectiveQuestion: QUESTIONS[veinIdx],
     interpretiveBoundary: '개인 점수·심리 진단·미래 예측이 아닙니다. 자기 성찰을 돕기 위한 상징적 관점 안내입니다.',
   };
 }
@@ -80,6 +92,7 @@ export function formatBadakhshanLapisPrompt(res: BadakhshanLapisResult): string 
     `[바다흐샨·청금석 안료 관점 · ${res.engineVersion}]`,
     `기준 시각: ${res.calculatedAtKst}`,
     `청금석 맥: ${res.azureVein}`,
+    `동반 맥: ${res.companionVein}`,
     `정제 공예: ${res.mineralCraft}`,
     `성찰 초점: ${res.reflectionFocus}`,
     `권장 의식: ${res.ritualAction}`,
