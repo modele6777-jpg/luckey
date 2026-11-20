@@ -4,6 +4,7 @@ export interface NaxiDongbaResult {
   engineVersion: string;
   calculatedAtKst: string;
   scriptMotif: string;
+  companionMotif: string;
   chimeResonance: string;
   reflectionFocus: string;
   ritualAction: string;
@@ -47,7 +48,12 @@ const QUESTIONS = [
 
 function toKstIso(now: Date): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
-  return kst.toISOString().replace('Z', '+09:00 (KST)');
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
 }
 
 function hashSeed(text: string): number {
@@ -61,16 +67,22 @@ function hashSeed(text: string): number {
 
 export function calculateNaxiDongbaChime(input: NaxiDongbaInput): NaxiDongbaResult {
   const fate = input.profile.fate ?? {};
-  const seed = hashSeed(`${JSON.stringify(fate)}|${input.now.toISOString().slice(0, 13)}|${input.question ?? ''}`);
+  const seedText = `${JSON.stringify(fate)}|${input.now.toISOString().slice(0, 13)}|${input.question ?? ''}`;
+  const seed = hashSeed(seedText);
+  const motifIdx = seed % MOTIFS.length;
+  const companionOffset = 1 + (hashSeed(`${seedText}|companion`) % (MOTIFS.length - 1));
+  const scriptMotif = MOTIFS[motifIdx];
+  const companionMotif = MOTIFS[(motifIdx + companionOffset) % MOTIFS.length];
 
   return {
-    engineVersion: 'LUCKEY-NAXI-DONGBA-v2.1.0',
+    engineVersion: 'LUCKEY-NAXI-DONGBA-v2.2.0',
     calculatedAtKst: toKstIso(input.now),
-    scriptMotif: MOTIFS[seed % MOTIFS.length],
+    scriptMotif,
+    companionMotif,
     chimeResonance: RESONANCES[(seed >>> 3) % RESONANCES.length],
-    reflectionFocus: '윈난 리장의 나시족 동파 문자처럼 살아 있는 상형 기호로 자연과 사람의 조화를 짚고 마음의 풍경을 단순화하는 상징적 관점입니다.',
-    ritualAction: ACTIONS[(seed >>> 6) % ACTIONS.length],
-    reflectiveQuestion: QUESTIONS[(seed >>> 9) % QUESTIONS.length],
+    reflectionFocus: `윈난 리장의 나시족 동파 문자처럼 주 모티프('${scriptMotif}')와 동반 모티프('${companionMotif}')가 어우러져 살아 있는 상형 기호로 자연과 사람의 조화를 짚고 마음의 풍경을 단순화하는 상징적 관점입니다.`,
+    ritualAction: ACTIONS[motifIdx],
+    reflectiveQuestion: QUESTIONS[motifIdx],
     interpretiveBoundary: '개인 점수·심리 진단·미래 예측이 아닙니다. 자기 성찰을 돕기 위한 상징적 관점 안내입니다.',
   };
 }
@@ -80,6 +92,7 @@ export function formatNaxiDongbaPrompt(res: NaxiDongbaResult): string {
     `[나시·동파 상형문자 바람종 관점 · ${res.engineVersion}]`,
     `기준 시각: ${res.calculatedAtKst}`,
     `문자 모티프: ${res.scriptMotif}`,
+    `동반 모티프: ${res.companionMotif}`,
     `울림: ${res.chimeResonance}`,
     `성찰 초점: ${res.reflectionFocus}`,
     `권장 의식: ${res.ritualAction}`,
