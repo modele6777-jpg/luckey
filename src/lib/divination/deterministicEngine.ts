@@ -428,6 +428,9 @@ import { calculateBengaliBaulMonerManush, formatBengaliBaulPrompt, type BengaliB
 import { calculatePunjabiNanakLangarService, formatPunjabiNanakPrompt, type PunjabiNanakResult } from './punjabiNanakLangarServiceEngine';
 import { calculateChuvashTuraWorldTreeBalance, formatChuvashTuraPrompt, type ChuvashTuraResult } from './chuvashTuraWorldTreeBalanceEngine';
 import { calculateKalmykJangarBumbaSteppe, formatKalmykJangarPrompt, type KalmykJangarResult } from './kalmykJangarBumbaSteppeEngine';
+import { calculateBugisLontaraPasikWisdom, formatBugisLontaraPrompt, type BugisLontaraResult } from './bugisLontaraPasikWisdomEngine';
+import { calculateLatvianDainasMaraHarmony, formatLatvianDainasPrompt, type LatvianDainasResult } from './latvianDainasMaraHarmonyEngine';
+import { calculateCherokeeGadugiHarmony, formatCherokeeGadugiPrompt, type CherokeeGadugiResult } from './cherokeeGadugiHarmonyEngine';
 
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
@@ -874,6 +877,9 @@ export interface DeterministicEngineReport {
   punjabiNanakLangarServiceResult?: PunjabiNanakResult | null;
   chuvashTuraWorldTreeBalanceResult?: ChuvashTuraResult | null;
   kalmykJangarBumbaSteppeResult?: KalmykJangarResult | null;
+  bugisLontaraPasikWisdomResult?: BugisLontaraResult | null;
+  latvianDainasMaraHarmonyResult?: LatvianDainasResult | null;
+  cherokeeGadugiHarmonyResult?: CherokeeGadugiResult | null;
 
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
@@ -4041,6 +4047,33 @@ try {
     }
   })()));
 
+  // 405. 부기스 론타라·파시크 지혜 엔진
+  const bugisLontaraPasikWisdomResult = calculateSupplement('bugisLontaraPasikWisdomResult', () => ((() => {
+    try {
+      return calculateBugisLontaraPasikWisdom({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 406. 라트비아 다이나스·마라 조화 엔진
+  const latvianDainasMaraHarmonyResult = calculateSupplement('latvianDainasMaraHarmonyResult', () => ((() => {
+    try {
+      return calculateLatvianDainasMaraHarmony({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 407. 체로키 가두기·두육트브 조화 엔진
+  const cherokeeGadugiHarmonyResult = calculateSupplement('cherokeeGadugiHarmonyResult', () => ((() => {
+    try {
+      return calculateCherokeeGadugiHarmony({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
   // 220. 한국 신라 의상대사 화엄일승법계도 & 법성게 원융무애 엔진
   const uisangHwaeomIlseungBeopgyeResult = calculateSupplement('uisangHwaeomIlseungBeopgyeResult', () => ((() => {
     try {
@@ -5463,6 +5496,9 @@ try {
     punjabiNanakLangarServiceResult,
     chuvashTuraWorldTreeBalanceResult,
     kalmykJangarBumbaSteppeResult,
+    bugisLontaraPasikWisdomResult,
+    latvianDainasMaraHarmonyResult,
+    cherokeeGadugiHarmonyResult,
     tools: toolsMap,
   };
 }
@@ -5890,6 +5926,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'punjabiNanakLangarService', nameKo: '펀자브 나낙·랑가르 나눔', icon: '🌾', category: 'deep_master', summary: '펀자브 나낙의 정직한 땀(Kirat Karo)과 나눔(Langar)처럼 성실함과 넉넉한 기상(Chardi Kala)을 세우는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'bluebird' },
   { key: 'chuvashTuraWorldTreeBalance', nameKo: '추바시 투라·세계수', icon: '🪡', category: 'deep_master', summary: '볼가 추바시의 키레메트와 전통 자수처럼 한 땀씩 정갈하게 순서를 밟아 내면의 질서를 세우는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'trinity' },
   { key: 'kalmykJangarBumbaSteppe', nameKo: '칼미크 쟌가르·붐바', icon: '🐎', category: 'deep_master', summary: '칼미크 《쟌가르》의 붐바 이상향처럼 조급한 경쟁심을 내려놓고 넓은 초원의 넉넉한 시야와 신의를 지키는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'muse' },
+  { key: 'bugisLontaraPasikWisdom', nameKo: '부기스 론타라·파시크', icon: '⛵', category: 'deep_master', summary: '술라웨시 부기스 항해사의 시리 나 파체(Siri’ na Pacce)처럼 자신의 품위와 타인을 향한 연민의 균형으로 오늘의 항로를 정하는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'aura' },
+  { key: 'latvianDainasMaraHarmony', nameKo: '라트비아 다이나스·마라', icon: '🌾', category: 'deep_master', summary: '라트비아 다이나스 구전 시가처럼 거창한 해답보다 오늘 내 일상의 작은 리듬과 몸의 감각을 정성껏 돌보는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'bluebird' },
+  { key: 'cherokeeGadugiHarmony', nameKo: '체로키 가두기·두육트브', icon: '🐺', category: 'deep_master', summary: '북미 체로키의 가두기(Gadugi) 상호부조와 두육트브(Duyuktv)처럼 내 안의 두려움 대신 신뢰와 조화에 마음을 보태는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'trinity' },
 ] as DceEngineMeta[]).filter(engine => !LUCY_PRO_CATALOG_DUPLICATE_KEYS.has(engine.key));
 
 export function getFiredEngineBadges(
@@ -6735,6 +6774,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'punjabiNanakLangarService',
     'chuvashTuraWorldTreeBalance',
     'kalmykJangarBumbaSteppe',
+    'bugisLontaraPasikWisdom',
+    'latvianDainasMaraHarmony',
+    'cherokeeGadugiHarmony',
   ],
 };
 

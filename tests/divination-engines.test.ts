@@ -397,6 +397,9 @@ import { calculateBengaliBaulMonerManush, formatBengaliBaulPrompt } from '../src
 import { calculatePunjabiNanakLangarService, formatPunjabiNanakPrompt } from '../src/lib/divination/punjabiNanakLangarServiceEngine';
 import { calculateChuvashTuraWorldTreeBalance, formatChuvashTuraPrompt } from '../src/lib/divination/chuvashTuraWorldTreeBalanceEngine';
 import { calculateKalmykJangarBumbaSteppe, formatKalmykJangarPrompt } from '../src/lib/divination/kalmykJangarBumbaSteppeEngine';
+import { calculateBugisLontaraPasikWisdom, formatBugisLontaraPrompt } from '../src/lib/divination/bugisLontaraPasikWisdomEngine';
+import { calculateLatvianDainasMaraHarmony, formatLatvianDainasPrompt } from '../src/lib/divination/latvianDainasMaraHarmonyEngine';
+import { calculateCherokeeGadugiHarmony, formatCherokeeGadugiPrompt } from '../src/lib/divination/cherokeeGadugiHarmonyEngine';
 
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
@@ -13800,4 +13803,37 @@ test('Kalmyk Jangar Bumba Steppe engine: motif, +09:00 KST, and interpretive bou
   const prompt = formatKalmykJangarPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
   assert.ok(prompt.includes('칼미크') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Bugis Lontara Pasik Wisdom engine: principle, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateBugisLontaraPasikWisdom({ profile, now: new Date('2026-11-20T08:04:00Z'), question: '품위와 연민의 균형을 지키고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-BUGIS-LONTARA-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatBugisLontaraPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('부기스') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Latvian Dainas Mara Harmony engine: motif, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateLatvianDainasMaraHarmony({ profile, now: new Date('2026-11-20T08:04:00Z'), question: '오늘 일상의 작은 리듬을 돌보고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-LATVIAN-DAINAS-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatLatvianDainasPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('라트비아') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Cherokee Gadugi Harmony engine: principle, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateCherokeeGadugiHarmony({ profile, now: new Date('2026-11-20T08:04:00Z'), question: '신뢰와 조화에 마음을 보태고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-CHEROKEE-GADUGI-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatCherokeeGadugiPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('체로키') && prompt.includes('+09:00 (KST)'));
 });
