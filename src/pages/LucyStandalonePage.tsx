@@ -3,6 +3,7 @@ import { LucyModeName } from '@/components/chat/LucyModeName';
 import { ScreenPortal } from '@/components/layout/ScreenPortal';
 import { LucyModeTransition } from '@/components/chat/LucyModeTransition';
 import { LucyEntryScreen, type LucyEntryVariant } from '@/components/chat/LucyEntryScreen';
+import { publishTableSaju, publishTableAnswer } from '@/lib/lucyTableBus';
 import { isLucyChatPath } from '@/lib/duoPaneFocus';
 import { isLucyTarotDrawRequest, isLucyTarotDrawOpen } from '@/lib/lucyTarotIntegrity';
 import { useSyncedChatDraft } from '@/hooks/useSyncedChatDraft';
@@ -1587,6 +1588,22 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
   const isLucyGenerating = isMasterMode ? Boolean(isLucyProGenerating) : Boolean(isGenerating?.lucy);
   // 🧰 엔진함에서 담아 둔 엔진 (매 답변에 함께 사용)
   const selectedEngineKeys = useSelectedEngines();
+
+  // 🔮 펼친 루시 마스터의 왼쪽 테이블(사주 원국판)에 상담 대상의 원국과 루시의 최신 답을 넘긴다.
+  useEffect(() => {
+    if (isMasterMode) publishTableSaju(sajuInfo);
+  }, [isMasterMode, sajuInfo]);
+  useEffect(() => {
+    if (!isMasterMode || isLucyGenerating) return;
+    for (let i = lucyMessages.length - 1; i >= 0; i--) {
+      const m = lucyMessages[i];
+      if ((m.role === 'model' || m.role === 'assistant') && typeof m.content === 'string' && m.content.trim()) {
+        // 인사·안내 말풍선이 아니라, 사용자의 말에 대한 실제 답일 때만 테이블 면을 바꾼다.
+        if (lucyMessages.slice(0, i).some(prev => prev.role === 'user')) publishTableAnswer(m.content);
+        return;
+      }
+    }
+  }, [isMasterMode, isLucyGenerating, lucyMessages]);
 
   // 🔮 점술모드가 켜지면 타로집에 들어선 것처럼 루시가 먼저 인사한다 (다른 화면에서 홀드해 들어와도 1회).
   // 루시 마스터는 나갔다 다시 들어오면 항상 처음부터: 이전 마스터 대화를 비우고 새 인사로 시작한다.
