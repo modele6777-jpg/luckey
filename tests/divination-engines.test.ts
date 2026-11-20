@@ -385,6 +385,9 @@ import { calculateScythianGoldenStagSteppe, formatScythianGoldenStagPrompt } fro
 import { calculateGalicianCaminoAtlanticReflection, formatGalicianCaminoPrompt } from '../src/lib/divination/galicianCaminoAtlanticReflectionEngine';
 import { calculateUyghurKutadguBiligWisdom, formatUyghurKutadguPrompt } from '../src/lib/divination/uyghurKutadguBiligWisdomEngine';
 import { calculateBuryatBaikalTengriHarmony, formatBuryatBaikalPrompt } from '../src/lib/divination/buryatBaikalTengriHarmonyEngine';
+import { calculateCornishKernowSeaGranite, formatCornishKernowPrompt } from '../src/lib/divination/cornishKernowSeaGraniteEngine';
+import { calculateOssetianNartSagasForge, formatOssetianNartPrompt } from '../src/lib/divination/ossetianNartSagasForgeEngine';
+import { calculateSardinianNuragheStoneCalm, formatSardinianNuraghePrompt } from '../src/lib/divination/sardinianNuragheStoneCalmEngine';
 
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
@@ -13656,4 +13659,37 @@ test('Buryat Baikal Tengri Harmony engine: spirit, +09:00 KST, and interpretive 
   const prompt = formatBuryatBaikalPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
   assert.ok(prompt.includes('부랴트') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Cornish Kernow Sea Granite engine: landmark, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateCornishKernowSeaGranite({ profile, now: new Date('2026-11-20T07:38:00Z'), question: '묵묵히 내공을 쌓아 가고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-CORNISH-KERNOW-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatCornishKernowPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('콘월') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Ossetian Nart Sagas Forge engine: emblem, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateOssetianNartSagasForge({ profile, now: new Date('2026-11-20T07:38:00Z'), question: '지금의 수고를 단련으로 바꾸고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-OSSETIAN-NART-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatOssetianNartPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('오세트') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Sardinian Nuraghe Stone Calm engine: stone, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateSardinianNuragheStoneCalm({ profile, now: new Date('2026-11-20T07:38:00Z'), question: '꾸밈없는 고요한 균형을 찾고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-SARDINIAN-NURAGHE-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatSardinianNuraghePrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('사르데냐') && prompt.includes('+09:00 (KST)'));
 });

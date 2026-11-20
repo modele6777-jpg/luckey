@@ -416,6 +416,9 @@ import { calculateScythianGoldenStagSteppe, formatScythianGoldenStagPrompt, type
 import { calculateGalicianCaminoAtlanticReflection, formatGalicianCaminoPrompt, type GalicianCaminoResult } from './galicianCaminoAtlanticReflectionEngine';
 import { calculateUyghurKutadguBiligWisdom, formatUyghurKutadguPrompt, type UyghurKutadguResult } from './uyghurKutadguBiligWisdomEngine';
 import { calculateBuryatBaikalTengriHarmony, formatBuryatBaikalPrompt, type BuryatBaikalResult } from './buryatBaikalTengriHarmonyEngine';
+import { calculateCornishKernowSeaGranite, formatCornishKernowPrompt, type CornishKernowResult } from './cornishKernowSeaGraniteEngine';
+import { calculateOssetianNartSagasForge, formatOssetianNartPrompt, type OssetianNartResult } from './ossetianNartSagasForgeEngine';
+import { calculateSardinianNuragheStoneCalm, formatSardinianNuraghePrompt, type SardinianNuragheResult } from './sardinianNuragheStoneCalmEngine';
 
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
@@ -850,6 +853,9 @@ export interface DeterministicEngineReport {
   galicianCaminoAtlanticReflectionResult?: GalicianCaminoResult | null;
   uyghurKutadguBiligWisdomResult?: UyghurKutadguResult | null;
   buryatBaikalTengriHarmonyResult?: BuryatBaikalResult | null;
+  cornishKernowSeaGraniteResult?: CornishKernowResult | null;
+  ossetianNartSagasForgeResult?: OssetianNartResult | null;
+  sardinianNuragheStoneCalmResult?: SardinianNuragheResult | null;
 
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
@@ -3909,6 +3915,33 @@ try {
     }
   })()));
 
+  // 393. 콘월 케르노우·화강암 인내 엔진
+  const cornishKernowSeaGraniteResult = calculateSupplement('cornishKernowSeaGraniteResult', () => ((() => {
+    try {
+      return calculateCornishKernowSeaGranite({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 394. 오세트 나르트 서사시·단련 엔진
+  const ossetianNartSagasForgeResult = calculateSupplement('ossetianNartSagasForgeResult', () => ((() => {
+    try {
+      return calculateOssetianNartSagasForge({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 395. 사르데냐 누라게·고요한 돌탑 엔진
+  const sardinianNuragheStoneCalmResult = calculateSupplement('sardinianNuragheStoneCalmResult', () => ((() => {
+    try {
+      return calculateSardinianNuragheStoneCalm({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
   // 220. 한국 신라 의상대사 화엄일승법계도 & 법성게 원융무애 엔진
   const uisangHwaeomIlseungBeopgyeResult = calculateSupplement('uisangHwaeomIlseungBeopgyeResult', () => ((() => {
     try {
@@ -5319,6 +5352,9 @@ try {
     galicianCaminoAtlanticReflectionResult,
     uyghurKutadguBiligWisdomResult,
     buryatBaikalTengriHarmonyResult,
+    cornishKernowSeaGraniteResult,
+    ossetianNartSagasForgeResult,
+    sardinianNuragheStoneCalmResult,
     tools: toolsMap,
   };
 }
@@ -5734,6 +5770,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'galicianCaminoAtlanticReflection', nameKo: '갈리시아 대서양 순례', icon: '🐚', category: 'deep_master', summary: '이베리아 갈리시아 카미노의 피니스테레처럼 남과의 속도 비교를 내려놓고 나만의 호흡을 되찾는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'bluebird' },
   { key: 'uyghurKutadguBiligWisdom', nameKo: '위구르 쿠타드구 빌리그', icon: '📜', category: 'deep_master', summary: '위구르 고전 《쿠타드구 빌리그》처럼 공정한 원칙·순환·분별·절제의 네 기둥으로 오늘의 선택을 가다듬는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'trinity' },
   { key: 'buryatBaikalTengriHarmony', nameKo: '부랴트 바이칼·텐그리', icon: '🩵', category: 'deep_master', summary: '시베리아 부랴트의 바이칼·텐그리처럼 먹구름 너머의 푸른 하늘을 신뢰하며 마음의 물결을 맑게 조율하는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'aura' },
+  { key: 'cornishKernowSeaGranite', nameKo: '콘월 케르노우·화강암', icon: '🪨', category: 'deep_master', summary: '영국 콘월 케르노우 해안의 화강암처럼 바깥의 거친 바람을 견디며 내면의 내공이 여물어 가는 시간을 믿는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'bluebird' },
+  { key: 'ossetianNartSagasForge', nameKo: '오세트 나르트 서사시', icon: '⚒️', category: 'deep_master', summary: '코카서스 오세트 나르트 서사시의 대장간·진실의 잔처럼 지금의 단련을 통해 더 맑고 단단한 힘을 벼리는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'trinity' },
+  { key: 'sardinianNuragheStoneCalm', nameKo: '사르데냐 누라게 돌탑', icon: '🏛️', category: 'deep_master', summary: '지중해 사르데냐의 누라게처럼 억지스러운 꾸밈 없이도 서로의 무게가 맞물려 서는 고요한 균형을 찾는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'muse' },
 ] as DceEngineMeta[]).filter(engine => !LUCY_PRO_CATALOG_DUPLICATE_KEYS.has(engine.key));
 
 export function getFiredEngineBadges(
@@ -6567,6 +6606,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'galicianCaminoAtlanticReflection',
     'uyghurKutadguBiligWisdom',
     'buryatBaikalTengriHarmony',
+    'cornishKernowSeaGranite',
+    'ossetianNartSagasForge',
+    'sardinianNuragheStoneCalm',
   ],
 };
 
