@@ -442,6 +442,9 @@ import { calculateBaekjeGiltBronzeIncenseCalm, formatBaekjeIncensePrompt } from 
 import { calculateParthianNisaArcheryPoise, formatParthianNisaPrompt } from '../src/lib/divination/parthianNisaArcheryPoiseEngine';
 import { calculateNahuaXochitlCuicatlFlow, formatNahuaXochitlPrompt } from '../src/lib/divination/nahuaXochitlCuicatlFlowEngine';
 import { calculateBeninBronzeObaMemory, formatBeninBronzeObaPrompt } from '../src/lib/divination/beninBronzeObaMemoryEngine';
+import { calculateBamiyanSilkRoadValleyCalm, formatBamiyanValleyPrompt } from '../src/lib/divination/bamiyanSilkRoadValleyCalmEngine';
+import { calculateSigiriyaLionRockWaterGarden, formatSigiriyaRockPrompt } from '../src/lib/divination/sigiriyaLionRockWaterGardenEngine';
+import { calculateNumidianCirtaHorizonPoise, formatNumidianCirtaPrompt } from '../src/lib/divination/numidianCirtaHorizonPoiseEngine';
 
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
@@ -14352,4 +14355,37 @@ test('Benin Bronze Oba Memory engine: motif, +09:00 KST, and interpretive bounda
   const prompt = formatBeninBronzeObaPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
   assert.ok(prompt.includes('베냉') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Bamiyan Silk Road Valley Calm engine: motif, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateBamiyanSilkRoadValleyCalm({ profile, now: new Date('2026-11-20T19:35:00Z'), question: '마음의 소음을 잠시 내려놓고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-BAMIYAN-VALLEY-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatBamiyanValleyPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('바미얀') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Sigiriya Lion Rock Water Garden engine: motif, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateSigiriyaLionRockWaterGarden({ profile, now: new Date('2026-11-20T19:35:00Z'), question: '보이지 않는 기본기를 먼저 다지고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-SIGIRIYA-ROCK-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatSigiriyaRockPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('시기리야') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Numidian Cirta Horizon Poise engine: motif, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateNumidianCirtaHorizonPoise({ profile, now: new Date('2026-11-20T19:35:00Z'), question: '부담 없이 가벼운 첫 걸음을 내딛고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-NUMIDIAN-CIRTA-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatNumidianCirtaPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('누미디아') && prompt.includes('+09:00 (KST)'));
 });
