@@ -497,6 +497,9 @@ import { calculateAzeriCarpetFlamePoise, formatAzeriCarpetPrompt, type AzeriCarp
 import { calculateDalmatianStoneLavenderCalm, formatDalmatianStonePrompt, type DalmatianStoneResult } from './dalmatianStoneLavenderCalmEngine';
 import { calculateKubaRaffiaGeometryOrder, formatKubaRaffiaPrompt, type KubaRaffiaResult } from './kubaRaffiaGeometryOrderEngine';
 import { calculateSamoanFaleTapaBreeze, formatSamoanFalePrompt, type SamoanFaleResult } from './samoanFaleTapaBreezeEngine';
+import { calculateCappadocianTuffCaveCalm, formatCappadocianCavePrompt, type CappadocianCaveResult } from './cappadocianTuffCaveCalmEngine';
+import { calculateIfugaoBanaueRiceTerrace, formatIfugaoTerracePrompt, type IfugaoTerraceResult } from './ifugaoBanaueRiceTerraceEngine';
+import { calculateOtavaloAndesLoomBalance, formatOtavaloLoomPrompt, type OtavaloLoomResult } from './otavaloAndesLoomBalanceEngine';
 
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
@@ -1012,6 +1015,9 @@ export interface DeterministicEngineReport {
   dalmatianStoneLavenderCalmResult?: DalmatianStoneResult | null;
   kubaRaffiaGeometryOrderResult?: KubaRaffiaResult | null;
   samoanFaleTapaBreezeResult?: SamoanFaleResult | null;
+  cappadocianTuffCaveCalmResult?: CappadocianCaveResult | null;
+  ifugaoBanaueRiceTerraceResult?: IfugaoTerraceResult | null;
+  otavaloAndesLoomBalanceResult?: OtavaloLoomResult | null;
 
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
@@ -4800,6 +4806,33 @@ try {
     }
   })()));
 
+  // 474. 카파도키아·응회암 동굴 성찰 엔진
+  const cappadocianTuffCaveCalmResult = calculateSupplement('cappadocianTuffCaveCalmResult', () => ((() => {
+    try {
+      return calculateCappadocianTuffCaveCalm({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 475. 이푸가오·바나우에 계단논 성찰 엔진
+  const ifugaoBanaueRiceTerraceResult = calculateSupplement('ifugaoBanaueRiceTerraceResult', () => ((() => {
+    try {
+      return calculateIfugaoBanaueRiceTerrace({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 476. 오타발로·안데스 베틀 균형 성찰 엔진
+  const otavaloAndesLoomBalanceResult = calculateSupplement('otavaloAndesLoomBalanceResult', () => ((() => {
+    try {
+      return calculateOtavaloAndesLoomBalance({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
   // 220. 한국 신라 의상대사 화엄일승법계도 & 법성게 원융무애 엔진
   const uisangHwaeomIlseungBeopgyeResult = calculateSupplement('uisangHwaeomIlseungBeopgyeResult', () => ((() => {
     try {
@@ -6291,6 +6324,9 @@ try {
     dalmatianStoneLavenderCalmResult,
     kubaRaffiaGeometryOrderResult,
     samoanFaleTapaBreezeResult,
+    cappadocianTuffCaveCalmResult,
+    ifugaoBanaueRiceTerraceResult,
+    otavaloAndesLoomBalanceResult,
     tools: toolsMap,
   };
 }
@@ -6787,6 +6823,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'dalmatianStoneLavenderCalm', nameKo: '달마티아·라벤더 석축', icon: '🪻', category: 'deep_master', summary: '아드리아해 흐바르 섬의 석회암 계단 밭과 라벤더 바람처럼 거친 돌멩이를 내 밭을 지키는 울타리로 바꾸는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'aura' },
   { key: 'kubaRaffiaGeometryOrder', nameKo: '쿠바·라피아 기하학', icon: '🧶', category: 'deep_master', summary: '중앙아프리카 쿠바 왕국의 라피아 벨벳 자수처럼 보이지 않는 안쪽 매듭을 단단히 하고 작은 비대칭의 생동감을 즐기는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'trinity' },
   { key: 'samoanFaleTapaBreeze', nameKo: '사모아·팔레 바람', icon: '🌺', category: 'deep_master', summary: '남태평양 사모아의 벽 없는 둥근 팔레 지붕처럼 불필요한 방어벽을 세우기보다 시원한 바람이 통하도록 열어 두는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'bluebird' },
+  { key: 'cappadocianTuffCaveCalm', nameKo: '카파도키아·응회암 동굴', icon: '🎈', category: 'deep_master', summary: '아나톨리아 카파도키아의 응회암 굴착 쉼터와 지하 환기구처럼 막막한 일도 한 겹 파고들며 숨통과 시야를 여는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'muse' },
+  { key: 'ifugaoBanaueRiceTerrace', nameKo: '이푸가오·계단논 무용 숲', icon: '🌾', category: 'deep_master', summary: '필리핀 바나우에 계단논과 위쪽 원시림 무용 숲처럼 당장의 결과물뿐 아니라 물을 대어 주는 근원을 돌보는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'trinity' },
+  { key: 'otavaloAndesLoomBalance', nameKo: '오타발로·안데스 베틀', icon: '🧣', category: 'deep_master', summary: '에콰도르 오타발로의 허리 베틀과 이카트 매듭처럼 내 몸의 거리로 장력을 조절하고 제약을 고유한 무늬로 엮는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'aura' },
 ] as DceEngineMeta[]).filter(engine => !LUCY_PRO_CATALOG_DUPLICATE_KEYS.has(engine.key));
 
 export function getFiredEngineBadges(
@@ -7701,6 +7740,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'dalmatianStoneLavenderCalm',
     'kubaRaffiaGeometryOrder',
     'samoanFaleTapaBreeze',
+    'cappadocianTuffCaveCalm',
+    'ifugaoBanaueRiceTerrace',
+    'otavaloAndesLoomBalance',
   ],
 };
 
