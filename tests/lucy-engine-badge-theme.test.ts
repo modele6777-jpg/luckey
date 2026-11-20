@@ -18,8 +18,8 @@ function contrastRatio(foreground: string, background: string): number {
 
 test('every visible catalog engine maps to its existing channel badge palette', () => {
   assert.equal(ENGINE_CATALOG_COUNTS.foundational, 15);
-  assert.equal(ENGINE_CATALOG_COUNTS.deep_master, 321);
-  assert.equal(LUCY_PRO_CATALOG_ENGINES.length, 336);
+  assert.equal(ENGINE_CATALOG_COUNTS.deep_master, 324);
+  assert.equal(LUCY_PRO_CATALOG_ENGINES.length, 339);
 
   for (const engine of LUCY_PRO_CATALOG_ENGINES) {
     const theme = getEngineCatalogTheme(engine);

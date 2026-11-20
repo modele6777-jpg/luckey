@@ -368,6 +368,9 @@ import { calculateZuluUbuntuRelationalSelf, formatZuluUbuntuRelationalSelfPrompt
 import { calculateAkanAdinkraSymbolsWisdom, formatAkanAdinkraSymbolsWisdomPrompt, type AkanAdinkraSymbolsWisdomResult, AKAN_ADINKRA_WISDOM_VERSION } from './akanAdinkraSymbolsWisdomEngine';
 import { calculateEthiopianZeraYacobHatataReason, formatEthiopianZeraYacobHatataReasonPrompt, type EthiopianZeraYacobHatataResult, ETHIOPIAN_ZERA_YACOB_VERSION } from './ethiopianZeraYacobHatataReasonEngine';
 import { calculateBasqueLauburuBasajaunHarmony, formatBasqueLauburuBasajaunHarmonyPrompt, type BasqueLauburuBasajaunResult, BASQUE_LAUBURU_HARMONY_VERSION } from './basqueLauburuBasajaunHarmonyEngine';
+import { calculateOjibweSevenGrandfatherTeachings, formatOjibweSevenGrandfatherPrompt, type OjibweSevenGrandfatherResult } from './ojibweSevenGrandfatherTeachingsEngine';
+import { calculateSamiNoaidiDrumJoik, formatSamiNoaidiDrumJoikPrompt, type SamiNoaidiDrumJoikResult } from './samiNoaidiDrumJoikEngine';
+import { calculateGeorgianRustaveliKnightPanther, formatGeorgianRustaveliKnightPantherPrompt, type GeorgianRustaveliResult } from './georgianRustaveliKnightPantherEngine';
 
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
@@ -754,6 +757,9 @@ export interface DeterministicEngineReport {
   akanAdinkraSymbolsWisdomResult?: AkanAdinkraSymbolsWisdomResult | null;
   ethiopianZeraYacobHatataReasonResult?: EthiopianZeraYacobHatataResult | null;
   basqueLauburuBasajaunHarmonyResult?: BasqueLauburuBasajaunResult | null;
+  ojibweSevenGrandfatherTeachingsResult?: OjibweSevenGrandfatherResult | null;
+  samiNoaidiDrumJoikResult?: SamiNoaidiDrumJoikResult | null;
+  georgianRustaveliKnightPantherResult?: GeorgianRustaveliResult | null;
 
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
@@ -3381,6 +3387,33 @@ try {
     }
   })()));
 
+  // 345. 오지브웨(아니시나베) 7대 할아버지 가르침 엔진
+  const ojibweSevenGrandfatherTeachingsResult = calculateSupplement('ojibweSevenGrandfatherTeachingsResult', () => ((() => {
+    try {
+      return calculateOjibweSevenGrandfatherTeachings({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 346. 북유럽 사미(Sámi) 노아이디 드럼·요이쿠 리듬 엔진
+  const samiNoaidiDrumJoikResult = calculateSupplement('samiNoaidiDrumJoikResult', () => ((() => {
+    try {
+      return calculateSamiNoaidiDrumJoik({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 347. 조지아 루스타벨리 《표범 가죽을 두른 기사》 심성 관점 엔진
+  const georgianRustaveliKnightPantherResult = calculateSupplement('georgianRustaveliKnightPantherResult', () => ((() => {
+    try {
+      return calculateGeorgianRustaveliKnightPanther({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
   // 220. 한국 신라 의상대사 화엄일승법계도 & 법성게 원융무애 엔진
   const uisangHwaeomIlseungBeopgyeResult = calculateSupplement('uisangHwaeomIlseungBeopgyeResult', () => ((() => {
     try {
@@ -4743,6 +4776,9 @@ try {
     akanAdinkraSymbolsWisdomResult,
     ethiopianZeraYacobHatataReasonResult,
     basqueLauburuBasajaunHarmonyResult,
+    ojibweSevenGrandfatherTeachingsResult,
+    samiNoaidiDrumJoikResult,
+    georgianRustaveliKnightPantherResult,
     tools: toolsMap,
   };
 }
@@ -5110,6 +5146,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'akanAdinkraSymbolsWisdom', nameKo: '아칸 아딩크라 지혜 상징', icon: '🕊️', category: 'deep_master', summary: '서아프리카 가나 아칸족의 산코파·드웬니멘 등 아딩크라 상징으로 과거의 배움과 겸손·결단의 균형을 돌아보는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'trinity' },
   { key: 'ethiopianZeraYacobHatataReason', nameKo: '에티오피아 자라 야곱 하타타 이성·성찰', icon: '🕯️', category: 'deep_master', summary: '17세기 에티오피아 철학자 자라 야곱의 《하타타》 이성·양심·공정함 기준으로 맹목 없이 판단을 정돈하는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'muse' },
   { key: 'basqueLauburuBasajaunHarmony', nameKo: '바스크 라부루·바사하운 원환 균형', icon: '🌿', category: 'deep_master', summary: '피레네 바스크 전통의 네 갈래 순환 상징 라부루와 숲 수호자 바사하운의 돌봄으로 일과 쉼의 균형을 돌아보는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'aura' },
+  { key: 'ojibweSevenGrandfatherTeachings', nameKo: '오지브웨 7대 할아버지 가르침', icon: '🦅', category: 'deep_master', summary: '아니시나베 일곱 덕목(지혜·사랑·존중·용기·정직·겸손·진실)과 토템으로 태도를 돌아보는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'trinity' },
+  { key: 'samiNoaidiDrumJoik', nameKo: '사미 노아이디 드럼·요이쿠 리듬', icon: '🥁', category: 'deep_master', summary: '북유럽 사미 드럼의 태양 중심·계절 순환과 요이쿠 공명으로 내면의 호흡을 회복하는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'aura' },
+  { key: 'georgianRustaveliKnightPanther', nameKo: '조지아 루스타벨리 표범 가죽을 두른 기사', icon: '🐆', category: 'deep_master', summary: '12세기 조지아 서사시의 우정·자기 극복·관용의 기품으로 선택의 품격을 살피는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'muse' },
 ] as DceEngineMeta[]).filter(engine => !LUCY_PRO_CATALOG_DUPLICATE_KEYS.has(engine.key));
 
 export function getFiredEngineBadges(
@@ -5612,6 +5651,7 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'hinduKundalini',
     'inuitSilaBreathWeather',
     'basqueLauburuBasajaunHarmony',
+    'samiNoaidiDrumJoik',
   ],
   creative_mind: [
     'irishJamesJoyceUlyssesEpiphany',
@@ -5882,6 +5922,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'akanAdinkraSymbolsWisdom',
     'ethiopianZeraYacobHatataReason',
     'basqueLauburuBasajaunHarmony',
+    'ojibweSevenGrandfatherTeachings',
+    'samiNoaidiDrumJoik',
+    'georgianRustaveliKnightPanther',
   ],
 };
 
