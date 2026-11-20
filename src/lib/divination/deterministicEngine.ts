@@ -446,6 +446,9 @@ import { calculateLadakhiStupaGlacierWater, formatLadakhiChortenPrompt, type Lad
 import { calculateAssyrianNinevehClayTablet, formatAssyrianNinevehPrompt, type AssyrianNinevehResult } from './assyrianNinevehClayTabletEngine';
 import { calculateTuaregTagelmustSaharaStars, formatTuaregSaharaPrompt, type TuaregSaharaResult } from './tuaregTagelmustSaharaStarsEngine';
 import { calculateEstonianRegilaulForestCalm, formatEstonianRegilaulPrompt, type EstonianRegilaulResult } from './estonianRegilaulForestCalmEngine';
+import { calculateBalkanOhridLakeReflection, formatBalkanOhridPrompt, type BalkanOhridResult } from './balkanOhridLakeReflectionEngine';
+import { calculateGarifunaDuguCaribbeanRhythm, formatGarifunaDuguPrompt, type GarifunaDuguResult } from './garifunaDuguCaribbeanRhythmEngine';
+import { calculateAlpineSavoyColWisdom, formatAlpineSavoyPrompt, type AlpineSavoyResult } from './alpineSavoyColWisdomEngine';
 
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
@@ -910,6 +913,9 @@ export interface DeterministicEngineReport {
   assyrianNinevehClayTabletResult?: AssyrianNinevehResult | null;
   tuaregTagelmustSaharaStarsResult?: TuaregSaharaResult | null;
   estonianRegilaulForestCalmResult?: EstonianRegilaulResult | null;
+  balkanOhridLakeReflectionResult?: BalkanOhridResult | null;
+  garifunaDuguCaribbeanRhythmResult?: GarifunaDuguResult | null;
+  alpineSavoyColWisdomResult?: AlpineSavoyResult | null;
 
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
@@ -4239,6 +4245,33 @@ try {
     }
   })()));
 
+  // 423. 발칸 오흐리드·호수 심연 엔진
+  const balkanOhridLakeReflectionResult = calculateSupplement('balkanOhridLakeReflectionResult', () => ((() => {
+    try {
+      return calculateBalkanOhridLakeReflection({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 424. 가리푸나 둥구·카리브 해안 리듬 엔진
+  const garifunaDuguCaribbeanRhythmResult = calculateSupplement('garifunaDuguCaribbeanRhythmResult', () => ((() => {
+    try {
+      return calculateGarifunaDuguCaribbeanRhythm({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 425. 알프스 사보이·고갯마루 지혜 엔진
+  const alpineSavoyColWisdomResult = calculateSupplement('alpineSavoyColWisdomResult', () => ((() => {
+    try {
+      return calculateAlpineSavoyColWisdom({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
   // 220. 한국 신라 의상대사 화엄일승법계도 & 법성게 원융무애 엔진
   const uisangHwaeomIlseungBeopgyeResult = calculateSupplement('uisangHwaeomIlseungBeopgyeResult', () => ((() => {
     try {
@@ -5679,6 +5712,9 @@ try {
     assyrianNinevehClayTabletResult,
     tuaregTagelmustSaharaStarsResult,
     estonianRegilaulForestCalmResult,
+    balkanOhridLakeReflectionResult,
+    garifunaDuguCaribbeanRhythmResult,
+    alpineSavoyColWisdomResult,
     tools: toolsMap,
   };
 }
@@ -6124,6 +6160,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'assyrianNinevehClayTablet', nameKo: '아시리아 니네베·서판', icon: '📜', category: 'deep_master', summary: '니네베 서고의 점토 서판처럼 머릿속에만 맴도는 고민을 짧은 기록으로 붙들어 맑고 단단한 기준으로 세우는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'muse' },
   { key: 'tuaregTagelmustSaharaStars', nameKo: '투아레그 사하라·별자리', icon: '🌌', category: 'deep_master', summary: '사하라 투아레그의 타길무스트 절제처럼 거친 모래바람 속에서도 내 호흡을 먼저 보호하며 변치 않는 별빛의 기준을 바라보는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'aura' },
   { key: 'estonianRegilaulForestCalm', nameKo: '에스토니아 레기라울·숲', icon: '🌲', category: 'deep_master', summary: '에스토니아 레기라울과 히이스 숲의 정적처럼 복잡한 변주보다 오늘 내가 지킬 소박한 리듬과 쉼의 여백을 먼저 챙기는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'bluebird' },
+  { key: 'balkanOhridLakeReflection', nameKo: '발칸 오흐리드·호수', icon: '🫧', category: 'deep_master', summary: '발칸 오흐리드 호수의 맑은 심연과 진주 겹처럼 서두르는 직선 대신 깊은 바닥에서부터 스스로를 맑게 돌보는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'trinity' },
+  { key: 'garifunaDuguCaribbeanRhythm', nameKo: '가리푸나 둥구·리듬', icon: '🥁', category: 'deep_master', summary: '가리푸나 둥구 화해와 푼타 박자처럼 머릿속에만 맴도는 무거운 생각을 가벼운 움직임과 솔직한 리듬으로 풀어내는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'bluebird' },
+  { key: 'alpineSavoyColWisdom', nameKo: '알프스 사보이·고개', icon: '🏔️', category: 'deep_master', summary: '알프스 사보이 산장과 고갯마루(Col)처럼 가장 험한 길로 정면 돌파하기보다 지형과 날씨에 맞는 현명한 통로를 택하는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'aura' },
 ] as DceEngineMeta[]).filter(engine => !LUCY_PRO_CATALOG_DUPLICATE_KEYS.has(engine.key));
 
 export function getFiredEngineBadges(
@@ -6987,6 +7026,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'assyrianNinevehClayTablet',
     'tuaregTagelmustSaharaStars',
     'estonianRegilaulForestCalm',
+    'balkanOhridLakeReflection',
+    'garifunaDuguCaribbeanRhythm',
+    'alpineSavoyColWisdom',
   ],
 };
 
