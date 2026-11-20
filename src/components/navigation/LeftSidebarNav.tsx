@@ -7,6 +7,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useLocation } from 'wouter';
 import {
   MessageCircle,
+  MessageCircleQuestion,
   Sparkles,
   KeyRound,
   User,
@@ -32,6 +33,7 @@ import { markAppScreenReset } from '@/lib/appUpdateReload';
 import { showViewportDiagnostics } from '@/lib/viewportDiagnostics';
 import { startFoldRuntimeTrace } from '@/lib/foldRuntimeTrace';
 import { markPendingUpdateNotice } from '@/lib/updateNotice';
+import { isLucyMasterModeOn, LUCY_MASTER_MODE_EVENT } from '@/lib/lucyMasterMode';
 
 export interface NavItemConfig {
   path: string;
@@ -380,7 +382,19 @@ export default function LeftSidebarNav() {
     }
   }, [syncPrismDevices]);
 
-  const renderNavButton = ({ path, icon: Icon, label, isMainChat, isKey, isPrologue }: NavItemConfig) => {
+  const [isLucyMaster, setIsLucyMaster] = useState<boolean>(() => isLucyMasterModeOn());
+  useEffect(() => {
+    const sync = (e: Event) => {
+      const on = (e as CustomEvent<{ on?: boolean }>).detail?.on;
+      setIsLucyMaster(typeof on === 'boolean' ? on : isLucyMasterModeOn());
+    };
+    window.addEventListener(LUCY_MASTER_MODE_EVENT, sync);
+    return () => window.removeEventListener(LUCY_MASTER_MODE_EVENT, sync);
+  }, []);
+
+  const renderNavButton = ({ path, icon: NavIcon, label, isMainChat, isKey, isPrologue }: NavItemConfig) => {
+    // 점술모드(Lucy Master) 중에는 Lucy 말풍선 안에 물음표를 띄운다.
+    const Icon = isMainChat && isLucyMaster ? MessageCircleQuestion : NavIcon;
     const isActive = isMainChat ? isLucyActive : isKey ? isKeyActive : isPrologue ? isPrologueActive
       : path === '/epilogue' ? isEpilogueActive : cleanPath === path || cleanPath.startsWith(path + '/');
     return (
@@ -388,6 +402,7 @@ export default function LeftSidebarNav() {
         aria-label={label} title={label} aria-current={isActive ? 'page' : undefined}
         onClick={() => handleNavigate(path)}>
         <Icon size={22} aria-hidden="true" />
+        {isMainChat && isLucyMaster && <span className="sr-only">점술모드</span>}
       </button>
     );
   };
