@@ -370,6 +370,9 @@ import { calculateTonganKavaCircleTauhiVa, formatTonganKavaPrompt } from '../src
 import { calculateDogonAmmaNommoHarmony, formatDogonAmmaNommoPrompt } from '../src/lib/divination/dogonAmmaNommoHarmonyEngine';
 import { calculateAymaraPachamamaAmautaWisdom, formatAymaraPachamamaPrompt } from '../src/lib/divination/aymaraPachamamaAmautaWisdomEngine';
 import { calculateWelshMabinogionAwenInspiration, formatWelshMabinogionAwenPrompt } from '../src/lib/divination/welshMabinogionAwenInspirationEngine';
+import { calculateIgboOfoOguTruthJustice, formatIgboOfoOguPrompt } from '../src/lib/divination/igboOfoOguTruthJusticeEngine';
+import { calculateRyukyuIcharibaChodeHospitality, formatRyukyuIcharibaChodePrompt } from '../src/lib/divination/ryukyuIcharibaChodeHospitalityEngine';
+import { calculateSogdianSilkRoadCaravanTrust, formatSogdianSilkRoadPrompt } from '../src/lib/divination/sogdianSilkRoadCaravanTrustEngine';
 
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
@@ -13476,4 +13479,37 @@ test('Welsh Mabinogion Awen Inspiration engine: ray, +09:00 KST, and interpretiv
   const prompt = formatWelshMabinogionAwenPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
   assert.ok(prompt.includes('웨일스') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Igbo Ofo Ogu Truth Justice engine: symbol, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateIgboOfoOguTruthJustice({ profile, now: new Date('2026-11-20T07:03:00Z'), question: '떳떳한 기준을 세우고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-IGBO-OFO-OGU-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatIgboOfoOguPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('이그보') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Ryukyu Ichariba Chode Hospitality engine: motif, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateRyukyuIcharibaChodeHospitality({ profile, now: new Date('2026-11-20T07:03:00Z'), question: '주변과 따뜻한 공기를 만들고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-RYUKYU-ICHARIBA-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatRyukyuIcharibaChodePrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('류큐') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Sogdian Silk Road Caravan Trust engine: stage, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateSogdianSilkRoadCaravanTrust({ profile, now: new Date('2026-11-20T07:03:00Z'), question: '긴 여정의 균형을 맞추고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-SOGDIAN-CARAVAN-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatSogdianSilkRoadPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('소그드') && prompt.includes('+09:00 (KST)'));
 });

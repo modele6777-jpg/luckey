@@ -401,6 +401,9 @@ import { calculateTonganKavaCircleTauhiVa, formatTonganKavaPrompt, type TonganKa
 import { calculateDogonAmmaNommoHarmony, formatDogonAmmaNommoPrompt, type DogonAmmaNommoResult } from './dogonAmmaNommoHarmonyEngine';
 import { calculateAymaraPachamamaAmautaWisdom, formatAymaraPachamamaPrompt, type AymaraPachamamaResult } from './aymaraPachamamaAmautaWisdomEngine';
 import { calculateWelshMabinogionAwenInspiration, formatWelshMabinogionAwenPrompt, type WelshMabinogionAwenResult } from './welshMabinogionAwenInspirationEngine';
+import { calculateIgboOfoOguTruthJustice, formatIgboOfoOguPrompt, type IgboOfoOguResult } from './igboOfoOguTruthJusticeEngine';
+import { calculateRyukyuIcharibaChodeHospitality, formatRyukyuIcharibaChodePrompt, type RyukyuIcharibaChodeResult } from './ryukyuIcharibaChodeHospitalityEngine';
+import { calculateSogdianSilkRoadCaravanTrust, formatSogdianSilkRoadPrompt, type SogdianSilkRoadResult } from './sogdianSilkRoadCaravanTrustEngine';
 
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
@@ -820,6 +823,9 @@ export interface DeterministicEngineReport {
   dogonAmmaNommoHarmonyResult?: DogonAmmaNommoResult | null;
   aymaraPachamamaAmautaWisdomResult?: AymaraPachamamaResult | null;
   welshMabinogionAwenInspirationResult?: WelshMabinogionAwenResult | null;
+  igboOfoOguTruthJusticeResult?: IgboOfoOguResult | null;
+  ryukyuIcharibaChodeHospitalityResult?: RyukyuIcharibaChodeResult | null;
+  sogdianSilkRoadCaravanTrustResult?: SogdianSilkRoadResult | null;
 
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
@@ -3744,6 +3750,33 @@ try {
     }
   })()));
 
+  // 378. 나이지리아 이그보 오포·오구 진실 성찰 엔진
+  const igboOfoOguTruthJusticeResult = calculateSupplement('igboOfoOguTruthJusticeResult', () => ((() => {
+    try {
+      return calculateIgboOfoOguTruthJustice({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 379. 오키나와 류큐 이차리바 초데·유이마루 엔진
+  const ryukyuIcharibaChodeHospitalityResult = calculateSupplement('ryukyuIcharibaChodeHospitalityResult', () => ((() => {
+    try {
+      return calculateRyukyuIcharibaChodeHospitality({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 380. 고대 소그드 실크로드 대상 신뢰 엔진
+  const sogdianSilkRoadCaravanTrustResult = calculateSupplement('sogdianSilkRoadCaravanTrustResult', () => ((() => {
+    try {
+      return calculateSogdianSilkRoadCaravanTrust({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
   // 220. 한국 신라 의상대사 화엄일승법계도 & 법성게 원융무애 엔진
   const uisangHwaeomIlseungBeopgyeResult = calculateSupplement('uisangHwaeomIlseungBeopgyeResult', () => ((() => {
     try {
@@ -5139,6 +5172,9 @@ try {
     dogonAmmaNommoHarmonyResult,
     aymaraPachamamaAmautaWisdomResult,
     welshMabinogionAwenInspirationResult,
+    igboOfoOguTruthJusticeResult,
+    ryukyuIcharibaChodeHospitalityResult,
+    sogdianSilkRoadCaravanTrustResult,
     tools: toolsMap,
   };
 }
@@ -5539,6 +5575,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'dogonAmmaNommoHarmony', nameKo: '도곤 암마·노모 질서', icon: '🌌', category: 'deep_master', summary: '서아프리카 말리 도곤의 시리우스 주기와 토구나 대화 지혜처럼 조급함 대신 차분한 호흡으로 말과 궤도를 다듬는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'trinity' },
   { key: 'aymaraPachamamaAmautaWisdom', nameKo: '아이마라 나이라·파차마마', icon: '🌄', category: 'deep_master', summary: '안데스 아이마라의 나이라(Nayra) 시간관과 호혜 철학처럼 이미 걸어온 경험에서 오늘의 기준을 꺼내 보는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'aura' },
   { key: 'welshMabinogionAwenInspiration', nameKo: '웨일스 마비노기온·아웬', icon: '🦢', category: 'deep_master', summary: '웨일스 《마비노기온》과 아웬(Awen) 세 줄기 영감처럼 의무감 너머 순수한 호기심이 가리키는 작은 시도를 살피는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'muse' },
+  { key: 'igboOfoOguTruthJustice', nameKo: '이그보 오포·오구 진실', icon: '🪵', category: 'deep_master', summary: '서아프리카 이그보의 오포·오구(Ofo na Ogu) 진실과 실행 철학처럼 눈치보다 내 양심에 떳떳한 기준을 세우는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'trinity' },
+  { key: 'ryukyuIcharibaChodeHospitality', nameKo: '류큐 이차리바 초데', icon: '🌺', category: 'deep_master', summary: '오키나와 류큐의 이차리바 초데·유이마루 정신처럼 작은 친절과 상부상조로 오늘의 공기를 따뜻하게 여는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'bluebird' },
+  { key: 'sogdianSilkRoadCaravanTrust', nameKo: '소그드 실크로드 대상', icon: '🐪', category: 'deep_master', summary: '중앙아시아 소그드 대상들의 계약과 오아시스 지혜처럼 무리한 질주 대신 긴 여정을 완주할 균형을 챙기는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'muse' },
 ] as DceEngineMeta[]).filter(engine => !LUCY_PRO_CATALOG_DUPLICATE_KEYS.has(engine.key));
 
 export function getFiredEngineBadges(
@@ -6357,6 +6396,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'dogonAmmaNommoHarmony',
     'aymaraPachamamaAmautaWisdom',
     'welshMabinogionAwenInspiration',
+    'igboOfoOguTruthJustice',
+    'ryukyuIcharibaChodeHospitality',
+    'sogdianSilkRoadCaravanTrust',
   ],
 };
 

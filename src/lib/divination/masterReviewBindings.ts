@@ -1503,5 +1503,17 @@ export const MASTER_REVIEW_BINDINGS: Record<string, { field: string; traceKey: s
   "welshMabinogionAwenInspiration": {
     "field": "welshMabinogionAwenInspirationResult",
     "traceKey": "welshMabinogionAwenInspirationResult"
+  },
+  "igboOfoOguTruthJustice": {
+    "field": "igboOfoOguTruthJusticeResult",
+    "traceKey": "igboOfoOguTruthJusticeResult"
+  },
+  "ryukyuIcharibaChodeHospitality": {
+    "field": "ryukyuIcharibaChodeHospitalityResult",
+    "traceKey": "ryukyuIcharibaChodeHospitalityResult"
+  },
+  "sogdianSilkRoadCaravanTrust": {
+    "field": "sogdianSilkRoadCaravanTrustResult",
+    "traceKey": "sogdianSilkRoadCaravanTrustResult"
   }
 };
