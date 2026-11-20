@@ -13452,13 +13452,14 @@ test('Nubian Meroe Apedemak Balance engine: principles, +09:00 KST, and interpre
 
 test('Samarkand Ulugh Beg Observatory engine: meridian arc, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateSamarkandUlughBegObservatory({ profile, now: new Date('2026-11-20T06:20:00Z'), question: '사실과 기준을 차분히 정리하고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-SAMARKAND-ULUGH-v2.1.0');
-  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.equal(rep.engineVersion, 'LUCKEY-SAMARKAND-ULUGH-v2.2.0');
+  assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
+  assert.ok(rep.companionArc !== rep.arcStage);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatSamarkandUlughPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('사마르칸트') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('사마르칸트') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionArc));
 });
 
 test('Haudenosaunee Seven Generations engine: council principle, +09:00 KST, and interpretive boundary', () => {
@@ -13698,13 +13699,14 @@ test('Zapotec Piye Cloud Wisdom engine: glyph, +09:00 KST, and interpretive boun
 
 test('Sakha Olonkho Three Worlds engine: pillar, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateSakhaOlonkhoThreeWorlds({ profile, now: new Date('2026-11-20T07:22:00Z'), question: '오늘의 단단한 뿌리를 돌보고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-SAKHA-OLONKHO-v2.1.0');
-  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.equal(rep.engineVersion, 'LUCKEY-SAKHA-OLONKHO-v2.2.0');
+  assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
+  assert.ok(rep.companionPillar !== rep.worldPillar);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatSakhaOlonkhoPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('사하') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('사하') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionPillar));
 });
 
 test('Scythian Golden Stag Steppe engine: emblem, +09:00 KST, and interpretive boundary', () => {
@@ -14045,13 +14047,14 @@ test('Portuguese Saudade Sagres Compass engine: compass, +09:00 KST, and interpr
 
 test('Ladakhi Stupa Glacier Water engine: wisdom, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateLadakhiStupaGlacierWater({ profile, now: new Date('2026-11-20T08:28:00Z'), question: '다음 계절을 위해 차분히 모아 두고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-LADAKHI-CHORTEN-v2.1.0');
-  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.equal(rep.engineVersion, 'LUCKEY-LADAKHI-CHORTEN-v2.2.0');
+  assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
+  assert.ok(rep.companionWisdom !== rep.glacierWisdom);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatLadakhiChortenPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('라다크') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('라다크') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionWisdom));
 });
 
 test('Assyrian Nineveh Clay Tablet engine: seal, +09:00 KST, and interpretive boundary', () => {
