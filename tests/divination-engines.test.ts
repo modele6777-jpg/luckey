@@ -5928,7 +5928,7 @@ test('Korean Jeon Bongjun Nokdu General Engine: calculates Sabal Tongmun solidar
   assert(rep.bogukAnminPeaceStabilityScore >= 0 && rep.bogukAnminPeaceStabilityScore <= 100);
   assert(rep.cheongpodoSpringResilience >= 0 && rep.cheongpodoSpringResilience <= 100);
   assert(rep.activeNokduStage.stageNameHanja.length > 0);
-  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(Boolean(rep.nokduSynthesisMatrix?.integratedAction));
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatJeonBongjunNokduPrompt(rep);
@@ -5936,6 +5936,7 @@ test('Korean Jeon Bongjun Nokdu General Engine: calculates Sabal Tongmun solidar
   assert(prompt.includes(rep.activeNokduStage.stageNameKo));
   assert(prompt.includes('교차 매트릭스'));
   assert(prompt.includes(rep.ritualAction));
+  assert(prompt.includes(rep.reflectionFocus));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });
@@ -6144,7 +6145,7 @@ test('Korean Jeong Yak-yong Mongmin Simseo Engine: calculates Cheongnyeom integr
   assert(rep.secondaryMongminVirtue.virtueNameKo !== rep.primaryMongminVirtue.virtueNameKo);
   assert(rep.reflectiveQuestion.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
-  assert(rep.calculatedAtKst.endsWith('+09:00 KST'));
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(Boolean(rep.mongminSynthesisMatrix?.integratedAction));
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const repQ = calculateJeongYakyongMongmin(profile, '사사로운 편의를 끊고 지켜야 할 원칙');
@@ -6156,6 +6157,7 @@ test('Korean Jeong Yak-yong Mongmin Simseo Engine: calculates Cheongnyeom integr
   assert(prompt.includes('해석 경계'));
   assert(prompt.includes('교차 매트릭스'));
   assert(prompt.includes(repQ.ritualAction));
+  assert(prompt.includes(repQ.reflectionFocus));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });
@@ -7177,7 +7179,7 @@ test('Jang Bogo Cheonghaejin Maritime Pioneer Engine: calculates Maritime Vision
   assert(rep.globalTradeStrategicMindScore >= 0 && rep.globalTradeStrategicMindScore <= 100);
   assert(rep.independentStrongholdScore >= 0 && rep.independentStrongholdScore <= 100);
   assert(rep.activeCheonghaeTheme.themeTitleHanja.length > 0);
-  assert(rep.calculatedAtKst.endsWith('KST'));
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(Boolean(rep.cheonghaeSynthesisMatrix?.integratedAction));
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatJangBogoCheonghaejinMaritimePioneerPrompt(rep);
@@ -7185,6 +7187,7 @@ test('Jang Bogo Cheonghaejin Maritime Pioneer Engine: calculates Maritime Vision
   assert(prompt.includes(rep.activeCheonghaeTheme.themeTitleKo));
   assert(prompt.includes('교차 매트릭스'));
   assert(prompt.includes(rep.ritualAction));
+  assert(prompt.includes(rep.reflectionFocus));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });
