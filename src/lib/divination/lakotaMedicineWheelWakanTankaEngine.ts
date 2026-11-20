@@ -1,7 +1,7 @@
 /**
  * 북미 원주민 라코타 수(Lakota Sioux)족 와칸 탕카(Wakan Tanka) & 4대 방향 성스러운 의약 휠(Sacred Medicine Wheel) & 미타쿠예 오야신(Mitakuye Oyasin) 조화 엔진
  *
- * LUCKEY-LAKOTA-MEDICINE-WHEEL-v1.0.0
+ * LUCKEY-LAKOTA-MEDICINE-WHEEL-v2.3.0
  *
  * 북미 대평원의 라코타(Lakota), 다코타(Dakota), 나코타(Nakota) 수(Sioux) 연합의
  * 최고 영적 원전 《와칸 탕카(Wakan Tanka, 위대한 신비/위대한 영령)》와 성스러운 후프(Cangleska Wakan, Medicine Wheel),
@@ -29,7 +29,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const LAKOTA_MEDICINE_WHEEL_ENGINE_VERSION = '2.2.0';
+export const LAKOTA_MEDICINE_WHEEL_ENGINE_VERSION = '2.3.0';
 
 export interface LakotaMedicineWheelReport {
   engineVersion: string;
@@ -90,7 +90,7 @@ function formatLakotaKstTimestamp(now: Date = new Date()): string {
   const d = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm} +09:00 KST`;
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
 }
 
 function describeLakotaStage(score: number): string {

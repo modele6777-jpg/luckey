@@ -3626,7 +3626,7 @@ test('Mayan Tzolkin Sacred Calendar Engine: calculates 260 Kin and galactic reso
   assert(rep.birthKin.kinNumber >= 1 && rep.birthKin.kinNumber <= 260);
   assert(rep.todayKin.kinNumber >= 1 && rep.todayKin.kinNumber <= 260);
   assert(rep.galacticHarmonicResonanceScore >= 0 && rep.galacticHarmonicResonanceScore <= 100);
-  assert(rep.calculatedAtKst.endsWith('+09:00 KST'));
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(rep.ritualAction.length > 0);
   assert(rep.reflectionFocus.length > 0);
   assert(rep.reflectiveQuestion.length > 0);
@@ -3639,6 +3639,7 @@ test('Mayan Tzolkin Sacred Calendar Engine: calculates 260 Kin and galactic reso
   assert(prompt.includes(repQ.todayKin.kinFullName));
   assert(prompt.includes('실천 의례'));
   assert(prompt.includes('성찰 초점'));
+  assert(prompt.includes(repQ.reflectionFocus));
   assert(prompt.includes('해석 경계'));
   assert(prompt.includes('교차 매트릭스'));
   assert(!prompt.includes('/100'));
@@ -4402,7 +4403,7 @@ test('Maori Mauri Hauora Engine: calculates 4 Hauora pillars and Mauri vitality 
   assert(rep.ritualAction.length > 0);
   assert(rep.reflectionFocus.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
-  assert(rep.calculatedAtKst.endsWith('+09:00 KST'));
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(Boolean(rep.maoriSynthesisMatrix?.integratedAction));
   const repQ = calculateMaoriMauriHauora({ profile, question: '마우리(생명력)를 고르게 세우기' });
   assert(repQ.reflectiveQuestion.includes('고르게 세우기'));
@@ -4411,6 +4412,7 @@ test('Maori Mauri Hauora Engine: calculates 4 Hauora pillars and Mauri vitality 
   assert(prompt.includes(repQ.pillars.dominantPillar.nameMaori));
   assert(prompt.includes('실천 의례'));
   assert(prompt.includes('성찰 초점'));
+  assert(prompt.includes(repQ.reflectionFocus));
   assert(prompt.includes('해석 경계'));
   assert(prompt.includes('교차 매트릭스'));
   assert(!prompt.includes('/100'));
@@ -5637,7 +5639,7 @@ test('Lakota Medicine Wheel Wakan Tanka Engine: calculates 4 sacred directions, 
   assert(rep.ritualAction.length > 0);
   assert(rep.reflectionFocus.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
-  assert(rep.calculatedAtKst.endsWith('+09:00 KST'));
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(Boolean(rep.lakotaSynthesisMatrix?.integratedAction));
   const repQ = calculateLakotaMedicineWheel(profile, '모든 친족과의 연결을 회복하기');
   assert(repQ.reflectiveQuestion.includes('연결을 회복하기'));
@@ -5646,6 +5648,7 @@ test('Lakota Medicine Wheel Wakan Tanka Engine: calculates 4 sacred directions, 
   assert(prompt.includes(repQ.primarySacredDirection.lakotaTerm));
   assert(prompt.includes(repQ.secondarySacredDirection.lakotaTerm));
   assert(prompt.includes('실천 의례'));
+  assert(prompt.includes(repQ.reflectionFocus));
   assert(prompt.includes('성찰 초점'));
   assert(prompt.includes('해석 경계'));
   assert(prompt.includes('교차 매트릭스'));
