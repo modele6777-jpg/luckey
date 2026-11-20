@@ -1,7 +1,7 @@
 /**
  * 신라 원효대사(元曉大師) 《십문화쟁론(十門和諍論)》 일심이문(一心二門) 화쟁(和諍) & 원융회통 무애 엔진
  *
- * LUCKEY-WONHYO-HWAJAENG-v2.0.0
+ * LUCKEY-WONHYO-HWAJAENG-v2.6.0
  *
  * 7세기 통일신라 최고의 대승 성사이자 동아시아 불교 철학의 태두 원효대사(元曉大師, 617~686)의
  * 저술 《십문화쟁론(十門和諍論)》, 《대승기신론소(大乘起信論疏)》, 《금강삼매경론(金剛三昧經論)》에 기반한
@@ -10,7 +10,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const WONHYO_HWAJAENG_VERSION = '2.5.0';
+export const WONHYO_HWAJAENG_VERSION = '2.6.0';
 
 export interface WonhyoSituationalHwajaeng {
   themeKey: 'existence_emptiness' | 'truth_delusion' | 'assertion_refutation' | 'source_return' | 'fearless_freedom';
@@ -295,7 +295,12 @@ export function calculateWonhyoHwajaeng(
   }
 
   const kst = new Date(now.getTime() + 9 * 3600 * 1000);
-  const calculatedAtKst = `${kst.toISOString().slice(0, 19)}+09:00`;
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  const calculatedAtKst = `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
   const trimmedQ = (question || '').trim();
   const ritualAction = `[${activeHwajaengGate.gateNameKo.split(' ')[0]}] ${muAePracticeDirective}`;
   const reflectionFocus = situational.reflectionPrompt;

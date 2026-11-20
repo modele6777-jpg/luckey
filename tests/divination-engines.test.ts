@@ -5738,11 +5738,13 @@ test('Korean Wonhyo Hwajaeng One Mind Engine: calculates One Mind Two Gates, Hwa
   assert(rep.activeHwajaengGate.gateNameKo.length > 0);
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   const prompt = formatWonhyoHwajaengPrompt(rep);
   assert(prompt.includes('신라 원효대사 《십문화쟁론》 일심이문 & 화쟁 원융회통'));
   assert(prompt.includes(rep.activeHwajaengGate.gateNameKo));
   assert(prompt.includes('실천 의례'));
   assert(prompt.includes('성찰 초점'));
+  assert(prompt.includes(rep.reflectionFocus));
 });
 
 test('Chinese Mayi Mianxiang Twelve Palaces Engine: calculates 12 palaces, Qi aura luminosity and inner heart morphology', () => {
@@ -6010,7 +6012,7 @@ test('Korean Yi Sun-sin Nanjung Ilgi Strategic Engine: calculates Pilsa Jeuksaen
   assert(rep.ritualAction.length > 0);
   assert(rep.reflectionFocus.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
-  assert(rep.calculatedAtKst.endsWith('+09:00 KST'));
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(Boolean(rep.yiSunSinSynthesisMatrix?.integratedAction));
   const repQ = calculateYiSunSinNanjungIlgi(profile, '반드시 먼저 지켜야 할 좁은 길목');
   assert(repQ.reflectiveQuestion.includes('좁은 길목'));
@@ -6020,6 +6022,7 @@ test('Korean Yi Sun-sin Nanjung Ilgi Strategic Engine: calculates Pilsa Jeuksaen
   assert(prompt.includes(repQ.secondaryStrategicStage.stageNameKo));
   assert(prompt.includes('실천 의례'));
   assert(prompt.includes('성찰 초점'));
+  assert(prompt.includes(repQ.reflectionFocus));
   assert(prompt.includes('해석 경계'));
   assert(prompt.includes('교차 매트릭스'));
   assert(!prompt.includes('/100'));
@@ -6277,7 +6280,7 @@ test('Korean Yulgok Yi I Gyeokmong Yogyeol Engine: calculates noble aspiration i
   assert(rep.ritualAction.length > 0);
   assert(rep.reflectionFocus.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
-  assert(rep.calculatedAtKst.endsWith('+09:00 KST'));
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(Boolean(rep.yulgokSynthesisMatrix?.integratedAction));
   const repQ = calculateYulgokGyeokmong(profile, '미루던 옛 습관을 끊고 바로 세울 뜻');
   assert(repQ.reflectiveQuestion.includes('바로 세울 뜻'));
@@ -6287,6 +6290,7 @@ test('Korean Yulgok Yi I Gyeokmong Yogyeol Engine: calculates noble aspiration i
   assert(prompt.includes(repQ.secondaryScholarStage.stageNameKo));
   assert(prompt.includes('실천 의례'));
   assert(prompt.includes('성찰 초점'));
+  assert(prompt.includes(repQ.reflectionFocus));
   assert(prompt.includes('해석 경계'));
   assert(prompt.includes('교차 매트릭스'));
   assert(!prompt.includes('%'));
