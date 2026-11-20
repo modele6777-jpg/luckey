@@ -421,6 +421,9 @@ import { calculateAlpineSavoyColWisdom, formatAlpineSavoyPrompt } from '../src/l
 import { calculateNabataeanPetraCisternWater, formatNabataeanPetraPrompt } from '../src/lib/divination/nabataeanPetraCisternWaterEngine';
 import { calculateFrisianPolderDikeBalance, formatFrisianPolderPrompt } from '../src/lib/divination/frisianPolderDikeBalanceEngine';
 import { calculateUkrainianVyshyvankaSunflower, formatUkrainianVyshyvankaPrompt } from '../src/lib/divination/ukrainianVyshyvankaSunflowerEngine';
+import { calculateChampaMySonBrickSanctuary, formatChampaMySonPrompt } from '../src/lib/divination/champaMySonBrickSanctuaryEngine';
+import { calculateKetYeniseiTaigaStars, formatKetYeniseiPrompt } from '../src/lib/divination/ketYeniseiTaigaStarsEngine';
+import { calculateChachapoyaCloudForestKuelap, formatChachapoyaKuelapPrompt } from '../src/lib/divination/chachapoyaCloudForestKuelapEngine';
 
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
@@ -14088,4 +14091,37 @@ test('Ukrainian Vyshyvanka Sunflower engine: motif, +09:00 KST, and interpretive
   const prompt = formatUkrainianVyshyvankaPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
   assert.ok(prompt.includes('비시반카') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Champa My Son Brick Sanctuary engine: motif, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateChampaMySonBrickSanctuary({ profile, now: new Date('2026-11-20T08:58:00Z'), question: '기본기를 반듯하게 맞춰 오래 버티고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-CHAMPA-MYSON-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatChampaMySonPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('미선') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Ket Yenisei Taiga Stars engine: sign, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateKetYeniseiTaigaStars({ profile, now: new Date('2026-11-20T08:58:00Z'), question: '큰 물길의 방향과 지금 내 계절을 살피고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-KET-YENISEI-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatKetYeniseiPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('예니세이') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Chachapoya Cloud Forest Kuelap engine: citadel, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateChachapoyaCloudForestKuelap({ profile, now: new Date('2026-11-20T08:58:00Z'), question: '둥글게 바람을 흘려보내며 높은 시야를 찾고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-CHACHAPOYA-KUELAP-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatChachapoyaKuelapPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('차차포야스') && prompt.includes('+09:00 (KST)'));
 });

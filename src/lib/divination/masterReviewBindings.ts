@@ -1707,5 +1707,17 @@ export const MASTER_REVIEW_BINDINGS: Record<string, { field: string; traceKey: s
   "ukrainianVyshyvankaSunflower": {
     "field": "ukrainianVyshyvankaSunflowerResult",
     "traceKey": "ukrainianVyshyvankaSunflowerResult"
+  },
+  "champaMySonBrickSanctuary": {
+    "field": "champaMySonBrickSanctuaryResult",
+    "traceKey": "champaMySonBrickSanctuaryResult"
+  },
+  "ketYeniseiTaigaStars": {
+    "field": "ketYeniseiTaigaStarsResult",
+    "traceKey": "ketYeniseiTaigaStarsResult"
+  },
+  "chachapoyaCloudForestKuelap": {
+    "field": "chachapoyaCloudForestKuelapResult",
+    "traceKey": "chachapoyaCloudForestKuelapResult"
   }
 };
