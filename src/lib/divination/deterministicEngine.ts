@@ -392,6 +392,9 @@ import { calculateNubianMeroeApedemakBalance, formatNubianMeroePrompt, type Nubi
 import { calculateSamarkandUlughBegObservatory, formatSamarkandUlughPrompt, type SamarkandUlughResult } from './samarkandUlughBegObservatoryEngine';
 import { calculateHaudenosauneeSevenGenerations, formatHaudenosauneePrompt, type HaudenosauneeResult } from './haudenosauneeSevenGenerationsEngine';
 import { calculateSwahiliUtuDhowMonsoon, formatSwahiliUtuDhowPrompt, type SwahiliUtuDhowResult } from './swahiliUtuDhowMonsoonEngine';
+import { calculateKhmerAngkorBarayWaterBalance, formatKhmerAngkorBarayPrompt, type KhmerAngkorBarayResult } from './khmerAngkorBarayWaterBalanceEngine';
+import { calculateMalagasyFihavananaKinship, formatMalagasyFihavananaPrompt, type MalagasyFihavananaResult } from './malagasyFihavananaKinshipHarmonyEngine';
+import { calculateHungarianTaltosTreeOfLife, formatHungarianTaltosPrompt, type HungarianTaltosResult } from './hungarianTaltosTreeOfLifeEngine';
 
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
@@ -802,6 +805,9 @@ export interface DeterministicEngineReport {
   samarkandUlughBegObservatoryResult?: SamarkandUlughResult | null;
   haudenosauneeSevenGenerationsResult?: HaudenosauneeResult | null;
   swahiliUtuDhowMonsoonResult?: SwahiliUtuDhowResult | null;
+  khmerAngkorBarayWaterBalanceResult?: KhmerAngkorBarayResult | null;
+  malagasyFihavananaKinshipResult?: MalagasyFihavananaResult | null;
+  hungarianTaltosTreeOfLifeResult?: HungarianTaltosResult | null;
 
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
@@ -3645,6 +3651,33 @@ try {
     }
   })()));
 
+  // 369. 크메르 앙코르 바라이 물 순환 균형 엔진
+  const khmerAngkorBarayWaterBalanceResult = calculateSupplement('khmerAngkorBarayWaterBalanceResult', () => ((() => {
+    try {
+      return calculateKhmerAngkorBarayWaterBalance({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 370. 말라가시 피하바나나 연대와 조화 엔진
+  const malagasyFihavananaKinshipResult = calculateSupplement('malagasyFihavananaKinshipResult', () => ((() => {
+    try {
+      return calculateMalagasyFihavananaKinship({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 371. 헝가리 탈토시 하늘 닿는 세계수 엔진
+  const hungarianTaltosTreeOfLifeResult = calculateSupplement('hungarianTaltosTreeOfLifeResult', () => ((() => {
+    try {
+      return calculateHungarianTaltosTreeOfLife({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
   // 220. 한국 신라 의상대사 화엄일승법계도 & 법성게 원융무애 엔진
   const uisangHwaeomIlseungBeopgyeResult = calculateSupplement('uisangHwaeomIlseungBeopgyeResult', () => ((() => {
     try {
@@ -5031,6 +5064,9 @@ try {
     samarkandUlughBegObservatoryResult,
     haudenosauneeSevenGenerationsResult,
     swahiliUtuDhowMonsoonResult,
+    khmerAngkorBarayWaterBalanceResult,
+    malagasyFihavananaKinshipResult,
+    hungarianTaltosTreeOfLifeResult,
     tools: toolsMap,
   };
 }
@@ -5422,6 +5458,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'samarkandUlughBegObservatory', nameKo: '사마르칸트 울루그 베그 천문대', icon: '🔭', category: 'deep_master', summary: '우즈베키스탄 사마르칸트 울루그 베그 천문대의 자오선 관측처럼 막연한 짐작을 내려놓고 사실과 순서를 차분히 재어 보는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'muse' },
   { key: 'haudenosauneeSevenGenerations', nameKo: '호데노쇼니 7세대 대평화', icon: '🌲', category: 'deep_master', summary: '호데노쇼니(이로쿼이) 7세대 대평화 법칙처럼 당장의 조급함보다 오래 남을 신뢰와 공생의 가치를 살피는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'trinity' },
   { key: 'swahiliUtuDhowMonsoon', nameKo: '스와힐리 우투·다우 항해', icon: '⛵', category: 'deep_master', summary: '동아프리카 스와힐리의 우투(Utu) 정신과 다우 범선 계절풍 항해처럼 사람다움의 연대와 때를 기다리는 균형을 읽는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'bluebird' },
+  { key: 'khmerAngkorBarayWaterBalance', nameKo: '크메르 앙코르 바라이 순환', icon: '🪷', category: 'deep_master', summary: '캄보디아 크메르 앙코르 바라이 저수지처럼 에너지를 고요히 모으고 막힌 감정의 물길을 열어 흘려보내는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'aura' },
+  { key: 'malagasyFihavananaKinship', nameKo: '말라가시 피하바나나 연대', icon: '🌴', category: 'deep_master', summary: '마다가스카르 말라가시의 피하바나나(Fihavanana) 정신처럼 서두름 대신 따뜻한 유대와 부드러운 언어로 관계를 돌보는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'bluebird' },
+  { key: 'hungarianTaltosTreeOfLife', nameKo: '헝가리 탈토시 세계수', icon: '🌳', category: 'deep_master', summary: '헝가리 탈토시와 하늘 닿는 세계수 설화처럼 익숙한 걱정의 틀에서 한 층 위로 시야를 넓혀 다음 계단을 살피는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'muse' },
 ] as DceEngineMeta[]).filter(engine => !LUCY_PRO_CATALOG_DUPLICATE_KEYS.has(engine.key));
 
 export function getFiredEngineBadges(
@@ -5935,6 +5974,7 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'bhutanGnhTashiTagye',
     'torajaAlukTodoloTongkonan',
     'swahiliUtuDhowMonsoon',
+    'malagasyFihavananaKinship',
   ],
   creative_mind: [
     'irishJamesJoyceUlyssesEpiphany',
@@ -6229,6 +6269,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'samarkandUlughBegObservatory',
     'haudenosauneeSevenGenerations',
     'swahiliUtuDhowMonsoon',
+    'khmerAngkorBarayWaterBalance',
+    'malagasyFihavananaKinship',
+    'hungarianTaltosTreeOfLife',
   ],
 };
 
