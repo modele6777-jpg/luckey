@@ -365,6 +365,9 @@ import { calculateGermanHermannHesseDemianSteppenwolf, type GermanHermannHesseDe
 import { calculateKoreanHanYongUnSilenceOfNim, type KoreanHanYongUnSilenceOfNimResult, KOREAN_HAN_YONG_UN_SILENCE_OF_NIM_VERSION } from './koreanHanYongUnSilenceOfNimEngine';
 import { calculateInuitSilaBreathWeather, formatInuitSilaBreathWeatherPrompt, type InuitSilaBreathWeatherResult, INUIT_SILA_BREATH_WEATHER_VERSION } from './inuitSilaBreathWeatherEngine';
 import { calculateZuluUbuntuRelationalSelf, formatZuluUbuntuRelationalSelfPrompt, type ZuluUbuntuRelationalSelfResult, ZULU_UBUNTU_RELATIONAL_SELF_VERSION } from './zuluUbuntuRelationalSelfEngine';
+import { calculateAkanAdinkraSymbolsWisdom, formatAkanAdinkraSymbolsWisdomPrompt, type AkanAdinkraSymbolsWisdomResult, AKAN_ADINKRA_WISDOM_VERSION } from './akanAdinkraSymbolsWisdomEngine';
+import { calculateEthiopianZeraYacobHatataReason, formatEthiopianZeraYacobHatataReasonPrompt, type EthiopianZeraYacobHatataResult, ETHIOPIAN_ZERA_YACOB_VERSION } from './ethiopianZeraYacobHatataReasonEngine';
+import { calculateBasqueLauburuBasajaunHarmony, formatBasqueLauburuBasajaunHarmonyPrompt, type BasqueLauburuBasajaunResult, BASQUE_LAUBURU_HARMONY_VERSION } from './basqueLauburuBasajaunHarmonyEngine';
 
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
@@ -748,6 +751,9 @@ export interface DeterministicEngineReport {
   tamilThirukkuralAramPorulKamamResult?: TamilThirukkuralAramPorulKamamResult | null;
   inuitSilaBreathWeatherResult?: InuitSilaBreathWeatherResult | null;
   zuluUbuntuRelationalSelfResult?: ZuluUbuntuRelationalSelfResult | null;
+  akanAdinkraSymbolsWisdomResult?: AkanAdinkraSymbolsWisdomResult | null;
+  ethiopianZeraYacobHatataReasonResult?: EthiopianZeraYacobHatataResult | null;
+  basqueLauburuBasajaunHarmonyResult?: BasqueLauburuBasajaunResult | null;
 
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
@@ -3348,6 +3354,33 @@ try {
     }
   })()));
 
+  // 342. 아칸 아딩크라(Adinkra) 지혜 상징 엔진
+  const akanAdinkraSymbolsWisdomResult = calculateSupplement('akanAdinkraSymbolsWisdomResult', () => ((() => {
+    try {
+      return calculateAkanAdinkraSymbolsWisdom(profile, question, now);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 343. 에티오피아 자라 야곱 《하타타》 이성·성찰 엔진
+  const ethiopianZeraYacobHatataReasonResult = calculateSupplement('ethiopianZeraYacobHatataReasonResult', () => ((() => {
+    try {
+      return calculateEthiopianZeraYacobHatataReason(profile, question, now);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 344. 바스크 라부루(Lauburu)·바사하운 숲과 원환의 균형 엔진
+  const basqueLauburuBasajaunHarmonyResult = calculateSupplement('basqueLauburuBasajaunHarmonyResult', () => ((() => {
+    try {
+      return calculateBasqueLauburuBasajaunHarmony(profile, question, now);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
   // 220. 한국 신라 의상대사 화엄일승법계도 & 법성게 원융무애 엔진
   const uisangHwaeomIlseungBeopgyeResult = calculateSupplement('uisangHwaeomIlseungBeopgyeResult', () => ((() => {
     try {
@@ -4707,6 +4740,9 @@ try {
     tamilThirukkuralAramPorulKamamResult,
     inuitSilaBreathWeatherResult,
     zuluUbuntuRelationalSelfResult,
+    akanAdinkraSymbolsWisdomResult,
+    ethiopianZeraYacobHatataReasonResult,
+    basqueLauburuBasajaunHarmonyResult,
     tools: toolsMap,
   };
 }
@@ -5071,6 +5107,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'tamilThirukkuralAramPorulKamam', nameKo: '타밀 티루쿠랄 아람 포룰 카맘 삼편 덕 재물 사랑 발라르 고전 지혜', icon: '🌺', category: 'deep_master', summary: '남인도 타밀 고전 《티루쿠랄》의 덕·재물·사랑 세 축으로 지금 삶에서 비어 있는 곳을 살피는 고전 지혜 관점입니다. 역본마다 다른 원문 문장을 인용하지 않고 길흉·점수를 산출하지 않습니다.', primaryTheme: 'bluebird' },
   { key: 'inuitSilaBreathWeather', nameKo: '이누이트 시라 숨·날씨·빛의 리듬', icon: '🌬️', category: 'deep_master', summary: '북극 이누이트의 시라(Sila) 숨·날씨·빛의 상징으로 오늘의 호흡 결과 기다림과 움직임의 균형을 돌아보는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'aura' },
   { key: 'zuluUbuntuRelationalSelf', nameKo: '줄루 우부투 관계적 자아', icon: '🌍', category: 'deep_master', summary: '남아프리카 줄루 우부투(Ubuntu)의 인정·나눔·화평 세 축으로 관계 속 나의 자리와 상호 존중의 균형을 돌아보는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'bluebird' },
+  { key: 'akanAdinkraSymbolsWisdom', nameKo: '아칸 아딩크라 지혜 상징', icon: '🕊️', category: 'deep_master', summary: '서아프리카 가나 아칸족의 산코파·드웬니멘 등 아딩크라 상징으로 과거의 배움과 겸손·결단의 균형을 돌아보는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'trinity' },
+  { key: 'ethiopianZeraYacobHatataReason', nameKo: '에티오피아 자라 야곱 하타타 이성·성찰', icon: '🕯️', category: 'deep_master', summary: '17세기 에티오피아 철학자 자라 야곱의 《하타타》 이성·양심·공정함 기준으로 맹목 없이 판단을 정돈하는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'muse' },
+  { key: 'basqueLauburuBasajaunHarmony', nameKo: '바스크 라부루·바사하운 원환 균형', icon: '🌿', category: 'deep_master', summary: '피레네 바스크 전통의 네 갈래 순환 상징 라부루와 숲 수호자 바사하운의 돌봄으로 일과 쉼의 균형을 돌아보는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'aura' },
 ] as DceEngineMeta[]).filter(engine => !LUCY_PRO_CATALOG_DUPLICATE_KEYS.has(engine.key));
 
 export function getFiredEngineBadges(
@@ -5390,6 +5429,7 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'slavicSvarog',
     'tamilThirukkuralAramPorulKamam',
     'zuluUbuntuRelationalSelf',
+    'akanAdinkraSymbolsWisdom',
   ],
   immediate_decision: [
     'frenchAlbertCamusAbsurdRevolt',
@@ -5571,6 +5611,7 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'fengShuiEightMansions',
     'hinduKundalini',
     'inuitSilaBreathWeather',
+    'basqueLauburuBasajaunHarmony',
   ],
   creative_mind: [
     'irishJamesJoyceUlyssesEpiphany',
@@ -5838,6 +5879,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'tamilThirukkuralAramPorulKamam',
     'inuitSilaBreathWeather',
     'zuluUbuntuRelationalSelf',
+    'akanAdinkraSymbolsWisdom',
+    'ethiopianZeraYacobHatataReason',
+    'basqueLauburuBasajaunHarmony',
   ],
 };
 

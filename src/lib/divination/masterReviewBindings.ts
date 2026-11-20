@@ -1359,5 +1359,17 @@ export const MASTER_REVIEW_BINDINGS: Record<string, { field: string; traceKey: s
   "zuluUbuntuRelationalSelf": {
     "field": "zuluUbuntuRelationalSelfResult",
     "traceKey": "zuluUbuntuRelationalSelfResult"
+  },
+  "akanAdinkraSymbolsWisdom": {
+    "field": "akanAdinkraSymbolsWisdomResult",
+    "traceKey": "akanAdinkraSymbolsWisdomResult"
+  },
+  "ethiopianZeraYacobHatataReason": {
+    "field": "ethiopianZeraYacobHatataReasonResult",
+    "traceKey": "ethiopianZeraYacobHatataReasonResult"
+  },
+  "basqueLauburuBasajaunHarmony": {
+    "field": "basqueLauburuBasajaunHarmonyResult",
+    "traceKey": "basqueLauburuBasajaunHarmonyResult"
   }
 };
