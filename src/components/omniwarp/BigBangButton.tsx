@@ -8,6 +8,7 @@ import { ChevronUp, ChevronDown, Clover, KeyRound } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { WarpPhase, OmniWarpTarget, OmniWarpContext, WarpForceMetrics } from '@/lib/omniWarp/types';
 import { calculateWarpMetrics, forceToAiTemperature, WARP_ABORT_DISTANCE } from '@/lib/omniWarp/forceSensor';
+import { playLucyMasterSuction } from './BigBangMasterSuction';
 import { serializeCurrentView, synthesizeWarpTarget, isDisallowedWarpDestination } from '@/lib/omniWarp/omniWarpEngine';
 import {
   getWhiteholeRecommendedApp,
@@ -941,9 +942,13 @@ export function BigBangButton() {
     // 홀드(사용자 제스처) 안에서 바로 배경음을 시작해야 모바일 브라우저가 소리를 허용한다.
     const startBgmIfWanted = () => { if (isLucyMasterBgmPreferred()) void startLucyMasterBgm(); };
     if (lucyVisible) {
-      if (toggleLucyMasterMode()) startBgmIfWanted();
+      if (toggleLucyMasterMode()) {
+        playLucyMasterSuction(); // 들어갈 때만: 화면이 버튼 안으로 빨려 들어간다
+        startBgmIfWanted();
+      }
       return;
     }
+    playLucyMasterSuction();
     startBgmIfWanted();
     // 다른 화면에서는 점술모드를 켠 채로 루시 채팅으로 이동한다.
     setLucyMasterMode(true);
@@ -951,7 +956,8 @@ export function BigBangButton() {
     safeSessionStorage.setItem('lucy_tier_mode', tier);
     safeLocalStorage.setItem('lucy_tier_mode', tier);
     const path = tier === 'plus' ? '/' : `/chat?mode=${tier}`;
-    dispatchBigBangRouteTransition(path, 'Lucy 점술모드', metrics);
+    // 빨려 들어가는 효과가 전환 연출을 맡으므로 일반 웜홀 전환은 띄우지 않는다.
+    void metrics;
     (window as any).__prismAllowRouteChangeUntil = Date.now() + 1500;
     navigate(path);
     window.dispatchEvent(new CustomEvent('prism-navigate', { detail: { path } }));
