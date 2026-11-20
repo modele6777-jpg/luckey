@@ -36,7 +36,7 @@ import remarkGfm from 'remark-gfm';
 import { safeSessionStorage, safeLocalStorage } from '@/utils/safeStorage';
 import { isLucyMasterModeOn, setLucyMasterMode, LUCY_MASTER_MODE_EVENT, publishLucyTarotDraw, isAcceptingTarotDrawOffer, buildTarotHouseGuide, createTarotHouseGreeting, consumeTarotHouseGreetingPending, parseAnswerChoices, isAskingForDeepEngines, createTarotOfferOnUnfold, setLucyMasterLink, getLucyMasterLink, resolveLucyMasterLinkChoice, buildLinkedLucyContext, isTarotHouseGreetingPending, findConcernAnchor, createTarotHouseConcernQuestion, LUCY_TAROT_PICK_REQUEST_EVENT, LUCY_TAROT_PICKED_EVENT, LUCY_TAROT_PICK_CANCEL_EVENT, tarotPickPositions, toDetectedTarotCards, takeQueuedMasterTarotSpread, buildSpreadLayoutContext, matchMasterTarotSpread, isAutoSpreadCandidate } from '@/lib/lucyMasterMode';
 import { cleanAssistantMessageDisplay, cleanUserMessageDisplay } from '@/utils/cleanMessage';
-import { detectLucyChannelsFromText, formatChannelsModeTitle, getSeptagramBadgeStyle, shouldShowAutoDetectionBadge } from '@/lib/lucyAutoModeDetector';
+import { detectLucyChannelsFromText, formatChannelsModeTitle } from '@/lib/lucyAutoModeDetector';
 import { selectOptimalDivinationTools, THEME_PRIMARY_DIVINATION_TOOLS, type SelectedDivinationToolsResult } from '@/lib/fifteenDivinationTools';
 import { triggerHaptic } from '@/lib/omniWarp/omniWarpHaptics';
 import { DynamicGhostInputPlaceholder } from '@/components/chat/DynamicGhostInputPlaceholder';
@@ -984,7 +984,6 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
     }
     return null;
   });
-  const [liveDetection, setLiveDetection] = useState<{ channels: SpecialChannel[]; isCasual: boolean } | null>(null);
 
   const setAutoDetectedTitle = useCallback((value: React.SetStateAction<string | null>) => {
     setAutoDetectedTitleState(previous => {
@@ -1017,45 +1016,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
     title: string;
   } | null>(null);
 
-  // Real-time input text analysis for live dynamic mode indicator badge (AI 자동 감지 모드일 때 실시간 인디케이터 배지 표시용)
-  useEffect(() => {
-    if (!isAutoDetect) {
-      setLiveDetection(null);
-      return;
-    }
-
-    if (!input.trim() || input.trim().length < 2) {
-      presetModeRef.current = null;
-      setLiveDetection(null);
-      setAutoDetectedTitle(null);
-      return;
-    }
-
-    // 질문 라이브러리/칩에서 선택된 질문 내용과 완전히 일치할 경우 사전 지정된 모드 유지
-    if (presetModeRef.current && presetModeRef.current.text === input) {
-      const channels = [...presetModeRef.current.channels];
-      setLiveDetection({ channels, isCasual: channels.length === 0 });
-      setAutoDetectedTitle(presetModeRef.current.title);
-      return;
-    }
-
-    // 사용자가 직접 내용을 수정/타이핑하기 시작하면 프리셋을 해제하고 실시간 감지 실행
-    presetModeRef.current = null;
-    setLiveDetection(null);
-
-    const timer = setTimeout(() => {
-      const detected = detectPageChannels(input);
-      setLiveDetection({ channels: [...detected.channels], isCasual: detected.isCasual });
-      const nextTitle = detected.isMaster || detected.channels.length > 0
-        ? detected.modeTitle
-        : '가벼운 일상 수다';
-
-      setAutoDetectedTitle((prev) => (prev === nextTitle ? prev : nextTitle));
-    }, 300);
-    return () => clearTimeout(timer);
-  }, [input, isAutoDetect]);
-
-  const showAutoDetectBadge = shouldShowAutoDetectionBadge(isAutoDetect, isInputFocused, input, liveDetection);
+  // 입력하는 동안의 실시간 AI 모드 감지와 'AI 감지' 배지는 사용자 요청으로 제거했다. 모드 판별은 보낼 때만 한다.
 
   const [attachedImage, setAttachedImage] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -4301,23 +4262,6 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
             </div>
           )}
 
-          {/* Live Auto-Detect Indicator Badge */}
-          <AnimatePresence>
-            {showAutoDetectBadge && autoDetectedTitle && liveDetection && (
-              <motion.div
-                initial={{ opacity: 0, y: 4 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 4 }}
-                className="lucy-auto-detect-badge flex items-center gap-1 px-2 py-0.5 border rounded-full text-[9px] sm:text-[10px] font-semibold w-fit shadow-2xs"
-                style={getSeptagramBadgeStyle(liveDetection.channels)}
-              >
-                <Sparkles size={10} className="animate-spin" />
-                <span>AI 감지:</span>
-                <span className="font-bold underline decoration-current/30">{autoDetectedTitle}</span>
-                <span className="text-[8px] sm:text-[9px] bg-white/75 px-1 py-0.1 rounded-full font-medium">자동 전환</span>
-              </motion.div>
-            )}
-          </AnimatePresence>
 
           {ttsError && <div role="alert" className="flex items-center justify-between gap-2 rounded-lg border border-amber-400/40 bg-amber-100 px-3 py-2 text-xs text-amber-950">
             <span>{ttsError}</span>

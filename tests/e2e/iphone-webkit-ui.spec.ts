@@ -446,17 +446,13 @@ test('Lucy engine catalog fills its mobile pane and its list scrolls without aut
   await expect(dialog).toHaveCount(0);
 });
 
-test('AI detection badge appears only for a focused non-casual query', async ({ page }) => {
+test('typing in the composer shows no AI detection badge', async ({ page }) => {
   await openLucy(page);
   const composer = page.locator('.lucy-chat-footer textarea');
-  const badge = page.locator('.lucy-auto-detect-badge');
-
   await composer.fill('홍국기문(기문둔갑)으로 지금 막힌 상황을 분석해줘.');
-  await expect(badge).toContainText('AI 감지');
-  await expect(badge).toBeVisible();
-
-  await composer.fill('오늘 어땠어? 사소한 일상 이야기를 편하게 나누고 싶어.');
-  await expect(badge).toHaveCount(0);
+  await page.waitForTimeout(500);
+  await expect(page.locator('.lucy-auto-detect-badge')).toHaveCount(0);
+  await expect(page.getByText('AI 감지')).toHaveCount(0);
 });
 
 test('Big Bang left and right controls stay disabled in Lucy chat', async ({ page }) => {
