@@ -1,4 +1,4 @@
-/** Lucy Pro shows 324 deep perspectives and 15 foundational tools in its approved 339-entry catalog. */
+/** Lucy Pro shows 327 deep perspectives and 15 foundational tools in its approved 342-entry catalog. */
 export const LUCY_PRO_FOUNDATIONAL_COUNT = 15;
-export const LUCY_PRO_DEEP_PERSPECTIVE_COUNT = 324;
+export const LUCY_PRO_DEEP_PERSPECTIVE_COUNT = 327;
 export const LUCY_PRO_CATALOG_TOTAL_COUNT = LUCY_PRO_FOUNDATIONAL_COUNT + LUCY_PRO_DEEP_PERSPECTIVE_COUNT;
