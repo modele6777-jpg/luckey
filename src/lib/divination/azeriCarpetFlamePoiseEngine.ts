@@ -4,6 +4,7 @@ export interface AzeriCarpetResult {
   engineVersion: string;
   calculatedAtKst: string;
   azeriMotif: string;
+  companionMotif: string;
   azeriInsight: string;
   bakuTone: string;
   reflectionFocus: string;
@@ -13,16 +14,51 @@ export interface AzeriCarpetResult {
 }
 
 const MOTIFS = [
-  { motif: '부타의 불꽃 곡선(Buta Flame · 바람에 흔들리면서도 꺼지지 않는 작은 불꽃 문양)', insight: '환경의 바람이 거세어져도 내 안의 작은 열정이 완전히 꺼지지 않고 유연하게 흔들릴 줄 알면 됨', tone: '카스피해의 바닷바람이 불어오는 바쿠 성곽 안, 붉은 양탄자 위 부타 문양이 선명한 아침' },
-  { motif: '경사와 위사의 교차 매듭(Double Knot · 세로줄과 가로줄이 단단히 얽혀 풀리지 않음)', insight: '내가 세운 원칙(세로줄)과 유연한 일상 경험(가로줄)이 교차할 때 비로소 튼튼한 무늬가 됨', tone: '나무 베틀 앞에서 장인이 양손으로 실을 엮으며 차분한 리듬을 만드는 오전' },
-  { motif: '천연 염료의 깊은 색(Saffron & Pomegranate · 사프란과 석류 껍질로 물들인 시간이 지날수록 깊어지는 색)', insight: '인공적인 화려함보다 시간을 들여서 우려낸 태도와 실력이 오래갈수록 더 빛을 발함', tone: '햇볕이 따스한 마당에서 천연 염색된 양모 실타래가 바람에 말라 가는 낮' },
-  { motif: '메다글리온 중심 원(Central Medallion · 가장자리 문양들이 모두 한가운데 원으로 시선을 모음)', insight: '주변에 온갖 자잘한 일이 많아도 결국 내 삶의 중심 원이 무엇인지 기억하면 산만하지 않음', tone: '카펫 한가운데 둥근 기하학 문양이 방 안의 모든 빛을 모아들이는 오후' },
-  { motif: '아르무두 유리잔의 홍차(Armudu Tea · 허리가 잘록한 잔에 담긴 차가 천천히 식으며 대화를 잇음)', insight: '뜨거운 문제도 잘록한 잔처럼 속도를 조금 늦추어 식히면서 마주 앉으면 풀리지 않을 일이 없음', tone: '석양빛이 비치는 테라스에서 투명한 유리잔 속 붉은 홍차가 따뜻하게 빛나는 저녁' },
+  {
+    motif: '부타의 불꽃 곡선(Buta Flame · 바람에 흔들리면서도 꺼지지 않는 작은 불꽃 문양)',
+    insight: '환경의 바람이 거세어져도 내 안의 작은 열정이 완전히 꺼지지 않고 유연하게 흔들릴 줄 알면 됨',
+    tone: '카스피해의 바닷바람이 불어오는 바쿠 성곽 안, 붉은 양탄자 위 부타 문양이 선명한 아침',
+    ritual: '바람이 거세게 느껴지는 일 앞에서 마음을 다그치기보다, 불꽃이 꺼지지 않게 호흡만 고르게 지켜 보세요.',
+    question: '외부의 바람이 거셀 때도 내 안에서 끝까지 꺼뜨리지 않고 지키고 싶은 작은 불꽃은 무엇인가요?',
+  },
+  {
+    motif: '경사와 위사의 교차 매듭(Double Knot · 세로줄과 가로줄이 단단히 얽혀 풀리지 않음)',
+    insight: '내가 세운 원칙(세로줄)과 유연한 일상 경험(가로줄)이 교차할 때 비로소 튼튼한 무늬가 됨',
+    tone: '나무 베틀 앞에서 장인이 양손으로 실을 엮으며 차분한 리듬을 만드는 오전',
+    ritual: '오늘 내가 지킬 원칙 한 가지와 상황에 맞춰 유연하게 조절할 부분 한 가지를 나란히 적어 보세요.',
+    question: '내 원칙(세로줄)과 일상의 유연함(가로줄)이 튼튼하게 매듭지어져야 할 오늘의 과제는 무엇인가요?',
+  },
+  {
+    motif: '천연 염료의 깊은 색(Saffron & Pomegranate · 사프란과 석류 껍질로 물들인 시간이 지날수록 깊어지는 색)',
+    insight: '인공적인 화려함보다 시간을 들여서 우려낸 태도와 실력이 오래갈수록 더 빛을 발함',
+    tone: '햇볕이 따스한 마당에서 천연 염색된 양모 실타래가 바람에 말라 가는 낮',
+    ritual: '당장 눈에 띄는 성과보다 시간이 지날수록 깊어지는 기본기 연습 15분을 오늘 몫으로 챙겨 보세요.',
+    question: '반짝 화려해 보이는 것 대신, 시간을 들여 깊게 물들여 두고 싶은 내 삶의 태도나 실력은 무엇인가요?',
+  },
+  {
+    motif: '메다글리온 중심 원(Central Medallion · 가장자리 문양들이 모두 한가운데 원으로 시선을 모음)',
+    insight: '주변에 온갖 자잘한 일이 많아도 결국 내 삶의 중심 원이 무엇인지 기억하면 산만하지 않음',
+    tone: '카펫 한가운데 둥근 기하학 문양이 방 안의 모든 빛을 모아들이는 오후',
+    ritual: '오늘 복잡한 생각들을 한 번에 해결하려 들지 말고, 차 한 잔 마시는 동안 중심 과제 하나만 골라 매듭을 지어 보세요.',
+    question: '내 삶의 카펫 한가운데에 자리 잡은 메다글리온(가장 중요한 중심 원)은 지금 무엇을 향하고 있나요?',
+  },
+  {
+    motif: '아르무두 유리잔의 홍차(Armudu Tea · 허리가 잘록한 잔에 담긴 차가 천천히 식으며 대화를 잇음)',
+    insight: '뜨거운 문제도 잘록한 잔처럼 속도를 조금 늦추어 식히면서 마주 앉으면 풀리지 않을 일이 없음',
+    tone: '석양빛이 비치는 테라스에서 투명한 유리잔 속 붉은 홍차가 따뜻하게 빛나는 저녁',
+    ritual: '마음이 급해지는 대화나 결정 앞에선 따뜻한 차 한 모금만큼 속도를 늦춘 뒤 답을 건네 보세요.',
+    question: '지금 성급히 삼키기보다 아르무두 잔의 홍차처럼 조금 식히며 천천히 마주 앉아야 할 문제는 무엇인가요?',
+  },
 ];
 
 function formatKstIso(date: Date): string {
   const kst = new Date(date.getTime() + 9 * 60 * 60 * 1000);
-  return kst.toISOString().replace('Z', '+09:00 (KST)');
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
 }
 
 function stableHash(input: string): number {
@@ -42,17 +78,20 @@ export function calculateAzeriCarpetFlamePoise(params: {
   const now = params.now ?? new Date();
   const seed = `${JSON.stringify(params.profile.fate ?? {})}|${params.question ?? ''}|${now.toISOString().slice(0, 13)}`;
   const idx = stableHash(seed) % MOTIFS.length;
+  const companionOffset = 1 + (stableHash(`${seed}|companion`) % (MOTIFS.length - 1));
   const picked = MOTIFS[idx];
+  const companion = MOTIFS[(idx + companionOffset) % MOTIFS.length];
 
   return {
-    engineVersion: 'LUCKEY-AZERI-CARPET-v2.1.0',
+    engineVersion: 'LUCKEY-AZERI-CARPET-v2.2.0',
     calculatedAtKst: formatKstIso(now),
     azeriMotif: picked.motif,
-    azeriInsight: picked.insight,
+    companionMotif: companion.motif,
+    azeriInsight: `${picked.insight} (동반 결: ${companion.motif})`,
     bakuTone: picked.tone,
-    reflectionFocus: `아제르바이잔 카펫의 '${picked.motif}'처럼, 바람 앞에서도 유연하게 흔들리는 불꽃과 중심 원의 균형을 지켜 보세요.`,
-    ritualAction: '오늘 복잡한 생각들을 한 번에 해결하려 들지 말고, 차 한 잔 마시는 동안 중심 과제 하나만 골라 매듭을 지어 보세요.',
-    reflectiveQuestion: '내 삶의 카펫 한가운데에 자리 잡은 메다글리온(가장 중요한 중심 원)은 지금 무엇을 향하고 있나요?',
+    reflectionFocus: `아제르바이잔 카펫의 '${picked.motif}'와 동반 결 '${companion.motif}'처럼, 바람 앞에서도 유연하게 흔들리는 불꽃과 중심 원의 균형을 지켜 보세요.`,
+    ritualAction: picked.ritual,
+    reflectiveQuestion: picked.question,
     interpretiveBoundary: '아제르바이잔 바쿠·카펫 직조와 부타 문양 지혜 전통을 바탕으로 한 상징적 성찰 프레임입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.',
   };
 }
@@ -62,6 +101,7 @@ export function formatAzeriCarpetPrompt(res: AzeriCarpetResult): string {
     `[아제리·바쿠 카펫 불꽃 성찰 · ${res.engineVersion}]`,
     `- 기준 시각: ${res.calculatedAtKst}`,
     `- 아제리 모티프: ${res.azeriMotif} (${res.bakuTone})`,
+    `- 동반 결: ${res.companionMotif}`,
     `- 중심 통찰: ${res.azeriInsight}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 오늘의 작은 실천: ${res.ritualAction}`,
