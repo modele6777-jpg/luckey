@@ -895,6 +895,6 @@ html[data-lucy-theme='starlight'] .lucy-night .lucy-voice-status { background: #
 /* iOS 26+: the keyboard's floating accessory bar (^ v ✓) overlays the page
    without shrinking visualViewport. Lift the Lucy composer above it. */
 html.keyboard-open[data-ios-accessory-overlay] .lucy-chat-footer {
-  padding-bottom: var(--ios-keyboard-accessory-gap, 84px) !important;
+  padding-bottom: var(--ios-keyboard-accessory-gap, 92px) !important;
   min-height: 0 !important;
 }
