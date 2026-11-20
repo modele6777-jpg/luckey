@@ -491,6 +491,9 @@ import { calculateLuangPrabangMekongDawn, formatLuangPrabangDawnPrompt, type Lua
 import { calculateMossiEarthMuralHarmony, formatMossiMuralPrompt, type MossiMuralResult } from './mossiEarthMuralHarmonyEngine';
 import { calculateWolofTerangaBaobabWarmth, formatWolofTerangaPrompt, type WolofTerangaResult } from './wolofTerangaBaobabWarmthEngine';
 import { calculatePalauanBaiRafterBalance, formatPalauanBaiPrompt, type PalauanBaiResult } from './palauanBaiRafterBalanceEngine';
+import { calculateZimbabweGreatStoneWall, formatZimbabweStonePrompt, type ZimbabweStoneResult } from './zimbabweGreatStoneWallEngine';
+import { calculateBulgarianRoseValleyDawn, formatBulgarianRosePrompt, type BulgarianRoseResult } from './bulgarianRoseValleyDawnEngine';
+import { calculateAzeriCarpetFlamePoise, formatAzeriCarpetPrompt, type AzeriCarpetResult } from './azeriCarpetFlamePoiseEngine';
 
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
@@ -1000,6 +1003,9 @@ export interface DeterministicEngineReport {
   mossiEarthMuralHarmonyResult?: MossiMuralResult | null;
   wolofTerangaBaobabWarmthResult?: WolofTerangaResult | null;
   palauanBaiRafterBalanceResult?: PalauanBaiResult | null;
+  zimbabweGreatStoneWallResult?: ZimbabweStoneResult | null;
+  bulgarianRoseValleyDawnResult?: BulgarianRoseResult | null;
+  azeriCarpetFlamePoiseResult?: AzeriCarpetResult | null;
 
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
@@ -4734,6 +4740,33 @@ try {
     }
   })()));
 
+  // 468. 그레이트 짐바브웨·돌담 지혜 엔진
+  const zimbabweGreatStoneWallResult = calculateSupplement('zimbabweGreatStoneWallResult', () => ((() => {
+    try {
+      return calculateZimbabweGreatStoneWall({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 469. 불가리아·장미 계곡 새벽 성찰 엔진
+  const bulgarianRoseValleyDawnResult = calculateSupplement('bulgarianRoseValleyDawnResult', () => ((() => {
+    try {
+      return calculateBulgarianRoseValleyDawn({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 470. 아제리·바쿠 카펫 불꽃 성찰 엔진
+  const azeriCarpetFlamePoiseResult = calculateSupplement('azeriCarpetFlamePoiseResult', () => ((() => {
+    try {
+      return calculateAzeriCarpetFlamePoise({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
   // 220. 한국 신라 의상대사 화엄일승법계도 & 법성게 원융무애 엔진
   const uisangHwaeomIlseungBeopgyeResult = calculateSupplement('uisangHwaeomIlseungBeopgyeResult', () => ((() => {
     try {
@@ -6219,6 +6252,9 @@ try {
     mossiEarthMuralHarmonyResult,
     wolofTerangaBaobabWarmthResult,
     palauanBaiRafterBalanceResult,
+    zimbabweGreatStoneWallResult,
+    bulgarianRoseValleyDawnResult,
+    azeriCarpetFlamePoiseResult,
     tools: toolsMap,
   };
 }
@@ -6709,6 +6745,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'mossiEarthMuralHarmony', nameKo: '모시·황토 벽화 질서', icon: '🧱', category: 'deep_master', summary: '부르키나파소 티에벨레 모시족의 흙벽 기하학 벽화처럼 소박한 일상에 반복되는 리듬과 미리 챙기는 보호막을 더하는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'aura' },
   { key: 'wolofTerangaBaobabWarmth', nameKo: '월로프·테랑가 환대', icon: '🌳', category: 'deep_master', summary: '세네갈 월로프의 아타야 세 잔 차와 바오밥 그늘처럼 첫 잔의 씁쓸함을 견디고 마음의 여백을 남겨 인연을 맞는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'bluebird' },
   { key: 'palauanBaiRafterBalance', nameKo: '팔라우·바이 서까래', icon: '🏝️', category: 'deep_master', summary: '남태평양 팔라우 전통 바이 회당의 네 기둥과 산호초 안쪽 라군처럼 무게를 고르게 나누고 내 안의 고요를 지키는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'muse' },
+  { key: 'zimbabweGreatStoneWall', nameKo: '짐바브웨·돌담 지혜', icon: '🪨', category: 'deep_master', summary: '그레이트 짐바브웨의 모르타르 없는 화강암 돌담처럼 억지로 묶으려 하기보다 제 무게로 알맞게 맞물리는 자리를 찾는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'trinity' },
+  { key: 'bulgarianRoseValleyDawn', nameKo: '불가리아·장미 계곡', icon: '🌹', category: 'deep_master', summary: '카잔러크 장미 계곡의 동트기 전 이슬 수확과 구리 증류기처럼 가장 맑은 시간대를 골라 정성껏 핵심 한 방울을 모으는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'aura' },
+  { key: 'azeriCarpetFlamePoise', nameKo: '아제리·바쿠 카펫 불꽃', icon: '🪔', category: 'deep_master', summary: '아제르바이잔 바쿠의 부타 불꽃 문양과 메다글리온 중심 원처럼 바람 앞에서도 유연하게 흔들리며 중심을 지키는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'bluebird' },
 ] as DceEngineMeta[]).filter(engine => !LUCY_PRO_CATALOG_DUPLICATE_KEYS.has(engine.key));
 
 export function getFiredEngineBadges(
@@ -7617,6 +7656,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'mossiEarthMuralHarmony',
     'wolofTerangaBaobabWarmth',
     'palauanBaiRafterBalance',
+    'zimbabweGreatStoneWall',
+    'bulgarianRoseValleyDawn',
+    'azeriCarpetFlamePoise',
   ],
 };
 
