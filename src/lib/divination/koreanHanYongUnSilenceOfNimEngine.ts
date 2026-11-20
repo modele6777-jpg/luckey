@@ -5,7 +5,7 @@
  * @version LUCKEY-HAN-YONG-UN-SILENCE-OF-NIM-v2.0.0
  */
 
-export const KOREAN_HAN_YONG_UN_SILENCE_OF_NIM_VERSION = 'LUCKEY-HAN-YONG-UN-SILENCE-OF-NIM-v2.4.0';
+export const KOREAN_HAN_YONG_UN_SILENCE_OF_NIM_VERSION = 'LUCKEY-HAN-YONG-UN-SILENCE-OF-NIM-v2.5.0';
 
 export interface HanYongUnTheme {
   themeKey: string;
@@ -80,7 +80,7 @@ function selectHanYongUnTheme(query?: string): HanYongUnTheme {
 export function calculateKoreanHanYongUnSilenceOfNim(query?: string, now: Date = new Date()): KoreanHanYongUnSilenceOfNimResult {
   const activeHanYongUnTheme = selectHanYongUnTheme(query);
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
-  const calculatedAtKst = `${kst.toISOString().slice(0, 19)}+09:00`;
+  const calculatedAtKst = `${kst.toISOString().slice(0, 16).replace('T', ' ')} +09:00 (KST)`;
   const hanYongUnSynthesisMatrix = {
     dominantTension: `${activeHanYongUnTheme.themeTitleKo} ↔ ${activeHanYongUnTheme.themeTitleEn}`,
     alignmentState: '문학적 참고 관점 — 개인의 감정이나 미래를 단정하지 않고 작품의 주제를 비추는 정성적 성찰',
