@@ -1,0 +1,89 @@
+import type { UserProfile } from '../sharedState';
+
+export interface BadakhshanLapisInput {
+  profile: UserProfile;
+  now: Date;
+  question?: string;
+}
+
+export interface BadakhshanLapisResult {
+  engineVersion: string;
+  calculatedAtKst: string;
+  azureVein: string;
+  mineralCraft: string;
+  reflectionFocus: string;
+  ritualAction: string;
+  reflectiveQuestion: string;
+  interpretiveBoundary: string;
+}
+
+const VEINS = [
+  '거친 힌두쿠시 암벽 깊숙이 숨어 있는 짙은 쪽빛 맥',
+  '푸른 돌 속에 별빛처럼 박힌 황철석 금점(金點)',
+  '곱게 갈아 맑은 물에 띄워야 비로소 드러나는 울트라마린 안료',
+  '수천 년간 먼 산길을 넘어 그림과 건축에 닿은 푸른 인내',
+] as const;
+
+const CRAFTS = [
+  '원석을 쪼개기만 해서는 짙은 빛이 나오지 않듯, 힘든 경험도 곱게 다듬고 가라앉혀야 나만의 색이 됩니다.',
+  '짙은 푸른빛 속에 섞인 작은 금점들은 흠결이 아니라 이 돌이 진짜임을 말해 주는 고유의 결입니다.',
+  '좋은 빛깔을 얻으려면 불순물을 씻어 내고 가라앉기를 기다리는 시간이 반드시 필요합니다.',
+  '거친 바위산에서 캐낸 돌이 가장 섬세한 그림의 바탕이 되듯, 단단한 현실 감각 위에 섬세한 표현이 올라갑니다.',
+] as const;
+
+const ACTIONS = [
+  '요즘 나를 거칠게 누르는 문제에서 씻어 내어 정제할 불순물(불안·잡음) 하나 골라내기',
+  '내 안에 흠처럼 느껴지던 성향 하나를 고유한 금점(개성)으로 다시 바라보기',
+  '결과물을 급히 내놓기 전에 하루만 더 숙성하거나 한 번 더 다듬는 여유 갖기',
+  '깊은 집중이 필요한 작업 전 주변의 소음을 5분간 꺼 두고 맑은 바탕 만들기',
+] as const;
+
+const QUESTIONS = [
+  '지금 내 일상이라는 거친 암석 속에서 곱게 갈아 꺼내면 빛날 푸른 맥은 무엇인가요?',
+  '스스로 흠결이라 여겼지만 사실은 나를 고유하게 만드는 금점 같은 면모는 무엇인가요?',
+  '서둘러 칠하기 전에 충분히 가라앉히고 정제해야 할 감정이나 생각은 무엇인가요?',
+  '먼 길을 돌아서라도 결국 꼭 남겨 두고 싶은 나만의 색깔은 어떤 빛깔인가요?',
+] as const;
+
+function toKstIso(now: Date): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  return kst.toISOString().replace('Z', '+09:00 (KST)');
+}
+
+function hashSeed(text: string): number {
+  let h = 2166136261;
+  for (let i = 0; i < text.length; i += 1) {
+    h ^= text.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return h >>> 0;
+}
+
+export function calculateBadakhshanLapisVein(input: BadakhshanLapisInput): BadakhshanLapisResult {
+  const fate = input.profile.fate ?? {};
+  const seed = hashSeed(`${JSON.stringify(fate)}|${input.now.toISOString().slice(0, 13)}|${input.question ?? ''}`);
+
+  return {
+    engineVersion: 'LUCKEY-BADAKHSHAN-LAPIS-v2.1.0',
+    calculatedAtKst: toKstIso(input.now),
+    azureVein: VEINS[seed % VEINS.length],
+    mineralCraft: CRAFTS[(seed >>> 3) % CRAFTS.length],
+    reflectionFocus: '힌두쿠시 바다흐샨의 험준한 암벽에서 캐낸 청금석(라피스 라줄리)을 곱게 갈아 가장 순수한 푸른 안료를 얻던 공예처럼, 정제와 고유의 결을 살피는 상징적 관점입니다.',
+    ritualAction: ACTIONS[(seed >>> 6) % ACTIONS.length],
+    reflectiveQuestion: QUESTIONS[(seed >>> 9) % QUESTIONS.length],
+    interpretiveBoundary: '개인 점수·심리 진단·미래 예측이 아닙니다. 자기 성찰을 돕기 위한 상징적 관점 안내입니다.',
+  };
+}
+
+export function formatBadakhshanLapisPrompt(res: BadakhshanLapisResult): string {
+  return [
+    `[바다흐샨·청금석 안료 관점 · ${res.engineVersion}]`,
+    `기준 시각: ${res.calculatedAtKst}`,
+    `청금석 맥: ${res.azureVein}`,
+    `정제 공예: ${res.mineralCraft}`,
+    `성찰 초점: ${res.reflectionFocus}`,
+    `권장 의식: ${res.ritualAction}`,
+    `성찰 질문: ${res.reflectiveQuestion}`,
+    `경계: ${res.interpretiveBoundary}`,
+  ].join('\n');
+}

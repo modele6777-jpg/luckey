@@ -508,6 +508,9 @@ import { calculateSangamTinaiPoetics, formatSangamTinaiPrompt } from '../src/lib
 import { calculateBatammaribaTakienta, formatBatammaribaTakientaPrompt } from '../src/lib/divination/batammaribaTakientaMudTowerEngine';
 import { calculateKunaMolaStitch, formatKunaMolaPrompt } from '../src/lib/divination/kunaMolaLayeredStitchEngine';
 import { calculateVenetianLagoonForcola, formatVenetianLagoonPrompt } from '../src/lib/divination/venetianLagoonForcolaOarEngine';
+import { calculateBajauLautTide, formatBajauLautPrompt } from '../src/lib/divination/bajauLautHouseboatTideEngine';
+import { calculateWodaabeGerewol, formatWodaabeGerewolPrompt } from '../src/lib/divination/wodaabeGerewolDesertPoiseEngine';
+import { calculateBadakhshanLapisVein, formatBadakhshanLapisPrompt } from '../src/lib/divination/badakhshanLapisVeinPoiseEngine';
 
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
@@ -15204,4 +15207,37 @@ test('Venetian Lagoon Forcola engine: notch, +09:00 KST, and interpretive bounda
   const prompt = formatVenetianLagoonPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
   assert.ok(prompt.includes('베네치아') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionNotch));
+});
+
+test('Bajau Laut Tide engine: anchor, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateBajauLautTide({ profile, now: new Date('2026-11-20T22:55:00Z'), question: '호흡과 물때의 리듬을 맞추고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-BAJAU-LAUT-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatBajauLautPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('바야우') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Wodaabe Gerewol engine: gathering, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateWodaabeGerewol({ profile, now: new Date('2026-11-20T22:55:00Z'), question: '힘든 상황에서도 품위를 지키고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-WODAABE-GEREWOL-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatWodaabeGerewolPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('우다베') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Badakhshan Lapis Vein engine: vein, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateBadakhshanLapisVein({ profile, now: new Date('2026-11-20T22:55:00Z'), question: '내 안의 고유한 결을 정제하고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-BADAKHSHAN-LAPIS-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatBadakhshanLapisPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('바다흐샨') && prompt.includes('+09:00 (KST)'));
 });
