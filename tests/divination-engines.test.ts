@@ -15016,33 +15016,36 @@ test('Sumba Ikat Story engine: motif, +09:00 KST, and interpretive boundary', ()
 
 test('Batak Toba Sopo Roof engine: motif, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateBatakSopoRoof({ profile, now: new Date('2026-11-20T22:05:00Z'), question: '유연하게 짜맞추고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-BATAK-SOPO-v2.1.0');
-  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.equal(rep.engineVersion, 'LUCKEY-BATAK-SOPO-v2.2.0');
+  assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
+  assert.ok(rep.companionMotif !== rep.sopoMotif);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatBatakSopoPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('바타크') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('바타크') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionMotif));
 });
 
 test('Tarahumara Raramuri Stride engine: motif, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateTarahumaraStride({ profile, now: new Date('2026-11-20T22:05:00Z'), question: '멀리 갈 수 있는 호흡을 찾고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-TARAHUMARA-STRIDE-v2.1.0');
-  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.equal(rep.engineVersion, 'LUCKEY-TARAHUMARA-STRIDE-v2.2.0');
+  assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
+  assert.ok(rep.companionMotif !== rep.strideMotif);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatTarahumaraStridePrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('타라후마라') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('타라후마라') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionMotif));
 });
 
 test('Orkney Skara Brae Hearth engine: motif, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateOrkneySkaraHearth({ profile, now: new Date('2026-11-20T22:05:00Z'), question: '마음의 중앙 화덕을 지키고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-ORKNEY-SKARA-v2.1.0');
-  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.equal(rep.engineVersion, 'LUCKEY-ORKNEY-SKARA-v2.2.0');
+  assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
+  assert.ok(rep.companionMotif !== rep.hearthMotif);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatOrkneySkaraPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('오크니') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('오크니') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionMotif));
 });

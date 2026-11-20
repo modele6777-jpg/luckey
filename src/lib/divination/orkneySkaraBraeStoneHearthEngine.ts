@@ -10,6 +10,7 @@ export interface OrkneySkaraResult {
   engineVersion: string;
   calculatedAtKst: string;
   hearthMotif: string;
+  companionMotif: string;
   stoneShelterState: string;
   reflectionFocus: string;
   ritualAction: string;
@@ -47,7 +48,12 @@ const QUESTIONS = [
 
 function toKstIso(date: Date): string {
   const kst = new Date(date.getTime() + 9 * 60 * 60 * 1000);
-  return kst.toISOString().replace('Z', '+09:00 (KST)');
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
 }
 
 function stableHash(seed: string): number {
@@ -65,17 +71,21 @@ export function calculateOrkneySkaraHearth(input: OrkneySkaraInput): OrkneySkara
   const seedText = `${JSON.stringify(fate)}|${input.question ?? ''}|${now.toISOString().slice(0, 10)}|orkney-skara`;
   const h = stableHash(seedText);
 
-  const hearthMotif = MOTIFS[h % MOTIFS.length];
+  const motifIdx = h % MOTIFS.length;
+  const companionOffset = 1 + (stableHash(`${seedText}|companion`) % (MOTIFS.length - 1));
+  const hearthMotif = MOTIFS[motifIdx];
+  const companionMotif = MOTIFS[(motifIdx + companionOffset) % MOTIFS.length];
   const stoneShelterState = SHELTER_STATES[(h >>> 3) % SHELTER_STATES.length];
-  const ritualAction = RITUALS[(h >>> 6) % RITUALS.length];
-  const reflectiveQuestion = QUESTIONS[(h >>> 9) % QUESTIONS.length];
+  const ritualAction = RITUALS[motifIdx];
+  const reflectiveQuestion = QUESTIONS[motifIdx];
 
   return {
-    engineVersion: 'LUCKEY-ORKNEY-SKARA-v2.1.0',
+    engineVersion: 'LUCKEY-ORKNEY-SKARA-v2.2.0',
     calculatedAtKst: toKstIso(now),
     hearthMotif,
+    companionMotif,
     stoneShelterState,
-    reflectionFocus: `북해의 거센 바람을 흙과 돌벽으로 막고 중앙 화덕에 온기를 지킨 오크니 스카라 브레처럼, 지금은 '${stoneShelterState}'의 아늑한 중심 잡기가 어울립니다.`,
+    reflectionFocus: `북해의 거센 바람을 흙과 돌벽으로 막고 중앙 화덕에 온기를 지킨 오크니 스카라 브레처럼, 주 모티프와 동반 모티프('${companionMotif}')가 어우러져 지금은 '${stoneShelterState}'의 아늑한 중심 잡기가 어울립니다.`,
     ritualAction,
     reflectiveQuestion,
     interpretiveBoundary: '스코틀랜드 오크니 제도 신석기 스카라 브레 석실 주거의 지혜를 빌린 상징적 성찰 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.',
@@ -86,6 +96,7 @@ export function formatOrkneySkaraPrompt(result: OrkneySkaraResult): string {
   return [
     `[오크니 스카라 브레 석실 (${result.engineVersion}) · ${result.calculatedAtKst}]`,
     `- 상징 모티프: ${result.hearthMotif}`,
+    `- 동반 모티프: ${result.companionMotif}`,
     `- 현재 결: ${result.stoneShelterState}`,
     `- 성찰 초점: ${result.reflectionFocus}`,
     `- 작은 실천: ${result.ritualAction}`,
