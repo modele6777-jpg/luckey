@@ -1947,5 +1947,17 @@ export const MASTER_REVIEW_BINDINGS: Record<string, { field: string; traceKey: s
   "tatraShepherdRidge": {
     "field": "tatraShepherdRidgeResult",
     "traceKey": "tatraShepherdRidgeResult"
+  },
+  "yemeniShibamMudTower": {
+    "field": "yemeniShibamMudTowerResult",
+    "traceKey": "yemeniShibamMudTowerResult"
+  },
+  "icelandicSagaHearth": {
+    "field": "icelandicSagaHearthResult",
+    "traceKey": "icelandicSagaHearthResult"
+  },
+  "sepikRiverCarving": {
+    "field": "sepikRiverCarvingResult",
+    "traceKey": "sepikRiverCarvingResult"
   }
 };
