@@ -395,6 +395,9 @@ import { calculateSwahiliUtuDhowMonsoon, formatSwahiliUtuDhowPrompt, type Swahil
 import { calculateKhmerAngkorBarayWaterBalance, formatKhmerAngkorBarayPrompt, type KhmerAngkorBarayResult } from './khmerAngkorBarayWaterBalanceEngine';
 import { calculateMalagasyFihavananaKinship, formatMalagasyFihavananaPrompt, type MalagasyFihavananaResult } from './malagasyFihavananaKinshipHarmonyEngine';
 import { calculateHungarianTaltosTreeOfLife, formatHungarianTaltosPrompt, type HungarianTaltosResult } from './hungarianTaltosTreeOfLifeEngine';
+import { calculateKyrgyzManasOralEpicCourage, formatKyrgyzManasPrompt, type KyrgyzManasResult } from './kyrgyzManasOralEpicCourageEngine';
+import { calculateShonaMbiraAncestralResonance, formatShonaMbiraPrompt, type ShonaMbiraResult } from './shonaMbiraAncestralResonanceEngine';
+import { calculateTonganKavaCircleTauhiVa, formatTonganKavaPrompt, type TonganKavaResult } from './tonganKavaCircleTauhiVaEngine';
 
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
@@ -808,6 +811,9 @@ export interface DeterministicEngineReport {
   khmerAngkorBarayWaterBalanceResult?: KhmerAngkorBarayResult | null;
   malagasyFihavananaKinshipResult?: MalagasyFihavananaResult | null;
   hungarianTaltosTreeOfLifeResult?: HungarianTaltosResult | null;
+  kyrgyzManasOralEpicCourageResult?: KyrgyzManasResult | null;
+  shonaMbiraAncestralResonanceResult?: ShonaMbiraResult | null;
+  tonganKavaCircleTauhiVaResult?: TonganKavaResult | null;
 
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
@@ -3678,6 +3684,33 @@ try {
     }
   })()));
 
+  // 372. 키르기스 마나스 서사시 유목 용기 엔진
+  const kyrgyzManasOralEpicCourageResult = calculateSupplement('kyrgyzManasOralEpicCourageResult', () => ((() => {
+    try {
+      return calculateKyrgyzManasOralEpicCourage({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 373. 짐바브웨 쇼나 음비라 공명 성찰 엔진
+  const shonaMbiraAncestralResonanceResult = calculateSupplement('shonaMbiraAncestralResonanceResult', () => ((() => {
+    try {
+      return calculateShonaMbiraAncestralResonance({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 374. 폴리네시아 통가 카바 서클·타우히 바 엔진
+  const tonganKavaCircleTauhiVaResult = calculateSupplement('tonganKavaCircleTauhiVaResult', () => ((() => {
+    try {
+      return calculateTonganKavaCircleTauhiVa({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
   // 220. 한국 신라 의상대사 화엄일승법계도 & 법성게 원융무애 엔진
   const uisangHwaeomIlseungBeopgyeResult = calculateSupplement('uisangHwaeomIlseungBeopgyeResult', () => ((() => {
     try {
@@ -5067,6 +5100,9 @@ try {
     khmerAngkorBarayWaterBalanceResult,
     malagasyFihavananaKinshipResult,
     hungarianTaltosTreeOfLifeResult,
+    kyrgyzManasOralEpicCourageResult,
+    shonaMbiraAncestralResonanceResult,
+    tonganKavaCircleTauhiVaResult,
     tools: toolsMap,
   };
 }
@@ -5461,6 +5497,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'khmerAngkorBarayWaterBalance', nameKo: '크메르 앙코르 바라이 순환', icon: '🪷', category: 'deep_master', summary: '캄보디아 크메르 앙코르 바라이 저수지처럼 에너지를 고요히 모으고 막힌 감정의 물길을 열어 흘려보내는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'aura' },
   { key: 'malagasyFihavananaKinship', nameKo: '말라가시 피하바나나 연대', icon: '🌴', category: 'deep_master', summary: '마다가스카르 말라가시의 피하바나나(Fihavanana) 정신처럼 서두름 대신 따뜻한 유대와 부드러운 언어로 관계를 돌보는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'bluebird' },
   { key: 'hungarianTaltosTreeOfLife', nameKo: '헝가리 탈토시 세계수', icon: '🌳', category: 'deep_master', summary: '헝가리 탈토시와 하늘 닿는 세계수 설화처럼 익숙한 걱정의 틀에서 한 층 위로 시야를 넓혀 다음 계단을 살피는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'muse' },
+  { key: 'kyrgyzManasOralEpicCourage', nameKo: '키르기스 마나스 서사시', icon: '🏔️', category: 'deep_master', summary: '중앙아시아 키르기스 《마나스》 서사시와 유목 지혜처럼 큰 산 앞에서도 오늘 몫의 첫 걸음을 당당히 내딛는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'trinity' },
+  { key: 'shonaMbiraAncestralResonance', nameKo: '쇼나 음비라 공명', icon: '🎶', category: 'deep_master', summary: '짐바브웨 쇼나 음비라(Mbira)의 맑은 공명과 엇박자 전환처럼 흐트러진 마음의 호흡을 부드럽게 되찾는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'aura' },
+  { key: 'tonganKavaCircleTauhiVa', nameKo: '통가 카바·타우히 바', icon: '🥥', category: 'deep_master', summary: '폴리네시아 통가의 카바 서클과 타우히 바(Tauhi vā) 철학처럼 사람 사이의 거리와 따뜻한 존중을 정성껏 가꾸는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'bluebird' },
 ] as DceEngineMeta[]).filter(engine => !LUCY_PRO_CATALOG_DUPLICATE_KEYS.has(engine.key));
 
 export function getFiredEngineBadges(
@@ -5975,6 +6014,7 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'torajaAlukTodoloTongkonan',
     'swahiliUtuDhowMonsoon',
     'malagasyFihavananaKinship',
+    'tonganKavaCircleTauhiVa',
   ],
   creative_mind: [
     'irishJamesJoyceUlyssesEpiphany',
@@ -6272,6 +6312,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'khmerAngkorBarayWaterBalance',
     'malagasyFihavananaKinship',
     'hungarianTaltosTreeOfLife',
+    'kyrgyzManasOralEpicCourage',
+    'shonaMbiraAncestralResonance',
+    'tonganKavaCircleTauhiVa',
   ],
 };
 
