@@ -10,6 +10,7 @@ export interface BatammaribaTakientaResult {
   engineVersion: string;
   calculatedAtKst: string;
   earthenTower: string;
+  companionTower: string;
   hearthThreshold: string;
   reflectionFocus: string;
   ritualAction: string;
@@ -47,7 +48,12 @@ const QUESTIONS = [
 
 function toKstIso(now: Date): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
-  return kst.toISOString().replace('Z', '+09:00 (KST)');
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
 }
 
 function hashSeed(text: string): number {
@@ -61,16 +67,22 @@ function hashSeed(text: string): number {
 
 export function calculateBatammaribaTakienta(input: BatammaribaTakientaInput): BatammaribaTakientaResult {
   const fate = input.profile.fate ?? {};
-  const seed = hashSeed(`${JSON.stringify(fate)}|${input.now.toISOString().slice(0, 13)}|${input.question ?? ''}`);
+  const seedText = `${JSON.stringify(fate)}|${input.now.toISOString().slice(0, 13)}|${input.question ?? ''}`;
+  const seed = hashSeed(seedText);
+  const towerIdx = seed % TOWERS.length;
+  const companionOffset = 1 + (hashSeed(`${seedText}|companion`) % (TOWERS.length - 1));
+  const earthenTower = TOWERS[towerIdx];
+  const companionTower = TOWERS[(towerIdx + companionOffset) % TOWERS.length];
 
   return {
-    engineVersion: 'LUCKEY-BATAMMARIBA-v2.1.0',
+    engineVersion: 'LUCKEY-BATAMMARIBA-v2.2.0',
     calculatedAtKst: toKstIso(input.now),
-    earthenTower: TOWERS[seed % TOWERS.length],
+    earthenTower,
+    companionTower,
     hearthThreshold: THRESHOLDS[(seed >>> 3) % THRESHOLDS.length],
-    reflectionFocus: '토고·베냉 바타마리바 족이 손으로 빚어 올린 타키엔타 2층 흙탑 가옥처럼 실무와 쉼의 층위를 나누고 공동체로 버티는 지혜의 상징적 관점입니다.',
-    ritualAction: ACTIONS[(seed >>> 6) % ACTIONS.length],
-    reflectiveQuestion: QUESTIONS[(seed >>> 9) % QUESTIONS.length],
+    reflectionFocus: `토고·베냉 바타마리바 족이 손으로 빚어 올린 타키엔타 2층 흙탑 가옥처럼 주 자리('${earthenTower}')와 동반 자리('${companionTower}')를 겹쳐 실무와 쉼의 층위를 나누고 공동체로 버티는 지혜의 상징적 관점입니다.`,
+    ritualAction: ACTIONS[towerIdx],
+    reflectiveQuestion: QUESTIONS[towerIdx],
     interpretiveBoundary: '개인 점수·심리 진단·미래 예측이 아닙니다. 자기 성찰을 돕기 위한 상징적 관점 안내입니다.',
   };
 }
@@ -80,6 +92,7 @@ export function formatBatammaribaTakientaPrompt(res: BatammaribaTakientaResult):
     `[바타마리바·타키엔타 흙탑 관점 · ${res.engineVersion}]`,
     `기준 시각: ${res.calculatedAtKst}`,
     `흙탑 자리: ${res.earthenTower}`,
+    `동반 자리: ${res.companionTower}`,
     `층위 지혜: ${res.hearthThreshold}`,
     `성찰 초점: ${res.reflectionFocus}`,
     `권장 의식: ${res.ritualAction}`,

@@ -10,6 +10,7 @@ export interface KunaMolaResult {
   engineVersion: string;
   calculatedAtKst: string;
   fabricLayer: string;
+  companionLayer: string;
   reverseStitch: string;
   reflectionFocus: string;
   ritualAction: string;
@@ -47,7 +48,12 @@ const QUESTIONS = [
 
 function toKstIso(now: Date): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
-  return kst.toISOString().replace('Z', '+09:00 (KST)');
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
 }
 
 function hashSeed(text: string): number {
@@ -61,16 +67,22 @@ function hashSeed(text: string): number {
 
 export function calculateKunaMolaStitch(input: KunaMolaInput): KunaMolaResult {
   const fate = input.profile.fate ?? {};
-  const seed = hashSeed(`${JSON.stringify(fate)}|${input.now.toISOString().slice(0, 13)}|${input.question ?? ''}`);
+  const seedText = `${JSON.stringify(fate)}|${input.now.toISOString().slice(0, 13)}|${input.question ?? ''}`;
+  const seed = hashSeed(seedText);
+  const layerIdx = seed % LAYERS.length;
+  const companionOffset = 1 + (hashSeed(`${seedText}|companion`) % (LAYERS.length - 1));
+  const fabricLayer = LAYERS[layerIdx];
+  const companionLayer = LAYERS[(layerIdx + companionOffset) % LAYERS.length];
 
   return {
-    engineVersion: 'LUCKEY-KUNA-MOLA-v2.1.0',
+    engineVersion: 'LUCKEY-KUNA-MOLA-v2.2.0',
     calculatedAtKst: toKstIso(input.now),
-    fabricLayer: LAYERS[seed % LAYERS.length],
+    fabricLayer,
+    companionLayer,
     reverseStitch: STITCHES[(seed >>> 3) % STITCHES.length],
-    reflectionFocus: '파나마 산블라스 제도 쿠나 족 여인들이 여러 겹의 천을 오려 내며 아래의 색을 드러내는 몰라(Mola) 직물처럼, 덜어냄으로 본질을 드러내는 상징적 관점입니다.',
-    ritualAction: ACTIONS[(seed >>> 6) % ACTIONS.length],
-    reflectiveQuestion: QUESTIONS[(seed >>> 9) % QUESTIONS.length],
+    reflectionFocus: `파나마 산블라스 제도 쿠나 족 여인들이 여러 겹의 천을 오려 내며 아래의 색을 드러내는 몰라(Mola) 직물처럼, 주 겹('${fabricLayer}')과 동반 겹('${companionLayer}')을 함께 짚어 덜어냄으로 본질을 드러내는 상징적 관점입니다.`,
+    ritualAction: ACTIONS[layerIdx],
+    reflectiveQuestion: QUESTIONS[layerIdx],
     interpretiveBoundary: '개인 점수·심리 진단·미래 예측이 아닙니다. 자기 성찰을 돕기 위한 상징적 관점 안내입니다.',
   };
 }
@@ -80,6 +92,7 @@ export function formatKunaMolaPrompt(res: KunaMolaResult): string {
     `[쿠나·몰라 겹 바느질 관점 · ${res.engineVersion}]`,
     `기준 시각: ${res.calculatedAtKst}`,
     `천의 겹: ${res.fabricLayer}`,
+    `동반 겹: ${res.companionLayer}`,
     `역아플리케 결: ${res.reverseStitch}`,
     `성찰 초점: ${res.reflectionFocus}`,
     `권장 의식: ${res.ritualAction}`,
