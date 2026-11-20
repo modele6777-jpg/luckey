@@ -1395,5 +1395,17 @@ export const MASTER_REVIEW_BINDINGS: Record<string, { field: string; traceKey: s
   "phoenicianNavigatorStarCompass": {
     "field": "phoenicianNavigatorStarCompassResult",
     "traceKey": "phoenicianNavigatorStarCompassResult"
+  },
+  "kazakhAbaiBookOfWords": {
+    "field": "kazakhAbaiBookOfWordsResult",
+    "traceKey": "kazakhAbaiBookOfWordsResult"
+  },
+  "amazighDesertStarOasis": {
+    "field": "amazighDesertStarOasisResult",
+    "traceKey": "amazighDesertStarOasisResult"
+  },
+  "hittiteTelepinuHarmonyRenewal": {
+    "field": "hittiteTelepinuHarmonyRenewalResult",
+    "traceKey": "hittiteTelepinuHarmonyRenewalResult"
   }
 };

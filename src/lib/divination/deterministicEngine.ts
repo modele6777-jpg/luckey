@@ -374,6 +374,9 @@ import { calculateGeorgianRustaveliKnightPanther, formatGeorgianRustaveliKnightP
 import { calculateArmenianNarekatsiLamentationHealing, formatArmenianNarekatsiPrompt, type ArmenianNarekatsiResult } from './armenianNarekatsiLamentationHealingEngine';
 import { calculateJavaneseKejawenRasaHarmony, formatJavaneseKejawenPrompt, type JavaneseKejawenResult } from './javaneseKejawenRasaHarmonyEngine';
 import { calculatePhoenicianNavigatorStarCompass, formatPhoenicianNavigatorPrompt, type PhoenicianNavigatorResult } from './phoenicianNavigatorStarCompassEngine';
+import { calculateKazakhAbaiBookOfWords, formatKazakhAbaiPrompt, type KazakhAbaiResult } from './kazakhAbaiBookOfWordsEngine';
+import { calculateAmazighDesertStarOasis, formatAmazighDesertPrompt, type AmazighDesertResult } from './amazighDesertStarOasisEngine';
+import { calculateHittiteTelepinuHarmonyRenewal, formatHittiteTelepinuPrompt, type HittiteTelepinuResult } from './hittiteTelepinuHarmonyRenewalEngine';
 
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
@@ -766,6 +769,9 @@ export interface DeterministicEngineReport {
   armenianNarekatsiLamentationHealingResult?: ArmenianNarekatsiResult | null;
   javaneseKejawenRasaHarmonyResult?: JavaneseKejawenResult | null;
   phoenicianNavigatorStarCompassResult?: PhoenicianNavigatorResult | null;
+  kazakhAbaiBookOfWordsResult?: KazakhAbaiResult | null;
+  amazighDesertStarOasisResult?: AmazighDesertResult | null;
+  hittiteTelepinuHarmonyRenewalResult?: HittiteTelepinuResult | null;
 
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
@@ -3447,6 +3453,33 @@ try {
     }
   })()));
 
+  // 351. 카자흐 아바이 《교훈의 말씀》 지혜·의지 엔진
+  const kazakhAbaiBookOfWordsResult = calculateSupplement('kazakhAbaiBookOfWordsResult', () => ((() => {
+    try {
+      return calculateKazakhAbaiBookOfWords({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 352. 아마지그 사막 별·오아시스 길잡이 엔진
+  const amazighDesertStarOasisResult = calculateSupplement('amazighDesertStarOasisResult', () => ((() => {
+    try {
+      return calculateAmazighDesertStarOasis({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 353. 고대 히타이트 테레피누 조화·회복 엔진
+  const hittiteTelepinuHarmonyRenewalResult = calculateSupplement('hittiteTelepinuHarmonyRenewalResult', () => ((() => {
+    try {
+      return calculateHittiteTelepinuHarmonyRenewal({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
   // 220. 한국 신라 의상대사 화엄일승법계도 & 법성게 원융무애 엔진
   const uisangHwaeomIlseungBeopgyeResult = calculateSupplement('uisangHwaeomIlseungBeopgyeResult', () => ((() => {
     try {
@@ -4815,6 +4848,9 @@ try {
     armenianNarekatsiLamentationHealingResult,
     javaneseKejawenRasaHarmonyResult,
     phoenicianNavigatorStarCompassResult,
+    kazakhAbaiBookOfWordsResult,
+    amazighDesertStarOasisResult,
+    hittiteTelepinuHarmonyRenewalResult,
     tools: toolsMap,
   };
 }
@@ -5188,6 +5224,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'armenianNarekatsiLamentationHealing', nameKo: '아르메니아 나레카치 애가 내면 성찰', icon: '🕯️', category: 'deep_master', summary: '10세기 아르메니아 시인 나레카치 《애가》의 정직한 고백·자비·고요한 회복으로 마음을 보듬는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'bluebird' },
   { key: 'javaneseKejawenRasaHarmony', nameKo: '자바 케자웬 라사 내면 평정', icon: '🪷', category: 'deep_master', summary: '인도네시아 자바 전통 케자웬의 깨어 있음(Eling)·수용(Narima)·역지사지(Tepa Slira)로 평정을 세우는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'aura' },
   { key: 'phoenicianNavigatorStarCompass', nameKo: '고대 페니키아 항해 별자리 나침반', icon: '🧭', category: 'deep_master', summary: '고대 페니키아 항해사들이 북극성과 별자리로 망망대해의 기준점을 잡듯 흔들리지 않는 원칙을 세우는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'trinity' },
+  { key: 'kazakhAbaiBookOfWords', nameKo: '카자흐 아바이 교훈의 말씀', icon: '📜', category: 'deep_master', summary: '카자흐 사상가 아바이 《교훈의 말씀》의 이성(Aqyl)·의지(Qairat)·온기(Jurek)로 중심을 잡는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'muse' },
+  { key: 'amazighDesertStarOasis', nameKo: '아마지그 사막 별 오아시스 길잡이', icon: '🏜️', category: 'deep_master', summary: '북아프리카 아마지그 유목민이 별자리와 오아시스로 사막을 건너듯 에너지 배분과 경계를 세우는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'aura' },
+  { key: 'hittiteTelepinuHarmonyRenewal', nameKo: '고대 히타이트 테레피누 조화 회복', icon: '🌿', category: 'deep_master', summary: '고대 아나톨리아 테레피누 신화의 진정·질서 회복 모티프로 지친 일상의 리듬을 되살리는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'bluebird' },
 ] as DceEngineMeta[]).filter(engine => !LUCY_PRO_CATALOG_DUPLICATE_KEYS.has(engine.key));
 
 export function getFiredEngineBadges(
@@ -5693,6 +5732,8 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'samiNoaidiDrumJoik',
     'javaneseKejawenRasaHarmony',
     'armenianNarekatsiLamentationHealing',
+    'amazighDesertStarOasis',
+    'hittiteTelepinuHarmonyRenewal',
   ],
   creative_mind: [
     'irishJamesJoyceUlyssesEpiphany',
@@ -5969,6 +6010,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'armenianNarekatsiLamentationHealing',
     'javaneseKejawenRasaHarmony',
     'phoenicianNavigatorStarCompass',
+    'kazakhAbaiBookOfWords',
+    'amazighDesertStarOasis',
+    'hittiteTelepinuHarmonyRenewal',
   ],
 };
 
