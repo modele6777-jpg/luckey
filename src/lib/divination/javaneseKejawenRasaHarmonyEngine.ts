@@ -10,7 +10,7 @@ export interface KejawenRasaPrinciple {
   id: KejawenRasaPrincipleId;
   javanesePhrase: string;
   koreanTitle: string;
-  coreMeaning: string;
+  coreInsight: string;
   dailyPractice: string;
 }
 
