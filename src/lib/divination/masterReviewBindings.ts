@@ -1755,5 +1755,17 @@ export const MASTER_REVIEW_BINDINGS: Record<string, { field: string; traceKey: s
   "goryeoCeladonInlayClarity": {
     "field": "goryeoCeladonInlayClarityResult",
     "traceKey": "goryeoCeladonInlayClarityResult"
+  },
+  "lydianSardisElectrumBalance": {
+    "field": "lydianSardisElectrumBalanceResult",
+    "traceKey": "lydianSardisElectrumBalanceResult"
+  },
+  "canaaniteUgaritCedarWisdom": {
+    "field": "canaaniteUgaritCedarWisdomResult",
+    "traceKey": "canaaniteUgaritCedarWisdomResult"
+  },
+  "goguryeoSamjokoMuralSpirit": {
+    "field": "goguryeoSamjokoMuralSpiritResult",
+    "traceKey": "goguryeoSamjokoMuralSpiritResult"
   }
 };
