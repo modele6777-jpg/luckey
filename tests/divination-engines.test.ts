@@ -439,6 +439,9 @@ import { calculateGoguryeoSamjokoMuralSpirit, formatGoguryeoSamjokoPrompt } from
 import { calculateSillaEmilleCheomseongdae, formatSillaEmillePrompt } from '../src/lib/divination/sillaEmilleCheomseongdaeEngine';
 import { calculateOmaniFrankincenseFalajWater, formatOmaniFrankincensePrompt } from '../src/lib/divination/omaniFrankincenseFalajWaterEngine';
 import { calculateBaekjeGiltBronzeIncenseCalm, formatBaekjeIncensePrompt } from '../src/lib/divination/baekjeGiltBronzeIncenseCalmEngine';
+import { calculateParthianNisaArcheryPoise, formatParthianNisaPrompt } from '../src/lib/divination/parthianNisaArcheryPoiseEngine';
+import { calculateNahuaXochitlCuicatlFlow, formatNahuaXochitlPrompt } from '../src/lib/divination/nahuaXochitlCuicatlFlowEngine';
+import { calculateBeninBronzeObaMemory, formatBeninBronzeObaPrompt } from '../src/lib/divination/beninBronzeObaMemoryEngine';
 
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
@@ -14313,4 +14316,37 @@ test('Baekje Gilt-Bronze Incense Calm engine: motif, +09:00 KST, and interpretiv
   const prompt = formatBaekjeIncensePrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
   assert.ok(prompt.includes('백제') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Parthian Nisa Archery Poise engine: motif, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateParthianNisaArcheryPoise({ profile, now: new Date('2026-11-20T19:25:00Z'), question: '정면충돌 대신 유연하게 선회하고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-PARTHIAN-NISA-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatParthianNisaPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('파르티아') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Nahua Xochitl Cuicatl Flow engine: motif, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateNahuaXochitlCuicatlFlow({ profile, now: new Date('2026-11-20T19:25:00Z'), question: '일상 속 작은 아름다움과 진심을 찾고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-NAHUA-XOCHITL-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatNahuaXochitlPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('나우아틀') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Benin Bronze Oba Memory engine: motif, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateBeninBronzeObaMemory({ profile, now: new Date('2026-11-20T19:25:00Z'), question: '그동안 쌓아 온 경험을 믿고 매듭짓고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-BENIN-OBA-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatBeninBronzeObaPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('베냉') && prompt.includes('+09:00 (KST)'));
 });
