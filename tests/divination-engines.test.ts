@@ -599,6 +599,8 @@ test('Samjae/GyoUn skips without birthdate, degrades without gender, and renders
   assert(prompt.includes('교차 매트릭스')&&prompt.includes('해석 경계'));
   assert(prompt.includes('실천 의례')&&prompt.includes('성찰 초점'));
   assert(Boolean(r.ritualAction?.length)&&Boolean(r.reflectionFocus?.length));
+  assert(r.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert(prompt.includes(r.reflectionFocus!));
   assert(Boolean(r.samjaeGyoUnSynthesisMatrix?.integratedAction));
   assert(Boolean(r.interpretiveBoundary?.length));
   assert.equal(formatSamjaeGyoUnPrompt(skipped),'');
@@ -5017,11 +5019,13 @@ test('Vedic Mandukya Turiya Engine: calculates four consciousness states, AUM re
   assert(rep.mayaIllusionDissolutionRate >= 0 && rep.mayaIllusionDissolutionRate <= 100);
   assert(rep.dominantState.nameKo.length > 0);
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
+  assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   const prompt = formatVedicMandukyaTuriyaPrompt(rep);
   assert(prompt.includes('고대 인도 만두키야 우파니샤드 4대 의식 & 투리야(Turiya) 순수의식 정성 관조'));
   assert(!prompt.includes('실측 데이터'));
   assert(prompt.includes(rep.dominantState.nameKo));
   assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
+  assert(prompt.includes(rep.reflectionFocus));
 });
 
 test('Kabbalistic Zohar Five Soul Levels Engine: calculates five soul levels and Ein Sof spark', () => {
@@ -10342,7 +10346,7 @@ test('Tamil Thirukkural engine: Aram, Porul and Kamam guidance stay qualitative 
   const rep = calculateTamilThirukkuralAramPorulKamam(profile, '연인과 자꾸 다투어요', new Date('2026-11-15T12:00:00Z'));
   assert.equal(rep.engineVersion, TAMIL_THIRUKKURAL_ARAM_PORUL_KAMAM_VERSION);
   assert.equal(rep.questionTopic, 'relationship');
-  assert.ok(rep.calculatedAtKst.endsWith('+09:00'));
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert.ok(Boolean(rep.thirukkuralSynthesisMatrix?.integratedAction));
   assert.ok(rep.activeThirukkuralTheme.chapterReference.length > 0);
@@ -10353,6 +10357,7 @@ test('Tamil Thirukkural engine: Aram, Porul and Kamam guidance stay qualitative 
   assert.ok(prompt.includes('아람·포룰·카맘'));
   assert.ok(prompt.includes('오늘의 실천 의례'));
   assert.ok(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
+  assert.ok(prompt.includes(rep.reflectionFocus));
   assert.ok(prompt.includes('성찰 질문'));
   assert.ok(prompt.includes('해석 경계'));
   assert.ok(prompt.includes('+09:00') && prompt.includes('교차 매트릭스'));
@@ -10457,7 +10462,7 @@ test('Schopenhauer v2.1.0, Mandukya Turiya v2.0.0, and Zhuangzi v2.0.0 engines o
 
   const mandukya = calculateVedicMandukyaTuriya({ profile, question: '수면이 불안하고 마음이 자꾸 흔들려요', now });
   assert.equal(mandukya.engineVersion, VEDIC_MANDUKYA_TURIYA_ENGINE_VERSION);
-  assert.ok(mandukya.calculatedAtKst.endsWith('+09:00'));
+  assert.ok(mandukya.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert.ok(Boolean(mandukya.mandukyaSynthesisMatrix?.integratedAction));
   assert.ok(mandukya.dailyPracticeRitual.length > 0 && mandukya.reflectiveQuestion.length > 0 && mandukya.interpretiveBoundary.length > 0);
   const mandukyaPrompt = formatVedicMandukyaTuriyaPrompt(mandukya);

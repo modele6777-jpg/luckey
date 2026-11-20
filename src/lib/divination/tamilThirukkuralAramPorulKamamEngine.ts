@@ -9,12 +9,12 @@
  * 2. 개인의 길흉·점수·확률·미래 예측을 산출하지 않습니다.
  * 3. 덕과 사랑을 이유로 자기희생이나 무조건적 복종을 권하지 않습니다. 동의·안전·법적 경계를 존중합니다.
  *
- * @version LUCKEY-TAMIL-THIRUKKURAL-ARAM-PORUL-KAMAM-v2.1.0
+ * @version LUCKEY-TAMIL-THIRUKKURAL-ARAM-PORUL-KAMAM-v2.4.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const TAMIL_THIRUKKURAL_ARAM_PORUL_KAMAM_VERSION = 'LUCKEY-TAMIL-THIRUKKURAL-ARAM-PORUL-KAMAM-v2.3.0';
+export const TAMIL_THIRUKKURAL_ARAM_PORUL_KAMAM_VERSION = 'LUCKEY-TAMIL-THIRUKKURAL-ARAM-PORUL-KAMAM-v2.4.0';
 
 export type ThirukkuralQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -275,7 +275,12 @@ export function calculateTamilThirukkuralAramPorulKamam(
     '타밀 티루쿠랄 관점은 덕·재물·사랑의 균형을 비추는 상징적 성찰 렌즈입니다. 역본마다 문장 표현이 달라 원문을 그대로 옮기지 않으며, 개인의 길흉과 미래를 단정하지 않습니다. 덕과 사랑을 이유로 자기희생이나 무조건적 복종을 권하지 않고, 동의·안전·법적 경계를 존중합니다.';
 
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
-  const calculatedAtKst = kst.toISOString().replace('Z', '+09:00');
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  const calculatedAtKst = `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
   const trimmedQ = (question ?? '').trim();
   const ritualAction = `[${activeThirukkuralTheme.chapterReference}] ${extras.dailyPracticeRitual}`;
   const reflectionFocus = `타밀 티루쿠랄(${activeThirukkuralTheme.bookNameKo}) — ${situationalThirukkuralAudit.bookFocusKo}`;
