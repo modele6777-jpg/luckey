@@ -1983,5 +1983,17 @@ export const MASTER_REVIEW_BINDINGS: Record<string, { field: string; traceKey: s
   "turkanaJadeSeaWind": {
     "field": "turkanaJadeSeaWindResult",
     "traceKey": "turkanaJadeSeaWindResult"
+  },
+  "asturianHorreoPoise": {
+    "field": "asturianHorreoPoiseResult",
+    "traceKey": "asturianHorreoPoiseResult"
+  },
+  "omoKaroBodyArt": {
+    "field": "omoKaroBodyArtResult",
+    "traceKey": "omoKaroBodyArtResult"
+  },
+  "sumbaIkatStory": {
+    "field": "sumbaIkatStoryResult",
+    "traceKey": "sumbaIkatStoryResult"
   }
 };

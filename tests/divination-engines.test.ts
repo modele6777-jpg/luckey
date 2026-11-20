@@ -490,6 +490,9 @@ import { calculateCostaRicaDiquisSpheres, formatDiquisSpheresPrompt } from '../s
 import { calculateSiwaOasisSaltSpring, formatSiwaOasisPrompt } from '../src/lib/divination/siwaOasisSaltSpringEngine';
 import { calculateSikkimLepchaForest, formatSikkimLepchaPrompt } from '../src/lib/divination/sikkimLepchaForestCanopyEngine';
 import { calculateTurkanaJadeSeaWind, formatTurkanaWindPrompt } from '../src/lib/divination/turkanaJadeSeaWindEngine';
+import { calculateAsturianHorreoPoise, formatAsturianHorreoPrompt } from '../src/lib/divination/asturianHorreoGranaryPoiseEngine';
+import { calculateOmoKaroBodyArt, formatOmoKaroPrompt } from '../src/lib/divination/omoKaroClayBodyArtEngine';
+import { calculateSumbaIkatStory, formatSumbaIkatPrompt } from '../src/lib/divination/sumbaIkatWeaveStoryEngine';
 
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
@@ -14970,4 +14973,37 @@ test('Turkana Jade Sea Wind engine: motif, +09:00 KST, and interpretive boundary
   const prompt = formatTurkanaWindPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
   assert.ok(prompt.includes('투르카나') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Asturian Horreo Granary engine: motif, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateAsturianHorreoPoise({ profile, now: new Date('2026-11-20T21:55:00Z'), question: '습기를 피해 보존하고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-ASTURIAN-HORREO-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatAsturianHorreoPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('아스투리아스') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Omo Karo Body Art engine: motif, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateOmoKaroBodyArt({ profile, now: new Date('2026-11-20T21:55:00Z'), question: '오늘의 생기를 표현하고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-OMO-KARO-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatOmoKaroPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('오모') && prompt.includes('+09:00 (KST)'));
+});
+
+test('Sumba Ikat Story engine: motif, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateSumbaIkatStory({ profile, now: new Date('2026-11-20T21:55:00Z'), question: '여백을 지키며 서사를 짜고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-SUMBA-IKAT-v2.1.0');
+  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatSumbaIkatPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('숨바') && prompt.includes('+09:00 (KST)'));
 });
