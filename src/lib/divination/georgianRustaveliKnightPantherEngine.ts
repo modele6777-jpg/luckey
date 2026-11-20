@@ -96,8 +96,7 @@ export function calculateGeorgianRustaveliKnightPanther(params: {
   const seed = stableHash(
     [
       params.profile.basic?.name ?? '',
-      params.profile.fate?.birthDate ?? '',
-      params.profile.fate?.birthTime ?? 'unknown',
+      JSON.stringify(params.profile.fate ?? {}),
       query,
     ].join('|')
   );
