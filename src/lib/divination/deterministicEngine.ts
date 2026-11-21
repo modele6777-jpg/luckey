@@ -1314,9 +1314,9 @@ try {
 
   // 4. 숙요경 (27숙 본명숙 계산)
   let sukuyoEnvelope: ToolCalculationEnvelope<unknown>;
-  if (params.coreOnly && !params.reviewAll && (!params.focusTools?.length || params.focusTools.includes('sukuyo'))) {
-sukuyoEnvelope = {toolId:'sukuyo', toolKoName:'숙요경', status:'symbolic', note:'계산 기준 재검토 중 — 수치 근거에서 제외하고 상징적 참고로만 사용'};
-} else if (params.focusTools?.length && !params.focusTools.includes('sukuyo')) {
+  // 2026-11-21 검증: 본명숙(월별 기숙표 + 일진, 牛 제외 27숙)·칠요·삼구 관계가 원전 기준과 일치해 다시 계산한다.
+  // 숙격(7종 분류)은 원전 대조가 끝나지 않아 limitations 로 참고 표시만 한다.
+  if (params.focusTools?.length && !params.focusTools.includes('sukuyo')) {
 sukuyoEnvelope = {toolId:'sukuyo', toolKoName:'숙요경', status:'skipped', note:'이번 질문에서 선택하지 않은 도구'};
 } else {
 try {
@@ -1330,7 +1330,8 @@ try {
         toolKoName: '숙요경',
         status: 'calculated',
         method: sukuyoRes.method,
-        data: { ...sukuyoRes, advanced: sukuyoAdvanced }
+        data: { ...sukuyoRes, advanced: sukuyoAdvanced },
+        limitations: ['숙격(7종 분류)은 원전 대조가 끝나지 않아 상징 참고로만 쓴다. 본명숙·칠요·삼구(명·영·쇠…) 관계만 계산 근거다.', '한국 음력 기준이라 일본 구력과 경계일이 하루 다를 수 있고, 윤달 출생은 계산을 보류한다.'],
       };
     }
   } catch (err: any) {
@@ -1378,9 +1379,8 @@ try {
   // 6. 마하보테 (미얀마 7궁 명반 및 8요일 성좌 엔진)
   let mahaboteEnvelope: ToolCalculationEnvelope<MahaboteResult>;
   let mahaboteResult: MahaboteResult | null = null;
-  if (params.coreOnly && !params.reviewAll && (!params.focusTools?.length || params.focusTools.includes('mahabote'))) {
-mahaboteEnvelope = {toolId:'mahabote', toolKoName:'마하보테', status:'symbolic', note:'계산 기준 재검토 중 — 수치 근거에서 제외하고 상징적 참고로만 사용'};
-} else if (params.focusTools?.length && !params.focusTools.includes('mahabote')) {
+  // 2026-11-21 검증: 미얀마력(띤잔 경계)·요일 수·(ME − 요일) mod 7 본명궁 산식을 정통 산식으로 고쳐 다시 계산한다.
+  if (params.focusTools?.length && !params.focusTools.includes('mahabote')) {
 mahaboteEnvelope = {toolId:'mahabote', toolKoName:'마하보테', status:'skipped', note:'이번 질문에서 선택하지 않은 도구'};
 } else {
 try {
@@ -1392,6 +1392,7 @@ try {
         status: 'calculated',
         method: MAHABOTE_METHOD,
         data: mahaboteResult,
+        limitations: ['띤잔(4월 중순) 경계 출생은 미얀마력이 하루 차이로 달라질 수 있다.', '해마다 도는 나이 흐름(트랜짓)은 전통 산식 대조 전이라 상징 참고로만 쓴다.'],
       };
     } else {
       mahaboteEnvelope = {
@@ -7447,7 +7448,7 @@ export function getFiredEngineBadges(
     .map(item => `${item.status === 'symbolic' ? '상징 참고' : item.status === 'partial' ? '부분 계산' : '계산 근거'} · ${item.name}`);
 }
 
-const REVIEW_PENDING_CORE = new Set(['sukuyo', 'mahabote', 'kabbalah']);
+const REVIEW_PENDING_CORE = new Set(['kabbalah']);
 
 export function getMasterSymbolicReview(report: DeterministicEngineReport, options?: FormatDeterministicEngineOptions) {
   if (!report.masterReview) return [];

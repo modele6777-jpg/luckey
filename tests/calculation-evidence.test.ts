@@ -91,7 +91,8 @@ test('master audit separates calculated results, symbolic references and skipped
 
 test('calculators with unresolved reference fixtures stay symbolic and out of numeric evidence', () => {
   const report = runDeterministicEngine({ profile, question: '종합 분석', forceAllTools: true, coreOnly: true });
-  for (const id of ['sukuyo', 'mahabote', 'kabbalah']) {
+  // 2026-11-21: sukuyo and mahabote now have reference fixtures (below) and are calculated again.
+  for (const id of ['kabbalah']) {
     assert.equal(report.tools[id].status, 'symbolic');
     assert.equal(report.tools[id].data, undefined);
     assert.ok(!getFiredEngineBadges(report).some(name => name.includes(report.tools[id].toolKoName)));
@@ -104,4 +105,28 @@ test('missing birthdate cannot silently use the tarot calculator default birthda
   assert.equal(report.tools.tarot.status, 'skipped');
   assert.equal(report.tools.tarot.data, undefined);
   assert.deepEqual(getFiredEngineBadges(report), []);
+});
+
+test('sukuyo natal mansion matches the NAOJ 宿曜 table (first-day mansions, 牛 excluded)', async () => {
+  const { sukuyoIndexFromLunar, sukuyoMansionInfoByIndex } = await import('../src/lib/divination/sukuyoEngine');
+  const at = (m: number, d: number) => sukuyoMansionInfoByIndex(sukuyoIndexFromLunar(m, d)).hanja;
+  // 국립천문대(暦Wiki) 二十七宿: 정월 室 … 12월 虚, 8월 15일·9월 13일은 婁宿
+  assert.deepEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(m => at(m, 1)), ['室', '奎', '胃', '畢', '參', '鬼', '張', '角', '氐', '心', '斗', '虛']);
+  assert.equal(at(8, 15), '婁');
+  assert.equal(at(9, 13), '婁');
+  const report = runDeterministicEngine({ profile, question: '종합 분석', forceAllTools: true, coreOnly: true });
+  assert.equal(report.tools.sukuyo.status, 'calculated');
+});
+
+test('mahabote root house follows the standard (ME - weekday) mod 7 rule with the Thingyan year boundary', async () => {
+  const { calculateMahabote, myanmarEraOf, mahaboteHouseIndex } = await import('../src/lib/divination/mahaboteEngine');
+  // mmcal(Yan Naing Aye) cal_mahabote: (my - wd) % 7, wd 토0 일1 … 금6, 0 Binga … 6 Puti; 2000-01-01 → ME 1361
+  assert.equal(myanmarEraOf(2000, 1, 1), 1361);
+  assert.equal(myanmarEraOf(2000, 6, 1), 1362);
+  const fixtures: Array<[string, string]> = [['1990-05-17', '아디파디'], ['1995-03-25', '띠케'], ['2000-01-01', '아디파디']];
+  for (const [date, house] of fixtures) {
+    const r = calculateMahabote({ profile: { basic: { birthdate: date, birthtime: '09:00' } } as any });
+    assert.ok(r.houses.find(h => h.isBirthRootHouse)!.houseName.startsWith(house), `${date} → ${house}`);
+  }
+  assert.equal(mahaboteHouseIndex(1361, 0), 3);
 });

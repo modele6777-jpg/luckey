@@ -20,6 +20,18 @@ const sign = (body: Data | undefined) => body?.sign ? `${str(body.sign.symbol)} 
 const year = (v: unknown) => str(v).slice(0, 4);
 
 const EXTRACTORS: Partial<Record<DivinationToolId, (d: Data) => Array<ToolFact | null>>> = {
+  sukuyo: d => [
+    fact('본명숙', d.advanced?.mansion ? `${str(d.advanced.mansion.name)}수(${str(d.advanced.mansion.hanja)}) · ${str(d.advanced.mansion.fullName)}` : ''),
+    fact('칠요', d.advanced?.mansion?.luminary),
+    fact('음력 생일', d.lunarMonth ? `${str(d.lunarMonth)}월 ${str(d.lunarDay)}일` : ''),
+    fact('삼구 시기', d.advanced?.sanKyuCycle?.nineMansionPhase),
+  ],
+  mahabote: d => [
+    fact('본명궁', d.rootHouse ? `${str(d.rootHouse.houseName)} · ${str(d.rootHouse.category)}` : ''),
+    fact('태어난 요일', d.birthPlanet?.koreanName),
+    fact('미얀마력', d.myanmarEra ? `${str(d.myanmarEra)}년` : ''),
+    fact('수호 동물', d.birthPlanet?.animal),
+  ],
   astrology: d => [
     fact('태양', sign(d.sun)),
     fact('달', sign(d.moon)),

@@ -36,11 +36,12 @@
 
 import type { UserProfile } from '../sharedState';
 import { parseBirthTime } from '../birthDateTime';
+import { resolveEffectiveSolarDate } from '../lunarCalendar';
 
 export const MAHABOTE_ENGINE_VERSION = 'LUCKEY-MB-v2.3.0';
 
 export const MAHABOTE_METHOD =
-  '미얀마 정통 마하보테(Mahabote) 7궁 수리 산법: 소수력(ME=서기-638) 7제 잉여수 기반 7대 하우스(빙가·아타·야자·아디파디·마라나·띠케·푸티) 포국, 8요일 행성·영수(靈獸) 입궁, 본명궁(Root House) 3대 길흉 판정, 행성 친화도·4대 영역 가중치, 당해 연도 나이 다샤(Age Transit) 및 방위·색상 개운 처방 결정론 산출';
+  '미얀마 정통 마하보테(Mahabote) 7궁 수리 산법: 미얀마력(띤잔 전 서기-639·후 서기-638) 기반 정통 (ME−요일수) mod 7 7대 하우스(빙가·아타·야자·아디파디·마라나·띠케·푸티) 포국, 8요일 행성·영수(靈獸) 입궁, 본명궁(Root House) 3대 길흉 판정, 행성 친화도·4대 영역 가중치, 당해 연도 나이 다샤(Age Transit) 및 방위·색상 개운 처방 결정론 산출';
 
 export type MahaboteHouseName =
   | '야자(Yaza · 王)'
@@ -195,7 +196,16 @@ const HOUSES_META: ReadonlyArray<{
 
 // 7궁 포국 순서 (Burmese Mahabote Chart Layout Pattern)
 // 전통 7궁 행렬: 잉여수(Remainder)에 따라 행성들의 배속 하우스가 순환
-const HOUSE_PLANET_ORDER = [1, 2, 3, 4, 5, 6, 0]; // 일, 월, 화, 수, 목, 금, 토
+/** 미얀마력 연도. 띤잔 새해(대략 4월 17일) 전 출생은 서기-639, 이후는 서기-638. 경계 날짜는 해마다 하루 정도 달라질 수 있다. */
+export function myanmarEraOf(year: number, month: number, day: number): number {
+  const afterNewYear = month > 4 || (month === 4 && day >= 17);
+  return year - (afterNewYear ? 638 : 639);
+}
+
+/** 출생 요일이 앉는 집 (0 빙가 · 1 아타 · 2 야자 · 3 아디파디 · 4 마라나 · 5 띠케 · 6 푸티). wd: 토0 일1 … 금6 */
+export function mahaboteHouseIndex(me: number, wd: number): number {
+  return (((me - wd) % 7) + 7) % 7;
+}
 
 export function calculateMahabote(params: {
   profile?: UserProfile | null;
@@ -220,39 +230,38 @@ export function calculateMahabote(params: {
     };
   }
 
-  const parts = birthdateStr.split('-').map(Number);
-  const birthYear = parts[0];
-  const birthMonth = parts[1] - 1;
-  const birthDay = parts[2];
-  const birthDate = new Date(birthYear, birthMonth, birthDay);
+  // 음력으로 입력한 생일은 양력으로 바꿔서 요일·연도를 센다.
+  let solar: { year: number; month: number; day: number };
+  try {
+    solar = resolveEffectiveSolarDate(birthdateStr, params.profile?.basic?.lunarSolar, params.profile?.basic?.isLeapMonth ?? false).solarDate;
+  } catch {
+    const parts = birthdateStr.split('-').map(Number);
+    solar = { year: parts[0], month: parts[1], day: parts[2] };
+  }
+  const birthYear = solar.year;
+  const birthDate = new Date(Date.UTC(solar.year, solar.month - 1, solar.day));
 
-  // 1. 미얀마 소수력 (Myanmar Era) 계산
-  // 미얀마 역법은 전통적으로 4월 중순 띤잔(Thingyan)을 기점으로 새해가 시작되나,
-  // 출생연도 기준 환산 표준: 서기연도 - 638
-  const me = birthYear - 638;
+  // 1. 미얀마력(ME) — 새해는 띤잔(대략 4월 17일)에 바뀐다. 그 전 출생은 서기-639, 이후는 서기-638.
+  const me = myanmarEraOf(solar.year, solar.month, solar.day);
   const remainder = ((me % 7) + 7) % 7; // 0 ~ 6
 
-  // 2. 출생 요일 행성 식별 (수요일 오후 라후 분기)
-  const dayOfWeek = birthDate.getDay(); // 0(일) ~ 6(토)
+  // 2. 출생 요일 행성 (미얀마 숫자: 토0·일1·월2·화3·수4·목5·금6, 수요일 오후는 라후 8)
+  const weekdayNum = (birthDate.getUTCDay() + 1) % 7; // JS 일0 → 1, 토6 → 0
   const parsedTime = parseBirthTime(params.profile?.basic?.birthtime);
-  let planetKey = dayOfWeek;
-  if (dayOfWeek === 3) {
-    if (parsedTime && parsedTime.hour >= 12) {
-      planetKey = 8; // 라후
-    } else {
-      planetKey = 4; // 수성
-    }
+  let planetKey = weekdayNum;
+  if (weekdayNum === 4 && parsedTime && parsedTime.hour >= 12) {
+    planetKey = 8; // 라후
   }
-  const birthPlanet = PLANETS[planetKey] || PLANETS[dayOfWeek];
+  const birthPlanet = PLANETS[planetKey] || PLANETS[weekdayNum];
 
   // 3. 마하보테 7궁 포국 (7 Houses Chart Placement)
   // 잉여수에 따라 각 하우스에 입궁하는 행성 수리가 순환
+  // 정통 산식: 요일 수 wd 의 행성은 (ME − wd) mod 7 번째 집(0 빙가 … 6 푸티)에 앉는다.
+  // 그래서 idx 번째 집의 행성 = (ME − idx) mod 7. 라후는 수요일과 같은 집을 쓴다.
   const houses: MahaboteHousePlacement[] = HOUSES_META.map((meta, idx) => {
-    // 전통 수리: 하우스별 배치 행성
-    const planetNumIndex = (remainder + idx) % 7;
-    const planetNum = HOUSE_PLANET_ORDER[planetNumIndex];
+    const planetNum = (((me - idx) % 7) + 7) % 7;
     const pInfo = PLANETS[planetNum];
-    const isRoot = (planetNum === (planetKey === 8 ? 4 : planetKey));
+    const isRoot = planetNum === weekdayNum;
 
     return {
       houseNumber: meta.number,
@@ -415,7 +424,7 @@ export function calculateMahabote(params: {
     ritualAction,
     reflectionFocus,
     reflectiveQuestion,
-    interpretiveBoundary: '본 마하보테 7궁 명반 리포트는 미얀마 소수력·8요일 행성 상징에 기반한 정성적 성찰 안내이며, 운명의 절대적 예단이 아닙니다.',
+    interpretiveBoundary: '본명궁과 7궁 배치는 정통 산식((미얀마력 − 요일수) mod 7)으로 계산했다. 띤잔 경계(4월 중순) 출생은 하루 차이로 달라질 수 있고, 해마다 도는 나이 흐름(트랜짓)은 전통 산식 대조 전이라 상징 참고로만 쓴다. 본 마하보테 7궁 명반 리포트는 미얀마 소수력·8요일 행성 상징에 기반한 정성적 성찰 안내이며, 운명의 절대적 예단이 아닙니다.',
   };
 }
 
