@@ -14336,13 +14336,14 @@ test('Chukchi Bering Tundra Hearth engine: symbol, +09:00 KST, and interpretive 
 
 test('Palmyrene Oasis Colonnade engine: pillar, +09:00 KST, and interpretive boundary', () => {
   const rep = calculatePalmyreneOasisColonnade({ profile, now: new Date('2026-11-20T09:04:00Z'), question: '사막 한가운데서도 단정한 질서를 세우고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-PALMYRENE-OASIS-v2.1.0');
-  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.equal(rep.engineVersion, 'LUCKEY-PALMYRENE-OASIS-v2.2.0');
+  assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
+  assert.ok(rep.companionPillar !== rep.oasisPillar);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatPalmyreneOasisPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('팔미라') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('팔미라') && prompt.includes('동반 기둥') && prompt.includes('+09:00 (KST)'));
 });
 
 test('Sicilian Majolica Etna Balance engine: motif, +09:00 KST, and interpretive boundary', () => {
@@ -14722,13 +14723,14 @@ test('Wolof Teranga Baobab Warmth engine: motif, +09:00 KST, and interpretive bo
 
 test('Palauan Bai Rafter Balance engine: motif, +09:00 KST, and interpretive boundary', () => {
   const rep = calculatePalauanBaiRafterBalance({ profile, now: new Date('2026-11-20T20:13:00Z'), question: '내 안의 고요한 라군을 지키고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-PALAU-BAI-v2.1.0');
-  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.equal(rep.engineVersion, 'LUCKEY-PALAU-BAI-v2.2.0');
+  assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
+  assert.ok(rep.companionMotif !== rep.palauanMotif);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatPalauanBaiPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('팔라우') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('팔라우') && prompt.includes('동반 모티프') && prompt.includes('+09:00 (KST)'));
 });
 
 test('Zimbabwe Great Stone Wall engine: motif, +09:00 KST, and interpretive boundary', () => {
@@ -14828,13 +14830,14 @@ test('Ifugao Banaue Rice Terrace engine: motif, +09:00 KST, and interpretive bou
 
 test('Otavalo Andes Loom Balance engine: motif, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateOtavaloAndesLoomBalance({ profile, now: new Date('2026-11-20T20:39:00Z'), question: '일의 장력을 내 몸에 맞게 조절하고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-OTAVALO-LOOM-v2.1.0');
-  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.equal(rep.engineVersion, 'LUCKEY-OTAVALO-LOOM-v2.2.0');
+  assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
+  assert.ok(rep.companionMotif !== rep.otavaloMotif);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatOtavaloLoomPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('오타발로') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('오타발로') && prompt.includes('동반 모티프') && prompt.includes('+09:00 (KST)'));
 });
 
 test('Andalusian Patio Fountain Calm engine: motif, +09:00 KST, and interpretive boundary', () => {
