@@ -5,6 +5,8 @@ export interface AlpineSavoyResult {
   calculatedAtKst: string;
   ridgePrinciple: string;
   companionPrinciple: string;
+  alpineWeather: string;
+  shadowWarning: string;
   savoyInsight: string;
   alpineTone: string;
   reflectionFocus: string;
@@ -70,6 +72,21 @@ function stableHash(input: string): number {
   return Math.abs(h);
 }
 
+const ALPINE_WEATHERS = [
+  '맑게 트인 능선 시야 (장거리 조망에 유리)',
+  '구름이 낮게 깔린 고개 (발밑 한 걸음 집중 필요)',
+  '서늘한 빙하 바람 (체온·페이스 유지가 핵심)',
+  '황혼 빛 산장 들머리 (무리를 접고 쉼으로 전환)',
+];
+
+const SAVOY_SHADOW_WARNINGS = [
+  '우회로를 찾다 핵심 결단마저 계속 미루지 않도록 작은 기준점을 세우세요.',
+  '잠시 멈춤이 무기력한 회피로 굳어지지 않도록 재출발 시각을 함께 정해 두세요.',
+  '보폭을 맞추려다 내 본래 호흡까지 잃지 않도록 자신의 리듬도 챙기세요.',
+  '계절의 변화를 읽되 지금 당장 지켜야 할 기본 약속까지 가볍게 여기지 마세요.',
+  '소박한 만족이 더 큰 시도를 막는 안주로 이어지지 않도록 작은 호기심을 남기세요.',
+];
+
 export function calculateAlpineSavoyColWisdom(params: {
   profile: UserProfile;
   now?: Date;
@@ -80,18 +97,23 @@ export function calculateAlpineSavoyColWisdom(params: {
   const idx = stableHash(baseSeed) % PRINCIPLES.length;
   const companionOffset = 1 + (stableHash(`${baseSeed}|companion`) % (PRINCIPLES.length - 1));
   const companionIdx = (idx + companionOffset) % PRINCIPLES.length;
+  const weatherIdx = stableHash(`${baseSeed}|weather`) % ALPINE_WEATHERS.length;
   const picked = PRINCIPLES[idx];
   const companion = PRINCIPLES[companionIdx];
+  const alpineWeather = ALPINE_WEATHERS[weatherIdx];
+  const shadowWarning = SAVOY_SHADOW_WARNINGS[idx];
 
   return {
-    engineVersion: 'LUCKEY-ALPINE-SAVOY-v2.2.0',
+    engineVersion: 'LUCKEY-ALPINE-SAVOY-v2.3.0',
     calculatedAtKst: formatKstStandard(now),
     ridgePrinciple: picked.principle,
     companionPrinciple: companion.principle,
+    alpineWeather,
+    shadowWarning,
     savoyInsight: picked.insight,
     alpineTone: picked.tone,
-    reflectionFocus: `알프스 사보이 산악 지혜의 '${picked.principle}'을 중심으로 삼고 '${companion.principle}'으로 보폭을 맞추며, 지형과 날씨에 맞는 현명한 고개를 택해 보세요.`,
-    ritualAction: picked.ritual,
+    reflectionFocus: `알프스 사보이 산악 지혜의 '${picked.principle}'을 중심으로 삼고 '${companion.principle}'으로 보폭을 맞추며, '${alpineWeather}' 조건에 맞는 현명한 고개를 택해 보세요.`,
+    ritualAction: `${picked.ritual} (${companion.principle.split('(')[0].trim()} 관점도 함께 적용해 보세요.)`,
     reflectiveQuestion: picked.question,
     interpretiveBoundary: '알프스 사보이(Savoy)의 산장 쉼·고갯마루 지혜·코르데 동행 철학을 바탕으로 한 상징적 성찰 프레임입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.',
   };
@@ -103,6 +125,8 @@ export function formatAlpineSavoyPrompt(res: AlpineSavoyResult): string {
     `- 기준 시각: ${res.calculatedAtKst}`,
     `- 산악 지혜: ${res.ridgePrinciple} (${res.alpineTone})`,
     `- 보조 맥락: ${res.companionPrinciple}`,
+    `- 고산 기상 국면: ${res.alpineWeather}`,
+    `- 과잉·지연 경계: ${res.shadowWarning}`,
     `- 중심 통찰: ${res.savoyInsight}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 오늘의 작은 실천: ${res.ritualAction}`,
