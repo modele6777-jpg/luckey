@@ -31,6 +31,8 @@ export interface EndOfSpeechWatcher {
   heard(text: string): boolean;
   /** 지금 들은 말을 바로 보낸다 (인식이 끝났을 때 등). 보냈으면 true. */
   flush(): boolean;
+  /** 보내도 되는지 확인하지 않고 바로 보낸다 (화면에 보이는 글자가 오래 그대로일 때의 안전장치). */
+  sendNow(): boolean;
   /** 이미 보냈는지. */
   readonly sent: boolean;
   /** 마지막으로 들은 문장. */
@@ -60,9 +62,9 @@ export function createEndOfSpeechWatcher(options: {
     if (timer !== null) clearInterval(timer);
     timer = null;
   };
-  const fire = (): boolean => {
+  const fire = (force = false): boolean => {
     if (sent || key.length < minChars) return false;
-    if (options.canSend && !options.canSend()) return false;
+    if (!force && options.canSend && !options.canSend()) return false;
     sent = true;
     stop();
     options.onSend(text);
@@ -85,7 +87,8 @@ export function createEndOfSpeechWatcher(options: {
       if (timer === null) timer = setInterval(tick, 150);
       return true;
     },
-    flush: fire,
+    flush: () => fire(),
+    sendNow: () => fire(true),
     get sent() { return sent; },
     get text() { return text; },
     dispose: stop,
