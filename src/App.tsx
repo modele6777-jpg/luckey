@@ -20,7 +20,8 @@ import { BigBangExpansionOverlay } from "./components/omniwarp/BigBangExpansionO
 import { KeyChannelTransition } from "./components/omniwarp/KeyChannelTransition";
 import { LuckyChannelTransition } from "./components/omniwarp/LuckyChannelTransition";
 import { PageGuideButton } from "./components/guide/PageGuide";
-import { resolvePageGuide } from "./lib/pageGuides";
+import { resolvePageGuide, resolveDappGuide } from "./lib/pageGuides";
+import { getCurrentOneStopPage } from "./lib/omniWarp/contextNavCycleEngine";
 import { isKeyChannelPath } from "./components/omniwarp/KeyChannelTransition";
 import { BigBangMasterSuction } from "./components/omniwarp/BigBangMasterSuction";
 import ErrorBoundary from "./components/ErrorBoundary";
@@ -233,7 +234,7 @@ function ChannelPage({ location }: { location: string }) {
       {/* 📘 우측 상단 가이드 (Lucy·Key는 각자 헤더 안에 버튼이 있다) */}
       {!isLucyThemeRoute(path) && !isKeyChannelPath(path) && (
         <div className="channel-page-guide absolute right-3 z-[45]" style={{ top: 'calc(env(safe-area-inset-top, 0px) + 12px)' }}>
-          <PageGuideButton guide={resolvePageGuide(path)} tone={isLuckyChannel ? 'dark' : resolveChannelThemeFromPath(path) === 'light' ? 'light' : 'dark'} />
+          <PageGuideButton guide={resolvePageGuide(path)} resolve={() => resolveDappGuide(getCurrentOneStopPage(window.location.pathname + window.location.search))} tone={isLuckyChannel ? 'dark' : resolveChannelThemeFromPath(path) === 'light' ? 'light' : 'dark'} />
         </div>
       )}
     </motion.div>

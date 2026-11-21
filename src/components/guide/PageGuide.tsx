@@ -92,8 +92,9 @@ export function PageGuideDialog({ guide, onClose }: { guide: PageGuide; onClose:
 }
 
 /** Round "가이드" button for page headers (top right). */
-export function PageGuideButton({ guide, tone = 'dark', className = '' }: { guide: PageGuide; tone?: 'dark' | 'light'; className?: string }) {
-  const [open, setOpen] = useState(false);
+export function PageGuideButton({ guide, resolve, tone = 'dark', className = '' }: { guide: PageGuide; resolve?: () => PageGuide; tone?: 'dark' | 'light'; className?: string }) {
+  // 누르는 순간 지금 화면(dApp)에 맞는 가이드를 고른다.
+  const [openGuide, setOpenGuide] = useState<PageGuide | null>(null);
   return (
     <>
       <button
@@ -101,7 +102,7 @@ export function PageGuideButton({ guide, tone = 'dark', className = '' }: { guid
         data-page-guide-button={guide.id}
         aria-label={`${guide.title} 가이드 열기`}
         title="가이드"
-        onClick={() => { triggerHaptic('whitehole'); setOpen(true); }}
+        onClick={() => { triggerHaptic('whitehole'); setOpenGuide(resolve ? resolve() : guide); }}
         className={`inline-flex h-8 items-center gap-1 rounded-full border px-2.5 text-[11px] font-bold backdrop-blur-md active:scale-95 ${tone === 'light'
           ? 'border-slate-300/80 bg-white/80 text-slate-700'
           : 'border-white/20 bg-white/10 text-white/90'} ${className}`}
@@ -109,7 +110,7 @@ export function PageGuideButton({ guide, tone = 'dark', className = '' }: { guid
         <BookOpen size={13} aria-hidden="true" />
         가이드
       </button>
-      {open && <PageGuideDialog guide={guide} onClose={() => setOpen(false)} />}
+      {openGuide && <PageGuideDialog guide={openGuide} onClose={() => setOpenGuide(null)} />}
     </>
   );
 }
