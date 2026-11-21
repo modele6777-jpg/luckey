@@ -443,7 +443,7 @@ export function buildUserFifteenToolsDigest(profile?: UserProfile, asOfDate: Dat
       }
     } catch (_) {}
 
-    // 7. 베딕 점성술 (27 나크샤트라 · 빔쇼타리 다샤 결정론 산법)
+    // 7. 베딕 점성술 (27 나크샤트라 · 빔쇼타리 다샤 · 켄드라-트리코나 · 푸루샤르타 결정론 산법)
     let vedicLine = '';
     try {
       const vd = calculateVedicAdvanced({ profile, targetDate: referenceDate, targetYear: kstYear });
@@ -451,7 +451,12 @@ export function buildUserFifteenToolsDigest(profile?: UserProfile, asOfDate: Dat
         const lord = vd.currentDasha?.mahadasha.lord || vd.nakshatra.lord;
         const antar = vd.currentDasha?.antardasha?.lord;
         const sign = vd.rashi?.chandra.name || '미상';
-        vedicLine = `\n- 베딕 조티시: 달 나크샤트라 ${vd.nakshatra.name} ${vd.nakshatra.pada}파다(지배성: ${vd.nakshatra.lord}) · 빔쇼타리 대운 ${lord} 마하다샤${antar ? `·${antar} 부대운` : ''} · 달 라시 ${sign}.`;
+        const sunSign = vd.rashi?.surya.name ? ` · 태양 라시 ${vd.rashi.surya.name}` : '';
+        const lagnaSign = vd.rashi?.lagna?.name ? ` · 라그나 ${vd.rashi.lagna.name}` : '';
+        const synergy = vd.dashaPlanetarySynergy ? ` · 행성 시너지 [${vd.dashaPlanetarySynergy.relationship}](${vd.dashaPlanetarySynergy.karmicFocus})` : '';
+        const pillar = vd.kendraTrikonaProsperity ? ` · 핵심 하우스 축 [${vd.kendraTrikonaProsperity.dominantHousePillar}]` : '';
+        const aim = vd.purusharthaAlignment?.primarySpiritualAim ? ` · 영적 지향: ${vd.purusharthaAlignment.primarySpiritualAim}` : '';
+        vedicLine = `\n- 베딕 조티시: 달 나크샤트라 ${vd.nakshatra.name} ${vd.nakshatra.pada}파다(지배성: ${vd.nakshatra.lord} · ${vd.nakshatra.gana} · ${vd.nakshatra.tattva}) · 빔쇼타리 대운 ${lord} 마하다샤${antar ? `·${antar} 부대운` : ''} · 달 라시 ${sign}${sunSign}${lagnaSign}${synergy}${pillar}${aim}.`;
       }
     } catch (_) {}
 
@@ -480,7 +485,7 @@ export function buildUserFifteenToolsDigest(profile?: UserProfile, asOfDate: Dat
       }
     } catch (_) {}
 
-    // 9. 홍국기문 (조선 정통 4주 9궁 세효·응효·중궁·삼형·통기·8문 결정론 산법)
+    // 9. 홍국기문 (조선 정통 4주 9궁 세효·응효·중궁·천지반 공명·삼기·삼형·통기·8문 결정론 산법)
     let qimenLine = '';
     try {
       const hq = calculateHonggukQimen({ profile, targetYear: kstYear });
@@ -491,7 +496,14 @@ export function buildUserFifteenToolsDigest(profile?: UserProfile, asOfDate: Dat
         const gate = se.gate || hq.eightGatesVerdict.seYaoGate || '중궁기궁';
         const riskTone = hq.samhyeong.riskIndex >= 70 ? '고위험 주의' : hq.samhyeong.riskIndex >= 35 ? '중간 유의' : '안정';
         const tonggiTone = hq.tonggi.score >= 80 ? '완숙 유통' : hq.tonggi.score >= 40 ? '부분 유통' : '정체 보완 필요';
-        qimenLine = `\n- 홍국기문(4주 9궁): 세효 [${se.palaceName}](${se.element}·${se.star}) · 응효 [${eung.palaceName}](${eung.element}·${eung.star}) · 중궁 [${jg.palaceName}](${jg.element}) · 세효 8문 ${gate}(${se.gateCategory}) · 삼형살 ${hq.samhyeong.formed ? `${hq.samhyeong.type || '삼형'} 성립` : hq.samhyeong.partial ? '부분형' : '미성립'}(파극 위험 ${riskTone}) · 5행 통기 ${tonggiTone}.`;
+        const resonance = hq.heavenEarthResonance?.seYaoResonance ? ` · 천지반 공명 [${hq.heavenEarthResonance.seYaoResonance.relation}]` : '';
+        const wonders = hq.threeWondersAlliance?.wondersDetected?.length
+          ? ` · 삼기 회합 [${hq.threeWondersAlliance.wondersDetected.join('·')}]`
+          : '';
+        const seasonWin = hq.tacticalSeasonWindows?.peakActionSeason ? ` · 최적 결단 계절 [${hq.tacticalSeasonWindows.peakActionSeason}]` : '';
+        const seDirection = hq.palaces?.find((p) => p.palace === se.palace)?.direction;
+        const dirInfo = seDirection ? ` · 방위 ${seDirection}` : '';
+        qimenLine = `\n- 홍국기문(4주 9궁): 세효 [${se.palaceName}](${se.element}·${se.star}${dirInfo}) · 응효 [${eung.palaceName}](${eung.element}·${eung.star}) · 중궁 [${jg.palaceName}](${jg.element}) · 세효 8문 ${gate}(${se.gateCategory})${resonance}${wonders} · 삼형살 ${hq.samhyeong.formed ? `${hq.samhyeong.type || '삼형'} 성립` : hq.samhyeong.partial ? '부분형' : '미성립'}(파극 위험 ${riskTone}) · 5행 통기 ${tonggiTone}${seasonWin}.`;
       }
     } catch (_) {}
 
@@ -504,13 +516,20 @@ export function buildUserFifteenToolsDigest(profile?: UserProfile, asOfDate: Dat
       }
     } catch (_) {}
 
-    // 8. 대육임 (천지반 월장·사과·삼전·12천장 결정론 산법)
+    // 8. 대육임 (천지반 월장·사과 생극·삼전 전개 템포·12천장 결정론 산법)
     let liurenLine = '';
     try {
       const lr = calculateLiurenMaster(referenceDate);
       if (lr.status === 'calculated') {
         const trans = lr.threeTransmissions.map(t => `${t.stage}:${t.branch}(${t.general})`).join('→');
-        liurenLine = `\n- 대육임(12천장·삼전): ${lr.dayStemBranch}일 ${lr.hourBranch}시(${lr.monthGeneral} 월장) · 과격 [${lr.patternName}] · 국면 [${lr.decisionGrade}] · 삼전(${trans}) · 주천장 ${lr.primaryGeneral.name}(${lr.primaryGeneral.nature}).`;
+        const harmonyTone = lr.interpersonalDynamic.fourLessonsHarmonyScore >= 85
+          ? '높은 상생 조화'
+          : lr.interpersonalDynamic.fourLessonsHarmonyScore >= 65
+            ? '무난한 균형'
+            : '조율 필요';
+        const lessonDyn = ` · 사과 생극 [${lr.interpersonalDynamic.relationType} · ${lr.interpersonalDynamic.subjectUpper}(${lr.interpersonalDynamic.subjectElement})⇄${lr.interpersonalDynamic.environmentUpper}(${lr.interpersonalDynamic.environmentElement}) · ${harmonyTone}]`;
+        const tempoInfo = ` · 전개 템포 [${lr.transmissionDynamics.tempo}] · 돌파 전략: ${lr.transmissionDynamics.breakthroughStrategy}`;
+        liurenLine = `\n- 대육임(12천장·삼전): ${lr.dayStemBranch}일 ${lr.hourBranch}시(${lr.monthGeneral} 월장) · 과격 [${lr.patternName}] · 국면 [${lr.decisionGrade}] · 삼전(${trans}) · 주천장 ${lr.primaryGeneral.name}(${lr.primaryGeneral.nature})${lessonDyn}${tempoInfo}.`;
       }
     } catch (_) {}
 
