@@ -54,6 +54,8 @@ export function MasterTableSheet({ onClose }: { onClose: () => void }) {
           aria-modal="true"
           aria-label="점술 도구 보기"
           data-master-table-sheet
+          // 창은 화면 밖(포털)에 떠서 아침·낮 밝은 테마가 카드 색을 밝게 바꿔 버린다. 늘 어두운 창으로 고정.
+          data-theme-dark-island="true"
           onClick={e => e.stopPropagation()}
           className="flex h-[min(42rem,calc(var(--overlay-height,100dvh)-1.5rem))] w-full max-w-[420px] flex-col overflow-hidden rounded-3xl border border-amber-200/20 bg-gradient-to-b from-[#24163a] to-[#140c24] text-white shadow-2xl"
           style={{ colorScheme: 'dark' }}
