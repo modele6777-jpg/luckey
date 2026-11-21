@@ -339,6 +339,44 @@ export default function CalmApp() {
       window.cancelAnimationFrame(raf);
     };
   }, []);
+  // Key 안에서 검색창이나 팝업이 열려 있으면 버튼을 숨겨 그 창의 닫기 버튼을 가리지 않는다.
+  const [keyOverlayOpen, setKeyOverlayOpen] = useState(false);
+  useEffect(() => {
+    const iframe = iframeRef.current;
+    if (!iframe) return;
+    let observer: MutationObserver | null = null;
+    let raf = 0;
+    const check = () => {
+      window.cancelAnimationFrame(raf);
+      raf = window.requestAnimationFrame(() => {
+        try {
+          const doc = iframe.contentDocument;
+          if (!doc) return;
+          const open = doc.documentElement.classList.contains('key-search-open')
+            || Array.from(doc.querySelectorAll<HTMLElement>('[role="dialog"]')).some(el =>
+              !el.hidden && !el.classList.contains('hidden') && el.getClientRects().length > 0 && getComputedStyle(el).display !== 'none' && getComputedStyle(el).visibility !== 'hidden');
+          setKeyOverlayOpen(open);
+        } catch { /* navigating */ }
+      });
+    };
+    const attach = () => {
+      observer?.disconnect();
+      try {
+        const doc = iframe.contentDocument;
+        if (!doc?.documentElement) return;
+        observer = new MutationObserver(check);
+        observer.observe(doc.documentElement, { subtree: true, attributes: true, attributeFilter: ['class', 'hidden', 'style'], childList: true });
+        check();
+      } catch { /* navigating */ }
+    };
+    iframe.addEventListener('load', attach);
+    attach();
+    return () => {
+      iframe.removeEventListener('load', attach);
+      observer?.disconnect();
+      window.cancelAnimationFrame(raf);
+    };
+  }, []);
   const activeKeyTab = () => {
     try { return iframeRef.current?.contentDocument?.querySelector('.tab-pill.active')?.getAttribute('data-tab') || ''; } catch { return ''; }
   };
@@ -390,7 +428,7 @@ export default function CalmApp() {
         allow="autoplay; microphone"
         onLoad={handleIFrameLoad}
       />
-      {actionsTop !== null && (
+      {actionsTop !== null && !keyOverlayOpen && (
         <div className="key-parent-actions absolute right-3 z-[45] flex items-center gap-1.5" style={{ top: actionsTop }}>
           <button
             type="button"
