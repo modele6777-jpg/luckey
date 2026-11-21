@@ -13717,13 +13717,14 @@ test('Sogdian Silk Road Caravan Trust engine: stage, +09:00 KST, and interpretiv
 
 test('Taino Zemi Areito Harmony engine: emblem, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateTainoZemiAreitoHarmony({ profile, now: new Date('2026-11-20T07:12:00Z'), question: '호흡과 리듬을 맞추고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-TAINO-ZEMI-AREITO-v2.1.0');
-  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.equal(rep.engineVersion, 'LUCKEY-TAINO-ZEMI-AREITO-v2.2.0');
+  assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
+  assert.ok(rep.companionEmblem !== rep.zemiEmblem);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatTainoZemiAreitoPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('타이노') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('타이노') && prompt.includes('동반 상징') && prompt.includes('+09:00 (KST)'));
 });
 
 test('Basotho Botho Mountain Wisdom engine: sign, +09:00 KST, and interpretive boundary', () => {
@@ -14088,13 +14089,14 @@ test('Maltese Megalith Luzzu Harbor engine: symbol, +09:00 KST, and interpretive
 
 test('Uzbek Mahalla Rishtan Craft engine: virtue, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateUzbekMahallaRishtanCraft({ profile, now: new Date('2026-11-20T08:15:00Z'), question: '정성과 곁의 온기를 회복하고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-UZBEK-MAHALLA-v2.1.0');
-  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.equal(rep.engineVersion, 'LUCKEY-UZBEK-MAHALLA-v2.2.0');
+  assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
+  assert.ok(rep.companionVirtue !== rep.mahallaVirtue);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatUzbekMahallaPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('우즈베크') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('우즈베크') && prompt.includes('동반 지혜') && prompt.includes('+09:00 (KST)'));
 });
 
 test('Rapa Nui Mana Moai Horizon engine: focus, +09:00 KST, and interpretive boundary', () => {
@@ -14375,13 +14377,14 @@ test('Sicilian Majolica Etna Balance engine: motif, +09:00 KST, and interpretive
 
 test('Somali Gabay Dhow Horizon engine: principle, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateSomaliGabayDhowHorizon({ profile, now: new Date('2026-11-20T09:14:00Z'), question: '정갈한 한 마디와 계절풍의 때를 기다리고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-SOMALI-GABAY-v2.1.0');
-  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.equal(rep.engineVersion, 'LUCKEY-SOMALI-GABAY-v2.2.0');
+  assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
+  assert.ok(rep.companionPrinciple !== rep.poetryPrinciple);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatSomaliGabayPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('소말리') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('소말리') && prompt.includes('동반 원리') && prompt.includes('+09:00 (KST)'));
 });
 
 test('Bohemian Crystal Glass Light engine: facet, +09:00 KST, and interpretive boundary', () => {
