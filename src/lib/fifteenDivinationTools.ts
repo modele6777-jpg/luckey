@@ -353,7 +353,7 @@ export function buildUserFifteenToolsDigest(profile?: UserProfile, asOfDate: Dat
     try {
       const mb = calculateMahabote({ profile, targetYear: kstYear });
       if (mb.status === 'calculated' && mb.rootHouse && mb.currentAgeTransit) {
-        mahaboteLine = `- 마하보테 8요일 부분 계산: ${KOR_WEEKDAYS[dow]} · ${animal}(수호성 ${mb.birthPlanet?.planet || '태양(Sun)'}). [7궁 명반 포국]: 본명궁 ${mb.rootHouse.houseName}(${mb.rootHouse.category}) · 소수력 잉여수 ${mb.remainder} · 당해 ${mb.currentAgeTransit.currentAge}세 나이 다샤(${mb.currentAgeTransit.transitHouseName}${mb.transitInteraction?.phase ? ` · ${mb.transitInteraction.phase}` : ''}) · 길방위: ${mb.remedies?.luckyDirection || '동쪽'} · 길색: ${mb.remedies?.luckyColors?.join(', ') || '흰색'}.`;
+        mahaboteLine = `- 마하보테 8요일 부분 계산: ${KOR_WEEKDAYS[dow]} · ${animal}(수호성 ${mb.birthPlanet?.planet || '태양(Sun)'}). [7궁 명반 포국]: 본명궁 ${mb.rootHouse.houseName}(${mb.rootHouse.category}) · 소수력 잉여수 ${mb.remainder} · 당해 ${mb.currentAgeTransit.currentAge}세 나이 다샤(${mb.currentAgeTransit.transitHouseName}${mb.transitInteraction?.phase ? ` · ${mb.transitInteraction.phase}` : ''}) · 길방위: ${mb.remedies?.luckyDirection || '동쪽'} · 길색: ${mb.remedies?.luckyColors?.join(', ') || '흰색'}${mb.remedies?.luckyGemstone ? ` · 길보석: ${mb.remedies.luckyGemstone}` : ''} · 실행 조언: ${mb.currentAgeTransit.actionAdvice}.`;
       } else {
         mahaboteLine = `- 마하보테 8요일 부분 계산: ${KOR_WEEKDAYS[dow]} · ${animal}. 7궁 명반 미계산.`;
       }
@@ -424,16 +424,22 @@ export function buildUserFifteenToolsDigest(profile?: UserProfile, asOfDate: Dat
         elems.sort((a, b) => b[1] - a[1]);
         const domElem = elems[0][0];
         const lackElem = elems[elems.length - 1][0];
-        tarotLine = `\n- 타로 마스터 수비학: 소울 카드 ${tm.soulCard.name}(${tm.soulCard.keywords.slice(0, 2).join('·')}) · 퍼스널리티 카드 ${tm.personalityCard.name} · ${tm.currentYear}년 성장 카드 ${tm.yearCard.name}(${tm.yearCard.keywords.slice(0, 2).join('·')}) · 4원소 흐름(우세 ${domElem} · 보완 ${lackElem}).`;
+        const timelineBrief = tm.timelineCards?.length
+          ? ` · 3카드 흐름(${tm.timelineCards.map((c) => `${c.timeline.split(' ')[0]}:${c.card.name}`).join('→')})`
+          : '';
+        const suitNote = tm.suitManifestation ? ` · 실천 수트 [${tm.suitManifestation.suitName}]` : '';
+        tarotLine = `\n- 타로 마스터 수비학: 소울 카드 ${tm.soulCard.name}(${tm.soulCard.keywords.slice(0, 2).join('·')}) · 퍼스널리티 카드 ${tm.personalityCard.name} · ${tm.currentYear}년 성장 카드 ${tm.yearCard.name}(${tm.yearCard.keywords.slice(0, 2).join('·')})${timelineBrief} · 4원소 흐름(우세 ${domElem} · 보완 ${lackElem})${suitNote}.`;
       }
     } catch (_) {}
 
-    // 5. 숙요 (27숙 본명숙 · 7대 숙격 · 4방신 결정론 산법)
+    // 5. 숙요 (27숙 본명숙 · 7대 숙격 · 4방신 · 삼구주기 · 칠요 수호성 결정론 산법)
     let sukuyoLine = '';
     try {
       const sk = calculateSukuyoAdvanced({ profile, now: referenceDate });
       if (sk.status === 'calculated' && sk.mansion) {
-        sukuyoLine = `\n- 숙요경(27숙): 본명숙 ${sk.mansion.fullName}(${sk.mansion.animal} · ${sk.mansion.element}행) · 숙격 ${sk.mansion.shukgukHanja}(${sk.mansion.shukgukTrait}) · 4방신 ${sk.mansion.group}.`;
+        const sanKyuNote = sk.sanKyuCycle ? ` · 삼구주기 [${sk.sanKyuCycle.nineMansionPhase}]` : '';
+        const guardNote = sk.planetaryGuard ? ` · 칠요 수호성 ${sk.planetaryGuard.dominantLuminary}(길요일 ${sk.planetaryGuard.favorableWeekday})` : '';
+        sukuyoLine = `\n- 숙요경(27숙): 본명숙 ${sk.mansion.fullName}(${sk.mansion.animal} · ${sk.mansion.element}행) · 숙격 ${sk.mansion.shukgukHanja}(${sk.mansion.shukgukTrait}) · 4방신 ${sk.mansion.group}${sanKyuNote}${guardNote}.`;
       }
     } catch (_) {}
 
