@@ -439,9 +439,10 @@ export function buildUserFifteenToolsDigest(profile?: UserProfile, asOfDate: Dat
         const topDirNote = ks.topFortuneDirection?.summary ? ` · 길방 해설: ${ks.topFortuneDirection.summary}` : '';
         const ritualNote = ks.ritualAction ? ` · 방위 의례: ${ks.ritualAction}` : '';
         const focusNote = ks.reflectionFocus ? ` · 성찰 초점: ${ks.reflectionFocus}` : '';
+        const questionNote = ks.reflectiveQuestion ? ` · 성찰 질문: "${ks.reflectiveQuestion}"` : '';
         const boundaryNote = ks.interpretiveBoundary ? ` · 해석 경계: ${ks.interpretiveBoundary}` : '';
         const centerFlow = `년(${ks.annualChart.centerStarName})·월(${ks.monthlyChart.centerStarName})·일(${ks.dailyChart.centerStarName})`;
-        kyuseiLine = `- 구성학 9궁 명반: 본명성 ${ks.honmyosei.name} · 월명성 ${ks.getmyosei.name}(${ks.getmyosei.currentTerm}) · 일명성 ${ks.ilmyosei.name} · 중궁 흐름[${centerFlow} · ${ks.targetYearGanZhi}년] · 최길방위 [${topDir}] · 주의 흉살방위 [${hazardSummary}]${synergyNote}${scenarioNote}${matrixAction}${topDirNote}${ritualNote}${focusNote}${boundaryNote}.`;
+        kyuseiLine = `- 구성학 9궁 명반: 본명성 ${ks.honmyosei.name} · 월명성 ${ks.getmyosei.name}(${ks.getmyosei.monthBranch}월·${ks.getmyosei.currentTerm}) · 일명성 ${ks.ilmyosei.name}(${ks.ilmyosei.dayGanZhi}일) · 중궁 흐름[${centerFlow} · ${ks.targetYearGanZhi}년] · 최길방위 [${topDir}] · 주의 흉살방위 [${hazardSummary}]${synergyNote}${scenarioNote}${matrixAction}${topDirNote}${ritualNote}${focusNote}${questionNote}${boundaryNote}.`;
       } else {
         kyuseiLine = `- 구성학: ${ks.note || '생년월일 미입력으로 미계산'}`;
       }
@@ -590,10 +591,11 @@ export function buildUserFifteenToolsDigest(profile?: UserProfile, asOfDate: Dat
         const matrixAction = tj.tojeongSynthesisMatrix
           ? ` · 괘 조율 [${tj.tojeongSynthesisMatrix.alignmentState} / ${tj.tojeongSynthesisMatrix.dominantTension}] → ${tj.tojeongSynthesisMatrix.integratedAction}`
           : '';
-        const lunarNote = `음력 ${tj.lunarBirth.year}.${tj.lunarBirth.month}.${tj.lunarBirth.day}${tj.lunarBirth.isLeapMonth ? '(윤)' : ''} · ${tj.birthMonthGanZhi}월/${tj.birthdayGanZhi}일`;
+        const lunarNote = `음력 ${tj.lunarBirth.year}.${tj.lunarBirth.month}.${tj.lunarBirth.day}${tj.lunarBirth.isLeapMonth ? '(윤)' : ''} · ${tj.birthMonthGanZhi}월/${tj.birthdayGanZhi}일 · 세수 ${tj.ageKorean}세 · 원수(태세${tj.taeseCount}/월건${tj.wolgeonCount}/일진${tj.iljinCount})`;
         const focusNote = tj.reflectionFocus ? ` · 성찰 초점: ${tj.reflectionFocus}` : '';
+        const questionNote = tj.reflectiveQuestion ? ` · 성찰 질문: "${tj.reflectiveQuestion}"` : '';
         const boundaryNote = tj.interpretiveBoundary ? ` · 해석 경계: ${tj.interpretiveBoundary}` : '';
-        tojeongLine = `\n- 토정비결: ${tj.targetYear}년(${tj.targetYearGanZhi} · ${lunarNote}) 제${tj.hexagramCode}괘(${tj.hexagramName} · ${tj.upperTrigram}상/${tj.lowerTrigram}하 · ${tj.movingLineLabel} · ${tj.luckGrade}) · 3수(상${tj.upperGua}·중${tj.middleGua}·하${tj.lowerGua}) · 연간 총론: "${tj.annualSummary}"${monthPart}${trigramNote}${ritualNote}${matrixAction}${focusNote}${boundaryNote}.`;
+        tojeongLine = `\n- 토정비결: ${tj.targetYear}년(${tj.targetYearGanZhi} · ${lunarNote}) 제${tj.hexagramCode}괘(${tj.hexagramName} · ${tj.upperTrigram}상/${tj.lowerTrigram}하 · ${tj.movingLineLabel} · ${tj.luckGrade}) · 3수(상${tj.upperGua}·중${tj.middleGua}·하${tj.lowerGua}) · 연간 총론: "${tj.annualSummary}"${monthPart}${trigramNote}${ritualNote}${matrixAction}${focusNote}${questionNote}${boundaryNote}.`;
       }
     } catch (_) {}
 
@@ -615,8 +617,10 @@ export function buildUserFifteenToolsDigest(profile?: UserProfile, asOfDate: Dat
           : '';
         const ritualNote = ty.ritualAction ? ` · 연국 의례: ${ty.ritualAction}` : '';
         const focusNote = ty.reflectionFocus ? ` · 성찰 초점: ${ty.reflectionFocus}` : '';
+        const questionNote = ty.reflectiveQuestion ? ` · 성찰 질문: "${ty.reflectiveQuestion}"` : '';
         const boundaryNote = ty.interpretiveBoundary ? ` · 해석 경계: ${ty.interpretiveBoundary}` : '';
-        taiyiLine = `\n- 태을신수: ${ty.targetYear}년 적년 ${c.accumulatedYears}년(${c.cycleName} · ${c.juType} 제${c.juNumber}국) · 16궁 태을 재궁 [${c.taiyiPalaceName}] · 문창(주) ${c.wenChangPalaceName}궁 / 시격(객) ${c.shiJiPalaceName}궁 · 주객 판정 [${c.outcome} — ${c.outcomeReason}]${fiveBless}${threeGiNote}${macroNote}${matrixAction}${ritualNote}${focusNote}${boundaryNote} · 시대 대세: "${ty.macroActionStrategy}".`;
+        const sanTypeNote = ` · 수리 장단(주산 ${c.juSanType} / 객산 ${c.gaekSanType})`;
+        taiyiLine = `\n- 태을신수: ${ty.targetYear}년 적년 ${c.accumulatedYears}년(${c.cycleName} · ${c.juType} 제${c.juNumber}국) · 16궁 태을 재궁 [${c.taiyiPalaceName}] · 문창(주) ${c.wenChangPalaceName}궁 / 시격(객) ${c.shiJiPalaceName}궁 · 주객 판정 [${c.outcome} — ${c.outcomeReason}]${sanTypeNote}${fiveBless}${threeGiNote}${macroNote}${matrixAction}${ritualNote}${focusNote}${questionNote}${boundaryNote} · 시대 대세: "${ty.macroActionStrategy}".`;
       }
     } catch (_) {}
 
