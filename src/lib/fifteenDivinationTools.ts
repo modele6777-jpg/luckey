@@ -392,7 +392,16 @@ export function buildUserFifteenToolsDigest(profile?: UserProfile, asOfDate: Dat
         const hazardSummary = ks.hazards && ks.hazards.length > 0
           ? ks.hazards.slice(0, 3).map((h) => `${h.name}(${h.direction})`).join(', ')
           : '특이 흉살 없음';
-        kyuseiLine = `- 구성학 9궁 명반: 본명성 ${ks.honmyosei.name} · 월명성 ${ks.getmyosei.name}(${ks.getmyosei.currentTerm}) · 일명성 ${ks.ilmyosei.name} · 당해 연성 ${ks.annualChart.centerStarName}(${ks.targetYearGanZhi}년) · 최길방위 [${topDir}] · 주의 흉살방위 [${hazardSummary}].`;
+        const synergyNote = ks.honmyoseiSynergy
+          ? ` · 연성 시너지 [${ks.honmyoseiSynergy.annualStarRelation}](${ks.honmyoseiSynergy.annualThemeGuidance})`
+          : '';
+        const scenarioNote = ks.usageScenarios && ks.usageScenarios.length > 0
+          ? ` · 활용 방위 [${ks.usageScenarios[0].scenario}: ${ks.usageScenarios[0].direction}](${ks.usageScenarios[0].advice})`
+          : '';
+        const matrixAction = ks.kyuseiSynthesisMatrix?.integratedAction
+          ? ` · 9궁 처신: ${ks.kyuseiSynthesisMatrix.integratedAction}`
+          : '';
+        kyuseiLine = `- 구성학 9궁 명반: 본명성 ${ks.honmyosei.name} · 월명성 ${ks.getmyosei.name}(${ks.getmyosei.currentTerm}) · 일명성 ${ks.ilmyosei.name} · 당해 연성 ${ks.annualChart.centerStarName}(${ks.targetYearGanZhi}년) · 최길방위 [${topDir}] · 주의 흉살방위 [${hazardSummary}]${synergyNote}${scenarioNote}${matrixAction}.`;
       } else {
         kyuseiLine = `- 구성학: ${ks.note || '생년월일 미입력으로 미계산'}`;
       }
@@ -480,7 +489,13 @@ export function buildUserFifteenToolsDigest(profile?: UserProfile, asOfDate: Dat
         const monthPart = currentMonthFortune
           ? ` · ${kstMonth}월 운세: "${currentMonthFortune.fortune}" (처방: ${currentMonthFortune.tip})`
           : '';
-        tojeongLine = `\n- 토정비결: ${tj.targetYear}년(${tj.targetYearGanZhi}) 제${tj.hexagramCode}괘(${tj.hexagramName} · ${tj.upperTrigram}상/${tj.lowerTrigram}하 · ${tj.luckGrade}) · 3수(상${tj.upperGua}·중${tj.middleGua}·하${tj.lowerGua}) · 연간 총론: "${tj.annualSummary}"${monthPart}.`;
+        const trigramNote = tj.trigramAnalysis
+          ? ` · 상하괘 오행 [${tj.trigramAnalysis.upperElement}/${tj.trigramAnalysis.lowerElement} · ${tj.trigramAnalysis.elementRelation} · 최성 ${tj.trigramAnalysis.seasonalFlow.peakSeason}](${tj.trigramAnalysis.hexagramEssenceAdvice})`
+          : '';
+        const matrixAction = tj.tojeongSynthesisMatrix?.integratedAction
+          ? ` · 괘 처신: ${tj.tojeongSynthesisMatrix.integratedAction}`
+          : '';
+        tojeongLine = `\n- 토정비결: ${tj.targetYear}년(${tj.targetYearGanZhi}) 제${tj.hexagramCode}괘(${tj.hexagramName} · ${tj.upperTrigram}상/${tj.lowerTrigram}하 · ${tj.movingLineLabel} · ${tj.luckGrade}) · 3수(상${tj.upperGua}·중${tj.middleGua}·하${tj.lowerGua}) · 연간 총론: "${tj.annualSummary}"${monthPart}${trigramNote}${matrixAction}.`;
       }
     } catch (_) {}
 
@@ -491,7 +506,16 @@ export function buildUserFifteenToolsDigest(profile?: UserProfile, asOfDate: Dat
       if (ty.status === 'calculated' && ty.calculation) {
         const c = ty.calculation;
         const fiveBless = ty.fiveBlessings ? ` · 오복길성 [${ty.fiveBlessings.palaceName}궁]` : '';
-        taiyiLine = `\n- 태을신수: ${ty.targetYear}년 적년 ${c.accumulatedYears}년(제${c.juNumber}국) · 16궁 태을 재궁 [${c.taiyiPalaceName}] · 문창(주) ${c.wenChangPalaceName}궁 / 시격(객) ${c.shiJiPalaceName}궁 · 주객 판정 [${c.outcome}]${fiveBless} · 시대 대세: "${ty.macroActionStrategy}".`;
+        const threeGiNote = ty.threeGi
+          ? ` · 삼기(군:${ty.threeGi.gunGi.rating}/신:${ty.threeGi.sinGi.rating}/민:${ty.threeGi.minGi.rating})`
+          : '';
+        const macroNote = ty.macroStrategicMatrix
+          ? ` · 대세 국면 [${ty.macroStrategicMatrix.macroPhase}](${ty.macroStrategicMatrix.tacticalWindowAdvice})`
+          : '';
+        const matrixAction = ty.taiyiSynthesisMatrix?.integratedAction
+          ? ` · 국 처신: ${ty.taiyiSynthesisMatrix.integratedAction}`
+          : '';
+        taiyiLine = `\n- 태을신수: ${ty.targetYear}년 적년 ${c.accumulatedYears}년(제${c.juNumber}국) · 16궁 태을 재궁 [${c.taiyiPalaceName}] · 문창(주) ${c.wenChangPalaceName}궁 / 시격(객) ${c.shiJiPalaceName}궁 · 주객 판정 [${c.outcome}]${fiveBless}${threeGiNote}${macroNote}${matrixAction} · 시대 대세: "${ty.macroActionStrategy}".`;
       }
     } catch (_) {}
 

@@ -15491,3 +15491,21 @@ test('buildUserFifteenToolsDigest integrates Kabbalah lightning/manifestation, I
   assert.ok(digest.includes('활력 좌우명:') && digest.includes('개운 실천:'));
   assert.ok(!/ascensionPotentialIndex|harmonyScore|momentumScore|affinityScore/.test(digest));
 });
+
+test('buildUserFifteenToolsDigest integrates Kyusei synergy/scenarios, Tojeong trigram/seasonal flow, and Taiyi 3-Gi/macro phase without raw scores', () => {
+  const profile: any = {
+    basic: {
+      name: '제제',
+      birthdate: '1994-01-24',
+      birthtime: '10:30',
+      calendarType: 'solar',
+      isLeapMonth: false,
+      gender: 'male',
+    },
+  };
+  const digest = buildUserFifteenToolsDigest(profile, new Date('2026-11-22T04:46:00+09:00'));
+  assert.ok(digest.includes('연성 시너지 [') && digest.includes('9궁 처신:'));
+  assert.ok(digest.includes('상하괘 오행 [') && digest.includes('괘 처신:'));
+  assert.ok(digest.includes('삼기(군:') && digest.includes('대세 국면 [') && digest.includes('국 처신:'));
+  assert.ok(!/synergyScore|harmonyScore|juBalanceScore|initiativeIndex|defensiveIndex/.test(digest));
+});
