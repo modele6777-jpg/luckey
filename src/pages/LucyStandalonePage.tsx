@@ -4787,7 +4787,16 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
 
                 {/* 실시간 음성 인식 텍스트 표시 영역 */}
                 {(speechTranscript || speechInterim) && (
-                  <div className="mt-1.5 px-2.5 py-1.5 rounded-xl bg-white/70 dark:bg-white/5 border border-amber-400/30 text-xs flex items-center justify-between gap-2">
+                  <div data-voice-transcript className="relative overflow-hidden mt-1.5 px-2.5 py-1.5 rounded-xl bg-white/70 dark:bg-white/5 border border-amber-400/30 text-xs flex items-center justify-between gap-2">
+                    {/* 말을 멈추면 자동 전송까지 남은 시간 (글자가 바뀌면 처음부터 다시) */}
+                    {speechTranscript.trim().length >= 2 && !isVoiceMuted && !isLucyGenerating && (
+                      <span
+                        key={speechTranscript}
+                        aria-hidden="true"
+                        data-voice-autosend-bar
+                        className="lucy-voice-autosend-bar pointer-events-none absolute bottom-0 left-0 h-[2px] bg-amber-400"
+                      />
+                    )}
                     <span className="truncate text-slate-700 dark:text-amber-100/90 font-medium">
                       "{speechTranscript || speechInterim}"
                     </span>
