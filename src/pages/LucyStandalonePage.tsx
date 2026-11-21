@@ -1382,6 +1382,29 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
     frame: null,
   });
   const fileInputRef = useRef<HTMLInputElement>(null);
+  // 📷 카메라·사진 고르기 창을 여는 동안 iOS는 앱을 잠깐 '숨김'으로 본다.
+  // 돌아왔을 때 "다시 들어옴"으로 착각해 대화를 맨 아래로 끌어내리지 않도록, 열기 전 위치를 기억해 둔다.
+  const photoPickerRef = useRef<{ openedAt: number; scrollTop: number } | null>(null);
+  const restoreAfterPhotoPicker = () => {
+    const picker = photoPickerRef.current;
+    photoPickerRef.current = null;
+    const container = messagesContainerRef.current;
+    if (!picker || !container) return;
+    const top = picker.scrollTop;
+    requestAnimationFrame(() => { container.scrollTop = top; });
+  };
+  // 사진 고르기를 취소해도 보던 자리로 (React에는 cancel 이벤트 prop이 없어 직접 단다)
+  useEffect(() => {
+    const input = fileInputRef.current;
+    if (!input) return;
+    const onCancel = () => restoreAfterPhotoPicker();
+    input.addEventListener('cancel', onCancel);
+    return () => input.removeEventListener('cancel', onCancel);
+  });
+  const isReturningFromPhotoPicker = () => {
+    const picker = photoPickerRef.current;
+    return Boolean(picker && Date.now() - picker.openedAt < 2 * 60 * 1000);
+  };
   const isTTSActive = useTTSActive();
   const isUserScrolledUpRef = useRef(false);
   const [showReturnToRecentConversation, setShowReturnToRecentConversation] = useState(false);
@@ -3160,6 +3183,11 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
         wasAppHiddenRef.current = true;
       } else if (document.visibilityState === 'visible' && wasAppHiddenRef.current) {
         wasAppHiddenRef.current = false;
+        // 카메라·사진 고르기에서 돌아온 것: 다시 들어온 게 아니므로 보던 자리를 그대로 둔다.
+        if (isReturningFromPhotoPicker()) {
+          restoreAfterPhotoPicker();
+          return;
+        }
         refreshEntryGreeting();
         restoreLatestSavedMessages();
         isUserScrolledUpRef.current = false;
@@ -3168,7 +3196,11 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
       }
     };
 
-    const onPageShow = () => {
+    const onPageShow = (event?: Event) => {
+      if (event?.type === 'pageshow' && isReturningFromPhotoPicker()) {
+        restoreAfterPhotoPicker();
+        return;
+      }
       refreshEntryGreeting();
       restoreLatestSavedMessages();
       isUserScrolledUpRef.current = false;
@@ -4987,7 +5019,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
             <input 
               type="file" 
               ref={fileInputRef} 
-              onChange={handleImageSelect} 
+              onChange={(e) => { restoreAfterPhotoPicker(); void handleImageSelect(e); }}
               accept="image/*" 
               className="hidden" 
             />
@@ -4995,7 +5027,10 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
             {/* 📷 Image / Camera Button */}
             <button
               type="button"
-              onClick={() => fileInputRef.current?.click()}
+              onClick={() => {
+                photoPickerRef.current = { openedAt: Date.now(), scrollTop: messagesContainerRef.current?.scrollTop ?? 0 };
+                fileInputRef.current?.click();
+              }}
               className={`w-7 h-7 sm:w-8 sm:h-8 p-0 flex items-center justify-center rounded-lg transition-colors cursor-pointer shrink-0 ${
                 isLight
                   ? 'text-slate-400 hover:text-amber-700 hover:bg-amber-50'
