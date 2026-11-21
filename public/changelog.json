@@ -1,5 +1,16 @@
 [
   {
+    "version": "1.8.114",
+    "summary": "Cloud Gemini 음성을 서비스 계정으로 정식 인증 (같은 목소리 대신 읽기 준비)",
+    "builtAt": "2026-11-21T06:53:36.990Z",
+    "items": [
+      "Cloud의 Gemini 음성은 API 키를 받지 않아(403) 서비스 계정 인증으로 연결",
+      "Render에 서비스 계정 JSON(GOOGLE_CLOUD_TTS_CREDENTIALS)을 넣으면 Gemini 한도가 찰 때 같은 목소리로 대신 읽음",
+      "서비스 계정이 없으면 시도하지 않아 대신 읽기가 느려지지 않음",
+      "인증 출입증은 만료 전까지 재사용"
+    ]
+  },
+  {
     "version": "1.8.113",
     "summary": "Gemini 한도가 차면 같은 Gemini 목소리로 대신 읽기 (Google Cloud)",
     "builtAt": "2026-11-21T06:44:33.816Z",

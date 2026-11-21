@@ -1,4 +1,5 @@
 import { synthesizeChirpSpeech, synthesizeCloudGeminiSpeech, cloudGeminiTtsStatus, type CloudTtsRuntime } from './googleCloudTts.ts';
+import { readServiceAccount } from './googleServiceAccount.ts';
 import { synthesizeGeminiSpeech } from './geminiMedia.ts';
 
 /**
@@ -12,14 +13,15 @@ const CLOUD_TTS_COOLDOWN_MS = 10 * 60 * 1000;
 const GEMINI_DEFAULT_COOLDOWN_MS = 60 * 1000;
 let cloudTtsSkippedUntil = 0;
 let geminiSkippedUntil = 0;
+let cloudGeminiSkippedUntil = 0;
 let lastCloudTtsFailure: { status?: number; providerCode?: string } | null = null;
 let lastGeminiFailure: { status?: number; providerCode?: string } | null = null;
 
-export function cloudTtsStatus() {
+export function cloudTtsStatus(env: CloudTtsRuntime = {}) {
   const now = Date.now();
   return {
     order: ['gemini', 'cloud-gemini-tts', 'chirp3-hd'],
-    cloudGemini: cloudGeminiTtsStatus(),
+    cloudGemini: { ...cloudGeminiTtsStatus(env), skippedSeconds: Math.max(0, Math.ceil((cloudGeminiSkippedUntil - now) / 1000)) },
     skipped: now < cloudTtsSkippedUntil,
     lastFailure: lastCloudTtsFailure,
     geminiSkippedSeconds: Math.max(0, Math.ceil((geminiSkippedUntil - now) / 1000)),
@@ -30,6 +32,7 @@ export function cloudTtsStatus() {
 export function resetCloudTtsCooldown() {
   cloudTtsSkippedUntil = 0;
   geminiSkippedUntil = 0;
+  cloudGeminiSkippedUntil = 0;
   lastCloudTtsFailure = null;
   lastGeminiFailure = null;
 }
@@ -44,14 +47,17 @@ function failureSummary(error: any) {
  * then Chirp 3 HD as the last resort.
  */
 async function tryChirp(text: string, voice: string | undefined, env: CloudTtsRuntime, fetchApi: typeof fetch, signal?: AbortSignal) {
-  if (env.CLOUD_GEMINI_TTS !== 'off') {
+  if (env.CLOUD_GEMINI_TTS !== 'off' && readServiceAccount(env.GOOGLE_CLOUD_TTS_CREDENTIALS) && Date.now() >= cloudGeminiSkippedUntil) {
     try {
       const result = await synthesizeCloudGeminiSpeech(text, voice, env, fetchApi, signal);
       lastCloudTtsFailure = null;
       return result;
     } catch (error: any) {
       if (signal?.aborted) throw error;
-      console.warn('[tts] Cloud Gemini-TTS unavailable, trying Chirp 3 HD:', failureSummary(error));
+      const summary = failureSummary(error);
+      // Permission/auth problems need a settings change: don't pay for them on every reading.
+      if ([401, 403].includes(Number(summary.status))) cloudGeminiSkippedUntil = Date.now() + CLOUD_TTS_COOLDOWN_MS;
+      console.warn('[tts] Cloud Gemini-TTS unavailable, trying Chirp 3 HD:', summary);
     }
   }
   try {
