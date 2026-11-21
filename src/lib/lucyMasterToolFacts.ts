@@ -26,6 +26,15 @@ const EXTRACTORS: Partial<Record<DivinationToolId, (d: Data) => Array<ToolFact |
     fact('음력 생일', d.lunarMonth ? `${str(d.lunarMonth)}월 ${str(d.lunarDay)}일` : ''),
     fact('삼구 시기', d.advanced?.sanKyuCycle?.nineMansionPhase),
   ],
+  kabbalah: d => {
+    const n: Data = d.numerology || {};
+    return [
+      fact('라이프 패스', n.lifePathNumber ? `${str(n.lifePathNumber)} → ${n.lifePathNumber === 22 ? '다트' : str(n.lifePathSephirah?.name)}` : ''),
+      fact('생일수', n.personalityNumber ? `${str(n.personalityNumber)} → ${str(n.personalitySephirah?.name)}` : ''),
+      fact('탄생 카드', n.soulPath ? `${str(n.soulPath.tarotName)} · ${str(n.soulPath.number)}번 경로` : ''),
+      fact('세계', n.dominantWorld?.name),
+    ];
+  },
   mahabote: d => [
     fact('본명궁', d.rootHouse ? `${str(d.rootHouse.houseName)} · ${str(d.rootHouse.category)}` : ''),
     fact('태어난 요일', d.birthPlanet?.koreanName),

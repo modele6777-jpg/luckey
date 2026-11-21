@@ -586,9 +586,6 @@ function AstrologyView({ d }: { d: Data }) {
 }
 
 /* ───────────── 11~13. 숙요·마하보테·카발라 (구조만, 개인 값 없음) ───────────── */
-function HeldNotice() {
-  return <p className="mt-2 text-[11px] text-slate-300 break-keep">이 도구는 계산 기준을 다시 살펴보는 중이라, 지금은 개인 결과 없이 <b className="text-amber-100">구조와 의미만</b> 보여줘요. 루시도 상징 참고로만 써요.</p>;
-}
 /** 27숙 (각부터, 우宿 제외) — 엔진(sukuyoEngine)의 순서와 같다. */
 const MANSIONS = ['角', '亢', '氐', '房', '心', '尾', '箕', '斗', '女', '虛', '危', '室', '壁', '奎', '婁', '胃', '昴', '畢', '觜', '參', '井', '鬼', '柳', '星', '張', '翼', '軫'];
 /** 삼구(三九) 관계: 나(명)에서 몇 칸 떨어졌는지 → 명·영·쇠·안·위·성·괴·우·친 / 업 / 태 */
@@ -686,25 +683,54 @@ function MahaboteView({ d }: { d?: Data }) {
     </>
   );
 }
+/** 10 세피로트를 번호 순서(1 케테르 … 10 말쿠트)로. 보는 쪽 기준 오른쪽이 자비의 기둥(호크마·헤세드·네차흐). */
 const SEPHIROT: Array<[string, number, number]> = [
-  ['케테르', 100, 14], ['비나', 52, 42], ['호크마', 148, 42], ['게부라', 52, 88], ['헤세드', 148, 88],
-  ['티페레트', 100, 112], ['호드', 52, 150], ['네차흐', 148, 150], ['예소드', 100, 170], ['말쿠트', 100, 196],
+  ['케테르', 100, 14], ['호크마', 148, 42], ['비나', 52, 42], ['헤세드', 148, 88], ['게부라', 52, 88],
+  ['티페레트', 100, 112], ['네차흐', 148, 150], ['호드', 52, 150], ['예소드', 100, 170], ['말쿠트', 100, 196],
 ];
-const PATHS: Array<[number, number]> = [[0, 1], [0, 2], [1, 2], [1, 3], [2, 4], [3, 4], [1, 5], [2, 5], [3, 5], [4, 5], [3, 6], [4, 7], [5, 6], [5, 7], [6, 7], [6, 8], [7, 8], [5, 8], [8, 9], [6, 9], [7, 9], [0, 5]];
-function KabbalahView() {
+/** 경로 번호(11~32) → 이어지는 두 세피라 (황금여명 통용표, 엔진 PATHS_22 와 같음) */
+const PATH_ENDS: Record<number, [number, number]> = {
+  11: [0, 1], 12: [0, 2], 13: [0, 5], 14: [1, 2], 15: [1, 5], 16: [1, 3], 17: [2, 5], 18: [2, 4], 19: [3, 4], 20: [3, 5], 21: [3, 6],
+  22: [4, 5], 23: [4, 7], 24: [5, 6], 25: [5, 8], 26: [5, 7], 27: [6, 7], 28: [6, 8], 29: [6, 9], 30: [7, 8], 31: [7, 9], 32: [8, 9],
+};
+function KabbalahView({ d }: { d?: Data }) {
+  const n: Data | undefined = d?.numerology;
+  const lifeIdx = n && typeof n.lifePathSephirah?.number === 'number' && n.lifePathSephirah.number > 0 ? n.lifePathSephirah.number - 1 : -1;
+  const persIdx = n && typeof n.personalitySephirah?.number === 'number' ? n.personalitySephirah.number - 1 : -1;
+  const soul = n?.soulPath && PATH_ENDS[n.soulPath.number];
+  const daath = n?.lifePathNumber === 22;
   return (
-    <Panel title="생명나무 (10 세피로트 · 22 경로)">
-      <svg viewBox="0 0 200 212" className="mx-auto block w-full max-w-[12rem]" role="img" aria-label="생명나무">
-        {PATHS.map(([a, b]) => <line key={`${a}-${b}`} x1={SEPHIROT[a][1]} y1={SEPHIROT[a][2]} x2={SEPHIROT[b][1]} y2={SEPHIROT[b][2]} stroke="rgba(252,211,77,.3)" />)}
-        {SEPHIROT.map(([name, x, y]) => (
-          <g key={name}>
-            <circle cx={x} cy={y} r="10" fill="rgba(30,20,50,.95)" stroke="rgba(252,211,77,.7)" />
-            <text x={x} y={y + 2.5} textAnchor="middle" fontSize="5.6" fill="#fde68a">{name}</text>
-          </g>
-        ))}
-      </svg>
-      <HeldNotice />
-    </Panel>
+    <>
+      <Panel title="생명나무 (10 세피로트 · 22 경로)" note={n ? '금색 = 라이프 패스 세피라, 하늘색 = 생일수 세피라, 분홍 선 = 타로 탄생 카드의 경로.' : undefined}>
+        <svg viewBox="0 0 200 212" className="mx-auto block w-full max-w-[12.5rem]" role="img" aria-label="생명나무">
+          {Object.entries(PATH_ENDS).map(([num, [a, b]]) => {
+            const active = soul && Number(num) === n?.soulPath?.number;
+            return <line key={num} x1={SEPHIROT[a][1]} y1={SEPHIROT[a][2]} x2={SEPHIROT[b][1]} y2={SEPHIROT[b][2]} stroke={active ? '#fb7185' : 'rgba(252,211,77,.28)'} strokeWidth={active ? 2.4 : 1} />;
+          })}
+          {daath && <circle cx="100" cy="66" r="8" fill="rgba(252,211,77,.25)" stroke="#fcd34d" strokeDasharray="2 2" />}
+          {SEPHIROT.map(([name, x, y], i) => {
+            const life = i === lifeIdx;
+            const pers = i === persIdx;
+            return (
+              <g key={name}>
+                <circle cx={x} cy={y} r={life || pers ? 11.5 : 10} fill={life ? 'rgba(252,211,77,.35)' : pers ? 'rgba(125,211,252,.3)' : 'rgba(30,20,50,.95)'} stroke={life ? '#fcd34d' : pers ? '#7dd3fc' : 'rgba(252,211,77,.6)'} strokeWidth={life || pers ? 1.6 : 1} />
+                <text x={x} y={y + 2.5} textAnchor="middle" fontSize="5.6" fill="#fde68a">{name}</text>
+              </g>
+            );
+          })}
+        </svg>
+        {!n && <p className="mt-2 text-[11px] text-slate-300 break-keep">생년월일이 있으면 내 라이프 패스·생일수·탄생 카드 자리가 나무 위에 표시돼요.</p>}
+      </Panel>
+      {n && (
+        <Panel>
+          <Line label="라이프 패스" value={`${s(n.lifePathNumber)} → ${daath ? '다트(숨겨진 세피라)' : `${s(n.lifePathSephirah?.name)}(${s(n.lifePathSephirah?.meaning)})`}`} />
+          <Line label="생일수" value={`${s(n.personalityNumber)} → ${s(n.personalitySephirah?.name)}(${s(n.personalitySephirah?.meaning)})`} />
+          <Line label="탄생 카드" value={n.soulPath ? `${s(n.soulPath.tarotNumber)} ${s(n.soulPath.tarotName)} → ${s(n.soulPath.number)}번 경로 ${s(n.soulPath.hebrewLetter)} ${s(n.soulPath.letterName)}` : ''} />
+          <Line label="세계" value={n.dominantWorld ? `${s(n.dominantWorld.name)}(${s(n.dominantWorld.korean)})` : ''} />
+          <p className="mt-1 text-[10px] text-slate-400 break-keep">전통 유대 카발라 계산이 아니라, 헤르메틱(황금여명) 대응표에 생년월일 수비학과 타로 탄생 카드를 얹은 현대식 상징 해석이에요.</p>
+        </Panel>
+      )}
+    </>
   );
 }
 
@@ -712,9 +738,9 @@ const VIEWS: Partial<Record<DivinationToolId, (props: { d: Data }) => ReactEleme
   qimen: QimenView, ziwei: ZiweiView, vedic: VedicView, iching: IchingView, liuren: LiurenView,
   taiyi: TaiyiView, tojeong: TojeongView, kyusei: KyuseiView, thai_astrology: ThaiView, astrology: AstrologyView,
 };
-const HELD: Partial<Record<DivinationToolId, () => ReactElement>> = { kabbalah: KabbalahView };
+const HELD: Partial<Record<DivinationToolId, () => ReactElement>> = {};
 /** 계산값이 없어도 구조(원·7궁)는 보여주는 도구 */
-const STRUCTURE_FALLBACK: Partial<Record<DivinationToolId, (props: { d?: Data }) => ReactElement>> = { sukuyo: SukuyoView, mahabote: MahaboteView };
+const STRUCTURE_FALLBACK: Partial<Record<DivinationToolId, (props: { d?: Data }) => ReactElement>> = { sukuyo: SukuyoView, mahabote: MahaboteView, kabbalah: KabbalahView };
 
 /** 도구 전용 화면. 계산값이 없거나 그릴 수 없으면 null. */
 export function ToolDetailView({ id, data }: { id: DivinationToolId; data: unknown }) {

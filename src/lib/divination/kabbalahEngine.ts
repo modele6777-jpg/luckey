@@ -54,7 +54,7 @@ import { resolveEffectiveSolarDate } from '../lunarCalendar';
 export const KABBALAH_ENGINE_VERSION = 'LUCKEY-KB-v2.3.0';
 
 export const KABBALAH_METHOD =
-  '정통 카발라 생명나무 결정론 산법: 헤브라이 전통 10 세피로트(케테르~말쿠트, 다트는 숨겨진 세피라 별도 보존)·3대 기둥(자비·엄격·균형)·4개 세계(아칠루트·베리아·예치라·아시야)·22 경로(알레프~타브 22문자, 황금여명(Golden Dawn) 통용 원소·행성·별자리 속성 및 타로 메이저 0~21 배속) 전수 데이터와 생년월일 게마트리아 수리(라이프 패스 세피라 1~10 축약 및 11·22·33 마스터 넘버 케테르·다트 특별 해석, 퍼스널리티 세피라, 소울 패스 활성 경로, 3기둥 밸런스 백분율) 산출';
+  '헤르메틱 카발라(황금여명 통용표) 생명나무 대응 산법: 10 세피로트·다트, 3대 기둥, 4개 세계(아칠루트 케테르·베리아 호크마~비나·예치라 헤세드~예소드·아시야 말쿠트), 22 경로(알레프~타브, 황금여명 원소·행성·별자리 및 타로 메이저 0~21 배속)에 생년월일 수비학(피타고라스 라이프 패스 1~9·마스터 11/22/33, 생일수 1~9)과 타로 탄생 카드(그리어 방식: 월+일+연 → 22 이하 축약, 22=바보)를 대응';
 
 /** 기둥 구분 */
 export type KabbalahPillar = '자비의 기둥' | '엄격의 기둥' | '균형의 기둥';
@@ -150,15 +150,15 @@ export interface KabbalahWorld {
 export const FOUR_WORLDS: ReadonlyArray<KabbalahWorld> = [
   {
     order: 1, name: '아칠루트', hebrew: 'אֲצִילוּת', translit: 'Atziluth', korean: '원형계', element: '불',
-    description: '순수 영성', sephirahRange: '케테르~비나 (1~3)',
+    description: '순수 영성', sephirahRange: '케테르 (1)',
   },
   {
     order: 2, name: '베리아', hebrew: 'בְּרִיאָה', translit: 'Beriah', korean: '창조계', element: '물',
-    description: '대천사의 영역', sephirahRange: '헤세드~게부라 (4~5)',
+    description: '대천사의 영역', sephirahRange: '호크마~비나 (2~3)',
   },
   {
     order: 3, name: '예치라', hebrew: 'יְצִירָה', translit: 'Yetzirah', korean: '형성계', element: '바람',
-    description: '천사단과 아스트랄계', sephirahRange: '티페레트~예소드 (6~9)',
+    description: '천사단과 아스트랄계', sephirahRange: '헤세드~예소드 (4~9)',
   },
   {
     order: 4, name: '아시야', hebrew: 'עֲשִׁיָּה', translit: 'Assiah', korean: '물질계', element: '흙',
@@ -221,7 +221,7 @@ export const PATHS_22: ReadonlyArray<KabbalahPath> = [
   { number: 27, from: 7, to: 8, hebrewLetter: 'פ', letterName: '페', translit: 'Peh', letterMeaning: '입', attribution: { kind: '행성', value: '화성(Mars)' }, tarotNumber: 16, tarotName: '탑', tarotTranslit: 'The Tower', spiritualTheme: '말로 세운 탑이 무너지는 순간 — 거짓 구조만 무너뜨리는 해방의 상승' },
   { number: 28, from: 7, to: 9, hebrewLetter: 'צ', letterName: '차디', translit: 'Tzaddi', letterMeaning: '낚싯바늘', attribution: { kind: '별자리', value: '물병자리(Aquarius)' }, tarotNumber: 17, tarotName: '별', tarotTranslit: 'The Star', spiritualTheme: '무의식의 물에서 희망을 낚아 올리는 것 — 별빛을 따라 흐르는 상승' },
   { number: 29, from: 7, to: 10, hebrewLetter: 'ק', letterName: '코프', translit: 'Qoph', letterMeaning: '뒷머리', attribution: { kind: '별자리', value: '물고기자리(Pisces)' }, tarotNumber: 18, tarotName: '달', tarotTranslit: 'The Moon', spiritualTheme: '감정의 깊은 바다에서 물질의 육지로 — 환영을 통과해 오는 상승' },
-  { number: 30, from: 8, to: 6, hebrewLetter: 'ר', letterName: '레쉬', translit: 'Resh', letterMeaning: '머리', attribution: { kind: '행성', value: '태양(Sun)' }, tarotNumber: 19, tarotName: '태양', tarotTranslit: 'The Sun', spiritualTheme: '이성의 머리가 태양을 향해 돌아서는 것 — 지혜가 빛으로 포화되는 상승' },
+  { number: 30, from: 8, to: 9, hebrewLetter: 'ר', letterName: '레쉬', translit: 'Resh', letterMeaning: '머리', attribution: { kind: '행성', value: '태양(Sun)' }, tarotNumber: 19, tarotName: '태양', tarotTranslit: 'The Sun', spiritualTheme: '이성의 머리가 태양을 향해 돌아서는 것 — 지혜가 빛으로 포화되는 상승' },
   { number: 31, from: 8, to: 10, hebrewLetter: 'ש', letterName: '신', translit: 'Shin', letterMeaning: '이(아래니)', attribution: { kind: '원소', value: '불(Fire)' }, tarotNumber: 20, tarotName: '심판', tarotTranslit: 'Judgement', spiritualTheme: '이성의 불이 땅에서 부활을 일으키는 것 — 말과 불로 일어서는 각성의 상승' },
   { number: 32, from: 9, to: 10, hebrewLetter: 'ת', letterName: '타브', translit: 'Tav', letterMeaning: '십자(표식)', attribution: { kind: '행성', value: '토성(Saturn)' }, tarotNumber: 21, tarotName: '세계', tarotTranslit: 'The World', spiritualTheme: '꿈(예소드)이 현실(말쿠트)로 완성되는 마지막 문 — 순환을 닫아 완전해지는 상승' },
 ];
@@ -271,12 +271,25 @@ export const KABBALAH_MASTER_INTERPRETATIONS: Readonly<Record<number, string>> =
   33: '마스터 넘버 33 — 케테르~말쿠트 전 나무 통합 해석: 가장 높은 빛(케테르)이 가장 낮은 왕국(말쿠트)까지 그대로 비치는 나무 전체의 통합. 교사·치유자의 극단적 희생과 전체성의 주제로 작동한다.',
 };
 
-/** 소울 패스 수리(1~22) → 활성 경로 번호(11~32) */
-export function soulPathNumberToPath(soulPathNumber: number): number {
-  if (!Number.isInteger(soulPathNumber) || soulPathNumber < 1 || soulPathNumber > 22) {
-    throw new RangeError('1~22 소울 패스 수리가 필요합니다.');
+/**
+ * 소울 패스(타로 탄생 카드 번호 0~21) → 경로 번호(11~32).
+ * 황금여명 대응: 11번 알레프 = 0 바보, 12번 베트 = 1 마법사 … 32번 타브 = 21 세계.
+ */
+export function soulPathNumberToPath(tarotCardNumber: number): number {
+  if (!Number.isInteger(tarotCardNumber) || tarotCardNumber < 0 || tarotCardNumber > 21) {
+    throw new RangeError('0~21 타로 카드 번호가 필요합니다.');
   }
-  return soulPathNumber + 10;
+  return tarotCardNumber + 11;
+}
+
+/**
+ * 타로 탄생 카드 (메리 K. 그리어 방식): 월 + 일 + 연을 그대로 더하고, 22 이하가 될 때까지 자릿수를 더한다.
+ * 22는 0번 바보로 읽는다.
+ */
+export function tarotBirthCardNumber(year: number, month: number, day: number): number {
+  let sum = year + month + day;
+  while (sum > 22) sum = digitSum(sum);
+  return sum === 22 ? 0 : sum;
 }
 
 /** 창조의 번개 하강 계위 및 상승 잠재력 */
@@ -363,9 +376,10 @@ export interface KabbalahResult {
 }
 
 /** 세피로트 번호 → 소속 세계 */
+/** 황금여명 통용 배치: 아칠루트 = 케테르, 베리아 = 호크마·비나, 예치라 = 헤세드~예소드, 아시야 = 말쿠트 */
 function worldOfSephirah(sephirahNumber: number): KabbalahWorld {
-  if (sephirahNumber <= 3) return FOUR_WORLDS[0];
-  if (sephirahNumber <= 5) return FOUR_WORLDS[1];
+  if (sephirahNumber <= 1) return FOUR_WORLDS[0];
+  if (sephirahNumber <= 3) return FOUR_WORLDS[1];
   if (sephirahNumber <= 9) return FOUR_WORLDS[2];
   return FOUR_WORLDS[3];
 }
@@ -456,14 +470,14 @@ function calculateTipherethAlignment(sephirahNumber: number, isDaath: boolean): 
 }
 
 function calculateFourWorldsSpectrum(activatedSephiroth: ReadonlyArray<number>): KabbalahFourWorldsSpectrum {
-  let atziluthCount = 0; // 1~3 (다트 포함 시 1)
-  let beriahCount = 0;   // 4~5
-  let yetzirahCount = 0; // 6~9
+  let atziluthCount = 0; // 1 케테르 (다트 0 포함)
+  let beriahCount = 0;   // 2~3
+  let yetzirahCount = 0; // 4~9
   let assiahCount = 0;   // 10
 
   for (const s of activatedSephiroth) {
-    if (s <= 3) atziluthCount++;
-    else if (s <= 5) beriahCount++;
+    if (s <= 1) atziluthCount++;
+    else if (s <= 3) beriahCount++;
     else if (s <= 9) yetzirahCount++;
     else assiahCount++;
   }
@@ -561,8 +575,8 @@ export function calculateKabbalah(params: {
     // 1. 게마트리아 원값: YYYY+MM+DD 전 자리 숫자 합
     const rawDigitSum = [year, month, day].reduce((s, v) => s + digitSum(v), 0);
 
-    // 2. 라이프 패스 세피라 (1~10 축약, 11·22·33 마스터 넘버 보존)
-    const lifePathNumber = reduceGematria(rawDigitSum, { keepMasters: true, floor: 10 });
+    // 2. 라이프 패스 (피타고라스 수비학 표준: 1~9 로 축약, 11·22·33 마스터 넘버 보존) → 같은 번호의 세피라
+    const lifePathNumber = reduceGematria(rawDigitSum, { keepMasters: true, floor: 9 });
     const lifePathIsMaster = (MASTER_NUMBERS as readonly number[]).includes(lifePathNumber);
     const lifePathSephirah: KabbalahSephirah | typeof DAATH =
       lifePathNumber === 22
@@ -572,12 +586,12 @@ export function calculateKabbalah(params: {
       ? KABBALAH_MASTER_INTERPRETATIONS[lifePathNumber]
       : `${lifePathSephirah.name}(${lifePathSephirah.translit}) 세피라 — ${lifePathSephirah.title}의 원리가 삶의 배경 주제로 작동한다.`;
 
-    // 3. 퍼스널리티 세피라: 출생일(DD) 자리 합 1~10 축약
-    const personalityNumber = reduceGematria(digitSum(day), { keepMasters: false, floor: 10 });
+    // 3. 퍼스널리티(생일수): 출생일(DD)을 1~9 로 축약 → 같은 번호의 세피라
+    const personalityNumber = reduceGematria(day, { keepMasters: false, floor: 9 });
     const personalitySephirah = kabbalahSephirahByNumber(personalityNumber);
 
-    // 4. 소울 패스 경로: 전체 원값 1~22 축약 → 경로 11~32
-    const soulPathNumber = reduceGematria(rawDigitSum, { keepMasters: false, floor: 22 });
+    // 4. 소울 패스: 타로 탄생 카드(그리어 방식, 0~21) → 황금여명 경로 11~32
+    const soulPathNumber = tarotBirthCardNumber(year, month, day);
     const soulPath = kabbalahPathByNumber(soulPathNumberToPath(soulPathNumber));
 
     // 5. 3기둥 밸런스: 활성 세피로트 = 라이프 패스 세피라 + 퍼스널리티 세피라 + 소울 패스 경로 양 끝
@@ -660,7 +674,7 @@ export function calculateKabbalah(params: {
       temporalKabbalahRhythm,
       kabbalahSynthesisMatrix,
       boundaryNotice: '본 결과는 헤브라이 카발라 생명나무와 생년월일 게마트리아 수리에 기반한 정성적 성찰 안내이며, 확정적 예언이 아닙니다.',
-      interpretiveBoundary: '본 결과는 헤브라이 카발라 생명나무와 생년월일 게마트리아 수리에 기반한 정성적 성찰 안내이며, 확정적 예언이 아닙니다.',
+      interpretiveBoundary: '전통 유대 카발라의 계산법이 아니라, 헤르메틱 카발라(황금여명) 대응표에 생년월일 수비학과 타로 탄생 카드를 얹은 현대식 상징 해석이다. 숫자 계산은 표준 방식대로 정확하지만, 어느 세피라·경로에 대응시키느냐는 이 전통의 약속이다. 확정적 예언이 아니다.',
       ritualAction: `[${lifePathSephirah.name} · 제${soulPath.number}경로 ${soulPath.tarotName}] ${tipherethAlignment.solarHeartGuidance}`,
       reflectionFocus,
       reflectiveQuestion,

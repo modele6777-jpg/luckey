@@ -1589,9 +1589,8 @@ try {
   // 13. 카발라 (정통 생명나무 10 세피로트 · 3대 기둥 · 4개 세계 · 22 경로 & 생년월일 게마트리아 수리)
   let kabbalahEnvelope: ToolCalculationEnvelope<KabbalahResult>;
   let kabbalahResult: KabbalahResult | null = null;
-  if (params.coreOnly && !params.reviewAll && (!params.focusTools?.length || params.focusTools.includes('kabbalah'))) {
-kabbalahEnvelope = {toolId:'kabbalah', toolKoName:'카발라', status:'symbolic', note:'계산 기준 재검토 중 — 수치 근거에서 제외하고 상징적 참고로만 사용'};
-} else if (params.focusTools?.length && !params.focusTools.includes('kabbalah')) {
+  // 2026-11-21: 황금여명 대응표(경로 30 호드↔예소드, 4개 세계)·피타고라스 라이프 패스(1~9)·그리어 타로 탄생 카드로 맞춰 다시 계산한다.
+  if (params.focusTools?.length && !params.focusTools.includes('kabbalah')) {
 kabbalahEnvelope = {toolId:'kabbalah', toolKoName:'카발라', status:'skipped', note:'이번 질문에서 선택하지 않은 도구'};
 } else {
 try {
@@ -1603,6 +1602,7 @@ try {
         status: 'calculated',
         method: KABBALAH_METHOD,
         data: kabbalahResult,
+        limitations: ['전통 유대 카발라 계산이 아니라 헤르메틱(황금여명) 대응표 + 생년월일 수비학 + 타로 탄생 카드의 현대식 상징 대응이다. 숫자 계산은 정확하지만 대응은 이 전통의 약속으로 설명한다.'],
       };
     } else {
       kabbalahEnvelope = {
@@ -7448,7 +7448,7 @@ export function getFiredEngineBadges(
     .map(item => `${item.status === 'symbolic' ? '상징 참고' : item.status === 'partial' ? '부분 계산' : '계산 근거'} · ${item.name}`);
 }
 
-const REVIEW_PENDING_CORE = new Set(['kabbalah']);
+const REVIEW_PENDING_CORE = new Set<string>([]);
 
 export function getMasterSymbolicReview(report: DeterministicEngineReport, options?: FormatDeterministicEngineOptions) {
   if (!report.masterReview) return [];
