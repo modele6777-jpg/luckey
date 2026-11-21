@@ -320,13 +320,10 @@ test('Lucy engine box opens the 515-entry catalog with multi-select and no prese
   await expect(dialog).toContainText('15개 기초 도구');
   await expect(dialog).toContainText('500개 심층 관점');
   await expect(dialog).toContainText('각각 독립 계산기가 아닙니다');
-  // 맞춤 세팅 추천 묶음은 사용자 요청으로 제거됨: 엔진은 하나씩 직접 담는다
+  // 담기·프리셋은 사용자 요청으로 제거됨: 엔진은 질문마다 자동으로 골라지고, 엔진함은 목록과 뜻만 보여 준다.
   await expect(dialog.locator('[data-engine-preset]')).toHaveCount(0);
-  await expect(dialog).not.toContainText('맞춤 세팅 추천');
-  await dialog.getByRole('button', { name: '타로 담기', exact: true }).click();
-  await expect(dialog).toContainText('담은 엔진 1개');
-  await dialog.getByRole('button', { name: '모두 비우기' }).click();
-  await expect(dialog).toContainText('아직 담은 엔진이 없어요');
+  await expect(dialog.getByRole('button', { name: /담기$/ })).toHaveCount(0);
+  await expect(dialog).toContainText('자동으로 골라');
   const nameStyle = await dialog.locator('.lucy-engine-catalog-entry-name').first().evaluate(element => {
     const dialogElement = element.closest('[role="dialog"]');
     const theme = dialogElement?.getAttribute('data-catalog-theme');

@@ -3,10 +3,7 @@ import { defaultLibrarySessionKey, useLibrarySessionState, useLibrarySessionScro
 import { DialogBackdrop } from '@/components/layout/DialogBackdrop';
 import './chat-library-layout.css';
 import React, { useMemo } from 'react';
-import { Check, Plus, Search, Sparkles, X } from 'lucide-react';
-import { setSelectedEngineKeys, toggleSelectedEngine, useSelectedEngines, recommendPromptsForEngines } from '@/lib/lucyEngineSelection';
-import { HORI_PROMPT_LIBRARY, type HoriPromptItem } from '@/data/horiPromptLibrary';
-import { triggerHaptic } from '@/lib/omniWarp/omniWarpHaptics';
+import { Search, Sparkles, X } from 'lucide-react';
 import { WorkspacePortal } from '@/components/layout/DuoWorkspace';
 import {
   ENGINE_CATALOG_COUNTS,
@@ -20,7 +17,7 @@ import {
 } from '@/lib/divination/engineCatalog';
 
 interface LucyEngineCatalogDialogProps {
-  /** 🔗 추천질문 라이브러리 연동: 담은 엔진에 맞는 질문을 바로 입력창에 넣는다 */
+  /** Kept for callers; the engine box is read-only and no longer suggests prompts. */
   onSelectPrompt?: (text: string, sendImmediately: boolean, toolIds?: string[], title?: string) => void;
   isOpen: boolean;
   sessionKey?: string;
@@ -37,7 +34,7 @@ const FILTERS: { id: CatalogFilter; label: string }[] = [
   { id: 'deep_master', label: '심층 관점' },
 ];
 
-export function LucyEngineCatalogDialog({ isOpen, onClose, isLight, onSelectPrompt, sessionKey = defaultLibrarySessionKey('engine-library') }: LucyEngineCatalogDialogProps) {
+export function LucyEngineCatalogDialog({ isOpen, onClose, isLight, sessionKey = defaultLibrarySessionKey('engine-library') }: LucyEngineCatalogDialogProps) {
   const [filter, setFilter] = useLibrarySessionState<CatalogFilter>(`${sessionKey}:filter`, 'all');
   const [themeFilter, setThemeFilter] = useLibrarySessionState<CatalogThemeFilter>(`${sessionKey}:theme`, 'all');
   const [query, setQuery] = useLibrarySessionState<string>(`${sessionKey}:query`, '');
@@ -48,17 +45,13 @@ export function LucyEngineCatalogDialog({ isOpen, onClose, isLight, onSelectProm
     query,
   }), [filter, query, themeFilter]);
   const filteredEngines = catalog.engines;
-  const selectedKeys = useSelectedEngines();
-  const [showSelectedOnly, setShowSelectedOnly] = React.useState(false);
-  const recommendedPrompts = useMemo<HoriPromptItem[]>(() => recommendPromptsForEngines(HORI_PROMPT_LIBRARY, selectedKeys, 3), [selectedKeys]);
 
   const groupedEngines = useMemo(() => LUCY_PRO_CHANNEL_THEMES
     .map(theme => ({
       theme,
-      engines: filteredEngines.filter(engine => getEngineCatalogTheme(engine) === theme.id
-        && (!showSelectedOnly || selectedKeys.includes(engine.key))),
+      engines: filteredEngines.filter(engine => getEngineCatalogTheme(engine) === theme.id),
     }))
-    .filter(group => group.engines.length > 0), [filteredEngines, showSelectedOnly, selectedKeys]);
+    .filter(group => group.engines.length > 0), [filteredEngines]);
 
   const renderedCount = useProgressiveLibrary(isOpen, filteredEngines.length, `${filter}:${themeFilter}:${query}`);
   const visibleGroups = useMemo(() => {
@@ -132,51 +125,9 @@ export function LucyEngineCatalogDialog({ isOpen, onClose, isLight, onSelectProm
               </details>
             </div>
 
-            <div className="chat-library-toolbar shrink-0 space-y-2 px-4 pt-1 sm:px-6" data-testid="lucy-engine-selection">
-              {onSelectPrompt && recommendedPrompts.length > 0 && (
-                <div className={`rounded-2xl border p-3 ${subtleSurface}`} data-testid="lucy-engine-recommended-prompts">
-                  <h3 className="text-xs font-black sm:text-sm">🧭 담은 엔진에 맞는 추천 질문</h3>
-                  <ul className="mt-2 space-y-1.5">
-                    {recommendedPrompts.map(prompt => (
-                      <li key={prompt.id}>
-                        <button
-                          type="button"
-                          data-recommended-prompt={prompt.id}
-                          onClick={() => {
-                            triggerHaptic('whitehole');
-                            onSelectPrompt(prompt.body, false, prompt.tool_ids, prompt.title);
-                            onClose();
-                          }}
-                          className={`w-full rounded-xl border px-3 py-2 text-left transition-colors ${isLight ? 'border-amber-200 bg-white hover:bg-amber-50' : 'border-white/10 bg-white/[0.04] hover:bg-white/10'}`}
-                        >
-                          <span className="block text-xs font-bold">{prompt.title}</span>
-                          <span className={`mt-0.5 block text-[10px] leading-snug line-clamp-2 ${muted}`}>{prompt.body}</span>
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-              <div className={`flex flex-wrap items-center gap-2 rounded-xl border px-3 py-2 text-xs ${subtleSurface}`} role="status" aria-live="polite">
-                <span className="font-bold">
-                  {selectedKeys.length ? `담은 엔진 ${selectedKeys.length}개 · 매 답변에 함께 봐요` : '아직 담은 엔진이 없어요 · 루시가 질문에 맞춰 골라요'}
-                </span>
-                {selectedKeys.length > 0 && (
-                  <span className="ml-auto flex gap-1.5">
-                    <button
-                      type="button"
-                      aria-pressed={showSelectedOnly}
-                      onClick={() => { scroll.reset(); setShowSelectedOnly(v => !v); }}
-                      className={`rounded-full px-2.5 py-1 text-[11px] font-bold ${showSelectedOnly ? 'bg-amber-400 text-slate-950' : inactivePill}`}
-                    >담은 것만</button>
-                    <button
-                      type="button"
-                      onClick={() => { triggerHaptic('abort'); setShowSelectedOnly(false); setSelectedEngineKeys([]); }}
-                      className={`rounded-full px-2.5 py-1 text-[11px] font-bold ${inactivePill}`}
-                    >모두 비우기</button>
-                  </span>
-                )}
-              </div>
+            {/* 엔진함은 목록과 뜻만 보여준다. 엔진은 질문마다 루시가 자동으로 고른다. */}
+            <div className="chat-library-toolbar shrink-0 px-4 pt-1 sm:px-6" data-testid="lucy-engine-auto-note">
+              <p className={`rounded-xl border px-3 py-2 text-xs font-semibold ${subtleSurface}`}>루시가 질문마다 알맞은 도구와 관점을 자동으로 골라 답해요.</p>
             </div>
 
             <div className="chat-library-toolbar shrink-0 space-y-2 px-4 py-3 sm:px-6">
@@ -252,17 +203,13 @@ export function LucyEngineCatalogDialog({ isOpen, onClose, isLight, onSelectProm
                       <ul className="space-y-2">
                         {engines.map(engine => {
                           const isFoundational = engine.category === 'foundational';
-                          const isSelected = selectedKeys.includes(engine.key);
                           return (
                             <li
                               key={engine.key}
                               data-testid="lucy-engine-catalog-entry"
                               data-engine-key={engine.key}
                               data-engine-theme={theme.id}
-                              data-engine-selected={isSelected ? 'true' : undefined}
-                              className={`lucy-engine-catalog-entry rounded-2xl border p-3 sm:p-3.5 ${isSelected
-                                ? 'border-amber-400 bg-amber-400/10'
-                                : isLight ? 'border-slate-200 bg-white' : 'border-white/10 bg-white/[0.035]'}`}
+                              className={`lucy-engine-catalog-entry rounded-2xl border p-3 sm:p-3.5 ${isLight ? 'border-slate-200 bg-white' : 'border-white/10 bg-white/[0.035]'}`}
                             >
                               <div className="flex items-start gap-2.5">
                                 <span aria-hidden="true" className="pt-0.5 text-lg">{engine.icon}</span>
@@ -280,16 +227,6 @@ export function LucyEngineCatalogDialog({ isOpen, onClose, isLight, onSelectProm
                                     {getEngineCatalogMeaning(engine)}
                                   </p>
                                 </div>
-                                <button
-                                  type="button"
-                                  aria-pressed={isSelected}
-                                  aria-label={`${engine.nameKo} ${isSelected ? '빼기' : '담기'}`}
-                                  onClick={() => { triggerHaptic('whitehole'); toggleSelectedEngine(engine.key); }}
-                                  className={`flex shrink-0 items-center gap-1 rounded-full px-2.5 py-1.5 text-[11px] font-bold transition-colors ${isSelected ? 'bg-amber-400 text-slate-950' : inactivePill}`}
-                                >
-                                  {isSelected ? <Check size={13} /> : <Plus size={13} />}
-                                  {isSelected ? '담음' : '담기'}
-                                </button>
                               </div>
                             </li>
                           );
