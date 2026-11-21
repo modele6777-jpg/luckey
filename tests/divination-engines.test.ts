@@ -13705,13 +13705,14 @@ test('Ryukyu Ichariba Chode Hospitality engine: motif, +09:00 KST, and interpret
 
 test('Sogdian Silk Road Caravan Trust engine: stage, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateSogdianSilkRoadCaravanTrust({ profile, now: new Date('2026-11-20T07:03:00Z'), question: '긴 여정의 균형을 맞추고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-SOGDIAN-CARAVAN-v2.1.0');
-  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.equal(rep.engineVersion, 'LUCKEY-SOGDIAN-CARAVAN-v2.2.0');
+  assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
+  assert.ok(rep.companionStage !== rep.caravanStage);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatSogdianSilkRoadPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('소그드') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('소그드') && prompt.includes('동반 단계') && prompt.includes('+09:00 (KST)'));
 });
 
 test('Taino Zemi Areito Harmony engine: emblem, +09:00 KST, and interpretive boundary', () => {
@@ -13811,13 +13812,14 @@ test('Sakha Olonkho Three Worlds engine: pillar, +09:00 KST, and interpretive bo
 
 test('Scythian Golden Stag Steppe engine: emblem, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateScythianGoldenStagSteppe({ profile, now: new Date('2026-11-20T07:22:00Z'), question: '가볍고 기민하게 도약하고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-SCYTHIAN-STAG-v2.1.0');
-  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.equal(rep.engineVersion, 'LUCKEY-SCYTHIAN-STAG-v2.2.0');
+  assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
+  assert.ok(rep.companionEmblem !== rep.steppeEmblem);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatScythianGoldenStagPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('스키타이') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('스키타이') && prompt.includes('동반 상징') && prompt.includes('+09:00 (KST)'));
 });
 
 test('Galician Camino Atlantic Reflection engine: sign, +09:00 KST, and interpretive boundary', () => {
@@ -15092,13 +15094,14 @@ test('Siwa Oasis Salt Spring engine: motif, +09:00 KST, and interpretive boundar
 
 test('Sikkim Lepcha Forest engine: motif, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateSikkimLepchaForest({ profile, now: new Date('2026-11-20T21:46:00Z'), question: '유연하게 건너고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-SIKKIM-LEPCHA-v2.1.0');
-  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.equal(rep.engineVersion, 'LUCKEY-SIKKIM-LEPCHA-v2.2.0');
+  assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
+  assert.ok(rep.companionMotif !== rep.symbolicMotif);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatSikkimLepchaPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('시킴') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('시킴') && prompt.includes('동반 모티프') && prompt.includes('+09:00 (KST)'));
 });
 
 test('Turkana Jade Sea Wind engine: motif, +09:00 KST, and interpretive boundary', () => {
