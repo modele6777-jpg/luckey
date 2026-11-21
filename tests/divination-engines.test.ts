@@ -15768,3 +15768,21 @@ test('buildUserFifteenToolsDigest integrates 5th-round Tarot, Sukuyo, and Mahabo
   assert.ok(digest.includes('성찰 초점:') && digest.includes('해석 경계:'));
   assert.ok(!/tarotVitalityScore/.test(digest));
 });
+
+test('buildUserFifteenToolsDigest integrates 5th-round Vedic, Liuren, and Hongguk Qimen pillar advice, pattern guidance, palace watch window, and boundaries without raw scores', () => {
+  const profile: any = {
+    basic: {
+      name: '제제',
+      birthdate: '1994-01-24',
+      birthtime: '10:30',
+      calendarType: 'solar',
+      isLeapMonth: false,
+      gender: 'male',
+    },
+  };
+  const digest = buildUserFifteenToolsDigest(profile, new Date('2026-11-22T06:56:00+09:00'));
+  assert.ok(digest.includes('핵심 하우스 축 [') && digest.includes('베딕 조율 ['));
+  assert.ok(digest.includes('타이밍 조언:') && digest.includes('육임 처신('));
+  assert.ok(digest.includes('궁 순시창 [') && digest.includes('기문 의례:'));
+  assert.ok(!/synergyScore|dharmaProsperityScore|decisionScore|fourLessonsHarmonyScore|riskIndex|tonggi\.score/.test(digest));
+});
