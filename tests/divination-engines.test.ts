@@ -15828,3 +15828,21 @@ test('buildUserFifteenToolsDigest integrates 5th-round Tojeong, Kyusei, and Taiy
   assert.ok(digest.includes('성찰 질문:') && digest.includes('해석 경계:'));
   assert.ok(!/juBalanceScore|initiativeIndex|defensiveIndex|directionalScores/.test(digest));
 });
+
+test('buildUserFifteenToolsDigest integrates 6th-round Saju, Astrology, and Ziwei caution, modality harmony, palace branches, and reflective questions without raw scores', () => {
+  const profile: any = {
+    basic: {
+      name: '제제',
+      birthdate: '1994-01-24',
+      birthtime: '10:30',
+      calendarType: 'solar',
+      isLeapMonth: false,
+      gender: 'male',
+    },
+  };
+  const digest = buildUserFifteenToolsDigest(profile, new Date('2026-11-22T07:26:00+09:00'));
+  assert.ok(digest.includes('주의:') && digest.includes('개운 처방:'));
+  assert.ok(digest.includes('핵심 양식 결:') && digest.includes('산출 정밀도:'));
+  assert.ok(digest.includes('명궁 ') && digest.includes('성찰 질문:'));
+  assert.ok(!/breakthroughPowerScore|deukSeScore|driveScore|wealthAffinityScore/.test(digest));
+});
