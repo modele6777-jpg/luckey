@@ -14675,13 +14675,14 @@ test('Palauan Bai Rafter Balance engine: motif, +09:00 KST, and interpretive bou
 
 test('Zimbabwe Great Stone Wall engine: motif, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateZimbabweGreatStoneWall({ profile, now: new Date('2026-11-20T20:19:00Z'), question: '제 무게로 맞물리는 자리를 찾고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-ZIMBABWE-STONE-v2.1.0');
-  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.equal(rep.engineVersion, 'LUCKEY-ZIMBABWE-STONE-v2.2.0');
+  assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
+  assert.ok(rep.companionMotif !== rep.zimbabweMotif);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatZimbabweStonePrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('짐바브웨') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('짐바브웨') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionMotif));
 });
 
 test('Bulgarian Rose Valley Dawn engine: motif, +09:00 KST, and interpretive boundary', () => {
@@ -14966,13 +14967,14 @@ test('Moldovan Orhei Limestone engine: motif, +09:00 KST, and interpretive bound
 
 test('Minangkabau Rumah Gadang engine: motif, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateMinangkabauRumahGadang({ profile, now: new Date('2026-11-20T21:36:00Z'), question: '자연스럽게 홈을 맞추고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-MINANGKABAU-GADANG-v2.1.0');
-  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.equal(rep.engineVersion, 'LUCKEY-MINANGKABAU-GADANG-v2.2.0');
+  assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
+  assert.ok(rep.companionMotif !== rep.symbolicMotif);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatMinangkabauGadangPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('미낭카바우') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('미낭카바우') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionMotif));
 });
 
 test('Costa Rica Diquis Spheres engine: motif, +09:00 KST, and interpretive boundary', () => {
@@ -15011,13 +15013,14 @@ test('Sikkim Lepcha Forest engine: motif, +09:00 KST, and interpretive boundary'
 
 test('Turkana Jade Sea Wind engine: motif, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateTurkanaJadeSeaWind({ profile, now: new Date('2026-11-20T21:46:00Z'), question: '거친 바람을 물결로 바꾸고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-TURKANA-WIND-v2.1.0');
-  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.equal(rep.engineVersion, 'LUCKEY-TURKANA-WIND-v2.2.0');
+  assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
+  assert.ok(rep.companionMotif !== rep.symbolicMotif);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatTurkanaWindPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('투르카나') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('투르카나') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionMotif));
 });
 
 test('Asturian Horreo Granary engine: motif, +09:00 KST, and interpretive boundary', () => {
