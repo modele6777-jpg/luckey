@@ -1435,79 +1435,6 @@ export function TrinityDestinyReportView({ onConsult }: TrinityDestinyReportView
           </p>
         </div>
       </div>
-{daewunDetail && (
-        <div className="rounded-3xl p-6 sm:p-8 bg-[#18191e]/95 border border-white/10 shadow-2xl space-y-5">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-white/10">
-            <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-xl bg-sky-500/20 border border-sky-400/40 flex items-center justify-center text-sky-300">
-                <TrendingUp size={16} />
-              </div>
-              <div>
-                <h3 className="text-base sm:text-lg font-serif font-bold text-white flex items-center gap-2 flex-wrap">
-                  <span>인생 10년 주기 대운(大運) 타임라인</span>
-                  <span className="text-[11px] font-mono px-2 py-0.5 rounded-md bg-sky-500/15 text-sky-300 border border-sky-500/30">
-                    대운수 {daewunDetail.daewunNumber} • {daewunDetail.directionText}
-                  </span>
-                </h3>
-                <p className="text-[11px] text-zinc-400 font-sans">
-                  절입일과 생년월일시 간격으로 정밀 계산된 10년 단위의 인생 계절 변화
-                </p>
-              </div>
-            </div>
-
-            <div className="px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 text-xs font-mono text-zinc-300">
-              현재 대운: <strong className="text-amber-300">{saju.daeun.current}</strong>
-            </div>
-          </div>
-
-          {/* 대운 카드 그리드 */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-8 gap-2.5">
-            {daewunDetail.timeline.map((dw) => {
-              const isCurrent = saju.koreanAge >= dw.startAge && saju.koreanAge <= dw.endAge;
-              const ganEl = STEM_ELEMENT[dw.gan];
-              const zhiEl = BRANCH_ELEMENT[dw.zhi];
-
-              return (
-                <div
-                  key={dw.order}
-                  className={`p-3 rounded-2xl border text-center transition-all relative overflow-hidden ${
-                    isCurrent
-                      ? 'bg-amber-500/15 border-amber-400 ring-2 ring-amber-400/30 shadow-lg shadow-amber-500/10'
-                      : 'bg-white/[0.02] border-white/5 hover:border-white/20'
-                  }`}
-                >
-                  {isCurrent && (
-                    <div className="absolute top-1 right-1">
-                      <span className="px-1.5 py-0.2 rounded-full bg-amber-400 text-zinc-950 text-[8px] font-black">
-                        현재
-                      </span>
-                    </div>
-                  )}
-
-                  <span className="text-[10px] text-zinc-500 font-mono block">
-                    {dw.startAge}~{dw.endAge}세
-                  </span>
-
-                  <div className="py-1">
-                    <span className="text-xl sm:text-2xl font-serif font-black text-white block">
-                      <span className={ELEMENT_COLORS[ganEl]?.text}>{dw.gan}</span>
-                      <span className={ELEMENT_COLORS[zhiEl]?.text}>{dw.zhi}</span>
-                    </span>
-                    <span className="text-[10px] text-zinc-400 font-mono block">
-                      {dw.ganKr}{dw.zhiKr}
-                    </span>
-                  </div>
-
-                  <div className="pt-1 border-t border-white/5 space-y-0.5 text-[9px] font-mono text-zinc-400">
-                    <div className="text-zinc-300">{dw.tenGodGan} · {dw.tenGodZhi}</div>
-                    <div className="text-amber-300 font-semibold">{dw.twelveStage}</div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
 <div className="rounded-3xl p-6 sm:p-8 bg-[#18191e]/95 border border-white/10 shadow-2xl space-y-6 duo-workspace-card">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 border-b border-white/10">
           <div className="flex items-center gap-2.5">
@@ -1637,6 +1564,80 @@ export function TrinityDestinyReportView({ onConsult }: TrinityDestinyReportView
           </div>
         </div>
       </div>
+
+      {daewunDetail && (
+        <div className="rounded-3xl p-6 sm:p-8 bg-[#18191e]/95 border border-white/10 shadow-2xl space-y-5">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-white/10">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-xl bg-sky-500/20 border border-sky-400/40 flex items-center justify-center text-sky-300">
+                <TrendingUp size={16} />
+              </div>
+              <div>
+                <h3 className="text-base sm:text-lg font-serif font-bold text-white flex items-center gap-2 flex-wrap">
+                  <span>인생 10년 주기 대운(大運) 타임라인</span>
+                  <span className="text-[11px] font-mono px-2 py-0.5 rounded-md bg-sky-500/15 text-sky-300 border border-sky-500/30">
+                    대운수 {daewunDetail.daewunNumber} • {daewunDetail.directionText}
+                  </span>
+                </h3>
+                <p className="text-[11px] text-zinc-400 font-sans">
+                  절입일과 생년월일시 간격으로 정밀 계산된 10년 단위의 인생 계절 변화
+                </p>
+              </div>
+            </div>
+
+            <div className="px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 text-xs font-mono text-zinc-300">
+              현재 대운: <strong className="text-amber-300">{saju.daeun.current}</strong>
+            </div>
+          </div>
+
+          {/* 대운 카드 그리드 */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-8 gap-2.5">
+            {daewunDetail.timeline.map((dw) => {
+              const isCurrent = saju.koreanAge >= dw.startAge && saju.koreanAge <= dw.endAge;
+              const ganEl = STEM_ELEMENT[dw.gan];
+              const zhiEl = BRANCH_ELEMENT[dw.zhi];
+
+              return (
+                <div
+                  key={dw.order}
+                  className={`p-3 rounded-2xl border text-center transition-all relative overflow-hidden ${
+                    isCurrent
+                      ? 'bg-amber-500/15 border-amber-400 ring-2 ring-amber-400/30 shadow-lg shadow-amber-500/10'
+                      : 'bg-white/[0.02] border-white/5 hover:border-white/20'
+                  }`}
+                >
+                  {isCurrent && (
+                    <div className="absolute top-1 right-1">
+                      <span className="px-1.5 py-0.2 rounded-full bg-amber-400 text-zinc-950 text-[8px] font-black">
+                        현재
+                      </span>
+                    </div>
+                  )}
+
+                  <span className="text-[10px] text-zinc-500 font-mono block">
+                    {dw.startAge}~{dw.endAge}세
+                  </span>
+
+                  <div className="py-1">
+                    <span className="text-xl sm:text-2xl font-serif font-black text-white block">
+                      <span className={ELEMENT_COLORS[ganEl]?.text}>{dw.gan}</span>
+                      <span className={ELEMENT_COLORS[zhiEl]?.text}>{dw.zhi}</span>
+                    </span>
+                    <span className="text-[10px] text-zinc-400 font-mono block">
+                      {dw.ganKr}{dw.zhiKr}
+                    </span>
+                  </div>
+
+                  <div className="pt-1 border-t border-white/5 space-y-0.5 text-[9px] font-mono text-zinc-400">
+                    <div className="text-zinc-300">{dw.tenGodGan} · {dw.tenGodZhi}</div>
+                    <div className="text-amber-300 font-semibold">{dw.twelveStage}</div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* 🌟 사주 인터랙티브 비주얼 차트 (오행 펜타곤 레이더 · 궁통보감 기후 온도계 · 자오유주 24h 생체 바이오리듬) */}
       <SajuVisualInteractiveCharts
