@@ -590,8 +590,38 @@ export function splitSpeechIntoChunks(text: string, maxChunkLength = 240): strin
   return chunks;
 }
 
+const LEAD_CHUNK_TARGET = 70;
+const LEAD_CHUNK_MAX = 90;
+
 /**
- * Proactively prefetch the first 2 chunks of a speech text (Zero-Lag Ultra Audio Streaming)
+ * The exact chunks playTTSInChunks speaks. The first chunk is kept short (about one
+ * sentence) because the server returns a chunk's audio only after synthesizing all of
+ * it: a short lead starts the voice quickly while the following chunks download.
+ * Prefetching must use this same plan or its cached audio never matches playback.
+ */
+export function planTTSChunks(text: string, maxChunkLength = 240): string[] {
+  const cleanText = prepareNaturalSpeechText(text);
+  if (!cleanText) return [];
+  const chunks = splitSpeechIntoChunks(cleanText, Math.max(80, Math.min(120, maxChunkLength)));
+  if (chunks.length === 0) return chunks;
+  const first = chunks[0];
+  if (first.length <= LEAD_CHUNK_MAX) return chunks;
+  const sentences = splitSpeechIntoSentences(first);
+  let lead = sentences[0] || first;
+  if (lead.length > LEAD_CHUNK_MAX) {
+    const window = lead.slice(0, LEAD_CHUNK_MAX);
+    const comma = Math.max(window.lastIndexOf(','), window.lastIndexOf('，'));
+    const space = window.lastIndexOf(' ', LEAD_CHUNK_TARGET + 10);
+    const cut = comma >= 30 ? comma + 1 : space >= 30 ? space : LEAD_CHUNK_TARGET;
+    lead = lead.slice(0, cut).trim();
+  }
+  const rest = first.slice(first.indexOf(lead) + lead.length).trim();
+  return [lead, ...(rest ? [rest] : []), ...chunks.slice(1)];
+}
+
+/**
+ * Proactively prefetch the first 2 chunks of a speech text, using the same chunk plan
+ * as playback so the cached audio is actually reused.
  */
 export function prefetchTTSChunks(
   text: string,
@@ -600,7 +630,7 @@ export function prefetchTTSChunks(
   emotion?: string,
 ): void {
   try {
-    const chunks = splitSpeechIntoChunks(text, maxChunkLength);
+    const chunks = planTTSChunks(text, maxChunkLength);
     for (let k = 0; k < Math.min(2, chunks.length); k++) {
       prefetchTTS(chunks[k], voice, emotion).catch(() => {});
     }
@@ -651,8 +681,7 @@ export const playTTSInChunks = async (
     stopTTS();
   }
 
-  const effectiveMaxLen = Math.max(80, Math.min(120, maxChunkLength));
-  const chunks = splitSpeechIntoChunks(cleanText, effectiveMaxLen);
+  const chunks = planTTSChunks(cleanText, maxChunkLength);
   if (chunks.length === 0) return;
 
   // 중간 청크 오류 후에는 완료된 청크를 건너뛰고 사용자가 누른 재생에서 이어 듣습니다.
