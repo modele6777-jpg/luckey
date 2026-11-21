@@ -27,12 +27,12 @@ import { MasterToolBoard } from './MasterToolBoard';
 import { useTTSState } from '@/utils/tts';
 
 type TableFace = 'tarot' | 'saju' | 'recommended' | 'scrolls';
-const FACES: { id: TableFace | 'reading'; label: string }[] = [
-  { id: 'tarot', label: '🃏 타로' },
-  { id: 'saju', label: '☯ 사주 원국' },
-  { id: 'recommended', label: '🧭 추천 도구' },
-  { id: 'scrolls', label: '📜 12대 양피지' },
-  { id: 'reading', label: '🔊 낭독' },
+/** 단계 순서대로 쌓인다: 1 사주 → 2 타로 → 3 추천 도구·12대 양피지. 낮은 단계 도구는 높은 단계에서도 언제든 탭해서 본다. */
+const FACES: { id: TableFace; icon: string; label: string; stage: 1 | 2 | 3 }[] = [
+  { id: 'saju', icon: '☯', label: '사주 원국', stage: 1 },
+  { id: 'tarot', icon: '🃏', label: '타로', stage: 2 },
+  { id: 'recommended', icon: '🧭', label: '추천 도구', stage: 3 },
+  { id: 'scrolls', icon: '📜', label: '양피지', stage: 3 },
 ];
 
 /**
@@ -117,9 +117,9 @@ export function DuoDivinationTarotPane(_props: { isLight?: boolean }) {
       <LucyMasterTarotRoom variant="table" />
       <div className="relative z-[1] flex-1 min-h-0 flex flex-col">
         {/* 테이블 면 바꾸기 탭 (낭독은 루시가 읽는 동안에만) */}
-        <div className="shrink-0 flex items-center gap-1.5 overflow-x-auto px-3.5 pt-3 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" role="tablist" aria-label="타로 테이블 보기">
-          {FACES.filter(item => (item.id !== 'reading' || reading) && (item.id !== 'tarot' || tarotAvailable) && ((item.id !== 'recommended' && item.id !== 'scrolls') || toolsAvailable)).map(item => {
-            const active = item.id === 'reading' ? showReading : !showReading && shownFace === item.id;
+        <div className="shrink-0 flex items-stretch gap-1 px-3 pt-3 pb-1.5" role="tablist" aria-label="점술 테이블 보기">
+          {FACES.filter(item => (item.id !== 'tarot' || tarotAvailable) && ((item.id !== 'recommended' && item.id !== 'scrolls') || toolsAvailable)).map(item => {
+            const active = !showReading && shownFace === item.id;
             return (
               <button
                 key={item.id}
@@ -129,14 +129,31 @@ export function DuoDivinationTarotPane(_props: { isLight?: boolean }) {
                 data-table-face={item.id}
                 onClick={() => {
                   triggerHaptic('whitehole');
-                  if (item.id === 'reading') { setReadingDismissed(false); return; }
                   setReadingDismissed(reading);
                   setFace(item.id);
                 }}
-                className={`shrink-0 whitespace-nowrap rounded-full border px-3 py-1 text-[11px] font-bold transition-colors ${active ? 'border-amber-300/80 bg-amber-400/20 text-amber-100' : 'border-white/15 bg-white/[0.05] text-slate-200 hover:bg-white/10'}`}
-              >{item.label}</button>
+                className={`relative flex min-w-0 flex-1 flex-col items-center justify-center rounded-xl border px-1 py-1.5 transition-colors ${active ? 'border-amber-300/80 bg-amber-400/20 text-amber-50' : 'border-white/12 bg-white/[0.05] text-slate-200 hover:bg-white/10'}`}
+              >
+                <span className="text-[15px] leading-none" aria-hidden="true">{item.icon}</span>
+                <span className="mt-0.5 max-w-full truncate text-[10.5px] font-bold leading-tight">{item.label}</span>
+                <span className={`text-[8px] leading-none ${active ? 'text-amber-200/90' : 'text-slate-400'}`}>{item.stage}단계</span>
+              </button>
             );
           })}
+          {reading && (
+            <button
+              type="button"
+              role="tab"
+              aria-selected={showReading}
+              data-table-face="reading"
+              aria-label="낭독 보기"
+              onClick={() => { triggerHaptic('whitehole'); setReadingDismissed(false); }}
+              className={`flex w-11 shrink-0 flex-col items-center justify-center rounded-xl border py-1.5 ${showReading ? 'border-amber-300/80 bg-amber-400/20 text-amber-50' : 'border-white/12 bg-white/[0.05] text-slate-200'}`}
+            >
+              <span className="text-[15px] leading-none" aria-hidden="true">🔊</span>
+              <span className="mt-0.5 text-[9.5px] font-bold">낭독</span>
+            </button>
+          )}
         </div>
         {showReading ? (
           <MasterReadingStage />

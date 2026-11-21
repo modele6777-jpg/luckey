@@ -89,6 +89,20 @@ export function MasterToolBoard({ view, tools, concern, lastAnswer, facts, toolD
       {concern && <p className="mt-0.5 text-[11px] text-slate-300/85 break-keep line-clamp-1">“{concern}”</p>}
 
       {view === 'recommended' ? (<>
+      {onShowScrolls && (
+        <button
+          type="button"
+          onClick={onShowScrolls}
+          data-master-tool-open-scrolls
+          className="mt-2 flex w-full items-center gap-2 rounded-xl border border-[#c89a5e]/50 px-3 py-2 text-left text-[12px] text-[#3b2610] shadow-md"
+          style={{ ...PARCHMENT_BG, ...SERIF }}
+        >
+          <span aria-hidden="true">📜</span>
+          <span className="min-w-0 flex-1 font-bold">나머지 12대 도구 양피지 펼쳐보기</span>
+          {commonCount - (shown.common ? 1 : 0) > 0 && <span className="rounded-full bg-[#7b1d14] px-1.5 text-[10px] text-amber-100">✦ {commonCount - (shown.common ? 1 : 0)}</span>}
+          <span aria-hidden="true">→</span>
+        </button>
+      )}
 
       {/* 추천 도구 1개 (또는 양피지에서 크게 보기로 고른 도구) */}
       <section
@@ -116,14 +130,6 @@ export function MasterToolBoard({ view, tools, concern, lastAnswer, facts, toolD
         {!shown.signal && shown.status !== 'symbolic' && <p className="mt-2 text-[11px] text-slate-300 break-keep">루시 답변이 오면 이 도구로 짚은 내용이 위에 떠요.</p>}
         <p className="mt-2.5 text-[10.5px] text-amber-100/75 break-keep">잘 보는 것 · {FULL_BEST_FOR(shown.id)}</p>
       </section>
-      {onShowScrolls && (
-        <button
-          type="button"
-          onClick={onShowScrolls}
-          className="mt-3 w-full rounded-xl border border-amber-200/30 bg-[#ecd9b0]/10 px-3 py-2.5 text-left text-[12px] text-amber-100"
-          style={SERIF}
-        >📜 나머지 12개 도구는 양피지에서 볼 수 있어요{commonCount - (rec.common ? 1 : 0) > 0 ? ` · ✦ ${commonCount - (rec.common ? 1 : 0)}개 봉인` : ''} →</button>
-      )}
       </>) : (<>
       <p className="mt-2 mb-1.5 text-[11px] font-bold tracking-wide text-amber-100/80" style={SERIF}>두루마리를 눌러 펼쳐 보세요</p>
       <div className="space-y-2" data-master-tool-scrolls>
