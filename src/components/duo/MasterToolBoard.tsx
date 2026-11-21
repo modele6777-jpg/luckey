@@ -4,6 +4,7 @@ import type { ToolFact } from '@/lib/lucyMasterToolFacts';
 import { buildToolBoard, type ToolBoardItem } from '@/lib/lucyMasterToolBoard';
 import { triggerHaptic } from '@/lib/omniWarp/omniWarpHaptics';
 import { FIFTEEN_DIVINATION_TOOLS, type DivinationToolId } from '@/lib/fifteenDivinationTools';
+import { ToolDetailView } from './MasterToolViews';
 
 const FULL_BEST_FOR = (id: DivinationToolId) => FIFTEEN_DIVINATION_TOOLS[id].bestFor;
 
@@ -49,9 +50,13 @@ function FactRows({ facts, tone }: { facts: ToolFact[]; tone: 'dark' | 'parchmen
  * - recommended: 고민에 맞춘 추천 도구 1개를 크게
  * - scrolls: 나머지 12개를 양피지 두루마리 보조 자료로
  */
-export function MasterToolBoard({ view, tools, concern, lastAnswer, facts, onShowScrolls }: {
+export function MasterToolBoard({ view, tools, concern, lastAnswer, facts, toolData, onShowScrolls, focusId, onFocusTool }: {
   view: 'recommended' | 'scrolls';
   onShowScrolls?: () => void;
+  toolData: Record<string, unknown>;
+  /** 양피지에서 "크게 보기"로 고른 도구 (없으면 루시 추천) */
+  focusId?: string | null;
+  onFocusTool?: (id: string | null) => void;
   tools: CalculationAuditItem[];
   concern: string;
   lastAnswer: string;
@@ -71,6 +76,8 @@ export function MasterToolBoard({ view, tools, concern, lastAnswer, facts, onSho
   }
 
   const rec = board.recommended;
+  const focused = focusId ? [rec, ...board.others].find(item => item.id === focusId && item.id !== rec.id) : undefined;
+  const shown = focused ?? rec;
   const commonCount = [rec, ...board.others].filter(item => item.common).length;
 
   return (
@@ -83,23 +90,31 @@ export function MasterToolBoard({ view, tools, concern, lastAnswer, facts, onSho
 
       {view === 'recommended' ? (<>
 
-      {/* 추천 도구 1개 */}
+      {/* 추천 도구 1개 (또는 양피지에서 크게 보기로 고른 도구) */}
       <section
         className="mt-2.5 rounded-2xl border border-amber-300/60 bg-gradient-to-br from-amber-400/15 to-fuchsia-500/10 p-3.5"
-        data-master-tool-recommended={rec.id}
+        data-master-tool-recommended={shown.id}
+        data-master-tool-focused={focused ? 'true' : 'false'}
       >
         <div className="flex items-center gap-2">
-          <span className="rounded-full bg-amber-400/90 px-2 py-0.5 text-[10px] font-black text-slate-950">루시 추천</span>
-          <p className="text-[15px] font-black text-amber-50">{rec.name}</p>
-          <p className="text-[10px] text-amber-100/70">{rec.hanja}</p>
-          {rec.common && <span className="ml-auto text-amber-300" title="루시가 답변에서 짚은 도구" aria-label="공통 신호">✦</span>}
+          <span className="rounded-full bg-amber-400/90 px-2 py-0.5 text-[10px] font-black text-slate-950">{focused ? '직접 고른 도구' : '루시 추천'}</span>
+          <p className="text-[15px] font-black text-amber-50">{shown.name}</p>
+          <p className="min-w-0 truncate text-[10px] text-amber-100/70">{shown.hanja}</p>
+          {shown.common && <span className="ml-auto text-amber-300" title="루시가 답변에서 짚은 도구" aria-label="공통 신호">✦</span>}
         </div>
-        <p className="mt-1 text-[11px] text-amber-100/85 break-keep">이 고민엔 {board.recommendReason}.</p>
-        {rec.facts.length > 0 && <div className="mt-2.5 rounded-xl bg-black/20 px-3 py-2"><FactRows facts={rec.facts} tone="dark" /></div>}
-        <p className="mt-2 text-[12.5px] leading-relaxed text-slate-100 break-keep">
-          {rec.signal || (rec.status === 'symbolic' ? rec.note : '루시 답변이 오면 이 도구로 짚은 내용이 여기에 떠요.')}
-        </p>
-        <p className="mt-2.5 text-[10.5px] text-amber-100/75 break-keep">잘 보는 것 · {FULL_BEST_FOR(rec.id)}</p>
+        {focused ? (
+          <button type="button" onClick={() => onFocusTool?.(null)} className="mt-1 text-[11px] text-amber-200 underline underline-offset-2">← 루시 추천({rec.name})으로 돌아가기</button>
+        ) : (
+          <p className="mt-1 text-[11px] text-amber-100/85 break-keep">이 고민엔 {board.recommendReason}.</p>
+        )}
+        {shown.signal && <p className="mt-2 text-[12.5px] leading-relaxed text-slate-100 break-keep">“{shown.signal}”</p>}
+        {toolData[shown.id] || shown.status === 'symbolic' ? (
+          <ToolDetailView id={shown.id} data={toolData[shown.id]} />
+        ) : shown.facts.length > 0 ? (
+          <div className="mt-2.5 rounded-xl bg-black/20 px-3 py-2"><FactRows facts={shown.facts} tone="dark" /></div>
+        ) : null}
+        {!shown.signal && shown.status !== 'symbolic' && <p className="mt-2 text-[11px] text-slate-300 break-keep">루시 답변이 오면 이 도구로 짚은 내용이 위에 떠요.</p>}
+        <p className="mt-2.5 text-[10.5px] text-amber-100/75 break-keep">잘 보는 것 · {FULL_BEST_FOR(shown.id)}</p>
       </section>
       {onShowScrolls && (
         <button
@@ -118,6 +133,7 @@ export function MasterToolBoard({ view, tools, concern, lastAnswer, facts, onSho
             item={item}
             open={openId === item.id}
             onToggle={() => { triggerHaptic('whitehole'); setOpenId(openId === item.id ? null : item.id); }}
+            onEnlarge={onFocusTool && item.status !== 'needs_info' ? () => { triggerHaptic('whitehole'); onFocusTool(item.id); } : undefined}
           />
         ))}
       </div>
@@ -126,7 +142,7 @@ export function MasterToolBoard({ view, tools, concern, lastAnswer, facts, onSho
   );
 }
 
-function ParchmentScroll({ item, open, onToggle }: { item: ToolBoardItem; open: boolean; onToggle: () => void }) {
+function ParchmentScroll({ item, open, onToggle, onEnlarge }: { item: ToolBoardItem; open: boolean; onToggle: () => void; onEnlarge?: () => void }) {
   const faded = item.status === 'needs_info';
   const symbolic = item.status === 'symbolic';
   return (
@@ -137,34 +153,30 @@ function ParchmentScroll({ item, open, onToggle }: { item: ToolBoardItem; open: 
       data-master-tool-common={item.common ? 'true' : 'false'}
     >
       <ScrollRod />
-      <button
-        type="button"
-        aria-expanded={open}
-        onClick={onToggle}
-        className="relative -my-0.5 mx-1 block w-[calc(100%-0.5rem)] text-left px-3.5 py-2.5"
-        style={{ ...PARCHMENT_BG, ...SERIF }}
-      >
-        <div className="flex items-center gap-2">
-          <span className="text-[13.5px] font-bold text-[#3b2610]">{item.name}</span>
-          <span className="text-[10px] text-[#7a4f22]/80">{item.hanja}</span>
-          <span className="ml-auto flex items-center gap-1.5">
-            {symbolic && <span className="rounded-full border border-[#7a4f22]/40 px-1.5 text-[9px] text-[#7a4f22]">상징 참고</span>}
-            {faded && <span className="rounded-full border border-[#7a4f22]/40 px-1.5 text-[9px] text-[#7a4f22]">정보 필요</span>}
-            {item.common && (
-              <span
-                aria-label="루시가 함께 짚은 도구"
-                title="루시가 함께 짚은 도구"
-                className="flex h-6 w-6 items-center justify-center rounded-full text-[11px] text-amber-100"
-                style={{ background: 'radial-gradient(circle at 35% 30%,#c0392b,#7b1d14)', boxShadow: '0 1px 3px rgba(0,0,0,.5), inset 0 0 0 2px rgba(255,255,255,.12)' }}
-              >✦</span>
-            )}
-          </span>
-        </div>
-        {!open && (
-          <p className="mt-0.5 text-[11px] leading-snug text-[#5a3a18] break-keep line-clamp-1">
-            {faded ? item.note : item.signal || (item.facts[0] ? `${item.facts[0].label} · ${item.facts[0].value}` : item.bestFor)}
-          </p>
-        )}
+      <div className="relative -my-0.5 mx-1 px-3.5 py-2.5" style={{ ...PARCHMENT_BG, ...SERIF }}>
+        <button type="button" aria-expanded={open} onClick={onToggle} className="block w-full text-left">
+          <div className="flex items-center gap-2">
+            <span className="text-[13.5px] font-bold text-[#3b2610]">{item.name}</span>
+            <span className="min-w-0 truncate text-[10px] text-[#7a4f22]/80">{item.hanja}</span>
+            <span className="ml-auto flex shrink-0 items-center gap-1.5">
+              {symbolic && <span className="rounded-full border border-[#7a4f22]/40 px-1.5 text-[9px] text-[#7a4f22]">상징 참고</span>}
+              {faded && <span className="rounded-full border border-[#7a4f22]/40 px-1.5 text-[9px] text-[#7a4f22]">정보 필요</span>}
+              {item.common && (
+                <span
+                  aria-label="루시가 함께 짚은 도구"
+                  title="루시가 함께 짚은 도구"
+                  className="flex h-6 w-6 items-center justify-center rounded-full text-[11px] text-amber-100"
+                  style={{ background: 'radial-gradient(circle at 35% 30%,#c0392b,#7b1d14)', boxShadow: '0 1px 3px rgba(0,0,0,.5), inset 0 0 0 2px rgba(255,255,255,.12)' }}
+                >✦</span>
+              )}
+            </span>
+          </div>
+          {!open && (
+            <p className="mt-0.5 text-[11px] leading-snug text-[#5a3a18] break-keep line-clamp-1">
+              {faded ? item.note : item.signal || (item.facts[0] ? `${item.facts[0].label} · ${item.facts[0].value}` : item.bestFor)}
+            </p>
+          )}
+        </button>
         {open && (
           <div className="mt-2 space-y-2 border-t border-dashed border-[#7a4f22]/35 pt-2">
             {faded ? (
@@ -175,11 +187,14 @@ function ParchmentScroll({ item, open, onToggle }: { item: ToolBoardItem; open: 
                 {symbolic && <p className="text-[11px] text-[#5a3a18] break-keep">{item.note}</p>}
                 {item.signal && <p className="text-[11.5px] italic leading-relaxed text-[#3b2610] break-keep">“{item.signal}”</p>}
                 <p className="text-[10.5px] text-[#7a4f22] break-keep">잘 보는 것 · {item.bestFor}</p>
+                {onEnlarge && (
+                  <button type="button" onClick={onEnlarge} className="rounded-full border border-[#7a4f22]/50 bg-[#7a4f22]/10 px-3 py-1 text-[11px] font-bold text-[#3b2610]">🧭 크게 보기</button>
+                )}
               </>
             )}
           </div>
         )}
-      </button>
+      </div>
       <ScrollRod />
     </div>
   );

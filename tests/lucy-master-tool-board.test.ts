@@ -49,3 +49,16 @@ test('parchment facts come only from calculated tool data', async () => {
   assert.deepEqual(board.others.find(i => i.id === 'kabbalah')!.facts, []);
   assert.equal(board.others.find(i => i.id === 'iching')!.facts.length, 3);
 });
+
+test('liuren master reads the library lessons and transmissions instead of fixed defaults', async () => {
+  const { calculateLiurenMaster, normalizeRawLessons, normalizeRawTransmissions, toKoreanGeneral } = await import('../src/lib/divination/liurenMasterEngine');
+  assert.deepEqual(normalizeRawLessons({ ke1: ['子己', '勾陈'], ke2: ['巳子', '玄武'], ke3: ['辰亥', '太常'], ke4: ['酉辰', '腾蛇'] }).map(l => `${l.upper}${l.lower}`), ['子己', '巳子', '辰亥', '酉辰']);
+  assert.deepEqual(normalizeRawTransmissions({ chuChuan: ['巳', '玄武'], zhongChuan: ['戌', '朱雀'], moChuan: ['卯', '白虎'] }).map(t => t.branch), ['巳', '戌', '卯']);
+  assert.equal(toKoreanGeneral('青龙'), '청룡');
+  const seen = new Set<string>();
+  for (const iso of ['2026-11-21T12:50:00Z', '2026-11-22T03:10:00Z', '2026-12-05T08:00:00Z']) {
+    const r = calculateLiurenMaster(new Date(iso));
+    seen.add(r.fourLessons.map(l => l.upper + l.lower).join() + r.threeTransmissions.map(t => t.branch + t.general).join());
+  }
+  assert.ok(seen.size > 1, 'different instants give different boards');
+});
