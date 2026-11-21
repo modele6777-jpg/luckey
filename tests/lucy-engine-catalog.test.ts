@@ -17,15 +17,15 @@ import {
 } from '../src/lib/divination/engineCatalog';
 import { FIFTEEN_DIVINATION_TOOLS, type DivinationToolId } from '../src/lib/fifteenDivinationTools';
 
-test('Lucy Pro catalog contains the approved 513 entries: 15 foundational tools and 498 deep perspectives', () => {
-  assert.equal(ALL_DCE_ENGINES.length, 515);
-  assert.equal(LUCY_PRO_CATALOG_ENGINES.length, 513);
+test('Lucy Pro catalog contains the approved 515 entries: 15 foundational tools and 500 deep perspectives', () => {
+  assert.equal(ALL_DCE_ENGINES.length, 517);
+  assert.equal(LUCY_PRO_CATALOG_ENGINES.length, 515);
   assert.equal(LUCY_PRO_FOUNDATIONAL_COUNT, 15);
-  assert.equal(LUCY_PRO_CATALOG_TOTAL_COUNT, 513);
+  assert.equal(LUCY_PRO_CATALOG_TOTAL_COUNT, 515);
   assert.equal(LUCY_PRO_DEEP_PERSPECTIVE_COUNT, ENGINE_CATALOG_COUNTS.deep_master);
-  assert.equal(LUCY_PRO_DEEP_PERSPECTIVE_COUNT, 498);
-  assert.deepEqual(ENGINE_CATALOG_COUNTS, { foundational: 15, deep_master: 498 });
-  assert.equal(new Set(LUCY_PRO_CATALOG_ENGINES.map(engine => engine.key)).size, 513);
+  assert.equal(LUCY_PRO_DEEP_PERSPECTIVE_COUNT, 500);
+  assert.deepEqual(ENGINE_CATALOG_COUNTS, { foundational: 15, deep_master: 500 });
+  assert.equal(new Set(LUCY_PRO_CATALOG_ENGINES.map(engine => engine.key)).size, 515);
   assert.deepEqual([...LUCY_PRO_CATALOG_OMITTED_KEYS], [
     'irishJamesJoyceUlyssesEpiphany',
     'germanHermannHesseDemianSteppenwolf',
@@ -46,8 +46,8 @@ test('every listed engine has a readable meaning and one of the seven channel th
     prologue: 5,
     orange: 26,
     trinity: 108,
-    aura: 121,
-    bluebird: 83,
+    aura: 122,
+    bluebird: 84,
     muse: 161,
     epilogue: 9,
   });
@@ -71,7 +71,7 @@ test('bluebird catalog label changes without changing its ID, route, or count', 
     route: '/bluebird',
     description: '일상·관계·소통',
   });
-  assert.equal(ENGINE_CATALOG_THEME_COUNTS.bluebird, 38);
+  assert.equal(ENGINE_CATALOG_THEME_COUNTS.bluebird, 84);
 });
 
 test('foundational tool meanings and primary themes use their existing authored definitions', () => {

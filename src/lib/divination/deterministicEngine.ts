@@ -545,6 +545,8 @@ import { calculateBadakhshanLapisVein, formatBadakhshanLapisPrompt, type Badakhs
 import { calculateKogiAlunaThread, formatKogiAlunaPrompt, type KogiAlunaResult } from './kogiAlunaThoughtThreadEngine';
 import { calculateBamilekeBeadedThrone, formatBamilekeBeadedPrompt, type BamilekeBeadedResult } from './bamilekeBeadedThronePoiseEngine';
 import { calculateFezCobaltPottery, formatFezCobaltPrompt, type FezCobaltResult } from './fezCobaltPotteryKilnEngine';
+import { calculatePortugueseAzulejoTile, formatPortugueseAzulejoPrompt, type PortugueseAzulejoResult } from './portugueseAzulejoTileEngine';
+import { calculateMenorcaTalayotStoneBalance, formatMenorcaTalayotPrompt, type MenorcaTalayotResult } from './menorcaTalayotStoneBalanceEngine';
 
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
@@ -1108,6 +1110,8 @@ export interface DeterministicEngineReport {
   kogiAlunaThreadResult?: KogiAlunaResult | null;
   bamilekeBeadedThroneResult?: BamilekeBeadedResult | null;
   fezCobaltPotteryResult?: FezCobaltResult | null;
+  portugueseAzulejoTileResult?: PortugueseAzulejoResult | null;
+  menorcaTalayotStoneBalanceResult?: MenorcaTalayotResult | null;
 
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
@@ -5328,6 +5332,24 @@ try {
     }
   })()));
 
+  // 522. 포르투갈·아줄레주 푸른 타일 성찰 엔진
+  const portugueseAzulejoTileResult = calculateSupplement('portugueseAzulejoTileResult', () => ((() => {
+    try {
+      return calculatePortugueseAzulejoTile({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 523. 메노르카·탈라요트 돌탑 균형 성찰 엔진
+  const menorcaTalayotStoneBalanceResult = calculateSupplement('menorcaTalayotStoneBalanceResult', () => ((() => {
+    try {
+      return calculateMenorcaTalayotStoneBalance({ profile, now, question });
+    } catch (_) {
+      return null;
+    }
+  })()));
+
   // 220. 한국 신라 의상대사 화엄일승법계도 & 법성게 원융무애 엔진
   const uisangHwaeomIlseungBeopgyeResult = calculateSupplement('uisangHwaeomIlseungBeopgyeResult', () => ((() => {
     try {
@@ -6867,6 +6889,8 @@ try {
     kogiAlunaThreadResult,
     bamilekeBeadedThroneResult,
     fezCobaltPotteryResult,
+    portugueseAzulejoTileResult,
+    menorcaTalayotStoneBalanceResult,
     tools: toolsMap,
   };
 }
@@ -7411,6 +7435,8 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = ([
   { key: 'kogiAlunaThread', nameKo: '코기·알루나 사유 실', icon: '🧶', category: 'deep_master', summary: '시에라 네바다 산맥의 코기 족이 물질 세계 너머의 의도와 연결을 엮는 사유의 실 알루나(Aluna)처럼 행동 이전의 마음을 살피는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'muse' },
   { key: 'bamilekeBeadedThrone', nameKo: '바밀레케·구슬 왕좌 결속', icon: '📿', category: 'deep_master', summary: '수만 알의 작은 유리 구슬을 나무 틀 위에 정성껏 꿰어 기하학 문양을 세우는 바밀레케 공예처럼 작은 일상의 축적과 질서를 살피는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'aura' },
   { key: 'fezCobaltPottery', nameKo: '페즈·코발트 도자기 가마', icon: '🏺', category: 'deep_master', summary: '흰 흙 위에 코발트 블루 문양을 중심에서부터 그려 가마에 구워 내는 모로코 페즈 도자기처럼 중심과 여백의 균형을 살피는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'trinity' },
+  { key: 'portugueseAzulejoTile', nameKo: '포르투갈·아줄레주 푸른 타일', icon: '🟦', category: 'deep_master', summary: '작은 유약 타일 조각들의 이어짐과 줄눈의 여백으로 건물의 온도를 지키는 포르투갈 아줄레주처럼 작은 단위와 여백의 리듬을 살피는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'bluebird' },
+  { key: 'menorcaTalayotStoneBalance', nameKo: '메노르카·탈라요트 돌탑 균형', icon: '🪨', category: 'deep_master', summary: '모르타르 없이 돌 자체의 무게와 각도만으로 수천 년을 버티는 메노르카 탈라요트 석축처럼 억지 없는 자생적 균형을 살피는 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.', primaryTheme: 'aura' },
 ] as DceEngineMeta[]).filter(engine => !LUCY_PRO_CATALOG_DUPLICATE_KEYS.has(engine.key));
 
 export function getFiredEngineBadges(
@@ -8373,6 +8399,8 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'kogiAlunaThread',
     'bamilekeBeadedThrone',
     'fezCobaltPottery',
+    'portugueseAzulejoTile',
+    'menorcaTalayotStoneBalance',
   ],
 };
 

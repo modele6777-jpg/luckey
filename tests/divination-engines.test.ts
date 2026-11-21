@@ -514,6 +514,8 @@ import { calculateBadakhshanLapisVein, formatBadakhshanLapisPrompt } from '../sr
 import { calculateKogiAlunaThread, formatKogiAlunaPrompt } from '../src/lib/divination/kogiAlunaThoughtThreadEngine';
 import { calculateBamilekeBeadedThrone, formatBamilekeBeadedPrompt } from '../src/lib/divination/bamilekeBeadedThronePoiseEngine';
 import { calculateFezCobaltPottery, formatFezCobaltPrompt } from '../src/lib/divination/fezCobaltPotteryKilnEngine';
+import { calculatePortugueseAzulejoTile, formatPortugueseAzulejoPrompt } from '../src/lib/divination/portugueseAzulejoTileEngine';
+import { calculateMenorcaTalayotStoneBalance, formatMenorcaTalayotPrompt } from '../src/lib/divination/menorcaTalayotStoneBalanceEngine';
 
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
@@ -15321,4 +15323,28 @@ test('Fez Cobalt Pottery engine: glaze, +09:00 KST, and interpretive boundary', 
   const prompt = formatFezCobaltPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
   assert.ok(prompt.includes('페즈·코발트') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionGlaze));
+});
+
+test('Portuguese Azulejo Tile engine: motif, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculatePortugueseAzulejoTile({ profile, now: new Date('2026-11-21T01:20:00Z'), question: '작은 조각부터 차분히 붙이고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-PORTUGUESE-AZULEJO-v2.2.0');
+  assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
+  assert.ok(rep.companionMotif !== rep.tileMotif);
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatPortugueseAzulejoPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('포르투갈·아줄레주') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionMotif));
+});
+
+test('Menorca Talayot Stone Balance engine: stance, +09:00 KST, and interpretive boundary', () => {
+  const rep = calculateMenorcaTalayotStoneBalance({ profile, now: new Date('2026-11-21T01:20:00Z'), question: '억지 없는 자생적 균형을 잡고 싶어요' });
+  assert.equal(rep.engineVersion, 'LUCKEY-MENORCA-TALAYOT-v2.2.0');
+  assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
+  assert.ok(rep.companionStance !== rep.stoneStance);
+  assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
+  assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
+  const prompt = formatMenorcaTalayotPrompt(rep);
+  assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
+  assert.ok(prompt.includes('메노르카·탈라요트') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionStance));
 });
