@@ -15659,3 +15659,21 @@ test('buildUserFifteenToolsDigest integrates 4th-round Tarot, Sukuyo, and Mahabo
   assert.ok(digest.includes('분기 초점:') && digest.includes('명반 조율 ['));
   assert.ok(!/tarotVitalityScore|guardScore|leadershipHonor/.test(digest));
 });
+
+test('buildUserFifteenToolsDigest integrates 4th-round Vedic, Liuren, and Hongguk Qimen rhythms and steps without raw scores', () => {
+  const profile: any = {
+    basic: {
+      name: '제제',
+      birthdate: '1994-01-24',
+      birthtime: '10:30',
+      calendarType: 'solar',
+      isLeapMonth: false,
+      gender: 'male',
+    },
+  };
+  const digest = buildUserFifteenToolsDigest(profile, new Date('2026-11-22T06:06:00+09:00'));
+  assert.ok(digest.includes('베딕 조율 ['));
+  assert.ok(digest.includes('시지 순시창 [') && digest.includes('다음 수:'));
+  assert.ok(digest.includes('8문 격국 [') && digest.includes('전술 스텝:'));
+  assert.ok(!/decisionScore|riskIndex|tonggi\.score/.test(digest));
+});
