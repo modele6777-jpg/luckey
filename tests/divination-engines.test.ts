@@ -13561,13 +13561,14 @@ test('Haudenosaunee Seven Generations engine: council principle, +09:00 KST, and
 
 test('Swahili Utu Dhow Monsoon engine: wind, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateSwahiliUtuDhowMonsoon({ profile, now: new Date('2026-11-20T06:20:00Z'), question: '언제 멈추고 언제 나아갈지 궁금해요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-SWAHILI-UTU-DHOW-v2.1.0');
-  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.equal(rep.engineVersion, 'LUCKEY-SWAHILI-UTU-DHOW-v2.2.0');
+  assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
+  assert.ok(rep.companionWind !== rep.monsoonWind);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatSwahiliUtuDhowPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('스와힐리') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('스와힐리') && prompt.includes('동반 바람') && prompt.includes('+09:00 (KST)'));
 });
 
 test('Khmer Angkor Baray Water Balance engine: state, +09:00 KST, and interpretive boundary', () => {
@@ -14360,13 +14361,14 @@ test('Palmyrene Oasis Colonnade engine: pillar, +09:00 KST, and interpretive bou
 
 test('Sicilian Majolica Etna Balance engine: motif, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateSicilianMajolicaEtnaBalance({ profile, now: new Date('2026-11-20T09:14:00Z'), question: '흔들린 자리 위에서도 새로운 싹을 키우고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-SICILIAN-MAJOLICA-v2.1.0');
-  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.equal(rep.engineVersion, 'LUCKEY-SICILIAN-MAJOLICA-v2.2.0');
+  assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
+  assert.ok(rep.companionMotif !== rep.islandMotif);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatSicilianMajolicaPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('시칠리아') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('시칠리아') && prompt.includes('동반 상징') && prompt.includes('+09:00 (KST)'));
 });
 
 test('Somali Gabay Dhow Horizon engine: principle, +09:00 KST, and interpretive boundary', () => {
@@ -15078,13 +15080,14 @@ test('Costa Rica Diquis Spheres engine: motif, +09:00 KST, and interpretive boun
 
 test('Siwa Oasis Salt Spring engine: motif, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateSiwaOasisSaltSpring({ profile, now: new Date('2026-11-20T21:46:00Z'), question: '힘을 빼고 떠오르고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-SIWA-OASIS-v2.1.0');
-  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.equal(rep.engineVersion, 'LUCKEY-SIWA-OASIS-v2.2.0');
+  assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
+  assert.ok(rep.companionMotif !== rep.symbolicMotif);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatSiwaOasisPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('시와') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('시와') && prompt.includes('동반 모티프') && prompt.includes('+09:00 (KST)'));
 });
 
 test('Sikkim Lepcha Forest engine: motif, +09:00 KST, and interpretive boundary', () => {
