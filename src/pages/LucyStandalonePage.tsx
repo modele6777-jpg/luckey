@@ -1934,6 +1934,26 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
     }
   }, [stopRecognition]);
 
+  // 🛟 안전장치: 화면에 보이는 들은 말이 1.5초 동안 그대로면, 인식기 신호와 상관없이 보낸다.
+  useEffect(() => {
+    const text = speechTranscript.trim();
+    if (!isVoiceMode || isVoiceMuted || isLucyGenerating || text.length < 2) return;
+    const timer = setTimeout(() => {
+      if (!isVoiceModeRef.current || isVoiceMutedRef.current || isLucyGeneratingRef.current) return;
+      if (speechTranscriptRef.current.trim() !== text) return;
+      const watcher = speechWatcherRef.current;
+      if (watcher && !watcher.sent && watcher.text.trim()) {
+        watcher.sendNow();
+        return;
+      }
+      speechTranscriptRef.current = '';
+      setSpeechTranscript('');
+      setSpeechInterim('');
+      void handleSendRef.current(text);
+    }, 1500);
+    return () => clearTimeout(timer);
+  }, [speechTranscript, isVoiceMode, isVoiceMuted, isLucyGenerating]);
+
   const startListeningRef = useRef(startListening);
   useEffect(() => {
     startListeningRef.current = startListening;
