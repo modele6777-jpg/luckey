@@ -4,6 +4,8 @@ import { ScreenPortal } from '@/components/layout/ScreenPortal';
 import { LucyModeTransition } from '@/components/chat/LucyModeTransition';
 import { LucyEntryScreen, type LucyEntryVariant } from '@/components/chat/LucyEntryScreen';
 import { publishTableSaju, publishTableAnswer } from '@/lib/lucyTableBus';
+import { shouldOfferLucyMaster, dismissLucyMasterOffer, markLucyMasterFromOffer, consumeLucyMasterFromOffer } from '@/lib/lucyMasterOffer';
+import { playLucyMasterSuction } from '@/components/omniwarp/BigBangMasterSuction';
 import { isLucyChatPath } from '@/lib/duoPaneFocus';
 import { isLucyTarotDrawRequest, isLucyTarotDrawOpen } from '@/lib/lucyTarotIntegrity';
 import { useSyncedChatDraft } from '@/hooks/useSyncedChatDraft';
@@ -1551,6 +1553,35 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
   // 엔진함 담기 기능은 제거됨: 예전에 담아 둔 엔진도 비워서 매 질문 자동 선택만 쓰게 한다.
   useEffect(() => { setSelectedEngineKeys([]); }, []);
 
+  // 🔮 일반 루시 대화의 맥락을 읽어 상담이 필요해 보이면 점술모드로 들어갈지 채팅에 제안한다.
+  const [masterOfferFor, setMasterOfferFor] = useState<string | null>(null);
+  const offeredForRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (isMasterMode || pro || isLucyGenerating) return;
+    const last = lucyMessages[lucyMessages.length - 1];
+    if (!last || (last.role !== 'model' && last.role !== 'assistant') || offeredForRef.current === last.id) return;
+    const recentUser = lucyMessages.filter(m => m.role === 'user').slice(-3).map(m => typeof m.content === 'string' ? m.content : '');
+    if (!recentUser.length) return;
+    if (shouldOfferLucyMaster(recentUser)) {
+      offeredForRef.current = last.id;
+      setMasterOfferFor(last.id);
+    }
+  }, [isMasterMode, pro, isLucyGenerating, lucyMessages]);
+  useEffect(() => { if (isMasterMode) setMasterOfferFor(null); }, [isMasterMode]);
+  const acceptMasterOffer = useCallback(() => {
+    setMasterOfferFor(null);
+    markLucyMasterFromOffer();
+    playLucyMasterSuction();
+    setLucyMasterMode(true);
+    if (isLucyMasterBgmPreferred()) void startLucyMasterBgm();
+    triggerHaptic('wormhole');
+  }, []);
+  const declineMasterOffer = useCallback(() => {
+    setMasterOfferFor(null);
+    dismissLucyMasterOffer();
+    triggerHaptic('whitehole');
+  }, []);
+
   // 🔮 펼친 루시 마스터의 왼쪽 테이블(사주 원국판)에 상담 대상의 원국과 루시의 최신 답을 넘긴다.
   useEffect(() => {
     if (isMasterMode) publishTableSaju(sajuInfo);
@@ -1574,8 +1605,10 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
     clearLucyProMessages();
     // Always offer "이어서 / 새로" on entry: regular Lucy history may still be loading,
     // or today's thread may be empty after the KST midnight rollover.
-    const greeting = createTarotHouseGreeting(userDisplayName, isDuoUnfoldedState().unfolded ? 'unfolded' : 'folded', true);
-    setLucyMasterLink('undecided');
+    // 루시의 상담 제안으로 들어왔으면 방금 대화를 이어서 보므로 "이어서/새로" 질문 없이 고민부터 묻는다.
+    const fromOffer = consumeLucyMasterFromOffer();
+    const greeting = createTarotHouseGreeting(userDisplayName, isDuoUnfoldedState().unfolded ? 'unfolded' : 'folded', !fromOffer);
+    setLucyMasterLink(fromOffer ? 'linked' : 'undecided');
     setLucyProMessages([greeting]);
   }, [isMasterMode, setLucyProMessages, clearLucyProMessages, userDisplayName]);
 
@@ -4205,6 +4238,34 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
               </motion.div>
             );
           })}
+
+          {!isMasterMode && !isLucyGenerating && masterOfferFor && lucyMessages[lucyMessages.length - 1]?.id === masterOfferFor && (
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              data-lucy-master-offer
+              className={`max-w-[92%] rounded-2xl border p-3.5 shadow-sm ${isLight ? 'bg-[#faf5ff]/95 border-violet-300/70 text-slate-900' : 'bg-[#1a0f2e]/90 border-violet-400/40 text-white'}`}
+            >
+              <p className="text-[13px] font-bold">🔮 조금 더 깊게 봐 줄까?</p>
+              <p className={`mt-1 text-xs leading-relaxed break-keep ${isLight ? 'text-slate-600' : 'text-violet-100/85'}`}>
+                지금 이야기는 사주와 타로로 차분히 상담해 보면 좋을 것 같아. 점술모드(루시 마스터)로 들어가서 방금 얘기를 이어서 볼까?
+              </p>
+              <div className="mt-2.5 flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  data-lucy-master-offer-accept
+                  onClick={acceptMasterOffer}
+                  className="rounded-full bg-gradient-to-r from-violet-600 to-fuchsia-600 px-3.5 py-1.5 text-xs font-bold text-white shadow active:scale-95"
+                >점술모드로 상담하기</button>
+                <button
+                  type="button"
+                  data-lucy-master-offer-decline
+                  onClick={declineMasterOffer}
+                  className={`rounded-full border px-3.5 py-1.5 text-xs font-bold active:scale-95 ${isLight ? 'border-slate-300 text-slate-700 bg-white' : 'border-white/20 text-white/85 bg-white/5'}`}
+                >괜찮아, 계속 얘기할래</button>
+              </div>
+            </motion.div>
+          )}
 
           {isLucyGenerating && (
             <div className={`flex items-center gap-2.5 p-3.5 border rounded-2xl w-fit shadow-xs animate-pulse ${
