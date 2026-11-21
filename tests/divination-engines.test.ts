@@ -15641,3 +15641,21 @@ test('buildUserFifteenToolsDigest integrates 4th-round Saju, Astrology, and Ziwe
   assert.ok(digest.includes('유년 기조[') && digest.includes('사화 조율 ['));
   assert.ok(!/deukSeScore|sanFangScore|luJiScore/.test(digest));
 });
+
+test('buildUserFifteenToolsDigest integrates 4th-round Tarot, Sukuyo, and Mahabote alignment matrices without raw scores', () => {
+  const profile: any = {
+    basic: {
+      name: '제제',
+      birthdate: '1994-01-24',
+      birthtime: '10:30',
+      calendarType: 'solar',
+      isLeapMonth: false,
+      gender: 'male',
+    },
+  };
+  const digest = buildUserFifteenToolsDigest(profile, new Date('2026-11-22T05:56:00+09:00'));
+  assert.ok(digest.includes('실천 의식:') && digest.includes('타로 조율 ['));
+  assert.ok(digest.includes('숙격 역학(') && digest.includes('숙요 조율 ['));
+  assert.ok(digest.includes('분기 초점:') && digest.includes('명반 조율 ['));
+  assert.ok(!/tarotVitalityScore|guardScore|leadershipHonor/.test(digest));
+});
