@@ -1,6 +1,6 @@
-import { synthesizeGeminiSpeech } from './geminiMedia.ts';
+import { synthesizePreferredSpeech } from './preferredSpeech.ts';
 import { getGeminiApiKey } from '../geminiKey.ts';
-const synthesizeDefault = (text: string, voice?: string) => synthesizeGeminiSpeech(text, voice, { ...process.env, GEMINI_API_KEY: getGeminiApiKey() });
+const synthesizeDefault = (text: string, voice?: string) => synthesizePreferredSpeech(text, voice, { ...process.env, GEMINI_API_KEY: getGeminiApiKey() });
 import { classifyTtsError, createTtsDiagnosticId, logTtsDiagnostic } from './ttsDiagnostics.ts';
 
 export interface TTSHandlerOptions {

@@ -826,6 +826,13 @@ ${content}
   });
 
   // TTS - generative AI speech only, without standard/device voice substitution
+  // 🔊 Which speech engine answers right now (no secrets): Chirp 3 HD, or Gemini fallback and why.
+  app.get("/api/ai/tts/status", async (_req, res) => {
+    const { cloudTtsStatus } = await import('./server/api-lib/preferredSpeech.ts');
+    res.setHeader("Cache-Control", "no-store");
+    return res.json(cloudTtsStatus());
+  });
+
   app.post("/api/ai/tts", async (req, res) => {
     const { text, voice = 'Aoede', emotion, rate, speed, pitch, language, provider } = req.body || {};
     const speech = String(text || '').trim();
