@@ -1,5 +1,13 @@
 [
   {
+    "version": "1.8.110",
+    "summary": "Chirp 3 HD 요청 시 API 키 전달 방식 수정",
+    "builtAt": "2026-11-21T06:21:17.221Z",
+    "items": [
+      "Google Cloud TTS가 헤더로 보낸 키를 인식하지 못해(401) 문서 방식(주소의 key)으로 변경"
+    ]
+  },
+  {
     "version": "1.8.109",
     "summary": "음성을 Google Cloud Chirp 3 HD로 교체 (안 되면 Gemini로 자동 대체)",
     "builtAt": "2026-11-21T06:18:26.800Z",

@@ -19,14 +19,13 @@ test('long text is split under the request size limit without losing words', () 
   assert.equal(parts.join(' ').replace(/\s/g, ''), text.replace(/\s/g, ''));
 });
 
-test('Chirp 3 HD request uses the key header and returns mp3', async () => {
+test('Chirp 3 HD request sends the API key as the key parameter and returns mp3', async () => {
   let seen: any = null;
   const fetchApi = (async (url: string, init: any) => { seen = { url, init }; return new Response(JSON.stringify({ audioContent: mp3 }), { status: 200 }); }) as typeof fetch;
   const result = await synthesizeChirpSpeech('안녕, 루시야.', 'Kore', { GOOGLE_CLOUD_TTS_API_KEY: 'k' }, fetchApi);
   assert.equal(result.encoding, 'mp3');
   assert.equal(result.voice, 'ko-KR-Chirp3-HD-Kore');
-  assert.match(seen.url, /texttospeech\.googleapis\.com\/v1\/text:synthesize$/);
-  assert.equal(seen.init.headers['x-goog-api-key'], 'k');
+  assert.match(seen.url, /texttospeech\.googleapis\.com\/v1\/text:synthesize\?key=k$/);
   assert.equal(JSON.parse(seen.init.body).voice.name, 'ko-KR-Chirp3-HD-Kore');
 });
 
