@@ -440,9 +440,14 @@ export function buildUserNatalSummary(profile?: UserProfile | null): string {
   ];
   const lackingElements = elementEntries.filter(([, count]) => count === 0).map(([label]) => label);
   const balanceNote = lackingElements.length > 0
-    ? ` · 보완 원소: ${lackingElements.join('·')}`
-    : ' · 4원소 균형 배치';
-  return `${chart.summaryText}${balanceNote} · 심리 청사진: ${chart.psychologicalBlueprint}`;
+    ? ` · 우세 원소: ${chart.elements.dominant} · 보완 원소: ${lackingElements.join('·')}`
+    : ` · 우세 원소: ${chart.elements.dominant} · 4원소 균형 배치`;
+  const modalityNote = ` · 우세 양식: ${chart.modalities.dominant}`;
+  const topAspectObj = chart.majorAspects?.[0];
+  const topAspect = topAspectObj
+    ? ` · 핵심 각도: ${topAspectObj.bodyA}${topAspectObj.symbol}${topAspectObj.bodyB}(${topAspectObj.aspectName}·${topAspectObj.quality})`
+    : '';
+  return `${chart.summaryText}${balanceNote}${modalityNote}${topAspect} · 심리 청사진: ${chart.psychologicalBlueprint}`;
 }
 
 /**
