@@ -13511,13 +13511,14 @@ test('Toraja Aluk Todolo Tongkonan engine: pillars, +09:00 KST, and interpretive
 
 test('Sinhala Bali Kohomba Harmony engine: layers, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateSinhalaBaliKohombaHarmony({ profile, now: new Date('2026-11-20T06:10:00Z'), question: '묵은 피로를 털어내고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-SINHALA-BALI-v2.1.0');
-  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.equal(rep.engineVersion, 'LUCKEY-SINHALA-BALI-v2.2.0');
+  assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
+  assert.ok(rep.companionLayer.name !== rep.activeLayer.name);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatSinhalaBaliPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('싱할라') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('싱할라') && prompt.includes('동반 층위') && prompt.includes('+09:00 (KST)'));
 });
 
 test('Nubian Meroe Apedemak Balance engine: principles, +09:00 KST, and interpretive boundary', () => {
@@ -13617,13 +13618,14 @@ test('Kyrgyz Manas Oral Epic Courage engine: chapter, +09:00 KST, and interpreti
 
 test('Shona Mbira Ancestral Resonance engine: cycle, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateShonaMbiraAncestralResonance({ profile, now: new Date('2026-11-20T06:40:00Z'), question: '마음의 리듬을 되찾고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-SHONA-MBIRA-v2.1.0');
-  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.equal(rep.engineVersion, 'LUCKEY-SHONA-MBIRA-v2.2.0');
+  assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
+  assert.ok(rep.companionCycle !== rep.mbiraCycle);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatShonaMbiraPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('쇼나') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('쇼나') && prompt.includes('동반 순환') && prompt.includes('+09:00 (KST)'));
 });
 
 test('Tongan Kava Circle Tauhi Va engine: practice, +09:00 KST, and interpretive boundary', () => {
@@ -14452,13 +14454,14 @@ test('Goguryeo Samjoko Mural Spirit engine: motif, +09:00 KST, and interpretive 
 
 test('Silla Emille Cheomseongdae engine: motif, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateSillaEmilleCheomseongdae({ profile, now: new Date('2026-11-20T19:15:00Z'), question: '조급함을 내려놓고 고요히 관찰하고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-SILLA-EMILLE-v2.1.0');
-  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.equal(rep.engineVersion, 'LUCKEY-SILLA-EMILLE-v2.2.0');
+  assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
+  assert.ok(rep.companionMotif !== rep.gyeongjuMotif);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatSillaEmillePrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('신라') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('신라') && prompt.includes('동반 모티프') && prompt.includes('+09:00 (KST)'));
 });
 
 test('Omani Frankincense Falaj Water engine: symbol, +09:00 KST, and interpretive boundary', () => {
