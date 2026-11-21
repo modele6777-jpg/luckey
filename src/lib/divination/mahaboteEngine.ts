@@ -276,8 +276,9 @@ export function calculateMahabote(params: {
     rootEval = `본명 수호행성이 ${rootPlacement.houseName}에 입궁하여 젊은 날의 역경과 시련을 단련의 기회로 삼아 대기만성하는 형국입니다.`;
   }
 
-  // 5. 당해 연도 나이 다샤 (Burmese Age Transit)
-  const targetYear = params.targetYear || new Date().getFullYear();
+  // 5. 당해 연도 나이 다샤 (Burmese Age Transit, +09:00 KST 기준)
+  const kstNow = new Date(Date.now() + 9 * 60 * 60 * 1000);
+  const targetYear = params.targetYear || kstNow.getUTCFullYear();
   const currentAge = Math.max(1, targetYear - birthYear + 1); // 한국 나이
   const transitIndex = (remainder + currentAge - 1) % 7;
   const transitHouse = HOUSES_META[transitIndex];
