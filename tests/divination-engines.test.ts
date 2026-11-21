@@ -13331,13 +13331,14 @@ test('Armenian Narekatsi Lamentation Healing engine: contemplations, +09:00 KST,
 
 test('Javanese Kejawen Rasa Harmony engine: principles, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateJavaneseKejawenRasaHarmony({ profile, now: new Date('2026-11-20T05:05:00Z'), question: '흔들리지 않는 평정이 필요해요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-JAVANESE-KEJAWEN-v2.1.0');
-  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.equal(rep.engineVersion, 'LUCKEY-JAVANESE-KEJAWEN-v2.2.0');
+  assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
+  assert.ok(rep.supportingPrinciple.id !== rep.activePrinciple.id);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('수치적 운세 점수가 아닙니다'));
   const prompt = formatJavaneseKejawenPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('케자웬') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('케자웬') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.supportingPrinciple.koreanTitle));
 });
 
 test('Phoenician Navigator Star Compass engine: beacons, +09:00 KST, and interpretive boundary', () => {
@@ -13353,13 +13354,14 @@ test('Phoenician Navigator Star Compass engine: beacons, +09:00 KST, and interpr
 
 test('Kazakh Abai Book of Words engine: pillars, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateKazakhAbaiBookOfWords({ profile, now: new Date('2026-11-20T05:30:00Z'), question: '나만의 기준을 세우고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-KAZAKH-ABAI-v2.1.0');
-  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.equal(rep.engineVersion, 'LUCKEY-KAZAKH-ABAI-v2.2.0');
+  assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
+  assert.ok(rep.balancingPillar.id !== rep.primaryPillar.id);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatKazakhAbaiPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('아바이') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('아바이') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.balancingPillar.koreanLabel));
 });
 
 test('Amazigh Desert Star Oasis engine: waypoints, +09:00 KST, and interpretive boundary', () => {
@@ -13376,13 +13378,14 @@ test('Amazigh Desert Star Oasis engine: waypoints, +09:00 KST, and interpretive 
 
 test('Hittite Telepinu Harmony Renewal engine: phases, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateHittiteTelepinuHarmonyRenewal({ profile, now: new Date('2026-11-20T05:30:00Z'), question: '일상의 활력을 되찾고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-HITTITE-TELEPINU-v2.1.0');
-  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.equal(rep.engineVersion, 'LUCKEY-HITTITE-TELEPINU-v2.2.0');
+  assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
+  assert.ok(rep.companionPhase.id !== rep.activePhase.id);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('운세 점수가 아닙니다'));
   const prompt = formatHittiteTelepinuPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('테레피누') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('테레피누') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionPhase.koreanLabel));
 });
 
 test('Mapuche Kultrun Cosmic Balance engine: directions, +09:00 KST, and interpretive boundary', () => {

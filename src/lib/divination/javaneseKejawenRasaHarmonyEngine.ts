@@ -68,7 +68,12 @@ const RASA_TONES: readonly string[] = [
 
 function formatJavaneseKstTimestamp(now: Date): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
-  return `${kst.toISOString().slice(0, 19)}+09:00 (KST)`;
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
 }
 
 function stableHash(input: string): number {
@@ -88,17 +93,18 @@ export function calculateJavaneseKejawenRasaHarmony(params: {
   const now = params.now ?? new Date();
   const query = (params.question ?? '').trim();
 
-  const seed = stableHash(
-    [
-      params.profile.basic?.name ?? '',
-      JSON.stringify(params.profile.fate ?? {}),
-      query,
-    ].join('|')
-  );
+  const seedInput = [
+    params.profile.basic?.name ?? '',
+    JSON.stringify(params.profile.fate ?? {}),
+    query,
+    now.toISOString().slice(0, 13),
+  ].join('|');
+  const seed = stableHash(seedInput);
 
   const activeIdx = seed % KEJAWEN_PRINCIPLES.length;
-  const supportingIdx = (activeIdx + 1) % KEJAWEN_PRINCIPLES.length;
-  const rasaTone = RASA_TONES[(seed >> 3) % RASA_TONES.length];
+  const supportingOffset = 1 + (stableHash(`${seedInput}|companion`) % (KEJAWEN_PRINCIPLES.length - 1));
+  const supportingIdx = (activeIdx + supportingOffset) % KEJAWEN_PRINCIPLES.length;
+  const rasaTone = RASA_TONES[stableHash(`${seedInput}|tone`) % RASA_TONES.length];
 
   const activePrinciple = KEJAWEN_PRINCIPLES[activeIdx];
   const supportingPrinciple = KEJAWEN_PRINCIPLES[supportingIdx];
@@ -115,12 +121,12 @@ export function calculateJavaneseKejawenRasaHarmony(params: {
   const ritualAction = activePrinciple.dailyPractice;
 
   const reflectiveQuestion = query
-    ? `‘${query.slice(0, 36)}’을(를) 대하는 지금, 내 마음의 평정(Rasa)을 가장 흐리게 만드는 조급함은 어디에서 오고 있나요?`
-    : `오늘 하루 내 주변과 관계를 조금 더 평온하게 가꾸기 위해 부드럽게 바꿀 수 있는 태도는 무엇인가요?`;
+    ? `‘${query.slice(0, 36)}’을(를) 대하는 지금, ‘${activePrinciple.koreanTitle}’과 ‘${supportingPrinciple.koreanTitle}’으로 가라앉혀야 할 조급함은 어디에서 오고 있나요?`
+    : `오늘 하루 ‘${activePrinciple.koreanTitle}’의 태도로 내 주변과 관계를 조금 더 평온하게 가꾸기 위해 바꿀 수 있는 한 가지는 무엇인가요?`;
 
   return {
     engineName: '자바 케자웬(Kejawen) 라사·내면 평정 (Javanese Kejawen Rasa)',
-    engineVersion: 'LUCKEY-JAVANESE-KEJAWEN-v2.1.0',
+    engineVersion: 'LUCKEY-JAVANESE-KEJAWEN-v2.2.0',
     calculatedAtKst: formatJavaneseKstTimestamp(now),
     activePrinciple,
     supportingPrinciple,

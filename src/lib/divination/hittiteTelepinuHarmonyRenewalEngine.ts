@@ -61,7 +61,12 @@ const TELEPINU_PHASES: readonly TelepinuRenewalPhase[] = [
 
 function formatHittiteKstTimestamp(now: Date): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
-  return `${kst.toISOString().slice(0, 19)}+09:00 (KST)`;
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
 }
 
 function stableHash(input: string): number {
@@ -81,16 +86,17 @@ export function calculateHittiteTelepinuHarmonyRenewal(params: {
   const now = params.now ?? new Date();
   const query = (params.question ?? '').trim();
 
-  const seed = stableHash(
-    [
-      params.profile.basic?.name ?? '',
-      JSON.stringify(params.profile.fate ?? {}),
-      query,
-    ].join('|')
-  );
+  const seedInput = [
+    params.profile.basic?.name ?? '',
+    JSON.stringify(params.profile.fate ?? {}),
+    query,
+    now.toISOString().slice(0, 13),
+  ].join('|');
+  const seed = stableHash(seedInput);
 
   const activeIdx = seed % TELEPINU_PHASES.length;
-  const companionIdx = (activeIdx + 2) % TELEPINU_PHASES.length;
+  const companionOffset = 1 + (stableHash(`${seedInput}|companion`) % (TELEPINU_PHASES.length - 1));
+  const companionIdx = (activeIdx + companionOffset) % TELEPINU_PHASES.length;
 
   const activePhase = TELEPINU_PHASES[activeIdx];
   const companionPhase = TELEPINU_PHASES[companionIdx];
@@ -107,12 +113,12 @@ export function calculateHittiteTelepinuHarmonyRenewal(params: {
   const ritualAction = activePhase.renewalPractice;
 
   const reflectiveQuestion = query
-    ? `‘${query.slice(0, 36)}’ 때문에 지친 마음이 다시 제자리를 찾으려면, 오늘 가장 먼저 달래 주어야 할 내 안의 긴장은 무엇인가요?`
-    : `사라졌던 활력을 되찾기 위해 오늘 내 일상에서 가장 작고 다정하게 다시 불을 지필 수 있는 루틴은 무엇일까요?`;
+    ? `‘${query.slice(0, 36)}’ 앞에서 ‘${activePhase.koreanLabel}’이 요청하는 오늘의 첫걸음과, ‘${companionPhase.koreanLabel}’으로 이어 갈 여유는 무엇인가요?`
+    : `사라졌던 활력을 되찾기 위해 ‘${activePhase.koreanLabel}’에서 오늘 가장 작고 다정하게 불을 지필 수 있는 루틴은 무엇일까요?`;
 
   return {
     engineName: '고대 히타이트 테레피누 조화·회복 (Hittite Telepinu Renewal)',
-    engineVersion: 'LUCKEY-HITTITE-TELEPINU-v2.1.0',
+    engineVersion: 'LUCKEY-HITTITE-TELEPINU-v2.2.0',
     calculatedAtKst: formatHittiteKstTimestamp(now),
     activePhase,
     companionPhase,
