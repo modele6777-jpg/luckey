@@ -34,6 +34,8 @@ import { LucyMasterTarotRoom } from '@/components/chat/LucyMasterTarotRoom';
 import { LucyMasterBgmToggle } from '@/components/chat/LucyMasterBgmToggle';
 import { setSelectedEngineKeys } from '@/lib/lucyEngineSelection';
 import { detectMasterConcernTopic, getMasterDepthPrompts, type MasterConcernTopic } from '@/lib/lucyMasterPrompts';
+import { hasMeaningfulMasterSession, type MasterSessionCardSource } from '@/lib/lucyMasterSessionCard';
+import { LucyMasterSessionCard } from '@/components/chat/LucyMasterSessionCard';
 import { archiveMasterSession, buildDepthContinuityContext, buildDepthLinkedLucyContext, buildPastMasterSessionsContext } from '@/lib/lucyMasterContinuity';
 import { isLucyMasterBgmPreferred, startLucyMasterBgm, stopLucyMasterBgm, setLucyMasterBgmDepth } from '@/lib/lucyMasterBgm';
 import remarkGfm from 'remark-gfm';
@@ -1662,9 +1664,28 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
     setLucyMasterLink(fromOffer ? 'linked' : 'undecided');
     setLucyProMessages([greeting]);
   }, [isMasterMode, setLucyProMessages, clearLucyProMessages, userDisplayName, chatAccount]);
+  // 📜 상담 카드: 상담에서 도달한 가장 깊은 단계를 기억해 카드에 적는다.
+  const maxDepthRef = useRef<LucyMasterDepth>(1);
+  useEffect(() => {
+    if (!isMasterMode) return;
+    if (masterDepth > maxDepthRef.current) maxDepthRef.current = masterDepth;
+  }, [isMasterMode, masterDepth]);
+  const [sessionCardOffer, setSessionCardOffer] = useState<MasterSessionCardSource | null>(null);
+  const [sessionCard, setSessionCard] = useState<MasterSessionCardSource | null>(null);
   const wasMasterRef = useRef(isMasterMode);
   useEffect(() => {
-    if (wasMasterRef.current && !isMasterMode) archiveMasterSession(chatAccount, masterMessagesRef.current || []);
+    if (wasMasterRef.current && !isMasterMode) {
+      const messages = [...(masterMessagesRef.current || [])];
+      archiveMasterSession(chatAccount, messages);
+      // 상담이 끝나면: 실제로 나눈 상담이 있었을 때만 "카드로 남길까?"를 한 번 묻는다.
+      if (hasMeaningfulMasterSession(messages)) {
+        setSessionCardOffer({ messages, depth: maxDepthRef.current, endedAt: Date.now() });
+      }
+    }
+    if (!wasMasterRef.current && isMasterMode) {
+      maxDepthRef.current = 1;
+      setSessionCardOffer(null);
+    }
     wasMasterRef.current = isMasterMode;
   }, [isMasterMode, chatAccount]);
 
@@ -4404,6 +4425,32 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
             </motion.div>
           )}
 
+          {!isMasterMode && sessionCardOffer && (
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              data-lucy-session-card-offer
+              className="max-w-[92%] rounded-2xl border border-violet-400/40 bg-[#1a0f2e]/90 p-3.5 text-white shadow-sm"
+            >
+              <p className="text-[13px] font-bold">📜 방금 상담을 카드로 남길까?</p>
+              <p className="mt-1 text-xs leading-relaxed text-violet-100/85 break-keep">핵심 3줄이랑 내가 남기는 한마디를 한 장에 담아 줄게.</p>
+              <div className="mt-2.5 flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  data-lucy-session-card-open
+                  onClick={() => { triggerHaptic('whitehole'); setSessionCard(sessionCardOffer); setSessionCardOffer(null); }}
+                  className="rounded-full bg-gradient-to-r from-amber-400 to-orange-400 px-3.5 py-1.5 text-xs font-bold text-slate-950 shadow active:scale-95"
+                >카드 만들기</button>
+                <button
+                  type="button"
+                  data-lucy-session-card-dismiss
+                  onClick={() => setSessionCardOffer(null)}
+                  className="rounded-full border border-white/20 bg-white/5 px-3.5 py-1.5 text-xs font-bold text-white/85 active:scale-95"
+                >괜찮아</button>
+              </div>
+            </motion.div>
+          )}
+
           {isLucyGenerating && (
             <div className={`flex items-center gap-2.5 p-3.5 border rounded-2xl w-fit shadow-xs animate-pulse ${
               isLight
@@ -5093,6 +5140,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
 
       {/* 📖 13페이지 추천 질문 라이브러리 모달 */}
       {/* 엔진함·추천질문 라이브러리는 점술모드에서만 연다 */}
+      {sessionCard && <LucyMasterSessionCard source={sessionCard} onClose={() => setSessionCard(null)} />}
       {isMasterMode && <LucyLibraryDialogs sessionKey={librarySessionKey} isLight={isLight} onSelectPrompt={handleSelectPromptFromLibrary} />}
 
       {/* 👥 대화창 프로필 추가/수정 모달 */}
