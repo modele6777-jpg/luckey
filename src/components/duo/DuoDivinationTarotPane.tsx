@@ -137,7 +137,7 @@ export function DuoDivinationTarotPane(_props: { isLight?: boolean }) {
         {showReading ? (
           <MasterReadingStage />
         ) : shownFace === 'tools' ? (
-          <MasterToolBoard tools={table.tools} concern={table.concern} lastAnswer={table.lastAnswer} />
+          <MasterToolBoard tools={table.tools} concern={table.concern} lastAnswer={table.lastAnswer} facts={table.facts} />
         ) : shownFace === 'saju' ? (
           <MasterSajuBoard saju={table.saju} lastAnswer={table.lastAnswer} />
         ) : (

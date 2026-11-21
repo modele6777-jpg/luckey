@@ -1,5 +1,6 @@
 import type { SajuAnalysisResult } from '@/lib/sajuAnalysis';
 import type { CalculationAuditItem } from '@/lib/divination/calculationAudit';
+import type { ToolFact } from '@/lib/lucyMasterToolFacts';
 
 /**
  * Lucy Master's unfolded left table listens to what Lucy is doing in the right pane:
@@ -15,9 +16,11 @@ export interface LucyTableState {
   /** 3단계(심층)에서 13대 도구가 어떻게 계산됐는지, 그리고 그때의 중심 고민. */
   tools: CalculationAuditItem[];
   concern: string;
+  /** 도구별 실제 계산 결과 핵심 줄 (양피지 두루마리용). */
+  facts: Record<string, ToolFact[]>;
 }
 
-let state: LucyTableState = { saju: null, lastAnswer: '', lastAnswerHasTarot: false, answerVersion: 0, tools: [], concern: '' };
+let state: LucyTableState = { saju: null, lastAnswer: '', lastAnswerHasTarot: false, answerVersion: 0, tools: [], concern: '', facts: {} };
 
 export function getLucyTableState(): LucyTableState {
   return state;
@@ -33,14 +36,14 @@ export function publishTableSaju(saju: SajuAnalysisResult | null): void {
   emit();
 }
 
-export function publishTableTools(tools: readonly CalculationAuditItem[], concern: string): void {
-  state = { ...state, tools: [...tools], concern };
+export function publishTableTools(tools: readonly CalculationAuditItem[], concern: string, facts: Record<string, ToolFact[]> = {}): void {
+  state = { ...state, tools: [...tools], concern, facts };
   emit();
 }
 
 export function clearTableTools(): void {
   if (state.tools.length === 0 && !state.concern) return;
-  state = { ...state, tools: [], concern: '' };
+  state = { ...state, tools: [], concern: '', facts: {} };
   emit();
 }
 
