@@ -5,6 +5,7 @@ export interface TurkanaWindResult {
   calculatedAtKst: string;
   reflectionFocus: string;
   symbolicMotif: string;
+  companionMotif: string;
   ritualAction: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
@@ -12,7 +13,12 @@ export interface TurkanaWindResult {
 
 function getKstTimeString(date: Date): string {
   const kst = new Date(date.getTime() + 9 * 60 * 60 * 1000);
-  return kst.toISOString().replace('Z', '+09:00 (KST)');
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
 }
 
 function stableHash(input: string): number {
@@ -33,9 +39,19 @@ const TURKANA_MOTIFS = [
 ];
 
 const TURKANA_ACTIONS = [
+  '거센 바람에 맞서 힘만 빼기보다, 바람결이 만들어 내는 옥빛 물결을 타듯 오늘의 리듬을 바꿔 보세요.',
   '지금 거센 바람이 불고 있다면 맞서 버티기보다 바람의 방향에 맞춰 내 자리나 계획을 가볍게 조정해 보세요.',
+  '먼 목표와 발밑의 오늘 할 일 중 지금 당장 밟아야 할 한 걸음만 또렷이 골라 보세요.',
   '겉으로 답이 보이지 않을수록 마른 강바닥을 조금만 더 파 보는 마음으로 한 번 더 확인해 보세요.',
-  '먼 목표와 발밑의 오늘 할 일 중 지금 당장 밟아야 할 한 걸음만 또렷이 골라 보세요.'
+  '내가 이미 쥐고 있는 작은 자원 하나가 누구의 필요와 맞닿을 수 있는지 가볍게 떠올려 보세요.'
+];
+
+const TURKANA_QUESTIONS = [
+  '지금 내 앞에서 불고 있는 바람을 피하지 않고 오히려 물결의 색으로 바꿀 방법은 무엇일까요?',
+  '무겁게 못 박아 둔 자리에서 야자 천막처럼 가볍게 방향만 틀어도 훨씬 편해질 일은 무엇인가요?',
+  '먼 수평선에 시선을 빼앗겨 자꾸 놓치고 있던 발밑의 돌부리는 무엇인가요?',
+  '겉으로 말라 보이지만 조금만 더 파 보면 물길이 나올 것 같은 자리는 어디인가요?',
+  '내가 가진 작은 소금 한 줌이 다른 이의 하루와 만날 수 있는 연결 지점은 어디인가요?'
 ];
 
 export function calculateTurkanaJadeSeaWind(params: {
@@ -46,19 +62,24 @@ export function calculateTurkanaJadeSeaWind(params: {
   const { profile, now = new Date(), question = '' } = params;
   const seed = `${JSON.stringify(profile.fate ?? {})}|${question.trim()}|${now.toISOString().slice(0, 13)}`;
   const hash = stableHash(seed);
+  const idx = hash % TURKANA_MOTIFS.length;
+  const companionOffset = 1 + (stableHash(`${seed}|companion`) % (TURKANA_MOTIFS.length - 1));
 
-  const motif = TURKANA_MOTIFS[hash % TURKANA_MOTIFS.length];
-  const ritualAction = TURKANA_ACTIONS[Math.floor(hash / 7) % TURKANA_ACTIONS.length];
+  const motif = TURKANA_MOTIFS[idx];
+  const companionMotif = TURKANA_MOTIFS[(idx + companionOffset) % TURKANA_MOTIFS.length];
+  const ritualAction = TURKANA_ACTIONS[idx];
+  const reflectiveQuestion = TURKANA_QUESTIONS[idx];
 
   return {
-    engineVersion: 'LUCKEY-TURKANA-WIND-v2.1.0',
+    engineVersion: 'LUCKEY-TURKANA-WIND-v2.2.0',
     calculatedAtKst: getKstTimeString(now),
     reflectionFocus: question.trim()
-      ? `질문 "${question.trim()}" 속에서 거친 바람을 비취빛 물결로 바꾸는 투르카나 호수 관점`
+      ? `질문 "${question.trim()}" 속에서 거친 바람을 비취빛 물결로 바꾸는 투르카나 호수 관점 (동반 결: ${companionMotif.slice(0, 24)}…)`
       : '사막의 거친 바람 속에서도 옥빛 물결과 가벼운 기동성을 지키는 투르카나 비취 바다 관점',
     symbolicMotif: motif,
+    companionMotif,
     ritualAction,
-    reflectiveQuestion: '지금 내 앞에서 불고 있는 바람을 피하지 않고 오히려 물결의 색으로 바꿀 방법은 무엇일까요?',
+    reflectiveQuestion,
     interpretiveBoundary:
       '케냐 투르카나 호수와 사막 유목 문화의 상징적 비유로, 개인 점수·성격 진단·미래 예측이 아닙니다.'
   };
@@ -70,6 +91,7 @@ export function formatTurkanaWindPrompt(result: TurkanaWindResult): string {
     `- 기준 시각: ${result.calculatedAtKst}`,
     `- 성찰 초점: ${result.reflectionFocus}`,
     `- 상징 모티프: ${result.symbolicMotif}`,
+    `- 동반 모티프: ${result.companionMotif}`,
     `- 제안 의식: ${result.ritualAction}`,
     `- 성찰 질문: ${result.reflectiveQuestion}`,
     `- 경계: ${result.interpretiveBoundary}`
