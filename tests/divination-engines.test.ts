@@ -13727,13 +13727,14 @@ test('Breton Barzaz Sea Poetry engine: motif, +09:00 KST, and interpretive bound
 
 test('Hausa Kirari Alada Wisdom engine: proverb, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateHausaKirariAladaWisdom({ profile, now: new Date('2026-11-20T07:18:00Z'), question: '긴 호흡으로 신뢰를 지키고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-HAUSA-KIRARI-v2.1.0');
-  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.equal(rep.engineVersion, 'LUCKEY-HAUSA-KIRARI-v2.2.0');
+  assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
+  assert.ok(rep.companionSign !== rep.proverbSign);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatHausaKirariPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('하우사') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('하우사') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionSign));
 });
 
 test('Occitan Troubadour Paratge engine: virtue, +09:00 KST, and interpretive boundary', () => {
@@ -14362,13 +14363,14 @@ test('Phrygian Gordian Knot Clarity engine: symbol, +09:00 KST, and interpretive
 
 test('Goryeo Celadon Inlay Clarity engine: craft, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateGoryeoCeladonInlayClarity({ profile, now: new Date('2026-11-20T09:20:00Z'), question: '마음의 여백과 숨구멍을 마련하고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-GORYEO-CELADON-v2.1.0');
-  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.equal(rep.engineVersion, 'LUCKEY-GORYEO-CELADON-v2.2.0');
+  assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
+  assert.ok(rep.companionCraft !== rep.celadonCraft);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatGoryeoCeladonPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('고려 청자') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('고려 청자') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionCraft));
 });
 
 test('Lydian Sardis Electrum Balance engine: sign, +09:00 KST, and interpretive boundary', () => {
@@ -14396,13 +14398,14 @@ test('Canaanite Ugarit Cedar Wisdom engine: symbol, +09:00 KST, and interpretive
 
 test('Goguryeo Samjoko Mural Spirit engine: motif, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateGoguryeoSamjokoMuralSpirit({ profile, now: new Date('2026-11-20T19:05:00Z'), question: '시야를 넓혀 당당하게 나아가고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-GOGURYEO-SAMJOKO-v2.1.0');
-  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.equal(rep.engineVersion, 'LUCKEY-GOGURYEO-SAMJOKO-v2.2.0');
+  assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
+  assert.ok(rep.companionMotif !== rep.muralMotif);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatGoguryeoSamjokoPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('고구려') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('고구려') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionMotif));
 });
 
 test('Silla Emille Cheomseongdae engine: motif, +09:00 KST, and interpretive boundary', () => {
