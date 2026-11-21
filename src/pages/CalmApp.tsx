@@ -12,7 +12,7 @@ import { playAudioHaptic } from "@/lib/audioHaptics";
 import { useTheme } from "@/contexts/ThemeContext";
 import { readSafeAreaInsets } from "@/lib/visualViewportBox";
 import { PageGuideDialog } from "@/components/guide/PageGuide";
-import { getPageGuide } from "@/lib/pageGuides";
+import { resolveKeyTabGuide } from "@/lib/pageGuides";
 
 const CALM_DARK_THEME_CSS = `
   html.dark {
@@ -303,17 +303,17 @@ export default function CalmApp() {
     return () => frame?.removeEventListener('load', updateLayout);
   }, [isWideWorkspace]);
   // 📘 Key 안의 가이드 버튼 → 앱 가이드 창 (Key 화면 안에서 열림)
-  const [guideOpen, setGuideOpen] = useState(false);
+  const [guideOpen, setGuideOpen] = useState<string | null>(null);
   useEffect(() => {
     const onMessage = (event: MessageEvent) => {
       if (event.origin !== window.location.origin) return;
-      if (event.data?.type === 'LUCKEY_OPEN_GUIDE') setGuideOpen(true);
+      if (event.data?.type === 'LUCKEY_OPEN_GUIDE') setGuideOpen(typeof event.data.tab === 'string' ? event.data.tab : '');
     };
     window.addEventListener('message', onMessage);
     return () => window.removeEventListener('message', onMessage);
   }, []);
   const searchParams = typeof window !== 'undefined' ? window.location.search : '';
-  const iframeSrc = `/calm/index.html${searchParams ? searchParams + '&v=46.0' : '?v=46.0'}`;
+  const iframeSrc = `/calm/index.html${searchParams ? searchParams + '&v=47.0' : '?v=47.0'}`;
 
   return (
     <div
@@ -345,7 +345,7 @@ export default function CalmApp() {
         allow="autoplay; microphone"
         onLoad={handleIFrameLoad}
       />
-      {guideOpen && <PageGuideDialog guide={getPageGuide('key')} onClose={() => setGuideOpen(false)} />}
+      {guideOpen !== null && <PageGuideDialog guide={resolveKeyTabGuide(guideOpen)} onClose={() => setGuideOpen(null)} />}
     </div>
   );
 }

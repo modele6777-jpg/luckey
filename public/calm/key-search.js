@@ -194,7 +194,8 @@
       guide.setAttribute('aria-label', 'Key 가이드 열기');
       guide.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 7v14"/><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/></svg><span>가이드</span>';
       guide.addEventListener('click', function () {
-        window.parent.postMessage({ type: 'LUCKEY_OPEN_GUIDE', guide: 'key' }, window.location.origin);
+        var active = document.querySelector('.tab-pill.active');
+        window.parent.postMessage({ type: 'LUCKEY_OPEN_GUIDE', guide: 'key', tab: active ? active.getAttribute('data-tab') : '' }, window.location.origin);
       });
       actions.appendChild(guide);
     }
