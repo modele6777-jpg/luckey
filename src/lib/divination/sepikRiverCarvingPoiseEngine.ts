@@ -5,6 +5,7 @@ export interface SepikCarvingResult {
   calculatedAtKst: string;
   reflectionFocus: string;
   symbolicMotif: string;
+  companionMotif: string;
   ritualAction: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
@@ -12,7 +13,12 @@ export interface SepikCarvingResult {
 
 function getKstTimeString(date: Date): string {
   const kst = new Date(date.getTime() + 9 * 60 * 60 * 1000);
-  return kst.toISOString().replace('Z', '+09:00 (KST)');
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
 }
 
 function stableHash(input: string): number {
@@ -34,8 +40,18 @@ const SEPIK_MOTIFS = [
 
 const SEPIK_ACTIONS = [
   '내 안의 거친 면이나 옹이를 억지로 깎아 내기보다 지금의 결을 살려 쓸 자리를 찾아보세요.',
+  '흐름을 직선으로 억지로 펴려 하지 말고 오늘의 곡선을 따라 부드럽게 노를 저어 보세요.',
   '선택지가 많아 머리가 복잡할 때는 숯·황토·석회 세 가지처럼 가장 핵심적인 기준 세 개만 남겨 보세요.',
-  '흐름을 직선으로 억지로 펴려 하지 말고 오늘의 곡선을 따라 부드럽게 노를 저어 보세요.'
+  '환경의 수위가 바뀔 때마다 억지로 버티기보다 오늘 내 마음의 마루 높이를 한 칸 조절해 보세요.',
+  '당장 칼을 대어 결론을 내기보다 지금 마주한 재료의 결을 5분만 더 가만히 들여다보세요.'
+];
+
+const SEPIK_QUESTIONS = [
+  '지금 내가 없애려고만 했던 옹이 가운데 사실은 내 이야기의 핵심이 될 부분은 무엇인가요?',
+  '직선으로 억지로 펴려 들지 않고 굽이치는 곡선 그대로 노를 저을 때 훨씬 편해질 일은 무엇인가요?',
+  '지금 내 작업대 위에서 덜어 내고 숯·황토·석회처럼 선명하게 남길 세 가지 기준은 무엇인가요?',
+  '불어나는 물결에 맞춰 내 일상이나 마음의 높이를 유연하게 조절해야 할 자리는 어디인가요?',
+  '서둘러 깎아 내기 전에 그 안에 이미 들어 있는 형상이 드러날 때까지 기다려 줄 일은 무엇인가요?'
 ];
 
 export function calculateSepikRiverCarving(params: {
@@ -44,21 +60,26 @@ export function calculateSepikRiverCarving(params: {
   question?: string;
 }): SepikCarvingResult {
   const { profile, now = new Date(), question = '' } = params;
-  const seed = `${JSON.stringify(profile.fate ?? {})}|${question.trim()}|${now.toISOString().slice(0, 13)}`;
+  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${question.trim()}|${now.toISOString().slice(0, 13)}`;
   const hash = stableHash(seed);
+  const idx = hash % SEPIK_MOTIFS.length;
+  const companionOffset = 1 + (stableHash(`${seed}|companion`) % (SEPIK_MOTIFS.length - 1));
 
-  const motif = SEPIK_MOTIFS[hash % SEPIK_MOTIFS.length];
-  const ritualAction = SEPIK_ACTIONS[Math.floor(hash / 7) % SEPIK_ACTIONS.length];
+  const motif = SEPIK_MOTIFS[idx];
+  const companionMotif = SEPIK_MOTIFS[(idx + companionOffset) % SEPIK_MOTIFS.length];
+  const ritualAction = SEPIK_ACTIONS[idx];
+  const reflectiveQuestion = SEPIK_QUESTIONS[idx];
 
   return {
-    engineVersion: 'LUCKEY-SEPIK-CARVING-v2.1.0',
+    engineVersion: 'LUCKEY-SEPIK-CARVING-v2.2.0',
     calculatedAtKst: getKstTimeString(now),
     reflectionFocus: question.trim()
-      ? `질문 "${question.trim()}" 속에서 나무의 옹이와 강물의 곡선을 있는 그대로 살리는 세픽 강 조각 관점`
+      ? `질문 "${question.trim()}" 속에서 나무의 옹이와 강물의 곡선을 있는 그대로 살리는 세픽 강 조각 관점 (동반 결: ${companionMotif.slice(0, 24)}…)`
       : '거친 결을 깎아 버리지 않고 형태를 꺼내는 파푸아뉴기니 세픽 강 조각 관점',
     symbolicMotif: motif,
+    companionMotif,
     ritualAction,
-    reflectiveQuestion: '지금 내가 없애려고만 했던 옹이 가운데 사실은 내 이야기의 핵심이 될 부분은 무엇인가요?',
+    reflectiveQuestion,
     interpretiveBoundary:
       '파푸아뉴기니 세픽 강 목조 예술 전통의 상징적 비유로, 개인 점수·성격 진단·미래 예측이 아닙니다.'
   };
@@ -70,6 +91,7 @@ export function formatSepikCarvingPrompt(result: SepikCarvingResult): string {
     `- 기준 시각: ${result.calculatedAtKst}`,
     `- 성찰 초점: ${result.reflectionFocus}`,
     `- 상징 모티프: ${result.symbolicMotif}`,
+    `- 동반 모티프: ${result.companionMotif}`,
     `- 제안 의식: ${result.ritualAction}`,
     `- 성찰 질문: ${result.reflectiveQuestion}`,
     `- 경계: ${result.interpretiveBoundary}`

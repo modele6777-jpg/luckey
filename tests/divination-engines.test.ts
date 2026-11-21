@@ -14907,24 +14907,26 @@ test('Maldivian Coral Atoll engine: motif, +09:00 KST, and interpretive boundary
 
 test('Tatra Shepherd Ridge engine: motif, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateTatraShepherdRidge({ profile, now: new Date('2026-11-20T21:16:00Z'), question: '발끝의 능선부터 차분히 짚고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-TATRA-RIDGE-v2.1.0');
-  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.equal(rep.engineVersion, 'LUCKEY-TATRA-RIDGE-v2.2.0');
+  assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
+  assert.ok(rep.companionMotif !== rep.symbolicMotif);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatTatraRidgePrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('타트라') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('타트라') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionMotif));
 });
 
 test('Yemeni Shibam Mud Tower engine: motif, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateYemeniShibamMudTower({ profile, now: new Date('2026-11-20T21:28:00Z'), question: '한 층씩 천천히 굳혀 가고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-YEMENI-SHIBAM-v2.1.0');
-  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.equal(rep.engineVersion, 'LUCKEY-YEMENI-SHIBAM-v2.2.0');
+  assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
+  assert.ok(rep.companionMotif !== rep.symbolicMotif);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatYemeniShibamPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('예멘') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('예멘') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionMotif));
 });
 
 test('Icelandic Saga Hearth engine: motif, +09:00 KST, and interpretive boundary', () => {
@@ -14941,13 +14943,14 @@ test('Icelandic Saga Hearth engine: motif, +09:00 KST, and interpretive boundary
 
 test('Sepik River Carving engine: motif, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateSepikRiverCarving({ profile, now: new Date('2026-11-20T21:28:00Z'), question: '거친 결을 살려 쓰고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-SEPIK-CARVING-v2.1.0');
-  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.equal(rep.engineVersion, 'LUCKEY-SEPIK-CARVING-v2.2.0');
+  assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
+  assert.ok(rep.companionMotif !== rep.symbolicMotif);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatSepikCarvingPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('세픽') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('세픽') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionMotif));
 });
 
 test('Moldovan Orhei Limestone engine: motif, +09:00 KST, and interpretive boundary', () => {
