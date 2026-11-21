@@ -13297,13 +13297,14 @@ test('Ojibwe Seven Grandfather Teachings engine: virtues, +09:00 KST, and interp
 
 test('Sami Noaidi Drum & Joik engine: drum zone, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateSamiNoaidiDrumJoik({ profile, now: new Date('2026-11-20T04:40:00Z'), question: '지친 마음을 회복하고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-SAMI-NOAIDI-JOIK-v2.1.0');
-  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.equal(rep.engineVersion, 'LUCKEY-SAMI-NOAIDI-JOIK-v2.2.0');
+  assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
+  assert.ok(rep.companionDrumZone.id !== rep.activeDrumZone.id);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측 수치가 아닙니다'));
   const prompt = formatSamiNoaidiDrumJoikPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('사미') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('사미') && prompt.includes('동반 공명 영역') && prompt.includes('+09:00 (KST)'));
 });
 
 test('Georgian Rustaveli Knight in the Panther’s Skin engine: virtues, +09:00 KST, and interpretive boundary', () => {
@@ -13500,13 +13501,14 @@ test('Minoan Labyrinth Labrys engine: stages, +09:00 KST, and interpretive bound
 
 test('Toraja Aluk Todolo Tongkonan engine: pillars, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateTorajaAlukTodoloTongkonan({ profile, now: new Date('2026-11-20T06:10:00Z'), question: '삶의 방향과 감사를 세우고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-TORAJA-ALUK-v2.1.0');
-  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.equal(rep.engineVersion, 'LUCKEY-TORAJA-ALUK-v2.2.0');
+  assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
+  assert.ok(rep.companionPillar.name !== rep.activePillar.name);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatTorajaAlukPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('토라자') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('토라자') && prompt.includes('동반 기둥') && prompt.includes('+09:00 (KST)'));
 });
 
 test('Sinhala Bali Kohomba Harmony engine: layers, +09:00 KST, and interpretive boundary', () => {
@@ -14812,13 +14814,14 @@ test('Kuba Raffia Geometry Order engine: motif, +09:00 KST, and interpretive bou
 
 test('Samoan Fale Tapa Breeze engine: motif, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateSamoanFaleTapaBreeze({ profile, now: new Date('2026-11-20T20:24:00Z'), question: '마음에 시원한 바람을 쐬어 주고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-SAMOAN-FALE-v2.1.0');
-  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.equal(rep.engineVersion, 'LUCKEY-SAMOAN-FALE-v2.2.0');
+  assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
+  assert.ok(rep.companionMotif !== rep.samoanMotif);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatSamoanFalePrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('사모아') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('사모아') && prompt.includes('동반 모티프') && prompt.includes('+09:00 (KST)'));
 });
 
 test('Cappadocian Tuff Cave Calm engine: motif, +09:00 KST, and interpretive boundary', () => {
