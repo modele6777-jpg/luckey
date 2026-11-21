@@ -15746,3 +15746,22 @@ test('buildUserFifteenToolsDigest integrates 5th-round Saju, Astrology, and Ziwe
   assert.ok(digest.includes('분기 사화 [') && digest.includes('유년 의례:'));
   assert.ok(!/breakthroughPowerScore|deukSeScore|driveScore|wealthAffinityScore/.test(digest));
 });
+
+test('buildUserFifteenToolsDigest integrates 5th-round Tarot, Sukuyo, and Mahabote pathworking, lunar date, house evaluation, and interpretive boundaries without raw scores', () => {
+  const profile: any = {
+    basic: {
+      name: '제제',
+      birthdate: '1994-01-24',
+      birthtime: '10:30',
+      calendarType: 'solar',
+      isLeapMonth: false,
+      gender: 'male',
+    },
+  };
+  const digest = buildUserFifteenToolsDigest(profile, new Date('2026-11-22T06:46:00+09:00'));
+  assert.ok(digest.includes('세피라 조응(') && digest.includes('타로 조율 ['));
+  assert.ok(digest.includes('본명숙 ') && digest.includes('음력 '));
+  assert.ok(digest.includes('본명궁 평가(') && digest.includes('명반 의례:'));
+  assert.ok(digest.includes('성찰 초점:') && digest.includes('해석 경계:'));
+  assert.ok(!/tarotVitalityScore/.test(digest));
+});
