@@ -590,33 +590,15 @@ export function splitSpeechIntoChunks(text: string, maxChunkLength = 240): strin
   return chunks;
 }
 
-const LEAD_CHUNK_TARGET = 70;
-const LEAD_CHUNK_MAX = 90;
-
 /**
- * The exact chunks playTTSInChunks speaks. The first chunk is kept short (about one
- * sentence) because the server returns a chunk's audio only after synthesizing all of
- * it: a short lead starts the voice quickly while the following chunks download.
- * Prefetching must use this same plan or its cached audio never matches playback.
+ * The exact chunks playTTSInChunks speaks. Kept to the established ~180-character
+ * chunks: each chunk is one provider request and the Gemini TTS rate limit is small,
+ * so splitting into more, shorter requests caused "음성 요청이 몰려" errors (v1.8.102).
  */
 export function planTTSChunks(text: string, maxChunkLength = 240): string[] {
   const cleanText = prepareNaturalSpeechText(text);
   if (!cleanText) return [];
-  const chunks = splitSpeechIntoChunks(cleanText, Math.max(80, Math.min(120, maxChunkLength)));
-  if (chunks.length === 0) return chunks;
-  const first = chunks[0];
-  if (first.length <= LEAD_CHUNK_MAX) return chunks;
-  const sentences = splitSpeechIntoSentences(first);
-  let lead = sentences[0] || first;
-  if (lead.length > LEAD_CHUNK_MAX) {
-    const window = lead.slice(0, LEAD_CHUNK_MAX);
-    const comma = Math.max(window.lastIndexOf(','), window.lastIndexOf('，'));
-    const space = window.lastIndexOf(' ', LEAD_CHUNK_TARGET + 10);
-    const cut = comma >= 30 ? comma + 1 : space >= 30 ? space : LEAD_CHUNK_TARGET;
-    lead = lead.slice(0, cut).trim();
-  }
-  const rest = first.slice(first.indexOf(lead) + lead.length).trim();
-  return [lead, ...(rest ? [rest] : []), ...chunks.slice(1)];
+  return splitSpeechIntoChunks(cleanText, Math.max(80, Math.min(120, maxChunkLength)));
 }
 
 /**

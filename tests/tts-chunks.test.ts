@@ -22,14 +22,13 @@ test('the same chat text uses separate cached audio for user and Lucy voices', (
   assert.equal(getTTSCacheKey(text, 'Kore'), getTTSCacheKey(text, 'Aoede'));
 });
 
-test('playback starts with a short lead chunk and keeps every word', async () => {
+test('playback keeps the established chunk count (one provider request per chunk)', async () => {
   const { planTTSChunks } = await import('../src/utils/tts');
   const text = '오늘은 마음이 조금 무거운 날일 수 있어요, 그래도 괜찮아요. 천천히 숨을 고르고 지금 할 수 있는 한 가지만 생각해 봐요. 사주로 보면 올해는 변화의 기운이 강해서 서두르기보다 준비하는 게 좋아요. 이번 주에는 원하는 조건 세 가지를 적어 보세요.';
   const chunks = planTTSChunks(text);
-  assert.ok(chunks.length >= 2);
-  assert.ok(chunks[0].length <= 90, `lead chunk too long: ${chunks[0].length}`);
-  assert.equal(chunks.join('').replace(/\s/g, ''), planTTSChunks(chunks.join(' ')).join('').replace(/\s/g, ''));
-  assert.equal(chunks.join('').replace(/[\s]/g, ''), text.replace(/[\s]/g, ''));
+  assert.ok(chunks.every(chunk => chunk.length <= 180));
+  assert.ok(chunks.length <= 2, `too many requests: ${chunks.length}`);
+  assert.equal(chunks.join('').replace(/\s/g, ''), text.replace(/\s/g, ''));
 });
 
 test('prefetch and playback plan identical chunks for any chunk-length argument', async () => {
