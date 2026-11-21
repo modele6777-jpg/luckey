@@ -353,13 +353,14 @@ export function calculateIchingMaster(
   if (Array.isArray(linesOrDate) && linesOrDate.length === 6) {
     lines = [...linesOrDate] as Yao[];
   } else {
-    // 날짜/타임스탬프 기반 소강절 선천팔괘수 시간작괘 (결정론적 일관성)
+    // 날짜/타임스탬프 기반 소강절 선천팔괘수 시간작괘 (+09:00 KST 결정론적 일관성)
     const target = linesOrDate instanceof Date ? linesOrDate : refNow;
-    const y = target.getFullYear();
-    const m = target.getMonth() + 1;
-    const d = target.getDate();
-    const h = target.getHours();
-    const min = target.getMinutes();
+    const kstTarget = new Date(target.getTime() + 9 * 60 * 60 * 1000);
+    const y = kstTarget.getUTCFullYear();
+    const m = kstTarget.getUTCMonth() + 1;
+    const d = kstTarget.getUTCDate();
+    const h = kstTarget.getUTCHours();
+    const min = kstTarget.getUTCMinutes();
 
     const upperNum = (y + m + d) % 8 || 8;
     const lowerNum = (y + m + d + h + min) % 8 || 8;
