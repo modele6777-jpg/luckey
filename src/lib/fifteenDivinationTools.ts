@@ -575,7 +575,14 @@ export function buildUserFifteenToolsDigest(profile?: UserProfile, asOfDate: Dat
         const matrixNote = vd.vedicSynthesisMatrix
           ? ` · 베딕 조율 [${vd.vedicSynthesisMatrix.alignmentState} / ${vd.vedicSynthesisMatrix.dominantTension}] → ${vd.vedicSynthesisMatrix.integratedAction}`
           : '';
-        vedicLine = `\n- 베딕 조티시: 달 나크샤트라 ${vd.nakshatra.name} ${vd.nakshatra.pada}파다(지배성: ${vd.nakshatra.lord} · ${vd.nakshatra.gana} · ${vd.nakshatra.tattva}) · 빔쇼타리 대운 ${lord} 마하다샤${antar ? `·${antar} 부대운` : ''} · 달 라시 ${sign}${sunSign}${lagnaSign}${synergy}${pillar}${aim}${secondaryNote}${ritualNote}${matrixNote}${focusNote}${boundaryNote}.`;
+        const dashaEndNote = vd.currentDasha
+          ? ` (마하 종료 ${vd.currentDasha.mahadasha.endDate} · 안타르 종료 ${vd.currentDasha.antardasha.endDate})`
+          : '';
+        const balanceNote = vd.dashaBalance
+          ? ` · 출생 잔여 대운 ${vd.dashaBalance.lord} ${vd.dashaBalance.years.toFixed(1)}년`
+          : '';
+        const questionNote = vd.reflectiveQuestion ? ` · 성찰 질문: "${vd.reflectiveQuestion}"` : '';
+        vedicLine = `\n- 베딕 조티시: 달 나크샤트라 ${vd.nakshatra.name} ${vd.nakshatra.pada}파다(지배성: ${vd.nakshatra.lord} · ${vd.nakshatra.gana} · ${vd.nakshatra.tattva}) · 빔쇼타리 대운 ${lord} 마하다샤${antar ? `·${antar} 부대운` : ''}${dashaEndNote}${balanceNote} · 달 라시 ${sign}${sunSign}${lagnaSign}${synergy}${pillar}${aim}${secondaryNote}${ritualNote}${matrixNote}${focusNote}${questionNote}${boundaryNote}.`;
       }
     } catch (_) {}
 
@@ -640,11 +647,15 @@ export function buildUserFifteenToolsDigest(profile?: UserProfile, asOfDate: Dat
         const gate = se.gate || hq.eightGatesVerdict.seYaoGate || '중궁기궁';
         const riskTone = hq.samhyeong.riskIndex >= 70 ? '고위험 주의' : hq.samhyeong.riskIndex >= 35 ? '중간 유의' : '안정';
         const tonggiTone = hq.tonggi.score >= 80 ? '완숙 유통' : hq.tonggi.score >= 40 ? '부분 유통' : '정체 보완 필요';
-        const resonance = hq.heavenEarthResonance?.seYaoResonance ? ` · 천지반 공명 [${hq.heavenEarthResonance.seYaoResonance.relation}]` : '';
+        const resonance = hq.heavenEarthResonance?.seYaoResonance
+          ? ` · 천지반 공명 [${hq.heavenEarthResonance.seYaoResonance.relation}](${hq.heavenEarthResonance.seYaoResonance.interpretation})`
+          : '';
         const wonders = hq.threeWondersAlliance?.wondersDetected?.length
           ? ` · 삼기 회합 [${hq.threeWondersAlliance.wondersDetected.join('·')}]`
           : '';
-        const seasonWin = hq.tacticalSeasonWindows?.peakActionSeason ? ` · 최적 결단 계절 [${hq.tacticalSeasonWindows.peakActionSeason}]` : '';
+        const seasonWin = hq.tacticalSeasonWindows?.peakActionSeason
+          ? ` · 결단/수성 계절 [${hq.tacticalSeasonWindows.peakActionSeason} 추진 / ${hq.tacticalSeasonWindows.defensiveSeason} 수성]`
+          : '';
         const seDirection = hq.palaces?.find((p) => p.palace === se.palace)?.direction;
         const dirInfo = seDirection ? ` · 방위 ${seDirection}` : '';
         const rel0 = hq.keyPointRelations?.[0]
@@ -665,7 +676,8 @@ export function buildUserFifteenToolsDigest(profile?: UserProfile, asOfDate: Dat
         const matrixNote = hq.honggukSynthesisMatrix
           ? ` · 기문 처신(${hq.honggukSynthesisMatrix.coreInsight}): ${hq.honggukSynthesisMatrix.recommendedAction} (유의: ${hq.honggukSynthesisMatrix.cautionNotice})`
           : '';
-        qimenLine = `\n- 홍국기문(4주 9궁): 세효 [${se.palaceName}](${se.element}·${se.star}${dirInfo}) · 응효 [${eung.palaceName}](${eung.element}·${eung.star}) · 중궁 [${jg.palaceName}](${jg.element}) · 세효 8문 ${gate}(${se.gateCategory})${gateVerdict}${rel0}${resonance}${wonders} · 삼형살 ${hq.samhyeong.formed ? `${hq.samhyeong.type || '삼형'} 성립` : hq.samhyeong.partial ? '부분형' : '미성립'}(파극 위험 ${riskTone}) · 5행 통기 ${tonggiTone}${seasonWin}${seasonTone}${tacticalNote}${ritualNote}${matrixNote}${focusNote}${boundaryNote}.`;
+        const questionNote = hq.reflectiveQuestion ? ` · 성찰 질문: "${hq.reflectiveQuestion}"` : '';
+        qimenLine = `\n- 홍국기문(4주 9궁): 세효 [${se.palaceName}](${se.element}·${se.star}${dirInfo}) · 응효 [${eung.palaceName}](${eung.element}·${eung.star}) · 중궁 [${jg.palaceName}](${jg.element}) · 세효 8문 ${gate}(${se.gateCategory})${gateVerdict}${rel0}${resonance}${wonders} · 삼형살 ${hq.samhyeong.formed ? `${hq.samhyeong.type || '삼형'} 성립` : hq.samhyeong.partial ? '부분형' : '미성립'}(파극 위험 ${riskTone}) · 5행 통기 ${tonggiTone}${seasonWin}${seasonTone}${tacticalNote}${ritualNote}${matrixNote}${focusNote}${questionNote}${boundaryNote}.`;
       }
     } catch (_) {}
 
@@ -724,7 +736,14 @@ export function buildUserFifteenToolsDigest(profile?: UserProfile, asOfDate: Dat
         const matrixNote = lr.liurenSynthesisMatrix
           ? ` · 육임 처신(${lr.liurenSynthesisMatrix.coreInsight}): ${lr.liurenSynthesisMatrix.recommendedAction} (유의: ${lr.liurenSynthesisMatrix.cautionNotice})`
           : '';
-        liurenLine = `\n- 대육임(12천장·삼전): ${lr.dayStemBranch}일 ${lr.hourBranch}시(${lr.monthGeneral} 월장) · 과격 [${lr.patternName}](${lr.patternGuidance}) · 국면 [${lr.decisionGrade}] · 삼전(${trans}) · 주천장 ${lr.primaryGeneral.name}(${lr.primaryGeneral.nature})${lessonDyn}${tempoInfo}${temporalNote}${nextMoveNote}${timingNote}${ritualNote}${matrixNote}${focusNote}${boundaryNote}.`;
+        const yinLessons = lr.fourLessons?.[1] && lr.fourLessons?.[3]
+          ? ` · 음신 흐름(내면 제2과 ${lr.fourLessons[1].upper}/${lr.fourLessons[1].lower} · 상대 의도 제4과 ${lr.fourLessons[3].upper}/${lr.fourLessons[3].lower})`
+          : '';
+        const protocolNote = lr.actionProtocols?.relationshipAdvice && lr.actionProtocols?.strategicCaution
+          ? ` · 관계 전략: ${lr.actionProtocols.relationshipAdvice} · 핵심 주의: ${lr.actionProtocols.strategicCaution}`
+          : '';
+        const questionNote = lr.reflectiveQuestion ? ` · 성찰 질문: "${lr.reflectiveQuestion}"` : '';
+        liurenLine = `\n- 대육임(12천장·삼전): ${lr.dayStemBranch}일 ${lr.hourBranch}시(${lr.monthGeneral} 월장) · 과격 [${lr.patternName}](${lr.patternGuidance}) · 국면 [${lr.decisionGrade}] · 삼전(${trans}) · 주천장 ${lr.primaryGeneral.name}(${lr.primaryGeneral.nature})${lessonDyn}${yinLessons}${tempoInfo}${temporalNote}${nextMoveNote}${timingNote}${protocolNote}${ritualNote}${matrixNote}${focusNote}${questionNote}${boundaryNote}.`;
       }
     } catch (_) {}
 

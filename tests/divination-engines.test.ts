@@ -15869,3 +15869,22 @@ test('buildUserFifteenToolsDigest integrates 6th-round Tarot, Sukuyo, and Mahabo
   assert.ok(digest.includes('숙격 성향:') && digest.includes('나이 다샤('));
   assert.ok(!/tarotVitalityScore|guardScore|leadershipHonor/.test(digest));
 });
+
+test('buildUserFifteenToolsDigest integrates 6th-round Vedic, Liuren, and Qimen dasha end dates, yin lessons, resonance details, and reflective questions without raw scores', () => {
+  const profile: any = {
+    basic: {
+      name: '제제',
+      birthdate: '1994-01-24',
+      birthtime: '10:30',
+      calendarType: 'solar',
+      isLeapMonth: false,
+      gender: 'male',
+    },
+  };
+  const digest = buildUserFifteenToolsDigest(profile, new Date('2026-11-22T07:47:00+09:00'));
+  assert.ok(digest.includes('출생 잔여 대운') && digest.includes('마하 종료'));
+  assert.ok(digest.includes('음신 흐름(내면 제2과') && digest.includes('관계 전략:'));
+  assert.ok(digest.includes('천지반 공명 [') && digest.includes('결단/수성 계절 ['));
+  assert.ok(!/dharmaProsperityScore|fourLessonsHarmonyScore|decisionScore|riskIndex|tonggi\.score/.test(digest));
+});
+
