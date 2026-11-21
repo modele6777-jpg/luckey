@@ -25,6 +25,8 @@ on:
       - 'server/api-lib/sajuChartRoute.ts'
       - 'tests/server-import-extensions.test.ts'
       - 'tests/prod-audit-routes.test.ts'
+      - 'tests/render-api-routes.test.ts'
+      - 'server.app.ts'
       - 'package.json'
       - 'package-lock.json'
       - '.github/workflows/saju-checks.yml'
@@ -41,5 +43,5 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run lint
-      - run: npx tsx --test tests/saju-boundaries.test.ts tests/saju-clock-and-elements.test.ts tests/saju-surface-interpretation.test.ts tests/mcp-saju.test.ts tests/mcp-streamable.test.ts tests/mcp-query-auth.test.ts tests/reading-api-origin.test.ts tests/server-import-extensions.test.ts tests/prod-audit-routes.test.ts
+      - run: npx tsx --test tests/saju-boundaries.test.ts tests/saju-clock-and-elements.test.ts tests/saju-surface-interpretation.test.ts tests/mcp-saju.test.ts tests/mcp-streamable.test.ts tests/mcp-query-auth.test.ts tests/reading-api-origin.test.ts tests/server-import-extensions.test.ts tests/prod-audit-routes.test.ts tests/render-api-routes.test.ts
       - run: npm run build

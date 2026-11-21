@@ -243,7 +243,8 @@ export function calculateTarotMaster(params?: {
   question?: string;
 }): TarotMasterResult {
   const now = params?.now || new Date();
-  const currentYear = params?.targetYear || now.getFullYear();
+  const kstNow = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const currentYear = params?.targetYear || kstNow.getUTCFullYear();
 
   let birthY = 1994;
   let birthM = 1;
@@ -275,8 +276,8 @@ export function calculateTarotMaster(params?: {
   if (yrNum > 21) yrNum = sumDigits(yrNum);
   const yearCard = MAJOR_ARCANA[yrNum] || MAJOR_ARCANA[10];
 
-  // 4. 시공간 3카드 결정론 스프레드
-  const timeHash = now.getFullYear() * 10000 + (now.getMonth() + 1) * 100 + now.getDate() + now.getHours() + now.getMinutes();
+  // 4. 시공간 3카드 결정론 스프레드 (+09:00 KST 기준)
+  const timeHash = kstNow.getUTCFullYear() * 10000 + (kstNow.getUTCMonth() + 1) * 100 + kstNow.getUTCDate() + kstNow.getUTCHours() + kstNow.getUTCMinutes();
   const pastCardNum = (timeHash + sNum + 3) % 22;
   const presentCardNum = (timeHash + pNum + yrNum + 7) % 22;
   const futureCardNum = (timeHash + yrNum * 2 + 11) % 22;
