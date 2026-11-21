@@ -13830,13 +13830,14 @@ test('Galician Camino Atlantic Reflection engine: sign, +09:00 KST, and interpre
 
 test('Uyghur Kutadgu Bilig Wisdom engine: pillar, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateUyghurKutadguBiligWisdom({ profile, now: new Date('2026-11-20T07:32:00Z'), question: '오늘의 선택에서 절제와 분별을 세우고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-UYGHUR-KUTADGU-v2.1.0');
-  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.equal(rep.engineVersion, 'LUCKEY-UYGHUR-KUTADGU-v2.2.0');
+  assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
+  assert.ok(rep.companionPillar !== rep.biligPillar);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatUyghurKutadguPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('위구르') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('위구르') && prompt.includes('동반 기둥') && prompt.includes('+09:00 (KST)'));
 });
 
 test('Buryat Baikal Tengri Harmony engine: spirit, +09:00 KST, and interpretive boundary', () => {
@@ -14032,13 +14033,14 @@ test('Cherokee Gadugi Harmony engine: principle, +09:00 KST, and interpretive bo
 
 test('Tlingit Raven Clan Balance engine: balance, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateTlingitRavenClanBalance({ profile, now: new Date('2026-11-20T08:11:00Z'), question: '나와 다른 시선을 균형으로 보고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-TLINGIT-RAVEN-v2.1.0');
-  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.equal(rep.engineVersion, 'LUCKEY-TLINGIT-RAVEN-v2.2.0');
+  assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
+  assert.ok(rep.companionBalance !== rep.tlingitBalance);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatTlingitRavenPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('틀링깃') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('틀링깃') && prompt.includes('동반 균형') && prompt.includes('+09:00 (KST)'));
 });
 
 test('Oromo Gadaa Saffuu Harmony engine: cycle, +09:00 KST, and interpretive boundary', () => {
@@ -14718,13 +14720,14 @@ test('Mossi Earth Mural Harmony engine: motif, +09:00 KST, and interpretive boun
 
 test('Wolof Teranga Baobab Warmth engine: motif, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateWolofTerangaBaobabWarmth({ profile, now: new Date('2026-11-20T20:13:00Z'), question: '여백을 남기고 좋은 인연을 맞고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-WOLOF-TERANGA-v2.1.0');
-  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.equal(rep.engineVersion, 'LUCKEY-WOLOF-TERANGA-v2.2.0');
+  assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
+  assert.ok(rep.companionMotif !== rep.terangaMotif);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatWolofTerangaPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('월로프') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('월로프') && prompt.includes('동반 모티프') && prompt.includes('+09:00 (KST)'));
 });
 
 test('Palauan Bai Rafter Balance engine: motif, +09:00 KST, and interpretive boundary', () => {
