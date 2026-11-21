@@ -2,7 +2,15 @@
  * 📘 페이지 가이드: 화면(dApp)마다 우측 상단 가이드 버튼으로 연다.
  * - 사용 가이드(steps): 처음 쓰는 사람이 그대로 따라 하는 순서
  * - 활용 팁(tips): 더 잘 쓰는 요령과 아이디어
+ * - 추천 활용(uses): "이럴 때 → 이렇게" 쓰는 상황 예시 (pageGuideUses.ts)
  */
+import { PAGE_GUIDE_USES } from './pageGuideUses';
+
+export interface PageGuideUse {
+  icon: string;
+  when: string;
+  how: string;
+}
 export interface PageGuideTip {
   icon: string;
   text: string;
@@ -14,10 +22,15 @@ export interface PageGuide {
   intro: string;
   steps: string[];
   tips: PageGuideTip[];
+  uses: PageGuideUse[];
 }
 
 const g = (id: string, title: string, intro: string, steps: string[], tips: [string, string][]): PageGuide =>
-  ({ id, title, intro, steps, tips: tips.map(([icon, text]) => ({ icon, text })) });
+  ({
+    id, title, intro, steps,
+    tips: tips.map(([icon, text]) => ({ icon, text })),
+    uses: (PAGE_GUIDE_USES[id] ?? []).map(([icon, when, how]) => ({ icon, when, how })),
+  });
 
 const GUIDES: Record<string, PageGuide> = {
   lucy: g('lucy', '루시', '고민도, 일상 이야기도 편하게 나누는 대화 친구예요.', [
@@ -402,10 +415,13 @@ export function resolveKeyTabGuide(tab?: string | null): PageGuide {
   return (tab && KEY_TAB_GUIDES[tab]) || GUIDES.key;
 }
 
-export type PageGuideSection = 'guide' | 'tips';
+export type PageGuideSection = 'guide' | 'tips' | 'uses';
 
 /** Text read aloud by the guide's listen button (the section being viewed). */
 export function pageGuideSpeech(guide: PageGuide, section: PageGuideSection = 'guide'): string {
+  if (section === 'uses') {
+    return [`${guide.title} 추천 활용.`, ...guide.uses.map((use, index) => `${index + 1}. ${use.when}, ${use.how}`)].join('\n');
+  }
   if (section === 'tips') {
     return [`${guide.title} 활용 팁.`, ...guide.tips.map((tip, index) => `${index + 1}. ${tip.text}`)].join('\n');
   }

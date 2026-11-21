@@ -44,8 +44,8 @@ export function PageGuideDialog({ guide, onClose }: { guide: PageGuide; onClose:
             <button type="button" onClick={close} aria-label="가이드 닫기" className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-slate-500 hover:bg-slate-100"><X size={18} /></button>
           </div>
 
-          <div className="mt-3.5 grid shrink-0 grid-cols-2 gap-1 rounded-full bg-slate-100 p-1" role="tablist" aria-label="가이드 보기">
-            {([['guide', '📖 사용 가이드'], ['tips', '💡 활용 팁']] as const).map(([id, label]) => (
+          <div className="mt-3.5 grid shrink-0 grid-cols-3 gap-1 rounded-2xl bg-slate-100 p-1" role="tablist" aria-label="가이드 보기">
+            {([['guide', '📖', '사용 가이드'], ['tips', '💡', '활용 팁'], ['uses', '🎯', '추천 활용']] as const).map(([id, icon, label]) => (
               <button
                 key={id}
                 type="button"
@@ -53,8 +53,8 @@ export function PageGuideDialog({ guide, onClose }: { guide: PageGuide; onClose:
                 aria-selected={section === id}
                 data-page-guide-section={id}
                 onClick={() => switchSection(id)}
-                className={`rounded-full py-2 text-[13px] font-bold transition-colors ${section === id ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500'}`}
-              >{label}</button>
+                className={`flex flex-col items-center gap-0.5 rounded-xl px-1 py-1.5 text-[12px] font-bold whitespace-nowrap transition-colors ${section === id ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500'}`}
+              ><span className="text-base leading-none" aria-hidden="true">{icon}</span>{label}</button>
             ))}
           </div>
 
@@ -67,6 +67,18 @@ export function PageGuideDialog({ guide, onClose }: { guide: PageGuide; onClose:
                 </li>
               ))}
             </ol>
+          ) : section === 'uses' ? (
+            <ul className="-mx-1 mt-3.5 min-h-0 flex-1 space-y-2 overflow-y-auto overscroll-contain px-1" data-page-guide-uses>
+              {guide.uses.map((use, index) => (
+                <li key={index} className="flex gap-3 rounded-2xl border border-emerald-100 bg-emerald-50/60 px-3.5 py-2.5">
+                  <span className="text-lg leading-none" aria-hidden="true">{use.icon}</span>
+                  <span className="min-w-0 break-keep">
+                    <span className="block text-[13px] font-bold leading-snug text-slate-900">{use.when}</span>
+                    <span className="mt-0.5 block text-[13px] leading-relaxed text-slate-700">→ {use.how}</span>
+                  </span>
+                </li>
+              ))}
+            </ul>
           ) : (
             <ul className="-mx-1 mt-3.5 min-h-0 flex-1 space-y-2 overflow-y-auto overscroll-contain px-1" data-page-guide-tips>
               {guide.tips.map((tip, index) => (

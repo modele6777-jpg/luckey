@@ -1900,7 +1900,8 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
 
       // 말이 끝나면(들은 글자가 1.2초 동안 그대로면) 시리처럼 자동 전송한다.
       const watcher = createEndOfSpeechWatcher({
-        canSend: () => isCurrent() && voiceStateRef.current !== 'thinking' && voiceStateRef.current !== 'speaking',
+        // 루시가 답변을 쓰는 중이어도 이어서 보낼 수 있다 (상태 표시가 늦게 풀려도 전송이 막히지 않게).
+        canSend: () => isCurrent(),
         onSend: (text) => {
           speechTranscriptRef.current = '';
           setSpeechTranscript('');
@@ -1958,12 +1959,12 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
   }, [stopRecognition]);
 
   // 🛟 안전장치: 화면에 보이는 들은 말이 1.5초 동안 그대로면, 인식기 신호와 상관없이 보낸다.
+  const heardOnScreen = (speechTranscript || speechInterim).trim();
   useEffect(() => {
-    const text = speechTranscript.trim();
-    if (!isVoiceMode || isVoiceMuted || isLucyGenerating || text.length < 2) return;
+    const text = heardOnScreen;
+    if (!isVoiceMode || isVoiceMuted || text.length < 2) return;
     const timer = setTimeout(() => {
-      if (!isVoiceModeRef.current || isVoiceMutedRef.current || isLucyGeneratingRef.current) return;
-      if (speechTranscriptRef.current.trim() !== text) return;
+      if (!isVoiceModeRef.current || isVoiceMutedRef.current) return;
       const watcher = speechWatcherRef.current;
       if (watcher && !watcher.sent && watcher.text.trim()) {
         watcher.sendNow();
@@ -1975,7 +1976,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
       void handleSendRef.current(text);
     }, 1500);
     return () => clearTimeout(timer);
-  }, [speechTranscript, isVoiceMode, isVoiceMuted, isLucyGenerating]);
+  }, [heardOnScreen, isVoiceMode, isVoiceMuted]);
 
   const startListeningRef = useRef(startListening);
   useEffect(() => {
@@ -4821,12 +4822,12 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
                 {(speechTranscript || speechInterim) && (
                   <div data-voice-transcript className="relative overflow-hidden mt-1.5 px-2.5 py-1.5 rounded-xl bg-white/70 dark:bg-white/5 border border-amber-400/30 text-xs flex items-center justify-between gap-2">
                     {/* 말을 멈추면 자동 전송까지 남은 시간 (글자가 바뀌면 처음부터 다시) */}
-                    {speechTranscript.trim().length >= 2 && !isVoiceMuted && !isLucyGenerating && (
+                    {heardOnScreen.length >= 2 && !isVoiceMuted && (
                       <span
-                        key={speechTranscript}
+                        key={heardOnScreen}
                         aria-hidden="true"
                         data-voice-autosend-bar
-                        className="lucy-voice-autosend-bar pointer-events-none absolute bottom-0 left-0 h-[2px] bg-amber-400"
+                        className="lucy-voice-autosend-bar pointer-events-none absolute bottom-0 left-0 h-[3px] bg-amber-400"
                       />
                     )}
                     <span className="truncate text-slate-700 dark:text-amber-100/90 font-medium">
