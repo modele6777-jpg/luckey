@@ -841,7 +841,7 @@ ${content}
         return res.status(200).json(await synthesizeWithEdgeTTS(speech, voice));
       } catch (error: any) {
         console.warn("Edge lead TTS failed:", error?.providerCode || error?.message);
-        return res.status(502).json({ error: "Edge TTS unavailable", code: "TTS_EDGE_UNAVAILABLE" });
+        return res.status(502).json({ error: "Edge TTS unavailable", code: "TTS_EDGE_UNAVAILABLE", ...(error?.providerStatus ? { providerStatus: error.providerStatus } : {}), ...(error?.providerCode ? { providerCode: String(error.providerCode).slice(0, 40) } : {}) });
       }
     }
 

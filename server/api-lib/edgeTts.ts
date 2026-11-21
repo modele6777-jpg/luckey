@@ -54,7 +54,7 @@ const EDGE_SPEECH_HOST = 'speech.platform.bing.com';
 const EDGE_SPEECH_PATH = '/consumer/speech/synthesize/readaloud/edge/v1';
 const EDGE_UA =
   'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) ' +
-  'Chrome/130.0.0.0 Safari/537.36 Edg/130.0.0.0';
+  'Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0';
 
 /**
  * Edge TTS 엔드포인트가 요구하는 Sec-MS-GEC (DRM 토큰)를 만듭니다.
@@ -69,7 +69,7 @@ function secMsGec(): { gec: string; version: string } {
     .update(`${ticks}${TRUSTED_CLIENT_TOKEN}`, 'ascii')
     .digest('hex')
     .toUpperCase();
-  return { gec, version: '1-130.0.2849.68' };
+  return { gec, version: '1-143.0.3650.75' };
 }
 
 /** 최소한의 마스킹된 WebSocket 프레임(텍스트)을 인코딩합니다. */
