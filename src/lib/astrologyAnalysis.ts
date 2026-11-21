@@ -449,7 +449,12 @@ export function buildUserNatalSummary(profile?: UserProfile | null): string {
     : '';
   const mcNote = chart.mc ? ` · 천정(MC) ${chart.mc.sign.name}` : '';
   const innerOuterAxis = ` · 소통/애정/추진/확장/성숙 축: 수성 ${chart.mercury.sign.name} · 금성 ${chart.venus.sign.name} · 화성 ${chart.mars.sign.name} · 목성 ${chart.jupiter.sign.name} · 토성 ${chart.saturn.sign.name}${mcNote}`;
-  return `${chart.summaryText}${balanceNote}${modalityNote}${topAspect}${innerOuterAxis} · 심리 청사진: ${chart.psychologicalBlueprint}`;
+  const coreElementHarmony = ` · 핵심 원소 결: 태양(${chart.sun.sign.element})·달(${chart.moon.sign.element})${chart.ascendant ? `·상승(${chart.ascendant.sign.element})` : ''}`;
+  const precisionNote = chart.timeKnown
+    ? ' · 산출 정밀도: 생시 반영 상승궁·MC 정밀 산출'
+    : ' · 산출 정밀도: 생시 미상(정오 기준 태양·달 중심 해석)';
+  const limitNote = chart.limitations?.length ? ` · 해석 경계: ${chart.limitations[0]}` : '';
+  return `${chart.summaryText}${balanceNote}${modalityNote}${coreElementHarmony}${topAspect}${innerOuterAxis}${precisionNote}${limitNote} · 심리 청사진: ${chart.psychologicalBlueprint}`;
 }
 
 /**
