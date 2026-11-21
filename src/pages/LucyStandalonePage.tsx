@@ -33,7 +33,7 @@ import { LucyAuraLoader } from '@/components/LucyAuraLoader';
 import { LucyMasterTarotRoom } from '@/components/chat/LucyMasterTarotRoom';
 import { LucyMasterBgmToggle } from '@/components/chat/LucyMasterBgmToggle';
 import { setSelectedEngineKeys } from '@/lib/lucyEngineSelection';
-import { isLucyMasterBgmPreferred, startLucyMasterBgm, stopLucyMasterBgm } from '@/lib/lucyMasterBgm';
+import { isLucyMasterBgmPreferred, startLucyMasterBgm, stopLucyMasterBgm, setLucyMasterBgmDepth } from '@/lib/lucyMasterBgm';
 import remarkGfm from 'remark-gfm';
 import { safeSessionStorage, safeLocalStorage } from '@/utils/safeStorage';
 import { isLucyMasterModeOn, setLucyMasterMode, LUCY_MASTER_MODE_EVENT, publishLucyTarotDraw, isAcceptingTarotDrawOffer, buildTarotHouseGuide, createTarotHouseGreeting, consumeTarotHouseGreetingPending, parseAnswerChoices, isAskingForDeepEngines, createTarotOfferOnUnfold, setLucyMasterLink, getLucyMasterLink, resolveLucyMasterLinkChoice, buildLinkedLucyContext, isTarotHouseGreetingPending, findConcernAnchor, createTarotHouseConcernQuestion, LUCY_TAROT_PICK_REQUEST_EVENT, LUCY_TAROT_PICKED_EVENT, LUCY_TAROT_PICK_CANCEL_EVENT, tarotPickPositions, toDetectedTarotCards, takeQueuedMasterTarotSpread, buildSpreadLayoutContext, matchMasterTarotSpread, isAutoSpreadCandidate, getLucyMasterDepth, useLucyMasterDepth, LUCY_MASTER_DEPTH_EVENT, LUCY_MASTER_DEPTH_INFO, LUCY_MASTER_MAX_DEPTH, type LucyMasterDepth } from '@/lib/lucyMasterMode';
@@ -750,6 +750,8 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
   const [isMasterMode, setIsMasterMode] = useState<boolean>(() => isLucyMasterModeOn());
   // 🔮 상담 깊이(빅뱅 홀드로 1→2→3). 바뀔 때 잠깐 안내를 띄운다.
   const masterDepth = useLucyMasterDepth();
+  // 배경음: 곡은 그대로, 깊이마다 소리를 한 겹씩 더한다 (켜져 있을 때만 들림)
+  useEffect(() => { setLucyMasterBgmDepth(masterDepth); }, [masterDepth]);
   const [depthNotice, setDepthNotice] = useState<{ depth: LucyMasterDepth; changed: boolean; key: number } | null>(null);
   useEffect(() => {
     let timer = 0;
