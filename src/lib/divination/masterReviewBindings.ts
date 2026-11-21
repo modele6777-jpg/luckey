@@ -2079,5 +2079,13 @@ export const MASTER_REVIEW_BINDINGS: Record<string, { field: string; traceKey: s
   "fezCobaltPottery": {
     "field": "fezCobaltPotteryResult",
     "traceKey": "fezCobaltPotteryResult"
+  },
+  "portugueseAzulejoTile": {
+    "field": "portugueseAzulejoTileResult",
+    "traceKey": "portugueseAzulejoTileResult"
+  },
+  "menorcaTalayotStoneBalance": {
+    "field": "menorcaTalayotStoneBalanceResult",
+    "traceKey": "menorcaTalayotStoneBalanceResult"
   }
 };
