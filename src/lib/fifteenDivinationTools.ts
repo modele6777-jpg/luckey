@@ -411,7 +411,7 @@ export function buildUserFifteenToolsDigest(profile?: UserProfile, asOfDate: Dat
         const questionNote = th.reflectiveQuestion ? ` · 성찰 질문: "${th.reflectiveQuestion}"` : '';
         const boundaryNote = th.interpretiveBoundary ? ` · 해석 경계: ${th.interpretiveBoundary}` : '';
         const matrixNote = th.horasatSynthesisMatrix ? ` · 호라삿 조율 [${th.horasatSynthesisMatrix.alignmentState} / ${th.horasatSynthesisMatrix.dominantTension}] → ${th.horasatSynthesisMatrix.integratedAction}` : '';
-        thaiLine = `- 태국점성술 요일 상징: ${KOR_WEEKDAYS[dow]} · 전통 색상 ${colors[dow]}. [호라삿 정밀 차트]: 수호신 ${th.birthDayPlanet.thaiName}(${th.birthDayPlanet.character}) · 마하탁사 108년 대운(${th.mahaThaksa.current.planet.planet} 대운 · ${th.mahaThaksa.current.planet.element} · 속성: ${th.mahaThaksa.current.attribute.korean}${dyn}${antardasha}) · 4대 원소 본명 ${th.fourElements.birthThaat.korean}/계절 ${th.fourElements.currentThaat.korean} 활력 [${vitalityTone}]${balanceNote}${luckyDir}${luckyColors}${seasonalTactics}${practiceNote}${ritualNote}${matrixNote}${focusNote}${questionNote}${boundaryNote}.`;
+        thaiLine = `- 태국점성술 요일 상징: ${KOR_WEEKDAYS[dow]} · 전통 색상 ${colors[dow]}. [호라삿 정밀 차트]: 수호신 ${th.birthDayPlanet.thaiName}(${th.birthDayPlanet.character}) · 마하탁사 108년 대운(${th.mahaThaksa.current.planet.planet} 대운 · 속성: ${th.mahaThaksa.current.attribute.korean}${dyn}${antardasha}) · 4대 원소 본명 ${th.fourElements.birthThaat.korean}/계절 ${th.fourElements.currentThaat.korean} 활력 [${vitalityTone}]${balanceNote}${luckyDir}${luckyColors}${seasonalTactics}${practiceNote}${ritualNote}${matrixNote}${focusNote}${questionNote}${boundaryNote}.`;
       } else {
         thaiLine = `- 태국점성술 요일 상징: ${KOR_WEEKDAYS[dow]} · 전통 색상 ${colors[dow]}. 정밀 호라삿 차트 미계산.`;
       }
@@ -765,10 +765,10 @@ export function buildUserFifteenToolsDigest(profile?: UserProfile, asOfDate: Dat
         const focusNote = ic.reflectionFocus ? ` · 성찰 초점: ${ic.reflectionFocus}` : '';
         const boundaryNote = ic.interpretiveBoundary ? ` · 해석 경계: ${ic.interpretiveBoundary}` : '';
         const matrixNote = ic.ichingSynthesisMatrix ? ` · 주역 처신(${ic.ichingSynthesisMatrix.coreInsight} → ${ic.ichingSynthesisMatrix.recommendedAction} · 유의: ${ic.ichingSynthesisMatrix.cautionNotice})` : '';
-        const riskWarnNote = ic.guidance?.riskWarning ? ` · 착괘 경고(${ic.guidance.riskWarning})` : '';
+        const outcomeNote = ic.guidance?.outcomeFuture ? ` · 지괘 귀결(${ic.guidance.outcomeFuture})` : '';
         const counterpartNote = ic.guidance?.counterpartView ? ` · 종괘 시선(${ic.guidance.counterpartView})` : '';
         const questionNote = ic.reflectiveQuestion ? ` · 성찰 질문: "${ic.reflectiveQuestion}"` : '';
-        ichingLine = `\n- 주역(64괘): 본괘 [${ic.primary.name}] → 지괘 [${ic.changed.name}] · 호괘 [${ic.nuclear.name}] · 착괘 [${ic.opposite.name}] · 종괘 [${ic.reversed.name}] · 체용관계 ${ic.tiYong.relationship}(${ic.tiYong.tiElement}/${ic.tiYong.yongElement}) · 주효 [${ic.dominantStage.yaoName} · ${ic.dominantStage.lifeStage}] · 경방 ${ic.palGongSeYing.palaceName}(세 ${ic.palGongSeYing.seYao}효⇄응 ${ic.palGongSeYing.yingYao}효 · ${ic.palGongSeYing.seYingHarmony})${dynNote}${coopNote}${seasonTone}${hiddenNote}${riskWarnNote}${counterpartNote}${protocolNote}${ritualNote}${matrixNote}${focusNote}${questionNote}${boundaryNote} · 결단 기조 [${ic.decisionGrade}].`;
+        ichingLine = `\n- 주역(64괘): 본괘 [${ic.primary.name}] → 지괘 [${ic.changed.name}] · 호괘 [${ic.nuclear.name}] · 착괘 [${ic.opposite.name}] · 종괘 [${ic.reversed.name}] · 체용관계 ${ic.tiYong.relationship}(${ic.tiYong.tiElement}/${ic.tiYong.yongElement}) · 주효 [${ic.dominantStage.yaoName} · ${ic.dominantStage.lifeStage}] · 경방 ${ic.palGongSeYing.palaceName}(세 ${ic.palGongSeYing.seYao}효⇄응 ${ic.palGongSeYing.yingYao}효 · ${ic.palGongSeYing.seYingHarmony})${dynNote}${coopNote}${seasonTone}${hiddenNote}${outcomeNote}${counterpartNote}${protocolNote}${ritualNote}${matrixNote}${focusNote}${questionNote}${boundaryNote} · 결단 기조 [${ic.decisionGrade}].`;
       }
     } catch (_) {}
 

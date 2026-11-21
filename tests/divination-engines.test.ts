@@ -15901,7 +15901,7 @@ test('buildUserFifteenToolsDigest integrates 6th-round Kabbalah, I Ching, and Th
   };
   const digest = buildUserFifteenToolsDigest(profile, new Date('2026-11-22T07:57:00+09:00'));
   assert.ok(digest.includes('수비 ') && digest.includes('성찰 질문:'));
-  assert.ok(digest.includes('착괘 경고(') && digest.includes('종괘 시선('));
+  assert.ok(digest.includes('지괘 귀결(') && digest.includes('종괘 시선('));
   assert.ok(digest.includes('계절 전술 [추진 ') && digest.includes('/ 수성 '));
   assert.ok(!/vitalityIndex|affinityScore|decisionScore|momentumScore/.test(digest));
 });
