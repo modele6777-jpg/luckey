@@ -97,8 +97,8 @@ export const HAPTIC_PATTERNS: Record<AudioHapticType, HapticPatternMeta> = {
   ai_result_chime: {
     vibration: [18, 35, 22],
     category: 'success',
-    label: 'TTS 및 작업 완료 띵동',
-    description: 'TTS 완독 뒤 한 번 울리는 1초의 옅고 둥근 2음 띵동 (대화 제외)',
+    label: 'TTS 완료 착 소리',
+    description: 'TTS 완독 뒤 한 번 울리는 0.15초의 짧고 또렷한 착 소리 (대화 제외)',
   },
 
   // Breathing (Soft Rhythmic)
@@ -988,7 +988,7 @@ export function playCardHaptic(
 }
 
 /**
- * 오직 TTS 음성 낭독 완독 시 한 번 재생하는 옅은 2음 띵동 (일반 채팅 대화 및 단순 텍스트 생성은 생략)
+ * 오직 TTS 음성 낭독 완독 시 한 번 재생하는 짧은 착 소리 (일반 채팅 대화 및 단순 텍스트 생성은 생략)
  */
 export function playAiResultNotification(options?: AudioHapticOptions): void {
   try {

@@ -86,6 +86,8 @@ test('a chunked reading plays one completion cue only after its final chunk', ()
 test('the completion cue uses the shared output bus and leaves external music alone', () => {
   assert.match(hapticsSource, /import \{ playCompletionChime \} from '\.\/completionChime';/);
   assert.match(hapticsSource, /case 'ai_result_chime':\s*\{\s*playCompletionChime\(ctx, bus, volScale\);/);
+  assert.match(hapticsSource, /label: 'TTS 완료 착 소리'/);
+  assert.match(hapticsSource, /0\.15초의 짧고 또렷한 착 소리/);
   assert.doesNotMatch(hapticsSource, /completionBirdChirp|playCompletionBirdChirp/);
   assert.match(hapticsSource, /const bus = getHapticBus\(ctx\)/);
   assert.match(ttsSource, /configureSpeechAudioSession\(\);[\s\S]*?duckAmbientAudio\(true/);
