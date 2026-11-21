@@ -185,6 +185,19 @@
     btn.title = '검색';
     btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>';
     btn.addEventListener('click', open);
+    // 📘 가이드: 앱(부모 화면)이 Key 사용법을 띄워 준다. 검색 버튼 왼쪽.
+    if (window.parent && window.parent !== window && !document.getElementById('key-guide-btn')) {
+      var guide = document.createElement('button');
+      guide.type = 'button';
+      guide.id = 'key-guide-btn';
+      guide.className = 'key-guide-btn';
+      guide.setAttribute('aria-label', 'Key 가이드 열기');
+      guide.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 7v14"/><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/></svg><span>가이드</span>';
+      guide.addEventListener('click', function () {
+        window.parent.postMessage({ type: 'LUCKEY_OPEN_GUIDE', guide: 'key' }, window.location.origin);
+      });
+      actions.appendChild(guide);
+    }
     actions.appendChild(btn);
   }
 

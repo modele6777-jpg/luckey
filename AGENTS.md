@@ -29,6 +29,8 @@ Every time a user request is completed or changes are made to the codebase:
 
 - User update 2026-11-21: the Key channel (`public/calm`) has a search button in its top nav (`key-search.js`). It searches the 90 practices, healing teachings and Key screens together. A result opens the practice (`startPractice`), the teaching (`keyShowTeaching`) or the tab (`keySwitchTab`). Bump the calm asset `?v=` and the SW cache when changing Key files.
 
+- User update 2026-11-21: every page has a top-right "가이드" button (`PageGuideButton`, data in `src/lib/pageGuides.ts`). Lucky channels and other content routes get it from `ChannelPage`, Lucy/Master in the Lucy header, and Key in its own top nav (it posts `LUCKEY_OPEN_GUIDE` to `CalmApp`). The guide is 3–5 simple tips with a "소리로 듣기" TTS button (`playTTSInChunks`, stopped on close). Keep tips accurate when features change.
+
 ### 4. Lucy Theme Isolation Across Channels
 - Lucy's time-of-day palette and nested text renderers use `LucyThemeBoundary`, regardless of whether the other pane is Key (light) or Lucky (dark).
 - Global channel theme selectors and Tailwind dark utilities must respect `.lucy-chat-shell`'s own daylight marker; never recolor its messages using the Key channel's document theme.
