@@ -68,6 +68,7 @@ import {
   hasSpokenDailyGreetingToday,
   markDailyGreetingSpokenToday,
   createDefaultGreeting,
+  LUCY_GREETING_BODIES,
   isGreetingMessage,
   saveUnifiedMessagesSafely,
   loadSavedUnifiedMessages,
@@ -1615,6 +1616,18 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
 
   // 🔮 루시 마스터(점술모드)는 일반 루시·루시+와 대화 내역을 따로 쓴다 (lucy-pro 저장소).
   const lucyMessages = isMasterMode ? (lucyProMessages || []) : (personaMessages?.lucy || []);
+  // 채팅방에 들어올 때마다 첫 인사(시간대 인사 + 문장)를 새로 고른다. 저장된 대화는 그대로 둔다.
+  const [greetingEntry, setGreetingEntry] = useState(() => ({ at: Date.now(), variant: Math.floor(Math.random() * LUCY_GREETING_BODIES.length) }));
+  const refreshEntryGreeting = useCallback(() => {
+    setGreetingEntry(previous => {
+      // 한 번 들어올 때 여러 진입 신호(경로·표시·pageshow)가 겹치므로 한 번만 바꾼다.
+      if (Date.now() - previous.at < 1500) return previous;
+      const count = LUCY_GREETING_BODIES.length;
+      const step = 1 + Math.floor(Math.random() * (count - 1));
+      return { at: Date.now(), variant: (previous.variant + step) % count };
+    });
+  }, []);
+
   const isLucyGenerating = isMasterMode ? Boolean(isLucyProGenerating) : Boolean(isGenerating?.lucy);
   // 🧰 엔진함에서 담아 둔 엔진 (매 답변에 함께 사용)
   // 엔진함 담기 기능은 제거됨: 예전에 담아 둔 엔진도 비워서 매 질문 자동 선택만 쓰게 한다.
@@ -2565,14 +2578,19 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
       }
       return m;
     });
-    if (!searchQuery.trim()) return baseList;
+    const freshList = baseList.map((m, index) => {
+      if (isMasterMode || index !== 0 || !isGreetingMessage(m) || m.mode === 'master') return m;
+      const fresh = createDefaultGreeting('lucy', userDisplayName, false, isPlusMode, new Date(greetingEntry.at), greetingEntry.variant);
+      return { ...m, content: fresh.content, timestamp: baseList.length === 1 ? greetingEntry.at : m.timestamp };
+    });
+    if (!searchQuery.trim()) return freshList;
     const q = searchQuery.toLowerCase();
-    return baseList.filter((m) => {
+    return freshList.filter((m) => {
       const rawText = typeof m.content === 'string' ? m.content : JSON.stringify(m.content);
       const txt = m.role === 'user' ? rawText : cleanAssistantMessageDisplay(rawText);
       return txt.toLowerCase().includes(q);
     });
-  }, [lucyMessages, searchQuery, userDisplayName, isPlusMode, pro, lucyTier]);
+  }, [lucyMessages, searchQuery, userDisplayName, isPlusMode, pro, lucyTier, greetingEntry, isMasterMode]);
 
   // 🛡️ 루시 플러스(Lucy+) 진입 시 잔존하는 프로 모드(마스터) 인사말 및 프로 상태 완벽 정화
   useEffect(() => {
@@ -3019,6 +3037,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
   // Align it before paint; playback state must never retrigger this entry scroll.
   useLayoutEffect(() => {
     if (!isLucyReady) return;
+    if (['/', '/chat', '/lucy', '/chat/pro'].includes(String(location).split(/[?#]/)[0])) refreshEntryGreeting();
     restoreLatestSavedMessages();
     isUserScrolledUpRef.current = false;
     setShowReturnToRecentConversation(false);
@@ -3029,7 +3048,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
     const first = requestAnimationFrame(() => { second = requestAnimationFrame(align); });
     document.fonts?.ready.then(align).catch(() => {});
     return () => { active = false; cancelAnimationFrame(first); cancelAnimationFrame(second); };
-  }, [isLucyReady, location, scrollToBottom, restoreLatestSavedMessages]);
+  }, [isLucyReady, location, scrollToBottom, restoreLatestSavedMessages, refreshEntryGreeting]);
 
   // Follow resized geometry at the bottom; revealing a retained pane reopens the latest thread.
   useEffect(() => {
@@ -3039,7 +3058,10 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
     const revealLatest = () => {
       const hidden = container.getBoundingClientRect().height < 2;
       if (!hidden && (wasHidden || !isUserScrolledUpRef.current)) {
-        if (wasHidden) restoreLatestSavedMessages();
+        if (wasHidden) {
+          refreshEntryGreeting();
+          restoreLatestSavedMessages();
+        }
         isUserScrolledUpRef.current = false;
         setShowReturnToRecentConversation(false);
         scrollToBottom(wasHidden, false);
@@ -3049,7 +3071,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
     const observer = new ResizeObserver(revealLatest);
     observer.observe(container);
     return () => observer.disconnect();
-  }, [isLucyReady, scrollToBottom, restoreLatestSavedMessages]);
+  }, [isLucyReady, scrollToBottom, restoreLatestSavedMessages, refreshEntryGreeting]);
 
   // Returning from the background also opens at the latest conversation.
   const wasAppHiddenRef = useRef(false);
@@ -3060,6 +3082,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
         wasAppHiddenRef.current = true;
       } else if (document.visibilityState === 'visible' && wasAppHiddenRef.current) {
         wasAppHiddenRef.current = false;
+        refreshEntryGreeting();
         restoreLatestSavedMessages();
         isUserScrolledUpRef.current = false;
         setShowReturnToRecentConversation(false);
@@ -3068,6 +3091,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
     };
 
     const onPageShow = () => {
+      refreshEntryGreeting();
       restoreLatestSavedMessages();
       isUserScrolledUpRef.current = false;
       setShowReturnToRecentConversation(false);
@@ -3092,7 +3116,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
       window.removeEventListener('nav-click-active', onLucyNavigation);
       if (navigationFrame !== null) cancelAnimationFrame(navigationFrame);
     };
-  }, [isLucyReady, scrollToBottom, restoreLatestSavedMessages]);
+  }, [isLucyReady, scrollToBottom, restoreLatestSavedMessages, refreshEntryGreeting]);
 
   // 🚀 최상단 스크롤 이벤트 수신 시 루시 대화창 최상단으로 부드럽게 스크롤
   useEffect(() => {
