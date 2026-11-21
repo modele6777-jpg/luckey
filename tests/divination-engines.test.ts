@@ -15536,3 +15536,21 @@ test('buildUserFifteenToolsDigest integrates Saju heeshin/gisin/specials, Astrol
   assert.ok(digest.includes('삼방 조언:') && digest.includes('록기 처신:') && digest.includes('사화 통합:'));
   assert.ok(!/breakthroughPowerScore|deukSeScore|driveScore|wealthAffinityScore/.test(digest));
 });
+
+test('buildUserFifteenToolsDigest integrates Tarot sephira/polarity, Sukuyo quadrant/compass, and Mahabote affinity/domain without raw scores', () => {
+  const profile: any = {
+    basic: {
+      name: '제제',
+      birthdate: '1994-01-24',
+      birthtime: '10:30',
+      calendarType: 'solar',
+      isLeapMonth: false,
+      gender: 'male',
+    },
+  };
+  const digest = buildUserFifteenToolsDigest(profile, new Date('2026-11-22T05:06:00+09:00'));
+  assert.ok(digest.includes('세피라 조응(') && digest.includes('극성 승화 [') && digest.includes('타로 처신:'));
+  assert.ok(digest.includes('수호영수 ') && digest.includes('숙요 처신:'));
+  assert.ok(digest.includes('주도 영역 [') && digest.includes('행성 친화(') && digest.includes('명반 처신:'));
+  assert.ok(!/tarotVitalityScore|guardScore|planetaryHarmonyScore/.test(digest));
+});

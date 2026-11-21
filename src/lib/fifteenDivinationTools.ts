@@ -356,7 +356,16 @@ export function buildUserFifteenToolsDigest(profile?: UserProfile, asOfDate: Dat
     try {
       const mb = calculateMahabote({ profile, targetYear: kstYear });
       if (mb.status === 'calculated' && mb.rootHouse && mb.currentAgeTransit) {
-        mahaboteLine = `- 마하보테 8요일 부분 계산: ${KOR_WEEKDAYS[dow]} · ${animal}(수호성 ${mb.birthPlanet?.planet || '태양(Sun)'}). [7궁 명반 포국]: 본명궁 ${mb.rootHouse.houseName}(${mb.rootHouse.category}) · 소수력 잉여수 ${mb.remainder} · 당해 ${mb.currentAgeTransit.currentAge}세 나이 다샤(${mb.currentAgeTransit.transitHouseName}${mb.transitInteraction?.phase ? ` · ${mb.transitInteraction.phase}` : ''}) · 길방위: ${mb.remedies?.luckyDirection || '동쪽'} · 길색: ${mb.remedies?.luckyColors?.join(', ') || '흰색'}${mb.remedies?.luckyGemstone ? ` · 길보석: ${mb.remedies.luckyGemstone}` : ''} · 실행 조언: ${mb.currentAgeTransit.actionAdvice}.`;
+        const affinityNote = mb.planetaryAffinity
+          ? ` · 행성 친화(${mb.planetaryAffinity.friendlyPlanets.slice(0, 2).join('·')} 조화 / ${mb.planetaryAffinity.challengingPlanets.slice(0, 2).join('·')} 절제 — ${mb.planetaryAffinity.affinityAdvice})`
+          : '';
+        const domainNote = mb.domainAffinities?.primaryLifeDomain
+          ? ` · 주도 영역 [${mb.domainAffinities.primaryLifeDomain}]`
+          : '';
+        const matrixNote = mb.mahaboteSynthesisMatrix?.integratedAction
+          ? ` · 명반 처신: ${mb.mahaboteSynthesisMatrix.integratedAction}`
+          : '';
+        mahaboteLine = `- 마하보테 8요일 부분 계산: ${KOR_WEEKDAYS[dow]} · ${animal}(수호성 ${mb.birthPlanet?.planet || '태양(Sun)'}). [7궁 명반 포국]: 본명궁 ${mb.rootHouse.houseName}(${mb.rootHouse.category}) · 소수력 잉여수 ${mb.remainder} · 당해 ${mb.currentAgeTransit.currentAge}세 나이 다샤(${mb.currentAgeTransit.transitHouseName}${mb.transitInteraction?.phase ? ` · ${mb.transitInteraction.phase}` : ''})${domainNote}${affinityNote} · 길방위: ${mb.remedies?.luckyDirection || '동쪽'} · 길색: ${mb.remedies?.luckyColors?.join(', ') || '흰색'}${mb.remedies?.luckyGemstone ? ` · 길보석: ${mb.remedies.luckyGemstone}` : ''} · 실행 조언: ${mb.currentAgeTransit.actionAdvice}${matrixNote}.`;
       } else {
         mahaboteLine = `- 마하보테 8요일 부분 계산: ${KOR_WEEKDAYS[dow]} · ${animal}. 7궁 명반 미계산.`;
       }
@@ -449,8 +458,19 @@ export function buildUserFifteenToolsDigest(profile?: UserProfile, asOfDate: Dat
         const timelineBrief = tm.timelineCards?.length
           ? ` · 3카드 흐름(${tm.timelineCards.map((c) => `${c.timeline.split(' ')[0]}:${c.card.name}`).join('→')})`
           : '';
-        const suitNote = tm.suitManifestation ? ` · 실천 수트 [${tm.suitManifestation.suitName}]` : '';
-        tarotLine = `\n- 타로 마스터 수비학: 소울 카드 ${tm.soulCard.name}(${tm.soulCard.keywords.slice(0, 2).join('·')}) · 퍼스널리티 카드 ${tm.personalityCard.name} · ${tm.currentYear}년 성장 카드 ${tm.yearCard.name}(${tm.yearCard.keywords.slice(0, 2).join('·')})${timelineBrief} · 4원소 흐름(우세 ${domElem} · 보완 ${lackElem})${suitNote}.`;
+        const suitNote = tm.suitManifestation
+          ? ` · 실천 수트 [${tm.suitManifestation.suitName}](${tm.suitManifestation.dailyPractice})`
+          : '';
+        const sephiraNote = tm.sephiraMapping
+          ? ` · 세피라 조응(${tm.sephiraMapping.soulSephira.sephiraName}↔${tm.sephiraMapping.personalitySephira.sephiraName})`
+          : '';
+        const polarityNote = tm.cardPolarities?.[0]
+          ? ` · 극성 승화 [${tm.cardPolarities[0].cardName} ${tm.cardPolarities[0].isUpright ? '정방향' : '역방향'}]: ${tm.cardPolarities[0].transmutationAdvice}`
+          : '';
+        const matrixNote = tm.tarotSynthesisMatrix?.integratedAction
+          ? ` · 타로 처신: ${tm.tarotSynthesisMatrix.integratedAction}`
+          : '';
+        tarotLine = `\n- 타로 마스터 수비학: 소울 카드 ${tm.soulCard.name}(${tm.soulCard.keywords.slice(0, 2).join('·')}) · 퍼스널리티 카드 ${tm.personalityCard.name} · ${tm.currentYear}년 성장 카드 ${tm.yearCard.name}(${tm.yearCard.keywords.slice(0, 2).join('·')})${timelineBrief} · 4원소 흐름(우세 ${domElem} · 보완 ${lackElem})${suitNote}${sephiraNote}${polarityNote}${matrixNote}.`;
       }
     } catch (_) {}
 
@@ -459,9 +479,19 @@ export function buildUserFifteenToolsDigest(profile?: UserProfile, asOfDate: Dat
     try {
       const sk = calculateSukuyoAdvanced({ profile, now: referenceDate });
       if (sk.status === 'calculated' && sk.mansion) {
-        const sanKyuNote = sk.sanKyuCycle ? ` · 삼구주기 [${sk.sanKyuCycle.nineMansionPhase}]` : '';
-        const guardNote = sk.planetaryGuard ? ` · 칠요 수호성 ${sk.planetaryGuard.dominantLuminary}(길요일 ${sk.planetaryGuard.favorableWeekday})` : '';
-        sukuyoLine = `\n- 숙요경(27숙): 본명숙 ${sk.mansion.fullName}(${sk.mansion.animal} · ${sk.mansion.element}행) · 숙격 ${sk.mansion.shukgukHanja}(${sk.mansion.shukgukTrait}) · 4방신 ${sk.mansion.group}${sanKyuNote}${guardNote}.`;
+        const sanKyuNote = sk.sanKyuCycle
+          ? ` · 삼구주기 [${sk.sanKyuCycle.nineMansionPhase}](${sk.sanKyuCycle.actionCompass})`
+          : '';
+        const guardNote = sk.planetaryGuard
+          ? ` · 칠요 수호성 ${sk.planetaryGuard.dominantLuminary}(길요일 ${sk.planetaryGuard.favorableWeekday} · ${sk.planetaryGuard.yearlyAdvice})`
+          : '';
+        const quadrantNote = sk.celestialQuadrant
+          ? ` · 수호영수 ${sk.celestialQuadrant.guardianSpirit}(${sk.celestialQuadrant.seasonalWeight})`
+          : '';
+        const matrixNote = sk.sukuyoSynthesisMatrix?.integratedAction
+          ? ` · 숙요 처신: ${sk.sukuyoSynthesisMatrix.integratedAction}`
+          : '';
+        sukuyoLine = `\n- 숙요경(27숙): 본명숙 ${sk.mansion.fullName}(${sk.mansion.animal} · ${sk.mansion.element}행) · 숙격 ${sk.mansion.shukgukHanja}(${sk.mansion.shukgukTrait}) · 4방신 ${sk.mansion.group}${quadrantNote}${sanKyuNote}${guardNote}${matrixNote}.`;
       }
     } catch (_) {}
 
