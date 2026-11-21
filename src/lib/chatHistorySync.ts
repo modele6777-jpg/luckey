@@ -13,6 +13,7 @@ import { LUCY_PRO_CATALOG_DUPLICATE_KEYS } from './divination/catalogDuplicateKe
 
 import { safeLocalStorage } from '../utils/safeStorage';
 import { getLucyChatDay as getTodayDateKey, isLucyTimestampToday as isTimestampToday, formatLucyChatDay } from './lucyChatDay';
+import { getLucyDayPeriod } from './lucyDayTheme';
 import { rememberChatDays } from './dailyChatMemoryStore';
 
 export type PersonaType = 'lucy' | 'orange' | 'trinity' | 'aura' | 'bluebird' | 'muse';
@@ -217,10 +218,20 @@ export function createDefaultGreeting(
   targetPersona: PersonaType = 'lucy',
   userName?: string,
   isMaster = false,
-  isPlus = false
+  isPlus = false,
+  now = new Date()
 ): UnifiedMessage {
   const nick = userName || getSavedNickname();
-  const nameLabel = nick && nick !== '여행자' ? `${nick}! ` : '';
+  const localHour = now.getHours();
+  const timeGreeting = getLucyDayPeriod(now) === 'morning'
+    ? '좋은 아침'
+    : getLucyDayPeriod(now) === 'day'
+      ? '안녕'
+      : localHour >= 18 && localHour < 22
+        ? '좋은 저녁'
+        : '늦은 시간에도 반가워';
+  const nameSuffix = nick && nick !== '여행자' ? `, ${nick}` : '';
+  const greetingLead = `${timeGreeting}${nameSuffix}!`;
   const todayKey = getTodayDateKey();
   const visibleCatalogEngines = ALL_DCE_ENGINES.filter(engine => !LUCY_PRO_CATALOG_DUPLICATE_KEYS.has(engine.key));
   const engineCount = visibleCatalogEngines.length;
@@ -229,7 +240,7 @@ export function createDefaultGreeting(
     return {
       id: `greet-${todayKey}`,
       role: 'model',
-      content: `안녕, ${nameLabel}루시 프로의 ${engineCount}개 카탈로그를 바탕으로 7대 테마 중 질문에 맞는 관점과 실제 계산 결과를 선별해 함께 살펴볼게. 어떤 고민이든 편하게 물어봐! 👑🔮`,
+      content: `${greetingLead} 루시 프로의 ${engineCount}개 카탈로그를 바탕으로 7대 테마 중 질문에 맞는 관점과 실제 계산 결과를 선별해 함께 살펴볼게. 어떤 고민이든 편하게 물어봐! 👑🔮`,
       timestamp: Date.now(),
       persona: targetPersona,
       mode: 'master',
@@ -240,7 +251,7 @@ export function createDefaultGreeting(
     return {
       id: `greet-${todayKey}`,
       role: 'model',
-      content: `안녕, ${nameLabel}오늘 하루는 어땠어? ㅎㅎ 사소한 일상 이야기나 오늘 있었던 일, 나누고 싶은 생각 뭐든 편하게 들려줘. 좌측 화면을 보면서 언제든 다정하게 수다 떨 준비되어 있어! 💬✨`,
+      content: `${greetingLead} 오늘 하루는 어땠어? ㅎㅎ 사소한 일상 이야기나 오늘 있었던 일, 나누고 싶은 생각 뭐든 편하게 들려줘. 좌측 화면을 보면서 언제든 다정하게 수다 떨 준비되어 있어! 💬✨`,
       timestamp: Date.now(),
       persona: targetPersona,
       mode: 'casual',
@@ -250,7 +261,7 @@ export function createDefaultGreeting(
   return {
     id: `greet-${todayKey}`,
     role: 'model',
-    content: `안녕, ${nameLabel}오늘 하루는 어땠어? ㅎㅎ 사소한 일상 이야기나 오늘 있었던 일, 나누고 싶은 생각 뭐든 편하게 들려줘. 언제든 친구처럼 다정하게 수다 떨 준비되어 있어! 💬✨`,
+    content: `${greetingLead} 오늘 하루는 어땠어? ㅎㅎ 사소한 일상 이야기나 오늘 있었던 일, 나누고 싶은 생각 뭐든 편하게 들려줘. 언제든 친구처럼 다정하게 수다 떨 준비되어 있어! 💬✨`,
     timestamp: Date.now(),
     persona: targetPersona,
     mode: 'casual',
