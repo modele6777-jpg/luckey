@@ -4,7 +4,7 @@ import { ScreenPortal } from '@/components/layout/ScreenPortal';
 import { LucyModeTransition } from '@/components/chat/LucyModeTransition';
 import { LucyEntryScreen, type LucyEntryVariant } from '@/components/chat/LucyEntryScreen';
 import { publishTableSaju, publishTableAnswer } from '@/lib/lucyTableBus';
-import { shouldOfferLucyMaster, dismissLucyMasterOffer, markLucyMasterFromOffer, consumeLucyMasterFromOffer } from '@/lib/lucyMasterOffer';
+import { shouldOfferLucyMaster, dismissLucyMasterOffer, markLucyMasterFromOffer, consumeLucyMasterFromOffer, shouldOfferReturnToLucy, dismissReturnToLucyOffer } from '@/lib/lucyMasterOffer';
 import { playLucyMasterSuction } from '@/components/omniwarp/BigBangMasterSuction';
 import { isLucyChatPath } from '@/lib/duoPaneFocus';
 import { isLucyTarotDrawRequest, isLucyTarotDrawOpen } from '@/lib/lucyTarotIntegrity';
@@ -1579,6 +1579,31 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
   const declineMasterOffer = useCallback(() => {
     setMasterOfferFor(null);
     dismissLucyMasterOffer();
+    triggerHaptic('whitehole');
+  }, []);
+
+  // 🌙 점술모드에서 상담이 마무리된 것처럼 보이면 일반 루시로 돌아갈지 채팅에 묻는다.
+  const [returnOfferFor, setReturnOfferFor] = useState<string | null>(null);
+  const returnOfferedForRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (!isMasterMode || isLucyGenerating) return;
+    const last = lucyMessages[lucyMessages.length - 1];
+    if (!last || (last.role !== 'model' && last.role !== 'assistant') || returnOfferedForRef.current === last.id) return;
+    const userTexts = lucyMessages.filter(m => m.role === 'user').map(m => typeof m.content === 'string' ? m.content : '');
+    if (shouldOfferReturnToLucy(userTexts)) {
+      returnOfferedForRef.current = last.id;
+      setReturnOfferFor(last.id);
+    }
+  }, [isMasterMode, isLucyGenerating, lucyMessages]);
+  useEffect(() => { if (!isMasterMode) setReturnOfferFor(null); }, [isMasterMode]);
+  const acceptReturnOffer = useCallback(() => {
+    setReturnOfferFor(null);
+    setLucyMasterMode(false);
+    triggerHaptic('whitehole');
+  }, []);
+  const declineReturnOffer = useCallback(() => {
+    setReturnOfferFor(null);
+    dismissReturnToLucyOffer();
     triggerHaptic('whitehole');
   }, []);
 
@@ -4263,6 +4288,34 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
                   onClick={declineMasterOffer}
                   className={`rounded-full border px-3.5 py-1.5 text-xs font-bold active:scale-95 ${isLight ? 'border-slate-300 text-slate-700 bg-white' : 'border-white/20 text-white/85 bg-white/5'}`}
                 >괜찮아, 계속 얘기할래</button>
+              </div>
+            </motion.div>
+          )}
+
+          {isMasterMode && !isLucyGenerating && returnOfferFor && lucyMessages[lucyMessages.length - 1]?.id === returnOfferFor && (
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              data-lucy-master-return-offer
+              className="max-w-[92%] rounded-2xl border border-violet-400/40 bg-[#1a0f2e]/90 p-3.5 text-white shadow-sm"
+            >
+              <p className="text-[13px] font-bold">🌙 상담은 여기까지 할까?</p>
+              <p className="mt-1 text-xs leading-relaxed text-violet-100/85 break-keep">
+                마음이 조금 정리된 것 같아. 일반 루시로 돌아가서 편하게 얘기할까? 다시 깊게 보고 싶을 땐 언제든 불러 줘.
+              </p>
+              <div className="mt-2.5 flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  data-lucy-master-return-accept
+                  onClick={acceptReturnOffer}
+                  className="rounded-full bg-gradient-to-r from-amber-400 to-orange-400 px-3.5 py-1.5 text-xs font-bold text-slate-950 shadow active:scale-95"
+                >일반 루시로 돌아가기</button>
+                <button
+                  type="button"
+                  data-lucy-master-return-decline
+                  onClick={declineReturnOffer}
+                  className="rounded-full border border-white/20 bg-white/5 px-3.5 py-1.5 text-xs font-bold text-white/85 active:scale-95"
+                >조금 더 상담할래</button>
               </div>
             </motion.div>
           )}
