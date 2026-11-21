@@ -554,14 +554,18 @@ export function buildUserFifteenToolsDigest(profile?: UserProfile, asOfDate: Dat
         const sunSign = vd.rashi?.surya.name ? ` · 태양 라시 ${vd.rashi.surya.name}` : '';
         const lagnaSign = vd.rashi?.lagna?.name ? ` · 라그나 ${vd.rashi.lagna.name}` : '';
         const synergy = vd.dashaPlanetarySynergy ? ` · 행성 시너지 [${vd.dashaPlanetarySynergy.relationship}](${vd.dashaPlanetarySynergy.karmicFocus})` : '';
-        const pillar = vd.kendraTrikonaProsperity ? ` · 핵심 하우스 축 [${vd.kendraTrikonaProsperity.dominantHousePillar}]` : '';
+        const pillar = vd.kendraTrikonaProsperity
+          ? ` · 핵심 하우스 축 [${vd.kendraTrikonaProsperity.dominantHousePillar}](${vd.kendraTrikonaProsperity.lifePillarAdvice})`
+          : '';
         const aim = vd.purusharthaAlignment?.primarySpiritualAim ? ` · 영적 지향: ${vd.purusharthaAlignment.primarySpiritualAim}` : '';
         const secondaryNote = vd.secondaryAxis ? ` · 보조 축: ${vd.secondaryAxis}` : '';
         const ritualNote = vd.ritualAction ? ` · 개운 실천: ${vd.ritualAction}` : '';
+        const focusNote = vd.reflectionFocus ? ` · 성찰 초점: ${vd.reflectionFocus}` : '';
+        const boundaryNote = vd.interpretiveBoundary ? ` · 해석 경계: ${vd.interpretiveBoundary}` : '';
         const matrixNote = vd.vedicSynthesisMatrix
           ? ` · 베딕 조율 [${vd.vedicSynthesisMatrix.alignmentState} / ${vd.vedicSynthesisMatrix.dominantTension}] → ${vd.vedicSynthesisMatrix.integratedAction}`
           : '';
-        vedicLine = `\n- 베딕 조티시: 달 나크샤트라 ${vd.nakshatra.name} ${vd.nakshatra.pada}파다(지배성: ${vd.nakshatra.lord} · ${vd.nakshatra.gana} · ${vd.nakshatra.tattva}) · 빔쇼타리 대운 ${lord} 마하다샤${antar ? `·${antar} 부대운` : ''} · 달 라시 ${sign}${sunSign}${lagnaSign}${synergy}${pillar}${aim}${secondaryNote}${ritualNote}${matrixNote}.`;
+        vedicLine = `\n- 베딕 조티시: 달 나크샤트라 ${vd.nakshatra.name} ${vd.nakshatra.pada}파다(지배성: ${vd.nakshatra.lord} · ${vd.nakshatra.gana} · ${vd.nakshatra.tattva}) · 빔쇼타리 대운 ${lord} 마하다샤${antar ? `·${antar} 부대운` : ''} · 달 라시 ${sign}${sunSign}${lagnaSign}${synergy}${pillar}${aim}${secondaryNote}${ritualNote}${matrixNote}${focusNote}${boundaryNote}.`;
       }
     } catch (_) {}
 
@@ -636,16 +640,19 @@ export function buildUserFifteenToolsDigest(profile?: UserProfile, asOfDate: Dat
         const gateVerdict = hq.eightGatesVerdict.pattern
           ? ` · 8문 격국 [${hq.eightGatesVerdict.pattern}](${hq.eightGatesVerdict.advice})`
           : '';
-        const seasonTone = hq.temporalHonggukRhythm?.seasonalQimenTone
-          ? ` · 계절 기문 결 [${hq.temporalHonggukRhythm.seasonalQimenTone}]`
+        const seasonTone = hq.temporalHonggukRhythm
+          ? ` · 궁 순시창 [${hq.temporalHonggukRhythm.palaceWatchWindow} · ${hq.temporalHonggukRhythm.seasonalQimenTone}]`
           : '';
         const tacticalNote = hq.situationalHonggukAudit?.tacticalStep
           ? ` · 전술 스텝: ${hq.situationalHonggukAudit.tacticalStep}`
           : '';
+        const ritualNote = hq.ritualAction ? ` · 기문 의례: ${hq.ritualAction}` : '';
+        const focusNote = hq.reflectionFocus ? ` · 성찰 초점: ${hq.reflectionFocus}` : '';
+        const boundaryNote = hq.interpretiveBoundary ? ` · 해석 경계: ${hq.interpretiveBoundary}` : '';
         const matrixNote = hq.honggukSynthesisMatrix
           ? ` · 기문 처신(${hq.honggukSynthesisMatrix.coreInsight}): ${hq.honggukSynthesisMatrix.recommendedAction} (유의: ${hq.honggukSynthesisMatrix.cautionNotice})`
           : '';
-        qimenLine = `\n- 홍국기문(4주 9궁): 세효 [${se.palaceName}](${se.element}·${se.star}${dirInfo}) · 응효 [${eung.palaceName}](${eung.element}·${eung.star}) · 중궁 [${jg.palaceName}](${jg.element}) · 세효 8문 ${gate}(${se.gateCategory})${gateVerdict}${rel0}${resonance}${wonders} · 삼형살 ${hq.samhyeong.formed ? `${hq.samhyeong.type || '삼형'} 성립` : hq.samhyeong.partial ? '부분형' : '미성립'}(파극 위험 ${riskTone}) · 5행 통기 ${tonggiTone}${seasonWin}${seasonTone}${tacticalNote}${matrixNote}.`;
+        qimenLine = `\n- 홍국기문(4주 9궁): 세효 [${se.palaceName}](${se.element}·${se.star}${dirInfo}) · 응효 [${eung.palaceName}](${eung.element}·${eung.star}) · 중궁 [${jg.palaceName}](${jg.element}) · 세효 8문 ${gate}(${se.gateCategory})${gateVerdict}${rel0}${resonance}${wonders} · 삼형살 ${hq.samhyeong.formed ? `${hq.samhyeong.type || '삼형'} 성립` : hq.samhyeong.partial ? '부분형' : '미성립'}(파극 위험 ${riskTone}) · 5행 통기 ${tonggiTone}${seasonWin}${seasonTone}${tacticalNote}${ritualNote}${matrixNote}${focusNote}${boundaryNote}.`;
       }
     } catch (_) {}
 
@@ -691,11 +698,16 @@ export function buildUserFifteenToolsDigest(profile?: UserProfile, asOfDate: Dat
         const nextMoveNote = lr.situationalLiurenAudit?.nextMove
           ? ` · 다음 수: ${lr.situationalLiurenAudit.nextMove}`
           : '';
+        const timingNote = lr.actionProtocols?.timingAdvice
+          ? ` · 타이밍 조언: ${lr.actionProtocols.timingAdvice}`
+          : '';
         const ritualNote = lr.ritualAction ? ` · 개운 실천: ${lr.ritualAction}` : '';
+        const focusNote = lr.reflectionFocus ? ` · 성찰 초점: ${lr.reflectionFocus}` : '';
+        const boundaryNote = lr.interpretiveBoundary ? ` · 해석 경계: ${lr.interpretiveBoundary}` : '';
         const matrixNote = lr.liurenSynthesisMatrix
           ? ` · 육임 처신(${lr.liurenSynthesisMatrix.coreInsight}): ${lr.liurenSynthesisMatrix.recommendedAction} (유의: ${lr.liurenSynthesisMatrix.cautionNotice})`
           : '';
-        liurenLine = `\n- 대육임(12천장·삼전): ${lr.dayStemBranch}일 ${lr.hourBranch}시(${lr.monthGeneral} 월장) · 과격 [${lr.patternName}] · 국면 [${lr.decisionGrade}] · 삼전(${trans}) · 주천장 ${lr.primaryGeneral.name}(${lr.primaryGeneral.nature})${lessonDyn}${tempoInfo}${temporalNote}${nextMoveNote}${ritualNote}${matrixNote}.`;
+        liurenLine = `\n- 대육임(12천장·삼전): ${lr.dayStemBranch}일 ${lr.hourBranch}시(${lr.monthGeneral} 월장) · 과격 [${lr.patternName}](${lr.patternGuidance}) · 국면 [${lr.decisionGrade}] · 삼전(${trans}) · 주천장 ${lr.primaryGeneral.name}(${lr.primaryGeneral.nature})${lessonDyn}${tempoInfo}${temporalNote}${nextMoveNote}${timingNote}${ritualNote}${matrixNote}${focusNote}${boundaryNote}.`;
       }
     } catch (_) {}
 
