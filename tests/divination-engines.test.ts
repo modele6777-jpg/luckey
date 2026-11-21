@@ -13321,14 +13321,15 @@ test('Georgian Rustaveli Knight in the Panther’s Skin engine: virtues, +09:00 
 
 test('Armenian Narekatsi Lamentation Healing engine: contemplations, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateArmenianNarekatsiLamentationHealing({ profile, now: new Date('2026-11-20T05:05:00Z'), question: '마음이 지쳐서 쉬고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-ARMENIAN-NAREKATSI-v2.2.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-ARMENIAN-NAREKATSI-v2.3.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.balancingContemplation.id !== rep.primaryContemplation.id);
+  assert.ok(rep.vigilPhase.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('운세 점수가 아닙니다'));
   const prompt = formatArmenianNarekatsiPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('나레카치') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.reflectionFocus));
+  assert.ok(prompt.includes('나레카치') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.vigilPhase) && prompt.includes(rep.reflectionFocus));
 });
 
 test('Javanese Kejawen Rasa Harmony engine: principles, +09:00 KST, and interpretive boundary', () => {
@@ -14187,14 +14188,15 @@ test('Ladakhi Stupa Glacier Water engine: wisdom, +09:00 KST, and interpretive b
 
 test('Assyrian Nineveh Clay Tablet engine: seal, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateAssyrianNinevehClayTablet({ profile, now: new Date('2026-11-20T08:40:00Z'), question: '머릿속 고민을 짧은 기록으로 세우고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-ASSYRIAN-NINEVEH-v2.2.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-ASSYRIAN-NINEVEH-v2.3.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionSeal.length > 0 && rep.companionSeal !== rep.tabletSeal);
+  assert.ok(rep.archiveCycle.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatAssyrianNinevehPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('아시리아') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.reflectionFocus));
+  assert.ok(prompt.includes('아시리아') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.archiveCycle) && prompt.includes(rep.reflectionFocus));
 });
 
 test('Tuareg Tagelmust Sahara Stars engine: compass, +09:00 KST, and interpretive boundary', () => {
@@ -14872,14 +14874,15 @@ test('Otavalo Andes Loom Balance engine: motif, +09:00 KST, and interpretive bou
 
 test('Andalusian Patio Fountain Calm engine: motif, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateAndalusianPatioFountainCalm({ profile, now: new Date('2026-11-20T20:49:00Z'), question: '내 안뜰의 잔잔한 물소리를 지키고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-ANDALUSIAN-PATIO-v2.2.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-ANDALUSIAN-PATIO-v2.3.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionMotif !== rep.patioMotif);
+  assert.ok(rep.courtyardPhase.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatAndalusianPatioPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('안달루시아') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionMotif));
+  assert.ok(prompt.includes('안달루시아') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.courtyardPhase) && prompt.includes(rep.companionMotif));
 });
 
 test('Lozi Kuomboka Flood Path engine: motif, +09:00 KST, and interpretive boundary', () => {
