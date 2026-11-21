@@ -31,6 +31,12 @@ export type QuestionIntentCategory =
   | 'master_blueprint'    // 인생 전체 운명 지도, 종합 진단, 7대 채널 총망라
   | 'casual_greeting';    // 가벼운 인사, 단순 맞장구
 
+/** 점술모드 3단계(심층)의 주 구성: 15대 도구 중 사주·타로를 뺀 13대 도구. */
+export const LUCY_MASTER_DEPTH3_TOOLS: readonly DivinationToolId[] = [
+  'astrology', 'ziwei', 'sukuyo', 'mahabote', 'vedic', 'liuren', 'qimen',
+  'kabbalah', 'iching', 'thai_astrology', 'tojeong', 'kyusei', 'taiyi',
+];
+
 export interface AgentRoutePlan {
   intent: QuestionIntentCategory;
   intentKoName: string;
@@ -535,12 +541,12 @@ export function routeAndExecute(params: {
   const divination = params.divinationMode;
   if (divination) {
     const baseTools: DivinationToolId[] = divination.base === 'tarot_saju' ? ['saju', 'tarot'] : ['saju'];
-    // 상담 깊이: 1 = 사주(+타로)만, 2 = 고민 의도에 맞는 도구 추가, 3 = 보조 도구까지 더해 입체적으로.
-    // 사용자가 말로 "더 깊게"를 원하면 그 답변은 3단계처럼 본다.
-    const level = divination.deep ? 3 : (divination.depth ?? 1);
-    const intentTools = level >= 2 ? (routePlan.targetTools ?? []) : [];
-    const companionTools: DivinationToolId[] = level >= 3 ? ['astrology', 'ziwei', 'iching'] : [];
-    const extraTools = [...intentTools, ...companionTools];
+    // 상담 깊이(쌓아가기): 1 = 사주, 2 = 사주 + 타로(손님이 직접 고른 카드만), 3 = 사주 + 타로 + 13대 도구.
+    // 말로 "더 깊게"를 원하면 그 답변에만 고민과 관련된 도구와 심층 관점을 더한다.
+    const toolLevel = divination.depth ?? 1;
+    const extraTools: DivinationToolId[] = toolLevel >= 3
+      ? [...LUCY_MASTER_DEPTH3_TOOLS]
+      : divination.deep ? (routePlan.targetTools ?? []) : [];
     routePlan.isCasual = false;
     routePlan.isMasterMobilization = false;
     routePlan.targetTools = [...new Set<DivinationToolId>([...baseTools, ...(params.targetTools ?? []), ...extraTools])];
@@ -598,14 +604,14 @@ export function routeAndExecute(params: {
       const engineNames = new Map(ALL_DCE_ENGINES.filter(e => e.category === 'deep_master').map(e => [e.key, e.nameKo] as const));
       routePlan.deepEngineKeys = deepKeys;
       routePlan.deepEnginesKo = deepKeys.map(key => engineNames.get(key) ?? key);
-      routePlan.deepEngineGuidance = '사용자가 상담 깊이를 2단계(심화)로 올렸다. 사주를 중심에 두고 함께 전달된 관련 도구 결과와 심층 관점을 엮어 원인과 흐름을 짚어줘. 심층 관점은 상징 참고일 뿐 별도 계산이 아니며, 미실행·오류·미기록 항목을 사용했다고 주장하지 마.';
+      routePlan.deepEngineGuidance = '사용자가 상담 깊이를 2단계(심화)로 올렸다. 2단계의 주 구성은 사주 + 타로다. 사주를 중심에 두고, 손님이 직접 고른 타로 카드가 전달됐다면 카드와 사주 흐름을 엮고, 함께 전달된 심층 관점으로 원인과 흐름을 짚어줘. 카드가 전달되지 않았다면 카드 결과를 지어내지 마. 심층 관점은 상징 참고일 뿐 별도 계산이 아니며, 미실행·오류·미기록 항목을 사용했다고 주장하지 마.';
     } else if (level === 3) {
       // 3단계 심층(또는 사용자가 말로 원함): 고민과 관련된 심층 관점을 넉넉히(최대 24개) 추가
       const deepKeys = selectRelevantDeepPerspectiveKeys(params.text, routePlan.intent, routePlan.deepEngineKeys ?? [], 24);
       const engineNames = new Map(ALL_DCE_ENGINES.filter(e => e.category === 'deep_master').map(e => [e.key, e.nameKo] as const));
       routePlan.deepEngineKeys = deepKeys;
       routePlan.deepEnginesKo = deepKeys.map(key => engineNames.get(key) ?? key);
-      routePlan.deepEngineGuidance = '사용자가 가장 깊은 상담(3단계 심층)을 원했다. 사주를 중심에 두고, 함께 전달된 관련 도구 계산 결과와 심층 관점을 하나씩 짚어 연결해줘. 심층 관점은 상징 참고일 뿐 별도 계산이 아니며, 미실행·오류·미기록 항목을 사용했다고 주장하지 마.';
+      routePlan.deepEngineGuidance = '사용자가 가장 깊은 상담(3단계 심층)을 원했다. 3단계의 주 구성은 사주 + 타로(고른 카드가 있을 때) + 13대 도구다. 13개 결과를 하나씩 나열하지 말고, 여러 도구가 공통으로 가리키는 신호 3~4개를 골라 사주와 엮어 풀고, 나머지는 "그 외 도구"로 한두 줄만 요약해. 도구끼리 엇갈리면 엇갈린다고 솔직히 말해. 태어난 시간 등 정보가 없어 계산되지 않은 도구는 "정보가 없어 못 봤어"라고 밝혀. 심층 관점은 상징 참고일 뿐 별도 계산이 아니며, 미실행·오류·미기록 항목을 사용했다고 주장하지 마.';
     } else {
       // 평소 대화: 사주 중심으로 가볍게. 심층 관점은 1개만 은은하게.
       routePlan.deepEngineKeys = (routePlan.deepEngineKeys ?? []).slice(0, 1);
