@@ -15909,4 +15909,22 @@ test('buildUserFifteenToolsDigest integrates 6th-round Kabbalah, I Ching, and Th
   assert.ok(!/vitalityIndex|affinityScore|decisionScore|momentumScore/.test(digest));
 });
 
+test('buildUserFifteenToolsDigest integrates 6th-round Kyusei, Tojeong, and Taiyi guidance, hazard reasons, elementRelationDesc, and threeGi palace details without raw scores', () => {
+  const profile: any = {
+    basic: {
+      name: '제제',
+      birthdate: '1994-01-24',
+      birthtime: '10:30',
+      calendarType: 'solar',
+      isLeapMonth: false,
+      gender: 'male',
+    },
+  };
+  const digest = buildUserFifteenToolsDigest(profile, new Date('2026-11-22T08:07:00+09:00'));
+  assert.ok(digest.includes('길방 실행(') && digest.includes('흉살 주의('));
+  assert.ok(digest.includes('일월)') && digest.includes('상하괘 오행 ['));
+  assert.ok(digest.includes('삼기(군[') && digest.includes('궁·'));
+  assert.ok(!/juBalanceScore|initiativeIndex|defensiveIndex|directionalScores|synergyScore|harmonyScore/.test(digest));
+});
+
 
