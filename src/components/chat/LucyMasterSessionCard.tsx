@@ -11,33 +11,180 @@ import {
 } from '@/lib/lucyMasterSessionCard';
 
 const DEPTH_NAME = { 1: '기본', 2: '심화', 3: '심층' } as const;
+const DEPTH_ROMAN = { 1: 'I', 2: 'II', 3: 'III' } as const;
 const LINE_LABELS = ['지금', '방향', '해볼 일'];
 // 4:5 portrait — Instagram feed size (1080×1350 at 3×), also fine for KakaoTalk.
 const CARD_W = 360;
 const CARD_H = 450;
 const SERIF = '"Noto Serif KR", "Playfair Display", Georgia, serif';
+const SANS = '"Noto Sans KR", "SUIT Variable", system-ui, sans-serif';
+const CORMORANT = '"Cormorant Garamond", "Playfair Display", Georgia, serif';
+const CINZEL = 'Cinzel, "Playfair Display", Georgia, serif';
 
-// Fixed star field so the saved image always looks the same.
-const STARS = Array.from({ length: 60 }, (_, i) => ({
-  left: (i * 47 + 13) % 100,
-  top: (i * 61 + 5) % 100,
-  size: i % 7 === 0 ? 2.2 : i % 3 === 0 ? 1.4 : 1,
-  opacity: 0.25 + ((i * 37) % 60) / 100,
-})).filter(star => star.left < 14 || star.left > 86 || star.top > 92 || star.top < 6 || (star.top > 52 && star.top < 66));
+export type SessionCardTheme = 'arch' | 'pastel' | 'stellar';
+const THEMES: { id: SessionCardTheme; label: string; swatch: string }[] = [
+  { id: 'arch', label: '아치', swatch: 'linear-gradient(135deg,#fffaf1,#ecdcc4)' },
+  { id: 'pastel', label: '파스텔', swatch: 'linear-gradient(135deg,#ffd9e8,#e6d4ff,#c9e4ff)' },
+  { id: 'stellar', label: '별자리', swatch: 'radial-gradient(circle,#1b2b5e,#05081a)' },
+];
+const THEME_KEY = 'lucy_session_card_theme';
 
-function formatDate(at: number): string {
+function readTheme(): SessionCardTheme {
   try {
-    return new Intl.DateTimeFormat('ko-KR', { timeZone: 'Asia/Seoul', year: 'numeric', month: 'long', day: 'numeric' }).format(new Date(at));
+    const saved = localStorage.getItem(THEME_KEY);
+    return saved === 'pastel' || saved === 'stellar' || saved === 'arch' ? saved : 'arch';
+  } catch {
+    return 'arch';
+  }
+}
+
+function formatDate(at: number, dotted = false): string {
+  try {
+    const parts = new Intl.DateTimeFormat('ko-KR', { timeZone: 'Asia/Seoul', year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(new Date(at));
+    const get = (type: string) => parts.find(part => part.type === type)?.value || '';
+    return dotted ? `${get('year')}.${get('month')}.${get('day')}` : `${get('year')}. ${get('month')}. ${get('day')}`;
   } catch {
     return '';
   }
 }
 
-function Sparkle({ size = 10, className = '' }: { size?: number; className?: string }) {
+interface FaceProps {
+  depth: 1 | 2 | 3;
+  endedAt: number;
+  concern: string;
+  status: 'loading' | 'ready' | 'error';
+  content: MasterSessionCardContent | null;
+}
+
+function Placeholder({ status, color }: { status: FaceProps['status']; color: string }) {
   return (
-    <svg viewBox="0 0 24 24" width={size} height={size} aria-hidden="true" className={className}>
-      <path d="M12 0 C13 8 16 11 24 12 C16 13 13 16 12 24 C11 16 8 13 0 12 C8 11 11 8 12 0 Z" fill="currentColor" />
-    </svg>
+    <div className="flex flex-1 flex-col items-center justify-center text-center" role="status" style={{ color }}>
+      {status === 'loading' ? (
+        <>
+          <motion.p className="text-3xl" animate={{ opacity: [0.4, 1, 0.4] }} transition={{ duration: 1.6, repeat: Infinity }}>🕯️</motion.p>
+          <p className="mt-2 text-xs">루시가 오늘 상담을 한 장에 담고 있어요…</p>
+        </>
+      ) : (
+        <p className="text-xs">카드를 만들지 못했어요. 다시 시도해 주세요.</p>
+      )}
+    </div>
+  );
+}
+
+const clamp2 = { display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' as const, overflow: 'hidden' };
+
+/** A · 아이보리 아치: 크림 바탕, 금색 아치 테두리, 달 문양. */
+function ArchFace({ depth, endedAt, concern, status, content }: FaceProps) {
+  return (
+    <div className="relative h-full w-full" style={{ background: 'radial-gradient(120% 90% at 50% 0%, #fffaf1 0%, #f6ecdc 60%, #ecdcc4 100%)', color: '#3a2e26', fontFamily: SANS, wordBreak: 'keep-all' }}>
+      <div className="absolute" style={{ inset: 18, border: '1px solid #b8925a', borderRadius: '150px 150px 10px 10px' }} />
+      <div className="absolute" style={{ inset: 23, border: '1px solid rgba(184,146,90,0.35)', borderRadius: '145px 145px 7px 7px' }} />
+      <div className="relative flex h-full flex-col items-center px-12 pt-12 pb-9 text-center">
+        <svg viewBox="0 0 48 48" width="42" height="42" aria-hidden="true">
+          <circle cx="24" cy="24" r="21" fill="none" stroke="#b8925a" strokeWidth="0.8" />
+          <path d="M30 10a14 14 0 1 0 8 20 11 11 0 1 1-8-20z" fill="#c9a26a" />
+          <circle cx="12" cy="14" r="1" fill="#b8925a" />
+          <circle cx="38" cy="38" r="1.2" fill="#b8925a" />
+        </svg>
+        <p className="mt-2" style={{ fontFamily: CORMORANT, letterSpacing: '0.35em', fontSize: 11, color: '#9a7445' }}>LUCY MASTER</p>
+        <p className="mt-0.5" style={{ fontSize: 9.5, color: '#9b8a78', letterSpacing: '0.05em' }}>{formatDate(endedAt)} · {DEPTH_NAME[depth]}</p>
+        {concern && <p className="mt-3" style={{ fontFamily: SERIF, fontSize: 13.5, lineHeight: 1.5, ...clamp2 }}>“{concern}”</p>}
+        <p className="my-2.5" style={{ color: '#b8925a', fontSize: 9, letterSpacing: '0.6em' }}>✦ ✦ ✦</p>
+        {status === 'ready' && content ? (
+          <>
+            <ul className="w-full space-y-1.5 text-left">
+              {content.lines.map((line, index) => (
+                <li key={index} className="flex gap-2.5" style={{ fontSize: 11.2, lineHeight: 1.5 }}>
+                  <span className="shrink-0" style={{ width: 14, fontFamily: CORMORANT, fontStyle: 'italic', color: '#9a7445', fontSize: 13 }}>{['i', 'ii', 'iii'][index]}</span>
+                  <span>{line}</span>
+                </li>
+              ))}
+            </ul>
+            <div className="mt-auto pt-2">
+              <p style={{ fontSize: 8.5, letterSpacing: '0.3em', color: '#a8916f' }}>루시가 남기는 한마디</p>
+              <p className="mt-1.5" style={{ fontFamily: SERIF, fontSize: 14.5, lineHeight: 1.6, color: '#5b3d22' }}>{content.word}</p>
+            </div>
+          </>
+        ) : <Placeholder status={status} color="#8a7458" />}
+        <p className="mt-2.5" style={{ fontFamily: CORMORANT, fontSize: 10, letterSpacing: '0.3em', color: '#b09a7c' }}>— LUCKY —</p>
+      </div>
+    </div>
+  );
+}
+
+/** B · 파스텔 그라데이션: 루시의 한마디를 크게. */
+function PastelFace({ depth, endedAt, concern, status, content }: FaceProps) {
+  return (
+    <div className="relative h-full w-full overflow-hidden" style={{ background: 'linear-gradient(160deg, #ffd9e8 0%, #e6d4ff 45%, #c9e4ff 100%)', color: '#2d2440', fontFamily: SANS, wordBreak: 'keep-all' }}>
+      <div className="absolute rounded-full" style={{ width: 240, height: 240, right: -70, top: -80, background: 'radial-gradient(circle, rgba(255,243,176,0.85) 0%, rgba(255,243,176,0) 70%)' }} />
+      <div className="absolute rounded-full" style={{ width: 240, height: 240, left: -90, bottom: 40, background: 'radial-gradient(circle, rgba(255,179,209,0.7) 0%, rgba(255,179,209,0) 70%)' }} />
+      <div className="relative flex h-full flex-col px-[30px] pt-[34px] pb-[26px]">
+        <div className="flex justify-between" style={{ fontSize: 10, letterSpacing: '0.15em', color: '#6b5a8a' }}>
+          <span>LUCY MASTER ☾</span>
+          <span>{formatDate(endedAt, true)}</span>
+        </div>
+        {status === 'ready' && content ? (
+          <>
+            <p className="mt-9" style={{ fontFamily: SERIF, fontWeight: 600, fontSize: content.word.length > 34 ? 19 : 22, lineHeight: 1.55, letterSpacing: '-0.01em' }}>{content.word}</p>
+            {concern && <p className="mt-3.5" style={{ fontSize: 10.5, color: '#6b5a8a', ...clamp2 }}>— “{concern}”에 대한 루시의 한마디</p>}
+            <div className="mt-auto rounded-[18px] px-[15px] py-[12px]" style={{ background: 'rgba(255,255,255,0.5)', border: '1px solid rgba(255,255,255,0.75)' }}>
+              {content.lines.map((line, index) => (
+                <p key={index} className="flex" style={{ fontSize: 10.8, lineHeight: 1.5, margin: '3px 0', color: '#3d3354' }}>
+                  <span className="shrink-0" style={{ width: 42, fontWeight: 500, color: '#8b6fc0', fontSize: 10 }}>{LINE_LABELS[index]}</span>
+                  <span>{line}</span>
+                </p>
+              ))}
+            </div>
+          </>
+        ) : <Placeholder status={status} color="#6b5a8a" />}
+        <p className="mt-3 text-center" style={{ fontSize: 9, letterSpacing: '0.3em', color: '#7d6c9c' }}>
+          LUCKY · 깊이 {[1, 2, 3].map(level => (level <= depth ? '●' : '○')).join('')}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+/** C · 딥네이비 별자리: 별 나침반 문양, 오로라 빛 글씨. */
+function StellarFace({ depth, endedAt, concern, status, content }: FaceProps) {
+  const aurora = 'linear-gradient(90deg, #ffe7a3, #ffd1f0, #b9e9ff)';
+  return (
+    <div className="relative h-full w-full overflow-hidden" style={{ background: 'radial-gradient(90% 60% at 50% 38%, #1b2b5e 0%, #0b1230 55%, #05081a 100%)', color: '#e8ecff', fontFamily: SANS, wordBreak: 'keep-all' }}>
+      <svg viewBox="0 0 190 190" width="190" height="190" aria-hidden="true" className="absolute" style={{ left: '50%', top: 160, transform: 'translate(-50%, -50%)', opacity: 0.85 }}>
+        <defs>
+          <linearGradient id="stellar-ring" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stopColor="#c7b7ff" />
+            <stop offset=".5" stopColor="#ffe7a3" />
+            <stop offset="1" stopColor="#9ee7ff" />
+          </linearGradient>
+        </defs>
+        <circle cx="95" cy="95" r="88" fill="none" stroke="url(#stellar-ring)" strokeWidth="0.8" />
+        <circle cx="95" cy="95" r="76" fill="none" stroke="url(#stellar-ring)" strokeWidth="0.4" strokeDasharray="2 4" />
+        <path d="M95 7 L101 89 L183 95 L101 101 L95 183 L89 101 L7 95 L89 89 Z" fill="none" stroke="url(#stellar-ring)" strokeWidth="0.5" opacity="0.5" />
+        <path d="M95 30 L99 91 L160 95 L99 99 L95 160 L91 99 L30 95 L91 91 Z" fill="none" stroke="url(#stellar-ring)" strokeWidth="0.4" opacity="0.35" transform="rotate(45 95 95)" />
+      </svg>
+      <div className="relative flex h-full flex-col items-center px-7 pt-[26px] pb-5 text-center">
+        <p style={{ fontFamily: CINZEL, fontSize: 12, letterSpacing: '0.4em', color: '#e9dcff' }}>LUCY MASTER</p>
+        <p className="mt-1" style={{ fontSize: 9, color: '#8f9bd0', letterSpacing: '0.1em' }}>{formatDate(endedAt, true)} · DEPTH {DEPTH_ROMAN[depth]}</p>
+        <div className="flex items-center justify-center" style={{ height: 170, marginTop: 8 }}>
+          {concern && <p style={{ fontFamily: SERIF, fontSize: 12.5, lineHeight: 1.5, color: '#fff', maxWidth: 150, textShadow: '0 0 12px #05081a', display: '-webkit-box', WebkitLineClamp: 4, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>“{concern}”</p>}
+        </div>
+        {status === 'ready' && content ? (
+          <>
+            <div className="mt-1.5 w-full text-left">
+              {content.lines.map((line, index) => (
+                <p key={index} style={{ fontSize: 10.8, lineHeight: 1.5, margin: '5px 0', color: '#d5dcff', paddingLeft: 12, borderLeft: '2px solid rgba(158,231,255,0.5)' }}>{line}</p>
+              ))}
+            </div>
+            <div className="mt-auto">
+              <p style={{ fontSize: 8.5, letterSpacing: '0.3em', color: '#8f9bd0' }}>루시가 남기는 한마디</p>
+              <p className="mt-1.5" style={{ fontFamily: SERIF, fontSize: 14, lineHeight: 1.6, color: '#ffe7f3', backgroundImage: aurora, WebkitBackgroundClip: 'text', backgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>{content.word}</p>
+            </div>
+          </>
+        ) : <Placeholder status={status} color="#aab4e6" />}
+        <p className="mt-2.5" style={{ fontFamily: CINZEL, fontSize: 9, letterSpacing: '0.4em', color: '#6e7aa8' }}>LUCKY</p>
+      </div>
+    </div>
   );
 }
 
@@ -51,9 +198,15 @@ export function LucyMasterSessionCard({ source, onClose }: { source: MasterSessi
   const [attempt, setAttempt] = useState(0);
   const [saving, setSaving] = useState(false);
   const [scale, setScale] = useState(1);
+  const [theme, setTheme] = useState<SessionCardTheme>(() => readTheme());
+  const chooseTheme = (next: SessionCardTheme) => {
+    setTheme(next);
+    try { localStorage.setItem(THEME_KEY, next); } catch { /* storage optional */ }
+  };
   const frameRef = useRef<HTMLDivElement | null>(null);
   const cardRef = useRef<HTMLDivElement | null>(null);
   const concern = masterSessionConcern(source.messages);
+  const faceProps: FaceProps = { depth: source.depth, endedAt: source.endedAt, concern, status, content };
 
   useEffect(() => {
     const controller = new AbortController();
@@ -115,117 +268,30 @@ export function LucyMasterSessionCard({ source, onClose }: { source: MasterSessi
           className="w-full max-w-[400px] flex flex-col items-center gap-3"
         >
           <div ref={frameRef} className="w-full flex justify-center" style={{ height: CARD_H * scale }}>
-            <div style={{ width: CARD_W, height: CARD_H, transform: `scale(${scale})`, transformOrigin: 'top center', borderRadius: 28, overflow: 'hidden', boxShadow: '0 24px 60px rgba(76,29,149,0.5)' }}>
+            <div style={{ width: CARD_W, height: CARD_H, transform: `scale(${scale})`, transformOrigin: 'top center', borderRadius: 22, overflow: 'hidden', boxShadow: '0 24px 60px rgba(0,0,0,0.45)' }}>
               {/* The card itself (saved as the image) */}
-              <div
-                ref={cardRef}
-                data-session-card-image
-                className="relative overflow-hidden text-white"
-                style={{
-                  width: CARD_W,
-                  height: CARD_H,
-                  background: 'radial-gradient(120% 80% at 50% -10%, #5b2a9a 0%, #2a1252 38%, #150a2e 70%, #0b0618 100%)',
-                }}
-              >
-                {/* Stars */}
-                {STARS.map((star, i) => (
-                  <span key={i} className="absolute rounded-full bg-white" style={{ left: `${star.left}%`, top: `${star.top}%`, width: star.size, height: star.size, opacity: star.opacity }} />
-                ))}
-                {/* Candle glow at the bottom and a soft halo at the top */}
-                <div className="absolute inset-x-0 bottom-0 h-40" style={{ background: 'radial-gradient(60% 100% at 50% 100%, rgba(251,191,36,0.22) 0%, rgba(251,191,36,0) 70%)' }} />
-                <div className="absolute left-1/2 top-[-60px] h-48 w-48 -translate-x-1/2 rounded-full" style={{ background: 'radial-gradient(circle, rgba(216,180,254,0.28) 0%, rgba(216,180,254,0) 70%)' }} />
-                {/* Crescent moon */}
-                <svg viewBox="0 0 40 40" width="30" height="30" className="absolute right-6 top-6" aria-hidden="true">
-                  <defs>
-                    <linearGradient id="card-moon" x1="0" y1="0" x2="1" y2="1">
-                      <stop offset="0%" stopColor="#fef3c7" />
-                      <stop offset="100%" stopColor="#fbbf24" />
-                    </linearGradient>
-                  </defs>
-                  <path d="M26 4 A16 16 0 1 0 36 30 A13 13 0 1 1 26 4 Z" fill="url(#card-moon)" opacity="0.9" />
-                </svg>
-                {/* Gold double frame */}
-                <div className="absolute inset-[10px] rounded-[22px]" style={{ border: '1px solid rgba(253,230,138,0.45)' }} />
-                <div className="absolute inset-[14px] rounded-[19px]" style={{ border: '1px solid rgba(253,230,138,0.18)' }} />
-
-                <div className="relative flex h-full flex-col px-8 pt-8 pb-6">
-                  {/* Header */}
-                  <div className="text-center">
-                    <p className="text-[9px] font-bold tracking-[0.42em] text-amber-200/90">LUCY MASTER</p>
-                    <div className="mt-1.5 flex items-center justify-center gap-2 text-[10px] text-violet-200/80">
-                      <span>{formatDate(source.endedAt)}</span>
-                      <span className="text-amber-200/50">·</span>
-                      <span className="inline-flex items-center gap-[3px]">
-                        {[1, 2, 3].map(level => (
-                          <span key={level} className="inline-block h-[5px] w-[5px] rounded-full" style={{ background: level <= source.depth ? '#fcd34d' : 'rgba(255,255,255,0.22)' }} />
-                        ))}
-                        <span className="ml-1">{DEPTH_NAME[source.depth]}</span>
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Concern */}
-                  {concern && (
-                    <p className="mt-4 text-center text-[14px] leading-snug text-white break-keep" style={{ fontFamily: SERIF, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-                      “{concern}”
-                    </p>
-                  )}
-
-                  <div className="my-3.5 flex items-center justify-center gap-2 text-amber-200/70">
-                    <span className="h-px w-14 bg-gradient-to-r from-transparent to-amber-200/50" />
-                    <Sparkle size={9} />
-                    <span className="h-px w-14 bg-gradient-to-l from-transparent to-amber-200/50" />
-                  </div>
-
-                  {status === 'ready' && content ? (
-                    <>
-                      <ul className="space-y-2">
-                        {content.lines.map((line, index) => (
-                          <li key={index} className="flex items-baseline gap-2.5">
-                            <span className="shrink-0 w-10 text-[10px] font-bold tracking-wide text-amber-200/90">{LINE_LABELS[index]}</span>
-                            <span className="text-[12px] leading-[1.55] text-white/95 break-keep">{line}</span>
-                          </li>
-                        ))}
-                      </ul>
-
-                      {/* Lucy's word */}
-                      <div className="flex flex-1 flex-col items-center justify-center pt-3 text-center">
-                        <svg viewBox="0 0 24 32" width="16" height="22" aria-hidden="true" className="mb-2">
-                          <defs>
-                            <radialGradient id="card-flame" cx="50%" cy="60%" r="60%">
-                              <stop offset="0%" stopColor="#fff7d6" />
-                              <stop offset="55%" stopColor="#fcd34d" />
-                              <stop offset="100%" stopColor="#f59e0b" stopOpacity="0" />
-                            </radialGradient>
-                          </defs>
-                          <path d="M12 1 C16 9 20 13 20 20 A8 8 0 0 1 4 20 C4 14 9 10 12 1 Z" fill="url(#card-flame)" />
-                        </svg>
-                        <p className="text-[9px] font-bold tracking-[0.3em] text-amber-200/80">루시가 남기는 한마디</p>
-                        <p className="mt-2 text-[15.5px] leading-[1.6] text-amber-50 break-keep" style={{ fontFamily: SERIF, textShadow: '0 0 18px rgba(251,191,36,0.35)' }}>
-                          {content.word}
-                        </p>
-                      </div>
-                    </>
-                  ) : status === 'loading' ? (
-                    <div className="flex flex-1 flex-col items-center justify-center" role="status">
-                      <motion.p className="text-3xl" animate={{ opacity: [0.4, 1, 0.4] }} transition={{ duration: 1.6, repeat: Infinity }}>🕯️</motion.p>
-                      <p className="mt-2 text-xs text-violet-100/80">루시가 오늘 상담을 한 장에 담고 있어요…</p>
-                    </div>
-                  ) : (
-                    <div className="flex flex-1 items-center justify-center">
-                      <p className="text-xs text-violet-100/85">카드를 만들지 못했어요. 다시 시도해 주세요.</p>
-                    </div>
-                  )}
-
-                  {/* Footer */}
-                  <div className="mt-4 flex items-center justify-center gap-1.5 text-[9px] tracking-[0.25em] text-white/45">
-                    <Sparkle size={7} className="text-amber-200/60" />
-                    <span>LUCKY · 루시의 상담 카드</span>
-                    <Sparkle size={7} className="text-amber-200/60" />
-                  </div>
-                </div>
+              <div ref={cardRef} data-session-card-image data-session-card-theme={theme} className="relative overflow-hidden" style={{ width: CARD_W, height: CARD_H }}>
+                {theme === 'pastel' ? <PastelFace {...faceProps} /> : theme === 'stellar' ? <StellarFace {...faceProps} /> : <ArchFace {...faceProps} />}
               </div>
             </div>
+          </div>
+
+          {/* Style picker */}
+          <div className="flex items-center gap-2" role="radiogroup" aria-label="카드 스타일">
+            {THEMES.map(item => (
+              <button
+                key={item.id}
+                type="button"
+                role="radio"
+                aria-checked={theme === item.id}
+                data-session-card-theme-option={item.id}
+                onClick={() => chooseTheme(item.id)}
+                className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-bold transition-colors ${theme === item.id ? 'border-amber-300 bg-white/20 text-white' : 'border-white/20 bg-white/5 text-white/75'}`}
+              >
+                <span className="inline-block h-3.5 w-3.5 rounded-full border border-white/40" style={{ background: item.swatch }} />
+                {item.label}
+              </button>
+            ))}
           </div>
 
           {/* Actions (not part of the saved image) */}
