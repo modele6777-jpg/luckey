@@ -73,10 +73,10 @@ export const FIFTEEN_DIVINATION_TOOLS: Record<DivinationToolId, DivinationToolSp
     hanjaOrEng: '四柱命理',
     primaryTheme: 'trinity',
     secondaryThemes: ['prologue', 'orange', 'aura'],
-    coreEssence: '연·월·일·시 사주팔자(천간·지지)와 음양오행(목·화·토·금·수), 십신(비겁·식상·재성·관성·인성), 용신·대운·세운의 생극제화로 타고난 기질과 시기별 성패를 읽는 정통 명학',
-    bestFor: '타고난 성향·재능, 대운과 연운의 흐름, 직업·재물·연애의 근본 그릇, 부족한 오행 개운법',
-    easyLanguageGuide: '한자 용어를 그대로 나열하지 말고 "네가 타고난 일간의 기질이 ~해서", "지금 들어온 불/물 기운이 ~를 도와주고 있어서"처럼 계절과 자연의 비유로 친근하게 풀어줘.',
-    explicitRegex: /사주|팔자|명리|만세력|일주|일간|용신|대운|세운|십신|오행|천을귀인|도화살|역마살/,
+    coreEssence: '연·월·일·시 사주팔자(천간·지지)와 음양오행(목·화·토·금·수), 십신(비겁·식상·재성·관성·인성), 12운성·합충형파해·조후(調候) 및 용신·대운·세운의 생극제화로 타고난 기질과 시기별 성패를 읽는 정통 명학',
+    bestFor: '타고난 성향·재능, 대운과 연운의 흐름, 직업·재물·연애의 근본 그릇, 결핍·과다 오행의 조후 및 개운법',
+    easyLanguageGuide: '한자 용어를 그대로 나열하지 말고 "네가 타고난 일간의 기질이 ~해서", "지금 들어온 불/물 기운이 ~를 도와주고 있어서"처럼 계절·온도·자연의 비유로 친근하게 풀어줘.',
+    explicitRegex: /사주|팔자|명리|만세력|일주|일간|용신|대운|세운|십신|오행|천을귀인|도화살|역마살|조후|십이운성/,
     intentKeywords: [/타고난|성격|적성|재물운|직업운|결혼운|올해\s*운|운세|사주/]
   },
 
@@ -87,10 +87,10 @@ export const FIFTEEN_DIVINATION_TOOLS: Record<DivinationToolId, DivinationToolSp
     hanjaOrEng: 'Western Astrology',
     primaryTheme: 'trinity',
     secondaryThemes: ['bluebird', 'muse'],
-    coreEssence: '태양(자아)·달(내면 감정)·상승궁(페르소나)과 10행성, 12하우스, 행성 간 각도(Aspect) 및 트랜짓을 통해 무의식적 욕망과 관계의 심리 역학을 해독하는 별의 지도',
-    bestFor: '내면 심리와 감정 패턴, 자존감, 연인·지인과의 시나스트리(궁합), 현재 행성 트랜짓에 따른 심리적 변화',
-    easyLanguageGuide: '트라인·스퀘어 같은 각도 용어 대신 "태양과 달의 기운이 서로 밀어주면서 ~한 매력이 나타나", "금성의 에너지가 감수성을 자극해서"처럼 감정과 심리 중심으로 쉽게 설명해줘.',
-    explicitRegex: /점성술|점성학|별자리|네이탈|출생\s*차트|태양궁|달\s*별자리|상승궁|어센던트|트랜짓|하우스|금성|화성|수성\s*역행/,
+    coreEssence: '태양(자아)·달(내면 감정)·상승궁(페르소나)과 10행성, 12하우스, 4원소·3모달리티(활동·고정·변통) 균형 및 행성 간 각도(Aspect)·트랜짓을 통해 무의식적 욕망과 관계의 심리 역학을 해독하는 별의 지도',
+    bestFor: '내면 심리와 감정 패턴, 자존감, 원소·모달리티 균형, 연인·지인과의 시나스트리(궁합), 현재 행성 트랜짓에 따른 심리적 변화',
+    easyLanguageGuide: '트라인·스퀘어 같은 각도 용어 대신 "태양과 달의 기운이 서로 밀어주면서 ~한 매력이 나타나", "불과 물의 기운이 맞물려 감수성을 자극해서"처럼 감정과 심리 중심으로 쉽게 설명해줘.',
+    explicitRegex: /점성술|점성학|별자리|네이탈|출생\s*차트|태양궁|달\s*별자리|상승궁|어센던트|트랜짓|하우스|금성|화성|수성\s*역행|모달리티|어스펙트/,
     intentKeywords: [/별자리|매력|자아|심리\s*패턴|연애\s*스타일|궁합|감정\s*기복/]
   },
 
@@ -101,10 +101,10 @@ export const FIFTEEN_DIVINATION_TOOLS: Record<DivinationToolId, DivinationToolSp
     hanjaOrEng: '紫微斗數',
     primaryTheme: 'trinity',
     secondaryThemes: ['orange', 'prologue'],
-    coreEssence: '자미성·천기성·태양성·무곡성 등 14주성과 보성, 사화(화록·화권·화과·화기)를 명궁·부처궁·재백궁·관록궁·천이궁 등 12궁 명반에 배치해 인생의 구체적 사건과 환경을 정밀하게 비추는 황실 별자리 명학',
-    bestFor: '배우자·연인의 구체적 성향(부처궁), 재물 축적 방식(재백궁), 직장·사회적 명예(관록궁), 인간관계·외부 환경(천이궁/노복궁), 세밀한 사건 흐름',
-    easyLanguageGuide: '12궁과 주성의 상징을 "자미두수 명반의 부처궁(연애·배우자 방) 흐름을 보면~", "재백궁에 실속을 챙기는 별이 빛나고 있어서~"처럼 인생의 12개 방 이야기로 생생하게 들려줘.',
-    explicitRegex: /자미두수|자미성|명궁|부처궁|재백궁|관록궁|천이궁|복덕궁|명반|사화|화록|화권|화기|14주성/,
+    coreEssence: '자미성·천기성·태양성·무곡성 등 14주성과 보성, 사화(화록·화권·화과·화기) 및 삼방사정·록기교충을 명궁·부처궁·재백궁·관록궁·천이궁 등 12궁 명반에 배치해 인생의 구체적 사건과 환경을 정밀하게 비추는 황실 별자리 명학',
+    bestFor: '배우자·연인의 구체적 성향(부처궁), 재물 축적 방식(재백궁), 직장·사회적 명예(관록궁), 인간관계·외부 환경(천이궁/노복궁), 유년 사화의 공수 전환 타이밍',
+    easyLanguageGuide: '12궁과 주성·사화의 상징을 "자미두수 명반의 부처궁(연애·배우자 방) 흐름을 보면~", "올해 화록의 기운이 재백궁을 비추고 있어서~"처럼 인생의 12개 방 이야기로 생생하게 들려줘.',
+    explicitRegex: /자미두수|자미성|명궁|부처궁|재백궁|관록궁|천이궁|복덕궁|명반|사화|화록|화권|화과|화기|14주성|삼방사정|록기교충/,
     intentKeywords: [/배우자|결혼\s*상대|직장\s*생활|사회적\s*성공|부모|형제|집안|구체적\s*사건/]
   },
 
@@ -334,6 +334,7 @@ const MAHABOTE_ANIMALS = ['가루다(일요일·명예와 비상)', '호랑이(�
 export function buildUserFifteenToolsDigest(profile?: UserProfile, asOfDate: Date = new Date()): string {
   if (!profile?.basic?.birthdate) return '[개인화 계산 미실시] 생년월일 미입력. 명반·본명성·요일·별자리를 임의 지정하지 말 것.';
   const referenceDate = new Date(asOfDate.getTime());
+  const kstYear = new Date(referenceDate.getTime() + 9 * 60 * 60 * 1000).getUTCFullYear();
   try {
     const { solarDate, solarDateString, isLunar } = resolveEffectiveSolarDate(profile.basic.birthdate.trim(), profile.basic.lunarSolar, profile.basic.isLeapMonth ?? false);
     const { year, month, day } = solarDate;
@@ -343,7 +344,7 @@ export function buildUserFifteenToolsDigest(profile?: UserProfile, asOfDate: Dat
     civil.setUTCHours(time?.hour ?? 12, time?.minute ?? 0, 0, 0);
     const dow = civil.getUTCDay();
     const saju = calculateDetailedSaju(profile);
-    const sajuBrief = saju ? `${saju.dayMaster.hanja}(${saju.dayMaster.korean}) 일간 · 4주: ${saju.pillars.year.gan}${saju.pillars.year.zhi}년 ${saju.pillars.month.gan}${saju.pillars.month.zhi}월 ${saju.pillars.day.gan}${saju.pillars.day.zhi}일${saju.pillars.hour ? ` ${saju.pillars.hour.gan}${saju.pillars.hour.zhi}시` : ''} · 격국: ${saju.geokguk.name} · ${saju.bodyStrength.level} · 용신: ${saju.yongsin.name} · 우세 오행: ${saju.elements.dominant.name}(목${saju.elements.counts['목']} 화${saju.elements.counts['화']} 토${saju.elements.counts['토']} 금${saju.elements.counts['금']} 수${saju.elements.counts['수']})` : '입력 확인 필요: 사주 미계산';
+    const sajuBrief = saju ? `${saju.dayMaster.hanja}(${saju.dayMaster.korean}) 일간 · 4주: ${saju.pillars.year.gan}${saju.pillars.year.zhi}년 ${saju.pillars.month.gan}${saju.pillars.month.zhi}월 ${saju.pillars.day.gan}${saju.pillars.day.zhi}일${saju.pillars.hour ? ` ${saju.pillars.hour.gan}${saju.pillars.hour.zhi}시` : ''} · 격국: ${saju.geokguk.name} · ${saju.bodyStrength.level} · 용신: ${saju.yongsin.name} · 우세 오행: ${saju.elements.dominant.name} · 보완 오행: ${saju.elements.lacking.name}(개운 색: ${saju.elements.lacking.luckyColor})` : '입력 확인 필요: 사주 미계산';
     let animal = MAHABOTE_ANIMALS[dow];
     if (dow === 3) animal = !time ? '수요일 오전/오후 구분은 생시 필요' : time.hour < 12 ? '수요일 오전·수성·엄니 코끼리' : '수요일 오후·라후·엄니 없는 코끼리';
 
@@ -458,9 +459,9 @@ export function buildUserFifteenToolsDigest(profile?: UserProfile, asOfDate: Dat
     // 3. 자미두수 유년 사화 (12궁 명반 사화·삼방사정·록기교충 결정론 산법)
     let ziweiLine = '';
     try {
-      const zw = calculateZiweiFlyingStars({ profile, targetYear: referenceDate.getFullYear() });
+      const zw = calculateZiweiFlyingStars({ profile, targetYear: kstYear });
       if (zw && zw.sanFangSiZhengBalance && zw.luJiConflictDynamics) {
-        ziweiLine = `\n- 자미두수 유년 사화: 명궁 [${zw.sanFangSiZhengBalance.myMingPalaceName}] · 삼방사정 돌파력 ${zw.sanFangSiZhengBalance.breakthroughPowerScore}점(${zw.sanFangSiZhengBalance.patternGrade}) · 록기 역학 [${zw.luJiConflictDynamics.relationType}](록: ${zw.luJiConflictDynamics.luPalaceName} / 기: ${zw.luJiConflictDynamics.jiPalaceName}).`;
+        ziweiLine = `\n- 자미두수 유년 사화: 명궁 [${zw.sanFangSiZhengBalance.myMingPalaceName}](${kstYear}년) · 삼방사정 국면 [${zw.sanFangSiZhengBalance.patternGrade}] · 록기 역학 [${zw.luJiConflictDynamics.relationType}](화록 ${zw.mutagens.lu.starName}→${zw.luJiConflictDynamics.luPalaceName} · 화권 ${zw.mutagens.quan.starName}→${zw.mutagens.quan.targetPalaceName} · 화기 ${zw.mutagens.ji.starName}→${zw.luJiConflictDynamics.jiPalaceName}).`;
       }
     } catch (_) {}
 
