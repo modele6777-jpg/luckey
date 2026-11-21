@@ -33,6 +33,7 @@ import { LucyAuraLoader } from '@/components/LucyAuraLoader';
 import { LucyMasterTarotRoom } from '@/components/chat/LucyMasterTarotRoom';
 import { LucyMasterBgmToggle } from '@/components/chat/LucyMasterBgmToggle';
 import { setSelectedEngineKeys } from '@/lib/lucyEngineSelection';
+import { detectMasterConcernTopic, getMasterDepthPrompts, type MasterConcernTopic } from '@/lib/lucyMasterPrompts';
 import { archiveMasterSession, buildDepthContinuityContext, buildDepthLinkedLucyContext, buildPastMasterSessionsContext } from '@/lib/lucyMasterContinuity';
 import { isLucyMasterBgmPreferred, startLucyMasterBgm, stopLucyMasterBgm, setLucyMasterBgmDepth } from '@/lib/lucyMasterBgm';
 import remarkGfm from 'remark-gfm';
@@ -629,9 +630,11 @@ export function resolveMessageModeAndChannels(
 function getCuratedPrompts(
   profiles: ChatTargetProfile[], 
   mode: LucyChatMode,
-  channels: SpecialChannel[] = []
+  channels: SpecialChannel[] = [],
+  master: { depth: LucyMasterDepth; topic: MasterConcernTopic } = { depth: 1, topic: 'general' }
 ): string[] {
-  if (mode === 'master') return shuffle(MASTER_PROMPT_POOL).slice(0, 6);
+  // 🔮 루시 마스터: 상담 깊이(1~3)와 중심 고민 주제에 맞춰 점점 더 심오한 질문
+  if (mode === 'master') return getMasterDepthPrompts(master.depth, master.topic);
 
   // 0. 다자간(2인 이상) 프로필 활성화 시: 두 사람(구성원)의 이름을 반영한 궁합·연애·시너지 맞춤 질문
   if (profiles.length >= 2) {
@@ -2000,16 +2003,24 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
     };
   }, []);
 
+  // 🔮 루시 마스터 추천 질문의 깊이·주제 (렌더마다 최신값)
+  const masterConcernTopic = useMemo<MasterConcernTopic>(
+    () => (isMasterMode ? detectMasterConcernTopic(findConcernAnchor(lucyProMessages || [])) : 'general'),
+    [isMasterMode, lucyProMessages],
+  );
+  const masterPromptContextRef = useRef<{ depth: LucyMasterDepth; topic: MasterConcernTopic }>({ depth: 1, topic: 'general' });
+  masterPromptContextRef.current = { depth: masterDepth, topic: masterConcernTopic };
+
   // 🎲 차분하게 유지되는 맞춤 추천 질문 상태 (새로고침 🔄 클릭, 모드 전환, 프로필 변경 시에만 명시적으로 갱신되며 실시간 임의 변동 방지)
   const [currentPrompts, setCurrentPrompts] = useState<string[]>(() => {
-    return getCuratedPrompts(activeProfiles, selectedMode, activeChannels);
+    return getCuratedPrompts(activeProfiles, selectedMode, activeChannels, masterPromptContextRef.current);
   });
 
 
   // 🔄 루시 AI 모드 ↔ 마스터 모드 전환 시 하단 추천 질문 예시 1:1 실시간 즉시 동기화
   useEffect(() => {
-    setCurrentPrompts(getCuratedPrompts(activeProfiles, selectedMode, activeChannels));
-  }, [selectedMode, activeChannels, activeProfiles]);
+    setCurrentPrompts(getCuratedPrompts(activeProfiles, selectedMode, activeChannels, masterPromptContextRef.current));
+  }, [selectedMode, activeChannels, activeProfiles, masterDepth, masterConcernTopic]);
 
   // sharedState 변경 시 내 프로필 정보 동기화 (사용자가 대화창에서 프로필을 직접 수정한 경우 덮어쓰지 않고 변경 상태 유지)
   useEffect(() => {
@@ -2162,7 +2173,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
         }, 'lucy');
       }
 
-      setCurrentPrompts(getCuratedPrompts(updated, selectedMode, activeChannels));
+      setCurrentPrompts(getCuratedPrompts(updated, selectedMode, activeChannels, masterPromptContextRef.current));
       try {
         safeLocalStorage.setItem(CHAT_PROFILES_STORAGE_KEY, JSON.stringify(updated));
       } catch (_) {}
@@ -2202,7 +2213,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
       if (profileId === activeProfileId && remaining.length > 0) {
         setActiveProfileId(remaining[0].id);
       }
-      setCurrentPrompts(getCuratedPrompts(remaining, selectedMode, activeChannels));
+      setCurrentPrompts(getCuratedPrompts(remaining, selectedMode, activeChannels, masterPromptContextRef.current));
       try {
         safeLocalStorage.setItem(CHAT_PROFILES_STORAGE_KEY, JSON.stringify(remaining));
       } catch (_) {}
@@ -2212,7 +2223,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
 
   // Refresh / Reshuffle prompts (새로고침 버튼 클릭 시에만 안정적으로 갱신)
   const refreshPrompts = useCallback(() => {
-    setCurrentPrompts(getCuratedPrompts(activeProfiles, selectedMode, activeChannels));
+    setCurrentPrompts(getCuratedPrompts(activeProfiles, selectedMode, activeChannels, masterPromptContextRef.current));
   }, [activeProfiles, selectedMode, activeChannels]);
 
   // 🌀 추천 질문 예시 마키: 자동 흐름 + 손가락·포인터 드래그·휠 양방향 무한 스크롤
