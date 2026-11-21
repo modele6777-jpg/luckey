@@ -68,7 +68,12 @@ const SEA_STATES: readonly string[] = [
 
 function formatPhoenicianKstTimestamp(now: Date): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
-  return `${kst.toISOString().slice(0, 19)}+09:00 (KST)`;
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
 }
 
 function stableHash(input: string): number {
@@ -88,17 +93,18 @@ export function calculatePhoenicianNavigatorStarCompass(params: {
   const now = params.now ?? new Date();
   const query = (params.question ?? '').trim();
 
-  const seed = stableHash(
-    [
-      params.profile.basic?.name ?? '',
-      JSON.stringify(params.profile.fate ?? {}),
-      query,
-    ].join('|')
-  );
+  const seedInput = [
+    params.profile.basic?.name ?? '',
+    JSON.stringify(params.profile.fate ?? {}),
+    query,
+    now.toISOString().slice(0, 13),
+  ].join('|');
+  const seed = stableHash(seedInput);
 
   const primaryIdx = seed % PHOENICIAN_BEACONS.length;
-  const backupIdx = (primaryIdx + 2) % PHOENICIAN_BEACONS.length;
-  const seaStateMetaphor = SEA_STATES[(seed >> 4) % SEA_STATES.length];
+  const backupOffset = 1 + (stableHash(`${seedInput}|companion`) % (PHOENICIAN_BEACONS.length - 1));
+  const backupIdx = (primaryIdx + backupOffset) % PHOENICIAN_BEACONS.length;
+  const seaStateMetaphor = SEA_STATES[stableHash(`${seedInput}|sea`) % SEA_STATES.length];
 
   const primaryBeacon = PHOENICIAN_BEACONS[primaryIdx];
   const backupBeacon = PHOENICIAN_BEACONS[backupIdx];
@@ -115,12 +121,12 @@ export function calculatePhoenicianNavigatorStarCompass(params: {
   const ritualAction = primaryBeacon.voyagePractice;
 
   const reflectiveQuestion = query
-    ? `‘${query.slice(0, 36)}’이라는 항로에서, 주변의 파도 소리 대신 내가 끝까지 바라보고 가야 할 ‘북극성 기준’은 무엇인가요?`
-    : `지금 내 삶의 항해에서 당장 속도를 높이는 것보다 먼저 닻을 내리거나 방향을 맞춰야 할 지점은 어디인가요?`;
+    ? `‘${query.slice(0, 36)}’이라는 항로에서 ‘${primaryBeacon.beaconTitle}’을 중심에 두고 ‘${backupBeacon.beaconTitle}’까지 살피며 끝까지 지켜 갈 기준은 무엇인가요?`
+    : `지금 내 삶의 항해에서 ‘${primaryBeacon.navigationRole}’을 지키기 위해 먼저 닻을 내리거나 방향을 맞춰야 할 지점은 어디인가요?`;
 
   return {
     engineName: '고대 페니키아 항해 별자리 나침반 (Phoenician Star Compass)',
-    engineVersion: 'LUCKEY-PHOENICIAN-NAVIGATOR-v2.1.0',
+    engineVersion: 'LUCKEY-PHOENICIAN-NAVIGATOR-v2.2.0',
     calculatedAtKst: formatPhoenicianKstTimestamp(now),
     primaryBeacon,
     backupBeacon,

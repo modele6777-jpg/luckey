@@ -101,7 +101,12 @@ const MEDICINE_WHEEL_PHASES: readonly string[] = [
 
 function formatOjibweKstTimestamp(now: Date): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
-  return `${kst.toISOString().slice(0, 19)}+09:00 (KST)`;
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
 }
 
 function stableHash(input: string): number {
@@ -121,17 +126,18 @@ export function calculateOjibweSevenGrandfatherTeachings(params: {
   const now = params.now ?? new Date();
   const query = (params.question ?? '').trim();
 
-  const seed = stableHash(
-    [
-      params.profile.basic?.name ?? '',
-      JSON.stringify(params.profile.fate ?? {}),
-      query,
-    ].join('|')
-  );
+  const seedInput = [
+    params.profile.basic?.name ?? '',
+    JSON.stringify(params.profile.fate ?? {}),
+    query,
+    now.toISOString().slice(0, 13),
+  ].join('|');
+  const seed = stableHash(seedInput);
 
   const dominantIdx = seed % GRANDFATHER_TEACHINGS.length;
-  const balancingIdx = (dominantIdx + 3) % GRANDFATHER_TEACHINGS.length;
-  const wheelIdx = (seed >> 4) % MEDICINE_WHEEL_PHASES.length;
+  const balancingOffset = 1 + (stableHash(`${seedInput}|companion`) % (GRANDFATHER_TEACHINGS.length - 1));
+  const balancingIdx = (dominantIdx + balancingOffset) % GRANDFATHER_TEACHINGS.length;
+  const wheelIdx = stableHash(`${seedInput}|wheel`) % MEDICINE_WHEEL_PHASES.length;
 
   const dominantTeaching = GRANDFATHER_TEACHINGS[dominantIdx];
   const balancingTeaching = GRANDFATHER_TEACHINGS[balancingIdx];
@@ -149,12 +155,12 @@ export function calculateOjibweSevenGrandfatherTeachings(params: {
   const ritualAction = `${dominantTeaching.reflectivePractice} (${balancingTeaching.ojibweName}의 균형 함께 살피기)`;
 
   const reflectiveQuestion = query
-    ? `‘${query.slice(0, 36)}’을(를) 마주한 지금, ${dominantTeaching.koreanName}과 ${balancingTeaching.koreanName} 중 내 마음에서 가장 먼저 회복해야 할 태도는 무엇인가요?`
-    : `지금 내 일상에서 ${dominantTeaching.koreanName}의 마음으로 가장 정직하게 다듬고 싶은 관계나 선택은 무엇인가요?`;
+    ? `‘${query.slice(0, 36)}’을(를) 마주한 지금, ${dominantTeaching.koreanName}을 지키면서 ${balancingTeaching.koreanName}으로 균형을 맞추기 위해 먼저 돌아볼 태도는 무엇인가요?`
+    : `지금 내 일상에서 ${dominantTeaching.koreanName}과 ${balancingTeaching.koreanName}이 함께 살아나도록 가장 정직하게 다듬고 싶은 선택은 무엇인가요?`;
 
   return {
     engineName: '오지브웨(아니시나베) 7대 할아버지 가르침 (Seven Grandfather Teachings)',
-    engineVersion: 'LUCKEY-OJIBWE-SEVEN-GRANDFATHERS-v2.1.0',
+    engineVersion: 'LUCKEY-OJIBWE-SEVEN-GRANDFATHERS-v2.2.0',
     calculatedAtKst: formatOjibweKstTimestamp(now),
     dominantTeaching,
     balancingTeaching,

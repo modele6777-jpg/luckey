@@ -9,7 +9,7 @@ export interface SandDrawingMotif {
 }
 
 export interface MelanesianSandResult {
-  engineVersion: 'LUCKEY-MELANESIAN-SAND-v2.1.0';
+  engineVersion: 'LUCKEY-MELANESIAN-SAND-v2.2.0';
   calculatedAtKst: string;
   questionFocus: string;
   primaryMotif: SandDrawingMotif;
@@ -54,8 +54,12 @@ const SAND_MOTIFS: SandDrawingMotif[] = [
 
 function formatKstTimestamp(date: Date): string {
   const kst = new Date(date.getTime() + 9 * 60 * 60 * 1000);
-  const iso = kst.toISOString().slice(0, 19);
-  return `${iso}+09:00 (KST)`;
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
 }
 
 function stableHash(input: string): number {
@@ -74,17 +78,17 @@ export function calculateMelanesianSandDrawingPattern(params: {
 }): MelanesianSandResult {
   const now = params.now ?? new Date();
   const questionFocus = (params.question ?? '').trim() || '흩어진 생각의 한 줄 연결';
-  const seed = stableHash(
-    `${JSON.stringify(params.profile.fate ?? {})}|${now.toISOString().slice(0, 13)}|${questionFocus}|melanesian-sand`
-  );
+  const seedInput = `${JSON.stringify(params.profile.fate ?? {})}|${now.toISOString().slice(0, 13)}|${questionFocus}|melanesian-sand`;
+  const seed = stableHash(seedInput);
 
   const primaryIdx = seed % SAND_MOTIFS.length;
-  const bridgeIdx = (primaryIdx + 1) % SAND_MOTIFS.length;
+  const bridgeOffset = 1 + (stableHash(`${seedInput}|bridge`) % (SAND_MOTIFS.length - 1));
+  const bridgeIdx = (primaryIdx + bridgeOffset) % SAND_MOTIFS.length;
   const primaryMotif = SAND_MOTIFS[primaryIdx];
   const bridgingMotif = SAND_MOTIFS[bridgeIdx];
 
   return {
-    engineVersion: 'LUCKEY-MELANESIAN-SAND-v2.1.0',
+    engineVersion: 'LUCKEY-MELANESIAN-SAND-v2.2.0',
     calculatedAtKst: formatKstTimestamp(now),
     questionFocus,
     primaryMotif,
@@ -92,7 +96,7 @@ export function calculateMelanesianSandDrawingPattern(params: {
     continuousThread: `${primaryMotif.koreanLabel}에서 출발해 ${bridgingMotif.koreanLabel}으로 자연스럽게 이어지는 연속 맥락`,
     ritualAction: primaryMotif.practicalStep,
     reflectionFocus: `${primaryMotif.name}의 원리(${primaryMotif.strokePrinciple})를 바탕으로 지금의 과제를 한 맥락으로 엮습니다.`,
-    reflectiveQuestion: `지금 흩어져 있는 고민들을 하나의 선으로 잇는다면 가장 먼저 통과해야 할 핵심 매듭은 무엇인가요?`,
+    reflectiveQuestion: `‘${primaryMotif.koreanLabel}’에서 ‘${bridgingMotif.koreanLabel}’으로 선을 이어 갈 때, 지금 가장 먼저 통과해야 할 핵심 매듭은 무엇인가요?`,
     interpretiveBoundary:
       '멜라네시아 바누아투 모래 그림 관점은 맥락 연결과 우선순위 정리를 돕는 상징 도구이며, 개인 점수·심리 진단·미래 예측이 아닙니다.',
   };
