@@ -15888,3 +15888,22 @@ test('buildUserFifteenToolsDigest integrates 6th-round Vedic, Liuren, and Qimen 
   assert.ok(!/dharmaProsperityScore|fourLessonsHarmonyScore|decisionScore|riskIndex|tonggi\.score/.test(digest));
 });
 
+test('buildUserFifteenToolsDigest integrates 6th-round Kabbalah, I Ching, and Thai Astrology lifepath numbers, counterpart views, defensive seasons, and reflective questions without raw scores', () => {
+  const profile: any = {
+    basic: {
+      name: '제제',
+      birthdate: '1994-01-24',
+      birthtime: '10:30',
+      calendarType: 'solar',
+      isLeapMonth: false,
+      gender: 'male',
+    },
+  };
+  const digest = buildUserFifteenToolsDigest(profile, new Date('2026-11-22T07:57:00+09:00'));
+  assert.ok(digest.includes('수비 ') && digest.includes('성찰 질문:'));
+  assert.ok(digest.includes('착괘 경고(') && digest.includes('종괘 시선('));
+  assert.ok(digest.includes('계절 전술 [추진 ') && digest.includes('/ 수성 '));
+  assert.ok(!/vitalityIndex|affinityScore|decisionScore|momentumScore/.test(digest));
+});
+
+
