@@ -5,6 +5,7 @@ export interface TatraRidgeResult {
   calculatedAtKst: string;
   reflectionFocus: string;
   symbolicMotif: string;
+  companionMotif: string;
   ritualAction: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
@@ -17,8 +18,7 @@ function getKstTimeString(date: Date): string {
   const dd = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mi = String(kst.getUTCMinutes()).padStart(2, '0');
-  const ss = String(kst.getUTCSeconds()).padStart(2, '0');
-  return `${yyyy}-${mm}-${dd} ${hh}:${mi}:${ss} +09:00 (KST)`;
+  return `${yyyy}-${mm}-${dd} ${hh}:${mi} +09:00 (KST)`;
 }
 
 function stableHash(input: string): number {
@@ -40,8 +40,18 @@ const TATRA_MOTIFS = [
 
 const TATRA_ACTIONS = [
   '산 너머의 풍경까지 다 보려 하기보다, 지금 발끝이 딛고 선 돌과 풀잎의 감촉부터 확인해 보세요.',
+  '거울 같은 호수처럼 판단을 덧씌우기 전에 지금 눈앞의 상황을 있는 그대로 한 줄로 적어 보세요.',
+  '화덕의 불씨를 키우려고 바람을 세게 불기보다 마른 나뭇가지 하나를 조용히 보태는 쪽을 택해 보세요.',
   '긴 메아리가 돌아오기까지는 시간이 걸립니다. 말을 건넨 뒤 조급해하지 말고 한 박자 비워 두세요.',
-  '화덕의 불씨를 키우려고 바람을 세게 불기보다 마른 나뭇가지 하나를 조용히 보태는 쪽을 택해 보세요.'
+  '지금 계절이 바뀌는 길목이라면 높은 목초지와 낮은 마을 중 내 몸이 편안한 높이를 스스로 정해 보세요.'
+];
+
+const TATRA_QUESTIONS = [
+  '안개 낀 능선에서 먼 봉우리 대신 지금 내 발끝이 가장 또렷이 딛고 있는 기준은 무엇인가요?',
+  '내 마음의 빙하 호수가 출렁이지 않고 있는 그대로 비추어 주길 기다리는 사실은 무엇인가요?',
+  '화려한 불꽃은 아니지만 내 일상을 오래 따뜻하게 데워 주고 있는 붉은 숯불은 무엇인가요?',
+  '오늘 내가 가장 조급하게 재촉하던 메아리는 어떤 작은 침묵을 기다리고 있나요?',
+  '지금 내 계절에 맞춰 오르거나 내려와야 할 삶의 고도는 어느 지점인가요?'
 ];
 
 export function calculateTatraShepherdRidge(params: {
@@ -52,19 +62,24 @@ export function calculateTatraShepherdRidge(params: {
   const { profile, now = new Date(), question = '' } = params;
   const seed = `${JSON.stringify(profile.fate ?? {})}|${question.trim()}|${now.toISOString().slice(0, 13)}`;
   const hash = stableHash(seed);
+  const idx = hash % TATRA_MOTIFS.length;
+  const companionOffset = 1 + (stableHash(`${seed}|companion`) % (TATRA_MOTIFS.length - 1));
 
-  const motif = TATRA_MOTIFS[hash % TATRA_MOTIFS.length];
-  const ritualAction = TATRA_ACTIONS[Math.floor(hash / 7) % TATRA_ACTIONS.length];
+  const motif = TATRA_MOTIFS[idx];
+  const companionMotif = TATRA_MOTIFS[(idx + companionOffset) % TATRA_MOTIFS.length];
+  const ritualAction = TATRA_ACTIONS[idx];
+  const reflectiveQuestion = TATRA_QUESTIONS[idx];
 
   return {
-    engineVersion: 'LUCKEY-TATRA-RIDGE-v2.1.0',
+    engineVersion: 'LUCKEY-TATRA-RIDGE-v2.2.0',
     calculatedAtKst: getKstTimeString(now),
     reflectionFocus: question.trim()
-      ? `질문 "${question.trim()}" 속에서 먼 봉우리 대신 발끝의 능선을 짚는 타트라 목동 관점`
+      ? `질문 "${question.trim()}" 속에서 먼 봉우리 대신 발끝의 능선을 짚는 타트라 목동 관점 (동반 결: ${companionMotif.slice(0, 24)}…)`
       : '높은 능선의 안개 속에서도 침착하게 호흡을 고르는 타트라 목동 산길 관점',
     symbolicMotif: motif,
+    companionMotif,
     ritualAction,
-    reflectiveQuestion: '오늘 내가 가장 조급하게 재촉하던 메아리는 어떤 작은 침묵을 기다리고 있나요?',
+    reflectiveQuestion,
     interpretiveBoundary:
       '타트라 산맥 목동 전통의 상징적 비유로, 개인 점수·성격 진단·미래 예측이 아닙니다.'
   };
@@ -76,6 +91,7 @@ export function formatTatraRidgePrompt(result: TatraRidgeResult): string {
     `- 기준 시각: ${result.calculatedAtKst}`,
     `- 성찰 초점: ${result.reflectionFocus}`,
     `- 상징 모티프: ${result.symbolicMotif}`,
+    `- 동반 모티프: ${result.companionMotif}`,
     `- 제안 의식: ${result.ritualAction}`,
     `- 성찰 질문: ${result.reflectiveQuestion}`,
     `- 경계: ${result.interpretiveBoundary}`
