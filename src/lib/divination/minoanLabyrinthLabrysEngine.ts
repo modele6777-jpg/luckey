@@ -4,12 +4,15 @@ export interface MinoanLabyrinthStage {
   name: string;
   motif: string;
   guidance: string;
+  action: string;
+  question: string;
 }
 
 export interface MinoanLabyrinthResult {
   engineVersion: string;
   calculatedAtKst: string;
   activeStage: MinoanLabyrinthStage;
+  companionStage: MinoanLabyrinthStage;
   labrysBalance: string;
   interpretation: string;
   ritualAction: string;
@@ -23,21 +26,29 @@ const MINOAN_LABYRINTH_STAGES: MinoanLabyrinthStage[] = [
     name: '미궁 입구 — 실타래를 손에 쥐는 첫 걸음',
     motif: '아리아드네의 실',
     guidance: '복잡해 보이는 문제도 입구에서 기준이 되는 실 한 가닥만 놓치지 않으면 길을 잃지 않고 건너갈 수 있습니다.',
+    action: '머릿속에서 얽힌 고민을 종이에 한 줄로 적어 ‘절대 놓치지 않을 실타래’ 한 가지만 남기고 나머지는 오늘 보류해 보세요.',
+    question: '지금 복잡하게 얽혀 보이는 문제 속에서, 내가 끝까지 손에 쥐고 있으면 길을 잃지 않을 단 하나의 실타래는 무엇인가요?',
   },
   {
     name: '굽이치는 회랑 — 서두르지 않는 방향 전환',
     motif: '크노소스 나선 회랑',
     guidance: '직선으로 곧장 닿지 않는다고 해서 잘못 가고 있는 것이 아닙니다. 굽이도는 길 자체가 중심을 향한 과정입니다.',
+    action: '직선으로 해결되지 않는 문제 앞에서 오늘 당장 결론을 내리지 말고, 한 굽이 돌아가는 대안 경로 한 가지만 적어 보세요.',
+    question: '곧장 닿지 않는다고 조급해하고 있었지만, 사실은 중심을 향해 굽이돌며 꼭 거쳐 가야 하는 회랑은 어디인가요?',
   },
   {
     name: '미궁의 중심 — 이중 도끼(라브리스)의 명료함',
     motif: '라브리스(Labrys)',
     guidance: '양날의 균형처럼 두 가지 상반된 요구 사이에서 불필요한 가지를 쳐내고 핵심 하나를 마주하는 자리입니다.',
+    action: '서로 부딪히는 두 요구 사이에서 오늘 반드시 지켜야 할 핵심 기준 하나를 남기고 군더더기 선택지 하나를 정리해 보세요.',
+    question: '라브리스의 양날처럼 상반된 요구가 맞서는 자리에서, 내가 명료하게 쳐내거나 중심에 세워야 할 핵심은 무엇인가요?',
   },
   {
     name: '되돌아 나오는 길 — 배운 것을 품고 일상으로',
     motif: '황소 도약자의 유연함',
     guidance: '긴장된 순간에도 힘으로 맞서기보다 유연하게 몸을 띄워 넘듯, 겪은 통찰을 가볍게 삶에 옮길 때입니다.',
+    action: '최근 긴장했던 상황에서 배운 교훈 한 줄을 오늘 실제 일정 한 곳에 가볍게 적용해 보세요.',
+    question: '힘으로 밀어붙이기보다 황소 도약자처럼 유연하게 몸을 띄워 넘기며 일상에 옮길 수 있는 배움은 무엇인가요?',
   },
 ];
 
@@ -48,15 +59,8 @@ const LABRYS_BALANCES = [
 ];
 
 function formatKstTimestamp(date: Date): string {
-  const kstMs = date.getTime() + 9 * 60 * 60 * 1000;
-  const kst = new Date(kstMs);
-  const yyyy = kst.getUTCFullYear();
-  const mm = String(kst.getUTCMonth() + 1).padStart(2, '0');
-  const dd = String(kst.getUTCDate()).padStart(2, '0');
-  const hh = String(kst.getUTCHours()).padStart(2, '0');
-  const mi = String(kst.getUTCMinutes()).padStart(2, '0');
-  const ss = String(kst.getUTCSeconds()).padStart(2, '0');
-  return `${yyyy}-${mm}-${dd}T${hh}:${mi}:${ss}+09:00 (KST)`;
+  const kst = new Date(date.getTime() + 9 * 60 * 60 * 1000);
+  return `${kst.toISOString().slice(0, 16).replace('T', ' ')} +09:00 (KST)`;
 }
 
 function stableHash(input: string): number {
@@ -74,21 +78,25 @@ export function calculateMinoanLabyrinthLabrys(params: {
   question?: string;
 }): MinoanLabyrinthResult {
   const now = params.now ?? new Date();
-  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${params.question ?? ''}|${now.toISOString().slice(0, 10)}`;
+  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${params.question ?? ''}|${now.toISOString().slice(0, 13)}`;
   const hash = stableHash(seed);
 
-  const activeStage = MINOAN_LABYRINTH_STAGES[hash % MINOAN_LABYRINTH_STAGES.length];
-  const labrysBalance = LABRYS_BALANCES[(hash >>> 3) % LABRYS_BALANCES.length];
+  const activeIdx = hash % MINOAN_LABYRINTH_STAGES.length;
+  const companionOffset = 1 + (stableHash(`${seed}|companion`) % (MINOAN_LABYRINTH_STAGES.length - 1));
+  const activeStage = MINOAN_LABYRINTH_STAGES[activeIdx];
+  const companionStage = MINOAN_LABYRINTH_STAGES[(activeIdx + companionOffset) % MINOAN_LABYRINTH_STAGES.length];
+  const labrysBalance = LABRYS_BALANCES[stableHash(`${seed}|balance`) % LABRYS_BALANCES.length];
 
   return {
-    engineVersion: 'LUCKEY-MINOAN-LABYRINTH-v2.1.0',
+    engineVersion: 'LUCKEY-MINOAN-LABYRINTH-v2.2.0',
     calculatedAtKst: formatKstTimestamp(now),
     activeStage,
+    companionStage,
     labrysBalance,
-    interpretation: `고대 미노스 크노소스 미궁과 라브리스 상징에서는 지금이 '${activeStage.name}'(${activeStage.motif}) 구간에 해당합니다. ${activeStage.guidance}`,
-    ritualAction: '머릿속에서 얽힌 고민을 종이에 한 줄로 적어 ‘절대 놓치지 않을 실타래’ 한 가지만 남기고 나머지는 오늘 보류해 보세요.',
+    interpretation: `고대 미노스 크노소스 미궁과 라브리스 상징에서는 지금이 '${activeStage.name}'(${activeStage.motif}) 구간에 해당하며 '${companionStage.name}'의 시야가 동반됩니다. ${activeStage.guidance}`,
+    ritualAction: activeStage.action,
     reflectionFocus: `'${labrysBalance}'을(를) 기준으로 지금 내 선택이 중심을 향하고 있는지 차분히 가늠해 보세요.`,
-    reflectiveQuestion: '지금 복잡하게 얽혀 보이는 문제 속에서, 내가 끝까지 손에 쥐고 있으면 길을 잃지 않을 단 하나의 실타래는 무엇인가요?',
+    reflectiveQuestion: activeStage.question,
     interpretiveBoundary: '본 풀이는 고대 미노스 크노소스 미궁과 라브리스 상징을 바탕으로 한 성찰적 비유이며, 개인 점수·심리 진단·미래 예측이 아닙니다.',
   };
 }
@@ -98,6 +106,7 @@ export function formatMinoanLabyrinthPrompt(result: MinoanLabyrinthResult): stri
     `[고대 미노스 미궁·라브리스 중심 (${result.engineVersion})]`,
     `- 연산 시각: ${result.calculatedAtKst}`,
     `- 미궁 구간: ${result.activeStage.name} (${result.activeStage.motif})`,
+    `- 동반 구간: ${result.companionStage.name} (${result.companionStage.motif})`,
     `- 라브리스 균형: ${result.labrysBalance}`,
     `- 해석 요지: ${result.interpretation}`,
     `- 실천 의례: ${result.ritualAction}`,
