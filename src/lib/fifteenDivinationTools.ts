@@ -454,10 +454,10 @@ export function buildUserFifteenToolsDigest(profile?: UserProfile, asOfDate: Dat
     try {
       const tj = calculateTojeong({ profile, targetYear: kstYear, now: referenceDate });
       if (tj.status === 'calculated') {
-        const kstMonth = kstNow.getUTCMonth() + 1;
+        const kstMonth = new Date(referenceDate.getTime() + 9 * 60 * 60 * 1000).getUTCMonth() + 1;
         const currentMonthFortune = tj.monthlyFortunes?.find((m) => m.month === kstMonth);
         const monthPart = currentMonthFortune
-          ? ` · ${kstMonth}월 운세(${currentMonthFortune.keyword}): "${currentMonthFortune.fortune}"`
+          ? ` · ${kstMonth}월 운세: "${currentMonthFortune.fortune}" (처방: ${currentMonthFortune.tip})`
           : '';
         tojeongLine = `\n- 토정비결: ${tj.targetYear}년(${tj.targetYearGanZhi}) 제${tj.hexagramCode}괘(${tj.hexagramName} · ${tj.upperTrigram}상/${tj.lowerTrigram}하 · ${tj.luckGrade}) · 3수(상${tj.upperGua}·중${tj.middleGua}·하${tj.lowerGua}) · 연간 총론: "${tj.annualSummary}"${monthPart}.`;
       }
