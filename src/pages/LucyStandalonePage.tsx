@@ -33,6 +33,7 @@ import { LucyAuraLoader } from '@/components/LucyAuraLoader';
 import { LucyMasterTarotRoom } from '@/components/chat/LucyMasterTarotRoom';
 import { LucyMasterBgmToggle } from '@/components/chat/LucyMasterBgmToggle';
 import { setSelectedEngineKeys } from '@/lib/lucyEngineSelection';
+import { archiveMasterSession, buildDepthContinuityContext, buildDepthLinkedLucyContext, buildPastMasterSessionsContext } from '@/lib/lucyMasterContinuity';
 import { isLucyMasterBgmPreferred, startLucyMasterBgm, stopLucyMasterBgm, setLucyMasterBgmDepth } from '@/lib/lucyMasterBgm';
 import remarkGfm from 'remark-gfm';
 import { safeSessionStorage, safeLocalStorage } from '@/utils/safeStorage';
@@ -943,6 +944,9 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
   // Both modes now send to conversationId 'lucy', so abort the same runtime.
   const abortGenerating = abortNormalGenerating;
   const chatAccount = firebaseUser?.uid || safeSessionStorage.getItem('prism_auth_uid') || 'device';
+  // 점술모드 대화는 다시 들어오면 비워지므로, 비우기 전/나갈 때 계정별 상담 기록으로 남긴다 (3단계 연결용).
+  const masterMessagesRef = useRef(lucyProMessages);
+  masterMessagesRef.current = lucyProMessages;
   const librarySessionKey = `lucy:${chatAccount}:${chatScope}`;
 
   const handleAbortGeneration = useCallback(() => {
@@ -1645,6 +1649,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
   // 루시 마스터는 나갔다 다시 들어오면 항상 처음부터: 이전 마스터 대화를 비우고 새 인사로 시작한다.
   useEffect(() => {
     if (!isMasterMode || !consumeTarotHouseGreetingPending()) return;
+    archiveMasterSession(chatAccount, masterMessagesRef.current || []);
     clearLucyProMessages();
     // Always offer "이어서 / 새로" on entry: regular Lucy history may still be loading,
     // or today's thread may be empty after the KST midnight rollover.
@@ -1653,7 +1658,12 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
     const greeting = createTarotHouseGreeting(userDisplayName, isDuoUnfoldedState().unfolded ? 'unfolded' : 'folded', !fromOffer);
     setLucyMasterLink(fromOffer ? 'linked' : 'undecided');
     setLucyProMessages([greeting]);
-  }, [isMasterMode, setLucyProMessages, clearLucyProMessages, userDisplayName]);
+  }, [isMasterMode, setLucyProMessages, clearLucyProMessages, userDisplayName, chatAccount]);
+  const wasMasterRef = useRef(isMasterMode);
+  useEffect(() => {
+    if (wasMasterRef.current && !isMasterMode) archiveMasterSession(chatAccount, masterMessagesRef.current || []);
+    wasMasterRef.current = isMasterMode;
+  }, [isMasterMode, chatAccount]);
 
   // 🔮 점술모드 대화 중 폰을 펼치면: 루시가 타로 상담을 더하자고 제안 (왼쪽엔 타로 테이블)
   useEffect(() => {
@@ -3464,8 +3474,16 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
       }
       // 처음 꺼낸 고민을 중심에 고정해 대화가 산으로 가지 않게 한다 (아직 없으면 이번 말이 중심 고민)
       const concernAnchor = findConcernAnchor([...lucyMessages, { role: 'user', content: userCleanText }]);
-      const houseGuide = buildTarotHouseGuide(divinationLayout, isTarotIntent, wantsDeepEngines, concernAnchor, getLucyMasterDepth());
+      const depthNow = getLucyMasterDepth();
+      const houseGuide = buildTarotHouseGuide(divinationLayout, isTarotIntent, wantsDeepEngines, concernAnchor, depthNow);
       extraSystemContext = extraSystemContext ? `${extraSystemContext}\n\n${houseGuide}` : houseGuide;
+      // 🔮 상담 깊이 이어짐: 2·3단계는 앞 단계 상담을 이어받고, 3단계는 일반 루시 대화와 지난 점술모드 상담까지 연결한다.
+      const continuity = [
+        buildDepthContinuityContext(lucyMessages, depthNow),
+        depthNow >= 3 && link !== 'linked' ? buildDepthLinkedLucyContext(personaMessages?.lucy || []) : '',
+        depthNow >= 3 ? buildPastMasterSessionsContext(chatAccount, String(lucyMessages.find(m => m.role === 'user')?.id || '')) : '',
+      ].filter(Boolean).join('\n\n');
+      if (continuity) extraSystemContext = `${extraSystemContext}\n\n${continuity}`;
     }
 
     // 🔮 타로 질문 의도 감지 시 실제 운명의 타로 카드를 즉시 드로우하여 루시 프롬프트에 주입 (이미지 비주얼 연동)

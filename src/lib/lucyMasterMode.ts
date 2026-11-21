@@ -60,8 +60,8 @@ export const LUCY_MASTER_DEPTH_EVENT = 'prism:lucy_master_depth';
 export const LUCY_MASTER_MAX_DEPTH: LucyMasterDepth = 3;
 export const LUCY_MASTER_DEPTH_INFO: Record<LucyMasterDepth, { name: string; note: string }> = {
   1: { name: '기본', note: '사주를 중심으로 고민을 들어볼게' },
-  2: { name: '심화', note: '고민과 관련된 도구를 더 써서 원인과 흐름까지 짚어볼게' },
-  3: { name: '심층', note: '여러 도구와 심층 관점까지 모두 꺼내서 마음·관계·시기를 깊이 풀어볼게' },
+  2: { name: '심화', note: '앞에서 나눈 이야기를 이어받아, 관련 도구를 더 써서 원인과 흐름까지 짚어볼게' },
+  3: { name: '심층', note: '일반 루시 대화와 지난 상담 기록까지 이어서, 여러 도구와 심층 관점으로 깊이 풀어볼게' },
 };
 
 export function getLucyMasterDepth(): LucyMasterDepth {
