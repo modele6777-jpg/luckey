@@ -6,10 +6,11 @@ export interface HozhoPillar {
   sacredOrder: string;
   coreInsight: string;
   practicalWalk: string;
+  reflectiveQuestion: string;
 }
 
 export interface NavajoHozhoResult {
-  engineVersion: 'LUCKEY-NAVAJO-HOZHO-v2.1.0';
+  engineVersion: 'LUCKEY-NAVAJO-HOZHO-v2.2.0';
   calculatedAtKst: string;
   questionFocus: string;
   primaryPillar: HozhoPillar;
@@ -28,6 +29,7 @@ const HOZHO_PILLARS: HozhoPillar[] = [
     sacredOrder: '동방 · 하루를 여는 첫 생각의 정렬',
     coreInsight: '혼란스러운 감정 속에서 사실과 추측을 분리하는 순간 생각의 하늘이 맑아집니다.',
     practicalWalk: '지금 걱정되는 일을 사실 한 줄과 내 염려 한 줄로 나누어 적어 보세요.',
+    reflectiveQuestion: '지금 내 머릿속을 복잡하게 만드는 생각 중 확인된 사실과 내가 앞당겨 한 추측을 가른다면 무엇이 남나요?',
   },
   {
     name: 'Nahat’á (단정한 계획과 준비)',
@@ -35,6 +37,7 @@ const HOZHO_PILLARS: HozhoPillar[] = [
     sacredOrder: '남방 · 생각을 현실의 걸음으로 옮기는 질서',
     coreInsight: '완벽한 거대 계획보다 오늘 실제로 해낼 수 있는 작고 단정한 순서가 나를 지킵니다.',
     practicalWalk: '오늘 꼭 끝낼 핵심 행동 딱 두 가지만 순서대로 정해 두세요.',
+    reflectiveQuestion: '크고 완벽한 청사진 대신 오늘 내 숨결에 맞게 단정히 세울 수 있는 두 걸음의 순서는 무엇인가요?',
   },
   {
     name: 'Iiná (생명력 있는 실천)',
@@ -42,6 +45,7 @@ const HOZHO_PILLARS: HozhoPillar[] = [
     sacredOrder: '서방 · 몸으로 부딪혀 살아 내는 현재',
     coreInsight: '생각만으로는 균형이 완성되지 않으며, 작은 행동 하나가 정체된 공기를 바꿉니다.',
     practicalWalk: '미뤄 둔 짧은 작업 하나를 지금 바로 5분만 손대어 흐름을 열어 보세요.',
+    reflectiveQuestion: '머릿속에서 맴돌기만 하던 생각 가운데 지금 5분만 손대어도 공기가 달라질 행동은 무엇인가요?',
   },
   {
     name: 'Sihasin (성찰과 고요한 확신)',
@@ -49,13 +53,13 @@ const HOZHO_PILLARS: HozhoPillar[] = [
     sacredOrder: '북방 · 경험을 지혜로 묶는 마무리',
     coreInsight: '잘한 점과 아쉬운 점을 모두 품고 내일의 나에게 고요한 신뢰를 건네는 시간입니다.',
     practicalWalk: '오늘 해낸 작은 성취 하나를 인정하고 어깨의 힘을 천천히 빼 보세요.',
+    reflectiveQuestion: '내 앞과 뒤에 아름다움과 질서를 세운다면 지나온 걸음에서 이미 충분히 잘 지켜 낸 나의 몫은 무엇인가요?',
   },
 ];
 
 function formatKstTimestamp(date: Date): string {
   const kst = new Date(date.getTime() + 9 * 60 * 60 * 1000);
-  const iso = kst.toISOString().slice(0, 19);
-  return `${iso}+09:00 (KST)`;
+  return `${kst.toISOString().slice(0, 16).replace('T', ' ')} +09:00 (KST)`;
 }
 
 function stableHash(input: string): number {
@@ -74,25 +78,25 @@ export function calculateNavajoHozhoBeautyBalance(params: {
 }): NavajoHozhoResult {
   const now = params.now ?? new Date();
   const questionFocus = (params.question ?? '').trim() || '아름다움과 균형 속의 걸음';
-  const seed = stableHash(
-    `${JSON.stringify(params.profile.fate ?? {})}|${now.toISOString().slice(0, 13)}|${questionFocus}|navajo-hozho`
-  );
+  const seedBase = `${JSON.stringify(params.profile.fate ?? {})}|${now.toISOString().slice(0, 13)}|${questionFocus}|navajo-hozho`;
+  const seed = stableHash(seedBase);
 
   const primaryIdx = seed % HOZHO_PILLARS.length;
-  const balanceIdx = (primaryIdx + 2) % HOZHO_PILLARS.length;
+  const balanceOffset = 1 + (stableHash(`${seedBase}|balance`) % (HOZHO_PILLARS.length - 1));
+  const balanceIdx = (primaryIdx + balanceOffset) % HOZHO_PILLARS.length;
   const primaryPillar = HOZHO_PILLARS[primaryIdx];
   const balancePillar = HOZHO_PILLARS[balanceIdx];
 
   return {
-    engineVersion: 'LUCKEY-NAVAJO-HOZHO-v2.1.0',
+    engineVersion: 'LUCKEY-NAVAJO-HOZHO-v2.2.0',
     calculatedAtKst: formatKstTimestamp(now),
     questionFocus,
     primaryPillar,
     balancePillar,
     beautyWalkTheme: `${primaryPillar.koreanLabel}으로 길을 열고 ${balancePillar.koreanLabel}으로 균형을 맞추는 호조(Hózhó) 걸음`,
     ritualAction: primaryPillar.practicalWalk,
-    reflectionFocus: `${primaryPillar.name}(${primaryPillar.sacredOrder})의 자리에서 오늘 흐트러진 리듬을 다시 정돈합니다.`,
-    reflectiveQuestion: `내 앞과 뒤에 아름다움과 질서를 세운다면 지금 내 걸음에서 가장 먼저 바로잡고 싶은 방향은 어디인가요?`,
+    reflectionFocus: `${primaryPillar.name}(${primaryPillar.sacredOrder})의 자리에서 '${balancePillar.name}'의 균형을 함께 엮어 오늘 흐트러진 리듬을 다시 정돈합니다.`,
+    reflectiveQuestion: primaryPillar.reflectiveQuestion,
     interpretiveBoundary:
       '나바호 디네 호조 관점은 생각·계획·실천·성찰의 균형을 비유적으로 돕는 상징 도구이며, 개인 점수·심리 진단·미래 예측이 아닙니다.',
   };
