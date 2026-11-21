@@ -29,24 +29,45 @@ test('Chirp 3 HD request sends the API key as the key parameter and returns mp3'
   assert.equal(JSON.parse(seen.init.body).voice.name, 'ko-KR-Chirp3-HD-Kore');
 });
 
-test('a disabled Cloud TTS API falls back to Gemini and is skipped for a while', async () => {
+const geminiOk = () => new Response(JSON.stringify({ candidates: [{ content: { parts: [{ inlineData: { data: btoa('\u0000\u0000\u0000\u0000'), mimeType: 'audio/L16;rate=24000' } }] } }] }), { status: 200 });
+const geminiDaily = () => new Response(JSON.stringify({ error: { code: 429, details: [
+  { '@type': 'type.googleapis.com/google.rpc.QuotaFailure', violations: [{ quotaId: 'GenerateRequestsPerDayPerProjectPerModel-FreeTier' }] },
+  { '@type': 'type.googleapis.com/google.rpc.RetryInfo', retryDelay: '3600s' },
+] } }), { status: 429 });
+const chirpOk = () => new Response(JSON.stringify({ audioContent: mp3 }), { status: 200 });
+
+test('Gemini reads first while it has quota', async () => {
   resetCloudTtsCooldown();
   const calls: string[] = [];
-  const fetchApi = (async (url: string) => {
-    calls.push(String(url));
-    if (String(url).includes('texttospeech')) {
-      return new Response(JSON.stringify({ error: { status: 'PERMISSION_DENIED', details: [{ reason: 'SERVICE_DISABLED' }] } }), { status: 403 });
-    }
-    const pcm = btoa('\u0000\u0000\u0000\u0000');
-    return new Response(JSON.stringify({ candidates: [{ content: { parts: [{ inlineData: { data: pcm, mimeType: 'audio/L16;rate=24000' } }] } }] }), { status: 200 });
-  }) as typeof fetch;
+  const fetchApi = (async (url: string) => { calls.push(String(url)); return String(url).includes('texttospeech') ? chirpOk() : geminiOk(); }) as typeof fetch;
+  const result = await synthesizePreferredSpeech('안녕.', 'Aoede', { GEMINI_API_KEY: 'g' }, fetchApi);
+  assert.equal(result.provider, 'gemini');
+  assert.ok(calls.every(url => !url.includes('texttospeech')));
+});
+
+test('when Gemini runs out of quota, Chirp 3 HD reads and Gemini is skipped until its retry time', async () => {
+  resetCloudTtsCooldown();
+  const calls: string[] = [];
+  const fetchApi = (async (url: string) => { calls.push(String(url)); return String(url).includes('texttospeech') ? chirpOk() : geminiDaily(); }) as typeof fetch;
   const env = { GEMINI_API_KEY: 'g' };
-  const first = await synthesizePreferredSpeech('안녕.', 'Aoede', env, fetchApi);
-  assert.equal(first.provider, 'gemini');
-  assert.deepEqual(cloudTtsStatus().lastFailure, { status: 403, providerCode: 'SERVICE_DISABLED' });
-  assert.equal(cloudTtsStatus().skipped, true);
+  const first = await synthesizePreferredSpeech('안녕.', 'Kore', env, fetchApi);
+  assert.equal(first.provider, 'google-cloud-chirp3-hd');
+  assert.equal(first.voice, 'ko-KR-Chirp3-HD-Kore');
+  assert.ok(cloudTtsStatus().geminiSkippedSeconds > 3000);
   calls.length = 0;
-  await synthesizePreferredSpeech('또 안녕.', 'Aoede', env, fetchApi);
-  assert.ok(calls.every(url => !url.includes('texttospeech')), 'Cloud TTS is skipped during the cooldown');
+  const second = await synthesizePreferredSpeech('또 안녕.', 'Kore', env, fetchApi);
+  assert.equal(second.provider, 'google-cloud-chirp3-hd');
+  assert.ok(calls.every(url => url.includes('texttospeech')), 'Gemini is not asked again during its cooldown');
+  resetCloudTtsCooldown();
+});
+
+test('if both engines fail, the app hears Gemini\'s reason (e.g. daily quota)', async () => {
+  resetCloudTtsCooldown();
+  const fetchApi = (async (url: string) => String(url).includes('texttospeech')
+    ? new Response(JSON.stringify({ error: { status: 'UNAUTHENTICATED', details: [{ reason: 'CREDENTIALS_MISSING' }] } }), { status: 401 })
+    : geminiDaily()) as typeof fetch;
+  const error = await synthesizePreferredSpeech('안녕.', 'Aoede', { GEMINI_API_KEY: 'g' }, fetchApi).catch(e => e);
+  assert.equal(error.providerCode, 'DAILY_LIMIT_EXCEEDED');
+  assert.equal(cloudTtsStatus().skipped, true);
   resetCloudTtsCooldown();
 });
