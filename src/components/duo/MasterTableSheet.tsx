@@ -6,13 +6,16 @@ import { useLucyMasterDepth } from '@/lib/lucyMasterMode';
 import { triggerHaptic } from '@/lib/omniWarp/omniWarpHaptics';
 import { MasterSajuBoard } from './MasterSajuBoard';
 import { MasterToolBoard } from './MasterToolBoard';
+import { LucyEngineCatalogPanel } from '@/components/chat/LucyEngineCatalogDialog';
 
-type Face = 'saju' | 'tarot' | 'recommended' | 'scrolls';
+type Face = 'saju' | 'tarot' | 'recommended' | 'scrolls' | 'engines';
 const FACES: { id: Face; icon: string; label: string; stage: 1 | 2 | 3 }[] = [
   { id: 'saju', icon: '☯', label: '사주 원국', stage: 1 },
   { id: 'tarot', icon: '🃏', label: '타로', stage: 2 },
   { id: 'recommended', icon: '🧭', label: '추천 도구', stage: 3 },
   { id: 'scrolls', icon: '📜', label: '양피지', stage: 3 },
+  // 엔진함: 모든 단계에서 볼 수 있는 엔진 이름·뜻 목록 (읽기 전용)
+  { id: 'engines', icon: '📚', label: '엔진함', stage: 1 },
 ];
 
 /**
@@ -74,13 +77,15 @@ export function MasterTableSheet({ onClose }: { onClose: () => void }) {
                 >
                   <span className="text-[15px] leading-none" aria-hidden="true">{item.icon}</span>
                   <span className="mt-0.5 max-w-full truncate text-[10.5px] font-bold leading-tight">{item.label}</span>
-                  <span className={`text-[8px] leading-none ${active ? 'text-amber-200/90' : 'text-slate-400'}`}>{item.stage}단계</span>
+                  <span className={`text-[8px] leading-none ${active ? 'text-amber-200/90' : 'text-slate-400'}`}>{item.id === 'engines' ? '목록' : `${item.stage}단계`}</span>
                 </button>
               );
             })}
           </div>
           <div className="flex min-h-0 flex-1 flex-col">
-            {shown === 'saju' ? (
+            {shown === 'engines' ? (
+              <LucyEngineCatalogPanel />
+            ) : shown === 'saju' ? (
               <MasterSajuBoard saju={table.saju} lastAnswer={table.lastAnswer} />
             ) : shown === 'tarot' ? (
               <DrawnCards cards={table.cards} />

@@ -6,6 +6,17 @@ async function openLucyMaster(page, path = '/chat') {
   await openLucy(page, path);
 }
 
+/** 엔진함은 점술 도구 창의 📚 엔진함 탭에 있다 (접은 화면: 헤더의 "도구" 버튼). */
+async function openEngineTab(page) {
+  await page.locator('[data-master-table-sheet-button]').first().click();
+  const sheet = page.locator('[data-master-table-sheet]');
+  await expect(sheet).toBeVisible();
+  await sheet.locator('[data-table-face="engines"]').click();
+  const panel = page.getByRole('region', { name: 'Lucy 엔진함' });
+  await expect(panel).toBeVisible();
+  return { sheet, panel };
+}
+
 async function openLucy(page, path = '/chat') {
   await page.addInitScript(() => {
     const now = new Date();
@@ -249,7 +260,7 @@ test('legacy Pro URL normalizes to Lucy and keeps the shared catalog available',
   await expect(page).toHaveURL(/\/chat\?mode=ai$/);
   await expect(page.getByText('Lucy Pro', { exact: true })).toHaveCount(0);
   // Engine box and prompt library are Lucy Master only.
-  await expect(page.getByRole('button', { name: /^엔진함 열기/ })).toHaveCount(0);
+  await expect(page.locator('[data-master-table-sheet-button]')).toHaveCount(0);
   await expect(page.getByRole('button', { name: '추천질문 라이브러리 열기' })).toHaveCount(0);
   expect(await page.evaluate(() => localStorage.getItem('lucy_tier_mode'))).toBe('ai');
 });
@@ -319,12 +330,9 @@ test('Lucy chat shows no per-message mode or engine badges', async ({ page, base
 
 test('Lucy engine box opens the 515-entry catalog with multi-select and no preset bundles', async ({ page }) => {
   await openLucyMaster(page);
-  const trigger = page.getByRole('button', { name: /^엔진함 열기/ });
-  await expect(trigger).toBeVisible();
-  await trigger.click();
-
-  const dialog = page.getByRole('dialog', { name: 'Lucy 엔진함' });
-  await expect(dialog).toBeVisible();
+  // 엔진함은 헤더 버튼이 아니라 점술 도구 창의 탭으로 옮겨졌다.
+  await expect(page.getByRole('button', { name: /^엔진함 열기/ })).toHaveCount(0);
+  const { panel: dialog } = await openEngineTab(page);
   await expect(dialog).toContainText('15개 기초 도구');
   await expect(dialog).toContainText('500개 심층 관점');
   await expect(dialog).toContainText('각각 독립 계산기가 아닙니다');
@@ -333,7 +341,7 @@ test('Lucy engine box opens the 515-entry catalog with multi-select and no prese
   await expect(dialog.getByRole('button', { name: /담기$/ })).toHaveCount(0);
   await expect(dialog).toContainText('자동으로 골라');
   const nameStyle = await dialog.locator('.lucy-engine-catalog-entry-name').first().evaluate(element => {
-    const dialogElement = element.closest('[role="dialog"]');
+    const dialogElement = element.closest('[data-catalog-theme]');
     const theme = dialogElement?.getAttribute('data-catalog-theme');
     const style = getComputedStyle(element);
     return { theme, color: style.color, textFill: style.webkitTextFillColor };
@@ -359,10 +367,7 @@ test('Lucy engine box opens the 515-entry catalog with multi-select and no prese
 
 test('Lucy groups all 515 catalog entries under the seven channel themes', async ({ page }) => {
   await openLucyMaster(page);
-  await page.getByRole('button', { name: /^엔진함 열기/ }).click();
-
-  const dialog = page.getByRole('dialog', { name: 'Lucy 엔진함' });
-  await expect(dialog).toBeVisible();
+  const { panel: dialog } = await openEngineTab(page);
   const entries = dialog.getByTestId('lucy-engine-catalog-entry');
   await expect(entries).toHaveCount(515);
   const meaningTexts = await entries.locator('.lucy-engine-catalog-entry-meaning').allTextContents();
@@ -406,49 +411,34 @@ test('Lucy groups all 515 catalog entries under the seven channel themes', async
   await expect(dialog.getByTestId('lucy-engine-catalog-entry')).toHaveCount(auraCount);
 });
 
-test('Lucy engine catalog fills its mobile pane and its list scrolls without auto-opening the keyboard', async ({ page }) => {
+test('Lucy engine tab fills the tool window and its list scrolls without auto-opening the keyboard', async ({ page }) => {
   await openLucyMaster(page);
-  await page.getByRole('button', { name: /^엔진함 열기/ }).click();
-
-  const dialog = page.getByRole('dialog', { name: 'Lucy 엔진함' });
-  const search = dialog.getByRole('searchbox', { name: '엔진과 관점 검색' });
-  await expect(dialog).toBeVisible();
-  const closeButton = dialog.getByRole('button', { name: '엔진 목록 닫기' });
-  await expect(closeButton).toBeVisible();
-  await expect(closeButton).toContainText('닫기');
+  const { sheet, panel } = await openEngineTab(page);
+  const search = panel.getByRole('searchbox', { name: '엔진과 관점 검색' });
   await expect(search).not.toBeFocused();
 
-  const paneBounds = await page.locator('.duo-portal').boundingBox();
-  const dialogBounds = await dialog.boundingBox();
-  expect(paneBounds).not.toBeNull();
-  expect(dialogBounds).not.toBeNull();
-  if (!paneBounds || !dialogBounds) throw new Error('Lucy engine catalog dialog or pane is missing');
-  expect(dialogBounds.width).toBeGreaterThan(paneBounds.width * 0.9);
-  expect(dialogBounds.height).toBeGreaterThan(paneBounds.height * 0.94);
+  const sheetBounds = await sheet.boundingBox();
+  const panelBounds = await panel.boundingBox();
+  expect(sheetBounds).not.toBeNull();
+  expect(panelBounds).not.toBeNull();
+  if (!sheetBounds || !panelBounds) throw new Error('Lucy tool window or engine tab is missing');
+  expect(panelBounds.width).toBeGreaterThan(sheetBounds.width * 0.9);
+  expect(panelBounds.height).toBeGreaterThan(sheetBounds.height * 0.6);
 
   const list = page.getByTestId('lucy-engine-catalog-list');
   await expect(list).toHaveAttribute('aria-busy', 'false');
-  await list.evaluate(element => new Promise<void>(resolve => {
-    requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
-  }));
   const metrics = await list.evaluate(element => {
     const style = getComputedStyle(element);
-    return {
-      clientHeight: element.clientHeight,
-      scrollHeight: element.scrollHeight,
-      overflowY: style.overflowY,
-      touchAction: style.touchAction,
-    };
+    return { clientHeight: element.clientHeight, scrollHeight: element.scrollHeight, overflowY: style.overflowY, touchAction: style.touchAction };
   });
-  expect(metrics.clientHeight).toBeGreaterThan(paneBounds.height * 0.45);
   expect(metrics.scrollHeight).toBeGreaterThan(metrics.clientHeight + 500);
   expect(metrics.overflowY).toBe('auto');
   expect(metrics.touchAction).toBe('pan-y');
 
   await list.evaluate(element => { element.scrollTop = 400; });
   await expect.poll(() => list.evaluate(element => element.scrollTop)).toBeGreaterThan(0);
-  await closeButton.click();
-  await expect(dialog).toHaveCount(0);
+  await sheet.getByRole('button', { name: '도구 창 닫기' }).click();
+  await expect(sheet).toHaveCount(0);
 });
 
 test('typing in the composer shows no AI detection badge', async ({ page }) => {

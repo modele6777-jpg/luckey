@@ -34,7 +34,8 @@ const FILTERS: { id: CatalogFilter; label: string }[] = [
   { id: 'deep_master', label: '심층 관점' },
 ];
 
-export function LucyEngineCatalogDialog({ isOpen, onClose, isLight, sessionKey = defaultLibrarySessionKey('engine-library') }: LucyEngineCatalogDialogProps) {
+/** 엔진 목록 본문. 엔진함 창과 점술 도구 창의 "엔진함" 탭이 같이 쓴다. */
+function LucyEngineCatalogBody({ isOpen, isLight, sessionKey }: { isOpen: boolean; isLight: boolean; sessionKey: string }) {
   const [filter, setFilter] = useLibrarySessionState<CatalogFilter>(`${sessionKey}:filter`, 'all');
   const [themeFilter, setThemeFilter] = useLibrarySessionState<CatalogThemeFilter>(`${sessionKey}:theme`, 'all');
   const [query, setQuery] = useLibrarySessionState<string>(`${sessionKey}:query`, '');
@@ -64,11 +65,6 @@ export function LucyEngineCatalogDialog({ isOpen, onClose, isLight, sessionKey =
   }, [groupedEngines, renderedCount]);
   const scroll = useLibrarySessionScroll(`${sessionKey}:scroll`, isOpen, renderedCount >= filteredEngines.length);
 
-  if (!isOpen) return null;
-
-  const surface = isLight
-    ? 'bg-white text-slate-900 border-amber-200/80'
-    : 'bg-slate-950 text-slate-100 border-white/10';
   const muted = isLight ? 'text-slate-600' : 'text-slate-300';
   const subtleSurface = isLight ? 'bg-amber-50/70 border-amber-200/70' : 'bg-white/[0.045] border-white/10';
   const inactivePill = isLight
@@ -76,40 +72,6 @@ export function LucyEngineCatalogDialog({ isOpen, onClose, isLight, sessionKey =
     : 'border border-white/10 bg-white/[0.04] text-slate-300 hover:bg-white/10';
 
   return (
-    <WorkspacePortal onClose={onClose}>
-      <DialogBackdrop
-        className="fixed inset-0 z-[10050] flex items-center justify-center bg-slate-950/75 p-2 backdrop-blur-md sm:p-5"
-        onDismiss={onClose}
-      >
-        <section
-          id="lucy-engine-catalog-dialog"
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="lucy-engine-catalog-title"
-          aria-describedby="lucy-engine-catalog-intro"
-          onClick={event => event.stopPropagation()}
-          data-catalog-theme={isLight ? 'light' : 'dark'}
-          // Portaled outside the Lucy shell: keep the global light-theme remaps off a dark catalog.
-          data-theme-dark-island={isLight ? undefined : 'true'}
-          style={isLight ? undefined : { colorScheme: 'dark' }}
-          className={`lucy-engine-catalog-dialog chat-library-dialog flex w-full max-w-4xl flex-col overflow-hidden rounded-2xl border shadow-2xl sm:rounded-3xl ${surface}`}
-        >
-          <header className={`chat-library-heading flex shrink-0 items-center justify-between gap-3 border-b px-4 py-4 sm:px-6 ${isLight ? 'border-amber-100' : 'border-white/10'}`}>
-            <div className="flex min-w-0 items-center gap-3">
-              <span className="chat-library-heading-icon flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-amber-400/20 text-amber-500">
-                <Sparkles size={20} />
-              </span>
-              <div className="chat-library-heading-copy min-w-0">
-                <h2 id="lucy-engine-catalog-title" className="text-base font-black sm:text-lg">Lucy 엔진함</h2>
-                <p className={`chat-library-subtitle text-[11px] sm:text-xs ${muted}`}>엔진 이름과 뜻을 볼 수 있어요 · 루시가 질문마다 자동으로 골라요</p>
-              </div>
-            </div>
-            <button type="button" onClick={onClose} aria-label="엔진 목록 닫기" title="닫기" className={`chat-library-close flex h-11 min-w-[72px] shrink-0 items-center justify-center gap-1.5 rounded-xl border px-2.5 text-xs font-bold transition-colors ${isLight ? 'border-amber-300 bg-amber-50 text-slate-800 hover:bg-amber-100' : 'border-white/20 bg-white/10 text-white hover:bg-white/20'}`}>
-              <X size={20} strokeWidth={2.5} />
-              <span>닫기</span>
-            </button>
-          </header>
-
           <div ref={scroll.ref} onScroll={scroll.onScroll} data-app-scroll-root="" data-testid="lucy-engine-catalog-list" tabIndex={0}
             aria-label="엔진 목록, 세로로 스크롤할 수 있습니다" className="chat-library-scroll overflow-y-auto" aria-busy={renderedCount < filteredEngines.length}>
             <div className="chat-library-toolbar shrink-0 px-4 py-2.5 sm:px-6">
@@ -245,8 +207,70 @@ export function LucyEngineCatalogDialog({ isOpen, onClose, isLight, sessionKey =
               )}
             </div>
           </div>
+  );
+}
+
+export function LucyEngineCatalogDialog({ isOpen, onClose, isLight, sessionKey = defaultLibrarySessionKey('engine-library') }: LucyEngineCatalogDialogProps) {
+  if (!isOpen) return null;
+  const surface = isLight
+    ? 'bg-white text-slate-900 border-amber-200/80'
+    : 'bg-slate-950 text-slate-100 border-white/10';
+  const muted = isLight ? 'text-slate-600' : 'text-slate-300';
+  return (
+    <WorkspacePortal onClose={onClose}>
+      <DialogBackdrop
+        className="fixed inset-0 z-[10050] flex items-center justify-center bg-slate-950/75 p-2 backdrop-blur-md sm:p-5"
+        onDismiss={onClose}
+      >
+        <section
+          id="lucy-engine-catalog-dialog"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="lucy-engine-catalog-title"
+          aria-describedby="lucy-engine-catalog-intro"
+          onClick={event => event.stopPropagation()}
+          data-catalog-theme={isLight ? 'light' : 'dark'}
+          // Portaled outside the Lucy shell: keep the global light-theme remaps off a dark catalog.
+          data-theme-dark-island={isLight ? undefined : 'true'}
+          style={isLight ? undefined : { colorScheme: 'dark' }}
+          className={`lucy-engine-catalog-dialog chat-library-dialog flex w-full max-w-4xl flex-col overflow-hidden rounded-2xl border shadow-2xl sm:rounded-3xl ${surface}`}
+        >
+          <header className={`chat-library-heading flex shrink-0 items-center justify-between gap-3 border-b px-4 py-4 sm:px-6 ${isLight ? 'border-amber-100' : 'border-white/10'}`}>
+            <div className="flex min-w-0 items-center gap-3">
+              <span className="chat-library-heading-icon flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-amber-400/20 text-amber-500">
+                <Sparkles size={20} />
+              </span>
+              <div className="chat-library-heading-copy min-w-0">
+                <h2 id="lucy-engine-catalog-title" className="text-base font-black sm:text-lg">Lucy 엔진함</h2>
+                <p className={`chat-library-subtitle text-[11px] sm:text-xs ${muted}`}>엔진 이름과 뜻을 볼 수 있어요 · 루시가 질문마다 자동으로 골라요</p>
+              </div>
+            </div>
+            <button type="button" onClick={onClose} aria-label="엔진 목록 닫기" title="닫기" className={`chat-library-close flex h-11 min-w-[72px] shrink-0 items-center justify-center gap-1.5 rounded-xl border px-2.5 text-xs font-bold transition-colors ${isLight ? 'border-amber-300 bg-amber-50 text-slate-800 hover:bg-amber-100' : 'border-white/20 bg-white/10 text-white hover:bg-white/20'}`}>
+              <X size={20} strokeWidth={2.5} />
+              <span>닫기</span>
+            </button>
+          </header>
+
+          <LucyEngineCatalogBody isOpen={isOpen} isLight={isLight} sessionKey={sessionKey} />
         </section>
       </DialogBackdrop>
     </WorkspacePortal>
+  );
+}
+
+/** 점술 도구 창 / 펼친 화면 왼쪽 테이블의 "📚 엔진함" 탭 내용 (닫기 버튼 없이 탭 안에 들어간다). */
+export function LucyEngineCatalogPanel({ sessionKey = defaultLibrarySessionKey('engine-library') }: { sessionKey?: string }) {
+  return (
+    <section
+      role="region"
+      aria-label="Lucy 엔진함"
+      data-catalog-theme="dark"
+      data-theme-dark-island="true"
+      data-lucy-engine-panel
+      style={{ colorScheme: 'dark' }}
+      className="lucy-engine-catalog-dialog lucy-engine-catalog-embedded flex min-h-0 flex-1 flex-col text-slate-100"
+    >
+      <LucyEngineCatalogBody isOpen isLight={false} sessionKey={sessionKey} />
+    </section>
   );
 }
