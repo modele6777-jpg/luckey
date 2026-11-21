@@ -378,11 +378,12 @@ export function buildUserFifteenToolsDigest(profile?: UserProfile, asOfDate: Dat
           : '';
         const ritualNote = mb.ritualAction ? ` · 명반 의례: ${mb.ritualAction}` : '';
         const focusNote = mb.reflectionFocus ? ` · 성찰 초점: ${mb.reflectionFocus}` : '';
+        const questionNote = mb.reflectiveQuestion ? ` · 성찰 질문: "${mb.reflectiveQuestion}"` : '';
         const boundaryNote = mb.interpretiveBoundary ? ` · 해석 경계: ${mb.interpretiveBoundary}` : '';
         const matrixNote = mb.mahaboteSynthesisMatrix
           ? ` · 명반 조율 [${mb.mahaboteSynthesisMatrix.alignmentState} / ${mb.mahaboteSynthesisMatrix.dominantTension}] → ${mb.mahaboteSynthesisMatrix.integratedAction}`
           : '';
-        mahaboteLine = `- 마하보테 8요일 부분 계산: ${KOR_WEEKDAYS[dow]} · ${animal}(수호성 ${mb.birthPlanet?.planet || '태양(Sun)'}). [7궁 명반 포국]: 본명궁 ${mb.rootHouse.houseName}(${mb.rootHouse.category})${evalNote} · 소수력 잉여수 ${mb.remainder} · 당해 ${mb.currentAgeTransit.currentAge}세 나이 다샤(${mb.currentAgeTransit.transitHouseName}${mb.transitInteraction?.phase ? ` · ${mb.transitInteraction.phase}` : ''})${transitDetailNote}${domainNote}${affinityNote} · 길방위: ${mb.remedies?.luckyDirection || '동쪽'} · 길색: ${mb.remedies?.luckyColors?.join(', ') || '흰색'}${mb.remedies?.luckyGemstone ? ` · 길보석: ${mb.remedies.luckyGemstone}` : ''}${practiceNote} · 실행 조언: ${mb.currentAgeTransit.actionAdvice}${ritualNote}${matrixNote}${focusNote}${boundaryNote}.`;
+        mahaboteLine = `- 마하보테 8요일 부분 계산: ${KOR_WEEKDAYS[dow]} · ${animal}(수호성 ${mb.birthPlanet?.planet || '태양(Sun)'}). [7궁 명반 포국]: 본명궁 ${mb.rootHouse.houseName}(${mb.rootHouse.category})${evalNote} · 소수력 잉여수 ${mb.remainder} · 당해 ${mb.currentAgeTransit.currentAge}세 나이 다샤(${mb.currentAgeTransit.transitHouseName}${mb.transitInteraction?.phase ? ` · ${mb.transitInteraction.phase}` : ''} — ${mb.currentAgeTransit.theme})${transitDetailNote}${domainNote}${affinityNote} · 길방위: ${mb.remedies?.luckyDirection || '동쪽'} · 길색: ${mb.remedies?.luckyColors?.join(', ') || '흰색'}${mb.remedies?.luckyGemstone ? ` · 길보석: ${mb.remedies.luckyGemstone}` : ''}${practiceNote} · 실행 조언: ${mb.currentAgeTransit.actionAdvice}${ritualNote}${matrixNote}${focusNote}${questionNote}${boundaryNote}.`;
       } else {
         mahaboteLine = `- 마하보테 8요일 부분 계산: ${KOR_WEEKDAYS[dow]} · ${animal}. 7궁 명반 미계산.`;
       }
@@ -507,16 +508,17 @@ export function buildUserFifteenToolsDigest(profile?: UserProfile, asOfDate: Dat
           ? ` · 세피라 조응(${tm.sephiraMapping.soulSephira.sephiraName}↔${tm.sephiraMapping.personalitySephira.sephiraName}${tm.sephiraMapping.soulSephira.pathworkingGuidance ? ` — ${tm.sephiraMapping.soulSephira.pathworkingGuidance}` : ''})`
           : '';
         const polarityNote = tm.cardPolarities?.[0]
-          ? ` · 극성 승화 [${tm.cardPolarities[0].cardName} ${tm.cardPolarities[0].isUpright ? '정방향' : '역방향'}]: ${tm.cardPolarities[0].transmutationAdvice}`
+          ? ` · 극성 승화 [${tm.cardPolarities[0].cardName} ${tm.cardPolarities[0].isUpright ? '정방향' : '역방향'}]: ${tm.cardPolarities[0].transmutationAdvice} (그림자 경계: ${tm.cardPolarities[0].shadowWarning})`
           : '';
         const ritualNote = tm.ritualAction ? ` · 실천 의식: ${tm.ritualAction}` : '';
         const affirmNote = tm.masterAffirmation ? ` · 확언: "${tm.masterAffirmation}"` : '';
         const focusNote = tm.reflectionFocus ? ` · 성찰 초점: ${tm.reflectionFocus}` : '';
+        const questionNote = tm.reflectiveQuestion ? ` · 성찰 질문: "${tm.reflectiveQuestion}"` : '';
         const boundaryNote = tm.interpretiveBoundary ? ` · 해석 경계: ${tm.interpretiveBoundary}` : '';
         const matrixNote = tm.tarotSynthesisMatrix
           ? ` · 타로 조율 [${tm.tarotSynthesisMatrix.alignmentState} / ${tm.tarotSynthesisMatrix.dominantTension}] → ${tm.tarotSynthesisMatrix.integratedAction}`
           : '';
-        tarotLine = `\n- 타로 마스터 수비학: 소울 카드 ${tm.soulCard.name}(${tm.soulCard.keywords.slice(0, 2).join('·')}) · 퍼스널리티 카드 ${tm.personalityCard.name} · ${tm.currentYear}년 성장 카드 ${tm.yearCard.name}(${tm.yearCard.keywords.slice(0, 2).join('·')})${timelineBrief} · 4원소 흐름(우세 ${domElem} · 보완 ${lackElem})${suitNote}${sephiraNote}${polarityNote}${ritualNote}${affirmNote}${matrixNote}${focusNote}${boundaryNote}.`;
+        tarotLine = `\n- 타로 마스터 수비학: 소울 카드 ${tm.soulCard.name}(${tm.soulCard.keywords.slice(0, 2).join('·')}) · 퍼스널리티 카드 ${tm.personalityCard.name} · ${tm.currentYear}년 성장 카드 ${tm.yearCard.name}(${tm.yearCard.keywords.slice(0, 2).join('·')})${timelineBrief} · 4원소 흐름(우세 ${domElem} · 보완 ${lackElem})${suitNote}${sephiraNote}${polarityNote}${ritualNote}${affirmNote}${matrixNote}${focusNote}${questionNote}${boundaryNote}.`;
       }
     } catch (_) {}
 
@@ -536,16 +538,18 @@ export function buildUserFifteenToolsDigest(profile?: UserProfile, asOfDate: Dat
           : '';
         const dynamicsNote = sk.selfDynamics ? ` · 숙격 역학(${sk.selfDynamics})` : '';
         const guideNote = sk.shukguk?.lifeGuide ? ` · 인생 기조: ${sk.shukguk.lifeGuide}` : '';
+        const traitNote = sk.shukguk?.trait ? ` · 숙격 성향: ${sk.shukguk.trait}` : '';
         const lunarNote = sk.lunarDate
           ? ` · 음력 ${sk.lunarDate.month}월 ${sk.lunarDate.day}일${sk.lunarDate.isLeapMonth ? '(윤)' : ''}`
           : '';
         const ritualNote = sk.ritualAction ? ` · 개운 실천: ${sk.ritualAction}` : '';
         const focusNote = sk.reflectionFocus ? ` · 성찰 초점: ${sk.reflectionFocus}` : '';
+        const questionNote = sk.reflectiveQuestion ? ` · 성찰 질문: "${sk.reflectiveQuestion}"` : '';
         const boundaryNote = sk.interpretiveBoundary ? ` · 해석 경계: ${sk.interpretiveBoundary}` : '';
         const matrixNote = sk.sukuyoSynthesisMatrix
           ? ` · 숙요 조율 [${sk.sukuyoSynthesisMatrix.alignmentState} / ${sk.sukuyoSynthesisMatrix.dominantTension}] → ${sk.sukuyoSynthesisMatrix.integratedAction}`
           : '';
-        sukuyoLine = `\n- 숙요경(27숙): 본명숙 ${sk.mansion.fullName}${lunarNote}(${sk.mansion.animal} · ${sk.mansion.element}행) · 숙격 ${sk.mansion.shukgukHanja}(${sk.mansion.shukgukTrait}) · 4방신 ${sk.mansion.group}${quadrantNote}${sanKyuNote}${guardNote}${dynamicsNote}${guideNote}${ritualNote}${matrixNote}${focusNote}${boundaryNote}.`;
+        sukuyoLine = `\n- 숙요경(27숙): 본명숙 ${sk.mansion.fullName}${lunarNote}(${sk.mansion.animal} · ${sk.mansion.element}행) · 숙격 ${sk.mansion.shukgukHanja}(${sk.mansion.shukgukTrait}) · 4방신 ${sk.mansion.group}${quadrantNote}${sanKyuNote}${guardNote}${dynamicsNote}${traitNote}${guideNote}${ritualNote}${matrixNote}${focusNote}${questionNote}${boundaryNote}.`;
       }
     } catch (_) {}
 

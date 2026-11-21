@@ -15852,3 +15852,20 @@ test('buildUserFifteenToolsDigest integrates 6th-round Saju, Astrology, and Ziwe
   assert.ok(digest.includes('명궁 ') && digest.includes('성찰 질문:'));
   assert.ok(!/breakthroughPowerScore|deukSeScore|driveScore|wealthAffinityScore/.test(digest));
 });
+
+test('buildUserFifteenToolsDigest integrates 6th-round Tarot, Sukuyo, and Mahabote shadow warnings, traits, transit themes, and reflective questions without raw scores', () => {
+  const profile: any = {
+    basic: {
+      name: '제제',
+      birthdate: '1994-01-24',
+      birthtime: '10:30',
+      calendarType: 'solar',
+      isLeapMonth: false,
+      gender: 'male',
+    },
+  };
+  const digest = buildUserFifteenToolsDigest(profile, new Date('2026-11-22T07:36:00+09:00'));
+  assert.ok(digest.includes('그림자 경계:') && digest.includes('성찰 질문:'));
+  assert.ok(digest.includes('숙격 성향:') && digest.includes('나이 다샤('));
+  assert.ok(!/tarotVitalityScore|guardScore|leadershipHonor/.test(digest));
+});
