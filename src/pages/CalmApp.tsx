@@ -301,7 +301,7 @@ export default function CalmApp() {
     return () => frame?.removeEventListener('load', updateLayout);
   }, [isWideWorkspace]);
   const searchParams = typeof window !== 'undefined' ? window.location.search : '';
-  const iframeSrc = `/calm/index.html${searchParams ? searchParams + '&v=43.0' : '?v=43.0'}`;
+  const iframeSrc = `/calm/index.html${searchParams ? searchParams + '&v=44.0' : '?v=44.0'}`;
 
   return (
     <div

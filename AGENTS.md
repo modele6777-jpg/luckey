@@ -27,6 +27,8 @@ Every time a user request is completed or changes are made to the codebase:
 
 - User update 2026-11-21: entering a Lucky channel (the 7 prism channels and prologue aliases) from Lucy chat or the Key channel shows `LuckyChannelTransition`. It is a night-sky entry screen with the channel colour, label and clover, inside the content canvas, visual-only, shown for 0.95–2.4s. Lucky→Lucky, profile and library navigation do not show it.
 
+- User update 2026-11-21: the Key channel (`public/calm`) has a search button in its top nav (`key-search.js`). It searches the 90 practices, healing teachings and Key screens together. A result opens the practice (`startPractice`), the teaching (`keyShowTeaching`) or the tab (`keySwitchTab`). Bump the calm asset `?v=` and the SW cache when changing Key files.
+
 ### 4. Lucy Theme Isolation Across Channels
 - Lucy's time-of-day palette and nested text renderers use `LucyThemeBoundary`, regardless of whether the other pane is Key (light) or Lucky (dark).
 - Global channel theme selectors and Tailwind dark utilities must respect `.lucy-chat-shell`'s own daylight marker; never recolor its messages using the Key channel's document theme.
