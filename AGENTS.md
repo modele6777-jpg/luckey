@@ -91,6 +91,7 @@ Every time a user request is completed or changes are made to the codebase:
 
 ### 16. Hidden Lucy Master (Divination Mode)
 - A stationary Big Bang center long-press toggles Lucy Master in folded and unfolded layouts; double tap still opens Key. It has no sidebar/menu entry.
+- User update 2026-11-21: regular Lucy reads recent user turns (`lucyMasterOffer`) and, when counselling seems needed, shows an in-chat card offering to enter Lucy Master; the user chooses. Accepting plays the suction effect and carries the conversation (link = linked, no 이어서/새로 question); declining pauses offers for 45 minutes.
 - Lucy Master history lives in the separate `lucy-pro` store and restarts on every re-entry; its greeting may offer to carry over recent regular-Lucy context, which is passed as reference only.
 - Saju is the main base. Tarot cards are never auto-drawn in Lucy Master: the user shuffles and picks in the existing `TarotSpread` (left table pane when unfolded, over the chat when folded). Regular Lucy/Plus keep their existing auto-draw.
 - User update 2026-11-20: the unfolded left table has three faces — 🃏 Tarot (with a once-per-KST-day user-picked "오늘의 한 장"), ☯ Saju chart board (computed pillars, five-element balance and 10-year luck of the counselled profile, lighting up what Lucy's latest answer mentions) and 🔊 Reading (the sentence being spoken, only while TTS plays). New answers switch to Tarot when they carry cards, otherwise to Saju; tabs allow manual switching.
