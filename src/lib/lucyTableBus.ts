@@ -20,9 +20,11 @@ export interface LucyTableState {
   facts: Record<string, ToolFact[]>;
   /** 도구별 계산 원자료 (전용 화면용, 계산된 도구만). */
   toolData: Record<string, unknown>;
+  /** 이번 상담에서 손님이 마지막으로 직접 뽑은 카드 (접힌 화면 도구 창에서 다시 보기). */
+  cards: Array<{ id: string; nameKo: string; reversed: boolean; imageUrl?: string; orientationKo?: string }>;
 }
 
-let state: LucyTableState = { saju: null, lastAnswer: '', lastAnswerHasTarot: false, answerVersion: 0, tools: [], concern: '', facts: {}, toolData: {} };
+let state: LucyTableState = { saju: null, lastAnswer: '', lastAnswerHasTarot: false, answerVersion: 0, tools: [], concern: '', facts: {}, toolData: {}, cards: [] };
 
 export function getLucyTableState(): LucyTableState {
   return state;
@@ -43,9 +45,25 @@ export function publishTableTools(tools: readonly CalculationAuditItem[], concer
   emit();
 }
 
+/** 점술모드에서 뽑은 카드 (publishLucyTarotDraw 와 같은 이벤트를 듣는다). */
+const TAROT_DRAWN_EVENT = 'prism:lucy_tarot_drawn';
+if (typeof window !== 'undefined') {
+  window.addEventListener(TAROT_DRAWN_EVENT, (e: Event) => {
+    const cards = (e as CustomEvent<{ cards?: Array<Record<string, unknown>> }>).detail?.cards;
+    if (!Array.isArray(cards) || cards.length === 0) return;
+    state = {
+      ...state,
+      cards: cards.map(c => ({ id: String(c.id ?? ''), nameKo: String(c.nameKo ?? c.name ?? ''), reversed: Boolean(c.reversed), imageUrl: typeof c.imageUrl === 'string' ? c.imageUrl : undefined, orientationKo: typeof c.orientationKo === 'string' ? c.orientationKo : undefined })),
+    };
+    emit();
+  });
+  // 점술모드에 들어가거나 나오면 지난 상담의 도구·카드는 비운다 (펼친/접힌 화면 모두).
+  window.addEventListener('prism:lucy_master_mode', () => clearTableTools());
+}
+
 export function clearTableTools(): void {
-  if (state.tools.length === 0 && !state.concern) return;
-  state = { ...state, tools: [], concern: '', facts: {}, toolData: {} };
+  if (state.tools.length === 0 && !state.concern && state.cards.length === 0) return;
+  state = { ...state, tools: [], concern: '', facts: {}, toolData: {}, cards: [] };
   emit();
 }
 
