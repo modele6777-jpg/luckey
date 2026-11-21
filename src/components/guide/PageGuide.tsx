@@ -49,7 +49,7 @@ export function PageGuideDialog({ guide, onClose }: { guide: PageGuide; onClose:
 
   return (
     <ScreenPortal>
-      <div className="fixed inset-0 z-[60] flex items-start justify-center overflow-y-auto bg-black/45 px-4 pt-4 pb-32 backdrop-blur-[2px]" onClick={close}>
+      <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/45 p-4 backdrop-blur-[2px]" onClick={close}>
         <motion.div
           role="dialog"
           aria-modal="true"
@@ -59,10 +59,10 @@ export function PageGuideDialog({ guide, onClose }: { guide: PageGuide; onClose:
           animate={{ opacity: 1, y: 0, scale: 1 }}
           transition={{ duration: 0.2 }}
           onClick={event => event.stopPropagation()}
-          className="w-full max-w-[400px] rounded-3xl border border-slate-200 bg-white p-5 text-slate-800 shadow-2xl"
+          className="flex w-full max-w-[400px] max-h-[calc(var(--overlay-height,100dvh)-2rem)] flex-col overflow-hidden rounded-3xl border border-slate-200 bg-white p-5 text-slate-800 shadow-2xl"
           style={{ colorScheme: 'light' }}
         >
-          <div className="flex items-start gap-3">
+          <div className="flex shrink-0 items-start gap-3">
             <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-amber-100 text-amber-700"><BookOpen size={20} /></span>
             <div className="min-w-0 flex-1">
               <h2 id={`page-guide-title-${guide.id}`} className="text-base font-black text-slate-900">{guide.title}</h2>
@@ -71,7 +71,7 @@ export function PageGuideDialog({ guide, onClose }: { guide: PageGuide; onClose:
             <button type="button" onClick={close} aria-label="가이드 닫기" className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-slate-500 hover:bg-slate-100"><X size={18} /></button>
           </div>
 
-          <div className="mt-3.5 grid grid-cols-2 gap-1 rounded-full bg-slate-100 p-1" role="tablist" aria-label="가이드 보기">
+          <div className="mt-3.5 grid shrink-0 grid-cols-2 gap-1 rounded-full bg-slate-100 p-1" role="tablist" aria-label="가이드 보기">
             {([['guide', '📖 사용 가이드'], ['tips', '💡 활용 팁']] as const).map(([id, label]) => (
               <button
                 key={id}
@@ -85,7 +85,7 @@ export function PageGuideDialog({ guide, onClose }: { guide: PageGuide; onClose:
             ))}
           </div>
 
-          <div className="mt-2.5 flex gap-2">
+          <div className="mt-2.5 flex shrink-0 gap-2">
             <button
               type="button"
               data-page-guide-listen
@@ -98,7 +98,7 @@ export function PageGuideDialog({ guide, onClose }: { guide: PageGuide; onClose:
             <button type="button" onClick={close} className="rounded-full border border-slate-200 px-5 py-2.5 text-sm font-bold text-slate-700 active:scale-95">확인</button>
           </div>
           {section === 'guide' ? (
-            <ol className="mt-3.5 space-y-2" data-page-guide-steps>
+            <ol className="-mx-1 mt-3.5 min-h-0 flex-1 space-y-2 overflow-y-auto overscroll-contain px-1" data-page-guide-steps>
               {guide.steps.map((step, index) => (
                 <li key={index} className="flex gap-3 rounded-2xl bg-slate-50 px-3.5 py-2.5">
                   <span className="mt-[1px] flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-amber-400 text-[11px] font-black text-slate-950">{index + 1}</span>
@@ -107,7 +107,7 @@ export function PageGuideDialog({ guide, onClose }: { guide: PageGuide; onClose:
               ))}
             </ol>
           ) : (
-            <ul className="mt-3.5 space-y-2" data-page-guide-tips>
+            <ul className="-mx-1 mt-3.5 min-h-0 flex-1 space-y-2 overflow-y-auto overscroll-contain px-1" data-page-guide-tips>
               {guide.tips.map((tip, index) => (
                 <li key={index} className="flex gap-3 rounded-2xl bg-amber-50/70 px-3.5 py-2.5">
                   <span className="text-lg leading-none" aria-hidden="true">{tip.icon}</span>
