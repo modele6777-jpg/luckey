@@ -650,7 +650,7 @@ export function buildUserFifteenToolsDigest(profile?: UserProfile, asOfDate: Dat
           : '';
         const kstQIdx = Math.floor(new Date(referenceDate.getTime() + 9 * 3600000).getUTCMonth() / 3);
         const qPacing = zw.quarterlyPacing?.[kstQIdx];
-        const quarterNote = qPacing ? ` · 분기 사화 [${qPacing.quarterLabel}: ${qPacing.focus}](${qPacing.advice})` : '';
+        const quarterNote = qPacing ? ` · 분기 사화 [${qPacing.quarter} · ${qPacing.activeMutagen} — ${qPacing.pacingTheme}](${qPacing.tacticalFocus})` : '';
         const secAxisNote = zw.secondaryMutagenAxis ? ` · 보조 축: ${zw.secondaryMutagenAxis}` : '';
         const ritualNote = zw.ritualAction ? ` · 유년 의례: ${zw.ritualAction}` : '';
         const focusNote = zw.reflectionFocus ? ` · 성찰 초점: ${zw.reflectionFocus}` : '';
