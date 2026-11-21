@@ -7,6 +7,8 @@
  * Key: GOOGLE_CLOUD_TTS_API_KEY, or the existing Google/Gemini API key when the
  * Text-to-Speech API is enabled on that key's project.
  */
+import { getServiceAccountToken, readServiceAccount } from './googleServiceAccount.ts';
+
 export type CloudTtsRuntime = Record<string, string | undefined>;
 
 const CHIRP_VOICES = ['Aoede', 'Kore', 'Leda', 'Zephyr', 'Puck', 'Charon', 'Fenrir', 'Orus'];
@@ -111,8 +113,12 @@ const CLOUD_GEMINI_STYLE = '다정하고 차분한 한국어 친구의 말투로
 let workingCloudGeminiModel = '';
 let lastCloudGeminiModelError: { model: string; status?: number; providerCode?: string } | null = null;
 
-export function cloudGeminiTtsStatus() {
-  return { model: workingCloudGeminiModel || null, lastModelError: lastCloudGeminiModelError };
+export function cloudGeminiTtsStatus(env: CloudTtsRuntime = {}) {
+  return {
+    serviceAccount: Boolean(readServiceAccount(env.GOOGLE_CLOUD_TTS_CREDENTIALS)),
+    model: workingCloudGeminiModel || null,
+    lastModelError: lastCloudGeminiModelError,
+  };
 }
 
 export function resetCloudGeminiTts() {
@@ -124,8 +130,12 @@ export function resetCloudGeminiTts() {
 export async function synthesizeCloudGeminiSpeech(text: string, voice: string | undefined, env: CloudTtsRuntime, fetchApi: typeof fetch = fetch, signal?: AbortSignal) {
   const speech = String(text || '').trim();
   if (!speech) throw failure(400, '음성으로 읽을 내용이 없습니다.');
-  const key = cloudTtsKey(env);
-  if (!key) throw failure(503, 'Google Cloud TTS 키가 설정되지 않았습니다.', { code: 'TTS_NOT_CONFIGURED' });
+  // Cloud Gemini-TTS refuses plain API keys (403 IAM_PERMISSION_DENIED): it needs a service account.
+  const account = readServiceAccount(env.GOOGLE_CLOUD_TTS_CREDENTIALS);
+  if (!account) throw failure(503, 'Cloud Gemini-TTS용 서비스 계정이 설정되지 않았습니다.', { code: 'TTS_NOT_CONFIGURED' });
+  const token = await getServiceAccountToken(account, fetchApi);
+  const authHeaders: Record<string, string> = { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` };
+  if (account.project_id) authHeaders['x-goog-user-project'] = account.project_id;
   const name = CHIRP_VOICES.includes(String(voice || '')) ? String(voice) : 'Aoede';
   const configured = String(env.CLOUD_GEMINI_TTS_MODEL || '').trim();
   const models = [...new Set([workingCloudGeminiModel, configured, ...CLOUD_GEMINI_TTS_MODELS].filter(Boolean))];
@@ -134,9 +144,9 @@ export async function synthesizeCloudGeminiSpeech(text: string, voice: string | 
     try {
       const pieces: Uint8Array[] = [];
       for (const piece of splitForCloudTts(speech)) {
-        const response = await fetchApi(`https://texttospeech.googleapis.com/v1/text:synthesize?key=${encodeURIComponent(key)}`, {
+        const response = await fetchApi('https://texttospeech.googleapis.com/v1/text:synthesize', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: authHeaders,
           body: JSON.stringify({
             input: { prompt: CLOUD_GEMINI_STYLE, text: piece },
             voice: { languageCode: 'ko-KR', name, model_name: model },

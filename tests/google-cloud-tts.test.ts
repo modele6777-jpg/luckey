@@ -3,6 +3,15 @@ import assert from 'node:assert/strict';
 import { chirpVoiceName, splitForCloudTts, synthesizeChirpSpeech } from '../server/api-lib/googleCloudTts';
 import { synthesizePreferredSpeech, resetCloudTtsCooldown, cloudTtsStatus } from '../server/api-lib/preferredSpeech';
 import { resetCloudGeminiTts } from '../server/api-lib/googleCloudTts';
+import { signServiceAccountJwt, getServiceAccountToken, readServiceAccount, resetServiceAccountTokenCache } from '../server/api-lib/googleServiceAccount';
+import { generateKeyPairSync, createVerify } from 'node:crypto';
+
+const { privateKey, publicKey } = generateKeyPairSync('rsa', { modulusLength: 2048 });
+const credentials = JSON.stringify({
+  type: 'service_account', project_id: 'lucky-test', client_email: 'tts@lucky-test.iam.gserviceaccount.com',
+  private_key: privateKey.export({ type: 'pkcs8', format: 'pem' }).toString(),
+});
+const tokenOk = () => new Response(JSON.stringify({ access_token: 'ya29.test', expires_in: 3600 }), { status: 200 });
 
 const mp3 = btoa('ID3fake-mp3');
 
@@ -52,10 +61,13 @@ test('when Gemini runs out of quota, the same Gemini voice reads through Cloud T
   resetCloudTtsCooldown(); resetCloudGeminiTts();
   const calls: { url: string; cloudGemini: boolean }[] = [];
   const fetchApi = (async (url: string, init: any) => {
+    if (String(url).includes('oauth2')) return tokenOk();
     calls.push({ url: String(url), cloudGemini: isCloudGemini(init) });
+    if (isCloudGemini(init)) assert.equal(init.headers.Authorization, 'Bearer ya29.test');
     return String(url).includes('texttospeech') ? chirpOk() : geminiDaily();
   }) as typeof fetch;
-  const env = { GEMINI_API_KEY: 'g', GOOGLE_CLOUD_TTS_API_KEY: 'c' };
+  const env = { GEMINI_API_KEY: 'g', GOOGLE_CLOUD_TTS_API_KEY: 'c', GOOGLE_CLOUD_TTS_CREDENTIALS: credentials };
+  resetServiceAccountTokenCache();
   const first = await synthesizePreferredSpeech('안녕.', 'Kore', env, fetchApi);
   assert.equal(first.provider, 'google-cloud-gemini-tts');
   assert.equal(first.voice, 'Kore');
@@ -70,7 +82,9 @@ test('when Gemini runs out of quota, the same Gemini voice reads through Cloud T
 test('an unknown Cloud Gemini model name tries the next one, and Chirp 3 HD is the last resort', async () => {
   resetCloudTtsCooldown(); resetCloudGeminiTts();
   const models: string[] = [];
+  resetServiceAccountTokenCache();
   const fetchApi = (async (url: string, init: any) => {
+    if (String(url).includes('oauth2')) return tokenOk();
     if (!String(url).includes('texttospeech')) return geminiDaily();
     if (isCloudGemini(init)) {
       const model = JSON.parse(init.body).voice.model_name;
@@ -79,7 +93,7 @@ test('an unknown Cloud Gemini model name tries the next one, and Chirp 3 HD is t
     }
     return chirpOk();
   }) as typeof fetch;
-  const result = await synthesizePreferredSpeech('안녕.', 'Aoede', { GEMINI_API_KEY: 'g', GOOGLE_CLOUD_TTS_API_KEY: 'c' }, fetchApi);
+  const result = await synthesizePreferredSpeech('안녕.', 'Aoede', { GEMINI_API_KEY: 'g', GOOGLE_CLOUD_TTS_API_KEY: 'c', GOOGLE_CLOUD_TTS_CREDENTIALS: credentials }, fetchApi);
   assert.equal(result.provider, 'google-cloud-chirp3-hd');
   assert.ok(models.length >= 2, 'tries more than one model name');
   resetCloudTtsCooldown(); resetCloudGeminiTts();
@@ -94,4 +108,37 @@ test('if both engines fail, the app hears Gemini\'s reason (e.g. daily quota)', 
   assert.equal(error.providerCode, 'DAILY_LIMIT_EXCEEDED');
   assert.equal(cloudTtsStatus().skipped, true);
   resetCloudTtsCooldown();
+});
+
+test('the service-account JWT is RS256-signed and verifiable, and the token is reused', async () => {
+  const account = readServiceAccount(credentials)!;
+  const jwt = await signServiceAccountJwt(account, 1_800_000_000);
+  const [header, claims, signature] = jwt.split('.');
+  const verifier = createVerify('RSA-SHA256');
+  verifier.update(`${header}.${claims}`);
+  assert.ok(verifier.verify(publicKey, Buffer.from(signature, 'base64url')));
+  const payload = JSON.parse(Buffer.from(claims, 'base64url').toString());
+  assert.equal(payload.iss, 'tts@lucky-test.iam.gserviceaccount.com');
+  assert.equal(payload.scope, 'https://www.googleapis.com/auth/cloud-platform');
+  resetServiceAccountTokenCache();
+  let tokenCalls = 0;
+  const fetchApi = (async () => { tokenCalls++; return tokenOk(); }) as typeof fetch;
+  assert.equal(await getServiceAccountToken(account, fetchApi), 'ya29.test');
+  assert.equal(await getServiceAccountToken(account, fetchApi), 'ya29.test');
+  assert.equal(tokenCalls, 1);
+  resetServiceAccountTokenCache();
+});
+
+test('without a service account, Cloud Gemini-TTS is not attempted', async () => {
+  resetCloudTtsCooldown(); resetCloudGeminiTts();
+  const calls: boolean[] = [];
+  const fetchApi = (async (url: string, init: any) => {
+    if (!String(url).includes('texttospeech')) return geminiDaily();
+    calls.push(isCloudGemini(init));
+    return chirpOk();
+  }) as typeof fetch;
+  const result = await synthesizePreferredSpeech('안녕.', 'Aoede', { GEMINI_API_KEY: 'g', GOOGLE_CLOUD_TTS_API_KEY: 'c' }, fetchApi);
+  assert.equal(result.provider, 'google-cloud-chirp3-hd');
+  assert.deepEqual(calls, [false]);
+  resetCloudTtsCooldown(); resetCloudGeminiTts();
 });
