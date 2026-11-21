@@ -13,6 +13,8 @@ import { useTheme } from "@/contexts/ThemeContext";
 import { readSafeAreaInsets } from "@/lib/visualViewportBox";
 import { PageGuideDialog } from "@/components/guide/PageGuide";
 import { resolveKeyTabGuide } from "@/lib/pageGuides";
+import { BookOpen, Search } from "lucide-react";
+import { triggerHaptic } from "@/lib/omniWarp/omniWarpHaptics";
 
 const CALM_DARK_THEME_CSS = `
   html.dark {
@@ -302,6 +304,49 @@ export default function CalmApp() {
     updateLayout();
     return () => frame?.removeEventListener('load', updateLayout);
   }, [isWideWorkspace]);
+  // 🔍📘 검색·가이드 버튼은 앱이 Key 화면의 우측 상단 끝에 직접 그린다.
+  // (iPhone/iPad는 iframe 안 고정 헤더 폭을 다르게 계산해 버튼이 끝에 붙지 않는 경우가 있다)
+  const [actionsTop, setActionsTop] = useState<number | null>(null);
+  useEffect(() => {
+    const iframe = iframeRef.current;
+    if (!iframe) return;
+    let raf = 0;
+    const markParentActions = () => {
+      try { iframe.contentDocument?.documentElement.classList.add('luckey-parent-actions'); } catch { /* navigating */ }
+    };
+    const measure = () => {
+      window.cancelAnimationFrame(raf);
+      raf = window.requestAnimationFrame(() => {
+        markParentActions();
+        try {
+          const nav = iframe.contentDocument?.querySelector('.top-nav');
+          const rect = nav?.getBoundingClientRect();
+          if (rect && rect.height > 0) setActionsTop(Math.max(6, Math.round(rect.top + rect.height / 2 - 20)));
+        } catch { /* iframe navigating */ }
+      });
+    };
+    const observer = new ResizeObserver(measure);
+    observer.observe(iframe);
+    iframe.addEventListener('load', measure);
+    window.addEventListener('resize', measure);
+    const retry = window.setInterval(measure, 1500);
+    measure();
+    return () => {
+      observer.disconnect();
+      iframe.removeEventListener('load', measure);
+      window.removeEventListener('resize', measure);
+      window.clearInterval(retry);
+      window.cancelAnimationFrame(raf);
+    };
+  }, []);
+  const activeKeyTab = () => {
+    try { return iframeRef.current?.contentDocument?.querySelector('.tab-pill.active')?.getAttribute('data-tab') || ''; } catch { return ''; }
+  };
+  const openKeySearch = () => {
+    triggerHaptic('whitehole');
+    try { (iframeRef.current?.contentWindow as (Window & { keySearch?: { open: () => void } }) | null)?.keySearch?.open(); } catch { /* not ready yet */ }
+  };
+
   // 📘 Key 안의 가이드 버튼 → 앱 가이드 창 (Key 화면 안에서 열림)
   const [guideOpen, setGuideOpen] = useState<string | null>(null);
   useEffect(() => {
@@ -313,7 +358,7 @@ export default function CalmApp() {
     return () => window.removeEventListener('message', onMessage);
   }, []);
   const searchParams = typeof window !== 'undefined' ? window.location.search : '';
-  const iframeSrc = `/calm/index.html${searchParams ? searchParams + '&v=49.0' : '?v=49.0'}`;
+  const iframeSrc = `/calm/index.html${searchParams ? searchParams + '&v=50.0' : '?v=50.0'}`;
 
   return (
     <div
@@ -345,6 +390,29 @@ export default function CalmApp() {
         allow="autoplay; microphone"
         onLoad={handleIFrameLoad}
       />
+      {actionsTop !== null && (
+        <div className="key-parent-actions absolute right-3 z-[45] flex items-center gap-1.5" style={{ top: actionsTop }}>
+          <button
+            type="button"
+            data-key-guide-parent
+            aria-label="Key 가이드 열기"
+            onClick={() => { triggerHaptic('whitehole'); setGuideOpen(activeKeyTab()); }}
+            className="inline-flex h-10 items-center gap-1 rounded-full border border-[#e9dccd] bg-[#fffdf9] px-3 text-[12px] font-bold text-[#3b2f2a] shadow-sm active:scale-95"
+          >
+            <BookOpen size={14} className="text-[#c9805c]" aria-hidden="true" />
+            가이드
+          </button>
+          <button
+            type="button"
+            data-key-search-parent
+            aria-label="Key 검색"
+            onClick={openKeySearch}
+            className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[#e9dccd] bg-[#fffdf9] text-[#c9805c] shadow-sm active:scale-95"
+          >
+            <Search size={18} aria-hidden="true" />
+          </button>
+        </div>
+      )}
       {guideOpen !== null && <PageGuideDialog guide={resolveKeyTabGuide(guideOpen)} onClose={() => setGuideOpen(null)} />}
     </div>
   );
