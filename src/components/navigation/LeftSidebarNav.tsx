@@ -26,7 +26,6 @@ import {
   getBgmPublicState,
   type BgmPublicState,
 } from '@/components/trinity/BgMusicPlayer';
-import { isDualPaneLayout } from '@/lib/perfMode';
 import { subscribeFoldState } from '@/lib/foldState';
 import { forceAppUpgradeAndReload } from '@/lib/prismSync';
 import { useApp } from '@/contexts/AppContext';
@@ -35,7 +34,10 @@ import { markAppScreenReset } from '@/lib/appUpdateReload';
 import { showViewportDiagnostics } from '@/lib/viewportDiagnostics';
 import { startFoldRuntimeTrace } from '@/lib/foldRuntimeTrace';
 import { markPendingUpdateNotice } from '@/lib/updateNotice';
-import { isLucyMasterModeOn, LUCY_MASTER_MODE_EVENT, useLucyMasterDepth } from '@/lib/lucyMasterMode';
+import { isLucyMasterModeOn, setLucyMasterMode, deepenLucyMasterDepth, getLucyMasterDepth, LUCY_MASTER_MAX_DEPTH, LUCY_MASTER_MODE_EVENT, useLucyMasterDepth } from '@/lib/lucyMasterMode';
+import { playLucyMasterSuction } from '@/components/omniwarp/BigBangMasterSuction';
+import { isLucyMasterBgmPreferred, startLucyMasterBgm } from '@/lib/lucyMasterBgm';
+import { isDualPaneLayout, isDuoUnfoldedState } from '@/lib/perfMode';
 
 export interface NavItemConfig {
   path: string;
@@ -318,7 +320,37 @@ export default function LeftSidebarNav() {
     };
   }, []);
 
+  /**
+   * 💬 Lucy bubble while Lucy is on screen: each tap steps through
+   * Lucy → 점술모드 1 → 2 → 3 → Lucy, with the same effects as the Big Bang gestures.
+   */
+  const cycleLucyMode = () => {
+    triggerHaptic('whitehole');
+    if (!isLucyMasterModeOn()) {
+      setLucyMasterMode(true);
+      playLucyMasterSuction('in');
+      if (isLucyMasterBgmPreferred()) void startLucyMasterBgm();
+      return;
+    }
+    if (getLucyMasterDepth() < LUCY_MASTER_MAX_DEPTH) {
+      deepenLucyMasterDepth();
+      playLucyMasterSuction('deepen');
+      return;
+    }
+    playLucyMasterSuction('out');
+    setLucyMasterMode(false);
+  };
+
+  const isLucyOnScreen = () => isLucyActive || (typeof document !== 'undefined'
+    && Boolean(document.getElementById('duo-lucy-viewport')) && isDuoUnfoldedState().unfolded);
+
   const handleNavigate = (path: string) => {
+    // Lucy already visible: the bubble switches Lucy / 점술모드 1·2·3 instead of navigating.
+    if (path === '/' && isLucyOnScreen()) {
+      cycleLucyMode();
+      window.dispatchEvent(new CustomEvent('nav-click-active', { detail: { path } }));
+      return;
+    }
     const isTargetActive =
       path === '/'
         ? isLucyActive
@@ -397,6 +429,12 @@ export default function LeftSidebarNav() {
     return () => window.removeEventListener(LUCY_MASTER_MODE_EVENT, sync);
   }, []);
 
+  const lucyBubbleLabel = !isLucyMaster
+    ? 'Lucy (루시 화면에서 누르면 점술모드)'
+    : masterDepth >= LUCY_MASTER_MAX_DEPTH
+      ? '점술모드 3단계 (누르면 일반 루시로)'
+      : `점술모드 ${masterDepth}단계 (누르면 ${masterDepth + 1}단계)`;
+
   const renderNavButton = ({ path, icon: NavIcon, label, isMainChat, isKey, isPrologue }: NavItemConfig) => {
     // 점술모드(Lucy Master) 중에는 Lucy 말풍선 안 기호가 상담 깊이를 보여준다 (… / ? / !).
     const Icon = isMainChat && isLucyMaster ? MasterBubbleIcon : NavIcon;
@@ -404,7 +442,7 @@ export default function LeftSidebarNav() {
       : path === '/epilogue' ? isEpilogueActive : cleanPath === path || cleanPath.startsWith(path + '/');
     return (
       <button key={path} type="button" className="refined-nav-item" data-active={isActive}
-        aria-label={label} title={label} aria-current={isActive ? 'page' : undefined}
+        aria-label={isMainChat ? lucyBubbleLabel : label} title={isMainChat ? lucyBubbleLabel : label} aria-current={isActive ? 'page' : undefined}
         onClick={() => handleNavigate(path)}>
         <Icon size={22} aria-hidden="true" />
         {isMainChat && isLucyMaster && <span className="sr-only">점술모드 깊이 {masterDepth}단계</span>}
