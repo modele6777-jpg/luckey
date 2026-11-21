@@ -827,10 +827,22 @@ ${content}
 
   // TTS - generative AI speech only, without standard/device voice substitution
   app.post("/api/ai/tts", async (req, res) => {
-    const { text, voice = 'Aoede', emotion, rate, speed, pitch, language } = req.body || {};
+    const { text, voice = 'Aoede', emotion, rate, speed, pitch, language, provider } = req.body || {};
     const speech = String(text || '').trim();
     if (!speech) {
       return res.status(400).json({ error: "Empty speech text" });
+    }
+
+    // ⚡ 빠른 첫 문장: 짧은 첫 문장만 Edge Neural로 바로 만들고, 나머지는 Gemini가 이어 읽는다.
+    if (provider === 'edge') {
+      if (speech.length > 200) return res.status(400).json({ error: "Edge lead sentence is too long", code: "TTS_EDGE_LEAD_TOO_LONG" });
+      try {
+        const { synthesizeWithEdgeTTS } = await import('./server/api-lib/edgeTts.ts');
+        return res.status(200).json(await synthesizeWithEdgeTTS(speech, voice));
+      } catch (error: any) {
+        console.warn("Edge lead TTS failed:", error?.providerCode || error?.message);
+        return res.status(502).json({ error: "Edge TTS unavailable", code: "TTS_EDGE_UNAVAILABLE" });
+      }
     }
 
     try {

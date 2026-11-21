@@ -36,7 +36,8 @@ test('server failure stops reading and never uses device speech', async () => {
   const doc = Object.assign(new EventTarget(), { visibilityState: 'visible' });
   const globals: Record<string, unknown> = {
     window: win, document: doc, navigator: { userAgent: 'test', userActivation: { isActive: false }, audioSession: { type: 'ambient' } }, Audio: Media, SpeechSynthesisUtterance: Utterance,
-    fetch: async () => { serverRequests++; return new Response(JSON.stringify({ code: 'TTS_PROVIDER_UNAVAILABLE' }), { status: 503, headers: { 'Content-Type': 'application/json' } }); },
+    // The fast Edge lead sentence is a separate provider; count only the main provider's requests.
+    fetch: async (_url: unknown, init?: { body?: string }) => { if (!String(init?.body || '').includes('"provider":"edge"')) serverRequests++; return new Response(JSON.stringify({ code: 'TTS_PROVIDER_UNAVAILABLE' }), { status: 503, headers: { 'Content-Type': 'application/json' } }); },
   };
   for (const [key, value] of Object.entries(globals)) Object.defineProperty(globalThis, key, { configurable: true, value });
   try {

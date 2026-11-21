@@ -37,3 +37,16 @@ test('prefetch and playback plan identical chunks for any chunk-length argument'
   assert.deepEqual(planTTSChunks(text, 240), planTTSChunks(text, 110));
   assert.deepEqual(planTTSChunks(text), planTTSChunks(text, 150));
 });
+
+test('fast lead splits only the first chunk and never adds a Gemini request', async () => {
+  const { planTTSChunks } = await import('../src/utils/tts');
+  const text = '오늘은 마음이 조금 무거운 날일 수 있어요, 그래도 괜찮아요. 천천히 숨을 고르고 지금 할 수 있는 한 가지만 생각해 봐요. 사주로 보면 올해는 변화의 기운이 강해서 서두르기보다 준비하는 게 좋아요. 이번 주에는 원하는 조건 세 가지를 적어 보세요.';
+  const normal = planTTSChunks(text);
+  const fast = planTTSChunks(text, 240, { fastLead: true });
+  assert.ok(fast[0].length <= 90, `lead too long: ${fast[0].length}`);
+  // The lead goes to Edge; every other chunk is one Gemini request, same count as before.
+  assert.equal(fast.length - 1, normal.length);
+  assert.equal(fast.join('').replace(/\s/g, ''), normal.join('').replace(/\s/g, ''));
+  const short = '짧은 인사예요.';
+  assert.deepEqual(planTTSChunks(short, 240, { fastLead: true }), planTTSChunks(short));
+});
