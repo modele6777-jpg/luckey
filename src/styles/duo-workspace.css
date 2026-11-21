@@ -382,3 +382,9 @@ html:root:root :is(.screen-portal, .duo-portal) :is(.bottom-safe-fab-center, .bo
 .tarot-spread-stage-root [data-tarot-controls] button { border-radius: 12px; min-height: 40px; box-shadow: inset 0 1px #ffffff15; }
 
 .tarot-draw-summary { max-height: min(32cqh, 200px); overflow-y: auto; overscroll-behavior: contain; touch-action: pan-y; }
+
+/* Page guide: keep the floating Big Bang orb from covering the open guide. */
+body:has([data-page-guide]) .bottom-safe-fab-center {
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
