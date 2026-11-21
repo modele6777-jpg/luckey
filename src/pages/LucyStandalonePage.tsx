@@ -1,4 +1,5 @@
 import { LucyLibraryDialogs, LucyLibraryTrigger } from '@/components/chat/LucyLibraryDialogs';
+import { collectSpeechTranscript, createEndOfSpeechWatcher, type EndOfSpeechWatcher } from '@/lib/speechAutoSend';
 import { LucyModeName } from '@/components/chat/LucyModeName';
 import { ScreenPortal } from '@/components/layout/ScreenPortal';
 import { LucyModeTransition } from '@/components/chat/LucyModeTransition';
@@ -1813,6 +1814,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
 
   const recognitionRef = useRef<any>(null);
   const silenceTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const speechWatcherRef = useRef<EndOfSpeechWatcher | null>(null);
   const speechTranscriptRef = useRef<string>('');
   const isLucyGeneratingRef = useRef<boolean>(isLucyGenerating);
 
@@ -1822,6 +1824,8 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
       clearTimeout(silenceTimerRef.current);
       silenceTimerRef.current = null;
     }
+    speechWatcherRef.current?.dispose();
+    speechWatcherRef.current = null;
     const recognition = recognitionRef.current;
     recognitionRef.current = null;
     try {
@@ -1869,49 +1873,26 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
         voiceStateRef.current = 'listening';
       };
 
-      // 말이 끝나면(같은 문장이 1.2초 동안 그대로면) 시리처럼 자동 전송한다.
-      // iOS Safari는 조용할 때도 같은 결과를 계속 보내므로, 글자가 바뀔 때만 타이머를 다시 잰다.
-      let lastHeard = '';
-      let sent = false;
-      const sendHeard = () => {
-        if (sent || !isCurrent() || voiceStateRef.current !== 'listening') return;
-        const text = speechTranscriptRef.current.trim();
-        if (text.length < 2) return;
-        sent = true;
-        if (silenceTimerRef.current) {
-          clearTimeout(silenceTimerRef.current);
-          silenceTimerRef.current = null;
-        }
-        speechTranscriptRef.current = '';
-        setSpeechTranscript('');
-        setSpeechInterim('');
-        void handleSendRef.current(text);
-      };
+      // 말이 끝나면(들은 글자가 1.2초 동안 그대로면) 시리처럼 자동 전송한다.
+      const watcher = createEndOfSpeechWatcher({
+        canSend: () => isCurrent() && voiceStateRef.current !== 'thinking' && voiceStateRef.current !== 'speaking',
+        onSend: (text) => {
+          speechTranscriptRef.current = '';
+          setSpeechTranscript('');
+          setSpeechInterim('');
+          void handleSendRef.current(text);
+        },
+      });
+      speechWatcherRef.current?.dispose();
+      speechWatcherRef.current = watcher;
 
       recognition.onresult = (event: any) => {
-        if (!isCurrent() || sent) return;
-        let finalStr = '';
-        let interimStr = '';
-
-        // 이어서 말한 앞부분이 빠지지 않도록 처음 결과부터 모두 이어 붙인다.
-        for (let i = 0; i < event.results.length; i++) {
-          const chunk = event.results[i][0].transcript;
-          if (event.results[i].isFinal) {
-            finalStr += chunk;
-          } else {
-            interimStr += chunk;
-          }
-        }
-
-        const combined = `${finalStr}${interimStr}`.replace(/\s+/g, ' ').trim();
-        if (!combined || combined === lastHeard) return;
-        lastHeard = combined;
-        speechTranscriptRef.current = combined;
-        setSpeechTranscript(combined);
-        setSpeechInterim(interimStr);
-
-        if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
-        silenceTimerRef.current = setTimeout(sendHeard, 1200);
+        if (!isCurrent() || watcher.sent) return;
+        const { text, interim } = collectSpeechTranscript(event.results);
+        if (!watcher.heard(text)) return;
+        speechTranscriptRef.current = text;
+        setSpeechTranscript(text);
+        setSpeechInterim(interim);
       };
 
       recognition.onerror = (e: any) => {
@@ -1927,12 +1908,8 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
       recognition.onend = () => {
         if (!isCurrent()) return;
         // 브라우저가 말이 끝났다고 듣기를 닫으면, 들은 말이 있을 때 바로 보낸다.
-        if (!sent && speechTranscriptRef.current.trim().length >= 2) {
-          sendHeard();
-          return;
-        }
+        if (watcher.sent || watcher.flush()) return;
         if (
-          !sent &&
           voiceStateRef.current === 'listening' &&
           !isLucyGeneratingRef.current
         ) {
