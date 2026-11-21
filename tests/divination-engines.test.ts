@@ -13827,13 +13827,14 @@ test('Cornish Kernow Sea Granite engine: landmark, +09:00 KST, and interpretive 
 
 test('Ossetian Nart Sagas Forge engine: emblem, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateOssetianNartSagasForge({ profile, now: new Date('2026-11-20T07:38:00Z'), question: '지금의 수고를 단련으로 바꾸고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-OSSETIAN-NART-v2.1.0');
-  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.equal(rep.engineVersion, 'LUCKEY-OSSETIAN-NART-v2.2.0');
+  assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
+  assert.ok(rep.companionEmblem !== rep.nartEmblem);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatOssetianNartPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('오세트') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('오세트') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionEmblem));
 });
 
 test('Sardinian Nuraghe Stone Calm engine: stone, +09:00 KST, and interpretive boundary', () => {
@@ -14541,13 +14542,14 @@ test('Carthaginian Tanit Harbor Compass engine: motif, +09:00 KST, and interpret
 
 test('Gaya Iron Crown River Harmony engine: motif, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateGayaIronCrownRiverHarmony({ profile, now: new Date('2026-11-20T19:55:00Z'), question: '열정과 식힘의 균형을 잡고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-GAYA-IRON-v2.1.0');
-  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.equal(rep.engineVersion, 'LUCKEY-GAYA-IRON-v2.2.0');
+  assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
+  assert.ok(rep.companionMotif !== rep.gayaMotif);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatGayaIronCrownPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('가야') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('가야') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionMotif));
 });
 
 test('Elamite Susa Water Choga engine: motif, +09:00 KST, and interpretive boundary', () => {
@@ -14587,13 +14589,14 @@ test('Byzantine Hagia Light Dome engine: motif, +09:00 KST, and interpretive bou
 
 test('Himba Otjize Desert Poise engine: motif, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateHimbaOtjizeDesertPoise({ profile, now: new Date('2026-11-20T20:00:00Z'), question: '나를 지키는 작은 돌봄을 챙기고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-HIMBA-OTJIZE-v2.1.0');
-  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.equal(rep.engineVersion, 'LUCKEY-HIMBA-OTJIZE-v2.2.0');
+  assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
+  assert.ok(rep.companionMotif !== rep.himbaMotif);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatHimbaOtjizePrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('힘바') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('힘바') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionMotif));
 });
 
 test('Haida Gwaii Cedar Canoe engine: motif, +09:00 KST, and interpretive boundary', () => {
