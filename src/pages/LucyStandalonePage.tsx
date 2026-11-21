@@ -1617,6 +1617,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
   // 🔮 루시 마스터(점술모드)는 일반 루시·루시+와 대화 내역을 따로 쓴다 (lucy-pro 저장소).
   const lucyMessages = isMasterMode ? (lucyProMessages || []) : (personaMessages?.lucy || []);
   // 채팅방에 들어올 때마다 첫 인사(시간대 인사 + 문장)를 새로 고른다. 저장된 대화는 그대로 둔다.
+  const shownGreetingRef = useRef<(typeof lucyMessages)[number] | null>(null);
   const [greetingEntry, setGreetingEntry] = useState(() => ({ at: Date.now(), variant: Math.floor(Math.random() * LUCY_GREETING_BODIES.length) }));
   const refreshEntryGreeting = useCallback(() => {
     setGreetingEntry(previous => {
@@ -2579,9 +2580,12 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
       return m;
     });
     const freshList = baseList.map((m, index) => {
-      if (isMasterMode || index !== 0 || !isGreetingMessage(m) || m.mode === 'master') return m;
+      // 인사 뒤에 대화 기록이 있으면 그 인사는 고정한다. 인사만 있을 때만 들어올 때마다 새로 고른다.
+      if (isMasterMode || index !== 0 || baseList.length !== 1 || !isGreetingMessage(m) || m.mode === 'master') return m;
       const fresh = createDefaultGreeting('lucy', userDisplayName, false, isPlusMode, new Date(greetingEntry.at), greetingEntry.variant);
-      return { ...m, content: fresh.content, timestamp: baseList.length === 1 ? greetingEntry.at : m.timestamp };
+      const shown = { ...m, content: fresh.content, timestamp: greetingEntry.at };
+      shownGreetingRef.current = shown;
+      return shown;
     });
     if (!searchQuery.trim()) return freshList;
     const q = searchQuery.toLowerCase();
@@ -2591,6 +2595,26 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
       return txt.toLowerCase().includes(q);
     });
   }, [lucyMessages, searchQuery, userDisplayName, isPlusMode, pro, lucyTier, greetingEntry, isMasterMode]);
+
+  // 인사만 보이던 방에서 첫 대화가 시작되면, 그때 보이던 인사를 저장해 이후 고정한다.
+  useEffect(() => {
+    const shown = shownGreetingRef.current;
+    if (isMasterMode || !shown || lucyMessages.length < 2) return;
+    const first = lucyMessages[0];
+    if (!isGreetingMessage(first) || first.id !== shown.id) {
+      shownGreetingRef.current = null;
+      return;
+    }
+    shownGreetingRef.current = null;
+    if (first.content === shown.content) return;
+    setPersonaMessages((previous) => {
+      const current = previous.lucy || [];
+      if (!current.length || current[0].id !== shown.id) return previous;
+      const next = [{ ...current[0], content: shown.content, timestamp: shown.timestamp }, ...current.slice(1)];
+      saveUnifiedMessagesSafely(next);
+      return { ...previous, lucy: next, orange: next, trinity: next, aura: next, bluebird: next, muse: next };
+    });
+  }, [isMasterMode, lucyMessages, setPersonaMessages]);
 
   // 🛡️ 루시 플러스(Lucy+) 진입 시 잔존하는 프로 모드(마스터) 인사말 및 프로 상태 완벽 정화
   useEffect(() => {
