@@ -15,12 +15,12 @@
  * 1. 개인 점수·심리 진단·미래 예측이 아닙니다. 모든 산출은 정성적 성찰 문장입니다.
  * 2. 원전 문구를 임의로 지어 인용하지 않고 사상적 핵심 원리만 반영합니다.
  *
- * @version LUCKEY-ZERA-YACOB-HATATA-v2.1.0
+ * @version LUCKEY-ZERA-YACOB-HATATA-v2.2.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const ETHIOPIAN_ZERA_YACOB_VERSION = 'LUCKEY-ZERA-YACOB-HATATA-v2.1.0';
+export const ETHIOPIAN_ZERA_YACOB_VERSION = 'LUCKEY-ZERA-YACOB-HATATA-v2.2.0';
 
 export type HatataQuestionTopic = 'decision' | 'relationship' | 'healing' | 'reflection';
 
@@ -50,6 +50,7 @@ export interface EthiopianZeraYacobHatataResult {
   calculatedAtKst: string;
   questionTopic: HatataQuestionTopic;
   inquiryLens: string;
+  companionLens: string;
   situationalHatataAudit: SituationalHatataAudit;
   temporalReasonPulse: HatataReasonPulse;
   hatataSynthesisMatrix: HatataSynthesisMatrix;
@@ -169,14 +170,23 @@ export function calculateEthiopianZeraYacobHatataReason(
     '공정한 저울 — 나와 타인을 같은 존엄과 기준으로 대하는 시선',
     '자연 질서의 조화 — 억지 없이 순리대로 흐름을 읽는 시선',
   ];
-  const inquiryLens = lenses[Math.abs(hash) % lenses.length];
+  const lensIdx = Math.abs(hash) % lenses.length;
+  const inquiryLens = lenses[lensIdx];
+  const compSeed = `${seed}|companion`;
+  let compHash = 0;
+  for (let i = 0; i < compSeed.length; i++) {
+    compHash = (compHash << 5) - compHash + compSeed.charCodeAt(i);
+    compHash |= 0;
+  }
+  const companionOffset = 1 + (Math.abs(compHash) % (lenses.length - 1));
+  const companionLens = lenses[(lensIdx + companionOffset) % lenses.length];
 
   const situationalHatataAudit = buildSituationalHatataAudit(topic, inquiryLens);
   const temporalReasonPulse = buildTemporalReasonPulse(now);
 
   const trimmedQ = (question ?? '').trim();
   const ritualAction = `${situationalHatataAudit.inquiryPractice} 이어서 ${situationalHatataAudit.biasCheckAdvice}`;
-  const reflectionFocus = `${inquiryLens} · ${temporalReasonPulse.kstTimeWindow} — 사실과 편견을 가르는 이성적 점검`;
+  const reflectionFocus = `${inquiryLens} · ${companionLens} · ${temporalReasonPulse.kstTimeWindow} — 사실과 편견을 가르는 이성적 점검`;
   const reflectiveQuestion = trimmedQ
     ? `'${trimmedQ}'라는 고민에서, 남의 시선이나 불안을 걷어낸 뒤 내 이성과 양심이 가장 맑게 동의하는 기준은 무엇인가요?`
     : `지금 내가 당연하게 믿고 있는 생각 중, 한 번쯤 차분히 다시 검증해 볼 전제는 무엇인가요?`;
@@ -191,7 +201,12 @@ export function calculateEthiopianZeraYacobHatataReason(
   };
 
   const kst = new Date(now.getTime() + 9 * 3600 * 1000);
-  const calculatedAtKst = `${kst.toISOString().slice(0, 19)}+09:00 (KST)`;
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  const calculatedAtKst = `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
 
   return {
     engineVersion: ETHIOPIAN_ZERA_YACOB_VERSION,
@@ -199,6 +214,7 @@ export function calculateEthiopianZeraYacobHatataReason(
     calculatedAtKst,
     questionTopic: topic,
     inquiryLens,
+    companionLens,
     situationalHatataAudit,
     temporalReasonPulse,
     hatataSynthesisMatrix,
@@ -214,6 +230,7 @@ export function formatEthiopianZeraYacobHatataReasonPrompt(res: EthiopianZeraYac
     `【에티오피아 자라 야곱 《하타타》 이성·성찰 (${res.engineVersion} | ${res.calculatedAtKst})】`,
     `- 질문 주제 분류: ${res.questionTopic}`,
     `- 탐구 렌즈: ${res.inquiryLens}`,
+    `- 동반 탐구 렌즈: ${res.companionLens}`,
     `- 질문 비춤: ${res.situationalHatataAudit.reasonMirror}`,
     `- 편견 점검: ${res.situationalHatataAudit.biasCheckAdvice}`,
     `- 양심 정렬: ${res.situationalHatataAudit.conscienceAlignment}`,
