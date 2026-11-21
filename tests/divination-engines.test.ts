@@ -13522,13 +13522,14 @@ test('Sinhala Bali Kohomba Harmony engine: layers, +09:00 KST, and interpretive 
 
 test('Nubian Meroe Apedemak Balance engine: principles, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateNubianMeroeApedemakBalance({ profile, now: new Date('2026-11-20T06:10:00Z'), question: '내 기준대로 당당히 서고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-NUBIAN-MEROE-v2.1.0');
-  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.equal(rep.engineVersion, 'LUCKEY-NUBIAN-MEROE-v2.2.0');
+  assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
+  assert.ok(rep.companionPrinciple.name !== rep.activePrinciple.name);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatNubianMeroePrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('누비아') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('누비아') && prompt.includes('동반 원칙') && prompt.includes('+09:00 (KST)'));
 });
 
 test('Samarkand Ulugh Beg Observatory engine: meridian arc, +09:00 KST, and interpretive boundary', () => {
@@ -14239,13 +14240,14 @@ test('Alpine Savoy Col Wisdom engine: principle, +09:00 KST, and interpretive bo
 
 test('Nabataean Petra Cistern Water engine: conduit, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateNabataeanPetraCisternWater({ profile, now: new Date('2026-11-20T08:52:00Z'), question: '작은 배움과 여유를 저수조에 모아 두고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-NABATAEAN-PETRA-v2.1.0');
-  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.equal(rep.engineVersion, 'LUCKEY-NABATAEAN-PETRA-v2.2.0');
+  assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
+  assert.ok(rep.companionConduit !== rep.desertConduit);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatNabataeanPetraPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('페트라') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('페트라') && prompt.includes('동반 수로') && prompt.includes('+09:00 (KST)'));
 });
 
 test('Frisian Polder Dike Balance engine: principle, +09:00 KST, and interpretive boundary', () => {
@@ -14694,13 +14696,14 @@ test('Luang Prabang Mekong Dawn engine: motif, +09:00 KST, and interpretive boun
 
 test('Mossi Earth Mural Harmony engine: motif, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateMossiEarthMuralHarmony({ profile, now: new Date('2026-11-20T20:13:00Z'), question: '소박한 일상에 질서를 세우고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-MOSSI-MURAL-v2.1.0');
-  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.equal(rep.engineVersion, 'LUCKEY-MOSSI-MURAL-v2.2.0');
+  assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
+  assert.ok(rep.companionMotif !== rep.mossiMotif);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatMossiMuralPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('모시') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('모시') && prompt.includes('동반 모티프') && prompt.includes('+09:00 (KST)'));
 });
 
 test('Wolof Teranga Baobab Warmth engine: motif, +09:00 KST, and interpretive boundary', () => {
