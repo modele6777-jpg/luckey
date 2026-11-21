@@ -46,8 +46,8 @@ test('every listed engine has a readable meaning and one of the seven channel th
     prologue: 5,
     orange: 26,
     trinity: 108,
-    aura: 121,
-    bluebird: 83,
+    aura: 122,
+    bluebird: 84,
     muse: 161,
     epilogue: 9,
   });
@@ -71,7 +71,7 @@ test('bluebird catalog label changes without changing its ID, route, or count', 
     route: '/bluebird',
     description: '일상·관계·소통',
   });
-  assert.equal(ENGINE_CATALOG_THEME_COUNTS.bluebird, 38);
+  assert.equal(ENGINE_CATALOG_THEME_COUNTS.bluebird, 84);
 });
 
 test('foundational tool meanings and primary themes use their existing authored definitions', () => {
