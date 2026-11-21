@@ -192,7 +192,7 @@ function requestAIAudio(text: string, emotion?: string, voice = 'Aoede', session
           if (controller.signal.aborted) throw new Error('음성 요청이 취소되었습니다.');
           if (response.status === 429) {
             if (['MEDIA_QUOTA_EXHAUSTED', 'TTS_QUOTA_EXHAUSTED'].includes(String(failure?.code || ''))) {
-              throw new TTSAudioRequestError('AI 음성 제공자의 사용 한도가 소진되었습니다. API 결제·한도 설정을 확인해 주세요.', 429, String(failure?.code), failure?.diagnosticId);
+              throw new TTSAudioRequestError('오늘 쓸 수 있는 음성(Gemini) 한도를 모두 썼어요. 한도가 다시 채워지면 들을 수 있어요.', 429, String(failure?.code), failure?.diagnosticId);
             }
             const waitMs = rateLimitWaitMs(response, failure);
             ttsRateLimitUntil = Date.now() + waitMs;
