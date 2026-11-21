@@ -3,6 +3,9 @@ import type { CalculationAuditItem } from '@/lib/divination/calculationAudit';
 import type { ToolFact } from '@/lib/lucyMasterToolFacts';
 import { buildToolBoard, type ToolBoardItem } from '@/lib/lucyMasterToolBoard';
 import { triggerHaptic } from '@/lib/omniWarp/omniWarpHaptics';
+import { FIFTEEN_DIVINATION_TOOLS, type DivinationToolId } from '@/lib/fifteenDivinationTools';
+
+const FULL_BEST_FOR = (id: DivinationToolId) => FIFTEEN_DIVINATION_TOOLS[id].bestFor;
 
 const SERIF = { fontFamily: '"Nanum Myeongjo", "Noto Serif KR", "AppleMyungjo", serif' } as const;
 
@@ -41,8 +44,14 @@ function FactRows({ facts, tone }: { facts: ToolFact[]; tone: 'dark' | 'parchmen
   );
 }
 
-/** 🧭 점술모드 3단계: 고민에 맞춘 추천 도구 1개 + 나머지 12개는 양피지 두루마리 보조 자료. */
-export function MasterToolBoard({ tools, concern, lastAnswer, facts }: {
+/**
+ * 🧭 점술모드 3단계 왼쪽 테이블의 두 탭.
+ * - recommended: 고민에 맞춘 추천 도구 1개를 크게
+ * - scrolls: 나머지 12개를 양피지 두루마리 보조 자료로
+ */
+export function MasterToolBoard({ view, tools, concern, lastAnswer, facts, onShowScrolls }: {
+  view: 'recommended' | 'scrolls';
+  onShowScrolls?: () => void;
   tools: CalculationAuditItem[];
   concern: string;
   lastAnswer: string;
@@ -53,9 +62,9 @@ export function MasterToolBoard({ tools, concern, lastAnswer, facts }: {
 
   if (!board.hasResults) {
     return (
-      <div className="flex-1 flex flex-col items-center justify-center text-center px-6" data-master-tool-board="empty">
-        <p className="text-3xl mb-3" aria-hidden="true">🧭</p>
-        <p className="text-sm font-bold text-amber-200">13대 도구가 펼쳐질 자리예요</p>
+      <div className="flex-1 flex flex-col items-center justify-center text-center px-6" data-master-tool-board="empty" data-master-tool-view={view}>
+        <p className="text-3xl mb-3" aria-hidden="true">{view === 'scrolls' ? '📜' : '🧭'}</p>
+        <p className="text-sm font-bold text-amber-200">{view === 'scrolls' ? '12대 도구 두루마리가 놓일 자리예요' : '추천 도구가 펼쳐질 자리예요'}</p>
         <p className="mt-1.5 text-xs text-slate-300/90 break-keep">3단계에서 고민을 보내면 루시가 13개 도구로 함께 보고, 이 고민에 가장 잘 맞는 도구부터 여기에 펼쳐줘요.</p>
       </div>
     );
@@ -65,12 +74,14 @@ export function MasterToolBoard({ tools, concern, lastAnswer, facts }: {
   const commonCount = [rec, ...board.others].filter(item => item.common).length;
 
   return (
-    <div className="flex-1 min-h-0 overflow-y-auto px-3.5 pb-5 pt-1 text-white" data-master-tool-board="ready">
+    <div className="flex-1 min-h-0 overflow-y-auto px-3.5 pb-5 pt-1 text-white" data-master-tool-board="ready" data-master-tool-view={view}>
       <div className="flex items-baseline justify-between gap-2">
-        <p className="text-[13px] font-black text-amber-200">🧭 13대 도구로 본 이 고민</p>
+        <p className="text-[13px] font-black text-amber-200">{view === 'scrolls' ? '📜 12대 도구 보조 자료' : '🧭 이 고민의 추천 도구'}</p>
         {commonCount > 0 && <p className="text-[10px] text-amber-100/80">✦ 루시가 함께 짚은 도구 {commonCount}개</p>}
       </div>
       {concern && <p className="mt-0.5 text-[11px] text-slate-300/85 break-keep line-clamp-1">“{concern}”</p>}
+
+      {view === 'recommended' ? (<>
 
       {/* 추천 도구 1개 */}
       <section
@@ -86,12 +97,20 @@ export function MasterToolBoard({ tools, concern, lastAnswer, facts }: {
         <p className="mt-1 text-[11px] text-amber-100/85 break-keep">이 고민엔 {board.recommendReason}.</p>
         {rec.facts.length > 0 && <div className="mt-2.5 rounded-xl bg-black/20 px-3 py-2"><FactRows facts={rec.facts} tone="dark" /></div>}
         <p className="mt-2 text-[12.5px] leading-relaxed text-slate-100 break-keep">
-          {rec.signal || (rec.status === 'symbolic' ? rec.note : `잘 보는 것: ${rec.bestFor}. 루시 답변이 오면 이 도구로 짚은 내용이 여기에 떠요.`)}
+          {rec.signal || (rec.status === 'symbolic' ? rec.note : '루시 답변이 오면 이 도구로 짚은 내용이 여기에 떠요.')}
         </p>
+        <p className="mt-2.5 text-[10.5px] text-amber-100/75 break-keep">잘 보는 것 · {FULL_BEST_FOR(rec.id)}</p>
       </section>
-
-      {/* 나머지 12개: 양피지 두루마리 보조 자료 */}
-      <p className="mt-4 mb-1.5 text-[11px] font-bold tracking-wide text-amber-100/80" style={SERIF}>📜 보조 자료 · 두루마리를 눌러 펼쳐 보세요</p>
+      {onShowScrolls && (
+        <button
+          type="button"
+          onClick={onShowScrolls}
+          className="mt-3 w-full rounded-xl border border-amber-200/30 bg-[#ecd9b0]/10 px-3 py-2.5 text-left text-[12px] text-amber-100"
+          style={SERIF}
+        >📜 나머지 12개 도구는 양피지에서 볼 수 있어요{commonCount - (rec.common ? 1 : 0) > 0 ? ` · ✦ ${commonCount - (rec.common ? 1 : 0)}개 봉인` : ''} →</button>
+      )}
+      </>) : (<>
+      <p className="mt-2 mb-1.5 text-[11px] font-bold tracking-wide text-amber-100/80" style={SERIF}>두루마리를 눌러 펼쳐 보세요</p>
       <div className="space-y-2" data-master-tool-scrolls>
         {board.others.map(item => (
           <ParchmentScroll
@@ -102,6 +121,7 @@ export function MasterToolBoard({ tools, concern, lastAnswer, facts }: {
           />
         ))}
       </div>
+      </>)}
     </div>
   );
 }
