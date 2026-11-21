@@ -8,6 +8,8 @@ import { useLocation } from 'wouter';
 import {
   MessageCircle,
   MessageCircleQuestion,
+  MessageCircleMore,
+  MessageCircleWarning,
   Sparkles,
   KeyRound,
   User,
@@ -33,7 +35,7 @@ import { markAppScreenReset } from '@/lib/appUpdateReload';
 import { showViewportDiagnostics } from '@/lib/viewportDiagnostics';
 import { startFoldRuntimeTrace } from '@/lib/foldRuntimeTrace';
 import { markPendingUpdateNotice } from '@/lib/updateNotice';
-import { isLucyMasterModeOn, LUCY_MASTER_MODE_EVENT } from '@/lib/lucyMasterMode';
+import { isLucyMasterModeOn, LUCY_MASTER_MODE_EVENT, useLucyMasterDepth } from '@/lib/lucyMasterMode';
 
 export interface NavItemConfig {
   path: string;
@@ -383,6 +385,9 @@ export default function LeftSidebarNav() {
   }, [syncPrismDevices]);
 
   const [isLucyMaster, setIsLucyMaster] = useState<boolean>(() => isLucyMasterModeOn());
+  // 점술모드 상담 깊이마다 말풍선 기호가 바뀐다: 1단계 … / 2단계 ? / 3단계 !
+  const masterDepth = useLucyMasterDepth();
+  const MasterBubbleIcon = masterDepth >= 3 ? MessageCircleWarning : masterDepth === 2 ? MessageCircleQuestion : MessageCircleMore;
   useEffect(() => {
     const sync = (e: Event) => {
       const on = (e as CustomEvent<{ on?: boolean }>).detail?.on;
@@ -393,8 +398,8 @@ export default function LeftSidebarNav() {
   }, []);
 
   const renderNavButton = ({ path, icon: NavIcon, label, isMainChat, isKey, isPrologue }: NavItemConfig) => {
-    // 점술모드(Lucy Master) 중에는 Lucy 말풍선 안에 물음표를 띄운다.
-    const Icon = isMainChat && isLucyMaster ? MessageCircleQuestion : NavIcon;
+    // 점술모드(Lucy Master) 중에는 Lucy 말풍선 안 기호가 상담 깊이를 보여준다 (… / ? / !).
+    const Icon = isMainChat && isLucyMaster ? MasterBubbleIcon : NavIcon;
     const isActive = isMainChat ? isLucyActive : isKey ? isKeyActive : isPrologue ? isPrologueActive
       : path === '/epilogue' ? isEpilogueActive : cleanPath === path || cleanPath.startsWith(path + '/');
     return (
@@ -402,7 +407,7 @@ export default function LeftSidebarNav() {
         aria-label={label} title={label} aria-current={isActive ? 'page' : undefined}
         onClick={() => handleNavigate(path)}>
         <Icon size={22} aria-hidden="true" />
-        {isMainChat && isLucyMaster && <span className="sr-only">점술모드</span>}
+        {isMainChat && isLucyMaster && <span className="sr-only">점술모드 깊이 {masterDepth}단계</span>}
       </button>
     );
   };
