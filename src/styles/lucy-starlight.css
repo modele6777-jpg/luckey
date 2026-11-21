@@ -916,3 +916,8 @@ html.keyboard-open .lucy-chat-shell .lucy-chat-footer {
 html.keyboard-open .lucy-chat-shell .lucy-chat-main {
   padding-bottom: calc(var(--lucy-keyboard-footer-h, 132px) + 8px) !important;
 }
+
+/* 🎙️ 마이크 자동 전송까지 남은 시간 (1.5초) */
+.lucy-voice-autosend-bar { width: 0; animation: lucy-voice-autosend 1.5s linear forwards; }
+@keyframes lucy-voice-autosend { from { width: 0; } to { width: 100%; } }
+@media (prefers-reduced-motion: reduce) { .lucy-voice-autosend-bar { animation-duration: 1.5s; } }
