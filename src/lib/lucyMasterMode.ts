@@ -134,7 +134,7 @@ export function consumeTarotHouseGreetingPending(): boolean {
 export function createTarotHouseGreeting(userName: string | undefined, layout: 'folded' | 'unfolded', askToLink = false): UnifiedMessage {
   const name = userName ? `${userName}, ` : '';
   const content = layout === 'unfolded'
-    ? `어서 와, ${name}루시의 타로 하우스에 온 걸 환영해 🕯️🔮\n촛불 켜두고 카드도 테이블에 올려뒀어. 차 한 잔 마신다 생각하고 편하게 얘기해줘. 이야기 듣다가 때가 되면 같이 카드 뽑아보자 — 뽑은 카드는 왼쪽 테이블에 바로 펼쳐줄게.`
+    ? `어서 와, ${name}루시의 타로 하우스에 온 걸 환영해 🕯️🔮\n촛불 켜두고 왼쪽엔 네 사주 원국판을 펼쳐뒀어. 차 한 잔 마신다 생각하고 편하게 얘기해줘. 이야기 듣다가 카드가 필요해지면 그때 같이 뽑아보자.`
     : `어서 와, ${name}루시의 타로 하우스에 온 걸 환영해 🕯️🔮\n오늘은 네 사주를 바탕에 깔고 천천히 이야기 나눠보자. 듣다가 필요하면 카드도 한 장 뽑아볼게.`;
   const depthHint = '\n\n💡 더 깊게 보고 싶으면 빅뱅 버튼을 꾹 눌러줘. 누를 때마다 상담이 한 단계씩(최대 3단계) 깊어져. 버튼을 한 번 탭하면 일반 루시로 돌아가.';
   const choices = askToLink
@@ -218,36 +218,6 @@ export function isAskingForDeepEngines(userText: string, lastLucyText: string): 
   if (!offered || clean.length > 30) return false;
   if (/(아니|괜찮아|됐어|나중에|말고)/.test(clean)) return false;
   return /^(응|어|웅|그래|좋아|좋지|오케이|ㅇㅋ|ㅇㅇ|콜|넵|네|예|당연|보자|볼래)/.test(clean);
-}
-
-/** 점술모드 대화 중 폰을 펼쳤을 때 루시가 건네는 타로 제안. */
-export function createTarotOfferOnUnfold(): UnifiedMessage {
-  return {
-    id: `tarot-house-unfold-${Date.now()}`,
-    role: 'model',
-    persona: 'lucy',
-    timestamp: Date.now(),
-    mode: 'master',
-    content: '오, 테이블을 펼쳤네 🕯️ 지금까지 사주로 본 흐름에 타로 카드도 한번 더해볼까? 뽑으면 왼쪽 테이블에 바로 펼쳐줄게.\n[답변선택: 응, 한 장 뽑아볼래 | 세 장 뽑아줘 | 사주로만 계속할래]',
-  };
-}
-
-/**
- * 펼침 타로 제안을 지금 끼워 넣어도 되는지.
- * 루시가 물어본 것(이어하기/새로 시작 같은 [답변선택])에 사용자가 아직 답하지 않았거나,
- * 아직 사용자가 한마디도 안 했다면 제안을 끼워 넣지 않는다.
- */
-export function shouldOfferTarotOnUnfold(messages: readonly UnifiedMessage[], link: LucyMasterLink = getLucyMasterLink()): boolean {
-  if (link === 'undecided') return false;
-  if (!messages.some(m => m.role === 'user')) return false;
-  const last = messages[messages.length - 1];
-  if (!last) return false;
-  if (last.role === 'model' || last.role === 'assistant') {
-    const text = typeof last.content === 'string' ? last.content : '';
-    if (text === createTarotOfferOnUnfold().content) return false;
-    if (ANSWER_CHOICES_REGEX.test(text)) return false;
-  }
-  return true;
 }
 
 const ANSWER_CHOICES_REGEX = /\n?\s*\[답변선택\s*[:：]\s*([^\]]+)\]\s*$/;

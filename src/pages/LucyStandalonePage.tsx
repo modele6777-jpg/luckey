@@ -42,7 +42,7 @@ import { archiveMasterSession, buildDepthContinuityContext, buildDepthLinkedLucy
 import { isLucyMasterBgmPreferred, startLucyMasterBgm, stopLucyMasterBgm, setLucyMasterBgmDepth } from '@/lib/lucyMasterBgm';
 import remarkGfm from 'remark-gfm';
 import { safeSessionStorage, safeLocalStorage } from '@/utils/safeStorage';
-import { isLucyMasterModeOn, setLucyMasterMode, LUCY_MASTER_MODE_EVENT, publishLucyTarotDraw, isAcceptingTarotDrawOffer, buildTarotHouseGuide, createTarotHouseGreeting, consumeTarotHouseGreetingPending, parseAnswerChoices, isAskingForDeepEngines, createTarotOfferOnUnfold, shouldOfferTarotOnUnfold, setLucyMasterLink, getLucyMasterLink, resolveLucyMasterLinkChoice, buildLinkedLucyContext, isTarotHouseGreetingPending, findConcernAnchor, createTarotHouseConcernQuestion, LUCY_TAROT_PICK_REQUEST_EVENT, LUCY_TAROT_PICKED_EVENT, LUCY_TAROT_PICK_CANCEL_EVENT, tarotPickPositions, toDetectedTarotCards, takeQueuedMasterTarotSpread, buildSpreadLayoutContext, matchMasterTarotSpread, isAutoSpreadCandidate, getLucyMasterDepth, useLucyMasterDepth, LUCY_MASTER_DEPTH_EVENT, LUCY_MASTER_DEPTH_INFO, LUCY_MASTER_MAX_DEPTH, type LucyMasterDepth } from '@/lib/lucyMasterMode';
+import { isLucyMasterModeOn, setLucyMasterMode, LUCY_MASTER_MODE_EVENT, publishLucyTarotDraw, isAcceptingTarotDrawOffer, buildTarotHouseGuide, createTarotHouseGreeting, consumeTarotHouseGreetingPending, parseAnswerChoices, isAskingForDeepEngines, setLucyMasterLink, getLucyMasterLink, resolveLucyMasterLinkChoice, buildLinkedLucyContext, isTarotHouseGreetingPending, findConcernAnchor, createTarotHouseConcernQuestion, LUCY_TAROT_PICK_REQUEST_EVENT, LUCY_TAROT_PICKED_EVENT, LUCY_TAROT_PICK_CANCEL_EVENT, tarotPickPositions, toDetectedTarotCards, takeQueuedMasterTarotSpread, buildSpreadLayoutContext, matchMasterTarotSpread, isAutoSpreadCandidate, getLucyMasterDepth, useLucyMasterDepth, LUCY_MASTER_DEPTH_EVENT, LUCY_MASTER_DEPTH_INFO, LUCY_MASTER_MAX_DEPTH, type LucyMasterDepth } from '@/lib/lucyMasterMode';
 import { cleanAssistantMessageDisplay, cleanUserMessageDisplay } from '@/utils/cleanMessage';
 import { detectLucyChannelsFromText, formatChannelsModeTitle } from '@/lib/lucyAutoModeDetector';
 import { selectOptimalDivinationTools, THEME_PRIMARY_DIVINATION_TOOLS, type SelectedDivinationToolsResult } from '@/lib/fifteenDivinationTools';
@@ -77,7 +77,7 @@ import { TarotSpread } from '@/components/trinity/TarotSpread';
 import { isLucyScrollPinned, lucyScrollPinHeld, noteLucyScrollPin, overlayCoversElement, releaseLucyScrollPin } from '@/lib/lucyScrollPin';
 import { captureLucySearchAnchor, resolveLucySearchOpenGuardedTop, resolveLucySearchRestoreTop, type LucySearchScrollAnchor } from '@/lib/lucySearchScroll';
 import { isDualPaneLayout, isDuoUnfoldedState } from '@/lib/perfMode';
-import { readFoldStateNow, subscribeFoldState } from '@/lib/foldState';
+import { subscribeFoldState } from '@/lib/foldState';
 import { buildLucyTarotReadingPrompt } from '@/lib/lucyTarotReading';
 import { getLucyChatDay as getTodayDateKey } from '@/lib/lucyChatDay';
 import { joinKakaoBubblesForTTS } from '@/lib/lucyChatUtils';
@@ -1693,28 +1693,6 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
     }
     wasMasterRef.current = isMasterMode;
   }, [isMasterMode, chatAccount]);
-
-  // 🔮 점술모드 대화 중 폰을 펼치면: 루시가 타로 상담을 더하자고 제안 (왼쪽엔 타로 테이블)
-  useEffect(() => {
-    if (!isMasterMode) return;
-    // iOS can report a brief unfolded size while the keyboard closes or the viewport
-    // settles on the cover screen. Offer only after a real unfold that is still there
-    // a moment later, with both panes laid out, and never twice in a row.
-    let timer: ReturnType<typeof setTimeout> | null = null;
-    const unsubscribe = subscribeFoldState((next, previous) => {
-      if (timer) { clearTimeout(timer); timer = null; }
-      if (previous.unfolded || !next.unfolded) return;
-      timer = setTimeout(() => {
-        timer = null;
-        const stillUnfolded = readFoldStateNow().unfolded && isDuoUnfoldedState().unfolded
-          && Boolean(document.getElementById('duo-lucy-viewport') && document.getElementById('duo-content-viewport'));
-        if (!stillUnfolded) return;
-        // 루시가 물어본 것(이어하기/새로 시작 등)에 아직 답하기 전이면 끼어들지 않는다.
-        setLucyProMessages(prev => (shouldOfferTarotOnUnfold(prev) ? [...prev, createTarotOfferOnUnfold()] : prev));
-      }, 1200);
-    });
-    return () => { if (timer) clearTimeout(timer); unsubscribe(); };
-  }, [isMasterMode, setLucyProMessages]);
 
   // 🎙️ 루시 1:1 전용 실시간 음성 대화 모드 (STT 마이크 + TTS 자동 루프)
   const [isVoiceMode, setIsVoiceMode] = useState<boolean>(() => {

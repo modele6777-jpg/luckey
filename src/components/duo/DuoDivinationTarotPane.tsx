@@ -39,8 +39,8 @@ export function DuoDivinationTarotPane(_props: { isLight?: boolean }) {
   const [cards, setCards] = useState<DetectedTarotCard[]>([]);
   const [revealed, setRevealed] = useState<string[]>([]);
   const [pick, setPick] = useState<TarotPickRequest | null>(null);
-  // 왼쪽 테이블의 면: 루시가 지금 하는 일을 따라 자동으로 바뀌고, 탭으로 직접 바꿀 수도 있다.
-  const [face, setFace] = useState<TableFace>('tarot');
+  // 왼쪽 테이블의 면: 처음엔 사주 원국판. 루시가 지금 하는 일을 따라 자동으로 바뀌고, 탭으로 직접 바꿀 수도 있다.
+  const [face, setFace] = useState<TableFace>('saju');
   const [table, setTable] = useState<LucyTableState>(() => getLucyTableState());
   const tts = useTTSState();
   const reading = Boolean(tts.isSpeaking || tts.isLoading);
@@ -76,7 +76,7 @@ export function DuoDivinationTarotPane(_props: { isLight?: boolean }) {
       if (detail?.count) { setPick(detail); setFace('tarot'); }
     };
     // 루시 마스터를 나갔다 들어오면 테이블도 비운다
-    const handleMode = () => { setCards([]); setRevealed([]); setPick(null); };
+    const handleMode = () => { setCards([]); setRevealed([]); setPick(null); setFace('saju'); };
     window.addEventListener(LUCY_TAROT_DRAWN_EVENT, handleDrawn);
     window.addEventListener(LUCY_TAROT_PICK_REQUEST_EVENT, handlePickRequest);
     window.addEventListener(LUCY_MASTER_MODE_EVENT, handleMode);
