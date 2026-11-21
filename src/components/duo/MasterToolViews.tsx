@@ -589,21 +589,63 @@ function AstrologyView({ d }: { d: Data }) {
 function HeldNotice() {
   return <p className="mt-2 text-[11px] text-slate-300 break-keep">이 도구는 계산 기준을 다시 살펴보는 중이라, 지금은 개인 결과 없이 <b className="text-amber-100">구조와 의미만</b> 보여줘요. 루시도 상징 참고로만 써요.</p>;
 }
-const MANSIONS = ['昴', '畢', '觜', '参', '井', '鬼', '柳', '星', '張', '翼', '軫', '角', '亢', '氐', '房', '心', '尾', '箕', '斗', '女', '虚', '危', '室', '壁', '奎', '婁', '胃'];
-function SukuyoView() {
+/** 27숙 (각부터, 우宿 제외) — 엔진(sukuyoEngine)의 순서와 같다. */
+const MANSIONS = ['角', '亢', '氐', '房', '心', '尾', '箕', '斗', '女', '虛', '危', '室', '壁', '奎', '婁', '胃', '昴', '畢', '觜', '參', '井', '鬼', '柳', '星', '張', '翼', '軫'];
+/** 삼구(三九) 관계: 나(명)에서 몇 칸 떨어졌는지 → 명·영·쇠·안·위·성·괴·우·친 / 업 / 태 */
+const SANKYU = ['명', '영', '쇠', '안', '위', '성', '괴', '우', '친', '업', '영', '쇠', '안', '위', '성', '괴', '우', '친', '태', '영', '쇠', '안', '위', '성', '괴', '우', '친'];
+const SANKYU_TONE: Record<string, string> = { 명: '#fcd34d', 업: '#fcd34d', 태: '#fcd34d', 영: '#86efac', 안: '#86efac', 성: '#86efac', 우: '#7dd3fc', 친: '#7dd3fc', 쇠: '#fda4af', 위: '#fda4af', 괴: '#fda4af' };
+function SukuyoView({ d }: { d?: Data }) {
+  const adv: Data = d?.advanced || {};
+  const me: Data = adv.mansion;
+  const myIndex = typeof me?.index === 'number' ? me.index : -1;
+  if (myIndex < 0) {
+    return (
+      <Panel title="27숙 (달이 머무는 스물일곱 집)">
+        <svg viewBox="0 0 200 200" className="mx-auto block w-full max-w-[13rem]" role="img" aria-label="27숙 원">
+          <circle cx="100" cy="100" r="84" fill="none" stroke="rgba(252,211,77,.35)" />
+          {MANSIONS.map((m, i) => {
+            const a = (i / 27) * Math.PI * 2 - Math.PI / 2;
+            return <text key={m} x={100 + 72 * Math.cos(a)} y={100 + 72 * Math.sin(a) + 3.5} textAnchor="middle" fontSize="9.5" fill="rgba(253,230,138,.85)">{m}</text>;
+          })}
+          <text x="100" y="104" textAnchor="middle" fontSize="13" fill="#fff">宿曜</text>
+        </svg>
+        <p className="mt-2 text-[11px] text-slate-300 break-keep">생년월일이 있으면 내 본명숙과 27숙과의 관계가 여기에 그려져요. (윤달 출생은 계산을 보류해요)</p>
+      </Panel>
+    );
+  }
   return (
-    <Panel title="27숙 (달이 머무는 스물일곱 집)">
-      <svg viewBox="0 0 200 200" className="mx-auto block w-full max-w-[13rem]" role="img" aria-label="27숙 원">
-        <circle cx="100" cy="100" r="84" fill="none" stroke="rgba(252,211,77,.35)" />
-        {MANSIONS.map((m, i) => {
-          const a = (i / 27) * Math.PI * 2 - Math.PI / 2;
-          return <text key={m} x={100 + 72 * Math.cos(a)} y={100 + 72 * Math.sin(a) + 3.5} textAnchor="middle" fontSize="9.5" fill="rgba(253,230,138,.85)">{m}</text>;
-        })}
-        <text x="100" y="97" textAnchor="middle" fontSize="13" fill="#fff">宿曜</text>
-        <text x="100" y="113" textAnchor="middle" fontSize="8" fill="rgba(203,213,225,.8)">본명숙 · 궁합 거리</text>
-      </svg>
-      <HeldNotice />
-    </Panel>
+    <>
+      <Panel title="27숙 원 · 나와 각 숙의 관계 (삼구)" note="금색 = 명·업·태(나와 깊이 얽힌 숙), 초록 = 영·안·성(돕는 관계), 하늘 = 우·친(편한 관계), 분홍 = 쇠·위·괴(조심할 관계). 맨 위가 내 본명숙.">
+        <svg viewBox="0 0 220 220" className="mx-auto block w-full max-w-[15rem]" role="img" aria-label="본명숙과 27숙 관계">
+          <circle cx="110" cy="110" r="96" fill="rgba(0,0,0,.25)" stroke="rgba(252,211,77,.4)" />
+          {MANSIONS.map((m, i) => {
+            const dist = (i - myIndex + 27) % 27;
+            const a = (dist / 27) * Math.PI * 2 - Math.PI / 2;
+            const x = 110 + 82 * Math.cos(a);
+            const y = 110 + 82 * Math.sin(a);
+            const rel = SANKYU[dist];
+            const mine = dist === 0;
+            return (
+              <g key={m}>
+                <circle cx={x} cy={y} r={mine ? 11 : 8.5} fill={mine ? 'rgba(252,211,77,.35)' : 'rgba(20,12,35,.9)'} stroke={SANKYU_TONE[rel]} strokeWidth={mine ? 1.6 : 0.9} />
+                <text x={x} y={y + 3} textAnchor="middle" fontSize={mine ? 10 : 8} fill="#fff">{m}</text>
+                <text x={110 + 64 * Math.cos(a)} y={110 + 64 * Math.sin(a) + 2.5} textAnchor="middle" fontSize="6.5" fill={SANKYU_TONE[rel]}>{rel}</text>
+              </g>
+            );
+          })}
+          <text x="110" y="104" textAnchor="middle" fontSize="18" fontWeight="bold" fill="#fde68a">{s(me.hanja)}</text>
+          <text x="110" y="120" textAnchor="middle" fontSize="8" fill="rgba(226,232,240,.85)">{s(me.fullName)}</text>
+          <text x="110" y="132" textAnchor="middle" fontSize="7" fill="rgba(148,163,184,.9)">본명숙</text>
+        </svg>
+      </Panel>
+      <Panel>
+        <Line label="본명숙" value={`${s(me.name)}수(${s(me.hanja)}) · ${s(me.group)}`} />
+        <Line label="칠요" value={me.luminary ? `${s(me.luminary)} — 수호 기운 ${s(adv.planetaryGuard?.elementAffinity)}` : ''} />
+        <Line label="음력 생일" value={d?.lunarMonth ? `${s(d.lunarMonth)}월 ${s(d.lunarDay)}일` : ''} />
+        <Line label="삼구 시기" value={adv.sanKyuCycle?.nineMansionPhase} />
+        {adv.shukguk?.ko && <p className="mt-1 text-[10px] text-slate-400 break-keep">숙격 {s(adv.shukguk.ko)}({s(adv.shukguk.trait)})은 원전 대조가 끝나지 않아 참고로만 봐주세요.</p>}
+      </Panel>
+    </>
   );
 }
 /** 마하보테 7궁: 엔진(mahaboteEngine)의 궁 이름·구분과 같다. 개인 배치는 재검토 중이라 그리지 않는다. */
@@ -611,21 +653,37 @@ const MAHABOTE_HOUSES: Array<[string, string, string]> = [
   ['빙가', '動', '평길'], ['아타', '破', '시험'], ['야자', '王', '대길'], ['아디파디', '主', '대길'],
   ['마라나', '絶', '시험'], ['띠케', '財', '대길'], ['푸티', '榮', '평길'],
 ];
-function MahaboteView() {
+function MahaboteView({ d }: { d?: Data }) {
+  const houses = arr<Data>(d?.houses);
+  const placed = houses.length === 7;
   return (
-    <Panel title="마하보테 7궁 (미얀마 8요일 점성술)">
-      <div className="grid grid-cols-4 gap-1 text-center">
-        {MAHABOTE_HOUSES.map(([house, hanja, kind]) => (
-          <div key={house} className={`rounded-lg border p-1.5 ${kind === '대길' ? 'border-amber-300/40 bg-amber-400/10' : 'border-white/10 bg-white/[0.04]'}`}>
-            <p className="text-[13px] font-black text-white">{hanja}</p>
-            <p className="text-[10px] font-bold text-amber-100">{house}</p>
-            <p className="text-[8.5px] text-slate-400">{kind}</p>
-          </div>
-        ))}
-      </div>
-      <p className="mt-1.5 text-[10px] text-slate-400 break-keep">태어난 요일(수요일은 낮·밤 둘로 나눠 8요일)의 행성이 일곱 집 중 어디에 놓이느냐로 타고난 생명력과 주기를 봐요. 야자·아디파디·띠케가 3대 길궁.</p>
-      <HeldNotice />
-    </Panel>
+    <>
+      <Panel title="마하보테 7궁 (미얀마 8요일 점성술)" note={placed ? '금색 테두리가 내가 태어난 요일의 행성이 앉은 본명궁이에요. 야자·아디파디·띠케가 3대 길궁.' : undefined}>
+        <div className="grid grid-cols-4 gap-1 text-center">
+          {MAHABOTE_HOUSES.map(([house, hanja, kind], i) => {
+            const h = placed ? houses[i] : null;
+            const root = Boolean(h?.isBirthRootHouse);
+            return (
+              <div key={house} className={`rounded-lg border p-1.5 ${root ? 'border-amber-300/90 bg-amber-400/20' : kind === '대길' ? 'border-amber-300/35 bg-amber-400/[0.07]' : 'border-white/10 bg-white/[0.04]'}`}>
+                <p className="text-[13px] font-black text-white">{hanja}</p>
+                <p className="text-[10px] font-bold text-amber-100">{house}</p>
+                <p className="text-[8.5px] text-slate-400">{kind}</p>
+                {h && <p className={`mt-0.5 text-[9.5px] ${root ? 'font-bold text-amber-50' : 'text-slate-200'}`}>{s(h.planet?.koreanName).replace(/요일/, '')}</p>}
+              </div>
+            );
+          })}
+        </div>
+        {!placed && <p className="mt-1.5 text-[10px] text-slate-400 break-keep">태어난 요일(수요일은 낮·밤 둘로 나눠 8요일)의 행성이 일곱 집 중 어디에 놓이느냐로 타고난 생명력과 주기를 봐요.</p>}
+      </Panel>
+      {placed && (
+        <Panel>
+          <Line label="미얀마력" value={d?.myanmarEra ? `${s(d.myanmarEra)}년` : ''} />
+          <Line label="태어난 요일" value={d?.birthPlanet ? `${s(d.birthPlanet.koreanName)} · ${s(d.birthPlanet.animal)} · ${s(d.birthPlanet.direction)}` : ''} />
+          <Line label="본명궁" value={d?.rootHouse ? `${s(d.rootHouse.houseName)} — ${s(d.rootHouse.category)}` : ''} />
+          {d?.currentAgeTransit && <p className="mt-1 text-[10px] text-slate-400 break-keep">올해 나이 흐름: {s(d.currentAgeTransit.transitHouseName)} (전통 산식 대조 전이라 상징 참고)</p>}
+        </Panel>
+      )}
+    </>
   );
 }
 const SEPHIROT: Array<[string, number, number]> = [
@@ -654,12 +712,16 @@ const VIEWS: Partial<Record<DivinationToolId, (props: { d: Data }) => ReactEleme
   qimen: QimenView, ziwei: ZiweiView, vedic: VedicView, iching: IchingView, liuren: LiurenView,
   taiyi: TaiyiView, tojeong: TojeongView, kyusei: KyuseiView, thai_astrology: ThaiView, astrology: AstrologyView,
 };
-const HELD: Partial<Record<DivinationToolId, () => ReactElement>> = { sukuyo: SukuyoView, mahabote: MahaboteView, kabbalah: KabbalahView };
+const HELD: Partial<Record<DivinationToolId, () => ReactElement>> = { kabbalah: KabbalahView };
+/** 계산값이 없어도 구조(원·7궁)는 보여주는 도구 */
+const STRUCTURE_FALLBACK: Partial<Record<DivinationToolId, (props: { d?: Data }) => ReactElement>> = { sukuyo: SukuyoView, mahabote: MahaboteView };
 
 /** 도구 전용 화면. 계산값이 없거나 그릴 수 없으면 null. */
 export function ToolDetailView({ id, data }: { id: DivinationToolId; data: unknown }) {
   const Held = HELD[id];
   if (Held) return <Held />;
+  const WithFallback = STRUCTURE_FALLBACK[id];
+  if (WithFallback) return <WithFallback d={data && typeof data === 'object' ? (data as Data) : undefined} />;
   const View = VIEWS[id];
   if (!View || !data || typeof data !== 'object') return null;
   try {
@@ -669,4 +731,4 @@ export function ToolDetailView({ id, data }: { id: DivinationToolId; data: unkno
   }
 }
 
-export const TOOL_VIEW_IDS = [...Object.keys(VIEWS), ...Object.keys(HELD)] as DivinationToolId[];
+export const TOOL_VIEW_IDS = [...Object.keys(VIEWS), ...Object.keys(STRUCTURE_FALLBACK), ...Object.keys(HELD)] as DivinationToolId[];

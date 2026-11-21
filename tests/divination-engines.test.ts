@@ -1250,8 +1250,11 @@ test('Burmese Mahabote: 7-house chart calculation, root house, age transit, Rahu
   const r1 = calculateMahabote({ profile, targetYear: 2026 });
   assert.equal(r1.status, 'calculated');
   assert.equal(r1.engineVersion, MAHABOTE_ENGINE_VERSION);
-  assert.equal(r1.myanmarEra, 1357);
-  assert.equal(r1.remainder, 6);
+  // 1995-03-25 is before Thingyan (mid-April), so it still belongs to ME 1356 (= 1995 - 639).
+  assert.equal(r1.myanmarEra, 1356);
+  assert.equal(r1.remainder, 5);
+  // Saturday (wd 0) → house (1356 - 0) mod 7 = 5 → 띠케 (standard (ME - wd) mod 7 rule)
+  assert(r1.houses.find((h) => h.isBirthRootHouse)!.houseName.startsWith('띠케'));
   assert.equal(r1.houses.length, 7);
   assert(r1.rootHouse !== null);
   assert(r1.houses.some((h) => h.isBirthRootHouse));
