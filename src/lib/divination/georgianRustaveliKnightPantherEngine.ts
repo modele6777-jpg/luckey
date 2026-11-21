@@ -21,6 +21,7 @@ export interface GeorgianRustaveliResult {
   calculatedAtKst: string;
   primaryVirtue: RustaveliVirtue;
   counterbalanceVirtue: RustaveliVirtue;
+  companionVirtue: RustaveliVirtue;
   heartCompassPrinciple: string;
   qualitativeSynthesis: string;
   reflectionFocus: string;
@@ -73,7 +74,12 @@ const HEART_COMPASS_PRINCIPLES: readonly string[] = [
 
 function formatGeorgianKstTimestamp(now: Date): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
-  return `${kst.toISOString().slice(0, 19)}+09:00 (KST)`;
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
 }
 
 function stableHash(input: string): number {
@@ -93,30 +99,32 @@ export function calculateGeorgianRustaveliKnightPanther(params: {
   const now = params.now ?? new Date();
   const query = (params.question ?? '').trim();
 
-  const seed = stableHash(
-    [
-      params.profile.basic?.name ?? '',
-      JSON.stringify(params.profile.fate ?? {}),
-      query,
-    ].join('|')
-  );
+  const baseSeedStr = [
+    params.profile.basic?.name ?? '',
+    JSON.stringify(params.profile.fate ?? {}),
+    query,
+  ].join('|');
+  const seed = stableHash(baseSeedStr);
 
   const primaryIdx = seed % RUSTAVELI_VIRTUES.length;
   const counterbalanceIdx = (primaryIdx + 2) % RUSTAVELI_VIRTUES.length;
+  const companionOffset = 1 + (stableHash(`${baseSeedStr}|companion`) % (RUSTAVELI_VIRTUES.length - 1));
+  const companionIdx = (primaryIdx + companionOffset) % RUSTAVELI_VIRTUES.length;
   const principleIdx = (seed >> 4) % HEART_COMPASS_PRINCIPLES.length;
 
   const primaryVirtue = RUSTAVELI_VIRTUES[primaryIdx];
   const counterbalanceVirtue = RUSTAVELI_VIRTUES[counterbalanceIdx];
+  const companionVirtue = RUSTAVELI_VIRTUES[companionIdx];
   const heartCompassPrinciple = HEART_COMPASS_PRINCIPLES[principleIdx];
 
   const qualitativeSynthesis =
     `조지아 쇼타 루스타벨리의 서사시 《표범 가죽을 두른 기사》의 상징으로 비추어 보면, 지금 흐름의 중심에는 ` +
     `‘${primaryVirtue.georgianTerm} — ${primaryVirtue.koreanTitle}’의 기품이 자리하고 있습니다. ` +
-    `${primaryVirtue.coreInsight} 여기에 ‘${counterbalanceVirtue.georgianTerm}’이 균형축으로 맞물려, ` +
+    `${primaryVirtue.coreInsight} 여기에 ‘${counterbalanceVirtue.georgianTerm}’이 균형축으로, ‘${companionVirtue.georgianTerm}’이 동반 덕목으로 맞물려 ` +
     `“${heartCompassPrinciple}”이라는 고전적 지혜처럼 품격 있는 선택을 이어가기 좋은 국면입니다.`;
 
   const reflectionFocus =
-    `${primaryVirtue.koreanTitle}을 중심으로 ${counterbalanceVirtue.koreanTitle}의 균형을 세우는 시점`;
+    `${primaryVirtue.koreanTitle}을 중심으로 ${counterbalanceVirtue.koreanTitle}과 ${companionVirtue.koreanTitle}의 균형을 세우는 시점`;
 
   const ritualAction = primaryVirtue.actionPractice;
 
@@ -126,10 +134,11 @@ export function calculateGeorgianRustaveliKnightPanther(params: {
 
   return {
     engineName: '조지아 루스타벨리 《표범 가죽을 두른 기사》 심성 관점 (Rustaveli Knight in the Panther’s Skin)',
-    engineVersion: 'LUCKEY-GEORGIAN-RUSTAVELI-v2.1.0',
+    engineVersion: 'LUCKEY-GEORGIAN-RUSTAVELI-v2.2.0',
     calculatedAtKst: formatGeorgianKstTimestamp(now),
     primaryVirtue,
     counterbalanceVirtue,
+    companionVirtue,
     heartCompassPrinciple,
     qualitativeSynthesis,
     reflectionFocus,
@@ -147,6 +156,7 @@ export function formatGeorgianRustaveliKnightPantherPrompt(res: GeorgianRustavel
     `- 엔진 버전: ${res.engineVersion} | 연산 시각: ${res.calculatedAtKst}`,
     `- 중심 덕목: ${res.primaryVirtue.georgianTerm} · ${res.primaryVirtue.koreanTitle} (${res.primaryVirtue.literaryMotif})`,
     `- 균형 덕목: ${res.counterbalanceVirtue.georgianTerm} · ${res.counterbalanceVirtue.koreanTitle}`,
+    `- 동반 덕목: ${res.companionVirtue.georgianTerm} · ${res.companionVirtue.koreanTitle}`,
     `- 마음의 나침반: “${res.heartCompassPrinciple}”`,
     `- 성찰 해석: ${res.qualitativeSynthesis}`,
     `- 성찰 초점: ${res.reflectionFocus}`,

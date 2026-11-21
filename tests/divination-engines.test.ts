@@ -13286,13 +13286,14 @@ test('Sami Noaidi Drum & Joik engine: drum zone, +09:00 KST, and interpretive bo
 
 test('Georgian Rustaveli Knight in the Panther’s Skin engine: virtues, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateGeorgianRustaveliKnightPanther({ profile, now: new Date('2026-11-20T04:40:00Z'), question: '품격 있는 결정을 내리고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-GEORGIAN-RUSTAVELI-v2.1.0');
-  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.equal(rep.engineVersion, 'LUCKEY-GEORGIAN-RUSTAVELI-v2.2.0');
+  assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
+  assert.ok(rep.companionVirtue.id !== rep.primaryVirtue.id);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('확정적 미래 예측이 아닙니다'));
   const prompt = formatGeorgianRustaveliKnightPantherPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('루스타벨리') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('루스타벨리') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionVirtue.georgianTerm));
 });
 
 test('Armenian Narekatsi Lamentation Healing engine: contemplations, +09:00 KST, and interpretive boundary', () => {
@@ -13775,13 +13776,14 @@ test('Scythian Golden Stag Steppe engine: emblem, +09:00 KST, and interpretive b
 
 test('Galician Camino Atlantic Reflection engine: sign, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateGalicianCaminoAtlanticReflection({ profile, now: new Date('2026-11-20T07:32:00Z'), question: '나만의 걸음 속도를 되찾고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-GALICIAN-CAMINO-v2.1.0');
-  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.equal(rep.engineVersion, 'LUCKEY-GALICIAN-CAMINO-v2.2.0');
+  assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
+  assert.ok(rep.companionSign !== rep.atlanticSign);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatGalicianCaminoPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('갈리시아') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('갈리시아') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionSign));
 });
 
 test('Uyghur Kutadgu Bilig Wisdom engine: pillar, +09:00 KST, and interpretive boundary', () => {
@@ -14074,13 +14076,14 @@ test('Sherpa Sagarmatha Ridge Harmony engine: principle, +09:00 KST, and interpr
 
 test('Evenki Buga Taiga Path engine: sign, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateEvenkiBugaTaigaPath({ profile, now: new Date('2026-11-20T08:21:00Z'), question: '작은 신호를 세심히 읽으며 유연하게 가고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-EVENKI-BUGA-v2.1.0');
-  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.equal(rep.engineVersion, 'LUCKEY-EVENKI-BUGA-v2.2.0');
+  assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
+  assert.ok(rep.companionSign !== rep.taigaSign);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatEvenkiBugaPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('에벤키') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('에벤키') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionSign));
 });
 
 test('Manchu Mukun White Mountain engine: principle, +09:00 KST, and interpretive boundary', () => {
