@@ -14185,13 +14185,14 @@ test('Assyrian Nineveh Clay Tablet engine: seal, +09:00 KST, and interpretive bo
 
 test('Tuareg Tagelmust Sahara Stars engine: compass, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateTuaregTagelmustSaharaStars({ profile, now: new Date('2026-11-20T08:40:00Z'), question: '내 호흡을 보호하며 별빛 기준을 보고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-TUAREG-SAHARA-v2.1.0');
-  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.equal(rep.engineVersion, 'LUCKEY-TUAREG-SAHARA-v2.2.0');
+  assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
+  assert.ok(rep.companionCompass !== rep.desertCompass);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatTuaregSaharaPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('투아레그') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('투아레그') && prompt.includes('동반 나침반') && prompt.includes('+09:00 (KST)'));
 });
 
 test('Estonian Regilaul Forest Calm engine: motif, +09:00 KST, and interpretive boundary', () => {
@@ -14268,13 +14269,14 @@ test('Frisian Polder Dike Balance engine: principle, +09:00 KST, and interpretiv
 
 test('Ukrainian Vyshyvanka Sunflower engine: motif, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateUkrainianVyshyvankaSunflower({ profile, now: new Date('2026-11-20T08:52:00Z'), question: '손끝의 정성과 밝은 방향을 지키고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-UKRAINIAN-VYSHYVANKA-v2.1.0');
-  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.equal(rep.engineVersion, 'LUCKEY-UKRAINIAN-VYSHYVANKA-v2.2.0');
+  assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
+  assert.ok(rep.companionMotif !== rep.embroideryMotif);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatUkrainianVyshyvankaPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('비시반카') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('비시반카') && prompt.includes('동반 상징') && prompt.includes('+09:00 (KST)'));
 });
 
 test('Champa My Son Brick Sanctuary engine: motif, +09:00 KST, and interpretive boundary', () => {
@@ -14384,13 +14386,14 @@ test('Bohemian Crystal Glass Light engine: facet, +09:00 KST, and interpretive b
 
 test('San Kalahari Tracking Stars engine: sign, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateSanKalahariTrackingStars({ profile, now: new Date('2026-11-20T09:20:00Z'), question: '작은 징후를 먼저 읽어 방향을 잡고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-SAN-KALAHARI-v2.1.0');
-  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.equal(rep.engineVersion, 'LUCKEY-SAN-KALAHARI-v2.2.0');
+  assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
+  assert.ok(rep.companionSign !== rep.desertSign);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatSanKalahariPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('칼라하리') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('칼라하리') && prompt.includes('동반 징후') && prompt.includes('+09:00 (KST)'));
 });
 
 test('Phrygian Gordian Knot Clarity engine: symbol, +09:00 KST, and interpretive boundary', () => {
