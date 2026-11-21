@@ -18,6 +18,7 @@ import LeftSidebarNav from "./components/navigation/LeftSidebarNav";
 import { BigBangButton } from "./components/omniwarp/BigBangButton";
 import { BigBangExpansionOverlay } from "./components/omniwarp/BigBangExpansionOverlay";
 import { KeyChannelTransition } from "./components/omniwarp/KeyChannelTransition";
+import { LuckyChannelTransition } from "./components/omniwarp/LuckyChannelTransition";
 import { BigBangMasterSuction } from "./components/omniwarp/BigBangMasterSuction";
 import ErrorBoundary from "./components/ErrorBoundary";
 import ReloadPrompt from "./components/ReloadPrompt";
@@ -999,6 +1000,7 @@ function AppContent() {
       <BigBangButton />
       <BigBangExpansionOverlay />
       <KeyChannelTransition />
+      <LuckyChannelTransition />
       <BigBangMasterSuction />
 
       <ReloadPrompt />
