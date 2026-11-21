@@ -55,7 +55,7 @@ Every time a user request is completed or changes are made to the codebase:
 - Big Bang navigation/commit, horizon and trail effects use the content pane bounds in unfolded mode, including swapped landscape and portrait layouts. Never paint across Lucy or navigation.
 - Keep effect layers visual-only and separate from popup/focus stacking. Folded effects use main bounds; the Big Bang button itself remains usable in its existing location.
 
-- User exception 2026-11-20: the Lucy Master entry suction (Big Bang hold) is centred on the button and covers the pane that holds it (Lucy or content when unfolded, main when folded), never navigation; visual-only.
+- User exception 2026-11-20: the Lucy Master entry suction (Big Bang hold) is centred on the button and covers the pane that holds it (Lucy or content when unfolded, main when folded), never navigation; visual-only. User update 2026-11-21: leaving Lucy Master (Big Bang hold or the return-to-Lucy card) plays the same effect in reverse (`playLucyMasterSuction('out')`), pouring back out of the button.
 - User exception: clover wind/breeze effects cover the entire display, including Lucy and navigation, in folded and unfolded layouts. They stay visual-only and never intercept input.
 
 ### 9. Latest Lucy Conversation on Entry
