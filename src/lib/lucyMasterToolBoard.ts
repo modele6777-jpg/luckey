@@ -129,7 +129,9 @@ export function buildToolBoard(params: {
     const spec = FIFTEEN_DIVINATION_TOOLS[id];
     const { status, note } = statusOf(auditById.get(id));
     const signal = status === 'needs_info' ? '' : findToolSignal(id, params.answer);
-    return { id, name: spec.koName, hanja: spec.hanjaOrEng, bestFor: shortBestFor(id), status, note, signal, common: Boolean(signal), facts: status === 'calculated' ? (params.facts?.[id] ?? []) : [] };
+    // 기문은 출생 기반 홍국기문이 아니라 지금 시각으로 세운 기문둔갑(차보법) 판을 보여주므로 이름을 그에 맞춘다.
+    const display = id === 'qimen' ? { name: '기문둔갑', hanja: '奇門遁甲 · 지금 시각 판' } : { name: spec.koName, hanja: spec.hanjaOrEng };
+    return { id, name: display.name, hanja: display.hanja, bestFor: shortBestFor(id), status, note, signal, common: Boolean(signal), facts: status === 'calculated' ? (params.facts?.[id] ?? []) : [] };
   });
 
   const baseIndex = (id: DivinationToolId) => LUCY_MASTER_DEPTH3_TOOLS.indexOf(id);
