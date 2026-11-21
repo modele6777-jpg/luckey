@@ -15435,3 +15435,20 @@ test('buildUserFifteenToolsDigest integrates Saju daeun, Astrology dominant elem
   assert.ok(digest.includes('우세 원소:') && digest.includes('우세 양식:'));
   assert.ok(digest.includes('화록 ') && digest.includes('화권 ') && digest.includes('화과 ') && digest.includes('화기 '));
 });
+
+test('buildUserFifteenToolsDigest integrates Tarot 3-card timeline/suit, Sukuyo sanKyu/guard, and Mahabote gemstone/advice', () => {
+  const profile: any = {
+    basic: {
+      name: '제제',
+      birthdate: '1994-01-24',
+      birthtime: '10:30',
+      calendarType: 'solar',
+      isLeapMonth: false,
+      gender: 'male',
+    },
+  };
+  const digest = buildUserFifteenToolsDigest(profile, new Date('2026-11-22T04:15:00+09:00'));
+  assert.ok(digest.includes('3카드 흐름(') && digest.includes('실천 수트 ['));
+  assert.ok(digest.includes('삼구주기 [') && digest.includes('칠요 수호성 '));
+  assert.ok(digest.includes('길보석:') && digest.includes('실행 조언:'));
+});
