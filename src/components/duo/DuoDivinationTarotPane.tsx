@@ -24,15 +24,18 @@ import { MasterReadingStage } from './MasterReadingStage';
 import { MasterDailyCard } from './MasterDailyCard';
 import { getLucyTableState, clearTableTools, LUCY_TABLE_EVENT, type LucyTableState } from '@/lib/lucyTableBus';
 import { MasterToolBoard } from './MasterToolBoard';
+import { LucyEngineCatalogPanel } from '@/components/chat/LucyEngineCatalogDialog';
 import { useTTSState } from '@/utils/tts';
 
-type TableFace = 'tarot' | 'saju' | 'recommended' | 'scrolls';
+type TableFace = 'tarot' | 'saju' | 'recommended' | 'scrolls' | 'engines';
 /** 단계 순서대로 쌓인다: 1 사주 → 2 타로 → 3 추천 도구·12대 양피지. 낮은 단계 도구는 높은 단계에서도 언제든 탭해서 본다. */
 const FACES: { id: TableFace; icon: string; label: string; stage: 1 | 2 | 3 }[] = [
   { id: 'saju', icon: '☯', label: '사주 원국', stage: 1 },
   { id: 'tarot', icon: '🃏', label: '타로', stage: 2 },
   { id: 'recommended', icon: '🧭', label: '추천 도구', stage: 3 },
   { id: 'scrolls', icon: '📜', label: '양피지', stage: 3 },
+  // 엔진함: 모든 단계에서 볼 수 있는 엔진 이름·뜻 목록 (읽기 전용)
+  { id: 'engines', icon: '📚', label: '엔진함', stage: 1 },
 ];
 
 /**
@@ -136,7 +139,7 @@ export function DuoDivinationTarotPane(_props: { isLight?: boolean }) {
               >
                 <span className="text-[15px] leading-none" aria-hidden="true">{item.icon}</span>
                 <span className="mt-0.5 max-w-full truncate text-[10.5px] font-bold leading-tight">{item.label}</span>
-                <span className={`text-[8px] leading-none ${active ? 'text-amber-200/90' : 'text-slate-400'}`}>{item.stage}단계</span>
+                <span className={`text-[8px] leading-none ${active ? 'text-amber-200/90' : 'text-slate-400'}`}>{item.id === 'engines' ? '목록' : `${item.stage}단계`}</span>
               </button>
             );
           })}
@@ -169,6 +172,8 @@ export function DuoDivinationTarotPane(_props: { isLight?: boolean }) {
             onFocusTool={(id) => { setFocusTool(id); setFace('recommended'); }}
             onShowScrolls={() => { triggerHaptic('whitehole'); setFace('scrolls'); }}
           />
+        ) : shownFace === 'engines' ? (
+          <LucyEngineCatalogPanel />
         ) : shownFace === 'saju' ? (
           <MasterSajuBoard saju={table.saju} lastAnswer={table.lastAnswer} />
         ) : (

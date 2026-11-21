@@ -72,3 +72,20 @@
 }
 .chat-library-dialog .lucy-engine-catalog-entry-name { font-size: 14px; line-height: 1.6; }
 .chat-library-dialog .lucy-engine-catalog-entry-meaning { font-size: 13px; line-height: 1.7; }
+
+/* 점술 도구 창 안의 "엔진함" 탭: 창 높이에 맞춰 목록만 스크롤된다. */
+.lucy-engine-catalog-embedded { container: chat-library / size; }
+.lucy-engine-catalog-embedded .lucy-engine-catalog-entry-name { font-size: 13px; line-height: 1.55; }
+.lucy-engine-catalog-embedded .lucy-engine-catalog-entry-meaning { font-size: 12px; line-height: 1.65; }
+/* 좁은 도구 창에서는 분류 버튼을 한 줄로 두고 옆으로 넘겨 본다. */
+.lucy-engine-catalog-embedded .chat-library-filters {
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  scrollbar-width: none;
+  touch-action: pan-x pan-y;
+}
+.lucy-engine-catalog-embedded .chat-library-filters::-webkit-scrollbar { display: none; }
+/* 도구 창은 낮지만, 계산 결과와 상징 참고를 구분하는 안내는 접어 둔 채로 항상 남긴다. */
+@container chat-library (max-height: 640px) {
+  .lucy-engine-catalog-embedded .chat-library-toolbar details { display: block; }
+}

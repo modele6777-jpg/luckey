@@ -4041,26 +4041,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
                       깊이 {masterDepth} · {LUCY_MASTER_DEPTH_INFO[masterDepth].name}
                     </span>
                   )}
-                  {/* 엔진함은 점술모드(루시 마스터)에서만 보인다 */}
-                  {isMasterMode && <LucyLibraryTrigger
-                    type="button"
-                    onClick={() => {
-                      triggerHaptic('whitehole');
-                    }}
-                    className={`lucy-engine-list-button inline-flex items-center gap-1.5 min-h-[32px] px-2 rounded-[6px] text-[10px] font-bold tracking-tight border whitespace-nowrap shrink-0 hover:bg-amber-500/25 transition-colors cursor-pointer select-none ${
-                      isLight
-                        ? 'bg-amber-100 text-amber-950 border-amber-500/50'
-                        : 'bg-amber-500/15 text-amber-100 border-amber-400/40'
-                    }`}
-                    title="엔진함 열기 · 엔진 목록과 뜻 보기"
-                    aria-label="엔진함 열기"
-                    aria-haspopup="dialog"
-                    stateKey={`${librarySessionKey}:engine`}
-                    aria-controls="lucy-engine-catalog-dialog"
-                  >
-                    <span className="w-1.5 h-1.5 rounded-full bg-amber-400/60" />
-                    엔진함
-                  </LucyLibraryTrigger>}
+                  {/* 엔진함은 점술 도구 창(접은 화면 "도구" 버튼 · 펼친 화면 왼쪽 테이블)의 📚 엔진함 탭으로 옮겨졌다 */}
                 </div>
               </div>
             </div>
