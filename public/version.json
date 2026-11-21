@@ -1,11 +1,8 @@
 {
-  "version": "1.8.109",
-  "builtAt": "2026-11-21T06:18:26.800Z",
-  "summary": "음성을 Google Cloud Chirp 3 HD로 교체 (안 되면 Gemini로 자동 대체)",
+  "version": "1.8.110",
+  "builtAt": "2026-11-21T06:21:17.221Z",
+  "summary": "Chirp 3 HD 요청 시 API 키 전달 방식 수정",
   "items": [
-    "루시 음성을 Google Cloud TTS Chirp 3 HD 한국어 목소리로 만듦 (Aoede·Kore·Charon 등 같은 이름의 목소리)",
-    "Chirp 3 HD가 설정 전이거나 막히면 자동으로 Gemini 음성으로 읽어 끊기지 않음",
-    "설정 문제일 때는 10분 동안 Chirp를 건너뛰어 기다림을 줄임",
-    "지금 어떤 음성 엔진이 쓰이는지 확인하는 점검 주소 추가"
+    "Google Cloud TTS가 헤더로 보낸 키를 인식하지 못해(401) 문서 방식(주소의 key)으로 변경"
   ]
 }

@@ -65,9 +65,11 @@ export async function synthesizeChirpSpeech(text: string, voice: string | undefi
   const name = chirpVoiceName(voice);
   const pieces: Uint8Array[] = [];
   for (const piece of splitForCloudTts(speech)) {
-    const response = await fetchApi('https://texttospeech.googleapis.com/v1/text:synthesize', {
+    // Cloud TTS documents API keys as the `key` query parameter (the header form was refused
+    // with 401 CREDENTIALS_MISSING on the deployed server).
+    const response = await fetchApi(`https://texttospeech.googleapis.com/v1/text:synthesize?key=${encodeURIComponent(key)}`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ input: { text: piece }, voice: { languageCode: 'ko-KR', name }, audioConfig: { audioEncoding: 'MP3' } }),
       signal: signal ? AbortSignal.any([signal, AbortSignal.timeout(30000)]) : AbortSignal.timeout(30000),
     });
