@@ -1733,7 +1733,9 @@ test('buildUserFifteenToolsDigest integrates Hongguk Qimen and Ziwei Flying Star
   assert.match(digest, /타로 마스터 수비학:.*4원소 흐름\(우세/);
   assert.match(digest, /숙요경\(27숙\): 본명숙.*행\) · 숙격/);
   assert.match(digest, /마하보테 8요일 부분 계산:.*수호성/);
-  assert.match(digest, /홍국기문\(4주 9궁\): 세효/);
+  assert.match(digest, /베딕 조티시:.*파다.*부대운/);
+  assert.match(digest, /대육임\(12천장·삼전\):.*국면 \[/);
+  assert.match(digest, /홍국기문\(4주 9궁\): 세효.*5행 통기/);
   assert.match(digest, /자미두수 유년 사화: 명궁/);
   assert.match(digest, /삼방사정 국면 \[.+\] · 록기 역학/);
   assert.match(digest, /태국점성술 요일 상징/);

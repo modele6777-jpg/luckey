@@ -157,10 +157,10 @@ export const FIFTEEN_DIVINATION_TOOLS: Record<DivinationToolId, DivinationToolSp
     hanjaOrEng: 'Vedic Jyotish (인도 점성술)',
     primaryTheme: 'bluebird',
     secondaryThemes: ['epilogue', 'trinity'],
-    coreEssence: '실제 항성 황도대(Sidereal) 기준의 달 궁(Rashi)과 27 나크샤트라(Nakshatra), 빔쇼타리 다샤(Dasha 행성 대운 주기), 카르마(Karma)와 다르마(Dharma)를 통해 영혼의 숙제와 내면의 평화를 밝히는 빛의 학문(Jyotish)',
-    bestFor: '반복되는 삶의 패턴(카르마) 이해와 치유, 영혼의 사명(다르마), 인생 주기(다샤)의 깊은 의미, 마음의 안식',
+    coreEssence: '실제 항성 황도대(Sidereal) 기준의 달 궁(Rashi)과 27 나크샤트라(Nakshatra)·파다(Pada), 빔쇼타리 다샤(마하다샤·안타르다샤 행성 대운 주기), 카르마(Karma)와 다르마(Dharma)를 통해 영혼의 숙제와 내면의 평화를 밝히는 빛의 학문(Jyotish)',
+    bestFor: '반복되는 삶의 패턴(카르마) 이해와 치유, 영혼의 사명(다르마), 마하다샤·부대운(안타르다샤) 전환기 의미, 마음의 안식',
     easyLanguageGuide: '"베딕 점성술(조티쉬)의 관점에서 보면 지금 겪는 시련은 네 영혼이 더 단단해지려는 다샤(성장 주기)의 과정이야"처럼 깊은 위로와 영적 통찰로 마음을 보듬어줘.',
-    explicitRegex: /베딕|인도\s*점성술|조티쉬|jyotish|나크샤트라|다샤|라후|케투|카르마|다르마|아트마카라카/i,
+    explicitRegex: /베딕|인도\s*점성술|조티쉬|jyotish|나크샤트라|파다|다샤|안타르다샤|라후|케투|카르마|다르마|아트마카라카/i,
     intentKeywords: [/반복되는|아픔|상처|업보|이유가\s*뭘까|영혼|사명|내면의\s*평화|위로/]
   },
 
@@ -171,10 +171,10 @@ export const FIFTEEN_DIVINATION_TOOLS: Record<DivinationToolId, DivinationToolSp
     hanjaOrEng: '大六壬',
     primaryTheme: 'orange',
     secondaryThemes: ['trinity'],
-    coreEssence: '동양 삼식(태을·기문·육임) 중 인사(人事) 예측의 정점으로, 천지반과 사과(四課)·삼전(三傳: 초전·중전·말전) 및 12천장을 통해 사건의 발단(초전)-전개(중전)-결말(말전)과 숨겨진 변수를 예리하게 꿰뚫는 예측학',
-    bestFor: '현재 진행 중인 일·계약·협상·관계의 구체적 진행 과정(초전→중전→말전)과 성패, 숨은 의도나 리스크 파악',
+    coreEssence: '동양 삼식(태을·기문·육임) 중 인사(人事) 예측의 정점으로, 천지반 월장·점시와 사과(四課)·삼전(三傳: 초전·중전·말전)·12천장 및 국면 판정을 통해 사건의 발단-전개-결말과 숨겨진 변수를 예리하게 꿰뚫는 예측학',
+    bestFor: '현재 진행 중인 일·계약·협상·관계의 구체적 진행 과정(초전→중전→말전)과 추진/관망 판단, 숨은 의도나 리스크 파악',
     easyLanguageGuide: '"육임의 삼전(시작-중간-결과) 흐름으로 이 일을 짚어보면, 초반(초전)에는 ~한 변수가 있지만 중반(중전)에 ~하게 대응하면 끝(말전)에는 좋은 결실을 맺을 수 있어"처럼 단계별 전략으로 명쾌하게 설명해줘.',
-    explicitRegex: /육임|대육임|사과삼전|삼전|초전|중전|말전|천장|귀인\s*포국/,
+    explicitRegex: /육임|대육임|사과삼전|삼전|초전|중전|말전|천장|월장|귀인\s*포국/,
     intentKeywords: [/결과가\s*어떨까|성공할까|합격|계약|협상|변수|리스크|어떻게\s*흘러갈까|전망/]
   },
 
@@ -185,10 +185,10 @@ export const FIFTEEN_DIVINATION_TOOLS: Record<DivinationToolId, DivinationToolSp
     hanjaOrEng: '洪局奇門 (기문둔갑)',
     primaryTheme: 'orange',
     secondaryThemes: ['prologue', 'trinity'],
-    coreEssence: '시공간의 구궁(九宮) 팔문(휴·생·상·두·경·사·경·개문)·구성·팔신과 홍국 수리(1~10 생성수)를 배합해 막힌 상황을 뚫는 최적의 타이밍, 유리한 방위, 승부수 전략을 설계하는 제왕의 병법 방위학',
-    bestFor: '이직·창업·사업 확장·투자·면접 등 중대한 결단의 최적 타이밍, 돌파구(생문/개문) 전략, 유리한 방향 선택',
+    coreEssence: '조선 정통 4주 9궁의 세효·응효·중궁·팔문(휴·생·상·두·경·사·경·개문)·삼형살·5행 통기(通氣) 순환을 배합해 막힌 상황을 뚫는 최적의 타이밍, 유리한 방위, 승부수 전략을 설계하는 제왕의 병법 방위학',
+    bestFor: '이직·창업·사업 확장·투자·면접 등 중대한 결단의 최적 타이밍, 세효 8문 돌파구(생문/개문) 전략, 5행 통기 보완 방향 선택',
     easyLanguageGuide: '"홍국기문(기문둔갑)으로 지금 판세를 읽어보면, 정면 돌파보다는 생문(生門·살아나는 문)이 열리는 ~한 방식과 타이밍을 택하는 게 최고의 한 수야"처럼 전략적 돌파구를 제시해줘.',
-    explicitRegex: /홍국기문|기문둔갑|기문|팔문|생문|개문|휴문|경문|삼기|육의|포국/,
+    explicitRegex: /홍국기문|기문둔갑|기문|팔문|생문|개문|휴문|경문|삼기|육의|포국|세효|응효|통기/,
     intentKeywords: [/돌파구|전략|이직|창업|사업|승부|면접|타이밍|언제\s*움직|방향성|결정/]
   },
 
@@ -426,11 +426,12 @@ export function buildUserFifteenToolsDigest(profile?: UserProfile, asOfDate: Dat
     // 7. 베딕 점성술 (27 나크샤트라 · 빔쇼타리 다샤 결정론 산법)
     let vedicLine = '';
     try {
-      const vd = calculateVedicAdvanced({ profile });
+      const vd = calculateVedicAdvanced({ profile, now: referenceDate });
       if (vd.status === 'calculated' && vd.nakshatra) {
         const lord = vd.currentDasha?.mahadasha.lord || vd.nakshatra.lord;
+        const antar = vd.currentDasha?.antardasha?.lord;
         const sign = vd.rashi?.chandra.name || '미상';
-        vedicLine = `\n- 베딕 조티시: 달 나크샤트라 ${vd.nakshatra.name}(지배성: ${vd.nakshatra.lord}) · 빔쇼타리 대운 ${lord} 마하다샤 · 달 라시 ${sign}.`;
+        vedicLine = `\n- 베딕 조티시: 달 나크샤트라 ${vd.nakshatra.name} ${vd.nakshatra.pada}파다(지배성: ${vd.nakshatra.lord}) · 빔쇼타리 대운 ${lord} 마하다샤${antar ? `·${antar} 부대운` : ''} · 달 라시 ${sign}.`;
       }
     } catch (_) {}
 
@@ -455,13 +456,15 @@ export function buildUserFifteenToolsDigest(profile?: UserProfile, asOfDate: Dat
     // 9. 홍국기문 (조선 정통 4주 9궁 세효·응효·중궁·삼형·통기·8문 결정론 산법)
     let qimenLine = '';
     try {
-      const hq = calculateHonggukQimen({ profile, targetYear: referenceDate.getFullYear() });
+      const hq = calculateHonggukQimen({ profile, targetYear: kstYear });
       if (hq.status === 'calculated' && hq.keyPoints && hq.samhyeong && hq.tonggi && hq.eightGatesVerdict) {
         const se = hq.keyPoints.seYao;
         const eung = hq.keyPoints.eungYao;
         const jg = hq.keyPoints.jungGung;
         const gate = se.gate || hq.eightGatesVerdict.seYaoGate || '중궁기궁';
-        qimenLine = `\n- 홍국기문(4주 9궁): 세효 [${se.palaceName}](${se.element}·${se.star}) · 응효 [${eung.palaceName}](${eung.element}·${eung.star}) · 중궁 [${jg.palaceName}](${jg.element}) · 세효 8문 ${gate}(${se.gateCategory}) · 삼형살 ${hq.samhyeong.formed ? `${hq.samhyeong.type || '삼형'} 성립` : hq.samhyeong.partial ? '부분형' : '미성립'}(파극위험 ${hq.samhyeong.riskIndex}점) · 5행 통기 순환도 ${hq.tonggi.score}점.`;
+        const riskTone = hq.samhyeong.riskIndex >= 70 ? '고위험 주의' : hq.samhyeong.riskIndex >= 35 ? '중간 유의' : '안정';
+        const tonggiTone = hq.tonggi.score >= 80 ? '완숙 유통' : hq.tonggi.score >= 40 ? '부분 유통' : '정체 보완 필요';
+        qimenLine = `\n- 홍국기문(4주 9궁): 세효 [${se.palaceName}](${se.element}·${se.star}) · 응효 [${eung.palaceName}](${eung.element}·${eung.star}) · 중궁 [${jg.palaceName}](${jg.element}) · 세효 8문 ${gate}(${se.gateCategory}) · 삼형살 ${hq.samhyeong.formed ? `${hq.samhyeong.type || '삼형'} 성립` : hq.samhyeong.partial ? '부분형' : '미성립'}(파극 위험 ${riskTone}) · 5행 통기 ${tonggiTone}.`;
       }
     } catch (_) {}
 
@@ -480,7 +483,7 @@ export function buildUserFifteenToolsDigest(profile?: UserProfile, asOfDate: Dat
       const lr = calculateLiurenMaster(referenceDate);
       if (lr.status === 'calculated') {
         const trans = lr.threeTransmissions.map(t => `${t.stage}:${t.branch}(${t.general})`).join('→');
-        liurenLine = `\n- 대육임(12천장·삼전): ${lr.dayStemBranch}일 ${lr.hourBranch}시(${lr.monthGeneral} 월장) · 과격 [${lr.patternName}] · 삼전(${trans}) · 주천장 ${lr.primaryGeneral.name}(${lr.primaryGeneral.nature}).`;
+        liurenLine = `\n- 대육임(12천장·삼전): ${lr.dayStemBranch}일 ${lr.hourBranch}시(${lr.monthGeneral} 월장) · 과격 [${lr.patternName}] · 국면 [${lr.decisionGrade}] · 삼전(${trans}) · 주천장 ${lr.primaryGeneral.name}(${lr.primaryGeneral.nature}).`;
       }
     } catch (_) {}
 
