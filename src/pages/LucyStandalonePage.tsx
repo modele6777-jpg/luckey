@@ -1269,6 +1269,8 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
     }
   });
   const isAutoTtsRef = useRef(isAutoTts);
+  // 🎙️ 마이크(음성 모드)를 켜기 전 자동읽기 설정. 마이크를 끄면 이 값으로 되돌린다 (null = 마이크 꺼짐).
+  const autoTtsBeforeVoiceRef = useRef<boolean | null>(null);
   useEffect(() => {
     isAutoTtsRef.current = isAutoTts;
   }, [isAutoTts]);
@@ -1308,6 +1310,8 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
     isAutoTtsRef.current = next;
     isAutoTtsBusyRef.current = false;
     setIsAutoTts(next);
+    // 마이크가 켜진 동안 직접 바꾸면, 마이크를 꺼도 그 선택을 그대로 둔다.
+    if (autoTtsBeforeVoiceRef.current !== null) autoTtsBeforeVoiceRef.current = next;
 
     try {
       localStorage.setItem('lucy_chat_auto_tts', String(next));
@@ -1756,6 +1760,34 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
     }
   });
   const [voiceState, setVoiceState] = useState<'idle' | 'listening' | 'thinking' | 'speaking' | 'error'>('idle');
+
+  // 🎙️ 마이크(음성 모드)를 켜면 자동읽기도 켜고, 끄면 원래 설정으로 되돌린다. 저장된 설정은 바꾸지 않는다.
+  useEffect(() => {
+    if (isVoiceMode) {
+      if (autoTtsBeforeVoiceRef.current !== null) return;
+      autoTtsBeforeVoiceRef.current = isAutoTtsRef.current;
+      if (!isAutoTtsRef.current) {
+        isAutoTtsRef.current = true;
+        isAutoTtsBusyRef.current = false;
+        setIsAutoTts(true);
+        if (autoTtsToastTimerRef.current) clearTimeout(autoTtsToastTimerRef.current);
+        setAutoTtsToast('🎙️ 마이크 켜짐 · 루시 답변을 자동으로 읽어드려요');
+        autoTtsToastTimerRef.current = setTimeout(() => setAutoTtsToast(null), 2200);
+      }
+      return;
+    }
+    const before = autoTtsBeforeVoiceRef.current;
+    if (before === null) return;
+    autoTtsBeforeVoiceRef.current = null;
+    if (!before && isAutoTtsRef.current) {
+      isAutoTtsRef.current = false;
+      isAutoTtsBusyRef.current = false;
+      setIsAutoTts(false);
+      if (autoTtsToastTimerRef.current) clearTimeout(autoTtsToastTimerRef.current);
+      setAutoTtsToast('🔇 마이크 꺼짐 · 자동읽기를 원래대로 껐어요');
+      autoTtsToastTimerRef.current = setTimeout(() => setAutoTtsToast(null), 2200);
+    }
+  }, [isVoiceMode]);
   const [speechTranscript, setSpeechTranscript] = useState<string>('');
   const [speechInterim, setSpeechInterim] = useState<string>('');
   const [voiceError, setVoiceError] = useState<string | null>(null);
@@ -1837,12 +1869,32 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
         voiceStateRef.current = 'listening';
       };
 
+      // 말이 끝나면(같은 문장이 1.2초 동안 그대로면) 시리처럼 자동 전송한다.
+      // iOS Safari는 조용할 때도 같은 결과를 계속 보내므로, 글자가 바뀔 때만 타이머를 다시 잰다.
+      let lastHeard = '';
+      let sent = false;
+      const sendHeard = () => {
+        if (sent || !isCurrent() || voiceStateRef.current !== 'listening') return;
+        const text = speechTranscriptRef.current.trim();
+        if (text.length < 2) return;
+        sent = true;
+        if (silenceTimerRef.current) {
+          clearTimeout(silenceTimerRef.current);
+          silenceTimerRef.current = null;
+        }
+        speechTranscriptRef.current = '';
+        setSpeechTranscript('');
+        setSpeechInterim('');
+        void handleSendRef.current(text);
+      };
+
       recognition.onresult = (event: any) => {
-        if (!isCurrent()) return;
+        if (!isCurrent() || sent) return;
         let finalStr = '';
         let interimStr = '';
 
-        for (let i = event.resultIndex; i < event.results.length; i++) {
+        // 이어서 말한 앞부분이 빠지지 않도록 처음 결과부터 모두 이어 붙인다.
+        for (let i = 0; i < event.results.length; i++) {
           const chunk = event.results[i][0].transcript;
           if (event.results[i].isFinal) {
             finalStr += chunk;
@@ -1851,22 +1903,15 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
           }
         }
 
-        const combined = (finalStr || interimStr).trim();
-        if (combined) {
-          speechTranscriptRef.current = combined;
-          setSpeechTranscript(combined);
-          setSpeechInterim(interimStr);
+        const combined = `${finalStr}${interimStr}`.replace(/\s+/g, ' ').trim();
+        if (!combined || combined === lastHeard) return;
+        lastHeard = combined;
+        speechTranscriptRef.current = combined;
+        setSpeechTranscript(combined);
+        setSpeechInterim(interimStr);
 
-          // 1.3초 무음 감지 시 발화 마감 및 자동 전송
-          if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
-          silenceTimerRef.current = setTimeout(() => {
-            if (isCurrent() && combined.length >= 2 && voiceStateRef.current === 'listening') {
-              void handleSendRef.current(combined);
-              setSpeechTranscript('');
-              setSpeechInterim('');
-            }
-          }, 1300);
-        }
+        if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
+        silenceTimerRef.current = setTimeout(sendHeard, 1200);
       };
 
       recognition.onerror = (e: any) => {
@@ -1881,7 +1926,13 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
 
       recognition.onend = () => {
         if (!isCurrent()) return;
+        // 브라우저가 말이 끝났다고 듣기를 닫으면, 들은 말이 있을 때 바로 보낸다.
+        if (!sent && speechTranscriptRef.current.trim().length >= 2) {
+          sendHeard();
+          return;
+        }
         if (
+          !sent &&
           voiceStateRef.current === 'listening' &&
           !isLucyGeneratingRef.current
         ) {

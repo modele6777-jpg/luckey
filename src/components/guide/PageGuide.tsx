@@ -1,28 +1,14 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { BookOpen, Square, Volume2, X } from 'lucide-react';
+import { BookOpen, X } from 'lucide-react';
 import { ScreenPortal } from '@/components/layout/ScreenPortal';
-import { pageGuideSpeech, type PageGuide, type PageGuideSection } from '@/lib/pageGuides';
-import { playTTSInChunks, stopTTS, useTTSState } from '@/utils/tts';
+import { type PageGuide, type PageGuideSection } from '@/lib/pageGuides';
 import { triggerHaptic } from '@/lib/omniWarp/omniWarpHaptics';
 
-/** 📘 Simple guide dialog with a listen (TTS) button. */
+/** 📘 Simple guide dialog (사용 가이드 / 활용 팁 두 탭). */
 export function PageGuideDialog({ guide, onClose }: { guide: PageGuide; onClose: () => void }) {
-  const tts = useTTSState();
   const [section, setSection] = useState<PageGuideSection>('guide');
-  const speech = pageGuideSpeech(guide, section);
-  const mine = Boolean((tts.isSpeaking || tts.isLoading) && (tts.activeFullText === speech || tts.activeText === speech || (tts.activeFullText || '').startsWith(guide.title)));
-  const [requested, setRequested] = useState(false);
-  const playing = mine || (requested && tts.isLoading);
-
-  useEffect(() => {
-    if (!tts.isSpeaking && !tts.isLoading) setRequested(false);
-  }, [tts.isSpeaking, tts.isLoading]);
-
-  const close = () => {
-    if (mine || requested) stopTTS();
-    onClose();
-  };
+  const close = onClose;
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => { if (event.key === 'Escape') close(); };
@@ -31,20 +17,7 @@ export function PageGuideDialog({ guide, onClose }: { guide: PageGuide; onClose:
   });
 
   const switchSection = (next: PageGuideSection) => {
-    if (next === section) return;
-    if (mine || requested) { stopTTS(); setRequested(false); }
-    setSection(next);
-  };
-
-  const toggleListen = () => {
-    triggerHaptic('whitehole');
-    if (playing) {
-      stopTTS();
-      setRequested(false);
-      return;
-    }
-    setRequested(true);
-    void playTTSInChunks(speech, 'Kore', 110, undefined, undefined, { isUserToggleClick: true, skipCompletionChime: true });
+    if (next !== section) setSection(next);
   };
 
   return (
@@ -85,18 +58,6 @@ export function PageGuideDialog({ guide, onClose }: { guide: PageGuide; onClose:
             ))}
           </div>
 
-          <div className="mt-2.5 flex shrink-0 gap-2">
-            <button
-              type="button"
-              data-page-guide-listen
-              aria-pressed={playing}
-              onClick={toggleListen}
-              className={`flex-1 inline-flex items-center justify-center gap-1.5 rounded-full px-4 py-2.5 text-sm font-bold active:scale-95 ${playing ? 'bg-slate-800 text-white' : 'bg-amber-400 text-slate-950'}`}
-            >
-              {playing ? <><Square size={14} /> 그만 듣기</> : <><Volume2 size={16} /> {section === 'tips' ? '팁 듣기' : '가이드 듣기'}</>}
-            </button>
-            <button type="button" onClick={close} className="rounded-full border border-slate-200 px-5 py-2.5 text-sm font-bold text-slate-700 active:scale-95">확인</button>
-          </div>
           {section === 'guide' ? (
             <ol className="-mx-1 mt-3.5 min-h-0 flex-1 space-y-2 overflow-y-auto overscroll-contain px-1" data-page-guide-steps>
               {guide.steps.map((step, index) => (
@@ -117,6 +78,7 @@ export function PageGuideDialog({ guide, onClose }: { guide: PageGuide; onClose:
             </ul>
           )}
 
+          <button type="button" onClick={close} className="mt-3 shrink-0 rounded-full border border-slate-200 py-2.5 text-sm font-bold text-slate-700 active:scale-95">확인</button>
         </motion.div>
       </div>
     </ScreenPortal>
