@@ -831,7 +831,9 @@ ${content}
     const { cloudTtsStatus } = await import('./server/api-lib/preferredSpeech.ts');
     const { cloudTtsKeySource } = await import('./server/api-lib/googleCloudTts.ts');
     res.setHeader("Cache-Control", "no-store");
-    return res.json({ ...cloudTtsStatus(process.env), cloudKeySource: cloudTtsKeySource(process.env) });
+    const { speechRuntimeEnv } = await import('./server/api-lib/ttsHandler.ts');
+    const env = speechRuntimeEnv();
+    return res.json({ ...cloudTtsStatus(env), cloudKeySource: cloudTtsKeySource(env) });
   });
 
   app.post("/api/ai/tts", async (req, res) => {

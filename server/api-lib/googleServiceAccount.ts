@@ -15,6 +15,15 @@ const SCOPE = 'https://www.googleapis.com/auth/cloud-platform';
 const DEFAULT_TOKEN_URI = 'https://oauth2.googleapis.com/token';
 let cached: { email: string; token: string; expiresAt: number } | null = null;
 
+/** Why the credentials can't be used (no secret content): for the status endpoint. */
+export function serviceAccountProblem(raw: string | undefined): 'ok' | 'missing' | 'invalid-json' | 'missing-fields' {
+  const text = String(raw || '').trim();
+  if (!text) return 'missing';
+  let parsed: any;
+  try { parsed = JSON.parse(text.startsWith('{') ? text : atob(text)); } catch { return 'invalid-json'; }
+  return typeof parsed?.client_email === 'string' && typeof parsed?.private_key === 'string' ? 'ok' : 'missing-fields';
+}
+
 export function readServiceAccount(raw: string | undefined): ServiceAccount | null {
   const text = String(raw || '').trim();
   if (!text) return null;

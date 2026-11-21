@@ -1,5 +1,14 @@
 [
   {
+    "version": "1.8.115",
+    "summary": "서비스 계정 키를 Render Secret File로 넣어도 읽고, 못 읽는 이유를 점검 화면에 표시",
+    "builtAt": "2026-11-21T07:06:21.285Z",
+    "items": [
+      "Render의 Secret Files(/etc/secrets)나 GOOGLE_APPLICATION_CREDENTIALS 경로의 서비스 계정 JSON도 읽음",
+      "점검 화면에 서비스 계정 상태(없음/JSON 형식 오류/필수 항목 없음/정상) 표시 (내용은 표시하지 않음)"
+    ]
+  },
+  {
     "version": "1.8.114",
     "summary": "Cloud Gemini 음성을 서비스 계정으로 정식 인증 (같은 목소리 대신 읽기 준비)",
     "builtAt": "2026-11-21T06:53:36.990Z",

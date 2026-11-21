@@ -1,6 +1,41 @@
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { synthesizePreferredSpeech } from './preferredSpeech.ts';
 import { getGeminiApiKey } from '../geminiKey.ts';
-const synthesizeDefault = (text: string, voice?: string) => synthesizePreferredSpeech(text, voice, { ...process.env, GEMINI_API_KEY: getGeminiApiKey() });
+const synthesizeDefault = (text: string, voice?: string) => synthesizePreferredSpeech(text, voice, speechRuntimeEnv());
+
+/**
+ * Environment for speech, with the service-account JSON also read from a file when it was
+ * added as a Render Secret File or via GOOGLE_APPLICATION_CREDENTIALS.
+ */
+export function speechRuntimeEnv(): Record<string, string | undefined> {
+  const env: Record<string, string | undefined> = { ...process.env, GEMINI_API_KEY: getGeminiApiKey() };
+  if (!String(env.GOOGLE_CLOUD_TTS_CREDENTIALS || '').trim()) {
+    const fromFile = readCredentialsFile(env);
+    if (fromFile) env.GOOGLE_CLOUD_TTS_CREDENTIALS = fromFile;
+  }
+  return env;
+}
+
+function readCredentialsFile(env: Record<string, string | undefined>): string {
+  const candidates = [
+    env.GOOGLE_APPLICATION_CREDENTIALS,
+    '/etc/secrets/GOOGLE_CLOUD_TTS_CREDENTIALS',
+    '/etc/secrets/GOOGLE_CLOUD_TTS_CREDENTIALS.json',
+  ].filter(Boolean) as string[];
+  try {
+    for (const path of candidates) {
+      if (existsSync(path)) return readFileSync(path, 'utf8');
+    }
+    if (existsSync('/etc/secrets')) {
+      for (const name of readdirSync('/etc/secrets')) {
+        if (!name.endsWith('.json')) continue;
+        const text = readFileSync(`/etc/secrets/${name}`, 'utf8');
+        if (text.includes('"service_account"')) return text;
+      }
+    }
+  } catch { /* unreadable: treat as not configured */ }
+  return '';
+}
 import { classifyTtsError, createTtsDiagnosticId, logTtsDiagnostic } from './ttsDiagnostics.ts';
 
 export interface TTSHandlerOptions {
