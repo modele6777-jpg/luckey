@@ -30,9 +30,19 @@ export function isLuckyChannelPath(path: string): boolean {
   return Boolean(matchLuckyChannel(clean)) && resolveChannelThemeFromPath(clean) === 'dark';
 }
 
+/** 마이페이지(프로필). 루시·키 채널에서 들어갈 때도 같은 로딩 화면을 보여 준다. */
+export function isProfilePath(path: string): boolean {
+  const clean = cleanPath(path);
+  return clean === '/profile' || clean.startsWith('/profile/');
+}
+
 function channelInfo(path: string) {
+  if (isProfilePath(path)) {
+    return { kicker: 'MY', label: 'MY PAGE', subLabel: '마이페이지 · 내 프로필과 기록', color: '#a855f7' };
+  }
   const match = matchLuckyChannel(path);
   return {
+    kicker: 'LUCKY',
     label: match?.label || 'LUCKY',
     subLabel: match?.subLabel || '럭키 채널',
     color: match?.color || '#34d399',
@@ -47,7 +57,7 @@ const STARS = Array.from({ length: 36 }, (_, i) => ({
 }));
 
 /**
- * Loading screen for entering a Lucky channel from Lucy chat or the Key channel.
+ * Loading screen for entering a Lucky channel (or My Page) from Lucy chat or the Key channel.
  * It uses the Lucky night-sky palette and the channel's own colour, stays inside
  * the content canvas (never over Lucy or navigation) and is visual-only.
  */
@@ -63,7 +73,7 @@ export function LuckyChannelTransition() {
     previous.current = location;
     if (before === null) return; // first paint: the page's own loader handles it
     const fromLucyOrKey = isLucyThemeRoute(cleanPath(before)) || isKeyChannelPath(before);
-    if (fromLucyOrKey && isLuckyChannelPath(location)) {
+    if (fromLucyOrKey && (isLuckyChannelPath(location) || isProfilePath(location))) {
       setTarget(location);
       setRun(value => value + 1);
     }
@@ -97,7 +107,7 @@ export function LuckyChannelTransition() {
           <motion.div
             key={`lucky-entry-${run}`}
             role="status"
-            aria-label={`${info.label} 채널을 여는 중`}
+            aria-label={info.kicker === 'MY' ? '마이페이지를 여는 중' : `${info.label} 채널을 여는 중`}
             data-testid="lucky-channel-transition"
             data-lucky-channel={info.label}
             initial={{ opacity: 0 }}
@@ -183,7 +193,7 @@ export function LuckyChannelTransition() {
                 initial={{ opacity: 0, y: 6 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4, delay: 0.15 }}
-              >LUCKY</motion.p>
+              >{info.kicker}</motion.p>
               <motion.p
                 className="mt-1 text-2xl font-black tracking-wide"
                 style={{ color: '#ffffff', textShadow: `0 0 18px ${info.color}aa` }}
