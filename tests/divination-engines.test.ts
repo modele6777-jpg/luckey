@@ -13630,13 +13630,14 @@ test('Shona Mbira Ancestral Resonance engine: cycle, +09:00 KST, and interpretiv
 
 test('Tongan Kava Circle Tauhi Va engine: practice, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateTonganKavaCircleTauhiVa({ profile, now: new Date('2026-11-20T06:40:00Z'), question: '관계의 거리를 잘 지키고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-TONGAN-KAVA-v2.1.0');
-  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.equal(rep.engineVersion, 'LUCKEY-TONGAN-KAVA-v2.2.0');
+  assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
+  assert.ok(rep.companionPractice !== rep.vaPractice);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatTonganKavaPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('통가') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('통가') && prompt.includes('동반 원리') && prompt.includes('+09:00 (KST)'));
 });
 
 test('Dogon Amma Nommo Harmony engine: star phase, +09:00 KST, and interpretive boundary', () => {
@@ -14319,13 +14320,14 @@ test('Chachapoya Cloud Forest Kuelap engine: citadel, +09:00 KST, and interpreti
 
 test('Yapese Rai Stone Trust engine: stone, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateYapeseRaiStoneTrust({ profile, now: new Date('2026-11-20T09:04:00Z'), question: '보이지 않아도 쌓아 둔 신뢰를 믿고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-YAPESE-RAI-v2.1.0');
-  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.equal(rep.engineVersion, 'LUCKEY-YAPESE-RAI-v2.2.0');
+  assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
+  assert.ok(rep.companionTrust !== rep.stoneTrust);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatYapeseRaiPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('야프') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('야프') && prompt.includes('동반 상징') && prompt.includes('+09:00 (KST)'));
 });
 
 test('Chukchi Bering Tundra Hearth engine: symbol, +09:00 KST, and interpretive boundary', () => {
@@ -14542,13 +14544,14 @@ test('Bamiyan Silk Road Valley Calm engine: motif, +09:00 KST, and interpretive 
 
 test('Sigiriya Lion Rock Water Garden engine: motif, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateSigiriyaLionRockWaterGarden({ profile, now: new Date('2026-11-20T19:35:00Z'), question: '보이지 않는 기본기를 먼저 다지고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-SIGIRIYA-ROCK-v2.1.0');
-  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.equal(rep.engineVersion, 'LUCKEY-SIGIRIYA-ROCK-v2.2.0');
+  assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
+  assert.ok(rep.companionMotif !== rep.sigiriyaMotif);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatSigiriyaRockPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('시기리야') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('시기리야') && prompt.includes('동반 모티프') && prompt.includes('+09:00 (KST)'));
 });
 
 test('Numidian Cirta Horizon Poise engine: motif, +09:00 KST, and interpretive boundary', () => {
