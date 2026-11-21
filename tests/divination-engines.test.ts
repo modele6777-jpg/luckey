@@ -15415,3 +15415,20 @@ test('buildUserFifteenToolsDigest integrates Tojeong 3-numbers & monthly fortune
   // 15. 태을신수: 72국·주객 판정·오복길성 포함
   assert.ok(digest.includes('태을신수:') && digest.includes('제') && digest.includes('국)') && digest.includes('주객 판정 ['));
 });
+
+test('buildUserFifteenToolsDigest integrates Saju daeun, Astrology dominant element/modality/aspect, and Ziwei 4-mutagens', () => {
+  const profile: any = {
+    basic: {
+      name: '제제',
+      birthdate: '1994-01-24',
+      birthtime: '10:30',
+      calendarType: 'solar',
+      isLeapMonth: false,
+      gender: 'male',
+    },
+  };
+  const digest = buildUserFifteenToolsDigest(profile, new Date('2026-11-22T04:05:00+09:00'));
+  assert.ok(digest.includes('현재 대운:'));
+  assert.ok(digest.includes('우세 원소:') && digest.includes('우세 양식:'));
+  assert.ok(digest.includes('화록 ') && digest.includes('화권 ') && digest.includes('화과 ') && digest.includes('화기 '));
+});
