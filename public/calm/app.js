@@ -117,6 +117,8 @@ document.addEventListener('DOMContentLoaded', () => {
       window.scrollTo({ top: 400, behavior: 'smooth' });
     }
   }
+  // 🔍 Key 검색에서 결과를 누르면 해당 화면으로 이동할 수 있게 노출
+  window.keySwitchTab = switchTab;
 
 
   // ==========================================================================
@@ -2977,6 +2979,16 @@ document.addEventListener('DOMContentLoaded', () => {
       playAllOracleTeachingSequential();
     });
   }
+
+  // 🔍 Key 검색: 치유 비결 결과를 누르면 그 가르침을 바로 펼친다
+  window.keyShowTeaching = function(id) {
+    const teaching = (window.INNER_PAUSE_TEACHINGS || []).find(item => item.id === id);
+    if (!teaching) return;
+    switchTab('tab-teachings', false);
+    renderTeaching(teaching);
+    const card = document.getElementById('teaching-oracle-card');
+    if (card) card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
 
   function renderTeaching(teaching) {
     if (!teaching) return;
