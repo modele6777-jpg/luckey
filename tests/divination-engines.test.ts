@@ -13546,13 +13546,14 @@ test('Swahili Utu Dhow Monsoon engine: wind, +09:00 KST, and interpretive bounda
 
 test('Khmer Angkor Baray Water Balance engine: state, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateKhmerAngkorBarayWaterBalance({ profile, now: new Date('2026-11-20T06:30:00Z'), question: '마음의 에너지를 흘려보내고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-KHMER-ANGKOR-BARAY-v2.1.0');
-  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.equal(rep.engineVersion, 'LUCKEY-KHMER-ANGKOR-BARAY-v2.2.0');
+  assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
+  assert.ok(rep.companionState !== rep.barayState);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatKhmerAngkorBarayPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('크메르') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('크메르') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionState));
 });
 
 test('Malagasy Fihavanana Kinship engine: principle, +09:00 KST, and interpretive boundary', () => {
@@ -13952,13 +13953,14 @@ test('Chuvash Tura World Tree Balance engine: sign, +09:00 KST, and interpretive
 
 test('Kalmyk Jangar Bumba Steppe engine: motif, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateKalmykJangarBumbaSteppe({ profile, now: new Date('2026-11-20T07:56:00Z'), question: '넓은 초원의 넉넉한 시야를 갖고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-KALMYK-JANGAR-v2.1.0');
-  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.equal(rep.engineVersion, 'LUCKEY-KALMYK-JANGAR-v2.2.0');
+  assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
+  assert.ok(rep.companionMotif !== rep.bumbaMotif);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatKalmykJangarPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('칼미크') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('칼미크') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionMotif));
 });
 
 test('Bugis Lontara Pasik Wisdom engine: principle, +09:00 KST, and interpretive boundary', () => {
@@ -14739,13 +14741,14 @@ test('Dalmatian Stone Lavender Calm engine: motif, +09:00 KST, and interpretive 
 
 test('Kuba Raffia Geometry Order engine: motif, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateKubaRaffiaGeometryOrder({ profile, now: new Date('2026-11-20T20:24:00Z'), question: '안쪽 매듭을 단단히 하고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-KUBA-RAFFIA-v2.1.0');
-  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.equal(rep.engineVersion, 'LUCKEY-KUBA-RAFFIA-v2.2.0');
+  assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
+  assert.ok(rep.companionMotif !== rep.kubaMotif);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatKubaRaffiaPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('쿠바') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('쿠바') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionMotif));
 });
 
 test('Samoan Fale Tapa Breeze engine: motif, +09:00 KST, and interpretive boundary', () => {
