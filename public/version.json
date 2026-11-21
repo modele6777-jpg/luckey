@@ -1,6 +1,6 @@
 {
-  "version": "1.8.70",
-  "builtAt": "2026-11-21T10:12:00+09:00",
+  "version": "1.8.71",
+  "builtAt": "2026-11-21T10:16:00+09:00",
   "summary": "Render 서버에 빠져 있던 사주 차트 API를 연결",
   "items": [
     "POST /api/saju/chart를 앱·MCP와 같은 사주 계산 핸들러에 연결",
