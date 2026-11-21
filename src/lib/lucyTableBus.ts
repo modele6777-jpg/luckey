@@ -1,4 +1,5 @@
 import type { SajuAnalysisResult } from '@/lib/sajuAnalysis';
+import type { CalculationAuditItem } from '@/lib/divination/calculationAudit';
 
 /**
  * Lucy Master's unfolded left table listens to what Lucy is doing in the right pane:
@@ -11,9 +12,12 @@ export interface LucyTableState {
   lastAnswer: string;
   lastAnswerHasTarot: boolean;
   answerVersion: number;
+  /** 3단계(심층)에서 13대 도구가 어떻게 계산됐는지, 그리고 그때의 중심 고민. */
+  tools: CalculationAuditItem[];
+  concern: string;
 }
 
-let state: LucyTableState = { saju: null, lastAnswer: '', lastAnswerHasTarot: false, answerVersion: 0 };
+let state: LucyTableState = { saju: null, lastAnswer: '', lastAnswerHasTarot: false, answerVersion: 0, tools: [], concern: '' };
 
 export function getLucyTableState(): LucyTableState {
   return state;
@@ -26,6 +30,17 @@ function emit() {
 export function publishTableSaju(saju: SajuAnalysisResult | null): void {
   if (state.saju === saju) return;
   state = { ...state, saju };
+  emit();
+}
+
+export function publishTableTools(tools: readonly CalculationAuditItem[], concern: string): void {
+  state = { ...state, tools: [...tools], concern };
+  emit();
+}
+
+export function clearTableTools(): void {
+  if (state.tools.length === 0 && !state.concern) return;
+  state = { ...state, tools: [], concern: '' };
   emit();
 }
 

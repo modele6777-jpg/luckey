@@ -3,7 +3,7 @@ import { LucyModeName } from '@/components/chat/LucyModeName';
 import { ScreenPortal } from '@/components/layout/ScreenPortal';
 import { LucyModeTransition } from '@/components/chat/LucyModeTransition';
 import { LucyEntryScreen, type LucyEntryVariant } from '@/components/chat/LucyEntryScreen';
-import { publishTableSaju, publishTableAnswer } from '@/lib/lucyTableBus';
+import { publishTableSaju, publishTableAnswer, publishTableTools } from '@/lib/lucyTableBus';
 import { shouldOfferLucyMaster, dismissLucyMasterOffer, markLucyMasterFromOffer, consumeLucyMasterFromOffer, shouldOfferReturnToLucy, dismissReturnToLucyOffer } from '@/lib/lucyMasterOffer';
 import { playLucyMasterSuction } from '@/components/omniwarp/BigBangMasterSuction';
 import { isLucyChatPath } from '@/lib/duoPaneFocus';
@@ -3485,6 +3485,11 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
         // 점술모드: 사주 메인. 7대 채널 보강·올인원 총동원 없이, 원할 때만 관련 엔진 추가
         ? selectOptimalDivinationTools(combinedContextText, [], counselingUserProfile, false, { allowMaster: false, requireBasicAndDeep, divinationMode })
         : selectOptimalDivinationTools(combinedContextText, isMaster ? ALL_CHANNELS : channels, counselingUserProfile, isMaster, { allowMaster: isMasterMode || requireBasicAndDeep, requireBasicAndDeep }));
+    // 🧭 3단계(심층): 13대 도구 계산 결과를 왼쪽 테이블에 넘긴다 (데이터만, 지시문 아님).
+    if (divinationMode?.depth === 3 && !divinationSelection.isCasualMessage) {
+      const concernForBoard = findConcernAnchor([...lucyMessages, { role: 'user', content: userCleanText }]) || userCleanText;
+      publishTableTools(divinationSelection.calculationAudit || [], concernForBoard);
+    }
     if (!divinationSelection.isCasualMessage && divinationSelection.promptInjection) {
       extraSystemContext = extraSystemContext
         ? `${extraSystemContext}\n\n${divinationSelection.promptInjection}`
