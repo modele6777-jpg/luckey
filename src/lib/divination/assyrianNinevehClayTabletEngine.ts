@@ -5,6 +5,8 @@ export interface AssyrianNinevehResult {
   calculatedAtKst: string;
   tabletSeal: string;
   companionSeal: string;
+  archiveCycle: string;
+  shadowWarning: string;
   ninevehInsight: string;
   tigrisTone: string;
   reflectionFocus: string;
@@ -70,6 +72,21 @@ function stableHash(input: string): number {
   return Math.abs(h);
 }
 
+const ARCHIVE_CYCLES = [
+  '점토 반죽의 국면 (복잡한 생각을 짧은 문장 재료로 다듬기)',
+  '갈대 첨필의 국면 (서두르지 않고 한 획씩 정확하게 실행)',
+  '물라핀 대조의 국면 (감정의 파동 대신 반복 패턴을 기록으로 확인)',
+  '서고 봉인의 국면 (불필요한 잡음을 닫고 핵심 원칙만 보관)',
+];
+
+const NINEVEH_SHADOW_WARNINGS = [
+  '기록과 정리에만 머물러 정작 첫 행동을 시작하는 시점을 놓치지 마세요.',
+  '문턱을 너무 높게 세워 도움이 될 협업 기회까지 돌려보내지 않도록 살피세요.',
+  '패턴을 분석하다가 지금 눈앞의 예외적 신호를 무시하지 않도록 주의하세요.',
+  '한 획의 완벽함을 추구하느라 전체 흐름이 멈추지 않도록 마침표도 함께 정하세요.',
+  '원칙을 지키는 단단함이 고집으로 변하지 않도록 유연한 질문 하나를 곁들이세요.',
+];
+
 export function calculateAssyrianNinevehClayTablet(params: {
   profile: UserProfile;
   now?: Date;
@@ -80,18 +97,23 @@ export function calculateAssyrianNinevehClayTablet(params: {
   const idx = stableHash(baseSeed) % SEALS.length;
   const companionOffset = 1 + (stableHash(`${baseSeed}|companion`) % (SEALS.length - 1));
   const companionIdx = (idx + companionOffset) % SEALS.length;
+  const cycleIdx = stableHash(`${baseSeed}|cycle`) % ARCHIVE_CYCLES.length;
   const picked = SEALS[idx];
   const companion = SEALS[companionIdx];
+  const archiveCycle = ARCHIVE_CYCLES[cycleIdx];
+  const shadowWarning = NINEVEH_SHADOW_WARNINGS[idx];
 
   return {
-    engineVersion: 'LUCKEY-ASSYRIAN-NINEVEH-v2.2.0',
+    engineVersion: 'LUCKEY-ASSYRIAN-NINEVEH-v2.3.0',
     calculatedAtKst: formatKstStandard(now),
     tabletSeal: picked.seal,
     companionSeal: companion.seal,
+    archiveCycle,
+    shadowWarning,
     ninevehInsight: picked.insight,
     tigrisTone: picked.tone,
-    reflectionFocus: `아시리아 니네베 서고의 '${picked.seal}'을 중심축으로 삼고 '${companion.seal}'의 절제를 더해, 머릿속 생각을 짧은 기록과 선명한 기준으로 세워 보세요.`,
-    ritualAction: picked.ritual,
+    reflectionFocus: `아시리아 니네베 서고의 '${picked.seal}'을 중심축으로 삼고 '${companion.seal}'의 절제를 더해 '${archiveCycle}'에서 머릿속 생각을 짧은 기록과 선명한 기준으로 세워 보세요.`,
+    ritualAction: `${picked.ritual} (${companion.seal.split('(')[0].trim()} 관점도 함께 적용해 보세요.)`,
     reflectiveQuestion: picked.question,
     interpretiveBoundary: '고대 아시리아 니네베 서고의 점토 서판·물라핀(MUL.APIN) 기록 전통을 바탕으로 한 상징적 성찰 프레임입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.',
   };
@@ -103,6 +125,8 @@ export function formatAssyrianNinevehPrompt(res: AssyrianNinevehResult): string 
     `- 기준 시각: ${res.calculatedAtKst}`,
     `- 서고 상징: ${res.tabletSeal} (${res.tigrisTone})`,
     `- 보조 인장: ${res.companionSeal}`,
+    `- 서고 기록 국면: ${res.archiveCycle}`,
+    `- 과잉·지연 경계: ${res.shadowWarning}`,
     `- 중심 통찰: ${res.ninevehInsight}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 오늘의 작은 실천: ${res.ritualAction}`,

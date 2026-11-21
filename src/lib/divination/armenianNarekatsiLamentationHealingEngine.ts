@@ -21,6 +21,8 @@ export interface ArmenianNarekatsiResult {
   calculatedAtKst: string;
   primaryContemplation: NarekatsiContemplation;
   balancingContemplation: NarekatsiContemplation;
+  vigilPhase: string;
+  shadowWarning: string;
   qualitativeSynthesis: string;
   reflectionFocus: string;
   ritualAction: string;
@@ -83,6 +85,20 @@ function stableHash(input: string): number {
   return h >>> 0;
 }
 
+const VIGIL_PHASES = [
+  '새벽 등불의 시간 (꾸밈없이 감정을 들여다보는 정직한 첫 숨)',
+  '정오 고백의 시간 (무거운 자책을 내려놓고 마음을 가볍게 비움)',
+  '황혼 위안의 시간 (아직 풀리지 않은 일 앞에서도 작은 불씨 유지)',
+  '심야 평화의 시간 (바깥의 소란을 끄고 내면의 결을 다시 이음)',
+] as const;
+
+const NAREKATSI_SHADOW_WARNINGS: Record<NarekatsiContemplationId, string> = {
+  honest_confession: '솔직한 고백이 끝없는 자기 비난이나 체념으로 번지지 않도록 자비의 시선을 함께 두세요.',
+  merciful_release: '스스로를 용서하는 마음이 필요한 책임 회피로 이어지지 않게 작은 다음 걸음을 정하세요.',
+  vigilant_hope: '희망을 지킨다는 이유로 지금 몸과 마음이 보내는 피로 신호까지 억누르지 마세요.',
+  quiet_restoration: '고요한 회복의 시간이 타인과의 단절로 굳어지지 않도록 따뜻한 안부 한 줄은 열어 두세요.',
+};
+
 export function calculateArmenianNarekatsiLamentationHealing(params: {
   profile: UserProfile;
   now?: Date;
@@ -94,10 +110,12 @@ export function calculateArmenianNarekatsiLamentationHealing(params: {
   const seedRaw = [
     params.profile.basic?.name ?? '',
     JSON.stringify(params.profile.fate ?? {}),
+    now.toISOString().slice(0, 13),
     query,
   ].join('|');
   const seed = stableHash(seedRaw);
   const balanceSeed = stableHash(`${seedRaw}|balance`);
+  const vigilSeed = stableHash(`${seedRaw}|vigil`);
 
   const primaryIdx = seed % NAREKATSI_CONTEMPLATIONS.length;
   const balancingOffset = 1 + (balanceSeed % (NAREKATSI_CONTEMPLATIONS.length - 1));
@@ -105,9 +123,11 @@ export function calculateArmenianNarekatsiLamentationHealing(params: {
 
   const primaryContemplation = NAREKATSI_CONTEMPLATIONS[primaryIdx];
   const balancingContemplation = NAREKATSI_CONTEMPLATIONS[balancingIdx];
+  const vigilPhase = VIGIL_PHASES[vigilSeed % VIGIL_PHASES.length];
+  const shadowWarning = NAREKATSI_SHADOW_WARNINGS[primaryContemplation.id];
 
   const qualitativeSynthesis =
-    `10세기 아르메니아 시인 그레고르 나레카치의 《애가》 관점으로 마음을 살피면, 지금은 ` +
+    `10세기 아르메니아 시인 그레고르 나레카치의 《애가》 관점으로 '${vigilPhase}'을(를) 살피면, 지금은 ` +
     `‘${primaryContemplation.armenianMotif} — ${primaryContemplation.koreanLabel}’의 결이 앞에 놓여 있습니다. ` +
     `${primaryContemplation.coreInsight} 여기에 ‘${balancingContemplation.koreanLabel}’이 균형을 받쳐 주어, ` +
     `완벽한 해답을 서두르기보다 다친 마음을 조용히 보듬으며 중심을 회복하기 좋은 흐름입니다.`;
@@ -115,7 +135,7 @@ export function calculateArmenianNarekatsiLamentationHealing(params: {
   const reflectionFocus =
     `${primaryContemplation.koreanLabel}을 통해 무거운 긴장을 풀고 ${balancingContemplation.koreanLabel}으로 이어 가는 시점`;
 
-  const ritualAction = primaryContemplation.healingPractice;
+  const ritualAction = `${primaryContemplation.healingPractice} (${balancingContemplation.koreanLabel}도 함께 떠올려 보세요.)`;
 
   const reflectiveQuestion = query
     ? `‘${query.slice(0, 36)}’을(를) 안고 있는 지금, ${primaryContemplation.reflectiveQuestion}`
@@ -123,10 +143,12 @@ export function calculateArmenianNarekatsiLamentationHealing(params: {
 
   return {
     engineName: '아르메니아 나레카치 《애가》 내면 정화·성찰 (Narekatsi Lamentation Healing)',
-    engineVersion: 'LUCKEY-ARMENIAN-NAREKATSI-v2.2.0',
+    engineVersion: 'LUCKEY-ARMENIAN-NAREKATSI-v2.3.0',
     calculatedAtKst: formatArmenianKstTimestamp(now),
     primaryContemplation,
     balancingContemplation,
+    vigilPhase,
+    shadowWarning,
     qualitativeSynthesis,
     reflectionFocus,
     ritualAction,
@@ -143,6 +165,8 @@ export function formatArmenianNarekatsiPrompt(res: ArmenianNarekatsiResult): str
     `- 엔진 버전: ${res.engineVersion} | 연산 시각: ${res.calculatedAtKst}`,
     `- 중심 성찰: ${res.primaryContemplation.armenianMotif} · ${res.primaryContemplation.koreanLabel}`,
     `- 균형 성찰: ${res.balancingContemplation.armenianMotif} · ${res.balancingContemplation.koreanLabel}`,
+    `- 내면 정화 국면: ${res.vigilPhase}`,
+    `- 과잉·결핍 경계: ${res.shadowWarning}`,
     `- 성찰 해석: ${res.qualitativeSynthesis}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 실천 의례: ${res.ritualAction}`,
