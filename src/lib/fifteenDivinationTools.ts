@@ -426,7 +426,7 @@ export function buildUserFifteenToolsDigest(profile?: UserProfile, asOfDate: Dat
     // 7. 베딕 점성술 (27 나크샤트라 · 빔쇼타리 다샤 결정론 산법)
     let vedicLine = '';
     try {
-      const vd = calculateVedicAdvanced({ profile, now: referenceDate });
+      const vd = calculateVedicAdvanced({ profile, targetDate: referenceDate, targetYear: kstYear });
       if (vd.status === 'calculated' && vd.nakshatra) {
         const lord = vd.currentDasha?.mahadasha.lord || vd.nakshatra.lord;
         const antar = vd.currentDasha?.antardasha?.lord;
