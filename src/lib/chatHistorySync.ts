@@ -211,6 +211,22 @@ export function retainRecentConversation(
   return greeting ? [greeting, ...conversation] : conversation;
 }
 
+/** 채팅방에 들어올 때마다 고르는 첫 인사 문장들 (0번이 기본). */
+export const LUCY_GREETING_BODIES = [
+  '오늘 하루는 어땠어? ㅎㅎ 사소한 일상 이야기나 오늘 있었던 일, 나누고 싶은 생각 뭐든 편하게 들려줘. 언제든 친구처럼 다정하게 수다 떨 준비되어 있어! 💬✨',
+  '다시 와 줘서 반가워! 지금 마음은 어때? 좋았던 일이든 속상했던 일이든 편하게 꺼내 줘. 천천히 들어줄게 🌙',
+  '오늘은 어떤 이야기부터 해 볼까? 별일 없었던 하루라도 괜찮아. 생각나는 것부터 가볍게 말해 줘 ☕️',
+  '왔구나! 요즘 제일 자주 떠오르는 생각이 뭐야? 고민이든 소소한 기쁨이든 같이 나눠 보자 🍀',
+  '잠깐 쉬어 가는 시간이야. 오늘 나를 웃게 한 일이나 마음에 걸린 일, 하나만 들려줄래? 💛',
+];
+export const LUCY_PLUS_GREETING_BODIES = [
+  '오늘 하루는 어땠어? ㅎㅎ 사소한 일상 이야기나 오늘 있었던 일, 나누고 싶은 생각 뭐든 편하게 들려줘. 좌측 화면을 보면서 언제든 다정하게 수다 떨 준비되어 있어! 💬✨',
+  '넓은 화면으로 다시 만났네! 지금 보고 있는 화면 이야기도, 마음속 이야기도 편하게 들려줘 🌙',
+  '오늘은 어떤 이야기부터 해 볼까? 옆 화면을 둘러보다 궁금한 게 생기면 바로 물어봐 ☕️',
+  '왔구나! 요즘 제일 자주 떠오르는 생각이 뭐야? 화면을 함께 보면서 천천히 이야기해 보자 🍀',
+  '잠깐 쉬어 가는 시간이야. 오늘 마음에 남은 일 하나만 들려줄래? 옆에서 같이 들어줄게 💛',
+];
+
 /**
  * 기본 환영 메시지 생성자 (매일 처음 루시채팅 들어갈 때만 표시)
  */
@@ -219,7 +235,8 @@ export function createDefaultGreeting(
   userName?: string,
   isMaster = false,
   isPlus = false,
-  now = new Date()
+  now = new Date(),
+  variant = 0,
 ): UnifiedMessage {
   const nick = userName || getSavedNickname();
   const localHour = now.getHours();
@@ -247,11 +264,12 @@ export function createDefaultGreeting(
       channels: ['prologue', 'orange', 'trinity', 'aura', 'bluebird', 'muse', 'epilogue'],
     };
   }
+  const pick = (list: string[]) => list[Math.abs(Math.floor(variant)) % list.length];
   if (isPlus) {
     return {
       id: `greet-${todayKey}`,
       role: 'model',
-      content: `${greetingLead} 오늘 하루는 어땠어? ㅎㅎ 사소한 일상 이야기나 오늘 있었던 일, 나누고 싶은 생각 뭐든 편하게 들려줘. 좌측 화면을 보면서 언제든 다정하게 수다 떨 준비되어 있어! 💬✨`,
+      content: `${greetingLead} ${pick(LUCY_PLUS_GREETING_BODIES)}`,
       timestamp: Date.now(),
       persona: targetPersona,
       mode: 'casual',
@@ -261,7 +279,7 @@ export function createDefaultGreeting(
   return {
     id: `greet-${todayKey}`,
     role: 'model',
-    content: `${greetingLead} 오늘 하루는 어땠어? ㅎㅎ 사소한 일상 이야기나 오늘 있었던 일, 나누고 싶은 생각 뭐든 편하게 들려줘. 언제든 친구처럼 다정하게 수다 떨 준비되어 있어! 💬✨`,
+    content: `${greetingLead} ${pick(LUCY_GREETING_BODIES)}`,
     timestamp: Date.now(),
     persona: targetPersona,
     mode: 'casual',
