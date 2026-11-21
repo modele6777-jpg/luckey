@@ -232,6 +232,24 @@ export function createTarotOfferOnUnfold(): UnifiedMessage {
   };
 }
 
+/**
+ * 펼침 타로 제안을 지금 끼워 넣어도 되는지.
+ * 루시가 물어본 것(이어하기/새로 시작 같은 [답변선택])에 사용자가 아직 답하지 않았거나,
+ * 아직 사용자가 한마디도 안 했다면 제안을 끼워 넣지 않는다.
+ */
+export function shouldOfferTarotOnUnfold(messages: readonly UnifiedMessage[], link: LucyMasterLink = getLucyMasterLink()): boolean {
+  if (link === 'undecided') return false;
+  if (!messages.some(m => m.role === 'user')) return false;
+  const last = messages[messages.length - 1];
+  if (!last) return false;
+  if (last.role === 'model' || last.role === 'assistant') {
+    const text = typeof last.content === 'string' ? last.content : '';
+    if (text === createTarotOfferOnUnfold().content) return false;
+    if (ANSWER_CHOICES_REGEX.test(text)) return false;
+  }
+  return true;
+}
+
 const ANSWER_CHOICES_REGEX = /\n?\s*\[답변선택\s*[:：]\s*([^\]]+)\]\s*$/;
 
 /** 루시 답변 끝의 [답변선택: A | B | C] 줄을 떼어내고 보기 목록을 돌려준다. */

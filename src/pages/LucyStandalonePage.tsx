@@ -42,7 +42,7 @@ import { archiveMasterSession, buildDepthContinuityContext, buildDepthLinkedLucy
 import { isLucyMasterBgmPreferred, startLucyMasterBgm, stopLucyMasterBgm, setLucyMasterBgmDepth } from '@/lib/lucyMasterBgm';
 import remarkGfm from 'remark-gfm';
 import { safeSessionStorage, safeLocalStorage } from '@/utils/safeStorage';
-import { isLucyMasterModeOn, setLucyMasterMode, LUCY_MASTER_MODE_EVENT, publishLucyTarotDraw, isAcceptingTarotDrawOffer, buildTarotHouseGuide, createTarotHouseGreeting, consumeTarotHouseGreetingPending, parseAnswerChoices, isAskingForDeepEngines, createTarotOfferOnUnfold, setLucyMasterLink, getLucyMasterLink, resolveLucyMasterLinkChoice, buildLinkedLucyContext, isTarotHouseGreetingPending, findConcernAnchor, createTarotHouseConcernQuestion, LUCY_TAROT_PICK_REQUEST_EVENT, LUCY_TAROT_PICKED_EVENT, LUCY_TAROT_PICK_CANCEL_EVENT, tarotPickPositions, toDetectedTarotCards, takeQueuedMasterTarotSpread, buildSpreadLayoutContext, matchMasterTarotSpread, isAutoSpreadCandidate, getLucyMasterDepth, useLucyMasterDepth, LUCY_MASTER_DEPTH_EVENT, LUCY_MASTER_DEPTH_INFO, LUCY_MASTER_MAX_DEPTH, type LucyMasterDepth } from '@/lib/lucyMasterMode';
+import { isLucyMasterModeOn, setLucyMasterMode, LUCY_MASTER_MODE_EVENT, publishLucyTarotDraw, isAcceptingTarotDrawOffer, buildTarotHouseGuide, createTarotHouseGreeting, consumeTarotHouseGreetingPending, parseAnswerChoices, isAskingForDeepEngines, createTarotOfferOnUnfold, shouldOfferTarotOnUnfold, setLucyMasterLink, getLucyMasterLink, resolveLucyMasterLinkChoice, buildLinkedLucyContext, isTarotHouseGreetingPending, findConcernAnchor, createTarotHouseConcernQuestion, LUCY_TAROT_PICK_REQUEST_EVENT, LUCY_TAROT_PICKED_EVENT, LUCY_TAROT_PICK_CANCEL_EVENT, tarotPickPositions, toDetectedTarotCards, takeQueuedMasterTarotSpread, buildSpreadLayoutContext, matchMasterTarotSpread, isAutoSpreadCandidate, getLucyMasterDepth, useLucyMasterDepth, LUCY_MASTER_DEPTH_EVENT, LUCY_MASTER_DEPTH_INFO, LUCY_MASTER_MAX_DEPTH, type LucyMasterDepth } from '@/lib/lucyMasterMode';
 import { cleanAssistantMessageDisplay, cleanUserMessageDisplay } from '@/utils/cleanMessage';
 import { detectLucyChannelsFromText, formatChannelsModeTitle } from '@/lib/lucyAutoModeDetector';
 import { selectOptimalDivinationTools, THEME_PRIMARY_DIVINATION_TOOLS, type SelectedDivinationToolsResult } from '@/lib/fifteenDivinationTools';
@@ -1709,12 +1709,8 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
         const stillUnfolded = readFoldStateNow().unfolded && isDuoUnfoldedState().unfolded
           && Boolean(document.getElementById('duo-lucy-viewport') && document.getElementById('duo-content-viewport'));
         if (!stillUnfolded) return;
-        setLucyProMessages(prev => {
-          const last = prev[prev.length - 1];
-          const offer = createTarotOfferOnUnfold();
-          if (last?.role === 'model' && last.content === offer.content) return prev;
-          return [...prev, offer];
-        });
+        // 루시가 물어본 것(이어하기/새로 시작 등)에 아직 답하기 전이면 끼어들지 않는다.
+        setLucyProMessages(prev => (shouldOfferTarotOnUnfold(prev) ? [...prev, createTarotOfferOnUnfold()] : prev));
       }, 1200);
     });
     return () => { if (timer) clearTimeout(timer); unsubscribe(); };
