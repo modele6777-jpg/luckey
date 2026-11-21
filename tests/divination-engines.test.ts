@@ -13890,13 +13890,14 @@ test('Catalan Seny Rauxa Balance engine: principle, +09:00 KST, and interpretive
 
 test('Kurdish Newroz Zagros Renewal engine: symbol, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateKurdishNewrozZagrosRenewal({ profile, now: new Date('2026-11-20T07:42:00Z'), question: '어제의 피로를 털고 새로 시작하고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-KURDISH-NEWROZ-v2.1.0');
-  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.equal(rep.engineVersion, 'LUCKEY-KURDISH-NEWROZ-v2.2.0');
+  assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
+  assert.ok(rep.companionSymbol !== rep.zagrosSymbol);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatKurdishNewrozPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('쿠르드') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('쿠르드') && prompt.includes('동반 상징') && prompt.includes('+09:00 (KST)'));
 });
 
 test('Sindhi Bhitai Indus Melody engine: sur, +09:00 KST, and interpretive boundary', () => {
@@ -13996,13 +13997,14 @@ test('Bugis Lontara Pasik Wisdom engine: principle, +09:00 KST, and interpretive
 
 test('Latvian Dainas Mara Harmony engine: motif, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateLatvianDainasMaraHarmony({ profile, now: new Date('2026-11-20T08:04:00Z'), question: '오늘 일상의 작은 리듬을 돌보고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-LATVIAN-DAINAS-v2.1.0');
-  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.equal(rep.engineVersion, 'LUCKEY-LATVIAN-DAINAS-v2.2.0');
+  assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
+  assert.ok(rep.companionMotif !== rep.dainasMotif);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatLatvianDainasPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('라트비아') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('라트비아') && prompt.includes('동반 상징') && prompt.includes('+09:00 (KST)'));
 });
 
 test('Cherokee Gadugi Harmony engine: principle, +09:00 KST, and interpretive boundary', () => {
@@ -14830,13 +14832,14 @@ test('Andalusian Patio Fountain Calm engine: motif, +09:00 KST, and interpretive
 
 test('Lozi Kuomboka Flood Path engine: motif, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateLoziKuombokaFloodPath({ profile, now: new Date('2026-11-20T20:49:00Z'), question: '물길에 맞추어 새 터로 옮기고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-LOZI-KUOMBOKA-v2.1.0');
-  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.equal(rep.engineVersion, 'LUCKEY-LOZI-KUOMBOKA-v2.2.0');
+  assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
+  assert.ok(rep.companionMotif !== rep.loziMotif);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatLoziKuombokaPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('로지') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('로지') && prompt.includes('동반 모티프') && prompt.includes('+09:00 (KST)'));
 });
 
 test('Pamir Wakhan Corridor Stars engine: motif, +09:00 KST, and interpretive boundary', () => {
