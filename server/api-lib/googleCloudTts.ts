@@ -104,3 +104,72 @@ export async function synthesizeChirpSpeech(text: string, voice: string | undefi
   for (const piece of pieces) { merged.set(piece, offset); offset += piece.length; }
   return { audioContent: encode(merged), encoding: 'mp3' as const, sampleRate: 24000, provider: 'google-cloud-chirp3-hd', voice: name };
 }
+
+/* ── Cloud Gemini-TTS: the same Gemini voices through Cloud Text-to-Speech (billed project quota). ── */
+const CLOUD_GEMINI_TTS_MODELS = ['gemini-3.8-flash-tts', 'gemini-2.5-flash-tts'];
+const CLOUD_GEMINI_STYLE = '다정하고 차분한 한국어 친구의 말투로, 자연스럽게 읽어 주세요.';
+let workingCloudGeminiModel = '';
+let lastCloudGeminiModelError: { model: string; status?: number; providerCode?: string } | null = null;
+
+export function cloudGeminiTtsStatus() {
+  return { model: workingCloudGeminiModel || null, lastModelError: lastCloudGeminiModelError };
+}
+
+export function resetCloudGeminiTts() {
+  workingCloudGeminiModel = '';
+  lastCloudGeminiModelError = null;
+}
+
+/** Read with a Gemini voice (Aoede, Kore, ...) through Cloud TTS; the first model that answers is remembered. */
+export async function synthesizeCloudGeminiSpeech(text: string, voice: string | undefined, env: CloudTtsRuntime, fetchApi: typeof fetch = fetch, signal?: AbortSignal) {
+  const speech = String(text || '').trim();
+  if (!speech) throw failure(400, '음성으로 읽을 내용이 없습니다.');
+  const key = cloudTtsKey(env);
+  if (!key) throw failure(503, 'Google Cloud TTS 키가 설정되지 않았습니다.', { code: 'TTS_NOT_CONFIGURED' });
+  const name = CHIRP_VOICES.includes(String(voice || '')) ? String(voice) : 'Aoede';
+  const configured = String(env.CLOUD_GEMINI_TTS_MODEL || '').trim();
+  const models = [...new Set([workingCloudGeminiModel, configured, ...CLOUD_GEMINI_TTS_MODELS].filter(Boolean))];
+  let lastError: unknown = null;
+  for (const model of models) {
+    try {
+      const pieces: Uint8Array[] = [];
+      for (const piece of splitForCloudTts(speech)) {
+        const response = await fetchApi(`https://texttospeech.googleapis.com/v1/text:synthesize?key=${encodeURIComponent(key)}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            input: { prompt: CLOUD_GEMINI_STYLE, text: piece },
+            voice: { languageCode: 'ko-KR', name, model_name: model },
+            audioConfig: { audioEncoding: 'MP3' },
+          }),
+          signal: signal ? AbortSignal.any([signal, AbortSignal.timeout(45000)]) : AbortSignal.timeout(45000),
+        });
+        if (!response.ok) {
+          let reason = '';
+          try {
+            const body = await response.json() as any;
+            reason = String(body?.error?.details?.find((d: any) => d?.reason)?.reason || body?.error?.status || '');
+          } catch { /* not JSON */ }
+          throw failure(response.status, 'Cloud Gemini-TTS 요청이 거부되었습니다.', { providerStatus: response.status, ...(reason ? { providerCode: reason.slice(0, 60) } : {}) });
+        }
+        const body = await response.json() as { audioContent?: string };
+        if (!body.audioContent) throw failure(502, 'Cloud Gemini-TTS 응답이 비어 있습니다.', { code: 'TTS_EMPTY_RESPONSE' });
+        pieces.push(decode(body.audioContent));
+      }
+      workingCloudGeminiModel = model;
+      const total = pieces.reduce((sum, p) => sum + p.length, 0);
+      const merged = new Uint8Array(total);
+      let offset = 0;
+      for (const p of pieces) { merged.set(p, offset); offset += p.length; }
+      return { audioContent: encode(merged), encoding: 'mp3' as const, sampleRate: 24000, provider: 'google-cloud-gemini-tts', voice: name, model };
+    } catch (error: any) {
+      lastError = error;
+      lastCloudGeminiModelError = { model, ...(error?.providerStatus ? { status: error.providerStatus } : {}), ...(error?.providerCode ? { providerCode: error.providerCode } : {}) };
+      if (signal?.aborted) throw error;
+      // Only an unknown/unsupported model is worth trying the next name for.
+      if (![400, 404].includes(Number(error?.providerStatus))) throw error;
+      if (workingCloudGeminiModel === model) workingCloudGeminiModel = '';
+    }
+  }
+  throw lastError;
+}

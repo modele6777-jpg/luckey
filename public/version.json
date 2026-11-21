@@ -1,8 +1,10 @@
 {
-  "version": "1.8.112",
-  "builtAt": "2026-11-21T06:31:24.198Z",
-  "summary": "음성 점검 화면에 Chirp 키가 어디서 오는지(설정 이름만) 표시",
+  "version": "1.8.113",
+  "builtAt": "2026-11-21T06:44:33.816Z",
+  "summary": "Gemini 한도가 차면 같은 Gemini 목소리로 대신 읽기 (Google Cloud)",
   "items": [
-    "Chirp 3 HD 키를 어떤 설정 이름에서 읽는지 점검 주소에 표시 (키 값은 표시하지 않음)"
+    "Gemini 무료 한도가 차면 Google Cloud의 Gemini 음성으로, 같은 목소리(Aoede 등)로 대신 읽음",
+    "Chirp 3 HD는 그것마저 안 될 때만 쓰는 마지막 대안으로 순서를 내림",
+    "다정하고 차분한 친구 말투로 읽도록 말투 지시를 함께 보냄"
   ]
 }

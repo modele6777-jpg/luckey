@@ -1,4 +1,4 @@
-import { synthesizeChirpSpeech, type CloudTtsRuntime } from './googleCloudTts.ts';
+import { synthesizeChirpSpeech, synthesizeCloudGeminiSpeech, cloudGeminiTtsStatus, type CloudTtsRuntime } from './googleCloudTts.ts';
 import { synthesizeGeminiSpeech } from './geminiMedia.ts';
 
 /**
@@ -18,7 +18,8 @@ let lastGeminiFailure: { status?: number; providerCode?: string } | null = null;
 export function cloudTtsStatus() {
   const now = Date.now();
   return {
-    order: ['gemini', 'chirp3-hd'],
+    order: ['gemini', 'cloud-gemini-tts', 'chirp3-hd'],
+    cloudGemini: cloudGeminiTtsStatus(),
     skipped: now < cloudTtsSkippedUntil,
     lastFailure: lastCloudTtsFailure,
     geminiSkippedSeconds: Math.max(0, Math.ceil((geminiSkippedUntil - now) / 1000)),
@@ -38,7 +39,21 @@ function failureSummary(error: any) {
   return { ...(Number.isFinite(status) ? { status } : {}), ...(error?.providerCode ? { providerCode: String(error.providerCode) } : {}) };
 }
 
+/**
+ * Cloud backup reader: the same Gemini voice through Cloud TTS (natural, billed quota) first,
+ * then Chirp 3 HD as the last resort.
+ */
 async function tryChirp(text: string, voice: string | undefined, env: CloudTtsRuntime, fetchApi: typeof fetch, signal?: AbortSignal) {
+  if (env.CLOUD_GEMINI_TTS !== 'off') {
+    try {
+      const result = await synthesizeCloudGeminiSpeech(text, voice, env, fetchApi, signal);
+      lastCloudTtsFailure = null;
+      return result;
+    } catch (error: any) {
+      if (signal?.aborted) throw error;
+      console.warn('[tts] Cloud Gemini-TTS unavailable, trying Chirp 3 HD:', failureSummary(error));
+    }
+  }
   try {
     const result = await synthesizeChirpSpeech(text, voice, env, fetchApi, signal);
     lastCloudTtsFailure = null;
