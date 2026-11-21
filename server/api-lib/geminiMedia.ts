@@ -14,14 +14,43 @@ export async function geminiMedia(env: GeminiRuntime, payload: unknown, model: s
     signal: signal ? AbortSignal.any([signal, AbortSignal.timeout(60000)]) : AbortSignal.timeout(60000),
   });
   if (!response.ok) {
+    if (response.status === 429) throw await rateLimitFailure(response);
     await response.body?.cancel();
-    throw failure([400, 401, 403, 404, 429].includes(response.status) ? response.status : 502,
-      response.status === 429 ? 'Gemini 사용 한도에 도달했습니다. 잠시 후 다시 시도해 주세요.' : 'Gemini 미디어 생성에 실패했습니다. 모델과 API 권한을 확인해 주세요.');
+    throw failure([400, 401, 403, 404].includes(response.status) ? response.status : 502,
+      'Gemini 미디어 생성에 실패했습니다. 모델과 API 권한을 확인해 주세요.');
   }
   const result = await response.json() as any;
   const media = result.candidates?.[0]?.content?.parts?.find((part: any) => part.inlineData?.data)?.inlineData;
   if (!media) throw failure(502, 'Gemini 미디어 응답이 비어 있습니다. 다시 시도해 주세요.');
   return media as { data: string; mimeType: string };
+}
+/**
+ * Keep the useful part of a Gemini 429: whether the per-day or per-minute quota ran out
+ * and how long Google asks us to wait. (The body was discarded before, so users were
+ * told to "tap again in 3 seconds" even when the daily quota was used up.)
+ */
+async function rateLimitFailure(response: Response) {
+  let body: any = null;
+  try { body = await response.json(); } catch { /* not JSON */ }
+  const details: any[] = Array.isArray(body?.error?.details) ? body.error.details : [];
+  const quotaIds = details.flatMap(detail => Array.isArray(detail?.violations) ? detail.violations : [])
+    .map(violation => String(violation?.quotaId || violation?.quotaMetric || ''))
+    .join(' ');
+  const evidence = `${quotaIds} ${String(body?.error?.message || '')}`;
+  const daily = /PerDay|per_day|per day|daily/i.test(evidence);
+  const delay = details.find(detail => String(detail?.['@type'] || '').includes('RetryInfo'))?.retryDelay;
+  const delaySeconds = Number.parseFloat(String(delay || ''));
+  const header = Number.parseFloat(response.headers.get('Retry-After') || '');
+  const retryAfterSeconds = Number.isFinite(delaySeconds) && delaySeconds > 0 ? Math.ceil(delaySeconds)
+    : Number.isFinite(header) && header > 0 ? Math.ceil(header) : undefined;
+  return Object.assign(new Error(daily
+    ? 'Gemini 오늘 사용 한도를 모두 썼습니다.'
+    : 'Gemini 사용 한도에 도달했습니다. 잠시 후 다시 시도해 주세요.'), {
+    status: 429,
+    providerStatus: 429,
+    providerCode: daily ? 'DAILY_LIMIT_EXCEEDED' : 'RATE_LIMIT_PER_MINUTE',
+    ...(retryAfterSeconds ? { retryAfterSeconds } : {}),
+  });
 }
 function base64(bytes: Uint8Array): string {
   let binary = '';
