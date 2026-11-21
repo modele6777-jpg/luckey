@@ -13239,13 +13239,14 @@ test('Akan Adinkra Symbols Wisdom engine: qualitative symbol balance, +09:00 KST
 test('Ethiopian Zera Yacob Hatata Reason engine: conscience inquiry, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateEthiopianZeraYacobHatataReason(profile, '동료와 오해를 풀고 싶어요', new Date('2026-11-20T04:00:00Z'));
   assert.equal(rep.engineVersion, ETHIOPIAN_ZERA_YACOB_VERSION);
-  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
+  assert.ok(rep.companionLens !== rep.inquiryLens);
   assert.equal(rep.questionTopic, 'relationship');
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('개인 점수·심리 진단·미래 예측이 아닙니다'));
   const prompt = formatEthiopianZeraYacobHatataReasonPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('하타타') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('하타타') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionLens));
 });
 
 test('Basque Lauburu & Basajaun Harmony engine: cycle balance, +09:00 KST, and interpretive boundary', () => {
@@ -13386,13 +13387,14 @@ test('Melanesian Sand Drawing Pattern engine: motifs, +09:00 KST, and interpreti
 
 test('Etruscan Templum Sky Division engine: sectors, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateEtruscanTemplumSkyDivision({ profile, now: new Date('2026-11-20T05:40:00Z'), question: '지금 집중할 영역과 경계를 정하고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-ETRUSCAN-TEMPLUM-v2.1.0');
-  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.equal(rep.engineVersion, 'LUCKEY-ETRUSCAN-TEMPLUM-v2.2.0');
+  assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
+  assert.ok(rep.companionSector.name !== rep.primarySector.name);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatEtruscanTemplumPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('템플룸') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('템플룸') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionSector.name));
 });
 
 test('Ainu Kamuy Iomante Harmony engine: aspects, +09:00 KST, and interpretive boundary', () => {
@@ -14863,13 +14865,14 @@ test('Bukhara Tile Mosaic Calm engine: motif, +09:00 KST, and interpretive bound
 
 test('Faroese Turf Roof Shelter engine: motif, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateFaroeseTurfRoofShelter({ profile, now: new Date('2026-11-20T21:08:00Z'), question: '안개 속에서도 다음 돌무더기만 보고 걷고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-FAROESE-TURF-v2.1.0');
-  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.equal(rep.engineVersion, 'LUCKEY-FAROESE-TURF-v2.2.0');
+  assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
+  assert.ok(rep.companionMotif !== rep.faroeseMotif);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatFaroeseTurfPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('페로') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('페로') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionMotif));
 });
 
 test('Marshallese Stick Chart engine: motif, +09:00 KST, and interpretive boundary', () => {
