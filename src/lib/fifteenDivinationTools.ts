@@ -368,7 +368,10 @@ export function buildUserFifteenToolsDigest(profile?: UserProfile, asOfDate: Dat
       const th = calculateThaiHorasat({ profile, targetDate: referenceDate });
       if (th.status === 'calculated' && th.birthDayPlanet && th.mahaThaksa && th.fourElements) {
         const dyn = th.planetaryFriendEnemyDynamic ? ` · 친우역학: ${th.planetaryFriendEnemyDynamic.relationshipType}` : '';
-        thaiLine = `- 태국점성술 요일 상징: ${KOR_WEEKDAYS[dow]} · 전통 색상 ${colors[dow]}. [호라삿 정밀 차트]: 수호신 ${th.birthDayPlanet.thaiName}(${th.birthDayPlanet.character}) · 마하탁사 108년 대운(${th.mahaThaksa.current.planet.planet} 대운 · 속성: ${th.mahaThaksa.current.attribute.korean}${dyn}) · 4대 원소 ${th.fourElements.birthThaat.korean} 신체 활력 ${th.fourElements.vitalityIndex}점.`;
+        const antardasha = th.mahaThaksaAntardasha ? ` · 소운 ${th.mahaThaksaAntardasha.antardashaPlanetName}(${th.mahaThaksaAntardasha.pacingTempo})` : '';
+        const vitalityTone = th.fourElements.vitalityIndex >= 80 ? '충만' : th.fourElements.vitalityIndex >= 60 ? '안정' : '조율 필요';
+        const luckyDir = th.remedies?.luckyDirection ? ` · 길방위 ${th.remedies.luckyDirection}` : '';
+        thaiLine = `- 태국점성술 요일 상징: ${KOR_WEEKDAYS[dow]} · 전통 색상 ${colors[dow]}. [호라삿 정밀 차트]: 수호신 ${th.birthDayPlanet.thaiName}(${th.birthDayPlanet.character}) · 마하탁사 108년 대운(${th.mahaThaksa.current.planet.planet} 대운 · 속성: ${th.mahaThaksa.current.attribute.korean}${dyn}${antardasha}) · 4대 원소 본명 ${th.fourElements.birthThaat.korean}/계절 ${th.fourElements.currentThaat.korean} 활력 [${vitalityTone}]${luckyDir}.`;
       } else {
         thaiLine = `- 태국점성술 요일 상징: ${KOR_WEEKDAYS[dow]} · 전통 색상 ${colors[dow]}. 정밀 호라삿 차트 미계산.`;
       }
@@ -387,12 +390,15 @@ export function buildUserFifteenToolsDigest(profile?: UserProfile, asOfDate: Dat
       kyuseiLine = '- 구성학: 기준일 절기 범위 확인이 필요해 미계산. 임의 본명성·방위반을 지어내지 말 것.';
     }
 
-    // 10. 카발라 (10 세피로트 · 22 경로 · 생년월일 게마트리아 결정론 산법)
+    // 10. 카발라 (10 세피로트 · 22 경로 · 4개 세계 · 생년월일 게마트리아 결정론 산법)
     let kabbalahLine = '';
     try {
       const kb = calculateKabbalah({ profile });
       if (kb.status === 'calculated' && kb.numerology) {
-        kabbalahLine = `\n- 카발라 생명나무: 라이프 패스 세피라 ${kb.numerology.lifePathSephirah.name}(${kb.numerology.lifePathSephirah.hebrew} · ${kb.numerology.lifePathSephirah.title}) · 퍼스널리티 세피라 ${kb.numerology.personalitySephirah.name} · 소울 패스 활성 경로 ${kb.numerology.soulPath.number}번(${kb.numerology.soulPath.hebrewLetter} ${kb.numerology.soulPath.tarotName}) · 3기둥 밸런스(자비 ${kb.numerology.pillarBalance.mercy}% / 엄격 ${kb.numerology.pillarBalance.severity}% / 균형 ${kb.numerology.pillarBalance.mildness}%).`;
+        const describePillar = (v: number) => (v >= 50 ? '우세' : v >= 25 ? '균형' : '보완 필요');
+        const worldNote = `${kb.numerology.dominantWorld.name}(${kb.numerology.dominantWorld.korean}·${kb.numerology.dominantWorld.element})`;
+        const heartNote = kb.numerology.tipherethAlignment ? ` · 티페레트 [${kb.numerology.tipherethAlignment.balanceStatus}]` : '';
+        kabbalahLine = `\n- 카발라 생명나무: 라이프 패스 세피라 ${kb.numerology.lifePathSephirah.name}(${kb.numerology.lifePathSephirah.hebrew} · ${kb.numerology.lifePathSephirah.title}) · 퍼스널리티 세피라 ${kb.numerology.personalitySephirah.name} · 소울 패스 제${kb.numerology.soulPath.number}경로(${kb.numerology.soulPath.hebrewLetter} ${kb.numerology.soulPath.tarotName} · ${kb.numerology.soulPath.attribution.value}) · 지배 세계 ${worldNote} · 3기둥 밸런스(자비 ${describePillar(kb.numerology.pillarBalance.mercy)} / 엄격 ${describePillar(kb.numerology.pillarBalance.severity)} / 균형 ${describePillar(kb.numerology.pillarBalance.mildness)})${heartNote}.`;
       }
     } catch (_) {}
 
@@ -487,12 +493,12 @@ export function buildUserFifteenToolsDigest(profile?: UserProfile, asOfDate: Dat
       }
     } catch (_) {}
 
-    // 11. 주역 (64괘 본괘·지괘·호괘·체용 생극·주효 위상 결정론 산법)
+    // 11. 주역 (64괘 본·지·호·착·종 4대 대칭 괘상 · 체용 생극 · 경방 8궁 세응 결정론 산법)
     let ichingLine = '';
     try {
       const ic = calculateIchingMaster(referenceDate);
       if (ic.status === 'calculated') {
-        ichingLine = `\n- 주역(64괘): 본괘 [${ic.primary.name}] → 지괘 [${ic.changed.name}] · 호괘 [${ic.nuclear.name}] · 체용관계 ${ic.tiYong.relationship}(${ic.tiYong.tiElement}/${ic.tiYong.yongElement}) · 주효 [${ic.dominantStage.yaoName} · ${ic.dominantStage.lifeStage}].`;
+        ichingLine = `\n- 주역(64괘): 본괘 [${ic.primary.name}] → 지괘 [${ic.changed.name}] · 호괘 [${ic.nuclear.name}] · 착괘 [${ic.opposite.name}] · 종괘 [${ic.reversed.name}] · 체용관계 ${ic.tiYong.relationship}(${ic.tiYong.tiElement}/${ic.tiYong.yongElement}) · 주효 [${ic.dominantStage.yaoName} · ${ic.dominantStage.lifeStage}] · 경방 ${ic.palGongSeYing.palaceName}(세 ${ic.palGongSeYing.seYao}효⇄응 ${ic.palGongSeYing.yingYao}효 · ${ic.palGongSeYing.seYingHarmony}) · 결단 기조 [${ic.decisionGrade}].`;
       }
     } catch (_) {}
 

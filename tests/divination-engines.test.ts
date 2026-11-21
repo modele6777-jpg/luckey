@@ -15356,3 +15356,28 @@ test('Menorca Talayot Stone Balance engine: stance, +09:00 KST, and interpretive
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
   assert.ok(prompt.includes('메노르카·탈라요트') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionStance));
 });
+
+test('buildUserFifteenToolsDigest integrates qualitative Kabbalah, 4-symmetric Iching, and Thai Horasat without raw scores', () => {
+  const profile: any = {
+    basic: {
+      name: '제제',
+      birthdate: '1994-01-24',
+      birthtime: '10:30',
+      calendarType: 'solar',
+      isLeapMonth: false,
+      gender: 'male',
+    },
+  };
+  const digest = buildUserFifteenToolsDigest(profile, new Date('2026-11-21T01:45:00Z'));
+  // 10. 카발라: 원시 % 미노출, 지배 세계 & 티페레트 포함
+  assert.ok(digest.includes('카발라 생명나무:'));
+  assert.ok(digest.includes('지배 세계'));
+  assert.ok(!digest.match(/3기둥 밸런스\([^)]*%\)/));
+  // 11. 주역: 착괘·종괘·경방 8궁·결단 기조 포함
+  assert.ok(digest.includes('주역(64괘):'));
+  assert.ok(digest.includes('착괘 [') && digest.includes('종괘 [') && digest.includes('경방 ') && digest.includes('결단 기조 ['));
+  // 12. 태국점성술: 원시 점수(점) 미노출, 소운·계절 원소·길방위 포함
+  assert.ok(digest.includes('태국점성술 요일 상징:'));
+  assert.ok(digest.includes('소운 ') && digest.includes('길방위 '));
+  assert.ok(!digest.includes('신체 활력 ') || !digest.match(/신체 활력 \d+점/));
+});

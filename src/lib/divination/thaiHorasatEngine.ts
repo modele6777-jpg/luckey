@@ -608,9 +608,10 @@ export function calculateThaiHorasat(params: {
     const birthPlanet = thaiDayPlanetById(planetBranch.id);
     const weekdayLabel = weekday === 3 ? (birthPlanet.id === 'rahu' ? '수요일(밤)' : '수요일(낮)') : birthPlanet.weekday.split('(')[0];
 
-    // 2. 마하탁사 생애 대운 (108년 순환, 출생 행성 기점)
-    const targetYear = params.targetYear || new Date().getFullYear();
+    // 2. 마하탁사 생애 대운 (108년 순환, 출생 행성 기점, +09:00 KST 기준)
     const targetDate = params.targetDate || new Date();
+    const kstTarget = new Date(targetDate.getTime() + 9 * 60 * 60 * 1000);
+    const targetYear = params.targetYear || kstTarget.getUTCFullYear();
     const ageCounting = Math.max(1, targetYear - year + 1); // 태국식 세는 나이(만태 나이)
     const sequence = buildMahaThaksaTimeline(birthPlanet.id);
     const cyclePosition = ((ageCounting - 1) % MAHA_THAKSA_TOTAL_YEARS) + 1; // 1~108
@@ -628,9 +629,9 @@ export function calculateThaiHorasat(params: {
       verdict = `현재 ${currentSegment.planet.thaiName}(${currentSegment.planet.planet}) 대운은 ${attribute.korean}의 시련기입니다. ${attribute.meaning} 무리한 확장을 삼가고 근본을 지키십시오.`;
     }
 
-    // 3. 4대 원소(Thaat) 신체 활력 진단
+    // 3. 4대 원소(Thaat) 신체 활력 진단 (+09:00 KST 계절 월 기준)
     const birthThaat = thaatByMonth(month);
-    const currentThaat = thaatByMonth(targetDate.getMonth() + 1);
+    const currentThaat = thaatByMonth(kstTarget.getUTCMonth() + 1);
     const dashaScore = attribute.score;
     let seasonEffect = 0;
     let balanceNote = '';
