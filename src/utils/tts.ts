@@ -590,15 +590,85 @@ export function splitSpeechIntoChunks(text: string, maxChunkLength = 240): strin
   return chunks;
 }
 
+const LEAD_CHUNK_TARGET = 70;
+const LEAD_CHUNK_MAX = 90;
+
+/** Split a long first chunk into a short lead sentence and its remainder. */
+function splitLeadChunk(first: string): [string, string] | null {
+  if (first.length <= LEAD_CHUNK_MAX) return null;
+  let lead = splitSpeechIntoSentences(first)[0] || first;
+  if (lead.length > LEAD_CHUNK_MAX) {
+    const window = lead.slice(0, LEAD_CHUNK_MAX);
+    const comma = Math.max(window.lastIndexOf(','), window.lastIndexOf('，'));
+    const space = window.lastIndexOf(' ', LEAD_CHUNK_TARGET + 10);
+    const cut = comma >= 30 ? comma + 1 : space >= 30 ? space : LEAD_CHUNK_TARGET;
+    lead = lead.slice(0, cut).trim();
+  }
+  const rest = first.slice(first.indexOf(lead) + lead.length).trim();
+  return rest ? [lead, rest] : null;
+}
+
 /**
- * The exact chunks playTTSInChunks speaks. Kept to the established ~180-character
- * chunks: each chunk is one provider request and the Gemini TTS rate limit is small,
- * so splitting into more, shorter requests caused "음성 요청이 몰려" errors (v1.8.102).
+ * The exact chunks playTTSInChunks speaks (~180 characters, one Gemini request each:
+ * its rate limit is small, so the Gemini request count must not grow).
+ * With `fastLead`, a long first chunk is split into a short lead sentence that is
+ * synthesized by the fast Edge voice (separate quota) and its remainder (Gemini), so
+ * the voice starts quickly while the Gemini request count stays the same.
  */
-export function planTTSChunks(text: string, maxChunkLength = 240): string[] {
+export function planTTSChunks(text: string, maxChunkLength = 240, options: { fastLead?: boolean } = {}): string[] {
   const cleanText = prepareNaturalSpeechText(text);
   if (!cleanText) return [];
-  return splitSpeechIntoChunks(cleanText, Math.max(80, Math.min(120, maxChunkLength)));
+  const chunks = splitSpeechIntoChunks(cleanText, Math.max(80, Math.min(120, maxChunkLength)));
+  if (!options.fastLead || chunks.length === 0) return chunks;
+  const split = splitLeadChunk(chunks[0]);
+  return split ? [...split, ...chunks.slice(1)] : chunks;
+}
+
+/* ── ⚡ 빠른 첫 문장 (Edge Neural) ── */
+const EDGE_LEAD_TIMEOUT_MS = 2500;
+const EDGE_LEAD_COOLDOWN_MS = 10 * 60 * 1000;
+let edgeLeadUnavailableUntil = 0;
+
+export function isEdgeLeadAvailable(now = Date.now()): boolean {
+  return now >= edgeLeadUnavailableUntil;
+}
+
+/**
+ * Put the lead sentence's audio in the cache from the fast Edge voice. Playback then
+ * finds it there. If Edge fails or is slow, the same cache slot falls back to the
+ * regular Gemini request, and Edge is skipped for a while.
+ */
+function primeEdgeLead(text: string, voice: string | undefined, emotion: string | undefined, session: string): void {
+  const resolvedVoice = voice === 'Charon' ? 'Charon' : 'Aoede';
+  const key = getTTSCacheKey(text, resolvedVoice);
+  if (ttsCache.has(key)) return;
+  const controller = new AbortController();
+  const edge = (async (): Promise<TTSAudioData> => {
+    const timer = setTimeout(() => controller.abort(), EDGE_LEAD_TIMEOUT_MS);
+    try {
+      const response = await fetch('/api/ai/tts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify({ text: normalizeTextForSpeech(text), voice: resolvedVoice, provider: 'edge' }),
+        signal: controller.signal,
+      });
+      if (!response.ok) throw new Error(`edge ${response.status}`);
+      const audio = await parseTTSAudioResponse(response);
+      if (!audio?.audioContent) throw new Error('edge empty');
+      return { audioContent: audio.audioContent, encoding: audio.encoding, sampleRate: audio.sampleRate };
+    } finally {
+      clearTimeout(timer);
+    }
+  })();
+  const withFallback = edge.catch(() => {
+    edgeLeadUnavailableUntil = Date.now() + EDGE_LEAD_COOLDOWN_MS;
+    if (ttsCache.get(key) === withFallback) ttsCache.delete(key);
+    return requestAIAudio(text, emotion, resolvedVoice, session);
+  });
+  // Callers await this promise themselves; mark it handled so a failed reading never
+  // surfaces as an unhandled rejection after the reader has already stopped.
+  withFallback.catch(() => {});
+  ttsCache.set(key, withFallback);
 }
 
 /**
@@ -663,7 +733,8 @@ export const playTTSInChunks = async (
     stopTTS();
   }
 
-  const chunks = planTTSChunks(cleanText, maxChunkLength);
+  const fastLead = isEdgeLeadAvailable();
+  const chunks = planTTSChunks(cleanText, maxChunkLength, { fastLead });
   if (chunks.length === 0) return;
 
   // 중간 청크 오류 후에는 완료된 청크를 건너뛰고 사용자가 누른 재생에서 이어 듣습니다.
@@ -696,6 +767,12 @@ export const playTTSInChunks = async (
   });
   isPlayingSequence = true;
   acquireScreenWakeLock().catch(() => {});
+
+  // ⚡ 첫 문장은 빠른 Edge 음성으로 바로 시작한다. 다음 조각(Gemini)은 첫 문장이 재생되기 시작할 때
+  // 기존 미리 듣기(lookahead)가 요청하므로 Gemini 요청 수는 그대로다.
+  if (fastLead && startChunkIndex === 0 && chunks.length > 1 && chunks[0] !== splitSpeechIntoChunks(cleanText, 120)[0]) {
+    primeEdgeLead(chunks[0], voice, emotion, sequenceSessionId);
+  }
 
   try {
     // Prime the audio context and element during user click

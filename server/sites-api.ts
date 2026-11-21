@@ -201,6 +201,8 @@ export async function handleSitesApi(request: Request, env: Runtime, fetchApi: F
       return json({ audioContent: bytesToBase64(bytes), encoding: 'wav', sampleRate: 22050, durationSec: 48, trackKey: input.trackKey });
     }
     if (route === '/api/ai/tts') {
+      // 빠른 첫 문장(Edge)은 Render 서버 전용. 여기서는 Gemini 요청을 늘리지 않도록 거절해 앱이 바로 Gemini로 읽게 한다.
+      if (body.provider === 'edge') return json({ error: 'Edge lead TTS is not available here.', code: 'TTS_EDGE_UNAVAILABLE' }, 502);
       const speech = required(stripInternalSpeechDirectives(required(body.text, '낭독할 문장', 4000)), '낭독할 문장', 4000);
       if (!synthesize) {
         try { return json(await synthesizeGeminiSpeech(speech, body.voice, env, fetchApi, request.signal)); }

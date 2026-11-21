@@ -182,6 +182,9 @@ app.post("/api/ai/tts", async (req, res) => {
   if (!text) {
     return res.status(400).json({ error: "Empty speech text" });
   }
+  if (req.body?.provider === "edge") {
+    return res.status(502).json({ error: "Edge lead TTS is not available here.", code: "TTS_EDGE_UNAVAILABLE" });
+  }
 
   try {
     const { handleTTS } = await import("../server/api-lib/ttsHandler.ts");

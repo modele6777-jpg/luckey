@@ -19,6 +19,8 @@ Every time a user request is completed or changes are made to the codebase:
 - Do not add automatic BGM, silent keep-alive loops, or focus-reclaim retries when no app audio was requested.
 - Verify policy and playback entry points when changing audio. Browser/OS restrictions (especially microphone capture and cross-origin players) cannot be overridden by web code; describe physical-device verification limits honestly.
 
+- User update 2026-11-21 (hybrid TTS): `playTTSInChunks` keeps ~180-character Gemini chunks, because Gemini TTS has a small rate limit and extra requests caused "음성 요청이 몰려" errors. With `fastLead`, only a long first chunk is split: its short lead sentence is synthesized by Edge Neural (`/api/ai/tts` with `provider:'edge'`, Render server only, separate quota) and the remainder by Gemini, so the Gemini request count never grows. If Edge fails or takes longer than 2.5s, the lead falls back to Gemini and Edge is skipped for 10 minutes. Sites/Vercel refuse `provider:'edge'` so they never spend an extra Gemini request.
+
 ### 3. Identical Folded / Unfolded Lucky Channel Background
 - Lucky channels render the same folded mobile sky inside `ChannelPage` using `AuroraBackground channel`, regardless of screen width or performance/device classification.
 - Keep this background within the channel canvas, behind page content; never rely on a document-wide background behind split panes.
