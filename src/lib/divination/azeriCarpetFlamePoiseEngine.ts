@@ -7,6 +7,8 @@ export interface AzeriCarpetResult {
   companionMotif: string;
   azeriInsight: string;
   bakuTone: string;
+  loomTension: string;
+  shadowWarning: string;
   reflectionFocus: string;
   ritualAction: string;
   reflectiveQuestion: string;
@@ -51,6 +53,20 @@ const MOTIFS = [
   },
 ];
 
+const LOOM_TENSIONS = [
+  '느슨한 첫 줄 걸기(여유 확보)',
+  '단단한 이중 매듭(원칙 고정)',
+  '천연 염색 말리기(숙성 대기)',
+  '가장자리 마감 매듭(완급 조절)',
+] as const;
+
+const SHADOW_WARNINGS = [
+  '완벽한 대칭 무늬에만 집착하면 한 코만 틀어져도 전체 작업을 멈추게 될 수 있습니다.',
+  '불꽃을 지키려다 바람까지 전부 막아 버리면 오히려 숨 쉴 공기까지 줄어듭니다.',
+  '긴장을 너무 팽팽히 당기면 날실이 끊어지듯, 일상의 탄력도 지나친 강박 앞에서는 약해집니다.',
+  '차를 식히는 시간을 지나치게 끌면 정작 따뜻할 때 건네야 할 진심까지 식어 버릴 수 있습니다.',
+] as const;
+
 function formatKstIso(date: Date): string {
   const kst = new Date(date.getTime() + 9 * 60 * 60 * 1000);
   const y = kst.getUTCFullYear();
@@ -79,19 +95,24 @@ export function calculateAzeriCarpetFlamePoise(params: {
   const seed = `${JSON.stringify(params.profile.fate ?? {})}|${params.question ?? ''}|${now.toISOString().slice(0, 13)}`;
   const idx = stableHash(seed) % MOTIFS.length;
   const companionOffset = 1 + (stableHash(`${seed}|companion`) % (MOTIFS.length - 1));
+  const tensionIdx = stableHash(`${seed}|tension`) % LOOM_TENSIONS.length;
   const picked = MOTIFS[idx];
   const companion = MOTIFS[(idx + companionOffset) % MOTIFS.length];
+  const loomTension = LOOM_TENSIONS[tensionIdx];
+  const shadowWarning = SHADOW_WARNINGS[(tensionIdx + companionOffset) % SHADOW_WARNINGS.length];
 
   return {
-    engineVersion: 'LUCKEY-AZERI-CARPET-v2.2.0',
+    engineVersion: 'LUCKEY-AZERI-CARPET-v2.3.0',
     calculatedAtKst: formatKstIso(now),
     azeriMotif: picked.motif,
     companionMotif: companion.motif,
     azeriInsight: `${picked.insight} (동반 결: ${companion.motif})`,
     bakuTone: picked.tone,
-    reflectionFocus: `아제르바이잔 카펫의 '${picked.motif}'와 동반 결 '${companion.motif}'처럼, 바람 앞에서도 유연하게 흔들리는 불꽃과 중심 원의 균형을 지켜 보세요.`,
-    ritualAction: picked.ritual,
-    reflectiveQuestion: picked.question,
+    loomTension,
+    shadowWarning,
+    reflectionFocus: `아제르바이잔 카펫의 '${picked.motif}'와 동반 결 '${companion.motif}'가 '${loomTension}' 국면 위에서 만나 바람 앞에서도 유연하게 흔들리는 불꽃과 중심 원의 균형을 지켜 줍니다.`,
+    ritualAction: `${picked.ritual} (${loomTension} 리듬으로 동반 결 '${companion.motif.split('(')[0].trim()}'까지 엮어 보세요.)`,
+    reflectiveQuestion: `${picked.question} (동반 결 '${companion.motif.split('(')[0].trim()}'을 함께 고려하면 오늘의 장력은 어느 정도가 알맞을까요?)`,
     interpretiveBoundary: '아제르바이잔 바쿠·카펫 직조와 부타 문양 지혜 전통을 바탕으로 한 상징적 성찰 프레임입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.',
   };
 }
@@ -102,6 +123,8 @@ export function formatAzeriCarpetPrompt(res: AzeriCarpetResult): string {
     `- 기준 시각: ${res.calculatedAtKst}`,
     `- 아제리 모티프: ${res.azeriMotif} (${res.bakuTone})`,
     `- 동반 결: ${res.companionMotif}`,
+    `- 베틀 장력: ${res.loomTension}`,
+    `- 과잉 경계: ${res.shadowWarning}`,
     `- 중심 통찰: ${res.azeriInsight}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 오늘의 작은 실천: ${res.ritualAction}`,
