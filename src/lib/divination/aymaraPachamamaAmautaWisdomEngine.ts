@@ -7,6 +7,8 @@ export interface AymaraPachamamaResult {
   companionLens: string;
   amautaInsight: string;
   altiplanoTone: string;
+  reciprocityPhase: string;
+  shadowWarning: string;
   reflectionFocus: string;
   ritualAction: string;
   reflectiveQuestion: string;
@@ -51,6 +53,20 @@ const LENSES = [
   },
 ];
 
+const RECIPROCITY_PHASES = [
+  '씨앗 고르기(지나온 경험 회수)',
+  '대지에 물 대기(작은 감사 되돌리기)',
+  '아와요 씨실 엮기(서로 다른 힘의 균형)',
+  '공동 수확 나누기(함께 숨 쉬는 속도)',
+] as const;
+
+const SHADOW_WARNINGS = [
+  '지나온 길만 바라보며 과거의 성공 방식에 매이면 눈앞의 새로운 계절을 놓칠 수 있습니다.',
+  '주변을 챙기느라 내 몫의 휴식과 기준까지 내어주면 호혜의 순환이 한쪽으로 기울어집니다.',
+  '정오의 기준을 너무 날카롭게 세우면 함께 걸어가는 사람들의 서로 다른 보폭을 다치게 할 수 있습니다.',
+  '평온한 속도를 지키려다 꼭 밟아야 할 결단의 언덕마저 미루지 않도록 균형을 살피세요.',
+] as const;
+
 function formatKstStandard(date: Date): string {
   const kst = new Date(date.getTime() + 9 * 60 * 60 * 1000);
   const y = kst.getUTCFullYear();
@@ -79,20 +95,25 @@ export function calculateAymaraPachamamaAmautaWisdom(params: {
   const baseSeed = `${JSON.stringify(params.profile.fate ?? {})}|${params.question ?? ''}|${now.toISOString().slice(0, 13)}`;
   const idx = stableHash(baseSeed) % LENSES.length;
   const companionOffset = 1 + (stableHash(`${baseSeed}|companion`) % (LENSES.length - 1));
+  const phaseIdx = stableHash(`${baseSeed}|phase`) % RECIPROCITY_PHASES.length;
   const companionIdx = (idx + companionOffset) % LENSES.length;
   const picked = LENSES[idx];
   const companion = LENSES[companionIdx];
+  const reciprocityPhase = RECIPROCITY_PHASES[phaseIdx];
+  const shadowWarning = SHADOW_WARNINGS[(phaseIdx + companionOffset) % SHADOW_WARNINGS.length];
 
   return {
-    engineVersion: 'LUCKEY-AYMARA-AMAUTA-v2.2.0',
+    engineVersion: 'LUCKEY-AYMARA-AMAUTA-v2.3.0',
     calculatedAtKst: formatKstStandard(now),
     nayraLens: picked.lens,
     companionLens: companion.lens,
     amautaInsight: picked.insight,
     altiplanoTone: picked.tone,
-    reflectionFocus: `아이마라 지혜의 '${picked.lens}'를 중심에 두고 '${companion.lens}'의 균형을 곁들여, 이미 검증된 나의 경험에서 오늘의 기준을 꺼내 보세요.`,
-    ritualAction: picked.ritual,
-    reflectiveQuestion: picked.question,
+    reciprocityPhase,
+    shadowWarning,
+    reflectionFocus: `아이마라 지혜의 '${picked.lens}'를 중심에 두고 '${companion.lens}'의 균형을 '${reciprocityPhase}' 국면으로 곁들여, 이미 검증된 나의 경험에서 오늘의 기준을 꺼내 보세요.`,
+    ritualAction: `${picked.ritual} (${reciprocityPhase} 흐름에서 '${companion.lens}'의 균형도 함께 챙겨 보세요.)`,
+    reflectiveQuestion: `${picked.question} (특히 '${companion.lens}'와 맞물려 지금 조율할 대목은 무엇인가요?)`,
     interpretiveBoundary: '남미 안데스 아이마라 전통의 시간관(Nayra)과 호혜·공존 철학을 바탕으로 한 상징적 성찰 프레임입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.',
   };
 }
@@ -103,6 +124,8 @@ export function formatAymaraPachamamaPrompt(res: AymaraPachamamaResult): string 
     `- 기준 시각: ${res.calculatedAtKst}`,
     `- 시간 렌즈: ${res.nayraLens} (${res.altiplanoTone})`,
     `- 보조 맥락: ${res.companionLens}`,
+    `- 호혜 국면: ${res.reciprocityPhase}`,
+    `- 과잉 경계: ${res.shadowWarning}`,
     `- 중심 통찰: ${res.amautaInsight}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 오늘의 작은 실천: ${res.ritualAction}`,
