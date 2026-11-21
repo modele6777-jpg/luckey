@@ -115,10 +115,10 @@ export const FIFTEEN_DIVINATION_TOOLS: Record<DivinationToolId, DivinationToolSp
     hanjaOrEng: 'Tarot Archetypes',
     primaryTheme: 'trinity',
     secondaryThemes: ['muse', 'bluebird'],
-    coreEssence: '메이저 아르카나 22장의 영혼 성장 여정과 마이너 아르카나 56장(완드·컵·소드·펜타클)의 원형 상징을 통해 현재 순간의 무의식, 상대의 속마음, 단기적 흐름을 직관적으로 비추는 거울',
-    bestFor: '상대방의 현재 속마음, 썸·재회·갈등의 단기 흐름, 무의식이 보내는 시그널, 당장 필요한 태도',
+    coreEssence: '메이저 아르카나 22장의 영혼 성장 여정(소울·퍼스널리티·성장 카드 수비학)과 마이너 아르카나 56장(완드·컵·소드·펜타클 4원소 균형)의 원형 상징을 통해 현재 순간의 무의식, 상대의 속마음, 단기적 흐름을 직관적으로 비추는 거울',
+    bestFor: '상대방의 현재 속마음, 썸·재회·갈등의 단기 흐름, 소울/올해의 성장 카드 키워드, 무의식이 보내는 시그널과 당장 필요한 태도',
     easyLanguageGuide: '카드 이미지가 품은 이야기와 상징을 들어 "지금 네 마음은 마치 타로의 [별/은둔자/완드 에이스] 카드처럼 ~한 상태야"라고 직관적이고 공감 가게 비유해줘.',
-    explicitRegex: /타로|아르카나|스프레드|타로\s*카드|메이저\s*카드|완드|펜타클|소드|속마음/,
+    explicitRegex: /타로|아르카나|스프레드|타로\s*카드|메이저\s*카드|완드|펜타클|소드|속마음|소울\s*카드|올해의\s*카드/,
     intentKeywords: [/속마음|연락|재회|썸|그\s*사람|직관|지금\s*당장|오늘의\s*운세/]
   },
 
@@ -129,10 +129,10 @@ export const FIFTEEN_DIVINATION_TOOLS: Record<DivinationToolId, DivinationToolSp
     hanjaOrEng: '宿曜經 (27숙)',
     primaryTheme: 'bluebird',
     secondaryThemes: ['trinity', 'orange'],
-    coreEssence: '달이 지나는 황도 27숙(각숙·항숙·저숙·방숙·심숙·미숙·기숙 등)을 기반으로 사람의 내면 정서와 두 사람 사이의 인연 역학(안괴·영친·우태·성유·업태·명 등 6대 관계)을 꿰뚫어 보는 밀교 달의 지혜',
-    bestFor: '두 사람의 숙명적 인연과 궁합(왜 끌리는지, 왜 부딪히는지), 감정적 파동, 관계에서의 거리 조절과 치유',
+    coreEssence: '달이 지나는 황도 27숙(각숙·항숙·저숙·방숙·심숙·미숙·기숙 등)과 7대 숙격(안중숙·화해숙·강유숙·조급숙·맹악숙·경조숙·행요숙)·칠요 오행을 기반으로 내면 정서와 인연 역학(안괴·영친·우태·성유·업태·명)을 꿰뚫어 보는 밀교 달의 지혜',
+    bestFor: '두 사람의 숙명적 인연과 궁합(왜 끌리는지, 왜 부딪히는지), 본명숙 기질과 감정적 파동, 관계에서의 거리 조절과 치유',
     easyLanguageGuide: '"숙요(달의 27숙)로 두 사람의 인연 결을 살펴보면 서로 성장시키는 영친(榮親)/강렬하게 끌리는 안괴(安壞) 흐름이 있어서~"처럼 관계의 심리와 감정 파동을 다정하게 풀어줘.',
-    explicitRegex: /숙요|27숙|28숙|숙요경|안괴|영친|우태|성유|업태|본명숙/,
+    explicitRegex: /숙요|27숙|28숙|숙요경|안괴|영친|우태|성유|업태|본명숙|숙격/,
     intentKeywords: [/인연|궁합|관계|갈등|친해지|왜\s*힘들까|감정\s*소모|거리두기|동료|친구\s*사이/]
   },
 
@@ -143,10 +143,10 @@ export const FIFTEEN_DIVINATION_TOOLS: Record<DivinationToolId, DivinationToolSp
     hanjaOrEng: 'Mahabote (미얀마 8요일 점성술)',
     primaryTheme: 'aura',
     secondaryThemes: ['prologue', 'trinity'],
-    coreEssence: '미얀마 전통의 출생 요일(일~토 및 수요일 오후 라후 포함 8방위 동물 상징)과 7궁(Binga·Atun·Yaza·Adipati·Marana·Thike·Puti) 배치를 통해 생체 에너지 균형과 행운의 방향·생활 리듬을 조율하는 실천 비법',
-    bestFor: '타고난 출생 요일별 생명력, 신체·정신적 에너지 밸런스, 일상의 활력을 깨우는 개운 루틴',
+    coreEssence: '미얀마 전통의 출생 요일(일~토 및 수요일 오후 라후 포함 8방위 동물·행성 상징)과 7궁(Binga·Atun·Yaza·Adipati·Marana·Thike·Puti) 및 나이 다샤 순환을 통해 생체 에너지 균형과 길방위·생활 리듬을 조율하는 실천 비법',
+    bestFor: '타고난 출생 요일별 생명력과 수호성, 당해 나이 다샤(길흉 주기), 신체·정신적 에너지 밸런스와 개운 루틴',
     easyLanguageGuide: '"마하보테에서 네가 태어난 요일의 수호 기운을 보면 ~한 생명력을 가지고 있어서, 몸이 지칠 땐 ~처럼 에너지를 순환시키는 게 딱 맞아"라고 실생활 웰니스 팁으로 연결해줘.',
-    explicitRegex: /마하보테|mahabote|8요일|요일\s*점성술|미얀마\s*점성술|빙가|야자|아디파티/i,
+    explicitRegex: /마하보테|mahabote|8요일|요일\s*점성술|미얀마\s*점성술|빙가|야자|아디파티|나이\s*다샤/i,
     intentKeywords: [/활력|에너지|체력|리듬|요일|컨디션|지칠\s*때|생기/]
   },
 
@@ -351,9 +351,9 @@ export function buildUserFifteenToolsDigest(profile?: UserProfile, asOfDate: Dat
     // 6. 마하보테 (미얀마 7궁 명반 및 8요일 성좌 결정론 산법)
     let mahaboteLine: string;
     try {
-      const mb = calculateMahabote({ profile, targetYear: referenceDate.getFullYear() });
+      const mb = calculateMahabote({ profile, targetYear: kstYear });
       if (mb.status === 'calculated' && mb.rootHouse && mb.currentAgeTransit) {
-        mahaboteLine = `- 마하보테 8요일 부분 계산: ${KOR_WEEKDAYS[dow]} · ${animal}. [7궁 명반 포국]: 본명궁 ${mb.rootHouse.houseName}(${mb.rootHouse.category}) · 소수력 잉여수 ${mb.remainder} · 당해 ${mb.currentAgeTransit.currentAge}세 나이 다샤(${mb.currentAgeTransit.transitHouseName}) · 길방위: ${mb.remedies?.luckyDirection || '동쪽'} · 길색: ${mb.remedies?.luckyColors?.join(', ') || '흰색'}.`;
+        mahaboteLine = `- 마하보테 8요일 부분 계산: ${KOR_WEEKDAYS[dow]} · ${animal}(수호성 ${mb.birthPlanet?.planet || '태양(Sun)'}). [7궁 명반 포국]: 본명궁 ${mb.rootHouse.houseName}(${mb.rootHouse.category}) · 소수력 잉여수 ${mb.remainder} · 당해 ${mb.currentAgeTransit.currentAge}세 나이 다샤(${mb.currentAgeTransit.transitHouseName}${mb.transitInteraction?.phase ? ` · ${mb.transitInteraction.phase}` : ''}) · 길방위: ${mb.remedies?.luckyDirection || '동쪽'} · 길색: ${mb.remedies?.luckyColors?.join(', ') || '흰색'}.`;
       } else {
         mahaboteLine = `- 마하보테 8요일 부분 계산: ${KOR_WEEKDAYS[dow]} · ${animal}. 7궁 명반 미계산.`;
       }
@@ -399,18 +399,27 @@ export function buildUserFifteenToolsDigest(profile?: UserProfile, asOfDate: Dat
     // 4. 타로 (78장 아르카나 수비학 소울·퍼스널리티·올해의 성장 카드 결정론 산법)
     let tarotLine = '';
     try {
-      const tm = calculateTarotMaster({ profile, targetYear: referenceDate.getFullYear(), now: referenceDate });
+      const tm = calculateTarotMaster({ profile, targetYear: kstYear, now: referenceDate });
       if (tm.status === 'calculated') {
-        tarotLine = `\n- 타로 마스터 수비학: 소울 카드 ${tm.soulCard.name} · 퍼스널리티 카드 ${tm.personalityCard.name} · ${tm.currentYear}년 성장 카드 ${tm.yearCard.name} · 4원소 밸런스(불 ${tm.elementalBalance.fire}% / 물 ${tm.elementalBalance.water}% / 공기 ${tm.elementalBalance.air}% / 흙 ${tm.elementalBalance.earth}%).`;
+        const elems = [
+          ['불', tm.elementalBalance.fire],
+          ['물', tm.elementalBalance.water],
+          ['공기', tm.elementalBalance.air],
+          ['흙', tm.elementalBalance.earth],
+        ] as Array<[string, number]>;
+        elems.sort((a, b) => b[1] - a[1]);
+        const domElem = elems[0][0];
+        const lackElem = elems[elems.length - 1][0];
+        tarotLine = `\n- 타로 마스터 수비학: 소울 카드 ${tm.soulCard.name}(${tm.soulCard.keywords.slice(0, 2).join('·')}) · 퍼스널리티 카드 ${tm.personalityCard.name} · ${tm.currentYear}년 성장 카드 ${tm.yearCard.name}(${tm.yearCard.keywords.slice(0, 2).join('·')}) · 4원소 흐름(우세 ${domElem} · 보완 ${lackElem}).`;
       }
     } catch (_) {}
 
     // 5. 숙요 (27숙 본명숙 · 7대 숙격 · 4방신 결정론 산법)
     let sukuyoLine = '';
     try {
-      const sk = calculateSukuyoAdvanced({ profile });
+      const sk = calculateSukuyoAdvanced({ profile, now: referenceDate });
       if (sk.status === 'calculated' && sk.mansion) {
-        sukuyoLine = `\n- 숙요경(27숙): 본명숙 ${sk.mansion.fullName}(${sk.mansion.animal}) · 숙격 ${sk.mansion.shukgukHanja} · 4방신 ${sk.mansion.group}.`;
+        sukuyoLine = `\n- 숙요경(27숙): 본명숙 ${sk.mansion.fullName}(${sk.mansion.animal} · ${sk.mansion.element}행) · 숙격 ${sk.mansion.shukgukHanja}(${sk.mansion.shukgukTrait}) · 4방신 ${sk.mansion.group}.`;
       }
     } catch (_) {}
 
