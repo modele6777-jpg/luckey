@@ -83,6 +83,21 @@ export function LucyKakaoBubbleGroup({
 
   const prevVisibleCountRef = useRef(visibleCount);
 
+  // 새 답변은 말풍선마다 한 글자씩 타이핑되고, 다 써진 뒤 다음 말풍선이 나온다.
+  // 과거 메시지·다시 그려진 메시지·동작 줄이기 설정에서는 즉시 표시.
+  const [typingEnabled] = useState<boolean>(() => {
+    if (shouldSkipStagger) return false;
+    try {
+      return !window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    } catch {
+      return true;
+    }
+  });
+  const [typedCount, setTypedCount] = useState(0);
+  const [skipTyping, setSkipTyping] = useState(false);
+  const typingActive = typingEnabled && !skipTyping;
+  const waitingForTyping = typingActive && typedCount < visibleCount;
+
   useEffect(() => {
     if (shouldSkipStagger) {
       if (!isGenerating && bubbles.length > 0) {
@@ -107,7 +122,8 @@ export function LucyKakaoBubbleGroup({
       return;
     }
 
-    // 3. 2~4번째 말풍선을 짧은 카톡 간격(380ms)으로 순차 전송 연출
+    // 3. 2~4번째 말풍선을 짧은 카톡 간격으로 순차 전송 연출 (타이핑 중이면 다 써질 때까지 대기)
+    if (waitingForTyping) return;
     if (visibleCount < bubbles.length) {
       const timer = setTimeout(() => {
         setVisibleCount((prev) => {
@@ -117,12 +133,12 @@ export function LucyKakaoBubbleGroup({
           }
           return next;
         });
-      }, 380);
+      }, typingActive ? 260 : 380);
       return () => clearTimeout(timer);
     } else if (bubbles.length > 0) {
       revealedMessageIds.add(msgId);
     }
-  }, [bubbles.length, isGenerating, msgId, shouldSkipStagger, textContent, visibleCount]);
+  }, [bubbles.length, isGenerating, msgId, shouldSkipStagger, textContent, visibleCount, waitingForTyping, typingActive]);
 
   // 새 말풍선이 순차 팝업될 때마다 스크롤 하단 정렬 이벤트 트리거
   useEffect(() => {
@@ -156,6 +172,11 @@ export function LucyKakaoBubbleGroup({
     }
     return false;
   }, [playingMsgId, msgId, ttsInfo?.isSpeaking, ttsInfo?.isLoading, ttsInfo?.activeSentence, ttsInfo?.activeText, textContent]);
+
+  // 음성이 이 답변을 읽기 시작하면 문장 하이라이트·스크롤이 맞도록 남은 타이핑을 바로 끝낸다.
+  useEffect(() => {
+    if (typingEnabled && isThisMsgPlaying && ttsInfo?.isSpeaking) setSkipTyping(true);
+  }, [typingEnabled, isThisMsgPlaying, ttsInfo?.isSpeaking]);
 
   const activeSpeakingBubbleIdx = useMemo(() => {
     if (!isThisMsgPlaying) return -1;
@@ -191,7 +212,7 @@ export function LucyKakaoBubbleGroup({
     : bubbles.slice(0, Math.min(visibleCount, bubbles.length));
 
   const isStaggeringMoreBubbles =
-    !shouldSkipStagger && (isGenerating || visibleCount < bubbles.length);
+    !shouldSkipStagger && (isGenerating || visibleCount < bubbles.length || waitingForTyping);
 
   if (bubbles.length === 0 && detectedTarotCards.length === 0) return null;
 
@@ -242,6 +263,7 @@ export function LucyKakaoBubbleGroup({
             >
               <div
                 data-forward-bubble
+                onClick={typingActive && bIdx >= typedCount ? () => setSkipTyping(true) : undefined}
                 className={`p-3.5 sm:p-4.5 text-sm sm:text-[15px] lg:text-base leading-relaxed select-text min-w-0 max-w-full overflow-x-hidden break-words [overflow-wrap:anywhere] transition-all duration-300 ${isLastBubble && renderRecommendationFooter ? 'flex-1 w-full' : ''} ${bubbleSurfaceClass} ${theme === 'starlight' ? 'lucy-starlight-assistant' : ''}`}
                 style={
                   variant === 'standalone' && theme !== 'starlight'
@@ -263,11 +285,15 @@ export function LucyKakaoBubbleGroup({
                 )}
 
                 <LucyProTypewriter
+                  key={typingActive && bIdx >= typedCount ? 'typing' : 'shown'}
                   content={bubbleText}
                   isLatest={isLatest && isLastBubble}
                   isGenerating={false}
                   instantReveal={true}
                   enableTTSHighlight={isBubbleSpeaking}
+                  typeIn={typingActive && bIdx >= typedCount}
+                  streamOpen={isGenerating && bIdx === bubbles.length - 1}
+                  onTypeDone={() => setTypedCount((prev) => (prev === bIdx ? bIdx + 1 : prev))}
                 />
 
                 {/* 전문 모드 추천 채널 & Key 실천 도약 바는 마지막 말풍선 하단에 1회만 깔끔하게 표시 */}
