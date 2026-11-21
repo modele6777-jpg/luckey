@@ -15515,3 +15515,21 @@ test('buildUserFifteenToolsDigest integrates Kyusei synergy/scenarios, Tojeong t
   assert.ok(digest.includes('삼기(군:') && digest.includes('대세 국면 [') && digest.includes('국 처신:'));
   assert.ok(!/synergyScore|harmonyScore|juBalanceScore|initiativeIndex|defensiveIndex/.test(digest));
 });
+
+test('buildUserFifteenToolsDigest integrates Saju heeshin/gisin/specials, Astrology inner-outer axis, and Ziwei flying-star advice without raw scores', () => {
+  const profile: any = {
+    basic: {
+      name: '제제',
+      birthdate: '1994-01-24',
+      birthtime: '10:30',
+      calendarType: 'solar',
+      isLeapMonth: false,
+      gender: 'male',
+    },
+  };
+  const digest = buildUserFifteenToolsDigest(profile, new Date('2026-11-22T04:56:00+09:00'));
+  assert.ok(digest.includes('희신 ') && digest.includes('기신 ') && digest.includes('세운 기조:'));
+  assert.ok(digest.includes('애정/추진/성숙 축:') && digest.includes('핵심 각도:'));
+  assert.ok(digest.includes('삼방 조언:') && digest.includes('록기 처신:') && digest.includes('사화 통합:'));
+  assert.ok(!/breakthroughPowerScore|deukSeScore|driveScore|wealthAffinityScore/.test(digest));
+});

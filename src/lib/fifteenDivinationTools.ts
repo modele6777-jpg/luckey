@@ -344,7 +344,10 @@ export function buildUserFifteenToolsDigest(profile?: UserProfile, asOfDate: Dat
     civil.setUTCHours(time?.hour ?? 12, time?.minute ?? 0, 0, 0);
     const dow = civil.getUTCDay();
     const saju = calculateDetailedSaju(profile);
-    const sajuBrief = saju ? `${saju.dayMaster.hanja}(${saju.dayMaster.korean}) 일간 · 4주: ${saju.pillars.year.gan}${saju.pillars.year.zhi}년 ${saju.pillars.month.gan}${saju.pillars.month.zhi}월 ${saju.pillars.day.gan}${saju.pillars.day.zhi}일${saju.pillars.hour ? ` ${saju.pillars.hour.gan}${saju.pillars.hour.zhi}시` : ''} · 격국: ${saju.geokguk.name} · ${saju.bodyStrength.level} · 용신: ${saju.yongsin.name} · 현재 대운: ${saju.daeun.current}(${saju.daewunDetail.directionText}) · 우세 오행: ${saju.elements.dominant.name} · 보완 오행: ${saju.elements.lacking.name}(개운 색: ${saju.elements.lacking.luckyColor})` : '입력 확인 필요: 사주 미계산';
+    const sajuSpecials = saju?.specialStructures?.length
+      ? ` · 특수 신살: ${saju.specialStructures.slice(0, 3).map((st) => st.name).join('·')}`
+      : '';
+    const sajuBrief = saju ? `${saju.dayMaster.hanja}(${saju.dayMaster.korean}) 일간 · 4주: ${saju.pillars.year.gan}${saju.pillars.year.zhi}년 ${saju.pillars.month.gan}${saju.pillars.month.zhi}월 ${saju.pillars.day.gan}${saju.pillars.day.zhi}일${saju.pillars.hour ? ` ${saju.pillars.hour.gan}${saju.pillars.hour.zhi}시` : ''} · 격국: ${saju.geokguk.name} · ${saju.bodyStrength.level} · 용신: ${saju.yongsin.name}(희신 ${saju.yongsinDetails.heeshin} · 기신 ${saju.yongsinDetails.gisin} · 처방: ${saju.yongsin.actionTip}) · 현재 대운: ${saju.daeun.current}(${saju.daewunDetail.directionText} · 차기 ${saju.daeun.next}) · 세운 기조: ${saju.annual2026.theme}(기회: ${saju.annual2026.keyOpportunity}) · 우세 오행: ${saju.elements.dominant.name} · 보완 오행: ${saju.elements.lacking.name}(개운 색: ${saju.elements.lacking.luckyColor})${sajuSpecials}` : '입력 확인 필요: 사주 미계산';
     let animal = MAHABOTE_ANIMALS[dow];
     if (dow === 3) animal = !time ? '수요일 오전/오후 구분은 생시 필요' : time.hour < 12 ? '수요일 오전·수성·엄니 코끼리' : '수요일 오후·라후·엄니 없는 코끼리';
 
@@ -546,7 +549,11 @@ export function buildUserFifteenToolsDigest(profile?: UserProfile, asOfDate: Dat
     try {
       const zw = calculateZiweiFlyingStars({ profile, targetYear: kstYear });
       if (zw && zw.sanFangSiZhengBalance && zw.luJiConflictDynamics) {
-        ziweiLine = `\n- 자미두수 유년 사화: 명궁 [${zw.sanFangSiZhengBalance.myMingPalaceName}](${kstYear}년) · 삼방사정 국면 [${zw.sanFangSiZhengBalance.patternGrade}] · 록기 역학 [${zw.luJiConflictDynamics.relationType}](화록 ${zw.mutagens.lu.starName}→${zw.luJiConflictDynamics.luPalaceName} · 화권 ${zw.mutagens.quan.starName}→${zw.mutagens.quan.targetPalaceName} · 화과 ${zw.mutagens.ke.starName}→${zw.mutagens.ke.targetPalaceName} · 화기 ${zw.mutagens.ji.starName}→${zw.luJiConflictDynamics.jiPalaceName}).`;
+        const classNote = zw.natalChartSummary?.fiveElementsClass ? ` · ${zw.natalChartSummary.fiveElementsClass}` : '';
+        const coreAdvice = zw.sanFangSiZhengBalance.coreDynamicsAdvice ? ` · 삼방 조언: ${zw.sanFangSiZhengBalance.coreDynamicsAdvice}` : '';
+        const defenseNote = zw.luJiConflictDynamics.wealthPreservationAdvice ? ` · 록기 처신: ${zw.luJiConflictDynamics.wealthPreservationAdvice}` : '';
+        const matrixAction = zw.ziweiFlyingSynthesisMatrix?.integratedAction ? ` · 사화 통합: ${zw.ziweiFlyingSynthesisMatrix.integratedAction}` : '';
+        ziweiLine = `\n- 자미두수 유년 사화: 명궁 [${zw.sanFangSiZhengBalance.myMingPalaceName}](${kstYear}년${classNote}) · 삼방사정 국면 [${zw.sanFangSiZhengBalance.patternGrade}] · 록기 역학 [${zw.luJiConflictDynamics.relationType}](화록 ${zw.mutagens.lu.starName}→${zw.luJiConflictDynamics.luPalaceName} · 화권 ${zw.mutagens.quan.starName}→${zw.mutagens.quan.targetPalaceName} · 화과 ${zw.mutagens.ke.starName}→${zw.mutagens.ke.targetPalaceName} · 화기 ${zw.mutagens.ji.starName}→${zw.luJiConflictDynamics.jiPalaceName})${coreAdvice}${defenseNote}${matrixAction}.`;
       }
     } catch (_) {}
 
