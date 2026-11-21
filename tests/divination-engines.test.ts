@@ -15683,3 +15683,21 @@ test('buildUserFifteenToolsDigest integrates 4th-round Vedic, Liuren, and Honggu
   assert.ok(digest.includes('8문 격국 [') && digest.includes('전술 스텝:'));
   assert.ok(!/decisionScore|riskIndex|tonggi\.score/.test(digest));
 });
+
+test('buildUserFifteenToolsDigest integrates 4th-round Kabbalah, I Ching, and Thai Horasat practices and watch windows without raw scores', () => {
+  const profile: any = {
+    basic: {
+      name: '제제',
+      birthdate: '1994-01-24',
+      birthtime: '10:30',
+      calendarType: 'solar',
+      isLeapMonth: false,
+      gender: 'male',
+    },
+  };
+  const digest = buildUserFifteenToolsDigest(profile, new Date('2026-11-22T06:16:00+09:00'));
+  assert.ok(digest.includes('경로 실천:') && digest.includes('개운 의식:'));
+  assert.ok(digest.includes('실천 방침:'));
+  assert.ok(digest.includes('호라삿 조율 [') && digest.includes('원소 진단('));
+  assert.ok(!/vitalityIndex|affinityScore|decisionScore/.test(digest));
+});
