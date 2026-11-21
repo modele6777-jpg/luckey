@@ -14503,14 +14503,15 @@ test('Omani Frankincense Falaj Water engine: symbol, +09:00 KST, and interpretiv
 
 test('Baekje Gilt-Bronze Incense Calm engine: motif, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateBaekjeGiltBronzeIncenseCalm({ profile, now: new Date('2026-11-20T19:15:00Z'), question: '둥글고 온화한 비례로 마음을 펴고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-BAEKJE-INCENSE-v2.2.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-BAEKJE-INCENSE-v2.3.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionMotif !== rep.buyeoMotif);
+  assert.ok(rep.incensePhase.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatBaekjeIncensePrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('백제') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionMotif));
+  assert.ok(prompt.includes('백제') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.incensePhase) && prompt.includes(rep.shadowWarning));
 });
 
 test('Parthian Nisa Archery Poise engine: motif, +09:00 KST, and interpretive boundary', () => {
@@ -15346,14 +15347,15 @@ test('Venetian Lagoon Forcola engine: notch, +09:00 KST, and interpretive bounda
 
 test('Bajau Laut Tide engine: anchor, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateBajauLautTide({ profile, now: new Date('2026-11-20T22:55:00Z'), question: '호흡과 물때의 리듬을 맞추고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-BAJAU-LAUT-v2.2.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-BAJAU-LAUT-v2.3.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionAnchor !== rep.tidalAnchor);
+  assert.ok(rep.tidalPhase.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatBajauLautPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('바야우') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionAnchor));
+  assert.ok(prompt.includes('바야우') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.tidalPhase) && prompt.includes(rep.shadowWarning));
 });
 
 test('Wodaabe Gerewol engine: gathering, +09:00 KST, and interpretive boundary', () => {
@@ -15370,14 +15372,15 @@ test('Wodaabe Gerewol engine: gathering, +09:00 KST, and interpretive boundary',
 
 test('Badakhshan Lapis Vein engine: vein, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateBadakhshanLapisVein({ profile, now: new Date('2026-11-20T22:55:00Z'), question: '내 안의 고유한 결을 정제하고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-BADAKHSHAN-LAPIS-v2.2.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-BADAKHSHAN-LAPIS-v2.3.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionVein !== rep.azureVein);
+  assert.ok(rep.refinementPhase.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatBadakhshanLapisPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('바다흐샨') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionVein));
+  assert.ok(prompt.includes('바다흐샨') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.refinementPhase) && prompt.includes(rep.shadowWarning));
 });
 
 test('Kogi Aluna Thread engine: thread, +09:00 KST, and interpretive boundary', () => {

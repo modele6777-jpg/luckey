@@ -12,6 +12,8 @@ export interface BajauLautResult {
   tidalAnchor: string;
   companionAnchor: string;
   horizonDrift: string;
+  tidalPhase: string;
+  shadowWarning: string;
   reflectionFocus: string;
   ritualAction: string;
   reflectiveQuestion: string;
@@ -46,6 +48,20 @@ const QUESTIONS = [
   '더 가볍게 항해하기 위해 배 위에서 비워 내도 좋을 짐은 무엇일까요?',
 ] as const;
 
+const TIDAL_PHASES = [
+  '들물 맞이(가벼운 닻 올리기)',
+  '만조의 숨 고르기(깊은 호흡 준비)',
+  '썰물 흘려보내기(군더더기 비우기)',
+  '잔잔한 만 정박(선단과 저녁 나누기)',
+] as const;
+
+const SHADOW_WARNINGS = [
+  '어디에도 매이지 않으려다 정작 오래 뿌리내려야 할 관계나 약속까지 가볍게 지나칠 수 있습니다.',
+  '파도를 피해 만으로 숨기만 하면 정작 건너야 할 넓은 바다로 나갈 때가 늦어집니다.',
+  '호흡을 아끼려고 숨을 너무 오래 참다 보면 오히려 작은 물결에도 급히 흔들릴 수 있습니다.',
+  '짐을 비우는 데 집중한 나머지 오늘 꼭 챙겨야 할 필수 나침반까지 내려놓지 않도록 살피세요.',
+] as const;
+
 function toKstIso(now: Date): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
   const y = kst.getUTCFullYear();
@@ -71,18 +87,23 @@ export function calculateBajauLautTide(input: BajauLautInput): BajauLautResult {
   const seed = hashSeed(seedText);
   const anchorIdx = seed % ANCHORS.length;
   const companionOffset = 1 + (hashSeed(`${seedText}|companion`) % (ANCHORS.length - 1));
+  const phaseIdx = hashSeed(`${seedText}|phase`) % TIDAL_PHASES.length;
   const tidalAnchor = ANCHORS[anchorIdx];
   const companionAnchor = ANCHORS[(anchorIdx + companionOffset) % ANCHORS.length];
+  const tidalPhase = TIDAL_PHASES[phaseIdx];
+  const shadowWarning = SHADOW_WARNINGS[(phaseIdx + companionOffset) % SHADOW_WARNINGS.length];
 
   return {
-    engineVersion: 'LUCKEY-BAJAU-LAUT-v2.2.0',
+    engineVersion: 'LUCKEY-BAJAU-LAUT-v2.3.0',
     calculatedAtKst: toKstIso(input.now),
     tidalAnchor,
     companionAnchor,
     horizonDrift: DRIFTS[(seed >>> 3) % DRIFTS.length],
-    reflectionFocus: `동남아 술루해·셀레베스해를 집 삼아 물때와 호흡으로 살아가는 바야우 라우트 바다 유목민의 레파(Lepa) 항해처럼, 주 닻 자리('${tidalAnchor}')와 동반 자리('${companionAnchor}')를 겹쳐 가벼움과 호흡의 리듬을 읽는 상징적 관점입니다.`,
-    ritualAction: ACTIONS[anchorIdx],
-    reflectiveQuestion: QUESTIONS[anchorIdx],
+    tidalPhase,
+    shadowWarning,
+    reflectionFocus: `동남아 술루해·셀레베스해를 집 삼아 물때와 호흡으로 살아가는 바야우 라우트 바다 유목민의 레파(Lepa) 항해처럼, 주 닻 자리('${tidalAnchor}')와 동반 자리('${companionAnchor}')가 '${tidalPhase}' 물때 위에서 겹쳐 가벼움과 호흡의 리듬을 읽는 상징적 관점입니다.`,
+    ritualAction: `${ACTIONS[anchorIdx]} (${tidalPhase} 흐름에서 동반 자리 '${companionAnchor}'의 감각도 함께 맞춰 보세요.)`,
+    reflectiveQuestion: `${QUESTIONS[anchorIdx]} (동반 자리 '${companionAnchor}'를 함께 띄워 보면 오늘 가장 가볍게 바꿀 방향은 어디인가요?)`,
     interpretiveBoundary: '개인 점수·심리 진단·미래 예측이 아닙니다. 자기 성찰을 돕기 위한 상징적 관점 안내입니다.',
   };
 }
@@ -93,6 +114,8 @@ export function formatBajauLautPrompt(res: BajauLautResult): string {
     `기준 시각: ${res.calculatedAtKst}`,
     `닻의 자리: ${res.tidalAnchor}`,
     `동반 자리: ${res.companionAnchor}`,
+    `물때 국면: ${res.tidalPhase}`,
+    `과잉 경계: ${res.shadowWarning}`,
     `항해 흐름: ${res.horizonDrift}`,
     `성찰 초점: ${res.reflectionFocus}`,
     `권장 의식: ${res.ritualAction}`,
