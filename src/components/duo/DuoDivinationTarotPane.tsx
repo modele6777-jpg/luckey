@@ -53,6 +53,9 @@ export function DuoDivinationTarotPane(_props: { isLight?: boolean }) {
   const depth = useLucyMasterDepth();
   const tarotAvailable = depth >= 2 || cards.length > 0 || Boolean(pick);
   const toolsAvailable = depth >= 3;
+  // 양피지에서 "크게 보기"로 고른 도구. 새 3단계 답변이 오면 다시 루시 추천으로 돌아간다.
+  const [focusTool, setFocusTool] = useState<string | null>(null);
+  useEffect(() => { setFocusTool(null); }, [table.tools]);
   const shownFace: TableFace = (face === 'tarot' && !tarotAvailable) || ((face === 'recommended' || face === 'scrolls') && !toolsAvailable) ? 'saju' : face;
   const tts = useTTSState();
   const reading = Boolean(tts.isSpeaking || tts.isLoading);
@@ -144,6 +147,9 @@ export function DuoDivinationTarotPane(_props: { isLight?: boolean }) {
             concern={table.concern}
             lastAnswer={table.lastAnswer}
             facts={table.facts}
+            toolData={table.toolData}
+            focusId={focusTool}
+            onFocusTool={(id) => { setFocusTool(id); setFace('recommended'); }}
             onShowScrolls={() => { triggerHaptic('whitehole'); setFace('scrolls'); }}
           />
         ) : shownFace === 'saju' ? (

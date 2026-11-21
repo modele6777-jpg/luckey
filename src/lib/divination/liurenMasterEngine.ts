@@ -252,6 +252,38 @@ function evaluateElementRelation(subjEl: string, envEl: string): {
   };
 }
 
+/** liuren-ts-lib 천장(간체 한자) → 엔진에서 쓰는 한글 이름 */
+const GENERAL_KO: Record<string, string> = {
+  贵人: '귀인', 貴人: '귀인', 腾蛇: '등사', 騰蛇: '등사', 朱雀: '주작', 六合: '육합', 勾陈: '구진', 勾陳: '구진',
+  青龙: '청룡', 青龍: '청룡', 天空: '천공', 白虎: '백호', 太常: '태상', 玄武: '현무', 太阴: '태음', 太陰: '태음', 天后: '천후',
+};
+export function toKoreanGeneral(name: string): string {
+  const clean = (name || '').trim();
+  return GENERAL_KO[clean] || clean;
+}
+
+/** 사과: 배열 또는 { ke1..ke4: ['上下', 천장] } 를 [{ upper, lower }] 로 */
+export function normalizeRawLessons(lessons: unknown): Array<{ upper?: string; lower?: string; shang?: string; xia?: string }> {
+  if (Array.isArray(lessons)) return lessons;
+  if (!lessons || typeof lessons !== 'object') return [];
+  return ['ke1', 'ke2', 'ke3', 'ke4'].map(key => {
+    const entry = (lessons as Record<string, unknown>)[key];
+    const pair = Array.isArray(entry) ? String(entry[0] ?? '') : '';
+    const chars = Array.from(pair);
+    return chars.length >= 2 ? { upper: chars[0], lower: chars[1] } : {};
+  });
+}
+
+/** 삼전: 배열 또는 { chuChuan, zhongChuan, moChuan: [지지, 천장, 육친, 둔간] } 를 [{ branch, general }] 로 */
+export function normalizeRawTransmissions(trans: unknown): Array<{ branch?: string; general?: string; zhi?: string; tianjiang?: string }> {
+  if (Array.isArray(trans)) return trans;
+  if (!trans || typeof trans !== 'object') return [];
+  return ['chuChuan', 'zhongChuan', 'moChuan'].map(key => {
+    const entry = (trans as Record<string, unknown>)[key];
+    return Array.isArray(entry) && entry[0] ? { branch: String(entry[0]), general: String(entry[1] ?? '') } : {};
+  });
+}
+
 /**
  * 대육임 정통 수리 계산 및 사과·삼전·12천장 결단 마스터 엔진 실행
  */
@@ -265,8 +297,8 @@ export function calculateLiurenMaster(instant: Date = new Date(), question?: str
   const mm = String(kstDate.getUTCMinutes()).padStart(2, '0');
   const nowKstIso = `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
 
-  // 사과 (四課) 추출
-  const rawLessons = (raw.lessons as unknown as any[]) || [];
+  // 사과 (四課) 추출 — liuren-ts-lib 는 { ke1: ['子己', '勾陈'], ... } 형태(앞 글자 = 상신, 뒷 글자 = 하)로 돌려준다.
+  const rawLessons = normalizeRawLessons((raw as any).lessons);
   const lessonTitles: Array<{ id: LiurenLessonId; name: string; hanja: string; meaning: string }> = [
     { id: 'first', name: '제1과 일간상신', hanja: '日干上神', meaning: '나의 현재 처지, 대외적 역량과 주도권' },
     { id: 'second', name: '제2과 일간음신', hanja: '日干陰神', meaning: '나의 내면 심리, 숨겨진 배경과 잠재 파급력' },
@@ -289,7 +321,7 @@ export function calculateLiurenMaster(instant: Date = new Date(), question?: str
   });
 
   // 삼전 (三傳) 추출
-  const rawTrans = (raw.transmissions as unknown as any[]) || [];
+  const rawTrans = normalizeRawTransmissions((raw as any).transmissions); // { chuChuan: ['巳', '玄武', ...], ... }
   const transStages: Array<{ stage: '초전(初傳/發用)' | '중전(中傳)' | '말전(末傳)'; role: string }> = [
     { stage: '초전(初傳/發用)', role: '일의 발단, 시작 국면의 동력과 촉발 계기' },
     { stage: '중전(中傳)', role: '일의 진행 과정, 마주칠 전환점과 고비' },
@@ -299,7 +331,7 @@ export function calculateLiurenMaster(instant: Date = new Date(), question?: str
   const threeTransmissions: LiurenTransmission[] = transStages.map((s, idx) => {
     const rawT = rawTrans[idx] || {};
     const branch = String(rawT.zhi || rawT.branch || '寅');
-    const general = String(rawT.tianjiang || rawT.general || '청룡');
+    const general = toKoreanGeneral(String(rawT.tianjiang || rawT.general || '청룡'));
     return {
       stage: s.stage,
       branch,
@@ -310,18 +342,30 @@ export function calculateLiurenMaster(instant: Date = new Date(), question?: str
   });
 
   // 발용 과격(課格) 산출
-  const patternHanja = String((raw as any).pattern || '元首課');
+  // 과체: 라이브러리는 sanChuan.keTi('元首'·'重审'·'比用' …)로 준다.
+  const keTi = String((raw as any).transmissions?.keTi || (raw as any).pattern || '').trim();
+  const patternHanja = keTi ? (keTi.endsWith('課') || keTi.endsWith('课') ? keTi : `${keTi}課`) : '元首課';
   const patternGuidance =
     patternHanja.includes('元首')
       ? '원수과(元首課): 상하의 위계와 순리가 바르게 서 있어 정공법으로 추진하면 대길합니다.'
-      : patternHanja.includes('重審')
+      : /重審|重审/.test(patternHanja)
       ? '중심과(重審課): 아래에서 위를 극하는 형세로, 재검토와 신중한 설득이 필수적입니다.'
       : patternHanja.includes('涉害')
       ? '섭해과(涉害課): 물을 건너듯 난관을 헤쳐나가는 격으로, 준비된 자만이 돌파합니다.'
-      : patternHanja.includes('遙克')
+      : /遙克|遥克/.test(patternHanja)
       ? '요극과(遙克課): 멀리서 기운이 작용하므로 직접 충돌보다 우회적 협상이 유리합니다.'
       : patternHanja.includes('昴星')
       ? '묘성과(昴星課): 길이 뚜렷하지 않으니 외부 귀인과 지혜로운 스승을 찾아야 합니다.'
+      : /八專|八专/.test(patternHanja)
+      ? '팔전과(八專課): 기운이 한곳에 뭉쳐 있으므로 독립적 결단과 내부 단속이 핵심입니다.'
+      : /比用|知一/.test(patternHanja)
+      ? '비용과(比用課): 비슷한 기운 가운데 하나를 골라 쓰는 격으로, 여러 선택지 중 나와 결이 맞는 쪽을 택해야 풀립니다.'
+      : /伏吟/.test(patternHanja)
+      ? '복음과(伏吟課): 기운이 제자리에 엎드려 있어 움직임이 더디니, 서두르지 말고 때를 기다리며 내실을 다지세요.'
+      : /返吟|反吟/.test(patternHanja)
+      ? '반음과(返吟課): 기운이 뒤집혀 오가는 격으로 변동과 번복이 잦으니, 결정은 두 번 확인하고 움직이세요.'
+      : /別責|别责/.test(patternHanja)
+      ? '별책과(別責課): 기댈 곳을 밖에서 빌려오는 격으로, 혼자보다 협력자와 함께할 때 길이 열립니다.'
       : patternHanja.includes('八專')
       ? '팔전과(八專課): 기운이 한곳에 뭉쳐 있으므로 독립적 결단과 내부 단속이 핵심입니다.'
       : '순리상행과(順理上行課): 자연스러운 흐름에 몸을 맡기고 단계를 밟아 나가야 합니다.';

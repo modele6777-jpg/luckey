@@ -18,9 +18,11 @@ export interface LucyTableState {
   concern: string;
   /** 도구별 실제 계산 결과 핵심 줄 (양피지 두루마리용). */
   facts: Record<string, ToolFact[]>;
+  /** 도구별 계산 원자료 (전용 화면용, 계산된 도구만). */
+  toolData: Record<string, unknown>;
 }
 
-let state: LucyTableState = { saju: null, lastAnswer: '', lastAnswerHasTarot: false, answerVersion: 0, tools: [], concern: '', facts: {} };
+let state: LucyTableState = { saju: null, lastAnswer: '', lastAnswerHasTarot: false, answerVersion: 0, tools: [], concern: '', facts: {}, toolData: {} };
 
 export function getLucyTableState(): LucyTableState {
   return state;
@@ -36,14 +38,14 @@ export function publishTableSaju(saju: SajuAnalysisResult | null): void {
   emit();
 }
 
-export function publishTableTools(tools: readonly CalculationAuditItem[], concern: string, facts: Record<string, ToolFact[]> = {}): void {
-  state = { ...state, tools: [...tools], concern, facts };
+export function publishTableTools(tools: readonly CalculationAuditItem[], concern: string, facts: Record<string, ToolFact[]> = {}, toolData: Record<string, unknown> = {}): void {
+  state = { ...state, tools: [...tools], concern, facts, toolData };
   emit();
 }
 
 export function clearTableTools(): void {
   if (state.tools.length === 0 && !state.concern) return;
-  state = { ...state, tools: [], concern: '', facts: {} };
+  state = { ...state, tools: [], concern: '', facts: {}, toolData: {} };
   emit();
 }
 

@@ -66,7 +66,7 @@ const EXTRACTORS: Partial<Record<DivinationToolId, (d: Data) => Array<ToolFact |
     fact('본괘', d.primary ? `${str(d.primary.number)}. ${str(d.primary.name)}` : ''),
     fact('변하는 효', Array.isArray(d.movingLines) && d.movingLines.length ? `${d.movingLines.join('·')}효` : ''),
     fact('지괘', d.changed ? `${str(d.changed.number)}. ${str(d.changed.name)}` : ''),
-    fact('행동', d.judgment?.actionProtocol, 60),
+    fact('행동', d.guidance?.actionProtocol, 60),
   ],
   thai_astrology: d => [
     fact('태어난 요일', d.birthDayPlanet ? `${str(d.birthDayPlanet.weekday)} · ${str(d.birthDayPlanet.planet)}` : ''),
@@ -119,6 +119,19 @@ export function extractAllToolFacts(
     if (!entry || (entry.status !== 'calculated' && entry.status !== 'partial')) continue;
     const facts = extractToolFacts(id, entry.data);
     if (facts.length) out[id] = facts;
+  }
+  return out;
+}
+
+/** 전용 화면에 넘길 계산 원자료. 계산(또는 부분 계산)된 도구만. */
+export function pickCalculatedToolData(
+  ids: readonly DivinationToolId[],
+  engineTools: Record<string, { status: string; data?: unknown }> | undefined,
+): Record<string, unknown> {
+  const out: Record<string, unknown> = {};
+  for (const id of ids) {
+    const entry = engineTools?.[id];
+    if (entry && (entry.status === 'calculated' || entry.status === 'partial') && entry.data) out[id] = entry.data;
   }
   return out;
 }
