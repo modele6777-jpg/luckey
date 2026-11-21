@@ -14402,13 +14402,14 @@ test('Goryeo Celadon Inlay Clarity engine: craft, +09:00 KST, and interpretive b
 
 test('Lydian Sardis Electrum Balance engine: sign, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateLydianSardisElectrumBalance({ profile, now: new Date('2026-11-20T19:05:00Z'), question: '강함과 부드러움의 균형을 맞추고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-LYDIAN-SARDIS-v2.1.0');
-  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.equal(rep.engineVersion, 'LUCKEY-LYDIAN-SARDIS-v2.2.0');
+  assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
+  assert.ok(rep.companionSign !== rep.electrumSign);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatLydianSardisPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('리디아') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('리디아') && prompt.includes('동반 징표') && prompt.includes('+09:00 (KST)'));
 });
 
 test('Canaanite Ugarit Cedar Wisdom engine: symbol, +09:00 KST, and interpretive boundary', () => {
@@ -14599,13 +14600,14 @@ test('Elamite Susa Water Choga engine: motif, +09:00 KST, and interpretive bound
 
 test('Lycian Cliff Horizon Calm engine: motif, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateLycianCliffHorizonCalm({ profile, now: new Date('2026-11-20T19:55:00Z'), question: '넓은 수평선을 바라보고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-LYCIAN-CLIFF-v2.1.0');
-  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.equal(rep.engineVersion, 'LUCKEY-LYCIAN-CLIFF-v2.2.0');
+  assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
+  assert.ok(rep.companionMotif !== rep.lycianMotif);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatLycianCliffPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('리키아') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('리키아') && prompt.includes('동반 모티프') && prompt.includes('+09:00 (KST)'));
 });
 
 test('Byzantine Hagia Light Dome engine: motif, +09:00 KST, and interpretive boundary', () => {
@@ -14891,13 +14893,14 @@ test('Bunun Jade Mountain Song engine: motif, +09:00 KST, and interpretive bound
 
 test('Malagasy Baobab Root Poise engine: motif, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateMalagasyBaobabRootPoise({ profile, now: new Date('2026-11-20T21:08:00Z'), question: '내 안의 중심 줄기에 물을 채워 두고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-MALAGASY-BAOBAB-v2.1.0');
-  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.equal(rep.engineVersion, 'LUCKEY-MALAGASY-BAOBAB-v2.2.0');
+  assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
+  assert.ok(rep.companionMotif !== rep.malagasyMotif);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatMalagasyBaobabPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('말라가시') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('말라가시') && prompt.includes('동반 모티프') && prompt.includes('+09:00 (KST)'));
 });
 
 test('Bukhara Tile Mosaic Calm engine: motif, +09:00 KST, and interpretive boundary', () => {
