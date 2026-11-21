@@ -13392,13 +13392,14 @@ test('Hittite Telepinu Harmony Renewal engine: phases, +09:00 KST, and interpret
 
 test('Mapuche Kultrun Cosmic Balance engine: directions, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateMapucheKultrunCosmicBalance({ profile, now: new Date('2026-11-20T05:40:00Z'), question: '일과 휴식의 균형을 잡고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-MAPUCHE-KULTRUN-v2.1.0');
-  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.equal(rep.engineVersion, 'LUCKEY-MAPUCHE-KULTRUN-v2.2.0');
+  assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
+  assert.ok(rep.counterDirection.name !== rep.dominantDirection.name);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatMapucheKultrunPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('쿨트룬') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('쿨트룬') && prompt.includes('보완 방위') && prompt.includes('+09:00 (KST)'));
 });
 
 test('Melanesian Sand Drawing Pattern engine: motifs, +09:00 KST, and interpretive boundary', () => {
@@ -14060,13 +14061,14 @@ test('Karelian Runo Kantele Resonance engine: motif, +09:00 KST, and interpretiv
 
 test('Maltese Megalith Luzzu Harbor engine: symbol, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateMalteseMegalithLuzzuHarbor({ profile, now: new Date('2026-11-20T08:15:00Z'), question: '내 마음의 닻을 내리고 맑은 시야를 찾고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-MALTESE-LUZZU-v2.1.0');
-  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.equal(rep.engineVersion, 'LUCKEY-MALTESE-LUZZU-v2.2.0');
+  assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
+  assert.ok(rep.companionSymbol !== rep.harborSymbol);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatMalteseLuzzuPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('몰타') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('몰타') && prompt.includes('동반 상징') && prompt.includes('+09:00 (KST)'));
 });
 
 test('Uzbek Mahalla Rishtan Craft engine: virtue, +09:00 KST, and interpretive boundary', () => {
@@ -14129,13 +14131,14 @@ test('Evenki Buga Taiga Path engine: sign, +09:00 KST, and interpretive boundary
 
 test('Manchu Mukun White Mountain engine: principle, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateManchuMukunWhiteMountain({ profile, now: new Date('2026-11-20T08:28:00Z'), question: '오늘 내 몫의 작은 한 걸음을 묵직하게 깎고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-MANCHU-MUKUN-v2.1.0');
-  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.equal(rep.engineVersion, 'LUCKEY-MANCHU-MUKUN-v2.2.0');
+  assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
+  assert.ok(rep.companionPrinciple !== rep.mukunPrinciple);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatManchuMukunPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('만주') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('만주') && prompt.includes('동반 축') && prompt.includes('+09:00 (KST)'));
 });
 
 test('Portuguese Saudade Sagres Compass engine: compass, +09:00 KST, and interpretive boundary', () => {

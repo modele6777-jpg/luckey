@@ -6,10 +6,11 @@ export interface KultrunDirection {
   seasonAspect: string;
   coreInsight: string;
   practicalBalance: string;
+  reflectiveQuestion: string;
 }
 
 export interface MapucheKultrunResult {
-  engineVersion: 'LUCKEY-MAPUCHE-KULTRUN-v2.1.0';
+  engineVersion: 'LUCKEY-MAPUCHE-KULTRUN-v2.2.0';
   calculatedAtKst: string;
   questionFocus: string;
   dominantDirection: KultrunDirection;
@@ -28,6 +29,7 @@ const KULTRUN_DIRECTIONS: KultrunDirection[] = [
     seasonAspect: '봄 · 맑은 싹틈',
     coreInsight: '새로운 의도를 세우기 전 몸과 마음의 호흡을 먼저 고르게 맞추는 자리입니다.',
     practicalBalance: '오늘 시작할 일 하나만 골라 첫 15분의 리듬을 부드럽게 열어 두세요.',
+    reflectiveQuestion: '새벽 동방의 호흡처럼 무리한 속도를 내기 전에 먼저 고르게 맞추고 싶은 시작의 리듬은 무엇인가요?',
   },
   {
     name: 'Pikunmapu (북방)',
@@ -35,6 +37,7 @@ const KULTRUN_DIRECTIONS: KultrunDirection[] = [
     seasonAspect: '여름 · 열린 확장',
     coreInsight: '사람과 자원이 자연스럽게 오가는 흐름 속에서 과열되지 않는 중심을 지킵니다.',
     practicalBalance: '바쁜 일정 사이에도 물 한 잔과 짧은 환기 시간을 먼저 확보하세요.',
+    reflectiveQuestion: '활력이 오가는 한낮의 북방처럼 열기를 유지하면서도 과열되지 않게 식혀 줄 여백은 어디에 있나요?',
   },
   {
     name: 'Lafkenmapu (서방)',
@@ -42,6 +45,7 @@ const KULTRUN_DIRECTIONS: KultrunDirection[] = [
     seasonAspect: '가을 · 차분한 수렴',
     coreInsight: '이미 지나온 선택들을 탓하기보다 경험의 결실만 추려 다음 걸음으로 옮깁니다.',
     practicalBalance: '미뤄 둔 작은 마무리를 하나 정리해 마음의 자리를 비워 주세요.',
+    reflectiveQuestion: '서방 바다를 바라보는 갈무리의 자리에서 지나온 일 중 감사히 내려놓고 비울 몫은 무엇인가요?',
   },
   {
     name: 'WilliMapu (남방)',
@@ -49,13 +53,13 @@ const KULTRUN_DIRECTIONS: KultrunDirection[] = [
     seasonAspect: '겨울 · 단단한 내면',
     coreInsight: '바깥의 속도를 잠시 멈추고 땅 아래 뿌리처럼 내면의 체력을 회복하는 구간입니다.',
     practicalBalance: '불필요한 연락이나 소음을 줄이고 조용히 내 컨디션을 먼저 살피세요.',
+    reflectiveQuestion: '남방의 깊은 뿌리처럼 바깥 속도를 늦추고 오늘 먼저 회복해 주어야 할 내 안의 체력은 어디인가요?',
   },
 ];
 
 function formatKstTimestamp(date: Date): string {
   const kst = new Date(date.getTime() + 9 * 60 * 60 * 1000);
-  const iso = kst.toISOString().slice(0, 19);
-  return `${iso}+09:00 (KST)`;
+  return `${kst.toISOString().slice(0, 16).replace('T', ' ')} +09:00 (KST)`;
 }
 
 function stableHash(input: string): number {
@@ -74,25 +78,25 @@ export function calculateMapucheKultrunCosmicBalance(params: {
 }): MapucheKultrunResult {
   const now = params.now ?? new Date();
   const questionFocus = (params.question ?? '').trim() || '삶의 네 방위 균형과 호흡';
-  const seed = stableHash(
-    `${JSON.stringify(params.profile.fate ?? {})}|${now.toISOString().slice(0, 13)}|${questionFocus}|mapuche-kultrun`
-  );
+  const seedBase = `${JSON.stringify(params.profile.fate ?? {})}|${now.toISOString().slice(0, 13)}|${questionFocus}|mapuche-kultrun`;
+  const seed = stableHash(seedBase);
 
   const primaryIdx = seed % KULTRUN_DIRECTIONS.length;
-  const counterIdx = (primaryIdx + 2) % KULTRUN_DIRECTIONS.length;
+  const counterOffset = 1 + (stableHash(`${seedBase}|counter`) % (KULTRUN_DIRECTIONS.length - 1));
+  const counterIdx = (primaryIdx + counterOffset) % KULTRUN_DIRECTIONS.length;
   const dominantDirection = KULTRUN_DIRECTIONS[primaryIdx];
   const counterDirection = KULTRUN_DIRECTIONS[counterIdx];
 
   return {
-    engineVersion: 'LUCKEY-MAPUCHE-KULTRUN-v2.1.0',
+    engineVersion: 'LUCKEY-MAPUCHE-KULTRUN-v2.2.0',
     calculatedAtKst: formatKstTimestamp(now),
     questionFocus,
     dominantDirection,
     counterDirection,
     kumeMongenTheme: `${dominantDirection.koreanLabel}을 중심에 두고 ${counterDirection.koreanLabel}으로 여백을 맞추는 퀴메 몽겐(Küme Mongen·조화로운 삶) 흐름`,
     ritualAction: dominantDirection.practicalBalance,
-    reflectionFocus: `${dominantDirection.name}(${dominantDirection.seasonAspect})의 시선에서 오늘의 과부하와 여백을 함께 살핍니다.`,
-    reflectiveQuestion: `지금 내 하루에서 '${dominantDirection.koreanLabel}'과 가장 균형이 필요한 영역은 어디인가요?`,
+    reflectionFocus: `${dominantDirection.name}(${dominantDirection.seasonAspect})의 시선과 '${counterDirection.name}'의 보완 호흡을 함께 엮어 오늘의 과부하와 여백을 살핍니다.`,
+    reflectiveQuestion: dominantDirection.reflectiveQuestion,
     interpretiveBoundary:
       '마푸체 쿨트룬 관점은 계절과 방위의 균형을 비유적으로 성찰하는 상징 도구이며, 개인 점수·심리 진단·미래 예측이 아닙니다.',
   };
