@@ -2,14 +2,15 @@ import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { BookOpen, Square, Volume2, X } from 'lucide-react';
 import { ScreenPortal } from '@/components/layout/ScreenPortal';
-import { pageGuideSpeech, type PageGuide } from '@/lib/pageGuides';
+import { pageGuideSpeech, type PageGuide, type PageGuideSection } from '@/lib/pageGuides';
 import { playTTSInChunks, stopTTS, useTTSState } from '@/utils/tts';
 import { triggerHaptic } from '@/lib/omniWarp/omniWarpHaptics';
 
 /** 📘 Simple guide dialog with a listen (TTS) button. */
 export function PageGuideDialog({ guide, onClose }: { guide: PageGuide; onClose: () => void }) {
   const tts = useTTSState();
-  const speech = pageGuideSpeech(guide);
+  const [section, setSection] = useState<PageGuideSection>('guide');
+  const speech = pageGuideSpeech(guide, section);
   const mine = Boolean((tts.isSpeaking || tts.isLoading) && (tts.activeFullText === speech || tts.activeText === speech || (tts.activeFullText || '').startsWith(guide.title)));
   const [requested, setRequested] = useState(false);
   const playing = mine || (requested && tts.isLoading);
@@ -29,6 +30,12 @@ export function PageGuideDialog({ guide, onClose }: { guide: PageGuide; onClose:
     return () => window.removeEventListener('keydown', onKey);
   });
 
+  const switchSection = (next: PageGuideSection) => {
+    if (next === section) return;
+    if (mine || requested) { stopTTS(); setRequested(false); }
+    setSection(next);
+  };
+
   const toggleListen = () => {
     triggerHaptic('whitehole');
     if (playing) {
@@ -42,7 +49,7 @@ export function PageGuideDialog({ guide, onClose }: { guide: PageGuide; onClose:
 
   return (
     <ScreenPortal>
-      <div className="fixed inset-0 z-[60] flex items-start justify-center overflow-y-auto bg-black/45 px-4 pt-14 pb-10 backdrop-blur-[2px]" onClick={close}>
+      <div className="fixed inset-0 z-[60] flex items-start justify-center overflow-y-auto bg-black/45 px-4 pt-4 pb-32 backdrop-blur-[2px]" onClick={close}>
         <motion.div
           role="dialog"
           aria-modal="true"
@@ -64,7 +71,21 @@ export function PageGuideDialog({ guide, onClose }: { guide: PageGuide; onClose:
             <button type="button" onClick={close} aria-label="가이드 닫기" className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-slate-500 hover:bg-slate-100"><X size={18} /></button>
           </div>
 
-          <div className="mt-3.5 flex gap-2">
+          <div className="mt-3.5 grid grid-cols-2 gap-1 rounded-full bg-slate-100 p-1" role="tablist" aria-label="가이드 보기">
+            {([['guide', '📖 사용 가이드'], ['tips', '💡 활용 팁']] as const).map(([id, label]) => (
+              <button
+                key={id}
+                type="button"
+                role="tab"
+                aria-selected={section === id}
+                data-page-guide-section={id}
+                onClick={() => switchSection(id)}
+                className={`rounded-full py-2 text-[13px] font-bold transition-colors ${section === id ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500'}`}
+              >{label}</button>
+            ))}
+          </div>
+
+          <div className="mt-2.5 flex gap-2">
             <button
               type="button"
               data-page-guide-listen
@@ -72,18 +93,29 @@ export function PageGuideDialog({ guide, onClose }: { guide: PageGuide; onClose:
               onClick={toggleListen}
               className={`flex-1 inline-flex items-center justify-center gap-1.5 rounded-full px-4 py-2.5 text-sm font-bold active:scale-95 ${playing ? 'bg-slate-800 text-white' : 'bg-amber-400 text-slate-950'}`}
             >
-              {playing ? <><Square size={14} /> 그만 듣기</> : <><Volume2 size={16} /> 소리로 듣기</>}
+              {playing ? <><Square size={14} /> 그만 듣기</> : <><Volume2 size={16} /> {section === 'tips' ? '팁 듣기' : '가이드 듣기'}</>}
             </button>
             <button type="button" onClick={close} className="rounded-full border border-slate-200 px-5 py-2.5 text-sm font-bold text-slate-700 active:scale-95">확인</button>
           </div>
-          <ul className="mt-3.5 space-y-2">
-            {guide.tips.map((tip, index) => (
-              <li key={index} className="flex gap-3 rounded-2xl bg-slate-50 px-3.5 py-2.5">
-                <span className="text-lg leading-none" aria-hidden="true">{tip.icon}</span>
-                <span className="text-[13.5px] leading-relaxed text-slate-700 break-keep">{tip.text}</span>
-              </li>
-            ))}
-          </ul>
+          {section === 'guide' ? (
+            <ol className="mt-3.5 space-y-2" data-page-guide-steps>
+              {guide.steps.map((step, index) => (
+                <li key={index} className="flex gap-3 rounded-2xl bg-slate-50 px-3.5 py-2.5">
+                  <span className="mt-[1px] flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-amber-400 text-[11px] font-black text-slate-950">{index + 1}</span>
+                  <span className="text-[13.5px] leading-relaxed text-slate-700 break-keep">{step}</span>
+                </li>
+              ))}
+            </ol>
+          ) : (
+            <ul className="mt-3.5 space-y-2" data-page-guide-tips>
+              {guide.tips.map((tip, index) => (
+                <li key={index} className="flex gap-3 rounded-2xl bg-amber-50/70 px-3.5 py-2.5">
+                  <span className="text-lg leading-none" aria-hidden="true">{tip.icon}</span>
+                  <span className="text-[13.5px] leading-relaxed text-slate-700 break-keep">{tip.text}</span>
+                </li>
+              ))}
+            </ul>
+          )}
 
         </motion.div>
       </div>
