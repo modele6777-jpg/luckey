@@ -501,7 +501,8 @@ export function buildUserFifteenToolsDigest(profile?: UserProfile, asOfDate: Dat
           ? ` · 삼기 회합 [${hq.threeWondersAlliance.wondersDetected.join('·')}]`
           : '';
         const seasonWin = hq.tacticalSeasonWindows?.peakActionSeason ? ` · 최적 결단 계절 [${hq.tacticalSeasonWindows.peakActionSeason}]` : '';
-        const dirInfo = se.direction ? ` · 방위 ${se.direction}` : '';
+        const seDirection = hq.palaces?.find((p) => p.palace === se.palace)?.direction;
+        const dirInfo = seDirection ? ` · 방위 ${seDirection}` : '';
         qimenLine = `\n- 홍국기문(4주 9궁): 세효 [${se.palaceName}](${se.element}·${se.star}${dirInfo}) · 응효 [${eung.palaceName}](${eung.element}·${eung.star}) · 중궁 [${jg.palaceName}](${jg.element}) · 세효 8문 ${gate}(${se.gateCategory})${resonance}${wonders} · 삼형살 ${hq.samhyeong.formed ? `${hq.samhyeong.type || '삼형'} 성립` : hq.samhyeong.partial ? '부분형' : '미성립'}(파극 위험 ${riskTone}) · 5행 통기 ${tonggiTone}${seasonWin}.`;
       }
     } catch (_) {}
