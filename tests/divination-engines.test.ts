@@ -15707,3 +15707,21 @@ test('buildUserFifteenToolsDigest integrates 4th-round Kabbalah, I Ching, and Th
   assert.ok(digest.includes('호라삿 조율 [') && digest.includes('원소 진단('));
   assert.ok(!/vitalityIndex|affinityScore|decisionScore/.test(digest));
 });
+
+test('buildUserFifteenToolsDigest integrates 4th-round Tojeong, Kyusei, and Taiyi ritual actions, focus, and boundaries without raw scores', () => {
+  const profile: any = {
+    basic: {
+      name: '제제',
+      birthdate: '1994-01-24',
+      birthtime: '10:30',
+      calendarType: 'solar',
+      isLeapMonth: false,
+      gender: 'male',
+    },
+  };
+  const digest = buildUserFifteenToolsDigest(profile, new Date('2026-11-22T06:26:00+09:00'));
+  assert.ok(digest.includes('방위 의례:') && digest.includes('성찰 초점:'));
+  assert.ok(digest.includes('음력 ') && digest.includes('해석 경계:'));
+  assert.ok(digest.includes('연국 의례:') && digest.includes('대세 국면 ['));
+  assert.ok(!/juBalanceScore|initiativeIndex|defensiveIndex/.test(digest));
+});
