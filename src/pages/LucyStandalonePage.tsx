@@ -36,7 +36,7 @@ import { setSelectedEngineKeys } from '@/lib/lucyEngineSelection';
 import { isLucyMasterBgmPreferred, startLucyMasterBgm, stopLucyMasterBgm } from '@/lib/lucyMasterBgm';
 import remarkGfm from 'remark-gfm';
 import { safeSessionStorage, safeLocalStorage } from '@/utils/safeStorage';
-import { isLucyMasterModeOn, setLucyMasterMode, LUCY_MASTER_MODE_EVENT, publishLucyTarotDraw, isAcceptingTarotDrawOffer, buildTarotHouseGuide, createTarotHouseGreeting, consumeTarotHouseGreetingPending, parseAnswerChoices, isAskingForDeepEngines, createTarotOfferOnUnfold, setLucyMasterLink, getLucyMasterLink, resolveLucyMasterLinkChoice, buildLinkedLucyContext, isTarotHouseGreetingPending, findConcernAnchor, createTarotHouseConcernQuestion, LUCY_TAROT_PICK_REQUEST_EVENT, LUCY_TAROT_PICKED_EVENT, LUCY_TAROT_PICK_CANCEL_EVENT, tarotPickPositions, toDetectedTarotCards, takeQueuedMasterTarotSpread, buildSpreadLayoutContext, matchMasterTarotSpread, isAutoSpreadCandidate } from '@/lib/lucyMasterMode';
+import { isLucyMasterModeOn, setLucyMasterMode, LUCY_MASTER_MODE_EVENT, publishLucyTarotDraw, isAcceptingTarotDrawOffer, buildTarotHouseGuide, createTarotHouseGreeting, consumeTarotHouseGreetingPending, parseAnswerChoices, isAskingForDeepEngines, createTarotOfferOnUnfold, setLucyMasterLink, getLucyMasterLink, resolveLucyMasterLinkChoice, buildLinkedLucyContext, isTarotHouseGreetingPending, findConcernAnchor, createTarotHouseConcernQuestion, LUCY_TAROT_PICK_REQUEST_EVENT, LUCY_TAROT_PICKED_EVENT, LUCY_TAROT_PICK_CANCEL_EVENT, tarotPickPositions, toDetectedTarotCards, takeQueuedMasterTarotSpread, buildSpreadLayoutContext, matchMasterTarotSpread, isAutoSpreadCandidate, getLucyMasterDepth, useLucyMasterDepth, LUCY_MASTER_DEPTH_EVENT, LUCY_MASTER_DEPTH_INFO, LUCY_MASTER_MAX_DEPTH, type LucyMasterDepth } from '@/lib/lucyMasterMode';
 import { cleanAssistantMessageDisplay, cleanUserMessageDisplay } from '@/utils/cleanMessage';
 import { detectLucyChannelsFromText, formatChannelsModeTitle } from '@/lib/lucyAutoModeDetector';
 import { selectOptimalDivinationTools, THEME_PRIMARY_DIVINATION_TOOLS, type SelectedDivinationToolsResult } from '@/lib/fifteenDivinationTools';
@@ -698,7 +698,7 @@ const detectPageChannels = (text: string, options: { allowMaster?: boolean } = {
 let lucyMountedBefore = false;
 
 /** Lucy Master answers take longer; show the elapsed time so the wait never looks frozen. */
-function LucyThinkingElapsed({ isLight }: { isLight: boolean }) {
+function LucyThinkingElapsed({ isLight, depth = 1 }: { isLight: boolean; depth?: LucyMasterDepth }) {
   const [seconds, setSeconds] = useState(0);
   useEffect(() => {
     const startedAt = Date.now();
@@ -707,7 +707,7 @@ function LucyThinkingElapsed({ isLight }: { isLight: boolean }) {
   }, []);
   return (
     <span data-lucy-thinking-elapsed className={`text-[11px] font-semibold tabular-nums ml-1 ${isLight ? 'text-emerald-800/80' : 'text-white/70'}`}>
-      {seconds}초 · 보통 1분 안팎
+      {seconds}초 · {depth >= 3 ? '심층 상담이라 1~2분 걸릴 수 있어요' : depth === 2 ? '심화 상담이라 조금 더 걸려요' : '보통 1분 안팎'}
     </span>
   );
 }
@@ -748,6 +748,21 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
 
   // 🔮 점술모드(Lucy Master): 빅뱅 버튼 홀드로 켜고 끈다. 접힘·펼침 모두 같은 값을 쓴다.
   const [isMasterMode, setIsMasterMode] = useState<boolean>(() => isLucyMasterModeOn());
+  // 🔮 상담 깊이(빅뱅 홀드로 1→2→3). 바뀔 때 잠깐 안내를 띄운다.
+  const masterDepth = useLucyMasterDepth();
+  const [depthNotice, setDepthNotice] = useState<{ depth: LucyMasterDepth; changed: boolean; key: number } | null>(null);
+  useEffect(() => {
+    let timer = 0;
+    const onDepth = (e: Event) => {
+      const detail = (e as CustomEvent<{ depth: LucyMasterDepth; changed: boolean }>).detail;
+      if (!detail) return;
+      setDepthNotice({ depth: detail.depth, changed: detail.changed, key: Date.now() });
+      window.clearTimeout(timer);
+      timer = window.setTimeout(() => setDepthNotice(null), 2800);
+    };
+    window.addEventListener(LUCY_MASTER_DEPTH_EVENT, onDepth);
+    return () => { window.removeEventListener(LUCY_MASTER_DEPTH_EVENT, onDepth); window.clearTimeout(timer); };
+  }, []);
   // 홀드로 루시 마스터에 들어올 때 잠깐 보여주는 로딩 화면
   const [isMasterEntering, setIsMasterEntering] = useState<boolean>(() => isLucyMasterModeOn() && isTarotHouseGreetingPending());
   // 🎵 점술모드 배경음: 켜져 있으면 재생(선호 기억), 모드를 끄거나 화면을 떠나면 멈춤
@@ -3423,7 +3438,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
     }
     const wantsDeepEngines = Boolean(divinationLayout) && isAskingForDeepEngines(userCleanText, lastLucyText);
     const divinationMode = divinationLayout
-      ? { base: (isTarotIntent ? 'tarot_saju' : 'saju') as 'saju' | 'tarot_saju', deep: wantsDeepEngines }
+      ? { base: (isTarotIntent ? 'tarot_saju' : 'saju') as 'saju' | 'tarot_saju', deep: wantsDeepEngines, depth: getLucyMasterDepth() }
       : undefined;
 
     // 🔮 질문 의도와 활성 테마에 맞춰 도구 지침을 주입하고, 계산 근거와 상징 참고를 구분
@@ -3447,7 +3462,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
       }
       // 처음 꺼낸 고민을 중심에 고정해 대화가 산으로 가지 않게 한다 (아직 없으면 이번 말이 중심 고민)
       const concernAnchor = findConcernAnchor([...lucyMessages, { role: 'user', content: userCleanText }]);
-      const houseGuide = buildTarotHouseGuide(divinationLayout, isTarotIntent, wantsDeepEngines, concernAnchor);
+      const houseGuide = buildTarotHouseGuide(divinationLayout, isTarotIntent, wantsDeepEngines, concernAnchor, getLucyMasterDepth());
       extraSystemContext = extraSystemContext ? `${extraSystemContext}\n\n${houseGuide}` : houseGuide;
     }
 
@@ -3794,6 +3809,29 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
         maxWidth: '100%',
       }}
     >
+      {/* 🔮 상담 깊이 안내 (빅뱅 홀드). 시각 전용, 입력을 막지 않는다. */}
+      <AnimatePresence>
+        {isMasterMode && depthNotice && (
+          <motion.div
+            key={depthNotice.key}
+            data-lucy-master-depth-notice={depthNotice.depth}
+            role="status"
+            aria-live="polite"
+            initial={{ opacity: 0, y: -10, scale: 0.96 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.25 }}
+            className="pointer-events-none absolute left-1/2 top-16 z-[60] w-[min(92%,360px)] -translate-x-1/2 rounded-2xl border border-amber-300/50 bg-[#1e0f3a]/90 px-4 py-3 text-center shadow-[0_10px_40px_rgba(124,58,237,0.45)] backdrop-blur-md"
+          >
+            <p className="text-sm font-black text-amber-200">
+              {depthNotice.changed ? `🔮 상담 깊이 ${depthNotice.depth}단계 · ${LUCY_MASTER_DEPTH_INFO[depthNotice.depth].name}` : `🔮 이미 가장 깊은 ${LUCY_MASTER_MAX_DEPTH}단계예요`}
+            </p>
+            <p className="mt-1 text-xs leading-relaxed text-violet-100/90 break-keep">
+              {depthNotice.changed ? `다음 답부터 ${LUCY_MASTER_DEPTH_INFO[depthNotice.depth].note}` : '빅뱅 버튼을 한 번 탭하면 일반 루시로 돌아가요'}
+            </p>
+          </motion.div>
+        )}
+      </AnimatePresence>
       {/* 🌌 Shared AI/Plus sky background; clover accents belong to Pro modes only */}
       {isMasterMode
         ? <LucyMasterTarotRoom />
@@ -3866,6 +3904,20 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
                       <LucyModeName plus={showPlusMarker} pro={false} master={isMasterMode} isLight={isLight} />
                     </span>
                   </h1>
+                  {isMasterMode && (
+                    <span
+                      data-lucy-master-depth={masterDepth}
+                      title="빅뱅 버튼을 꾹 누르면 상담이 한 단계 깊어져요"
+                      className="inline-flex items-center gap-1 rounded-full border border-amber-300/50 bg-amber-400/15 px-2 py-0.5 text-[10px] font-bold text-amber-100 whitespace-nowrap shrink-0"
+                    >
+                      <span aria-hidden="true" className="inline-flex gap-[2px]">
+                        {[1, 2, 3].map(level => (
+                          <span key={level} className={`h-1.5 w-1.5 rounded-full ${level <= masterDepth ? 'bg-amber-300 shadow-[0_0_6px_rgba(252,211,77,0.8)]' : 'bg-white/20'}`} />
+                        ))}
+                      </span>
+                      깊이 {masterDepth} · {LUCY_MASTER_DEPTH_INFO[masterDepth].name}
+                    </span>
+                  )}
                   {/* 엔진함은 점술모드(루시 마스터)에서만 보인다 */}
                   {isMasterMode && <LucyLibraryTrigger
                     type="button"
@@ -4339,7 +4391,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
               >
                 기본 도구와 심층 관점을 함께 살펴보고 있어요...
               </span>
-              {isMasterMode && <LucyThinkingElapsed isLight={isLight} />}
+              {isMasterMode && <LucyThinkingElapsed isLight={isLight} depth={masterDepth} />}
             </div>
           )}
           

@@ -35,6 +35,17 @@ test('deep request adds concern-related engines', () => {
   assert.equal(deep.routePlan.isMasterMobilization, false);
 });
 
+test('consultation depth adds tools and perspectives step by step', () => {
+  const depth = (level: 1 | 2 | 3) => routeAndExecute({ text: '이직 고민', profile, requireBasicAndDeep: true, divinationMode: { base: 'saju', depth: level } });
+  const [one, two, three] = [depth(1), depth(2), depth(3)];
+  assert.ok(two.routePlan.targetTools.length >= one.routePlan.targetTools.length);
+  assert.ok(three.routePlan.targetTools.length > two.routePlan.targetTools.length);
+  assert.ok((two.routePlan.deepEngineKeys ?? []).length > (one.routePlan.deepEngineKeys ?? []).length);
+  assert.ok((three.routePlan.deepEngineKeys ?? []).length > (two.routePlan.deepEngineKeys ?? []).length);
+  assert.ok(three.routePlan.targetTools.includes('saju'));
+  assert.equal(three.routePlan.isMasterMobilization, false);
+});
+
 test('answer choices are parsed from the last line', () => {
   const r = parseAnswerChoices('요즘 많이 지쳤어?\n[답변선택: 응, 좀 지쳤어 | 아니 괜찮아 | 잘 모르겠어]');
   assert.equal(r.text, '요즘 많이 지쳤어?');
