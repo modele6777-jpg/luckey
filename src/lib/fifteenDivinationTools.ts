@@ -368,10 +368,12 @@ export function buildUserFifteenToolsDigest(profile?: UserProfile, asOfDate: Dat
       const th = calculateThaiHorasat({ profile, targetDate: referenceDate });
       if (th.status === 'calculated' && th.birthDayPlanet && th.mahaThaksa && th.fourElements) {
         const dyn = th.planetaryFriendEnemyDynamic ? ` · 친우역학: ${th.planetaryFriendEnemyDynamic.relationshipType}` : '';
-        const antardasha = th.mahaThaksaAntardasha ? ` · 소운 ${th.mahaThaksaAntardasha.antardashaPlanetName}(${th.mahaThaksaAntardasha.pacingTempo})` : '';
+        const antardasha = th.mahaThaksaAntardasha ? ` · 소운 ${th.mahaThaksaAntardasha.antardashaPlanetName}(${th.mahaThaksaAntardasha.pacingTempo} — ${th.mahaThaksaAntardasha.actionAdvice})` : '';
         const vitalityTone = th.fourElements.vitalityIndex >= 80 ? '충만' : th.fourElements.vitalityIndex >= 60 ? '안정' : '조율 필요';
         const luckyDir = th.remedies?.luckyDirection ? ` · 길방위 ${th.remedies.luckyDirection}` : '';
-        thaiLine = `- 태국점성술 요일 상징: ${KOR_WEEKDAYS[dow]} · 전통 색상 ${colors[dow]}. [호라삿 정밀 차트]: 수호신 ${th.birthDayPlanet.thaiName}(${th.birthDayPlanet.character}) · 마하탁사 108년 대운(${th.mahaThaksa.current.planet.planet} 대운 · 속성: ${th.mahaThaksa.current.attribute.korean}${dyn}${antardasha}) · 4대 원소 본명 ${th.fourElements.birthThaat.korean}/계절 ${th.fourElements.currentThaat.korean} 활력 [${vitalityTone}]${luckyDir}.`;
+        const seasonalTactics = th.seasonalThaatTactics ? ` · 최적 결단 계절 [${th.seasonalThaatTactics.peakActionSeason}] · 활력 좌우명: ${th.seasonalThaatTactics.vitalityPreservationMotto}` : '';
+        const practiceNote = th.remedies?.practice ? ` · 개운 실천: ${th.remedies.practice}` : '';
+        thaiLine = `- 태국점성술 요일 상징: ${KOR_WEEKDAYS[dow]} · 전통 색상 ${colors[dow]}. [호라삿 정밀 차트]: 수호신 ${th.birthDayPlanet.thaiName}(${th.birthDayPlanet.character}) · 마하탁사 108년 대운(${th.mahaThaksa.current.planet.planet} 대운 · 속성: ${th.mahaThaksa.current.attribute.korean}${dyn}${antardasha}) · 4대 원소 본명 ${th.fourElements.birthThaat.korean}/계절 ${th.fourElements.currentThaat.korean} 활력 [${vitalityTone}]${luckyDir}${seasonalTactics}${practiceNote}.`;
       } else {
         thaiLine = `- 태국점성술 요일 상징: ${KOR_WEEKDAYS[dow]} · 전통 색상 ${colors[dow]}. 정밀 호라삿 차트 미계산.`;
       }
@@ -405,8 +407,16 @@ export function buildUserFifteenToolsDigest(profile?: UserProfile, asOfDate: Dat
       if (kb.status === 'calculated' && kb.numerology) {
         const describePillar = (v: number) => (v >= 50 ? '우세' : v >= 25 ? '균형' : '보완 필요');
         const worldNote = `${kb.numerology.dominantWorld.name}(${kb.numerology.dominantWorld.korean}·${kb.numerology.dominantWorld.element})`;
-        const heartNote = kb.numerology.tipherethAlignment ? ` · 티페레트 [${kb.numerology.tipherethAlignment.balanceStatus}]` : '';
-        kabbalahLine = `\n- 카발라 생명나무: 라이프 패스 세피라 ${kb.numerology.lifePathSephirah.name}(${kb.numerology.lifePathSephirah.hebrew} · ${kb.numerology.lifePathSephirah.title}) · 퍼스널리티 세피라 ${kb.numerology.personalitySephirah.name} · 소울 패스 제${kb.numerology.soulPath.number}경로(${kb.numerology.soulPath.hebrewLetter} ${kb.numerology.soulPath.tarotName} · ${kb.numerology.soulPath.attribution.value}) · 지배 세계 ${worldNote} · 3기둥 밸런스(자비 ${describePillar(kb.numerology.pillarBalance.mercy)} / 엄격 ${describePillar(kb.numerology.pillarBalance.severity)} / 균형 ${describePillar(kb.numerology.pillarBalance.mildness)})${heartNote}.`;
+        const heartNote = kb.numerology.tipherethAlignment
+          ? ` · 티페레트 [${kb.numerology.tipherethAlignment.balanceStatus}](${kb.numerology.tipherethAlignment.solarHeartGuidance})`
+          : '';
+        const flashNote = kb.numerology.lightningFlash
+          ? ` · 번개 섬광 계위 [${kb.numerology.lightningFlash.stageTitle}](${kb.numerology.lightningFlash.spiritualLesson})`
+          : '';
+        const worldManifest = kb.numerology.fourWorldsSpectrum?.manifestationAdvice
+          ? ` · 현현 조언: ${kb.numerology.fourWorldsSpectrum.manifestationAdvice}`
+          : '';
+        kabbalahLine = `\n- 카발라 생명나무: 라이프 패스 세피라 ${kb.numerology.lifePathSephirah.name}(${kb.numerology.lifePathSephirah.hebrew} · ${kb.numerology.lifePathSephirah.title}) · 퍼스널리티 세피라 ${kb.numerology.personalitySephirah.name} · 소울 패스 제${kb.numerology.soulPath.number}경로(${kb.numerology.soulPath.hebrewLetter} ${kb.numerology.soulPath.tarotName} · ${kb.numerology.soulPath.attribution.value}) · 지배 세계 ${worldNote} · 3기둥 밸런스(자비 ${describePillar(kb.numerology.pillarBalance.mercy)} / 엄격 ${describePillar(kb.numerology.pillarBalance.severity)} / 균형 ${describePillar(kb.numerology.pillarBalance.mildness)})${heartNote}${flashNote}${worldManifest}.`;
       }
     } catch (_) {}
 
@@ -533,12 +543,15 @@ export function buildUserFifteenToolsDigest(profile?: UserProfile, asOfDate: Dat
       }
     } catch (_) {}
 
-    // 11. 주역 (64괘 본·지·호·착·종 4대 대칭 괘상 · 체용 생극 · 경방 8궁 세응 결정론 산법)
+    // 11. 주역 (64괘 본·지·호·착·종 4대 대칭 괘상 · 체용 생극 · 동효 국면 · 경방 8궁 세응 결정론 산법)
     let ichingLine = '';
     try {
       const ic = calculateIchingMaster(referenceDate);
       if (ic.status === 'calculated') {
-        ichingLine = `\n- 주역(64괘): 본괘 [${ic.primary.name}] → 지괘 [${ic.changed.name}] · 호괘 [${ic.nuclear.name}] · 착괘 [${ic.opposite.name}] · 종괘 [${ic.reversed.name}] · 체용관계 ${ic.tiYong.relationship}(${ic.tiYong.tiElement}/${ic.tiYong.yongElement}) · 주효 [${ic.dominantStage.yaoName} · ${ic.dominantStage.lifeStage}] · 경방 ${ic.palGongSeYing.palaceName}(세 ${ic.palGongSeYing.seYao}효⇄응 ${ic.palGongSeYing.yingYao}효 · ${ic.palGongSeYing.seYingHarmony}) · 결단 기조 [${ic.decisionGrade}].`;
+        const dyn = ic.hexagramDynamics;
+        const dynNote = dyn ? ` · 동효 국면 [${dyn.phaseShift} / ${dyn.movingEntropy}] · 전반(${dyn.strategicWindow.firstHalf})→후반(${dyn.strategicWindow.secondHalf})` : '';
+        const coopNote = ic.palGongSeYing.cooperationAdvice ? ` · 세응 처신: ${ic.palGongSeYing.cooperationAdvice}` : '';
+        ichingLine = `\n- 주역(64괘): 본괘 [${ic.primary.name}] → 지괘 [${ic.changed.name}] · 호괘 [${ic.nuclear.name}] · 착괘 [${ic.opposite.name}] · 종괘 [${ic.reversed.name}] · 체용관계 ${ic.tiYong.relationship}(${ic.tiYong.tiElement}/${ic.tiYong.yongElement}) · 주효 [${ic.dominantStage.yaoName} · ${ic.dominantStage.lifeStage}] · 경방 ${ic.palGongSeYing.palaceName}(세 ${ic.palGongSeYing.seYao}효⇄응 ${ic.palGongSeYing.yingYao}효 · ${ic.palGongSeYing.seYingHarmony})${dynNote}${coopNote} · 결단 기조 [${ic.decisionGrade}].`;
       }
     } catch (_) {}
 
