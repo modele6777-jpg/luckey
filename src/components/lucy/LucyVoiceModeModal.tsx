@@ -15,6 +15,7 @@ import {
 import { playTTS, stopTTS, subscribeTTS } from '@/utils/tts';
 import { unlockAudioPlayback, primeTTSAudioElement } from '@/lib/audio';
 import { triggerHaptic } from '@/lib/omniWarp/omniWarpHaptics';
+import { collectSpeechTranscript, createEndOfSpeechWatcher, type EndOfSpeechWatcher } from '@/lib/speechAutoSend';
 
 type VoiceState = 'idle' | 'listening' | 'thinking' | 'speaking' | 'error';
 
@@ -93,7 +94,12 @@ export function LucyVoiceModeModal() {
     };
   }, [isOpen, voiceState]);
 
+  const speechWatcherRef = useRef<EndOfSpeechWatcher | null>(null);
+  // 늘 최신 전송 함수를 부르도록 (startListening은 한 번 만든 함수를 계속 쓴다)
+  const sendPromptRef = useRef<(text: string) => void>(() => {});
   const stopRecognition = useCallback(() => {
+    speechWatcherRef.current?.dispose();
+    speechWatcherRef.current = null;
     if (silenceTimerRef.current) {
       clearTimeout(silenceTimerRef.current);
       silenceTimerRef.current = null;
@@ -136,36 +142,21 @@ export function LucyVoiceModeModal() {
         setErrorMessage(null);
       };
 
+      // 말이 끝나면(들은 글자가 1.2초 동안 그대로면) 시리처럼 자동 전송한다. (iOS가 같은 결과를 반복해도 OK)
+      const watcher = createEndOfSpeechWatcher({
+        canSend: () => isCurrent() && !isPttActiveRef.current && voiceStateRef.current !== 'thinking' && voiceStateRef.current !== 'speaking',
+        onSend: (text) => { sendPromptRef.current(text); },
+      });
+      speechWatcherRef.current?.dispose();
+      speechWatcherRef.current = watcher;
+
       recognition.onresult = (event: any) => {
-        if (!isCurrent()) return;
-        let finalStr = '';
-        let interimStr = '';
-
-        for (let i = event.resultIndex; i < event.results.length; ++i) {
-          const item = event.results[i];
-          if (item.isFinal) {
-            finalStr += item[0].transcript;
-          } else {
-            interimStr += item[0].transcript;
-          }
-        }
-
-        const combined = (finalStr || interimStr).trim();
-        if (combined) {
-          latestTranscriptRef.current = combined;
-          setTranscript(combined);
-          setInterimTranscript(interimStr);
-
-          // PTT(홀드) 모드가 아닐 때만 1.2초 무음 감지 시 자동 전송
-          if (!isPttActiveRef.current) {
-            if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
-            silenceTimerRef.current = setTimeout(() => {
-              if (isCurrent() && combined.length >= 2 && voiceStateRef.current === 'listening') {
-                handleSendPrompt(combined);
-              }
-            }, 1250);
-          }
-        }
+        if (!isCurrent() || watcher.sent) return;
+        const { text, interim } = collectSpeechTranscript(event.results);
+        if (!watcher.heard(text)) return;
+        latestTranscriptRef.current = text;
+        setTranscript(text);
+        setInterimTranscript(interim);
       };
 
       recognition.onerror = (e: any) => {
@@ -180,6 +171,8 @@ export function LucyVoiceModeModal() {
 
       recognition.onend = () => {
         if (!isCurrent()) return;
+        // 브라우저가 듣기를 닫으면, 들은 말이 있을 때 바로 보낸다.
+        if (watcher.sent || watcher.flush()) return;
         // 모달이 열려있고 여전히 경청 상태라면 세션 재개
         if (voiceStateRef.current === 'listening') {
           try {
@@ -248,6 +241,7 @@ export function LucyVoiceModeModal() {
       startListening();
     }
   };
+  sendPromptRef.current = (text: string) => { void handleSendPrompt(text); };
 
   // 🔊 전역 TTS 상태 구독 (루시가 말하는 중인지 실시간 감지)
   useEffect(() => {

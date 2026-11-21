@@ -29,6 +29,7 @@ import { playTTSInChunks, stopTTS, subscribeTTS, normalizeTextForSpeech } from '
 import { unlockAudioPlayback, primeTTSAudioElement } from '@/lib/audio';
 import { splitIntoKakaoBubbles, joinKakaoBubblesForTTS } from '@/lib/lucyChatUtils';
 import { cleanAssistantMessageDisplay, cleanUserMessageDisplay } from '@/utils/cleanMessage';
+import { collectSpeechTranscript, createEndOfSpeechWatcher, type EndOfSpeechWatcher } from '@/lib/speechAutoSend';
 
 // 💬 퀵 말풍선 전용 감성 맞춤 예시 고민 풀 (루시 호리 라이브러리 및 데일리 힐링)
 const QUICK_LUCY_PROMPTS = [
@@ -637,7 +638,10 @@ export const LucyQuickChatBubble: React.FC<LucyQuickChatBubbleProps> = ({
   }, []);
 
   // 🎙️ 음성 인식 중지
+  const speechWatcherRef = useRef<EndOfSpeechWatcher | null>(null);
   const stopRecognition = useCallback(() => {
+    speechWatcherRef.current?.dispose();
+    speechWatcherRef.current = null;
     if (silenceTimerRef.current) {
       clearTimeout(silenceTimerRef.current);
       silenceTimerRef.current = null;
@@ -865,33 +869,21 @@ export const LucyQuickChatBubble: React.FC<LucyQuickChatBubbleProps> = ({
         setVoiceState('listening');
       };
 
+      // 말이 끝나면(들은 글자가 1.2초 동안 그대로면) 시리처럼 자동 전송한다. (iOS가 같은 결과를 반복해도 OK)
+      const watcher = createEndOfSpeechWatcher({
+        canSend: () => isCurrent() && voiceStateRef.current !== 'thinking' && voiceStateRef.current !== 'speaking',
+        onSend: (text) => { void handleSendRef.current(text); },
+      });
+      speechWatcherRef.current?.dispose();
+      speechWatcherRef.current = watcher;
+
       recognition.onresult = (event: any) => {
-        if (!isCurrent()) return;
-        let finalStr = '';
-        let interimStr = '';
-
-        for (let i = event.resultIndex; i < event.results.length; i++) {
-          const chunk = event.results[i][0].transcript;
-          if (event.results[i].isFinal) {
-            finalStr += chunk;
-          } else {
-            interimStr += chunk;
-          }
-        }
-
-        const combined = (finalStr || interimStr).trim();
-        if (combined) {
-          speechTranscriptRef.current = combined;
-          setSpeechTranscript(combined);
-          setSpeechInterim(interimStr);
-
-          if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
-          silenceTimerRef.current = setTimeout(() => {
-            if (isCurrent() && combined.length >= 2 && voiceStateRef.current === 'listening') {
-              void handleSendRef.current(combined);
-            }
-          }, 1300);
-        }
+        if (!isCurrent() || watcher.sent) return;
+        const { text, interim } = collectSpeechTranscript(event.results);
+        if (!watcher.heard(text)) return;
+        speechTranscriptRef.current = text;
+        setSpeechTranscript(text);
+        setSpeechInterim(interim);
       };
 
       recognition.onerror = (e: any) => {
@@ -906,6 +898,8 @@ export const LucyQuickChatBubble: React.FC<LucyQuickChatBubbleProps> = ({
 
       recognition.onend = () => {
         if (!isCurrent()) return;
+        // 브라우저가 듣기를 닫으면, 들은 말이 있을 때 바로 보낸다.
+        if (watcher.sent || watcher.flush()) return;
         if (voiceStateRef.current === 'listening') {
           try {
             recognition.start();
