@@ -19,6 +19,9 @@ import { BigBangButton } from "./components/omniwarp/BigBangButton";
 import { BigBangExpansionOverlay } from "./components/omniwarp/BigBangExpansionOverlay";
 import { KeyChannelTransition } from "./components/omniwarp/KeyChannelTransition";
 import { LuckyChannelTransition } from "./components/omniwarp/LuckyChannelTransition";
+import { PageGuideButton } from "./components/guide/PageGuide";
+import { resolvePageGuide } from "./lib/pageGuides";
+import { isKeyChannelPath } from "./components/omniwarp/KeyChannelTransition";
 import { BigBangMasterSuction } from "./components/omniwarp/BigBangMasterSuction";
 import ErrorBoundary from "./components/ErrorBoundary";
 import ReloadPrompt from "./components/ReloadPrompt";
@@ -221,12 +224,18 @@ function ChannelPage({ location }: { location: string }) {
       initial={['/epilogue', '/profile', '/chronicle'].includes(path) ? false : { opacity: 0.88 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.1, ease: 'easeOut' }}
-      className="channel-page w-full h-full flex flex-col min-h-0"
+      className="channel-page relative w-full h-full flex flex-col min-h-0"
     >
       {isLuckyChannel && <AuroraBackground channel />}
       <div className="channel-page-content relative z-[1] w-full h-full flex flex-col min-h-0">
         <ActivePage loc={location} />
       </div>
+      {/* 📘 우측 상단 가이드 (Lucy·Key는 각자 헤더 안에 버튼이 있다) */}
+      {!isLucyThemeRoute(path) && !isKeyChannelPath(path) && (
+        <div className="channel-page-guide absolute right-3 z-[45]" style={{ top: 'calc(env(safe-area-inset-top, 0px) + 12px)' }}>
+          <PageGuideButton guide={resolvePageGuide(path)} tone={isLuckyChannel ? 'dark' : resolveChannelThemeFromPath(path) === 'light' ? 'light' : 'dark'} />
+        </div>
+      )}
     </motion.div>
   );
 }

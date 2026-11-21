@@ -8281,3 +8281,22 @@ button, a, input, textarea, select {
   cursor: pointer;
 }
 html.key-search-open, html.key-search-open body { overflow: hidden; }
+
+.key-guide-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 34px;
+  padding: 0 12px;
+  border-radius: 999px;
+  border: 1px solid var(--border-linen, rgba(0, 0, 0, 0.1));
+  background: var(--bg-card, #fff);
+  color: var(--text-body, #3b2f2a);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm, 0 2px 8px rgba(0, 0, 0, 0.06));
+  -webkit-tap-highlight-color: transparent;
+}
+.key-guide-btn svg { color: var(--copper-primary, #c9805c); }
+.key-guide-btn:active { transform: scale(0.95); }

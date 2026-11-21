@@ -36,6 +36,8 @@ import { setSelectedEngineKeys } from '@/lib/lucyEngineSelection';
 import { detectMasterConcernTopic, getMasterDepthPrompts, type MasterConcernTopic } from '@/lib/lucyMasterPrompts';
 import { hasMeaningfulMasterSession, type MasterSessionCardSource } from '@/lib/lucyMasterSessionCard';
 import { LucyMasterSessionCard } from '@/components/chat/LucyMasterSessionCard';
+import { PageGuideButton } from '@/components/guide/PageGuide';
+import { getPageGuide } from '@/lib/pageGuides';
 import { archiveMasterSession, buildDepthContinuityContext, buildDepthLinkedLucyContext, buildPastMasterSessionsContext } from '@/lib/lucyMasterContinuity';
 import { isLucyMasterBgmPreferred, startLucyMasterBgm, stopLucyMasterBgm, setLucyMasterBgmDepth } from '@/lib/lucyMasterBgm';
 import remarkGfm from 'remark-gfm';
@@ -3997,6 +3999,8 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
 
           {/* Right Action Tools: 검색 · 자동 읽기 · 내보내기 */}
           <div className="lucy-header-actions flex items-center gap-1.5 sm:gap-2 shrink-0">
+            {/* 📘 가이드 */}
+            <PageGuideButton guide={getPageGuide(isMasterMode ? 'master' : 'lucy')} tone={isLight ? 'light' : 'dark'} />
             {/* 1. 검색 (Search Toggle) */}
             <button
               type="button"
