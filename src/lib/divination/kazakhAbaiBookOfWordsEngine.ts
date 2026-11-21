@@ -61,7 +61,12 @@ const ABAI_PILLARS: readonly AbaiVirtuePillar[] = [
 
 function formatKazakhKstTimestamp(now: Date): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
-  return `${kst.toISOString().slice(0, 19)}+09:00 (KST)`;
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mm = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
 }
 
 function stableHash(input: string): number {
@@ -81,16 +86,17 @@ export function calculateKazakhAbaiBookOfWords(params: {
   const now = params.now ?? new Date();
   const query = (params.question ?? '').trim();
 
-  const seed = stableHash(
-    [
-      params.profile.basic?.name ?? '',
-      JSON.stringify(params.profile.fate ?? {}),
-      query,
-    ].join('|')
-  );
+  const seedInput = [
+    params.profile.basic?.name ?? '',
+    JSON.stringify(params.profile.fate ?? {}),
+    query,
+    now.toISOString().slice(0, 13),
+  ].join('|');
+  const seed = stableHash(seedInput);
 
   const primaryIdx = seed % ABAI_PILLARS.length;
-  const balancingIdx = (primaryIdx + 2) % ABAI_PILLARS.length;
+  const balancingOffset = 1 + (stableHash(`${seedInput}|companion`) % (ABAI_PILLARS.length - 1));
+  const balancingIdx = (primaryIdx + balancingOffset) % ABAI_PILLARS.length;
 
   const primaryPillar = ABAI_PILLARS[primaryIdx];
   const balancingPillar = ABAI_PILLARS[balancingIdx];
@@ -107,12 +113,12 @@ export function calculateKazakhAbaiBookOfWords(params: {
   const ritualAction = primaryPillar.dailyPractice;
 
   const reflectiveQuestion = query
-    ? `‘${query.slice(0, 36)}’ 앞에서, 남의 기준이 아니라 내 안의 ‘이성(Aqyl)·의지(Qairat)·마음(Jurek)’ 중 지금 가장 먼저 깨워야 할 것은 무엇인가요?`
-    : `오늘 내 시간과 에너지를 가장 정직하고 의미 있는 곳에 쓰기 위해 덜어낼 수 있는 소모는 무엇인가요?`;
+    ? `‘${query.slice(0, 36)}’ 앞에서 ‘${primaryPillar.koreanLabel}’을 세우면서 동시에 ‘${balancingPillar.koreanLabel}’을 지키려면 무엇을 먼저 바로잡아야 할까요?`
+    : `오늘 내 시간과 에너지를 ‘${primaryPillar.koreanLabel}’에 가장 정직하게 쓰기 위해 덜어낼 수 있는 소모는 무엇인가요?`;
 
   return {
     engineName: '카자흐 아바이 《교훈의 말씀》 지혜·의지 (Kazakh Abai Book of Words)',
-    engineVersion: 'LUCKEY-KAZAKH-ABAI-v2.1.0',
+    engineVersion: 'LUCKEY-KAZAKH-ABAI-v2.2.0',
     calculatedAtKst: formatKazakhKstTimestamp(now),
     primaryPillar,
     balancingPillar,
