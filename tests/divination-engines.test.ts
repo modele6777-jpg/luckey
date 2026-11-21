@@ -13488,13 +13488,14 @@ test('Baltic Romuva Darna Harmony engine: axes, +09:00 KST, and interpretive bou
 
 test('Minoan Labyrinth Labrys engine: stages, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateMinoanLabyrinthLabrys({ profile, now: new Date('2026-11-20T06:00:00Z'), question: '복잡한 문제의 핵심을 잡고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-MINOAN-LABYRINTH-v2.1.0');
-  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.equal(rep.engineVersion, 'LUCKEY-MINOAN-LABYRINTH-v2.2.0');
+  assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
+  assert.ok(rep.companionStage.name !== rep.activeStage.name);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatMinoanLabyrinthPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('미노스') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('미노스') && prompt.includes('동반 구간') && prompt.includes('+09:00 (KST)'));
 });
 
 test('Toraja Aluk Todolo Tongkonan engine: pillars, +09:00 KST, and interpretive boundary', () => {
@@ -14669,13 +14670,14 @@ test('Chavin Lanzon Stone Balance engine: motif, +09:00 KST, and interpretive bo
 
 test('Maramures Wood Gate Calm engine: motif, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateMaramuresWoodGateCalm({ profile, now: new Date('2026-11-20T20:09:00Z'), question: '일정과 관계에 숨 쉴 유격을 두고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-MARAMURES-GATE-v2.1.0');
-  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.equal(rep.engineVersion, 'LUCKEY-MARAMURES-GATE-v2.2.0');
+  assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
+  assert.ok(rep.companionMotif !== rep.maramuresMotif);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatMaramuresGatePrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('마라무레슈') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('마라무레슈') && prompt.includes('동반 모티프') && prompt.includes('+09:00 (KST)'));
 });
 
 test('Luang Prabang Mekong Dawn engine: motif, +09:00 KST, and interpretive boundary', () => {
@@ -15010,13 +15012,14 @@ test('Sepik River Carving engine: motif, +09:00 KST, and interpretive boundary',
 
 test('Moldovan Orhei Limestone engine: motif, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateMoldovanOrheiLimestone({ profile, now: new Date('2026-11-20T21:36:00Z'), question: '조용히 곡선을 따라가고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-MOLDOVAN-ORHEI-v2.1.0');
-  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.equal(rep.engineVersion, 'LUCKEY-MOLDOVAN-ORHEI-v2.2.0');
+  assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
+  assert.ok(rep.companionMotif !== rep.symbolicMotif);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatMoldovanOrheiPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('몰도바') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('몰도바') && prompt.includes('동반 모티프') && prompt.includes('+09:00 (KST)'));
 });
 
 test('Minangkabau Rumah Gadang engine: motif, +09:00 KST, and interpretive boundary', () => {
