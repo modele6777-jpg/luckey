@@ -627,6 +627,28 @@ ${content}
     }
   });
 
+  app.get("/api/ai/daily-bgm", async (req, res) => {
+    try {
+      const {
+        dailyBgmFormat,
+        isDailyBgmParamError,
+        readDailyBgmParams,
+        replyDailyBgm,
+      } = await import("./server/api-lib/dailyBgmRoute.ts");
+      const params = readDailyBgmParams(req.query as Record<string, unknown>);
+      if (isDailyBgmParamError(params)) {
+        res.setHeader("Cache-Control", "no-store");
+        return res.status(400).json(params);
+      }
+      return replyDailyBgm(res, params, dailyBgmFormat(req.query as Record<string, unknown>, req.method));
+    } catch (err: unknown) {
+      console.error("[daily-bgm] error:", err);
+      const message = err instanceof Error ? err.message : "Daily BGM generation failed";
+      res.setHeader("Cache-Control", "no-store");
+      return res.status(500).json({ error: message });
+    }
+  });
+
   app.post("/api/ai/daily-bgm", async (req, res) => {
     try {
       const {
@@ -683,6 +705,11 @@ ${content}
         ),
       );
     }
+  });
+
+  app.post("/api/saju/chart", async (req, res) => {
+    const { handleSajuChartPost } = await import("./server/api-lib/sajuChartRoute.ts");
+    return handleSajuChartPost(req, res);
   });
 
   app.post("/api/ai/daily-tarot", async (req, res) => {
@@ -801,10 +828,14 @@ ${content}
   // TTS - generative AI speech only, without standard/device voice substitution
   app.post("/api/ai/tts", async (req, res) => {
     const { text, voice = 'Aoede', emotion, rate, speed, pitch, language } = req.body || {};
+    const speech = String(text || '').trim();
+    if (!speech) {
+      return res.status(400).json({ error: "Empty speech text" });
+    }
 
     try {
       const { handleTTS } = await import('./server/api-lib/ttsHandler.ts');
-      const result = await handleTTS({ text, voice, emotion, rate, speed, pitch, language });
+      const result = await handleTTS({ text: speech, voice, emotion, rate, speed, pitch, language });
       return res.status(200).json(result);
     } catch (error: any) {
       console.error("TTS generation error:", error);
@@ -863,7 +894,7 @@ ${content}
 
 
 
-  app.post("/api/openai/v1/chat/completions", async (req, res) => {
+  app.post([/.*\/chat\/completions$/, "/api/openai/v1/chat/completions", "/openai/v1/chat/completions"], async (req, res) => {
     res.setHeader("Cache-Control", "no-store");
     const getFriendlyErrorMessage = (err: any): string => {
       if (!err) return "알 수 없는 시스템 오류가 발생했습니다.";
@@ -1597,7 +1628,7 @@ ${content}
   // TRPC + Health + Vite
   app.use("/api/trpc", trpcExpress.createExpressMiddleware({ router: appRouter, createContext: () => ({}) }));
 
-  app.get("/api/health", (req, res) => res.json({ status: "ok" }));
+  app.get(["/api/health", "/health"], (req, res) => res.json({ status: "ok" }));
 
   // Firebase sign-in on this origin: iOS home-screen apps block the cross-site
   // <project>.firebaseapp.com handler, so /__/auth and /__/firebase are forwarded.
