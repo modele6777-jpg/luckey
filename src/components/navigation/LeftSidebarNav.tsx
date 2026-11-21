@@ -34,10 +34,11 @@ import { markAppScreenReset } from '@/lib/appUpdateReload';
 import { showViewportDiagnostics } from '@/lib/viewportDiagnostics';
 import { startFoldRuntimeTrace } from '@/lib/foldRuntimeTrace';
 import { markPendingUpdateNotice } from '@/lib/updateNotice';
-import { isLucyMasterModeOn, setLucyMasterMode, deepenLucyMasterDepth, getLucyMasterDepth, LUCY_MASTER_MAX_DEPTH, LUCY_MASTER_MODE_EVENT, useLucyMasterDepth } from '@/lib/lucyMasterMode';
+import { isLucyMasterModeOn, setLucyMasterMode, deepenLucyMasterDepth, getLucyMasterDepth, LUCY_MASTER_MAX_DEPTH, LUCY_MASTER_MODE_EVENT, useLucyMasterDepth, getLucyBubbleMarker, setLucyBubbleMarker, useLucyBubbleMarker, isLucyMasterToolsRequested, setLucyMasterToolsRequested } from '@/lib/lucyMasterMode';
 import { playLucyMasterSuction } from '@/components/omniwarp/BigBangMasterSuction';
 import { isLucyMasterBgmPreferred, startLucyMasterBgm } from '@/lib/lucyMasterBgm';
 import { isDualPaneLayout, isDuoUnfoldedState } from '@/lib/perfMode';
+import { isLucyChatPath } from '@/lib/duoPaneFocus';
 
 export interface NavItemConfig {
   path: string;
@@ -321,15 +322,33 @@ export default function LeftSidebarNav() {
   }, []);
 
   /**
-   * 💬 Lucy bubble while Lucy is on screen: each tap steps through
-   * Lucy → 점술모드 1 → 2 → 3 → Lucy, with the same effects as the Big Bang gestures.
+   * 💬 Folded: Lucy → Lucy− → Master 1 → 2 → 3 → Lucy.
+   * Expanded: Lucy → Lucy+ → Master 1 → 2 → 3 → Lucy.
    */
   const cycleLucyMode = () => {
     triggerHaptic('whitehole');
+    const isExpandedDuo = typeof document !== 'undefined' && Boolean(
+      document.getElementById('duo-lucy-viewport') && document.getElementById('duo-content-viewport')
+    ) && isDuoUnfoldedState().unfolded;
     if (!isLucyMasterModeOn()) {
+      const marker = getLucyBubbleMarker();
+      if (isExpandedDuo && marker !== 'plus') {
+        setLucyBubbleMarker('plus');
+        return;
+      }
+      if (!isExpandedDuo && marker !== 'minus') {
+        setLucyBubbleMarker('minus');
+        return;
+      }
+      setLucyBubbleMarker(null);
       setLucyMasterMode(true);
+      setLucyMasterToolsRequested(isExpandedDuo);
       playLucyMasterSuction('in');
       if (isLucyMasterBgmPreferred()) void startLucyMasterBgm();
+      return;
+    }
+    if (isExpandedDuo && !isLucyMasterToolsRequested()) {
+      setLucyMasterToolsRequested(true);
       return;
     }
     if (getLucyMasterDepth() < LUCY_MASTER_MAX_DEPTH) {
@@ -343,11 +362,27 @@ export default function LeftSidebarNav() {
 
   const isLucyOnScreen = () => isLucyActive || (typeof document !== 'undefined'
     && Boolean(document.getElementById('duo-lucy-viewport')) && isDuoUnfoldedState().unfolded);
+  const isExpandedLucyDuo = () => typeof document !== 'undefined' && Boolean(
+    document.getElementById('duo-lucy-viewport') && document.getElementById('duo-content-viewport')
+  ) && isDuoUnfoldedState().unfolded;
 
   const handleNavigate = (path: string) => {
     // Lucy already visible: the bubble switches Lucy / 점술모드 1·2·3 instead of navigating.
     if (path === '/' && isLucyOnScreen()) {
-      cycleLucyMode();
+      if (isExpandedLucyDuo() && !isLucyChatPath(location)) {
+        // The Lucy bubble is also the shortcut back to its left-side tools after
+        // another channel has replaced the content pane. Normal Lucy enters Plus;
+        // an active Master session stays Master instead of advancing its depth.
+        if (isLucyMasterModeOn()) {
+          setLucyMasterToolsRequested(true);
+          navigate('/');
+        } else {
+          setLucyBubbleMarker('plus');
+          navigate('/');
+        }
+      } else {
+        cycleLucyMode();
+      }
       window.dispatchEvent(new CustomEvent('nav-click-active', { detail: { path } }));
       return;
     }
@@ -417,6 +452,7 @@ export default function LeftSidebarNav() {
   }, [syncPrismDevices]);
 
   const [isLucyMaster, setIsLucyMaster] = useState<boolean>(() => isLucyMasterModeOn());
+  const bubbleMarker = useLucyBubbleMarker();
   // 점술모드 상담 깊이마다 말풍선 기호가 바뀐다: 1단계 … / 2단계 ? / 3단계 !
   const masterDepth = useLucyMasterDepth();
   const MasterBubbleIcon = masterDepth >= 3 ? MessageCircleWarning : masterDepth === 2 ? MessageCircleQuestion : MessageCircleMore;
@@ -430,7 +466,11 @@ export default function LeftSidebarNav() {
   }, []);
 
   const lucyBubbleLabel = !isLucyMaster
-    ? 'Lucy (루시 화면에서 누르면 점술모드)'
+    ? bubbleMarker === 'plus'
+      ? 'Lucy Plus (+) (누르면 점술모드 1단계)'
+      : bubbleMarker === 'minus'
+        ? 'Lucy (−) (누르면 점술모드 1단계)'
+        : 'Lucy (루시 화면에서 누르면 Lucy Plus 또는 Lucy−)'
     : masterDepth >= LUCY_MASTER_MAX_DEPTH
       ? '점술모드 3단계 (누르면 일반 루시로)'
       : `점술모드 ${masterDepth}단계 (누르면 ${masterDepth + 1}단계)`;
@@ -441,11 +481,18 @@ export default function LeftSidebarNav() {
     const isActive = isMainChat ? isLucyActive : isKey ? isKeyActive : isPrologue ? isPrologueActive
       : path === '/epilogue' ? isEpilogueActive : cleanPath === path || cleanPath.startsWith(path + '/');
     return (
-      <button key={path} type="button" className="refined-nav-item" data-active={isActive}
+      <button key={path} type="button" className="refined-nav-item relative" data-active={isActive}
         aria-label={isMainChat ? lucyBubbleLabel : label} title={isMainChat ? lucyBubbleLabel : label} aria-current={isActive ? 'page' : undefined}
         onClick={() => handleNavigate(path)}>
         <Icon size={22} aria-hidden="true" />
         {isMainChat && isLucyMaster && <span className="sr-only">점술모드 깊이 {masterDepth}단계</span>}
+        {isMainChat && !isLucyMaster && bubbleMarker && (
+          <span
+            aria-hidden="true"
+            data-lucy-mode-marker={bubbleMarker}
+            className={`absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full border border-slate-950 text-[10px] font-black leading-none shadow ${bubbleMarker === 'plus' ? 'bg-emerald-300 text-emerald-950' : 'bg-slate-300 text-slate-950'}`}
+          >{bubbleMarker === 'plus' ? '+' : '−'}</span>
+        )}
       </button>
     );
   };

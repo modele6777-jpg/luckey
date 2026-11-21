@@ -636,6 +636,132 @@ test('Big Bang hold enters Lucy Master, deepens it, and a single tap leaves', as
   expect(await page.evaluate(() => sessionStorage.getItem('lucy_master_depth'))).toBeNull();
 });
 
+test('Lucy Plus selection survives left pane navigation and returns with the cosmic room', async ({ page }) => {
+  await page.setViewportSize({ width: 700, height: 900 });
+  await openLucy(page, '/chat');
+
+  const leftPane = page.locator('#duo-content-viewport');
+  const lucyPane = page.locator('#duo-lucy-viewport');
+  const lucyBubble = page.locator('#main-sidebar-navigation button[aria-label^="Lucy"]');
+  await expect(page.locator('html')).toHaveClass(/duo-unfolded-portrait/);
+  await expect(leftPane.locator('.cosmic-room')).toBeVisible();
+  await expect(page.locator('html')).not.toHaveClass(/lucy-plus-active/);
+  await expect(lucyBubble.locator('[data-lucy-mode-marker]')).toHaveCount(0);
+  await lucyBubble.click();
+  await expect(lucyBubble.locator('[data-lucy-mode-marker="plus"]')).toBeVisible();
+  await expect.poll(() => page.locator('html').evaluate(element => element.classList.contains('lucy-plus-active'))).toBe(true);
+
+  await page.evaluate(() => window.dispatchEvent(new CustomEvent('prism-navigate', { detail: { path: '/prologue' } })));
+  await expect.poll(() => new URL(page.url()).pathname).toBe('/prologue');
+  await expect.poll(() => page.evaluate(() => sessionStorage.getItem('lucy_bubble_marker'))).toBe('plus');
+  await expect.poll(() => page.locator('html').evaluate(element => element.classList.contains('lucy-plus-active'))).toBe(false);
+  await expect(lucyPane.locator('.lucy-chat-footer textarea')).toBeVisible();
+
+  await lucyBubble.click();
+  await expect.poll(() => new URL(page.url()).pathname).toBe('/');
+  await expect(lucyBubble.locator('[data-lucy-mode-marker="plus"]')).toBeVisible();
+  await expect.poll(() => page.locator('html').evaluate(element => element.classList.contains('lucy-plus-active'))).toBe(true);
+  await expect(leftPane.locator('.cosmic-room')).toBeVisible();
+});
+
+test('expanded Lucy bubble activates Lucy Plus first, then enters divination stages', async ({ page }) => {
+  await page.setViewportSize({ width: 700, height: 900 });
+  await openLucy(page, '/chat');
+
+  const leftPane = page.locator('#duo-content-viewport');
+  const lucyPane = page.locator('#duo-lucy-viewport');
+  const lucyBubble = page.locator('#main-sidebar-navigation button[aria-label^="Lucy"]');
+  await expect(page.locator('html')).toHaveClass(/duo-unfolded-portrait/);
+
+  // Tap one activates Lucy+ and its left cosmic room; it must not enter Master yet.
+  await lucyBubble.click();
+  await expect(lucyBubble.locator('[data-lucy-mode-marker="plus"]')).toBeVisible();
+  await expect(leftPane.locator('.cosmic-room')).toBeVisible();
+  await expect.poll(() => page.evaluate(() => sessionStorage.getItem('lucy_master_mode'))).toBeNull();
+
+  // The next tap enters Master stage 1 (ellipsis); only a further tap advances to stage 2.
+  await lucyBubble.click();
+  await expect.poll(() => page.evaluate(() => sessionStorage.getItem('lucy_master_mode'))).toBe('on');
+  await expect(lucyBubble.locator('[data-lucy-mode-marker]')).toHaveCount(0);
+  await expect(leftPane.locator('[data-duo-divination-tarot="true"]')).toBeVisible();
+  await expect(lucyPane.locator('[data-lucy-master-depth="1"]')).toBeVisible();
+
+  await page.locator('#main-sidebar-navigation button[aria-label^="점술모드"]').click();
+  await expect.poll(() => page.evaluate(() => sessionStorage.getItem('lucy_master_depth'))).toBe('2');
+  await expect(lucyPane.locator('[data-lucy-master-depth="2"]')).toBeVisible();
+
+  await page.locator('#main-sidebar-navigation button[aria-label^="점술모드"]').click();
+  await expect.poll(() => page.evaluate(() => sessionStorage.getItem('lucy_master_depth'))).toBe('3');
+  await expect(lucyPane.locator('[data-lucy-master-depth="3"]')).toBeVisible();
+
+  await page.locator('#main-sidebar-navigation button[aria-label^="점술모드"]').click();
+  await expect.poll(() => page.evaluate(() => sessionStorage.getItem('lucy_master_mode'))).toBeNull();
+});
+
+test('folded Lucy bubble shows minus before entering divination stage 1', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await openLucy(page, '/chat');
+
+  const lucyBubble = page.locator('#main-sidebar-navigation button[aria-label^="Lucy"]');
+  await expect(page.locator('#duo-content-viewport')).toHaveCount(0);
+  await lucyBubble.click();
+  await expect(lucyBubble.locator('[data-lucy-mode-marker="minus"]')).toBeVisible();
+  await expect.poll(() => page.evaluate(() => sessionStorage.getItem('lucy_master_mode'))).toBeNull();
+
+  await lucyBubble.click();
+  await expect.poll(() => page.evaluate(() => sessionStorage.getItem('lucy_master_mode'))).toBe('on');
+  await expect(page.locator('#main-sidebar-navigation button[aria-label^="점술모드 1단계"]')).toBeVisible();
+});
+
+test('Lucy Master preserves the other pane on re-entry; only a Lucy bubble tap opens its tools', async ({ page }) => {
+  await page.setViewportSize({ width: 700, height: 900 });
+  await openLucyMaster(page, '/chat');
+
+  const leftPane = page.locator('#duo-content-viewport');
+  const lucyPane = page.locator('#duo-lucy-viewport');
+  await expect(page.locator('html')).toHaveClass(/duo-unfolded-portrait/);
+  await expect(leftPane.locator('.cosmic-room')).toBeVisible();
+  await expect(leftPane.locator('[data-duo-divination-tarot="true"]')).toHaveCount(0);
+  await expect(lucyPane.locator('[data-lucy-master-depth="1"]')).toBeVisible();
+
+  await page.evaluate(() => window.dispatchEvent(new CustomEvent('prism-navigate', { detail: { path: '/prologue' } })));
+  await expect.poll(() => new URL(page.url()).pathname).toBe('/prologue');
+  await expect.poll(() => page.evaluate(() => sessionStorage.getItem('lucy_master_mode'))).toBe('on');
+  await expect(leftPane.locator('[data-duo-divination-tarot="true"]')).toHaveCount(0);
+  await expect(lucyPane.locator('[data-lucy-master-depth="1"]')).toBeVisible();
+
+  // Re-entering the app at its retained route must keep that pane, not auto-open tarot tools.
+  await page.reload();
+  await expect.poll(() => new URL(page.url()).pathname).toBe('/prologue');
+  await expect.poll(() => page.evaluate(() => sessionStorage.getItem('lucy_master_mode'))).toBe('on');
+  await expect(leftPane.locator('[data-duo-divination-tarot="true"]')).toHaveCount(0);
+
+  await page.locator('#main-sidebar-navigation button[aria-label^="점술모드"]').click();
+  await expect.poll(() => new URL(page.url()).pathname).toBe('/');
+  await expect.poll(() => page.evaluate(() => sessionStorage.getItem('lucy_master_mode'))).toBe('on');
+  await expect(leftPane.locator('[data-duo-divination-tarot="true"]')).toBeVisible();
+  await expect(lucyPane.locator('[data-lucy-master-depth="1"]')).toBeVisible();
+});
+
+test('Master tools request is cleared when folding and does not reopen on unfolding', async ({ page }) => {
+  await page.setViewportSize({ width: 700, height: 900 });
+  await openLucyMaster(page, '/chat');
+
+  const leftPane = page.locator('#duo-content-viewport');
+  const lucyBubble = page.locator('#main-sidebar-navigation button[aria-label^="점술모드 1단계"]');
+  await expect(page.locator('html')).toHaveClass(/duo-unfolded-portrait/);
+  await expect(leftPane.locator('.cosmic-room')).toBeVisible();
+  await lucyBubble.click();
+  await expect(leftPane.locator('[data-duo-divination-tarot="true"]')).toBeVisible();
+
+  await page.setViewportSize({ width: 390, height: 844 });
+  await expect(page.locator('html')).not.toHaveClass(/duo-unfolded-mode/);
+  await page.setViewportSize({ width: 700, height: 900 });
+  await expect(page.locator('html')).toHaveClass(/duo-unfolded-portrait/);
+  await expect(leftPane.locator('.cosmic-room')).toBeVisible();
+  await expect(leftPane.locator('[data-duo-divination-tarot="true"]')).toHaveCount(0);
+});
+
 test('Big Bang overlay remains visible for the newest overlapping transition', async ({ page }) => {
   await openLucy(page);
   const overlay = page.getByTestId('bigbang-transition-overlay');

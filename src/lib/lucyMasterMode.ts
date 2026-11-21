@@ -13,10 +13,68 @@ import type { UnifiedMessage } from '@/lib/chatHistorySync';
 export const LUCY_MASTER_MODE_KEY = 'lucy_master_mode';
 export const LUCY_MASTER_MODE_EVENT = 'prism:lucy_master_mode';
 export const LUCY_TAROT_DRAWN_EVENT = 'prism:lucy_tarot_drawn';
+export type LucyBubbleMarker = 'plus' | 'minus' | null;
+export const LUCY_BUBBLE_MARKER_KEY = 'lucy_bubble_marker';
+export const LUCY_BUBBLE_MARKER_EVENT = 'prism:lucy_bubble_marker';
+export const LUCY_MASTER_TOOLS_REQUEST_EVENT = 'prism:lucy_master_tools_request';
 const GREETING_PENDING_KEY = 'lucy_master_greet_pending';
 const LINK_KEY = 'lucy_master_link';
 const CONCERN_QUESTION = '오늘은 어떤 고민이나 궁금한 게 있어? 주제를 골라도 되고, 그냥 편하게 적어줘도 돼.';
 const CONCERN_CHOICES = '[답변선택: 연애·관계 | 일·진로 | 돈·재물 | 마음이 복잡해]';
+let lucyMasterToolsRequested = false;
+
+export function getLucyBubbleMarker(): LucyBubbleMarker {
+  try {
+    const marker = safeSessionStorage.getItem(LUCY_BUBBLE_MARKER_KEY);
+    return marker === 'plus' || marker === 'minus' ? marker : null;
+  } catch {
+    return null;
+  }
+}
+
+export function setLucyBubbleMarker(marker: LucyBubbleMarker): void {
+  try {
+    if (marker) safeSessionStorage.setItem(LUCY_BUBBLE_MARKER_KEY, marker);
+    else safeSessionStorage.removeItem(LUCY_BUBBLE_MARKER_KEY);
+  } catch { /* storage unavailable: the event still updates the open UI */ }
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent(LUCY_BUBBLE_MARKER_EVENT, { detail: { marker } }));
+  }
+}
+
+export function useLucyBubbleMarker(): LucyBubbleMarker {
+  const [marker, setMarker] = useState<LucyBubbleMarker>(() => getLucyBubbleMarker());
+  useEffect(() => {
+    const sync = (e: Event) => {
+      const next = (e as CustomEvent<{ marker?: LucyBubbleMarker }>).detail?.marker;
+      setMarker(next === 'plus' || next === 'minus' ? next : getLucyBubbleMarker());
+    };
+    window.addEventListener(LUCY_BUBBLE_MARKER_EVENT, sync);
+    return () => window.removeEventListener(LUCY_BUBBLE_MARKER_EVENT, sync);
+  }, []);
+  return marker;
+}
+
+export function isLucyMasterToolsRequested(): boolean {
+  return lucyMasterToolsRequested;
+}
+
+export function setLucyMasterToolsRequested(requested: boolean): void {
+  lucyMasterToolsRequested = requested;
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent(LUCY_MASTER_TOOLS_REQUEST_EVENT, { detail: { requested } }));
+  }
+}
+
+export function useLucyMasterToolsRequested(): boolean {
+  const [requested, setRequested] = useState(() => isLucyMasterToolsRequested());
+  useEffect(() => {
+    const sync = (e: Event) => setRequested(Boolean((e as CustomEvent<{ requested?: boolean }>).detail?.requested));
+    window.addEventListener(LUCY_MASTER_TOOLS_REQUEST_EVENT, sync);
+    return () => window.removeEventListener(LUCY_MASTER_TOOLS_REQUEST_EVENT, sync);
+  }, []);
+  return requested;
+}
 
 export function isLucyMasterModeOn(): boolean {
   try {
@@ -27,6 +85,11 @@ export function isLucyMasterModeOn(): boolean {
 }
 
 export function setLucyMasterMode(on: boolean): void {
+  if (on) {
+    setLucyBubbleMarker(null);
+    setLucyMasterToolsRequested(false);
+  }
+  else setLucyMasterToolsRequested(false);
   try {
     if (on) {
       if (!isLucyMasterModeOn()) {

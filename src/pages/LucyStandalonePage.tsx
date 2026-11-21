@@ -45,7 +45,7 @@ import { archiveMasterSession, buildDepthContinuityContext, buildDepthLinkedLucy
 import { isLucyMasterBgmPreferred, startLucyMasterBgm, stopLucyMasterBgm, setLucyMasterBgmDepth } from '@/lib/lucyMasterBgm';
 import remarkGfm from 'remark-gfm';
 import { safeSessionStorage, safeLocalStorage } from '@/utils/safeStorage';
-import { isLucyMasterModeOn, setLucyMasterMode, LUCY_MASTER_MODE_EVENT, publishLucyTarotDraw, isAcceptingTarotDrawOffer, buildTarotHouseGuide, createTarotHouseGreeting, consumeTarotHouseGreetingPending, parseAnswerChoices, isAskingForDeepEngines, createDepthTwoTarotOffer, setLucyMasterLink, getLucyMasterLink, resolveLucyMasterLinkChoice, buildLinkedLucyContext, isTarotHouseGreetingPending, findConcernAnchor, createTarotHouseConcernQuestion, LUCY_TAROT_PICK_REQUEST_EVENT, LUCY_TAROT_PICKED_EVENT, LUCY_TAROT_PICK_CANCEL_EVENT, tarotPickPositions, toDetectedTarotCards, takeQueuedMasterTarotSpread, buildSpreadLayoutContext, matchMasterTarotSpread, isAutoSpreadCandidate, getLucyMasterDepth, useLucyMasterDepth, LUCY_MASTER_DEPTH_EVENT, LUCY_MASTER_DEPTH_INFO, LUCY_MASTER_MAX_DEPTH, type LucyMasterDepth } from '@/lib/lucyMasterMode';
+import { isLucyMasterModeOn, setLucyMasterMode, LUCY_MASTER_MODE_EVENT, publishLucyTarotDraw, isAcceptingTarotDrawOffer, buildTarotHouseGuide, createTarotHouseGreeting, consumeTarotHouseGreetingPending, parseAnswerChoices, isAskingForDeepEngines, createDepthTwoTarotOffer, setLucyMasterLink, getLucyMasterLink, resolveLucyMasterLinkChoice, buildLinkedLucyContext, isTarotHouseGreetingPending, findConcernAnchor, createTarotHouseConcernQuestion, LUCY_TAROT_PICK_REQUEST_EVENT, LUCY_TAROT_PICKED_EVENT, LUCY_TAROT_PICK_CANCEL_EVENT, tarotPickPositions, toDetectedTarotCards, takeQueuedMasterTarotSpread, buildSpreadLayoutContext, matchMasterTarotSpread, isAutoSpreadCandidate, getLucyMasterDepth, useLucyMasterDepth, LUCY_MASTER_DEPTH_EVENT, LUCY_MASTER_DEPTH_INFO, LUCY_MASTER_MAX_DEPTH, getLucyBubbleMarker, setLucyBubbleMarker, useLucyBubbleMarker, type LucyMasterDepth } from '@/lib/lucyMasterMode';
 import { cleanAssistantMessageDisplay, cleanUserMessageDisplay } from '@/utils/cleanMessage';
 import { detectLucyChannelsFromText, formatChannelsModeTitle } from '@/lib/lucyAutoModeDetector';
 import { selectOptimalDivinationTools, THEME_PRIMARY_DIVINATION_TOOLS, type SelectedDivinationToolsResult } from '@/lib/fifteenDivinationTools';
@@ -741,8 +741,9 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
   });
   const isDuoPortrait = isDuoUnfolded && isDuoUnfoldedState().orientation === 'portrait';
 
-  // Every Lucy chat in the unfolded dual screen is Lucy Plus, whatever the content pane shows.
-  const isCosmicRoomActive = isActuallyUnfoldedDual;
+  // Lucy Plus is a distinct bubble step, active only in the unfolded Lucy cosmic room.
+  const bubbleMarker = useLucyBubbleMarker();
+  const isCosmicRoomActive = isActuallyUnfoldedDual && isLucyChatPath(location) && bubbleMarker === 'plus';
 
   const [lucyTier, setLucyTier] = useState<LucyTier>(() => {
     try {
@@ -812,7 +813,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
   }, []);
   const requireBasicAndDeep = true;
 
-  // The visible plus marker remains independent from the shared answer policy.
+  // The visible plus marker follows the Lucy bubble's explicit Plus step.
   const showPlusMarker = isCosmicRoomActive;
   const isPlusMode = showPlusMarker;
   const [modeTransitioningTier, setModeTransitioningTier] = useState<LucyTier | null>(null);
@@ -887,7 +888,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
         document.getElementById('duo-lucy-viewport') && document.getElementById('duo-content-viewport')
       ) && isDuoUnfoldedState().unfolded;
       const path = typeof window !== 'undefined' ? window.location.pathname : '/';
-      const isCosmic = isDual;
+      const isCosmic = isDual && isLucyChatPath(path) && getLucyBubbleMarker() === 'plus';
       const validTarget: LucyTier = isCosmic ? 'plus' : 'ai';
       safeLocalStorage.setItem('lucy_tier_mode', validTarget);
       safeSessionStorage.setItem('lucy_tier_mode', validTarget);
@@ -1154,26 +1155,45 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
     };
   }, []);
 
-  // 🧭 채널 이동 감지: 실제 펼친 상태에서 채팅 버튼 눌러 코스믹 룸 진입 시 'Lucy+', 그 외 모든 경우(접힘 또는 다른 채널)엔 무조건 'Lucy'
+  // URI shorthand may still enter Lucy+ directly when the expanded Lucy pane is visible.
+  useEffect(() => {
+    if (pro) return;
+    const mode = new URLSearchParams(location.includes('?') ? location.slice(location.indexOf('?') + 1) : '').get('mode');
+    if (mode === 'plus' && isDuoUnfolded && isLucyChatPath(location) && bubbleMarker !== 'plus') {
+      setLucyBubbleMarker('plus');
+    }
+  }, [location, isDuoUnfolded, bubbleMarker, pro]);
+
+  // Keep the Plus selection while another app occupies the left pane; restore it on return.
+  useEffect(() => {
+    if (!bubbleMarker) return;
+    const markerInvalid = (bubbleMarker === 'plus' && !isDuoUnfolded)
+      || (bubbleMarker === 'minus' && isDuoUnfolded);
+    if (markerInvalid) setLucyBubbleMarker(null);
+  }, [bubbleMarker, isDuoUnfolded]);
+
+  // 🧭 Lucy Plus requires the explicit + step while the unfolded left pane is on Lucy.
   useEffect(() => {
     if (pro) return;
     const isDual = typeof document !== 'undefined' && Boolean(
       document.getElementById('duo-lucy-viewport') && document.getElementById('duo-content-viewport')
     ) && isDuoUnfoldedState().unfolded;
     const clean = location ? location.split('?')[0].split('#')[0] : '/';
-    const isCosmic = isDual;
+    const isCosmic = isDual && isLucyChatPath(clean) && bubbleMarker === 'plus';
     const expected: LucyTier = isCosmic ? 'plus' : 'ai';
     if (lucyTier !== expected) {
       setLucyTier(expected);
       safeLocalStorage.setItem('lucy_tier_mode', expected);
       safeSessionStorage.setItem('lucy_tier_mode', expected);
-      setModeTransitioningTier(expected);
-      setTimeout(() => setModeTransitioningTier(null), 550);
-      try { triggerHaptic('whitehole'); } catch (_) {}
-      setModeSwitchToast(expected === 'plus' ? '🌿 Lucy Plus' : '✨ Lucy');
-      setTimeout(() => setModeSwitchToast(null), 2000);
+      if (!isMasterMode) {
+        setModeTransitioningTier(expected);
+        setTimeout(() => setModeTransitioningTier(null), 550);
+        try { triggerHaptic('whitehole'); } catch (_) {}
+        setModeSwitchToast(expected === 'plus' ? '🌿 Lucy Plus' : '✨ Lucy');
+        setTimeout(() => setModeSwitchToast(null), 2000);
+      }
     }
-  }, [location, isDuoUnfolded, pro, lucyTier]);
+  }, [location, isDuoUnfolded, pro, lucyTier, isMasterMode, bubbleMarker]);
 
   useEffect(() => {
     let initialRun = true;
@@ -1184,7 +1204,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
       ) && isDuoUnfoldedState().unfolded;
       setIsDuoUnfolded((prev) => {
         const clean = window.location.pathname || '/';
-        const isCosmic = isDual;
+        const isCosmic = isDual && isLucyChatPath(clean) && getLucyBubbleMarker() === 'plus';
         const targetTier: LucyTier = isCosmic ? 'plus' : 'ai';
 
         if (initialRun) {

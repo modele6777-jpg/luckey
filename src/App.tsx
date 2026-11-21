@@ -46,7 +46,7 @@ import { useFoldState, subscribeFoldState } from "./lib/foldState";
 import { isDuoDividerDoubleTap, mapDuoPaneSide, shouldResetDuoPaneSwapOnFold, type DuoDividerTap } from "./lib/duoPaneSwap";
 import { DuoCosmicAmbientRoom } from "./components/duo/DuoCosmicAmbientRoom";
 import { DuoDivinationTarotPane } from "./components/duo/DuoDivinationTarotPane";
-import { useLucyMasterMode } from "./lib/lucyMasterMode";
+import { useLucyMasterMode, useLucyMasterToolsRequested, setLucyMasterToolsRequested } from "./lib/lucyMasterMode";
 import AuroraBackground from "./components/AuroraBackground";
 import EpilogueApp from "./pages/EpilogueApp";
 
@@ -266,6 +266,7 @@ function AppContent() {
   const duoState = useFoldState();
   const isDuoUnfolded = duoState.unfolded;
   const isDivinationMode = useLucyMasterMode();
+  const isMasterToolsRequested = useLucyMasterToolsRequested();
   const isDuoPortrait = isDuoUnfolded && duoState.orientation === 'portrait';
   const isDuoLandscape = isDuoUnfolded && duoState.orientation === 'landscape';
   const [duoPanesSwapped, setDuoPanesSwapped] = React.useState(false);
@@ -757,6 +758,9 @@ function AppContent() {
   }, [isUnlocked, sharedState?.themeColor, resolvedTheme]);
 
   const isLucyRoute = location === '/' || location === '/chat' || location === '/lucy' || location === '/chat/pro';
+  React.useEffect(() => {
+    if (!isLucyRoute || !isDuoUnfolded) setLucyMasterToolsRequested(false);
+  }, [isLucyRoute, location, isDuoUnfolded]);
   const showLucyPane = isDuoUnfolded || (foldedPopupPane ? foldedPopupPane === 'lucy' : isLucyRoute && !foldedCosmicRoom);
   const showContentPane = isDuoUnfolded || !showLucyPane;
 
@@ -940,8 +944,8 @@ function AppContent() {
                   {isLucyRoute ? (
                     /* 최우측/최하단 메뉴에서 루시 선택 시 ➔ 코스믹 룸 표출 */
                     <div className="w-full h-full overflow-hidden flex flex-col">
-                      {/* 🔮 점술모드: 펼치면 왼쪽은 타로 테이블 */}
-                      {isDivinationMode && isDuoUnfolded
+                      {/* 🔮 타로 도구는 펼친 Lucy Master에서 말풍선을 직접 눌렀을 때만 연다 */}
+                      {isDivinationMode && isDuoUnfolded && isMasterToolsRequested
                         ? <DuoDivinationTarotPane isLight={isLight} />
                         : <DuoCosmicAmbientRoom isLight={isLight} />}
                     </div>
