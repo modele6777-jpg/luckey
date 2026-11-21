@@ -21,6 +21,7 @@ export interface SamiNoaidiDrumJoikResult {
   engineVersion: string;
   calculatedAtKst: string;
   activeDrumZone: SamiDrumZone;
+  companionDrumZone: SamiDrumZone;
   joikResonanceMode: string;
   seasonalRhythm: string;
   qualitativeSynthesis: string;
@@ -89,7 +90,7 @@ const SAMI_EIGHT_SEASONS: readonly string[] = [
 
 function formatSamiKstTimestamp(now: Date): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
-  return `${kst.toISOString().slice(0, 19)}+09:00 (KST)`;
+  return `${kst.toISOString().slice(0, 16).replace('T', ' ')} +09:00 (KST)`;
 }
 
 function stableHash(input: string): number {
@@ -109,38 +110,41 @@ export function calculateSamiNoaidiDrumJoik(params: {
   const now = params.now ?? new Date();
   const query = (params.question ?? '').trim();
 
-  const seed = stableHash(
-    [
-      params.profile.basic?.name ?? '',
-      JSON.stringify(params.profile.fate ?? {}),
-      query,
-    ].join('|')
-  );
+  const seedStr = [
+    params.profile.basic?.name ?? '',
+    JSON.stringify(params.profile.fate ?? {}),
+    query,
+  ].join('|');
+  const seed = stableHash(seedStr);
 
-  const activeDrumZone = SAMI_DRUM_ZONES[seed % SAMI_DRUM_ZONES.length];
+  const activeIndex = seed % SAMI_DRUM_ZONES.length;
+  const activeDrumZone = SAMI_DRUM_ZONES[activeIndex];
+  const companionOffset = 1 + (stableHash(`${seedStr}|companion`) % (SAMI_DRUM_ZONES.length - 1));
+  const companionDrumZone = SAMI_DRUM_ZONES[(activeIndex + companionOffset) % SAMI_DRUM_ZONES.length];
   const joikResonanceMode = JOIK_MODES[(seed >> 3) % JOIK_MODES.length];
   const seasonalRhythm = SAMI_EIGHT_SEASONS[(seed >> 5) % SAMI_EIGHT_SEASONS.length];
 
   const qualitativeSynthesis =
     `북유럽 사미(Sámi) 전통의 노아이디 드럼과 요이쿠 상징으로 살펴보면, 현재 마음의 진동은 ` +
-    `‘${activeDrumZone.samiTerm} — ${activeDrumZone.koreanLabel}’ 영역에 머물러 있습니다. ` +
+    `‘${activeDrumZone.samiTerm} — ${activeDrumZone.koreanLabel}’ 영역을 중심으로 ‘${companionDrumZone.samiTerm} — ${companionDrumZone.koreanLabel}’의 결이 곁들여져 있습니다. ` +
     `${activeDrumZone.coreInsight} 사미의 8계절 감각으로는 ‘${seasonalRhythm}’에 해당하며, ` +
     `무언가를 설명하거나 증명하려 들기보다 ‘${joikResonanceMode}’의 태도로 자기 호흡을 되찾기 좋은 때입니다.`;
 
   const reflectionFocus =
-    `${activeDrumZone.koreanLabel}의 리듬 위에서 불필요한 긴장을 내려놓고 고유한 호흡을 회복하는 시점`;
+    `${activeDrumZone.koreanLabel}의 리듬 위에서 ${companionDrumZone.koreanLabel}의 균형을 곁들여 불필요한 긴장을 내려놓고 고유한 호흡을 회복하는 시점`;
 
   const ritualAction = activeDrumZone.groundingPractice;
 
   const reflectiveQuestion = query
-    ? `‘${query.slice(0, 36)}’의 한가운데에서, ${activeDrumZone.koreanLabel}의 감각을 되찾기 위해 지금 당장 멈추거나 놓아주어도 되는 긴장은 무엇인가요?`
-    : `지금 내 삶의 계절에서 억지로 밀어붙이기보다 리듬을 맞춰 기다려 주어야 할 일은 무엇인가요?`;
+    ? `‘${query.slice(0, 36)}’의 한가운데에서, ${activeDrumZone.koreanLabel}과 ${companionDrumZone.koreanLabel}의 감각을 되찾기 위해 지금 당장 멈추거나 놓아주어도 되는 긴장은 무엇인가요?`
+    : `지금 내 삶의 계절에서 ‘${activeDrumZone.koreanLabel}’의 시선으로 억지로 밀어붙이기보다 리듬을 맞춰 기다려 주어야 할 일은 무엇인가요?`;
 
   return {
     engineName: '사미(Sámi) 노아이디 드럼·요이쿠 리듬 (Noaidi Drum & Joik)',
-    engineVersion: 'LUCKEY-SAMI-NOAIDI-JOIK-v2.1.0',
+    engineVersion: 'LUCKEY-SAMI-NOAIDI-JOIK-v2.2.0',
     calculatedAtKst: formatSamiKstTimestamp(now),
     activeDrumZone,
+    companionDrumZone,
     joikResonanceMode,
     seasonalRhythm,
     qualitativeSynthesis,
@@ -158,6 +162,7 @@ export function formatSamiNoaidiDrumJoikPrompt(res: SamiNoaidiDrumJoikResult): s
     `[보조 상징 관점 — ${res.engineName}]`,
     `- 엔진 버전: ${res.engineVersion} | 연산 시각: ${res.calculatedAtKst}`,
     `- 드럼 공명 영역: ${res.activeDrumZone.samiTerm} · ${res.activeDrumZone.koreanLabel} (${res.activeDrumZone.symbolicImage})`,
+    `- 동반 공명 영역: ${res.companionDrumZone.samiTerm} · ${res.companionDrumZone.koreanLabel}`,
     `- 요이쿠 공명 방식: ${res.joikResonanceMode}`,
     `- 사미 절기 리듬: ${res.seasonalRhythm}`,
     `- 성찰 해석: ${res.qualitativeSynthesis}`,
