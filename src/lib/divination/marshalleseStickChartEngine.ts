@@ -5,6 +5,7 @@ export interface MarshalleseChartResult {
   calculatedAtKst: string;
   reflectionFocus: string;
   symbolicMotif: string;
+  companionMotif: string;
   ritualAction: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
@@ -17,8 +18,7 @@ function getKstTimeString(date: Date): string {
   const dd = String(kst.getUTCDate()).padStart(2, '0');
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mi = String(kst.getUTCMinutes()).padStart(2, '0');
-  const ss = String(kst.getUTCSeconds()).padStart(2, '0');
-  return `${yyyy}-${mm}-${dd} ${hh}:${mi}:${ss} +09:00 (KST)`;
+  return `${yyyy}-${mm}-${dd} ${hh}:${mi} +09:00 (KST)`;
 }
 
 function stableHash(input: string): number {
@@ -41,7 +41,17 @@ const MARSHALLESE_MOTIFS = [
 const MARSHALLESE_ACTIONS = [
   '머릿속으로 먼 결론부터 계산하기보다 지금 내 앞에서 꺾이는 첫 번째 흐름 하나만 차분히 짚어 보세요.',
   '모든 변수를 한눈에 다 통제하려 들지 말고, 손끝에 닿는 가장 분명한 기준선 하나만 쥐고 방향을 정해 보세요.',
-  '파도가 반대편에서 밀려올 때는 정면으로 맞서기보다 카누의 각도를 살짝 틀어 힘을 흘려보내 보세요.'
+  '아직 오지 않은 수평선 너머를 걱정하기보다 지금 내 발밑을 지나가는 현재의 물결 리듬에만 집중해 보세요.',
+  '파도가 반대편에서 밀려올 때는 정면으로 맞서기보다 카누의 각도를 살짝 틀어 힘을 흘려보내 보세요.',
+  '어두워서 앞이 잘 안 보일수록 시야보다 손끝과 발끝에 닿는 실제 감각을 믿고 한 걸음만 내디뎌 보세요.'
+];
+
+const MARSHALLESE_QUESTIONS = [
+  '지금 내 발밑을 스치는 가장 조용한 신호는 어느 방향의 섬을 가리키고 있나요?',
+  '서로 다른 두 흐름이 만나는 분기점에서 내가 고요히 뱃머리를 맞출 기준선은 무엇인가요?',
+  '수평선 너머의 결론을 미리 그리는 대신 지금 배 밑을 스치는 리듬에서 무엇을 읽을 수 있나요?',
+  '정면으로 맞서며 힘을 빼기보다 카누의 균형대처럼 각도를 틀어 흘려보내야 할 흔들림은 무엇인가요?',
+  '눈에 당장 보이지 않아도 내 감각이 이미 섬이 가까워졌음을 알아차리고 있는 신호는 무엇인가요?'
 ];
 
 export function calculateMarshalleseStickChart(params: {
@@ -52,19 +62,24 @@ export function calculateMarshalleseStickChart(params: {
   const { profile, now = new Date(), question = '' } = params;
   const seed = `${JSON.stringify(profile.fate ?? {})}|${question.trim()}|${now.toISOString().slice(0, 13)}`;
   const hash = stableHash(seed);
+  const idx = hash % MARSHALLESE_MOTIFS.length;
+  const companionOffset = 1 + (stableHash(`${seed}|companion`) % (MARSHALLESE_MOTIFS.length - 1));
 
-  const motif = MARSHALLESE_MOTIFS[hash % MARSHALLESE_MOTIFS.length];
-  const ritualAction = MARSHALLESE_ACTIONS[Math.floor(hash / 7) % MARSHALLESE_ACTIONS.length];
+  const motif = MARSHALLESE_MOTIFS[idx];
+  const companionMotif = MARSHALLESE_MOTIFS[(idx + companionOffset) % MARSHALLESE_MOTIFS.length];
+  const ritualAction = MARSHALLESE_ACTIONS[idx];
+  const reflectiveQuestion = MARSHALLESE_QUESTIONS[idx];
 
   return {
-    engineVersion: 'LUCKEY-MARSHALLESE-CHART-v2.1.0',
+    engineVersion: 'LUCKEY-MARSHALLESE-CHART-v2.2.0',
     calculatedAtKst: getKstTimeString(now),
     reflectionFocus: question.trim()
-      ? `질문 "${question.trim()}" 속에서 보이지 않는 흐름의 결을 읽는 스틱 차트 항법 관점`
+      ? `질문 "${question.trim()}" 속에서 보이지 않는 흐름의 결을 읽는 스틱 차트 항법 관점 (동반 결: ${companionMotif.slice(0, 24)}…)`
       : '복잡한 바다 위에서 물결의 꺾임만으로 중심을 찾는 스틱 차트 항법 관점',
     symbolicMotif: motif,
+    companionMotif,
     ritualAction,
-    reflectiveQuestion: '지금 내 발밑을 스치는 가장 조용한 신호는 어느 방향의 섬을 가리키고 있나요?',
+    reflectiveQuestion,
     interpretiveBoundary:
       '마셜 제도 막대 해도 항법의 상징적 비유로, 개인 점수·성격 진단·미래 예측이 아닙니다.'
   };
@@ -76,6 +91,7 @@ export function formatMarshalleseChartPrompt(result: MarshalleseChartResult): st
     `- 기준 시각: ${result.calculatedAtKst}`,
     `- 성찰 초점: ${result.reflectionFocus}`,
     `- 상징 모티프: ${result.symbolicMotif}`,
+    `- 동반 모티프: ${result.companionMotif}`,
     `- 제안 의식: ${result.ritualAction}`,
     `- 성찰 질문: ${result.reflectiveQuestion}`,
     `- 경계: ${result.interpretiveBoundary}`
