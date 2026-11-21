@@ -15620,3 +15620,21 @@ test('buildUserFifteenToolsDigest integrates Tojeong, Kyusei, and Taiyi 3rd-roun
   assert.ok(digest.includes('국 조율 ['));
   assert.ok(!/directionalScores|synergyScore|juBalanceScore/.test(digest));
 });
+
+test('buildUserFifteenToolsDigest integrates 4th-round Saju, Astrology, and Ziwei synthesis without raw scores', () => {
+  const profile: any = {
+    basic: {
+      name: '제제',
+      birthdate: '1994-01-24',
+      birthtime: '10:30',
+      calendarType: 'solar',
+      isLeapMonth: false,
+      gender: 'male',
+    },
+  };
+  const digest = buildUserFifteenToolsDigest(profile, new Date('2026-11-22T05:46:00+09:00'));
+  assert.ok(digest.includes('개운 장소:') && (digest.includes('득령') || digest.includes('득지') || digest.includes('평형')));
+  assert.ok(digest.includes('소통/애정/추진/확장/성숙 축:'));
+  assert.ok(digest.includes('유년 기조[') && digest.includes('사화 조율 ['));
+  assert.ok(!/deukSeScore|sanFangScore|luJiScore/.test(digest));
+});
