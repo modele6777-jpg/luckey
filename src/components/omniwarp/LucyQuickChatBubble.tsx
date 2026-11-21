@@ -857,7 +857,9 @@ export const LucyQuickChatBubble: React.FC<LucyQuickChatBubbleProps> = ({
 
       const recognition = new SpeechRecognition();
       recognition.lang = 'ko-KR';
-      recognition.continuous = true;
+      // 한 문장씩 듣는다: 말이 끝나면 브라우저(특히 아이폰 Safari)가 스스로 문장을 확정하고 듣기를 닫는다.
+      // 확정되거나 닫히는 순간 바로 보내고, 아무 말도 없었으면 다시 듣는다.
+      recognition.continuous = false;
       recognition.interimResults = true;
       recognition.maxAlternatives = 1;
 
@@ -880,10 +882,14 @@ export const LucyQuickChatBubble: React.FC<LucyQuickChatBubbleProps> = ({
       recognition.onresult = (event: any) => {
         if (!isCurrent() || watcher.sent) return;
         const { text, interim } = collectSpeechTranscript(event.results);
-        if (!watcher.heard(text)) return;
-        speechTranscriptRef.current = text;
-        setSpeechTranscript(text);
-        setSpeechInterim(interim);
+        if (watcher.heard(text)) {
+          speechTranscriptRef.current = text;
+          setSpeechTranscript(text);
+          setSpeechInterim(interim);
+        }
+        // 브라우저가 문장을 확정했으면(말이 끝남) 기다리지 않고 바로 보낸다.
+        const results = event.results as ArrayLike<{ isFinal?: boolean }>;
+        if (results.length > 0 && results[results.length - 1]?.isFinal) watcher.flush();
       };
 
       recognition.onerror = (e: any) => {
