@@ -10,11 +10,13 @@ export interface AinuKamuyAspect {
 }
 
 export interface AinuKamuyResult {
-  engineVersion: 'LUCKEY-AINU-KAMUY-v2.2.0';
+  engineVersion: 'LUCKEY-AINU-KAMUY-v2.3.0';
   calculatedAtKst: string;
   questionFocus: string;
   primaryAspect: AinuKamuyAspect;
   companionAspect: AinuKamuyAspect;
+  seasonalBreath: string;
+  shadowWarning: string;
   kamuyCircleTheme: string;
   ritualAction: string;
   reflectionFocus: string;
@@ -76,6 +78,20 @@ function stableHash(input: string): number {
   return hash >>> 0;
 }
 
+const SEASONAL_BREATHS = [
+  '여명 화로(아페 후치)의 고요한 불씨 점검',
+  '한낮 코탄(마을)의 활기찬 교류와 거리 유지',
+  '해 질 녘 이오만테의 감사와 정돈된 배웅',
+  '깊은 밤 시리 코르(대지)의 회복과 깊은 쉼',
+];
+
+const SHADOW_WARNINGS = [
+  '돌봄이 과해져 내면의 화로 온기까지 소진하지 않도록 경계하세요.',
+  '익숙한 바탕을 당연시하다가 작은 균열을 놓치지 않도록 살피세요.',
+  '보내야 할 것을 붙잡고 있거나 반대로 충분히 애도하지 않고 서두르지 마세요.',
+  '상대의 자리를 배려한다는 이유로 내 경계선까지 지워 버리지 않도록 주의하세요.',
+];
+
 export function calculateAinuKamuyIomanteHarmony(params: {
   profile: UserProfile;
   now?: Date;
@@ -86,23 +102,28 @@ export function calculateAinuKamuyIomanteHarmony(params: {
   const seedBase = `${JSON.stringify(params.profile.fate ?? {})}|${now.toISOString().slice(0, 13)}|${questionFocus}|ainu-kamuy`;
   const seed = stableHash(seedBase);
   const companionSeed = stableHash(`${seedBase}|companion`);
+  const breathSeed = stableHash(`${seedBase}|breath`);
 
   const primaryIdx = seed % AINU_ASPECTS.length;
   const companionOffset = 1 + (companionSeed % (AINU_ASPECTS.length - 1));
   const companionIdx = (primaryIdx + companionOffset) % AINU_ASPECTS.length;
   const primaryAspect = AINU_ASPECTS[primaryIdx];
   const companionAspect = AINU_ASPECTS[companionIdx];
+  const seasonalBreath = SEASONAL_BREATHS[(breathSeed + now.getUTCHours()) % SEASONAL_BREATHS.length];
+  const shadowWarning = SHADOW_WARNINGS[primaryIdx];
 
   return {
-    engineVersion: 'LUCKEY-AINU-KAMUY-v2.2.0',
+    engineVersion: 'LUCKEY-AINU-KAMUY-v2.3.0',
     calculatedAtKst: formatKstTimestamp(now),
     questionFocus,
     primaryAspect,
     companionAspect,
+    seasonalBreath,
+    shadowWarning,
     kamuyCircleTheme: `${primaryAspect.koreanLabel}에서 ${companionAspect.koreanLabel}으로 이어지는 존중의 순환`,
-    ritualAction: primaryAspect.practicalRespect,
-    reflectionFocus: `${primaryAspect.name}의 시선(${primaryAspect.circulationPrinciple})과 ${companionAspect.koreanLabel}의 여운으로 오늘의 소모와 감사를 되짚습니다.`,
-    reflectiveQuestion: primaryAspect.reflectiveQuestion,
+    ritualAction: `${primaryAspect.practicalRespect} 이어서 ${companionAspect.koreanLabel}을 떠올리며 호흡을 고르세요.`,
+    reflectionFocus: `${primaryAspect.name}의 시선(${primaryAspect.circulationPrinciple})과 ${companionAspect.koreanLabel}의 여운, 그리고 '${seasonalBreath}' 국면으로 오늘의 소모와 감사를 되짚습니다.`,
+    reflectiveQuestion: `${primaryAspect.reflectiveQuestion} (${companionAspect.koreanLabel}의 시선도 함께 살펴보세요.)`,
     interpretiveBoundary:
       '아이누 카무이·이오만테 관점은 존중과 순환을 비유적으로 성찰하는 상징 도구이며, 개인 점수·심리 진단·미래 예측이 아닙니다.',
   };
@@ -115,6 +136,8 @@ export function formatAinuKamuyPrompt(result: AinuKamuyResult): string {
     `- 질문 초점: ${result.questionFocus}`,
     `- 중심 결: ${result.primaryAspect.name} (${result.primaryAspect.koreanLabel}) — ${result.primaryAspect.coreInsight}`,
     `- 이어지는 결: ${result.companionAspect.name} (${result.companionAspect.koreanLabel})`,
+    `- 순환 호흡 국면: ${result.seasonalBreath}`,
+    `- 과잉·결핍 경계: ${result.shadowWarning}`,
     `- 순환 주제: ${result.kamuyCircleTheme}`,
     `- 실천 제안: ${result.ritualAction}`,
     `- 성찰 초점: ${result.reflectionFocus}`,

@@ -13369,14 +13369,15 @@ test('Kazakh Abai Book of Words engine: pillars, +09:00 KST, and interpretive bo
 
 test('Amazigh Desert Star Oasis engine: waypoints, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateAmazighDesertStarOasis({ profile, now: new Date('2026-11-20T05:30:00Z'), question: '지치지 않고 멀리 가고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-AMAZIGH-DESERT-v2.2.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-AMAZIGH-DESERT-v2.3.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.supportWaypoint.id !== rep.primaryWaypoint.id);
+  assert.ok(rep.desertPhase.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatAmazighDesertPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('아마지그') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.reflectionFocus));
+  assert.ok(prompt.includes('아마지그') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.desertPhase) && prompt.includes(rep.reflectionFocus));
 });
 
 test('Hittite Telepinu Harmony Renewal engine: phases, +09:00 KST, and interpretive boundary', () => {
@@ -13429,14 +13430,15 @@ test('Etruscan Templum Sky Division engine: sectors, +09:00 KST, and interpretiv
 
 test('Ainu Kamuy Iomante Harmony engine: aspects, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateAinuKamuyIomanteHarmony({ profile, now: new Date('2026-11-20T05:50:00Z'), question: '일상의 감사와 순환을 회복하고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-AINU-KAMUY-v2.2.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-AINU-KAMUY-v2.3.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionAspect.name !== rep.primaryAspect.name);
+  assert.ok(rep.seasonalBreath.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatAinuKamuyPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('아이누') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.reflectionFocus));
+  assert.ok(prompt.includes('아이누') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.seasonalBreath) && prompt.includes(rep.reflectionFocus));
 });
 
 test('Guarani Teko Pora Forest Harmony engine: principles, +09:00 KST, and interpretive boundary', () => {
@@ -14245,14 +14247,15 @@ test('Garifuna Dugu Caribbean Rhythm engine: rhythm, +09:00 KST, and interpretiv
 
 test('Alpine Savoy Col Wisdom engine: principle, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateAlpineSavoyColWisdom({ profile, now: new Date('2026-11-20T08:46:00Z'), question: '더 부드럽게 건널 수 있는 고개를 찾고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-ALPINE-SAVOY-v2.2.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-ALPINE-SAVOY-v2.3.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionPrinciple.length > 0 && rep.companionPrinciple !== rep.ridgePrinciple);
+  assert.ok(rep.alpineWeather.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatAlpineSavoyPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('사보이') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.reflectionFocus));
+  assert.ok(prompt.includes('사보이') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.alpineWeather) && prompt.includes(rep.reflectionFocus));
 });
 
 test('Nabataean Petra Cistern Water engine: conduit, +09:00 KST, and interpretive boundary', () => {

@@ -21,6 +21,8 @@ export interface AmazighDesertResult {
   calculatedAtKst: string;
   primaryWaypoint: AmazighWaypoint;
   supportWaypoint: AmazighWaypoint;
+  desertPhase: string;
+  shadowWarning: string;
   qualitativeSynthesis: string;
   reflectionFocus: string;
   ritualAction: string;
@@ -83,6 +85,20 @@ function stableHash(input: string): number {
   return h >>> 0;
 }
 
+const DESERT_PHASES = [
+  '별빛 항해의 시간 (큰 방향과 장기 기준 재정렬)',
+  '새벽 이슬의 시간 (지치지 않을 기초 체력·자원 확보)',
+  '모래바람 경계의 시간 (외부 소음 차단과 중심 유지)',
+  '오아시스 모닥불의 시간 (신뢰할 동행과의 조율)',
+] as const;
+
+const AMAZIGH_SHADOW_WARNINGS: Record<AmazighWaypointId, string> = {
+  itri_star_bearing: '멀리 있는 별만 바라보다가 지금 발밑의 모래 웅덩이(현실 조건)를 놓치지 않도록 살피세요.',
+  aman_oasis_reserve: '아끼는 데만 치중해 정작 건너야 할 순간의 결단까지 멈추지 않도록 균형을 잡으세요.',
+  taghelmust_boundary: '경계를 세우다 필요한 협력 신호까지 차단하지 않도록 마음의 창은 조금 열어 두세요.',
+  tada_caravan_trust: '동행에게 기대기 전에 내가 감당할 몫의 짐을 먼저 분명히 정돈해 두세요.',
+};
+
 export function calculateAmazighDesertStarOasis(params: {
   profile: UserProfile;
   now?: Date;
@@ -94,10 +110,12 @@ export function calculateAmazighDesertStarOasis(params: {
   const seedRaw = [
     params.profile.basic?.name ?? '',
     JSON.stringify(params.profile.fate ?? {}),
+    now.toISOString().slice(0, 13),
     query,
   ].join('|');
   const seed = stableHash(seedRaw);
   const supportSeed = stableHash(`${seedRaw}|support`);
+  const phaseSeed = stableHash(`${seedRaw}|phase`);
 
   const primaryIdx = seed % AMAZIGH_WAYPOINTS.length;
   const supportOffset = 1 + (supportSeed % (AMAZIGH_WAYPOINTS.length - 1));
@@ -105,9 +123,11 @@ export function calculateAmazighDesertStarOasis(params: {
 
   const primaryWaypoint = AMAZIGH_WAYPOINTS[primaryIdx];
   const supportWaypoint = AMAZIGH_WAYPOINTS[supportIdx];
+  const desertPhase = DESERT_PHASES[phaseSeed % DESERT_PHASES.length];
+  const shadowWarning = AMAZIGH_SHADOW_WARNINGS[primaryWaypoint.id];
 
   const qualitativeSynthesis =
-    `북아프리카 아마지그(베르베르) 사막 유목의 지혜로 바라보면, 지금 여정에는 ` +
+    `북아프리카 아마지그(베르베르) 사막 유목의 지혜로 바라보면, '${desertPhase}' 국면에서 ` +
     `‘${primaryWaypoint.amazighTerm} — ${primaryWaypoint.koreanLabel}’의 표지가 선명합니다. ` +
     `${primaryWaypoint.coreInsight} 여기에 ‘${supportWaypoint.koreanLabel}’이 뒤를 받쳐 주어, ` +
     `조급한 질주 대신 호흡을 지키며 끝까지 건너갈 수 있는 흐름입니다.`;
@@ -115,7 +135,7 @@ export function calculateAmazighDesertStarOasis(params: {
   const reflectionFocus =
     `${primaryWaypoint.koreanLabel}을 기준으로 에너지와 경계를 지키는 ${supportWaypoint.koreanLabel} 정렬 시점`;
 
-  const ritualAction = primaryWaypoint.desertPractice;
+  const ritualAction = `${primaryWaypoint.desertPractice} (${supportWaypoint.koreanLabel}도 함께 의식해 보세요.)`;
 
   const reflectiveQuestion = query
     ? `‘${query.slice(0, 36)}’이라는 사막 구간을 건너는 지금, ${primaryWaypoint.reflectiveQuestion}`
@@ -123,10 +143,12 @@ export function calculateAmazighDesertStarOasis(params: {
 
   return {
     engineName: '아마지그 사막 별·오아시스 길잡이 (Amazigh Desert Compass)',
-    engineVersion: 'LUCKEY-AMAZIGH-DESERT-v2.2.0',
+    engineVersion: 'LUCKEY-AMAZIGH-DESERT-v2.3.0',
     calculatedAtKst: formatAmazighKstTimestamp(now),
     primaryWaypoint,
     supportWaypoint,
+    desertPhase,
+    shadowWarning,
     qualitativeSynthesis,
     reflectionFocus,
     ritualAction,
@@ -143,6 +165,8 @@ export function formatAmazighDesertPrompt(res: AmazighDesertResult): string {
     `- 엔진 버전: ${res.engineVersion} | 연산 시각: ${res.calculatedAtKst}`,
     `- 주된 길잡이: ${res.primaryWaypoint.amazighTerm} · ${res.primaryWaypoint.koreanLabel}`,
     `- 보조 길잡이: ${res.supportWaypoint.amazighTerm} · ${res.supportWaypoint.koreanLabel}`,
+    `- 사막 여정 국면: ${res.desertPhase}`,
+    `- 과잉·결핍 경계: ${res.shadowWarning}`,
     `- 성찰 해석: ${res.qualitativeSynthesis}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 실천 의례: ${res.ritualAction}`,
