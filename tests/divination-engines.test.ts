@@ -15470,3 +15470,21 @@ test('buildUserFifteenToolsDigest integrates Vedic synergy/axis/aim, Liuren less
   assert.ok(digest.includes('천지반 공명 [') && digest.includes('최적 결단 계절 ['));
   assert.ok(!/synergyScore|fourLessonsHarmonyScore|actionMomentumIndex|resonanceScore/.test(digest));
 });
+
+test('buildUserFifteenToolsDigest integrates Kabbalah lightning/manifestation, Iching dynamics/windows, and Thai seasonal tactics without raw scores', () => {
+  const profile: any = {
+    basic: {
+      name: '제제',
+      birthdate: '1994-01-24',
+      birthtime: '10:30',
+      calendarType: 'solar',
+      isLeapMonth: false,
+      gender: 'male',
+    },
+  };
+  const digest = buildUserFifteenToolsDigest(profile, new Date('2026-11-22T04:35:00+09:00'));
+  assert.ok(digest.includes('번개 섬광 계위 [') && digest.includes('현현 조언:'));
+  assert.ok(digest.includes('동효 국면 [') && digest.includes('세응 처신:'));
+  assert.ok(digest.includes('활력 좌우명:') && digest.includes('개운 실천:'));
+  assert.ok(!/ascensionPotentialIndex|harmonyScore|momentumScore|affinityScore/.test(digest));
+});
