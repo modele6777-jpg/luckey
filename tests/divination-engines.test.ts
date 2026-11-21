@@ -15575,3 +15575,21 @@ test('buildUserFifteenToolsDigest integrates Vedic, Liuren, and Hongguk Qimen sy
   assert.ok(digest.includes('세응 관계 [') && digest.includes('기문 처신('));
   assert.ok(!/fourLessonsHarmonyScore|riskIndex|tonggi\.score/.test(digest));
 });
+
+test('buildUserFifteenToolsDigest integrates Kabbalah, Iching, and Thai Horasat synthesis matrices and rhythms without raw scores', () => {
+  const profile: any = {
+    basic: {
+      name: '제제',
+      birthdate: '1994-01-24',
+      birthtime: '10:30',
+      calendarType: 'solar',
+      isLeapMonth: false,
+      gender: 'male',
+    },
+  };
+  const digest = buildUserFifteenToolsDigest(profile, new Date('2026-11-22T05:26:00+09:00'));
+  assert.ok(digest.includes('카발라 처신(') && digest.includes('계절 세계 결 ['));
+  assert.ok(digest.includes('주역 처신(') && digest.includes('호괘 내면(') && digest.includes('계절 괘조 ['));
+  assert.ok(digest.includes('호라삿 처신 [') && digest.includes('호라삿 길색 ['));
+  assert.ok(!/affinityScore|vitalityIndex|decisionScore/.test(digest));
+});
