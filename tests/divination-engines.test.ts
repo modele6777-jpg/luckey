@@ -15789,3 +15789,21 @@ test('buildUserFifteenToolsDigest integrates 5th-round Vedic, Liuren, and Honggu
   assert.ok(digest.includes('궁 순시창 [') && digest.includes('기문 의례:'));
   assert.ok(!/synergyScore|dharmaProsperityScore|decisionScore|fourLessonsHarmonyScore|riskIndex|tonggi\.score/.test(digest));
 });
+
+test('buildUserFifteenToolsDigest integrates 5th-round Kabbalah, Iching, and Thai Horasat temporal guidance, focus themes, and interpretive boundaries without raw scores', () => {
+  const profile: any = {
+    basic: {
+      name: '제제',
+      birthdate: '1994-01-24',
+      birthtime: '10:30',
+      calendarType: 'solar',
+      isLeapMonth: false,
+      gender: 'male',
+    },
+  };
+  const digest = buildUserFifteenToolsDigest(profile, new Date('2026-11-22T07:06:00+09:00'));
+  assert.ok(digest.includes('경로 실천(') && digest.includes('카발라 처신('));
+  assert.ok(digest.includes('실천 방침(') && digest.includes('주역 처신('));
+  assert.ok(digest.includes('일상 의식:') && digest.includes('성찰 초점:') && digest.includes('해석 경계:'));
+  assert.ok(!/vitalityIndex|affinityScore|decisionScore|momentumScore/.test(digest));
+});
