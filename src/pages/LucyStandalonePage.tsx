@@ -4,6 +4,7 @@ import { ScreenPortal } from '@/components/layout/ScreenPortal';
 import { LucyModeTransition } from '@/components/chat/LucyModeTransition';
 import { LucyEntryScreen, type LucyEntryVariant } from '@/components/chat/LucyEntryScreen';
 import { publishTableSaju, publishTableAnswer, publishTableTools } from '@/lib/lucyTableBus';
+import { MasterTableSheetButton } from '@/components/duo/MasterTableSheet';
 import { extractAllToolFacts, pickCalculatedToolData, type ToolFact } from '@/lib/lucyMasterToolFacts';
 import { LUCY_MASTER_DEPTH3_TOOLS } from '@/lib/divination/smartAgentRouter';
 import { shouldOfferLucyMaster, dismissLucyMasterOffer, markLucyMasterFromOffer, consumeLucyMasterFromOffer, shouldOfferReturnToLucy, dismissReturnToLucyOffer } from '@/lib/lucyMasterOffer';
@@ -3997,6 +3998,8 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
 
           {/* Right Action Tools: 검색 · 자동 읽기 · 내보내기 */}
           <div className="lucy-header-actions flex items-center gap-1.5 sm:gap-2 shrink-0">
+            {/* 🔮 접은 화면 점술모드: 펼친 화면의 왼쪽 테이블(사주·타로·추천 도구·양피지)을 창으로 본다 */}
+            {isMasterMode && !isDuoUnfolded && <MasterTableSheetButton tone={isLight ? 'light' : 'dark'} />}
             {/* 📘 가이드 */}
             <PageGuideButton guide={getPageGuide(isMasterMode ? 'master' : 'lucy')} tone={isLight ? 'light' : 'dark'} />
             {/* 1. 검색 (Search Toggle) */}
