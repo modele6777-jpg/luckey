@@ -7,7 +7,7 @@
  * Key: GOOGLE_CLOUD_TTS_API_KEY, or the existing Google/Gemini API key when the
  * Text-to-Speech API is enabled on that key's project.
  */
-import { getServiceAccountToken, readServiceAccount } from './googleServiceAccount.ts';
+import { getServiceAccountToken, readServiceAccount, serviceAccountProblem } from './googleServiceAccount.ts';
 
 export type CloudTtsRuntime = Record<string, string | undefined>;
 
@@ -116,6 +116,7 @@ let lastCloudGeminiModelError: { model: string; status?: number; providerCode?: 
 export function cloudGeminiTtsStatus(env: CloudTtsRuntime = {}) {
   return {
     serviceAccount: Boolean(readServiceAccount(env.GOOGLE_CLOUD_TTS_CREDENTIALS)),
+    serviceAccountState: serviceAccountProblem(env.GOOGLE_CLOUD_TTS_CREDENTIALS),
     model: workingCloudGeminiModel || null,
     lastModelError: lastCloudGeminiModelError,
   };

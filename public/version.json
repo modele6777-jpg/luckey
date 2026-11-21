@@ -1,11 +1,9 @@
 {
-  "version": "1.8.114",
-  "builtAt": "2026-11-21T06:53:36.990Z",
-  "summary": "Cloud Gemini 음성을 서비스 계정으로 정식 인증 (같은 목소리 대신 읽기 준비)",
+  "version": "1.8.115",
+  "builtAt": "2026-11-21T07:06:21.285Z",
+  "summary": "서비스 계정 키를 Render Secret File로 넣어도 읽고, 못 읽는 이유를 점검 화면에 표시",
   "items": [
-    "Cloud의 Gemini 음성은 API 키를 받지 않아(403) 서비스 계정 인증으로 연결",
-    "Render에 서비스 계정 JSON(GOOGLE_CLOUD_TTS_CREDENTIALS)을 넣으면 Gemini 한도가 찰 때 같은 목소리로 대신 읽음",
-    "서비스 계정이 없으면 시도하지 않아 대신 읽기가 느려지지 않음",
-    "인증 출입증은 만료 전까지 재사용"
+    "Render의 Secret Files(/etc/secrets)나 GOOGLE_APPLICATION_CREDENTIALS 경로의 서비스 계정 JSON도 읽음",
+    "점검 화면에 서비스 계정 상태(없음/JSON 형식 오류/필수 항목 없음/정상) 표시 (내용은 표시하지 않음)"
   ]
 }
