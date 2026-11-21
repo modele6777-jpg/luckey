@@ -13963,13 +13963,14 @@ test('Bengali Baul Moner Manush engine: string, +09:00 KST, and interpretive bou
 
 test('Punjabi Nanak Langar Service engine: pillar, +09:00 KST, and interpretive boundary', () => {
   const rep = calculatePunjabiNanakLangarService({ profile, now: new Date('2026-11-20T07:56:00Z'), question: '성실함과 넉넉한 나눔을 세우고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-PUNJABI-NANAK-v2.1.0');
-  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.equal(rep.engineVersion, 'LUCKEY-PUNJABI-NANAK-v2.2.0');
+  assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
+  assert.ok(rep.companionPillar !== rep.punjabiPillar);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatPunjabiNanakPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('펀자브') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('펀자브') && prompt.includes('동반 기둥') && prompt.includes('+09:00 (KST)'));
 });
 
 test('Chuvash Tura World Tree Balance engine: sign, +09:00 KST, and interpretive boundary', () => {
@@ -14093,13 +14094,14 @@ test('Uzbek Mahalla Rishtan Craft engine: virtue, +09:00 KST, and interpretive b
 
 test('Rapa Nui Mana Moai Horizon engine: focus, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateRapaNuiManaMoaiHorizon({ profile, now: new Date('2026-11-20T08:15:00Z'), question: '지금 내 자리를 지키는 중심을 세우고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-RAPANUI-MOAI-v2.1.0');
-  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.equal(rep.engineVersion, 'LUCKEY-RAPANUI-MOAI-v2.2.0');
+  assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
+  assert.ok(rep.companionFocus !== rep.moaiFocus);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatRapaNuiMoaiPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('라파 누이') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('라파 누이') && prompt.includes('동반 시선') && prompt.includes('+09:00 (KST)'));
 });
 
 test('Chechen Vainakh Kovakh Honor engine: code, +09:00 KST, and interpretive boundary', () => {
@@ -14402,13 +14404,14 @@ test('San Kalahari Tracking Stars engine: sign, +09:00 KST, and interpretive bou
 
 test('Phrygian Gordian Knot Clarity engine: symbol, +09:00 KST, and interpretive boundary', () => {
   const rep = calculatePhrygianGordianKnotClarity({ profile, now: new Date('2026-11-20T09:20:00Z'), question: '꼬인 매듭을 단순하게 풀어내고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-PHRYGIAN-GORDIAN-v2.1.0');
-  assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.equal(rep.engineVersion, 'LUCKEY-PHRYGIAN-GORDIAN-v2.2.0');
+  assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
+  assert.ok(rep.companionSymbol !== rep.anatolianSymbol);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatPhrygianGordianPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('프리지아') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('프리지아') && prompt.includes('동반 상징') && prompt.includes('+09:00 (KST)'));
 });
 
 test('Goryeo Celadon Inlay Clarity engine: craft, +09:00 KST, and interpretive boundary', () => {
