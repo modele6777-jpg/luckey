@@ -503,9 +503,10 @@ function skippedResult(targetYear: number, note: string): TojeongResult {
  * 조선 정통 이지함 토정비결 작괘 산법으로 당해 연도(기본값: 현재 연도)의 괘문을 결정론적으로 산출한다.
  * 생년월일이 없거나 판별할 수 없으면 status 'skipped'로 명확히 알린다.
  */
-export function calculateTojeong(params: { profile?: UserProfile | null; targetYear?: number; question?: string }): TojeongResult {
-  const now = new Date();
-  const targetYear = params.targetYear ?? now.getFullYear();
+export function calculateTojeong(params: { profile?: UserProfile | null; targetYear?: number; now?: Date; question?: string }): TojeongResult {
+  const now = params.now ?? new Date();
+  const kstNow = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const targetYear = params.targetYear ?? kstNow.getUTCFullYear();
   const profile = params.profile ?? null;
   const birthdateStr = profile?.basic?.birthdate?.trim() || '';
 

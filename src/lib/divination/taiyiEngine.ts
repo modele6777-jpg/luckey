@@ -193,7 +193,8 @@ export function calculateTaiyi(params: {
 }): TaiyiResult {
   const now = params.targetDate || new Date();
   const calculatedAtKst = formatTaiyiKstTimestamp(now);
-  const targetYear = params.targetYear || now.getFullYear();
+  const kstNow = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const targetYear = params.targetYear || kstNow.getUTCFullYear();
   const targetGanZhi = getYearGanZhi(targetYear);
 
   if (!params.profile?.basic?.birthdate) {

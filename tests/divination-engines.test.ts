@@ -15381,3 +15381,23 @@ test('buildUserFifteenToolsDigest integrates qualitative Kabbalah, 4-symmetric I
   assert.ok(digest.includes('소운 ') && digest.includes('길방위 '));
   assert.ok(!digest.includes('신체 활력 ') || !digest.match(/신체 활력 \d+점/));
 });
+
+test('buildUserFifteenToolsDigest integrates Tojeong 3-numbers & monthly fortune, Kyusei directions/hazards, and Taiyi ju/outcome', () => {
+  const profile: any = {
+    basic: {
+      name: '제제',
+      birthdate: '1994-01-24',
+      birthtime: '10:30',
+      calendarType: 'solar',
+      isLeapMonth: false,
+      gender: 'male',
+    },
+  };
+  const digest = buildUserFifteenToolsDigest(profile, new Date('2026-11-21T01:55:00Z'));
+  // 13. 토정비결: 3수·11월 운세 포함
+  assert.ok(digest.includes('토정비결:') && digest.includes('3수(') && digest.includes('11월 운세('));
+  // 14. 구성학: 일명성·최길방위·주의 흉살방위 포함
+  assert.ok(digest.includes('구성학 9궁 명반:') && digest.includes('일명성 ') && digest.includes('최길방위 [') && digest.includes('주의 흉살방위 ['));
+  // 15. 태을신수: 72국·주객 판정·오복길성 포함
+  assert.ok(digest.includes('태을신수:') && digest.includes('제') && digest.includes('국)') && digest.includes('주객 판정 ['));
+});

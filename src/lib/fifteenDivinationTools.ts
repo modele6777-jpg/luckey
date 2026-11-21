@@ -379,13 +379,21 @@ export function buildUserFifteenToolsDigest(profile?: UserProfile, asOfDate: Dat
       thaiLine = `- 태국점성술 요일 상징: ${KOR_WEEKDAYS[dow]} · 전통 색상 ${colors[dow]}. 정밀 호라삿 차트 미계산.`;
     }
 
-    // 14. 구성학 (9궁 명반 및 본명성·월명성·길방위)
+    // 14. 구성학 (9궁 명반 · 본명성·월명성·일명성 · 최길방위·주요 흉살방위 결정론 산법)
     let kyuseiLine: string;
     try {
       const ks = calculateKyusei({ profile, targetDate: referenceDate });
-      kyuseiLine = ks.status === 'calculated'
-        ? `- 구성학 9궁 명반: 본명성 ${ks.honmyosei.name} · 월명성 ${ks.getmyosei.name} · 당해 연성 ${ks.annualChart.centerStarName}(${ks.targetYearGanZhi}년). 연·월·일반 포국과 오황살·암검살·세파·월파·본명살·본명적살, 최길방위는 결정론 엔진 리포트(kyuseiResult)의 실측 데이터로 안내.`
-        : `- 구성학: ${ks.note || '생년월일 미입력으로 미계산'}`;
+      if (ks.status === 'calculated') {
+        const topDir = ks.topFortuneDirection
+          ? `${ks.topFortuneDirection.direction}(${ks.topFortuneDirection.starName}·${ks.topFortuneDirection.relation})`
+          : '동남·서북 균형 탐색';
+        const hazardSummary = ks.hazards && ks.hazards.length > 0
+          ? ks.hazards.slice(0, 3).map((h) => `${h.name}(${h.direction})`).join(', ')
+          : '특이 흉살 없음';
+        kyuseiLine = `- 구성학 9궁 명반: 본명성 ${ks.honmyosei.name} · 월명성 ${ks.getmyosei.name}(${ks.getmyosei.currentTerm}) · 일명성 ${ks.ilmyosei.name} · 당해 연성 ${ks.annualChart.centerStarName}(${ks.targetYearGanZhi}년) · 최길방위 [${topDir}] · 주의 흉살방위 [${hazardSummary}].`;
+      } else {
+        kyuseiLine = `- 구성학: ${ks.note || '생년월일 미입력으로 미계산'}`;
+      }
     } catch {
       kyuseiLine = '- 구성학: 기준일 절기 범위 확인이 필요해 미계산. 임의 본명성·방위반을 지어내지 말 것.';
     }
@@ -441,21 +449,28 @@ export function buildUserFifteenToolsDigest(profile?: UserProfile, asOfDate: Dat
       }
     } catch (_) {}
 
-    // 13. 토정비결 (이지함 144괘문 수리 산법)
+    // 13. 토정비결 (이지함 상·중·하 3수 작괘 및 144괘문 · KST 당해 월운 수리 산법)
     let tojeongLine = '';
     try {
-      const tj = calculateTojeong({ profile, targetYear: referenceDate.getFullYear() });
+      const tj = calculateTojeong({ profile, targetYear: kstYear, now: referenceDate });
       if (tj.status === 'calculated') {
-        tojeongLine = `\n- 토정비결: ${tj.targetYear}년 작괘 제${tj.hexagramCode}괘(${tj.hexagramName}) · 연간 총론: "${tj.annualSummary}".`;
+        const kstMonth = kstNow.getUTCMonth() + 1;
+        const currentMonthFortune = tj.monthlyFortunes?.find((m) => m.month === kstMonth);
+        const monthPart = currentMonthFortune
+          ? ` · ${kstMonth}월 운세(${currentMonthFortune.keyword}): "${currentMonthFortune.fortune}"`
+          : '';
+        tojeongLine = `\n- 토정비결: ${tj.targetYear}년(${tj.targetYearGanZhi}) 제${tj.hexagramCode}괘(${tj.hexagramName} · ${tj.upperTrigram}상/${tj.lowerTrigram}하 · ${tj.luckGrade}) · 3수(상${tj.upperGua}·중${tj.middleGua}·하${tj.lowerGua}) · 연간 총론: "${tj.annualSummary}"${monthPart}.`;
       }
     } catch (_) {}
 
-    // 15. 태을신수 (16궁 연국 적년 수리 산법)
+    // 15. 태을신수 (16궁 연국 적년 · 72국 · 주객 승부 · 오복길성 수리 산법)
     let taiyiLine = '';
     try {
-      const ty = calculateTaiyi({ profile, targetYear: referenceDate.getFullYear(), targetDate: referenceDate });
+      const ty = calculateTaiyi({ profile, targetYear: kstYear, targetDate: referenceDate });
       if (ty.status === 'calculated' && ty.calculation) {
-        taiyiLine = `\n- 태을신수: 적년 ${ty.calculation.accumulatedYears}년 · 16궁 재궁 [${ty.calculation.taiyiPalaceName}] · 시대 대세: "${ty.macroActionStrategy}".`;
+        const c = ty.calculation;
+        const fiveBless = ty.fiveBlessings ? ` · 오복길성 [${ty.fiveBlessings.palaceName}궁]` : '';
+        taiyiLine = `\n- 태을신수: ${ty.targetYear}년 적년 ${c.accumulatedYears}년(제${c.juNumber}국) · 16궁 태을 재궁 [${c.taiyiPalaceName}] · 문창(주) ${c.wenChangPalaceName}궁 / 시격(객) ${c.shiJiPalaceName}궁 · 주객 판정 [${c.outcome}]${fiveBless} · 시대 대세: "${ty.macroActionStrategy}".`;
       }
     } catch (_) {}
 
