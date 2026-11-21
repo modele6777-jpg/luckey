@@ -1744,7 +1744,7 @@ test('buildUserFifteenToolsDigest integrates Hongguk Qimen and Ziwei Flying Star
   assert.match(digest, /태국점성술 요일 상징/);
 });
 
-import { calculateKabbalah, formatKabbalahPrompt, KABBALAH_ENGINE_VERSION, KABBALAH_METHOD, SEPHIROTH_10, PATHS_22, FOUR_WORLDS, THREE_PILLARS, DAATH, kabbalahSephirahByNumber, kabbalahPathByNumber, reduceGematria, digitSum, soulPathNumberToPath } from '../src/lib/divination/kabbalahEngine';
+import { calculateKabbalah, formatKabbalahPrompt, KABBALAH_ENGINE_VERSION, KABBALAH_METHOD, SEPHIROTH_10, PATHS_22, FOUR_WORLDS, THREE_PILLARS, DAATH, kabbalahSephirahByNumber, kabbalahPathByNumber, reduceGematria, digitSum, soulPathNumberToPath, tarotBirthCardNumber } from '../src/lib/divination/kabbalahEngine';
 
 test('Kabbalah 10 sephiroth: full table, 3-pillar classification and hidden Daath', () => {
   assert.equal(SEPHIROTH_10.length, 10);
@@ -1807,7 +1807,9 @@ test('Kabbalah 22 paths: connectivity, hebrew letters, Golden Dawn attributions 
     assert(['원소', '행성', '별자리'].includes(p.attribution.kind));
   });
   assert.equal(new Set(PATHS_22.map((p) => p.hebrewLetter)).size, 22); // 22문자 전부 상이
-  assert.equal(new Set(PATHS_22.map((p) => `${p.from}-${p.to}`)).size, 22); // 연결 중복 없음
+  assert.equal(new Set(PATHS_22.map((p) => [p.from, p.to].sort((a, b) => a - b).join('-'))).size, 22); // 연결 중복 없음 (방향 무관)
+  // 황금여명 표준 연결 (특히 30번 레쉬 = 호드↔예소드)
+  assert.deepEqual([PATHS_22[19].from, PATHS_22[19].to].sort((a, b) => a - b), [8, 9]);
   assert.equal(new Set(PATHS_22.map((p) => p.tarotNumber)).size, 22); // 메이저 22장 일대일
   // 원소 3개(알레프=바람, 멤=물, 신=불), 행성 7개, 별자리 12개 = 22
   const byKind = { 원소: 0, 행성: 0, 별자리: 0 } as Record<string, number>;
@@ -1838,10 +1840,16 @@ test('Kabbalah gematria: digit sums, reduction to 1-10, master numbers 11/22/33 
   // 소울 패스 1~22 축약 및 경로 대응
   assert.equal(reduceGematria(34, { keepMasters: false, floor: 22 }), 7);
   assert.equal(reduceGematria(22, { keepMasters: false, floor: 22 }), 22);
-  assert.equal(soulPathNumberToPath(1), 11);
-  assert.equal(soulPathNumberToPath(22), 32);
-  assert.throws(() => soulPathNumberToPath(0), RangeError);
-  assert.throws(() => soulPathNumberToPath(23), RangeError);
+  // 타로 카드 번호 0~21 → 경로 11~32 (0 바보 = 11 알레프, 21 세계 = 32 타브)
+  assert.equal(soulPathNumberToPath(0), 11);
+  assert.equal(soulPathNumberToPath(1), 12);
+  assert.equal(soulPathNumberToPath(21), 32);
+  assert.throws(() => soulPathNumberToPath(-1), RangeError);
+  assert.throws(() => soulPathNumberToPath(22), RangeError);
+  // 그리어 탄생 카드: 3+25+1995=2023 → 7 전차 / 8+8+2022=2038 → 13 죽음 / 합이 22면 0 바보
+  assert.equal(tarotBirthCardNumber(1995, 3, 25), 7);
+  assert.equal(tarotBirthCardNumber(2022, 8, 8), 13);
+  assert.equal(tarotBirthCardNumber(1980, 1, 3), 0); // 1984 → 22 → 0 바보
 });
 
 test('Kabbalah engine fixtures: life path / personality / soul path and pillar balance', () => {
@@ -1858,11 +1866,11 @@ test('Kabbalah engine fixtures: life path / personality / soul path and pillar b
   assert.equal(n.lifePathSephirah.name, '네차크'); // 7 = 네차크, 5 = 게부라
   assert.equal(n.personalityNumber, 7); // 25 → 7
   assert.equal(n.personalitySephirah.name, '네차크');
-  assert.equal(n.soulPathNumber, 7);
-  assert.equal(n.soulPath.number, 17); // 7번째 경로 = 17번 (자인)
-  assert.equal(n.soulPath.tarotName, '연인');
-  // 활성 세피로트 4개(7·7·3·6): 자비 2, 엄격 1, 균형 1 → 50/25/25
-  assert.deepEqual(n.pillarBalance, { mercy: 50, severity: 25, mildness: 25 });
+  assert.equal(n.soulPathNumber, 7); // 그리어 탄생 카드 7 전차
+  assert.equal(n.soulPath.number, 18); // 7 전차 = 18번 헤트 (비나↔게부라)
+  assert.equal(n.soulPath.tarotName, '전차');
+  // 활성 세피로트 4개(7·7·3·5): 자비 2, 엄격 2, 균형 0 → 50/50/0
+  assert.deepEqual(n.pillarBalance, { mercy: 50, severity: 50, mildness: 0 });
   assert.equal(n.dominantWorld.name, '예치라'); // 네차크(7)는 형성계
   // 마스터 넘버 11 → 케테르 특별 해석 (1987-11-29 = 38 → 11)
   const r11 = calculateKabbalah({ profile: { basic: { birthdate: '1987-11-29', gender: 'female' as const } } });
@@ -1877,10 +1885,10 @@ test('Kabbalah engine fixtures: life path / personality / soul path and pillar b
   assert.equal(r22.numerology!.lifePathSephirah.number, 0);
   assert.equal(r22.numerology!.lifePathSephirah.name, '다트');
   assert(r22.numerology!.lifePathInterpretation.includes('다트'));
-  assert.equal(r22.numerology!.soulPathNumber, 22);
-  assert.equal(r22.numerology!.soulPath.number, 32); // 타브 예소드↔말쿠트
-  // 다트는 기둥 없음 → 퍼스널리티(호드) + 경로 양끝(예소드·말쿠트)만 집계: 엄격 1, 균형 2
-  assert.deepEqual(r22.numerology!.pillarBalance, { mercy: 0, severity: 33, mildness: 67 });
+  assert.equal(r22.numerology!.soulPathNumber, 13); // 8+8+2022=2038 → 13 죽음
+  assert.equal(r22.numerology!.soulPath.number, 24); // 눈 티페레트↔네차크
+  // 다트는 기둥 없음 → 퍼스널리티(호드) + 경로 양끝(티페레트·네차크): 자비 1, 엄격 1, 균형 1
+  assert.deepEqual(r22.numerology!.pillarBalance, { mercy: 33, severity: 33, mildness: 34 });
   // 마스터 넘버 33 → 케테르 전 나무 통합 해석 (1999-12-20 = 33)
   const r33 = calculateKabbalah({ profile: { basic: { birthdate: '1999-12-20' } } });
   assert.equal(r33.numerology!.rawDigitSum, 33);
@@ -1914,8 +1922,8 @@ test('Kabbalah engine: determinism, null-safe fallback and prompt formatting', (
   assert(prompt.includes(KABBALAH_ENGINE_VERSION));
   assert(prompt.includes('네차크'));
   assert(!prompt.includes('라이프 패스 세피라: 7 → 게부라'));
-  assert(prompt.includes('제17경로'));
-  assert(prompt.includes('연인'));
+  assert(prompt.includes('제18경로')); // 1995-03-25 → 탄생 카드 7 전차 = 18번 헤트
+  assert(prompt.includes('전차'));
   assert(prompt.includes('자비(확장)'));
   assert(prompt.includes('엄격(수축)'));
   assert(prompt.includes('예치라'));

@@ -89,15 +89,20 @@ test('master audit separates calculated results, symbolic references and skipped
   assert.ok(audit.some(item => item.status !== 'symbolic'), 'the full catalogue is not counted as symbolic use');
 });
 
-test('calculators with unresolved reference fixtures stay symbolic and out of numeric evidence', () => {
+test('previously held calculators now carry reference fixtures and honest limitations', async () => {
   const report = runDeterministicEngine({ profile, question: '종합 분석', forceAllTools: true, coreOnly: true });
-  // 2026-11-21: sukuyo and mahabote now have reference fixtures (below) and are calculated again.
-  for (const id of ['kabbalah']) {
-    assert.equal(report.tools[id].status, 'symbolic');
-    assert.equal(report.tools[id].data, undefined);
-    assert.ok(!getFiredEngineBadges(report).some(name => name.includes(report.tools[id].toolKoName)));
+  // 2026-11-21: sukuyo · mahabote · kabbalah were verified against reference rules and are calculated again.
+  for (const id of ['sukuyo', 'mahabote', 'kabbalah']) {
+    assert.equal(report.tools[id].status, 'calculated', id);
+    assert.ok((report.tools[id].limitations ?? []).length > 0, `${id} keeps its limitation note`);
   }
+  assert.match(report.tools.kabbalah.limitations!.join(' '), /유대 카발라 계산이 아니라/);
   assert.ok(!(report.tools.qimen.data as any)?.honggukQimen);
+  const { PATHS_22, FOUR_WORLDS } = await import('../src/lib/divination/kabbalahEngine');
+  // 황금여명 통용표: 30번 레쉬 = 호드(8)↔예소드(9), 아칠루트 = 케테르
+  const resh = PATHS_22.find(p => p.number === 30)!;
+  assert.deepEqual([resh.from, resh.to].sort(), [8, 9]);
+  assert.match(FOUR_WORLDS[0].sephirahRange, /케테르 \(1\)/);
 });
 
 test('missing birthdate cannot silently use the tarot calculator default birthday', () => {

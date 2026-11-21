@@ -20,6 +20,9 @@ test('views draw nothing when there is no computed data (no invented values)', (
     assert.equal(renderToStaticMarkup(<ToolDetailView id={id} data={null} />), '', id);
     assert.equal(renderToStaticMarkup(<ToolDetailView id={id} data={{}} />), '', `${id} empty object`);
   }
-  // 재검토 중인 도구는 개인 값 없이 구조만
-  assert.match(renderToStaticMarkup(<ToolDetailView id="kabbalah" data={null} />), /구조와 의미만/);
+  // 숙요·마하보테·카발라는 값이 없으면 구조만 (개인 값 없이)
+  for (const id of ['sukuyo', 'mahabote', 'kabbalah'] as const) {
+    const html = renderToStaticMarkup(<ToolDetailView id={id} data={null} />);
+    assert.ok(html.length > 100 && !/본명궁|라이프 패스 /.test(html), id);
+  }
 });
