@@ -429,7 +429,20 @@ export function buildUserNatalSummary(profile?: UserProfile | null): string {
     return '출생정보 미입력: 개인 출생 차트 미계산. 별자리·상승궁·행성 배치를 임의로 지정하지 마세요.';
   }
   const chart = calculateNatalChart(profile);
-  return chart?.summaryText || '출생정보를 확인해 주세요. 유효한 생년월일·시간·역법을 확인하기 전에는 출생 차트를 계산한 것으로 해석하지 마세요.';
+  if (!chart?.summaryText) {
+    return '출생정보를 확인해 주세요. 유효한 생년월일·시간·역법을 확인하기 전에는 출생 차트를 계산한 것으로 해석하지 마세요.';
+  }
+  const elementEntries: Array<[string, number]> = [
+    ['불', chart.elements.fire],
+    ['흙', chart.elements.earth],
+    ['공기', chart.elements.air],
+    ['물', chart.elements.water],
+  ];
+  const lackingElements = elementEntries.filter(([, count]) => count === 0).map(([label]) => label);
+  const balanceNote = lackingElements.length > 0
+    ? ` · 보완 원소: ${lackingElements.join('·')}`
+    : ' · 4원소 균형 배치';
+  return `${chart.summaryText}${balanceNote} · 심리 청사진: ${chart.psychologicalBlueprint}`;
 }
 
 /**

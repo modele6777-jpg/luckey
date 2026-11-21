@@ -1726,8 +1726,11 @@ test('Thai Horasat engine binds into the deterministic engine report and prompt'
 test('buildUserFifteenToolsDigest integrates Hongguk Qimen and Ziwei Flying Stars into synapse perception digest', () => {
   const profile = { basic: { birthdate: '1995-03-25', birthtime: '14:30', gender: 'male' as const, birthCity: '서울' } };
   const digest = buildUserFifteenToolsDigest(profile);
+  assert.match(digest, /보완 오행:/);
+  assert.match(digest, /심리 청사진:/);
   assert.match(digest, /홍국기문\(4주 9궁\): 세효/);
   assert.match(digest, /자미두수 유년 사화: 명궁/);
+  assert.match(digest, /삼방사정 국면 \[.+\] · 록기 역학/);
   assert.match(digest, /태국점성술 요일 상징/);
 });
 
