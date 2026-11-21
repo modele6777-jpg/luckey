@@ -466,7 +466,8 @@ export default function LeftSidebarNav() {
   const masterDepth = useLucyMasterDepth();
   const MasterBubbleIcon = masterDepth >= 3 ? MessageCircleWarning : masterDepth === 2 ? MessageCircleQuestion : MessageCircleMore;
   const displayBubbleMarker = !isLucyMaster
-    ? (isExpandedLucyDuo() && isLucyActive ? 'plus' : 'minus')
+    // 펼침 상태(isUnfolded)는 접기/펼치기 즉시 갱신된다. 화면 칸(DOM)이 생길 때까지 기다리지 않아 + 표시가 바로 바뀐다.
+    ? ((isUnfolded || isExpandedLucyDuo()) && isLucyActive ? 'plus' : 'minus')
     : null;
   useEffect(() => {
     const sync = (e: Event) => {
