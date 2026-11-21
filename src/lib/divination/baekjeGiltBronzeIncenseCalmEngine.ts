@@ -7,6 +7,8 @@ export interface BaekjeIncenseResult {
   companionMotif: string;
   baekjeInsight: string;
   incenseTone: string;
+  incensePhase: string;
+  shadowWarning: string;
   reflectionFocus: string;
   ritualAction: string;
   reflectiveQuestion: string;
@@ -51,6 +53,20 @@ const MOTIFS = [
   },
 ];
 
+const INCENSE_PHASES = [
+  '연꽃 받침 다지기(바닥 고르기)',
+  '오악 봉우리 피어오름(고요한 확산)',
+  '오악사 선율 어우러짐(조화로운 표현)',
+  '금동 봉황 내려앉음(단정한 마무리)',
+] as const;
+
+const SHADOW_WARNINGS = [
+  '둥글고 온화하게 넘기려다 꼭 지켜야 할 내 안의 선마저 흐려지지 않도록 살피세요.',
+  '군더더기를 덜어 내는 데 집중한 나머지 지금 필요한 따뜻한 표현까지 생략할 수 있습니다.',
+  '조화를 맞추기 위해 불편한 감정을 무조건 누르면 오악사의 합주 대신 침묵만 남습니다.',
+  '여백을 남기려다 당장 매듭지어야 할 현실의 손길까지 미루지 않도록 균형을 잡으세요.',
+] as const;
+
 function formatKstIso(date: Date): string {
   const kst = new Date(date.getTime() + 9 * 60 * 60 * 1000);
   const y = kst.getUTCFullYear();
@@ -79,19 +95,24 @@ export function calculateBaekjeGiltBronzeIncenseCalm(params: {
   const seed = `${JSON.stringify(params.profile.fate ?? {})}|${params.question ?? ''}|${now.toISOString().slice(0, 13)}`;
   const idx = stableHash(seed) % MOTIFS.length;
   const companionOffset = 1 + (stableHash(`${seed}|companion`) % (MOTIFS.length - 1));
+  const phaseIdx = stableHash(`${seed}|phase`) % INCENSE_PHASES.length;
   const picked = MOTIFS[idx];
   const companion = MOTIFS[(idx + companionOffset) % MOTIFS.length];
+  const incensePhase = INCENSE_PHASES[phaseIdx];
+  const shadowWarning = SHADOW_WARNINGS[(phaseIdx + companionOffset) % SHADOW_WARNINGS.length];
 
   return {
-    engineVersion: 'LUCKEY-BAEKJE-INCENSE-v2.2.0',
+    engineVersion: 'LUCKEY-BAEKJE-INCENSE-v2.3.0',
     calculatedAtKst: formatKstIso(now),
     buyeoMotif: picked.motif,
     companionMotif: companion.motif,
     baekjeInsight: `${picked.insight} (동반 결: ${companion.motif})`,
     incenseTone: picked.tone,
-    reflectionFocus: `백제 금동대향로·미소의 지혜 '${picked.motif}'와 동반 결 '${companion.motif}'처럼, 뾰족한 긴장과 불필요한 장식을 덜어 내고 둥글고 온화한 비례로 마음을 고르게 펴 보세요.`,
-    ritualAction: picked.ritual,
-    reflectiveQuestion: picked.question,
+    incensePhase,
+    shadowWarning,
+    reflectionFocus: `백제 금동대향로·미소의 지혜 '${picked.motif}'와 동반 결 '${companion.motif}'가 '${incensePhase}' 국면에서 만나 뾰족한 긴장과 불필요한 장식을 덜어 내고 둥글고 온화한 비례로 마음을 고르게 펴 줍니다.`,
+    ritualAction: `${picked.ritual} (${incensePhase} 흐름에 맞춰 동반 결 '${companion.motif.split('(')[0].trim()}'의 여유도 곁들여 보세요.)`,
+    reflectiveQuestion: `${picked.question} (동반 결 '${companion.motif.split('(')[0].trim()}'과 함께 볼 때 오늘 가장 단정히 다듬을 비례는 무엇인가요?)`,
     interpretiveBoundary: '한국 백제의 금동대향로·서산 마애불·정림사지 비례 미학을 바탕으로 한 상징적 성찰 프레임입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.',
   };
 }
@@ -102,6 +123,8 @@ export function formatBaekjeIncensePrompt(res: BaekjeIncenseResult): string {
     `- 기준 시각: ${res.calculatedAtKst}`,
     `- 부여 모티프: ${res.buyeoMotif} (${res.incenseTone})`,
     `- 동반 결: ${res.companionMotif}`,
+    `- 향로 국면: ${res.incensePhase}`,
+    `- 과잉 경계: ${res.shadowWarning}`,
     `- 중심 통찰: ${res.baekjeInsight}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 오늘의 작은 실천: ${res.ritualAction}`,
