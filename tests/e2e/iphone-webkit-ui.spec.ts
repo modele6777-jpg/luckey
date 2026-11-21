@@ -1,5 +1,11 @@
 import { expect, test } from '@playwright/test';
 
+async function openLucyMaster(page, path = '/chat') {
+  // 엔진함·추천질문 라이브러리는 점술모드(루시 마스터)에서만 보인다.
+  await page.addInitScript(() => { sessionStorage.setItem('lucy_master_mode', 'on'); });
+  await openLucy(page, path);
+}
+
 async function openLucy(page, path = '/chat') {
   await page.addInitScript(() => {
     const now = new Date();
@@ -242,7 +248,9 @@ test('legacy Pro URL normalizes to Lucy and keeps the shared catalog available',
   await openLucy(page, '/chat?mode=pro');
   await expect(page).toHaveURL(/\/chat\?mode=ai$/);
   await expect(page.getByText('Lucy Pro', { exact: true })).toHaveCount(0);
-  await expect(page.getByRole('button', { name: /^엔진함 열기/ })).toBeVisible();
+  // Engine box and prompt library are Lucy Master only.
+  await expect(page.getByRole('button', { name: /^엔진함 열기/ })).toHaveCount(0);
+  await expect(page.getByRole('button', { name: '추천질문 라이브러리 열기' })).toHaveCount(0);
   expect(await page.evaluate(() => localStorage.getItem('lucy_tier_mode'))).toBe('ai');
 });
 
@@ -310,7 +318,7 @@ test('Lucy chat shows no per-message mode or engine badges', async ({ page, base
 });
 
 test('Lucy engine box opens the 515-entry catalog with multi-select and no preset bundles', async ({ page }) => {
-  await openLucy(page);
+  await openLucyMaster(page);
   const trigger = page.getByRole('button', { name: /^엔진함 열기/ });
   await expect(trigger).toBeVisible();
   await trigger.click();
@@ -350,7 +358,7 @@ test('Lucy engine box opens the 515-entry catalog with multi-select and no prese
 });
 
 test('Lucy groups all 515 catalog entries under the seven channel themes', async ({ page }) => {
-  await openLucy(page);
+  await openLucyMaster(page);
   await page.getByRole('button', { name: /^엔진함 열기/ }).click();
 
   const dialog = page.getByRole('dialog', { name: 'Lucy 엔진함' });
@@ -399,7 +407,7 @@ test('Lucy groups all 515 catalog entries under the seven channel themes', async
 });
 
 test('Lucy engine catalog fills its mobile pane and its list scrolls without auto-opening the keyboard', async ({ page }) => {
-  await openLucy(page);
+  await openLucyMaster(page);
   await page.getByRole('button', { name: /^엔진함 열기/ }).click();
 
   const dialog = page.getByRole('dialog', { name: 'Lucy 엔진함' });

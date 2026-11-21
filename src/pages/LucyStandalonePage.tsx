@@ -3807,7 +3807,8 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
                       <LucyModeName plus={showPlusMarker} pro={false} master={isMasterMode} isLight={isLight} />
                     </span>
                   </h1>
-                  <LucyLibraryTrigger
+                  {/* 엔진함은 점술모드(루시 마스터)에서만 보인다 */}
+                  {isMasterMode && <LucyLibraryTrigger
                     type="button"
                     onClick={() => {
                       triggerHaptic('whitehole');
@@ -3825,7 +3826,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
                   >
                     <span className="w-1.5 h-1.5 rounded-full bg-amber-400/60" />
                     엔진함
-                  </LucyLibraryTrigger>
+                  </LucyLibraryTrigger>}
                 </div>
               </div>
             </div>
@@ -4521,8 +4522,8 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
               </div>
             )}
 
-            {/* ✨ 추천질문 전체보기 모달 트리거 아이콘 버튼 */}
-            <LucyLibraryTrigger
+            {/* ✨ 추천질문 전체보기 모달 트리거 아이콘 버튼 (점술모드에서만) */}
+            {isMasterMode && <LucyLibraryTrigger
               id="lucy-open-prompt-library-btn"
               type="button"
               aria-haspopup="dialog"
@@ -4536,7 +4537,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
               aria-label="추천질문 라이브러리 열기"
             >
               <Sparkles size={11} className="sm:w-3 sm:h-3 text-amber-500 dark:text-amber-400 group-hover:scale-110 transition-transform" />
-            </LucyLibraryTrigger>
+            </LucyLibraryTrigger>}
 
             {/* 새로고침 셔플 버튼 */}
             <button
@@ -4893,7 +4894,8 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
       </AnimatePresence>
 
       {/* 📖 13페이지 추천 질문 라이브러리 모달 */}
-      <LucyLibraryDialogs sessionKey={librarySessionKey} isLight={isLight} onSelectPrompt={handleSelectPromptFromLibrary} />
+      {/* 엔진함·추천질문 라이브러리는 점술모드에서만 연다 */}
+      {isMasterMode && <LucyLibraryDialogs sessionKey={librarySessionKey} isLight={isLight} onSelectPrompt={handleSelectPromptFromLibrary} />}
 
       {/* 👥 대화창 프로필 추가/수정 모달 */}
       <ChatProfileModal
