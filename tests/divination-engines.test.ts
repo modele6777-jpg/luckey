@@ -15557,3 +15557,21 @@ test('buildUserFifteenToolsDigest integrates Tarot sephira/polarity, Sukuyo quad
   assert.ok(digest.includes('주도 영역 [') && digest.includes('행성 친화(') && digest.includes('명반 처신:'));
   assert.ok(!/tarotVitalityScore|guardScore|planetaryHarmonyScore/.test(digest));
 });
+
+test('buildUserFifteenToolsDigest integrates Vedic, Liuren, and Hongguk Qimen synthesis matrices without raw scores', () => {
+  const profile: any = {
+    basic: {
+      name: '제제',
+      birthdate: '1994-01-24',
+      birthtime: '10:30',
+      calendarType: 'solar',
+      isLeapMonth: false,
+      gender: 'male',
+    },
+  };
+  const digest = buildUserFifteenToolsDigest(profile, new Date('2026-11-22T05:16:00+09:00'));
+  assert.ok(digest.includes('베딕 처신 ['));
+  assert.ok(digest.includes('육임 처신(') && digest.includes('유의:'));
+  assert.ok(digest.includes('세응 관계 [') && digest.includes('기문 처신('));
+  assert.ok(!/fourLessonsHarmonyScore|riskIndex|tonggi\.score/.test(digest));
+});

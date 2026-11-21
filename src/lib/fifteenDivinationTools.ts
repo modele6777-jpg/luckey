@@ -508,7 +508,10 @@ export function buildUserFifteenToolsDigest(profile?: UserProfile, asOfDate: Dat
         const synergy = vd.dashaPlanetarySynergy ? ` · 행성 시너지 [${vd.dashaPlanetarySynergy.relationship}](${vd.dashaPlanetarySynergy.karmicFocus})` : '';
         const pillar = vd.kendraTrikonaProsperity ? ` · 핵심 하우스 축 [${vd.kendraTrikonaProsperity.dominantHousePillar}]` : '';
         const aim = vd.purusharthaAlignment?.primarySpiritualAim ? ` · 영적 지향: ${vd.purusharthaAlignment.primarySpiritualAim}` : '';
-        vedicLine = `\n- 베딕 조티시: 달 나크샤트라 ${vd.nakshatra.name} ${vd.nakshatra.pada}파다(지배성: ${vd.nakshatra.lord} · ${vd.nakshatra.gana} · ${vd.nakshatra.tattva}) · 빔쇼타리 대운 ${lord} 마하다샤${antar ? `·${antar} 부대운` : ''} · 달 라시 ${sign}${sunSign}${lagnaSign}${synergy}${pillar}${aim}.`;
+        const matrixNote = vd.vedicSynthesisMatrix
+          ? ` · 베딕 처신 [${vd.vedicSynthesisMatrix.dominantTension}]: ${vd.vedicSynthesisMatrix.integratedAction}`
+          : '';
+        vedicLine = `\n- 베딕 조티시: 달 나크샤트라 ${vd.nakshatra.name} ${vd.nakshatra.pada}파다(지배성: ${vd.nakshatra.lord} · ${vd.nakshatra.gana} · ${vd.nakshatra.tattva}) · 빔쇼타리 대운 ${lord} 마하다샤${antar ? `·${antar} 부대운` : ''} · 달 라시 ${sign}${sunSign}${lagnaSign}${synergy}${pillar}${aim}${matrixNote}.`;
       }
     } catch (_) {}
 
@@ -570,7 +573,13 @@ export function buildUserFifteenToolsDigest(profile?: UserProfile, asOfDate: Dat
         const seasonWin = hq.tacticalSeasonWindows?.peakActionSeason ? ` · 최적 결단 계절 [${hq.tacticalSeasonWindows.peakActionSeason}]` : '';
         const seDirection = hq.palaces?.find((p) => p.palace === se.palace)?.direction;
         const dirInfo = seDirection ? ` · 방위 ${seDirection}` : '';
-        qimenLine = `\n- 홍국기문(4주 9궁): 세효 [${se.palaceName}](${se.element}·${se.star}${dirInfo}) · 응효 [${eung.palaceName}](${eung.element}·${eung.star}) · 중궁 [${jg.palaceName}](${jg.element}) · 세효 8문 ${gate}(${se.gateCategory})${resonance}${wonders} · 삼형살 ${hq.samhyeong.formed ? `${hq.samhyeong.type || '삼형'} 성립` : hq.samhyeong.partial ? '부분형' : '미성립'}(파극 위험 ${riskTone}) · 5행 통기 ${tonggiTone}${seasonWin}.`;
+        const rel0 = hq.keyPointRelations?.[0]
+          ? ` · 세응 관계 [${hq.keyPointRelations[0].relation}]`
+          : '';
+        const matrixNote = hq.honggukSynthesisMatrix
+          ? ` · 기문 처신(${hq.honggukSynthesisMatrix.coreInsight}): ${hq.honggukSynthesisMatrix.recommendedAction} (유의: ${hq.honggukSynthesisMatrix.cautionNotice})`
+          : '';
+        qimenLine = `\n- 홍국기문(4주 9궁): 세효 [${se.palaceName}](${se.element}·${se.star}${dirInfo}) · 응효 [${eung.palaceName}](${eung.element}·${eung.star}) · 중궁 [${jg.palaceName}](${jg.element}) · 세효 8문 ${gate}(${se.gateCategory})${rel0}${resonance}${wonders} · 삼형살 ${hq.samhyeong.formed ? `${hq.samhyeong.type || '삼형'} 성립` : hq.samhyeong.partial ? '부분형' : '미성립'}(파극 위험 ${riskTone}) · 5행 통기 ${tonggiTone}${seasonWin}${matrixNote}.`;
       }
     } catch (_) {}
 
@@ -600,7 +609,10 @@ export function buildUserFifteenToolsDigest(profile?: UserProfile, asOfDate: Dat
             : '조율 필요';
         const lessonDyn = ` · 사과 생극 [${lr.interpersonalDynamic.relationType} · ${lr.interpersonalDynamic.subjectUpper}(${lr.interpersonalDynamic.subjectElement})⇄${lr.interpersonalDynamic.environmentUpper}(${lr.interpersonalDynamic.environmentElement}) · ${harmonyTone}]`;
         const tempoInfo = ` · 전개 템포 [${lr.transmissionDynamics.tempo}] · 돌파 전략: ${lr.transmissionDynamics.breakthroughStrategy}`;
-        liurenLine = `\n- 대육임(12천장·삼전): ${lr.dayStemBranch}일 ${lr.hourBranch}시(${lr.monthGeneral} 월장) · 과격 [${lr.patternName}] · 국면 [${lr.decisionGrade}] · 삼전(${trans}) · 주천장 ${lr.primaryGeneral.name}(${lr.primaryGeneral.nature})${lessonDyn}${tempoInfo}.`;
+        const matrixNote = lr.liurenSynthesisMatrix
+          ? ` · 육임 처신(${lr.liurenSynthesisMatrix.coreInsight}): ${lr.liurenSynthesisMatrix.recommendedAction} (유의: ${lr.liurenSynthesisMatrix.cautionNotice})`
+          : '';
+        liurenLine = `\n- 대육임(12천장·삼전): ${lr.dayStemBranch}일 ${lr.hourBranch}시(${lr.monthGeneral} 월장) · 과격 [${lr.patternName}] · 국면 [${lr.decisionGrade}] · 삼전(${trans}) · 주천장 ${lr.primaryGeneral.name}(${lr.primaryGeneral.nature})${lessonDyn}${tempoInfo}${matrixNote}.`;
       }
     } catch (_) {}
 
