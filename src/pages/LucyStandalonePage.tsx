@@ -1598,6 +1598,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
   useEffect(() => { if (!isMasterMode) setReturnOfferFor(null); }, [isMasterMode]);
   const acceptReturnOffer = useCallback(() => {
     setReturnOfferFor(null);
+    playLucyMasterSuction('out');
     setLucyMasterMode(false);
     triggerHaptic('whitehole');
   }, []);

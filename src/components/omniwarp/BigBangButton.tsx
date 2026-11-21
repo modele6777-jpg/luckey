@@ -943,8 +943,10 @@ export function BigBangButton() {
     const startBgmIfWanted = () => { if (isLucyMasterBgmPreferred()) void startLucyMasterBgm(); };
     if (lucyVisible) {
       if (toggleLucyMasterMode()) {
-        playLucyMasterSuction(); // 들어갈 때만: 화면이 버튼 안으로 빨려 들어간다
+        playLucyMasterSuction('in'); // 들어갈 때: 화면이 버튼 안으로 빨려 들어간다
         startBgmIfWanted();
+      } else {
+        playLucyMasterSuction('out'); // 나올 때: 같은 효과를 거꾸로, 버튼에서 화면이 쏟아져 나온다
       }
       return;
     }

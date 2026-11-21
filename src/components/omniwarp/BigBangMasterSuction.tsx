@@ -5,10 +5,16 @@ import { createPortal } from 'react-dom';
 
 export const LUCY_MASTER_SUCTION_EVENT = 'prism:lucy_master_suction';
 
-/** Fire the "pulled into the Big Bang button" effect (entering Lucy Master). */
-export function playLucyMasterSuction(): void {
+export type LucyMasterSuctionDirection = 'in' | 'out';
+
+/**
+ * Fire the Big Bang suction effect: 'in' pulls the screen into the button
+ * (entering Lucy Master); 'out' plays it in reverse, the screen pouring back
+ * out of the button (returning to regular Lucy).
+ */
+export function playLucyMasterSuction(direction: LucyMasterSuctionDirection = 'in'): void {
   if (typeof window === 'undefined') return;
-  window.dispatchEvent(new CustomEvent(LUCY_MASTER_SUCTION_EVENT));
+  window.dispatchEvent(new CustomEvent(LUCY_MASTER_SUCTION_EVENT, { detail: { direction } }));
 }
 
 const DURATION_MS = 1050;
@@ -24,6 +30,7 @@ interface Particle { angle: number; radius: number; speed: number; spin: number;
  */
 export function BigBangMasterSuction() {
   const [run, setRun] = useState(0);
+  const [direction, setDirection] = useState<LucyMasterSuctionDirection>('in');
   const [origin, setOrigin] = useState({ x: 0, y: 0, reach: 600 });
   // The layer covers the pane that holds the button, so the vortex centre sits exactly on it.
   const [bounds, setBounds] = useState({ left: 0, top: 0, width: 0, height: 0 });
@@ -31,7 +38,8 @@ export function BigBangMasterSuction() {
   const reduceMotion = useReducedMotion();
 
   useEffect(() => {
-    const onSuction = () => {
+    const onSuction = (event: Event) => {
+      setDirection((event as CustomEvent<{ direction?: LucyMasterSuctionDirection }>).detail?.direction === 'out' ? 'out' : 'in');
       const btn = document.getElementById('bigbang-omnibutton')?.getBoundingClientRect();
       const bx = btn ? btn.left + btn.width / 2 : 0;
       const by = btn ? btn.top + btn.height / 2 : 0;
@@ -73,9 +81,11 @@ export function BigBangMasterSuction() {
     canvas.width = Math.max(1, Math.round(rect.width * dpr));
     canvas.height = Math.max(1, Math.round(rect.height * dpr));
     ctx.scale(dpr, dpr);
+    const reverse = direction === 'out';
     const particles: Particle[] = Array.from({ length: 150 }, () => ({
       angle: Math.random() * Math.PI * 2,
-      radius: origin.reach * (0.35 + Math.random() * 0.75),
+      // Reverse: particles start inside the button and spiral back out.
+      radius: reverse ? 2 + Math.random() * 10 : origin.reach * (0.35 + Math.random() * 0.75),
       speed: 0.018 + Math.random() * 0.03,
       spin: 0.025 + Math.random() * 0.045,
       size: 0.8 + Math.random() * 2.4,
@@ -89,12 +99,20 @@ export function BigBangMasterSuction() {
       for (const p of particles) {
         const prevX = origin.x + Math.cos(p.angle) * p.radius;
         const prevY = origin.y + Math.sin(p.angle) * p.radius;
-        // Accelerate as the pull tightens; spin faster near the centre.
-        p.radius *= 1 - (p.speed + t * 0.08);
-        p.angle += p.spin * (1 + (1 - p.radius / origin.reach) * 3);
+        if (reverse) {
+          // Burst out of the button fast, then ease as the spiral unwinds.
+          p.radius = Math.min(origin.reach * 1.3, p.radius * (1 + (p.speed + 0.03) * (1.6 - t)) + 1.5);
+          p.angle -= p.spin * (1 + Math.max(0, 1 - p.radius / origin.reach) * 3);
+        } else {
+          // Accelerate as the pull tightens; spin faster near the centre.
+          p.radius *= 1 - (p.speed + t * 0.08);
+          p.angle += p.spin * (1 + (1 - p.radius / origin.reach) * 3);
+        }
         const px = origin.x + Math.cos(p.angle) * p.radius;
         const py = origin.y + Math.sin(p.angle) * p.radius;
-        const alpha = Math.max(0, Math.min(1, p.radius / 40)) * (1 - t * 0.4);
+        const alpha = reverse
+          ? Math.max(0, Math.min(1, p.radius / 24)) * (1 - t * 0.85)
+          : Math.max(0, Math.min(1, p.radius / 40)) * (1 - t * 0.4);
         ctx.globalAlpha = alpha;
         ctx.strokeStyle = p.color;
         ctx.lineWidth = p.size;
@@ -109,7 +127,9 @@ export function BigBangMasterSuction() {
     };
     frame = requestAnimationFrame(draw);
     return () => cancelAnimationFrame(frame);
-  }, [visible, origin, reduceMotion]);
+  }, [visible, origin, reduceMotion, direction]);
+
+  const reverse = direction === 'out';
 
   const at = `${origin.x}px ${origin.y}px`;
   return (
@@ -121,8 +141,9 @@ export function BigBangMasterSuction() {
       <AnimatePresence>
         {visible && (
           <motion.div
-            key={`master-suction-${run}`}
+            key={`master-suction-${run}-${direction}`}
             data-testid="lucy-master-suction"
+            data-direction={direction}
             aria-hidden="true"
             className="absolute inset-0 overflow-hidden pointer-events-none"
             initial={{ opacity: 0 }}
@@ -130,12 +151,12 @@ export function BigBangMasterSuction() {
             exit={{ opacity: 0 }}
             transition={{ duration: 0.18 }}
           >
-            {/* Darkness closing in on the button: the visible screen shrinks into it. */}
+            {/* In: darkness closes in on the button. Out: the screen opens back up from it. */}
             <motion.div
               className="absolute inset-0"
-              initial={{ ['--hole' as string]: `${origin.reach * 1.1}px` }}
-              animate={{ ['--hole' as string]: '0px' }}
-              transition={{ duration: (reduceMotion ? 400 : DURATION_MS * 0.8) / 1000, ease: [0.55, 0, 0.9, 0.45] }}
+              initial={{ ['--hole' as string]: reverse ? '0px' : `${origin.reach * 1.1}px` }}
+              animate={{ ['--hole' as string]: reverse ? `${origin.reach * 1.1}px` : '0px' }}
+              transition={{ duration: (reduceMotion ? 400 : DURATION_MS * 0.8) / 1000, ease: reverse ? [0.1, 0.55, 0.45, 1] : [0.55, 0, 0.9, 0.45] }}
               style={{
                 background: `radial-gradient(circle at ${at}, transparent 0, transparent var(--hole), rgba(46,16,101,0.55) calc(var(--hole) + 40px), rgba(12,5,26,0.96) calc(var(--hole) + 160px))`,
               }}
@@ -152,9 +173,9 @@ export function BigBangMasterSuction() {
                     maskImage: 'radial-gradient(circle, transparent 4%, black 22%, black 55%, transparent 72%)',
                     WebkitMaskImage: 'radial-gradient(circle, transparent 4%, black 22%, black 55%, transparent 72%)',
                   }}
-                  initial={{ scale: 1, rotate: 0, opacity: 0 }}
-                  animate={{ scale: 0.02, rotate: -540, opacity: [0, 0.9, 0.9, 0] }}
-                  transition={{ duration: DURATION_MS / 1000, ease: [0.6, 0, 0.85, 0.4] }}
+                  initial={reverse ? { scale: 0.02, rotate: -540, opacity: 0 } : { scale: 1, rotate: 0, opacity: 0 }}
+                  animate={reverse ? { scale: 1, rotate: 0, opacity: [0, 0.9, 0.9, 0] } : { scale: 0.02, rotate: -540, opacity: [0, 0.9, 0.9, 0] }}
+                  transition={{ duration: DURATION_MS / 1000, ease: reverse ? [0.15, 0.6, 0.4, 1] : [0.6, 0, 0.85, 0.4] }}
                 />
                 <canvas ref={canvasRef} className="absolute inset-0 w-full h-full" />
                 {/* The button swallows the light: a bright core that collapses, then a soft pulse. */}
@@ -164,9 +185,9 @@ export function BigBangMasterSuction() {
                     left: origin.x, top: origin.y, width: 120, height: 120, marginLeft: -60, marginTop: -60,
                     background: 'radial-gradient(circle, rgba(255,255,255,0.95) 0%, rgba(216,180,254,0.85) 30%, rgba(124,58,237,0.4) 60%, transparent 72%)',
                   }}
-                  initial={{ scale: 2.4, opacity: 0 }}
-                  animate={{ scale: [2.4, 0.35, 1.6], opacity: [0, 1, 0] }}
-                  transition={{ duration: DURATION_MS / 1000, times: [0, 0.72, 1], ease: 'easeIn' }}
+                  initial={reverse ? { scale: 1.6, opacity: 0 } : { scale: 2.4, opacity: 0 }}
+                  animate={reverse ? { scale: [1.6, 0.35, 2.4], opacity: [0, 1, 0] } : { scale: [2.4, 0.35, 1.6], opacity: [0, 1, 0] }}
+                  transition={{ duration: DURATION_MS / 1000, times: reverse ? [0, 0.28, 1] : [0, 0.72, 1], ease: reverse ? 'easeOut' : 'easeIn' }}
                 />
               </>
             )}
