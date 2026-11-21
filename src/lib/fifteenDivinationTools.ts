@@ -536,12 +536,13 @@ export function buildUserFifteenToolsDigest(profile?: UserProfile, asOfDate: Dat
           ? ` · ${kstMonth}월 운세: "${currentMonthFortune.fortune}" (처방: ${currentMonthFortune.tip})`
           : '';
         const trigramNote = tj.trigramAnalysis
-          ? ` · 상하괘 오행 [${tj.trigramAnalysis.upperElement}/${tj.trigramAnalysis.lowerElement} · ${tj.trigramAnalysis.elementRelation} · 최성 ${tj.trigramAnalysis.seasonalFlow.peakSeason} · 주의 ${tj.trigramAnalysis.seasonalFlow.cautionSeason}](${tj.trigramAnalysis.hexagramEssenceAdvice})`
+          ? ` · 상하괘 오행 [${tj.trigramAnalysis.upperElement}/${tj.trigramAnalysis.lowerElement} · ${tj.trigramAnalysis.elementRelation} · 최성 ${tj.trigramAnalysis.seasonalFlow.peakSeason}](${tj.trigramAnalysis.hexagramEssenceAdvice})`
           : '';
+        const ritualNote = tj.ritualAction ? ` · 개운 실천: ${tj.ritualAction}` : '';
         const matrixAction = tj.tojeongSynthesisMatrix
           ? ` · 괘 조율 [${tj.tojeongSynthesisMatrix.alignmentState} / ${tj.tojeongSynthesisMatrix.dominantTension}] → ${tj.tojeongSynthesisMatrix.integratedAction}`
           : '';
-        tojeongLine = `\n- 토정비결: ${tj.targetYear}년(${tj.targetYearGanZhi}) 제${tj.hexagramCode}괘(${tj.hexagramName} · ${tj.upperTrigram}상/${tj.lowerTrigram}하 · ${tj.movingLineLabel} · ${tj.luckGrade}) · 3수(상${tj.upperGua}·중${tj.middleGua}·하${tj.lowerGua}) · 연간 총론: "${tj.annualSummary}"${monthPart}${trigramNote}${matrixAction}.`;
+        tojeongLine = `\n- 토정비결: ${tj.targetYear}년(${tj.targetYearGanZhi}) 제${tj.hexagramCode}괘(${tj.hexagramName} · ${tj.upperTrigram}상/${tj.lowerTrigram}하 · ${tj.movingLineLabel} · ${tj.luckGrade}) · 3수(상${tj.upperGua}·중${tj.middleGua}·하${tj.lowerGua}) · 연간 총론: "${tj.annualSummary}"${monthPart}${trigramNote}${ritualNote}${matrixAction}.`;
       }
     } catch (_) {}
 

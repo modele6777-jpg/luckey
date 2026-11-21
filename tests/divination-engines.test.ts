@@ -15609,7 +15609,7 @@ test('buildUserFifteenToolsDigest integrates Tojeong, Kyusei, and Taiyi 3rd-roun
     },
   };
   const digest = buildUserFifteenToolsDigest(profile, new Date('2026-11-22T05:36:00+09:00'));
-  assert.ok(digest.includes('괘 조율 [') && digest.includes('주의 '));
+  assert.ok(digest.includes('괘 조율 [') && digest.includes('개운 실천:'));
   assert.ok(digest.includes('중궁 흐름[') && digest.includes('9궁 조율 ['));
   assert.ok(digest.includes('국 조율 ['));
   assert.ok(!/directionalScores|synergyScore|juBalanceScore/.test(digest));
