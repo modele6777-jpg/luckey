@@ -8300,3 +8300,25 @@ html.key-search-open, html.key-search-open body { overflow: hidden; }
 }
 .key-guide-btn svg { color: var(--copper-primary, #c9805c); }
 .key-guide-btn:active { transform: scale(0.95); }
+
+/* 🔍📘 검색·가이드 버튼은 항상 상단 우측 끝 (좁은 화면에서도 한 줄 유지) */
+.top-nav {
+  flex-wrap: nowrap !important;
+  padding-right: max(10px, env(safe-area-inset-right)) !important;
+}
+.top-nav .brand-wrapper {
+  min-width: 0 !important;
+  flex: 1 1 auto;
+}
+.top-nav .brand-text-col { min-width: 0; }
+.top-nav .nav-actions {
+  margin-left: auto;
+  flex-shrink: 0;
+  justify-content: flex-end;
+  gap: 6px;
+}
+.top-nav .key-guide-btn { height: 40px; }
+@media (max-width: 300px) {
+  .key-guide-btn span { display: none; }
+  .top-nav .key-guide-btn { width: 40px; padding: 0; justify-content: center; }
+}
