@@ -15599,3 +15599,21 @@ test('buildUserFifteenToolsDigest integrates Kabbalah, Iching, and Thai Horasat 
   assert.ok(digest.includes('호라삿 처신 [') && digest.includes('호라삿 길색 ['));
   assert.ok(!/affinityScore|vitalityIndex|decisionScore/.test(digest));
 });
+
+test('buildUserFifteenToolsDigest integrates Tojeong, Kyusei, and Taiyi 3rd-round alignment matrices without raw scores', () => {
+  const profile: any = {
+    basic: {
+      name: '제제',
+      birthdate: '1994-01-24',
+      birthtime: '10:30',
+      calendarType: 'solar',
+      isLeapMonth: false,
+      gender: 'male',
+    },
+  };
+  const digest = buildUserFifteenToolsDigest(profile, new Date('2026-11-22T05:36:00+09:00'));
+  assert.ok(digest.includes('괘 조율 [') && digest.includes('개운 실천:'));
+  assert.ok(digest.includes('중궁 흐름[') && digest.includes('9궁 조율 ['));
+  assert.ok(digest.includes('국 조율 ['));
+  assert.ok(!/directionalScores|synergyScore|juBalanceScore/.test(digest));
+});

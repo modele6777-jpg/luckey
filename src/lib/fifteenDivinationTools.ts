@@ -413,10 +413,11 @@ export function buildUserFifteenToolsDigest(profile?: UserProfile, asOfDate: Dat
         const scenarioNote = ks.usageScenarios && ks.usageScenarios.length > 0
           ? ` · 활용 방위 [${ks.usageScenarios[0].scenario}: ${ks.usageScenarios[0].direction}](${ks.usageScenarios[0].advice})`
           : '';
-        const matrixAction = ks.kyuseiSynthesisMatrix?.integratedAction
-          ? ` · 9궁 처신: ${ks.kyuseiSynthesisMatrix.integratedAction}`
+        const matrixAction = ks.kyuseiSynthesisMatrix
+          ? ` · 9궁 조율 [${ks.kyuseiSynthesisMatrix.alignmentState} / ${ks.kyuseiSynthesisMatrix.dominantTension}] → ${ks.kyuseiSynthesisMatrix.integratedAction}`
           : '';
-        kyuseiLine = `- 구성학 9궁 명반: 본명성 ${ks.honmyosei.name} · 월명성 ${ks.getmyosei.name}(${ks.getmyosei.currentTerm}) · 일명성 ${ks.ilmyosei.name} · 당해 연성 ${ks.annualChart.centerStarName}(${ks.targetYearGanZhi}년) · 최길방위 [${topDir}] · 주의 흉살방위 [${hazardSummary}]${synergyNote}${scenarioNote}${matrixAction}.`;
+        const centerFlow = `년(${ks.annualChart.centerStarName})·월(${ks.monthlyChart.centerStarName})·일(${ks.dailyChart.centerStarName})`;
+        kyuseiLine = `- 구성학 9궁 명반: 본명성 ${ks.honmyosei.name} · 월명성 ${ks.getmyosei.name}(${ks.getmyosei.currentTerm}) · 일명성 ${ks.ilmyosei.name} · 중궁 흐름[${centerFlow} · ${ks.targetYearGanZhi}년] · 최길방위 [${topDir}] · 주의 흉살방위 [${hazardSummary}]${synergyNote}${scenarioNote}${matrixAction}.`;
       } else {
         kyuseiLine = `- 구성학: ${ks.note || '생년월일 미입력으로 미계산'}`;
       }
@@ -537,10 +538,11 @@ export function buildUserFifteenToolsDigest(profile?: UserProfile, asOfDate: Dat
         const trigramNote = tj.trigramAnalysis
           ? ` · 상하괘 오행 [${tj.trigramAnalysis.upperElement}/${tj.trigramAnalysis.lowerElement} · ${tj.trigramAnalysis.elementRelation} · 최성 ${tj.trigramAnalysis.seasonalFlow.peakSeason}](${tj.trigramAnalysis.hexagramEssenceAdvice})`
           : '';
-        const matrixAction = tj.tojeongSynthesisMatrix?.integratedAction
-          ? ` · 괘 처신: ${tj.tojeongSynthesisMatrix.integratedAction}`
+        const ritualNote = tj.ritualAction ? ` · 개운 실천: ${tj.ritualAction}` : '';
+        const matrixAction = tj.tojeongSynthesisMatrix
+          ? ` · 괘 조율 [${tj.tojeongSynthesisMatrix.alignmentState} / ${tj.tojeongSynthesisMatrix.dominantTension}] → ${tj.tojeongSynthesisMatrix.integratedAction}`
           : '';
-        tojeongLine = `\n- 토정비결: ${tj.targetYear}년(${tj.targetYearGanZhi}) 제${tj.hexagramCode}괘(${tj.hexagramName} · ${tj.upperTrigram}상/${tj.lowerTrigram}하 · ${tj.movingLineLabel} · ${tj.luckGrade}) · 3수(상${tj.upperGua}·중${tj.middleGua}·하${tj.lowerGua}) · 연간 총론: "${tj.annualSummary}"${monthPart}${trigramNote}${matrixAction}.`;
+        tojeongLine = `\n- 토정비결: ${tj.targetYear}년(${tj.targetYearGanZhi}) 제${tj.hexagramCode}괘(${tj.hexagramName} · ${tj.upperTrigram}상/${tj.lowerTrigram}하 · ${tj.movingLineLabel} · ${tj.luckGrade}) · 3수(상${tj.upperGua}·중${tj.middleGua}·하${tj.lowerGua}) · 연간 총론: "${tj.annualSummary}"${monthPart}${trigramNote}${ritualNote}${matrixAction}.`;
       }
     } catch (_) {}
 
@@ -550,15 +552,15 @@ export function buildUserFifteenToolsDigest(profile?: UserProfile, asOfDate: Dat
       const ty = calculateTaiyi({ profile, targetYear: kstYear, targetDate: referenceDate });
       if (ty.status === 'calculated' && ty.calculation) {
         const c = ty.calculation;
-        const fiveBless = ty.fiveBlessings ? ` · 오복길성 [${ty.fiveBlessings.palaceName}궁]` : '';
+        const fiveBless = ty.fiveBlessings ? ` · 오복길성 [${ty.fiveBlessings.palaceName}궁 · ${ty.fiveBlessings.meaning}]` : '';
         const threeGiNote = ty.threeGi
           ? ` · 삼기(군:${ty.threeGi.gunGi.rating}/신:${ty.threeGi.sinGi.rating}/민:${ty.threeGi.minGi.rating})`
           : '';
         const macroNote = ty.macroStrategicMatrix
           ? ` · 대세 국면 [${ty.macroStrategicMatrix.macroPhase}](${ty.macroStrategicMatrix.tacticalWindowAdvice})`
           : '';
-        const matrixAction = ty.taiyiSynthesisMatrix?.integratedAction
-          ? ` · 국 처신: ${ty.taiyiSynthesisMatrix.integratedAction}`
+        const matrixAction = ty.taiyiSynthesisMatrix
+          ? ` · 국 조율 [${ty.taiyiSynthesisMatrix.alignmentState} / ${ty.taiyiSynthesisMatrix.dominantTension}] → ${ty.taiyiSynthesisMatrix.integratedAction}`
           : '';
         taiyiLine = `\n- 태을신수: ${ty.targetYear}년 적년 ${c.accumulatedYears}년(제${c.juNumber}국) · 16궁 태을 재궁 [${c.taiyiPalaceName}] · 문창(주) ${c.wenChangPalaceName}궁 / 시격(객) ${c.shiJiPalaceName}궁 · 주객 판정 [${c.outcome}]${fiveBless}${threeGiNote}${macroNote}${matrixAction} · 시대 대세: "${ty.macroActionStrategy}".`;
       }
