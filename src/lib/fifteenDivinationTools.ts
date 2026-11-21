@@ -427,14 +427,19 @@ export function buildUserFifteenToolsDigest(profile?: UserProfile, asOfDate: Dat
         const topDir = ks.topFortuneDirection
           ? `${ks.topFortuneDirection.direction}(${ks.topFortuneDirection.starName}·${ks.topFortuneDirection.relation})`
           : '동남·서북 균형 탐색';
+        const topFortuneDetail = ks.topFortuneDirection
+          ? ks.fortuneDirections.find((d) => d.direction === ks.topFortuneDirection?.direction)
+          : ks.fortuneDirections[0];
+        const topGuidanceNote = topFortuneDetail?.guidance ? ` · 길방 실행(${topFortuneDetail.guidance})` : '';
         const hazardSummary = ks.hazards && ks.hazards.length > 0
           ? ks.hazards.slice(0, 3).map((h) => `${h.name}(${h.direction})`).join(', ')
           : '특이 흉살 없음';
+        const hazardReasonNote = ks.hazards && ks.hazards[0]?.reason ? ` · 흉살 주의(${ks.hazards[0].reason})` : '';
         const synergyNote = ks.honmyoseiSynergy
           ? ` · 연성 시너지 [${ks.honmyoseiSynergy.annualStarRelation}](${ks.honmyoseiSynergy.annualThemeGuidance})`
           : '';
         const scenarioNote = ks.usageScenarios && ks.usageScenarios.length > 0
-          ? ` · 활용 방위 [${ks.usageScenarios[0].scenario}: ${ks.usageScenarios[0].direction}](${ks.usageScenarios[0].advice})`
+          ? ` · 활용 방위 [${ks.usageScenarios.slice(0, 2).map((u) => `${u.scenario}: ${u.direction}(${u.advice})`).join(' / ')}]`
           : '';
         const matrixAction = ks.kyuseiSynthesisMatrix
           ? ` · 9궁 조율 [${ks.kyuseiSynthesisMatrix.alignmentState} / ${ks.kyuseiSynthesisMatrix.dominantTension}] → ${ks.kyuseiSynthesisMatrix.integratedAction}`
@@ -445,7 +450,7 @@ export function buildUserFifteenToolsDigest(profile?: UserProfile, asOfDate: Dat
         const questionNote = ks.reflectiveQuestion ? ` · 성찰 질문: "${ks.reflectiveQuestion}"` : '';
         const boundaryNote = ks.interpretiveBoundary ? ` · 해석 경계: ${ks.interpretiveBoundary}` : '';
         const centerFlow = `년(${ks.annualChart.centerStarName})·월(${ks.monthlyChart.centerStarName})·일(${ks.dailyChart.centerStarName})`;
-        kyuseiLine = `- 구성학 9궁 명반: 본명성 ${ks.honmyosei.name} · 월명성 ${ks.getmyosei.name}(${ks.getmyosei.monthBranch}월·${ks.getmyosei.currentTerm}) · 일명성 ${ks.ilmyosei.name}(${ks.ilmyosei.dayGanZhi}일) · 중궁 흐름[${centerFlow} · ${ks.targetYearGanZhi}년] · 최길방위 [${topDir}] · 주의 흉살방위 [${hazardSummary}]${synergyNote}${scenarioNote}${matrixAction}${topDirNote}${ritualNote}${focusNote}${questionNote}${boundaryNote}.`;
+        kyuseiLine = `- 구성학 9궁 명반: 본명성 ${ks.honmyosei.name} · 월명성 ${ks.getmyosei.name}(${ks.getmyosei.monthBranch}월·${ks.getmyosei.currentTerm}) · 일명성 ${ks.ilmyosei.name}(${ks.ilmyosei.dayGanZhi}일) · 중궁 흐름[${centerFlow} · ${ks.targetYearGanZhi}년] · 최길방위 [${topDir}] · 주의 흉살방위 [${hazardSummary}]${hazardReasonNote}${synergyNote}${scenarioNote}${matrixAction}${topDirNote}${topGuidanceNote}${ritualNote}${focusNote}${questionNote}${boundaryNote}.`;
       } else {
         kyuseiLine = `- 구성학: ${ks.note || '생년월일 미입력으로 미계산'}`;
       }
@@ -600,13 +605,13 @@ export function buildUserFifteenToolsDigest(profile?: UserProfile, asOfDate: Dat
           ? ` · ${kstMonth}월 운세: "${currentMonthFortune.fortune}" (처방: ${currentMonthFortune.tip})`
           : '';
         const trigramNote = tj.trigramAnalysis
-          ? ` · 상하괘 오행 [${tj.trigramAnalysis.upperElement}/${tj.trigramAnalysis.lowerElement} · ${tj.trigramAnalysis.elementRelation} · 최성 ${tj.trigramAnalysis.seasonalFlow.peakSeason}](${tj.trigramAnalysis.hexagramEssenceAdvice})`
+          ? ` · 상하괘 오행 [${tj.trigramAnalysis.upperElement}/${tj.trigramAnalysis.lowerElement} · ${tj.trigramAnalysis.elementRelation}(${tj.trigramAnalysis.elementRelationDesc}) · 최성 ${tj.trigramAnalysis.seasonalFlow.peakSeason}](${tj.trigramAnalysis.hexagramEssenceAdvice})`
           : '';
         const ritualNote = tj.ritualAction ? ` · 개운 실천: ${tj.ritualAction}` : '';
         const matrixAction = tj.tojeongSynthesisMatrix
           ? ` · 괘 조율 [${tj.tojeongSynthesisMatrix.alignmentState} / ${tj.tojeongSynthesisMatrix.dominantTension}] → ${tj.tojeongSynthesisMatrix.integratedAction}`
           : '';
-        const lunarNote = `음력 ${tj.lunarBirth.year}.${tj.lunarBirth.month}.${tj.lunarBirth.day}${tj.lunarBirth.isLeapMonth ? '(윤)' : ''} · ${tj.birthMonthGanZhi}월/${tj.birthdayGanZhi}일 · 세수 ${tj.ageKorean}세 · 원수(태세${tj.taeseCount}/월건${tj.wolgeonCount}/일진${tj.iljinCount})`;
+        const lunarNote = `음력 ${tj.lunarBirth.year}.${tj.lunarBirth.month}.${tj.lunarBirth.day}${tj.lunarBirth.isLeapMonth ? '(윤)' : ''}(${tj.birthMonthLength}일월) · ${tj.birthMonthGanZhi}월/${tj.birthdayGanZhi}일 · 세수 ${tj.ageKorean}세 · 원수(태세${tj.taeseCount}/월건${tj.wolgeonCount}/일진${tj.iljinCount})`;
         const focusNote = tj.reflectionFocus ? ` · 성찰 초점: ${tj.reflectionFocus}` : '';
         const questionNote = tj.reflectiveQuestion ? ` · 성찰 질문: "${tj.reflectiveQuestion}"` : '';
         const boundaryNote = tj.interpretiveBoundary ? ` · 해석 경계: ${tj.interpretiveBoundary}` : '';
@@ -622,7 +627,7 @@ export function buildUserFifteenToolsDigest(profile?: UserProfile, asOfDate: Dat
         const c = ty.calculation;
         const fiveBless = ty.fiveBlessings ? ` · 오복길성 [${ty.fiveBlessings.palaceName}궁 · ${ty.fiveBlessings.meaning}]` : '';
         const threeGiNote = ty.threeGi
-          ? ` · 삼기(군:${ty.threeGi.gunGi.rating}/신:${ty.threeGi.sinGi.rating}/민:${ty.threeGi.minGi.rating})`
+          ? ` · 삼기(군[${ty.threeGi.gunGi.palaceName}·${ty.threeGi.gunGi.rating}]: ${ty.threeGi.gunGi.desc} / 신[${ty.threeGi.sinGi.palaceName}·${ty.threeGi.sinGi.rating}] / 민[${ty.threeGi.minGi.palaceName}·${ty.threeGi.minGi.rating}])`
           : '';
         const macroNote = ty.macroStrategicMatrix
           ? ` · 대세 국면 [${ty.macroStrategicMatrix.macroPhase}: ${ty.macroStrategicMatrix.phaseDescription}](${ty.macroStrategicMatrix.tacticalWindowAdvice})`
