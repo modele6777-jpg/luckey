@@ -629,8 +629,15 @@ const EDGE_LEAD_TIMEOUT_MS = 2500;
 const EDGE_LEAD_COOLDOWN_MS = 10 * 60 * 1000;
 let edgeLeadUnavailableUntil = 0;
 
+/**
+ * Off: Microsoft answers 403 to Edge requests from the Render server (checked on the
+ * deployed app, v1.8.106), and each failed try costs one extra Gemini request for the
+ * fallback. Flip this on only if Edge starts answering from the server again.
+ */
+const EDGE_LEAD_ENABLED = false;
+
 export function isEdgeLeadAvailable(now = Date.now()): boolean {
-  return now >= edgeLeadUnavailableUntil;
+  return EDGE_LEAD_ENABLED && now >= edgeLeadUnavailableUntil;
 }
 
 /**
