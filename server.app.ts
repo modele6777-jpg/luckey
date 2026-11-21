@@ -829,8 +829,9 @@ ${content}
   // 🔊 Which speech engine answers right now (no secrets): Chirp 3 HD, or Gemini fallback and why.
   app.get("/api/ai/tts/status", async (_req, res) => {
     const { cloudTtsStatus } = await import('./server/api-lib/preferredSpeech.ts');
+    const { cloudTtsKeySource } = await import('./server/api-lib/googleCloudTts.ts');
     res.setHeader("Cache-Control", "no-store");
-    return res.json(cloudTtsStatus());
+    return res.json({ ...cloudTtsStatus(), cloudKeySource: cloudTtsKeySource(process.env) });
   });
 
   app.post("/api/ai/tts", async (req, res) => {

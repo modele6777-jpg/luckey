@@ -19,6 +19,16 @@ export function cloudTtsKey(env: CloudTtsRuntime): string {
     .find(value => value && !/^(sk-|xai-|gsk_)/.test(value)) || '';
 }
 
+/** Which setting supplies the Cloud TTS key (the name only, never the value). */
+export function cloudTtsKeySource(env: CloudTtsRuntime): string {
+  const names = ['GOOGLE_CLOUD_TTS_API_KEY', 'gemini', 'GEMINI_API_KEY', 'GOOGLE_GENAI_API_KEY', 'GOOGLE_API_KEY'] as const;
+  for (const name of names) {
+    const value = String(env[name] || '').trim().replace(/^['"]|['"]$/g, '');
+    if (value && !/^(sk-|xai-|gsk_)/.test(value)) return name;
+  }
+  return 'none';
+}
+
 export function chirpVoiceName(voice?: string): string {
   const name = CHIRP_VOICES.includes(String(voice || '')) ? String(voice) : 'Aoede';
   return `ko-KR-Chirp3-HD-${name}`;
