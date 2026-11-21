@@ -10,6 +10,8 @@ import {
   MessageCircleQuestion,
   MessageCircleMore,
   MessageCircleWarning,
+  MessageCirclePlus,
+  createLucideIcon,
   Sparkles,
   KeyRound,
   User,
@@ -168,6 +170,13 @@ export const AUXILIARY_CHANNELS: NavItemConfig[] = [
     color: '#ec4899',
   },
 ];
+
+
+// 일반 루시 말풍선: 말풍선 안에 − 표시 (lucide에는 minus 버전이 없어 같은 외곽선으로 만든다)
+const MessageCircleMinus = createLucideIcon('message-circle-minus', [
+  ['path', { d: 'M2.992 16.342a2 2 0 0 1 .094 1.167l-1.065 3.29a1 1 0 0 0 1.236 1.168l3.413-.998a2 2 0 0 1 1.099.092 10 10 0 1 0-4.777-4.719', key: 'bubble' }],
+  ['path', { d: 'M8 12h8', key: 'minus' }],
+]);
 
 export default function LeftSidebarNav() {
   const [isUnfolded, setIsUnfolded] = useState(() => {
@@ -478,22 +487,26 @@ export default function LeftSidebarNav() {
 
   const renderNavButton = ({ path, icon: NavIcon, label, isMainChat, isKey, isPrologue }: NavItemConfig) => {
     // 점술모드(Lucy Master) 중에는 Lucy 말풍선 안 기호가 상담 깊이를 보여준다 (… / ? / !).
-    const Icon = isMainChat && isLucyMaster ? MasterBubbleIcon : NavIcon;
+    // 일반 모드에서는 말풍선 안에 Lucy(−) / Lucy Plus(+) 기호를 그린다.
+    const Icon = isMainChat
+      ? isLucyMaster
+        ? MasterBubbleIcon
+        : displayBubbleMarker === 'plus'
+          ? MessageCirclePlus
+          : MessageCircleMinus
+      : NavIcon;
     const isActive = isMainChat ? isLucyActive : isKey ? isKeyActive : isPrologue ? isPrologueActive
       : path === '/epilogue' ? isEpilogueActive : cleanPath === path || cleanPath.startsWith(path + '/');
     return (
       <button key={path} type="button" className="refined-nav-item relative" data-active={isActive}
         aria-label={isMainChat ? lucyBubbleLabel : label} title={isMainChat ? lucyBubbleLabel : label} aria-current={isActive ? 'page' : undefined}
         onClick={() => handleNavigate(path)}>
-        <Icon size={22} aria-hidden="true" />
+        <Icon
+          size={22}
+          aria-hidden="true"
+          data-lucy-mode-marker={isMainChat && !isLucyMaster && displayBubbleMarker ? displayBubbleMarker : undefined}
+        />
         {isMainChat && isLucyMaster && <span className="sr-only">점술모드 깊이 {masterDepth}단계</span>}
-        {isMainChat && !isLucyMaster && displayBubbleMarker && (
-          <span
-            aria-hidden="true"
-            data-lucy-mode-marker={displayBubbleMarker}
-            className={`absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full border border-slate-950 text-[10px] font-black leading-none shadow ${displayBubbleMarker === 'plus' ? 'bg-emerald-300 text-emerald-950' : 'bg-slate-300 text-slate-950'}`}
-          >{displayBubbleMarker === 'plus' ? '+' : '−'}</span>
-        )}
       </button>
     );
   };
