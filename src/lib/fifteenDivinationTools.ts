@@ -405,8 +405,10 @@ export function buildUserFifteenToolsDigest(profile?: UserProfile, asOfDate: Dat
         const balanceNote = th.fourElements.balanceNote ? ` · 원소 진단(${th.fourElements.balanceNote})` : '';
         const practiceNote = th.remedies?.practice ? ` · 개운 실천: ${th.remedies.practice}` : '';
         const ritualNote = th.ritualAction ? ` · 일상 의식: ${th.ritualAction}` : '';
+        const focusNote = th.reflectionFocus ? ` · 성찰 초점: ${th.reflectionFocus}` : '';
+        const boundaryNote = th.interpretiveBoundary ? ` · 해석 경계: ${th.interpretiveBoundary}` : '';
         const matrixNote = th.horasatSynthesisMatrix ? ` · 호라삿 조율 [${th.horasatSynthesisMatrix.alignmentState} / ${th.horasatSynthesisMatrix.dominantTension}] → ${th.horasatSynthesisMatrix.integratedAction}` : '';
-        thaiLine = `- 태국점성술 요일 상징: ${KOR_WEEKDAYS[dow]} · 전통 색상 ${colors[dow]}. [호라삿 정밀 차트]: 수호신 ${th.birthDayPlanet.thaiName}(${th.birthDayPlanet.character}) · 마하탁사 108년 대운(${th.mahaThaksa.current.planet.planet} 대운 · 속성: ${th.mahaThaksa.current.attribute.korean}${dyn}${antardasha}) · 4대 원소 본명 ${th.fourElements.birthThaat.korean}/계절 ${th.fourElements.currentThaat.korean} 활력 [${vitalityTone}]${balanceNote}${luckyDir}${luckyColors}${seasonalTactics}${practiceNote}${ritualNote}${matrixNote}.`;
+        thaiLine = `- 태국점성술 요일 상징: ${KOR_WEEKDAYS[dow]} · 전통 색상 ${colors[dow]}. [호라삿 정밀 차트]: 수호신 ${th.birthDayPlanet.thaiName}(${th.birthDayPlanet.character}) · 마하탁사 108년 대운(${th.mahaThaksa.current.planet.planet} 대운 · 속성: ${th.mahaThaksa.current.attribute.korean}${dyn}${antardasha}) · 4대 원소 본명 ${th.fourElements.birthThaat.korean}/계절 ${th.fourElements.currentThaat.korean} 활력 [${vitalityTone}]${balanceNote}${luckyDir}${luckyColors}${seasonalTactics}${practiceNote}${ritualNote}${matrixNote}${focusNote}${boundaryNote}.`;
       } else {
         thaiLine = `- 태국점성술 요일 상징: ${KOR_WEEKDAYS[dow]} · 전통 색상 ${colors[dow]}. 정밀 호라삿 차트 미계산.`;
       }
@@ -464,16 +466,18 @@ export function buildUserFifteenToolsDigest(profile?: UserProfile, asOfDate: Dat
           ? ` · 현현 조언: ${kb.numerology.fourWorldsSpectrum.manifestationAdvice}`
           : '';
         const seasonTone = kb.temporalKabbalahRhythm?.seasonalWorldTone
-          ? ` · 계절 세계 결 [${kb.temporalKabbalahRhythm.treeWatchWindow} · ${kb.temporalKabbalahRhythm.seasonalWorldTone}]`
+          ? ` · 계절 세계 결 [${kb.temporalKabbalahRhythm.treeWatchWindow} · ${kb.temporalKabbalahRhythm.seasonalWorldTone}](${kb.temporalKabbalahRhythm.temporalGuidance})`
           : '';
         const pathPractice = kb.situationalKabbalahAudit?.pathPractice
-          ? ` · 경로 실천: ${kb.situationalKabbalahAudit.pathPractice}`
+          ? ` · 경로 실천(${kb.situationalKabbalahAudit.focusTheme}): ${kb.situationalKabbalahAudit.pathPractice}`
           : '';
         const ritualNote = kb.ritualAction ? ` · 개운 의식: ${kb.ritualAction}` : '';
+        const focusNote = kb.reflectionFocus ? ` · 성찰 초점: ${kb.reflectionFocus}` : '';
+        const boundaryNote = kb.interpretiveBoundary ? ` · 해석 경계: ${kb.interpretiveBoundary}` : '';
         const matrixNote = kb.kabbalahSynthesisMatrix
           ? ` · 카발라 처신(${kb.kabbalahSynthesisMatrix.coreInsight} → ${kb.kabbalahSynthesisMatrix.recommendedAction} · 유의: ${kb.kabbalahSynthesisMatrix.cautionNotice})`
           : '';
-        kabbalahLine = `\n- 카발라 생명나무: 라이프 패스 세피라 ${kb.numerology.lifePathSephirah.name}(${kb.numerology.lifePathSephirah.hebrew} · ${kb.numerology.lifePathSephirah.title}) · 퍼스널리티 세피라 ${kb.numerology.personalitySephirah.name} · 소울 패스 제${kb.numerology.soulPath.number}경로(${kb.numerology.soulPath.hebrewLetter} ${kb.numerology.soulPath.tarotName} · ${kb.numerology.soulPath.attribution.value}) · 지배 세계 ${worldNote} · 3기둥 밸런스(자비 ${describePillar(kb.numerology.pillarBalance.mercy)} / 엄격 ${describePillar(kb.numerology.pillarBalance.severity)} / 균형 ${describePillar(kb.numerology.pillarBalance.mildness)})${heartNote}${flashNote}${worldManifest}${seasonTone}${pathPractice}${ritualNote}${matrixNote}.`;
+        kabbalahLine = `\n- 카발라 생명나무: 라이프 패스 세피라 ${kb.numerology.lifePathSephirah.name}(${kb.numerology.lifePathSephirah.hebrew} · ${kb.numerology.lifePathSephirah.title}) · 퍼스널리티 세피라 ${kb.numerology.personalitySephirah.name} · 소울 패스 제${kb.numerology.soulPath.number}경로(${kb.numerology.soulPath.hebrewLetter} ${kb.numerology.soulPath.tarotName} · ${kb.numerology.soulPath.attribution.value}) · 지배 세계 ${worldNote} · 3기둥 밸런스(자비 ${describePillar(kb.numerology.pillarBalance.mercy)} / 엄격 ${describePillar(kb.numerology.pillarBalance.severity)} / 균형 ${describePillar(kb.numerology.pillarBalance.mildness)})${heartNote}${flashNote}${worldManifest}${seasonTone}${pathPractice}${ritualNote}${matrixNote}${focusNote}${boundaryNote}.`;
       }
     } catch (_) {}
 
@@ -719,12 +723,14 @@ export function buildUserFifteenToolsDigest(profile?: UserProfile, asOfDate: Dat
         const dyn = ic.hexagramDynamics;
         const dynNote = dyn ? ` · 동효 국면 [${dyn.phaseShift} / ${dyn.movingEntropy}] · 전반(${dyn.strategicWindow.firstHalf})→후반(${dyn.strategicWindow.secondHalf})` : '';
         const coopNote = ic.palGongSeYing.cooperationAdvice ? ` · 세응 처신: ${ic.palGongSeYing.cooperationAdvice}` : '';
-        const seasonTone = ic.temporalIchingRhythm?.seasonalIchingTone ? ` · 계절 괘조 [${ic.temporalIchingRhythm.divinationWatchWindow} · ${ic.temporalIchingRhythm.seasonalIchingTone}]` : '';
+        const seasonTone = ic.temporalIchingRhythm?.seasonalIchingTone ? ` · 계절 괘조 [${ic.temporalIchingRhythm.divinationWatchWindow} · ${ic.temporalIchingRhythm.seasonalIchingTone}](${ic.temporalIchingRhythm.temporalGuidance})` : '';
         const hiddenNote = ic.guidance?.hiddenDynamic ? ` · 호괘 내면(${ic.guidance.hiddenDynamic})` : '';
-        const protocolNote = ic.guidance?.actionProtocol ? ` · 실천 방침: ${ic.guidance.actionProtocol}` : '';
+        const protocolNote = ic.guidance?.actionProtocol ? ` · 실천 방침(${ic.situationalIchingAudit?.focusTheme || '핵심'}): ${ic.guidance.actionProtocol}` : '';
         const ritualNote = ic.ritualAction ? ` · 개운 의식: ${ic.ritualAction}` : '';
+        const focusNote = ic.reflectionFocus ? ` · 성찰 초점: ${ic.reflectionFocus}` : '';
+        const boundaryNote = ic.interpretiveBoundary ? ` · 해석 경계: ${ic.interpretiveBoundary}` : '';
         const matrixNote = ic.ichingSynthesisMatrix ? ` · 주역 처신(${ic.ichingSynthesisMatrix.coreInsight} → ${ic.ichingSynthesisMatrix.recommendedAction} · 유의: ${ic.ichingSynthesisMatrix.cautionNotice})` : '';
-        ichingLine = `\n- 주역(64괘): 본괘 [${ic.primary.name}] → 지괘 [${ic.changed.name}] · 호괘 [${ic.nuclear.name}] · 착괘 [${ic.opposite.name}] · 종괘 [${ic.reversed.name}] · 체용관계 ${ic.tiYong.relationship}(${ic.tiYong.tiElement}/${ic.tiYong.yongElement}) · 주효 [${ic.dominantStage.yaoName} · ${ic.dominantStage.lifeStage}] · 경방 ${ic.palGongSeYing.palaceName}(세 ${ic.palGongSeYing.seYao}효⇄응 ${ic.palGongSeYing.yingYao}효 · ${ic.palGongSeYing.seYingHarmony})${dynNote}${coopNote}${seasonTone}${hiddenNote}${protocolNote}${ritualNote}${matrixNote} · 결단 기조 [${ic.decisionGrade}].`;
+        ichingLine = `\n- 주역(64괘): 본괘 [${ic.primary.name}] → 지괘 [${ic.changed.name}] · 호괘 [${ic.nuclear.name}] · 착괘 [${ic.opposite.name}] · 종괘 [${ic.reversed.name}] · 체용관계 ${ic.tiYong.relationship}(${ic.tiYong.tiElement}/${ic.tiYong.yongElement}) · 주효 [${ic.dominantStage.yaoName} · ${ic.dominantStage.lifeStage}] · 경방 ${ic.palGongSeYing.palaceName}(세 ${ic.palGongSeYing.seYao}효⇄응 ${ic.palGongSeYing.yingYao}효 · ${ic.palGongSeYing.seYingHarmony})${dynNote}${coopNote}${seasonTone}${hiddenNote}${protocolNote}${ritualNote}${matrixNote}${focusNote}${boundaryNote} · 결단 기조 [${ic.decisionGrade}].`;
       }
     } catch (_) {}
 
