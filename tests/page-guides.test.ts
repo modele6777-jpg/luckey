@@ -25,3 +25,13 @@ test('listen text follows the visible section', () => {
   assert.match(pageGuideSpeech(guide, 'guide'), /사용 가이드[\s\S]*1단계/);
   assert.match(pageGuideSpeech(guide, 'tips'), /활용 팁/);
 });
+
+test('every guide has a 추천 활용 tab with at least two "when → how" uses', () => {
+  for (const guide of allPageGuides()) {
+    assert.ok(guide.uses.length >= 2, `${guide.id} needs 추천 활용`);
+    for (const use of guide.uses) {
+      assert.ok(use.icon && use.when.trim() && use.how.trim(), `${guide.id} has an empty use`);
+    }
+  }
+  assert.match(pageGuideSpeech(allPageGuides()[0], 'uses'), /추천 활용/);
+});
