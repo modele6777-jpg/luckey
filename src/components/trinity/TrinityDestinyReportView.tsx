@@ -1353,7 +1353,7 @@ export function TrinityDestinyReportView({ onConsult }: TrinityDestinyReportView
           </div>
         </div>
       )}
-<div className="rounded-3xl p-6 sm:p-8 bg-gradient-to-br from-[#1b1c24] via-[#14151a] to-[#121318] border border-amber-500/30 shadow-2xl space-y-6 duo-workspace-card">
+<div className="rounded-3xl p-6 sm:p-8 bg-gradient-to-br from-[#1b1c24] via-[#14151a] to-[#121318] border border-amber-500/30 shadow-2xl space-y-6 duo-workspace-card self-stretch">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-white/10">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-xl bg-amber-500/20 border border-amber-400/40 flex items-center justify-center text-amber-300">
@@ -1435,7 +1435,7 @@ export function TrinityDestinyReportView({ onConsult }: TrinityDestinyReportView
           </p>
         </div>
       </div>
-<div className="rounded-3xl p-6 sm:p-8 bg-[#18191e]/95 border border-white/10 shadow-2xl space-y-6 duo-workspace-card">
+<div className="rounded-3xl p-6 sm:p-8 bg-[#18191e]/95 border border-white/10 shadow-2xl space-y-6 duo-workspace-card self-stretch">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 border-b border-white/10">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-xl bg-emerald-500/20 border border-emerald-400/40 flex items-center justify-center text-emerald-400">
