@@ -2,6 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { chirpVoiceName, splitForCloudTts, synthesizeChirpSpeech } from '../server/api-lib/googleCloudTts';
 import { synthesizePreferredSpeech, resetCloudTtsCooldown, cloudTtsStatus } from '../server/api-lib/preferredSpeech';
+import { resetCloudGeminiTts } from '../server/api-lib/googleCloudTts';
 
 const mp3 = btoa('ID3fake-mp3');
 
@@ -45,20 +46,43 @@ test('Gemini reads first while it has quota', async () => {
   assert.ok(calls.every(url => !url.includes('texttospeech')));
 });
 
-test('when Gemini runs out of quota, Chirp 3 HD reads and Gemini is skipped until its retry time', async () => {
-  resetCloudTtsCooldown();
-  const calls: string[] = [];
-  const fetchApi = (async (url: string) => { calls.push(String(url)); return String(url).includes('texttospeech') ? chirpOk() : geminiDaily(); }) as typeof fetch;
-  const env = { GEMINI_API_KEY: 'g' };
+const isCloudGemini = (init: any) => String(init?.body || '').includes('model_name');
+
+test('when Gemini runs out of quota, the same Gemini voice reads through Cloud TTS and Gemini is skipped', async () => {
+  resetCloudTtsCooldown(); resetCloudGeminiTts();
+  const calls: { url: string; cloudGemini: boolean }[] = [];
+  const fetchApi = (async (url: string, init: any) => {
+    calls.push({ url: String(url), cloudGemini: isCloudGemini(init) });
+    return String(url).includes('texttospeech') ? chirpOk() : geminiDaily();
+  }) as typeof fetch;
+  const env = { GEMINI_API_KEY: 'g', GOOGLE_CLOUD_TTS_API_KEY: 'c' };
   const first = await synthesizePreferredSpeech('안녕.', 'Kore', env, fetchApi);
-  assert.equal(first.provider, 'google-cloud-chirp3-hd');
-  assert.equal(first.voice, 'ko-KR-Chirp3-HD-Kore');
+  assert.equal(first.provider, 'google-cloud-gemini-tts');
+  assert.equal(first.voice, 'Kore');
   assert.ok(cloudTtsStatus().geminiSkippedSeconds > 3000);
   calls.length = 0;
   const second = await synthesizePreferredSpeech('또 안녕.', 'Kore', env, fetchApi);
-  assert.equal(second.provider, 'google-cloud-chirp3-hd');
-  assert.ok(calls.every(url => url.includes('texttospeech')), 'Gemini is not asked again during its cooldown');
-  resetCloudTtsCooldown();
+  assert.equal(second.provider, 'google-cloud-gemini-tts');
+  assert.ok(calls.every(call => call.url.includes('texttospeech')), 'AI Studio Gemini is not asked again during its cooldown');
+  resetCloudTtsCooldown(); resetCloudGeminiTts();
+});
+
+test('an unknown Cloud Gemini model name tries the next one, and Chirp 3 HD is the last resort', async () => {
+  resetCloudTtsCooldown(); resetCloudGeminiTts();
+  const models: string[] = [];
+  const fetchApi = (async (url: string, init: any) => {
+    if (!String(url).includes('texttospeech')) return geminiDaily();
+    if (isCloudGemini(init)) {
+      const model = JSON.parse(init.body).voice.model_name;
+      models.push(model);
+      return new Response(JSON.stringify({ error: { status: 'INVALID_ARGUMENT' } }), { status: 400 });
+    }
+    return chirpOk();
+  }) as typeof fetch;
+  const result = await synthesizePreferredSpeech('안녕.', 'Aoede', { GEMINI_API_KEY: 'g', GOOGLE_CLOUD_TTS_API_KEY: 'c' }, fetchApi);
+  assert.equal(result.provider, 'google-cloud-chirp3-hd');
+  assert.ok(models.length >= 2, 'tries more than one model name');
+  resetCloudTtsCooldown(); resetCloudGeminiTts();
 });
 
 test('if both engines fail, the app hears Gemini\'s reason (e.g. daily quota)', async () => {
