@@ -15452,3 +15452,21 @@ test('buildUserFifteenToolsDigest integrates Tarot 3-card timeline/suit, Sukuyo 
   assert.ok(digest.includes('삼구주기 [') && digest.includes('칠요 수호성 '));
   assert.ok(digest.includes('길보석:') && digest.includes('실행 조언:'));
 });
+
+test('buildUserFifteenToolsDigest integrates Vedic synergy/axis/aim, Liuren lesson dynamics/tempo, and Hongguk resonance/season without raw scores', () => {
+  const profile: any = {
+    basic: {
+      name: '제제',
+      birthdate: '1994-01-24',
+      birthtime: '10:30',
+      calendarType: 'solar',
+      isLeapMonth: false,
+      gender: 'male',
+    },
+  };
+  const digest = buildUserFifteenToolsDigest(profile, new Date('2026-11-22T04:25:00+09:00'));
+  assert.ok(digest.includes('행성 시너지 [') && digest.includes('핵심 하우스 축 [') && digest.includes('영적 지향:'));
+  assert.ok(digest.includes('사과 생극 [') && digest.includes('전개 템포 [') && digest.includes('돌파 전략:'));
+  assert.ok(digest.includes('천지반 공명 [') && digest.includes('최적 결단 계절 ['));
+  assert.ok(!/synergyScore|fourLessonsHarmonyScore|actionMomentumIndex|resonanceScore/.test(digest));
+});
