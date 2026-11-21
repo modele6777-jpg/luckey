@@ -89,6 +89,9 @@ export function LucyEngineCatalogDialog({ isOpen, onClose, isLight, sessionKey =
           aria-describedby="lucy-engine-catalog-intro"
           onClick={event => event.stopPropagation()}
           data-catalog-theme={isLight ? 'light' : 'dark'}
+          // Portaled outside the Lucy shell: keep the global light-theme remaps off a dark catalog.
+          data-theme-dark-island={isLight ? undefined : 'true'}
+          style={isLight ? undefined : { colorScheme: 'dark' }}
           className={`lucy-engine-catalog-dialog chat-library-dialog flex w-full max-w-4xl flex-col overflow-hidden rounded-2xl border shadow-2xl sm:rounded-3xl ${surface}`}
         >
           <header className={`chat-library-heading flex shrink-0 items-center justify-between gap-3 border-b px-4 py-4 sm:px-6 ${isLight ? 'border-amber-100' : 'border-white/10'}`}>
@@ -98,7 +101,7 @@ export function LucyEngineCatalogDialog({ isOpen, onClose, isLight, sessionKey =
               </span>
               <div className="chat-library-heading-copy min-w-0">
                 <h2 id="lucy-engine-catalog-title" className="text-base font-black sm:text-lg">Lucy 엔진함</h2>
-                <p className={`chat-library-subtitle text-[11px] sm:text-xs ${muted}`}>쓰고 싶은 엔진을 여러 개 담으면 매 답변에 함께 봐요</p>
+                <p className={`chat-library-subtitle text-[11px] sm:text-xs ${muted}`}>엔진 이름과 뜻을 볼 수 있어요 · 루시가 질문마다 자동으로 골라요</p>
               </div>
             </div>
             <button type="button" onClick={onClose} aria-label="엔진 목록 닫기" title="닫기" className={`chat-library-close flex h-11 min-w-[72px] shrink-0 items-center justify-center gap-1.5 rounded-xl border px-2.5 text-xs font-bold transition-colors ${isLight ? 'border-amber-300 bg-amber-50 text-slate-800 hover:bg-amber-100' : 'border-white/20 bg-white/10 text-white hover:bg-white/20'}`}>
