@@ -15719,6 +15719,6 @@ test('buildUserFifteenToolsDigest integrates 4th-round Tojeong, Kyusei, and Taiy
   const digest = buildUserFifteenToolsDigest(profile, new Date('2026-11-22T06:26:00+09:00'));
   assert.ok(digest.includes('방위 의례:') && digest.includes('성찰 초점:'));
   assert.ok(digest.includes('음력 ') && digest.includes('해석 경계:'));
-  assert.ok((digest.includes('양국(陽局)') || digest.includes('음국(陰局)')) && digest.includes('연국 의례:'));
+  assert.ok(digest.includes('연국 의례:') && digest.includes('대세 국면 ['));
   assert.ok(!/juBalanceScore|initiativeIndex|defensiveIndex/.test(digest));
 });

@@ -592,11 +592,10 @@ export function buildUserFifteenToolsDigest(profile?: UserProfile, asOfDate: Dat
         const matrixAction = ty.taiyiSynthesisMatrix
           ? ` · 국 조율 [${ty.taiyiSynthesisMatrix.alignmentState} / ${ty.taiyiSynthesisMatrix.dominantTension}] → ${ty.taiyiSynthesisMatrix.integratedAction}`
           : '';
-        const cycleMode = c.isYangYear ? '양국(陽局)' : '음국(陰局)';
         const ritualNote = ty.ritualAction ? ` · 연국 의례: ${ty.ritualAction}` : '';
         const focusNote = ty.reflectionFocus ? ` · 성찰 초점: ${ty.reflectionFocus}` : '';
         const boundaryNote = ty.interpretiveBoundary ? ` · 해석 경계: ${ty.interpretiveBoundary}` : '';
-        taiyiLine = `\n- 태을신수: ${ty.targetYear}년 적년 ${c.accumulatedYears}년(${cycleMode} 제${c.juNumber}국) · 16궁 태을 재궁 [${c.taiyiPalaceName}] · 문창(주) ${c.wenChangPalaceName}궁 / 시격(객) ${c.shiJiPalaceName}궁 · 주객 판정 [${c.outcome}]${fiveBless}${threeGiNote}${macroNote}${matrixAction}${ritualNote}${focusNote}${boundaryNote} · 시대 대세: "${ty.macroActionStrategy}".`;
+        taiyiLine = `\n- 태을신수: ${ty.targetYear}년 적년 ${c.accumulatedYears}년(${c.cycleName} · ${c.juType} 제${c.juNumber}국) · 16궁 태을 재궁 [${c.taiyiPalaceName}] · 문창(주) ${c.wenChangPalaceName}궁 / 시격(객) ${c.shiJiPalaceName}궁 · 주객 판정 [${c.outcome} — ${c.outcomeReason}]${fiveBless}${threeGiNote}${macroNote}${matrixAction}${ritualNote}${focusNote}${boundaryNote} · 시대 대세: "${ty.macroActionStrategy}".`;
       }
     } catch (_) {}
 
