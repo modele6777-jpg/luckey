@@ -60,8 +60,8 @@ export const LUCY_MASTER_DEPTH_EVENT = 'prism:lucy_master_depth';
 export const LUCY_MASTER_MAX_DEPTH: LucyMasterDepth = 3;
 export const LUCY_MASTER_DEPTH_INFO: Record<LucyMasterDepth, { name: string; note: string }> = {
   1: { name: '기본', note: '사주를 중심으로 고민을 들어볼게' },
-  2: { name: '심화', note: '앞에서 나눈 이야기를 이어받아, 관련 도구를 더 써서 원인과 흐름까지 짚어볼게' },
-  3: { name: '심층', note: '일반 루시 대화와 지난 상담 기록까지 이어서, 여러 도구와 심층 관점으로 깊이 풀어볼게' },
+  2: { name: '심화', note: '사주에 타로를 더해, 앞에서 나눈 이야기 위에서 원인과 흐름까지 짚어볼게' },
+  3: { name: '심층', note: '13개 도구를 펼치는 중… 사주·타로에 13대 도구와 심층 관점까지 더해 깊이 풀어볼게' },
 };
 
 export function getLucyMasterDepth(): LucyMasterDepth {
@@ -134,7 +134,7 @@ export function consumeTarotHouseGreetingPending(): boolean {
 export function createTarotHouseGreeting(userName: string | undefined, layout: 'folded' | 'unfolded', askToLink = false): UnifiedMessage {
   const name = userName ? `${userName}, ` : '';
   const content = layout === 'unfolded'
-    ? `어서 와, ${name}루시의 타로 하우스에 온 걸 환영해 🕯️🔮\n촛불 켜두고 카드도 테이블에 올려뒀어. 차 한 잔 마신다 생각하고 편하게 얘기해줘. 이야기 듣다가 때가 되면 같이 카드 뽑아보자 — 뽑은 카드는 왼쪽 테이블에 바로 펼쳐줄게.`
+    ? `어서 와, ${name}루시의 타로 하우스에 온 걸 환영해 🕯️🔮\n촛불 켜두고 왼쪽엔 네 사주 원국판을 펼쳐뒀어. 차 한 잔 마신다 생각하고 편하게 얘기해줘. 이야기 듣다가 카드가 필요해지면 그때 같이 뽑아보자.`
     : `어서 와, ${name}루시의 타로 하우스에 온 걸 환영해 🕯️🔮\n오늘은 네 사주를 바탕에 깔고 천천히 이야기 나눠보자. 듣다가 필요하면 카드도 한 장 뽑아볼게.`;
   const depthHint = '\n\n💡 더 깊게 보고 싶으면 빅뱅 버튼을 꾹 눌러줘. 누를 때마다 상담이 한 단계씩(최대 3단계) 깊어져. 버튼을 한 번 탭하면 일반 루시로 돌아가.';
   const choices = askToLink
@@ -195,8 +195,8 @@ export function buildTarotHouseGuide(layout: 'folded' | 'unfolded', cardsDrawnNo
   }
   if (depth >= 2) {
     lines.push(depth === 3
-      ? '- [상담 깊이 3단계 · 심층] 사용자가 빅뱅 버튼으로 가장 깊은 상담을 골랐어. 사주를 중심에 두고, 함께 전달된 여러 도구의 계산 결과와 심층 관점을 서로 비교·연결해 고민의 뿌리(마음), 관계의 흐름, 시기를 입체적으로 풀어줘. 답이 조금 길어져도 괜찮지만 대화체를 유지하고, 마지막엔 지금 할 수 있는 구체적인 행동 하나로 정리해.'
-      : '- [상담 깊이 2단계 · 심화] 사용자가 빅뱅 버튼으로 상담을 한 단계 깊게 골랐어. 사주에 함께 전달된 관련 도구 결과를 더해, 고민의 원인과 앞으로의 흐름까지 짚어줘. 평소보다 조금 길어도 괜찮아.');
+      ? '- [상담 깊이 3단계 · 심층] 사용자가 빅뱅 버튼으로 가장 깊은 상담을 골랐어. 주 구성은 사주 + 타로(고른 카드가 있을 때) + 13대 도구야. 13개를 하나씩 읊지 말고, 여러 도구가 공통으로 가리키는 신호 3~4개를 사주와 엮어 고민의 뿌리(마음), 관계의 흐름, 시기를 입체적으로 풀고, 나머지 도구는 한두 줄로만 요약해. 정보가 없어 계산되지 않은 도구는 못 봤다고 솔직히 말해. 답이 조금 길어져도 괜찮지만 대화체를 유지하고, 마지막엔 지금 할 수 있는 구체적인 행동 하나로 정리해.'
+      : '- [상담 깊이 2단계 · 심화] 사용자가 빅뱅 버튼으로 상담을 한 단계 깊게 골랐어. 주 구성은 사주 + 타로야. 손님이 고른 카드가 있으면 카드와 사주 흐름을 엮어 고민의 원인과 앞으로의 흐름까지 짚어줘. 아직 카드를 안 골랐다면 결과를 지어내지 말고, 필요할 때 "카드로 마음을 볼까?" 하고 권해. 평소보다 조금 길어도 괜찮아.');
     lines.push('- 도구·관점이 많아도 실제로 전달된 계산 결과만 "계산했다"고 말하고, 심층 관점은 상징 참고라고 구분해. 전달되지 않은 도구를 썼다고 말하지 마.');
     lines.push(depth === 3
       ? '- 질문과 [답변선택] 보기도 3단계답게 마음의 뿌리·두려움·삶의 의미·운명과 선택처럼 심오하고 깊은 쪽으로 골라. (예: "그 밑의 두려움 볼래", "이 일의 의미가 궁금해")'
@@ -220,15 +220,16 @@ export function isAskingForDeepEngines(userText: string, lastLucyText: string): 
   return /^(응|어|웅|그래|좋아|좋지|오케이|ㅇㅋ|ㅇㅇ|콜|넵|네|예|당연|보자|볼래)/.test(clean);
 }
 
-/** 점술모드 대화 중 폰을 펼쳤을 때 루시가 건네는 타로 제안. */
-export function createTarotOfferOnUnfold(): UnifiedMessage {
+/** 2단계(심화)로 들어갈 때 루시가 건네는 타로 제안. 카드는 손님이 직접 섞고 고른다. */
+export function createDepthTwoTarotOffer(layout: 'folded' | 'unfolded'): UnifiedMessage {
+  const where = layout === 'unfolded' ? '왼쪽 테이블에 카드를 깔아뒀어.' : '카드를 섞어둘게.';
   return {
-    id: `tarot-house-unfold-${Date.now()}`,
+    id: `tarot-house-depth2-${Date.now()}`,
     role: 'model',
     persona: 'lucy',
     timestamp: Date.now(),
     mode: 'master',
-    content: '오, 테이블을 펼쳤네 🕯️ 지금까지 사주로 본 흐름에 타로 카드도 한번 더해볼까? 뽑으면 왼쪽 테이블에 바로 펼쳐줄게.\n[답변선택: 응, 한 장 뽑아볼래 | 세 장 뽑아줘 | 사주로만 계속할래]',
+    content: `한 단계 더 들어가 보자 🃏 지금까지 사주로 본 흐름 위에, 이번엔 카드로 마음을 같이 볼까? ${where} 직접 섞고 골라줘.\n[답변선택: 응, 한 장 뽑아볼래 | 세 장 뽑아줘 | 사주로만 계속할래]`,
   };
 }
 

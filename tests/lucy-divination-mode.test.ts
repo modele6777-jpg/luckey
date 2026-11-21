@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { routeAndExecute } from '../src/lib/divination/smartAgentRouter';
+import { routeAndExecute, LUCY_MASTER_DEPTH3_TOOLS } from '../src/lib/divination/smartAgentRouter';
 import {
   parseAnswerChoices,
   isAcceptingTarotDrawOffer,
@@ -9,6 +9,7 @@ import {
   findConcernAnchor,
   createTarotHouseGreeting,
   createTarotHouseConcernQuestion,
+  createDepthTwoTarotOffer,
 } from '../src/lib/lucyMasterMode';
 
 const profile = {
@@ -33,6 +34,17 @@ test('deep request adds concern-related engines', () => {
   assert.ok(deep.routePlan.targetTools.length > light.routePlan.targetTools.length);
   assert.ok((deep.routePlan.deepEngineKeys ?? []).length > (light.routePlan.deepEngineKeys ?? []).length);
   assert.equal(deep.routePlan.isMasterMobilization, false);
+});
+
+test('depth composition: 1 saju, 2 saju + picked tarot, 3 adds the 13 other tools', () => {
+  const run = (level: 1 | 2 | 3, base: 'saju' | 'tarot_saju' = 'saju') => routeAndExecute({ text: '이직 고민', profile, requireBasicAndDeep: true, divinationMode: { base, depth: level } }).routePlan.targetTools;
+  assert.deepEqual(run(1), ['saju']);
+  assert.deepEqual(run(2), ['saju']);
+  assert.deepEqual(run(2, 'tarot_saju'), ['saju', 'tarot']);
+  const three = run(3, 'tarot_saju');
+  assert.equal(three.length, 15);
+  for (const id of LUCY_MASTER_DEPTH3_TOOLS) assert.ok(three.includes(id), id);
+  assert.ok(!run(3).includes('tarot'), 'tarot needs user-picked cards');
 });
 
 test('consultation depth adds tools and perspectives step by step', () => {
@@ -126,4 +138,12 @@ test('prompt library and engine box recommend each other', async () => {
     assert.ok(picks.every(p => recommendPresetForPrompt(p).id === preset.id), preset.id);
   }
   assert.deepEqual(recommendPromptsForEngines(HORI_PROMPT_LIBRARY, [], 3), []);
+});
+
+test('depth two offer asks the user to pick cards and can be accepted or declined', () => {
+  const offer = String(createDepthTwoTarotOffer('unfolded').content);
+  assert.match(offer, /\[답변선택:/);
+  assert.equal(isAcceptingTarotDrawOffer('응, 한 장 뽑아볼래', offer), true);
+  assert.equal(isAcceptingTarotDrawOffer('세 장 뽑아줘', offer), true);
+  assert.equal(isAcceptingTarotDrawOffer('사주로만 계속할래', offer), false);
 });

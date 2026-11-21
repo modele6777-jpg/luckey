@@ -11,6 +11,8 @@ import {
   tarotPickPositions,
   queueMasterTarotSpread,
   toDetectedTarotCards,
+  LUCY_MASTER_DEPTH_EVENT as LUCY_MASTER_DEPTH_EVENT_NAME,
+  useLucyMasterDepth,
   type TarotPickRequest,
 } from '@/lib/lucyMasterMode';
 import { requestLucyAction } from '@/lib/duoLucyActionRouting';
@@ -39,9 +41,14 @@ export function DuoDivinationTarotPane(_props: { isLight?: boolean }) {
   const [cards, setCards] = useState<DetectedTarotCard[]>([]);
   const [revealed, setRevealed] = useState<string[]>([]);
   const [pick, setPick] = useState<TarotPickRequest | null>(null);
-  // 왼쪽 테이블의 면: 루시가 지금 하는 일을 따라 자동으로 바뀌고, 탭으로 직접 바꿀 수도 있다.
-  const [face, setFace] = useState<TableFace>('tarot');
+  // 왼쪽 테이블의 면: 처음엔 사주 원국판. 루시가 지금 하는 일을 따라 자동으로 바뀌고, 탭으로 직접 바꿀 수도 있다.
+  const [face, setFace] = useState<TableFace>('saju');
   const [table, setTable] = useState<LucyTableState>(() => getLucyTableState());
+  // 1단계는 사주 원국만, 2단계부터 타로 화면이 테이블에 더해진다.
+  // (1단계라도 손님이 직접 카드를 뽑았다면 그 카드는 볼 수 있게 둔다.)
+  const depth = useLucyMasterDepth();
+  const tarotAvailable = depth >= 2 || cards.length > 0 || Boolean(pick);
+  const shownFace: TableFace = tarotAvailable ? face : 'saju';
   const tts = useTTSState();
   const reading = Boolean(tts.isSpeaking || tts.isLoading);
   const [readingDismissed, setReadingDismissed] = useState(false);
@@ -76,7 +83,14 @@ export function DuoDivinationTarotPane(_props: { isLight?: boolean }) {
       if (detail?.count) { setPick(detail); setFace('tarot'); }
     };
     // 루시 마스터를 나갔다 들어오면 테이블도 비운다
-    const handleMode = () => { setCards([]); setRevealed([]); setPick(null); };
+    const handleMode = () => { setCards([]); setRevealed([]); setPick(null); setFace('saju'); };
+    // 단계에 맞춰 테이블 면도 바꾼다: 1단계 사주 원국, 2단계부터 타로.
+    const handleDepth = (e: Event) => {
+      const depth = (e as CustomEvent<{ depth?: number; changed?: boolean }>)?.detail;
+      if (!depth?.changed) return;
+      setFace(depth.depth === 1 ? 'saju' : 'tarot');
+    };
+    window.addEventListener(LUCY_MASTER_DEPTH_EVENT_NAME, handleDepth);
     window.addEventListener(LUCY_TAROT_DRAWN_EVENT, handleDrawn);
     window.addEventListener(LUCY_TAROT_PICK_REQUEST_EVENT, handlePickRequest);
     window.addEventListener(LUCY_MASTER_MODE_EVENT, handleMode);
@@ -84,6 +98,7 @@ export function DuoDivinationTarotPane(_props: { isLight?: boolean }) {
       window.removeEventListener(LUCY_TAROT_DRAWN_EVENT, handleDrawn);
       window.removeEventListener(LUCY_TAROT_PICK_REQUEST_EVENT, handlePickRequest);
       window.removeEventListener(LUCY_MASTER_MODE_EVENT, handleMode);
+      window.removeEventListener(LUCY_MASTER_DEPTH_EVENT_NAME, handleDepth);
     };
   }, []);
 
@@ -94,8 +109,8 @@ export function DuoDivinationTarotPane(_props: { isLight?: boolean }) {
       <div className="relative z-[1] flex-1 min-h-0 flex flex-col">
         {/* 테이블 면 바꾸기 탭 (낭독은 루시가 읽는 동안에만) */}
         <div className="shrink-0 flex items-center gap-1.5 px-3.5 pt-3 pb-1" role="tablist" aria-label="타로 테이블 보기">
-          {FACES.filter(item => item.id !== 'reading' || reading).map(item => {
-            const active = item.id === 'reading' ? showReading : !showReading && face === item.id;
+          {FACES.filter(item => (item.id !== 'reading' || reading) && (item.id !== 'tarot' || tarotAvailable)).map(item => {
+            const active = item.id === 'reading' ? showReading : !showReading && shownFace === item.id;
             return (
               <button
                 key={item.id}
@@ -116,7 +131,7 @@ export function DuoDivinationTarotPane(_props: { isLight?: boolean }) {
         </div>
         {showReading ? (
           <MasterReadingStage />
-        ) : face === 'saju' ? (
+        ) : shownFace === 'saju' ? (
           <MasterSajuBoard saju={table.saju} lastAnswer={table.lastAnswer} />
         ) : (
           <>

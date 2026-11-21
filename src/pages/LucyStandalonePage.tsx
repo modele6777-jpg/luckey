@@ -42,7 +42,7 @@ import { archiveMasterSession, buildDepthContinuityContext, buildDepthLinkedLucy
 import { isLucyMasterBgmPreferred, startLucyMasterBgm, stopLucyMasterBgm, setLucyMasterBgmDepth } from '@/lib/lucyMasterBgm';
 import remarkGfm from 'remark-gfm';
 import { safeSessionStorage, safeLocalStorage } from '@/utils/safeStorage';
-import { isLucyMasterModeOn, setLucyMasterMode, LUCY_MASTER_MODE_EVENT, publishLucyTarotDraw, isAcceptingTarotDrawOffer, buildTarotHouseGuide, createTarotHouseGreeting, consumeTarotHouseGreetingPending, parseAnswerChoices, isAskingForDeepEngines, createTarotOfferOnUnfold, setLucyMasterLink, getLucyMasterLink, resolveLucyMasterLinkChoice, buildLinkedLucyContext, isTarotHouseGreetingPending, findConcernAnchor, createTarotHouseConcernQuestion, LUCY_TAROT_PICK_REQUEST_EVENT, LUCY_TAROT_PICKED_EVENT, LUCY_TAROT_PICK_CANCEL_EVENT, tarotPickPositions, toDetectedTarotCards, takeQueuedMasterTarotSpread, buildSpreadLayoutContext, matchMasterTarotSpread, isAutoSpreadCandidate, getLucyMasterDepth, useLucyMasterDepth, LUCY_MASTER_DEPTH_EVENT, LUCY_MASTER_DEPTH_INFO, LUCY_MASTER_MAX_DEPTH, type LucyMasterDepth } from '@/lib/lucyMasterMode';
+import { isLucyMasterModeOn, setLucyMasterMode, LUCY_MASTER_MODE_EVENT, publishLucyTarotDraw, isAcceptingTarotDrawOffer, buildTarotHouseGuide, createTarotHouseGreeting, consumeTarotHouseGreetingPending, parseAnswerChoices, isAskingForDeepEngines, createDepthTwoTarotOffer, setLucyMasterLink, getLucyMasterLink, resolveLucyMasterLinkChoice, buildLinkedLucyContext, isTarotHouseGreetingPending, findConcernAnchor, createTarotHouseConcernQuestion, LUCY_TAROT_PICK_REQUEST_EVENT, LUCY_TAROT_PICKED_EVENT, LUCY_TAROT_PICK_CANCEL_EVENT, tarotPickPositions, toDetectedTarotCards, takeQueuedMasterTarotSpread, buildSpreadLayoutContext, matchMasterTarotSpread, isAutoSpreadCandidate, getLucyMasterDepth, useLucyMasterDepth, LUCY_MASTER_DEPTH_EVENT, LUCY_MASTER_DEPTH_INFO, LUCY_MASTER_MAX_DEPTH, type LucyMasterDepth } from '@/lib/lucyMasterMode';
 import { cleanAssistantMessageDisplay, cleanUserMessageDisplay } from '@/utils/cleanMessage';
 import { detectLucyChannelsFromText, formatChannelsModeTitle } from '@/lib/lucyAutoModeDetector';
 import { selectOptimalDivinationTools, THEME_PRIMARY_DIVINATION_TOOLS, type SelectedDivinationToolsResult } from '@/lib/fifteenDivinationTools';
@@ -77,7 +77,7 @@ import { TarotSpread } from '@/components/trinity/TarotSpread';
 import { isLucyScrollPinned, lucyScrollPinHeld, noteLucyScrollPin, overlayCoversElement, releaseLucyScrollPin } from '@/lib/lucyScrollPin';
 import { captureLucySearchAnchor, resolveLucySearchOpenGuardedTop, resolveLucySearchRestoreTop, type LucySearchScrollAnchor } from '@/lib/lucySearchScroll';
 import { isDualPaneLayout, isDuoUnfoldedState } from '@/lib/perfMode';
-import { readFoldStateNow, subscribeFoldState } from '@/lib/foldState';
+import { subscribeFoldState } from '@/lib/foldState';
 import { buildLucyTarotReadingPrompt } from '@/lib/lucyTarotReading';
 import { getLucyChatDay as getTodayDateKey } from '@/lib/lucyChatDay';
 import { joinKakaoBubblesForTTS } from '@/lib/lucyChatUtils';
@@ -768,6 +768,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
       const detail = (e as CustomEvent<{ depth: LucyMasterDepth; changed: boolean }>).detail;
       if (!detail) return;
       setDepthNotice({ depth: detail.depth, changed: detail.changed, key: Date.now() });
+
       window.clearTimeout(timer);
       timer = window.setTimeout(() => setDepthNotice(null), 2800);
     };
@@ -951,6 +952,18 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
 
   // Both modes now send to conversationId 'lucy', so abort the same runtime.
   const abortGenerating = abortNormalGenerating;
+
+  // 🃏 2단계(사주 + 타로)에 들어서면 루시가 카드 뽑기를 권한다. 카드는 손님이 직접 섞고 고른다.
+  useEffect(() => {
+    const onDepth = (e: Event) => {
+      const detail = (e as CustomEvent<{ depth: LucyMasterDepth; changed: boolean }>).detail;
+      if (!detail?.changed || detail.depth !== 2 || !isLucyMasterModeOn()) return;
+      const layout = isDuoUnfoldedState().unfolded ? 'unfolded' : 'folded';
+      setLucyProMessages(prev => [...prev, createDepthTwoTarotOffer(layout)]);
+    };
+    window.addEventListener(LUCY_MASTER_DEPTH_EVENT, onDepth);
+    return () => window.removeEventListener(LUCY_MASTER_DEPTH_EVENT, onDepth);
+  }, [setLucyProMessages]);
   const chatAccount = firebaseUser?.uid || safeSessionStorage.getItem('prism_auth_uid') || 'device';
   // 점술모드 대화는 다시 들어오면 비워지므로, 비우기 전/나갈 때 계정별 상담 기록으로 남긴다 (3단계 연결용).
   const masterMessagesRef = useRef(lucyProMessages);
@@ -1693,32 +1706,6 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
     }
     wasMasterRef.current = isMasterMode;
   }, [isMasterMode, chatAccount]);
-
-  // 🔮 점술모드 대화 중 폰을 펼치면: 루시가 타로 상담을 더하자고 제안 (왼쪽엔 타로 테이블)
-  useEffect(() => {
-    if (!isMasterMode) return;
-    // iOS can report a brief unfolded size while the keyboard closes or the viewport
-    // settles on the cover screen. Offer only after a real unfold that is still there
-    // a moment later, with both panes laid out, and never twice in a row.
-    let timer: ReturnType<typeof setTimeout> | null = null;
-    const unsubscribe = subscribeFoldState((next, previous) => {
-      if (timer) { clearTimeout(timer); timer = null; }
-      if (previous.unfolded || !next.unfolded) return;
-      timer = setTimeout(() => {
-        timer = null;
-        const stillUnfolded = readFoldStateNow().unfolded && isDuoUnfoldedState().unfolded
-          && Boolean(document.getElementById('duo-lucy-viewport') && document.getElementById('duo-content-viewport'));
-        if (!stillUnfolded) return;
-        setLucyProMessages(prev => {
-          const last = prev[prev.length - 1];
-          const offer = createTarotOfferOnUnfold();
-          if (last?.role === 'model' && last.content === offer.content) return prev;
-          return [...prev, offer];
-        });
-      }, 1200);
-    });
-    return () => { if (timer) clearTimeout(timer); unsubscribe(); };
-  }, [isMasterMode, setLucyProMessages]);
 
   // 🎙️ 루시 1:1 전용 실시간 음성 대화 모드 (STT 마이크 + TTS 자동 루프)
   const [isVoiceMode, setIsVoiceMode] = useState<boolean>(() => {
@@ -3465,7 +3452,8 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
     // 방금 펼친 카드 풀이에 이어 묻는 말(그럼·이 카드·더 자세히 등)은 새 스프레드를 열지 않고 대화로 답한다.
     const isFollowUpOnReading = /\[TAROT:/.test(lastLucyText)
       && /(그럼|그러면|그래서|이\s*카드|그\s*카드|방금|아까|더\s*자세히|자세하게|왜|무슨\s*뜻|어떻게\s*해|뭘\s*해야)/.test(userCleanText);
-    const autoSpread = hasLeftTarotTable && !pickedTarotCards?.length && !attachedImage && !isFollowUpOnReading
+    // 1단계(사주)에서는 고민을 적어도 스프레드를 자동으로 열지 않는다. 2단계부터 타로가 테이블에 더해진다.
+    const autoSpread = hasLeftTarotTable && getLucyMasterDepth() >= 2 && !pickedTarotCards?.length && !attachedImage && !isFollowUpOnReading
       && (isTarotIntent || isAutoSpreadCandidate(userCleanText));
     if (divinationLayout && (isTarotIntent || autoSpread) && !pickedTarotCards?.length) {
       setInput('');
