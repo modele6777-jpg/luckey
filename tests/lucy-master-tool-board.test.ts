@@ -36,3 +36,16 @@ test('qualified astrology names do not count as Western astrology', () => {
   assert.equal(findToolSignal('astrology', '베딕 점성술로 보면 카르마가 보여.'), '');
   assert.notEqual(findToolSignal('vedic', '베딕 점성술로 보면 카르마가 보여.'), '');
 });
+
+test('parchment facts come only from calculated tool data', async () => {
+  const { extractToolFacts, extractAllToolFacts } = await import('../src/lib/lucyMasterToolFacts');
+  const iching = extractToolFacts('iching', { primary: { number: 43, name: '택천쾌' }, movingLines: [5], changed: { number: 34, name: '뇌천대장' } });
+  assert.deepEqual(iching.map(f => f.label), ['본괘', '변하는 효', '지괘']);
+  assert.deepEqual(extractToolFacts('kabbalah', { anything: 1 }), []);
+  assert.deepEqual(extractToolFacts('qimen', null), []);
+  const all = extractAllToolFacts(['iching', 'qimen'], { iching: { status: 'symbolic', data: {} }, qimen: { status: 'skipped' } });
+  assert.deepEqual(all, {});
+  const board = buildToolBoard({ audit: audit({ kabbalah: { status: 'symbolic', sentToModel: false } }), concern: '이직', answer: '', facts: { kabbalah: [{ label: 'x', value: 'y' }], iching: iching } });
+  assert.deepEqual(board.others.find(i => i.id === 'kabbalah')!.facts, []);
+  assert.equal(board.others.find(i => i.id === 'iching')!.facts.length, 3);
+});

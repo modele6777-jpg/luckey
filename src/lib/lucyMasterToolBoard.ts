@@ -2,6 +2,7 @@ import { FIFTEEN_DIVINATION_TOOLS, type DivinationToolId } from '@/lib/fifteenDi
 import type { CalculationAuditItem } from '@/lib/divination/calculationAudit';
 import { LUCY_MASTER_DEPTH3_TOOLS } from '@/lib/divination/smartAgentRouter';
 import { detectMasterConcernTopic, type MasterConcernTopic } from '@/lib/lucyMasterPrompts';
+import type { ToolFact } from '@/lib/lucyMasterToolFacts';
 
 /**
  * 점술모드 3단계 왼쪽 테이블의 "13대 도구" 판.
@@ -27,6 +28,8 @@ export interface ToolBoardItem {
   signal: string;
   /** 루시가 답변에서 함께 짚은 도구 */
   common: boolean;
+  /** 엔진이 실제로 계산한 핵심 결과 (최대 4줄) */
+  facts: ToolFact[];
 }
 
 export interface ToolBoard {
@@ -105,7 +108,7 @@ function statusOf(item: CalculationAuditItem | undefined): { status: ToolBoardSt
   if (!item) return { status: 'pending', note: '' };
   const note = item.note || '';
   if (item.status === 'calculated' && item.sentToModel) return { status: 'calculated', note };
-  if (item.status === 'symbolic') return { status: 'symbolic', note: '상징 참고' };
+  if (item.status === 'symbolic') return { status: 'symbolic', note: '계산 기준을 다시 살펴보는 중이라 상징 참고로만 봐요' };
   if (item.status === 'partial' && item.sentToModel) return { status: 'calculated', note };
   const needsBirth = /생시|출생\s*시간|출생시간|출생도시|성별/.test(note);
   return { status: 'needs_info', note: needsBirth ? '태어난 시간 정보가 있어야 볼 수 있어요' : '이번엔 계산되지 않았어요' };
@@ -115,6 +118,7 @@ export function buildToolBoard(params: {
   audit: readonly CalculationAuditItem[];
   concern: string;
   answer: string;
+  facts?: Partial<Record<string, ToolFact[]>>;
 }): ToolBoard {
   const topic = detectMasterConcernTopic(params.concern);
   const auditById = new Map(params.audit.map(item => [item.toolId, item] as const));
@@ -125,7 +129,7 @@ export function buildToolBoard(params: {
     const spec = FIFTEEN_DIVINATION_TOOLS[id];
     const { status, note } = statusOf(auditById.get(id));
     const signal = status === 'needs_info' ? '' : findToolSignal(id, params.answer);
-    return { id, name: spec.koName, hanja: spec.hanjaOrEng, bestFor: shortBestFor(id), status, note, signal, common: Boolean(signal) };
+    return { id, name: spec.koName, hanja: spec.hanjaOrEng, bestFor: shortBestFor(id), status, note, signal, common: Boolean(signal), facts: status === 'calculated' ? (params.facts?.[id] ?? []) : [] };
   });
 
   const baseIndex = (id: DivinationToolId) => LUCY_MASTER_DEPTH3_TOOLS.indexOf(id);

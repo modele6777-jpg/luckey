@@ -26,11 +26,12 @@ import { getLucyTableState, clearTableTools, LUCY_TABLE_EVENT, type LucyTableSta
 import { MasterToolBoard } from './MasterToolBoard';
 import { useTTSState } from '@/utils/tts';
 
-type TableFace = 'tarot' | 'saju' | 'tools';
+type TableFace = 'tarot' | 'saju' | 'recommended' | 'scrolls';
 const FACES: { id: TableFace | 'reading'; label: string }[] = [
   { id: 'tarot', label: '🃏 타로' },
   { id: 'saju', label: '☯ 사주 원국' },
-  { id: 'tools', label: '🧭 13대 도구' },
+  { id: 'recommended', label: '🧭 추천 도구' },
+  { id: 'scrolls', label: '📜 12대 양피지' },
   { id: 'reading', label: '🔊 낭독' },
 ];
 
@@ -52,7 +53,7 @@ export function DuoDivinationTarotPane(_props: { isLight?: boolean }) {
   const depth = useLucyMasterDepth();
   const tarotAvailable = depth >= 2 || cards.length > 0 || Boolean(pick);
   const toolsAvailable = depth >= 3;
-  const shownFace: TableFace = (face === 'tarot' && !tarotAvailable) || (face === 'tools' && !toolsAvailable) ? 'saju' : face;
+  const shownFace: TableFace = (face === 'tarot' && !tarotAvailable) || ((face === 'recommended' || face === 'scrolls') && !toolsAvailable) ? 'saju' : face;
   const tts = useTTSState();
   const reading = Boolean(tts.isSpeaking || tts.isLoading);
   const [readingDismissed, setReadingDismissed] = useState(false);
@@ -66,7 +67,7 @@ export function DuoDivinationTarotPane(_props: { isLight?: boolean }) {
       setTable(prev => {
         // 새 답변이 오면: 카드가 있으면 타로, 사주만으로 답했으면 사주 원국판.
         // 새 답변이 오면: 카드가 있으면 타로, 3단계면 13대 도구, 아니면 사주 원국판.
-        if (next.answerVersion !== prev.answerVersion) setFace(next.lastAnswerHasTarot ? 'tarot' : getLucyMasterDepth() >= 3 ? 'tools' : 'saju');
+        if (next.answerVersion !== prev.answerVersion) setFace(next.lastAnswerHasTarot ? 'tarot' : getLucyMasterDepth() >= 3 ? 'recommended' : 'saju');
         return next;
       });
     };
@@ -93,7 +94,7 @@ export function DuoDivinationTarotPane(_props: { isLight?: boolean }) {
     const handleDepth = (e: Event) => {
       const depth = (e as CustomEvent<{ depth?: number; changed?: boolean }>)?.detail;
       if (!depth?.changed) return;
-      setFace(depth.depth === 1 ? 'saju' : depth.depth === 2 ? 'tarot' : 'tools');
+      setFace(depth.depth === 1 ? 'saju' : depth.depth === 2 ? 'tarot' : 'recommended');
     };
     window.addEventListener(LUCY_MASTER_DEPTH_EVENT_NAME, handleDepth);
     window.addEventListener(LUCY_TAROT_DRAWN_EVENT, handleDrawn);
@@ -113,8 +114,8 @@ export function DuoDivinationTarotPane(_props: { isLight?: boolean }) {
       <LucyMasterTarotRoom variant="table" />
       <div className="relative z-[1] flex-1 min-h-0 flex flex-col">
         {/* 테이블 면 바꾸기 탭 (낭독은 루시가 읽는 동안에만) */}
-        <div className="shrink-0 flex items-center gap-1.5 px-3.5 pt-3 pb-1" role="tablist" aria-label="타로 테이블 보기">
-          {FACES.filter(item => (item.id !== 'reading' || reading) && (item.id !== 'tarot' || tarotAvailable) && (item.id !== 'tools' || toolsAvailable)).map(item => {
+        <div className="shrink-0 flex items-center gap-1.5 overflow-x-auto px-3.5 pt-3 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" role="tablist" aria-label="타로 테이블 보기">
+          {FACES.filter(item => (item.id !== 'reading' || reading) && (item.id !== 'tarot' || tarotAvailable) && ((item.id !== 'recommended' && item.id !== 'scrolls') || toolsAvailable)).map(item => {
             const active = item.id === 'reading' ? showReading : !showReading && shownFace === item.id;
             return (
               <button
@@ -129,15 +130,22 @@ export function DuoDivinationTarotPane(_props: { isLight?: boolean }) {
                   setReadingDismissed(reading);
                   setFace(item.id);
                 }}
-                className={`rounded-full border px-3 py-1 text-[11px] font-bold transition-colors ${active ? 'border-amber-300/80 bg-amber-400/20 text-amber-100' : 'border-white/15 bg-white/[0.05] text-slate-200 hover:bg-white/10'}`}
+                className={`shrink-0 whitespace-nowrap rounded-full border px-3 py-1 text-[11px] font-bold transition-colors ${active ? 'border-amber-300/80 bg-amber-400/20 text-amber-100' : 'border-white/15 bg-white/[0.05] text-slate-200 hover:bg-white/10'}`}
               >{item.label}</button>
             );
           })}
         </div>
         {showReading ? (
           <MasterReadingStage />
-        ) : shownFace === 'tools' ? (
-          <MasterToolBoard tools={table.tools} concern={table.concern} lastAnswer={table.lastAnswer} />
+        ) : shownFace === 'recommended' || shownFace === 'scrolls' ? (
+          <MasterToolBoard
+            view={shownFace}
+            tools={table.tools}
+            concern={table.concern}
+            lastAnswer={table.lastAnswer}
+            facts={table.facts}
+            onShowScrolls={() => { triggerHaptic('whitehole'); setFace('scrolls'); }}
+          />
         ) : shownFace === 'saju' ? (
           <MasterSajuBoard saju={table.saju} lastAnswer={table.lastAnswer} />
         ) : (

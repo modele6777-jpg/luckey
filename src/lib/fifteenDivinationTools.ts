@@ -534,6 +534,8 @@ export interface SelectedDivinationToolsResult {
   selectedTools: DivinationToolSpec[];
   firedEngineBadges?: string[];
   calculationAudit?: CalculationAuditItem[];
+  /** 도구별 실제 계산 결과 (점술모드 3단계 테이블이 핵심 값만 뽑아 쓴다). */
+  engineTools?: Record<string, { status: string; data?: unknown }>;
   isCasualMessage: boolean;
   isMasterMobilization?: boolean;
   selectionReason: string;
@@ -665,6 +667,7 @@ export function selectOptimalDivinationTools(
     selectedTools,
     firedEngineBadges: routed.toolsForBadge,
     calculationAudit,
+    engineTools: routed.engineReport?.tools as Record<string, { status: string; data?: unknown }> | undefined,
     isCasualMessage: false,
     isMasterMobilization: false,
     selectionReason: `${routed.routePlan.intentKoName} (${routed.toolsForBadge.slice(0, 3).join(' + ')})`,

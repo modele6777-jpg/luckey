@@ -4,6 +4,8 @@ import { ScreenPortal } from '@/components/layout/ScreenPortal';
 import { LucyModeTransition } from '@/components/chat/LucyModeTransition';
 import { LucyEntryScreen, type LucyEntryVariant } from '@/components/chat/LucyEntryScreen';
 import { publishTableSaju, publishTableAnswer, publishTableTools } from '@/lib/lucyTableBus';
+import { extractAllToolFacts, type ToolFact } from '@/lib/lucyMasterToolFacts';
+import { LUCY_MASTER_DEPTH3_TOOLS } from '@/lib/divination/smartAgentRouter';
 import { shouldOfferLucyMaster, dismissLucyMasterOffer, markLucyMasterFromOffer, consumeLucyMasterFromOffer, shouldOfferReturnToLucy, dismissReturnToLucyOffer } from '@/lib/lucyMasterOffer';
 import { playLucyMasterSuction } from '@/components/omniwarp/BigBangMasterSuction';
 import { isLucyChatPath } from '@/lib/duoPaneFocus';
@@ -3488,7 +3490,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
     // 🧭 3단계(심층): 13대 도구 계산 결과를 왼쪽 테이블에 넘긴다 (데이터만, 지시문 아님).
     if (divinationMode?.depth === 3 && !divinationSelection.isCasualMessage) {
       const concernForBoard = findConcernAnchor([...lucyMessages, { role: 'user', content: userCleanText }]) || userCleanText;
-      publishTableTools(divinationSelection.calculationAudit || [], concernForBoard);
+      publishTableTools(divinationSelection.calculationAudit || [], concernForBoard, extractAllToolFacts(LUCY_MASTER_DEPTH3_TOOLS, divinationSelection.engineTools) as Record<string, ToolFact[]>);
     }
     if (!divinationSelection.isCasualMessage && divinationSelection.promptInjection) {
       extraSystemContext = extraSystemContext
