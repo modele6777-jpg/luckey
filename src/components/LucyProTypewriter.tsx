@@ -16,6 +16,11 @@ interface LucyProTypewriterProps {
   typewriterSpeed?: number;
   instantReveal?: boolean;
   enableTTSHighlight?: boolean;
+  /** Type this text in even on phones (new Lucy answers). */
+  typeIn?: boolean;
+  /** More text may still arrive; do not report completion yet. */
+  streamOpen?: boolean;
+  onTypeDone?: () => void;
 }
 
 function LucyProImageItem({ src, alt }: { src?: string; alt?: string }) {
@@ -188,12 +193,15 @@ export function LucyProTypewriter({
   typewriterSpeed = 32,
   instantReveal = false,
   enableTTSHighlight = false,
+  typeIn = false,
+  streamOpen = false,
+  onTypeDone,
 }: LucyProTypewriterProps) {
   const { resolvedTheme } = useTheme();
   const isLight = resolvedTheme === 'light';
   const isMobile = typeof window !== 'undefined' && (isMobileDevice() || isPerfReduced());
   // On mobile or in KakaoTalk bubble pop-in mode, render bubble content directly while keeping TTS sentence highlighting
-  const shouldAnimate = !instantReveal && !isMobile && (isLatest || isGenerating);
+  const shouldAnimate = typeIn || (!instantReveal && !isMobile && (isLatest || isGenerating));
   const [displayedLength, setDisplayedLength] = useState<number>(() => {
     return shouldAnimate ? 0 : content.length;
   });
@@ -221,6 +229,14 @@ export function LucyProTypewriter({
       }
 
       // Adaptive chunk sizing for smooth typing cadence without CPU bottleneck
+      if (typeIn) {
+        // New Lucy answer: about 1.5s per bubble, a few characters per tick.
+        const step = Math.max(2, Math.ceil(content.length / 55));
+        const timer = setTimeout(() => {
+          setDisplayedLength((prev) => Math.min(content.length, prev + step));
+        }, 26);
+        return () => clearTimeout(timer);
+      }
       let chunkSize = 4;
       if (remainder > 300) {
         chunkSize = 16;
@@ -240,10 +256,22 @@ export function LucyProTypewriter({
 
   // When generation finishes, immediately reveal 100% of the completed response to avoid cutoffs or frozen typing
   useEffect(() => {
+    if (typeIn) return;
     if (!isGenerating && displayedLength < content.length) {
       setDisplayedLength(content.length);
     }
-  }, [isGenerating, content.length, displayedLength]);
+  }, [typeIn, isGenerating, content.length, displayedLength]);
+
+  const onTypeDoneRef = useRef(onTypeDone);
+  onTypeDoneRef.current = onTypeDone;
+  const typeDoneReportedRef = useRef(false);
+  useEffect(() => {
+    if (!typeIn || streamOpen || typeDoneReportedRef.current) return;
+    if (displayedLength >= content.length) {
+      typeDoneReportedRef.current = true;
+      onTypeDoneRef.current?.();
+    }
+  }, [typeIn, streamOpen, displayedLength, content.length]);
 
   const displayedText = useMemo(() => {
     if (!shouldAnimate || displayedLength >= content.length) {
@@ -267,7 +295,7 @@ export function LucyProTypewriter({
       ? activeSentence
       : null;
 
-  const isTyping = isGenerating || (shouldAnimate && displayedLength < content.length);
+  const isTyping = isGenerating || (shouldAnimate && (displayedLength < content.length || (typeIn && streamOpen)));
 
   return (
     <div
