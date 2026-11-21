@@ -30,7 +30,7 @@ import { ChatInsightsBoardModal } from '@/components/ChatInsightsBoardModal';
 import { LucyAuraLoader } from '@/components/LucyAuraLoader';
 import { LucyMasterTarotRoom } from '@/components/chat/LucyMasterTarotRoom';
 import { LucyMasterBgmToggle } from '@/components/chat/LucyMasterBgmToggle';
-import { useSelectedEngines, splitSelectedEngines } from '@/lib/lucyEngineSelection';
+import { setSelectedEngineKeys } from '@/lib/lucyEngineSelection';
 import { isLucyMasterBgmPreferred, startLucyMasterBgm, stopLucyMasterBgm } from '@/lib/lucyMasterBgm';
 import remarkGfm from 'remark-gfm';
 import { safeSessionStorage, safeLocalStorage } from '@/utils/safeStorage';
@@ -1548,7 +1548,8 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
   const lucyMessages = isMasterMode ? (lucyProMessages || []) : (personaMessages?.lucy || []);
   const isLucyGenerating = isMasterMode ? Boolean(isLucyProGenerating) : Boolean(isGenerating?.lucy);
   // 🧰 엔진함에서 담아 둔 엔진 (매 답변에 함께 사용)
-  const selectedEngineKeys = useSelectedEngines();
+  // 엔진함 담기 기능은 제거됨: 예전에 담아 둔 엔진도 비워서 매 질문 자동 선택만 쓰게 한다.
+  useEffect(() => { setSelectedEngineKeys([]); }, []);
 
   // 🔮 펼친 루시 마스터의 왼쪽 테이블(사주 원국판)에 상담 대상의 원국과 루시의 최신 답을 넘긴다.
   useEffect(() => {
@@ -3371,8 +3372,8 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
       ? { isCasualMessage: true, selectedTools: [], promptInjection: '', selectionReason: '가벼운 일상 인사', firedEngineBadges: [] }
       : (divinationMode
         // 점술모드: 사주 메인. 7대 채널 보강·올인원 총동원 없이, 원할 때만 관련 엔진 추가
-        ? selectOptimalDivinationTools(combinedContextText, [], counselingUserProfile, false, { allowMaster: false, requireBasicAndDeep, divinationMode, ...splitSelectedEngines() })
-        : selectOptimalDivinationTools(combinedContextText, isMaster ? ALL_CHANNELS : channels, counselingUserProfile, isMaster, { allowMaster: isMasterMode || requireBasicAndDeep, requireBasicAndDeep, ...splitSelectedEngines() }));
+        ? selectOptimalDivinationTools(combinedContextText, [], counselingUserProfile, false, { allowMaster: false, requireBasicAndDeep, divinationMode })
+        : selectOptimalDivinationTools(combinedContextText, isMaster ? ALL_CHANNELS : channels, counselingUserProfile, isMaster, { allowMaster: isMasterMode || requireBasicAndDeep, requireBasicAndDeep }));
     if (!divinationSelection.isCasualMessage && divinationSelection.promptInjection) {
       extraSystemContext = extraSystemContext
         ? `${extraSystemContext}\n\n${divinationSelection.promptInjection}`
@@ -3816,13 +3817,13 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
                         ? 'bg-amber-100 text-amber-950 border-amber-500/50'
                         : 'bg-amber-500/15 text-amber-100 border-amber-400/40'
                     }`}
-                    title={selectedEngineKeys.length ? '엔진함 열기 · 담은 엔진 사용 중' : '엔진함 열기 · 쓰고 싶은 엔진 고르기'}
-                    aria-label={selectedEngineKeys.length ? '엔진함 열기, 담은 엔진 사용 중' : '엔진함 열기'}
+                    title="엔진함 열기 · 엔진 목록과 뜻 보기"
+                    aria-label="엔진함 열기"
                     aria-haspopup="dialog"
                     stateKey={`${librarySessionKey}:engine`}
                     aria-controls="lucy-engine-catalog-dialog"
                   >
-                    <span className={`w-1.5 h-1.5 rounded-full ${selectedEngineKeys.length ? 'bg-amber-400 animate-pulse' : 'bg-amber-400/40'}`} />
+                    <span className="w-1.5 h-1.5 rounded-full bg-amber-400/60" />
                     엔진함
                   </LucyLibraryTrigger>
                 </div>
