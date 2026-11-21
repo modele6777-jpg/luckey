@@ -443,11 +443,12 @@ export function buildUserNatalSummary(profile?: UserProfile | null): string {
     ? ` · 우세 원소: ${chart.elements.dominant} · 보완 원소: ${lackingElements.join('·')}`
     : ` · 우세 원소: ${chart.elements.dominant} · 4원소 균형 배치`;
   const modalityNote = ` · 우세 양식: ${chart.modalities.dominant}`;
-  const topAspectObj = chart.majorAspects?.[0];
-  const topAspect = topAspectObj
-    ? ` · 핵심 각도: ${topAspectObj.bodyA}${topAspectObj.symbol}${topAspectObj.bodyB}(${topAspectObj.aspectName}·${topAspectObj.quality})`
+  const topAspects = (chart.majorAspects ?? []).slice(0, 2);
+  const topAspect = topAspects.length > 0
+    ? ` · 핵심 각도: ${topAspects.map((a) => `${a.bodyA}${a.symbol}${a.bodyB}(${a.aspectName}·${a.quality})`).join(', ')}`
     : '';
-  return `${chart.summaryText}${balanceNote}${modalityNote}${topAspect} · 심리 청사진: ${chart.psychologicalBlueprint}`;
+  const innerOuterAxis = ` · 애정/추진/성숙 축: 금성 ${chart.venus.sign.name} · 화성 ${chart.mars.sign.name} · 토성 ${chart.saturn.sign.name}`;
+  return `${chart.summaryText}${balanceNote}${modalityNote}${topAspect}${innerOuterAxis} · 심리 청사진: ${chart.psychologicalBlueprint}`;
 }
 
 /**
