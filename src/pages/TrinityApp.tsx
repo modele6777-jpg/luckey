@@ -4927,7 +4927,7 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
       {/* 📍 메인 전체 화면 스마트 스크롤 수동 조작 시 낭독 위치 즉시 복귀 플로팅 버튼 */}
       <SmartScrollResumeButton
         isVisible={isMainUserOverriding && isTTSActive && hasMainActiveHighlight}
-        onResume={resumeMainAutoScroll}
+        onResume={() => resumeMainAutoScroll('smooth')}
         remainingSeconds={mainRemainingSeconds}
         fixed
       />

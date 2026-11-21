@@ -82,6 +82,7 @@ import { buildLucyTarotReadingPrompt } from '@/lib/lucyTarotReading';
 import { getLucyChatDay as getTodayDateKey } from '@/lib/lucyChatDay';
 import { joinKakaoBubblesForTTS } from '@/lib/lucyChatUtils';
 import { LucyKakaoBubbleGroup } from '@/components/chat/LucyKakaoBubbleGroup';
+import { LucyResponseRecommendation } from '@/components/LucyResponseRecommendation';
 import { LucyCosmicBackground } from '@/components/chat/LucyCosmicBackground';
 import { ALL_DCE_ENGINES } from '@/lib/divination/deterministicEngine';
 import { LUCY_PRO_CATALOG_ENGINES } from '@/lib/divination/engineCatalog';
@@ -1583,6 +1584,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
 
   // 🔮 일반 루시 대화의 맥락을 읽어 상담이 필요해 보이면 점술모드로 들어갈지 채팅에 제안한다.
   const [masterOfferFor, setMasterOfferFor] = useState<string | null>(null);
+  const [dismissedRecommendationFor, setDismissedRecommendationFor] = useState<string | null>(null);
   const offeredForRef = useRef<string | null>(null);
   useEffect(() => {
     if (isMasterMode || pro || isLucyGenerating) return;
@@ -1605,10 +1607,11 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
     triggerHaptic('wormhole');
   }, []);
   const declineMasterOffer = useCallback(() => {
+    setDismissedRecommendationFor(masterOfferFor);
     setMasterOfferFor(null);
     dismissLucyMasterOffer();
     triggerHaptic('whitehole');
-  }, []);
+  }, [masterOfferFor]);
 
   // 🌙 점술모드에서 상담이 마무리된 것처럼 보이면 일반 루시로 돌아갈지 채팅에 묻는다.
   const [returnOfferFor, setReturnOfferFor] = useState<string | null>(null);
@@ -4337,33 +4340,69 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
                       onVoicePlay={handleVoicePlay}
                       renderRecommendationFooter={() => {
                         if (isLucyGenerating && index === filteredMessages.length - 1) return null;
-                        // 🔮 루시가 질문하며 건넨 보기: 가장 최근 답변에서만 탭해서 바로 대답
-                        if (answerChoices.length > 0) {
-                          if (index !== filteredMessages.length - 1) return null;
-                          return (
-                            <div className="mt-2.5 flex flex-wrap gap-1.5" data-lucy-answer-choices="true">
-                              {answerChoices.map(choice => (
-                                <button
-                                  key={choice}
-                                  type="button"
-                                  onClick={() => {
-                                    triggerHaptic('whitehole');
-                                    void handleSend(choice);
-                                  }}
-                                  className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-all active:scale-95 ${
-                                    isLight
-                                      ? 'bg-amber-50 border-amber-300 text-amber-900 hover:bg-amber-100'
-                                      : 'bg-amber-500/10 border-amber-400/40 text-amber-200 hover:bg-amber-500/20'
-                                  }`}
-                                >
-                                  {choice}
-                                </button>
-                              ))}
-                            </div>
-                          );
-                        }
-                        // 루시·루시+·루시 마스터 모두: 대화마다 붙던 모드·엔진 안내는 표시하지 않음 (TTS 버튼은 그대로)
-                        return null;
+                        if (index !== filteredMessages.length - 1 || searchQuery.trim()) return null;
+
+                        const recentUserTexts = filteredMessages
+                          .slice(0, index)
+                          .filter((candidate: any) => candidate.role === 'user')
+                          .slice(-3)
+                          .map((candidate: any) => {
+                            const content = typeof candidate.content === 'string'
+                              ? candidate.content
+                              : Array.isArray(candidate.content)
+                                ? candidate.content.find((item: any) => item.type === 'text')?.text || ''
+                                : '';
+                            return cleanUserMessageDisplay(content);
+                          });
+                        const answerChoiceButtons = answerChoices.length > 0 ? (
+                          <div className="mt-2.5 flex flex-wrap gap-1.5" data-lucy-answer-choices="true">
+                            {answerChoices.map(choice => (
+                              <button
+                                key={choice}
+                                type="button"
+                                onClick={() => {
+                                  triggerHaptic('whitehole');
+                                  void handleSend(choice);
+                                }}
+                                className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-all active:scale-95 ${
+                                  isLight
+                                    ? 'bg-amber-50 border-amber-300 text-amber-900 hover:bg-amber-100'
+                                    : 'bg-amber-500/10 border-amber-400/40 text-amber-200 hover:bg-amber-500/20'
+                                }`}
+                              >
+                                {choice}
+                              </button>
+                            ))}
+                          </div>
+                        ) : null;
+
+                        if (dismissedRecommendationFor === msgId) return answerChoiceButtons;
+                        const nextStepRecommendation = !isMasterMode && !msgModeInfo.isCasual && !isGreeting ? (
+                          <LucyResponseRecommendation
+                            userQuery={recentUserTexts[recentUserTexts.length - 1] || ''}
+                            recentUserTexts={recentUserTexts}
+                            lucyAnswer={textContent}
+                            currentChannels={msgModeInfo.channels}
+                            isCasual={msgModeInfo.isCasual}
+                            isGreeting={isGreeting}
+                            isMasterMode={isMasterMode}
+                            forceDivination={masterOfferFor === msgId}
+                            isLight={isLight}
+                            onEnterDivination={acceptMasterOffer}
+                            onDismissDivination={() => {
+                              setDismissedRecommendationFor(msgId);
+                              if (masterOfferFor === msgId) declineMasterOffer();
+                            }}
+                            onNavigate={path => navigate(path)}
+                          />
+                        ) : null;
+
+                        return (
+                          <>
+                            {answerChoiceButtons}
+                            {nextStepRecommendation}
+                          </>
+                        );
                       }}
                     />
                     </>
@@ -4372,34 +4411,6 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
               </motion.div>
             );
           })}
-
-          {!isMasterMode && !isLucyGenerating && masterOfferFor && lucyMessages[lucyMessages.length - 1]?.id === masterOfferFor && (
-            <motion.div
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              data-lucy-master-offer
-              className={`max-w-[92%] rounded-2xl border p-3.5 shadow-sm ${isLight ? 'bg-[#faf5ff]/95 border-violet-300/70 text-slate-900' : 'bg-[#1a0f2e]/90 border-violet-400/40 text-white'}`}
-            >
-              <p className="text-[13px] font-bold">🔮 조금 더 깊게 봐 줄까?</p>
-              <p className={`mt-1 text-xs leading-relaxed break-keep ${isLight ? 'text-slate-600' : 'text-violet-100/85'}`}>
-                지금 이야기는 사주와 타로로 차분히 상담해 보면 좋을 것 같아. 점술모드(루시 마스터)로 들어가서 방금 얘기를 이어서 볼까?
-              </p>
-              <div className="mt-2.5 flex flex-wrap gap-2">
-                <button
-                  type="button"
-                  data-lucy-master-offer-accept
-                  onClick={acceptMasterOffer}
-                  className="rounded-full bg-gradient-to-r from-violet-600 to-fuchsia-600 px-3.5 py-1.5 text-xs font-bold text-white shadow active:scale-95"
-                >점술모드로 상담하기</button>
-                <button
-                  type="button"
-                  data-lucy-master-offer-decline
-                  onClick={declineMasterOffer}
-                  className={`rounded-full border px-3.5 py-1.5 text-xs font-bold active:scale-95 ${isLight ? 'border-slate-300 text-slate-700 bg-white' : 'border-white/20 text-white/85 bg-white/5'}`}
-                >괜찮아, 계속 얘기할래</button>
-              </div>
-            </motion.div>
-          )}
 
           {isMasterMode && !isLucyGenerating && returnOfferFor && lucyMessages[lucyMessages.length - 1]?.id === returnOfferFor && (
             <motion.div
@@ -5090,7 +5101,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
       {/* 📍 루시 채팅 스마트 스크롤 낭독 위치 즉시 복귀 플로팅 버튼 */}
       <SmartScrollResumeButton
         isVisible={isLucyUserOverriding && isTTSActive && hasLucyActiveHighlight}
-        onResume={resumeLucyAutoScroll}
+        onResume={() => resumeLucyAutoScroll('smooth')}
         remainingSeconds={lucyRemainingSeconds}
         fixed
         className="!bottom-[calc(var(--sidebar-footer-height,var(--lucy-footer-height,140px))+12px)] sm:!bottom-[calc(var(--sidebar-footer-height,var(--lucy-footer-height,140px))+16px)]"

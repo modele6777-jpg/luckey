@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { useTTSState } from '@/utils/tts';
 
 const managedContainers = new WeakSet<HTMLElement>();
+type SmartScrollBehavior = 'auto' | 'smooth';
 
 export interface UseSmartScrollOptions {
   /**
@@ -40,7 +41,7 @@ export interface UseSmartScrollReturn {
   /**
    * Manually resume auto-scroll immediately and center the active sentence immediately.
    */
-  resumeAutoScroll: () => void;
+  resumeAutoScroll: (behavior?: SmartScrollBehavior) => void;
   /**
    * Whether an active highlight element currently exists in the target container.
    */
@@ -52,7 +53,7 @@ export interface UseSmartScrollReturn {
   /**
    * Programmatically trigger immediate centering on the active highlight.
    */
-  scrollToActiveSentence: (force?: boolean) => boolean;
+  scrollToActiveSentence: (force?: boolean, behavior?: SmartScrollBehavior) => boolean;
 }
 
 export function useSmartScroll(options: UseSmartScrollOptions = {}): UseSmartScrollReturn {
@@ -166,7 +167,7 @@ export function useSmartScroll(options: UseSmartScrollOptions = {}): UseSmartScr
 
   // Viewport centering math
   const scrollToActiveSentence = useCallback(
-    (force: boolean = false): boolean => {
+    (force: boolean = false, behavior: SmartScrollBehavior = 'auto'): boolean => {
       if (!enabled) return false;
       const target = getActiveElement();
       if (!target) {
@@ -203,11 +204,11 @@ export function useSmartScroll(options: UseSmartScrollOptions = {}): UseSmartScr
         return true;
       }
 
-      // Safari can reject "instant"; disable inherited smooth scrolling explicitly.
+      // Keep automatic sentence-following immediate; allow an explicit smooth resume from the button.
       const previousBehavior = container.style.scrollBehavior;
-      container.style.scrollBehavior = 'auto';
+      container.style.scrollBehavior = behavior;
       try {
-        container.scrollTo({ top: finalTop, behavior: 'auto' });
+        container.scrollTo({ top: finalTop, behavior });
       } catch (_) {
         container.scrollTop = finalTop;
       } finally {
@@ -220,13 +221,13 @@ export function useSmartScroll(options: UseSmartScrollOptions = {}): UseSmartScr
   );
 
   // Resume auto-scroll action (called by user click or 3s timeout)
-  const resumeAutoScroll = useCallback(() => {
+  const resumeAutoScroll = useCallback((behavior: SmartScrollBehavior = 'auto') => {
     clearTimers();
     isUserOverridingRef.current = false;
     setIsUserOverriding(false);
     setRemainingSeconds(0);
     requestAnimationFrame(() => {
-      scrollToActiveSentence(true);
+      scrollToActiveSentence(true, behavior);
     });
   }, [clearTimers, scrollToActiveSentence]);
 

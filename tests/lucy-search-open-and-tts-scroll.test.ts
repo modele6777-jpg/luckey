@@ -5,6 +5,7 @@ import { captureLucySearchAnchor, resolveLucySearchOpenGuardedTop } from '../src
 import { planTtsScroll, ttsScrollDeadZone } from '../src/lib/ttsScrollFollow';
 
 const page = readFileSync(new URL('../src/pages/LucyStandalonePage.tsx', import.meta.url), 'utf8');
+const trinityPage = readFileSync(new URL('../src/pages/TrinityApp.tsx', import.meta.url), 'utf8');
 const smartScroll = readFileSync(new URL('../src/hooks/useSmartScroll.ts', import.meta.url), 'utf8');
 const searchPanel = page.slice(page.indexOf('{/*  Search Input Dropdown'), page.indexOf('</header>'));
 
@@ -168,6 +169,20 @@ test('the dead zone scales with the viewport but keeps a readable minimum', () =
 test('the highlight being read is taken from the message currently playing', () => {
   assert.match(smartScroll, /\[data-tts-playing-message="true"\]/);
   assert.match(page, /data-tts-playing-message=\{playingMsgId === msgId \? 'true' : undefined\}/);
+});
+
+test('the reading-position buttons smoothly return to the active sentence on Lucy and Trinity', () => {
+  assert.match(smartScroll, /type SmartScrollBehavior = 'auto' \| 'smooth'/);
+  assert.match(smartScroll, /resumeAutoScroll = useCallback\(\(behavior: SmartScrollBehavior = 'auto'\)/);
+  assert.match(smartScroll, /scrollToActiveSentence\(true, behavior\)/);
+  assert.match(smartScroll, /container\.scrollTo\(\{ top: finalTop, behavior \}\)/);
+  assert.match(page, /onResume=\{\(\) => resumeLucyAutoScroll\('smooth'\)\}/);
+  assert.match(trinityPage, /onResume=\{\(\) => resumeMainAutoScroll\('smooth'\)\}/);
+});
+
+test('automatic sentence tracking keeps its immediate behavior', () => {
+  assert.match(smartScroll, /if \(!isUserOverridingRef\.current\) scrollToActiveSentence\(false\)/);
+  assert.match(smartScroll, /resumeAutoScroll\(\);\s+\}, resumeDelayMs\)/);
 });
 
 test('the conversation is not dragged to the bottom in the gaps between TTS chunks', () => {

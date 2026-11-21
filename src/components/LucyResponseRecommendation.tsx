@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import './lucy-response-recommendation.css';
 import { motion } from 'framer-motion';
 import {
@@ -10,6 +10,7 @@ import { sendPrismToss } from '@/lib/prismToss';
 import { triggerHaptic } from '@/lib/omniWarp/omniWarpHaptics';
 import { resolveCanonicalPath } from '@/lib/prismRouteRegistry';
 import { findBestKeyExercise } from '@/lib/keyExercisesCatalog';
+import { selectLucyRecommendationKind } from '@/lib/lucyNextStepRecommendation';
 import { useTheme } from '@/contexts/ThemeContext';
 import type { SpecialChannel } from '@/pages/LucyStandalonePage';
 
@@ -19,8 +20,13 @@ export interface LucyResponseRecommendationProps {
   currentChannels: SpecialChannel[];
   isCasual?: boolean;
   isGreeting?: boolean;
+  isMasterMode?: boolean;
+  forceDivination?: boolean;
+  recentUserTexts?: readonly string[];
   isLight?: boolean;
-  onSwitchChannel: (channels: SpecialChannel[], isMaster: boolean, label: string) => void;
+  onEnterDivination?: () => void;
+  onDismissDivination?: () => void;
+  onSwitchChannel?: (channels: SpecialChannel[], isMaster: boolean, label: string) => void;
   onNavigate?: (path: string) => void;
 }
 
@@ -266,7 +272,12 @@ export function LucyResponseRecommendation({
   currentChannels = [],
   isCasual = false,
   isGreeting = false,
+  isMasterMode = false,
+  forceDivination = false,
+  recentUserTexts = [],
   isLight: propIsLight,
+  onEnterDivination,
+  onDismissDivination,
   onSwitchChannel,
   onNavigate,
 }: LucyResponseRecommendationProps) {
@@ -320,7 +331,7 @@ export function LucyResponseRecommendation({
   }
 
   // 2. 질문과 답변의 맥락 정밀 분석을 통해 최적의 단일 추천 채널 및 Key 실천 기법 도출
-  const { recommendedChannel, recommendedFeature, themeReason } = useMemo(() => {
+  const { recommendedChannel, recommendedFeature } = (() => {
     const cleanUser = (userQuery || '').toLowerCase();
     const cleanLucy = (lucyAnswer || '').toLowerCase();
 
@@ -445,14 +456,22 @@ export function LucyResponseRecommendation({
       keywords: [],
     };
 
-    const reasonText = `[${bestEx.tag}·${primaryChannel.badgeLabel}] ${primaryChannel.shortName} 채널 × Key 실천법(${bestEx.title}) 맞춤 연계`;
-
     return {
       recommendedChannel: primaryChannel,
       recommendedFeature: keyFeature,
-      themeReason: reasonText,
     };
-  }, [userQuery, lucyAnswer, currentChannels]);
+  })();
+
+  const recommendationKind = selectLucyRecommendationKind({
+    userQuery,
+    lucyAnswer,
+    recentUserTexts,
+    isCasual,
+    isGreeting,
+    isMasterMode,
+    forceDivination,
+  });
+  if (!recommendationKind) return null;
 
   // 추천 기능으로 도약 실행 (오브의 handleTossToDimension과 동일한 유기적 토스 연동)
   const handleLeapToFeature = (feature: FeatureAppMeta) => {
@@ -530,144 +549,106 @@ export function LucyResponseRecommendation({
     }, 280);
   };
 
-  const isCurrentChannelActive = (currentChannels || []).includes(recommendedChannel.id);
   const RecChannelIcon = recommendedChannel.icon;
+  const recommendationTitle = recommendationKind === 'key'
+    ? 'Key 채널'
+    : recommendationKind === 'luckey'
+      ? 'Luckey 채널'
+      : '점술모드';
+  const recommendationDetail = recommendationKind === 'key'
+    ? `${recommendedFeature.shortName} · ${recommendedFeature.description}`
+    : recommendationKind === 'luckey'
+      ? `${recommendedChannel.shortName} · ${recommendedChannel.tagline}`
+      : '사주·타로로 방금 이야기를 더 깊게 이어가요.';
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 6 }}
       animate={{ opacity: 1, y: 0 }}
+      data-lucy-recommendation="true"
+      data-lucy-recommendation-kind={recommendationKind}
       className={`lucy-recommendation mt-3 pt-2.5 border-t ${isLight ? 'border-amber-900/10 text-stone-800' : 'border-white/15 text-white'}`}
     >
-      {/* 🌟 단일 통합 추천 칸 (Key 추천 기법 + LucKey 연계 추천 경로 1개를 같은 칸에 배치 - 프리미엄 베이지/다크 테마) */}
       <div className={`p-3 sm:p-3.5 rounded-2xl border space-y-2.5 transition-all ${
         isLight
           ? 'bg-gradient-to-r from-[#FAF6EE] via-[#FDFBF7] to-[#F5EFE6] border-[#E6D9C5] shadow-[0_2px_12px_rgba(180,140,90,0.08)] hover:border-[#D6C4AA]'
           : 'bg-slate-950/80 border-white/15 hover:border-amber-400/40'
       }`}>
-        {/* 헤더: LucKey 연계 추천 라벨 & 테마 이유 */}
-        <div className="lucy-recommendation-heading">
-          <div className={`lucy-recommendation-badge flex items-center gap-1.5 px-2 py-0.5 rounded-full border text-[10.5px] font-bold shadow-2xs ${
+        <div className="flex items-center gap-1.5">
+          <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full border text-[10.5px] font-bold shadow-2xs ${
             isLight
               ? 'bg-[#EFE4D2] border-[#DFCEB3] text-[#844A14]'
               : 'bg-amber-950/70 border-amber-500/40 text-amber-200'
           }`}>
             <Sparkles size={12} className="text-[#D97706] dark:text-[#FBBF24] animate-pulse shrink-0" />
-            <span>LucKey 연계 추천</span>
-          </div>
-          <span className={`lucy-recommendation-reason text-[10px] font-medium ${
-            isLight ? 'text-stone-500' : 'text-white/80'
-          }`}>
-            {themeReason}
+            <span>이어서 할 수 있는 한 가지</span>
           </span>
         </div>
-
-        {/* 같은 칸 내부: Key 추천기법 (좌측) + 단 1개의 LucKey 연계 채널 (우측) */}
-        <div className="lucy-recommendation-layout pt-0.5">
-          {/* A. Key 추천 기법 (40가지 실천 연습실) */}
+        <div className="flex items-start gap-2.5 pt-0.5">
+          <span
+            className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0 border text-base shadow-xs"
+            style={{
+              color: recommendationKind === 'luckey' ? recommendedChannel.color : undefined,
+              background: isLight ? 'linear-gradient(135deg, #FFFDF9 0%, #EFE5D2 100%)' : 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)',
+              borderColor: isLight ? '#DFCBB0' : 'rgba(255,255,255,0.2)',
+            }}
+          >
+            {recommendationKind === 'key' ? '🔑' : recommendationKind === 'divination' ? '🔮' : <RecChannelIcon size={16} />}
+          </span>
+          <div className="min-w-0 flex-1">
+            <p className={`text-xs font-bold ${isLight ? 'text-stone-900' : 'text-white'}`}>{recommendationTitle}</p>
+            <p className={`mt-0.5 text-[11px] leading-relaxed break-keep ${isLight ? 'text-stone-600' : 'text-white/80'}`}>
+              {recommendationDetail}
+            </p>
+          </div>
+        </div>
+        <div className="flex flex-wrap items-center gap-2 pt-0.5">
           <button
             type="button"
-            disabled={isLeaping}
-            onClick={() => handleLeapToFeature(recommendedFeature)}
-            aria-label={recommendedFeature.featureTitle}
-            className={`lucy-recommendation-feature p-3 rounded-xl border transition-all duration-200 cursor-pointer group active:scale-[0.99] min-w-0 shadow-xs ${
-              isLight
-                ? 'bg-white/90 hover:bg-white border-[#E8DEC9] hover:border-[#D0BD9D]'
-                : 'bg-slate-900/90 hover:bg-slate-800/90 border-white/15 hover:border-amber-400/50'
+            data-lucy-recommendation-action="true"
+            disabled={recommendationKind === 'divination' ? !onEnterDivination : isLeaping}
+            onClick={() => {
+              if (recommendationKind === 'divination') {
+                onEnterDivination?.();
+                return;
+              }
+              if (recommendationKind === 'key') {
+                handleLeapToFeature(recommendedFeature);
+                return;
+              }
+              handleLeapToFeature({
+                id: recommendedChannel.id,
+                name: recommendedChannel.name,
+                shortName: recommendedChannel.shortName,
+                featureTitle: `${recommendedChannel.name} 전문 채널`,
+                path: recommendedChannel.path,
+                iconText: '✨',
+                runeSymbol: 'ᛟ',
+                runeName: recommendedChannel.shortName,
+                color: recommendedChannel.color,
+                glowColor: recommendedChannel.color,
+                description: recommendedChannel.tagline,
+                actionLabel: `${recommendedChannel.shortName} 채널 입장`,
+                keywords: [],
+              });
+              onSwitchChannel?.([recommendedChannel.id], false, recommendedChannel.name);
+            }}
+            className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold text-white shadow-sm transition-all active:scale-95 disabled:opacity-50 ${
+              recommendationKind === 'divination'
+                ? 'bg-gradient-to-r from-violet-600 to-fuchsia-600'
+                : 'bg-gradient-to-r from-amber-600 to-orange-600'
             }`}
-            title={`${recommendedFeature.featureTitle} (클릭 시 Key 연습실로 바로 이동)`}
           >
-            <div
-              className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0 border font-serif font-black text-base shadow-xs transition-transform duration-200 group-hover:scale-105"
-              style={{
-                background: isLight
-                  ? 'linear-gradient(135deg, #FFFDF9 0%, #EFE5D2 100%)'
-                  : 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)',
-                borderColor: isLight ? '#DFCBB0' : 'rgba(255,255,255,0.2)',
-                boxShadow: '0 1px 4px rgba(180, 140, 90, 0.15)',
-              }}
-            >
-              {recommendedFeature.iconText || '🔑'}
-            </div>
-            <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-1.5 flex-wrap">
-                <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-bold border shrink-0 ${
-                  isLight
-                    ? 'bg-[#F3E8D5] text-[#8C4F13] border-[#E0CFB3]'
-                    : 'bg-amber-950/70 text-amber-200 border-amber-500/40'
-                }`}>
-                  Key 추천 기법
-                </span>
-                <span
-                  className={`text-xs font-bold break-keep break-words transition-colors ${
-                    isLight
-                      ? 'text-stone-900 group-hover:text-[#9A520E]'
-                      : 'text-white group-hover:text-amber-300'
-                  }`}
-                  style={{ color: isLight ? '#1c1917' : '#ffffff' }}
-                >
-                  {recommendedFeature.shortName}
-                </span>
-              </div>
-              <p
-                className={`text-[11px] break-keep break-words whitespace-normal mt-0.5 font-normal ${
-                  isLight ? 'text-stone-600' : 'text-white/85'
-                }`}
-                style={{ color: isLight ? '#57534e' : 'rgba(255,255,255,0.88)' }}
-              >
-                {recommendedFeature.description}
-              </p>
-            </div>
-            <span
-              className="lucy-recommendation-action px-2.5 py-1.5 rounded-lg text-[11px] font-bold text-white shrink-0 flex items-center gap-1 shadow-xs transition-all duration-200 group-hover:brightness-105 active:scale-95 cursor-pointer"
-              style={{
-                background: 'linear-gradient(135deg, #D97706 0%, #B45309 100%)',
-              }}
-            >
-              <span>실천</span>
-              <ArrowRight size={11} className="group-hover:translate-x-0.5 transition-transform" />
-            </span>
+            <span>{recommendationKind === 'key' ? 'Key 채널에서 이어서 보기' : recommendationKind === 'luckey' ? `${recommendedChannel.shortName} 채널로 이어서 보기` : '점술모드로 이어서 보기'}</span>
+            <ArrowRight size={12} />
           </button>
-
-          {/* B. LucKey 연계 추천 경로 (단 1개만 같은 칸에 배치) */}
-          <div className={`lucy-recommendation-channel ${
-            isLight ? 'border-[#DFCBB0]/70' : 'border-white/15'
-          }`}>
+          {recommendationKind === 'divination' && onDismissDivination && (
             <button
               type="button"
-              onClick={() => {
-                handleLeapToFeature({
-                  id: recommendedChannel.id,
-                  name: recommendedChannel.name,
-                  shortName: recommendedChannel.shortName,
-                  featureTitle: `${recommendedChannel.name} 전문 채널`,
-                  path: recommendedChannel.path,
-                  iconText: '✨',
-                  runeSymbol: 'ᛟ',
-                  runeName: recommendedChannel.shortName,
-                  color: recommendedChannel.color,
-                  glowColor: recommendedChannel.color,
-                  description: recommendedChannel.tagline,
-                  actionLabel: `${recommendedChannel.shortName} 채널 입장`,
-                  keywords: [],
-                });
-                onSwitchChannel([recommendedChannel.id], false, recommendedChannel.name);
-              }}
-              className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold border transition-all cursor-pointer shadow-2xs active:scale-95 ${
-                isLight
-                  ? 'bg-[#FCF8F2] hover:bg-[#F3EAD5] border-[#E2D2B8] text-stone-800 hover:text-stone-950'
-                  : 'bg-slate-900 hover:bg-slate-800 border-white/20 text-white'
-              }`}
-              style={{ color: isLight ? '#292524' : '#ffffff' }}
-              title={`[${recommendedChannel.name}] LucKey 채널로 즉시 입장합니다.`}
-            >
-              <span className="shrink-0 flex items-center" style={{ color: recommendedChannel.color }}>
-                <RecChannelIcon size={13} />
-              </span>
-              <span>{recommendedChannel.shortName} 채널</span>
-              <span className={`text-[10px] font-normal ${isLight ? 'text-stone-400 group-hover:text-stone-600' : 'text-white/70'}`}>➔</span>
-            </button>
-          </div>
+              onClick={onDismissDivination}
+              className={`rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors ${isLight ? 'border-stone-300 text-stone-600 hover:bg-white' : 'border-white/20 text-white/75 hover:bg-white/10'}`}
+            >계속 대화하기</button>
+          )}
         </div>
       </div>
     </motion.div>
