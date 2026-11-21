@@ -390,16 +390,16 @@ test('Lucy groups all 515 catalog entries under the seven channel themes', async
   await expect(dialog.getByRole('link')).toHaveCount(0);
 
   const themeNav = dialog.getByRole('navigation', { name: 'Lucy 7개 채널 테마' });
-  const bluebirdFilter = themeNav.getByRole('button', { name: '블루버드 38', exact: true });
+  const bluebirdFilter = themeNav.getByRole('button', { name: '블루버드 84', exact: true });
   await expect(bluebirdFilter).toBeVisible();
   const bluebirdGroup = dialog.getByTestId('lucy-engine-theme-bluebird');
   await expect(bluebirdGroup).toHaveAttribute('aria-label', '블루버드 테마');
   await expect(bluebirdGroup.locator('.lucy-engine-catalog-theme-name')).toHaveText('블루버드');
-  await expect(bluebirdGroup.locator('.lucy-engine-catalog-theme-count')).toHaveText('38개');
+  await expect(bluebirdGroup.locator('.lucy-engine-catalog-theme-count')).toHaveText('84개');
   await expect(bluebirdGroup.locator('.lucy-engine-catalog-entry-theme').first()).toHaveText('테마: 블루버드');
   await bluebirdFilter.click();
   await expect(bluebirdFilter).toHaveAttribute('aria-pressed', 'true');
-  await expect(dialog.getByTestId('lucy-engine-catalog-entry')).toHaveCount(38);
+  await expect(dialog.getByTestId('lucy-engine-catalog-entry')).toHaveCount(84);
 
   const auraFilter = themeNav.getByRole('button', { name: /아우라/ });
   await auraFilter.click();
