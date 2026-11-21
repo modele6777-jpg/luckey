@@ -207,8 +207,9 @@ export function calculateZiweiFlyingStars(options?: {
   const now = new Date();
   const nowUtcIso = now.toISOString();
   const nowKstIso = formatZiweiFlyingKstTimestamp(now);
+  const kstNow = new Date(now.getTime() + 9 * 60 * 60 * 1000);
 
-  const targetYear = options?.targetYear || now.getFullYear();
+  const targetYear = options?.targetYear || kstNow.getUTCFullYear();
 
   // 대상 연도 간지 산출 (2026 = 丙午, 병오)
   const stemIdx = (targetYear - 4) % 10;
