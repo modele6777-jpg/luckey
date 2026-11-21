@@ -742,8 +742,9 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
   const isDuoPortrait = isDuoUnfolded && isDuoUnfoldedState().orientation === 'portrait';
 
   // Lucy Plus is a distinct bubble step, active only in the unfolded Lucy cosmic room.
+  const [isMasterMode, setIsMasterMode] = useState<boolean>(() => isLucyMasterModeOn());
   const bubbleMarker = useLucyBubbleMarker();
-  const isCosmicRoomActive = isActuallyUnfoldedDual && isLucyChatPath(location) && bubbleMarker === 'plus';
+  const isCosmicRoomActive = isActuallyUnfoldedDual && isLucyChatPath(location) && !isMasterMode;
 
   const [lucyTier, setLucyTier] = useState<LucyTier>(() => {
     try {
@@ -760,7 +761,6 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
   });
 
   // 🔮 점술모드(Lucy Master): 빅뱅 버튼 홀드로 켜고 끈다. 접힘·펼침 모두 같은 값을 쓴다.
-  const [isMasterMode, setIsMasterMode] = useState<boolean>(() => isLucyMasterModeOn());
   // 🔮 상담 깊이(빅뱅 홀드로 1→2→3). 바뀔 때 잠깐 안내를 띄운다.
   const masterDepth = useLucyMasterDepth();
   // 배경음: 곡은 그대로, 깊이마다 소리를 한 겹씩 더한다 (켜져 있을 때만 들림)
@@ -813,7 +813,17 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
   }, []);
   const requireBasicAndDeep = true;
 
-  // The visible plus marker follows the Lucy bubble's explicit Plus step.
+  // Cosmic Room on the unfolded Lucy screen is Lucy Plus by default; folded Lucy is basic Lucy (−).
+  useEffect(() => {
+    if (pro || isMasterMode) return;
+    if (isActuallyUnfoldedDual && isLucyChatPath(location)) {
+      if (bubbleMarker !== 'plus') setLucyBubbleMarker('plus');
+      return;
+    }
+    if (!isActuallyUnfoldedDual && bubbleMarker !== 'minus') setLucyBubbleMarker('minus');
+  }, [bubbleMarker, isActuallyUnfoldedDual, isMasterMode, location, pro]);
+
+  // Lucy Plus follows the expanded Cosmic Room; other left-pane apps remain Lucy (−).
   const showPlusMarker = isCosmicRoomActive;
   const isPlusMode = showPlusMarker;
   const [modeTransitioningTier, setModeTransitioningTier] = useState<LucyTier | null>(null);
@@ -1164,22 +1174,14 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
     }
   }, [location, isDuoUnfolded, bubbleMarker, pro]);
 
-  // Keep the Plus selection while another app occupies the left pane; restore it on return.
-  useEffect(() => {
-    if (!bubbleMarker) return;
-    const markerInvalid = (bubbleMarker === 'plus' && !isDuoUnfolded)
-      || (bubbleMarker === 'minus' && isDuoUnfolded);
-    if (markerInvalid) setLucyBubbleMarker(null);
-  }, [bubbleMarker, isDuoUnfolded]);
-
-  // 🧭 Lucy Plus requires the explicit + step while the unfolded left pane is on Lucy.
+  // 🧭 The mode follows the left Cosmic Room automatically; Master remains its own mode.
   useEffect(() => {
     if (pro) return;
     const isDual = typeof document !== 'undefined' && Boolean(
       document.getElementById('duo-lucy-viewport') && document.getElementById('duo-content-viewport')
     ) && isDuoUnfoldedState().unfolded;
     const clean = location ? location.split('?')[0].split('#')[0] : '/';
-    const isCosmic = isDual && isLucyChatPath(clean) && bubbleMarker === 'plus';
+    const isCosmic = isDual && isLucyChatPath(clean) && !isMasterMode;
     const expected: LucyTier = isCosmic ? 'plus' : 'ai';
     if (lucyTier !== expected) {
       setLucyTier(expected);
@@ -1193,7 +1195,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
         setTimeout(() => setModeSwitchToast(null), 2000);
       }
     }
-  }, [location, isDuoUnfolded, pro, lucyTier, isMasterMode, bubbleMarker]);
+  }, [location, isDuoUnfolded, pro, lucyTier, isMasterMode]);
 
   useEffect(() => {
     let initialRun = true;
@@ -1204,7 +1206,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
       ) && isDuoUnfoldedState().unfolded;
       setIsDuoUnfolded((prev) => {
         const clean = window.location.pathname || '/';
-        const isCosmic = isDual && isLucyChatPath(clean) && getLucyBubbleMarker() === 'plus';
+        const isCosmic = isDual && isLucyChatPath(clean) && !isLucyMasterModeOn();
         const targetTier: LucyTier = isCosmic ? 'plus' : 'ai';
 
         if (initialRun) {

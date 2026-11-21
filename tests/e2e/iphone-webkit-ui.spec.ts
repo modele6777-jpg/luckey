@@ -645,16 +645,16 @@ test('Lucy Plus selection survives left pane navigation and returns with the cos
   const lucyBubble = page.locator('#main-sidebar-navigation button[aria-label^="Lucy"]');
   await expect(page.locator('html')).toHaveClass(/duo-unfolded-portrait/);
   await expect(leftPane.locator('.cosmic-room')).toBeVisible();
-  await expect(page.locator('html')).not.toHaveClass(/lucy-plus-active/);
-  await expect(lucyBubble.locator('[data-lucy-mode-marker]')).toHaveCount(0);
-  await lucyBubble.click();
   await expect(lucyBubble.locator('[data-lucy-mode-marker="plus"]')).toBeVisible();
   await expect.poll(() => page.locator('html').evaluate(element => element.classList.contains('lucy-plus-active'))).toBe(true);
+  await expect.poll(() => page.evaluate(() => sessionStorage.getItem('lucy_master_mode'))).toBeNull();
 
   await page.evaluate(() => window.dispatchEvent(new CustomEvent('prism-navigate', { detail: { path: '/prologue' } })));
   await expect.poll(() => new URL(page.url()).pathname).toBe('/prologue');
   await expect.poll(() => page.evaluate(() => sessionStorage.getItem('lucy_bubble_marker'))).toBe('plus');
   await expect.poll(() => page.locator('html').evaluate(element => element.classList.contains('lucy-plus-active'))).toBe(false);
+  await expect(lucyBubble.locator('[data-lucy-mode-marker="minus"]')).toBeVisible();
+  await expect(leftPane.locator('.cosmic-room')).toHaveCount(0);
   await expect(lucyPane.locator('.lucy-chat-footer textarea')).toBeVisible();
 
   await lucyBubble.click();
@@ -664,7 +664,7 @@ test('Lucy Plus selection survives left pane navigation and returns with the cos
   await expect(leftPane.locator('.cosmic-room')).toBeVisible();
 });
 
-test('expanded Lucy bubble activates Lucy Plus first, then enters divination stages', async ({ page }) => {
+test('expanded Cosmic Room starts in Lucy Plus and the bubble enters divination stages', async ({ page }) => {
   await page.setViewportSize({ width: 700, height: 900 });
   await openLucy(page, '/chat');
 
@@ -673,13 +673,11 @@ test('expanded Lucy bubble activates Lucy Plus first, then enters divination sta
   const lucyBubble = page.locator('#main-sidebar-navigation button[aria-label^="Lucy"]');
   await expect(page.locator('html')).toHaveClass(/duo-unfolded-portrait/);
 
-  // Tap one activates Lucy+ and its left cosmic room; it must not enter Master yet.
-  await lucyBubble.click();
+  // The visible Cosmic Room makes Lucy Plus active automatically before any tap.
   await expect(lucyBubble.locator('[data-lucy-mode-marker="plus"]')).toBeVisible();
-  await expect(leftPane.locator('.cosmic-room')).toBeVisible();
-  await expect.poll(() => page.evaluate(() => sessionStorage.getItem('lucy_master_mode'))).toBeNull();
+  await expect.poll(() => page.locator('html').evaluate(element => element.classList.contains('lucy-plus-active'))).toBe(true);
 
-  // The next tap enters Master stage 1 (ellipsis); only a further tap advances to stage 2.
+  // Tapping the already-active Lucy Plus enters divination stage 1.
   await lucyBubble.click();
   await expect.poll(() => page.evaluate(() => sessionStorage.getItem('lucy_master_mode'))).toBe('on');
   await expect(lucyBubble.locator('[data-lucy-mode-marker]')).toHaveCount(0);
@@ -704,13 +702,44 @@ test('folded Lucy bubble shows minus before entering divination stage 1', async 
 
   const lucyBubble = page.locator('#main-sidebar-navigation button[aria-label^="Lucy"]');
   await expect(page.locator('#duo-content-viewport')).toHaveCount(0);
-  await lucyBubble.click();
   await expect(lucyBubble.locator('[data-lucy-mode-marker="minus"]')).toBeVisible();
+  await expect.poll(() => page.evaluate(() => sessionStorage.getItem('lucy_bubble_marker'))).toBe('minus');
+
+  await lucyBubble.click();
+  await expect.poll(() => page.evaluate(() => sessionStorage.getItem('lucy_master_mode'))).toBe('on');
+  await expect(lucyBubble.locator('[data-lucy-mode-marker]')).toHaveCount(0);
+  await expect(page.locator('#main-sidebar-navigation button[aria-label^="점술모드 1단계"]')).toBeVisible();
+});
+
+test('folded Lucy must be activated from another app before entering divination', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await openPrologue(page, '/prologue');
+
+  const lucyBubble = page.locator('#main-sidebar-navigation button[aria-label^="Lucy"]');
+  await expect(lucyBubble.locator('[data-lucy-mode-marker="minus"]')).toBeVisible();
+  await lucyBubble.click();
+  await expect.poll(() => new URL(page.url()).pathname).toBe('/');
   await expect.poll(() => page.evaluate(() => sessionStorage.getItem('lucy_master_mode'))).toBeNull();
+  await expect(lucyBubble.locator('[data-lucy-mode-marker="minus"]')).toBeVisible();
 
   await lucyBubble.click();
   await expect.poll(() => page.evaluate(() => sessionStorage.getItem('lucy_master_mode'))).toBe('on');
   await expect(page.locator('#main-sidebar-navigation button[aria-label^="점술모드 1단계"]')).toBeVisible();
+});
+
+test('unfolding from a folded app restores that app on the left, not Lucy Plus', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await openPrologue(page, '/prologue');
+  await page.setViewportSize({ width: 700, height: 900 });
+
+  const leftPane = page.locator('#duo-content-viewport');
+  const lucyBubble = page.locator('#main-sidebar-navigation button[aria-label^="Lucy"]');
+  await expect(page.locator('html')).toHaveClass(/duo-unfolded-portrait/);
+  await expect.poll(() => new URL(page.url()).pathname).toBe('/prologue');
+  await expect(leftPane.locator('.channel-page')).toBeVisible();
+  await expect(leftPane.locator('.cosmic-room')).toHaveCount(0);
+  await expect(lucyBubble.locator('[data-lucy-mode-marker="minus"]')).toBeVisible();
+  await expect.poll(() => page.locator('html').evaluate(element => element.classList.contains('lucy-plus-active'))).toBe(false);
 });
 
 test('Lucy Master preserves the other pane on re-entry; only a Lucy bubble tap opens its tools', async ({ page }) => {

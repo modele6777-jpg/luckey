@@ -34,7 +34,7 @@ import { markAppScreenReset } from '@/lib/appUpdateReload';
 import { showViewportDiagnostics } from '@/lib/viewportDiagnostics';
 import { startFoldRuntimeTrace } from '@/lib/foldRuntimeTrace';
 import { markPendingUpdateNotice } from '@/lib/updateNotice';
-import { isLucyMasterModeOn, setLucyMasterMode, deepenLucyMasterDepth, getLucyMasterDepth, LUCY_MASTER_MAX_DEPTH, LUCY_MASTER_MODE_EVENT, useLucyMasterDepth, getLucyBubbleMarker, setLucyBubbleMarker, useLucyBubbleMarker, isLucyMasterToolsRequested, setLucyMasterToolsRequested } from '@/lib/lucyMasterMode';
+import { isLucyMasterModeOn, setLucyMasterMode, deepenLucyMasterDepth, getLucyMasterDepth, LUCY_MASTER_MAX_DEPTH, LUCY_MASTER_MODE_EVENT, useLucyMasterDepth, getLucyBubbleMarker, setLucyBubbleMarker, isLucyMasterToolsRequested, setLucyMasterToolsRequested } from '@/lib/lucyMasterMode';
 import { playLucyMasterSuction } from '@/components/omniwarp/BigBangMasterSuction';
 import { isLucyMasterBgmPreferred, startLucyMasterBgm } from '@/lib/lucyMasterBgm';
 import { isDualPaneLayout, isDuoUnfoldedState } from '@/lib/perfMode';
@@ -332,11 +332,12 @@ export default function LeftSidebarNav() {
     ) && isDuoUnfoldedState().unfolded;
     if (!isLucyMasterModeOn()) {
       const marker = getLucyBubbleMarker();
-      if (isExpandedDuo && marker !== 'plus') {
+      const activeMarker = isLucyActive ? (isExpandedDuo ? 'plus' : 'minus') : marker;
+      if (isExpandedDuo && activeMarker !== 'plus') {
         setLucyBubbleMarker('plus');
         return;
       }
-      if (!isExpandedDuo && marker !== 'minus') {
+      if (!isExpandedDuo && activeMarker !== 'minus') {
         setLucyBubbleMarker('minus');
         return;
       }
@@ -452,10 +453,12 @@ export default function LeftSidebarNav() {
   }, [syncPrismDevices]);
 
   const [isLucyMaster, setIsLucyMaster] = useState<boolean>(() => isLucyMasterModeOn());
-  const bubbleMarker = useLucyBubbleMarker();
   // 점술모드 상담 깊이마다 말풍선 기호가 바뀐다: 1단계 … / 2단계 ? / 3단계 !
   const masterDepth = useLucyMasterDepth();
   const MasterBubbleIcon = masterDepth >= 3 ? MessageCircleWarning : masterDepth === 2 ? MessageCircleQuestion : MessageCircleMore;
+  const displayBubbleMarker = !isLucyMaster
+    ? (isExpandedLucyDuo() && isLucyActive ? 'plus' : 'minus')
+    : null;
   useEffect(() => {
     const sync = (e: Event) => {
       const on = (e as CustomEvent<{ on?: boolean }>).detail?.on;
@@ -466,11 +469,9 @@ export default function LeftSidebarNav() {
   }, []);
 
   const lucyBubbleLabel = !isLucyMaster
-    ? bubbleMarker === 'plus'
+    ? displayBubbleMarker === 'plus'
       ? 'Lucy Plus (+) (누르면 점술모드 1단계)'
-      : bubbleMarker === 'minus'
-        ? 'Lucy (−) (누르면 점술모드 1단계)'
-        : 'Lucy (루시 화면에서 누르면 Lucy Plus 또는 Lucy−)'
+      : 'Lucy (−) (누르면 점술모드 1단계)'
     : masterDepth >= LUCY_MASTER_MAX_DEPTH
       ? '점술모드 3단계 (누르면 일반 루시로)'
       : `점술모드 ${masterDepth}단계 (누르면 ${masterDepth + 1}단계)`;
@@ -486,12 +487,12 @@ export default function LeftSidebarNav() {
         onClick={() => handleNavigate(path)}>
         <Icon size={22} aria-hidden="true" />
         {isMainChat && isLucyMaster && <span className="sr-only">점술모드 깊이 {masterDepth}단계</span>}
-        {isMainChat && !isLucyMaster && bubbleMarker && (
+        {isMainChat && !isLucyMaster && displayBubbleMarker && (
           <span
             aria-hidden="true"
-            data-lucy-mode-marker={bubbleMarker}
-            className={`absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full border border-slate-950 text-[10px] font-black leading-none shadow ${bubbleMarker === 'plus' ? 'bg-emerald-300 text-emerald-950' : 'bg-slate-300 text-slate-950'}`}
-          >{bubbleMarker === 'plus' ? '+' : '−'}</span>
+            data-lucy-mode-marker={displayBubbleMarker}
+            className={`absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full border border-slate-950 text-[10px] font-black leading-none shadow ${displayBubbleMarker === 'plus' ? 'bg-emerald-300 text-emerald-950' : 'bg-slate-300 text-slate-950'}`}
+          >{displayBubbleMarker === 'plus' ? '+' : '−'}</span>
         )}
       </button>
     );
