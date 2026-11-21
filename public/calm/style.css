@@ -8324,3 +8324,8 @@ html.key-search-open, html.key-search-open body { overflow: hidden; }
   .key-guide-btn span { display: none; }
   .top-nav .key-guide-btn { width: 40px; padding: 0; justify-content: center; }
 }
+
+/* 앱 안에서 열릴 때는 앱이 검색·가이드 버튼을 우측 상단 끝에 직접 그린다 */
+html.luckey-parent-actions #key-search-btn,
+html.luckey-parent-actions #key-guide-btn { display: none !important; }
+html.luckey-parent-actions .top-nav { padding-right: 140px !important; }
