@@ -558,7 +558,7 @@ export function selectOptimalDivinationTools(
   activeChannels: SevenThemeChannel[] = [],
   profile?: UserProfile,
   isMasterMode?: boolean,
-  policy: { allowMaster?: boolean; requireBasicAndDeep?: boolean; divinationMode?: { base: 'saju' | 'tarot_saju'; deep?: boolean }; pinnedTools?: DivinationToolId[]; pinnedDeepKeys?: string[] } = {}
+  policy: { allowMaster?: boolean; requireBasicAndDeep?: boolean; divinationMode?: { base: 'saju' | 'tarot_saju'; deep?: boolean; depth?: 1 | 2 | 3 }; pinnedTools?: DivinationToolId[]; pinnedDeepKeys?: string[] } = {}
 ): SelectedDivinationToolsResult {
   const clean = (userText || '').trim();
   const lower = clean.toLowerCase();

@@ -5,12 +5,13 @@ import { createPortal } from 'react-dom';
 
 export const LUCY_MASTER_SUCTION_EVENT = 'prism:lucy_master_suction';
 
-export type LucyMasterSuctionDirection = 'in' | 'out';
+export type LucyMasterSuctionDirection = 'in' | 'out' | 'deepen';
 
 /**
  * Fire the Big Bang suction effect: 'in' pulls the screen into the button
  * (entering Lucy Master); 'out' plays it in reverse, the screen pouring back
- * out of the button (returning to regular Lucy).
+ * out of the button (returning to regular Lucy); 'deepen' is a lighter pull
+ * (no darkness) when a hold inside Lucy Master deepens the consultation.
  */
 export function playLucyMasterSuction(direction: LucyMasterSuctionDirection = 'in'): void {
   if (typeof window === 'undefined') return;
@@ -39,7 +40,8 @@ export function BigBangMasterSuction() {
 
   useEffect(() => {
     const onSuction = (event: Event) => {
-      setDirection((event as CustomEvent<{ direction?: LucyMasterSuctionDirection }>).detail?.direction === 'out' ? 'out' : 'in');
+      const next = (event as CustomEvent<{ direction?: LucyMasterSuctionDirection }>).detail?.direction;
+      setDirection(next === 'out' || next === 'deepen' ? next : 'in');
       const btn = document.getElementById('bigbang-omnibutton')?.getBoundingClientRect();
       const bx = btn ? btn.left + btn.width / 2 : 0;
       const by = btn ? btn.top + btn.height / 2 : 0;
@@ -69,6 +71,7 @@ export function BigBangMasterSuction() {
     const timer = window.setTimeout(() => setVisible(false), reduceMotion ? 450 : DURATION_MS);
     return () => window.clearTimeout(timer);
   }, [run, reduceMotion]);
+  const light = direction === 'deepen';
 
   // Particles stream inward on a tightening spiral and vanish into the button.
   useEffect(() => {
@@ -82,10 +85,11 @@ export function BigBangMasterSuction() {
     canvas.height = Math.max(1, Math.round(rect.height * dpr));
     ctx.scale(dpr, dpr);
     const reverse = direction === 'out';
-    const particles: Particle[] = Array.from({ length: 150 }, () => ({
+    const deepen = direction === 'deepen';
+    const particles: Particle[] = Array.from({ length: deepen ? 70 : 150 }, () => ({
       angle: Math.random() * Math.PI * 2,
-      // Reverse: particles start inside the button and spiral back out.
-      radius: reverse ? 2 + Math.random() * 10 : origin.reach * (0.35 + Math.random() * 0.75),
+      // Reverse: particles start inside the button and spiral back out. Deepen: a short, close pull.
+      radius: reverse ? 2 + Math.random() * 10 : origin.reach * (deepen ? 0.15 + Math.random() * 0.3 : 0.35 + Math.random() * 0.75),
       speed: 0.018 + Math.random() * 0.03,
       spin: 0.025 + Math.random() * 0.045,
       size: 0.8 + Math.random() * 2.4,
@@ -151,8 +155,8 @@ export function BigBangMasterSuction() {
             exit={{ opacity: 0 }}
             transition={{ duration: 0.18 }}
           >
-            {/* In: darkness closes in on the button. Out: the screen opens back up from it. */}
-            <motion.div
+            {/* In: darkness closes in on the button. Out: the screen opens back up from it. Deepen: no darkness. */}
+            {!light && <motion.div
               className="absolute inset-0"
               initial={{ ['--hole' as string]: reverse ? '0px' : `${origin.reach * 1.1}px` }}
               animate={{ ['--hole' as string]: reverse ? `${origin.reach * 1.1}px` : '0px' }}
@@ -160,15 +164,15 @@ export function BigBangMasterSuction() {
               style={{
                 background: `radial-gradient(circle at ${at}, transparent 0, transparent var(--hole), rgba(46,16,101,0.55) calc(var(--hole) + 40px), rgba(12,5,26,0.96) calc(var(--hole) + 160px))`,
               }}
-            />
+            />}
             {!reduceMotion && (
               <>
                 {/* Spiral arms rotating and shrinking into the centre. */}
                 <motion.div
                   className="absolute rounded-full"
                   style={{
-                    left: origin.x, top: origin.y, width: origin.reach * 2.4, height: origin.reach * 2.4,
-                    marginLeft: -origin.reach * 1.2, marginTop: -origin.reach * 1.2,
+                    left: origin.x, top: origin.y, width: origin.reach * (light ? 0.9 : 2.4), height: origin.reach * (light ? 0.9 : 2.4),
+                    marginLeft: -origin.reach * (light ? 0.45 : 1.2), marginTop: -origin.reach * (light ? 0.45 : 1.2),
                     background: 'conic-gradient(from 0deg, transparent 0deg, rgba(192,132,252,0.55) 30deg, transparent 75deg, rgba(253,230,138,0.45) 130deg, transparent 175deg, rgba(168,85,247,0.55) 220deg, transparent 265deg, rgba(245,208,254,0.5) 310deg, transparent 360deg)',
                     maskImage: 'radial-gradient(circle, transparent 4%, black 22%, black 55%, transparent 72%)',
                     WebkitMaskImage: 'radial-gradient(circle, transparent 4%, black 22%, black 55%, transparent 72%)',

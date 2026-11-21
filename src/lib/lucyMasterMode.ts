@@ -29,10 +29,15 @@ export function isLucyMasterModeOn(): boolean {
 export function setLucyMasterMode(on: boolean): void {
   try {
     if (on) {
-      if (!isLucyMasterModeOn()) safeSessionStorage.setItem(GREETING_PENDING_KEY, '1');
+      if (!isLucyMasterModeOn()) {
+        safeSessionStorage.setItem(GREETING_PENDING_KEY, '1');
+        // 새로 들어올 때마다 상담 깊이는 1단계부터
+        safeSessionStorage.removeItem(LUCY_MASTER_DEPTH_KEY);
+      }
       safeSessionStorage.setItem(LUCY_MASTER_MODE_KEY, 'on');
     } else {
       safeSessionStorage.removeItem(LUCY_MASTER_MODE_KEY);
+      safeSessionStorage.removeItem(LUCY_MASTER_DEPTH_KEY);
       safeSessionStorage.removeItem(GREETING_PENDING_KEY);
       safeSessionStorage.removeItem(LINK_KEY);
     }
@@ -46,6 +51,52 @@ export function toggleLucyMasterMode(): boolean {
   const next = !isLucyMasterModeOn();
   setLucyMasterMode(next);
   return next;
+}
+
+/* ── 상담 깊이: 점술모드 안에서 빅뱅 버튼을 홀드할 때마다 한 단계씩 깊어진다 (최대 3). ── */
+export type LucyMasterDepth = 1 | 2 | 3;
+export const LUCY_MASTER_DEPTH_KEY = 'lucy_master_depth';
+export const LUCY_MASTER_DEPTH_EVENT = 'prism:lucy_master_depth';
+export const LUCY_MASTER_MAX_DEPTH: LucyMasterDepth = 3;
+export const LUCY_MASTER_DEPTH_INFO: Record<LucyMasterDepth, { name: string; note: string }> = {
+  1: { name: '기본', note: '사주를 중심으로 고민을 들어볼게' },
+  2: { name: '심화', note: '고민과 관련된 도구를 더 써서 원인과 흐름까지 짚어볼게' },
+  3: { name: '심층', note: '여러 도구와 심층 관점까지 모두 꺼내서 마음·관계·시기를 깊이 풀어볼게' },
+};
+
+export function getLucyMasterDepth(): LucyMasterDepth {
+  try {
+    const value = Number(safeSessionStorage.getItem(LUCY_MASTER_DEPTH_KEY) || 1);
+    return value >= 3 ? 3 : value >= 2 ? 2 : 1;
+  } catch {
+    return 1;
+  }
+}
+
+/** One step deeper (max 3). Returns the new depth and whether it changed. */
+export function deepenLucyMasterDepth(): { depth: LucyMasterDepth; changed: boolean } {
+  const current = getLucyMasterDepth();
+  const next = Math.min(LUCY_MASTER_MAX_DEPTH, current + 1) as LucyMasterDepth;
+  const changed = next !== current;
+  try { safeSessionStorage.setItem(LUCY_MASTER_DEPTH_KEY, String(next)); } catch { /* storage optional */ }
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent(LUCY_MASTER_DEPTH_EVENT, { detail: { depth: next, changed } }));
+  }
+  return { depth: next, changed };
+}
+
+export function useLucyMasterDepth(): LucyMasterDepth {
+  const [depth, setDepth] = useState<LucyMasterDepth>(() => getLucyMasterDepth());
+  useEffect(() => {
+    const sync = () => setDepth(getLucyMasterDepth());
+    window.addEventListener(LUCY_MASTER_DEPTH_EVENT, sync);
+    window.addEventListener(LUCY_MASTER_MODE_EVENT, sync);
+    return () => {
+      window.removeEventListener(LUCY_MASTER_DEPTH_EVENT, sync);
+      window.removeEventListener(LUCY_MASTER_MODE_EVENT, sync);
+    };
+  }, []);
+  return depth;
 }
 
 /** React components that only need to read the switch (e.g. the unfolded left pane). */
@@ -85,6 +136,7 @@ export function createTarotHouseGreeting(userName: string | undefined, layout: '
   const content = layout === 'unfolded'
     ? `어서 와, ${name}루시의 타로 하우스에 온 걸 환영해 🕯️🔮\n촛불 켜두고 카드도 테이블에 올려뒀어. 차 한 잔 마신다 생각하고 편하게 얘기해줘. 이야기 듣다가 때가 되면 같이 카드 뽑아보자 — 뽑은 카드는 왼쪽 테이블에 바로 펼쳐줄게.`
     : `어서 와, ${name}루시의 타로 하우스에 온 걸 환영해 🕯️🔮\n오늘은 네 사주를 바탕에 깔고 천천히 이야기 나눠보자. 듣다가 필요하면 카드도 한 장 뽑아볼게.`;
+  const depthHint = '\n\n💡 더 깊게 보고 싶으면 빅뱅 버튼을 꾹 눌러줘. 누를 때마다 상담이 한 단계씩(최대 3단계) 깊어져. 버튼을 한 번 탭하면 일반 루시로 돌아가.';
   const choices = askToLink
     ? '\n\n아, 그리고 하나만 먼저 물어볼게. 일반 루시랑 나눴던 이야기를 여기로 이어서 가져올까, 아니면 오늘은 새로 시작할까?\n[답변선택: 루시랑 하던 얘기 이어서 | 새로 시작할래]'
     : `\n\n${CONCERN_QUESTION}\n${CONCERN_CHOICES}`;
@@ -94,7 +146,7 @@ export function createTarotHouseGreeting(userName: string | undefined, layout: '
     persona: 'lucy',
     timestamp: Date.now(),
     mode: 'master',
-    content: content + choices,
+    content: content + depthHint + choices,
   };
 }
 
@@ -110,7 +162,7 @@ export function isAcceptingTarotDrawOffer(userText: string, lastLucyText: string
 }
 
 /** 점술모드 동안 루시에게 주는 타로집 상담 가이드. */
-export function buildTarotHouseGuide(layout: 'folded' | 'unfolded', cardsDrawnNow: boolean, deepEngines = false, concernAnchor = ''): string {
+export function buildTarotHouseGuide(layout: 'folded' | 'unfolded', cardsDrawnNow: boolean, deepEngines = false, concernAnchor = '', depth: LucyMasterDepth = 1): string {
   const lines = [
     '[🔮 점술모드 · 루시의 타로 하우스]',
     '- 이 상담의 메인은 사주야. 타로는 화면을 펼쳤을 때 더해지는 보조 상담이야.',
@@ -141,9 +193,15 @@ export function buildTarotHouseGuide(layout: 'folded' | 'unfolded', cardsDrawnNo
       '- 실제로 뽑힌 카드가 전달되지 않았다면 카드 이름이나 결과를 지어내지 마.',
     );
   }
+  if (depth >= 2) {
+    lines.push(depth === 3
+      ? '- [상담 깊이 3단계 · 심층] 사용자가 빅뱅 버튼으로 가장 깊은 상담을 골랐어. 사주를 중심에 두고, 함께 전달된 여러 도구의 계산 결과와 심층 관점을 서로 비교·연결해 고민의 뿌리(마음), 관계의 흐름, 시기를 입체적으로 풀어줘. 답이 조금 길어져도 괜찮지만 대화체를 유지하고, 마지막엔 지금 할 수 있는 구체적인 행동 하나로 정리해.'
+      : '- [상담 깊이 2단계 · 심화] 사용자가 빅뱅 버튼으로 상담을 한 단계 깊게 골랐어. 사주에 함께 전달된 관련 도구 결과를 더해, 고민의 원인과 앞으로의 흐름까지 짚어줘. 평소보다 조금 길어도 괜찮아.');
+    lines.push('- 도구·관점이 많아도 실제로 전달된 계산 결과만 "계산했다"고 말하고, 심층 관점은 상징 참고라고 구분해. 전달되지 않은 도구를 썼다고 말하지 마.');
+  }
   if (deepEngines) {
     lines.push('- 사용자가 고민과 관련된 엔진을 더 보길 원했어. 이번 답변은 평소보다 조금 길어도 괜찮으니, 함께 전달된 관련 도구·관점을 사주와 엮어 하나씩 짚어줘.');
-  } else {
+  } else if (depth < 3) {
     lines.push('- 고민이 충분히 구체화되면 한 번쯤 "이 고민이랑 관련된 다른 관점들도 더 볼래?" 하고 물어보고 [답변선택: 응, 더 깊게 볼래 | 지금은 괜찮아] 를 붙여. 원하지 않으면 다시 권하지 마.');
   }
   return lines.join('\n');

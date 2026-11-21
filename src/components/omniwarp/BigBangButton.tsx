@@ -31,7 +31,7 @@ import { isDuoUnfoldedState } from '@/lib/perfMode';
 import { isLucyChatScreen } from '@/lib/duoPaneFocus';
 import { isSinglePaneLucyScreen } from '@/lib/workspacePaneDom';
 import { BigBangCircularMeter } from './BigBangCircularMeter';
-import { isLucyMasterModeOn, setLucyMasterMode, toggleLucyMasterMode } from '@/lib/lucyMasterMode';
+import { isLucyMasterModeOn, setLucyMasterMode, deepenLucyMasterDepth, getLucyMasterDepth, LUCY_MASTER_MAX_DEPTH, useLucyMasterMode, useLucyMasterDepth } from '@/lib/lucyMasterMode';
 import { isLucyMasterBgmPreferred, startLucyMasterBgm } from '@/lib/lucyMasterBgm';
 // 🎯 미세 드래그 판정 임계값 (터치스크린 미세 떨림/지문 면적 20px 노이즈 면역 + 확실한 드래그 제스처 감지)
 const DRAG_ACTIVATION_THRESHOLD = 26;
@@ -219,6 +219,9 @@ export function BigBangButton() {
   const [feedbackChannel, setFeedbackChannel] = useState<ReturnType<typeof getDestinationChannel> | null>(null);
   const DestinationIcon = feedbackChannel?.icon;
   const navigationFeedbackStorageKey = 'luckey-bigbang-navigation-feedback';
+  // 🔮 점술모드 상담 깊이 표시 (버튼 고리)
+  const masterOn = useLucyMasterMode();
+  const masterDepth = useLucyMasterDepth();
   const [gestureFeedback, setGestureFeedback] = useState<'tap' | 'hold' | 'double' | null>(null);
   const gestureFeedbackTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const centerGesture = isPressing && durationMs >= 220 && hoverDirection === 'none' ? 'hold' : gestureFeedback;
@@ -613,10 +616,14 @@ export function BigBangButton() {
         phase: 'whitehole',
         gauge: metrics.virtualForce,
         aiTemperature: temp,
-        title: isLucyMasterModeOn() ? '점술모드 OFF' : '점술모드 ON',
+        title: isLucyMasterModeOn()
+          ? (getLucyMasterDepth() >= LUCY_MASTER_MAX_DEPTH ? '가장 깊은 상담' : `상담 깊이 ${getLucyMasterDepth() + 1}단계`)
+          : '점술모드 ON',
         actionType: 'navigate',
-        previewLabel: isLucyMasterModeOn() ? '[홀드] 점술모드 끄기' : '[홀드] 루시 점술모드 켜기',
-        previewDescription: '빅뱅 버튼을 길게 누르면 루시 점술모드(Lucy Master)를 켜고 끕니다.',
+        previewLabel: isLucyMasterModeOn() ? '[홀드] 상담 더 깊게' : '[홀드] 루시 점술모드 켜기',
+        previewDescription: isLucyMasterModeOn()
+          ? '점술모드에서 길게 누를 때마다 상담이 한 단계씩(최대 3단계) 깊어집니다. 한 번 탭하면 일반 루시로 돌아갑니다.'
+          : '빅뱅 버튼을 길게 누르면 루시 점술모드(Lucy Master)에 들어갑니다.',
         destinationPath: '/chat',
         themeColor: '#38bdf8',
         accentGlow: 'rgba(56, 189, 248, 0.85)',
@@ -941,19 +948,23 @@ export function BigBangButton() {
     );
     // 홀드(사용자 제스처) 안에서 바로 배경음을 시작해야 모바일 브라우저가 소리를 허용한다.
     const startBgmIfWanted = () => { if (isLucyMasterBgmPreferred()) void startLucyMasterBgm(); };
-    if (lucyVisible) {
-      if (toggleLucyMasterMode()) {
-        playLucyMasterSuction('in'); // 들어갈 때: 화면이 버튼 안으로 빨려 들어간다
-        startBgmIfWanted();
-      } else {
-        playLucyMasterSuction('out'); // 나올 때: 같은 효과를 거꾸로, 버튼에서 화면이 쏟아져 나온다
-      }
+    const alreadyMaster = isLucyMasterModeOn();
+    if (alreadyMaster) {
+      // 점술모드 안에서 다시 홀드: 상담이 한 단계 깊어진다 (최대 3단계). 나가기는 한 번 탭.
+      const { changed } = deepenLucyMasterDepth();
+      if (changed) playLucyMasterSuction('deepen');
+      if (lucyVisible) return;
+    } else if (lucyVisible) {
+      setLucyMasterMode(true);
+      playLucyMasterSuction('in'); // 들어갈 때: 화면이 버튼 안으로 빨려 들어간다
+      startBgmIfWanted();
       return;
+    } else {
+      playLucyMasterSuction();
+      startBgmIfWanted();
+      // 다른 화면에서는 점술모드를 켠 채로 루시 채팅으로 이동한다.
+      setLucyMasterMode(true);
     }
-    playLucyMasterSuction();
-    startBgmIfWanted();
-    // 다른 화면에서는 점술모드를 켠 채로 루시 채팅으로 이동한다.
-    setLucyMasterMode(true);
     const tier = isDuoUnfoldedState().unfolded ? 'plus' : 'ai';
     safeSessionStorage.setItem('lucy_tier_mode', tier);
     safeLocalStorage.setItem('lucy_tier_mode', tier);
@@ -1306,6 +1317,13 @@ export function BigBangButton() {
           lastTapTimeRef.current = 0;
           triggerHaptic('whitehole');
           showGestureFeedback('tap');
+
+          // 점술모드 중 한 번 탭: 일반 루시로 돌아간다 (빨려 들어가는 효과를 거꾸로).
+          if (isLucyMasterModeOn()) {
+            playLucyMasterSuction('out');
+            setLucyMasterMode(false);
+            return;
+          }
 
           // A single center tap keeps the existing Lucy / Lucy+ action.
           // - Expanded: remain on Lucy+.
@@ -1994,6 +2012,26 @@ export function BigBangButton() {
                   );
                 })}
               </div>
+
+              {/* 🔮 점술모드 상담 깊이: 단계마다 금빛 고리가 하나씩 늘어난다 (시각 전용) */}
+              {masterOn && (
+                <div data-bigbang-master-depth={masterDepth} className="absolute inset-0 z-10 pointer-events-none" aria-hidden="true">
+                  {Array.from({ length: masterDepth }, (_, index) => (
+                    <motion.span
+                      key={index}
+                      className="absolute rounded-full border"
+                      style={{
+                        inset: `${-3 - index * 4}px`,
+                        borderColor: index === masterDepth - 1 ? 'rgba(253,230,138,0.85)' : 'rgba(192,132,252,0.6)',
+                        boxShadow: `0 0 ${6 + index * 4}px rgba(192,132,252,0.55)`,
+                      }}
+                      initial={{ opacity: 0, scale: 1.25 }}
+                      animate={{ opacity: [0.55, 0.95, 0.55], scale: 1 }}
+                      transition={{ opacity: { duration: 2.4, repeat: Infinity, delay: index * 0.3 }, scale: { duration: 0.5 } }}
+                    />
+                  ))}
+                </div>
+              )}
 
               {/* Big Bang center: directional chevrons on activation, dot while idle */}
               <div className="relative z-20 w-full h-full rounded-full flex items-center justify-center text-center select-none pointer-events-none">

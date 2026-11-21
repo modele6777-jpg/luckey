@@ -592,7 +592,7 @@ test('Big Bang center single tap enters Lucy with the shared transition, without
   expect(commits[0].isDoubleTapSuction).toBe(false);
 });
 
-test('Big Bang center long press toggles the hidden Lucy Master divination mode', async ({ page }) => {
+test('Big Bang hold enters Lucy Master, deepens it, and a single tap leaves', async ({ page }) => {
   await openLucy(page);
   const button = page.locator('#bigbang-omnibutton');
   await expect(button).toBeVisible();
@@ -613,9 +613,27 @@ test('Big Bang center long press toggles the hidden Lucy Master divination mode'
   await expect(page).not.toHaveURL(/\/key$/);
   await expect(page.locator('.lucy-master-room')).toBeVisible();
 
+  await expect(page.locator('[data-lucy-master-depth="1"]')).toBeVisible();
+
+  // 점술모드 안에서 다시 홀드: 상담이 깊어진다 (최대 3단계), 모드는 유지
+  await page.waitForTimeout(400);
   await hold();
+  await expect.poll(() => page.evaluate(() => sessionStorage.getItem('lucy_master_depth'))).toBe('2');
+  await expect(page.locator('[data-lucy-master-depth="2"]')).toBeVisible();
+  await page.waitForTimeout(400);
+  await hold();
+  await expect.poll(() => page.evaluate(() => sessionStorage.getItem('lucy_master_depth'))).toBe('3');
+  await page.waitForTimeout(400);
+  await hold();
+  await expect.poll(() => page.evaluate(() => sessionStorage.getItem('lucy_master_depth'))).toBe('3');
+  expect(await page.evaluate(() => sessionStorage.getItem('lucy_master_mode'))).toBe('on');
+
+  // 한 번 탭: 일반 루시로 돌아가고 깊이도 초기화
+  await page.waitForTimeout(400);
+  await page.mouse.click(x, y);
   await expect.poll(() => page.evaluate(() => sessionStorage.getItem('lucy_master_mode'))).toBeNull();
   await expect(page.locator('.lucy-master-room')).toHaveCount(0);
+  expect(await page.evaluate(() => sessionStorage.getItem('lucy_master_depth'))).toBeNull();
 });
 
 test('Big Bang overlay remains visible for the newest overlapping transition', async ({ page }) => {
