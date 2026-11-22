@@ -11,7 +11,9 @@ export interface BatammaribaTakientaResult {
   calculatedAtKst: string;
   earthenTower: string;
   companionTower: string;
+  towerPhase: string;
   hearthThreshold: string;
+  shadowWarning: string;
   reflectionFocus: string;
   ritualAction: string;
   reflectiveQuestion: string;
@@ -23,6 +25,18 @@ const TOWERS = [
   '1층의 서늘한 곳간과 2층의 따뜻한 잠자리가 나뉜 구조',
   '빗물을 밖으로 흘려보내는 매끄러운 붉은 흙벽',
   '해 질 녘 온 식구가 모여 하늘을 보는 평평한 옥상',
+] as const;
+
+const TOWER_PHASES = [
+  '기초 다짐(흙 반죽과 벽체를 두껍게 세워 안팎의 기준을 잡는 시기)',
+  '층위 분리(곳간과 쉼터의 경계를 분명히 하여 소모를 막는 시기)',
+  '옥상 개방(지붕 위로 올라 서로 기대며 넓은 시야를 여는 시기)',
+] as const;
+
+const SHADOW_WARNINGS = [
+  '안전만 지키려다 문턱을 너무 높여 필요한 도움과 숨통까지 막히지 않도록 점검하세요.',
+  '당장 할 일(1층)과 쉼(2층)이 한 공간에 뒤엉켜 밤에도 머리가 식지 않는 과부하를 경계하세요.',
+  '혼자 버티는 고집으로 두 번째 기둥과 나눌 수 있는 짐마저 떠안고 있지는 않은지 살피세요.',
 ] as const;
 
 const THRESHOLDS = [
@@ -73,16 +87,20 @@ export function calculateBatammaribaTakienta(input: BatammaribaTakientaInput): B
   const companionOffset = 1 + (hashSeed(`${seedText}|companion`) % (TOWERS.length - 1));
   const earthenTower = TOWERS[towerIdx];
   const companionTower = TOWERS[(towerIdx + companionOffset) % TOWERS.length];
+  const towerPhase = TOWER_PHASES[hashSeed(`${seedText}|phase`) % TOWER_PHASES.length];
+  const shadowWarning = SHADOW_WARNINGS[hashSeed(`${seedText}|shadow`) % SHADOW_WARNINGS.length];
 
   return {
-    engineVersion: 'LUCKEY-BATAMMARIBA-v2.2.0',
+    engineVersion: 'LUCKEY-BATAMMARIBA-v2.3.0',
     calculatedAtKst: toKstIso(input.now),
     earthenTower,
     companionTower,
+    towerPhase,
     hearthThreshold: THRESHOLDS[(seed >>> 3) % THRESHOLDS.length],
-    reflectionFocus: `토고·베냉 바타마리바 족이 손으로 빚어 올린 타키엔타 2층 흙탑 가옥처럼 주 자리('${earthenTower}')와 동반 자리('${companionTower}')를 겹쳐 실무와 쉼의 층위를 나누고 공동체로 버티는 지혜의 상징적 관점입니다.`,
-    ritualAction: ACTIONS[towerIdx],
-    reflectiveQuestion: QUESTIONS[towerIdx],
+    shadowWarning,
+    reflectionFocus: `토고·베냉 바타마리바 족이 손으로 빚어 올린 타키엔타 2층 흙탑 가옥처럼 '${towerPhase}' 흐름 위에서 주 자리('${earthenTower}')와 동반 자리('${companionTower}')를 겹쳐 실무와 쉼의 층위를 나누는 상징적 관점입니다.`,
+    ritualAction: `${ACTIONS[towerIdx]} (동반 자리: ${companionTower})`,
+    reflectiveQuestion: `${QUESTIONS[towerIdx]} 특히 '${towerPhase}' 국면에서 내가 가장 먼저 지킬 층위는 무엇인가요?`,
     interpretiveBoundary: '개인 점수·심리 진단·미래 예측이 아닙니다. 자기 성찰을 돕기 위한 상징적 관점 안내입니다.',
   };
 }
@@ -93,7 +111,9 @@ export function formatBatammaribaTakientaPrompt(res: BatammaribaTakientaResult):
     `기준 시각: ${res.calculatedAtKst}`,
     `흙탑 자리: ${res.earthenTower}`,
     `동반 자리: ${res.companionTower}`,
+    `흙탑 국면: ${res.towerPhase}`,
     `층위 지혜: ${res.hearthThreshold}`,
+    `과잉·경계 점검: ${res.shadowWarning}`,
     `성찰 초점: ${res.reflectionFocus}`,
     `권장 의식: ${res.ritualAction}`,
     `성찰 질문: ${res.reflectiveQuestion}`,

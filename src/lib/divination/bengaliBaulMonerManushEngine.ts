@@ -5,13 +5,27 @@ export interface BengaliBaulResult {
   calculatedAtKst: string;
   baulString: string;
   companionString: string;
+  melodyPhase: string;
   monerInsight: string;
   bengalTone: string;
+  shadowWarning: string;
   reflectionFocus: string;
   ritualAction: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
+
+const MELODY_PHASES = [
+  '단선 조율(흩어진 조건을 덜어내고 한 줄 진심의 음정을 맞추는 시기)',
+  '강변 유랑(바깥의 인정보다 내 안의 소박한 걸음을 따라 걷는 시기)',
+  '여백 호흡(붙잡아 둔 생각의 새장 문을 열어 가볍게 흐르게 하는 시기)',
+] as const;
+
+const SHADOW_WARNINGS = [
+  '자유로움이라는 이름으로 꼭 마주해야 할 현실의 매듭까지 가볍게 미루고 있지는 않은지 살피세요.',
+  '남의 시선을 의식해 소박한 본심 대신 화려한 이유만 덧대며 스스로를 지치게 하지 않도록 점검하세요.',
+  '단순함을 찾으려다 다른 사람의 미세한 사정까지 한 줄로 단정 짓는 조급함을 경계하세요.',
+] as const;
 
 const STRINGS = [
   {
@@ -82,17 +96,21 @@ export function calculateBengaliBaulMonerManush(params: {
   const companionIdx = (idx + companionOffset) % STRINGS.length;
   const picked = STRINGS[idx];
   const companion = STRINGS[companionIdx];
+  const melodyPhase = MELODY_PHASES[stableHash(`${baseSeed}|phase`) % MELODY_PHASES.length];
+  const shadowWarning = SHADOW_WARNINGS[stableHash(`${baseSeed}|shadow`) % SHADOW_WARNINGS.length];
 
   return {
-    engineVersion: 'LUCKEY-BENGALI-BAUL-v2.2.0',
+    engineVersion: 'LUCKEY-BENGALI-BAUL-v2.3.0',
     calculatedAtKst: formatKstStandard(now),
     baulString: picked.stringName,
     companionString: companion.stringName,
+    melodyPhase,
     monerInsight: picked.insight,
     bengalTone: picked.tone,
-    reflectionFocus: `벵골 바울 유랑 시인의 '${picked.stringName}'을 첫 울림으로 삼고 '${companion.stringName}'의 여운을 곁들여, 이미 내 마음 안에 있는 가장 단순하고 솔직한 소리를 들어 보세요.`,
-    ritualAction: picked.ritual,
-    reflectiveQuestion: picked.question,
+    shadowWarning,
+    reflectionFocus: `벵골 바울 유랑 시인의 '${melodyPhase}' 결 위에서 '${picked.stringName}'을 첫 울림으로 삼고 '${companion.stringName}'의 여운을 곁들여, 이미 내 마음 안에 있는 가장 단순하고 솔직한 소리를 들어 보세요.`,
+    ritualAction: `${picked.ritual} (보조 여운: ${companion.stringName})`,
+    reflectiveQuestion: `${picked.question} '${melodyPhase}' 흐름 속에서 지금 덜어낼 잡음은 무엇인가요?`,
     interpretiveBoundary: '벵골(Bengal) 바울 유랑 시인과 랄론 파키르의 모네르 마누쉬 철학을 바탕으로 한 상징적 성찰 프레임입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.',
   };
 }
@@ -103,7 +121,9 @@ export function formatBengaliBaulPrompt(res: BengaliBaulResult): string {
     `- 기준 시각: ${res.calculatedAtKst}`,
     `- 바울 선율: ${res.baulString} (${res.bengalTone})`,
     `- 보조 여운: ${res.companionString}`,
+    `- 선율 국면: ${res.melodyPhase}`,
     `- 중심 통찰: ${res.monerInsight}`,
+    `- 과잉·경계 점검: ${res.shadowWarning}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 오늘의 작은 실천: ${res.ritualAction}`,
     `- 스스로에게 묻기: ${res.reflectiveQuestion}`,

@@ -13964,14 +13964,15 @@ test('Pashtun Roshaniya Inner Light engine: lamp, +09:00 KST, and interpretive b
 
 test('Bengali Baul Moner Manush engine: string, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateBengaliBaulMonerManush({ profile, now: new Date('2026-11-20T07:52:00Z'), question: '마음속 소박한 울림을 듣고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-BENGALI-BAUL-v2.2.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-BENGALI-BAUL-v2.3.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionString.length > 0 && rep.companionString !== rep.baulString);
+  assert.ok(rep.melodyPhase.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatBengaliBaulPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('벵골') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.reflectionFocus));
+  assert.ok(prompt.includes('벵골') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.melodyPhase) && prompt.includes(rep.shadowWarning));
 });
 
 test('Punjabi Nanak Langar Service engine: pillar, +09:00 KST, and interpretive boundary', () => {
@@ -14544,14 +14545,15 @@ test('Nahua Xochitl Cuicatl Flow engine: motif, +09:00 KST, and interpretive bou
 
 test('Benin Bronze Oba Memory engine: motif, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateBeninBronzeObaMemory({ profile, now: new Date('2026-11-20T19:25:00Z'), question: '그동안 쌓아 온 경험을 믿고 매듭짓고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-BENIN-OBA-v2.2.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-BENIN-OBA-v2.3.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionMotif !== rep.edoMotif);
+  assert.ok(rep.castingPhase.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatBeninBronzeObaPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('베냉') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionMotif));
+  assert.ok(prompt.includes('베냉') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionMotif) && prompt.includes(rep.castingPhase) && prompt.includes(rep.shadowWarning));
 });
 
 test('Bamiyan Silk Road Valley Calm engine: motif, +09:00 KST, and interpretive boundary', () => {
@@ -15319,14 +15321,15 @@ test('Sangam Tinai Poetics engine: landscape, +09:00 KST, and interpretive bound
 
 test('Batammariba Takienta engine: tower, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateBatammaribaTakienta({ profile, now: new Date('2026-11-20T22:45:00Z'), question: '일과 쉼의 층위를 나누고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-BATAMMARIBA-v2.2.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-BATAMMARIBA-v2.3.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionTower !== rep.earthenTower);
+  assert.ok(rep.towerPhase.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatBatammaribaTakientaPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('바타마리바') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionTower));
+  assert.ok(prompt.includes('바타마리바') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionTower) && prompt.includes(rep.towerPhase) && prompt.includes(rep.shadowWarning));
 });
 
 test('Kuna Mola Stitch engine: layer, +09:00 KST, and interpretive boundary', () => {
