@@ -1274,6 +1274,27 @@ export function BigBangButton() {
       setDurationMs(0);
       return;
     }
+    // 🔑 Key 채널에서 좌·우 탭: 화면에 보이는 목록(장 분류 버튼 등)을 한 칸씩 이동 (채널은 그대로)
+    if (!isDragGesture && isKeyChannel && (targetDir === 'west' || targetDir === 'east')) {
+      if (singleTapTimerRef.current) {
+        clearTimeout(singleTapTimerRef.current);
+        singleTapTimerRef.current = null;
+      }
+      lastTapTimeRef.current = 0;
+      setIsQuickChatOpen(false);
+      downDirectionRef.current = 'none';
+      setHoverDirection('none');
+      window.dispatchEvent(new CustomEvent('luckey:key-step', { detail: { direction: targetDir === 'west' ? 'previous' : 'next' } }));
+      triggerHaptic('whitehole');
+      showDirectionFeedback(targetDir);
+      lastValidSelectionRef.current = '';
+      touchStartSelectionRef.current = '';
+      clearPendingSelection();
+      setActivePhase('idle');
+      setGauge(0);
+      setDurationMs(0);
+      return;
+    }
     const isDisabledChannelDirection =
       isCycleNavigationDisabled && (targetDir === 'west' || targetDir === 'east');
     if (!isDragGesture && isDisabledChannelDirection) {
@@ -1826,8 +1847,8 @@ export function BigBangButton() {
                   ? 'inset 0 0 24px rgba(0, 240, 255, 0.48), inset -4px -4px 16px rgba(168, 85, 247, 0.45), 0 0 34px rgba(0, 240, 255, 0.55)'
                   : 'inset 0 0 22px rgba(56, 189, 248, 0.25), inset -6px -6px 18px rgba(0, 0, 0, 0.9), 0 0 24px rgba(56, 189, 248, 0.3)',
               }}
-              title={`빅뱅 버튼 (탭: Lucy 채팅 / 더블탭: Key로 이동 / 위·아래: 스크롤 위치와 무관하게 메뉴 앱 순서대로 이동 / ${isChatView ? '좌우: 점술모드 한 단계 얕게·깊게' : isCycleNavigationDisabled ? '현재 화면에서는 좌우 이동 비활성화' : '좌우: 현재 앱 내부 화면만 이동'} / 길게 누름: Key로 이동 / 드래그 후 놓기: 럭키 추천 앱으로 워프 · 범위 밖에서 놓으면 취소)`}
-              aria-label={`빅뱅 버튼 · 탭: Lucy 채팅, 더블탭: Key로 이동 / 위·아래: 스크롤 위치와 무관하게 메뉴 앱 순서대로 이동 / ${isChatView ? '좌우는 점술모드 한 단계 얕게·깊게' : isCycleNavigationDisabled ? '현재 화면에서는 좌우 이동 비활성화' : '좌우는 현재 앱 내부 화면만 이동'}, 길게 누름: 루시 마스터(점술모드) 켜기·끄기, 드래그 후 놓으면 럭키 추천 앱으로 워프, 범위 밖이면 취소`}
+              title={`빅뱅 버튼 (탭: Lucy 채팅 / 더블탭: Key로 이동 / 위·아래: 스크롤 위치와 무관하게 메뉴 앱 순서대로 이동 / ${isChatView ? '좌우: 점술모드 한 단계 얕게·깊게' : isKeyChannel ? '좌우: Key 목록 한 칸씩 이동' : isCycleNavigationDisabled ? '현재 화면에서는 좌우 이동 비활성화' : '좌우: 현재 앱 내부 화면만 이동'} / 길게 누름: Key로 이동 / 드래그 후 놓기: 럭키 추천 앱으로 워프 · 범위 밖에서 놓으면 취소)`}
+              aria-label={`빅뱅 버튼 · 탭: Lucy 채팅, 더블탭: Key로 이동 / 위·아래: 스크롤 위치와 무관하게 메뉴 앱 순서대로 이동 / ${isChatView ? '좌우는 점술모드 한 단계 얕게·깊게' : isKeyChannel ? '좌우는 Key 목록 한 칸씩 이동' : isCycleNavigationDisabled ? '현재 화면에서는 좌우 이동 비활성화' : '좌우는 현재 앱 내부 화면만 이동'}, 길게 누름: 루시 마스터(점술모드) 켜기·끄기, 드래그 후 놓으면 럭키 추천 앱으로 워프, 범위 밖이면 취소`}
             >
               {/* 🌀 [웜홀] 빛비춤 + 어두운 심연 + 사건의 지평선 3원 동시 융합 전개 */}
               {isPressing && activePhase === 'wormhole' && (
