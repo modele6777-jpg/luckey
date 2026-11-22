@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.8.340",
+    "builtAt": "2026-11-23T05:19:00+09:00",
+    "summary": "피타고라스 테트락티스·도교 황정경·도교 삼보 내단학 3대 엔진 맥락·국면·과잉 경계 심층 강화(v1.8.340)",
+    "items": [
+      "피타고라스 테트락티스 게마트리아 엔진(v2.3.0): 질문 맥락 분류(questionTopic)·창조 국면(tetraktysPhase)·과잉 경계(shadowWarning) 추가",
+      "도교 상청파 황정경 내경 엔진(v2.3.0): 질문 맥락 분류(questionTopic)·내관 국면(huangtingPhase)·과잉 경계(shadowWarning) 추가",
+      "도교 삼보 내단학 엔진(v2.3.0): 질문 맥락 분류(questionTopic)·내단 국면(sanbaoPhase)·과잉 경계(shadowWarning) 추가"
+    ]
+  },
+  {
     "version": "1.8.339",
     "summary": "오브 자막은 마스터의 말만 한 줄씩 보여 주고, 내 목소리를 한국어로 알아듣도록 고쳤습니다",
     "builtAt": "2026-11-22T20:17:06.614Z",
