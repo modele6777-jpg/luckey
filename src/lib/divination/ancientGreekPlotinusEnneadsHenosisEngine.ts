@@ -4,12 +4,12 @@
  * 3세기 신플라톤주의 창시자 플로티노스의 《엔네아데스》 사상 기반:
  * 일자(The One), 누스(Nous), 프쉬케(Psyche), 헤노시스(Henosis)의 내면 정화·관조·합일 관점.
  *
- * @version LUCKEY-PLOTINUS-ENNEADS-v2.2.0
+ * @version LUCKEY-PLOTINUS-ENNEADS-v2.3.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const ANCIENT_GREEK_PLOTINUS_VERSION = 'LUCKEY-PLOTINUS-ENNEADS-v2.2.0';
+export const ANCIENT_GREEK_PLOTINUS_VERSION = 'LUCKEY-PLOTINUS-ENNEADS-v2.3.0';
 
 export type PlotinusQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 export type PlotinusAscentStage = 'KATHARSIS_PURIFICATION' | 'NOUS_ILLUMINATION' | 'HENOSIS_STILLNESS';
@@ -63,7 +63,10 @@ export interface AncientGreekPlotinusEnneadsHenosisResult {
   questionTopic: PlotinusQuestionTopic;
   ascentStage: PlotinusAscentStage;
   ascentStageLabel: string;
+  henosisPhase: string;
+  shadowWarning: string;
   activePlotinusTheme: PlotinusTheme;
+  companionPlotinusTheme: PlotinusTheme;
   focalPlotinusAphorism: PlotinusAphorism;
   practiceGuidance: string;
   ritualAction: string;
@@ -79,6 +82,18 @@ export interface AncientGreekPlotinusEnneadsHenosisResult {
     philosophicalCounsel: string;
   };
 }
+
+const PLOTINUS_HENOSIS_PHASES = [
+  '카타르시스 정화(마음의 조각상에서 불필요한 군더더기와 조급함을 덜어내는 시기)',
+  '누스 관조(흔들리는 현상 너머의 본질적 질서와 구조를 맑게 비추어 보는 시기)',
+  '헤노시스 귀환(외부의 승인이나 분주함을 거두고 내면의 고요한 중심으로 돌아가는 시기)',
+] as const;
+
+const PLOTINUS_SHADOW_WARNINGS = [
+  '비움과 정화에만 몰두하다 현실의 관계와 일상적 책임을 차갑게 밀어내지 않도록 살피세요.',
+  '본질을 관조하고 사유하는 데 그쳐 정작 지금 손대야 할 구체적 실천을 미루지 않도록 점검하세요.',
+  '홀로 온전한 고요를 지키려다 타인의 진심 어린 조언과 연결의 온기까지 닫아 버리지 않도록 유의하세요.',
+] as const;
 
 export const PLOTINUS_THEMES: PlotinusTheme[] = [
   {
@@ -317,27 +332,31 @@ export function calculateAncientGreekPlotinusEnneadsHenosis(
   const innerBeautySculptingVirtueScore = 73 + ((absHash >> 12) % 26);
 
   const themeIndex = (absHash >> 4) % PLOTINUS_THEMES.length;
+  const companionOffset = 1 + ((absHash >> 5) % (PLOTINUS_THEMES.length - 1));
   const aphorismIndex = (absHash >> 7) % PLOTINUS_APHORISMS.length;
 
   const activePlotinusTheme = PLOTINUS_THEMES[themeIndex];
+  const companionPlotinusTheme = PLOTINUS_THEMES[(themeIndex + companionOffset) % PLOTINUS_THEMES.length];
   const focalPlotinusAphorism = PLOTINUS_APHORISMS[aphorismIndex];
   const questionTopic = classifyPlotinusTopic(question);
 
   const stages: PlotinusAscentStage[] = ['KATHARSIS_PURIFICATION', 'NOUS_ILLUMINATION', 'HENOSIS_STILLNESS'];
   const ascentStage = stages[(absHash >> 2) % stages.length];
   const ascentStageLabel = PLOTINUS_STAGE_LABELS[ascentStage];
+  const henosisPhase = PLOTINUS_HENOSIS_PHASES[(absHash >> 10) % PLOTINUS_HENOSIS_PHASES.length];
+  const shadowWarning = PLOTINUS_SHADOW_WARNINGS[(absHash >> 13) % PLOTINUS_SHADOW_WARNINGS.length];
 
   const situationalEnneadsAudit = buildPlotinusSituationalAudit(questionTopic);
   const temporalNousRhythm = buildPlotinusTemporalRhythm(now);
   const plotinusSynthesisMatrix = buildPlotinusSynthesisMatrix(ascentStage, questionTopic, temporalNousRhythm);
 
-  const practiceGuidance = `${activePlotinusTheme.practicalCounsel} ${PLOTINUS_TOPIC_PRACTICE[questionTopic]}`;
-  const ritualAction = PLOTINUS_TOPIC_RITUAL[questionTopic];
+  const practiceGuidance = `${activePlotinusTheme.practicalCounsel} ${PLOTINUS_TOPIC_PRACTICE[questionTopic]} (동반 테마: ${companionPlotinusTheme.themeTitleKo})`;
+  const ritualAction = `${PLOTINUS_TOPIC_RITUAL[questionTopic]} (${henosisPhase})`;
   const reflectionFocus = PLOTINUS_TOPIC_REFLECTION[questionTopic];
   const trimmedQ = question.trim();
   const reflectiveQuestion = trimmedQ
-    ? `지금 "${trimmedQ}"의 고민 앞에서, ${reflectionFocus}`
-    : reflectionFocus;
+    ? `지금 "${trimmedQ}"의 고민 앞에서 '${henosisPhase}' 국면을 지나는 중, ${reflectionFocus}`
+    : `${reflectionFocus} (${henosisPhase})`;
   const boundaryNotice = '이 관점은 플로티노스 신플라톤주의의 정화와 관조 상징을 빌린 정성적 성찰이며, 우열의 점수나 확정적 예언이 아닙니다.';
 
   const guidanceTitle = `플로티노스 엔네아데스 일자 유출과 영적 귀환 지혜: ${activePlotinusTheme.themeTitleKo}`;
@@ -355,7 +374,10 @@ export function calculateAncientGreekPlotinusEnneadsHenosis(
     questionTopic,
     ascentStage,
     ascentStageLabel,
+    henosisPhase,
+    shadowWarning,
     activePlotinusTheme,
+    companionPlotinusTheme,
     focalPlotinusAphorism,
     practiceGuidance,
     ritualAction,
@@ -377,7 +399,10 @@ export function formatAncientGreekPlotinusEnneadsHenosisPrompt(res: AncientGreek
   return [
     `【플로티노스 《엔네아데스》 일자유출설 & 영적 귀환 지표】 (${res.engineVersion} | 기준 시각: ${res.calculatedAtKst})`,
     `- 귀환 단계: ${res.ascentStageLabel}`,
+    `- 귀환 국면: ${res.henosisPhase}`,
     `- 핵심 영적 테마: ${res.activePlotinusTheme.themeTitleKo} [${res.activePlotinusTheme.themeTitleEn}]`,
+    `- 동반 영적 테마: ${res.companionPlotinusTheme.themeTitleKo}`,
+    `- 과잉·경계 점검: ${res.shadowWarning}`,
     `- 질문 맥락 감사(${res.situationalEnneadsAudit.enneadsRef}): 함정(${res.situationalEnneadsAudit.shadowTrap}) → 변증 질문("${res.situationalEnneadsAudit.dialecticQuestion}") / 정화 실천(${res.situationalEnneadsAudit.katharsisPractice})`,
     `- KST 시공간 리듬(${res.temporalNousRhythm.kstWindowLabel} · ${res.temporalNousRhythm.seasonTone}): ${res.temporalNousRhythm.henosisClarityState} (${res.temporalNousRhythm.contemplativeCue})`,
     `- 엔네아데스 교차 매트릭스: 정화(${res.plotinusSynthesisMatrix.katharsisReadiness}) | 누스(${res.plotinusSynthesisMatrix.nousAlignment}) | 헤노시스(${res.plotinusSynthesisMatrix.henosisStillness})`,
