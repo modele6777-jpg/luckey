@@ -54,6 +54,12 @@ const CLOUDS = [
   { left: 76, top: 6, width: 20, delay: 0.7, drift: 21 },
 ];
 const ORB_ROUTE = '/voice';
+/** 마스터가 말하는 중인 문장 하나만 자막 한 줄로. 길면 최근 부분만 보여 준다. */
+function captionLine(spoken: string): string {
+  const sentences = spoken.replace(/\s+/g, ' ').trim().split(/(?<=[.!?…。])\s+/).filter(Boolean);
+  const last = sentences[sentences.length - 1] || '';
+  return last.length > 38 ? `…${last.slice(-37)}` : last;
+}
 /** Sparks thrown out of the ball on a tap: evenly spread angles with varied reach, size and timing. */
 const BURST_PARTICLES = Array.from({ length: 18 }, (_, index) => ({
   angle: Math.round(index * 20 + ((index * 37) % 11) - 5),
@@ -155,6 +161,7 @@ export function LucyOrbCounsel({
   const [speaking, setSpeaking] = useState(false);
   const [master, setMaster] = useState<OrbMaster | null>(null);
   const [lines, setLines] = useState<Line[]>([]);
+  const [caption, setCaption] = useState('');
   const [draft, setDraft] = useState('');
   const [notice, setNotice] = useState('');
   const [micPermissionBusy, setMicPermissionBusy] = useState(false);
@@ -227,6 +234,7 @@ export function LucyOrbCounsel({
     setAudioLevel(0);
     setMaster(null);
     setLines([]);
+    setCaption('');
     setDraft('');
     setNotice('');
     setMicPermissionBusy(false);
@@ -468,6 +476,7 @@ export function LucyOrbCounsel({
       onLucyText: (text) => {
         if (userBuf.current) take('나', userBuf);
         lucyBuf.current = mergeTranscript(lucyBuf.current, text);
+        setCaption(captionLine(lucyBuf.current));
       },
       onError: (error) => setNotice(error.message),
       onNotice: (message) => {
@@ -946,10 +955,9 @@ export function LucyOrbCounsel({
               ))}
             </div>
           )}
-          {phase === 'live' && (
-            <div className="lucy-orb-lines">
-              {lines.slice(-3).map((line, index) => <span key={`${line.who}-${index}`}>{line.who}: {line.text}</span>)}
-            </div>
+          {/* 자막: 마스터가 지금 하는 말만 한 줄씩 (내가 한 말은 보이지 않는다) */}
+          {phase === 'live' && caption && (
+            <p key={caption.slice(0, 12)} className="lucy-orb-caption" aria-live="polite">{caption}</p>
           )}
           {phase === 'report' && master && (
             <article className="lucy-charm" aria-label="상담 부적">
