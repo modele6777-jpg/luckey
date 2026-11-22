@@ -16394,5 +16394,23 @@ test('buildUserFifteenToolsDigest integrates 9th-round Tojeong 3-month flow/harm
   assert.ok(!/harmonyScore|juBalanceScore|initiativeIndex|defensiveIndex|synergyScore/.test(digest));
 });
 
+test('buildUserFifteenToolsDigest integrates 10th-round Saju stem ten-gods/3-layer hidden stems, Astrology chart ruler/moon ruler, and Ziwei mutagen branch/significance without raw scores', () => {
+  const profile: any = {
+    basic: {
+      name: '제제',
+      birthdate: '1994-01-24',
+      birthtime: '10:30',
+      calendarType: 'solar',
+      isLeapMonth: false,
+      gender: 'male',
+    },
+  };
+  const digest = buildUserFifteenToolsDigest(profile, new Date('2026-11-23T06:48:00+09:00'));
+  assert.ok(digest.includes('천간 십신: 년(') && digest.includes('지장간(초·중·정): 월['));
+  assert.ok(digest.includes('달 지배성(') && digest.includes('차트 룰러 '));
+  assert.ok(digest.includes('사화 의미(화록:') && digest.includes('궁⇄대궁 '));
+  assert.ok(!/breakthroughPowerScore|deukSeScore|juBalanceScore/.test(digest));
+});
+
 
 
