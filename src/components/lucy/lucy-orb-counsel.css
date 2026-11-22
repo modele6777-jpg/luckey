@@ -204,6 +204,24 @@ html.duo-unfolded-mode .lucy-orb-masters { grid-template-columns: 1fr 1fr; }
     radial-gradient(circle at 50% 55%, #d5def2, #7f97c4 55%, #243352);
   box-shadow: 0 0 8px rgba(255,255,255,.45);
 }
+.lucy-orb-stage.is-leaving { pointer-events: none; animation: lucy-stage-clear 1.5s ease forwards; }
+.lucy-orb-stage.is-leaving .lucy-orb-mist { animation: lucy-mist-clear 1.5s ease forwards; }
+.lucy-orb-stage.is-leaving :is(.lucy-orb-ritual, .lucy-orb-copy, .lucy-orb-dock, .lucy-orb-end) {
+  animation: lucy-ritual-away .8s ease forwards;
+}
+@keyframes lucy-mist-clear {
+  0% { opacity: .25; transform: scale(1.15); }
+  40% { opacity: .9; transform: scale(1.7); }
+  100% { opacity: 0; transform: scale(2.3); }
+}
+@keyframes lucy-ritual-away {
+  to { opacity: 0; transform: scale(.9); filter: blur(8px); }
+}
+@keyframes lucy-stage-clear {
+  0% { opacity: 1; }
+  62% { opacity: 1; }
+  100% { opacity: 0; }
+}
 @keyframes lucy-mist-bloom {
   0% { opacity: 0; transform: scale(.2); }
   35% { opacity: .9; }

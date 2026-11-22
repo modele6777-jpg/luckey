@@ -67,7 +67,7 @@ export function LucyOrbCounsel({
   const [draft, setDraft] = useState('');
   const [notice, setNotice] = useState('');
   const [report, setReport] = useState('');
-  const [lit, setLit] = useState(false);
+  const [leaving, setLeaving] = useState(false);
   const flashTimer = useRef<number | null>(null);
   const sessionRef = useRef<LiveVoiceSession | null>(null);
   const linesRef = useRef<Line[]>([]);
@@ -103,6 +103,7 @@ export function LucyOrbCounsel({
     setReport('');
     setReady(false);
     setSpeaking(false);
+    setLeaving(false);
     const appear = window.setTimeout(() => setReady(true), window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 1700);
     return () => {
       window.clearTimeout(appear);
@@ -158,9 +159,19 @@ export function LucyOrbCounsel({
   };
 
   const keepReport = () => {
-    if (closedRef.current) return;
-    closedRef.current = true;
-    onFinishRef.current(report || null);
+    if (closedRef.current || leaving) return;
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduced) {
+      closedRef.current = true;
+      onFinishRef.current(report || null);
+      return;
+    }
+    setLeaving(true);
+    window.setTimeout(() => {
+      if (closedRef.current) return;
+      closedRef.current = true;
+      onFinishRef.current(report || null);
+    }, 1500);
   };
 
   const flashOrb = () => {
@@ -192,7 +203,7 @@ export function LucyOrbCounsel({
 
   return (
     <ScreenPortal>
-      <section className={`lucy-orb-stage ${ready ? 'is-ready' : ''} ${speaking ? 'is-speaking' : ''}`} role="dialog" aria-label="오브 상담">
+      <section className={`lucy-orb-stage ${ready ? 'is-ready' : ''} ${speaking ? 'is-speaking' : ''} ${leaving ? 'is-leaving' : ''}`} role="dialog" aria-label="오브 상담">
         {[0, 1, 2, 3, 4, 5].map(index => (
           <span
             key={index}
