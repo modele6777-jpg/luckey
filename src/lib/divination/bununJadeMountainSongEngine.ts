@@ -5,13 +5,27 @@ export interface BununMountainResult {
   calculatedAtKst: string;
   bununMotif: string;
   companionMotif: string;
+  ridgePhase: string;
   bununInsight: string;
   mountainTone: string;
+  shadowWarning: string;
   reflectionFocus: string;
   ritualAction: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
+
+const RIDGE_PHASES = [
+  '여덟 겹 공명(혼자 고음을 치고 나가기보다 낮은 호흡부터 포개어 맞추는 시기)',
+  '계절 가늠(지금이 씨를 뿌릴 때인지 밭을 쉬게 둘 때인지 먼저 살피는 시기)',
+  '불씨 보존(겉으로 조용해 보여도 내일의 불을 살릴 작은 에너지를 지키는 시기)',
+] as const;
+
+const SHADOW_WARNINGS = [
+  '주변과 화음을 맞추려다 내가 꼭 내야 할 솔직한 목소리까지 지워 버리지 않도록 살피세요.',
+  '메아리가 어떻게 돌아올지 지나치게 재다가 정작 건네야 할 따뜻한 한 마디를 미루지 않도록 점검하세요.',
+  '불씨를 아낀다는 이유로 오늘 당장 움직여야 할 작은 실행까지 멈추고 숨어 버리지 않도록 유의하세요.',
+] as const;
 
 const MOTIFS = [
   {
@@ -81,17 +95,21 @@ export function calculateBununJadeMountainSong(params: {
   const companionOffset = 1 + (stableHash(`${seed}|companion`) % (MOTIFS.length - 1));
   const picked = MOTIFS[idx];
   const companion = MOTIFS[(idx + companionOffset) % MOTIFS.length];
+  const ridgePhase = RIDGE_PHASES[stableHash(`${seed}|phase`) % RIDGE_PHASES.length];
+  const shadowWarning = SHADOW_WARNINGS[stableHash(`${seed}|shadow`) % SHADOW_WARNINGS.length];
 
   return {
-    engineVersion: 'LUCKEY-BUNUN-MOUNTAIN-v2.2.0',
+    engineVersion: 'LUCKEY-BUNUN-MOUNTAIN-v2.3.0',
     calculatedAtKst: formatKstIso(now),
     bununMotif: picked.motif,
     companionMotif: companion.motif,
+    ridgePhase,
     bununInsight: `${picked.insight} (동반 결: ${companion.motif})`,
     mountainTone: picked.tone,
-    reflectionFocus: `부눈족 산맥 화음의 '${picked.motif}'와 동반 결 '${companion.motif}'처럼, 혼자 높은 음을 내려 애쓰기보다 낮은 호흡부터 포개어 공명을 만들어 보세요.`,
-    ritualAction: picked.ritual,
-    reflectiveQuestion: picked.question,
+    shadowWarning,
+    reflectionFocus: `부눈족 산맥 화음의 '${ridgePhase}' 흐름에서 '${picked.motif}'와 동반 결 '${companion.motif}'을 함께 짚어, 낮은 호흡부터 포개어 공명을 만들어 보세요.`,
+    ritualAction: `${picked.ritual} (동반 결: ${companion.motif})`,
+    reflectiveQuestion: `${picked.question} '${ridgePhase}' 국면에서 가장 먼저 맞출 호흡은 무엇인가요?`,
     interpretiveBoundary: '대만 중앙산맥 부눈족의 파시부트부트 다성 합창과 그림 달력 지혜 전통을 바탕으로 한 상징적 성찰 프레임입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.',
   };
 }
@@ -102,7 +120,9 @@ export function formatBununMountainPrompt(res: BununMountainResult): string {
     `- 기준 시각: ${res.calculatedAtKst}`,
     `- 부눈 모티프: ${res.bununMotif} (${res.mountainTone})`,
     `- 동반 결: ${res.companionMotif}`,
+    `- 산맥 국면: ${res.ridgePhase}`,
     `- 중심 통찰: ${res.bununInsight}`,
+    `- 과잉·경계 점검: ${res.shadowWarning}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 오늘의 작은 실천: ${res.ritualAction}`,
     `- 스스로에게 묻기: ${res.reflectiveQuestion}`,

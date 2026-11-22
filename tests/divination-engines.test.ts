@@ -13858,14 +13858,15 @@ test('Uyghur Kutadgu Bilig Wisdom engine: pillar, +09:00 KST, and interpretive b
 
 test('Buryat Baikal Tengri Harmony engine: spirit, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateBuryatBaikalTengriHarmony({ profile, now: new Date('2026-11-20T07:32:00Z'), question: '마음의 물결을 맑게 조율하고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-BURYAT-BAIKAL-v2.2.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-BURYAT-BAIKAL-v2.3.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionSpirit !== rep.baikalSpirit);
+  assert.ok(rep.steppePhase.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatBuryatBaikalPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('부랴트') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionSpirit));
+  assert.ok(prompt.includes('부랴트') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionSpirit) && prompt.includes(rep.steppePhase) && prompt.includes(rep.shadowWarning));
 });
 
 test('Cornish Kernow Sea Granite engine: landmark, +09:00 KST, and interpretive boundary', () => {
@@ -14672,14 +14673,15 @@ test('Lycian Cliff Horizon Calm engine: motif, +09:00 KST, and interpretive boun
 
 test('Byzantine Hagia Light Dome engine: motif, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateByzantineHagiaLightDome({ profile, now: new Date('2026-11-20T20:00:00Z'), question: '마음이 숨 쉴 창을 열고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-BYZANTINE-DOME-v2.2.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-BYZANTINE-DOME-v2.3.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionMotif !== rep.byzantineMotif);
+  assert.ok(rep.domePhase.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatByzantineDomePrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('비잔틴') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionMotif));
+  assert.ok(prompt.includes('비잔틴') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionMotif) && prompt.includes(rep.domePhase) && prompt.includes(rep.shadowWarning));
 });
 
 test('Himba Otjize Desert Poise engine: motif, +09:00 KST, and interpretive boundary', () => {
@@ -14951,14 +14953,15 @@ test('Chiloe Palafito Tide Poise engine: motif, +09:00 KST, and interpretive bou
 
 test('Bunun Jade Mountain Song engine: motif, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateBununJadeMountainSong({ profile, now: new Date('2026-11-20T20:59:00Z'), question: '낮은 호흡부터 포개어 공명을 만들고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-BUNUN-MOUNTAIN-v2.2.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-BUNUN-MOUNTAIN-v2.3.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionMotif !== rep.bununMotif);
+  assert.ok(rep.ridgePhase.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatBununMountainPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('부눈') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionMotif));
+  assert.ok(prompt.includes('부눈') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionMotif) && prompt.includes(rep.ridgePhase) && prompt.includes(rep.shadowWarning));
 });
 
 test('Malagasy Baobab Root Poise engine: motif, +09:00 KST, and interpretive boundary', () => {
