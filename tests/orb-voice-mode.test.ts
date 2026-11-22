@@ -5,6 +5,8 @@ import { startGeminiLiveVoice } from '../src/lib/geminiLiveSession.ts';
 
 const component = readFileSync(new URL('../src/components/lucy/LucyOrbCounsel.tsx', import.meta.url), 'utf8');
 const liveSession = readFileSync(new URL('../src/lib/geminiLiveSession.ts', import.meta.url), 'utf8');
+const packageJson = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8')) as { version: string };
+const changelog = JSON.parse(readFileSync(new URL('../public/changelog.json', import.meta.url), 'utf8')) as Array<{ version: string; summary: string; items?: string[] }>;
 
 class FakeAudioContext {
   static processors: Array<{ onaudioprocess: ((event: AudioProcessingEvent) => void) | null; connect: () => void; disconnect: () => void }> = [];
@@ -56,6 +58,13 @@ test('Orb defaults to hold-to-talk; the input button sends only while held and a
   assert.match(component, /if \(voiceMode === 'hold'\) chooseVoiceMode\('realtime'\)/);
   assert.match(component, /aria-pressed=\{voiceMode === 'realtime'\}[\s\S]*?aria-pressed=\{voiceMode === 'hold'\}/);
   assert.match(liveSession, /if \(!ready \|\| muted \|\| stopped \|\| socket\?\.readyState !== WebSocket\.OPEN\) return/);
+});
+
+test('current app version has public changelog details for the generated version endpoint', () => {
+  const entry = changelog.find(item => item.version === packageJson.version);
+  assert.ok(entry, `public/changelog.json should contain v${packageJson.version}`);
+  assert.ok(entry.summary.trim());
+  assert.ok(entry.items?.length, 'release details should be available to the update notice and version endpoint');
 });
 
 test('Gemini Live hold-to-talk session does not send audio until unmuted and mutes it again on release', async () => {
