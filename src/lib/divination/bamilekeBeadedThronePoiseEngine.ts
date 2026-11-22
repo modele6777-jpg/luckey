@@ -11,10 +11,12 @@ export interface BamilekeBeadedResult {
   calculatedAtKst: string;
   beadPattern: string;
   companionPattern: string;
+  weavingPhase: string;
   craftDignity: string;
   reflectionFocus: string;
   ritualAction: string;
   reflectiveQuestion: string;
+  shadowWarning: string;
   interpretiveBoundary: string;
 }
 
@@ -23,6 +25,20 @@ const PATTERNS = [
   '검정과 흰색, 붉은색 구슬이 엇갈리며 균형을 잡는 리듬',
   '단단한 나무 틀 위를 빈틈없이 감싸는 인내의 꿰기',
   '멀리서 보면 웅장하고 가까이 보면 세밀한 손끝의 정성',
+] as const;
+
+const WEAVING_PHASES = [
+  '틀 세움 국면 — 구슬을 꿰기 전 단단한 나무 틀의 중심선부터 바로 잡는 때',
+  '고른 장력 국면 — 실을 너무 세게도 느슨하게도 당기지 않고 일정한 호흡으로 잇는 때',
+  '색 교차 국면 — 서로 다른 색의 구슬이 한쪽에 몰리지 않게 번갈아 엮는 때',
+  '매듭 마감 국면 — 흩어지기 쉬운 끝자락을 단단히 묶어 형태를 오래 지키게 하는 때',
+] as const;
+
+const SHADOW_WARNINGS = [
+  '작은 구슬 한 알의 어긋남을 지나치게 의식해 전체 흐름을 멈추는 완벽주의를 경계하세요.',
+  '한 가지 색깔(일·걱정·책임)만 쉼 없이 꿰다가 손목과 마음이 함께 지치는 과부하를 경계하세요.',
+  '바탕 틀을 살피지 않고 급하게 실만 당기다 문양이 한쪽으로 쏠리는 조급함을 경계하세요.',
+  '세부 손질에만 매달려 지금 내가 왜 이 문양을 엮고 있는지 큰 그림을 잊는 시야 좁아짐을 경계하세요.',
 ] as const;
 
 const DIGNITIES = [
@@ -71,18 +87,21 @@ export function calculateBamilekeBeadedThrone(input: BamilekeBeadedInput): Bamil
   const seed = hashSeed(seedText);
   const patternIdx = seed % PATTERNS.length;
   const companionOffset = 1 + (hashSeed(`${seedText}|companion`) % (PATTERNS.length - 1));
+  const weavingPhase = WEAVING_PHASES[hashSeed(`${seedText}|phase`) % WEAVING_PHASES.length];
   const beadPattern = PATTERNS[patternIdx];
   const companionPattern = PATTERNS[(patternIdx + companionOffset) % PATTERNS.length];
 
   return {
-    engineVersion: 'LUCKEY-BAMILEKE-BEADS-v2.2.0',
+    engineVersion: 'LUCKEY-BAMILEKE-BEADS-v2.3.0',
     calculatedAtKst: toKstIso(input.now),
     beadPattern,
     companionPattern,
+    weavingPhase,
     craftDignity: DIGNITIES[(seed >>> 3) % DIGNITIES.length],
-    reflectionFocus: `카메룬 서부 초원의 바밀레케 왕국이 수만 알의 작은 구슬을 엮어 왕좌와 의례 조각을 완성하듯, 주 문양('${beadPattern}')과 동반 문양('${companionPattern}')을 겹쳐 작은 일상의 축적과 질서를 살피는 상징적 관점입니다.`,
-    ritualAction: ACTIONS[patternIdx],
+    reflectionFocus: `카메룬 서부 초원의 바밀레케 왕국이 수만 알의 작은 구슬을 엮어 왕좌와 의례 조각을 완성하듯, '${weavingPhase}' 위에서 주 문양('${beadPattern}')과 동반 문양('${companionPattern}')을 겹쳐 작은 일상의 축적과 질서를 살피는 상징적 관점입니다.`,
+    ritualAction: `${ACTIONS[patternIdx]} (${weavingPhase.split('—')[0].trim()} 기준)`,
     reflectiveQuestion: QUESTIONS[patternIdx],
+    shadowWarning: SHADOW_WARNINGS[patternIdx],
     interpretiveBoundary: '개인 점수·심리 진단·미래 예측이 아닙니다. 자기 성찰을 돕기 위한 상징적 관점 안내입니다.',
   };
 }
@@ -93,10 +112,12 @@ export function formatBamilekeBeadedPrompt(res: BamilekeBeadedResult): string {
     `기준 시각: ${res.calculatedAtKst}`,
     `구슬 문양: ${res.beadPattern}`,
     `동반 문양: ${res.companionPattern}`,
+    `꿰기 국면: ${res.weavingPhase}`,
     `공예 품격: ${res.craftDignity}`,
     `성찰 초점: ${res.reflectionFocus}`,
     `권장 의식: ${res.ritualAction}`,
     `성찰 질문: ${res.reflectiveQuestion}`,
+    `과잉 경계: ${res.shadowWarning}`,
     `경계: ${res.interpretiveBoundary}`,
   ].join('\n');
 }
