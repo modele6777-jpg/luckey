@@ -197,10 +197,10 @@ export default function LeftSidebarNav() {
   const unfoldedRef = useRef(screenUnfolded);
   unfoldedRef.current = screenUnfolded;
   // 🍀 펼친 화면은 목록을 닫지 않는다. 접힌 화면만 럭키에서 나갈 때 접힌다.
+  // 접힌 화면은 클로버 목록이 접힌 상태가 기본이다 (Lucky 채널에 있어도). 펼친 화면은 늘 펼쳐져 있다.
   const [isChannelsOpen, setIsChannelsOpen] = useState(() => {
     if (typeof window === 'undefined') return false;
-    if (isDualPaneLayout()) return true;
-    return isLuckyListPath(window.location.pathname || '/');
+    return isDualPaneLayout();
   });
   useEffect(() => {
     const openForLucky = () => setIsChannelsOpen(true);
@@ -325,10 +325,12 @@ export default function LeftSidebarNav() {
       setIsChannelsOpen(true);
       return;
     }
-    if (luckyPathRef.current === cleanPath) return;
+    // 펼쳤다가 다시 접으면 접힌 화면의 기본값(접힘)으로 돌아간다. 경로가 바뀌어도 저절로 펼치지 않는다.
+    if (unfoldedBeforeRef.current) setIsChannelsOpen(false);
     luckyPathRef.current = cleanPath;
-    if (isLuckyListPath(cleanPath)) setIsChannelsOpen(true);
   }, [cleanPath, screenUnfolded]);
+  const unfoldedBeforeRef = useRef(screenUnfolded);
+  useEffect(() => { unfoldedBeforeRef.current = screenUnfolded; }, [screenUnfolded]);
   const { resolvedTheme } = useTheme();
   const reduceMotion = useReducedMotion();
 
@@ -693,12 +695,33 @@ export default function LeftSidebarNav() {
                       <motion.div
                         id="prism-channel-icons"
                         className="refined-prism-icons"
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: 'auto', opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        transition={{ duration: reduceMotion ? 0 : 0.2 }}
+                        initial="closed"
+                        animate="open"
+                        exit="closed"
+                        variants={{
+                          closed: { height: 0, opacity: 0, transition: { duration: reduceMotion ? 0 : 0.18 } },
+                          open: {
+                            height: 'auto',
+                            opacity: 1,
+                            transition: reduceMotion
+                              ? { duration: 0 }
+                              : { height: { type: 'spring', stiffness: 380, damping: 30 }, opacity: { duration: 0.12 }, staggerChildren: 0.045, delayChildren: 0.03 },
+                          },
+                        }}
                       >
-                        {PRISM_CHANNELS.map(renderNavButton)}
+                        {/* 🍀 펼칠 때 7대 채널 아이콘이 하나씩 "촥" 튀어나온다 */}
+                        {PRISM_CHANNELS.map((channel) => (
+                          <motion.div
+                            key={channel.path}
+                            data-prism-channel-item
+                            variants={{
+                              closed: { opacity: 0, scale: 0.4, y: -10 },
+                              open: { opacity: 1, scale: 1, y: 0, transition: reduceMotion ? { duration: 0 } : { type: 'spring', stiffness: 520, damping: 22 } },
+                            }}
+                          >
+                            {renderNavButton(channel)}
+                          </motion.div>
+                        ))}
                       </motion.div>
                     )}
                   </AnimatePresence>
