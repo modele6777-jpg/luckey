@@ -23,7 +23,7 @@ import {
   EARTHLY_BRANCHES
 } from '../sajuAnalysis';
 
-export const TWELVE_SPIRITS_ENGINE_VERSION = 'LUCKEY-SPIRIT-v2.2.0';
+export const TWELVE_SPIRITS_ENGINE_VERSION = 'LUCKEY-SPIRIT-v2.3.0';
 
 function formatSpiritsKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -264,6 +264,13 @@ export interface TwelveSpiritsResult {
   };
 
   summary: string;
+  questionTopic: string;
+  spiritPhase: {
+    phase: 'breakthrough_surge' | 'reflective_shelter' | 'harmonic_stage';
+    titleKo: string;
+    description: string;
+  };
+  shadowWarning: string;
   secondarySpirit?: SpiritMetadata;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
@@ -364,8 +371,39 @@ export function calculateTwelveSpiritsCycle(params?: {
 
   const calculatedAtKst = formatSpiritsKstTimestamp(now);
   const q = (params?.question || '').trim();
+  const questionTopic = !q
+    ? '일상·균형'
+    : /사랑|연애|관계|결혼|사람|이별|가족/.test(q)
+      ? '관계·협업'
+      : /일|직장|사업|돈|재물|이직|합격|시험|전략/.test(q)
+        ? '일·돌파'
+        : /이동|여행|이사|변화|도전|새로/.test(q)
+          ? '이동·전환'
+          : '내면·정비';
+
+  const spiritPhase: TwelveSpiritsResult['spiritPhase'] =
+    primarySpirit.category === '추진·돌파' || primarySpirit.category === '이동·변화'
+      ? {
+          phase: 'breakthrough_surge',
+          titleKo: '전진·돌파 가속 국면',
+          description: '결단과 이동의 기운이 강해 막힌 흐름을 정면으로 열어젖히기 좋은 시기',
+        }
+      : primarySpirit.category === '보호·성찰' || primarySpirit.category === '철학·창작'
+        ? {
+            phase: 'reflective_shelter',
+            titleKo: '내실·성찰 축적 국면',
+            description: '외부 확장보다 내면의 전략·창작·체력 비축에 집중할 때 힘이 모이는 시기',
+          }
+        : {
+            phase: 'harmonic_stage',
+            titleKo: '매력·안정 조율 국면',
+            description: '사람의 시선과 사회적 신뢰가 자연스럽게 모여 무대를 넓히기 좋은 시기',
+          };
+
+  const shadowWarning = `과잉 경계: ${primarySpirit.name}(${primarySpirit.hanja}) 기운이 과해지면 '${primarySpirit.trapToAvoid}' 함정으로 기울 수 있으니 속도를 조절하세요.`;
+
   const reflectiveQuestion = q
-    ? `‘${q}’ 앞에서 오늘 내면의 ${primarySpirit.name}(${primarySpirit.hanja})과 대외적 ${secondarySpirit.name}(${secondarySpirit.hanja})의 기운 중 어느 쪽 역할에 더 무게를 두고 움직이겠습니까?`
+    ? `‘${q}’(${questionTopic}) 앞에서 오늘 내면의 ${primarySpirit.name}(${primarySpirit.hanja})과 대외적 ${secondarySpirit.name}(${secondarySpirit.hanja})의 기운 중 어느 쪽 역할에 더 무게를 두고 움직이겠습니까?`
     : `오늘 ${primarySpirit.name}(${primarySpirit.hanja})이 열어 주는 힘과 ${secondarySpirit.name}(${secondarySpirit.hanja})이 비추는 무대 사이에서 가장 먼저 선택할 행동은 무엇입니까?`;
   const interpretiveBoundary =
     '해석 경계: 12신살은 삼합 궤도와 일진·세운의 지지 순환을 통해 오늘의 태도와 행동 역할을 비추는 명리적·상징적 나침반이며, 개인의 자유 의지나 구체적 성패를 단정하지 않습니다.';
@@ -373,8 +411,8 @@ export function calculateTwelveSpiritsCycle(params?: {
   const reflectionFocus = `내면 궤도 ${primarySpirit.name}(${primarySpirit.hanja})과 대외 궤도 ${secondarySpirit.name}(${secondarySpirit.hanja})의 균형 잡힌 역할 선택`;
   const twelveSpiritsSynthesisMatrix = {
     dominantTension: `${primarySpirit.name}(${primarySpirit.hanja}) ↔ ${secondarySpirit.name}(${secondarySpirit.hanja})`,
-    alignmentState: `${primarySpirit.nature} · ${todayDaySpirit.branchKo} 일진`,
-    integratedAction: `${primarySpirit.actionGuidance}${q ? ` [질문 맥락: ${q}]` : ''}`,
+    alignmentState: `${spiritPhase.titleKo} · ${primarySpirit.nature} · ${todayDaySpirit.branchKo} 일진`,
+    integratedAction: `${primarySpirit.actionGuidance}${q ? ` [질문 맥락(${questionTopic}): ${q}]` : ''}`,
   };
 
   return {
@@ -388,6 +426,9 @@ export function calculateTwelveSpiritsCycle(params?: {
     annualSeunSpirit,
     todayStrategy,
     summary,
+    questionTopic,
+    spiritPhase,
+    shadowWarning,
     secondarySpirit,
     reflectiveQuestion,
     interpretiveBoundary,
@@ -408,12 +449,14 @@ export function formatTwelveSpiritsPrompt(res: TwelveSpiritsResult): string {
     : '';
 
   return `[사주 12신살(겁재천지년월망장반역육화) 완전 순환 궤도 리포트 (엔진: ${res.engineVersion} | ${res.calculatedAtKst})]
+- 질문 맥락: ${res.questionTopic} · 순환 국면: ${res.spiritPhase.titleKo} (${res.spiritPhase.description})
 - 오늘 일진(${res.todayDaySpirit.branchKo}) 배속:
   • 내면/심리 궤도(일지 기준): [${dSpirit.name}(${dSpirit.hanja})] - ${dSpirit.alias} (${dSpirit.nature})
   • 대외/사회 궤도(년지 기준): [${ySpirit.name}(${ySpirit.hanja})] - ${ySpirit.alias} (${ySpirit.nature})
 - 오늘 추천 페르소나: ${res.todayStrategy.recommendedPersona}
 - 오늘 발휘할 슈퍼파워: ${res.todayStrategy.superpowerToUse}
 - 피해야 할 함정: ${res.todayStrategy.trapToAvoid}
+- ${res.shadowWarning}
 - 하루 실천 지침: ${res.todayStrategy.coreAdvice}${matrixLine}
 - 성찰 질문: ${res.reflectiveQuestion}
 - 실천 의례: ${res.ritualAction}
