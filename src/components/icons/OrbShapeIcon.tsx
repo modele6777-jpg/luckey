@@ -33,17 +33,11 @@ export function OrbShapeIcon({
       className={`shrink-0 select-none ${className}`}
       xmlns="http://www.w3.org/2000/svg"
     >
-      {/* 1. 크리스탈 구체 외곽 메인 바디 원 (Main Sphere Outline) */}
-      <circle cx="12" cy="12" r="9" />
-
-      {/* 2. 상단 글래스 렌즈 곡면 반사광 (Curved Specular Highlight Arc) */}
-      <path d="M8 8a5.5 5.5 0 0 1 8 0" strokeWidth={Math.max(strokeWidth - 0.5, 1.2)} />
-
-      {/* 3. 구체 중심 싱귤래리티 코어 (Center Core Dot) */}
-      <circle cx="12" cy="12" r="1.75" fill={color} stroke="none" />
-
-      {/* 4. 하단 림 반사광 미세 아크 (Bottom Rim Reflection Arc) */}
-      <path d="M9.5 16.5a4 4 0 0 0 5 0" strokeWidth={Math.max(strokeWidth - 0.7, 1)} strokeOpacity="0.75" />
+      <circle cx="12" cy="8" r="5.25" />
+      <path d="M9.3 6.5a3.3 3.3 0 0 1 5 0" strokeWidth={Math.max(strokeWidth - 0.5, 1.2)} />
+      <circle cx="12" cy="8.4" r="0.9" fill={color} stroke="none" />
+      <path d="M9.3 13.7h5.4l1.6 4.7H7.7l1.6-4.7z" />
+      <path d="M8.6 16.2h6.8" strokeWidth={Math.max(strokeWidth - 0.6, 1)} />
     </svg>
   );
 }
