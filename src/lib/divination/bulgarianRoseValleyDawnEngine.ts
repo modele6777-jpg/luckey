@@ -5,13 +5,27 @@ export interface BulgarianRoseResult {
   calculatedAtKst: string;
   roseMotif: string;
   companionMotif: string;
+  harvestPhase: string;
   bulgarianInsight: string;
   valleyTone: string;
+  shadowWarning: string;
   reflectionFocus: string;
   ritualAction: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
+
+const HARVEST_PHASES = [
+  '새벽 수확(가장 맑고 방해 없는 첫 시간대에 핵심 일감을 따는 시기)',
+  '구리 증류(흩어진 시도와 메모를 모아 순도 높은 한 문장으로 거르는 시기)',
+  '산맥 울타리(불필요한 자극과 찬바람을 막아 여린 흐름을 보호하는 시기)',
+] as const;
+
+const SHADOW_WARNINGS = [
+  '가장 완벽한 새벽 타이밍만 기다리다가 지금 바로 손댈 수 있는 오후의 실행까지 놓치지 않도록 살피세요.',
+  '불필요한 자극을 막으려 세운 울타리가 필요한 소통과 피드백까지 막는 고립으로 굳지 않도록 점검하세요.',
+  '핵심 한 방울을 증류하는 데만 마음을 쓰다가 오늘 바로 건네야 할 따뜻한 행동과 기록을 미루지 않도록 유의하세요.',
+] as const;
 
 const MOTIFS = [
   {
@@ -81,17 +95,21 @@ export function calculateBulgarianRoseValleyDawn(params: {
   const companionOffset = 1 + (stableHash(`${seed}|companion`) % (MOTIFS.length - 1));
   const picked = MOTIFS[idx];
   const companion = MOTIFS[(idx + companionOffset) % MOTIFS.length];
+  const harvestPhase = HARVEST_PHASES[stableHash(`${seed}|phase`) % HARVEST_PHASES.length];
+  const shadowWarning = SHADOW_WARNINGS[stableHash(`${seed}|shadow`) % SHADOW_WARNINGS.length];
 
   return {
-    engineVersion: 'LUCKEY-BULGARIAN-ROSE-v2.2.0',
+    engineVersion: 'LUCKEY-BULGARIAN-ROSE-v2.3.0',
     calculatedAtKst: formatKstIso(now),
     roseMotif: picked.motif,
     companionMotif: companion.motif,
+    harvestPhase,
     bulgarianInsight: `${picked.insight} (동반 결: ${companion.motif})`,
     valleyTone: picked.tone,
-    reflectionFocus: `카잔러크 장미 계곡의 '${picked.motif}'와 동반 결 '${companion.motif}'처럼, 가장 맑은 시간대를 골라 정성껏 핵심 한 방울을 모아 보세요.`,
-    ritualAction: picked.ritual,
-    reflectiveQuestion: picked.question,
+    shadowWarning,
+    reflectionFocus: `카잔러크 장미 계곡의 '${harvestPhase}' 흐름에서 '${picked.motif}'와 동반 결 '${companion.motif}'을 함께 짚어, 가장 맑은 시간대에 핵심 한 방울을 모아 보세요.`,
+    ritualAction: `${picked.ritual} (동반 결: ${companion.motif})`,
+    reflectiveQuestion: `${picked.question} '${harvestPhase}' 국면에서 내가 먼저 가꿀 한 가지는 무엇인가요?`,
     interpretiveBoundary: '불가리아 카잔러크 장미 계곡의 새벽 수확·구리 증류 장인 지혜 전통을 바탕으로 한 상징적 성찰 프레임입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.',
   };
 }
@@ -102,7 +120,9 @@ export function formatBulgarianRosePrompt(res: BulgarianRoseResult): string {
     `- 기준 시각: ${res.calculatedAtKst}`,
     `- 장미 계곡 모티프: ${res.roseMotif} (${res.valleyTone})`,
     `- 동반 결: ${res.companionMotif}`,
+    `- 수확 국면: ${res.harvestPhase}`,
     `- 중심 통찰: ${res.bulgarianInsight}`,
+    `- 과잉·경계 점검: ${res.shadowWarning}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 오늘의 작은 실천: ${res.ritualAction}`,
     `- 스스로에게 묻기: ${res.reflectiveQuestion}`,

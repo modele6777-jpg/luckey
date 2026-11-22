@@ -5,13 +5,27 @@ export interface BukharaTileResult {
   calculatedAtKst: string;
   bukharaMotif: string;
   companionMotif: string;
+  craftPhase: string;
   bukharaInsight: string;
   oasisTone: string;
+  shadowWarning: string;
   reflectionFocus: string;
   ritualAction: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
+
+const CRAFT_PHASES = [
+  '벽돌 축적(거창한 계획보다 오늘 제자리에 놓일 작은 리듬을 쌓는 시기)',
+  '수면 성찰(잠시 속도를 늦추고 오아시스 연못에 마음의 결을 비춰 보는 시기)',
+  '격자 개방(단단한 경계 안에서 숨통과 새로운 시선이 드나들 창을 여는 시기)',
+] as const;
+
+const SHADOW_WARNINGS = [
+  '작은 타일 한 조각을 완벽히 맞추느라 전체 판의 흐름과 마감 시점을 놓치지 않도록 살피세요.',
+  '연못 앞에 멈춰 마음을 비추어 보는 시간이 현실의 실행을 미루는 핑계가 되지 않도록 점검하세요.',
+  '나를 지키는 벽돌 담을 너무 높게 쌓아 필요한 도움과 대화가 드나들 틈까지 막지 않도록 유의하세요.',
+] as const;
 
 const MOTIFS = [
   {
@@ -81,17 +95,21 @@ export function calculateBukharaTileMosaicCalm(params: {
   const companionOffset = 1 + (stableHash(`${seed}|companion`) % (MOTIFS.length - 1));
   const picked = MOTIFS[idx];
   const companion = MOTIFS[(idx + companionOffset) % MOTIFS.length];
+  const craftPhase = CRAFT_PHASES[stableHash(`${seed}|phase`) % CRAFT_PHASES.length];
+  const shadowWarning = SHADOW_WARNINGS[stableHash(`${seed}|shadow`) % SHADOW_WARNINGS.length];
 
   return {
-    engineVersion: 'LUCKEY-BUKHARA-TILE-v2.2.0',
+    engineVersion: 'LUCKEY-BUKHARA-TILE-v2.3.0',
     calculatedAtKst: formatKstIso(now),
     bukharaMotif: picked.motif,
     companionMotif: companion.motif,
+    craftPhase,
     bukharaInsight: `${picked.insight} (동반 결: ${companion.motif})`,
     oasisTone: picked.tone,
-    reflectionFocus: `부하라 타일 모자이크의 '${picked.motif}'와 동반 결 '${companion.motif}'처럼, 손바닥만 한 작은 조각 하나를 제자리에 맞추는 정성으로 오늘의 균형을 세워 보세요.`,
-    ritualAction: picked.ritual,
-    reflectiveQuestion: picked.question,
+    shadowWarning,
+    reflectionFocus: `부하라 타일 모자이크의 '${craftPhase}' 흐름에서 '${picked.motif}'와 동반 결 '${companion.motif}'을 함께 맞춰, 작은 조각 하나를 제자리에 두는 정성으로 오늘의 균형을 세워 보세요.`,
+    ritualAction: `${picked.ritual} (동반 결: ${companion.motif})`,
+    reflectiveQuestion: `${picked.question} '${craftPhase}' 국면에서 가장 먼저 제자리에 둘 한 조각은 무엇인가요?`,
     interpretiveBoundary: '우즈베키스탄 부하라 오아시스 도시의 벽돌 건축과 타일 기하학 전통을 바탕으로 한 상징적 성찰 프레임입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.',
   };
 }
@@ -102,7 +120,9 @@ export function formatBukharaTilePrompt(res: BukharaTileResult): string {
     `- 기준 시각: ${res.calculatedAtKst}`,
     `- 부하라 모티프: ${res.bukharaMotif} (${res.oasisTone})`,
     `- 동반 결: ${res.companionMotif}`,
+    `- 공예 국면: ${res.craftPhase}`,
     `- 중심 통찰: ${res.bukharaInsight}`,
+    `- 과잉·경계 점검: ${res.shadowWarning}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 오늘의 작은 실천: ${res.ritualAction}`,
     `- 스스로에게 묻기: ${res.reflectiveQuestion}`,
