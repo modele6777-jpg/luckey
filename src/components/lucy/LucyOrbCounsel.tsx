@@ -154,6 +154,8 @@ export function LucyOrbCounsel({
   const [notice, setNotice] = useState('');
   const [micPermissionBusy, setMicPermissionBusy] = useState(false);
   const [micUnavailable, setMicUnavailable] = useState(false);
+  // 마이크 권한을 이미 받았으면 '마이크 권한 요청' 버튼은 숨긴다.
+  const [micGranted, setMicGranted] = useState(false);
   const [report, setReport] = useState('');
   const [leaving, setLeaving] = useState(false);
   const [dice, setDice] = useState<[number, number]>([1, 6]);
@@ -224,6 +226,16 @@ export function LucyOrbCounsel({
     setNotice('');
     setMicPermissionBusy(false);
     setMicUnavailable(false);
+    setMicGranted(false);
+    // 이미 허용된 마이크라면 처음부터 권한 요청 버튼을 보이지 않는다 (지원하는 브라우저에서만).
+    try {
+      void navigator.permissions?.query({ name: 'microphone' as PermissionName })
+        .then(status => {
+          if (status.state === 'granted') setMicGranted(true);
+          status.onchange = () => setMicGranted(status.state === 'granted');
+        })
+        .catch(() => undefined);
+    } catch { /* Permissions API unavailable */ }
     setReport('');
     setReady(false);
     setSpeaking(false);
@@ -377,6 +389,7 @@ export function LucyOrbCounsel({
     try {
       const stream = await request;
       micPrime.current = Promise.resolve(stream);
+      setMicGranted(true);
       setNotice('마이크 권한이 허용됐어요. 연결을 준비해 두었습니다. 아래에서 마스터를 선택하면 음성 상담을 시작합니다.');
     } catch (error) {
       micPrime.current = null;
@@ -834,7 +847,7 @@ export function LucyOrbCounsel({
             </div>
           )}
           {notice && <p role="status">{notice}</p>}
-          {phase === 'pick' && (
+          {phase === 'pick' && !micGranted && (
             <div className="lucy-orb-permission-actions">
               <button type="button" className="lucy-orb-permission" disabled={micPermissionBusy || rolling} onClick={() => void requestMicPermission()}>
                 {micPermissionBusy ? '권한 확인 중…' : '마이크 권한 요청'}
