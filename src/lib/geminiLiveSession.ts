@@ -6,6 +6,7 @@ export type LiveVoiceSession = {
   stop: () => void;
   setMuted: (muted: boolean) => void;
   interrupt: () => void;
+  sendText: (text: string) => boolean;
 };
 
 const LIVE_MODEL = 'gemini-3.8-live';
@@ -116,6 +117,22 @@ export function startGeminiLiveVoice(handlers: LiveVoiceHandlers): LiveVoiceSess
     markSpeaking();
   };
 
+  let pendingText = '';
+
+  const sendTyped = (text: string) => {
+    const line = text.replace(/\s+/g, ' ').trim().slice(0, 500);
+    if (!line || stopped || socket?.readyState !== WebSocket.OPEN) return false;
+    stopPlayback();
+    socket.send(JSON.stringify({
+      clientContent: {
+        turns: [{ role: 'user', parts: [{ text: line }] }],
+        turnComplete: true,
+      },
+    }));
+    handlers.onState?.('listening');
+    return true;
+  };
+
   const handleMessage = (raw: string) => {
     let message: any;
     try { message = JSON.parse(raw); } catch { return; }
@@ -127,6 +144,11 @@ export function startGeminiLiveVoice(handlers: LiveVoiceHandlers): LiveVoiceSess
       ready = true;
       if (setupTimer) clearTimeout(setupTimer);
       handlers.onState?.('listening');
+      if (pendingText) {
+        const queued = pendingText;
+        pendingText = '';
+        sendTyped(queued);
+      }
       return;
     }
     const content = message.serverContent || message.server_content;
@@ -246,5 +268,14 @@ export function startGeminiLiveVoice(handlers: LiveVoiceHandlers): LiveVoiceSess
     stop,
     setMuted: (next) => { muted = next; },
     interrupt: stopPlayback,
+    sendText: (text: string) => {
+      const line = text.replace(/\s+/g, ' ').trim().slice(0, 500);
+      if (!line || stopped) return false;
+      if (!ready || socket?.readyState !== WebSocket.OPEN) {
+        pendingText = line;
+        return true;
+      }
+      return sendTyped(line);
+    },
   };
 }

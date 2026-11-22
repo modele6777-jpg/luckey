@@ -30,7 +30,6 @@ import { playTTS, playTTSInChunks, playQAndATTS, stopTTS, useTTSActive, subscrib
 import { unlockAudioPlayback, primeTTSAudioElement } from '@/lib/audio';
 import { playAudioHaptic } from '@/lib/audioHaptics';
 import { calculateDetailedSaju } from '@/lib/sajuAnalysis';
-import { drawLucyTarotCards } from '@/utils/tarotDetector';
 import { getLocalDateKey } from '@/lib/rebibleStorage';
 import ReactMarkdown from 'react-markdown';
 import { LucyProTypewriter } from '@/components/LucyProTypewriter';
@@ -3613,6 +3612,14 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
     if (!rawMsg.trim() && !attachedImage) return;
 
     const userCleanText = rawMsg.trim();
+
+    if (!fromVoice && !attachedImage && !forcedChannels?.length && !pickedTarotCards?.length && liveVoiceRef.current?.sendText(userCleanText)) {
+      setInput('');
+      setSpeechInterim('');
+      setSpeechTranscript(userCleanText);
+      speechTranscriptRef.current = userCleanText;
+      return;
+    }
 
     if (fromVoice && isVoiceModeRef.current && userCleanText && !attachedImage) {
       setInput('');
