@@ -223,6 +223,7 @@ html:root .channel-page [data-page-brand="true"].duo-page-brand {
   display: flex !important;
   align-items: center !important;
   overflow: hidden;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.10) !important;
 }
 .channel-page .duo-page-title {
   top: 0 !important;
