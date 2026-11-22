@@ -94,7 +94,8 @@ export async function probeVertex(models: string[]): Promise<{ configured: boole
   if (!setup) return { configured: false, results: [] };
   const results = await Promise.all(models.map(async (model): Promise<VertexProbeResult> => {
     try {
-      await vertexGenerateText(model, [{ role: 'user', parts: [{ text: 'OK라고만 답해.' }] }], { maxOutputTokens: 16 }, { timeoutMs: 15000, setup });
+      // 생각하는 모델은 짧은 한도를 생각에 다 써서 빈 답을 낸다: 한도를 넉넉히 준다.
+      await vertexGenerateText(model, [{ role: 'user', parts: [{ text: 'OK라고만 답해.' }] }], { maxOutputTokens: 1024 }, { timeoutMs: 20000, setup });
       return { model, ok: true };
     } catch (err: any) {
       return { model, ok: false, status: err?.status, problem: err?.problem || 'other', reason: sanitizeReason(String(err?.message || err)) };
