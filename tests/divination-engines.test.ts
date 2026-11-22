@@ -16322,5 +16322,23 @@ test('buildUserFifteenToolsDigest integrates 9th-round Tarot past/future insight
   assert.ok(!/tarotVitalityScore|guardScore|planetaryHarmonyScore|leadershipHonor|wealthProsperity|wisdomFortitude|innovationBreakthrough/.test(digest));
 });
 
+test('buildUserFifteenToolsDigest integrates 9th-round Vedic dasha span/next mahadasha/purushartha balance, Liuren 4-lesson yang/transmissions meanings, and Qimen keypoint/tonggi notes without raw scores', () => {
+  const profile: any = {
+    basic: {
+      name: '제제',
+      birthdate: '1994-01-24',
+      birthtime: '10:30',
+      calendarType: 'solar',
+      isLeapMonth: false,
+      gender: 'male',
+    },
+  };
+  const digest = buildUserFifteenToolsDigest(profile, new Date('2026-11-23T06:18:00+09:00'));
+  assert.ok(digest.includes('차기 대운 ') && digest.includes('우세 ') && digest.includes('세 기준'));
+  assert.ok(digest.includes('삼전 요해(초전:') && digest.includes('양신 구도(주체 제1과'));
+  assert.ok(digest.includes('거점 요해(세효:') && digest.includes('·천'));
+  assert.ok(!/dharmaWeight|arthaWeight|kamaWeight|mokshaWeight|fourLessonsHarmonyScore|actionMomentumIndex|decisionScore|riskIndex|tonggi\.score/.test(digest));
+});
+
 
 
