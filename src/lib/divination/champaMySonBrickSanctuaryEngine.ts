@@ -5,13 +5,27 @@ export interface ChampaMySonResult {
   calculatedAtKst: string;
   brickMotif: string;
   companionMotif: string;
+  sanctuaryPhase: string;
   mySonInsight: string;
   monsoonTone: string;
+  shadowWarning: string;
   reflectionFocus: string;
   ritualAction: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
+
+const SANCTUARY_PHASES = [
+  '벽돌 정돈(요란한 포장 대신 기본기 한 장을 반듯하게 맞춰 세우는 시기)',
+  '물길 연결(혼자 쌓아 둔 재능과 생각을 바깥 통로로 가볍게 이어 주는 시기)',
+  '문턱 휴식(소란을 바깥에 두고 고요한 성소 안으로 들어 숨을 고르는 시기)',
+] as const;
+
+const SHADOW_WARNINGS = [
+  '기본기를 다듬고 정돈하는 데에만 매달리다가 정작 바깥세상과 연결해 보여 줄 시기를 늦추지 않도록 살피세요.',
+  '바깥 물길을 열고 소통하느라 내 안의 고요한 칼란 탑 문턱을 지키는 쉼까지 놓치지 않도록 점검하세요.',
+  '어깨에 힘을 빼고 흐름에 맡긴다는 이유로 반드시 내가 쥐어야 할 마감과 책임선까지 느슨해지지 않도록 유의하세요.',
+] as const;
 
 const MOTIFS = [
   {
@@ -81,17 +95,21 @@ export function calculateChampaMySonBrickSanctuary(params: {
   const companionOffset = 1 + (stableHash(`${seed}|companion`) % (MOTIFS.length - 1));
   const picked = MOTIFS[idx];
   const companion = MOTIFS[(idx + companionOffset) % MOTIFS.length];
+  const sanctuaryPhase = SANCTUARY_PHASES[stableHash(`${seed}|phase`) % SANCTUARY_PHASES.length];
+  const shadowWarning = SHADOW_WARNINGS[stableHash(`${seed}|shadow`) % SHADOW_WARNINGS.length];
 
   return {
-    engineVersion: 'LUCKEY-CHAMPA-MYSON-v2.2.0',
+    engineVersion: 'LUCKEY-CHAMPA-MYSON-v2.3.0',
     calculatedAtKst: formatKstIso(now),
     brickMotif: picked.motif,
     companionMotif: companion.motif,
+    sanctuaryPhase,
     mySonInsight: `${picked.insight} (동반 결: ${companion.motif})`,
     monsoonTone: picked.tone,
-    reflectionFocus: `참파 미선 성소 지혜의 '${picked.motif}'와 동반 결 '${companion.motif}'처럼, 겉을 요란하게 꾸미기보다 오늘 내 기본기 한 장을 빈틈없이 반듯하게 올려 보세요.`,
-    ritualAction: picked.ritual,
-    reflectiveQuestion: picked.question,
+    shadowWarning,
+    reflectionFocus: `참파 미선 성소 지혜의 '${sanctuaryPhase}' 흐름에서 '${picked.motif}'와 동반 결 '${companion.motif}'을 함께 짚어, 기본기 한 장을 빈틈없이 반듯하게 올려 보세요.`,
+    ritualAction: `${picked.ritual} (동반 결: ${companion.motif})`,
+    reflectiveQuestion: `${picked.question} '${sanctuaryPhase}' 국면에서 가장 먼저 반듯하게 놓을 벽돌은 무엇인가요?`,
     interpretiveBoundary: '베트남 중부 참파(Champa) 미선 성소의 붉은 벽돌 건축과 투본 강 조화 지혜를 바탕으로 한 상징적 성찰 프레임입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.',
   };
 }
@@ -102,7 +120,9 @@ export function formatChampaMySonPrompt(res: ChampaMySonResult): string {
     `- 기준 시각: ${res.calculatedAtKst}`,
     `- 성소 상징: ${res.brickMotif} (${res.monsoonTone})`,
     `- 동반 결: ${res.companionMotif}`,
+    `- 성소 국면: ${res.sanctuaryPhase}`,
     `- 중심 통찰: ${res.mySonInsight}`,
+    `- 과잉·경계 점검: ${res.shadowWarning}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 오늘의 작은 실천: ${res.ritualAction}`,
     `- 스스로에게 묻기: ${res.reflectiveQuestion}`,

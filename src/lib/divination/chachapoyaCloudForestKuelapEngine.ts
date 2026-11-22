@@ -5,13 +5,27 @@ export interface ChachapoyaKuelapResult {
   calculatedAtKst: string;
   cloudCitadel: string;
   companionCitadel: string;
+  cloudPhase: string;
   kuelapInsight: string;
   andesCloudTone: string;
+  shadowWarning: string;
   reflectionFocus: string;
   ritualAction: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
+
+const CLOUD_PHASES = [
+  '원형 포용(날카로운 모서리 대신 바람을 감싸 돌리며 충격을 줄이는 시기)',
+  '운해 조망(발밑 안개에서 한 걸음 올라서서 전체 지형을 다시 읽는 시기)',
+  '물안개 호흡(중간에 한 번 꺾여 숨을 고르며 지금 손안의 자원을 키우는 시기)',
+] as const;
+
+const SHADOW_WARNINGS = [
+  '모서리 없이 둥글게 감싸려다 분명하게 바로잡아야 할 원칙선까지 흐려지지 않도록 살피세요.',
+  '안개 위에서 큰 지형만 내려다보느라 오늘 당장 발밑에서 건너야 할 작은 돌다리를 놓치지 않도록 점검하세요.',
+  '완벽한 토양이 올 때까지 기다리거나 꺾임 마디를 길게 두다가 실행의 흐름 자체가 식어 버리지 않도록 유의하세요.',
+] as const;
 
 const CITADELS = [
   {
@@ -81,17 +95,21 @@ export function calculateChachapoyaCloudForestKuelap(params: {
   const companionOffset = 1 + (stableHash(`${seed}|companion`) % (CITADELS.length - 1));
   const picked = CITADELS[idx];
   const companion = CITADELS[(idx + companionOffset) % CITADELS.length];
+  const cloudPhase = CLOUD_PHASES[stableHash(`${seed}|phase`) % CLOUD_PHASES.length];
+  const shadowWarning = SHADOW_WARNINGS[stableHash(`${seed}|shadow`) % SHADOW_WARNINGS.length];
 
   return {
-    engineVersion: 'LUCKEY-CHACHAPOYA-KUELAP-v2.2.0',
+    engineVersion: 'LUCKEY-CHACHAPOYA-KUELAP-v2.3.0',
     calculatedAtKst: formatKstIso(now),
     cloudCitadel: picked.citadel,
     companionCitadel: companion.citadel,
+    cloudPhase,
     kuelapInsight: `${picked.insight} (동반 결: ${companion.citadel})`,
     andesCloudTone: picked.tone,
-    reflectionFocus: `차차포야스 구름숲 지혜의 '${picked.citadel}'와 동반 결 '${companion.citadel}'처럼, 날카롭게 각을 세우기보다 둥근 돌집처럼 바람을 흘려보내며 높은 시야를 되찾아 보세요.`,
-    ritualAction: picked.ritual,
-    reflectiveQuestion: picked.question,
+    shadowWarning,
+    reflectionFocus: `차차포야스 구름숲 지혜의 '${cloudPhase}' 흐름에서 '${picked.citadel}'와 동반 결 '${companion.citadel}'을 함께 짚어, 바람을 흘려보내며 높은 시야를 되찾아 보세요.`,
+    ritualAction: `${picked.ritual} (동반 결: ${companion.citadel})`,
+    reflectiveQuestion: `${picked.question} '${cloudPhase}' 국면에서 가장 먼저 고를 시야는 무엇인가요?`,
     interpretiveBoundary: '안데스 북부 차차포야스(Chachapoyas) 쿠엘랍 원형 성채와 구름숲 생태 지혜를 바탕으로 한 상징적 성찰 프레임입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.',
   };
 }
@@ -102,7 +120,9 @@ export function formatChachapoyaKuelapPrompt(res: ChachapoyaKuelapResult): strin
     `- 기준 시각: ${res.calculatedAtKst}`,
     `- 구름숲 상징: ${res.cloudCitadel} (${res.andesCloudTone})`,
     `- 동반 결: ${res.companionCitadel}`,
+    `- 운무림 국면: ${res.cloudPhase}`,
     `- 중심 통찰: ${res.kuelapInsight}`,
+    `- 과잉·경계 점검: ${res.shadowWarning}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 오늘의 작은 실천: ${res.ritualAction}`,
     `- 스스로에게 묻기: ${res.reflectiveQuestion}`,
