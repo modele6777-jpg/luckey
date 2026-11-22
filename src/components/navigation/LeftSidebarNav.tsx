@@ -286,7 +286,7 @@ export default function LeftSidebarNav() {
     aside.querySelectorAll<HTMLElement>('.refined-nav-item').forEach(node => {
       if (node.getAttribute('data-active') !== 'true') node.blur();
     });
-  }, [cleanPath, orbOpen]);
+  }, [cleanPath, orbOpen, screenUnfolded]);
   useEffect(() => {
     const aside = document.getElementById('main-sidebar-navigation');
     if (!aside) return;
@@ -639,7 +639,7 @@ export default function LeftSidebarNav() {
                   <button
                     type="button"
                     className="refined-nav-item"
-                    data-active={!orbOpen && isLuckyListPath(cleanPath)}
+                    data-active={!screenUnfolded && !orbOpen && isLuckyListPath(cleanPath)}
                     aria-label="Luckey"
                     aria-expanded={channelsVisible}
                     aria-controls={channelsVisible ? 'prism-channel-icons' : undefined}
