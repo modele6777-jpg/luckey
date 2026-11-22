@@ -6,12 +6,17 @@ export interface ChumashTomolInput {
   question?: string;
 }
 
+export type ChumashQuestionTopic = 'career' | 'relationship' | 'wealth' | 'health' | 'decision' | 'general';
+
 export interface ChumashTomolResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: ChumashQuestionTopic;
   voyageSignal: string;
   companionSignal: string;
   plankSealing: string;
+  tideNavigationAxis: string;
+  shadowWarning: string;
   reflectionFocus: string;
   ritualAction: string;
   reflectiveQuestion: string;
@@ -65,6 +70,16 @@ function hashSeed(text: string): number {
   return h >>> 0;
 }
 
+function classifyChumashTopic(question?: string): ChumashQuestionTopic {
+  const q = (question ?? '').trim();
+  if (/이직|직장|사업|승진|일|커리어|프로젝트|업무/.test(q)) return 'career';
+  if (/연애|결혼|사람|관계|가족|갈등|친구|이별|소통/.test(q)) return 'relationship';
+  if (/돈|재물|투자|재정|수입|지출|계약|매매/.test(q)) return 'wealth';
+  if (/건강|몸|마음|휴식|수면|피로|회복/.test(q)) return 'health';
+  if (/결정|선택|고민|방향|시작|틈|안전/.test(q)) return 'decision';
+  return 'general';
+}
+
 export function calculateChumashTomolCanoe(input: ChumashTomolInput): ChumashTomolResult {
   const fate = input.profile.fate ?? {};
   const seedText = `${JSON.stringify(fate)}|${input.now.toISOString().slice(0, 13)}|${input.question ?? ''}`;
@@ -73,13 +88,19 @@ export function calculateChumashTomolCanoe(input: ChumashTomolInput): ChumashTom
   const companionOffset = 1 + (hashSeed(`${seedText}|companion`) % (SIGNALS.length - 1));
   const voyageSignal = SIGNALS[signalIdx];
   const companionSignal = SIGNALS[(signalIdx + companionOffset) % SIGNALS.length];
+  const questionTopic = classifyChumashTopic(input.question);
+  const tideNavigationAxis = `${voyageSignal} ↔ ${companionSignal} 해협 조류 축`;
+  const shadowWarning = '[항해 과잉 경계] 틈새 점검과 만반의 준비에만 머무르며 정작 조류가 열린 순간의 출항을 놓치지 않도록 살피십시오.';
 
   return {
-    engineVersion: 'LUCKEY-CHUMASH-TOMOL-v2.2.0',
+    engineVersion: 'LUCKEY-CHUMASH-TOMOL-v2.3.0',
     calculatedAtKst: toKstIso(input.now),
+    questionTopic,
     voyageSignal,
     companionSignal,
     plankSealing: SEALINGS[(seed >>> 3) % SEALINGS.length],
+    tideNavigationAxis,
+    shadowWarning,
     reflectionFocus: `캘리포니아 해협을 건너던 추마시 족의 토몰(Tomol) 판자 카누처럼 주 신호('${voyageSignal}')와 동반 신호('${companionSignal}')를 함께 짚어 작은 틈을 정성껏 메우고 해류를 읽으며 나아가는 상징적 관점입니다.`,
     ritualAction: ACTIONS[signalIdx],
     reflectiveQuestion: QUESTIONS[signalIdx],
@@ -90,13 +111,15 @@ export function calculateChumashTomolCanoe(input: ChumashTomolInput): ChumashTom
 export function formatChumashTomolPrompt(res: ChumashTomolResult): string {
   return [
     `[추마시·토몰 카누 항해 관점 · ${res.engineVersion}]`,
-    `기준 시각: ${res.calculatedAtKst}`,
+    `기준 시각: ${res.calculatedAtKst} | 질문 맥락: ${res.questionTopic}`,
     `항해 신호: ${res.voyageSignal}`,
     `동반 신호: ${res.companionSignal}`,
+    `해협 조류 축: ${res.tideNavigationAxis}`,
     `선체 결합: ${res.plankSealing}`,
     `성찰 초점: ${res.reflectionFocus}`,
     `권장 의식: ${res.ritualAction}`,
     `성찰 질문: ${res.reflectiveQuestion}`,
+    `과잉 경계: ${res.shadowWarning}`,
     `경계: ${res.interpretiveBoundary}`,
   ].join('\n');
 }
