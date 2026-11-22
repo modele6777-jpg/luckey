@@ -418,7 +418,7 @@ export default function CalmApp() {
     return () => window.removeEventListener('message', onMessage);
   }, []);
   const searchParams = typeof window !== 'undefined' ? window.location.search : '';
-  const iframeSrc = `/calm/index.html${searchParams ? searchParams + '&v=52.0' : '?v=52.0'}`;
+  const iframeSrc = `/calm/index.html${searchParams ? searchParams + '&v=52.1' : '?v=52.1'}`;
 
   return (
     <div

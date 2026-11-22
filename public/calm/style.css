@@ -8329,3 +8329,16 @@ html.key-search-open, html.key-search-open body { overflow: hidden; }
 html.luckey-parent-actions #key-search-btn,
 html.luckey-parent-actions #key-guide-btn { display: none !important; }
 html.luckey-parent-actions .top-nav { padding-right: 140px !important; }
+
+/* Key header: hide the cover next to the title and the line under it, and keep the bar a little shorter. */
+.brand-icon-thumb,
+.brand-subheading {
+  display: none !important;
+}
+.top-nav {
+  padding-top: max(8px, var(--key-safe-top, env(safe-area-inset-top))) !important;
+  padding-bottom: 8px !important;
+}
+.brand-wrapper {
+  gap: 0 !important;
+}
