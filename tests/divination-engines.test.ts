@@ -7455,9 +7455,12 @@ test('John Stuart Mill On Liberty Individuality Engine: calculates Autonomy, Har
   assert(rep.tyrannyResistanceCourageScore >= 0 && rep.tyrannyResistanceCourageScore <= 100);
   assert(rep.qualitativeGrowthPursuitScore >= 0 && rep.qualitativeGrowthPursuitScore <= 100);
   assert(rep.activeMillTheme.themeTitleEn.length > 0);
+  assert(rep.companionMillTheme.themeKey !== rep.activeMillTheme.themeKey);
+  assert(rep.libertyPhase.length > 0 && rep.shadowWarning.length > 0);
   const prompt = formatJohnStuartMillOnLibertyIndividualityPrompt(rep);
   assert(prompt.includes('존 스튜어트 밀 《자유론》 개별성 자율성 & 해악 원칙 지표'));
-  assert(prompt.includes(rep.activeMillTheme.themeTitleKo));
+  assert(prompt.includes(rep.activeMillTheme.themeTitleKo) && prompt.includes(rep.companionMillTheme.themeTitleKo));
+  assert(prompt.includes(rep.libertyPhase) && prompt.includes(rep.shadowWarning));
   assert(prompt.includes('질문 주제 맥락: decision'));
   assert(prompt.includes('KST 시공간 리듬:'));
   assert.ok(rep.calculatedAtKst.includes('KST'));
@@ -8652,10 +8655,13 @@ test('Thomas More Utopia Engine: calculates Communal Conscience, Labor-Leisure B
   assert(rep.visionarySocialReformIndex >= 0 && rep.visionarySocialReformIndex <= 100);
   assert(rep.steadfastMoralCourageResilienceScore >= 0 && rep.steadfastMoralCourageResilienceScore <= 100);
   assert(rep.activeMoreTheme.themeTitleKo.length > 0);
+  assert(rep.companionMoreTheme.themeKey !== rep.activeMoreTheme.themeKey);
+  assert(rep.utopiaPhase.length > 0 && rep.shadowWarning.length > 0);
   assert(rep.practiceGuidance.length > 0 && rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.boundaryNotice.length > 0 && rep.interpretiveBoundary.length > 0);
   const prompt = formatBritishThomasMoreUtopiaPrompt(rep);
   assert(prompt.includes('토머스 모어 《유토피아》 공동체 양심·삶의 균형 및 도덕적 용기 지표'));
-  assert(prompt.includes(rep.activeMoreTheme.themeTitleKo));
+  assert(prompt.includes(rep.activeMoreTheme.themeTitleKo) && prompt.includes(rep.companionMoreTheme.themeTitleKo));
+  assert(prompt.includes(rep.utopiaPhase) && prompt.includes(rep.shadowWarning));
   assert(prompt.includes('2026-11-14'));
   assert.ok(rep.calculatedAtKst.includes('KST'));
   assert.ok(prompt.includes('교차 매트릭스'));
@@ -9161,10 +9167,13 @@ test('Virginia Woolf Room of One\'s Own Engine: calculates Autonomy, Moments of 
   assert(rep.streamOfConsciousnessFlowIndex >= 0 && rep.streamOfConsciousnessFlowIndex <= 100);
   assert(rep.lighthouseResilienceScore >= 0 && rep.lighthouseResilienceScore <= 100);
   assert(rep.activeWoolfTheme.themeTitleKo.length > 0);
+  assert(rep.companionWoolfTheme.themeKey !== rep.activeWoolfTheme.themeKey);
+  assert(rep.luminousPhase.length > 0 && rep.shadowWarning.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatBritishVirginiaWoolfRoomOfOnesOwnPrompt(rep);
   assert(prompt.includes('버지니아 울프 《자기만의 방·등대로》 사유의 독립·존재의 순간들 지표'));
-  assert(prompt.includes(rep.activeWoolfTheme.themeTitleKo));
+  assert(prompt.includes(rep.activeWoolfTheme.themeTitleKo) && prompt.includes(rep.companionWoolfTheme.themeTitleKo));
+  assert(prompt.includes(rep.luminousPhase) && prompt.includes(rep.shadowWarning));
 });
 
 test('Victor Hugo Les Miserables Engine: calculates Mercy, Conscience, and Humanitarian Solidarity', () => {
