@@ -8,12 +8,12 @@
  * 4. 파스칼의 내기(Pari de Pascal): 불확실한 삶 속에서 의미와 영원한 가치를 향해 전 존재를 던지는 실존적 결단의 용기.
  * 5. 오락과 기만(Divertissement)의 탈피: 내면의 공허를 회피하기 위한 헛된 부산스러움을 멈추고 고요히 참된 자아와 대면하는 평정심.
  *
- * @version LUCKEY-PASCAL-PENSEES-HEART-REASON-v2.0.0
+ * @version LUCKEY-PASCAL-PENSEES-HEART-REASON-v2.3.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const PASCAL_PENSEES_HEART_REASON_VERSION = 'LUCKEY-PASCAL-PENSEES-HEART-REASON-v2.2.0';
+export const PASCAL_PENSEES_HEART_REASON_VERSION = 'LUCKEY-PASCAL-PENSEES-HEART-REASON-v2.3.0';
 
 export type PascalQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -51,12 +51,15 @@ export interface PascalPenseesHeartReasonResult {
   divertissementTranquilityScore: number;  // 헛된 오락·소음 탈피 내면 고요 지수
   // 세부 체계
   activeThematicThought: PascalThematicThought;
+  companionThematicThought: PascalThematicThought;
   focalPenseesMaxim: PascalPenseesMaxim;
   pascalPersonalCounsel: {
     counselTitle: string;
     philosophicalGuidance: string;
   };
   questionTopic: PascalQuestionTopic;
+  heartPhase: string;
+  shadowWarning: string;
   temporalRhythm: PascalTemporalRhythm;
   questionContextGuide: string;
   dailyPracticeRitual: string;
@@ -72,6 +75,18 @@ export interface PascalPenseesHeartReasonResult {
 }
 
 export type PascalPenseesHeartReasonReport = PascalPenseesHeartReasonResult;
+
+const PASCAL_HEART_PHASES = [
+  '소음 멈춤(불안을 덮으려 분주해지는 기만을 내려놓고 조용한 방에 머무는 시기)',
+  '심장 경청(계산적 이성이 닿지 못하는 내면의 제1원리와 진실한 울림을 듣는 시기)',
+  '실존 결단(완벽한 증명을 기다리지 않고 오래 후회하지 않을 가치에 한 걸음을 거는 시기)',
+] as const;
+
+const PASCAL_SHADOW_WARNINGS = [
+  '연약함을 자각하는 겸허가 자기 비하나 무력감으로 기울지 않도록 사유하는 갈대의 존엄을 함께 붙드세요.',
+  '심장의 직관에 귀 기울이되, 현실의 구체적 조건과 기하학적 사실 검토까지 놓치지 않도록 살피세요.',
+  '의미 있는 결단을 내리기 위해 분주히 고민하느라 정작 오늘 곁에 있는 작은 평안을 지나치지 않도록 유의하세요.',
+] as const;
 
 const THEMATIC_THOUGHTS: PascalThematicThought[] = [
   {
@@ -232,10 +247,14 @@ export function calculatePascalPenseesHeartReason(
   const divertissementTranquilityScore = 70 + ((absHash >> 12) % 29);
 
   const thoughtIndex = (absHash >> 4) % THEMATIC_THOUGHTS.length;
+  const companionOffset = 1 + ((absHash >> 5) % (THEMATIC_THOUGHTS.length - 1));
   const maximIndex = (absHash >> 7) % PENSEES_MAXIMS.length;
 
   const activeThematicThought = THEMATIC_THOUGHTS[thoughtIndex];
+  const companionThematicThought = THEMATIC_THOUGHTS[(thoughtIndex + companionOffset) % THEMATIC_THOUGHTS.length];
   const focalPenseesMaxim = PENSEES_MAXIMS[maximIndex];
+  const heartPhase = PASCAL_HEART_PHASES[(absHash >> 10) % PASCAL_HEART_PHASES.length];
+  const shadowWarning = PASCAL_SHADOW_WARNINGS[(absHash >> 13) % PASCAL_SHADOW_WARNINGS.length];
 
   const topicGuides: Record<PascalQuestionTopic, { guide: string; ritual: string; question: string }> = {
     relationship: {
@@ -264,17 +283,17 @@ export function calculatePascalPenseesHeartReason(
 
   const counselTitle = `파스칼 팡세(Pensées) 성찰: ${activeThematicThought.thoughtTitleKo}`;
   const philosophicalGuidance = `블레즈 파스칼의 팡세는 연약한 한 줄기 갈대 같은 인간이 맑은 사유와 심장의 직관을 통해 어떻게 우주적 존엄에 이르는지를 일깨웁니다. ` +
-    `현재 당신의 삶에 필요한 지혜는 '${activeThematicThought.thoughtTitleKo}'의 통찰과 맞닿아 있습니다. ` +
+    `현재 당신의 삶에 필요한 지혜는 '${activeThematicThought.thoughtTitleKo}'(동반 성찰: ${companionThematicThought.thoughtTitleKo})의 통찰과 맞닿아 있습니다. ` +
     `${activeThematicThought.existentialCounsel} 또한 파스칼의 명제인 '${focalPenseesMaxim.maximKo}'(${focalPenseesMaxim.coreDimension})을 마음에 새겨, ` +
     `${focalPenseesMaxim.practicalAction}`;
 
   const pascalSynthesisMatrix = {
-    dominantTension: `${activeThematicThought.thoughtTitleKo} ↔ ${temporalRhythm.kstSlot}`,
+    dominantTension: `${activeThematicThought.thoughtTitleKo} ↔ ${companionThematicThought.thoughtTitleKo} · ${temporalRhythm.kstSlot}`,
     alignmentState:
       heartIntuitionFinesseScore >= 85 && thinkingReedDignityScore >= 85
         ? '기하학적 정신과 심장 직관의 고차원 공명'
         : '소음을 비우고 심장의 제1원리를 가다듬는 숙성기',
-    integratedAction: `${topicPack.ritual} (${focalPenseesMaxim.practicalAction})`,
+    integratedAction: `${topicPack.ritual} (${heartPhase})`,
   };
 
   return {
@@ -286,18 +305,21 @@ export function calculatePascalPenseesHeartReason(
     dualInfinitiesPerspectiveScore,
     divertissementTranquilityScore,
     activeThematicThought,
+    companionThematicThought,
     focalPenseesMaxim,
     pascalPersonalCounsel: {
       counselTitle,
       philosophicalGuidance,
     },
     questionTopic,
+    heartPhase,
+    shadowWarning,
     temporalRhythm,
-    questionContextGuide: topicPack.guide,
-    dailyPracticeRitual: topicPack.ritual,
-    reflectiveQuestion: topicPack.question,
-    ritualAction: topicPack.ritual,
-    reflectionFocus: topicPack.question,
+    questionContextGuide: `${topicPack.guide} (동반 성찰: ${companionThematicThought.thoughtTitleKo})`,
+    dailyPracticeRitual: `${topicPack.ritual} (${heartPhase})`,
+    reflectiveQuestion: `'${heartPhase}' 국면에서 ${topicPack.question}`,
+    ritualAction: `${topicPack.ritual} (${heartPhase})`,
+    reflectionFocus: `'${heartPhase}' 국면에서 ${topicPack.question}`,
     interpretiveBoundary: '본 관점은 파스칼 《팡세》의 철학적 상징을 바탕으로 내면의 사유와 직관을 돕는 성찰 도구이며, 우열을 가르는 수치나 확정적 예언이 아닙니다.',
     pascalSynthesisMatrix,
   };
@@ -313,8 +335,11 @@ export function formatPascalPenseesHeartReasonPrompt(res: PascalPenseesHeartReas
     `- 두 심연(무한과 허무 사이) 중용 조망: ${describePascalQualitativeStage(res.dualInfinitiesPerspectiveScore)}`,
     `- 소음 탈피 내면 고요(Divertissement 탈피): ${describePascalQualitativeStage(res.divertissementTranquilityScore)}`,
     `- 현재 시공간 리듬 (${res.temporalRhythm.kstSlot}): ${res.temporalRhythm.rhythmTitle} — ${res.temporalRhythm.rhythmGuidance}`,
+    `- 심장의 논리 국면: ${res.heartPhase}`,
     `- 질문 맥락 맞춤 성찰 (${res.questionTopic}): ${res.questionContextGuide}`,
     `- 핵심 실존 성찰: ${res.activeThematicThought.thoughtTitleKo} [${res.activeThematicThought.thoughtTitleFrench}]`,
+    `- 동반 실존 성찰: ${res.companionThematicThought.thoughtTitleKo}`,
+    `- 과잉·경계 점검: ${res.shadowWarning}`,
     `- 철학적 통찰: ${res.activeThematicThought.philosophicalInsight}`,
     `- 실존적 조언: ${res.activeThematicThought.existentialCounsel}`,
     `- 팡세 핵심 격언: "${res.focalPenseesMaxim.maximKo}"`,
