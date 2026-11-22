@@ -296,6 +296,30 @@ export default function LeftSidebarNav() {
   }, []);
   const channelsVisible = screenUnfolded || isChannelsOpen;
   useEffect(() => {
+    if (!channelsVisible) return;
+    const list = document.querySelector<HTMLElement>('#main-sidebar-navigation .refined-menu-list');
+    if (!list) return;
+    const revealEpilogue = () => {
+      const epilogue = list.querySelector<HTMLElement>('button[title="EPILOGUE"]');
+      if (!epilogue) return;
+      const listRect = list.getBoundingClientRect();
+      const itemRect = epilogue.getBoundingClientRect();
+      const hidden = itemRect.bottom - listRect.bottom + 8;
+      if (hidden > 1) list.scrollTop += hidden;
+    };
+    revealEpilogue();
+    const frame = window.requestAnimationFrame(revealEpilogue);
+    const timer = window.setTimeout(revealEpilogue, 260);
+    const observer = new ResizeObserver(revealEpilogue);
+    const icons = list.querySelector('#prism-channel-icons');
+    observer.observe(icons || list);
+    return () => {
+      window.cancelAnimationFrame(frame);
+      window.clearTimeout(timer);
+      observer.disconnect();
+    };
+  }, [channelsVisible, screenUnfolded]);
+  useEffect(() => {
     if (isLuckyListPath(cleanPath) || screenUnfolded) setIsChannelsOpen(true);
   }, [cleanPath, screenUnfolded]);
   const { resolvedTheme } = useTheme();
