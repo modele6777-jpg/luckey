@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type RefObject } from 'react';
 import { setMicCaptureActive } from '@/lib/audioMixingPolicy';
 import { collectSpeechTranscript } from '@/lib/speechAutoSend';
+import { rememberBgmBeforeMic, resumeBgmAfterMicSoon } from '@/lib/micBgmResume';
 
 /**
  * 🎙️ 입력창 누르고 말하기 (루시·Lucy Pro 공용).
@@ -42,6 +43,7 @@ export function useHoldToTalk(
     current: string;
     active: boolean;
     finishing: boolean;
+    bgmWasPlaying: boolean;
   } | null>(null);
   const pressTimer = useRef<number | null>(null);
   const pressStart = useRef<{ x: number; y: number } | null>(null);
@@ -141,7 +143,7 @@ export function useHoldToTalk(
 
   const begin = () => {
     if (session.current) return;
-    session.current = { recognition: null, stream: null, context: null, frame: 0, committed: '', current: '', active: true, finishing: false };
+    session.current = { recognition: null, stream: null, context: null, frame: 0, committed: '', current: '', active: true, finishing: false, bgmWasPlaying: rememberBgmBeforeMic() };
     setTranscript('');
     setHolding(true);
     optionsRef.current.onStart?.();
@@ -170,6 +172,8 @@ export function useHoldToTalk(
     setHolding(false);
     const text = `${s.committed} ${s.current}`.replace(/\s+/g, ' ').trim();
     setTranscript('');
+    // 마이크 때문에 멈췄던 앱 배경음은 오디오 세션이 돌아온 뒤 다시 튼다.
+    resumeBgmAfterMicSoon(s.bgmWasPlaying, 450);
     if (text) optionsRef.current.onSend(text);
   };
 

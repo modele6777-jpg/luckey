@@ -12,6 +12,7 @@ import { Clover, KeyRound, MessageCirclePlus, type LucideIcon } from 'lucide-rea
 import React, { useEffect, useRef, useState } from 'react';
 import { useLocation } from 'wouter';
 import { setMicCaptureActive } from '@/lib/audioMixingPolicy';
+import { rememberBgmBeforeMic, resumeBgmAfterMicSoon } from '@/lib/micBgmResume';
 import './lucy-orb-counsel.css';
 
 const BOKCHAE = [
@@ -164,6 +165,7 @@ export function LucyOrbCounsel({
   const pressStart = useRef<{ x: number; y: number } | null>(null);
   const talkingRef = useRef(false);
   const pttToken = useRef(0);
+  const pttBgmWasPlaying = useRef(false);
   const pressHandlers = useRef<{ begin: (x: number, y: number) => void; end: (tapFocus?: boolean) => void }>({ begin: () => undefined, end: () => undefined });
   const [ready, setReady] = useState(false);
   const [speaking, setSpeaking] = useState(false);
@@ -558,6 +560,7 @@ export function LucyOrbCounsel({
     if (event && (!event.isPrimary || event.button !== 0)) return;
     const session = sessionRef.current;
     const token = ++pttToken.current;
+    pttBgmWasPlaying.current = rememberBgmBeforeMic();
     setTalkPressed(true);
     void session.acquireMic().then(ok => {
       if (pttToken.current !== token || sessionRef.current !== session) return;
@@ -577,7 +580,12 @@ export function LucyOrbCounsel({
     const session = sessionRef.current;
     if (!session) return;
     session.setMuted(voiceMode === 'hold');
-    if (voiceMode === 'hold') session.releaseMic();
+    if (voiceMode === 'hold') {
+      session.releaseMic();
+      // 마이크 때문에 멈췄던 앱 배경음은 다시 튼다.
+      resumeBgmAfterMicSoon(pttBgmWasPlaying.current, 450);
+      pttBgmWasPlaying.current = false;
+    }
   };
 
   // 입력창 누르고 말하기: 짧게 누르면 글자 입력(키보드), 0.22초 이상 누르고 있으면 마이크가 켜지고 떼면 전송.
