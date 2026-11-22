@@ -639,7 +639,7 @@ export default function LeftSidebarNav() {
                   <button
                     type="button"
                     className="refined-nav-item"
-                    data-active={cleanPath === '/lucky' || channelsVisible || PRISM_CHANNELS.some(({ path }) => cleanPath === path)}
+                    data-active={!orbOpen && isLuckyListPath(cleanPath)}
                     aria-label="Luckey"
                     aria-expanded={channelsVisible}
                     aria-controls={channelsVisible ? 'prism-channel-icons' : undefined}
