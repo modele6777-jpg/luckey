@@ -3212,7 +3212,14 @@ html:root :is(.lucy-chat-header, .lucy-orb-header, [data-page-brand="true"]) {
   min-height: var(--duo-pane-header-height) !important;
   max-height: var(--duo-pane-header-height) !important;
   padding: 0 var(--orb-header-pad-x) !important;
-  justify-content: center !important;
+}
+html:root .lucy-orb-header {
+  justify-content: space-between !important;
+  align-items: center !important;
+}
+html:root [data-page-brand="true"] {
+  justify-content: flex-start !important;
+  align-items: center !important;
 }
 html:root [data-page-brand="true"].fixed { top: 0 !important; }
 html:root [data-page-brand="true"] > div { padding-left: 0 !important; min-height: 40px; }
@@ -3791,7 +3798,6 @@ html.duo-unfolded-portrait .lucy-chat-header,
   min-height: var(--duo-pane-header-height) !important;
   max-height: var(--duo-pane-header-height) !important;
   padding: 0 var(--orb-header-pad-x) !important;
-  justify-content: center !important;
   overflow: hidden !important;
 }
 html.duo-unfolded-landscape .lucy-chat-header h1,
