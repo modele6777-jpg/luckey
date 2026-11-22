@@ -37,15 +37,48 @@
   }
 
   function centerInRow(row, btn) {
+    // 가로로만 움직인다. 화면(세로)은 절대 움직이지 않는다.
     try {
       if (row.scrollWidth > row.clientWidth + 2) {
         var left = btn.offsetLeft - (row.clientWidth - btn.offsetWidth) / 2;
         row.scrollTo({ left: Math.max(0, left), behavior: 'smooth' });
       }
-      var rect = row.getBoundingClientRect();
-      // 목록 줄이 화면 밖이면 보이도록 (화면 안이면 세로로 움직이지 않는다)
-      if (rect.bottom < 0 || rect.top > window.innerHeight) row.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
     } catch (_) { /* old browsers */ }
+  }
+
+  // 📌 목록을 바꿔도 보던 화면 위치를 그대로 둔다.
+  // Key의 버튼들은 누르면 화면을 위로 올리거나(scrollTo) 목록이 짧아지며 화면이 끌려 올라가므로,
+  // 페이지 높이를 잠시 유지하고 스크롤 위치를 되돌린다. 사용자가 직접 화면을 만지면 풀린다.
+  var holdState = null;
+  function releaseHold() {
+    if (!holdState) return;
+    holdState.stopped = true;
+    if (holdState.frame) cancelAnimationFrame(holdState.frame);
+    holdState.timers.forEach(clearTimeout);
+    document.body.style.minHeight = holdState.prevMinHeight;
+    holdState = null;
+  }
+  ['touchstart', 'wheel', 'keydown', 'pointerdown'].forEach(function (name) {
+    window.addEventListener(name, releaseHold, { passive: true, capture: true });
+  });
+  function holdScroll(fn) {
+    var se = document.scrollingElement || document.documentElement;
+    // 앞선 이동을 아직 붙잡는 중일 때만 그 위치를 이어 쓴다.
+    var y = holdState && !holdState.done ? holdState.y : se.scrollTop;
+    var prevMinHeight = holdState ? holdState.prevMinHeight : document.body.style.minHeight;
+    var pageHeight = Math.max(se.scrollHeight, document.body.scrollHeight);
+    if (holdState) { holdState.stopped = true; if (holdState.frame) cancelAnimationFrame(holdState.frame); holdState.timers.forEach(clearTimeout); }
+    document.body.style.minHeight = pageHeight + 'px';
+    var state = { y: y, prevMinHeight: prevMinHeight, stopped: false, done: false, frame: 0, timers: [] };
+    holdState = state;
+    var restore = function () { if (!state.stopped && Math.abs(se.scrollTop - y) > 1) se.scrollTop = y; };
+    fn();
+    restore();
+    var until = Date.now() + 900;
+    var loop = function () { restore(); if (!state.stopped && Date.now() < until) state.frame = requestAnimationFrame(loop); };
+    state.frame = requestAnimationFrame(loop);
+    [50, 150, 300, 500, 800].forEach(function (ms) { state.timers.push(setTimeout(restore, ms)); });
+    state.timers.push(setTimeout(function () { state.done = true; }, 950));
   }
 
   function step(direction) {
@@ -61,7 +94,7 @@
     if (current < 0) current = 0;
     var next = (current + (direction === 'previous' ? -1 : 1) + buttons.length) % buttons.length;
     var target = buttons[next];
-    target.click();
+    holdScroll(function () { target.click(); });
     centerInRow(row, target);
     return (target.textContent || '').replace(/\s+/g, ' ').trim();
   }
