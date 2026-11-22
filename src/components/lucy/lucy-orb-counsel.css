@@ -616,21 +616,31 @@ html.duo-unfolded-mode .lucy-orb-figure { width: 34%; }
 
 /* Two 3D dice thrown onto the table: real cubes tumbling, bouncing and resting with the rolled value up front. */
 .lucy-die {
-  grid-column: 1 / -1;
-  justify-self: center;
+  position: absolute;
+  z-index: 6;
+  left: 50%;
+  top: 86%;
+  transform: translate(-50%, -50%);
   display: flex;
-  gap: 10px;
-  margin: 0 auto 8px;
-  padding: 0;
+  gap: 8px;
+  margin: 0;
+  padding: 6px;
   border: 0;
   background: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
   transition: transform .4s var(--orb-spring), opacity .3s ease;
+  animation: lucy-die-ready 2.8s ease-in-out 2s infinite;
 }
-.lucy-die:active { transform: scale(.94); }
+.lucy-die:active { transform: translate(-50%, -50%) scale(.92); }
+@keyframes lucy-die-ready {
+  0%, 100% { filter: drop-shadow(0 0 0 rgba(255, 220, 150, 0)); }
+  50% { filter: drop-shadow(0 0 10px rgba(255, 220, 150, .7)); }
+}
 .lucy-die-mini {
-  width: 46px;
-  height: 46px;
-  padding: 7px;
+  width: 36px;
+  height: 36px;
+  padding: 5px;
   box-sizing: border-box;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -638,10 +648,10 @@ html.duo-unfolded-mode .lucy-orb-figure { width: 34%; }
   background: radial-gradient(circle at 30% 25%, #ffffff, #f4ecdf 55%, #dccdb6);
   box-shadow: inset 0 -3px 6px rgba(120, 90, 60, .3), inset 0 2px 2px #fff, 0 8px 16px rgba(4, 2, 14, .45);
 }
-.lucy-orb-masters .lucy-die-mini { display: grid; margin-top: 0; }
+.lucy-die .lucy-die-mini { display: grid; margin-top: 0; }
 .lucy-die-mini:nth-child(2) { transform: rotate(9deg) translateY(3px); }
 .lucy-die-mini:nth-child(1) { transform: rotate(-6deg); }
-.lucy-die i { width: 7px; height: 7px; }
+.lucy-die i { width: 6px; height: 6px; }
 .lucy-die i,
 .lucy-die-face i {
   border-radius: 50%;
@@ -651,7 +661,7 @@ html.duo-unfolded-mode .lucy-orb-figure { width: 34%; }
 }
 .lucy-die i.is-off,
 .lucy-die-face i.is-off { visibility: hidden; }
-.lucy-die.is-thrown { opacity: .2; transform: scale(.85); }
+.lucy-die.is-thrown { opacity: 0; transform: translate(-50%, -50%) scale(.8); animation: none; }
 .lucy-die-caption { grid-column: 1 / -1; margin: 0 0 8px; font-size: 12px; color: rgba(251, 247, 255, .72); }
 .lucy-dice-throw { position: absolute; inset: 0; z-index: 5; pointer-events: none; }
 .lucy-die-3d {
@@ -660,10 +670,10 @@ html.duo-unfolded-mode .lucy-orb-figure { width: 34%; }
   position: absolute;
   width: 0;
   height: 0;
-  left: 38%;
-  top: 80%;
+  left: 36%;
+  top: 76%;
 }
-.lucy-die-3d.is-second { left: 63%; top: 82%; }
+.lucy-die-3d.is-second { left: 64%; top: 78%; }
 .lucy-die-tumble {
   position: absolute;
   left: calc(var(--size) / -2);
@@ -711,9 +721,9 @@ html.duo-unfolded-mode .lucy-orb-figure { width: 34%; }
   100% { transform: rotateX(-16deg) rotateY(20deg) var(--end); }
 }
 @keyframes lucy-die-fly {
-  0% { transform: translate(-60px, 240px) scale(1.3); opacity: 0; }
-  8% { opacity: 1; }
-  40% { transform: translate(-24px, -80px) scale(1.08); }
+  0% { transform: translate(52px, 44px) scale(1); opacity: 0; }
+  6% { opacity: 1; }
+  40% { transform: translate(18px, -96px) scale(1.12); }
   62% { transform: translate(0, 0) scale(1, .9); }
   72% { transform: translate(8px, -22px) scale(1); }
   82% { transform: translate(13px, 0) scale(1.02, .95); }
@@ -721,9 +731,9 @@ html.duo-unfolded-mode .lucy-orb-figure { width: 34%; }
   100% { transform: translate(18px, 0); opacity: 1; }
 }
 @keyframes lucy-die-fly-2 {
-  0% { transform: translate(40px, 250px) scale(1.3); opacity: 0; }
-  8% { opacity: 1; }
-  42% { transform: translate(18px, -96px) scale(1.08); }
+  0% { transform: translate(-48px, 38px) scale(1); opacity: 0; }
+  6% { opacity: 1; }
+  42% { transform: translate(-16px, -110px) scale(1.12); }
   64% { transform: translate(0, 0) scale(1, .9); }
   74% { transform: translate(-7px, -18px) scale(1); }
   84% { transform: translate(-11px, 0) scale(1.02, .95); }
@@ -1043,7 +1053,7 @@ html.duo-unfolded-mode .lucy-charm { width: min(380px, 70%); }
 @media (prefers-reduced-motion: reduce) {
   .lucy-orb-cloud, .lucy-orb-rays, .lucy-orb-caustic, .lucy-orb-swirl, .lucy-orb-body, .lucy-orb-body.is-lit::before, .lucy-orb-body.is-lit::after, .lucy-orb-circle,
   .lucy-candle, .lucy-candle::before, .lucy-candle b, .lucy-candle em, .lucy-candle u, .lucy-mote, .lucy-voice-ring, .lucy-orb-sparkle, .lucy-orb-stand,
-  .lucy-die-tumble, .lucy-die-shadow, .lucy-dice-sum, .lucy-charm, .lucy-charm-seal, .lucy-orb-keywords button, .lucy-orb-masters button:not(.lucy-die) { animation: none; }
+  .lucy-die, .lucy-die-tumble, .lucy-die-shadow, .lucy-dice-sum, .lucy-charm, .lucy-charm-seal, .lucy-orb-keywords button, .lucy-orb-masters button:not(.lucy-die) { animation: none; }
   .lucy-orb-cloud, .lucy-orb-body, .lucy-orb-circle, .lucy-candle, .lucy-orb-stand, .lucy-dice-sum { opacity: 1; }
   .lucy-orb-body, .lucy-orb-stand { transform: none; }
   .lucy-dice-sum { transform: translateX(-50%); }

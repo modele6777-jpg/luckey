@@ -486,6 +486,12 @@ export function LucyOrbCounsel({
             </button>
             <span className="lucy-orb-stand" aria-hidden="true"><i className="cup" /><i className="ring" /><i className="neck" /><i className="base" /></span>
           </div>
+          {/* 주사위는 탁자 앞쪽에 놓여 있다 (아래쪽 빅뱅 버튼에 가리지 않게). 누르면 탁자 위로 던져진다. */}
+          {phase === 'pick' && (
+            <button type="button" className={`lucy-die ${rolling ? 'is-thrown' : ''}`} onClick={rollMaster} aria-label="주사위 두 개로 마스터 고르기">
+              {dice.map((face, index) => <span key={index} className="lucy-die-mini"><Pips value={face} /></span>)}
+            </button>
+          )}
           {thrown > 0 && (
             <span key={thrown} className="lucy-dice-throw" aria-hidden="true">
               {dice.map((face, index) => (
@@ -507,16 +513,12 @@ export function LucyOrbCounsel({
           )}
         </div>
         <div className="lucy-orb-copy">
-          {phase === 'pick' && <p>마스터를 고르시면 상담이 시작됩니다</p>}
+          {phase === 'pick' && <p>탁자 위 주사위를 누르거나 마스터를 고르시면 상담이 시작됩니다</p>}
           {phase === 'live' && <p>{speaking ? `${master?.name} 마스터가 말하고 있습니다` : `${master?.name} · ${master?.tone}. 말씀하셔도 되고, 적으셔도 됩니다`}</p>}
           {phase === 'report' && <p>이번 상담을 부적으로 남겼습니다. 파일로도 보관할 수 있습니다</p>}
           {notice && <p>{notice}</p>}
           {phase === 'pick' && (
             <div className="lucy-orb-masters">
-              <button type="button" className={`lucy-die ${rolling ? 'is-thrown' : ''}`} onClick={rollMaster} aria-label="주사위 두 개로 마스터 고르기">
-                {dice.map((face, index) => <span key={index} className="lucy-die-mini"><Pips value={face} /></span>)}
-              </button>
-              <p className="lucy-die-caption">주사위 두 개를 던져 나온 합으로 마스터를 정합니다</p>
               {ORB_MASTERS.map(item => (
                 <button key={item.id} type="button" onClick={() => begin(item)}>
                   <strong>{item.name}</strong>
