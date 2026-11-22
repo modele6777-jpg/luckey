@@ -1,3 +1,5 @@
+import { PageGuideButton } from '@/components/guide/PageGuide';
+import { getPageGuide } from '@/lib/pageGuides';
 import { ScreenPortal } from '@/components/layout/ScreenPortal';
 import { startGeminiLiveVoice, type LiveVoiceSession } from '@/lib/geminiLiveSession';
 import { createOrbCounselBed, type OrbCounselBed } from '@/lib/orbCounselBed';
@@ -308,21 +310,27 @@ export function LucyOrbCounsel({
           />
         ))}
         {caution && <p className="lucy-orb-caution" role="status">이 상담은 참고일 뿐입니다. 맹신하지 마세요.</p>}
+        <header className="lucy-orb-header" data-top-bar="true">
+          <h1>Orb</h1>
+          <div className="lucy-orb-header-actions">
+            <button
+              type="button"
+              className="lucy-orb-bed"
+              aria-pressed={bedOn}
+              onClick={() => {
+                const next = !bedOn;
+                setBedOn(next);
+                sessionStorage.setItem('lucy_orb_bed', next ? 'on' : 'off');
+                void bedRef.current?.resume();
+              }}
+            >
+              {bedOn ? '배경음 켜짐' : '배경음 꺼짐'}
+            </button>
+            <PageGuideButton guide={getPageGuide('orb')} />
+          </div>
+        </header>
         {phase === 'live' && <button type="button" className="lucy-orb-end" onClick={openReport}>상담 끝내기</button>}
         {phase === 'report' && <button type="button" className="lucy-orb-end" onClick={keepReport}>채팅으로</button>}
-        <button
-          type="button"
-          className="lucy-orb-bed"
-          aria-pressed={bedOn}
-          onClick={() => {
-            const next = !bedOn;
-            setBedOn(next);
-            sessionStorage.setItem('lucy_orb_bed', next ? 'on' : 'off');
-            void bedRef.current?.resume();
-          }}
-        >
-          {bedOn ? '배경음 켜짐' : '배경음 꺼짐'}
-        </button>
         <div className={`lucy-orb-ritual ${lit ? 'is-lit' : ''}`}>
           <svg className="lucy-orb-circle lucy-orb-circle-back" viewBox="0 0 200 200" aria-hidden="true">
             <circle cx="100" cy="100" r="90" strokeDasharray="3 8" />

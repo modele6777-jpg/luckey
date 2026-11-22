@@ -341,11 +341,39 @@ html.duo-unfolded-mode .lucy-orb-copy { width: min(720px, 92%); }
   78% { opacity: 1; }
   100% { opacity: 0; transform: translate(-50%, -56%); }
 }
-.lucy-orb-bed {
+.lucy-orb-header {
   position: absolute;
-  top: max(16px, env(safe-area-inset-top));
-  left: 16px;
-  z-index: 3;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 6;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 56px;
+  padding: max(14px, calc(env(safe-area-inset-top, 0px) + 10px)) 14px 12px;
+  background: rgba(7, 11, 18, 0.62);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(16px);
+}
+.lucy-orb-header h1 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  color: #fff;
+}
+.lucy-orb-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.lucy-orb-header .lucy-orb-bed {
+  position: static;
+  top: auto;
+  left: auto;
   border: 1px solid rgba(255,255,255,.28);
   border-radius: 999px;
   background: rgba(255,255,255,.12);
