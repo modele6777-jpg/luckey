@@ -23,6 +23,10 @@ type LiveVoiceHandlers = {
   onUserText?: (text: string) => void;
   onLucyText?: (text: string) => void;
   onError?: (error: { code: string; message: string }) => void;
+  /** Microphone requested earlier inside the user's tap (some browsers only show the prompt there). */
+  micStream?: Promise<MediaStream> | null;
+  /** When set, a missing microphone is not fatal: the session continues with typed input and spoken answers. */
+  onNotice?: (message: string) => void;
 };
 
 function downsample(input: Float32Array, inRate: number, outRate = 16000): Float32Array {
@@ -216,33 +220,40 @@ export function startGeminiLiveVoice(handlers: LiveVoiceHandlers): LiveVoiceSess
     if (stopped) return;
 
     try {
-      stream = await navigator.mediaDevices.getUserMedia({
+      stream = await (handlers.micStream || navigator.mediaDevices.getUserMedia({
         audio: { channelCount: 1, echoCancellation: true, noiseSuppression: true, autoGainControl: true },
-      });
+      }));
     } catch {
-      fail('mic-denied', '마이크 권한이 차단되어 있습니다. 브라우저 설정에서 마이크를 허용해 주세요.');
-      return;
+      stream = null;
+      if (!handlers.onNotice) {
+        fail('mic-denied', '마이크 권한이 차단되어 있습니다. 브라우저 설정에서 마이크를 허용해 주세요.');
+        return;
+      }
+      // 마이크 없이도 상담은 이어 간다: 글로 보내면 마스터가 목소리로 답한다.
+      handlers.onNotice('마이크를 쓸 수 없어 글로 상담해요. 아이폰 설정 → Safari(홈 화면 앱이면 해당 앱) → 마이크를 허용하면 말로도 할 수 있어요.');
     }
     if (stopped) {
-      stream.getTracks().forEach(track => track.stop());
+      stream?.getTracks().forEach(track => track.stop());
       return;
     }
 
-    const source = capture.createMediaStreamSource(stream);
-    processor = (capture as any).createScriptProcessor(4096, 1, 1);
-    const silent = capture.createGain();
-    silent.gain.value = 0;
-    processor.onaudioprocess = (event) => {
-      if (!ready || muted || stopped || socket?.readyState !== WebSocket.OPEN) return;
-      const input = event.inputBuffer.getChannelData(0);
-      const samples = downsample(input, capture.sampleRate);
-      socket.send(JSON.stringify({
-        realtimeInput: { audio: { data: pcmBase64(samples), mimeType: 'audio/pcm;rate=16000' } },
-      }));
-    };
-    source.connect(processor as unknown as AudioNode);
-    processor.connect(silent);
-    silent.connect(capture.destination);
+    if (stream) {
+      const source = capture.createMediaStreamSource(stream);
+      processor = (capture as any).createScriptProcessor(4096, 1, 1);
+      const silent = capture.createGain();
+      silent.gain.value = 0;
+      processor!.onaudioprocess = (event) => {
+        if (!ready || muted || stopped || socket?.readyState !== WebSocket.OPEN) return;
+        const input = event.inputBuffer.getChannelData(0);
+        const samples = downsample(input, capture.sampleRate);
+        socket.send(JSON.stringify({
+          realtimeInput: { audio: { data: pcmBase64(samples), mimeType: 'audio/pcm;rate=16000' } },
+        }));
+      };
+      source.connect(processor as unknown as AudioNode);
+      processor!.connect(silent);
+      silent.connect(capture.destination);
+    }
 
     const url = `wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContentConstrained?access_token=${encodeURIComponent(token)}`;
     socket = new WebSocket(url);

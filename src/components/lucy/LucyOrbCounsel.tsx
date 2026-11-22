@@ -167,6 +167,8 @@ export function LucyOrbCounsel({
   const heldRef = useRef(false);
   const heavenToken = useRef(0);
   const heavenSpokeRef = useRef(false);
+  const micPrime = useRef<Promise<MediaStream> | null>(null);
+  const releasePrimedMicRef = useRef<() => void>(() => {});
   const ttsActive = useTTSActive();
   const cautionTimer = useRef<number | null>(null);
   const dieTimer = useRef<number | null>(null);
@@ -231,6 +233,7 @@ export function LucyOrbCounsel({
       if (cautionTimer.current) window.clearTimeout(cautionTimer.current);
       if (holdTimer.current) window.clearTimeout(holdTimer.current);
       heavenToken.current += 1;
+      releasePrimedMicRef.current();
       if (heavenSpokeRef.current) { stopTTS(); heavenSpokeRef.current = false; }
       bed?.stop();
       bedRef.current = null;
@@ -272,8 +275,27 @@ export function LucyOrbCounsel({
 
   if (!open) return null;
 
+  // 마이크는 사용자가 누른 그 순간에 요청한다 (브라우저가 탭 안에서만 허용 창을 띄우는 경우가 있다).
+  const requestMic = (): Promise<MediaStream> | null => {
+    if (typeof navigator === 'undefined' || !navigator.mediaDevices?.getUserMedia) return null;
+    const request = navigator.mediaDevices.getUserMedia({
+      audio: { channelCount: 1, echoCancellation: true, noiseSuppression: true, autoGainControl: true },
+    });
+    request.catch(() => undefined);
+    return request;
+  };
+  const releasePrimedMic = () => {
+    const pending = micPrime.current;
+    micPrime.current = null;
+    void pending?.then(stream => stream.getTracks().forEach(track => track.stop())).catch(() => undefined);
+  };
+
+  releasePrimedMicRef.current = releasePrimedMic;
+
   const begin = (next: OrbMaster) => {
     sessionRef.current?.stop();
+    const micStream = micPrime.current || requestMic();
+    micPrime.current = null;
     setMaster(next);
     setPhase('live');
     setNotice('');
@@ -295,6 +317,8 @@ export function LucyOrbCounsel({
         lucyBuf.current = mergeTranscript(lucyBuf.current, text);
       },
       onError: (error) => setNotice(error.message),
+      onNotice: (message) => setNotice(message),
+      micStream,
     });
     sessionRef.current = session;
     const typed = draft.trim();
@@ -336,6 +360,19 @@ export function LucyOrbCounsel({
       closedRef.current = true;
       onFinishRef.current(report || null);
     }, 1500);
+  };
+
+  // 위쪽 '닫기': 보고서를 채팅에 남기지 않고 오브를 닫는다. 남기려면 아래 '채팅에 남기기'를 누른다.
+  const closeWithoutSaving = () => {
+    if (closedRef.current || leaving) return;
+    const finish = () => {
+      if (closedRef.current) return;
+      closedRef.current = true;
+      onFinishRef.current(null);
+    };
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) { finish(); return; }
+    setLeaving(true);
+    window.setTimeout(finish, 1500);
   };
 
   const flashOrb = (heavenly = false) => {
@@ -412,6 +449,8 @@ export function LucyOrbCounsel({
     if (rolling || leaving) return;
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     // 두 주사위의 눈을 먼저 정하고, 3D 주사위가 그 눈이 위로 오도록 굴러가 멈춘다. 합으로 마스터를 고른다.
+    releasePrimedMic();
+    micPrime.current = requestMic();
     const next: [number, number] = [1 + Math.floor(Math.random() * 6), 1 + Math.floor(Math.random() * 6)];
     setDice(next);
     setRolling(true);
@@ -499,7 +538,7 @@ export function LucyOrbCounsel({
           </div>
         </header>
         {phase === 'live' && <button type="button" className="lucy-orb-end" onClick={openReport}>상담 끝내기</button>}
-        {phase === 'report' && <button type="button" className="lucy-orb-end" onClick={keepReport}>채팅으로</button>}
+        {phase === 'report' && <button type="button" className="lucy-orb-end" onClick={closeWithoutSaving}>닫기</button>}
         <div className={`lucy-orb-ritual ${lit ? 'is-lit' : ''}`}>
           <span className="lucy-orb-table" aria-hidden="true"><i className="side" /><i className="top" /></span>
           <span className="lucy-orb-caustic" aria-hidden="true" />
