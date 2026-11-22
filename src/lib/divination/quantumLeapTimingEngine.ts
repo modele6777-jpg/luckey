@@ -16,7 +16,7 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const QUANTUM_LEAP_VERSION = 'LUCKEY-LEAP-v2.2.0';
+export const QUANTUM_LEAP_VERSION = 'LUCKEY-LEAP-v2.3.0';
 
 function formatQuantumLeapKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -78,6 +78,13 @@ export interface QuantumLeapResult {
   engineVersion: string;
   calculatedAtIso: string;
   calculatedAtKst: string;
+  questionTopic: string;
+  momentumPhase: {
+    phase: 'latent_coil' | 'threshold_spark' | 'breakthrough_wave';
+    titleKo: string;
+    description: string;
+  };
+  shadowWarning: string;
 
   // 퀀텀 점프 준비도 지수 (0~100)
   leapReadinessScore: number;
@@ -155,19 +162,53 @@ export function calculateQuantumLeapTiming(params?: {
 
   const calculatedAtKst = formatQuantumLeapKstTimestamp(now);
   const q = (params?.question || '').trim();
+  const questionTopic = !q
+    ? '전반·도약'
+    : /사랑|연애|관계|결혼|사람|동맹/.test(q)
+      ? '관계·동맹'
+      : /사업|일|직장|돈|재물|런칭|프로덕트/.test(q)
+        ? '사업·확장'
+        : /결단|승부|선택|도전|전환/.test(q)
+          ? '도약·결단'
+          : '내면·정비';
+
+  const momentumPhase: QuantumLeapResult['momentumPhase'] =
+    phaseKey === 'quantum_breakthrough'
+      ? {
+          phase: 'breakthrough_wave',
+          titleKo: '전면 도약 임계 파동 국면',
+          description: '축적된 역량이 한꺼번에 임계점을 넘어 10배 스케일로 확장되는 상승 파동',
+        }
+      : phaseKey === 'ignition'
+        ? {
+            phase: 'threshold_spark',
+            titleKo: '점화·시장 검증 가속 국면',
+            description: '작은 실험과 빠른 피드백으로 도약의 발사각을 정밀하게 맞추는 시기',
+          }
+        : {
+            phase: 'latent_coil',
+            titleKo: '잠룡 에너지 응축 국면',
+            description: '외부 노출보다 코어 구조와 내공을 깊게 다져 반동을 키우는 시기',
+          };
+
+  const shadowWarning = `과잉 경계: ${currentPhase.titleKo}에서는 '${currentPhase.warningTrap}' 유혹에 휩쓸리지 않도록 실행 기준을 선명하게 붙들어야 합니다.`;
+
   const quantumLeapSynthesisMatrix = {
     dominantTension: `${currentPhase.titleKo} ↔ ${currentPhase.warningTrap}`,
-    alignmentState: `${readinessTitle} · ${goldenWindow.targetDomain}`,
-    integratedAction: `${goldenWindow.boldAction}${q ? ` [질문 맥락: ${q}]` : ''}`,
+    alignmentState: `${momentumPhase.titleKo} · ${readinessTitle} · ${goldenWindow.targetDomain}`,
+    integratedAction: `${goldenWindow.boldAction}${q ? ` [질문 맥락(${questionTopic}): ${q}]` : ''}`,
   };
   const reflectiveQuestion = q
-    ? `"${q}"에서 ${currentPhase.warningTrap}을 피해 ${currentPhase.strategicMandate} 쪽으로 지금 당장 옮길 수 있는 가장 작은 승부수 한 수는 무엇인가요?`
+    ? `"${q}"(${questionTopic})에서 ${currentPhase.warningTrap}을 피해 ${currentPhase.strategicMandate} 쪽으로 지금 당장 옮길 수 있는 가장 작은 승부수 한 수는 무엇인가요?`
     : `오늘 ${currentPhase.titleKo} 국면에서 ${currentPhase.warningTrap}을 내려놓고 바로 실행에 옮길 단 하나의 행동은 무엇일까요?`;
 
   return {
     engineVersion: QUANTUM_LEAP_VERSION,
     calculatedAtIso: now.toISOString(),
     calculatedAtKst,
+    questionTopic,
+    momentumPhase,
+    shadowWarning,
     leapReadinessScore,
     readinessTitle,
     currentPhase,
@@ -187,11 +228,13 @@ export function calculateQuantumLeapTiming(params?: {
 export function formatQuantumLeapPrompt(res: QuantumLeapResult): string {
   const lines = [
     `[퀀텀 점프 & 승부수 모멘텀 타이밍 리포트 (엔진: ${res.engineVersion} | ${res.calculatedAtKst})]`,
+    `- 질문 맥락: ${res.questionTopic} · 모멘텀 국면: ${res.momentumPhase.titleKo} (${res.momentumPhase.description})`,
     `- 퀀텀 점프 준비 상태: **${res.readinessTitle}**`,
     `- 현재 우주적 국면: **${res.currentPhase.titleKo}** [${res.currentPhase.hanja}]`,
     `  • 우주적 흐름: ${res.currentPhase.cosmicTheme}`,
     `  • 절대 전략 지침: **${res.currentPhase.strategicMandate}**`,
     `  • 경계할 함정: ${res.currentPhase.warningTrap}`,
+    `- ${res.shadowWarning}`,
     `- 골든 모멘텀 승부수 윈도우:`,
     `  • 최적 타이밍: ${res.goldenWindow.bestTimingDesc}`,
     `  • 승부수 도메인: ${res.goldenWindow.targetDomain}`,

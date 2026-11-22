@@ -21,7 +21,7 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const TAROT_KABBALAH_SHADOW_VERSION = 'LUCKEY-TAROT-KABBALAH-SHADOW-v2.2.0';
+export const TAROT_KABBALAH_SHADOW_VERSION = 'LUCKEY-TAROT-KABBALAH-SHADOW-v2.3.0';
 
 function formatKabbalahShadowKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -54,9 +54,16 @@ export interface TarotTreeOfLifeShadowReport {
   engineVersion: string;
   calculatedAt: string;
   calculatedAtKst: string;
+  questionTopic: string;
   tarotEsotericTitle: string;
   ascensionPath: TreeOfLifePathMapping;
   secondaryPath: TreeOfLifePathMapping;
+  kabbalahPhase: {
+    phase: 'descent_mirror' | 'alchemical_threshold' | 'crown_integration';
+    titleKo: string;
+    description: string;
+  };
+  shadowWarning: string;
   shadowMirror: TarotShadowMirrorAnalysis;
   soulHermeticAffirmation: string;
   reflectiveQuestion: string;
@@ -120,15 +127,46 @@ export function runTarotTreeOfLifeShadowEngine(
   const shadowData = shadowCardMap[shadowCardNum] || shadowCardMap[21];
   const calculatedAtKst = formatKabbalahShadowKstTimestamp(targetDate);
   const q = (question || '').trim();
+  const questionTopic = !q
+    ? '전반·균형'
+    : /사랑|연애|관계|결혼|사람|이별|가족/.test(q)
+      ? '관계·감정'
+      : /일|직장|사업|돈|재물|이직|합격|시험/.test(q)
+        ? '일·성취'
+        : /변화|전환|도전|선택|결정|새로/.test(q)
+          ? '전환·도약'
+          : '내면·성찰';
+
+  const kabbalahPhase: TarotTreeOfLifeShadowReport['kabbalahPhase'] =
+    selectedPathNum >= 25
+      ? {
+          phase: 'descent_mirror',
+          titleKo: '예소드·말쿠트 심층 미러 국면',
+          description: '무의식의 그림자와 현실 습관이 맞닿은 지점에서 방어기제를 비추는 시기',
+        }
+      : selectedPathNum >= 14
+        ? {
+            phase: 'alchemical_threshold',
+            titleKo: '호크마·비나 연금술 전환 국면',
+            description: '상반된 에너지를 조율해 창조적 질서와 생명의 결실로 옮겨가는 시기',
+          }
+        : {
+            phase: 'crown_integration',
+            titleKo: '케테르·티페레트 상위 통합 국면',
+            description: '높은 직관과 의식의 뜻을 지상의 구체적 행동으로 내리는 시기',
+          };
+
+  const shadowWarning = `과잉 경계: [${shadowData.name}]의 '${shadowData.defenseMechanism}'이 작동하면 오히려 [${pathInfo.cardName}]의 순수한 상승 흐름이 경직될 수 있습니다.`;
+
   const reflectiveQuestion = q
-    ? `"${q}" 앞에서 [${shadowData.name}]의 방어기제(${shadowData.defenseMechanism})를 내려놓고 [${pathInfo.cardName}]의 관문을 건넌다면 무엇이 달라질까요?`
+    ? `"${q}"(${questionTopic}) 앞에서 [${shadowData.name}]의 방어기제(${shadowData.defenseMechanism})를 내려놓고 [${pathInfo.cardName}]의 관문을 건넌다면 무엇이 달라질까요?`
     : `지금 [${shadowData.name}]가 비추는 내면의 맹점을 마주하고 제${secondaryPathNum}경로(${secondaryPathInfo.cardName})의 균형으로 옮겨갈 한 걸음은 무엇인가요?`;
   const interpretiveBoundary =
     '해석 경계: 본 리포트는 카발라 생명나무 22경로와 타로 섀도우 미러 원형을 바탕으로 내면의 방어기제와 전환 관점을 비추는 상징적 성찰이며, 미래 사건의 단정이나 의료적·심리적 진단을 대신하지 않습니다.';
   const kabbalahShadowSynthesisMatrix = {
     dominantTension: `${pathInfo.cardName} ↔ ${shadowData.name}`,
-    alignmentState: `제${selectedPathNum}경로(${pathInfo.connecting}) · 보조 제${secondaryPathNum}경로(${secondaryPathInfo.cardName}) · 방어기제(${shadowData.defenseMechanism})`,
-    integratedAction: `${shadowData.ritual}${q ? ` [질문 맥락: ${q}]` : ''}`,
+    alignmentState: `${kabbalahPhase.titleKo} · 제${selectedPathNum}경로(${pathInfo.connecting}) · 보조 제${secondaryPathNum}경로(${secondaryPathInfo.cardName})`,
+    integratedAction: `${shadowData.ritual}${q ? ` [질문 맥락(${questionTopic}): ${q}]` : ''}`,
   };
 
   const ritualAction = `제${selectedPathNum}경로(${pathInfo.cardName}) 섀도우 통합 의례 — ${shadowData.ritual}`;
@@ -138,6 +176,7 @@ export function runTarotTreeOfLifeShadowEngine(
   const soulHermeticAffirmation = `나는 생명나무의 신성한 경로를 따라 영혼을 상승시키며, 빛과 그림자를 모두 통합하여 온전한 존재로 거듭난다.`;
 
   const synthesisPromptGuidance = `[LUCKEY 타로 카발라 생명나무 & 섀도우 미러 심층 ${TAROT_KABBALAH_SHADOW_VERSION} | ${calculatedAtKst}]
+- 질문 맥락: ${questionTopic} · 카발라 국면: ${kabbalahPhase.titleKo} (${kabbalahPhase.description})
 - 생명나무 상승 경로 (Path of Ascension):
   * 제${selectedPathNum}경로: ${pathInfo.connecting}
   * 주관 메이저 아르카나: [${pathInfo.cardName}] (히브리 문자: ${pathInfo.hebrew})
@@ -147,6 +186,7 @@ export function runTarotTreeOfLifeShadowEngine(
   * 의식의 빛 아르카나: [${pathInfo.cardName}]
   * 무의식의 그림자 아르카나: [${shadowData.name}]
   * 숨은 방어기제: ${shadowData.defense}
+  * ${shadowWarning}
   * 그림자 변환 초능력 (Transmuted Gold): ${shadowData.superpower}
   * 180초 섀도우 통합 리추얼: ${shadowData.ritual}
 - 에소테릭 타로 확언: "${soulHermeticAffirmation}"
@@ -160,6 +200,7 @@ export function runTarotTreeOfLifeShadowEngine(
     engineVersion: TAROT_KABBALAH_SHADOW_VERSION,
     calculatedAt: targetDate.toISOString(),
     calculatedAtKst,
+    questionTopic,
     tarotEsotericTitle,
     ascensionPath: {
       pathNumber: selectedPathNum,
@@ -177,6 +218,8 @@ export function runTarotTreeOfLifeShadowEngine(
       hebrewLetter: secondaryPathInfo.hebrew,
       spiritualGatewayTheme: secondaryPathInfo.gateway
     },
+    kabbalahPhase,
+    shadowWarning,
     shadowMirror: {
       consciousLightCard: pathInfo.cardName,
       shadowBlindSpotCard: shadowData.name,
