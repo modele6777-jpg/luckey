@@ -8,12 +8,12 @@
  * 4. 현실의 부조리를 꿰뚫고 대안을 설계하는 이상주의적 통찰력 (Visionary Ideal & Social Wisdom Index): "양들이 사람을 잡아먹는다"는 비판처럼 현실 문제를 정밀 진단하고 대안을 제시하는 힘.
  * 5. 외적 압박 앞에서도 신념을 굽히지 않는 단호한 도덕적 용기 회복탄력성 (Steadfast Moral Courage Resilience Score): 권력의 위협 앞에서도 타협하지 않고 양심의 법정을 지켜낸 불굴의 기개.
  *
- * @version LUCKEY-THOMAS-MORE-UTOPIA-v2.0.0
+ * @version LUCKEY-THOMAS-MORE-UTOPIA-v2.3.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const BRITISH_THOMAS_MORE_UTOPIA_VERSION = 'LUCKEY-THOMAS-MORE-UTOPIA-v2.2.0';
+export const BRITISH_THOMAS_MORE_UTOPIA_VERSION = 'LUCKEY-THOMAS-MORE-UTOPIA-v2.3.0';
 
 export type MoreQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -51,8 +51,11 @@ export interface BritishThomasMoreUtopiaResult {
   steadfastMoralCourageResilienceScore: number;     // 도덕적 용기 회복탄력성 (Steadfast Moral Courage)
   // 세부 분석
   questionTopic: MoreQuestionTopic;
+  utopiaPhase: string;
+  shadowWarning: string;
   temporalMoreRhythm: MoreTemporalRhythm;
   activeMoreTheme: ThomasMoreTheme;
+  companionMoreTheme: ThomasMoreTheme;
   focalMoreAphorism: ThomasMoreAphorism;
   practiceGuidance: string;
   ritualAction: string;
@@ -70,6 +73,18 @@ export interface BritishThomasMoreUtopiaResult {
     philosophicalCounsel: string;
   };
 }
+
+const MORE_UTOPIA_PHASES = [
+  '양심 정돈(헛된 과시와 과욕을 걷어내고 내면의 기준을 바로 세우는 시기)',
+  '노동·여가 균형(집중된 일과 영혼을 회복하는 오티움의 리듬을 맞추는 시기)',
+  '우회적 실천(불완전한 현실 속에서 돛을 조율해 선을 넓혀 가는 시기)',
+] as const;
+
+const MORE_SHADOW_WARNINGS = [
+  '이상과 양심의 기준을 높이다 현실의 유연한 타협과 대화의 여지까지 닫아 버리지 않도록 살피세요.',
+  '여가와 쉼을 챙긴다는 이유로 지금 매듭지어야 할 공동의 책임까지 미루지 않도록 점검하세요.',
+  '우회적 지혜를 쓰려다 정작 지켜야 할 양심의 핵심 선까지 흐려지지 않도록 유의하세요.',
+] as const;
 
 export const THOMAS_MORE_THEMES: ThomasMoreTheme[] = [
   {
@@ -254,30 +269,34 @@ export function calculateBritishThomasMoreUtopia(
   const steadfastMoralCourageResilienceScore = 86 + ((absHash >> 13) % 13);
 
   const themeIndex = (absHash >> 5) % THOMAS_MORE_THEMES.length;
+  const companionOffset = 1 + ((absHash >> 6) % (THOMAS_MORE_THEMES.length - 1));
   const aphorismIndex = (absHash >> 8) % THOMAS_MORE_APHORISMS.length;
 
   const activeMoreTheme = THOMAS_MORE_THEMES[themeIndex];
+  const companionMoreTheme = THOMAS_MORE_THEMES[(themeIndex + companionOffset) % THOMAS_MORE_THEMES.length];
   const focalMoreAphorism = THOMAS_MORE_APHORISMS[aphorismIndex];
+  const utopiaPhase = MORE_UTOPIA_PHASES[(absHash >> 11) % MORE_UTOPIA_PHASES.length];
+  const shadowWarning = MORE_SHADOW_WARNINGS[(absHash >> 14) % MORE_SHADOW_WARNINGS.length];
 
   const guidanceTitle = `토머스 모어 유토피아 양심과 삶의 균형 지혜: ${activeMoreTheme.themeTitleKo}`;
   const philosophicalCounsel = `영국의 사상가 토머스 모어는 《유토피아》를 통해 탐욕과 불평등을 넘어 노동과 여가의 조화, ` +
     `내면의 순결한 양심, 그리고 공공선의 균형을 비춥니다. ` +
-    `현재 당신의 흐름에서 핵심이 되는 관점은 '${activeMoreTheme.themeTitleKo}'입니다. ` +
+    `현재 당신의 흐름에서 핵심이 되는 관점은 '${activeMoreTheme.themeTitleKo}'(동반 테마: ${companionMoreTheme.themeTitleKo})입니다. ` +
     `${activeMoreTheme.practicalCounsel} ${topicGuidance.practiceGuidance} "${focalMoreAphorism.aphorismKo}"(${focalMoreAphorism.aphorismLatin})의 뜻처럼, ` +
     `${focalMoreAphorism.actionGuidance}`;
 
   const boundaryNotice = '토머스 모어 유토피아 해석은 노동·여가의 균형과 양심적 성찰을 돕는 상징 관점이며, 미래 예측이나 확정적 판단이 아닙니다.';
   const baseDate = now ?? new Date();
   const kst = new Date(baseDate.getTime() + 9 * 60 * 60 * 1000);
-  const kstTimeLabel = `${temporalMoreRhythm.kstDateLabel} ${String(kst.getUTCHours()).padStart(2, '0')}:${String(kst.getUTCMinutes()).padStart(2, '0')} +09:00 (KST)`;
+  const kstTimeLabel = `${temporalMoreRhythm.kstDateLabel}T${String(kst.getUTCHours()).padStart(2, '0')}:${String(kst.getUTCMinutes()).padStart(2, '0')}:00+09:00 (KST)`;
   const trimmedQuery = (query ?? '').trim();
   const reflectiveQuestion = trimmedQuery
-    ? `"${trimmedQuery}"라는 고민 속에서, 일과 여가(Otium)의 균형을 잃지 않고 내면의 양심에 부끄럽지 않게 지킬 수 있는 선택은 무엇인가요?`
-    : topicGuidance.reflectionFocus;
+    ? `"${trimmedQuery}"라는 고민 속에서, '${utopiaPhase}' 국면과 일·여가(Otium)의 균형을 잃지 않고 내면의 양심에 부끄럽지 않게 지킬 수 있는 선택은 무엇인가요?`
+    : `'${utopiaPhase}' 국면에서 ${topicGuidance.reflectionFocus}`;
   const moreSynthesisMatrix = {
     coreInsight: activeMoreTheme.themeTitleKo,
-    recommendedAction: topicGuidance.practiceGuidance,
-    cautionNotice: '단기적 탐욕과 체면치레에 휘둘려 노동·쉼의 균형과 내면의 양심을 팔지 마십시오.',
+    recommendedAction: `${topicGuidance.practiceGuidance} (${utopiaPhase})`,
+    cautionNotice: shadowWarning,
   };
 
   return {
@@ -289,11 +308,14 @@ export function calculateBritishThomasMoreUtopia(
     visionarySocialReformIndex,
     steadfastMoralCourageResilienceScore,
     questionTopic,
+    utopiaPhase,
+    shadowWarning,
     temporalMoreRhythm,
     activeMoreTheme,
+    companionMoreTheme,
     focalMoreAphorism,
-    practiceGuidance: topicGuidance.practiceGuidance,
-    ritualAction: topicGuidance.ritualAction,
+    practiceGuidance: `${topicGuidance.practiceGuidance} (동반 테마: ${companionMoreTheme.themeTitleKo})`,
+    ritualAction: `${topicGuidance.ritualAction} (${utopiaPhase})`,
     reflectionFocus: topicGuidance.reflectionFocus,
     reflectiveQuestion,
     boundaryNotice,
@@ -313,8 +335,11 @@ export function formatBritishThomasMoreUtopiaPrompt(
     `【토머스 모어 《유토피아》 공동체 양심·삶의 균형 및 도덕적 용기 지표 (${res.engineVersion})】`,
     `- 연산 시각: ${res.calculatedAtKst}`,
     `- 질문 주제 맥락: ${res.questionTopic}`,
+    `- 유토피아 국면: ${res.utopiaPhase}`,
     `- KST 시공간 리듬: ${res.temporalMoreRhythm.kstDateLabel} · ${res.temporalMoreRhythm.timeWindowKo} (${res.temporalMoreRhythm.utopiaTone}) — ${res.temporalMoreRhythm.rhythmDirective}`,
     `- 핵심 토머스 모어 테마: ${res.activeMoreTheme.themeTitleKo} [${res.activeMoreTheme.themeTitleEn}]`,
+    `- 동반 토머스 모어 테마: ${res.companionMoreTheme.themeTitleKo}`,
+    `- 과잉·경계 점검: ${res.shadowWarning}`,
     `- 실천적 통찰: ${res.activeMoreTheme.pragmaticInsight}`,
     `- 행동 조언: ${res.activeMoreTheme.practicalCounsel}`,
     `- 질문 맞춤 실천 가이드: ${res.practiceGuidance}`,

@@ -8,12 +8,12 @@
  * 4. 내면 의식의 흐름 수용 및 진실성 지표 (Stream of Consciousness Authenticity Index): 관습적 형식에 얽매이지 않고 인간 내면의 솔직한 감정과 사유의 물결을 온전히 긍정하는 힘.
  * 5. 세월의 파도 속에서도 중심을 잡는 등대적 회복탄력성 (Lighthouse Steadfast Resilience Score): 시간의 무상함과 상실 속에서도 삶의 의미를 잃지 않고 내면의 빛을 비추는 회복탄력성.
  *
- * @version LUCKEY-VIRGINIA-WOOLF-ROOM-OF-ONES-OWN-v2.0.0
+ * @version LUCKEY-VIRGINIA-WOOLF-ROOM-OF-ONES-OWN-v2.3.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const BRITISH_VIRGINIA_WOOLF_ROOM_OF_ONES_OWN_VERSION = 'LUCKEY-VIRGINIA-WOOLF-ROOM-OF-ONES-OWN-v2.2.0';
+export const BRITISH_VIRGINIA_WOOLF_ROOM_OF_ONES_OWN_VERSION = 'LUCKEY-VIRGINIA-WOOLF-ROOM-OF-ONES-OWN-v2.3.0';
 
 export type WoolfQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -51,8 +51,11 @@ export interface BritishVirginiaWoolfRoomOfOnesOwnResult {
   lighthouseResilienceScore: number;                    // 등대적 회복탄력성 (Lighthouse Steadfast Resilience)
   // 세부 분석
   questionTopic: WoolfQuestionTopic;
+  luminousPhase: string;
+  shadowWarning: string;
   temporalWoolfRhythm: WoolfTemporalRhythm;
   activeWoolfTheme: WoolfTheme;
+  companionWoolfTheme: WoolfTheme;
   focalWoolfAphorism: WoolfAphorism;
   practiceGuidance: string;
   ritualAction: string;
@@ -70,6 +73,18 @@ export interface BritishVirginiaWoolfRoomOfOnesOwnResult {
     philosophicalCounsel: string;
   };
 }
+
+const WOOLF_LUMINOUS_PHASES = [
+  '자기만의 방 개방(외부 소음을 닫고 내면의 문장과 시선을 되찾는 시기)',
+  '존재의 순간 포착(무감각한 일상 틈에서 번뜩이는 작은 성냥빛을 건져 올리는 시기)',
+  '등대 시선 정렬(이성과 감성이 공명하며 흔들리지 않는 중심을 세우는 시기)',
+] as const;
+
+const WOOLF_SHADOW_WARNINGS = [
+  '자기만의 방을 지키려다 필요한 현실의 연결과 협력의 문까지 너무 굳게 걸어 잠그지 않도록 살피세요.',
+  '찰나의 감수성과 의식의 흐름에 머물다 오늘 실제로 마쳐야 할 현실적 자립의 한 걸음을 놓치지 않도록 점검하세요.',
+  '완벽한 계시나 큰 영감만 기다리다 오늘 눈앞의 작은 성냥빛 같은 기회를 지나치지 않도록 유의하세요.',
+] as const;
 
 export const WOOLF_THEMES: WoolfTheme[] = [
   {
@@ -247,31 +262,35 @@ export function calculateBritishVirginiaWoolfRoomOfOnesOwn(
   const lighthouseResilienceScore = 89 + ((absHash >> 13) % 10);
 
   const themeIndex = (absHash >> 5) % WOOLF_THEMES.length;
+  const companionOffset = 1 + ((absHash >> 6) % (WOOLF_THEMES.length - 1));
   const aphorismIndex = (absHash >> 8) % WOOLF_APHORISMS.length;
 
   const activeWoolfTheme = WOOLF_THEMES[themeIndex];
+  const companionWoolfTheme = WOOLF_THEMES[(themeIndex + companionOffset) % WOOLF_THEMES.length];
   const focalWoolfAphorism = WOOLF_APHORISMS[aphorismIndex];
+  const luminousPhase = WOOLF_LUMINOUS_PHASES[(absHash >> 11) % WOOLF_LUMINOUS_PHASES.length];
+  const shadowWarning = WOOLF_SHADOW_WARNINGS[(absHash >> 14) % WOOLF_SHADOW_WARNINGS.length];
 
   const guidanceTitle = `버지니아 울프 자기만의 방과 존재의 순간들: ${activeWoolfTheme.themeTitleKo}`;
   const philosophicalCounsel = `20세기 모더니즘 문학의 거장 버지니아 울프 선생은 《자기만의 방》과 《등대로》를 통해 ` +
     `외부의 억압과 편견을 넘어선 온전한 사유의 독립성, 무감각한 일상의 껍질을 뚫고 솟구치는 존재의 순간들(Moments of Being), ` +
     `그리고 이성과 감성이 상호 공명하는 양성구유적(Androgynous) 전인적 창조성의 길을 제시했습니다. ` +
-    `지금 당신에게 가장 필요한 실천적 나침반은 '${activeWoolfTheme.themeTitleKo}'입니다. ` +
+    `지금 당신에게 가장 필요한 실천적 나침반은 '${activeWoolfTheme.themeTitleKo}'(동반 테마: ${companionWoolfTheme.themeTitleKo})입니다. ` +
     `${activeWoolfTheme.practicalCounsel} ${topicGuidance.practiceGuidance} 울프의 명언 "${focalWoolfAphorism.aphorismKo}" (${focalWoolfAphorism.aphorismEnglish})을 마음에 새기고, ` +
     `${focalWoolfAphorism.actionGuidance}`;
 
   const boundaryNotice = '버지니아 울프 문학·철학 해석은 사유의 독립과 내면 성찰을 돕는 상징 관점이며, 현실의 확정 예언이나 의학적 진단이 아닙니다.';
   const baseDate = now ?? new Date();
   const kst = new Date(baseDate.getTime() + 9 * 60 * 60 * 1000);
-  const kstTimeLabel = `${temporalWoolfRhythm.kstDateLabel} ${String(kst.getUTCHours()).padStart(2, '0')}:${String(kst.getUTCMinutes()).padStart(2, '0')} +09:00 (KST)`;
+  const kstTimeLabel = `${temporalWoolfRhythm.kstDateLabel}T${String(kst.getUTCHours()).padStart(2, '0')}:${String(kst.getUTCMinutes()).padStart(2, '0')}:00+09:00 (KST)`;
   const trimmedQuery = (query ?? '').trim();
   const reflectiveQuestion = trimmedQuery
-    ? `"${trimmedQuery}"라는 질문 앞에서, 외부의 소음을 닫고 나만의 '자기만의 방'에서 고요히 꺼내 들 수 있는 진실한 목소리는 무엇인가요?`
-    : topicGuidance.reflectionFocus;
+    ? `"${trimmedQuery}"라는 질문 앞에서, '${luminousPhase}' 국면으로 외부의 소음을 닫고 나만의 '자기만의 방'에서 고요히 꺼내 들 수 있는 진실한 목소리는 무엇인가요?`
+    : `'${luminousPhase}' 국면에서 ${topicGuidance.reflectionFocus}`;
   const woolfSynthesisMatrix = {
     coreInsight: activeWoolfTheme.themeTitleKo,
-    recommendedAction: topicGuidance.practiceGuidance,
-    cautionNotice: '타인의 요구와 세속적 소음에 나만의 시간·사유의 방을 전부 내주지 마십시오.',
+    recommendedAction: `${topicGuidance.practiceGuidance} (${luminousPhase})`,
+    cautionNotice: shadowWarning,
   };
 
   return {
@@ -283,11 +302,14 @@ export function calculateBritishVirginiaWoolfRoomOfOnesOwn(
     streamOfConsciousnessFlowIndex,
     lighthouseResilienceScore,
     questionTopic,
+    luminousPhase,
+    shadowWarning,
     temporalWoolfRhythm,
     activeWoolfTheme,
+    companionWoolfTheme,
     focalWoolfAphorism,
-    practiceGuidance: topicGuidance.practiceGuidance,
-    ritualAction: topicGuidance.ritualAction,
+    practiceGuidance: `${topicGuidance.practiceGuidance} (동반 테마: ${companionWoolfTheme.themeTitleKo})`,
+    ritualAction: `${topicGuidance.ritualAction} (${luminousPhase})`,
     reflectionFocus: topicGuidance.reflectionFocus,
     reflectiveQuestion,
     boundaryNotice,
@@ -307,8 +329,11 @@ export function formatBritishVirginiaWoolfRoomOfOnesOwnPrompt(
     `【버지니아 울프 《자기만의 방·등대로》 사유의 독립·존재의 순간들 지표 (${res.engineVersion})】`,
     `- 연산 시각: ${res.calculatedAtKst}`,
     `- 질문 주제 맥락: ${res.questionTopic}`,
+    `- 사유 국면: ${res.luminousPhase}`,
     `- KST 시공간 리듬: ${res.temporalWoolfRhythm.kstDateLabel} · ${res.temporalWoolfRhythm.timeWindowKo} (${res.temporalWoolfRhythm.luminousTone}) — ${res.temporalWoolfRhythm.rhythmDirective}`,
     `- 핵심 울프 테마: ${res.activeWoolfTheme.themeTitleKo} [${res.activeWoolfTheme.themeTitleEn}]`,
+    `- 동반 울프 테마: ${res.companionWoolfTheme.themeTitleKo}`,
+    `- 과잉·경계 점검: ${res.shadowWarning}`,
     `- 문학적 통찰: ${res.activeWoolfTheme.literaryInsight}`,
     `- 행동 조언: ${res.activeWoolfTheme.practicalCounsel}`,
     `- 질문 맞춤 실천 가이드: ${res.practiceGuidance}`,
