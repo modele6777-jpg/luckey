@@ -1,12 +1,17 @@
 import type { UserProfile } from '../sharedState';
 
+export type PortugueseQuestionTopic = 'career' | 'relationship' | 'wealth' | 'health' | 'decision' | 'general';
+
 export interface PortugueseSagresResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: PortugueseQuestionTopic;
   atlanticCompass: string;
   companionCompass: string;
   sagresInsight: string;
   atlanticTone: string;
+  caravelHeadingAxis: string;
+  shadowWarning: string;
   reflectionFocus: string;
   ritualAction: string;
   reflectiveQuestion: string;
@@ -51,6 +56,16 @@ const COMPASSES = [
   },
 ];
 
+function classifyPortugueseTopic(question?: string): PortugueseQuestionTopic {
+  const q = (question ?? '').trim();
+  if (/이직|직장|사업|승진|일|커리어|프로젝트|업무/.test(q)) return 'career';
+  if (/연애|결혼|사람|관계|가족|갈등|친구|이별|소통/.test(q)) return 'relationship';
+  if (/돈|재물|투자|재정|수입|지출|계약|매매/.test(q)) return 'wealth';
+  if (/건강|몸|마음|휴식|수면|피로|회복/.test(q)) return 'health';
+  if (/결정|선택|고민|방향|시작|역풍|나아가/.test(q)) return 'decision';
+  return 'general';
+}
+
 function formatKstIso(date: Date): string {
   const kst = new Date(date.getTime() + 9 * 60 * 60 * 1000);
   const y = kst.getUTCFullYear();
@@ -81,14 +96,20 @@ export function calculatePortugueseSaudadeSagresCompass(params: {
   const companionOffset = 1 + (stableHash(`${seed}|companion`) % (COMPASSES.length - 1));
   const picked = COMPASSES[idx];
   const companion = COMPASSES[(idx + companionOffset) % COMPASSES.length];
+  const questionTopic = classifyPortugueseTopic(params.question);
+  const caravelHeadingAxis = `${picked.compass.split('(')[0].trim()} ↔ ${companion.compass.split('(')[0].trim()} 대서양 항로 축`;
+  const shadowWarning = `[${picked.compass.split('(')[0].trim()} 과잉 경계] 새로운 항로를 좇거나 지난 기억을 되새기는 데 기울어 지금 눈앞의 한 걸음을 놓치지 않도록 살피십시오.`;
 
   return {
-    engineVersion: 'LUCKEY-PORTUGUESE-SAGRES-v2.2.0',
+    engineVersion: 'LUCKEY-PORTUGUESE-SAGRES-v2.3.0',
     calculatedAtKst: formatKstIso(now),
+    questionTopic,
     atlanticCompass: picked.compass,
     companionCompass: companion.compass,
     sagresInsight: `${picked.insight} (동반 항로: ${companion.compass})`,
     atlanticTone: picked.tone,
+    caravelHeadingAxis,
+    shadowWarning,
     reflectionFocus: `포르투갈 대서양 지혜의 '${picked.compass}'와 동반 항로 '${companion.compass}'처럼, 완벽한 지도가 없더라도 지금 내 손에 있는 작은 단서를 믿고 유연하게 각도를 틀어 보세요.`,
     ritualAction: picked.ritual,
     reflectiveQuestion: picked.question,
@@ -99,13 +120,15 @@ export function calculatePortugueseSaudadeSagresCompass(params: {
 export function formatPortugueseSagresPrompt(res: PortugueseSagresResult): string {
   return [
     `[포르투갈 사우다데·사그레스 나침반 성찰 · ${res.engineVersion}]`,
-    `- 기준 시각: ${res.calculatedAtKst}`,
+    `- 기준 시각: ${res.calculatedAtKst} | 질문 맥락: ${res.questionTopic}`,
     `- 대서양 상징: ${res.atlanticCompass} (${res.atlanticTone})`,
     `- 동반 항로: ${res.companionCompass}`,
+    `- 대서양 항로 축: ${res.caravelHeadingAxis}`,
     `- 중심 통찰: ${res.sagresInsight}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 오늘의 작은 실천: ${res.ritualAction}`,
     `- 스스로에게 묻기: ${res.reflectiveQuestion}`,
+    `- 과잉 경계: ${res.shadowWarning}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
   ].join('\n');
 }
