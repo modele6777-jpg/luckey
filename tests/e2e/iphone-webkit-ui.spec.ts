@@ -450,26 +450,37 @@ test('typing in the composer shows no AI detection badge', async ({ page }) => {
   await expect(page.getByText('AI 감지')).toHaveCount(0);
 });
 
-test('Big Bang left and right controls stay disabled in Lucy chat', async ({ page }) => {
+test('Big Bang left and right taps step Lucy Master in Lucy chat', async ({ page }) => {
   await openLucy(page);
   const bigBang = page.locator('div[data-bigbang="true"]');
   await expect(bigBang).toBeVisible();
-  await expect(bigBang).toHaveAttribute('data-cycle-navigation-disabled', 'true');
   await expectHiddenDirectionTarget(bigBang, 'north', 'epilogue');
   await expectHiddenDirectionTarget(bigBang, 'south', 'key');
-  await expect(bigBang.locator('[data-bigbang-direction-target="west"]')).toHaveCount(0);
-  await expect(bigBang.locator('[data-bigbang-direction-target="east"]')).toHaveCount(0);
   const box = await bigBang.boundingBox();
   expect(box).not.toBeNull();
   if (!box) throw new Error('Big Bang hit area is missing');
 
   const chatUrl = page.url();
+  const centerX = box.x + box.width / 2;
   const centerY = box.y + box.height / 2;
-  for (const offsetX of [-36, 36]) {
-    await page.touchscreen.tap(box.x + box.width / 2 + offsetX, centerY);
-    await expect(page).toHaveURL(chatUrl);
-    await expect(page.locator('.lucy-chat-footer')).toBeVisible();
-  }
+  const master = () => page.evaluate(() => [sessionStorage.getItem('lucy_master_mode'), sessionStorage.getItem('lucy_master_depth') || '1']);
+  const tap = async (offsetX: number) => {
+    await page.touchscreen.tap(centerX + offsetX, centerY);
+    await page.waitForTimeout(450);
+  };
+  // 오른쪽 = 한 단계 깊게: 루시 → 점술모드 1 → 2
+  await tap(36);
+  await expect.poll(master).toEqual(['on', '1']);
+  await tap(36);
+  await expect.poll(master).toEqual(['on', '2']);
+  // 왼쪽 = 한 단계 얕게: 2 → 1 → 루시
+  await tap(-36);
+  await expect.poll(master).toEqual(['on', '1']);
+  await tap(-36);
+  await expect.poll(() => page.evaluate(() => sessionStorage.getItem('lucy_master_mode'))).toBeNull();
+  // 화면(채널)은 바뀌지 않는다.
+  await expect(page).toHaveURL(chatUrl);
+  await expect(page.locator('.lucy-chat-footer')).toBeVisible();
 });
 
 test('Big Bang left and right controls stay disabled in the Key channel', async ({ page }) => {
