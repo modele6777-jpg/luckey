@@ -187,7 +187,10 @@ export default function LeftSidebarNav() {
   });
   useEffect(() => {
     const openForLucky = () => setIsChannelsOpen(true);
-    const closeForExit = () => setIsChannelsOpen(false);
+    const closeForExit = () => {
+      if (isDualPaneLayout()) return;
+      setIsChannelsOpen(false);
+    };
     window.addEventListener('prism:open-lucky-channels', openForLucky);
     window.addEventListener('prism:close-lucky-channels', closeForExit);
     return () => {
@@ -260,9 +263,10 @@ export default function LeftSidebarNav() {
   }, []);
   const [location, navigate] = useLocation();
   const cleanPath = location ? location.split('?')[0].split('#')[0] : '/';
+  const channelsVisible = isUnfolded || isChannelsOpen;
   useEffect(() => {
-    if (cleanPath === '/lucky') setIsChannelsOpen(true);
-  }, [cleanPath]);
+    if (cleanPath === '/lucky' || isUnfolded) setIsChannelsOpen(true);
+  }, [cleanPath, isUnfolded]);
   const { resolvedTheme } = useTheme();
   const reduceMotion = useReducedMotion();
 
@@ -581,7 +585,7 @@ export default function LeftSidebarNav() {
     >
               <div
                 className="refined-menu-list flex-1 overflow-y-auto no-scrollbar"
-                data-channels-open={isChannelsOpen ? 'true' : 'false'}
+                data-channels-open={channelsVisible ? 'true' : 'false'}
               >
                 <div className="refined-menu-content">
                   {renderNavButton(CORE_CHANNELS[0])}
@@ -604,10 +608,10 @@ export default function LeftSidebarNav() {
                   <button
                     type="button"
                     className="refined-nav-item"
-                    data-active={cleanPath === '/lucky' || isChannelsOpen || PRISM_CHANNELS.some(({ path }) => cleanPath === path)}
+                    data-active={cleanPath === '/lucky' || channelsVisible || PRISM_CHANNELS.some(({ path }) => cleanPath === path)}
                     aria-label="Luckey"
-                    aria-expanded={isChannelsOpen}
-                    aria-controls={isChannelsOpen ? 'prism-channel-icons' : undefined}
+                    aria-expanded={channelsVisible}
+                    aria-controls={channelsVisible ? 'prism-channel-icons' : undefined}
                     title="Luckey"
                     onClick={() => {
                       triggerHaptic('whitehole');
@@ -618,7 +622,7 @@ export default function LeftSidebarNav() {
                     <Clover size={22} aria-hidden="true" />
                   </button>
                   <AnimatePresence initial={false}>
-                    {isChannelsOpen && (
+                    {channelsVisible && (
                       <motion.div
                         id="prism-channel-icons"
                         className="refined-prism-icons"
