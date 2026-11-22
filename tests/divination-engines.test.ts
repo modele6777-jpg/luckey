@@ -15939,4 +15939,22 @@ test('buildUserFifteenToolsDigest integrates 6th-round Kyusei, Tojeong, and Taiy
   assert.ok(!/juBalanceScore|initiativeIndex|defensiveIndex|directionalScores|synergyScore|harmonyScore/.test(digest));
 });
 
+test('buildUserFifteenToolsDigest integrates 7th-round Saju, Astrology, and Ziwei analysis notes, ruler/mood, and yearly axes without raw scores', () => {
+  const profile: any = {
+    basic: {
+      name: '제제',
+      birthdate: '1994-01-24',
+      birthtime: '10:30',
+      calendarType: 'solar',
+      isLeapMonth: false,
+      gender: 'male',
+    },
+  };
+  const digest = buildUserFifteenToolsDigest(profile, new Date('2026-11-22T09:16:00+09:00'));
+  assert.ok(digest.includes('근거:') && digest.includes('판정:'));
+  assert.ok(digest.includes('태양 지배성(') && digest.includes('달 정서 결:'));
+  assert.ok(digest.includes('재물/커리어:') && digest.includes('관계/건강:'));
+  assert.ok(!/deukSeScore|driveScore|wealthAffinityScore|intuitionScore|breakthroughPowerScore/.test(digest));
+});
+
 
