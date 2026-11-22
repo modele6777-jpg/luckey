@@ -46,7 +46,7 @@ import { useFoldState, subscribeFoldState } from "./lib/foldState";
 import { isDuoDividerDoubleTap, mapDuoPaneSide, shouldResetDuoPaneSwapOnFold, type DuoDividerTap } from "./lib/duoPaneSwap";
 import { DuoCosmicAmbientRoom } from "./components/duo/DuoCosmicAmbientRoom";
 import { DuoDivinationTarotPane } from "./components/duo/DuoDivinationTarotPane";
-import { useLucyMasterMode, useLucyMasterToolsRequested, setLucyMasterToolsRequested } from "./lib/lucyMasterMode";
+import { useLucyMasterMode, setLucyMasterToolsRequested } from "./lib/lucyMasterMode";
 import AuroraBackground from "./components/AuroraBackground";
 import EpilogueApp from "./pages/EpilogueApp";
 
@@ -270,7 +270,6 @@ function AppContent() {
   const duoState = useFoldState();
   const isDuoUnfolded = duoState.unfolded;
   const isDivinationMode = useLucyMasterMode();
-  const isMasterToolsRequested = useLucyMasterToolsRequested();
   const isDuoPortrait = isDuoUnfolded && duoState.orientation === 'portrait';
   const isDuoLandscape = isDuoUnfolded && duoState.orientation === 'landscape';
   const [duoPanesSwapped, setDuoPanesSwapped] = React.useState(false);
@@ -770,7 +769,7 @@ function AppContent() {
 
   React.useEffect(() => {
     if (typeof document === 'undefined') return;
-    const isCosmicActive = isDuoUnfolded && isLucyRoute;
+    const isCosmicActive = isDuoUnfolded && isLucyRoute && !isDivinationMode;
     document.documentElement.classList.toggle('duo-cosmic-active', isCosmicActive);
     document.body.classList.toggle('duo-cosmic-active', isCosmicActive);
   }, [isDuoUnfolded, isLucyRoute]);
@@ -948,8 +947,8 @@ function AppContent() {
                   {isLucyRoute ? (
                     /* 최우측/최하단 메뉴에서 루시 선택 시 ➔ 코스믹 룸 표출 */
                     <div className="w-full h-full overflow-hidden flex flex-col">
-                      {/* 🔮 타로 도구는 펼친 Lucy Master에서 말풍선을 직접 눌렀을 때만 연다 */}
-                      {isDivinationMode && isDuoUnfolded && isMasterToolsRequested
+                      {/* 코스믹 룸은 Lucy Plus 전용. Lucy Master는 항상 점술 테이블. */}
+                      {isDivinationMode
                         ? <DuoDivinationTarotPane isLight={isLight} />
                         : <DuoCosmicAmbientRoom isLight={isLight} />}
                     </div>
