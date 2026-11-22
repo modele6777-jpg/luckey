@@ -1,10 +1,10 @@
 {
-  "version": "1.8.326",
-  "builtAt": "2026-11-23T04:27:00+09:00",
-  "summary": "오성과 한음·연암 박지원·아담 스미스 3대 엔진 3축 국면 및 동반 테마·과잉 경계 심층 강화(v1.8.326)",
+  "version": "1.8.327",
+  "builtAt": "2026-11-23T04:33:00+09:00",
+  "summary": "데이비드 흄·조르다노 브루노·마야 포폴 부 3대 엔진 3축 국면 및 동반 관문·과잉 경계 심층 강화(v1.8.327)",
   "items": [
-    "오성과 한음 지기지우·경세제민 엔진(v2.3.0): 동반 테마(companionOhseongHaneumTheme)·지기·경세 국면(friendshipPhase)·과잉 경계(shadowWarning) 추가",
-    "연암 박지원 《열하일기》 실학 엔진(v2.3.0): 동반 실학 테마(companionYeonamTheme)·실학 국면(silhakPhase)·과잉 경계(shadowWarning) 추가",
-    "아담 스미스 《도덕감정론》 엔진(v2.3.0): 질문 맥락 분류(questionTopic)·공정한 관찰자 국면(moralPhase)·과잉 경계(shadowWarning) 추가"
+    "데이비드 흄 《인간 본성에 관한 논고》 엔진(v2.3.0): 질문 맥락 분류(questionTopic)·인간 본성 국면(humePhase)·과잉 경계(shadowWarning) 추가",
+    "조르다노 브루노 무한우주론·영웅적 열정 엔진(v2.3.0): 질문 맥락 분류(questionTopic)·실천 국면(furorePhase)·과잉 경계(shadowWarning) 추가",
+    "마야 포폴 부 쌍둥이 영웅·시발바 돌파 엔진(v2.3.0): 연계 시련 관문(companionTrialHouse)·돌파 국면(heroicPhase)·과잉 경계(shadowWarning) 추가"
   ]
 }
