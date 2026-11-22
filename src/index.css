@@ -3194,19 +3194,25 @@ html.light .lucy-cosmic-bubble .lucy-user-cosmic-msg *:not(:where(.lucy-chat-she
 @keyframes sidebar-aurora-pulse { 0%, 100% { opacity: .65; } 50% { opacity: 1; } }
 @media (prefers-reduced-motion: reduce) { .sidebar-aurora > * { animation: none; } }
 
-/* Shared brand alignment across page headers. */
-:root { --page-header-inset: max(14px, env(safe-area-inset-left, 0px)); --page-header-top: max(14px, calc(env(safe-area-inset-top, 0px) + 10px)); }
-@media (min-width: 640px) { :root { --page-header-inset: max(32px, env(safe-area-inset-left, 0px)); } }
-@media (min-width: 1024px) { :root { --page-header-inset: max(48px, env(safe-area-inset-left, 0px)); } }
-.lucy-chat-header { padding-left: var(--page-header-inset) !important; }
-html:root [data-page-brand="true"] {
-  top: 0 !important;
-  left: 0 !important;
-  padding-left: var(--page-header-inset) !important;
-  padding-right: 14px;
-  padding-top: var(--page-header-top) !important;
-  width: 100%;
-  box-sizing: border-box;
+/* Every page header uses the Orb header's box: full pane width, 14px sides, same bar height. */
+:root {
+  --orb-header-pad-x: 14px;
+  --orb-header-pad-top: max(14px, calc(env(safe-area-inset-top, 0px) + 10px));
+  --orb-header-pad-bottom: 12px;
+  --orb-header-min-height: 56px;
+  --page-header-inset: var(--orb-header-pad-x);
+  --page-header-top: var(--orb-header-pad-top);
+  --duo-pane-header-height: max(var(--orb-header-min-height), calc(var(--orb-header-pad-top) + var(--orb-header-pad-bottom) + 32px));
+}
+html:root :is(.lucy-chat-header, .lucy-orb-header, [data-page-brand="true"]) {
+  box-sizing: border-box !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  height: var(--duo-pane-header-height) !important;
+  min-height: var(--duo-pane-header-height) !important;
+  max-height: var(--duo-pane-header-height) !important;
+  padding: 0 var(--orb-header-pad-x) !important;
+  justify-content: center !important;
 }
 html:root [data-page-brand="true"].fixed { top: 0 !important; }
 html:root [data-page-brand="true"] > div { padding-left: 0 !important; min-height: 40px; }
@@ -3318,12 +3324,7 @@ body:has(.keyboard-open) .bottom-safe-fab-center:not([data-selection-send="true"
   }
 }
 
-/* 📱 iPhone Duo 펼침 세로 모드(Portrait 50% 상하 분할) 시:
-   하단에 위치하는 루시 채팅창 상단에는 노치/다이나믹 아일랜드가 없으므로 과다 상단 여백 제거 */
-.duo-dual-view.flex-col #duo-lucy-viewport .lucy-chat-header,
-.duo-dual-view.flex-col #duo-lucy-viewport header {
-  padding-top: max(8px, 0.5rem) !important;
-}
+/* Headers keep the Orb bar in every fold, including the lower portrait pane. */
 
 /* ==========================================================================
    📱 iPhone Duo 7.6" 펼침 화면 최적화 (가로 좌우 50vw / 세로 상하 50vh)
@@ -3587,8 +3588,8 @@ html.duo-unfolded-mode #duo-content-viewport {
      contain: layout gives fixed descendants this containing block without a
      composited transform, which iOS would pin to the pre-unfold viewport. */
   contain: layout;
-  --page-header-inset: clamp(14px, 4cqw, 32px);
-  --page-header-top: max(14px, env(safe-area-inset-top, 0px));
+  --page-header-inset: 14px;
+  --page-header-top: 0px;
 }
 
 html.duo-unfolded-mode #duo-content-viewport .h-app-full {
@@ -3777,34 +3778,21 @@ body.duo-unfolded-portrait.duo-panels-swapped .prism-aura-bg:not([data-channel-b
   height: calc(var(--duo-portrait-canvas-height) / 2) !important;
 }
 
-/* Lucy, Lucy Plus and Lucy Master share the header height used beside Key. */
-.lucy-chat-shell .lucy-chat-header {
+/* Lucy, channel and Orb headers share one bar. Folded and unfolded stay the same width. */
+.lucy-chat-shell .lucy-chat-header,
+html.duo-unfolded-landscape.duo-header-sync #duo-lucy-viewport .lucy-chat-header,
+html.duo-unfolded-landscape .lucy-chat-header,
+html.duo-unfolded-portrait .lucy-chat-header,
+.duo-dual-view.flex-col #duo-lucy-viewport .lucy-chat-header,
+.duo-dual-view.flex-col #duo-lucy-viewport header {
   box-sizing: border-box !important;
-  height: var(--duo-pane-header-height, 56px) !important;
-  min-height: var(--duo-pane-header-height, 56px) !important;
-  max-height: var(--duo-pane-header-height, 56px) !important;
-  padding-top: 0 !important;
-  padding-bottom: 0 !important;
-  justify-content: center !important;
-  overflow: hidden !important;
-}
-
-/* Landscape split: Lucy's header bottom meets the Key header bottom. */
-html.duo-unfolded-landscape.duo-header-sync #duo-lucy-viewport .lucy-chat-header {
-  box-sizing: border-box !important;
+  width: 100% !important;
   height: var(--duo-pane-header-height) !important;
   min-height: var(--duo-pane-header-height) !important;
   max-height: var(--duo-pane-header-height) !important;
-  padding-top: 0 !important;
-  padding-bottom: 0 !important;
+  padding: 0 var(--orb-header-pad-x) !important;
   justify-content: center !important;
-}
-
-/* Unfolded Lucy header stays the same compact bar as the cover screen. */
-html.duo-unfolded-landscape .lucy-chat-header,
-html.duo-unfolded-portrait .lucy-chat-header {
-  padding-left: 14px !important;
-  padding-right: 14px !important;
+  overflow: hidden !important;
 }
 html.duo-unfolded-landscape .lucy-chat-header h1,
 html.duo-unfolded-portrait .lucy-chat-header h1 {

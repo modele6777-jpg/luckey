@@ -239,7 +239,7 @@ function ChannelPage({ location }: { location: string }) {
       </div>
       {/* 📘 우측 상단 가이드 (Lucy·Key는 각자 헤더 안에 버튼이 있다) */}
       {!isLucyThemeRoute(path) && !isKeyChannelPath(path) && (
-        <div className="channel-page-guide absolute right-3 z-[45]" style={{ top: 'calc(env(safe-area-inset-top, 0px) + 12px)' }}>
+        <div className="channel-page-guide absolute z-[45] flex items-center" style={{ top: 0, right: 14, height: 'var(--duo-pane-header-height)' }}>
           <PageGuideButton guide={resolvePageGuide(path)} resolve={() => resolveDappGuide(getCurrentOneStopPage(window.location.pathname + window.location.search))} tone={isLuckyChannel ? 'dark' : resolveChannelThemeFromPath(path) === 'light' ? 'light' : 'dark'} />
         </div>
       )}

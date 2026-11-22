@@ -207,7 +207,7 @@ html:root [data-page-brand="true"].duo-page-brand {
    including an unfolded pane, rather than the complete device width. */
 .channel-page { container: channel-page / inline-size; position: relative; isolation: isolate; }
 .channel-page > .channel-page-content {
-  --page-header-inset: max(14px, env(safe-area-inset-left, 0px));
+  --page-header-inset: 14px;
   --page-header-top: 0px;
   --channel-title-top: calc(var(--duo-pane-header-height, 56px) - 1.75rem);
   --channel-nav-top: calc(var(--duo-pane-header-height, 56px) + 8px);

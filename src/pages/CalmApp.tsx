@@ -323,14 +323,6 @@ export default function CalmApp() {
           const rect = nav?.getBoundingClientRect();
           if (rect && rect.height > 0) {
             setActionsTop(Math.max(6, Math.round(rect.top + rect.height / 2 - 20)));
-            const landscape = document.documentElement.classList.contains('duo-unfolded-landscape');
-            if (landscape && document.getElementById('duo-lucy-viewport')) {
-              document.documentElement.style.setProperty('--duo-pane-header-height', `${Math.round(rect.height)}px`);
-              document.documentElement.classList.add('duo-header-sync');
-            } else {
-              document.documentElement.classList.remove('duo-header-sync');
-              document.documentElement.style.removeProperty('--duo-pane-header-height');
-            }
           }
         } catch { /* iframe navigating */ }
       });
@@ -418,7 +410,7 @@ export default function CalmApp() {
     return () => window.removeEventListener('message', onMessage);
   }, []);
   const searchParams = typeof window !== 'undefined' ? window.location.search : '';
-  const iframeSrc = `/calm/index.html${searchParams ? searchParams + '&v=52.2' : '?v=52.2'}`;
+  const iframeSrc = `/calm/index.html${searchParams ? searchParams + '&v=52.3' : '?v=52.3'}`;
 
   return (
     <div

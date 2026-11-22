@@ -743,7 +743,6 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
     if (typeof window === 'undefined') return false;
     return isActuallyUnfoldedDual;
   });
-  const isDuoPortrait = isDuoUnfolded && isDuoUnfoldedState().orientation === 'portrait';
 
   // Lucy Plus is a distinct bubble step, active only in the unfolded Lucy cosmic room.
   const [isMasterMode, setIsMasterMode] = useState<boolean>(() => isLucyMasterModeOn());
@@ -4263,11 +4262,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
           if (target instanceof HTMLElement && target.closest('button, a, input, select, textarea, [role="button"], [data-no-scroll-top]')) return;
           scrollToConversationTop();
         }}
-        style={{
-          paddingTop: isDuoPortrait ? 'max(8px, 0.5rem)' : 'max(14px, calc(env(safe-area-inset-top, 0px) + 10px))',
-          overflowX: 'hidden',
-        }}
-        className={`lucy-chat-header w-full max-w-full overflow-x-hidden px-3.5 sm:px-8 lg:px-12 pb-3 backdrop-blur-xl border-b shadow-xs flex flex-col gap-2.5 z-40 shrink-0 relative transition-colors duration-500 ${
+        className={`lucy-chat-header w-full max-w-full overflow-x-hidden backdrop-blur-xl border-b shadow-xs flex flex-col z-40 shrink-0 relative transition-colors duration-500 ${
           isLight
             ? 'bg-white/85 border-amber-200/60 text-slate-900 shadow-[0_2px_14px_rgba(180,140,90,0.08)]'
             : isPlusMode

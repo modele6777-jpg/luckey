@@ -352,7 +352,7 @@ html.duo-unfolded-mode .lucy-orb-copy { width: min(720px, 92%); }
   justify-content: space-between;
   gap: 8px;
   min-height: 56px;
-  padding: max(14px, calc(env(safe-area-inset-top, 0px) + 10px)) 14px 12px;
+  padding: 0 14px;
   background: rgba(7, 11, 18, 0.62);
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(16px);

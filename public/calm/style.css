@@ -8329,17 +8329,18 @@ html.key-search-open, html.key-search-open body { overflow: hidden; }
 html.luckey-parent-actions #key-search-btn,
 html.luckey-parent-actions #key-guide-btn { display: none !important; }
 html.luckey-parent-actions .top-nav { padding-right: 140px !important; }
-
-/* Key header: hide the cover next to the title and the line under it, and keep the bar a little shorter. */
+.top-nav {
+  box-sizing: border-box !important;
+  width: 100% !important;
+  height: max(56px, calc(max(14px, calc(var(--key-safe-top, env(safe-area-inset-top, 0px)) + 10px)) + 12px + 32px)) !important;
+  min-height: max(56px, calc(max(14px, calc(var(--key-safe-top, env(safe-area-inset-top, 0px)) + 10px)) + 12px + 32px)) !important;
+  max-height: max(56px, calc(max(14px, calc(var(--key-safe-top, env(safe-area-inset-top, 0px)) + 10px)) + 12px + 32px)) !important;
+  padding: 0 14px !important;
+}
+html.luckey-parent-actions .top-nav { padding-right: 140px !important; }
 .brand-icon-thumb,
 .brand-subheading {
   display: none !important;
-}
-.top-nav {
-  padding-top: max(14px, var(--key-safe-top, env(safe-area-inset-top))) !important;
-  padding-bottom: 14px !important;
-  min-height: 56px;
-  box-sizing: border-box;
 }
 .brand-wrapper {
   gap: 0 !important;
