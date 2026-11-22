@@ -1,10 +1,10 @@
 {
-  "version": "1.8.318",
-  "builtAt": "2026-11-22T13:07:32.000Z",
-  "summary": "Orb의 누르고 말하기 기본 모드와 마이크 오류 진단을 보강합니다",
+  "version": "1.8.321",
+  "builtAt": "2026-11-23T04:04:00+09:00",
+  "summary": "들뢰즈·베르그송·루소 3대 엔진 3축 국면 및 동반 테마·과잉 경계 심층 강화(v1.8.321)",
   "items": [
-    "입력창 옆 버튼을 누르고 있는 동안 음성을 전송하고, 상담 중 오브를 짧게 누르면 실시간 대화로 전환합니다",
-    "실시간 대화와 누르고 말하기는 같은 Gemini Live 연결을 사용합니다",
-    "마이크 연결 실패 시 브라우저 오류 코드와 실행 중인 앱의 권한 확인 안내를 표시합니다"
+    "질 들뢰즈 《천 개의 고원》 리좀·생성 엔진(v2.3.0): 동반 들뢰즈 테마(companionDeleuzeTheme)·생성 국면(becomingPhase)·과잉 경계(shadowWarning) 추가",
+    "앙리 베르그송 순수 지속·생명의 도약 엔진(v2.3.0): 동반 생명 테마(companionBergsonTheme)·순수 지속 국면(durationPhase)·과잉 경계(shadowWarning) 추가",
+    "장 자크 루소 《에밀·사회계약론》 자연 회복 엔진(v2.3.0): 동반 자연 테마(companionRousseauTheme)·자연 회복 국면(naturePhase)·과잉 경계(shadowWarning) 추가"
   ]
 }

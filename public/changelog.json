@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.8.321",
+    "builtAt": "2026-11-23T04:04:00+09:00",
+    "summary": "들뢰즈·베르그송·루소 3대 엔진 3축 국면 및 동반 테마·과잉 경계 심층 강화(v1.8.321)",
+    "items": [
+      "질 들뢰즈 《천 개의 고원》 리좀·생성 엔진(v2.3.0): 동반 들뢰즈 테마(companionDeleuzeTheme)·생성 국면(becomingPhase)·과잉 경계(shadowWarning) 추가",
+      "앙리 베르그송 순수 지속·생명의 도약 엔진(v2.3.0): 동반 생명 테마(companionBergsonTheme)·순수 지속 국면(durationPhase)·과잉 경계(shadowWarning) 추가",
+      "장 자크 루소 《에밀·사회계약론》 자연 회복 엔진(v2.3.0): 동반 자연 테마(companionRousseauTheme)·자연 회복 국면(naturePhase)·과잉 경계(shadowWarning) 추가"
+    ]
+  },
+  {
     "version": "1.8.320",
     "builtAt": "2026-11-22T13:45:00.000Z",
     "summary": "TTS 완료음을 메시지 전송 효과음으로 바꾸고 긴 낭독의 음성을 안정화합니다",

@@ -8,12 +8,12 @@
  * 4. 창조적 자유(Liberté créatrice): 우리의 행동이 인격 전체로부터 흘러나와 스스로의 독창적 삶을 조각해 나가는 완전한 실존적 자유.
  * 5. 열린 도덕과 생명성(Société ouverte): 폐쇄된 집단의 배타적 경계를 허물고, 모든 살아있는 존재를 향해 무한히 확장되는 열린 영성과 생명적 연대.
  *
- * @version LUCKEY-HENRI-BERGSON-ELAN-VITAL-v2.0.0
+ * @version LUCKEY-HENRI-BERGSON-ELAN-VITAL-v2.3.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const FRENCH_HENRI_BERGSON_VERSION = 'LUCKEY-HENRI-BERGSON-ELAN-VITAL-v2.2.0';
+export const FRENCH_HENRI_BERGSON_VERSION = 'LUCKEY-HENRI-BERGSON-ELAN-VITAL-v2.3.0';
 
 export type BergsonQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -44,6 +44,8 @@ export interface HenriBergsonElanVitalResult {
   engineVersion: string;
   calculatedAtKst: string;
   questionTopic: BergsonQuestionTopic;
+  durationPhase: string;
+  shadowWarning: string;
   temporalBergsonRhythm: BergsonTemporalRhythm;
   // 5대 핵심 베르그송 생명·시간 지표 (내부 호환용 보존, 프롬프트 비노출)
   pureDurationContinuityScore: number;     // 순수 지속 자아 연속도 (Durée pure)
@@ -53,6 +55,7 @@ export interface HenriBergsonElanVitalResult {
   openSocietyVitalityIndex: number;        // 열린 도덕·생명 포용 지수 (Société ouverte)
   // 세부 분석
   activeBergsonTheme: BergsonTheme;
+  companionBergsonTheme: BergsonTheme;
   focalBergsonAphorism: BergsonAphorism;
   practiceGuidance: string;
   dailyPracticeRitual: string;
@@ -70,6 +73,18 @@ export interface HenriBergsonElanVitalResult {
     philosophicalCounsel: string;
   };
 }
+
+const BERGSON_DURATION_PHASES = [
+  '순수 지속(과거의 경험이 현재로 녹아들어 내면의 두께를 더하는 시기)',
+  '직관 교감(분절된 계산을 멈추고 사물과 사람의 살아있는 리듬에 귀 기울이는 시기)',
+  '생명 도약(물질적 관성을 뚫고 전인격적 자유의 한 걸음을 내딛는 시기)',
+] as const;
+
+const BERGSON_SHADOW_WARNINGS = [
+  '내면의 지속과 숙성에만 머물다 현실의 구체적인 일정과 작은 실행을 뒤로 미루지 않도록 살피세요.',
+  '생명의 도약과 열정에 이끌려 몸의 피로와 호흡의 균형을 지나치지 않도록 점검하세요.',
+  '직관적 공감을 신뢰하되, 필요한 사실 확인과 차분한 정리까지 건너뛰지 않도록 유의하세요.',
+] as const;
 
 export const BERGSON_THEMES: BergsonTheme[] = [
   {
@@ -283,10 +298,14 @@ export function calculateHenriBergsonElanVital(
   const openSocietyVitalityIndex = 70 + ((absHash >> 12) % 29);
 
   const themeIndex = (absHash >> 4) % BERGSON_THEMES.length;
+  const companionOffset = 1 + ((absHash >> 5) % (BERGSON_THEMES.length - 1));
   const aphorismIndex = (absHash >> 7) % BERGSON_APHORISMS.length;
 
   const activeBergsonTheme = BERGSON_THEMES[themeIndex];
+  const companionBergsonTheme = BERGSON_THEMES[(themeIndex + companionOffset) % BERGSON_THEMES.length];
   const focalBergsonAphorism = BERGSON_APHORISMS[aphorismIndex];
+  const durationPhase = BERGSON_DURATION_PHASES[(absHash >> 10) % BERGSON_DURATION_PHASES.length];
+  const shadowWarning = BERGSON_SHADOW_WARNINGS[(absHash >> 13) % BERGSON_SHADOW_WARNINGS.length];
 
   const { practiceGuidance, dailyPracticeRitual, reflectiveQuestion } = buildBergsonTopicContext(
     questionTopic,
@@ -299,22 +318,24 @@ export function calculateHenriBergsonElanVital(
 
   const guidanceTitle = `앙리 베르그송 생명의 도약 지혜: ${activeBergsonTheme.themeTitleKo}`;
   const philosophicalCounsel = `베르그송의 생명철학은 굳어버린 일상의 타성을 깨고 내면의 약동하는 지속과 창조적 자유를 회복하도록 일깨웁니다. ` +
-    `현재 당신의 삶을 인도하는 핵심 원리는 '${activeBergsonTheme.themeTitleKo}'입니다. ` +
+    `현재 당신의 삶을 인도하는 핵심 원리는 '${activeBergsonTheme.themeTitleKo}'(동반 원리: ${companionBergsonTheme.themeTitleKo})입니다. ` +
     `${activeBergsonTheme.practicalCounsel} ${practiceGuidance} 아울러 원전의 불멸의 통찰 "${focalBergsonAphorism.aphorismKo}"(${focalBergsonAphorism.aphorismFrench})을 마음에 품고, ` +
     `${focalBergsonAphorism.actionGuidance}`;
 
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
   const kstTimeLabel = `${temporalBergsonRhythm.kstDateLabel} ${String(kst.getUTCHours()).padStart(2, '0')}:${String(kst.getUTCMinutes()).padStart(2, '0')} +09:00 (KST)`;
   const bergsonSynthesisMatrix = {
-    coreInsight: activeBergsonTheme.themeTitleKo,
-    recommendedAction: practiceGuidance,
-    cautionNotice: '기계적 시계 시간과 타성적 계산에만 갇혀 내면에서 솟아오르는 생명의 직관과 지속을 놓치지 마십시오.',
+    coreInsight: `${activeBergsonTheme.themeTitleKo} (동반: ${companionBergsonTheme.themeTitleKo})`,
+    recommendedAction: `${practiceGuidance} (${durationPhase})`,
+    cautionNotice: shadowWarning,
   };
 
   return {
     engineVersion: FRENCH_HENRI_BERGSON_VERSION,
     calculatedAtKst: kstTimeLabel,
     questionTopic,
+    durationPhase,
+    shadowWarning,
     temporalBergsonRhythm,
     pureDurationContinuityScore,
     elanVitalCreativeImpulseScore,
@@ -322,12 +343,13 @@ export function calculateHenriBergsonElanVital(
     creativeFreedomUnfoldingScore,
     openSocietyVitalityIndex,
     activeBergsonTheme,
+    companionBergsonTheme,
     focalBergsonAphorism,
-    practiceGuidance,
-    dailyPracticeRitual,
-    reflectiveQuestion,
-    ritualAction: dailyPracticeRitual,
-    reflectionFocus: reflectiveQuestion,
+    practiceGuidance: `${practiceGuidance} (동반 원리: ${companionBergsonTheme.themeTitleKo})`,
+    dailyPracticeRitual: `${dailyPracticeRitual} (${durationPhase})`,
+    reflectiveQuestion: `'${durationPhase}' 국면에서 ${reflectiveQuestion}`,
+    ritualAction: `${dailyPracticeRitual} (${durationPhase})`,
+    reflectionFocus: `'${durationPhase}' 국면에서 ${reflectiveQuestion}`,
     interpretiveBoundary,
     bergsonSynthesisMatrix,
     bergsonComprehensiveGuidance: {
@@ -342,6 +364,7 @@ export function formatHenriBergsonElanVitalPrompt(res: HenriBergsonElanVitalResu
     `【앙리 베르그송 《시간과 자유의지·창조적 진화》 순수 지속 & 생명의 도약 성찰 가이드 (${res.engineVersion})】`,
     `- 연산 시각: ${res.calculatedAtKst}`,
     `- 질문 주제 맥락: ${res.questionTopic}`,
+    `- 순수 지속 국면: ${res.durationPhase}`,
     `- KST 시공간 리듬: ${res.temporalBergsonRhythm.kstDateLabel} · ${res.temporalBergsonRhythm.timeBand} (${res.temporalBergsonRhythm.vitalTempo})`,
     `- 시공간 권면: ${res.temporalBergsonRhythm.temporalGuidance}`,
     `- 순수 지속 자아 연속성(Durée pure): ${describeQualitativeLevel(res.pureDurationContinuityScore)}`,
@@ -350,6 +373,8 @@ export function formatHenriBergsonElanVitalPrompt(res: HenriBergsonElanVitalResu
     `- 전인격적 창조 자유(Liberté): ${describeQualitativeLevel(res.creativeFreedomUnfoldingScore)}`,
     `- 열린 도덕·생명 포용(Société ouverte): ${describeQualitativeLevel(res.openSocietyVitalityIndex)}`,
     `- 핵심 생명 테마: ${res.activeBergsonTheme.themeTitleKo} [${res.activeBergsonTheme.themeTitleFrench}]`,
+    `- 동반 생명 테마: ${res.companionBergsonTheme.themeTitleKo}`,
+    `- 과잉·경계 점검: ${res.shadowWarning}`,
     `- 철학적 통찰: ${res.activeBergsonTheme.vitalInsight}`,
     `- 실천적 조언: ${res.activeBergsonTheme.practicalCounsel}`,
     `- 맥락 맞춤 가이드: ${res.practiceGuidance}`,
