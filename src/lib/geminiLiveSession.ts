@@ -10,6 +10,8 @@ export type LiveVoiceSession = {
   sendText: (text: string) => boolean;
 };
 
+import { setMicCaptureActive } from './audioMixingPolicy';
+
 const LIVE_MODEL = 'gemini-3.8-live';
 
 type LiveVoiceHandlers = {
@@ -180,6 +182,7 @@ export function startGeminiLiveVoice(handlers: LiveVoiceHandlers): LiveVoiceSess
   const stop = () => {
     if (stopped) return;
     stopped = true;
+    setMicCaptureActive(false);
     if (speakTimer) clearTimeout(speakTimer);
     if (setupTimer) clearTimeout(setupTimer);
     handlers.onAudioLevel?.(0);
@@ -224,12 +227,14 @@ export function startGeminiLiveVoice(handlers: LiveVoiceHandlers): LiveVoiceSess
     if (stopped) return;
 
     try {
+      setMicCaptureActive(true);
       stream = await (handlers.micStream || navigator.mediaDevices.getUserMedia({
         audio: { channelCount: 1, echoCancellation: true, noiseSuppression: true, autoGainControl: true },
       }));
       stream.getAudioTracks().forEach(track => { track.enabled = !muted; });
     } catch {
       stream = null;
+      setMicCaptureActive(false);
       if (!handlers.onNotice) {
         fail('mic-denied', '마이크 권한이 차단되어 있습니다. 브라우저 설정에서 마이크를 허용해 주세요.');
         return;
