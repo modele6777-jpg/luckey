@@ -6,6 +6,7 @@ import { isLucyMasterBgmPlaying, stopLucyMasterBgm } from '@/lib/lucyMasterBgm';
 import { ORB_MASTERS, orbVoice, type OrbMaster } from '@/lib/orbMasters';
 import { generateHeavenlyAdvice } from '@/lib/orbHeavenlyAdvice';
 import { playTTSInChunks, stopTTS, useTTSActive } from '@/utils/tts';
+import { setMicCaptureActive } from '@/lib/audioMixingPolicy';
 import { CHANNEL_MENU_ICONS, MessageCircleMinus } from '@/lib/channelMenuIcons';
 import { drawLucyTarotCards } from '@/utils/tarotDetector';
 import { Clover, KeyRound, MessageCirclePlus, type LucideIcon } from 'lucide-react';
@@ -278,15 +279,18 @@ export function LucyOrbCounsel({
   // 마이크는 사용자가 누른 그 순간에 요청한다 (브라우저가 탭 안에서만 허용 창을 띄우는 경우가 있다).
   const requestMic = (): Promise<MediaStream> | null => {
     if (typeof navigator === 'undefined' || !navigator.mediaDevices?.getUserMedia) return null;
+    // 탭 안에서 먼저 녹음 가능한 오디오 세션으로 바꿔야 iOS가 마이크 권한 창을 띄운다.
+    setMicCaptureActive(true);
     const request = navigator.mediaDevices.getUserMedia({
       audio: { channelCount: 1, echoCancellation: true, noiseSuppression: true, autoGainControl: true },
     });
-    request.catch(() => undefined);
+    request.catch(() => { if (!sessionRef.current) setMicCaptureActive(false); });
     return request;
   };
   const releasePrimedMic = () => {
     const pending = micPrime.current;
     micPrime.current = null;
+    if (pending && !sessionRef.current) setMicCaptureActive(false);
     void pending?.then(stream => stream.getTracks().forEach(track => track.stop())).catch(() => undefined);
   };
 
