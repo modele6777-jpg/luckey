@@ -1,4 +1,5 @@
 import { LucyOrbCounsel } from '@/components/lucy/LucyOrbCounsel';
+import { OrbShapeIcon } from '@/components/icons/OrbShapeIcon';
 import { collectSpeechTranscript, createEndOfSpeechWatcher, type EndOfSpeechWatcher } from '@/lib/speechAutoSend';
 import { startGeminiLiveVoice, type LiveVoiceSession } from '@/lib/geminiLiveSession';
 import { LucyModeName } from '@/components/chat/LucyModeName';
@@ -5263,17 +5264,17 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
             <button
               type="button"
               onClick={() => setOrbCounselOpen(true)}
-              className={`w-7 h-7 sm:w-8 sm:h-8 p-0 flex items-center justify-center rounded-lg transition-all cursor-pointer shrink-0 ${
+              className={`w-7 h-7 sm:w-8 sm:h-8 p-0 flex items-center justify-center rounded-lg transition-colors cursor-pointer shrink-0 ${
                 orbCounselOpen
-                  ? 'bg-white/80 shadow-2xs'
+                  ? 'bg-white/80 text-slate-900 shadow-2xs'
                   : lucyDayPeriod !== 'night'
-                  ? 'hover:bg-amber-50'
-                  : 'hover:bg-white/10'
+                  ? 'text-slate-500 hover:text-amber-700 hover:bg-amber-50'
+                  : 'text-white/75 hover:text-amber-300 hover:bg-white/10'
               }`}
               title="오브 상담 열기"
               aria-label="오브 상담 열기"
             >
-              <span className="lucy-composer-orb" />
+              <OrbShapeIcon size={16} className="sm:w-[18px] sm:h-[18px]" />
             </button>
 
             {/* Textarea Wrapper for Ghost Typewriter Overlay */}
