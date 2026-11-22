@@ -14464,14 +14464,15 @@ test('Nabataean Petra Cistern Water engine: conduit, +09:00 KST, and interpretiv
 
 test('Frisian Polder Dike Balance engine: principle, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateFrisianPolderDikeBalance({ profile, now: new Date('2026-11-20T08:52:00Z'), question: '마음속 수위를 천천히 조절하고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-FRISIAN-POLDER-v2.2.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-FRISIAN-POLDER-v2.3.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionPrinciple !== rep.polderPrinciple);
+  assert.ok(rep.questionTopic.length > 0 && rep.dikeWaterAxis.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatFrisianPolderPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('폴데르') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionPrinciple));
+  assert.ok(prompt.includes('폴데르') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionPrinciple) && prompt.includes(rep.dikeWaterAxis));
 });
 
 test('Ukrainian Vyshyvanka Sunflower engine: motif, +09:00 KST, and interpretive boundary', () => {
@@ -14721,14 +14722,15 @@ test('Parthian Nisa Archery Poise engine: motif, +09:00 KST, and interpretive bo
 
 test('Nahua Xochitl Cuicatl Flow engine: motif, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateNahuaXochitlCuicatlFlow({ profile, now: new Date('2026-11-20T19:25:00Z'), question: '일상 속 작은 아름다움과 진심을 찾고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-NAHUA-XOCHITL-v2.2.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-NAHUA-XOCHITL-v2.3.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionMotif !== rep.xochitlMotif);
+  assert.ok(rep.questionTopic.length > 0 && rep.xochitlBreathAxis.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatNahuaXochitlPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('나우아틀') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionMotif));
+  assert.ok(prompt.includes('나우아틀') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionMotif) && prompt.includes(rep.xochitlBreathAxis));
 });
 
 test('Benin Bronze Oba Memory engine: motif, +09:00 KST, and interpretive boundary', () => {
@@ -15410,14 +15412,15 @@ test('Orkney Skara Brae Hearth engine: motif, +09:00 KST, and interpretive bound
 
 test('Muisca Guatavita Lake engine: phase, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateMuiscaGuatavitaLake({ profile, now: new Date('2026-11-20T22:15:00Z'), question: '마음의 균형을 비우고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-MUISCA-GUATAVITA-v2.2.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-MUISCA-GUATAVITA-v2.3.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionPhase !== rep.offeringPhase);
+  assert.ok(rep.questionTopic.length > 0 && rep.goldRaftCycle.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatMuiscaGuatavitaPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('무이스카') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionPhase));
+  assert.ok(prompt.includes('무이스카') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionPhase) && prompt.includes(rep.goldRaftCycle));
 });
 
 test('Naxi Dongba Chime engine: motif, +09:00 KST, and interpretive boundary', () => {

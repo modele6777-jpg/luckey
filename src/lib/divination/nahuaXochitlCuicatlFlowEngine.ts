@@ -3,15 +3,25 @@ import type { UserProfile } from '../sharedState';
 export interface NahuaXochitlResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: string;
   xochitlMotif: string;
   companionMotif: string;
+  xochitlBreathAxis: string;
   nahuaInsight: string;
   valleyTone: string;
   reflectionFocus: string;
   ritualAction: string;
   reflectiveQuestion: string;
+  shadowWarning: string;
   interpretiveBoundary: string;
 }
+
+const XOCHITL_BREATH_AXES = [
+  '진실한 언어(Cuicatl) · 오늘의 작은 꽃(Xochitl) 공명',
+  '흔들림(Ollin) 인지 · 중심 재정렬 순환',
+  '맑은 거울(Tlamatini) 비춤 · 내면 비취 보존',
+  '치남파 물 위 뿌리 · 매일의 작은 정성 이어가기',
+] as const;
 
 const MOTIFS = [
   {
@@ -81,17 +91,25 @@ export function calculateNahuaXochitlCuicatlFlow(params: {
   const companionOffset = 1 + (stableHash(`${seed}|companion`) % (MOTIFS.length - 1));
   const picked = MOTIFS[idx];
   const companion = MOTIFS[(idx + companionOffset) % MOTIFS.length];
+  const xochitlBreathAxis = XOCHITL_BREATH_AXES[stableHash(`${seed}|axis`) % XOCHITL_BREATH_AXES.length];
+  const trimmedQ = (params.question ?? '').trim();
+  const questionTopic = trimmedQ
+    ? trimmedQ.slice(0, 36)
+    : '흐르는 일상 속에서 마음을 살리는 꽃과 노래';
 
   return {
-    engineVersion: 'LUCKEY-NAHUA-XOCHITL-v2.2.0',
+    engineVersion: 'LUCKEY-NAHUA-XOCHITL-v2.3.0',
     calculatedAtKst: formatKstIso(now),
+    questionTopic,
     xochitlMotif: picked.motif,
     companionMotif: companion.motif,
+    xochitlBreathAxis,
     nahuaInsight: `${picked.insight} (동반 모티프: ${companion.motif})`,
     valleyTone: picked.tone,
-    reflectionFocus: `나우아틀 꽃과 노래 지혜의 '${picked.motif}'와 동반 모티프 '${companion.motif}'처럼, 쫓기는 일정 속에서도 마음을 살리는 진실한 언어와 작은 아름다움의 틈을 내어 보세요.`,
+    reflectionFocus: `질문 맥락('${questionTopic}')에서 나우아틀 꽃과 노래 지혜의 '${picked.motif}'와 숨결 축('${xochitlBreathAxis}')을 함께 살피며, 쫓기는 일정 속에서도 마음을 살리는 진실한 언어와 작은 아름다움의 틈을 내어 보세요.`,
     ritualAction: picked.ritual,
     reflectiveQuestion: picked.question,
+    shadowWarning: '무상함을 지나치게 묵상하다 오늘 손에 쥘 수 있는 작은 결실과 실천까지 미루지 않도록 살피세요.',
     interpretiveBoundary: '멕시코 고원 나우아틀 철학의 꽃과 노래(In Xochitl In Cuicatl)·틀라매티니 성찰 전통을 바탕으로 한 상징적 프레임입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.',
   };
 }
@@ -100,12 +118,15 @@ export function formatNahuaXochitlPrompt(res: NahuaXochitlResult): string {
   return [
     `[나우아틀 꽃과 노래·테오틀 성찰 · ${res.engineVersion}]`,
     `- 기준 시각: ${res.calculatedAtKst}`,
+    `- 질문 맥락: ${res.questionTopic}`,
     `- 쇼치틀 모티프: ${res.xochitlMotif} (${res.valleyTone})`,
     `- 동반 모티프: ${res.companionMotif}`,
+    `- 숨결 공명 축: ${res.xochitlBreathAxis}`,
     `- 중심 통찰: ${res.nahuaInsight}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 오늘의 작은 실천: ${res.ritualAction}`,
     `- 스스로에게 묻기: ${res.reflectiveQuestion}`,
+    `- 과잉 경계: ${res.shadowWarning}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
   ].join('\n');
 }

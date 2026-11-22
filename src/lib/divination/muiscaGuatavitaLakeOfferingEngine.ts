@@ -9,14 +9,24 @@ export interface MuiscaGuatavitaInput {
 export interface MuiscaGuatavitaResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: string;
   offeringPhase: string;
   companionPhase: string;
+  goldRaftCycle: string;
   lakeReflection: string;
   reflectionFocus: string;
   ritualAction: string;
   reflectiveQuestion: string;
+  shadowWarning: string;
   interpretiveBoundary: string;
 }
+
+const GOLD_RAFT_CYCLES = [
+  '물안개 속 호숫가 정돈 · 성급함 내려놓기',
+  '소유보다 감사 순환 · 마음의 수면 넓히기',
+  '겉의 광채 비우기 · 정성의 중심 세우기',
+  '약속과 화해 건네기 · 맑은 여백 채우기',
+] as const;
 
 const PHASES = [
   '고원 호수의 새벽 물안개',
@@ -73,16 +83,24 @@ export function calculateMuiscaGuatavitaLake(input: MuiscaGuatavitaInput): Muisc
   const companionOffset = 1 + (hashSeed(`${seedText}|companion`) % (PHASES.length - 1));
   const offeringPhase = PHASES[phaseIdx];
   const companionPhase = PHASES[(phaseIdx + companionOffset) % PHASES.length];
+  const goldRaftCycle = GOLD_RAFT_CYCLES[hashSeed(`${seedText}|cycle`) % GOLD_RAFT_CYCLES.length];
+  const trimmedQ = (input.question ?? '').trim();
+  const questionTopic = trimmedQ
+    ? trimmedQ.slice(0, 36)
+    : '감사·화해와 비움으로 세우는 호수 균형';
 
   return {
-    engineVersion: 'LUCKEY-MUISCA-GUATAVITA-v2.2.0',
+    engineVersion: 'LUCKEY-MUISCA-GUATAVITA-v2.3.0',
     calculatedAtKst: toKstIso(input.now),
+    questionTopic,
     offeringPhase,
     companionPhase,
+    goldRaftCycle,
     lakeReflection: REFLECTIONS[(seed >>> 3) % REFLECTIONS.length],
-    reflectionFocus: `안데스 고원 무이스카 족이 과타비타 호수에 감사와 화해의 뜻으로 금을 바치던 의식처럼, 주 국면('${offeringPhase}')과 동반 국면('${companionPhase}')을 함께 비추어 소유보다 순환과 정성의 균형을 돌아보는 상징적 관점입니다.`,
+    reflectionFocus: `질문 맥락('${questionTopic}')에서 안데스 고원 무이스카 족이 과타비타 호수에 감사와 화해의 뜻으로 금을 바치던 의식처럼, 주 국면('${offeringPhase}')과 황금 뗏목 순환('${goldRaftCycle}')을 함께 비추어 소유보다 순환과 정성의 균형을 돌아보는 상징적 관점입니다.`,
     ritualAction: ACTIONS[phaseIdx],
     reflectiveQuestion: QUESTIONS[phaseIdx],
+    shadowWarning: '비움과 봉헌을 명분으로 지금 정당하게 지켜야 할 자신의 몫과 경계까지 무작정 내어주지 않도록 살피세요.',
     interpretiveBoundary: '개인 점수·심리 진단·미래 예측이 아닙니다. 자기 성찰을 돕기 위한 상징적 관점 안내입니다.',
   };
 }
@@ -91,12 +109,15 @@ export function formatMuiscaGuatavitaPrompt(res: MuiscaGuatavitaResult): string 
   return [
     `[무이스카·과타비타 황금 호수 관점 · ${res.engineVersion}]`,
     `기준 시각: ${res.calculatedAtKst}`,
+    `질문 맥락: ${res.questionTopic}`,
     `호수 국면: ${res.offeringPhase}`,
     `동반 국면: ${res.companionPhase}`,
+    `황금 뗏목 순환: ${res.goldRaftCycle}`,
     `비춤: ${res.lakeReflection}`,
     `성찰 초점: ${res.reflectionFocus}`,
     `권장 의식: ${res.ritualAction}`,
     `성찰 질문: ${res.reflectiveQuestion}`,
+    `과잉 경계: ${res.shadowWarning}`,
     `경계: ${res.interpretiveBoundary}`,
   ].join('\n');
 }
