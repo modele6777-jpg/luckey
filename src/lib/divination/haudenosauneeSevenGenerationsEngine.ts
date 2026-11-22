@@ -3,15 +3,25 @@ import type { UserProfile } from '../sharedState';
 export interface HaudenosauneeResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: string;
   councilPrinciple: string;
   companionPrinciple: string;
+  longhousePeaceAxis: string;
   generationalLens: string;
   peaceTone: string;
   reflectionFocus: string;
   ritualAction: string;
   reflectiveQuestion: string;
+  shadowWarning: string;
   interpretiveBoundary: string;
 }
+
+const LONGHOUSE_PEACE_AXES = [
+  '일곱 세대 앞선 시선 · 지금 손에 쥔 신뢰 다지기',
+  '좋은 마음(Good Mind) 대화 · 서로의 품위 보전',
+  '왐펌(Wampum) 작은 약속 · 끝까지 매듭짓는 힘',
+  '세 자매 공생 리듬 · 혼자 짊어지지 않는 호흡',
+] as const;
 
 const PRINCIPLES = [
   {
@@ -81,17 +91,25 @@ export function calculateHaudenosauneeSevenGenerations(params: {
   const companionOffset = 1 + (stableHash(`${seed}|companion`) % (PRINCIPLES.length - 1));
   const picked = PRINCIPLES[idx];
   const companion = PRINCIPLES[(idx + companionOffset) % PRINCIPLES.length];
+  const longhousePeaceAxis = LONGHOUSE_PEACE_AXES[stableHash(`${seed}|axis`) % LONGHOUSE_PEACE_AXES.length];
+  const trimmedQ = (params.question ?? '').trim();
+  const questionTopic = trimmedQ
+    ? trimmedQ.slice(0, 36)
+    : '오래 남을 신뢰와 품위를 세우는 선택';
 
   return {
-    engineVersion: 'LUCKEY-HAUDENOSAUNEE-7GEN-v2.2.0',
+    engineVersion: 'LUCKEY-HAUDENOSAUNEE-7GEN-v2.3.0',
     calculatedAtKst: formatKstIso(now),
+    questionTopic,
     councilPrinciple: picked.principle,
     companionPrinciple: companion.principle,
+    longhousePeaceAxis,
     generationalLens: `${picked.lens} (동반 원리: ${companion.principle})`,
     peaceTone: picked.tone,
-    reflectionFocus: `호데노쇼니 대평화 법칙의 '${picked.principle}'와 동반 원리 '${companion.principle}'처럼, 급한 결정 앞에서도 1년 뒤 내가 고마워할 쪽을 살펴보세요.`,
+    reflectionFocus: `질문 맥락('${questionTopic}')에서 호데노쇼니 대평화 법칙의 '${picked.principle}'와 평화의 집 축('${longhousePeaceAxis}')을 함께 살피며, 급한 결정 앞에서도 1년 뒤 내가 고마워할 쪽을 살펴보세요.`,
     ritualAction: picked.ritual,
     reflectiveQuestion: picked.question,
+    shadowWarning: '먼 훗날의 이상만 내다보다 지금 당장 건네야 할 솔직한 말과 작은 실행을 미루지 않도록 살피세요.',
     interpretiveBoundary: '호데노쇼니(이로쿼이) 7세대 대평화 법칙을 바탕으로 한 상징적 성찰 프레임입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.',
   };
 }
@@ -100,12 +118,15 @@ export function formatHaudenosauneePrompt(res: HaudenosauneeResult): string {
   return [
     `[호데노쇼니 7세대 대평화 법칙 성찰 · ${res.engineVersion}]`,
     `- 기준 시각: ${res.calculatedAtKst}`,
+    `- 질문 맥락: ${res.questionTopic}`,
     `- 평의회 원칙: ${res.councilPrinciple} (${res.peaceTone})`,
     `- 동반 원리: ${res.companionPrinciple}`,
+    `- 평화의 집 축: ${res.longhousePeaceAxis}`,
     `- 장기 시선: ${res.generationalLens}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 오늘의 작은 실천: ${res.ritualAction}`,
     `- 스스로에게 묻기: ${res.reflectiveQuestion}`,
+    `- 과잉 경계: ${res.shadowWarning}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
   ].join('\n');
 }

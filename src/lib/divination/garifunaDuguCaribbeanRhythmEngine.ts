@@ -3,15 +3,25 @@ import type { UserProfile } from '../sharedState';
 export interface GarifunaDuguResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: string;
   caribbeanRhythm: string;
   companionRhythm: string;
+  coastCadenceAxis: string;
   duguInsight: string;
   coastTone: string;
   reflectionFocus: string;
   ritualAction: string;
   reflectiveQuestion: string;
+  shadowWarning: string;
   interpretiveBoundary: string;
 }
+
+const COAST_CADENCE_AXES = [
+  '둥구 화해의 마당 · 묵은 서운함 풀어내기',
+  '푼타 경쾌한 발걸음 · 경직된 긴장 털어내기',
+  '바미 소박한 정성 · 기본 루틴 단단히 지키기',
+  '아우아시 파도 간격 · 한 박자 여유로 타이밍 읽기',
+] as const;
 
 const RHYTHMS = [
   {
@@ -81,17 +91,25 @@ export function calculateGarifunaDuguCaribbeanRhythm(params: {
   const companionOffset = 1 + (stableHash(`${seed}|companion`) % (RHYTHMS.length - 1));
   const picked = RHYTHMS[idx];
   const companion = RHYTHMS[(idx + companionOffset) % RHYTHMS.length];
+  const coastCadenceAxis = COAST_CADENCE_AXES[stableHash(`${seed}|axis`) % COAST_CADENCE_AXES.length];
+  const trimmedQ = (params.question ?? '').trim();
+  const questionTopic = trimmedQ
+    ? trimmedQ.slice(0, 36)
+    : '무거운 생각을 가벼운 박자로 풀어내는 하루';
 
   return {
-    engineVersion: 'LUCKEY-GARIFUNA-DUGU-v2.2.0',
+    engineVersion: 'LUCKEY-GARIFUNA-DUGU-v2.3.0',
     calculatedAtKst: formatKstIso(now),
+    questionTopic,
     caribbeanRhythm: picked.rhythm,
     companionRhythm: companion.rhythm,
+    coastCadenceAxis,
     duguInsight: `${picked.insight} (동반 리듬: ${companion.rhythm})`,
     coastTone: picked.tone,
-    reflectionFocus: `가리푸나 카리브 해안 지혜의 '${picked.rhythm}'와 동반 리듬 '${companion.rhythm}'처럼, 머릿속에서만 맴도는 무거운 생각을 가벼운 움직임과 솔직한 박자로 풀어내 보세요.`,
+    reflectionFocus: `질문 맥락('${questionTopic}')에서 가리푸나 카리브 해안 지혜의 '${picked.rhythm}'와 해안 박자 축('${coastCadenceAxis}')을 함께 살피며, 머릿속에서만 맴도는 무거운 생각을 가벼운 움직임과 솔직한 박자로 풀어내 보세요.`,
     ritualAction: picked.ritual,
     reflectiveQuestion: picked.question,
+    shadowWarning: '분위기를 가볍게 돌리려다 정작 짚고 넘어가야 할 핵심 문제나 약속까지 흘려보내지 않도록 살피세요.',
     interpretiveBoundary: '카리브 연안 가리푸나(Garifuna)의 둥구(Dügü) 화해·푼타(Punta) 생동 리듬을 바탕으로 한 상징적 성찰 프레임입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.',
   };
 }
@@ -100,12 +118,15 @@ export function formatGarifunaDuguPrompt(res: GarifunaDuguResult): string {
   return [
     `[가리푸나 둥구·카리브 해안 리듬 성찰 · ${res.engineVersion}]`,
     `- 기준 시각: ${res.calculatedAtKst}`,
+    `- 질문 맥락: ${res.questionTopic}`,
     `- 해안 리듬: ${res.caribbeanRhythm} (${res.coastTone})`,
     `- 동반 리듬: ${res.companionRhythm}`,
+    `- 해안 박자 축: ${res.coastCadenceAxis}`,
     `- 중심 통찰: ${res.duguInsight}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 오늘의 작은 실천: ${res.ritualAction}`,
     `- 스스로에게 묻기: ${res.reflectiveQuestion}`,
+    `- 과잉 경계: ${res.shadowWarning}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
   ].join('\n');
 }
