@@ -311,6 +311,25 @@ export const PRISM_CHANNELS_DETAILS: Record<string, ChannelDetail> = {
   },
 };
 
+const INTRO_ID_ALIASES: Record<string, string> = {
+  aura: 'heal',
+  prologue: 'hub',
+};
+
+const GUIDE_CHANNELS: { id: string; path: string; label: string }[] = [
+  { id: 'hub', path: '/prologue', label: '프롤로그' },
+  { id: 'orange', path: '/orange', label: '오렌지' },
+  { id: 'trinity', path: '/trinity', label: '트리니티' },
+  { id: 'heal', path: '/heal', label: '아우라' },
+  { id: 'bluebird', path: '/bluebird', label: '블루버드' },
+  { id: 'muse', path: '/muse', label: '뮤즈' },
+  { id: 'epilogue', path: '/epilogue', label: '에필로그' },
+];
+
+function resolveIntroId(channelId: string) {
+  return INTRO_ID_ALIASES[channelId] || channelId;
+}
+
 /**
  * 채널 소개 창을 연다. startPath를 주면(예: 유니버스 허브의 채널 카드 "?" 버튼)
  * "채널 시작하기"가 창을 닫고 그 채널로 들어간다. 없으면(이미 그 채널 안) 창만 닫는다.
@@ -331,7 +350,14 @@ export function ChannelIntroModal() {
   const [startPath, setStartPath] = useState<string | null>(null);
   const [location, navigate] = useLocation();
 
-  const channel = PRISM_CHANNELS_DETAILS[channelId] || PRISM_CHANNELS_DETAILS.hub;
+  const channel = PRISM_CHANNELS_DETAILS[resolveIntroId(channelId)] || PRISM_CHANNELS_DETAILS.hub;
+
+  const selectGuide = (id: string, path: string) => {
+    if (resolveIntroId(channelId) === id) return;
+    stopTTS();
+    setChannelId(id);
+    setStartPath(path);
+  };
 
   useEffect(() => {
     const handleOpen = (e: CustomEvent<{ channelId: string; startPath?: string }>) => {
@@ -440,6 +466,28 @@ export function ChannelIntroModal() {
             >
               <X size={18} />
             </button>
+          </div>
+
+          <div className="relative z-10 flex gap-1.5 overflow-x-auto no-scrollbar px-3 sm:px-4 py-2.5 border-b border-white/10">
+            {GUIDE_CHANNELS.map((item) => {
+              const active = resolveIntroId(channelId) === item.id;
+              const tone = PRISM_CHANNELS_DETAILS[item.id]?.themeColor || '#fff';
+              return (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => selectGuide(item.id, item.path)}
+                  className="shrink-0 px-2.5 py-1 rounded-full text-[11px] font-bold border cursor-pointer"
+                  style={{
+                    color: active ? '#fff' : 'rgba(255,255,255,0.72)',
+                    background: active ? tone : 'transparent',
+                    borderColor: active ? tone : 'rgba(255,255,255,0.16)',
+                  }}
+                >
+                  {item.label}
+                </button>
+              );
+            })}
           </div>
 
           {/* Scrollable Content Body */}
