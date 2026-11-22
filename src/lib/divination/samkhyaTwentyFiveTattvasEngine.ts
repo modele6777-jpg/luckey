@@ -23,7 +23,9 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const SAMKHYA_TATTVAS_ENGINE_VERSION = 'LUCKEY-SAMKHYA-TATTVAS-v2.2.0';
+export const SAMKHYA_TATTVAS_ENGINE_VERSION = 'LUCKEY-SAMKHYA-TATTVAS-v2.3.0';
+
+export type SamkhyaQuestionTopic = 'career' | 'relationship' | 'wealth' | 'health' | 'decision' | 'general';
 
 export interface SamkhyaTattvaInfo {
   index: number;
@@ -52,6 +54,9 @@ export interface SamkhyaTwentyFiveTattvasReport {
   kaivalyaLiberationIndex: number;    // 0 ~ 100 카이발랴(독존 해탈) 준비도
   purushaWitnessPower: number;       // 0 ~ 100 순수 관조자(Witness) 힘
   prakritiEntanglementRisk: number;  // 0 ~ 100 물질계 동일시/속박 위험도
+  questionTopic: SamkhyaQuestionTopic;
+  samkhyaPhase: string;
+  shadowWarning: string;
   samkhyaPhilosophicalGuidance: string;
   mindPurificationPrescription: string;
   ritualAction: string;
@@ -73,6 +78,35 @@ function formatSamkhyaKstTimestamp(now: Date = new Date()): string {
   const hh = String(kst.getUTCHours()).padStart(2, '0');
   const mm = String(kst.getUTCMinutes()).padStart(2, '0');
   return `${y}-${m}-${d} ${hh}:${mm} +09:00 (KST)`;
+}
+
+function classifySamkhyaTopic(question: string): SamkhyaQuestionTopic {
+  const q = question.trim();
+  if (/이직|직장|사업|승진|일|커리어|프로젝트|업무/.test(q)) return 'career';
+  if (/연애|결혼|사람|관계|가족|갈등|친구|이별|소통/.test(q)) return 'relationship';
+  if (/돈|재물|투자|재정|수입|지출|계약|매매/.test(q)) return 'wealth';
+  if (/건강|몸|마음|휴식|수면|피로|회복/.test(q)) return 'health';
+  if (/결정|선택|고민|방향|시작|분별/.test(q)) return 'decision';
+  return 'general';
+}
+
+function buildSamkhyaShadowWarning(
+  dominantTattva: SamkhyaTattvaInfo,
+  dominantGuna: GunaBalance['dominantGuna'],
+  topic: SamkhyaQuestionTopic,
+): string {
+  const gunaNote = dominantGuna.startsWith('Rajas')
+    ? '라자스의 추진력이 과해져 조급함과 집착으로 흐르기 쉬우니 행동 전 호흡 한 번의 간격을 두십시오.'
+    : dominantGuna.startsWith('Tamas')
+      ? '타마스의 관성이 무거워져 무기력이나 회피로 이어지지 않도록 작은 몸 움직임으로 환기하십시오.'
+      : '사트바의 명료함에 취해 현실적 실행을 미루는 관조의 고립에 빠지지 않도록 주의하십시오.';
+  const topicNote =
+    topic === 'relationship'
+      ? '상대의 감정을 내 에고(아함카라)의 기준으로 재단하지 마십시오.'
+      : topic === 'career'
+        ? '성과와 역할을 내 본체와 동일시해 과로하지 마십시오.'
+        : '생각의 소용돌이를 곧 나 자신으로 착각하지 마십시오.';
+  return `[${dominantTattva.nameSanskrit} 과잉 경계] ${gunaNote} ${topicNote}`;
 }
 
 function describeSamkhyaStage(score: number, dominantGuna: string): string {
@@ -387,12 +421,15 @@ export function calculateSamkhyaTwentyFiveTattvas(params: {
   const mindPurificationPrescription = `[마음 정화 처방] 보조 타트바 [${secondaryTattva.nameKo}]의 에너지를 도구로 삼아, 감각(마나스)의 분요를 가라앉히고 붓디(대지성)를 맑게 닦아내십시오. 욕망과 번뇌가 일어날 때 "이것은 내가 아니라 자연(Prakriti)의 작용일 뿐이다"라고 관조할 때 비베카 분별지가 당신을 진정한 자유로 이끕니다.`;
 
   const calculatedAtKst = formatSamkhyaKstTimestamp(now);
+  const questionTopic = classifySamkhyaTopic(question);
   const composite = Math.round(
     (vivekaDiscernmentScore + kaivalyaLiberationIndex + purushaWitnessPower) / 3
   );
+  const samkhyaPhase = describeSamkhyaStage(composite, dominantGuna);
+  const shadowWarning = buildSamkhyaShadowWarning(dominantTattva, dominantGuna, questionTopic);
   const samkhyaSynthesisMatrix = {
-    dominantTension: `${dominantTattva.nameKo} ↔ ${dominantGuna}`,
-    alignmentState: describeSamkhyaStage(composite, dominantGuna),
+    dominantTension: `${dominantTattva.nameKo} ↔ ${dominantGuna} (${questionTopic})`,
+    alignmentState: samkhyaPhase,
     integratedAction: `${mindPurificationPrescription}${question.trim() ? ` [질문 맥락: ${question.trim()}]` : ''}`,
   };
 
@@ -415,6 +452,9 @@ export function calculateSamkhyaTwentyFiveTattvas(params: {
     kaivalyaLiberationIndex,
     purushaWitnessPower,
     prakritiEntanglementRisk,
+    questionTopic,
+    samkhyaPhase,
+    shadowWarning,
     samkhyaPhilosophicalGuidance,
     mindPurificationPrescription,
     ritualAction,
@@ -431,13 +471,13 @@ export function formatSamkhyaTwentyFiveTattvasPrompt(rep: SamkhyaTwentyFiveTattv
   );
   const lines = [
     `[고대 인도 상키야(Samkhya) 25타트바 & 푸루샤-프라크리티 분별지 실측 리포트]`,
-    `· 연산 시각: ${rep.calculatedAtKst} | 버전: ${rep.engineVersion}`,
+    `· 연산 시각: ${rep.calculatedAtKst} | 질문 맥락: ${rep.questionTopic} | 버전: ${rep.engineVersion}`,
     `· 주재 타트바: [${rep.dominantTattva.nameKo} (${rep.dominantTattva.nameSanskrit})] — 분류: ${rep.dominantTattva.categoryKo}`,
     `  - 우주적 기능: ${rep.dominantTattva.cosmicFunction}`,
     `  - 영적 의미: ${rep.dominantTattva.spiritualSignificance}`,
     `· 보조 타트바: [${rep.secondaryTattva.nameKo} (${rep.secondaryTattva.nameSanskrit})] — 분류: ${rep.secondaryTattva.categoryKo}`,
     `· 주도 구나(Tri-Guna): ${rep.gunaBalance.dominantGuna}`,
-    `· 분별지 국면: ${describeSamkhyaStage(composite, rep.gunaBalance.dominantGuna)}`,
+    `· 분별지 국면: ${rep.samkhyaPhase}`,
     `· 상키야 철학적 통찰 지침: ${rep.samkhyaPhilosophicalGuidance}`,
     `· 심신 정화 및 판별 실천 처방: ${rep.mindPurificationPrescription}`,
   ];
@@ -451,6 +491,7 @@ export function formatSamkhyaTwentyFiveTattvasPrompt(rep: SamkhyaTwentyFiveTattv
     `· 실천 의례: ${rep.ritualAction}`,
     `· 성찰 초점: ${rep.reflectionFocus}`,
     `· 성찰 질문: ${rep.reflectiveQuestion}`,
+    `· 과잉 경계: ${rep.shadowWarning}`,
     `· 해석 경계: ${rep.interpretiveBoundary}`,
   );
   return lines.join('\n');

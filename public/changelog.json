@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.8.354",
+    "builtAt": "2026-11-23T06:16:00+09:00",
+    "summary": "상키야 25타트바·티베트 바르도·티베트 본교 9승 3대 엔진 국면·맥락·과잉 경계 심층 강화(v1.8.354)",
+    "items": [
+      "상키야 25타트바 엔진(v2.3.0): 질문 맥락(questionTopic)·분별지 국면(samkhyaPhase)·과잉 경계(shadowWarning) 추가",
+      "티베트 바르도 의식 항해 엔진(v2.3.0): 질문 맥락(questionTopic)·바르도 각성 국면(bardoPhase)·과잉 경계(shadowWarning) 추가",
+      "티베트 본교 9승 엔진(v2.3.0): 질문 맥락(questionTopic)·융드룽 청정 국면(bonPhase)·과잉 경계(shadowWarning) 추가"
+    ]
+  },
+  {
     "version": "1.8.353",
     "builtAt": "2026-11-23T06:12:00+09:00",
     "summary": "15대 기초엔진 9회전 2회차(타로·숙요·마하보테) 3카드 통찰·근거리 길숙·다샤 궁위 다이제스트 강화(v1.8.353)",
