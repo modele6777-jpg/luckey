@@ -16055,5 +16055,23 @@ test('buildUserFifteenToolsDigest integrates 7th-round Tarot, Sukuyo, and Mahabo
   assert.ok(!/tarotVitalityScore|guardScore|planetaryHarmonyScore|leadershipHonor/.test(digest));
 });
 
+test('buildUserFifteenToolsDigest integrates 7th-round Vedic, Liuren, and Qimen deity, general guidance, and center numbers without raw scores', () => {
+  const profile: any = {
+    basic: {
+      name: '제제',
+      birthdate: '1994-01-24',
+      birthtime: '10:30',
+      calendarType: 'solar',
+      isLeapMonth: false,
+      gender: 'male',
+    },
+  };
+  const digest = buildUserFifteenToolsDigest(profile, new Date('2026-11-23T04:17:00+09:00'));
+  assert.ok(digest.includes('주재신 ') && digest.includes('나바암사 파다 주인 ') && digest.includes('Lahiri 아야남샤 '));
+  assert.ok(digest.includes('전개 템포 [') && digest.includes('다음 수('));
+  assert.ok(digest.includes('지반수 ') && digest.includes('천반수 ') && digest.includes('3궁 관계 ['));
+  assert.ok(!/dharmaProsperityScore|fourLessonsHarmonyScore|actionMomentumIndex|decisionScore|riskIndex|tonggi\.score/.test(digest));
+});
+
 
 
