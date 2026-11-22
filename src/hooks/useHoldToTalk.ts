@@ -151,10 +151,21 @@ export function useHoldToTalk(
     void startMeter();
   };
 
+  // 인식기를 확실히 끈다: 아이폰은 stop() 뒤에도 계속 듣는 경우가 있어 abort()로 마이크를 놓게 한다.
+  const killRecognition = (recognition: any) => {
+    if (!recognition) return;
+    recognition.onresult = null;
+    recognition.onend = null;
+    recognition.onerror = null;
+    try { recognition.abort(); } catch { /* already ended */ }
+  };
+
   const finish = () => {
     const s = session.current;
     if (!s) return;
     session.current = null;
+    killRecognition(s.recognition);
+    s.recognition = null;
     releaseAudio();
     setHolding(false);
     const text = `${s.committed} ${s.current}`.replace(/\s+/g, ' ').trim();
@@ -168,9 +179,11 @@ export function useHoldToTalk(
     s.active = false;
     s.finishing = true;
     setHolding(false);
-    // 마지막 말을 확정할 시간을 조금 준다. 인식이 끝나면(onend) 바로 보낸다.
+    // 손을 떼면 소리 파동용 마이크는 바로 닫는다.
+    releaseAudio();
+    // 마지막 말을 확정할 시간을 조금(0.6초) 준다. 인식이 끝나면(onend) 바로 보내고, 안 끝나면 강제로 끈 뒤 보낸다.
     try { s.recognition?.stop(); } catch { /* not started */ }
-    window.setTimeout(() => { if (session.current === s) finish(); }, 900);
+    window.setTimeout(() => { if (session.current === s) finish(); }, 600);
   };
 
   const cancelPress = () => {
@@ -216,11 +229,26 @@ export function useHoldToTalk(
       cancelPress();
       if (wasTalking) end();
     };
+    // 손가락이 입력창 밖에서 떨어져도 '뗌'으로 처리한다.
+    const onWindowRelease = () => {
+      if (!talking.current) return;
+      talking.current = false;
+      cancelPress();
+      end();
+    };
+    window.addEventListener('touchend', onWindowRelease);
+    window.addEventListener('touchcancel', onWindowRelease);
+    window.addEventListener('blur', onWindowRelease);
+    document.addEventListener('visibilitychange', onWindowRelease);
     target.addEventListener('touchstart', onStart, { passive: false });
     target.addEventListener('touchmove', onMove, { passive: true });
     target.addEventListener('touchend', onEnd, { passive: false });
     target.addEventListener('touchcancel', onCancel);
     return () => {
+      window.removeEventListener('touchend', onWindowRelease);
+      window.removeEventListener('touchcancel', onWindowRelease);
+      window.removeEventListener('blur', onWindowRelease);
+      document.removeEventListener('visibilitychange', onWindowRelease);
       target.removeEventListener('touchstart', onStart);
       target.removeEventListener('touchmove', onMove);
       target.removeEventListener('touchend', onEnd);
@@ -233,6 +261,7 @@ export function useHoldToTalk(
     const s = session.current;
     if (s) {
       session.current = null;
+      if (s.recognition) { s.recognition.onend = null; s.recognition.onresult = null; s.recognition.onerror = null; }
       try { s.recognition?.abort(); } catch { /* ignore */ }
       s.stream?.getTracks().forEach(track => track.stop());
       void s.context?.close().catch(() => undefined);
