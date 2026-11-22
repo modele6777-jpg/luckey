@@ -1,6 +1,8 @@
 .lucy-orb-stage {
-  position: fixed;
+  position: absolute;
   inset: 0;
+  width: 100%;
+  height: 100%;
   z-index: 80;
   display: flex;
   flex-direction: column;
@@ -20,9 +22,12 @@
 }
 .lucy-orb-body {
   position: relative;
-  width: min(180px, 46vw);
+  width: clamp(148px, 46%, 280px);
   aspect-ratio: 1;
+  border: 0;
+  padding: 0;
   border-radius: 999px;
+  cursor: pointer;
   background:
     radial-gradient(circle at 34% 30%, #ffffff 0%, #f4f7ff 18%, rgba(255,255,255,0) 36%),
     radial-gradient(circle at 50% 54%, #d5def2 0%, #7f97c4 42%, #1a2744 74%, #070b12 100%);
@@ -31,6 +36,28 @@
   opacity: 0;
   animation: lucy-orb-arrive 1.15s cubic-bezier(.16,1,.3,1) .95s forwards, lucy-orb-breathe 4.8s ease-in-out 2.1s infinite;
 }
+html.duo-unfolded-mode .lucy-orb-body { width: clamp(220px, 34%, 520px); }
+html.duo-unfolded-mode .lucy-orb-mist { animation-duration: 2.6s; }
+html.duo-unfolded-mode .lucy-orb-stage { justify-content: center; }
+.lucy-orb-body::before,
+.lucy-orb-body::after {
+  content: "";
+  position: absolute;
+  inset: -46%;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;
+}
+.lucy-orb-body::before {
+  background: repeating-conic-gradient(from 0deg, rgba(255,255,255,.7) 0 7deg, transparent 7deg 22deg);
+  mask: radial-gradient(circle, transparent 42%, #000 56%, transparent 74%);
+}
+.lucy-orb-body::after {
+  inset: -18%;
+  background: radial-gradient(circle, rgba(255,255,255,.92) 0%, rgba(255,244,214,.4) 32%, transparent 68%);
+}
+.lucy-orb-body.is-lit::before { animation: lucy-orb-rays .95s ease-out; }
+.lucy-orb-body.is-lit::after { animation: lucy-orb-flare .95s ease-out; }
 .lucy-orb-stage.is-speaking .lucy-orb-body {
   animation: lucy-orb-arrive 1.15s cubic-bezier(.16,1,.3,1) .95s forwards, lucy-orb-speak 1.6s ease-in-out 2.1s infinite;
 }
@@ -39,14 +66,25 @@
   position: relative;
   z-index: 2;
   margin-top: 22px;
-  max-height: calc(100vh - 230px);
+  max-height: calc(100% - 230px);
   overflow: auto;
   text-align: center;
-  padding: 0 24px 72px;
+  padding: 0 24px 88px;
+  width: min(560px, 100%);
 }
+html.duo-unfolded-mode .lucy-orb-copy { width: min(720px, 92%); }
 .lucy-orb-copy p { margin: 0; font-size: 15px; line-height: 1.6; color: rgba(247,244,238,.86); }
-.lucy-orb-lines { margin-top: 14px; display: flex; flex-direction: column; gap: 6px; max-width: 320px; }
+.lucy-orb-lines { margin-top: 14px; display: flex; flex-direction: column; gap: 6px; }
 .lucy-orb-lines span { font-size: 13px; color: rgba(247,244,238,.72); }
+.lucy-orb-keywords { margin-top: 14px; display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+.lucy-orb-keywords button {
+  border: 1px solid rgba(255,255,255,.3);
+  background: rgba(255,255,255,.1);
+  color: #f7f4ee;
+  border-radius: 999px;
+  padding: 8px 12px;
+  font-size: 13px;
+}
 .lucy-orb-dock {
   position: absolute;
   left: 16px;
@@ -75,7 +113,8 @@
   padding: 12px 14px;
 }
 .lucy-orb-end { position: absolute; top: max(16px, env(safe-area-inset-top)); right: 16px; z-index: 3; }
-.lucy-orb-masters { margin-top: 16px; display: grid; gap: 8px; width: min(320px, 86vw); }
+.lucy-orb-masters { margin-top: 16px; display: grid; gap: 8px; width: min(420px, 100%); }
+html.duo-unfolded-mode .lucy-orb-masters { grid-template-columns: 1fr 1fr; }
 .lucy-orb-masters button {
   text-align: left;
   border: 1px solid rgba(255,255,255,.28);
@@ -92,11 +131,10 @@
   overflow: auto;
   white-space: pre-wrap;
   text-align: left;
-  width: min(360px, 88vw);
+  width: 100%;
   font: 13px/1.55 inherit;
   color: rgba(247,244,238,.88);
 }
-.lucy-orb-dock button:disabled { opacity: .55; }
 .lucy-composer-orb {
   width: 16px;
   height: 16px;
@@ -122,6 +160,17 @@
   0%, 100% { transform: scale(1); box-shadow: 0 0 70px rgba(255,255,255,.35); }
   50% { transform: scale(1.08); box-shadow: 0 0 120px rgba(255,255,255,.7); }
 }
+@keyframes lucy-orb-flare {
+  0% { opacity: .15; transform: scale(.7); }
+  28% { opacity: 1; }
+  100% { opacity: 0; transform: scale(1.7); }
+}
+@keyframes lucy-orb-rays {
+  0% { opacity: 0; transform: scale(.8) rotate(0deg); }
+  30% { opacity: .9; }
+  100% { opacity: 0; transform: scale(1.35) rotate(18deg); }
+}
 @media (prefers-reduced-motion: reduce) {
-  .lucy-orb-mist, .lucy-orb-body { animation: none; opacity: 1; transform: none; }
+  .lucy-orb-mist, .lucy-orb-body, .lucy-orb-body.is-lit::before, .lucy-orb-body.is-lit::after { animation: none; opacity: 1; transform: none; }
+  .lucy-orb-body.is-lit::before, .lucy-orb-body.is-lit::after { opacity: .45; }
 }

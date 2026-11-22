@@ -67,6 +67,8 @@ export function LucyOrbCounsel({
   const [draft, setDraft] = useState('');
   const [notice, setNotice] = useState('');
   const [report, setReport] = useState('');
+  const [lit, setLit] = useState(false);
+  const flashTimer = useRef<number | null>(null);
   const sessionRef = useRef<LiveVoiceSession | null>(null);
   const linesRef = useRef<Line[]>([]);
   const userBuf = useRef('');
@@ -104,6 +106,7 @@ export function LucyOrbCounsel({
     const appear = window.setTimeout(() => setReady(true), window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 1700);
     return () => {
       window.clearTimeout(appear);
+      if (flashTimer.current) window.clearTimeout(flashTimer.current);
       sessionRef.current?.stop();
       sessionRef.current = null;
     };
@@ -160,6 +163,23 @@ export function LucyOrbCounsel({
     onFinishRef.current(report || null);
   };
 
+  const flashOrb = () => {
+    setLit(true);
+    if (flashTimer.current) window.clearTimeout(flashTimer.current);
+    flashTimer.current = window.setTimeout(() => setLit(false), 950);
+  };
+
+  const ask = (text: string) => {
+    flashOrb();
+    if (!sessionRef.current) {
+      setDraft(text);
+      return;
+    }
+    sessionRef.current.sendText(text);
+    userBuf.current = text;
+    take('나', userBuf);
+  };
+
   const sendDraft = () => {
     const text = draft.trim();
     if (!text) return;
@@ -178,17 +198,17 @@ export function LucyOrbCounsel({
             key={index}
             className="lucy-orb-mist"
             style={{
-              width: 180 + index * 70,
-              height: 140 + index * 48,
-              left: `${8 + index * 12}%`,
-              top: `${18 + (index % 3) * 16}%`,
+              width: `${42 + index * 12}%`,
+              height: `${24 + index * 9}%`,
+              left: `${4 + index * 8}%`,
+              top: `${12 + (index % 3) * 14}%`,
               animationDelay: `${index * 0.12}s`,
             }}
           />
         ))}
         {phase === 'live' && <button type="button" className="lucy-orb-end" onClick={openReport}>상담 끝내기</button>}
         {phase === 'report' && <button type="button" className="lucy-orb-end" onClick={keepReport}>채팅으로</button>}
-        <div className="lucy-orb-body" aria-hidden="true" />
+        <button type="button" className={`lucy-orb-body ${lit ? 'is-lit' : ''}`} aria-label="오브 빛" onClick={flashOrb} />
         <div className="lucy-orb-copy">
           {phase === 'pick' && <p>마스터를 고르면 상담이 시작돼</p>}
           {phase === 'live' && <p>{speaking ? `${master?.name} 마스터가 말하고 있어` : `${master?.name} · ${master?.tone}. 말해도 되고, 적어도 돼`}</p>}
@@ -201,6 +221,13 @@ export function LucyOrbCounsel({
                   <strong>{item.name}</strong>
                   <span>{item.tone} · {item.topic}</span>
                 </button>
+              ))}
+            </div>
+          )}
+          {phase === 'live' && master && (
+            <div className="lucy-orb-keywords">
+              {master.prompts.map(prompt => (
+                <button key={prompt} type="button" onClick={() => ask(prompt)}>{prompt}</button>
               ))}
             </div>
           )}
