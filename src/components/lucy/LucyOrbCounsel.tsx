@@ -398,7 +398,7 @@ export function LucyOrbCounsel({
     flashOrb(true);
     setHeaven({ status: 'loading', text: '' });
     const recent = linesRef.current.slice(-4).map(line => `${line.who}: ${line.text}`).join('\n');
-    const text = await generateHeavenlyAdvice({ nickname, chart, recent, topic: master?.topic });
+    const text = await generateHeavenlyAdvice({ recent, topic: master?.topic, avoidNames: nickname ? [nickname] : [] });
     if (token !== heavenToken.current || closedRef.current) return;
     setHeaven({ status: 'ready', text });
     speakHeaven(text);
