@@ -3383,7 +3383,7 @@ html.duo-unfolded-landscape .sites-pinned-sidebar,
 body.duo-unfolded-landscape .sites-pinned-sidebar {
   position: fixed !important;
   top: 0 !important;
-  right: 0 !important;
+  right: calc(-1 * var(--sidebar-right-gap, 0px)) !important;
   width: var(--sites-sidebar-width, 80px) !important;
   height: 100% !important;
 }

@@ -185,6 +185,31 @@ export default function LeftSidebarNav() {
   });
 
   useEffect(() => {
+    const root = document.documentElement;
+    const measure = () => {
+      const bar = document.getElementById('main-sidebar-navigation');
+      if (!bar || !root.classList.contains('duo-unfolded-landscape')) {
+        root.style.setProperty('--sidebar-right-gap', '0px');
+        return;
+      }
+      const applied = parseFloat(root.style.getPropertyValue('--sidebar-right-gap')) || 0;
+      const gap = Math.max(0, Math.round(window.innerWidth - bar.getBoundingClientRect().right + applied));
+      root.style.setProperty('--sidebar-right-gap', `${gap}px`);
+    };
+    measure();
+    const frame = window.requestAnimationFrame(measure);
+    window.addEventListener('resize', measure);
+    window.visualViewport?.addEventListener('resize', measure);
+    const stop = subscribeFoldState(() => measure());
+    return () => {
+      window.cancelAnimationFrame(frame);
+      window.removeEventListener('resize', measure);
+      window.visualViewport?.removeEventListener('resize', measure);
+      stop();
+    };
+  }, []);
+
+  useEffect(() => {
     const handleLayoutChange = () => {
       if (typeof window === 'undefined') return;
       const unfolded = isDualPaneLayout();
