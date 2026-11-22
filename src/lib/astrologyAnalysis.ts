@@ -447,8 +447,8 @@ export function buildUserNatalSummary(profile?: UserProfile | null): string {
   const topAspect = topAspects.length > 0
     ? ` · 핵심 각도: ${topAspects.map((a) => `${a.bodyA}${a.symbol}${a.bodyB}(${a.aspectName}·${a.quality}·오브 ${a.orb.toFixed(1)}°)`).join(', ')}`
     : '';
-  const mcNote = chart.mc ? ` · 천정(MC) ${chart.mc.sign.name}` : '';
-  const innerOuterAxis = ` · 소통/애정/추진/확장/성숙 축: 수성 ${chart.mercury.sign.name}(${chart.mercury.sign.keywords[0]}) · 금성 ${chart.venus.sign.name}(${chart.venus.sign.keywords[0]}) · 화성 ${chart.mars.sign.name}(${chart.mars.sign.keywords[0]}) · 목성 ${chart.jupiter.sign.name} · 토성 ${chart.saturn.sign.name}${mcNote}`;
+  const mcNote = chart.mc ? ` · 천정(MC) ${chart.mc.sign.name} ${chart.mc.degree.toFixed(1)}°(${chart.mc.sign.keywords[0]})` : '';
+  const innerOuterAxis = ` · 소통/애정/추진/확장/성숙 축: 수성 ${chart.mercury.sign.name} ${chart.mercury.degree.toFixed(1)}°(${chart.mercury.sign.keywords[0]}) · 금성 ${chart.venus.sign.name} ${chart.venus.degree.toFixed(1)}°(${chart.venus.sign.keywords[0]}) · 화성 ${chart.mars.sign.name} ${chart.mars.degree.toFixed(1)}°(${chart.mars.sign.keywords[0]}) · 목성 ${chart.jupiter.sign.name} ${chart.jupiter.degree.toFixed(1)}°(${chart.jupiter.sign.keywords[0]}) · 토성 ${chart.saturn.sign.name} ${chart.saturn.degree.toFixed(1)}°(${chart.saturn.sign.keywords[0]})${mcNote}`;
   const degreeNote = ` · 황도 도수: 태양 ${chart.sun.degree.toFixed(1)}°·달 ${chart.moon.degree.toFixed(1)}°${chart.ascendant ? `·상승 ${chart.ascendant.degree.toFixed(1)}°` : ''}`;
   const coreElementHarmony = ` · 핵심 원소 결: 태양(${chart.sun.sign.element})·달(${chart.moon.sign.element})${chart.ascendant ? `·상승(${chart.ascendant.sign.element})` : ''}`;
   const coreModalityHarmony = ` · 핵심 양식 결: 태양(${chart.sun.sign.modality})·달(${chart.moon.sign.modality})${chart.ascendant ? `·상승(${chart.ascendant.sign.modality})` : ''}`;
