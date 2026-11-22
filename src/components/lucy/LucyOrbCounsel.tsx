@@ -188,8 +188,8 @@ export function LucyOrbCounsel({
     sessionRef.current = session;
     const typed = draft.trim();
     const cue = typed
-      ? `먼저 네 말투로 두 문장만 인사한 뒤, 이어서 이 말에 답해. 이 지시 문장은 읽지 마. 사용자의 말: ${typed}`
-      : '지금 막 도착했어. 사용자가 말하기 전에 네 말투로 두 문장만 먼저 인사해. 이 지시 문장은 읽지 마.';
+      ? `먼저 존댓말로 두 문장만 인사한 뒤, 이어서 이 말씀에 답하세요. 이 지시 문장은 읽지 마세요. 사용자의 말: ${typed}`
+      : '지금 막 도착하셨습니다. 사용자가 말씀하시기 전에 존댓말로 두 문장만 먼저 인사하세요. 이 지시 문장은 읽지 마세요.';
     session.sendText(cue);
     if (typed) {
       userBuf.current = typed;
@@ -304,7 +304,7 @@ export function LucyOrbCounsel({
             }}
           />
         ))}
-        {caution && <p className="lucy-orb-caution" role="status">이 상담은 참고일 뿐이야. 맹신하지 마.</p>}
+        {caution && <p className="lucy-orb-caution" role="status">이 상담은 참고일 뿐입니다. 맹신하지 마세요.</p>}
         {phase === 'live' && <button type="button" className="lucy-orb-end" onClick={openReport}>상담 끝내기</button>}
         {phase === 'report' && <button type="button" className="lucy-orb-end" onClick={keepReport}>채팅으로</button>}
         <button
@@ -358,9 +358,9 @@ export function LucyOrbCounsel({
           <button type="button" className={`lucy-orb-body ${lit ? 'is-lit' : ''}`} aria-label={draft.trim() ? '입력한 말 보내기' : '오브 빛'} onClick={() => { flashOrb(); if (phase === 'live') sendDraft(); }} />
         </div>
         <div className="lucy-orb-copy">
-          {phase === 'pick' && <p>마스터를 고르면 상담이 시작돼</p>}
-          {phase === 'live' && <p>{speaking ? `${master?.name} 마스터가 말하고 있어` : `${master?.name} · ${master?.tone}. 말해도 되고, 적어도 돼`}</p>}
-          {phase === 'report' && <p>이번 상담을 부적으로 남겼어. 파일로도 보관할 수 있어</p>}
+          {phase === 'pick' && <p>마스터를 고르시면 상담이 시작됩니다</p>}
+          {phase === 'live' && <p>{speaking ? `${master?.name} 마스터가 말하고 있습니다` : `${master?.name} · ${master?.tone}. 말씀하셔도 되고, 적으셔도 됩니다`}</p>}
+          {phase === 'report' && <p>이번 상담을 부적으로 남겼습니다. 파일로도 보관할 수 있습니다</p>}
           {notice && <p>{notice}</p>}
           {phase === 'pick' && (
             <div className="lucy-orb-masters">
@@ -370,7 +370,7 @@ export function LucyOrbCounsel({
                   return <i key={index} className={pips.split(',').includes(String(index)) ? '' : 'is-off'} />;
                 })}
               </button>
-              <p className="lucy-die-caption">주사위를 누르면 마스터가 무작위로 정해져</p>
+              <p className="lucy-die-caption">주사위를 누르면 마스터가 무작위로 정해집니다</p>
               {ORB_MASTERS.map(item => (
                 <button key={item.id} type="button" onClick={() => begin(item)}>
                   <strong>{item.name}</strong>
@@ -398,7 +398,7 @@ export function LucyOrbCounsel({
               <h2>상담 부적</h2>
               <p>{master.topic}</p>
               <div className="lucy-charm-lines">
-                {(lines.length ? lines.slice(-6) : [{ who: '루시' as const, text: '오늘은 말을 아끼고, 숨만 고르기로 했어.' }]).map((line, index) => (
+                {(lines.length ? lines.slice(-6) : [{ who: '루시' as const, text: '오늘은 말을 아끼고, 숨만 고르기로 했습니다.' }]).map((line, index) => (
                   <span key={`${line.who}-${index}`}>{line.who === '나' ? '원' : '답'} · {line.text}</span>
                 ))}
               </div>
@@ -407,13 +407,13 @@ export function LucyOrbCounsel({
         </div>
         {phase !== 'report' && (
           <div className="lucy-orb-dock">
-            <input value={draft} onChange={(event) => setDraft(event.target.value)} onKeyDown={(event) => { if (event.key === 'Enter') event.preventDefault(); }} placeholder={phase === 'pick' ? '먼저 적어도 돼. 마스터를 고른 뒤 오브를 누르면 보내져' : '적고 오브를 누르면 보내져'} aria-label="오브 상담 입력" enterKeyHint="done" />
+            <input value={draft} onChange={(event) => setDraft(event.target.value)} onKeyDown={(event) => { if (event.key === 'Enter') event.preventDefault(); }} placeholder={phase === 'pick' ? '먼저 적어두셔도 됩니다. 마스터를 고른 뒤 오브를 누르면 보내집니다' : '적고 오브를 누르면 보내집니다'} aria-label="오브 상담 입력" enterKeyHint="done" />
           </div>
         )}
         {phase === 'report' && master && (
           <>
           <div className="lucy-bok">
-            <p>복채는 마음껏 고르면 돼</p>
+            <p>복채는 마음껏 고르셔도 됩니다</p>
             <div>
               {BOKCHAE.map(item => (
                 <button key={item.id} type="button" className={bok === item.id ? 'is-on' : ''} disabled={hearted} onClick={() => setBok(item.id)}>{item.label}</button>
