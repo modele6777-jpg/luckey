@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 interface LucyModeNameProps { plus: boolean; pro: boolean; isLight: boolean; master?: boolean }
 const proStyle = 'bg-gradient-to-r from-amber-300 via-emerald-300 to-yellow-200 bg-clip-text text-transparent font-black tracking-wide drop-shadow-[0_0_16px_rgba(245,158,11,0.6)]';
 
-// Lucy Master 로고: 텍스트만, 선명하게.
+// Lucy Master(점술모드) 로고: 헤더에서는 깊이 표시가 잘리지 않게 짧은 이름 'Lucy Pro'로 보인다. 텍스트만, 선명하게.
 // iOS는 그라데이션 글자에 CSS filter(drop-shadow)를 걸면 비트맵으로 그려 픽셀이 보이므로,
 // 빛번짐은 글자 뒤에 겹친 별도 레이어(text-shadow)로만 준다.
 const MASTER_GRADIENT = 'linear-gradient(100deg, #f3e8ff 0%, #e9d5ff 35%, #f5d0fe 60%, #fde68a 100%)';
@@ -24,7 +24,7 @@ function MasterWords({ style }: { style: React.CSSProperties }) {
   return (
     <>
       <span className="font-black tracking-tight" style={style}>Lucy</span>
-      <span className="font-serif italic font-semibold tracking-normal" style={style}>Master</span>
+      <span className="font-serif italic font-semibold tracking-normal" style={style}>Pro</span>
     </>
   );
 }
@@ -38,7 +38,7 @@ export function LucyModeName({ plus, pro, isLight, master = false }: LucyModeNam
         className="relative inline-flex items-baseline whitespace-nowrap"
         data-lucy-name
         data-lucy-name-marker="master"
-        aria-label="Lucy Master"
+        aria-label="Lucy Pro"
         initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.35 }}
       >
         {/* 빛번짐 레이어 (장식) */}
