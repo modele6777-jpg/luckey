@@ -1,16 +1,15 @@
 import { LucyOrbCounsel } from '@/components/lucy/LucyOrbCounsel';
 import { getPersistentUserProfile, useApp } from '@/contexts/AppContext';
-import { saveUnifiedMessagesSafely } from '@/lib/chatHistorySync';
-import { isLucyMasterModeOn } from '@/lib/lucyMasterMode';
 import { setOrbCounselOpen } from '@/lib/orbCounselGate';
 import { calculateDetailedSaju } from '@/lib/sajuAnalysis';
+import { requestLucyAction } from '@/lib/duoLucyActionRouting';
 import { useEffect, useMemo } from 'react';
 import { useLocation } from 'wouter';
 
 /** Orb is a page, not a popup. Only this route is active while it is open. */
 export function OrbPage() {
   const [, navigate] = useLocation();
-  const { sharedState, setPersonaMessages, setLucyProMessages } = useApp();
+  const { sharedState } = useApp();
   const profile = sharedState?.userProfile || getPersistentUserProfile();
   const nickname = profile?.basic?.nickname || profile?.basic?.name || '';
   const chart = useMemo(() => {
@@ -29,27 +28,13 @@ export function OrbPage() {
       nickname={nickname}
       chart={chart}
       onFinish={(summary) => {
-        if (summary) {
-          const message = {
-            // 오브 상담 보고서는 루시가 아니라 사용자가 보낸 말풍선으로 남긴다.
-            id: `orb-${Date.now()}`,
-            role: 'user' as const,
-            content: summary,
-            timestamp: Date.now(),
-            persona: 'lucy' as const,
-            mode: isLucyMasterModeOn() ? 'master' as const : 'casual' as const,
-          };
-          if (isLucyMasterModeOn()) setLucyProMessages((prev) => [...prev, message]);
-          else {
-            setPersonaMessages((prev) => {
-              const next = [...(prev.lucy || []), message];
-              saveUnifiedMessagesSafely(next);
-              return { ...prev, lucy: next, orange: next, trinity: next, aura: next, bluebird: next, muse: next };
-            });
-          }
+        // 상담 보고서는 내 말풍선으로 루시에게 보내고, 루시가 그 보고서에 바로 답한다.
+        if (summary) requestLucyAction({ prompt: `${summary}\n\n오브 상담을 마쳤어. 이 보고서를 보고 루시 생각을 들려줘.` });
+        // 접힌 화면은 requestLucyAction이 루시 채팅으로 이동한다. 펼친 화면(또는 보고서 없음)은 예전처럼 처음 화면으로 돌아간다.
+        if (!summary || document.getElementById('duo-lucy-viewport')) {
+          navigate('/');
+          window.dispatchEvent(new CustomEvent('prism-navigate', { detail: { path: '/' } }));
         }
-        navigate('/');
-        window.dispatchEvent(new CustomEvent('prism-navigate', { detail: { path: '/' } }));
       }}
     />
   );
