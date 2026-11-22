@@ -3159,6 +3159,12 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
     let wasHidden = container.getBoundingClientRect().height < 2;
     const revealLatest = () => {
       const hidden = container.getBoundingClientRect().height < 2;
+      if (!hidden && wasHidden && isReturningFromPhotoPicker()) {
+        // 카메라·사진 고르기 동안 화면이 잠깐 접혔다 펴진 것: 다시 들어온 게 아니므로 보던 자리 유지
+        restoreAfterPhotoPicker();
+        wasHidden = hidden;
+        return;
+      }
       if (!hidden && (wasHidden || !isUserScrolledUpRef.current)) {
         if (wasHidden) {
           refreshEntryGreeting();
