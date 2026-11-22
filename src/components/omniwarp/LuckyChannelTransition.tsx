@@ -46,7 +46,7 @@ function channelInfo(path: string) {
     return { kicker: 'MY', label: 'MY PAGE', subLabel: '마이페이지 · 내 프로필과 기록', color: '#a855f7' };
   }
   if (isLuckyHubPath(path)) {
-    return { kicker: 'LUCKEY', label: 'Luckey', subLabel: '7대 차원 DApp 채널', color: '#34d399' };
+    return { kicker: '', label: 'Lucky', subLabel: '7대 차원 DApp 채널', color: '#34d399' };
   }
   const match = matchLuckyChannel(path);
   return {
@@ -116,7 +116,7 @@ export function LuckyChannelTransition() {
           <motion.div
             key={`lucky-entry-${run}`}
             role="status"
-            aria-label={info.kicker === 'MY' ? '마이페이지를 여는 중' : isLuckyHubPath(target) ? 'Luckey를 여는 중' : `${info.label} 채널을 여는 중`}
+            aria-label={info.kicker === 'MY' ? '마이페이지를 여는 중' : isLuckyHubPath(target) ? 'Lucky를 여는 중' : `${info.label} 채널을 여는 중`}
             data-testid="lucky-channel-transition"
             data-lucky-channel={info.label}
             initial={{ opacity: 0 }}
@@ -197,12 +197,14 @@ export function LuckyChannelTransition() {
                 </motion.svg>
               </div>
 
+              {info.kicker ? (
               <motion.p
                 className="text-[11px] font-bold tracking-[0.35em] text-emerald-200/80"
                 initial={{ opacity: 0, y: 6 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4, delay: 0.15 }}
               >{info.kicker}</motion.p>
+              ) : null}
               <motion.p
                 className="mt-1 text-2xl font-black tracking-wide"
                 style={{ color: '#ffffff', textShadow: `0 0 18px ${info.color}aa` }}
