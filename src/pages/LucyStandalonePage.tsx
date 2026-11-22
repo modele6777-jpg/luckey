@@ -1860,7 +1860,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
         isAutoTtsBusyRef.current = false;
         setIsAutoTts(true);
         if (autoTtsToastTimerRef.current) clearTimeout(autoTtsToastTimerRef.current);
-        setAutoTtsToast('🎙️ 마이크 켜짐 · 루시 답변을 자동으로 읽어드려요');
+        setAutoTtsToast('🎙️ 음성모드 · 말로 이야기해요');
         autoTtsToastTimerRef.current = setTimeout(() => setAutoTtsToast(null), 2200);
       }
       return;
@@ -1904,6 +1904,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
   const silenceTimerRef = useRef<NodeJS.Timeout | null>(null);
   const speechWatcherRef = useRef<EndOfSpeechWatcher | null>(null);
   const speechTranscriptRef = useRef<string>('');
+  const voiceUtteranceRef = useRef(false);
   const isLucyGeneratingRef = useRef<boolean>(isLucyGenerating);
 
   // 🎙️ 음성 인식 중지
@@ -1971,6 +1972,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
           speechTranscriptRef.current = '';
           setSpeechTranscript('');
           setSpeechInterim('');
+          voiceUtteranceRef.current = true;
           void handleSendRef.current(text);
         },
       });
@@ -2038,6 +2040,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
       speechTranscriptRef.current = '';
       setSpeechTranscript('');
       setSpeechInterim('');
+      voiceUtteranceRef.current = true;
       void handleSendRef.current(text);
     }, 1500);
     return () => clearTimeout(timer);
@@ -3552,6 +3555,8 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
   }, [finishMasterTarotPick]);
 
   const handleSend = useCallback(async (textToSend?: string, forcedChannels?: SpecialChannel[], pickedTarotCards?: DetectedTarotCard[]) => {
+    const fromVoice = voiceUtteranceRef.current;
+    voiceUtteranceRef.current = false;
     const hasExplicitUserInput = Boolean(textToSend || input.trim() || attachedImage);
     // 💡 사용자가 직접 입력한 텍스트가 없고 첨부 이미지가 없는 경우(생성 중이 아닐 때만), 현재 화면에 표시/타이핑 중인 완성형 예시 질문 채택
     const candidateGhost = (!hasExplicitUserInput && !isLucyGenerating)
@@ -3561,6 +3566,27 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
     if (!rawMsg.trim() && !attachedImage) return;
 
     const userCleanText = rawMsg.trim();
+
+    if (fromVoice && isVoiceModeRef.current && userCleanText && !attachedImage) {
+      setInput('');
+      stopTTS();
+      setVoiceState('thinking');
+      voiceStateRef.current = 'thinking';
+      stopRecognition();
+      unlockAudioPlayback();
+      primeTTSAudioElement();
+      await sendUnifiedMessage(userCleanText, 'lucy', undefined, {
+        conversationId: isMasterMode ? 'lucy-pro' : 'lucy',
+        voiceTurn: true,
+        mode: 'casual',
+        customUserProfile: counselingUserProfile,
+        onFinish: async (fullText, _sent, replyMsgId) => {
+          if (!isVoiceModeRef.current || !fullText?.trim()) return;
+          void triggerAutoTts(fullText, replyMsgId);
+        },
+      });
+      return;
+    }
 
     // 🔮 루시 마스터 인사의 "이어서/새로" 선택에는 바로 답하고, 이어서 오늘의 고민·질문을 물어본다
     if (isMasterMode && !attachedImage && getLucyMasterLink() === 'undecided') {
@@ -4842,7 +4868,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
                           <Loader2 size={13} className="animate-spin text-amber-600 dark:text-amber-300" />
                         </div>
                         <span className="text-xs font-bold truncate animate-pulse">
-                          루시가 생각을 정리하고 있어요...
+                          듣고, 바로 말할게요
                         </span>
                       </div>
                     ) : voiceState === 'speaking' ? (
@@ -4851,7 +4877,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
                           <Volume2 size={13} className="text-amber-600 dark:text-amber-300 animate-pulse" />
                         </div>
                         <span className="text-xs font-bold truncate">
-                          루시가 다정하게 답변 중이에요
+                          루시가 말하고 있어요
                         </span>
                       </div>
                     ) : (
@@ -4939,6 +4965,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
                       onClick={() => {
                         const textToSend = (speechTranscript || speechInterim).trim();
                         if (textToSend) {
+                          voiceUtteranceRef.current = true;
                           void handleSend(textToSend);
                           setSpeechTranscript('');
                           setSpeechInterim('');

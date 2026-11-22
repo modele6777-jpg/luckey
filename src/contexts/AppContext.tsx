@@ -97,6 +97,8 @@ export interface SendUnifiedMessageOptions {
   isLucyPro?: boolean;
   isPro?: boolean;
   requireBasicAndDeep?: boolean;
+  /** 마이크 음성모드. 긴 채팅 답 대신 말로 주고받는 짧은 턴. */
+  voiceTurn?: boolean;
 }
 
 interface AppContextValue {
@@ -1847,7 +1849,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     options?: SendUnifiedMessageOptions,
   ) => {
     // Cover drawer and other callers as well as the standalone chat.
-    if (!options?.tarotCardMarkers && isLucyTarotDrawRequest(text)) {
+    if (!options?.voiceTurn && !options?.tarotCardMarkers && isLucyTarotDrawRequest(text)) {
       const cards = drawLucyTarotCards(/3장|세\s*장|쓰리카드|과거\s*현재\s*미래/i.test(text) ? 3 : 1);
       options = { ...options, tarotCardMarkers: cards.map(formatTarotMarker).join(' '),
         extraSystemContext: `${options?.extraSystemContext || ''}\n${buildLucyTarotReadingPrompt(cards, text)}` };
@@ -1886,7 +1888,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const chatBroadcastRef = isProConversation ? { current: null } : regularRuntimeRef.current.chatBroadcastRef;
     const pushChatThreadsToFirestore = isProConversation ? proRuntimeRef.current.push : regularRuntimeRef.current.pushChatThreadsToFirestore;
     const updateSharedState = isProConversation ? async (_state: Partial<SharedState>, _source: string) => {} : regularRuntimeRef.current.updateSharedState;
-    const isLucyPro = Boolean(
+    const isLucyPro = options?.voiceTurn ? false : Boolean(
       (options as any)?.isLucyPro ||
       (options as any)?.isPro ||
       isProConversation ||
@@ -2086,7 +2088,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       options?.extraSystemContext?.includes('선별된 도구별 맞춤 풀이 가이드');
     const activeThemeList = (options?.channels || (options?.channel ? [options.channel] : [])) as SevenThemeChannel[];
     const isMasterCall = Boolean(isLucyPro);
-    const requireBasicAndDeep = sourcePersona === 'lucy' || isMasterCall || Boolean(options?.requireBasicAndDeep);
+    const requireBasicAndDeep = options?.voiceTurn
+      ? false
+      : sourcePersona === 'lucy' || isMasterCall || Boolean(options?.requireBasicAndDeep);
     const isCasualMode =
       !options?.tarotCardMarkers && !requireBasicAndDeep && (
         options?.mode === 'casual' ||
@@ -2104,15 +2108,22 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       : hasDivinationInjection
       ? options?.usedTools || []
       : [];
-    const isFastCasualPath =
+    const isFastCasualPath = Boolean(options?.voiceTurn) || (
       !requireBasicAndDeep &&
       sourcePersona === 'lucy' &&
       responseLength === 'short' &&
       toolSelection.isCasualMessage &&
-      !options?.extraSystemContext;
+      !options?.extraSystemContext
+    );
 
     let systemPrompt = "";
-    if (isFastCasualPath) {
+    if (options?.voiceTurn) {
+      systemPrompt = `당신은 '${nickname}'와 지금 목소리로 이야기하는 루시야. 글을 읽어 주는 답이 아니라, 옆에서 주고받는 대화야.
+- 1~2문장만 말해. 목록, 제목, 마크다운, 이모지, 번호 금지.
+- 풀이하거나 설명하지 마. 들은 말에 반응하고, 되묻는 질문은 하나까지만.
+- 반말만. 호칭은 '${nickname}'. 본명 '${realName}'은 부르지 마.
+- 참고: ${deepCoreInfo}. 요즘 마음: ${memory}`;
+    } else if (isFastCasualPath) {
       // ⚡ 초고속 일상 수다 패스: 25KB 운명학/옴니 컨텍스트를 생략하고 핵심 프로필만 주입하여 0.7초 내 즉시 응답 보장
       systemPrompt = `당신은 사용자('${nickname}')의 가장 가깝고 다정한 단짝 친구 '루시(Lucy)'야.
 - 사용자 기본 정보: 호칭 '${nickname}' (본명 '${realName}'은 절대 부르지 말고 오직 '${nickname}'으로만 불러줘), ${deepCoreInfo}, 최근 관심/고민: ${memory}
@@ -2311,6 +2322,14 @@ ${responseProfile.rule}`;
       systemPrompt += `\n\n${buildTarotInterpretationGuidance({ question: effectiveUserText, hasAppDraw: true })}`;
     }
 
+    if (options?.voiceTurn) {
+      systemPrompt = `당신은 '${nickname}'와 지금 목소리로 이야기하는 루시야. 글을 읽어 주는 답이 아니라, 옆에서 주고받는 대화야.
+- 1~2문장만 말해. 목록, 제목, 마크다운, 이모지, 번호 금지.
+- 풀이하거나 설명하지 마. 들은 말에 반응하고, 되묻는 질문은 하나까지만.
+- 반말만. 호칭은 '${nickname}'. 본명 '${realName}'은 부르지 마.
+- 참고: ${deepCoreInfo}. 요즘 마음: ${memory}`;
+    }
+
     const _isPerfReduced = isPerfReduced() || isStandalonePWA();
     
     // Format conversation properly for the API (only user/assistant roles after system)
@@ -2413,9 +2432,8 @@ ${responseProfile.rule}`;
         timeoutMs: isMasterCall ? 150000 : isMobileChat ? 180000 : 120000,
         model: isMasterCall ? LUCY_MASTER_MODEL : LUCY_CHAT_MODEL,
         fallbackModels: isMasterCall ? LUCY_MASTER_FALLBACK_MODELS : undefined,
-        maxOutputTokens: isMasterCall ? 8192 : responseProfile.maxOutputTokens,
-        // MEDIUM keeps the reasoning tier but answers ~15s sooner than HIGH on the master prompt.
-        thinkingLevel: isMasterCall ? 'MEDIUM' : responseProfile.thinkingLevel,
+        maxOutputTokens: options?.voiceTurn ? 256 : isMasterCall ? 8192 : responseProfile.maxOutputTokens,
+        thinkingLevel: options?.voiceTurn ? 'MINIMAL' : isMasterCall ? 'MEDIUM' : responseProfile.thinkingLevel,
         preferBuffered: false,
         onChunk: () => {
           resetWatchdog();
@@ -2431,7 +2449,9 @@ ${responseProfile.rule}`;
             return;
           }
 
-          const cleanFullText = await verifyReply(fullText);
+          const cleanFullText = options?.voiceTurn
+            ? cleanChatDisplayText(fullText)
+            : await verifyReply(fullText);
           if (isSuperseded()) return;
           if (!cleanFullText || cleanFullText.trim().length === 0) {
             throw new Error("Empty cleaned reply in onFinish");
@@ -2582,7 +2602,9 @@ ${responseProfile.rule}`;
           fallbackModels: isMasterCall ? LUCY_MASTER_FALLBACK_MODELS : undefined,
           signal: currentAbortController.signal,
         });
-        const recoveredClean = await verifyReply(String(recoveredRaw || '').trim());
+        const recoveredClean = options?.voiceTurn
+          ? cleanChatDisplayText(String(recoveredRaw || '').trim())
+          : await verifyReply(String(recoveredRaw || '').trim());
         if (isSuperseded()) return;
         if (recoveredClean && recoveredClean.length > 0) {
           rememberConversation([userMsg, { id: assistMsgId, role: 'model', content: recoveredClean, timestamp: Date.now() }], isProConversation ? 'lucy-pro' : 'lucy');
