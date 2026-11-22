@@ -670,7 +670,8 @@ export default function LeftSidebarNav() {
                   <button
                     type="button"
                     className="refined-nav-item"
-                    data-active={!screenUnfolded && !orbOpen && isLuckyListPath(cleanPath)}
+                    // Lucky 페이지에서는 접힘·펼침 모두 켜진다. 펼친 화면에서는 목록이 열려 있다는 이유만으로는 켜지지 않는다.
+                    data-active={!orbOpen && (cleanPath === '/lucky' || (!screenUnfolded && isLuckyListPath(cleanPath)))}
                     aria-label="Luckey"
                     aria-expanded={channelsVisible}
                     aria-controls={channelsVisible ? 'prism-channel-icons' : undefined}
