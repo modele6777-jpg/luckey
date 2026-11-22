@@ -14,12 +14,12 @@
  *    - 열거(Dénombrement): 빠뜨린 것이 없는지 전면적으로 점검하고 검토함.
  * 5. 잠정적 도덕 규칙(Morale par provision): 삶의 현장에서 행동을 미루지 않고 결단력 있게 정도를 걸어가는 실천 지혜.
  *
- * @version LUCKEY-DESCARTES-COGITO-v2.0.0
+ * @version LUCKEY-DESCARTES-COGITO-v2.3.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const DESCARTES_COGITO_VERSION = 'LUCKEY-DESCARTES-COGITO-v2.2.0';
+export const DESCARTES_COGITO_VERSION = 'LUCKEY-DESCARTES-COGITO-v2.3.0';
 
 export type DescartesQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -56,8 +56,11 @@ export interface FrenchDescartesCogitoResult {
   provisionalMoralResolveScore: number;  // 잠정 도덕 결단력 (주저함 탈피율)
   // 세부 명세
   questionTopic: DescartesQuestionTopic;
+  cogitoPhase: string;
+  shadowWarning: string;
   temporalDescartesRhythm: DescartesTemporalRhythm;
   activeMethodRule: DescartesMethodRule;
+  companionMethodRule: DescartesMethodRule;
   focalProvisionalMoralRule: DescartesProvisionalMoralRule;
   practiceGuidance: string;
   ritualAction: string;
@@ -77,6 +80,18 @@ export interface FrenchDescartesCogitoResult {
 }
 
 export type FrenchDescartesCogitoReport = FrenchDescartesCogitoResult;
+
+const DESCARTES_COGITO_PHASES = [
+  '회의 정화(감각적 선입견과 막연한 추측을 잠시 멈추고 확인된 사실만 남기는 시기)',
+  '분해·종합(복잡한 난제를 가장 단순한 실행 단위로 나누어 한 걸음씩 쌓아 올리는 시기)',
+  '잠정 결단(완벽한 확신을 기다리다 멈추지 않고 가장 개연성 높은 길로 일관되게 전진하는 시기)',
+] as const;
+
+const DESCARTES_SHADOW_WARNINGS = [
+  '모든 전제를 의심하고 검증하려다 정작 지금 내려야 할 실행과 결단까지 끝없이 미루지 않도록 살피세요.',
+  '문제를 작은 단위로 쪼개어 분석하는 데 집중하느라 전체 맥락과 사람의 온기를 놓치지 않도록 점검하세요.',
+  '정한 방향을 일관되게 밀고 나가다 새로운 반증이나 주변의 정당한 신호까지 닫아 두지 않도록 유의하세요.',
+] as const;
 
 const METHOD_RULES: DescartesMethodRule[] = [
   {
@@ -240,14 +255,18 @@ export function calculateFrenchDescartesCogito(
   const provisionalMoralResolveScore = 66 + ((absHash >> 12) % 33);
 
   const ruleIndex = (absHash >> 4) % METHOD_RULES.length;
+  const companionOffset = 1 + ((absHash >> 5) % (METHOD_RULES.length - 1));
   const moralIndex = (absHash >> 7) % PROVISIONAL_MORAL_RULES.length;
 
   const activeMethodRule = METHOD_RULES[ruleIndex];
+  const companionMethodRule = METHOD_RULES[(ruleIndex + companionOffset) % METHOD_RULES.length];
   const focalProvisionalMoralRule = PROVISIONAL_MORAL_RULES[moralIndex];
+  const cogitoPhase = DESCARTES_COGITO_PHASES[(absHash >> 10) % DESCARTES_COGITO_PHASES.length];
+  const shadowWarning = DESCARTES_SHADOW_WARNINGS[(absHash >> 13) % DESCARTES_SHADOW_WARNINGS.length];
 
   const counselTitle = `데카르트 방법서설: ${activeMethodRule.ruleNameFrench}`;
   const philosophicalGuidance = `나는 생각한다, 고로 존재한다(Cogito, ergo sum). 모든 불안과 혼돈 속에서도 사유하는 당신의 주체성은 확고합니다. ` +
-    `현재 당면한 문제를 풀기 위해서는 '${activeMethodRule.ruleNameKo}'이 요청됩니다. ${activeMethodRule.actionDirective} ` +
+    `현재 당면한 문제를 풀기 위해서는 '${activeMethodRule.ruleNameKo}'(동반 규칙: ${companionMethodRule.ruleNameFrench})이 요청됩니다. ${activeMethodRule.actionDirective} ` +
     `${topicGuidance.practiceGuidance} 실천적으로는 '${focalProvisionalMoralRule.maximeNameKo}'의 규범을 지키십시오. ${focalProvisionalMoralRule.counselForAction}`;
 
   const boundaryNotice = '데카르트 철학 해석은 명석판명한 사유 정리와 실천적 결단을 돕는 상징·성찰 관점이며, 확정적 미래 예언이나 의학적 진단이 아닙니다.';
@@ -256,12 +275,12 @@ export function calculateFrenchDescartesCogito(
   const kstTimeLabel = `${temporalDescartesRhythm.kstDateLabel}T${String(kst.getUTCHours()).padStart(2, '0')}:${String(kst.getUTCMinutes()).padStart(2, '0')}:00+09:00 (KST)`;
   const qText = (query ?? '').trim();
   const reflectiveQuestion = qText
-    ? `‘${qText}’ 앞에서 추측과 선입견을 걷어내고 명석판명(Clara et Distincta)하게 확인할 사실 한 가지는 무엇입니까?`
-    : topicGuidance.reflectionFocus;
+    ? `‘${qText}’ 앞에서 '${cogitoPhase}' 국면으로 볼 때, 추측과 선입견을 걷어내고 명석판명(Clara et Distincta)하게 확인할 사실 한 가지는 무엇입니까?`
+    : `'${cogitoPhase}' 국면에서 ${topicGuidance.reflectionFocus}`;
   const descartesSynthesisMatrix = {
-    coreInsight: activeMethodRule.ruleNameKo,
-    recommendedAction: topicGuidance.practiceGuidance,
-    cautionNotice: '검증되지 않은 추측을 사실로 성급히 받아들이거나 결단 앞에서 끝없이 주저하지 마십시오.',
+    coreInsight: `${activeMethodRule.ruleNameKo} (동반: ${companionMethodRule.ruleNameKo})`,
+    recommendedAction: `${topicGuidance.practiceGuidance} (${cogitoPhase})`,
+    cautionNotice: shadowWarning,
   };
 
   return {
@@ -273,11 +292,14 @@ export function calculateFrenchDescartesCogito(
     fourRulesReasoningScore,
     provisionalMoralResolveScore,
     questionTopic,
+    cogitoPhase,
+    shadowWarning,
     temporalDescartesRhythm,
     activeMethodRule,
+    companionMethodRule,
     focalProvisionalMoralRule,
-    practiceGuidance: topicGuidance.practiceGuidance,
-    ritualAction: topicGuidance.ritualAction,
+    practiceGuidance: `${topicGuidance.practiceGuidance} (동반 규칙: ${companionMethodRule.ruleNameFrench})`,
+    ritualAction: `${topicGuidance.ritualAction} (${cogitoPhase})`,
     reflectionFocus: reflectiveQuestion,
     reflectiveQuestion,
     boundaryNotice,
@@ -295,8 +317,11 @@ export function formatFrenchDescartesCogitoPrompt(res: FrenchDescartesCogitoResu
     `【데카르트 코기토 & 명석판명 방법서설 지표 (${res.engineVersion})】`,
     `- 연산 시각: ${res.calculatedAtKst}`,
     `- 질문 주제 맥락: ${res.questionTopic}`,
+    `- 코기토 국면: ${res.cogitoPhase}`,
     `- KST 시공간 리듬: ${res.temporalDescartesRhythm.kstDateLabel} · ${res.temporalDescartesRhythm.timeWindowKo} (${res.temporalDescartesRhythm.clarityTone}) — ${res.temporalDescartesRhythm.rhythmDirective}`,
     `- 적용 방법 규칙: ${res.activeMethodRule.ruleNameFrench} (${res.activeMethodRule.ruleNameKo})`,
+    `- 동반 방법 규칙: ${res.companionMethodRule.ruleNameFrench} (${res.companionMethodRule.ruleNameKo})`,
+    `- 과잉·경계 점검: ${res.shadowWarning}`,
     `- 지성적 초점: ${res.activeMethodRule.epistemicFocus}`,
     `- 규칙별 실천 지침: ${res.activeMethodRule.actionDirective}`,
     `- 당면 잠정 도덕 규칙: ${res.focalProvisionalMoralRule.maximeNameKo}`,
