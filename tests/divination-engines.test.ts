@@ -4797,6 +4797,8 @@ test('Popol Vuh Hero Twins Engine: calculates active trial house and qualitative
   assert.equal(rep.questionTheme, 'relationship');
   assert(rep.activeTrialHouse.houseNumber >= 1 && rep.activeTrialHouse.houseNumber <= 6);
   assert(rep.activeTrialHouse.houseNameKo.length > 0);
+  assert(rep.companionTrialHouse.houseNumber !== rep.activeTrialHouse.houseNumber);
+  assert(rep.heroicPhase.length > 0 && rep.shadowWarning.length > 0);
   assert(rep.twinArchetype.twinName.length > 0);
   assert(rep.practiceGuidance.length > 0);
   assert(rep.ritualAction.length > 0);
@@ -4807,7 +4809,8 @@ test('Popol Vuh Hero Twins Engine: calculates active trial house and qualitative
   assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatPopolVuhHeroTwinsPrompt(rep);
   assert(prompt.includes('고대 마야 포폴 부(Popol Vuh) 쌍둥이 영웅 & 시발바 시련 돌파 실측 데이터'));
-  assert(prompt.includes(rep.activeTrialHouse.houseNameKo));
+  assert(prompt.includes(rep.activeTrialHouse.houseNameKo) && prompt.includes(rep.companionTrialHouse.houseNameKo));
+  assert(prompt.includes(rep.heroicPhase) && prompt.includes(rep.shadowWarning));
   assert(prompt.includes('교차 매트릭스'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
@@ -7008,6 +7011,8 @@ test('Giordano Bruno Infinite Universe Engine: calculates Infinite cosmos vision
   assert(rep.unboundedAutonomyScore >= 0 && rep.unboundedAutonomyScore <= 100);
   assert(rep.activeCosmicAspect.aspectLatinOrItalian.length > 0);
   assert(rep.secondaryCosmicAspect.aspectLatinOrItalian.length > 0);
+  assert(rep.secondaryCosmicAspect.aspectKey !== rep.activeCosmicAspect.aspectKey);
+  assert(rep.furorePhase.length > 0 && rep.shadowWarning.length > 0);
   assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(Boolean(rep.brunoSynthesisMatrix?.integratedAction));
@@ -7017,6 +7022,7 @@ test('Giordano Bruno Infinite Universe Engine: calculates Infinite cosmos vision
   assert(prompt.includes('브루노 무한우주론 & 영웅적 열정(Eroico Furore) 지표'));
   assert(prompt.includes(rep.activeCosmicAspect.aspectLatinOrItalian));
   assert(prompt.includes('보조 교차 관점'));
+  assert(prompt.includes(rep.furorePhase) && prompt.includes(rep.shadowWarning));
   assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
   assert(prompt.includes('교차 매트릭스'));
   assert(prompt.includes('성찰 질문'));
@@ -7836,6 +7842,8 @@ test('David Hume Treatise of Human Nature Engine: calculates Mitigated Skepticis
   assert(rep.gentleComposurePeaceScore >= 0 && rep.gentleComposurePeaceScore <= 100);
   assert(rep.activeHumeTheme.themeTitleKo.length > 0);
   assert(rep.secondaryHumeTheme.themeTitleKo.length > 0);
+  assert(rep.secondaryHumeTheme.themeKey !== rep.activeHumeTheme.themeKey);
+  assert(rep.humePhase.length > 0 && rep.shadowWarning.length > 0);
   assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(Boolean(rep.humeSynthesisMatrix?.integratedAction));
@@ -7845,6 +7853,7 @@ test('David Hume Treatise of Human Nature Engine: calculates Mitigated Skepticis
   assert(prompt.includes('데이비드 흄 《인간 본성에 관한 논고》 온건한 회의주의 & 공감 지표'));
   assert(prompt.includes(rep.activeHumeTheme.themeTitleKo));
   assert(prompt.includes('보조 교차 테마'));
+  assert(prompt.includes(rep.humePhase) && prompt.includes(rep.shadowWarning));
   assert(prompt.includes('교차 매트릭스'));
   assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
   assert(prompt.includes('성찰 질문'));
