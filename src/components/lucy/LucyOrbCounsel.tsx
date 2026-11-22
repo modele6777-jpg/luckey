@@ -90,6 +90,8 @@ export function LucyOrbCounsel({
   const [bok, setBok] = useState<string | null>(null);
   const [hearted, setHearted] = useState(false);
   const [burst, setBurst] = useState(0);
+  const [caution, setCaution] = useState(false);
+  const cautionTimer = useRef<number | null>(null);
   const dieTimer = useRef<number | null>(null);
   const bedRef = useRef<OrbCounselBed | null>(null);
   const flashTimer = useRef<number | null>(null);
@@ -131,6 +133,7 @@ export function LucyOrbCounsel({
     setBok(null);
     setHearted(false);
     setBurst(0);
+    setCaution(false);
     const appear = window.setTimeout(() => setReady(true), window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 1700);
     const masterWasOn = isLucyMasterBgmPlaying();
     if (masterWasOn) stopLucyMasterBgm();
@@ -143,6 +146,7 @@ export function LucyOrbCounsel({
       window.clearTimeout(appear);
       if (flashTimer.current) window.clearTimeout(flashTimer.current);
       if (dieTimer.current) window.clearInterval(dieTimer.current);
+      if (cautionTimer.current) window.clearTimeout(cautionTimer.current);
       bed?.stop();
       bedRef.current = null;
       if (masterWasOn) void startLucyMasterBgm();
@@ -202,6 +206,9 @@ export function LucyOrbCounsel({
     sessionRef.current = null;
     setReport(reportFrom(master, nickname, linesRef.current));
     setPhase('report');
+    setCaution(true);
+    if (cautionTimer.current) window.clearTimeout(cautionTimer.current);
+    cautionTimer.current = window.setTimeout(() => setCaution(false), 3200);
   };
 
   const keepReport = () => {
@@ -297,6 +304,7 @@ export function LucyOrbCounsel({
             }}
           />
         ))}
+        {caution && <p className="lucy-orb-caution" role="status">이 상담은 참고일 뿐이야. 맹신하지 마.</p>}
         {phase === 'live' && <button type="button" className="lucy-orb-end" onClick={openReport}>상담 끝내기</button>}
         {phase === 'report' && <button type="button" className="lucy-orb-end" onClick={keepReport}>채팅으로</button>}
         <button
