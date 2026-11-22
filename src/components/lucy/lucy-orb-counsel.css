@@ -222,6 +222,10 @@ html.duo-unfolded-mode .lucy-orb-figure { width: 34%; }
   cursor: pointer;
   container-type: inline-size;
   -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+  touch-action: manipulation;
   /* Glass: dark refracted room in the middle, warm table light refracted to the top, bright fresnel rim. */
   background:
     radial-gradient(circle at 50% 50%, transparent 58%, rgba(200, 230, 255, .28) 68%, rgba(235, 245, 255, .6) 71%, transparent 72%),
@@ -450,6 +454,240 @@ html.duo-unfolded-mode .lucy-orb-figure { width: 34%; }
   0% { opacity: 0; transform: scale(.8) rotate(0deg); }
   30% { opacity: .9; }
   100% { opacity: 0; transform: scale(1.35) rotate(18deg); }
+}
+
+/* Tap: a layered burst of light. Inner glow flares, a soft bloom swells, god rays turn, three shock rings
+   ripple outward and sparks fly from the glass. Holding (heavenly) makes it golden, larger and slower. */
+.lucy-orb-glow {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  pointer-events: none;
+  opacity: 0;
+  background: radial-gradient(circle at 50% 48%, rgba(255, 255, 255, .95), rgba(190, 230, 255, .55) 35%, rgba(150, 120, 255, 0) 70%);
+  mix-blend-mode: screen;
+}
+.lucy-orb-body.is-lit .lucy-orb-glow { animation: lucy-orb-glow 1.3s var(--orb-ease); }
+.lucy-orb-body.is-lit .lucy-orb-inner { animation: lucy-orb-inner-lit 1.3s var(--orb-ease); }
+@keyframes lucy-orb-glow {
+  0% { opacity: 0; transform: scale(.4); }
+  18% { opacity: 1; transform: scale(1); }
+  100% { opacity: 0; transform: scale(1.05); }
+}
+@keyframes lucy-orb-inner-lit {
+  0% { filter: brightness(1); }
+  20% { filter: brightness(2.2) saturate(1.4); }
+  100% { filter: brightness(1); }
+}
+.lucy-orb-burst {
+  position: absolute;
+  z-index: 3;
+  left: 0;
+  top: 0;
+  width: 100%;
+  aspect-ratio: 1;
+  pointer-events: none;
+}
+.lucy-orb-burst i,
+.lucy-orb-burst b {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  display: block;
+  border-radius: 50%;
+}
+.lucy-orb-burst .bloom {
+  width: 160%;
+  height: 160%;
+  margin: -80% 0 0 -80%;
+  background: radial-gradient(circle, rgba(220, 240, 255, .75), rgba(160, 200, 255, .28) 34%, rgba(160, 130, 255, .08) 55%, transparent 70%);
+  mix-blend-mode: screen;
+  animation: lucy-burst-bloom 1.3s var(--orb-ease) forwards;
+}
+.lucy-orb-burst .flare {
+  width: 260%;
+  height: 10px;
+  margin: -5px 0 0 -130%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, transparent, rgba(200, 230, 255, .2) 25%, rgba(255, 255, 255, .95) 50%, rgba(200, 230, 255, .2) 75%, transparent);
+  filter: blur(1px);
+  animation: lucy-burst-flare 1s var(--orb-ease) forwards;
+}
+.lucy-orb-burst .rays {
+  width: 230%;
+  height: 230%;
+  margin: -115% 0 0 -115%;
+  background: repeating-conic-gradient(from 0deg, rgba(210, 235, 255, .5) 0 3deg, transparent 3deg 15deg);
+  -webkit-mask-image: radial-gradient(circle, transparent 20%, #000 32%, transparent 68%);
+  mask-image: radial-gradient(circle, transparent 20%, #000 32%, transparent 68%);
+  filter: blur(1.5px);
+  animation: lucy-burst-rays 1.4s var(--orb-ease) forwards;
+}
+.lucy-orb-burst .ring {
+  width: 100%;
+  height: 100%;
+  margin: -50% 0 0 -50%;
+  border: 2px solid rgba(200, 232, 255, .85);
+  box-shadow: 0 0 14px rgba(170, 215, 255, .8), inset 0 0 10px rgba(170, 215, 255, .5);
+  opacity: 0;
+  animation: lucy-burst-ring 1.1s var(--orb-ease) forwards;
+}
+.lucy-orb-burst .r2 { animation-delay: .12s; border-width: 1.5px; }
+.lucy-orb-burst .r3 { animation-delay: .26s; border-width: 1px; }
+.lucy-orb-burst b {
+  width: var(--s, 4px);
+  height: var(--s, 4px);
+  margin: calc(var(--s, 4px) / -2) 0 0 calc(var(--s, 4px) / -2);
+  background: #fff;
+  box-shadow: 0 0 6px 2px rgba(180, 225, 255, .9);
+  opacity: 0;
+  animation: lucy-burst-spark 1.15s cubic-bezier(.15, .7, .3, 1) forwards;
+}
+.lucy-orb-burst.is-heaven .bloom { background: radial-gradient(circle, rgba(255, 246, 214, .9), rgba(255, 214, 140, .4) 34%, rgba(255, 190, 120, .1) 55%, transparent 72%); animation-duration: 2.2s; }
+.lucy-orb-burst.is-heaven .rays { background: repeating-conic-gradient(from 0deg, rgba(255, 232, 170, .6) 0 3deg, transparent 3deg 12deg); animation-duration: 2.2s; }
+.lucy-orb-burst.is-heaven .ring { border-color: rgba(255, 226, 160, .9); box-shadow: 0 0 18px rgba(255, 210, 130, .9), inset 0 0 12px rgba(255, 210, 130, .5); animation-duration: 1.6s; }
+.lucy-orb-burst.is-heaven .flare { background: linear-gradient(90deg, transparent, rgba(255, 226, 160, .25) 25%, #fffaf0 50%, rgba(255, 226, 160, .25) 75%, transparent); animation-duration: 1.6s; }
+.lucy-orb-burst.is-heaven b { background: #fff6dc; box-shadow: 0 0 8px 3px rgba(255, 214, 140, .95); animation-duration: 1.8s; }
+@keyframes lucy-burst-bloom {
+  0% { opacity: 0; transform: scale(.3); }
+  20% { opacity: 1; }
+  100% { opacity: 0; transform: scale(1.25); }
+}
+@keyframes lucy-burst-flare {
+  0% { opacity: 0; transform: scaleX(.1); }
+  25% { opacity: 1; transform: scaleX(1); }
+  100% { opacity: 0; transform: scaleX(1.25) scaleY(.4); }
+}
+@keyframes lucy-burst-rays {
+  0% { opacity: 0; transform: scale(.6) rotate(0deg); }
+  25% { opacity: 1; }
+  100% { opacity: 0; transform: scale(1.2) rotate(28deg); }
+}
+@keyframes lucy-burst-ring {
+  0% { opacity: .95; transform: scale(.9); }
+  100% { opacity: 0; transform: scale(2.4); }
+}
+@keyframes lucy-burst-spark {
+  0% { opacity: 0; transform: rotate(var(--a)) translateY(-38%) scale(.4); }
+  12% { opacity: 1; }
+  70% { opacity: .9; }
+  100% { opacity: 0; transform: rotate(var(--a)) translateY(calc(-1 * var(--d))) scale(.2); }
+}
+.lucy-orb-ritual.is-lit .lucy-orb-caustic { animation: lucy-caustic-flash 1.3s var(--orb-ease); }
+.lucy-orb-ritual.is-lit .lucy-candle em { animation: lucy-candle-flare 1.2s var(--orb-ease); }
+@keyframes lucy-caustic-flash {
+  0% { opacity: .7; transform: scale(1); }
+  25% { opacity: 1; transform: scale(1.35); filter: brightness(1.8); }
+  100% { opacity: .7; transform: scale(1); }
+}
+@keyframes lucy-candle-flare {
+  0% { transform: scale(1); opacity: .8; }
+  30% { transform: scale(1.5); opacity: 1; }
+  100% { transform: scale(1); opacity: .8; }
+}
+
+/* Hold: a golden ring fills around the ball over 0.7s. */
+.lucy-orb-charge {
+  position: absolute;
+  z-index: 3;
+  left: -7%;
+  top: -7%;
+  width: 114%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  pointer-events: none;
+  background: conic-gradient(from -90deg, rgba(255, 226, 160, .95) var(--charge, 0turn), transparent 0);
+  -webkit-mask-image: radial-gradient(circle, transparent 64%, #000 66%, #000 69%, transparent 71%);
+  mask-image: radial-gradient(circle, transparent 64%, #000 66%, #000 69%, transparent 71%);
+  filter: drop-shadow(0 0 6px rgba(255, 210, 130, .9));
+  animation: lucy-charge .7s linear forwards;
+}
+@property --charge { syntax: '<angle>'; inherits: false; initial-value: 0turn; }
+@keyframes lucy-charge { to { --charge: 1turn; } }
+.lucy-orb-body.is-charging .lucy-orb-inner { filter: brightness(1.35); transition: filter .7s ease; }
+
+/* Heavenly advice: a beam of light falls from above and a soft parchment-gold card appears. */
+.lucy-heaven {
+  position: absolute;
+  inset: 56px 0 0;
+  z-index: 7;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 18px 18px 0;
+  pointer-events: none;
+}
+.lucy-heaven-beam {
+  position: absolute;
+  left: 50%;
+  top: -56px;
+  width: 70%;
+  height: 120%;
+  transform: translateX(-50%);
+  background: linear-gradient(180deg, rgba(255, 238, 190, .55), rgba(255, 220, 150, .18) 45%, transparent 80%);
+  clip-path: polygon(38% 0, 62% 0, 100% 100%, 0 100%);
+  filter: blur(10px);
+  animation: lucy-heaven-beam 1.6s var(--orb-ease) both;
+}
+.lucy-heaven-card {
+  position: relative;
+  pointer-events: auto;
+  width: min(420px, 100%);
+  padding: 20px 20px 16px;
+  border-radius: 22px;
+  text-align: center;
+  color: #3a2410;
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(255, 255, 255, .85), transparent 60%),
+    linear-gradient(180deg, #fffaf0 0%, #fbeccb 100%);
+  box-shadow: 0 0 0 1px rgba(243, 207, 134, .9), 0 0 40px rgba(255, 214, 140, .55), 0 18px 40px rgba(6, 4, 18, .5);
+  animation: lucy-heaven-card 1s var(--orb-spring) .25s both;
+}
+.lucy-heaven-halo {
+  position: absolute;
+  left: 50%;
+  top: -16px;
+  width: 64px;
+  height: 14px;
+  margin-left: -32px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 220, 150, .95);
+  box-shadow: 0 0 14px rgba(255, 220, 150, .9);
+  animation: lucy-heaven-halo 3s ease-in-out infinite;
+}
+.lucy-heaven-title { margin: 0 0 8px; font-size: 13px; font-weight: 800; letter-spacing: .12em; color: #9a6a1c; }
+.lucy-orb-stage .lucy-heaven-text { margin: 0; font-size: 16px; line-height: 1.65; color: #3a2410; font-weight: 600; animation: lucy-heaven-text 1.2s var(--orb-ease) both; }
+.lucy-orb-stage .lucy-heaven-wait { margin: 0; font-size: 14px; color: #8a6a3c; animation: lucy-heaven-wait 1.6s ease-in-out infinite; }
+.lucy-heaven-actions { display: flex; justify-content: center; gap: 8px; margin-top: 14px; }
+.lucy-heaven-actions button {
+  border: 1px solid rgba(180, 130, 50, .45);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .7);
+  color: #6b4614;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 7px 14px;
+}
+@keyframes lucy-heaven-beam {
+  0% { opacity: 0; transform: translateX(-50%) scaleY(.2); transform-origin: top; }
+  40% { opacity: 1; }
+  100% { opacity: .85; transform: translateX(-50%) scaleY(1); }
+}
+@keyframes lucy-heaven-card {
+  0% { opacity: 0; transform: translateY(-18px) scale(.94); filter: blur(4px); }
+  100% { opacity: 1; transform: none; filter: none; }
+}
+@keyframes lucy-heaven-halo {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+@keyframes lucy-heaven-text {
+  0% { opacity: 0; letter-spacing: .08em; filter: blur(3px); }
+  100% { opacity: 1; letter-spacing: 0; filter: none; }
+}
+@keyframes lucy-heaven-wait {
+  0%, 100% { opacity: .5; }
+  50% { opacity: 1; }
 }
 
 /* Ivory wax candles with soft shading, drips and a warm living flame that lights the table. */
@@ -1053,12 +1291,13 @@ html.duo-unfolded-mode .lucy-charm { width: min(380px, 70%); }
 @media (prefers-reduced-motion: reduce) {
   .lucy-orb-cloud, .lucy-orb-rays, .lucy-orb-caustic, .lucy-orb-swirl, .lucy-orb-body, .lucy-orb-body.is-lit::before, .lucy-orb-body.is-lit::after, .lucy-orb-circle,
   .lucy-candle, .lucy-candle::before, .lucy-candle b, .lucy-candle em, .lucy-candle u, .lucy-mote, .lucy-voice-ring, .lucy-orb-sparkle, .lucy-orb-stand,
-  .lucy-die, .lucy-die-tumble, .lucy-die-shadow, .lucy-dice-sum, .lucy-charm, .lucy-charm-seal, .lucy-orb-keywords button, .lucy-orb-masters button:not(.lucy-die) { animation: none; }
+  .lucy-die, .lucy-die-tumble, .lucy-die-shadow, .lucy-dice-sum, .lucy-orb-glow, .lucy-heaven-beam, .lucy-heaven-card, .lucy-heaven-halo, .lucy-orb-stage .lucy-heaven-text, .lucy-charm, .lucy-charm-seal, .lucy-orb-keywords button, .lucy-orb-masters button:not(.lucy-die) { animation: none; }
   .lucy-orb-cloud, .lucy-orb-body, .lucy-orb-circle, .lucy-candle, .lucy-orb-stand, .lucy-dice-sum { opacity: 1; }
   .lucy-orb-body, .lucy-orb-stand { transform: none; }
   .lucy-dice-sum { transform: translateX(-50%); }
   .lucy-die-cube3d { animation-duration: .01s; }
   .lucy-orb-glyph { animation: none; opacity: .22; }
+  .lucy-orb-burst, .lucy-orb-charge { display: none; }
   .lucy-orb-body.is-lit::before, .lucy-orb-body.is-lit::after { opacity: .45; }
 }
 

@@ -3,7 +3,9 @@ import { getPageGuide } from '@/lib/pageGuides';
 import { startGeminiLiveVoice, type LiveVoiceSession } from '@/lib/geminiLiveSession';
 import { createOrbCounselBed, type OrbCounselBed } from '@/lib/orbCounselBed';
 import { isLucyMasterBgmPlaying, stopLucyMasterBgm } from '@/lib/lucyMasterBgm';
-import { ORB_MASTERS, type OrbMaster } from '@/lib/orbMasters';
+import { ORB_MASTERS, orbVoice, type OrbMaster } from '@/lib/orbMasters';
+import { generateHeavenlyAdvice } from '@/lib/orbHeavenlyAdvice';
+import { playTTSInChunks, stopTTS, useTTSActive } from '@/utils/tts';
 import { CHANNEL_MENU_ICONS, MessageCircleMinus } from '@/lib/channelMenuIcons';
 import { drawLucyTarotCards } from '@/utils/tarotDetector';
 import { Clover, KeyRound, MessageCirclePlus, type LucideIcon } from 'lucide-react';
@@ -51,6 +53,13 @@ const CLOUDS = [
   { left: 76, top: 6, width: 20, delay: 0.7, drift: 21 },
 ];
 const ORB_ROUTE = '/voice';
+/** Sparks thrown out of the ball on a tap: evenly spread angles with varied reach, size and timing. */
+const BURST_PARTICLES = Array.from({ length: 18 }, (_, index) => ({
+  angle: Math.round(index * 20 + ((index * 37) % 11) - 5),
+  distance: 70 + ((index * 53) % 45),
+  size: 3 + (index % 4),
+  delay: ((index * 29) % 7) * 0.025,
+}));
 
 /** Pips laid out on a 3×3 grid. */
 const PIP_SLOTS = ['4', '0,8', '0,4,8', '0,2,6,8', '0,2,4,6,8', '0,2,3,5,6,8'];
@@ -150,6 +159,15 @@ export function LucyOrbCounsel({
   const [burst, setBurst] = useState(0);
   const [caution, setCaution] = useState(false);
   const [lit, setLit] = useState(false);
+  const [orbBurst, setOrbBurst] = useState(0);
+  const [heavenBurst, setHeavenBurst] = useState(false);
+  const [charging, setCharging] = useState(false);
+  const [heaven, setHeaven] = useState<{ status: 'loading' | 'ready'; text: string } | null>(null);
+  const holdTimer = useRef<number | null>(null);
+  const heldRef = useRef(false);
+  const heavenToken = useRef(0);
+  const heavenSpokeRef = useRef(false);
+  const ttsActive = useTTSActive();
   const cautionTimer = useRef<number | null>(null);
   const dieTimer = useRef<number | null>(null);
   const bedRef = useRef<OrbCounselBed | null>(null);
@@ -196,6 +214,9 @@ export function LucyOrbCounsel({
     setLit(false);
     setRolling(false);
     setThrown(0);
+    setHeaven(null);
+    setCharging(false);
+    setOrbBurst(0);
     const appear = window.setTimeout(() => setReady(true), window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 1700);
     if (isLucyMasterBgmPlaying()) stopLucyMasterBgm();
     const bed = createOrbCounselBed();
@@ -208,6 +229,9 @@ export function LucyOrbCounsel({
       if (flashTimer.current) window.clearTimeout(flashTimer.current);
       if (dieTimer.current) window.clearTimeout(dieTimer.current);
       if (cautionTimer.current) window.clearTimeout(cautionTimer.current);
+      if (holdTimer.current) window.clearTimeout(holdTimer.current);
+      heavenToken.current += 1;
+      if (heavenSpokeRef.current) { stopTTS(); heavenSpokeRef.current = false; }
       bed?.stop();
       bedRef.current = null;
       // Lucy Master BGM is not restarted here: leaving Orb must be silent. Lucy's own page restarts it if wanted.
@@ -243,8 +267,8 @@ export function LucyOrbCounsel({
   const bedAudible = bedOn && onOrbRoute && !awayFromOrb;
 
   useEffect(() => {
-    bedRef.current?.setAudible(bedAudible, speaking);
-  }, [bedAudible, speaking]);
+    bedRef.current?.setAudible(bedAudible, speaking || ttsActive);
+  }, [bedAudible, speaking, ttsActive]);
 
   if (!open) return null;
 
@@ -314,10 +338,54 @@ export function LucyOrbCounsel({
     }, 1500);
   };
 
-  const flashOrb = () => {
+  const flashOrb = (heavenly = false) => {
     setLit(true);
+    setHeavenBurst(heavenly);
+    setOrbBurst(value => value + 1);
     if (flashTimer.current) window.clearTimeout(flashTimer.current);
-    flashTimer.current = window.setTimeout(() => setLit(false), 950);
+    flashTimer.current = window.setTimeout(() => setLit(false), heavenly ? 2200 : 1400);
+  };
+
+  // 꾹 누르기(0.7초): 천상의 조언이 내려오고, 그 조언을 목소리로 들려준다.
+  const speakHeaven = (text: string) => {
+    if (sessionRef.current) {
+      // 상담 중에는 마스터의 실시간 목소리가 그대로 읽어 준다 (두 소리가 겹치지 않게).
+      sessionRef.current.sendText(`다음 천상의 조언을 그대로 천천히 읽어 주세요. 이 지시 문장은 읽지 마세요: ${text}`);
+      return;
+    }
+    heavenSpokeRef.current = true;
+    void playTTSInChunks(text, orbVoice(master?.voice || 'Aoede'), 160, '차분', undefined, { skipCompletionChime: true });
+  };
+  const summonHeaven = async () => {
+    const token = ++heavenToken.current;
+    flashOrb(true);
+    setHeaven({ status: 'loading', text: '' });
+    const recent = linesRef.current.slice(-4).map(line => `${line.who}: ${line.text}`).join('\n');
+    const text = await generateHeavenlyAdvice({ nickname, chart, recent, topic: master?.topic });
+    if (token !== heavenToken.current || closedRef.current) return;
+    setHeaven({ status: 'ready', text });
+    speakHeaven(text);
+  };
+  const closeHeaven = () => {
+    heavenToken.current += 1;
+    setHeaven(null);
+    if (heavenSpokeRef.current) { stopTTS(); heavenSpokeRef.current = false; }
+  };
+  const startHold = () => {
+    heldRef.current = false;
+    if (holdTimer.current) window.clearTimeout(holdTimer.current);
+    setCharging(true);
+    holdTimer.current = window.setTimeout(() => {
+      holdTimer.current = null;
+      heldRef.current = true;
+      setCharging(false);
+      void summonHeaven();
+    }, 700);
+  };
+  const endHold = () => {
+    if (holdTimer.current) window.clearTimeout(holdTimer.current);
+    holdTimer.current = null;
+    setCharging(false);
   };
 
   const ask = (text: string) => {
@@ -394,6 +462,22 @@ export function LucyOrbCounsel({
         ))}
         <span className="lucy-orb-rays" aria-hidden="true" />
         <span className="lucy-orb-vignette" aria-hidden="true" />
+        {heaven && (
+          <div className="lucy-heaven" role="dialog" aria-label="천상의 조언">
+            <span className="lucy-heaven-beam" aria-hidden="true" />
+            <div className="lucy-heaven-card">
+              <span className="lucy-heaven-halo" aria-hidden="true" />
+              <p className="lucy-heaven-title">✦ 천상의 조언 ✦</p>
+              {heaven.status === 'loading'
+                ? <p className="lucy-heaven-wait">별빛이 말을 고르고 있어요…</p>
+                : <p className="lucy-heaven-text">{heaven.text}</p>}
+              <div className="lucy-heaven-actions">
+                {heaven.status === 'ready' && <button type="button" onClick={() => speakHeaven(heaven.text)}>다시 듣기</button>}
+                <button type="button" onClick={closeHeaven}>닫기</button>
+              </div>
+            </div>
+          </div>
+        )}
         {caution && <p className="lucy-orb-caution" role="status">이 상담은 참고일 뿐입니다. 맹신하지 마세요.</p>}
         <header className="lucy-orb-header" data-top-bar="true">
           <h1>Orb</h1>
@@ -467,7 +551,36 @@ export function LucyOrbCounsel({
           })}
           <div className="lucy-orb-figure">
             {[0, 1, 2, 3, 4].map(index => <span key={index} className="lucy-orb-sparkle" aria-hidden="true">✦</span>)}
-            <button type="button" className={`lucy-orb-body ${lit ? 'is-lit' : ''}`} aria-label={draft.trim() ? '입력한 말 보내기' : '오브 빛'} onClick={() => { flashOrb(); if (phase === 'live') sendDraft(); }}>
+            {charging && <span className="lucy-orb-charge" aria-hidden="true" />}
+            {orbBurst > 0 && (
+              <span key={orbBurst} className={`lucy-orb-burst ${heavenBurst ? 'is-heaven' : ''}`} aria-hidden="true">
+                <i className="bloom" />
+                <i className="flare" />
+                <i className="rays" />
+                <i className="ring r1" />
+                <i className="ring r2" />
+                <i className="ring r3" />
+                {BURST_PARTICLES.map(particle => (
+                  <b key={particle.angle} style={{ ['--a' as string]: `${particle.angle}deg`, ['--d' as string]: `${particle.distance}%`, ['--s' as string]: `${particle.size}px`, animationDelay: `${particle.delay}s` }} />
+                ))}
+              </span>
+            )}
+            <button
+              type="button"
+              className={`lucy-orb-body ${lit ? 'is-lit' : ''} ${charging ? 'is-charging' : ''}`}
+              aria-label={draft.trim() ? '입력한 말 보내기 (꾹 누르면 천상의 조언)' : '오브 빛 (꾹 누르면 천상의 조언)'}
+              onPointerDown={startHold}
+              onPointerUp={endHold}
+              onPointerLeave={endHold}
+              onPointerCancel={endHold}
+              onContextMenu={(event) => event.preventDefault()}
+              onClick={() => {
+                if (heldRef.current) { heldRef.current = false; return; }
+                flashOrb();
+                if (phase === 'live') sendDraft();
+              }}
+            >
+              <span className="lucy-orb-glow" aria-hidden="true" />
               <span className="lucy-orb-inner" aria-hidden="true">
                 <span className="lucy-orb-swirl" />
                 <span className="lucy-orb-swirl is-two" />
