@@ -2,32 +2,14 @@ import { LucyOrbCounsel } from '@/components/lucy/LucyOrbCounsel';
 import { getPersistentUserProfile, useApp } from '@/contexts/AppContext';
 import { saveUnifiedMessagesSafely } from '@/lib/chatHistorySync';
 import { isLucyMasterModeOn } from '@/lib/lucyMasterMode';
-import { setOrbCounselOpen, useOrbCounselOpen, isOrbCounselOpen } from '@/lib/orbCounselGate';
+import { setOrbCounselOpen } from '@/lib/orbCounselGate';
 import { calculateDetailedSaju } from '@/lib/sajuAnalysis';
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useLocation } from 'wouter';
 
-/** 사이드바·빅뱅에서 연 음성 오브. 어느 채널에서 열어도 같은 상담이 뜬다. */
-export function OrbCounselHost() {
-  const open = useOrbCounselOpen();
-  const [location] = useLocation();
-  const locationRef = useRef(location);
-  useEffect(() => {
-    if (locationRef.current === location) return;
-    locationRef.current = location;
-    if (isOrbCounselOpen()) setOrbCounselOpen(false);
-  }, [location]);
-  useEffect(() => {
-    const leave = () => {
-      if (isOrbCounselOpen()) setOrbCounselOpen(false);
-    };
-    window.addEventListener('prism-navigate', leave);
-    window.addEventListener('nav-click-active', leave);
-    return () => {
-      window.removeEventListener('prism-navigate', leave);
-      window.removeEventListener('nav-click-active', leave);
-    };
-  }, []);
+/** Orb is a page, not a popup. Only this route is active while it is open. */
+export function OrbPage() {
+  const [, navigate] = useLocation();
   const { sharedState, setPersonaMessages, setLucyProMessages } = useApp();
   const profile = sharedState?.userProfile || getPersistentUserProfile();
   const nickname = profile?.basic?.nickname || profile?.basic?.name || '';
@@ -36,31 +18,37 @@ export function OrbCounselHost() {
     catch { return ''; }
   }, [profile]);
 
+  useEffect(() => {
+    setOrbCounselOpen(true);
+    return () => setOrbCounselOpen(false);
+  }, []);
+
   return (
     <LucyOrbCounsel
-      open={open}
+      open
       nickname={nickname}
       chart={chart}
       onFinish={(summary) => {
-        setOrbCounselOpen(false);
-        if (!summary) return;
-        const message = {
-          id: `orb-${Date.now()}`,
-          role: 'model' as const,
-          content: summary,
-          timestamp: Date.now(),
-          persona: 'lucy' as const,
-          mode: isLucyMasterModeOn() ? 'master' as const : 'casual' as const,
-        };
-        if (isLucyMasterModeOn()) {
-          setLucyProMessages((prev) => [...prev, message]);
-          return;
+        if (summary) {
+          const message = {
+            id: `orb-${Date.now()}`,
+            role: 'model' as const,
+            content: summary,
+            timestamp: Date.now(),
+            persona: 'lucy' as const,
+            mode: isLucyMasterModeOn() ? 'master' as const : 'casual' as const,
+          };
+          if (isLucyMasterModeOn()) setLucyProMessages((prev) => [...prev, message]);
+          else {
+            setPersonaMessages((prev) => {
+              const next = [...(prev.lucy || []), message];
+              saveUnifiedMessagesSafely(next);
+              return { ...prev, lucy: next, orange: next, trinity: next, aura: next, bluebird: next, muse: next };
+            });
+          }
         }
-        setPersonaMessages((prev) => {
-          const next = [...(prev.lucy || []), message];
-          saveUnifiedMessagesSafely(next);
-          return { ...prev, lucy: next, orange: next, trinity: next, aura: next, bluebird: next, muse: next };
-        });
+        navigate('/');
+        window.dispatchEvent(new CustomEvent('prism-navigate', { detail: { path: '/' } }));
       }}
     />
   );

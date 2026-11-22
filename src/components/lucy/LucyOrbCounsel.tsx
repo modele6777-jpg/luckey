@@ -1,6 +1,5 @@
 import { PageGuideButton } from '@/components/guide/PageGuide';
 import { getPageGuide } from '@/lib/pageGuides';
-import { ScreenPortal } from '@/components/layout/ScreenPortal';
 import { startGeminiLiveVoice, type LiveVoiceSession } from '@/lib/geminiLiveSession';
 import { createOrbCounselBed, type OrbCounselBed } from '@/lib/orbCounselBed';
 import { isLucyMasterBgmPlaying, startLucyMasterBgm, stopLucyMasterBgm } from '@/lib/lucyMasterBgm';
@@ -285,7 +284,6 @@ export function LucyOrbCounsel({
   };
 
   return (
-    <ScreenPortal>
       <section
         className={`lucy-orb-stage ${ready ? 'is-ready' : ''} ${phase === 'live' ? 'is-live' : ''} ${speaking ? 'is-speaking' : ''} ${leaving ? 'is-leaving' : ''}`}
         data-orb-counsel="true"
@@ -449,6 +447,5 @@ export function LucyOrbCounsel({
           </>
         )}
       </section>
-    </ScreenPortal>
   );
 }

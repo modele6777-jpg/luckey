@@ -54,8 +54,8 @@ const SIDEBAR_MENU: { id: string; path: string | null; aliases: string[]; orb?: 
 ];
 
 function sidebarMenuIndex(location: string, orbOpen: boolean) {
-  if (orbOpen) return SIDEBAR_MENU.findIndex(stop => stop.orb);
   const path = (location || '/').split(/[?#]/)[0] || '/';
+  if (path === '/voice' || orbOpen) return SIDEBAR_MENU.findIndex(stop => stop.orb);
   return SIDEBAR_MENU.findIndex(stop => !stop.orb && stop.aliases.some(alias =>
     path === alias || (alias !== '/' && path.startsWith(`${alias}/`))
   ));
@@ -287,8 +287,8 @@ export function BigBangButton() {
     if (!stop) return false;
     if (stop.orb) {
       setFeedbackChannel(orbDirectionTarget);
-      setOrbCounselOpen(true);
-      triggerHaptic('whitehole');
+      openMenuPath('/voice');
+      triggerHaptic('wormhole');
       return true;
     }
     setFeedbackChannel(stop.id === 'lucky' ? luckyDirectionTarget : getDestinationChannel(stop.path || '/'));
@@ -1438,8 +1438,10 @@ export function BigBangButton() {
           showGestureFeedback('tap');
 
           // 음성모드가 켜져 있으면 탭으로 끈다. 루시 화면에서 꺼져 있으면 탭으로 켠다.
-          if (isOrbCounselOpen()) {
+          if (isOrbCounselOpen() || (location || '/').split(/[?#]/)[0] === '/voice') {
             setOrbCounselOpen(false);
+            navigate('/');
+            window.dispatchEvent(new CustomEvent('prism-navigate', { detail: { path: '/' } }));
             return;
           }
 
@@ -1451,7 +1453,8 @@ export function BigBangButton() {
           }
 
           if (checkIsInLucyChat()) {
-            setOrbCounselOpen(true);
+            navigate('/voice');
+            window.dispatchEvent(new CustomEvent('prism-navigate', { detail: { path: '/voice' } }));
             return;
           }
 

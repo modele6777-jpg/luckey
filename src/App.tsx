@@ -32,7 +32,7 @@ import AppIconPreviewModal from "./components/AppIconPreviewModal";
 import { GlobalHandbookAudioWidget } from "./components/GlobalHandbookAudioWidget";
 import { ChannelIntroModal } from "./components/common/ChannelIntroModal";
 import { LucyVoiceModeModal } from "./components/lucy/LucyVoiceModeModal";
-import { OrbCounselHost } from "./components/lucy/OrbCounselHost";
+import { OrbPage } from "./components/lucy/OrbCounselHost";
 import { useOrbCounselOpen } from "./lib/orbCounselGate";
 import { PageLoader } from "./components/PageLoader";
 import { PrismRainbowLoader } from "./components/PrismRainbowLoader";
@@ -175,6 +175,7 @@ const ROUTES_MAP = [
   { path: "/crystal", Component: CalmApp },
   { path: "/calm", Component: CalmApp },
   { path: "/key", Component: CalmApp },
+  { path: "/voice", Component: OrbPage },
 ];
 
 function SuspendedPage({ children }: { children: React.ReactNode }) {
@@ -216,6 +217,7 @@ function ActivePage({ loc }: { loc: string }) {
         <Route path="/crystal"><React.Suspense fallback={<PageLoader />}><CalmApp /></React.Suspense></Route>
         <Route path="/calm"><React.Suspense fallback={<PageLoader />}><CalmApp /></React.Suspense></Route>
         <Route path="/key"><React.Suspense fallback={<PageLoader />}><CalmApp /></React.Suspense></Route>
+        <Route path="/voice"><React.Suspense fallback={<PageLoader />}><OrbPage /></React.Suspense></Route>
       </Switch>
     </ErrorBoundary>
   );
@@ -233,12 +235,12 @@ function ChannelPage({ location }: { location: string }) {
       transition={{ duration: 0.1, ease: 'easeOut' }}
       className="channel-page relative w-full h-full flex flex-col min-h-0"
     >
-      {isLuckyChannel && <AuroraBackground channel />}
+      {isLuckyChannel && path !== '/voice' && <AuroraBackground channel />}
       <div className="channel-page-content relative z-[1] w-full h-full flex flex-col min-h-0">
         <ActivePage loc={location} />
       </div>
       {/* 📘 우측 상단 가이드 (Lucy·Key는 각자 헤더 안에 버튼이 있다) */}
-      {!isLucyThemeRoute(path) && !isKeyChannelPath(path) && (
+      {!isLucyThemeRoute(path) && !isKeyChannelPath(path) && path !== '/voice' && (
         <div className="channel-page-guide absolute z-[45] flex items-center" style={{ top: 0, right: 14, height: 'var(--duo-pane-header-height)' }}>
           <PageGuideButton guide={resolvePageGuide(path)} resolve={() => resolveDappGuide(getCurrentOneStopPage(window.location.pathname + window.location.search))} tone={isLuckyChannel ? 'dark' : resolveChannelThemeFromPath(path) === 'light' ? 'light' : 'dark'} />
         </div>
@@ -1037,7 +1039,6 @@ function AppContent() {
       <GlobalHandbookAudioWidget />
       <TTSFailureNotice />
       <LucyVoiceModeModal />
-      <OrbCounselHost />
       <AppIconPreviewModal />
       {updateNotice}
     </div>

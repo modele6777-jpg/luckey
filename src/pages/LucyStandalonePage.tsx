@@ -2139,7 +2139,8 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
   // 빅뱅버튼 홀드 시 별도 말풍선 없이 루시채팅 자체 음성 모드 즉시 토글
   useEffect(() => {
     const handleBigBangVoiceToggle = () => {
-      setOrbCounselOpen(true);
+      navigate('/voice');
+      window.dispatchEvent(new CustomEvent('prism-navigate', { detail: { path: '/voice' } }));
     };
     window.addEventListener('prism:toggle_lucy_chat_voice', handleBigBangVoiceToggle);
     return () => {

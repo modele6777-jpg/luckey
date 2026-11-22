@@ -623,13 +623,13 @@ export default function LeftSidebarNav() {
                     type="button"
                     className="refined-nav-item"
                     data-orb-nav="true"
-                    data-active={orbOpen}
-                    aria-pressed={orbOpen}
-                    aria-label={orbOpen ? '음성모드 끄기' : '음성모드'}
-                    title={orbOpen ? '음성모드 끄기' : '음성모드'}
+                    data-active={cleanPath === '/voice'}
+                    aria-pressed={cleanPath === '/voice'}
+                    aria-label={cleanPath === '/voice' ? '음성모드' : '음성모드'}
+                    title="음성모드"
                     onClick={() => {
                       triggerHaptic('whitehole');
-                      setOrbCounselOpen(!orbOpen);
+                      if (cleanPath !== '/voice') handleNavigate('/voice');
                     }}
                   >
                     <OrbShapeIcon size={22} />
