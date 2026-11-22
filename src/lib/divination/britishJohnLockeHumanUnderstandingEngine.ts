@@ -8,12 +8,12 @@
  * 4. 사회계약과 상호 신뢰 연대도(Social Contract & Fiduciary Trust): 지배와 복종이 아닌 자유로운 동의와 상호 신뢰를 바탕으로 공정한 연대와 협력을 구축하는 역량.
  * 5. 관용과 다원성 존중·온건한 실용 분별력(Toleration & Practical Prudence): 서로 다른 신념과 개성을 포용하며, 맹목적 광신을 배격하고 상식과 이성에 기반한 평화적 공존을 이끄는 지혜.
  *
- * @version LUCKEY-JOHN-LOCKE-UNDERSTANDING-v2.2.0
+ * @version LUCKEY-JOHN-LOCKE-UNDERSTANDING-v2.3.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const BRITISH_JOHN_LOCKE_VERSION = 'LUCKEY-JOHN-LOCKE-UNDERSTANDING-v2.2.0';
+export const BRITISH_JOHN_LOCKE_VERSION = 'LUCKEY-JOHN-LOCKE-UNDERSTANDING-v2.3.0';
 
 export type LockeQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -51,8 +51,11 @@ export interface JohnLockeHumanUnderstandingResult {
   tolerantPrudenceWisdomScore: number;        // 관용과 다원성 존중 실용 분별력 (Toleration & Prudence)
   // 세부 분석
   questionTopic: LockeQuestionTopic;
+  experiencePhase: string;
+  shadowWarning: string;
   temporalLockeRhythm: LockeTemporalRhythm;
   activeLockeTheme: LockeTheme;
+  companionLockeTheme: LockeTheme;
   focalLockeAphorism: LockeAphorism;
   practiceGuidance: string;
   ritualAction: string;
@@ -70,6 +73,18 @@ export interface JohnLockeHumanUnderstandingResult {
     philosophicalCounsel: string;
   };
 }
+
+const LOCKE_EXPERIENCE_PHASES = [
+  '백지 수용(낡은 선입견을 비우고 눈앞의 생생한 경험을 정직하게 받아들이는 시기)',
+  '감각·반성 조화(외부의 사실 관찰과 내면의 성찰을 나란히 세워 분별하는 시기)',
+  '상호 신의·관용(나의 정당한 경계를 지키면서도 다름을 품는 신뢰를 세우는 시기)',
+] as const;
+
+const LOCKE_SHADOW_WARNINGS = [
+  '선입견을 비운다는 이유로 그동안 몸으로 익힌 소중한 분별력까지 백지화하지 않도록 살피세요.',
+  '감각적 사실과 내면의 반성을 저울질하다 정작 지금 필요한 선택과 행동이 늦어지지 않도록 점검하세요.',
+  '관용과 배려를 베풀려다 침해받지 말아야 할 내 시간·자유·존엄의 경계선까지 양보하지 않도록 유의하세요.',
+] as const;
 
 export const LOCKE_THEMES: LockeTheme[] = [
   {
@@ -250,14 +265,18 @@ export function calculateJohnLockeHumanUnderstanding(
   const tolerantPrudenceWisdomScore = 72 + ((absHash >> 12) % 27);
 
   const themeIndex = (absHash >> 4) % LOCKE_THEMES.length;
+  const companionOffset = 1 + ((absHash >> 5) % (LOCKE_THEMES.length - 1));
   const aphorismIndex = (absHash >> 7) % LOCKE_APHORISMS.length;
 
   const activeLockeTheme = LOCKE_THEMES[themeIndex];
+  const companionLockeTheme = LOCKE_THEMES[(themeIndex + companionOffset) % LOCKE_THEMES.length];
   const focalLockeAphorism = LOCKE_APHORISMS[aphorismIndex];
+  const experiencePhase = LOCKE_EXPERIENCE_PHASES[(absHash >> 10) % LOCKE_EXPERIENCE_PHASES.length];
+  const shadowWarning = LOCKE_SHADOW_WARNINGS[(absHash >> 13) % LOCKE_SHADOW_WARNINGS.length];
 
   const guidanceTitle = `존 로크 경험론과 천부인권 지혜: ${activeLockeTheme.themeTitleKo}`;
   const philosophicalCounsel = `존 로크의 경험론과 권리 철학은 마음의 백지 위에 편견 없는 경험의 배움을 채우고, 침해할 수 없는 자유와 천부인권, 상호 신뢰와 너른 관용으로 세상을 마주하도록 일깨웁니다. ` +
-    `현재 당신의 지성과 행동을 인도하는 경험론적 원리는 '${activeLockeTheme.themeTitleKo}'입니다. ` +
+    `현재 당신의 지성과 행동을 인도하는 경험론적 원리는 '${activeLockeTheme.themeTitleKo}'(동반 테마: ${companionLockeTheme.themeTitleKo})입니다. ` +
     `${activeLockeTheme.practicalCounsel} ${topicGuidance.practiceGuidance} 아울러 《인간 오성론》 및 《통치론》의 불멸의 원전 명제 "${focalLockeAphorism.aphorismKo}"(${focalLockeAphorism.aphorismEn})를 가슴에 품고, ` +
     `${focalLockeAphorism.actionGuidance}`;
 
@@ -267,12 +286,12 @@ export function calculateJohnLockeHumanUnderstanding(
   const kstTimeLabel = `${temporalLockeRhythm.kstDateLabel}T${String(kst.getUTCHours()).padStart(2, '0')}:${String(kst.getUTCMinutes()).padStart(2, '0')}:00+09:00 (KST)`;
   const trimmedQuery = (query ?? '').trim();
   const reflectiveQuestion = trimmedQuery
-    ? `"${trimmedQuery}"의 상황 앞에 '${activeLockeTheme.themeTitleKo}'의 백지(Tabula Rasa)를 펼친다면, 과거의 선입견 대신 새로 확인한 경험과 정당한 경계는 무엇인가요?`
-    : `오늘 '${activeLockeTheme.themeTitleKo}'의 관점에서, 낡은 편견을 비우고 감각과 반성으로 새롭게 세워 볼 기준 하나는 무엇인가요?`;
+    ? `"${trimmedQuery}"의 상황 앞에 '${activeLockeTheme.themeTitleKo}'의 백지(Tabula Rasa)와 '${experiencePhase}' 국면을 펼친다면, 과거의 선입견 대신 새로 확인한 경험과 정당한 경계는 무엇인가요?`
+    : `'${experiencePhase}' 국면에서 오늘 '${activeLockeTheme.themeTitleKo}'의 관점으로, 낡은 편견을 비우고 감각과 반성으로 새롭게 세워 볼 기준 하나는 무엇인가요?`;
   const lockeSynthesisMatrix = {
     coreInsight: activeLockeTheme.themeTitleKo,
-    recommendedAction: topicGuidance.practiceGuidance,
-    cautionNotice: '과거의 선입견에 기대어 눈앞의 경험적 사실을 왜곡하거나 타인의 권리를 침해하지 마십시오.',
+    recommendedAction: `${topicGuidance.practiceGuidance} (${experiencePhase})`,
+    cautionNotice: shadowWarning,
   };
 
   return {
@@ -284,11 +303,14 @@ export function calculateJohnLockeHumanUnderstanding(
     socialContractMutualTrustIndex,
     tolerantPrudenceWisdomScore,
     questionTopic,
+    experiencePhase,
+    shadowWarning,
     temporalLockeRhythm,
     activeLockeTheme,
+    companionLockeTheme,
     focalLockeAphorism,
-    practiceGuidance: topicGuidance.practiceGuidance,
-    ritualAction: topicGuidance.ritualAction,
+    practiceGuidance: `${topicGuidance.practiceGuidance} (동반 테마: ${companionLockeTheme.themeTitleKo})`,
+    ritualAction: `${topicGuidance.ritualAction} (${experiencePhase})`,
     reflectionFocus: topicGuidance.reflectionFocus,
     reflectiveQuestion,
     boundaryNotice,
@@ -306,8 +328,11 @@ export function formatJohnLockeHumanUnderstandingPrompt(res: JohnLockeHumanUnder
     `【존 로크 《인간 오성론》 타불라 라사 & 천부인권 지표 (${res.engineVersion})】`,
     `- 연산 시각: ${res.calculatedAtKst}`,
     `- 질문 주제 맥락: ${res.questionTopic}`,
+    `- 경험 국면: ${res.experiencePhase}`,
     `- KST 시공간 리듬: ${res.temporalLockeRhythm.kstDateLabel} · ${res.temporalLockeRhythm.timeWindowKo} (${res.temporalLockeRhythm.empiricalTone}) — ${res.temporalLockeRhythm.rhythmDirective}`,
     `- 핵심 경험론 테마: ${res.activeLockeTheme.themeTitleKo} [${res.activeLockeTheme.themeTitleEn}]`,
+    `- 동반 경험론 테마: ${res.companionLockeTheme.themeTitleKo}`,
+    `- 과잉·경계 점검: ${res.shadowWarning}`,
     `- 실존적 통찰: ${res.activeLockeTheme.existentialInsight}`,
     `- 실천적 조언: ${res.activeLockeTheme.practicalCounsel}`,
     `- 질문 맞춤 실천 가이드: ${res.practiceGuidance}`,

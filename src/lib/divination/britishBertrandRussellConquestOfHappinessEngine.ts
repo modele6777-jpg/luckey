@@ -9,12 +9,12 @@
  * 4. 비인칭적 흥미와 여가의 활력도(Impersonal Interests & Leisure Vitality Index): 생업의 중압감에서 벗어나 마음을 회복시키는 순수한 취미와 폭넓은 시야.
  * 5. 합리적 이성과 회복탄력성 지수(Rational Equanimity & Resilience Score): 피할 수 없는 불행 앞에서도 불필요한 감정 소모를 멈추고 냉철하고 따뜻한 이성으로 극복하는 지혜.
  *
- * @version LUCKEY-BERTRAND-RUSSELL-HAPPINESS-v2.2.0
+ * @version LUCKEY-BERTRAND-RUSSELL-HAPPINESS-v2.3.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const BRITISH_BERTRAND_RUSSELL_VERSION = 'LUCKEY-BERTRAND-RUSSELL-HAPPINESS-v2.2.0';
+export const BRITISH_BERTRAND_RUSSELL_VERSION = 'LUCKEY-BERTRAND-RUSSELL-HAPPINESS-v2.3.0';
 
 export type RussellQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -52,8 +52,11 @@ export interface BritishBertrandRussellConquestOfHappinessResult {
   rationalEquanimityResilienceScore: number;      // 합리적 이성과 회복탄력성 지수 (Rational Equanimity & Resilience)
   // 세부 분석
   questionTopic: RussellQuestionTopic;
+  zestPhase: string;
+  shadowWarning: string;
   temporalRussellRhythm: RussellTemporalRhythm;
   activeRussellTheme: RussellTheme;
+  companionRussellTheme: RussellTheme;
   focalRussellAphorism: RussellAphorism;
   practiceGuidance: string;
   ritualAction: string;
@@ -71,6 +74,18 @@ export interface BritishBertrandRussellConquestOfHappinessResult {
     philosophicalCounsel: string;
   };
 }
+
+const RUSSELL_ZEST_PHASES = [
+  '열의 점화(내면의 좁은 걱정을 걷어내고 바깥 세상의 호기심으로 시선을 돌리는 시기)',
+  '자기몰두 해체(남과의 비교·피해의식을 내려놓고 자기 고유의 속도를 되찾는 시기)',
+  '비인칭적 관조(성과 압박에서 벗어나 순수한 취미·배움으로 마음을 환기하는 시기)',
+] as const;
+
+const RUSSELL_SHADOW_WARNINGS = [
+  '바깥의 자극과 활동만 쫓다가 정작 내면의 피로 신호를 외면하지 않도록 살피세요.',
+  '비교를 멈춘다는 이유로 필요한 현실 점검과 건설적 노력까지 느슨해지지 않도록 유의하세요.',
+  '관조와 여가에 머물다 막상 오늘 착수해야 할 작은 한 걸음을 미루지 않도록 점검하세요.',
+] as const;
 
 export const RUSSELL_THEMES: RussellTheme[] = [
   {
@@ -265,14 +280,18 @@ export function calculateBritishBertrandRussellConquestOfHappiness(
   const rationalEquanimityResilienceScore = 78 + ((absHash >> 12) % 21);
 
   const themeIndex = (absHash >> 4) % RUSSELL_THEMES.length;
+  const companionOffset = 1 + ((absHash >> 5) % (RUSSELL_THEMES.length - 1));
   const aphorismIndex = (absHash >> 7) % RUSSELL_APHORISMS.length;
 
   const activeRussellTheme = RUSSELL_THEMES[themeIndex];
+  const companionRussellTheme = RUSSELL_THEMES[(themeIndex + companionOffset) % RUSSELL_THEMES.length];
   const focalRussellAphorism = RUSSELL_APHORISMS[aphorismIndex];
+  const zestPhase = RUSSELL_ZEST_PHASES[(absHash >> 10) % RUSSELL_ZEST_PHASES.length];
+  const shadowWarning = RUSSELL_SHADOW_WARNINGS[(absHash >> 13) % RUSSELL_SHADOW_WARNINGS.length];
 
   const guidanceTitle = `버트런드 러셀 행복의 정복 지혜: ${activeRussellTheme.themeTitleKo}`;
   const philosophicalCounsel = `20세기 최고의 지성 버트런드 러셀의 《행복의 정복》은 불필요한 자기몰두와 남과의 비교를 털어내고, 외부 세계를 향한 열정적 관심(Zest)과 건설적인 일의 기쁨으로 나아가도록 이끕니다. ` +
-    `현재 당신의 삶을 환하게 밝히는 핵심 행복 원리는 '${activeRussellTheme.themeTitleKo}'입니다. ` +
+    `현재 당신의 삶을 환하게 밝히는 핵심 행복 원리는 '${activeRussellTheme.themeTitleKo}'(동반 테마: ${companionRussellTheme.themeTitleKo})입니다. ` +
     `${activeRussellTheme.practicalCounsel} ${topicGuidance.practiceGuidance} 아울러 러셀의 명언 "${focalRussellAphorism.aphorismKo}"를 되새기며, ` +
     `${focalRussellAphorism.actionGuidance}`;
 
@@ -282,12 +301,12 @@ export function calculateBritishBertrandRussellConquestOfHappiness(
   const kstTimeLabel = `${temporalRussellRhythm.kstDateLabel}T${String(kst.getUTCHours()).padStart(2, '0')}:${String(kst.getUTCMinutes()).padStart(2, '0')}:00+09:00 (KST)`;
   const trimmedQuery = (query ?? '').trim();
   const reflectiveQuestion = trimmedQuery
-    ? `"${trimmedQuery}"의 고민을 버트런드 러셀의 '${activeRussellTheme.themeTitleKo}' 시선으로 옮길 때, 오늘 자기몰두나 비교 대신 밖을 향해 바로 뻗어 볼 수 있는 작은 열의(Zest) 하나는 무엇인가요?`
-    : `오늘 '${activeRussellTheme.themeTitleKo}'의 관점에서, 내면의 불안이나 비교를 멈추고 세상과 사람에게 호기심으로 건네 볼 작은 행동 하나는 무엇인가요?`;
+    ? `"${trimmedQuery}"의 고민을 버트런드 러셀의 '${activeRussellTheme.themeTitleKo}' 시선과 '${zestPhase}' 국면으로 옮길 때, 오늘 자기몰두나 비교 대신 밖을 향해 바로 뻗어 볼 수 있는 작은 열의(Zest) 하나는 무엇인가요?`
+    : `'${zestPhase}' 국면에서 오늘 '${activeRussellTheme.themeTitleKo}'의 관점으로 내면의 불안이나 비교를 멈추고 세상과 사람에게 호기심으로 건네 볼 작은 행동 하나는 무엇인가요?`;
   const russellSynthesisMatrix = {
     coreInsight: activeRussellTheme.themeTitleKo,
-    recommendedAction: topicGuidance.practiceGuidance,
-    cautionNotice: '과도한 자의식과 남과의 비교 속에 갇혀 외부 세계의 열정적 관심(Zest)을 놓치지 마십시오.',
+    recommendedAction: `${topicGuidance.practiceGuidance} (${zestPhase})`,
+    cautionNotice: shadowWarning,
   };
 
   return {
@@ -299,11 +318,14 @@ export function calculateBritishBertrandRussellConquestOfHappiness(
     impersonalInterestsVitalityIndex,
     rationalEquanimityResilienceScore,
     questionTopic,
+    zestPhase,
+    shadowWarning,
     temporalRussellRhythm,
     activeRussellTheme,
+    companionRussellTheme,
     focalRussellAphorism,
-    practiceGuidance: topicGuidance.practiceGuidance,
-    ritualAction: topicGuidance.ritualAction,
+    practiceGuidance: `${topicGuidance.practiceGuidance} (동반 테마: ${companionRussellTheme.themeTitleKo})`,
+    ritualAction: `${topicGuidance.ritualAction} (${zestPhase})`,
     reflectionFocus: topicGuidance.reflectionFocus,
     reflectiveQuestion,
     boundaryNotice,
@@ -323,8 +345,11 @@ export function formatBritishBertrandRussellConquestOfHappinessPrompt(
     `【버트런드 러셀 《행복의 정복》 열정적 관심 & 합리적 낙관 지표 (${res.engineVersion})】`,
     `- 연산 시각: ${res.calculatedAtKst}`,
     `- 질문 주제 맥락: ${res.questionTopic}`,
+    `- 행복 국면: ${res.zestPhase}`,
     `- KST 시공간 리듬: ${res.temporalRussellRhythm.kstDateLabel} · ${res.temporalRussellRhythm.timeWindowKo} (${res.temporalRussellRhythm.zestTone}) — ${res.temporalRussellRhythm.rhythmDirective}`,
     `- 핵심 행복 테마: ${res.activeRussellTheme.themeTitleKo} [${res.activeRussellTheme.themeTitleEn}]`,
+    `- 동반 행복 테마: ${res.companionRussellTheme.themeTitleKo}`,
+    `- 과잉·경계 점검: ${res.shadowWarning}`,
     `- 실존적 통찰: ${res.activeRussellTheme.existentialInsight}`,
     `- 실천적 조언: ${res.activeRussellTheme.practicalCounsel}`,
     `- 질문 맞춤 실천 가이드: ${res.practiceGuidance}`,

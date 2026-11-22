@@ -10,12 +10,12 @@
  * 4. 극장의 우상(Idola Theatri) 극복: 과거의 낡은 권위, 검증되지 않은 전통 체계나 독단적 교조주의를 맹종하지 않는 비판적 성찰력.
  * 5. 참된 귀납과 실천적 힘(Inductio Vera & Scientia Potentia Est): "아는 것이 힘이다(Scientia potentia est)"라는 명제처럼, 면밀한 관찰과 사실 검증을 통해 실질적인 변화를 창출하는 실증적 실행력.
  *
- * @version LUCKEY-FRANCIS-BACON-NOVUM-ORGANUM-v2.2.0
+ * @version LUCKEY-FRANCIS-BACON-NOVUM-ORGANUM-v2.3.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const BRITISH_FRANCIS_BACON_VERSION = 'LUCKEY-FRANCIS-BACON-NOVUM-ORGANUM-v2.2.0';
+export const BRITISH_FRANCIS_BACON_VERSION = 'LUCKEY-FRANCIS-BACON-NOVUM-ORGANUM-v2.3.0';
 
 export type BaconQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -53,8 +53,11 @@ export interface FrancisBaconNovumOrganumResult {
   trueInductionEmpiricalGroundedScore: number;       // 참된 귀납(Inductio Vera) 사실 검증력 & 지식의 실천력
   // 세부 분석
   questionTopic: BaconQuestionTopic;
+  inductionPhase: string;
+  shadowWarning: string;
   temporalBaconRhythm: BaconTemporalRhythm;
   activeBaconTheme: BaconTheme;
+  companionBaconTheme: BaconTheme;
   focalBaconAphorism: BaconAphorism;
   practiceGuidance: string;
   ritualAction: string;
@@ -72,6 +75,18 @@ export interface FrancisBaconNovumOrganumResult {
     philosophicalCounsel: string;
   };
 }
+
+const BACON_INDUCTION_PHASES = [
+  '우상 정화(희망적 편향과 모호한 수사를 먼저 걷어내는 시기)',
+  '반증 수집(가설에 어긋나는 사실과 현장의 예외를 꼼꼼히 대조하는 시기)',
+  '실증 실행(검증된 작은 사실을 토대로 현실의 한 걸음을 내딛는 시기)',
+] as const;
+
+const BACON_SHADOW_WARNINGS = [
+  '모든 전제를 의심하고 정화하느라 정작 믿을 수 있는 협력과 직관의 단서까지 밀어내지 않도록 살피세요.',
+  '반증과 데이터를 모으는 데만 머물러 결정과 실행의 타이밍을 놓치지 않도록 점검하세요.',
+  '부분적인 사실 몇 개만으로 성급한 일반화를 내려 또 다른 동굴의 우상에 갇히지 않도록 유의하세요.',
+] as const;
 
 export const BACON_THEMES: BaconTheme[] = [
   {
@@ -259,14 +274,18 @@ export function calculateFrancisBaconNovumOrganum(
   const trueInductionEmpiricalGroundedScore = 67 + ((absHash >> 12) % 32);
 
   const themeIndex = (absHash >> 4) % BACON_THEMES.length;
+  const companionOffset = 1 + ((absHash >> 5) % (BACON_THEMES.length - 1));
   const aphorismIndex = (absHash >> 7) % BACON_APHORISMS.length;
 
   const activeBaconTheme = BACON_THEMES[themeIndex];
+  const companionBaconTheme = BACON_THEMES[(themeIndex + companionOffset) % BACON_THEMES.length];
   const focalBaconAphorism = BACON_APHORISMS[aphorismIndex];
+  const inductionPhase = BACON_INDUCTION_PHASES[(absHash >> 10) % BACON_INDUCTION_PHASES.length];
+  const shadowWarning = BACON_SHADOW_WARNINGS[(absHash >> 13) % BACON_SHADOW_WARNINGS.length];
 
   const guidanceTitle = `프랜시스 베이컨 신기관 지성 지혜: ${activeBaconTheme.themeTitleKo}`;
   const philosophicalCounsel = `프랜시스 베이컨의 경험론 철학은 마음을 흐리는 4대 우상을 깨부수고 차가운 사실에 입각한 실천적 힘을 세우도록 이끕니다. ` +
-    `현재 당신이 가장 주의 깊게 점검해야 할 지점은 '${activeBaconTheme.themeTitleKo}'입니다. ` +
+    `현재 당신이 가장 주의 깊게 점검해야 할 지점은 '${activeBaconTheme.themeTitleKo}'(동반 테마: ${companionBaconTheme.themeTitleKo})입니다. ` +
     `${activeBaconTheme.practicalCounsel} ${topicGuidance.practiceGuidance} 아울러 베이컨의 명언 "${focalBaconAphorism.aphorismKo}"(${focalBaconAphorism.aphorismLatin})을 상기하며, ` +
     `${focalBaconAphorism.actionGuidance}`;
 
@@ -276,12 +295,12 @@ export function calculateFrancisBaconNovumOrganum(
   const kstTimeLabel = `${temporalBaconRhythm.kstDateLabel}T${String(kst.getUTCHours()).padStart(2, '0')}:${String(kst.getUTCMinutes()).padStart(2, '0')}:00+09:00 (KST)`;
   const trimmedQuery = (query ?? '').trim();
   const reflectiveQuestion = trimmedQuery
-    ? `"${trimmedQuery}"의 질문 앞에서 '${activeBaconTheme.themeTitleKo}'을 적용할 때, 희망적 관측이나 막연한 수사 대신 지금 바로 사실로 대조해 볼 한 가지는 무엇인가요?`
-    : `오늘 '${activeBaconTheme.themeTitleKo}'의 잣대로, 내가 당연한 사실처럼 믿어 온 전제 중 반증 사례를 하나 찾아 점검해 볼 것은 무엇인가요?`;
+    ? `"${trimmedQuery}"의 질문 앞에서 '${activeBaconTheme.themeTitleKo}'과 '${inductionPhase}' 국면을 적용할 때, 희망적 관측이나 막연한 수사 대신 지금 바로 사실로 대조해 볼 한 가지는 무엇인가요?`
+    : `'${inductionPhase}' 국면에서 오늘 '${activeBaconTheme.themeTitleKo}'의 잣대로, 내가 당연한 사실처럼 믿어 온 전제 중 반증 사례를 하나 찾아 점검해 볼 것은 무엇인가요?`;
   const baconSynthesisMatrix = {
     coreInsight: activeBaconTheme.themeTitleKo,
-    recommendedAction: topicGuidance.practiceGuidance,
-    cautionNotice: '보고 싶은 사실만 모으거나 모호한 수사(시장의 우상)에 이끌려 성급히 단정하지 마십시오.',
+    recommendedAction: `${topicGuidance.practiceGuidance} (${inductionPhase})`,
+    cautionNotice: shadowWarning,
   };
 
   return {
@@ -293,11 +312,14 @@ export function calculateFrancisBaconNovumOrganum(
     idolsTheatriAuthorityDogmaOvercomingScore,
     trueInductionEmpiricalGroundedScore,
     questionTopic,
+    inductionPhase,
+    shadowWarning,
     temporalBaconRhythm,
     activeBaconTheme,
+    companionBaconTheme,
     focalBaconAphorism,
-    practiceGuidance: topicGuidance.practiceGuidance,
-    ritualAction: topicGuidance.ritualAction,
+    practiceGuidance: `${topicGuidance.practiceGuidance} (동반 테마: ${companionBaconTheme.themeTitleKo})`,
+    ritualAction: `${topicGuidance.ritualAction} (${inductionPhase})`,
     reflectionFocus: topicGuidance.reflectionFocus,
     reflectiveQuestion,
     boundaryNotice,
@@ -315,8 +337,11 @@ export function formatFrancisBaconNovumOrganumPrompt(res: FrancisBaconNovumOrgan
     `【프랜시스 베이컨 《신기관》 4대 우상 타파 & 실증 경험 지표 (${res.engineVersion})】`,
     `- 연산 시각: ${res.calculatedAtKst}`,
     `- 질문 주제 맥락: ${res.questionTopic}`,
+    `- 귀납 국면: ${res.inductionPhase}`,
     `- KST 시공간 리듬: ${res.temporalBaconRhythm.kstDateLabel} · ${res.temporalBaconRhythm.timeWindowKo} (${res.temporalBaconRhythm.empiricalTone}) — ${res.temporalBaconRhythm.rhythmDirective}`,
     `- 핵심 우상 타파 테마: ${res.activeBaconTheme.themeTitleKo} [${res.activeBaconTheme.themeTitleLatin}]`,
+    `- 동반 우상 타파 테마: ${res.companionBaconTheme.themeTitleKo}`,
+    `- 과잉·경계 점검: ${res.shadowWarning}`,
     `- 인식론적 통찰: ${res.activeBaconTheme.epistemologicalInsight}`,
     `- 실천적 조언: ${res.activeBaconTheme.practicalCounsel}`,
     `- 질문 맞춤 실천 가이드: ${res.practiceGuidance}`,

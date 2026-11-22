@@ -7331,9 +7331,12 @@ test('Francis Bacon Novum Organum Engine: calculates Four Idols overcoming, Indu
   assert(rep.idolsTheatriAuthorityDogmaOvercomingScore >= 0 && rep.idolsTheatriAuthorityDogmaOvercomingScore <= 100);
   assert(rep.trueInductionEmpiricalGroundedScore >= 0 && rep.trueInductionEmpiricalGroundedScore <= 100);
   assert(rep.activeBaconTheme.themeTitleLatin.length > 0);
+  assert(rep.companionBaconTheme.themeKey !== rep.activeBaconTheme.themeKey);
+  assert(rep.inductionPhase.length > 0 && rep.shadowWarning.length > 0);
   const prompt = formatFrancisBaconNovumOrganumPrompt(rep);
   assert(prompt.includes('프랜시스 베이컨 《신기관》 4대 우상 타파 & 실증 경험 지표'));
-  assert(prompt.includes(rep.activeBaconTheme.themeTitleKo));
+  assert(prompt.includes(rep.activeBaconTheme.themeTitleKo) && prompt.includes(rep.companionBaconTheme.themeTitleKo));
+  assert(prompt.includes(rep.inductionPhase) && prompt.includes(rep.shadowWarning));
   assert(prompt.includes('질문 주제 맥락: decision'));
   assert(prompt.includes('KST 시공간 리듬:'));
   assert.ok(rep.calculatedAtKst.includes('KST'));
@@ -7897,9 +7900,12 @@ test('John Locke Human Understanding Engine: calculates Tabula Rasa, Sensation/R
   assert(rep.socialContractMutualTrustIndex >= 0 && rep.socialContractMutualTrustIndex <= 100);
   assert(rep.tolerantPrudenceWisdomScore >= 0 && rep.tolerantPrudenceWisdomScore <= 100);
   assert(rep.activeLockeTheme.themeTitleKo.length > 0);
+  assert(rep.companionLockeTheme.themeKey !== rep.activeLockeTheme.themeKey);
+  assert(rep.experiencePhase.length > 0 && rep.shadowWarning.length > 0);
   const prompt = formatJohnLockeHumanUnderstandingPrompt(rep);
   assert(prompt.includes('존 로크 《인간 오성론》 타불라 라사 & 천부인권 지표'));
-  assert(prompt.includes(rep.activeLockeTheme.themeTitleKo));
+  assert(prompt.includes(rep.activeLockeTheme.themeTitleKo) && prompt.includes(rep.companionLockeTheme.themeTitleKo));
+  assert(prompt.includes(rep.experiencePhase) && prompt.includes(rep.shadowWarning));
   assert(prompt.includes('질문 주제 맥락: relationship'));
   assert(prompt.includes('KST 시공간 리듬:'));
   assert.ok(rep.calculatedAtKst.includes('KST'));
@@ -8156,10 +8162,13 @@ test('Bertrand Russell Conquest of Happiness Engine: calculates Zest for Life, O
   assert(rep.impersonalInterestsVitalityIndex >= 0 && rep.impersonalInterestsVitalityIndex <= 100);
   assert(rep.rationalEquanimityResilienceScore >= 0 && rep.rationalEquanimityResilienceScore <= 100);
   assert(rep.activeRussellTheme.themeTitleKo.length > 0);
+  assert(rep.companionRussellTheme.themeKey !== rep.activeRussellTheme.themeKey);
+  assert(rep.zestPhase.length > 0 && rep.shadowWarning.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatBritishBertrandRussellConquestOfHappinessPrompt(rep);
   assert(prompt.includes('버트런드 러셀 《행복의 정복》 열정적 관심 & 합리적 낙관 지표'));
-  assert(prompt.includes(rep.activeRussellTheme.themeTitleKo));
+  assert(prompt.includes(rep.activeRussellTheme.themeTitleKo) && prompt.includes(rep.companionRussellTheme.themeTitleKo));
+  assert(prompt.includes(rep.zestPhase) && prompt.includes(rep.shadowWarning));
 });
 
 test('Karl Jaspers Existenz Grenzsituationen Engine: calculates Grenzsituationen Acceptance, Existential Leap, Cipher Transcendence, and Loving Struggle Communication', () => {
