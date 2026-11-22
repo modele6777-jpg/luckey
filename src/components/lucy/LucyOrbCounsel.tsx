@@ -68,6 +68,9 @@ export function LucyOrbCounsel({
   const [notice, setNotice] = useState('');
   const [report, setReport] = useState('');
   const [leaving, setLeaving] = useState(false);
+  const [dieFace, setDieFace] = useState(1);
+  const [rolling, setRolling] = useState(false);
+  const dieTimer = useRef<number | null>(null);
   const flashTimer = useRef<number | null>(null);
   const sessionRef = useRef<LiveVoiceSession | null>(null);
   const linesRef = useRef<Line[]>([]);
@@ -108,6 +111,7 @@ export function LucyOrbCounsel({
     return () => {
       window.clearTimeout(appear);
       if (flashTimer.current) window.clearTimeout(flashTimer.current);
+      if (dieTimer.current) window.clearInterval(dieTimer.current);
       sessionRef.current?.stop();
       sessionRef.current = null;
     };
@@ -191,6 +195,23 @@ export function LucyOrbCounsel({
     take('나', userBuf);
   };
 
+  const rollMaster = () => {
+    if (rolling || leaving) return;
+    setRolling(true);
+    let ticks = 0;
+    if (dieTimer.current) window.clearInterval(dieTimer.current);
+    dieTimer.current = window.setInterval(() => {
+      ticks += 1;
+      setDieFace(1 + Math.floor(Math.random() * 6));
+      if (ticks < 8) return;
+      if (dieTimer.current) window.clearInterval(dieTimer.current);
+      dieTimer.current = null;
+      setRolling(false);
+      const pick = ORB_MASTERS[Math.floor(Math.random() * ORB_MASTERS.length)];
+      begin(pick);
+    }, 90);
+  };
+
   const sendDraft = () => {
     const text = draft.trim();
     if (!text) return;
@@ -256,6 +277,13 @@ export function LucyOrbCounsel({
           {notice && <p>{notice}</p>}
           {phase === 'pick' && (
             <div className="lucy-orb-masters">
+              <button type="button" className={`lucy-die ${rolling ? 'is-rolling' : ''}`} onClick={rollMaster} aria-label="주사위로 마스터 고르기">
+                {Array.from({ length: 9 }, (_, index) => {
+                  const pips = ['4', '0,8', '0,4,8', '0,2,6,8', '0,2,4,6,8', '0,2,3,5,6,8'][dieFace - 1];
+                  return <i key={index} className={pips.split(',').includes(String(index)) ? '' : 'is-off'} />;
+                })}
+              </button>
+              <p className="lucy-die-caption">주사위를 누르면 마스터가 무작위로 정해져</p>
               {ORB_MASTERS.map(item => (
                 <button key={item.id} type="button" onClick={() => begin(item)}>
                   <strong>{item.name}</strong>

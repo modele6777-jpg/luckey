@@ -173,9 +173,32 @@ html.duo-unfolded-mode .lucy-orb-copy { width: min(720px, 92%); }
   padding: 12px 14px;
 }
 .lucy-orb-end { position: absolute; top: max(16px, env(safe-area-inset-top)); right: 16px; z-index: 3; }
+.lucy-die {
+  width: 58px;
+  height: 58px;
+  margin: 0 auto 8px;
+  padding: 8px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  border: 0;
+  border-radius: 12px;
+  background: linear-gradient(145deg, #f8f1e4, #d7c4a0);
+  box-shadow: 0 10px 18px rgba(0,0,0,.35), inset 0 1px 0 #fff;
+}
+.lucy-die i { width: 8px; height: 8px; border-radius: 50%; background: #2a2118; margin: auto; }
+.lucy-die i.is-off { opacity: 0; }
+.lucy-die.is-rolling { animation: lucy-die-roll .72s linear; }
+.lucy-die-caption { margin: 0 0 8px; font-size: 12px; color: rgba(247,244,238,.7); }
+@keyframes lucy-die-roll {
+  0% { transform: rotate(0deg) scale(1); }
+  40% { transform: rotate(180deg) scale(1.08); }
+  100% { transform: rotate(360deg) scale(1); }
+}
 .lucy-orb-masters { margin-top: 16px; display: grid; gap: 8px; width: min(420px, 100%); }
 html.duo-unfolded-mode .lucy-orb-masters { grid-template-columns: 1fr 1fr; }
-.lucy-orb-masters button {
+.lucy-die { grid-column: 1 / -1; justify-self: center; }
+.lucy-die-caption { grid-column: 1 / -1; }
+.lucy-orb-masters button:not(.lucy-die) {
   text-align: left;
   border: 1px solid rgba(255,255,255,.28);
   background: rgba(255,255,255,.1);
