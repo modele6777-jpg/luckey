@@ -16127,5 +16127,23 @@ test('buildUserFifteenToolsDigest integrates 7th-round Tojeong, Kyusei, and Taiy
   assert.ok(!/juBalanceScore|initiativeIndex|defensiveIndex|directionalScores|synergyScore|harmonyScore|springScore|summerScore/.test(digest));
 });
 
+test('buildUserFifteenToolsDigest integrates 8th-round Saju twelve stages, Astrology degrees/orbs, and Ziwei sanfang/lu-ji defense without raw scores', () => {
+  const profile: any = {
+    basic: {
+      name: '제제',
+      birthdate: '1994-01-24',
+      birthtime: '10:30',
+      calendarType: 'solar',
+      isLeapMonth: false,
+      gender: 'male',
+    },
+  };
+  const digest = buildUserFifteenToolsDigest(profile, new Date('2026-11-23T04:46:00+09:00'));
+  assert.ok(digest.includes('월지(') && digest.includes('일지(') && digest.includes('대운수 '));
+  assert.ok(digest.includes('황도 도수: 태양 ') && digest.includes('오브 '));
+  assert.ok(digest.includes('삼방사정[') && digest.includes('사화 전략(화록: ') && digest.includes('방어선: '));
+  assert.ok(!/breakthroughPowerScore|strengthScore/.test(digest));
+});
+
 
 

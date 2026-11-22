@@ -443,12 +443,13 @@ export function buildUserNatalSummary(profile?: UserProfile | null): string {
     ? ` · 우세 원소: ${chart.elements.dominant} · 보완 원소: ${lackingElements.join('·')}`
     : ` · 우세 원소: ${chart.elements.dominant} · 4원소 균형 배치`;
   const modalityNote = ` · 우세 양식: ${chart.modalities.dominant}`;
-  const topAspects = (chart.majorAspects ?? []).slice(0, 2);
+  const topAspects = (chart.majorAspects ?? []).slice(0, 3);
   const topAspect = topAspects.length > 0
-    ? ` · 핵심 각도: ${topAspects.map((a) => `${a.bodyA}${a.symbol}${a.bodyB}(${a.aspectName}·${a.quality})`).join(', ')}`
+    ? ` · 핵심 각도: ${topAspects.map((a) => `${a.bodyA}${a.symbol}${a.bodyB}(${a.aspectName}·${a.quality}·오브 ${a.orb.toFixed(1)}°)`).join(', ')}`
     : '';
   const mcNote = chart.mc ? ` · 천정(MC) ${chart.mc.sign.name}` : '';
-  const innerOuterAxis = ` · 소통/애정/추진/확장/성숙 축: 수성 ${chart.mercury.sign.name} · 금성 ${chart.venus.sign.name} · 화성 ${chart.mars.sign.name} · 목성 ${chart.jupiter.sign.name} · 토성 ${chart.saturn.sign.name}${mcNote}`;
+  const innerOuterAxis = ` · 소통/애정/추진/확장/성숙 축: 수성 ${chart.mercury.sign.name}(${chart.mercury.sign.keywords[0]}) · 금성 ${chart.venus.sign.name}(${chart.venus.sign.keywords[0]}) · 화성 ${chart.mars.sign.name}(${chart.mars.sign.keywords[0]}) · 목성 ${chart.jupiter.sign.name} · 토성 ${chart.saturn.sign.name}${mcNote}`;
+  const degreeNote = ` · 황도 도수: 태양 ${chart.sun.degree.toFixed(1)}°·달 ${chart.moon.degree.toFixed(1)}°${chart.ascendant ? `·상승 ${chart.ascendant.degree.toFixed(1)}°` : ''}`;
   const coreElementHarmony = ` · 핵심 원소 결: 태양(${chart.sun.sign.element})·달(${chart.moon.sign.element})${chart.ascendant ? `·상승(${chart.ascendant.sign.element})` : ''}`;
   const coreModalityHarmony = ` · 핵심 양식 결: 태양(${chart.sun.sign.modality})·달(${chart.moon.sign.modality})${chart.ascendant ? `·상승(${chart.ascendant.sign.modality})` : ''}`;
   const rulerAndMoodNote = ` · 태양 지배성(${chart.sun.sign.ruler}): ${chart.sun.sign.coreTrait} · 달 정서 결: ${chart.moon.sign.emotionalTendency}`;
@@ -457,7 +458,7 @@ export function buildUserNatalSummary(profile?: UserProfile | null): string {
     ? ' · 산출 정밀도: 생시 반영 상승궁·MC 정밀 산출'
     : ' · 산출 정밀도: 생시 미상(정오 기준 태양·달 중심 해석)';
   const limitNote = chart.limitations?.length ? ` · 해석 경계: ${chart.limitations[0]}` : '';
-  return `${chart.summaryText}${balanceNote}${modalityNote}${coreElementHarmony}${coreModalityHarmony}${rulerAndMoodNote}${ascTraitNote}${topAspect}${innerOuterAxis}${precisionNote}${limitNote} · 심리 청사진: ${chart.psychologicalBlueprint}`;
+  return `${chart.summaryText}${balanceNote}${modalityNote}${degreeNote}${coreElementHarmony}${coreModalityHarmony}${rulerAndMoodNote}${ascTraitNote}${topAspect}${innerOuterAxis}${precisionNote}${limitNote} · 심리 청사진: ${chart.psychologicalBlueprint}`;
 }
 
 /**
