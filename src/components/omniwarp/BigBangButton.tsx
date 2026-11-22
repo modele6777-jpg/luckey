@@ -39,27 +39,33 @@ import { OrbShapeIcon } from '@/components/icons/OrbShapeIcon';
 const DRAG_ACTIVATION_THRESHOLD = 26;
 const DOUBLE_TAP_WINDOW_MS = 300;
 
-const SIDEBAR_APP_ORDER: { path: string; aliases: string[] }[] = [
-  { path: '/', aliases: ['/', '/chat', '/lucy'] },
-  { path: '/key', aliases: ['/key', '/calm', '/orb', '/gateway', '/crystal', '/pharmacy'] },
-  { path: '/prologue', aliases: ['/prologue', '/universe', '/ecpr', '/todo', '/mission', '/synergy', '/aegis'] },
-  { path: '/orange', aliases: ['/orange'] },
-  { path: '/trinity', aliases: ['/trinity', '/oracle'] },
-  { path: '/heal', aliases: ['/heal', '/aura'] },
-  { path: '/bluebird', aliases: ['/bluebird'] },
-  { path: '/muse', aliases: ['/muse'] },
-  { path: '/epilogue', aliases: ['/epilogue', '/profile', '/chronicle'] },
+const SIDEBAR_MENU: { id: string; path: string | null; aliases: string[]; orb?: boolean }[] = [
+  { id: 'lucy', path: '/', aliases: ['/', '/chat', '/lucy'] },
+  { id: 'orb', path: null, aliases: [], orb: true },
+  { id: 'key', path: '/key', aliases: ['/key', '/calm', '/orb', '/gateway', '/crystal', '/pharmacy'] },
+  { id: 'lucky', path: '/lucky', aliases: ['/lucky'] },
+  { id: 'prologue', path: '/prologue', aliases: ['/prologue', '/universe', '/ecpr', '/todo', '/mission', '/synergy', '/aegis'] },
+  { id: 'orange', path: '/orange', aliases: ['/orange'] },
+  { id: 'trinity', path: '/trinity', aliases: ['/trinity', '/oracle'] },
+  { id: 'heal', path: '/heal', aliases: ['/heal', '/aura'] },
+  { id: 'bluebird', path: '/bluebird', aliases: ['/bluebird'] },
+  { id: 'muse', path: '/muse', aliases: ['/muse'] },
+  { id: 'epilogue', path: '/epilogue', aliases: ['/epilogue', '/profile', '/chronicle'] },
 ];
 
-function getAdjacentSidebarAppPath(currentLocation: string, direction: 'previous' | 'next') {
-  const currentPath = (currentLocation || '/').split(/[?#]/)[0] || '/';
-  const currentIndex = SIDEBAR_APP_ORDER.findIndex(({ aliases }) => aliases.some((alias) =>
-    currentPath === alias || (alias !== '/' && currentPath.startsWith(`${alias}/`))
+function sidebarMenuIndex(location: string, orbOpen: boolean) {
+  if (orbOpen) return SIDEBAR_MENU.findIndex(stop => stop.orb);
+  const path = (location || '/').split(/[?#]/)[0] || '/';
+  return SIDEBAR_MENU.findIndex(stop => !stop.orb && stop.aliases.some(alias =>
+    path === alias || (alias !== '/' && path.startsWith(`${alias}/`))
   ));
-  if (currentIndex < 0) return null;
+}
+
+function adjacentSidebarStop(location: string, orbOpen: boolean, direction: 'previous' | 'next') {
+  const index = sidebarMenuIndex(location, orbOpen);
+  if (index < 0) return null;
   const offset = direction === 'next' ? 1 : -1;
-  const nextIndex = (currentIndex + offset + SIDEBAR_APP_ORDER.length) % SIDEBAR_APP_ORDER.length;
-  return SIDEBAR_APP_ORDER[nextIndex].path;
+  return SIDEBAR_MENU[(index + offset + SIDEBAR_MENU.length) % SIDEBAR_MENU.length];
 }
 
 export function BigBangButton() {
@@ -110,24 +116,23 @@ export function BigBangButton() {
   const isKeyChannel = [currentCleanPath, windowCleanPath].some((path) =>
     ['/key', '/calm', '/orb', '/gateway', '/crystal', '/pharmacy'].some((alias) => path === alias || path.startsWith(`${alias}/`))
   );
-  const isPrologueChannel = [currentCleanPath, windowCleanPath].some((path) =>
-    ['/prologue', '/universe', '/ecpr', '/todo', '/mission', '/synergy', '/aegis'].some((alias) => path === alias || path.startsWith(`${alias}/`))
-  );
-  const isEpilogueChannel = [currentCleanPath, windowCleanPath].some((path) =>
-    ['/epilogue', '/profile', '/chronicle'].some((alias) => path === alias || path.startsWith(`${alias}/`))
-  );
-  const isLuckyPage = [currentCleanPath, windowCleanPath].some((path) => path === '/lucky' || path.startsWith('/lucky/'));
   const orbNavOpen = isOrbCounselOpen();
   const currentOneStopPage = getCurrentOneStopPage(location);
   const currentAppPages = getOrderedLuckeyPageKeysForCurrentApp(currentOneStopPage);
   const isCycleNavigationDisabled = isChatView || isKeyChannel || currentAppPages.length < 2;
-  const previousAppPath = getAdjacentSidebarAppPath(location, 'previous');
-  const nextAppPath = getAdjacentSidebarAppPath(location, 'next');
+  const upStop = adjacentSidebarStop(location, orbNavOpen, 'previous');
+  const downStop = adjacentSidebarStop(location, orbNavOpen, 'next');
   const orbDirectionTarget = { id: 'orb' as const, icon: OrbShapeIcon as ReturnType<typeof getDestinationChannel>['icon'] };
   const luckyDirectionTarget = { id: 'lucky' as const, icon: Clover as ReturnType<typeof getDestinationChannel>['icon'] };
+  const channelForStop = (stop: { id: string; path: string | null; orb?: boolean } | null) => {
+    if (!stop) return null;
+    if (stop.orb) return orbDirectionTarget;
+    if (stop.id === 'lucky') return luckyDirectionTarget;
+    return getDestinationChannel(stop.path || '/');
+  };
   const directionTargets = {
-    north: orbNavOpen ? getDestinationChannel('/') : isKeyChannel ? orbDirectionTarget : isPrologueChannel ? luckyDirectionTarget : isLuckyPage ? getDestinationChannel('/key') : previousAppPath ? getDestinationChannel(previousAppPath) : null,
-    south: orbNavOpen ? getDestinationChannel('/key') : isChatView ? orbDirectionTarget : isKeyChannel ? luckyDirectionTarget : isLuckyPage ? getDestinationChannel('/prologue') : isEpilogueChannel ? getDestinationChannel('/') : nextAppPath ? getDestinationChannel(nextAppPath) : null,
+    north: channelForStop(upStop),
+    south: channelForStop(downStop),
     west: isCycleNavigationDisabled ? null : getDestinationChannel(previousOrderedLuckeyPage(currentOneStopPage)),
     east: isCycleNavigationDisabled ? null : getDestinationChannel(nextOrderedLuckeyPage(currentOneStopPage)),
   };
@@ -275,20 +280,25 @@ export function BigBangButton() {
       try { sessionStorage.removeItem(navigationFeedbackStorageKey); } catch { /* ignore */ }
     }, feedbackDurationMs);
   };
-  const navigateToAdjacentMenuApp = (direction: 'previous' | 'next', feedbackDirection: 'north' | 'south') => {
-    const path = getAdjacentSidebarAppPath(location, direction);
-    if (!path) return false;
-    showDirectionFeedback(feedbackDirection, path);
-    (window as any).__prismAllowRouteChangeUntil = Date.now() + 1500;
-    try {
-      sessionStorage.setItem('prism_bigbang_navigation_target', JSON.stringify({
-        path: new URL(path, window.location.href).pathname,
-        timestamp: Date.now(),
-      }));
-    } catch { /* ignore */ }
-    navigate(path);
-    window.dispatchEvent(new CustomEvent('prism-navigate', { detail: { path } }));
-    window.dispatchEvent(new CustomEvent('nav-click-active', { detail: { path } }));
+  const navigateToAdjacentMenuApp = (direction: 'previous' | 'next') => {
+    const orbOpen = isOrbCounselOpen();
+    const from = SIDEBAR_MENU[sidebarMenuIndex(location, orbOpen)];
+    const stop = adjacentSidebarStop(location, orbOpen, direction);
+    if (!stop) return false;
+    if (stop.orb) {
+      setFeedbackChannel(orbDirectionTarget);
+      setOrbCounselOpen(true);
+      triggerHaptic('whitehole');
+      return true;
+    }
+    setFeedbackChannel(stop.id === 'lucky' ? luckyDirectionTarget : getDestinationChannel(stop.path || '/'));
+    if (orbOpen) setOrbCounselOpen(false);
+    if ((from?.id === 'epilogue' && stop.id === 'lucy') || (from?.id === 'lucky' && stop.id === 'key')) {
+      closeLuckyChannels();
+    }
+    if (stop.id === 'lucky') openLuckyPage();
+    else if (stop.path) openMenuPath(stop.path);
+    triggerHaptic('wormhole');
     return true;
   };
   const openLuckyPage = () => {
@@ -1359,38 +1369,10 @@ export function BigBangButton() {
       downDirectionRef.current = 'none';
       setHoverDirection('none');
       showDirectionFeedback(targetDir);
-      if (isOrbCounselOpen() && (targetDir === 'north' || targetDir === 'south')) {
-        const path = targetDir === 'north' ? '/' : '/key';
-        setFeedbackChannel(getDestinationChannel(path));
-        setOrbCounselOpen(false);
-        openMenuPath(path);
-        triggerHaptic('wormhole');
-      } else if ((targetDir === 'south' && isChatView) || (targetDir === 'north' && isKeyChannel)) {
-        setFeedbackChannel(orbDirectionTarget);
-        setOrbCounselOpen(true);
-        triggerHaptic('whitehole');
-      } else if ((targetDir === 'south' && isKeyChannel) || (targetDir === 'north' && isPrologueChannel)) {
-        setFeedbackChannel(luckyDirectionTarget);
-        openLuckyPage();
-        triggerHaptic('wormhole');
-      } else if (targetDir === 'north' && isLuckyPage) {
-        setFeedbackChannel(getDestinationChannel('/key'));
-        closeLuckyChannels();
-        openMenuPath('/key');
-        triggerHaptic('wormhole');
-      } else if (targetDir === 'south' && isLuckyPage) {
-        setFeedbackChannel(getDestinationChannel('/prologue'));
-        openMenuPath('/prologue');
-        triggerHaptic('wormhole');
-      } else if (targetDir === 'north') {
-        if (navigateToAdjacentMenuApp('previous', 'north')) {
-          triggerHaptic('wormhole');
-        }
+      if (targetDir === 'north') {
+        navigateToAdjacentMenuApp('previous');
       } else if (targetDir === 'south') {
-        if (isEpilogueChannel) closeLuckyChannels();
-        if (navigateToAdjacentMenuApp('next', 'south')) {
-          triggerHaptic('wormhole');
-        }
+        navigateToAdjacentMenuApp('next');
       } else if (targetDir === 'west') {
         goToPreviousDapp();
       } else if (targetDir === 'east') {
@@ -1928,8 +1910,8 @@ export function BigBangButton() {
                   ? 'inset 0 0 24px rgba(0, 240, 255, 0.48), inset -4px -4px 16px rgba(168, 85, 247, 0.45), 0 0 34px rgba(0, 240, 255, 0.55)'
                   : 'inset 0 0 22px rgba(56, 189, 248, 0.25), inset -6px -6px 18px rgba(0, 0, 0, 0.9), 0 0 24px rgba(56, 189, 248, 0.3)',
               }}
-              title={`빅뱅 버튼 (탭: Lucy 채팅 / 더블탭: Key로 이동 / ${orbNavOpen ? '위: 루시 채팅, 아래: 키' : isChatView ? '아래: 음성모드' : isKeyChannel ? '위: 음성모드, 아래: 럭키' : isPrologueChannel ? '위: 럭키' : isLuckyPage ? '위: 키, 아래: 프롤로그' : isEpilogueChannel ? '아래: 루시, 채널 목록 접기' : '위·아래: 메뉴 앱 순서대로 이동'} / ${isChatView ? '좌우: 점술모드 한 단계 얕게·깊게' : isKeyChannel ? '좌우: Key 목록 한 칸씩 이동' : isCycleNavigationDisabled ? '현재 화면에서는 좌우 이동 비활성화' : '좌우: 현재 앱 내부 화면만 이동'} / 길게 누름: 점술모드 / 드래그 후 놓기: 럭키 추천 앱으로 워프 · 범위 밖에서 놓으면 취소)`}
-              aria-label={`빅뱅 버튼 · 탭: Lucy 채팅, 루시 화면에서는 음성모드 켜기·끄기, 더블탭: Key로 이동 / ${orbNavOpen ? '위는 루시 채팅, 아래는 키' : isChatView ? '아래는 음성모드, 위는 이전 메뉴' : isKeyChannel ? '위는 음성모드, 아래는 럭키' : isPrologueChannel ? '위는 럭키, 아래는 다음 메뉴' : isLuckyPage ? '위는 키, 아래는 프롤로그' : isEpilogueChannel ? '아래는 루시, 채널 목록은 접힘' : '위·아래는 메뉴 앱 순서대로 이동'} / ${isChatView ? '좌우는 점술모드 한 단계 얕게·깊게' : isKeyChannel ? '좌우는 Key 목록 한 칸씩 이동' : isCycleNavigationDisabled ? '현재 화면에서는 좌우 이동 비활성화' : '좌우는 현재 앱 내부 화면만 이동'}, 길게 누름: 루시 마스터(점술모드) 켜기·끄기, 드래그 후 놓으면 럭키 추천 앱으로 워프, 범위 밖이면 취소`}
+              title={`빅뱅 버튼 (탭: Lucy 채팅 / 더블탭: Key로 이동 / 위·아래: 사이드바 메뉴 순서 / ${isChatView ? '좌우: 점술모드 한 단계 얕게·깊게' : isKeyChannel ? '좌우: Key 목록 한 칸씩 이동' : isCycleNavigationDisabled ? '현재 화면에서는 좌우 이동 비활성화' : '좌우: 현재 앱 내부 화면만 이동'} / 길게 누름: 점술모드 / 드래그 후 놓기: 럭키 추천 앱으로 워프 · 범위 밖에서 놓으면 취소)`}
+              aria-label={`빅뱅 버튼 · 탭: Lucy 채팅, 루시 화면에서는 음성모드 켜기·끄기, 더블탭: Key로 이동, 위·아래는 사이드바 메뉴 순서 / ${isChatView ? '좌우는 점술모드 한 단계 얕게·깊게' : isKeyChannel ? '좌우는 Key 목록 한 칸씩 이동' : isCycleNavigationDisabled ? '현재 화면에서는 좌우 이동 비활성화' : '좌우는 현재 앱 내부 화면만 이동'}, 길게 누름: 루시 마스터(점술모드) 켜기·끄기, 드래그 후 놓으면 럭키 추천 앱으로 워프, 범위 밖이면 취소`}
             >
               {/* 🌀 [웜홀] 빛비춤 + 어두운 심연 + 사건의 지평선 3원 동시 융합 전개 */}
               {isPressing && activePhase === 'wormhole' && (
