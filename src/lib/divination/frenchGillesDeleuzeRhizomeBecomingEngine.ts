@@ -9,12 +9,12 @@
  * 4. 창조적 '되기(Devenir / Becoming)' 변용 역동성 (Creative Becoming & Transformation): 고정된 정체성에 머물지 않고 끊임없이 새로운 존재로 변용하며 성장하는 활력.
  * 5. 고착 극복 및 잠재력 해방 회복탄력성 (Liberation of Potential & Resilience): 억압적인 도그마나 결핍의 환상을 부수고 내재적 충만과 생명 에너지를 회복하는 힘.
  *
- * @version LUCKEY-DELEUZE-RHIZOME-BECOMING-v2.0.0
+ * @version LUCKEY-DELEUZE-RHIZOME-BECOMING-v2.3.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const FRENCH_GILLES_DELEUZE_RHIZOME_BECOMING_VERSION = 'LUCKEY-DELEUZE-RHIZOME-BECOMING-v2.2.0';
+export const FRENCH_GILLES_DELEUZE_RHIZOME_BECOMING_VERSION = 'LUCKEY-DELEUZE-RHIZOME-BECOMING-v2.3.0';
 
 export type DeleuzeQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -45,6 +45,8 @@ export interface FrenchGillesDeleuzeRhizomeBecomingResult {
   engineVersion: string;
   calculatedAtKst: string;
   questionTopic: DeleuzeQuestionTopic;
+  becomingPhase: string;
+  shadowWarning: string;
   temporalDeleuzeRhythm: DeleuzeTemporalRhythm;
   // 5대 들뢰즈 리좀·탈영토화·생성 핵심 지표 (내부 호환용 보존, 프롬프트 비노출)
   rhizomaticHorizontalConnectionIndex: number;      // 리좀적 수평 접속 역량 (Rhizomatic Connection)
@@ -54,6 +56,7 @@ export interface FrenchGillesDeleuzeRhizomeBecomingResult {
   desiringProductionLiberationResilienceScore: number; // 잠재력 해방 회복탄력성 (Liberation Resilience)
   // 세부 분석
   activeDeleuzeTheme: DeleuzeTheme;
+  companionDeleuzeTheme: DeleuzeTheme;
   focalDeleuzeAphorism: DeleuzeAphorism;
   practiceGuidance: string;
   dailyPracticeRitual: string;
@@ -71,6 +74,18 @@ export interface FrenchGillesDeleuzeRhizomeBecomingResult {
     philosophicalCounsel: string;
   };
 }
+
+const DELEUZE_BECOMING_PHASES = [
+  '탈주선 포착(익숙한 위계와 관성의 틈새에서 새로운 연결의 실마리를 발견하는 시기)',
+  '리좀 접속(이질적인 경험과 사람들을 수평적으로 엮어 다채로운 회로를 여는 시기)',
+  '차이 변용(남과 같아지려는 모방을 내려놓고 나만의 고유한 생성으로 건너가는 시기)',
+] as const;
+
+const DELEUZE_SHADOW_WARNINGS = [
+  '새로운 탈주선과 변용을 좇다 지금 단단히 매듭지어야 할 현실의 약속까지 흩어놓지 않도록 살피세요.',
+  '수평적 연결과 실험을 넓히느라 정작 내 에너지를 모아야 할 핵심 중심축이 분산되지 않도록 점검하세요.',
+  '기존의 틀을 깨는 데 집중하다 곁에 있는 소중한 사람들의 안정감과 속도를 놓치지 않도록 유의하세요.',
+] as const;
 
 export const DELEUZE_THEMES: DeleuzeTheme[] = [
   {
@@ -281,10 +296,14 @@ export function calculateFrenchGillesDeleuzeRhizomeBecoming(
   const desiringProductionLiberationResilienceScore = 81 + ((absHash >> 13) % 18);
 
   const themeIndex = (absHash >> 5) % DELEUZE_THEMES.length;
+  const companionOffset = 1 + ((absHash >> 6) % (DELEUZE_THEMES.length - 1));
   const aphorismIndex = (absHash >> 8) % DELEUZE_APHORISMS.length;
 
   const activeDeleuzeTheme = DELEUZE_THEMES[themeIndex];
+  const companionDeleuzeTheme = DELEUZE_THEMES[(themeIndex + companionOffset) % DELEUZE_THEMES.length];
   const focalDeleuzeAphorism = DELEUZE_APHORISMS[aphorismIndex];
+  const becomingPhase = DELEUZE_BECOMING_PHASES[(absHash >> 11) % DELEUZE_BECOMING_PHASES.length];
+  const shadowWarning = DELEUZE_SHADOW_WARNINGS[(absHash >> 14) % DELEUZE_SHADOW_WARNINGS.length];
 
   const { practiceGuidance, dailyPracticeRitual, reflectiveQuestion } = buildDeleuzeTopicContext(
     questionTopic,
@@ -297,22 +316,24 @@ export function calculateFrenchGillesDeleuzeRhizomeBecoming(
 
   const guidanceTitle = `들뢰즈 리좀·탈영토화 지혜: ${activeDeleuzeTheme.themeTitleKo}`;
   const philosophicalCounsel = `현대 사상의 지형을 바꾼 질 들뢰즈는 수직적 위계를 허무는 '리좀(Rhizome)'적 접속, 한계를 돌파하는 '탈영토화(Déterritorialisation)', 그리고 끊임없이 변용하는 '되기(Devenir)'의 철학을 완성했습니다. ` +
-    `현재 당신의 흐름에서 가장 역동적인 활력을 불어넣는 핵심 원리는 '${activeDeleuzeTheme.themeTitleKo}'입니다. ` +
+    `현재 당신의 흐름에서 가장 역동적인 활력을 불어넣는 핵심 원리는 '${activeDeleuzeTheme.themeTitleKo}'(동반 원리: ${companionDeleuzeTheme.themeTitleKo})입니다. ` +
     `${activeDeleuzeTheme.practicalCounsel} ${practiceGuidance} 들뢰즈의 명언 "${focalDeleuzeAphorism.aphorismKo} (${focalDeleuzeAphorism.aphorismOriginal})"을 되새기며, ` +
     `${focalDeleuzeAphorism.actionGuidance}`;
 
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
   const kstTimeLabel = `${temporalDeleuzeRhythm.kstDateLabel} ${String(kst.getUTCHours()).padStart(2, '0')}:${String(kst.getUTCMinutes()).padStart(2, '0')} +09:00 (KST)`;
   const deleuzeSynthesisMatrix = {
-    coreInsight: activeDeleuzeTheme.themeTitleKo,
-    recommendedAction: practiceGuidance,
-    cautionNotice: '익숙한 위계와 고정 관념의 영토에 안주해 새로운 접속과 변용의 탈주선을 닫아버리지 마십시오.',
+    coreInsight: `${activeDeleuzeTheme.themeTitleKo} (동반: ${companionDeleuzeTheme.themeTitleKo})`,
+    recommendedAction: `${practiceGuidance} (${becomingPhase})`,
+    cautionNotice: shadowWarning,
   };
 
   return {
     engineVersion: FRENCH_GILLES_DELEUZE_RHIZOME_BECOMING_VERSION,
     calculatedAtKst: kstTimeLabel,
     questionTopic,
+    becomingPhase,
+    shadowWarning,
     temporalDeleuzeRhythm,
     rhizomaticHorizontalConnectionIndex,
     deterritorializationNomadicFreedomScore,
@@ -320,12 +341,13 @@ export function calculateFrenchGillesDeleuzeRhizomeBecoming(
     creativeBecomingVitalityScore,
     desiringProductionLiberationResilienceScore,
     activeDeleuzeTheme,
+    companionDeleuzeTheme,
     focalDeleuzeAphorism,
-    practiceGuidance,
-    dailyPracticeRitual,
-    reflectiveQuestion,
-    ritualAction: dailyPracticeRitual,
-    reflectionFocus: reflectiveQuestion,
+    practiceGuidance: `${practiceGuidance} (동반 원리: ${companionDeleuzeTheme.themeTitleKo})`,
+    dailyPracticeRitual: `${dailyPracticeRitual} (${becomingPhase})`,
+    reflectiveQuestion: `'${becomingPhase}' 국면에서 ${reflectiveQuestion}`,
+    ritualAction: `${dailyPracticeRitual} (${becomingPhase})`,
+    reflectionFocus: `'${becomingPhase}' 국면에서 ${reflectiveQuestion}`,
     interpretiveBoundary,
     deleuzeSynthesisMatrix,
     deleuzeComprehensiveGuidance: {
@@ -342,6 +364,7 @@ export function formatFrenchGillesDeleuzeRhizomeBecomingPrompt(
     `【들뢰즈 《천 개의 고원·차이와 반복》 리좀·탈영토화·생성 성찰 가이드 (${res.engineVersion})】`,
     `- 연산 시각: ${res.calculatedAtKst}`,
     `- 질문 주제 맥락: ${res.questionTopic}`,
+    `- 생성(Devenir) 국면: ${res.becomingPhase}`,
     `- KST 시공간 리듬: ${res.temporalDeleuzeRhythm.kstDateLabel} · ${res.temporalDeleuzeRhythm.timeBand} (${res.temporalDeleuzeRhythm.nomadicTempo})`,
     `- 시공간 권면: ${res.temporalDeleuzeRhythm.temporalGuidance}`,
     `- 리좀적 수평 접속 역량(Rhizomatic Connection): ${describeQualitativeIntensity(res.rhizomaticHorizontalConnectionIndex)}`,
@@ -350,6 +373,8 @@ export function formatFrenchGillesDeleuzeRhizomeBecomingPrompt(
     `- 창조적 되기 변용 역동성(Creative Becoming): ${describeQualitativeIntensity(res.creativeBecomingVitalityScore)}`,
     `- 잠재력 해방 회복탄력성(Liberation Resilience): ${describeQualitativeIntensity(res.desiringProductionLiberationResilienceScore)}`,
     `- 핵심 들뢰즈 테마: ${res.activeDeleuzeTheme.themeTitleKo} [${res.activeDeleuzeTheme.themeTitleEn}]`,
+    `- 동반 들뢰즈 테마: ${res.companionDeleuzeTheme.themeTitleKo}`,
+    `- 과잉·경계 점검: ${res.shadowWarning}`,
     `- 실천적 통찰: ${res.activeDeleuzeTheme.pragmaticInsight}`,
     `- 행동 조언: ${res.activeDeleuzeTheme.practicalCounsel}`,
     `- 맥락 맞춤 가이드: ${res.practiceGuidance}`,

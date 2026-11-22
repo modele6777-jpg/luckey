@@ -1018,6 +1018,27 @@ html.duo-unfolded-mode .lucy-orb-figure { width: 34%; }
 }
 html.duo-unfolded-mode .lucy-orb-copy { width: min(720px, 92%); }
 .lucy-orb-copy p { margin: 0; font-size: 15px; line-height: 1.6; color: rgba(247,244,238,.86); }
+.lucy-orb-permission-actions { display: flex; justify-content: center; margin: 10px auto 0; }
+.lucy-orb-voice-controls { display: flex; flex-direction: column; align-items: center; gap: 8px; margin: 14px auto 0; }
+.lucy-orb-voice-label { color: rgba(247,244,238,.72); font-size: 12px; font-weight: 700; }
+.lucy-orb-voice-options { display: flex; gap: 4px; padding: 4px; border: 1px solid rgba(243,207,134,.36); border-radius: 999px; background: rgba(10,12,28,.42); }
+.lucy-orb-voice-options button { border: 0; border-radius: 999px; padding: 8px 13px; background: transparent; color: rgba(251,247,255,.78); font-size: 13px; font-weight: 700; white-space: nowrap; }
+.lucy-orb-voice-options button[aria-pressed="true"] { background: linear-gradient(180deg, #fff6dc, #f3cf86); color: #3a2410; box-shadow: 0 3px 10px rgba(255,200,120,.24); }
+.lucy-orb-voice-options button:focus-visible, .lucy-orb-ptt:focus-visible { outline: 2px solid #fff6dc; outline-offset: 3px; }
+.lucy-orb-voice-description { margin: 0 !important; font-size: 12px !important; color: rgba(247,244,238,.74) !important; }
+.lucy-orb-ptt { min-height: 46px; padding: 11px 22px; border: 1px solid rgba(255,244,210,.8); border-radius: 999px; background: linear-gradient(180deg, #fff6dc, #f3cf86); color: #3a2410; font-size: 14px; font-weight: 800; box-shadow: 0 6px 18px rgba(255,200,120,.3), inset 0 1px 0 #fff; touch-action: none; -webkit-user-select: none; user-select: none; }
+.lucy-orb-ptt.is-pressed { transform: scale(.97); background: linear-gradient(180deg, #f3cf86, #e8b95f); box-shadow: 0 2px 8px rgba(255,200,120,.24), inset 0 2px 5px rgba(58,36,16,.18); }
+.lucy-orb-ptt:disabled { opacity: .45; box-shadow: none; }
+.lucy-orb-permission {
+  border: 1px solid rgba(243, 207, 134, .5);
+  border-radius: 999px;
+  background: rgba(255, 240, 210, .12);
+  color: #fff6dc;
+  padding: 9px 15px;
+  font-size: 13px;
+  font-weight: 700;
+}
+.lucy-orb-permission:disabled { opacity: .6; }
 .lucy-orb-lines { margin-top: 14px; display: flex; flex-direction: column; gap: 6px; }
 .lucy-orb-lines span { font-size: 13px; color: rgba(247,244,238,.72); }
 .lucy-orb-keywords { margin-top: 14px; display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
@@ -1038,17 +1059,23 @@ html.duo-unfolded-mode .lucy-orb-copy { width: min(720px, 92%); }
   display: flex;
   gap: 8px;
 }
+.lucy-orb-input-wrap { position: relative; flex: 1 1 auto; min-width: 0; }
 .lucy-orb-dock input {
-  flex: 1;
+  display: block;
+  width: 100%;
   min-width: 0;
   border: 0;
   border-radius: 999px;
   background: rgba(240, 232, 255, .14);
   box-shadow: inset 0 0 0 1.5px rgba(214, 196, 255, .28);
   color: #fff;
-  padding: 12px 16px;
+  padding: 12px 72px 12px 16px;
   font-size: 16px;
+  transition: box-shadow .12s ease, background .12s ease;
 }
+.lucy-orb-dock input.is-pressed { background: rgba(240, 232, 255, .22); box-shadow: inset 0 0 0 2px rgba(255, 230, 170, .82), 0 0 18px rgba(255, 200, 120, .16); }
+.lucy-orb-input-wave { position: absolute; top: 50%; right: 18px; display: flex; align-items: center; justify-content: center; gap: 2px; height: 24px; transform: translateY(-50%); pointer-events: none; filter: drop-shadow(0 0 5px rgba(255, 218, 151, .55)); }
+.lucy-orb-input-wave i { display: block; width: 2px; min-height: 3px; border-radius: 999px; background: linear-gradient(180deg, #fff6dc, #f3cf86); transition: height 80ms linear; }
 .lucy-orb-dock button, .lucy-orb-end {
   border: 0;
   border-radius: 999px;
@@ -1057,6 +1084,14 @@ html.duo-unfolded-mode .lucy-orb-copy { width: min(720px, 92%); }
   font-weight: 800;
   box-shadow: 0 6px 18px rgba(255, 200, 120, .35), inset 0 1px 0 #fff;
   padding: 12px 14px;
+}
+.lucy-orb-report-dock { align-items: center; gap: 6px; }
+.lucy-orb-report-dock button {
+  flex: 1 1 0;
+  min-width: 0;
+  white-space: nowrap;
+  padding: 10px 6px;
+  font-size: clamp(11px, 3.4vw, 14px);
 }
 .lucy-bok { position: absolute; left: 16px; right: 16px; bottom: calc(64px + max(16px, env(safe-area-inset-bottom))); z-index: 3; text-align: center; }
 .lucy-bok p { margin: 0 0 8px; font-size: 12px; color: rgba(247,244,238,.78); }
@@ -1300,5 +1335,3 @@ html.duo-unfolded-mode .lucy-charm { width: min(380px, 70%); }
   .lucy-orb-burst, .lucy-orb-charge { display: none; }
   .lucy-orb-body.is-lit::before, .lucy-orb-body.is-lit::after { opacity: .45; }
 }
-
-

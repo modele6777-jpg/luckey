@@ -1,14 +1,15 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useReducer, useState } from 'react';
 import { X } from 'lucide-react';
 import { ScreenPortal } from '@/components/layout/ScreenPortal';
 import { getLucyTableState, LUCY_TABLE_EVENT, type LucyTableState } from '@/lib/lucyTableBus';
-import { useLucyMasterDepth, requestLucyTableFace } from '@/lib/lucyMasterMode';
+import { LUCY_MASTER_DEPTH_EVENT, useLucyMasterDepth, requestLucyTableFace } from '@/lib/lucyMasterMode';
 import { triggerHaptic } from '@/lib/omniWarp/omniWarpHaptics';
 import { MasterSajuBoard } from './MasterSajuBoard';
 import { MasterToolBoard } from './MasterToolBoard';
 import { LucyEngineCatalogPanel } from '@/components/chat/LucyEngineCatalogDialog';
+import { getLucyMasterDefaultTableFace, reduceLucyMasterTableFace, type LucyMasterTableFace } from '@/lib/lucyMasterTableFace';
 
-type Face = 'saju' | 'tarot' | 'recommended' | 'scrolls' | 'engines';
+type Face = LucyMasterTableFace;
 const FACES: { id: Face; icon: string; label: string; stage: 1 | 2 | 3 }[] = [
   { id: 'saju', icon: '☯', label: '사주 원국', stage: 1 },
   { id: 'tarot', icon: '🃏', label: '타로', stage: 2 },
@@ -26,17 +27,28 @@ const FACES: { id: Face; icon: string; label: string; stage: 1 | 2 | 3 }[] = [
 export function MasterTableSheet({ onClose }: { onClose: () => void }) {
   const depth = useLucyMasterDepth();
   const [table, setTable] = useState<LucyTableState>(() => getLucyTableState());
-  // 단계마다 기본으로 여는 탭: 1 사주 원국 · 2 타로 · 3 추천 도구 (탭으로 바꿀 수 있다).
-  const [face, setFace] = useState<Face>(() => (depth >= 3 ? 'recommended' : depth === 2 ? 'tarot' : 'saju'));
+  const [face, dispatchFace] = useReducer(reduceLucyMasterTableFace, depth, getLucyMasterDefaultTableFace);
   const [focusTool, setFocusTool] = useState<string | null>(null);
 
   useEffect(() => {
     const onTable = (e: Event) => {
       const next = (e as CustomEvent<LucyTableState>).detail;
-      if (next) setTable(next);
+      if (next) {
+        setTable(next);
+        dispatchFace({ type: 'answer-updated' });
+      }
     };
     window.addEventListener(LUCY_TABLE_EVENT, onTable);
     return () => window.removeEventListener(LUCY_TABLE_EVENT, onTable);
+  }, []);
+  useEffect(() => {
+    const onDepth = (e: Event) => {
+      const detail = (e as CustomEvent<{ depth?: number; changed?: boolean }>).detail;
+      if (!detail?.changed || typeof detail.depth !== 'number') return;
+      dispatchFace({ type: 'stage-changed', depth: detail.depth, changed: true });
+    };
+    window.addEventListener(LUCY_MASTER_DEPTH_EVENT, onDepth);
+    return () => window.removeEventListener(LUCY_MASTER_DEPTH_EVENT, onDepth);
   }, []);
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
@@ -75,7 +87,7 @@ export function MasterTableSheet({ onClose }: { onClose: () => void }) {
                   role="tab"
                   aria-selected={active}
                   data-table-face={item.id}
-                  onClick={() => { triggerHaptic('whitehole'); setFace(item.id); }}
+                  onClick={() => { triggerHaptic('whitehole'); dispatchFace({ type: 'tab-selected', face: item.id }); }}
                   className={`flex min-w-0 flex-1 flex-col items-center justify-center rounded-xl border px-1 py-1.5 ${active ? 'border-amber-300/80 bg-amber-400/20 text-amber-50' : 'border-white/12 bg-white/[0.05] text-slate-200'}`}
                 >
                   <span className="text-[15px] leading-none" aria-hidden="true">{item.icon}</span>
@@ -101,8 +113,8 @@ export function MasterTableSheet({ onClose }: { onClose: () => void }) {
                 facts={table.facts}
                 toolData={table.toolData}
                 focusId={focusTool}
-                onFocusTool={id => { setFocusTool(id); setFace('recommended'); }}
-                onShowScrolls={() => { triggerHaptic('whitehole'); setFace('scrolls'); }}
+                onFocusTool={id => { setFocusTool(id); dispatchFace({ type: 'tab-selected', face: 'recommended' }); }}
+                onShowScrolls={() => { triggerHaptic('whitehole'); dispatchFace({ type: 'tab-selected', face: 'scrolls' }); }}
               />
             )}
           </div>

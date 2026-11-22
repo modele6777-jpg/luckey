@@ -22,11 +22,14 @@ type LiveVoiceHandlers = {
   focus?: string;
   greet?: string;
   onState?: (state: LiveVoiceState) => void;
+  onAudioLevel?: (level: number) => void;
   onUserText?: (text: string) => void;
   onLucyText?: (text: string) => void;
   onError?: (error: { code: string; message: string }) => void;
   /** Microphone requested earlier inside the user's tap (some browsers only show the prompt there). */
   micStream?: Promise<MediaStream> | null;
+  /** Start without sending microphone audio (used by Orb's hold-to-talk mode). */
+  startMuted?: boolean;
   /** When set, a missing microphone is not fatal: the session continues with typed input and spoken answers. */
   onNotice?: (message: string) => void;
 };
@@ -73,7 +76,7 @@ export function startGeminiLiveVoice(handlers: LiveVoiceHandlers): LiveVoiceSess
   void capture.resume();
   let stopped = false;
   let failed = false;
-  let muted = false;
+  let muted = handlers.startMuted ?? false;
   let ready = false;
   let socket: WebSocket | null = null;
   let stream: MediaStream | null = null;
@@ -182,6 +185,7 @@ export function startGeminiLiveVoice(handlers: LiveVoiceHandlers): LiveVoiceSess
     setMicCaptureActive(false);
     if (speakTimer) clearTimeout(speakTimer);
     if (setupTimer) clearTimeout(setupTimer);
+    handlers.onAudioLevel?.(0);
     stopPlayback();
     try { processor?.disconnect(); } catch { /* ignore */ }
     try { socket?.close(); } catch { /* ignore */ }
@@ -227,6 +231,7 @@ export function startGeminiLiveVoice(handlers: LiveVoiceHandlers): LiveVoiceSess
       stream = await (handlers.micStream || navigator.mediaDevices.getUserMedia({
         audio: { channelCount: 1, echoCancellation: true, noiseSuppression: true, autoGainControl: true },
       }));
+      stream.getAudioTracks().forEach(track => { track.enabled = !muted; });
     } catch {
       stream = null;
       setMicCaptureActive(false);
@@ -248,8 +253,16 @@ export function startGeminiLiveVoice(handlers: LiveVoiceHandlers): LiveVoiceSess
       const silent = capture.createGain();
       silent.gain.value = 0;
       processor!.onaudioprocess = (event) => {
-        if (!ready || muted || stopped || socket?.readyState !== WebSocket.OPEN) return;
+        if (stopped) return;
         const input = event.inputBuffer.getChannelData(0);
+        if (!ready || muted || socket?.readyState !== WebSocket.OPEN) {
+          handlers.onAudioLevel?.(0);
+          return;
+        }
+        let sumSquares = 0;
+        for (let index = 0; index < input.length; index += 1) sumSquares += input[index] * input[index];
+        const rms = Math.sqrt(sumSquares / Math.max(1, input.length));
+        handlers.onAudioLevel?.(Math.max(0, Math.min(1, (rms - 0.006) / 0.06)));
         const samples = downsample(input, capture.sampleRate);
         socket.send(JSON.stringify({
           realtimeInput: { audio: { data: pcmBase64(samples), mimeType: 'audio/pcm;rate=16000' } },
@@ -293,7 +306,11 @@ export function startGeminiLiveVoice(handlers: LiveVoiceHandlers): LiveVoiceSess
   void run();
   return {
     stop,
-    setMuted: (next) => { muted = next; },
+    setMuted: (next) => {
+      muted = next;
+      if (next) handlers.onAudioLevel?.(0);
+      stream?.getAudioTracks().forEach(track => { track.enabled = !next; });
+    },
     interrupt: stopPlayback,
     sendText: (text: string) => {
       const line = text.replace(/\s+/g, ' ').trim().slice(0, 500);

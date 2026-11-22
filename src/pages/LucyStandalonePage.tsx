@@ -48,7 +48,7 @@ import { archiveMasterSession, buildDepthContinuityContext, buildDepthLinkedLucy
 import { isLucyMasterBgmPreferred, startLucyMasterBgm, stopLucyMasterBgm, setLucyMasterBgmDepth } from '@/lib/lucyMasterBgm';
 import remarkGfm from 'remark-gfm';
 import { safeSessionStorage, safeLocalStorage } from '@/utils/safeStorage';
-import { isLucyMasterModeOn, setLucyMasterMode, LUCY_MASTER_MODE_EVENT, publishLucyTarotDraw, isAcceptingTarotDrawOffer, buildTarotHouseGuide, createTarotHouseGreeting, consumeTarotHouseGreetingPending, parseAnswerChoices, isAskingForDeepEngines, createDepthTwoTarotOffer, setLucyMasterLink, getLucyMasterLink, resolveLucyMasterLinkChoice, buildLinkedLucyContext, isTarotHouseGreetingPending, findConcernAnchor, createTarotHouseConcernQuestion, LUCY_TAROT_PICK_REQUEST_EVENT, LUCY_TAROT_PICKED_EVENT, LUCY_TAROT_PICK_CANCEL_EVENT, tarotPickPositions, toDetectedTarotCards, takeQueuedMasterTarotSpread, buildSpreadLayoutContext, matchMasterTarotSpread, isAutoSpreadCandidate, getLucyMasterDepth, useLucyMasterDepth, LUCY_MASTER_DEPTH_EVENT, LUCY_MASTER_DEPTH_INFO, LUCY_MASTER_MAX_DEPTH, getLucyBubbleMarker, setLucyBubbleMarker, useLucyBubbleMarker, type LucyMasterDepth } from '@/lib/lucyMasterMode';
+import { isLucyMasterModeOn, setLucyMasterMode, LUCY_MASTER_MODE_EVENT, publishLucyTarotDraw, isAcceptingTarotDrawOffer, buildTarotHouseGuide, createTarotHouseGreeting, consumeTarotHouseGreetingPending, parseAnswerChoices, getPendingAnswerChoices, isAskingForDeepEngines, createDepthTwoTarotOffer, setLucyMasterLink, getLucyMasterLink, resolveLucyMasterLinkChoice, buildLinkedLucyContext, isTarotHouseGreetingPending, findConcernAnchor, createTarotHouseConcernQuestion, LUCY_TAROT_PICK_REQUEST_EVENT, LUCY_TAROT_PICKED_EVENT, LUCY_TAROT_PICK_CANCEL_EVENT, tarotPickPositions, toDetectedTarotCards, takeQueuedMasterTarotSpread, buildSpreadLayoutContext, matchMasterTarotSpread, isAutoSpreadCandidate, getLucyMasterDepth, useLucyMasterDepth, LUCY_MASTER_DEPTH_EVENT, LUCY_MASTER_DEPTH_INFO, LUCY_MASTER_MAX_DEPTH, getLucyBubbleMarker, setLucyBubbleMarker, useLucyBubbleMarker, type LucyMasterDepth } from '@/lib/lucyMasterMode';
 import { cleanAssistantMessageDisplay, cleanUserMessageDisplay } from '@/utils/cleanMessage';
 import { detectLucyChannelsFromText, formatChannelsModeTitle } from '@/lib/lucyAutoModeDetector';
 import { selectOptimalDivinationTools, THEME_PRIMARY_DIVINATION_TOOLS, type SelectedDivinationToolsResult } from '@/lib/fifteenDivinationTools';
@@ -1815,6 +1815,9 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
 
   // 🔮 루시 마스터(점술모드)는 일반 루시·루시+와 대화 내역을 따로 쓴다 (lucy-pro 저장소).
   const lucyMessages = isMasterMode ? (lucyProMessages || []) : (personaMessages?.lucy || []);
+  const isLucyGenerating = isMasterMode ? Boolean(isLucyProGenerating) : Boolean(isGenerating?.lucy);
+  const pendingAnswerChoices = isLucyGenerating ? [] : getPendingAnswerChoices(lucyMessages);
+  const hasPendingAnswer = pendingAnswerChoices.length > 0;
   // 채팅방에 들어올 때마다 첫 인사(시간대 인사 + 문장)를 새로 고른다. 저장된 대화는 그대로 둔다.
   const shownGreetingRef = useRef<(typeof lucyMessages)[number] | null>(null);
   const [greetingEntry, setGreetingEntry] = useState(() => ({ at: Date.now(), variant: Math.floor(Math.random() * LUCY_GREETING_BODIES.length) }));
@@ -1828,7 +1831,6 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
     });
   }, []);
 
-  const isLucyGenerating = isMasterMode ? Boolean(isLucyProGenerating) : Boolean(isGenerating?.lucy);
   // 🧰 엔진함에서 담아 둔 엔진 (매 답변에 함께 사용)
   // 엔진함 담기 기능은 제거됨: 예전에 담아 둔 엔진도 비워서 매 질문 자동 선택만 쓰게 한다.
   useEffect(() => { setSelectedEngineKeys([]); }, []);
@@ -3710,7 +3712,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
     voiceUtteranceRef.current = false;
     const hasExplicitUserInput = Boolean(textToSend || input.trim() || attachedImage);
     // 💡 사용자가 직접 입력한 텍스트가 없고 첨부 이미지가 없는 경우(생성 중이 아닐 때만), 현재 화면에 표시/타이핑 중인 완성형 예시 질문 채택
-    const candidateGhost = (!hasExplicitUserInput && !isLucyGenerating)
+    const candidateGhost = (!hasExplicitUserInput && !isLucyGenerating && !hasPendingAnswer)
       ? (currentGhostPromptRef.current || activeGhostPrompt || dynamicGhostPrompts[0] || '')
       : '';
     const rawMsg = textToSend || (input.trim() ? input : candidateGhost);
@@ -4043,7 +4045,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
         }
       }
     });
-  }, [input, attachedImage, isLucyGenerating, lucyMessages, activeChannels, isAutoDetect, sendUnifiedMessage, activeProfiles, activeProfileId, counselingUserProfile, triggerAutoTts, activeGhostPrompt, dynamicGhostPrompts, stopRecognition, pro, isPlusMode, isMasterMode, personaMessages]);
+  }, [input, attachedImage, isLucyGenerating, hasPendingAnswer, lucyMessages, activeChannels, isAutoDetect, sendUnifiedMessage, activeProfiles, activeProfileId, counselingUserProfile, triggerAutoTts, activeGhostPrompt, dynamicGhostPrompts, stopRecognition, pro, isPlusMode, isMasterMode, personaMessages]);
 
   useEffect(() => {
     handleSendRef.current = handleSend;
@@ -4087,6 +4089,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
 
   // 🎯 가로 스크롤 추천 질문 칩 클릭 시 해당 질문에 맞는 7대 채널 모드로 전환하고 채팅 입력란에만 입력 (즉시 전송 X)
   const handleSelectRecommendationChip = useCallback((promptText: string) => {
+    if (hasPendingAnswer) return;
     const focusInputBox = (textToFill: string) => {
       setInput(textToFill);
       setTimeout(() => {
@@ -4154,7 +4157,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
       title: modeTitle,
     };
     focusInputBox(promptText);
-  }, [isMasterMode]);
+  }, [isMasterMode, hasPendingAnswer]);
 
   // Handle pending channel and draft / auto-send input from other sub-apps (ReBible, Prism, etc.)
   useEffect(() => {
@@ -5205,7 +5208,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
             )}
 
             {/* ✨ 추천질문 전체보기 모달 트리거 아이콘 버튼 (점술모드에서만) */}
-            {isMasterMode && <LucyLibraryTrigger
+            {isMasterMode && !hasPendingAnswer && <LucyLibraryTrigger
               id="lucy-open-prompt-library-btn"
               type="button"
               aria-haspopup="dialog"
@@ -5222,7 +5225,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
             </LucyLibraryTrigger>}
 
             {/* 새로고침 셔플 버튼 */}
-            <button
+            {!hasPendingAnswer && <button
               type="button"
               onClick={refreshPrompts}
               className={`w-[22px] h-[22px] sm:w-[24px] sm:h-[24px] p-0 rounded-lg border transition-all shrink-0 cursor-pointer active:scale-90 flex items-center justify-center shadow-2xs ${
@@ -5234,10 +5237,10 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
               aria-label="추천 질문 새로고침"
             >
               <RefreshCw size={10} className={`sm:w-2.5 sm:h-2.5 text-amber-600 dark:text-amber-400 ${isLucyGenerating ? 'animate-spin' : ''}`} />
-            </button>
+            </button>}
 
             {/* 가로 무한 흐름 추천 질문 리스트 (자동 흐름 + 손가락·휠·드래그 양방향 스크롤) */}
-            {currentPrompts.length > 0 && (
+            {!hasPendingAnswer && currentPrompts.length > 0 && (
               <div
                 ref={promptsMarqueeRef}
                 aria-label="추천 질문 예시"
@@ -5275,6 +5278,15 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
                     </button>
                   ))}
                 </div>
+              </div>
+            )}
+            {hasPendingAnswer && (
+              <div
+                role="status"
+                data-lucy-answer-required="true"
+                className={`flex-1 min-w-0 px-2 text-[10px] sm:text-[11px] font-semibold truncate ${isLight ? 'text-amber-800' : 'text-amber-200'}`}
+              >
+                루시의 질문에 먼저 답해 주세요. 위 선택지를 누르거나 직접 답변을 입력해 주세요.
               </div>
             )}
           </div>
@@ -5322,7 +5334,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
               {/* 옅은색 동적 예시 고민 타이프라이터 플레이스홀더 (호리 스타일) */}
               <DynamicGhostInputPlaceholder
                 prompts={dynamicGhostPrompts}
-                isVisible={!input && !isLucyGenerating && !isInputFocused}
+                isVisible={!input && !isLucyGenerating && !isInputFocused && !hasPendingAnswer}
                 pauseDuration={12000}
                 typingSpeed={45}
                 deletingSpeed={20}
@@ -5360,7 +5372,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
                 onKeyDown={(e) => {
                   // Safari may end composition before keydown; keyCode 229 still identifies the IME event.
                   if (isInputComposingRef.current || e.nativeEvent.isComposing || e.nativeEvent.keyCode === 229) return;
-                  if (e.key === 'Tab' && !input && currentGhostPromptRef.current) {
+                  if (e.key === 'Tab' && !hasPendingAnswer && !input && currentGhostPromptRef.current) {
                     e.preventDefault();
                     setInput(currentGhostPromptRef.current);
                     return;
@@ -5377,7 +5389,9 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
                   if (document.body.scrollTop !== 0) document.body.scrollTop = 0;
                 }}
                 placeholder={
-                  isLucyGenerating
+                  hasPendingAnswer
+                    ? '루시의 질문에 대한 답변을 입력하세요...'
+                    : isLucyGenerating
                     ? '추가로 할 말을 입력하면 이어서 한 번에 답변해 드려요...'
                     : (isInputFocused ? '메시지를 입력하세요 (Shift+Enter 줄바꿈, Enter 전송)...' : '')
                 }
@@ -5404,7 +5418,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
               <button
                 type="button"
                 onClick={() => handleSend()}
-                disabled={!input.trim() && !attachedImage && (!activeGhostPrompt || isLucyGenerating)}
+                disabled={!input.trim() && !attachedImage && (hasPendingAnswer || !activeGhostPrompt || isLucyGenerating)}
                 className={`lucy-starlight-send w-7 h-7 sm:w-8 sm:h-8 p-0 font-bold rounded-lg sm:rounded-xl transition-all shadow-xs cursor-pointer shrink-0 active:scale-95 flex items-center justify-center ${
                   input.trim() || attachedImage
                     ? 'bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-slate-950 shadow-amber-500/20'
@@ -5414,17 +5428,17 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
                 }`}
                 title={
                   input.trim() || attachedImage
-                    ? (isLucyGenerating ? '추가 메시지 연속 전송 (진행 중인 답변을 멈추고 합쳐서 답변)' : '메시지 전송')
-                    : activeGhostPrompt
+                    ? (hasPendingAnswer ? '루시 질문에 답변 전송' : isLucyGenerating ? '추가 메시지 연속 전송 (진행 중인 답변을 멈추고 합쳐서 답변)' : '메시지 전송')
+                    : activeGhostPrompt && !hasPendingAnswer
                     ? `예시 질문 바로 전송: "${activeGhostPrompt}"`
-                    : '메시지를 입력하거나 예시를 선택하세요'
+                    : hasPendingAnswer ? '루시 질문에 먼저 답해 주세요' : '메시지를 입력하거나 예시를 선택하세요'
                 }
                 aria-label={
                   input.trim() || attachedImage
-                    ? (isLucyGenerating ? '추가 메시지 연속 전송' : '메시지 전송')
-                    : activeGhostPrompt
+                    ? (hasPendingAnswer ? '루시 질문에 답변 전송' : isLucyGenerating ? '추가 메시지 연속 전송' : '메시지 전송')
+                    : activeGhostPrompt && !hasPendingAnswer
                     ? `예시 질문 바로 전송: ${activeGhostPrompt}`
-                    : '메시지 전송'
+                    : hasPendingAnswer ? '루시 질문에 먼저 답해 주세요' : '메시지 전송'
                 }
               >
                 <Send size={12.5} className="sm:w-3.5 sm:h-3.5" />

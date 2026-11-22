@@ -12,6 +12,15 @@ test('typing in the composer no longer runs live AI mode detection or shows its 
   assert.doesNotMatch(page, /liveDetection/);
 });
 
+test('pending Lucy questions require an answer before another suggested prompt can be used', () => {
+  assert.match(page, /getPendingAnswerChoices\(lucyMessages\)/);
+  assert.match(page, /if \(hasPendingAnswer\) return;/);
+  assert.match(page, /!hasPendingAnswer && currentPrompts\.length > 0/);
+  assert.match(page, /data-lucy-answer-required="true"/);
+  assert.match(page, /placeholder=\{\s*hasPendingAnswer\s*\?/);
+  assert.match(page, /disabled=\{!input\.trim\(\) && !attachedImage && \(hasPendingAnswer/);
+});
+
 test('Lucy footer grows with its content instead of clipping the composer at a fixed height', () => {
   const footerStyles = styles.slice(styles.indexOf('/* Fill the usable canvas up to the rail. */'));
   const footerRule = footerStyles.match(/\.lucy-chat-footer\s*\{([^}]*)\}/)?.[1] ?? '';

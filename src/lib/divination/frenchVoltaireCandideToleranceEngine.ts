@@ -9,12 +9,12 @@
  * 4. 억울한 약자를 구명하고 진실을 밝히는 실천적 양심 및 정의 구현도(Justice Advocacy & Conscience Score): 카라스 사건 구명처럼 불의에 맞서 진실을 밝히는 용기.
  * 5. 헛된 관념론을 탈피하고 현실을 직시하는 분별력(Realistic Disillusionment & Clarity Index): 뜬구름 잡는 낙관론을 넘어 객관적 현실을 마주하는 힘.
  *
- * @version LUCKEY-VOLTAIRE-CANDIDE-TOLERANCE-v2.0.0
+ * @version LUCKEY-VOLTAIRE-CANDIDE-TOLERANCE-v2.3.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const FRENCH_VOLTAIRE_CANDIDE_TOLERANCE_VERSION = 'LUCKEY-VOLTAIRE-CANDIDE-TOLERANCE-v2.2.0';
+export const FRENCH_VOLTAIRE_CANDIDE_TOLERANCE_VERSION = 'LUCKEY-VOLTAIRE-CANDIDE-TOLERANCE-v2.3.0';
 
 export type VoltaireQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -52,12 +52,15 @@ export interface FrenchVoltaireCandideToleranceResult {
   realisticDisillusionmentClarityIndex: number;     // 현실 직시 및 분별력 지수 (Realistic Disillusionment & Clarity)
   // 세부 분석
   activeVoltaireTheme: VoltaireTheme;
+  companionVoltaireTheme: VoltaireTheme;
   focalVoltaireAphorism: VoltaireAphorism;
   voltaireComprehensiveGuidance: {
     guidanceTitle: string;
     philosophicalCounsel: string;
   };
   questionTopic: VoltaireQuestionTopic;
+  gardenPhase: string;
+  shadowWarning: string;
   temporalRhythm: VoltaireTemporalRhythm;
   questionContextGuide: string;
   dailyPracticeRitual: string;
@@ -71,6 +74,18 @@ export interface FrenchVoltaireCandideToleranceResult {
     integratedAction: string;
   };
 }
+
+const VOLTAIRE_GARDEN_PHASES = [
+  '사변 걷어내기(거창한 걱정과 완벽주의를 내려놓고 현실의 손잡이를 잡는 시기)',
+  '관용·위트 발휘(서로 다른 생각 앞에서 날을 세우기보다 유머와 열린 대화로 숨통을 틔우는 시기)',
+  '우리의 밭 경작(내 손이 닿는 오늘의 작은 일부터 성실하게 가꾸어 실질적 결실을 쌓는 시기)',
+] as const;
+
+const VOLTAIRE_SHADOW_WARNINGS = [
+  '유머와 풍자로 상황을 가볍게 넘기려다 상대방이 진지하게 아파하는 핵심까지 가볍게 짚지 않도록 살피세요.',
+  '내 밭을 성실히 일구는 데 집중하다 주변의 억울함과 연대의 손길이 필요한 순간을 놓치지 않도록 점검하세요.',
+  '독단을 경계하는 회의와 질문이 실행 자체를 미루는 냉소로 흐르지 않도록 유의하세요.',
+] as const;
 
 export const VOLTAIRE_THEMES: VoltaireTheme[] = [
   {
@@ -229,10 +244,14 @@ export function calculateFrenchVoltaireCandideTolerance(
   const realisticDisillusionmentClarityIndex = 82 + ((absHash >> 13) % 17);
 
   const themeIndex = (absHash >> 6) % VOLTAIRE_THEMES.length;
+  const companionOffset = 1 + ((absHash >> 7) % (VOLTAIRE_THEMES.length - 1));
   const aphorismIndex = (absHash >> 9) % VOLTAIRE_APHORISMS.length;
 
   const activeVoltaireTheme = VOLTAIRE_THEMES[themeIndex];
+  const companionVoltaireTheme = VOLTAIRE_THEMES[(themeIndex + companionOffset) % VOLTAIRE_THEMES.length];
   const focalVoltaireAphorism = VOLTAIRE_APHORISMS[aphorismIndex];
+  const gardenPhase = VOLTAIRE_GARDEN_PHASES[(absHash >> 11) % VOLTAIRE_GARDEN_PHASES.length];
+  const shadowWarning = VOLTAIRE_SHADOW_WARNINGS[(absHash >> 14) % VOLTAIRE_SHADOW_WARNINGS.length];
 
   const topicGuides: Record<VoltaireQuestionTopic, { guide: string; ritual: string; question: string }> = {
     relationship: {
@@ -261,17 +280,17 @@ export function calculateFrenchVoltaireCandideTolerance(
 
   const guidanceTitle = `볼테르 계몽주의 실천 지혜: ${activeVoltaireTheme.themeTitleKo}`;
   const philosophicalCounsel = `프랑스 계몽주의의 거목 볼테르는 "우리의 밭을 일구어야 한다(Il faut cultiver notre jardin)"는 일상의 성실한 실천과 광신을 물리치는 관용(Tolérance)을 가르칩니다. ` +
-    `현재 당신의 흐름에서 가장 귀감이 되는 핵심 지혜는 '${activeVoltaireTheme.themeTitleKo}'입니다. ` +
+    `현재 당신의 흐름에서 가장 귀감이 되는 핵심 지혜는 '${activeVoltaireTheme.themeTitleKo}'(동반 지혜: ${companionVoltaireTheme.themeTitleKo})입니다. ` +
     `${activeVoltaireTheme.practicalCounsel} 볼테르의 통찰 "${focalVoltaireAphorism.aphorismKo}"를 되새기며, ` +
     `${focalVoltaireAphorism.actionGuidance}`;
 
   const voltaireSynthesisMatrix = {
-    dominantTension: `${activeVoltaireTheme.themeTitleKo} ↔ ${temporalRhythm.kstSlot}`,
+    dominantTension: `${activeVoltaireTheme.themeTitleKo} ↔ ${companionVoltaireTheme.themeTitleKo} · ${temporalRhythm.kstSlot}`,
     alignmentState:
       cultivateOurGardenPragmaticDevotionScore >= 88 && toleranceEnlightenedReasonIndex >= 88
         ? '현실 경작과 관용·위트의 고차원 공명'
         : '공리공론을 걷어내고 오늘의 밭을 일구는 실천기',
-    integratedAction: `${topicPack.ritual} (${focalVoltaireAphorism.actionGuidance})`,
+    integratedAction: `${topicPack.ritual} (${gardenPhase})`,
   };
 
   return {
@@ -283,18 +302,21 @@ export function calculateFrenchVoltaireCandideTolerance(
     justiceAdvocacyConscienceScore,
     realisticDisillusionmentClarityIndex,
     activeVoltaireTheme,
+    companionVoltaireTheme,
     focalVoltaireAphorism,
     voltaireComprehensiveGuidance: {
       guidanceTitle,
       philosophicalCounsel,
     },
     questionTopic,
+    gardenPhase,
+    shadowWarning,
     temporalRhythm,
-    questionContextGuide: topicPack.guide,
-    dailyPracticeRitual: topicPack.ritual,
-    reflectiveQuestion: topicPack.question,
-    ritualAction: topicPack.ritual,
-    reflectionFocus: topicPack.question,
+    questionContextGuide: `${topicPack.guide} (동반 지혜: ${companionVoltaireTheme.themeTitleKo})`,
+    dailyPracticeRitual: `${topicPack.ritual} (${gardenPhase})`,
+    reflectiveQuestion: `'${gardenPhase}' 국면에서 ${topicPack.question}`,
+    ritualAction: `${topicPack.ritual} (${gardenPhase})`,
+    reflectionFocus: `'${gardenPhase}' 국면에서 ${topicPack.question}`,
     interpretiveBoundary: '본 관점은 볼테르의 《캉디드》와 《관용론》 사상을 바탕으로 일상의 실천과 열린 시선을 돕는 상징적 안내이며, 우열의 점수나 확정적 예언이 아닙니다.',
     voltaireSynthesisMatrix,
   };
@@ -312,8 +334,11 @@ export function formatFrenchVoltaireCandideTolerancePrompt(
     `- 실천적 양심 및 정의 구현(Justice Advocacy & Conscience): ${describeVoltaireQualitativeStage(res.justiceAdvocacyConscienceScore)}`,
     `- 현실 직시 및 분별력(Realistic Disillusionment & Clarity): ${describeVoltaireQualitativeStage(res.realisticDisillusionmentClarityIndex)}`,
     `- 현재 시공간 리듬 (${res.temporalRhythm.kstSlot}): ${res.temporalRhythm.rhythmTitle} — ${res.temporalRhythm.rhythmGuidance}`,
+    `- 밭 경작 국면: ${res.gardenPhase}`,
     `- 질문 맥락 맞춤 성찰 (${res.questionTopic}): ${res.questionContextGuide}`,
     `- 핵심 볼테르 실천 테마: ${res.activeVoltaireTheme.themeTitleKo} [${res.activeVoltaireTheme.themeTitleEn}]`,
+    `- 동반 볼테르 실천 테마: ${res.companionVoltaireTheme.themeTitleKo}`,
+    `- 과잉·경계 점검: ${res.shadowWarning}`,
     `- 실천적 통찰: ${res.activeVoltaireTheme.pragmaticInsight}`,
     `- 행동 조언: ${res.activeVoltaireTheme.practicalCounsel}`,
     `- 볼테르 원전 명언: "${res.focalVoltaireAphorism.aphorismKo}"`,

@@ -29,12 +29,14 @@ const realFetch = globalThis.fetch;
 let server: Server;
 let base = '';
 let providerCalls = 0;
+const providerModels: string[] = [];
 
 function stubProvider() {
   globalThis.fetch = (async (input: any, init?: any) => {
     const target = typeof input === 'string' ? input : String(input?.url || '');
     if (!target.includes('generativelanguage.googleapis.com')) return realFetch(input, init);
     providerCalls++;
+    providerModels.push(JSON.parse(String(init?.body)).model);
     return Response.json({
       output_audio: { data: WAV.toString('base64'), mime_type: 'audio/wav' },
     });
@@ -55,6 +57,7 @@ before(async () => {
 
 beforeEach(() => {
   providerCalls = 0;
+  providerModels.length = 0;
   stubProvider();
 });
 
@@ -84,12 +87,25 @@ test('responseFormat: "binary" returns raw audio bytes with TTS metadata headers
   assert.equal(response.headers.get('x-tts-encoding'), 'wav');
   assert.equal(response.headers.get('x-tts-sample-rate'), '24000');
   assert.equal(response.headers.get('x-tts-voice'), 'Aoede');
+  assert.ok(['gemini-3.8-flash-tts', 'gemini-3.8-flash-lite-tts'].includes(response.headers.get('x-tts-model') || ''));
   assert.match(response.headers.get('cache-control') || '', /no-store/, 'narration must not land in shared caches');
   assert.match(response.headers.get('access-control-expose-headers') || '', /X-TTS-Encoding/);
 
   const bytes = Buffer.from(await response.arrayBuffer());
   assert(bytes.equals(WAV));
   assert.equal(providerCalls, 1);
+});
+
+test('a pinned model is honored and returned with binary audio metadata', async () => {
+  const response = await ttsPost({
+    text: '같은 목소리로 이어서 읽습니다.',
+    preferredModel: 'gemini-3.8-flash-lite-tts',
+    responseFormat: 'binary',
+  }, { Accept: 'audio/wav' });
+  assert.equal(response.status, 200);
+  assert.deepEqual(providerModels, ['gemini-3.8-flash-lite-tts']);
+  assert.equal(response.headers.get('x-tts-model'), 'gemini-3.8-flash-lite-tts');
+  assert.match(response.headers.get('access-control-expose-headers') || '', /X-TTS-Model/);
 });
 
 test('Accept: audio/* also selects the binary path, without a 405 on POST', async () => {
@@ -133,21 +149,23 @@ test('binary preference detection keeps browser defaults on JSON', () => {
 test('client parser reads both binary and legacy JSON responses identically', async () => {
   const binaryResponse = new Response(WAV, {
     status: 200,
-    headers: { 'Content-Type': 'audio/wav', 'X-TTS-Encoding': 'wav', 'X-TTS-Sample-Rate': '24000' },
+    headers: { 'Content-Type': 'audio/wav', 'X-TTS-Encoding': 'wav', 'X-TTS-Sample-Rate': '24000', 'X-TTS-Model': 'gemini-3.8-flash-tts' },
   });
   const parsedBinary = await parseTTSAudioResponse(binaryResponse);
   assert(parsedBinary);
   assert.equal(parsedBinary!.encoding, 'wav');
   assert.equal(parsedBinary!.sampleRate, 24000);
+  assert.equal(parsedBinary!.model, 'gemini-3.8-flash-tts');
   assert(Buffer.from(parsedBinary!.bytes).equals(WAV));
   assert.equal(parsedBinary!.audioContent, WAV.toString('base64'));
 
-  const jsonResponse = Response.json({ audioContent: WAV.toString('base64'), encoding: 'wav', sampleRate: 24000 });
+  const jsonResponse = Response.json({ audioContent: WAV.toString('base64'), encoding: 'wav', sampleRate: 24000, model: 'gemini-3.8-flash-lite-tts' });
   const parsedJson = await parseTTSAudioResponse(jsonResponse);
   assert(parsedJson);
   assert.equal(parsedJson!.audioContent, parsedBinary!.audioContent);
   assert.equal(parsedJson!.encoding, 'wav');
   assert.equal(parsedJson!.sampleRate, 24000);
+  assert.equal(parsedJson!.model, 'gemini-3.8-flash-lite-tts');
 
   const empty = await parseTTSAudioResponse(new Response(null, { status: 200, headers: { 'Content-Type': 'audio/wav' } }));
   assert.equal(empty, null);

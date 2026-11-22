@@ -10,12 +10,12 @@
  * 4. 일반의지(Volonté Générale): 개별적인 사욕과 편협한 에고를 넘어, 모두의 공공선과 인류적 조화를 지향하는 고결한 공감과 연대.
  * 5. 자율적 주체성과 내적 자유: 억압적 관습의 사슬을 자각하고 영혼의 주권자로서 진정한 자율성을 꽃피우는 성숙.
  *
- * @version LUCKEY-JJ-ROUSSEAU-NATURE-v2.0.0
+ * @version LUCKEY-JJ-ROUSSEAU-NATURE-v2.3.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const FRENCH_JJ_ROUSSEAU_VERSION = 'LUCKEY-JJ-ROUSSEAU-NATURE-v2.2.0';
+export const FRENCH_JJ_ROUSSEAU_VERSION = 'LUCKEY-JJ-ROUSSEAU-NATURE-v2.3.0';
 
 export type RousseauQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -53,12 +53,15 @@ export interface JeanJacquesRousseauNatureAuthenticityResult {
   emileAutonomyEducationScore: number;     // 에밀식 자율적 주체성 및 내면의 자유도
   // 세부 분석
   activeRousseauTheme: RousseauTheme;
+  companionRousseauTheme: RousseauTheme;
   focalRousseauAphorism: RousseauAphorism;
   rousseauComprehensiveGuidance: {
     guidanceTitle: string;
     philosophicalCounsel: string;
   };
   questionTopic: RousseauQuestionTopic;
+  naturePhase: string;
+  shadowWarning: string;
   temporalRhythm: RousseauTemporalRhythm;
   questionContextGuide: string;
   dailyPracticeRitual: string;
@@ -72,6 +75,18 @@ export interface JeanJacquesRousseauNatureAuthenticityResult {
     cautionNotice: string;
   };
 }
+
+const ROUSSEAU_NATURE_PHASES = [
+  '가면 탈피(타인의 시선과 비교하는 허영을 벗고 내 본래 감정을 확인하는 시기)',
+  '양심 경청(이해득실 계산을 잠시 멈추고 내면의 정직한 나침반을 듣는 시기)',
+  '자율 연대(나와 모두의 선을 함께 살피며 소박하고 떳떳한 걸음을 내딛는 시기)',
+] as const;
+
+const ROUSSEAU_SHADOW_WARNINGS = [
+  '순수성과 진정성을 지키려다 현실의 필요한 타협과 조율까지 전부 위선으로 밀어내지 않도록 살피세요.',
+  '내면의 감정과 양심에 몰두하느라 상대방이 처한 현실적 제약과 입장을 충분히 듣지 못하는 일이 없도록 점검하세요.',
+  '자연으로의 회귀를 떠올리며 정작 오늘 마무리해야 할 일상의 책임까지 미루지 않도록 유의하세요.',
+] as const;
 
 export const ROUSSEAU_THEMES: RousseauTheme[] = [
   {
@@ -216,10 +231,14 @@ export function calculateFrenchJeanJacquesRousseauNatureAuthenticity(
   const emileAutonomyEducationScore = 71 + ((absHash >> 12) % 28);
 
   const themeIndex = (absHash >> 4) % ROUSSEAU_THEMES.length;
+  const companionOffset = 1 + ((absHash >> 5) % (ROUSSEAU_THEMES.length - 1));
   const aphorismIndex = (absHash >> 7) % ROUSSEAU_APHORISMS.length;
 
   const activeRousseauTheme = ROUSSEAU_THEMES[themeIndex];
+  const companionRousseauTheme = ROUSSEAU_THEMES[(themeIndex + companionOffset) % ROUSSEAU_THEMES.length];
   const focalRousseauAphorism = ROUSSEAU_APHORISMS[aphorismIndex];
+  const naturePhase = ROUSSEAU_NATURE_PHASES[(absHash >> 10) % ROUSSEAU_NATURE_PHASES.length];
+  const shadowWarning = ROUSSEAU_SHADOW_WARNINGS[(absHash >> 13) % ROUSSEAU_SHADOW_WARNINGS.length];
 
   const topicGuides: Record<RousseauQuestionTopic, { guide: string; ritual: string; question: string }> = {
     relationship: {
@@ -248,16 +267,16 @@ export function calculateFrenchJeanJacquesRousseauNatureAuthenticity(
 
   const guidanceTitle = `장 자크 루소 자연 회복 진정성 지혜: ${activeRousseauTheme.themeTitleKo}`;
   const philosophicalCounsel = `장 자크 루소의 자연 회복과 진정성 철학은 사회적 허식과 비교의 고통을 털어내고 당신 본래의 순수한 생명력을 꽃피우도록 돕습니다. ` +
-    `현재 당신에게 필요한 가장 핵심적인 내적 성찰은 '${activeRousseauTheme.themeTitleKo}'입니다. ` +
+    `현재 당신에게 필요한 가장 핵심적인 내적 성찰은 '${activeRousseauTheme.themeTitleKo}'(동반 테마: ${companionRousseauTheme.themeTitleKo})입니다. ` +
     `${activeRousseauTheme.practicalCounsel} 루소의 명언 "${focalRousseauAphorism.aphorismKo}"(${focalRousseauAphorism.aphorismEn})을 마음에 품고, ` +
     `${focalRousseauAphorism.actionGuidance}`;
 
   const kst = new Date(targetDate.getTime() + 9 * 60 * 60 * 1000);
   const kstTimeLabel = `${kst.toISOString().slice(0, 10)} ${String(kst.getUTCHours()).padStart(2, '0')}:${String(kst.getUTCMinutes()).padStart(2, '0')} +09:00 (KST)`;
   const rousseauSynthesisMatrix = {
-    coreInsight: activeRousseauTheme.themeTitleKo,
-    recommendedAction: topicPack.guide,
-    cautionNotice: '타인의 시선과 비교하는 허영(Amour-propre)에 휘둘려 내면 양심의 소리를 덮어버리지 마십시오.',
+    coreInsight: `${activeRousseauTheme.themeTitleKo} (동반: ${companionRousseauTheme.themeTitleKo})`,
+    recommendedAction: `${topicPack.guide} (${naturePhase})`,
+    cautionNotice: shadowWarning,
   };
 
   return {
@@ -269,18 +288,21 @@ export function calculateFrenchJeanJacquesRousseauNatureAuthenticity(
     amourDeSoiSelfLoveScore,
     emileAutonomyEducationScore,
     activeRousseauTheme,
+    companionRousseauTheme,
     focalRousseauAphorism,
     rousseauComprehensiveGuidance: {
       guidanceTitle,
       philosophicalCounsel,
     },
     questionTopic,
+    naturePhase,
+    shadowWarning,
     temporalRhythm,
-    questionContextGuide: topicPack.guide,
-    dailyPracticeRitual: topicPack.ritual,
-    reflectiveQuestion: topicPack.question,
-    ritualAction: topicPack.ritual,
-    reflectionFocus: topicPack.question,
+    questionContextGuide: `${topicPack.guide} (동반 테마: ${companionRousseauTheme.themeTitleKo})`,
+    dailyPracticeRitual: `${topicPack.ritual} (${naturePhase})`,
+    reflectiveQuestion: `'${naturePhase}' 국면에서 ${topicPack.question}`,
+    ritualAction: `${topicPack.ritual} (${naturePhase})`,
+    reflectionFocus: `'${naturePhase}' 국면에서 ${topicPack.question}`,
     interpretiveBoundary: '본 관점은 루소의 자연 회복·진정성 사상을 바탕으로 자기 성찰을 돕는 상징적 안내이며, 우열의 점수나 단정적 예언이 아닙니다.',
     rousseauSynthesisMatrix,
   };
@@ -296,8 +318,11 @@ export function formatJeanJacquesRousseauNatureAuthenticityPrompt(res: JeanJacqu
     `- 건전한 자기애 자존감(Amour de soi): ${describeRousseauQualitativeStage(res.amourDeSoiSelfLoveScore)}`,
     `- 에밀식 자율적 주체성(Emile Autonomy): ${describeRousseauQualitativeStage(res.emileAutonomyEducationScore)}`,
     `- 현재 시공간 리듬 (${res.temporalRhythm.kstSlot}): ${res.temporalRhythm.rhythmTitle} — ${res.temporalRhythm.rhythmGuidance}`,
+    `- 자연 회복 국면: ${res.naturePhase}`,
     `- 질문 맥락 맞춤 성찰 (${res.questionTopic}): ${res.questionContextGuide}`,
     `- 핵심 자연 테마: ${res.activeRousseauTheme.themeTitleKo} [${res.activeRousseauTheme.themeTitleEn}]`,
+    `- 동반 자연 테마: ${res.companionRousseauTheme.themeTitleKo}`,
+    `- 과잉·경계 점검: ${res.shadowWarning}`,
     `- 철학적 통찰: ${res.activeRousseauTheme.philosophicalInsight}`,
     `- 실천적 조언: ${res.activeRousseauTheme.practicalCounsel}`,
     `- 핵심 경구: "${res.focalRousseauAphorism.aphorismKo}"`,

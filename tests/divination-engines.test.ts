@@ -7039,12 +7039,15 @@ test('Blaise Pascal Pensees Engine: calculates Thinking reed dignity, Heart intu
   assert(rep.dualInfinitiesPerspectiveScore >= 0 && rep.dualInfinitiesPerspectiveScore <= 100);
   assert(rep.divertissementTranquilityScore >= 0 && rep.divertissementTranquilityScore <= 100);
   assert(rep.activeThematicThought.thoughtTitleFrench.length > 0);
+  assert(rep.companionThematicThought.thoughtKey !== rep.activeThematicThought.thoughtKey);
+  assert(rep.heartPhase.length > 0 && rep.shadowWarning.length > 0);
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assertKstTimestamp(rep.calculatedAtKst);
   assert(Boolean(rep.pascalSynthesisMatrix?.integratedAction));
   const prompt = formatPascalPenseesHeartReasonPrompt(rep);
   assert(prompt.includes('블레즈 파스칼 팡세(Pensées) 사유하는 갈대 & 심장의 논리 지표'));
-  assert(prompt.includes(rep.activeThematicThought.thoughtTitleKo));
+  assert(prompt.includes(rep.activeThematicThought.thoughtTitleKo) && prompt.includes(rep.companionThematicThought.thoughtTitleKo));
+  assert(prompt.includes(rep.heartPhase) && prompt.includes(rep.shadowWarning));
   assert(prompt.includes('교차 매트릭스'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
@@ -7487,10 +7490,13 @@ test('Jean-Jacques Rousseau Nature Authenticity Engine: calculates Inherent Good
   assert(rep.amourDeSoiSelfLoveScore >= 0 && rep.amourDeSoiSelfLoveScore <= 100);
   assert(rep.emileAutonomyEducationScore >= 0 && rep.emileAutonomyEducationScore <= 100);
   assert(rep.activeRousseauTheme.themeTitleKo.length > 0);
+  assert(rep.companionRousseauTheme.themeKey !== rep.activeRousseauTheme.themeKey);
+  assert(rep.naturePhase.length > 0 && rep.shadowWarning.length > 0);
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatJeanJacquesRousseauNatureAuthenticityPrompt(rep);
   assert(prompt.includes('장 자크 루소 《에밀·사회계약론》 인간 본성 자연 회복 & 진정성 지표'));
-  assert(prompt.includes(rep.activeRousseauTheme.themeTitleKo));
+  assert(prompt.includes(rep.activeRousseauTheme.themeTitleKo) && prompt.includes(rep.companionRousseauTheme.themeTitleKo));
+  assert(prompt.includes(rep.naturePhase) && prompt.includes(rep.shadowWarning));
   assert.ok(rep.calculatedAtKst.includes('KST'));
   assert.ok(prompt.includes('교차 매트릭스'));
   assert(!prompt.includes('/100'));
@@ -7624,10 +7630,13 @@ test('Henri Bergson Elan Vital Engine: calculates Pure Duration, Elan Vital, and
   assert(rep.creativeFreedomUnfoldingScore >= 0 && rep.creativeFreedomUnfoldingScore <= 100);
   assert(rep.openSocietyVitalityIndex >= 0 && rep.openSocietyVitalityIndex <= 100);
   assert(rep.activeBergsonTheme.themeTitleKo.length > 0);
+  assert(rep.companionBergsonTheme.themeKey !== rep.activeBergsonTheme.themeKey);
+  assert(rep.durationPhase.length > 0 && rep.shadowWarning.length > 0);
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatHenriBergsonElanVitalPrompt(rep);
   assert(prompt.includes('앙리 베르그송 《시간과 자유의지·창조적 진화》 순수 지속 & 생명의 도약 성찰 가이드'));
-  assert(prompt.includes(rep.activeBergsonTheme.themeTitleKo));
+  assert(prompt.includes(rep.activeBergsonTheme.themeTitleKo) && prompt.includes(rep.companionBergsonTheme.themeTitleKo));
+  assert(prompt.includes(rep.durationPhase) && prompt.includes(rep.shadowWarning));
   assert.ok(rep.calculatedAtKst.includes('KST'));
   assert.ok(prompt.includes('교차 매트릭스'));
   assert(!prompt.includes('/100'));
@@ -7660,6 +7669,8 @@ test('Yeonam Park Jiwon Yeolha Ilgi Engine: calculates One-Night Nine Crossings,
   assert(rep.bukhakOpenMindedInsightScore >= 0 && rep.bukhakOpenMindedInsightScore <= 100);
   assert(rep.haehakSatiricalGenerosityQuotient >= 0 && rep.haehakSatiricalGenerosityQuotient <= 100);
   assert(rep.activeYeonamTheme.themeTitleKo.length > 0);
+  assert(rep.companionYeonamTheme.themeKey !== rep.activeYeonamTheme.themeKey);
+  assert(rep.silhakPhase.length > 0 && rep.shadowWarning.length > 0);
   assertKstTimestamp(rep.calculatedAtKst);
   assert(Boolean(rep.yeonamSynthesisMatrix?.integratedAction));
   assert(rep.dailyPracticeRitual.length > 0);
@@ -7668,7 +7679,8 @@ test('Yeonam Park Jiwon Yeolha Ilgi Engine: calculates One-Night Nine Crossings,
   assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatYeonamParkJiwonYeolhaIlgiPrompt(rep);
   assert(prompt.includes('연암 박지원 《열하일기》 일야구도 & 이용후생·법고창신 실학 지표'));
-  assert(prompt.includes(rep.activeYeonamTheme.themeTitleKo));
+  assert(prompt.includes(rep.activeYeonamTheme.themeTitleKo) && prompt.includes(rep.companionYeonamTheme.themeTitleKo));
+  assert(prompt.includes(rep.silhakPhase) && prompt.includes(rep.shadowWarning));
   assert(prompt.includes('실천 의례'));
   assert(prompt.includes('성찰 초점'));
   assert(prompt.includes('교차 매트릭스'));
@@ -7971,6 +7983,8 @@ test('Adam Smith Moral Sentiments Engine: calculates Impartial Spectator, Sympat
   assert(rep.praiseworthinessIntegrityScore >= 0 && rep.praiseworthinessIntegrityScore <= 100);
   assert(rep.activeAdamSmithTheme.themeTitleKo.length > 0);
   assert(rep.secondaryAdamSmithTheme.themeTitleKo.length > 0);
+  assert(rep.secondaryAdamSmithTheme.themeKey !== rep.activeAdamSmithTheme.themeKey);
+  assert(rep.moralPhase.length > 0 && rep.shadowWarning.length > 0);
   assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(Boolean(rep.adamSmithSynthesisMatrix?.integratedAction));
@@ -7980,6 +7994,7 @@ test('Adam Smith Moral Sentiments Engine: calculates Impartial Spectator, Sympat
   assert(prompt.includes('아담 스미스 《도덕감정론》 공정한 관찰자 & 공감·자기통제 지표'));
   assert(prompt.includes(rep.activeAdamSmithTheme.themeTitleKo));
   assert(prompt.includes('보조 교차 테마'));
+  assert(prompt.includes(rep.moralPhase) && prompt.includes(rep.shadowWarning));
   assert(prompt.includes('교차 매트릭스'));
   assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
   assert(prompt.includes('성찰 질문'));
@@ -8426,6 +8441,8 @@ test('Ohseong and Haneum Friendship Governance Engine: calculates Lifelong Moral
   assert(rep.antiFactionalImpartialityScore >= 0 && rep.antiFactionalImpartialityScore <= 100);
   assert(rep.unyieldingFidelityGraceIndex >= 0 && rep.unyieldingFidelityGraceIndex <= 100);
   assert(rep.activeOhseongHaneumTheme.themeTitleKo.length > 0);
+  assert(rep.companionOhseongHaneumTheme.themeKey !== rep.activeOhseongHaneumTheme.themeKey);
+  assert(rep.friendshipPhase.length > 0 && rep.shadowWarning.length > 0);
   assert(rep.dailyPracticeRitual.length > 0);
   assert(rep.reflectiveQuestion.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
@@ -8434,7 +8451,8 @@ test('Ohseong and Haneum Friendship Governance Engine: calculates Lifelong Moral
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatKoreanOhseongHaneumFriendshipGovernancePrompt(rep);
   assert(prompt.includes('오성과 한음(이항복·이덕형) 지기지우 & 경세제민 지혜 지표'));
-  assert(prompt.includes(rep.activeOhseongHaneumTheme.themeTitleKo));
+  assert(prompt.includes(rep.activeOhseongHaneumTheme.themeTitleKo) && prompt.includes(rep.companionOhseongHaneumTheme.themeTitleKo));
+  assert(prompt.includes(rep.friendshipPhase) && prompt.includes(rep.shadowWarning));
   assert(prompt.includes('교차 매트릭스'));
   assert(prompt.includes(rep.ritualAction));
   assert(!prompt.includes('/100'));
@@ -8455,12 +8473,15 @@ test('Voltaire Candide and Tolerance Engine: calculates Cultivate Our Garden Dev
   assert(rep.justiceAdvocacyConscienceScore >= 0 && rep.justiceAdvocacyConscienceScore <= 100);
   assert(rep.realisticDisillusionmentClarityIndex >= 0 && rep.realisticDisillusionmentClarityIndex <= 100);
   assert(rep.activeVoltaireTheme.themeTitleKo.length > 0);
+  assert(rep.companionVoltaireTheme.themeKey !== rep.activeVoltaireTheme.themeKey);
+  assert(rep.gardenPhase.length > 0 && rep.shadowWarning.length > 0);
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assertKstTimestamp(rep.calculatedAtKst);
   assert(Boolean(rep.voltaireSynthesisMatrix?.integratedAction));
   const prompt = formatFrenchVoltaireCandideTolerancePrompt(rep);
   assert(prompt.includes('볼테르 《캉디드》 & 《관용론》 일상 실천 및 관용 지혜 지표'));
-  assert(prompt.includes(rep.activeVoltaireTheme.themeTitleKo));
+  assert(prompt.includes(rep.activeVoltaireTheme.themeTitleKo) && prompt.includes(rep.companionVoltaireTheme.themeTitleKo));
+  assert(prompt.includes(rep.gardenPhase) && prompt.includes(rep.shadowWarning));
   assert(prompt.includes('교차 매트릭스'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
@@ -8595,10 +8616,13 @@ test('Gilles Deleuze Rhizome and Becoming Engine: calculates Rhizomatic Connecti
   assert(rep.creativeBecomingVitalityScore >= 0 && rep.creativeBecomingVitalityScore <= 100);
   assert(rep.desiringProductionLiberationResilienceScore >= 0 && rep.desiringProductionLiberationResilienceScore <= 100);
   assert(rep.activeDeleuzeTheme.themeTitleKo.length > 0);
+  assert(rep.companionDeleuzeTheme.themeKey !== rep.activeDeleuzeTheme.themeKey);
+  assert(rep.becomingPhase.length > 0 && rep.shadowWarning.length > 0);
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatFrenchGillesDeleuzeRhizomeBecomingPrompt(rep);
   assert(prompt.includes('들뢰즈 《천 개의 고원·차이와 반복》 리좀·탈영토화·생성 성찰 가이드'));
-  assert(prompt.includes(rep.activeDeleuzeTheme.themeTitleKo));
+  assert(prompt.includes(rep.activeDeleuzeTheme.themeTitleKo) && prompt.includes(rep.companionDeleuzeTheme.themeTitleKo));
+  assert(prompt.includes(rep.becomingPhase) && prompt.includes(rep.shadowWarning));
   assert.ok(rep.calculatedAtKst.includes('KST'));
   assert.ok(prompt.includes('교차 매트릭스'));
   assert(!prompt.includes('/100'));
@@ -8791,10 +8815,13 @@ test('Maurice Merleau-Ponty Embodied Phenomenology Engine: calculates Body-Subje
   assert(rep.sensoryCreativeEyeScore >= 0 && rep.sensoryCreativeEyeScore <= 100);
   assert(rep.phenomenologicalGroundingResilienceScore >= 0 && rep.phenomenologicalGroundingResilienceScore <= 100);
   assert(rep.activePontyTheme.themeTitleKo.length > 0);
+  assert(rep.companionPontyTheme.themeKey !== rep.activePontyTheme.themeKey);
+  assert(rep.embodiedPhase.length > 0 && rep.shadowWarning.length > 0);
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatFrenchMauriceMerleauPontyEmbodiedPhenomenologyPrompt(rep);
   assert(prompt.includes('모리스 메를로퐁티 《지각의 현상학·눈과 마음》 신체-주체 및 원초적 지각 성찰 가이드'));
-  assert(prompt.includes(rep.activePontyTheme.themeTitleKo));
+  assert(prompt.includes(rep.activePontyTheme.themeTitleKo) && prompt.includes(rep.companionPontyTheme.themeTitleKo));
+  assert(prompt.includes(rep.embodiedPhase) && prompt.includes(rep.shadowWarning));
   assert.ok(rep.calculatedAtKst.includes('KST'));
   assert.ok(prompt.includes('교차 매트릭스'));
   assert(!prompt.includes('/100'));
@@ -16018,5 +16045,60 @@ test('buildUserFifteenToolsDigest integrates 7th-round Saju, Astrology, and Ziwe
   assert.ok(digest.includes('재물/커리어:') && digest.includes('관계/건강:'));
   assert.ok(!/deukSeScore|driveScore|wealthAffinityScore|intuitionScore|breakthroughPowerScore/.test(digest));
 });
+
+test('buildUserFifteenToolsDigest integrates 7th-round Tarot, Sukuyo, and Mahabote sephira stage, san-kyu phase theme, and Myanmar Era without raw scores', () => {
+  const profile: any = {
+    basic: {
+      name: '제제',
+      birthdate: '1994-01-24',
+      birthtime: '10:30',
+      calendarType: 'solar',
+      isLeapMonth: false,
+      gender: 'male',
+    },
+  };
+  const digest = buildUserFifteenToolsDigest(profile, new Date('2026-11-23T04:10:00+09:00'));
+  assert.ok(digest.includes('핵심 메시지:') && digest.includes('페르소나:'));
+  assert.ok(digest.includes('삼구주기 [') && digest.includes('°') && digest.includes('칠요 수호성 '));
+  assert.ok(digest.includes('미얀마 역법 ME ') && digest.includes('본원 '));
+  assert.ok(!/tarotVitalityScore|guardScore|planetaryHarmonyScore|leadershipHonor/.test(digest));
+});
+
+test('buildUserFifteenToolsDigest integrates 7th-round Vedic, Liuren, and Qimen deity, general guidance, and center numbers without raw scores', () => {
+  const profile: any = {
+    basic: {
+      name: '제제',
+      birthdate: '1994-01-24',
+      birthtime: '10:30',
+      calendarType: 'solar',
+      isLeapMonth: false,
+      gender: 'male',
+    },
+  };
+  const digest = buildUserFifteenToolsDigest(profile, new Date('2026-11-23T04:17:00+09:00'));
+  assert.ok(digest.includes('주재신 ') && digest.includes('나바암사 파다 주인 ') && digest.includes('Lahiri 아야남샤 '));
+  assert.ok(digest.includes('전개 템포 [') && digest.includes('다음 수('));
+  assert.ok(digest.includes('지반수 ') && digest.includes('천반수 ') && digest.includes('3궁 관계 ['));
+  assert.ok(!/dharmaProsperityScore|fourLessonsHarmonyScore|actionMomentumIndex|decisionScore|riskIndex|tonggi\.score/.test(digest));
+});
+
+test('buildUserFifteenToolsDigest integrates 7th-round Kabbalah, Iching, and Thai Horasat sephirah pillar, moving lines, and dasha verdict without raw scores', () => {
+  const profile: any = {
+    basic: {
+      name: '제제',
+      birthdate: '1994-01-24',
+      birthtime: '10:30',
+      calendarType: 'solar',
+      isLeapMonth: false,
+      gender: 'male',
+    },
+  };
+  const digest = buildUserFifteenToolsDigest(profile, new Date('2026-11-23T04:27:00+09:00'));
+  assert.ok(digest.includes('기둥 · ') && digest.includes('경로 실천('));
+  assert.ok((digest.includes('동효 [') || digest.includes('무동효(')) && digest.includes('본괘 국면(') && digest.includes('괘상 요해('));
+  assert.ok(digest.includes('대운 판정: ') && digest.includes('소운 '));
+  assert.ok(!/affinityScore|vitalityIndex|decisionScore|mercy|severity|mildness/.test(digest));
+});
+
 
 
