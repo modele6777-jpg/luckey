@@ -6489,10 +6489,12 @@ test('Ancient Chinese Mozi Gyeom-Ae Universal Love Engine: calculates Gyeom-Ae l
   assert(rep.tianZhiCosmicJusticeScore >= 0 && rep.tianZhiCosmicJusticeScore <= 100);
   assert(rep.activeMohistStage.stageNameHanja.length > 0);
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
+  assert(rep.shadowWarning.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatMoziGyeomAePrompt(rep);
   assert(prompt.includes('춘추전국시대 묵가(墨家) 묵자(墨子) 겸애교리'));
   assert(prompt.includes(rep.activeMohistStage.stageNameKo));
+  assert(prompt.includes('과잉 경계'));
 });
 
 test('Roman Marcus Aurelius Inner Citadel Meditations Engine: calculates Inner Citadel score, Hic et nunc and Amor Fati', () => {
@@ -6782,10 +6784,12 @@ test('Confucius Analects Zhitianming Engine: calculates life stage wisdom, Ren, 
   assert(rep.junziEquanimityScore >= 0 && rep.junziEquanimityScore <= 100);
   assert(rep.activeLifeStage.stageNameHanja.length > 0);
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
+  assert(rep.shadowWarning.length > 0);
   const prompt = formatConfuciusAnalectsZhitianmingPrompt(rep);
   assert(prompt.includes('공자 논어 지천명 & 극기복례 군자도 성찰'));
   assert(prompt.includes(rep.activeLifeStage.stageNameKo));
   assert(prompt.includes('성찰 초점'));
+  assert(prompt.includes('과잉 경계'));
 });
 
 test('Spinoza Ethica Conatus Engine: calculates Conatus vitality, Sub Specie Aeternitatis, and Amor Dei Intellectualis', () => {
@@ -8326,9 +8330,11 @@ test('William James Pragmatism Will to Believe Engine: calculates Cash-Value, Wi
   assert(rep.healthyMindedResilienceIndex >= 0 && rep.healthyMindedResilienceIndex <= 100);
   assert(rep.activeJamesTheme.themeTitleKo.length > 0);
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
+  assert(rep.shadowWarning.length > 0);
   const prompt = formatAmericanWilliamJamesPragmatismPrompt(rep);
   assert(prompt.includes('윌리엄 제임스 《실용주의》 & 《신념의 의지》 실천적 현금가치 지표'));
   assert(prompt.includes(rep.activeJamesTheme.themeTitleKo));
+  assert(prompt.includes('과잉 경계'));
 });
 
 test('Erich Fromm Art of Loving Being Engine: calculates Active Care, Respect & Knowledge, Being Mode, and Positive Freedom', () => {

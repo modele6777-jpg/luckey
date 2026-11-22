@@ -7,12 +7,12 @@
  * 3. 극기복례(克己復禮): 사사로운 욕망을 이겨내고 본래의 도리와 예법으로 돌아감.
  * 4. 군자탄탕탕(君子坦蕩蕩): 소인의 조급하고 궁색한 근심(小人長戚戚)을 벗어나 마음에 걸림이 없는 넓고 평정한 품격.
  *
- * @version LUCKEY-CONFUCIUS-ZHITIANMING-v2.2.0
+ * @version LUCKEY-CONFUCIUS-ZHITIANMING-v2.5.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const CONFUCIUS_ZHITIANMING_VERSION = 'LUCKEY-CONFUCIUS-ZHITIANMING-v2.4.0';
+export const CONFUCIUS_ZHITIANMING_VERSION = 'LUCKEY-CONFUCIUS-ZHITIANMING-v2.5.0';
 
 function formatConfuciusKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -88,6 +88,7 @@ export interface ConfuciusAnalectsZhitianmingResult {
   reflectiveQuestion: string;
   ritualAction: string;
   reflectionFocus: string;
+  shadowWarning: string;
   interpretiveBoundary: string;
   confuciusSynthesisMatrix?: {
     dominantTension: string;
@@ -337,6 +338,7 @@ export function calculateConfuciusAnalectsZhitianming(
   const dailyPracticeRitual =
     `${temporalJunziRhythm.dailyCultivationPractice} (${junziCultivationMatrix.dailyThreeReflections})`;
   const reflectiveQuestion = situationalAnalects.reflectionPrompt;
+  const shadowWarning = `[군자 수양 과잉 경계] 예법과 절제(${focalVirtue.virtueHanja})를 지키려다 스스로와 타인에게 엄격한 잣대만 세워 인(仁)의 온기를 잃지 않도록 살피십시오.`;
   const interpretiveBoundary =
     '이 관점은 점수가 아니라 공자 《논어》의 인·의·예·지·신과 군자도(君子道) 수양 틀로 현재 질문의 도리와 태도를 비추는 상징적 성찰입니다.';
 
@@ -368,6 +370,7 @@ export function calculateConfuciusAnalectsZhitianming(
     reflectiveQuestion,
     ritualAction: dailyPracticeRitual,
     reflectionFocus: reflectiveQuestion,
+    shadowWarning,
     interpretiveBoundary,
     confuciusSynthesisMatrix,
   };
@@ -396,6 +399,7 @@ export function formatConfuciusAnalectsZhitianmingPrompt(res: ConfuciusAnalectsZ
     `- 일일 수양 의례: ${res.dailyPracticeRitual}`,
     `- 군자 수양 방향: 인예 일치 [${describeConfuciusStage(res.junziCultivationMatrix.renLiCohesion)}] / 극기 절제 [${describeConfuciusStage(res.junziCultivationMatrix.kejiRestraint)}] / 천명 수용 [${describeConfuciusStage(res.junziCultivationMatrix.tianmingAcceptance)}] → [${res.junziCultivationMatrix.priorityVirtueFocus}]`,
     `- 핵심 수양 덕목: ${res.focalVirtue.virtueKo}`,
+    `- 과잉 경계: ${res.shadowWarning}`,
     `- 철학적 수양 지침: ${res.confucianPhilosophicalCounsel.philosophicalGuidance}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
     matrixLine,

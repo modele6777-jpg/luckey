@@ -5,12 +5,12 @@
  * 《실용주의(Pragmatism, 1907)》, 《신념의 의지(The Will to Believe, 1897)》, 《심리학의 원리(The Principles of Psychology, 1890)》,
  * 《종교적 경험의 다양성(The Varieties of Religious Experience, 1902)》 원전 기반.
  *
- * @version LUCKEY-WILLIAM-JAMES-PRAGMATISM-v2.2.0
+ * @version LUCKEY-WILLIAM-JAMES-PRAGMATISM-v2.4.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const AMERICAN_WILLIAM_JAMES_VERSION = 'LUCKEY-WILLIAM-JAMES-PRAGMATISM-v2.3.0';
+export const AMERICAN_WILLIAM_JAMES_VERSION = 'LUCKEY-WILLIAM-JAMES-PRAGMATISM-v2.4.0';
 
 export type JamesQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -74,6 +74,7 @@ export interface AmericanWilliamJamesPragmatismResult {
   reflectiveQuestion: string;
   ritualAction: string;
   reflectionFocus: string;
+  shadowWarning: string;
   interpretiveBoundary: string;
   jamesComprehensiveGuidance: {
     guidanceTitle: string;
@@ -346,6 +347,7 @@ export function calculateAmericanWilliamJamesPragmatism(
     `${focalJamesAphorism.actionGuidance}`;
 
   const topicExtras = buildJamesTopicExtras(questionTopic);
+  const shadowWarning = `[${activeJamesTheme.themeTitleKo.split('—')[0].trim()} 과잉 경계] 실용적 결과나 즉각적 행동에만 몰두한 나머지 내면의 속도와 타인의 다원적 맥락을 건너뛰지 않도록 살피십시오.`;
   const interpretiveBoundary = '윌리엄 제임스의 실용주의와 심리학 관점은 행동과 태도의 전환을 비추는 상징적 성찰 렌즈이며, 확정적 예측이나 전문 자문을 대신하지 않습니다.';
   const baseDate = now ?? new Date();
   const kst = new Date(baseDate.getTime() + 9 * 60 * 60 * 1000);
@@ -369,6 +371,7 @@ export function calculateAmericanWilliamJamesPragmatism(
     reflectiveQuestion: topicExtras.reflectiveQuestion,
     ritualAction: topicExtras.dailyPracticeRitual,
     reflectionFocus: topicExtras.reflectiveQuestion,
+    shadowWarning,
     interpretiveBoundary,
     jamesComprehensiveGuidance: {
       guidanceTitle,
@@ -394,6 +397,7 @@ export function formatAmericanWilliamJamesPragmatismPrompt(
     `- 제임스 매트릭스: 현금가치(${describeJamesStage(res.jamesSynthesisMatrix.cashValueClarity)}) · 신념 결단(${describeJamesStage(res.jamesSynthesisMatrix.willToBelieveCourage)}) · 의식 유연성(${describeJamesStage(res.jamesSynthesisMatrix.streamAdaptability)}) — 종합 결(${describeJamesStage(res.jamesSynthesisMatrix.overallSynthesis)})`,
     `- 오늘의 실천 의례: ${res.dailyPracticeRitual}`,
     `- 성찰 질문: ${res.reflectiveQuestion}`,
+    `- 과잉 경계: ${res.shadowWarning}`,
     `- 종합 제임스 실용 권면: ${res.jamesComprehensiveGuidance.philosophicalCounsel}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
   ].join('\n');
