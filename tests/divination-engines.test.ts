@@ -14102,14 +14102,17 @@ test('Corsican Paghjella Maquis Harmony engine: voice, +09:00 KST, and interpret
 
 test('Pashtun Roshaniya Inner Light engine: lamp, +09:00 KST, and interpretive boundary', () => {
   const rep = calculatePashtunRoshaniyaInnerLight({ profile, now: new Date('2026-11-20T07:52:00Z'), question: '내 안의 맑은 등불을 밝히고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-PASHTUN-ROSHANIYA-v2.2.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-PASHTUN-ROSHANIYA-v2.3.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
+  assert.equal(rep.questionTopic, 'decision');
   assert.ok(rep.companionLamp !== rep.roshaniyaLamp);
+  assert.ok(rep.innerLightAxis.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatPashtunRoshaniyaPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
   assert.ok(prompt.includes('파슈툰') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionLamp));
+  assert.ok(prompt.includes('내면 등불 축') && prompt.includes('과잉 경계'));
 });
 
 test('Bengali Baul Moner Manush engine: string, +09:00 KST, and interpretive boundary', () => {
@@ -14188,14 +14191,17 @@ test('Latvian Dainas Mara Harmony engine: motif, +09:00 KST, and interpretive bo
 
 test('Cherokee Gadugi Harmony engine: principle, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateCherokeeGadugiHarmony({ profile, now: new Date('2026-11-20T08:04:00Z'), question: '신뢰와 조화에 마음을 보태고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-CHEROKEE-GADUGI-v2.2.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-CHEROKEE-GADUGI-v2.3.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
+  assert.equal(rep.questionTopic, 'decision');
   assert.ok(rep.companionPrinciple !== rep.gadugiPrinciple);
+  assert.ok(rep.duyuktvBalanceAxis.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatCherokeeGadugiPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
   assert.ok(prompt.includes('체로키') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionPrinciple));
+  assert.ok(prompt.includes('두육트브 조화 축') && prompt.includes('과잉 경계'));
 });
 
 test('Tlingit Raven Clan Balance engine: balance, +09:00 KST, and interpretive boundary', () => {
@@ -15440,14 +15446,17 @@ test('Shan Inle Rowing engine: posture, +09:00 KST, and interpretive boundary', 
 
 test('Chumash Tomol Canoe engine: signal, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateChumashTomolCanoe({ profile, now: new Date('2026-11-20T22:25:00Z'), question: '작은 틈을 메우고 안전하게 건너고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-CHUMASH-TOMOL-v2.2.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-CHUMASH-TOMOL-v2.3.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
+  assert.equal(rep.questionTopic, 'decision');
   assert.ok(rep.companionSignal !== rep.voyageSignal);
+  assert.ok(rep.tideNavigationAxis.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatChumashTomolPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
   assert.ok(prompt.includes('추마시') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionSignal));
+  assert.ok(prompt.includes('해협 조류 축') && prompt.includes('과잉 경계'));
 });
 
 test('Serer Baobab Council engine: shade, +09:00 KST, and interpretive boundary', () => {

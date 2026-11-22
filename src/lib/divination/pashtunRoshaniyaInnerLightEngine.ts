@@ -1,12 +1,17 @@
 import type { UserProfile } from '../sharedState';
 
+export type PashtunQuestionTopic = 'career' | 'relationship' | 'wealth' | 'health' | 'decision' | 'general';
+
 export interface PashtunRoshaniyaResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: PashtunQuestionTopic;
   roshaniyaLamp: string;
   companionLamp: string;
   pashtunInsight: string;
   hinduKushTone: string;
+  innerLightAxis: string;
+  shadowWarning: string;
   reflectionFocus: string;
   ritualAction: string;
   reflectiveQuestion: string;
@@ -51,6 +56,16 @@ const LAMPS = [
   },
 ];
 
+function classifyPashtunTopic(question?: string): PashtunQuestionTopic {
+  const q = (question ?? '').trim();
+  if (/이직|직장|사업|승진|일|커리어|프로젝트|업무/.test(q)) return 'career';
+  if (/연애|결혼|사람|관계|가족|갈등|친구|이별|소통/.test(q)) return 'relationship';
+  if (/돈|재물|투자|재정|수입|지출|계약|매매/.test(q)) return 'wealth';
+  if (/건강|몸|마음|휴식|수면|피로|회복/.test(q)) return 'health';
+  if (/결정|선택|고민|방향|시작|등불|기준/.test(q)) return 'decision';
+  return 'general';
+}
+
 function formatKstIso(date: Date): string {
   const kst = new Date(date.getTime() + 9 * 60 * 60 * 1000);
   const y = kst.getUTCFullYear();
@@ -81,14 +96,20 @@ export function calculatePashtunRoshaniyaInnerLight(params: {
   const companionOffset = 1 + (stableHash(`${seed}|companion`) % (LAMPS.length - 1));
   const picked = LAMPS[idx];
   const companion = LAMPS[(idx + companionOffset) % LAMPS.length];
+  const questionTopic = classifyPashtunTopic(params.question);
+  const innerLightAxis = `${picked.lamp.split('(')[0].trim()} ↔ ${companion.lamp.split('(')[0].trim()} 내면 등불 축`;
+  const shadowWarning = `[${picked.lamp.split('(')[0].trim()} 과잉 경계] 내 기준의 맑음을 지키는 데 몰두해 타인의 다른 속도와 사정을 성급히 재단하지 않도록 살피십시오.`;
 
   return {
-    engineVersion: 'LUCKEY-PASHTUN-ROSHANIYA-v2.2.0',
+    engineVersion: 'LUCKEY-PASHTUN-ROSHANIYA-v2.3.0',
     calculatedAtKst: formatKstIso(now),
+    questionTopic,
     roshaniyaLamp: picked.lamp,
     companionLamp: companion.lamp,
     pashtunInsight: `${picked.insight} (동반 등불: ${companion.lamp})`,
     hinduKushTone: picked.tone,
+    innerLightAxis,
+    shadowWarning,
     reflectionFocus: `파슈툰 시학과 로샤니야 철학의 '${picked.lamp}'와 동반 등불 '${companion.lamp}'처럼, 바깥의 평가에 흔들리기 전에 내 안의 맑은 등불이 무엇을 비추는지 먼저 들여다보세요.`,
     ritualAction: picked.ritual,
     reflectiveQuestion: picked.question,
@@ -99,13 +120,15 @@ export function calculatePashtunRoshaniyaInnerLight(params: {
 export function formatPashtunRoshaniyaPrompt(res: PashtunRoshaniyaResult): string {
   return [
     `[파슈툰 로샤니야·내면의 빛 성찰 · ${res.engineVersion}]`,
-    `- 기준 시각: ${res.calculatedAtKst}`,
+    `- 기준 시각: ${res.calculatedAtKst} | 질문 맥락: ${res.questionTopic}`,
     `- 빛의 상징: ${res.roshaniyaLamp} (${res.hinduKushTone})`,
     `- 동반 등불: ${res.companionLamp}`,
+    `- 내면 등불 축: ${res.innerLightAxis}`,
     `- 중심 통찰: ${res.pashtunInsight}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 오늘의 작은 실천: ${res.ritualAction}`,
     `- 스스로에게 묻기: ${res.reflectiveQuestion}`,
+    `- 과잉 경계: ${res.shadowWarning}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
   ].join('\n');
 }
