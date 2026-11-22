@@ -426,6 +426,7 @@ export function buildUserFifteenToolsDigest(profile?: UserProfile, asOfDate: Dat
         const dyn = th.planetaryFriendEnemyDynamic ? ` · 친우역학: ${th.planetaryFriendEnemyDynamic.relationshipType}${dynAdvice}` : '';
         const antardasha = th.mahaThaksaAntardasha ? ` · 소운 ${th.mahaThaksaAntardasha.antardashaPlanetName}[${th.mahaThaksaAntardasha.antardashaAttribute}](${th.mahaThaksaAntardasha.pacingTempo} — ${th.mahaThaksaAntardasha.actionAdvice})` : '';
         const dashaVerdict = th.mahaThaksa.current.verdict ? ` · 대운 판정: ${th.mahaThaksa.current.verdict}` : '';
+        const dashaMeta = ` · 대운 잔여 ${th.mahaThaksa.current.yearsLeft}년(만태나이 ${th.mahaThaksa.ageCounting}세 · ${th.mahaThaksa.current.attribute.meaning})`;
         const planetNatureNote = th.birthDayPlanet.animal && th.birthDayPlanet.direction ? ` · 영수 ${th.birthDayPlanet.animal} · ${th.birthDayPlanet.direction}` : '';
         const vitalityTone = th.fourElements.vitalityIndex >= 80 ? '충만' : th.fourElements.vitalityIndex >= 60 ? '안정' : '조율 필요';
         const luckyDir = th.remedies?.luckyDirection ? ` · 길방위 ${th.remedies.luckyDirection}` : '';
@@ -438,7 +439,7 @@ export function buildUserFifteenToolsDigest(profile?: UserProfile, asOfDate: Dat
         const questionNote = th.reflectiveQuestion ? ` · 성찰 질문: "${th.reflectiveQuestion}"` : '';
         const boundaryNote = th.interpretiveBoundary ? ` · 해석 경계: ${th.interpretiveBoundary}` : '';
         const matrixNote = th.horasatSynthesisMatrix ? ` · 호라삿 조율 [${th.horasatSynthesisMatrix.alignmentState} / ${th.horasatSynthesisMatrix.dominantTension}] → ${th.horasatSynthesisMatrix.integratedAction}` : '';
-        thaiLine = `- 태국점성술 요일 상징: ${KOR_WEEKDAYS[dow]} · 전통 색상 ${colors[dow]}. [호라삿 정밀 차트]: 수호신 ${th.birthDayPlanet.thaiName}(${th.birthDayPlanet.character}${planetNatureNote}) · 마하탁사 108년 대운(${th.mahaThaksa.current.planet.planet} 대운 · 속성: ${th.mahaThaksa.current.attribute.korean}${dashaVerdict}${dyn}${antardasha}) · 4대 원소 본명 ${th.fourElements.birthThaat.korean}/계절 ${th.fourElements.currentThaat.korean} 활력 [${vitalityTone}]${balanceNote}${luckyDir}${luckyColors}${seasonalTactics}${practiceNote}${ritualNote}${matrixNote}${focusNote}${questionNote}${boundaryNote}.`;
+        thaiLine = `- 태국점성술 요일 상징: ${KOR_WEEKDAYS[dow]} · 전통 색상 ${colors[dow]}. [호라삿 정밀 차트]: 수호신 ${th.birthDayPlanet.thaiName}(${th.birthDayPlanet.translit} · ${th.birthDayPlanet.cycleYears}년 주기 · ${th.birthDayPlanet.character}${planetNatureNote}) · 마하탁사 108년 대운(${th.mahaThaksa.current.planet.planet} 대운 · 속성: ${th.mahaThaksa.current.attribute.korean}${dashaMeta}${dashaVerdict}${dyn}${antardasha}) · 4대 원소 본명 ${th.fourElements.birthThaat.korean}/계절 ${th.fourElements.currentThaat.korean} 활력 [${vitalityTone}]${balanceNote}${luckyDir}${luckyColors}${seasonalTactics}${practiceNote}${ritualNote}${matrixNote}${focusNote}${questionNote}${boundaryNote}.`;
       } else {
         thaiLine = `- 태국점성술 요일 상징: ${KOR_WEEKDAYS[dow]} · 전통 색상 ${colors[dow]}. 정밀 호라삿 차트 미계산.`;
       }
@@ -522,8 +523,11 @@ export function buildUserFifteenToolsDigest(profile?: UserProfile, asOfDate: Dat
           : '';
         const lifeNumNote = `수비 ${kb.numerology.lifePathNumber}${kb.numerology.lifePathIsMaster ? '(마스터)' : ''}`;
         const sephirahDetail = `${kb.numerology.lifePathSephirah.meaning}${'pillar' in kb.numerology.lifePathSephirah ? ` · ${kb.numerology.lifePathSephirah.pillar} · ${kb.numerology.lifePathSephirah.planet}` : ''}`;
+        const lifeInterpNote = kb.numerology.lifePathInterpretation ? ` · 원전 해석(${kb.numerology.lifePathInterpretation})` : '';
+        const personalityDetail = `${kb.numerology.personalitySephirah.name}(${kb.numerology.personalitySephirah.title} · ${kb.numerology.personalitySephirah.meaning})`;
+        const soulPathNote = `제${kb.numerology.soulPath.number}경로(${kb.numerology.soulPath.hebrewLetter} ${kb.numerology.soulPath.letterName}[${kb.numerology.soulPath.letterMeaning}] · ${kb.numerology.soulPath.tarotName} · ${kb.numerology.soulPath.attribution.value} — ${kb.numerology.soulPath.spiritualTheme})`;
         const questionNote = kb.reflectiveQuestion ? ` · 성찰 질문: "${kb.reflectiveQuestion}"` : '';
-        kabbalahLine = `\n- 카발라 생명나무: 라이프 패스 세피라 ${kb.numerology.lifePathSephirah.name}(${lifeNumNote} · ${kb.numerology.lifePathSephirah.hebrew} · ${kb.numerology.lifePathSephirah.title} · ${sephirahDetail}) · 퍼스널리티 세피라 ${kb.numerology.personalitySephirah.name} · 소울 패스 제${kb.numerology.soulPath.number}경로(${kb.numerology.soulPath.hebrewLetter} ${kb.numerology.soulPath.tarotName} · ${kb.numerology.soulPath.attribution.value}) · 지배 세계 ${worldNote} · 3기둥 밸런스(자비 ${describePillar(kb.numerology.pillarBalance.mercy)} / 엄격 ${describePillar(kb.numerology.pillarBalance.severity)} / 균형 ${describePillar(kb.numerology.pillarBalance.mildness)})${heartNote}${flashNote}${worldManifest}${seasonTone}${pathPractice}${ritualNote}${matrixNote}${focusNote}${questionNote}${boundaryNote}.`;
+        kabbalahLine = `\n- 카발라 생명나무: 라이프 패스 세피라 ${kb.numerology.lifePathSephirah.name}(${lifeNumNote} · ${kb.numerology.lifePathSephirah.hebrew} · ${kb.numerology.lifePathSephirah.title} · ${sephirahDetail})${lifeInterpNote} · 퍼스널리티 세피라 ${personalityDetail} · 소울 패스 ${soulPathNote} · 지배 세계 ${worldNote} · 3기둥 밸런스(자비 ${describePillar(kb.numerology.pillarBalance.mercy)} / 엄격 ${describePillar(kb.numerology.pillarBalance.severity)} / 균형 ${describePillar(kb.numerology.pillarBalance.mildness)})${heartNote}${flashNote}${worldManifest}${seasonTone}${pathPractice}${ritualNote}${matrixNote}${focusNote}${questionNote}${boundaryNote}.`;
       }
     } catch (_) {}
 
@@ -874,10 +878,11 @@ export function buildUserFifteenToolsDigest(profile?: UserProfile, asOfDate: Dat
         const movingNote = ic.movingLines?.length ? ` · 동효 [${ic.movingLines.join('·')}효]` : ' · 무동효(靜卦)';
         const situationNote = ic.guidance?.situationNow ? ` · 본괘 국면(${ic.guidance.situationNow})` : '';
         const hexNote = ic.situationalIchingAudit?.hexagramNote ? ` · 괘상 요해(${ic.situationalIchingAudit.hexagramNote})` : '';
+        const actionStepNote = ic.situationalIchingAudit?.actionStep ? ` · 당면 실행 스텝(${ic.situationalIchingAudit.actionStep})` : '';
         const outcomeNote = ic.guidance?.outcomeFuture ? ` · 지괘 귀결(${ic.guidance.outcomeFuture})` : '';
         const counterpartNote = ic.guidance?.counterpartView ? ` · 종괘 시선(${ic.guidance.counterpartView})` : '';
         const questionNote = ic.reflectiveQuestion ? ` · 성찰 질문: "${ic.reflectiveQuestion}"` : '';
-        ichingLine = `\n- 주역(64괘): 본괘 [${ic.primary.name}] → 지괘 [${ic.changed.name}]${movingNote} · 호괘 [${ic.nuclear.name}] · 착괘 [${ic.opposite.name}] · 종괘 [${ic.reversed.name}] · 체용관계 ${ic.tiYong.relationship}(${ic.tiYong.tiElement}/${ic.tiYong.yongElement}) · 주효 [${ic.dominantStage.yaoName} · ${ic.dominantStage.lifeStage}] · 경방 ${ic.palGongSeYing.palaceName}(세 ${ic.palGongSeYing.seYao}효⇄응 ${ic.palGongSeYing.yingYao}효 · ${ic.palGongSeYing.seYingHarmony})${dynNote}${coopNote}${seasonTone}${situationNote}${hexNote}${hiddenNote}${outcomeNote}${counterpartNote}${protocolNote}${ritualNote}${matrixNote}${focusNote}${questionNote}${boundaryNote} · 결단 기조 [${ic.decisionGrade}].`;
+        ichingLine = `\n- 주역(64괘): 본괘 [${ic.primary.name}] → 지괘 [${ic.changed.name}]${movingNote} · 호괘 [${ic.nuclear.name}] · 착괘 [${ic.opposite.name}] · 종괘 [${ic.reversed.name}] · 체용관계 ${ic.tiYong.relationship}(체 ${ic.tiYong.tiGua}[${ic.tiYong.tiElement}]/용 ${ic.tiYong.yongGua}[${ic.tiYong.yongElement}] — ${ic.tiYong.summary}) · 주효 [${ic.dominantStage.yaoName} · ${ic.dominantStage.lifeStage} · ${ic.dominantStage.archetypeRole} — ${ic.dominantStage.actionGuidance}] · 경방 ${ic.palGongSeYing.palaceName}(세 ${ic.palGongSeYing.seYao}효⇄응 ${ic.palGongSeYing.yingYao}효 · ${ic.palGongSeYing.seYingHarmony})${dynNote}${coopNote}${seasonTone}${situationNote}${hexNote}${actionStepNote}${hiddenNote}${outcomeNote}${counterpartNote}${protocolNote}${ritualNote}${matrixNote}${focusNote}${questionNote}${boundaryNote} · 결단 기조 [${ic.decisionGrade}].`;
       }
     } catch (_) {}
 
