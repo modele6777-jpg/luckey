@@ -483,23 +483,31 @@ test('Big Bang left and right taps step Lucy Master in Lucy chat', async ({ page
   await expect(page.locator('.lucy-chat-footer')).toBeVisible();
 });
 
-test('Big Bang left and right controls stay disabled in the Key channel', async ({ page }) => {
+test('Big Bang left and right taps move the visible Key list without leaving Key', async ({ page }) => {
   await openKeyChannel(page);
   const bigBang = page.locator('div[data-bigbang="true"]');
-  await expect(bigBang).toHaveAttribute('data-cycle-navigation-disabled', 'true');
   await expectHiddenDirectionTarget(bigBang, 'north', 'lucy');
   await expectHiddenDirectionTarget(bigBang, 'south', 'prologue');
-  await expect(bigBang.locator('[data-bigbang-direction-target="west"]')).toHaveCount(0);
-  await expect(bigBang.locator('[data-bigbang-direction-target="east"]')).toHaveCount(0);
   const box = await bigBang.boundingBox();
   expect(box).not.toBeNull();
   if (!box) throw new Error('Big Bang hit area is missing in Key');
   const keyUrl = page.url();
+  const centerX = box.x + box.width / 2;
   const centerY = box.y + box.height / 2;
-  for (const offsetX of [-36, 36]) {
-    await page.touchscreen.tap(box.x + box.width / 2 + offsetX, centerY);
-    await expect(page).toHaveURL(keyUrl);
-  }
+  const frame = page.frameLocator('iframe[src*="/calm/"]');
+  const active = frame.locator('.exercises-filter-strip .filter-pill-btn.active');
+  await expect(active).toHaveAttribute('data-chapter', 'all');
+  // 오른쪽 = 다음 목록, 왼쪽 = 이전 목록 (처음에서 왼쪽이면 끝으로)
+  await page.touchscreen.tap(centerX + 36, centerY);
+  await expect(active).toHaveAttribute('data-chapter', 'book1');
+  await page.touchscreen.tap(centerX + 36, centerY);
+  await expect(active).toHaveAttribute('data-chapter', 'book2');
+  await page.touchscreen.tap(centerX - 36, centerY);
+  await expect(active).toHaveAttribute('data-chapter', 'book1');
+  await page.touchscreen.tap(centerX - 36, centerY);
+  await page.touchscreen.tap(centerX - 36, centerY);
+  await expect(active).toHaveAttribute('data-chapter', '8');
+  await expect(page).toHaveURL(keyUrl);
 });
 
 test('Big Bang center double tap opens the Key channel without firing a single-tap action', async ({ page }) => {
