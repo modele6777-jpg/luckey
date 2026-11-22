@@ -13734,14 +13734,16 @@ test('Taino Zemi Areito Harmony engine: emblem, +09:00 KST, and interpretive bou
 
 test('Basotho Botho Mountain Wisdom engine: sign, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateBasothoBothoMountainWisdom({ profile, now: new Date('2026-11-20T07:12:00Z'), question: '태도의 온도와 품위를 지키고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-BASOTHO-BOTHO-v2.2.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-BASOTHO-BOTHO-v2.3.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionSign.length > 0 && rep.companionSign !== rep.mountainSign);
+  assert.ok(rep.highlandPhase.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatBasothoBothoPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
   assert.ok(prompt.includes('바소토') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.reflectionFocus));
+  assert.ok(prompt.includes(rep.highlandPhase) && prompt.includes(rep.shadowWarning));
 });
 
 test('Tuvan Khoomei Overtones Resonance engine: layer, +09:00 KST, and interpretive boundary', () => {
@@ -14554,14 +14556,16 @@ test('Benin Bronze Oba Memory engine: motif, +09:00 KST, and interpretive bounda
 
 test('Bamiyan Silk Road Valley Calm engine: motif, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateBamiyanSilkRoadValleyCalm({ profile, now: new Date('2026-11-20T19:35:00Z'), question: '마음의 소음을 잠시 내려놓고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-BAMIYAN-VALLEY-v2.2.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-BAMIYAN-VALLEY-v2.3.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionMotif !== rep.bamiyanMotif);
+  assert.ok(rep.valleyPhase.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatBamiyanValleyPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
   assert.ok(prompt.includes('바미얀') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionMotif));
+  assert.ok(prompt.includes(rep.valleyPhase) && prompt.includes(rep.shadowWarning));
 });
 
 test('Sigiriya Lion Rock Water Garden engine: motif, +09:00 KST, and interpretive boundary', () => {
@@ -15169,14 +15173,16 @@ test('Sumba Ikat Story engine: motif, +09:00 KST, and interpretive boundary', ()
 
 test('Batak Toba Sopo Roof engine: motif, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateBatakSopoRoof({ profile, now: new Date('2026-11-20T22:05:00Z'), question: '유연하게 짜맞추고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-BATAK-SOPO-v2.2.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-BATAK-SOPO-v2.3.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionMotif !== rep.sopoMotif);
+  assert.ok(rep.sopoPhase.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatBatakSopoPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
   assert.ok(prompt.includes('바타크') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionMotif));
+  assert.ok(prompt.includes(rep.sopoPhase) && prompt.includes(rep.shadowWarning));
 });
 
 test('Tarahumara Raramuri Stride engine: motif, +09:00 KST, and interpretive boundary', () => {

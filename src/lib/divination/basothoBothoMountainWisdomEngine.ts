@@ -5,13 +5,29 @@ export interface BasothoBothoResult {
   calculatedAtKst: string;
   mountainSign: string;
   companionSign: string;
+  highlandPhase: string;
   bothoInsight: string;
   highlandTone: string;
   reflectionFocus: string;
   ritualAction: string;
   reflectiveQuestion: string;
+  shadowWarning: string;
   interpretiveBoundary: string;
 }
+
+const HIGHLAND_PHASES = [
+  '온기 건네기(바쁠수록 말과 태도의 온도를 지키는 국면)',
+  '품위 지키기(외부 평가와 무관하게 단정한 기준을 세우는 국면)',
+  '품앗이 나누기(혼자의 짐을 덜고 곁과 손을 맞잡는 국면)',
+  '단비 기다리기(보이지 않는 성실이 싹을 틔우길 견디는 국면)',
+] as const;
+
+const SHADOW_WARNINGS = [
+  '배려를 앞세우다 정작 내 경계와 진심을 삼켜 버리는 과잉 희생 경계',
+  '평화를 지키려다 꼭 해야 할 분명한 거절을 미루는 경계',
+  '자존감을 세우려다 주변의 선한 조언까지 닫아 버리는 고집 경계',
+  '품앗이를 기다리며 오늘 내가 움직여야 할 첫 삽을 미루는 경계',
+] as const;
 
 const SIGNS = [
   {
@@ -80,19 +96,26 @@ export function calculateBasothoBothoMountainWisdom(params: {
   const idx = stableHash(baseSeed) % SIGNS.length;
   const companionOffset = 1 + (stableHash(`${baseSeed}|companion`) % (SIGNS.length - 1));
   const companionIdx = (idx + companionOffset) % SIGNS.length;
+  const phaseIdx = stableHash(`${baseSeed}|phase`) % HIGHLAND_PHASES.length;
   const picked = SIGNS[idx];
   const companion = SIGNS[companionIdx];
+  const highlandPhase = HIGHLAND_PHASES[phaseIdx];
+  const shadowWarning = SHADOW_WARNINGS[(idx + phaseIdx) % SHADOW_WARNINGS.length];
+  const shortCompanion = companion.sign.split('(')[0].trim();
+  const shortPhase = highlandPhase.split('(')[0].trim();
 
   return {
-    engineVersion: 'LUCKEY-BASOTHO-BOTHO-v2.2.0',
+    engineVersion: 'LUCKEY-BASOTHO-BOTHO-v2.3.0',
     calculatedAtKst: formatKstStandard(now),
     mountainSign: picked.sign,
     companionSign: companion.sign,
-    bothoInsight: picked.insight,
+    highlandPhase,
+    bothoInsight: `${picked.insight} (국면: ${shortPhase})`,
     highlandTone: picked.tone,
-    reflectionFocus: `남아프리카 바소토의 '${picked.sign}'을 중심에 두고 '${companion.sign}'의 온기를 곁들여, 결과의 크기만큼이나 내 태도의 품위를 함께 챙겨 보세요.`,
-    ritualAction: picked.ritual,
-    reflectiveQuestion: picked.question,
+    reflectionFocus: `남아프리카 바소토의 '${picked.sign}'을 중심에 두고 '${companion.sign}'의 온기를 곁들여 '${highlandPhase}' 흐름 속에서 결과의 크기만큼이나 태도의 품위를 챙겨야 할 때입니다.`,
+    ritualAction: `${picked.ritual} (${shortPhase} 흐름에서 '${shortCompanion}'의 태도도 함께 살려 보세요.)`,
+    reflectiveQuestion: `${picked.question} (보조 맥락 '${shortCompanion}'을 곁들이면 무엇이 달라질까요?)`,
+    shadowWarning,
     interpretiveBoundary: '남아프리카 바소토(Basotho) 전통의 보토(Botho)·평화(Khotso) 공동체 철학을 바탕으로 한 상징적 성찰 프레임입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.',
   };
 }
@@ -103,10 +126,12 @@ export function formatBasothoBothoPrompt(res: BasothoBothoResult): string {
     `- 기준 시각: ${res.calculatedAtKst}`,
     `- 고원 상징: ${res.mountainSign} (${res.highlandTone})`,
     `- 보조 맥락: ${res.companionSign}`,
+    `- 고원 국면: ${res.highlandPhase}`,
     `- 중심 통찰: ${res.bothoInsight}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 오늘의 작은 실천: ${res.ritualAction}`,
     `- 스스로에게 묻기: ${res.reflectiveQuestion}`,
+    `- 과잉·체면 경계: ${res.shadowWarning}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
   ].join('\n');
 }
