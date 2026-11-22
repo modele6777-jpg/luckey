@@ -16259,5 +16259,23 @@ test('buildUserFifteenToolsDigest integrates 8th-round Tojeong next-month tip/pe
   assert.ok(!/juBalanceScore|initiativeIndex|defensiveIndex|directionalScores|synergyScore|harmonyScore|springScore|summerScore/.test(digest));
 });
 
+test('buildUserFifteenToolsDigest integrates 9th-round Saju hidden-stems/archetype, Astrology outer-planet degrees/keywords, and Ziwei core-axis/all-mutagen strategies without raw scores', () => {
+  const profile: any = {
+    basic: {
+      name: '제제',
+      birthdate: '1994-01-24',
+      birthtime: '10:30',
+      calendarType: 'solar',
+      isLeapMonth: false,
+      gender: 'male',
+    },
+  };
+  const digest = buildUserFifteenToolsDigest(profile, new Date('2026-11-23T05:58:00+09:00'));
+  assert.ok(digest.includes('지장간 정기: 월(') && digest.includes('년지('));
+  assert.ok(digest.includes('목성 ') && digest.includes('토성 ') && digest.includes('°('));
+  assert.ok(digest.includes('록기 대궁(') && digest.includes('화권: ') && digest.includes('화과: '));
+  assert.ok(!/breakthroughPowerScore|deukSeScore/.test(digest));
+});
+
 
 
