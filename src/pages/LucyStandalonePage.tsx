@@ -1468,6 +1468,9 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
   };
   const isTTSActive = useTTSActive();
   const isUserScrolledUpRef = useRef(false);
+  // 📖 방금 도착한 루시 답의 id. 답이 화면보다 길어지면 그 답의 첫 부분으로 스크롤을 맞춘다.
+  const answerAnchorIdRef = useRef<string | null>(null);
+  const lastAnswerAnchorRef = useRef<string | null>(null);
   const [showReturnToRecentConversation, setShowReturnToRecentConversation] = useState(false);
   const isAutoScrollingRef = useRef(false);
   const autoScrollTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -3125,11 +3128,50 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
     }, 200);
 
     const container = messagesContainerRef.current;
+    // 📖 새 답이 화면보다 길어지면 맨 아래(답의 끝)가 아니라 답의 첫 부분에서 멈춘다.
+    // 그 뒤로는 읽는 중으로 보고 더 끌어내리지 않는다 ("최근대화" 버튼으로 내려갈 수 있다).
+    const anchorId = answerAnchorIdRef.current;
+    if (anchorId) {
+      if (force) {
+        answerAnchorIdRef.current = null;
+      } else {
+        const anchor = container.querySelector<HTMLElement>(`[data-chat-msg-id="${CSS.escape(anchorId)}"]`);
+        if (anchor) {
+          const anchorTop = anchor.getBoundingClientRect().top - container.getBoundingClientRect().top + container.scrollTop - 8;
+          const maxTop = container.scrollHeight - container.clientHeight;
+          if (anchorTop < maxTop - 2) {
+            answerAnchorIdRef.current = null;
+            container.scrollTo({ top: Math.max(0, anchorTop), behavior: smooth ? 'smooth' : 'auto' });
+            isUserScrolledUpRef.current = true;
+            noteLucyScrollPin(false);
+            setShowReturnToRecentConversation(true);
+            return;
+          }
+        }
+      }
+    }
     container.scrollTo({
       top: container.scrollHeight,
       behavior: smooth ? 'smooth' : 'auto',
     });
   }, [cancelTopScrollAnimation]);
+
+  useEffect(() => {
+    const last = lucyMessages[lucyMessages.length - 1];
+    if (!last) return;
+    if (last.role === 'user') {
+      answerAnchorIdRef.current = null;
+      return;
+    }
+    const prev = lucyMessages[lucyMessages.length - 2];
+    const id = String(last.id || lucyMessages.length - 1);
+    // 채팅방에 들어온 뒤 새로 도착한 답만 (들어올 때는 최신 대화를 그대로 보여 준다)
+    const fresh = Boolean(last.timestamp && last.timestamp >= pageMountedAtRef.current - 1000 && Date.now() - last.timestamp < 2 * 60 * 1000);
+    if (prev?.role === 'user' && fresh && !isGreetingMessage(last) && lastAnswerAnchorRef.current !== id) {
+      lastAnswerAnchorRef.current = id;
+      answerAnchorIdRef.current = id;
+    }
+  }, [lucyMessages]);
 
   followLatestLayoutRef.current = () => {
     if (followLayoutFrameRef.current !== null) cancelAnimationFrame(followLayoutFrameRef.current);
@@ -4410,6 +4452,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
             return (
               <motion.div
                 key={msgId}
+                data-chat-msg-id={msgId}
                 data-tts-playing-message={playingMsgId === msgId ? 'true' : undefined}
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
