@@ -13480,14 +13480,15 @@ test('Bhutan GNH Tashi Tagye engine: pillars, +09:00 KST, and interpretive bound
 
 test('Baltic Romuva Darna Harmony engine: axes, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateBalticRomuvaDarnaHarmony({ profile, now: new Date('2026-11-20T06:00:00Z'), question: '자연스러운 리듬을 찾고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-BALTIC-ROMUVA-DARNA-v2.2.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-BALTIC-ROMUVA-DARNA-v2.3.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionAxis.name !== rep.activeAxis.name);
+  assert.ok(rep.seasonalPhase.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatBalticRomuvaPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('로무바') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionAxis.name));
+  assert.ok(prompt.includes('로무바') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionAxis.name) && prompt.includes(rep.seasonalPhase) && prompt.includes(rep.shadowWarning));
 });
 
 test('Minoan Labyrinth Labrys engine: stages, +09:00 KST, and interpretive boundary', () => {
@@ -14226,14 +14227,15 @@ test('Estonian Regilaul Forest Calm engine: motif, +09:00 KST, and interpretive 
 
 test('Balkan Ohrid Lake Reflection engine: symbol, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateBalkanOhridLakeReflection({ profile, now: new Date('2026-11-20T08:46:00Z'), question: '깊은 바닥에서부터 스스로를 맑게 돌보고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-BALKAN-OHRID-v2.2.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-BALKAN-OHRID-v2.3.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionSymbol.length > 0 && rep.companionSymbol !== rep.ohridSymbol);
+  assert.ok(rep.springPhase.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatBalkanOhridPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('오흐리드') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.reflectionFocus));
+  assert.ok(prompt.includes('오흐리드') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.reflectionFocus) && prompt.includes(rep.springPhase) && prompt.includes(rep.shadowWarning));
 });
 
 test('Garifuna Dugu Caribbean Rhythm engine: rhythm, +09:00 KST, and interpretive boundary', () => {
@@ -15397,14 +15399,15 @@ test('Kogi Aluna Thread engine: thread, +09:00 KST, and interpretive boundary', 
 
 test('Bamileke Beaded Throne engine: pattern, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateBamilekeBeadedThrone({ profile, now: new Date('2026-11-20T23:05:00Z'), question: '작은 일상을 차곡차곡 엮고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-BAMILEKE-BEADS-v2.2.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-BAMILEKE-BEADS-v2.3.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionPattern !== rep.beadPattern);
+  assert.ok(rep.weavingPhase.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatBamilekeBeadedPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('바밀레케') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionPattern));
+  assert.ok(prompt.includes('바밀레케') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionPattern) && prompt.includes(rep.weavingPhase) && prompt.includes(rep.shadowWarning));
 });
 
 test('Fez Cobalt Pottery engine: glaze, +09:00 KST, and interpretive boundary', () => {
