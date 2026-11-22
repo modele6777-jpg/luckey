@@ -27,13 +27,27 @@ export async function createGeminiLiveToken(nickname = '', reading?: { chart?: s
     },
     systemInstruction: { parts: [{ text: lucyLiveInstruction(nickname, reading?.chart || '', reading?.cards || '', reading?.focus || '', reading?.greet || '') }] },
   };
+  // 한국어로 듣고 말하게 고정하고, 마스터의 말을 자막으로 받는다 (받아쓰기 켜기).
+  const koreanSetup = {
+    ...setup,
+    generationConfig: { ...setup.generationConfig, speechConfig: { ...setup.generationConfig.speechConfig, languageCode: 'ko-KR' } },
+    inputAudioTranscription: {},
+    outputAudioTranscription: {},
+  };
   const headers = { 'content-type': 'application/json', 'x-goog-api-key': key };
   const url = 'https://generativelanguage.googleapis.com/v1beta/auth_tokens';
   let response = await fetch(url, {
     method: 'POST',
     headers,
-    body: JSON.stringify({ uses: 1, expireTime, newSessionExpireTime, bidiGenerateContentSetup: setup }),
+    body: JSON.stringify({ uses: 1, expireTime, newSessionExpireTime, bidiGenerateContentSetup: koreanSetup }),
   });
+  if (response.status === 400) {
+    response = await fetch(url, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ uses: 1, expireTime, newSessionExpireTime, bidiGenerateContentSetup: setup }),
+    });
+  }
   if (response.status === 400) {
     const withoutVoice = { ...setup, generationConfig: { responseModalities: ['AUDIO'] } };
     response = await fetch(url, {
