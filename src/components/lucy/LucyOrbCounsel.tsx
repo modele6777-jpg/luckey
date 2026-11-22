@@ -224,7 +224,10 @@ export function LucyOrbCounsel({
 
   return (
     <ScreenPortal>
-      <section className={`lucy-orb-stage ${ready ? 'is-ready' : ''} ${speaking ? 'is-speaking' : ''} ${leaving ? 'is-leaving' : ''}`} role="dialog" aria-label="오브 상담">
+      <section className={`lucy-orb-stage ${ready ? 'is-ready' : ''} ${phase === 'live' ? 'is-live' : ''} ${speaking ? 'is-speaking' : ''} ${leaving ? 'is-leaving' : ''}`} role="dialog" aria-label="오브 상담">
+        {Array.from({ length: 10 }, (_, index) => (
+          <span key={`mote-${index}`} className="lucy-mote" style={{ left: `${8 + index * 9}%`, animationDelay: `${index * .35}s` }} />
+        ))}
         {[0, 1, 2, 3, 4, 5].map(index => (
           <span
             key={index}
@@ -241,6 +244,10 @@ export function LucyOrbCounsel({
         {phase === 'live' && <button type="button" className="lucy-orb-end" onClick={openReport}>상담 끝내기</button>}
         {phase === 'report' && <button type="button" className="lucy-orb-end" onClick={keepReport}>채팅으로</button>}
         <div className={`lucy-orb-ritual ${lit ? 'is-lit' : ''}`}>
+          <svg className="lucy-orb-circle lucy-orb-circle-back" viewBox="0 0 200 200" aria-hidden="true">
+            <circle cx="100" cy="100" r="90" strokeDasharray="3 8" />
+            <circle cx="100" cy="100" r="48" />
+          </svg>
           <svg className="lucy-orb-circle" viewBox="0 0 200 200" aria-hidden="true">
             <circle cx="100" cy="100" r="96" />
             <circle cx="100" cy="100" r="84" />
@@ -254,6 +261,8 @@ export function LucyOrbCounsel({
             <polygon points="100,38 146,128 54,128" />
             <polygon points="100,162 54,72 146,72" />
           </svg>
+          {[0, 1, 2].map(index => <span key={index} className="lucy-voice-ring" style={{ animationDelay: `${index * 0.7}s` }} />)}
+          <span className="lucy-orbit" aria-hidden="true">{[0, 1, 2, 3, 4].map(index => <i key={index} />)}</span>
           {[-140, -90, -40, 40, 90, 140].map(angle => {
             const turn = ((angle - 90) * Math.PI) / 180;
             return (
