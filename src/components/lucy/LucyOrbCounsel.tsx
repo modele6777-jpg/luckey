@@ -2,10 +2,13 @@ import { PageGuideButton } from '@/components/guide/PageGuide';
 import { getPageGuide } from '@/lib/pageGuides';
 import { startGeminiLiveVoice, type LiveVoiceSession } from '@/lib/geminiLiveSession';
 import { createOrbCounselBed, type OrbCounselBed } from '@/lib/orbCounselBed';
-import { isLucyMasterBgmPlaying, startLucyMasterBgm, stopLucyMasterBgm } from '@/lib/lucyMasterBgm';
+import { isLucyMasterBgmPlaying, stopLucyMasterBgm } from '@/lib/lucyMasterBgm';
 import { ORB_MASTERS, type OrbMaster } from '@/lib/orbMasters';
+import { CHANNEL_MENU_ICONS, MessageCircleMinus } from '@/lib/channelMenuIcons';
 import { drawLucyTarotCards } from '@/utils/tarotDetector';
+import { Clover, KeyRound, MessageCirclePlus, type LucideIcon } from 'lucide-react';
 import React, { useEffect, useRef, useState } from 'react';
+import { useLocation } from 'wouter';
 import './lucy-orb-counsel.css';
 
 const BOKCHAE = [
@@ -22,6 +25,33 @@ function HeartGlyph() {
     </svg>
   );
 }
+/** Faint shapes drifting inside the crystal ball: every Luckey icon plus runes. */
+const ORB_ICONS: LucideIcon[] = [Clover, MessageCircleMinus, MessageCirclePlus, KeyRound, ...Object.values(CHANNEL_MENU_ICONS).filter(icon => icon !== KeyRound)];
+const ORB_RUNES = ['ᚠ', 'ᚢ', 'ᚦ', 'ᚨ', 'ᚱ', 'ᚲ', 'ᚷ', 'ᚹ', 'ᛉ', 'ᛋ', 'ᛏ', 'ᛒ', 'ᛗ', 'ᛟ'];
+const ORB_GLYPHS = [
+  ...ORB_ICONS.map((Icon, index) => ({ key: `icon-${index}`, Icon, rune: '' })),
+  ...ORB_RUNES.map((rune, index) => ({ key: `rune-${index}`, Icon: null, rune })),
+].map((glyph, index, all) => {
+  // Golden-angle spiral keeps the glyphs spread evenly inside the sphere.
+  const radius = 34 * Math.sqrt((index + 0.5) / all.length);
+  const turn = index * 2.39996;
+  return {
+    ...glyph,
+    left: 50 + Math.cos(turn) * radius,
+    top: 50 + Math.sin(turn) * radius,
+    delay: -((index * 1.37) % 9),
+    duration: 8 + (index % 5) * 1.6,
+  };
+});
+const CLOUDS = [
+  { left: -8, top: 30, width: 32, delay: 0.1, drift: 9 },
+  { left: 72, top: 25, width: 34, delay: 0.25, drift: 11 },
+  { left: 4, top: 10, width: 22, delay: 0.4, drift: 13 },
+  { left: 78, top: 8, width: 20, delay: 0.55, drift: 10 },
+  { left: 44, top: 4, width: 16, delay: 0.7, drift: 12 },
+];
+const ORB_ROUTE = '/voice';
+
 type Line = { who: '나' | '루시'; text: string };
 type Phase = 'pick' | 'live' | 'report';
 
@@ -87,6 +117,9 @@ export function LucyOrbCounsel({
   const [leaving, setLeaving] = useState(false);
   const [dieFace, setDieFace] = useState(1);
   const [rolling, setRolling] = useState(false);
+  const [thrown, setThrown] = useState(0);
+  const [location] = useLocation();
+  const [awayFromOrb, setAwayFromOrb] = useState(false);
   const [bedOn, setBedOn] = useState(true);
   const [bok, setBok] = useState<string | null>(null);
   const [hearted, setHearted] = useState(false);
@@ -137,14 +170,15 @@ export function LucyOrbCounsel({
     setBurst(0);
     setCaution(false);
     setLit(false);
+    setRolling(false);
+    setThrown(0);
     const appear = window.setTimeout(() => setReady(true), window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 1700);
-    const masterWasOn = isLucyMasterBgmPlaying();
-    if (masterWasOn) stopLucyMasterBgm();
+    if (isLucyMasterBgmPlaying()) stopLucyMasterBgm();
     const bed = createOrbCounselBed();
     bedRef.current = bed;
     const on = sessionStorage.getItem('lucy_orb_bed') !== 'off';
     setBedOn(on);
-    void bed?.resume().then(() => bed.setAudible(on, false));
+    void bed?.resume().then(() => bed.setAudible(on && document.visibilityState !== 'hidden', false));
     return () => {
       window.clearTimeout(appear);
       if (flashTimer.current) window.clearTimeout(flashTimer.current);
@@ -152,15 +186,41 @@ export function LucyOrbCounsel({
       if (cautionTimer.current) window.clearTimeout(cautionTimer.current);
       bed?.stop();
       bedRef.current = null;
-      if (masterWasOn) void startLucyMasterBgm();
+      // Lucy Master BGM is not restarted here: leaving Orb must be silent. Lucy's own page restarts it if wanted.
       sessionRef.current?.stop();
       sessionRef.current = null;
     };
   }, [open]);
 
+  // Leaving the Orb page (route change, another pane's navigation, hidden tab) silences the bed at once,
+  // even if the page stays mounted for a moment during the transition.
+  const onOrbRoute = location.split(/[?#]/)[0] === ORB_ROUTE;
   useEffect(() => {
-    bedRef.current?.setAudible(bedOn, speaking);
-  }, [bedOn, speaking]);
+    if (!open) return;
+    setAwayFromOrb(false);
+    const onNavigate = (event: Event) => {
+      const path = String((event as CustomEvent<{ path?: string }>).detail?.path || '').split(/[?#]/)[0];
+      if (path && path !== ORB_ROUTE) setAwayFromOrb(true);
+    };
+    const onVisibility = () => setAwayFromOrb(document.visibilityState === 'hidden');
+    const onHide = () => setAwayFromOrb(true);
+    window.addEventListener('prism-navigate', onNavigate);
+    document.addEventListener('visibilitychange', onVisibility);
+    window.addEventListener('pagehide', onHide);
+    return () => {
+      window.removeEventListener('prism-navigate', onNavigate);
+      document.removeEventListener('visibilitychange', onVisibility);
+      window.removeEventListener('pagehide', onHide);
+    };
+  }, [open]);
+  useEffect(() => {
+    if (onOrbRoute) setAwayFromOrb(document.visibilityState === 'hidden');
+  }, [onOrbRoute]);
+  const bedAudible = bedOn && onOrbRoute && !awayFromOrb;
+
+  useEffect(() => {
+    bedRef.current?.setAudible(bedAudible, speaking);
+  }, [bedAudible, speaking]);
 
   if (!open) return null;
 
@@ -258,19 +318,24 @@ export function LucyOrbCounsel({
 
   const rollMaster = () => {
     if (rolling || leaving) return;
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     setRolling(true);
+    setThrown(value => value + 1);
     let ticks = 0;
+    const landTicks = reduced ? 2 : 10;
     if (dieTimer.current) window.clearInterval(dieTimer.current);
+    // The die tumbles through the air (face keeps changing), lands on the floor, then rests on its face.
     dieTimer.current = window.setInterval(() => {
       ticks += 1;
-      setDieFace(1 + Math.floor(Math.random() * 6));
-      if (ticks < 8) return;
+      if (ticks <= landTicks) setDieFace(1 + Math.floor(Math.random() * 6));
+      if (ticks < landTicks + (reduced ? 2 : 5)) return;
       if (dieTimer.current) window.clearInterval(dieTimer.current);
       dieTimer.current = null;
       setRolling(false);
+      setThrown(0);
       const pick = ORB_MASTERS[Math.floor(Math.random() * ORB_MASTERS.length)];
       begin(pick);
-    }, 90);
+    }, 115);
   };
 
   const sendDraft = () => {
@@ -289,23 +354,24 @@ export function LucyOrbCounsel({
         data-orb-counsel="true"
         role="region"
         aria-label="오브 상담"
-        onPointerDown={() => { void bedRef.current?.resume().then(() => bedRef.current?.setAudible(bedOn, speaking)); }}
+        onPointerDown={() => { void bedRef.current?.resume().then(() => bedRef.current?.setAudible(bedAudible, speaking)); }}
       >
         {Array.from({ length: 10 }, (_, index) => (
           <span key={`mote-${index}`} className="lucy-mote" style={{ left: `${8 + index * 9}%`, animationDelay: `${index * .35}s` }} />
         ))}
-        {[0, 1, 2, 3, 4, 5].map(index => (
+        {CLOUDS.map((cloud, index) => (
           <span
             key={index}
-            className="lucy-orb-mist"
+            className="lucy-orb-cloud"
+            aria-hidden="true"
             style={{
-              width: `${42 + index * 12}%`,
-              height: `${24 + index * 9}%`,
-              left: `${4 + index * 8}%`,
-              top: `${12 + (index % 3) * 14}%`,
-              animationDelay: `${index * 0.12}s`,
+              left: `${cloud.left}%`,
+              top: `${cloud.top}%`,
+              width: `${cloud.width}%`,
+              animationDelay: `${cloud.delay}s, ${cloud.delay + 1.1}s`,
+              ['--drift' as string]: `${cloud.drift}s`,
             }}
-          />
+          ><i /></span>
         ))}
         {caution && <p className="lucy-orb-caution" role="status">이 상담은 참고일 뿐입니다. 맹신하지 마세요.</p>}
         <header className="lucy-orb-header" data-top-bar="true">
@@ -330,32 +396,44 @@ export function LucyOrbCounsel({
         {phase === 'live' && <button type="button" className="lucy-orb-end" onClick={openReport}>상담 끝내기</button>}
         {phase === 'report' && <button type="button" className="lucy-orb-end" onClick={keepReport}>채팅으로</button>}
         <div className={`lucy-orb-ritual ${lit ? 'is-lit' : ''}`}>
-          <svg className="lucy-orb-circle lucy-orb-circle-back" viewBox="0 0 200 200" aria-hidden="true">
-            <circle cx="100" cy="100" r="90" strokeDasharray="3 8" />
-            <circle cx="100" cy="100" r="48" />
-          </svg>
-          <svg className="lucy-orb-circle" viewBox="0 0 200 200" aria-hidden="true">
-            <circle cx="100" cy="100" r="96" />
-            <circle cx="100" cy="100" r="84" />
-            <circle cx="100" cy="100" r="70" />
-            <circle cx="100" cy="100" r="56" strokeDasharray="1.5 5" />
-            {Array.from({ length: 12 }, (_, index) => {
-              const turn = (Math.PI * 2 * index) / 12;
-              const inner = index % 3 === 0 ? 78 : 86;
-              return <line key={index} x1={100 + Math.cos(turn) * inner} y1={100 + Math.sin(turn) * inner} x2={100 + Math.cos(turn) * 96} y2={100 + Math.sin(turn) * 96} />;
-            })}
-            <polygon points="100,38 146,128 54,128" />
-            <polygon points="100,162 54,72 146,72" />
-          </svg>
-          {[0, 1, 2].map(index => <span key={index} className="lucy-voice-ring" style={{ animationDelay: `${index * 0.7}s` }} />)}
-          <span className="lucy-orbit" aria-hidden="true">{[0, 1, 2, 3, 4].map(index => <i key={index} />)}</span>
+          <div className="lucy-orb-floor" aria-hidden="true">
+            <svg className="lucy-orb-circle lucy-orb-circle-back" viewBox="0 0 200 200">
+              <circle cx="100" cy="100" r="90" strokeDasharray="3 8" />
+              <circle cx="100" cy="100" r="48" />
+            </svg>
+            <svg className="lucy-orb-circle" viewBox="0 0 200 200">
+              <circle cx="100" cy="100" r="96" />
+              <circle cx="100" cy="100" r="84" />
+              <circle cx="100" cy="100" r="70" />
+              <circle cx="100" cy="100" r="56" strokeDasharray="1.5 5" />
+              {Array.from({ length: 12 }, (_, index) => {
+                const turn = (Math.PI * 2 * index) / 12;
+                const inner = index % 3 === 0 ? 78 : 86;
+                return <line key={index} x1={100 + Math.cos(turn) * inner} y1={100 + Math.sin(turn) * inner} x2={100 + Math.cos(turn) * 96} y2={100 + Math.sin(turn) * 96} />;
+              })}
+              {ORB_RUNES.slice(0, 12).map((rune, index) => {
+                const turn = (Math.PI * 2 * (index + 0.5)) / 12;
+                return <text key={rune} x={100 + Math.cos(turn) * 77} y={100 + Math.sin(turn) * 77} textAnchor="middle" dominantBaseline="central">{rune}</text>;
+              })}
+              <polygon points="100,38 146,128 54,128" />
+              <polygon points="100,162 54,72 146,72" />
+            </svg>
+            {[0, 1, 2].map(index => <span key={index} className="lucy-voice-ring" style={{ animationDelay: `${index * 0.7}s` }} />)}
+          </div>
           {[-140, -90, -40, 40, 90, 140].map((angle, index) => {
             const turn = ((angle - 90) * Math.PI) / 180;
+            const depth = Math.sin(turn); // -1 = back of the floor, 1 = front
             return (
               <span
                 key={angle}
-                className="lucy-candle"
-                style={{ left: `${50 + Math.cos(turn) * 43}%`, top: `${50 + Math.sin(turn) * 43}%`, ['--flick' as string]: `${index * 0.23}s` }}
+                className={`lucy-candle ${depth > 0 ? 'is-front' : 'is-back'}`}
+                style={{
+                  left: `${50 + Math.cos(turn) * 43}%`,
+                  top: `${66 + depth * 20.5}%`,
+                  ['--flick' as string]: `${index * 0.23}s`,
+                  ['--depth' as string]: `${0.92 + depth * 0.14}`,
+                  ['--wax' as string]: ['#ffc9de', '#c9f2e3', '#ddd2ff', '#fff0b8', '#ffd6c2', '#cfe8ff'][index],
+                }}
                 aria-hidden="true"
               >
                 <em />
@@ -364,7 +442,35 @@ export function LucyOrbCounsel({
               </span>
             );
           })}
-          <button type="button" className={`lucy-orb-body ${lit ? 'is-lit' : ''}`} aria-label={draft.trim() ? '입력한 말 보내기' : '오브 빛'} onClick={() => { flashOrb(); if (phase === 'live') sendDraft(); }} />
+          <div className="lucy-orb-figure">
+            {[0, 1, 2, 3, 4].map(index => <span key={index} className="lucy-orb-sparkle" aria-hidden="true">✦</span>)}
+            <button type="button" className={`lucy-orb-body ${lit ? 'is-lit' : ''}`} aria-label={draft.trim() ? '입력한 말 보내기' : '오브 빛'} onClick={() => { flashOrb(); if (phase === 'live') sendDraft(); }}>
+              <span className="lucy-orb-inner" aria-hidden="true">
+                {ORB_GLYPHS.map(glyph => (
+                  <span
+                    key={glyph.key}
+                    className={`lucy-orb-glyph ${glyph.Icon ? 'is-icon' : 'is-rune'}`}
+                    style={{ left: `${glyph.left}%`, top: `${glyph.top}%`, animationDelay: `${glyph.delay}s`, animationDuration: `${glyph.duration}s` }}
+                  >
+                    {glyph.Icon ? <glyph.Icon strokeWidth={1.6} /> : glyph.rune}
+                  </span>
+                ))}
+              </span>
+              <span className="lucy-orb-shine" aria-hidden="true" />
+            </button>
+            <span className="lucy-orb-stand" aria-hidden="true"><i className="cup" /><i className="neck" /><i className="base" /></span>
+          </div>
+          {thrown > 0 && (
+            <span key={thrown} className="lucy-die-throw" aria-hidden="true">
+              <span className="lucy-die-shadow" />
+              <span className="lucy-die-cube">
+                {Array.from({ length: 9 }, (_, index) => {
+                  const pips = ['4', '0,8', '0,4,8', '0,2,6,8', '0,2,4,6,8', '0,2,3,5,6,8'][dieFace - 1];
+                  return <i key={index} className={pips.split(',').includes(String(index)) ? '' : 'is-off'} />;
+                })}
+              </span>
+            </span>
+          )}
         </div>
         <div className="lucy-orb-copy">
           {phase === 'pick' && <p>마스터를 고르시면 상담이 시작됩니다</p>}
@@ -373,13 +479,13 @@ export function LucyOrbCounsel({
           {notice && <p>{notice}</p>}
           {phase === 'pick' && (
             <div className="lucy-orb-masters">
-              <button type="button" className={`lucy-die ${rolling ? 'is-rolling' : ''}`} onClick={rollMaster} aria-label="주사위로 마스터 고르기">
+              <button type="button" className={`lucy-die ${rolling ? 'is-thrown' : ''}`} onClick={rollMaster} aria-label="주사위로 마스터 고르기">
                 {Array.from({ length: 9 }, (_, index) => {
                   const pips = ['4', '0,8', '0,4,8', '0,2,6,8', '0,2,4,6,8', '0,2,3,5,6,8'][dieFace - 1];
                   return <i key={index} className={pips.split(',').includes(String(index)) ? '' : 'is-off'} />;
                 })}
               </button>
-              <p className="lucy-die-caption">주사위를 누르면 마스터가 무작위로 정해집니다</p>
+              <p className="lucy-die-caption">주사위를 누르면 바닥에 던져서 마스터를 정합니다</p>
               {ORB_MASTERS.map(item => (
                 <button key={item.id} type="button" onClick={() => begin(item)}>
                   <strong>{item.name}</strong>

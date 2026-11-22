@@ -80,7 +80,7 @@ export function createOrbCounselBed(): OrbCounselBed | null {
     osc.stop(start + 3.6);
   };
   const chimeTimer = window.setInterval(chime, 11000);
-  window.setTimeout(chime, 2200);
+  const firstChime = window.setTimeout(chime, 2200);
 
   let stopped = false;
   const level = (on: boolean, ducked = false) => (on ? (ducked ? 0.35 : 0.72) : 0.0001);
@@ -92,19 +92,27 @@ export function createOrbCounselBed(): OrbCounselBed | null {
       if (stopped) return;
       const now = ctx.currentTime;
       bed.gain.cancelScheduledValues(now);
-      bed.gain.linearRampToValueAtTime(level(on, ducked), now + 0.7);
+      bed.gain.setValueAtTime(bed.gain.value, now);
+      bed.gain.linearRampToValueAtTime(level(on, ducked), now + (on ? 0.7 : 0.3));
     },
     stop: () => {
       if (stopped) return;
       stopped = true;
       window.clearInterval(chimeTimer);
+      window.clearTimeout(firstChime);
       const now = ctx.currentTime;
-      bed.gain.cancelScheduledValues(now);
-      bed.gain.linearRampToValueAtTime(0.0001, now + 0.6);
-      window.setTimeout(() => {
+      try {
+        bed.gain.cancelScheduledValues(now);
+        bed.gain.setValueAtTime(bed.gain.value, now);
+        bed.gain.linearRampToValueAtTime(0.0001, now + 0.25);
+      } catch { /* context closed */ }
+      const release = () => {
         nodes.forEach(node => { try { node.stop(); } catch { /* already stopped */ } });
         try { bed.disconnect(); } catch { /* already disconnected */ }
-      }, 700);
+      };
+      // A suspended/interrupted context (iOS) never plays the fade, so cut it off right away.
+      if (ctx.state !== 'running') release();
+      else window.setTimeout(release, 300);
     },
   };
 }
