@@ -16233,5 +16233,23 @@ test('buildUserFifteenToolsDigest integrates 8th-round Kabbalah soulPath theme/p
   assert.ok(!/affinityScore|vitalityIndex|decisionScore|momentumScore/.test(digest));
 });
 
+test('buildUserFifteenToolsDigest integrates 8th-round Tojeong next-month tip/peak seasons, Kyusei second direction/multi-hazards, and Taiyi ganZhi/wenChang-shiJi palace details without raw scores', () => {
+  const profile: any = {
+    basic: {
+      name: '제제',
+      birthdate: '1994-01-24',
+      birthtime: '10:30',
+      calendarType: 'solar',
+      isLeapMonth: false,
+      gender: 'male',
+    },
+  };
+  const digest = buildUserFifteenToolsDigest(profile, new Date('2026-11-23T05:38:00+09:00'));
+  assert.ok(digest.includes('차선 길방 [') && digest.includes('활용 방위 ['));
+  assert.ok(digest.includes('추진 호기 ') && digest.includes('다음 달(') && digest.includes('(처방:'));
+  assert.ok(digest.includes('원 ') && digest.includes('주산 ') && digest.includes('객산 '));
+  assert.ok(!/juBalanceScore|initiativeIndex|defensiveIndex|directionalScores|synergyScore|harmonyScore|springScore|summerScore/.test(digest));
+});
+
 
 
