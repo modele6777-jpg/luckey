@@ -91,6 +91,7 @@ export function LucyOrbCounsel({
   const [hearted, setHearted] = useState(false);
   const [burst, setBurst] = useState(0);
   const [caution, setCaution] = useState(false);
+  const [lit, setLit] = useState(false);
   const cautionTimer = useRef<number | null>(null);
   const dieTimer = useRef<number | null>(null);
   const bedRef = useRef<OrbCounselBed | null>(null);
@@ -134,6 +135,7 @@ export function LucyOrbCounsel({
     setHearted(false);
     setBurst(0);
     setCaution(false);
+    setLit(false);
     const appear = window.setTimeout(() => setReady(true), window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 1700);
     const masterWasOn = isLucyMasterBgmPlaying();
     if (masterWasOn) stopLucyMasterBgm();
