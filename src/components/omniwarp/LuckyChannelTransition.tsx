@@ -36,9 +36,17 @@ export function isProfilePath(path: string): boolean {
   return clean === '/profile' || clean.startsWith('/profile/');
 }
 
+function isLuckyHubPath(path: string): boolean {
+  const clean = cleanPath(path);
+  return clean === '/lucky' || clean.startsWith('/lucky/');
+}
+
 function channelInfo(path: string) {
   if (isProfilePath(path)) {
     return { kicker: 'MY', label: 'MY PAGE', subLabel: '마이페이지 · 내 프로필과 기록', color: '#a855f7' };
+  }
+  if (isLuckyHubPath(path)) {
+    return { kicker: 'LUCKY', label: '럭키채널', subLabel: '7대 차원 DApp 채널', color: '#34d399' };
   }
   const match = matchLuckyChannel(path);
   return {
@@ -73,7 +81,8 @@ export function LuckyChannelTransition() {
     previous.current = location;
     if (before === null) return; // first paint: the page's own loader handles it
     const fromLucyOrKey = isLucyThemeRoute(cleanPath(before)) || isKeyChannelPath(before);
-    if (fromLucyOrKey && (isLuckyChannelPath(location) || isProfilePath(location))) {
+    const enteringHub = isLuckyHubPath(location) && !isLuckyHubPath(before);
+    if (enteringHub || (fromLucyOrKey && (isLuckyChannelPath(location) || isProfilePath(location)))) {
       setTarget(location);
       setRun(value => value + 1);
     }
@@ -107,7 +116,7 @@ export function LuckyChannelTransition() {
           <motion.div
             key={`lucky-entry-${run}`}
             role="status"
-            aria-label={info.kicker === 'MY' ? '마이페이지를 여는 중' : `${info.label} 채널을 여는 중`}
+            aria-label={info.kicker === 'MY' ? '마이페이지를 여는 중' : isLuckyHubPath(target) ? '럭키채널을 여는 중' : `${info.label} 채널을 여는 중`}
             data-testid="lucky-channel-transition"
             data-lucky-channel={info.label}
             initial={{ opacity: 0 }}
