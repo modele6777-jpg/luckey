@@ -16028,4 +16028,23 @@ test('buildUserFifteenToolsDigest integrates 7th-round Saju, Astrology, and Ziwe
   assert.ok(!/deukSeScore|driveScore|wealthAffinityScore|intuitionScore|breakthroughPowerScore/.test(digest));
 });
 
+test('buildUserFifteenToolsDigest integrates 7th-round Tarot, Sukuyo, and Mahabote sephira stage, san-kyu phase theme, and Myanmar Era without raw scores', () => {
+  const profile: any = {
+    basic: {
+      name: '제제',
+      birthdate: '1994-01-24',
+      birthtime: '10:30',
+      calendarType: 'solar',
+      isLeapMonth: false,
+      gender: 'male',
+    },
+  };
+  const digest = buildUserFifteenToolsDigest(profile, new Date('2026-11-23T04:10:00+09:00'));
+  assert.ok(digest.includes('핵심 메시지:') && digest.includes('페르소나:'));
+  assert.ok(digest.includes('삼구주기 [') && digest.includes('°') && digest.includes('칠요 수호성 '));
+  assert.ok(digest.includes('미얀마 역법 ME ') && digest.includes('본원 '));
+  assert.ok(!/tarotVitalityScore|guardScore|planetaryHarmonyScore|leadershipHonor/.test(digest));
+});
+
+
 
