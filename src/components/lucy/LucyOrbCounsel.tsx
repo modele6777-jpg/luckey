@@ -273,7 +273,7 @@ export function LucyOrbCounsel({
         <div className="lucy-orb-copy">
           {phase === 'pick' && <p>마스터를 고르면 상담이 시작돼</p>}
           {phase === 'live' && <p>{speaking ? `${master?.name} 마스터가 말하고 있어` : `${master?.name} · ${master?.tone}. 말해도 되고, 적어도 돼`}</p>}
-          {phase === 'report' && <p>상담 보고서야. 파일로 저장하면 나중에 그대로 볼 수 있어</p>}
+          {phase === 'report' && <p>이번 상담을 부적으로 남겼어. 파일로도 보관할 수 있어</p>}
           {notice && <p>{notice}</p>}
           {phase === 'pick' && (
             <div className="lucy-orb-masters">
@@ -304,7 +304,19 @@ export function LucyOrbCounsel({
               {lines.slice(-3).map((line, index) => <span key={`${line.who}-${index}`}>{line.who}: {line.text}</span>)}
             </div>
           )}
-          {phase === 'report' && <pre className="lucy-orb-report">{report}</pre>}
+          {phase === 'report' && master && (
+            <article className="lucy-charm" aria-label="상담 부적">
+              <span className="lucy-charm-side">守</span>
+              <span className="lucy-charm-seal">{master.name}</span>
+              <h2>상담 부적</h2>
+              <p>{master.topic}</p>
+              <div className="lucy-charm-lines">
+                {(lines.length ? lines.slice(-6) : [{ who: '루시' as const, text: '오늘은 말을 아끼고, 숨만 고르기로 했어.' }]).map((line, index) => (
+                  <span key={`${line.who}-${index}`}>{line.who === '나' ? '원' : '답'} · {line.text}</span>
+                ))}
+              </div>
+            </article>
+          )}
         </div>
         {phase !== 'report' && (
           <form className="lucy-orb-dock" onSubmit={(event) => { event.preventDefault(); phase === 'live' ? sendDraft() : undefined; }}>
