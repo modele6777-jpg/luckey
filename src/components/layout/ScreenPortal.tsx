@@ -14,11 +14,14 @@ export const ScreenOverlayContext = createContext<readonly RefObject<HTMLDivElem
  */
 const isRendered = (element: Element) => element.getClientRects().length > 0;
 
+const isOrbCounselLayer = (layer: HTMLElement) => Boolean(layer.querySelector('[data-orb-counsel]'));
+
 export function hasOpenScreenOverlay(): boolean {
   if (Array.from(document.querySelectorAll<HTMLElement>('[data-screen-overlay-layer]'))
-    .some(layer => layer.childElementCount > 0 && isRendered(layer))) return true;
+    .some(layer => layer.childElementCount > 0 && isRendered(layer) && !isOrbCounselLayer(layer))) return true;
   const visibleDialog = (doc: Document) => Array.from(doc.querySelectorAll<HTMLElement>('[role="dialog"], dialog[open]'))
     .some(dialog => {
+      if (dialog.hasAttribute('data-orb-counsel')) return false;
       if (dialog.hidden || dialog.getAttribute('aria-hidden') === 'true' || !isRendered(dialog)) return false;
       const style = doc.defaultView?.getComputedStyle(dialog);
       return style?.visibility !== 'hidden' && style?.display !== 'none';
@@ -35,7 +38,7 @@ export function hasOpenScreenOverlay(): boolean {
 /** The pane owning the top open popup, decided before a fold hides either pane. */
 export function getOpenScreenOverlayPane(): 'content' | 'lucy' | null {
   const layers = Array.from(document.querySelectorAll<HTMLElement>('[data-screen-overlay-layer][data-overlay-pane]'))
-    .filter(layer => layer.childElementCount > 0)
+    .filter(layer => layer.childElementCount > 0 && !isOrbCounselLayer(layer))
     .sort((a, b) => (Number(b.style.zIndex) || 10000) - (Number(a.style.zIndex) || 10000));
   for (const layer of layers) {
     const owner = layer.dataset.overlayPane;

@@ -286,7 +286,8 @@ export function LucyOrbCounsel({
     <ScreenPortal>
       <section
         className={`lucy-orb-stage ${ready ? 'is-ready' : ''} ${phase === 'live' ? 'is-live' : ''} ${speaking ? 'is-speaking' : ''} ${leaving ? 'is-leaving' : ''}`}
-        role="dialog"
+        data-orb-counsel="true"
+        role="region"
         aria-label="오브 상담"
         onPointerDown={() => { void bedRef.current?.resume().then(() => bedRef.current?.setAudible(bedOn, speaking)); }}
       >
