@@ -23,7 +23,9 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const SUMERIAN_FIFTY_MES_VERSION = 'LUCKEY-SUMERIAN-FIFTY-MES-v2.2.0';
+export const SUMERIAN_FIFTY_MES_VERSION = 'LUCKEY-SUMERIAN-FIFTY-MES-v2.3.0';
+
+export type FiftyMesQuestionTopic = 'career' | 'relationship' | 'wealth' | 'health' | 'decision' | 'general';
 
 export interface SumerianMeArchetype {
   cuneiformCode: string;
@@ -40,6 +42,9 @@ export interface SumerianMeReport {
   primaryMe: SumerianMeArchetype;
   secondaryMe: SumerianMeArchetype;
   creationIndex: number;           // 0 ~ 100 문명 창조력 지수
+  questionTopic: FiftyMesQuestionTopic;
+  eriduPhase: string;
+  shadowWarning: string;
   civilizationResonance: string;   // 사회 및 환경과의 공명도
   sumerianWisdomOmen: string;
   synthesisMessage: string;
@@ -109,6 +114,38 @@ const SUMERIAN_MES: SumerianMeArchetype[] = [
   },
 ];
 
+function classifyFiftyMesTopic(question: string): FiftyMesQuestionTopic {
+  if (/이직|직장|사업|승진|일|커리어|프로젝트|업무/.test(question)) return 'career';
+  if (/연애|결혼|사람|관계|가족|갈등|친구|이별|소통/.test(question)) return 'relationship';
+  if (/돈|재물|투자|재정|수입|지출|계약|매매/.test(question)) return 'wealth';
+  if (/건강|몸|마음|휴식|수면|피로|회복/.test(question)) return 'health';
+  if (/결정|선택|고민|방향|시작|전환|기준/.test(question)) return 'decision';
+  return 'general';
+}
+
+function resolveEriduPhase(creationIndex: number): string {
+  if (creationIndex >= 88) return '에리두 성수 범람기 (Eridu Surge) — 신성 규범의 창조력이 정점에 올라 과감한 질서 수립과 실행에 유리한 국면';
+  if (creationIndex >= 80) return '아프수 순환 안정기 (Apsu Flow) — 지혜의 샘물이 고르게 흐르며 기준을 다지고 협력을 넓히기 좋은 국면';
+  return '점토판 교정 정비기 (Tablet Calibration) — 성급한 확장보다 낡은 원칙을 점검하고 핵심 규범을 가다듬는 국면';
+}
+
+function buildFiftyMesShadowWarning(
+  primaryMe: SumerianMeArchetype,
+  topic: FiftyMesQuestionTopic,
+): string {
+  const topicNote =
+    topic === 'career'
+      ? '일과 프로젝트에서 완벽한 규범만 앞세워 동료의 속도를 놓치지 않도록 주의하십시오.'
+      : topic === 'relationship'
+        ? '가까운 관계에서 옳고 그름의 잣대만 세워 상대의 마음을 닫게 하지 않도록 살피십시오.'
+        : topic === 'wealth'
+          ? '이익과 계약의 계산에 치우쳐 장기적 신뢰를 해치지 않도록 경계하십시오.'
+          : topic === 'health'
+            ? '규율과 성취에만 몰두해 몸과 마음의 회복 신호를 뒤로 미루지 마십시오.'
+            : '원칙의 이름 아래 유연성과 현실 감각을 잃지 않도록 한 박자 숨을 고르십시오.';
+  return `[${primaryMe.cuneiformCode} 과잉 경계] ${primaryMe.koreanName}의 기운이 지나치면 독단이나 경직으로 흐를 수 있습니다. ${topicNote}`;
+}
+
 export function calculateSumerianFiftyMes(
   profile?: UserProfile,
   question?: string,
@@ -139,6 +176,9 @@ export function calculateSumerianFiftyMes(
   const synthesisMessage = `수메르 50대 메 원전에 따라, 당신의 현실 구축 힘은 [${primaryMe.cuneiformCode}]와 연결되어 있습니다.`;
 
   const calculatedAtKst = formatFiftyMesKstTimestamp(now);
+  const questionTopic = classifyFiftyMesTopic(q);
+  const eriduPhase = resolveEriduPhase(creationIndex);
+  const shadowWarning = buildFiftyMesShadowWarning(primaryMe, questionTopic);
   const reflectiveQuestion = q
     ? `"${q}"에 대해 ${primaryMe.cuneiformCode}의 원칙을 중심에 둔다면, ${secondaryMe.cuneiformCode}의 균형으로 보완해야 할 관계나 기준은 무엇입니까?`
     : `오늘 ${primaryMe.koreanName}(${primaryMe.cuneiformCode})의 미덕을 지켜내면서도 ${secondaryMe.koreanName}의 유연함을 함께 살릴 수 있는 구체적 선택은 무엇입니까?`;
@@ -147,8 +187,8 @@ export function calculateSumerianFiftyMes(
   const ritualAction = `[${primaryMe.cuneiformCode}] ${primaryMe.eriduOracleDecree}`;
   const reflectionFocus = `수메르 50대 메(${primaryMe.koreanName}) — ${primaryMe.civilizationDomain}`;
   const fiftyMesSynthesisMatrix = {
-    dominantTension: `${primaryMe.cuneiformCode} ↔ ${secondaryMe.cuneiformCode}`,
-    alignmentState: `${primaryMe.koreanName} · ${primaryMe.civilizationDomain}`,
+    dominantTension: `${primaryMe.cuneiformCode} ↔ ${secondaryMe.cuneiformCode} (${questionTopic})`,
+    alignmentState: `${eriduPhase} · ${primaryMe.civilizationDomain}`,
     integratedAction: `${primaryMe.eriduOracleDecree}${q ? ` [질문 맥락: ${q}]` : ''}`,
   };
 
@@ -159,6 +199,9 @@ export function calculateSumerianFiftyMes(
     primaryMe,
     secondaryMe,
     creationIndex,
+    questionTopic,
+    eriduPhase,
+    shadowWarning,
     civilizationResonance,
     sumerianWisdomOmen,
     synthesisMessage,
@@ -173,7 +216,8 @@ export function calculateSumerianFiftyMes(
 export function formatSumerianFiftyMesPrompt(report: SumerianMeReport): string {
   const lines = [
     `### 🏺 고대 수메르 에리두 50대 메(Me) 신성 문명 규범 엔진 (${SUMERIAN_FIFTY_MES_VERSION})`,
-    `- **연산 시각**: ${report.calculatedAtKst}`,
+    `- **연산 시각**: ${report.calculatedAtKst} | **질문 맥락**: ${report.questionTopic}`,
+    `- **에리두 문명 국면**: ${report.eriduPhase}`,
     `- **오늘의 수메르 수호 메(Me)**: **${report.primaryMe.koreanName}** (${report.primaryMe.cuneiformCode})`,
     `  - 문명 관할: ${report.primaryMe.civilizationDomain}`,
     `  - 신성한 미덕: ${report.primaryMe.sacredVirtue}`,
@@ -185,6 +229,7 @@ export function formatSumerianFiftyMesPrompt(report: SumerianMeReport): string {
     `- **실천 의례**: ${report.ritualAction}`,
     `- **성찰 초점**: ${report.reflectionFocus}`,
     `- **성찰 질문**: ${report.reflectiveQuestion}`,
+    `- **과잉 경계**: ${report.shadowWarning}`,
     `- **해석 경계**: ${report.interpretiveBoundary}`,
   ];
   if (report.fiftyMesSynthesisMatrix) {

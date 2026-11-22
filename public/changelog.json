@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.8.352",
+    "builtAt": "2026-11-23T06:08:00+09:00",
+    "summary": "수메르 50대 메·슬라브 스바로그·페르시아 아메샤 스펜타 3대 엔진 국면·맥락·과잉 경계 심층 강화(v1.8.352)",
+    "items": [
+      "수메르 50대 메(Me) 엔진(v2.3.0): 질문 맥락(questionTopic)·에리두 문명 국면(eriduPhase)·과잉 경계(shadowWarning) 추가",
+      "슬라브 16 스바로그 엔진(v2.3.0): 질문 맥락(questionTopic)·스바로그 조화 국면(svarogPhase)·과잉 경계(shadowWarning) 추가",
+      "페르시아 아메샤 스펜타 엔진(v2.3.0): 질문 맥락(questionTopic)·광휘 국면(ameshaPhase)·과잉 경계(shadowWarning) 추가"
+    ]
+  },
+  {
     "version": "1.8.351",
     "builtAt": "2026-11-23T06:02:00+09:00",
     "summary": "15대 기초엔진 9회전 1회차(사주명리·서양 점성술·자미두수) 지장간 정기·행성 도수·사화 대궁 다이제스트 강화(v1.8.351)",
