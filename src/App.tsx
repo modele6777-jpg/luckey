@@ -70,6 +70,7 @@ function lazyWithRetry<T extends React.ComponentType<any>>(
 }
 
 const HubHome = lazyWithRetry(() => import("./pages/HubHome"));
+const LuckyChannelPage = lazyWithRetry(() => import("./pages/LuckyChannelPage"));
 const LucyStandalonePage = lazyWithRetry(() => import("./pages/LucyStandalonePage"));
 const TrinityApp = lazyWithRetry(() => import("./pages/TrinityApp"));
 const MuseApp = lazyWithRetry(() => import("./pages/MuseApp"));
@@ -87,6 +88,7 @@ const ALL_CHANNEL_LOADERS = [
   () => import("./pages/LucyStandalonePage"),
   () => import("./pages/CalmApp"),
   () => import("./pages/HubHome"),
+  () => import("./pages/LuckyChannelPage"),
   () => import("./pages/OrangeApp"),
   () => import("./pages/TrinityApp"),
   () => import("./pages/HealApp"),
@@ -143,6 +145,7 @@ import { resolveFoldCover } from "./lib/duoFoldCover";
 const ROUTES_MAP = [
   { path: "/", Component: LucyStandalonePage },
   { path: "/prologue", Component: HubHome },
+  { path: "/lucky", Component: LuckyChannelPage },
   { path: "/universe", Component: HubHome },
   { path: "/ecpr", Component: HubHome },
   { path: "/todo", Component: HubHome },
@@ -183,6 +186,7 @@ function ActivePage({ loc }: { loc: string }) {
       <Switch location={cleanLoc}>
         <Route path="/"><SuspendedPage><LucyStandalonePage /></SuspendedPage></Route>
         <Route path="/prologue"><SuspendedPage><HubHome /></SuspendedPage></Route>
+        <Route path="/lucky"><SuspendedPage><LuckyChannelPage /></SuspendedPage></Route>
         <Route path="/universe"><SuspendedPage><HubHome /></SuspendedPage></Route>
         <Route path="/ecpr"><SuspendedPage><HubHome /></SuspendedPage></Route>
         <Route path="/todo"><SuspendedPage><HubHome /></SuspendedPage></Route>

@@ -20,7 +20,6 @@ import { UniverseInsightCard } from '@/components/UniverseInsightCard';
 import { type UniverseInsightItem } from '@/data/universeInsights';
 import { useBackgroundMood } from '@/hooks/useBackgroundMood';
 import { LucKeyLogoText } from '@/components/LucKeyLogoText';
-import { openChannelIntro } from '@/components/common/ChannelIntroModal';
 import { GoalProgressRingDashboard } from '@/components/goals/GoalProgressRingDashboard';
 import { TodayLucyPersonaCard } from '@/components/TodayLucyPersonaCard';
 import { useSwipeableTabs } from '@/hooks/useSwipeableTabs';
@@ -116,9 +115,6 @@ const APPS = [
     vibeKeyword: '통합 결산',
   },
 ];
-
-const PROLOGUE_APPS = ['prologue', 'orange', 'trinity', 'heal', 'bluebird', 'muse', 'epilogue']
-  .map((id) => APPS.find((app) => app.id === id)!);
 
 type TimeEnergySlot = 'morning' | 'afternoon' | 'evening' | 'night';
 
@@ -514,9 +510,6 @@ export default function HubHome() {
   const timeSlot = getTimeEnergySlot(hour);
   const timeAdvice = TIME_ENERGY_PRESETS[timeSlot];
 
-  // Determine which app is "active" based on sourceApp
-  const activeApp = APPS.find(a => sharedState?.sourceApp === a.id.toUpperCase());
-
   // 시간대별 기본 추천 + 긴급 생체 지표 시 우선 보정
   let energyPatternName = timeAdvice.energyPatternName;
   let energyPatternDesc = timeAdvice.energyPatternDesc;
@@ -893,153 +886,6 @@ export default function HubHome() {
               </motion.div>
             </div>
 
-              {/* Universe 7-Channel DApp Section */}
-              <div className="space-y-3.5 pb-4 md:pb-6">
-                <div className="flex flex-wrap items-center justify-between gap-3 px-1">
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <Compass size={15} className="text-cyan-400" />
-                      <h3 className="text-sm sm:text-base font-bold text-white tracking-tight">
-                        유니버스 7대 차원 DApp 채널
-                      </h3>
-                      <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-cyan-500/15 text-cyan-300 border border-cyan-400/30">
-                        7 CHANNELS
-                      </span>
-                    </div>
-                    <p className="text-[11px] text-white/55 mt-0.5">
-                      시작 방향·마음 치유·운명 분석·신체 활력·예술 사운드·창작 영감·통합 결산 채널로 바로 이동합니다
-                    </p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => openChannelIntro('hub')}
-                    className="px-3 py-1.5 rounded-full text-[11px] font-semibold text-white/75 hover:text-white bg-white/5 hover:bg-white/15 border border-white/15 transition-all cursor-pointer shrink-0"
-                  >
-                    전체 채널 안내
-                  </button>
-                </div>
-
-                {/* DApp Grid */}
-                <div className="duo-channel-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5 md:gap-5 w-full items-stretch">
-                  {PROLOGUE_APPS.map((app, i) => {
-                    const Icon = app.icon;
-                    const isActive = activeApp?.id === app.id;
-                    const isRecommended = recommendedEnergyApp?.id === app.id;
-                    
-                    return (
-                      <motion.div
-                        key={app.id}
-                        initial={{ opacity: 0, scale: 0.97, y: 12 }}
-                        animate={{ opacity: 1, scale: 1, y: 0 }}
-                        transition={{ duration: 0.35, delay: i * 0.05, ease: [0.16, 1, 0.3, 1] }}
-                        onClick={() => {
-                          navigate(app.path);
-                          window.dispatchEvent(new CustomEvent('nav-click-active', { detail: { path: app.path } }));
-                        }}
-                        role="button"
-                        tabIndex={0}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter' || e.key === ' ') {
-                            e.preventDefault();
-                            navigate(app.path);
-                          }
-                        }}
-                        className={`prism-xs-app-card group relative text-left rounded-[26px] p-5 sm:p-6 overflow-hidden transition-all duration-300 border flex flex-col justify-between h-full cursor-pointer ${
-                          isActive
-                            ? 'glass border-white/35 shadow-[0_0_28px_rgba(255,255,255,0.12)] scale-[1.01]'
-                            : 'glass border-white/12 hover:border-white/30 hover:-translate-y-0.5 shadow-xl'
-                        }`}
-                      >
-                        <div
-                          className="absolute -top-16 -right-16 w-44 h-44 rounded-full blur-[65px] opacity-15 group-hover:opacity-30 transition-opacity duration-500 pointer-events-none"
-                          style={{ background: app.color }}
-                        />
-
-                        <div>
-                          {/* Top Row: Icon + Subtitle Badge & Guide Button */}
-                          <div className="flex items-start justify-between gap-3 mb-4 relative z-10">
-                            <div
-                              className="relative w-12 h-12 rounded-2xl flex items-center justify-center overflow-hidden border border-white/15 shadow-md shrink-0"
-                              style={{ background: `${app.color}16` }}
-                            >
-                              <Icon
-                                size={22}
-                                className="relative z-10 group-hover:scale-110 transition-transform duration-300"
-                                style={{ color: app.color, filter: `drop-shadow(0 0 10px ${app.color})` }}
-                                strokeWidth={2.1}
-                              />
-                            </div>
-
-                            <div className="flex items-center gap-1.5">
-                              {isRecommended && (
-                                <span
-                                  className="px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider border"
-                                  style={{
-                                    color: app.color,
-                                    borderColor: `${app.color}55`,
-                                    background: `${app.color}18`,
-                                  }}
-                                >
-                                  오늘의 추천
-                                </span>
-                              )}
-                              <span className="px-2.5 py-1 rounded-full text-[10px] font-bold text-white/75 bg-white/[0.07] border border-white/10 tracking-wide">
-                                {app.subtitle}
-                              </span>
-                              <button
-                                type="button"
-                                title={`${app.name} 채널 소개`}
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  const introId = app.id === 'prologue' ? 'hub' : app.id;
-                                  openChannelIntro(introId, app.path);
-                                }}
-                                className="w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-bold text-white/50 hover:text-white bg-white/5 hover:bg-white/15 border border-white/10 transition-colors cursor-pointer"
-                              >
-                                ?
-                              </button>
-                            </div>
-                          </div>
-
-                          {/* Title & Persona Desc */}
-                          <div className="relative z-10 mb-2">
-                            <div className="flex items-baseline gap-2">
-                              <h4
-                                className="text-xl font-extrabold tracking-wide transition-transform duration-300 group-hover:translate-x-0.5"
-                                style={{ color: app.color }}
-                              >
-                                {app.name}
-                              </h4>
-                              <span className="text-[11px] font-semibold text-white/55 truncate">
-                                {app.personaDesc}
-                              </span>
-                            </div>
-                          </div>
-
-                          {/* Full-width Channel Description */}
-                          <p className="relative z-10 text-[13px] leading-relaxed text-white/80 font-sans font-medium break-keep">
-                            {app.desc}
-                          </p>
-                        </div>
-
-                        {/* Card Footer */}
-                        <div className="relative z-10 flex items-center justify-between mt-5 pt-3.5 border-t border-white/10">
-                          <div className="flex items-center gap-2">
-                            <span className="w-2 h-2 rounded-full" style={{ background: app.color }} />
-                            <span className="text-[11px] font-bold text-white/60 tracking-wide font-sans">
-                              {app.vibeKeyword} 스페이스
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-1 text-xs font-bold text-white/75 group-hover:text-white transition-colors">
-                            <span>채널 입장</span>
-                            <ChevronRight size={15} className="group-hover:translate-x-0.5 transition-transform" />
-                          </div>
-                        </div>
-                      </motion.div>
-                    );
-                  })}
-                </div>
-              </div>
             </div>
           </div>
         )}

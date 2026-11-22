@@ -527,13 +527,18 @@ export default function LeftSidebarNav() {
                   <button
                     type="button"
                     className="refined-nav-item"
-                    data-active={isChannelsOpen || PRISM_CHANNELS.some(({ path }) => cleanPath === path)}
-                    aria-label={isChannelsOpen ? '7대 프리즘 채널 접기' : '7대 프리즘 채널 펼치기'}
+                    data-active={cleanPath === '/lucky' || isChannelsOpen || PRISM_CHANNELS.some(({ path }) => cleanPath === path)}
+                    aria-label={cleanPath === '/lucky' && isChannelsOpen ? '럭키채널, 채널 목록 접기' : '럭키채널'}
                     aria-expanded={isChannelsOpen}
                     aria-controls={isChannelsOpen ? 'prism-channel-icons' : undefined}
-                    title="7대 프리즘 채널"
+                    title="럭키채널"
                     onClick={() => {
                       triggerHaptic('whitehole');
+                      if (cleanPath !== '/lucky') {
+                        setIsChannelsOpen(true);
+                        handleNavigate('/lucky');
+                        return;
+                      }
                       setIsChannelsOpen((open) => !open);
                     }}
                   >
