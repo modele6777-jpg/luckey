@@ -31,6 +31,7 @@ const _dirname = typeof __dirname !== "undefined" ? __dirname : process.cwd();
 
 import { getGeminiApiKey } from "./server/geminiKey";
 import { recordGeminiFailure, recordGeminiSuccess, getGeminiHealthSnapshot } from "./server/api-lib/geminiHealth";
+import { getVertexSetup, probeVertex, vertexGenerateText } from "./server/api-lib/vertexGemini";
 export { getGeminiApiKey };
 
 function getAIConfig(): { aiType: string; apiKey: string } {
@@ -359,6 +360,17 @@ async function callGeminiContentWithFallback(ai: GoogleGenAI, contents: any, con
         }
         break;
       }
+    }
+  }
+  // 🌐 AI Studio가 모두 실패하면(무료 한도 초과 등) 같은 모델을 Vertex AI(구글 클라우드 결제·크레딧)로 한 번 더 시도한다.
+  if (getVertexSetup() && modelsToTry[0]) {
+    const vertexModel = modelsToTry[0];
+    try {
+      const text = await vertexGenerateText(vertexModel, contents, buildFastModelConfig(config, vertexModel, undefined, true), { timeoutMs: 30000 });
+      recordGeminiSuccess(`vertex:${vertexModel}`);
+      return { response: { text } as any, modelUsed: `vertex:${vertexModel}` };
+    } catch (vertexErr) {
+      recordGeminiFailure(`vertex:${vertexModel}`, vertexErr);
     }
   }
   throw lastError || new Error("All Gemini content models exhausted");
@@ -857,7 +869,10 @@ ${content}
         }
       }));
     }
-    return res.json({ keyConfigured: Boolean(apiKey), probed, ...getGeminiHealthSnapshot() });
+    const vertex = probed
+      ? await probeVertex(["gemini-3.6-flash", "gemini-3.8-flash", "gemini-2.5-flash"])
+      : { configured: Boolean(getVertexSetup()) };
+    return res.json({ keyConfigured: Boolean(apiKey), probed, vertex, ...getGeminiHealthSnapshot() });
   });
 
   app.get("/api/ai/tts/status", async (_req, res) => {

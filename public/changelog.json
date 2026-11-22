@@ -1,12 +1,22 @@
 [
   {
-    "version": "1.8.344",
-    "builtAt": "2026-11-23T05:34:00+09:00",
-    "summary": "타로 카발라 섀도우·사주 12신살·퀀텀 점프 타이밍 3대 엔진 맥락·국면·과잉 경계 심층 강화(v1.8.344)",
+    "version": "1.8.345",
+    "builtAt": "2026-11-23T05:37:00+09:00",
+    "summary": "타로 카발라 섀도우·사주 12신살·퀀텀 점프 타이밍 3대 엔진 맥락·국면·과잉 경계 심층 강화(v1.8.345)",
     "items": [
       "타로 카발라 생명나무 & 섀도우 미러 엔진(v2.3.0): 질문 맥락(questionTopic)·카발라 상승 국면(kabbalahPhase)·과잉 경계(shadowWarning) 추가",
       "사주 12신살 완전 순환 엔진(v2.3.0): 질문 맥락(questionTopic)·12신살 순환 국면(spiritPhase)·과잉 경계(shadowWarning) 추가",
       "퀀텀 점프 타이밍 엔진(v2.3.0): 질문 맥락(questionTopic)·모멘텀 국면(momentumPhase)·과잉 경계(shadowWarning) 추가"
+    ]
+  },
+  {
+    "version": "1.8.344",
+    "summary": "서버 AI가 무료 한도에 막히면 구글 클라우드(Vertex AI)로 다시 시도하고, 상태 화면에서 Vertex 연결 상태를 확인합니다",
+    "builtAt": "2026-11-22T20:34:00.153Z",
+    "items": [
+      "AI Studio 모델이 모두 실패하면 같은 모델을 Vertex AI(구글 클라우드 결제·크레딧)로 한 번 더 부릅니다",
+      "음성(TTS)용 구글 클라우드 서비스 계정을 그대로 사용합니다",
+      "/api/ai/status?probe=1 에서 Vertex AI의 API 사용 설정·권한·결제 연결·모델 사용 가능 여부를 확인할 수 있습니다"
     ]
   },
   {
