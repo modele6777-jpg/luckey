@@ -2,12 +2,12 @@
  * Vedic Upanishadic Four Mahavakyas Consciousness Awakening Engine
  * 고대 인도 베다 우파니샤드 4대 마하바키야(Mahāvākya) 대선언 의식 각성 & 참자아 성찰 엔진
  *
- * Version: LUCKEY-VEDIC-MAHAVAKYA-v1.1.0
+ * Version: LUCKEY-VEDIC-MAHAVAKYA-v2.3.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const VEDIC_MAHAVAKYA_ENGINE_VERSION = 'LUCKEY-VEDIC-MAHAVAKYA-v2.2.0';
+export const VEDIC_MAHAVAKYA_ENGINE_VERSION = 'LUCKEY-VEDIC-MAHAVAKYA-v2.3.0';
 
 function formatMahavakyaKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -49,6 +49,8 @@ export interface VedicMahavakyaReport {
     koreanMeaning: string;
   };
   shankaraNonDualWisdom: string;
+  awarenessPhase: string;
+  shadowWarning: string;
   practiceGuidance: string;
   ritualAction: string;
   reflectionFocus: string;
@@ -288,9 +290,24 @@ export function calculateVedicMahavakya(params?: VedicMahavakyaParams): VedicMah
   const guidance = buildMahavakyaGuidance(activeVakya.key, questionFocus);
   const calculatedAtKst = formatMahavakyaKstTimestamp(now);
   const q = question.trim();
+  const compositeAwareness = Math.round((brahman + maya + soham) / 3);
+  const awarenessPhase =
+    compositeAwareness >= 78
+      ? '사트바 관조 정점 — 분별지와 내면 고요가 또렷이 맞아떨어지는 명료기'
+      : compositeAwareness >= 63
+        ? '비베카 분별 조율 — 사실과 해석의 경계를 가다듬는 성찰기'
+        : '프라나 이완 수련 — 성급한 초탈 대신 호흡과 몸의 감각부터 돌보는 안정기';
+  const shadowWarning =
+    questionFocus === 'relationship'
+      ? '초연함을 앞세워 상대의 정당한 서운함이나 구체적 대화를 회피하지 않도록 경계하세요.'
+      : questionFocus === 'decision'
+        ? '내면 확신만으로 현실의 수치·기한·검증 절차를 건너뛰지 않도록 경계하세요.'
+        : questionFocus === 'healing'
+          ? '고통을 억지로 "환상"이라 밀어내며 정당한 휴식과 돌봄을 미루지 않도록 경계하세요.'
+          : '사색에만 머물러 오늘 해야 할 작은 현실 행동 하나를 놓치지 않도록 경계하세요.';
   const mahavakyaSynthesisMatrix = {
     dominantTension: `${activeVakya.sanskritPhrase} ↔ ${vrittiPattern}`,
-    alignmentState: `${vivekaLens} · 보조 교차(${secondaryVakya.sanskritPhrase}) · ${questionFocus}`,
+    alignmentState: `${awarenessPhase} · ${vivekaLens} · 보조 교차(${secondaryVakya.sanskritPhrase}) · ${questionFocus}`,
     integratedAction: `${guidance.ritualAction}${q ? ` [질문 맥락: ${q}]` : ''}`,
   };
   const interpretiveBoundary =
@@ -321,6 +338,8 @@ export function calculateVedicMahavakya(params?: VedicMahavakyaParams): VedicMah
       koreanMeaning: secondaryVakya.koreanMeaning,
     },
     shankaraNonDualWisdom: SHANKARA_NON_DUAL_ADVICES[Math.abs(seed) % SHANKARA_NON_DUAL_ADVICES.length],
+    awarenessPhase,
+    shadowWarning,
     practiceGuidance: guidance.practiceGuidance,
     ritualAction: guidance.ritualAction,
     reflectionFocus: guidance.reflectionFocus,
@@ -338,6 +357,7 @@ export function formatVedicMahavakyaPrompt(report: VedicMahavakyaReport): string
     : '';
   return `[고대 인도 베다 우파니샤드 4대 마하바키야(Mahāvākya) 대선언 실측 데이터]
 - 엔진 버전: ${report.engineVersion} | ${report.calculatedAtKst} | 질문 맥락: ${report.questionFocus}
+- 의식 각성 국면: ${report.awarenessPhase}
 - 마음 파동(Vritti): ${report.vrittiPattern}
 - 분별 렌즈(Viveka): ${report.vivekaLens}
 - 활성 대선언: [${report.activeMahavakya.sanskritPhrase}] (${report.activeMahavakya.vedaSourceKo})
@@ -346,6 +366,7 @@ export function formatVedicMahavakyaPrompt(report: VedicMahavakyaReport): string
   * 현실 확언: "${report.activeMahavakya.realLifeAffirmation}"
 - 보조 교차 대선언: [${report.secondaryMahavakya.sanskritPhrase}] (${report.secondaryMahavakya.koreanMeaning})
 - 샹카라 불이론(Non-duality) 조언: ${report.shankaraNonDualWisdom}
+- 과잉 경계(Shadow Warning): ${report.shadowWarning}
 - 실천 조언: ${report.practiceGuidance}
 - 일상 의례: ${report.ritualAction}
 - 성찰 질문: ${report.reflectionFocus}
