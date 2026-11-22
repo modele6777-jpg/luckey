@@ -29,7 +29,7 @@ export type AudioHapticType =
   | 'save_success'       // Saved confirmation with radiant double-chime + sharp double pulse
   | 'save_auto'          // Discrete water droplet bell ping for auto-saves
   | 'milestone_success'  // Triumphant multi-stage sharp ripple pulse & golden chord flourish
-  | 'ai_result_chime'    // 옅은 2음 띵동 완료 알림 (대화 제외)
+  | 'ai_result_chime'    // 메시지 전송 확인 완료음 (대화 제외)
 
   // --- Breathing category (soft, rhythmic vibration & respiratory bio-harmonics) ---
   | 'breathe_inhale'     // Gentle swelling rhythmic wave [25, 75, 40, 75, 55] + soft note cue
@@ -97,8 +97,8 @@ export const HAPTIC_PATTERNS: Record<AudioHapticType, HapticPatternMeta> = {
   ai_result_chime: {
     vibration: [18, 35, 22],
     category: 'success',
-    label: 'TTS 완료 착 소리',
-    description: 'TTS 완독 뒤 한 번 울리는 0.15초의 짧고 또렷한 착 소리 (대화 제외)',
+    label: '메시지 전송 완료 효과음',
+    description: 'TTS 완독 뒤 한 번 재생되는 짧은 아이폰 메시지 전송 확인음 (대화 제외)',
   },
 
   // Breathing (Soft Rhythmic)
@@ -988,7 +988,7 @@ export function playCardHaptic(
 }
 
 /**
- * 오직 TTS 음성 낭독 완독 시 한 번 재생하는 짧은 착 소리 (일반 채팅 대화 및 단순 텍스트 생성은 생략)
+ * 오직 TTS 음성 낭독 완독 시 한 번 재생하는 메시지 전송 확인음 (일반 채팅 대화 및 단순 텍스트 생성은 생략)
  */
 export function playAiResultNotification(options?: AudioHapticOptions): void {
   try {

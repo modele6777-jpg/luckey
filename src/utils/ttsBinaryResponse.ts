@@ -15,6 +15,7 @@ export type ParsedTTSAudio = {
   audioContent: string;
   encoding: TTSAudioEncoding;
   sampleRate: number;
+  model?: string;
 };
 
 export function bytesToBase64(bytes: Uint8Array): string {
@@ -81,11 +82,12 @@ export async function parseTTSAudioResponse(response: Response): Promise<ParsedT
       audioContent: bytesToBase64(bytes),
       encoding,
       sampleRate: resolveSampleRate(response.headers),
+      model: response.headers.get('X-TTS-Model') || undefined,
     };
   }
 
   const data = await response.json().catch(() => null) as
-    | { audioContent?: unknown; encoding?: unknown; sampleRate?: unknown }
+    | { audioContent?: unknown; encoding?: unknown; sampleRate?: unknown; model?: unknown }
     | null;
   if (!data || typeof data.audioContent !== 'string' || !data.audioContent) return null;
   const bytes = base64ToBytes(data.audioContent);
@@ -98,5 +100,6 @@ export async function parseTTSAudioResponse(response: Response): Promise<ParsedT
     audioContent: data.audioContent,
     encoding,
     sampleRate: Number.isFinite(sampleRate) && sampleRate >= 8000 && sampleRate <= 96000 ? sampleRate : 24000,
+    model: typeof data.model === 'string' ? data.model : undefined,
   };
 }

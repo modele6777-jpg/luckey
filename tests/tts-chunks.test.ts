@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { splitSpeechIntoChunks, getTTSCacheKey } from '../src/utils/tts';
+import { splitSpeechIntoChunks, getTTSCacheKey, resolveTTSPlaybackProfile } from '../src/utils/tts';
 test('a long report without punctuation or spaces fits the speech request limit without loss', () => {
   const text = '가'.repeat(5001);
   const chunks = splitSpeechIntoChunks(text, 240);
@@ -20,6 +20,26 @@ test('the same chat text uses separate cached audio for user and Lucy voices', (
   const text = '반가워요. 오늘도 함께해요.';
   assert.notEqual(getTTSCacheKey(text, 'Charon'), getTTSCacheKey(text, 'Aoede'));
   assert.equal(getTTSCacheKey(text, 'Kore'), getTTSCacheKey(text, 'Aoede'));
+});
+
+test('one read captures its voice and embedded emotion once for every chunk', () => {
+  assert.deepEqual(resolveTTSPlaybackProfile('[EMOTION: 차분] 첫 문장입니다. 두 번째 문장입니다.', 'Kore'), {
+    voice: 'Aoede',
+    emotion: '차분',
+  });
+  assert.deepEqual(resolveTTSPlaybackProfile('[EMOTION: 차분] 첫 문장입니다.', 'Charon', '밝음'), {
+    voice: 'Charon',
+    emotion: '밝음',
+  });
+});
+
+test('TTS cache separates emotion and pinned Gemini models to avoid reusing a different voice style', () => {
+  const text = '오늘도 함께해요.';
+  assert.notEqual(getTTSCacheKey(text, 'Aoede', '차분'), getTTSCacheKey(text, 'Aoede', '밝음'));
+  assert.notEqual(
+    getTTSCacheKey(text, 'Aoede', '차분', undefined, undefined, 'gemini-3.8-flash-tts'),
+    getTTSCacheKey(text, 'Aoede', '차분', undefined, undefined, 'gemini-3.8-flash-lite-tts'),
+  );
 });
 
 test('playback keeps the established chunk count (one provider request per chunk)', async () => {

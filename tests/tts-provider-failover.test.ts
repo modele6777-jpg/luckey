@@ -135,7 +135,24 @@ test('Gemini Lite neural TTS can serve when the preferred model is rate-limited'
   });
   assert.deepEqual(attemptedModels, ['gemini-3.8-flash-tts', 'gemini-3.8-flash-lite-tts']);
   assert.equal(result?.audioContent, audio);
+  assert.equal(result?.model, 'gemini-3.8-flash-lite-tts');
   assert.equal(result?.provider, 'gemini');
+});
+
+test('a pinned TTS sequence never switches models after its first segment', async () => {
+  const attemptedModels: string[] = [];
+  await assert.rejects(
+    synthesizeWithGemini('이어지는 문장입니다.', 'Aoede', {
+      apiKey: 'test-only',
+      models: ['gemini-3.8-flash-tts', 'gemini-3.8-flash-lite-tts'],
+      request: async (_url, init) => {
+        attemptedModels.push(JSON.parse(String(init?.body)).model);
+        return new Response('{}', { status: 429 });
+      },
+    }, undefined, undefined, 'gemini-3.8-flash-lite-tts'),
+    error => (error as any).status === 429 && (error as any).code === 'MEDIA_RATE_LIMIT',
+  );
+  assert.deepEqual(attemptedModels, ['gemini-3.8-flash-lite-tts']);
 });
 
 test('Gemini 3.8 Interactions TTS returns WAV from the REST audio step', async () => {
@@ -152,11 +169,12 @@ test('Gemini 3.8 Interactions TTS returns WAV from the REST audio step', async (
       assert.equal(body.model, 'gemini-3.8-flash-tts');
       assert.equal(body.input[0].content[0].text, '안녕하세요.');
       assert.match(body.input[0].content[0].annotations[0].style, /natural/i);
+      assert.match(body.input[0].content[0].annotations[0].style, /consistent speaker identity/i);
       assert.equal(body.generation_config.speech_config[0].voice, 'Aoede');
       return Response.json({ steps: [{ type: 'model_output', content: [{ type: 'audio', mime_type: 'audio/wav', data: audio }] }] });
     },
   });
-  assert.deepEqual(result, { audioContent: audio, encoding: 'wav', sampleRate: 24000, voice: 'Aoede', provider: 'gemini' });
+  assert.deepEqual(result, { audioContent: audio, encoding: 'wav', sampleRate: 24000, voice: 'Aoede', model: 'gemini-3.8-flash-tts', provider: 'gemini' });
 });
 
 test('Gemini raw Linear PCM is wrapped as WAV for the shared audio player', async () => {

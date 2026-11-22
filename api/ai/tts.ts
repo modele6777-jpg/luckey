@@ -18,6 +18,7 @@ type TTSAudioResult = {
   encoding: "wav" | "mp3";
   sampleRate: number;
   voice: string;
+  model: string;
   provider: "gemini";
 };
 
@@ -62,7 +63,7 @@ function resolveSpeechStyle(emotion?: string): string {
       : /신비|진지|경고|mystery|serious|dreamy/.test(value)
         ? "gentle and reflective"
         : "warm and conversational";
-  return `Natural Korean narration with a ${tone} tone, expressive intonation, clear articulation, and natural pauses; avoid a flat, robotic cadence.`;
+  return `Natural Korean narration with a ${tone} tone. Keep a consistent speaker identity, timbre, pitch range, accent, and pacing across every segment. Use clear articulation and natural pauses; keep expressive changes subtle and do not change vocal character.`;
 }
 
 function extractAudio(data: any): { base64: string; mimeType: string } | null {
@@ -84,7 +85,7 @@ function extractAudio(data: any): { base64: string; mimeType: string } | null {
   return null;
 }
 
-function normalizedAudio(audio: { base64: string; mimeType: string }, voice: string): TTSAudioResult | null {
+function normalizedAudio(audio: { base64: string; mimeType: string }, voice: string, model: string): TTSAudioResult | null {
   let bytes: Buffer;
   try {
     bytes = Buffer.from(audio.base64, "base64");
@@ -98,13 +99,13 @@ function normalizedAudio(audio: { base64: string; mimeType: string }, voice: str
   const sampleRate = Number(rateMatch?.[1]) || 24000;
   if (mime.includes("l16") || mime.includes("pcm")) {
     bytes = pcmToWav(bytes, sampleRate, 1, 16);
-    return { audioContent: bytes.toString("base64"), encoding: "wav", sampleRate, voice, provider: "gemini" };
+    return { audioContent: bytes.toString("base64"), encoding: "wav", sampleRate, voice, model, provider: "gemini" };
   }
   if (mime.includes("mpeg") || mime.includes("mp3") || (bytes[0] === 0xff && (bytes[1] & 0xe0) === 0xe0)) {
-    return { audioContent: bytes.toString("base64"), encoding: "mp3", sampleRate, voice, provider: "gemini" };
+    return { audioContent: bytes.toString("base64"), encoding: "mp3", sampleRate, voice, model, provider: "gemini" };
   }
   if (mime.includes("wav") || bytes.subarray(0, 4).toString("ascii") === "RIFF" || !mime) {
-    return { audioContent: bytes.toString("base64"), encoding: "wav", sampleRate, voice, provider: "gemini" };
+    return { audioContent: bytes.toString("base64"), encoding: "wav", sampleRate, voice, model, provider: "gemini" };
   }
   return null;
 }
@@ -116,6 +117,7 @@ export async function synthesizeWithGemini(
   dependencies?: TTSDependencies,
   emotion?: string,
   diagnosticId?: string,
+  preferredModel?: string,
 ): Promise<TTSAudioResult | null> {
   const requestId = createTtsDiagnosticId(diagnosticId);
   const geminiKeys = getGeminiApiKeys(dependencies);
@@ -126,10 +128,12 @@ export async function synthesizeWithGemini(
   const delay = dependencies?.delay || ((ms: number) => new Promise<void>(resolve => setTimeout(resolve, ms)));
   const voiceName = resolveVoice(voice);
   const configuredModel = process.env.GEMINI_TTS_MODEL?.trim();
-  const preferredModel = configuredModel && DEFAULT_TTS_MODELS.includes(configuredModel) ? configuredModel : undefined;
-  const models = dependencies?.models || (preferredModel
-    ? [preferredModel, ...DEFAULT_TTS_MODELS.filter(model => model !== preferredModel)]
+  const environmentModel = configuredModel && DEFAULT_TTS_MODELS.includes(configuredModel) ? configuredModel : undefined;
+  const candidateModels = dependencies?.models || (environmentModel
+    ? [environmentModel, ...DEFAULT_TTS_MODELS.filter(model => model !== environmentModel)]
     : DEFAULT_TTS_MODELS);
+  const pinnedModel = preferredModel && candidateModels.includes(preferredModel) ? preferredModel : undefined;
+  const models = pinnedModel ? [pinnedModel] : candidateModels;
   let geminiRateLimited = false;
   let geminiQuotaExhausted = false;
   let retryAfterSeconds: number | undefined;
@@ -220,7 +224,7 @@ export async function synthesizeWithGemini(
 
           const payload = await response.json() as any;
           const audio = extractAudio(payload);
-          const result = audio ? normalizedAudio(audio, voiceName) : null;
+          const result = audio ? normalizedAudio(audio, voiceName, model) : null;
           if (result) return result;
           lastFailure = { status: 502, reason: 'EMPTY_AUDIO', model };
           logTtsDiagnostic({ event: 'provider_failure', requestId, provider: 'gemini', model, error: Object.assign(new Error('Gemini returned no audio.'), { status: 502, code: 'GEMINI_TTS_EMPTY_RESPONSE' }) });
@@ -286,6 +290,7 @@ type TTSAudioResponse = {
   encoding: "wav" | "mp3" | "pcm";
   sampleRate?: number;
   voice?: string;
+  model?: string;
   provider?: string;
 };
 
@@ -301,11 +306,12 @@ export async function synthesizeSpeechWithFallback(
   emotion?: string,
   dependencies: TTSFailoverDependencies = {},
   diagnosticId?: string,
+  preferredModel?: string,
 ): Promise<TTSAudioResponse> {
   const requestId = createTtsDiagnosticId(diagnosticId);
   // Legacy export name retained; Gemini failures never switch providers.
   try {
-    const result = await (dependencies.synthesizeGemini || synthesizeWithGemini)(text, voice, undefined, emotion, requestId);
+    const result = await (dependencies.synthesizeGemini || synthesizeWithGemini)(text, voice, undefined, emotion, requestId, preferredModel);
     if (!result) throw Object.assign(new Error('Gemini 음성 응답이 비어 있습니다.'), { status: 502, code: 'TTS_EMPTY_RESPONSE' });
     return result;
   } catch (error) {
@@ -358,8 +364,9 @@ export function sendBinaryTTSResponse(res: Response, result: TTSAudioResponse): 
   res.setHeader("X-TTS-Encoding", result.encoding);
   res.setHeader("X-TTS-Sample-Rate", String(result.sampleRate ?? 24000));
   res.setHeader("X-TTS-Voice", result.voice || "Aoede");
+  if (result.model) res.setHeader("X-TTS-Model", result.model);
   if (result.provider) res.setHeader("X-TTS-Provider", result.provider);
-  res.setHeader("Access-Control-Expose-Headers", "X-TTS-Encoding, X-TTS-Sample-Rate, X-TTS-Voice, X-TTS-Provider, X-TTS-Diagnostic-ID");
+  res.setHeader("Access-Control-Expose-Headers", "X-TTS-Encoding, X-TTS-Sample-Rate, X-TTS-Voice, X-TTS-Model, X-TTS-Provider, X-TTS-Diagnostic-ID");
   res.status(200).end(bytes);
 }
 
@@ -396,6 +403,8 @@ export default async function handler(
     const text = String(body.text || "").trim();
     const voice = body.voice ? String(body.voice) : undefined;
     const emotion = body.emotion ? String(body.emotion) : undefined;
+    const requestedModel = typeof body.preferredModel === "string" ? body.preferredModel : undefined;
+    const preferredModel = requestedModel && DEFAULT_TTS_MODELS.includes(requestedModel) ? requestedModel : undefined;
     if (!text) return res.status(400).json({ error: "Empty speech text" });
 
     const acceptHeader = req.headers?.accept;
@@ -406,7 +415,7 @@ export default async function handler(
     });
 
     // Server-only Gemini TTS. Browser-native and translator voices are excluded.
-    const result = await synthesizeSpeechWithFallback(text, voice, emotion, {}, requestId);
+    const result = await synthesizeSpeechWithFallback(text, voice, emotion, {}, requestId, preferredModel);
     if (wantsBinary) {
       sendBinaryTTSResponse(res, result);
       return;

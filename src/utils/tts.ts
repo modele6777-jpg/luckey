@@ -17,6 +17,7 @@ import {
   configureAmbientAudioSession,
 } from '../lib/audio';
 import { playAiResultNotification } from '../lib/audioHaptics';
+import { preloadCompletionChime } from '../lib/completionChime';
 import { setTTSSessionActive, clearTTSSession, initTTSSessionHandlers, pauseTTSSession, resumeTTSSession } from '../lib/ttsMediaSession';
 import { acquireScreenWakeLock, releaseScreenWakeLock } from '../lib/wakeLock';
 import { prepareNaturalSpeechText } from './speechText';
@@ -32,6 +33,8 @@ export interface TTSPlaybackOptions extends TTSCompletionPolicyOptions {
   isAutoPlay?: boolean;
   isAutoPlayback?: boolean;
   isUserToggleClick?: boolean;
+  /** @internal Keep one Gemini voice model for every chunk in this playback. */
+  preferredModel?: string;
 }
 
 export interface TTSState {
@@ -96,10 +99,19 @@ export interface TTSAudioData {
   audioContent: string;
   encoding: 'pcm' | 'mp3' | 'wav';
   sampleRate: number;
+  model?: string;
+}
+
+export function resolveTTSPlaybackProfile(text: string, voice?: string, emotion?: string): { voice: 'Aoede' | 'Charon'; emotion?: string } {
+  const embeddedEmotion = /\[EMOTION:\s*([^\]]+)\]/i.exec(String(text || ''))?.[1]?.trim();
+  return {
+    voice: voice === 'Charon' ? 'Charon' : 'Aoede',
+    emotion: emotion || embeddedEmotion || undefined,
+  };
 }
 
 const ttsCache = new Map<string, Promise<TTSAudioData | null>>();
-interface SpeechLookahead { text: string; voice?: string; emotion?: string }
+interface SpeechLookahead { text: string; voice?: string; emotion?: string; model?: string }
 const playbackLookahead = new Map<string, SpeechLookahead>();
 function prepareNextSpeech(session: string): void {
   if (ttsState.activeSessionId !== session || ttsState.isPaused) return;
@@ -108,17 +120,19 @@ function prepareNextSpeech(session: string): void {
   // Match the next actual request even when a legacy reader supplies a long chunk.
   const clean = normalizeTextForSpeech(next.text);
   const first = clean.length > 260 ? splitSpeechIntoChunks(clean, 240)[0] : clean;
-  if (first) void requestAIAudio(first, next.emotion, next.voice === 'Charon' ? 'Charon' : 'Aoede', session).catch(() => {});
+  if (first) void requestAIAudio(first, next.emotion, next.voice === 'Charon' ? 'Charon' : 'Aoede', session, next.model).catch(() => {});
 }
 function setSpeechLookahead(session: string, next?: SpeechLookahead): void {
   if (next) playbackLookahead.set(session, next);
   else playbackLookahead.delete(session);
 }
 
-export function getTTSCacheKey(text: string, _voice?: string, _emotion?: string, _rate?: string, _speed?: number): string {
+export function getTTSCacheKey(text: string, _voice?: string, _emotion?: string, _rate?: string, _speed?: number, _preferredModel?: string): string {
   const clean = normalizeTextForSpeech(text);
   const voice = _voice === 'Charon' ? 'Charon' : 'Aoede';
-  return `lucy_natural_v9_${voice}_${clean}`;
+  const emotion = String(_emotion || '').trim().toLowerCase();
+  const model = String(_preferredModel || 'auto').trim();
+  return `lucy_natural_v10_${voice}_${model}_${emotion}_${clean}`;
 }
 
 class TTSAudioRequestError extends Error {
@@ -151,8 +165,8 @@ async function pauseForTTSSlot(ms: number, session: string | undefined, signal: 
   }
 }
 
-function requestAIAudio(text: string, emotion?: string, voice = 'Aoede', session?: string): Promise<TTSAudioData> {
-  const key = getTTSCacheKey(text, voice);
+function requestAIAudio(text: string, emotion?: string, voice = 'Aoede', session?: string, preferredModel?: string): Promise<TTSAudioData> {
+  const key = getTTSCacheKey(text, voice, emotion, undefined, undefined, preferredModel);
   const existing = ttsCache.get(key);
   if (existing) return existing as Promise<TTSAudioData>;
   const pending = ttsRequestQueue.catch(() => {}).then(async () => {
@@ -184,7 +198,7 @@ function requestAIAudio(text: string, emotion?: string, voice = 'Aoede', session
           method: 'POST',
           // 📉 바이너리 오디오를 우선 요청합니다(base64 JSON 대비 Origin 전송량 -25%).
           headers: { 'Content-Type': 'application/json', Accept: 'audio/wav, audio/mpeg' },
-          body: JSON.stringify({ text: normalizeTextForSpeech(text), voice, emotion, responseFormat: 'binary' }), signal: controller.signal,
+          body: JSON.stringify({ text: normalizeTextForSpeech(text), voice, emotion, preferredModel, responseFormat: 'binary' }), signal: controller.signal,
         });
         if (controller.signal.aborted) throw new Error('음성 요청이 취소되었습니다.');
         if (!response.ok) {
@@ -225,7 +239,7 @@ function requestAIAudio(text: string, emotion?: string, voice = 'Aoede', session
         }
         const audio = await parseTTSAudioResponse(response);
         if (!audio?.audioContent) throw new TTSAudioRequestError('AI 음성 응답이 비어 있습니다. 다시 눌러 주세요.', 502);
-        return { audioContent: audio.audioContent, encoding: audio.encoding, sampleRate: audio.sampleRate };
+        return { audioContent: audio.audioContent, encoding: audio.encoding, sampleRate: audio.sampleRate, model: audio.model };
       }
       throw new TTSAudioRequestError('음성 요청이 일시적으로 몰려 잠시 지연되었습니다. 약 3초 뒤 다시 눌러 주세요.', 429, 'MEDIA_RATE_LIMIT');
       })()]);
@@ -241,10 +255,10 @@ function requestAIAudio(text: string, emotion?: string, voice = 'Aoede', session
   if (ttsCache.size > 24) ttsCache.delete(ttsCache.keys().next().value!);
   return pending;
 }
-export function prefetchTTS(text: string, _voice?: string, emotion?: string, _rate?: string, _speed?: number): Promise<TTSAudioData | null> {
+export function prefetchTTS(text: string, _voice?: string, emotion?: string, _rate?: string, _speed?: number, preferredModel?: string): Promise<TTSAudioData | null> {
   // Generating voices for unopened/idle content consumed the small TTS quota.
   // Playback requests own generation; no speculative provider requests.
-  return ttsCache.get(getTTSCacheKey(text, _voice)) || Promise.resolve(null);
+  return ttsCache.get(getTTSCacheKey(text, _voice, emotion, _rate, _speed, preferredModel)) || Promise.resolve(null);
 }
 
 let isPlayingSequence = false;
@@ -342,12 +356,13 @@ export const playTTS = async (
   options?: TTSPlaybackOptions,
 ): Promise<void> => {
   ensureTTSLifecycle();
+  const playbackProfile = resolveTTSPlaybackProfile(text, voice, emotion);
   const cleanText = normalizeTextForSpeech(text);
   if (!cleanText || (sequenceSessionId && retiredTTSSessions.has(sequenceSessionId))) return;
   // Legacy book, report and insight readers call this entrypoint directly.
   if (!sequenceSessionId && cleanText.length > 260) {
     try {
-      return await playTTSInChunks(cleanText, voice, 240, emotion, _speed, options);
+      return await playTTSInChunks(cleanText, playbackProfile.voice, 240, playbackProfile.emotion, _speed, options);
     } catch (error) {
       if (wait) throw error;
       window.dispatchEvent(new CustomEvent('prism:tts-error', { detail: { message: error instanceof Error ? error.message : 'AI 음성을 재생하지 못했습니다. 다시 눌러 주세요.' } }));
@@ -363,8 +378,8 @@ export const playTTS = async (
     for (let index = 0; index < parts.length; index++) {
       if (ttsState.activeSessionId && ttsState.activeSessionId !== sequenceSessionId) return;
       setSpeechLookahead(sequenceSessionId, index + 1 < parts.length
-        ? { text: parts[index + 1], voice, emotion } : parentNext);
-      await playTTS(parts[index], voice, true, emotion, sequenceSessionId,
+        ? { text: parts[index + 1], voice: playbackProfile.voice, emotion: playbackProfile.emotion, model: options?.preferredModel } : parentNext);
+      await playTTS(parts[index], playbackProfile.voice, true, playbackProfile.emotion, sequenceSessionId,
         isSequenceChunk || index < parts.length - 1, fullTextReference || cleanText,
         _rate, _speed, options);
       if (ttsState.activeSessionId !== sequenceSessionId) return;
@@ -373,7 +388,7 @@ export const playTTS = async (
   }
 
   // Lucy uses Aoede; explicit Charon requests read the user's chat messages.
-  const targetVoice = voice === 'Charon' ? 'Charon' : 'Aoede';
+  const targetVoice = playbackProfile.voice;
 
   // If we are calling playTTS standalone (without sequence) and something is already loading/speaking for this exact text:
   if (!sequenceSessionId && (ttsState.isSpeaking || ttsState.isLoading) && (ttsState.activeText === cleanText || ttsState.activeFullText === cleanText)) {
@@ -426,19 +441,13 @@ export const playTTS = async (
 
   const sessionToVerify = mySessionId;
 
-  // Auto-extract emotion tag if not explicitly provided
-  let activeEmotion = emotion;
-  if (!activeEmotion) {
-    const emotionMatch = text.match(/\[EMOTION:\s*([^\]]+)\]/i);
-    if (emotionMatch) {
-      activeEmotion = emotionMatch[1].trim();
-    }
-  }
+  const activeEmotion = playbackProfile.emotion;
 
   try {
     // Synchronously unlock audio during user gesture (required for mobile iOS/Android WebAudio playback)
     try {
       unlockAudioPlayback();
+      preloadCompletionChime(getSharedAudioContext());
     } catch (e) {
       console.warn("[TTS] Failed to warm up audio systems:", e);
     }
@@ -447,12 +456,17 @@ export const playTTS = async (
       currentSentence: initialSubSentence, activeSentence: initialSubSentence,
       ...(fullTextReference ? { activeFullText: fullTextReference } : {}) });
     const data = await retrySpeechRequest(
-      () => requestAIAudio(cleanText, activeEmotion, targetVoice, sessionToVerify),
+      () => requestAIAudio(cleanText, activeEmotion, targetVoice, sessionToVerify, options?.preferredModel),
       {
         isActive: () => ttsState.activeSessionId === sessionToVerify,
         waitUntilResumed: () => waitForTTSResume(sessionToVerify!),
       },
     );
+    if (data.model) {
+      if (options) options.preferredModel = data.model;
+      const next = playbackLookahead.get(sessionToVerify);
+      if (next) next.model = data.model;
+    }
 
     // CRITICAL ABORT CHECK after JSON parse
     if (sessionToVerify && ttsState.activeSessionId !== sessionToVerify) {
@@ -475,7 +489,7 @@ export const playTTS = async (
             data!.sampleRate ?? 24000, activeEmotion || cleanText, isSequenceChunk, 1.0, () => prepareNextSpeech(sessionToVerify!));
         } catch (error) {
           if (!['TTS_CONTEXT_STALLED', 'TTS_DECODE_TIMEOUT', 'TTS_INTERRUPTED'].includes((error as any)?.code)) {
-            ttsCache.delete(getTTSCacheKey(cleanText, targetVoice));
+            ttsCache.delete(getTTSCacheKey(cleanText, targetVoice, activeEmotion, _rate, _speed, options?.preferredModel));
           }
           throw error;
         }
@@ -647,7 +661,7 @@ export function isEdgeLeadAvailable(now = Date.now()): boolean {
  */
 function primeEdgeLead(text: string, voice: string | undefined, emotion: string | undefined, session: string): void {
   const resolvedVoice = voice === 'Charon' ? 'Charon' : 'Aoede';
-  const key = getTTSCacheKey(text, resolvedVoice);
+  const key = getTTSCacheKey(text, resolvedVoice, emotion);
   if (ttsCache.has(key)) return;
   const controller = new AbortController();
   const edge = (async (): Promise<TTSAudioData> => {
@@ -718,6 +732,8 @@ export const playTTSInChunks = async (
   _speed?: number,
   options?: TTSPlaybackOptions,
 ): Promise<void> => {
+  const playbackProfile = resolveTTSPlaybackProfile(text, voice, emotion);
+  const sequenceOptions: TTSPlaybackOptions = { ...options };
   const cleanText = prepareNaturalSpeechText(text);
   if (!cleanText) return;
   if ((options?.isAutoPlay || options?.isAutoPlayback) && ttsState.activeSessionId) return;
@@ -747,7 +763,7 @@ export const playTTSInChunks = async (
   // 중간 청크 오류 후에는 완료된 청크를 건너뛰고 사용자가 누른 재생에서 이어 듣습니다.
   const startChunkIndex = getResumableTTSChunkIndex(lastTTSProgress, {
     fullText: cleanText,
-    voice,
+    voice: playbackProfile.voice,
     chunks,
   });
   if (startChunkIndex > 0) {
@@ -778,7 +794,7 @@ export const playTTSInChunks = async (
   // ⚡ 첫 문장은 빠른 Edge 음성으로 바로 시작한다. 다음 조각(Gemini)은 첫 문장이 재생되기 시작할 때
   // 기존 미리 듣기(lookahead)가 요청하므로 Gemini 요청 수는 그대로다.
   if (fastLead && startChunkIndex === 0 && chunks.length > 1 && chunks[0] !== splitSpeechIntoChunks(cleanText, 120)[0]) {
-    primeEdgeLead(chunks[0], voice, emotion, sequenceSessionId);
+    primeEdgeLead(chunks[0], playbackProfile.voice, playbackProfile.emotion, sequenceSessionId);
   }
 
   try {
@@ -788,6 +804,7 @@ export const playTTSInChunks = async (
       if (ctx.state === 'suspended') {
         ctx.resume().catch(() => {});
       }
+      preloadCompletionChime(ctx);
       primeTTSAudioElement();
     } catch (_) {}
 
@@ -807,7 +824,7 @@ export const playTTSInChunks = async (
         chunkIndex: i,
         totalChunks: chunks.length,
         chunks,
-        voice: voice === 'Charon' ? 'Charon' : 'Aoede',
+        voice: playbackProfile.voice,
         updatedAt: Date.now(),
       };
 
@@ -827,14 +844,14 @@ export const playTTSInChunks = async (
       });
 
       setSpeechLookahead(sequenceSessionId, i + 1 < chunks.length
-        ? { text: chunks[i + 1], voice, emotion } : undefined);
-      if (i + 1 < chunks.length) void prefetchTTS(chunks[i + 1], voice, emotion).catch(() => {});
-      if (i + 2 < chunks.length) void prefetchTTS(chunks[i + 2], voice, emotion).catch(() => {});
+        ? { text: chunks[i + 1], voice: playbackProfile.voice, emotion: playbackProfile.emotion, model: sequenceOptions.preferredModel } : undefined);
+      if (i + 1 < chunks.length) void prefetchTTS(chunks[i + 1], playbackProfile.voice, playbackProfile.emotion, undefined, undefined, sequenceOptions.preferredModel).catch(() => {});
+      if (i + 2 < chunks.length) void prefetchTTS(chunks[i + 2], playbackProfile.voice, playbackProfile.emotion, undefined, undefined, sequenceOptions.preferredModel).catch(() => {});
 
       const isLastChunk = i === chunks.length - 1;
       try {
-        await playTTS(currentChunkText, voice, true, emotion,
-          sequenceSessionId, true, cleanText);
+        await playTTS(currentChunkText, playbackProfile.voice, true, playbackProfile.emotion,
+          sequenceSessionId, true, cleanText, undefined, undefined, sequenceOptions);
       } catch (chunkErr) {
         console.warn(`[TTS] Sequence chunk ${i + 1}/${chunks.length} playback failed:`, chunkErr);
         throw chunkErr;
@@ -1068,4 +1085,3 @@ export const useTTSState = () => {
   }, []);
   return state;
 };
-
