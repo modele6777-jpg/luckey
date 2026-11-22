@@ -3855,6 +3855,8 @@ test('Mayan Tzolkin Sacred Calendar Engine: calculates 260 Kin and galactic reso
 test('Nordic Elder Futhark Runes Engine: calculates birth rune, norns trio and bindrune', () => {
   const rep = calculateNordicElderFutharkRunes({ profile, question: '새 프로젝트 시작 타이밍이 맞을까요?' });
   assert.equal(rep.engineVersion, NORDIC_RUNES_VERSION);
+  assert.equal(rep.questionTopic, 'decision');
+  assert(rep.wyrdPhase.length > 0 && rep.shadowWarning.length > 0);
   assert(rep.birthRune.runeNumber >= 1 && rep.birthRune.runeNumber <= 24);
   assert(rep.nornsTrio.urdPast.runeNumber >= 1 && rep.nornsTrio.urdPast.runeNumber <= 24);
   assert(rep.nornsTrio.verdandiPresent.runeNumber >= 1 && rep.nornsTrio.verdandiPresent.runeNumber <= 24);
@@ -3871,6 +3873,7 @@ test('Nordic Elder Futhark Runes Engine: calculates birth rune, norns trio and b
   const prompt = formatNordicElderFutharkRunesPrompt(rep);
   assert(prompt.includes('북유럽 24 엘더 푸사르크 룬'));
   assert(prompt.includes(rep.birthRune.koreanName));
+  assert(prompt.includes('과잉·경계 점검'));
   assert(prompt.includes('실천 의례'));
   assert(prompt.includes('성찰 초점'));
   assert(prompt.includes('교차 매트릭스'));
@@ -4701,6 +4704,8 @@ test('Hawaiian Kahuna Three Selves Engine: calculates 3 selves harmony and mana 
 test('Nordic Yggdrasil Nine Realms Engine: calculates dominant realm and Bifrost clearance', () => {
   const rep = calculateNordicYggdrasilRealms({ profile, question: '지금 방향을 유지할지 전환할지 고민입니다.' });
   assert.equal(rep.engineVersion, NORDIC_YGGDRASIL_NINE_REALMS_ENGINE_VERSION);
+  assert.equal(rep.questionTopic, 'decision');
+  assert(rep.yggdrasilPhase.length > 0 && rep.shadowWarning.length > 0);
   assert(rep.yggdrasilAxisAlignmentScore >= 0 && rep.yggdrasilAxisAlignmentScore <= 100);
   assert(rep.bifrostBridgeClearance >= 0 && rep.bifrostBridgeClearance <= 100);
   assert(rep.dominantRealm.nameKo.length > 0);
@@ -4715,6 +4720,7 @@ test('Nordic Yggdrasil Nine Realms Engine: calculates dominant realm and Bifrost
   assert(prompt.includes('고대 북유럽 세계수 위그드라실(Yggdrasil) 9대 영역 실측 데이터'));
   assert(prompt.includes(rep.dominantRealm.nameKo));
   assert(prompt.includes('보조 교차 영역'));
+  assert(prompt.includes('과잉·경계 점검'));
   assert(prompt.includes('실천 의례'));
   assert(prompt.includes('성찰 초점'));
   assert(prompt.includes('교차 매트릭스'));
@@ -4777,6 +4783,8 @@ test('Orpheic Mysteries Engine: calculates memory well awakening and Dionysian e
   assert(rep.dionysianEcstasyVitality >= 0 && rep.dionysianEcstasyVitality <= 100);
   assert(rep.thresholdState.length > 0);
   assert(rep.polarityArchetype.nameKo.length > 0);
+  assert.notEqual(rep.companionArchetype.nameKo, rep.polarityArchetype.nameKo);
+  assert(rep.orphicPhase.length > 0 && rep.shadowWarning.length > 0);
   assert(rep.divineLineageDeclaration.length > 0);
   assert(rep.practiceGuidance.length > 0 && rep.ritualAction.length > 0 && rep.boundaryNotice.length > 0);
   assertKstTimestamp(rep.calculatedAtKst);
@@ -4785,6 +4793,8 @@ test('Orpheic Mysteries Engine: calculates memory well awakening and Dionysian e
   const prompt = formatOrpheicMysteriesPrompt(rep);
   assert(prompt.includes('고대 그리스 오르페우스 신비주의 & 므네모시네 기억의 샘 실측 데이터'));
   assert(prompt.includes(rep.goldTabletPassportCode));
+  assert(prompt.includes('동반 교차 원형'));
+  assert(prompt.includes('과잉·경계 점검'));
   assert(prompt.includes(rep.practiceGuidance));
   assert(prompt.includes('교차 매트릭스'));
   assert(!prompt.includes('/100'));
