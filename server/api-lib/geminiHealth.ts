@@ -38,6 +38,7 @@ export function sanitizeReason(raw: string): string {
     .replace(/AIza[0-9A-Za-z_-]{10,}/g, '[key]')
     .replace(/(key|token|access_token)=[^&\s"']+/gi, '$1=[hidden]')
     .replace(/Bearer\s+[A-Za-z0-9._-]+/gi, 'Bearer [hidden]')
+    .replace(/projects\/[^/\s"'`]+/g, 'projects/[project]')
     .replace(/\s+/g, ' ')
     .trim()
     .slice(0, 180);
