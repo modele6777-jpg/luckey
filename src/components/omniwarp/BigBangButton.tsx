@@ -110,15 +110,19 @@ export function BigBangButton() {
   const isKeyChannel = [currentCleanPath, windowCleanPath].some((path) =>
     ['/key', '/calm', '/orb', '/gateway', '/crystal', '/pharmacy'].some((alias) => path === alias || path.startsWith(`${alias}/`))
   );
+  const isPrologueChannel = [currentCleanPath, windowCleanPath].some((path) =>
+    ['/prologue', '/universe', '/ecpr', '/todo', '/mission', '/synergy', '/aegis'].some((alias) => path === alias || path.startsWith(`${alias}/`))
+  );
   const currentOneStopPage = getCurrentOneStopPage(location);
   const currentAppPages = getOrderedLuckeyPageKeysForCurrentApp(currentOneStopPage);
   const isCycleNavigationDisabled = isChatView || isKeyChannel || currentAppPages.length < 2;
   const previousAppPath = getAdjacentSidebarAppPath(location, 'previous');
   const nextAppPath = getAdjacentSidebarAppPath(location, 'next');
   const orbDirectionTarget = { id: 'orb' as const, icon: OrbShapeIcon as ReturnType<typeof getDestinationChannel>['icon'] };
+  const luckyDirectionTarget = { id: 'lucky' as const, icon: Clover as ReturnType<typeof getDestinationChannel>['icon'] };
   const directionTargets = {
-    north: isKeyChannel ? orbDirectionTarget : previousAppPath ? getDestinationChannel(previousAppPath) : null,
-    south: isChatView ? orbDirectionTarget : nextAppPath ? getDestinationChannel(nextAppPath) : null,
+    north: isKeyChannel ? orbDirectionTarget : isPrologueChannel ? luckyDirectionTarget : previousAppPath ? getDestinationChannel(previousAppPath) : null,
+    south: isChatView ? orbDirectionTarget : isKeyChannel ? luckyDirectionTarget : nextAppPath ? getDestinationChannel(nextAppPath) : null,
     west: isCycleNavigationDisabled ? null : getDestinationChannel(previousOrderedLuckeyPage(currentOneStopPage)),
     east: isCycleNavigationDisabled ? null : getDestinationChannel(nextOrderedLuckeyPage(currentOneStopPage)),
   };
@@ -281,6 +285,20 @@ export function BigBangButton() {
     window.dispatchEvent(new CustomEvent('prism-navigate', { detail: { path } }));
     window.dispatchEvent(new CustomEvent('nav-click-active', { detail: { path } }));
     return true;
+  };
+  const openLuckyPage = () => {
+    const path = '/lucky';
+    (window as any).__prismAllowRouteChangeUntil = Date.now() + 1500;
+    try {
+      sessionStorage.setItem('prism_bigbang_navigation_target', JSON.stringify({
+        path,
+        timestamp: Date.now(),
+      }));
+    } catch { /* ignore */ }
+    navigate(path);
+    window.dispatchEvent(new CustomEvent('prism-navigate', { detail: { path } }));
+    window.dispatchEvent(new CustomEvent('nav-click-active', { detail: { path } }));
+    window.dispatchEvent(new CustomEvent('prism:open-lucky-channels'));
   };
   useEffect(() => () => {
     if (directionFeedbackTimer.current) clearTimeout(directionFeedbackTimer.current);
@@ -1325,6 +1343,10 @@ export function BigBangButton() {
         setFeedbackChannel(orbDirectionTarget);
         setOrbCounselOpen(true);
         triggerHaptic('whitehole');
+      } else if ((targetDir === 'south' && isKeyChannel) || (targetDir === 'north' && isPrologueChannel)) {
+        setFeedbackChannel(luckyDirectionTarget);
+        openLuckyPage();
+        triggerHaptic('wormhole');
       } else if (targetDir === 'north') {
         if (navigateToAdjacentMenuApp('previous', 'north')) {
           triggerHaptic('wormhole');
@@ -1870,8 +1892,8 @@ export function BigBangButton() {
                   ? 'inset 0 0 24px rgba(0, 240, 255, 0.48), inset -4px -4px 16px rgba(168, 85, 247, 0.45), 0 0 34px rgba(0, 240, 255, 0.55)'
                   : 'inset 0 0 22px rgba(56, 189, 248, 0.25), inset -6px -6px 18px rgba(0, 0, 0, 0.9), 0 0 24px rgba(56, 189, 248, 0.3)',
               }}
-              title={`빅뱅 버튼 (탭: Lucy 채팅 / 더블탭: Key로 이동 / ${isChatView ? '아래: 음성모드' : isKeyChannel ? '위: 음성모드' : '위·아래: 메뉴 앱 순서대로 이동'} / ${isChatView ? '좌우: 점술모드 한 단계 얕게·깊게' : isKeyChannel ? '좌우: Key 목록 한 칸씩 이동' : isCycleNavigationDisabled ? '현재 화면에서는 좌우 이동 비활성화' : '좌우: 현재 앱 내부 화면만 이동'} / 길게 누름: 점술모드 / 드래그 후 놓기: 럭키 추천 앱으로 워프 · 범위 밖에서 놓으면 취소)`}
-              aria-label={`빅뱅 버튼 · 탭: Lucy 채팅, 루시 화면에서는 음성모드 켜기·끄기, 더블탭: Key로 이동 / ${isChatView ? '아래는 음성모드, 위는 이전 메뉴' : isKeyChannel ? '위는 음성모드, 아래는 다음 메뉴' : '위·아래는 메뉴 앱 순서대로 이동'} / ${isChatView ? '좌우는 점술모드 한 단계 얕게·깊게' : isKeyChannel ? '좌우는 Key 목록 한 칸씩 이동' : isCycleNavigationDisabled ? '현재 화면에서는 좌우 이동 비활성화' : '좌우는 현재 앱 내부 화면만 이동'}, 길게 누름: 루시 마스터(점술모드) 켜기·끄기, 드래그 후 놓으면 럭키 추천 앱으로 워프, 범위 밖이면 취소`}
+              title={`빅뱅 버튼 (탭: Lucy 채팅 / 더블탭: Key로 이동 / ${isChatView ? '아래: 음성모드' : isKeyChannel ? '위: 음성모드, 아래: 럭키' : isPrologueChannel ? '위: 럭키' : '위·아래: 메뉴 앱 순서대로 이동'} / ${isChatView ? '좌우: 점술모드 한 단계 얕게·깊게' : isKeyChannel ? '좌우: Key 목록 한 칸씩 이동' : isCycleNavigationDisabled ? '현재 화면에서는 좌우 이동 비활성화' : '좌우: 현재 앱 내부 화면만 이동'} / 길게 누름: 점술모드 / 드래그 후 놓기: 럭키 추천 앱으로 워프 · 범위 밖에서 놓으면 취소)`}
+              aria-label={`빅뱅 버튼 · 탭: Lucy 채팅, 루시 화면에서는 음성모드 켜기·끄기, 더블탭: Key로 이동 / ${isChatView ? '아래는 음성모드, 위는 이전 메뉴' : isKeyChannel ? '위는 음성모드, 아래는 럭키' : isPrologueChannel ? '위는 럭키, 아래는 다음 메뉴' : '위·아래는 메뉴 앱 순서대로 이동'} / ${isChatView ? '좌우는 점술모드 한 단계 얕게·깊게' : isKeyChannel ? '좌우는 Key 목록 한 칸씩 이동' : isCycleNavigationDisabled ? '현재 화면에서는 좌우 이동 비활성화' : '좌우는 현재 앱 내부 화면만 이동'}, 길게 누름: 루시 마스터(점술모드) 켜기·끄기, 드래그 후 놓으면 럭키 추천 앱으로 워프, 범위 밖이면 취소`}
             >
               {/* 🌀 [웜홀] 빛비춤 + 어두운 심연 + 사건의 지평선 3원 동시 융합 전개 */}
               {isPressing && activePhase === 'wormhole' && (

@@ -185,6 +185,11 @@ export default function LeftSidebarNav() {
     if (typeof window === 'undefined') return false;
     return isDualPaneLayout();
   });
+  useEffect(() => {
+    const openForLucky = () => setIsChannelsOpen(true);
+    window.addEventListener('prism:open-lucky-channels', openForLucky);
+    return () => window.removeEventListener('prism:open-lucky-channels', openForLucky);
+  }, []);
 
   useEffect(() => {
     const root = document.documentElement;
@@ -250,6 +255,9 @@ export default function LeftSidebarNav() {
   }, []);
   const [location, navigate] = useLocation();
   const cleanPath = location ? location.split('?')[0].split('#')[0] : '/';
+  useEffect(() => {
+    if (cleanPath === '/lucky') setIsChannelsOpen(true);
+  }, [cleanPath]);
   const { resolvedTheme } = useTheme();
   const reduceMotion = useReducedMotion();
 
@@ -592,18 +600,14 @@ export default function LeftSidebarNav() {
                     type="button"
                     className="refined-nav-item"
                     data-active={cleanPath === '/lucky' || isChannelsOpen || PRISM_CHANNELS.some(({ path }) => cleanPath === path)}
-                    aria-label={cleanPath === '/lucky' && isChannelsOpen ? 'Luckey, 채널 목록 접기' : 'Luckey'}
+                    aria-label="Luckey"
                     aria-expanded={isChannelsOpen}
                     aria-controls={isChannelsOpen ? 'prism-channel-icons' : undefined}
                     title="Luckey"
                     onClick={() => {
                       triggerHaptic('whitehole');
-                      if (cleanPath !== '/lucky') {
-                        setIsChannelsOpen(true);
-                        handleNavigate('/lucky');
-                        return;
-                      }
-                      setIsChannelsOpen((open) => !open);
+                      setIsChannelsOpen(true);
+                      if (cleanPath !== '/lucky') handleNavigate('/lucky');
                     }}
                   >
                     <Clover size={22} aria-hidden="true" />
