@@ -285,8 +285,12 @@ export function startGeminiLiveVoice(handlers: LiveVoiceHandlers): LiveVoiceSess
           model: `models/${model}`,
           generationConfig: {
             responseModalities: ['AUDIO'],
-            speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: orbVoice(handlers.voice || '') } } },
+            // 한국어로 듣고 말한다 (영어로 잘못 알아듣지 않게).
+            speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: orbVoice(handlers.voice || '') } }, languageCode: 'ko-KR' },
           },
+          // 마스터가 한 말과 사용자의 말을 글자로도 받는다 (자막·보고서용).
+          inputAudioTranscription: {},
+          outputAudioTranscription: {},
           systemInstruction: {
             parts: [{ text: buildLucyLiveInstruction(handlers.nickname || '', handlers.chart || '', handlers.cards || '', handlers.focus || '', handlers.greet || '') }],
           },
