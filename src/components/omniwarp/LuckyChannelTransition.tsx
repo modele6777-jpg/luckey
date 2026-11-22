@@ -41,7 +41,16 @@ function isLuckyHubPath(path: string): boolean {
   return clean === '/lucky' || clean.startsWith('/lucky/');
 }
 
+/** 오브(음성 상담) 페이지. 다른 화면에서 들어갈 때 같은 로딩 화면을 오브 색감으로 보여 준다. */
+export function isOrbPath(path: string): boolean {
+  const clean = cleanPath(path);
+  return clean === '/voice' || clean.startsWith('/voice/');
+}
+
 function channelInfo(path: string) {
+  if (isOrbPath(path)) {
+    return { kicker: 'ORB', label: 'Orb', subLabel: '오브 음성 상담 · 마음을 비추는 수정 구슬', color: '#9fb4dc' };
+  }
   if (isProfilePath(path)) {
     return { kicker: 'MY', label: 'MY PAGE', subLabel: '마이페이지 · 내 프로필과 기록', color: '#a855f7' };
   }
@@ -82,7 +91,8 @@ export function LuckyChannelTransition() {
     if (before === null) return; // first paint: the page's own loader handles it
     const fromLucyOrKey = isLucyThemeRoute(cleanPath(before)) || isKeyChannelPath(before);
     const enteringHub = isLuckyHubPath(location) && !isLuckyHubPath(before);
-    if (enteringHub || (fromLucyOrKey && (isLuckyChannelPath(location) || isProfilePath(location)))) {
+    const enteringOrb = isOrbPath(location) && !isOrbPath(before);
+    if (enteringHub || enteringOrb || (fromLucyOrKey && (isLuckyChannelPath(location) || isProfilePath(location)))) {
       setTarget(location);
       setRun(value => value + 1);
     }
@@ -116,7 +126,7 @@ export function LuckyChannelTransition() {
           <motion.div
             key={`lucky-entry-${run}`}
             role="status"
-            aria-label={info.kicker === 'MY' ? '마이페이지를 여는 중' : isLuckyHubPath(target) ? 'Lucky를 여는 중' : `${info.label} 채널을 여는 중`}
+            aria-label={info.kicker === 'ORB' ? '오브를 여는 중' : info.kicker === 'MY' ? '마이페이지를 여는 중' : isLuckyHubPath(target) ? 'Lucky를 여는 중' : `${info.label} 채널을 여는 중`}
             data-testid="lucky-channel-transition"
             data-lucky-channel={info.label}
             initial={{ opacity: 0 }}
@@ -124,7 +134,9 @@ export function LuckyChannelTransition() {
             exit={{ opacity: 0, scale: reduceMotion ? 1 : 1.05 }}
             transition={{ duration: reduceMotion ? 0.15 : 0.32, ease: 'easeOut' }}
             className="absolute inset-0 flex items-center justify-center overflow-hidden select-none"
-            style={{ background: 'radial-gradient(ellipse at 50% 38%, #12233f 0%, #0a1226 48%, #050811 100%)', color: '#f8fafc' }}
+            style={{ background: info.kicker === 'ORB'
+              ? 'radial-gradient(circle at 50% 38%, #24180f 0%, #100d12 46%, #070b12 100%)'
+              : 'radial-gradient(ellipse at 50% 38%, #12233f 0%, #0a1226 48%, #050811 100%)', color: '#f8fafc' }}
           >
             {/* Lucky night sky */}
             {STARS.map((star, i) => (
@@ -142,7 +154,7 @@ export function LuckyChannelTransition() {
             <motion.div
               aria-hidden="true"
               className="absolute inset-x-[-20%] top-[18%] h-40 blur-3xl"
-              style={{ background: `linear-gradient(100deg, transparent 10%, ${info.color}55 40%, #34d39944 60%, transparent 90%)` }}
+              style={{ background: `linear-gradient(100deg, transparent 10%, ${info.color}55 40%, ${info.kicker === 'ORB' ? '#f4f7ff33' : '#34d39944'} 60%, transparent 90%)` }}
               initial={{ opacity: 0, x: -40 }}
               animate={{ opacity: 1, x: reduceMotion ? 0 : 30 }}
               transition={{ duration: 2.2, ease: 'easeOut' }}
@@ -168,6 +180,22 @@ export function LuckyChannelTransition() {
                     transition={{ duration: 1.2, delay: 0.5, ease: 'easeOut', repeat: Infinity, repeatDelay: 0.2 }}
                   />
                 )}
+                {info.kicker === 'ORB' ? (
+                  // 오브: 오브 화면의 수정 구슬처럼 하얗게 빛나며 떠오른다
+                  <motion.span
+                    aria-hidden="true"
+                    data-orb-entry-sphere
+                    className="relative block h-12 w-12 rounded-full"
+                    style={{
+                      background: 'radial-gradient(circle at 34% 30%, #ffffff 0%, #f4f7ff 18%, rgba(255,255,255,0) 36%), radial-gradient(circle at 50% 54%, #d5def2 0%, #7f97c4 42%, #1a2744 74%, #070b12 100%)',
+                      boxShadow: '0 0 28px rgba(255,255,255,.35), inset 0 -6px 10px rgba(7,11,18,.35)',
+                    }}
+                    initial={{ scale: 0.3, opacity: 0 }}
+                    animate={reduceMotion ? { scale: 1, opacity: 1 } : { scale: [0.3, 1.08, 1], opacity: 1 }}
+                    transition={{ duration: reduceMotion ? 0.1 : 0.9, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
+                  />
+                ) : (
+                  <>
                 {/* Four-leaf clover unfolding */}
                 <motion.svg
                   viewBox="0 0 48 48"
@@ -195,11 +223,13 @@ export function LuckyChannelTransition() {
                   ))}
                   <circle cx="24" cy="24" r="2.4" fill="#fef9c3" />
                 </motion.svg>
+                  </>
+                )}
               </div>
 
               {info.kicker ? (
               <motion.p
-                className="text-[11px] font-bold tracking-[0.35em] text-emerald-200/80"
+                className={`text-[11px] font-bold tracking-[0.35em] ${info.kicker === 'ORB' ? 'text-slate-200/80' : 'text-emerald-200/80'}`}
                 initial={{ opacity: 0, y: 6 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4, delay: 0.15 }}
