@@ -5,7 +5,9 @@
  * 12대 영웅적 통과의례 및 영혼 불멸 탐색 관문을 현대 심리 분석과 사주·운명학적 맥락에 연동합니다.
  */
 
-export const SUMERIAN_GILGAMESH_TRIALS_ENGINE_VERSION = 'LUCKEY-GILGAMESH-TRIALS-v2.2.0';
+export const SUMERIAN_GILGAMESH_TRIALS_ENGINE_VERSION = 'LUCKEY-GILGAMESH-TRIALS-v2.3.0';
+
+export type GilgameshQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
 export interface GilgameshTrial {
   gateNumber: number;
@@ -21,6 +23,9 @@ export interface GilgameshTrialsReport {
   engineVersion: string;
   calculatedAt: string;
   calculatedAtKst: string;
+  questionTopic: GilgameshQuestionTopic;
+  immortalPhase: string;
+  shadowWarning: string;
   activeTrial: GilgameshTrial;
   secondaryTrial: GilgameshTrial;
   heroicResilienceScore: number; // 0 ~ 100
@@ -159,6 +164,20 @@ const TWELVE_TRIALS: GilgameshTrial[] = [
   },
 ];
 
+function classifyGilgameshTopic(question: string): GilgameshQuestionTopic {
+  const q = question.toLowerCase();
+  if (/연애|사랑|관계|사람|가족|친구|이별|갈등|상대|배우자|대화|동료/.test(q)) {
+    return 'relationship';
+  }
+  if (/결정|선택|진로|이직|사업|투자|계약|시험|프로젝트|전환|시작|방향/.test(q)) {
+    return 'decision';
+  }
+  if (/지침|불안|우울|회복|치유|피로|건강|마음|상처|슬픔|잠|스트레스/.test(q)) {
+    return 'healing';
+  }
+  return 'reflection';
+}
+
 export function calculateSumerianGilgameshTrials(params: {
   profile?: any;
   question?: string;
@@ -196,6 +215,22 @@ export function calculateSumerianGilgameshTrials(params: {
   const legacyBuildingPrescription = `지금 당신의 영혼은 길가메시의 ${activeTrial.gateNumber}번째 관문 [${activeTrial.nameKo}]에 위치해 있습니다. 에고의 함정인 '${activeTrial.egoShadowTrap}'을 경계하고, '${activeTrial.heroicBreakthroughAction}'을 통해 유한한 시간 속에서 영원히 빛날 레거시를 세우세요.`;
 
   const calculatedAtKst = formatGilgameshKstTimestamp(now);
+  const questionTopic = classifyGilgameshTopic(question);
+  const compositeHeroic = Math.round((heroicResilienceScore + immortalityWisdomIndex) / 2);
+  const immortalPhase =
+    compositeHeroic >= 80
+      ? '우루크 레거시 정점 — 시련의 핵심을 돌파해 오래 남을 성벽과 작품을 세우는 창조기'
+      : compositeHeroic >= 68
+        ? '엔키두 동행 조율 — 무모한 독주 대신 균형과 협력으로 관문을 건너는 정렬기'
+        : '사막 야영 성찰 — 무리한 원정을 잠시 멈추고 유한성과 휴식을 돌보는 재정비기';
+  const shadowWarning =
+    questionTopic === 'relationship'
+      ? `홀로 영웅이 되려는 조급함으로 곁의 동반자(엔키두)의 목소리를 누르지 않도록 경계하세요. (${activeTrial.egoShadowTrap})`
+      : questionTopic === 'decision'
+        ? `거대한 명분만 보고 눈앞의 실무 리스크와 대가를 과소평가하지 않도록 경계하세요. (${activeTrial.egoShadowTrap})`
+        : questionTopic === 'healing'
+          ? `약함을 보이면 진다는 강박으로 몸과 마음의 피로 신호를 무시하지 않도록 경계하세요. (${activeTrial.egoShadowTrap})`
+          : `불가능한 완벽을 좇느라 시두리의 포도원 같은 오늘의 작은 기쁨을 유예하지 않도록 경계하세요. (${activeTrial.egoShadowTrap})`;
   const reflectiveQuestion = question
     ? `"${question}" 앞에서 제${activeTrial.gateNumber}관문(${activeTrial.nameKo})의 에고 함정을 넘어, 제${secondaryTrial.gateNumber}관문(${secondaryTrial.nameKo})으로 건너가기 위해 오늘 실행할 한 가지는 무엇입니까?`
     : `지금 마주한 과제에서 '${activeTrial.egoShadowTrap}'을 내려놓고 '${activeTrial.heroicBreakthroughAction}'을 실천한다면 어떤 변화가 열리겠습니까?`;
@@ -205,7 +240,7 @@ export function calculateSumerianGilgameshTrials(params: {
   const reflectionFocus = `길가메시 12관문(${activeTrial.nameKo}) — ${activeTrial.nameAkkadian}`;
   const gilgameshSynthesisMatrix = {
     dominantTension: `제${activeTrial.gateNumber}관문(${activeTrial.nameKo}) ↔ ${activeTrial.egoShadowTrap}`,
-    alignmentState: `${activeTrial.cosmicElement} 원형 · 보조 관문 제${secondaryTrial.gateNumber}관문(${secondaryTrial.nameKo}) · ${soulCompanionType}`,
+    alignmentState: `${immortalPhase} · ${activeTrial.cosmicElement} 원형 · 보조 관문 제${secondaryTrial.gateNumber}관문(${secondaryTrial.nameKo}) · ${questionTopic}`,
     integratedAction: `${activeTrial.heroicBreakthroughAction}${question ? ` [질문 맥락: ${question}]` : ''}`,
   };
 
@@ -213,6 +248,9 @@ export function calculateSumerianGilgameshTrials(params: {
     engineVersion: SUMERIAN_GILGAMESH_TRIALS_ENGINE_VERSION,
     calculatedAt: now.toISOString(),
     calculatedAtKst,
+    questionTopic,
+    immortalPhase,
+    shadowWarning,
     activeTrial,
     secondaryTrial,
     heroicResilienceScore,
@@ -232,12 +270,14 @@ export function formatSumerianGilgameshTrialsPrompt(report: GilgameshTrialsRepor
   const s = report.secondaryTrial;
   const lines = [
     `### 🏛️ 고대 메소포타미아 길가메시 서사시 12관문 불멸 여정 실측 데이터 (${report.engineVersion})`,
-    `- **연산 시각**: ${report.calculatedAtKst}`,
+    `- **연산 시각**: ${report.calculatedAtKst} | **질문 맥락**: ${report.questionTopic}`,
+    `- **불멸 여정 국면**: ${report.immortalPhase}`,
     `- **현재 통과의례 관문**: 제${t.gateNumber}관문 - ${t.nameKo} (${t.nameAkkadian}, ${t.cosmicElement}의 원형)`,
     `- **보조 교차 관문**: 제${s.gateNumber}관문 - ${s.nameKo} (${s.nameAkkadian}, ${s.cosmicElement}의 원형)`,
     `- **원형적 테마**: ${t.archetypalTheme}`,
     `- **경계해야 할 에고의 함정**: ${t.egoShadowTrap}`,
     `- **영웅적 돌파 행동 처방**: ${t.heroicBreakthroughAction}`,
+    `- **과잉 경계(Shadow Warning)**: ${report.shadowWarning}`,
     `- **영혼의 거울 동반자 (엔키두 원형)**: ${report.soulCompanionType}`,
     `- **마스터 레거시 지침**: ${report.legacyBuildingPrescription}`,
     `- **실천 의례**: ${report.ritualAction}`,
