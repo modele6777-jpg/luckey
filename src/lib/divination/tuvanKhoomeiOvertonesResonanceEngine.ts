@@ -3,15 +3,25 @@ import type { UserProfile } from '../sharedState';
 export interface TuvanKhoomeiResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: string;
   overtoneLayer: string;
   companionLayer: string;
+  resonanceAxis: string;
   steppeInsight: string;
   soundTone: string;
   reflectionFocus: string;
   ritualAction: string;
   reflectiveQuestion: string;
+  shadowWarning: string;
   interpretiveBoundary: string;
 }
+
+const RESONANCE_AXES = [
+  '후메이 이중 호흡 · 겉말 너머 진심 듣기',
+  '시깃 맑은 초점 · 잡음 걷고 핵심 남기기',
+  '카르기라 대지 저음 · 발바닥 붙이고 중심 잡기',
+  '이기르 두 줄 공명 · 상반된 요구 조율하기',
+] as const;
 
 const LAYERS = [
   {
@@ -81,17 +91,25 @@ export function calculateTuvanKhoomeiOvertonesResonance(params: {
   const companionOffset = 1 + (stableHash(`${seed}|companion`) % (LAYERS.length - 1));
   const picked = LAYERS[idx];
   const companion = LAYERS[(idx + companionOffset) % LAYERS.length];
+  const resonanceAxis = RESONANCE_AXES[stableHash(`${seed}|axis`) % RESONANCE_AXES.length];
+  const trimmedQ = (params.question ?? '').trim();
+  const questionTopic = trimmedQ
+    ? trimmedQ.slice(0, 36)
+    : '겉소음을 줄이고 내 안의 진짜 울림 듣기';
 
   return {
-    engineVersion: 'LUCKEY-TUVAN-KHOOMEI-v2.2.0',
+    engineVersion: 'LUCKEY-TUVAN-KHOOMEI-v2.3.0',
     calculatedAtKst: formatKstIso(now),
+    questionTopic,
     overtoneLayer: picked.layer,
     companionLayer: companion.layer,
+    resonanceAxis,
     steppeInsight: `${picked.insight} (동반 배음: ${companion.layer})`,
     soundTone: picked.tone,
-    reflectionFocus: `시베리아 투바 후메이의 '${picked.layer}'와 동반 배음 '${companion.layer}'처럼, 겉으로 흩어지는 소음을 줄이고 내 안의 진짜 울림에 귀를 기울여 보세요.`,
+    reflectionFocus: `질문 맥락('${questionTopic}')에서 시베리아 투바 후메이의 '${picked.layer}'와 배음 공명 축('${resonanceAxis}')을 함께 살피며, 겉으로 흩어지는 소음을 줄이고 내 안의 진짜 울림에 귀를 기울여 보세요.`,
     ritualAction: picked.ritual,
     reflectiveQuestion: picked.question,
+    shadowWarning: '내 안의 깊은 공명에만 잠겨 상대방과 바깥 현장이 보내는 실제 피드백의 음정을 놓치지 않도록 살피세요.',
     interpretiveBoundary: '시베리아 투바 전통의 후메이(Khoomei) 배음과 자연 공명 철학을 바탕으로 한 상징적 성찰 프레임입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.',
   };
 }
@@ -100,12 +118,15 @@ export function formatTuvanKhoomeiPrompt(res: TuvanKhoomeiResult): string {
   return [
     `[투바 후메이 배음 공명 성찰 · ${res.engineVersion}]`,
     `- 기준 시각: ${res.calculatedAtKst}`,
+    `- 질문 맥락: ${res.questionTopic}`,
     `- 배음 층위: ${res.overtoneLayer} (${res.soundTone})`,
     `- 동반 배음: ${res.companionLayer}`,
+    `- 공명 축: ${res.resonanceAxis}`,
     `- 중심 통찰: ${res.steppeInsight}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 오늘의 작은 실천: ${res.ritualAction}`,
     `- 스스로에게 묻기: ${res.reflectiveQuestion}`,
+    `- 과잉 경계: ${res.shadowWarning}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
   ].join('\n');
 }

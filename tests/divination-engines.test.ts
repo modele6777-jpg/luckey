@@ -13561,14 +13561,15 @@ test('Mapuche Kultrun Cosmic Balance engine: directions, +09:00 KST, and interpr
 
 test('Melanesian Sand Drawing Pattern engine: motifs, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateMelanesianSandDrawingPattern({ profile, now: new Date('2026-11-20T05:40:00Z'), question: '흩어진 고민을 하나로 잇고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-MELANESIAN-SAND-v2.2.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-MELANESIAN-SAND-v2.3.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.bridgingMotif.name !== rep.primaryMotif.name);
+  assert.ok(rep.sandGridAxis.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatMelanesianSandPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('모래 그림') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.bridgingMotif.name));
+  assert.ok(prompt.includes('모래 그림') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.bridgingMotif.name) && prompt.includes(rep.sandGridAxis));
 });
 
 test('Etruscan Templum Sky Division engine: sectors, +09:00 KST, and interpretive boundary', () => {
@@ -13913,14 +13914,15 @@ test('Basotho Botho Mountain Wisdom engine: sign, +09:00 KST, and interpretive b
 
 test('Tuvan Khoomei Overtones Resonance engine: layer, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateTuvanKhoomeiOvertonesResonance({ profile, now: new Date('2026-11-20T07:12:00Z'), question: '내 안의 진짜 울림을 듣고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-TUVAN-KHOOMEI-v2.2.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-TUVAN-KHOOMEI-v2.3.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionLayer !== rep.overtoneLayer);
+  assert.ok(rep.questionTopic.length > 0 && rep.resonanceAxis.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatTuvanKhoomeiPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('투바') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionLayer));
+  assert.ok(prompt.includes('투바') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionLayer) && prompt.includes(rep.resonanceAxis));
 });
 
 test('Breton Barzaz Sea Poetry engine: motif, +09:00 KST, and interpretive boundary', () => {
@@ -14099,14 +14101,15 @@ test('Kurdish Newroz Zagros Renewal engine: symbol, +09:00 KST, and interpretive
 
 test('Sindhi Bhitai Indus Melody engine: sur, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateSindhiBhitaiIndusMelody({ profile, now: new Date('2026-11-20T07:42:00Z'), question: '내 마음의 진실한 선율을 지키고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-SINDHI-BHITAI-v2.2.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-SINDHI-BHITAI-v2.3.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionSur !== rep.surMelody);
+  assert.ok(rep.questionTopic.length > 0 && rep.indusFlowAxis.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatSindhiBhitaiPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('신드') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionSur));
+  assert.ok(prompt.includes('신드') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionSur) && prompt.includes(rep.indusFlowAxis));
 });
 
 test('Corsican Paghjella Maquis Harmony engine: voice, +09:00 KST, and interpretive boundary', () => {
