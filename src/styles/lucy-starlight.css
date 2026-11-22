@@ -940,3 +940,17 @@ html.keyboard-open .lucy-chat-shell .lucy-chat-main {
 @media (prefers-reduced-motion: reduce) {
   .lucy-thinking-line, .lucy-thinking-ring-spark { animation: none; }
 }
+/* Three-leaf clover sways gently while Lucy writes; the four-leaf clover pops in with a small glow near the end. */
+.lucy-thinking-clover { transform-origin: 50% 70%; animation: lucy-clover-sway 2.4s ease-in-out infinite; }
+.lucy-thinking-clover.is-lucky { animation: lucy-clover-pop .7s cubic-bezier(.34, 1.56, .64, 1) both, lucy-clover-sway 2.4s ease-in-out .7s infinite; filter: drop-shadow(0 0 4px rgba(253, 230, 138, .9)); }
+@keyframes lucy-clover-sway {
+  0%, 100% { transform: rotate(-8deg); }
+  50% { transform: rotate(8deg); }
+}
+@keyframes lucy-clover-pop {
+  0% { transform: scale(.4) rotate(-90deg); opacity: 0; }
+  100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .lucy-thinking-clover, .lucy-thinking-clover.is-lucky { animation: none; }
+}

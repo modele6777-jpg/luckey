@@ -745,11 +745,7 @@ function LucyThinkingLine({ isLight, master }: { isLight: boolean; master: boole
   );
 }
 
-/**
- * Rough waiting time shown as a ring that fills, never as seconds.
- * It approaches full over the usual time for this mode (90% at the expected time) and never quite completes before the answer arrives.
- */
-function LucyThinkingRing({ isLight, depth = 1, master }: { isLight: boolean; depth?: LucyMasterDepth; master: boolean }) {
+function useThinkingProgress(master: boolean, depth: LucyMasterDepth = 1): number {
   const expectedMs = master ? (depth >= 3 ? 110000 : depth === 2 ? 75000 : 55000) : 25000;
   const [progress, setProgress] = useState(0);
   useEffect(() => {
@@ -760,6 +756,44 @@ function LucyThinkingRing({ isLight, depth = 1, master }: { isLight: boolean; de
     const timer = window.setInterval(tick, 400);
     return () => window.clearInterval(timer);
   }, [expectedMs]);
+  return progress;
+}
+
+const CLOVER_LEAF = 'M12 12 C 8.6 9.4, 7.6 5.2, 10.2 4.3 C 11.3 3.9, 12 4.7, 12 5.6 C 12 4.7, 12.7 3.9, 13.8 4.3 C 16.4 5.2, 15.4 9.4, 12 12 Z';
+
+/** A three-leaf clover while Lucy writes; it becomes a four-leaf clover as the waiting ring is nearly full. */
+function LucyThinkingClover({ progress, isLight }: { progress: number; isLight: boolean }) {
+  const lucky = progress >= 0.85;
+  const angles = lucky ? [45, 135, 225, 315] : [0, 120, 240];
+  return (
+    <span
+      key={lucky ? 'four' : 'three'}
+      data-lucy-thinking-clover={lucky ? 'four' : 'three'}
+      aria-hidden="true"
+      className={`lucy-thinking-clover inline-flex shrink-0 ${lucky ? 'is-lucky' : ''}`}
+    >
+      <svg viewBox="0 0 24 24" width="26" height="26">
+        <path d="M12 12 Q 13.4 17 16.6 20.6" fill="none" stroke={isLight ? '#15803d' : '#4ade80'} strokeWidth="1.6" strokeLinecap="round" />
+        {angles.map(angle => (
+          <path key={angle} d={CLOVER_LEAF} transform={`rotate(${angle} 12 12)`} fill={lucky ? 'url(#lucy-clover-lucky)' : (isLight ? '#22c55e' : '#4ade80')} stroke={isLight ? '#15803d' : '#14532d'} strokeWidth=".6" />
+        ))}
+        <defs>
+          <linearGradient id="lucy-clover-lucky" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stopColor="#4ade80" />
+            <stop offset="100%" stopColor="#16a34a" />
+          </linearGradient>
+        </defs>
+        {lucky && <circle cx="12" cy="12" r="1.3" fill="#fde68a" />}
+      </svg>
+    </span>
+  );
+}
+
+/**
+ * Rough waiting time shown as a ring that fills, never as seconds.
+ * It approaches full over the usual time for this mode (90% at the expected time) and never quite completes before the answer arrives.
+ */
+function LucyThinkingRing({ isLight, depth = 1, master, progress }: { isLight: boolean; depth?: LucyMasterDepth; master: boolean; progress: number }) {
   const radius = 9;
   const length = 2 * Math.PI * radius;
   const hint = master ? (depth >= 3 ? '심층 상담이라 조금 오래 걸려요' : depth === 2 ? '심화 상담이라 조금 더 걸려요' : '잠시만 기다려 주세요') : '곧 답장이 와요';
@@ -789,6 +823,17 @@ function LucyThinkingRing({ isLight, depth = 1, master }: { isLight: boolean; de
         <circle className="lucy-thinking-ring-spark" cx="12" cy="3" r="1.4" fill={isLight ? '#059669' : '#fde68a'} />
       </svg>
     </span>
+  );
+}
+
+function LucyThinkingIndicator({ isLight, depth, master }: { isLight: boolean; depth: LucyMasterDepth; master: boolean }) {
+  const progress = useThinkingProgress(master, depth);
+  return (
+    <>
+      <LucyThinkingClover progress={progress} isLight={isLight} />
+      <LucyThinkingLine isLight={isLight} master={master} />
+      <LucyThinkingRing isLight={isLight} depth={depth} master={master} progress={progress} />
+    </>
   );
 }
 
@@ -4831,19 +4876,12 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
           )}
 
           {isLucyGenerating && (
-            <div className={`flex items-center gap-2.5 p-3.5 border rounded-2xl w-fit shadow-xs animate-pulse ${
+            <div data-lucy-thinking className={`flex items-center gap-2.5 p-3.5 border rounded-2xl w-fit shadow-xs ${
               isLight
                 ? 'bg-[#fffdf9]/95 border-emerald-200/80 text-emerald-950'
                 : 'bg-slate-900/90 border-emerald-500/30 text-white'
             }`}>
-              <span className="text-base select-none animate-bounce">✨</span>
-              <div className="flex gap-1 items-center">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-bounce" />
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-bounce delay-100" />
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-bounce delay-200" />
-              </div>
-              <LucyThinkingLine isLight={isLight} master={isMasterMode} />
-              <LucyThinkingRing isLight={isLight} depth={masterDepth} master={isMasterMode} />
+              <LucyThinkingIndicator isLight={isLight} depth={masterDepth} master={isMasterMode} />
             </div>
           )}
           
