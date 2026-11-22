@@ -5,13 +5,27 @@ export interface BugisLontaraResult {
   calculatedAtKst: string;
   lontaraPrinciple: string;
   companionPrinciple: string;
+  voyagePhase: string;
   pasikInsight: string;
   sulawesiTone: string;
+  shadowWarning: string;
   reflectionFocus: string;
   ritualAction: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
+
+const VOYAGE_PHASES = [
+  '출항 정돈(바람의 방향과 돛의 장력을 맞추며 기준을 세우는 시기)',
+  '해협 통과(흔들리는 물살 속에서도 용골의 중심을 지키는 시기)',
+  '항구 결속(서로의 존엄을 먼저 헤아리며 신뢰의 닻을 내리는 시기)',
+] as const;
+
+const SHADOW_WARNINGS = [
+  '품위와 원칙을 세우려다 상대의 사정이나 현장의 유연함까지 닫아 버리지 않도록 살피세요.',
+  '바람의 결을 살피며 신중함을 유지하려다 정작 닻을 올려야 할 때마저 늦추지 않도록 점검하세요.',
+  '연민과 배려에 치우쳐 내가 꼭 지켜야 할 정직한 경계와 기준까지 흐려지지 않도록 유의하세요.',
+] as const;
 
 const PRINCIPLES = [
   {
@@ -81,17 +95,21 @@ export function calculateBugisLontaraPasikWisdom(params: {
   const companionOffset = 1 + (stableHash(`${seed}|companion`) % (PRINCIPLES.length - 1));
   const picked = PRINCIPLES[idx];
   const companion = PRINCIPLES[(idx + companionOffset) % PRINCIPLES.length];
+  const voyagePhase = VOYAGE_PHASES[stableHash(`${seed}|phase`) % VOYAGE_PHASES.length];
+  const shadowWarning = SHADOW_WARNINGS[stableHash(`${seed}|shadow`) % SHADOW_WARNINGS.length];
 
   return {
-    engineVersion: 'LUCKEY-BUGIS-LONTARA-v2.2.0',
+    engineVersion: 'LUCKEY-BUGIS-LONTARA-v2.3.0',
     calculatedAtKst: formatKstIso(now),
     lontaraPrinciple: picked.principle,
     companionPrinciple: companion.principle,
+    voyagePhase,
     pasikInsight: `${picked.insight} (동반 덕목: ${companion.principle})`,
     sulawesiTone: picked.tone,
-    reflectionFocus: `부기스 론타라 지혜의 '${picked.principle}'와 동반 덕목 '${companion.principle}'처럼, 내 품위와 타인을 향한 연민의 균형 속에서 오늘의 항로를 차분히 정해 보세요.`,
-    ritualAction: picked.ritual,
-    reflectiveQuestion: picked.question,
+    shadowWarning,
+    reflectionFocus: `부기스 론타라 지혜의 '${voyagePhase}' 흐름 속에서 '${picked.principle}'와 동반 덕목 '${companion.principle}'을 함께 비춰 오늘의 항로를 차분히 정해 보세요.`,
+    ritualAction: `${picked.ritual} (동반 덕목: ${companion.principle})`,
+    reflectiveQuestion: `${picked.question} '${voyagePhase}' 국면에서 가장 먼저 지킬 중심은 무엇인가요?`,
     interpretiveBoundary: '인도네시아 술라웨시 부기스·마카사르의 론타라(Lontara)·파시크(Pasik) 항해 윤리를 바탕으로 한 상징적 성찰 프레임입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.',
   };
 }
@@ -102,7 +120,9 @@ export function formatBugisLontaraPrompt(res: BugisLontaraResult): string {
     `- 기준 시각: ${res.calculatedAtKst}`,
     `- 론타라 덕목: ${res.lontaraPrinciple} (${res.sulawesiTone})`,
     `- 동반 덕목: ${res.companionPrinciple}`,
+    `- 항해 국면: ${res.voyagePhase}`,
     `- 중심 통찰: ${res.pasikInsight}`,
+    `- 과잉·경계 점검: ${res.shadowWarning}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 오늘의 작은 실천: ${res.ritualAction}`,
     `- 스스로에게 묻기: ${res.reflectiveQuestion}`,

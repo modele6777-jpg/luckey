@@ -14015,14 +14015,15 @@ test('Kalmyk Jangar Bumba Steppe engine: motif, +09:00 KST, and interpretive bou
 
 test('Bugis Lontara Pasik Wisdom engine: principle, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateBugisLontaraPasikWisdom({ profile, now: new Date('2026-11-20T08:04:00Z'), question: '품위와 연민의 균형을 지키고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-BUGIS-LONTARA-v2.2.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-BUGIS-LONTARA-v2.3.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionPrinciple !== rep.lontaraPrinciple);
+  assert.ok(rep.voyagePhase.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatBugisLontaraPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('부기스') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionPrinciple));
+  assert.ok(prompt.includes('부기스') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionPrinciple) && prompt.includes(rep.voyagePhase) && prompt.includes(rep.shadowWarning));
 });
 
 test('Latvian Dainas Mara Harmony engine: motif, +09:00 KST, and interpretive boundary', () => {
@@ -14791,14 +14792,15 @@ test('Zimbabwe Great Stone Wall engine: motif, +09:00 KST, and interpretive boun
 
 test('Bulgarian Rose Valley Dawn engine: motif, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateBulgarianRoseValleyDawn({ profile, now: new Date('2026-11-20T20:19:00Z'), question: '가장 맑은 시간대에 핵심을 모으고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-BULGARIAN-ROSE-v2.2.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-BULGARIAN-ROSE-v2.3.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionMotif !== rep.roseMotif);
+  assert.ok(rep.harvestPhase.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatBulgarianRosePrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('불가리아') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionMotif));
+  assert.ok(prompt.includes('불가리아') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionMotif) && prompt.includes(rep.harvestPhase) && prompt.includes(rep.shadowWarning));
 });
 
 test('Azeri Carpet Flame Poise engine: motif, +09:00 KST, and interpretive boundary', () => {
@@ -14973,14 +14975,15 @@ test('Malagasy Baobab Root Poise engine: motif, +09:00 KST, and interpretive bou
 
 test('Bukhara Tile Mosaic Calm engine: motif, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateBukharaTileMosaicCalm({ profile, now: new Date('2026-11-20T21:08:00Z'), question: '작은 타일 한 조각을 제자리에 맞추고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-BUKHARA-TILE-v2.2.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-BUKHARA-TILE-v2.3.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionMotif !== rep.bukharaMotif);
+  assert.ok(rep.craftPhase.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatBukharaTilePrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('부하라') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionMotif));
+  assert.ok(prompt.includes('부하라') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionMotif) && prompt.includes(rep.craftPhase) && prompt.includes(rep.shadowWarning));
 });
 
 test('Faroese Turf Roof Shelter engine: motif, +09:00 KST, and interpretive boundary', () => {
