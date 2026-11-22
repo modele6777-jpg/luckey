@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { routeAndExecute, LUCY_MASTER_DEPTH3_TOOLS } from '../src/lib/divination/smartAgentRouter';
 import {
   parseAnswerChoices,
+  getPendingAnswerChoices,
   isAcceptingTarotDrawOffer,
   isAskingForDeepEngines,
   buildTarotHouseGuide,
@@ -63,6 +64,15 @@ test('answer choices are parsed from the last line', () => {
   assert.equal(r.text, '요즘 많이 지쳤어?');
   assert.deepEqual(r.choices, ['응, 좀 지쳤어', '아니 괜찮아', '잘 모르겠어']);
   assert.deepEqual(parseAnswerChoices('그냥 말').choices, []);
+});
+
+test('Lucy keeps an explicit question pending until the user answers with text or a choice', () => {
+  const choices = ['응, 한 장 뽑아볼래', '세 장 뽑아줘', '사주로만 계속할래'];
+  const offer = { role: 'model' as const, content: '카드로 마음을 볼까?\n[답변선택: 응, 한 장 뽑아볼래 | 세 장 뽑아줘 | 사주로만 계속할래]' };
+  assert.deepEqual(getPendingAnswerChoices([offer]), choices);
+  assert.deepEqual(getPendingAnswerChoices([offer, { role: 'model', content: '' }]), choices);
+  assert.deepEqual(getPendingAnswerChoices([offer, { role: 'user', content: '한 장으로 부탁해' }]), []);
+  assert.deepEqual(getPendingAnswerChoices([offer, { role: 'user', content: choices[1] }, { role: 'model', content: '좋아, 카드를 준비할게.' }]), []);
 });
 
 test('accepting a tarot offer and asking for deeper engines are detected', () => {

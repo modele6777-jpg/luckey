@@ -326,6 +326,23 @@ export function parseAnswerChoices(text: string): { text: string; choices: strin
   return { text: text.slice(0, match.index).trimEnd(), choices };
 }
 
+/** Latest Lucy question choices stay pending until the user sends a reply. */
+export function getPendingAnswerChoices(messages: readonly Pick<UnifiedMessage, 'role' | 'content'>[]): string[] {
+  for (let i = messages.length - 1; i >= 0; i--) {
+    const message = messages[i];
+    if (message.role === 'user') return [];
+    if (message.role !== 'model' && message.role !== 'assistant') continue;
+    const content = typeof message.content === 'string'
+      ? message.content
+      : Array.isArray(message.content)
+        ? String(message.content.find((part: any) => part?.type === 'text')?.text || '')
+        : '';
+    if (!content.trim()) continue;
+    return parseAnswerChoices(content).choices;
+  }
+  return [];
+}
+
 /**
  * 루시 마스터 ↔ 일반 루시 대화 연동 선택.
  * - undecided: 인사에서 물어본 상태 / linked: 최근 루시 대화를 맥락으로 이어감 / fresh: 따로 새로 시작
