@@ -197,10 +197,11 @@ export default function LeftSidebarNav() {
   const unfoldedRef = useRef(screenUnfolded);
   unfoldedRef.current = screenUnfolded;
   // 🍀 펼친 화면은 목록을 닫지 않는다. 접힌 화면만 럭키에서 나갈 때 접힌다.
-  // 접힌 화면은 클로버 목록이 접힌 상태가 기본이다 (Lucky 채널에 있어도). 펼친 화면은 늘 펼쳐져 있다.
+  // 접힌 화면: Lucky 채널(Lucky·7대 앱)에 있으면 클로버 목록이 펼쳐지고, 그 밖(루시·키·오브 등)에서는 접혀 있다.
+  // 펼친 화면은 늘 펼쳐져 있다.
   const [isChannelsOpen, setIsChannelsOpen] = useState(() => {
     if (typeof window === 'undefined') return false;
-    return isDualPaneLayout();
+    return isDualPaneLayout() || isLuckyListPath(window.location.pathname || '/');
   });
   useEffect(() => {
     const openForLucky = () => setIsChannelsOpen(true);
@@ -325,8 +326,10 @@ export default function LeftSidebarNav() {
       setIsChannelsOpen(true);
       return;
     }
-    // 펼쳤다가 다시 접으면 접힌 화면의 기본값(접힘)으로 돌아간다. 경로가 바뀌어도 저절로 펼치지 않는다.
-    if (unfoldedBeforeRef.current) setIsChannelsOpen(false);
+    // 접힌 화면: 다른 화면으로 옮기거나 펼쳤다 접을 때, Lucky 채널이면 펼치고 아니면 접는다.
+    // 같은 화면에서 클로버로 직접 열고 닫은 것은 그대로 둔다.
+    const pathChanged = luckyPathRef.current !== cleanPath;
+    if (pathChanged || unfoldedBeforeRef.current) setIsChannelsOpen(isLuckyListPath(cleanPath));
     luckyPathRef.current = cleanPath;
   }, [cleanPath, screenUnfolded]);
   const unfoldedBeforeRef = useRef(screenUnfolded);
