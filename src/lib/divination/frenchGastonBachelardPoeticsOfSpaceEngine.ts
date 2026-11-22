@@ -10,12 +10,12 @@
  * 4. 지성적 엄밀성과 시적 상상력의 이중 나선 조화도(Dual Spiral of Reason & Poetics): 낮의 냉철한 분석과 밤의 따스한 감성을 조화롭게 넘나드는 유연성.
  * 5. 우주적 친밀감 및 사물 교감 회복탄력성(Cosmic Intimacy & Poetic Resilience): 작은 사물 하나에서도 거대한 우주를 발견하고 마음을 치유하는 감수성.
  *
- * @version LUCKEY-GASTON-BACHELARD-POETICS-v2.0.0
+ * @version LUCKEY-GASTON-BACHELARD-POETICS-v2.3.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const FRENCH_GASTON_BACHELARD_POETICS_VERSION = 'LUCKEY-GASTON-BACHELARD-POETICS-v2.2.0';
+export const FRENCH_GASTON_BACHELARD_POETICS_VERSION = 'LUCKEY-GASTON-BACHELARD-POETICS-v2.3.0';
 
 export type BachelardQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -53,8 +53,11 @@ export interface FrenchGastonBachelardPoeticsOfSpaceResult {
   cosmicIntimacyReverieResilience: number;      // 우주적 친밀감 및 사물 교감 회복탄력성 (Cosmic Intimacy & Poetic Resilience)
   // 세부 분석
   questionTopic: BachelardQuestionTopic;
+  reveriePhase: string;
+  shadowWarning: string;
   temporalBachelardRhythm: BachelardTemporalRhythm;
   activeBachelardTheme: BachelardTheme;
+  companionBachelardTheme: BachelardTheme;
   focalBachelardAphorism: BachelardAphorism;
   practiceGuidance: string;
   ritualAction: string;
@@ -72,6 +75,18 @@ export interface FrenchGastonBachelardPoeticsOfSpaceResult {
     philosophicalCounsel: string;
   };
 }
+
+const BACHELARD_REVERIE_PHASES = [
+  '은신처 정돈(바깥의 소음을 잠시 닫고 영혼이 숨 쉴 작은 공간을 가꾸는 시기)',
+  '촛불 몽상(홀로 깨어 있는 고요 속에서 물질의 숨결과 새로운 영감을 길어 올리는 시기)',
+  '이중 나선(밤의 시적 직관과 낮의 명철한 이성을 조화롭게 엮어 현실로 옮기는 시기)',
+] as const;
+
+const BACHELARD_SHADOW_WARNINGS = [
+  '고독한 몽상과 내면의 은신처에 머물다 지금 세상 밖으로 내디뎌야 할 작은 실행을 미루지 않도록 살피세요.',
+  '시적 이미지와 감수성에 몰두하느라 현실의 구체적인 일정과 사실 확인을 건너뛰지 않도록 점검하세요.',
+  '낮의 엄밀한 분석과 효율만 앞세우다 영혼이 쉬어갈 다락방의 여백까지 닫아 두지 않도록 유의하세요.',
+] as const;
 
 export const BACHELARD_THEMES: BachelardTheme[] = [
   {
@@ -260,14 +275,18 @@ export function calculateFrenchGastonBachelardPoeticsOfSpace(
   const cosmicIntimacyReverieResilience = 83 + ((absHash >> 12) % 16);
 
   const themeIndex = (absHash >> 5) % BACHELARD_THEMES.length;
+  const companionOffset = 1 + ((absHash >> 6) % (BACHELARD_THEMES.length - 1));
   const aphorismIndex = (absHash >> 8) % BACHELARD_APHORISMS.length;
 
   const activeBachelardTheme = BACHELARD_THEMES[themeIndex];
+  const companionBachelardTheme = BACHELARD_THEMES[(themeIndex + companionOffset) % BACHELARD_THEMES.length];
   const focalBachelardAphorism = BACHELARD_APHORISMS[aphorismIndex];
+  const reveriePhase = BACHELARD_REVERIE_PHASES[(absHash >> 11) % BACHELARD_REVERIE_PHASES.length];
+  const shadowWarning = BACHELARD_SHADOW_WARNINGS[(absHash >> 14) % BACHELARD_SHADOW_WARNINGS.length];
 
   const guidanceTitle = `가스통 바슐라르 공간의 시학 지혜: ${activeBachelardTheme.themeTitleKo}`;
   const philosophicalCounsel = `프랑스의 위대한 과학철학자이자 상상력의 현상학자 가스통 바슐라르는 영혼을 품어주는 내면의 집, 촛불 앞 순수한 고독의 사색, 그리고 이성과 시의 아름다운 이중 나선을 일깨웁니다. ` +
-    `현재 당신의 지친 마음과 창조적 영감에 생기를 불어넣는 핵심 통찰은 '${activeBachelardTheme.themeTitleKo}'입니다. ` +
+    `현재 당신의 지친 마음과 창조적 영감에 생기를 불어넣는 핵심 통찰은 '${activeBachelardTheme.themeTitleKo}'(동반 테마: ${companionBachelardTheme.themeTitleKo})입니다. ` +
     `${activeBachelardTheme.practicalCounsel} ${topicGuidance.practiceGuidance} 아울러 바슐라르의 명언 "${focalBachelardAphorism.aphorismKo}"를 마음에 품고, ` +
     `${focalBachelardAphorism.actionGuidance}`;
 
@@ -277,12 +296,12 @@ export function calculateFrenchGastonBachelardPoeticsOfSpace(
   const kstTimeLabel = `${temporalBachelardRhythm.kstDateLabel}T${String(kst.getUTCHours()).padStart(2, '0')}:${String(kst.getUTCMinutes()).padStart(2, '0')}:00+09:00 (KST)`;
   const qText = (query ?? '').trim();
   const reflectiveQuestion = qText
-    ? `‘${qText}’의 소음에서 한 걸음 물러나 내 영혼이 촛불처럼 고요히 쉴 수 있는 작은 공간은 어디입니까?`
-    : topicGuidance.reflectionFocus;
+    ? `‘${qText}’의 소음에서 '${reveriePhase}' 국면으로 한 걸음 물러나 내 영혼이 촛불처럼 고요히 쉴 수 있는 작은 공간은 어디입니까?`
+    : `'${reveriePhase}' 국면에서 ${topicGuidance.reflectionFocus}`;
   const bachelardSynthesisMatrix = {
-    coreInsight: activeBachelardTheme.themeTitleKo,
-    recommendedAction: topicGuidance.practiceGuidance,
-    cautionNotice: '바깥의 소음과 효율에만 매달려 내면의 촛불과 고요한 은신처를 돌보지 않는 태도를 경계하십시오.',
+    coreInsight: `${activeBachelardTheme.themeTitleKo} (동반: ${companionBachelardTheme.themeTitleKo})`,
+    recommendedAction: `${topicGuidance.practiceGuidance} (${reveriePhase})`,
+    cautionNotice: shadowWarning,
   };
 
   return {
@@ -294,11 +313,14 @@ export function calculateFrenchGastonBachelardPoeticsOfSpace(
     dualSpiralReasonPoeticsScore,
     cosmicIntimacyReverieResilience,
     questionTopic,
+    reveriePhase,
+    shadowWarning,
     temporalBachelardRhythm,
     activeBachelardTheme,
+    companionBachelardTheme,
     focalBachelardAphorism,
-    practiceGuidance: topicGuidance.practiceGuidance,
-    ritualAction: topicGuidance.ritualAction,
+    practiceGuidance: `${topicGuidance.practiceGuidance} (동반 테마: ${companionBachelardTheme.themeTitleKo})`,
+    ritualAction: `${topicGuidance.ritualAction} (${reveriePhase})`,
     reflectionFocus: reflectiveQuestion,
     reflectiveQuestion,
     boundaryNotice,
@@ -318,8 +340,11 @@ export function formatFrenchGastonBachelardPoeticsOfSpacePrompt(
     `【가스통 바슐라르 《공간의 시학》 & 《촛불의 미학》 몽상의 시학 지표 (${res.engineVersion})】`,
     `- 연산 시각: ${res.calculatedAtKst}`,
     `- 질문 주제 맥락: ${res.questionTopic}`,
+    `- 몽상 국면: ${res.reveriePhase}`,
     `- KST 시공간 리듬: ${res.temporalBachelardRhythm.kstDateLabel} · ${res.temporalBachelardRhythm.timeWindowKo} (${res.temporalBachelardRhythm.poeticsTone}) — ${res.temporalBachelardRhythm.rhythmDirective}`,
     `- 핵심 공간 시학 테마: ${res.activeBachelardTheme.themeTitleKo} [${res.activeBachelardTheme.themeTitleEn}]`,
+    `- 동반 공간 시학 테마: ${res.companionBachelardTheme.themeTitleKo}`,
+    `- 과잉·경계 점검: ${res.shadowWarning}`,
     `- 현상학적 몽상 통찰: ${res.activeBachelardTheme.pragmaticInsight}`,
     `- 실천적 치유 조언: ${res.activeBachelardTheme.practicalCounsel}`,
     `- 질문 맞춤 실천 가이드: ${res.practiceGuidance}`,
