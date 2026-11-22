@@ -8,12 +8,14 @@
  * 4. 정의(Justice)와 인애(Beneficence)의 조화 균형도: 사회의 존립을 떠받치는 주춧돌인 엄격한 '정의'와 세상을 윤택하고 따뜻하게 가꾸는 '인애'의 아름다운 균형.
  * 5. 칭찬받을 자격(Praiseworthiness)과 내적 진실성 지수: 단순히 남들에게 칭찬을 받는 외적 평판에 그치지 않고, 진정으로 칭찬받을 만한 자격을 갖춘 고결한 인격을 지향하는 진정성.
  *
- * @version LUCKEY-ADAM-SMITH-MORAL-SENTIMENTS-v1.0.0
+ * @version LUCKEY-ADAM-SMITH-MORAL-SENTIMENTS-v2.3.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const SCOTTISH_ADAM_SMITH_VERSION = 'LUCKEY-ADAM-SMITH-MORAL-SENTIMENTS-v2.2.0';
+export const SCOTTISH_ADAM_SMITH_VERSION = 'LUCKEY-ADAM-SMITH-MORAL-SENTIMENTS-v2.3.0';
+
+export type AdamSmithQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
 export interface AdamSmithTheme {
   themeKey: string;
@@ -34,6 +36,9 @@ export interface AdamSmithAphorism {
 export interface ScottishAdamSmithMoralSentimentsResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: AdamSmithQuestionTopic;
+  moralPhase: string;
+  shadowWarning: string;
   // 5대 핵심 도덕감정론 지표 (0~100)
   impartialSpectatorConscienceScore: number;    // 공정한 관찰자 내면 양심도 (Impartial Spectator Conscience)
   mutualSympathyFellowFeelingIndex: number;     // 동반자적 공감 및 동류의식 지수 (Mutual Sympathy & Fellow-Feeling)
@@ -73,6 +78,26 @@ function describeAdamSmithStage(score: number): string {
   if (score >= 88) return '공정한 관찰자 명징기(Impartial Clarity) — 내면 양심과 상호 공감이 조화롭게 어우러져 고결한 자기통제가 자연스러운 상태';
   if (score >= 80) return '도덕 감정 성숙기(Sympathetic Poise) — 타인의 입장을 헤아리면서도 스스로의 품격과 원칙을 차분히 지키는 상태';
   return '양심의 거울 정련기(Conscience Mirror) — 사사로운 감정을 한 발 물러나 비추어 보며 균형 잡힌 판단을 세우는 상태';
+}
+
+const ADAM_SMITH_MORAL_PHASES = [
+  '공감의 온도 조율(타인의 감정에 공명하되 내 마음의 중심을 고르게 가다듬는 시기)',
+  '공정한 관찰자 응시(이해득실에서 한 걸음 물러나 제3자의 맑은 시선으로 자신을 살피는 시기)',
+  '자기통제·품격(칭찬받기보다 스스로 떳떳한 원칙과 온정을 함께 세우는 시기)',
+] as const;
+
+const ADAM_SMITH_SHADOW_WARNINGS = [
+  '공정한 관찰자의 엄정한 잣대가 스스로를 지나치게 몰아세우는 자기 비난으로 기울지 않도록 살피세요.',
+  '타인의 시선과 평판(Praise)을 의식하느라 내 양심이 승인하는 진정한 가치(Praiseworthiness)를 놓치지 않도록 점검하세요.',
+  '자기통제와 평정을 지키려다 마음속에서 실제로 도움을 청하고 있는 솔직한 감정까지 억누르지 않도록 유의하세요.',
+] as const;
+
+function classifyAdamSmithQuestionTopic(query?: string): AdamSmithQuestionTopic {
+  const q = (query ?? '').toLowerCase();
+  if (/연애|사랑|사람|관계|친구|가족|동료|갈등|이별|결혼|상대/.test(q)) return 'relationship';
+  if (/결정|선택|진로|이직|사업|투자|시험|공부|합격|도전|방향|계획|원칙/.test(q)) return 'decision';
+  if (/불안|힘들|지치|우울|회복|위로|휴식|건강|마음|치유|고민/.test(q)) return 'healing';
+  return 'reflection';
 }
 
 export const ADAM_SMITH_THEMES: AdamSmithTheme[] = [
@@ -155,7 +180,8 @@ export function calculateScottishAdamSmithMoralSentiments(
   const birthTime = profile?.basic?.birthtime ?? p?.birthTime ?? p?.birthtime ?? '12:00';
   const gender = profile?.basic?.gender ?? p?.gender ?? 'neutral';
 
-  const seedString = `ADAM-SMITH-MORAL-SENTIMENTS:${name}:${birthDate}:${birthTime}:${gender}:${query ?? ''}`;
+  const questionTopic = classifyAdamSmithQuestionTopic(query);
+  const seedString = `ADAM-SMITH-MORAL-SENTIMENTS:${name}:${birthDate}:${birthTime}:${gender}:${questionTopic}:${query ?? ''}`;
 
   let hash = 0;
   for (let i = 0; i < seedString.length; i++) {
@@ -177,10 +203,12 @@ export function calculateScottishAdamSmithMoralSentiments(
   const activeAdamSmithTheme = ADAM_SMITH_THEMES[themeIndex];
   const secondaryAdamSmithTheme = ADAM_SMITH_THEMES[secondaryThemeIndex];
   const focalAdamSmithAphorism = ADAM_SMITH_APHORISMS[aphorismIndex];
+  const moralPhase = ADAM_SMITH_MORAL_PHASES[(absHash >> 10) % ADAM_SMITH_MORAL_PHASES.length];
+  const shadowWarning = ADAM_SMITH_SHADOW_WARNINGS[(absHash >> 13) % ADAM_SMITH_SHADOW_WARNINGS.length];
 
   const guidanceTitle = `아담 스미스 도덕감정론 공정한 관찰자와 자기통제 지혜: ${activeAdamSmithTheme.themeTitleKo}`;
   const philosophicalCounsel = `스코틀랜드 계몽주의의 거장 아담 스미스의 도덕감정론 사상은 가슴속 공정한 관찰자(Impartial Spectator)를 통한 양심의 성찰, 타인과의 가슴 깊은 동반자적 공감, 시련을 품위 있게 이겨내는 자기통제(Self-Command), 그리고 칭찬받을 자격(Praiseworthiness)을 갖추려는 진정한 도덕적 품격을 일깨웁니다. ` +
-    `현재 당신의 삶을 인도하는 도덕철학적 원리는 '${activeAdamSmithTheme.themeTitleKo}'입니다. ` +
+    `현재 당신의 삶을 인도하는 도덕철학적 원리는 '${activeAdamSmithTheme.themeTitleKo}'(보조 원리: ${secondaryAdamSmithTheme.themeTitleKo})입니다. ` +
     `${activeAdamSmithTheme.practicalCounsel} 아울러 《도덕감정론》 원전의 명언 "${focalAdamSmithAphorism.aphorismKo}"(${focalAdamSmithAphorism.aphorismEn})를 깊이 마음에 새기고, ` +
     `${focalAdamSmithAphorism.actionGuidance}`;
 
@@ -191,20 +219,23 @@ export function calculateScottishAdamSmithMoralSentiments(
   const adamSmithSynthesisMatrix = {
     dominantTension: `${activeAdamSmithTheme.themeTitleKo} ↔ ${secondaryAdamSmithTheme.themeTitleKo}`,
     alignmentState: describeAdamSmithStage(composite),
-    integratedAction: `${focalAdamSmithAphorism.actionGuidance}${query?.trim() ? ` [질문 맥락: ${query.trim()}]` : ''}`,
+    integratedAction: `${focalAdamSmithAphorism.actionGuidance} (${moralPhase})${query?.trim() ? ` [질문 맥락: ${query.trim()}]` : ''}`,
   };
   const trimmedQ = query?.trim() ?? '';
   const reflectiveQuestion = trimmedQ
-    ? `지금 고민하시는 '${trimmedQ}' 앞에서, 사사로운 이해관계를 비운 가슴속 공정한 관찰자(Impartial Spectator)는 어떤 태도를 가장 품위 있게 승인하겠습니까?`
-    : `오늘 마주한 선택에서 세속의 평판(Praise)보다 내면의 양심이 스스로 칭찬받을 만하다고 여기는(Praiseworthiness) 기준은 무엇입니까?`;
+    ? `'${moralPhase}' 국면에서 지금 고민하시는 '${trimmedQ}' 앞에서, 사사로운 이해관계를 비운 가슴속 공정한 관찰자(Impartial Spectator)는 어떤 태도를 가장 품위 있게 승인하겠습니까?`
+    : `'${moralPhase}' 국면에서 오늘 마주한 선택 가운데 세속의 평판(Praise)보다 내면의 양심이 스스로 칭찬받을 만하다고 여기는(Praiseworthiness) 기준은 무엇입니까?`;
   const interpretiveBoundary = '이 리포트는 아담 스미스 《도덕감정론》의 공정한 관찰자와 공감 철학을 바탕으로 한 성찰 비유이며, 윤리적 단정이나 미래 예측이 아닙니다.';
 
-  const ritualAction = `[${activeAdamSmithTheme.themeTitleKo}] ${focalAdamSmithAphorism.actionGuidance}`;
-  const reflectionFocus = `아담 스미스 도덕감정론(${activeAdamSmithTheme.themeKey}) — ${secondaryAdamSmithTheme.themeTitleKo}`;
+  const ritualAction = `[${activeAdamSmithTheme.themeTitleKo}] ${focalAdamSmithAphorism.actionGuidance} (${moralPhase})`;
+  const reflectionFocus = `아담 스미스 도덕감정론(${activeAdamSmithTheme.themeKey} · ${moralPhase}) — ${secondaryAdamSmithTheme.themeTitleKo}`;
 
   return {
     engineVersion: SCOTTISH_ADAM_SMITH_VERSION,
     calculatedAtKst,
+    questionTopic,
+    moralPhase,
+    shadowWarning,
     impartialSpectatorConscienceScore,
     mutualSympathyFellowFeelingIndex,
     selfCommandEquanimityScore,
@@ -231,10 +262,12 @@ export function formatScottishAdamSmithMoralSentimentsPrompt(res: ScottishAdamSm
   );
   const lines = [
     `【아담 스미스 《도덕감정론》 공정한 관찰자 & 공감·자기통제 지표】`,
-    `- 연산 시각: ${res.calculatedAtKst} | 엔진 버전: ${res.engineVersion}`,
+    `- 연산 시각: ${res.calculatedAtKst} | 엔진 버전: ${res.engineVersion} | 질문 맥락: ${res.questionTopic}`,
     `- 도덕감정 성숙 국면: ${describeAdamSmithStage(composite)}`,
+    `- 공정한 관찰자 국면: ${res.moralPhase}`,
     `- 핵심 도덕감정 테마: ${res.activeAdamSmithTheme.themeTitleKo} [${res.activeAdamSmithTheme.themeTitleEn}]`,
     `- 보조 교차 테마: ${res.secondaryAdamSmithTheme.themeTitleKo} [${res.secondaryAdamSmithTheme.themeTitleEn}]`,
+    `- 과잉·경계 점검: ${res.shadowWarning}`,
     `- 실존적 통찰: ${res.activeAdamSmithTheme.existentialInsight}`,
     `- 실천적 조언: ${res.activeAdamSmithTheme.practicalCounsel}`,
     `- 핵심 원전 명언: "${res.focalAdamSmithAphorism.aphorismKo}" [${res.focalAdamSmithAphorism.aphorismEn}]`,
