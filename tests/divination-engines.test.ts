@@ -3769,6 +3769,8 @@ test('Tibetan Bardo Navigation Engine: maps 6 bardo states and clear light insig
   const rep = calculateTibetanBardoNavigation(profile, new Date('2026-11-16T08:00:00+09:00'), '전환기 방향');
   assert.equal(rep.engineVersion, TIBETAN_BARDO_VERSION);
   assert(rep.calculatedAtKst.includes('+09:00 (KST)'));
+  assert.equal(rep.questionTopic, 'decision');
+  assert(rep.bardoPhase.length > 0 && rep.shadowWarning.length > 0);
   assert(Boolean(rep.bardoSynthesisMatrix?.integratedAction));
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(rep.currentBardoState.stateNo >= 1 && rep.currentBardoState.stateNo <= 6);
@@ -3781,6 +3783,7 @@ test('Tibetan Bardo Navigation Engine: maps 6 bardo states and clear light insig
   assert(prompt.includes('티베트 불교 바르도'));
   assert(prompt.includes(rep.currentBardoState.nameKo));
   assert(prompt.includes('다음 전환 국면'));
+  assert(prompt.includes('바르도 각성 국면') && prompt.includes('과잉 경계'));
   assert(prompt.includes('성찰 질문'));
   assert(prompt.includes('해석 경계'));
   assert(prompt.includes('교차 매트릭스'));
@@ -4302,6 +4305,8 @@ test('Tibetan Bon Nine Ways & Five Soul Vitalities Engine: calculates active way
   const rep = calculateTibetanBonNineWays(profile, { question: '영혼 정화와 균형' });
   assert.equal(rep.engineVersion, TIBETAN_BON_NINE_WAYS_VERSION);
   assert(rep.calculatedAtKst.includes('+09:00 (KST)'));
+  assert.equal(rep.questionTopic, 'health');
+  assert(rep.bonPhase.length > 0 && rep.shadowWarning.length > 0);
   assert(Boolean(rep.bonSynthesisMatrix?.integratedAction));
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(rep.activeWay.tibetanName.length > 0);
@@ -4314,6 +4319,7 @@ test('Tibetan Bon Nine Ways & Five Soul Vitalities Engine: calculates active way
   assert(prompt.includes('티베트 정통 본교(Bon) 카르마 9승 & 5대 영혼 수호 융드룽 엔진'));
   assert(prompt.includes(rep.activeWay.koreanName));
   assert(prompt.includes('보조 교차 영적 길'));
+  assert(prompt.includes('융드룽 청정 국면') && prompt.includes('과잉 경계'));
   assert(prompt.includes('성찰 질문'));
   assert(prompt.includes('해석 경계'));
   assert(prompt.includes('교차 매트릭스'));
@@ -5518,6 +5524,8 @@ test('Taoist Liezi Wind Riding Engine: calculates wind riding unity, Muhayu rest
 test('Samkhya Twenty-Five Tattvas Engine: calculates Viveka discernment, Guna balance and Kaivalya liberation index', () => {
   const rep = calculateSamkhyaTwentyFiveTattvas({ profile, question: '상키야 25타트바 분별지', now: new Date('2026-11-17T05:35:00+09:00') });
   assert.equal(rep.engineVersion, SAMKHYA_TATTVAS_ENGINE_VERSION);
+  assert.equal(rep.questionTopic, 'decision');
+  assert(rep.samkhyaPhase.length > 0 && rep.shadowWarning.length > 0);
   assert(rep.vivekaDiscernmentScore >= 0 && rep.vivekaDiscernmentScore <= 100);
   assert(rep.kaivalyaLiberationIndex >= 0 && rep.kaivalyaLiberationIndex <= 100);
   assert(rep.purushaWitnessPower >= 0 && rep.purushaWitnessPower <= 100);
@@ -5535,6 +5543,7 @@ test('Samkhya Twenty-Five Tattvas Engine: calculates Viveka discernment, Guna ba
   assert(prompt.includes('교차 매트릭스'));
   assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
   assert(prompt.includes('성찰 질문'));
+  assert(prompt.includes('과잉 경계'));
   assert(prompt.includes('해석 경계'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
