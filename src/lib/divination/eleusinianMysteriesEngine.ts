@@ -23,7 +23,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const ELEUSINIAN_MYSTERIES_VERSION = 'LUCKEY-ELEUSINIAN-MYSTERIES-v2.2.0';
+export const ELEUSINIAN_MYSTERIES_VERSION = 'LUCKEY-ELEUSINIAN-MYSTERIES-v2.3.0';
 
 export type EleusinianQuestionTheme = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -48,8 +48,11 @@ export interface EleusinianReport {
   questionTheme: EleusinianQuestionTheme;
   currentGrade: EleusinianGrade;
   activeStation: EleusinianStation;
+  companionStation: EleusinianStation;
   epoptiaRebirthScore: number;   // 내부 참조용
   rebirthPosture: string;        // 정성적 에포프테이아 부활 국면
+  eleusinianPhase: string;
+  shadowWarning: string;
   sacredSymbol: string;          // 보리 이삭(Ear of Grain), 횃불(Torch), 키케온(Kykeon) 등
   oracleMessage: string;         // 신비전 오라클 전언
   temporalEleusinianRhythm: {
@@ -124,6 +127,18 @@ const MYSTIC_STATIONS: EleusinianStation[] = [
   }
 ];
 
+const ELEUSINIAN_PHASES = [
+  '정화의 문턱(묵은 자책과 피로를 일리소스 강물에 씻어 보내는 시기)',
+  '심연의 하강(피해 온 본질과 두려움을 정면으로 비추어 내면의 씨앗을 품는 시기)',
+  '빛의 귀환(겨울을 지난 보리 이삭처럼 새로운 시선과 행동으로 깨어나는 시기)',
+] as const;
+
+const ELEUSINIAN_SHADOW_WARNINGS = [
+  '정화와 비움에 머물다 지금 싹틔워야 할 작은 현실의 씨앗까지 미루지 않도록 살피세요.',
+  '심연과 어둠을 깊이 들여다보느라 이미 곁에 놓인 횃불과 일상의 온기를 놓치지 않도록 점검하세요.',
+  '새로운 부활의 열망이 앞서 충분한 뿌리내림과 침묵의 숙성 시간을 건너뛰지 않도록 유의하세요.',
+] as const;
+
 const SACRED_SYMBOLS = [
   '침묵 속에 들어 올려진 황금빛 보리 이삭 (Reaped Ear of Wheat - 불멸의 생명력)',
   '어둠을 가르는 데메테르의 이중 횃불 (Twin Torches - 의식의 각성과 인도)',
@@ -180,6 +195,9 @@ export function calculateEleusinianMysteries(
   // 2. 신비의례 국면 산출
   const stationIdx = (Math.abs(birthYear * 2 + birthMonth * 7 + birthDay * 11 + birthHour * 13 + now.getUTCDate() + qSeed) % 4);
   const activeStation = MYSTIC_STATIONS[stationIdx];
+  const companionStation = MYSTIC_STATIONS[(stationIdx + 1 + (Math.abs(qSeed + birthDay) % 3)) % MYSTIC_STATIONS.length];
+  const eleusinianPhase = ELEUSINIAN_PHASES[Math.abs(birthMonth + birthDay + qSeed) % ELEUSINIAN_PHASES.length];
+  const shadowWarning = ELEUSINIAN_SHADOW_WARNINGS[Math.abs(birthYear + birthHour + qSeed) % ELEUSINIAN_SHADOW_WARNINGS.length];
 
   // 3. 에포프테이아 영혼 부활 국면 (내부 인덱스 -> 정성적 표현)
   const epoptiaRebirthScore = Math.min(99, Math.max(65, Math.round(
@@ -256,16 +274,16 @@ export function calculateEleusinianMysteries(
   };
 
   const eleusinianSynthesisMatrix = {
-    gradeStationNexus: `${currentGrade.gradeTitle} × ${activeStation.stationName}`,
+    gradeStationNexus: `${currentGrade.gradeTitle} × ${activeStation.stationName} (동반: ${companionStation.stationName})`,
     thresholdTension: questionTheme === 'decision'
       ? '익숙한 껍질을 유지하려는 관성과 새로운 국면으로 건너가려는 부름 사이의 긴장'
       : '외부의 인정을 구하는 마음과 내면의 침묵 속에서 본질을 확인하려는 마음 사이의 긴장',
-    initiationDirective: `${activeStation.practicalVirtue} (${sacredSymbol})`,
+    initiationDirective: `${activeStation.practicalVirtue} (${sacredSymbol} · ${eleusinianPhase})`,
   };
 
   const reflectiveQuestion = question
-    ? `‘${question}’ 앞에서 ${themed.reflection}`
-    : themed.reflection;
+    ? `‘${question}’ 앞에서 '${eleusinianPhase}' 국면으로 볼 때, ${themed.reflection}`
+    : `'${eleusinianPhase}' 국면에서 ${themed.reflection}`;
 
   return {
     engineVersion: ELEUSINIAN_MYSTERIES_VERSION,
@@ -273,14 +291,17 @@ export function calculateEleusinianMysteries(
     questionTheme,
     currentGrade,
     activeStation,
+    companionStation,
     epoptiaRebirthScore,
     rebirthPosture,
+    eleusinianPhase,
+    shadowWarning,
     sacredSymbol,
     oracleMessage,
     temporalEleusinianRhythm,
     eleusinianSynthesisMatrix,
-    practiceGuidance: themed.practice,
-    ritualAction: themed.ritual,
+    practiceGuidance: `${themed.practice} (동반 국면: ${companionStation.stationName})`,
+    ritualAction: `${themed.ritual} (${eleusinianPhase})`,
     reflectionFocus: themed.reflection,
     reflectiveQuestion,
     counselNote: `[엘레우시스 입사의례 성찰] ${currentGrade.gradeTitle} · ${activeStation.stationName} — ${themed.practice}`,
@@ -295,7 +316,9 @@ export function formatEleusinianMysteriesPrompt(report: EleusinianReport): strin
 - 입사 등급: ${report.currentGrade.gradeTitle} (${report.currentGrade.greekTerm})
   * 의식 층위: ${report.currentGrade.spiritualLevel}
   * 입사 지침: ${report.currentGrade.initiationGuidance}
-- 신비의례 국면: ${report.activeStation.stationName}
+- 신비의례 국면: ${report.activeStation.stationName} (동반: ${report.companionStation.stationName})
+  * 순환 국면: ${report.eleusinianPhase}
+  * 과잉·경계 점검: ${report.shadowWarning}
   * 신화적 상징: ${report.activeStation.mythicArchetype}
   * 내적 변용: ${report.activeStation.innerTransformation}
   * 행동 미덕: ${report.activeStation.practicalVirtue}

@@ -15,12 +15,12 @@
  * 1. 개인 점수·심리 진단·미래 예측이 아닙니다. 모든 산출은 정성적 성찰 문장입니다.
  * 2. 원전 문구를 임의로 지어 인용하지 않고 사상적 핵심 원리만 반영합니다.
  *
- * @version LUCKEY-ZERA-YACOB-HATATA-v2.2.0
+ * @version LUCKEY-ZERA-YACOB-HATATA-v2.3.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const ETHIOPIAN_ZERA_YACOB_VERSION = 'LUCKEY-ZERA-YACOB-HATATA-v2.2.0';
+export const ETHIOPIAN_ZERA_YACOB_VERSION = 'LUCKEY-ZERA-YACOB-HATATA-v2.3.0';
 
 export type HatataQuestionTopic = 'decision' | 'relationship' | 'healing' | 'reflection';
 
@@ -51,6 +51,8 @@ export interface EthiopianZeraYacobHatataResult {
   questionTopic: HatataQuestionTopic;
   inquiryLens: string;
   companionLens: string;
+  inquiryPhase: string;
+  shadowWarning: string;
   situationalHatataAudit: SituationalHatataAudit;
   temporalReasonPulse: HatataReasonPulse;
   hatataSynthesisMatrix: HatataSynthesisMatrix;
@@ -59,6 +61,18 @@ export interface EthiopianZeraYacobHatataResult {
   reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
+
+const HATATA_INQUIRY_PHASES = [
+  '사실 분리(관습과 추측을 걷어내고 확인된 사실만 남기는 시기)',
+  '동굴 관조(외부의 조급함에서 물러나 내면의 양심과 대조하는 시기)',
+  '공정 실행(나와 상대를 같은 저울에 올려 떳떳한 한 걸음을 옮기는 시기)',
+] as const;
+
+const HATATA_SHADOW_WARNINGS = [
+  '이성적 검증과 사실 분리에 몰두하다 상대의 아픈 감정과 맥락을 차갑게 재단하지 않도록 살피세요.',
+  '동굴의 고요 속에 머물며 숙고하다 지금 건네야 할 대화와 실행의 시기를 늦추지 않도록 점검하세요.',
+  '공정함과 양심의 기준을 세우려다 나 자신의 작은 실수까지 가혹하게 몰아붙이지 않도록 유의하세요.',
+] as const;
 
 function classifyHatataTopic(query?: string): HatataQuestionTopic {
   const q = (query ?? '').toLowerCase();
@@ -180,16 +194,18 @@ export function calculateEthiopianZeraYacobHatataReason(
   }
   const companionOffset = 1 + (Math.abs(compHash) % (lenses.length - 1));
   const companionLens = lenses[(lensIdx + companionOffset) % lenses.length];
+  const inquiryPhase = HATATA_INQUIRY_PHASES[(Math.abs(hash) >> 3) % HATATA_INQUIRY_PHASES.length];
+  const shadowWarning = HATATA_SHADOW_WARNINGS[(Math.abs(compHash) >> 4) % HATATA_SHADOW_WARNINGS.length];
 
   const situationalHatataAudit = buildSituationalHatataAudit(topic, inquiryLens);
   const temporalReasonPulse = buildTemporalReasonPulse(now);
 
   const trimmedQ = (question ?? '').trim();
-  const ritualAction = `${situationalHatataAudit.inquiryPractice} 이어서 ${situationalHatataAudit.biasCheckAdvice}`;
-  const reflectionFocus = `${inquiryLens} · ${companionLens} · ${temporalReasonPulse.kstTimeWindow} — 사실과 편견을 가르는 이성적 점검`;
+  const ritualAction = `${situationalHatataAudit.inquiryPractice} 이어서 ${situationalHatataAudit.biasCheckAdvice} (${inquiryPhase})`;
+  const reflectionFocus = `${inquiryLens} · ${companionLens} · ${inquiryPhase} · ${temporalReasonPulse.kstTimeWindow} — 사실과 편견을 가르는 이성적 점검`;
   const reflectiveQuestion = trimmedQ
-    ? `'${trimmedQ}'라는 고민에서, 남의 시선이나 불안을 걷어낸 뒤 내 이성과 양심이 가장 맑게 동의하는 기준은 무엇인가요?`
-    : `지금 내가 당연하게 믿고 있는 생각 중, 한 번쯤 차분히 다시 검증해 볼 전제는 무엇인가요?`;
+    ? `'${trimmedQ}'라는 고민에서 '${inquiryPhase}' 국면으로 볼 때, 남의 시선이나 불안을 걷어낸 뒤 내 이성과 양심이 가장 맑게 동의하는 기준은 무엇인가요?`
+    : `'${inquiryPhase}' 국면에서 지금 내가 당연하게 믿고 있는 생각 중, 한 번쯤 차분히 다시 검증해 볼 전제는 무엇인가요?`;
 
   const interpretiveBoundary =
     '본 리포트는 에티오피아 철학자 자라 야곱의 《하타타》 사유를 빌려 이성적 성찰을 돕는 정성적 안내이며, 개인 점수·심리 진단·미래 예측이 아닙니다.';
@@ -197,7 +213,7 @@ export function calculateEthiopianZeraYacobHatataReason(
   const hatataSynthesisMatrix: HatataSynthesisMatrix = {
     inquiryLens,
     conscienceAnchor: situationalHatataAudit.conscienceAlignment,
-    integratedAction: `${temporalReasonPulse.inquiryMethod}${trimmedQ ? ` [질문 맥락: ${trimmedQ}]` : ''}`,
+    integratedAction: `${temporalReasonPulse.inquiryMethod} (${inquiryPhase})${trimmedQ ? ` [질문 맥락: ${trimmedQ}]` : ''}`,
   };
 
   const kst = new Date(now.getTime() + 9 * 3600 * 1000);
@@ -215,6 +231,8 @@ export function calculateEthiopianZeraYacobHatataReason(
     questionTopic: topic,
     inquiryLens,
     companionLens,
+    inquiryPhase,
+    shadowWarning,
     situationalHatataAudit,
     temporalReasonPulse,
     hatataSynthesisMatrix,
@@ -231,6 +249,8 @@ export function formatEthiopianZeraYacobHatataReasonPrompt(res: EthiopianZeraYac
     `- 질문 주제 분류: ${res.questionTopic}`,
     `- 탐구 렌즈: ${res.inquiryLens}`,
     `- 동반 탐구 렌즈: ${res.companionLens}`,
+    `- 탐구 국면: ${res.inquiryPhase}`,
+    `- 과잉·경계 점검: ${res.shadowWarning}`,
     `- 질문 비춤: ${res.situationalHatataAudit.reasonMirror}`,
     `- 편견 점검: ${res.situationalHatataAudit.biasCheckAdvice}`,
     `- 양심 정렬: ${res.situationalHatataAudit.conscienceAlignment}`,
