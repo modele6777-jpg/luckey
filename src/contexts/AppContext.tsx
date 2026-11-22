@@ -2416,10 +2416,22 @@ ${responseProfile.rule}`;
           conversation: taskContext.messages.slice(-8).map(message => ({ role:message.role === 'user' ? 'user' as const : 'assistant' as const, content:extractPlainUserText(message.content).slice(0,2000) })),
           facts: criticalFacts, memoryRecall,
           audit: reviewAudit, signal: currentAbortController.signal,
-          request: messages => invokeLLM({ messages, preferServer: true, reviewMode: isMasterCall ? 'master' : 'general',
-            model: isMasterCall ? LUCY_MASTER_MODEL : LUCY_REVIEW_MODEL,
-            fallbackModels: isMasterCall ? LUCY_MASTER_FALLBACK_MODELS : LUCY_REVIEW_FALLBACK_MODELS,
-            maxOutputTokens: isMasterCall ? 8192 : 4096, timeoutMs: isMasterCall ? 75000 : 120000, signal: currentAbortController.signal }),
+          request: async messages => {
+            const reviewParams = { messages, reviewMode: isMasterCall ? 'master' as const : 'general' as const,
+              model: isMasterCall ? LUCY_MASTER_MODEL : LUCY_REVIEW_MODEL,
+              fallbackModels: isMasterCall ? LUCY_MASTER_FALLBACK_MODELS : LUCY_REVIEW_FALLBACK_MODELS,
+              maxOutputTokens: isMasterCall ? 8192 : 4096, timeoutMs: isMasterCall ? 75000 : 120000, signal: currentAbortController.signal };
+            try {
+              return await invokeLLM({ ...reviewParams, preferServer: true });
+            } catch (serverErr) {
+              // 서버 쪽 검토가 막히면(503 등) 같은 검토를 앱의 직접 연결로 한 번 더 시도한다.
+              // 검토 자체는 반드시 거치므로, 확인되지 않은 초안을 내보내지 않는 원칙은 그대로다.
+              if (currentAbortController.signal.aborted) throw serverErr;
+              console.warn('[reviewLucyReply] Server review unavailable; retrying the same review over the direct connection.', serverErr);
+              resetWatchdog();
+              return await invokeLLM({ ...reviewParams, preferServer: false });
+            }
+          },
         });
         return verifyLucyTarotReply(cleanChatDisplayText(reviewed), tarotDraw, effectiveUserText);
       } finally { isReviewingReply = false; }
