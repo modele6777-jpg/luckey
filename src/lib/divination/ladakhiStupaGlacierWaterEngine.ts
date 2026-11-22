@@ -1,12 +1,17 @@
 import type { UserProfile } from '../sharedState';
 
+export type LadakhiQuestionTopic = 'career' | 'relationship' | 'wealth' | 'health' | 'decision' | 'general';
+
 export interface LadakhiChortenResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: LadakhiQuestionTopic;
   glacierWisdom: string;
   companionWisdom: string;
   chortenInsight: string;
   transHimalayanTone: string;
+  glacierFlowCycle: string;
+  shadowWarning: string;
   reflectionFocus: string;
   ritualAction: string;
   reflectiveQuestion: string;
@@ -51,6 +56,16 @@ const WISDOMS = [
   },
 ];
 
+function classifyLadakhiTopic(question?: string): LadakhiQuestionTopic {
+  const q = (question ?? '').trim();
+  if (/이직|직장|사업|승진|일|커리어|프로젝트|업무/.test(q)) return 'career';
+  if (/연애|결혼|사람|관계|가족|갈등|친구|이별|소통/.test(q)) return 'relationship';
+  if (/돈|재물|투자|재정|수입|지출|계약|매매/.test(q)) return 'wealth';
+  if (/건강|몸|마음|휴식|수면|피로|회복/.test(q)) return 'health';
+  if (/결정|선택|고민|방향|시작|계절|모아/.test(q)) return 'decision';
+  return 'general';
+}
+
 function formatKstIso(date: Date): string {
   const kst = new Date(date.getTime() + 9 * 60 * 60 * 1000);
   const y = kst.getUTCFullYear();
@@ -81,14 +96,20 @@ export function calculateLadakhiStupaGlacierWater(params: {
   const companionOffset = 1 + (stableHash(`${seed}|companion`) % (WISDOMS.length - 1));
   const picked = WISDOMS[idx];
   const companion = WISDOMS[(idx + companionOffset) % WISDOMS.length];
+  const questionTopic = classifyLadakhiTopic(params.question);
+  const glacierFlowCycle = `${picked.wisdom.split('(')[0].trim()} ↔ ${companion.wisdom.split('(')[0].trim()} 고원 순환`;
+  const shadowWarning = `[${picked.wisdom.split('(')[0].trim()} 과잉 경계] 자원과 에너지를 아끼려다 필요한 나눔과 숨 고르기까지 미루지 않도록 살피십시오.`;
 
   return {
-    engineVersion: 'LUCKEY-LADAKHI-CHORTEN-v2.2.0',
+    engineVersion: 'LUCKEY-LADAKHI-CHORTEN-v2.3.0',
     calculatedAtKst: formatKstIso(now),
+    questionTopic,
     glacierWisdom: picked.wisdom,
     companionWisdom: companion.wisdom,
     chortenInsight: `${picked.insight} (동반 지혜: ${companion.wisdom})`,
     transHimalayanTone: picked.tone,
+    glacierFlowCycle,
+    shadowWarning,
     reflectionFocus: `라다크 고원 지혜의 '${picked.wisdom}'와 동반 지혜 '${companion.wisdom}'처럼, 지금 내게 주어진 자원과 시간을 알뜰히 아껴 쓰며 필요한 때를 위해 고요히 모아 두세요.`,
     ritualAction: picked.ritual,
     reflectiveQuestion: picked.question,
@@ -99,13 +120,15 @@ export function calculateLadakhiStupaGlacierWater(params: {
 export function formatLadakhiChortenPrompt(res: LadakhiChortenResult): string {
   return [
     `[라다크 스투파·고원 물길 조화 성찰 · ${res.engineVersion}]`,
-    `- 기준 시각: ${res.calculatedAtKst}`,
+    `- 기준 시각: ${res.calculatedAtKst} | 질문 맥락: ${res.questionTopic}`,
     `- 고원 지혜: ${res.glacierWisdom} (${res.transHimalayanTone})`,
     `- 동반 지혜: ${res.companionWisdom}`,
+    `- 고원 순환 축: ${res.glacierFlowCycle}`,
     `- 중심 통찰: ${res.chortenInsight}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 오늘의 작은 실천: ${res.ritualAction}`,
     `- 스스로에게 묻기: ${res.reflectiveQuestion}`,
+    `- 과잉 경계: ${res.shadowWarning}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
   ].join('\n');
 }
