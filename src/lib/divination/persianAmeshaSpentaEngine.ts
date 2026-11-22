@@ -25,7 +25,9 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const PERSIAN_AMESHA_SPENTA_VERSION = 'LUCKEY-PERSIAN-AMESHA-SPENTA-v2.2.0';
+export const PERSIAN_AMESHA_SPENTA_VERSION = 'LUCKEY-PERSIAN-AMESHA-SPENTA-v2.3.0';
+
+export type AmeshaQuestionTopic = 'career' | 'relationship' | 'wealth' | 'health' | 'decision' | 'general';
 
 export interface AmeshaSpentaImmortal {
   avestanName: string;
@@ -50,6 +52,9 @@ export interface PersianAmeshaSpentaReport {
   secondaryImmortal: AmeshaSpentaImmortal;
   baresman: BaresmanAlignment;
   totalRadianceScore: number;
+  questionTopic: AmeshaQuestionTopic;
+  ameshaPhase: string;
+  shadowWarning: string;
   avestanGuidance: string;
   synthesisMessage: string;
   ritualAction: string;
@@ -79,6 +84,33 @@ function buildAmeshaReflectiveQuestion(patron: AmeshaSpentaImmortal, query?: str
     return `'${focus}'에 대해 판단할 때, ${patron.avestanName}의 미덕(${patron.sacredAttribute.slice(0, 28)}...)에 비추어 지금 가장 먼저 바로잡아야 할 마음가짐은 무엇인가요?`;
   }
   return `오늘의 수호 불멸자 ${patron.koreanName}의 시선에서, 흩어진 마음을 하나로 묶기 위해 오늘 내려놓아야 할 사소한 번뇌는 무엇인가요?`;
+}
+
+function classifyAmeshaTopic(query?: string): AmeshaQuestionTopic {
+  const q = (query || '').trim();
+  if (/이직|직장|사업|승진|일|커리어|프로젝트|업무/.test(q)) return 'career';
+  if (/연애|결혼|사람|관계|가족|갈등|친구|이별|소통/.test(q)) return 'relationship';
+  if (/돈|재물|투자|재정|수입|지출|계약|매매/.test(q)) return 'wealth';
+  if (/건강|몸|마음|휴식|수면|피로|회복/.test(q)) return 'health';
+  if (/결정|선택|고민|방향|시작|중심/.test(q)) return 'decision';
+  return 'general';
+}
+
+function buildAmeshaShadowWarning(
+  patron: AmeshaSpentaImmortal,
+  topic: AmeshaQuestionTopic,
+): string {
+  const topicNote =
+    topic === 'relationship'
+      ? '선한 의도를 앞세우다 상대의 입장을 단정하거나 가르치려 들지 않도록 부드럽게 경청하십시오.'
+      : topic === 'career'
+        ? '명분과 원칙을 지키려다 현실적 타협과 실행 속도를 놓치지 않도록 균형을 잡으십시오.'
+        : topic === 'wealth'
+          ? '이상적인 기준에만 기대어 구체적 수치와 위험 점검을 소홀히 하지 마십시오.'
+          : topic === 'health'
+            ? '정신적 각성에만 집중해 몸의 피로 신호를 지나치지 않도록 돌보십시오.'
+            : '올곧은 기준을 세우되 자기 자신과 타인에게 지나친 완벽주의를 강요하지 마십시오.';
+  return `[${patron.avestanName} 과잉 경계] ${patron.koreanName}의 이상이 과해지면 자기검열이나 경직으로 흐를 수 있습니다. ${topicNote}`;
 }
 
 function describeAmeshaStage(score: number): string {
@@ -169,13 +201,16 @@ export function calculatePersianAmeshaSpenta(
   const synthesisMessage = `아베스타 가타 원전에 따라, 당신의 영혼은 6대 아메샤 스펜타 중 [${patronImmortal.koreanName}]의 신성한 가호를 받습니다.`;
 
   const calculatedAtKst = formatAmeshaKstTimestamp(now);
+  const questionTopic = classifyAmeshaTopic(query);
+  const ameshaPhase = describeAmeshaStage(totalRadianceScore);
+  const shadowWarning = buildAmeshaShadowWarning(patronImmortal, questionTopic);
   const ritualAction = `오늘 '${patronImmortal.koreanName}'(${patronImmortal.avestanName})의 미덕을 떠올리며 바르숨 가지를 가지런히 모으듯 마음을 정돈하고 "${patronImmortal.contemplativeMantra}"를 실천하세요.`;
   const reflectionFocus = `아메샤 스펜타(${patronImmortal.avestanName} ↔ ${secondaryImmortal.avestanName}) — ${patronImmortal.guardianDominion}과 아샤(진리의 질서)`;
   const reflectiveQuestion = buildAmeshaReflectiveQuestion(patronImmortal, query);
   const interpretiveBoundary = '조로아스터교 아베스타의 6대 아메샤 스펜타는 신화적·윤리적 상징 비유로만 활용하며, 미래의 확정적 사건 예측이나 의학적·재무적 판단의 근거로 단정하지 않습니다.';
   const ameshaSynthesisMatrix = {
-    dominantTension: `${patronImmortal.avestanName} ↔ ${secondaryImmortal.avestanName}`,
-    alignmentState: describeAmeshaStage(totalRadianceScore),
+    dominantTension: `${patronImmortal.avestanName} ↔ ${secondaryImmortal.avestanName} (${questionTopic})`,
+    alignmentState: ameshaPhase,
     integratedAction: `${patronImmortal.contemplativeMantra}${query?.trim() ? ` [질문 맥락: ${query.trim()}]` : ''}`,
   };
 
@@ -192,6 +227,9 @@ export function calculatePersianAmeshaSpenta(
       twigsHarmonicState,
     },
     totalRadianceScore,
+    questionTopic,
+    ameshaPhase,
+    shadowWarning,
     avestanGuidance,
     synthesisMessage,
     ritualAction,
@@ -205,7 +243,7 @@ export function calculatePersianAmeshaSpenta(
 export function formatPersianAmeshaSpentaPrompt(report: PersianAmeshaSpentaReport): string {
   const lines = [
     `### 🔥 고대 페르시아 바르숨 & 6대 아메샤 스펜타 조화 엔진 (${PERSIAN_AMESHA_SPENTA_VERSION})`,
-    `- **연산 시각**: ${report.calculatedAtKst} | **광휘 국면**: ${describeAmeshaStage(report.totalRadianceScore)}`,
+    `- **연산 시각**: ${report.calculatedAtKst} | **질문 맥락**: ${report.questionTopic} | **광휘 국면**: ${report.ameshaPhase}`,
     `- **아메샤 스펜타 수호 불멸자**: **${report.patronImmortal.koreanName}** (${report.patronImmortal.avestanName})`,
     `  - 신성 미덕: ${report.patronImmortal.sacredAttribute}`,
     `  - 관할 영역: ${report.patronImmortal.guardianDominion}`,
@@ -225,6 +263,7 @@ export function formatPersianAmeshaSpentaPrompt(report: PersianAmeshaSpentaRepor
     `- **실천 의례**: ${report.ritualAction}`,
     `- **성찰 초점**: ${report.reflectionFocus}`,
     `- **성찰 질문**: ${report.reflectiveQuestion}`,
+    `- **과잉 경계**: ${report.shadowWarning}`,
     `- **해석 경계**: ${report.interpretiveBoundary}`,
   );
   return lines.join('\n');

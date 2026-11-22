@@ -27,7 +27,9 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const SLAVIC_SVAROG_VERSION = 'LUCKEY-SLAVIC-SVAROG-v2.2.0';
+export const SLAVIC_SVAROG_VERSION = 'LUCKEY-SLAVIC-SVAROG-v2.3.0';
+
+export type SvarogQuestionTopic = 'career' | 'relationship' | 'wealth' | 'health' | 'decision' | 'general';
 
 export interface SvarogHallCherteg {
   code: string;
@@ -68,6 +70,9 @@ export interface SlavicSvarogCircleReport {
     protectiveMeaning: string;
   };
   totalSvarogHarmonics: number; // 0 ~ 100
+  questionTopic: SvarogQuestionTopic;
+  svarogPhase: string;
+  shadowWarning: string;
   synthesisMessage: string;
   ritualAction: string;
   reflectionFocus: string;
@@ -108,6 +113,38 @@ function stringHash(str: string): number {
     hash |= 0;
   }
   return Math.abs(hash);
+}
+
+function classifySvarogTopic(context: string): SvarogQuestionTopic {
+  if (/이직|직장|사업|승진|일|커리어|프로젝트|업무/.test(context)) return 'career';
+  if (/연애|결혼|사람|관계|가족|가계|갈등|친구|이별/.test(context)) return 'relationship';
+  if (/돈|재물|투자|재정|수입|지출|계약|매매/.test(context)) return 'wealth';
+  if (/건강|몸|마음|휴식|수면|피로|회복/.test(context)) return 'health';
+  if (/결정|선택|고민|방향|시작|균형/.test(context)) return 'decision';
+  return 'general';
+}
+
+function resolveSvarogPhase(harmonics: number): string {
+  if (harmonics >= 84) return '스바로그 천상 단조기 (Svarog Forging) — 가계의 뿌리와 4대 원소가 강하게 정렬되어 결실과 결단에 유리한 국면';
+  if (harmonics >= 72) return '콜로브라트 순환 균형기 (Kolovrat Balance) — 일상과 전통의 균형이 안정적으로 맞물려 꾸준히 다져가기 좋은 국면';
+  return '로드 뿌리 정돈기 (Rod Grounding) — 무리한 확장보다 오래된 마음의 매듭을 풀고 내면의 중심을 세우는 국면';
+}
+
+function buildSvarogShadowWarning(
+  hall: SvarogHallCherteg,
+  topic: SvarogQuestionTopic,
+): string {
+  const topicNote =
+    topic === 'relationship'
+      ? '가족이나 가까운 이의 몫까지 대신 짊어지려다 정작 내 경계가 흐려지지 않도록 주의하십시오.'
+      : topic === 'career'
+        ? '책임감만 앞세워 혼자 버티려 하지 말고 필요한 역할 분담을 요청하십시오.'
+        : topic === 'wealth'
+          ? '과거의 불안감 때문에 성급한 확정이나 과도한 방어에 치우치지 않도록 살피십시오.'
+          : topic === 'health'
+            ? '마음의 긴장을 몸에 쌓아두지 말고 충분한 이완과 휴식을 먼저 허락하십시오.'
+            : '오래된 관성과 고집에 머물지 않도록 하루 한 번 시야를 환기하십시오.';
+  return `[${hall.koreanName} 과잉 경계] ${hall.karmicChallenge}. ${topicNote}`;
 }
 
 export function calculateSlavicSvarogCircle(params: {
@@ -193,6 +230,9 @@ export function calculateSlavicSvarogCircle(params: {
 
   const synthesisMessage = `당신은 슬라브 16궁 중 [${svarogHall.koreanName}]의 가호를 받으며, 수호신 [${svarogHall.patronDeity}]과 성목 [${svarogHall.sacredTree}]의 정기가 깃들어 있습니다. 조상신 로드의 가호 아래 "${ancestralKarma.generationalKnotResolution}"`;
   const calculatedAtKst = formatSvarogKstTimestamp(now);
+  const questionTopic = classifySvarogTopic(context);
+  const svarogPhase = resolveSvarogPhase(totalSvarogHarmonics);
+  const shadowWarning = buildSvarogShadowWarning(svarogHall, questionTopic);
   const ritualAction = `[${svarogHall.koreanName}] ${ancestralKarma.generationalKnotResolution}`;
   const reflectionFocus = `슬라브 스바로그(${svarogHall.koreanName}) — ${sacredRuneSymbol.symbolName}`;
   const reflectiveQuestion = context
@@ -201,8 +241,8 @@ export function calculateSlavicSvarogCircle(params: {
   const interpretiveBoundary =
     '고대 슬라브 16 스바로그 궁과 로드(Rod) 조상 원형은 내면의 기질과 관계의 흐름을 돌아보는 상징적 관점이며, 단정적 미래 예측이나 의학·법률·재무 판단을 대체하지 않습니다.';
   const svarogSynthesisMatrix = {
-    dominantTension: `${svarogHall.koreanName} (${svarogHall.karmicChallenge}) ↔ ${elements.dominantElement}`,
-    alignmentState: `${sacredRuneSymbol.symbolName} · 보조 궁 ${secondaryHall.koreanName} · ${ancestralKarma.ancestralLineageGift}`,
+    dominantTension: `${svarogHall.koreanName} (${svarogHall.karmicChallenge}) ↔ ${elements.dominantElement} (${questionTopic})`,
+    alignmentState: `${svarogPhase} · ${sacredRuneSymbol.symbolName} · 보조 궁 ${secondaryHall.koreanName}`,
     integratedAction: `${ancestralKarma.generationalKnotResolution}${context ? ` [질문 맥락: ${context}]` : ''}`,
   };
 
@@ -216,6 +256,9 @@ export function calculateSlavicSvarogCircle(params: {
     elements,
     sacredRuneSymbol,
     totalSvarogHarmonics,
+    questionTopic,
+    svarogPhase,
+    shadowWarning,
     synthesisMessage,
     ritualAction,
     reflectionFocus,
@@ -228,7 +271,8 @@ export function calculateSlavicSvarogCircle(params: {
 export function formatSlavicSvarogCirclePrompt(report: SlavicSvarogCircleReport): string {
   const lines = [
     `### 🌌 고대 슬라브 16 스바로그 체계 & 로드(Rod) 가계 카르마 엔진 (${SLAVIC_SVAROG_VERSION})`,
-    `- **연산 시각**: ${report.calculatedAtKst}`,
+    `- **연산 시각**: ${report.calculatedAtKst} | **질문 맥락**: ${report.questionTopic}`,
+    `- **스바로그 조화 국면**: ${report.svarogPhase}`,
     `- **스바로그 궁(Cherteg)**: **${report.svarogHall.koreanName}** [수호신: ${report.svarogHall.patronDeity} | 성목: ${report.svarogHall.sacredTree}]`,
     `- **보조 교차 궁**: **${report.secondaryHall.koreanName}** [수호신: ${report.secondaryHall.patronDeity} | 미덕: ${report.secondaryHall.soulVirtue}]`,
     `  - 영혼의 미덕: ${report.svarogHall.soulVirtue}`,
@@ -244,6 +288,7 @@ export function formatSlavicSvarogCirclePrompt(report: SlavicSvarogCircleReport)
     `- **실천 의례**: ${report.ritualAction}`,
     `- **성찰 초점**: ${report.reflectionFocus}`,
     `- **성찰 질문**: ${report.reflectiveQuestion}`,
+    `- **과잉 경계**: ${report.shadowWarning}`,
     `- **해석 경계**: ${report.interpretiveBoundary}`,
   ];
   if (report.svarogSynthesisMatrix) {
