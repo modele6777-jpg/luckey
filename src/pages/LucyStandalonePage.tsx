@@ -35,6 +35,7 @@ import { LucyProTypewriter } from '@/components/LucyProTypewriter';
 import { ChatInsightsBoardModal } from '@/components/ChatInsightsBoardModal';
 import { LucyAuraLoader } from '@/components/LucyAuraLoader';
 import { LucyMasterTarotRoom } from '@/components/chat/LucyMasterTarotRoom';
+import { LucyLibraryDialogs, LucyLibraryTrigger } from '@/components/chat/LucyLibraryDialogs';
 import { LucyMasterBgmToggle } from '@/components/chat/LucyMasterBgmToggle';
 import { setSelectedEngineKeys } from '@/lib/lucyEngineSelection';
 import { detectMasterConcernTopic, getMasterDepthPrompts, type MasterConcernTopic } from '@/lib/lucyMasterPrompts';

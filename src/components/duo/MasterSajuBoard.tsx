@@ -24,7 +24,7 @@ const PILLAR_ORDER: { key: PillarKey; label: string }[] = [
  * whatever Lucy's latest answer mentions. Computed values only; no new claims.
  */
 export function MasterSajuBoard({ saju, lastAnswer }: { saju: SajuAnalysisResult | null; lastAnswer: string }) {
-  if (!saju || !saju.hasBirthInfo) {
+  if (!saju || !saju.hasBirthInfo || !saju.elements?.percentages || !saju.pillars) {
     return (
       <div className="flex-1 flex flex-col items-center justify-center text-center px-6" data-master-saju-board="empty">
         <p className="text-3xl mb-3" aria-hidden="true">☯</p>

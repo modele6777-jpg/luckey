@@ -1257,6 +1257,9 @@ export function BigBangButton() {
           if (isLucyMasterBgmPreferred()) void startLucyMasterBgm();
         } else if (deepenLucyMasterDepth().changed) {
           playLucyMasterSuction('deepen');
+        } else {
+          playLucyMasterSuction('out');
+          setLucyMasterMode(false);
         }
       } else if (masterNow) {
         if (getLucyMasterDepth() > 1) {
@@ -1778,6 +1781,11 @@ export function BigBangButton() {
               onContextMenu={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
+                if (!isLucyMasterModeOn()) return;
+                playLucyMasterSuction('out');
+                setOrbCounselOpen(false);
+                setLucyMasterMode(false);
+                triggerHaptic('whitehole');
               }}
               onClick={(event) => {
                 // Pointer activation is handled on release; detail=0 covers keyboard/assistive activation.
