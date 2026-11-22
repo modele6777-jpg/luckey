@@ -6,7 +6,7 @@
  * 질문 맥락에 반응하는 정성적 성찰과 유연한 위기 전환 지침으로 연결합니다.
  */
 
-export const MESOAMERICAN_POPOL_VUH_ENGINE_VERSION = 'LUCKEY-POPOL-VUH-HERO-TWINS-v2.2.0';
+export const MESOAMERICAN_POPOL_VUH_ENGINE_VERSION = 'LUCKEY-POPOL-VUH-HERO-TWINS-v2.3.0';
 
 export type PopolVuhQuestionTheme = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -21,7 +21,16 @@ export interface PopolVuhReport {
   calculatedAt: string;
   calculatedAtKst: string;
   questionTheme: PopolVuhQuestionTheme;
+  heroicPhase: string;
+  shadowWarning: string;
   activeTrialHouse: {
+    houseNumber: number;
+    houseNameKo: string;
+    houseNameMaya: string;
+    coreHazard: string;
+    heroicCounterStrategy: string;
+  };
+  companionTrialHouse: {
     houseNumber: number;
     houseNameKo: string;
     houseNameMaya: string;
@@ -73,6 +82,18 @@ function describePopolVuhStage(phase: PopolVuhTransformationPhase): string {
       return '시발바 관문 통과(Underworld Trial) — 흔들리지 않는 숨과 관찰로 시련의 방을 건너는 인내기';
   }
 }
+
+const POPOL_VUH_HEROIC_PHASES = [
+  '시발바 관찰(어둠의 관문 규칙을 먼저 파악하고 섣부른 정면 충돌을 피하는 시기)',
+  '트릭스터 전환(유머와 기지, 작은 우회로로 불리한 판을 유리하게 뒤집는 시기)',
+  '새벽 부활(시련의 재를 털고 태양과 달의 명료한 시야로 다시 솟구치는 시기)',
+] as const;
+
+const POPOL_VUH_SHADOW_WARNINGS = [
+  '기지와 우회 전략이 문제를 정직하게 마주해야 할 순간까지 회피하는 습관으로 흐르지 않도록 살피세요.',
+  '시련을 견디기 위해 두른 방어적 유머가 진심으로 도움을 요청할 틈까지 가리지 않도록 점검하세요.',
+  '위기를 돌파한 뒤에도 방심하여 새로운 교만이나 성급함의 함정에 빠지지 않도록 호흡을 고르세요.',
+] as const;
 
 const XIBALBA_HOUSES = [
   {
@@ -200,8 +221,12 @@ export function calculatePopolVuhHeroTwins(params: {
   seed += now.getDate() * 31 + now.getMonth() * 71;
 
   const houseIdx = Math.abs(seed) % XIBALBA_HOUSES.length;
+  const companionOffset = 1 + (Math.abs(seed * 5) % (XIBALBA_HOUSES.length - 1));
   const activeTrialHouse = XIBALBA_HOUSES[houseIdx];
+  const companionTrialHouse = XIBALBA_HOUSES[(houseIdx + companionOffset) % XIBALBA_HOUSES.length];
   const twinArchetype = TWIN_ARCHETYPES[Math.abs(seed) % TWIN_ARCHETYPES.length];
+  const heroicPhase = POPOL_VUH_HEROIC_PHASES[Math.abs(seed * 11) % POPOL_VUH_HEROIC_PHASES.length];
+  const shadowWarning = POPOL_VUH_SHADOW_WARNINGS[Math.abs(seed * 13) % POPOL_VUH_SHADOW_WARNINGS.length];
 
   const phases: PopolVuhTransformationPhase[] = [
     'UNDERWORLD_TRIAL',
@@ -219,28 +244,31 @@ export function calculatePopolVuhHeroTwins(params: {
 
   const calculatedAtKst = formatPopolVuhKstTimestamp(now);
   const popolVuhSynthesisMatrix = {
-    dominantTension: `${activeTrialHouse.houseNameKo} ↔ ${twinArchetype.twinName}`,
+    dominantTension: `${activeTrialHouse.houseNameKo} ↔ ${companionTrialHouse.houseNameKo} · ${twinArchetype.twinName}`,
     alignmentState: describePopolVuhStage(transformationPhase),
-    integratedAction: `${qualitative.practice}${question ? ` [질문 맥락: ${question}]` : ''}`,
+    integratedAction: `${qualitative.practice} (${heroicPhase})${question ? ` [질문 맥락: ${question}]` : ''}`,
   };
 
   const reflectiveQuestion = question
-    ? `지금 "${question}" 앞에서 ${activeTrialHouse.houseNameKo}의 시련을 ${twinArchetype.twinName}의 기지로 전환하기 위해 내가 먼저 시도할 우회로는 무엇인가요?`
-    : qualitative.reflection;
+    ? `'${heroicPhase}' 국면에서 지금 "${question}" 앞에서 ${activeTrialHouse.houseNameKo}의 시련을 ${twinArchetype.twinName}의 기지로 전환하기 위해 내가 먼저 시도할 우회로는 무엇인가요?`
+    : `'${heroicPhase}' 국면에서 ${qualitative.reflection}`;
 
   return {
     engineVersion: MESOAMERICAN_POPOL_VUH_ENGINE_VERSION,
     calculatedAt: now.toISOString(),
     calculatedAtKst,
     questionTheme,
+    heroicPhase,
+    shadowWarning,
     activeTrialHouse,
+    companionTrialHouse,
     twinArchetype,
     transformationPhase,
     tricksterResilienceScore,
     heroicTransformationVerdict,
     underworldVictoryRule,
-    practiceGuidance: qualitative.practice,
-    ritualAction: qualitative.ritual,
+    practiceGuidance: `${qualitative.practice} (${heroicPhase})`,
+    ritualAction: `${qualitative.ritual} (${heroicPhase})`,
     reflectionFocus: qualitative.reflection,
     reflectiveQuestion,
     counselNote: qualitative.counsel,
@@ -255,8 +283,11 @@ export function formatPopolVuhHeroTwinsPrompt(report: PopolVuhReport): string {
   const lines = [
     `### 🐆 고대 마야 포폴 부(Popol Vuh) 쌍둥이 영웅 & 시발바 시련 돌파 실측 데이터 (${report.engineVersion})`,
     `- **연산 시각**: ${report.calculatedAtKst} | **질문 맥락 & 변모 국면**: ${report.questionTheme} · ${describePopolVuhStage(report.transformationPhase)}`,
+    `- **영웅적 돌파 국면**: ${report.heroicPhase}`,
     `- **현재 돌파 중인 시련의 방**: 제${h.houseNumber}관문 - ${h.houseNameKo} (${h.houseNameMaya})`,
+    `- **연계 시련의 방**: 제${report.companionTrialHouse.houseNumber}관문 - ${report.companionTrialHouse.houseNameKo} (${report.companionTrialHouse.houseNameMaya})`,
     `- **조응하는 쌍둥이 영웅**: ${report.twinArchetype.twinName} (${report.twinArchetype.celestialSymbol})`,
+    `- **과잉·경계 점검**: ${report.shadowWarning}`,
     `- **직면한 핵심 위기 요인**: ${h.coreHazard}`,
     `- **영웅들의 트릭스터 돌파 전략**: ${h.heroicCounterStrategy}`,
     `- **영혼의 변모 판정**: ${report.heroicTransformationVerdict}`,

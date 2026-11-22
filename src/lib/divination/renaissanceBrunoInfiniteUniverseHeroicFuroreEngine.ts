@@ -15,12 +15,14 @@
  * 5. 정신의 절대적 자율과 용기:
  *    - 권위와 도그마에 무릎 꿇지 않고, 화형대의 불길 앞에서도 양심의 자유와 진리의 무한함을 수호한 불굴의 영혼.
  *
- * @version LUCKEY-BRUNO-INFINITE-UNIVERSE-v1.0.0
+ * @version LUCKEY-BRUNO-INFINITE-UNIVERSE-v2.3.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const BRUNO_INFINITE_UNIVERSE_VERSION = 'LUCKEY-BRUNO-INFINITE-UNIVERSE-v2.2.0';
+export const BRUNO_INFINITE_UNIVERSE_VERSION = 'LUCKEY-BRUNO-INFINITE-UNIVERSE-v2.3.0';
+
+export type BrunoQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
 export interface BrunoCosmicAspect {
   aspectKey: string;
@@ -41,6 +43,9 @@ export interface BrunoFuroreMetaphor {
 export interface RenaissanceBrunoInfiniteUniverseResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: BrunoQuestionTopic;
+  furorePhase: string;
+  shadowWarning: string;
   // 5대 핵심 지표 (0~100)
   infiniteCosmosVisionScore: number;       // 무한우주적 시야 및 경계 돌파력
   heroicFurorePassionScore: number;        // 영웅적 열정(Eroico Furore) 지적 비상도
@@ -83,6 +88,26 @@ function describeBrunoStage(score: number): string {
 }
 
 export type RenaissanceBrunoInfiniteUniverseReport = RenaissanceBrunoInfiniteUniverseResult;
+
+const BRUNO_FURORE_PHASES = [
+  '구체 해체(익숙하지만 답답한 낡은 틀과 타인의 기준을 먼저 비워내는 시기)',
+  '영웅적 비상(두려움 대신 내면의 지적 열정과 호기심에 날개를 달아 도약하는 시기)',
+  '중심 자각(외부 서열에 흔들리지 않고 지금 내가 선 자리를 우주의 중심으로 세우는 시기)',
+] as const;
+
+const BRUNO_SHADOW_WARNINGS = [
+  '무한한 지평을 향한 비상이 지금 당장 발 딛고 선 현실의 책임과 약속을 건너뛰는 조급함이 되지 않도록 살피세요.',
+  '영웅적 열정이 주변의 신중한 조언이나 속도가 다른 동료를 답답하게 몰아붙이는 독선으로 흐르지 않도록 점검하세요.',
+  '도그마를 거부하는 정신의 자율성이 스스로를 고립시키는 고집으로 굳지 않도록 열린 대화를 유지하세요.',
+] as const;
+
+function classifyBrunoQuestionTopic(query?: string): BrunoQuestionTopic {
+  const q = (query ?? '').toLowerCase();
+  if (/연애|사랑|사람|관계|친구|가족|동료|갈등|이별|결혼|상대/.test(q)) return 'relationship';
+  if (/결정|선택|진로|이직|사업|투자|시험|공부|합격|도전|방향|계획|틀/.test(q)) return 'decision';
+  if (/불안|힘들|지치|우울|회복|위로|휴식|건강|마음|치유|고민/.test(q)) return 'healing';
+  return 'reflection';
+}
 
 const BRUNO_COSMIC_ASPECTS: BrunoCosmicAspect[] = [
   {
@@ -151,10 +176,12 @@ export function calculateRenaissanceBrunoInfiniteUniverse(
   query?: string,
   now: Date = new Date(),
 ): RenaissanceBrunoInfiniteUniverseResult {
+  const questionTopic = classifyBrunoQuestionTopic(query);
   const seedString =
     (profile?.basic?.birthdate ?? (profile as any)?.birthdate ?? '1990-01-01') +
     (profile?.basic?.name ?? (profile as any)?.name ?? 'User') +
     (profile?.basic?.birthtime ?? (profile as any)?.birthtime ?? '12:00') +
+    questionTopic +
     (query ?? '') +
     'BrunoInfiniteUniverseFurore';
 
@@ -178,6 +205,8 @@ export function calculateRenaissanceBrunoInfiniteUniverse(
   const activeCosmicAspect = BRUNO_COSMIC_ASPECTS[aspectIndex];
   const secondaryCosmicAspect = BRUNO_COSMIC_ASPECTS[secondaryAspectIndex];
   const focalFuroreMetaphor = FURORE_METAPHORS[metaphorIndex];
+  const furorePhase = BRUNO_FURORE_PHASES[(absHash >> 10) % BRUNO_FURORE_PHASES.length];
+  const shadowWarning = BRUNO_SHADOW_WARNINGS[(absHash >> 13) % BRUNO_SHADOW_WARNINGS.length];
 
   const counselTitle = `브루노 무한우주론 & 영웅적 비상: ${activeCosmicAspect.aspectNameKo}`;
   const heroicFlightGuidance = `조르다노 브루노의 르네상스 우주철학은 폐쇄된 경계를 허물고 무한한 진리와 지적 아름다움을 향해 날아오르도록 독려합니다. ` +
@@ -198,12 +227,15 @@ export function calculateRenaissanceBrunoInfiniteUniverse(
   const brunoSynthesisMatrix = {
     dominantTension: `${activeCosmicAspect.aspectNameKo} ↔ ${secondaryCosmicAspect.aspectNameKo} ↔ ${focalFuroreMetaphor.metaphorTitleKo}`,
     alignmentState: describeBrunoStage(composite),
-    integratedAction: `${focalFuroreMetaphor.sovereignAction}${q ? ` [질문 맥락: ${q}]` : ''}`,
+    integratedAction: `${focalFuroreMetaphor.sovereignAction} (${furorePhase})${q ? ` [질문 맥락: ${q}]` : ''}`,
   };
 
   return {
     engineVersion: BRUNO_INFINITE_UNIVERSE_VERSION,
     calculatedAtKst,
+    questionTopic,
+    furorePhase,
+    shadowWarning,
     infiniteCosmosVisionScore,
     heroicFurorePassionScore,
     immanentDivineResonanceScore,
@@ -216,8 +248,8 @@ export function calculateRenaissanceBrunoInfiniteUniverse(
       counselTitle,
       heroicFlightGuidance,
     },
-    ritualAction: `[${activeCosmicAspect.aspectNameKo}]의 지평을 넓히기 위해 '${focalFuroreMetaphor.sovereignAction}'의 첫 행동을 오늘 바로 실행하세요.`,
-    reflectionFocus: `브루노 무한우주론(${activeCosmicAspect.aspectNameKo} ↔ ${secondaryCosmicAspect.aspectNameKo}) — ${focalFuroreMetaphor.metaphorTitleKo}`,
+    ritualAction: `[${activeCosmicAspect.aspectNameKo}]의 지평을 넓히기 위해 '${focalFuroreMetaphor.sovereignAction}'의 첫 행동을 오늘 바로 실행하세요. (${furorePhase})`,
+    reflectionFocus: `브루노 무한우주론(${activeCosmicAspect.aspectNameKo} ↔ ${secondaryCosmicAspect.aspectNameKo} · ${furorePhase}) — ${focalFuroreMetaphor.metaphorTitleKo}`,
     reflectiveQuestion,
     interpretiveBoundary,
     brunoSynthesisMatrix,
@@ -230,10 +262,12 @@ export function formatRenaissanceBrunoInfiniteUniversePrompt(res: RenaissanceBru
   );
   const lines = [
     `【브루노 무한우주론 & 영웅적 열정(Eroico Furore) 지표】`,
-    `- 연산 시각: ${res.calculatedAtKst} | 엔진 버전: ${res.engineVersion}`,
+    `- 연산 시각: ${res.calculatedAtKst} | 엔진 버전: ${res.engineVersion} | 질문 맥락: ${res.questionTopic}`,
     `- 영웅적 비상 국면: ${describeBrunoStage(composite)}`,
+    `- 무한우주 실천 국면: ${res.furorePhase}`,
     `- 핵심 우주론적 관점: ${res.activeCosmicAspect.aspectNameKo} [${res.activeCosmicAspect.aspectLatinOrItalian}]`,
     `- 보조 교차 관점: ${res.secondaryCosmicAspect.aspectNameKo} [${res.secondaryCosmicAspect.aspectLatinOrItalian}]`,
+    `- 과잉·경계 점검: ${res.shadowWarning}`,
     `- 우주론적 의미: ${res.activeCosmicAspect.cosmicMeaning}`,
     `- 영웅적 비상 조언: ${res.activeCosmicAspect.heroicCounsel}`,
     `- 핵심 영웅적 비유: ${res.focalFuroreMetaphor.metaphorTitleKo}`,
