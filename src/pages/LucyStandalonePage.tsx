@@ -5227,8 +5227,8 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
               type="button"
               onClick={openPhotoPicker}
               className={`w-7 h-7 sm:w-8 sm:h-8 p-0 flex items-center justify-center rounded-lg transition-colors cursor-pointer shrink-0 ${
-                isLight
-                  ? 'text-slate-400 hover:text-amber-700 hover:bg-amber-50'
+                lucyDayPeriod !== 'night'
+                  ? 'text-slate-500 hover:text-amber-700 hover:bg-amber-50'
                   : 'text-white/75 hover:text-amber-300 hover:bg-white/10'
               }`}
               title="사진/이미지 첨부"
@@ -5244,8 +5244,8 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
               className={`w-7 h-7 sm:w-8 sm:h-8 p-0 flex items-center justify-center rounded-lg transition-all cursor-pointer shrink-0 ${
                 isVoiceMode
                   ? 'text-amber-500 dark:text-amber-300 bg-amber-100/90 dark:bg-amber-950/80 border border-amber-400 dark:border-amber-500/50 shadow-2xs animate-pulse ring-1 ring-amber-400/50'
-                  : isLight
-                  ? 'text-slate-400 hover:text-amber-700 hover:bg-amber-50'
+                  : lucyDayPeriod !== 'night'
+                  ? 'text-slate-500 hover:text-amber-700 hover:bg-amber-50'
                   : 'text-white/75 hover:text-amber-300 hover:bg-white/10'
               }`}
               title={isVoiceMode ? '루시 음성 모드 켜짐 (클릭 시 끄기)' : '루시 1:1 음성 모드 켜기 (마이크 실시간 대화)'}
