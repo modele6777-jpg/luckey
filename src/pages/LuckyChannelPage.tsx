@@ -149,8 +149,8 @@ export default function LuckyChannelPage() {
         data-page-title="true"
         className="duo-page-title pointer-events-none select-none z-40 flex items-center justify-center transition-opacity duration-300"
       >
-        <span className="text-[11px] sm:text-xs font-black uppercase tracking-[0.32em] text-white/95 drop-shadow-[0_2px_8px_rgba(0,0,0,0.85)]">
-          LUCKEY
+        <span className="text-[11px] sm:text-xs font-black tracking-[0.32em] text-white/95 drop-shadow-[0_2px_8px_rgba(0,0,0,0.85)]" style={{ textTransform: 'none' }}>
+          Lucky
         </span>
       </div>
       <div data-app-scroll-root className="min-h-0 flex-1 w-full overflow-y-auto no-scrollbar touch-pan-y overscroll-x-none pb-28">
