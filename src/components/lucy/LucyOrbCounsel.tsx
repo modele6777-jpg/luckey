@@ -11,6 +11,7 @@ import { drawLucyTarotCards } from '@/utils/tarotDetector';
 import { Clover, KeyRound, MessageCirclePlus, type LucideIcon } from 'lucide-react';
 import React, { useEffect, useRef, useState } from 'react';
 import { useLocation } from 'wouter';
+import { setMicCaptureActive } from '@/lib/audioMixingPolicy';
 import './lucy-orb-counsel.css';
 
 const BOKCHAE = [
@@ -292,8 +293,11 @@ export function LucyOrbCounsel({
     if (typeof navigator === 'undefined' || !navigator.mediaDevices?.getUserMedia) return null;
     // Keep the permission request as permissive as possible for iOS home-screen apps.
     // The stream is primed from the tap and handed to the session instead of reopening it.
+    // iOS shows no permission prompt (and refuses capture) while the app holds the 'ambient' audio session,
+    // so switch to a recording session inside the tap, before asking.
+    setMicCaptureActive(true);
     const request = navigator.mediaDevices.getUserMedia({ audio: true });
-    request.catch(() => undefined);
+    request.catch(() => { if (!sessionRef.current) setMicCaptureActive(false); });
     return request.then(stream => {
       // Do not capture audio while the user is only granting permission or choosing a master.
       stream.getAudioTracks().forEach(track => { track.enabled = false; });
@@ -303,6 +307,7 @@ export function LucyOrbCounsel({
   const releasePrimedMic = () => {
     const pending = micPrime.current;
     micPrime.current = null;
+    if (pending && !sessionRef.current) setMicCaptureActive(false);
     void pending?.then(stream => stream.getTracks().forEach(track => track.stop())).catch(() => undefined);
   };
 
