@@ -5,7 +5,7 @@ import { createOrbCounselBed, type OrbCounselBed } from '@/lib/orbCounselBed';
 import { isLucyMasterBgmPlaying, stopLucyMasterBgm } from '@/lib/lucyMasterBgm';
 import { ORB_MASTERS, orbVoice, type OrbMaster } from '@/lib/orbMasters';
 import { generateHeavenlyAdvice } from '@/lib/orbHeavenlyAdvice';
-import { playTTSInChunks, stopTTS, useTTSActive } from '@/utils/tts';
+import { playTTSInChunks, stopTTS, useTTSActive, useTTSState } from '@/utils/tts';
 import { CHANNEL_MENU_ICONS, MessageCircleMinus } from '@/lib/channelMenuIcons';
 import { drawLucyTarotCards } from '@/utils/tarotDetector';
 import { Clover, KeyRound, MessageCirclePlus, type LucideIcon } from 'lucide-react';
@@ -175,9 +175,15 @@ export function LucyOrbCounsel({
   const heldRef = useRef(false);
   const heavenToken = useRef(0);
   const heavenSpokeRef = useRef(false);
+  // 천상의 조언을 다 듣고 나면 팝업이 저절로 사라진다: 목소리가 시작됐다가 끝난 것을 지켜본다.
+  const heavenListen = useRef<{ via: 'tts' | 'live'; started: boolean } | null>(null);
+  const heavenCloseTimer = useRef<number | null>(null);
+  const [heavenLeaving, setHeavenLeaving] = useState(false);
   const micPrime = useRef<Promise<MediaStream> | null>(null);
   const releasePrimedMicRef = useRef<() => void>(() => {});
   const ttsActive = useTTSActive();
+  // 실제로 소리가 나는 중인지 (불러오는 중·실패는 '들었다'로 치지 않는다)
+  const ttsSpeaking = useTTSState().isSpeaking;
   const cautionTimer = useRef<number | null>(null);
   const dieTimer = useRef<number | null>(null);
   const bedRef = useRef<OrbCounselBed | null>(null);
@@ -285,6 +291,26 @@ export function LucyOrbCounsel({
   useEffect(() => {
     bedRef.current?.setAudible(bedAudible, speaking || ttsActive);
   }, [bedAudible, speaking, ttsActive]);
+
+  useEffect(() => {
+    const listen = heavenListen.current;
+    if (!listen) return;
+    const active = listen.via === 'tts' ? ttsSpeaking || (listen.started && ttsActive) : speaking;
+    if (active) { listen.started = true; return; }
+    if (!listen.started) return;
+    // 다 읽었다: 잠깐 여운을 두고 부드럽게 사라진다.
+    heavenListen.current = null;
+    heavenCloseTimer.current = window.setTimeout(() => {
+      setHeavenLeaving(true);
+      heavenCloseTimer.current = window.setTimeout(() => {
+        heavenCloseTimer.current = null;
+        heavenSpokeRef.current = false;
+        setHeavenLeaving(false);
+        setHeaven(null);
+      }, 700);
+    }, 1400);
+  }, [ttsActive, ttsSpeaking, speaking]);
+  useEffect(() => () => { if (heavenCloseTimer.current) window.clearTimeout(heavenCloseTimer.current); }, []);
 
   if (!open) return null;
 
@@ -503,6 +529,10 @@ export function LucyOrbCounsel({
 
   // 꾹 누르기(0.7초): 천상의 조언이 내려오고, 그 조언을 목소리로 들려준다.
   const speakHeaven = (text: string) => {
+    if (heavenCloseTimer.current) window.clearTimeout(heavenCloseTimer.current);
+    heavenCloseTimer.current = null;
+    setHeavenLeaving(false);
+    heavenListen.current = { via: sessionRef.current ? 'live' : 'tts', started: false };
     if (sessionRef.current) {
       // 상담 중에는 마스터의 실시간 목소리가 그대로 읽어 준다 (두 소리가 겹치지 않게).
       sessionRef.current.sendText(`다음 천상의 조언을 그대로 천천히 읽어 주세요. 이 지시 문장은 읽지 마세요: ${text}`);
@@ -523,6 +553,10 @@ export function LucyOrbCounsel({
   };
   const closeHeaven = () => {
     heavenToken.current += 1;
+    heavenListen.current = null;
+    if (heavenCloseTimer.current) window.clearTimeout(heavenCloseTimer.current);
+    heavenCloseTimer.current = null;
+    setHeavenLeaving(false);
     setHeaven(null);
     if (heavenSpokeRef.current) { stopTTS(); heavenSpokeRef.current = false; }
   };
@@ -619,7 +653,7 @@ export function LucyOrbCounsel({
         <span className="lucy-orb-rays" aria-hidden="true" />
         <span className="lucy-orb-vignette" aria-hidden="true" />
         {heaven && (
-          <div className="lucy-heaven" role="dialog" aria-label="천상의 조언">
+          <div className={`lucy-heaven ${heavenLeaving ? 'is-leaving' : ''}`} role="dialog" aria-label="천상의 조언">
             <span className="lucy-heaven-beam" aria-hidden="true" />
             <div className="lucy-heaven-card">
               <span className="lucy-heaven-halo" aria-hidden="true" />
