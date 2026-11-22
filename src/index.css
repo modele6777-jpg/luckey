@@ -3213,6 +3213,10 @@ html:root :is(.lucy-chat-header, .lucy-orb-header, [data-page-brand="true"]) {
   max-height: var(--duo-pane-header-height) !important;
   padding: 0 var(--orb-header-pad-x) !important;
 }
+html:root .lucy-chat-header {
+  display: flex !important;
+  justify-content: center !important;
+}
 html:root .lucy-orb-header {
   justify-content: space-between !important;
   align-items: center !important;
