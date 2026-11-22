@@ -3795,6 +3795,22 @@ html.duo-unfolded-landscape.duo-header-sync #duo-lucy-viewport .lucy-chat-header
   justify-content: center !important;
 }
 
+/* Unfolded Lucy header stays the same compact bar as the cover screen. */
+html.duo-unfolded-landscape .lucy-chat-header,
+html.duo-unfolded-portrait .lucy-chat-header {
+  padding-left: 14px !important;
+  padding-right: 14px !important;
+}
+html.duo-unfolded-landscape .lucy-chat-header h1,
+html.duo-unfolded-portrait .lucy-chat-header h1 {
+  font-size: 16px !important;
+  line-height: 1.15 !important;
+}
+html.duo-unfolded-landscape .lucy-header-actions,
+html.duo-unfolded-portrait .lucy-header-actions {
+  gap: 6px !important;
+}
+
 /* Lucy search uses the same panel as Key search, and stays inside the Lucy pane. */
 .lucy-search-overlay {
   position: absolute;

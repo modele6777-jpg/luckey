@@ -4227,14 +4227,14 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
                     <span
                       data-lucy-master-depth={masterDepth}
                       title="빅뱅 버튼을 꾹 누르면 상담이 한 단계 깊어져요"
-                      className="inline-flex items-center gap-1 rounded-full border border-amber-300/50 bg-amber-400/15 px-2 py-0.5 text-[10px] font-bold text-amber-100 whitespace-nowrap min-w-0 truncate"
+                      aria-label={`상담 깊이 ${masterDepth}, ${LUCY_MASTER_DEPTH_INFO[masterDepth].name}`}
+                      className="inline-flex h-7 shrink-0 items-center justify-center rounded-full border border-amber-300/50 bg-amber-400/15 px-2.5"
                     >
-                      <span aria-hidden="true" className="inline-flex gap-[2px]">
+                      <span aria-hidden="true" className="inline-flex gap-[3px]">
                         {[1, 2, 3].map(level => (
                           <span key={level} className={`h-1.5 w-1.5 rounded-full ${level <= masterDepth ? 'bg-amber-300 shadow-[0_0_6px_rgba(252,211,77,0.8)]' : 'bg-white/20'}`} />
                         ))}
                       </span>
-                      깊이 {masterDepth} · {LUCY_MASTER_DEPTH_INFO[masterDepth].name}
                     </span>
                   )}
                   {/* 엔진함은 점술 도구 창(접은 화면 "도구" 버튼 · 펼친 화면 왼쪽 테이블)의 📚 엔진함 탭으로 옮겨졌다 */}
@@ -4246,7 +4246,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
           {/* Right Action Tools: 검색 · 자동 읽기 · 내보내기 */}
           <div className="lucy-header-actions flex items-center gap-1.5 sm:gap-2 shrink-0">
             {/* 🔮 접은 화면 점술모드: 펼친 화면의 왼쪽 테이블(사주·타로·추천 도구·양피지)을 창으로 본다 */}
-            {isMasterMode && !isDuoUnfolded && <MasterTableSheetButton tone={isLight ? 'light' : 'dark'} />}
+            {isMasterMode && <MasterTableSheetButton tone={isLight ? 'light' : 'dark'} />}
             {/* 📘 가이드 */}
             <PageGuideButton guide={getPageGuide(isMasterMode ? 'master' : 'lucy')} tone={isLight ? 'light' : 'dark'} />
             {/* 1. 검색 (Search Toggle) */}
