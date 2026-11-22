@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useReducer, useState } from 'react';
 import { DuoTarotBookSpread } from './DuoTarotBookSpread';
 import { TarotSpread } from '@/components/trinity/TarotSpread';
 import type { DetectedTarotCard } from '@/utils/tarotDetector';
@@ -28,8 +28,9 @@ import { MasterToolBoard } from './MasterToolBoard';
 import { LucyEngineCatalogPanel } from '@/components/chat/LucyEngineCatalogDialog';
 import { useTTSState } from '@/utils/tts';
 import { CosmicRoomHeader } from './DuoCosmicAmbientRoom';
+import { getLucyMasterDefaultTableFace, reduceLucyMasterTableFace, type LucyMasterTableFace } from '@/lib/lucyMasterTableFace';
 
-type TableFace = 'tarot' | 'saju' | 'recommended' | 'scrolls' | 'engines';
+type TableFace = LucyMasterTableFace;
 /** 단계 순서대로 쌓인다: 1 사주 → 2 타로 → 3 추천 도구·12대 양피지. 낮은 단계 도구는 높은 단계에서도 언제든 탭해서 본다. */
 const FACES: { id: TableFace; icon: string; label: string; stage: 1 | 2 | 3 }[] = [
   { id: 'saju', icon: '☯', label: '사주 원국', stage: 1 },
@@ -50,15 +51,15 @@ export function DuoDivinationTarotPane(_props: { isLight?: boolean }) {
   const [cards, setCards] = useState<DetectedTarotCard[]>([]);
   const [revealed, setRevealed] = useState<string[]>([]);
   const [pick, setPick] = useState<TarotPickRequest | null>(null);
-  // 왼쪽 테이블의 면: 처음엔 사주 원국판. 루시가 지금 하는 일을 따라 자동으로 바뀌고, 탭으로 직접 바꿀 수도 있다.
-  const [face, setFace] = useState<TableFace>('saju');
+  // 단계가 바뀌면 기본 화면을 고르고, 같은 단계에서는 사용자가 탭으로 고른 화면을 유지한다.
+  const [face, dispatchFace] = useReducer(reduceLucyMasterTableFace, getLucyMasterDepth(), getLucyMasterDefaultTableFace);
   const [table, setTable] = useState<LucyTableState>(() => getLucyTableState());
   // 1단계는 사주 원국만, 2단계부터 타로 화면이 테이블에 더해진다.
   // (1단계라도 손님이 직접 카드를 뽑았다면 그 카드는 볼 수 있게 둔다.)
   const depth = useLucyMasterDepth();
   const tarotAvailable = depth >= 2 || cards.length > 0 || Boolean(pick);
   const toolsAvailable = depth >= 3;
-  // 양피지에서 "크게 보기"로 고른 도구. 새 3단계 답변이 오면 다시 루시 추천으로 돌아간다.
+  // 양피지에서 "크게 보기"로 고른 도구. 새 도구 분석이 오면 포커스만 초기화한다.
   const [focusTool, setFocusTool] = useState<string | null>(null);
   useEffect(() => { setFocusTool(null); }, [table.tools]);
   const shownFace: TableFace = (face === 'tarot' && !tarotAvailable) || ((face === 'recommended' || face === 'scrolls') && !toolsAvailable) ? 'saju' : face;
@@ -72,12 +73,8 @@ export function DuoDivinationTarotPane(_props: { isLight?: boolean }) {
     const onTable = (e: Event) => {
       const next = (e as CustomEvent<LucyTableState>).detail;
       if (!next) return;
-      setTable(prev => {
-        // 새 답변이 오면: 카드가 있으면 타로, 사주만으로 답했으면 사주 원국판.
-        // 새 답변이 오면: 카드가 있으면 타로, 3단계면 13대 도구, 아니면 사주 원국판.
-        if (next.answerVersion !== prev.answerVersion) setFace(next.lastAnswerHasTarot ? 'tarot' : getLucyMasterDepth() >= 3 ? 'recommended' : 'saju');
-        return next;
-      });
+      setTable(next);
+      dispatchFace({ type: 'answer-updated' });
     };
     window.addEventListener(LUCY_TABLE_EVENT, onTable);
     return () => window.removeEventListener(LUCY_TABLE_EVENT, onTable);
@@ -89,26 +86,26 @@ export function DuoDivinationTarotPane(_props: { isLight?: boolean }) {
       if (!Array.isArray(next) || next.length === 0) return;
       setCards(next);
       setRevealed([]);
-      setFace('tarot');
+      dispatchFace({ type: 'tarot-requested' });
       triggerHaptic('whitehole');
     };
     const handlePickRequest = (e: Event) => {
       const detail = (e as CustomEvent)?.detail as TarotPickRequest | undefined;
-      if (detail?.count) { setPick(detail); setFace('tarot'); }
+      if (detail?.count) { setPick(detail); dispatchFace({ type: 'tarot-requested' }); }
     };
     // 루시 마스터를 나갔다 들어오면 테이블도 비운다
-    const handleMode = () => { setCards([]); setRevealed([]); setPick(null); setFace('saju'); clearTableTools(); };
-    // 단계에 맞춰 테이블 면도 바꾼다: 1단계 사주 원국, 2단계부터 타로.
+    const handleMode = () => { setCards([]); setRevealed([]); setPick(null); dispatchFace({ type: 'mode-reset' }); clearTableTools(); };
+    // 단계별 기본 화면: 1단계 사주, 2단계 타로, 3단계 추천 도구.
     const handleDepth = (e: Event) => {
       const depth = (e as CustomEvent<{ depth?: number; changed?: boolean }>)?.detail;
-      if (!depth?.changed) return;
-      setFace(depth.depth === 1 ? 'saju' : depth.depth === 2 ? 'tarot' : 'recommended');
+      if (!depth?.changed || typeof depth.depth !== 'number') return;
+      dispatchFace({ type: 'stage-changed', depth: depth.depth, changed: true });
     };
     const handleFace = (e: Event) => {
       const next = (e as CustomEvent<{ face?: TableFace }>)?.detail?.face;
       if (next !== 'engines') return;
       setReadingDismissed(true);
-      setFace('engines');
+      dispatchFace({ type: 'tab-selected', face: 'engines' });
     };
     window.addEventListener(LUCY_TABLE_FACE_EVENT, handleFace);
     window.addEventListener(LUCY_MASTER_DEPTH_EVENT_NAME, handleDepth);
@@ -145,7 +142,7 @@ export function DuoDivinationTarotPane(_props: { isLight?: boolean }) {
                 onClick={() => {
                   triggerHaptic('whitehole');
                   setReadingDismissed(reading);
-                  setFace(item.id);
+                  dispatchFace({ type: 'tab-selected', face: item.id });
                 }}
                 className={`relative flex min-w-0 flex-1 flex-col items-center justify-center rounded-xl border px-1 py-1.5 transition-colors ${active ? 'border-amber-300/80 bg-amber-400/20 text-amber-50' : 'border-white/12 bg-white/[0.05] text-slate-200 hover:bg-white/10'}`}
               >
@@ -181,8 +178,8 @@ export function DuoDivinationTarotPane(_props: { isLight?: boolean }) {
             facts={table.facts}
             toolData={table.toolData}
             focusId={focusTool}
-            onFocusTool={(id) => { setFocusTool(id); setFace('recommended'); }}
-            onShowScrolls={() => { triggerHaptic('whitehole'); setFace('scrolls'); }}
+            onFocusTool={(id) => { setFocusTool(id); dispatchFace({ type: 'tab-selected', face: 'recommended' }); }}
+            onShowScrolls={() => { triggerHaptic('whitehole'); dispatchFace({ type: 'tab-selected', face: 'scrolls' }); }}
           />
         ) : shownFace === 'engines' ? (
           <LucyEngineCatalogPanel />

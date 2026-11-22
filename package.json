@@ -1,7 +1,7 @@
 {
   "name": "luckey",
   "private": true,
-  "version": "1.8.314",
+  "version": "1.8.315",
   "engines": {
     "node": ">=20.0.0"
   },
@@ -27,7 +27,8 @@
     "test:cloudflare": "tsx --test tests/cloudflare-worker.test.ts",
     "test:key-exercise-index": "node scripts/test-key-global-exercise-index.mjs",
     "test:key-exercise-title": "node scripts/test-key-exercise-global-number.mjs",
-    "test:fold-dialogs": "tsx --test tests/fold-cover-rotation.test.ts tests/fold-cosmic-cover.test.ts tests/duo-pane-swap.test.ts tests/screen-overlay-order.test.ts tests/visual-viewport.test.ts tests/fold-viewport-settle.test.ts tests/folded-overlay-pane.test.ts tests/pwa-fold-geometry.test.ts tests/dialog-backdrop-touch.test.tsx tests/fold-state-store.test.ts tests/ios-viewport-recovery.test.ts"
+    "test:fold-dialogs": "tsx --test tests/fold-cover-rotation.test.ts tests/fold-cosmic-cover.test.ts tests/duo-pane-swap.test.ts tests/screen-overlay-order.test.ts tests/visual-viewport.test.ts tests/fold-viewport-settle.test.ts tests/folded-overlay-pane.test.ts tests/pwa-fold-geometry.test.ts tests/dialog-backdrop-touch.test.tsx tests/fold-state-store.test.ts tests/ios-viewport-recovery.test.ts",
+    "test:lucy-master-stage-face": "tsx --test tests/lucy-master-stage-face.test.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.91.1",
