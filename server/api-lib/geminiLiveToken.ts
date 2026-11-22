@@ -1,6 +1,7 @@
 import { getGeminiApiKey } from '../geminiKey.ts';
 
 const LIVE_MODEL = 'gemini-3.8-live';
+const LIVE_VOICE = 'Kore';
 
 export function lucyLiveInstruction(nickname: string): string {
   const name = nickname.replace(/[^\p{L}\p{N} _.-]/gu, '').trim().slice(0, 24) || '친구';
@@ -10,23 +11,8 @@ export function lucyLiveInstruction(nickname: string): string {
 한국어 반말만. 호칭은 ${name}.`;
 }
 
-const LIVE_VOICES = ['Aoede', 'Kore', 'Sulafat', 'Puck'] as const;
-
-function providedKey(raw: string | undefined): string {
-  const key = (raw || '').trim();
-  if (!key) return '';
-  if (key.startsWith('sk-') || key.startsWith('xai-') || !/^[A-Za-z0-9_-]{20,200}$/.test(key)) {
-    const error = new Error('API 키가 맞지 않습니다.') as Error & { status?: number; code?: string };
-    error.status = 400;
-    error.code = 'GEMINI_API_KEY_INVALID';
-    throw error;
-  }
-  return key;
-}
-
-export async function createGeminiLiveToken(nickname = '', options?: { apiKey?: string; voice?: string }): Promise<{ token: string; model: string; expiresAt: string }> {
-  const key = providedKey(options?.apiKey) || getGeminiApiKey();
-  const voice = LIVE_VOICES.includes(options?.voice as typeof LIVE_VOICES[number]) ? options!.voice : 'Aoede';
+export async function createGeminiLiveToken(nickname = ''): Promise<{ token: string; model: string; expiresAt: string }> {
+  const key = getGeminiApiKey();
   if (!key) {
     const error = new Error('Gemini 키가 설정되어 있지 않습니다.') as Error & { status?: number; code?: string };
     error.status = 503;
@@ -40,7 +26,7 @@ export async function createGeminiLiveToken(nickname = '', options?: { apiKey?: 
     model: `models/${LIVE_MODEL}`,
     generationConfig: {
       responseModalities: ['AUDIO'],
-      speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: voice } } },
+      speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: LIVE_VOICE } } },
     },
     systemInstruction: { parts: [{ text: lucyLiveInstruction(nickname) }] },
   };
