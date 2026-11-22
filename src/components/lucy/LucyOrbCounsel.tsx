@@ -87,6 +87,7 @@ const DIE_END = [
 
 type Line = { who: '나' | '루시'; text: string };
 type Phase = 'pick' | 'live' | 'report';
+type OrbVoiceMode = 'realtime' | 'hold';
 
 function mergeTranscript(previous: string, next: string): string {
   const line = next.replace(/\s+/g, ' ').trim();
@@ -141,6 +142,8 @@ export function LucyOrbCounsel({
   onFinish: (summary: string | null) => void;
 }) {
   const [phase, setPhase] = useState<Phase>('pick');
+  const [voiceMode, setVoiceMode] = useState<OrbVoiceMode>('hold');
+  const [talkPressed, setTalkPressed] = useState(false);
   const [ready, setReady] = useState(false);
   const [speaking, setSpeaking] = useState(false);
   const [master, setMaster] = useState<OrbMaster | null>(null);
@@ -204,6 +207,8 @@ export function LucyOrbCounsel({
     userBuf.current = '';
     lucyBuf.current = '';
     setPhase('pick');
+    setVoiceMode('hold');
+    setTalkPressed(false);
     setMaster(null);
     setLines([]);
     setDraft('');
@@ -299,16 +304,20 @@ export function LucyOrbCounsel({
 
   const describeMicPermissionError = (error: unknown) => {
     const name = error && typeof error === 'object' && 'name' in error ? String(error.name) : '';
+    const errorSuffix = name ? ` (오류 코드: ${name})` : '';
     if (name === 'NotAllowedError' || name === 'PermissionDeniedError') {
-      return '마이크 권한이 차단되어 있어요. 브라우저 주소창의 사이트 설정에서 마이크를 허용한 뒤 다시 눌러 주세요. iPhone에서는 설정 > Safari(홈 화면 앱이면 해당 앱) > 마이크도 확인해 주세요.';
+      return `마이크 권한이 차단되어 있어요. 브라우저 주소창의 사이트 설정에서 마이크를 허용한 뒤 다시 눌러 주세요. iPhone에서는 설정 > Safari(홈 화면 앱이면 해당 앱) > 마이크도 확인해 주세요.${errorSuffix}`;
+    }
+    if (name === 'SecurityError') {
+      return `브라우저나 앱이 이 화면의 마이크 접근을 차단했어요. 사이트 권한과 기기 설정에서 Luckey의 마이크를 허용한 뒤 다시 시도해 주세요.${errorSuffix}`;
     }
     if (name === 'NotFoundError' || name === 'DevicesNotFoundError') {
-      return '사용할 수 있는 마이크를 찾지 못했어요. 마이크가 연결되어 있는지 확인해 주세요.';
+      return `사용할 수 있는 마이크를 찾지 못했어요. 마이크가 연결되어 있는지 확인해 주세요.${errorSuffix}`;
     }
     if (name === 'NotReadableError' || name === 'TrackStartError') {
-      return '마이크가 다른 앱에서 사용 중이거나 시작할 수 없어요. 다른 앱에서 마이크를 닫고 다시 시도해 주세요.';
+      return `마이크가 다른 앱에서 사용 중이거나 시작할 수 없어요. 다른 앱에서 마이크를 닫고 다시 시도해 주세요.${errorSuffix}`;
     }
-    return '마이크 권한을 확인할 수 없어요. 사이트 설정에서 마이크를 허용했는지 확인한 뒤 다시 시도해 주세요.';
+    return `마이크를 시작하지 못했어요.${errorSuffix} Safari에서 권한을 이미 허용했다면, Safari에서 사이트를 직접 열었는지 확인해 주세요. 홈 화면 웹 앱이나 앱 내 브라우저에서 실행 중이라면 그 앱의 마이크 권한도 확인해 주세요.`;
   };
 
   const requestMicPermission = async () => {
@@ -366,6 +375,7 @@ export function LucyOrbCounsel({
         setNotice(message);
         setMicUnavailable(true);
       },
+      startMuted: voiceMode === 'hold',
       micStream,
     });
     sessionRef.current = session;
@@ -404,6 +414,26 @@ export function LucyOrbCounsel({
     } finally {
       setMicPermissionBusy(false);
     }
+  };
+
+  const chooseVoiceMode = (next: OrbVoiceMode) => {
+    setVoiceMode(next);
+    setTalkPressed(false);
+    sessionRef.current?.setMuted(next === 'hold');
+  };
+
+  const startPushToTalk = (event?: React.PointerEvent<HTMLButtonElement>) => {
+    if (voiceMode !== 'hold' || micUnavailable || micPermissionBusy || !sessionRef.current) return;
+    if (event) {
+      try { event.currentTarget.setPointerCapture(event.pointerId); } catch { /* optional on older browsers */ }
+    }
+    setTalkPressed(true);
+    sessionRef.current.setMuted(false);
+  };
+
+  const stopPushToTalk = () => {
+    setTalkPressed(false);
+    sessionRef.current?.setMuted(voiceMode === 'hold');
   };
 
   const openReport = () => {
@@ -679,7 +709,7 @@ export function LucyOrbCounsel({
             <button
               type="button"
               className={`lucy-orb-body ${lit ? 'is-lit' : ''} ${charging ? 'is-charging' : ''}`}
-              aria-label={draft.trim() ? '입력한 말 보내기 (꾹 누르면 천상의 조언)' : '오브 빛 (꾹 누르면 천상의 조언)'}
+              aria-label={phase === 'live' ? (draft.trim() ? '실시간 대화로 전환하고 입력한 말 보내기 (꾹 누르면 천상의 조언)' : '실시간 대화 시작 (꾹 누르면 천상의 조언)') : '오브 빛 (꾹 누르면 천상의 조언)'}
               onPointerDown={startHold}
               onPointerUp={endHold}
               onPointerLeave={endHold}
@@ -688,7 +718,10 @@ export function LucyOrbCounsel({
               onClick={() => {
                 if (heldRef.current) { heldRef.current = false; return; }
                 flashOrb();
-                if (phase === 'live') sendDraft();
+                if (phase === 'live') {
+                  if (voiceMode === 'hold') chooseVoiceMode('realtime');
+                  if (draft.trim()) sendDraft();
+                }
               }}
             >
               <span className="lucy-orb-glow" aria-hidden="true" />
@@ -740,6 +773,18 @@ export function LucyOrbCounsel({
           {phase === 'pick' && <p>탁자 위 주사위를 누르거나 마스터를 고르시면 상담이 시작됩니다</p>}
           {phase === 'live' && <p>{speaking ? `${master?.name} 마스터가 말하고 있습니다` : `${master?.name} · ${master?.tone}. 말씀하셔도 되고, 적으셔도 됩니다`}</p>}
           {phase === 'report' && <p>이번 상담을 부적으로 남겼습니다. 파일로도 보관할 수 있습니다</p>}
+          {(phase === 'pick' || phase === 'live') && (
+            <div className="lucy-orb-voice-controls">
+              <span className="lucy-orb-voice-label">음성 대화 방식</span>
+              <div className="lucy-orb-voice-options" role="group" aria-label="음성 대화 방식">
+                <button type="button" aria-pressed={voiceMode === 'realtime'} onClick={() => chooseVoiceMode('realtime')}>실시간 대화</button>
+                <button type="button" aria-pressed={voiceMode === 'hold'} onClick={() => chooseVoiceMode('hold')}>누르고 말하기</button>
+              </div>
+              <p className="lucy-orb-voice-description">
+                {voiceMode === 'realtime' ? '마이크가 계속 켜져 있어 자연스럽게 대화해요.' : '버튼을 누르고 있는 동안 말하고, 오브를 짧게 누르면 실시간 대화로 바뀌어요.'}
+              </p>
+            </div>
+          )}
           {notice && <p role="status">{notice}</p>}
           {phase === 'pick' && (
             <div className="lucy-orb-permission-actions">
@@ -795,6 +840,36 @@ export function LucyOrbCounsel({
         {phase === 'live' && (
           <div className="lucy-orb-dock">
             <input value={draft} onChange={(event) => setDraft(event.target.value)} onKeyDown={(event) => { if (event.key === 'Enter') event.preventDefault(); }} placeholder="적고 오브를 누르면 보내집니다" aria-label="오브 상담 입력" enterKeyHint="done" />
+            {voiceMode === 'hold' && (
+              <button
+                type="button"
+                className={`lucy-orb-ptt lucy-orb-dock-ptt ${talkPressed ? 'is-pressed' : ''}`}
+                aria-label={talkPressed ? '말하기 전송 중, 놓으면 멈춥니다' : '길게 눌러 말하기'}
+                aria-pressed={talkPressed}
+                disabled={micUnavailable || micPermissionBusy || !sessionRef.current}
+                onPointerDown={startPushToTalk}
+                onPointerUp={stopPushToTalk}
+                onPointerLeave={stopPushToTalk}
+                onPointerCancel={stopPushToTalk}
+                onLostPointerCapture={stopPushToTalk}
+                onKeyDown={(event) => {
+                  if ((event.key === ' ' || event.key === 'Enter') && !event.repeat) {
+                    event.preventDefault();
+                    startPushToTalk();
+                  }
+                }}
+                onKeyUp={(event) => {
+                  if (event.key === ' ' || event.key === 'Enter') {
+                    event.preventDefault();
+                    stopPushToTalk();
+                  }
+                }}
+                onBlur={stopPushToTalk}
+                onContextMenu={(event) => event.preventDefault()}
+              >
+                {talkPressed ? '말하는 중' : '길게 눌러 말하기'}
+              </button>
+            )}
           </div>
         )}
         {phase === 'report' && master && (

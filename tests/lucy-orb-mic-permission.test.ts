@@ -18,3 +18,9 @@ test('Orb explains denied microphone permission and can reconnect during the liv
   assert.match(source, /begin\(master, Promise\.resolve\(stream\), false\)/);
   assert.match(source, /마이크 다시 연결/);
 });
+
+test('Orb shows the microphone error code and checks the app context when Safari permission may already be enabled', () => {
+  assert.match(source, /오류 코드: \$\{name\}/);
+  assert.match(source, /Safari에서 사이트를 직접 열었는지 확인/);
+  assert.match(source, /홈 화면 웹 앱이나 앱 내 브라우저/);
+});

@@ -25,6 +25,8 @@ type LiveVoiceHandlers = {
   onError?: (error: { code: string; message: string }) => void;
   /** Microphone requested earlier inside the user's tap (some browsers only show the prompt there). */
   micStream?: Promise<MediaStream> | null;
+  /** Start without sending microphone audio (used by Orb's hold-to-talk mode). */
+  startMuted?: boolean;
   /** When set, a missing microphone is not fatal: the session continues with typed input and spoken answers. */
   onNotice?: (message: string) => void;
 };
@@ -71,7 +73,7 @@ export function startGeminiLiveVoice(handlers: LiveVoiceHandlers): LiveVoiceSess
   void capture.resume();
   let stopped = false;
   let failed = false;
-  let muted = false;
+  let muted = handlers.startMuted ?? false;
   let ready = false;
   let socket: WebSocket | null = null;
   let stream: MediaStream | null = null;
@@ -223,6 +225,7 @@ export function startGeminiLiveVoice(handlers: LiveVoiceHandlers): LiveVoiceSess
       stream = await (handlers.micStream || navigator.mediaDevices.getUserMedia({
         audio: { channelCount: 1, echoCancellation: true, noiseSuppression: true, autoGainControl: true },
       }));
+      stream.getAudioTracks().forEach(track => { track.enabled = !muted; });
     } catch {
       stream = null;
       if (!handlers.onNotice) {
@@ -288,7 +291,10 @@ export function startGeminiLiveVoice(handlers: LiveVoiceHandlers): LiveVoiceSess
   void run();
   return {
     stop,
-    setMuted: (next) => { muted = next; },
+    setMuted: (next) => {
+      muted = next;
+      stream?.getAudioTracks().forEach(track => { track.enabled = !next; });
+    },
     interrupt: stopPlayback,
     sendText: (text: string) => {
       const line = text.replace(/\s+/g, ' ').trim().slice(0, 500);
