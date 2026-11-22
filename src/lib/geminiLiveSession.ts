@@ -307,6 +307,10 @@ export function startGeminiLiveVoice(handlers: LiveVoiceHandlers): LiveVoiceSess
   return {
     stop,
     setMuted: (next) => {
+      // 누르고 말하기: 손을 떼면(다시 음소거) 말이 끝났다고 알려 바로 답하게 한다.
+      if (next && !muted && ready && socket?.readyState === WebSocket.OPEN) {
+        try { socket.send(JSON.stringify({ realtimeInput: { audioStreamEnd: true } })); } catch { /* socket closing */ }
+      }
       muted = next;
       if (next) handlers.onAudioLevel?.(0);
       stream?.getAudioTracks().forEach(track => { track.enabled = !next; });

@@ -1339,3 +1339,31 @@ html.duo-unfolded-mode .lucy-charm { width: min(380px, 70%); }
   .lucy-orb-burst, .lucy-orb-charge { display: none; }
   .lucy-orb-body.is-lit::before, .lucy-orb-body.is-lit::after { opacity: .45; }
 }
+
+/* Hold-to-talk on the Orb input: no iOS loupe/callout/preview before typing starts. */
+.lucy-orb-dock .lucy-orb-input:not(:focus) {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+.lucy-orb-input-wave.is-holding i { min-height: 4px; background: #ffe7a8; }
+.lucy-orb-hold-hint {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 8px);
+  transform: translateX(-50%);
+  padding: 5px 12px;
+  border-radius: 999px;
+  white-space: nowrap;
+  font-size: 12px;
+  font-weight: 800;
+  color: #3a2410;
+  background: linear-gradient(180deg, #fff6dc, #f3cf86);
+  box-shadow: 0 4px 14px rgba(255, 200, 120, .4);
+  pointer-events: none;
+  animation: lucy-hold-hint-in .25s ease both;
+}
+@keyframes lucy-hold-hint-in {
+  from { opacity: 0; transform: translate(-50%, 6px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}
