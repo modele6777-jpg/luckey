@@ -1,7 +1,7 @@
 {
-  "version": "1.8.325",
-  "builtAt": "2026-11-23T04:24:00+09:00",
-  "summary": "오성과 한음·연암 박지원·아담 스미스 3대 엔진 3축 국면 및 동반 테마·과잉 경계 심층 강화(v1.8.325)",
+  "version": "1.8.326",
+  "builtAt": "2026-11-23T04:27:00+09:00",
+  "summary": "오성과 한음·연암 박지원·아담 스미스 3대 엔진 3축 국면 및 동반 테마·과잉 경계 심층 강화(v1.8.326)",
   "items": [
     "오성과 한음 지기지우·경세제민 엔진(v2.3.0): 동반 테마(companionOhseongHaneumTheme)·지기·경세 국면(friendshipPhase)·과잉 경계(shadowWarning) 추가",
     "연암 박지원 《열하일기》 실학 엔진(v2.3.0): 동반 실학 테마(companionYeonamTheme)·실학 국면(silhakPhase)·과잉 경계(shadowWarning) 추가",

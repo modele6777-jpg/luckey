@@ -290,11 +290,15 @@ export function LucyOrbCounsel({
   // 마이크는 사용자가 누른 그 순간에 요청한다 (브라우저가 탭 안에서만 허용 창을 띄우는 경우가 있다).
   const requestMic = (): Promise<MediaStream> | null => {
     if (typeof navigator === 'undefined' || !navigator.mediaDevices?.getUserMedia) return null;
-    const request = navigator.mediaDevices.getUserMedia({
-      audio: { channelCount: 1, echoCancellation: true, noiseSuppression: true, autoGainControl: true },
-    });
+    // Keep the permission request as permissive as possible for iOS home-screen apps.
+    // The stream is primed from the tap and handed to the session instead of reopening it.
+    const request = navigator.mediaDevices.getUserMedia({ audio: true });
     request.catch(() => undefined);
-    return request;
+    return request.then(stream => {
+      // Do not capture audio while the user is only granting permission or choosing a master.
+      stream.getAudioTracks().forEach(track => { track.enabled = false; });
+      return stream;
+    });
   };
   const releasePrimedMic = () => {
     const pending = micPrime.current;
@@ -341,9 +345,10 @@ export function LucyOrbCounsel({
     }
     try {
       const stream = await request;
-      stream.getTracks().forEach(track => track.stop());
-      setNotice('마이크 권한이 허용됐어요. 마스터를 선택하면 음성 상담을 시작합니다.');
+      micPrime.current = Promise.resolve(stream);
+      setNotice('마이크 권한이 허용됐어요. 연결을 준비해 두었습니다. 아래에서 마스터를 선택하면 음성 상담을 시작합니다.');
     } catch (error) {
+      micPrime.current = null;
       setMicUnavailable(true);
       setNotice(describeMicPermissionError(error));
     } finally {
@@ -557,8 +562,7 @@ export function LucyOrbCounsel({
     if (rolling || leaving || micPermissionBusy) return;
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     // 두 주사위의 눈을 먼저 정하고, 3D 주사위가 그 눈이 위로 오도록 굴러가 멈춘다. 합으로 마스터를 고른다.
-    releasePrimedMic();
-    micPrime.current = requestMic();
+    if (!micPrime.current) micPrime.current = requestMic();
     const next: [number, number] = [1 + Math.floor(Math.random() * 6), 1 + Math.floor(Math.random() * 6)];
     setDice(next);
     setRolling(true);
@@ -808,7 +812,7 @@ export function LucyOrbCounsel({
           {phase === 'pick' && (
             <div className="lucy-orb-masters">
               {ORB_MASTERS.map(item => (
-                <button key={item.id} type="button" onClick={() => begin(item)}>
+                <button key={item.id} type="button" disabled={micPermissionBusy || rolling} onClick={() => begin(item)}>
                   <strong>{item.name}</strong>
                   <span>{item.tone} · {item.topic}</span>
                 </button>
