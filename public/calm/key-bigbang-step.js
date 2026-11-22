@@ -52,6 +52,7 @@
   var holdState = null;
   function releaseHold() {
     if (!holdState) return;
+    blockUntil = 0;
     holdState.stopped = true;
     if (holdState.frame) cancelAnimationFrame(holdState.frame);
     holdState.timers.forEach(clearTimeout);
@@ -61,6 +62,38 @@
   ['touchstart', 'wheel', 'keydown', 'pointerdown'].forEach(function (name) {
     window.addEventListener(name, releaseHold, { passive: true, capture: true });
   });
+  // Key 버튼들이 부르는 화면 이동 명령(scrollTo·scrollIntoView)을 잠시 막는다.
+  // 아이폰의 부드러운 스크롤은 시작이 늦고 길어서, 나중에 되돌리는 것만으로는 이길 수 없다.
+  var blockUntil = 0;
+  (function patchScrollCalls() {
+    function guard(original) {
+      return function () {
+        if (Date.now() < blockUntil) return undefined;
+        return original.apply(this, arguments);
+      };
+    }
+    try {
+      window.scrollTo = guard(window.scrollTo);
+      window.scroll = guard(window.scroll);
+      window.scrollBy = guard(window.scrollBy);
+      var proto = Element.prototype;
+      if (proto.scrollIntoView) proto.scrollIntoView = guard(proto.scrollIntoView);
+      var elementScrollTo = proto.scrollTo;
+      if (elementScrollTo) {
+        proto.scrollTo = function () {
+          // 가로 목록 줄은 움직여도 된다. 페이지(세로) 스크롤 요소만 막는다.
+          var se = document.scrollingElement || document.documentElement;
+          if (Date.now() < blockUntil && (this === se || this === document.body || this === document.documentElement || this.scrollHeight > this.clientHeight + 4)) {
+            var arg = arguments[0];
+            var onlyHorizontal = arg && typeof arg === 'object' && arg.top === undefined && arg.left !== undefined;
+            if (!onlyHorizontal) return undefined;
+          }
+          return elementScrollTo.apply(this, arguments);
+        };
+      }
+    } catch (_) { /* very old browsers */ }
+  })();
+
   function holdScroll(fn) {
     var se = document.scrollingElement || document.documentElement;
     // 앞선 이동을 아직 붙잡는 중일 때만 그 위치를 이어 쓴다.
@@ -69,16 +102,17 @@
     var pageHeight = Math.max(se.scrollHeight, document.body.scrollHeight);
     if (holdState) { holdState.stopped = true; if (holdState.frame) cancelAnimationFrame(holdState.frame); holdState.timers.forEach(clearTimeout); }
     document.body.style.minHeight = pageHeight + 'px';
+    blockUntil = Date.now() + 1500;
     var state = { y: y, prevMinHeight: prevMinHeight, stopped: false, done: false, frame: 0, timers: [] };
     holdState = state;
     var restore = function () { if (!state.stopped && Math.abs(se.scrollTop - y) > 1) se.scrollTop = y; };
     fn();
     restore();
-    var until = Date.now() + 900;
+    var until = Date.now() + 1500;
     var loop = function () { restore(); if (!state.stopped && Date.now() < until) state.frame = requestAnimationFrame(loop); };
     state.frame = requestAnimationFrame(loop);
-    [50, 150, 300, 500, 800].forEach(function (ms) { state.timers.push(setTimeout(restore, ms)); });
-    state.timers.push(setTimeout(function () { state.done = true; }, 950));
+    [50, 150, 300, 500, 800, 1100, 1400].forEach(function (ms) { state.timers.push(setTimeout(restore, ms)); });
+    state.timers.push(setTimeout(function () { state.done = true; }, 1550));
   }
 
   function step(direction) {
