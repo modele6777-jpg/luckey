@@ -578,10 +578,10 @@ export const DuoCosmicAmbientRoom: React.FC<DuoCosmicAmbientRoomProps> = ({ isLi
 
 
 /**
- * 🌌 코스믹 룸 헤더. 오른쪽 루시 플러스 헤더와 높이·배경·아래 선 색을 그대로 맞춰
+ * 🌌 코스믹 룸 / 코스믹 프로(점술모드 테이블) 헤더. 오른쪽 루시 헤더와 높이·배경·아래 선 색을 그대로 맞춰
  * 두 화면의 경계선이 한 줄로 이어지게 한다 (루시 헤더 크기·테마가 바뀌면 따라간다).
  */
-function CosmicRoomHeader({ isLight }: { isLight: boolean }) {
+export function CosmicRoomHeader({ isLight, title = 'Cosmic Room', guideId = 'cosmic' }: { isLight: boolean; title?: string; guideId?: string }) {
   const [look, setLook] = useState<{ height: number; background: string; border: string } | null>(null);
   useEffect(() => {
     let frame = 0;
@@ -637,8 +637,8 @@ function CosmicRoomHeader({ isLight }: { isLight: boolean }) {
         borderBottomColor: look?.border || (isLight ? 'rgba(253,230,138,0.6)' : 'rgba(245,158,11,0.3)'),
       }}
     >
-      <h2 className="min-w-0 truncate text-base sm:text-xl font-black tracking-tight">Cosmic Room</h2>
-      <PageGuideButton guide={getPageGuide('cosmic')} tone={isLight ? 'light' : 'dark'} />
+      <h2 className="min-w-0 truncate text-base sm:text-xl font-black tracking-tight">{title}</h2>
+      <PageGuideButton guide={getPageGuide(guideId)} tone={isLight ? 'light' : 'dark'} />
     </header>
   );
 }

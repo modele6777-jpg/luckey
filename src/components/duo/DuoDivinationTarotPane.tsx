@@ -27,6 +27,7 @@ import { getLucyTableState, clearTableTools, LUCY_TABLE_EVENT, type LucyTableSta
 import { MasterToolBoard } from './MasterToolBoard';
 import { LucyEngineCatalogPanel } from '@/components/chat/LucyEngineCatalogDialog';
 import { useTTSState } from '@/utils/tts';
+import { CosmicRoomHeader } from './DuoCosmicAmbientRoom';
 
 type TableFace = 'tarot' | 'saju' | 'recommended' | 'scrolls' | 'engines';
 /** 단계 순서대로 쌓인다: 1 사주 → 2 타로 → 3 추천 도구·12대 양피지. 낮은 단계 도구는 높은 단계에서도 언제든 탭해서 본다. */
@@ -128,6 +129,8 @@ export function DuoDivinationTarotPane(_props: { isLight?: boolean }) {
       {/* Same purple velvet and candles as the Lucy Master chat, so both panes read as one room. */}
       <LucyMasterTarotRoom variant="table" />
       <div className="relative z-[1] flex-1 min-h-0 flex flex-col">
+        {/* 🔮 Cosmic Pro 헤더: 오른쪽 루시 마스터 헤더와 높이·선이 한 줄로 이어진다 */}
+        <CosmicRoomHeader isLight={false} title="Cosmic Pro" guideId="cosmic-pro" />
         {/* 테이블 면 바꾸기 탭 (낭독은 루시가 읽는 동안에만) */}
         <div className="shrink-0 flex items-stretch gap-1 px-3 pt-3 pb-1.5" role="tablist" aria-label="점술 테이블 보기">
           {FACES.filter(item => (item.id !== 'tarot' || tarotAvailable) && ((item.id !== 'recommended' && item.id !== 'scrolls') || toolsAvailable)).map(item => {
