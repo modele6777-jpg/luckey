@@ -122,6 +122,14 @@
   margin-block: 0;
 }
 
+/* 접힌 화면에서 클로버 목록을 접었을 때: 네 아이콘(루시·오브·키·클로버)을 사이드바 전체 높이의 정중앙에 둔다.
+   목록 영역을 위쪽 여백(168px)까지 끌어올리고, 아래 푸터 높이만큼 위에도 여백을 줘 화면 가운데에 맞춘다. */
+html:not(.duo-unfolded-mode):not(.duo-unfolded-portrait):not(.duo-unfolded-landscape) .sites-pinned-sidebar[data-theme] .refined-menu-list[data-channels-open='false'] {
+  margin-top: calc(-1 * max(168px, calc(env(safe-area-inset-top, 0px) + 56px)));
+  padding-top: var(--sidebar-footer-height, 76px);
+  padding-bottom: 0;
+}
+
 .refined-prism-icons {
   overflow: hidden;
 }
