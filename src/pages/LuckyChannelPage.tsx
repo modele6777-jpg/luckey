@@ -149,7 +149,7 @@ export default function LuckyChannelPage() {
         data-page-title="true"
         className="duo-page-title pointer-events-none select-none z-40 flex items-center justify-center transition-opacity duration-300"
       >
-        <span className="text-[11px] sm:text-xs font-black tracking-[0.32em] text-white/95 drop-shadow-[0_2px_8px_rgba(0,0,0,0.85)]" style={{ textTransform: 'none' }}>
+        <span className="lucky-page-title text-[11px] sm:text-xs font-black tracking-[0.32em] text-white/95 drop-shadow-[0_2px_8px_rgba(0,0,0,0.85)]">
           Lucky
         </span>
       </div>

@@ -147,6 +147,16 @@ html:root [data-page-brand="true"].duo-page-brand {
     font-size: 12px;
   }
 }
+/* Lucky stays title case, so it needs a slightly larger size to match the all-caps channel titles. */
+.duo-page-title > span.lucky-page-title {
+  font-size: 13px;
+  text-transform: none;
+}
+@media (min-width: 640px) {
+  .duo-page-title > span.lucky-page-title {
+    font-size: 14px;
+  }
+}
 .duo-page-nav {
   position: absolute !important;
   top: var(--channel-nav-top, calc(var(--page-header-top) + 4.35rem)) !important;
