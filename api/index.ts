@@ -183,8 +183,10 @@ app.post("/api/ai/live-token", async (req, res) => {
     const nickname = typeof req.body?.nickname === "string" ? req.body.nickname : "";
     const chart = typeof req.body?.chart === "string" ? req.body.chart : "";
     const cards = typeof req.body?.cards === "string" ? req.body.cards : "";
+    const voice = typeof req.body?.voice === "string" ? req.body.voice : "";
+    const focus = typeof req.body?.focus === "string" ? req.body.focus : "";
     res.setHeader("Cache-Control", "no-store");
-    return res.status(200).json(await createGeminiLiveToken(nickname, { chart, cards }));
+    return res.status(200).json(await createGeminiLiveToken(nickname, { chart, cards, voice, focus }));
   } catch (error: any) {
     const status = Number(error?.status) || 500;
     return res.status(status).json({ error: error?.message || "실시간 음성 토큰을 만들지 못했습니다.", ...(error?.code ? { code: error.code } : {}) });

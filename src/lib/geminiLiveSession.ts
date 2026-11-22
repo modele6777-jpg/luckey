@@ -1,4 +1,5 @@
 import { buildLucyLiveInstruction } from './lucyLiveBrief';
+import { orbVoice } from './orbMasters';
 
 export type LiveVoiceState = 'listening' | 'speaking';
 
@@ -15,6 +16,8 @@ type LiveVoiceHandlers = {
   nickname?: string;
   chart?: string;
   cards?: string;
+  voice?: string;
+  focus?: string;
   onState?: (state: LiveVoiceState) => void;
   onUserText?: (text: string) => void;
   onLucyText?: (text: string) => void;
@@ -189,7 +192,13 @@ export function startGeminiLiveVoice(handlers: LiveVoiceHandlers): LiveVoiceSess
       const response = await fetch('/api/ai/live-token', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ nickname: handlers.nickname || '', chart: handlers.chart || '', cards: handlers.cards || '' }),
+        body: JSON.stringify({
+          nickname: handlers.nickname || '',
+          chart: handlers.chart || '',
+          cards: handlers.cards || '',
+          voice: orbVoice(handlers.voice || ''),
+          focus: handlers.focus || '',
+        }),
       });
       const body = await response.json().catch(() => ({}));
       if (!response.ok || !body?.token) {
@@ -245,10 +254,10 @@ export function startGeminiLiveVoice(handlers: LiveVoiceHandlers): LiveVoiceSess
           model: `models/${model}`,
           generationConfig: {
             responseModalities: ['AUDIO'],
-            speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Kore' } } },
+            speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: orbVoice(handlers.voice || '') } } },
           },
           systemInstruction: {
-            parts: [{ text: buildLucyLiveInstruction(handlers.nickname || '', handlers.chart || '', handlers.cards || '') }],
+            parts: [{ text: buildLucyLiveInstruction(handlers.nickname || '', handlers.chart || '', handlers.cards || '', handlers.focus || '') }],
           },
         },
       }));

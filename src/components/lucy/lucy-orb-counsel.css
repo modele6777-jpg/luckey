@@ -20,7 +20,7 @@
 }
 .lucy-orb-body {
   position: relative;
-  width: min(220px, 58vw);
+  width: min(180px, 46vw);
   aspect-ratio: 1;
   border-radius: 999px;
   background:
@@ -38,9 +38,11 @@
 .lucy-orb-copy {
   position: relative;
   z-index: 2;
-  margin-top: 28px;
+  margin-top: 22px;
+  max-height: calc(100vh - 230px);
+  overflow: auto;
   text-align: center;
-  padding: 0 24px;
+  padding: 0 24px 72px;
 }
 .lucy-orb-copy p { margin: 0; font-size: 15px; line-height: 1.6; color: rgba(247,244,238,.86); }
 .lucy-orb-lines { margin-top: 14px; display: flex; flex-direction: column; gap: 6px; max-width: 320px; }
@@ -73,6 +75,28 @@
   padding: 12px 14px;
 }
 .lucy-orb-end { position: absolute; top: max(16px, env(safe-area-inset-top)); right: 16px; z-index: 3; }
+.lucy-orb-masters { margin-top: 16px; display: grid; gap: 8px; width: min(320px, 86vw); }
+.lucy-orb-masters button {
+  text-align: left;
+  border: 1px solid rgba(255,255,255,.28);
+  background: rgba(255,255,255,.1);
+  color: #f7f4ee;
+  border-radius: 16px;
+  padding: 10px 12px;
+}
+.lucy-orb-masters strong { display: block; font-size: 15px; }
+.lucy-orb-masters span { display: block; margin-top: 2px; font-size: 12px; color: rgba(247,244,238,.72); }
+.lucy-orb-report {
+  margin: 12px 0 0;
+  max-height: 28vh;
+  overflow: auto;
+  white-space: pre-wrap;
+  text-align: left;
+  width: min(360px, 88vw);
+  font: 13px/1.55 inherit;
+  color: rgba(247,244,238,.88);
+}
+.lucy-orb-dock button:disabled { opacity: .55; }
 .lucy-composer-orb {
   width: 16px;
   height: 16px;

@@ -1,10 +1,12 @@
 import { ScreenPortal } from '@/components/layout/ScreenPortal';
 import { startGeminiLiveVoice, type LiveVoiceSession } from '@/lib/geminiLiveSession';
+import { ORB_MASTERS, type OrbMaster } from '@/lib/orbMasters';
 import { drawLucyTarotCards } from '@/utils/tarotDetector';
 import React, { useEffect, useRef, useState } from 'react';
 import './lucy-orb-counsel.css';
 
 type Line = { who: '나' | '루시'; text: string };
+type Phase = 'pick' | 'live' | 'report';
 
 function mergeTranscript(previous: string, next: string): string {
   const line = next.replace(/\s+/g, ' ').trim();
@@ -13,11 +15,37 @@ function mergeTranscript(previous: string, next: string): string {
   return `${previous} ${line}`.trim();
 }
 
-function summaryFrom(lines: Line[]): string | null {
+function reportFrom(master: OrbMaster, nickname: string, lines: Line[]): string {
+  const when = new Date().toLocaleString('ko-KR');
+  const body = lines.map(line => `${line.who}: ${line.text}`).join('\n\n') || '남긴 말이 없습니다.';
   const said = lines.filter(line => line.who === '나').map(line => line.text).slice(-4).join(' ');
   const answered = lines.filter(line => line.who === '루시').map(line => line.text).slice(-4).join(' ');
-  if (!said && !answered) return null;
-  return ['오브 상담 요약', said ? `네가 한 말: ${said}` : '', answered ? `루시가 남긴 말: ${answered}` : ''].filter(Boolean).join('\n');
+  return [
+    '루시 오브 상담 보고서',
+    `마스터: ${master.name}`,
+    `목소리: ${master.tone}`,
+    `주제: ${master.topic}`,
+    `이름: ${nickname || '친구'}`,
+    `시각: ${when}`,
+    '',
+    '상담 내용',
+    body,
+    '',
+    '요약',
+    said ? `네가 한 말: ${said}` : '',
+    answered ? `루시가 남긴 말: ${answered}` : '',
+  ].filter(line => line !== undefined).join('\n');
+}
+
+function saveReportFile(master: OrbMaster, report: string) {
+  const stamp = new Date().toISOString().slice(0, 16).replace(/[:T]/g, '-');
+  const blob = new Blob([report], { type: 'text/plain;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `루시_오브상담_${master.name}_${stamp}.txt`;
+  link.click();
+  URL.revokeObjectURL(url);
 }
 
 export function LucyOrbCounsel({
@@ -31,11 +59,14 @@ export function LucyOrbCounsel({
   chart: string;
   onFinish: (summary: string | null) => void;
 }) {
+  const [phase, setPhase] = useState<Phase>('pick');
   const [ready, setReady] = useState(false);
   const [speaking, setSpeaking] = useState(false);
+  const [master, setMaster] = useState<OrbMaster | null>(null);
   const [lines, setLines] = useState<Line[]>([]);
   const [draft, setDraft] = useState('');
   const [notice, setNotice] = useState('');
+  const [report, setReport] = useState('');
   const sessionRef = useRef<LiveVoiceSession | null>(null);
   const linesRef = useRef<Line[]>([]);
   const userBuf = useRef('');
@@ -44,10 +75,7 @@ export function LucyOrbCounsel({
   const onFinishRef = useRef(onFinish);
   onFinishRef.current = onFinish;
 
-  const publish = () => {
-    linesRef.current = [...linesRef.current];
-    setLines(linesRef.current);
-  };
+  const publish = () => setLines([...linesRef.current]);
   const take = (who: Line['who'], buf: React.MutableRefObject<string>) => {
     const text = buf.current.trim();
     buf.current = '';
@@ -65,17 +93,36 @@ export function LucyOrbCounsel({
     linesRef.current = [];
     userBuf.current = '';
     lucyBuf.current = '';
+    setPhase('pick');
+    setMaster(null);
     setLines([]);
     setDraft('');
     setNotice('');
+    setReport('');
     setReady(false);
     setSpeaking(false);
     const appear = window.setTimeout(() => setReady(true), window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 1700);
+    return () => {
+      window.clearTimeout(appear);
+      sessionRef.current?.stop();
+      sessionRef.current = null;
+    };
+  }, [open]);
+
+  if (!open) return null;
+
+  const begin = (next: OrbMaster) => {
+    sessionRef.current?.stop();
+    setMaster(next);
+    setPhase('live');
+    setNotice('');
     const cards = drawLucyTarotCards(3).map((card, index) => `${index + 1}번 ${card.nameKo} ${card.orientationKo}`).join(', ');
     const session = startGeminiLiveVoice({
       nickname,
       chart,
       cards,
+      voice: next.voice,
+      focus: next.focus,
       onState: (state) => setSpeaking(state === 'speaking'),
       onUserText: (text) => {
         if (lucyBuf.current) take('루시', lucyBuf);
@@ -88,28 +135,36 @@ export function LucyOrbCounsel({
       onError: (error) => setNotice(error.message),
     });
     sessionRef.current = session;
-    return () => {
-      window.clearTimeout(appear);
-      session.stop();
-      if (sessionRef.current === session) sessionRef.current = null;
-    };
-  }, [open, nickname, chart]);
+    const typed = draft.trim();
+    if (typed) {
+      session.sendText(typed);
+      userBuf.current = typed;
+      take('나', userBuf);
+      setDraft('');
+    }
+  };
 
-  if (!open) return null;
-
-  const finish = () => {
-    if (closedRef.current) return;
-    closedRef.current = true;
+  const openReport = () => {
+    if (!master || closedRef.current) return;
     if (userBuf.current) take('나', userBuf);
     if (lucyBuf.current) take('루시', lucyBuf);
     sessionRef.current?.stop();
-    onFinishRef.current(summaryFrom(linesRef.current));
+    sessionRef.current = null;
+    setReport(reportFrom(master, nickname, linesRef.current));
+    setPhase('report');
+  };
+
+  const keepReport = () => {
+    if (closedRef.current) return;
+    closedRef.current = true;
+    onFinishRef.current(report || null);
   };
 
   const sendDraft = () => {
     const text = draft.trim();
     if (!text) return;
-    sessionRef.current?.sendText(text);
+    if (!sessionRef.current) return;
+    sessionRef.current.sendText(text);
     userBuf.current = text;
     take('나', userBuf);
     setDraft('');
@@ -131,19 +186,43 @@ export function LucyOrbCounsel({
             }}
           />
         ))}
-        <button type="button" className="lucy-orb-end" onClick={finish}>상담 끝내기</button>
+        {phase === 'live' && <button type="button" className="lucy-orb-end" onClick={openReport}>상담 끝내기</button>}
+        {phase === 'report' && <button type="button" className="lucy-orb-end" onClick={keepReport}>채팅으로</button>}
         <div className="lucy-orb-body" aria-hidden="true" />
         <div className="lucy-orb-copy">
-          <p>{ready ? (speaking ? '루시가 말하고 있어' : '듣고 있어. 말해도 되고, 적어도 돼') : '안개 속에서 오브가 나오고 있어'}</p>
+          {phase === 'pick' && <p>마스터를 고르면 상담이 시작돼</p>}
+          {phase === 'live' && <p>{speaking ? `${master?.name} 마스터가 말하고 있어` : `${master?.name} · ${master?.tone}. 말해도 되고, 적어도 돼`}</p>}
+          {phase === 'report' && <p>상담 보고서야. 파일로 저장하면 나중에 그대로 볼 수 있어</p>}
           {notice && <p>{notice}</p>}
-          <div className="lucy-orb-lines">
-            {lines.slice(-3).map((line, index) => <span key={`${line.who}-${index}`}>{line.who}: {line.text}</span>)}
-          </div>
+          {phase === 'pick' && (
+            <div className="lucy-orb-masters">
+              {ORB_MASTERS.map(item => (
+                <button key={item.id} type="button" onClick={() => begin(item)}>
+                  <strong>{item.name}</strong>
+                  <span>{item.tone} · {item.topic}</span>
+                </button>
+              ))}
+            </div>
+          )}
+          {phase === 'live' && (
+            <div className="lucy-orb-lines">
+              {lines.slice(-3).map((line, index) => <span key={`${line.who}-${index}`}>{line.who}: {line.text}</span>)}
+            </div>
+          )}
+          {phase === 'report' && <pre className="lucy-orb-report">{report}</pre>}
         </div>
-        <form className="lucy-orb-dock" onSubmit={(event) => { event.preventDefault(); sendDraft(); }}>
-          <input value={draft} onChange={(event) => setDraft(event.target.value)} placeholder="여기에 적어도 같은 상담이야" aria-label="오브 상담 입력" />
-          <button type="submit">보내기</button>
-        </form>
+        {phase !== 'report' && (
+          <form className="lucy-orb-dock" onSubmit={(event) => { event.preventDefault(); phase === 'live' ? sendDraft() : undefined; }}>
+            <input value={draft} onChange={(event) => setDraft(event.target.value)} placeholder={phase === 'pick' ? '먼저 적어도 돼. 마스터를 고르면 이 글부터 상담해' : '여기에 적어도 같은 상담이야'} aria-label="오브 상담 입력" />
+            {phase === 'live' && <button type="submit">보내기</button>}
+          </form>
+        )}
+        {phase === 'report' && master && (
+          <div className="lucy-orb-dock">
+            <button type="button" onClick={() => saveReportFile(master, report)}>보고서 파일 저장</button>
+            <button type="button" onClick={keepReport}>채팅에 남기기</button>
+          </div>
+        )}
       </section>
     </ScreenPortal>
   );
