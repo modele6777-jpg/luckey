@@ -8,12 +8,12 @@
  * 4. 전체성 탈피 및 무한 지향 지수 (Beyond Totality & Transcendence of Infinity Index): 인간과 세계를 획일적인 효율성이나 계산된 손익의 전체성(Totalité)에 가두지 않고, 무한(Infini)의 신비로 열어두는 비판적 통찰.
  * 5. 취약성 응답 및 비폭력 수호 지표 (Vulnerability Protection & Non-Violent Care Score): 약자의 눈물과 벌거벗은 취약함 앞에 폭력성과 오만을 거두고, 생명을 보살피는 평화적 연대와 배려의 힘.
  *
- * @version LUCKEY-EMMANUEL-LEVINAS-ETHICS-v2.0.0
+ * @version LUCKEY-EMMANUEL-LEVINAS-ETHICS-v2.3.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const FRENCH_EMMANUEL_LEVINAS_ETHICS_VERSION = 'LUCKEY-EMMANUEL-LEVINAS-ETHICS-v2.2.0';
+export const FRENCH_EMMANUEL_LEVINAS_ETHICS_VERSION = 'LUCKEY-EMMANUEL-LEVINAS-ETHICS-v2.3.0';
 
 export type LevinasQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -51,8 +51,11 @@ export interface FrenchEmmanuelLevinasFaceOfOtherHospitalityResult {
   vulnerabilityProtectionScore: number;       // 취약성 응답 및 비폭력 수호 지표 (Vulnerability Protection Score)
   // 세부 분석
   questionTopic: LevinasQuestionTopic;
+  hospitalityPhase: string;
+  shadowWarning: string;
   temporalLevinasRhythm: LevinasTemporalRhythm;
   activeLevinasTheme: LevinasTheme;
+  companionLevinasTheme: LevinasTheme;
   focalLevinasAphorism: LevinasAphorism;
   practiceGuidance: string;
   ritualAction: string;
@@ -70,6 +73,18 @@ export interface FrenchEmmanuelLevinasFaceOfOtherHospitalityResult {
     philosophicalCounsel: string;
   };
 }
+
+const LEVINAS_HOSPITALITY_PHASES = [
+  '얼굴 대면(상대를 내 편리한 이미지에 가두지 않고 고유한 타자로 마주하는 시기)',
+  '먼저 응답(누구의 잘못인지 따지기 앞서 내가 감당할 몫을 먼저 건네는 시기)',
+  '문턱 개방(낯선 변화와 타인의 다름을 방어벽 대신 환대의 여백으로 품는 시기)',
+] as const;
+
+const LEVINAS_SHADOW_WARNINGS = [
+  '타인의 짐을 먼저 지려는 책임감이 지나쳐 나 자신의 건강한 경계와 돌봄까지 소진하지 않도록 살피세요.',
+  '무조건적 환대와 포용을 택하느라 분명히 짚어야 할 부당함이나 사실의 선까지 흐리지 않도록 점검하세요.',
+  '상대의 취약함에 조심스러워하다 꼭 필요한 솔직한 대화와 요청의 타이밍을 놓치지 않도록 유의하세요.',
+] as const;
 
 export const LEVINAS_THEMES: LevinasTheme[] = [
   {
@@ -255,16 +270,20 @@ export function calculateFrenchEmmanuelLevinasFaceOfOtherHospitality(
   const vulnerabilityProtectionScore = 88 + ((absHash >> 13) % 11);
 
   const themeIndex = (absHash >> 5) % LEVINAS_THEMES.length;
+  const companionOffset = 1 + ((absHash >> 6) % (LEVINAS_THEMES.length - 1));
   const aphorismIndex = (absHash >> 8) % LEVINAS_APHORISMS.length;
 
   const activeLevinasTheme = LEVINAS_THEMES[themeIndex];
+  const companionLevinasTheme = LEVINAS_THEMES[(themeIndex + companionOffset) % LEVINAS_THEMES.length];
   const focalLevinasAphorism = LEVINAS_APHORISMS[aphorismIndex];
+  const hospitalityPhase = LEVINAS_HOSPITALITY_PHASES[(absHash >> 11) % LEVINAS_HOSPITALITY_PHASES.length];
+  const shadowWarning = LEVINAS_SHADOW_WARNINGS[(absHash >> 14) % LEVINAS_SHADOW_WARNINGS.length];
 
   const guidanceTitle = `에마뉘엘 레비나스 타자의 얼굴과 무한한 책임의 지혜: ${activeLevinasTheme.themeTitleKo}`;
   const philosophicalCounsel = `20세기 윤리 제일철학의 거장 에마뉘엘 레비나스 선생은 《전체성과 무한》과 《존재와 다르게》를 통해 ` +
     `내 욕망의 감옥을 부수고 상대방의 고유한 존재를 직시하는 '타자의 얼굴(Visage)', 계산과 핑계를 넘어선 '무한한 책임(Responsabilité infinie)', ` +
     `그리고 닫힌 전체성의 폭력을 극복하고 낯선 이를 품어내는 '무조건적 환대(Hospitalité)'의 길을 밝혔습니다. ` +
-    `현재 당신이 마주한 인간관계와 갈등의 해법은 바로 '${activeLevinasTheme.themeTitleKo}'에 있습니다. ` +
+    `현재 당신이 마주한 인간관계와 갈등의 해법은 바로 '${activeLevinasTheme.themeTitleKo}'(동반 테마: ${companionLevinasTheme.themeTitleKo})에 있습니다. ` +
     `${activeLevinasTheme.practicalCounsel} ${topicGuidance.practiceGuidance} 레비나스의 숭고한 윤리적 명제 "${focalLevinasAphorism.aphorismKo}" (${focalLevinasAphorism.aphorismFrench})를 깊이 묵상하며, ` +
     `${focalLevinasAphorism.actionGuidance}`;
 
@@ -274,12 +293,12 @@ export function calculateFrenchEmmanuelLevinasFaceOfOtherHospitality(
   const kstTimeLabel = `${temporalLevinasRhythm.kstDateLabel}T${String(kst.getUTCHours()).padStart(2, '0')}:${String(kst.getUTCMinutes()).padStart(2, '0')}:00+09:00 (KST)`;
   const qText = (query ?? '').trim();
   const reflectiveQuestion = qText
-    ? `‘${qText}’ 앞에서 내 계산과 잣대를 내려놓고 상대의 고유한 얼굴(Visage)에 건넬 첫 환대는 무엇입니까?`
-    : topicGuidance.reflectionFocus;
+    ? `‘${qText}’ 앞에서 '${hospitalityPhase}' 국면으로 볼 때, 내 계산과 잣대를 내려놓고 상대의 고유한 얼굴(Visage)에 건넬 첫 환대는 무엇입니까?`
+    : `'${hospitalityPhase}' 국면에서 ${topicGuidance.reflectionFocus}`;
   const levinasSynthesisMatrix = {
-    coreInsight: activeLevinasTheme.themeTitleKo,
-    recommendedAction: topicGuidance.practiceGuidance,
-    cautionNotice: '상대를 내 계산과 편견의 틀에 가두거나 약한 자의 호소에 고개를 돌리지 마십시오.',
+    coreInsight: `${activeLevinasTheme.themeTitleKo} (동반: ${companionLevinasTheme.themeTitleKo})`,
+    recommendedAction: `${topicGuidance.practiceGuidance} (${hospitalityPhase})`,
+    cautionNotice: shadowWarning,
   };
 
   return {
@@ -291,11 +310,14 @@ export function calculateFrenchEmmanuelLevinasFaceOfOtherHospitality(
     beyondTotalityInfinityIndex,
     vulnerabilityProtectionScore,
     questionTopic,
+    hospitalityPhase,
+    shadowWarning,
     temporalLevinasRhythm,
     activeLevinasTheme,
+    companionLevinasTheme,
     focalLevinasAphorism,
-    practiceGuidance: topicGuidance.practiceGuidance,
-    ritualAction: topicGuidance.ritualAction,
+    practiceGuidance: `${topicGuidance.practiceGuidance} (동반 테마: ${companionLevinasTheme.themeTitleKo})`,
+    ritualAction: `${topicGuidance.ritualAction} (${hospitalityPhase})`,
     reflectionFocus: reflectiveQuestion,
     reflectiveQuestion,
     boundaryNotice,
@@ -315,8 +337,11 @@ export function formatFrenchEmmanuelLevinasFaceOfOtherHospitalityPrompt(
     `【에마뉘엘 레비나스 《전체성과 무한》 타자의 얼굴·무한한 책임 지표 (${res.engineVersion})】`,
     `- 연산 시각: ${res.calculatedAtKst}`,
     `- 질문 주제 맥락: ${res.questionTopic}`,
+    `- 환대 국면: ${res.hospitalityPhase}`,
     `- KST 시공간 리듬: ${res.temporalLevinasRhythm.kstDateLabel} · ${res.temporalLevinasRhythm.timeWindowKo} (${res.temporalLevinasRhythm.ethicsTone}) — ${res.temporalLevinasRhythm.rhythmDirective}`,
     `- 핵심 레비나스 테마: ${res.activeLevinasTheme.themeTitleKo} [${res.activeLevinasTheme.themeTitleEn}]`,
+    `- 동반 레비나스 테마: ${res.companionLevinasTheme.themeTitleKo}`,
+    `- 과잉·경계 점검: ${res.shadowWarning}`,
     `- 실천적 통찰: ${res.activeLevinasTheme.pragmaticInsight}`,
     `- 행동 조언: ${res.activeLevinasTheme.practicalCounsel}`,
     `- 질문 맞춤 실천 가이드: ${res.practiceGuidance}`,
