@@ -146,6 +146,11 @@ export function LucyOrbCounsel({
   const [voiceMode, setVoiceMode] = useState<OrbVoiceMode>('hold');
   const [talkPressed, setTalkPressed] = useState(false);
   const [audioLevel, setAudioLevel] = useState(0);
+  const orbInputRef = useRef<HTMLInputElement | null>(null);
+  const pressTimer = useRef<number | null>(null);
+  const pressStart = useRef<{ x: number; y: number } | null>(null);
+  const talkingRef = useRef(false);
+  const pressHandlers = useRef<{ begin: (x: number, y: number) => void; end: (tapFocus?: boolean) => void }>({ begin: () => undefined, end: () => undefined });
   const [ready, setReady] = useState(false);
   const [speaking, setSpeaking] = useState(false);
   const [master, setMaster] = useState<OrbMaster | null>(null);
@@ -324,6 +329,44 @@ export function LucyOrbCounsel({
   }, [ttsActive, ttsSpeaking, speaking]);
   useEffect(() => () => { if (heavenCloseTimer.current) window.clearTimeout(heavenCloseTimer.current); }, []);
 
+  useEffect(() => {
+    const input = orbInputRef.current;
+    if (!input) return;
+    const onStart = (event: TouchEvent) => {
+      // 이미 키보드로 입력 중이면 평소처럼 커서 이동·선택을 쓴다.
+      if (document.activeElement === input || event.touches.length > 1) return;
+      event.preventDefault();
+      const touch = event.touches[0];
+      pressHandlers.current.begin(touch.clientX, touch.clientY);
+    };
+    const onMove = (event: TouchEvent) => {
+      const start = pressStart.current;
+      const touch = event.touches[0];
+      if (!start || !touch || talkingRef.current) return;
+      if (Math.hypot(touch.clientX - start.x, touch.clientY - start.y) > 24) {
+        if (pressTimer.current) window.clearTimeout(pressTimer.current);
+        pressTimer.current = null;
+        pressStart.current = null;
+      }
+    };
+    const onEnd = (event: TouchEvent) => {
+      if (!pressStart.current && !talkingRef.current) return;
+      event.preventDefault();
+      pressHandlers.current.end(true);
+    };
+    const onCancel = () => pressHandlers.current.end(false);
+    input.addEventListener('touchstart', onStart, { passive: false });
+    input.addEventListener('touchmove', onMove, { passive: true });
+    input.addEventListener('touchend', onEnd, { passive: false });
+    input.addEventListener('touchcancel', onCancel);
+    return () => {
+      input.removeEventListener('touchstart', onStart);
+      input.removeEventListener('touchmove', onMove);
+      input.removeEventListener('touchend', onEnd);
+      input.removeEventListener('touchcancel', onCancel);
+    };
+  }, [phase, open]);
+
   if (!open) return null;
 
   // 마이크는 사용자가 누른 그 순간에 요청한다 (브라우저가 탭 안에서만 허용 창을 띄우는 경우가 있다).
@@ -489,6 +532,31 @@ export function LucyOrbCounsel({
     setTalkPressed(false);
     sessionRef.current?.setMuted(voiceMode === 'hold');
   };
+
+  // 입력창 누르고 말하기: 짧게 누르면 글자 입력(키보드), 0.22초 이상 누르고 있으면 마이크가 켜지고 떼면 전송.
+  // iOS가 입력창을 길게 누를 때 띄우는 돋보기·미리보기를 막으려고, 입력 중이 아닐 때는 터치를 직접 처리한다.
+  const canHoldToTalk = () => voiceMode === 'hold' && !micUnavailable && !micPermissionBusy && Boolean(sessionRef.current);
+  const beginInputPress = (x: number, y: number) => {
+    if (pressTimer.current) window.clearTimeout(pressTimer.current);
+    pressStart.current = { x, y };
+    talkingRef.current = false;
+    pressTimer.current = window.setTimeout(() => {
+      pressTimer.current = null;
+      if (!canHoldToTalk()) return;
+      talkingRef.current = true;
+      startPushToTalk();
+    }, 220);
+  };
+  const endInputPress = (tapFocus = false) => {
+    if (pressTimer.current) window.clearTimeout(pressTimer.current);
+    pressTimer.current = null;
+    const wasTalking = talkingRef.current;
+    talkingRef.current = false;
+    pressStart.current = null;
+    if (wasTalking) { stopPushToTalk(); return; }
+    if (tapFocus) orbInputRef.current?.focus();
+  };
+  pressHandlers.current = { begin: beginInputPress, end: endInputPress };
 
   const openReport = () => {
     if (!master || closedRef.current) return;
@@ -902,28 +970,28 @@ export function LucyOrbCounsel({
           <div className="lucy-orb-dock">
             <div className="lucy-orb-input-wrap">
               <input
+                ref={orbInputRef}
                 className={`lucy-orb-input ${talkPressed ? 'is-pressed' : ''}`}
                 value={draft}
                 onChange={(event) => setDraft(event.target.value)}
                 onKeyDown={(event) => { if (event.key === 'Enter') event.preventDefault(); }}
-                onPointerDown={(event) => startPushToTalk(event)}
-                onPointerUp={stopPushToTalk}
-                onPointerLeave={stopPushToTalk}
-                onPointerCancel={stopPushToTalk}
-                onLostPointerCapture={stopPushToTalk}
-                onBlur={stopPushToTalk}
+                onPointerDown={(event) => { if (event.pointerType === 'mouse') beginInputPress(event.clientX, event.clientY); }}
+                onPointerUp={(event) => { if (event.pointerType === 'mouse') endInputPress(); }}
+                onPointerLeave={(event) => { if (event.pointerType === 'mouse' && talkingRef.current) endInputPress(); }}
+                onBlur={() => { if (talkingRef.current) endInputPress(); }}
                 onContextMenu={(event) => event.preventDefault()}
                 placeholder="누르고 말한 뒤 떼면 전송 · 탭해 입력"
                 aria-label="오브 상담 입력. 누르고 말한 뒤 떼면 음성을 전송합니다"
                 enterKeyHint="done"
               />
-              {audioLevel > 0.035 && (
-                <span className="lucy-orb-input-wave" aria-hidden="true">
+              {(talkPressed || audioLevel > 0.035) && (
+                <span className={`lucy-orb-input-wave ${talkPressed ? 'is-holding' : ''}`} aria-hidden="true">
                   {[0.36, 0.58, 0.82, 0.48, 1, 0.66, 0.9, 0.52, 0.74, 0.42, 0.62].map((weight, index) => (
                     <i key={index} style={{ height: `${3 + audioLevel * weight * 18}px` }} />
                   ))}
                 </span>
               )}
+              {talkPressed && <span className="lucy-orb-hold-hint" role="status">듣고 있어요 · 손을 떼면 전송</span>}
             </div>
           </div>
         )}
