@@ -5264,17 +5264,17 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
             <button
               type="button"
               onClick={() => setOrbCounselOpen(true)}
-              className={`w-7 h-7 sm:w-8 sm:h-8 p-0 flex items-center justify-center rounded-lg transition-colors cursor-pointer shrink-0 ${
+              className={`w-7 h-7 sm:w-8 sm:h-8 p-0 flex items-center justify-center rounded-lg transition-all cursor-pointer shrink-0 ${
                 orbCounselOpen
-                  ? 'bg-white/80 text-slate-900 shadow-2xs'
+                  ? 'bg-white/80 shadow-2xs'
                   : lucyDayPeriod !== 'night'
-                  ? 'text-slate-500 hover:text-amber-700 hover:bg-amber-50'
-                  : 'text-white/75 hover:text-amber-300 hover:bg-white/10'
+                  ? 'hover:bg-amber-50'
+                  : 'hover:bg-white/10'
               }`}
               title="오브 상담 열기"
               aria-label="오브 상담 열기"
             >
-              <OrbShapeIcon size={16} className="sm:w-[18px] sm:h-[18px]" />
+              <OrbShapeIcon size={16} className="w-4 h-4" />
             </button>
 
             {/* Textarea Wrapper for Ghost Typewriter Overlay */}
