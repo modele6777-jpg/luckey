@@ -14,12 +14,12 @@
  * 1. 개인 점수·심리 진단·미래 예측이 아닙니다. 모든 산출은 정성적 성찰 문장입니다.
  * 2. 바스크 전통의 보편적 상징만 빌려 쓰며 출처 없는 인용문을 만들지 않습니다.
  *
- * @version LUCKEY-BASQUE-LAUBURU-v2.2.0
+ * @version LUCKEY-BASQUE-LAUBURU-v2.3.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const BASQUE_LAUBURU_HARMONY_VERSION = 'LUCKEY-BASQUE-LAUBURU-v2.2.0';
+export const BASQUE_LAUBURU_HARMONY_VERSION = 'LUCKEY-BASQUE-LAUBURU-v2.3.0';
 
 export type LauburuQuestionTopic = 'decision' | 'relationship' | 'healing' | 'reflection';
 
@@ -51,6 +51,8 @@ export interface BasqueLauburuBasajaunResult {
   questionTopic: LauburuQuestionTopic;
   lauburuArmKey: string;
   companionArmKey: string;
+  cycleHarmonyPhase: string;
+  shadowWarning: string;
   situationalLauburuAudit: SituationalLauburuAudit;
   temporalCyclePulse: LauburuCyclePulse;
   lauburuSynthesisMatrix: LauburuSynthesisMatrix;
@@ -59,6 +61,18 @@ export interface BasqueLauburuBasajaunResult {
   reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
+
+const LAUBURU_HARMONY_PHASES = [
+  '뿌리 다짐(눈앞의 속도보다 오래 버틸 일상 토대를 먼저 고르는 시기)',
+  '흐름 순환(막힌 매듭을 힘으로 밀지 않고 물길처럼 돌아서 푸는 시기)',
+  '숲 경계 휴식(바사하운의 숲처럼 과업을 거두고 다음 계절의 불씨를 지키는 시기)',
+] as const;
+
+const LAUBURU_SHADOW_WARNINGS = [
+  '토대와 구조를 다지느라 너무 신중해져서 지금 열려 있는 기회의 문까지 지나치지 않도록 살피세요.',
+  '유연하게 흐름을 타려다 내가 반드시 지켜야 할 원칙과 생활 리듬의 경계까지 흐려지지 않도록 점검하세요.',
+  '다음 계절을 위한 쉼과 수렴을 미룬 채 쉼 없이 바퀴만 돌리다가 숲의 기력이 소진되지 않도록 유의하세요.',
+] as const;
 
 function classifyLauburuTopic(query?: string): LauburuQuestionTopic {
   const q = (query ?? '').toLowerCase();
@@ -181,15 +195,24 @@ export function calculateBasqueLauburuBasajaunHarmony(
   const lauburuArmKey = arms[primaryIdx];
   const companionArmKey = arms[(primaryIdx + companionOffset) % arms.length];
 
+  let phaseHash = 0;
+  const phaseSeed = `${seed}:phase`;
+  for (let i = 0; i < phaseSeed.length; i++) {
+    phaseHash = (phaseHash << 5) - phaseHash + phaseSeed.charCodeAt(i);
+    phaseHash |= 0;
+  }
+  const cycleHarmonyPhase = LAUBURU_HARMONY_PHASES[Math.abs(phaseHash) % LAUBURU_HARMONY_PHASES.length];
+  const shadowWarning = LAUBURU_SHADOW_WARNINGS[Math.abs(phaseHash >> 3) % LAUBURU_SHADOW_WARNINGS.length];
+
   const situationalLauburuAudit = buildSituationalLauburuAudit(topic, lauburuArmKey);
   const temporalCyclePulse = buildTemporalCyclePulse(now);
 
   const trimmedQ = (question ?? '').trim();
-  const ritualAction = `${situationalLauburuAudit.forestPractice} 이어서 ${situationalLauburuAudit.renewalAdvice}`;
-  const reflectionFocus = `${lauburuArmKey} ↔ ${companionArmKey} · ${temporalCyclePulse.kstTimeWindow} — 일과 쉼의 순환 균형 점검`;
+  const ritualAction = `${situationalLauburuAudit.forestPractice} 이어서 ${situationalLauburuAudit.renewalAdvice} (${cycleHarmonyPhase})`;
+  const reflectionFocus = `${lauburuArmKey} ↔ ${companionArmKey} · ${cycleHarmonyPhase} · ${temporalCyclePulse.kstTimeWindow} — 일과 쉼의 순환 균형 점검`;
   const reflectiveQuestion = trimmedQ
-    ? `'${trimmedQ}'라는 문제 앞에서, 지금 내가 더 키워야 할 것은 추진력인가요, 아니면 숲을 지키듯 속도를 늦추는 돌봄인가요?`
-    : `지금 내 하루의 순환(시작·성장·수렴·휴식) 가운데 가장 돌봄이 필요한 구간은 어디인가요?`;
+    ? `'${trimmedQ}'라는 문제 앞에서 '${cycleHarmonyPhase}' 국면을 지나는 지금, 내가 더 키워야 할 것은 추진력인가요, 아니면 숲을 지키듯 속도를 늦추는 돌봄인가요?`
+    : `'${cycleHarmonyPhase}' 흐름에서 지금 내 하루의 순환(시작·성장·수렴·휴식) 가운데 가장 돌봄이 필요한 구간은 어디인가요?`;
 
   const interpretiveBoundary =
     '본 리포트는 바스크 전통의 라부루(Lauburu)·바사하운 상징을 빌려 삶의 순환과 균형을 돌아보는 정성적 성찰 안내이며, 개인 점수·심리 진단·미래 예측이 아닙니다.';
@@ -216,6 +239,8 @@ export function calculateBasqueLauburuBasajaunHarmony(
     questionTopic: topic,
     lauburuArmKey,
     companionArmKey,
+    cycleHarmonyPhase,
+    shadowWarning,
     situationalLauburuAudit,
     temporalCyclePulse,
     lauburuSynthesisMatrix,
@@ -232,6 +257,8 @@ export function formatBasqueLauburuBasajaunHarmonyPrompt(res: BasqueLauburuBasaj
     `- 질문 주제 분류: ${res.questionTopic}`,
     `- 활성 순환 날개: ${res.lauburuArmKey}`,
     `- 동반 순환 날개: ${res.companionArmKey}`,
+    `- 순환 국면: ${res.cycleHarmonyPhase}`,
+    `- 과잉·경계 점검: ${res.shadowWarning}`,
     `- 질문 비춤: ${res.situationalLauburuAudit.cycleMirror}`,
     `- 토대 조언: ${res.situationalLauburuAudit.groundedAdvice}`,
     `- 순환 갱신 조언: ${res.situationalLauburuAudit.renewalAdvice}`,

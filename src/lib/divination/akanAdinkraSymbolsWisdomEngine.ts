@@ -18,12 +18,12 @@
  * 1. 개인 점수·심리 진단·미래 예측이 아닙니다. 모든 산출은 상징 성찰 문장입니다.
  * 2. 특정 구전 인용을 만들어 귀속하지 않고 상징의 보편적 의미만 정성적으로 씁니다.
  *
- * @version LUCKEY-AKAN-ADINKRA-v2.2.0
+ * @version LUCKEY-AKAN-ADINKRA-v2.3.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const AKAN_ADINKRA_WISDOM_VERSION = 'LUCKEY-AKAN-ADINKRA-v2.2.0';
+export const AKAN_ADINKRA_WISDOM_VERSION = 'LUCKEY-AKAN-ADINKRA-v2.3.0';
 
 export type AdinkraQuestionTopic = 'decision' | 'relationship' | 'healing' | 'reflection';
 
@@ -56,6 +56,8 @@ export interface AkanAdinkraSymbolsWisdomResult {
   questionTopic: AdinkraQuestionTopic;
   symbolArchetype: string;
   companionSymbol: string;
+  adinkraPhase: string;
+  shadowWarning: string;
   situationalAdinkraAudit: SituationalAdinkraAudit;
   temporalSymbolPulse: AdinkraSymbolPulse;
   adinkraSynthesisMatrix: AdinkraSynthesisMatrix;
@@ -64,6 +66,18 @@ export interface AkanAdinkraSymbolsWisdomResult {
   reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
+
+const ADINKRA_PHASES = [
+  '산코파 회고(지나온 배움을 오늘의 나침반으로 다시 챙기는 시기)',
+  '드웬니멘 조율(단단한 추진력 위에 겸손한 경청을 얹는 시기)',
+  '기에 냐메 여백(내 손을 떠난 몫을 내려놓고 중심을 비우는 시기)',
+] as const;
+
+const ADINKRA_SHADOW_WARNINGS = [
+  '과거의 교훈을 되새기다 정작 오늘 앞으로 내디뎌야 할 발걸음까지 미루지 않도록 살피세요.',
+  '겸손과 조화를 지키려다 분명히 세워야 할 자기 기준과 요구선까지 흐려지지 않도록 점검하세요.',
+  '큰 흐름에 맡긴다는 이유로 내가 직접 매듭지어야 할 현실의 책임까지 놓치지 않도록 유의하세요.',
+] as const;
 
 function classifyAdinkraTopic(query?: string): AdinkraQuestionTopic {
   const q = (query ?? '').toLowerCase();
@@ -192,15 +206,24 @@ export function calculateAkanAdinkraSymbolsWisdom(
   const symbolArchetype = symbols[primaryIdx];
   const companionSymbol = symbols[(primaryIdx + companionOffset) % symbols.length];
 
+  let phaseHash = 0;
+  const phaseSeed = `${seed}|phase`;
+  for (let i = 0; i < phaseSeed.length; i++) {
+    phaseHash = (phaseHash << 5) - phaseHash + phaseSeed.charCodeAt(i);
+    phaseHash |= 0;
+  }
+  const adinkraPhase = ADINKRA_PHASES[Math.abs(phaseHash) % ADINKRA_PHASES.length];
+  const shadowWarning = ADINKRA_SHADOW_WARNINGS[Math.abs(phaseHash >> 3) % ADINKRA_SHADOW_WARNINGS.length];
+
   const situationalAdinkraAudit = buildSituationalAdinkraAudit(topic, symbolArchetype);
   const temporalSymbolPulse = buildTemporalSymbolPulse(now, symbolArchetype);
 
   const trimmedQ = (question ?? '').trim();
-  const ritualAction = `${situationalAdinkraAudit.adinkraPractice} 이어서 ${situationalAdinkraAudit.humbleStrengthAdvice}`;
-  const reflectionFocus = `${symbolArchetype} · ${companionSymbol} · ${temporalSymbolPulse.kstTimeWindow} — 과거의 배움과 현재의 균형 점검`;
+  const ritualAction = `${situationalAdinkraAudit.adinkraPractice} 이어서 ${situationalAdinkraAudit.humbleStrengthAdvice} (${adinkraPhase})`;
+  const reflectionFocus = `${symbolArchetype} · ${companionSymbol} · ${adinkraPhase} · ${temporalSymbolPulse.kstTimeWindow} — 과거의 배움과 현재의 균형 점검`;
   const reflectiveQuestion = trimmedQ
-    ? `'${trimmedQ}'라는 물음 앞에서, 지나온 경험에서 되찾아야 할 교훈 한 가지는 무엇이고 지금 내려놓아야 할 고집은 무엇인가요?`
-    : `오늘 나에게 필요한 아딩크라의 태도는 과거를 돌아보는 지혜인가요, 아니면 힘을 낮추는 겸손인가요?`;
+    ? `'${trimmedQ}'라는 물음 앞에서 '${adinkraPhase}' 국면을 지나는 지금, 지나온 경험에서 되찾아야 할 교훈 한 가지는 무엇이고 지금 내려놓아야 할 고집은 무엇인가요?`
+    : `'${adinkraPhase}' 흐름에서 오늘 나에게 필요한 아딩크라의 태도는 과거를 돌아보는 지혜인가요, 아니면 힘을 낮추는 겸손인가요?`;
 
   const interpretiveBoundary =
     '본 리포트는 가나 아칸족의 아딩크라(Adinkra) 상징을 빌려 삶의 태도와 균형을 돌아보는 정성적 성찰 안내이며, 개인 점수·심리 진단·미래 예측이 아닙니다.';
@@ -227,6 +250,8 @@ export function calculateAkanAdinkraSymbolsWisdom(
     questionTopic: topic,
     symbolArchetype,
     companionSymbol,
+    adinkraPhase,
+    shadowWarning,
     situationalAdinkraAudit,
     temporalSymbolPulse,
     adinkraSynthesisMatrix,
@@ -243,6 +268,8 @@ export function formatAkanAdinkraSymbolsWisdomPrompt(res: AkanAdinkraSymbolsWisd
     `- 질문 주제 분류: ${res.questionTopic}`,
     `- 중심 상징: ${res.symbolArchetype}`,
     `- 보조 상징: ${res.companionSymbol}`,
+    `- 상징 국면: ${res.adinkraPhase}`,
+    `- 과잉·경계 점검: ${res.shadowWarning}`,
     `- 질문 비춤: ${res.situationalAdinkraAudit.symbolMirror}`,
     `- 되돌아봄 교훈: ${res.situationalAdinkraAudit.retrospectiveLesson}`,
     `- 겸손과 힘의 조언: ${res.situationalAdinkraAudit.humbleStrengthAdvice}`,

@@ -7938,10 +7938,13 @@ test('Plotinus Enneads Henosis Engine: calculates The One, Nous, Psyche, Henosis
   assert(rep.henosisMysticAscentUnionIndex >= 0 && rep.henosisMysticAscentUnionIndex <= 100);
   assert(rep.innerBeautySculptingVirtueScore >= 0 && rep.innerBeautySculptingVirtueScore <= 100);
   assert(rep.activePlotinusTheme.themeTitleKo.length > 0);
+  assert(rep.companionPlotinusTheme.themeKey !== rep.activePlotinusTheme.themeKey);
+  assert(rep.henosisPhase.length > 0 && rep.shadowWarning.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatAncientGreekPlotinusEnneadsHenosisPrompt(rep);
   assert(prompt.includes('플로티노스 《엔네아데스》 일자유출설 & 영적 귀환 지표'));
-  assert(prompt.includes(rep.activePlotinusTheme.themeTitleKo));
+  assert(prompt.includes(rep.activePlotinusTheme.themeTitleKo) && prompt.includes(rep.companionPlotinusTheme.themeTitleKo));
+  assert(prompt.includes(rep.henosisPhase) && prompt.includes(rep.shadowWarning));
 });
 
 test('Adam Smith Moral Sentiments Engine: calculates Impartial Spectator, Sympathy, Self-Command, and Praiseworthiness', () => {
@@ -13250,11 +13253,12 @@ test('Akan Adinkra Symbols Wisdom engine: qualitative symbol balance, +09:00 KST
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.equal(rep.questionTopic, 'decision');
   assert.ok(rep.companionSymbol.length > 0 && rep.companionSymbol !== rep.symbolArchetype);
+  assert.ok(rep.adinkraPhase.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('개인 점수·심리 진단·미래 예측이 아닙니다'));
   const prompt = formatAkanAdinkraSymbolsWisdomPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('아딩크라(Adinkra)') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionSymbol));
+  assert.ok(prompt.includes('아딩크라(Adinkra)') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionSymbol) && prompt.includes(rep.adinkraPhase) && prompt.includes(rep.shadowWarning));
 });
 
 test('Ethiopian Zera Yacob Hatata Reason engine: conscience inquiry, +09:00 KST, and interpretive boundary', () => {
@@ -13275,12 +13279,13 @@ test('Basque Lauburu & Basajaun Harmony engine: cycle balance, +09:00 KST, and i
   assert.equal(rep.engineVersion, BASQUE_LAUBURU_HARMONY_VERSION);
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionArmKey !== rep.lauburuArmKey);
+  assert.ok(rep.cycleHarmonyPhase.length > 0 && rep.shadowWarning.length > 0);
   assert.equal(rep.questionTopic, 'healing');
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('개인 점수·심리 진단·미래 예측이 아닙니다'));
   const prompt = formatBasqueLauburuBasajaunHarmonyPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('라부루(Lauburu)') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionArmKey));
+  assert.ok(prompt.includes('라부루(Lauburu)') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionArmKey) && prompt.includes(rep.cycleHarmonyPhase) && prompt.includes(rep.shadowWarning));
 });
 
 test('Ojibwe Seven Grandfather Teachings engine: virtues, +09:00 KST, and interpretive boundary', () => {
