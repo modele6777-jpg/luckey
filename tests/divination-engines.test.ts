@@ -4292,11 +4292,14 @@ test('Eleusinian Mysteries Initiation & Rebirth Engine: calculates grade, statio
   assert.equal(rep.engineVersion, ELEUSINIAN_MYSTERIES_VERSION);
   assert(rep.currentGrade.gradeTitle.length > 0);
   assert(rep.activeStation.stationName.length > 0);
+  assert(rep.companionStation.stationName !== rep.activeStation.stationName);
+  assert(rep.eleusinianPhase.length > 0 && rep.shadowWarning.length > 0);
   assert(rep.epoptiaRebirthScore >= 0 && rep.epoptiaRebirthScore <= 100);
   assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatEleusinianMysteriesPrompt(rep);
   assert(prompt.includes('고대 그리스 엘레우시스 신비주의(Eleusinian Mysteries) 영혼 입사의례 & 페르세포네 환원 엔진'));
   assert(prompt.includes(rep.currentGrade.gradeTitle));
+  assert(prompt.includes(rep.eleusinianPhase) && prompt.includes(rep.shadowWarning));
 });
 
 test('Vedic Nakshatra 108 Pada Engine: calculates nakshatra, pada and dharma path score', () => {
@@ -9287,10 +9290,13 @@ test('William Shakespeare Tragic Wisdom Engine: calculates Tragic Depth, Existen
   assert(rep.poeticImmortalityAestheticsIndex >= 0 && rep.poeticImmortalityAestheticsIndex <= 100);
   assert(rep.sereneFortitudeResilienceScore >= 0 && rep.sereneFortitudeResilienceScore <= 100);
   assert(rep.activeShakespeareTheme.themeTitleKo.length > 0);
+  assert(rep.companionShakespeareTheme.themeKey !== rep.activeShakespeareTheme.themeKey);
+  assert(rep.dramaticPhase.length > 0 && rep.shadowWarning.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatBritishWilliamShakespeareTragicWisdomPrompt(rep);
   assert(prompt.includes('윌리엄 셰익스피어 《햄릿·템페스트》 비극적 통찰·실존적 결단 지표'));
-  assert(prompt.includes(rep.activeShakespeareTheme.themeTitleKo));
+  assert(prompt.includes(rep.activeShakespeareTheme.themeTitleKo) && prompt.includes(rep.companionShakespeareTheme.themeTitleKo));
+  assert(prompt.includes(rep.dramaticPhase) && prompt.includes(rep.shadowWarning));
 });
 
 test('Marcel Proust Lost Time Regained Engine: calculates Involuntary Memory, Time Regained, and Aesthetic Insight', () => {
@@ -13284,12 +13290,13 @@ test('Ethiopian Zera Yacob Hatata Reason engine: conscience inquiry, +09:00 KST,
   assert.equal(rep.engineVersion, ETHIOPIAN_ZERA_YACOB_VERSION);
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionLens !== rep.inquiryLens);
+  assert.ok(rep.inquiryPhase.length > 0 && rep.shadowWarning.length > 0);
   assert.equal(rep.questionTopic, 'relationship');
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('개인 점수·심리 진단·미래 예측이 아닙니다'));
   const prompt = formatEthiopianZeraYacobHatataReasonPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('하타타') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionLens));
+  assert.ok(prompt.includes('하타타') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionLens) && prompt.includes(rep.inquiryPhase) && prompt.includes(rep.shadowWarning));
 });
 
 test('Basque Lauburu & Basajaun Harmony engine: cycle balance, +09:00 KST, and interpretive boundary', () => {

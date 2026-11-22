@@ -1,10 +1,10 @@
 {
-  "version": "1.8.218",
-  "builtAt": "2026-11-22T11:13:00+09:00",
-  "summary": "존 스튜어트 밀·토머스 모어·버지니아 울프 3대 엔진 3축 국면 및 동반 테마·과잉 경계 심층 강화(v1.8.218)",
+  "version": "1.8.219",
+  "builtAt": "2026-11-22T11:23:00+09:00",
+  "summary": "윌리엄 셰익스피어·엘레우시스 신비주의·자라 야곱 하타타 3대 엔진 3축 국면 및 동반 테마·과잉 경계 심층 강화(v1.8.219)",
   "items": [
-    "존 스튜어트 밀 《자유론》 엔진(v2.3.0): 동반 자유 테마(companionMillTheme)·자유 국면(libertyPhase)·과잉 경계(shadowWarning) 추가",
-    "토머스 모어 《유토피아》 엔진(v2.3.0): 동반 유토피아 테마(companionMoreTheme)·유토피아 국면(utopiaPhase)·과잉 경계(shadowWarning) 추가",
-    "버지니아 울프 《자기만의 방》 엔진(v2.3.0): 동반 울프 테마(companionWoolfTheme)·사유 국면(luminousPhase)·과잉 경계(shadowWarning) 추가"
+    "윌리엄 셰익스피어 비극·결단 지혜 엔진(v2.3.0): 동반 셰익스피어 테마(companionShakespeareTheme)·극적 국면(dramaticPhase)·과잉 경계(shadowWarning) 추가",
+    "고대 그리스 엘레우시스 신비주의 엔진(v2.3.0): 동반 의례 국면(companionStation)·순환 국면(eleusinianPhase)·과잉 경계(shadowWarning) 추가",
+    "에티오피아 자라 야곱 하타타 엔진(v2.3.0): 탐구 국면(inquiryPhase)·과잉 경계(shadowWarning) 추가 및 실천·성찰 질문 심화"
   ]
 }

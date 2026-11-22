@@ -8,12 +8,12 @@
  * 4. 시간의 무상함을 넘어서는 예술적 영원성 지수 (Poetic Immortality & Creative Aesthetic Index): 소네트 18번처럼 세월의 풍화를 이겨내고 참된 아름다움과 진실을 영원히 꽃피우는 창조적 생명력.
  * 5. "준비되어 있음이 전부다" 초연한 섭리 수용 회복탄력성 (Serene Fortitude & "Readiness is All" Resilience Score): "참새 한 마리의 추락에도 특별한 섭리가 있다. 지금이 아니라면 언젠가 올 것이요, 준비되어 있음이 전부다"라는 초연한 내면 평정심.
  *
- * @version LUCKEY-SHAKESPEARE-TRAGIC-WISDOM-v2.0.0
+ * @version LUCKEY-SHAKESPEARE-TRAGIC-WISDOM-v2.3.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const BRITISH_WILLIAM_SHAKESPEARE_TRAGIC_WISDOM_VERSION = 'LUCKEY-SHAKESPEARE-TRAGIC-WISDOM-v2.2.0';
+export const BRITISH_WILLIAM_SHAKESPEARE_TRAGIC_WISDOM_VERSION = 'LUCKEY-SHAKESPEARE-TRAGIC-WISDOM-v2.3.0';
 
 export type ShakespeareQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -51,8 +51,11 @@ export interface BritishWilliamShakespeareTragicWisdomResult {
   sereneFortitudeResilienceScore: number;                // 준비되어 있음이 전부인 초연한 회복탄력성
   // 세부 분석
   questionTopic: ShakespeareQuestionTopic;
+  dramaticPhase: string;
+  shadowWarning: string;
   temporalShakespeareRhythm: ShakespeareTemporalRhythm;
   activeShakespeareTheme: ShakespeareTheme;
+  companionShakespeareTheme: ShakespeareTheme;
   focalShakespeareAphorism: ShakespeareAphorism;
   practiceGuidance: string;
   ritualAction: string;
@@ -70,6 +73,18 @@ export interface BritishWilliamShakespeareTragicWisdomResult {
     philosophicalCounsel: string;
   };
 }
+
+const SHAKESPEARE_DRAMATIC_PHASES = [
+  '심연 직시(내면의 고뇌와 회피하던 진실을 정직하게 마주하는 시기)',
+  '결단·대비(망설임을 접고 내가 준비할 수 있는 최선에 착수하는 시기)',
+  '템페스트 화해(복수와 원망의 지팡이를 내려놓고 품위 있는 자유로 건너가는 시기)',
+] as const;
+
+const SHAKESPEARE_SHADOW_WARNINGS = [
+  '내면의 고뇌와 인간 본성의 그림자를 깊이 파고들다 실행의 순간까지 우유부단하게 미루지 않도록 살피세요.',
+  '품위와 용서를 택하느라 지금 분명히 세워야 할 자기 보호의 경계선까지 허물지 않도록 점검하세요.',
+  '이상적인 진실과 영원성을 좇다 오늘 눈앞의 작은 화해와 소박한 일상을 놓치지 않도록 유의하세요.',
+] as const;
 
 export const SHAKESPEARE_THEMES: ShakespeareTheme[] = [
   {
@@ -255,32 +270,36 @@ export function calculateBritishWilliamShakespeareTragicWisdom(
   const sereneFortitudeResilienceScore = 90 + ((absHash >> 13) % 9);
 
   const themeIndex = (absHash >> 5) % SHAKESPEARE_THEMES.length;
+  const companionOffset = 1 + ((absHash >> 6) % (SHAKESPEARE_THEMES.length - 1));
   const aphorismIndex = (absHash >> 8) % SHAKESPEARE_APHORISMS.length;
 
   const activeShakespeareTheme = SHAKESPEARE_THEMES[themeIndex];
+  const companionShakespeareTheme = SHAKESPEARE_THEMES[(themeIndex + companionOffset) % SHAKESPEARE_THEMES.length];
   const focalShakespeareAphorism = SHAKESPEARE_APHORISMS[aphorismIndex];
+  const dramaticPhase = SHAKESPEARE_DRAMATIC_PHASES[(absHash >> 11) % SHAKESPEARE_DRAMATIC_PHASES.length];
+  const shadowWarning = SHAKESPEARE_SHADOW_WARNINGS[(absHash >> 14) % SHAKESPEARE_SHADOW_WARNINGS.length];
 
   const guidanceTitle = `윌리엄 셰익스피어 비극적 지혜와 실존적 결단: ${activeShakespeareTheme.themeTitleKo}`;
   const philosophicalCounsel = `영국 문학의 거장이자 불멸의 극작가 윌리엄 셰익스피어 선생은 《햄릿》, 《맥베스》, 《템페스트》를 통해 ` +
     `인간 본성의 깊은 심연과 위선을 정직하게 응시하는 통찰력, "있음인가 없음인가"의 고뇌를 딛고 일어서는 주체적 결단, ` +
     `복수의 지팡이를 꺾고 관용으로 품는 템페스트의 숭고한 용서, 그리고 "준비되어 있음이 전부다(The readiness is all)"라는 의연한 섭리 수용의 평정심을 일깨웠습니다. ` +
-    `지금 당신에게 가장 절실한 지혜의 나침반은 '${activeShakespeareTheme.themeTitleKo}'입니다. ` +
+    `지금 당신에게 가장 절실한 지혜의 나침반은 '${activeShakespeareTheme.themeTitleKo}'(동반 테마: ${companionShakespeareTheme.themeTitleKo})입니다. ` +
     `${activeShakespeareTheme.practicalCounsel} ${topicGuidance.practiceGuidance} 셰익스피어의 불멸의 원전 격언 "${focalShakespeareAphorism.aphorismKo}"을 가슴에 새기고, ` +
     `${focalShakespeareAphorism.actionGuidance}`;
 
   const boundaryNotice = '윌리엄 셰익스피어 문학·철학 해석은 인간 본성과 선택을 비추는 상징·성찰 관점이며, 미래의 확정 예언이나 사실 판정이 아닙니다.';
   const baseDate = now ?? new Date();
   const kst = new Date(baseDate.getTime() + 9 * 60 * 60 * 1000);
-  const kstTimeLabel = `${temporalShakespeareRhythm.kstDateLabel} ${String(kst.getUTCHours()).padStart(2, '0')}:${String(kst.getUTCMinutes()).padStart(2, '0')}:00+09:00 (KST)`;
+  const kstTimeLabel = `${temporalShakespeareRhythm.kstDateLabel}T${String(kst.getUTCHours()).padStart(2, '0')}:${String(kst.getUTCMinutes()).padStart(2, '0')}:00+09:00 (KST)`;
   const shakespeareSynthesisMatrix = {
     coreInsight: activeShakespeareTheme.themeTitleKo,
-    recommendedAction: topicGuidance.practiceGuidance,
-    cautionNotice: '우유부단한 계산이나 오래된 원한에 붙들려 지금 이 순간의 준비와 품위를 잃지 마십시오.',
+    recommendedAction: `${topicGuidance.practiceGuidance} (${dramaticPhase})`,
+    cautionNotice: shadowWarning,
   };
   const trimmedQuery = query?.trim();
   const reflectiveQuestion = trimmedQuery
-    ? `"${trimmedQuery}"이라는 물음 앞에서 셰익스피어의 '${activeShakespeareTheme.themeTitleKo}' 시선으로 볼 때, 지금 내가 끝까지 진실하게 지키고 싶은 중심은 무엇인가요?`
-    : topicGuidance.reflectionFocus;
+    ? `"${trimmedQuery}"이라는 물음 앞에서 셰익스피어의 '${activeShakespeareTheme.themeTitleKo}' 시선과 '${dramaticPhase}' 국면으로 볼 때, 지금 내가 끝까지 진실하게 지키고 싶은 중심은 무엇인가요?`
+    : `'${dramaticPhase}' 국면에서 ${topicGuidance.reflectionFocus}`;
 
   return {
     engineVersion: BRITISH_WILLIAM_SHAKESPEARE_TRAGIC_WISDOM_VERSION,
@@ -291,11 +310,14 @@ export function calculateBritishWilliamShakespeareTragicWisdom(
     poeticImmortalityAestheticsIndex,
     sereneFortitudeResilienceScore,
     questionTopic,
+    dramaticPhase,
+    shadowWarning,
     temporalShakespeareRhythm,
     activeShakespeareTheme,
+    companionShakespeareTheme,
     focalShakespeareAphorism,
-    practiceGuidance: topicGuidance.practiceGuidance,
-    ritualAction: topicGuidance.ritualAction,
+    practiceGuidance: `${topicGuidance.practiceGuidance} (동반 테마: ${companionShakespeareTheme.themeTitleKo})`,
+    ritualAction: `${topicGuidance.ritualAction} (${dramaticPhase})`,
     reflectionFocus: topicGuidance.reflectionFocus,
     reflectiveQuestion,
     boundaryNotice,
@@ -315,8 +337,11 @@ export function formatBritishWilliamShakespeareTragicWisdomPrompt(
     `【윌리엄 셰익스피어 《햄릿·템페스트》 비극적 통찰·실존적 결단 지표 (${res.engineVersion})】`,
     `- 연산 시각: ${res.calculatedAtKst}`,
     `- 질문 주제 맥락: ${res.questionTopic}`,
+    `- 극적 국면: ${res.dramaticPhase}`,
     `- KST 시공간 리듬: ${res.temporalShakespeareRhythm.kstDateLabel} · ${res.temporalShakespeareRhythm.timeWindowKo} (${res.temporalShakespeareRhythm.dramaticTone}) — ${res.temporalShakespeareRhythm.rhythmDirective}`,
     `- 핵심 셰익스피어 테마: ${res.activeShakespeareTheme.themeTitleKo} [${res.activeShakespeareTheme.themeTitleEn}]`,
+    `- 동반 셰익스피어 테마: ${res.companionShakespeareTheme.themeTitleKo}`,
+    `- 과잉·경계 점검: ${res.shadowWarning}`,
     `- 문학적 사색: ${res.activeShakespeareTheme.literaryInsight}`,
     `- 행동 조언: ${res.activeShakespeareTheme.practicalCounsel}`,
     `- 질문 맞춤 실천 가이드: ${res.practiceGuidance}`,
