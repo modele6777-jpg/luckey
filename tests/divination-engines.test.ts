@@ -16109,5 +16109,23 @@ test('buildUserFifteenToolsDigest integrates 7th-round Kabbalah, Iching, and Tha
   assert.ok(!/affinityScore|vitalityIndex|decisionScore|mercy|severity|mildness/.test(digest));
 });
 
+test('buildUserFifteenToolsDigest integrates 7th-round Tojeong, Kyusei, and Taiyi seasonal rhythm, star elements, and general palaces without raw scores', () => {
+  const profile: any = {
+    basic: {
+      name: '제제',
+      birthdate: '1994-01-24',
+      birthtime: '10:30',
+      calendarType: 'solar',
+      isLeapMonth: false,
+      gender: 'male',
+    },
+  };
+  const digest = buildUserFifteenToolsDigest(profile, new Date('2026-11-23T04:36:00+09:00'));
+  assert.ok(digest.includes('다음 달(') && digest.includes('숨 고를 계절 '));
+  assert.ok(digest.includes('길방 적격(') && digest.includes('흉살 주의['));
+  assert.ok(digest.includes('주대장 ') && digest.includes('객대장 ') && digest.includes('16궁 태을 재궁 ['));
+  assert.ok(!/juBalanceScore|initiativeIndex|defensiveIndex|directionalScores|synergyScore|harmonyScore|springScore|summerScore/.test(digest));
+});
+
 
 
