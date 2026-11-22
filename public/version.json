@@ -1,9 +1,10 @@
 {
-  "version": "1.8.325",
-  "builtAt": "2026-11-22T19:22:25.757Z",
-  "summary": "오브 마이크 권한 요청 후 음성 입력을 안정화합니다",
+  "version": "1.8.326",
+  "builtAt": "2026-11-23T04:27:00+09:00",
+  "summary": "오성과 한음·연암 박지원·아담 스미스 3대 엔진 3축 국면 및 동반 테마·과잉 경계 심층 강화(v1.8.326)",
   "items": [
-    "권한 요청으로 허용된 마이크 스트림을 상담에서 재사용해 재요청 오류를 줄입니다",
-    "상담 전 마이크 입력은 음소거하고 권한 확인 중 중복 시작을 막습니다"
+    "오성과 한음 지기지우·경세제민 엔진(v2.3.0): 동반 테마(companionOhseongHaneumTheme)·지기·경세 국면(friendshipPhase)·과잉 경계(shadowWarning) 추가",
+    "연암 박지원 《열하일기》 실학 엔진(v2.3.0): 동반 실학 테마(companionYeonamTheme)·실학 국면(silhakPhase)·과잉 경계(shadowWarning) 추가",
+    "아담 스미스 《도덕감정론》 엔진(v2.3.0): 질문 맥락 분류(questionTopic)·공정한 관찰자 국면(moralPhase)·과잉 경계(shadowWarning) 추가"
   ]
 }
