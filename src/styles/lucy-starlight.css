@@ -954,3 +954,60 @@ html.keyboard-open .lucy-chat-shell .lucy-chat-main {
 @media (prefers-reduced-motion: reduce) {
   .lucy-thinking-clover, .lucy-thinking-clover.is-lucky { animation: none; }
 }
+
+/* Lucy composer hold-to-talk: no iOS loupe/preview before typing, a hint/transcript chip above and a live wave inside. */
+textarea[data-hold-to-talk]:not(:focus) {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+.lucy-hold-talk {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  pointer-events: none;
+}
+.lucy-hold-talk-chip {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: calc(100% + 12px);
+  margin: 0 auto;
+  width: max-content;
+  max-width: 100%;
+  padding: 7px 14px;
+  border-radius: 999px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13px;
+  font-weight: 800;
+  color: #3a2410;
+  background: linear-gradient(180deg, #fff6dc, #f3cf86);
+  box-shadow: 0 6px 18px rgba(255, 200, 120, .4);
+  animation: lucy-hold-chip-in .22s ease both;
+}
+.lucy-hold-talk-chip.is-error { color: #7f1d1d; background: #fee2e2; box-shadow: 0 4px 14px rgba(220, 38, 38, .25); }
+.lucy-hold-talk-wave {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  height: 26px;
+  filter: drop-shadow(0 0 5px rgba(255, 200, 120, .55));
+}
+.lucy-hold-talk-wave i {
+  display: block;
+  width: 2.5px;
+  min-height: 4px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #fbbf24, #f59e0b);
+  transition: height 70ms linear;
+}
+@keyframes lucy-hold-chip-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}

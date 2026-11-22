@@ -1,6 +1,7 @@
 import { collectSpeechTranscript, createEndOfSpeechWatcher, type EndOfSpeechWatcher } from '@/lib/speechAutoSend';
 import { startGeminiLiveVoice, type LiveVoiceSession } from '@/lib/geminiLiveSession';
 import { LucyModeName } from '@/components/chat/LucyModeName';
+import { useHoldToTalk } from '@/hooks/useHoldToTalk';
 import { ScreenPortal } from '@/components/layout/ScreenPortal';
 import { LucyModeTransition } from '@/components/chat/LucyModeTransition';
 import { LucyEntryScreen, type LucyEntryVariant } from '@/components/chat/LucyEntryScreen';
@@ -2039,6 +2040,13 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
 
   // handleSend forward ref
   const handleSendRef = useRef<(textToSend?: string, forcedChannels?: SpecialChannel[], pickedTarotCards?: DetectedTarotCard[]) => Promise<void>>(async () => {});
+
+  // 🎙️ 입력창을 누른 채 말하고 떼면 전송 (음성 대화 모드가 아닐 때). 말하는 동안 소리 파동과 들은 글자가 보인다.
+  const holdTalk = useHoldToTalk(textareaRef, {
+    enabled: !isVoiceMode,
+    onStart: () => { stopTTS(); },
+    onSend: (text) => { void handleSendRef.current(text); },
+  });
 
   // 🎙️ 음성 인식 시작 (STT)
   const startListening = useCallback(() => {
@@ -5334,7 +5342,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
               {/* 옅은색 동적 예시 고민 타이프라이터 플레이스홀더 (호리 스타일) */}
               <DynamicGhostInputPlaceholder
                 prompts={dynamicGhostPrompts}
-                isVisible={!input && !isLucyGenerating && !isInputFocused && !hasPendingAnswer}
+                isVisible={!input && !isLucyGenerating && !isInputFocused && !hasPendingAnswer && !holdTalk.holding}
                 pauseDuration={12000}
                 typingSpeed={45}
                 deletingSpeed={20}
@@ -5344,9 +5352,23 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
                 }}
               />
 
+              {/* 누르고 말하기: 소리 파동 + 들은 글자 */}
+              {holdTalk.holding && (
+                <div className="lucy-hold-talk" role="status" aria-live="polite">
+                  <span className="lucy-hold-talk-chip">{holdTalk.transcript || '듣고 있어요 · 손을 떼면 전송'}</span>
+                  <span className="lucy-hold-talk-wave" aria-hidden="true">
+                    {[0.36, 0.58, 0.82, 0.48, 1, 0.66, 0.9, 0.52, 0.74, 0.42, 0.62].map((weight, index) => (
+                      <i key={index} style={{ height: `${4 + holdTalk.level * weight * 20}px` }} />
+                    ))}
+                  </span>
+                </div>
+              )}
+              {holdTalk.error && !holdTalk.holding && <div className="lucy-hold-talk" role="alert"><span className="lucy-hold-talk-chip is-error">{holdTalk.error}</span></div>}
+
               {/* Textarea */}
               <textarea
                 ref={textareaRef}
+                data-hold-to-talk={!isVoiceMode ? 'true' : undefined}
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onCompositionStart={() => { isInputComposingRef.current = true; }}
