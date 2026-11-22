@@ -845,8 +845,9 @@ ${content}
       const cards = typeof req.body?.cards === "string" ? req.body.cards : "";
       const voice = typeof req.body?.voice === "string" ? req.body.voice : "";
       const focus = typeof req.body?.focus === "string" ? req.body.focus : "";
+      const greet = typeof req.body?.greet === "string" ? req.body.greet : "";
       res.setHeader("Cache-Control", "no-store");
-      return res.status(200).json(await createGeminiLiveToken(nickname, { chart, cards, voice, focus }));
+      return res.status(200).json(await createGeminiLiveToken(nickname, { chart, cards, voice, focus, greet }));
     } catch (error: any) {
       const status = Number(error?.status) || 500;
       return res.status(status).json({ error: error?.message || "실시간 음성 토큰을 만들지 못했습니다.", ...(error?.code ? { code: error.code } : {}) });

@@ -149,6 +149,7 @@ export function LucyOrbCounsel({
       cards,
       voice: next.voice,
       focus: next.focus,
+      greet: next.greet,
       onState: (state) => setSpeaking(state === 'speaking'),
       onUserText: (text) => {
         if (lucyBuf.current) take('루시', lucyBuf);
@@ -162,8 +163,11 @@ export function LucyOrbCounsel({
     });
     sessionRef.current = session;
     const typed = draft.trim();
+    const cue = typed
+      ? `먼저 네 말투로 두 문장만 인사한 뒤, 이어서 이 말에 답해. 이 지시 문장은 읽지 마. 사용자의 말: ${typed}`
+      : '지금 막 도착했어. 사용자가 말하기 전에 네 말투로 두 문장만 먼저 인사해. 이 지시 문장은 읽지 마.';
+    session.sendText(cue);
     if (typed) {
-      session.sendText(typed);
       userBuf.current = typed;
       take('나', userBuf);
       setDraft('');

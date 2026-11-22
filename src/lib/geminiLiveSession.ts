@@ -18,6 +18,7 @@ type LiveVoiceHandlers = {
   cards?: string;
   voice?: string;
   focus?: string;
+  greet?: string;
   onState?: (state: LiveVoiceState) => void;
   onUserText?: (text: string) => void;
   onLucyText?: (text: string) => void;
@@ -198,6 +199,7 @@ export function startGeminiLiveVoice(handlers: LiveVoiceHandlers): LiveVoiceSess
           cards: handlers.cards || '',
           voice: orbVoice(handlers.voice || ''),
           focus: handlers.focus || '',
+          greet: handlers.greet || '',
         }),
       });
       const body = await response.json().catch(() => ({}));
@@ -257,7 +259,7 @@ export function startGeminiLiveVoice(handlers: LiveVoiceHandlers): LiveVoiceSess
             speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: orbVoice(handlers.voice || '') } } },
           },
           systemInstruction: {
-            parts: [{ text: buildLucyLiveInstruction(handlers.nickname || '', handlers.chart || '', handlers.cards || '', handlers.focus || '') }],
+            parts: [{ text: buildLucyLiveInstruction(handlers.nickname || '', handlers.chart || '', handlers.cards || '', handlers.focus || '', handlers.greet || '') }],
           },
         },
       }));

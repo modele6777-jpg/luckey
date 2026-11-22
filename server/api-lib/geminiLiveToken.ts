@@ -4,11 +4,11 @@ import { orbVoice } from '../../src/lib/orbMasters.ts';
 
 const LIVE_MODEL = 'gemini-3.8-live';
 
-export function lucyLiveInstruction(nickname: string, chart = '', cards = '', focus = ''): string {
-  return buildLucyLiveInstruction(nickname, chart, cards, focus);
+export function lucyLiveInstruction(nickname: string, chart = '', cards = '', focus = '', greet = ''): string {
+  return buildLucyLiveInstruction(nickname, chart, cards, focus, greet);
 }
 
-export async function createGeminiLiveToken(nickname = '', reading?: { chart?: string; cards?: string; voice?: string; focus?: string }): Promise<{ token: string; model: string; expiresAt: string }> {
+export async function createGeminiLiveToken(nickname = '', reading?: { chart?: string; cards?: string; voice?: string; focus?: string; greet?: string }): Promise<{ token: string; model: string; expiresAt: string }> {
   const key = getGeminiApiKey();
   if (!key) {
     const error = new Error('Gemini 키가 설정되어 있지 않습니다.') as Error & { status?: number; code?: string };
@@ -25,7 +25,7 @@ export async function createGeminiLiveToken(nickname = '', reading?: { chart?: s
       responseModalities: ['AUDIO'],
       speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: orbVoice(reading?.voice || '') } } },
     },
-    systemInstruction: { parts: [{ text: lucyLiveInstruction(nickname, reading?.chart || '', reading?.cards || '', reading?.focus || '') }] },
+    systemInstruction: { parts: [{ text: lucyLiveInstruction(nickname, reading?.chart || '', reading?.cards || '', reading?.focus || '', reading?.greet || '') }] },
   };
   const headers = { 'content-type': 'application/json', 'x-goog-api-key': key };
   const url = 'https://generativelanguage.googleapis.com/v1beta/auth_tokens';
