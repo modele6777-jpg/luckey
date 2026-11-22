@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.8.344",
+    "builtAt": "2026-11-23T05:34:00+09:00",
+    "summary": "타로 카발라 섀도우·사주 12신살·퀀텀 점프 타이밍 3대 엔진 맥락·국면·과잉 경계 심층 강화(v1.8.344)",
+    "items": [
+      "타로 카발라 생명나무 & 섀도우 미러 엔진(v2.3.0): 질문 맥락(questionTopic)·카발라 상승 국면(kabbalahPhase)·과잉 경계(shadowWarning) 추가",
+      "사주 12신살 완전 순환 엔진(v2.3.0): 질문 맥락(questionTopic)·12신살 순환 국면(spiritPhase)·과잉 경계(shadowWarning) 추가",
+      "퀀텀 점프 타이밍 엔진(v2.3.0): 질문 맥락(questionTopic)·모멘텀 국면(momentumPhase)·과잉 경계(shadowWarning) 추가"
+    ]
+  },
+  {
     "version": "1.8.343",
     "builtAt": "2026-11-23T05:30:00+09:00",
     "summary": "15대 기초엔진 8회전 4회차(카발라·주역·태국점성술) 원전 해석·체용 괘명·만태나이 대운 잔여 다이제스트 강화(v1.8.343)",
