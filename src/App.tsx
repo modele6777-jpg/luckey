@@ -33,6 +33,7 @@ import { GlobalHandbookAudioWidget } from "./components/GlobalHandbookAudioWidge
 import { ChannelIntroModal } from "./components/common/ChannelIntroModal";
 import { LucyVoiceModeModal } from "./components/lucy/LucyVoiceModeModal";
 import { OrbCounselHost } from "./components/lucy/OrbCounselHost";
+import { useOrbCounselOpen } from "./lib/orbCounselGate";
 import { PageLoader } from "./components/PageLoader";
 import { PrismRainbowLoader } from "./components/PrismRainbowLoader";
 import { LucyAuraLoader } from "./components/LucyAuraLoader";
@@ -762,6 +763,8 @@ function AppContent() {
   }, [isUnlocked, sharedState?.themeColor, resolvedTheme]);
 
   const isLucyRoute = location === '/' || location === '/chat' || location === '/lucy' || location === '/chat/pro';
+  const orbOpen = useOrbCounselOpen();
+  const lucyChatActive = isLucyRoute && !orbOpen;
   React.useEffect(() => {
     if (!isLucyRoute || !isDuoUnfolded) setLucyMasterToolsRequested(false);
   }, [isLucyRoute, location, isDuoUnfolded]);
@@ -770,10 +773,10 @@ function AppContent() {
 
   React.useEffect(() => {
     if (typeof document === 'undefined') return;
-    const isCosmicActive = isDuoUnfolded && isLucyRoute && !isDivinationMode;
+    const isCosmicActive = isDuoUnfolded && lucyChatActive && !isDivinationMode;
     document.documentElement.classList.toggle('duo-cosmic-active', isCosmicActive);
     document.body.classList.toggle('duo-cosmic-active', isCosmicActive);
-  }, [isDuoUnfolded, isLucyRoute]);
+  }, [isDuoUnfolded, isLucyRoute, lucyChatActive, isDivinationMode]);
 
   // 📱 좌/우측 패널 터치 감지 및 좌측 채널 경로 동기화
   React.useEffect(() => {
@@ -893,7 +896,7 @@ function AppContent() {
   }
 
   return (
-    <div className={`prism-app-shell relative z-[1] bg-transparent ${isLucyRoute ? 'in-lucy-chat' : ''}`}>
+    <div className={`prism-app-shell relative z-[1] bg-transparent ${lucyChatActive ? 'in-lucy-chat' : ''}`}>
 
       {/* Draggable & Edge-Dockable Background Music Player */}
       {shouldMountBgMusicPlayer() && (

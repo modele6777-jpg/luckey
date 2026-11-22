@@ -264,6 +264,7 @@ export default function LeftSidebarNav() {
   }, []);
   const [location, navigate] = useLocation();
   const cleanPath = location ? location.split('?')[0].split('#')[0] : '/';
+  const orbOpen = useOrbCounselOpen();
   useEffect(() => {
     const aside = document.getElementById('main-sidebar-navigation');
     if (!aside) return;
@@ -271,7 +272,7 @@ export default function LeftSidebarNav() {
     aside.querySelectorAll<HTMLElement>('.refined-nav-item').forEach(node => {
       if (node.getAttribute('data-active') !== 'true') node.blur();
     });
-  }, [cleanPath]);
+  }, [cleanPath, orbOpen]);
   useEffect(() => {
     const aside = document.getElementById('main-sidebar-navigation');
     if (!aside) return;
@@ -382,11 +383,11 @@ export default function LeftSidebarNav() {
     e.stopPropagation();
   }, []);
 
-  const isLucyActive = LUCY_SUBPATHS.some(
+  const isLucyActive = !orbOpen && LUCY_SUBPATHS.some(
     (p) => cleanPath === p || (p !== '/' && cleanPath.startsWith(p + '/'))
   );
 
-  const isKeyActive = KEY_SUBPATHS.some(
+  const isKeyActive = !orbOpen && KEY_SUBPATHS.some(
     (p) => cleanPath === p || cleanPath.startsWith(p + '/')
   );
 
@@ -540,7 +541,6 @@ export default function LeftSidebarNav() {
   const [isLucyMaster, setIsLucyMaster] = useState<boolean>(() => isLucyMasterModeOn());
   // 점술모드 상담 깊이마다 말풍선 기호가 바뀐다: 1단계 … / 2단계 ? / 3단계 !
   const masterDepth = useLucyMasterDepth();
-  const orbOpen = useOrbCounselOpen();
   const MasterBubbleIcon = masterDepth >= 3 ? MessageCircleWarning : masterDepth === 2 ? MessageCircleQuestion : MessageCircleMore;
   const displayBubbleMarker = !isLucyMaster
     // 펼침 상태(isUnfolded)는 접기/펼치기 즉시 갱신된다. 화면 칸(DOM)이 생길 때까지 기다리지 않아 + 표시가 바로 바뀐다.

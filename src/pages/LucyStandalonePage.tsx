@@ -11,6 +11,7 @@ import { LUCY_MASTER_DEPTH3_TOOLS } from '@/lib/divination/smartAgentRouter';
 import { shouldOfferLucyMaster, dismissLucyMasterOffer, markLucyMasterFromOffer, consumeLucyMasterFromOffer, shouldOfferReturnToLucy, dismissReturnToLucyOffer } from '@/lib/lucyMasterOffer';
 import { playLucyMasterSuction } from '@/components/omniwarp/BigBangMasterSuction';
 import { isLucyChatPath } from '@/lib/duoPaneFocus';
+import { useOrbCounselOpen } from '@/lib/orbCounselGate';
 import { isLucyTarotDrawRequest, isLucyTarotDrawOpen } from '@/lib/lucyTarotIntegrity';
 import { useSyncedChatDraft } from '@/hooks/useSyncedChatDraft';
 import { LUCY_PRO_PATH, resolveLucyPageChannels } from '@/lib/lucyChatPageMode';
@@ -1588,9 +1589,10 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
     return () => clearTimeout(timer);
   }, [isLucyReady]);
 
-  // 🌌 루시 채팅이 지금 화면일 때만 활성화. 접힌 채팅은 DOM에 남아도 다른 페이지에서는 끈다.
+  const orbOpen = useOrbCounselOpen();
+  // 🌌 루시 채팅이 지금 화면일 때만 활성화. 오브로 이동하면 루시는 끈다.
   useEffect(() => {
-    const onLucy = isLucyChatPath(location);
+    const onLucy = isLucyChatPath(location) && !orbOpen;
     document.documentElement.classList.toggle('in-lucy-chat', onLucy);
     document.body.classList.toggle('in-lucy-chat', onLucy);
     if (!onLucy) {
@@ -1603,7 +1605,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
       document.documentElement.style.removeProperty('--lucy-chat-bar-height');
       document.body.style.removeProperty('--lucy-chat-bar-height');
     };
-  }, [location]);
+  }, [location, orbOpen]);
 
 
   // Determine User Nickname (🛡️ 실명이나 구글 계정명으로 폴백하지 않고 '제제'로 영구 고정)
