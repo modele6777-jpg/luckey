@@ -351,7 +351,12 @@ export function buildUserFifteenToolsDigest(profile?: UserProfile, asOfDate: Dat
       ? [saju.bodyStrength.deukRyeong ? '득령' : '', saju.bodyStrength.deukJi ? '득지' : ''].filter(Boolean).join('·') || '평형'
       : '';
     const johuNote = saju?.yongsinDetails?.johuYongsin ? ` · 조후 ${saju.yongsinDetails.johuYongsin}` : '';
-    const sajuBrief = saju ? `${saju.dayMaster.hanja}(${saju.dayMaster.korean}) 일간 · 4주: ${saju.pillars.year.gan}${saju.pillars.year.zhi}년 ${saju.pillars.month.gan}${saju.pillars.month.zhi}월 ${saju.pillars.day.gan}${saju.pillars.day.zhi}일${saju.pillars.hour ? ` ${saju.pillars.hour.gan}${saju.pillars.hour.zhi}시` : ''} · 격국: ${saju.geokguk.name}(${saju.geokguk.category} — ${saju.geokguk.description}) · ${saju.bodyStrength.level}(${sajuBodyRoot}) · 용신: ${saju.yongsin.name}(희신 ${saju.yongsinDetails.heeshin} · 기신 ${saju.yongsinDetails.gisin}${johuNote} · 처방: ${saju.yongsin.actionTip}) · 현재 대운: ${saju.daeun.current}(${saju.daewunDetail.directionText} · 차기 ${saju.daeun.next}) · 세운 기조: ${saju.annual2026.theme}(기회: ${saju.annual2026.keyOpportunity} · 주의: ${saju.annual2026.caution}) · 우세 오행: ${saju.elements.dominant.name}(${saju.elements.dominant.advice}) · 보완 오행: ${saju.elements.lacking.name}(개운 처방: ${saju.elements.lacking.remedy} · 개운 색: ${saju.elements.lacking.luckyColor} · 개운 음식: ${saju.elements.lacking.luckyFood} · 개운 장소: ${saju.elements.lacking.luckyPlace})${sajuSpecials}` : '입력 확인 필요: 사주 미계산';
+    const yongsinAnalysis = saju?.yongsinDetails?.analysisNote ? ` · 근거: ${saju.yongsinDetails.analysisNote}` : '';
+    const annualFlow = saju?.annual2026?.yearName && saju?.annual2026?.elementFlow
+      ? `${saju.annual2026.yearName}[${saju.annual2026.elementFlow}] `
+      : '';
+    const dominantLabel = saju?.elements?.strengthLabel ? ` · 판정: ${saju.elements.strengthLabel}` : '';
+    const sajuBrief = saju ? `${saju.dayMaster.hanja}(${saju.dayMaster.korean}) 일간 · 4주: ${saju.pillars.year.gan}${saju.pillars.year.zhi}년 ${saju.pillars.month.gan}${saju.pillars.month.zhi}월 ${saju.pillars.day.gan}${saju.pillars.day.zhi}일${saju.pillars.hour ? ` ${saju.pillars.hour.gan}${saju.pillars.hour.zhi}시` : ''} · 격국: ${saju.geokguk.name}(${saju.geokguk.category} — ${saju.geokguk.description}) · ${saju.bodyStrength.level}(${sajuBodyRoot}) · 용신: ${saju.yongsin.name}(희신 ${saju.yongsinDetails.heeshin} · 기신 ${saju.yongsinDetails.gisin}${johuNote}${yongsinAnalysis} · 처방: ${saju.yongsin.actionTip}) · 현재 대운: ${saju.daeun.current}(${saju.daewunDetail.directionText} · 차기 ${saju.daeun.next}) · 세운 기조: ${annualFlow}${saju.annual2026.theme}(기회: ${saju.annual2026.keyOpportunity} · 주의: ${saju.annual2026.caution}) · 우세 오행: ${saju.elements.dominant.name}(${saju.elements.dominant.advice}${dominantLabel}) · 보완 오행: ${saju.elements.lacking.name}(개운 처방: ${saju.elements.lacking.remedy} · 개운 색: ${saju.elements.lacking.luckyColor} · 개운 음식: ${saju.elements.lacking.luckyFood} · 개운 장소: ${saju.elements.lacking.luckyPlace})${sajuSpecials}` : '입력 확인 필요: 사주 미계산';
     let animal = MAHABOTE_ANIMALS[dow];
     if (dow === 3) animal = !time ? '수요일 오전/오후 구분은 생시 필요' : time.hour < 12 ? '수요일 오전·수성·엄니 코끼리' : '수요일 오후·라후·엄니 없는 코끼리';
 
@@ -697,10 +702,15 @@ export function buildUserFifteenToolsDigest(profile?: UserProfile, asOfDate: Dat
         const palBranchNote = zw.natalChartSummary?.soulPalaceBranch && zw.natalChartSummary?.bodyPalaceBranch
           ? ` · 명궁 ${zw.natalChartSummary.soulPalaceBranch}/신궁 ${zw.natalChartSummary.bodyPalaceBranch}`
           : '';
-        const classNote = zw.natalChartSummary?.fiveElementsClass ? ` · ${zw.natalChartSummary.fiveElementsClass}${palBranchNote}` : palBranchNote;
+        const dayElNote = zw.natalChartSummary?.myDayMasterElement ? ` · 본명 ${zw.natalChartSummary.myDayMasterElement}` : '';
+        const classNote = zw.natalChartSummary?.fiveElementsClass ? ` · ${zw.natalChartSummary.fiveElementsClass}${dayElNote}${palBranchNote}` : `${dayElNote}${palBranchNote}`;
+        const yearLabel = zw.yearGanZhiKr ? `${kstYear}년 ${zw.yearGanZhiKr}` : `${kstYear}년`;
         const coreAdvice = zw.sanFangSiZhengBalance.coreDynamicsAdvice ? ` · 삼방 조언: ${zw.sanFangSiZhengBalance.coreDynamicsAdvice}` : '';
         const defenseNote = zw.luJiConflictDynamics.wealthPreservationAdvice ? ` · 록기 처신: ${zw.luJiConflictDynamics.wealthPreservationAdvice}` : '';
-        const strategyNote = zw.yearlyStrategy ? ` · 유년 기조[${zw.yearlyStrategy.overallTheme} · 기회: ${zw.yearlyStrategy.keyOpportunity} · 주의: ${zw.yearlyStrategy.keyVulnerability}](${zw.yearlyStrategy.strategicVerdict})` : '';
+        const axesNote = zw.yearlyStrategy?.wealthAndCareerAxis || zw.yearlyStrategy?.relationshipAndHealthAxis
+          ? ` · 재물/커리어: ${zw.yearlyStrategy.wealthAndCareerAxis} · 관계/건강: ${zw.yearlyStrategy.relationshipAndHealthAxis}`
+          : '';
+        const strategyNote = zw.yearlyStrategy ? ` · 유년 기조[${zw.yearlyStrategy.overallTheme} · 기회: ${zw.yearlyStrategy.keyOpportunity} · 주의: ${zw.yearlyStrategy.keyVulnerability}${axesNote}](${zw.yearlyStrategy.strategicVerdict})` : '';
         const matrixAction = zw.ziweiFlyingSynthesisMatrix
           ? ` · 사화 조율 [${zw.ziweiFlyingSynthesisMatrix.alignmentState} / ${zw.ziweiFlyingSynthesisMatrix.dominantTension}] → ${zw.ziweiFlyingSynthesisMatrix.integratedAction}`
           : '';
@@ -712,7 +722,7 @@ export function buildUserFifteenToolsDigest(profile?: UserProfile, asOfDate: Dat
         const focusNote = zw.reflectionFocus ? ` · 성찰 초점: ${zw.reflectionFocus}` : '';
         const questionNote = zw.reflectiveQuestion ? ` · 성찰 질문: "${zw.reflectiveQuestion}"` : '';
         const boundaryNote = zw.interpretiveBoundary ? ` · 해석 경계: ${zw.interpretiveBoundary}` : '';
-        ziweiLine = `\n- 자미두수 유년 사화: 명궁 [${zw.sanFangSiZhengBalance.myMingPalaceName}](${kstYear}년${classNote}) · 삼방사정 국면 [${zw.sanFangSiZhengBalance.patternGrade}] · 록기 역학 [${zw.luJiConflictDynamics.relationType}](화록 ${zw.mutagens.lu.starName}→${zw.luJiConflictDynamics.luPalaceName} · 화권 ${zw.mutagens.quan.starName}→${zw.mutagens.quan.targetPalaceName} · 화과 ${zw.mutagens.ke.starName}→${zw.mutagens.ke.targetPalaceName} · 화기 ${zw.mutagens.ji.starName}→${zw.luJiConflictDynamics.jiPalaceName})${coreAdvice}${defenseNote}${strategyNote}${matrixAction}${quarterNote}${secAxisNote}${ritualNote}${focusNote}${questionNote}${boundaryNote}.`;
+        ziweiLine = `\n- 자미두수 유년 사화: 명궁 [${zw.sanFangSiZhengBalance.myMingPalaceName}](${yearLabel}${classNote}) · 삼방사정 국면 [${zw.sanFangSiZhengBalance.patternGrade}] · 록기 역학 [${zw.luJiConflictDynamics.relationType}](화록 ${zw.mutagens.lu.starName}→${zw.luJiConflictDynamics.luPalaceName} · 화권 ${zw.mutagens.quan.starName}→${zw.mutagens.quan.targetPalaceName} · 화과 ${zw.mutagens.ke.starName}→${zw.mutagens.ke.targetPalaceName} · 화기 ${zw.mutagens.ji.starName}→${zw.luJiConflictDynamics.jiPalaceName})${coreAdvice}${defenseNote}${strategyNote}${matrixAction}${quarterNote}${secAxisNote}${ritualNote}${focusNote}${questionNote}${boundaryNote}.`;
       }
     } catch (_) {}
 
