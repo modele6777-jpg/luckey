@@ -5,13 +5,27 @@ export interface BohemianCrystalResult {
   calculatedAtKst: string;
   crystalFacet: string;
   companionFacet: string;
+  refractionPhase: string;
   bohemianInsight: string;
   forestGlassTone: string;
+  shadowWarning: string;
   reflectionFocus: string;
   ritualAction: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
+
+const REFRACTION_PHASES = [
+  '분광 정돈(뭉친 감정을 사실·감정·실행 세 갈래로 나누는 시기)',
+  '온도 조율(너무 뜨거운 조급함을 식히고 유리의 숨을 고르는 시기)',
+  '각면 세공(여러 일을 벌이기보다 핵심 한 면을 선명히 깎는 시기)',
+] as const;
+
+const SHADOW_WARNINGS = [
+  '문제를 지나치게 잘게 나누어 분석만 하다 정작 손댈 한 가지 실행을 놓치지 않도록 살피세요.',
+  '고요함과 완충을 찾다가 꼭 건너야 할 다리 앞에서도 발을 떼지 못하는 머뭇거림을 경계하세요.',
+  '완벽한 각면을 깎으려다 주변 사람의 서툰 온기와 흐름까지 날카롭게 재단하지 않도록 점검하세요.',
+] as const;
 
 const FACETS = [
   {
@@ -81,17 +95,21 @@ export function calculateBohemianCrystalGlassLight(params: {
   const companionOffset = 1 + (stableHash(`${seed}|companion`) % (FACETS.length - 1));
   const picked = FACETS[idx];
   const companion = FACETS[(idx + companionOffset) % FACETS.length];
+  const refractionPhase = REFRACTION_PHASES[stableHash(`${seed}|phase`) % REFRACTION_PHASES.length];
+  const shadowWarning = SHADOW_WARNINGS[stableHash(`${seed}|shadow`) % SHADOW_WARNINGS.length];
 
   return {
-    engineVersion: 'LUCKEY-BOHEMIAN-CRYSTAL-v2.2.0',
+    engineVersion: 'LUCKEY-BOHEMIAN-CRYSTAL-v2.3.0',
     calculatedAtKst: formatKstIso(now),
     crystalFacet: picked.facet,
     companionFacet: companion.facet,
+    refractionPhase,
     bohemianInsight: `${picked.insight} (동반 각면: ${companion.facet})`,
     forestGlassTone: picked.tone,
-    reflectionFocus: `보헤미아 크리스탈 공예 지혜의 '${picked.facet}'와 동반 각면 '${companion.facet}'처럼, 한데 뭉쳐 답답해 보이는 마음도 프리즘을 통과시키듯 결을 나누어 맑게 비춰 보세요.`,
-    ritualAction: picked.ritual,
-    reflectiveQuestion: picked.question,
+    shadowWarning,
+    reflectionFocus: `보헤미아 크리스탈 공예 지혜의 '${refractionPhase}' 흐름에서 '${picked.facet}'와 동반 각면 '${companion.facet}'을 함께 비춰, 한데 뭉쳐 답답해 보이는 마음을 맑게 나누어 보세요.`,
+    ritualAction: `${picked.ritual} (동반 각면: ${companion.facet})`,
+    reflectiveQuestion: `${picked.question} '${refractionPhase}' 국면에서 가장 먼저 맑게 비출 부분은 어디인가요?`,
     interpretiveBoundary: '보헤미아(Bohemia)의 유리 공예 빛 세공·슈마바 숲 정적 지혜를 바탕으로 한 상징적 성찰 프레임입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.',
   };
 }
@@ -102,7 +120,9 @@ export function formatBohemianCrystalPrompt(res: BohemianCrystalResult): string 
     `- 기준 시각: ${res.calculatedAtKst}`,
     `- 유리 각면: ${res.crystalFacet} (${res.forestGlassTone})`,
     `- 동반 각면: ${res.companionFacet}`,
+    `- 굴절 국면: ${res.refractionPhase}`,
     `- 중심 통찰: ${res.bohemianInsight}`,
+    `- 과잉·경계 점검: ${res.shadowWarning}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 오늘의 작은 실천: ${res.ritualAction}`,
     `- 스스로에게 묻기: ${res.reflectiveQuestion}`,

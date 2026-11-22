@@ -14,12 +14,26 @@ export interface BhutanGnhResult {
   activePillar: BhutanGnhPillar;
   companionPillar: BhutanGnhPillar;
   auspiciousSymbol: string;
+  harmonyPhase: string;
+  shadowWarning: string;
   interpretation: string;
   ritualAction: string;
   reflectionFocus: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
+
+const HARMONY_PHASES = [
+  '호흡 안착(바깥 속도를 늦추고 오늘의 적정 리듬을 고르는 시기)',
+  '의례 정비(작은 정리와 차 한 잔으로 흐트러진 결을 세우는 시기)',
+  '상호 균형(나와 얽힌 이들의 박자를 맞추어 길을 여는 시기)',
+] as const;
+
+const SHADOW_WARNINGS = [
+  '평온을 지키려다 꼭 짚고 넘어가야 할 현실의 확인까지 미루지 않도록 살피세요.',
+  '작은 의례와 정리에 매달려 정작 오늘 내려야 할 핵심 결정을 뒤로 미루지 않도록 점검하세요.',
+  '모두의 속도를 배려하다가 내가 꼭 지켜야 할 기준과 경계까지 흐려지지 않도록 유의하세요.',
+] as const;
 
 const BHUTAN_GNH_PILLARS: BhutanGnhPillar[] = [
   {
@@ -85,7 +99,7 @@ export function calculateBhutanGnhTashiTagye(params: {
   question?: string;
 }): BhutanGnhResult {
   const now = params.now ?? new Date();
-  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${params.question ?? ''}|${now.toISOString().slice(0, 10)}`;
+  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${params.question ?? ''}|${now.toISOString().slice(0, 13)}`;
   const hash = stableHash(seed);
   const companionHash = stableHash(`${seed}|companion`);
 
@@ -94,17 +108,21 @@ export function calculateBhutanGnhTashiTagye(params: {
   const activePillar = BHUTAN_GNH_PILLARS[primaryIdx];
   const companionPillar = BHUTAN_GNH_PILLARS[(primaryIdx + companionOffset) % BHUTAN_GNH_PILLARS.length];
   const auspiciousSymbol = AUSPICIOUS_SYMBOLS[(hash >>> 3) % AUSPICIOUS_SYMBOLS.length];
+  const harmonyPhase = HARMONY_PHASES[stableHash(`${seed}|phase`) % HARMONY_PHASES.length];
+  const shadowWarning = SHADOW_WARNINGS[stableHash(`${seed}|shadow`) % SHADOW_WARNINGS.length];
 
   return {
-    engineVersion: 'LUCKEY-BHUTAN-GNH-v2.2.0',
+    engineVersion: 'LUCKEY-BHUTAN-GNH-v2.3.0',
     calculatedAtKst: formatKstTimestamp(now),
     activePillar,
     companionPillar,
     auspiciousSymbol,
-    interpretation: `부탄 국민총행복(GNH)과 타시 타게이(팔길상) 상징으로 보면 지금은 '${activePillar.name}'(${activePillar.symbol})을 중심으로 '${companionPillar.name}'의 결이 함께 받쳐 줍니다. ${activePillar.guidance}`,
-    ritualAction: activePillar.ritual,
-    reflectionFocus: `질문과 맞닿은 '${auspiciousSymbol}' 및 '${companionPillar.name}'의 의미를 떠올리며, 지금 내가 지키고 싶은 평온의 기준을 문장으로 적어 보세요.`,
-    reflectiveQuestion: activePillar.question,
+    harmonyPhase,
+    shadowWarning,
+    interpretation: `부탄 국민총행복(GNH)과 타시 타게이(팔길상) 상징으로 보면 지금은 '${harmonyPhase}' 흐름 위에서 '${activePillar.name}'(${activePillar.symbol})을 중심으로 '${companionPillar.name}'의 결이 함께 받쳐 줍니다. ${activePillar.guidance}`,
+    ritualAction: `${activePillar.ritual} (보조 기둥: ${companionPillar.name})`,
+    reflectionFocus: `질문과 맞닿은 '${auspiciousSymbol}' 및 '${companionPillar.name}'의 의미를 떠올리며, '${harmonyPhase}' 국면에서 지키고 싶은 평온의 기준을 문장으로 적어 보세요.`,
+    reflectiveQuestion: `${activePillar.question} 지금 '${harmonyPhase}' 흐름에서 먼저 가다듬을 균형은 무엇인가요?`,
     interpretiveBoundary: '본 풀이는 부탄 국민총행복(GNH)과 타시 타게이 전통 상징을 바탕으로 한 성찰적 비유이며, 개인 점수·심리 진단·미래 예측이 아닙니다.',
   };
 }
@@ -115,7 +133,9 @@ export function formatBhutanGnhPrompt(result: BhutanGnhResult): string {
     `- 연산 시각: ${result.calculatedAtKst}`,
     `- 중심 기둥: ${result.activePillar.name} (${result.activePillar.symbol})`,
     `- 보조 기둥: ${result.companionPillar.name} (${result.companionPillar.symbol})`,
+    `- 조화 국면: ${result.harmonyPhase}`,
     `- 길상 상징: ${result.auspiciousSymbol}`,
+    `- 과잉·경계 점검: ${result.shadowWarning}`,
     `- 해석 요지: ${result.interpretation}`,
     `- 실천 의례: ${result.ritualAction}`,
     `- 성찰 초점: ${result.reflectionFocus}`,
