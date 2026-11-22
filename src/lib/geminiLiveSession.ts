@@ -1,4 +1,4 @@
-const LIVE_MODEL = 'gemini-3.8-live';
+import { buildLucyLiveInstruction } from './lucyLiveBrief';
 
 export type LiveVoiceState = 'listening' | 'speaking';
 
@@ -8,8 +8,12 @@ export type LiveVoiceSession = {
   interrupt: () => void;
 };
 
+const LIVE_MODEL = 'gemini-3.8-live';
+
 type LiveVoiceHandlers = {
   nickname?: string;
+  chart?: string;
+  cards?: string;
   onState?: (state: LiveVoiceState) => void;
   onUserText?: (text: string) => void;
   onLucyText?: (text: string) => void;
@@ -163,7 +167,7 @@ export function startGeminiLiveVoice(handlers: LiveVoiceHandlers): LiveVoiceSess
       const response = await fetch('/api/ai/live-token', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ nickname: handlers.nickname || '' }),
+        body: JSON.stringify({ nickname: handlers.nickname || '', chart: handlers.chart || '', cards: handlers.cards || '' }),
       });
       const body = await response.json().catch(() => ({}));
       if (!response.ok || !body?.token) {
@@ -214,7 +218,6 @@ export function startGeminiLiveVoice(handlers: LiveVoiceHandlers): LiveVoiceSess
     }, 8000);
     setupTimer = setupTimerId;
     socket.onopen = () => {
-      const name = (handlers.nickname || '친구').replace(/[^\p{L}\p{N} _.-]/gu, '').trim().slice(0, 24) || '친구';
       socket?.send(JSON.stringify({
         setup: {
           model: `models/${model}`,
@@ -223,7 +226,7 @@ export function startGeminiLiveVoice(handlers: LiveVoiceHandlers): LiveVoiceSess
             speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Kore' } } },
           },
           systemInstruction: {
-            parts: [{ text: `당신은 ${name}와 목소리로만 이야기하는 루시야. 한국어 반말로 1~2문장만 말하고, 풀이 대신 대화를 이어가.` }],
+            parts: [{ text: buildLucyLiveInstruction(handlers.nickname || '', handlers.chart || '', handlers.cards || '') }],
           },
         },
       }));

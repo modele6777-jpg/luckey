@@ -1,17 +1,14 @@
 import { getGeminiApiKey } from '../geminiKey.ts';
+import { buildLucyLiveInstruction } from '../../src/lib/lucyLiveBrief.ts';
 
 const LIVE_MODEL = 'gemini-3.8-live';
 const LIVE_VOICE = 'Kore';
 
-export function lucyLiveInstruction(nickname: string): string {
-  const name = nickname.replace(/[^\p{L}\p{N} _.-]/gu, '').trim().slice(0, 24) || '친구';
-  return `당신은 ${name}와 지금 목소리로만 이야기하는 루시야. 글을 읽어 주는 답이 아니라 옆에서 주고받는 대화야.
-1~2문장만 말해. 목록, 제목, 기호, 영어 설명은 빼.
-풀이하지 말고 들은 말에 반응한 뒤, 질문은 하나까지만 해.
-한국어 반말만. 호칭은 ${name}.`;
+export function lucyLiveInstruction(nickname: string, chart = '', cards = ''): string {
+  return buildLucyLiveInstruction(nickname, chart, cards);
 }
 
-export async function createGeminiLiveToken(nickname = ''): Promise<{ token: string; model: string; expiresAt: string }> {
+export async function createGeminiLiveToken(nickname = '', reading?: { chart?: string; cards?: string }): Promise<{ token: string; model: string; expiresAt: string }> {
   const key = getGeminiApiKey();
   if (!key) {
     const error = new Error('Gemini 키가 설정되어 있지 않습니다.') as Error & { status?: number; code?: string };
@@ -28,7 +25,7 @@ export async function createGeminiLiveToken(nickname = ''): Promise<{ token: str
       responseModalities: ['AUDIO'],
       speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: LIVE_VOICE } } },
     },
-    systemInstruction: { parts: [{ text: lucyLiveInstruction(nickname) }] },
+    systemInstruction: { parts: [{ text: lucyLiveInstruction(nickname, reading?.chart || '', reading?.cards || '') }] },
   };
   const headers = { 'content-type': 'application/json', 'x-goog-api-key': key };
   const url = 'https://generativelanguage.googleapis.com/v1beta/auth_tokens';

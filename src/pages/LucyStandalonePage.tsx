@@ -30,6 +30,7 @@ import { playTTS, playTTSInChunks, playQAndATTS, stopTTS, useTTSActive, subscrib
 import { unlockAudioPlayback, primeTTSAudioElement } from '@/lib/audio';
 import { playAudioHaptic } from '@/lib/audioHaptics';
 import { calculateDetailedSaju } from '@/lib/sajuAnalysis';
+import { drawLucyTarotCards } from '@/utils/tarotDetector';
 import { getLocalDateKey } from '@/lib/rebibleStorage';
 import ReactMarkdown from 'react-markdown';
 import { LucyProTypewriter } from '@/components/LucyProTypewriter';
@@ -2102,8 +2103,11 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
       setVoiceState('listening');
       voiceStateRef.current = 'listening';
       liveVoiceRef.current?.stop();
+      const spread = drawLucyTarotCards(3).map((card, index) => `${index + 1}번 ${card.nameKo} ${card.orientationKo}`).join(', ');
       const session = startGeminiLiveVoice({
         nickname: userDisplayName,
+        chart: sajuInfo?.systemPromptSummary || '',
+        cards: spread,
         onState: (state) => {
           if (!isVoiceModeRef.current || liveVoiceRef.current !== session) return;
           setVoiceState(state);
@@ -2136,7 +2140,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
       });
       liveVoiceRef.current = session;
     }
-  }, [stopRecognition, userDisplayName]);
+  }, [stopRecognition, userDisplayName, sajuInfo]);
 
   // 빅뱅버튼 홀드 시 별도 말풍선 없이 루시채팅 자체 음성 모드 즉시 토글
   useEffect(() => {
