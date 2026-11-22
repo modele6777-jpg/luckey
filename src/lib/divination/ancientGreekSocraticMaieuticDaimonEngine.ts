@@ -8,12 +8,12 @@
  * 4. 엘렌코스(Elenchus): 집요한 문답을 통해 헛된 편견을 허물고 참된 앎에 이르는 과정.
  * 5. 에피멜레이아 헤아우투(Epimeleia Heautou): 외적 명예와 부보다 영혼을 가장 훌륭하게 가꾸는 배려.
  *
- * @version LUCKEY-SOCRATIC-MAIEUTIC-DAIMON-v2.2.0
+ * @version LUCKEY-SOCRATIC-MAIEUTIC-DAIMON-v2.4.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const SOCRATIC_MAIEUTIC_DAIMON_VERSION = 'LUCKEY-SOCRATIC-MAIEUTIC-DAIMON-v2.3.0';
+export const SOCRATIC_MAIEUTIC_DAIMON_VERSION = 'LUCKEY-SOCRATIC-MAIEUTIC-DAIMON-v2.4.0';
 
 function describeSocraticStage(score: number): string {
   if (score >= 88) return '명료한 각성 단계';
@@ -82,6 +82,7 @@ export interface SocraticMaieuticDaimonResult {
   reflectiveQuestion: string;
   ritualAction: string;
   reflectionFocus: string;
+  shadowWarning: string;
   interpretiveBoundary: string;
 }
 
@@ -335,6 +336,7 @@ export function calculateSocraticMaieuticDaimon(
     reflectiveQuestion: situationalElenchus.elenchusQuestion,
     ritualAction: `${temporalDaimonionRhythm.recommendedPractice} · ${situationalElenchus.maieuticPrompt}`,
     reflectionFocus: situationalElenchus.elenchusQuestion,
+    shadowWarning: `[소크라테스 문답 과잉 경계] 끝없는 되물음(${activeSocraticStage.stageNameGreek})에 갇혀 필요한 결단과 실행 시기를 놓치지 않도록 살피십시오.`,
     interpretiveBoundary: '소크라테스 산파술과 다이몬 성찰은 정답을 대신 내려주는 점술이 아니라, 질문자가 스스로 헛된 전제를 비우고 내면의 양심을 들을 수 있도록 돕는 상징적 문답 프레임입니다.',
   };
 }
@@ -352,6 +354,7 @@ export function formatSocraticMaieuticDaimonPrompt(res: SocraticMaieuticDaimonRe
     `- KST 시공간 리듬 (${res.calculatedAtKst}): ${res.temporalDaimonionRhythm.kstPhaseLabel} · ${res.temporalDaimonionRhythm.seasonContext} (다이몬 감응: ${describeSocraticStage(res.temporalDaimonionRhythm.daimonClarityIndex)})`,
     `- 변증 통합 매트릭스: 아포리아 용기(${describeSocraticStage(res.dialecticSynthesisMatrix.aporiaCourage)}) / 다이몬 조율(${describeSocraticStage(res.dialecticSynthesisMatrix.daimonAttunement)}) / 산파 명료도(${describeSocraticStage(res.dialecticSynthesisMatrix.maieuticClarity)}) → [${res.dialecticSynthesisMatrix.primaryBottleneck}] ${res.dialecticSynthesisMatrix.synthesisDirective}`,
     `- 성찰 핵심 격언: "${res.primarySocraticAphorism.themeKo}" [${res.primarySocraticAphorism.greekClassic}]`,
+    `- 과잉 경계: ${res.shadowWarning}`,
     `- 철학적 처방: ${res.socraticPhilosophicalCounsel.philosophicalGuidance}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
   ].join('\n');
