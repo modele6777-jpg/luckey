@@ -333,13 +333,23 @@ export default function LeftSidebarNav() {
     // 접힌 화면: 다른 화면으로 옮기거나 펼쳤다 접을 때, Lucky 채널이면 펼치고 아니면 접는다.
     // 같은 화면에서 클로버로 직접 열고 닫은 것은 그대로 둔다.
     const pathChanged = luckyPathRef.current !== cleanPath;
-    if (pathChanged || unfoldedBeforeRef.current) setIsChannelsOpen(isLuckyListPath(cleanPath));
+    const justFolded = unfoldedBeforeRef.current;
     luckyPathRef.current = cleanPath;
+    if (!pathChanged && !justFolded) return;
+    const open = isLuckyListPath(cleanPath);
+    // 펼쳤다 접을 때는 화면 크기가 자리 잡은 뒤 접어서, 아이콘이 하나씩 들어가는 모습이 보이게 한다.
+    if (justFolded && !open && !reduceMotionRef.current) {
+      const timer = window.setTimeout(() => setIsChannelsOpen(false), 420);
+      return () => window.clearTimeout(timer);
+    }
+    setIsChannelsOpen(open);
   }, [cleanPath, screenUnfolded]);
   const unfoldedBeforeRef = useRef(screenUnfolded);
   useEffect(() => { unfoldedBeforeRef.current = screenUnfolded; }, [screenUnfolded]);
   const { resolvedTheme } = useTheme();
   const reduceMotion = useReducedMotion();
+  const reduceMotionRef = useRef(reduceMotion);
+  reduceMotionRef.current = reduceMotion;
 
   // 📐 우측 메뉴 분할선과 루시 채팅 입력란 분할선 1:1 완벽 수평 일치 연동
   useSidebarFooterHeight();
@@ -707,7 +717,14 @@ export default function LeftSidebarNav() {
                         animate="open"
                         exit="closed"
                         variants={{
-                          closed: { height: 0, opacity: 0, transition: { duration: reduceMotion ? 0 : 0.18 } },
+                          // 접을 때: 아래 아이콘부터 하나씩 쏙 들어간 뒤 목록이 닫힌다.
+                          closed: {
+                            height: 0,
+                            opacity: 0,
+                            transition: reduceMotion
+                              ? { duration: 0 }
+                              : { when: 'afterChildren', staggerChildren: 0.035, staggerDirection: -1, height: { duration: 0.26, ease: [0.4, 0, 0.2, 1] }, opacity: { duration: 0.2, delay: 0.06 } },
+                          },
                           open: {
                             height: 'auto',
                             opacity: 1,
@@ -723,7 +740,7 @@ export default function LeftSidebarNav() {
                             key={channel.path}
                             data-prism-channel-item
                             variants={{
-                              closed: { opacity: 0, scale: 0.4, y: -10 },
+                              closed: { opacity: 0, scale: 0.4, y: -10, transition: reduceMotion ? { duration: 0 } : { duration: 0.16, ease: [0.4, 0, 1, 1] } },
                               open: { opacity: 1, scale: 1, y: 0, transition: reduceMotion ? { duration: 0 } : { type: 'spring', stiffness: 520, damping: 22 } },
                             }}
                           >
