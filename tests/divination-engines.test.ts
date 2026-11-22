@@ -7669,6 +7669,8 @@ test('Yeonam Park Jiwon Yeolha Ilgi Engine: calculates One-Night Nine Crossings,
   assert(rep.bukhakOpenMindedInsightScore >= 0 && rep.bukhakOpenMindedInsightScore <= 100);
   assert(rep.haehakSatiricalGenerosityQuotient >= 0 && rep.haehakSatiricalGenerosityQuotient <= 100);
   assert(rep.activeYeonamTheme.themeTitleKo.length > 0);
+  assert(rep.companionYeonamTheme.themeKey !== rep.activeYeonamTheme.themeKey);
+  assert(rep.silhakPhase.length > 0 && rep.shadowWarning.length > 0);
   assertKstTimestamp(rep.calculatedAtKst);
   assert(Boolean(rep.yeonamSynthesisMatrix?.integratedAction));
   assert(rep.dailyPracticeRitual.length > 0);
@@ -7677,7 +7679,8 @@ test('Yeonam Park Jiwon Yeolha Ilgi Engine: calculates One-Night Nine Crossings,
   assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatYeonamParkJiwonYeolhaIlgiPrompt(rep);
   assert(prompt.includes('연암 박지원 《열하일기》 일야구도 & 이용후생·법고창신 실학 지표'));
-  assert(prompt.includes(rep.activeYeonamTheme.themeTitleKo));
+  assert(prompt.includes(rep.activeYeonamTheme.themeTitleKo) && prompt.includes(rep.companionYeonamTheme.themeTitleKo));
+  assert(prompt.includes(rep.silhakPhase) && prompt.includes(rep.shadowWarning));
   assert(prompt.includes('실천 의례'));
   assert(prompt.includes('성찰 초점'));
   assert(prompt.includes('교차 매트릭스'));
@@ -7980,6 +7983,8 @@ test('Adam Smith Moral Sentiments Engine: calculates Impartial Spectator, Sympat
   assert(rep.praiseworthinessIntegrityScore >= 0 && rep.praiseworthinessIntegrityScore <= 100);
   assert(rep.activeAdamSmithTheme.themeTitleKo.length > 0);
   assert(rep.secondaryAdamSmithTheme.themeTitleKo.length > 0);
+  assert(rep.secondaryAdamSmithTheme.themeKey !== rep.activeAdamSmithTheme.themeKey);
+  assert(rep.moralPhase.length > 0 && rep.shadowWarning.length > 0);
   assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(Boolean(rep.adamSmithSynthesisMatrix?.integratedAction));
@@ -7989,6 +7994,7 @@ test('Adam Smith Moral Sentiments Engine: calculates Impartial Spectator, Sympat
   assert(prompt.includes('아담 스미스 《도덕감정론》 공정한 관찰자 & 공감·자기통제 지표'));
   assert(prompt.includes(rep.activeAdamSmithTheme.themeTitleKo));
   assert(prompt.includes('보조 교차 테마'));
+  assert(prompt.includes(rep.moralPhase) && prompt.includes(rep.shadowWarning));
   assert(prompt.includes('교차 매트릭스'));
   assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
   assert(prompt.includes('성찰 질문'));
@@ -8435,6 +8441,8 @@ test('Ohseong and Haneum Friendship Governance Engine: calculates Lifelong Moral
   assert(rep.antiFactionalImpartialityScore >= 0 && rep.antiFactionalImpartialityScore <= 100);
   assert(rep.unyieldingFidelityGraceIndex >= 0 && rep.unyieldingFidelityGraceIndex <= 100);
   assert(rep.activeOhseongHaneumTheme.themeTitleKo.length > 0);
+  assert(rep.companionOhseongHaneumTheme.themeKey !== rep.activeOhseongHaneumTheme.themeKey);
+  assert(rep.friendshipPhase.length > 0 && rep.shadowWarning.length > 0);
   assert(rep.dailyPracticeRitual.length > 0);
   assert(rep.reflectiveQuestion.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
@@ -8443,7 +8451,8 @@ test('Ohseong and Haneum Friendship Governance Engine: calculates Lifelong Moral
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatKoreanOhseongHaneumFriendshipGovernancePrompt(rep);
   assert(prompt.includes('오성과 한음(이항복·이덕형) 지기지우 & 경세제민 지혜 지표'));
-  assert(prompt.includes(rep.activeOhseongHaneumTheme.themeTitleKo));
+  assert(prompt.includes(rep.activeOhseongHaneumTheme.themeTitleKo) && prompt.includes(rep.companionOhseongHaneumTheme.themeTitleKo));
+  assert(prompt.includes(rep.friendshipPhase) && prompt.includes(rep.shadowWarning));
   assert(prompt.includes('교차 매트릭스'));
   assert(prompt.includes(rep.ritualAction));
   assert(!prompt.includes('/100'));
