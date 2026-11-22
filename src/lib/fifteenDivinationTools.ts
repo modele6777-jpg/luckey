@@ -406,7 +406,7 @@ export function buildUserFifteenToolsDigest(profile?: UserProfile, asOfDate: Dat
         const dyn = th.planetaryFriendEnemyDynamic ? ` · 친우역학: ${th.planetaryFriendEnemyDynamic.relationshipType}${dynAdvice}` : '';
         const antardasha = th.mahaThaksaAntardasha ? ` · 소운 ${th.mahaThaksaAntardasha.antardashaPlanetName}[${th.mahaThaksaAntardasha.antardashaAttribute}](${th.mahaThaksaAntardasha.pacingTempo} — ${th.mahaThaksaAntardasha.actionAdvice})` : '';
         const dashaVerdict = th.mahaThaksa.current.verdict ? ` · 대운 판정: ${th.mahaThaksa.current.verdict}` : '';
-        const planetNatureNote = th.birthDayPlanet.element && th.birthDayPlanet.direction ? `/${th.birthDayPlanet.element}·${th.birthDayPlanet.direction}` : '';
+        const planetNatureNote = th.birthDayPlanet.animal && th.birthDayPlanet.direction ? ` · 영수 ${th.birthDayPlanet.animal} · ${th.birthDayPlanet.direction}` : '';
         const vitalityTone = th.fourElements.vitalityIndex >= 80 ? '충만' : th.fourElements.vitalityIndex >= 60 ? '안정' : '조율 필요';
         const luckyDir = th.remedies?.luckyDirection ? ` · 길방위 ${th.remedies.luckyDirection}` : '';
         const luckyColors = th.remedies?.luckyColors?.length ? ` · 호라삿 길색 [${th.remedies.luckyColors.join(', ')}]` : '';
@@ -494,7 +494,7 @@ export function buildUserFifteenToolsDigest(profile?: UserProfile, asOfDate: Dat
           ? ` · 카발라 처신(${kb.kabbalahSynthesisMatrix.coreInsight} → ${kb.kabbalahSynthesisMatrix.recommendedAction} · 유의: ${kb.kabbalahSynthesisMatrix.cautionNotice})`
           : '';
         const lifeNumNote = `수비 ${kb.numerology.lifePathNumber}${kb.numerology.lifePathIsMaster ? '(마스터)' : ''}`;
-        const sephirahDetail = `${kb.numerology.lifePathSephirah.meaning} · ${kb.numerology.lifePathSephirah.pillar} · ${kb.numerology.lifePathSephirah.planet}`;
+        const sephirahDetail = `${kb.numerology.lifePathSephirah.meaning}${'pillar' in kb.numerology.lifePathSephirah ? ` · ${kb.numerology.lifePathSephirah.pillar} · ${kb.numerology.lifePathSephirah.planet}` : ''}`;
         const questionNote = kb.reflectiveQuestion ? ` · 성찰 질문: "${kb.reflectiveQuestion}"` : '';
         kabbalahLine = `\n- 카발라 생명나무: 라이프 패스 세피라 ${kb.numerology.lifePathSephirah.name}(${lifeNumNote} · ${kb.numerology.lifePathSephirah.hebrew} · ${kb.numerology.lifePathSephirah.title} · ${sephirahDetail}) · 퍼스널리티 세피라 ${kb.numerology.personalitySephirah.name} · 소울 패스 제${kb.numerology.soulPath.number}경로(${kb.numerology.soulPath.hebrewLetter} ${kb.numerology.soulPath.tarotName} · ${kb.numerology.soulPath.attribution.value}) · 지배 세계 ${worldNote} · 3기둥 밸런스(자비 ${describePillar(kb.numerology.pillarBalance.mercy)} / 엄격 ${describePillar(kb.numerology.pillarBalance.severity)} / 균형 ${describePillar(kb.numerology.pillarBalance.mildness)})${heartNote}${flashNote}${worldManifest}${seasonTone}${pathPractice}${ritualNote}${matrixNote}${focusNote}${questionNote}${boundaryNote}.`;
       }
