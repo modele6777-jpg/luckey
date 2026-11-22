@@ -16200,5 +16200,23 @@ test('buildUserFifteenToolsDigest integrates 8th-round Vedic sanskrit/rashi long
   assert.ok(!/dharmaProsperityScore|fourLessonsHarmonyScore|actionMomentumIndex|decisionScore|riskIndex|tonggi\.score|synergyScore|wondersEmpowermentIndex|resonanceScore/.test(digest));
 });
 
+test('buildUserFifteenToolsDigest integrates 8th-round Kabbalah soulPath theme/personality meaning, Iching tiYong gua/dominant guidance, and Thai translit/dasha remaining years without raw scores', () => {
+  const profile: any = {
+    basic: {
+      name: '제제',
+      birthdate: '1994-01-24',
+      birthtime: '10:30',
+      calendarType: 'solar',
+      isLeapMonth: false,
+      gender: 'male',
+    },
+  };
+  const digest = buildUserFifteenToolsDigest(profile, new Date('2026-11-23T05:28:00+09:00'));
+  assert.ok(digest.includes('원전 해석(') && digest.includes('퍼스널리티 세피라 ') && digest.includes('소울 패스 제'));
+  assert.ok(digest.includes('체용관계 ') && digest.includes('당면 실행 스텝(') && digest.includes('주효 ['));
+  assert.ok(digest.includes('년 주기 · ') && digest.includes('대운 잔여 ') && digest.includes('만태나이 '));
+  assert.ok(!/affinityScore|vitalityIndex|decisionScore|momentumScore/.test(digest));
+});
+
 
 
