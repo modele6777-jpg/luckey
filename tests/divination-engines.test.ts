@@ -3727,6 +3727,8 @@ test('Celtic Tree Ogham Engine: derives birth guardian tree and seasonal oracle'
 test('Taoist Sanbao Inner Alchemy Engine: calculates Jing-Qi-Shen and alchemy phase', () => {
   const rep = calculateTaoistSanbaoInnerAlchemy(profile, new Date(), '삼보 균형');
   assert.equal(rep.engineVersion, TAOIST_SANBAO_VERSION);
+  assert.equal(rep.questionTopic, 'inner');
+  assert(rep.sanbaoPhase.length > 0 && rep.shadowWarning.length > 0);
   assert(rep.calculatedAtKst.includes('+09:00 (KST)'));
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(Boolean(rep.sanbaoSynthesisMatrix?.integratedAction));
@@ -3739,6 +3741,7 @@ test('Taoist Sanbao Inner Alchemy Engine: calculates Jing-Qi-Shen and alchemy ph
   const prompt = formatTaoistSanbaoInnerAlchemyPrompt(rep);
   assert(prompt.includes('도교 내단학'));
   assert(prompt.includes(rep.dominantTreasure));
+  assert(prompt.includes('과잉·경계 점검'));
   assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
   assert(prompt.includes('성찰 질문'));
   assert(prompt.includes('해석 경계'));
@@ -4086,6 +4089,8 @@ test('Huangdi Five Movements & Six Qi Engine: calculates movements, heaven/earth
 test('Pythagorean Tetraktys & Gematria Harmonics Engine: calculates root, 4 tiers and manifestation index', () => {
   const rep = calculatePythagoreanTetraktys(profile, '아이디어를 실제 서비스로 완성하고 싶습니다', new Date('2026-11-17T05:15:00+09:00'));
   assert.equal(rep.engineVersion, PYTHAGOREAN_TETRAKTYS_VERSION);
+  assert.equal(rep.questionTopic, 'career');
+  assert(rep.tetraktysPhase.length > 0 && rep.shadowWarning.length > 0);
   assert(rep.harmonicSignature.soulRootNumber >= 1);
   assert(rep.realityManifestationIndex >= 0 && rep.realityManifestationIndex <= 100);
   assert(rep.tetraktysDistribution.dominantTier.length > 0);
@@ -4099,6 +4104,7 @@ test('Pythagorean Tetraktys & Gematria Harmonics Engine: calculates root, 4 tier
   assert(prompt.includes('피타고라스 테트락티스 10대 신성기하 & 게마트리아 엔진'));
   assert(prompt.includes(rep.harmonicSignature.sacredRatioName));
   assert(prompt.includes('보조 교차 층위'));
+  assert(prompt.includes('과잉·경계 점검'));
   assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
   assert(prompt.includes('교차 매트릭스'));
   assert(prompt.includes('성찰 질문'));
@@ -4128,6 +4134,8 @@ test('Babylonian Enuma Elish & Tablets of Destiny Engine: calculates patron deit
 test('Taoist Huangting Jing Internal Palaces Engine: calculates palaces, guardian spirit and prescription', () => {
   const rep = calculateTaoistHuangtingJing(profile, { question: '내면 양생' });
   assert.equal(rep.engineVersion, TAOIST_HUANGTING_VERSION);
+  assert.equal(rep.questionTopic, 'inner');
+  assert(rep.huangtingPhase.length > 0 && rep.shadowWarning.length > 0);
   assert(rep.calculatedAtKst.includes('+09:00 (KST)'));
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(Boolean(rep.huangtingSynthesisMatrix?.integratedAction));
@@ -4141,6 +4149,7 @@ test('Taoist Huangting Jing Internal Palaces Engine: calculates palaces, guardia
   assert(prompt.includes('도교 상청파 황정경(黃庭經) 신체 오장 신성좌 & 존사 엔진'));
   assert(prompt.includes(rep.guardianSpirit.spiritName));
   assert(prompt.includes('보조 교차 진신'));
+  assert(prompt.includes('과잉·경계 점검'));
   assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
   assert(prompt.includes('성찰 질문'));
   assert(prompt.includes('해석 경계'));
