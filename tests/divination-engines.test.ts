@@ -16073,5 +16073,23 @@ test('buildUserFifteenToolsDigest integrates 7th-round Vedic, Liuren, and Qimen 
   assert.ok(!/dharmaProsperityScore|fourLessonsHarmonyScore|actionMomentumIndex|decisionScore|riskIndex|tonggi\.score/.test(digest));
 });
 
+test('buildUserFifteenToolsDigest integrates 7th-round Kabbalah, Iching, and Thai Horasat sephirah pillar, moving lines, and dasha verdict without raw scores', () => {
+  const profile: any = {
+    basic: {
+      name: '제제',
+      birthdate: '1994-01-24',
+      birthtime: '10:30',
+      calendarType: 'solar',
+      isLeapMonth: false,
+      gender: 'male',
+    },
+  };
+  const digest = buildUserFifteenToolsDigest(profile, new Date('2026-11-23T04:27:00+09:00'));
+  assert.ok(digest.includes('기둥 · ') && digest.includes('경로 실천('));
+  assert.ok((digest.includes('동효 [') || digest.includes('무동효(')) && digest.includes('본괘 국면(') && digest.includes('괘상 요해('));
+  assert.ok(digest.includes('대운 판정: ') && digest.includes('소운 '));
+  assert.ok(!/affinityScore|vitalityIndex|decisionScore|mercy|severity|mildness/.test(digest));
+});
+
 
 
