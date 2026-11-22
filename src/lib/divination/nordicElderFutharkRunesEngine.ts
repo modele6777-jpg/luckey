@@ -19,7 +19,9 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const NORDIC_RUNES_VERSION = 'LUCKEY-NORDIC-RUNES-v2.2.0';
+export const NORDIC_RUNES_VERSION = 'LUCKEY-NORDIC-RUNES-v2.3.0';
+
+export type NordicRunesQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
 export interface RuneInfo {
   runeNumber: number;          // 1 ~ 24
@@ -45,6 +47,7 @@ export interface NordicElderFutharkRunesReport {
   engineVersion: string;
   calculatedAt: string;
   calculatedAtKst: string;
+  questionTopic: NordicRunesQuestionTopic;
   birthRune: RuneInfo;
   nornsTrio: {
     urdPast: RuneInfo;         // 과거의 뿌리 (원인)
@@ -53,6 +56,8 @@ export interface NordicElderFutharkRunesReport {
   };
   bindruneTalisman: BindruneTalisman;
   cosmicWyrdResonanceScore: number; // 0 ~ 100 위르드 운명 공명도
+  wyrdPhase: string;
+  shadowWarning: string;
   yggdrasilNavigationGuidance: string;
   ritualAction: string;
   reflectionFocus: string;
@@ -80,6 +85,19 @@ function describeRunesStage(score: number): string {
   if (score >= 86) return '위르드 직조 공명(Wyrd Harmony) — 과거의 뿌리와 현재의 결단이 노른의 그물 위에서 자연스럽게 맞물리는 상승기';
   if (score >= 74) return '애트 균형 순환(Aett Circulation) — 바인드룬의 결속이 일상의 리듬을 안정적으로 지탱하는 조율기';
   return '노른 성찰(Norns Reflection) — 서두르지 않고 과거의 원인과 현재의 파동을 차분히 가다듬는 숙고기';
+}
+
+function classifyRunesTopic(question: string): NordicRunesQuestionTopic {
+  if (/연애|사랑|관계|사람|친구|가족|배우자|이별|갈등|마음/.test(question)) return 'relationship';
+  if (/선택|결정|이직|직장|일|사업|돈|시험|도전|시작|타이밍|포기/.test(question)) return 'decision';
+  if (/힘들|지치|불안|우울|잠|휴식|치유|피곤|스트레스|건강/.test(question)) return 'healing';
+  return 'reflection';
+}
+
+function deriveWyrdPhase(score: number): string {
+  if (score >= 86) return '위르드 공명기 (노른의 직조가 순풍을 타는 상승)';
+  if (score >= 74) return '애트 조율기 (뿌리와 파동의 보폭을 맞추는 정돈)';
+  return '노른 성찰기 (결단 전 기틀을 다지는 숙고)';
 }
 
 const ELDER_FUTHARK_LIST: RuneInfo[] = [
@@ -445,28 +463,32 @@ export function calculateNordicElderFutharkRunes(params: {
 
   const calculatedAtKst = formatRunesKstTimestamp(now);
   const trimmedQ = params.question?.trim() || '';
+  const questionTopic = classifyRunesTopic(trimmedQ);
+  const wyrdPhase = deriveWyrdPhase(cosmicWyrdResonanceScore);
+  const shadowWarning = `${verdandiPresent.koreanName}의 역방향 그림자 경계: ${verdandiPresent.reversedWarning} 또한 선천 룬 ${birthRune.koreanName}의 기운이 과열되지 않도록 균형을 살피세요.`;
   let qHash = 0;
   for (let i = 0; i < trimmedQ.length; i++) {
     qHash = (qHash * 31 + trimmedQ.charCodeAt(i)) >>> 0;
   }
   const secondaryRune = ELDER_FUTHARK_LIST[(verdandiIndex + 7 + (qHash % 11)) % 24];
   const reflectiveQuestion = trimmedQ
-    ? `"${trimmedQ}"라는 물음 앞에서 ${verdandiPresent.koreanName}의 파동과 ${secondaryRune.koreanName}의 교차 지점 중 지금 내가 가장 먼저 붙잡아야 할 실천은 무엇인가요?`
-    : `과거(${urdPast.koreanName})와 현재(${verdandiPresent.koreanName})가 만나는 지점에서 ${secondaryRune.koreanName}이 건네는 오늘의 과제는 무엇인가요?`;
+    ? `"${trimmedQ}"라는 물음 앞에서 ${wyrdPhase}의 흐름 속 ${verdandiPresent.koreanName}과 ${secondaryRune.koreanName}의 교차 지점 중 지금 가장 먼저 붙잡아야 할 실천은 무엇인가요?`
+    : `과거(${urdPast.koreanName})와 현재(${verdandiPresent.koreanName})가 만나는 ${wyrdPhase} 지점에서 ${secondaryRune.koreanName}이 건네는 오늘의 과제는 무엇인가요?`;
   const interpretiveBoundary =
     '이 리포트는 고대 북유럽 24 엘더 푸사르크 룬과 노른의 위르드(Wyrd) 직조 상징을 바탕으로 삶의 흐름과 성찰의 관점을 비추는 참고용 비유이며, 확정된 미래 예언이나 의학·법률·재무적 판단을 대신하지 않습니다.';
 
   const runesSynthesisMatrix = {
-    dominantTension: `${birthRune.koreanName} ↔ ${verdandiPresent.koreanName}`,
+    dominantTension: `${birthRune.koreanName} ↔ ${verdandiPresent.koreanName} (${wyrdPhase})`,
     secondaryRuneSummary: `${secondaryRune.runeSymbol} ${secondaryRune.koreanName} (${secondaryRune.wyrdWeavingKeyword})`,
     alignmentState: describeRunesStage(cosmicWyrdResonanceScore),
-    integratedAction: `${verdandiPresent.uprightInterpretation}${trimmedQ ? ` [질문 맥락: ${trimmedQ}]` : ''}`,
+    integratedAction: `${verdandiPresent.uprightInterpretation} [과잉 경계: ${verdandiPresent.reversedWarning}]${trimmedQ ? ` [질문 맥락: ${trimmedQ}]` : ''}`,
   };
 
   return {
     engineVersion: NORDIC_RUNES_VERSION,
     calculatedAt: now.toISOString(),
     calculatedAtKst,
+    questionTopic,
     birthRune,
     nornsTrio: {
       urdPast,
@@ -475,6 +497,8 @@ export function calculateNordicElderFutharkRunes(params: {
     },
     bindruneTalisman,
     cosmicWyrdResonanceScore,
+    wyrdPhase,
+    shadowWarning,
     yggdrasilNavigationGuidance,
     ritualAction,
     reflectionFocus,
@@ -487,7 +511,7 @@ export function calculateNordicElderFutharkRunes(params: {
 export function formatNordicElderFutharkRunesPrompt(report: NordicElderFutharkRunesReport): string {
   const lines = [
     `### ᚱ 북유럽 24 엘더 푸사르크 룬 & 노른 운명 직조 엔진 (${NORDIC_RUNES_VERSION})`,
-    `- **연산 시각**: ${report.calculatedAtKst} | **위르드 공명 국면**: ${describeRunesStage(report.cosmicWyrdResonanceScore)}`,
+    `- **연산 시각**: ${report.calculatedAtKst} | **위르드 공명 국면**: ${report.wyrdPhase} (${describeRunesStage(report.cosmicWyrdResonanceScore)})`,
     `- **선천 본명 룬**: ${report.birthRune.runeSymbol} ${report.birthRune.koreanName} [${report.birthRune.aett}]`,
     `  - 본질 원소 / 상징: ${report.birthRune.elementalForce} · ${report.birthRune.divineMeaning}`,
     `- **노른 3대 운명 직조 (Wyrd Trio)**:`,
@@ -497,6 +521,7 @@ export function formatNordicElderFutharkRunesPrompt(report: NordicElderFutharkRu
     `- **위그드라실 맞춤 바인드룬 탈리스만**: ${report.bindruneTalisman.talismanName} (${report.bindruneTalisman.combinedRunes.join(' + ')})`,
     `  - 결속 은총: ${report.bindruneTalisman.blessingEffect}`,
     `- **노른의 영혼 항해 지침**: ${report.yggdrasilNavigationGuidance}`,
+    `- **과잉·경계 점검**: ${report.shadowWarning}`,
   ];
   if (report.runesSynthesisMatrix) {
     lines.push(
