@@ -5,13 +5,27 @@ export interface CappadocianCaveResult {
   calculatedAtKst: string;
   cappadocianMotif: string;
   companionMotif: string;
+  cavePhase: string;
   cappadocianInsight: string;
   tuffTone: string;
+  shadowWarning: string;
   reflectionFocus: string;
   ritualAction: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
+
+const CAVE_PHASES = [
+  '응회암 굴착(단단한 겉면 아래 부드럽게 풀리는 첫 단추 한 조각부터 파고드는 시기)',
+  '수직 환기(깊은 몰입 속에서도 바깥 공기와 이어진 쉼의 숨통을 열어 두는 시기)',
+  '계곡 조망(바위 틈 시선에서 잠깐 벗어나 이번 주 전체의 지형을 내려다보는 시기)',
+] as const;
+
+const SHADOW_WARNINGS = [
+  '일을 잘게 쪼개고 다듬는 데만 머무르다 전체 방향이 어긋나고 있는지 점검을 놓치지 않도록 살피세요.',
+  '숨통을 틔우고 쉼을 챙기느라 지금 끝내야 할 핵심 과제에서 지나치게 멀어지지 않도록 점검하세요.',
+  '열기구처럼 높이 올라가 큰 그림만 보다가 발밑에서 바로 손대야 할 작은 틈새를 놓치지 않도록 유의하세요.',
+] as const;
 
 const MOTIFS = [
   {
@@ -81,17 +95,21 @@ export function calculateCappadocianTuffCaveCalm(params: {
   const companionOffset = 1 + (stableHash(`${seed}|companion`) % (MOTIFS.length - 1));
   const picked = MOTIFS[idx];
   const companion = MOTIFS[(idx + companionOffset) % MOTIFS.length];
+  const cavePhase = CAVE_PHASES[stableHash(`${seed}|phase`) % CAVE_PHASES.length];
+  const shadowWarning = SHADOW_WARNINGS[stableHash(`${seed}|shadow`) % SHADOW_WARNINGS.length];
 
   return {
-    engineVersion: 'LUCKEY-CAPPADOCIAN-CAVE-v2.2.0',
+    engineVersion: 'LUCKEY-CAPPADOCIAN-CAVE-v2.3.0',
     calculatedAtKst: formatKstIso(now),
     cappadocianMotif: picked.motif,
     companionMotif: companion.motif,
+    cavePhase,
     cappadocianInsight: `${picked.insight} (동반 결: ${companion.motif})`,
     tuffTone: picked.tone,
-    reflectionFocus: `카파도키아 응회암의 '${picked.motif}'와 동반 결 '${companion.motif}'처럼, 겉보기에 단단한 문제도 한 겹 파고들며 숨통과 시야를 열어 보세요.`,
-    ritualAction: picked.ritual,
-    reflectiveQuestion: picked.question,
+    shadowWarning,
+    reflectionFocus: `카파도키아 응회암의 '${cavePhase}' 흐름에서 '${picked.motif}'와 동반 결 '${companion.motif}'을 함께 짚어, 단단한 문제도 한 겹 파고들며 숨통과 시야를 열어 보세요.`,
+    ritualAction: `${picked.ritual} (동반 결: ${companion.motif})`,
+    reflectiveQuestion: `${picked.question} '${cavePhase}' 국면에서 가장 먼저 열어야 할 숨통은 어디인가요?`,
     interpretiveBoundary: '아나톨리아 카파도키아의 응회암 굴착 쉼터와 지하 환기 지혜 전통을 바탕으로 한 상징적 성찰 프레임입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.',
   };
 }
@@ -102,7 +120,9 @@ export function formatCappadocianCavePrompt(res: CappadocianCaveResult): string 
     `- 기준 시각: ${res.calculatedAtKst}`,
     `- 카파도키아 모티프: ${res.cappadocianMotif} (${res.tuffTone})`,
     `- 동반 결: ${res.companionMotif}`,
+    `- 응회암 국면: ${res.cavePhase}`,
     `- 중심 통찰: ${res.cappadocianInsight}`,
+    `- 과잉·경계 점검: ${res.shadowWarning}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 오늘의 작은 실천: ${res.ritualAction}`,
     `- 스스로에게 묻기: ${res.reflectiveQuestion}`,

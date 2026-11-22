@@ -5,13 +5,27 @@ export interface CanaaniteUgaritResult {
   calculatedAtKst: string;
   levantSymbol: string;
   companionSymbol: string;
+  levantPhase: string;
   ugaritInsight: string;
   cedarTone: string;
+  shadowWarning: string;
   reflectionFocus: string;
   ritualAction: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
+
+const LEVANT_PHASES = [
+  '뿌리 다짐(보이는 성과보다 체력과 기본기를 바위 틈에 깊게 내리는 시기)',
+  '점토판 요약(거대한 걱정을 짧은 문장 몇 줄로 옮겨 다룰 수 있게 줄이는 시기)',
+  '계절 전환(메마른 정체 끝에 다음 비를 맞을 땅을 고르며 경계를 세우는 시기)',
+] as const;
+
+const SHADOW_WARNINGS = [
+  '기본기와 체력을 다진다는 이유로 정작 세상에 내보여야 할 첫 시도를 한없이 미루지 않도록 살피세요.',
+  '고민을 한 줄로 정리해 두기만 하고 실제로 손을 대어 푸는 작은 실행까지 건너뛰지 않도록 점검하세요.',
+  '울타리와 경계를 분명히 세우려다 꼭 필요한 따뜻한 연결과 협력의 문까지 닫아 버리지 않도록 유의하세요.',
+] as const;
 
 const SYMBOLS = [
   {
@@ -81,17 +95,21 @@ export function calculateCanaaniteUgaritCedarWisdom(params: {
   const companionOffset = 1 + (stableHash(`${seed}|companion`) % (SYMBOLS.length - 1));
   const picked = SYMBOLS[idx];
   const companion = SYMBOLS[(idx + companionOffset) % SYMBOLS.length];
+  const levantPhase = LEVANT_PHASES[stableHash(`${seed}|phase`) % LEVANT_PHASES.length];
+  const shadowWarning = SHADOW_WARNINGS[stableHash(`${seed}|shadow`) % SHADOW_WARNINGS.length];
 
   return {
-    engineVersion: 'LUCKEY-CANAANITE-UGARIT-v2.2.0',
+    engineVersion: 'LUCKEY-CANAANITE-UGARIT-v2.3.0',
     calculatedAtKst: formatKstIso(now),
     levantSymbol: picked.symbol,
     companionSymbol: companion.symbol,
+    levantPhase,
     ugaritInsight: `${picked.insight} (동반 상징: ${companion.symbol})`,
     cedarTone: picked.tone,
-    reflectionFocus: `고대 가나안·우가리트 지혜의 '${picked.symbol}'와 동반 상징 '${companion.symbol}'처럼, 거창한 결과보다 깊은 뿌리와 간결한 기록, 그리고 돌아올 일상의 좌표를 먼저 세워 보세요.`,
-    ritualAction: picked.ritual,
-    reflectiveQuestion: picked.question,
+    shadowWarning,
+    reflectionFocus: `고대 가나안·우가리트 지혜의 '${levantPhase}' 흐름 속에서 '${picked.symbol}'와 동반 상징 '${companion.symbol}'을 함께 짚어, 깊은 뿌리와 간결한 기록·일상의 좌표를 세워 보세요.`,
+    ritualAction: `${picked.ritual} (동반 상징: ${companion.symbol})`,
+    reflectiveQuestion: `${picked.question} '${levantPhase}' 국면에서 가장 먼저 다질 좌표는 무엇인가요?`,
     interpretiveBoundary: '고대 레반트 가나안·우가리트(Ugarit) 서판과 삼나무 뿌리 지혜를 바탕으로 한 상징적 성찰 프레임입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.',
   };
 }
@@ -102,7 +120,9 @@ export function formatCanaaniteUgaritPrompt(res: CanaaniteUgaritResult): string 
     `- 기준 시각: ${res.calculatedAtKst}`,
     `- 레반트 상징: ${res.levantSymbol} (${res.cedarTone})`,
     `- 동반 상징: ${res.companionSymbol}`,
+    `- 레반트 국면: ${res.levantPhase}`,
     `- 중심 통찰: ${res.ugaritInsight}`,
+    `- 과잉·경계 점검: ${res.shadowWarning}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 오늘의 작은 실천: ${res.ritualAction}`,
     `- 스스로에게 묻기: ${res.reflectiveQuestion}`,

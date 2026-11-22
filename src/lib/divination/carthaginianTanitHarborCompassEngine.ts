@@ -5,13 +5,27 @@ export interface CarthaginianTanitResult {
   calculatedAtKst: string;
   tanitMotif: string;
   companionMotif: string;
+  harborPhase: string;
   carthaginianInsight: string;
   harborTone: string;
+  shadowWarning: string;
   reflectionFocus: string;
   ritualAction: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
+
+const HARBOR_PHASES = [
+  '내항 정박(거친 바깥 파도를 피해 코톤 항구 안에서 배와 마음을 손보는 시기)',
+  '별빛 항로(눈앞 이정표가 흐릴수록 변함없는 큰 원칙을 바라보며 방향을 잡는 시기)',
+  '돛 조절(바람의 결이 바뀔 때 무리하게 밀어붙이지 않고 속도를 가늠하는 시기)',
+] as const;
+
+const SHADOW_WARNINGS = [
+  '안전한 내항에 머무르며 정비만 하다가 바람이 좋을 때 출항해야 할 기회까지 놓치지 않도록 살피세요.',
+  '하늘과 별빛 같은 높은 이상에만 시선을 두다 오늘 당장 발밑에서 건너야 할 작은 실무가 비지 않도록 점검하세요.',
+  '정성스러운 빛깔과 속도를 조절한다는 명분으로 마감과 약속된 도착 시한까지 흐트러지지 않도록 유의하세요.',
+] as const;
 
 const MOTIFS = [
   {
@@ -81,17 +95,21 @@ export function calculateCarthaginianTanitHarborCompass(params: {
   const companionOffset = 1 + (stableHash(`${seed}|companion`) % (MOTIFS.length - 1));
   const picked = MOTIFS[idx];
   const companion = MOTIFS[(idx + companionOffset) % MOTIFS.length];
+  const harborPhase = HARBOR_PHASES[stableHash(`${seed}|phase`) % HARBOR_PHASES.length];
+  const shadowWarning = SHADOW_WARNINGS[stableHash(`${seed}|shadow`) % SHADOW_WARNINGS.length];
 
   return {
-    engineVersion: 'LUCKEY-CARTHAGINIAN-TANIT-v2.2.0',
+    engineVersion: 'LUCKEY-CARTHAGINIAN-TANIT-v2.3.0',
     calculatedAtKst: formatKstIso(now),
     tanitMotif: picked.motif,
     companionMotif: companion.motif,
+    harborPhase,
     carthaginianInsight: `${picked.insight} (동반 결: ${companion.motif})`,
     harborTone: picked.tone,
-    reflectionFocus: `카르타고 타닛 항구의 '${picked.motif}'와 동반 결 '${companion.motif}'처럼, 먼 바다의 파도만 걱정하기보다 내 안의 안전한 내항과 돛을 조절하는 감각을 먼저 챙겨 보세요.`,
-    ritualAction: picked.ritual,
-    reflectiveQuestion: picked.question,
+    shadowWarning,
+    reflectionFocus: `카르타고 타닛 항구의 '${harborPhase}' 흐름에서 '${picked.motif}'와 동반 결 '${companion.motif}'을 함께 짚어, 안전한 내항과 돛을 조절하는 감각을 먼저 챙겨 보세요.`,
+    ritualAction: `${picked.ritual} (동반 결: ${companion.motif})`,
+    reflectiveQuestion: `${picked.question} '${harborPhase}' 국면에서 가장 먼저 손볼 항해의 기준은 무엇인가요?`,
     interpretiveBoundary: '고대 카르타고의 코톤 항구·타닛 균형 지혜 전통을 바탕으로 한 상징적 성찰 프레임입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.',
   };
 }
@@ -102,7 +120,9 @@ export function formatCarthaginianTanitPrompt(res: CarthaginianTanitResult): str
     `- 기준 시각: ${res.calculatedAtKst}`,
     `- 타닛 모티프: ${res.tanitMotif} (${res.harborTone})`,
     `- 동반 결: ${res.companionMotif}`,
+    `- 항해 국면: ${res.harborPhase}`,
     `- 중심 통찰: ${res.carthaginianInsight}`,
+    `- 과잉·경계 점검: ${res.shadowWarning}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 오늘의 작은 실천: ${res.ritualAction}`,
     `- 스스로에게 묻기: ${res.reflectiveQuestion}`,
