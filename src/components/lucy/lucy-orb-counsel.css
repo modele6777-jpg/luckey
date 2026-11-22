@@ -1347,6 +1347,7 @@ html.duo-unfolded-mode .lucy-charm { width: min(380px, 70%); }
   user-select: none;
 }
 .lucy-orb-input-wave.is-holding i { min-height: 4px; background: #ffe7a8; }
+.lucy-orb-input-wave.is-holding { left: 20px; right: 20px; justify-content: space-between; }
 .lucy-orb-hold-hint {
   position: absolute;
   left: 50%;

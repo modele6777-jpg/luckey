@@ -54,6 +54,13 @@ const CLOUDS = [
   { left: 76, top: 6, width: 20, delay: 0.7, drift: 21 },
 ];
 const ORB_ROUTE = '/voice';
+/** 실시간 대화 중 오른쪽의 작은 파동과, 누르고 말하는 동안 입력창 끝까지 이어지는 긴 파동(가운데가 크게). */
+const ORB_SMALL_WAVE = [0.36, 0.58, 0.82, 0.48, 1, 0.66, 0.9, 0.52, 0.74, 0.42, 0.62];
+const ORB_HOLD_WAVE = Array.from({ length: 44 }, (_, index) => {
+  const edge = Math.sin((Math.PI * (index + 0.5)) / 44);
+  const ripple = 0.55 + 0.45 * Math.abs(Math.sin(index * 1.7));
+  return Number((0.25 + 0.75 * edge * ripple).toFixed(2));
+});
 /** 마스터가 말하는 중인 문장 하나만 자막 한 줄로. 길면 최근 부분만 보여 준다. */
 function captionLine(spoken: string): string {
   const sentences = spoken.replace(/\s+/g, ' ').trim().split(/(?<=[.!?…。])\s+/).filter(Boolean);
@@ -1019,14 +1026,14 @@ export function LucyOrbCounsel({
                 onPointerLeave={(event) => { if (event.pointerType === 'mouse' && talkingRef.current) endInputPress(); }}
                 onBlur={() => { if (talkingRef.current) endInputPress(); }}
                 onContextMenu={(event) => event.preventDefault()}
-                placeholder="누르고 말한 뒤 떼면 전송 · 탭해 입력"
+                placeholder={talkPressed ? '' : '누르고 말한 뒤 떼면 전송 · 탭해 입력'}
                 aria-label="오브 상담 입력. 누르고 말한 뒤 떼면 음성을 전송합니다"
                 enterKeyHint="done"
               />
               {(talkPressed || audioLevel > 0.035) && (
                 <span className={`lucy-orb-input-wave ${talkPressed ? 'is-holding' : ''}`} aria-hidden="true">
-                  {[0.36, 0.58, 0.82, 0.48, 1, 0.66, 0.9, 0.52, 0.74, 0.42, 0.62].map((weight, index) => (
-                    <i key={index} style={{ height: `${3 + audioLevel * weight * 18}px` }} />
+                  {(talkPressed ? ORB_HOLD_WAVE : ORB_SMALL_WAVE).map((weight, index) => (
+                    <i key={index} style={{ height: `${3 + audioLevel * weight * 20}px` }} />
                   ))}
                 </span>
               )}
