@@ -173,6 +173,19 @@ html.duo-unfolded-mode .lucy-orb-copy { width: min(720px, 92%); }
   padding: 12px 14px;
 }
 .lucy-orb-end { position: absolute; top: max(16px, env(safe-area-inset-top)); right: 16px; z-index: 3; }
+.lucy-orb-bed {
+  position: absolute;
+  top: max(16px, env(safe-area-inset-top));
+  left: 16px;
+  z-index: 3;
+  border: 1px solid rgba(255,255,255,.28);
+  border-radius: 999px;
+  background: rgba(255,255,255,.12);
+  color: #f7f4ee;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 8px 12px;
+}
 .lucy-die {
   width: 58px;
   height: 58px;

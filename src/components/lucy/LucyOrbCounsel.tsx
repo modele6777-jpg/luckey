@@ -1,5 +1,7 @@
 import { ScreenPortal } from '@/components/layout/ScreenPortal';
 import { startGeminiLiveVoice, type LiveVoiceSession } from '@/lib/geminiLiveSession';
+import { createOrbCounselBed, type OrbCounselBed } from '@/lib/orbCounselBed';
+import { isLucyMasterBgmPlaying, startLucyMasterBgm, stopLucyMasterBgm } from '@/lib/lucyMasterBgm';
 import { ORB_MASTERS, type OrbMaster } from '@/lib/orbMasters';
 import { drawLucyTarotCards } from '@/utils/tarotDetector';
 import React, { useEffect, useRef, useState } from 'react';
@@ -70,7 +72,9 @@ export function LucyOrbCounsel({
   const [leaving, setLeaving] = useState(false);
   const [dieFace, setDieFace] = useState(1);
   const [rolling, setRolling] = useState(false);
+  const [bedOn, setBedOn] = useState(true);
   const dieTimer = useRef<number | null>(null);
+  const bedRef = useRef<OrbCounselBed | null>(null);
   const flashTimer = useRef<number | null>(null);
   const sessionRef = useRef<LiveVoiceSession | null>(null);
   const linesRef = useRef<Line[]>([]);
@@ -108,14 +112,28 @@ export function LucyOrbCounsel({
     setSpeaking(false);
     setLeaving(false);
     const appear = window.setTimeout(() => setReady(true), window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 1700);
+    const masterWasOn = isLucyMasterBgmPlaying();
+    if (masterWasOn) stopLucyMasterBgm();
+    const bed = createOrbCounselBed();
+    bedRef.current = bed;
+    const on = sessionStorage.getItem('lucy_orb_bed') !== 'off';
+    setBedOn(on);
+    void bed?.resume().then(() => bed.setAudible(on, false));
     return () => {
       window.clearTimeout(appear);
       if (flashTimer.current) window.clearTimeout(flashTimer.current);
       if (dieTimer.current) window.clearInterval(dieTimer.current);
+      bed?.stop();
+      bedRef.current = null;
+      if (masterWasOn) void startLucyMasterBgm();
       sessionRef.current?.stop();
       sessionRef.current = null;
     };
   }, [open]);
+
+  useEffect(() => {
+    bedRef.current?.setAudible(bedOn, speaking);
+  }, [bedOn, speaking]);
 
   if (!open) return null;
 
@@ -224,7 +242,12 @@ export function LucyOrbCounsel({
 
   return (
     <ScreenPortal>
-      <section className={`lucy-orb-stage ${ready ? 'is-ready' : ''} ${phase === 'live' ? 'is-live' : ''} ${speaking ? 'is-speaking' : ''} ${leaving ? 'is-leaving' : ''}`} role="dialog" aria-label="오브 상담">
+      <section
+        className={`lucy-orb-stage ${ready ? 'is-ready' : ''} ${phase === 'live' ? 'is-live' : ''} ${speaking ? 'is-speaking' : ''} ${leaving ? 'is-leaving' : ''}`}
+        role="dialog"
+        aria-label="오브 상담"
+        onPointerDown={() => { void bedRef.current?.resume().then(() => bedRef.current?.setAudible(bedOn, speaking)); }}
+      >
         {Array.from({ length: 10 }, (_, index) => (
           <span key={`mote-${index}`} className="lucy-mote" style={{ left: `${8 + index * 9}%`, animationDelay: `${index * .35}s` }} />
         ))}
@@ -243,6 +266,19 @@ export function LucyOrbCounsel({
         ))}
         {phase === 'live' && <button type="button" className="lucy-orb-end" onClick={openReport}>상담 끝내기</button>}
         {phase === 'report' && <button type="button" className="lucy-orb-end" onClick={keepReport}>채팅으로</button>}
+        <button
+          type="button"
+          className="lucy-orb-bed"
+          aria-pressed={bedOn}
+          onClick={() => {
+            const next = !bedOn;
+            setBedOn(next);
+            sessionStorage.setItem('lucy_orb_bed', next ? 'on' : 'off');
+            void bedRef.current?.resume();
+          }}
+        >
+          {bedOn ? '배경음 켜짐' : '배경음 꺼짐'}
+        </button>
         <div className={`lucy-orb-ritual ${lit ? 'is-lit' : ''}`}>
           <svg className="lucy-orb-circle lucy-orb-circle-back" viewBox="0 0 200 200" aria-hidden="true">
             <circle cx="100" cy="100" r="90" strokeDasharray="3 8" />
