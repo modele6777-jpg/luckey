@@ -142,9 +142,19 @@ function DrawnCards({ cards }: { cards: LucyTableState['cards'] }) {
   );
 }
 
-/** 접은 화면 점술모드 헤더의 "도구" 버튼. 열림 상태는 이 버튼이 직접 가진다. */
+function leftMasterTableIsVisible(): boolean {
+  if (typeof document === 'undefined') return false;
+  const root = document.documentElement;
+  return root.classList.contains('duo-unfolded-landscape')
+    || root.classList.contains('duo-unfolded-portrait')
+    || Boolean(document.getElementById('duo-content-viewport'))
+    || isDuoUnfoldedState().unfolded;
+}
+
+/** 접은 화면에서만 도구 팝업을 연다. 펼친 화면은 왼쪽 테이블이 있으니 엔진함으로만 바꾼다. */
 export function MasterTableSheetButton({ tone = 'dark' }: { tone?: 'dark' | 'light' }) {
   const [open, setOpen] = useState(false);
+  const popupAllowed = !leftMasterTableIsVisible();
   return (
     <>
       <button
@@ -154,7 +164,8 @@ export function MasterTableSheetButton({ tone = 'dark' }: { tone?: 'dark' | 'lig
         title="점술 도구"
         onClick={() => {
           triggerHaptic('whitehole');
-          if (isDuoUnfoldedState().unfolded) {
+          if (leftMasterTableIsVisible()) {
+            setOpen(false);
             requestLucyTableFace('engines');
             return;
           }
@@ -167,7 +178,7 @@ export function MasterTableSheetButton({ tone = 'dark' }: { tone?: 'dark' | 'lig
         <span aria-hidden="true">🔮</span>
         도구
       </button>
-      {open && <MasterTableSheet onClose={() => setOpen(false)} />}
+      {open && popupAllowed && <MasterTableSheet onClose={() => setOpen(false)} />}
     </>
   );
 }
