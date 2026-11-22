@@ -5,13 +5,27 @@ export interface BuryatBaikalResult {
   calculatedAtKst: string;
   baikalSpirit: string;
   companionSpirit: string;
+  steppePhase: string;
   tengriInsight: string;
   olkhonTone: string;
+  shadowWarning: string;
   reflectionFocus: string;
   ritualAction: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
+
+const STEPPE_PHASES = [
+  '푸른 시선(눈앞의 작은 구름 너머에 있는 큰 하늘과 본심을 바라보는 시기)',
+  '기둥 정박(바쁜 일정 속에서 마음을 매어 두고 숨을 고를 기준을 세우는 시기)',
+  '샘물 회복(고갈된 힘을 억지로 짜내기보다 쉼과 약수로 기운을 채우는 시기)',
+] as const;
+
+const SHADOW_WARNINGS = [
+  '하늘처럼 넓은 시선으로 관망만 하다가 지금 당장 손봐야 할 눈앞의 작은 불씨를 놓치지 않도록 살피세요.',
+  '세르게 기둥에 기준을 매어 두려다 변화하는 상황에 맞춘 유연한 방향 수정까지 막아 버리지 않도록 점검하세요.',
+  '아르샨의 쉼과 회복을 챙기느라 약속된 최소한의 마감과 책임 리듬까지 흐트러지지 않도록 유의하세요.',
+] as const;
 
 const SPIRITS = [
   {
@@ -81,17 +95,21 @@ export function calculateBuryatBaikalTengriHarmony(params: {
   const companionOffset = 1 + (stableHash(`${seed}|companion`) % (SPIRITS.length - 1));
   const picked = SPIRITS[idx];
   const companion = SPIRITS[(idx + companionOffset) % SPIRITS.length];
+  const steppePhase = STEPPE_PHASES[stableHash(`${seed}|phase`) % STEPPE_PHASES.length];
+  const shadowWarning = SHADOW_WARNINGS[stableHash(`${seed}|shadow`) % SHADOW_WARNINGS.length];
 
   return {
-    engineVersion: 'LUCKEY-BURYAT-BAIKAL-v2.2.0',
+    engineVersion: 'LUCKEY-BURYAT-BAIKAL-v2.3.0',
     calculatedAtKst: formatKstIso(now),
     baikalSpirit: picked.spirit,
     companionSpirit: companion.spirit,
+    steppePhase,
     tengriInsight: `${picked.insight} (동반 결: ${companion.spirit})`,
     olkhonTone: picked.tone,
-    reflectionFocus: `시베리아 부랴트 바이칼 전통의 '${picked.spirit}'와 동반 결 '${companion.spirit}'처럼, 자연과 내 안의 리듬을 억지로 거스르지 말고 맑게 조율해 보세요.`,
-    ritualAction: picked.ritual,
-    reflectiveQuestion: picked.question,
+    shadowWarning,
+    reflectionFocus: `시베리아 부랴트 바이칼 전통의 '${steppePhase}' 흐름 속에서 '${picked.spirit}'와 동반 결 '${companion.spirit}'을 함께 짚어, 자연과 내 안의 리듬을 맑게 조율해 보세요.`,
+    ritualAction: `${picked.ritual} (동반 결: ${companion.spirit})`,
+    reflectiveQuestion: `${picked.question} '${steppePhase}' 국면에서 가장 먼저 돌볼 리듬은 무엇인가요?`,
     interpretiveBoundary: '시베리아 부랴트(Buryat) 바이칼·텐그리 자연 조화 철학을 바탕으로 한 상징적 성찰 프레임입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.',
   };
 }
@@ -102,7 +120,9 @@ export function formatBuryatBaikalPrompt(res: BuryatBaikalResult): string {
     `- 기준 시각: ${res.calculatedAtKst}`,
     `- 바이칼 상징: ${res.baikalSpirit} (${res.olkhonTone})`,
     `- 동반 결: ${res.companionSpirit}`,
+    `- 초원 국면: ${res.steppePhase}`,
     `- 중심 통찰: ${res.tengriInsight}`,
+    `- 과잉·경계 점검: ${res.shadowWarning}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 오늘의 작은 실천: ${res.ritualAction}`,
     `- 스스로에게 묻기: ${res.reflectiveQuestion}`,

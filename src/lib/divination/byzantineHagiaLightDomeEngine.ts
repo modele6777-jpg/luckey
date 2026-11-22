@@ -5,13 +5,27 @@ export interface ByzantineDomeResult {
   calculatedAtKst: string;
   byzantineMotif: string;
   companionMotif: string;
+  domePhase: string;
   byzantineInsight: string;
   domeTone: string;
+  shadowWarning: string;
   reflectionFocus: string;
   ritualAction: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
+
+const DOME_PHASES = [
+  '곡선 전환(각진 현실과 둥근 이상 사이에 무리 없는 완충 단계를 놓는 시기)',
+  '빛의 창 개방(무거운 책임 아래에서도 숨통이 트일 작은 틈을 여는 시기)',
+  '대칭 펼침(한 덩어리로 뭉친 고민을 둘로 나누어 균형을 가려 보는 시기)',
+] as const;
+
+const SHADOW_WARNINGS = [
+  '완충과 곡선 전환을 찾다가 정작 분명하게 매듭지어야 할 선택까지 흐릿하게 넘기지 않도록 살피세요.',
+  '나만의 비스듬한 각도와 고유한 결을 지키려다 함께 호흡하는 동료와의 합의선까지 어긋나지 않도록 점검하세요.',
+  '고민을 대칭으로 나누어 펼쳐 보기만 하고 내가 바꿀 수 있는 쪽에 첫 손을 대는 실행을 미루지 않도록 유의하세요.',
+] as const;
 
 const MOTIFS = [
   {
@@ -81,17 +95,21 @@ export function calculateByzantineHagiaLightDome(params: {
   const companionOffset = 1 + (stableHash(`${seed}|companion`) % (MOTIFS.length - 1));
   const picked = MOTIFS[idx];
   const companion = MOTIFS[(idx + companionOffset) % MOTIFS.length];
+  const domePhase = DOME_PHASES[stableHash(`${seed}|phase`) % DOME_PHASES.length];
+  const shadowWarning = SHADOW_WARNINGS[stableHash(`${seed}|shadow`) % SHADOW_WARNINGS.length];
 
   return {
-    engineVersion: 'LUCKEY-BYZANTINE-DOME-v2.2.0',
+    engineVersion: 'LUCKEY-BYZANTINE-DOME-v2.3.0',
     calculatedAtKst: formatKstIso(now),
     byzantineMotif: picked.motif,
     companionMotif: companion.motif,
+    domePhase,
     byzantineInsight: `${picked.insight} (동반 결: ${companion.motif})`,
     domeTone: picked.tone,
-    reflectionFocus: `비잔틴 돔 빛의 '${picked.motif}'와 동반 결 '${companion.motif}'처럼, 무거운 일과 속에서도 마음이 숨 쉴 수 있는 작은 빛의 창을 먼저 열어 두세요.`,
-    ritualAction: picked.ritual,
-    reflectiveQuestion: picked.question,
+    shadowWarning,
+    reflectionFocus: `비잔틴 돔 빛의 '${domePhase}' 흐름에서 '${picked.motif}'와 동반 결 '${companion.motif}'을 함께 비춰, 무거운 일과 속에서도 숨 쉴 빛의 창을 먼저 열어 두세요.`,
+    ritualAction: `${picked.ritual} (동반 결: ${companion.motif})`,
+    reflectiveQuestion: `${picked.question} '${domePhase}' 국면에서 가장 먼저 열어 둘 빛의 창은 어디인가요?`,
     interpretiveBoundary: '비잔틴 건축의 펜덴티브·빛의 돔·모자이크 조화 지혜 전통을 바탕으로 한 상징적 성찰 프레임입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.',
   };
 }
@@ -102,7 +120,9 @@ export function formatByzantineDomePrompt(res: ByzantineDomeResult): string {
     `- 기준 시각: ${res.calculatedAtKst}`,
     `- 비잔틴 모티프: ${res.byzantineMotif} (${res.domeTone})`,
     `- 동반 결: ${res.companionMotif}`,
+    `- 돔 빛 국면: ${res.domePhase}`,
     `- 중심 통찰: ${res.byzantineInsight}`,
+    `- 과잉·경계 점검: ${res.shadowWarning}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 오늘의 작은 실천: ${res.ritualAction}`,
     `- 스스로에게 묻기: ${res.reflectiveQuestion}`,
