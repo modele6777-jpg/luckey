@@ -55,6 +55,7 @@ Every time a user request is completed or changes are made to the codebase:
 - User update 2026-11-19: folded layouts use Lucy; every Lucy chat in the unfolded dual screen is Lucy Plus (Plus marker in the header), regardless of the content pane route, in landscape and portrait.
 - Entering Lucy Plus (unfolding) shows the Lucy Plus entry screen; folding back, or a folded screen entering Lucy from another channel, shows the Lucy entry screen. Both stay inside the Lucy pane, are visual-only and follow Lucy's day/night palette.
 - Preserve Pro markers and mode transition popups; do not add Plus when Pro is active.
+- User update 2026-11-22: the Lucy Plus Cosmic Room (`DuoCosmicAmbientRoom`) has its own header ("Cosmic Room" + guide button, guide id `cosmic`). `CosmicRoomHeader` copies the live Lucy Plus header's height, background and bottom-border colour (ResizeObserver/MutationObserver on `#duo-lucy-viewport .lucy-chat-header`), so the two header borders form one straight line in landscape and follow Lucy's day/night theme.
 - User update 2026-11-22: the Lucy markers are drawn inside the speech bubble (sidebar: `MessageCircleMinus` from `channelMenuIcons` / `MessageCirclePlus`, no coloured badge). The Big Bang button's post-navigation channel icon uses the same bubble when the destination is Lucy (− folded, + unfolded, depth symbols in Master).
 
 ### 7. Popup Bounds Exclude Navigation

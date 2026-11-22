@@ -1,6 +1,8 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { Sparkles, Music, Activity, Headphones, Pause, Play } from 'lucide-react';
 import './duo-cosmic-room.css';
+import { PageGuideButton } from '@/components/guide/PageGuide';
+import { getPageGuide } from '@/lib/pageGuides';
 import { ALL_DCE_ENGINES, type DceEngineMeta } from '@/lib/divination/deterministicEngine';
 import { LUCY_PRO_CATALOG_DUPLICATE_KEYS } from '@/lib/divination/catalogDuplicateKeys';
 import { triggerHaptic } from '@/lib/omniWarp/omniWarpHaptics';
@@ -489,7 +491,9 @@ export const DuoCosmicAmbientRoom: React.FC<DuoCosmicAmbientRoomProps> = ({ isLi
   const binauralConfig = getVisualRhythmBeatConfig(ambientTempoBpm);
 
   return (
-    <section className={'cosmic-room ' + (isLight ? 'cosmic-room--light' : '')} aria-label="코스믹 룸">
+    <div className="cosmic-room-shell flex h-full min-h-0 w-full flex-col">
+    <CosmicRoomHeader isLight={isLight} />
+    <section className={'cosmic-room ' + (isLight ? 'cosmic-room--light' : '')} aria-label="코스믹 룸" style={{ height: 'auto', flex: '1 1 0%', minHeight: 0 }}>
       {/* 1️⃣ 상단 카드: 나의 리듬 (제목·설명 제외 순수 비주얼 파동 캔버스) */}
       <div className="cosmic-room-visual cosmic-room-card">
         {/* 상단 라벨 */}
@@ -568,5 +572,73 @@ export const DuoCosmicAmbientRoom: React.FC<DuoCosmicAmbientRoomProps> = ({ isLi
         </div>
       </section>
     </section>
+    </div>
   );
 };
+
+
+/**
+ * 🌌 코스믹 룸 헤더. 오른쪽 루시 플러스 헤더와 높이·배경·아래 선 색을 그대로 맞춰
+ * 두 화면의 경계선이 한 줄로 이어지게 한다 (루시 헤더 크기·테마가 바뀌면 따라간다).
+ */
+function CosmicRoomHeader({ isLight }: { isLight: boolean }) {
+  const [look, setLook] = useState<{ height: number; background: string; border: string } | null>(null);
+  useEffect(() => {
+    let frame = 0;
+    let observed: Element | null = null;
+    let resize: ResizeObserver | null = null;
+    let mutation: MutationObserver | null = null;
+    const read = () => {
+      const header = document.querySelector('#duo-lucy-viewport .lucy-chat-header');
+      if (!header) return;
+      if (header !== observed) {
+        resize?.disconnect();
+        mutation?.disconnect();
+        observed = header;
+        if (typeof ResizeObserver !== 'undefined') {
+          resize = new ResizeObserver(schedule);
+          resize.observe(header);
+        }
+        mutation = new MutationObserver(schedule);
+        mutation.observe(header, { attributes: true, attributeFilter: ['class', 'style'] });
+      }
+      const style = getComputedStyle(header);
+      const rect = header.getBoundingClientRect();
+      setLook((prev) => {
+        const next = { height: Math.round(rect.height), background: style.backgroundColor, border: style.borderBottomColor };
+        return prev && prev.height === next.height && prev.background === next.background && prev.border === next.border ? prev : next;
+      });
+    };
+    function schedule() {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(read);
+    }
+    read();
+    // 루시 헤더가 늦게 생기거나 테마(아침·밤)가 바뀌는 경우
+    const timer = window.setInterval(read, 1500);
+    window.addEventListener('resize', schedule);
+    return () => {
+      cancelAnimationFrame(frame);
+      window.clearInterval(timer);
+      window.removeEventListener('resize', schedule);
+      resize?.disconnect();
+      mutation?.disconnect();
+    };
+  }, [isLight]);
+
+  return (
+    <header
+      data-cosmic-room-header
+      className={`cosmic-room-header flex shrink-0 items-center justify-between gap-2 border-b px-3 backdrop-blur-xl ${isLight ? 'text-slate-900' : 'text-white'}`}
+      style={{
+        height: look?.height || 58,
+        minHeight: look?.height || 58,
+        background: look?.background || (isLight ? 'rgba(255,255,255,0.85)' : 'rgba(2,6,23,0.85)'),
+        borderBottomColor: look?.border || (isLight ? 'rgba(253,230,138,0.6)' : 'rgba(245,158,11,0.3)'),
+      }}
+    >
+      <h2 className="min-w-0 truncate text-base sm:text-xl font-black tracking-tight">Cosmic Room</h2>
+      <PageGuideButton guide={getPageGuide('cosmic')} tone={isLight ? 'light' : 'dark'} />
+    </header>
+  );
+}
