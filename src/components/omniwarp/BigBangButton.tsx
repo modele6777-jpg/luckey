@@ -1,10 +1,10 @@
-import { getDestinationChannel } from '@/lib/channelMenuIcons';
+import { getDestinationChannel, MessageCircleMinus } from '@/lib/channelMenuIcons';
 import { createPortal } from 'react-dom';
 import { BigBangLuckyBreeze } from './BigBangLuckyBreeze';
 import { getOrderedLuckeyPageKeysForCurrentApp, oneStopNavigationPath, nextOrderedLuckeyPage, previousOrderedLuckeyPage } from '@/lib/omniWarp/oneStopPages';
 import React, { useRef, useState, useEffect, useCallback, useMemo } from 'react';
 import { useLocation } from 'wouter';
-import { ChevronUp, ChevronDown, Clover, KeyRound } from 'lucide-react';
+import { ChevronUp, ChevronDown, Clover, KeyRound, MessageCirclePlus, MessageCircleMore, MessageCircleQuestion, MessageCircleWarning } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { WarpPhase, OmniWarpTarget, OmniWarpContext, WarpForceMetrics } from '@/lib/omniWarp/types';
 import { calculateWarpMetrics, forceToAiTemperature, WARP_ABORT_DISTANCE } from '@/lib/omniWarp/forceSensor';
@@ -222,6 +222,12 @@ export function BigBangButton() {
   // 🔮 점술모드 상담 깊이 표시 (버튼 고리)
   const masterOn = useLucyMasterMode();
   const masterDepth = useLucyMasterDepth();
+  // 루시로 갈 때 빅뱅 버튼 안 말풍선: 접힌 화면 루시는 −, 펼친 화면 루시 플러스는 +, 점술모드는 깊이 기호(… ? !) — 사이드바와 같다.
+  const LucyBubbleIcon = masterOn
+    ? (masterDepth >= 3 ? MessageCircleWarning : masterDepth === 2 ? MessageCircleQuestion : MessageCircleMore)
+    : isDuoUnfoldedState().unfolded ? MessageCirclePlus : MessageCircleMinus;
+  const CenterChannelIcon = feedbackChannel?.id === 'lucy' ? LucyBubbleIcon : DestinationIcon;
+  const lucyBubbleMarker = feedbackChannel?.id === 'lucy' && !masterOn ? (isDuoUnfoldedState().unfolded ? 'plus' : 'minus') : undefined;
   const [gestureFeedback, setGestureFeedback] = useState<'tap' | 'hold' | 'double' | null>(null);
   const gestureFeedbackTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const centerGesture = isPressing && durationMs >= 220 && hoverDirection === 'none' ? 'hold' : gestureFeedback;
@@ -2038,8 +2044,8 @@ export function BigBangButton() {
                 <div className="relative flex items-center justify-center pointer-events-none">
                   {cloverWind !== 'off' ? (
                     <span data-bigbang-center-drag-core="true" className="w-2.5 h-2.5 rounded-full bg-emerald-200/85 blur-[1px] animate-pulse" aria-hidden="true" />
-                  ) : !isPressing && centerDirection !== 'none' && DestinationIcon ? (
-                    <DestinationIcon data-bigbang-center-channel={feedbackChannel?.id} data-bigbang-center-direction={centerDirection} size={24} strokeWidth={1.8} className="-rotate-45 text-cyan-200 drop-shadow-[0_0_6px_#22d3ee]" aria-hidden="true" />
+                  ) : !isPressing && centerDirection !== 'none' && CenterChannelIcon ? (
+                    <CenterChannelIcon data-bigbang-center-channel={feedbackChannel?.id} data-bigbang-center-direction={centerDirection} data-lucy-mode-marker={lucyBubbleMarker} size={24} strokeWidth={1.8} className="-rotate-45 text-cyan-200 drop-shadow-[0_0_6px_#22d3ee]" aria-hidden="true" />
                   ) : centerDirection === 'north' || centerDirection === 'south' ? (
                     centerDirection === 'north'
                       ? <ChevronUp data-bigbang-center-arrow="north" size={24} strokeWidth={2} className="-rotate-45 text-cyan-200 drop-shadow-[0_0_6px_#22d3ee]" aria-hidden="true" />
