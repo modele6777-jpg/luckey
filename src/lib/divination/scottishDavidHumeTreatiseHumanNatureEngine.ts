@@ -8,12 +8,14 @@
  * 4. 관습과 경험의 실용적 삶의 안내(Custom as the Great Guide of Life): 공허한 형이상학 대신 세월 속에 검증된 상식과 누적된 경험을 존중하는 실용적 슬기.
  * 5. 극단과 광신을 경계하는 온유한 평정심(Gentle Philosophical Composure): 심오한 철학적 회의 속에서도 친구들과의 대화와 유쾌한 웃음을 잃지 않는 명랑하고 온유한 삶의 균형.
  *
- * @version LUCKEY-DAVID-HUME-TREATISE-HUMAN-NATURE-v1.0.0
+ * @version LUCKEY-DAVID-HUME-TREATISE-HUMAN-NATURE-v2.3.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const SCOTTISH_DAVID_HUME_VERSION = 'LUCKEY-DAVID-HUME-TREATISE-HUMAN-NATURE-v2.2.0';
+export const SCOTTISH_DAVID_HUME_VERSION = 'LUCKEY-DAVID-HUME-TREATISE-HUMAN-NATURE-v2.3.0';
+
+export type HumeQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
 export interface HumeTheme {
   themeKey: string;
@@ -34,6 +36,9 @@ export interface HumeAphorism {
 export interface DavidHumeTreatiseHumanNatureResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: HumeQuestionTopic;
+  humePhase: string;
+  shadowWarning: string;
   // 5대 핵심 흄 인간 본성 & 공감 지표 (0~100)
   mitigatedSkepticismScore: number;             // 온건한 회의주의(Mitigated Skepticism) 및 독단적 도그마 탈피도
   sympathyBenevolenceEmpathyScore: number;      // 공감(Sympathy)과 온정적 인류애·도덕 감정 지수
@@ -73,6 +78,26 @@ function describeHumeStage(score: number): string {
   if (score >= 86) return '온유한 철학적 평정(Gentle Composure) — 독단을 내려놓고 따뜻한 공감과 명랑한 균형으로 일상을 누리는 상태';
   if (score >= 78) return '온건한 회의와 공감(Mitigated Sympathy) — 성급한 확신을 거두고 상식과 경험의 지혜로 유연하게 조율하는 상태';
   return '경험의 시선 회복(Common Life Anchor) — 공허한 사변에서 벗어나 살아있는 정념과 현실 감각을 되찾는 상태';
+}
+
+const HUME_PHASES = [
+  '온건한 회의(성급한 단정과 편견을 내려놓고 사실과 경험의 여백을 여는 시기)',
+  '공감의 거울(타인의 기쁨과 고충을 내 마음의 진동으로 함께 헤아리는 시기)',
+  '온유한 평정(복잡한 사변을 벗어나 일상의 상식과 명랑한 균형을 회복하는 시기)',
+] as const;
+
+const HUME_SHADOW_WARNINGS = [
+  '온건한 회의주의가 해야 할 결단까지 끝없이 미루는 우유부단함으로 기울지 않도록 살피세요.',
+  '타인과의 공감이 지나쳐 상대방의 불안과 감정적 짐까지 내 책임으로 떠안지 않도록 경계를 챙기세요.',
+  '일상의 관습과 상식을 존중하되, 이미 달라진 현실 앞에서 변화가 필요한 신호까지 덮어두지 마세요.',
+] as const;
+
+function classifyHumeQuestionTopic(query?: string): HumeQuestionTopic {
+  const q = (query ?? '').toLowerCase();
+  if (/연애|사랑|사람|관계|친구|가족|동료|갈등|이별|결혼|상대/.test(q)) return 'relationship';
+  if (/결정|선택|진로|이직|사업|투자|시험|공부|합격|도전|방향|계획|균형/.test(q)) return 'decision';
+  if (/불안|힘들|지치|우울|회복|위로|휴식|건강|마음|치유|고민/.test(q)) return 'healing';
+  return 'reflection';
 }
 
 export const HUME_THEMES: HumeTheme[] = [
@@ -155,7 +180,8 @@ export function calculateDavidHumeTreatiseHumanNature(
   const birthTime = profile?.basic?.birthtime ?? p?.birthTime ?? p?.birthtime ?? '12:00';
   const gender = profile?.basic?.gender ?? p?.gender ?? 'neutral';
 
-  const seedString = `DAVID-HUME-TREATISE-HUMAN-NATURE:${name}:${birthDate}:${birthTime}:${gender}:${query ?? ''}`;
+  const questionTopic = classifyHumeQuestionTopic(query);
+  const seedString = `DAVID-HUME-TREATISE-HUMAN-NATURE:${name}:${birthDate}:${birthTime}:${gender}:${questionTopic}:${query ?? ''}`;
 
   let hash = 0;
   for (let i = 0; i < seedString.length; i++) {
@@ -177,6 +203,8 @@ export function calculateDavidHumeTreatiseHumanNature(
   const activeHumeTheme = HUME_THEMES[themeIndex];
   const secondaryHumeTheme = HUME_THEMES[secondaryThemeIndex];
   const focalHumeAphorism = HUME_APHORISMS[aphorismIndex];
+  const humePhase = HUME_PHASES[(absHash >> 10) % HUME_PHASES.length];
+  const shadowWarning = HUME_SHADOW_WARNINGS[(absHash >> 13) % HUME_SHADOW_WARNINGS.length];
 
   const guidanceTitle = `데이비드 흄 온건한 회의주의와 공감 지혜: ${activeHumeTheme.themeTitleKo}`;
   const philosophicalCounsel = `데이비드 흄의 경험주의와 인간학은 오만한 독단주의를 경계하고, 타인을 향한 따뜻한 공감(Sympathy)과 온유한 평정심으로 일상의 행복을 누리도록 이끕니다. ` +
@@ -191,20 +219,23 @@ export function calculateDavidHumeTreatiseHumanNature(
   const humeSynthesisMatrix = {
     dominantTension: `${activeHumeTheme.themeTitleKo} ↔ ${secondaryHumeTheme.themeTitleKo}`,
     alignmentState: describeHumeStage(composite),
-    integratedAction: `${focalHumeAphorism.actionGuidance}${query?.trim() ? ` [질문 맥락: ${query.trim()}]` : ''}`,
+    integratedAction: `${focalHumeAphorism.actionGuidance} (${humePhase})${query?.trim() ? ` [질문 맥락: ${query.trim()}]` : ''}`,
   };
   const trimmedQ = query?.trim() ?? '';
   const reflectiveQuestion = trimmedQ
-    ? `지금 고민하시는 '${trimmedQ}'에서 성급한 독단을 한 걸음 거두고 경험과 온유한 공감(Sympathy)으로 다시 바라보면 어떤 유연한 길이 보입니까?`
-    : `오늘 붙잡고 있는 확신 가운데, 온건한 회의주의의 여백과 타인을 향한 따뜻한 공감을 함께 열어 둘 부분은 어디입니까?`;
+    ? `'${humePhase}' 국면에서 지금 고민하시는 '${trimmedQ}'에서 성급한 독단을 한 걸음 거두고 경험과 온유한 공감(Sympathy)으로 다시 바라보면 어떤 유연한 길이 보입니까?`
+    : `'${humePhase}' 국면에서 오늘 붙잡고 있는 확신 가운데, 온건한 회의주의의 여백과 타인을 향한 따뜻한 공감을 함께 열어 둘 부분은 어디입니까?`;
   const interpretiveBoundary = '이 리포트는 데이비드 흄의 경험론과 인간 본성론 철학을 바탕으로 한 성찰 비유이며, 사실적 인과 단정이나 미래 예측이 아닙니다.';
 
-  const ritualAction = `[${activeHumeTheme.themeTitleKo}] ${focalHumeAphorism.actionGuidance}`;
-  const reflectionFocus = `데이비드 흄 인간 본성론(${activeHumeTheme.themeKey}) — ${secondaryHumeTheme.themeTitleKo}`;
+  const ritualAction = `[${activeHumeTheme.themeTitleKo}] ${focalHumeAphorism.actionGuidance} (${humePhase})`;
+  const reflectionFocus = `데이비드 흄 인간 본성론(${activeHumeTheme.themeKey} · ${humePhase}) — ${secondaryHumeTheme.themeTitleKo}`;
 
   return {
     engineVersion: SCOTTISH_DAVID_HUME_VERSION,
     calculatedAtKst,
+    questionTopic,
+    humePhase,
+    shadowWarning,
     mitigatedSkepticismScore,
     sympathyBenevolenceEmpathyScore,
     passionsReasonHarmonyScore,
@@ -231,10 +262,12 @@ export function formatDavidHumeTreatiseHumanNaturePrompt(res: DavidHumeTreatiseH
   );
   const lines = [
     `【데이비드 흄 《인간 본성에 관한 논고》 온건한 회의주의 & 공감 지표】`,
-    `- 연산 시각: ${res.calculatedAtKst} | 엔진 버전: ${res.engineVersion}`,
+    `- 연산 시각: ${res.calculatedAtKst} | 엔진 버전: ${res.engineVersion} | 질문 맥락: ${res.questionTopic}`,
     `- 경험론적 평정 국면: ${describeHumeStage(composite)}`,
+    `- 인간 본성 국면: ${res.humePhase}`,
     `- 핵심 경험론 테마: ${res.activeHumeTheme.themeTitleKo} [${res.activeHumeTheme.themeTitleEn}]`,
     `- 보조 교차 테마: ${res.secondaryHumeTheme.themeTitleKo} [${res.secondaryHumeTheme.themeTitleEn}]`,
+    `- 과잉·경계 점검: ${res.shadowWarning}`,
     `- 실존적 통찰: ${res.activeHumeTheme.existentialInsight}`,
     `- 실천적 조언: ${res.activeHumeTheme.practicalCounsel}`,
     `- 핵심 원전 경구: "${res.focalHumeAphorism.aphorismKo}"`,
