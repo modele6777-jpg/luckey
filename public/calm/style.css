@@ -8336,8 +8336,10 @@ html.luckey-parent-actions .top-nav { padding-right: 140px !important; }
   display: none !important;
 }
 .top-nav {
-  padding-top: max(8px, var(--key-safe-top, env(safe-area-inset-top))) !important;
-  padding-bottom: 8px !important;
+  padding-top: max(14px, var(--key-safe-top, env(safe-area-inset-top))) !important;
+  padding-bottom: 14px !important;
+  min-height: 56px;
+  box-sizing: border-box;
 }
 .brand-wrapper {
   gap: 0 !important;
