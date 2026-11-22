@@ -3,7 +3,6 @@ import { X } from 'lucide-react';
 import { ScreenPortal } from '@/components/layout/ScreenPortal';
 import { getLucyTableState, LUCY_TABLE_EVENT, type LucyTableState } from '@/lib/lucyTableBus';
 import { useLucyMasterDepth, requestLucyTableFace } from '@/lib/lucyMasterMode';
-import { isDuoUnfoldedState } from '@/lib/perfMode';
 import { triggerHaptic } from '@/lib/omniWarp/omniWarpHaptics';
 import { MasterSajuBoard } from './MasterSajuBoard';
 import { MasterToolBoard } from './MasterToolBoard';
@@ -144,17 +143,16 @@ function DrawnCards({ cards }: { cards: LucyTableState['cards'] }) {
 
 function leftMasterTableIsVisible(): boolean {
   if (typeof document === 'undefined') return false;
-  const root = document.documentElement;
-  return root.classList.contains('duo-unfolded-landscape')
-    || root.classList.contains('duo-unfolded-portrait')
-    || Boolean(document.getElementById('duo-content-viewport'))
-    || isDuoUnfoldedState().unfolded;
+  const pane = document.getElementById('duo-content-viewport');
+  const table = pane?.querySelector('[data-duo-divination-tarot="true"]');
+  if (!table) return false;
+  const box = table.getBoundingClientRect();
+  return box.width > 0 && box.height > 0;
 }
 
-/** 접은 화면에서만 도구 팝업을 연다. 펼친 화면은 왼쪽 테이블이 있으니 엔진함으로만 바꾼다. */
+/** 왼쪽이 점술 테이블이면 엔진함만 연다. 왼쪽이 다른 화면이면 도구 팝업을 연다. */
 export function MasterTableSheetButton({ tone = 'dark' }: { tone?: 'dark' | 'light' }) {
   const [open, setOpen] = useState(false);
-  const popupAllowed = !leftMasterTableIsVisible();
   return (
     <>
       <button
@@ -178,7 +176,7 @@ export function MasterTableSheetButton({ tone = 'dark' }: { tone?: 'dark' | 'lig
         <span aria-hidden="true">🔮</span>
         도구
       </button>
-      {open && popupAllowed && <MasterTableSheet onClose={() => setOpen(false)} />}
+      {open && <MasterTableSheet onClose={() => setOpen(false)} />}
     </>
   );
 }
