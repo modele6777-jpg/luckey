@@ -6,12 +6,17 @@ export interface SererBaobabInput {
   question?: string;
 }
 
+export type SererQuestionTopic = 'career' | 'relationship' | 'wealth' | 'health' | 'decision' | 'general';
+
 export interface SererBaobabResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: SererQuestionTopic;
   councilShade: string;
   companionShade: string;
   baobabRoots: string;
+  baobabReserveAxis: string;
+  shadowWarning: string;
   reflectionFocus: string;
   ritualAction: string;
   reflectiveQuestion: string;
@@ -65,6 +70,16 @@ function hashSeed(text: string): number {
   return h >>> 0;
 }
 
+function classifySererTopic(question?: string): SererQuestionTopic {
+  const q = (question ?? '').trim();
+  if (/이직|직장|사업|승진|일|커리어|프로젝트|업무/.test(q)) return 'career';
+  if (/연애|결혼|사람|관계|가족|갈등|친구|이별|소통|듣/.test(q)) return 'relationship';
+  if (/돈|재물|투자|재정|수입|지출|계약|매매/.test(q)) return 'wealth';
+  if (/건강|몸|마음|휴식|수면|피로|회복|여력/.test(q)) return 'health';
+  if (/결정|선택|고민|방향|시작|기다림/.test(q)) return 'decision';
+  return 'general';
+}
+
 export function calculateSererBaobabCouncil(input: SererBaobabInput): SererBaobabResult {
   const fate = input.profile.fate ?? {};
   const seedText = `${JSON.stringify(fate)}|${input.now.toISOString().slice(0, 13)}|${input.question ?? ''}`;
@@ -73,13 +88,19 @@ export function calculateSererBaobabCouncil(input: SererBaobabInput): SererBaoba
   const companionOffset = 1 + (hashSeed(`${seedText}|companion`) % (SHADES.length - 1));
   const councilShade = SHADES[shadeIdx];
   const companionShade = SHADES[(shadeIdx + companionOffset) % SHADES.length];
+  const questionTopic = classifySererTopic(input.question);
+  const baobabReserveAxis = `${councilShade} ↔ ${companionShade} 평의회·비축 축`;
+  const shadowWarning = '[평의회 과잉 경계] 비축과 경청에만 머무르며 정작 오늘 내디뎌야 할 명확한 선택과 한 걸음을 미루지 않도록 살피십시오.';
 
   return {
-    engineVersion: 'LUCKEY-SERER-BAOBAB-v2.2.0',
+    engineVersion: 'LUCKEY-SERER-BAOBAB-v2.3.0',
     calculatedAtKst: toKstIso(input.now),
+    questionTopic,
     councilShade,
     companionShade,
     baobabRoots: ROOTS[(seed >>> 3) % ROOTS.length],
+    baobabReserveAxis,
+    shadowWarning,
     reflectionFocus: `세네갈 세레르 족이 오래된 바오밥 나무 그늘 아래 모여 경청과 비축의 지혜를 나누던 평의회처럼, 주 그늘('${councilShade}')과 동반 그늘('${companionShade}')을 함께 짚어 내면의 여력과 깊은 대화를 살피는 상징적 관점입니다.`,
     ritualAction: ACTIONS[shadeIdx],
     reflectiveQuestion: QUESTIONS[shadeIdx],
@@ -90,13 +111,15 @@ export function calculateSererBaobabCouncil(input: SererBaobabInput): SererBaoba
 export function formatSererBaobabPrompt(res: SererBaobabResult): string {
   return [
     `[세레르·바오밥 평의회 관점 · ${res.engineVersion}]`,
-    `기준 시각: ${res.calculatedAtKst}`,
+    `기준 시각: ${res.calculatedAtKst} | 질문 맥락: ${res.questionTopic}`,
     `그늘 자리: ${res.councilShade}`,
     `동반 자리: ${res.companionShade}`,
+    `평의회·비축 축: ${res.baobabReserveAxis}`,
     `뿌리 지혜: ${res.baobabRoots}`,
     `성찰 초점: ${res.reflectionFocus}`,
     `권장 의식: ${res.ritualAction}`,
     `성찰 질문: ${res.reflectiveQuestion}`,
+    `과잉 경계: ${res.shadowWarning}`,
     `경계: ${res.interpretiveBoundary}`,
   ].join('\n');
 }

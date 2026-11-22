@@ -1,11 +1,16 @@
 import type { UserProfile } from '../sharedState';
 
+export type TurkanaQuestionTopic = 'career' | 'relationship' | 'wealth' | 'health' | 'decision' | 'general';
+
 export interface TurkanaWindResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: TurkanaQuestionTopic;
   reflectionFocus: string;
   symbolicMotif: string;
   companionMotif: string;
+  riftWindAxis: string;
+  shadowWarning: string;
   ritualAction: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
@@ -54,6 +59,16 @@ const TURKANA_QUESTIONS = [
   '내가 가진 작은 소금 한 줌이 다른 이의 하루와 만날 수 있는 연결 지점은 어디인가요?'
 ];
 
+function classifyTurkanaTopic(question?: string): TurkanaQuestionTopic {
+  const q = (question ?? '').trim();
+  if (/이직|직장|사업|승진|일|커리어|프로젝트|업무/.test(q)) return 'career';
+  if (/연애|결혼|사람|관계|가족|갈등|친구|이별|소통/.test(q)) return 'relationship';
+  if (/돈|재물|투자|재정|수입|지출|계약|매매/.test(q)) return 'wealth';
+  if (/건강|몸|마음|휴식|수면|피로|회복/.test(q)) return 'health';
+  if (/결정|선택|고민|방향|시작|바람|물결/.test(q)) return 'decision';
+  return 'general';
+}
+
 export function calculateTurkanaJadeSeaWind(params: {
   profile: UserProfile;
   now?: Date;
@@ -69,15 +84,21 @@ export function calculateTurkanaJadeSeaWind(params: {
   const companionMotif = TURKANA_MOTIFS[(idx + companionOffset) % TURKANA_MOTIFS.length];
   const ritualAction = TURKANA_ACTIONS[idx];
   const reflectiveQuestion = TURKANA_QUESTIONS[idx];
+  const questionTopic = classifyTurkanaTopic(question);
+  const riftWindAxis = `${motif.slice(0, 14).trim()}… ↔ ${companionMotif.slice(0, 14).trim()}… 리프트 바람 축`;
+  const shadowWarning = '[리프트 바람 과잉 경계] 바람을 피해 잦은 이동만 반복하거나 한 자리에 지나치게 버티다 유연한 균형을 잃지 않도록 살피십시오.';
 
   return {
-    engineVersion: 'LUCKEY-TURKANA-WIND-v2.2.0',
+    engineVersion: 'LUCKEY-TURKANA-WIND-v2.3.0',
     calculatedAtKst: getKstTimeString(now),
+    questionTopic,
     reflectionFocus: question.trim()
       ? `질문 "${question.trim()}" 속에서 거친 바람을 비취빛 물결로 바꾸는 투르카나 호수 관점 (동반 결: ${companionMotif.slice(0, 24)}…)`
       : '사막의 거친 바람 속에서도 옥빛 물결과 가벼운 기동성을 지키는 투르카나 비취 바다 관점',
     symbolicMotif: motif,
     companionMotif,
+    riftWindAxis,
+    shadowWarning,
     ritualAction,
     reflectiveQuestion,
     interpretiveBoundary:
@@ -88,12 +109,14 @@ export function calculateTurkanaJadeSeaWind(params: {
 export function formatTurkanaWindPrompt(result: TurkanaWindResult): string {
   return [
     `[투르카나·비취 바다 바람 관점 (${result.engineVersion})]`,
-    `- 기준 시각: ${result.calculatedAtKst}`,
+    `- 기준 시각: ${result.calculatedAtKst} | 질문 맥락: ${result.questionTopic}`,
     `- 성찰 초점: ${result.reflectionFocus}`,
     `- 상징 모티프: ${result.symbolicMotif}`,
     `- 동반 모티프: ${result.companionMotif}`,
+    `- 리프트 바람 축: ${result.riftWindAxis}`,
     `- 제안 의식: ${result.ritualAction}`,
     `- 성찰 질문: ${result.reflectiveQuestion}`,
+    `- 과잉 경계: ${result.shadowWarning}`,
     `- 경계: ${result.interpretiveBoundary}`
   ].join('\n');
 }
