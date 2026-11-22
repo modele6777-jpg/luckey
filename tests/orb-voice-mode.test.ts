@@ -49,15 +49,19 @@ function replaceGlobal(name: string, value: unknown) {
   };
 }
 
-test('Orb defaults to hold-to-talk; the input button sends only while held and a short Orb tap switches to real time', () => {
+test('Orb defaults to hold-to-talk on the input itself; a short Orb tap still switches to real time', () => {
   assert.match(component, /useState<OrbVoiceMode>\('hold'\)/);
   assert.match(component, /setVoiceMode\('hold'\)/);
   assert.match(component, /startMuted: voiceMode === 'hold'/);
-  assert.match(component, /className=\{`lucy-orb-ptt lucy-orb-dock-ptt/);
-  assert.match(component, /onPointerDown=\{startPushToTalk\}[\s\S]*?onPointerUp=\{stopPushToTalk\}/);
+  assert.match(component, /className="lucy-orb-input-wrap"[\s\S]*?onPointerDown=\{\(event\) => startPushToTalk\(event\)\}[\s\S]*?onPointerUp=\{stopPushToTalk\}/);
+  assert.doesNotMatch(component, /lucy-orb-dock-ptt/);
+  assert.match(component, /className="lucy-orb-input-wave"/);
+  assert.match(component, /onAudioLevel: \(level\) => setAudioLevel\(level\)/);
+  assert.match(liveSession, /onAudioLevel\?: \(level: number\) => void/);
+  assert.match(liveSession, /handlers\.onAudioLevel\?\.\(Math\.max\(0, Math\.min\(1,/);
   assert.match(component, /if \(voiceMode === 'hold'\) chooseVoiceMode\('realtime'\)/);
   assert.match(component, /aria-pressed=\{voiceMode === 'realtime'\}[\s\S]*?aria-pressed=\{voiceMode === 'hold'\}/);
-  assert.match(liveSession, /if \(!ready \|\| muted \|\| stopped \|\| socket\?\.readyState !== WebSocket\.OPEN\) return/);
+  assert.match(liveSession, /if \(!ready \|\| muted \|\| socket\?\.readyState !== WebSocket\.OPEN\) \{/);
 });
 
 test('current app version has public changelog details for the generated version endpoint', () => {
@@ -72,6 +76,7 @@ test('Gemini Live hold-to-talk session does not send audio until unmuted and mut
   FakeWebSocket.sockets = [];
   const track = { enabled: true, stop() {} };
   const stream = { getAudioTracks: () => [track], getTracks: () => [track] } as unknown as MediaStream;
+  const audioLevels: number[] = [];
   const restore = [
     replaceGlobal('AudioContext', FakeAudioContext),
     replaceGlobal('WebSocket', FakeWebSocket),
@@ -79,7 +84,7 @@ test('Gemini Live hold-to-talk session does not send audio until unmuted and mut
     replaceGlobal('fetch', async () => ({ ok: true, json: async () => ({ token: 'test-token', model: 'gemini-3.8-live' }) })),
   ];
 
-  const session = startGeminiLiveVoice({ startMuted: true, micStream: Promise.resolve(stream) });
+  const session = startGeminiLiveVoice({ startMuted: true, micStream: Promise.resolve(stream), onAudioLevel: level => audioLevels.push(level) });
   try {
     for (let attempt = 0; attempt < 30 && (!FakeWebSocket.sockets.length || !FakeAudioContext.processors.length); attempt += 1) {
       await new Promise(resolve => setTimeout(resolve, 0));
@@ -103,9 +108,11 @@ test('Gemini Live hold-to-talk session does not send audio until unmuted and mut
     processor.onaudioprocess?.(event);
     assert.equal(socket.sent.length, 2, 'audio is sent while held');
     assert.ok(JSON.parse(socket.sent[1]).realtimeInput.audio.data);
+    assert.ok((audioLevels.at(-1) || 0) > 0, 'waveform level follows the live microphone signal');
 
     session.setMuted(true);
     assert.equal(track.enabled, false, 'releasing the talk control disables the microphone track');
+    assert.equal(audioLevels.at(-1), 0, 'releasing the talk control clears the waveform');
     processor.onaudioprocess?.(event);
     assert.equal(socket.sent.length, 2, 'audio stops immediately after release');
   } finally {

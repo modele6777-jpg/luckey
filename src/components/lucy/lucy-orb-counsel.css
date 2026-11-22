@@ -1059,17 +1059,23 @@ html.duo-unfolded-mode .lucy-orb-copy { width: min(720px, 92%); }
   display: flex;
   gap: 8px;
 }
+.lucy-orb-input-wrap { position: relative; flex: 1 1 auto; min-width: 0; }
 .lucy-orb-dock input {
-  flex: 1;
+  display: block;
+  width: 100%;
   min-width: 0;
   border: 0;
   border-radius: 999px;
   background: rgba(240, 232, 255, .14);
   box-shadow: inset 0 0 0 1.5px rgba(214, 196, 255, .28);
   color: #fff;
-  padding: 12px 16px;
+  padding: 12px 72px 12px 16px;
   font-size: 16px;
+  transition: box-shadow .12s ease, background .12s ease;
 }
+.lucy-orb-dock input.is-pressed { background: rgba(240, 232, 255, .22); box-shadow: inset 0 0 0 2px rgba(255, 230, 170, .82), 0 0 18px rgba(255, 200, 120, .16); }
+.lucy-orb-input-wave { position: absolute; top: 50%; right: 18px; display: flex; align-items: center; justify-content: center; gap: 2px; height: 24px; transform: translateY(-50%); pointer-events: none; filter: drop-shadow(0 0 5px rgba(255, 218, 151, .55)); }
+.lucy-orb-input-wave i { display: block; width: 2px; min-height: 3px; border-radius: 999px; background: linear-gradient(180deg, #fff6dc, #f3cf86); transition: height 80ms linear; }
 .lucy-orb-dock button, .lucy-orb-end {
   border: 0;
   border-radius: 999px;
@@ -1079,7 +1085,6 @@ html.duo-unfolded-mode .lucy-orb-copy { width: min(720px, 92%); }
   box-shadow: 0 6px 18px rgba(255, 200, 120, .35), inset 0 1px 0 #fff;
   padding: 12px 14px;
 }
-.lucy-orb-dock .lucy-orb-dock-ptt { flex: 0 0 auto; min-width: 116px; padding: 10px 12px; font-size: 12px; white-space: nowrap; }
 .lucy-orb-report-dock { align-items: center; gap: 6px; }
 .lucy-orb-report-dock button {
   flex: 1 1 0;

@@ -20,6 +20,7 @@ type LiveVoiceHandlers = {
   focus?: string;
   greet?: string;
   onState?: (state: LiveVoiceState) => void;
+  onAudioLevel?: (level: number) => void;
   onUserText?: (text: string) => void;
   onLucyText?: (text: string) => void;
   onError?: (error: { code: string; message: string }) => void;
@@ -181,6 +182,7 @@ export function startGeminiLiveVoice(handlers: LiveVoiceHandlers): LiveVoiceSess
     stopped = true;
     if (speakTimer) clearTimeout(speakTimer);
     if (setupTimer) clearTimeout(setupTimer);
+    handlers.onAudioLevel?.(0);
     stopPlayback();
     try { processor?.disconnect(); } catch { /* ignore */ }
     try { socket?.close(); } catch { /* ignore */ }
@@ -246,8 +248,16 @@ export function startGeminiLiveVoice(handlers: LiveVoiceHandlers): LiveVoiceSess
       const silent = capture.createGain();
       silent.gain.value = 0;
       processor!.onaudioprocess = (event) => {
-        if (!ready || muted || stopped || socket?.readyState !== WebSocket.OPEN) return;
+        if (stopped) return;
         const input = event.inputBuffer.getChannelData(0);
+        if (!ready || muted || socket?.readyState !== WebSocket.OPEN) {
+          handlers.onAudioLevel?.(0);
+          return;
+        }
+        let sumSquares = 0;
+        for (let index = 0; index < input.length; index += 1) sumSquares += input[index] * input[index];
+        const rms = Math.sqrt(sumSquares / Math.max(1, input.length));
+        handlers.onAudioLevel?.(Math.max(0, Math.min(1, (rms - 0.006) / 0.06)));
         const samples = downsample(input, capture.sampleRate);
         socket.send(JSON.stringify({
           realtimeInput: { audio: { data: pcmBase64(samples), mimeType: 'audio/pcm;rate=16000' } },
@@ -293,6 +303,7 @@ export function startGeminiLiveVoice(handlers: LiveVoiceHandlers): LiveVoiceSess
     stop,
     setMuted: (next) => {
       muted = next;
+      if (next) handlers.onAudioLevel?.(0);
       stream?.getAudioTracks().forEach(track => { track.enabled = !next; });
     },
     interrupt: stopPlayback,
