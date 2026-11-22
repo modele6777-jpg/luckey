@@ -1384,23 +1384,54 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   // 📷 카메라·사진 고르기 창을 여는 동안 iOS는 앱을 잠깐 '숨김'으로 본다.
   // 돌아왔을 때 "다시 들어옴"으로 착각해 대화를 맨 아래로 끌어내리지 않도록, 열기 전 위치를 기억해 둔다.
-  const photoPickerRef = useRef<{ openedAt: number; scrollTop: number } | null>(null);
+  const photoPickerRef = useRef<{ openedAt: number; scrollTop: number; atBottom: boolean } | null>(null);
+  const photoPinFrameRef = useRef<number | null>(null);
+  // 보던 자리(맨 아래였다면 맨 아래)에 대화를 잠깐 붙잡아 둔다. iOS가 사진 메뉴를 띄우거나 닫으며 스크롤을 옮겨도 되돌린다.
+  const pinConversationForPicker = (picker: { scrollTop: number; atBottom: boolean }, ms: number) => {
+    const container = messagesContainerRef.current;
+    if (!container) return;
+    if (photoPinFrameRef.current !== null) cancelAnimationFrame(photoPinFrameRef.current);
+    const until = Date.now() + ms;
+    const hold = () => {
+      const target = picker.atBottom ? container.scrollHeight - container.clientHeight : picker.scrollTop;
+      if (Math.abs(container.scrollTop - target) > 1) container.scrollTop = target;
+      if (picker.atBottom) {
+        isUserScrolledUpRef.current = false;
+        setShowReturnToRecentConversation(false);
+      }
+      photoPinFrameRef.current = Date.now() < until ? requestAnimationFrame(hold) : null;
+    };
+    hold();
+  };
+  const openPhotoPicker = () => {
+    const container = messagesContainerRef.current;
+    const scrollTop = container?.scrollTop ?? 0;
+    const atBottom = container ? container.scrollHeight - container.clientHeight - scrollTop < 48 : true;
+    const picker = { openedAt: Date.now(), scrollTop, atBottom };
+    photoPickerRef.current = picker;
+    fileInputRef.current?.click();
+    // 메뉴가 뜨는 동안 (iOS: 사진 보관함·사진 찍기·파일 선택)
+    pinConversationForPicker(picker, 1500);
+  };
   const restoreAfterPhotoPicker = () => {
     const picker = photoPickerRef.current;
     photoPickerRef.current = null;
-    const container = messagesContainerRef.current;
-    if (!picker || !container) return;
-    const top = picker.scrollTop;
-    requestAnimationFrame(() => { container.scrollTop = top; });
+    if (!picker) return;
+    // 메뉴가 닫히고 화면이 다시 자리 잡는 동안
+    pinConversationForPicker(picker, 800);
   };
-  // 사진 고르기를 취소해도 보던 자리로 (React에는 cancel 이벤트 prop이 없어 직접 단다)
+  // 사진 고르기를 취소하거나, 메뉴 밖을 눌러 닫고 앱으로 돌아와도 보던 자리로
   useEffect(() => {
     const input = fileInputRef.current;
-    if (!input) return;
-    const onCancel = () => restoreAfterPhotoPicker();
-    input.addEventListener('cancel', onCancel);
-    return () => input.removeEventListener('cancel', onCancel);
+    const onReturn = () => { if (photoPickerRef.current) restoreAfterPhotoPicker(); };
+    input?.addEventListener('cancel', onReturn);
+    window.addEventListener('focus', onReturn);
+    return () => {
+      input?.removeEventListener('cancel', onReturn);
+      window.removeEventListener('focus', onReturn);
+    };
   });
+  useEffect(() => () => { if (photoPinFrameRef.current !== null) cancelAnimationFrame(photoPinFrameRef.current); }, []);
   const isReturningFromPhotoPicker = () => {
     const picker = photoPickerRef.current;
     return Boolean(picker && Date.now() - picker.openedAt < 2 * 60 * 1000);
@@ -1962,7 +1993,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
   const heardOnScreen = (speechTranscript || speechInterim).trim();
   useEffect(() => {
     const text = heardOnScreen;
-    if (!isVoiceMode || isVoiceMuted || text.length < 2) return;
+    if (!isVoiceMode || isVoiceMuted || text.length < 1) return;
     const timer = setTimeout(() => {
       if (!isVoiceModeRef.current || isVoiceMutedRef.current) return;
       const watcher = speechWatcherRef.current;
@@ -4828,7 +4859,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
                 {(speechTranscript || speechInterim) && (
                   <div data-voice-transcript className="relative overflow-hidden mt-1.5 px-2.5 py-1.5 rounded-xl bg-white/70 dark:bg-white/5 border border-amber-400/30 text-xs flex items-center justify-between gap-2">
                     {/* 말을 멈추면 자동 전송까지 남은 시간 (글자가 바뀌면 처음부터 다시) */}
-                    {heardOnScreen.length >= 2 && !isVoiceMuted && (
+                    {heardOnScreen.length >= 1 && !isVoiceMuted && (
                       <span
                         key={heardOnScreen}
                         aria-hidden="true"
@@ -5034,10 +5065,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
             {/* 📷 Image / Camera Button */}
             <button
               type="button"
-              onClick={() => {
-                photoPickerRef.current = { openedAt: Date.now(), scrollTop: messagesContainerRef.current?.scrollTop ?? 0 };
-                fileInputRef.current?.click();
-              }}
+              onClick={openPhotoPicker}
               className={`w-7 h-7 sm:w-8 sm:h-8 p-0 flex items-center justify-center rounded-lg transition-colors cursor-pointer shrink-0 ${
                 isLight
                   ? 'text-slate-400 hover:text-amber-700 hover:bg-amber-50'

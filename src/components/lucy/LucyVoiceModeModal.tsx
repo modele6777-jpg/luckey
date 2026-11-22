@@ -510,7 +510,7 @@ export function LucyVoiceModeModal() {
               )}
 
               {/* Manual Send Button (when transcript exists) */}
-              {transcript.trim().length >= 2 && voiceState === 'listening' && (
+              {transcript.trim().length >= 1 && voiceState === 'listening' && (
                 <button
                   type="button"
                   onClick={() => handleSendPrompt(transcript)}

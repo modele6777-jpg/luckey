@@ -47,3 +47,12 @@ test('waits while sending is not allowed and flush sends what was heard', async 
   assert.equal(watcher.flush(), false);
   watcher.dispose();
 });
+
+test('a one-syllable answer like "야" or "응" is sent too', async () => {
+  const sent: string[] = [];
+  const watcher = createEndOfSpeechWatcher({ silenceMs: 60, onSend: text => sent.push(text) });
+  watcher.heard('야');
+  await wait(200);
+  assert.deepEqual(sent, ['야']);
+  watcher.dispose();
+});
