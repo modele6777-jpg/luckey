@@ -32,6 +32,18 @@ type HubSwipeTab = typeof HUB_SWIPE_TABS[number];
 
 const APPS = [
   {
+    id: 'prologue',
+    name: 'PROLOGUE',
+    subtitle: '시작 방향',
+    desc: '삶의 시작과 오늘의 방향을 잡고, 목적에 맞게 하루의 여정을 여는 프롤로그 공간',
+    icon: Sun,
+    color: 'oklch(0.84 0.14 75)',
+    path: '/prologue',
+    persona: 'PROLOGUE',
+    personaDesc: '하루의 시작·방향·목적을 여는 가이드',
+    vibeKeyword: '시작 방향',
+  },
+  {
     id: 'orange',
     name: 'ORANGE',
     subtitle: '마음 치유',
@@ -105,7 +117,7 @@ const APPS = [
   },
 ];
 
-const PROLOGUE_APPS = ['orange', 'trinity', 'heal', 'bluebird', 'muse', 'epilogue']
+const PROLOGUE_APPS = ['prologue', 'orange', 'trinity', 'heal', 'bluebird', 'muse', 'epilogue']
   .map((id) => APPS.find((app) => app.id === id)!);
 
 type TimeEnergySlot = 'morning' | 'afternoon' | 'evening' | 'night';
@@ -881,21 +893,21 @@ export default function HubHome() {
               </motion.div>
             </div>
 
-              {/* Universe 6-Channel DApp Section */}
+              {/* Universe 7-Channel DApp Section */}
               <div className="space-y-3.5 pb-4 md:pb-6">
                 <div className="flex flex-wrap items-center justify-between gap-3 px-1">
                   <div>
                     <div className="flex items-center gap-2">
                       <Compass size={15} className="text-cyan-400" />
                       <h3 className="text-sm sm:text-base font-bold text-white tracking-tight">
-                        유니버스 6대 차원 DApp 채널
+                        유니버스 7대 차원 DApp 채널
                       </h3>
                       <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-cyan-500/15 text-cyan-300 border border-cyan-400/30">
-                        6 CHANNELS
+                        7 CHANNELS
                       </span>
                     </div>
                     <p className="text-[11px] text-white/55 mt-0.5">
-                      마음 치유·운명 분석·신체 활력·예술 사운드·창작 영감·통합 결산 채널로 바로 이동합니다
+                      시작 방향·마음 치유·운명 분석·신체 활력·예술 사운드·창작 영감·통합 결산 채널로 바로 이동합니다
                     </p>
                   </div>
                   <button
@@ -979,7 +991,8 @@ export default function HubHome() {
                                 title={`${app.name} 채널 소개`}
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  openChannelIntro(app.id === 'heal' ? 'aura' : app.id, app.path);
+                                  const introId = app.id === 'heal' ? 'aura' : app.id === 'prologue' ? 'hub' : app.id;
+                                  openChannelIntro(introId, app.path);
                                 }}
                                 className="w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-bold text-white/50 hover:text-white bg-white/5 hover:bg-white/15 border border-white/10 transition-colors cursor-pointer"
                               >
