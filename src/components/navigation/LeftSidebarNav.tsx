@@ -133,6 +133,19 @@ const LUCY_SUBPATHS = ['/', '/chat', '/lucy'];
 const KEY_SUBPATHS = ['/key', '/calm', '/orb', '/gateway', '/crystal'];
 const PROLOGUE_SUBPATHS = ['/prologue', '/universe', '/ecpr', '/todo', '/mission', '/synergy', '/aegis'];
 const EPILOGUE_SUBPATHS = ['/epilogue', '/profile', '/chronicle'];
+const LUCKY_LIST_PATHS = [
+  '/lucky',
+  ...PROLOGUE_SUBPATHS,
+  '/orange',
+  '/trinity', '/oracle',
+  '/heal', '/aura',
+  '/bluebird',
+  '/muse',
+  ...EPILOGUE_SUBPATHS,
+];
+function isLuckyListPath(path: string) {
+  return LUCKY_LIST_PATHS.some((item) => path === item || path.startsWith(`${item}/`));
+}
 
 // 3. Auxiliary Channels with dedicated identities
 export const AUXILIARY_CHANNELS: NavItemConfig[] = [
@@ -186,7 +199,8 @@ export default function LeftSidebarNav() {
   // 🍀 펼친 화면은 목록을 닫지 않는다. 접힌 화면만 럭키에서 나갈 때 접힌다.
   const [isChannelsOpen, setIsChannelsOpen] = useState(() => {
     if (typeof window === 'undefined') return false;
-    return isDualPaneLayout();
+    if (isDualPaneLayout()) return true;
+    return isLuckyListPath(window.location.pathname || '/');
   });
   useEffect(() => {
     const openForLucky = () => setIsChannelsOpen(true);
@@ -282,7 +296,7 @@ export default function LeftSidebarNav() {
   }, []);
   const channelsVisible = screenUnfolded || isChannelsOpen;
   useEffect(() => {
-    if (cleanPath === '/lucky' || screenUnfolded) setIsChannelsOpen(true);
+    if (isLuckyListPath(cleanPath) || screenUnfolded) setIsChannelsOpen(true);
   }, [cleanPath, screenUnfolded]);
   const { resolvedTheme } = useTheme();
   const reduceMotion = useReducedMotion();
