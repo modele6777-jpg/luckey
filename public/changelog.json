@@ -1,12 +1,20 @@
 [
   {
-    "version": "1.8.222",
-    "builtAt": "2026-11-22T11:33:00+09:00",
-    "summary": "데카르트·레비나스·바슐라르 3대 엔진 3축 국면 및 동반 테마·과잉 경계 심층 강화(v1.8.222)",
+    "version": "1.8.223",
+    "builtAt": "2026-11-22T11:36:00+09:00",
+    "summary": "데카르트·레비나스·바슐라르 3대 엔진 3축 국면 및 동반 테마·과잉 경계 심층 강화(v1.8.223)",
     "items": [
       "르네 데카르트 《방법서설》 코기토 엔진(v2.3.0): 동반 방법 규칙(companionMethodRule)·코기토 국면(cogitoPhase)·과잉 경계(shadowWarning) 추가",
       "에마뉘엘 레비나스 타자의 얼굴·환대 엔진(v2.3.0): 동반 레비나스 테마(companionLevinasTheme)·환대 국면(hospitalityPhase)·과잉 경계(shadowWarning) 추가",
       "가스통 바슐라르 《공간의 시학》 엔진(v2.3.0): 동반 공간 시학 테마(companionBachelardTheme)·몽상 국면(reveriePhase)·과잉 경계(shadowWarning) 추가"
+    ]
+  },
+  {
+    "version": "1.8.222",
+    "builtAt": "2026-11-22T11:35:00+09:00",
+    "summary": "루시·플러스·마스터 헤더 높이를 Key 옆 루시 헤더와 통일(v1.8.222)",
+    "items": [
+      "루시, 루시 플러스, 루시 마스터 헤더 높이를 Key 옆에 있는 루시 헤더와 같게 맞췄습니다"
     ]
   },
   {

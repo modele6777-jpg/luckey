@@ -4216,7 +4216,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
               className="flex items-center gap-2 sm:gap-3 min-w-0 w-full group select-none"
             >
               <div className="min-w-0 flex-1 overflow-hidden">
-                <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap min-w-0">
+                <div className="flex items-center gap-1.5 sm:gap-2 flex-nowrap min-w-0">
                   <h1
                     className={`text-base sm:text-xl font-black tracking-tight flex items-center gap-1.5 shrink-0 ${isLight ? 'text-slate-900' : 'text-white'}`}
                   >
@@ -4228,7 +4228,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
                     <span
                       data-lucy-master-depth={masterDepth}
                       title="빅뱅 버튼을 꾹 누르면 상담이 한 단계 깊어져요"
-                      className="inline-flex items-center gap-1 rounded-full border border-amber-300/50 bg-amber-400/15 px-2 py-0.5 text-[10px] font-bold text-amber-100 whitespace-nowrap shrink-0"
+                      className="inline-flex items-center gap-1 rounded-full border border-amber-300/50 bg-amber-400/15 px-2 py-0.5 text-[10px] font-bold text-amber-100 whitespace-nowrap min-w-0 truncate"
                     >
                       <span aria-hidden="true" className="inline-flex gap-[2px]">
                         {[1, 2, 3].map(level => (

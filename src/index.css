@@ -3772,6 +3772,18 @@ body.duo-unfolded-portrait.duo-panels-swapped .prism-aura-bg:not([data-channel-b
   height: calc(var(--duo-portrait-canvas-height) / 2) !important;
 }
 
+/* Lucy, Lucy Plus and Lucy Master share the header height used beside Key. */
+.lucy-chat-shell:not(.lucy-search-active) .lucy-chat-header {
+  box-sizing: border-box !important;
+  height: var(--duo-pane-header-height, 56px) !important;
+  min-height: var(--duo-pane-header-height, 56px) !important;
+  max-height: var(--duo-pane-header-height, 56px) !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  justify-content: center !important;
+  overflow: hidden !important;
+}
+
 /* Landscape split: Lucy's header bottom meets the Key header bottom. */
 html.duo-unfolded-landscape.duo-header-sync #duo-lucy-viewport .lucy-chat-header {
   box-sizing: border-box !important;

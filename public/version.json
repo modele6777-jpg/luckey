@@ -1,7 +1,7 @@
 {
-  "version": "1.8.222",
-  "builtAt": "2026-11-22T11:33:00+09:00",
-  "summary": "데카르트·레비나스·바슐라르 3대 엔진 3축 국면 및 동반 테마·과잉 경계 심층 강화(v1.8.222)",
+  "version": "1.8.223",
+  "builtAt": "2026-11-22T11:36:00+09:00",
+  "summary": "데카르트·레비나스·바슐라르 3대 엔진 3축 국면 및 동반 테마·과잉 경계 심층 강화(v1.8.223)",
   "items": [
     "르네 데카르트 《방법서설》 코기토 엔진(v2.3.0): 동반 방법 규칙(companionMethodRule)·코기토 국면(cogitoPhase)·과잉 경계(shadowWarning) 추가",
     "에마뉘엘 레비나스 타자의 얼굴·환대 엔진(v2.3.0): 동반 레비나스 테마(companionLevinasTheme)·환대 국면(hospitalityPhase)·과잉 경계(shadowWarning) 추가",
