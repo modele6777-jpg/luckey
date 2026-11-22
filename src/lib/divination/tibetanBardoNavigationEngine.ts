@@ -22,7 +22,9 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const TIBETAN_BARDO_VERSION = 'LUCKEY-TIBETAN-BARDO-v2.2.0';
+export const TIBETAN_BARDO_VERSION = 'LUCKEY-TIBETAN-BARDO-v2.3.0';
+
+export type BardoQuestionTopic = 'career' | 'relationship' | 'wealth' | 'health' | 'decision' | 'general';
 
 function formatBardoKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -50,6 +52,9 @@ export interface TibetanBardoReport {
   currentBardoState: BardoStateInfo;
   secondaryBardoState: BardoStateInfo;
   awarenessClarityScore: number; // 0 ~ 100 의식 명징도 및 자각 지수
+  questionTopic: BardoQuestionTopic;
+  bardoPhase: string;
+  shadowWarning: string;
   clearLightRecognition: string; // 근원적 맑은 빛(Rigpa)의 통찰
   bardoNavigationGuidance: string; // 중간 상태를 안전하게 건너는 항해 나침반
   dailyZenAnchor: string;         // 일상에서 마음의 중심을 잡는 닻
@@ -115,6 +120,39 @@ const BARDO_STATES: BardoStateInfo[] = [
   }
 ];
 
+function classifyBardoTopic(question?: string): BardoQuestionTopic {
+  const q = (question || '').trim();
+  if (/이직|직장|사업|승진|일|커리어|프로젝트|업무/.test(q)) return 'career';
+  if (/연애|결혼|사람|관계|가족|갈등|친구|이별|소통/.test(q)) return 'relationship';
+  if (/돈|재물|투자|재정|수입|지출|계약|매매/.test(q)) return 'wealth';
+  if (/건강|몸|마음|휴식|수면|피로|회복/.test(q)) return 'health';
+  if (/결정|선택|고민|방향|시작|전환/.test(q)) return 'decision';
+  return 'general';
+}
+
+function resolveBardoPhase(score: number): string {
+  if (score >= 85) return '릭파 맑은 빛 직관기 (Clear Light Rigpa) — 전환의 파도를 두려움 없이 비추며 명징하게 길을 가려내는 국면';
+  if (score >= 72) return '중음 항해 정돈기 (Bardo Navigation) — 변화의 흔들림을 알아차리고 차분히 다음 문턱을 준비하는 국면';
+  return '환영 경계 각성기 (Illusion Watch) — 불안과 공상이 커지기 쉬워 즉각적 판단을 늦추고 호흡으로 중심을 잡는 국면';
+}
+
+function buildBardoShadowWarning(
+  state: BardoStateInfo,
+  topic: BardoQuestionTopic,
+): string {
+  const topicNote =
+    topic === 'career'
+      ? '전환기의 불안 때문에 검증되지 않은 선택지로 성급히 뛰어들지 마십시오.'
+      : topic === 'relationship'
+        ? '과거의 상처를 현재 상대에게 투사해 단절을 서두르지 마십시오.'
+        : topic === 'wealth'
+          ? '손실에 대한 공포나 요행 심리로 기준을 무너뜨리지 마십시오.'
+          : topic === 'health'
+            ? '긴장과 불면이 쌓일 때는 결단보다 신체 회복을 먼저 두십시오.'
+            : '생각의 그림자를 현실의 확정으로 오인하지 마십시오.';
+  return `[${state.nameTibetan} 과잉 경계] ${state.illusoryTrap}. ${topicNote}`;
+}
+
 export function calculateTibetanBardoNavigation(
   profile?: UserProfile | null,
   targetDate: Date = new Date(),
@@ -164,6 +202,9 @@ export function calculateTibetanBardoNavigation(
 
   const calculatedAtKst = formatBardoKstTimestamp(targetDate);
   const q = (question || '').trim();
+  const questionTopic = classifyBardoTopic(q);
+  const bardoPhase = resolveBardoPhase(awarenessClarityScore);
+  const shadowWarning = buildBardoShadowWarning(currentBardoState, questionTopic);
   const reflectiveQuestion = q
     ? `"${q}"라는 전환의 문턱에서 [${currentBardoState.nameKo}]의 혼란에 휩쓸리지 않고 [${secondaryBardoState.nameKo}]로 건너가기 위해, 지금 가장 먼저 내려놓아야 할 집착은 무엇입니까?`
     : `[${currentBardoState.nameKo}]의 자리에서 환영의 함정을 알아차릴 때, 오늘 가장 고요하게 비추어 보고 싶은 마음의 그림자는 무엇입니까?`;
@@ -172,8 +213,8 @@ export function calculateTibetanBardoNavigation(
   const ritualAction = `${dailyZenAnchor} 이어 호흡 세 번 동안 [${currentBardoState.nameKo}]의 감정을 이름 붙여 흘려보내십시오.`;
   const reflectionFocus = `[${currentBardoState.nameKo}]에서 [${secondaryBardoState.nameKo}]로 건너가는 문턱의 맑은 자각(Rigpa)`;
   const bardoSynthesisMatrix = {
-    dominantTension: `${currentBardoState.nameKo} ↔ 환영의 함정`,
-    alignmentState: `영적 기회(${currentBardoState.spiritualOpportunity}) · 다음 전환(${secondaryBardoState.nameKo})`,
+    dominantTension: `${currentBardoState.nameKo} ↔ 환영의 함정 (${questionTopic})`,
+    alignmentState: `${bardoPhase} · 다음 전환(${secondaryBardoState.nameKo})`,
     integratedAction: `${dailyZenAnchor}${q ? ` [질문 맥락: ${q}]` : ''}`,
   };
 
@@ -184,6 +225,9 @@ export function calculateTibetanBardoNavigation(
     currentBardoState,
     secondaryBardoState,
     awarenessClarityScore,
+    questionTopic,
+    bardoPhase,
+    shadowWarning,
     clearLightRecognition,
     bardoNavigationGuidance,
     dailyZenAnchor,
@@ -200,6 +244,7 @@ export function formatTibetanBardoNavigationPrompt(report: TibetanBardoReport): 
     ? `\n- **바르도 교차 매트릭스**: 핵심 긴장(${report.bardoSynthesisMatrix.dominantTension}) · 조율 상태(${report.bardoSynthesisMatrix.alignmentState}) · 통합 실천(${report.bardoSynthesisMatrix.integratedAction})`
     : '';
   return `### ☸️ 티베트 불교 바르도(Bardo) 6대 환생 상태 & 전환기 의식 항해 엔진 (${TIBETAN_BARDO_VERSION} | ${report.calculatedAtKst})
+- **질문 맥락**: ${report.questionTopic} | **바르도 각성 국면**: ${report.bardoPhase}
 - **현재 바르도 국면**: ${report.currentBardoState.nameTibetan} (${report.currentBardoState.nameKo})
 - **다음 전환 국면**: ${report.secondaryBardoState.nameTibetan} (${report.secondaryBardoState.nameKo})
 - **전환기적 현실 맥락**: ${report.currentBardoState.transitionalContext}
@@ -209,6 +254,7 @@ export function formatTibetanBardoNavigationPrompt(report: TibetanBardoReport): 
 - **바르도 항해 나침반 지침**: ${report.bardoNavigationGuidance}
 - **일일 릭파(자각) 닻 내리기**: ${report.dailyZenAnchor}${matrixLine}
 - **성찰 질문**: ${report.reflectiveQuestion}
+- **과잉 경계**: ${report.shadowWarning}
 - **실천 의례**: ${report.ritualAction}
 - **성찰 초점**: ${report.reflectionFocus}
 - **해석 경계**: ${report.interpretiveBoundary}`;

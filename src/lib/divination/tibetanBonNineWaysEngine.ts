@@ -32,7 +32,9 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const TIBETAN_BON_NINE_WAYS_VERSION = 'LUCKEY-TIBETAN-BON-NINE-WAYS-v2.2.0';
+export const TIBETAN_BON_NINE_WAYS_VERSION = 'LUCKEY-TIBETAN-BON-NINE-WAYS-v2.3.0';
+
+export type BonQuestionTopic = 'career' | 'relationship' | 'wealth' | 'health' | 'decision' | 'general';
 
 function formatBonKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -69,6 +71,9 @@ export interface TibetanBonReport {
   primaryVitality: BonVitalityEnergy; // 가장 강화가 필요한 주재 영혼 에너지
   vitalities: BonVitalityEnergy[];    // 5대 영혼 에너지 전수 상태
   primordialPurityIndex: number; // 0 ~ 100 융드룽 본원 청정도
+  questionTopic: BonQuestionTopic;
+  bonPhase: string;
+  shadowWarning: string;
   yungdrungMantraDecree: string; // 불멸의 진언 칙령
   reflectiveQuestion: string;
   interpretiveBoundary: string;
@@ -155,6 +160,37 @@ const NINE_BON_WAYS: BonWayPath[] = [
     soulGuidance: '그 어떤 것도 더하거나 뺄 필요가 없습니다. 지금 이 순간 깨어있는 당신 자신이 곧 불멸의 지혜입니다.'
   }
 ];
+
+function classifyBonTopic(question: string): BonQuestionTopic {
+  if (/이직|직장|사업|승진|일|커리어|프로젝트|업무/.test(question)) return 'career';
+  if (/연애|결혼|사람|관계|가족|갈등|친구|이별|소통/.test(question)) return 'relationship';
+  if (/돈|재물|투자|재정|수입|지출|계약|매매/.test(question)) return 'wealth';
+  if (/건강|몸|마음|휴식|수면|피로|회복|정화|균형/.test(question)) return 'health';
+  if (/결정|선택|고민|방향|시작/.test(question)) return 'decision';
+  return 'general';
+}
+
+function resolveBonPhase(purityIndex: number): string {
+  if (purityIndex >= 85) return '융드룽 대원만 광명기 (Yungdrung Dzogchen) — 5대 영혼 활력소가 고르게 빛나 중심이 흔들리지 않는 국면';
+  if (purityIndex >= 75) return '아카르 호흡 조율기 (Akar Balance) — 일상 수행과 환경 정화가 맞물려 안정감을 키워가는 국면';
+  return '차셴 정화 복원기 (Chashen Renewal) — 소모된 활력소를 먼저 보충하고 주변의 불필요한 잡음을 비우는 국면';
+}
+
+function buildBonShadowWarning(
+  activeWay: BonWayPath,
+  primaryVitality: BonVitalityEnergy,
+  topic: BonQuestionTopic,
+): string {
+  const topicNote =
+    topic === 'health'
+      ? '피로가 누적된 상태에서 무리한 절제보다 따뜻한 휴식과 호흡 복원을 우선하십시오.'
+      : topic === 'relationship'
+        ? '타인의 기운까지 떠안으려다 내 오라(라)가 소진되지 않도록 거리를 조절하십시오.'
+        : topic === 'career'
+          ? '속도와 성취만 좇다 일상의 기본 리듬(속·체)이 무너지지 않도록 살피십시오.'
+          : '겉의 의례보다 지금 마음의 고요와 솔직한 상태 점검을 앞세우십시오.';
+  return `[${activeWay.koreanName} · ${primaryVitality.name} 과잉 경계] ${primaryVitality.koreanMeaning}이 약해질 때 조급함이나 자기 소진이 찾아올 수 있습니다. ${topicNote}`;
+}
 
 export function calculateTibetanBonNineWays(
   profile: UserProfile,
@@ -253,6 +289,9 @@ export function calculateTibetanBonNineWays(
   const now = new Date();
   const calculatedAtKst = formatBonKstTimestamp(now);
   const q = (options?.question || options?.contextText || '').trim();
+  const questionTopic = classifyBonTopic(q);
+  const bonPhase = resolveBonPhase(primordialPurityIndex);
+  const shadowWarning = buildBonShadowWarning(activeWay, primaryVitality, questionTopic);
   const reflectiveQuestion = q
     ? `"${q}" 앞에서 [${activeWay.koreanName}]의 수행과 보조 [${secondaryWay.koreanName}]의 시선을 함께 세우며 ${primaryVitality.name}을 회복하려면, 오늘 가장 먼저 정돈할 습관은 무엇입니까?`
     : `${activeWay.koreanName}의 가르침 속에서 ${primaryVitality.koreanMeaning}을 지키기 위해, 지금 내 삶의 공간과 마음에서 비워내고 싶은 잡음은 무엇입니까?`;
@@ -261,8 +300,8 @@ export function calculateTibetanBonNineWays(
   const ritualAction = `조용한 자리에서 "${yungdrungMantraDecree.split('(')[0].trim()}" 진언을 세 번 암송하며 ${primaryVitality.name} 에너지를 가다듬으십시오.`;
   const reflectionFocus = `[${activeWay.koreanName}]의 수행과 부족해진 ${primaryVitality.koreanMeaning}의 균형 회복`;
   const bonSynthesisMatrix = {
-    dominantTension: `${activeWay.koreanName} ↔ ${primaryVitality.name}`,
-    alignmentState: `${activeWay.category} · 보조 교차(${secondaryWay.koreanName}) · 보강(${primaryVitality.koreanMeaning})`,
+    dominantTension: `${activeWay.koreanName} ↔ ${primaryVitality.name} (${questionTopic})`,
+    alignmentState: `${bonPhase} · 보조 교차(${secondaryWay.koreanName})`,
     integratedAction: `${primaryVitality.harmonizationNote}${q ? ` [질문 맥락: ${q}]` : ''}`,
   };
 
@@ -275,6 +314,9 @@ export function calculateTibetanBonNineWays(
     primaryVitality,
     vitalities,
     primordialPurityIndex,
+    questionTopic,
+    bonPhase,
+    shadowWarning,
     yungdrungMantraDecree,
     reflectiveQuestion,
     interpretiveBoundary,
@@ -293,6 +335,7 @@ export function formatTibetanBonNineWaysPrompt(report: TibetanBonReport): string
     : '';
 
   return `[티베트 정통 본교(Bon) 카르마 9승 & 5대 영혼 수호 융드룽 엔진 (${TIBETAN_BON_NINE_WAYS_VERSION} | ${report.calculatedAtKst})]
+- 질문 맥락: ${report.questionTopic} | 융드룽 청정 국면: ${report.bonPhase}
 - 공명 영적 길: ${report.activeWay.tibetanName} [${report.activeWay.koreanName}] (${report.activeWay.category})
   * 신성 수행: ${report.activeWay.sacredPractice}
   * 영혼 나침반: ${report.activeWay.soulGuidance}
@@ -302,6 +345,7 @@ export function formatTibetanBonNineWaysPrompt(report: TibetanBonReport): string
 ${vitLines}
 - 융드룽 불멸의 진언 칙령: "${report.yungdrungMantraDecree}"${matrixLine}
 - 성찰 질문: ${report.reflectiveQuestion}
+- 과잉 경계: ${report.shadowWarning}
 - 실천 의례: ${report.ritualAction}
 - 성찰 초점: ${report.reflectionFocus}
 - 해석 경계: ${report.interpretiveBoundary}`;
