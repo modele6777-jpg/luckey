@@ -980,7 +980,7 @@ function AppContent() {
                   ? { display: showLucyPane ? 'flex' : 'none', width: '100%', height: '100%', flex: '1 1 0%', minHeight: 0 }
                   : isDuoPortrait
                   ? { height: '50%', minHeight: '50%', maxHeight: '50%', width: '100%', flex: '0 0 50%' }
-                  : { flex: '1 1 0px', width: 'calc(50vw - var(--sites-sidebar-width, 80px))', height: '100%' }
+                  : { flex: '1 1 0px', width: 'calc(50vw - var(--duo-rail-reserve, var(--sites-sidebar-width, 80px)))', height: '100%' }
               }
               className="shrink-0 min-h-0 flex flex-col overflow-hidden z-10 relative border-none"
             >

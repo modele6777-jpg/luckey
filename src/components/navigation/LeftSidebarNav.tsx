@@ -186,6 +186,7 @@ export default function LeftSidebarNav() {
 
   useEffect(() => {
     const root = document.documentElement;
+    const MAX_GAP = 160;
     const measure = () => {
       const bar = document.getElementById('main-sidebar-navigation');
       if (!bar || !root.classList.contains('duo-unfolded-landscape')) {
@@ -193,18 +194,38 @@ export default function LeftSidebarNav() {
         return;
       }
       const applied = parseFloat(root.style.getPropertyValue('--sidebar-right-gap')) || 0;
-      const gap = Math.max(0, Math.round(window.innerWidth - bar.getBoundingClientRect().right + applied));
+      const rectRight = bar.getBoundingClientRect().right;
+      const layoutRight = window.innerWidth;
+      const visual = window.visualViewport;
+      const visualRight = visual ? visual.offsetLeft + visual.width : layoutRight;
+      let target = Math.max(layoutRight, visualRight);
+      const sw = window.screen?.width || 0;
+      const sh = window.screen?.height || 0;
+      if (sw > 0 && sh > 0) {
+        const screenLandscape = sw > sh;
+        const viewLandscape = window.innerWidth > window.innerHeight;
+        const screenRight = screenLandscape === viewLandscape ? sw : sh;
+        if (screenRight > target && screenRight - layoutRight <= MAX_GAP) target = screenRight;
+      }
+      const outer = window.outerWidth || 0;
+      if (outer > target && outer - layoutRight <= MAX_GAP) target = outer;
+      const raw = Math.round(target - rectRight + applied);
+      // A shift the browser clips would inflate the next sample past the cap.
+      // Keep the previous gap instead of bouncing back to zero.
+      const gap = raw >= 8 && raw <= MAX_GAP ? raw : raw > MAX_GAP ? Math.min(applied, MAX_GAP) : 0;
       root.style.setProperty('--sidebar-right-gap', `${gap}px`);
     };
     measure();
     const frame = window.requestAnimationFrame(measure);
     window.addEventListener('resize', measure);
     window.visualViewport?.addEventListener('resize', measure);
+    window.screen?.orientation?.addEventListener?.('change', measure);
     const stop = subscribeFoldState(() => measure());
     return () => {
       window.cancelAnimationFrame(frame);
       window.removeEventListener('resize', measure);
       window.visualViewport?.removeEventListener('resize', measure);
+      window.screen?.orientation?.removeEventListener?.('change', measure);
       stop();
     };
   }, []);

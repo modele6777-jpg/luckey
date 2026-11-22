@@ -3378,19 +3378,24 @@ body.duo-unfolded-portrait #circular-tarot-modal-container {
   position: fixed !important;
 }
 
-/* 🧭 가로 방향 (Landscape): 좌측 50vw 콘텐츠 / 우측 50vw 루시채팅 / 우측 80px 세로 메뉴 */
+/* 🧭 가로 방향 (Landscape): 좌측 50vw 콘텐츠 / 우측 루시채팅 / 최우측 상태여백의 세로 메뉴 */
+html.duo-unfolded-landscape,
+body.duo-unfolded-landscape {
+  --duo-rail-reserve: max(0px, calc(var(--sites-sidebar-width, 80px) - var(--sidebar-right-gap, 0px)));
+}
 html.duo-unfolded-landscape .sites-pinned-sidebar,
 body.duo-unfolded-landscape .sites-pinned-sidebar {
   position: fixed !important;
   top: 0 !important;
   right: calc(-1 * var(--sidebar-right-gap, 0px)) !important;
-  width: var(--sites-sidebar-width, 80px) !important;
+  width: max(var(--sites-sidebar-width, 80px), var(--sidebar-right-gap, 0px)) !important;
   height: 100% !important;
+  box-sizing: border-box !important;
 }
 
 html.duo-unfolded-landscape .sites-pinned-main {
-  width: calc(100vw - var(--sites-sidebar-width, 80px)) !important;
-  max-width: calc(100vw - var(--sites-sidebar-width, 80px)) !important;
+  width: calc(100vw - var(--duo-rail-reserve, var(--sites-sidebar-width, 80px))) !important;
+  max-width: calc(100vw - var(--duo-rail-reserve, var(--sites-sidebar-width, 80px))) !important;
 }
 
 html.duo-unfolded-landscape .bottom-safe-fab-center,
@@ -3529,9 +3534,9 @@ html.duo-unfolded-mode:not(.duo-unfolded-portrait) #duo-content-viewport {
 
 html.duo-unfolded-landscape #duo-lucy-viewport,
 html.duo-unfolded-mode:not(.duo-unfolded-portrait) #duo-lucy-viewport {
-  width: calc(50vw - var(--sites-sidebar-width, 80px)) !important;
-  min-width: calc(50vw - var(--sites-sidebar-width, 80px)) !important;
-  max-width: calc(50vw - var(--sites-sidebar-width, 80px)) !important;
+  width: calc(50vw - var(--duo-rail-reserve, var(--sites-sidebar-width, 80px))) !important;
+  min-width: calc(50vw - var(--duo-rail-reserve, var(--sites-sidebar-width, 80px))) !important;
+  max-width: calc(50vw - var(--duo-rail-reserve, var(--sites-sidebar-width, 80px))) !important;
   height: 100% !important;
   flex: 1 1 0px !important;
   display: flex !important;
@@ -3670,9 +3675,9 @@ html.duo-unfolded-landscape :is([data-lucy-loader], [data-lucy-aura-loader], .lu
 html.duo-unfolded-mode:not(.duo-unfolded-portrait) :is([data-lucy-loader], [data-lucy-aura-loader], .lucy-mode-transition, [data-lucy-animation]) {
   position: fixed !important;
   left: 50vw !important;
-  width: calc(50vw - var(--sites-sidebar-width, 80px)) !important;
-  max-width: calc(50vw - var(--sites-sidebar-width, 80px)) !important;
-  right: var(--sites-sidebar-width, 80px) !important;
+  width: calc(50vw - var(--duo-rail-reserve, var(--sites-sidebar-width, 80px))) !important;
+  max-width: calc(50vw - var(--duo-rail-reserve, var(--sites-sidebar-width, 80px))) !important;
+  right: var(--duo-rail-reserve, var(--sites-sidebar-width, 80px)) !important;
   top: 0 !important;
   height: 100% !important;
   bottom: 0 !important;
@@ -3898,10 +3903,10 @@ html.duo-unfolded-portrait .lucy-header-actions {
    pane keeps the right-side navigation rail reserved on the physical right. */
 html.duo-unfolded-landscape.duo-panels-swapped #duo-content-viewport,
 body.duo-unfolded-landscape.duo-panels-swapped #duo-content-viewport {
-  width: calc(50vw - var(--sites-sidebar-width, 80px)) !important;
-  min-width: calc(50vw - var(--sites-sidebar-width, 80px)) !important;
-  max-width: calc(50vw - var(--sites-sidebar-width, 80px)) !important;
-  flex: 0 0 calc(50vw - var(--sites-sidebar-width, 80px)) !important;
+  width: calc(50vw - var(--duo-rail-reserve, var(--sites-sidebar-width, 80px))) !important;
+  min-width: calc(50vw - var(--duo-rail-reserve, var(--sites-sidebar-width, 80px))) !important;
+  max-width: calc(50vw - var(--duo-rail-reserve, var(--sites-sidebar-width, 80px))) !important;
+  flex: 0 0 calc(50vw - var(--duo-rail-reserve, var(--sites-sidebar-width, 80px))) !important;
 }
 html.duo-unfolded-landscape.duo-panels-swapped #duo-lucy-viewport,
 body.duo-unfolded-landscape.duo-panels-swapped #duo-lucy-viewport {
@@ -3917,9 +3922,9 @@ body.duo-unfolded-landscape.duo-panels-swapped #tarot-stage-container,
 body.duo-unfolded-landscape.duo-panels-swapped #today-tarot-narration-modal,
 body.duo-unfolded-landscape.duo-panels-swapped #circular-tarot-modal-container {
   left: 50vw !important;
-  right: var(--sites-sidebar-width, 80px) !important;
-  width: calc(50vw - var(--sites-sidebar-width, 80px)) !important;
-  max-width: calc(50vw - var(--sites-sidebar-width, 80px)) !important;
+  right: var(--duo-rail-reserve, var(--sites-sidebar-width, 80px)) !important;
+  width: calc(50vw - var(--duo-rail-reserve, var(--sites-sidebar-width, 80px))) !important;
+  max-width: calc(50vw - var(--duo-rail-reserve, var(--sites-sidebar-width, 80px))) !important;
 }
 html.duo-unfolded-landscape.duo-panels-swapped .bottom-safe-fab-center,
 body.duo-unfolded-landscape.duo-panels-swapped .bottom-safe-fab-center {
@@ -3929,14 +3934,14 @@ body.duo-unfolded-landscape.duo-panels-swapped .bottom-safe-fab-center {
 html.duo-unfolded-landscape.duo-panels-swapped .prism-xs-subnav:not(.duo-page-nav),
 body.duo-unfolded-landscape.duo-panels-swapped .prism-xs-subnav:not(.duo-page-nav) {
   left: calc(75vw - 40px) !important;
-  max-width: calc(50vw - var(--sites-sidebar-width, 80px) - 2rem) !important;
+  max-width: calc(50vw - var(--duo-rail-reserve, var(--sites-sidebar-width, 80px)) - 2rem) !important;
 }
 html.duo-unfolded-landscape.duo-panels-swapped :is([data-app-channel-loader], [data-fullscreen-loader]:not([data-lucy-loader])),
 body.duo-unfolded-landscape.duo-panels-swapped :is([data-app-channel-loader], [data-fullscreen-loader]:not([data-lucy-loader])) {
   left: 50vw !important;
-  width: calc(50vw - var(--sites-sidebar-width, 80px)) !important;
-  max-width: calc(50vw - var(--sites-sidebar-width, 80px)) !important;
-  right: var(--sites-sidebar-width, 80px) !important;
+  width: calc(50vw - var(--duo-rail-reserve, var(--sites-sidebar-width, 80px))) !important;
+  max-width: calc(50vw - var(--duo-rail-reserve, var(--sites-sidebar-width, 80px))) !important;
+  right: var(--duo-rail-reserve, var(--sites-sidebar-width, 80px)) !important;
 }
 html.duo-unfolded-landscape.duo-panels-swapped :is([data-lucy-loader], [data-lucy-aura-loader], .lucy-mode-transition, [data-lucy-animation]),
 body.duo-unfolded-landscape.duo-panels-swapped :is([data-lucy-loader], [data-lucy-aura-loader], .lucy-mode-transition, [data-lucy-animation]) {
