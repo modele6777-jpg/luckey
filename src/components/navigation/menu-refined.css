@@ -164,6 +164,18 @@ html.duo-unfolded-portrait .refined-prism-icons {
   }
 }
 
+/* 터치로 나갔는데도 이전 아이콘에 :hover가 남아 켜진 것처럼 보이지 않게 한다. */
+@media (hover: none), (pointer: coarse) {
+  .refined-nav-item:hover:not([data-active='true']) {
+    background: transparent;
+    border-color: transparent;
+  }
+}
+.sites-pinned-sidebar[data-clear-hover='true'] .refined-nav-item:not([data-active='true']):hover {
+  background: transparent;
+  border-color: transparent;
+}
+
 .refined-nav-item:focus-visible {
   outline: 2px solid #85a8cb;
   outline-offset: -2px;

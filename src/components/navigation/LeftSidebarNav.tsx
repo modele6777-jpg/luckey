@@ -264,6 +264,21 @@ export default function LeftSidebarNav() {
   }, []);
   const [location, navigate] = useLocation();
   const cleanPath = location ? location.split('?')[0].split('#')[0] : '/';
+  useEffect(() => {
+    const aside = document.getElementById('main-sidebar-navigation');
+    if (!aside) return;
+    aside.setAttribute('data-clear-hover', 'true');
+    aside.querySelectorAll<HTMLElement>('.refined-nav-item').forEach(node => {
+      if (node.getAttribute('data-active') !== 'true') node.blur();
+    });
+  }, [cleanPath]);
+  useEffect(() => {
+    const aside = document.getElementById('main-sidebar-navigation');
+    if (!aside) return;
+    const release = () => aside.removeAttribute('data-clear-hover');
+    aside.addEventListener('pointerdown', release);
+    return () => aside.removeEventListener('pointerdown', release);
+  }, []);
   const channelsVisible = screenUnfolded || isChannelsOpen;
   useEffect(() => {
     if (cleanPath === '/lucky' || screenUnfolded) setIsChannelsOpen(true);

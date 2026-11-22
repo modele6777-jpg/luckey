@@ -1588,20 +1588,22 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
     return () => clearTimeout(timer);
   }, [isLucyReady]);
 
-  // 🌌 루시 채팅 페이지 스코프 설정 (배경 순백색 고정용)
+  // 🌌 루시 채팅이 지금 화면일 때만 활성화. 접힌 채팅은 DOM에 남아도 다른 페이지에서는 끈다.
   useEffect(() => {
-    document.documentElement.classList.add('in-lucy-chat');
-    document.body.classList.add('in-lucy-chat');
-    document.documentElement.style.removeProperty('--lucy-chat-bar-height');
-    document.body.style.removeProperty('--lucy-chat-bar-height');
-
-    return () => {
+    const onLucy = isLucyChatPath(location);
+    document.documentElement.classList.toggle('in-lucy-chat', onLucy);
+    document.body.classList.toggle('in-lucy-chat', onLucy);
+    if (!onLucy) {
       document.documentElement.style.removeProperty('--lucy-chat-bar-height');
       document.body.style.removeProperty('--lucy-chat-bar-height');
+    }
+    return () => {
       document.documentElement.classList.remove('in-lucy-chat');
       document.body.classList.remove('in-lucy-chat');
+      document.documentElement.style.removeProperty('--lucy-chat-bar-height');
+      document.body.style.removeProperty('--lucy-chat-bar-height');
     };
-  }, []);
+  }, [location]);
 
 
   // Determine User Nickname (🛡️ 실명이나 구글 계정명으로 폴백하지 않고 '제제'로 영구 고정)
