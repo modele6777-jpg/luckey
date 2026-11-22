@@ -972,8 +972,9 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
   // 🃏 2단계(사주 + 타로)에 들어서면 루시가 카드 뽑기를 권한다. 카드는 손님이 직접 섞고 고른다.
   useEffect(() => {
     const onDepth = (e: Event) => {
-      const detail = (e as CustomEvent<{ depth: LucyMasterDepth; changed: boolean }>).detail;
-      if (!detail?.changed || detail.depth !== 2 || !isLucyMasterModeOn()) return;
+      const detail = (e as CustomEvent<{ depth: LucyMasterDepth; changed: boolean; shallower?: boolean }>).detail;
+      // 3단계에서 2단계로 얕아질 때는 카드 권유를 다시 하지 않는다.
+      if (!detail?.changed || detail.shallower || detail.depth !== 2 || !isLucyMasterModeOn()) return;
       const layout = isDuoUnfoldedState().unfolded ? 'unfolded' : 'folded';
       setLucyProMessages(prev => [...prev, createDepthTwoTarotOffer(layout)]);
     };

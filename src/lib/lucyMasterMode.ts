@@ -148,6 +148,18 @@ export function deepenLucyMasterDepth(): { depth: LucyMasterDepth; changed: bool
   return { depth: next, changed };
 }
 
+/** One step shallower (min 1). Used by the Big Bang left tap in Lucy chat. */
+export function shallowLucyMasterDepth(): { depth: LucyMasterDepth; changed: boolean } {
+  const current = getLucyMasterDepth();
+  const next = Math.max(1, current - 1) as LucyMasterDepth;
+  const changed = next !== current;
+  try { safeSessionStorage.setItem(LUCY_MASTER_DEPTH_KEY, String(next)); } catch { /* storage optional */ }
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent(LUCY_MASTER_DEPTH_EVENT, { detail: { depth: next, changed, shallower: true } }));
+  }
+  return { depth: next, changed };
+}
+
 export function useLucyMasterDepth(): LucyMasterDepth {
   const [depth, setDepth] = useState<LucyMasterDepth>(() => getLucyMasterDepth());
   useEffect(() => {
