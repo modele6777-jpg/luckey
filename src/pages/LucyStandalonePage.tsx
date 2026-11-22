@@ -714,16 +714,80 @@ const detectPageChannels = (text: string, options: { allowMaster?: boolean } = {
 let lucyMountedBefore = false;
 
 /** Lucy Master answers take longer; show the elapsed time so the wait never looks frozen. */
-function LucyThinkingElapsed({ isLight, depth = 1 }: { isLight: boolean; depth?: LucyMasterDepth }) {
-  const [seconds, setSeconds] = useState(0);
+/** Rotating, natural "Lucy is writing" lines (casual Lucy vs. calm Master tone). */
+const LUCY_THINKING_LINES = [
+  '루시가 네 이야기를 곰곰이 읽고 있어',
+  '마음에 닿을 말을 고르는 중이야',
+  '답장을 정성껏 쓰고 있어',
+];
+const MASTER_THINKING_LINES = [
+  '사주의 흐름을 차분히 짚어 보고 있어',
+  '여러 관점을 겹쳐 보며 답을 다듬는 중이야',
+  '마음에 남을 한마디를 고르고 있어',
+];
+
+function LucyThinkingLine({ isLight, master }: { isLight: boolean; master: boolean }) {
+  const lines = master ? MASTER_THINKING_LINES : LUCY_THINKING_LINES;
+  const [index, setIndex] = useState(0);
+  useEffect(() => {
+    const timer = window.setInterval(() => setIndex(value => (value + 1) % lines.length), 3600);
+    return () => window.clearInterval(timer);
+  }, [lines.length]);
+  return (
+    <span
+      key={index}
+      data-lucy-thinking-line
+      className={`lucy-thinking-line text-xs sm:text-sm font-bold ml-1 ${isLight ? 'text-emerald-950' : 'text-white'}`}
+      style={{ color: isLight ? '#022c22' : '#ffffff' }}
+    >
+      {lines[index]}
+    </span>
+  );
+}
+
+/**
+ * Rough waiting time shown as a ring that fills, never as seconds.
+ * It approaches full over the usual time for this mode (90% at the expected time) and never quite completes before the answer arrives.
+ */
+function LucyThinkingRing({ isLight, depth = 1, master }: { isLight: boolean; depth?: LucyMasterDepth; master: boolean }) {
+  const expectedMs = master ? (depth >= 3 ? 110000 : depth === 2 ? 75000 : 55000) : 25000;
+  const [progress, setProgress] = useState(0);
   useEffect(() => {
     const startedAt = Date.now();
-    const timer = window.setInterval(() => setSeconds(Math.floor((Date.now() - startedAt) / 1000)), 1000);
+    const tau = expectedMs / 2.3;
+    const tick = () => setProgress(Math.min(0.97, 1 - Math.exp(-(Date.now() - startedAt) / tau)));
+    tick();
+    const timer = window.setInterval(tick, 400);
     return () => window.clearInterval(timer);
-  }, []);
+  }, [expectedMs]);
+  const radius = 9;
+  const length = 2 * Math.PI * radius;
+  const hint = master ? (depth >= 3 ? '심층 상담이라 조금 오래 걸려요' : depth === 2 ? '심화 상담이라 조금 더 걸려요' : '잠시만 기다려 주세요') : '곧 답장이 와요';
   return (
-    <span data-lucy-thinking-elapsed className={`text-[11px] font-semibold tabular-nums ml-1 ${isLight ? 'text-emerald-800/80' : 'text-white/70'}`}>
-      {seconds}초 · {depth >= 3 ? '심층 상담이라 1~2분 걸릴 수 있어요' : depth === 2 ? '심화 상담이라 조금 더 걸려요' : '보통 1분 안팎'}
+    <span data-lucy-thinking-ring role="progressbar" aria-label={`답변 준비 중 · ${hint}`} aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(progress * 100)} title={hint} className="lucy-thinking-ring ml-1 inline-flex shrink-0">
+      <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+        <defs>
+          <linearGradient id="lucy-thinking-ring-fill" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stopColor="#10b981" />
+            <stop offset="100%" stopColor="#f59e0b" />
+          </linearGradient>
+        </defs>
+        <circle cx="12" cy="12" r={radius} fill="none" stroke={isLight ? 'rgba(6, 78, 59, .15)' : 'rgba(255, 255, 255, .18)'} strokeWidth="3" />
+        <circle
+          cx="12"
+          cy="12"
+          r={radius}
+          fill="none"
+          stroke="url(#lucy-thinking-ring-fill)"
+          strokeWidth="3"
+          strokeLinecap="round"
+          strokeDasharray={length}
+          strokeDashoffset={length * (1 - progress)}
+          transform="rotate(-90 12 12)"
+          style={{ transition: 'stroke-dashoffset .4s linear' }}
+        />
+        <circle className="lucy-thinking-ring-spark" cx="12" cy="3" r="1.4" fill={isLight ? '#059669' : '#fde68a'} />
+      </svg>
     </span>
   );
 }
@@ -4778,13 +4842,8 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
                 <span className="w-2 h-2 rounded-full bg-emerald-500 animate-bounce delay-100" />
                 <span className="w-2 h-2 rounded-full bg-emerald-500 animate-bounce delay-200" />
               </div>
-              <span
-                className={`text-xs sm:text-sm font-bold ml-1 ${isLight ? 'text-emerald-950' : 'text-white'}`}
-                style={{ color: isLight ? '#022c22' : '#ffffff' }}
-              >
-                기본 도구와 심층 관점을 함께 살펴보고 있어요...
-              </span>
-              {isMasterMode && <LucyThinkingElapsed isLight={isLight} depth={masterDepth} />}
+              <LucyThinkingLine isLight={isLight} master={isMasterMode} />
+              <LucyThinkingRing isLight={isLight} depth={masterDepth} master={isMasterMode} />
             </div>
           )}
           
