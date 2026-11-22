@@ -4045,6 +4045,8 @@ test('Slavic Svarog Circle & Rod Ancestral Karma Engine: calculates svarog hall,
   const rep = calculateSlavicSvarogCircle({ profile, contextText: '가계와 일의 균형을 어떻게 잡을까요?' });
   assert.equal(rep.engineVersion, SLAVIC_SVAROG_VERSION);
   assert(rep.calculatedAtKst.includes('+09:00 (KST)'));
+  assert.equal(rep.questionTopic, 'decision');
+  assert(rep.svarogPhase.length > 0 && rep.shadowWarning.length > 0);
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(Boolean(rep.svarogSynthesisMatrix?.integratedAction));
   assert(rep.svarogHall.koreanName.length > 0);
@@ -4058,6 +4060,7 @@ test('Slavic Svarog Circle & Rod Ancestral Karma Engine: calculates svarog hall,
   assert(prompt.includes('고대 슬라브 16 스바로그 체계 & 로드(Rod) 가계 카르마 엔진'));
   assert(prompt.includes(rep.svarogHall.koreanName));
   assert(prompt.includes('보조 교차 궁'));
+  assert(prompt.includes('스바로그 조화 국면') && prompt.includes('과잉 경계'));
   assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
   assert(prompt.includes('성찰 질문'));
   assert(prompt.includes('해석 경계'));
@@ -4175,6 +4178,8 @@ test('Taoist Huangting Jing Internal Palaces Engine: calculates palaces, guardia
 test('Persian Amesha Spenta & Baresman Engine: calculates immortal, baresman scores and avestan guidance', () => {
   const rep = calculatePersianAmeshaSpenta(profile, '갈등 상황에서 맑은 중심을 지키고 싶습니다', new Date('2026-11-17T05:00:00+09:00'));
   assert.equal(rep.engineVersion, PERSIAN_AMESHA_SPENTA_VERSION);
+  assert.equal(rep.questionTopic, 'relationship');
+  assert(rep.ameshaPhase.length > 0 && rep.shadowWarning.length > 0);
   assert(rep.patronImmortal.koreanName.length > 0);
   assert(rep.secondaryImmortal.koreanName.length > 0);
   assert(rep.totalRadianceScore >= 0 && rep.totalRadianceScore <= 100);
@@ -4193,6 +4198,7 @@ test('Persian Amesha Spenta & Baresman Engine: calculates immortal, baresman sco
   assert(prompt.includes('성찰 초점'));
   assert(prompt.includes('교차 매트릭스'));
   assert(prompt.includes('성찰 질문'));
+  assert(prompt.includes('과잉 경계'));
   assert(prompt.includes('해석 경계'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
@@ -4202,6 +4208,8 @@ test('Sumerian Fifty Mes & Civilization Engine: calculates primary me, creation 
   const rep = calculateSumerianFiftyMes(profile, '새 프로젝트의 기준을 어떻게 세울까요?');
   assert.equal(rep.engineVersion, SUMERIAN_FIFTY_MES_VERSION);
   assert(rep.calculatedAtKst.includes('+09:00 (KST)'));
+  assert.equal(rep.questionTopic, 'career');
+  assert(rep.eriduPhase.length > 0 && rep.shadowWarning.length > 0);
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(Boolean(rep.fiftyMesSynthesisMatrix?.integratedAction));
   assert(rep.primaryMe.koreanName.length > 0);
@@ -4213,6 +4221,7 @@ test('Sumerian Fifty Mes & Civilization Engine: calculates primary me, creation 
   assert(prompt.includes('고대 수메르 에리두 50대 메(Me) 신성 문명 규범 엔진'));
   assert(prompt.includes(rep.primaryMe.koreanName));
   assert(prompt.includes('보조 교차 메(Me)'));
+  assert(prompt.includes('에리두 문명 국면') && prompt.includes('과잉 경계'));
   assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
   assert(prompt.includes('성찰 질문'));
   assert(prompt.includes('해석 경계'));
