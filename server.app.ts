@@ -30,6 +30,7 @@ const _filename = typeof __filename !== "undefined" ? __filename : "";
 const _dirname = typeof __dirname !== "undefined" ? __dirname : process.cwd();
 
 import { getGeminiApiKey } from "./server/geminiKey";
+import { recordGeminiFailure, recordGeminiSuccess, getGeminiHealthSnapshot } from "./server/api-lib/geminiHealth";
 export { getGeminiApiKey };
 
 function getAIConfig(): { aiType: string; apiKey: string } {
@@ -294,9 +295,11 @@ async function callGeminiStreamWithFallback(ai: GoogleGenAI, contents: any, conf
           ),
         ]);
         modelCooldownMap.delete(model);
+        recordGeminiSuccess(model);
         return { stream, modelUsed: model };
       } catch (err: any) {
         lastError = err;
+        recordGeminiFailure(model, err);
         if (!omitThinking && (model === "gemini-3.1-flash-lite" || model === "gemini-3.8-flash")) {
           continue;
         }
@@ -336,11 +339,13 @@ async function callGeminiContentWithFallback(ai: GoogleGenAI, contents: any, con
         ]);
         if (response?.text && String(response.text).trim().length > 0) {
           modelCooldownMap.delete(model);
+          recordGeminiSuccess(model);
           return { response, modelUsed: model };
         }
         throw new Error(`Empty response text from ${model}`);
       } catch (err: any) {
         lastError = err;
+        recordGeminiFailure(model, err);
         if (!omitThinking && (model === "gemini-3.1-flash-lite" || model === "gemini-3.8-flash")) {
           continue;
         }
@@ -827,6 +832,34 @@ ${content}
 
   // TTS - generative AI speech only, without standard/device voice substitution
   // 🔊 Which speech engine answers right now (no secrets): Chirp 3 HD, or Gemini fallback and why.
+  // 🩺 서버 Gemini 상태: 모델별 마지막 성공/실패와 실패 이유(분류·상태 코드)만 보여 준다. 키 값은 절대 내보내지 않는다.
+  // ?probe=1 이면 주요 모델에 아주 짧은 요청을 한 번씩 보내 지금 상태를 확인한다 (1분에 한 번까지).
+  let lastGeminiProbeAt = 0;
+  app.get("/api/ai/status", async (req, res) => {
+    res.setHeader("Cache-Control", "no-store");
+    const apiKey = getGeminiApiKey();
+    let probed = false;
+    if (req.query?.probe === "1" && apiKey && Date.now() - lastGeminiProbeAt > 60000) {
+      lastGeminiProbeAt = Date.now();
+      probed = true;
+      const ai = new GoogleGenAI({ apiKey });
+      const probeModels = ["gemini-3.6-flash", "gemini-flash-latest", "gemini-3.8-flash", "gemini-3.1-flash-lite", "gemini-flash-lite-latest"];
+      await Promise.all(probeModels.map(async (model) => {
+        try {
+          const response = await Promise.race([
+            ai.models.generateContent({ model, contents: [{ role: "user", parts: [{ text: "OK라고만 답해." }] }], config: { maxOutputTokens: 16 } }),
+            new Promise<never>((_, reject) => setTimeout(() => reject(new Error(`probe timeout on ${model}`)), 15000)),
+          ]);
+          if (response?.text && String(response.text).trim()) recordGeminiSuccess(model);
+          else recordGeminiFailure(model, new Error(`Empty response text from ${model}`));
+        } catch (err) {
+          recordGeminiFailure(model, err);
+        }
+      }));
+    }
+    return res.json({ keyConfigured: Boolean(apiKey), probed, ...getGeminiHealthSnapshot() });
+  });
+
   app.get("/api/ai/tts/status", async (_req, res) => {
     const { cloudTtsStatus } = await import('./server/api-lib/preferredSpeech.ts');
     const { cloudTtsKeySource } = await import('./server/api-lib/googleCloudTts.ts');
@@ -1330,6 +1363,7 @@ ${content}
                 markModelThrottled(currentModel, 60000);
                 break;
               } catch (streamErr: any) {
+                recordGeminiFailure(currentModel, streamErr);
                 if (!omitThinking && chunksDelivered === 0 && (currentModel === "gemini-3.1-flash-lite" || currentModel === "gemini-3.8-flash")) {
                   continue;
                 }
