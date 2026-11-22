@@ -836,6 +836,19 @@ ${content}
     return res.json({ ...cloudTtsStatus(env), cloudKeySource: cloudTtsKeySource(env) });
   });
 
+  // Gemini Live 음성 전용. 브라우저에는 짧은 토큰만 주고, API 키는 서버에 둔다.
+  app.post("/api/ai/live-token", async (req, res) => {
+    try {
+      const { createGeminiLiveToken } = await import("./server/api-lib/geminiLiveToken.ts");
+      const nickname = typeof req.body?.nickname === "string" ? req.body.nickname : "";
+      res.setHeader("Cache-Control", "no-store");
+      return res.status(200).json(await createGeminiLiveToken(nickname));
+    } catch (error: any) {
+      const status = Number(error?.status) || 500;
+      return res.status(status).json({ error: error?.message || "실시간 음성 토큰을 만들지 못했습니다.", ...(error?.code ? { code: error.code } : {}) });
+    }
+  });
+
   app.post("/api/ai/tts", async (req, res) => {
     const { text, voice = 'Aoede', emotion, rate, speed, pitch, language, provider } = req.body || {};
     const speech = String(text || '').trim();

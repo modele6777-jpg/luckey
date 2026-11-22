@@ -1,5 +1,6 @@
 import { LucyLibraryDialogs, LucyLibraryTrigger } from '@/components/chat/LucyLibraryDialogs';
 import { collectSpeechTranscript, createEndOfSpeechWatcher, type EndOfSpeechWatcher } from '@/lib/speechAutoSend';
+import { startGeminiLiveVoice, type LiveVoiceSession } from '@/lib/geminiLiveSession';
 import { LucyModeName } from '@/components/chat/LucyModeName';
 import { ScreenPortal } from '@/components/layout/ScreenPortal';
 import { LucyModeTransition } from '@/components/chat/LucyModeTransition';
@@ -1905,6 +1906,8 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
   const speechWatcherRef = useRef<EndOfSpeechWatcher | null>(null);
   const speechTranscriptRef = useRef<string>('');
   const voiceUtteranceRef = useRef(false);
+  const liveVoiceRef = useRef<LiveVoiceSession | null>(null);
+  const [voiceEngine, setVoiceEngine] = useState<'live' | 'browser' | null>(null);
   const isLucyGeneratingRef = useRef<boolean>(isLucyGenerating);
 
   // 🎙️ 음성 인식 중지
@@ -1932,6 +1935,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
 
   // 🎙️ 음성 인식 시작 (STT)
   const startListening = useCallback(() => {
+    if (liveVoiceRef.current) return;
     if (typeof window === 'undefined' || !isVoiceModeRef.current || isVoiceMutedRef.current) return;
     stopRecognition();
     const SpeechRecognition =
@@ -2073,6 +2077,9 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
     if (isVoiceModeRef.current) {
       isVoiceModeRef.current = false;
       speechTranscriptRef.current = '';
+      liveVoiceRef.current?.stop();
+      liveVoiceRef.current = null;
+      setVoiceEngine(null);
       stopRecognition();
       stopTTS();
       setIsVoiceMode(false);
@@ -2093,9 +2100,43 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
       setSpeechTranscript('');
       setSpeechInterim('');
       setVoiceError(null);
-      startListening();
+      setVoiceEngine('live');
+      liveVoiceRef.current?.stop();
+      const session = startGeminiLiveVoice({
+        nickname: userDisplayName,
+        onState: (state) => {
+          if (!isVoiceModeRef.current || liveVoiceRef.current !== session) return;
+          setVoiceState(state);
+          voiceStateRef.current = state;
+        },
+        onUserText: (text) => {
+          if (!isVoiceModeRef.current || liveVoiceRef.current !== session) return;
+          setSpeechTranscript(text);
+        },
+        onLucyText: (text) => {
+          if (!isVoiceModeRef.current || liveVoiceRef.current !== session) return;
+          setSpeechInterim(text);
+        },
+        onError: (error) => {
+          if (liveVoiceRef.current !== session) return;
+          liveVoiceRef.current = null;
+          session.stop();
+          if (!isVoiceModeRef.current) return;
+          if (error.code === 'mic-denied') {
+            setVoiceEngine(null);
+            setVoiceError(error.message);
+            setVoiceState('error');
+            voiceStateRef.current = 'error';
+            return;
+          }
+          setVoiceEngine('browser');
+          setVoiceError(null);
+          startListeningRef.current?.();
+        },
+      });
+      liveVoiceRef.current = session;
     }
-  }, [startListening, stopRecognition]);
+  }, [startListening, stopRecognition, userDisplayName]);
 
   // 빅뱅버튼 홀드 시 별도 말풍선 없이 루시채팅 자체 음성 모드 즉시 토글
   useEffect(() => {
@@ -2127,6 +2168,8 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
       isVoiceModeRef.current = false;
       isAutoTtsRef.current = false;
       voiceStateRef.current = 'idle';
+      liveVoiceRef.current?.stop();
+      liveVoiceRef.current = null;
       stopRecognition();
       stopTTS();
     };
@@ -4859,7 +4902,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
                           <span className="w-1 h-2 bg-cyan-400 rounded-full animate-pulse" />
                         </div>
                         <span className="text-xs font-bold truncate">
-                          루시가 듣고 있어요... 편하게 말씀하세요
+                          {voiceEngine === 'live' ? '실시간으로 듣고 있어요. 그냥 말하세요' : '루시가 듣고 있어요... 편하게 말씀하세요'}
                         </span>
                       </div>
                     ) : voiceState === 'thinking' ? (
@@ -4893,7 +4936,15 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
                     {voiceState === 'speaking' && (
                       <button
                         type="button"
-                        onClick={handleInterruptLucy}
+                        onClick={() => {
+                          if (liveVoiceRef.current) {
+                            liveVoiceRef.current.interrupt();
+                            setVoiceState('listening');
+                            voiceStateRef.current = 'listening';
+                            return;
+                          }
+                          handleInterruptLucy();
+                        }}
                         className="px-2 py-0.5 rounded-lg bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-[10px] cursor-pointer active:scale-95 transition-all shadow-xs flex items-center gap-1"
                         title="루시 말 끊고 바로 질문하기"
                       >
@@ -4910,6 +4961,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
                         setIsVoiceMuted(nextMuted);
                         isVoiceMutedRef.current = nextMuted;
                         if (nextMuted) {
+                          liveVoiceRef.current?.setMuted(true);
                           stopRecognition();
                           voiceStateRef.current = 'idle';
                           speechTranscriptRef.current = '';
@@ -4917,6 +4969,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
                           setSpeechInterim('');
                           setVoiceState('idle');
                         } else {
+                          liveVoiceRef.current?.setMuted(false);
                           setVoiceState('listening');
                           startListening();
                         }
