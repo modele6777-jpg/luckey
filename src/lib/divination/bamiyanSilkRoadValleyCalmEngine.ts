@@ -5,13 +5,29 @@ export interface BamiyanValleyResult {
   calculatedAtKst: string;
   bamiyanMotif: string;
   companionMotif: string;
+  valleyPhase: string;
   bamiyanInsight: string;
   valleyTone: string;
   reflectionFocus: string;
   ritualAction: string;
   reflectiveQuestion: string;
+  shadowWarning: string;
   interpretiveBoundary: string;
 }
+
+const VALLEY_PHASES = [
+  '바람막이 쉼터(소음을 차단하고 내면의 자리부터 확보하는 국면)',
+  '물길 모으기(작은 성실이 고여 스스로 둑을 이루는 국면)',
+  '여울 흘려보내기(묵힌 인내가 맑은 활력으로 풀려 나오는 국면)',
+  '고원 조망(시야를 높여 걱정의 크기를 다시 재는 국면)',
+] as const;
+
+const SHADOW_WARNINGS = [
+  '쉼터를 핑계로 필요한 대화까지 닫아 버리는 과잉 고립 경계',
+  '성실을 재촉하다가 맑은 물빛을 흐리게 만드는 조급함 경계',
+  '여유를 차일피일 미루며 결정의 때를 놓치는 안일함 경계',
+  '시야만 높인 채 발밑의 작은 실행 한 걸음을 건너뛰는 경계',
+] as const;
 
 const MOTIFS = [
   {
@@ -79,19 +95,26 @@ export function calculateBamiyanSilkRoadValleyCalm(params: {
   const seed = `${JSON.stringify(params.profile.fate ?? {})}|${params.question ?? ''}|${now.toISOString().slice(0, 13)}`;
   const idx = stableHash(seed) % MOTIFS.length;
   const companionOffset = 1 + (stableHash(`${seed}|companion`) % (MOTIFS.length - 1));
+  const phaseIdx = stableHash(`${seed}|phase`) % VALLEY_PHASES.length;
   const picked = MOTIFS[idx];
   const companion = MOTIFS[(idx + companionOffset) % MOTIFS.length];
+  const valleyPhase = VALLEY_PHASES[phaseIdx];
+  const shadowWarning = SHADOW_WARNINGS[(idx + phaseIdx) % SHADOW_WARNINGS.length];
+  const shortCompanion = companion.motif.split('(')[0].trim();
+  const shortPhase = valleyPhase.split('(')[0].trim();
 
   return {
-    engineVersion: 'LUCKEY-BAMIYAN-VALLEY-v2.2.0',
+    engineVersion: 'LUCKEY-BAMIYAN-VALLEY-v2.3.0',
     calculatedAtKst: formatKstIso(now),
     bamiyanMotif: picked.motif,
     companionMotif: companion.motif,
-    bamiyanInsight: `${picked.insight} (동반 결: ${companion.motif})`,
+    valleyPhase,
+    bamiyanInsight: `${picked.insight} (동반 결: ${companion.motif} · 국면: ${shortPhase})`,
     valleyTone: picked.tone,
-    reflectionFocus: `바미얀 계곡 조화의 '${picked.motif}'와 동반 결 '${companion.motif}'처럼, 거센 일정 속에서도 등을 기댈 조용한 틈을 먼저 마련하고 맑은 물빛을 지켜 보세요.`,
-    ritualAction: picked.ritual,
-    reflectiveQuestion: picked.question,
+    reflectionFocus: `바미얀 계곡 조화의 '${picked.motif}'와 동반 결 '${companion.motif}'이 '${valleyPhase}'에서 맞물려, 거센 일정 속에서도 등을 기댈 조용한 틈을 먼저 마련하고 맑은 물빛을 지켜야 하는 때입니다.`,
+    ritualAction: `${picked.ritual} (${shortPhase} 흐름에 맞춰 '${shortCompanion}'의 감각도 한 번 겹쳐 보세요.)`,
+    reflectiveQuestion: `${picked.question} (동반 결 '${shortCompanion}'의 시선으로 보면 어떤 여유가 먼저 보이나요?)`,
+    shadowWarning,
     interpretiveBoundary: '실크로드 바미얀 계곡의 쉼터·고원 호수 지혜 전통을 바탕으로 한 상징적 성찰 프레임입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.',
   };
 }
@@ -102,10 +125,12 @@ export function formatBamiyanValleyPrompt(res: BamiyanValleyResult): string {
     `- 기준 시각: ${res.calculatedAtKst}`,
     `- 계곡 모티프: ${res.bamiyanMotif} (${res.valleyTone})`,
     `- 동반 결: ${res.companionMotif}`,
+    `- 계곡 국면: ${res.valleyPhase}`,
     `- 중심 통찰: ${res.bamiyanInsight}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 오늘의 작은 실천: ${res.ritualAction}`,
     `- 스스로에게 묻기: ${res.reflectiveQuestion}`,
+    `- 과잉·고립 경계: ${res.shadowWarning}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
   ].join('\n');
 }
