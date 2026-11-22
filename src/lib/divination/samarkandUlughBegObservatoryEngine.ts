@@ -1,12 +1,17 @@
 import type { UserProfile } from '../sharedState';
 
+export type SamarkandQuestionTopic = 'career' | 'relationship' | 'wealth' | 'health' | 'decision' | 'general';
+
 export interface SamarkandUlughResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: SamarkandQuestionTopic;
   arcStage: string;
   companionArc: string;
   meridianFocus: string;
   starAlignmentTone: string;
+  observatoryAxis: string;
+  shadowWarning: string;
   reflectionFocus: string;
   ritualAction: string;
   reflectiveQuestion: string;
@@ -51,6 +56,16 @@ const ARCS = [
   },
 ];
 
+function classifySamarkandTopic(question?: string): SamarkandQuestionTopic {
+  const q = (question ?? '').trim();
+  if (/이직|직장|사업|승진|일|커리어|프로젝트|업무/.test(q)) return 'career';
+  if (/연애|결혼|사람|관계|가족|갈등|친구|이별|소통/.test(q)) return 'relationship';
+  if (/돈|재물|투자|재정|수입|지출|계약|매매/.test(q)) return 'wealth';
+  if (/건강|몸|마음|휴식|수면|피로|회복/.test(q)) return 'health';
+  if (/결정|선택|고민|방향|시작|기준|사실|정리/.test(q)) return 'decision';
+  return 'general';
+}
+
 function formatKstIso(date: Date): string {
   const kst = new Date(date.getTime() + 9 * 60 * 60 * 1000);
   const y = kst.getUTCFullYear();
@@ -81,14 +96,20 @@ export function calculateSamarkandUlughBegObservatory(params: {
   const companionOffset = 1 + (stableHash(`${seed}|companion`) % (ARCS.length - 1));
   const picked = ARCS[idx];
   const companion = ARCS[(idx + companionOffset) % ARCS.length];
+  const questionTopic = classifySamarkandTopic(params.question);
+  const observatoryAxis = `${picked.stage.split('(')[0].trim()} ↔ ${companion.stage.split('(')[0].trim()} 자오선 교차`;
+  const shadowWarning = `[${picked.stage.split('(')[0].trim()} 과잉 경계] 분석과 측정에만 매달려 정작 오늘 내디뎌야 할 작은 실행을 미루지 않도록 살피십시오.`;
 
   return {
-    engineVersion: 'LUCKEY-SAMARKAND-ULUGH-v2.2.0',
+    engineVersion: 'LUCKEY-SAMARKAND-ULUGH-v2.3.0',
     calculatedAtKst: formatKstIso(now),
+    questionTopic,
     arcStage: picked.stage,
     companionArc: companion.stage,
     meridianFocus: `${picked.focus} (동반 관측: ${companion.stage})`,
     starAlignmentTone: picked.tone,
+    observatoryAxis,
+    shadowWarning,
     reflectionFocus: `추측이 부풀어 오를수록 '${picked.stage}'와 동반 관측 '${companion.stage}'처럼 눈앞의 한 가지 기준만 차분히 재어 보세요.`,
     ritualAction: picked.ritual,
     reflectiveQuestion: picked.question,
@@ -99,13 +120,15 @@ export function calculateSamarkandUlughBegObservatory(params: {
 export function formatSamarkandUlughPrompt(res: SamarkandUlughResult): string {
   return [
     `[사마르칸트 울루그 베그 천문대 성찰 · ${res.engineVersion}]`,
-    `- 기준 시각: ${res.calculatedAtKst}`,
+    `- 기준 시각: ${res.calculatedAtKst} | 질문 맥락: ${res.questionTopic}`,
     `- 관측 단계: ${res.arcStage} (${res.starAlignmentTone})`,
     `- 동반 관측: ${res.companionArc}`,
+    `- 천문 교차 축: ${res.observatoryAxis}`,
     `- 중심 통찰: ${res.meridianFocus}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 오늘의 작은 실천: ${res.ritualAction}`,
     `- 스스로에게 묻기: ${res.reflectiveQuestion}`,
+    `- 과잉 경계: ${res.shadowWarning}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
   ].join('\n');
 }

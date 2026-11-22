@@ -1,12 +1,17 @@
 import type { UserProfile } from '../sharedState';
 
+export type KyrgyzQuestionTopic = 'career' | 'relationship' | 'wealth' | 'health' | 'decision' | 'general';
+
 export interface KyrgyzManasResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: KyrgyzQuestionTopic;
   epicChapter: string;
   companionChapter: string;
   nomadInsight: string;
   steppeTone: string;
+  steppeBreathAxis: string;
+  shadowWarning: string;
   reflectionFocus: string;
   ritualAction: string;
   reflectiveQuestion: string;
@@ -51,6 +56,16 @@ const CHAPTERS = [
   },
 ];
 
+function classifyKyrgyzTopic(question?: string): KyrgyzQuestionTopic {
+  const q = (question ?? '').trim();
+  if (/이직|직장|사업|승진|일|커리어|프로젝트|업무/.test(q)) return 'career';
+  if (/연애|결혼|사람|관계|가족|갈등|친구|이별|소통/.test(q)) return 'relationship';
+  if (/돈|재물|투자|재정|수입|지출|계약|매매/.test(q)) return 'wealth';
+  if (/건강|몸|마음|휴식|수면|피로|회복/.test(q)) return 'health';
+  if (/결정|선택|고민|방향|시작|걸음/.test(q)) return 'decision';
+  return 'general';
+}
+
 function formatKstIso(date: Date): string {
   const kst = new Date(date.getTime() + 9 * 60 * 60 * 1000);
   const y = kst.getUTCFullYear();
@@ -81,14 +96,20 @@ export function calculateKyrgyzManasOralEpicCourage(params: {
   const companionOffset = 1 + (stableHash(`${seed}|companion`) % (CHAPTERS.length - 1));
   const picked = CHAPTERS[idx];
   const companion = CHAPTERS[(idx + companionOffset) % CHAPTERS.length];
+  const questionTopic = classifyKyrgyzTopic(params.question);
+  const steppeBreathAxis = `${picked.chapter.split('(')[0].trim()} ↔ ${companion.chapter.split('(')[0].trim()} 서사 호흡 축`;
+  const shadowWarning = `[${picked.chapter.split('(')[0].trim()} 과잉 경계] 단거리 돌파나 고집에만 기대어 호흡의 완급과 동료의 화음을 놓치지 않도록 살피십시오.`;
 
   return {
-    engineVersion: 'LUCKEY-KYRGYZ-MANAS-v2.2.0',
+    engineVersion: 'LUCKEY-KYRGYZ-MANAS-v2.3.0',
     calculatedAtKst: formatKstIso(now),
+    questionTopic,
     epicChapter: picked.chapter,
     companionChapter: companion.chapter,
     nomadInsight: `${picked.insight} (동반 장면: ${companion.chapter})`,
     steppeTone: picked.tone,
+    steppeBreathAxis,
+    shadowWarning,
     reflectionFocus: `마나스 서사시의 '${picked.chapter}'와 동반 장면 '${companion.chapter}'처럼, 한 번에 다 끝내려 하지 말고 오늘 몫의 걸음만 당당히 내디뎌 보세요.`,
     ritualAction: picked.ritual,
     reflectiveQuestion: picked.question,
@@ -99,13 +120,15 @@ export function calculateKyrgyzManasOralEpicCourage(params: {
 export function formatKyrgyzManasPrompt(res: KyrgyzManasResult): string {
   return [
     `[키르기스 마나스 서사시 용기 성찰 · ${res.engineVersion}]`,
-    `- 기준 시각: ${res.calculatedAtKst}`,
+    `- 기준 시각: ${res.calculatedAtKst} | 질문 맥락: ${res.questionTopic}`,
     `- 서사 장면: ${res.epicChapter} (${res.steppeTone})`,
     `- 동반 장면: ${res.companionChapter}`,
+    `- 서사 호흡 축: ${res.steppeBreathAxis}`,
     `- 중심 통찰: ${res.nomadInsight}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 오늘의 작은 실천: ${res.ritualAction}`,
     `- 스스로에게 묻기: ${res.reflectiveQuestion}`,
+    `- 과잉 경계: ${res.shadowWarning}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
   ].join('\n');
 }
