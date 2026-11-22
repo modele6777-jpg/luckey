@@ -16173,5 +16173,23 @@ test('buildUserFifteenToolsDigest integrates 8th-round Tarot polarities/sephira 
   assert.ok(!/tarotVitalityScore|guardScore|planetaryHarmonyScore|leadershipHonor|wealthProsperity|wisdomFortitude|innovationBreakthrough/.test(digest));
 });
 
+test('buildUserFifteenToolsDigest integrates 8th-round Vedic sanskrit/rashi longitude, Liuren pattern hanja/relation meaning, and Qimen four-pillars/wonders sponsorship without raw scores', () => {
+  const profile: any = {
+    basic: {
+      name: '제제',
+      birthdate: '1994-01-24',
+      birthtime: '10:30',
+      calendarType: 'solar',
+      isLeapMonth: false,
+      gender: 'male',
+    },
+  };
+  const digest = buildUserFifteenToolsDigest(profile, new Date('2026-11-23T05:19:00+09:00'));
+  assert.ok(digest.includes('카스트: ') && digest.includes('본질: ') && digest.includes('달 라시 '));
+  assert.ok(digest.includes('대육임(12천장·삼전):') && digest.includes('사과 생극 [') && digest.includes('시지 순시창 ['));
+  assert.ok(digest.includes('포국 원국 [') && digest.includes('천지반 공명 [') && digest.includes('궁 순시창 ['));
+  assert.ok(!/dharmaProsperityScore|fourLessonsHarmonyScore|actionMomentumIndex|decisionScore|riskIndex|tonggi\.score|synergyScore|wondersEmpowermentIndex|resonanceScore/.test(digest));
+});
+
 
 
