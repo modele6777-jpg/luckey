@@ -314,7 +314,7 @@ export function LucyOrbCounsel({
               </span>
             );
           })}
-          <button type="button" className={`lucy-orb-body ${lit ? 'is-lit' : ''}`} aria-label="오브 빛" onClick={flashOrb} />
+          <button type="button" className={`lucy-orb-body ${lit ? 'is-lit' : ''}`} aria-label={draft.trim() ? '입력한 말 보내기' : '오브 빛'} onClick={() => { flashOrb(); if (phase === 'live') sendDraft(); }} />
         </div>
         <div className="lucy-orb-copy">
           {phase === 'pick' && <p>마스터를 고르면 상담이 시작돼</p>}
@@ -365,10 +365,9 @@ export function LucyOrbCounsel({
           )}
         </div>
         {phase !== 'report' && (
-          <form className="lucy-orb-dock" onSubmit={(event) => { event.preventDefault(); phase === 'live' ? sendDraft() : undefined; }}>
-            <input value={draft} onChange={(event) => setDraft(event.target.value)} placeholder={phase === 'pick' ? '먼저 적어도 돼. 마스터를 고르면 이 글부터 상담해' : '여기에 적어도 같은 상담이야'} aria-label="오브 상담 입력" />
-            {phase === 'live' && <button type="submit">보내기</button>}
-          </form>
+          <div className="lucy-orb-dock">
+            <input value={draft} onChange={(event) => setDraft(event.target.value)} onKeyDown={(event) => { if (event.key === 'Enter') event.preventDefault(); }} placeholder={phase === 'pick' ? '먼저 적어도 돼. 마스터를 고른 뒤 오브를 누르면 보내져' : '적고 오브를 누르면 보내져'} aria-label="오브 상담 입력" enterKeyHint="done" />
+          </div>
         )}
         {phase === 'report' && master && (
           <div className="lucy-orb-dock">
