@@ -5,13 +5,27 @@ export interface BretonBarzazResult {
   calculatedAtKst: string;
   coastalMotif: string;
   companionMotif: string;
+  tidePhase: string;
   barzazInsight: string;
   seaTone: string;
+  shadowWarning: string;
   reflectionFocus: string;
   ritualAction: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
+
+const TIDE_PHASES = [
+  '썰물 개방(물이 빠진 모래톱을 따라 한 걸음씩 길을 짚어 가는 시기)',
+  '만조 정박(파도가 높은 때에 닻을 내리고 등대 불빛을 확인하는 시기)',
+  '초입 샘물(복잡한 계산을 내려놓고 처음 품은 의도로 되돌아가는 시기)',
+] as const;
+
+const SHADOW_WARNINGS = [
+  '바다 안개가 걷히기를 기다리느라 지금 등대 아래에서 비출 수 있는 작은 한 걸음까지 미루지 마세요.',
+  '멘히르 선돌처럼 중심을 지키는 태도가 주변과의 대화를 닫는 완고함으로 굳어지지 않도록 살피세요.',
+  '밀물과 썰물의 흐름을 살피는 데 그치지 말고 물이 빠진 자리에 실제 발자국을 남길 실행을 챙기세요.',
+] as const;
 
 const MOTIFS = [
   {
@@ -81,17 +95,21 @@ export function calculateBretonBarzazSeaPoetry(params: {
   const companionOffset = 1 + (stableHash(`${seed}|companion`) % (MOTIFS.length - 1));
   const picked = MOTIFS[idx];
   const companion = MOTIFS[(idx + companionOffset) % MOTIFS.length];
+  const tidePhase = TIDE_PHASES[stableHash(`${seed}|phase`) % TIDE_PHASES.length];
+  const shadowWarning = SHADOW_WARNINGS[stableHash(`${seed}|shadow`) % SHADOW_WARNINGS.length];
 
   return {
-    engineVersion: 'LUCKEY-BRETON-BARZAZ-v2.2.0',
+    engineVersion: 'LUCKEY-BRETON-BARZAZ-v2.3.0',
     calculatedAtKst: formatKstIso(now),
     coastalMotif: picked.motif,
     companionMotif: companion.motif,
+    tidePhase,
     barzazInsight: `${picked.insight} (동반 결: ${companion.motif})`,
     seaTone: picked.tone,
-    reflectionFocus: `브르타뉴 시학의 '${picked.motif}'와 동반 결 '${companion.motif}'처럼, 지금이 밀물처럼 밀어붙일 때인지 썰물처럼 숨을 고를 때인지 먼저 살펴보세요.`,
-    ritualAction: picked.ritual,
-    reflectiveQuestion: picked.question,
+    shadowWarning,
+    reflectionFocus: `브르타뉴 시학의 '${tidePhase}' 흐름 속에서 '${picked.motif}'와 동반 결 '${companion.motif}'을 함께 짚어, 지금이 밀어붙일 때인지 숨을 고를 때인지 가려 보세요.`,
+    ritualAction: `${picked.ritual} (동반 결: ${companion.motif})`,
+    reflectiveQuestion: `${picked.question} '${tidePhase}' 국면에서 내가 가장 먼저 지킬 방향은 어디인가요?`,
     interpretiveBoundary: '프랑스 브르타뉴 전통의 바르작 브레이즈(Barzaz Breiz) 해안 시학과 켈트 자연 감수성을 바탕으로 한 상징적 성찰 프레임입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.',
   };
 }
@@ -102,7 +120,9 @@ export function formatBretonBarzazPrompt(res: BretonBarzazResult): string {
     `- 기준 시각: ${res.calculatedAtKst}`,
     `- 해안 모티프: ${res.coastalMotif} (${res.seaTone})`,
     `- 동반 결: ${res.companionMotif}`,
+    `- 조수 국면: ${res.tidePhase}`,
     `- 중심 통찰: ${res.barzazInsight}`,
+    `- 과잉·경계 점검: ${res.shadowWarning}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 오늘의 작은 실천: ${res.ritualAction}`,
     `- 스스로에게 묻기: ${res.reflectiveQuestion}`,
