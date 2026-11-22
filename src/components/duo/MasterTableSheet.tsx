@@ -26,7 +26,8 @@ const FACES: { id: Face; icon: string; label: string; stage: 1 | 2 | 3 }[] = [
 export function MasterTableSheet({ onClose }: { onClose: () => void }) {
   const depth = useLucyMasterDepth();
   const [table, setTable] = useState<LucyTableState>(() => getLucyTableState());
-  const [face, setFace] = useState<Face>(() => (depth >= 3 ? 'recommended' : depth === 2 ? 'tarot' : 'saju'));
+  // 단계마다 기본으로 여는 탭: 1 사주 원국 · 2 타로 · 3 엔진함 (탭으로 바꿀 수 있다).
+  const [face, setFace] = useState<Face>(() => (depth >= 3 ? 'engines' : depth === 2 ? 'tarot' : 'saju'));
   const [focusTool, setFocusTool] = useState<string | null>(null);
 
   useEffect(() => {

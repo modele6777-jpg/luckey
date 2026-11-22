@@ -31,6 +31,10 @@ import { CosmicRoomHeader } from './DuoCosmicAmbientRoom';
 
 type TableFace = 'tarot' | 'saju' | 'recommended' | 'scrolls' | 'engines';
 /** 단계 순서대로 쌓인다: 1 사주 → 2 타로 → 3 추천 도구·12대 양피지. 낮은 단계 도구는 높은 단계에서도 언제든 탭해서 본다. */
+/** 단계마다 왼쪽 테이블이 기본으로 여는 면: 1단계 사주 원국, 2단계 타로, 3단계 엔진함. 탭으로 언제든 바꿀 수 있다. */
+export function defaultTableFace(depth: number): TableFace {
+  return depth >= 3 ? 'engines' : depth === 2 ? 'tarot' : 'saju';
+}
 const FACES: { id: TableFace; icon: string; label: string; stage: 1 | 2 | 3 }[] = [
   { id: 'saju', icon: '☯', label: '사주 원국', stage: 1 },
   { id: 'tarot', icon: '🃏', label: '타로', stage: 2 },
@@ -51,7 +55,7 @@ export function DuoDivinationTarotPane(_props: { isLight?: boolean }) {
   const [revealed, setRevealed] = useState<string[]>([]);
   const [pick, setPick] = useState<TarotPickRequest | null>(null);
   // 왼쪽 테이블의 면: 처음엔 사주 원국판. 루시가 지금 하는 일을 따라 자동으로 바뀌고, 탭으로 직접 바꿀 수도 있다.
-  const [face, setFace] = useState<TableFace>('saju');
+  const [face, setFace] = useState<TableFace>(() => defaultTableFace(getLucyMasterDepth()));
   const [table, setTable] = useState<LucyTableState>(() => getLucyTableState());
   // 1단계는 사주 원국만, 2단계부터 타로 화면이 테이블에 더해진다.
   // (1단계라도 손님이 직접 카드를 뽑았다면 그 카드는 볼 수 있게 둔다.)
@@ -75,7 +79,8 @@ export function DuoDivinationTarotPane(_props: { isLight?: boolean }) {
       setTable(prev => {
         // 새 답변이 오면: 카드가 있으면 타로, 사주만으로 답했으면 사주 원국판.
         // 새 답변이 오면: 카드가 있으면 타로, 3단계면 13대 도구, 아니면 사주 원국판.
-        if (next.answerVersion !== prev.answerVersion) setFace(next.lastAnswerHasTarot ? 'tarot' : getLucyMasterDepth() >= 3 ? 'recommended' : 'saju');
+        // 카드가 담긴 답이면 타로, 아니면 지금 단계의 기본 면(1 사주 · 2 타로 · 3 엔진함).
+        if (next.answerVersion !== prev.answerVersion) setFace(next.lastAnswerHasTarot ? 'tarot' : defaultTableFace(getLucyMasterDepth()));
         return next;
       });
     };
@@ -102,7 +107,7 @@ export function DuoDivinationTarotPane(_props: { isLight?: boolean }) {
     const handleDepth = (e: Event) => {
       const depth = (e as CustomEvent<{ depth?: number; changed?: boolean }>)?.detail;
       if (!depth?.changed) return;
-      setFace(depth.depth === 1 ? 'saju' : depth.depth === 2 ? 'tarot' : 'recommended');
+      setFace(defaultTableFace(depth.depth || 1));
     };
     const handleFace = (e: Event) => {
       const next = (e as CustomEvent<{ face?: TableFace }>)?.detail?.face;
