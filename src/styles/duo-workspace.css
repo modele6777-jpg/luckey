@@ -208,10 +208,31 @@ html:root [data-page-brand="true"].duo-page-brand {
 .channel-page { container: channel-page / inline-size; position: relative; isolation: isolate; }
 .channel-page > .channel-page-content {
   --page-header-inset: max(14px, env(safe-area-inset-left, 0px));
-  --page-header-top: max(14px, env(safe-area-inset-top, 0px));
-  --channel-title-top: calc(var(--page-header-top) + 2.1rem);
-  --channel-nav-top: calc(var(--page-header-top) + 4.35rem);
-  --channel-content-top: calc(var(--page-header-top) + 8.5rem);
+  --page-header-top: 0px;
+  --channel-title-top: calc(var(--duo-pane-header-height, 56px) - 1.75rem);
+  --channel-nav-top: calc(var(--duo-pane-header-height, 56px) + 8px);
+  --channel-content-top: calc(var(--duo-pane-header-height, 56px) + 56px);
+}
+html:root .channel-page [data-page-brand="true"].duo-page-brand {
+  box-sizing: border-box !important;
+  height: var(--duo-pane-header-height, 56px) !important;
+  min-height: var(--duo-pane-header-height, 56px) !important;
+  max-height: var(--duo-pane-header-height, 56px) !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  overflow: hidden;
+}
+.channel-page .duo-page-title {
+  top: 0 !important;
+  height: var(--duo-pane-header-height, 56px) !important;
+}
+.channel-page .channel-page-guide {
+  top: 0 !important;
+  height: var(--duo-pane-header-height, 56px);
+  display: flex;
+  align-items: center;
 }
 html:root .channel-page [data-page-brand="true"] > div { min-height: 24px; }
 .channel-page .duo-page-nav {
