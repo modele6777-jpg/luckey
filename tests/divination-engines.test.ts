@@ -16367,5 +16367,23 @@ test('buildUserFifteenToolsDigest integrates 9th-round Kabbalah 4-worlds balance
   assert.ok(!/atziluth|beriah|yetzirah|assiah|ascensionPotentialIndex|harmonyScore|affinityScore|vitalityIndex/.test(digest));
 });
 
+test('buildUserFifteenToolsDigest integrates 9th-round Tojeong 3-month flow/harmony tone, Kyusei honmyosei palace placement, and Taiyi general palace elements/posture without raw scores', () => {
+  const profile: any = {
+    basic: {
+      name: '제제',
+      birthdate: '1994-01-24',
+      birthtime: '10:30',
+      calendarType: 'solar',
+      isLeapMonth: false,
+      gender: 'male',
+    },
+  };
+  const digest = buildUserFifteenToolsDigest(profile, new Date('2026-11-23T06:38:00+09:00'));
+  assert.ok(digest.includes('다다음 달(') && digest.includes(' · 조화 '));
+  assert.ok(digest.includes('본명성 낙궁 [연반 ') && digest.includes(' / 월반 '));
+  assert.ok(digest.includes('주대장 ') && digest.includes('객대장 ') && digest.includes('대세 국면 ['));
+  assert.ok(!/harmonyScore|juBalanceScore|initiativeIndex|defensiveIndex|synergyScore/.test(digest));
+});
+
 
 
