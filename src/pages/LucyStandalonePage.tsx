@@ -727,6 +727,13 @@ const MASTER_THINKING_LINES = [
   '마음에 남을 한마디를 고르고 있어',
 ];
 
+/** 입력창 끝까지 이어지는 소리 파동: 가운데가 크고 양 끝으로 갈수록 잔잔한 막대들. */
+const HOLD_TALK_WAVE = Array.from({ length: 44 }, (_, index) => {
+  const edge = Math.sin((Math.PI * (index + 0.5)) / 44);
+  const ripple = 0.55 + 0.45 * Math.abs(Math.sin(index * 1.7));
+  return Number((0.25 + 0.75 * edge * ripple).toFixed(2));
+});
+
 function LucyThinkingLine({ isLight, master }: { isLight: boolean; master: boolean }) {
   const lines = master ? MASTER_THINKING_LINES : LUCY_THINKING_LINES;
   const [index, setIndex] = useState(0);
@@ -5357,8 +5364,8 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
                 <div className="lucy-hold-talk" role="status" aria-live="polite">
                   <span className="lucy-hold-talk-chip">{holdTalk.transcript || '듣고 있어요 · 손을 떼면 전송'}</span>
                   <span className="lucy-hold-talk-wave" aria-hidden="true">
-                    {[0.36, 0.58, 0.82, 0.48, 1, 0.66, 0.9, 0.52, 0.74, 0.42, 0.62].map((weight, index) => (
-                      <i key={index} style={{ height: `${4 + holdTalk.level * weight * 20}px` }} />
+                    {HOLD_TALK_WAVE.map((weight, index) => (
+                      <i key={index} style={{ height: `${4 + holdTalk.level * weight * 22}px` }} />
                     ))}
                   </span>
                 </div>
@@ -5411,7 +5418,9 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
                   if (document.body.scrollTop !== 0) document.body.scrollTop = 0;
                 }}
                 placeholder={
-                  hasPendingAnswer
+                  holdTalk.holding
+                    ? ''
+                    : hasPendingAnswer
                     ? '루시의 질문에 대한 답변을 입력하세요...'
                     : isLucyGenerating
                     ? '추가로 할 말을 입력하면 이어서 한 번에 답변해 드려요...'
