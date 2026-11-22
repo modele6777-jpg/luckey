@@ -28,7 +28,9 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const TAOIST_HUANGTING_VERSION = 'LUCKEY-TAOIST-HUANGTING-v2.2.0';
+export const TAOIST_HUANGTING_VERSION = 'LUCKEY-TAOIST-HUANGTING-v2.3.0';
+
+export type HuangtingQuestionTopic = 'career' | 'relationship' | 'decision' | 'inner' | 'general';
 
 function formatHuangtingKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -59,10 +61,13 @@ export interface TaoistHuangtingJingReport {
   engineVersion: string;
   calculatedAt: string;
   calculatedAtKst: string;
+  questionTopic: HuangtingQuestionTopic;
   palaces: CinnabarPalaceStatus;
   guardianSpirit: VisceraGuardianSpirit;
   secondarySpirit: VisceraGuardianSpirit;
   illuminationScore: number;       // 0 ~ 100 회광반조 내적 조화도
+  huangtingPhase: string;
+  shadowWarning: string;
   huangtingPrescription: string;   // 황정경 실천 양생법
   synthesisMessage: string;
   ritualAction: string;
@@ -114,6 +119,32 @@ const VISCERA_SPIRITS: VisceraGuardianSpirit[] = [
   },
 ];
 
+function classifyHuangtingQuestionTopic(query?: string): HuangtingQuestionTopic {
+  const q = (query || '').toLowerCase();
+  if (/일|직장|커리어|사업|프로젝트|성과|취업|이직/.test(q)) return 'career';
+  if (/연애|관계|사랑|부부|가족|사람|갈등|인연/.test(q)) return 'relationship';
+  if (/선택|결정|타이밍|방향|전환|고민|계약/.test(q)) return 'decision';
+  if (/마음|감정|불안|휴식|회복|양생|내면|수면|건강/.test(q)) return 'inner';
+  return 'general';
+}
+
+function describeHuangtingPhase(score: number): string {
+  if (score >= 86) return '회광반조 청정기(澄明) — 삼단전의 기운이 고르게 모여 심신이 맑게 안정된 상태';
+  if (score >= 76) return '존사 조율기(調息) — 오장의 진신을 호흡으로 불러모아 균형을 다지는 상태';
+  return '기해 보양기(補養) — 소모된 원기를 아랫배와 휴식으로 먼저 채워야 하는 상태';
+}
+
+function buildHuangtingShadowWarning(spiritName: string, topic: HuangtingQuestionTopic): string {
+  const topicNote: Record<HuangtingQuestionTopic, string> = {
+    career: '성취 속도를 높이려다 호흡과 수면 리듬을 무너뜨리면 판단의 맑기가 흐려집니다.',
+    relationship: '상대의 반응에 가슴이 먼저 달아오를 때는 말을 아끼고 날숨을 길게 내려놓으세요.',
+    decision: '머리로만 맴도는 계산을 멈추고 몸이 보내는 피로와 긴장 신호부터 확인하세요.',
+    inner: '내면을 살피겠다는 생각 자체가 과도한 자기 검열로 변하지 않도록 부드럽게 놓아두세요.',
+    general: '바깥 일정에 쫓겨 몸의 중심 호흡을 건너뛰지 않도록 1분 멈춤을 확보하세요.',
+  };
+  return `[${spiritName}] 과잉 경계: ${topicNote[topic]}`;
+}
+
 export function calculateTaoistHuangtingJing(
   profile?: UserProfile,
   options?: { targetDate?: Date; question?: string }
@@ -142,6 +173,9 @@ export function calculateTaoistHuangtingJing(
   const secondarySpirit = VISCERA_SPIRITS[(spiritIdx + 1) % VISCERA_SPIRITS.length];
 
   const illuminationScore = Math.round((upperNiwanScore + middleJiangScore + lowerQihaiScore) / 3);
+  const questionTopic = classifyHuangtingQuestionTopic(q);
+  const huangtingPhase = describeHuangtingPhase(illuminationScore);
+  const shadowWarning = buildHuangtingShadowWarning(guardianSpirit.spiritName, questionTopic);
 
   const huangtingPrescription = `황정경 존사법: 숨을 들이쉴 때 [${guardianSpirit.robedColor}]의 신성한 빛이 [${guardianSpirit.organ}]을 가득 채우는 것을 마음의 눈으로 바라보며(존사), "${guardianSpirit.innerPreservationMantra}"를 가만히 묵상하세요.`;
 
@@ -158,7 +192,7 @@ export function calculateTaoistHuangtingJing(
 
   const huangtingSynthesisMatrix = {
     dominantTension: `${dominantPalace} ↔ ${guardianSpirit.organ}`,
-    alignmentState: `진신: ${guardianSpirit.spiritName} (${guardianSpirit.courtesyName}) · 보조: ${secondarySpirit.spiritName} · ${guardianSpirit.robedColor}`,
+    alignmentState: `${huangtingPhase} · 진신 ${guardianSpirit.spiritName} · 보조 ${secondarySpirit.spiritName}`,
     integratedAction: `${guardianSpirit.innerPreservationMantra}${q ? ` [질문 맥락: ${q}]` : ''}`,
   };
 
@@ -166,6 +200,7 @@ export function calculateTaoistHuangtingJing(
     engineVersion: TAOIST_HUANGTING_VERSION,
     calculatedAt: now.toISOString(),
     calculatedAtKst,
+    questionTopic,
     palaces: {
       upperNiwanScore,
       middleJiangScore,
@@ -175,6 +210,8 @@ export function calculateTaoistHuangtingJing(
     guardianSpirit,
     secondarySpirit,
     illuminationScore,
+    huangtingPhase,
+    shadowWarning,
     huangtingPrescription,
     synthesisMessage,
     ritualAction,
@@ -190,12 +227,14 @@ export function formatTaoistHuangtingJingPrompt(report: TaoistHuangtingJingRepor
     ? `\n- **황정 교차 매트릭스**: 핵심 긴장(${report.huangtingSynthesisMatrix.dominantTension}) · 조율 상태(${report.huangtingSynthesisMatrix.alignmentState}) · 통합 실천(${report.huangtingSynthesisMatrix.integratedAction})`
     : '';
   return `### ☯️ 도교 상청파 황정경(黃庭經) 신체 오장 신성좌 & 존사 엔진 (${TAOIST_HUANGTING_VERSION} | ${report.calculatedAtKst})
+- **질문 맥락**: ${report.questionTopic} | **내관 국면**: ${report.huangtingPhase}
 - **삼단전(三丹田) 신체 궁전 균형**:
   - 현재 주도 단전: **${report.palaces.dominantPalace}**
 - **오장 주재 진신(眞神)**: **${report.guardianSpirit.organ} - ${report.guardianSpirit.spiritName}** (자: ${report.guardianSpirit.courtesyName})
   - 신성 복식: ${report.guardianSpirit.robedColor}
   - 오장신 존사 잠언: "${report.guardianSpirit.innerPreservationMantra}"
 - **보조 교차 진신**: **${report.secondarySpirit.organ} - ${report.secondarySpirit.spiritName}** (${report.secondarySpirit.robedColor})
+- **과잉·경계 점검**: ${report.shadowWarning}
 - **황정경 내관 양생 처방**: ${report.huangtingPrescription}
 - **황정 통합 나침반**: ${report.synthesisMessage}${matrixLine}
 - **실천 의례**: ${report.ritualAction}

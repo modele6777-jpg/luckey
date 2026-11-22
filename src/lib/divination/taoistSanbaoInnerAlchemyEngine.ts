@@ -18,7 +18,9 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const TAOIST_SANBAO_VERSION = 'LUCKEY-TAOIST-SANBAO-v2.2.0';
+export const TAOIST_SANBAO_VERSION = 'LUCKEY-TAOIST-SANBAO-v2.3.0';
+
+export type SanbaoQuestionTopic = 'career' | 'relationship' | 'decision' | 'inner' | 'general';
 
 function formatSanbaoKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -40,6 +42,7 @@ export interface TaoistSanbaoReport {
   engineVersion: string;
   calculatedAt: string;
   calculatedAtKst: string;
+  questionTopic: SanbaoQuestionTopic;
   energyLevels: SanbaoEnergyLevels;
   dominantTreasure: '정 (Jing - 신체 활력)' | '기 (Qi - 실행과 호흡)' | '신 (Shen - 영적 통찰)';
   depletedTreasure: '정 (Jing - 수면·체력 고갈)' | '기 (Qi - 기력·감정 소진)' | '신 (Shen - 정신적 과부하)';
@@ -49,6 +52,8 @@ export interface TaoistSanbaoReport {
     transformationTask: string;
   };
   overallHarmonyScore: number;  // 0 ~ 100 삼보 조화도
+  sanbaoPhase: string;
+  shadowWarning: string;
   dantianPrescription: string;  // 단전 집중 처방
   taoistBreathingPractice: string; // 일일 조식(調息) 실천법
   ritualAction: string;
@@ -60,6 +65,29 @@ export interface TaoistSanbaoReport {
     alignmentState: string;
     integratedAction: string;
   };
+}
+
+function classifySanbaoQuestionTopic(query?: string): SanbaoQuestionTopic {
+  const q = (query || '').toLowerCase();
+  if (/일|직장|커리어|사업|프로젝트|성과|취업|이직/.test(q)) return 'career';
+  if (/연애|관계|사랑|부부|가족|사람|갈등|인연/.test(q)) return 'relationship';
+  if (/선택|결정|타이밍|방향|전환|고민|계약/.test(q)) return 'decision';
+  if (/마음|감정|불안|휴식|회복|삼보|균형|수면|체력/.test(q)) return 'inner';
+  return 'general';
+}
+
+function buildSanbaoShadowWarning(
+  depletedTreasure: TaoistSanbaoReport['depletedTreasure'],
+  topic: SanbaoQuestionTopic
+): string {
+  const topicNote: Record<SanbaoQuestionTopic, string> = {
+    career: '체력과 기력을 당겨 쓰며 성과를 밀어붙이면 집중력의 지속성이 급격히 떨어집니다.',
+    relationship: '감정적 여력이 부족할 때 무리하게 대화를 길게 끌면 오해가 깊어지기 쉽습니다.',
+    decision: '피로가 누적된 상태에서의 조급한 결단은 단기 회피로 흐르기 쉬우니 호흡부터 가다듬으세요.',
+    inner: '부족한 에너지를 자책으로 몰아가지 말고 수면·식사·호흡 중 가장 쉬운 하나부터 복구하세요.',
+    general: '한쪽 보물이 고갈된 신호를 무시하고 무리한 일정을 겹치지 않도록 속도를 조절하세요.',
+  };
+  return `[${depletedTreasure}] 과잉 경계: ${topicNote[topic]}`;
 }
 
 export function calculateTaoistSanbaoInnerAlchemy(
@@ -152,6 +180,9 @@ export function calculateTaoistSanbaoInnerAlchemy(
   const taoistBreathingPractice = `도교 복식 조식법: 숨을 들이쉴 때 아랫배를 부드럽게 부풀리고(4초), 2초간 멈춘 뒤, 천천히 입으로 숨을 내쉬며(6초) 몸속의 탁기(濁氣)를 배출하세요. 3회 반복으로 정·기·신이 즉각 정렬됩니다.`;
   const calculatedAtKst = formatSanbaoKstTimestamp(targetDate);
   const q = (question || '').trim();
+  const questionTopic = classifySanbaoQuestionTopic(q);
+  const sanbaoPhase = `${alchemyPhase.phaseName} — ${alchemyPhase.meaning}`;
+  const shadowWarning = buildSanbaoShadowWarning(depletedTreasure, questionTopic);
   const ritualAction = `[${alchemyPhase.phaseName}] ${alchemyPhase.transformationTask}`;
   const reflectionFocus = `도교 삼보 내단(${dominantTreasure}) — ${alchemyPhase.meaning}`;
   const reflectiveQuestion = q
@@ -161,7 +192,7 @@ export function calculateTaoistSanbaoInnerAlchemy(
     '도교 내단학 삼보(정·기·신)와 단전·조식법 상징은 몸과 마음의 휴식과 호흡 리듬을 살피기 위한 양생적 은유이며, 단정적 미래 예측이나 의학적 진단·처방을 대체하지 않습니다.';
   const sanbaoSynthesisMatrix = {
     dominantTension: `${dominantTreasure} ↔ ${depletedTreasure}`,
-    alignmentState: `${alchemyPhase.phaseName} — ${alchemyPhase.meaning}`,
+    alignmentState: `${sanbaoPhase} | 맥락(${questionTopic})`,
     integratedAction: `${alchemyPhase.transformationTask}${q ? ` [질문 맥락: ${q}]` : ''}`,
   };
 
@@ -169,11 +200,14 @@ export function calculateTaoistSanbaoInnerAlchemy(
     engineVersion: TAOIST_SANBAO_VERSION,
     calculatedAt: targetDate.toISOString(),
     calculatedAtKst,
+    questionTopic,
     energyLevels,
     dominantTreasure,
     depletedTreasure,
     alchemyPhase,
     overallHarmonyScore: Math.max(30, Math.min(99, overallHarmonyScore)),
+    sanbaoPhase,
+    shadowWarning,
     dantianPrescription,
     taoistBreathingPractice,
     ritualAction,
@@ -189,8 +223,10 @@ export function formatTaoistSanbaoInnerAlchemyPrompt(report: TaoistSanbaoReport)
     ? `\n- **삼보 교차 매트릭스**: 핵심 긴장(${report.sanbaoSynthesisMatrix.dominantTension}) · 조율 상태(${report.sanbaoSynthesisMatrix.alignmentState}) · 통합 실천(${report.sanbaoSynthesisMatrix.integratedAction})`
     : '';
   return `### ☯️ 도교 내단학(內丹學) 삼보(三寶: 정·기·신) 생체 에너지 순환 & 연정화기 엔진 (${TAOIST_SANBAO_VERSION} | ${report.calculatedAtKst})
+- **질문 맥락**: ${report.questionTopic} | **내단 국면**: ${report.sanbaoPhase}
 - **현재 우세 에너지**: ${report.dominantTreasure}
 - **우선 보충 필요(누수처)**: ${report.depletedTreasure}
+- **과잉·경계 점검**: ${report.shadowWarning}
 - **내단학 변환 국면**: ${report.alchemyPhase.phaseName} [${report.alchemyPhase.meaning}]
 - **내단 승화 핵심 과제**: ${report.alchemyPhase.transformationTask}
 - **단전(丹田) 집중 가이드**: ${report.dantianPrescription}
