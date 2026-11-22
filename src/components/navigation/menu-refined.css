@@ -126,6 +126,18 @@
   overflow: hidden;
 }
 
+/* 펼친 화면의 7대 채널은 상태와 상관없이 항상 보인다. */
+html.duo-unfolded-mode .refined-prism-icons,
+html.duo-unfolded-landscape .refined-prism-icons,
+html.duo-unfolded-portrait .refined-prism-icons {
+  display: flex !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  height: auto !important;
+  max-height: none !important;
+  overflow: visible !important;
+}
+
 .refined-nav-item {
   display: grid;
   place-items: center;

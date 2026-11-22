@@ -27,7 +27,7 @@ import {
   getBgmPublicState,
   type BgmPublicState,
 } from '@/components/trinity/BgMusicPlayer';
-import { subscribeFoldState } from '@/lib/foldState';
+import { subscribeFoldState, useFoldState } from '@/lib/foldState';
 import { MessageCircleMinus } from '@/lib/channelMenuIcons';
 import { forceAppUpgradeAndReload } from '@/lib/prismSync';
 import { useApp } from '@/contexts/AppContext';
@@ -180,7 +180,10 @@ export default function LeftSidebarNav() {
     if (typeof window === 'undefined') return false;
     return isDualPaneLayout();
   });
-  // 🍀 펼친 화면: 기본적으로 펼쳐짐(true), 접힌 화면: 기본적으로 접혀짐(false)
+  const screenUnfolded = useFoldState().unfolded;
+  const unfoldedRef = useRef(screenUnfolded);
+  unfoldedRef.current = screenUnfolded;
+  // 🍀 펼친 화면은 목록을 닫지 않는다. 접힌 화면만 럭키에서 나갈 때 접힌다.
   const [isChannelsOpen, setIsChannelsOpen] = useState(() => {
     if (typeof window === 'undefined') return false;
     return isDualPaneLayout();
@@ -188,7 +191,10 @@ export default function LeftSidebarNav() {
   useEffect(() => {
     const openForLucky = () => setIsChannelsOpen(true);
     const closeForExit = () => {
-      if (isDualPaneLayout()) return;
+      if (unfoldedRef.current || document.documentElement.classList.contains('duo-unfolded-mode')) {
+        setIsChannelsOpen(true);
+        return;
+      }
       setIsChannelsOpen(false);
     };
     window.addEventListener('prism:open-lucky-channels', openForLucky);
@@ -249,13 +255,8 @@ export default function LeftSidebarNav() {
     const handleLayoutChange = () => {
       if (typeof window === 'undefined') return;
       const unfolded = isDualPaneLayout();
-      setIsUnfolded((prev) => {
-        if (prev !== unfolded) {
-          // 화면 전환 시: 펼치면 기본적으로 펼쳐지고, 접으면 기본적으로 네잎클로버 버튼도 접힘
-          setIsChannelsOpen(unfolded);
-        }
-        return unfolded;
-      });
+      setIsUnfolded(unfolded);
+      if (unfolded) setIsChannelsOpen(true);
     };
     handleLayoutChange();
     // Same fold snapshot as the App frame, including late WebKit size updates.
@@ -263,10 +264,10 @@ export default function LeftSidebarNav() {
   }, []);
   const [location, navigate] = useLocation();
   const cleanPath = location ? location.split('?')[0].split('#')[0] : '/';
-  const channelsVisible = isUnfolded || isChannelsOpen;
+  const channelsVisible = screenUnfolded || isChannelsOpen;
   useEffect(() => {
-    if (cleanPath === '/lucky' || isUnfolded) setIsChannelsOpen(true);
-  }, [cleanPath, isUnfolded]);
+    if (cleanPath === '/lucky' || screenUnfolded) setIsChannelsOpen(true);
+  }, [cleanPath, screenUnfolded]);
   const { resolvedTheme } = useTheme();
   const reduceMotion = useReducedMotion();
 
