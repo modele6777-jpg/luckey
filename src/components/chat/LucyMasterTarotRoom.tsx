@@ -58,13 +58,45 @@ function DreamCatcher() {
   );
 }
 
+
+function magicPoint(radius: number, turn: number): string {
+  const angle = turn * Math.PI * 2 - Math.PI / 2;
+  return `${(100 + Math.cos(angle) * radius).toFixed(2)},${(100 + Math.sin(angle) * radius).toFixed(2)}`;
+}
+
+function MagicCircle() {
+  const ticks = Array.from({ length: 36 }, (_, index) => {
+    const angle = (index / 36) * Math.PI * 2 - Math.PI / 2;
+    const inner = index % 3 === 0 ? 74 : 80;
+    const x1 = 100 + Math.cos(angle) * inner;
+    const y1 = 100 + Math.sin(angle) * inner;
+    const x2 = 100 + Math.cos(angle) * 86;
+    const y2 = 100 + Math.sin(angle) * 86;
+    return `M${x1.toFixed(2)},${y1.toFixed(2)} L${x2.toFixed(2)},${y2.toFixed(2)}`;
+  }).join(' ');
+  const up = [0, 1, 2].map(index => magicPoint(58, index / 3)).join(' ');
+  const down = [0, 1, 2].map(index => magicPoint(58, index / 3 + 0.5)).join(' ');
+  return (
+    <svg className="lmr-cloth-sigil" viewBox="0 0 200 200" aria-hidden="true">
+      <circle className="lmr-sigil-ring" cx="100" cy="100" r="96" />
+      <circle className="lmr-sigil-faint" cx="100" cy="100" r="88" />
+      <path className="lmr-sigil-faint" d={ticks} />
+      <circle className="lmr-sigil-ring" cx="100" cy="100" r="66" />
+      <polygon className="lmr-sigil-core" points={up} />
+      <polygon className="lmr-sigil-core" points={down} />
+      <circle className="lmr-sigil-ring" cx="100" cy="100" r="24" />
+      <circle className="lmr-sigil-core" cx="100" cy="100" r="6" />
+    </svg>
+  );
+}
+
 /** `table`: the unfolded left tarot table continues the same velvet and candles, without a second dream catcher. */
 export function LucyMasterTarotRoom({ variant = 'chat' }: { variant?: 'chat' | 'table' } = {}) {
   return (
     <div className="lucy-master-room" data-lmr-variant={variant} aria-hidden="true">
       <div className="lmr-velvet" />
       <div className="lmr-cloth">
-        <div className="lmr-cloth-sigil" />
+        <MagicCircle />
         <div className="lmr-cloth-trim" />
       </div>
       <div className="lmr-cloth-fringe" />

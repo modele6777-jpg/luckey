@@ -17,11 +17,14 @@
   opacity: .9;
 }
 .lmr-cloth-sigil {
-  position: absolute; left: 50%; top: 38%; width: 46vmin; height: 46vmin; transform: translate(-50%, -50%) scaleY(.38);
-  border-radius: 50%;
-  border: 1px solid #d9b8ff26;
-  box-shadow: 0 0 0 10px #d9b8ff0a, 0 0 0 22px #d9b8ff08, inset 0 0 40px #b07cff14;
+  position: absolute; left: 50%; top: 42%; width: min(72%, 460px); height: auto;
+  transform: translate(-50%, -50%) scaleY(.4);
+  overflow: visible;
+  filter: drop-shadow(0 0 6px #b98cff33);
 }
+.lmr-cloth-sigil .lmr-sigil-ring { fill: none; stroke: #f0d48f; stroke-width: 1.15; stroke-opacity: .72; }
+.lmr-cloth-sigil .lmr-sigil-faint { fill: none; stroke: #e4d2ff; stroke-width: .7; stroke-opacity: .5; }
+.lmr-cloth-sigil .lmr-sigil-core { fill: none; stroke: #fff1c9; stroke-width: 1.25; stroke-opacity: .82; stroke-linejoin: round; }
 
 /* Gold embroidered edge + tassel fringe along the front of the tarot cloth */
 .lmr-cloth-trim { position: absolute; left: 14%; right: 14%; top: 0; height: 3px; background: linear-gradient(90deg, transparent, #c9a46a 15%, #f0d48f 50%, #c9a46a 85%, transparent); opacity: .7; }
