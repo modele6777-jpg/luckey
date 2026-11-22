@@ -668,6 +668,10 @@ html.duo-unfolded-mode .lucy-orb-figure { width: 34%; }
   font-weight: 700;
   padding: 7px 14px;
 }
+.lucy-heaven.is-leaving { animation: lucy-heaven-out .7s ease forwards; }
+@keyframes lucy-heaven-out {
+  to { opacity: 0; transform: translateY(-10px); filter: blur(3px); }
+}
 @keyframes lucy-heaven-beam {
   0% { opacity: 0; transform: translateX(-50%) scaleY(.2); transform-origin: top; }
   40% { opacity: 1; }
