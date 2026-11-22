@@ -990,11 +990,13 @@ textarea[data-hold-to-talk]:not(:focus) {
 .lucy-hold-talk-chip.is-error { color: #7f1d1d; background: #fee2e2; box-shadow: 0 4px 14px rgba(220, 38, 38, .25); }
 .lucy-hold-talk-wave {
   position: absolute;
+  left: 4px;
   right: 6px;
   top: 50%;
   transform: translateY(-50%);
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 2px;
   height: 26px;
   filter: drop-shadow(0 0 5px rgba(255, 200, 120, .55));
