@@ -299,16 +299,17 @@ export function LucyOrbCounsel({
           </svg>
           {[0, 1, 2].map(index => <span key={index} className="lucy-voice-ring" style={{ animationDelay: `${index * 0.7}s` }} />)}
           <span className="lucy-orbit" aria-hidden="true">{[0, 1, 2, 3, 4].map(index => <i key={index} />)}</span>
-          {[-140, -90, -40, 40, 90, 140].map(angle => {
+          {[-140, -90, -40, 40, 90, 140].map((angle, index) => {
             const turn = ((angle - 90) * Math.PI) / 180;
             return (
               <span
                 key={angle}
                 className="lucy-candle"
-                style={{ left: `${50 + Math.cos(turn) * 43}%`, top: `${50 + Math.sin(turn) * 43}%` }}
+                style={{ left: `${50 + Math.cos(turn) * 43}%`, top: `${50 + Math.sin(turn) * 43}%`, ['--flick' as string]: `${index * 0.23}s` }}
                 aria-hidden="true"
               >
-                <b />
+                <em />
+                <b><s /><u /></b>
                 <i />
               </span>
             );

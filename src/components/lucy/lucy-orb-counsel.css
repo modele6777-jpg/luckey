@@ -60,43 +60,138 @@ html.duo-unfolded-mode .lucy-orb-ritual { width: min(62%, 680px); }
 .lucy-orb-circle polygon { stroke-width: .45; opacity: .8; }
 .lucy-candle {
   position: absolute;
-  width: 8px;
-  height: 28px;
-  margin-left: -4px;
-  margin-top: -28px;
+  width: 10px;
+  height: 36px;
+  margin-left: -5px;
+  margin-top: -36px;
   opacity: 0;
-  animation: lucy-candle-in 1.2s ease .7s forwards;
+  transform-origin: 50% 100%;
+  animation: lucy-candle-in 1.2s ease .7s forwards, lucy-candle-sway 2.6s ease-in-out infinite;
+  animation-delay: .7s, var(--flick, 0s);
+}
+.lucy-candle em {
+  position: absolute;
+  left: 50%;
+  top: -8px;
+  width: 34px;
+  height: 34px;
+  margin-left: -17px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 196, 96, .42), rgba(255, 140, 40, 0) 70%);
+  animation: lucy-glow 1.35s ease-in-out infinite;
+  animation-delay: var(--flick, 0s);
+  pointer-events: none;
 }
 .lucy-candle i {
   display: block;
-  height: 22px;
-  border-radius: 2px 2px 3px 3px;
-  background: linear-gradient(#f3e2c4, #c9a56a 70%, #8d6840);
-  box-shadow: 0 0 8px rgba(255, 186, 92, .25);
+  height: 24px;
+  margin-top: 12px;
+  border-radius: 2px 2px 4px 4px;
+  background:
+    linear-gradient(90deg, rgba(90, 58, 28, .28), transparent 18% 82%, rgba(90, 58, 28, .22)),
+    linear-gradient(#f6e7cc, #e7c891 42%, #c49658 78%, #8a6238);
+  box-shadow: inset 0 3px 0 #fff4dc, 0 0 10px rgba(255, 176, 72, .28);
+  position: relative;
+}
+.lucy-candle i::before {
+  content: "";
+  position: absolute;
+  left: 1px;
+  right: 1px;
+  top: 0;
+  height: 4px;
+  border-radius: 2px;
+  background: #f8edd4;
+}
+.lucy-candle i::after {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 2px;
+  width: 2px;
+  height: 0;
+  border-radius: 1px;
+  background: #d7b56a;
+  animation: lucy-drip 4.8s ease-in infinite;
+  animation-delay: var(--flick, 0s);
 }
 .lucy-candle b {
   position: absolute;
   left: 50%;
-  bottom: 20px;
-  width: 7px;
-  height: 12px;
-  margin-left: -3.5px;
-  border-radius: 50% 50% 50% 50%;
-  background: radial-gradient(circle at 50% 70%, #fff6d8, #ffb347 45%, rgba(255, 120, 40, 0) 72%);
-  filter: blur(.2px);
+  bottom: 22px;
+  width: 10px;
+  height: 16px;
+  margin-left: -5px;
   transform-origin: 50% 100%;
-  animation: lucy-flame 1.3s ease-in-out infinite;
+  animation: lucy-flame-bend 1.05s ease-in-out infinite;
+  animation-delay: var(--flick, 0s);
 }
-.lucy-orb-ritual.is-lit .lucy-candle b { animation-duration: .7s; filter: blur(.2px) brightness(1.4); }
+.lucy-candle b::before {
+  content: "";
+  position: absolute;
+  left: 4px;
+  bottom: -2px;
+  width: 1px;
+  height: 4px;
+  background: #3a2a1c;
+}
+.lucy-candle s,
+.lucy-candle u {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  display: block;
+  border-radius: 50% 50% 45% 45%;
+  transform-origin: 50% 100%;
+}
+.lucy-candle s {
+  width: 9px;
+  height: 15px;
+  margin-left: -4.5px;
+  background: radial-gradient(circle at 50% 78%, #ffe7a8, #ff9a2e 48%, rgba(255, 70, 20, 0) 74%);
+  filter: blur(.2px);
+}
+.lucy-candle u {
+  width: 4px;
+  height: 9px;
+  margin-left: -2px;
+  background: linear-gradient(#fffef6, #ffe08a);
+  animation: lucy-flame-core .72s ease-in-out infinite;
+  animation-delay: var(--flick, 0s);
+}
+.lucy-orb-stage.is-speaking .lucy-candle b,
+.lucy-orb-ritual.is-lit .lucy-candle b { animation-duration: .48s; }
+@keyframes lucy-candle-sway {
+  0%, 100% { transform: rotate(-1.6deg); }
+  28% { transform: rotate(1.2deg); }
+  57% { transform: rotate(-.7deg); }
+  78% { transform: rotate(1.8deg); }
+}
+@keyframes lucy-flame-bend {
+  0% { transform: rotate(-8deg) scale(.92, 1); }
+  22% { transform: rotate(7deg) scale(1.06, 1.16) translateY(-1px); }
+  48% { transform: rotate(-4deg) scale(.78, .9) translateY(1px); }
+  73% { transform: rotate(10deg) scale(1.08, 1.22) translateY(-1px); }
+  100% { transform: rotate(-8deg) scale(.92, 1); }
+}
+@keyframes lucy-flame-core {
+  0%, 100% { transform: translateX(-1px) scaleY(1); }
+  50% { transform: translateX(1.4px) scaleY(1.28); }
+}
+@keyframes lucy-glow {
+  0%, 100% { opacity: .55; transform: scale(.92) translateX(-1px); }
+  50% { opacity: 1; transform: scale(1.08) translateX(1px); }
+}
+@keyframes lucy-drip {
+  0%, 68% { height: 0; opacity: 0; }
+  84% { height: 8px; opacity: .85; }
+  100% { height: 11px; opacity: 0; }
+}
 .lucy-orb-ritual .lucy-orb-body { width: 42%; }
 html.duo-unfolded-mode .lucy-orb-ritual .lucy-orb-body { width: 38%; }
 @keyframes lucy-circle-in { to { opacity: .9; } }
 @keyframes lucy-circle-spin { to { transform: rotate(360deg); } }
 @keyframes lucy-candle-in { to { opacity: 1; } }
-@keyframes lucy-flame {
-  0%, 100% { transform: scale(1, 1) translateY(0); }
-  50% { transform: scale(.82, 1.18) translateY(-1px); }
-}
 html.duo-unfolded-mode .lucy-orb-mist { animation-duration: 2.6s; }
 html.duo-unfolded-mode .lucy-orb-stage { justify-content: center; }
 .lucy-orb-body::before,
