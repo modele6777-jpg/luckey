@@ -6,7 +6,7 @@
   height: var(--app-height, 100dvh);
   width: var(--sites-sidebar-width);
   --sidebar-center-inset: 16px;
-  padding: max(112px, env(safe-area-inset-top, 0px)) 0 0;
+  padding: max(168px, calc(env(safe-area-inset-top, 0px) + 56px)) 0 0;
   --menu-bg: #151d29;
   --menu-text: #e9eef5;
   --menu-line: #ffffff20;
