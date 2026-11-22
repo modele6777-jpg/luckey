@@ -2730,14 +2730,15 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
       shownGreetingRef.current = shown;
       return shown;
     });
-    if (!searchQuery.trim()) return freshList;
-    const q = searchQuery.toLowerCase();
-    return freshList.filter((m) => {
-      const rawText = typeof m.content === 'string' ? m.content : JSON.stringify(m.content);
-      const txt = m.role === 'user' ? rawText : cleanAssistantMessageDisplay(rawText);
-      return txt.toLowerCase().includes(q);
-    });
-  }, [lucyMessages, searchQuery, userDisplayName, isPlusMode, pro, lucyTier, greetingEntry, isMasterMode]);
+    return freshList;
+  }, [lucyMessages, userDisplayName, isPlusMode, pro, lucyTier, greetingEntry, isMasterMode]);
+
+  const searchHits = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) return [] as typeof filteredMessages;
+    const hits = filteredMessages.filter((m) => lucyMessagePlainText(m).toLowerCase().includes(q));
+    return hits.slice(-40).reverse();
+  }, [filteredMessages, searchQuery]);
 
   // 인사만 보이던 방에서 첫 대화가 시작되면, 그때 보이던 인사를 저장해 이후 고정한다.
   useEffect(() => {
@@ -3367,6 +3368,16 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
     setIsSearchOpen(false);
   }, []);
 
+  const openSearchHit = useCallback((id: string) => {
+    setSearchQuery('');
+    setIsSearchOpen(false);
+    window.requestAnimationFrame(() => {
+      const root = messagesContainerRef.current;
+      const target = root?.querySelector(`[data-chat-msg-id="${CSS.escape(id)}"]`);
+      target?.scrollIntoView({ block: 'center', behavior: 'auto' });
+    });
+  }, []);
+
   const toggleSearch = useCallback(() => {
     if (isSearchOpen) closeSearch();
     else setIsSearchOpen(true);
@@ -3479,18 +3490,6 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
     noteLucyScrollPin(!readingHistory);
     setShowReturnToRecentConversation(readingHistory);
   }, [isSearchOpen, cancelTopScrollAnimation]);
-
-  // 검색 중에는 필터링된 최신 일치 메시지(하단)를 보여준다. 이 이동은 검색이 만든 것이므로
-  // 사용자가 위로 올린 것으로 오판해 자동 스크롤을 잠그지 않는다.
-  useLayoutEffect(() => {
-    if (!isSearchOpen || !searchQuery.trim()) return;
-    if (ttsBlocksAutoScrollRef.current) return;
-    isUserScrolledUpRef.current = false;
-    setShowReturnToRecentConversation(false);
-    noteLucyScrollPin(true);
-    scrollToBottom(true, false);
-  }, [isSearchOpen, searchQuery, scrollToBottom]);
-
 
   // Handle image attachment with auto-compression (prevents stuttering & infinite scroll)
   const handleImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -4331,48 +4330,47 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
 
         {/*  Search Input Dropdown */}
         {/* 높이 애니메이션 없음: 높이 0에서 포커스를 받으면 iOS가 대화를 끌어올린다. */}
-        <AnimatePresence initial={false}>
-          {isSearchOpen && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.12 }}
-              data-no-scroll-top="true"
-              className="w-full"
-            >
-              <div className={`flex items-center gap-2 border rounded-xl px-3 py-1.5 focus-within:border-amber-400 transition-all ${
-                isLight ? 'bg-[#fffdf9]/90 border-amber-900/20' : 'bg-slate-900/90 border-white/15'
-              }`}>
-                <Search size={14} className={isLight ? 'text-slate-400 shrink-0' : 'text-white/70 shrink-0'} />
-                <input
-                  ref={searchInputRef}
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="대화 내용 검색 (키워드 입력)..."
-                  className={`flex-1 bg-transparent text-base sm:text-sm outline-none ${
-                    isLight ? 'text-slate-800 placeholder-slate-400' : 'text-white placeholder-white/60'
-                  }`}
-                  style={{ color: isLight ? '#1e293b' : '#ffffff' }}
-                />
-                {searchQuery && (
-                  <span className="text-[11px] font-medium text-amber-700 dark:text-amber-300 bg-amber-100 dark:bg-amber-950/70 px-1.5 py-0.5 rounded">
-                    {filteredMessages.length}개 발견
-                  </span>
-                )}
-                <button 
-                  type="button"
-                  onClick={closeSearch}
-                  className="text-slate-400 hover:text-slate-700 dark:hover:text-white p-1 cursor-pointer"
-                >
-                  <X size={14} />
-                </button>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+
       </header>
+
+      {isSearchOpen && (
+        <div className="lucy-search-overlay" role="dialog" aria-label="대화 검색" onClick={closeSearch}>
+          <div className="lucy-search-panel" data-no-scroll-top="true" onClick={(e) => e.stopPropagation()}>
+            <div className="lucy-search-bar">
+              <Search size={18} aria-hidden="true" />
+              <input
+                ref={searchInputRef}
+                type="search"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="대화에 나온 말로 검색"
+                autoComplete="off"
+                enterKeyHint="search"
+              />
+              <button type="button" className="lucy-search-close" onClick={closeSearch}>닫기</button>
+            </div>
+            <div className="lucy-search-results">
+              {!searchQuery.trim() ? (
+                <div className="lucy-search-hint">대화에 나온 말을 입력하면 그 이야기로 이동해요</div>
+              ) : searchHits.length === 0 ? (
+                <div className="lucy-search-empty">“{searchQuery.trim()}”에 맞는 대화가 없어요.<br />다른 단어로 찾아보세요.</div>
+              ) : searchHits.map((hit) => {
+                const text = lucyMessagePlainText(hit).replace(/\s+/g, ' ').trim();
+                const when = hit.timestamp ? new Date(hit.timestamp).toLocaleString('ko-KR', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '';
+                return (
+                  <button key={String(hit.id)} type="button" className="lucy-search-item" onClick={() => openSearchHit(String(hit.id))}>
+                    <span className="lucy-search-icon" aria-hidden="true">{hit.role === 'user' ? '나' : '루'}</span>
+                    <span className="lucy-search-text">
+                      <strong>{text.slice(0, 80) || '내용 없음'}</strong>
+                      <small>{hit.role === 'user' ? '내가 보낸 말' : '루시'}{when ? ` · ${when}` : ''}</small>
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* 📱 메인 본문: 펼침 모드에서는 좌측 50% 화면을 온전히 채우며, 접힘 모드에서는 전체 단일 화면 채움 */}
       <div className="flex-1 min-h-0 flex flex-col w-full max-w-full overflow-hidden">
@@ -4386,14 +4384,6 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
         className="prism-page-content lucy-chat-main min-h-0 flex-1 overflow-y-auto overflow-x-hidden overscroll-x-none touch-pan-y p-3 sm:p-5 lg:p-6 w-full mx-auto min-w-0 select-text"
       >
         <div ref={messagesWrapperRef} className="space-y-3 sm:space-y-4 pb-3 sm:pb-4 w-full max-w-full min-w-0 overflow-x-hidden">
-          {filteredMessages.length === 0 && searchQuery.trim().length > 0 && (
-            <div className="text-center py-12 px-4">
-              <p className="text-xs sm:text-sm text-slate-500">
-                검색 결과가 없습니다.
-              </p>
-            </div>
-          )}
-
           {filteredMessages.map((msg, index) => {
             const isUser = msg.role === 'user';
             const msgId = String(msg.id || index);
@@ -5431,6 +5421,15 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
 
     </div>
   );
+}
+
+function lucyMessagePlainText(message: { role?: string; content?: unknown }): string {
+  const raw = typeof message.content === 'string'
+    ? message.content
+    : Array.isArray(message.content)
+      ? (message.content.find((item: { type?: string; text?: string }) => item?.type === 'text')?.text || '')
+      : '';
+  return message.role === 'user' ? cleanUserMessageDisplay(raw) : cleanAssistantMessageDisplay(raw, true);
 }
 
 export default function LucyStandalonePage(props: { pro?: boolean }) {
