@@ -551,9 +551,10 @@ export function LucyOrbCounsel({
             </article>
           )}
         </div>
-        {phase !== 'report' && (
+        {/* 입력창은 마스터가 정해진 뒤(상담 중)에만 보인다. */}
+        {phase === 'live' && (
           <div className="lucy-orb-dock">
-            <input value={draft} onChange={(event) => setDraft(event.target.value)} onKeyDown={(event) => { if (event.key === 'Enter') event.preventDefault(); }} placeholder={phase === 'pick' ? '먼저 적어두셔도 됩니다. 마스터를 고른 뒤 오브를 누르면 보내집니다' : '적고 오브를 누르면 보내집니다'} aria-label="오브 상담 입력" enterKeyHint="done" />
+            <input value={draft} onChange={(event) => setDraft(event.target.value)} onKeyDown={(event) => { if (event.key === 'Enter') event.preventDefault(); }} placeholder="적고 오브를 누르면 보내집니다" aria-label="오브 상담 입력" enterKeyHint="done" />
           </div>
         )}
         {phase === 'report' && master && (
