@@ -321,7 +321,17 @@ export default function CalmApp() {
         try {
           const nav = iframe.contentDocument?.querySelector('.top-nav');
           const rect = nav?.getBoundingClientRect();
-          if (rect && rect.height > 0) setActionsTop(Math.max(6, Math.round(rect.top + rect.height / 2 - 20)));
+          if (rect && rect.height > 0) {
+            setActionsTop(Math.max(6, Math.round(rect.top + rect.height / 2 - 20)));
+            const landscape = document.documentElement.classList.contains('duo-unfolded-landscape');
+            if (landscape && document.getElementById('duo-lucy-viewport')) {
+              document.documentElement.style.setProperty('--duo-pane-header-height', `${Math.round(rect.height)}px`);
+              document.documentElement.classList.add('duo-header-sync');
+            } else {
+              document.documentElement.classList.remove('duo-header-sync');
+              document.documentElement.style.removeProperty('--duo-pane-header-height');
+            }
+          }
         } catch { /* iframe navigating */ }
       });
     };
@@ -337,6 +347,8 @@ export default function CalmApp() {
       window.removeEventListener('resize', measure);
       window.clearInterval(retry);
       window.cancelAnimationFrame(raf);
+      document.documentElement.classList.remove('duo-header-sync');
+      document.documentElement.style.removeProperty('--duo-pane-header-height');
     };
   }, []);
   // Key 안에서 검색창이나 팝업이 열려 있으면 버튼을 숨겨 그 창의 닫기 버튼을 가리지 않는다.
