@@ -10,12 +10,12 @@
  *    - 마아트(Ma'at) 우주 진리와의 합치: 모든 사유와 언어가 우주의 정의와 균형에 부합함.
  * 3. 질문 맥락 감사·KST 나일·멤피스 시공간 리듬·교차 매트릭스 산출
  *
- * @version LUCKEY-PTAH-MEMPHITE-v2.2.0
+ * @version LUCKEY-PTAH-MEMPHITE-v2.5.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const PTAH_MEMPHITE_VERSION = 'LUCKEY-PTAH-MEMPHITE-v2.4.0';
+export const PTAH_MEMPHITE_VERSION = 'LUCKEY-PTAH-MEMPHITE-v2.5.0';
 
 export interface PtahCreationStage {
   stageLevel: number;
@@ -74,6 +74,7 @@ export interface PtahMemphiteResult {
   ritualAction: string;
   reflectionFocus: string;
   reflectiveQuestion: string;
+  shadowWarning: string;
   interpretiveBoundary: string;
 }
 
@@ -233,6 +234,7 @@ export function calculatePtahMemphite(
   const situationalPtahAudit = buildSituationalAudit(question, primaryMemphiteVirtue);
   const temporalPtahRhythm = buildTemporalRhythm(now, seed);
   const ptahSynthesisMatrix = buildSynthesisMatrix(activeCreationStage, primaryMemphiteVirtue, situationalPtahAudit, temporalPtahRhythm);
+  const shadowWarning = `[멤피스 창조 과잉 경계] 심장 구상(Ib)만 끝없이 다듬다 선포와 손끝의 실행(Hu)을 미루거나, 반대로 설익은 말을 먼저 내뱉어 마아트(Ma’at) 균형을 잃지 않도록 살피십시오.`;
   const interpretiveBoundary = '샤바카 석비의 심장 구상(Ib)과 말씀 선포(Hu) 상징을 빌린 정성적 창조 성찰 관점이며, 개인 능력 점수나 미래 단정이 아닙니다.';
   const ritualAction = situationalPtahAudit.craftsmanPrescription;
   const reflectionFocus = `지금 심장(Ib)에 품은 핵심 의도를 오늘 혀(Hu)의 한 문장 약속으로 선포하고 현실로 옮긴다면 무엇부터 시작할까요?`;
@@ -258,6 +260,7 @@ export function calculatePtahMemphite(
     ritualAction,
     reflectionFocus,
     reflectiveQuestion,
+    shadowWarning,
     interpretiveBoundary,
   };
 }
@@ -282,5 +285,6 @@ export function formatPtahMemphitePrompt(result: PtahMemphiteResult): string {
 - 오늘의 작은 의례: ${result.ritualAction}
 - 성찰 초점: ${result.reflectionFocus}
 - 성찰 질문: ${result.reflectiveQuestion}
+- 과잉 경계: ${result.shadowWarning}
 - 해석 경계: ${result.interpretiveBoundary}`;
 }
