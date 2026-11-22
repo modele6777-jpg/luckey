@@ -178,7 +178,7 @@ export function LucyEntryScreen({ trigger, variant, period }: LucyEntryScreenPro
             >
               <p className="text-[24px] font-black tracking-tight" style={{ color: palette.title }}>
                 Lucy{plus && <> <span className={`bg-gradient-to-r ${palette.accent} bg-clip-text text-transparent`}>Plus</span></>}
-                {master && <> <span className={`bg-gradient-to-r ${palette.accent} bg-clip-text text-transparent`}>Master</span></>}
+                {master && <> <span className={`bg-gradient-to-r ${palette.accent} bg-clip-text text-transparent`}>Pro</span></>}
               </p>
               <p className="mt-1.5 text-[13px] font-medium break-keep" style={{ color: palette.sub }}>
                 {master ? '사주 상담을 준비하고 있어요' : plus ? '두 화면으로 더 넓게 대화해요' : '루시가 이야기 들을 준비를 하고 있어요'}
