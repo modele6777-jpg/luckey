@@ -16286,5 +16286,23 @@ test('buildUserFifteenToolsDigest integrates 9th-round Saju hidden-stems/archety
   assert.ok(!/breakthroughPowerScore|deukSeScore/.test(digest));
 });
 
+test('buildUserFifteenToolsDigest integrates 9th-round Tarot past/future insights & personality sephira, Sukuyo 27-mansion order & near harmony, and Mahabote transit house & top-2 domains without raw scores', () => {
+  const profile: any = {
+    basic: {
+      name: '제제',
+      birthdate: '1994-01-24',
+      birthtime: '10:30',
+      calendarType: 'solar',
+      isLeapMonth: false,
+      gender: 'male',
+    },
+  };
+  const digest = buildUserFifteenToolsDigest(profile, new Date('2026-11-23T06:08:00+09:00'));
+  assert.ok(digest.includes('과거 카드 통찰(') && digest.includes('미래 카드 통찰(') && digest.includes('페르소나: '));
+  assert.ok(digest.includes('숙/27숙]') && digest.includes('근거리 길숙(영:'));
+  assert.ok(digest.includes('본명 색채 ') && digest.includes(' · 강점 ') && digest.includes('나이 다샤('));
+  assert.ok(!/tarotVitalityScore|guardScore|planetaryHarmonyScore|leadershipHonor|wealthProsperity|wisdomFortitude|innovationBreakthrough/.test(digest));
+});
+
 
 
