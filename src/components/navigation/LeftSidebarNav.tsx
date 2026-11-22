@@ -296,6 +296,7 @@ export default function LeftSidebarNav() {
     return () => aside.removeEventListener('pointerdown', release);
   }, []);
   const luckyPathRef = useRef(cleanPath);
+  const revealEpilogueRef = useRef<() => void>(() => {});
   const channelsVisible = screenUnfolded || isChannelsOpen;
   useEffect(() => {
     if (!channelsVisible) return;
@@ -309,15 +310,18 @@ export default function LeftSidebarNav() {
       const hidden = itemRect.bottom - listRect.bottom + 8;
       if (hidden > 1) list.scrollTop += hidden;
     };
+    revealEpilogueRef.current = revealEpilogue;
     revealEpilogue();
     const frame = window.requestAnimationFrame(revealEpilogue);
-    const timer = window.setTimeout(revealEpilogue, 260);
+    // 펼칠 때 아이콘이 하나씩 튀어나오는 동안(약 0.6초)과 화면 크기가 자리 잡는 동안(약 0.8초)에도
+    // 에필로그 버튼이 끝까지 보이도록 몇 번 더 맞춘다.
+    const timers = [260, 650, 1000, 1500].map((ms) => window.setTimeout(revealEpilogue, ms));
     const observer = new ResizeObserver(revealEpilogue);
     const icons = list.querySelector('#prism-channel-icons');
     observer.observe(icons || list);
     return () => {
       window.cancelAnimationFrame(frame);
-      window.clearTimeout(timer);
+      timers.forEach((id) => window.clearTimeout(id));
       observer.disconnect();
     };
   }, [channelsVisible, screenUnfolded]);
@@ -698,6 +702,7 @@ export default function LeftSidebarNav() {
                       <motion.div
                         id="prism-channel-icons"
                         className="refined-prism-icons"
+                        onAnimationComplete={() => revealEpilogueRef.current()}
                         initial="closed"
                         animate="open"
                         exit="closed"
