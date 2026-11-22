@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.8.367",
+    "builtAt": "2026-11-23T07:35:00+09:00",
+    "summary": "프리슬란트 폴데르·나우아틀 쇼치틀·무이스카 과타비타 3대 엔진 질문 맥락·순환 축·과잉 경계 심층 강화(v1.8.367)",
+    "items": [
+      "프리슬란트 폴데르 방파제 균형 엔진(v2.3.0): 질문 맥락(questionTopic), 제방 수위 축(dikeWaterAxis), 과잉 경계(shadowWarning) 추가",
+      "나우아틀 꽃과 노래 쇼치틀 엔진(v2.3.0): 질문 맥락(questionTopic), 숨결 공명 축(xochitlBreathAxis), 과잉 경계(shadowWarning) 추가",
+      "무이스카 과타비타 황금 호수 엔진(v2.3.0): 질문 맥락(questionTopic), 황금 뗏목 순환(goldRaftCycle), 과잉 경계(shadowWarning) 추가"
+    ]
+  },
+  {
     "version": "1.8.366",
     "builtAt": "2026-11-23T07:25:00+09:00",
     "summary": "소크라테스 산파술·알프레트 아들러·프란츠 카프카 3대 엔진 과잉 경계(shadowWarning) 심층 강화(v1.8.366)",

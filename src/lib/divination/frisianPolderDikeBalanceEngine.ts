@@ -3,15 +3,25 @@ import type { UserProfile } from '../sharedState';
 export interface FrisianPolderResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: string;
   polderPrinciple: string;
   companionPrinciple: string;
+  dikeWaterAxis: string;
   frisianInsight: string;
   northSeaTone: string;
   reflectionFocus: string;
   ritualAction: string;
   reflectiveQuestion: string;
+  shadowWarning: string;
   interpretiveBoundary: string;
 }
+
+const DIKE_WATER_AXES = [
+  '외부 밀물 완충 · 내부 수위 유지 균형',
+  '공동체 제방 합의 · 각자 자리 지킴 순환',
+  '간조 갯벌 기다림 · 길 열릴 때 건너기 리듬',
+  '배수 풍차 비움 · 테르프 언덕 돋우기 조화',
+] as const;
 
 const PRINCIPLES = [
   {
@@ -81,17 +91,25 @@ export function calculateFrisianPolderDikeBalance(params: {
   const companionOffset = 1 + (stableHash(`${seed}|companion`) % (PRINCIPLES.length - 1));
   const picked = PRINCIPLES[idx];
   const companion = PRINCIPLES[(idx + companionOffset) % PRINCIPLES.length];
+  const dikeWaterAxis = DIKE_WATER_AXES[stableHash(`${seed}|axis`) % DIKE_WATER_AXES.length];
+  const trimmedQ = (params.question ?? '').trim();
+  const questionTopic = trimmedQ
+    ? trimmedQ.slice(0, 36)
+    : '삶의 수위와 경계를 맞추는 오늘의 균형';
 
   return {
-    engineVersion: 'LUCKEY-FRISIAN-POLDER-v2.2.0',
+    engineVersion: 'LUCKEY-FRISIAN-POLDER-v2.3.0',
     calculatedAtKst: formatKstIso(now),
+    questionTopic,
     polderPrinciple: picked.principle,
     companionPrinciple: companion.principle,
+    dikeWaterAxis,
     frisianInsight: `${picked.insight} (동반 원리: ${companion.principle})`,
     northSeaTone: picked.tone,
-    reflectionFocus: `프리슬란트 폴데르 지혜의 '${picked.principle}'와 동반 원리 '${companion.principle}'처럼, 넘치는 걱정과 외부 요구를 한 번에 막으려 하기보다 수문을 열듯 천천히 수위를 맞춰 보세요.`,
+    reflectionFocus: `질문 맥락('${questionTopic}')에서 프리슬란트 폴데르 지혜의 '${picked.principle}'와 제방 수위 축('${dikeWaterAxis}')을 함께 살피며, 넘치는 걱정과 외부 요구를 한 번에 막으려 하기보다 수문을 열듯 천천히 수위를 맞춰 보세요.`,
     ritualAction: picked.ritual,
     reflectiveQuestion: picked.question,
+    shadowWarning: '제방과 수문을 과도하게 닫아만 두면 안쪽의 물도 고여 답답해질 수 있으니, 열어야 할 틈과 지킬 경계를 함께 살피세요.',
     interpretiveBoundary: '북해 프리슬란트의 폴데르(Polder) 수문 조절·테르프 언덕·공동체 합의 지혜를 바탕으로 한 상징적 성찰 프레임입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.',
   };
 }
@@ -100,12 +118,15 @@ export function formatFrisianPolderPrompt(res: FrisianPolderResult): string {
   return [
     `[프리슬란트 폴데르·방파제 균형 성찰 · ${res.engineVersion}]`,
     `- 기준 시각: ${res.calculatedAtKst}`,
+    `- 질문 맥락: ${res.questionTopic}`,
     `- 북해 원리: ${res.polderPrinciple} (${res.northSeaTone})`,
     `- 동반 원리: ${res.companionPrinciple}`,
+    `- 제방 수위 축: ${res.dikeWaterAxis}`,
     `- 중심 통찰: ${res.frisianInsight}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 오늘의 작은 실천: ${res.ritualAction}`,
     `- 스스로에게 묻기: ${res.reflectiveQuestion}`,
+    `- 과잉 경계: ${res.shadowWarning}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
   ].join('\n');
 }
