@@ -5,13 +5,27 @@ export interface BeninBronzeObaResult {
   calculatedAtKst: string;
   edoMotif: string;
   companionMotif: string;
+  castingPhase: string;
   beninInsight: string;
   guildTone: string;
+  shadowWarning: string;
   reflectionFocus: string;
   ritualAction: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
+
+const CASTING_PHASES = [
+  '밀랍 성형(서두르지 않고 손끝의 선을 또렷이 세우는 준비기)',
+  '쇳물 주입(충분히 익은 결심을 흔들림 없이 한 번에 붓는 결단기)',
+  '부조 연마(굳은 결과의 거친 모서리를 다듬어 기억으로 남기는 정리기)',
+] as const;
+
+const SHADOW_WARNINGS = [
+  '완벽한 거푸집만 다듬다가 정작 쇳물을 부어야 할 때를 계속 미루는 지연을 경계하세요.',
+  '지난 공적과 형식의 무게에 눌려 지금 새롭게 빚어야 할 유연한 시도를 스스로 막지 않도록 살피세요.',
+  '안팎의 경계를 세우려다 필요한 소통과 온기까지 차단할 만큼 벽을 두껍게 쌓지 않도록 점검하세요.',
+] as const;
 
 const MOTIFS = [
   {
@@ -81,17 +95,21 @@ export function calculateBeninBronzeObaMemory(params: {
   const companionOffset = 1 + (stableHash(`${seed}|companion`) % (MOTIFS.length - 1));
   const picked = MOTIFS[idx];
   const companion = MOTIFS[(idx + companionOffset) % MOTIFS.length];
+  const castingPhase = CASTING_PHASES[stableHash(`${seed}|phase`) % CASTING_PHASES.length];
+  const shadowWarning = SHADOW_WARNINGS[stableHash(`${seed}|shadow`) % SHADOW_WARNINGS.length];
 
   return {
-    engineVersion: 'LUCKEY-BENIN-OBA-v2.2.0',
+    engineVersion: 'LUCKEY-BENIN-OBA-v2.3.0',
     calculatedAtKst: formatKstIso(now),
     edoMotif: picked.motif,
     companionMotif: companion.motif,
+    castingPhase,
     beninInsight: `${picked.insight} (동반 결: ${companion.motif})`,
     guildTone: picked.tone,
-    reflectionFocus: `베냉 브론즈·오바 궁정 기억의 '${picked.motif}'와 동반 결 '${companion.motif}'처럼, 그동안 쌓아 온 경험의 부조를 믿고 차분한 장인의 손길로 오늘의 한 매듭을 지어 보세요.`,
-    ritualAction: picked.ritual,
-    reflectiveQuestion: picked.question,
+    shadowWarning,
+    reflectionFocus: `베냉 브론즈·오바 궁정 기억의 '${castingPhase}' 국면에서 '${picked.motif}'와 동반 결 '${companion.motif}'을 함께 겹쳐, 그동안 쌓아 온 경험의 부조를 믿고 차분한 장인의 손길로 오늘의 한 매듭을 지어 보세요.`,
+    ritualAction: `${picked.ritual} (동반 결: ${companion.motif})`,
+    reflectiveQuestion: `${picked.question} '${castingPhase}' 흐름에서 지금 가장 정성껏 다듬을 매듭은 무엇인가요?`,
     interpretiveBoundary: '서아프리카 에도(베냉) 청동 주조 장인 길드·기억의 부조 전통을 바탕으로 한 상징적 성찰 프레임입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.',
   };
 }
@@ -102,7 +120,9 @@ export function formatBeninBronzeObaPrompt(res: BeninBronzeObaResult): string {
     `- 기준 시각: ${res.calculatedAtKst}`,
     `- 에도 모티프: ${res.edoMotif} (${res.guildTone})`,
     `- 동반 결: ${res.companionMotif}`,
+    `- 주조 국면: ${res.castingPhase}`,
     `- 중심 통찰: ${res.beninInsight}`,
+    `- 과잉·경계 점검: ${res.shadowWarning}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 오늘의 작은 실천: ${res.ritualAction}`,
     `- 스스로에게 묻기: ${res.reflectiveQuestion}`,
