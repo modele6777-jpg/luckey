@@ -44,13 +44,37 @@ const ORB_GLYPHS = [
   };
 });
 const CLOUDS = [
-  { left: -8, top: 30, width: 32, delay: 0.1, drift: 9 },
-  { left: 72, top: 25, width: 34, delay: 0.25, drift: 11 },
-  { left: 4, top: 10, width: 22, delay: 0.4, drift: 13 },
-  { left: 78, top: 8, width: 20, delay: 0.55, drift: 10 },
-  { left: 44, top: 4, width: 16, delay: 0.7, drift: 12 },
+  { left: -14, top: 27, width: 44, delay: 0.1, drift: 14 },
+  { left: 68, top: 25, width: 46, delay: 0.25, drift: 17 },
+  { left: 14, top: 33, width: 32, delay: 0.4, drift: 19 },
+  { left: 56, top: 34, width: 30, delay: 0.55, drift: 15 },
+  { left: 76, top: 6, width: 20, delay: 0.7, drift: 21 },
 ];
 const ORB_ROUTE = '/voice';
+
+/** Pips laid out on a 3×3 grid. */
+const PIP_SLOTS = ['4', '0,8', '0,4,8', '0,2,6,8', '0,2,4,6,8', '0,2,3,5,6,8'];
+function Pips({ value }: { value: number }) {
+  const on = PIP_SLOTS[value - 1].split(',');
+  return <>{Array.from({ length: 9 }, (_, index) => <i key={index} className={on.includes(String(index)) ? '' : 'is-off'} />)}</>;
+}
+/** Real die layout (opposite faces add to 7) and the cube turn that brings each value to the front. */
+const DIE_FACES = [
+  { value: 1, place: 'translateZ(var(--half))' },
+  { value: 6, place: 'rotateY(180deg) translateZ(var(--half))' },
+  { value: 3, place: 'rotateY(90deg) translateZ(var(--half))' },
+  { value: 4, place: 'rotateY(-90deg) translateZ(var(--half))' },
+  { value: 2, place: 'rotateX(90deg) translateZ(var(--half))' },
+  { value: 5, place: 'rotateX(-90deg) translateZ(var(--half))' },
+];
+const DIE_END = [
+  'rotateX(720deg) rotateY(360deg)',
+  'rotateX(-810deg) rotateY(360deg)',
+  'rotateX(720deg) rotateY(270deg)',
+  'rotateX(720deg) rotateY(450deg)',
+  'rotateX(810deg) rotateY(360deg)',
+  'rotateX(720deg) rotateY(540deg)',
+];
 
 type Line = { who: '나' | '루시'; text: string };
 type Phase = 'pick' | 'live' | 'report';
@@ -115,7 +139,7 @@ export function LucyOrbCounsel({
   const [notice, setNotice] = useState('');
   const [report, setReport] = useState('');
   const [leaving, setLeaving] = useState(false);
-  const [dieFace, setDieFace] = useState(1);
+  const [dice, setDice] = useState<[number, number]>([1, 6]);
   const [rolling, setRolling] = useState(false);
   const [thrown, setThrown] = useState(0);
   const [location] = useLocation();
@@ -182,7 +206,7 @@ export function LucyOrbCounsel({
     return () => {
       window.clearTimeout(appear);
       if (flashTimer.current) window.clearTimeout(flashTimer.current);
-      if (dieTimer.current) window.clearInterval(dieTimer.current);
+      if (dieTimer.current) window.clearTimeout(dieTimer.current);
       if (cautionTimer.current) window.clearTimeout(cautionTimer.current);
       bed?.stop();
       bedRef.current = null;
@@ -319,23 +343,18 @@ export function LucyOrbCounsel({
   const rollMaster = () => {
     if (rolling || leaving) return;
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    // 두 주사위의 눈을 먼저 정하고, 3D 주사위가 그 눈이 위로 오도록 굴러가 멈춘다. 합으로 마스터를 고른다.
+    const next: [number, number] = [1 + Math.floor(Math.random() * 6), 1 + Math.floor(Math.random() * 6)];
+    setDice(next);
     setRolling(true);
     setThrown(value => value + 1);
-    let ticks = 0;
-    const landTicks = reduced ? 2 : 10;
-    if (dieTimer.current) window.clearInterval(dieTimer.current);
-    // The die tumbles through the air (face keeps changing), lands on the floor, then rests on its face.
-    dieTimer.current = window.setInterval(() => {
-      ticks += 1;
-      if (ticks <= landTicks) setDieFace(1 + Math.floor(Math.random() * 6));
-      if (ticks < landTicks + (reduced ? 2 : 5)) return;
-      if (dieTimer.current) window.clearInterval(dieTimer.current);
+    if (dieTimer.current) window.clearTimeout(dieTimer.current);
+    dieTimer.current = window.setTimeout(() => {
       dieTimer.current = null;
       setRolling(false);
       setThrown(0);
-      const pick = ORB_MASTERS[Math.floor(Math.random() * ORB_MASTERS.length)];
-      begin(pick);
-    }, 115);
+      begin(ORB_MASTERS[(next[0] + next[1]) % ORB_MASTERS.length]);
+    }, reduced ? 700 : 2300);
   };
 
   const sendDraft = () => {
@@ -356,8 +375,8 @@ export function LucyOrbCounsel({
         aria-label="오브 상담"
         onPointerDown={() => { void bedRef.current?.resume().then(() => bedRef.current?.setAudible(bedAudible, speaking)); }}
       >
-        {Array.from({ length: 10 }, (_, index) => (
-          <span key={`mote-${index}`} className="lucy-mote" style={{ left: `${8 + index * 9}%`, animationDelay: `${index * .35}s` }} />
+        {Array.from({ length: 18 }, (_, index) => (
+          <span key={`mote-${index}`} className="lucy-mote" style={{ left: `${3 + index * 5.4}%`, animationDelay: `${(index * 0.83) % 12}s`, ['--mote-x' as string]: `${(index % 2 ? 1 : -1) * (10 + (index % 4) * 8)}px` }} />
         ))}
         {CLOUDS.map((cloud, index) => (
           <span
@@ -373,6 +392,8 @@ export function LucyOrbCounsel({
             }}
           ><i /></span>
         ))}
+        <span className="lucy-orb-rays" aria-hidden="true" />
+        <span className="lucy-orb-vignette" aria-hidden="true" />
         {caution && <p className="lucy-orb-caution" role="status">이 상담은 참고일 뿐입니다. 맹신하지 마세요.</p>}
         <header className="lucy-orb-header" data-top-bar="true">
           <h1>Orb</h1>
@@ -396,6 +417,8 @@ export function LucyOrbCounsel({
         {phase === 'live' && <button type="button" className="lucy-orb-end" onClick={openReport}>상담 끝내기</button>}
         {phase === 'report' && <button type="button" className="lucy-orb-end" onClick={keepReport}>채팅으로</button>}
         <div className={`lucy-orb-ritual ${lit ? 'is-lit' : ''}`}>
+          <span className="lucy-orb-table" aria-hidden="true"><i className="side" /><i className="top" /></span>
+          <span className="lucy-orb-caustic" aria-hidden="true" />
           <div className="lucy-orb-floor" aria-hidden="true">
             <svg className="lucy-orb-circle lucy-orb-circle-back" viewBox="0 0 200 200">
               <circle cx="100" cy="100" r="90" strokeDasharray="3 8" />
@@ -446,6 +469,8 @@ export function LucyOrbCounsel({
             {[0, 1, 2, 3, 4].map(index => <span key={index} className="lucy-orb-sparkle" aria-hidden="true">✦</span>)}
             <button type="button" className={`lucy-orb-body ${lit ? 'is-lit' : ''}`} aria-label={draft.trim() ? '입력한 말 보내기' : '오브 빛'} onClick={() => { flashOrb(); if (phase === 'live') sendDraft(); }}>
               <span className="lucy-orb-inner" aria-hidden="true">
+                <span className="lucy-orb-swirl" />
+                <span className="lucy-orb-swirl is-two" />
                 {ORB_GLYPHS.map(glyph => (
                   <span
                     key={glyph.key}
@@ -457,18 +482,27 @@ export function LucyOrbCounsel({
                 ))}
               </span>
               <span className="lucy-orb-shine" aria-hidden="true" />
+              <span className="lucy-orb-rim" aria-hidden="true" />
             </button>
-            <span className="lucy-orb-stand" aria-hidden="true"><i className="cup" /><i className="neck" /><i className="base" /></span>
+            <span className="lucy-orb-stand" aria-hidden="true"><i className="cup" /><i className="ring" /><i className="neck" /><i className="base" /></span>
           </div>
           {thrown > 0 && (
-            <span key={thrown} className="lucy-die-throw" aria-hidden="true">
-              <span className="lucy-die-shadow" />
-              <span className="lucy-die-cube">
-                {Array.from({ length: 9 }, (_, index) => {
-                  const pips = ['4', '0,8', '0,4,8', '0,2,6,8', '0,2,4,6,8', '0,2,3,5,6,8'][dieFace - 1];
-                  return <i key={index} className={pips.split(',').includes(String(index)) ? '' : 'is-off'} />;
-                })}
-              </span>
+            <span key={thrown} className="lucy-dice-throw" aria-hidden="true">
+              {dice.map((face, index) => (
+                <span key={index} className={`lucy-die-3d is-${index ? 'second' : 'first'}`} style={{ ['--end' as string]: DIE_END[face - 1] }}>
+                  <span className="lucy-die-shadow" />
+                  <span className="lucy-die-tumble">
+                    <span className="lucy-die-cube3d">
+                      {DIE_FACES.map(({ value, place }) => (
+                        <span key={value} className="lucy-die-face" style={{ transform: place }}>
+                          <Pips value={value} />
+                        </span>
+                      ))}
+                    </span>
+                  </span>
+                </span>
+              ))}
+              <span className="lucy-dice-sum">{dice[0]} + {dice[1]} = {dice[0] + dice[1]}</span>
             </span>
           )}
         </div>
@@ -479,13 +513,10 @@ export function LucyOrbCounsel({
           {notice && <p>{notice}</p>}
           {phase === 'pick' && (
             <div className="lucy-orb-masters">
-              <button type="button" className={`lucy-die ${rolling ? 'is-thrown' : ''}`} onClick={rollMaster} aria-label="주사위로 마스터 고르기">
-                {Array.from({ length: 9 }, (_, index) => {
-                  const pips = ['4', '0,8', '0,4,8', '0,2,6,8', '0,2,4,6,8', '0,2,3,5,6,8'][dieFace - 1];
-                  return <i key={index} className={pips.split(',').includes(String(index)) ? '' : 'is-off'} />;
-                })}
+              <button type="button" className={`lucy-die ${rolling ? 'is-thrown' : ''}`} onClick={rollMaster} aria-label="주사위 두 개로 마스터 고르기">
+                {dice.map((face, index) => <span key={index} className="lucy-die-mini"><Pips value={face} /></span>)}
               </button>
-              <p className="lucy-die-caption">주사위를 누르면 바닥에 던져서 마스터를 정합니다</p>
+              <p className="lucy-die-caption">주사위 두 개를 던져 나온 합으로 마스터를 정합니다</p>
               {ORB_MASTERS.map(item => (
                 <button key={item.id} type="button" onClick={() => begin(item)}>
                   <strong>{item.name}</strong>

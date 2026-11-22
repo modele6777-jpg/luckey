@@ -31,8 +31,9 @@ export function OrbPage() {
       onFinish={(summary) => {
         if (summary) {
           const message = {
+            // 오브 상담 보고서는 루시가 아니라 사용자가 보낸 말풍선으로 남긴다.
             id: `orb-${Date.now()}`,
-            role: 'model' as const,
+            role: 'user' as const,
             content: summary,
             timestamp: Date.now(),
             persona: 'lucy' as const,
