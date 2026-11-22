@@ -100,6 +100,13 @@ function recommendedChannelId(hour: number) {
   return 'bluebird';
 }
 
+const USES = [
+  { title: '하루 열기', hint: '에너지 보고 오늘 방향을 잡아요', path: '/prologue', icon: Sun, color: '#ef4444' },
+  { title: '마음 쉬기', hint: '지치면 감정을 짧게 내려놓아요', path: '/orange', icon: TreeDeciduous, color: 'oklch(0.72 0.18 55)' },
+  { title: '몸 풀기', hint: '무거울 때 호흡하고 스트레칭해요', path: '/heal', icon: Activity, color: 'oklch(0.70 0.15 150)' },
+  { title: '오늘 닫기', hint: '하루를 결산하고 내일을 준비해요', path: '/epilogue', icon: Moon, color: 'oklch(0.65 0.25 310)' },
+];
+
 export default function LuckyChannelPage() {
   const [, navigate] = useLocation();
   const { sharedState } = useApp();
@@ -111,6 +118,36 @@ export default function LuckyChannelPage() {
       <div data-app-scroll-root className="min-h-0 flex-1 w-full overflow-y-auto no-scrollbar touch-pan-y overscroll-x-none pt-14 pb-28">
         <div className="px-3 sm:px-6 prism-xs-pad w-full max-w-6xl mx-auto space-y-3.5 pb-6">
           <RealtimeEnergyPatternCard />
+          <section className="space-y-2">
+            <div className="flex items-baseline gap-2 px-1">
+              <span className="text-[10px] font-bold tracking-[0.22em] text-emerald-300/85 font-mono">LUCKEY</span>
+              <h2 className="text-sm font-bold text-white">추천 활용</h2>
+            </div>
+            <div className="grid grid-cols-2 gap-2.5">
+              {USES.map((use) => {
+                const Icon = use.icon;
+                return (
+                  <button
+                    key={use.path}
+                    type="button"
+                    onClick={() => {
+                      navigate(use.path);
+                      window.dispatchEvent(new CustomEvent('nav-click-active', { detail: { path: use.path } }));
+                    }}
+                    className="text-left rounded-2xl border border-white/10 bg-white/[0.04] hover:bg-white/[0.08] px-3 py-3 flex items-start gap-2.5 transition-colors"
+                  >
+                    <span className="mt-0.5 w-8 h-8 rounded-xl flex items-center justify-center shrink-0 border border-white/10" style={{ background: `${use.color}22`, color: use.color }}>
+                      <Icon size={16} />
+                    </span>
+                    <span className="min-w-0">
+                      <span className="block text-[13px] font-bold text-white">{use.title}</span>
+                      <span className="block text-[11px] text-white/55 leading-snug mt-0.5">{use.hint}</span>
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </section>
           <div className="flex flex-wrap items-center justify-between gap-3 px-1 pr-16">
             <div>
               <div className="flex items-center gap-2">

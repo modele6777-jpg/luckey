@@ -46,7 +46,7 @@ function channelInfo(path: string) {
     return { kicker: 'MY', label: 'MY PAGE', subLabel: '마이페이지 · 내 프로필과 기록', color: '#a855f7' };
   }
   if (isLuckyHubPath(path)) {
-    return { kicker: 'LUCKY', label: '럭키채널', subLabel: '7대 차원 DApp 채널', color: '#34d399' };
+    return { kicker: 'LUCKEY', label: 'Luckey', subLabel: '7대 차원 DApp 채널', color: '#34d399' };
   }
   const match = matchLuckyChannel(path);
   return {
@@ -116,7 +116,7 @@ export function LuckyChannelTransition() {
           <motion.div
             key={`lucky-entry-${run}`}
             role="status"
-            aria-label={info.kicker === 'MY' ? '마이페이지를 여는 중' : isLuckyHubPath(target) ? '럭키채널을 여는 중' : `${info.label} 채널을 여는 중`}
+            aria-label={info.kicker === 'MY' ? '마이페이지를 여는 중' : isLuckyHubPath(target) ? 'Luckey를 여는 중' : `${info.label} 채널을 여는 중`}
             data-testid="lucky-channel-transition"
             data-lucky-channel={info.label}
             initial={{ opacity: 0 }}

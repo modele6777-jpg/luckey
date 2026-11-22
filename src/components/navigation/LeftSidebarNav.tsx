@@ -528,10 +528,10 @@ export default function LeftSidebarNav() {
                     type="button"
                     className="refined-nav-item"
                     data-active={cleanPath === '/lucky' || isChannelsOpen || PRISM_CHANNELS.some(({ path }) => cleanPath === path)}
-                    aria-label={cleanPath === '/lucky' && isChannelsOpen ? '럭키채널, 채널 목록 접기' : '럭키채널'}
+                    aria-label={cleanPath === '/lucky' && isChannelsOpen ? 'Luckey, 채널 목록 접기' : 'Luckey'}
                     aria-expanded={isChannelsOpen}
                     aria-controls={isChannelsOpen ? 'prism-channel-icons' : undefined}
-                    title="럭키채널"
+                    title="Luckey"
                     onClick={() => {
                       triggerHaptic('whitehole');
                       if (cleanPath !== '/lucky') {
