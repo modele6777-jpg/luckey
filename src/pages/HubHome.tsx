@@ -37,7 +37,7 @@ const APPS = [
     subtitle: '시작 방향',
     desc: '삶의 시작과 오늘의 방향을 잡고, 목적에 맞게 하루의 여정을 여는 프롤로그 공간',
     icon: Sun,
-    color: 'oklch(0.84 0.14 75)',
+    color: '#ef4444',
     path: '/prologue',
     persona: 'PROLOGUE',
     personaDesc: '하루의 시작·방향·목적을 여는 가이드',
