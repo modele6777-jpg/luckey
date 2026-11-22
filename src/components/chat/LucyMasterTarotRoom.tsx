@@ -59,33 +59,96 @@ function DreamCatcher() {
 }
 
 
-function magicPoint(radius: number, turn: number): string {
+function ringPoint(radius: number, turn: number) {
   const angle = turn * Math.PI * 2 - Math.PI / 2;
-  return `${(100 + Math.cos(angle) * radius).toFixed(2)},${(100 + Math.sin(angle) * radius).toFixed(2)}`;
+  return { x: 200 + Math.cos(angle) * radius, y: 200 + Math.sin(angle) * radius };
 }
 
 function MagicCircle() {
-  const ticks = Array.from({ length: 36 }, (_, index) => {
-    const angle = (index / 36) * Math.PI * 2 - Math.PI / 2;
-    const inner = index % 3 === 0 ? 74 : 80;
-    const x1 = 100 + Math.cos(angle) * inner;
-    const y1 = 100 + Math.sin(angle) * inner;
-    const x2 = 100 + Math.cos(angle) * 86;
-    const y2 = 100 + Math.sin(angle) * 86;
-    return `M${x1.toFixed(2)},${y1.toFixed(2)} L${x2.toFixed(2)},${y2.toFixed(2)}`;
+  const gold = React.useId().replace(/:/g, '');
+  const star = [0, 1, 2].map(index => {
+    const point = ringPoint(104, index / 3);
+    return `${point.x.toFixed(2)},${point.y.toFixed(2)}`;
   }).join(' ');
-  const up = [0, 1, 2].map(index => magicPoint(58, index / 3)).join(' ');
-  const down = [0, 1, 2].map(index => magicPoint(58, index / 3 + 0.5)).join(' ');
+  const starDown = [0, 1, 2].map(index => {
+    const point = ringPoint(104, index / 3 + 0.5);
+    return `${point.x.toFixed(2)},${point.y.toFixed(2)}`;
+  }).join(' ');
   return (
-    <svg className="lmr-cloth-sigil" viewBox="0 0 200 200" aria-hidden="true">
-      <circle className="lmr-sigil-ring" cx="100" cy="100" r="96" />
-      <circle className="lmr-sigil-faint" cx="100" cy="100" r="88" />
-      <path className="lmr-sigil-faint" d={ticks} />
-      <circle className="lmr-sigil-ring" cx="100" cy="100" r="66" />
-      <polygon className="lmr-sigil-core" points={up} />
-      <polygon className="lmr-sigil-core" points={down} />
-      <circle className="lmr-sigil-ring" cx="100" cy="100" r="24" />
-      <circle className="lmr-sigil-core" cx="100" cy="100" r="6" />
+    <svg className="lmr-cloth-sigil" viewBox="0 0 400 400" aria-hidden="true">
+      <defs>
+        <linearGradient id={gold} x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stopColor="#fff6d4" />
+          <stop offset="0.42" stopColor="#e6c27a" />
+          <stop offset="1" stopColor="#c9a6ff" />
+        </linearGradient>
+      </defs>
+      <circle cx="200" cy="200" r="190" fill="none" stroke={`url(#${gold})`} strokeWidth="2.4" strokeOpacity="0.9" />
+      <circle cx="200" cy="200" r="178" fill="none" stroke="#f3e2b4" strokeWidth="0.7" strokeOpacity="0.45" />
+      <circle cx="200" cy="200" r="168" fill="none" stroke={`url(#${gold})`} strokeWidth="3.2" strokeLinecap="round" strokeDasharray="58 30" strokeOpacity="0.8" />
+      {Array.from({ length: 12 }, (_, index) => {
+        const point = ringPoint(168, index / 12 + 1 / 24);
+        return <circle key={index} cx={point.x} cy={point.y} r="2.1" fill="#fff1c9" fillOpacity="0.85" />;
+      })}
+      {Array.from({ length: 8 }, (_, index) => {
+        const point = ringPoint(190, index / 8);
+        return (
+          <path
+            key={index}
+            d={`M${point.x},${point.y - 5.2} L${point.x + 3.4},${point.y} L${point.x},${point.y + 5.2} L${point.x - 3.4},${point.y} Z`}
+            fill="#f6e2ae"
+            fillOpacity="0.9"
+            stroke="#fff8df"
+            strokeWidth="0.4"
+          />
+        );
+      })}
+      {Array.from({ length: 12 }, (_, index) => {
+        const point = ringPoint(150, index / 12);
+        const turn = index % 4;
+        const mark = turn === 0
+          ? 'M0,-8 L6.2,6 L-6.2,6 Z'
+          : turn === 1
+            ? 'M-6,0 H6 M0,-6 V6'
+            : turn === 2
+              ? 'M-6,-2 H6 M-3.2,4 H3.2 M0,-7 V1'
+              : 'M0,-7 C4,-2 4,3 0,7 C-4,3 -4,-2 0,-7 Z';
+        return (
+          <path
+            key={index}
+            d={mark}
+            transform={`translate(${point.x.toFixed(2)} ${point.y.toFixed(2)}) rotate(${index * 30})`}
+            fill="none"
+            stroke={`url(#${gold})`}
+            strokeWidth="1.15"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeOpacity="0.8"
+          />
+        );
+      })}
+      <circle cx="200" cy="200" r="128" fill="none" stroke={`url(#${gold})`} strokeWidth="1.3" strokeOpacity="0.75" />
+      <polygon points={star} fill="none" stroke="#fff3cf" strokeWidth="1.7" strokeLinejoin="round" strokeOpacity="0.88" />
+      <polygon points={starDown} fill="none" stroke={`url(#${gold})`} strokeWidth="1.35" strokeLinejoin="round" strokeOpacity="0.8" />
+      <circle cx="200" cy="200" r="52" fill="none" stroke="#f0d7a2" strokeWidth="0.9" strokeOpacity="0.7" />
+      {Array.from({ length: 6 }, (_, index) => {
+        const tip = ringPoint(46, index / 6);
+        const left = ringPoint(16, index / 6 - 0.08);
+        const right = ringPoint(16, index / 6 + 0.08);
+        return (
+          <path
+            key={index}
+            d={`M${left.x.toFixed(2)},${left.y.toFixed(2)} Q${tip.x.toFixed(2)},${tip.y.toFixed(2)} ${right.x.toFixed(2)},${right.y.toFixed(2)}`}
+            fill="none"
+            stroke="#fff6dc"
+            strokeWidth="1.15"
+            strokeLinecap="round"
+            strokeOpacity="0.85"
+          />
+        );
+      })}
+      <circle cx="200" cy="200" r="14" fill="none" stroke={`url(#${gold})`} strokeWidth="1.4" />
+      <circle cx="200" cy="200" r="5.5" fill="#fff4cf" fillOpacity="0.9" />
     </svg>
   );
 }
