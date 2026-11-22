@@ -5,6 +5,7 @@ import { Sparkles, Music, TreeDeciduous, Bird, Activity, Moon, Sun, ChevronRight
 import { useApp } from '@/contexts/AppContext';
 import { openChannelIntro } from '@/components/common/ChannelIntroModal';
 import { RealtimeEnergyPatternCard } from '@/components/hub/RealtimeEnergyPatternCard';
+import { LucKeyLogoText } from '@/components/LucKeyLogoText';
 
 const CHANNELS = [
   {
@@ -115,12 +116,49 @@ export default function LuckyChannelPage() {
 
   return (
     <div className="relative w-full h-full min-h-0 flex flex-col text-white">
-      <div data-app-scroll-root className="min-h-0 flex-1 w-full overflow-y-auto no-scrollbar touch-pan-y overscroll-x-none pt-14 pb-28">
+      <motion.div
+        data-page-brand="true"
+        initial={{ y: -8, opacity: 0.88 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
+        className="duo-page-brand relative w-full shrink-0 px-4 pt-4 pointer-events-none z-40 transition-opacity duration-300"
+      >
+        <div className="flex items-center gap-2.5 sm:gap-3 pl-1 sm:pl-2">
+          <div
+            data-brand-logo="true"
+            data-no-scroll-top="true"
+            className="pointer-events-auto cursor-pointer flex flex-col justify-center select-none"
+            onClick={() => {
+              try { sessionStorage.setItem('prism_target_tab', 'universe'); } catch (_) {}
+              if (typeof window !== 'undefined') {
+                (window as any).__prismAllowRouteChangeUntil = Date.now() + 1500;
+              }
+              navigate('/prologue?tab=universe');
+              try {
+                window.dispatchEvent(new CustomEvent('nav-click-active', { detail: { path: '/prologue', tab: 'universe' } }));
+                window.dispatchEvent(new CustomEvent('prism-tab-change', { detail: { tab: 'universe' } }));
+              } catch (_) {}
+            }}
+            title="프롤로그 유니버스 탭으로 이동"
+          >
+            <h1><LucKeyLogoText /></h1>
+          </div>
+        </div>
+      </motion.div>
+      <div
+        data-page-title="true"
+        className="duo-page-title pointer-events-none select-none z-40 flex items-center justify-center transition-opacity duration-300"
+      >
+        <span className="text-[11px] sm:text-xs font-black uppercase tracking-[0.32em] text-white/95 drop-shadow-[0_2px_8px_rgba(0,0,0,0.85)]">
+          LUCKEY
+        </span>
+      </div>
+      <div data-app-scroll-root className="min-h-0 flex-1 w-full overflow-y-auto no-scrollbar touch-pan-y overscroll-x-none pb-28">
         <div className="px-3 sm:px-6 prism-xs-pad w-full max-w-6xl mx-auto space-y-3.5 pb-6">
+          <div aria-hidden="true" className="shrink-0" style={{ height: 'calc(var(--channel-title-top, 3.2rem) + 1.75rem)' }} />
           <RealtimeEnergyPatternCard />
           <section className="space-y-2">
             <div className="flex items-baseline gap-2 px-1">
-              <span className="text-[10px] font-bold tracking-[0.22em] text-emerald-300/85 font-mono">LUCKEY</span>
               <h2 className="text-sm font-bold text-white">추천 활용</h2>
             </div>
             <div className="grid grid-cols-2 gap-2.5">
