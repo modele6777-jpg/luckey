@@ -77,6 +77,7 @@ Every time a user request is completed or changes are made to the codebase:
 ### 9. Latest Lucy Conversation on Entry
 - Entering/revealing Lucy, returning from background/BFCache and layout changes while following the bottom must show the newest available messages. Reconcile saved/current history by content/identity, never just message count; retain active streamed content.
 - Delayed history, fonts/images and viewport changes are layout events, not manual scrolling. Preserve explicit reading of older messages and the header-to-top/recent controls.
+- User update 2026-11-22: a new Lucy answer that arrives while the chat is open and grows taller than the viewport stops at its first line (top of the answer, `answerAnchorIdRef` + `data-chat-msg-id`) instead of following to its end; the view then counts as reading (no further bottom-follow, "최근대화" shown). Entry/return still shows the newest messages, and TTS sentence tracking still owns the viewport while speaking.
 
 ### 10. TTS Sentence Scroll Ownership
 - While TTS is speaking/loading, sentence tracking owns the conversation viewport, including forced entry/reveal/background bottom-follow. Do not race it with top/bottom animations.
