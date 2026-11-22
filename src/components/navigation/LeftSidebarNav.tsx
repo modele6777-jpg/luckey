@@ -187,8 +187,13 @@ export default function LeftSidebarNav() {
   });
   useEffect(() => {
     const openForLucky = () => setIsChannelsOpen(true);
+    const closeForExit = () => setIsChannelsOpen(false);
     window.addEventListener('prism:open-lucky-channels', openForLucky);
-    return () => window.removeEventListener('prism:open-lucky-channels', openForLucky);
+    window.addEventListener('prism:close-lucky-channels', closeForExit);
+    return () => {
+      window.removeEventListener('prism:open-lucky-channels', openForLucky);
+      window.removeEventListener('prism:close-lucky-channels', closeForExit);
+    };
   }, []);
 
   useEffect(() => {
