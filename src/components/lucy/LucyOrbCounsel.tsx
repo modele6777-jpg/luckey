@@ -7,6 +7,20 @@ import { drawLucyTarotCards } from '@/utils/tarotDetector';
 import React, { useEffect, useRef, useState } from 'react';
 import './lucy-orb-counsel.css';
 
+const BOKCHAE = [
+  { id: 'mind', label: '마음' },
+  { id: '3', label: '3천 원' },
+  { id: '5', label: '5천 원' },
+  { id: '10', label: '1만 원' },
+] as const;
+
+function HeartGlyph() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M12 21s-6.7-4.35-9.33-8.2C.2 10 .4 6.4 3 4.8 5.1 3.5 7.7 4 9.1 5.8 10.5 4 13.1 3.5 15.2 4.8c2.6 1.6 2.8 5.2 1.1 7.9C18.7 16.6 12 21 12 21z" />
+    </svg>
+  );
+}
 type Line = { who: '나' | '루시'; text: string };
 type Phase = 'pick' | 'live' | 'report';
 
@@ -73,6 +87,9 @@ export function LucyOrbCounsel({
   const [dieFace, setDieFace] = useState(1);
   const [rolling, setRolling] = useState(false);
   const [bedOn, setBedOn] = useState(true);
+  const [bok, setBok] = useState<string | null>(null);
+  const [hearted, setHearted] = useState(false);
+  const [burst, setBurst] = useState(0);
   const dieTimer = useRef<number | null>(null);
   const bedRef = useRef<OrbCounselBed | null>(null);
   const flashTimer = useRef<number | null>(null);
@@ -111,6 +128,9 @@ export function LucyOrbCounsel({
     setReady(false);
     setSpeaking(false);
     setLeaving(false);
+    setBok(null);
+    setHearted(false);
+    setBurst(0);
     const appear = window.setTimeout(() => setReady(true), window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 1700);
     const masterWasOn = isLucyMasterBgmPlaying();
     if (masterWasOn) stopLucyMasterBgm();
@@ -215,6 +235,15 @@ export function LucyOrbCounsel({
     sessionRef.current.sendText(text);
     userBuf.current = text;
     take('나', userBuf);
+  };
+
+  const offerBok = () => {
+    if (!bok || hearted) return;
+    const picked = BOKCHAE.find(item => item.id === bok);
+    if (!picked) return;
+    setHearted(true);
+    setBurst(value => value + 1);
+    setReport(current => `${current}\n\n복채\n${picked.label}`.trim());
   };
 
   const rollMaster = () => {
@@ -374,10 +403,31 @@ export function LucyOrbCounsel({
           </div>
         )}
         {phase === 'report' && master && (
+          <>
+          <div className="lucy-bok">
+            <p>복채는 마음껏 고르면 돼</p>
+            <div>
+              {BOKCHAE.map(item => (
+                <button key={item.id} type="button" className={bok === item.id ? 'is-on' : ''} disabled={hearted} onClick={() => setBok(item.id)}>{item.label}</button>
+              ))}
+            </div>
+            <button type="button" className={`lucy-ig-like ${hearted ? 'is-liked' : ''}`} disabled={!bok} onClick={offerBok} aria-label="복채 내기">
+              <HeartGlyph />
+            </button>
+            {burst > 0 && (
+              <span key={burst} className="lucy-ig-pop" aria-hidden="true">
+                <HeartGlyph />
+                {[-72, -46, -18, 12, 40, 68].map(angle => (
+                  <i key={angle} style={{ ['--a' as string]: `${angle}deg` }}><HeartGlyph /></i>
+                ))}
+              </span>
+            )}
+          </div>
           <div className="lucy-orb-dock">
             <button type="button" onClick={() => saveReportFile(master, report)}>보고서 파일 저장</button>
             <button type="button" onClick={keepReport}>채팅에 남기기</button>
           </div>
+          </>
         )}
       </section>
     </ScreenPortal>
