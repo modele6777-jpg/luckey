@@ -925,3 +925,18 @@ html.keyboard-open .lucy-chat-shell .lucy-chat-main {
 .lucy-voice-autosend-bar { width: 0; animation: lucy-voice-autosend 1.5s linear forwards; }
 @keyframes lucy-voice-autosend { from { width: 0; } to { width: 100%; } }
 @media (prefers-reduced-motion: reduce) { .lucy-voice-autosend-bar { animation-duration: 1.5s; } }
+
+/* Lucy "writing" indicator: rotating natural lines fade in; the waiting ring fills while a small spark circles it. */
+.lucy-thinking-line { animation: lucy-thinking-line-in .5s ease both; }
+@keyframes lucy-thinking-line-in {
+  from { opacity: 0; transform: translateY(3px); }
+  to { opacity: 1; transform: none; }
+}
+.lucy-thinking-ring-spark {
+  transform-origin: 12px 12px;
+  animation: lucy-thinking-spark 1.6s linear infinite;
+}
+@keyframes lucy-thinking-spark { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) {
+  .lucy-thinking-line, .lucy-thinking-ring-spark { animation: none; }
+}
