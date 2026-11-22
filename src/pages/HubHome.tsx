@@ -979,7 +979,7 @@ export default function HubHome() {
                                 title={`${app.name} 채널 소개`}
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  openChannelIntro(app.id === 'heal' ? 'aura' : app.id);
+                                  openChannelIntro(app.id === 'heal' ? 'aura' : app.id, app.path);
                                 }}
                                 className="w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-bold text-white/50 hover:text-white bg-white/5 hover:bg-white/15 border border-white/10 transition-colors cursor-pointer"
                               >

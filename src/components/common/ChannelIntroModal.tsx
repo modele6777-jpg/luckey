@@ -1,5 +1,6 @@
 import { ScreenPortal } from '@/components/layout/ScreenPortal';
 import React, { useState, useEffect, useCallback } from 'react';
+import { useLocation } from 'wouter';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   X,
@@ -310,11 +311,15 @@ export const PRISM_CHANNELS_DETAILS: Record<string, ChannelDetail> = {
   },
 };
 
-export function openChannelIntro(channelId: string) {
+/**
+ * 채널 소개 창을 연다. startPath를 주면(예: 유니버스 허브의 채널 카드 "?" 버튼)
+ * "채널 시작하기"가 창을 닫고 그 채널로 들어간다. 없으면(이미 그 채널 안) 창만 닫는다.
+ */
+export function openChannelIntro(channelId: string, startPath?: string) {
   if (typeof window !== 'undefined') {
     window.dispatchEvent(
       new CustomEvent('prism:open-channel-intro', {
-        detail: { channelId },
+        detail: { channelId, startPath },
       }),
     );
   }
@@ -323,13 +328,16 @@ export function openChannelIntro(channelId: string) {
 export function ChannelIntroModal() {
   const [isOpen, setIsOpen] = useState(false);
   const [channelId, setChannelId] = useState<string>('hub');
+  const [startPath, setStartPath] = useState<string | null>(null);
+  const [location, navigate] = useLocation();
 
   const channel = PRISM_CHANNELS_DETAILS[channelId] || PRISM_CHANNELS_DETAILS.hub;
 
   useEffect(() => {
-    const handleOpen = (e: CustomEvent<{ channelId: string }>) => {
+    const handleOpen = (e: CustomEvent<{ channelId: string; startPath?: string }>) => {
       if (e.detail?.channelId) {
         setChannelId(e.detail.channelId);
+        setStartPath(typeof e.detail.startPath === 'string' && e.detail.startPath ? e.detail.startPath : null);
         setIsOpen(true);
       }
     };
@@ -343,6 +351,17 @@ export function ChannelIntroModal() {
     stopTTS();
     setIsOpen(false);
   }, []);
+
+  // "채널 시작하기": 다른 화면에서 열었으면 그 채널로 들어가고, 이미 그 채널이면 창만 닫는다.
+  const handleStart = useCallback(() => {
+    handleClose();
+    if (!startPath) return;
+    const here = (location || '/').split(/[?#]/)[0];
+    if (here === startPath.split(/[?#]/)[0]) return;
+    (window as Window & { __prismAllowRouteChangeUntil?: number }).__prismAllowRouteChangeUntil = Date.now() + 1500;
+    navigate(startPath);
+    window.dispatchEvent(new CustomEvent('nav-click-active', { detail: { path: startPath } }));
+  }, [handleClose, startPath, location, navigate]);
 
   if (!isOpen) return null;
 
@@ -490,7 +509,8 @@ export function ChannelIntroModal() {
             </span>
             <button
               type="button"
-              onClick={handleClose}
+              onClick={handleStart}
+              data-channel-intro-start={startPath || undefined}
               className="w-full xs:w-auto px-5 py-2.5 rounded-xl font-bold text-xs text-white flex items-center justify-center gap-1.5 shadow-md active:scale-95 transition-all cursor-pointer ml-auto"
               style={{
                 backgroundColor: channel.themeColor,
