@@ -240,13 +240,13 @@ export function startGeminiLiveVoice(handlers: LiveVoiceHandlers): LiveVoiceSess
         realtimeInput: { audio: { data: pcmBase64(samples), mimeType: 'audio/pcm;rate=16000' } },
       }));
     };
-    source.connect(processor);
+    source.connect(processor as unknown as AudioNode);
     processor.connect(silent);
     silent.connect(capture.destination);
 
     const url = `wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContentConstrained?access_token=${encodeURIComponent(token)}`;
     socket = new WebSocket(url);
-    const setupTimerId = window.setTimeout(() => {
+    const setupTimerId = setTimeout(() => {
       if (!stopped && !ready) fail('live-timeout', '실시간 음성 응답이 없어 기본 마이크로 듣습니다.');
     }, 8000);
     setupTimer = setupTimerId;

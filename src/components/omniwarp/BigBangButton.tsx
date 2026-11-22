@@ -233,7 +233,7 @@ export function BigBangButton() {
   const [clickedDirection, setClickedDirection] = useState<typeof hoverDirection>('none');
   const directionFeedbackTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const centerDirection = isPressing ? hoverDirection : clickedDirection;
-  const [feedbackChannel, setFeedbackChannel] = useState<ReturnType<typeof getDestinationChannel> | null>(null);
+  const [feedbackChannel, setFeedbackChannel] = useState<{ id: string; icon: ReturnType<typeof getDestinationChannel>['icon'] } | null>(null);
   const DestinationIcon = feedbackChannel?.icon;
   const navigationFeedbackStorageKey = 'luckey-bigbang-navigation-feedback';
   // 🔮 점술모드 상담 깊이 표시 (버튼 고리)
