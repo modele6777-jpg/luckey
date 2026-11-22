@@ -8,6 +8,10 @@ export type LiveVoiceSession = {
   setMuted: (muted: boolean) => void;
   interrupt: () => void;
   sendText: (text: string) => boolean;
+  /** 마이크를 완전히 닫는다 (아이폰 마이크 표시도 꺼진다). 연결은 그대로 둔다. */
+  releaseMic: () => void;
+  /** 닫힌 마이크를 다시 연다. 열렸으면 true. */
+  acquireMic: () => Promise<boolean>;
 };
 
 import { setMicCaptureActive } from './audioMixingPolicy';
@@ -30,6 +34,8 @@ type LiveVoiceHandlers = {
   micStream?: Promise<MediaStream> | null;
   /** Start without sending microphone audio (used by Orb's hold-to-talk mode). */
   startMuted?: boolean;
+  /** 누르고 말하기: 음소거 중에는 마이크를 아예 닫아 둔다 (누를 때 acquireMic으로 다시 연다). */
+  releaseMicWhileMuted?: boolean;
   /** When set, a missing microphone is not fatal: the session continues with typed input and spoken answers. */
   onNotice?: (message: string) => void;
 };
@@ -197,6 +203,44 @@ export function startGeminiLiveVoice(handlers: LiveVoiceHandlers): LiveVoiceSess
     processor = null;
   };
 
+  let micSource: MediaStreamAudioSourceNode | null = null;
+  const attachStream = (next: MediaStream) => {
+    stream = next;
+      const source = capture.createMediaStreamSource(next);
+      micSource = source;
+      processor = (capture as any).createScriptProcessor(4096, 1, 1);
+      const silent = capture.createGain();
+      silent.gain.value = 0;
+      processor!.onaudioprocess = (event) => {
+        if (stopped) return;
+        const input = event.inputBuffer.getChannelData(0);
+        if (!ready || muted || socket?.readyState !== WebSocket.OPEN) {
+          handlers.onAudioLevel?.(0);
+          return;
+        }
+        let sumSquares = 0;
+        for (let index = 0; index < input.length; index += 1) sumSquares += input[index] * input[index];
+        const rms = Math.sqrt(sumSquares / Math.max(1, input.length));
+        handlers.onAudioLevel?.(Math.max(0, Math.min(1, (rms - 0.006) / 0.06)));
+        const samples = downsample(input, capture.sampleRate);
+        socket.send(JSON.stringify({
+          realtimeInput: { audio: { data: pcmBase64(samples), mimeType: 'audio/pcm;rate=16000' } },
+        }));
+      };
+      source.connect(processor as unknown as AudioNode);
+      processor!.connect(silent);
+      silent.connect(capture.destination);
+  };
+  const detachStream = () => {
+    try { processor?.disconnect(); } catch { /* ignore */ }
+    try { micSource?.disconnect(); } catch { /* ignore */ }
+    stream?.getTracks().forEach(track => track.stop());
+    processor = null;
+    micSource = null;
+    stream = null;
+    handlers.onAudioLevel?.(0);
+  };
+
   const run = async () => {
     let token = '';
     let model = LIVE_MODEL;
@@ -247,30 +291,11 @@ export function startGeminiLiveVoice(handlers: LiveVoiceHandlers): LiveVoiceSess
       return;
     }
 
-    if (stream) {
-      const source = capture.createMediaStreamSource(stream);
-      processor = (capture as any).createScriptProcessor(4096, 1, 1);
-      const silent = capture.createGain();
-      silent.gain.value = 0;
-      processor!.onaudioprocess = (event) => {
-        if (stopped) return;
-        const input = event.inputBuffer.getChannelData(0);
-        if (!ready || muted || socket?.readyState !== WebSocket.OPEN) {
-          handlers.onAudioLevel?.(0);
-          return;
-        }
-        let sumSquares = 0;
-        for (let index = 0; index < input.length; index += 1) sumSquares += input[index] * input[index];
-        const rms = Math.sqrt(sumSquares / Math.max(1, input.length));
-        handlers.onAudioLevel?.(Math.max(0, Math.min(1, (rms - 0.006) / 0.06)));
-        const samples = downsample(input, capture.sampleRate);
-        socket.send(JSON.stringify({
-          realtimeInput: { audio: { data: pcmBase64(samples), mimeType: 'audio/pcm;rate=16000' } },
-        }));
-      };
-      source.connect(processor as unknown as AudioNode);
-      processor!.connect(silent);
-      silent.connect(capture.destination);
+    if (stream) attachStream(stream);
+    // 누르고 말하기 모드는 처음엔 음소거라 권한만 확인하고 마이크를 바로 닫는다 (아이폰 마이크 표시가 켜진 채 남지 않게).
+    if (stream && muted && handlers.releaseMicWhileMuted) {
+      detachStream();
+      setMicCaptureActive(false);
     }
 
     const url = `wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContentConstrained?access_token=${encodeURIComponent(token)}`;
@@ -320,6 +345,30 @@ export function startGeminiLiveVoice(handlers: LiveVoiceHandlers): LiveVoiceSess
       stream?.getAudioTracks().forEach(track => { track.enabled = !next; });
     },
     interrupt: stopPlayback,
+    releaseMic: () => {
+      if (!stream) return;
+      detachStream();
+      setMicCaptureActive(false);
+    },
+    acquireMic: async () => {
+      if (stopped) return false;
+      if (stream) return true;
+      try {
+        // iOS는 녹음 가능한 오디오 세션에서만 마이크를 연다.
+        setMicCaptureActive(true);
+        const next = await navigator.mediaDevices.getUserMedia({
+          audio: { channelCount: 1, echoCancellation: true, noiseSuppression: true, autoGainControl: true },
+        });
+        if (stopped) { next.getTracks().forEach(track => track.stop()); return false; }
+        next.getAudioTracks().forEach(track => { track.enabled = !muted; });
+        void capture.resume();
+        attachStream(next);
+        return true;
+      } catch {
+        setMicCaptureActive(false);
+        return false;
+      }
+    },
     sendText: (text: string) => {
       const line = text.replace(/\s+/g, ' ').trim().slice(0, 500);
       if (!line || stopped) return false;

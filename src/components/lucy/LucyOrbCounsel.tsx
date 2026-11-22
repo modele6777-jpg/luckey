@@ -156,6 +156,7 @@ export function LucyOrbCounsel({
   const pressTimer = useRef<number | null>(null);
   const pressStart = useRef<{ x: number; y: number } | null>(null);
   const talkingRef = useRef(false);
+  const pttToken = useRef(0);
   const pressHandlers = useRef<{ begin: (x: number, y: number) => void; end: (tapFocus?: boolean) => void }>({ begin: () => undefined, end: () => undefined });
   const [ready, setReady] = useState(false);
   const [speaking, setSpeaking] = useState(false);
@@ -484,6 +485,7 @@ export function LucyOrbCounsel({
         setMicUnavailable(true);
       },
       startMuted: voiceMode === 'hold',
+      releaseMicWhileMuted: voiceMode === 'hold',
       micStream,
     });
     sessionRef.current = session;
@@ -527,19 +529,48 @@ export function LucyOrbCounsel({
   const chooseVoiceMode = (next: OrbVoiceMode) => {
     setVoiceMode(next);
     setTalkPressed(false);
-    sessionRef.current?.setMuted(next === 'hold');
+    const session = sessionRef.current;
+    if (!session) return;
+    if (next === 'hold') {
+      // 기본(누르고 말하기)으로 돌아오면 마이크를 완전히 닫는다.
+      session.setMuted(true);
+      session.releaseMic();
+    } else {
+      // 실시간 대화는 마이크를 계속 열어 둔다.
+      void session.acquireMic().then(ok => {
+        if (sessionRef.current !== session) return;
+        if (ok) session.setMuted(false);
+        else { setMicUnavailable(true); setNotice('마이크를 열지 못했어요. 설정에서 마이크를 허용해 주세요.'); }
+      });
+    }
   };
 
+  // 누르고 말하기: 누르는 순간 마이크를 열고, 떼면 말이 끝났다고 알린 뒤 마이크를 완전히 닫는다.
   const startPushToTalk = (event?: React.PointerEvent<HTMLElement>) => {
     if (voiceMode !== 'hold' || micUnavailable || micPermissionBusy || !sessionRef.current) return;
     if (event && (!event.isPrimary || event.button !== 0)) return;
+    const session = sessionRef.current;
+    const token = ++pttToken.current;
     setTalkPressed(true);
-    sessionRef.current.setMuted(false);
+    void session.acquireMic().then(ok => {
+      if (pttToken.current !== token || sessionRef.current !== session) return;
+      if (!ok) {
+        setTalkPressed(false);
+        setMicUnavailable(true);
+        setNotice('마이크를 열지 못했어요. 설정에서 마이크를 허용해 주세요.');
+        return;
+      }
+      session.setMuted(false);
+    });
   };
 
   const stopPushToTalk = () => {
+    pttToken.current += 1;
     setTalkPressed(false);
-    sessionRef.current?.setMuted(voiceMode === 'hold');
+    const session = sessionRef.current;
+    if (!session) return;
+    session.setMuted(voiceMode === 'hold');
+    if (voiceMode === 'hold') session.releaseMic();
   };
 
   // 입력창 누르고 말하기: 짧게 누르면 글자 입력(키보드), 0.22초 이상 누르고 있으면 마이크가 켜지고 떼면 전송.
