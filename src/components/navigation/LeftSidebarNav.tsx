@@ -593,6 +593,7 @@ export default function LeftSidebarNav() {
                   <button
                     type="button"
                     className="refined-nav-item"
+                    data-orb-nav="true"
                     data-active={orbOpen}
                     aria-pressed={orbOpen}
                     aria-label={orbOpen ? '음성모드 끄기' : '음성모드'}

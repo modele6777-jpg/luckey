@@ -9,13 +9,28 @@ export function isOrbCounselOpen(): boolean {
 }
 
 export function setOrbCounselOpen(next: boolean): void {
-  if (open === next) return;
+  if (open === next) {
+    if (!next) clearOrbNavActivation();
+    return;
+  }
   open = next;
   if (typeof window === 'undefined') return;
   window.dispatchEvent(new CustomEvent(ORB_COUNSEL_EVENT, { detail: { open } }));
   window.dispatchEvent(new CustomEvent('prism:lucy_voice_state', {
     detail: { isOpen: open, state: open ? 'listening' : 'idle' },
   }));
+  if (!next) {
+    window.dispatchEvent(new CustomEvent('prism:abort_lucy_voice_ptt'));
+    clearOrbNavActivation();
+  }
+}
+
+function clearOrbNavActivation(): void {
+  if (typeof document === 'undefined') return;
+  document.querySelectorAll<HTMLElement>('[data-orb-nav]').forEach(node => {
+    node.blur();
+    node.setAttribute('data-active', 'false');
+  });
 }
 
 export function useOrbCounselOpen(): boolean {

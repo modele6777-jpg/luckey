@@ -17,6 +17,17 @@ export function OrbCounselHost() {
     locationRef.current = location;
     if (isOrbCounselOpen()) setOrbCounselOpen(false);
   }, [location]);
+  useEffect(() => {
+    const leave = () => {
+      if (isOrbCounselOpen()) setOrbCounselOpen(false);
+    };
+    window.addEventListener('prism-navigate', leave);
+    window.addEventListener('nav-click-active', leave);
+    return () => {
+      window.removeEventListener('prism-navigate', leave);
+      window.removeEventListener('nav-click-active', leave);
+    };
+  }, []);
   const { sharedState, setPersonaMessages, setLucyProMessages } = useApp();
   const profile = sharedState?.userProfile || getPersistentUserProfile();
   const nickname = profile?.basic?.nickname || profile?.basic?.name || '';
