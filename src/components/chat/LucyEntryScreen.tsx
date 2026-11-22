@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 
-export type LucyEntryVariant = 'lucy' | 'plus';
+export type LucyEntryVariant = 'lucy' | 'plus' | 'master';
 
 interface LucyEntryScreenProps {
   /** Increment to show the screen once (0 = never shown yet). */
@@ -23,6 +23,17 @@ const PALETTES = {
   },
 } as const;
 
+const MASTER_PALETTE = {
+  bg: 'radial-gradient(circle at 50% 40%, #2a1848 0%, #140e28 48%, #07060f 100%)',
+  title: '#f8fafc',
+  sub: 'rgba(253,230,138,0.88)',
+  ring: 'rgba(251,191,36,0.55)',
+  glow: 'rgba(168,85,247,0.38)',
+  track: 'rgba(255,255,255,0.12)',
+  bar: 'from-amber-200 via-amber-400 to-purple-400',
+  accent: 'from-amber-200 to-purple-300',
+} as const;
+
 /**
  * Lucy / Lucy Plus entry screen. Lives inside the Lucy chat shell, so it covers
  * only the Lucy pane (never the content pane or navigation), follows Lucy's own
@@ -40,8 +51,9 @@ export function LucyEntryScreen({ trigger, variant, period }: LucyEntryScreenPro
   }, [trigger, reduceMotion]);
 
   const plus = variant === 'plus';
-  const palette = PALETTES[variant][period === 'night' ? 'night' : 'day'];
-  const label = plus ? 'Lucy Plus' : 'Lucy';
+  const master = variant === 'master';
+  const palette = master ? MASTER_PALETTE : PALETTES[variant][period === 'night' ? 'night' : 'day'];
+  const label = master ? 'Lucy Master' : plus ? 'Lucy Plus' : 'Lucy';
 
   return (
     <AnimatePresence>
@@ -92,6 +104,40 @@ export function LucyEntryScreen({ trigger, variant, period }: LucyEntryScreenPro
                     transition={{ duration: reduceMotion ? 0.1 : 0.5, delay: 0.35, ease: 'backOut' }}
                   >+</motion.span>
                 </>
+              ) : master ? (
+                <>
+                  <motion.span
+                    aria-hidden="true"
+                    className="absolute top-1/2 left-1/2 w-16 h-16 -mt-8 -ml-8 rounded-full"
+                    style={{ border: `2px solid ${palette.ring}`, boxShadow: `0 0 22px ${palette.glow}` }}
+                    initial={{ scale: 0.7, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ duration: reduceMotion ? 0.1 : 0.5, ease: 'easeOut' }}
+                  />
+                  {!reduceMotion && (
+                    <motion.span
+                      aria-hidden="true"
+                      className="absolute top-1/2 left-1/2 w-16 h-16 -mt-8 -ml-8 rounded-full"
+                      style={{ border: `1px solid ${palette.ring}` }}
+                      initial={{ scale: 1, opacity: 0 }}
+                      animate={{ scale: [1, 1.6], opacity: [0, 0.7, 0] }}
+                      transition={{ duration: 1, delay: 0.3, ease: 'easeOut', repeat: Infinity, repeatDelay: 0.2 }}
+                    />
+                  )}
+                  <span className="absolute top-1/2 left-1/2 -mt-1 flex -translate-x-1/2 gap-1.5">
+                    {[0, 1, 2].map(index => (
+                      <motion.span
+                        key={index}
+                        aria-hidden="true"
+                        className="h-2 w-2 rounded-full bg-amber-200"
+                        style={{ boxShadow: '0 0 10px rgba(252,211,77,0.8)' }}
+                        initial={{ scale: 0, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        transition={{ duration: reduceMotion ? 0.1 : 0.35, delay: 0.18 + index * 0.12, ease: 'easeOut' }}
+                      />
+                    ))}
+                  </span>
+                </>
               ) : (
                 <>
                   {/* A single warm sun-orb with a breathing halo */}
@@ -132,9 +178,10 @@ export function LucyEntryScreen({ trigger, variant, period }: LucyEntryScreenPro
             >
               <p className="text-[24px] font-black tracking-tight" style={{ color: palette.title }}>
                 Lucy{plus && <> <span className={`bg-gradient-to-r ${palette.accent} bg-clip-text text-transparent`}>Plus</span></>}
+                {master && <> <span className={`bg-gradient-to-r ${palette.accent} bg-clip-text text-transparent`}>Master</span></>}
               </p>
               <p className="mt-1.5 text-[13px] font-medium break-keep" style={{ color: palette.sub }}>
-                {plus ? '두 화면으로 더 넓게 대화해요' : '루시가 이야기 들을 준비를 하고 있어요'}
+                {master ? '사주 상담을 준비하고 있어요' : plus ? '두 화면으로 더 넓게 대화해요' : '루시가 이야기 들을 준비를 하고 있어요'}
               </p>
             </motion.div>
 

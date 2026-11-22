@@ -783,9 +783,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
     window.addEventListener(LUCY_MASTER_DEPTH_EVENT, onDepth);
     return () => { window.removeEventListener(LUCY_MASTER_DEPTH_EVENT, onDepth); window.clearTimeout(timer); };
   }, []);
-  // 홀드로 루시 마스터에 들어올 때 잠깐 보여주는 로딩 화면
-  const [isMasterEntering, setIsMasterEntering] = useState<boolean>(() => isLucyMasterModeOn() && isTarotHouseGreetingPending());
-  // 🎵 점술모드 배경음: 켜져 있으면 재생(선호 기억), 모드를 끄거나 화면을 떠나면 멈춤
+  // 홀드로 루시 마스터에 들어올 때는 루시·플러스와 같은 진입 화면을 보여 준다.
   useEffect(() => {
     if (!isMasterMode) { stopLucyMasterBgm(); return; }
     if (isLucyMasterBgmPreferred()) void startLucyMasterBgm();
@@ -801,15 +799,10 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
   }, [isMasterMode]);
 
   useEffect(() => {
-    if (!isMasterEntering) return;
-    const t = setTimeout(() => setIsMasterEntering(false), 1400);
-    return () => clearTimeout(t);
-  }, [isMasterEntering]);
-  useEffect(() => {
     const handleMasterMode = (e: Event) => {
       const on = Boolean((e as CustomEvent)?.detail?.on);
       setIsMasterMode(on);
-      if (on) setIsMasterEntering(true);
+      if (on) setLucyEntry(entry => ({ run: entry.run + 1, variant: 'master' }));
       triggerHaptic('whitehole');
     };
     window.addEventListener(LUCY_MASTER_MODE_EVENT, handleMasterMode);
@@ -836,8 +829,8 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
   // when a folded screen enters the Lucy chat from another channel.
   // A remount (folded screen coming back to Lucy from another channel) shows the Lucy entry screen.
   const [lucyEntry, setLucyEntry] = useState<{ run: number; variant: LucyEntryVariant }>(() => ({
-    run: lucyMountedBefore && !pro ? 1 : 0,
-    variant: showPlusMarker ? 'plus' : 'lucy',
+    run: (lucyMountedBefore && !pro) || (isLucyMasterModeOn() && isTarotHouseGreetingPending()) ? 1 : 0,
+    variant: isLucyMasterModeOn() && isTarotHouseGreetingPending() ? 'master' : showPlusMarker ? 'plus' : 'lucy',
   }));
   useEffect(() => { lucyMountedBefore = true; }, []);
   const entryPlusRef = useRef(showPlusMarker);
@@ -847,7 +840,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
     const previousLocation = entryLocationRef.current;
     entryPlusRef.current = showPlusMarker;
     entryLocationRef.current = location;
-    if (pro) return;
+    if (pro || isMasterMode) return;
     if (wasPlus !== showPlusMarker) {
       setLucyEntry(entry => ({ run: entry.run + 1, variant: showPlusMarker ? 'plus' : 'lucy' }));
       return;
@@ -855,7 +848,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
     if (!showPlusMarker && isLucyChatPath(location) && !isLucyChatPath(previousLocation)) {
       setLucyEntry(entry => ({ run: entry.run + 1, variant: 'lucy' }));
     }
-  }, [showPlusMarker, location, pro]);
+  }, [showPlusMarker, location, pro, isMasterMode]);
 
   const previousPlusMode = useRef(isPlusMode);
   useEffect(() => {
@@ -4256,16 +4249,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
           onComplete={(cards) => finishMasterTarotPick(toDetectedTarotCards(cards))}
         />
       )}
-      {isMasterEntering && (
-        <LucyAuraLoader
-          fullScreen
-          tier="pro"
-          message="🔮 루시 마스터 채널로 들어가는 중..."
-          subMessage="촛불을 켜고 사주 차트를 펼치는 중"
-          isUnfolded={showPlusMarker}
-        />
-      )}
-      {/* Lucy and Lucy Plus have their own entry screens; other mode changes keep the short transition. */}
+      {/* Lucy, Lucy Plus and Lucy Master share the same entry screen. */}
       <LucyModeTransition active={modeTransitioningTier !== null && modeTransitioningTier !== 'plus' && modeTransitioningTier !== 'ai'} isPlusMode={showPlusMarker} isProMode={isMasterMode} />
       <LucyEntryScreen trigger={lucyEntry.run} variant={lucyEntry.variant} period={lucyDayPeriod} />
 
