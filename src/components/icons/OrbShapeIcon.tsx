@@ -33,9 +33,11 @@ export function OrbShapeIcon({
       className={`shrink-0 select-none ${className}`}
       xmlns="http://www.w3.org/2000/svg"
     >
-      <circle cx="12" cy="12" r="9" />
-      <path d="M7.6 8.5a5 5 0 0 1 7.2 0" strokeWidth={Math.max(strokeWidth - 0.4, 1.2)} />
-      <circle cx="12" cy="12.15" r="1.2" fill={color} stroke="none" />
+      <circle cx="12" cy="9" r="7" />
+      <path d="M8.4 6.5a3.8 3.8 0 0 1 5.6 0" strokeWidth={Math.max(strokeWidth - 0.4, 1.2)} />
+      <circle cx="12" cy="9.15" r="1.05" fill={color} stroke="none" />
+      <path d="M8.7 16.1h6.6l1.7 5.3H7l1.7-5.3z" />
+      <path d="M7.8 18.8h8.4" strokeWidth={Math.max(strokeWidth - 0.5, 1)} />
     </svg>
   );
 }
