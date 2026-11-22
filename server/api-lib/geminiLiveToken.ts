@@ -10,8 +10,23 @@ export function lucyLiveInstruction(nickname: string): string {
 한국어 반말만. 호칭은 ${name}.`;
 }
 
-export async function createGeminiLiveToken(nickname = ''): Promise<{ token: string; model: string; expiresAt: string }> {
-  const key = getGeminiApiKey();
+const LIVE_VOICES = ['Aoede', 'Kore', 'Sulafat', 'Puck'] as const;
+
+function providedKey(raw: string | undefined): string {
+  const key = (raw || '').trim();
+  if (!key) return '';
+  if (key.startsWith('sk-') || key.startsWith('xai-') || !/^[A-Za-z0-9_-]{20,200}$/.test(key)) {
+    const error = new Error('API 키가 맞지 않습니다.') as Error & { status?: number; code?: string };
+    error.status = 400;
+    error.code = 'GEMINI_API_KEY_INVALID';
+    throw error;
+  }
+  return key;
+}
+
+export async function createGeminiLiveToken(nickname = '', options?: { apiKey?: string; voice?: string }): Promise<{ token: string; model: string; expiresAt: string }> {
+  const key = providedKey(options?.apiKey) || getGeminiApiKey();
+  const voice = LIVE_VOICES.includes(options?.voice as typeof LIVE_VOICES[number]) ? options!.voice : 'Aoede';
   if (!key) {
     const error = new Error('Gemini 키가 설정되어 있지 않습니다.') as Error & { status?: number; code?: string };
     error.status = 503;
@@ -23,7 +38,10 @@ export async function createGeminiLiveToken(nickname = ''): Promise<{ token: str
   const newSessionExpireTime = new Date(now + 60 * 1000).toISOString();
   const setup = {
     model: `models/${LIVE_MODEL}`,
-    generationConfig: { responseModalities: ['AUDIO'] },
+    generationConfig: {
+      responseModalities: ['AUDIO'],
+      speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: voice } } },
+    },
     systemInstruction: { parts: [{ text: lucyLiveInstruction(nickname) }] },
   };
   const headers = { 'content-type': 'application/json', 'x-goog-api-key': key };
@@ -33,6 +51,14 @@ export async function createGeminiLiveToken(nickname = ''): Promise<{ token: str
     headers,
     body: JSON.stringify({ uses: 1, expireTime, newSessionExpireTime, bidiGenerateContentSetup: setup }),
   });
+  if (response.status === 400) {
+    const withoutVoice = { ...setup, generationConfig: { responseModalities: ['AUDIO'] } };
+    response = await fetch(url, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ uses: 1, expireTime, newSessionExpireTime, bidiGenerateContentSetup: withoutVoice }),
+    });
+  }
   if (response.status === 400) {
     response = await fetch(url, {
       method: 'POST',

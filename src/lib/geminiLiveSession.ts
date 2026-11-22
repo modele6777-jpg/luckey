@@ -10,6 +10,8 @@ export type LiveVoiceSession = {
 
 type LiveVoiceHandlers = {
   nickname?: string;
+  voice?: string;
+  apiKey?: string;
   onState?: (state: LiveVoiceState) => void;
   onUserText?: (text: string) => void;
   onLucyText?: (text: string) => void;
@@ -163,7 +165,7 @@ export function startGeminiLiveVoice(handlers: LiveVoiceHandlers): LiveVoiceSess
       const response = await fetch('/api/ai/live-token', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ nickname: handlers.nickname || '' }),
+        body: JSON.stringify({ nickname: handlers.nickname || '', voice: handlers.voice || 'Aoede', apiKey: handlers.apiKey || '' }),
       });
       const body = await response.json().catch(() => ({}));
       if (!response.ok || !body?.token) {
@@ -215,10 +217,14 @@ export function startGeminiLiveVoice(handlers: LiveVoiceHandlers): LiveVoiceSess
     setupTimer = setupTimerId;
     socket.onopen = () => {
       const name = (handlers.nickname || '친구').replace(/[^\p{L}\p{N} _.-]/gu, '').trim().slice(0, 24) || '친구';
+      const voice = ['Aoede', 'Kore', 'Sulafat', 'Puck'].includes(handlers.voice || '') ? handlers.voice : 'Aoede';
       socket?.send(JSON.stringify({
         setup: {
           model: `models/${model}`,
-          generationConfig: { responseModalities: ['AUDIO'] },
+          generationConfig: {
+            responseModalities: ['AUDIO'],
+            speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: voice } } },
+          },
           systemInstruction: {
             parts: [{ text: `당신은 ${name}와 목소리로만 이야기하는 루시야. 한국어 반말로 1~2문장만 말하고, 풀이 대신 대화를 이어가.` }],
           },

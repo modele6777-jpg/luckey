@@ -1908,6 +1908,18 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
   const voiceUtteranceRef = useRef(false);
   const liveVoiceRef = useRef<LiveVoiceSession | null>(null);
   const [voiceEngine, setVoiceEngine] = useState<'live' | 'browser' | null>(null);
+  const [liveVoiceName, setLiveVoiceName] = useState(() => {
+    try { return sessionStorage.getItem('lucy_live_voice') || 'Aoede'; } catch { return 'Aoede'; }
+  });
+  const [liveApiKey, setLiveApiKey] = useState(() => {
+    try { return sessionStorage.getItem('lucy_live_api_key') || ''; } catch { return ''; }
+  });
+  const liveVoices = [
+    { id: 'Aoede', tone: '부드러움' },
+    { id: 'Kore', tone: '차분함' },
+    { id: 'Sulafat', tone: '따뜻함' },
+    { id: 'Puck', tone: '밝음' },
+  ] as const;
   const isLucyGeneratingRef = useRef<boolean>(isLucyGenerating);
 
   // 🎙️ 음성 인식 중지
@@ -2033,7 +2045,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
   const heardOnScreen = (speechTranscript || speechInterim).trim();
   useEffect(() => {
     const text = heardOnScreen;
-    if (!isVoiceMode || isVoiceMuted || text.length < 1) return;
+    if (!isVoiceMode || isVoiceMuted || liveVoiceRef.current || text.length < 1) return;
     const timer = setTimeout(() => {
       if (!isVoiceModeRef.current || isVoiceMutedRef.current) return;
       const watcher = speechWatcherRef.current;
@@ -2095,48 +2107,64 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
       isVoiceModeRef.current = true;
       setIsVoiceMuted(false);
       isVoiceMutedRef.current = false;
-      setVoiceState('listening');
-      voiceStateRef.current = 'listening';
+      setVoiceState('idle');
+      voiceStateRef.current = 'idle';
       setSpeechTranscript('');
       setSpeechInterim('');
       setVoiceError(null);
-      setVoiceEngine('live');
-      liveVoiceRef.current?.stop();
-      const session = startGeminiLiveVoice({
-        nickname: userDisplayName,
-        onState: (state) => {
-          if (!isVoiceModeRef.current || liveVoiceRef.current !== session) return;
-          setVoiceState(state);
-          voiceStateRef.current = state;
-        },
-        onUserText: (text) => {
-          if (!isVoiceModeRef.current || liveVoiceRef.current !== session) return;
-          setSpeechTranscript(text);
-        },
-        onLucyText: (text) => {
-          if (!isVoiceModeRef.current || liveVoiceRef.current !== session) return;
-          setSpeechInterim(text);
-        },
-        onError: (error) => {
-          if (liveVoiceRef.current !== session) return;
-          liveVoiceRef.current = null;
-          session.stop();
-          if (!isVoiceModeRef.current) return;
-          if (error.code === 'mic-denied') {
-            setVoiceEngine(null);
-            setVoiceError(error.message);
-            setVoiceState('error');
-            voiceStateRef.current = 'error';
-            return;
-          }
-          setVoiceEngine('browser');
-          setVoiceError(null);
-          startListeningRef.current?.();
-        },
-      });
-      liveVoiceRef.current = session;
+      setVoiceEngine(null);
     }
-  }, [startListening, stopRecognition, userDisplayName]);
+  }, [stopRecognition]);
+
+  const startLiveConversation = useCallback(() => {
+    const key = liveApiKey.trim();
+    try {
+      sessionStorage.setItem('lucy_live_voice', liveVoiceName);
+      if (key) sessionStorage.setItem('lucy_live_api_key', key);
+    } catch { /* private mode */ }
+    unlockAudioPlayback();
+    primeTTSAudioElement();
+    setVoiceError(null);
+    setVoiceEngine('live');
+    setVoiceState('listening');
+    voiceStateRef.current = 'listening';
+    liveVoiceRef.current?.stop();
+    const session = startGeminiLiveVoice({
+      nickname: userDisplayName,
+      voice: liveVoiceName,
+      apiKey: key,
+      onState: (state) => {
+        if (!isVoiceModeRef.current || liveVoiceRef.current !== session) return;
+        setVoiceState(state);
+        voiceStateRef.current = state;
+      },
+      onUserText: (text) => {
+        if (!isVoiceModeRef.current || liveVoiceRef.current !== session) return;
+        setSpeechTranscript(text);
+      },
+      onLucyText: (text) => {
+        if (!isVoiceModeRef.current || liveVoiceRef.current !== session) return;
+        setSpeechInterim(text);
+      },
+      onError: (error) => {
+        if (liveVoiceRef.current !== session) return;
+        liveVoiceRef.current = null;
+        session.stop();
+        if (!isVoiceModeRef.current) return;
+        if (error.code === 'mic-denied' || error.code === 'GEMINI_API_KEY_MISSING' || error.code === 'GEMINI_API_KEY_INVALID') {
+          setVoiceEngine(null);
+          setVoiceState('idle');
+          voiceStateRef.current = 'idle';
+          setVoiceError(error.code === 'GEMINI_API_KEY_INVALID' ? 'API 키가 맞지 않습니다.' : error.code === 'mic-denied' ? error.message : 'API 키를 입력하세요');
+          return;
+        }
+        setVoiceEngine('browser');
+        setVoiceError(null);
+        startListeningRef.current?.();
+      },
+    });
+    liveVoiceRef.current = session;
+  }, [liveApiKey, liveVoiceName, userDisplayName]);
 
   // 빅뱅버튼 홀드 시 별도 말풍선 없이 루시채팅 자체 음성 모드 즉시 토글
   useEffect(() => {
@@ -4926,7 +4954,10 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
                     ) : (
                       <div className="flex items-center gap-1.5 text-slate-500 dark:text-slate-300">
                         <Mic size={14} className="text-slate-400 shrink-0" />
-                        <span className="text-xs font-medium truncate">1:1 음성 대화 준비됨</span>
+                        <span className="text-xs font-medium truncate">
+                          <span className="font-bold">LUCY</span>
+                          <span className="ml-1.5 opacity-70">Voice Mode</span>
+                        </span>
                       </div>
                     )}
                   </div>
@@ -4998,6 +5029,45 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
                   </div>
                 </div>
 
+                {voiceState === 'idle' && !voiceEngine && (
+                  <div className="mt-2 flex flex-col gap-1.5">
+                    {liveVoices.map((voice) => (
+                      <button
+                        key={voice.id}
+                        type="button"
+                        onClick={() => setLiveVoiceName(voice.id)}
+                        className={`px-2.5 py-1.5 rounded-lg border text-left text-xs cursor-pointer ${
+                          liveVoiceName === voice.id
+                            ? 'border-amber-400 bg-amber-400/20 font-bold'
+                            : isLight
+                              ? 'border-amber-200 bg-white/70'
+                              : 'border-white/15 bg-white/5'
+                        }`}
+                      >
+                        {voice.id} ({voice.tone})
+                      </button>
+                    ))}
+                    <button
+                      type="button"
+                      onClick={startLiveConversation}
+                      className="mt-0.5 px-3 py-2 rounded-lg bg-gradient-to-r from-amber-500 to-yellow-500 text-slate-950 font-bold text-xs cursor-pointer active:scale-[0.98]"
+                    >
+                      대화 시작
+                    </button>
+                    <input
+                      type="password"
+                      autoComplete="off"
+                      spellCheck={false}
+                      value={liveApiKey}
+                      onChange={(event) => setLiveApiKey(event.target.value)}
+                      placeholder="API 키를 입력하세요"
+                      className={`px-2.5 py-2 rounded-lg border text-xs outline-none ${
+                        isLight ? 'bg-white border-amber-200 text-slate-800' : 'bg-black/30 border-white/15 text-white'
+                      }`}
+                    />
+                  </div>
+                )}
+
                 {/* 실시간 음성 인식 텍스트 표시 영역 */}
                 {(speechTranscript || speechInterim) && (
                   <div data-voice-transcript className="relative overflow-hidden mt-1.5 px-2.5 py-1.5 rounded-xl bg-white/70 dark:bg-white/5 border border-amber-400/30 text-xs flex items-center justify-between gap-2">
@@ -5013,6 +5083,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
                     <span className="truncate text-slate-700 dark:text-amber-100/90 font-medium">
                       "{speechTranscript || speechInterim}"
                     </span>
+                    {voiceEngine !== 'live' && (
                     <button
                       type="button"
                       onClick={() => {
@@ -5028,6 +5099,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
                     >
                       지금 전송
                     </button>
+                    )}
                   </div>
                 )}
 
