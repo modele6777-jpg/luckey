@@ -16340,5 +16340,23 @@ test('buildUserFifteenToolsDigest integrates 9th-round Vedic dasha span/next mah
   assert.ok(!/dharmaWeight|arthaWeight|kamaWeight|mokshaWeight|fourLessonsHarmonyScore|actionMomentumIndex|decisionScore|riskIndex|tonggi\.score/.test(digest));
 });
 
+test('buildUserFifteenToolsDigest integrates 9th-round Kabbalah 4-worlds balance/path bridge, I-Ching PalGong guaType/trigrams, and Thai next-dasha/thaat care without raw scores', () => {
+  const profile: any = {
+    basic: {
+      name: '제제',
+      birthdate: '1994-01-24',
+      birthtime: '10:30',
+      calendarType: 'solar',
+      isLeapMonth: false,
+      gender: 'male',
+    },
+  };
+  const digest = buildUserFifteenToolsDigest(profile, new Date('2026-11-23T06:28:00+09:00'));
+  assert.ok(digest.includes('4대 세계 균형(주력 ') && digest.includes('↔') && digest.includes('타로 '));
+  assert.ok(digest.includes('경방 ') && (digest.includes('괘](') || digest.includes('세효')));
+  assert.ok(digest.includes('본명 탓(') && digest.includes('탓 처방(식단:') && digest.includes('/8차 '));
+  assert.ok(!/atziluth|beriah|yetzirah|assiah|ascensionPotentialIndex|harmonyScore|affinityScore|vitalityIndex/.test(digest));
+});
+
 
 
