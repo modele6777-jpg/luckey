@@ -11,12 +11,12 @@
  *    - 경물(敬物): 미물과 자연 만물까지도 함부로 대하지 않는 지극한 생명 공경
  * 3. 4대 심기 수련(지기금지원위대강) 및 운기 대반전 성화력 산출
  *
- * @version LUCKEY-SUUN-GASI-HEON-v2.2.0
+ * @version LUCKEY-SUUN-GASI-HEON-v2.4.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const SUUN_GASI_HEON_VERSION = 'LUCKEY-SUUN-GASI-HEON-v2.3.0';
+export const SUUN_GASI_HEON_VERSION = 'LUCKEY-SUUN-GASI-HEON-v2.4.0';
 
 export interface SuunCultivationStage {
   stageLevel: number;
@@ -58,6 +58,7 @@ export interface SuunGasiHeonResult {
   ritualAction: string;
   reflectionFocus: string;
   reflectiveQuestion: string;
+  shadowWarning: string;
   interpretiveBoundary: string;
   suunGasiSynthesisMatrix?: {
     dominantTension: string;
@@ -159,6 +160,7 @@ export function calculateSuunGasiHeon(
     : `지금 부재래지 시호(不再來之 時乎)의 문턱에서, '${activeCultivationStage.stageNameKo}'의 심검과 '${secondaryCultivationStage.stageNameKo}'의 수양을 함께 세우려면 무엇을 먼저 결단해야 할까요?`;
   const reflectionFocus = reflectiveQuestion;
 
+  const shadowWarning = `[수운 심검 과잉 경계] 용천검의 단호한 결단(${activeCultivationStage.stageNameKo})만 앞세우다 삼경(경천·경인·경물)의 너그러운 살핌과 상대의 처지를 놓치지 않도록 살피십시오.`;
   const interpretiveBoundary = '이 지표는 동학 수운 최제우 대신사의 《용담유사》 검결·삼경사상(경천·경인·경물)·수덕문 수양 원리를 내면 결단과 공경 태도 성찰의 거울로 해석한 것이며, 구체적 사건의 성패를 단정하는 예언이 아닙니다.';
 
   const calculatedAtKst = formatSuunGasiKstTimestamp(now);
@@ -192,6 +194,7 @@ export function calculateSuunGasiHeon(
     ritualAction,
     reflectionFocus,
     reflectiveQuestion,
+    shadowWarning,
     interpretiveBoundary,
     suunGasiSynthesisMatrix,
   };
@@ -224,6 +227,7 @@ export function formatSuunGasiHeonPrompt(result: SuunGasiHeonResult): string {
     `- 실천 의례: ${result.ritualAction}`,
     `- 성찰 질문: ${result.reflectiveQuestion}`,
     `- 성찰 초점: ${result.reflectionFocus}`,
+    `- 과잉 경계: ${result.shadowWarning}`,
     `- 해석 경계: ${result.interpretiveBoundary}`,
   ];
   if (result.suunGasiSynthesisMatrix) {
