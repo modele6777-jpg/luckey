@@ -901,7 +901,7 @@ export function buildUserFifteenToolsDigest(profile?: UserProfile, asOfDate: Dat
           ? ` · 육임 처신(${lr.liurenSynthesisMatrix.coreInsight}): ${lr.liurenSynthesisMatrix.recommendedAction} (유의: ${lr.liurenSynthesisMatrix.cautionNotice})`
           : '';
         const yangLessons = lr.fourLessons?.[0] && lr.fourLessons?.[2]
-          ? ` · 양신 구도(주체 제1과 ${lr.fourLessons[0].upper}/${lr.fourLessons[0].lower}·${lr.fourLessons[0].elementRelation} / 환경 제3과 ${lr.fourLessons[2].upper}/${lr.fourLessons[2].lower}·${lr.fourLessons[2].elementRelation})`
+          ? ` · 양신 구도(주체 제1과 ${lr.fourLessons[0].upper}/${lr.fourLessons[0].lower}·${lr.fourLessons[0].meaning} / 환경 제3과 ${lr.fourLessons[2].upper}/${lr.fourLessons[2].lower}·${lr.fourLessons[2].meaning})`
           : '';
         const yinLessons = lr.fourLessons?.[1] && lr.fourLessons?.[3]
           ? ` · 음신 흐름(내면 제2과 ${lr.fourLessons[1].upper}/${lr.fourLessons[1].lower} · 상대 의도 제4과 ${lr.fourLessons[3].upper}/${lr.fourLessons[3].lower})`
