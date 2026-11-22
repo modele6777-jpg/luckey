@@ -1353,7 +1353,7 @@ export const LucyQuickChatBubble: React.FC<LucyQuickChatBubbleProps> = ({
                       </button>
                     )}
 
-                    {speechTranscript.trim().length >= 2 && voiceState === 'listening' && (
+                    {speechTranscript.trim().length >= 1 && voiceState === 'listening' && (
                       <button
                         type="button"
                         onClick={() => handleSend(speechTranscript)}

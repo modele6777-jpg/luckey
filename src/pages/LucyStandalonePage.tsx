@@ -1993,7 +1993,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
   const heardOnScreen = (speechTranscript || speechInterim).trim();
   useEffect(() => {
     const text = heardOnScreen;
-    if (!isVoiceMode || isVoiceMuted || text.length < 2) return;
+    if (!isVoiceMode || isVoiceMuted || text.length < 1) return;
     const timer = setTimeout(() => {
       if (!isVoiceModeRef.current || isVoiceMutedRef.current) return;
       const watcher = speechWatcherRef.current;
@@ -4859,7 +4859,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
                 {(speechTranscript || speechInterim) && (
                   <div data-voice-transcript className="relative overflow-hidden mt-1.5 px-2.5 py-1.5 rounded-xl bg-white/70 dark:bg-white/5 border border-amber-400/30 text-xs flex items-center justify-between gap-2">
                     {/* 말을 멈추면 자동 전송까지 남은 시간 (글자가 바뀌면 처음부터 다시) */}
-                    {heardOnScreen.length >= 2 && !isVoiceMuted && (
+                    {heardOnScreen.length >= 1 && !isVoiceMuted && (
                       <span
                         key={heardOnScreen}
                         aria-hidden="true"
