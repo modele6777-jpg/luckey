@@ -5,13 +5,27 @@ export interface CatalanSenyRauxaResult {
   calculatedAtKst: string;
   catalanPrinciple: string;
   companionPrinciple: string;
+  balancePhase: string;
   senyInsight: string;
   barcelonaTone: string;
+  shadowWarning: string;
   reflectionFocus: string;
   ritualAction: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
+
+const BALANCE_PHASES = [
+  '세니 조율(사실과 순서를 차분히 짚어 감정의 파도를 가라앉히는 시기)',
+  '라우샤 점화(계산만 반복하던 일에 살아 있는 설렘으로 첫 시동을 거는 시기)',
+  '사르다나 박자(자유로움과 약속된 리듬 사이에서 함께 서는 균형을 맞추는 시기)',
+] as const;
+
+const SHADOW_WARNINGS = [
+  '차분한 분별과 검토만 계속하다가 정작 설렘으로 뚫어야 할 첫 실행을 놓치지 않도록 살피세요.',
+  '순간적인 열정과 직관으로 치고 나가기만 하다가 아래에서 받쳐 주는 기초와 순서를 건너뛰지 않도록 점검하세요.',
+  '약속된 박자와 규칙을 지키려다 예상치 못한 좋은 변수가 들어올 유연한 여지까지 닫아 버리지 않도록 유의하세요.',
+] as const;
 
 const PRINCIPLES = [
   {
@@ -81,17 +95,21 @@ export function calculateCatalanSenyRauxaBalance(params: {
   const companionOffset = 1 + (stableHash(`${seed}|companion`) % (PRINCIPLES.length - 1));
   const picked = PRINCIPLES[idx];
   const companion = PRINCIPLES[(idx + companionOffset) % PRINCIPLES.length];
+  const balancePhase = BALANCE_PHASES[stableHash(`${seed}|phase`) % BALANCE_PHASES.length];
+  const shadowWarning = SHADOW_WARNINGS[stableHash(`${seed}|shadow`) % SHADOW_WARNINGS.length];
 
   return {
-    engineVersion: 'LUCKEY-CATALAN-SENY-v2.2.0',
+    engineVersion: 'LUCKEY-CATALAN-SENY-v2.3.0',
     calculatedAtKst: formatKstIso(now),
     catalanPrinciple: picked.principle,
     companionPrinciple: companion.principle,
+    balancePhase,
     senyInsight: `${picked.insight} (동반 원리: ${companion.principle})`,
     barcelonaTone: picked.tone,
-    reflectionFocus: `카탈루냐 철학의 '${picked.principle}'와 동반 원리 '${companion.principle}'처럼, 차분한 분별(Seny)과 살아 있는 열정(Rauxa) 중 오늘 내게 조금 더 필요한 쪽의 균형을 맞추어 보세요.`,
-    ritualAction: picked.ritual,
-    reflectiveQuestion: picked.question,
+    shadowWarning,
+    reflectionFocus: `카탈루냐 철학의 '${balancePhase}' 흐름에서 '${picked.principle}'와 동반 원리 '${companion.principle}'을 함께 짚어, 분별(Seny)과 열정(Rauxa)의 균형을 맞추어 보세요.`,
+    ritualAction: `${picked.ritual} (동반 원리: ${companion.principle})`,
+    reflectiveQuestion: `${picked.question} '${balancePhase}' 국면에서 가장 먼저 맞출 박자는 무엇인가요?`,
     interpretiveBoundary: '카탈루냐(Catalan)의 세니·라우샤 균형과 라몬 류이 사유 철학을 바탕으로 한 상징적 성찰 프레임입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.',
   };
 }
@@ -102,7 +120,9 @@ export function formatCatalanSenyRauxaPrompt(res: CatalanSenyRauxaResult): strin
     `- 기준 시각: ${res.calculatedAtKst}`,
     `- 카탈루냐 원리: ${res.catalanPrinciple} (${res.barcelonaTone})`,
     `- 동반 원리: ${res.companionPrinciple}`,
+    `- 균형 국면: ${res.balancePhase}`,
     `- 중심 통찰: ${res.senyInsight}`,
+    `- 과잉·경계 점검: ${res.shadowWarning}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 오늘의 작은 실천: ${res.ritualAction}`,
     `- 스스로에게 묻기: ${res.reflectiveQuestion}`,
