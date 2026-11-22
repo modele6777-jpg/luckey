@@ -16421,5 +16421,23 @@ test('buildUserFifteenToolsDigest integrates 10th-round Saju stem ten-gods/3-lay
   assert.ok(!/breakthroughPowerScore|deukSeScore|juBalanceScore/.test(digest));
 });
 
+test('buildUserFifteenToolsDigest integrates 10th-round Tarot 3-card elements/transmutation, Sukuyo samhap axis/caution mansions, and Mahabote 7-house map/next-quarter focus without raw scores', () => {
+  const profile: any = {
+    basic: {
+      name: '제제',
+      birthdate: '1994-01-24',
+      birthtime: '10:30',
+      calendarType: 'solar',
+      isLeapMonth: false,
+      gender: 'male',
+    },
+  };
+  const digest = buildUserFifteenToolsDigest(profile, new Date('2026-11-23T06:58:00+09:00'));
+  assert.ok(digest.includes('3대 카드 원소(') && digest.includes(' / 경계: '));
+  assert.ok(digest.includes('명업태 삼합축(명:') && digest.includes('근거리 경계숙(쇠:'));
+  assert.ok(digest.includes('7궁 전도(') && digest.includes('차분기 대비: '));
+  assert.ok(!/tarotVitalityScore|guardScore|planetaryHarmonyScore|leadershipHonor|wealthProsperity|wisdomFortitude|innovationBreakthrough/.test(digest));
+});
+
 
 
