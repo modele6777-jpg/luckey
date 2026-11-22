@@ -571,7 +571,7 @@ export default function LeftSidebarNav() {
                 data-channels-open={isChannelsOpen ? 'true' : 'false'}
               >
                 <div className="refined-menu-content">
-                  {CORE_CHANNELS.map(renderNavButton)}
+                  {renderNavButton(CORE_CHANNELS[0])}
                   <button
                     type="button"
                     className="refined-nav-item"
@@ -586,6 +586,7 @@ export default function LeftSidebarNav() {
                   >
                     <OrbShapeIcon size={22} />
                   </button>
+                  {renderNavButton(CORE_CHANNELS[1])}
                   {/* 🍀 우측 메뉴 네잎클로버 버튼: 접힘/펼침 화면 모두 일관되게 제공 (펼침 기본: 펼쳐짐, 접힘 기본: 접힘) */}
                   <button
                     type="button"
