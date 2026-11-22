@@ -10,8 +10,13 @@ import { useLocation } from 'wouter';
 export function OrbPage() {
   const [, navigate] = useLocation();
   const { sharedState } = useApp();
-  const profile = sharedState?.userProfile || getPersistentUserProfile();
-  const nickname = profile?.basic?.nickname || profile?.basic?.name || '';
+  const persistentProfile = getPersistentUserProfile();
+  const profile = sharedState?.userProfile || persistentProfile;
+  const nickname = sharedState?.userProfile?.basic?.nickname?.trim()
+    || sharedState?.userProfile?.basic?.name?.trim()
+    || persistentProfile?.basic?.nickname?.trim()
+    || persistentProfile?.basic?.name?.trim()
+    || '';
   const chart = useMemo(() => {
     try { return calculateDetailedSaju(profile)?.systemPromptSummary || ''; }
     catch { return ''; }

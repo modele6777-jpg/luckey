@@ -97,6 +97,7 @@ function mergeTranscript(previous: string, next: string): string {
 
 function reportFrom(master: OrbMaster, nickname: string, lines: Line[]): string {
   const when = new Date().toLocaleString('ko-KR');
+  const reportName = nickname.trim();
   const body = lines.map(line => `${line.who}: ${line.text}`).join('\n\n') || '남긴 말이 없습니다.';
   const said = lines.filter(line => line.who === '나').map(line => line.text).slice(-4).join(' ');
   const answered = lines.filter(line => line.who === '루시').map(line => line.text).slice(-4).join(' ');
@@ -105,7 +106,7 @@ function reportFrom(master: OrbMaster, nickname: string, lines: Line[]): string 
     `마스터: ${master.name}`,
     `목소리: ${master.tone}`,
     `주제: ${master.topic}`,
-    `이름: ${nickname || '친구'}`,
+    ...(reportName ? [`이름: ${reportName}`] : []),
     `시각: ${when}`,
     '',
     '상담 내용',
@@ -146,6 +147,8 @@ export function LucyOrbCounsel({
   const [lines, setLines] = useState<Line[]>([]);
   const [draft, setDraft] = useState('');
   const [notice, setNotice] = useState('');
+  const [micPermissionBusy, setMicPermissionBusy] = useState(false);
+  const [micUnavailable, setMicUnavailable] = useState(false);
   const [report, setReport] = useState('');
   const [leaving, setLeaving] = useState(false);
   const [dice, setDice] = useState<[number, number]>([1, 6]);
@@ -205,6 +208,8 @@ export function LucyOrbCounsel({
     setLines([]);
     setDraft('');
     setNotice('');
+    setMicPermissionBusy(false);
+    setMicUnavailable(false);
     setReport('');
     setReady(false);
     setSpeaking(false);
@@ -292,13 +297,53 @@ export function LucyOrbCounsel({
 
   releasePrimedMicRef.current = releasePrimedMic;
 
-  const begin = (next: OrbMaster) => {
+  const describeMicPermissionError = (error: unknown) => {
+    const name = error && typeof error === 'object' && 'name' in error ? String(error.name) : '';
+    if (name === 'NotAllowedError' || name === 'PermissionDeniedError') {
+      return '마이크 권한이 차단되어 있어요. 브라우저 주소창의 사이트 설정에서 마이크를 허용한 뒤 다시 눌러 주세요. iPhone에서는 설정 > Safari(홈 화면 앱이면 해당 앱) > 마이크도 확인해 주세요.';
+    }
+    if (name === 'NotFoundError' || name === 'DevicesNotFoundError') {
+      return '사용할 수 있는 마이크를 찾지 못했어요. 마이크가 연결되어 있는지 확인해 주세요.';
+    }
+    if (name === 'NotReadableError' || name === 'TrackStartError') {
+      return '마이크가 다른 앱에서 사용 중이거나 시작할 수 없어요. 다른 앱에서 마이크를 닫고 다시 시도해 주세요.';
+    }
+    return '마이크 권한을 확인할 수 없어요. 사이트 설정에서 마이크를 허용했는지 확인한 뒤 다시 시도해 주세요.';
+  };
+
+  const requestMicPermission = async () => {
+    if (micPermissionBusy) return;
+    setMicPermissionBusy(true);
+    setMicUnavailable(false);
+    setNotice('마이크 권한을 요청하고 있습니다…');
+    releasePrimedMic();
+    const request = requestMic();
+    if (!request) {
+      setMicUnavailable(true);
+      setNotice('이 브라우저에서는 마이크를 사용할 수 없어요. Safari 또는 Chrome에서 다시 시도해 주세요.');
+      setMicPermissionBusy(false);
+      return;
+    }
+    try {
+      const stream = await request;
+      stream.getTracks().forEach(track => track.stop());
+      setNotice('마이크 권한이 허용됐어요. 마스터를 선택하면 음성 상담을 시작합니다.');
+    } catch (error) {
+      setMicUnavailable(true);
+      setNotice(describeMicPermissionError(error));
+    } finally {
+      setMicPermissionBusy(false);
+    }
+  };
+
+  const begin = (next: OrbMaster, micStreamOverride?: Promise<MediaStream> | null, shouldGreet = true) => {
     sessionRef.current?.stop();
-    const micStream = micPrime.current || requestMic();
+    const micStream = micStreamOverride === undefined ? micPrime.current || requestMic() : micStreamOverride;
     micPrime.current = null;
     setMaster(next);
     setPhase('live');
     setNotice('');
+    setMicUnavailable(false);
     const cards = drawLucyTarotCards(3).map((card, index) => `${index + 1}번 ${card.nameKo} ${card.orientationKo}`).join(', ');
     const session = startGeminiLiveVoice({
       nickname,
@@ -317,19 +362,47 @@ export function LucyOrbCounsel({
         lucyBuf.current = mergeTranscript(lucyBuf.current, text);
       },
       onError: (error) => setNotice(error.message),
-      onNotice: (message) => setNotice(message),
+      onNotice: (message) => {
+        setNotice(message);
+        setMicUnavailable(true);
+      },
       micStream,
     });
     sessionRef.current = session;
-    const typed = draft.trim();
-    const cue = typed
-      ? `먼저 존댓말로 두 문장만 인사한 뒤, 이어서 이 말씀에 답하세요. 이 지시 문장은 읽지 마세요. 사용자의 말: ${typed}`
-      : '지금 막 도착하셨습니다. 사용자가 말씀하시기 전에 존댓말로 두 문장만 먼저 인사하세요. 이 지시 문장은 읽지 마세요.';
-    session.sendText(cue);
-    if (typed) {
-      userBuf.current = typed;
-      take('나', userBuf);
-      setDraft('');
+    if (shouldGreet) {
+      const typed = draft.trim();
+      const cue = typed
+        ? `먼저 존댓말로 두 문장만 인사한 뒤, 이어서 이 말씀에 답하세요. 이 지시 문장은 읽지 마세요. 사용자의 말: ${typed}`
+        : '지금 막 도착하셨습니다. 사용자가 말씀하시기 전에 존댓말로 두 문장만 먼저 인사하세요. 이 지시 문장은 읽지 마세요.';
+      session.sendText(cue);
+      if (typed) {
+        userBuf.current = typed;
+        take('나', userBuf);
+        setDraft('');
+      }
+    }
+  };
+
+  const retryLiveMic = async () => {
+    if (!master || micPermissionBusy) return;
+    setMicPermissionBusy(true);
+    setNotice('마이크 권한을 요청하고 있습니다…');
+    releasePrimedMic();
+    const request = requestMic();
+    if (!request) {
+      setMicUnavailable(true);
+      setNotice('이 브라우저에서는 마이크를 사용할 수 없어요. Safari 또는 Chrome에서 다시 시도해 주세요.');
+      setMicPermissionBusy(false);
+      return;
+    }
+    try {
+      const stream = await request;
+      begin(master, Promise.resolve(stream), false);
+    } catch (error) {
+      setMicUnavailable(true);
+      setNotice(describeMicPermissionError(error));
+    } finally {
+      setMicPermissionBusy(false);
     }
   };
 
@@ -538,7 +611,6 @@ export function LucyOrbCounsel({
           </div>
         </header>
         {phase === 'live' && <button type="button" className="lucy-orb-end" onClick={openReport}>상담 끝내기</button>}
-        {phase === 'report' && <button type="button" className="lucy-orb-end" onClick={closeWithoutSaving}>닫기</button>}
         <div className={`lucy-orb-ritual ${lit ? 'is-lit' : ''}`}>
           <span className="lucy-orb-table" aria-hidden="true"><i className="side" /><i className="top" /></span>
           <span className="lucy-orb-caustic" aria-hidden="true" />
@@ -668,7 +740,21 @@ export function LucyOrbCounsel({
           {phase === 'pick' && <p>탁자 위 주사위를 누르거나 마스터를 고르시면 상담이 시작됩니다</p>}
           {phase === 'live' && <p>{speaking ? `${master?.name} 마스터가 말하고 있습니다` : `${master?.name} · ${master?.tone}. 말씀하셔도 되고, 적으셔도 됩니다`}</p>}
           {phase === 'report' && <p>이번 상담을 부적으로 남겼습니다. 파일로도 보관할 수 있습니다</p>}
-          {notice && <p>{notice}</p>}
+          {notice && <p role="status">{notice}</p>}
+          {phase === 'pick' && (
+            <div className="lucy-orb-permission-actions">
+              <button type="button" className="lucy-orb-permission" disabled={micPermissionBusy} onClick={() => void requestMicPermission()}>
+                {micPermissionBusy ? '권한 확인 중…' : '마이크 권한 요청'}
+              </button>
+            </div>
+          )}
+          {phase === 'live' && micUnavailable && (
+            <div className="lucy-orb-permission-actions">
+              <button type="button" className="lucy-orb-permission" disabled={micPermissionBusy} onClick={() => void retryLiveMic()}>
+                {micPermissionBusy ? '마이크 연결 중…' : '마이크 다시 연결'}
+              </button>
+            </div>
+          )}
           {phase === 'pick' && (
             <div className="lucy-orb-masters">
               {ORB_MASTERS.map(item => (
@@ -732,9 +818,10 @@ export function LucyOrbCounsel({
               </span>
             )}
           </div>
-          <div className="lucy-orb-dock">
+          <div className="lucy-orb-dock lucy-orb-report-dock">
             <button type="button" onClick={() => saveReportFile(master, report)}>보고서 파일 저장</button>
             <button type="button" onClick={keepReport}>채팅에 남기기</button>
+            <button type="button" className="lucy-orb-report-close" onClick={closeWithoutSaving}>닫기</button>
           </div>
           </>
         )}
