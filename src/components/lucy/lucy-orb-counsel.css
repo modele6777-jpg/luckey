@@ -432,6 +432,7 @@ html.duo-unfolded-mode .lucy-charm { width: min(380px, 70%); }
 .lucy-orb-copy .lucy-charm p,
 .lucy-orb-copy .lucy-charm h2,
 .lucy-orb-copy .lucy-charm span { color: #8d1f1f; }
+.lucy-charm-lines {
   margin-top: 14px;
   max-height: 24vh;
   overflow: auto;
