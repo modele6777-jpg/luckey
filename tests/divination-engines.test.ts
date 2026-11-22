@@ -4686,6 +4686,8 @@ test('Sumerian Gilgamesh Trials Engine: calculates 12 trials and heroic resilien
   const rep = calculateSumerianGilgameshTrials({ profile, question: '이 전환기를 어떻게 통과할까요?' });
   assert.equal(rep.engineVersion, SUMERIAN_GILGAMESH_TRIALS_ENGINE_VERSION);
   assert(rep.calculatedAtKst.includes('+09:00 (KST)'));
+  assert.equal(rep.questionTopic, 'decision');
+  assert(rep.immortalPhase.length > 0 && rep.shadowWarning.length > 0);
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(Boolean(rep.gilgameshSynthesisMatrix?.integratedAction));
   assert(rep.heroicResilienceScore >= 0 && rep.heroicResilienceScore <= 100);
@@ -4698,6 +4700,7 @@ test('Sumerian Gilgamesh Trials Engine: calculates 12 trials and heroic resilien
   assert(prompt.includes('고대 메소포타미아 길가메시 서사시 12관문 불멸 여정 실측 데이터'));
   assert(prompt.includes(rep.activeTrial.nameKo));
   assert(prompt.includes('보조 교차 관문'));
+  assert(prompt.includes('불멸 여정 국면') && prompt.includes('과잉 경계'));
   assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
   assert(prompt.includes('성찰 질문'));
   assert(prompt.includes('해석 경계'));
@@ -4776,6 +4779,8 @@ test('Egyptian Maat Feather Heart Engine: calculates heart lightness and Maat ve
 test('Persian Mithraic Seven Spheres Engine: calculates Mithraic grade and Sol Invictus score', () => {
   const rep = calculatePersianMithraicSpheres({ profile, question: '어려운 결단을 앞두고 있습니다', now: new Date('2026-11-17T05:00:00+09:00') });
   assert.equal(rep.engineVersion, PERSIAN_MITHRAIC_SPHERES_ENGINE_VERSION);
+  assert.equal(rep.questionTopic, 'decision');
+  assert(rep.mithraicPhase.length > 0 && rep.shadowWarning.length > 0);
   assert(rep.solInvictusScore >= 0 && rep.solInvictusScore <= 100);
   assert(rep.astralLadderAscensionRate >= 0 && rep.astralLadderAscensionRate <= 100);
   assert(rep.activeGrade.gradeLevel >= 1 && rep.activeGrade.gradeLevel <= 7);
@@ -4790,6 +4795,7 @@ test('Persian Mithraic Seven Spheres Engine: calculates Mithraic grade and Sol I
   assert(prompt.includes('고대 페르시아 미트라(Mithra) 7대 행성 입문 천계 사다리 실측 데이터'));
   assert(prompt.includes(rep.activeGrade.gradeTitleKo));
   assert(prompt.includes('보조 교차 계단'));
+  assert(prompt.includes('광명 입문 국면') && prompt.includes('과잉 경계'));
   assert(prompt.includes('실천 의례'));
   assert(prompt.includes('성찰 초점'));
   assert(prompt.includes('교차 매트릭스'));
@@ -4943,6 +4949,7 @@ test('Vedic Mahavakya Consciousness Engine: calculates qualitative Brahman conte
   assert(rep.calculatedAtKst.includes('+09:00 (KST)'));
   assert(Boolean(rep.mahavakyaSynthesisMatrix?.integratedAction));
   assert.equal(rep.questionFocus, 'relationship');
+  assert(rep.awarenessPhase.length > 0 && rep.shadowWarning.length > 0);
   assert(rep.brahmanRealizationScore >= 0 && rep.brahmanRealizationScore <= 100);
   assert(rep.innerSohamResonance >= 0 && rep.innerSohamResonance <= 100);
   assert(rep.activeMahavakya.sanskritPhrase.length > 0);
@@ -4954,6 +4961,7 @@ test('Vedic Mahavakya Consciousness Engine: calculates qualitative Brahman conte
   assert(prompt.includes('고대 인도 베다 우파니샤드 4대 마하바키야(Mahāvākya) 대선언 실측 데이터'));
   assert(prompt.includes(rep.activeMahavakya.sanskritPhrase));
   assert(prompt.includes('보조 교차 대선언'));
+  assert(prompt.includes('의식 각성 국면') && prompt.includes('과잉 경계'));
   assert(prompt.includes('해석 경계'));
   assert(prompt.includes('교차 매트릭스'));
   assert(!prompt.includes('/100'));
