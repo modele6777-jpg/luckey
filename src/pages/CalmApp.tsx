@@ -385,6 +385,16 @@ export default function CalmApp() {
     try { (iframeRef.current?.contentWindow as (Window & { keySearch?: { open: () => void } }) | null)?.keySearch?.open(); } catch { /* not ready yet */ }
   };
 
+  // 🌀 빅뱅 버튼 좌·우 탭 → Key 화면에 보이는 목록(장 분류 버튼 등)을 한 칸씩 이동
+  useEffect(() => {
+    const onStep = (event: Event) => {
+      const direction = (event as CustomEvent<{ direction?: string }>).detail?.direction === 'previous' ? 'previous' : 'next';
+      try { iframeRef.current?.contentWindow?.postMessage({ type: 'LUCKEY_KEY_STEP', direction }, window.location.origin); } catch { /* not ready yet */ }
+    };
+    window.addEventListener('luckey:key-step', onStep);
+    return () => window.removeEventListener('luckey:key-step', onStep);
+  }, []);
+
   // 📘 Key 안의 가이드 버튼 → 앱 가이드 창 (Key 화면 안에서 열림)
   const [guideOpen, setGuideOpen] = useState<string | null>(null);
   useEffect(() => {
@@ -396,7 +406,7 @@ export default function CalmApp() {
     return () => window.removeEventListener('message', onMessage);
   }, []);
   const searchParams = typeof window !== 'undefined' ? window.location.search : '';
-  const iframeSrc = `/calm/index.html${searchParams ? searchParams + '&v=50.0' : '?v=50.0'}`;
+  const iframeSrc = `/calm/index.html${searchParams ? searchParams + '&v=51.0' : '?v=51.0'}`;
 
   return (
     <div
