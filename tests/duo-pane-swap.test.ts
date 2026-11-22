@@ -40,14 +40,21 @@ test('pane order resets when an unfolded screen is folded, but not on initial un
   assert.match(appSource, /shouldResetDuoPaneSwapOnFold\(wasUnfolded, isNowUnfolded\)[\s\S]*?setDuoPanesSwapped\(false\)/);
 });
 
-test('the divider control is limited to unfolded landscape and swapped panes reserve the right menu rail', () => {
-  assert.match(appSource, /isDuoLandscape && \(/);
-  assert.match(appSource, /aria-label=\{isDuoPanesSwapped/);
+test('a second tap anywhere along the portrait divider within the touch window swaps panes', () => {
+  assert.equal(isDuoDividerDoubleTap(tap({ clientX: 20 }), tap({ timestamp: 1_300, clientX: 900, clientY: 448 }), 'y'), true);
+  assert.equal(isDuoDividerDoubleTap(tap(), tap({ timestamp: 1_200, clientY: 449 }), 'y'), false);
+});
+
+test('the divider control swaps unfolded landscape and portrait panes', () => {
+  assert.match(appSource, /isDuoLandscape \|\| isDuoPortrait/);
+  assert.match(appSource, /aria-label=\{isDuoPortrait/);
   assert.match(appSource, /data-duo-divider-swap[\s\S]*?inset-y-0[\s\S]*?opacity-0/);
   assert.match(appSource, /onPointerUp=\{handleDuoDividerPointerUp\}/);
   assert.match(appSource, /setDuoPanesSwapped\(\(previous\) => !previous\)/);
   assert.doesNotMatch(appSource, /ArrowLeftRight/);
   assert.match(appSource, /flex-row-reverse/);
+  assert.match(appSource, /flex-col-reverse/);
   assert.match(cssSource, /html\.duo-unfolded-landscape\.duo-panels-swapped #duo-content-viewport/);
   assert.match(cssSource, /html\.duo-unfolded-landscape\.duo-panels-swapped #duo-lucy-viewport/);
+  assert.match(cssSource, /html\.duo-unfolded-portrait\.duo-panels-swapped :is\(\[data-lucy-loader\]/);
 });

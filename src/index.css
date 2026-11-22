@@ -3750,6 +3750,28 @@ html.duo-unfolded-portrait :is([data-lucy-loader], [data-lucy-aura-loader], .luc
 }
 
 
+/* Swapped portrait panels: Lucy moves to the top half and content to the bottom. */
+html.duo-unfolded-portrait.duo-panels-swapped :is([data-app-channel-loader], [data-fullscreen-loader]:not([data-lucy-loader]), #tarot-stage-container, #today-tarot-narration-modal, #circular-tarot-modal-container),
+body.duo-unfolded-portrait.duo-panels-swapped :is([data-app-channel-loader], [data-fullscreen-loader]:not([data-lucy-loader]), #tarot-stage-container, #today-tarot-narration-modal, #circular-tarot-modal-container) {
+  top: auto !important;
+  bottom: var(--duo-bottom-nav-height) !important;
+  height: calc(var(--duo-portrait-canvas-height) / 2) !important;
+  max-height: calc(var(--duo-portrait-canvas-height) / 2) !important;
+}
+html.duo-unfolded-portrait.duo-panels-swapped :is([data-lucy-loader], [data-lucy-aura-loader], .lucy-mode-transition, [data-lucy-animation]),
+body.duo-unfolded-portrait.duo-panels-swapped :is([data-lucy-loader], [data-lucy-aura-loader], .lucy-mode-transition, [data-lucy-animation]) {
+  top: 0 !important;
+  bottom: auto !important;
+  height: calc(var(--duo-portrait-canvas-height) / 2) !important;
+  max-height: calc(var(--duo-portrait-canvas-height) / 2) !important;
+}
+html.duo-unfolded-portrait.duo-panels-swapped .prism-aura-bg:not([data-channel-background]),
+body.duo-unfolded-portrait.duo-panels-swapped .prism-aura-bg:not([data-channel-background]) {
+  top: auto !important;
+  bottom: var(--duo-bottom-nav-height) !important;
+  height: calc(var(--duo-portrait-canvas-height) / 2) !important;
+}
+
 /* Swapped landscape panels: Lucy occupies the physical left half; the content
    pane keeps the right-side navigation rail reserved on the physical right. */
 html.duo-unfolded-landscape.duo-panels-swapped #duo-content-viewport,

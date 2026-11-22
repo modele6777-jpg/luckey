@@ -13,14 +13,19 @@ const DOUBLE_TAP_MAX_HORIZONTAL_DISTANCE_PX = 48;
 export function isDuoDividerDoubleTap(
   previous: DuoDividerTap | null,
   current: DuoDividerTap,
+  axis: 'x' | 'y' = 'x',
 ): boolean {
   if (!previous || previous.pointerType !== current.pointerType) return false;
 
   const elapsed = current.timestamp - previous.timestamp;
   if (elapsed < 0 || elapsed > DOUBLE_TAP_WINDOW_MS) return false;
 
-  // The hit target spans the divider vertically, so taps may be anywhere from top to bottom.
-  return Math.abs(current.clientX - previous.clientX) <= DOUBLE_TAP_MAX_HORIZONTAL_DISTANCE_PX;
+  // Landscape divider is a vertical strip, so taps may land anywhere along Y.
+  // Portrait divider is a horizontal strip, so taps may land anywhere along X.
+  const delta = axis === 'y'
+    ? Math.abs(current.clientY - previous.clientY)
+    : Math.abs(current.clientX - previous.clientX);
+  return delta <= DOUBLE_TAP_MAX_HORIZONTAL_DISTANCE_PX;
 }
 
 export function mapDuoPaneSide(side: DuoPaneSide, swapped: boolean): DuoPaneSide {

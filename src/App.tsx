@@ -274,7 +274,7 @@ function AppContent() {
   const isDuoPortrait = isDuoUnfolded && duoState.orientation === 'portrait';
   const isDuoLandscape = isDuoUnfolded && duoState.orientation === 'landscape';
   const [duoPanesSwapped, setDuoPanesSwapped] = React.useState(false);
-  const isDuoPanesSwapped = isDuoLandscape && duoPanesSwapped;
+  const isDuoPanesSwapped = isDuoUnfolded && duoPanesSwapped;
   const duoDividerTapRef = React.useRef<DuoDividerTap | null>(null);
 
   React.useEffect(() => {
@@ -294,7 +294,7 @@ function AppContent() {
       clientY: event.clientY,
       pointerType: event.pointerType,
     };
-    if (isDuoDividerDoubleTap(duoDividerTapRef.current, currentTap)) {
+    if (isDuoDividerDoubleTap(duoDividerTapRef.current, currentTap, isDuoPortrait ? 'y' : 'x')) {
       duoDividerTapRef.current = null;
       setDuoPanesSwapped((previous) => !previous);
       event.preventDefault();
@@ -916,8 +916,8 @@ function AppContent() {
         )}
       </AnimatePresence>
 
-      <main className={`sites-pinned-main flex-1 min-h-0 overflow-x-hidden relative w-full ${isDuoUnfolded ? `duo-dual-view flex ${isDuoPortrait ? 'flex-col' : isDuoPanesSwapped ? 'flex-row-reverse' : 'flex-row'}` : 'flex flex-col'}`}>
-          <div className={`w-full h-full flex-1 min-h-0 overflow-hidden flex relative ${!isDuoUnfolded ? 'flex-col' : isDuoPortrait ? 'flex-col' : isDuoPanesSwapped ? 'flex-row-reverse' : 'flex-row'}`}>
+      <main className={`sites-pinned-main flex-1 min-h-0 overflow-x-hidden relative w-full ${isDuoUnfolded ? `duo-dual-view flex ${isDuoPortrait ? (isDuoPanesSwapped ? 'flex-col-reverse' : 'flex-col') : isDuoPanesSwapped ? 'flex-row-reverse' : 'flex-row'}` : 'flex flex-col'}`}>
+          <div className={`w-full h-full flex-1 min-h-0 overflow-hidden flex relative ${!isDuoUnfolded ? 'flex-col' : isDuoPortrait ? (isDuoPanesSwapped ? 'flex-col-reverse' : 'flex-col') : isDuoPanesSwapped ? 'flex-row-reverse' : 'flex-row'}`}>
             {/* 콘텐츠 뷰포트:
                 - 가로(Landscape): 물리 힌지 기준 기기 절반 (50vw)
                 - 세로(Portrait): 상단 50%
@@ -995,18 +995,24 @@ function AppContent() {
                 </RetainedPane>
               </OverlayPaneContext.Provider>
             </div>
-            {isDuoLandscape && (
+            {(isDuoLandscape || isDuoPortrait) && (
               <button
                 type="button"
-                aria-label={isDuoPanesSwapped ? '좌우 화면 배치를 원래대로 바꾸기' : '좌우 화면 바꾸기'}
+                aria-label={isDuoPortrait
+                  ? (isDuoPanesSwapped ? '위아래 화면 배치를 원래대로 바꾸기' : '위아래 화면 바꾸기')
+                  : (isDuoPanesSwapped ? '좌우 화면 배치를 원래대로 바꾸기' : '좌우 화면 바꾸기')}
                 aria-pressed={isDuoPanesSwapped}
-                title="가운데 경계를 두 번 탭하면 좌우 화면을 바꿉니다"
+                title={isDuoPortrait
+                  ? '가운데 경계를 두 번 탭하면 위아래 화면을 바꿉니다'
+                  : '가운데 경계를 두 번 탭하면 좌우 화면을 바꿉니다'}
                 data-duo-divider-swap
                 onPointerUp={handleDuoDividerPointerUp}
                 onPointerCancel={() => { duoDividerTapRef.current = null; }}
                 onClick={handleDuoDividerClick}
-                className="absolute inset-y-0 z-[80] flex w-12 -translate-x-1/2 items-center justify-center border border-transparent bg-transparent text-transparent opacity-0 shadow-none backdrop-blur-none focus-visible:opacity-100 focus-visible:border-white/60 focus-visible:bg-zinc-950/75 focus-visible:shadow-xl cursor-pointer touch-manipulation"
-                style={{ left: '50vw', touchAction: 'manipulation' }}
+                className={isDuoPortrait
+                  ? 'absolute inset-x-0 z-[80] flex h-12 -translate-y-1/2 items-center justify-center border border-transparent bg-transparent text-transparent opacity-0 shadow-none backdrop-blur-none focus-visible:opacity-100 focus-visible:border-white/60 focus-visible:bg-zinc-950/75 focus-visible:shadow-xl cursor-pointer touch-manipulation'
+                  : 'absolute inset-y-0 z-[80] flex w-12 -translate-x-1/2 items-center justify-center border border-transparent bg-transparent text-transparent opacity-0 shadow-none backdrop-blur-none focus-visible:opacity-100 focus-visible:border-white/60 focus-visible:bg-zinc-950/75 focus-visible:shadow-xl cursor-pointer touch-manipulation'}
+                style={isDuoPortrait ? { top: '50%', touchAction: 'manipulation' } : { left: '50vw', touchAction: 'manipulation' }}
               >
               </button>
             )}
