@@ -50,7 +50,7 @@ export function createEndOfSpeechWatcher(options: {
   now?: () => number;
 }): EndOfSpeechWatcher {
   const silenceMs = options.silenceMs ?? 1200;
-  const minChars = options.minChars ?? 2;
+  const minChars = options.minChars ?? 1;
   const now = options.now ?? (() => Date.now());
   let text = '';
   let key = '';
