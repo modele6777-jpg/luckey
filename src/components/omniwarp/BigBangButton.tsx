@@ -33,6 +33,7 @@ import { isSinglePaneLucyScreen } from '@/lib/workspacePaneDom';
 import { BigBangCircularMeter } from './BigBangCircularMeter';
 import { isLucyMasterModeOn, setLucyMasterMode, deepenLucyMasterDepth, shallowLucyMasterDepth, getLucyMasterDepth, LUCY_MASTER_MAX_DEPTH, useLucyMasterMode, useLucyMasterDepth } from '@/lib/lucyMasterMode';
 import { isLucyMasterBgmPreferred, startLucyMasterBgm } from '@/lib/lucyMasterBgm';
+import { isOrbCounselOpen, setOrbCounselOpen } from '@/lib/orbCounselGate';
 // 🎯 미세 드래그 판정 임계값 (터치스크린 미세 떨림/지문 면적 20px 노이즈 면역 + 확실한 드래그 제스처 감지)
 const DRAG_ACTIVATION_THRESHOLD = 26;
 const DOUBLE_TAP_WINDOW_MS = 300;
@@ -925,6 +926,7 @@ export function BigBangButton() {
     touchStartSelectionRef.current = '';
     isPttRecordingRef.current = false;
     window.dispatchEvent(new CustomEvent('prism:abort_lucy_voice_ptt'));
+    setOrbCounselOpen(false);
     setIsQuickChatOpen(false);
     setQuickChatVoiceActive(false);
     setQuickChatInitialPrompt('');
@@ -943,6 +945,7 @@ export function BigBangButton() {
   // 🔮 가운데 홀드: 루시 점술모드(Lucy Master) 켜기/끄기 (접힘·펼침 공통)
   const toggleDivinationMode = useCallback((metrics?: WarpForceMetrics) => {
     window.dispatchEvent(new CustomEvent('prism:abort_lucy_voice_ptt'));
+    setOrbCounselOpen(false);
     setIsQuickChatOpen(false);
     setQuickChatVoiceActive(false);
     setActivePhase('idle');
@@ -1385,10 +1388,21 @@ export function BigBangButton() {
           triggerHaptic('whitehole');
           showGestureFeedback('tap');
 
+          // 음성모드가 켜져 있으면 탭으로 끈다. 루시 화면에서 꺼져 있으면 탭으로 켠다.
+          if (isOrbCounselOpen()) {
+            setOrbCounselOpen(false);
+            return;
+          }
+
           // 점술모드 중 한 번 탭: 일반 루시로 돌아간다 (빨려 들어가는 효과를 거꾸로).
           if (isLucyMasterModeOn()) {
             playLucyMasterSuction('out');
             setLucyMasterMode(false);
+            return;
+          }
+
+          if (checkIsInLucyChat()) {
+            setOrbCounselOpen(true);
             return;
           }
 
@@ -1409,11 +1423,6 @@ export function BigBangButton() {
           const targetTier = 'ai';
           safeSessionStorage.setItem('lucy_tier_mode', targetTier);
           safeLocalStorage.setItem('lucy_tier_mode', targetTier);
-
-          if (checkIsInLucyChat()) {
-            window.dispatchEvent(new CustomEvent('prism:revert_lucy_normal', { detail: { tier: targetTier } }));
-            return;
-          }
 
           dispatchBigBangRouteTransition(`/chat?mode=${targetTier}`, 'Lucy', metrics);
           handleRuneNavigate(`/chat?mode=${targetTier}`);
@@ -1848,7 +1857,7 @@ export function BigBangButton() {
                   : 'inset 0 0 22px rgba(56, 189, 248, 0.25), inset -6px -6px 18px rgba(0, 0, 0, 0.9), 0 0 24px rgba(56, 189, 248, 0.3)',
               }}
               title={`빅뱅 버튼 (탭: Lucy 채팅 / 더블탭: Key로 이동 / 위·아래: 스크롤 위치와 무관하게 메뉴 앱 순서대로 이동 / ${isChatView ? '좌우: 점술모드 한 단계 얕게·깊게' : isKeyChannel ? '좌우: Key 목록 한 칸씩 이동' : isCycleNavigationDisabled ? '현재 화면에서는 좌우 이동 비활성화' : '좌우: 현재 앱 내부 화면만 이동'} / 길게 누름: Key로 이동 / 드래그 후 놓기: 럭키 추천 앱으로 워프 · 범위 밖에서 놓으면 취소)`}
-              aria-label={`빅뱅 버튼 · 탭: Lucy 채팅, 더블탭: Key로 이동 / 위·아래: 스크롤 위치와 무관하게 메뉴 앱 순서대로 이동 / ${isChatView ? '좌우는 점술모드 한 단계 얕게·깊게' : isKeyChannel ? '좌우는 Key 목록 한 칸씩 이동' : isCycleNavigationDisabled ? '현재 화면에서는 좌우 이동 비활성화' : '좌우는 현재 앱 내부 화면만 이동'}, 길게 누름: 루시 마스터(점술모드) 켜기·끄기, 드래그 후 놓으면 럭키 추천 앱으로 워프, 범위 밖이면 취소`}
+              aria-label={`빅뱅 버튼 · 탭: Lucy 채팅, 루시 화면에서는 음성모드 켜기·끄기, 더블탭: Key로 이동 / 위·아래: 스크롤 위치와 무관하게 메뉴 앱 순서대로 이동 / ${isChatView ? '좌우는 점술모드 한 단계 얕게·깊게' : isKeyChannel ? '좌우는 Key 목록 한 칸씩 이동' : isCycleNavigationDisabled ? '현재 화면에서는 좌우 이동 비활성화' : '좌우는 현재 앱 내부 화면만 이동'}, 길게 누름: 루시 마스터(점술모드) 켜기·끄기, 드래그 후 놓으면 럭키 추천 앱으로 워프, 범위 밖이면 취소`}
             >
               {/* 🌀 [웜홀] 빛비춤 + 어두운 심연 + 사건의 지평선 3원 동시 융합 전개 */}
               {isPressing && activePhase === 'wormhole' && (

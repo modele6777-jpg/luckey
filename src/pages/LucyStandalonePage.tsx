@@ -1,5 +1,3 @@
-import { LucyOrbCounsel } from '@/components/lucy/LucyOrbCounsel';
-import { OrbShapeIcon } from '@/components/icons/OrbShapeIcon';
 import { collectSpeechTranscript, createEndOfSpeechWatcher, type EndOfSpeechWatcher } from '@/lib/speechAutoSend';
 import { startGeminiLiveVoice, type LiveVoiceSession } from '@/lib/geminiLiveSession';
 import { LucyModeName } from '@/components/chat/LucyModeName';
@@ -1842,7 +1840,6 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
   }, [isMasterMode, chatAccount]);
 
   // 🎙️ 루시 1:1 전용 실시간 음성 대화 모드 (STT 마이크 + TTS 자동 루프)
-  const [orbCounselOpen, setOrbCounselOpen] = useState(false);
   const [isVoiceMode, setIsVoiceMode] = useState<boolean>(() => {
     if (pro) return false;
     try {
@@ -2068,28 +2065,6 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
     voiceStateRef.current = 'listening';
     startListening();
   }, [startListening]);
-
-  const finishOrbCounsel = useCallback((summary: string | null) => {
-    setOrbCounselOpen(false);
-    if (!summary) return;
-    const message = {
-      id: `orb-${Date.now()}`,
-      role: 'model' as const,
-      content: summary,
-      timestamp: Date.now(),
-      persona: 'lucy' as const,
-      mode: isMasterMode ? 'master' : 'casual',
-    };
-    if (isMasterMode) {
-      setLucyProMessages(prev => [...prev, message]);
-      return;
-    }
-    setPersonaMessages(prev => {
-      const next = [...(prev.lucy || []), message];
-      saveUnifiedMessagesSafely(next);
-      return { ...prev, lucy: next, orange: next, trinity: next, aura: next, bluebird: next, muse: next };
-    });
-  }, [isMasterMode, setLucyProMessages, setPersonaMessages]);
 
   const handleToggleVoiceMode = useCallback(() => {
     try {
@@ -5260,23 +5235,6 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
               <Camera size={16} className="sm:w-[18px] sm:h-[18px]" />
             </button>
 
-            {/* 🎙️ Voice Mode / STT Microphone Button */}
-            <button
-              type="button"
-              onClick={() => setOrbCounselOpen(true)}
-              className={`w-7 h-7 sm:w-8 sm:h-8 p-0 flex items-center justify-center rounded-lg transition-all cursor-pointer shrink-0 ${
-                orbCounselOpen
-                  ? 'bg-white/80 shadow-2xs'
-                  : lucyDayPeriod !== 'night'
-                  ? 'hover:bg-amber-50'
-                  : 'hover:bg-white/10'
-              }`}
-              title="오브 상담 열기"
-              aria-label="오브 상담 열기"
-            >
-              <OrbShapeIcon size={16} className="w-4 h-4" />
-            </button>
-
             {/* Textarea Wrapper for Ghost Typewriter Overlay */}
             <div className="relative flex-1 min-h-[24px] sm:min-h-[28px] flex items-center">
               {/* 옅은색 동적 예시 고민 타이프라이터 플레이스홀더 (호리 스타일) */}
@@ -5522,7 +5480,6 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
       {/* 엔진함·추천질문 라이브러리는 점술모드에서만 연다 */}
       {sessionCard && <LucyMasterSessionCard source={sessionCard} onClose={() => setSessionCard(null)} />}
       {isMasterMode && <LucyLibraryDialogs sessionKey={librarySessionKey} isLight={isLight} onSelectPrompt={handleSelectPromptFromLibrary} />}
-      <LucyOrbCounsel open={orbCounselOpen} nickname={userDisplayName} chart={sajuInfo?.systemPromptSummary || ''} onFinish={finishOrbCounsel} />
 
       {/* 👥 대화창 프로필 추가/수정 모달 */}
       <ChatProfileModal

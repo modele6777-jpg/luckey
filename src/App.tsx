@@ -32,6 +32,7 @@ import AppIconPreviewModal from "./components/AppIconPreviewModal";
 import { GlobalHandbookAudioWidget } from "./components/GlobalHandbookAudioWidget";
 import { ChannelIntroModal } from "./components/common/ChannelIntroModal";
 import { LucyVoiceModeModal } from "./components/lucy/LucyVoiceModeModal";
+import { OrbCounselHost } from "./components/lucy/OrbCounselHost";
 import { PageLoader } from "./components/PageLoader";
 import { PrismRainbowLoader } from "./components/PrismRainbowLoader";
 import { LucyAuraLoader } from "./components/LucyAuraLoader";
@@ -1033,6 +1034,7 @@ function AppContent() {
       <GlobalHandbookAudioWidget />
       <TTSFailureNotice />
       <LucyVoiceModeModal />
+      <OrbCounselHost />
       <AppIconPreviewModal />
       {updateNotice}
     </div>

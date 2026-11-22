@@ -41,6 +41,8 @@ import { playLucyMasterSuction } from '@/components/omniwarp/BigBangMasterSuctio
 import { isLucyMasterBgmPreferred, startLucyMasterBgm } from '@/lib/lucyMasterBgm';
 import { isDualPaneLayout, isDuoUnfoldedState } from '@/lib/perfMode';
 import { isLucyChatPath } from '@/lib/duoPaneFocus';
+import { OrbShapeIcon } from '@/components/icons/OrbShapeIcon';
+import { setOrbCounselOpen, useOrbCounselOpen } from '@/lib/orbCounselGate';
 
 export interface NavItemConfig {
   path: string;
@@ -505,6 +507,7 @@ export default function LeftSidebarNav() {
   const [isLucyMaster, setIsLucyMaster] = useState<boolean>(() => isLucyMasterModeOn());
   // 점술모드 상담 깊이마다 말풍선 기호가 바뀐다: 1단계 … / 2단계 ? / 3단계 !
   const masterDepth = useLucyMasterDepth();
+  const orbOpen = useOrbCounselOpen();
   const MasterBubbleIcon = masterDepth >= 3 ? MessageCircleWarning : masterDepth === 2 ? MessageCircleQuestion : MessageCircleMore;
   const displayBubbleMarker = !isLucyMaster
     // 펼침 상태(isUnfolded)는 접기/펼치기 즉시 갱신된다. 화면 칸(DOM)이 생길 때까지 기다리지 않아 + 표시가 바로 바뀐다.
@@ -569,6 +572,20 @@ export default function LeftSidebarNav() {
               >
                 <div className="refined-menu-content">
                   {CORE_CHANNELS.map(renderNavButton)}
+                  <button
+                    type="button"
+                    className="refined-nav-item"
+                    data-active={orbOpen}
+                    aria-pressed={orbOpen}
+                    aria-label={orbOpen ? '음성모드 끄기' : '음성모드'}
+                    title={orbOpen ? '음성모드 끄기' : '음성모드'}
+                    onClick={() => {
+                      triggerHaptic('whitehole');
+                      setOrbCounselOpen(!orbOpen);
+                    }}
+                  >
+                    <OrbShapeIcon size={22} />
+                  </button>
                   {/* 🍀 우측 메뉴 네잎클로버 버튼: 접힘/펼침 화면 모두 일관되게 제공 (펼침 기본: 펼쳐짐, 접힘 기본: 접힘) */}
                   <button
                     type="button"
