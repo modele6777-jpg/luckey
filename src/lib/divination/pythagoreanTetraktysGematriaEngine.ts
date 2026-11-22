@@ -26,7 +26,9 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const PYTHAGOREAN_TETRAKTYS_VERSION = 'LUCKEY-PYTHAGOREAN-TETRAKTYS-v2.2.0';
+export const PYTHAGOREAN_TETRAKTYS_VERSION = 'LUCKEY-PYTHAGOREAN-TETRAKTYS-v2.3.0';
+
+export type TetraktysQuestionTopic = 'career' | 'relationship' | 'decision' | 'inner' | 'general';
 
 export interface TetraktysLevelDistribution {
   monadIdeaWeight: number;         // 0 ~ 100% 모나드(영감/의도)
@@ -47,9 +49,12 @@ export interface PythagoreanTetraktysReport {
   engineVersion: string;
   calculatedAt: string;
   calculatedAtKst: string;
+  questionTopic: TetraktysQuestionTopic;
   harmonicSignature: GematriaHarmonicSignature;
   tetraktysDistribution: TetraktysLevelDistribution;
   realityManifestationIndex: number; // 0 ~ 100 현실 물질화 지수
+  tetraktysPhase: string;
+  shadowWarning: string;
   manifestationObstacleBreakthrough: string;
   sacredGeometryAffirmation: string;
   synthesisMessage: string;
@@ -86,6 +91,26 @@ function describeTetraktysStage(score: number): string {
   if (score >= 86) return '데카드 완성기(Decad Manifestation) — 1·2·3·4의 신성 기하가 현실의 구체적 결실로 단단히 구현되는 시기';
   if (score >= 74) return '트리아드 조율기(Triad Harmonics) — 영감과 동기가 조화로운 구조로 엮여 실행으로 넘어가는 시기';
   return '모나드 점화기(Monad Ignition) — 순수 의도의 불꽃을 먼저 명료하게 다듬어 방향을 세우는 시기';
+}
+
+function classifyTetraktysQuestionTopic(query?: string): TetraktysQuestionTopic {
+  const q = (query || '').toLowerCase();
+  if (/일|직장|커리어|사업|프로젝트|서비스|성과|취업|이직/.test(q)) return 'career';
+  if (/연애|관계|사랑|부부|가족|사람|갈등|인연/.test(q)) return 'relationship';
+  if (/선택|결정|타이밍|방향|전환|고민|계약/.test(q)) return 'decision';
+  if (/마음|감정|불안|휴식|회복|내면|성찰/.test(q)) return 'inner';
+  return 'general';
+}
+
+function buildTetraktysShadowWarning(dominantTier: string, topic: TetraktysQuestionTopic): string {
+  const topicNote: Record<TetraktysQuestionTopic, string> = {
+    career: '완벽한 설계도만 다듬다가 첫 프로토타입이나 출시 타이밍을 미루는 함정을 경계하세요.',
+    relationship: '상대의 마음을 도식이나 논리로만 재단하려 하면 정작 필요한 온기를 놓칠 수 있습니다.',
+    decision: '모든 변수를 숫자와 구조로 통제하려는 강박이 결단을 지연시킬 수 있습니다.',
+    inner: '머리속 개념 정리에만 매몰되어 몸의 피로 신호를 지나치지 않도록 주의하세요.',
+    general: '구상과 구조화에 치우쳐 작은 현실 실행 하나를 뒤로 미루지 않도록 살피세요.',
+  };
+  return `[${dominantTier}] 과잉 경계: ${topicNote[topic]}`;
 }
 
 export function calculatePythagoreanTetraktys(
@@ -161,11 +186,14 @@ export function calculatePythagoreanTetraktys(
 
   const synthesisMessage = `피타고라스 테트락티스 기하학에 따르면, 당신의 영혼 루트수는 [${soulRootNumber}]이며 현재 [${dominantTier}]에 있습니다. ${describeTetraktysStage(realityManifestationIndex)} 흐름에 맞춰 "${manifestationObstacleBreakthrough}"`;
   const calculatedAtKst = formatTetraktysKstTimestamp(now);
+  const questionTopic = classifyTetraktysQuestionTopic(queryStr);
+  const tetraktysPhase = describeTetraktysStage(realityManifestationIndex);
+  const shadowWarning = buildTetraktysShadowWarning(dominantTier, questionTopic);
   const reflectiveQuestion = buildTetraktysReflectiveQuestion(dominantTier, queryStr);
   const interpretiveBoundary = '피타고라스 테트락티스와 게마트리아 환원은 실행과 구조화를 돌아보는 수비학적 상징 비유일 뿐, 확정적 미래 예측이나 재무·투자 판단의 근거가 아닙니다.';
   const tetraktysSynthesisMatrix = {
     dominantTension: `${dominantTier} ↔ ${secondaryTier}`,
-    alignmentState: describeTetraktysStage(realityManifestationIndex),
+    alignmentState: `${tetraktysPhase} | 맥락(${questionTopic})`,
     integratedAction: `${manifestationObstacleBreakthrough}${queryStr.trim() ? ` [질문 맥락: ${queryStr.trim()}]` : ''}`,
   };
 
@@ -173,6 +201,7 @@ export function calculatePythagoreanTetraktys(
     engineVersion: PYTHAGOREAN_TETRAKTYS_VERSION,
     calculatedAt: now.toISOString(),
     calculatedAtKst,
+    questionTopic,
     harmonicSignature: {
       soulRootNumber,
       sacredRatioName: sacredRatio.name,
@@ -187,6 +216,8 @@ export function calculatePythagoreanTetraktys(
       secondaryTier,
     },
     realityManifestationIndex,
+    tetraktysPhase,
+    shadowWarning,
     manifestationObstacleBreakthrough,
     sacredGeometryAffirmation,
     synthesisMessage,
@@ -204,9 +235,11 @@ export function formatPythagoreanTetraktysPrompt(report: PythagoreanTetraktysRep
     `- **연산 시각**: ${report.calculatedAtKst}`,
     `- **영혼 루트수 (Soul Root)**: **${report.harmonicSignature.soulRootNumber}** [신성 화음비: ${report.harmonicSignature.sacredRatioName}]`,
     `  - 우주적 화음 상징: ${report.harmonicSignature.cosmicHarmonicMeaning}`,
-    `- **테트락티스 창조 국면**: ${describeTetraktysStage(report.realityManifestationIndex)}`,
+    `- **테트락티스 창조 국면**: ${report.tetraktysPhase}`,
+    `- **질문 맥락 분류**: ${report.questionTopic}`,
     `- **현재 주도 층위**: **${report.tetraktysDistribution.dominantTier}**`,
     `- **보조 교차 층위**: ${report.tetraktysDistribution.secondaryTier}`,
+    `- **과잉·경계 점검**: ${report.shadowWarning}`,
     `- **물질화 돌파 지침**: ${report.manifestationObstacleBreakthrough}`,
     `- **신성 기하 확언문**: "${report.sacredGeometryAffirmation}"`,
     `- **테트락티스 통합 결론**: ${report.synthesisMessage}`,
