@@ -17,6 +17,7 @@ export type LucyBubbleMarker = 'plus' | 'minus' | null;
 export const LUCY_BUBBLE_MARKER_KEY = 'lucy_bubble_marker';
 export const LUCY_BUBBLE_MARKER_EVENT = 'prism:lucy_bubble_marker';
 export const LUCY_MASTER_TOOLS_REQUEST_EVENT = 'prism:lucy_master_tools_request';
+export const LUCY_TABLE_FACE_EVENT = 'prism:lucy_table_face';
 const GREETING_PENDING_KEY = 'lucy_master_greet_pending';
 const LINK_KEY = 'lucy_master_link';
 const CONCERN_QUESTION = '오늘은 어떤 고민이나 궁금한 게 있어? 주제를 골라도 되고, 그냥 편하게 적어줘도 돼.';
@@ -74,6 +75,12 @@ export function useLucyMasterToolsRequested(): boolean {
     return () => window.removeEventListener(LUCY_MASTER_TOOLS_REQUEST_EVENT, sync);
   }, []);
   return requested;
+}
+
+
+export function requestLucyTableFace(face: 'engines'): void {
+  if (typeof window === 'undefined') return;
+  window.dispatchEvent(new CustomEvent(LUCY_TABLE_FACE_EVENT, { detail: { face } }));
 }
 
 export function isLucyMasterModeOn(): boolean {

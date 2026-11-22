@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react';
 import { X } from 'lucide-react';
 import { ScreenPortal } from '@/components/layout/ScreenPortal';
 import { getLucyTableState, LUCY_TABLE_EVENT, type LucyTableState } from '@/lib/lucyTableBus';
-import { useLucyMasterDepth } from '@/lib/lucyMasterMode';
+import { useLucyMasterDepth, requestLucyTableFace } from '@/lib/lucyMasterMode';
+import { isDuoUnfoldedState } from '@/lib/perfMode';
 import { triggerHaptic } from '@/lib/omniWarp/omniWarpHaptics';
 import { MasterSajuBoard } from './MasterSajuBoard';
 import { MasterToolBoard } from './MasterToolBoard';
@@ -151,7 +152,14 @@ export function MasterTableSheetButton({ tone = 'dark' }: { tone?: 'dark' | 'lig
         data-master-table-sheet-button
         aria-label="점술 도구 보기"
         title="점술 도구"
-        onClick={() => { triggerHaptic('whitehole'); setOpen(true); }}
+        onClick={() => {
+          triggerHaptic('whitehole');
+          if (isDuoUnfoldedState().unfolded) {
+            requestLucyTableFace('engines');
+            return;
+          }
+          setOpen(true);
+        }}
         className={`inline-flex h-8 items-center gap-1 rounded-full border px-2.5 text-[11px] font-bold backdrop-blur-md active:scale-95 ${tone === 'light'
           ? 'border-slate-300/80 bg-white/80 text-slate-700'
           : 'border-amber-200/30 bg-amber-400/10 text-amber-100'}`}

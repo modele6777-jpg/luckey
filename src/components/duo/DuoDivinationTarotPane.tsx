@@ -12,6 +12,7 @@ import {
   queueMasterTarotSpread,
   toDetectedTarotCards,
   LUCY_MASTER_DEPTH_EVENT as LUCY_MASTER_DEPTH_EVENT_NAME,
+  LUCY_TABLE_FACE_EVENT,
   useLucyMasterDepth,
   getLucyMasterDepth,
   type TarotPickRequest,
@@ -102,6 +103,13 @@ export function DuoDivinationTarotPane(_props: { isLight?: boolean }) {
       if (!depth?.changed) return;
       setFace(depth.depth === 1 ? 'saju' : depth.depth === 2 ? 'tarot' : 'recommended');
     };
+    const handleFace = (e: Event) => {
+      const next = (e as CustomEvent<{ face?: TableFace }>)?.detail?.face;
+      if (next !== 'engines') return;
+      setReadingDismissed(true);
+      setFace('engines');
+    };
+    window.addEventListener(LUCY_TABLE_FACE_EVENT, handleFace);
     window.addEventListener(LUCY_MASTER_DEPTH_EVENT_NAME, handleDepth);
     window.addEventListener(LUCY_TAROT_DRAWN_EVENT, handleDrawn);
     window.addEventListener(LUCY_TAROT_PICK_REQUEST_EVENT, handlePickRequest);
@@ -110,6 +118,7 @@ export function DuoDivinationTarotPane(_props: { isLight?: boolean }) {
       window.removeEventListener(LUCY_TAROT_DRAWN_EVENT, handleDrawn);
       window.removeEventListener(LUCY_TAROT_PICK_REQUEST_EVENT, handlePickRequest);
       window.removeEventListener(LUCY_MASTER_MODE_EVENT, handleMode);
+      window.removeEventListener(LUCY_TABLE_FACE_EVENT, handleFace);
       window.removeEventListener(LUCY_MASTER_DEPTH_EVENT_NAME, handleDepth);
     };
   }, []);
