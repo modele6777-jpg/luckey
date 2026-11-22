@@ -9,17 +9,26 @@ export interface SandDrawingMotif {
 }
 
 export interface MelanesianSandResult {
-  engineVersion: 'LUCKEY-MELANESIAN-SAND-v2.2.0';
+  engineVersion: 'LUCKEY-MELANESIAN-SAND-v2.3.0';
   calculatedAtKst: string;
   questionFocus: string;
   primaryMotif: SandDrawingMotif;
   bridgingMotif: SandDrawingMotif;
+  sandGridAxis: string;
   continuousThread: string;
   ritualAction: string;
   reflectionFocus: string;
   reflectiveQuestion: string;
+  shadowWarning: string;
   interpretiveBoundary: string;
 }
+
+const SAND_GRID_AXES = [
+  '산드로잉 한 줄 궤적 · 끊지 않고 매듭 통과하기',
+  '나우이 밀물 썰물 · 왕복 교차로 균형 잡기',
+  '카노 중심 대칭 · 집중과 여백 나란히 세우기',
+  '타부아 열린 통로 · 다음 대화의 여지 남기기',
+] as const;
 
 const SAND_MOTIFS: SandDrawingMotif[] = [
   {
@@ -86,17 +95,20 @@ export function calculateMelanesianSandDrawingPattern(params: {
   const bridgeIdx = (primaryIdx + bridgeOffset) % SAND_MOTIFS.length;
   const primaryMotif = SAND_MOTIFS[primaryIdx];
   const bridgingMotif = SAND_MOTIFS[bridgeIdx];
+  const sandGridAxis = SAND_GRID_AXES[stableHash(`${seedInput}|axis`) % SAND_GRID_AXES.length];
 
   return {
-    engineVersion: 'LUCKEY-MELANESIAN-SAND-v2.2.0',
+    engineVersion: 'LUCKEY-MELANESIAN-SAND-v2.3.0',
     calculatedAtKst: formatKstTimestamp(now),
     questionFocus,
     primaryMotif,
     bridgingMotif,
+    sandGridAxis,
     continuousThread: `${primaryMotif.koreanLabel}에서 출발해 ${bridgingMotif.koreanLabel}으로 자연스럽게 이어지는 연속 맥락`,
     ritualAction: primaryMotif.practicalStep,
-    reflectionFocus: `${primaryMotif.name}의 원리(${primaryMotif.strokePrinciple})를 바탕으로 지금의 과제를 한 맥락으로 엮습니다.`,
+    reflectionFocus: `${primaryMotif.name}의 원리(${primaryMotif.strokePrinciple})와 모래 격자 축('${sandGridAxis}')을 바탕으로 지금의 과제('${questionFocus}')를 한 맥락으로 엮습니다.`,
     reflectiveQuestion: `‘${primaryMotif.koreanLabel}’에서 ‘${bridgingMotif.koreanLabel}’으로 선을 이어 갈 때, 지금 가장 먼저 통과해야 할 핵심 매듭은 무엇인가요?`,
+    shadowWarning: '한 줄로 깔끔하게 연결하려는 완벽주의에 묶여 지금 당장 그어 볼 수 있는 작은 첫 선을 미루지 않도록 살피세요.',
     interpretiveBoundary:
       '멜라네시아 바누아투 모래 그림 관점은 맥락 연결과 우선순위 정리를 돕는 상징 도구이며, 개인 점수·심리 진단·미래 예측이 아닙니다.',
   };
@@ -109,10 +121,12 @@ export function formatMelanesianSandPrompt(result: MelanesianSandResult): string
     `- 질문 초점: ${result.questionFocus}`,
     `- 중심 문양: ${result.primaryMotif.name} (${result.primaryMotif.koreanLabel}) — ${result.primaryMotif.coreInsight}`,
     `- 연결 문양: ${result.bridgingMotif.name} (${result.bridgingMotif.koreanLabel})`,
+    `- 모래 격자 축: ${result.sandGridAxis}`,
     `- 연속 맥락: ${result.continuousThread}`,
     `- 실천 제안: ${result.ritualAction}`,
     `- 성찰 초점: ${result.reflectionFocus}`,
     `- 되묻는 질문: ${result.reflectiveQuestion}`,
+    `- 과잉 경계: ${result.shadowWarning}`,
     `- 해석 경계: ${result.interpretiveBoundary}`,
   ].join('\n');
 }
