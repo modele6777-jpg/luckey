@@ -1,5 +1,10 @@
 const SCROLL_ROOT_SELECTOR = "[data-app-scroll-root], .lucy-chat-main";
 
+/** The sidebar menu keeps its own scroll (e.g. EPILOGUE kept in view); page "scroll to top" never touches it. */
+function isNavigationScroller(el: Element): boolean {
+  return Boolean(el.closest?.('#main-sidebar-navigation'));
+}
+
 function scrollIframeToTop(iframe: HTMLIFrameElement, behavior: ScrollBehavior) {
   try {
     iframe.contentWindow?.postMessage({ type: 'PRISM_SCROLL_TO_TOP', behavior }, '*');
@@ -23,6 +28,7 @@ function scrollIframeToTop(iframe: HTMLIFrameElement, behavior: ScrollBehavior) 
         if (doc.body) doc.body.scrollTop = 0;
       }
       doc.querySelectorAll<HTMLElement>('[data-app-scroll-root], .overflow-y-auto, .overflow-y-scroll, .portal-container, .main-content').forEach((el) => {
+        if (isNavigationScroller(el)) return;
         if (el.scrollTop > 0) {
           try {
             el.scrollTo({ top: 0, left: 0, behavior });
@@ -43,6 +49,7 @@ function scrollRootsToTop(behavior: ScrollBehavior, targetElement?: HTMLElement 
 
   if (duoLucyPane) {
     duoLucyPane.querySelectorAll<HTMLElement>('[data-app-scroll-root], .lucy-chat-main, .overflow-y-auto, .overflow-y-scroll').forEach((el) => {
+      if (isNavigationScroller(el)) return;
       try {
         el.scrollTo({ top: 0, left: 0, behavior });
       } catch (_) {
@@ -64,6 +71,7 @@ function scrollRootsToTop(behavior: ScrollBehavior, targetElement?: HTMLElement 
 
   if (duoContentPane) {
     duoContentPane.querySelectorAll<HTMLElement>('[data-app-scroll-root], .overflow-y-auto, .overflow-y-scroll').forEach((el) => {
+      if (isNavigationScroller(el)) return;
       try {
         el.scrollTo({ top: 0, left: 0, behavior });
       } catch (_) {
@@ -102,6 +110,7 @@ function scrollRootsToTop(behavior: ScrollBehavior, targetElement?: HTMLElement 
 
   // Scroll all data-app-scroll-root elements
   document.querySelectorAll(SCROLL_ROOT_SELECTOR).forEach((node) => {
+    if (isNavigationScroller(node)) return;
     const el = node as HTMLElement;
     try {
       el.scrollTo({ top: 0, left: 0, behavior });
@@ -118,6 +127,7 @@ function scrollRootsToTop(behavior: ScrollBehavior, targetElement?: HTMLElement 
 
   // Also scroll any active overflow-y scroll containers that are scrolled down
   document.querySelectorAll<HTMLElement>('.overflow-y-auto, .overflow-y-scroll').forEach((el) => {
+    if (isNavigationScroller(el)) return;
     if (el.scrollTop > 0) {
       try {
         el.scrollTo({ top: 0, left: 0, behavior });
@@ -167,6 +177,7 @@ function scrollRootsToBottom(behavior: ScrollBehavior) {
 
   // Scroll all data-app-scroll-root elements to bottom
   document.querySelectorAll(SCROLL_ROOT_SELECTOR).forEach((node) => {
+    if (isNavigationScroller(node)) return;
     const el = node as HTMLElement;
     try {
       el.scrollTo({ top: el.scrollHeight, left: 0, behavior });
@@ -178,6 +189,7 @@ function scrollRootsToBottom(behavior: ScrollBehavior) {
 
   // Also scroll any active overflow-y scroll containers to bottom
   document.querySelectorAll<HTMLElement>('.overflow-y-auto, .overflow-y-scroll').forEach((el) => {
+    if (isNavigationScroller(el)) return;
     try {
       el.scrollTo({ top: el.scrollHeight, left: 0, behavior });
     } catch (_) {
@@ -214,6 +226,7 @@ function scrollRootsToBottom(behavior: ScrollBehavior) {
           if (doc.body) doc.body.scrollTop = maxIframeTop;
         }
         doc.querySelectorAll<HTMLElement>('[data-app-scroll-root], .overflow-y-auto, .overflow-y-scroll, .portal-container, .main-content').forEach((el) => {
+          if (isNavigationScroller(el)) return;
           if (el.scrollHeight > el.clientHeight) {
             try {
               el.scrollTo({ top: el.scrollHeight, left: 0, behavior });
