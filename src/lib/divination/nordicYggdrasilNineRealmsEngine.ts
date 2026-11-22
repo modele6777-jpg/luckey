@@ -5,7 +5,9 @@
  * 비프로스트(Bifrost) 의식의 다리를 현대인의 라이프스타일 에너지 축 및 결단 체계에 연동합니다.
  */
 
-export const NORDIC_YGGDRASIL_NINE_REALMS_ENGINE_VERSION = 'LUCKEY-YGGDRASIL-NINE-REALMS-v2.2.0';
+export const NORDIC_YGGDRASIL_NINE_REALMS_ENGINE_VERSION = 'LUCKEY-YGGDRASIL-NINE-REALMS-v2.3.0';
+
+export type YggdrasilQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
 export interface NordicRealm {
   realmId: number;
@@ -23,11 +25,14 @@ export interface YggdrasilRealmsReport {
   engineVersion: string;
   calculatedAt: string;
   calculatedAtKst: string;
+  questionTopic: YggdrasilQuestionTopic;
   dominantRealm: NordicRealm;
   secondaryRealm: NordicRealm;
   shadowTensionRealm: NordicRealm;
   yggdrasilAxisAlignmentScore: number; // 0 ~ 100 (세계수 중심축 정렬도)
   bifrostBridgeClearance: number; // 0 ~ 100 (의식과 무의식을 잇는 무지개 다리 통과력)
+  yggdrasilPhase: string;
+  shadowWarning: string;
   runeAttunementKey: string;
   masterCosmicPrescription: string;
   ritualAction: string;
@@ -55,6 +60,19 @@ function describeYggdrasilStage(score: number): string {
   if (score >= 84) return '비프로스트 개통(Bifröst Open) — 상층 의식과 현실 실행이 세계수 축을 따라 막힘없이 이어지는 시기';
   if (score >= 70) return '미드가르드 균형(Midgard Balance) — 중심축을 지키며 그림자 영역의 신호를 차분히 조율하는 시기';
   return '니플헤임 관조(Niflheim Stillness) — 속도를 낮추고 뿌리 영역의 근원 에너지를 다시 다지는 시기';
+}
+
+function classifyYggdrasilTopic(question: string): YggdrasilQuestionTopic {
+  if (/연애|사랑|관계|사람|친구|가족|배우자|이별|갈등|마음/.test(question)) return 'relationship';
+  if (/선택|결정|이직|직장|일|사업|돈|시험|도전|시작|방향|전환|고민/.test(question)) return 'decision';
+  if (/힘들|지치|불안|우울|잠|휴식|치유|피곤|스트레스|건강/.test(question)) return 'healing';
+  return 'reflection';
+}
+
+function deriveYggdrasilPhase(score: number): string {
+  if (score >= 84) return '비프로스트 개통기 (상층 비전과 현실 실행의 직통)';
+  if (score >= 70) return '미드가르드 균형기 (중심축을 지키며 그림자를 조율)';
+  return '니플헤임 관조기 (속도를 낮추고 뿌리를 다지는 정적)';
 }
 
 const NINE_REALMS: NordicRealm[] = [
@@ -198,27 +216,33 @@ export function calculateNordicYggdrasilRealms(params: {
   const calculatedAtKst = formatYggdrasilKstTimestamp(now);
   const composite = Math.round((yggdrasilAxisAlignmentScore + bifrostBridgeClearance) / 2);
   const trimmedQ = question.trim();
+  const questionTopic = classifyYggdrasilTopic(trimmedQ);
+  const yggdrasilPhase = deriveYggdrasilPhase(composite);
+  const shadowWarning = `[${dominantRealm.nameKo}]의 주도력이 과도해질 때 '${dominantRealm.shadowChallenge}'에 빠질 수 있으며, 대척점 [${shadowTensionRealm.nameKo}]의 '${shadowTensionRealm.shadowChallenge}'을 함께 경계해야 합니다.`;
   const reflectiveQuestion = trimmedQ
-    ? `"${trimmedQ}"라는 상황에서 주도 영역(${dominantRealm.nameEn})의 비전과 보조 영역(${secondaryRealm.nameEn})의 힘이 만나는 지점에 어떤 선택이 필요한가요?`
-    : `지금 내 일상은 [${dominantRealm.nameEn}]의 이상과 [${secondaryRealm.nameEn}]의 실천 중 어느 쪽에서 균형을 더 필요로 하나요?`;
+    ? `"${trimmedQ}"라는 상황에서 ${yggdrasilPhase}의 흐름 속 주도 영역(${dominantRealm.nameEn})의 비전과 보조 영역(${secondaryRealm.nameEn})의 힘이 만나는 지점에 어떤 선택이 필요한가요?`
+    : `지금 내 일상은 ${yggdrasilPhase} 가운데 [${dominantRealm.nameEn}]의 이상과 [${secondaryRealm.nameEn}]의 실천 중 어느 쪽에서 균형을 더 필요로 하나요?`;
   const interpretiveBoundary =
     '이 리포트는 고대 북유럽 세계수 위그드라실 9대 영역의 상징 체계를 통해 내면의 균형과 행동 방향을 성찰하는 참고용 비유이며, 확정된 미래 예언이나 의학·법률·재무적 결정을 대체하지 않습니다.';
 
   const yggdrasilSynthesisMatrix = {
-    dominantTension: `${dominantRealm.nameKo} ↔ ${shadowTensionRealm.nameKo}`,
+    dominantTension: `${dominantRealm.nameKo} ↔ ${shadowTensionRealm.nameKo} (${yggdrasilPhase})`,
     alignmentState: describeYggdrasilStage(composite),
-    integratedAction: `${dominantRealm.realmActionRule}${trimmedQ ? ` [질문 맥락: ${trimmedQ}]` : ''}`,
+    integratedAction: `${dominantRealm.realmActionRule} [그림자 경계: ${shadowTensionRealm.shadowChallenge}]${trimmedQ ? ` [질문 맥락: ${trimmedQ}]` : ''}`,
   };
 
   return {
     engineVersion: NORDIC_YGGDRASIL_NINE_REALMS_ENGINE_VERSION,
     calculatedAt: now.toISOString(),
     calculatedAtKst,
+    questionTopic,
     dominantRealm,
     secondaryRealm,
     shadowTensionRealm,
     yggdrasilAxisAlignmentScore,
     bifrostBridgeClearance,
+    yggdrasilPhase,
+    shadowWarning,
     runeAttunementKey,
     masterCosmicPrescription,
     ritualAction,
@@ -236,7 +260,7 @@ export function formatNordicYggdrasilRealmsPrompt(report: YggdrasilRealmsReport)
   const composite = Math.round((report.yggdrasilAxisAlignmentScore + report.bifrostBridgeClearance) / 2);
   const lines = [
     `### 🌳 고대 북유럽 세계수 위그드라실(Yggdrasil) 9대 영역 실측 데이터 (${report.engineVersion})`,
-    `- **연산 시각**: ${report.calculatedAtKst} | **세계수 정렬 국면**: ${describeYggdrasilStage(composite)}`,
+    `- **연산 시각**: ${report.calculatedAtKst} | **세계수 정렬 국면**: ${report.yggdrasilPhase} (${describeYggdrasilStage(composite)})`,
     `- **주도 영역 (Dominant Realm)**: ${d.nameKo} (${d.nameEn}, ${d.planeLevel})`,
     `  * 핵심 본질: ${d.coreEssence}`,
     `  * 원형적 축복: ${d.archetypalGift}`,
@@ -245,6 +269,7 @@ export function formatNordicYggdrasilRealmsPrompt(report: YggdrasilRealmsReport)
     `- **보조 교차 영역 (Secondary Realm)**: ${sec.nameKo} (${sec.nameEn}, ${sec.planeLevel}) — ${sec.archetypalGift}`,
     `- **그림자 긴장 영역 (Shadow Realm)**: ${s.nameKo} (${s.nameEn})`,
     `  * 주의할 그림자 도전: ${s.shadowChallenge}`,
+    `- **과잉·경계 점검**: ${report.shadowWarning}`,
     `- **주요 룬 공명 조율 키**: ${report.runeAttunementKey}`,
     `- **마스터 세계수 지침**: ${report.masterCosmicPrescription}`,
   ];

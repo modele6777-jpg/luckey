@@ -6,7 +6,7 @@
  * 상징적 균형을 통해 현대인의 자기 인식과 정서적 회복을 비추는 정성적 성찰 도구입니다.
  */
 
-export const ORPHEIC_MYSTERIES_ENGINE_VERSION = 'LUCKEY-ORPHEIC-MYSTERIES-v2.2.0';
+export const ORPHEIC_MYSTERIES_ENGINE_VERSION = 'LUCKEY-ORPHEIC-MYSTERIES-v2.3.0';
 
 export type OrphicQuestionTheme = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -24,6 +24,13 @@ export interface OrphicMysteriesReport {
     apollonianAspect: string;
     dionysianAspect: string;
   };
+  companionArchetype: {
+    nameKo: string;
+    apollonianAspect: string;
+    dionysianAspect: string;
+  };
+  orphicPhase: string;
+  shadowWarning: string;
   goldTabletPassportCode: string; // 황금판 상징 키워드
   soulAwakeningPrescription: string; // 하위 호환용 지침
   practiceGuidance: string; // getSymbolicPerspective 호환 정성적 조언 (숫자·인용 배제)
@@ -109,7 +116,17 @@ export function calculateOrpheicMysteries(params: {
       dionysianAspect: '삶의 순간마다 감사와 환희를 길어 올리는 따뜻한 열정',
     },
   ];
-  const polarityArchetype = archetypes[Math.abs(seed) % archetypes.length];
+  const primaryIdx = Math.abs(seed) % archetypes.length;
+  const polarityArchetype = archetypes[primaryIdx];
+  const companionOffset = 1 + (Math.abs(seed >> 2) % (archetypes.length - 1));
+  const companionArchetype = archetypes[(primaryIdx + companionOffset) % archetypes.length];
+  const orphicPhase =
+    memoryWellAwakeningScore >= 85
+      ? '므네모시네 각성기 (망각을 넘어 본질이 맑게 드러남)'
+      : memoryWellAwakeningScore >= 77
+        ? '경계 조율기 (아폴론적 절제와 디오니소스적 활력의 균형)'
+        : '레테 이완기 (묵은 피로를 흘려보내는 여백)';
+  const shadowWarning = `아폴론적 명료함('${polarityArchetype.apollonianAspect}')이 경직된 통제로 기울거나, 디오니소스적 생명력('${polarityArchetype.dionysianAspect}')이 산만한 충동으로 흐르지 않도록 동반 원형 '${companionArchetype.nameKo}'으로 균형을 잡으세요.`;
 
   const divineLineageDeclaration =
     '대지와 별빛 가득한 하늘의 유산을 함께 품은 존재로서, 망각의 관성을 넘어 스스로의 중심을 기억하는 상징적 선언';
@@ -159,12 +176,12 @@ export function calculateOrpheicMysteries(params: {
   const calculatedAtKst = formatOrphicKstTimestamp(now);
   const q = question.trim();
   const orphicSynthesisMatrix = {
-    dominantTension: `${polarityArchetype.nameKo} ↔ ${thresholdState}`,
-    alignmentState: `${polarityArchetype.apollonianAspect} · ${polarityArchetype.dionysianAspect}`,
-    integratedAction: `${themeContent.ritualAction}${q ? ` [질문 맥락: ${q}]` : ''}`,
+    dominantTension: `${polarityArchetype.nameKo} ↔ ${companionArchetype.nameKo} (${orphicPhase})`,
+    alignmentState: `${polarityArchetype.apollonianAspect} · ${companionArchetype.dionysianAspect}`,
+    integratedAction: `${themeContent.ritualAction} [과잉 경계: ${shadowWarning}]${q ? ` [질문 맥락: ${q}]` : ''}`,
   };
   const reflectiveQuestion = q
-    ? `지금 "${q}" 앞에서 '${polarityArchetype.nameKo}'(${thresholdState})의 므네모시네 기억의 샘을 마주할 때, 내가 망각의 관성에 휩쓸리지 않고 지켜야 할 진심은 무엇인가요?`
+    ? `지금 "${q}" 앞에서 '${polarityArchetype.nameKo}'와 '${companionArchetype.nameKo}'(${orphicPhase})의 므네모시네 기억의 샘을 마주할 때, 내가 망각의 관성에 휩쓸리지 않고 지켜야 할 진심은 무엇인가요?`
     : themeContent.reflectionFocus;
 
   return {
@@ -177,6 +194,9 @@ export function calculateOrpheicMysteries(params: {
     dionysianEcstasyVitality,
     thresholdState,
     polarityArchetype,
+    companionArchetype,
+    orphicPhase,
+    shadowWarning,
     goldTabletPassportCode,
     soulAwakeningPrescription: themeContent.practiceGuidance,
     practiceGuidance: themeContent.practiceGuidance,
@@ -195,8 +215,10 @@ export function formatOrpheicMysteriesPrompt(report: OrphicMysteriesReport): str
     `### 🏛️ 고대 그리스 오르페우스 신비주의 & 므네모시네 기억의 샘 실측 데이터 (${report.engineVersion})`,
     `- **연산 시각**: ${report.calculatedAtKst}`,
     `- **영혼의 신성한 근원 선언**: "${report.divineLineageDeclaration}"`,
-    `- **임계 통과 상태**: ${report.thresholdState}`,
+    `- **임계 통과 상태**: ${report.thresholdState} (${report.orphicPhase})`,
     `- **상징 원형**: ${report.polarityArchetype.nameKo} (아폴론적 명료함: ${report.polarityArchetype.apollonianAspect} / 디오니소스적 생명력: ${report.polarityArchetype.dionysianAspect})`,
+    `- **동반 교차 원형**: ${report.companionArchetype.nameKo} (${report.companionArchetype.dionysianAspect})`,
+    `- **과잉·경계 점검**: ${report.shadowWarning}`,
     `- **오르페우스 황금판 패스포트 코드**: \`${report.goldTabletPassportCode}\``,
     `- **실천 조언**: ${report.practiceGuidance}`,
     `- **일상 의례**: ${report.ritualAction}`,
