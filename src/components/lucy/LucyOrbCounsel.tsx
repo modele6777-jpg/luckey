@@ -208,7 +208,36 @@ export function LucyOrbCounsel({
         ))}
         {phase === 'live' && <button type="button" className="lucy-orb-end" onClick={openReport}>상담 끝내기</button>}
         {phase === 'report' && <button type="button" className="lucy-orb-end" onClick={keepReport}>채팅으로</button>}
-        <button type="button" className={`lucy-orb-body ${lit ? 'is-lit' : ''}`} aria-label="오브 빛" onClick={flashOrb} />
+        <div className={`lucy-orb-ritual ${lit ? 'is-lit' : ''}`}>
+          <svg className="lucy-orb-circle" viewBox="0 0 200 200" aria-hidden="true">
+            <circle cx="100" cy="100" r="96" />
+            <circle cx="100" cy="100" r="84" />
+            <circle cx="100" cy="100" r="70" />
+            <circle cx="100" cy="100" r="56" strokeDasharray="1.5 5" />
+            {Array.from({ length: 12 }, (_, index) => {
+              const turn = (Math.PI * 2 * index) / 12;
+              const inner = index % 3 === 0 ? 78 : 86;
+              return <line key={index} x1={100 + Math.cos(turn) * inner} y1={100 + Math.sin(turn) * inner} x2={100 + Math.cos(turn) * 96} y2={100 + Math.sin(turn) * 96} />;
+            })}
+            <polygon points="100,38 146,128 54,128" />
+            <polygon points="100,162 54,72 146,72" />
+          </svg>
+          {[-140, -90, -40, 40, 90, 140].map(angle => {
+            const turn = ((angle - 90) * Math.PI) / 180;
+            return (
+              <span
+                key={angle}
+                className="lucy-candle"
+                style={{ left: `${50 + Math.cos(turn) * 43}%`, top: `${50 + Math.sin(turn) * 43}%` }}
+                aria-hidden="true"
+              >
+                <b />
+                <i />
+              </span>
+            );
+          })}
+          <button type="button" className={`lucy-orb-body ${lit ? 'is-lit' : ''}`} aria-label="오브 빛" onClick={flashOrb} />
+        </div>
         <div className="lucy-orb-copy">
           {phase === 'pick' && <p>마스터를 고르면 상담이 시작돼</p>}
           {phase === 'live' && <p>{speaking ? `${master?.name} 마스터가 말하고 있어` : `${master?.name} · ${master?.tone}. 말해도 되고, 적어도 돼`}</p>}
