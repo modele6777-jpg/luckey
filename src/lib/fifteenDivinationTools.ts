@@ -356,11 +356,23 @@ export function buildUserFifteenToolsDigest(profile?: UserProfile, asOfDate: Dat
       ? `${saju.annual2026.yearName}[${saju.annual2026.elementFlow}] `
       : '';
     const dominantLabel = saju?.elements?.strengthLabel ? ` · 판정: ${saju.elements.strengthLabel}` : '';
+    const hiddenAll = (hs?: { initial?: { stem: string; tenGod: string } | null; middle?: { stem: string; tenGod: string } | null; main?: { stem: string; tenGod: string } | null }) => {
+      if (!hs) return '';
+      const parts = [
+        hs.initial ? `초(${hs.initial.stem}·${hs.initial.tenGod})` : '',
+        hs.middle ? `중(${hs.middle.stem}·${hs.middle.tenGod})` : '',
+        hs.main ? `정(${hs.main.stem}·${hs.main.tenGod})` : '',
+      ].filter(Boolean);
+      return parts.join('/');
+    };
     const hiddenMainNote = saju?.pillars.month.hiddenStems?.main && saju?.pillars.day.hiddenStems?.main
-      ? ` · 지장간 정기: 월(${saju.pillars.month.hiddenStems.main.stem}·${saju.pillars.month.hiddenStems.main.tenGod})/일(${saju.pillars.day.hiddenStems.main.stem}·${saju.pillars.day.hiddenStems.main.tenGod})`
+      ? ` · 지장간(초·중·정): 월[${hiddenAll(saju.pillars.month.hiddenStems)}]/일[${hiddenAll(saju.pillars.day.hiddenStems)}]`
+      : '';
+    const stemTenGodNote = saju
+      ? ` · 천간 십신: 년(${saju.pillars.year.tenGodGan.name})/월(${saju.pillars.month.tenGodGan.name})${saju.pillars.hour ? `/시(${saju.pillars.hour.tenGodGan.name})` : ''}`
       : '';
     const monthDayStageNote = saju
-      ? ` · 월지(${saju.pillars.month.tenGodZhi.name}·${saju.pillars.month.twelveStage})/일지(${saju.pillars.day.tenGodZhi.name}·${saju.pillars.day.twelveStage}) · 년지(${saju.pillars.year.twelveStage})${saju.pillars.hour ? `/시지(${saju.pillars.hour.twelveStage})` : ''}${hiddenMainNote}`
+      ? `${stemTenGodNote} · 월지(${saju.pillars.month.tenGodZhi.name}·${saju.pillars.month.twelveStage})/일지(${saju.pillars.day.tenGodZhi.name}·${saju.pillars.day.twelveStage}) · 년지(${saju.pillars.year.twelveStage})${saju.pillars.hour ? `/시지(${saju.pillars.hour.twelveStage})` : ''}${hiddenMainNote}`
       : '';
     const currentDaeunPillar = saju?.daewunDetail?.timeline?.find((p) => saju.daeun.current.includes(p.ganZhi) || saju.daeun.current.includes(`${p.ganKr}${p.zhiKr}`)) || saju?.daewunDetail?.timeline?.[0];
     const daeunMetaNote = saju
@@ -900,7 +912,8 @@ export function buildUserFifteenToolsDigest(profile?: UserProfile, asOfDate: Dat
         const mutagenActionNote = zw.mutagens.lu.actionStrategy && zw.mutagens.ji.actionStrategy
           ? ` · 사화 전략(화록: ${zw.mutagens.lu.actionStrategy} / 화권: ${zw.mutagens.quan.actionStrategy} / 화과: ${zw.mutagens.ke.actionStrategy} / 화기: ${zw.mutagens.ji.actionStrategy})`
           : '';
-        const oppositeNote = ` · 록기 대궁(화록 대궁 ${zw.mutagens.lu.oppositePalaceName} · 화기 대궁 ${zw.mutagens.ji.oppositePalaceName})`;
+        const mutagenMeaningNote = ` · 사화 의미(화록: ${zw.mutagens.lu.significance} / 화권: ${zw.mutagens.quan.significance} / 화과: ${zw.mutagens.ke.significance} / 화기: ${zw.mutagens.ji.significance})`;
+        const oppositeNote = ` · 록기 대궁(화록 ${zw.mutagens.lu.targetPalaceBranch}궁⇄대궁 ${zw.mutagens.lu.oppositePalaceName}[${zw.mutagens.lu.oppositePalaceBranch}] · 화기 ${zw.mutagens.ji.targetPalaceBranch}궁⇄대궁 ${zw.mutagens.ji.oppositePalaceName}[${zw.mutagens.ji.oppositePalaceBranch}])`;
         const axesNote = zw.yearlyStrategy?.wealthAndCareerAxis || zw.yearlyStrategy?.relationshipAndHealthAxis
           ? ` · 재물/커리어: ${zw.yearlyStrategy.wealthAndCareerAxis} · 관계/건강: ${zw.yearlyStrategy.relationshipAndHealthAxis}`
           : '';
@@ -916,7 +929,7 @@ export function buildUserFifteenToolsDigest(profile?: UserProfile, asOfDate: Dat
         const focusNote = zw.reflectionFocus ? ` · 성찰 초점: ${zw.reflectionFocus}` : '';
         const questionNote = zw.reflectiveQuestion ? ` · 성찰 질문: "${zw.reflectiveQuestion}"` : '';
         const boundaryNote = zw.interpretiveBoundary ? ` · 해석 경계: ${zw.interpretiveBoundary}` : '';
-        ziweiLine = `\n- 자미두수 유년 사화: 명궁 [${zw.sanFangSiZhengBalance.myMingPalaceName}](${yearLabel}${classNote}) · 삼방사정 국면 [${zw.sanFangSiZhengBalance.patternGrade}]${sanFangMapNote} · 록기 역학 [${zw.luJiConflictDynamics.relationType}](화록 ${zw.mutagens.lu.starName}→${zw.luJiConflictDynamics.luPalaceName} · 화권 ${zw.mutagens.quan.starName}→${zw.mutagens.quan.targetPalaceName} · 화과 ${zw.mutagens.ke.starName}→${zw.mutagens.ke.targetPalaceName} · 화기 ${zw.mutagens.ji.starName}→${zw.luJiConflictDynamics.jiPalaceName})${oppositeNote}${coreAdvice}${defenseNote}${mutagenActionNote}${strategyNote}${matrixAction}${quarterNote}${secAxisNote}${ritualNote}${focusNote}${questionNote}${boundaryNote}.`;
+        ziweiLine = `\n- 자미두수 유년 사화: 명궁 [${zw.sanFangSiZhengBalance.myMingPalaceName}](${yearLabel}${classNote}) · 삼방사정 국면 [${zw.sanFangSiZhengBalance.patternGrade}]${sanFangMapNote} · 록기 역학 [${zw.luJiConflictDynamics.relationType}](화록 ${zw.mutagens.lu.starName}→${zw.luJiConflictDynamics.luPalaceName} · 화권 ${zw.mutagens.quan.starName}→${zw.mutagens.quan.targetPalaceName} · 화과 ${zw.mutagens.ke.starName}→${zw.mutagens.ke.targetPalaceName} · 화기 ${zw.mutagens.ji.starName}→${zw.luJiConflictDynamics.jiPalaceName})${oppositeNote}${mutagenMeaningNote}${coreAdvice}${defenseNote}${mutagenActionNote}${strategyNote}${matrixAction}${quarterNote}${secAxisNote}${ritualNote}${focusNote}${questionNote}${boundaryNote}.`;
       }
     } catch (_) {}
 
