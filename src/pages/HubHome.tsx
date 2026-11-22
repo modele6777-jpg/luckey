@@ -2,7 +2,7 @@ import { ScreenPortal } from '@/components/layout/ScreenPortal';
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLocation } from 'wouter';
-import { Sparkles, Music, TreeDeciduous, Bird, Activity, Zap, Moon, Sun, ChevronDown, ChevronUp, Brain, ChevronRight, Play, Pause, Hexagon, Triangle, X, Compass, HeartPulse, Shield, ListTodo } from 'lucide-react';
+import { ChevronDown, ChevronUp, Play, Pause, Hexagon, Triangle, X, Compass, HeartPulse, Shield, ListTodo } from 'lucide-react';
 import { PrologueECPRView } from '@/components/prologue/PrologueECPRView';
 import { PrologueTodoSection } from '@/components/prologue/PrologueTodoSection';
 import ErrorBoundary from '@/components/ErrorBoundary';
@@ -13,8 +13,7 @@ import { recordPrismFeature } from '@/lib/prismOmniSync';
 
 import { useNarrowPhone } from '@/hooks/useNarrowPhone';
 import { getHubMetricsIntervalMs, isLegacyMobile } from '@/lib/perfMode';
-import { computeRealtimeBiometrics, getKstHour } from '@/lib/biometrics';
-import { HUB_TIME_PRESETS } from '@/lib/copyTone';
+import { computeRealtimeBiometrics } from '@/lib/biometrics';
 import { calculateDetailedSaju } from '@/lib/sajuAnalysis';
 import { UniverseInsightCard } from '@/components/UniverseInsightCard';
 import { type UniverseInsightItem } from '@/data/universeInsights';
@@ -28,143 +27,6 @@ import { DailyCosmicRoutineCard } from '@/components/hub/DailyCosmicRoutineCard'
 const HUB_SWIPE_TABS = ['universe', 'ecpr', 'todo'] as const;
 type HubSwipeTab = typeof HUB_SWIPE_TABS[number];
 
-
-const APPS = [
-  {
-    id: 'prologue',
-    name: 'PROLOGUE',
-    subtitle: '시작 방향',
-    desc: '삶의 시작과 오늘의 방향을 잡고, 목적에 맞게 하루의 여정을 여는 프롤로그 공간',
-    icon: Sun,
-    color: '#ef4444',
-    path: '/prologue',
-    persona: 'PROLOGUE',
-    personaDesc: '하루의 시작·방향·목적을 여는 가이드',
-    vibeKeyword: '시작 방향',
-  },
-  {
-    id: 'orange',
-    name: 'ORANGE',
-    subtitle: '마음 치유',
-    desc: '내면의 소외된 아이를 보듬고 하루의 감정을 따뜻하게 성찰하는 마음 치유 공간',
-    icon: TreeDeciduous,
-    color: 'oklch(0.72 0.18 55)',
-    path: '/orange',
-    persona: 'ORANGE',
-    personaDesc: '따뜻하고 솔직한 마음 치유 가이드',
-    vibeKeyword: '마음 치유',
-  },
-  {
-    id: 'trinity',
-    name: 'TRINITY',
-    subtitle: '운명 오라클',
-    desc: '사주·점성술·타로의 우주적 데이터를 엮어 삶의 길과 기운을 읽어내는 운명 나침반',
-    icon: Sparkles,
-    color: 'oklch(0.85 0.15 90)',
-    path: '/trinity',
-    persona: 'TRINITY',
-    personaDesc: '사주·점성술·타로 오라클 마스터',
-    vibeKeyword: '운명 탐구',
-  },
-  {
-    id: 'heal',
-    name: 'AURA',
-    subtitle: '신체 웰니스',
-    desc: '호흡과 스트레칭, 차크라 조율로 몸의 활력과 생체 리듬을 회복하는 신체 웰니스 공간',
-    icon: Activity,
-    color: 'oklch(0.70 0.15 150)',
-    path: '/heal',
-    persona: 'AURA',
-    personaDesc: '활력 회복 & 바디 웰니스 코치',
-    vibeKeyword: '신체 활력',
-  },
-  {
-    id: 'bluebird',
-    name: 'BLUEBIRD',
-    subtitle: '예술 정서',
-    desc: '시적 문장과 잔잔한 배경음악으로 감성을 돌보고 영감을 발견하는 예술 공간',
-    icon: Bird,
-    color: 'oklch(0.65 0.18 240)',
-    path: '/bluebird',
-    persona: 'BLUEBIRD',
-    personaDesc: '음악과 시적 공감 큐레이터',
-    vibeKeyword: '예술 정서',
-  },
-  {
-    id: 'muse',
-    name: 'MUSE',
-    subtitle: '영감 창조',
-    desc: '창작의 장애물을 걷어내고 독창적인 아이디어와 비전을 일깨우는 창의 스튜디오',
-    icon: Music,
-    color: 'oklch(0.50 0.15 260)',
-    path: '/muse',
-    persona: 'MUSE',
-    personaDesc: '창작 스파크 & 영감 코칭 마스터',
-    vibeKeyword: '영감 창조',
-  },
-  {
-    id: 'epilogue',
-    name: 'EPILOGUE',
-    subtitle: '통합 결산',
-    desc: '모든 채널의 여정과 기록을 한눈에 결산하고 내일의 새로운 시작을 준비하는 종합 에필로그',
-    icon: Moon,
-    color: 'oklch(0.65 0.25 310)',
-    path: '/epilogue',
-    persona: 'EPILOGUE',
-    personaDesc: '하루의 발자취와 여정 결산 가이드',
-    vibeKeyword: '통합 결산',
-  },
-];
-
-type TimeEnergySlot = 'morning' | 'afternoon' | 'evening' | 'night';
-
-type TimeEnergyAdvice = {
-  slotLabel: string;
-  energyPatternName: string;
-  energyPatternDesc: string;
-  energyAppId: string;
-  energyAppName: string;
-  matchReason: string;
-  matchPercentage: number;
-};
-
-const TIME_ENERGY_PRESETS: Record<TimeEnergySlot, TimeEnergyAdvice> = {
-  morning: {
-    slotLabel: '아침',
-    ...HUB_TIME_PRESETS.morning,
-    energyAppId: 'trinity',
-    energyAppName: 'TRINITY',
-    matchPercentage: 92,
-  },
-  afternoon: {
-    slotLabel: '오후',
-    ...HUB_TIME_PRESETS.afternoon,
-    energyAppId: 'muse',
-    energyAppName: 'MUSE',
-    matchPercentage: 90,
-  },
-  evening: {
-    slotLabel: '저녁',
-    ...HUB_TIME_PRESETS.evening,
-    energyAppId: 'orange',
-    energyAppName: 'ORANGE',
-    matchPercentage: 88,
-  },
-  night: {
-    slotLabel: '밤',
-    ...HUB_TIME_PRESETS.night,
-    energyAppId: 'bluebird',
-    energyAppName: 'BLUEBIRD',
-    matchPercentage: 94,
-  },
-};
-
-function getTimeEnergySlot(hour: number): TimeEnergySlot {
-  if (hour >= 6 && hour < 12) return 'morning';
-  if (hour >= 12 && hour < 18) return 'afternoon';
-  if (hour >= 18 && hour < 22) return 'evening';
-  return 'night';
-}
 
 // Zero-overhead: AuroraBackground already provides cosmic stars and nebulas globally
 function FloatingParticles(_props: { count?: number }) {
@@ -506,39 +368,6 @@ export default function HubHome() {
   // Avoid unsolicited background AI calls on home mount to prevent quota exhaustion and UI thread freezing
   // Global insight uses cached data or default presets instantly
 
-  const hour = getKstHour();
-  const timeSlot = getTimeEnergySlot(hour);
-  const timeAdvice = TIME_ENERGY_PRESETS[timeSlot];
-
-  // 시간대별 기본 추천 + 긴급 생체 지표 시 우선 보정
-  let energyPatternName = timeAdvice.energyPatternName;
-  let energyPatternDesc = timeAdvice.energyPatternDesc;
-  let energyAppName = timeAdvice.energyAppName;
-  let energyAppId = timeAdvice.energyAppId;
-  let matchReason = `${timeAdvice.slotLabel} 리듬 · ${timeAdvice.matchReason}`;
-  let matchPercentage = timeAdvice.matchPercentage;
-
-  if (fatigue > 65 || sleep < 50) {
-    energyPatternName = '회복이 필요한 시간';
-    energyPatternDesc = '피곤할 땐 무리하지 말고 몸을 먼저 쉬게 해 보세요.';
-    energyAppName = 'AURA';
-    energyAppId = 'heal';
-    matchReason = '피로 회복·가벼운 스트레칭에 좋아요';
-    matchPercentage = Math.min(99, Math.round(75 + fatigue * 0.25));
-  } else if (stress > 60) {
-    energyPatternName = '마음 쉬어가기';
-    energyPatternDesc = '스트레스가 높을 땐 잠깐 멈추고 호흡을 고르는 게 좋아요.';
-    energyAppName = 'BLUEBIRD';
-    energyAppId = 'bluebird';
-    matchReason = '마음 안정·휴식에 좋은 시간';
-    matchPercentage = Math.min(99, Math.round(70 + stress * 0.3));
-  }
-  
-  const recommendedEnergyApp = APPS.find(a => a.id === energyAppId);
-  const EnergyAppIcon = recommendedEnergyApp?.icon || Sparkles;
-  const energyAppColor = recommendedEnergyApp?.color || 'oklch(0.85 0.15 90)';
-
-
   return (
     <div className="universe-layout h-app-full w-full min-w-0 flex flex-col relative font-sans bg-transparent">
       {/* Header Info Bar - Always Fixed Outside Scroll Root */}
@@ -756,135 +585,14 @@ export default function HubHome() {
                 </motion.div>
               </div>
               
-              {/* Middle Dual-Pane Split: Left Pane (Goal Progress Ring) & Right Pane (Energy Pattern & App) */}
-              <div className="duo-split-grid items-stretch">
-                {/* User-Defined Goals Progress Ring Dashboard */}
-                <motion.div
-                  initial={{ opacity: 0, y: 12 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.04 }}
-                  className="flex flex-col h-full"
-                >
-                  <GoalProgressRingDashboard />
-                </motion.div>
-
-                {/* 에너지 패턴 추천앱 카드 */}
-                <motion.div
-                  initial={{ opacity: 0, y: 12 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="flex flex-col h-full"
-                >
-                  <div className="glass prism-xs-hub-card p-5 sm:p-6 md:p-7 rounded-[28px] border border-white/15 shadow-2xl relative overflow-hidden group h-full flex flex-col justify-between">
-                  <div 
-                    className="hidden md:block absolute -top-12 -right-12 w-72 h-72 rounded-full blur-[90px] opacity-15 pointer-events-none transition-transform duration-1000 group-hover:scale-110"
-                    style={{ background: energyAppColor }} 
-                  />
-                  
-                  <div className="relative z-10 flex flex-col lg:flex-row items-stretch gap-5 lg:gap-8">
-                    {/* 왼쪽 영역: 생체 상태 */}
-                    <div className="flex flex-col justify-between lg:w-72 shrink-0 border-b lg:border-b-0 lg:border-r border-white/10 pb-5 lg:pb-0 lg:pr-7 gap-4">
-                      <div>
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                          <span className="text-[10px] font-bold text-white/55 uppercase tracking-[0.22em] font-mono">REAL-TIME BIOMETRICS</span>
-                        </div>
-                        <h3 className="text-base sm:text-lg font-display font-bold text-white tracking-tight">현재 실시간 에너지 패턴</h3>
-                        {saju && (
-                          <p className="text-[11px] text-indigo-300/95 font-sans font-semibold mt-1 flex items-center gap-1.5">
-                            <Sparkles size={11} className="text-amber-400 shrink-0" />
-                            <span>{saju.dayMaster.hanja}({saju.dayMaster.korean}) 본원 체질 · {saju.elements.strengthLabel || `${saju.elements.dominant.element}기운 우세`}</span>
-                          </p>
-                        )}
-                      </div>
-                      
-                      <div className="grid grid-cols-3 lg:grid-cols-1 gap-2.5 lg:gap-3">
-                        <div className="p-2.5 lg:p-0 rounded-xl bg-white/[0.03] lg:bg-transparent border border-white/5 lg:border-0 space-y-1.5">
-                          <div className="flex justify-between items-center text-[11px] font-sans">
-                            <span className="text-white/65 flex items-center gap-1 font-medium"><Activity size={11} className="text-emerald-400 shrink-0" /> 피로도</span>
-                            <span className="text-emerald-400 font-bold font-mono">{Math.round(fatigue)}%</span>
-                          </div>
-                          <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
-                            <div className="h-full bg-emerald-400 rounded-full transition-all duration-500" style={{ width: `${Math.min(100, Math.max(5, fatigue))}%` }} />
-                          </div>
-                        </div>
-                        
-                        <div className="p-2.5 lg:p-0 rounded-xl bg-white/[0.03] lg:bg-transparent border border-white/5 lg:border-0 space-y-1.5">
-                          <div className="flex justify-between items-center text-[11px] font-sans">
-                            <span className="text-white/65 flex items-center gap-1 font-medium"><Brain size={11} className="text-rose-400 shrink-0" /> 스트레스</span>
-                            <span className="text-rose-400 font-bold font-mono">{Math.round(stress)}%</span>
-                          </div>
-                          <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
-                            <div className="h-full bg-rose-400 rounded-full transition-all duration-500" style={{ width: `${Math.min(100, Math.max(5, stress))}%` }} />
-                          </div>
-                        </div>
-
-                        <div className="p-2.5 lg:p-0 rounded-xl bg-white/[0.03] lg:bg-transparent border border-white/5 lg:border-0 space-y-1.5">
-                          <div className="flex justify-between items-center text-[11px] font-sans">
-                            <span className="text-white/65 flex items-center gap-1 font-medium"><Zap size={11} className="text-amber-400 shrink-0" /> 몰입도</span>
-                            <span className="text-amber-400 font-bold font-mono">{Math.round(focus)}%</span>
-                          </div>
-                          <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
-                            <div className="h-full bg-amber-400 rounded-full transition-all duration-500" style={{ width: `${Math.min(100, Math.max(5, focus))}%` }} />
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* 오른쪽 영역: 에너지 동조 추천 앱 */}
-                    <div className="flex-1 flex flex-col justify-between gap-4">
-                      <div className="space-y-2">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <div
-                            className="px-2.5 py-0.5 rounded-full text-[10px] font-bold font-mono border uppercase tracking-wider"
-                            style={{ color: energyAppColor, borderColor: `${energyAppColor}55`, background: `${energyAppColor}18` }}
-                          >
-                            SYNC RATE {matchPercentage}%
-                          </div>
-                          <span className="text-[10px] text-white/55 font-bold uppercase tracking-widest font-mono">
-                            ENERGY SYNC · {timeAdvice.slotLabel} 리듬
-                          </span>
-                        </div>
-
-                        <h4 className="text-lg sm:text-xl font-bold text-white tracking-tight break-keep">
-                          {energyPatternName}
-                        </h4>
-                        
-                        <p className="text-xs sm:text-[13px] text-white/75 leading-relaxed break-keep font-medium">
-                          {energyPatternDesc}
-                        </p>
-                      </div>
-
-                      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3.5 pt-3 border-t border-white/10">
-                        <div className="flex items-center gap-3">
-                          <div
-                            className="w-11 h-11 rounded-2xl flex items-center justify-center relative overflow-hidden shrink-0 border border-white/15 shadow-inner"
-                            style={{ background: `${energyAppColor}18` }}
-                          >
-                            <EnergyAppIcon size={20} style={{ color: energyAppColor, filter: `drop-shadow(0 0 8px ${energyAppColor})` }} />
-                          </div>
-                          <div className="text-left min-w-0">
-                            <div className="flex items-center gap-1.5">
-                              <span className="text-xs font-extrabold text-white uppercase tracking-wider">{energyAppName}</span>
-                              <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-white/10 text-white/80 font-semibold">추천 채널</span>
-                            </div>
-                            <div className="text-[11px] text-white/60 font-sans leading-snug mt-0.5 truncate">{matchReason}</div>
-                          </div>
-                        </div>
-
-                        <button
-                          type="button"
-                          onClick={() => navigate(recommendedEnergyApp?.path || '/')}
-                          className="w-full sm:w-auto px-5 py-2.5 rounded-2xl text-xs font-bold flex items-center justify-center gap-2 text-white transition-all active:scale-95 cursor-pointer shrink-0 border border-white/20 hover:border-white/40 bg-white/10 hover:bg-white/15 shadow-lg font-sans"
-                        >
-                          <span>추천 채널 바로가기</span>
-                          <ChevronRight size={14} className="opacity-80" />
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+              <motion.div
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.04 }}
+                className="flex flex-col"
+              >
+                <GoalProgressRingDashboard />
               </motion.div>
-            </div>
 
             </div>
           </div>

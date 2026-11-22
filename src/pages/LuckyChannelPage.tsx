@@ -4,6 +4,7 @@ import { useLocation } from 'wouter';
 import { Sparkles, Music, TreeDeciduous, Bird, Activity, Moon, Sun, ChevronRight, Compass } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
 import { openChannelIntro } from '@/components/common/ChannelIntroModal';
+import { RealtimeEnergyPatternCard } from '@/components/hub/RealtimeEnergyPatternCard';
 
 const CHANNELS = [
   {
@@ -109,6 +110,7 @@ export default function LuckyChannelPage() {
     <div className="relative w-full h-full min-h-0 flex flex-col text-white">
       <div data-app-scroll-root className="min-h-0 flex-1 w-full overflow-y-auto no-scrollbar touch-pan-y overscroll-x-none pt-14 pb-28">
         <div className="px-3 sm:px-6 prism-xs-pad w-full max-w-6xl mx-auto space-y-3.5 pb-6">
+          <RealtimeEnergyPatternCard />
           <div className="flex flex-wrap items-center justify-between gap-3 px-1 pr-16">
             <div>
               <div className="flex items-center gap-2">
