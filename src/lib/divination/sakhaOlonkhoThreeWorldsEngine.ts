@@ -1,12 +1,17 @@
 import type { UserProfile } from '../sharedState';
 
+export type SakhaQuestionTopic = 'career' | 'relationship' | 'wealth' | 'health' | 'decision' | 'general';
+
 export interface SakhaOlonkhoResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: SakhaQuestionTopic;
   worldPillar: string;
   companionPillar: string;
   olonkhoInsight: string;
   lenaTone: string;
+  worldAxisBreath: string;
+  shadowWarning: string;
   reflectionFocus: string;
   ritualAction: string;
   reflectiveQuestion: string;
@@ -47,9 +52,19 @@ const PILLARS = [
     insight: '지난 시간의 고단함을 털어내고 오늘부터 다시 시작할 수 있는 환대와 재생의 힘',
     tone: '백야의 밝은 하늘 아래 손을 맞잡고 도는 사람들의 원',
     ritual: '지나간 아쉬움은 오늘 자정에 내려놓고, 나 자신이나 가까운 사람에게 따뜻한 한마디를 건네 보세요.',
-    question: '지난 시간의 고단함을 털어내고 이흐야흐의 원무처럼 새롭게 다시 시작하고 싶은 마음의 다짐은 무엇인가요?',
+    question: '지난 시간의 고단함을 털어내고 이흐야흐의 원무처럼 새롭게 다시 시작할 수 있는 마음의 다짐은 무엇인가요?',
   },
 ];
+
+function classifySakhaTopic(question?: string): SakhaQuestionTopic {
+  const q = (question ?? '').trim();
+  if (/이직|직장|사업|승진|일|커리어|프로젝트|업무/.test(q)) return 'career';
+  if (/연애|결혼|사람|관계|가족|갈등|친구|이별|소통/.test(q)) return 'relationship';
+  if (/돈|재물|투자|재정|수입|지출|계약|매매/.test(q)) return 'wealth';
+  if (/건강|몸|마음|휴식|수면|피로|회복|뿌리/.test(q)) return 'health';
+  if (/결정|선택|고민|방향|시작/.test(q)) return 'decision';
+  return 'general';
+}
 
 function formatKstIso(date: Date): string {
   const kst = new Date(date.getTime() + 9 * 60 * 60 * 1000);
@@ -81,14 +96,20 @@ export function calculateSakhaOlonkhoThreeWorlds(params: {
   const companionOffset = 1 + (stableHash(`${seed}|companion`) % (PILLARS.length - 1));
   const picked = PILLARS[idx];
   const companion = PILLARS[(idx + companionOffset) % PILLARS.length];
+  const questionTopic = classifySakhaTopic(params.question);
+  const worldAxisBreath = `${picked.pillar.split('(')[0].trim()} ↔ ${companion.pillar.split('(')[0].trim()} 세 세계 공명`;
+  const shadowWarning = `[${picked.pillar.split('(')[0].trim()} 과잉 경계] 한 세계의 기준에만 치우쳐 뿌리(안정)와 가지(확장)의 균형을 잃지 않도록 살피십시오.`;
 
   return {
-    engineVersion: 'LUCKEY-SAKHA-OLONKHO-v2.2.0',
+    engineVersion: 'LUCKEY-SAKHA-OLONKHO-v2.3.0',
     calculatedAtKst: formatKstIso(now),
+    questionTopic,
     worldPillar: picked.pillar,
     companionPillar: companion.pillar,
     olonkhoInsight: `${picked.insight} (동반 기둥: ${companion.pillar})`,
     lenaTone: picked.tone,
+    worldAxisBreath,
+    shadowWarning,
     reflectionFocus: `시베리아 사하 올론호의 '${picked.pillar}'와 동반 기둥 '${companion.pillar}'처럼, 뿌리(기반)와 가지(목표) 사이의 중심을 지금 내가 서 있는 오늘에 두어 보세요.`,
     ritualAction: picked.ritual,
     reflectiveQuestion: picked.question,
@@ -99,13 +120,15 @@ export function calculateSakhaOlonkhoThreeWorlds(params: {
 export function formatSakhaOlonkhoPrompt(res: SakhaOlonkhoResult): string {
   return [
     `[사하 올론호 세 세계 균형 성찰 · ${res.engineVersion}]`,
-    `- 기준 시각: ${res.calculatedAtKst}`,
+    `- 기준 시각: ${res.calculatedAtKst} | 질문 맥락: ${res.questionTopic}`,
     `- 세계수 기둥: ${res.worldPillar} (${res.lenaTone})`,
     `- 동반 기둥: ${res.companionPillar}`,
+    `- 세 세계 공명 축: ${res.worldAxisBreath}`,
     `- 중심 통찰: ${res.olonkhoInsight}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 오늘의 작은 실천: ${res.ritualAction}`,
     `- 스스로에게 묻기: ${res.reflectiveQuestion}`,
+    `- 과잉 경계: ${res.shadowWarning}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
   ].join('\n');
 }
