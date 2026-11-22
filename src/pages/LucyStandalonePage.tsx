@@ -1,4 +1,4 @@
-import { LucyLibraryDialogs, LucyLibraryTrigger } from '@/components/chat/LucyLibraryDialogs';
+import { LucyOrbCounsel } from '@/components/lucy/LucyOrbCounsel';
 import { collectSpeechTranscript, createEndOfSpeechWatcher, type EndOfSpeechWatcher } from '@/lib/speechAutoSend';
 import { startGeminiLiveVoice, type LiveVoiceSession } from '@/lib/geminiLiveSession';
 import { LucyModeName } from '@/components/chat/LucyModeName';
@@ -1841,6 +1841,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
   }, [isMasterMode, chatAccount]);
 
   // 🎙️ 루시 1:1 전용 실시간 음성 대화 모드 (STT 마이크 + TTS 자동 루프)
+  const [orbCounselOpen, setOrbCounselOpen] = useState(false);
   const [isVoiceMode, setIsVoiceMode] = useState<boolean>(() => {
     if (pro) return false;
     try {
@@ -2067,7 +2068,28 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
     startListening();
   }, [startListening]);
 
-  // 🎙️ 음성 모드 토글
+  const finishOrbCounsel = useCallback((summary: string | null) => {
+    setOrbCounselOpen(false);
+    if (!summary) return;
+    const message = {
+      id: `orb-${Date.now()}`,
+      role: 'model' as const,
+      content: summary,
+      timestamp: Date.now(),
+      persona: 'lucy' as const,
+      mode: isMasterMode ? 'master' : 'casual',
+    };
+    if (isMasterMode) {
+      setLucyProMessages(prev => [...prev, message]);
+      return;
+    }
+    setPersonaMessages(prev => {
+      const next = [...(prev.lucy || []), message];
+      saveUnifiedMessagesSafely(next);
+      return { ...prev, lucy: next, orange: next, trinity: next, aura: next, bluebird: next, muse: next };
+    });
+  }, [isMasterMode, setLucyProMessages, setPersonaMessages]);
+
   const handleToggleVoiceMode = useCallback(() => {
     try {
       playAudioHaptic('tap_impact');
@@ -2144,13 +2166,13 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
   // 빅뱅버튼 홀드 시 별도 말풍선 없이 루시채팅 자체 음성 모드 즉시 토글
   useEffect(() => {
     const handleBigBangVoiceToggle = () => {
-      handleToggleVoiceMode();
+      setOrbCounselOpen(true);
     };
     window.addEventListener('prism:toggle_lucy_chat_voice', handleBigBangVoiceToggle);
     return () => {
       window.removeEventListener('prism:toggle_lucy_chat_voice', handleBigBangVoiceToggle);
     };
-  }, [handleToggleVoiceMode]);
+  }, []);
 
   // AI 응답 생성 상태 변화에 따른 음성 모드 동기화
   useEffect(() => {
@@ -5240,18 +5262,18 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
             {/* 🎙️ Voice Mode / STT Microphone Button */}
             <button
               type="button"
-              onClick={handleToggleVoiceMode}
+              onClick={() => setOrbCounselOpen(true)}
               className={`w-7 h-7 sm:w-8 sm:h-8 p-0 flex items-center justify-center rounded-lg transition-all cursor-pointer shrink-0 ${
-                isVoiceMode
-                  ? 'text-amber-500 dark:text-amber-300 bg-amber-100/90 dark:bg-amber-950/80 border border-amber-400 dark:border-amber-500/50 shadow-2xs animate-pulse ring-1 ring-amber-400/50'
+                orbCounselOpen
+                  ? 'bg-white/80 shadow-2xs'
                   : lucyDayPeriod !== 'night'
-                  ? 'text-slate-500 hover:text-amber-700 hover:bg-amber-50'
-                  : 'text-white/75 hover:text-amber-300 hover:bg-white/10'
+                  ? 'hover:bg-amber-50'
+                  : 'hover:bg-white/10'
               }`}
-              title={isVoiceMode ? '루시 음성 모드 켜짐 (클릭 시 끄기)' : '루시 1:1 음성 모드 켜기 (마이크 실시간 대화)'}
-              aria-label={isVoiceMode ? '음성 모드 켜짐' : '음성 모드 켜기'}
+              title="오브 상담 열기"
+              aria-label="오브 상담 열기"
             >
-              <Mic size={16} className={`sm:w-[18px] sm:h-[18px] ${isVoiceMode ? 'text-amber-500 dark:text-amber-300 animate-pulse' : ''}`} />
+              <span className="lucy-composer-orb" />
             </button>
 
             {/* Textarea Wrapper for Ghost Typewriter Overlay */}
@@ -5499,6 +5521,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
       {/* 엔진함·추천질문 라이브러리는 점술모드에서만 연다 */}
       {sessionCard && <LucyMasterSessionCard source={sessionCard} onClose={() => setSessionCard(null)} />}
       {isMasterMode && <LucyLibraryDialogs sessionKey={librarySessionKey} isLight={isLight} onSelectPrompt={handleSelectPromptFromLibrary} />}
+      <LucyOrbCounsel open={orbCounselOpen} nickname={userDisplayName} chart={sajuInfo?.systemPromptSummary || ''} onFinish={finishOrbCounsel} />
 
       {/* 👥 대화창 프로필 추가/수정 모달 */}
       <ChatProfileModal
