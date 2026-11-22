@@ -1,12 +1,17 @@
 import type { UserProfile } from '../sharedState';
 
+export type SherpaQuestionTopic = 'career' | 'relationship' | 'wealth' | 'health' | 'decision' | 'general';
+
 export interface SherpaSagarmathaResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: SherpaQuestionTopic;
   ridgePrinciple: string;
   companionPrinciple: string;
   sagarmathaInsight: string;
   himalayanTone: string;
+  altitudePaceAxis: string;
+  shadowWarning: string;
   reflectionFocus: string;
   ritualAction: string;
   reflectiveQuestion: string;
@@ -51,6 +56,16 @@ const PRINCIPLES = [
   },
 ];
 
+function classifySherpaTopic(question?: string): SherpaQuestionTopic {
+  const q = (question ?? '').trim();
+  if (/이직|직장|사업|승진|일|커리어|프로젝트|업무/.test(q)) return 'career';
+  if (/연애|결혼|사람|관계|가족|갈등|친구|이별|소통/.test(q)) return 'relationship';
+  if (/돈|재물|투자|재정|수입|지출|계약|매매/.test(q)) return 'wealth';
+  if (/건강|몸|마음|휴식|수면|피로|회복|호흡/.test(q)) return 'health';
+  if (/결정|선택|고민|방향|시작|발걸음/.test(q)) return 'decision';
+  return 'general';
+}
+
 function formatKstIso(date: Date): string {
   const kst = new Date(date.getTime() + 9 * 60 * 60 * 1000);
   const y = kst.getUTCFullYear();
@@ -81,14 +96,20 @@ export function calculateSherpaSagarmathaRidgeHarmony(params: {
   const companionOffset = 1 + (stableHash(`${seed}|companion`) % (PRINCIPLES.length - 1));
   const picked = PRINCIPLES[idx];
   const companion = PRINCIPLES[(idx + companionOffset) % PRINCIPLES.length];
+  const questionTopic = classifySherpaTopic(params.question);
+  const altitudePaceAxis = `${picked.principle.split('(')[0].trim()} ↔ ${companion.principle.split('(')[0].trim()} 고산 적응 축`;
+  const shadowWarning = `[${picked.principle.split('(')[0].trim()} 과잉 경계] 정상 속도나 휴식 중 한쪽에만 치우쳐 현재 호흡의 리듬을 잃지 않도록 살피십시오.`;
 
   return {
-    engineVersion: 'LUCKEY-SHERPA-SAGARMATHA-v2.2.0',
+    engineVersion: 'LUCKEY-SHERPA-SAGARMATHA-v2.3.0',
     calculatedAtKst: formatKstIso(now),
+    questionTopic,
     ridgePrinciple: picked.principle,
     companionPrinciple: companion.principle,
     sagarmathaInsight: `${picked.insight} (동반 원리: ${companion.principle})`,
     himalayanTone: picked.tone,
+    altitudePaceAxis,
+    shadowWarning,
     reflectionFocus: `셰르파 고산 지혜의 '${picked.principle}'와 동반 원리 '${companion.principle}'처럼, 무리한 속도전 대신 내 호흡과 상황의 흐름에 맞춘 꾸준한 발걸음을 선택해 보세요.`,
     ritualAction: picked.ritual,
     reflectiveQuestion: picked.question,
@@ -99,13 +120,15 @@ export function calculateSherpaSagarmathaRidgeHarmony(params: {
 export function formatSherpaSagarmathaPrompt(res: SherpaSagarmathaResult): string {
   return [
     `[셰르파 사거마타·능선 조화 성찰 · ${res.engineVersion}]`,
-    `- 기준 시각: ${res.calculatedAtKst}`,
+    `- 기준 시각: ${res.calculatedAtKst} | 질문 맥락: ${res.questionTopic}`,
     `- 등반 지혜: ${res.ridgePrinciple} (${res.himalayanTone})`,
     `- 동반 원리: ${res.companionPrinciple}`,
+    `- 고산 적응 축: ${res.altitudePaceAxis}`,
     `- 중심 통찰: ${res.sagarmathaInsight}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 오늘의 작은 실천: ${res.ritualAction}`,
     `- 스스로에게 묻기: ${res.reflectiveQuestion}`,
+    `- 과잉 경계: ${res.shadowWarning}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
   ].join('\n');
 }

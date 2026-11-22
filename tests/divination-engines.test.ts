@@ -13679,14 +13679,17 @@ test('Nubian Meroe Apedemak Balance engine: principles, +09:00 KST, and interpre
 
 test('Samarkand Ulugh Beg Observatory engine: meridian arc, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateSamarkandUlughBegObservatory({ profile, now: new Date('2026-11-20T06:20:00Z'), question: '사실과 기준을 차분히 정리하고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-SAMARKAND-ULUGH-v2.2.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-SAMARKAND-ULUGH-v2.3.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
+  assert.equal(rep.questionTopic, 'decision');
   assert.ok(rep.companionArc !== rep.arcStage);
+  assert.ok(rep.observatoryAxis.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatSamarkandUlughPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
   assert.ok(prompt.includes('사마르칸트') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionArc));
+  assert.ok(prompt.includes('천문 교차 축') && prompt.includes('과잉 경계'));
 });
 
 test('Haudenosaunee Seven Generations engine: council principle, +09:00 KST, and interpretive boundary', () => {
@@ -13751,14 +13754,17 @@ test('Hungarian Taltos Tree of Life engine: realm, +09:00 KST, and interpretive 
 
 test('Kyrgyz Manas Oral Epic Courage engine: chapter, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateKyrgyzManasOralEpicCourage({ profile, now: new Date('2026-11-20T06:40:00Z'), question: '첫 걸음을 내딛고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-KYRGYZ-MANAS-v2.2.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-KYRGYZ-MANAS-v2.3.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
+  assert.equal(rep.questionTopic, 'decision');
   assert.ok(rep.companionChapter !== rep.epicChapter);
+  assert.ok(rep.steppeBreathAxis.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatKyrgyzManasPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
   assert.ok(prompt.includes('키르기스') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionChapter));
+  assert.ok(prompt.includes('서사 호흡 축') && prompt.includes('과잉 경계'));
 });
 
 test('Shona Mbira Ancestral Resonance engine: cycle, +09:00 KST, and interpretive boundary', () => {
@@ -14278,14 +14284,17 @@ test('Chechen Vainakh Kovakh Honor engine: code, +09:00 KST, and interpretive bo
 
 test('Sherpa Sagarmatha Ridge Harmony engine: principle, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateSherpaSagarmathaRidgeHarmony({ profile, now: new Date('2026-11-20T08:21:00Z'), question: '내 호흡에 맞는 꾸준한 발걸음을 찾고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-SHERPA-SAGARMATHA-v2.2.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-SHERPA-SAGARMATHA-v2.3.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
+  assert.equal(rep.questionTopic, 'health');
   assert.ok(rep.companionPrinciple !== rep.ridgePrinciple);
+  assert.ok(rep.altitudePaceAxis.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatSherpaSagarmathaPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
   assert.ok(prompt.includes('셰르파') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionPrinciple));
+  assert.ok(prompt.includes('고산 적응 축') && prompt.includes('과잉 경계'));
 });
 
 test('Evenki Buga Taiga Path engine: sign, +09:00 KST, and interpretive boundary', () => {
