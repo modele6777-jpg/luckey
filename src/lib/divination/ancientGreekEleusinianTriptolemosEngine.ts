@@ -9,12 +9,12 @@
  *    - 살아있는 짐승을 해치지 말라 (Hurt not animals)
  * 3. 질문 맥락 감사·KST 데메테르 계절 리듬·교차 매트릭스 산출
  *
- * @version LUCKEY-ELEUSINIAN-TRIPTOLEMOS-v2.2.0
+ * @version LUCKEY-ELEUSINIAN-TRIPTOLEMOS-v2.5.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const ELEUSINIAN_TRIPTOLEMOS_VERSION = 'LUCKEY-ELEUSINIAN-TRIPTOLEMOS-v2.4.0';
+export const ELEUSINIAN_TRIPTOLEMOS_VERSION = 'LUCKEY-ELEUSINIAN-TRIPTOLEMOS-v2.5.0';
 
 export interface TriptolemosChariotStage {
   stageLevel: number;
@@ -73,6 +73,7 @@ export interface EleusinianTriptolemosResult {
   ritualAction: string;
   reflectionFocus: string;
   reflectiveQuestion: string;
+  shadowWarning: string;
   interpretiveBoundary: string;
 }
 
@@ -233,6 +234,7 @@ export function calculateEleusinianTriptolemos(
   const situationalEleusisAudit = buildSituationalAudit(question, primaryTriadicLaw);
   const temporalEleusisRhythm = buildTemporalRhythm(now, seed);
   const triptolemosSynthesisMatrix = buildSynthesisMatrix(activeChariotStage, primaryTriadicLaw, situationalEleusisAudit, temporalEleusisRhythm);
+  const shadowWarning = `[엘레우시스 파종 과잉 경계] 수확을 서둘러 아직 여물지 않은 씨앗을 재촉하거나, 반대로 겨울 휴면에 머물러 봄의 쟁기질을 놓치지 않도록 살피십시오.`;
   const interpretiveBoundary = '엘레우시스 밀의 트리프톨레모스 3대 율법 상징을 빌린 정성적 성찰 관점이며, 개인 평가나 미래 단정이 아닙니다.';
   const ritualAction = situationalEleusisAudit.chariotPrescription;
   const reflectionFocus = `오늘 내가 정직하게 뿌릴 작은 씨앗(${primaryTriadicLaw.lawTitleKo})과, 그 첫 결실을 나눌 대상은 누구인가요?`;
@@ -258,6 +260,7 @@ export function calculateEleusinianTriptolemos(
     ritualAction,
     reflectionFocus,
     reflectiveQuestion,
+    shadowWarning,
     interpretiveBoundary,
   };
 }
@@ -282,5 +285,6 @@ export function formatEleusinianTriptolemosPrompt(result: EleusinianTriptolemosR
 - 오늘의 작은 의례: ${result.ritualAction}
 - 성찰 초점: ${result.reflectionFocus}
 - 성찰 질문: ${result.reflectiveQuestion}
+- 과잉 경계: ${result.shadowWarning}
 - 해석 경계: ${result.interpretiveBoundary}`;
 }

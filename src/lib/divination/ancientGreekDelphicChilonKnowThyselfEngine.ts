@@ -13,12 +13,12 @@
  *    - 노인을 공경하고 법도를 지킴(Reverence for Order): 공동체의 오랜 지혜와 질서를 존중함.
  * 3. 질문 맥락·KST 시공간 절제 리듬·교차 매트릭스 산출
  *
- * @version LUCKEY-DELPHIC-CHILON-v2.2.0
+ * @version LUCKEY-DELPHIC-CHILON-v2.5.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const DELPHIC_CHILON_VERSION = 'LUCKEY-DELPHIC-CHILON-v2.4.0';
+export const DELPHIC_CHILON_VERSION = 'LUCKEY-DELPHIC-CHILON-v2.5.0';
 
 export interface DelphicSageStage {
   stageLevel: number;
@@ -77,6 +77,7 @@ export interface DelphicChilonResult {
   ritualAction: string;
   reflectionFocus: string;
   reflectiveQuestion: string;
+  shadowWarning: string;
   interpretiveBoundary: string;
 }
 
@@ -237,6 +238,7 @@ export function calculateDelphicChilon(
   const situationalChilonAudit = buildSituationalAudit(question, primaryDelphicMaxim);
   const temporalDelphicRhythm = buildTemporalRhythm(now, seed);
   const chilonSynthesisMatrix = buildSynthesisMatrix(activeSageStage, primaryDelphicMaxim, situationalChilonAudit, temporalDelphicRhythm);
+  const shadowWarning = `[델포이 절제 과잉 경계] 지나침을 경계(Meden Agan)하려다 필요한 표현과 정당한 한 걸음까지 지나치게 움츠러들지 않도록 살피십시오.`;
   const interpretiveBoundary = '스파르타 현인 킬론의 자기성찰(Gnothi Seauton)·중용(Meden Agan) 상징을 빌린 정성적 절제 참고 관점이며, 수치 평가나 확정 예언이 아닙니다.';
   const ritualAction = situationalChilonAudit.laconicPrescription;
   const reflectionFocus = `오늘 내가 넘치지 않게 멈춰야 할 한 가지(Meden Agan)와, 가볍게 장담하지 않고 지킬 약속(Engua)은 무엇일까요?`;
@@ -262,6 +264,7 @@ export function calculateDelphicChilon(
     ritualAction,
     reflectionFocus,
     reflectiveQuestion,
+    shadowWarning,
     interpretiveBoundary,
   };
 }
@@ -286,5 +289,6 @@ export function formatDelphicChilonPrompt(result: DelphicChilonResult): string {
 - 오늘의 작은 의례: ${result.ritualAction}
 - 성찰 초점: ${result.reflectionFocus}
 - 성찰 질문: ${result.reflectiveQuestion}
+- 과잉 경계: ${result.shadowWarning}
 - 해석 경계: ${result.interpretiveBoundary}`;
 }
