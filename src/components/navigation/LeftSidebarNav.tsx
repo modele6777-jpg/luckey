@@ -294,6 +294,7 @@ export default function LeftSidebarNav() {
     aside.addEventListener('pointerdown', release);
     return () => aside.removeEventListener('pointerdown', release);
   }, []);
+  const luckyPathRef = useRef(cleanPath);
   const channelsVisible = screenUnfolded || isChannelsOpen;
   useEffect(() => {
     if (!channelsVisible) return;
@@ -320,7 +321,13 @@ export default function LeftSidebarNav() {
     };
   }, [channelsVisible, screenUnfolded]);
   useEffect(() => {
-    if (isLuckyListPath(cleanPath) || screenUnfolded) setIsChannelsOpen(true);
+    if (screenUnfolded) {
+      setIsChannelsOpen(true);
+      return;
+    }
+    if (luckyPathRef.current === cleanPath) return;
+    luckyPathRef.current = cleanPath;
+    if (isLuckyListPath(cleanPath)) setIsChannelsOpen(true);
   }, [cleanPath, screenUnfolded]);
   const { resolvedTheme } = useTheme();
   const reduceMotion = useReducedMotion();
@@ -670,6 +677,10 @@ export default function LeftSidebarNav() {
                     title="Luckey"
                     onClick={() => {
                       triggerHaptic('whitehole');
+                      if (!screenUnfolded && channelsVisible) {
+                        setIsChannelsOpen(false);
+                        return;
+                      }
                       setIsChannelsOpen(true);
                       if (cleanPath !== '/lucky') handleNavigate('/lucky');
                     }}
