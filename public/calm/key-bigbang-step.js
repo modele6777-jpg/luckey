@@ -37,11 +37,11 @@
   }
 
   function centerInRow(row, btn) {
-    // 가로로만 움직인다. 화면(세로)은 절대 움직이지 않는다.
+    // 가로 위치만 즉시 맞춘다. smooth scrollTo는 아이폰에서 페이지를 세로로 살짝 올린다.
     try {
       if (row.scrollWidth > row.clientWidth + 2) {
         var left = btn.offsetLeft - (row.clientWidth - btn.offsetWidth) / 2;
-        row.scrollTo({ left: Math.max(0, left), behavior: 'smooth' });
+        row.scrollLeft = Math.max(0, left);
       }
     } catch (_) { /* old browsers */ }
   }
@@ -57,6 +57,8 @@
     if (holdState.frame) cancelAnimationFrame(holdState.frame);
     holdState.timers.forEach(clearTimeout);
     document.body.style.minHeight = holdState.prevMinHeight;
+    document.documentElement.style.overflowAnchor = '';
+    document.body.style.overflowAnchor = '';
     holdState = null;
   }
   ['touchstart', 'wheel', 'keydown', 'pointerdown'].forEach(function (name) {
@@ -102,6 +104,8 @@
     var pageHeight = Math.max(se.scrollHeight, document.body.scrollHeight);
     if (holdState) { holdState.stopped = true; if (holdState.frame) cancelAnimationFrame(holdState.frame); holdState.timers.forEach(clearTimeout); }
     document.body.style.minHeight = pageHeight + 'px';
+    document.documentElement.style.overflowAnchor = 'none';
+    document.body.style.overflowAnchor = 'none';
     blockUntil = Date.now() + 1500;
     var state = { y: y, prevMinHeight: prevMinHeight, stopped: false, done: false, frame: 0, timers: [] };
     holdState = state;
@@ -128,7 +132,10 @@
     if (current < 0) current = 0;
     var next = (current + (direction === 'previous' ? -1 : 1) + buttons.length) % buttons.length;
     var target = buttons[next];
-    holdScroll(function () { target.click(); });
+    holdScroll(function () {
+      // .click()은 버튼을 포커스해서 아이폰이 그 버튼이 보이게 화면을 살짝 올린다.
+      target.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+    });
     centerInRow(row, target);
     return (target.textContent || '').replace(/\s+/g, ' ').trim();
   }

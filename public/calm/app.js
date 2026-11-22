@@ -114,7 +114,16 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (shouldScroll) {
-      window.scrollTo({ top: 400, behavior: 'smooth' });
+      const anchor = document.querySelector('.key-tabs-anchor') || document.querySelector('.view-tabs-container');
+      if (anchor) {
+        const headerHeight = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--key-header-height')) || 0;
+        const top = anchor.getBoundingClientRect().top;
+        // 탭 목록이 화면 아래에 있을 때만 내려간다. 이미 보이면 지금 위치를 유지한다.
+        // (고정값 400으로 올리면 목록을 옮길 때 화면이 살짝 위로 끌려 올라갔다.)
+        if (top >= window.innerHeight - 8) {
+          window.scrollTo({ top: Math.max(0, window.scrollY + top - headerHeight), behavior: 'smooth' });
+        }
+      }
     }
   }
   // 🔍 Key 검색에서 결과를 누르면 해당 화면으로 이동할 수 있게 노출
@@ -499,8 +508,21 @@ document.addEventListener('DOMContentLoaded', () => {
   window.switchTab = switchTab;
 
   tabPills.forEach(pill => {
+    pill.addEventListener('pointerdown', () => {
+      const se = document.scrollingElement || document.documentElement;
+      const y = se.scrollTop;
+      const until = Date.now() + 700;
+      const restore = () => {
+        if (Date.now() < until && se.scrollTop !== y) se.scrollTop = y;
+      };
+      requestAnimationFrame(function loop() {
+        restore();
+        if (Date.now() < until) requestAnimationFrame(loop);
+      });
+    });
     pill.addEventListener('click', () => {
-      switchTab(pill.dataset.tab);
+      // 탭 목록을 눌러도 보던 화면은 그대로 둔다.
+      switchTab(pill.dataset.tab, false);
     });
   });
 
