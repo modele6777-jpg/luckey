@@ -6659,10 +6659,12 @@ test('Ancient Greek Socratic Maieutic Daimon Engine: calculates dialogue, daimon
   assert(rep.epimeleiaSoulCareIntegrity >= 0 && rep.epimeleiaSoulCareIntegrity <= 100);
   assert(rep.activeSocraticStage.stageNameGreek.length > 0);
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
+  assert(rep.shadowWarning.length > 0);
   const prompt = formatSocraticMaieuticDaimonPrompt(rep);
   assert(prompt.includes('고대 그리스 소크라테스 산파술 & 다이몬 영혼성찰 지표'));
   assert(prompt.includes(rep.activeSocraticStage.stageNameKo));
   assert(prompt.includes('성찰 초점'));
+  assert(prompt.includes('과잉 경계'));
 });
 
 test('Chinese Mencius Four Sprouts Hoyeon Jigi Engine: calculates four sprouts, Hoyeon-jigi, Bu-dong-xin and moral accumulation', () => {
@@ -8623,10 +8625,12 @@ test('Alfred Adler Individual Psychology Engine: calculates Inferiority Transcen
   assert(rep.teleologicalReframingCreationIndex >= 0 && rep.teleologicalReframingCreationIndex <= 100);
   assert(rep.courageToBeImperfectResilienceScore >= 0 && rep.courageToBeImperfectResilienceScore <= 100);
   assert(rep.activeAdlerTheme.themeTitleKo.length > 0);
+  assert(rep.shadowWarning.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatAustrianAlfredAdlerIndividualPsychologyPrompt(rep);
   assert(prompt.includes('알프레트 아들러 《인간이해》 & 《삶의 의미》 열등감 극복 및 공동체 감각 지혜 지표'));
   assert(prompt.includes(rep.activeAdlerTheme.themeTitleKo));
+  assert(prompt.includes('과잉 경계'));
 });
 
 test('Friedrich Schiller Aesthetic Education Engine: calculates Play Drive, Aesthetic Freedom, and Grace & Dignity', () => {
@@ -8835,10 +8839,12 @@ test('Franz Kafka Existential Truth Engine: calculates Existential Honesty, Inne
   assert(rep.frozenSeaPiercingInsightIndex >= 0 && rep.frozenSeaPiercingInsightIndex <= 100);
   assert(rep.transformativeSolitudeResilienceScore >= 0 && rep.transformativeSolitudeResilienceScore <= 100);
   assert(rep.activeKafkaTheme.themeTitleKo.length > 0);
+  assert(rep.shadowWarning.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatAustrianFranzKafkaExistentialTruthPrompt(rep);
   assert(prompt.includes('프란츠 카프카 《변신·성》 부조리 직시와 실존적 정직성 및 내적 존엄성 지표'));
   assert(prompt.includes(rep.activeKafkaTheme.themeTitleKo));
+  assert(prompt.includes('과잉 경계'));
 });
 
 test('Poeun Jeong Mong-ju Dansimga Engine: calculates Dansimga Moral Fidelity, Diplomatic Statesmanship, and Undaunted Integrity', () => {

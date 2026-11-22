@@ -8,12 +8,12 @@
  * 4. 얼어붙은 바다를 깨는 도끼와 같은 명민함 (Axe for the Frozen Sea Insight Index): 일상의 무감각과 안일함을 깨부수고 삶의 전율과 본질을 일깨우는 날카로운 통찰력.
  * 5. 깊은 고독의 내면 승화 회복탄력성 (Transformative Solitude & Creative Resilience Score): 고립과 고통의 심연을 정직하게 관통하여 예술적 사색과 내적 순수성으로 승화하는 힘.
  *
- * @version LUCKEY-FRANZ-KAFKA-EXISTENTIAL-TRUTH-v2.2.0
+ * @version LUCKEY-FRANZ-KAFKA-EXISTENTIAL-TRUTH-v2.4.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const AUSTRIAN_FRANZ_KAFKA_EXISTENTIAL_TRUTH_VERSION = 'LUCKEY-FRANZ-KAFKA-EXISTENTIAL-TRUTH-v2.3.0';
+export const AUSTRIAN_FRANZ_KAFKA_EXISTENTIAL_TRUTH_VERSION = 'LUCKEY-FRANZ-KAFKA-EXISTENTIAL-TRUTH-v2.4.0';
 
 export type KafkaQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -68,6 +68,7 @@ export interface AustrianFranzKafkaExistentialTruthResult {
   situationalKafkaAudit: KafkaSituationalAudit;
   temporalKafkaRhythm: KafkaTemporalRhythm;
   reflectiveQuestion: string;
+  shadowWarning: string;
   interpretiveBoundary: string;
   kafkaSynthesisMatrix: {
     coreInsight: string;
@@ -314,6 +315,7 @@ export function calculateAustrianFranzKafkaExistentialTruth(
   const reflectiveQuestion = trimmedQ
     ? `지금 "${trimmedQ}"의 물음 앞에서, ${situationalKafkaAudit.reflectionFocus}`
     : situationalKafkaAudit.reflectionFocus;
+  const shadowWarning = `[카프카 실존 성찰 과잉 경계] 부조리와 고독의 무게를 지나치게 깊게 응시하다 현실에서 건질 수 있는 작은 온기와 실행을 놓치지 않도록 살피십시오.`;
 
   return {
     engineVersion: AUSTRIAN_FRANZ_KAFKA_EXISTENTIAL_TRUTH_VERSION,
@@ -329,6 +331,7 @@ export function calculateAustrianFranzKafkaExistentialTruth(
     situationalKafkaAudit,
     temporalKafkaRhythm,
     reflectiveQuestion,
+    shadowWarning,
     interpretiveBoundary: situationalKafkaAudit.boundaryNotice,
     kafkaSynthesisMatrix,
     kafkaComprehensiveGuidance: {
@@ -358,6 +361,7 @@ export function formatAustrianFranzKafkaExistentialTruthPrompt(
     `- 원전 출처: [${res.focalKafkaAphorism.sourceContext}]`,
     `- 시간대 권고: ${res.temporalKafkaRhythm.dailyWatchword}`,
     `- 종합 카프카 권면: ${res.kafkaComprehensiveGuidance.philosophicalCounsel}`,
+    `- 과잉 경계: ${res.shadowWarning}`,
     `- 해석 경계: ${res.situationalKafkaAudit.boundaryNotice}`,
   ].join('\n');
 }

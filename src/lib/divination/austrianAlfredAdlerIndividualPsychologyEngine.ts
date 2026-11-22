@@ -9,12 +9,12 @@
  * 4. 목적론적 재해석 및 미래 창조력(Teleological Reframing & Future Creation Index): 과거 트라우마에 얽매이지 않고 지금 여기서 새로운 목적을 선택하는 힘.
  * 5. 불완전할 용기 및 공감적 연결 회복탄력성(Courage to Be Imperfect & Empathetic Connection Score): 완벽주의의 가면을 벗고 온전한 나로 마주하는 회복탄력성.
  *
- * @version LUCKEY-ADLER-INDIVIDUAL-PSYCHOLOGY-v2.2.0
+ * @version LUCKEY-ADLER-INDIVIDUAL-PSYCHOLOGY-v2.4.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const AUSTRIAN_ALFRED_ADLER_INDIVIDUAL_PSYCHOLOGY_VERSION = 'LUCKEY-ADLER-INDIVIDUAL-PSYCHOLOGY-v2.3.0';
+export const AUSTRIAN_ALFRED_ADLER_INDIVIDUAL_PSYCHOLOGY_VERSION = 'LUCKEY-ADLER-INDIVIDUAL-PSYCHOLOGY-v2.4.0';
 
 export type AdlerQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -59,6 +59,7 @@ export interface AustrianAlfredAdlerIndividualPsychologyResult {
   ritualAction: string;
   reflectionFocus: string;
   reflectiveQuestion: string;
+  shadowWarning: string;
   boundaryNotice: string;
   interpretiveBoundary: string;
   situationalAdlerAudit: {
@@ -291,6 +292,7 @@ export function calculateAustrianAlfredAdlerIndividualPsychology(
   const reflectiveQuestion = trimmedQ
     ? `지금 "${trimmedQ}"의 상황 앞에서, ${topicGuidance.reflectionFocus}`
     : topicGuidance.reflectionFocus;
+  const shadowWarning = `[아들러 과제 분리 과잉 경계] 과제 분리를 명분 삼아 꼭 필요한 정서적 공감과 협력의 손길까지 차갑게 끊어내지 않도록 살피십시오.`;
 
   return {
     engineVersion: AUSTRIAN_ALFRED_ADLER_INDIVIDUAL_PSYCHOLOGY_VERSION,
@@ -308,6 +310,7 @@ export function calculateAustrianAlfredAdlerIndividualPsychology(
     ritualAction: topicGuidance.ritualAction,
     reflectionFocus: topicGuidance.reflectionFocus,
     reflectiveQuestion,
+    shadowWarning,
     boundaryNotice,
     interpretiveBoundary: boundaryNotice,
     situationalAdlerAudit,
@@ -339,6 +342,7 @@ export function formatAustrianAlfredAdlerIndividualPsychologyPrompt(
     `- 원전 출처: [${res.focalAdlerAphorism.sourceContext}]`,
     `- 구체적 실천 지침: ${res.focalAdlerAphorism.actionGuidance}`,
     `- 종합 아들러 용기 심리학 권면: ${res.adlerComprehensiveGuidance.philosophicalCounsel}`,
+    `- 과잉 경계: ${res.shadowWarning}`,
     `- 해석 경계: ${res.boundaryNotice}`,
   ].join('\n');
 }
