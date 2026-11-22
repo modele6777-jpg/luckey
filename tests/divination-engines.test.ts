@@ -16145,5 +16145,23 @@ test('buildUserFifteenToolsDigest integrates 8th-round Saju twelve stages, Astro
   assert.ok(!/breakthroughPowerScore|strengthScore/.test(digest));
 });
 
+test('buildUserFifteenToolsDigest integrates 8th-round Tarot polarities/sephira attributes, Sukuyo luminary/members, and Mahabote root meaning/animal without raw scores', () => {
+  const profile: any = {
+    basic: {
+      name: '제제',
+      birthdate: '1994-01-24',
+      birthtime: '10:30',
+      calendarType: 'solar',
+      isLeapMonth: false,
+      gender: 'male',
+    },
+  };
+  const digest = buildUserFifteenToolsDigest(profile, new Date('2026-11-23T05:08:00+09:00'));
+  assert.ok(digest.includes('현재 카드 통찰(') && digest.includes('3대 카드 방향(') && digest.includes('지배 원소 기질: '));
+  assert.ok(digest.includes('칠요 ') && digest.includes('[동료 숙: ') && digest.includes('삼구주기 ['));
+  assert.ok(digest.includes('영수 ') && digest.includes('본명 보석 ') && digest.includes('명반 요해('));
+  assert.ok(!/tarotVitalityScore|guardScore|planetaryHarmonyScore|leadershipHonor|wealthProsperity|wisdomFortitude|innovationBreakthrough/.test(digest));
+});
+
 
 
