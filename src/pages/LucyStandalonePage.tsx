@@ -1385,23 +1385,53 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
   // 📷 카메라·사진 고르기 창을 여는 동안 iOS는 앱을 잠깐 '숨김'으로 본다.
   // 돌아왔을 때 "다시 들어옴"으로 착각해 대화를 맨 아래로 끌어내리지 않도록, 열기 전 위치를 기억해 둔다.
   const photoPickerRef = useRef<{ openedAt: number; scrollTop: number; atBottom: boolean } | null>(null);
-  const photoPinFrameRef = useRef<number | null>(null);
-  // 보던 자리(맨 아래였다면 맨 아래)에 대화를 잠깐 붙잡아 둔다. iOS가 사진 메뉴를 띄우거나 닫으며 스크롤을 옮겨도 되돌린다.
-  const pinConversationForPicker = (picker: { scrollTop: number; atBottom: boolean }, ms: number) => {
+  const photoPinStopRef = useRef<(() => void) | null>(null);
+  // 사진 메뉴(사진 보관함·사진 찍기·파일 선택)가 떠 있는 동안 대화를 보던 자리(맨 아래였다면 맨 아래)에 고정한다.
+  // iOS는 메뉴가 떠 있는 동안 화면 갱신(requestAnimationFrame)을 멈출 수 있어서,
+  // 스크롤 이벤트·타이머·화면 갱신 세 가지로 지키고, 사진을 고르거나 취소하거나 화면을 다시 만질 때까지 유지한다.
+  const pinConversationForPicker = (picker: { scrollTop: number; atBottom: boolean }, maxMs: number) => {
     const container = messagesContainerRef.current;
     if (!container) return;
-    if (photoPinFrameRef.current !== null) cancelAnimationFrame(photoPinFrameRef.current);
-    const until = Date.now() + ms;
+    photoPinStopRef.current?.();
+    let stopped = false;
+    let frame: number | null = null;
+    const target = () => (picker.atBottom ? container.scrollHeight - container.clientHeight : picker.scrollTop);
     const hold = () => {
-      const target = picker.atBottom ? container.scrollHeight - container.clientHeight : picker.scrollTop;
-      if (Math.abs(container.scrollTop - target) > 1) container.scrollTop = target;
+      if (stopped) return;
+      const top = target();
+      if (Math.abs(container.scrollTop - top) > 1) container.scrollTop = top;
       if (picker.atBottom) {
         isUserScrolledUpRef.current = false;
         setShowReturnToRecentConversation(false);
       }
-      photoPinFrameRef.current = Date.now() < until ? requestAnimationFrame(hold) : null;
     };
+    const loop = () => { hold(); if (!stopped) frame = requestAnimationFrame(loop); };
+    const interval = window.setInterval(hold, 60);
+    const timeout = window.setTimeout(() => stop(), maxMs);
+    const onUserTouch = () => stop();
+    const stop = () => {
+      if (stopped) return;
+      stopped = true;
+      if (frame !== null) cancelAnimationFrame(frame);
+      window.clearInterval(interval);
+      window.clearTimeout(timeout);
+      container.removeEventListener('scroll', hold);
+      document.removeEventListener('pointerdown', onUserTouch, true);
+      document.removeEventListener('touchstart', onUserTouch, true);
+      document.removeEventListener('wheel', onUserTouch, true);
+      if (photoPinStopRef.current === stop) photoPinStopRef.current = null;
+    };
+    container.addEventListener('scroll', hold, { passive: true });
+    // 사용자가 직접 화면을 만지면 고정을 풀어 스크롤을 막지 않는다 (카메라 버튼 탭 자체는 이미 지나감).
+    window.setTimeout(() => {
+      if (stopped) return;
+      document.addEventListener('pointerdown', onUserTouch, true);
+      document.addEventListener('touchstart', onUserTouch, true);
+      document.addEventListener('wheel', onUserTouch, true);
+    }, 0);
+    photoPinStopRef.current = stop;
     hold();
+    loop();
   };
   const openPhotoPicker = () => {
     const container = messagesContainerRef.current;
@@ -1409,16 +1439,16 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
     const atBottom = container ? container.scrollHeight - container.clientHeight - scrollTop < 48 : true;
     const picker = { openedAt: Date.now(), scrollTop, atBottom };
     photoPickerRef.current = picker;
+    // 메뉴가 닫힐 때까지 (최대 1분)
+    pinConversationForPicker(picker, 60_000);
     fileInputRef.current?.click();
-    // 메뉴가 뜨는 동안 (iOS: 사진 보관함·사진 찍기·파일 선택)
-    pinConversationForPicker(picker, 1500);
   };
   const restoreAfterPhotoPicker = () => {
     const picker = photoPickerRef.current;
     photoPickerRef.current = null;
     if (!picker) return;
     // 메뉴가 닫히고 화면이 다시 자리 잡는 동안
-    pinConversationForPicker(picker, 800);
+    pinConversationForPicker(picker, 900);
   };
   // 사진 고르기를 취소하거나, 메뉴 밖을 눌러 닫고 앱으로 돌아와도 보던 자리로
   useEffect(() => {
@@ -1431,7 +1461,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
       window.removeEventListener('focus', onReturn);
     };
   });
-  useEffect(() => () => { if (photoPinFrameRef.current !== null) cancelAnimationFrame(photoPinFrameRef.current); }, []);
+  useEffect(() => () => { photoPinStopRef.current?.(); }, []);
   const isReturningFromPhotoPicker = () => {
     const picker = photoPickerRef.current;
     return Boolean(picker && Date.now() - picker.openedAt < 2 * 60 * 1000);

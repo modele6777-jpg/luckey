@@ -11,7 +11,6 @@ import {
   MessageCircleMore,
   MessageCircleWarning,
   MessageCirclePlus,
-  createLucideIcon,
   Sparkles,
   KeyRound,
   User,
@@ -29,6 +28,7 @@ import {
   type BgmPublicState,
 } from '@/components/trinity/BgMusicPlayer';
 import { subscribeFoldState } from '@/lib/foldState';
+import { MessageCircleMinus } from '@/lib/channelMenuIcons';
 import { forceAppUpgradeAndReload } from '@/lib/prismSync';
 import { useApp } from '@/contexts/AppContext';
 import { resetAppScreen } from '@/lib/visualViewportBox';
@@ -172,11 +172,6 @@ export const AUXILIARY_CHANNELS: NavItemConfig[] = [
 ];
 
 
-// 일반 루시 말풍선: 말풍선 안에 − 표시 (lucide에는 minus 버전이 없어 같은 외곽선으로 만든다)
-const MessageCircleMinus = createLucideIcon('message-circle-minus', [
-  ['path', { d: 'M2.992 16.342a2 2 0 0 1 .094 1.167l-1.065 3.29a1 1 0 0 0 1.236 1.168l3.413-.998a2 2 0 0 1 1.099.092 10 10 0 1 0-4.777-4.719', key: 'bubble' }],
-  ['path', { d: 'M8 12h8', key: 'minus' }],
-]);
 
 export default function LeftSidebarNav() {
   const [isUnfolded, setIsUnfolded] = useState(() => {
