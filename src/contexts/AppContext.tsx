@@ -2284,9 +2284,13 @@ ${responseProfile.rule}`;
     const history = [...readLucyMemory(memoryAccount), ...(sharedStateRef.current?.lucyLongTermMemory || [])]
       .filter(entry => entry.scope === memoryScope);
     const memoryRecall = recallLucyLongTermMemory(memoryAccount, history, effectiveUserText, [`${memoryScope}:${userMsg.id}`]);
-    const longTermContext = [formatLucyConversationMemory(memoryRecall), isProConversation ? '' : buildPermanentMemoryPromptContext(memoryAccount, effectiveUserText)].filter(Boolean).join('\n\n');
-    if (!options?.voiceTurn && longTermContext) systemPrompt += `\n\n${longTermContext}`;
-    const consultMemory = options?.omitConsultMemoryContext ? '' : buildLucyConsultMemoryBrief(memoryAccount, memoryMode);
+    const longTermContext = options?.voiceTurn ? '' : [
+      formatLucyConversationMemory(memoryRecall),
+      isProConversation ? '' : buildPermanentMemoryPromptContext(memoryAccount, effectiveUserText),
+    ].filter(Boolean).join('\n\n');
+    if (longTermContext) systemPrompt += `\n\n${longTermContext}`;
+    const readConsultMemory = () => options?.omitConsultMemoryContext ? '' : buildLucyConsultMemoryBrief(memoryAccount, memoryMode);
+    const consultMemory = readConsultMemory();
     if (consultMemory) systemPrompt += `\n\n${consultMemory}`;
     const fullProfileContext = buildFullProfilePrompt(profile);
     systemPrompt += `\n\n${fullProfileContext}`;
@@ -2607,7 +2611,7 @@ ${responseProfile.rule}`;
       // Fast automatic recovery retry with compact context before showing any error
       try {
         resetWatchdog();
-        const compactSystemPrompt = `당신은 사용자('${nickname}')의 다정한 단짝 친구 '루시(Lucy)'야. 100% 친근한 반말 구어체(~야, ~어, ~지, ~네)로 사용자의 말에 따뜻하고 명쾌하게 답해줘.\n${TAROT_NO_DRAW_RULE}\n${CALCULATION_HONESTY_RULE}\n${responseProfile.rule}${'\n' + (options?.extraSystemContext || toolSelection.promptInjection || '')}\n${criticalFactsPrompt}\n${sharedLucyBackground}\n${longTermContext}\n${fullProfileContext}${fatePreviewContext ? '\n'+fatePreviewContext : ''}${chatDivinationContext ? '\n'+chatDivinationContext : ''}${isCasualMode ? '\n수다모드에서는 운세·타로·사주 등 운명학 도구를 선택하거나 답변에 적용하지 말고, 질문에 일상 대화처럼 직접 답해줘.' : ''}`;
+        const compactSystemPrompt = `당신은 사용자('${nickname}')의 다정한 단짝 친구 '루시(Lucy)'야. 100% 친근한 반말 구어체(~야, ~어, ~지, ~네)로 사용자의 말에 따뜻하고 명쾌하게 답해줘.\n${TAROT_NO_DRAW_RULE}\n${CALCULATION_HONESTY_RULE}\n${responseProfile.rule}${'\n' + (options?.extraSystemContext || toolSelection.promptInjection || '')}\n${criticalFactsPrompt}\n${readConsultMemory()}\n${longTermContext}\n${fullProfileContext}${fatePreviewContext ? '\n'+fatePreviewContext : ''}${chatDivinationContext ? '\n'+chatDivinationContext : ''}${isCasualMode ? '\n수다모드에서는 운세·타로·사주 등 운명학 도구를 선택하거나 답변에 적용하지 말고, 질문에 일상 대화처럼 직접 답해줘.' : ''}`;
         const compactMessages: Message[] = [
           { role: 'system', content: compactSystemPrompt },
           ...conversationForAPI.slice(-4),
