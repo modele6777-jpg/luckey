@@ -13450,14 +13450,15 @@ test('Sami Noaidi Drum & Joik engine: drum zone, +09:00 KST, and interpretive bo
 
 test('Georgian Rustaveli Knight in the Panther’s Skin engine: virtues, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateGeorgianRustaveliKnightPanther({ profile, now: new Date('2026-11-20T04:40:00Z'), question: '품격 있는 결정을 내리고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-GEORGIAN-RUSTAVELI-v2.2.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-GEORGIAN-RUSTAVELI-v2.3.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionVirtue.id !== rep.primaryVirtue.id);
+  assert.ok(rep.pantherKnightAxis.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('확정적 미래 예측이 아닙니다'));
   const prompt = formatGeorgianRustaveliKnightPantherPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('루스타벨리') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionVirtue.georgianTerm));
+  assert.ok(prompt.includes('루스타벨리') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionVirtue.georgianTerm) && prompt.includes('과잉 경계'));
 });
 
 test('Armenian Narekatsi Lamentation Healing engine: contemplations, +09:00 KST, and interpretive boundary', () => {
@@ -14632,14 +14633,15 @@ test('Phrygian Gordian Knot Clarity engine: symbol, +09:00 KST, and interpretive
 
 test('Goryeo Celadon Inlay Clarity engine: craft, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateGoryeoCeladonInlayClarity({ profile, now: new Date('2026-11-20T09:20:00Z'), question: '마음의 여백과 숨구멍을 마련하고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-GORYEO-CELADON-v2.2.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-GORYEO-CELADON-v2.3.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionCraft !== rep.celadonCraft);
+  assert.ok(rep.celadonKilnAxis.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatGoryeoCeladonPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('고려 청자') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionCraft));
+  assert.ok(prompt.includes('고려 청자') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionCraft) && prompt.includes('과잉 경계'));
 });
 
 test('Lydian Sardis Electrum Balance engine: sign, +09:00 KST, and interpretive boundary', () => {
@@ -14669,14 +14671,15 @@ test('Canaanite Ugarit Cedar Wisdom engine: symbol, +09:00 KST, and interpretive
 
 test('Goguryeo Samjoko Mural Spirit engine: motif, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateGoguryeoSamjokoMuralSpirit({ profile, now: new Date('2026-11-20T19:05:00Z'), question: '시야를 넓혀 당당하게 나아가고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-GOGURYEO-SAMJOKO-v2.2.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-GOGURYEO-SAMJOKO-v2.3.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionMotif !== rep.muralMotif);
+  assert.ok(rep.samjokoMuralAxis.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatGoguryeoSamjokoPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('고구려') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionMotif));
+  assert.ok(prompt.includes('고구려') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionMotif) && prompt.includes('과잉 경계'));
 });
 
 test('Silla Emille Cheomseongdae engine: motif, +09:00 KST, and interpretive boundary', () => {
