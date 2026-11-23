@@ -1779,11 +1779,19 @@ html.duo-unfolded-mode .lucy-orb-stage.is-live .lucy-orb-ritual { width: min(62%
   flex-direction: column;
   align-items: center;
   gap: 6px;
-  width: max-content;
-  max-width: 96%;
+  width: 100%;
+  max-width: 100%;
   pointer-events: none;
 }
 .lucy-orb-statusbar > * { pointer-events: auto; }
+/* 실시간 자막은 탁자 바로 아래 (빅뱅 버튼·키워드에 가려지지 않게), 최대 두 줄 */
+.lucy-orb-stage .lucy-orb-statusbar .lucy-orb-caption {
+  margin: 0;
+  width: max-content;
+  max-width: min(330px, calc(var(--orb-stage-w, 320px) - 28px));
+  pointer-events: none;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, .35);
+}
 .lucy-orb-statusbar .lucy-orb-status {
   margin: 0;
   padding: 4px 12px;

@@ -19,6 +19,7 @@ import { setMicCaptureActive } from '@/lib/audioMixingPolicy';
 import { rememberBgmBeforeMic, resumeBgmAfterMicSoon } from '@/lib/micBgmResume';
 import { drawTalisman, pickTalisman, saveTalismanImage, type TalismanSpec } from '@/lib/orbTalisman';
 import { buildOrbMasterRules } from '@/lib/orb/orbTools';
+import { CAPTION_CHAR_MS, captionSteps } from '@/lib/orb/orbCaption';
 import { createOrbToolExecutor, type OrbToolExecutor } from '@/lib/orb/orbToolExecutor';
 import type { UserProfile } from '@/lib/sharedState';
 import './lucy-orb-counsel.css';
@@ -83,16 +84,6 @@ const ORB_HOLD_WAVE = Array.from({ length: 44 }, (_, index) => {
   const ripple = 0.55 + 0.45 * Math.abs(Math.sin(index * 1.7));
   return Number((0.25 + 0.75 * edge * ripple).toFixed(2));
 });
-/** 마스터가 말하는 중인 문장 하나만 자막으로 (최대 두 줄, 말줄임표 없이). 길면 최근 부분만 보여 준다. */
-function captionLine(spoken: string): string {
-  const sentences = spoken.replace(/\s+/g, ' ').trim().split(/(?<=[.!?…。])\s+/).filter(Boolean);
-  const last = sentences[sentences.length - 1] || '';
-  // 말줄임표 없이 보여 준다. 아주 긴 문장은 지금 말하는 뒷부분만, 단어가 잘리지 않게 띄어쓰기에서 시작한다.
-  const limit = 40;
-  if (last.length <= limit) return last;
-  const cut = last.indexOf(' ', last.length - limit);
-  return (cut > 0 ? last.slice(cut + 1) : last.slice(-limit)).trim();
-}
 /** Sparks thrown out of the ball on a tap: evenly spread angles with varied reach, size and timing. */
 const BURST_PARTICLES = Array.from({ length: 18 }, (_, index) => ({
   angle: Math.round(index * 20 + ((index * 37) % 11) - 5),
@@ -214,6 +205,9 @@ export function LucyOrbCounsel({
   const [master, setMaster] = useState<OrbMaster | null>(null);
   const [lines, setLines] = useState<Line[]>([]);
   const [caption, setCaption] = useState('');
+  const captionPageRef = useRef('');
+  const captionStepTimers = useRef<number[]>([]);
+  useEffect(() => () => { for (const timer of captionStepTimers.current) window.clearTimeout(timer); }, []);
   const [draft, setDraft] = useState('');
   const [notice, setNotice] = useState('');
   const [micPermissionBusy, setMicPermissionBusy] = useState(false);
@@ -347,6 +341,7 @@ export function LucyOrbCounsel({
     setMaster(null);
     setLines([]);
     setCaption('');
+    captionPageRef.current = '';
     setDraft('');
     setNotice('');
     setMicPermissionBusy(false);
@@ -650,11 +645,27 @@ export function LucyOrbCounsel({
         if (state === 'speaking') setThinkingOn(false);
       },
       onTurnComplete: () => setThinkingOn(false),
+      // 실시간 자막: 목소리가 들리는 순간에 맞춰 한 쪽씩 차오른다.
+      onCaption: (text) => {
+        const { steps, page } = captionSteps(captionPageRef.current, text);
+        captionPageRef.current = page;
+        // 한 조각 안에서 쪽이 바뀌면 뒤쪽은 앞 글자를 말하는 동안 기다렸다 보여 준다.
+        for (const timer of captionStepTimers.current) window.clearTimeout(timer);
+        captionStepTimers.current = [];
+        for (const step of steps) {
+          if (!step.afterChars) { setCaption(step.page); continue; }
+          captionStepTimers.current.push(window.setTimeout(() => setCaption(step.page), step.afterChars * CAPTION_CHAR_MS));
+        }
+      },
+      onCaptionReset: () => {
+        for (const timer of captionStepTimers.current) window.clearTimeout(timer);
+        captionStepTimers.current = [];
+      },
       onAudioLevel: (level) => { audioLevelRef.current = level; setAudioLevel(level); },
       onUserText: (text) => {
         if (lucyBuf.current) take('루시', lucyBuf);
-        // 손님이 새로 말하기 시작하면 한 차례 도구 호출 수를 다시 센다.
-        if (!userBuf.current) executorRef.current?.newTurn();
+        // 손님이 새로 말하기 시작하면 한 차례 도구 호출 수를 다시 센다. 다음 답의 자막은 새 쪽에서 시작한다.
+        if (!userBuf.current) { executorRef.current?.newTurn(); captionPageRef.current = ''; setCaption(''); }
         // 실시간 대화: 손님 말이 들어오면 마스터가 답을 준비한다 (말을 시작하면 꺼진다).
         if (voiceModeRef.current === 'realtime') setThinkingOn(true);
         userBuf.current = mergeTranscript(userBuf.current, text);
@@ -681,7 +692,6 @@ export function LucyOrbCounsel({
       onLucyText: (text) => {
         if (userBuf.current) take('나', userBuf);
         lucyBuf.current = mergeTranscript(lucyBuf.current, text);
-        setCaption(captionLine(lucyBuf.current));
         // 마스터가 "멈춰라고 말씀해 주세요"라고 안내하면 섞는 화면을 연다 (한 번만).
         if (tarotArmedRef.current && !pickedRef.current && !autoOpenedRef.current && /멈춰|멈추/.test(lucyBuf.current)) {
           autoOpenedRef.current = true;
@@ -802,6 +812,7 @@ export function LucyOrbCounsel({
     if (voiceMode === 'hold') {
       // 손을 떼면 말이 끝난 것: 마스터가 답을 준비하는 동안 '생각 중'.
       setThinkingOn(true);
+      captionPageRef.current = '';
       session.releaseMic();
       // 마이크 때문에 멈췄던 앱 배경음은 다시 튼다.
       resumeBgmAfterMicSoon(pttBgmWasPlaying.current, 450);
@@ -1038,6 +1049,7 @@ export function LucyOrbCounsel({
     executorRef.current?.newTurn();
     sessionRef.current.sendText(text);
     setThinkingOn(true);
+    captionPageRef.current = '';
     userBuf.current = text;
     take('나', userBuf);
   };
@@ -1103,6 +1115,7 @@ export function LucyOrbCounsel({
     executorRef.current?.newTurn();
     sessionRef.current.sendText(text);
     setThinkingOn(true);
+    captionPageRef.current = '';
     userBuf.current = text;
     take('나', userBuf);
     setDraft('');
@@ -1122,6 +1135,8 @@ export function LucyOrbCounsel({
         clear = Math.max(clear, box.bottom - r.top + 6);
       });
       stage.style.setProperty('--orb-bok-bottom', `${Math.round(clear)}px`);
+      // 자막 칸 너비: 작아진 탁자가 아니라 화면 폭 기준 (두 줄 안에 들어가게).
+      stage.style.setProperty('--orb-stage-w', `${Math.round(box.width)}px`);
       stage.style.setProperty('--orb-dock-clear', dock ? `${Math.max(0, Math.round(box.bottom - dock.top + 6))}px` : '0px');
       const panel = stage.querySelector<HTMLElement>('.lucy-bok');
       const ritual = stage.querySelector<HTMLElement>('.lucy-orb-ritual');
@@ -1158,6 +1173,7 @@ export function LucyOrbCounsel({
     listening: talkPressed || (voiceMode === 'realtime' && audioLevel > 0.06),
     thinking,
   });
+  const showCaption = Boolean(caption) && (orbState === 'speaking' || orbState === 'idle');
   const orbStateLabel = orbState === 'connecting' ? '연결하고 있어요…'
     : orbState === 'error' ? (reconnectTimer.current ? '연결이 끊겨 다시 잇고 있어요…' : '음성 연결이 끊겼어요')
       : orbState === 'tool' ? `🔮 ${toolBusy} 살펴보는 중…`
@@ -1400,9 +1416,12 @@ export function LucyOrbCounsel({
             );
           })}
           {/* 🔮 오브 상태 문구와 다시 연결 (탁자 바로 아래, 좁은 화면에서도 가려지지 않게) */}
-          {phase === 'live' && (orbStateLabel || liveError) && (
+          {phase === 'live' && (orbStateLabel || liveError || showCaption) && (
             <div className="lucy-orb-statusbar" aria-live="polite">
-              {orbStateLabel && <p className="lucy-orb-status" data-state={orbState || undefined}>{orbStateLabel}</p>}
+              {/* 실시간 자막: 마스터가 말하는 동안(과 말을 마친 뒤) 들리는 말을 앞에서부터 보여 준다. 내 말은 보이지 않는다. */}
+              {showCaption
+                ? <p key={caption.slice(0, 12)} className="lucy-orb-caption">{caption}</p>
+                : orbStateLabel && <p className="lucy-orb-status" data-state={orbState || undefined}>{orbStateLabel}</p>}
               {liveError && !reconnectTimer.current && (
                 <div className="lucy-orb-reconnect" role="alert">
                   <span>{typeof navigator !== 'undefined' && navigator.onLine === false ? '인터넷 연결을 확인해 주세요.' : '대화 내용은 그대로 있어요.'}</span>
@@ -1550,10 +1569,6 @@ export function LucyOrbCounsel({
                 <button key={prompt} type="button" onClick={() => ask(prompt)}>{prompt}</button>
               ))}
             </div>
-          )}
-          {/* 자막: 마스터가 지금 하는 말만 한 줄씩 (내가 한 말은 보이지 않는다) */}
-          {phase === 'live' && caption && (
-            <p key={caption.slice(0, 12)} className="lucy-orb-caption" aria-live="polite">{caption}</p>
           )}
         </div>
         {/* 입력창은 마스터가 정해진 뒤(상담 중)에만 보인다. */}
