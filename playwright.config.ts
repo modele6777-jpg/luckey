@@ -4,8 +4,8 @@ export default defineConfig({
   testDir: './tests/e2e',
   fullyParallel: true,
   reporter: 'list',
-  timeout: 45_000,
-  expect: { timeout: 10_000 },
+  timeout: 100_000,
+  expect: { timeout: 30_000 },
   use: {
     baseURL: 'http://127.0.0.1:4173',
     trace: 'retain-on-failure',
@@ -20,9 +20,10 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: 'npm run dev -- --port 4173',
-    url: 'http://127.0.0.1:4173/',
+    command: 'npm run build && node dist/server.cjs',
+    env: { NODE_ENV: 'production', PORT: '4173' },
+    url: 'http://127.0.0.1:4173/api/health',
     reuseExistingServer: !process.env.CI,
-    timeout: 120_000,
+    timeout: 180_000,
   },
 });

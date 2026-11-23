@@ -85,7 +85,7 @@ import {
 import { processDailyChatArchival } from '@/lib/chatMemoryArchive';
 import { drawLucyTarotCards, formatTarotMarker, type DetectedTarotCard } from '@/utils/tarotDetector';
 import { TarotSpread } from '@/components/trinity/TarotSpread';
-import { isLucyScrollPinned, lucyScrollPinHeld, noteLucyScrollPin, overlayCoversElement, releaseLucyScrollPin } from '@/lib/lucyScrollPin';
+import { holdLucyScrollPin, isLucyScrollPinned, lucyScrollPinHeld, noteLucyScrollPin, overlayCoversElement, releaseLucyScrollPin } from '@/lib/lucyScrollPin';
 import { captureLucySearchAnchor, resolveLucySearchOpenGuardedTop, resolveLucySearchRestoreTop, type LucySearchScrollAnchor } from '@/lib/lucySearchScroll';
 import { isDualPaneLayout, isDuoUnfoldedState } from '@/lib/perfMode';
 import { subscribeFoldState } from '@/lib/foldState';
@@ -3191,15 +3191,26 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
     const previous = messageGeometryRef.current;
     const layoutChanged = previous.height !== scrollHeight || previous.viewport !== clientHeight;
     messageGeometryRef.current = { height: scrollHeight, viewport: clientHeight };
-    if (clientHeight < 2 || isAutoScrollingRef.current) return;
+    if (clientHeight < 2) return;
     // 낭독 중 문장 중앙 정렬로 생기는 이동은 사용자의 스크롤이 아니다.
-    // 여기서 사용자가 위로 올렸다고 판단하면 낭독 위치와 하단 사이를 오가게 된다.
     if (ttsHoldsScrollRef.current) return;
+    const distanceFromBottom = scrollHeight - (scrollTop + clientHeight);
+    if (isAutoScrollingRef.current) {
+      // WebKit can restore an older offset before the programmatic scroll
+      // settles. A manual reading gesture releases this temporary pin.
+      if (!isUserScrolledUpRef.current && lucyScrollPinHeld() && isLucyScrollPinned()) {
+        if (distanceFromBottom > 80) {
+          followLatestLayoutRef.current();
+        } else {
+          setShowReturnToRecentConversation(false);
+        }
+      }
+      return;
+    }
     if (layoutChanged && !isUserScrolledUpRef.current) {
       followLatestLayoutRef.current();
       return;
     }
-    const distanceFromBottom = scrollHeight - (scrollTop + clientHeight);
     // Only a layer over this conversation may ignore layout noise. A content-pane dialog stays independent.
     if (!isUserScrolledUpRef.current && (overlayCoversElement(container) || lucyScrollPinHeld())) {
       if (isLucyScrollPinned() || distanceFromBottom <= 80) followLatestLayoutRef.current();
@@ -3467,21 +3478,37 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
   const wasAppHiddenRef = useRef(false);
   useEffect(() => {
     if (!isLucyReady) return;
+    let restoreFrame: number | null = null;
+    const reopenLatest = () => {
+      refreshEntryGreeting();
+      restoreLatestSavedMessages();
+      isUserScrolledUpRef.current = false;
+      setShowReturnToRecentConversation(false);
+      if (!ttsBlocksAutoScrollRef.current && !manualTtsActiveRef.current) {
+        noteLucyScrollPin(true);
+        holdLucyScrollPin();
+      }
+      scrollToBottom(true, false);
+      if (restoreFrame !== null) cancelAnimationFrame(restoreFrame);
+      // WebKit can restore an older scroll anchor when the saved messages
+      // are painted. Re-align after layout, unless a new reading gesture won.
+      restoreFrame = requestAnimationFrame(() => {
+        restoreFrame = requestAnimationFrame(() => {
+          restoreFrame = null;
+          if (!isUserScrolledUpRef.current) scrollToBottom(true, false);
+        });
+      });
+    };
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'hidden') {
         wasAppHiddenRef.current = true;
       } else if (document.visibilityState === 'visible' && wasAppHiddenRef.current) {
         wasAppHiddenRef.current = false;
-        // 카메라·사진 고르기에서 돌아온 것: 다시 들어온 게 아니므로 보던 자리를 그대로 둔다.
         if (isReturningFromPhotoPicker()) {
           restoreAfterPhotoPicker();
           return;
         }
-        refreshEntryGreeting();
-        restoreLatestSavedMessages();
-        isUserScrolledUpRef.current = false;
-        setShowReturnToRecentConversation(false);
-        scrollToBottom(true, false);
+        reopenLatest();
       }
     };
 
@@ -3490,12 +3517,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
         restoreAfterPhotoPicker();
         return;
       }
-      refreshEntryGreeting();
-      restoreLatestSavedMessages();
-      isUserScrolledUpRef.current = false;
-      setShowReturnToRecentConversation(false);
-      scrollToBottom(true, false);
-      followLatestLayoutRef.current();
+      reopenLatest();
     };
     let navigationFrame: number | null = null;
     const onLucyNavigation = (event: Event) => {
@@ -3509,6 +3531,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
     window.addEventListener('prism-navigate', onLucyNavigation);
     window.addEventListener('nav-click-active', onLucyNavigation);
     return () => {
+      if (restoreFrame !== null) cancelAnimationFrame(restoreFrame);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('pageshow', onPageShow);
       window.removeEventListener('prism-navigate', onLucyNavigation);

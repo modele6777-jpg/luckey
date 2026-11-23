@@ -1,16 +1,29 @@
 import { expect, test } from '@playwright/test';
+import { build } from 'esbuild';
+import { fileURLToPath } from 'node:url';
 
 test('TTS keeps a separate continuous audio track playing and resumes after a simulated return', async ({ page }) => {
   await page.route('https://**', (route) => route.abort());
   await page.route('**/api/sync/**', (route) => route.abort());
+  const runtimePath = '/__playwright__/audio-mixing.mjs';
+  const runtime = await build({
+    stdin: {
+      contents: "export * as speech from './src/lib/speechMedia'; export * as policy from './src/lib/audioMixingPolicy';",
+      resolveDir: fileURLToPath(new URL('../../', import.meta.url)),
+    },
+    bundle: true,
+    format: 'esm',
+    write: false,
+  });
+  await page.route(`**${runtimePath}`, route => route.fulfill({
+    contentType: 'application/javascript',
+    body: runtime.outputFiles[0].text,
+  }));
   await page.goto('/');
   await page.setContent('<!doctype html><html><body><button type="button" data-audio-mix-test-start="true">Start isolated audio regression</button></body></html>');
 
-  await page.evaluate(async () => {
-    const speechModulePath: string = '/src/lib/speechMedia.ts';
-    const policyModulePath: string = '/src/lib/audioMixingPolicy.ts';
-    const speech = await import(speechModulePath);
-    const policy = await import(policyModulePath);
+  await page.evaluate(async path => {
+    const { speech, policy } = await import(path);
     const requestedModes: string[] = [];
     let audioSessionType = 'ambient';
     Object.defineProperty(navigator, 'audioSession', {
@@ -60,6 +73,7 @@ test('TTS keeps a separate continuous audio track playing and resumes after a si
     const music = new Audio(musicUrl);
     music.loop = true;
     music.volume = 0.65;
+    const musicProgressSince = (start: number) => (music.currentTime - start + music.duration) % music.duration;
 
     const button = document.querySelector<HTMLButtonElement>('[data-audio-mix-test-start="true"]');
     if (!button) throw new Error('Missing isolated audio test control');
@@ -78,7 +92,7 @@ test('TTS keeps a separate continuous audio track playing and resumes after a si
         const during = {
           musicPaused: music.paused,
           musicVolume: music.volume,
-          musicAdvanced: music.currentTime - musicAtStart,
+          musicAdvanced: musicProgressSince(musicAtStart),
           ttsPaused: ttsElement.paused,
           audioSessionType: audioSessionType,
           requestedModes: [...requestedModes],
@@ -91,11 +105,12 @@ test('TTS keeps a separate continuous audio track playing and resumes after a si
         const interruptedAt = ttsElement.currentTime;
         ttsElement.pause();
         speech.handleSpeechPageVisibility(true);
+        const musicAtReturn = music.currentTime;
         await new Promise((resolve) => setTimeout(resolve, 200));
         const afterReturn = {
           musicPaused: music.paused,
           musicVolume: music.volume,
-          musicAdvanced: music.currentTime - musicAtStart,
+          musicAdvanced: musicProgressSince(musicAtReturn),
           ttsPaused: ttsElement.paused,
           ttsResumedFromPosition: ttsElement.currentTime >= interruptedAt,
           audioSessionType: audioSessionType,
@@ -113,7 +128,7 @@ test('TTS keeps a separate continuous audio track playing and resumes after a si
       })();
     });
     document.body.appendChild(button);
-  });
+  }, runtimePath);
 
   await page.locator('[data-audio-mix-test-start="true"]').click();
   await expect.poll(() => page.evaluate(() => (window as any).__audioMixResult), { timeout: 12_000 }).not.toBeNull();
@@ -130,7 +145,7 @@ test('TTS keeps a separate continuous audio track playing and resumes after a si
   expect(result.during.mediaActionAssignments).toBe(0);
   expect(result.afterReturn.musicPaused).toBe(false);
   expect(result.afterReturn.musicVolume).toBeCloseTo(0.65, 3);
-  expect(result.afterReturn.musicAdvanced).toBeGreaterThan(result.during.musicAdvanced);
+  expect(result.afterReturn.musicAdvanced).toBeGreaterThan(0.05);
   expect(result.afterReturn.ttsPaused).toBe(false);
   expect(result.afterReturn.ttsResumedFromPosition).toBe(true);
   expect(result.afterReturn.audioSessionType).toBe('ambient');
