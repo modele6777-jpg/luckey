@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.8.403",
+    "builtAt": "2026-11-24T04:05:00+09:00",
+    "summary": "루앙프라방 메콩·예니세이 케트·쿠나 몰라 3대 엔진 질문 맥락·순환 축·과잉 경계 심층 강화(v1.8.403)",
+    "items": [
+      "루앙프라방 메콩 새벽 엔진(v2.3.0): 질문 맥락(questionTopic), 메콩 새벽 축(mekongDawnAxis), 과잉 경계(shadowWarning) 추가",
+      "시베리아 예니세이 케트 타이가 별 엔진(v2.3.0): 질문 맥락(questionTopic), 타이가 순환 축(taigaCycleAxis), 과잉 경계(shadowWarning) 추가",
+      "파나마 쿠나 몰라 겹바느질 엔진(v2.3.0): 질문 맥락(questionTopic), 겹바느질 축(molaStitchAxis), 과잉 경계(shadowWarning) 추가"
+    ]
+  },
+  {
     "version": "1.8.402",
     "builtAt": "2026-11-23T15:41:00.000Z",
     "summary": "Lucy 지식 성장 기능에 출처 검토·승인·버전·비용 안전장치를 더했어요",

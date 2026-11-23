@@ -2,8 +2,8 @@ import { createPublicKey, randomUUID, verify as verifySignature } from 'node:cry
 import express, { type Request, type Response } from 'express';
 import { GoogleGenAI } from '@google/genai';
 import firebaseConfig from '../../firebase-applet-config.json';
-import { hasVerifiedFullTextSource, validateKnowledgeCard, type KnowledgeSource } from '../../src/lib/divination/knowledge/governance';
-import type { DivinationToolId } from '../../src/lib/lucyToolRegistry';
+import { hasVerifiedFullTextSource, validateKnowledgeCard, type KnowledgeSource } from '../../src/lib/divination/knowledge/governance.js';
+import type { DivinationToolId } from '../../src/lib/lucyToolRegistry.js';
 
 const CERT_URL = 'https://www.googleapis.com/robot/v1/metadata/x509/securetoken@system.gserviceaccount.com';
 const router = express.Router();
