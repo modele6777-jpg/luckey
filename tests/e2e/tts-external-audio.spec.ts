@@ -73,6 +73,7 @@ test('TTS keeps a separate continuous audio track playing and resumes after a si
     const music = new Audio(musicUrl);
     music.loop = true;
     music.volume = 0.65;
+    const musicProgressSince = (start: number) => (music.currentTime - start + music.duration) % music.duration;
 
     const button = document.querySelector<HTMLButtonElement>('[data-audio-mix-test-start="true"]');
     if (!button) throw new Error('Missing isolated audio test control');
@@ -91,7 +92,7 @@ test('TTS keeps a separate continuous audio track playing and resumes after a si
         const during = {
           musicPaused: music.paused,
           musicVolume: music.volume,
-          musicAdvanced: music.currentTime - musicAtStart,
+          musicAdvanced: musicProgressSince(musicAtStart),
           ttsPaused: ttsElement.paused,
           audioSessionType: audioSessionType,
           requestedModes: [...requestedModes],
@@ -104,11 +105,12 @@ test('TTS keeps a separate continuous audio track playing and resumes after a si
         const interruptedAt = ttsElement.currentTime;
         ttsElement.pause();
         speech.handleSpeechPageVisibility(true);
+        const musicAtReturn = music.currentTime;
         await new Promise((resolve) => setTimeout(resolve, 200));
         const afterReturn = {
           musicPaused: music.paused,
           musicVolume: music.volume,
-          musicAdvanced: music.currentTime - musicAtStart,
+          musicAdvanced: musicProgressSince(musicAtReturn),
           ttsPaused: ttsElement.paused,
           ttsResumedFromPosition: ttsElement.currentTime >= interruptedAt,
           audioSessionType: audioSessionType,
@@ -143,7 +145,7 @@ test('TTS keeps a separate continuous audio track playing and resumes after a si
   expect(result.during.mediaActionAssignments).toBe(0);
   expect(result.afterReturn.musicPaused).toBe(false);
   expect(result.afterReturn.musicVolume).toBeCloseTo(0.65, 3);
-  expect(result.afterReturn.musicAdvanced).toBeGreaterThan(result.during.musicAdvanced);
+  expect(result.afterReturn.musicAdvanced).toBeGreaterThan(0.05);
   expect(result.afterReturn.ttsPaused).toBe(false);
   expect(result.afterReturn.ttsResumedFromPosition).toBe(true);
   expect(result.afterReturn.audioSessionType).toBe('ambient');

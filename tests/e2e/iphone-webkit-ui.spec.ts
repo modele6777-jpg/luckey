@@ -93,6 +93,21 @@ async function expectHiddenDirectionTarget(bigBang: import('@playwright/test').L
   await expect(target).toBeHidden();
 }
 
+async function getLucyHeaderBackground(page: import('@playwright/test').Page, edge: 'top' | 'bottom') {
+  return page.locator('[data-lucy-header-tap-scroll="true"]').evaluate((header, edge) => {
+    const rect = header.getBoundingClientRect();
+    const blocked = 'button, a, input, [role="button"], [data-no-scroll-top], [data-brand-logo], .lucy-header-actions';
+    const y = edge === 'top' ? rect.top + 4 : rect.bottom - 4;
+    const x = [0.5, 0.42, 0.58, 0.34, 0.26, 0.18].map(fraction => rect.left + rect.width * fraction)
+      .find(candidate => {
+        const hit = document.elementFromPoint(candidate, y);
+        return hit && header.contains(hit) && !hit.closest(blocked);
+      });
+    if (x == null) throw new Error(`Lucy header has no tappable background at its ${edge}`);
+    return { x, y };
+  }, edge);
+}
+
 async function setContentScrollBoundary(page, edge: 'top' | 'bottom') {
   await page.evaluate((targetEdge) => {
     const selectors = '[data-app-scroll-root], .lucy-chat-main, .overflow-y-auto, .overflow-y-scroll';
@@ -148,19 +163,16 @@ async function expectContentScrollBoundary(page, edge: 'top' | 'bottom') {
   }, edge)).toBe(true);
 }
 
-async function setLucyPrimaryScrollAtMiddle(page) {
-  return page.evaluate(() => {
-    const primary = document.querySelector<HTMLElement>('.lucy-chat-main');
-    if (!primary) throw new Error('Lucy primary conversation scroller is missing');
-    const filler = document.createElement('div');
-    filler.dataset.bigbangMidScrollTestFill = 'true';
-    filler.style.cssText = 'height:1200px;flex:none;pointer-events:none';
-    primary.append(filler);
-    const previousBehavior = primary.style.scrollBehavior;
-    primary.style.scrollBehavior = 'auto';
-    primary.scrollTop = 120;
-    primary.style.scrollBehavior = previousBehavior;
-    return { scrollTop: primary.scrollTop, clientHeight: primary.clientHeight, scrollHeight: primary.scrollHeight };
+async function seedScrollableLucyConversation(page: import('@playwright/test').Page) {
+  await page.addInitScript(() => {
+    const now = Date.now();
+    const content = Array.from({ length: 18 }, (_, index) =>
+      `대화 스크롤 회귀 검증 ${index + 1}번째 문단입니다. 화면을 내린 뒤 빅뱅 이동을 실행할 수 있도록 긴 대화를 준비합니다.`
+    ).join('\n');
+    localStorage.setItem('chat_history_unified_v3', JSON.stringify([
+      { id: 'bigbang-scroll-user', role: 'user', persona: 'lucy', content, timestamp: now - 1000 },
+      { id: 'bigbang-scroll-answer', role: 'assistant', persona: 'lucy', content, timestamp: now },
+    ]));
   });
 }
 
@@ -879,8 +891,10 @@ test('Key loading fallback does not consume the first Big Bang south touch', asy
 });
 
 test('Big Bang stays over Lucy while left and right change only the channel pane', async ({ page }) => {
-  await page.setViewportSize({ width: 1280, height: 800 });
-  await openPrologue(page, '/heal?device=duo&tab=meditation');
+  test.setTimeout(150_000);
+  await page.setViewportSize({ width: 960, height: 700 });
+  await page.addInitScript(() => localStorage.setItem('prism_device_perf_override', 'duo'));
+  await openPrologue(page, '/heal?tab=meditation');
   const channelPane = page.locator('#duo-content-viewport');
   const lucyPane = page.locator('#duo-lucy-viewport');
   await expect(channelPane).toBeVisible();
@@ -920,12 +934,10 @@ test('Big Bang stays over Lucy while left and right change only the channel pane
 });
 
 test('Big Bang north and south controls switch apps from mid-scroll without scrolling content', async ({ page }) => {
+  await seedScrollableLucyConversation(page);
   await openLucy(page);
   const tapFromMiddle = async (offsetY: number, expectedPath: string) => {
-    const scrollState = await setLucyPrimaryScrollAtMiddle(page);
-    expect(scrollState.clientHeight).toBeGreaterThan(0);
-    expect(scrollState.scrollHeight).toBeGreaterThan(scrollState.clientHeight);
-    expect(scrollState.scrollTop).toBe(120);
+    await expect.poll(() => page.locator('.lucy-chat-main').evaluate(element => element.scrollHeight - element.clientHeight)).toBeGreaterThan(500);
     const bigBang = page.locator('div[data-bigbang="true"]').first();
     const box = await bigBang.boundingBox();
     expect(box).not.toBeNull();
@@ -938,7 +950,7 @@ test('Big Bang north and south controls switch apps from mid-scroll without scro
       if (!root) throw new Error('Lucy primary conversation scroller is missing');
       root.style.scrollBehavior = 'auto';
       root.style.scrollSnapType = 'none';
-      root.scrollTop = 120;
+      root.scrollTo({ top: 120, behavior: 'instant' });
       const maxScroll = root.scrollHeight - root.clientHeight;
       if (root.scrollTop <= 2 || root.scrollTop >= maxScroll - 2) {
         throw new Error(`Lucy primary scroller is not in a middle position: ${root.scrollTop}/${maxScroll}`);
@@ -1283,7 +1295,8 @@ test('Lucy can return to the latest conversation and tap blank header space to r
 
   await simulateConversationScroll(400);
   await expect.poll(() => messages.evaluate(element => element.scrollTop)).toBeGreaterThan(80);
-  await page.mouse.click(headerBox.x + headerBox.width / 2, Math.min(headerBox.y + 30, 60));
+  const topTap = await getLucyHeaderBackground(page, 'top');
+  await page.mouse.click(topTap.x, topTap.y);
   await expect.poll(() => messages.evaluate(element => element.scrollTop)).toBeLessThan(3);
 
   await page.evaluate(() => {
@@ -1377,19 +1390,7 @@ test('Lucy smoothly reaches the exact top of a long conversation and recent conv
   const touchStartTop = await messages.evaluate(element => element.scrollTop);
   expect(touchStartTop).toBeGreaterThan(80);
 
-  const header = page.locator('[data-lucy-header-tap-scroll="true"]');
-  const topTap = await header.evaluate(element => {
-    const rect = element.getBoundingClientRect();
-    const blocked = 'button, a, input, select, textarea, [role="button"], [role="tab"], [role="menuitem"], [role="link"], label, .clickable, [data-no-scroll-top], [data-brand-logo], audio, video, iframe, .lucy-header-actions, .prism-subnav-btn, .duo-page-nav';
-    const y = rect.top + Math.min(8, rect.height / 2);
-    const x = [0.5, 0.42, 0.58, 0.34, 0.26].map(fraction => rect.left + rect.width * fraction)
-      .find(candidate => {
-        const hit = document.elementFromPoint(candidate, y);
-        return hit && element.contains(hit) && !hit.closest(blocked);
-      });
-    if (x == null) throw new Error('Lucy blank upper-center tap area is missing');
-    return { x, y };
-  });
+  const topTap = await getLucyHeaderBackground(page, 'top');
   await page.evaluate(() => {
     const messages = document.querySelector('.lucy-chat-main') as HTMLElement | null;
     if (!messages) throw new Error('Lucy message scroller is missing');

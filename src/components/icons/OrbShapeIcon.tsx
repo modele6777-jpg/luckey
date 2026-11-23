@@ -1,6 +1,6 @@
 import React from 'react';
 
-export interface OrbShapeIconProps {
+export interface OrbShapeIconProps extends React.SVGProps<SVGSVGElement> {
   size?: number;
   className?: string;
   color?: string;
@@ -19,9 +19,11 @@ export function OrbShapeIcon({
   className = '',
   color = 'currentColor',
   strokeWidth = 2,
+  ...svgProps
 }: OrbShapeIconProps) {
   return (
     <svg
+      {...svgProps}
       width={size}
       height={size}
       viewBox="0 0 24 24"
